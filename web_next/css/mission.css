@@ -35,10 +35,12 @@
 .mc-mini b { position: absolute; inset: 5px; border-radius: 50%; background: radial-gradient(circle at 32% 30%, #fff 0, color-mix(in srgb, var(--c) 80%, #fff) 12%, var(--c) 40%, color-mix(in srgb, var(--c) 30%, #000) 85%);
   box-shadow: 0 0 14px -2px var(--c); }
 .mc-mini i { position: absolute; inset: 0; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--c) 55%, transparent); transform: rotateX(68deg) rotateZ(-20deg); }
-.mc-chip.st-trade .mc-mini b, .mc-orbit.st-trade .mc-ball { animation: mc-pulse 1.1s ease-in-out infinite; }
-.mc-chip.st-armed .mc-mini b, .mc-orbit.st-armed .mc-ball { animation: mc-pulse 2.2s ease-in-out infinite; }
+/* the pulse: a glow layer that only changes opacity / scale (compositor-only, no repaint per frame on old phones) */
+.mc-mini b::after, .mc-ball::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; box-shadow: 0 0 18px 5px var(--c); opacity: 0; pointer-events: none; }
+.mc-chip.st-trade .mc-mini b::after, .mc-orbit.st-trade .mc-ball::after { animation: mc-glow 1.1s ease-in-out infinite; }
+.mc-chip.st-armed .mc-mini b::after, .mc-orbit.st-armed .mc-ball::after { animation: mc-glow 2.2s ease-in-out infinite; }
 .mc-chip.st-off .mc-mini b, .mc-orbit.st-off .mc-ball { filter: saturate(.35) brightness(.7); }
-@keyframes mc-pulse { 50% { box-shadow: 0 0 26px 4px var(--c); filter: brightness(1.25); } }
+@keyframes mc-glow { 50% { opacity: 1; transform: scale(1.14); } }
 .mc-mission { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px; }
 .mc-mission li { display: grid; grid-template-columns: 9px auto 1fr; gap: 8px; align-items: baseline; font-size: 13px; line-height: 1.4; }
 .mc-mission li i { width: 7px; height: 7px; border-radius: 50%; background: var(--c); box-shadow: 0 0 8px var(--c); align-self: center; }
@@ -47,7 +49,8 @@
 
 /* ------------------------------------------------------------------ the page */
 .mc-page { display: block; }
-.mc-hero { margin: 2px 0 14px; } .mc-hero h2 { margin: 6px 0 4px; font-size: 26px; letter-spacing: -.03em;
+.mc-hero { margin: 2px 0 14px; text-shadow: 0 1px 2px rgba(0,0,0,.9), 0 0 18px rgba(0,0,0,.85); }
+.mc-hero .mc-sess { color: #c9d4ea; } .mc-hero h2 { margin: 6px 0 4px; font-size: 26px; letter-spacing: -.03em;
   background: linear-gradient(90deg, #9ec2ff, #c8b3ff 55%, #ffc48a); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .mc-orbits { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 14px; perspective: 1200px; }
 .mc-orbit { position: relative; padding: 16px 16px 14px; border-radius: 20px; min-width: 0; overflow: hidden;
@@ -139,4 +142,4 @@
   .mc-tl-row { grid-template-columns: 56px 1fr; } .mc-tl-ticks { margin-left: 64px; }
 }
 @media (max-width: 370px) { .mc-ct b { font-size: 15px; } .mc-chip { padding: 9px 7px; } }
-@media (prefers-reduced-motion: reduce) { .mc-sat, .mc-think i, .mc-ball, .mc-mini b, .mc-star circle.h { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { .mc-sat, .mc-think i, .mc-ball::after, .mc-mini b::after, .mc-star circle.h { animation: none !important; } }

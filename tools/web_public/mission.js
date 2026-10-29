@@ -102,6 +102,11 @@
         el.querySelector('.mc-strip')?.remove();
         const box = document.createElement('div'); box.innerHTML = MU.strip(M, { go });
         el.insertBefore(box.firstElementChild, el.firstChild);      // Home's top area
+        // real.js prepends its cards once realcore.js has loaded (async on the first render): keep the strip on top
+        if (!el.__mcTop && typeof MutationObserver !== 'undefined') {
+          el.__mcTop = new MutationObserver(() => { const s = el.querySelector(':scope > .mc-strip'); if (s && el.firstElementChild !== s) el.prepend(s); });
+          el.__mcTop.observe(el, { childList: true });
+        }
         MU.wire(el);
       } catch (e) { console.warn('mission strip', e); }
       Sync.fx();
