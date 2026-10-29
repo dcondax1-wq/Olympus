@@ -645,9 +645,10 @@ part yourself or fold it into a script.**
   `/api/next/start/newacct` PC only: a funded account after the slot's pass via `go.to_funded`, else a new eval via
   `go.set_names`; BLITZ via `ROLE_SETTERS["blitz"]`; never arms; `tests/test_new_accounts.py` 12). **Autopilot score**
   `engine/autopilot.py` (Start page writes + hands-off events, 100 - 10 a step, heartbeat `remote.autopilot`;
-  `tests/test_autopilot.py` 7). Finding (heartbeat 2026-10-28): NinjaTrader's outgoing folder shows only
-  `Simulation=CONNECTED`, so the "every connection DISCONNECTED" checks cannot see the MFFU connection drop; orders
-  NinjaTrader refuses are still handled as "not placed".
+  `tests/test_autopilot.py` 7). Checked (heartbeat 2026-10-28): NinjaTrader's outgoing folder shows one connection,
+  `Simulation=CONNECTED`, and its trace puts both MFFU accounts on that connection ("(Simulation)
+  Cbi.Account.OnConnectionStatus: account='MFFUEVBLDR602936016' ..."), so the DISCONNECTED checks do watch the MFFU
+  accounts' connection.
 - **Execution audit (2026-10-25, `research/handoff/2026-10-25/A5_execution.md`, test `tests/test_nt_exec_audit.py`):** kill is
   account-scoped (CLOSEPOSITION + CANCEL by id) unless the action carries `"scope": "global"` (only `LiveBot.kill_switch`,
   the owner's kill -> FLATTENEVERYTHING); the OIF writer refuses FLATTENEVERYTHING / CANCELALLORDERS outside that, a line
