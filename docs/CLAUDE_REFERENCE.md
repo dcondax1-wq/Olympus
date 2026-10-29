@@ -227,13 +227,15 @@ part yourself or fold it into a script.**
   `ninjatrader_state_acctc.json`), state `live_state_acctc.json`, startup reconcile, guards (order sanity stop cap 250 pts:
   37 of the 330 2026 stops are over LIT's 100), live gate as account B (armed + the phrase at the bot's start +
   NINJATRADER_LIVE). Rule = `blitz.Engine` on the closed 1m bars (default `blitz.DEFAULT_PARAMS`; the block's "params" plugs
-  a research pick by config only: research/scalp/blitz_25k_pick.json is NOT read): signal close -> MARKET at once (late > 50 s
-  = not chased), stop + OCO 20R, the model's trail -> stop CHANGE (tighter only), 30-bar / 15:55 (+60 s clock) / CME early
-  close (flat -5 min, no entry -15 min) exits, 6 a day, -3R; a blocked signal keeps its model trade on paper (the slot is
-  used, as the research eval). Size = `blitz.PLAN` (40% of the room, <= $600, <= 0.9 x the $600 DLL left, 20 micros);
-  stuck room < $249.56; funded (owner's switch, new Name, disarmed) 10% / $150 / +$400 day stop (na_life 25k pick).
-  No hedging, LIT > ATLAS > BLITZ: C blocked while LIT holds / enters / has a setup armed the other way, B holds or closes the
-  other way, an extra account holds it; LIT's opposite entry -> `LiveBot._hedge_clear` -> `_hedge_clear_c` (C closed at market
+  a later rule pick by config only; `research/writeups/blitz-25k.md` = no rule change): signal close -> MARKET at once
+  (late > 50 s = not chased), stop + OCO 20R, the model's trail -> stop CHANGE (tighter only), 30-bar / 15:55 (+60 s clock) /
+  CME early close (flat -5 min, no entry -15 min) exits, 6 a day, -3R; a candidate opposite LIT / ATLAS is masked at the
+  signal (`AccountC._gate`: no model trade, the slot stays free, as blitz-25k.md measured it); any other block keeps its model
+  trade on paper (the slot is used, as the research eval). Size = blitz_25k_pick.json "eval_25k" (40% of the room for
+  sessions 1-4, the full room from session 5, <= $600, <= 0.9 x the $600 DLL left, 20 micros; `"sizing": "paper"` = flat 40%);
+  stuck room < $249.56; funded (owner's switch, new Name, disarmed) 10% / $150 / +$400 day stop ("funded_25k").
+  No hedging, LIT > ATLAS > BLITZ: C blocked while LIT holds / enters / has a setup armed the other way (the stricter block),
+  B holds or closes the other way, an extra account holds it; LIT's opposite entry -> `LiveBot._hedge_clear` -> `_hedge_clear_c` (C closed at market
   first, LIT routes once confirmed flat, else HEDGE WAIT / "HEDGE BLOCKED: BLITZ close not confirmed"); ATLAS's ->
   `AccountB._c_yield` right before B routes. Never-placed orders as account B (not booked, push). Performance contract
   `account_c.score`: 20+ finished trades with avg R or PF(R) under the 2026 bootstrap p5 (20: -0.150 / 0.62, 40: -0.061 /
