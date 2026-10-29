@@ -502,11 +502,11 @@ part yourself or fold it into a script.**
   `structure_note`), narrator kind `structure` (15m / 1h breaks, advice on an open Zlarior trade; not pushed by default;
   read from the block the page / live_publish thread computed, so the poll thread never recomputes: derive +0 ms).
   `docs/PLAYBOOK.md` + `engine/playbook.py` (rules Z1-Z18, A1-A8, B1-B8 + structure advice Z-S / A-S / B-S; `now()` = the
-  rule being applied, `applying()`, one check function per rule). `engine/advisor.py`: six rules (be_choch, exit_choch,
+  rule being applied, `applying()`, one check function per rule; `GET /api/next/playbook` on the Live View router). `engine/advisor.py`: six rules (be_choch, exit_choch,
   trail_15m, trail_5m, tp_pool, skip_htf) scored on every finished trade by the difference method; PC via `narrator.tick`
   (a key check on the poll, the scoring in a background thread; `logs/advisor/<strategy>.jsonl`, `tally.json`,
   gitignored), cloud via `live_learning.cloud_hook` (state "advisor");
-  cards in `live_learning.suggestions` (no approve command). Its backtest = the research (`tools/structure_manage.py
+  cards in `live_learning.suggestions` (live tally + the 2026 backtest cards `research/lit/advisor_backtest.json`; no approve command). Its backtest = the research (`tools/structure_manage.py
   advisor`). Tests `tests.test_structure`, `tests.test_advisor`.
 - **Dashboard 2026-10-28 (owner: "50 useful features", "what the bot is thinking", "very 3D"):** registry
   `web_next/FEATURES.md` (status of all 50). Home "Today · real accounts" (`realcore.js`, `cc.js`; phone

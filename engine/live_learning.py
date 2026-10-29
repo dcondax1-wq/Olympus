@@ -637,7 +637,7 @@ def suggestions(L: dict | None, journal: list | None, costs: dict | None = None,
                         "note": "Only makes sizing more conservative; off = today's exact sizing."})
     try:                                       # the discretion advisor's running tally per structure rule (read-only)
         from engine import advisor
-        out += advisor.cards(advisor_tally, store=advisor_store)
+        out += advisor.cards(advisor_tally, store=advisor_store, backtest=True)
     except Exception:
         pass
     return out

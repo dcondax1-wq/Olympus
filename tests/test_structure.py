@@ -375,6 +375,21 @@ def t_liveview():
     check("narrator on the poll thread never recomputes structure (no cache -> no structure message, no work)",
           L.structure_block(b, now + 3, compute=False) is None and not [m for m in N.derive(b, now + 4)[0] if m["kind"] == "structure"])
     check("narrator: 'structure' kind exists, never pushed by default", "structure" in N.KINDS and N.KINDS["structure"][1] is False)
+    # GET /api/next/playbook (read-only route on the Live View router): rules + the rule each bot is on + structure notes
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+    app = FastAPI()
+    app.include_router(L.router)
+    saved_bot = L._bot
+    L._bot = lambda: b
+    try:
+        pj = TestClient(app).get("/api/next/playbook").json()
+    finally:
+        L._bot = saved_bot
+    check("GET /api/next/playbook: the written rules, the rule each bot is on, structure per strategy",
+          len(pj.get("rules") or []) > 30 and set(pj.get("now") or {}) == {"lit", "atlas", "scalp"}
+          and (pj["now"]["lit"] or {}).get("id") and set((pj.get("structure") or {}).get("per_strategy") or {}) == {"lit", "atlas", "scalp"},
+          {k: pj.get(k) for k in ("now", "error")})
     # the advisor's PC hook on the fake bot: one finished routed LIT trade in the ledger
     et = TL.T(3, 30)
     b.ledger = [{"t": et + 2, "side": "buy", "qty": 2, "entry_t": et, "entry": 30800.0, "stop": 30780.0, "target": 30900.0, "result": {"ok": True}},

@@ -699,6 +699,44 @@ def r_view(tf: str = "1m"):
         return _J({"error": f"{e.__class__.__name__}: {e}"[:200]}, 500)
 
 
+def playbook_view(bot, now: int | None = None) -> dict:
+    """GET /api/next/playbook: the written rules (engine/playbook.py = docs/PLAYBOOK.md), the rule each bot is on right now and
+    what structure says per strategy (engine/structure.py). Read-only."""
+    from . import playbook as PB
+    now = int(now or _now(bot))
+    S = structure_block(bot, now) or {}
+    sec = getattr(bot, "second", None) or {}
+    mem = {k: (s.get("state") or {}) for k, s in (sec.get("strategies") or {}).items() if isinstance(s, dict)}
+    try:
+        from . import blitz as BZ
+        bl = BZ.state_text(getattr(bot, "blitz", None), now)
+    except Exception:
+        bl = {}
+    pos = None
+    try:
+        from . import accounts
+        p = accounts._position(bot)
+        if p and not getattr(bot, "_open_src", None) and p.get("entry") is not None:
+            pos = p
+    except Exception:
+        pos = None
+    brain = getattr(bot, "brain", None)
+    if pos is None and isinstance((brain or {}).get("trade"), dict):
+        pos = brain["trade"]
+    return {"t": now, "doc": "docs/PLAYBOOK.md", "rules": PB.RULES,
+            "now": {"lit": PB.now("lit", {"brain": brain, "position": pos, "now": now}), "atlas": PB.now("atlas", {"members": mem}),
+                    "scalp": PB.now("scalp", bl or {})},
+            "structure": {"summary": S.get("summary"), "per_strategy": S.get("per_strategy")}}
+
+
+@router.get("/api/next/playbook")
+def r_playbook():
+    try:
+        return _J(playbook_view(_bot()))
+    except Exception as e:
+        return _J({"error": f"{e.__class__.__name__}: {e}"[:200]}, 500)
+
+
 @router.get("/api/next/liveview/feed")
 def r_feed(after: int | None = None, n: int = 100, strat: str = ""):
     try:

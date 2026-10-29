@@ -129,8 +129,10 @@ The noise-area momentum scalp: when NQ breaks out of its normal intraday noise, 
 - **Live View** (PC and phone): the "structure" block (5m / 15m / 1h trend, last BOS / CHoCH, protected swings, pools,
   premium / discount) and one structure line per strategy in the thinking panel; the narrator posts structure changes
   ("5m CHoCH down at 29,950").
-- **Learning page**: the advisor's tally per rule ("BE on a 5m CHoCH would have saved $X over N trades") as suggestions.
-  Nothing switches on by itself; a rule that keeps earning goes to the owner with its numbers.
+- **Learning page**: the advisor's tally per rule ("BE on a 5m CHoCH would have saved $X over N trades") as suggestions,
+  next to its 2026 backtest cards. Nothing switches on by itself; a rule that keeps earning goes to the owner with its numbers.
+- **`GET /api/next/playbook`** (PC): every rule above as data, the rule each bot is on right now, and what structure says
+  per strategy.
 
 ## Tonight's verdict (2026-10-29, `research/writeups/structure-management.md`)
 101 LIT and 24 ATLAS structure ideas were tested on the real trades. None makes more money than the live rules in both

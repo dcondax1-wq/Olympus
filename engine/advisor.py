@@ -442,9 +442,10 @@ def load_tally(store: str | None = None) -> dict:
     return _read_json(_p(store, "tally.json"), {}) or {}
 
 
-def cards(T: dict | None = None, store: str | None = None) -> list:
-    """Suggestion cards for engine/live_learning.suggestions: one per strategy and rule that fired at least once. Advice only:
-    no approve command (a rule goes live only after research passes every gate and the owner approves)."""
+def cards(T: dict | None = None, store: str | None = None, backtest: bool = False) -> list:
+    """Suggestion cards for engine/live_learning.suggestions: one per strategy and rule that fired at least once (+ with
+    backtest=True the 2026 backtest cards). Advice only: no approve command (a rule goes live only after research passes every
+    gate and the owner approves)."""
     T = T if T is not None else load_tally(store)
     out = []
     for strat, blk in (T or {}).items():
@@ -458,6 +459,32 @@ def cards(T: dict | None = None, store: str | None = None) -> list:
                         "would_text": x.get("text"), "applied": False, "approve": None,
                         "note": "Discretion advisor (read-only shadow): it never changes an order. A rule that keeps saving money "
                                 "goes back to research before anything changes."})
+    if backtest:
+        out += backtest_cards()
+    return out
+
+
+BACKTEST_JSON = os.path.join(ROOT, "research", "lit", "advisor_backtest.json")
+
+
+def backtest_cards() -> list:
+    """One card per rule from the advisor's own backtest on the 2026 LIT trades (tools/structure_manage.py advisor): what each
+    piece of discretion would have done over the year, so the page says something before the live tally has trades."""
+    try:
+        with open(BACKTEST_JSON, encoding="utf-8") as fh:
+            B = json.load(fh)
+    except (OSError, ValueError):
+        return []
+    out = []
+    for rid, x in (B.get("rules") or {}).items():
+        a = x.get("advisor") or {}
+        net = float(a.get("H1") or 0) + float(a.get("H2") or 0)
+        out.append({"bot": "lit", "kind": "advisor_backtest", "id": f"advisor_bt:lit:{rid}",
+                    "title": f"Zlarior backtest 2026: {x.get('label') or rid}", "would_usd": round(net, 2),
+                    "evidence": research_note(rid), "would_text": f"{str(x.get('tally') or '').split(': ', 1)[-1]} in 2026 (H1 {a.get('H1', 0):+,} $, H2 {a.get('H2', 0):+,} $)",
+                    "applied": False, "approve": None,
+                    "note": "The advisor's rules replayed on the 2026 trades: the evidence behind keeping the written rules."})
+    out.sort(key=lambda c: -abs(c["would_usd"]))
     return out
 
 
