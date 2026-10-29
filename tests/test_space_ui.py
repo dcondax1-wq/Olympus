@@ -338,6 +338,14 @@ def part_c(b2, b3, lvd, now, shots, perf):
                 perf["phone_390_scene"] = fs
                 check("c. phone 390x844 scene alone: frame time sane (>= 8 frames in 4 s and < 250 ms CPU a frame in a software GPU, DPR <= 1.5)",
                       fs["frames"] >= 8 and fs["cpu_ms"] < 250 and fs["dpr"] <= 1.5, fs)
+                # a lost GPU context (a phone that slept) comes back with the textures baked again
+                pg.evaluate("() => { const gl = window.__LEFX.space.renderer.getContext(); window.__lc = gl.getExtension('WEBGL_lose_context'); window.__lc && window.__lc.loseContext(); }")
+                pg.wait_for_timeout(700)
+                pg.evaluate("() => window.__lc && window.__lc.restoreContext()")
+                f0 = pg.evaluate("() => window.__LEFX.space.stats.frames")
+                pg.wait_for_timeout(3500)
+                f1 = pg.evaluate("() => window.__LEFX.space.stats.frames")
+                check("c. a lost GPU context: the scene draws again after the restore (textures baked again), no errors", f1 > f0 and not errs, (f0, f1, errs[-3:]))
             else:
                 check("c. phone 390x844 scene alone mounts", False, errs[-3:])
             ctx.close()
