@@ -497,7 +497,8 @@ part yourself or fold it into a script.**
   unbroken 1h swings, premium / discount of the 15m dealing range, displacement legs; `block()` = the Live View
   "structure" shape, cached per closed bar, ~13-20 ms a recompute here; `frame_events()` for research). Live View
   `liveview_api.view()["structure"]` (+ phone_view; thinking panel `structure` / `rule` / `advice` lines, ATLAS / BLITZ
-  `structure_note`), narrator kind `structure` (15m / 1h breaks, advice on an open Zlarior trade; not pushed by default).
+  `structure_note`), narrator kind `structure` (15m / 1h breaks, advice on an open Zlarior trade; not pushed by default;
+  read from the block the page / live_publish thread computed, so the poll thread never recomputes: derive +0 ms).
   `docs/PLAYBOOK.md` + `engine/playbook.py` (rules Z1-Z18, A1-A8, B1-B8 + structure advice Z-S / A-S / B-S; `now()` = the
   rule being applied, `applying()`, one check function per rule). `engine/advisor.py`: six rules (be_choch, exit_choch,
   trail_15m, trail_5m, tp_pool, skip_htf) scored on every finished trade by the difference method; PC via `narrator.tick`

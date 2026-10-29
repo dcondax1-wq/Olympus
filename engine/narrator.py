@@ -537,7 +537,7 @@ def _structure_msgs(bot, now: int, day: str) -> list:
     from . import liveview_api as LV
     from . import playbook as PB
     out = []
-    S = LV.structure_block(bot, now)
+    S = LV.structure_block(bot, now, compute=False) or {}          # cached by the page / live_publish: no work on the poll
     ps = S.get("per_strategy") or {}
     for tf in ("15m", "1h"):
         ev = ((S.get("frames") or {}).get(tf) or {}).get("last_event")
@@ -555,10 +555,7 @@ def _structure_msgs(bot, now: int, day: str) -> list:
         pos = None
     if pos and pos.get("entry") is not None and pos.get("entry_t") and not getattr(bot, "_open_src", None):
         from . import advisor as AD
-        from . import pcdash_api
-        _, b1 = pcdash_api.bot_bars(bot, int(pos["entry_t"]) - 6 * 86400)
-        d = int(pos.get("dir") or (1 if str(pos.get("side") or "").upper() == "LONG" else -1))
-        for a in AD.advise_open("lit", {**pos, "dir": d}, b1, now):
+        for a in AD.cached_open_advice("lit", int(pos["entry_t"])):    # computed by the Live View (its own thread)
             rid = a.get("playbook") or ""
             r = PB.rule(rid) or {}
             out.append(msg(f"advice:{int(pos['entry_t'])}:{a['rule']}:{a['t']}", int(a["t"]), "lit", "structure",

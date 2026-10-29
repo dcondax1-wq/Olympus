@@ -338,6 +338,12 @@ def advise_open(strategy: str, pos: dict, b1, now: int | None = None) -> list:
 _OPEN: dict = {}
 
 
+def cached_open_advice(strategy: str, entry_t: int) -> list:
+    """The last advise_open() result for this open trade (no work: the narrator on the poll thread reads it)."""
+    k = _OPEN.get("k")
+    return list(_OPEN.get("v") or []) if k and k[0] == strategy and k[1] == int(entry_t) else []
+
+
 # ================================================================================================ store + tally
 def _p(store, name):
     return os.path.join(store or STORE, name)

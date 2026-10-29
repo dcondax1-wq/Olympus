@@ -450,6 +450,7 @@ def frames_from(b1: list | None, b5: list | None, now: int | None = None, tfs=("
     b1 = closed_only(as_rows(b1), 60, now)
     b5 = closed_only(as_rows(b5), 300, now)
     out = {}
+    r5_1 = None
     for tf in tfs:
         secs = TF_SECS[tf]
         t_from = (int(now) if now else (b1[-1][0] if b1 else (b5[-1][0] if b5 else 0))) - W[tf] * secs
@@ -467,7 +468,9 @@ def frames_from(b1: list | None, b5: list | None, now: int | None = None, tfs=("
                     last = rows[-1][0] if rows else -1
                     rows += [r for r in resample([x for x in s1 if x[0] >= last + secs], secs, 60, now) if r[0] > last]
             else:
-                rows = resample(s1, secs, 60, now)
+                if r5_1 is None:
+                    r5_1 = resample(b1, 300, 60, now)          # 1m -> 5m once; 15m / 1h from those 5m bars
+                rows = [r for r in r5_1 if r[0] >= t_from] if secs == 300 else resample([r for r in r5_1 if r[0] >= t_from], secs, 300, now)
         out[tf] = rows[-W[tf]:]
     return out
 

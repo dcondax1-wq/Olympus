@@ -584,13 +584,17 @@ def view(bot, tf: str = "1m", now: int | None = None, narr: N.Narrator | None = 
 _SB: dict = {}
 
 
-def structure_block(bot, now: int, price=None) -> dict:
+def structure_block(bot, now: int, price=None, compute: bool = True) -> dict | None:
     """The "structure" block (engine/structure.block: 5m / 15m / 1h trend, last BOS / CHoCH, swings, protected swings, pools,
     premium / discount, per-strategy bias) from the bot's own bars: the LIT 1m store (12 days) + bars_tail (5m); without
     them the TradingView export (data/NQ_1m.csv, the last 12 days up to now) when the CSV fallback is on. Cached on the
-    bot's last bars (the rows are only rebuilt when a bar closed)."""
+    bot's last bars (the rows are only rebuilt when a bar closed). compute=False (the narrator on the poll thread): the
+    last block computed by the page / live_publish (its own thread), or None; never a recompute."""
     from . import pcdash_api
     from . import structure as ST
+    if not compute:
+        hit = _SB.get("v")
+        return ST.block_from(hit[2], int(now), price) if hit and hit[0][0] == id(bot) else None
     st = getattr(bot, "_lit_1m_store", None)
     tail = getattr(bot, "bars_tail", None) or []
     try:

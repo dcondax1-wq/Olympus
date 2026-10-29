@@ -365,6 +365,15 @@ def t_liveview():
     msgs, _ = N.derive(b, now + 3)
     ms_der = (time.perf_counter() - t1) * 1000
     check("narrator.derive with the structure part stays fast on a cached bar (< 60 ms)", ms_der < 60, f"{ms_der:.1f} ms")
+    sm = [m for m in msgs if m["kind"] == "structure"]
+    S2 = L.structure_block(b, now + 3, compute=False) or {}
+    want = [tf for tf in ("15m", "1h") if (S2.get("frames", {}).get(tf) or {}).get("last_event")
+            and N.trading_day(S2["frames"][tf]["last_event"]["t"]) == N.trading_day(now)]
+    check("narrator: a 'structure' message for each 15m / 1h break of today (from the cached block, strat sys)",
+          len(sm) == len(want) and all(m["strat"] == "sys" and "trend is now" in m["text"] for m in sm), (want, [m["title"] for m in sm]))
+    L._SB.clear()
+    check("narrator on the poll thread never recomputes structure (no cache -> no structure message, no work)",
+          L.structure_block(b, now + 3, compute=False) is None and not [m for m in N.derive(b, now + 4)[0] if m["kind"] == "structure"])
     check("narrator: 'structure' kind exists, never pushed by default", "structure" in N.KINDS and N.KINDS["structure"][1] is False)
     # the advisor's PC hook on the fake bot: one finished routed LIT trade in the ledger
     et = TL.T(3, 30)
