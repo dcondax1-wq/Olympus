@@ -403,6 +403,12 @@ export class Space extends View {
     this.meteor = null; this.queue = []; this.nextQuiet = 25 + R() * 20;
 
     this.aura = new Aura();
+    // nothing to draw while a full-screen view covers the page (Live View full screen): pause, resume when it closes
+    this.covered = false;
+    this._cov = setInterval(() => {
+      const c = !!(document.fullscreenElement || document.querySelector('.lv-root.lv-max'));
+      if (c !== this.covered) { this.covered = c; if (!c) { this.dirty = true; wake(); } }
+    }, 1000);
     this.base = new THREE.Vector3();
     this.layout(1, 1);
   }
@@ -464,7 +470,7 @@ export class Space extends View {
     this.starU.uPix.value = Math.max(1, dpr);
     this.layout(w, h); this.dirty = true; wake();
   }
-  running() { return this.attached && !document.hidden && Q.level !== 'off' && !this.broken && (!Q.reduced || this.dirty); }
+  running() { return this.attached && !document.hidden && Q.level !== 'off' && !this.broken && !this.covered && (!Q.reduced || this.dirty); }
 
   // ------------------------------------------------------------------ API (same names as the old Field, plus bots / shoot / pnl)
   setScene(name, now = false) {
@@ -549,7 +555,8 @@ export class Space extends View {
   // ------------------------------------------------------------------ frame
   frame(t, dt) {
     // phones: at most ~30 fps (the scene moves slowly); the state still advances every tick
-    if (Q.phone && !this.dirty && t - this.lastDraw < 1 / 31 && this.warpV <= 0 && !this.meteor) { this.stats.skipped++; return; }
+    // a phone that cannot keep up (old iPhone) drops to ~16 fps for the background after a few seconds of slow frames
+    if (Q.phone && !this.dirty && t - this.lastDraw < (this.slowMode ? 1 / 16 : 1 / 31) && this.warpV <= 0 && !this.meteor) { this.stats.skipped++; return; }
     const step = this.lastDraw < 0 ? dt : Math.min(0.1, t - this.lastDraw);
     this.lastDraw = t;
     const c0 = performance.now();
@@ -563,6 +570,7 @@ export class Space extends View {
     const ms = performance.now() - c0, S = this.stats;
     S.frames++; S.last = ms; if (S.frames === 3) S.ms = ms; else if (S.frames > 3) S.ms = S.ms * 0.9 + ms * 0.1;   // the first frames compile the shaders
     S.fps = S.fps ? S.fps * 0.95 + (1 / Math.max(step, 1e-3)) * 0.05 : 1 / Math.max(step, 1e-3);
+    if (Q.phone && !Q.fixed && S.frames > 150 && !this.slowMode && S.fps < 17) { this.slowMode = true; S.slow = true; }
     if (!this.canvas.classList.contains('on')) this.canvas.classList.add('on');
     this.dirty = false;
   }
@@ -699,5 +707,5 @@ export class Space extends View {
     this.mStreak.scale.set((M.kind === 'quiet' ? 4.2 : 8.5) * Math.min(1, s * 3), M.kind === 'quiet' ? 0.14 : 0.3, 1); this.mStreak.material.opacity = fade;
     if (M.s >= 1) this.meteor = null;
   }
-  dispose() { this.labEl?.remove(); this.aura?.dispose(); for (const rt of [this.tA, this.tC, this.tS, this.tM]) rt?.dispose(); this.ov.traverse((o) => o.material?.dispose?.()); super.dispose(); }
+  dispose() { clearInterval(this._cov); this.labEl?.remove(); this.aura?.dispose(); for (const rt of [this.tA, this.tC, this.tS, this.tM]) rt?.dispose(); this.ov.traverse((o) => o.material?.dispose?.()); super.dispose(); }
 }
