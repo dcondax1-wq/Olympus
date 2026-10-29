@@ -24,6 +24,9 @@ sys.path.insert(0, ROOT)
 
 from engine import liveview_api as L, live_publish as LP, narrator as N  # noqa: E402
 from tests import test_liveview_api as F  # noqa: E402  (fake bot, brain, ATLAS; sets L.CSV_FALLBACK = False)
+from engine import holo_api as HA  # noqa: E402  (the Holodeck files ride in the same commit: no real logs / data/ read)
+_HT = tempfile.mkdtemp(prefix="phone_holo_")
+HA.STORE, HA.NARR_DIR, HA.BRAIN_DIR, HA.STATE_PATH, HA.CSV_FALLBACK = _HT, _HT, _HT, os.path.join(_HT, "live_state.json"), False
 
 RES = []
 
@@ -82,7 +85,8 @@ def main():
     pub = LP.Publisher(fixture(now), None, log=lambda t: None, clock=lambda: now, url="file:///x",
                        push_fn=lambda pl, url, **kw: seen.update(kw) or {"ok": True, "bytes": 10})
     ex = pub.extra()
-    check("Publisher.extra(): liveview.json from phone_view, scrubbed", list(ex) == ["liveview.json"] and ex["liveview.json"]["kind"] == "le-liveview"
+    check("Publisher.extra(): liveview.json from phone_view, scrubbed (+ the Holodeck's holo.json / holo_hist.json)",
+          list(ex)[:1] == ["liveview.json"] and set(ex) <= {"liveview.json", "holo.json", "holo_hist.json"} and ex["liveview.json"]["kind"] == "le-liveview"
           and "I ACCEPT" not in json.dumps(ex, default=str), list(ex))
     pub.publish(force=True)
     check("Publisher.publish passes liveview.json to the push", "liveview.json" in (seen.get("extra") or {}), list(seen))

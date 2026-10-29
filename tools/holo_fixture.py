@@ -88,8 +88,15 @@ def main(argv=None):
     ap.add_argument("--day", default="2026-10-13")
     ap.add_argument("--out", default=os.path.join(ROOT, "tests", "fixtures", "holo_sample.json"))
     a = ap.parse_args(argv)
+    from engine import holo_api as H
+    bot, now = make(a.day)
+    out = H.build(bot, None, now)
+    return _main_rest(a, H, out)
+
+
+def make(day: str):
+    """The fake PC bot at 16:10 ET of `day` (temp logs; holo_api pointed at them, LIVE_REPLAY on)."""
     from engine import blitz as BZ, brain as BR, fill_audit as FA, holo_api as H, lit_live, narrator as N, second
-    day = a.day
     now = FA._ts(day, 16, 10)
     d5, d1 = FA.load_bars()
     P = FA._params()
@@ -197,8 +204,11 @@ def main(argv=None):
         for o in orders:
             fh.write(json.dumps(o) + "\n")
     N.NARRATOR.observe(bot, now)                                  # today's feed in memory (no files, no pushes)
-    out = H.build(bot, None, now)
-    out["fixture"] = {"day": day, "note": "Sample day for the Holodeck: real futures bars (TradingView CME exports), the LIT backtest, "
+    return bot, now
+
+
+def _main_rest(a, H, out):
+    out["fixture"] = {"day": out["day"], "note": "Sample day for the Holodeck: real futures bars (TradingView CME exports), the LIT backtest, "
                                           "ATLAS research trades (engine/second.run) and BLITZ backtest trades of that day; the NinjaTrader "
                                           "Sim fills (1 tick off the model), the account names and the refused order are FAKE.",
                       "made_by": "python -X utf8 tools/holo_fixture.py"}

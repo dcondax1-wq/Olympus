@@ -62,6 +62,14 @@ _MODEL: dict = {}            # day -> (sig, model dict): a finished day with the
 _STRUCT: dict = {}
 
 
+def _g(obj, name, default=None):
+    """getattr that never raises (a broken bot / adapter property reads as missing)."""
+    try:
+        return getattr(obj, name, default)
+    except Exception:
+        return default
+
+
 def _J(obj, status=200):
     return Response(json.dumps(obj, separators=(",", ":"), default=str), media_type="application/json", status_code=status)
 
@@ -180,7 +188,7 @@ def _bot_rows(bot, t0, t1):
     """The bot's own feed (5m bars_tail, the 1m LIT store) inside [t0, t1)."""
     b5, b1 = [], []
     try:
-        for r in getattr(bot, "bars_tail", None) or []:
+        for r in _g(bot, "bars_tail", None) or []:
             if isinstance(r, dict):
                 t = _i(r.get("time"))
                 row = [t, float(r["open"]), float(r["high"]), float(r["low"]), float(r["close"]), int(r.get("volume") or 0)]
@@ -191,7 +199,7 @@ def _bot_rows(bot, t0, t1):
                 b5.append(row)
     except Exception:
         b5 = []
-    st = getattr(bot, "_lit_1m_store", None)
+    st = _g(bot, "_lit_1m_store", None)
     if st is not None:
         try:
             b1 = _rows(st[(st["time"] >= t0) & (st["time"] < t1)])
@@ -277,7 +285,7 @@ def model_day(day: str, errors: list | None = None, now: int | None = None) -> d
         levels = []
         try:
             from . import lit_brief
-            last = int(getattr(M, "n_closed", M.n)) - 1
+            last = int(_g(M, "n_closed", M.n)) - 1
             k = int(M.day_of[last])
             for lv in lit_brief.level_map(M, k, last, end):
                 levels.append({"bot": "lit", "px": _f(lv.get("price")), "label": lv.get("label"), "t0": _i(lv.get("known_t")),
@@ -372,21 +380,21 @@ def _accounts(bot) -> list:
     """[(bot key, account object or None, adapter, ledger rows, label)] of LIT's account, account B (ATLAS), account C (BLITZ)."""
     out = []
     try:
-        acct = bot._push_account() if callable(getattr(bot, "_push_account", None)) else None
+        acct = bot._push_account() if callable(_g(bot, "_push_account", None)) else None
     except Exception:
         acct = None
-    ad = getattr(bot, "adapter", None)
-    out.append(("lit", bot, ad, list(getattr(bot, "ledger", None) or []), acct or getattr(ad, "account", None)))
+    ad = _g(bot, "adapter", None)
+    out.append(("lit", bot, ad, list(_g(bot, "ledger", None) or []), acct or _g(ad, "account", None)))
     for key, attr in (("atlas", "acct_b"), ("blitz", "acct_c")):
-        A = getattr(bot, attr, None)
+        A = _g(bot, attr, None)
         if A is not None:
-            out.append((key, A, getattr(A, "adapter", None), list(getattr(A, "ledger", None) or []),
-                        getattr(A, "name", None) or getattr(A, "label", None)))
+            out.append((key, A, _g(A, "adapter", None), list(_g(A, "ledger", None) or []),
+                        _g(A, "name", None) or _g(A, "label", None)))
     return out
 
 
 def _state_path(bot):
-    return STATE_PATH or getattr(bot, "state_path", None) or os.path.join(DATA, "live_state.json")
+    return STATE_PATH or _g(bot, "state_path", None) or os.path.join(DATA, "live_state.json")
 
 
 def _disk_ledgers(bot) -> dict:
@@ -421,7 +429,7 @@ def _orders_raw(bot, accts) -> dict:
             put(r["id"], r, r.get("seen"))
     try:
         from tools import fill_audit as tfa
-        folders = {getattr(ad, "folder", None) for _k, _a, ad, _l, _n in accts if ad is not None}
+        folders = {_g(ad, "folder", None) for _k, _a, ad, _l, _n in accts if ad is not None}
         for fo in folders:
             if fo and os.path.isdir(os.path.join(fo, "outgoing")):
                 for oid, st in tfa.read_outgoing(fo).items():
@@ -436,7 +444,7 @@ def _legs(accts, bot) -> dict:
     out = {}
     for key, _A, ad, _l, _n in accts:
         seen = {}
-        for lg in list(getattr(ad, "legs", None) or []) + list(getattr(ad, "history", None) or []):
+        for lg in list(_g(ad, "legs", None) or []) + list(_g(ad, "history", None) or []):
             if isinstance(lg, dict) and lg.get("entry_id"):
                 old = seen.get(lg["entry_id"])
                 if old is None or int(lg.get("filled") or 0) >= int(old.get("filled") or 0):
@@ -525,8 +533,13 @@ def real_trades(bot, day: str, now: int, errors: list, accts=None) -> dict:
                 _err(errors, f"{key} trade {et_}", e)
         try:      # order events in the narrator's words (sent / refused / filled / BE / exit with real $)
             bk = "scalp" if key == "blitz" else key
-            for m in N._route_rows(sorted(rows, key=lambda r: r["t"]), bk, acct_name or "", paper=False):
-                thoughts.append(_thought_of(m))
+            srt = sorted(rows, key=lambda r: r["t"])
+            groups = [(bk, [r for r in srt if not (key == "lit" and r.get("src"))])]
+            if key == "lit":                         # ATLAS members routed on LIT's own account
+                groups.append(("atlas", [r for r in srt if r.get("src")]))
+            for strat, rs in groups:
+                for m in N._route_rows(rs, strat, acct_name or "", paper=False):
+                    thoughts.append(_thought_of(m))
         except Exception as e:
             _err(errors, f"{key} order events", e)
     return {"fills": fills, "trades": trades, "orders": orders_out, "thoughts": thoughts, "entries": entries}
@@ -541,7 +554,7 @@ def _one_real(key, A, ad, acct_name, et_, x, legs, orders, now, comm, fills, ord
     d = 1 if e.get("side") == "buy" else -1
     side = "BUY" if d == 1 else "SELL"
     acct = res.get("account") or acct_name
-    real, src = _src_of(res.get("adapter") or getattr(ad, "name", None), acct)
+    real, src = _src_of(res.get("adapter") or _g(ad, "name", None), acct)
     bot_key = "atlas" if key == "lit" and e.get("src") else key
     t_route = int(e["t"])
     filled_legs = [lg for lg in legs if int(lg.get("filled") or 0) > 0 and lg.get("fill_px") is not None]
@@ -766,7 +779,7 @@ def _attach_model(tr, m, fills, mfills):
 def _atlas_paper(bot, day) -> list:
     """ATLAS members' paper trades of `day` (bot.second; candidates and Zlarior's own variants left out)."""
     out = []
-    sec = getattr(bot, "second", None) or {}
+    sec = _g(bot, "second", None) or {}
     for k, s in (sec.get("strategies") or {}).items():
         if not isinstance(s, dict) or s.get("on") is False or s.get("candidate") or str(k).startswith(("lit", "scalp")):
             continue
@@ -777,7 +790,7 @@ def _atlas_paper(bot, day) -> list:
 
 
 def _blitz_paper(bot, day) -> list:
-    S = getattr(bot, "blitz", None)
+    S = _g(bot, "blitz", None)
     if not isinstance(S, dict):
         return []
     out = []
@@ -843,7 +856,7 @@ def _narr_rows(day: str, live: bool) -> list:
 
 def _levels_live(bot, day, t0) -> list:
     out = []
-    b = getattr(bot, "brain", None) or {}
+    b = _g(bot, "brain", None) or {}
     for lv in b.get("levels") or []:
         if isinstance(lv, dict) and lv.get("price") is not None:
             out.append({"bot": "lit", "px": _f(lv.get("price")), "label": lv.get("label"), "t0": _hm_t(day, t0, lv.get("known_hm")), "t1": None,
@@ -865,7 +878,7 @@ def _hm_t(day, t0, hm):
 
 def _levels_atlas_blitz(bot, day, t0, t1) -> list:
     out = []
-    sec = getattr(bot, "second", None) or {}
+    sec = _g(bot, "second", None) or {}
     for k, s in (sec.get("strategies") or {}).items():
         if not isinstance(s, dict) or s.get("on") is False or s.get("candidate") or str(k).startswith(("lit", "scalp")):
             continue
@@ -873,7 +886,7 @@ def _levels_atlas_blitz(bot, day, t0, t1) -> list:
             if isinstance(x, dict) and x.get("px") is not None:
                 out.append({"bot": "atlas", "px": _f(x.get("px")), "label": f"{s.get('short') or k} {x.get('name') or 'S/R'}", "t0": t0,
                             "t1": None, "taken_t": None, "stage": x.get("stage")})
-    S = getattr(bot, "blitz", None)
+    S = _g(bot, "blitz", None)
     try:
         if isinstance(S, dict) and S.get("eng"):
             from . import blitz as BZ
@@ -897,7 +910,7 @@ def _now_panels(bot, now, lv=None) -> dict | None:
     from . import liveview_api as LV
     try:
         if not isinstance(lv, dict) or "strategies" not in lv:
-            st = getattr(bot, "state", None) or {}
+            st = _g(bot, "state", None) or {}
             price = _f(st.get("price"))
             lv = {"strategies": {"lit": LV.lit_layer(bot, now, price)}}
             try:
@@ -956,35 +969,57 @@ def _structure(bot, day, live, now, bars, lv, errors):
 # ============================================================================================ the whole answer
 def _bots(bot) -> dict:
     try:
-        acct = bot._push_account() if callable(getattr(bot, "_push_account", None)) else None
+        acct = bot._push_account() if callable(_g(bot, "_push_account", None)) else None
     except Exception:
         acct = None
-    ad = getattr(bot, "adapter", None)
-    cfg = getattr(bot, "cfg", None) or {}
-    ab, ac = getattr(bot, "acct_b", None), getattr(bot, "acct_c", None)
-    lit_real = str(cfg.get("adapter") or getattr(ad, "name", "") or "paper").lower().startswith("ninja")
+    ad = _g(bot, "adapter", None)
+    cfg = _g(bot, "cfg", None) or {}
+    ab, ac = _g(bot, "acct_b", None), _g(bot, "acct_c", None)
+    lit_real = str(cfg.get("adapter") or _g(ad, "name", "") or "paper").lower().startswith("ninja")
 
     def plan_of(A):
         try:
-            return str((getattr(A, "spec", None) or {}).get("plan_label") or (getattr(A, "spec", None) or {}).get("plan") or "")
+            return str((_g(A, "spec", None) or {}).get("plan_label") or (_g(A, "spec", None) or {}).get("plan") or "")
         except Exception:
             return ""
     c_real = False
     try:
-        c_real = ac is not None and not (ac.disabled_reason() if callable(getattr(ac, "disabled_reason", None)) else True)
+        c_real = ac is not None and not (ac.disabled_reason() if callable(_g(ac, "disabled_reason", None)) else True)
     except Exception:
         c_real = False
-    return {"lit": {"name": BOTS["lit"][0], "color": BOTS["lit"][1], "account": acct or getattr(ad, "account", None), "real": lit_real,
+    return {"lit": {"name": BOTS["lit"][0], "color": BOTS["lit"][1], "account": acct or _g(ad, "account", None), "real": lit_real,
                     "plan": "LIT method · MFFU eval"},
-            "atlas": {"name": BOTS["atlas"][0], "color": BOTS["atlas"][1], "account": getattr(ab, "name", None) if ab is not None else None,
-                      "real": ab is not None and getattr(ab, "adapter", None) is not None, "plan": plan_of(ab) or "EMA · MACD · S/R (paper)"},
-            "blitz": {"name": BOTS["blitz"][0], "color": BOTS["blitz"][1], "account": getattr(ac, "name", None) if ac is not None else None,
+            "atlas": {"name": BOTS["atlas"][0], "color": BOTS["atlas"][1], "account": _g(ab, "name", None) if ab is not None else None,
+                      "real": ab is not None and _g(ab, "adapter", None) is not None, "plan": plan_of(ab) or "EMA · MACD · S/R (paper)"},
+            "blitz": {"name": BOTS["blitz"][0], "color": BOTS["blitz"][1], "account": _g(ac, "name", None) if ac is not None else None,
                       "real": bool(c_real), "plan": plan_of(ac) or "scalper · PAPER shadow"}}
+
+
+def _empty(now, day, why) -> dict:
+    try:
+        t = int(now or time.time())
+    except Exception:
+        t = int(time.time())
+    try:
+        d = str(dt.date.fromisoformat(str(day))) if day else N.trading_day(t)
+    except Exception:
+        d = N.trading_day(t)
+    t0, t1 = session_bounds(d)
+    return {"v": VERSION, "kind": KIND, "t": t, "day": d, "live": d == N.trading_day(t), "t0": t0, "t1": t1, "bars": {"1m": [], "5m": []},
+            "bots": {k: {"name": v[0], "color": v[1], "account": None, "real": False, "plan": ""} for k, v in BOTS.items()},
+            "fills": [], "trades": [], "orders": [], "thoughts": [], "levels": [], "structure": None, "now": None, "errors": [why[:200]]}
 
 
 def build(bot, day: str | None = None, now: int | None = None, lv: dict | None = None) -> dict:
     """The Holodeck answer for trading day `day` (default today's). lv: the Live View answer already built this minute (the
     publisher's phone_view), reused for the thinking panels and the structure. Never raises."""
+    try:
+        return _build(bot, day, now, lv)
+    except Exception as e:
+        return _empty(now, day, f"build: {e.__class__.__name__}: {e}")
+
+
+def _build(bot, day, now, lv) -> dict:
     t_start = time.perf_counter()
     errors: list = []
     try:
@@ -1023,7 +1058,7 @@ def build(bot, day: str | None = None, now: int | None = None, lv: dict | None =
     fills, trades, orders, thoughts = R["fills"], R["trades"], R["orders"], R["thoughts"]
     # 2. the LIT model of the day: past days from the bars (replay), today from the Brain
     M = None
-    brain = getattr(bot, "brain", None) if live else None
+    brain = _g(bot, "brain", None) if live else None
     if not live or LIVE_REPLAY:
         M = model_day(day, errors, now=now if live else None)
     elif isinstance(brain, dict):
@@ -1290,13 +1325,13 @@ def phone(bot, now: int | None = None, lv: dict | None = None) -> dict:
 def _hist_key(bot):
     """Changes when a trade closes / a fill lands (a cheap look at the ledgers' lengths and exits)."""
     try:
-        k = [len(getattr(bot, "ledger", None) or [])]
+        k = [len(_g(bot, "ledger", None) or [])]
         for a in ("acct_b", "acct_c"):
-            A = getattr(bot, a, None)
-            k.append(len(getattr(A, "ledger", None) or []) if A is not None else -1)
-        b = getattr(bot, "brain", None) or {}
+            A = _g(bot, a, None)
+            k.append(len(_g(A, "ledger", None) or []) if A is not None else -1)
+        b = _g(bot, "brain", None) or {}
         k.append(sum(1 for s in b.get("setups") or [] if isinstance(s, dict) and (s.get("trade") or {}).get("exit")))
-        S = getattr(bot, "blitz", None)
+        S = _g(bot, "blitz", None)
         k.append(len((S or {}).get("ledger") or []) if isinstance(S, dict) else -1)
         return tuple(k)
     except Exception:
