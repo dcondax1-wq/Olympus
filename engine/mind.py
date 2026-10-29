@@ -12,25 +12,32 @@ What it does
                band, time of day, killzone, VIX, 15m / 1h structure trend vs the trade, prior-day range ratio, first-hour
                range ratio, member) plus the live / paper trades as they close (logs/mind/<bot>_live.jsonl). For a forming /
                armed / open setup: the k nearest past setups -> win %, average R, $ at today's size, confidence, 3 examples.
-               Validated out of sample (tools/mind_build.py: fit on 2026 H1, checked on 2026 H2 and 2021-25): when similarity
-               does not predict the outcome there, the block says so ("valid": false, conf "low") and it is context only.
-  2 regime     per closed 5m bar: trend (15m + 1h structure), volatility (5m ATR vs its 7-day median, VIX), and from 10:30 ET
+               Validated out of sample (tools/mind_build.py: fit on 2026 H1, checked on 2026 H2 and 2021-25; also fit 2021-25
+               -> 2026 and fit 2021-24 -> 2025): when similarity does not predict the outcome there, the block says so
+               ("valid": false, conf "low", "Context only") - which is the case for all three bots (2026-10-29).
+  2 regime     per closed 5m bar: trend (15m + 1h structure), volatility (5m ATR vs its usual at that time of day, VIX), and
+               from 10:30 ET
                a trend-day probability (first hour vs its average, how directional the first hour was, where price sits vs
                the overnight range, the gap, VIX) from a small logistic model fit on 2026 H1, with its measured accuracy on
                2026 H2 and 2021-25 next to it.
   3 game plan  before each window (01:45 ET Zlarior + ATLAS, 10:45 ET BLITZ) an if-then plan per bot from today's levels,
                structure and regime, the $ at today's size and "what would change my mind".
   4 review     after each closed trade (any bot, real or paper): grade A-F, what went right / wrong, the lesson, luck or skill
-               (outcome vs the R similar setups made). Journal: logs/mind/reviews.jsonl (gitignored).
+               (outcome vs the R similar setups made when the memory predicts, else the trade's own path: MAE / MFE).
+               Journal: logs/mind/reviews.jsonl (gitignored).
   5 research   nightly (PC after 16:05 ET, a low-priority child process capped at 10 minutes): hypotheses from its own
-               observations, each tested on the stored trades with the research scoring (2026 H1 pick / H2 check, 2021-25),
-               filed as proposals {testing | candidate | rejected}. Never adopts anything: a candidate carries the exact change
-               for the owner to approve.
+               observations (where recent losses bunch up, where the money came from) + standing questions + the discretion
+               advisor's live tally, each tested on the stored trades with the run library's exact re-size (2026 H1 pick / H2
+               check, 2021-25; net $, $ a month, PF, DD, 2+ trades a week, the MFFU 50K eval speed for Zlarior), filed as
+               proposals {testing | candidate | rejected}. Never adopts anything: a candidate carries the exact change for the
+               owner to approve.
 
 Contract (rendered by the dashboards): block() -> {"t", "regime", "plans", "similar", "reviews", "proposals", "alerts", "iq"}
 (tests/fixtures/mind_sample.json). liveview view()["mind"], phone_view (small cut), heartbeat "mind" (compact < 12 KB),
-holo_api "mind", GET /api/next/mind (block + history). Nothing heavy runs on the trading poll: pc_tick (from
-engine/narrator.tick) only checks whether a new 5m bar closed and, if so, starts one background thread.
+holo_api "mind", GET /api/next/mind (block + history), narrator kind "brain" (plans / reviews / proposals; no phone push
+by default). Nothing heavy runs on the trading poll: pc_tick (from engine/narrator.tick) only checks whether a new 5m bar
+closed and, if so and 15-45 s into a minute (never on the polls right after a bar close), starts one background thread
+(~50 ms of work). contract_errors(block) checks the shape.
 
     python -X utf8 tools/mind_build.py            # rebuild the memory + the calibration (research/mind/)
     python -X utf8 -m engine.mind research        # the nightly self-research job, by hand
