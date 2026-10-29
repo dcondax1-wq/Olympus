@@ -875,7 +875,8 @@ class LiveBot:
         model's size. Eval modes (two_week / eval / safe_eval, as the research eval path tools/lit_big_ideas.py sizes them):
         engine/sizing.scale_in_qty at the ROUTED size: the add's open risk inside the first entry's $ risk, 60% of the room
         to the trailing floor and the $1,000 soft daily loss left today. The whole position at most max_micros.
-        Fails closed (0) in an eval mode."""
+        Fails closed (0) in an eval mode. Optional live_model.json "lit_sizing" switches (absent = today's behaviour):
+        "scale_in_from_session": N = no add before eval session N; "scale_in_funded": false = no add on a funded account."""
         from . import sizing as _sz
         lsz = getattr(self, "_lit_sizing", None) or {}
         mode = str(lsz.get("mode") or "")
@@ -888,8 +889,12 @@ class LiveBot:
                 n = int(int(an.get("qty") or 0) * q0 / qm + 1e-9) if qm else 0
                 return max(0, min(n, maxq - q0 - self._adds_qty(pos.get("entry_t"))))
             state = None
+            if mode == "funded" and lsz.get("scale_in_funded") is False:
+                return 0                          # owner switch (research/writeups/lit-edge-2026-10-30.md): no adds once funded
             if mode in ("two_week", "eval", "safe_eval"):
                 st = self.eval_state() or {}
+                if int(lsz.get("scale_in_from_session") or 0) > int(st.get("session") or 1):
+                    return 0                      # owner switch: adds on the eval only from this eval session on
                 if st and lsz.get("pass_lock") is not False and float(st.get("profit") or 0) + float(st.get("cum") or 0) \
                         >= float(((lsz.get("two_week") or {}).get("acct") or {}).get("target", _sz.TW_50K["target"])):
                     return 0                      # a passed eval (the 1-micro minimum-days trade): never add to it
