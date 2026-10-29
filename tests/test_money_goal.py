@@ -344,7 +344,8 @@ def readonly_ui_checks():
               not any(x in src for x in ("import ninjatrader", "from .ninjatrader", "from . import sizing", "live_model.json", "place_order",
                                          "set_route", "arm_b", "from .live import BOT\n        BOT.start")), p)
     src = rd("engine/money_goal.py")
-    check("h. money_goal.py writes only its own file (one open for writing)", src.count('open(tmp, "w"') == 1 and src.count("os.replace(") == 1)
+    check("h. money_goal.py writes only its own file (one open for writing)", src.count('open(tmp, "w"') == 1
+          and src.count("os.replace(") + src.count("_fs_replace(") == 1)       # fsutil.replace since 2026-10-29 (lock retries)
     a = rd("tools/web_public/moneycore.js")
     check("h. moneycore.js byte-identical on both apps", a == rd("web_next/js/next/moneycore.js"))
     idx = rd("tools/web_public/index.html")
