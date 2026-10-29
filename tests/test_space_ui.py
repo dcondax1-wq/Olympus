@@ -342,7 +342,7 @@ def part_c(b2, b3, lvd, now, shots, perf):
                 check("c. phone 390x844 scene alone mounts", False, errs[-3:])
             ctx.close()
             # 1. Home with the 3D scene (software GPU: small bakes, adaptive resolution)
-            ctx, pg = phone_page(br, base, lvp, 390, 844, "/index.html?fx=max" + ("&fxfixed" if shots else "") + "#/today", errs)
+            ctx, pg = phone_page(br, base, lvp, 390, 844, "/index.html?fx=max" + ("&fxfixed&fxbake=1024" if shots else "") + "#/today", errs)
             ok = wait_space(pg, 90000)
             check("c. phone 390x844: the deep-space scene mounts (WebGL2) and fades in", ok, errs[-3:])
             if ok:
@@ -419,7 +419,7 @@ def part_c(b2, b3, lvd, now, shots, perf):
             ctx.close()
             # 4. sideways
             site_with(tmp, b2, lvd, now)
-            ctx, pg = phone_page(br, base, lvp, 844, 390, "/index.html?fx=max" + ("&fxfixed" if shots else "") + "#/today", errs)
+            ctx, pg = phone_page(br, base, lvp, 844, 390, "/index.html?fx=max" + ("&fxfixed&fxbake=1024" if shots else "") + "#/today", errs)
             ok = wait_space(pg, 90000)
             check("c. phone sideways 844x390: the scene mounts", ok)
             if shots and ok:
@@ -506,7 +506,7 @@ def part_d(b3, lvd, now, shots, perf):
             errs = []
             pg.on("pageerror", lambda e: errs.append(f"pc pageerror: {str(e)[:240]}"))
             pg.add_init_script("localStorage.setItem('page', 'cc');")
-            pg.goto(base + "/?fx=max" + ("&fxfixed" if shots else ""), wait_until="domcontentloaded")
+            pg.goto(base + "/?fx=max" + ("&fxfixed&fxbake=1024" if shots else ""), wait_until="domcontentloaded")
             ok = wait_space(pg, 90000)
             check("d. PC 1440x900: the deep-space scene mounts behind the dashboard", ok, errs[-3:])
             if ok:

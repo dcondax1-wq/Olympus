@@ -68,7 +68,7 @@ void main(){
       gl_FragColor = vec4(cl, 1.0 - smoothstep(sea - 0.01, sea + 0.035, h), 0.0, 1.0); return;
     }
     float shelf = smoothstep(sea - 0.13, sea, h) * (1.0 - land);
-    vec3 ocean = mix(vec3(0.006, 0.03, 0.10), vec3(0.02, 0.17, 0.30), shelf * 0.85 + 0.06 * fbm3(p * 9.0));
+    vec3 ocean = mix(vec3(0.010, 0.05, 0.14), vec3(0.03, 0.21, 0.36), shelf * 0.85 + 0.06 * fbm3(p * 9.0));
     float hh = clamp((h - sea) * 2.6, 0.0, 1.0);
     float dry = smoothstep(0.05, 0.45, fbm3(p * 2.1 + vec3(7.0)) + 0.32 * exp(-pow((lat - 0.33) / 0.11, 2.0)) - 0.25 * exp(-pow(lat / 0.12, 2.0)));
     vec3 lc = mix(vec3(0.035, 0.10, 0.035), vec3(0.11, 0.14, 0.05), smoothstep(-0.3, 0.4, fbm3(p * 5.0)));
@@ -120,16 +120,18 @@ void main(){
   vec3 n = normalize(vN), v = normalize(uCam - vW);
   vec4 A = texture2D(tA, vUv);
   float cl = texture2D(tC, vec2(vUv.x + uCloud, vUv.y)).r, ocean = texture2D(tC, vUv).g;
+  float cs = texture2D(tC, vec2(vUv.x + uCloud + 0.006, vUv.y + 0.003)).r;      // the clouds' shadows on the ground
   float ndl = dot(n, uSun);
   float day = smoothstep(-0.10, 0.28, ndl);
   // the Moon's shadow: angular distance from its centre on the sphere -> umbra (dark core) .. penumbra (soft edge)
   float sd = acos(clamp(dot(n, uShC), -1.0, 1.0));
   float pen = smoothstep(uShU, uShR, sd);
-  float shade = mix(1.0, mix(0.02, 1.0, pen * pen * pen), uShK);
+  float shade = mix(1.0, mix(0.03, 1.0, pow(pen, 1.6)), uShK);
   float lit = day * shade * uBright;
   vec3 penC = mix(vec3(0.55, 0.36, 0.22), vec3(1.0), smoothstep(0.35, 1.0, pen));
   float dif = max(ndl, 0.0) * 0.85 + 0.15;
-  vec3 col = A.rgb * (0.025 + 1.35 * lit * dif) * mix(vec3(1.0), penC, uShK);
+  vec3 col = A.rgb * (0.025 + 1.35 * lit * dif * (1.0 - cs * 0.38)) * mix(vec3(1.0), penC, uShK);
+  col += vec3(0.035, 0.085, 0.17) * lit * dif * (1.0 - cl * 0.5);        // the day side's blue haze (the shadow takes it away)
   col = mix(col, vec3(0.93, 0.95, 1.0) * mix(vec3(1.0), penC, uShK) * (0.018 + 1.12 * lit * dif), cl * 0.82);
   vec3 h = normalize(uSun + v);
   col += vec3(1.0, 0.9, 0.72) * pow(max(dot(n, h), 0.0), 70.0) * ocean * (1.0 - cl) * lit * 1.1;
@@ -139,6 +141,11 @@ void main(){
   float night = 1.0 - smoothstep(-0.18, 0.06, ndl);
   float dark = max(night, (1.0 - pen) * day * 0.85 * uShK);
   col += vec3(1.0, 0.70, 0.36) * A.a * A.a * dark * (1.0 - cl * 0.8) * 1.9;
+  // lightning: rare, brief flashes inside the night side's thick clouds
+  vec2 cell = floor(vec2(vUv.x + uCloud, vUv.y) * vec2(110.0, 55.0));
+  float hs = fract(sin(dot(cell, vec2(12.9898, 78.233))) * 43758.5453);
+  float bolt = step(0.985, hs) * step(fract(uTime * (0.21 + hs * 0.3) + hs * 17.0), 0.012) * smoothstep(0.55, 0.85, cl) * night;
+  col += vec3(0.75, 0.82, 1.0) * bolt * 0.9;
   // aurora oval on the night side, coloured by today's P&L
   float sl = abs(dot(n, uAxis));
   float lon = atan(dot(n, uE1), dot(n, uE2));
@@ -282,7 +289,8 @@ export class Space extends View {
     // ---- baked textures (once)
     const t0 = performance.now();
     const big = !Q.phone && !lite && !this.soft;
-    const eW = this.soft ? 512 : big ? 2048 : 1024, sW = this.soft ? 512 : big ? 2048 : 1024;
+    const cap = +((location.search.match(/[?&]fxbake=(\d+)/) || [])[1] || 0);          // ?fxbake=1024: cap the bakes (screenshots in a slow software GPU)
+    const eW = Math.min(cap || 4096, this.soft ? 512 : big ? 2048 : 1024), sW = Math.min(cap || 4096, this.soft ? 512 : big ? 2048 : 1024);
     this.tA = this.bake(0, eW, eW / 2, true); this.tC = this.bake(1, eW / 2, eW / 4, true);
     this.tS = this.bake(2, sW, sW / 2, true); this.tM = this.bake(3, 256, 128, true);
     this.stats.bakeMs = Math.round(performance.now() - t0);
@@ -334,7 +342,7 @@ export class Space extends View {
     // ---- Earth: surface, clouds and lights in one shader; tilted 23.4 degrees, turning slowly
     const segW = lite || Q.phone ? 96 : 128, segH = lite || Q.phone ? 64 : 96;
     this.earthU = { tA: { value: this.tA.texture }, tC: { value: this.tC.texture }, uSun: { value: new THREE.Vector3(1, 0.4, 0).normalize() }, uCam: { value: this.camera.position },
-      uShC: { value: new THREE.Vector3(0, 0, 1) }, uShR: { value: 0.5 }, uShU: { value: 0.1 }, uCloud: { value: 0 }, uTime: this.u.uTime,
+      uShC: { value: new THREE.Vector3(0, 0, 1) }, uShR: { value: 0.62 }, uShU: { value: 0.12 }, uCloud: { value: 0 }, uTime: this.u.uTime,
       uAur: { value: this.mood.aur }, uAurK: { value: 0.15 }, uAxis: { value: new THREE.Vector3(0, 1, 0) }, uE1: { value: new THREE.Vector3(1, 0, 0) }, uE2: { value: new THREE.Vector3(0, 0, 1) },
       uBright: { value: 1 }, uPing: { value: 0 }, uShK: { value: 1 } };
     this.earthG = new THREE.Group(); S.add(this.earthG);
@@ -420,7 +428,7 @@ export class Space extends View {
     // x / y / r: the Earth's centre and radius on screen (NDC); sx / sy: the Sun; shx / shy: the eclipse shadow; l: the light (right, up, toward us)
     this.cfg = a < 0.8 ? { x: 0.1, y: -1.02, r: 0.9, sx: 0.5, sy: 0.62, shx: 0.42, shy: -0.5, sun: 0.085, l: [0.95, 0.1, 0.5] }    // phone portrait: a big arc at the bottom
       : a < 1.3 ? { x: 0.3, y: -0.85, r: 0.82, sx: 0.62, sy: 0.6, shx: 0.5, shy: -0.42, sun: 0.1, l: [0.9, 0.2, 0.5] }
-        : a < 1.95 ? { x: 0.5, y: -0.56, r: 0.76, sx: 0.8, sy: 0.64, shx: 0.66, shy: -0.32, sun: 0.11, l: [0.85, 0.3, 0.55] }   // PC
+        : a < 1.95 ? { x: 0.5, y: -0.56, r: 0.76, sx: 0.8, sy: 0.64, shx: 0.8, shy: -0.3, sun: 0.11, l: [0.85, 0.3, 0.55] }   // PC
           : { x: 0.55, y: -0.78, r: 0.9, sx: 0.84, sy: 0.6, shx: 0.66, shy: -0.4, sun: 0.12, l: [0.9, 0.15, 0.5] };             // phone sideways
     const c = this.cfg, tf = TF;
     const D = 1 / Math.sin(Math.atan(c.r * tf));
