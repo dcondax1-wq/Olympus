@@ -297,10 +297,14 @@ def t_cloud(tmp):
     os.makedirs(shim, exist_ok=True)
     with open(os.path.join(shim, "date"), "w") as fh:
         fh.write(f'#!/bin/sh\nexec "{real_date}" -d "@$FAKE_EPOCH" "$@"\n')
-    os.chmod(os.path.join(shim, "date"), 0o755)
+    with open(os.path.join(shim, "curl"), "w") as fh:       # the Actions budget read (tests/test_selfheal.py): no file here
+        fh.write("#!/bin/sh\nexit 22\n")
+    for f in ("date", "curl"):
+        os.chmod(os.path.join(shim, f), 0o755)
 
     def run_guard(t: dt.datetime, cron: str) -> bool:
-        s = script.replace("${{ github.event_name }}", "schedule").replace("${{ github.event.schedule }}", cron)
+        s = script.replace("${{ github.event_name }}", "schedule").replace("${{ github.event.schedule }}", cron) \
+            .replace("${{ github.repository }}", "owner/repo").replace("${{ github.token }}", "x")
         out = os.path.join(tmp, "gh_out")
         open(out, "w").close()
         env = {**os.environ, "PATH": shim + os.pathsep + os.environ.get("PATH", ""), "FAKE_EPOCH": str(int(t.timestamp())),

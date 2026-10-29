@@ -73,10 +73,22 @@ def main():
               set(c) == {NEW50, NEW25, FUNDED} and c[NEW50]["roles"] == ["zlarior"] and c[NEW25]["roles"] == ["atlas", "blitz"]
               and c[FUNDED]["roles"] == ["zlarior", "atlas", "blitz"], c)
         st = NA.status(nt, state)
+        o50 = next(x for x in st["new"] if x["name"] == NEW50)["options"]
+        o25 = next(x for x in st["new"] if x["name"] == NEW25)["options"]
         check("status: one line per Name, e.g. 'New account MFFUFBLDR700000001 ($50,000) in NinjaTrader: use it for Zlarior?'; "
-              "BLITZ not tappable until its slot registers",
+              "no outcome known -> a new eval (Zlarior / ATLAS); BLITZ not tappable until its slot registers",
               any(x["say"] == f"New account {NEW50} ($50,000) in NinjaTrader: use it for Zlarior?" for x in st["new"])
-              and st["blitz_ready"] is False, st)
+              and [o["act"] for o in o50] == ["zlarior"] and [o["act"] for o in o25] == ["atlas"] and st["blitz_ready"] is False, st)
+        # Zlarior's eval PASSED (the running bot's card): the new 50K is offered as its FUNDED account; remembered after a stop
+        st2 = NA.status(nt, state, rows=[{"name": L50, "state": "eval", "eval_status": "passed"},
+                                         {"name": L25, "state": "eval", "eval_status": "active"}])
+        st3 = NA.status(nt, state)                    # bot stopped: no rows, the outcome is remembered
+        o50b = next(x for x in st3["new"] if x["name"] == NEW50)
+        check("after Zlarior's pass: the new 50K is offered as 'Use as Zlarior's funded account' (funded sizing via go.to_funded), "
+              "still after the bot is stopped (outcome remembered); the 25K stays a new ATLAS eval",
+              [o["act"] for o in next(x for x in st2["new"] if x["name"] == NEW50)["options"]] == ["funded:zlarior"]
+              and [o["act"] for o in o50b["options"]] == ["funded:zlarior"] and "funded account after the pass" in o50b["say"]
+              and [o["act"] for o in next(x for x in st3["new"] if x["name"] == NEW25)["options"]] == ["atlas"], (st2, st3))
         # pushes: one per Name, through the ops helper's key store (never twice)
         sent = []
         ostate = {"sent": {}}
@@ -96,6 +108,19 @@ def main():
         check("refused: a 25K Name for Zlarior (size), and any change while the bot runs (stop it first); start_bot.json unchanged",
               not r_bad["ok"] and "25K" in r_bad["error"] and not r_run["ok"] and "Stop the bot" in r_run["error"]
               and json.load(open(G.CFG)) == before, (r_bad, r_run))
+        rf = NA.use(NEW50, "funded:zlarior", path=state, folder=nt, start="2026-11-02")
+        from engine import multi_account as MA
+        ex = [MA.normalize(e) for e in MA.load_file(G.ACCOUNTS_PATH)]
+        fnd = next((e for e in ex if e["nt_account"] == NEW50), None)
+        cfg_f = json.load(open(G.CFG))
+        check("Use as Zlarior's funded account: the new Name joins as a FUNDED account (data/accounts.json, mode funded, from "
+              "2026-11-02, NOT armed), Zlarior's eval Name kept as history, allowlisted, never offered again",
+              rf["ok"] and fnd is not None and fnd["mode"] == "funded" and not fnd["armed"] and cfg_f.get("lit") == L50
+              and NEW50 in G._allowed() and NEW50 not in {x["name"] for x in NA.candidates(nt, state)}, (rf, fnd, cfg_f))
+        G.remove_account(NEW50)                        # back to a fresh 50K for the new-eval path below
+        s0 = json.load(open(state))
+        s0.pop("outcomes", None)
+        json.dump(s0, open(state, "w"))
         r = NA.use(NEW50, "zlarior", path=state, folder=nt)
         cfg = json.load(open(G.CFG))
         check("Use for Zlarior: the 50K Name is the new one, ATLAS kept, the setup runs again (prepped cleared), nothing armed "

@@ -192,9 +192,8 @@ function newAcctLine(d) {
   const rows = d.new_accounts?.new || [];
   if (!rows.length) return '';
   const can = d.local && !d.running;
-  const label = { zlarior: 'Zlarior', atlas: 'ATLAS', blitz: 'BLITZ' };
   return rows.map((r) => `<div class="st-ro warn st-newacct">${icon('info')}<span>${esc(r.say)}</span>${!d.local ? '' : `<span class="st-acts">
-      ${(r.roles || []).filter((k) => k !== 'blitz' || d.new_accounts?.blitz_ready).map((k) => `<button type="button" class="btn primary sm" data-na-use="${k}" data-name="${esc(r.name)}" ${can ? '' : 'disabled title="Stop the bot first"'}>Use for ${label[k]}</button>`).join('')}
+      ${(r.options || []).map((o) => `<button type="button" class="btn primary sm" data-na-use="${esc(o.act)}" data-label="${esc(o.label)}" data-name="${esc(r.name)}" ${can ? '' : 'disabled title="Stop the bot first"'}>${esc(o.label)}</button>`).join('')}
       <button type="button" class="btn ghost sm" data-na-no="${esc(r.name)}">Not for the bot</button></span>`}</div>`).join('');
 }
 
@@ -202,9 +201,8 @@ function wireNewAcct(el) {
   el.addEventListener('click', (e) => {
     const u = e.target.closest('[data-na-use]');
     if (u && !u.disabled) {
-      const who = { zlarior: 'Zlarior', atlas: 'ATLAS', blitz: 'BLITZ' }[u.dataset.naUse];
-      if (!confirm(`Use ${u.dataset.name} for ${who}?\n\nNothing is armed: Start trading runs the setup for it and asks for I ACCEPT LIVE RISK.`)) return;
-      act(() => post('newacct', { name: u.dataset.name, role: u.dataset.naUse }));
+      if (!confirm(`${u.dataset.label}: ${u.dataset.name}?\n\nNothing is armed: Start trading runs the setup for it and asks for I ACCEPT LIVE RISK.`)) return;
+      act(() => post('newacct', { name: u.dataset.name, act: u.dataset.naUse }));
       return;
     }
     const n = e.target.closest('[data-na-no]');

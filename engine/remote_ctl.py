@@ -208,6 +208,11 @@ def _extras(folder: str, now=None) -> dict:
                                            presence_path=os.path.join(folder, "presence.jsonl"))
     except Exception:
         pass
+    try:                                         # manual steps this week (engine/autopilot.py, docs/AUTOPILOT.md)
+        from . import autopilot
+        out["autopilot"] = autopilot.compact(folder, now)
+    except Exception:
+        pass
     return out
 
 
