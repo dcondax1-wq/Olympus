@@ -109,7 +109,11 @@ export function go(page) {
   $$('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + page));
   $('#pageTitle').textContent = TITLES[page];
   store.set('page', page);
-  if (prev && prev !== page) fxWarp();
+  if (prev && prev !== page) {
+    fxWarp();
+    const pe = document.getElementById('page-' + page);       // the CSS warp-in (css/space.css), next to the 3D star streaks
+    if (pe) { pe.classList.remove('sp-in'); void pe.offsetWidth; pe.classList.add('sp-in'); clearTimeout(go._sp); go._sp = setTimeout(() => pe.classList.remove('sp-in'), 700); }
+  }
   fxScene(page);
   onPage(page);
   PAGES[page]?.show?.();

@@ -384,6 +384,19 @@ def part_c(b2, b3, lvd, now, shots, perf):
                   lv_ok and pg.is_visible('[data-lv-on="structure"]') and "Market structure" in pg.inner_text(".lv-struct"))
             if shots and lv_ok:
                 pg.screenshot(path=os.path.join(shots, "phone_liveview_390.png"))
+            # Settings: Max / Lite / Off + the background scene, live frame numbers
+            pg.evaluate("() => { location.hash = '#/settings'; }")
+            pg.wait_for_selector("#sFxBg", timeout=20000)
+            stx = pg.inner_text("#page")
+            check("c. phone Settings: 3D Max / Lite / Off + Background Deep space / Galaxy (+ the live fps line)",
+                  "Deep space" in stx and "Galaxy" in stx and pg.eval_on_selector_all("#sFx button", "e => e.length") == 3 and "fps" in stx, stx[:200])
+            pg.click('#sFxBg button[data-v="galaxy"]')
+            pg.wait_for_timeout(1500)
+            g1 = pg.evaluate("() => ({ space: !!(window.__LEFX && window.__LEFX.space), bg: !!document.querySelector('.fx-bg-galaxy') })")
+            pg.click('#sFxBg button[data-v="space"]')
+            pg.wait_for_timeout(2500)
+            g2 = pg.evaluate("() => ({ space: !!(window.__LEFX && window.__LEFX.space), bg: !!document.querySelector('.fx-bg-space') })")
+            check("c. phone Settings: switching Galaxy <-> Deep space rebuilds the background in place", not g1["space"] and g1["bg"] and g2["space"] and g2["bg"], (g1, g2))
             ctx.close()
             # 2. three accounts (a third board block)
             site_with(tmp, b3, lvd, now)
@@ -521,6 +534,10 @@ def part_d(b3, lvd, now, shots, perf):
             except Exception:
                 lv_ok = False
             check("d. PC Live View: structure card + switch", lv_ok and "Market structure" in pg.inner_text("#page-liveview"))
+            pc_go(pg, 'settings')
+            pg.wait_for_timeout(800)
+            check("d. PC Settings > Interface: 3D Off / Lite / Max + Background scene Deep space / Galaxy",
+                  pg.eval_on_selector_all("#nxOptFx button", "e => e.length") == 3 and pg.eval_on_selector_all("#nxOptFxBg button", "e => e.length") == 2)
             if shots and lv_ok:
                 pg.screenshot(path=os.path.join(shots, "pc_liveview_1440.png"))
             check("d. PC: no page errors", not errs, errs[:6])

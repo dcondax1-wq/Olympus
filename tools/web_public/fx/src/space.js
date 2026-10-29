@@ -520,7 +520,7 @@ export class Space extends View {
     if (this.aura && Q.level !== 'off' && this.aura.step(t, step, this.w, this.h, r.getPixelRatio())) r.render(this.aura.scene, this.aura.cam);
     r.autoClear = true;
     const ms = performance.now() - c0, S = this.stats;
-    S.frames++; S.last = ms; S.ms = S.ms ? S.ms * 0.95 + ms * 0.05 : ms;
+    S.frames++; S.last = ms; if (S.frames === 3) S.ms = ms; else if (S.frames > 3) S.ms = S.ms * 0.9 + ms * 0.1;   // the first frames compile the shaders
     S.fps = S.fps ? S.fps * 0.95 + (1 / Math.max(step, 1e-3)) * 0.05 : 1 / Math.max(step, 1e-3);
     if (!this.canvas.classList.contains('on')) this.canvas.classList.add('on');
     this.dirty = false;

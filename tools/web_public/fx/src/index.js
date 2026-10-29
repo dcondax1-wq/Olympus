@@ -108,7 +108,8 @@ function evict() {
 }
 
 // ---- background mood
-export function mood(m) { field?.setMood(m); }
+// an explicit FX.pnl (today's real P&L, Mission Control) wins over the page's own mood estimate
+export function mood(m) { field?.setMood(lastPnl != null && m ? { ...m, pnl: lastPnl } : m); }
 export function scene(name) { sceneName = resolveScene(name); field?.setScene(sceneName); document.documentElement.dataset.fxScene = sceneName; return sceneName; }
 export function ripple(x, y) { return field ? field.ripple(x, y) : false; }
 export const scenes = sceneNames;
