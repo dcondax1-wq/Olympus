@@ -244,7 +244,8 @@ export function mountHolodeck(host, env) {
       const useNow = S.live || T >= tEnd() - 1;
       const nh = n && (n.headline || n.text || n.stage?.waiting || (Array.isArray(n.members) ? n.members.filter((m) => !m.candidate).map((m) => `${m.short || m.key}: ${m.text || m.stage || ''}`).join(' · ') : ''));
       const head = useNow && nh ? nh : last ? `${last.title ? last.title + ': ' : ''}${last.text || ''}` : (nh || 'Waiting');
-      const stage = useNow && n?.stage ? (n.stage.label || n.stage) : last?.stage || '';
+      const mem = useNow && Array.isArray(n?.members) ? n.members.filter((m) => !m.candidate) : null;
+      const stage = useNow && n?.stage ? (n.stage.label || n.stage) : mem && mem.length ? `${mem.length} member${mem.length === 1 ? '' : 's'}` : last?.stage || '';
       const chk = useNow && Array.isArray(n?.checklist) ? n.checklist.slice(0, 5) : [];
       return `<article class="hd-mind" style="--c:${BOTC[k]}" data-bot="${k}"><header><i></i><b>${esc(b?.name || BOTN[k])}</b><span class="hd-pill">${esc(String(stage || '—'))}</span><em>${b ? botTag(b) + (b.account ? ' · ' + esc(b.account) : '') : ''}</em></header>
         <p>${esc(head)}</p>${useNow && n?.detail ? `<p class="hd-mut sm">${esc(n.detail)}</p>` : ''}

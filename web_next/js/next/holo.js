@@ -7,7 +7,7 @@
 // The page: ./holocore.js (byte-identical to tools/web_public/holocore.js) + /css/holo.css. No WebGL 2 (or quality "2D"):
 // the Live View chart (./liveviewchart.js) with the fills drawn on it. Page section is created here (no index.html change).
 import { store } from '../util.js';
-import { mountHolodeck } from './holocore.js?v=1ad153f6';
+import { mountHolodeck } from './holocore.js?v=293f5166';
 import { fxModule, fxLevel } from './fx3d.js';
 
 const ID = 'holo';
