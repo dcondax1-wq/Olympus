@@ -559,6 +559,19 @@ part yourself or fold it into a script.**
   `#/real`, CSV export). AI Insights (`insight.js`, `engine/insight_api.py` `GET /api/next/insight[?day&hm]`, features 21-30).
   Live View (`liveview*.js`, `engine/liveview_api.py` `GET /api/next/liveview?tf=1m|5m`): full-screen chart, per-strategy
   colour layers (Zlarior blue, ATLAS orange, BLITZ purple), "what the bot is thinking" panel, feed.
+  **Holodeck (2026-10-29, the main feature: "see exactly chart fills, very high quality and 3D, what every bot is thinking"):**
+  scene `tools/web_public/fx/src/holo.js` in fx.js (`FX.holo(el, opts)`, own loop, works with the space background off;
+  instanced candles + wicks + volume, Max = mirrored floor + bloom, Lite = neither, DPR cap 2 PC / 1.5 phone, sleeps off screen):
+  every fill an orb at its exact second / price (real solid, paper / model hollow, the model price as a ghost), trades as glass
+  risk / reward volumes with the stepping stop, the LIT setup anatomy (1 Sweep -> 2 Inducement -> 3 Displacement -> 4 CISD ->
+  5 Entry), thought panels, working orders, levels, structure; camera Flat / 3D / Fly, replay 1x-120x. Page UI `holocore.js` +
+  `holo.css` (byte-identical copies in `web_next/js/next/` and `web_next/css/`, copied + hash-stamped by fx/build.mjs). PC
+  `web_next/js/next/holo.js` (Main after Live View, `GET /api/next/holo[?day=]` every 5 s on today, `/api/next/holo/days`,
+  a "3D" button on Live View); phone `tools/web_public/holo.js` (`#/holo`, Home button under Live View, Mission Control link,
+  More > Today; `holo.json` + `holo_hist.json` from branch `live`, API first, raw fallback). No WebGL 2 / quality 2D: the Live
+  View chart with the fills. Data contract (v 1, kind le-holo) + the API: `engine/holo_api.py`. Test: `python -X utf8 -m
+  tests.test_holo_ui` (fixture `tests/fixtures/holo_fe_sample.json` from `tests/make_holo_fe_fixture.py`, real bars + research
+  trades, mocked real fills 1 tick off the model; `LE_SHOTS=<dir>` saves the screenshots).
   **Phone Live View (2026-10-28, `tools/web_public/liveview.js`, `#/liveview`, Home button under the plan line, More > Today):**
   the same page on the phone. The PC pushes `liveview.json` (`liveview_api.phone_view`: 1m bars of the last 8 h + the 5m
   session as `bars5`, the three layers, thinking, feed 60; < 240 KB) in the same orphan commit as live.json on branch `live`

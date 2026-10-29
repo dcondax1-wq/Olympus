@@ -119,13 +119,21 @@ export function mountHolodeck(host, env) {
     try {
       const d = await env.getDay(day || null);
       if (!d || !d.bars) throw new Error('no data for this day yet');
-      const same = S.d && S.d.day === d.day;
-      S.d = d; S.day = d.day; S.live = !!d.live && !day;
-      if (!same) {
-        if (S.live) { S.T = Infinity; S.playing = false; }
-        else { const tr = (d.trades || []).map((x) => x.entry?.t).filter(ok); S.T = tEnd(); S.playing = false; S.start = tr.length ? Math.max(t0(), Math.min(...tr) - 5400) : t0(); }
-      } else if (S.live && !S.playing) S.T = Infinity;
-      apply(true); seg();
+      const same = S.d && S.d.day === d.day, unchanged = same && S.d.t === d.t && (S.d.bars?.['1m']?.length || 0) === (d.bars?.['1m']?.length || 0);
+      // S.today: today's file from the bot (it keeps being polled, also while replaying it); S.live: the view follows it
+      const today = !!d.live && !day;
+      S.d = d; S.day = d.day; S.today = today;
+      if (!same) S.live = today; else if (!today) S.live = false; else if (o.live) S.live = true;
+      const tr0 = (d.trades || []).map((x) => x.entry?.t).filter(ok);
+      S.start = tr0.length ? Math.max(t0(), Math.min(...tr0) - 5400) : t0();
+      if (!same) { S.playing = false; S.T = S.live ? Infinity : tEnd(); }
+      else if (S.live && !S.playing) S.T = Infinity;
+      if (!(bars().length)) note('No bars for ' + (d.day || 'this day') + ' yet.'); else note('');
+      if (!unchanged) {
+        apply(true);
+        if (same && S.pick && view) view.focus(S.pick.kind, S.pick.id, { keepCam: true });      // a poll keeps what is picked
+      }
+      seg();
       // a past day opens on Zlarior's trade (the money), today follows the newest bar
       if (!same && !S.live && view) { const tr = (d.trades || []).filter((x) => bk(x.bot) === 'lit' && x.entry).at(-1) || (d.trades || []).at(-1); if (tr) { view.focus('trade', tr.id, { quiet: true }); S.cam = 'free'; seg(); } }
       if (o.replay) replay();
@@ -144,7 +152,7 @@ export function mountHolodeck(host, env) {
   }
   function schedule() {
     clearTimeout(S.poll);
-    if (!S.live || !root.isConnected) return;
+    if (!S.today || !root.isConnected) return;
     S.poll = setTimeout(async () => { if (!root.isConnected) return; if (!document.hidden) await load(null); else schedule(); }, (env.every || 5) * 1000);
   }
 
@@ -169,7 +177,7 @@ export function mountHolodeck(host, env) {
     };
     S.raf = requestAnimationFrame(step);
   }
-  function goLive() { S.pickedDay = ''; $('#hdDay').value = ''; S.playing = false; load(null).then(() => { S.T = S.live ? Infinity : tEnd(); if (view) { view.follow(true); view.setTime(S.T); } clock(); }); }
+  function goLive() { S.pickedDay = ''; $('#hdDay').value = ''; S.playing = false; load(null, { live: true }).then(() => { S.T = S.live ? Infinity : tEnd(); if (view) { view.follow(true); view.setTime(S.T); } clock(); }); }
   function clock() {
     const r = $('#hdRange'), a = t0(), b = tEnd(), T = Math.min(S.T, b);
     r.min = a; r.max = b; r.value = T;
@@ -229,12 +237,13 @@ export function mountHolodeck(host, env) {
       const b = B[k], n = N[k] || N[k === 'blitz' ? 'scalp' : k], last = [...TH].reverse().find((x) => bk(x.bot) === k);
       if (!b && !n && !last) return '';
       const useNow = S.live || T >= tEnd() - 1;
-      const head = useNow && n ? (n.headline || n.text || '') : last ? `${last.title ? last.title + ': ' : ''}${last.text || ''}` : (n?.headline || 'Waiting');
+      const nh = n && (n.headline || n.text || n.stage?.waiting || (Array.isArray(n.members) ? n.members.filter((m) => !m.candidate).map((m) => `${m.short || m.key}: ${m.text || m.stage || ''}`).join(' · ') : ''));
+      const head = useNow && nh ? nh : last ? `${last.title ? last.title + ': ' : ''}${last.text || ''}` : (nh || 'Waiting');
       const stage = useNow && n?.stage ? (n.stage.label || n.stage) : last?.stage || '';
       const chk = useNow && Array.isArray(n?.checklist) ? n.checklist.slice(0, 5) : [];
       return `<article class="hd-mind" style="--c:${BOTC[k]}" data-bot="${k}"><header><i></i><b>${esc(b?.name || BOTN[k])}</b><span class="hd-pill">${esc(String(stage || '—'))}</span><em>${b ? (b.real ? 'REAL' : 'PAPER') + (b.account ? ' · ' + esc(b.account) : '') : ''}</em></header>
         <p>${esc(head)}</p>${useNow && n?.detail ? `<p class="hd-mut sm">${esc(n.detail)}</p>` : ''}
-        ${chk.length ? `<ul class="hd-chk">${chk.map((c) => `<li class="${c.ok === true ? 'y' : c.ok === false ? 'n' : 'w'}">${c.ok === true ? '✓' : c.ok === false ? '✗' : '…'} ${esc(c.text || c.label || '')}</li>`).join('')}</ul>` : ''}
+        ${chk.length ? `<ul class="hd-chk">${chk.map((c) => `<li class="${c.ok === true ? 'y' : c.ok === false ? 'n' : 'w'}">${c.ok === true ? '✓' : c.ok === false ? '✗' : '…'} ${esc(c.label || c.text || '')}${c.label && c.text ? ` <small>${esc(c.text)}</small>` : ''}</li>`).join('')}</ul>` : ''}
         ${b?.plan ? `<p class="hd-mut sm">${esc(b.plan)}</p>` : ''}</article>`;
     };
     const f = S.thF, list = TH.filter((x) => f === 'all' || bk(x.bot) === f).slice(-40).reverse();
@@ -406,7 +415,7 @@ export function mountHolodeck(host, env) {
   const H = {
     root, state: S, get view() { return view; }, load, days, pick, jump, replay, pause, goLive, toggleFs, isFs, maxOff, draw2d,
     setSpeed(s) { S.speed = s; seg(); },
-    resume() { stage().then(() => { if (S.live) schedule(); }); },
+    resume() { stage().then(() => { if (S.today) schedule(); }); },
     dispose() { clearTimeout(S.poll); cancelAnimationFrame(S.raf); view?.dispose(); view = null; document.removeEventListener('fullscreenchange', fsc); document.removeEventListener('webkitfullscreenchange', fsc); removeEventListener('keydown', esc2); root.remove(); },
   };
   seg();

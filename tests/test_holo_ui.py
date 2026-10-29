@@ -6,6 +6,7 @@ NQ bars + the LIT / ATLAS / BLITZ research trades, mocked real fills 1 tick off 
 
   python -X utf8 -m tests.test_holo_ui                     # ~60-90 s (Playwright part skipped without node + playwright)
   LE_SHOTS=<dir> python -X utf8 -m tests.test_holo_ui      # also saves the screenshots there
+  LE_HOLO_FIX=<file> ...                                    # the same run on another {"holo": ..., "hist": ...} file
 
 Phone 390x844 + sideways 844x390 and PC 1440x900: the scene mounts, every fill drawn (= the fixture's fills), a fill's label
 and card show the exact price + second (+ REAL, the slip vs the model), trade volumes + the LIT setup anatomy, thought panels,
@@ -39,14 +40,14 @@ def rd(*p):
 
 
 def main() -> int:
-    fix = os.path.join(ROOT, "tests", "fixtures", "holo_fe_sample.json")
+    fix = os.environ.get("LE_HOLO_FIX") or os.path.join(ROOT, "tests", "fixtures", "holo_fe_sample.json")   # {"holo", "hist"}: another fixture
     if not os.path.exists(fix):
         subprocess.run([sys.executable, os.path.join(ROOT, "tests", "make_holo_fe_fixture.py")], check=True)
     F = json.load(open(fix, encoding="utf-8"))
     H = F["holo"]
     check("fixture: holo.json contract (v 1, le-holo, bars 1m / 5m, bots, fills with exact seconds, trades, thoughts)",
           H["v"] == 1 and H["kind"] == "le-holo" and H["bars"]["1m"] and H["bars"]["5m"] and set(H["bots"]) == {"lit", "atlas", "blitz"}
-          and all(isinstance(f["t"], int) and f["side"] in ("BUY", "SELL") for f in H["fills"]) and H["trades"] and H["thoughts"])
+          and all(isinstance(f["t"], (int, float)) and f["side"] in ("BUY", "SELL") for f in H["fills"]) and H["trades"] and H["thoughts"])
     check("fixture: real Zlarior fills 1 tick off the model, paper ATLAS / BLITZ fills", any(f["real"] and f["slip_ticks"] == 1 for f in H["fills"])
           and any(not f["real"] for f in H["fills"]))
     check("fixture: holo_hist.json days", F["hist"]["kind"] == "le-holo-hist" and len(F["hist"]["days"]) >= 3)

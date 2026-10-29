@@ -111,6 +111,7 @@ the news calendar); read-only. Tests: `python -X utf8 -m tests.test_space_ui`.
 | 67 | Live View market structure | new | When the data has `structure` (engine/liveview_api.view): premium / discount shading, liquidity pools (BSL / SSL, swept ticked), HH / HL / LH / LL swings of 5m / 15m / 1h, each frame's last BOS / CHoCH, protected high / low, a Structure switch and a "Market structure" card in the thinking panel; nothing is drawn without the block |
 | 68 | Telemetry strip | new | Mission Control's top: NQ price (last bar), ATR, VIX / VXN, the VIX-band objective down / up, a ticking ET clock (from the board's map) |
 | 69 | Satellite name tags | new | A small tag rides next to each bot's satellite in the 3D sky ("Zlarior · IN TRADE", "ATLAS · ARMED", "BLITZ · PAPER"), hidden behind the planet; each eval's progress to its target as a ring around its planet on Mission Control |
+| 70 | Holodeck | new | The day in 3D on both apps (PC Main > Holodeck after Live View, phone #/holo + Home button): every fill at its exact second and price (real solid, paper hollow, slip vs the model), trades as glass volumes with the stop stepping to break-even, each LIT setup step by step, what every bot is thinking (panels in the scene + the Minds panel), working orders, levels, structure; Flat / 3D / Fly camera, replay 1x-120x, day picker, full screen; 2D fallback without WebGL (tests.test_holo_ui) |
 
 ## Organization (2026-10-28)
 - PC sidebar Main (6 items): Home · Start · Zlarior · ATLAS · **Real results** · All tools; the backtest page is renamed

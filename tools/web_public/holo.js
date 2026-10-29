@@ -87,7 +87,7 @@
   };
   Object.defineProperty(env, 'every', { get: () => H.every });
   let core = null;
-  const coreMod = () => core || (core = import('./holocore.js?v=f32bdf59').catch((e) => { core = null; throw e; }));
+  const coreMod = () => core || (core = import('./holocore.js?v=c453402d').catch((e) => { core = null; throw e; }));
 
   // ------------------------------------------------------------------ the page (#/holo)
   function view(el) {

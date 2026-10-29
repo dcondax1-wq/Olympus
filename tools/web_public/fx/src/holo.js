@@ -120,9 +120,10 @@ export class Holo extends View {
     this._raf = 0;
     if (!this.attached || document.hidden || this.broken) return;
     const dt = Math.min(0.1, (now - (this._lt || now)) / 1000 || 0.016); this._lt = now;
-    if (this.visible) {
+    if (!this.visible) return;                 // off screen (another page, scrolled away): the loop sleeps until it shows again
+    {
       const t0 = performance.now();
-      try { this.renderer.info.reset(); this.update(now / 1000, dt); this._render(); this._errs = 0; }
+      try { this.renderer.info.reset(); this.update(now / 1000, dt); this._render(); if (this.measure) this.renderer.getContext().finish(); this._errs = 0; }
       catch (e) { console.warn('holo frame', e); if ((this._errs = (this._errs || 0) + 1) > 30) { this.broken = true; return; } }
       const ms = performance.now() - t0, S = this.st;
       S.frames++; S.ms = ms; S.msAvg = S.msAvg ? S.msAvg * 0.92 + ms * 0.08 : ms; S.acc += dt; S.n++;
@@ -132,10 +133,13 @@ export class Holo extends View {
   }
   attach(el) {
     super.attach(el);
+    this._io2?.disconnect();
+    this._io2 = new IntersectionObserver((es) => { for (const e of es) if (e.isIntersecting) { this.visible = true; this._wake(); } }, { rootMargin: '80px' });
+    this._io2.observe(el);
     if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
     el.appendChild(this.ov); this.dirty = true; this._wake();
   }
-  detach() { this.ov.remove(); cancelAnimationFrame(this._raf); this._raf = 0; super.detach(); }
+  detach() { this._io2?.disconnect(); this.ov.remove(); cancelAnimationFrame(this._raf); this._raf = 0; super.detach(); }
   _initComposer() {
     this.composer = null;
     if (this.lite) return;
@@ -385,17 +389,19 @@ export class Holo extends View {
     const short = tr.side === 'SHORT', z = 0.62, out = { g, parts: [] };
     const add = (t, obj, lab) => out.parts.push({ t, obj, lab });
     const px = (t, hi) => { const B = this.bars(), i = this.barAt(t); return i < 0 ? null : hi ? B[i][2] : B[i][3]; };
-    // 1 sweep: a cone pointing at the extreme + the swept level lines
+    // 1 sweep: a cone pointing at the extreme (t_ext when the data has it: the bar that made it) + the swept level lines
+    const tS = ok(S.t_ext) ? S.t_ext : S.t_sweep;
     const yS = this.Y(S.sweep_ext);
     const cone = new THREE.Mesh(this.coneG, this._neon('#ffd166', 1.6, 1)); cone.scale.setScalar(0.07); cone.rotation.z = short ? Math.PI : 0;
-    cone.position.set(this.X(S.t_sweep), yS + (short ? 0.2 : -0.2), z); g.add(cone);
-    const ring = this._sprite('#ffd166', 0.5, 0.9); ring.position.set(this.X(S.t_sweep), yS, z); g.add(ring);
-    add(S.t_sweep, cone, this._label('setup', `<em>1</em> Sweep ${fmtPx(S.sweep_ext)}`, 'step', { x: this.X(S.t_sweep), y: yS + (short ? 0.38 : -0.38), z }, { color: '#ffd166', t: S.t_sweep, bot: b, layer: 'setup', pri: 1.3, id: tr.id, data: tr }));
-    add(S.t_sweep, ring, null);
-    for (const sw of S.swept || []) {
-      if (!ok(sw.px)) continue;
-      const y = this.Y(sw.px), m = this._hbar(g, this._neon('#ffd166', 1.1, 0.8), this.X(S.t_sweep - 5400), this.X(S.t_sweep), y, z, 0.016);
-      add(S.t_sweep - 5400, m, this._label('setup', `swept: ${esc(sw.label || '')} ${fmtPx(sw.px)}`, 'lvl', { x: this.X(S.t_sweep - 5400), y, z, left: true }, { color: '#ffd166', t: S.t_sweep - 600, bot: b, layer: 'setup', pri: 0.9, click: false }));
+    cone.position.set(this.X(tS), yS + (short ? 0.2 : -0.2), z); g.add(cone);
+    const ring = this._sprite('#ffd166', 0.5, 0.9); ring.position.set(this.X(tS), yS, z); g.add(ring);
+    add(tS, cone, this._label('setup', `<em>1</em> Sweep ${fmtPx(S.sweep_ext)}`, 'step', { x: this.X(tS), y: yS + (short ? 0.38 : -0.38), z }, { color: '#ffd166', t: tS, bot: b, layer: 'setup', pri: 1.3, id: tr.id, data: tr }));
+    add(tS, ring, null);
+    // the swept levels (nearest the extreme first, 3 at most): a line up to the moment each one was taken
+    const sws = (S.swept || []).filter((x) => ok(x.px)).sort((p, q) => Math.abs(p.px - S.sweep_ext) - Math.abs(q.px - S.sweep_ext)).slice(0, 3);
+    for (const sw of sws) {
+      const te = ok(sw.t) ? sw.t : tS, y = this.Y(sw.px), m = this._hbar(g, this._neon('#ffd166', 1.1, 0.8), this.X(te - 5400), this.X(te), y, z, 0.016);
+      add(te - 5400, m, this._label('setup', `swept: ${esc(sw.label || '')} ${fmtPx(sw.px)}`, 'lvl', { x: this.X(te - 5400), y, z, left: true }, { color: '#ffd166', t: te - 600, bot: b, layer: 'setup', pri: 0.9, click: false }));
     }
     // 2 inducement
     const pts = [];
@@ -405,12 +411,12 @@ export class Holo extends View {
       add(S.t_idm, d, this._label('setup', '<em>2</em> Inducement', 'step', { x: this.X(S.t_idm), y: y + (short ? 0.26 : -0.26), z }, { color: '#c084fc', t: S.t_idm, bot: b, layer: 'setup', pri: 1.1, id: tr.id, data: tr }));
       pts.push(new THREE.Vector3(this.X(S.t_idm), y, z));
     }
-    pts.push(new THREE.Vector3(this.X(S.t_sweep), yS, z));
+    pts.push(new THREE.Vector3(this.X(tS), yS, z));
     // 3 displacement: an arrow from the sweep down / up to the displacement bar's close
     if (ok(S.t_disp)) {
       const B = this.bars(), i = this.barAt(S.t_disp), p = i >= 0 ? B[i][4] : null;
       if (p != null) {
-        const a = new THREE.Vector3(this.X(S.t_sweep), yS, z), c = new THREE.Vector3(this.X(S.t_disp), this.Y(p), z);
+        const a = new THREE.Vector3(this.X(Math.min(tS, S.t_disp - 60)), yS, z), c = new THREE.Vector3(this.X(S.t_disp), this.Y(p), z);
         const tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.LineCurve3(a, c), 8, 0.022, 6, false), this._neon('#38e1ff', 1.6, 0.95)); g.add(tube);
         const head = new THREE.Mesh(this.coneG, this._neon('#38e1ff', 1.8, 1)); head.scale.setScalar(0.05); head.position.copy(c);
         head.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), c.clone().sub(a).normalize()); g.add(head);
@@ -500,7 +506,7 @@ export class Holo extends View {
         const c = x[1] + (x[4] - x[1]) * f, top = Math.max(x[1], c), bot = Math.min(x[1], c);
         this._putBar(k, x[1], top + (x[2] - Math.max(x[1], x[4])) * f, bot - (Math.min(x[1], x[4]) - x[3]) * f, c); this._touch(); this._grow = k;
       } else if (this._grow === k) { this._putBar(k, x[1], x[2], x[3], x[4]); this._touch(); this._grow = null; }
-      this.price = f < 1 ? x[1] + (x[4] - x[1]) * f : x[4];
+      this.price = f < 1 ? Math.round((x[1] + (x[4] - x[1]) * f) * 4) / 4 : x[4];      // the forming bar's price, on the tick
     }
     // fills pop exactly when they happened
     for (const F of this.fills) {
@@ -608,6 +614,7 @@ export class Holo extends View {
       const yl = Math.min(this.Y(lo), Tr.loY), yh = Math.max(this.Y(hi), this.phone ? Math.min(Tr.hiY, this.Y(hi) + 2) : Tr.hiY); y = (yl + yh) / 2; this._trH = yh - yl; this._focusIt = Tr.it; } }
     if (kind === 'thought') { const th = this.thoughts.find((q) => q.id === id); if (th) { x = th.g.position.x; y = th.g.position.y + 0.4; this._focusIt = th.it; } }
     if (x == null) return false;
+    if (o.keepCam) { for (const it of this.items) it.el.classList.toggle('focus', it === this._focusIt); this.dirty = true; return true; }
     this.mode = 'free'; this.fly = null;
     Object.assign(this.goal, { tx: x, ty: y, dist: kind === 'trade' ? Math.max(3, this._fitDist(this._winW(), this.goal.fov) * 0.55) : (this.phone ? 3.4 : 3.8), yaw: this.presetName === 'flat' ? 0 : -0.38, pitch: this.presetName === 'flat' ? 0.02 : 0.2 });
     // phone: the detail card covers the lower part of the stage, so the picked fill / thought sits in the upper part

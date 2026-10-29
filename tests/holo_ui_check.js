@@ -12,6 +12,7 @@ const HOLO = FIX.holo, HIST = FIX.hist;
 const T = Math.floor(Date.now() / 1000);
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.svg': 'image/svg+xml', '.woff2': 'font/woff2' };
 const steps = [], errors = [], perf = {};
+let LIVEN = 0;
 const step = (n, ok, info = '') => steps.push([n, !!ok, String(info).slice(0, 300)]);
 const shot = async (p, name) => { if (shots) await p.screenshot({ path: path.join(shots, name) }); };
 const GPU = ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'];
@@ -112,19 +113,24 @@ async function dayPicker(p, tag) {
   await p.waitForFunction((d) => (window.HOLO?.ui || window.LE?.holo).state.day === d, HOLO.day, { timeout: 15000 }).catch(() => null);
 }
 async function frames(p, tag) {
-  await p.waitForTimeout(1200);
+  await p.evaluate(V('(v.measure = true, v.st.msAvg = 0, 1)'));      // gl.finish() after each frame: the full frame cost, not only the JS
+  await p.waitForTimeout(2000);
   const s = await p.evaluate(V('v.stats()'));
   perf[tag] = s;
   // 3D Lite (no bloom, no reflection): the frame time there too, then back to Max
   await p.evaluate(V('(v.setQuality("lite"), 1)')); await p.waitForTimeout(1500);
   perf[tag + '_lite'] = await p.evaluate(V('v.stats()'));
-  await p.evaluate(V('(v.setQuality("max"), 1)')); await p.waitForTimeout(300);
+  await p.evaluate(V('(v.setQuality("max"), v.measure = false, 1)')); await p.waitForTimeout(300);
   step(`${tag}: frame time sane (${s.msAvg} ms a frame, ${s.fps} fps, ${s.calls} draw calls, bloom ${s.bloom})`, s.msAvg > 0 && s.msAvg < 400 && s.frames > 10, JSON.stringify(s));
 }
 
 (async () => {
   const phoneSrv = await serve([site]);
   const pcSrv = await serve([webNext, web], (u, q) => {
+    if (u === '/api/next/holo' && LIVEN && !q.get('day')) {        // Live: today's file grows while the page polls it
+      const b = HOLO.bars['1m'].slice(0, LIVEN), tEnd = b.at(-1)[0] + 60;
+      return { ...HOLO, live: true, t: tEnd, bars: { '1m': b, '5m': HOLO.bars['5m'].filter((x) => x[0] < tEnd) }, fills: HOLO.fills.filter((f) => f.t < tEnd), thoughts: HOLO.thoughts.filter((x) => x.t < tEnd) };
+    }
     if (u === '/api/next/holo') return dayDoc(q.get('day'));
     if (u === '/api/next/holo/days') return { days: HIST.days.map((d) => ({ day: d.day, trades: d.trades.length, usd: d.trades.reduce((a, t) => a + (t.usd || 0), 0) })) };
     return null;
@@ -220,9 +226,29 @@ async function frames(p, tag) {
       step('pc: full screen covers the window', fs.fs && fs.w === 1440 && Math.abs(fs.h - 900) < 2, JSON.stringify(fs));
       await shot(p, 'pc_fullscreen.png');
       await p.click('#hdFs'); await p.waitForTimeout(300);
+      // Live: GET /api/next/holo every 5 s on today, the new bars come in and the camera follows the newest one
+      LIVEN = HOLO.bars['1m'].length - 40;
+      await p.click('#hdLR button[data-v="live"]');
+      const l1 = await p.waitForFunction(() => { const H = window.LE.holo; return H.state.live && H.view.counts().bars > 0 && document.querySelector('#hdMode').textContent === 'LIVE' ? H.view.counts().bars : 0; }, null, { timeout: 15000 }).then((h) => h.jsonValue(), () => 0);
+      LIVEN = HOLO.bars['1m'].length;
+      const l2 = await p.waitForFunction((n) => { const c = window.LE.holo.view.counts(); return c.bars > n ? c : null; }, l1, { timeout: 15000 }).then((h) => h.jsonValue(), () => null);
+      step('pc: Live polls /api/next/holo every 5 s, new bars drawn, the camera follows the newest bar', l1 > 0 && l2 && l2.bars === HOLO.bars['1m'].length && l2.mode === 'follow', JSON.stringify({ l1, l2 }));
+      await shot(p, 'pc_live_follow.png');
+      LIVEN = 0;
       // Live View has the 3D button
       await p.evaluate(() => window.LE.go('liveview')); await p.waitForTimeout(1500);
       step('pc: Live View has a "3D" button to the Holodeck', await p.evaluate(() => !!document.querySelector('#page-liveview .lv-3d[data-goto="holo"]')));
+      await ctx.close();
+    }
+    // ---------------------------------------------------------------- the PC has not sent holo.json yet: a plain note, no error
+    {
+      const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+      const p = await ctx.newPage(); p.on('pageerror', (e) => errors.push('nodata: ' + e.message.slice(0, 200)));
+      await p.route('https://api.github.com/**', (r) => r.fulfill({ status: 404, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"message":"Not Found"}' }));
+      await p.route('https://raw.githubusercontent.com/**', (r) => r.fulfill({ status: 404, body: 'nf' }));
+      await p.goto(`${PH}/#/holo`);
+      const n = await p.waitForFunction(() => { const e = document.querySelector('#hdNote'); return e && !e.hidden && e.textContent; }, null, { timeout: 20000 }).then((h) => h.jsonValue(), () => '');
+      step('no holo.json yet: "the PC has not sent the Holodeck yet"', /has not sent the Holodeck yet/.test(n), n);
       await ctx.close();
     }
     // ---------------------------------------------------------------- WebGL off: the 2D fallback
