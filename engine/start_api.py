@@ -22,10 +22,14 @@ owner's typed I ACCEPT LIVE RISK, checked here and again by engine/go.step_arm a
   POST /api/next/start/accounts/remove   {"name"}
   POST /api/next/start/accounts/anchor   {"name", "balance", "floor", "as_of"}
   POST /api/next/start/accounts/funded   {"name", "funded_name", "start"}
+  POST /api/next/start/blitz             {"name": a Sim account (the Sim test) | the MFFU 25K | "off", "start"} BLITZ's own
+                                         account (engine/account_c.py, OFF by default; never armed here)
+  POST /api/next/start/blitz/arm         {"confirm": "I ACCEPT LIVE RISK"} arm BLITZ's 25K (only with the typed phrase)
 """
 from __future__ import annotations
 
 import json
+import os
 import time
 
 from fastapi import APIRouter, Request
@@ -177,6 +181,7 @@ def r_status(request: Request, fresh: int = 0):
         st["local"] = cloud_guard.local_only(request) is None
         st["clock"] = _clock(fresh=bool(fresh))
         st["poll"] = _poll()
+        st["new_accounts"] = _new_accounts((st.get("accounts") or {}).get("rows"))
         return _J(st)
     except Exception as e:
         return _J({"error": f"{e.__class__.__name__}: {e}"[:200]}, 500)
@@ -186,6 +191,13 @@ def _do(request: Request, fn):
     bad = _local(request)
     if bad is not None:
         return bad
+    try:                                        # the autopilot score: a write here is a manual step (engine/autopilot.py)
+        from . import autopilot
+        if request.url.path not in autopilot.NOT_OWNER:
+            # next to start_bot.json (data/; a test's temp go.CFG keeps its taps in the temp dir)
+            autopilot.note_tap(request.url.path, path=os.path.join(os.path.dirname(go.CFG), "autopilot.jsonl"))
+    except Exception:
+        pass
     try:
         r = fn()
     except Exception as e:
@@ -269,6 +281,28 @@ def r_clock(request: Request):
     return _do(request, run)
 
 
+def _new_accounts(rows=None) -> dict:
+    """New MFFU account Names NinjaTrader shows that no bot uses (engine/new_accounts.py): the page's one line. rows = the
+    account rows (their eval_status tells a funded account after a pass from a new eval)."""
+    try:
+        from . import new_accounts
+        return new_accounts.status(rows=rows)
+    except Exception as e:
+        return {"new": [], "error": f"{e.__class__.__name__}"}
+
+
+@router.post("/api/next/start/newacct")
+async def r_newacct(request: Request):
+    """The owner's tap on the "New account" line: {"name", "act": zlarior | atlas | blitz | funded:zlarior | funded:atlas}
+    assigns the Name (never arms: the next Start trading asks for the live phrase), {"name", "dismiss": true} stops
+    offering it."""
+    d = await _body(request)
+    from . import new_accounts
+    if d.get("dismiss"):
+        return _do(request, lambda: new_accounts.dismiss(d.get("name")))
+    return _do(request, lambda: new_accounts.use(d.get("name"), d.get("act") or d.get("role")))
+
+
 @router.post("/api/next/start/accounts/add")
 async def r_add(request: Request):
     d = await _body(request)
@@ -285,6 +319,24 @@ async def r_remove(request: Request):
 async def r_anchor(request: Request):
     d = await _body(request)
     return _do(request, lambda: go.set_anchor(d.get("name"), d.get("balance"), d.get("floor"), d.get("as_of")))
+
+
+@router.post("/api/next/start/blitz")
+async def r_blitz(request: Request):
+    """BLITZ · 25K (account C): set its account (a Sim account = the Sim test), or "off". Never arms."""
+    d = await _body(request)
+    return _do(request, lambda: go.set_blitz(d.get("name"), d.get("start")))
+
+
+@router.post("/api/next/start/blitz/arm")
+async def r_blitz_arm(request: Request):
+    """Arm BLITZ's 25K: the typed phrase is checked here, then again by engine/go.arm_c and engine/ninjatrader."""
+    d = await _body(request)
+    phrase = go.typed_phrase(str(d.get("confirm") or ""))
+    if phrase != go.LIVE_PHRASE:
+        bad = _local(request)
+        return bad if bad is not None else _J({"ok": False, "error": "Type I ACCEPT LIVE RISK exactly. Nothing is armed."}, 400)
+    return _do(request, lambda: go.arm_c(phrase))
 
 
 @router.post("/api/next/start/accounts/funded")

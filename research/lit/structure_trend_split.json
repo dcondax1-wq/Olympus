@@ -1,0 +1,96 @@
+{
+ "lit_1h_2026": {
+  "against": {
+   "n": 76,
+   "usd": 22159,
+   "usd_per": 292,
+   "R_per": 0.72,
+   "win": 55
+  },
+  "with": {
+   "n": 44,
+   "usd": 21660,
+   "usd_per": 492,
+   "R_per": 1.02,
+   "win": 57
+  }
+ },
+ "lit_1h_2021_25": {
+  "against": {
+   "n": 333,
+   "usd": -978,
+   "usd_per": -3,
+   "R_per": 0.0,
+   "win": 55
+  },
+  "with": {
+   "n": 178,
+   "usd": 2243,
+   "usd_per": 13,
+   "R_per": 0.1,
+   "win": 52
+  }
+ },
+ "atlas_15m1h_2026": {
+  "with": {
+   "n": 35,
+   "usd": 800,
+   "usd_per": 23,
+   "R_per": 0.05,
+   "win": 54
+  },
+  "mixed": {
+   "n": 86,
+   "usd": 48289,
+   "usd_per": 561,
+   "R_per": 1.12,
+   "win": 59
+  },
+  "against": {
+   "n": 54,
+   "usd": 28388,
+   "usd_per": 526,
+   "R_per": 1.05,
+   "win": 50
+  }
+ },
+ "atlas_15m1h_2021_25": {
+  "mixed": {
+   "n": 508,
+   "usd": 36645,
+   "usd_per": 72,
+   "R_per": 0.14,
+   "win": 39
+  },
+  "with": {
+   "n": 263,
+   "usd": -6548,
+   "usd_per": -25,
+   "R_per": -0.05,
+   "win": 38
+  },
+  "against": {
+   "n": 449,
+   "usd": 40019,
+   "usd_per": 89,
+   "R_per": 0.18,
+   "win": 34
+  }
+ },
+ "blitz_5m_2026": {
+  "with": {
+   "n": 262,
+   "usd": 6466,
+   "usd_per": 25,
+   "R_per": 0.16,
+   "win": 54
+  },
+  "against": {
+   "n": 68,
+   "usd": 1288,
+   "usd_per": 19,
+   "R_per": 0.13,
+   "win": 60
+  }
+ }
+}

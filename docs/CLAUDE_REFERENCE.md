@@ -218,6 +218,43 @@ part yourself or fold it into a script.**
   ATLAS trades) 207 / 105 trades, +$11,750 / +$7,923 trading P&L (~$1.9k / $2.1k a month at $400-450 risk, no payouts: the
   research's whole-slot gain after MFFU payout limits is +$301 / +$290 a month). Test `python -X utf8 -m tests.test_blitz
   [--cloud]` (~65 s).
+- **Account C = BLITZ routed to its OWN MFFU Builder 25K (2026-10-29, owner "the scalping on a 25"), built, OFF:**
+  `engine/account_c.py` (LiveBot.acct_c, `_account_c_tick` right after LIT's routing, before account B and the read-only work: the entry latency matters), plain-language rules + bands + kill switch in
+  `BLITZ_STRATEGY.md`. Switch = local `data/account_c.json` (gitignored; absent / null = the bot is exactly as before: no
+  adapter, no heartbeat key) `{"account", "plan": "builder25k", "eval_start", "armed": false}`; CLI `python -X utf8 -m
+  engine.account_c --account "<Name>" --plan builder25k --start <day>` | `off` | `--status` | `--resume` | `--to-funded`
+  (refused when the NinjaTrader self-test fails; a real Name is allowlisted, never armed). Own adapter (OIF tag `acctc_`,
+  `ninjatrader_state_acctc.json`), state `live_state_acctc.json`, startup reconcile, guards (order sanity stop cap 250 pts:
+  37 of the 330 2026 stops are over LIT's 100), live gate as account B (armed + the phrase at the bot's start +
+  NINJATRADER_LIVE). Rule = `blitz.Engine` on the closed 1m bars (default `blitz.DEFAULT_PARAMS`; the block's "params" plugs
+  a later rule pick by config only; `research/writeups/blitz-25k.md` = no rule change): signal close -> MARKET at once
+  (late > 50 s = not chased), stop + OCO 20R, the model's trail -> stop CHANGE (tighter only), 30-bar / 15:55 (+60 s clock) /
+  CME early close (flat -5 min, no entry -15 min) exits, 6 a day, -3R; a candidate opposite LIT / ATLAS is masked at the
+  signal (`AccountC._gate`: no model trade, the slot stays free, as blitz-25k.md measured it); any other block keeps its model
+  trade on paper (the slot is used, as the research eval). Size = blitz_25k_pick.json "eval_25k" (40% of the room for
+  sessions 1-4, the full room from session 5, <= $600, <= 0.9 x the $600 DLL left, 20 micros; `"sizing": "paper"` = flat 40%);
+  stuck room < $249.56; funded (owner's switch, new Name, disarmed) 10% / $150 / +$400 day stop ("funded_25k").
+  No hedging, LIT > ATLAS > BLITZ: C blocked while LIT holds / enters / has a setup armed the other way (the stricter block),
+  B holds or closes the other way, an extra account holds it; LIT's opposite entry -> `LiveBot._hedge_clear` -> `_hedge_clear_c` (C closed at market
+  first, LIT routes once confirmed flat, else HEDGE WAIT / "HEDGE BLOCKED: BLITZ close not confirmed"); ATLAS's ->
+  `AccountB._c_yield` right before B routes. Never-placed orders as account B (not booked, push). Performance contract
+  `account_c.score`: 20+ finished trades with avg R or PF(R) under the 2026 bootstrap p5 (20: -0.150 / 0.62, 40: -0.061 /
+  0.83, 100: +0.019 / 1.06), or 6 losing R-days in a row -> PAUSED (no entry on C, push); `--resume` = "resume_after" in the
+  block. Data (only when on): heartbeat `account_c` (`AccountC.hb_block`), `accounts.blitz_section` (source `pc_blitz`, so
+  Zlarior-only views never read it), live board `blitz` card + `accts` + trade log acct "blitz" (`boardcore.js` does not
+  draw the third card yet: renderer work), Mission Control `pc_cc_api` home `blitz`, /api/next/board, narrator REAL / SIM
+  rows + pause, live.json / cloud state `pc.account_c`. Start page: card "BLITZ · 25K" (Set its 25K, Sim test = Sim101,
+  Arm BLITZ with the typed phrase, Off; Add account bot BLITZ; Passed → funded; `go.set_blitz` / `arm_c` / `blitz_status` /
+  `_c_to_funded`, POST `/api/next/start/blitz`, `/blitz/arm`; a running bot picks a change up once C is flat). Replay of
+  2026 through account C's live loop (paper adapter, minute polls, a new $63 eval after each end): all 330 model trades =
+  `blitz.backtest`; with the speed size routed H1 182 / H2 82, +$10,900 / +$4,709 inside evals (PF $ 1.62 / 1.60), 14 passes,
+  0 fails, 12 stuck (room < $249.56 ends an eval before the floor: research counts it dead), never paused; inside-eval $ is
+  not paid money (blitz-25k.md whole slot: $270 / $37 / -$40 a month; the losing-days streak counts all of a day's model
+  trades, routed or not: the routed ones alone hit 6 in May 2026 because the eval / daily loss stopped days early). Test `python -X utf8 -m
+  tests.test_account_c [--quick]`.
+  **Owner's turn-on (next week):** 1. buy the Builder 25K for BLITZ and connect it in NinjaTrader; 2. Start page > BLITZ ·
+  25K: its Name, Set BLITZ's 25K, Arm BLITZ (type I ACCEPT LIVE RISK); 3. Start trading. Console for step 2:
+  `python -X utf8 -m engine.account_c --account "<the 25K Name>" --plan builder25k --start 2026-11-02`.
 - Same code as the research: engine/second.py calls tools/second_ema.py / second_md.py / second_sr.py on LIT's live
   window (retail_standalone.load_frame live_cut, the simulators' live/OPEN mode). "With LIT" view = LIT first, no entry
   while LIT is in a trade, max 2 a day (MACD closed when LIT enters).
@@ -418,6 +455,25 @@ part yourself or fold it into a script.**
   cons_aware, stack payout reserves (cap a month) and pre-buying the next eval at the 4th payout: see the write-ups before
   redoing. Eval: keeping two_week after session 10 (`two_week_until` 999) is the one change that held in H1, H2 and 2021-25
   (+$14-21/mo per slot; owner decides, not switched).
+- **BLITZ on its own 25K, "like a person" (2026-10-29, `blitz-25k.md`, `tools/blitz25k_*.py`, runs `blitz25k_*`, pick
+  `research/scalp/blitz_25k_pick.json` = no-change):** as account C (never opposite LIT / ATLAS, closed first; costs $0 in
+  2026, $16/mo at $150 in 2021-25): structure stops (last 1m / 5m swing, the move's low, caps; 45), liquidity targets /
+  partials / swing trails / change-of-character exits / no clock (1,920), opening drive, London band, retest limits, 15m / 1h
+  BOS filters (32), funded-only structure rule: none beats today's rule in H1, H2 and 2021-25. 25K size: 40% of the room,
+  100% from eval session 5 (decided in 2 weeks 71-74% vs 29-41%, same money: slot $270 / $37 / -$40 a month; random
+  directions make the same H2 slot $). The post-hoc 1.0 x ATR / 45 min / no trail variant is worse on LIT's 50K too (H2).
+- **Structure management (2026-10-29, `structure-management.md`, `tools/structure_manage.py` LIT 101 variants, runs
+  `lit_struct_*`; `tools/structure_atlas.py` ATLAS 24, runs `atlas_struct_*`):** with `engine/structure.py` (closed-bar BOS /
+  CHoCH / protected swing / pools): target at the next opposing pool (cap / instead of the band), half off at the first pool,
+  stop to the protected swing after a BOS (1m / 5m / 15m), exit / BE on a CHoCH against after +0.5-2R, 1h / 15m trend skip /
+  size. None beats live LIT in both halves on both sizings (the owner's BE on a 5m CHoCH after +0.75R: H1 -$1,442 / H2 -$775;
+  1h skip: H1 -$15.0k / H2 -$7.5k, ~1 trade a week; runner past the target, lock 75% + 15m trail: H1 +$13.6k / H2 +$956 at
+  the LIT size but two trend days are the gain and the eval path loses, 2-week pass 57 -> 36% H1, rejected). Lead, not
+  switched: 15m structure trail after +1R (H1 +$467 / H2 +$13,
+  eval +$1,019 / +$3,762, one more 2-week fail in H1, 7 trades changed): the advisor's `trail_15m` tally watches it. ATLAS:
+  the 15m protected-swing stop passes the 25K account gates but its trades lose R in every span at a fixed risk (sizing
+  path): rejected; every ATLAS exit / trail loses in 2026. The executors' base = live exactly (LIT 0 mismatches; ATLAS 96%
+  within 0.5 pt, difference method).
 
 ## Key commands (run from the repo root)
 - **START BOT (owner's one start, 2026-10-26):** the owner now starts from the dashboard only (desktop **LE START** -> the
@@ -481,6 +537,21 @@ part yourself or fold it into a script.**
   raising stub), FEED STALE blocks entries, PC bars push/read roundtrip, roll back-adjustment, CBOE VIX (23 checks, ~10 s).
 
 ## Infrastructure
+- **Market structure, playbook, discretion advisor (2026-10-29, read-only, never an order):** `engine/structure.py`
+  (Tracker per timeframe on closed bars: fractal k=2 swings, HH/HL/LH/LL, BOS / CHoCH on a close, protected swing = origin
+  of the breaking leg, pools = today's Asia / London / NY-open boxes + prior day + equal highs / lows (`lit.buildups`) +
+  unbroken 1h swings, premium / discount of the 15m dealing range, displacement legs; `block()` = the Live View
+  "structure" shape, cached per closed bar, ~13-20 ms a recompute here; `frame_events()` for research). Live View
+  `liveview_api.view()["structure"]` (+ phone_view; thinking panel `structure` / `rule` / `advice` lines, ATLAS / BLITZ
+  `structure_note`), narrator kind `structure` (15m / 1h breaks, advice on an open Zlarior trade; not pushed by default;
+  read from the block the page / live_publish thread computed, so the poll thread never recomputes: derive +0 ms).
+  `docs/PLAYBOOK.md` + `engine/playbook.py` (rules Z1-Z18, A1-A8, B1-B8 + structure advice Z-S / A-S / B-S; `now()` = the
+  rule being applied, `applying()`, one check function per rule; `GET /api/next/playbook` on the Live View router). `engine/advisor.py`: six rules (be_choch, exit_choch,
+  trail_15m, trail_5m, tp_pool, skip_htf) scored on every finished trade by the difference method; PC via `narrator.tick`
+  (a key check on the poll, the scoring in a background thread; `logs/advisor/<strategy>.jsonl`, `tally.json`,
+  gitignored), cloud via `live_learning.cloud_hook` (state "advisor");
+  cards in `live_learning.suggestions` (live tally + the 2026 backtest cards `research/lit/advisor_backtest.json`; no approve command). Its backtest = the research (`tools/structure_manage.py
+  advisor`). Tests `tests.test_structure`, `tests.test_advisor`.
 - **Dashboard 2026-10-28 (owner: "50 useful features", "what the bot is thinking", "very 3D"):** registry
   `web_next/FEATURES.md` (status of all 50). Home "Today · real accounts" (`realcore.js`, `cc.js`; phone
   `tools/web_public/realcore.js`): one card per REAL account (ledger + NinjaTrader fills only, never paper $), gauges, health
@@ -498,6 +569,28 @@ part yourself or fold it into a script.**
   (`engine/narrator.py`, hooked in `LiveBot._alerts_tick`, real bot only, never raises): plain-language feed,
   `logs/narrator/<day>.jsonl`; phone pushes only for armed / entry / exit / refused (`data/narrator.json`, `LE_NARRATOR_PUSH=0`).
   Tests: test_real_ui, test_insight_api, test_liveview_api, test_narrator.
+- **Deep space + Mission Control (2026-10-29, owner: "make it look cooler ... almost like 3D space"; read-only):** the default
+  look of both dashboards. 3D: `tools/web_public/fx/src/space.js` (in fx.js; `FX.init({ level, bg: 'space' | 'galaxy' })`):
+  Earth (continents / clouds / city lights baked once from noise into textures, then texture reads + lighting), the Moon
+  crossing the Sun (a real sphere over the corona; glare + lens ghosts dim with the cover) and its soft shadow sliding over
+  the lit side (city lights come on inside it), analytic atmosphere rim, 3-layer parallax stars + baked Milky Way, one
+  satellite per bot (`FX.bots({ lit, atlas, scalp: 'trade' | 'armed' | 'idle' | 'off' })`), a shooting star per newly closed
+  trade (`FX.shoot('win' | 'loss')`), the aurora / rim tint from today's real P&L (`FX.pnl(usd)`), warp streaks on a page
+  change, `FX.stats()`. Cost: DPR cap 1.5 phone / 2 PC, phones <= 30 fps, everything 30 fps after 20 s idle, nothing while
+  hidden or under a full-screen view (Live View), reduced motion = one still frame, software GPU = small bakes, a phone below
+  17 fps drops to ~16 fps; no backdrop blur over it on phones; name tags ride next to the satellites (`FX.labels(on)`). 3D is ON by
+  default again (one-time reset of a stored Off: `clean.fx2` phone, `nx.fx2` PC); automated browsers (`navigator.webdriver`)
+  start Off unless the URL says `?fx=max|lite`. Off / no WebGL 2 = the static CSS sky (`space.css`, painted at first load).
+  Harness: `fx/space.html?lit=trade&atlas=armed&pnl=300&eclipse=0&fxfixed`. Mission Control: shared renderer
+  `missioncore.js` (window.MissionUI, byte-identical copies like boardcore.js; `mission.css`, `space.css` too, copied by the fx
+  build) reads only the live board (+ Live View data for BLITZ's line, the news); renders every account-shaped board block
+  generically (lit, atlas, a third one such as `blitz` / `scalp` or `board.accounts`; a BLITZ placeholder "paper / not live
+  yet" otherwise). Phone `mission.js` (Home strip on top + `#/mission`, More > Today); PC `js/next/mission.js` (Main >
+  Mission Control after Home; `initMissionSync()` drives the satellites / stars / aurora every 15 s). Features 51-67 in
+  `web_next/FEATURES.md` (stop-out now, why no trade yet, session timeline, alerts center, health constellation, eval runway,
+  streaks & consistency, daily loss & week pace, next news). Live View draws `view()["structure"]` when present (zone, pools,
+  swings, BOS / CHoCH, protected; a Structure switch + a "Market structure" thinking card). Caches le-public-v43 /
+  le-shell-next-v25. Test `python -X utf8 -m tests.test_space_ui [--shots <dir>]` (static, node render, phone + PC Playwright).
 - **Start & Accounts page (2026-10-26, PC dashboard sidebar "Start", page `start`):** START BOT as one checklist, one button
   per red line: NinjaTrader connected · live bars from NinjaTrader (`go.feed_problem`, fix "right-click the MNQ 5-minute chart > Reload NinjaScript (or re-add LE_BarFeed)"; the Sim job is refused while stale) · accounts set (50K -> Zlarior, 25K -> ATLAS) · setup done · Sim tests passed · armed ·
   running and routes verified, plus the plain line `Zlarior -> 50K <name> · ATLAS -> 25K <name> · both armed · running`.
@@ -619,7 +712,36 @@ part yourself or fold it into a script.**
   `ops_checks.roll_late_notice` at 01:40 ET, and the cloud monitor `roll_watch.cloud_notices` when the PC's ops tick is
   older than 1 h). The test simulates the roll with a constant 301.25-pt offset (TradingView export + archive old, chart
   switched Wed 17:00): on every session after the switch the LIT window = the adjusted series bar for bar and LIT's
-  signals / trades are identical (MNQ and NQ charts).
+  signals / trades are identical (MNQ and NQ charts). 2026-10-29 (test D, 29 checks): every account (Zlarior, ATLAS, an
+  account C) builds its NinjaTraderAdapter from `live.ADAPTERS`, so each carries the guard; an order contract pinned in a
+  config (`nt_instrument` / `nt_instrument_mini`) is refused once it is past its roll (`_contract_mismatch`), even with
+  the chart left on the same old contract.
+- **DST / CME holidays / self-healing (2026-10-29, `docs/AUTOPILOT.md`):** US clocks go back Sun 2026-11-01; every live
+  time decision is America/New_York wall clock (25 trading_day functions, market_open, entry / flat windows, auto-update,
+  ops pushes, the cloud's UTC crons through its real bash guard, LIT replays over the 2025-11-02 / 2025-03-09 /
+  2026-03-08 weeks identical to the backtest: `tests/test_dst.py` 49, `--quick` 45). The JS fallback for browsers without
+  Intl time zones (`litkit.js`, `tradechart.js`, both copies) uses the US rule (`usEtOff`), not a fixed -4 h. Known
+  fixed offsets left on purpose: the old engine's 4h buckets (`engine/data.resample`, `engine/mtf.build_4h`, shadow
+  only, identical in the backtest). **One CME calendar** `engine/cme_calendar.py` (`early_close`, `full_closure`,
+  `halted`, `entry_cut` / `flat_cut` / `flat_ts`; `lit_live.early_close` and `guards.full_closure` delegate, same values;
+  Christmas on a Saturday = Fri 12-24 closed); checked against every short session and missing weekday of
+  data/NQ_5m.csv 2021-2026 (`tests/test_holidays.py` 15; Good Fridays without a jobs report are closed but kept as a
+  09:15 close). `live` / `ops_checks` / `go.market_open` know the holidays (no FEED STALE / gap alarms after an early
+  halt or on Christmas); account B and the second strategies flat 5 min before an early close (as the adapter); the
+  adapter and the extra accounts refuse entries on a full closure; `cme_calendar.route_limits(day, flat_mod)` for BLITZ's router (the
+  paper engine unchanged and import-isolated). Self-healing (`tests/test_selfheal.py` 12): every engine state save goes through
+  `fsutil.replace`; `AccountB.void_refused_days` (like the 50K's eval_fix, once per process); narrator feeds
+  gzipped after 3 days, deleted after 120 (`ops_checks.rotate_feed`); weekend DISCONNECTED -> entries resume on
+  reconnect; **Actions minutes** `engine/actions_budget.py` (state.json "actions", budget.json on the dashboard branch;
+  saver at 85% of 2,000: the guard keeps the night check + one run an hour; only on a GitHub runner). **New MFFU Names**
+  `engine/new_accounts.py` (ops tick push once per Name; Start page line `newAcctLine` / `wireNewAcct`; POST
+  `/api/next/start/newacct` PC only: a funded account after the slot's pass via `go.to_funded`, else a new eval via
+  `go.set_names`; BLITZ via `ROLE_SETTERS["blitz"]`; never arms; `tests/test_new_accounts.py` 12). **Autopilot score**
+  `engine/autopilot.py` (Start page writes + hands-off events, 100 - 10 a step, heartbeat `remote.autopilot`;
+  `tests/test_autopilot.py` 7). Checked (heartbeat 2026-10-28): NinjaTrader's outgoing folder shows one connection,
+  `Simulation=CONNECTED`, and its trace puts both MFFU accounts on that connection ("(Simulation)
+  Cbi.Account.OnConnectionStatus: account='MFFUEVBLDR602936016' ..."), so the DISCONNECTED checks do watch the MFFU
+  accounts' connection.
 - **Execution audit (2026-10-25, `research/handoff/2026-10-25/A5_execution.md`, test `tests/test_nt_exec_audit.py`):** kill is
   account-scoped (CLOSEPOSITION + CANCEL by id) unless the action carries `"scope": "global"` (only `LiveBot.kill_switch`,
   the owner's kill -> FLATTENEVERYTHING); the OIF writer refuses FLATTENEVERYTHING / CANCELALLORDERS outside that, a line
@@ -768,7 +890,7 @@ part yourself or fold it into a script.**
    study trades. The scheduled run uses the workflow on the default branch, so merge changes there.
    - **3D layer (2026-10-17):** three.js source in `tools/web_public/fx/src/` (`core.js` loop + quality, `field.js` galaxy background,
      `aura.js` card glow, `taps.js` tap sparks, `orb.js` Live Oracle, `candles.js` 3D chart + replay, `galaxy.js` trade galaxy,
-     `city.js` month city). Build with `cd tools/web_public/fx && npm install && npm run build`: it writes the one bundle
+     `city.js` month city; 2026-10-29: `space.js` deep-space background, the default, see Infrastructure). Build with `cd tools/web_public/fx && npm install && npm run build`: it writes the one bundle
      `tools/web_public/fx.js`, copies it to `web_next/js/fx.js` and stamps its hash into both import URLs (commit all of it). Lazy-loaded after first paint; Settings has
      Max / Lite / Off; off or no WebGL2 leaves the 2D page. `fx/dev.html?view=orb|galaxy|city|candles` is a test harness;
      add `?fxfixed` to a page URL to stop the auto resolution drop in screenshots. PC side: `web_next/js/next/fx3d.js`.

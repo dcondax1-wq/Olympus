@@ -9,6 +9,10 @@
 //                    check) as a glowing corridor, the next check's band lines, its signals (filled = taken, hollow = not),
 //                    PAPER entries / exits, the PAPER position (both paper sizes: 25K eval + funded 50K next to LIT) as a
 //                    dashed glass volume labelled PAPER, the time exit; never a real size
+//   Structure        (2026-10-29, when the data has d.structure, switch o.on.structure): premium / discount shading around
+//                    the equilibrium, liquidity pools (buy side above, sell side below; swept = dashed with a tick), the
+//                    swing labels (HH / HL / LH / LL) of the 5m / 15m / 1h frames, each frame's last BOS / CHoCH as a line
+//                    from the broken swing to the break, the protected high / low; nothing is drawn when the block is absent
 // Two canvases: drawChart(base, data, o) draws everything static (on new data / zoom / resize: every 3 s at most, plus
 // while dragging with o.fast = no glow); drawFx(overlay, geo, o) draws only the moving parts (crosshair, the pulse on the
 // live price and on the entry / stop / target lines) and is cheap enough for every animation frame.
@@ -20,6 +24,7 @@ const THEMES = {
     risk: [255, 61, 110], reward: [34, 229, 138], good: '#22e58a', bad: '#ff3d6e', now: 'rgba(148,163,184,0.35)',
     label: 'rgba(5,10,28,0.78)', frame: 'rgba(148,163,184,0.18)', last: '#f8fafc', lastInk: '#020617', cross: 'rgba(186,230,253,0.55)', glowOn: true,
     setupFill: '#0b1430', muted: '#64748b',
+    st: 'rgba(226,232,240,0.85)', stSoft: 'rgba(226,232,240,0.45)', bsl: '#38e1ff', ssl: '#ff5fd2', prem: [255, 61, 110], disc: [34, 229, 138],
   },
   light: {
     bg0: '#ffffff', bg1: '#f6f8fc', glow: 'rgba(37,99,235,0.05)', floor: 'rgba(37,99,235,0.07)', grid: '#eef1f5',
@@ -28,6 +33,7 @@ const THEMES = {
     risk: [220, 38, 38], reward: [22, 163, 74], good: '#16a34a', bad: '#dc2626', now: '#cbd5e1',
     label: 'rgba(255,255,255,0.85)', frame: '#e2e8f0', last: '#0f172a', lastInk: '#ffffff', cross: '#94a3b8', glowOn: false,
     setupFill: '#ffffff', muted: '#94a3b8',
+    st: 'rgba(30,41,59,0.85)', stSoft: 'rgba(30,41,59,0.45)', bsl: '#0891b2', ssl: '#c026d3', prem: [220, 38, 38], disc: [22, 163, 74],
   },
 };
 const AX = 82, PADL = 6, TOP = 30, BOT = 22, FUT = 0.17;
@@ -93,6 +99,7 @@ export function drawChart(cv, d, o) {
   if (o.on.atlas) for (const l of at.lines || []) if (l.strong && l.price != null) want.push([l.price, far(l)]);
   const sc = S.scalp || {};
   if (o.on.scalp) for (const l of sc.lines || []) if (l.price != null) want.push([l.price, l.strong ? 2.5 : /blz_(up|lo)/.test(l.id || '') ? 0.6 : 1.0]);
+  if (o.on.structure !== false && d.structure && Array.isArray(d.structure.pools)) for (const p of d.structure.pools) if (p && p.price != null && !p.swept) want.push([p.price, 0.8]);
   for (const [p, k] of want) if (p > lo - k * rng0 && p < hi + k * rng0) { lo = Math.min(lo, p); hi = Math.max(hi, p); }
   const pad = (hi - lo) * 0.06 || 2;
   lo -= pad; hi += pad;
@@ -186,6 +193,32 @@ export function drawChart(cv, d, o) {
     }
   }
 
+  // ================================================================ market structure, under the candles: premium / discount + pools
+  const ST = o.on.structure !== false && d.structure && typeof d.structure === 'object' ? d.structure : null;
+  if (ST) {
+    const z = ST.zone;
+    if (z && z.hi != null && z.lo != null && z.hi > z.lo) {
+      const eq = z.eq != null ? z.eq : (z.hi + z.lo) / 2;
+      const yH = Y(Math.min(hi, z.hi)), yE = Y(Math.max(lo, Math.min(hi, eq))), yL = Y(Math.max(lo, z.lo));
+      if (z.hi > lo && eq < hi) { const gp = g.createLinearGradient(0, yH, 0, yE); gp.addColorStop(0, rgba(C.prem, 0.10)); gp.addColorStop(1, rgba(C.prem, 0.02)); g.fillStyle = gp; g.fillRect(PADL, yH, pw, Math.max(0, yE - yH)); }
+      if (eq > lo && z.lo < hi) { const gd = g.createLinearGradient(0, yE, 0, yL); gd.addColorStop(0, rgba(C.disc, 0.02)); gd.addColorStop(1, rgba(C.disc, 0.10)); g.fillStyle = gd; g.fillRect(PADL, yE, pw, Math.max(0, yL - yE)); }
+      if (inY(eq)) { hline(eq, PADL, right, C.stSoft, [2, 5], 1); notes.push({ x: PADL + 6, y: Y(eq) - 7, text: `EQ 50% ${fmt(eq)}`, color: C.stSoft, align: 'left', size: 10 }); }
+      if (z.hi < hi && z.hi > lo) notes.push({ x: PADL + 6, y: Y(z.hi) + 9, text: 'premium', color: rgba(C.prem, 0.8), align: 'left', size: 9.5 });
+      if (z.lo > lo && z.lo < hi) notes.push({ x: PADL + 6, y: Y(z.lo) - 9, text: 'discount', color: rgba(C.disc, 0.8), align: 'left', size: 9.5 });
+    }
+    for (const p of Array.isArray(ST.pools) ? ST.pools : []) {
+      if (p == null || p.price == null || !inY(p.price)) continue;
+      const buy = String(p.side || '').toLowerCase().startsWith('b'), c = buy ? C.bsl : C.ssl;
+      const x0 = p.t0 ? Math.max(PADL, xt(p.t0)) : PADL;
+      if (p.swept) hline(p.price, x0, right, c, [3, 4], 1);
+      else {
+        hline(p.price, x0, right, c, null, 1.4, 10);
+        g.save(); g.fillStyle = c; g.globalAlpha = 0.14; g.fillRect(x0, Y(p.price) - (buy ? 5 : 0), Math.min(right, xNow) - x0, 5); g.restore();
+      }
+      notes.push({ x: xNow - 6, y: Y(p.price) + (buy ? -7 : 8), text: `${p.swept ? '✓ ' : ''}${buy ? 'BSL' : 'SSL'}${p.label ? ' · ' + p.label : ''}`, color: c, align: 'right', size: 10 });
+    }
+  }
+
   // ================================================================ candles: extruded 3D bodies with a neon bloom
   const cw = Math.max(1, Math.min(14, bw * 0.62));
   const dep = cw >= 4 ? Math.min(4, cw * 0.35) : 0;            // extrusion depth (right + up)
@@ -209,6 +242,37 @@ export function drawChart(cv, d, o) {
     if (cw >= 5 && y1 - y0 > 3) { g.fillStyle = 'rgba(255,255,255,0.28)'; g.fillRect(xl, y0, 1, y1 - y0); }   // bevel highlight
   }
   g.shadowBlur = 0;
+
+  // ================================================================ market structure over the candles: swings, BOS / CHoCH, protected levels
+  if (ST && ST.frames && typeof ST.frames === 'object') {
+    const FR = [['1h', 11, 1], ['15m', 10, 0.85], ['5m', 9, 0.7]].filter(([k]) => ST.frames[k]);
+    const seenSw = [];
+    for (const [k, size, a] of FR) {
+      const F = ST.frames[k] || {};
+      for (const s of Array.isArray(F.swings) ? F.swings : []) {
+        if (!s || s.price == null || !s.t || !inY(s.price) || s.t < bars[i0][0] - secs || s.t > bars[i1][0] + secs) continue;
+        const x = xt(s.t), y = Y(s.price), hiS = /^(HH|LH|H)$/.test(s.kind || '');
+        if (seenSw.some((q) => Math.abs(q.x - x) < 10 && Math.abs(q.y - y) < 10)) continue;
+        seenSw.push({ x, y });
+        g.save(); g.globalAlpha = a; g.fillStyle = C.st; g.beginPath(); g.arc(x, y, size > 10 ? 2.6 : 2, 0, Math.PI * 2); g.fill(); g.restore();
+        notes.push({ x, y: y + (hiS ? -10 : 11), text: `${s.kind || ''}${k !== '5m' ? ' ' + k : ''}`, color: a > 0.9 ? C.st : C.stSoft, align: 'center', size, bold: k === '1h' });
+      }
+      const e = F.last_event;
+      if (e && e.price != null && inY(e.price)) {
+        const bull = e.dir === 1 || /up|bull|long/i.test(String(e.dir)), c = bull ? C.good : C.bad;
+        const sw = (F.swings || []).filter((s) => s && s.t && s.t < e.t && Math.abs(s.price - e.price) <= Math.max(0.5, Math.abs(e.price) * 1e-5));
+        const xa = sw.length ? xt(sw[sw.length - 1].t) : (e.t ? xt(e.t) - 60 : PADL), xb = e.t ? xt(e.t) : xNow;
+        hline(e.price, Math.min(xa, xb - 8), Math.max(xb, xa + 8), c, e.kind === 'CHoCH' ? [6, 3] : null, 1.6, 8);
+        notes.push({ x: (Math.min(xa, xb) + Math.max(xa, xb)) / 2, y: Y(e.price) + (bull ? -9 : 10), text: `${e.kind || 'BOS'} ${bull ? '▲' : '▼'} ${k}`, color: c, align: 'center', size: 10.5, bold: true });
+      }
+      const pr = F.protected || {};
+      for (const [pp, nm] of [[pr.high, 'protected high'], [pr.low, 'protected low']]) {
+        if (pp == null || !inY(pp)) continue;
+        hline(pp, xNow - Math.min(160, pw * 0.25), xNow, C.stSoft, [1, 3], 1);
+        notes.push({ x: xNow - 6, y: Y(pp) + (nm.endsWith('high') ? -7 : 8), text: `${nm} ${k}`, color: C.stSoft, align: 'right', size: 9.5 });
+      }
+    }
+  }
 
   // ================================================================ glass position tool (risk / reward volumes with depth)
   const box = (x0, x1, pEntry, pStop, pTgt, label) => {

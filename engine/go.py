@@ -71,7 +71,8 @@ def _save(cfg, path=None):
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(cfg, fh, indent=1)
-    os.replace(tmp, path)
+    from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+    _fs_replace(tmp, path)
 
 
 def _http(path, body=None, timeout=5):
@@ -96,13 +97,19 @@ def bot_running() -> bool:
 
 
 def market_open(now=None) -> bool:
-    """CME Globex: Sun 18:00 ET -> Fri 17:00 ET, closed 17:00-18:00 ET every weekday."""
+    """CME Globex: Sun 18:00 ET -> Fri 17:00 ET, closed 17:00-18:00 ET every weekday and on CME holidays (cme_calendar)."""
     from zoneinfo import ZoneInfo
     t = now or dt.datetime.now(ZoneInfo("America/New_York"))
     wd, h = t.weekday(), t.hour
     if wd == 5 or (wd == 6 and h < 18) or (wd == 4 and h >= 17):
         return False
-    return h != 17
+    if h == 17:
+        return False
+    try:                                  # CME holiday closure / after an early halt (engine/cme_calendar.py)
+        from .cme_calendar import halted
+        return not halted((t if t.tzinfo else t.replace(tzinfo=ZoneInfo("America/New_York"))).timestamp())
+    except Exception:
+        return True
 
 
 def session_day(now=None) -> str:
@@ -769,6 +776,8 @@ def role_of(name, cfg=None, b=None, extras=None) -> str | None:
         return "Zlarior's 50K"
     if name in (atlas, str(b.get("account") or "").strip()):
         return "ATLAS's 25K"
+    if name == str(_c().get("account") or "").strip():
+        return "BLITZ's 25K"
     for e in (_extras() if extras is None else extras):
         if str(e.get("nt_account") or "").strip() == name:
             return f"the funded account {e.get('id')}" if e.get("mode") == "funded" else f"the extra Zlarior account {e.get('id')}"
@@ -898,7 +907,11 @@ def status(state=None, connected=None, feed=None) -> dict:
                       "live switch on, ATLAS not armed" if live else "not armed",
                       ("running" if not run_bad else "running, wrong set-up") if running else "stopped"])
     why = None if running else resume_problem(cfg, b=b, live=live)
-    return {"steps": steps, "all_green": all(done.values()), "say": say, "lit": lit or None, "atlas": atlas or None,
+    try:
+        blitz = blitz_status()                     # the BLITZ · 25K slot (account C, off by default)
+    except Exception as e:
+        blitz = {"on": False, "error": f"{e.__class__.__name__}: {e}"[:160]}
+    return {"steps": steps, "all_green": all(done.values()), "say": say, "lit": lit or None, "atlas": atlas or None, "blitz": blitz,
             "suggest_lit": (_read(AUTOSTART).get("nt_account") or "").strip() or None, "running": running,
             "market_open": market_open(), "job": job_status(), "phrase": LIVE_PHRASE,
             "need_phrase": bool(not running and why), "resume_why": why}
@@ -1223,6 +1236,18 @@ def accounts(cards=None) -> dict:
                      "armed": n["armed"], "enabled": n["enabled"], "start": (n["funded"] or {}).get("start") or n["eval_start"],
                      "note": None if not n["problem"] or n["problem"] == "disabled in the config" else n["problem"],
                      **_money(n["nt_account"], n["preset"], False, bals)})
+    cb = _c()                                       # BLITZ's own 25K (account C, engine/account_c.py): only when set
+    if str(cb.get("account") or "").strip():
+        from .ninjatrader import is_sim
+        n = str(cb["account"]).strip()
+        funded = str(cb.get("stage") or "").lower() == "funded"
+        rows.append({"name": n, "bot": "BLITZ", "role": "c", "plan": "builder25k",
+                     "plan_label": "MFFU Builder 25K" + (" funded" if funded else "") + (" (Sim test)" if is_sim(n) else ""),
+                     "state": "funded" if funded else "eval", "armed": cb.get("armed") is True if not is_sim(n) else None,
+                     "start": cb.get("funded_start") if funded else cb.get("eval_start"),
+                     "note": (f"passed eval {cb.get('eval_account')}" if funded and cb.get("eval_account") else
+                              "Sim test: the real route on a Sim account, no real money" if is_sim(n) else None),
+                     **_money(n, "mffu_builder_25k", False, bals)})
     for r in rows:
         c = cards.get("lit" if r["role"] == "main" else "atlas" if r["role"] == "b" else "") or {}
         if c and not c.get("error") and c.get("balance") is not None and c.get("configured") is not False:
@@ -1238,8 +1263,14 @@ def add_account(name, plan="builder50k", strategy="zlarior", start=None) -> dict
     name, plan, strategy = str(name or "").strip(), str(plan or "").lower(), str(strategy or "").lower()
     if plan not in PLANS:
         return {"ok": False, "error": "Pick a plan: Builder 50K or Builder 25K."}
+    if strategy == "blitz":
+        if plan != "builder25k":
+            return {"ok": False, "error": "BLITZ trades a 25K (MFFU allows one funded 50K per person: Zlarior's): pick Builder 25K."}
+        if str(_c().get("account") or "").strip():
+            return {"ok": False, "error": f"BLITZ already has the 25K {_c().get('account')}: remove it first."}
+        return set_blitz(name, start)
     if strategy not in ("zlarior", "atlas"):
-        return {"ok": False, "error": "Pick the bot: Zlarior or ATLAS."}
+        return {"ok": False, "error": "Pick the bot: Zlarior, ATLAS or BLITZ."}
     try:
         start = dt.date.fromisoformat(str(start)).isoformat() if start else session_day()
     except ValueError:
@@ -1299,6 +1330,19 @@ def remove_account(name) -> dict:
     lit, atlas = _names(cfg)
     b_on = str(_b().get("account") or "").strip()
     ex = next((e for e in _extras() if name and name in (str(e.get("nt_account") or "").strip(), str(e.get("id") or ""))), None)
+    c_on = str(_c().get("account") or "").strip()
+    if name and name == c_on and name not in (lit, atlas, b_on) and not ex:
+        if bot_running():
+            return {"ok": False, "error": "Stop the bot first: it reads the accounts when it starts."}
+        r = set_blitz("off")
+        if not r.get("ok"):
+            return {"ok": False, "error": f"Not removed: {r.get('error')}"}
+        if not role_of(name):
+            try:
+                _allow(name, remove=True)
+            except ValueError:
+                pass
+        return {"ok": True, "say": f"Removed {name} (BLITZ's 25K): BLITZ is back to paper only."}
     if not name or not (name in (lit, atlas, b_on) or ex):
         return {"ok": False, "error": f"No account {name!r} here."}
     if bot_running():
@@ -1362,6 +1406,8 @@ def to_funded(name, funded_name, start, plan=None, balance=None) -> dict:
         return {"ok": False, "error": f"No eval account {name!r} here: pick the account that passed."}
     if row.get("role") == "b":
         return _b_to_funded(row, funded_name, start, balance)
+    if row.get("role") == "c":
+        return _c_to_funded(row, funded_name, start, balance)
     plan = str(plan or row.get("plan") or "builder50k").lower()
     if plan not in PLANS:
         return {"ok": False, "error": "Pick a plan: Builder 50K or Builder 25K."}
@@ -1414,6 +1460,117 @@ def _b_to_funded(row, funded_name, start, balance=None) -> dict:
     return {"ok": True, "say": f"ATLAS → funded {funded_name} from {start} (passed eval {row['name']}). Funded sizing: {r['rule']}. "
                                "Not armed: arm it at the next start (you type the phrase).",
             "lines": [r["say"]] + ([f"The eval's history is kept in {os.path.basename(r['archived'])}"] if r.get("archived") else [])}
+
+
+# ---------------------------------------------------------------------------- BLITZ's own 25K (account C, engine/account_c.py)
+# The Start page's third slot "BLITZ · 25K" next to "Zlarior · 50K" and "ATLAS · 25K". OFF by default (data/account_c.json
+# absent / null = the bot is exactly as before). Sim test = BLITZ on a NinjaTrader Sim account (the real route, no real money);
+# a real MFFU 25K trades only after the owner arms it here with the typed phrase (and the bot runs live: phrase + live
+# switch, engine/ninjatrader._live_gate). Nothing here arms by itself.
+def _c_root() -> str:
+    """The folder whose data/account_c.json is account C's block: next to SECOND_PATH (tests: their temp copy), else ROOT."""
+    return os.path.dirname(os.path.abspath(SECOND_PATH)) if SECOND_PATH else ROOT
+
+
+def _c() -> dict:
+    from . import account_c
+    return account_c.raw_cfg(_c_root()) or {}
+
+
+def blitz_status(c=None) -> dict:
+    """The BLITZ slot: on / off, the account, Sim or real, armed, the eval start, a problem, the stage."""
+    from . import account_c
+    from .ninjatrader import is_sim
+    c = _c() if c is None else c
+    name = str(c.get("account") or "").strip()
+    if not name:
+        return {"on": False, "say": "BLITZ · 25K is off (the scalper trades only on paper: its shadow ledgers)", "phrase": LIVE_PHRASE}
+    lit, atlas = _names()
+    sp = account_c.normalize(c, lit_account=lit or None, b_account=str(_b().get("account") or atlas or "").strip() or None)
+    sim = is_sim(name)
+    say = (f"BLITZ → {'Sim test on ' if sim else '25K '}{name}" + (" · funded" if c.get("stage") == "funded" else "")
+           + (" · armed" if c.get("armed") is True else "" if sim else " · not armed (Sim only until you arm it)"))
+    return {"on": True, "name": name, "sim": sim, "armed": c.get("armed") is True, "start": c.get("eval_start"), "stage": c.get("stage") or "eval",
+            "problem": sp.get("problem") if sp else None, "params": bool(c.get("params")), "say": say, "phrase": LIVE_PHRASE}
+
+
+def set_blitz(name, start=None) -> dict:
+    """The BLITZ slot's "Set": BLITZ's own account = name (a Sim account = the Sim test; an MFFU 25K = its real account,
+    NOT armed), or "off". A running bot picks the change up at its next poll, once BLITZ is flat (LiveBot._sync_account_c).
+    Refused on Zlarior's or ATLAS's account, or when engine.ninjatrader --selftest fails (account_c.set_account_c)."""
+    from . import account_c
+    from .ninjatrader import is_sim
+    name = str(name or "").strip()
+    if not name or name.lower() == "off":
+        r = account_c.set_account_c(None, root=_c_root())
+        return {**r, "say": "BLITZ · 25K is off: the bot is exactly as before (the BLITZ paper shadow keeps running)."} if r.get("ok") else r
+    try:
+        start = dt.date.fromisoformat(str(start)).isoformat() if start else session_day()
+    except ValueError:
+        return {"ok": False, "error": "Start day as yyyy-mm-dd."}
+    if not is_sim(name):
+        bad = slot_problem(name, "25K")
+        if bad:
+            return {"ok": False, "error": f"Not set: {bad}."}
+    cfg = _read(CFG)
+    who = role_of(name, cfg)
+    if who and who != "BLITZ's 25K":
+        return {"ok": False, "error": f"Not set: {name} is already {who}. BLITZ needs its own account."}
+    lit, atlas = _names(cfg)
+    r = account_c.set_account_c(name, plan="builder25k", start=start, root=_c_root(), lit_account=lit or None,
+                                b_account=str(_b().get("account") or atlas or "").strip() or None)
+    if not r.get("ok"):
+        return {"ok": False, "error": f"Not set: {r.get('error')}"}
+    if not is_sim(name):
+        _allow(name)
+    return {"ok": True, "sim": is_sim(name),
+            "say": (f"BLITZ Sim test → {name} from {start}: the real route on a Sim account, no real money." if is_sim(name) else
+                    f"BLITZ → 25K {name}, first session {start}. NOT armed: Sim only until you arm it (you type the phrase).")}
+
+
+def arm_c(phrase) -> dict:
+    """The BLITZ slot's "Arm BLITZ": only with the owner's typed I ACCEPT LIVE RISK, on the saved MFFU 25K (a Sim account
+    needs no arming). Writes account_c "armed": true; the running bot picks it up once BLITZ is flat (a real account also
+    needs the bot started with the phrase and the live switch: engine/ninjatrader._live_gate)."""
+    from . import account_c
+    from .ninjatrader import is_sim
+    if typed_phrase(str(phrase or "")) != LIVE_PHRASE:
+        return {"ok": False, "error": "Type I ACCEPT LIVE RISK exactly. Nothing is armed."}
+    c = _c()
+    name = str(c.get("account") or "").strip()
+    if not name:
+        return {"ok": False, "error": "BLITZ has no account yet: set its 25K first."}
+    if is_sim(name):
+        return {"ok": False, "error": f"{name} is a Sim account: the Sim test needs no arming."}
+    r = account_c.arm(name, root=_c_root())
+    if not r.get("ok"):
+        return {"ok": False, "error": f"Not armed: {r.get('error')}"}
+    return {"ok": True, "say": f"BLITZ armed on the 25K {name}. It trades real money once the bot runs live (the start with the phrase)."}
+
+
+def _c_to_funded(row, funded_name, start, balance=None) -> dict:
+    """BLITZ's passed 25K -> its funded account (engine/account_c.to_funded): the funded stage on the new Name, disarmed."""
+    from . import account_c
+    funded_name = str(funded_name or "").strip()
+    try:
+        start = dt.date.fromisoformat(str(start)).isoformat()
+    except (TypeError, ValueError):
+        return {"ok": False, "error": "First funded day as yyyy-mm-dd."}
+    bad = slot_problem(funded_name, "25K")
+    if bad:
+        return {"ok": False, "error": f"Not switched: {bad}."}
+    who = role_of(funded_name)
+    if who:
+        return {"ok": False, "error": f"Not switched: {funded_name} is already {who}. The funded account has its own Name."}
+    if bot_running():
+        return {"ok": False, "error": "Stop the bot first: it reads the accounts when it starts."}
+    lit, atlas = _names()
+    r = account_c.to_funded(funded_name, start, balance, root=_c_root(), allow_path=ALLOW_PATH, lit_account=lit or None,
+                            b_account=str(_b().get("account") or atlas or "").strip() or None)
+    if not r.get("ok"):
+        return {"ok": False, "error": f"Not switched: {r.get('error')}"}
+    return {"ok": True, "say": f"BLITZ → funded {funded_name} from {start} (passed eval {row['name']}). Funded sizing: {r['rule']}. "
+                               "Not armed: arm it on the BLITZ slot (you type the phrase)."}
 
 
 # ---------------------------------------------------------------------------- step jobs (Sim test, arm + start)

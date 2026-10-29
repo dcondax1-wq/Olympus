@@ -20,7 +20,9 @@ heartbeat.json: {"t": unix seconds, "running": bot running, "adapter": paper|nin
                  "ops": the owner's PC helpers (engine/ops_checks.hb_fields: last check red / yellow count + first fix,
                         last backup, free disk; ~200 bytes),
                  "blitz": the BLITZ scalper PAPER shadow (engine/blitz.compact: state text, today's paper trades, the simulated
-                          25K eval, today's band; never routed; ~3 KB)}
+                          25K eval, today's band; never routed; ~3 KB),
+                 "account_c": BLITZ routed to its OWN account (engine/account_c.AccountC.hb_block: REAL / SIM / PAPER, eval,
+                              performance scorecard, open trade, today's rows, P&L per day; ~4 KB; key absent when off)}
 Every beat also writes the payload to logs/heartbeat_last.json (local, gitignored) for HEALTH_CHECK and the ops task.
 
 No Yahoo (engine/pcbars.py, owner 2026-10-19): next to heartbeat.json the commit carries the PC's NinjaTrader bars,
@@ -76,6 +78,9 @@ STUCK_S = 600.0                                  # a beat running longer than th
 WATCH_S = 60.0                                   # the watchdog's tick
 FROZEN_S = 180.0                                 # a tick this much longer than asked = the process was frozen (PC asleep)
 RETRY_S = 60.0                                   # after a failed push the next try comes after at most this
+FAIL_NOTICE_S = 30 * 60                          # a refused GitHub login for this long -> one phone push a day (2026-10-29)
+AUTH_RE = re.compile(r"authentication failed|could not read username|terminal prompts disabled|invalid username or password|"
+                     r"permission denied|\b40[13]\b|bad credentials|logon failed|credential", re.I)
 LOCK_WAIT_S = 90.0                               # a second caller (the remote control's "status") waits this long for a beat
 PRUNE_EVERY = 50                                 # scratch dir: drop the unreachable old heartbeat objects every N pushes
 STALE_LOCK_S = 600.0                             # scratch dir only: a *.lock older than this is left over from a killed git
@@ -425,7 +430,8 @@ def save_last(payload: dict, res: dict, path: str = LAST_PATH):
         with open(tmp, "w", encoding="utf-8") as fh:
             json.dump({"saved_t": int(time.time()), "push": {"at": int(time.time()), **(res or {})}, "payload": payload}, fh,
                       separators=(",", ":"), default=str)
-        os.replace(tmp, path)
+        from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+        _fs_replace(tmp, path)
     except Exception:
         pass
 
@@ -516,6 +522,24 @@ def _blitz(bot):
         return None
 
 
+def _opt(key, val) -> dict:
+    """{key: val} when val is not None, else {} (a block that is off adds no key: the payload stays byte for byte as before)."""
+    return {key: val} if val is not None else {}
+
+
+def _account_c(bot):
+    """The heartbeat's "account_c" block: BLITZ on its own account (engine/account_c.AccountC.hb_block: eval, scorecard, open
+    trade, today's routed rows, P&L per day, closed trades). None when account C is off: the key is then left out (the
+    payload is exactly as before). Never raises."""
+    try:
+        ac = getattr(bot, "acct_c", None)
+        if ac is None:
+            return None
+        return ac.hb_block()
+    except Exception as e:
+        return {"error": f"{e.__class__.__name__}: {e}"[:200]}
+
+
 def _exec():
     """The "exec" block (engine/fill_audit.heartbeat_block: slippage / missed / extra $ against the backtest). Never raises."""
     try:
@@ -576,14 +600,23 @@ def _dur(s) -> str:
     return f"{s // 3600} h {s % 3600 // 60} min" if s >= 3600 else f"{s // 60} min"
 
 
+def _default_notify(title, body, key):
+    from . import autoupdate
+    autoupdate.notify(title, body, key=key)
+
+
 class Heartbeat:
     """Daemon thread on the PC server: pushes a heartbeat every `every_s` seconds while the server runs, plus a watchdog
     thread that restarts it when it died or hung and pushes at once after the PC was asleep (see the module doc)."""
 
     def __init__(self, bot, every_s: float = 300.0, log=print, last_path: str = LAST_PATH, push_fn=None, clock=time.time,
                  watch_s: float = WATCH_S, stuck_s: float = STUCK_S, frozen_s: float = FROZEN_S, retry_s: float = RETRY_S,
-                 lock_wait_s: float = LOCK_WAIT_S):
+                 lock_wait_s: float = LOCK_WAIT_S, notify_fn=None):
         self.bot, self.every_s, self.log, self.last_path = bot, every_s, log, last_path
+        # the phone push when the GitHub login is refused (engine/autoupdate.notify: the PC's own Web Push, which needs
+        # no GitHub push): on with the real push; a test's fake push_fn gets it only with its own notify_fn
+        self.notify_fn = notify_fn if notify_fn is not None else (_default_notify if push_fn is None else None)
+        self._fail_notified = None
         self.push_fn = push_fn or push
         self.clock = clock
         self.watch_s, self.stuck_s, self.frozen_s, self.retry_s, self.lock_wait_s = watch_s, stuck_s, frozen_s, retry_s, lock_wait_s
@@ -666,7 +699,8 @@ class Heartbeat:
                 "blitz": _blitz(self.bot),       # BLITZ scalper PAPER shadow (engine/blitz.compact; never routed; None before the first)
                 "ai": _ai(self.bot),             # AI watch: anomalies, drift, loss caps, rule changes (engine/ai_watch.hb_block)
                 "nt_log": _nt_log(self.bot),     # NinjaTrader's Log-tab lines about our orders (engine/nt_log.py; <= ~10 KB)
-                **_alerts_plus(self.bot)}       # "rules" (PC-vs-cloud fingerprint) + "crit" (critical conditions, engine/alerts_plus.py)
+                **_alerts_plus(self.bot),       # "rules" (PC-vs-cloud fingerprint) + "crit" (critical conditions, engine/alerts_plus.py)
+                **_opt("account_c", _account_c(self.bot))}   # BLITZ's own account (engine/account_c.py): only when it is on
 
     def beat(self) -> dict:
         """One heartbeat: bars + payload + push, the result kept in self.last / logs/heartbeat_last.json. One at a time (a
@@ -725,6 +759,31 @@ class Heartbeat:
         if now - self._err_at > 3600:
             self._err_at = now
             self._say(f"[heartbeat] push failed (try {self.fails}, next in {int(self.next_wait())} s): {self.last_error}")
+        self._fail_notice(now)
+
+    def _fail_notice(self, now):
+        """GitHub refused the PC's login for FAIL_NOTICE_S (an expired token / credential): the cloud and the phone app
+        see no heartbeat and say "Surface offline" while the bot trades on. One phone push a day with the one fix.
+        A network error is not pushed (the PC could not push the phone either; the cloud's alarm covers it)."""
+        try:
+            if self.notify_fn is None or not self.fail_since or now - self.fail_since < FAIL_NOTICE_S:
+                return
+            err = str(self.last_error or "")
+            if not AUTH_RE.search(err):
+                return
+            import datetime as _dt
+            from zoneinfo import ZoneInfo
+            day = _dt.datetime.fromtimestamp(int(now), ZoneInfo("America/New_York")).date().isoformat()
+            if self._fail_notified == day:
+                return
+            self._fail_notified = day
+            self.notify_fn("Surface can't upload to GitHub",
+                           f"GitHub refused the Surface's login since {_hm(self.fail_since)} ET ({err[:80]}). The phone app and "
+                           "the cloud see no heartbeat; the bot keeps trading. Fix after 16:00 ET: double-click UPDATE.bat in "
+                           "the bot folder and sign in to GitHub when Windows asks.", f"hb:auth:{day}")
+            self._say(f"[heartbeat] GitHub login refused for {int((now - self.fail_since) // 60)} min: phone notified")
+        except Exception:
+            pass
 
     def wait_s(self) -> float:
         """every_s, or FAST_EVERY_S while a LIT setup is armed / a trade is open in a session (the cloud watcher's bars)."""

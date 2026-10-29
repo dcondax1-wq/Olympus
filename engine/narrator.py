@@ -11,6 +11,8 @@ already keeps, polled after routing:
   accounts._position   the routed position (NinjaTrader leg fill price, the real micros)
   bot.second           the ATLAS paper run (engine/second.py): each member's stage and decision log
   bot.acct_b.info()    account B (ATLAS on its own account): routed entries / exits / refusals with real $
+  bot.acct_c.info()    account C (BLITZ on its own account, engine/account_c.py): routed entries / exits / refusals with
+                       booked $, labelled REAL (SIM / PAPER on a Sim account / the paper bot), its performance-contract pause
   bot.blitz            the BLITZ scalper PAPER shadow (engine/blitz.py): its signals, paper entries / exits (simulated 25K
                        eval micros, labelled PAPER), paper eval ends; kind "blitz", never pushed by default
   bot.health / kill    FEED STALE episodes, the kill switch
@@ -70,6 +72,7 @@ KINDS = {
     "model": ("Model trade (not routed)", False),
     "atlas": ("ATLAS paper", False),
     "blitz": ("BLITZ paper", False),
+    "structure": ("Market structure (advice)", False),
 }
 STRATS = {"lit": "Zlarior", "atlas": "ATLAS", "scalp": "BLITZ", "sys": "Bot"}
 EXIT_WORDS = {"TARGET": "hit the target", "STOP": "stopped out", "BE": "breakeven", "TIME": "closed at the 15-minute check",
@@ -480,6 +483,21 @@ def derive(bot, now=None, prev: dict | None = None) -> tuple[list, dict]:
             out += _route_rows(rows, "atlas", info.get("label") or "Account B", None, False)
     except Exception:
         pass
+    # account C (BLITZ routed to its OWN account, engine/account_c.py): labelled REAL / SIM (PAPER on the paper bot), apart
+    # from the BLITZ PAPER shadow ledgers below
+    try:
+        ac = getattr(bot, "acct_c", None)
+        if ac is not None:
+            info = ac.info(now)
+            rows = [r for r in (info.get("routed") or []) if r.get("t") and trading_day(int(r["t"])) == day]
+            out += _route_rows(rows, "scalp", f"{info.get('real') or 'PAPER'} · {info.get('label') or 'BLITZ'}", None, info.get("kind") == "PAPER")
+            if info.get("paused") and trading_day(int(info["paused"].get("t") or now)) == day:
+                p = info["paused"]
+                out.append(msg(f"scalp:acctc:pause:{int(p.get('t') or 0)}", int(p.get("t") or now), "scalp", "kill",
+                               f"{info.get('real') or 'PAPER'} · {info.get('label')}: BLITZ PAUSED (performance contract)",
+                               f"{_clean(p.get('why'), 240)}. No new BLITZ entry on its account until you resume it.", "bad"))
+    except Exception:
+        pass
     # ATLAS paper members
     try:
         am, state["atlas"] = _atlas_msgs(getattr(bot, "second", None), day, prev.get("atlas") or {})
@@ -514,6 +532,11 @@ def derive(bot, now=None, prev: dict | None = None) -> tuple[list, dict]:
         state["kill"] = k
     except Exception:
         pass
+    # market structure (engine/structure.py, advice only): 15m / 1h breaks today, the advisor's notes on an open Zlarior trade
+    try:
+        out += _structure_msgs(bot, now, day)
+    except Exception:
+        pass
     # daily summary: once, after the 15:55 flat (16:05-17:00 ET on a trading weekday)
     try:
         e = _et(now)
@@ -522,6 +545,41 @@ def derive(bot, now=None, prev: dict | None = None) -> tuple[list, dict]:
     except Exception:
         pass
     return out, state
+
+
+def _structure_msgs(bot, now: int, day: str) -> list:
+    """Kind "structure" (strat sys, never pushed by default): a 15m / 1h BOS or CHoCH today with what it means per strategy,
+    and on an open Zlarior trade the advisor's notes ("a structure trader would protect here"), each with the playbook rule.
+    Advice only: nothing here changes an order."""
+    from . import liveview_api as LV
+    from . import playbook as PB
+    out = []
+    S = LV.structure_block(bot, now, compute=False) or {}          # cached by the page / live_publish: no work on the poll
+    ps = S.get("per_strategy") or {}
+    for tf in ("15m", "1h"):
+        ev = ((S.get("frames") or {}).get(tf) or {}).get("last_event")
+        if not ev or trading_day(int(ev["t"])) != day:
+            continue
+        way = "up" if ev["dir"] > 0 else "down"
+        txt = (f"{tf} {ev['kind']} {way} through {px(ev['price'])} ({hm(ev['t'])} ET): the {tf} trend is now {way}. "
+               f"Zlarior: {(ps.get('lit') or {}).get('note', '')} ATLAS: {(ps.get('atlas') or {}).get('note', '')}")
+        out.append(msg(f"struct:{tf}:{int(ev['t'])}:{ev['dir']}", int(ev["t"]) + {"15m": 900, "1h": 3600}[tf], "sys", "structure",
+                       f"Structure {tf}: {ev['kind']} {way}", txt, "info"))
+    try:
+        from .accounts import _position
+        pos = _position(bot)
+    except Exception:
+        pos = None
+    if pos and pos.get("entry") is not None and pos.get("entry_t") and not getattr(bot, "_open_src", None):
+        from . import advisor as AD
+        for a in AD.cached_open_advice("lit", int(pos["entry_t"])):    # computed by the Live View (its own thread)
+            rid = a.get("playbook") or ""
+            r = PB.rule(rid) or {}
+            out.append(msg(f"advice:{int(pos['entry_t'])}:{a['rule']}:{a['t']}", int(a["t"]), "lit", "structure",
+                           f"Advice ({rid}): {r.get('title', a['rule'])}",
+                           f"{a['why']}. Advice only: the bot keeps its written rules (Z18); the advisor scores this note after the trade.",
+                           "info"))
+    return out
 
 
 def summary(bot, day, today_rows, now) -> dict:
@@ -543,6 +601,14 @@ def summary(bot, day, today_rows, now) -> dict:
         if ab is not None:
             info = ab.info(now)
             parts.append(f"ATLAS ({info.get('label') or 'account B'}): {info.get('entries_today') or 0} entries, {usd(info.get('day_pnl') or 0)} real")
+    except Exception:
+        pass
+    try:
+        ac = getattr(bot, "acct_c", None)
+        if ac is not None:
+            info = ac.info(now)
+            parts.append(f"BLITZ ({info.get('real') or 'PAPER'}, {info.get('label') or 'account C'}): {info.get('entries_today') or 0} entries, "
+                         f"{usd(info.get('day_pnl') or 0)} {'real' if info.get('real') == 'REAL' else (info.get('real') or 'paper').lower()}")
     except Exception:
         pass
     sec = getattr(bot, "second", None) or {}
@@ -718,6 +784,12 @@ def tick(bot, now=None) -> list:
         return []
     try:
         NARRATOR.enable_files(LOG_DIR)
-        return NARRATOR.observe(bot, now, push=True)
+        new = NARRATOR.observe(bot, now, push=True)
+        try:                                   # the discretion advisor (engine/advisor.py): scores finished trades, read-only
+            from . import advisor
+            advisor.pc_tick(bot, now)
+        except Exception:
+            pass
+        return new
     except Exception:
         return []

@@ -89,7 +89,13 @@ def market_open(t) -> bool:
     mod = e.hour * 60 + e.minute
     if e.weekday() == 5 or (e.weekday() == 6 and mod < 1080) or (e.weekday() == 4 and mod >= 1020):
         return False
-    return not (1020 <= mod < 1080)
+    if 1020 <= mod < 1080:
+        return False
+    try:                                  # CME holiday closure / after an early halt (engine/cme_calendar.py)
+        from .cme_calendar import halted
+        return not halted(t)
+    except Exception:
+        return True
 
 
 def _money(x) -> str:
@@ -232,7 +238,8 @@ def _write_json(path, obj):
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(obj, fh, indent=1, default=str)
-    os.replace(tmp, path)
+    from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+    _fs_replace(tmp, path)
 
 
 def load_state(path: str = STATE_PATH) -> dict:
@@ -1147,7 +1154,8 @@ def backup(root: str = ROOT, dest: str = BACKUP_DIR, keep_days: int = BACKUP_KEE
                     z.write(f, os.path.relpath(f, root))
                 except OSError:
                     pass
-        os.replace(tmp, name)
+        from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+        _fs_replace(tmp, name)
         gone = 0
         for old in glob.glob(os.path.join(dest, "le-backup-*.zip")):
             if now - os.path.getmtime(old) > keep_days * 86400:
@@ -1206,7 +1214,8 @@ def restore(src: str, root: str = ROOT, yes: bool = False, ping=..., dest: str =
                 tmp = f + ".restore"
                 with z.open(n) as fh, open(tmp, "wb") as out:
                     shutil.copyfileobj(fh, out)
-                os.replace(tmp, f)
+                from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+                _fs_replace(tmp, f)
         ops_log(f"restore {os.path.basename(src)}: {len(ok_names)} files (previous copies in {os.path.basename(pre)})")
         return {**plan, "applied": True, "pre_restore": os.path.basename(pre),
                 "text": f"restored {len(ok_names)} file(s); the replaced ones are in backups/{os.path.basename(pre)}"}
@@ -1246,9 +1255,41 @@ def rotate_logs(log_dir: str = LOG_DIR, now=None) -> dict:
                     res["deleted"] += 1
             except OSError:
                 continue
+        res["narrator"] = rotate_feed(os.path.join(log_dir, "narrator"), now=now)
     except Exception as e:
         res["error"] = f"{e.__class__.__name__}"
     return res
+
+
+NARRATOR_GZIP_AFTER_DAYS = 3                                # logs/narrator/<day>.jsonl: one plain-language feed a day
+NARRATOR_DELETE_AFTER_DAYS = 120
+
+
+def rotate_feed(folder: str, now=None, gzip_after: int = NARRATOR_GZIP_AFTER_DAYS, delete_after: int = NARRATOR_DELETE_AFTER_DAYS) -> dict:
+    """2026-10-29 (disk growth): the narrator's daily feeds (logs/narrator/<day>.jsonl, written every poll, never cut) are
+    gzipped once untouched for 3 days and deleted after 120. The bot only reads today's file. Never raises."""
+    now = time.time() if now is None else now
+    out = {"gzipped": 0, "deleted": 0}
+    try:
+        for p in glob.glob(os.path.join(folder, "*.jsonl")):
+            try:
+                if now - os.path.getmtime(p) > gzip_after * 86400:
+                    with open(p, "rb") as src, gzip.open(p + ".gz", "wb") as dst:
+                        shutil.copyfileobj(src, dst)
+                    os.remove(p)
+                    out["gzipped"] += 1
+            except OSError:
+                continue
+        for p in glob.glob(os.path.join(folder, "*.jsonl.gz")):
+            try:
+                if now - os.path.getmtime(p) > delete_after * 86400:
+                    os.remove(p)
+                    out["deleted"] += 1
+            except OSError:
+                continue
+    except Exception as e:
+        out["error"] = f"{e.__class__.__name__}"
+    return out
 
 
 def backup_due(state: dict, now) -> bool:
@@ -1318,6 +1359,12 @@ def due(now) -> dict:
     """Which timed notices are in their window now (ET)."""
     e = _et(now)
     mod, wd = e.hour * 60 + e.minute, e.weekday()
+    try:                                       # 2026-10-29: no session on a CME full closure (Christmas, New Year's Day):
+        from .cme_calendar import full_closure  # no pre-session / day-summary push that day (only noise: "feed stale" ...)
+        if wd < 5 and full_closure(e.date()):
+            wd = 7
+    except Exception:
+        pass
     return {"presession": wd < 5 and 100 <= mod <= 135,            # 01:40-02:15 ET
             "eod": wd < 5 and 965 <= mod <= 1020,                   # 16:05-17:00 ET
             "weekly": wd == 6 and 1020 <= mod <= 1439,              # Sunday 17:00-23:59 ET
@@ -1377,6 +1424,12 @@ def tick(now=None, ctx=None, state=None, sender=None, state_path: str = STATE_PA
                 notes += business_notices(view, now)
         if D["weekly"] and real:
             notes += watch_notices(state, now)
+        if real:                       # a new MFFU account Name in NinjaTrader (engine/new_accounts.py): one push per Name
+            try:
+                from . import new_accounts
+                notes += new_accounts.notices(now, folder=ctx.get("folder"))
+            except Exception as e:
+                ops_log(f"new account check failed: {e.__class__.__name__}")
         if D.get("mffu_check"):
             n = mffu_check_notice(ctx["hb"] or {}, view, now)
             if n:

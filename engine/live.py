@@ -180,7 +180,8 @@ def trading_day(ts) -> str:
 
 
 def market_open(ts) -> bool:
-    """Is CME Globex expected to be printing bars at `ts`? Sun 18:00 ET -> Fri 17:00 ET, daily break 17:00-18:00."""
+    """Is CME Globex expected to be printing bars at `ts`? Sun 18:00 ET -> Fri 17:00 ET, daily break 17:00-18:00, CME
+    holiday closures / early halts (engine/cme_calendar.halted)."""
     e = _et(ts)
     mod = e.hour * 60 + e.minute
     if e.weekday() == 5:
@@ -189,7 +190,13 @@ def market_open(ts) -> bool:
         return False
     if e.weekday() == 4 and mod >= 1020:
         return False
-    return not (1020 <= mod < 1080)
+    if 1020 <= mod < 1080:
+        return False
+    try:                                  # CME holidays (engine/cme_calendar.py): a full closure, or after an early halt
+        from .cme_calendar import halted
+        return not halted(ts)             # (no FEED STALE / gap alarms on Christmas or Thanksgiving afternoon)
+    except Exception:
+        return True
 
 
 TICK = 0.25
@@ -363,6 +370,9 @@ class LiveBot:
         self._brain_log = None           # engine/brain.BrainLog: today's thought log (data/brain/YYYY-MM-DD.jsonl for the real bot)
         self.acct_b = None               # engine/account_b.AccountB: the second strategies on their own account (None = off)
         self._acct_b_sig = None          # the account_b block it was built from (rebuilt when it changes and B is flat)
+        self.acct_c = None               # engine/account_c.AccountC: BLITZ, the scalper, on its own account (None = off)
+        self._acct_c_sig = None          # the account_c block it was built from (rebuilt when it changes and C is flat)
+        self._hedge_who = {}             # LIT entry_t -> whose opposite close it waits for ("BLITZ"; absent = account B)
 
     # ------------------------------------------------------------------ plumbing
     def _log(self, kind, text, **kw):
@@ -607,6 +617,8 @@ class LiveBot:
         self._start_accounts()
         self.acct_b, self._acct_b_sig = None, None
         self._sync_account_b()
+        self.acct_c, self._acct_c_sig = None, None
+        self._sync_account_c()                          # account C (engine/account_c.py, OFF by default: data/account_c.json)
         self.running = True
         self.stop_flag.clear()
         if spawn:
@@ -626,7 +638,7 @@ class LiveBot:
         self.running = False
         # engine/ninjatrader: each NinjaTrader account lock goes back when the bot stops (a Sim check or the next start may
         # take it); while the bot runs, a second process on the same account is refused
-        for ad in [self.adapter, getattr(self.acct_b, "adapter", None)] + \
+        for ad in [self.adapter, getattr(self.acct_b, "adapter", None), getattr(getattr(self, "acct_c", None), "adapter", None)] + \
                 [getattr(a, "adapter", None) for a in (getattr(self.accts, "accounts", None) or [])]:
             try:
                 if callable(getattr(ad, "release_lock", None)):
@@ -668,6 +680,8 @@ class LiveBot:
             self.accts.kill(self.cfg.get("sym", "NQ"))
         if self.acct_b is not None:                 # and account B (engine/account_b.py)
             self.acct_b.kill(self.cfg.get("sym", "NQ"))
+        if getattr(self, "acct_c", None) is not None:   # and account C (engine/account_c.py, BLITZ)
+            self.acct_c.kill(self.cfg.get("sym", "NQ"))
         self.stop()
         self._log("risk", "KILL SWITCH: flattened and stopped")
         self._save_state()
@@ -712,6 +726,10 @@ class LiveBot:
         if self.acct_b is not None and self.acct_b.open_t is not None:     # account B (engine/account_b.py)
             r = self.acct_b.kill(sym)
             extras.append({"id": "account_b", "ok": bool(r.get("ok")), "error": r.get("error")})
+        ac = getattr(self, "acct_c", None)
+        if ac is not None and ac.open_t is not None:                       # account C (engine/account_c.py, BLITZ)
+            r = ac.kill(sym)
+            extras.append({"id": "account_c", "ok": bool(r.get("ok")), "error": r.get("error")})
         self._log("risk", f"{reason}: " + ("position closed" if pos else "no open position") +
                   "; the bot keeps running, no new entries until the next trading day")
         self._save_state()
@@ -780,6 +798,8 @@ class LiveBot:
             self.accts.tick()                       # the extra accounts' adapters (never raises)
         if self.acct_b is not None and not self.kill:
             self.acct_b.adapter_tick()              # account B's adapter (never raises)
+        if getattr(self, "acct_c", None) is not None and not self.kill:
+            self.acct_c.adapter_tick()              # account C's adapter (never raises)
         if self.kill or not getattr(ad, "loop_tick", False) or not callable(getattr(ad, "tick", None)):
             return
         try:
@@ -1269,6 +1289,10 @@ class LiveBot:
         self.health["ok"] = not (self.health["stale"] and mopen) and not self.health["desync"]
         self._save_state()
         if model == "lit":                    # after routing and the state save: never delays an order
+            # account C (OFF by default): BLITZ on its own account right after LIT's routing, before the slower read-only
+            # work: its edge needs the entry at the next bar's open (research/writeups/blitz-25k.md: 1 minute late halves the
+            # 2-week pass). ATLAS still goes first on the other side: its opposite entry closes C first (AccountB._c_yield).
+            self._account_c_tick(df_full, df1, sym, now)
             self._learn_es(sym, tf, now, secs, refresh=True)       # ES bars for the next polls' learning features
             self._brain_tick(res, lit_p, now, brain_keep)
             self._second_route_tick(df_full, df1, res, sym, now)   # routed second strategies (OFF by default): LIT routed first
@@ -1647,6 +1671,16 @@ class LiveBot:
             gb = self._guard_entry(ent, q, sym, now)
             if gb:
                 why = f"GUARD {gb}"
+        ac = getattr(self, "acct_c", None)
+        if not why and ac is not None:
+            # account C (BLITZ, OFF by default) holding the other side is closed at market first, as for LIT / ATLAS; its close
+            # not confirmed flat = this entry is not routed (MFFU: no long + short across your own accounts)
+            try:
+                if ac.yield_to(d, f"second strategy {nm}", sym, now, px=ent["entry"], entry_t=tb) is False:
+                    why = "no hedging: BLITZ's (account C) opposite close is not confirmed yet"
+            except Exception as e:
+                if getattr(ac, "open_t", None) is not None:
+                    why = f"no hedging: account C check failed ({e.__class__.__name__}), fails closed"
         if why:
             self._log("risk", f"{head} NOT routed: {why}")
             return
@@ -1732,10 +1766,10 @@ class LiveBot:
             pv["final"] = True
 
     def _second_past_flat(self, pv, now):
-        """15:55 ET of the trade's day reached (the research flat), or the CME session ended early."""
+        """15:55 ET of the trade's day reached (the research flat), or 5 min before a CME early close (cme_calendar)."""
         try:
-            flat = int(_dt.datetime.combine(_dt.date.fromisoformat(pv["day"]), _dt.time(15, 55), ET_TZ).timestamp())
-            return int(now) >= flat
+            from .cme_calendar import flat_ts
+            return int(now) >= flat_ts(pv["day"], 955)
         except Exception:
             return False
 
@@ -2304,6 +2338,85 @@ class LiveBot:
         except Exception as e:
             self._note_error(f"account B failed: {e.__class__.__name__}: {e}")
 
+    # ------------------------------------------------------------------ account C (engine/account_c.py, off by default)
+    def _account_c_block(self):
+        """The account_c block: the start cfg's "account_c" (test harnesses; null = off) when the key is there, else
+        data/account_c.json. None = off."""
+        if "account_c" in (self.cfg or {}):
+            blk = self.cfg.get("account_c")
+        elif self.state_path != STATE_PATH:
+            return None                       # test harnesses: off unless their start cfg carries the block
+        else:
+            from . import account_c as _ac
+            blk = _ac.raw_cfg()
+        return blk if isinstance(blk, dict) and blk else None
+
+    def _sync_account_c(self):
+        """Start / rebuild / stop account C when its block changed (python -m engine.account_c ..., the Start page); an
+        open account C position keeps the running one until it is flat. Never raises."""
+        try:
+            blk = self._account_c_block()
+            sig = json.dumps(blk, sort_keys=True) if blk else None
+            if sig == getattr(self, "_acct_c_sig", None):
+                return
+            ac = getattr(self, "acct_c", None)
+            if ac is not None and (ac.open_t is not None or ac.closing_open()):
+                self._snote(("acctc", "wait"), "risk", "account C changed: applied once its open BLITZ trade is closed")
+                return
+            self._acct_c_sig = sig
+            if blk is None:
+                if ac is not None:
+                    self._log("system", f"{ac.label}: switched off (no new entries on it)")
+                self.acct_c = None
+                return
+            from . import account_c as _ac
+            self.acct_c = _ac.build(self, blk)
+        except Exception as e:
+            self.acct_c = None
+            self._note_error(f"account C NOT started: {e.__class__.__name__}: {e}")
+
+    def _account_c_tick(self, df5, df1, sym, now):
+        """Right after LIT's routing (before account B and the read-only work): account C's poll (BLITZ on the closed 1m bars). Never raises."""
+        try:
+            self._sync_account_c()
+            ac = getattr(self, "acct_c", None)
+            if ac is None:
+                return
+            d1 = df1
+            if d1 is None:
+                try:
+                    d1 = self._lit_1m(sym, now, int(df5["time"].min()))
+                except Exception:
+                    d1 = None
+            ac.tick(d1, sym, now)
+        except Exception as e:
+            self._note_error(f"account C failed: {e.__class__.__name__}: {e}")
+
+    def _hedge_clear_c(self, ent, sym, now) -> bool:
+        """Account C (BLITZ, engine/account_c.py) holds the direction opposite to this LIT entry: closed at market first; LIT
+        routes only once that close is CONFIRMED flat. C off / flat / same side: True at once (LIT never held back)."""
+        ac = getattr(self, "acct_c", None)
+        if ac is None:
+            return True
+        et_ = int(ent["entry_t"])
+        try:
+            ok = ac.yield_to(1 if int(ent.get("dir") or 1) == 1 else -1, "LIT", sym, now, px=ent.get("entry"), entry_t=et_) is not False
+        except Exception as e:
+            self._note_error(f"account C hedge close failed: {e.__class__.__name__}: {e}")
+            ok = getattr(ac, "open_t", None) is None
+        if ok:
+            if self._hedge_who.get(et_) == "BLITZ":
+                self._log("risk", f"Account C's (BLITZ) close confirmed: LIT's entry at {_et(et_):%H:%M} ET is routed")
+            return True
+        first = et_ not in self._hedge_wait
+        self._hedge_wait.setdefault(et_, int(now))
+        self._hedge_who[et_] = "BLITZ"
+        if first:
+            self._log("risk", f"HEDGE WAIT: LIT {'LONG' if int(ent.get('dir') or 1) == 1 else 'SHORT'} at {_et(et_):%H:%M} ET is NOT "
+                              "routed until account C's (BLITZ) opposite position is confirmed flat (the close is re-sent; LIT gives "
+                              "up at its entry deadline)")
+        return False
+
     def _route_signals(self, res, sym, now, secs):
         """The bot's own account (_route_primary) and, when configured, every extra account at the same time."""
         if self.accts is None:
@@ -2476,7 +2589,7 @@ class LiveBot:
         closed (LIT's opposite entry is not routed); with B flat or off, LIT is never held back."""
         ab = self.acct_b
         if ab is None:
-            return True
+            return self._hedge_clear_c(ent, sym, now)   # account C (BLITZ): off = True at once
         try:
             ok = ab.lit_entering(ent, sym, now) is not False
         except Exception as e:
@@ -2487,7 +2600,7 @@ class LiveBot:
             if et_ in self._hedge_wait:
                 self._log("risk", f"Account B's close confirmed: LIT's entry at {_et(et_):%H:%M} ET is routed "
                                   f"{int(now) - int(self._hedge_wait[et_])} s after it first waited")
-            return True
+            return self._hedge_clear_c(ent, sym, now)   # then account C (BLITZ): off = True at once
         first = et_ not in self._hedge_wait
         self._hedge_wait.setdefault(et_, int(now))
         if first:
@@ -2507,6 +2620,12 @@ class LiveBot:
         title = "HEDGE BLOCKED: ATLAS close not confirmed"
         body = (f"LIT's entry at {_et(et_):%H:%M} ET was skipped: account B's opposite position was not confirmed flat within "
                 f"the entry deadline. Check account B in NinjaTrader now (it may still be open; the bot keeps managing it).")
+        if getattr(self, "_hedge_who", {}).get(et_) == "BLITZ":
+            ac = getattr(self, "acct_c", None)
+            title = "HEDGE BLOCKED: BLITZ close not confirmed"
+            body = (f"LIT's entry at {_et(et_):%H:%M} ET was skipped: BLITZ's (account C) opposite position was not confirmed flat "
+                    f"within the entry deadline. Check BLITZ's account {getattr(ac, 'name', None) or ''} in NinjaTrader now (it may "
+                    "still be open; the bot keeps managing it).")
         self._hedge_crit[cid] = {"title": title, "body": body, "day": trading_day(et_)}
         self._log("risk", f"{title}: {body}")
         if self.state_path == STATE_PATH:                 # the real bot only (test harnesses never alert)

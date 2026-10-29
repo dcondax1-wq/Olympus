@@ -110,7 +110,8 @@ def _write_private(path, obj):
     fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(fd, "w", encoding="utf-8") as fh:
         json.dump(obj, fh)
-    os.replace(tmp, path)
+    from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+    _fs_replace(tmp, path)
 
 
 def ensure_key_file(path: str) -> dict:
@@ -401,7 +402,13 @@ def pc_offline_window(now) -> bool:
     """True on a weekday 01:30-16:00 ET (LIT enters 02:00-15:30 ET; the 01:30 run checks the PC before the session)."""
     e = _et_dt(now)
     mod = e.hour * 60 + e.minute
-    return e.weekday() < 5 and PC_OFFLINE_WINDOW[0] <= mod <= PC_OFFLINE_WINDOW[1]
+    if not (e.weekday() < 5 and PC_OFFLINE_WINDOW[0] <= mod <= PC_OFFLINE_WINDOW[1]):
+        return False
+    try:                                   # 2026-10-29: not on a CME full closure (Christmas, New Year's Day: no session)
+        from .cme_calendar import full_closure
+        return not full_closure(e.date())
+    except Exception:
+        return True
 
 
 def pc_since_text(t, now) -> str:
@@ -651,7 +658,8 @@ class Notifier:
             tmp = self.path + ".tmp"
             with open(tmp, "w", encoding="utf-8") as fh:
                 json.dump(self.sent, fh)
-            os.replace(tmp, self.path)
+            from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+            _fs_replace(tmp, self.path)
         except Exception:
             pass
 
@@ -661,13 +669,48 @@ _PC = {"notifier": None, "sync": None, "sync_t": 0.0, "sync_err": None}
 SYNC_EVERY_S = 20 * 60
 
 
-def pc_sync(force: bool = False, fetch=None, key_path: str | None = None) -> dict:
+SYNC_RETRY_S = 120                     # after a failed fetch: try again in 2 min (was: 20 min with nothing)
+SYNC_CACHE_PATH = os.path.join(ROOT, "data", "push_pc_sync.json")   # the last good box + subs (gitignored; the box stays
+                                                                     # sealed to the PC's own key, like on the branch)
+
+
+def _sync_cache_save(path, box, subs):
+    try:
+        tmp = path + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as fh:
+            json.dump({"t": int(time.time()), "box": box, "subs": subs}, fh)
+        from .fsutil import replace as _fs_replace
+        _fs_replace(tmp, path)
+    except Exception:
+        pass
+
+
+def _sync_cache_load(path, mine) -> dict | None:
+    try:
+        c = _read_json(path)
+        if not c or not (c.get("box") or c.get("subs")):
+            return None
+        return {"private": unseal(c["box"], mine).decode() if c.get("box") and mine else None, "subs": list(c.get("subs") or []),
+                "cached": int(c.get("t") or 0)}
+    except Exception:
+        return None
+
+
+def pc_sync(force: bool = False, fetch=None, key_path: str | None = None, cache_path: str | None = None) -> dict:
     """The VAPID key + subscriptions the cloud shares with this PC (state.json on the private dashboard branch: push_pc.box
-    sealed to the PC's heartbeat key, push_subs). Cached 20 min. fetch() -> state dict, for tests. Never raises."""
+    sealed to the PC's heartbeat key, push_subs). Cached 20 min. fetch() -> state dict, for tests. Never raises.
+    2026-10-29: a failed fetch (internet blip, the GitHub login on the PC expired) keeps the last good answer (this process,
+    else data/push_pc_sync.json) and tries again in 2 min, so the PC's phone pushes (entries, exits, risk) keep going;
+    before, the PC sent nothing for 20 min after a blip and nothing at all with a dead login. cache_path: the file (the
+    real fetch uses SYNC_CACHE_PATH; a test's fetch only when it passes one)."""
     if not force and fetch is None and _PC["sync"] is not None and time.time() - _PC["sync_t"] < SYNC_EVERY_S:
         return _PC["sync"]
+    cpath = cache_path or (SYNC_CACHE_PATH if fetch is None else None)
+    kp = key_path or PC_KEY_PATH
     out = {"private": None, "subs": []}
+    mine = None
     try:
+        mine = _read_json(kp).get("private")
         if fetch is not None:
             st = fetch()
         else:
@@ -677,13 +720,24 @@ def pc_sync(force: bool = False, fetch=None, key_path: str | None = None) -> dic
                 raise RuntimeError("no dashboard branch")
             r = subprocess.run(["git", "show", "FETCH_HEAD:state.json"], cwd=ROOT, capture_output=True, text=True, timeout=30)
             st = json.loads(r.stdout) if not r.returncode else {}
+    except Exception as e:                   # the fetch failed: keep the last good answer, ask again in 2 min
+        _PC["sync_err"] = e.__class__.__name__
+        last = (_PC.get("good") or {}).get(kp) or (_sync_cache_load(cpath, mine) if cpath else None)
+        if last:
+            out = dict(last, stale=True)
+        _PC["sync"], _PC["sync_t"] = out, time.time() - max(0, SYNC_EVERY_S - SYNC_RETRY_S)
+        return out
+    try:
         box = ((st or {}).get("push_pc") or {}).get("box")
-        mine = _read_json(key_path or PC_KEY_PATH).get("private")
         if box and mine:
             out["private"] = unseal(box, mine).decode()
         out["subs"] = [r["sub"] for r in (st or {}).get("push_subs") or [] if r.get("sub")]
         _PC["sync_err"] = None
-    except Exception as e:
+        if cpath and (box or out["subs"]):
+            _sync_cache_save(cpath, box, out["subs"])
+        if out["private"] or out["subs"]:
+            _PC.setdefault("good", {})[kp] = out
+    except Exception as e:                   # e.g. another machine's key cannot open the box: nothing to fall back to
         _PC["sync_err"] = e.__class__.__name__
     _PC["sync"], _PC["sync_t"] = out, time.time()
     return out

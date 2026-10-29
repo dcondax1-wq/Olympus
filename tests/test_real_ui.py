@@ -185,7 +185,7 @@ const bp = window.BoardUI.page({ ...B, trades: [B.trades[2]] }, {});
 const t0 = window.RealUI.today({ ...B, real: { trades: [], checks: [] }, atlas: { ...B.atlas, position: null } }, {});
 const pic = window.TradePics.title({ key: 'macd_sweep', src: 'paper', qty: 7, usd: 3878.7, r: 7.97, exit_kind: 'TARGET', side: 'LONG', entry_t: 1793086200 });
 console.log(JSON.stringify({
-  cards: (t.match(/rc-acct /g) || []).length, slot: t.includes('Strategy 3 (research)'), realToday: t.includes('−$437.00'), atlasNow: t.includes('to target'),
+  cards: (t.match(/rc-acct /g) || []).length, slot: t.includes('paper until its 25K is set'), realToday: t.includes('−$437.00'), atlasNow: t.includes('to target'),
   why: t0.includes('No trade yet today') && t.includes('class="rc-tr"'), check: t.includes('Ledger check') && t.includes('$1,106'), eta: t.includes('pass ≈ day'),
   score: t.includes('rc-score'), conflict: t.includes('LIT vs ATLAS'), events: t.includes('What happened today') && t.includes('REFUSED'),
   safe: s.includes('Kill switch') && s.includes('orders'), kpis: r.includes('Win rate') && r.includes('Real net'), cone: r.includes('rc-b1'), log: r.includes('rc-lrh'),

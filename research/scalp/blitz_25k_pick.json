@@ -1,0 +1,600 @@
+{
+ "name": "BLITZ on its own MFFU Builder 25K (account C)",
+ "date": "2026-10-29",
+ "writeup": "research/writeups/blitz-25k.md",
+ "verdict": "no-change",
+ "why": "No stop / target / management / window / entry variant beat today's rule in 2026 H1, H2 AND 2021-25 (0 of 1,920 management variants, 0 of 45 stops, 0 of 32 window / entry / structure-filter ideas on avg R, $ / month and the 25K 2-week pass - fail together); the H1 picks lose in H2 or 2021-25. Today's rule stays. Only the 25K eval SIZING changes for its own account (below).",
+ "engine": {
+  "blitz_rule": {
+   "vm": 1.0,
+   "every": 30,
+   "win": [
+    630,
+    930
+   ],
+   "lookback": 14,
+   "stop_atr": 1.5,
+   "trail_r": 1.5,
+   "trail_start_r": 1.0,
+   "hold_bars": 30,
+   "target_r": null,
+   "maxday": 6,
+   "day_stop_r": 3.0,
+   "prng_min": 0.8,
+   "entry": "market next open"
+  },
+  "account_c": {
+   "no_hedge_with": [
+    "lit",
+    "atlas"
+   ],
+   "skip_entry_if_opposite_open": true,
+   "close_first_on_opposite_entry": true,
+   "strict_lit_armed": false
+  },
+  "eval_25k": {
+   "f": 0.4,
+   "cap_usd": 600.0,
+   "push_from_session": 5,
+   "push_f": 1.0,
+   "dll_frac": 0.9,
+   "min1_micro": true
+  },
+  "funded_25k": {
+   "f": 0.1,
+   "cap_usd": 150.0,
+   "day_profit_stop_usd": 400.0
+  }
+ },
+ "rule": {
+  "name": "BLITZ",
+  "version": "today (engine/blitz.py VERSION 2, research/writeups/scalp-na-mffu.md)",
+  "tf": "1m",
+  "instrument": "MNQ",
+  "band": {
+   "anchor": "09:30 ET open",
+   "lookback_sessions": 14,
+   "vm": 1.0
+  },
+  "day_filter": {
+   "prior_rth_range_vs_14_mean_min": 0.8
+  },
+  "checks": {
+   "closes_et": [
+    "11:00",
+    "11:30",
+    "12:00",
+    "12:30",
+    "13:00",
+    "13:30",
+    "14:00",
+    "14:30",
+    "15:00",
+    "15:30"
+   ],
+   "every_min": 30,
+   "window_open_minutes": [
+    630,
+    930
+   ]
+  },
+  "entry": {
+   "type": "market",
+   "when": "next bar open after the check close",
+   "slip_ticks": 1
+  },
+  "stop": {
+   "type": "atr",
+   "atr": "Wilder 14 of 5m bars (last completed)",
+   "k": 1.5,
+   "from": "signal close"
+  },
+  "target": null,
+  "trail": {
+   "after_r": 1.0,
+   "distance_r": 1.5
+  },
+  "time_exit_bars_after_entry": 30,
+  "flat_et": "15:55",
+  "max_trades_day": 6,
+  "day_stop_r": -3.0,
+  "entries_until_et": "15:30",
+  "account_c": {
+   "never_opposite": [
+    "LIT (account A) open position",
+    "ATLAS (account B) open position"
+   ],
+   "on_opposite_entry": "close BLITZ at the open of the first bar at / after their entry (they go first)",
+   "lit_armed": "optional stricter mode (also never opposite a LIT setup that is armed): ~equal in research"
+  }
+ },
+ "sizing": {
+  "plan": {
+   "name": "MFFU Builder 25K",
+   "price": 63.0,
+   "target": 1500.0,
+   "mll_eod_trailing": 1000.0,
+   "lock": "start + $100",
+   "soft_daily_loss": 600.0,
+   "max_micros": 20
+  },
+  "eval": {
+   "mode": "room_fraction",
+   "f": 0.4,
+   "cap_usd": 600.0,
+   "push": {
+    "from_session": 5,
+    "f": 1.0
+   },
+   "dll_guard": "risk <= 0.9 x the soft daily loss left",
+   "min_1_micro_if": "1 micro's stop-out <= half the room and the daily loss left",
+   "micros": "floor(risk_usd / ((stop pts + 1 tick) x $2 + $1.90))",
+   "stuck": "room < 2 x the median 1-micro stop-out -> treat as dead"
+  },
+  "funded": {
+   "mode": "room_fraction",
+   "f": 0.1,
+   "cap_usd": 150.0,
+   "day_profit_stop_usd": 400.0
+  }
+ },
+ "numbers": {
+  "2026 H1 (pick)": {
+   "trades_week": 8.48,
+   "weeks_2plus_pct": 88.9,
+   "pf": 1.7,
+   "net_usd_150": 5873,
+   "usd_month_150": 963,
+   "max_dd_150": -1152,
+   "avg_r": 0.165,
+   "p10": 36.1,
+   "f10": 37.8,
+   "dec10": 73.9,
+   "p15": 45.6,
+   "f15": 46.5,
+   "p20": 48.6,
+   "f20": 49.5,
+   "slow_pass": 9.8,
+   "pass_med": 6.0,
+   "slot_usd_month": 270,
+   "slot_lose_pct": 9.0,
+   "funded_usd_month": 108,
+   "funded_stuck_pct": 45.5
+  },
+  "2026 H2 (check)": {
+   "trades_week": 6.79,
+   "weeks_2plus_pct": 75.0,
+   "pf": 1.62,
+   "net_usd_150": 2478,
+   "usd_month_150": 667,
+   "max_dd_150": -815,
+   "avg_r": 0.2,
+   "p10": 36.2,
+   "f10": 34.8,
+   "dec10": 71.0,
+   "p15": 32.8,
+   "f15": 57.8,
+   "p20": 27.1,
+   "f20": 72.9,
+   "slow_pass": 0.0,
+   "pass_med": 5.0,
+   "slot_usd_month": 37,
+   "slot_lose_pct": 52.4,
+   "funded_usd_month": 0,
+   "funded_stuck_pct": 100.0
+  },
+  "2021-25 (5m)": {
+   "trades_week": 8.55,
+   "weeks_2plus_pct": 80.3,
+   "pf": 1.05,
+   "net_usd_150": 3765,
+   "usd_month_150": 73,
+   "max_dd_150": -5512,
+   "avg_r": 0.013,
+   "p10": 20.4,
+   "f10": 50.2,
+   "dec10": 70.6,
+   "p15": 23.8,
+   "f15": 64.8,
+   "p20": 25.3,
+   "f20": 70.8,
+   "slow_pass": 5.6,
+   "pass_med": 6.0,
+   "slot_usd_month": -40,
+   "slot_lose_pct": 87.9,
+   "funded_usd_month": 2,
+   "funded_stuck_pct": 28.9
+  }
+ },
+ "paper_size_for_comparison": {
+  "name": "eval[frac f0.4 cap600] funded[frac f0.1 cap150 dtp400]",
+  "H1": {
+   "p10": 32.8,
+   "f10": 8.4,
+   "dec10": 41.2,
+   "slow_pass": 23.2,
+   "slot_usd_month": 251
+  },
+  "H2": {
+   "p10": 36.2,
+   "f10": 2.9,
+   "dec10": 39.1,
+   "slow_pass": 4.5,
+   "slot_usd_month": 40
+  },
+  "R": {
+   "p10": 15.8,
+   "f10": 13.1,
+   "dec10": 28.9,
+   "slow_pass": 10.8,
+   "slot_usd_month": -34
+  }
+ },
+ "speed_pick": {
+  "name": "eval[frac f0.4 cap600 push s5->f1.0] funded[frac f0.1 cap150 dtp400]",
+  "H1": {
+   "p10": 36.1,
+   "f10": 37.8,
+   "dec10": 73.9,
+   "slot_usd_month": 270
+  },
+  "H2": {
+   "p10": 36.2,
+   "f10": 34.8,
+   "dec10": 71.0,
+   "slot_usd_month": 37
+  },
+  "R": {
+   "p10": 20.4,
+   "f10": 50.2,
+   "dec10": 70.6,
+   "slot_usd_month": -40
+  }
+ },
+ "account_c_cost": {
+  "H1": {
+   "alone_usd_month_150": 912,
+   "account_c_usd_month_150": 963,
+   "alone_slot": 239,
+   "account_c_slot": 270
+  },
+  "H2": {
+   "alone_usd_month_150": 577,
+   "account_c_usd_month_150": 667,
+   "alone_slot": 7,
+   "account_c_slot": 37
+  },
+  "R": {
+   "alone_usd_month_150": 89,
+   "account_c_usd_month_150": 73,
+   "alone_slot": -39,
+   "account_c_slot": -40
+  }
+ },
+ "random_directions": {
+  "H1": {
+   "real": 0.165,
+   "mean": -0.029,
+   "p": 0.024
+  },
+  "H2": {
+   "real": 0.2,
+   "mean": -0.014,
+   "p": 0.049
+  },
+  "R": {
+   "real": 0.013,
+   "mean": -0.044,
+   "p": 0.024
+  }
+ },
+ "random_directions_slot_usd_month": {
+  "H1": {
+   "mean": -49,
+   "max": 116,
+   "real": 270
+  },
+  "H2": {
+   "mean": 30,
+   "max": 282,
+   "real": 37
+  },
+  "R": {
+   "mean": -67,
+   "max": -50,
+   "real": -40
+  }
+ },
+ "stress": {
+  "1 bar late": {
+   "H1": {
+    "avg_r": 0.139,
+    "pf": 1.6,
+    "per_month": 793,
+    "f40": {
+     "p10": 37.0,
+     "f10": 12.6,
+     "dec10": 49.6,
+     "p15": 48.2,
+     "f15": 18.4,
+     "p20": 53.2,
+     "f20": 23.9,
+     "pass_med": 7.0,
+     "slow_pass": 8.3
+    }
+   },
+   "H2": {
+    "avg_r": 0.112,
+    "pf": 1.36,
+    "per_month": 457,
+    "f40": {
+     "p10": 11.6,
+     "f10": 15.9,
+     "dec10": 27.5,
+     "p15": 10.9,
+     "f15": 37.5,
+     "p20": 11.9,
+     "f20": 57.6,
+     "pass_med": 6.0,
+     "slow_pass": 5.6
+    }
+   },
+   "R": {
+    "avg_r": -0.032,
+    "pf": 0.92,
+    "per_month": -133,
+    "f40": {
+     "p10": 11.3,
+     "f10": 21.1,
+     "dec10": 32.4,
+     "p15": 14.1,
+     "f15": 40.3,
+     "p20": 15.9,
+     "f20": 55.4,
+     "pass_med": 6.0,
+     "slow_pass": 10.7
+    }
+   }
+  },
+  "2 bars late": {
+   "H1": {
+    "avg_r": 0.063,
+    "pf": 1.28,
+    "per_month": 411,
+    "f40": {
+     "p10": 21.0,
+     "f10": 19.3,
+     "dec10": 40.3,
+     "p15": 25.4,
+     "f15": 33.3,
+     "p20": 26.6,
+     "f20": 42.2,
+     "pass_med": 6.0,
+     "slow_pass": 12.1
+    }
+   },
+   "H2": {
+    "avg_r": 0.066,
+    "pf": 1.28,
+    "per_month": 336,
+    "f40": {
+     "p10": 8.7,
+     "f10": 18.8,
+     "dec10": 27.5,
+     "p15": 7.8,
+     "f15": 40.6,
+     "p20": 6.8,
+     "f20": 57.6,
+     "pass_med": 7.0,
+     "slow_pass": 5.3
+    }
+   },
+   "R": {
+    "avg_r": -0.061,
+    "pf": 0.82,
+    "per_month": -305,
+    "f40": {
+     "p10": 11.6,
+     "f10": 26.8,
+     "dec10": 38.4,
+     "p15": 12.9,
+     "f15": 46.8,
+     "p20": 13.6,
+     "f20": 61.5,
+     "pass_med": 5.0,
+     "slow_pass": 4.9
+    }
+   }
+  },
+  "+1 tick a side": {
+   "H1": {
+    "avg_r": 0.155,
+    "pf": 1.66,
+    "per_month": 921,
+    "f40": {
+     "p10": 31.1,
+     "f10": 12.6,
+     "p15": 44.7,
+     "f15": 22.8,
+     "p20": 54.1,
+     "f20": 33.0,
+     "dec10": 43.7,
+     "pass_med": 8.5,
+     "slow_pass": 17.7
+    }
+   },
+   "H2": {
+    "avg_r": 0.191,
+    "pf": 1.58,
+    "per_month": 635,
+    "f40": {
+     "p10": 30.4,
+     "f10": 1.4,
+     "p15": 39.1,
+     "f15": 9.4,
+     "p20": 45.8,
+     "f20": 18.6,
+     "dec10": 31.8,
+     "pass_med": 7.0,
+     "slow_pass": 15.2
+    }
+   },
+   "R": {
+    "avg_r": 0.0,
+    "pf": 1.01,
+    "per_month": 18,
+    "f40": {
+     "p10": 15.1,
+     "f10": 14.3,
+     "p15": 18.2,
+     "f15": 27.9,
+     "p20": 20.0,
+     "f20": 39.1,
+     "dec10": 29.4,
+     "pass_med": 5.0,
+     "slow_pass": 9.0
+    }
+   }
+  },
+  "+2 tick a side": {
+   "H1": {
+    "avg_r": 0.146,
+    "pf": 1.62,
+    "per_month": 879,
+    "f40": {
+     "p10": 26.9,
+     "f10": 16.8,
+     "p15": 41.2,
+     "f15": 27.2,
+     "p20": 46.8,
+     "f20": 37.6,
+     "dec10": 43.7,
+     "pass_med": 9.0,
+     "slow_pass": 15.8
+    }
+   },
+   "H2": {
+    "avg_r": 0.182,
+    "pf": 1.54,
+    "per_month": 603,
+    "f40": {
+     "p10": 29.0,
+     "f10": 1.4,
+     "p15": 37.5,
+     "f15": 12.5,
+     "p20": 44.1,
+     "f20": 23.7,
+     "dec10": 30.4,
+     "pass_med": 7.0,
+     "slow_pass": 15.6
+    }
+   },
+   "R": {
+    "avg_r": -0.013,
+    "pf": 0.98,
+    "per_month": -37,
+    "f40": {
+     "p10": 12.7,
+     "f10": 17.6,
+     "p15": 15.4,
+     "f15": 31.0,
+     "p20": 16.6,
+     "f20": 42.2,
+     "dec10": 30.3,
+     "pass_med": 5.0,
+     "slow_pass": 6.8
+    }
+   }
+  }
+ },
+ "rejected_best": {
+  "h1_pick": "low60 d0.5-2.0 part-liq0.5 hold45 trail1.0@0.5",
+  "rule_slots": {
+   "today": {
+    "name": "atr1.5 hold30 trail1.5@1.0",
+    "H1": 266,
+    "H2": 38,
+    "R": -39
+   },
+   "h1t_clock": {
+    "name": "low60 d0.5-2.0 part-liq0.5 hold45 trail1.0@0.5",
+    "H1": 284,
+    "H2": 17,
+    "R": -69
+   },
+   "h1t_target": {
+    "name": "low60 d0.5-2.0 tgt-eq1.0-4.0 part-liq1.0+be hold60",
+    "H1": 224,
+    "H2": 137,
+    "R": -33
+   },
+   "h1t_structure": {
+    "name": "atr1.5 tgt-eq1.5-99.0 part-liq0.5+be holdflat sw1m@0.5 choch1m",
+    "H1": 249,
+    "H2": 55,
+    "R": -38
+   },
+   "h1_eval60": {
+    "name": "atr1.5 part-liq0.5+be holdflat sw5m@0.0 choch1m",
+    "H1": 167,
+    "H2": -28,
+    "R": -41
+   },
+   "h1_eval40": {
+    "name": "atr1.5 holdflat sw1m@0.5 choch1m",
+    "H1": 205,
+    "H2": 85,
+    "R": -32
+   },
+   "today_alone": {
+    "name": "atr1.5 hold30 trail1.5@1.0",
+    "H1": 238,
+    "H2": 9,
+    "R": -37
+   },
+   "posthoc_atr1_hold45": {
+    "name": "atr1.0 hold45",
+    "H1": 234,
+    "H2": 62,
+    "R": 12
+   }
+  }
+ },
+ "ideas_beat_all": [],
+ "lit50k_lead_atr1_hold45": {
+  "lit_alone": {
+   "H1": 823,
+   "H2": 798,
+   "REF": -7
+  },
+  "today": {
+   "H1": 1124,
+   "H2": 1088,
+   "REF": 9
+  },
+  "atr1.0_hold45_notrail": {
+   "H1": 1076,
+   "H2": 767,
+   "REF": 14
+  }
+ },
+ "hybrid_eval_today_funded_structure": {
+  "funded_rule": "low60 d0.5-2.0 part-liq0.5 hold45 trail1.0@0.5",
+  "today": {
+   "H1": 270,
+   "H2": 37,
+   "R": -40
+  },
+  "h1t_clock": {
+   "H1": 276,
+   "H2": 49,
+   "R": -64
+  },
+  "verdict": "rejected (2021-25 worse)"
+ },
+ "caveats": [
+  "2021-25 is the same rule on 5m bars (fills coarser)",
+  "LIT / ATLAS clashes use the research trades (2026 lit_live, 2021-25 REF rows)",
+  "the 25K slot still loses money in 2021-25 with every setting tested: BLITZ on its own 25K is a 2026-regime bet"
+ ]
+}

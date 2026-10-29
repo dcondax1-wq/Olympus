@@ -3,7 +3,7 @@
 import { $, $$, store, esc } from '../util.js';
 import { icon } from './icons.js';
 import { TOP, DATA, MODULES, ARCHIVE, HUB, TITLES, groupOf, CC, GROUPS, TABS, NAV_NAMES, groupIds, BOTS, BOT_CHIP, botOf } from './routes.js';
-import { fxLevel, setFxLevel } from './fx3d.js';
+import { fxLevel, setFxLevel, fxBg, setFxBg } from './fx3d.js';
 import { moreMenu } from './menu.js';
 
 const root = document.documentElement;
@@ -185,11 +185,14 @@ function interfaceCard() {
     <input type="checkbox" class="nx-switch" id="${id}" ${on ? 'checked' : ''}></label>`;
   el.innerHTML = row('nxOptCollapse', 'Compact sidebar', 'Icons only on desktop', pref.get('collapsed', false)) +
     row('nxOptAdv', 'Open "Advanced" in the sidebar', 'Show every page in the sidebar; off keeps it to the six main pages', !shutSet().has('Advanced')) +
-    `<div class="nx-switch-row"><span><b>3D background</b><span class="muted small">Galaxy background, card glow, tap sparks, Live Oracle, trade galaxy, month city. Off by default (calm and fast); Lite is a soft version.</span></span>
+    `<div class="nx-switch-row"><span><b>3D background</b><span class="muted small">Deep space (Earth, the Moon's eclipse shadow, the Sun, the bots' satellites, a shooting star per closed trade), card glow, tap sparks, Live Oracle, trade galaxy, month city. On by default; Lite is lighter (30 fps); Off keeps a still star sky.</span></span>
       <div class="seg sm" id="nxOptFx">${[['off', 'Off'], ['lite', 'Lite'], ['max', 'Max']].map(([v, l]) => `<button type="button" data-v="${v}" class="${fxLevel() === v ? 'on' : ''}">${l}</button>`).join('')}</div></div>` +
+    `<div class="nx-switch-row"><span><b>Background scene</b><span class="muted small">Deep space (default) or the older particle galaxy</span></span>
+      <div class="seg sm" id="nxOptFxBg">${[['space', 'Deep space'], ['galaxy', 'Galaxy']].map(([v, l]) => `<button type="button" data-v="${v}" class="${fxBg() === v ? 'on' : ''}">${l}</button>`).join('')}</div></div>` +
     `<div class="note">Classic dashboard: start the server with <span class="mono">LE_UI=classic</span> to get the previous look. Every page is shared, so both stay in sync.</div>`;
   $('#nxOptCollapse').onchange = (e) => setCollapsed(e.target.checked);
   $('#nxOptFx').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; $$('#nxOptFx button').forEach(x => x.classList.toggle('on', x === b)); setFxLevel(b.dataset.v); };
+  $('#nxOptFxBg').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; $$('#nxOptFxBg button').forEach(x => x.classList.toggle('on', x === b)); setFxBg(b.dataset.v); };
   $('#nxOptAdv').onchange = (e) => { const s = shutSet(); e.target.checked ? s.delete('Advanced') : s.add('Advanced'); pref.set('navShut.v2', [...s]); paintNav(); };
 }
 

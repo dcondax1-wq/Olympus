@@ -84,7 +84,8 @@ def apply(mapping: dict, data_dir: str | None = None) -> list:
         tmp = p + ".tmp"
         with open(tmp, "w", encoding="utf-8") as fh:
             fh.write(new)
-        os.replace(tmp, p)
+        from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+        _fs_replace(tmp, p)
         changed.append(name)
     return changed
 

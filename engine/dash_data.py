@@ -124,7 +124,8 @@ def _atomic_write(path, obj):
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(obj, fh, separators=(",", ":"), default=_py)
-    os.replace(tmp, path)
+    from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+    _fs_replace(tmp, path)
 
 
 def _iso_minus_sessions(day: str, n: int) -> str:

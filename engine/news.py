@@ -249,7 +249,8 @@ def _cboe_daily(name, path=None, fetch=None):
             df = pd.concat([old[~old.index.isin(new.index)], new]).sort_index()
         tmp = path + ".tmp"
         df.to_csv(tmp)
-        os.replace(tmp, path)
+        from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+        _fs_replace(tmp, path)
     except Exception:
         df = pd.read_csv(path, index_col="date") if os.path.exists(path) else pd.DataFrame()
     return df

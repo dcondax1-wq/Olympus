@@ -55,7 +55,8 @@ const srv = http.createServer((q, s) => {
     const src = await p.evaluate(() => document.querySelector('#lvSrc').textContent);
     step('top line: live from the PC N s ago', /from the PC \d+ s ago/.test(src), src);
     const cards = await p.evaluate(() => [...document.querySelectorAll('#lvThink .lv-card header b')].map((x) => x.textContent));
-    step('thinking cards: Zlarior, ATLAS, BLITZ', cards.join(',') === 'Zlarior,ATLAS,BLITZ', cards.join(','));
+    const hasSt = await p.evaluate(() => !!(window.LVP.d && window.LVP.d.structure));
+    step('thinking cards: Zlarior, ATLAS, BLITZ (+ Market structure when the PC sends it)', cards.join(',') === 'Zlarior,ATLAS,BLITZ' + (hasSt ? ',Market structure' : ''), cards.join(','));
     const head = await p.evaluate(() => [document.querySelector('#lvThink .lv-card .lv-head')?.textContent || '', window.LVP.d.strategies.lit.thinking.headline]);
     step('Zlarior card says what it is thinking (the PC\'s headline)', head[0] && head[0] === head[1], head.join(' | '));
     const fl = await p.evaluate(() => document.querySelectorAll('#lvFeedL li.lv-m').length);
@@ -71,7 +72,7 @@ const srv = http.createServer((q, s) => {
     // the strategy switch hides its card
     await p.click('[data-lv-on="atlas"]');
     const c2 = await p.evaluate(() => [...document.querySelectorAll('#lvThink .lv-card header b')].map((x) => x.textContent).join(','));
-    step('ATLAS switch off hides its card', c2 === 'Zlarior,BLITZ', c2);
+    step('ATLAS switch off hides its card', c2 === 'Zlarior,BLITZ' + (hasSt ? ',Market structure' : ''), c2);
     await p.click('[data-lv-on="atlas"]');
     // full screen (portrait)
     await p.click('#lvFs');

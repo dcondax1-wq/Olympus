@@ -16,6 +16,8 @@
   <link rel="stylesheet" href="/css/cc.css">
   <link rel="stylesheet" href="/css/clean.css">
   <link rel="stylesheet" href="/css/start.css">
+  <link rel="stylesheet" href="/css/space.css?v=1">
+  <link rel="stylesheet" href="/css/mission.css?v=1">
   <link rel="manifest" href="/manifest.webmanifest">
   <meta name="theme-color" content="#07080c">
   <meta name="mobile-web-app-capable" content="yes">
@@ -28,6 +30,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
+<!-- deep space (2026-10-29): the static CSS sky paints at once; the WebGL scene (/js/fx.js, space.js) fades in over it -->
+<div class="space-css" aria-hidden="true"><i class="sc-stars"></i><i class="sc-stars sc-b"></i><i class="sc-mw"></i><i class="sc-sun"></i><i class="sc-moon"></i><i class="sc-earth"></i></div>
 <div class="app nx">
   <aside class="nx-side" id="nxSide">
     <div class="nx-brand">

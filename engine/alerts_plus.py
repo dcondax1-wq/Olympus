@@ -105,7 +105,8 @@ def _write(path, obj):
         tmp = path + ".tmp"
         with open(tmp, "w", encoding="utf-8") as fh:
             json.dump(obj, fh, separators=(",", ":"), default=str)
-        os.replace(tmp, path)
+        from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+        _fs_replace(tmp, path)
     except Exception:
         pass
 
@@ -438,6 +439,14 @@ def pc_conditions(bot, now=None) -> list:
                             "body": f"{pv.get('short') or pv.get('key')} {cl.get('q')} MNQ on account B: {cl.get('reason')} close "
                                     f"not confirmed after {cl.get('tries')} tries ({str(cl.get('error') or '')[:80]}). Check "
                                     "NinjaTrader; LIT's opposite entry is held back."})
+        ac = getattr(bot, "acct_c", None)                 # BLITZ's own account (engine/account_c.py): only when it is on
+        if ac is not None and callable(getattr(ac, "closing_open", None)):
+            for et_, pv in ac.closing_open():
+                cl = pv.get("closing") or {}
+                out.append({"id": f"hedge_close_c:{int(et_)}", "kind": "hedge", "title": "BLITZ close not confirmed",
+                            "body": f"BLITZ {cl.get('q')} MNQ on account C: {cl.get('reason')} close not confirmed after "
+                                    f"{cl.get('tries')} tries ({str(cl.get('error') or '')[:80]}). Check NinjaTrader; an opposite "
+                                    "Zlarior / ATLAS entry is held back."})
         if h.get("guard_block"):
             out.append({"id": f"clock:{day}", "kind": "clock", "title": "Clock drift: entries blocked",
                         "body": f"{str(h['guard_block'])[:120]}. Windows: Settings > Time > Sync now."})

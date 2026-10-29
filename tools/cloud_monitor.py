@@ -998,7 +998,8 @@ def run(out):
                  if lm["model"] == "lit" else None,
                  "pc": {k: pc.get(k) for k in ("present", "t", "age_s", "silent", "running", "adapter", "position", "model_state", "host",
                                                "reason", "model", "push_pk", "acct", "health", "every_s", "exec", "learn", "ops", "remote", "live_pub",
-                                               "brain", "second", "blitz", "ai", "launch", "money")},  # the PC bot's Bot Brain (engine/brain.py compact), second strategies (paper)
+                                               "brain", "second", "blitz", "ai", "launch", "money")}
+                 | ({"account_c": pc["account_c"]} if isinstance(pc.get("account_c"), dict) else {}),   # Bot Brain, second (paper); BLITZ's own account when on
                  # "money": the owner's money figures for the Goals card's Road to $10K (engine/money_goal.heartbeat_block)
                  # is the PC bot really trading the eval (engine/accounts.verdict on the heartbeat's "health" block)
                  "pc_verdict": pc_verdict, "pc_verdict_alerts": pc_verdict_alerts,
@@ -1107,6 +1108,14 @@ def run(out):
             print(f"charts: {len(new_state['charts']['made'])} drawn in {new_state['charts'].get('secs')} s")
     except Exception as e:  # never fails the run
         print("charts failed:", e.__class__.__name__, e)
+    # ---- GitHub Actions minutes (engine/actions_budget.py): this month's estimate + budget.json (the workflow's guard step
+    # reads it: saver mode near the free 2,000 keeps the night check and one run an hour)
+    try:
+        from engine import actions_budget
+        new_state["actions"] = actions_budget.on_run(out, st.get("actions"), now, time.time() - now)
+        print(new_state["actions"]["estimate"]["text"])
+    except Exception as e:  # never fails the run
+        print("actions budget failed:", e.__class__.__name__, e)
     with open(os.path.join(out, "state.json"), "w", encoding="utf-8") as fh:
         json.dump(new_state, fh, indent=1, default=str)
     print(f"ok: last bar {health['last_bar']}, model {state.get('model_state')}, ledger {len(ledger)}, alerts {len(new_alerts)} {sent}"

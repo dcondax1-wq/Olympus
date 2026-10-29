@@ -166,7 +166,8 @@ def write_local(block, path: str | None = None, why: str = "") -> str:
     tmp = p + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(rec, fh, indent=1, ensure_ascii=False)
-    os.replace(tmp, p)
+    from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+    _fs_replace(tmp, p)
     return p
 
 
@@ -1031,6 +1032,12 @@ class AccountB:
         if chosen is None:
             return
         k, t, nm, d, head, risk, sz, act = chosen
+        why_c = self._c_yield(d, tb, sym, now, act.get("entry"))
+        if why_c:
+            # BLITZ's close is in flight: B waits for it (probed again at the next poll while this open is fresh, MAX_AGE_S)
+            self.seen.discard(("probe", tb))
+            self.log("risk", f"{head} NOT routed on account B yet: {why_c} (tried again at the next poll while the open is fresh)")
+            return
         q = int(sz["qty"])
         self.open_t = tb
         self.prov[tb] = {"key": k, "short": nm, "qty": q, "model_qty": int(t.get("qty") or 0), "dir": d, "est": est,
@@ -1046,6 +1053,21 @@ class AccountB:
             self._drop_unplaced(tb, rr, now)
         else:
             self._unconfirmed(tb, rr)
+
+    def _c_yield(self, d, tb, sym, now, px=None):
+        """Account C (BLITZ, engine/account_c.py; priority LIT > ATLAS > BLITZ): C holding the other side is closed at market
+        FIRST; B's entry goes out only once that close is CONFIRMED flat. None = route (C off / flat / same side)."""
+        ac = getattr(self.bot, "acct_c", None)
+        if ac is None:
+            return None
+        try:
+            if ac.yield_to(d, "ATLAS", sym, now, px=px, entry_t=tb) is not False:
+                return None
+        except Exception as e:
+            self.log("error", f"account C hedge close failed: {e.__class__.__name__}: {e}")
+            if getattr(ac, "open_t", None) is None:
+                return None
+        return "no hedging: BLITZ's (account C) opposite close is not confirmed yet"
 
     # ---- an entry the broker never took (2026-10-27: the 03:30 MACD LONG 3 on the 25K was refused, yet B kept it "open"
     # to its exit: B's other entries blocked all day, its paper P&L booked on B's eval, the phone showed a trade that
@@ -1102,12 +1124,53 @@ class AccountB:
             self._push_text(f"{self.label}: order NOT confirmed",
                             f"Entry at {_et(et_):%H:%M} ET on {self.name}: {err}. It may be open: check NinjaTrader.", key)
 
+    def void_refused_days(self, now) -> list:
+        """Once per process (2026-10-29; the 50K has LiveBot._void_refused_days): B's closes booked on an EARLIER trading day
+        whose NinjaTrader Log proves nothing was filled (engine/eval_fix.void_days: every PLACE refused "account does not
+        exist", no Execution on any account) are removed from B's eval (their exits marked void "refused day"), one push.
+        Covers a close whose entry is no longer in B's provisional book (the per-entry check above cannot see it).
+        NinjaTrader accounts only; a day with any fill or without its log file stays booked. Never raises."""
+        try:
+            if ((self.adapter_cfg() or {}).get("adapter")) != "ninjatrader":
+                return []
+            from . import eval_fix
+            today = trading_day(int(now))
+            by = {}
+            for c in self.closes:
+                if str(c[0]) < today:
+                    by[str(c[0])] = by.get(str(c[0]), 0.0) + float(c[2])
+            days = eval_fix.void_days(by, (self.bot.cfg or {}).get("nt_folder"))
+            if not days:
+                return []
+            gone = [c for c in self.closes if str(c[0]) in days]
+            ets = {int(c[3]) for c in gone if len(c) > 3}
+            with self.mx:
+                self.closes = [c for c in self.closes if str(c[0]) not in days]
+                for r in self.ledger:
+                    if r.get("side") == "exit" and r.get("entry_t") in ets and not r.get("void"):
+                        r["void"] = "refused day"
+            txt = ", ".join(f"{d} {by[d]:+,.2f}" for d in days)
+            self.log("risk", f"Voided account B's booked P&L of {txt}: NinjaTrader refused every order that day (account does "
+                             "not exist) and filled nothing")
+            key = f"acctb:voidday:{days[-1]}"
+            if key not in self.notified:
+                self.notified.append(key)
+                self._push_text(f"{self.label}: fake P&L removed",
+                                f"{txt} was booked on {self.name} for days NinjaTrader filled nothing (every order refused). "
+                                "Removed: ATLAS's balance and sizing are back to the real account.", key)
+            self.save()
+            return days
+        except Exception as e:
+            self.log("error", f"refused-day check failed: {e.__class__.__name__}: {e}")
+            return []
+
     def reconcile_unplaced(self, now):
         """Each poll: a position B holds whose entry provably never went in is dropped (a refused order, a working leg that
         NinjaTrader retired unfilled, or a state saved by an older version that kept such an entry open). Once per process,
         the closes an older version booked for such entries are voided too (their paper P&L never happened on B)."""
         if not getattr(self, "_unplaced_scanned", False):
             self._unplaced_scanned = True
+            self.void_refused_days(now)
             booked = {int(c[3]) for c in self.closes if len(c) > 3}
             for et_, pv in sorted(self.prov.items()):
                 if int(et_) in booked and not pv.get("not_placed"):
@@ -1234,10 +1297,11 @@ class AccountB:
             pv["final"] = True
 
     def _past_flat(self, pv, now):
+        """15:55 ET of the trade's day, or 5 min before a CME early close (Thanksgiving 12:55, the day after / Christmas Eve
+        13:10 ET: engine/cme_calendar.flat_cut, the time the NinjaTrader adapter flattens at), so B books its own TIME exit."""
         try:
-            from zoneinfo import ZoneInfo
-            flat = int(_dt.datetime.combine(_dt.date.fromisoformat(pv["day"]), _dt.time(15, 55), ZoneInfo("America/New_York")).timestamp())
-            return int(now) >= flat
+            from .cme_calendar import flat_ts
+            return int(now) >= flat_ts(pv["day"], 955)
         except Exception:
             return False
 
@@ -1773,7 +1837,8 @@ def _set_tracked_block(path: str, block) -> bool:
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8", newline="") as fh:
         fh.write(out)
-    os.replace(tmp, path)
+    from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+    _fs_replace(tmp, path)
     return True
 
 

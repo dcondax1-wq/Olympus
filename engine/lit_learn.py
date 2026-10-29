@@ -453,7 +453,8 @@ def save_learning(L: dict, path: str = LEARNING_PATH):
     os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(L, fh, indent=1, default=str)
-    os.replace(tmp, path)
+    from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+    _fs_replace(tmp, path)
 
 
 def _knob(knobs, fam, b):

@@ -702,7 +702,8 @@ def pc_step(path: str, second_run: dict | None, res: dict | None, df5, df1, now:
         tmp = path + ".tmp"
         with open(tmp, "w", encoding="utf-8") as fh:
             json.dump(S, fh, separators=(",", ":"), default=str)
-        os.replace(tmp, path)
+        from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+        _fs_replace(tmp, path)
         return S
     except Exception as e:
         return {"v": VERSION, "error": f"{e.__class__.__name__}: {e}"}

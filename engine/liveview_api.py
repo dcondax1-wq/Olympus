@@ -566,9 +566,102 @@ def view(bot, tf: str = "1m", now: int | None = None, narr: N.Narrator | None = 
                                           "members": bl["members"] + others}
     except Exception as e:
         out["strategies"].setdefault("scalp", {"key": "scalp", "color": COLORS["scalp"]})["error"] = f"BLITZ: {e.__class__.__name__}: {e}"[:200]
+    try:                                                       # market structure (engine/structure.py, read-only advice)
+        out["structure"] = structure_block(bot, now, price)
+    except Exception as e:
+        from . import structure as ST
+        out["structure"] = {**ST.block([], [], now=now, key="err"), "summary": f"Structure unavailable: {e.__class__.__name__}"[:160]}
+    try:
+        _structure_notes(out, bot, now)
+    except Exception:
+        pass
     out["narrator"] = narr.feed(n_feed)
     out["push_kinds"] = {k: {"label": v[0], "on": on} for (k, v), on in zip(N.KINDS.items(), N.push_prefs().values())}
     return out
+
+
+# ---------------------------------------------------------------------------------------------- market structure
+_SB: dict = {}
+
+
+def structure_block(bot, now: int, price=None, compute: bool = True) -> dict | None:
+    """The "structure" block (engine/structure.block: 5m / 15m / 1h trend, last BOS / CHoCH, swings, protected swings, pools,
+    premium / discount, per-strategy bias) from the bot's own bars: the LIT 1m store (12 days) + bars_tail (5m); without
+    them the TradingView export (data/NQ_1m.csv, the last 12 days up to now) when the CSV fallback is on. Cached on the
+    bot's last bars (the rows are only rebuilt when a bar closed). compute=False (the narrator on the poll thread): the
+    last block computed by the page / live_publish (its own thread), or None; never a recompute."""
+    from . import pcdash_api
+    from . import structure as ST
+    if not compute:
+        hit = _SB.get("v")
+        return ST.block_from(hit[2], int(now), price) if hit and hit[0][0] == id(bot) else None
+    st = getattr(bot, "_lit_1m_store", None)
+    tail = getattr(bot, "bars_tail", None) or []
+    try:
+        l1 = (len(st), int(st["time"].iloc[-1])) if st is not None and len(st) else (0, None)
+    except Exception:
+        l1 = (0, None)
+    last5 = tail[-1] if tail else None
+    sig = (id(bot), l1, len(tail), (last5.get("time") if isinstance(last5, dict) else (last5[0] if last5 else None)))
+    hit = _SB.get("v")
+    t_now = int(now)
+    if hit and hit[0] == sig and t_now // 60 == hit[1] // 60:
+        A = hit[2]                                             # same bars, same minute: no rows rebuilt, no recompute
+    else:
+        b5, b1 = pcdash_api.bot_bars(bot, now - 15 * 86400)
+        if not b1 and not b5 and CSV_FALLBACK:
+            df = pcdash_api._csv("NQ", "1m")
+            if df is not None and len(df):
+                end = min(int(now), int(df["time"].iloc[-1]) + 60)
+                b1 = pcdash_api._rows_from_frame(df[(df["time"] >= end - 12 * 86400) & (df["time"] < end)])
+                t_now = end if not getattr(bot, "running", False) else t_now
+        A = ST.analyze(ST.closed_only(b1, 60, t_now), ST.closed_only(b5, 300, t_now), t_now, None)
+        _SB["v"] = (sig, int(now), A)
+    return ST.block_from(A, int(now), price)
+
+
+_ADVICE = {"key": None, "val": []}         # the open Zlarior trade's advisor notes, recomputed once per new closed 1m bar
+
+
+def _structure_notes(out: dict, bot, now: int):
+    """One structure line + the playbook rule in each strategy's thinking panel (advice only), and for an open Zlarior trade the
+    discretion advisor's live notes (engine/advisor.advise_open: what a structure trader would do, never an order)."""
+    from . import playbook as PB
+    S = out.get("structure") or {}
+    ps = S.get("per_strategy") or {}
+    strats = out.get("strategies") or {}
+    lit_ = strats.get("lit") or {}
+    th = lit_.get("thinking")
+    if isinstance(th, dict):
+        th["structure"] = (ps.get("lit") or {}).get("note")
+        th["rule"] = PB.now("lit", {"brain": getattr(bot, "brain", None), "position": lit_.get("position"), "now": now})
+        pos = lit_.get("position")
+        if isinstance(pos, dict) and pos.get("entry") is not None and pos.get("entry_t"):
+            try:
+                from . import advisor as AD, pcdash_api
+                d_ = int(pos.get("dir") or (1 if pos.get("side") == "LONG" else -1))
+                st1 = getattr(bot, "_lit_1m_store", None)
+                last_t = int(st1["time"].iloc[-1]) if st1 is not None and len(st1) else 0
+                key = (int(pos["entry_t"]), d_, pos.get("stop"), pos.get("target"), last_t)
+                if _ADVICE["key"] != key:        # once per new 1m bar: the page polls every 3 s, the 6-day bar copy is not free
+                    _, b1 = pcdash_api.bot_bars(bot, int(pos["entry_t"]) - 6 * 86400)
+                    adv = AD.advise_open("lit", {**pos, "dir": d_}, b1, now)
+                    _ADVICE.update(key=key, val=[{"t": a["t"], "rule": a["rule"], "text": a["why"], "playbook": a.get("playbook")} for a in adv[:3]])
+                th["advice"] = list(_ADVICE["val"])
+            except Exception:
+                th["advice"] = []
+    at = strats.get("atlas")
+    if isinstance(at, dict):
+        mem = {m.get("key"): {"stage": m.get("stage"), "text": m.get("text")} for m in at.get("members") or [] if isinstance(m, dict)}
+        at["structure_note"] = (ps.get("atlas") or {}).get("note")
+        at["rule"] = PB.now("atlas", {"members": mem})
+    sc = strats.get("scalp")
+    if isinstance(sc, dict):
+        sc["structure_note"] = (ps.get("scalp") or {}).get("note")
+        thb = sc.get("thinking") if isinstance(sc.get("thinking"), dict) else None
+        if thb is not None:
+            thb["structure"] = sc["structure_note"]
+        sc["rule"] = PB.now("scalp", {"stage": (thb or {}).get("stage"), "text": (thb or {}).get("headline")})
 
 
 # ---------------------------------------------------------------------------------------------- phone (liveview.json)
@@ -611,6 +704,44 @@ def phone_view(bot, now: int | None = None, narr: N.Narrator | None = None) -> d
 def r_view(tf: str = "1m"):
     try:
         return _J(view(_bot(), tf))
+    except Exception as e:
+        return _J({"error": f"{e.__class__.__name__}: {e}"[:200]}, 500)
+
+
+def playbook_view(bot, now: int | None = None) -> dict:
+    """GET /api/next/playbook: the written rules (engine/playbook.py = docs/PLAYBOOK.md), the rule each bot is on right now and
+    what structure says per strategy (engine/structure.py). Read-only."""
+    from . import playbook as PB
+    now = int(now or _now(bot))
+    S = structure_block(bot, now) or {}
+    sec = getattr(bot, "second", None) or {}
+    mem = {k: (s.get("state") or {}) for k, s in (sec.get("strategies") or {}).items() if isinstance(s, dict)}
+    try:
+        from . import blitz as BZ
+        bl = BZ.state_text(getattr(bot, "blitz", None), now)
+    except Exception:
+        bl = {}
+    pos = None
+    try:
+        from . import accounts
+        p = accounts._position(bot)
+        if p and not getattr(bot, "_open_src", None) and p.get("entry") is not None:
+            pos = p
+    except Exception:
+        pos = None
+    brain = getattr(bot, "brain", None)
+    if pos is None and isinstance((brain or {}).get("trade"), dict):
+        pos = brain["trade"]
+    return {"t": now, "doc": "docs/PLAYBOOK.md", "rules": PB.RULES,
+            "now": {"lit": PB.now("lit", {"brain": brain, "position": pos, "now": now}), "atlas": PB.now("atlas", {"members": mem}),
+                    "scalp": PB.now("scalp", bl or {})},
+            "structure": {"summary": S.get("summary"), "per_strategy": S.get("per_strategy")}}
+
+
+@router.get("/api/next/playbook")
+def r_playbook():
+    try:
+        return _J(playbook_view(_bot()))
     except Exception as e:
         return _J({"error": f"{e.__class__.__name__}: {e}"[:200]}, 500)
 

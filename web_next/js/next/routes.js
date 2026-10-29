@@ -172,3 +172,9 @@ export const LIVEVIEW = { id: 'liveview', label: 'Live View', icon: 'chart', des
 CC.push(LIVEVIEW);
 TITLES.liveview = LIVEVIEW.label;
 { const g = GROUPS.find((x) => x.label === 'Main'); if (g?.ids && !g.ids.includes('liveview')) g.ids.splice(Math.max(0, g.ids.indexOf('cc') + 1), 0, 'liveview'); }
+
+// Mission Control (js/next/mission.js + missioncore.js, 2026-10-29; read-only): the three bots in orbit, right after Home
+export const MISSION = { id: 'mission', label: 'Mission Control', icon: 'target', desc: 'The three bots in orbit (Zlarior 50K, ATLAS 25K, BLITZ 25K): every number, today\'s mission, if it stops out now, why no trade yet, session timeline, alerts center, health constellation' };
+CC.push(MISSION);
+TITLES.mission = MISSION.label;
+{ const g = GROUPS.find((x) => x.label === 'Main'); if (g?.ids && !g.ids.includes('mission')) g.ids.splice(Math.max(0, g.ids.indexOf('cc') + 1), 0, 'mission'); }
