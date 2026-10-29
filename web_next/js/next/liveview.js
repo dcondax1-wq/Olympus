@@ -16,15 +16,15 @@ const pref = (k, d) => { try { return store.get(k, d); } catch { return d; } };
 const save = (k, v) => { try { store.set(k, v); } catch { /* private window: per session only */ } };
 const L = {
   d: null, busy: false, timer: null, tick: null, err: null, tf: pref('lv.tf', '1m'), theme: pref('lv.theme', 'dark') === 'light' ? 'light' : 'dark',
-  on: Object.assign({ lit: true, atlas: true, scalp: true }, pref('lv.on', {})),
+  on: Object.assign({ lit: true, atlas: true, scalp: true, structure: true }, pref('lv.on', {})),
   think: pref('lv.think', true), feed: pref('lv.feed', true), feedF: pref('lv.feedF', 'all'), important: pref('lv.imp', false),
   view: { n: null, end: 0 }, hover: null, seen: 0, at: 0, geo: null, raf: 0, lastFx: 0, fast: false,
 };
 const PAL = {
-  dark: { lit: '#4f9bff', atlas: '#ff9a3d', scalp: '#b388ff', sys: '#94a3b8' },
-  light: { lit: '#2563eb', atlas: '#ea580c', scalp: '#7c3aed', sys: '#475569' },
+  dark: { lit: '#4f9bff', atlas: '#ff9a3d', scalp: '#b388ff', sys: '#94a3b8', structure: '#e2e8f0' },
+  light: { lit: '#2563eb', atlas: '#ea580c', scalp: '#7c3aed', sys: '#475569', structure: '#334155' },
 };
-const NAMES = { lit: 'Zlarior', atlas: 'ATLAS', scalp: 'BLITZ', sys: 'Bot' };
+const NAMES = { lit: 'Zlarior', atlas: 'ATLAS', scalp: 'BLITZ', sys: 'Bot', structure: 'Structure' };
 const col = (k) => (PAL[L.theme][k] || PAL[L.theme].sys);
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fmtPx = (x) => x == null || isNaN(x) ? '—' : Number(x).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
@@ -41,7 +41,7 @@ const tick = (ok) => ok === true ? '<b class="lv-ok">✓</b>' : ok === false ? '
 // ------------------------------------------------------------------ page section + stylesheet (no index.html change)
 function ensure() {
   if (!document.querySelector('link[data-lv]')) {
-    const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('../../css/liveview.css?v=2', import.meta.url).href; l.dataset.lv = '1';
+    const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('../../css/liveview.css?v=3', import.meta.url).href; l.dataset.lv = '1';
     document.head.appendChild(l);
   }
   if (document.getElementById('page-' + ID)) return;
@@ -60,7 +60,7 @@ function shell(el) {
       <div class="lv-title"><b>Live View</b><span class="lv-px mono" id="lvPx">—</span><span class="lv-src" id="lvSrc"></span></div>
       <div class="lv-ctrls">
         <div class="lv-seg" id="lvTf" role="group" aria-label="Timeframe">${['1m', '5m'].map((t) => `<button type="button" data-v="${t}" aria-pressed="${L.tf === t}">${t}</button>`).join('')}</div>
-        <div class="lv-sws" role="group" aria-label="Strategies">${sw('lit')}${sw('atlas')}${sw('scalp')}</div>
+        <div class="lv-sws" role="group" aria-label="Strategies">${sw('lit')}${sw('atlas')}${sw('scalp')}${sw('structure')}</div>
         <button type="button" class="lv-btn" id="lvThinkB" aria-pressed="${L.think}" title="What the bot is thinking">🧠 Thinking</button>
         <button type="button" class="lv-btn" id="lvFeedB" aria-pressed="${L.feed}" title="The bot's running feed">Feed</button>
         <button type="button" class="lv-btn" id="lvTheme" title="Dark / light"></button>
@@ -193,6 +193,7 @@ function paint() {
   const d = L.d;
   if (!d) return;
   L.geo = drawChart(cv, d, { on: L.on, view: L.view, tf: L.tf, theme: L.theme, fast: L.fast });
+  document.querySelectorAll('#lvRoot [data-lv-on="structure"]').forEach((b) => { b.hidden = !d.structure; });
   const leg = ['lit', 'atlas', 'scalp'].filter((k) => L.on[k]).map((k) => {
     const s = d.strategies?.[k] || {};
     const what = k === 'lit' ? 'levels · setup · position' : k === 'atlas' ? 'EMA 21 / 50 · S/R · plans · position' : (s.placeholder ? 'not running yet' : 'band · signals · PAPER position');
@@ -296,6 +297,19 @@ function think() {
       ${th.eval ? `<p class="small">${esc(th.eval)}</p>` : ''}${th.funded50 ? `<p class="small">${esc(th.funded50)}</p>` : ''}
       ${sigs.length ? `<ul class="lv-checks">${sigs.map((x) => `<li>${tick(x.taken ? true : null)}<div><b>${esc(new Date(x.t * 1000).toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: false }))} ${esc(x.side)} signal</b><small>${esc(x.text)}</small></div></li>`).join('')}</ul>` : ''}
       ${sc.placeholder ? `<p class="lv-muted">${esc(sc.text || '')}</p>` : ''}</article>`);
+  }
+  // market structure (2026-10-29, liveview_api.view() "structure" when present): the summary + each frame's trend / last break
+  const st = L.d.structure;
+  if (st && typeof st === 'object' && L.on.structure !== false) {
+    const fr = st.frames || {}, up = (v) => v === 1 || /up|bull|long/i.test(String(v)), hmS = (t) => (t ? new Date(t * 1000).toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: false }) : '');
+    const chip = (k) => { const F = fr[k]; if (!F) return ''; const e = F.last_event, tr = String(F.trend || '—');
+      return `<li><b>${esc(k)}</b><span class="lv-pill ${up(tr) ? 'lv-ok' : /down|bear|short/i.test(tr) ? 'lv-no' : ''}">${esc(tr)}</span>${e ? `<small>${esc(e.kind || 'BOS')} ${up(e.dir) ? '▲' : '▼'} ${fmtPx(e.price)}${e.t ? ' · ' + hmS(e.t) : ''}</small>` : '<small>no break yet</small>'}</li>`; };
+    const z = st.zone, pools = (Array.isArray(st.pools) ? st.pools : []).filter((p) => p && !p.swept && p.price != null);
+    const bsl = pools.filter((p) => /^b/i.test(p.side || '')).sort((a, b) => a.price - b.price)[0], ssl = pools.filter((p) => /^s/i.test(p.side || '')).sort((a, b) => b.price - a.price)[0];
+    out.push(`<article class="lv-card lv-struct" style="--c:${col('structure')}"><header><i></i><b>Market structure</b><span class="lv-pill">${esc(z ? (z.premium ? 'in premium' : 'in discount') : 'structure')}</span></header>
+      ${st.summary ? `<p class="lv-head">${esc(st.summary)}</p>` : ''}<ul class="lv-frames">${['5m', '15m', '1h'].map(chip).join('')}</ul>
+      ${z && z.lo != null && z.hi != null ? `<p class="small">Range ${fmtPx(z.lo)} – ${fmtPx(z.hi)} · equilibrium ${fmtPx(z.eq != null ? z.eq : (z.lo + z.hi) / 2)}</p>` : ''}
+      ${bsl || ssl ? `<p class="small">Liquidity: ${bsl ? `buy side ${fmtPx(bsl.price)}${bsl.label ? ' (' + esc(bsl.label) + ')' : ''}` : ''}${bsl && ssl ? ' · ' : ''}${ssl ? `sell side ${fmtPx(ssl.price)}${ssl.label ? ' (' + esc(ssl.label) + ')' : ''}` : ''}</p>` : ''}</article>`);
   }
   el.innerHTML = out.join('') || '<p class="lv-muted">Switch a strategy on to see what it is thinking.</p>';
 }

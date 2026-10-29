@@ -178,3 +178,9 @@
 /* BLITZ (strategy 3) PAPER position: dashed edge, a PAPER caption (never a real size) */
 .lv-pos.lv-paper { border-style: dashed; }
 .lv-paper-t { font: 800 10.5px/1.2 ui-monospace, monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--c); margin-bottom: 3px; text-shadow: 0 0 calc(8px * var(--lv-glow)) var(--c); }
+
+/* market structure card (2026-10-29): each frame's trend + last BOS / CHoCH */
+.lv-frames { list-style: none; margin: 6px 0; padding: 0; display: grid; gap: 4px; }
+.lv-frames li { display: grid; grid-template-columns: 34px auto 1fr; gap: 8px; align-items: center; font-size: 12.5px; }
+.lv-frames li small { color: var(--lv-mut, #94a3b8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lv-sw[hidden] { display: none; }

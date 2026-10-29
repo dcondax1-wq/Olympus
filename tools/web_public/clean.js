@@ -245,7 +245,7 @@
 
   // ------------------------------------------------------------------ More: one grouped list, Advanced collapsed
   const SECTIONS = [
-    ['Today', ['liveview', 'goals', 'market', 'news', 'live', 'homefull']],   // liveview: Live View (liveview.js) 2026-10-28
+    ['Today', ['liveview', 'mission', 'goals', 'market', 'news', 'live', 'homefull']],   // liveview: Live View (liveview.js) 2026-10-28; mission: Mission Control (mission.js) 2026-10-29
     ['Bot and health', ['launch', 'lights', 'ops', 'engine', 'alerts', 'activity', 'remote', 'aiwatch']],
     ['Trades', ['tplay', 'weekcal', 'replays', 'accounts']],
     ['Money', ['share', 'evals', 'stops']],

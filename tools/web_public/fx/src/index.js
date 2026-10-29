@@ -8,10 +8,16 @@
 //     data -> results, mffu -> eval; anything else -> today). Returns the preset used. Call it on every route change
 //     (next to FX.warp()). FX.scenes lists the presets.
 //   FX.ripple(clientX, clientY)  a wave through the background at a screen point (taps on empty background do it already).
+//   Background (2026-10-29): 'space' (default: space.js, Earth + the Moon's eclipse shadow + the Sun + stars + three bot
+//     satellites) or 'galaxy' (the older field.js). FX.init({ level, bg }) / FX.background('space' | 'galaxy').
+//     FX.bots({ lit, atlas, scalp: 'trade' | 'armed' | 'idle' | 'off' })  the satellites glow / pulse with their bot;
+//     FX.shoot('win' | 'loss')  a shooting star (a closed trade); FX.pnl(usd)  the aurora / atmosphere tint;
+//     FX.stats()  the background's frame numbers ({ frames, ms, fps, bakeMs, ... }) for tests and Settings.
 // Kinds for FX.mount (data shapes in each file's header): orb galaxy city candles constellation ribbon reactor pipeline losses jarvis
 //   newsradar montecarlo heat liqmap weekring dayclock.
 import { THREE, Q, setLevel as setQuality, readTheme, theme, enableGyro, wake, toScreen } from './core.js';
 import { Field } from './field.js';
+import { Space } from './space.js';
 import { initTaps, spark, setTapColors, setTaps, setBgTap } from './taps.js';
 import { resolveScene, sceneNames } from './field.js';
 import { Orb } from './orb.js';
@@ -35,22 +41,22 @@ export const version = 1;
 const KINDS = { orb: Orb, galaxy: Galaxy, city: City, candles: Candles, constellation: Constellation, ribbon: Ribbon, reactor: Reactor, pipeline: Pipeline, losses: Losses, jarvis: Jarvis,
   newsradar: NewsRadar, montecarlo: MonteCarlo, heat: HeatCube, liqmap: LiquidityMap, weekring: WeekRing, dayclock: DayClock };
 const reg = new Map();
-let field = null, bg = null, inited = false, sceneName = 'today';
+let field = null, bg = null, inited = false, sceneName = 'today', bgKind = 'space', lastBots = null, lastPnl = null;
 
 export function supported() {
   try { const c = document.createElement('canvas'); return !!c.getContext('webgl2'); } catch { return false; }
 }
 const tapColors = () => ['#' + theme.accent.getHexString(), '#' + theme.accent2.getHexString(), '#ff2bd6', '#c084fc', '#ffffff'];
 
-export function init({ level = 'max', gyro = false } = {}) {
+export function init({ level = 'max', gyro = false, bg: kind = 'space' } = {}) {
   if (inited) return Q.level;
-  inited = true;
+  inited = true; bgKind = kind === 'galaxy' ? 'galaxy' : 'space';
   readTheme();
   initTaps({ colors: tapColors() });
   setBgTap((x, y) => (field ? field.ripple(x, y) : false));
   setLevel(level);
   if (gyro) enableGyro(true);
-  window.__LEFX = { Q, reg, get field() { return field; }, toScreen, THREE };
+  window.__LEFX = { Q, reg, get field() { return field; }, get space() { return field instanceof Space ? field : null }, toScreen, THREE };
   return Q.level;
 }
 
@@ -66,9 +72,12 @@ export function setLevel(level) {
     return lv;
   }
   if (!field) {
-    bg = document.createElement('div'); bg.className = 'fx-bg'; bg.setAttribute('aria-hidden', 'true');
+    bg = document.createElement('div'); bg.className = 'fx-bg fx-bg-' + bgKind; bg.setAttribute('aria-hidden', 'true');
     document.body.prepend(bg);
-    field = new Field(); field.attach(bg); field.setScene(sceneName, true);
+    try { field = bgKind === 'space' ? new Space() : new Field(); } catch (e) { console.warn('fx background', e); field = new Field(); }
+    field.attach(bg); field.setScene(sceneName, true);
+    if (field.bots && lastBots) field.bots(lastBots);
+    if (field.pnl && lastPnl != null) field.pnl(lastPnl);
   }
   wake();
   return lv;
@@ -104,6 +113,18 @@ export function scene(name) { sceneName = resolveScene(name); field?.setScene(sc
 export function ripple(x, y) { return field ? field.ripple(x, y) : false; }
 export const scenes = sceneNames;
 export function warp() { field?.warp(); }
+// the background kind: 'space' (default) | 'galaxy'; rebuilt in place when it changes
+export function background(kind) {
+  const k = kind === 'galaxy' ? 'galaxy' : 'space';
+  if (k === bgKind) return k;
+  bgKind = k;
+  if (field) { field.dispose(); field = null; bg?.remove(); bg = null; if (Q.level !== 'off') setLevel(Q.level); }
+  return k;
+}
+export function bots(st) { lastBots = { ...(lastBots || {}), ...(st || {}) }; field?.bots?.(lastBots); }
+export function shoot(kind = 'win') { return field?.shoot ? field.shoot(kind) : false; }
+export function pnl(usd) { lastPnl = +usd || 0; field?.pnl?.(lastPnl); }
+export function stats() { return field?.stats ? { ...field.stats, kind: bgKind, level: Q.level, dpr: field.renderer.getPixelRatio(), soft: !!field.soft } : null; }
 export function pulse() { field?.pulse(); }
 export function sweep() { field?.sweep(); }
 export function burst(x, y, n, power) { spark(x, y, n, undefined, power); }

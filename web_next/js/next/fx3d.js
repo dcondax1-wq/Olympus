@@ -9,16 +9,22 @@ import { S } from '../state.js';
 let FX = null;
 const pend = new Map();
 const root = document.documentElement;
-export const fxLevel = () => store.get('nx.fx', 'off');   // off by default since 2026-10-25 (calm); Settings > Interface turns it on
+// Deep space by default (owner 2026-10-29: "make it look cooler ... almost like 3D space"; it was off since 2026-10-25, calm).
+// One-time: an 'off' saved under the calm default is cleared once; a choice made after this version is kept. Automated
+// browsers (tests) start off unless the URL asks (?fx=max|lite), so the other UI tests stay fast and identical.
+try { if (!store.get('nx.fx2', false)) { if (store.get('nx.fx', null) === 'off') localStorage.removeItem('nx.fx'); store.set('nx.fx2', true); } } catch { }
+const FXQ = (location.search.match(/[?&]fx=(max|lite|off)\b/) || [])[1];
+export const fxLevel = () => FXQ || store.get('nx.fx', navigator.webdriver ? 'off' : 'max');
+export const fxBg = () => store.get('nx.fxbg', 'space');
 
 export async function initFX() {
   const lv = fxLevel();
   root.dataset.fx = lv;
-  if (lv === 'off' || matchMedia('(prefers-reduced-motion: reduce)').matches) { root.dataset.fx = 'off'; return; }
+  if (lv === 'off') { root.dataset.fx = 'off'; return; }      // reduced motion: space.js draws one still frame
   await new Promise(r => setTimeout(r, 300));
-  try { FX = await import('/js/fx.js?v=b8f02cba'); } catch (e) { console.warn('3D layer not loaded', e); root.dataset.fx = 'off'; return; }
+  try { FX = await import('/js/fx.js?v=5439e381'); } catch (e) { console.warn('3D layer not loaded', e); root.dataset.fx = 'off'; return; }
   if (!FX.supported()) { FX = null; root.dataset.fx = 'off'; return; }
-  root.dataset.fx = FX.init({ level: lv });
+  root.dataset.fx = FX.init({ level: lv, bg: fxBg() });
   for (const [key, a] of pend) mount3d(key, ...a);
   pend.clear();
   mood();
@@ -39,6 +45,13 @@ export function mount3d(key, el, kind, data, opts) {
 export const fxWarp = () => FX?.warp();
 export const fxScene = (page) => FX?.scene?.(page);   // per-page background mood (palette, galaxy tilt, spin)
 export const fxPulse = () => FX?.pulse();
+// the deep-space scene's live hooks (js/next/mission.js): satellites per bot, a shooting star per closed trade, the aurora tint
+export const fxBots = (st) => FX?.bots?.(st);
+export const fxShoot = (kind) => FX?.shoot?.(kind);
+export const fxPnl = (usd) => FX?.pnl?.(usd);
+export const fxStats = () => FX?.stats?.() || null;
+export const fxReady = () => !!FX;
+export function setFxBg(kind) { store.set('nx.fxbg', kind); FX?.background?.(kind); }
 
 export function setFxLevel(lv) {
   store.set('nx.fx', lv);

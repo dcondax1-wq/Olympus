@@ -64,6 +64,7 @@ import { board as boardPage } from './next/board.js';
 import { insight as insightPage } from './next/insight.js';   // AI Insights page (engine/insight_api.py, read-only)
 import { real as realPage } from './next/real.js';
 import { liveview as liveviewPage } from './next/liveview.js';   // Live View page (engine/liveview_api.py, read-only)
+import { mission as missionPage, initMissionSync } from './next/mission.js';   // Mission Control (missioncore.js, read-only, 2026-10-29)
 
 const TITLES_CLASSIC = { command: 'Command Center', briefing: 'Pre-market Briefing', chart: 'Chart', replay: 'Replay', backtest: 'Backtest Lab',
   prop: 'Prop Firms', robust: 'Robustness', conf: 'Confluence Lab', news: 'Markets & News', live: 'Live Bot', journal: 'Journal',
@@ -84,6 +85,7 @@ const PAGES = { chart: chartPage, replay: replayPage, backtest: btPage, prop: pr
   playbook: { show: () => {} }, learnlit: learnlitPage, learnatlas: learnatlasPage, start: startPage, board: boardPage, real: realPage, ...ccPages };
 PAGES.insight = insightPage;
 PAGES.liveview = liveviewPage;
+PAGES.mission = missionPage;
 const TITLES = { ...TITLES_CLASSIC, ...NX_TITLES };
 
 // installable home-screen app: register the service worker (no-op where unsupported, e.g. plain http on a LAN IP in some browsers).
@@ -554,6 +556,7 @@ async function boot() {
   initRunSwitch();                    // the Run / Stop switch at the top of every page (runswitch.js)
   initControls();
   initFX();
+  initMissionSync();                  // the deep-space satellites / shooting stars / aurora follow the bots (mission.js)
   applyAppearance();
   installSpotlight();
   startSoundWatch();

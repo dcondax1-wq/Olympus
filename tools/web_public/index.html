@@ -994,8 +994,11 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
   .acc-grid i { height: 36px; }
 }
 </style>
+<link rel="stylesheet" href="space.css?v=1"><link rel="stylesheet" href="mission.css?v=1">
 </head>
 <body>
+<!-- deep space (2026-10-29): the static CSS sky paints at once; the WebGL scene (fx.js, space.js) fades in over it -->
+<div class="space-css" aria-hidden="true"><i class="sc-stars"></i><i class="sc-stars sc-b"></i><i class="sc-mw"></i><i class="sc-sun"></i><i class="sc-moon"></i><i class="sc-earth"></i></div>
 <div id="splash" aria-hidden="true"><canvas id="spCv"></canvas><div class="sp-in"><img src="icons/icon-512.png?v=k31025" alt="">
   <div class="sp-t">LIQUIDITY ENGINE</div><div class="sp-s">Zlarior · the LIT method · NQ futures · paper · works with the PC off</div><div class="sp-bar"><i></i></div></div></div>
 <div class="app">
@@ -1740,16 +1743,21 @@ const STEP_L = ['Sweep', 'IFVG', 'Order', 'Trade', 'Done'];
 
 // ===================================================================== 3D layer (fx.js: three.js views, particle field, card auras, tap sparks)
 let FX = null, FXP = null;
-const FXV = 'b8f02cba';
-// calm by default (owner 2026-10-25): 3D effects start OFF; Settings > 3D effects turns them on. One-time: the old implicit
-// 'max' is cleared once so the phone starts calm; a choice made after this version is kept.
-try { if (!store.get('clean.fx1', false)) { if (store.get('fx', null) === 'max') localStorage.removeItem('le.fx'); store.set('clean.fx1', true); } } catch { }
-const fxPref = () => store.get('fx', 'off');
+const FXV = '5439e381';
+// Deep space by default (owner 2026-10-29: "make it look cooler ... almost like 3D space"; before: calm, OFF since 2026-10-25).
+// One-time: an 'off' saved under the calm default is cleared once so the phone opens on the space scene; a choice made after
+// this version is kept. Settings > 3D effects: Max / Lite / Off (Off = the static CSS sky). Automated browsers (tests) start
+// off unless they ask (?fx=max|lite), so the other UI tests stay fast and identical.
+try { if (!store.get('clean.fx2', false)) { if (store.get('fx', null) === 'off') localStorage.removeItem('le.fx'); store.set('clean.fx2', true); } } catch { }
+const FXQ = (location.search.match(/[?&]fx=(max|lite|off)\b/) || [])[1];
+const fxPref = () => FXQ || store.get('fx', navigator.webdriver ? 'off' : 'max');
+const fxBg = () => store.get('fxbg', 'space');
 const fxOn = () => !!FX && FX.Q.level !== 'off';
 function loadFX() {
   if (FXP || fxPref() === 'off') return FXP;
   FXP = import('./fx.js?v=' + FXV).then((m) => {
-    FX = m; FX.init({ level: fxPref() }); FX.scene?.(SCENE[PAGE] || PAGE || 'today');
+    FX = m; FX.init({ level: fxPref(), bg: fxBg() }); FX.scene?.(SCENE[PAGE] || PAGE || 'today');
+    window.MissionSync?.fx();          // satellites, aurora, shooting stars (mission.js)
     if (store.get('gyro', false)) armGyro();
     if (D) { FX.mood(moodNow()); render(true); }
     return m;
@@ -1758,7 +1766,7 @@ function loadFX() {
 }
 // LIT panels (litkit.js: Day clock, Setup tracker, Levels board, Eval cockpit, Week planner, checklist), loaded after the first paint
 let LK = null, LKP = null;
-const LKV = '5487cc77';
+const LKV = '35e4b9c3';
 function loadLK() {
   if (LKP) return LKP;
   LKP = import('./litkit.js?v=' + LKV).then((m) => { LK = m; if (D) render(true); return m; }).catch((e) => { console.warn('LIT panels unavailable', e); LK = null; });
@@ -1827,7 +1835,8 @@ function moodNow() {
   const lv = LV(), s = sessionNow(), ef = lv.equity_filter || {};
   const pnl = (lv.ledger || []).filter(v => v.day === lv.today).reduce((a, v) => a + (v.usd || 0), 0);
   const age = lv.last_run ? Date.now() / 1000 - lv.last_run : 1e9;
-  return { killzone: !!s.inkz, live: s.open && age < 2400, cold: isLIT() ? (litWeek()?.mult ?? 1) < 1 : ef.on === false, pnl, inTrade: !!lv.position, side: lv.position?.dir || 0 };
+  const mp = window.MissionSync?.pnl?.();       // today's real P&L of every account (mission.js) tints the aurora when known
+  return { killzone: !!s.inkz, live: s.open && age < 2400, cold: isLIT() ? (litWeek()?.mult ?? 1) < 1 : ef.on === false, pnl: typeof mp === 'number' ? mp : pnl, inTrade: !!lv.position, side: lv.position?.dir || 0 };
 }
 // mount a 3D view into el (or leave the 2D fallback that is already there)
 function fx3d(key, el, kind, data, opts) {
@@ -4359,8 +4368,11 @@ VIEWS.settings = (el) => {
         <div class="row"><span><b>Notes</b><span class="small mut">Close every “How to read this” note again</span></span><button class="btn ghost" type="button" id="sHow">${icon('info')}Reset</button></div>
         <div class="row"><span><b>Data</b><span class="small mut">built ${new Date(D.built).toLocaleString()}</span></span><button class="btn ghost" type="button" id="sRef">${icon('refresh')}Refresh now</button></div></div></div>
     <div class="card"><div class="card-h"><h3>3D effects</h3>${chip(fxOn() ? (FX.Q.level === 'lite' ? 'lite' : 'max') : 'off', fxOn() ? 'good' : '')}</div>
-      <div class="row"><span><b>Effects</b><span class="small mut">Max: full 3D world, particles, live orb · Lite: lighter for older phones · Off: flat and fastest</span></span>
+      <div class="row"><span><b>Effects</b><span class="small mut">Max: deep space in 3D (Earth, the eclipse, the bots' satellites), particles, live orb · Lite: lighter for older phones (30 fps, lower resolution) · Off: a still star sky, fastest</span></span>
         ${segHTML('sFx', [['max', 'Max'], ['lite', 'Lite'], ['off', 'Off']], fxPref(), 'sm')}</div>
+      <div class="row"><span><b>Background</b><span class="small mut">Deep space: Earth, the Moon's eclipse shadow, the Sun, stars · Galaxy: the older particle galaxy</span></span>
+        ${segHTML('sFxBg', [['space', 'Deep space'], ['galaxy', 'Galaxy']], fxBg(), 'sm')}</div>
+      ${FX && FX.stats && FX.stats() ? `<div class="note">3D: ${esc(FX.stats().kind)} · ${Math.round(FX.stats().fps || 0)} fps · ${(FX.stats().ms || 0).toFixed(1)} ms a frame · resolution ×${(FX.stats().dpr || 1).toFixed(2)}</div>` : ''}
       <label class="row"><span><b>Tilt to look around</b><span class="small mut">Move your phone and the 3D world moves with you (motion sensors)</span></span><input type="checkbox" class="switch" id="sGyro" ${store.get('gyro', false) ? 'checked' : ''}></label>
       ${FX && !FX.supported() ? '<div class="note">This browser has no WebGL 2, so the 3D layer stays off.</div>' : ''}</div>`;
   $('#sAuto').onchange = (e) => { store.set('auto', e.target.checked); schedule(); };
@@ -4374,6 +4386,10 @@ VIEWS.settings = (el) => {
     store.set('fx', b.dataset.v);
     if (b.dataset.v === 'off') FX?.setLevel('off'); else if (FX) FX.setLevel(b.dataset.v); else await loadFX();
     render(true);
+  };
+  $('#sFxBg').onclick = (e) => {
+    const b = e.target.closest('button[data-v]'); if (!b) return;
+    store.set('fxbg', b.dataset.v); FX?.background?.(b.dataset.v); window.MissionSync?.fx(); render(true);
   };
   $('#sGyro').onchange = async (e) => {
     if (!e.target.checked) { FX?.enableGyro(false); store.set('gyro', false); return; }
@@ -4527,9 +4543,11 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.se
 <script src="launch.js?v=1" defer></script>
 <script src="features.js?v=2" defer></script>
 <script src="learning.js?v=1" defer></script>
-<script src="clean.js?v=3" defer></script>
+<script src="clean.js?v=4" defer></script>
 <script src="board.js?v=2" defer></script>
 <script src="real.js?v=2" defer></script>
-<script src="liveview.js?v=1" defer></script>
+<script src="liveview.js?v=2" defer></script>
+<script src="missioncore.js?v=1" defer></script>
+<script src="mission.js?v=1" defer></script>
 </body>
 </html>
