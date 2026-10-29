@@ -325,6 +325,8 @@
 @media (min-width:1100px){.dk-wrap:not(.dk-home){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}.dk-wrap>.dk-title{grid-column:1/-1}}
 :root[data-theme="light"] .dk-card{--dk-ink:#101828;--dk-mut:#526079;--dk-line:rgba(37,99,235,.16);background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(240,247,255,.88)) padding-box,linear-gradient(140deg,rgba(37,99,235,.35),rgba(124,77,255,.2)) border-box}
 :root[data-theme="light"] .dk-title b,:root[data-theme="light"] .dk-3d,:root[data-theme="light"] .dk-link,:root[data-theme="light"] .dk-rp strong{color:#1d4ed8}
+:root[data-theme="light"] .dk-src{color:#5b2fd6;background:rgba(124,77,255,.12)}:root[data-theme="light"] .dk-lane .tick{background:#1b1530}
+:root[data-theme="light"] .dk-dig{background:linear-gradient(180deg,rgba(255,255,255,.94),rgba(236,253,245,.9)) padding-box,linear-gradient(140deg,rgba(16,185,129,.45),rgba(37,99,235,.2)) border-box}
 `;
   function css() { if (typeof document === 'undefined' || !document.head || document.getElementById('deck-css')) return; const s = document.createElement('style'); s.id = 'deck-css'; s.textContent = CSS; document.head.appendChild(s); }
   css();

@@ -540,6 +540,11 @@
 :root[data-theme="light"] .bl-wrap{--bl-glass:linear-gradient(180deg,rgba(255,255,255,.9),rgba(245,240,255,.86));--bl-ink:#1b1530;--bl-mut:#5b5675;--bl-line:rgba(124,77,255,.18)}
 :root[data-theme="light"] .bl-hero h2{background:linear-gradient(90deg,#3b1a8f,#7c4dff);-webkit-background-clip:text;background-clip:text}
 :root[data-theme="light"] .bl-eye,:root[data-theme="light"] .bl-rules li b,:root[data-theme="light"] .bl-step li b,:root[data-theme="light"] .bl-ladder li b{color:#5b2fd6}
+:root[data-theme="light"] .bl-chip.live{color:#5b2fd6;background:rgba(124,77,255,.12);border-color:rgba(124,77,255,.45)}:root[data-theme="light"] .bl-chip.live::before{background:#7c4dff}
+:root[data-theme="light"] .bl-holo,:root[data-theme="light"] .bl-tg.paper,:root[data-theme="light"] .bl-mini b,:root[data-theme="light"] .bl-tbl th.on{color:#5b2fd6}
+:root[data-theme="light"] .bl-ladder li.on,:root[data-theme="light"] .bl-tbl tr.on td{color:#1b1530}
+:root[data-theme="light"] .bl-band .n{stroke:#1b1530}:root[data-theme="light"] .bl-band .p{fill:#5b2fd6}:root[data-theme="light"] .bl-band circle.tk{stroke:#1b1530}
+:root[data-theme="light"] .bl-bb-t i.lv{background:#5b2fd6}
 `;
   function css() {
     if (typeof document === 'undefined' || !document.head || document.getElementById('blitz-css')) return;

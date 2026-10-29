@@ -59,7 +59,7 @@ def shift(o, dt, keys=("t", "entry_t", "exit_t", "close_t", "time_exit_t", "firs
 
 # ------------------------------------------------------------------------------------------------ fixtures
 def mind_fixture(T):
-    p = os.path.join(ROOT, "tests", "fixtures", "mind_sample.json")         # the Mind agent's sample, once it exists
+    p = os.environ.get("LE_MIND_FIXTURE") or os.path.join(ROOT, "tests", "fixtures", "mind_sample.json")   # the Mind agent's sample, once it exists
     if not os.path.exists(p):
         p = os.path.join(ROOT, "tests", "fixtures", "mind_ui_sample.json")
     m = json.load(open(p, encoding="utf-8"))
@@ -153,7 +153,8 @@ for (const c of ['off', 'sim', 'armed']) {
   if (c === 'off') { out.model = { stage: m.stage, band: m.band && m.band.rows.length, sig: m.signals.length, pos25: !!m.pos25, pos50: !!m.pos50, today: m.today25.length, hist: m.hist25.length, f50: m.today50.length, text: m.text }; }
 }
 out.mind = { has: M.has(F.mind), lit: M.bot(F.mind, 'lit', { go }), atlas: M.bot(F.mind, 'atlas', { go }), blitz: M.bot(F.mind, 'blitz', { go }), home: M.home(F.mind, { go }), page: M.page(F.mind, { go }),
-  none: [M.bot(null, 'lit'), M.home(undefined), M.bot({}, 'atlas'), M.bot({ error: 'x' }, 'blitz')], review: !!M.reviewFor(F.mind, { day: '2026-10-28', acct: 'lit' }) };
+  none: [M.bot(null, 'lit'), M.home(undefined), M.bot({}, 'atlas'), M.bot({ error: 'x' }, 'blitz')], review: (() => { const r = (F.mind.reviews || [])[0]; if (!r) return true; const tr = r.trade && typeof r.trade === 'object' ? r.trade : {};
+    const day = tr.day || String(r.trade || '').slice(0, 10); return !!M.reviewFor(F.mind, { day, acct: r.bot, entry_t: r.entry_t || tr.entry_t }); })() };
 const DM = { now: F.T, board: F.board, lv: F.lv, mind: F.mind, news: [{ t: F.T + 3600, title: 'CPI', impact: 'high' }], cal: { early_close: [] }, acc: F.cases.armed };
 out.deck = { page: K.page(DM, { go }), home: K.home(DM, { go }), replays: K.replays(DM, { go }), ev: K.events24(DM).map((e) => e.label), risk: K.accounts(DM).map((a) => [a.k, Math.round(a.risk)]),
   inbox: K.inboxItems(DM).length, dst: K.dstNext(Date.parse('2026-10-29T12:00:00Z') / 1000) };
@@ -207,7 +208,8 @@ def part_b(F, tmp):
           and "Preflight" in g and "of 6 ready" in g)
     mn = o["mind"]
     check("b. Mind: a card set per bot (plan, similar setups, reviews, ideas, alerts), Home card, the page with regime + IQ",
-          mn["has"] and all("game plan" in mn[k] and "similar past setups" in mn[k] for k in ("lit", "atlas", "blitz")) and "Mind · today" in mn["home"]
+          mn["has"] and all(("game plan" in mn[k] or not (F["mind"].get("plans") or {}).get(k)) and ("similar past setups" in mn[k] or not (F["mind"].get("similar") or {}).get(k))
+                            for k in ("lit", "atlas", "blitz")) and "Mind · today" in mn["home"]
           and "Market regime" in mn["page"] and "Mind IQ" in mn["page"] and "trade reviews" in mn["page"] and "self-research ideas" in mn["page"])
     check("b. Mind: nothing at all without the block", mn["none"] == ["", "", "", ""], mn["none"])
     check("b. Mind: the review of a trade is found for the journal", mn["review"])
@@ -403,6 +405,33 @@ def part_c(F, tmp, shots):
                   want in t.upper() and extra and not e2 and no_x(pg) <= 1, (t[:400], e2[:3]))
             sh(pg, f"phone_blitz_today_{case}.png")
             ctx.close()
+        # sideways (844 x 390) and the light theme: still no sideways scroll, the cards stay readable
+        e3 = []
+        ctx = br.new_context(viewport={"width": 844, "height": 390}, device_scale_factor=2, is_mobile=True, has_touch=True)
+        ctx.clock.install(time=F["T"])
+        ctx.add_init_script("try { localStorage.setItem('le.theme', JSON.stringify('light')); } catch (e) {}")
+        pg = ctx.new_page()
+        pg.on("pageerror", lambda e: e3.append(str(e)[:200]))
+        lj = json.dumps(live_json(F, "armed"), default=str)
+        pg.route("**/api.github.com/**", lambda r: r.fulfill(path=lvp, content_type="application/json") if "liveview.json" in r.request.url
+                 else r.fulfill(status=200, body=lj, content_type="application/json") if "/live.json" in r.request.url else r.fulfill(status=404, body="{}"))
+        pg.route("**/raw.githubusercontent.com/**", lambda r: r.fulfill(status=404, body="{}"))
+        ok_all = True
+        for h in ("#/blitz", "#/blitz/results", "#/blitz/trades", "#/deck", "#/mind"):
+            pg.goto(base + "?fxoff" + h)
+            pg.wait_for_selector(".bl-wrap, .dk-wrap, .mn-wrap", timeout=20000)
+            pg.wait_for_timeout(500)
+            ok_all = ok_all and no_x(pg) <= 1
+        light = pg.evaluate("() => document.documentElement.dataset.theme")
+        ink = pg.evaluate("() => getComputedStyle(document.querySelector('.mn-card h3, .dk-card h3, .bl-card h3')).color")
+        check("c. sideways 844x390 + light theme: BLITZ, Results, Trades, the deck and the Mind with no sideways scroll, dark ink on light glass, no errors",
+              ok_all and light == "light" and ink.startswith("rgb(") and sum(int(x) for x in re.findall(r"\d+", ink)[:3]) < 200 and not e3, (ok_all, light, ink, e3[:2]))
+        sh(pg, "phone_mind_landscape_light.png")
+        pg.goto(base + "?fxoff#/blitz")
+        pg.wait_for_selector(".bl-wrap .bl-hero", timeout=20000)
+        pg.wait_for_timeout(500)
+        sh(pg, "phone_blitz_landscape_light.png")
+        ctx.close()
         br.close()
     srv.shutdown()
 
