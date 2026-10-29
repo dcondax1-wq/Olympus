@@ -59,12 +59,17 @@ def shift(o, dt, keys=("t", "entry_t", "exit_t", "close_t", "time_exit_t", "firs
 
 # ------------------------------------------------------------------------------------------------ fixtures
 def mind_fixture(T):
-    p = os.environ.get("LE_MIND_FIXTURE") or os.path.join(ROOT, "tests", "fixtures", "mind_sample.json")   # the Mind agent's sample, once it exists
-    if not os.path.exists(p):
-        p = os.path.join(ROOT, "tests", "fixtures", "mind_ui_sample.json")
-    m = json.load(open(p, encoding="utf-8"))
-    m = m.get("mind", m) if isinstance(m, dict) else m
-    return shift(m, T - int(m.get("t") or T)), os.path.basename(p)
+    """The Mind block (the Mind agent's samples): the full one (GET /api/next/mind) and the compact phone / heartbeat cut,
+    both moved to the page's clock. LE_MIND_FIXTURE=<path> renders another sample instead of the full one."""
+    def load(p):
+        m = json.load(open(p, encoding="utf-8"))
+        m = m.get("mind", m) if isinstance(m, dict) else m
+        return shift(m, T - int(m.get("t") or T))
+    fx = os.path.join(ROOT, "tests", "fixtures")
+    p = os.environ.get("LE_MIND_FIXTURE") or os.path.join(fx, "mind_sample.json")
+    pc = os.path.join(fx, "mind_sample_compact.json")
+    full = load(p)
+    return full, (load(pc) if os.path.exists(pc) and not os.environ.get("LE_MIND_FIXTURE") else full), os.path.basename(p)
 
 
 def acct_c(kind, T, armed=False, pos=None):
@@ -102,8 +107,8 @@ def build(shots=""):
     lv = LV.phone_view(bot, T, narr=N.Narrator())
     lv = json.loads(json.dumps(lv, default=str))
     card = json.loads(json.dumps(BZ.card(S_), default=str))
-    mind, mind_src = mind_fixture(T)
-    lv["mind"] = mind
+    mind, mind_c, mind_src = mind_fixture(T)
+    lv["mind"] = mind_c                      # the phone gets the compact cut (liveview.json / live.json), the PC the full block
     from tests import test_space_ui as SU
     b2, b3 = SU.boards(T)
     b3 = json.loads(json.dumps(b3, default=str))
@@ -112,7 +117,7 @@ def build(shots=""):
            "stop": op.get("stop_now") or op.get("stop") or 24341.0, "target": None, "strategy": "BLITZ", "key": "blitz",
            "time_exit_t": op.get("time_exit_t") or T + 1200}
     cases = {"off": None, "sim": acct_c("SIM", T), "armed": acct_c("LIVE", T, armed=True, pos=pos)}
-    return {"T": T, "S": S_, "lv": lv, "card": card, "mind": mind, "mind_src": mind_src, "board": b3, "cases": cases}
+    return {"T": T, "S": S_, "lv": lv, "card": card, "mind": mind, "mind_c": mind_c, "mind_src": mind_src, "board": b3, "cases": cases}
 
 
 # ------------------------------------------------------------------------------------------------ a. static
@@ -152,6 +157,7 @@ for (const c of ['off', 'sim', 'armed']) {
   out[c + '_acct'] = B.acctC(m); out[c + '_line'] = B.line(m);
   if (c === 'off') { out.model = { stage: m.stage, band: m.band && m.band.rows.length, sig: m.signals.length, pos25: !!m.pos25, pos50: !!m.pos50, today: m.today25.length, hist: m.hist25.length, f50: m.today50.length, text: m.text }; }
 }
+out.mindc = { has: M.has(F.mind_c), page: M.page(F.mind_c, { go }), home: M.home(F.mind_c, { go }), lit: M.bot(F.mind_c, 'lit', { go }) };
 out.mind = { has: M.has(F.mind), lit: M.bot(F.mind, 'lit', { go }), atlas: M.bot(F.mind, 'atlas', { go }), blitz: M.bot(F.mind, 'blitz', { go }), home: M.home(F.mind, { go }), page: M.page(F.mind, { go }),
   none: [M.bot(null, 'lit'), M.home(undefined), M.bot({}, 'atlas'), M.bot({ error: 'x' }, 'blitz')], review: (() => { const r = (F.mind.reviews || [])[0]; if (!r) return true; const tr = r.trade && typeof r.trade === 'object' ? r.trade : {};
     const day = tr.day || String(r.trade || '').slice(0, 10); return !!M.reviewFor(F.mind, { day, acct: r.bot, entry_t: r.entry_t || tr.entry_t }); })() };
@@ -186,7 +192,7 @@ def part_b(F, tmp):
     P = o["parts"]
     t = P["off"]["today"]
     check("b. Today: next check, the noise band (SVG), the day filter verdict, signals, the open PAPER position with $ at the stop, account C OFF",
-          "Next check" in t and "bl-band" in t and ("TRADING TODAY" in t or "SKIPPED TODAY" in t) and "Signals today" in t
+          "Next check" in t and "How it is going:" in t and "bl-band" in t and ("TRADING TODAY" in t or "SKIPPED TODAY" in t) and "Signals today" in t
           and "PAPER" in t and "at the stop" in t and "OFF · paper shadow" in t, re.sub("<[^>]+>", " ", t)[:600])
     check("b. Today with account C on Sim101: SIM TEST chip, its eval tiles and scorecard", "SIM TEST" in P["sim"]["today"] and "Sim101" in P["sim"]["today"]
           and "Losing days" in P["sim"]["today"], o["sim_acct"])
@@ -211,6 +217,9 @@ def part_b(F, tmp):
           mn["has"] and all(("game plan" in mn[k] or not (F["mind"].get("plans") or {}).get(k)) and ("similar past setups" in mn[k] or not (F["mind"].get("similar") or {}).get(k))
                             for k in ("lit", "atlas", "blitz")) and "Mind · today" in mn["home"]
           and "Market regime" in mn["page"] and "Mind IQ" in mn["page"] and "trade reviews" in mn["page"] and "self-research ideas" in mn["page"])
+    mc = o["mindc"]
+    check("b. Mind: the compact phone cut renders too (game plans, Home card, Zlarior's cards)", mc["has"] and "game plan" in mc["page"]
+          and "Mind · today" in mc["home"] and 'data-mind="lit"' in mc["lit"])
     check("b. Mind: nothing at all without the block", mn["none"] == ["", "", "", ""], mn["none"])
     check("b. Mind: the review of a trade is found for the journal", mn["review"])
     d = o["deck"]
@@ -266,7 +275,7 @@ def live_json(F, case):
     return {"v": 1, "kind": "le-live", "t": T - 20, "every_s": 60, "host": "SURFACE",
             "pc": {"running": True, "adapter": "ninjatrader", "present": True, "t": T - 20, "age_s": 0, "live": True, **({"account_c": F["cases"][case]} if F["cases"][case] else {})},
             "pc_verdict": {"code": "LIVE", "label": "TRADING YOUR EVAL", "level": "good", "reason": "ok", "checks": [], "t": T}, "accounts": [], "board": F["board"],
-            "mind": F["mind"]}
+            "mind": F["mind_c"]}
 
 
 def phone_ctx(br, F, lvp, case, errs, seen=None):
@@ -505,12 +514,15 @@ def part_d(F, shots):
         side = pg.eval_on_selector_all("#nav > a.nx-gl[data-g='Main']", "els => els.map(e => e.dataset.page)")
         check("d. PC sidebar Main: BLITZ right after ATLAS; Mind + Trader's deck after Real results", "blitz" in side and side.index("blitz") == side.index("atlas") + 1
               and side.index("mind") == side.index("real") + 1 and side.index("deck") == side.index("mind") + 1, side)
-        pc_go(pg, "cc")
-        try:
-            pg.wait_for_selector("#page-cc #nxDeckHome .dk-card", timeout=30000)
-            home_ok = True
-        except Exception:
-            home_ok = False
+        home_ok = False
+        for _ in range(3):                   # the PC app opens Start by itself while the bot is stopped; cc loads its data first
+            pc_go(pg, "cc")
+            try:
+                pg.wait_for_selector("#page-cc.active #nxDeckHome .dk-card", timeout=30000)
+                home_ok = True
+                break
+            except Exception:
+                pass
         ct = pg.inner_text("#page-cc").upper()
         check("d. PC Home: since you last looked, risk meter, next 24 h + the Mind card under the Safety card", home_ok
               and "RISK METER" in ct and "MIND · TODAY" in ct and "SINCE YOU LAST LOOKED" in ct and "NEXT 24 HOURS" in ct, (home_ok, ct[:300]))

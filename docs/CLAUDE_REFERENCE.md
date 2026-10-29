@@ -639,7 +639,7 @@ part yourself or fold it into a script.**
   /api/next/blitz` in server.py (`blitz.card(BOT.blitz)` + `acct_c.hb_block()`), `/api/next/mind` when the Mind agent ships
   it, Holodeck links via `nx.holoDay` (js/next/holo.js). Features 71-80 in `web_next/FEATURES.md`. Caches le-public-v45 /
   le-shell-next-v27. Test `python -X utf8 -m tests.test_blitz_tab [--shots <dir>]` (static, node render, phone 390x844,
-  PC 1440x900; the Mind fixture `tests/fixtures/mind_ui_sample.json`, `mind_sample.json` preferred once it exists).
+  PC 1440x900; renders the Mind agent's `tests/fixtures/mind_sample.json` (PC) and `mind_sample_compact.json` (phone cut); `LE_MIND_FIXTURE=<path>` another one).
 - **Start & Accounts page (2026-10-26, PC dashboard sidebar "Start", page `start`):** START BOT as one checklist, one button
   per red line: NinjaTrader connected · live bars from NinjaTrader (`go.feed_problem`, fix "right-click the MNQ 5-minute chart > Reload NinjaScript (or re-add LE_BarFeed)"; the Sim job is refused while stale) · accounts set (50K -> Zlarior, 25K -> ATLAS) · setup done · Sim tests passed · armed ·
   running and routes verified, plus the plain line `Zlarior -> 50K <name> · ATLAS -> 25K <name> · both armed · running`.

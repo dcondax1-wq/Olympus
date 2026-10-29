@@ -145,6 +145,27 @@
       research: card && obj(card.research) };
   }
 
+  function sinceT(M) {
+    const f = M.card && M.card.first_run;
+    if (f == null || f === '') return NaN;
+    if (ok(+f) && +f > 1e9) return +f;
+    const t = Date.parse(String(f).length <= 10 ? `${f}T12:00:00Z` : String(f)) / 1000;
+    return ok(t) ? t : NaN;
+  }
+  // "How's BLITZ coming along?" in one sentence: its trades so far against the 2026 H2 research line
+  function report(M) {
+    const sc = M.ac && obj(M.ac.scorecard) && num(M.ac.scorecard.n) > 0 ? M.ac.scorecard : null, m = M.money || {};
+    const n = sc ? num(sc.n) : num(m.n), t0 = sinceT(M), H2 = RESEARCH[1];
+    const since = ok(t0) ? fmt({ month: 'short', day: 'numeric' }).format(new Date(t0 * 1000)) : '';
+    const where = sc ? 'on account C' : 'on paper';
+    if (!ok(n) || n <= 0) return { lvl: '', text: `No finished BLITZ trade yet${since ? ` (${where} since ${since})` : ''}: it trades on about 43% of days, 7-9 trades a week.` };
+    const win = sc ? num(sc.win_pct) : num(m.wins) / n * 100, avg = sc ? num(sc.avg_r) : num(m.avg_r), usd150 = sc ? num(sc.usd) : num(m.usd150);
+    const head = `${n} trade${n === 1 ? '' : 's'} ${where}${since ? ` since ${since}` : ''}${ok(num(m.days)) && !sc ? ` on ${m.days} day${m.days === 1 ? '' : 's'}` : ''}: ${ok(win) ? win.toFixed(0) + '% won, ' : ''}${ok(avg) ? fr(avg) + ' a trade' : ''}${ok(usd150) ? `, ${usd(usd150, true)}${sc ? '' : ' at $150 a trade'}` : ''}.`;
+    if (n < 20) return { lvl: '', text: `${head} Too early to judge: the research line needs about 20 trades (${Math.max(1, Math.ceil((20 - n) / 7.5))} more week${Math.ceil((20 - n) / 7.5) > 1 ? 's' : ''}).` };
+    const fl = killAt(n), good = ok(avg) && avg >= H2.avg_r * 0.5, bad = fl && ok(avg) && avg < fl.avg_r_p5;
+    return { lvl: bad ? 'bad' : good ? 'good' : 'warn', text: `${head} ${bad ? 'Below the kill-switch floor: account C would pause.' : good ? `In line with the 2026 H2 research (${fr(H2.avg_r)} a trade).` : `Under the 2026 H2 research (${fr(H2.avg_r)}) but above the floor.`}` };
+  }
+
   // account C: off / Sim test / armed / paused / funded
   function acctC(M) {
     const a = M.ac, sl = M.slot;
@@ -244,6 +265,7 @@
     return `<section class="bl-hero" aria-label="BLITZ status"><div class="bl-orb" aria-hidden="true"><i></i></div>
       <div class="bl-hero-h"><div><div class="bl-eye">Bot 3 · the scalper · 25K</div><h2>BLITZ</h2></div><div class="bl-chips">${chip(S.word, S.lvl)}${chip(c.label, c.lvl)}</div></div>
       <p class="bl-think">${esc(M.text || 'BLITZ has not reported yet: it runs after each Zlarior poll while the PC bot runs (paper).')}</p>
+      ${(() => { const r = report(M); return `<p class="bl-report ${r.lvl}"><b>How it is going:</b> ${esc(r.text)}</p>`; })()}
       ${M.ac && c.mode !== 'off' && M.ac.state && M.ac.state.text && M.ac.state.text !== M.text ? `<p class="bl-line bl-acline"><b>Account C${M.ac.account ? ' · ' + esc(M.ac.account) : ''}:</b> ${esc(M.ac.state.text)}</p>` : ''}
       <div class="bl-hero-r">${nc ? `<div><span>Next check</span><b>${nc.today ? '' : esc(dayLbl(nc.t)) + ' '}${esc(modHM(nc.mod))} ET</b><em data-bl-cd="${Math.round(nc.t)}">in ${esc(dur(nc.t - M.now))}</em></div>` : ''}
         <div><span>Paper 25K</span><b>${M.ev && ok(num(M.ev.balance)) ? usd(M.ev.balance) : '—'}</b><em>${M.ev && ok(num(M.ev.to_target)) ? usd(M.ev.to_target) + ' to pass' : 'not started'}</em></div>
@@ -351,7 +373,7 @@
     const win = !enough ? NaN : sc && sc.n ? num(sc.win_pct) : num(m.wins) / num(m.n) * 100;
     const avgR = !enough ? NaN : sc && sc.n ? num(sc.avg_r) : num(m.avg_r);
     const pf = !enough ? NaN : sc && sc.n ? num(sc.pf_r) : num(m.pf150);
-    const months = M.card && M.card.first_run ? Math.max(1 / 21, (M.now - Date.parse(String(M.card.first_run).length <= 10 ? M.card.first_run + 'T12:00:00Z' : M.card.first_run) / 1000) / (30.4 * 86400)) : NaN;
+    const t0 = sinceT(M), months = ok(t0) ? Math.max(1 / 21, (M.now - t0) / (30.4 * 86400)) : NaN;
     const pm = enough && ok(num(m.usd150)) && ok(months) ? num(m.usd150) / months : NaN;
     const tpw = enough && ok(months) ? n / (months * 30.4 / 7) : NaN;
     const fl = (sc && obj(sc.floor)) || killAt(n);
@@ -483,6 +505,9 @@
 .bl-hero-r em,.bl-tiles em,.bl-kv em{font-style:normal;font-size:11.5px;color:var(--bl-mut);overflow:hidden;text-overflow:ellipsis}
 .bl-src,.bl-foot{margin:10px 0 0;font-size:12px;color:var(--bl-mut)}.bl-foot{text-align:center}
 .bl-acline{padding:8px 10px;border-radius:10px;background:rgba(179,136,255,.12);border:1px solid rgba(179,136,255,.3)}
+.bl-report{margin:10px 0 0;padding:10px 12px;border-radius:12px;font-size:13.5px;line-height:1.5;background:rgba(148,163,184,.08);border:1px solid var(--bl-line)}
+.bl-report b{color:#e6d6ff}.bl-report.good{border-color:color-mix(in srgb,var(--bl-good) 45%,transparent)}.bl-report.warn{border-color:color-mix(in srgb,var(--bl-warn) 45%,transparent)}.bl-report.bad{border-color:color-mix(in srgb,var(--bl-bad) 50%,transparent)}
+:root[data-theme="light"] .bl-report b{color:#5b2fd6}
 .bl-h{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
 .bl-h h3{margin:0;font:700 15px/1.3 var(--sans,Inter,sans-serif);color:var(--bl-ink)}
 .bl-meta{font-size:12px;color:var(--bl-mut)}
@@ -554,5 +579,5 @@
     const s = document.createElement('style'); s.id = 'blitz-css'; s.textContent = CSS; document.head.appendChild(s);
   }
   css();
-  window.BlitzUI = { version: V, PARTS, RESEARCH, KILL, RULES, CHECKS, model, status, acctC, nextCheck, page, wire, line, css, rowsOf, filterLine, killAt };
+  window.BlitzUI = { version: V, PARTS, RESEARCH, KILL, RULES, CHECKS, model, status, acctC, nextCheck, page, wire, line, css, rowsOf, filterLine, killAt, report };
 })();
