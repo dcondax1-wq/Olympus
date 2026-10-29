@@ -167,8 +167,8 @@ function acctRow(r, d) {
       ${r.state === 'eval' ? `<button type="button" class="btn ghost sm" data-open="anchor:${esc(r.name)}">Change balance</button>` : ''}
       ${r.state === 'eval' ? `<button type="button" class="btn ghost sm" data-open="funded:${esc(r.name)}" ${can ? '' : 'disabled title="Stop the bot first"'}>Passed → funded</button>` : ''}
       <button type="button" class="btn ghost sm st-rm" data-rm="${esc(r.name)}" ${can ? '' : 'disabled title="Stop the bot first"'}>Remove</button></div>`;
-  return `<div class="st-acct ${r.bot === 'ATLAS' ? 'atlas' : 'lit'}"><div class="st-a1">
-      <div class="st-aname"><b>${esc(r.name)}</b><span>${chip(r.bot, r.bot === 'ATLAS' ? 'atlas' : 'lit')} ${esc(r.plan_label || r.plan)} ${state} ${armed}</span></div>
+  return `<div class="st-acct ${r.bot === 'ATLAS' ? 'atlas' : r.bot === 'BLITZ' ? 'blitz' : 'lit'}"><div class="st-a1">
+      <div class="st-aname"><b>${esc(r.name)}</b><span>${chip(r.bot, r.bot === 'ATLAS' ? 'atlas' : r.bot === 'BLITZ' ? 'blitz' : 'lit')} ${esc(r.plan_label || r.plan)} ${state} ${armed}</span></div>
       <div class="st-amoney"><span>Balance <b>${usd(r.balance)}</b></span><span>Floor <b>${usd(r.floor)}</b></span><em>${esc(r.source || '')}${r.as_of ? ' · as of ' + esc(r.as_of) : ''}</em></div>
       ${btns}</div>${r.note ? `<p class="st-note">${icon('info')}<span>${esc(r.note)}</span></p>` : ''}${form}</div>`;
 }
@@ -179,10 +179,35 @@ function addForm(d) {
   return `<div class="st-add"><h4>Add an account</h4><div class="st-grid four">
     <label>NinjaTrader Name<input id="stAName" list="stNames" autocomplete="off" placeholder="exactly as NinjaTrader shows it"></label>
     <label>Plan<span class="st-seg" data-seg="plan"><button type="button" class="on" data-v="builder50k">Builder 50K</button><button type="button" data-v="builder25k">Builder 25K</button></span></label>
-    <label>Bot<span class="st-seg" data-seg="strategy"><button type="button" class="on" data-v="zlarior">Zlarior</button><button type="button" data-v="atlas">ATLAS</button></span></label>
+    <label>Bot<span class="st-seg" data-seg="strategy"><button type="button" class="on" data-v="zlarior">Zlarior</button><button type="button" data-v="atlas">ATLAS</button><button type="button" data-v="blitz">BLITZ</button></span></label>
     <label>Start day<input id="stAStart" type="date" value="${esc(d.accounts?.today || '')}"></label></div>
     <div class="st-acts"><button type="button" class="btn primary sm" data-do="add" ${dis}>Add</button><span class="muted">Never armed here: arming is the Start list's last step.</span></div></div>`;
 }
+
+// ------------------------------------------------------------------ BLITZ · 25K (account C, engine/account_c.py; OFF by default)
+// The third slot next to Zlarior · 50K and ATLAS · 25K: BLITZ's own account. Sim test = BLITZ on a NinjaTrader Sim account (the
+// real route, no real money); a real MFFU 25K trades only after the owner arms it here with the typed phrase.
+function blitzCard(d) {
+  const b = d.blitz || {};
+  const can = d.local && !d.running;
+  const lock = !d.local ? 'Only on the PC itself' : d.running ? 'Stop the bot first' : '';
+  const state = !b.on ? chip('off') : b.sim ? chip('Sim test', 'good') : b.armed ? chip('armed', 'bad') : chip('not armed');
+  const arm = b.on && !b.sim && !b.armed && d.local ? `<div class="st-panel st-arm"><p><b>Real money.</b> BLITZ will trade the 25K <b>${esc(b.name)}</b> (its own account, next to Zlarior and ATLAS, never the other way of them).</p>
+      <label class="st-phrase">Type <b>${esc(b.phrase || d.phrase)}</b><input id="stCPhrase" autocomplete="off" spellcheck="false" placeholder="${esc(b.phrase || d.phrase)}"></label>
+      <div class="st-acts"><button type="button" class="btn primary sm" data-do="carm" id="stCArm" disabled>Arm BLITZ</button></div></div>` : '';
+  const form = d.local ? `<div class="st-grid three">
+      <label>25K · BLITZ<input id="stCName" list="stNames" value="${esc(b.on ? b.name : '')}" placeholder="e.g. MFFUEVBLDR… or Sim101" autocomplete="off"></label>
+      <label>Start day<input id="stCStart" type="date" value="${esc(b.start || d.accounts?.today || '')}"></label>
+      <span class="st-acts"><button type="button" class="btn primary sm" data-do="cset" ${can ? '' : `disabled title="${esc(lock)}"`}>Set BLITZ's 25K</button>
+      <button type="button" class="btn ghost sm" data-do="csim" ${can ? '' : `disabled title="${esc(lock)}"`}>Sim test (Sim101)</button>
+      ${b.on ? `<button type="button" class="btn ghost sm" data-do="coff" ${can ? '' : `disabled title="${esc(lock)}"`}>Off</button>` : ''}</span></div>` : '';
+  return `<div class="card nx-glass cc-card st-blitz"><div class="card-h"><h3>BLITZ · 25K</h3><div class="card-tools">${state}</div></div>
+    <p>${esc(b.say || 'BLITZ · 25K is off')}</p>${b.problem ? `<p class="st-note">${icon('info')}<span>${esc(b.problem)}</span></p>` : ''}
+    <p class="muted">The scalper on its own MFFU 25K: up to 6 trades a day, flat by 15:55, never opposite to Zlarior or ATLAS (they go first). Off = paper only. Every rule and what to expect: BLITZ_STRATEGY.md.</p>
+    ${form}${arm}</div>`;
+}
+
+function cArmBtn() { const b = $('#stCArm'); if (b) b.disabled = norm($('#stCPhrase')?.value) !== norm(P.d?.blitz?.phrase || P.d?.phrase); }
 
 // ------------------------------------------------------------------ draw
 function draw() {
@@ -190,7 +215,7 @@ function draw() {
   const d = P.d;
   if (!el || !d) return;
   const keep = { lit: $('#stLit')?.value, atlas: $('#stAtlas')?.value, phrase: $('#stPhrase')?.value, aname: $('#stAName')?.value,
-    go: $('#stGoPhrase')?.value };
+    go: $('#stGoPhrase')?.value, cname: $('#stCName')?.value, cphrase: $('#stCPhrase')?.value };
   const n = d.steps.filter((s) => s.done).length;
   const rows = d.accounts?.rows || [];
   el.innerHTML = `<div class="nx-hero cc-hero st-hero"><div><div class="nx-eyebrow">Start &amp; Accounts</div>
@@ -206,12 +231,15 @@ function draw() {
       ${jobCard(d.job) + pollCard(d.poll) ? `<div class="st-col2">${jobCard(d.job)}${pollCard(d.poll)}</div>` : ''}</div>
     <div class="card nx-glass cc-card st-accts"><div class="card-h"><h3>Accounts</h3><div class="card-tools">${d.running ? chip('bot running: stop it to add or remove', 'warn') : ''}</div></div>
       ${rows.length ? rows.map((r) => acctRow(r, d)).join('') : '<div class="pc-empty"><b>No accounts yet</b><span>Add the 50K for Zlarior and the 25K for ATLAS.</span></div>'}
-      ${addForm(d)}</div>`;
+      ${addForm(d)}</div>
+    ${blitzCard(d)}`;
   if (keep.lit != null && $('#stLit')) $('#stLit').value = keep.lit;
   if (keep.atlas != null && $('#stAtlas')) $('#stAtlas').value = keep.atlas;
   if (keep.phrase && $('#stPhrase')) { $('#stPhrase').value = keep.phrase; armBtn(); }
   if (keep.aname && $('#stAName')) $('#stAName').value = keep.aname;
   if (keep.go && $('#stGoPhrase')) { $('#stGoPhrase').value = keep.go; goBtn(); }
+  if (keep.cname != null && $('#stCName')) $('#stCName').value = keep.cname;
+  if (keep.cphrase && $('#stCPhrase')) { $('#stCPhrase').value = keep.cphrase; cArmBtn(); }
 }
 
 function armBtn() { const b = $('#stArmGo'); if (b) b.disabled = $('#stPhrase')?.value !== P.d?.phrase; }
@@ -265,7 +293,7 @@ async function act(fn, done) {
 }
 
 function wire(el) {
-  el.addEventListener('input', (e) => { if (e.target.id === 'stPhrase') armBtn(); if (e.target.id === 'stGoPhrase') goBtn(); });
+  el.addEventListener('input', (e) => { if (e.target.id === 'stPhrase') armBtn(); if (e.target.id === 'stGoPhrase') goBtn(); if (e.target.id === 'stCPhrase') cArmBtn(); });
   el.addEventListener('click', (e) => {
     const seg = e.target.closest('.st-seg button');
     if (seg) { seg.parentElement.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === seg)); return; }
@@ -296,6 +324,10 @@ function wire(el) {
       }
       if (k === 'names') return act(() => post('names', { lit: $('#stLit').value, atlas: $('#stAtlas').value }));
       if (k === 'arm') return act(() => post('arm', { confirm: $('#stPhrase').value }), 'Arming and starting: watch the lines');
+      if (k === 'cset') return act(() => post('blitz', { name: $('#stCName').value, start: $('#stCStart').value }));
+      if (k === 'csim') return act(() => post('blitz', { name: 'Sim101', start: $('#stCStart').value }));
+      if (k === 'coff') { if (!confirm('Switch BLITZ\'s own account off? (BLITZ keeps running on paper only)')) return; return act(() => post('blitz', { name: 'off' })); }
+      if (k === 'carm') return act(() => post('blitz/arm', { confirm: $('#stCPhrase').value }), 'BLITZ armed');
       if (k === 'anchor') return act(() => post('accounts/anchor', { name: d.dataset.name, balance: $('#stBal').value, floor: $('#stFloor').value, as_of: $('#stAsOf').value }));
       if (k === 'funded') return act(() => post('accounts/funded', { name: d.dataset.name, funded_name: $('#stFName').value, start: $('#stFStart').value }));
       if (k === 'add') {

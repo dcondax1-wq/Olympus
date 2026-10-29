@@ -22,6 +22,9 @@ owner's typed I ACCEPT LIVE RISK, checked here and again by engine/go.step_arm a
   POST /api/next/start/accounts/remove   {"name"}
   POST /api/next/start/accounts/anchor   {"name", "balance", "floor", "as_of"}
   POST /api/next/start/accounts/funded   {"name", "funded_name", "start"}
+  POST /api/next/start/blitz             {"name": a Sim account (the Sim test) | the MFFU 25K | "off", "start"} BLITZ's own
+                                         account (engine/account_c.py, OFF by default; never armed here)
+  POST /api/next/start/blitz/arm         {"confirm": "I ACCEPT LIVE RISK"} arm BLITZ's 25K (only with the typed phrase)
 """
 from __future__ import annotations
 
@@ -285,6 +288,24 @@ async def r_remove(request: Request):
 async def r_anchor(request: Request):
     d = await _body(request)
     return _do(request, lambda: go.set_anchor(d.get("name"), d.get("balance"), d.get("floor"), d.get("as_of")))
+
+
+@router.post("/api/next/start/blitz")
+async def r_blitz(request: Request):
+    """BLITZ · 25K (account C): set its account (a Sim account = the Sim test), or "off". Never arms."""
+    d = await _body(request)
+    return _do(request, lambda: go.set_blitz(d.get("name"), d.get("start")))
+
+
+@router.post("/api/next/start/blitz/arm")
+async def r_blitz_arm(request: Request):
+    """Arm BLITZ's 25K: the typed phrase is checked here, then again by engine/go.arm_c and engine/ninjatrader."""
+    d = await _body(request)
+    phrase = go.typed_phrase(str(d.get("confirm") or ""))
+    if phrase != go.LIVE_PHRASE:
+        bad = _local(request)
+        return bad if bad is not None else _J({"ok": False, "error": "Type I ACCEPT LIVE RISK exactly. Nothing is armed."}, 400)
+    return _do(request, lambda: go.arm_c(phrase))
 
 
 @router.post("/api/next/start/accounts/funded")
