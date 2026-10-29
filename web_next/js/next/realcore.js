@@ -36,8 +36,9 @@
   const dhm = (t) => { if (!ok(t)) return ''; try { return new Date(t * 1000).toLocaleString('en-US', { ...ETF, weekday: 'short', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
   const etDay = (t) => { try { return new Date(t * 1000).toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); } catch (e) { return ''; } };
   const dur = (s) => { s = Math.max(0, Math.round(s)); if (s < 90) return s + ' s'; const m = Math.round(s / 60); if (m < 90) return m + ' min'; const h = Math.floor(m / 60); return h < 48 ? h + ' h ' + (m % 60) + ' min' : Math.round(h / 24) + ' d'; };
-  const NAMES = { lit: 'Zlarior', atlas: 'ATLAS' };
-  const PLAN = { lit: { start: 50000, target: 3000, mll: 2000, dll: 1000, size: '50K' }, atlas: { start: 25000, target: 1500, mll: 1000, dll: 600, size: '25K' } };
+  const NAMES = { lit: 'Zlarior', atlas: 'ATLAS', blitz: 'BLITZ' };
+  const PLAN = { lit: { start: 50000, target: 3000, mll: 2000, dll: 1000, size: '50K' }, atlas: { start: 25000, target: 1500, mll: 1000, dll: 600, size: '25K' },
+    blitz: { start: 25000, target: 1500, mll: 1000, dll: 600, size: '25K' } };
   const KIND = { TARGET: 'target', STOP: 'stop', BE: 'breakeven', EOD: 'flat 15:55', FLAT: 'flat', CUT_T15: '15-min cut', CUT: '15-min cut', T15: '15-min cut', OPEN: 'open' };
   const how = (r) => r.open ? 'open' : KIND[String(r.exit || '').toUpperCase()] || String(r.exit || '').toLowerCase() || '—';
   const chip = (t, k) => `<span class="rc-chip ${k || ''}">${esc(t)}</span>`;
@@ -60,6 +61,9 @@
 
   // ---------------------------------------------------------------- data helpers
   const accOf = (B, k) => (B && B[k] && !B[k].error ? B[k] : null);
+  // the real accounts on the board: Zlarior + ATLAS, and BLITZ once its own 25K (account C, engine/account_c.py) is on
+  const AKS = (B) => ['lit', 'atlas'].concat(accOf(B, 'blitz') ? ['blitz'] : []);
+  const pageOf = (k) => (k === 'lit' ? 'zlarior' : k === 'atlas' ? 'atlas' : 'mission');
   function realRows(B) {
     const R = B && B.real && Array.isArray(B.real.trades) ? B.real.trades : (B && Array.isArray(B.trades) ? B.trades.filter((r) => r.src === 'live') : []);
     return R.slice().sort((x, y) => (+x.entry_t || 0) - (+y.entry_t || 0));
@@ -196,13 +200,13 @@
       ${gauge(tip('To target'), ok(a.to_target) ? (a.to_target <= 0 ? 'reached' : usd(a.to_target)) : '—', prof != null && tgt ? prof / tgt : 0, 'acc', `${susd(prof)} of +${usd(tgt)}${E ? ` · ≈ ${E.n} more session${E.n > 1 ? 's' : ''} at the backtest pace (${usd(E.ps)} a session)` : ''}`, k + '-tgt')}
       ${gauge(tip('Daily loss'), `${usd(used)} of ${usd(dll)}`, used / dll, used / dll > 0.75 ? 'bad' : used / dll > 0.4 ? 'warn' : 'good', used >= dll ? 'limit reached: no new trade today' : `${usd(dll - used)} left today`, k + '-dll')}
       ${S.n < 100 ? `<p class="rc-scw">${esc(S.why.join(' · '))}</p>` : ''}
-      <div class="rc-f"><button type="button" class="rc-btn" ${goA(o, k === 'lit' ? 'zlarior' : 'atlas')}>Open ${NAMES[k]}</button><button type="button" class="rc-btn" ${goA(o, 'real')}>Real results</button></div>
+      <div class="rc-f"><button type="button" class="rc-btn" ${goA(o, pageOf(k))}>Open ${NAMES[k]}</button><button type="button" class="rc-btn" ${goA(o, 'real')}>Real results</button></div>
     </section>`;
   }
   function slot3(o) {
-    return `<section class="rc-card rc-slot rc-tilt" aria-label="Strategy 3 (research)"><div class="rc-h"><div class="rc-eye">Strategy 3 (research)<em>free slot · paper only</em></div>${chip('no account', '')}</div>
-      <p class="rc-note">Room for a third strategy. It gets a real account only after the research proves it (better in 2026 and in 2021-25, 2-4 trades a week, a 2-week eval pass rate) and you buy the account. Until then nothing routes here.</p>
-      <div class="rc-f"><button type="button" class="rc-btn" ${goA(o, 'lab')}>See the research</button></div></section>`;
+    return `<section class="rc-card rc-slot rc-tilt" aria-label="BLITZ 25K (not set up)"><div class="rc-h"><div class="rc-eye">BLITZ · 25K<em>the scalper · paper until its 25K is set</em></div>${chip('no account', '')}</div>
+      <p class="rc-note">BLITZ trades on paper only until its own MFFU 25K is set on the Start page (BLITZ · 25K) and you arm it. Nothing routes here until then.</p>
+      <div class="rc-f"><button type="button" class="rc-btn" ${goA(o, 'mission')}>Mission Control</button></div></section>`;
   }
   function conflict(B) {
     const L = accOf(B, 'lit'), A = accOf(B, 'atlas');
@@ -216,7 +220,7 @@
   }
   function events(B) {
     const td = today(B), ev = [];
-    for (const k of ['lit', 'atlas']) {
+    for (const k of AKS(B)) {
       const a = accOf(B, k); if (!a) continue;
       for (const o of a.orders || []) {
         if (!ok(o.t) || etDay(o.t) !== td) continue;
@@ -246,7 +250,7 @@
       <div class="rc-hd"><div><div class="rc-eyeb">Today · real accounts</div><h2>${esc(new Date(today(B) + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }))}</h2></div>
         <span class="rc-age ${age != null && age > 900 ? 'warn' : ''}">data <b data-bd-age="${esc(B.data_t || '')}">${age != null ? esc(dur(age)) : '—'}</b> old · real $ only</span></div>
       ${checkBanners(B)}
-      <div class="rc-grid">${card(B, 'lit', o)}${card(B, 'atlas', o)}${slot3(o)}</div>
+      <div class="rc-grid">${card(B, 'lit', o)}${card(B, 'atlas', o)}${accOf(B, 'blitz') ? card(B, 'blitz', o) : slot3(o)}</div>
       <div class="rc-ban ${C.k}"><i></i><span><b>LIT vs ATLAS:</b> ${esc(C.t)}</span></div>
       ${eventsCard(B)}
     </section>`;
@@ -260,7 +264,7 @@
     const row = (lv, k, v, sub) => `<div class="rc-sr ${lv}"><i></i><span>${k}</span><b>${v}</b>${sub ? `<em>${sub}</em>` : ''}</div>`;
     const lvOf = (x) => (!x ? 'idle' : x.ok === false ? 'bad' : x.warn ? 'warn' : x.ok ? 'good' : 'idle');
     const rows = [];
-    for (const k of ['lit', 'atlas']) {
+    for (const k of AKS(B)) {
       const a = accOf(B, k); if (!a) continue;
       const P = PLAN[k], rf = ok(a.room_frac) ? a.room_frac : null, chk = checksOf(B, k);
       rows.push(row(rf == null ? 'idle' : rf < 0.25 ? (chk.length ? 'warn' : 'bad') : rf < 0.5 ? 'warn' : 'good', `${NAMES[k]} floor`, usd(a.room) + ' left', chk.length ? 'ledger check open' : `floor ${usd(a.floor)}`));
@@ -390,7 +394,7 @@
   }
   function incidents(B) {
     const out = [];
-    for (const k of ['lit', 'atlas']) { const a = accOf(B, k); if (!a) continue; for (const o of refused(a)) out.push({ t: o.t, k, text: `${o.side} ${o.qty ?? '?'} micros REFUSED${o.error ? ': ' + o.error : ''}` }); }
+    for (const k of AKS(B)) { const a = accOf(B, k); if (!a) continue; for (const o of refused(a)) out.push({ t: o.t, k, text: `${o.side} ${o.qty ?? '?'} micros REFUSED${o.error ? ': ' + o.error : ''}` }); }
     for (const c of checksOf(B)) out.push({ t: null, k: c.acct, text: 'Ledger check: ' + c.text });
     if (!out.length) return '<p class="rc-note">No refused order and no ledger question. Restarts and NinjaTrader messages are in the Bot log (PC).</p>';
     return `<ul class="rc-evl">${out.map((e) => `<li class="bad"><span class="mono">${e.t ? dhm(e.t) : '!'}</span><b>${esc(NAMES[e.k])}</b><span>${esc(e.text)}</span></li>`).join('')}</ul>`;
@@ -420,8 +424,8 @@
     css(); o = o || {};
     if (!B || B.error) return `<section class="rc-wrap"><p class="rc-note">${esc((B && B.error) || 'No data yet.')}</p></section>`;
     const all = realRows(B), R = all.filter((r) => F.acct === 'all' || r.acct === F.acct), S = stats(R);
-    const seg = `<div class="rc-seg" role="tablist">${[['all', 'Both accounts'], ['lit', 'Zlarior 50K'], ['atlas', 'ATLAS 25K']].map(([v, l]) => `<button type="button" role="tab" data-rc-acct="${v}" aria-selected="${F.acct === v}" class="${F.acct === v ? 'on' : ''}">${l}</button>`).join('')}</div>`;
-    const ks = F.acct === 'all' ? ['lit', 'atlas'] : [F.acct];
+    const seg = `<div class="rc-seg" role="tablist">${[['all', AKS(B).length > 2 ? 'All accounts' : 'Both accounts'], ['lit', 'Zlarior 50K'], ['atlas', 'ATLAS 25K']].concat(accOf(B, 'blitz') ? [['blitz', 'BLITZ 25K']] : []).map(([v, l]) => `<button type="button" role="tab" data-rc-acct="${v}" aria-selected="${F.acct === v}" class="${F.acct === v ? 'on' : ''}">${l}</button>`).join('')}</div>`;
+    const ks = F.acct === 'all' ? AKS(B) : [F.acct];
     return `<section class="rc-wrap rc-res">${checkBanners(B)}
       <div class="rc-tb">${seg}<button type="button" class="rc-btn" data-rc-csv="1">Export real trades (CSV)</button></div>
       ${kpis(S)}
@@ -627,7 +631,7 @@ display:flex;flex-direction:column;gap:12px;min-width:0;color:var(--rc-ink)}
 --rc-g1:color-mix(in srgb,var(--surface,#fff) 92%,transparent);--rc-g2:color-mix(in srgb,var(--surface,#fff) 76%,transparent);
 --rc-hi:rgba(255,255,255,.95);--rc-well:rgba(20,40,90,.09);--rc-wellhi:rgba(255,255,255,.8);--rc-tile:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,.4));
 --rc-sh:0 1px 2px rgba(20,40,90,.07),0 16px 36px -18px rgba(20,40,90,.3),0 40px 80px -52px rgba(20,40,90,.28);--rc-tsh:inset 0 1px 0 rgba(255,255,255,.9),0 6px 14px -10px rgba(20,40,90,.3)}
-.rc-wrap .rc-acct.lit,.rc-wrap .rc-n-lit,.rc-wrap .rc-seg [data-rc-acct="lit"]{--rc-neon:var(--rc-n-lit)}.rc-wrap .rc-acct.atlas,.rc-wrap .rc-n-atlas,.rc-wrap .rc-seg [data-rc-acct="atlas"]{--rc-neon:var(--rc-n-atlas)}.rc-wrap .rc-slot,.rc-wrap .rc-n-s3{--rc-neon:var(--rc-n-s3)}
+.rc-wrap .rc-acct.lit,.rc-wrap .rc-n-lit,.rc-wrap .rc-seg [data-rc-acct="lit"]{--rc-neon:var(--rc-n-lit)}.rc-wrap .rc-acct.atlas,.rc-wrap .rc-n-atlas,.rc-wrap .rc-seg [data-rc-acct="atlas"]{--rc-neon:var(--rc-n-atlas)}.rc-wrap .rc-slot,.rc-wrap .rc-n-s3,.rc-wrap .rc-acct.blitz,.rc-wrap .rc-n-blitz,.rc-wrap .rc-seg [data-rc-acct="blitz"]{--rc-neon:var(--rc-n-s3)}
 .rc-wrap .rc-big{min-height:0}
 .rc-wrap .rc-hd h2{font-size:24px;letter-spacing:-.02em;background:linear-gradient(92deg,var(--rc-ink) 35%,color-mix(in srgb,var(--rc-ink) 50%,var(--rc-n-lit)) 72%,color-mix(in srgb,var(--rc-ink) 45%,var(--rc-n-atlas)));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .rc-wrap .rc-eyeb{color:color-mix(in srgb,var(--rc-acc) 75%,var(--rc-ink));text-shadow:0 0 14px color-mix(in srgb,var(--rc-acc) 55%,transparent)}
