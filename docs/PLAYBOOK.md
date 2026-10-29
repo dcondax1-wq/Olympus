@@ -59,8 +59,8 @@ the turn with the stop just past the trap and aim for the day's expected move.
   rare case; the rules that fix it cut real winners every month.
 
 ### What structure says (advice, shown next to the trade)
-- **Z-S1** The 1h trend and whether price is in the premium or discount half of the 15m dealing range: a long from
-  discount with the 1h up "fits the structure"; against it the bot says so.
+- **Z-S1** The 1h trend and whether price is in the premium or discount half of the 15m dealing range. In 2026 LIT trades
+  with the 1h trend paid $492 a trade, against it $292: both pay, so LIT takes both (skipping the "against" ones cost $22k).
 - **Z-S2** The nearest opposing liquidity pool in front of the trade (where a person would expect price to slow down).
 - **Z-S3** A 5m CHoCH against an open trade after +1R: a person might move to breakeven. Advice only; the advisor scores it.
 - **Z-S4** A 5m BOS in the trade's favour: the new protected swing is where a structure trader would trail. Advice only.
@@ -93,7 +93,9 @@ switches routing on.
   check. Flat 15:55.
 
 ### What structure says (advice)
-- **A-S1** 15m and 1h trend agreement: ATLAS is a trend-follower, so "both up" fits longs, "both down" shorts.
+- **A-S1** 15m and 1h structure: ATLAS earns on pullbacks. Its trades paid most when the 15m structure was still against
+  the 1h trend ($526-561 a trade in 2026) and least when 15m and 1h already agreed with the trade ($23 a trade in 2026,
+  -$25 in 2021-25). Shown as context, not a filter.
 - **A-S2** The protected swing of the 5m trend: where a structure trader's stop would sit (shown, not used).
 
 ---
@@ -118,7 +120,8 @@ The noise-area momentum scalp: when NQ breaks out of its normal intraday noise, 
   ATLAS enters the other side.
 
 ### What structure says (advice)
-- **B-S1** The 5m trend and its last BOS / CHoCH: a breakout in the 5m trend's direction "goes with it".
+- **B-S1** The 5m trend and its last BOS / CHoCH. Most BLITZ breakouts already go with it (262 of 330 in 2026); with or
+  against, they paid about the same (0.16R vs 0.13R a trade): context only.
 
 ---
 

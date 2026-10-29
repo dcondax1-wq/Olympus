@@ -643,10 +643,46 @@ def advisor_check(out_path=os.path.join(ROOT, "research", "lit", "advisor_backte
     return out
 
 
+def trend_split(out_path=os.path.join(ROOT, "research", "lit", "structure_trend_split.json")):
+    """Descriptive (no rule): each strategy's trades split by the structure trend at the entry (with / against / mixed):
+    LIT (LIT size, 1h), the ATLAS members (research trades at $500 risk, 15m + 1h), BLITZ (research trades, 5m). The numbers
+    behind engine/structure.bias_for's notes."""
+    import pandas as pd
+    from tools import second_mix as M2
+    ev = {tf: events(tf) for tf in ("5m", "15m", "1h")}
+
+    def split(rows, tfs):
+        S = collections.defaultdict(lambda: [0, 0.0, 0.0, 0])
+        for r in rows:
+            tr = [ST.trend_at(ev[tf], int(r["entry_t"])) for tf in tfs]
+            g = "with" if all(x == r["dir"] for x in tr) else ("against" if all(x == -r["dir"] for x in tr) else "mixed")
+            s = S[g]; s[0] += 1; s[1] += r["usd"]; s[2] += r["R"]; s[3] += int(r["usd"] > 0)
+        return {g: {"n": v[0], "usd": round(v[1]), "usd_per": round(v[1] / v[0]), "R_per": round(v[2] / v[0], 2),
+                    "win": round(100 * v[3] / v[0])} for g, v in S.items() if v[0]}
+    out = {}
+    L = lit_size(trades({}))
+    for nm, f in (("2026", lambda d: d >= "2026"), ("2021_25", lambda d: d < "2026")):
+        out[f"lit_1h_{nm}"] = split([{"entry_t": l["entry_t"], "dir": l["dir"], "usd": l["pnl"], "R": l["pts"] / l["risk"]}
+                                     for l in L if f(l["day"])], ("1h",))
+    U = M2.units()
+    for nm, (a, z) in (("2026", ("2026-01-01", "2026-12-31")), ("2021_25", ("2021-01-01", "2025-12-31"))):
+        out[f"atlas_15m1h_{nm}"] = split([{"entry_t": u["entry_t"], "dir": u["dir"], "usd": 500.0 * u["pts"] / u["risk"], "R": u["pts"] / u["risk"]}
+                                          for src in ("EMA", "MD", "SR") for u in U[src] if a <= u["day"] <= z], ("15m", "1h"))
+    B = json.load(open(os.path.join(ROOT, "research", "scalp", "na_best_trades.json")))["trades"]
+    out["blitz_5m_2026"] = split([{"entry_t": int(pd.Timestamp(t["entry_t"], tz="America/New_York").timestamp()),
+                                   "dir": 1 if t["dir"] == "long" else -1, "usd": 150.0 * float(t["r"]), "R": float(t["r"])} for t in B], ("5m",))
+    json.dump(out, open(out_path, "w"), indent=1)
+    for k, v in out.items():
+        print(k, v)
+    return out
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "check"
     if cmd == "advisor":
         advisor_check()
+    elif cmd == "split":
+        trend_split()
     if cmd == "check":
         check()
     elif cmd == "grid":

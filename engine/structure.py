@@ -514,39 +514,47 @@ def _frame_block(s: dict) -> dict:
             "protected": {"high": (s.get("protected") or {}).get("high"), "low": (s.get("protected") or {}).get("low")}}
 
 
+# What each strategy's own trades did in each structure state (descriptive, not a rule; tools/structure_manage.py split ->
+# research/lit/structure_trend_split.json; research/writeups/structure-management.md):
+#   LIT (2026, LIT size): with the 1h trend 44 trades $492 a trade (1.02R), against 76 trades $292 (0.72R): both pay, skipping
+#                         the "against" ones costs $22k (htf_1h_skip_against), so LIT takes both.
+#   ATLAS members ($500 a trade): 15m + 1h both with the trade 2026 $23 a trade (0.05R), 2021-25 -$25; against / mixed (the
+#                         pullback) 2026 $526-561, 2021-25 $72-89.
+#   BLITZ (2026): with the 5m trend 262 trades 0.16R a trade, against 68 trades 0.13R.
 def bias_for(A: dict) -> dict:
-    """Per strategy: what structure says about the side (advice only; the strategies' own rules decide)."""
+    """Per strategy: what structure says about the side, with what that state paid in research (advice only; the strategies'
+    own rules decide)."""
     fr = A.get("frames") or {}
     tw = {tf: (fr.get(tf) or {}).get("trend", "range") for tf in ("5m", "15m", "1h")}
     z = A.get("zone")
     prem = None if not z else bool(z.get("premium"))
     side = {"up": "long", "down": "short"}
     out = {}
-    # LIT (Zlarior): reversal after a sweep. Structure helps when the 1h agrees and price sits on the cheap / dear side.
+    # LIT (Zlarior): a reversal after a sweep; takes both sides of the 1h trend.
     h1 = tw["1h"]
-    if h1 == "up" and prem is False:
-        out["lit"] = {"bias": "long", "note": "1h up and price in the discount half: a long after a sell-side sweep fits the structure."}
-    elif h1 == "down" and prem is True:
-        out["lit"] = {"bias": "short", "note": "1h down and price in the premium half: a short after a buy-side sweep fits the structure."}
-    elif h1 in ("up", "down") and prem is None:
-        out["lit"] = {"bias": side[h1], "note": f"1h {h1}; no dealing range yet for premium / discount. LIT's own rules decide."}
-    elif h1 in ("up", "down"):
-        out["lit"] = {"bias": side[h1], "note": f"1h {h1}, but price is in the {'premium' if prem else 'discount'} half: "
-                      f"a {side[h1]} here would {'buy high' if h1 == 'up' else 'sell low'}; LIT's own rules decide."}
+    if h1 in ("up", "down"):
+        pd_ = "" if prem is None else f" Price is in the {'premium' if prem else 'discount'} half of the 15m range."
+        out["lit"] = {"bias": side[h1], "note": f"1h {h1}: LIT {side[h1]}s with the 1h trend paid $492 a trade in 2026, the other side "
+                                                 f"$292 (both pay; LIT takes both).{pd_}"}
     else:
         out["lit"] = {"bias": "none", "note": "1h has no trend yet (range): no structure side for LIT; LIT's own rules decide."}
-    # ATLAS: trend pullbacks / sweeps on 5m with the 15m + 1h trend.
-    if tw["15m"] == tw["1h"] and tw["1h"] in ("up", "down"):
-        out["atlas"] = {"bias": side[tw["1h"]], "note": f"15m and 1h both {tw['1h']}: ATLAS's trend pullbacks fit {side[tw['1h']]}s."}
+    # ATLAS: trend members; paid most on pullbacks (15m structure still against the 1h).
+    if h1 in ("up", "down") and tw["15m"] not in (h1,):
+        out["atlas"] = {"bias": side[h1], "note": f"1h {h1}, 15m {tw['15m']}: a pullback in the 1h trend, the state where ATLAS's "
+                                                   f"trades paid most ($526-561 a trade in 2026)."}
+    elif h1 in ("up", "down"):
+        out["atlas"] = {"bias": side[h1], "note": f"15m and 1h both {h1}: late in the move; ATLAS trades in this state paid least "
+                                                   f"($23 a trade in 2026, -$25 in 2021-25). Advice only."}
     else:
-        out["atlas"] = {"bias": "none", "note": f"15m {tw['15m']}, 1h {tw['1h']}: the trends disagree, no clean side for ATLAS."}
-    # BLITZ: intraday momentum out of the noise band; the 5m structure is the tell.
+        out["atlas"] = {"bias": "none", "note": f"1h has no trend yet (15m {tw['15m']}): no structure side for ATLAS."}
+    # BLITZ: intraday momentum out of the noise band; the 5m structure is context.
     ev = (fr.get("5m") or {}).get("last_event")
     if tw["5m"] in ("up", "down"):
         e = f" (last {ev['kind']} {'up' if ev['dir'] > 0 else 'down'} at {ev['price']:,.2f})" if ev else ""
-        out["scalp"] = {"bias": side[tw["5m"]], "note": f"5m {tw['5m']}{e}: momentum {side[tw['5m']]}s go with it."}
+        out["scalp"] = {"bias": side[tw["5m"]], "note": f"5m {tw['5m']}{e}: BLITZ breakouts with the 5m trend paid 0.16R a trade in "
+                                                         f"2026, against it 0.13R (about the same: context only)."}
     else:
-        out["scalp"] = {"bias": "none", "note": "5m is ranging: no momentum side yet."}
+        out["scalp"] = {"bias": "none", "note": "5m is ranging: no structure side for BLITZ."}
     return out
 
 

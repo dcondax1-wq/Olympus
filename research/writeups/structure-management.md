@@ -157,6 +157,26 @@ It fails one gate (2-week fails H1 1.7% -> 2.5%: one more of 119 fresh-eval star
   eventual pass rate drops (p60 H1 92.2% -> 89.1%). Not a better way to trade: rejected.
 - Every ATLAS exit and trail idea loses money in 2026 H1 and H2 and needs more sessions to pass.
 
+## What structure says about each strategy's own trades (descriptive, not a rule)
+
+The structure trend at the entry vs each strategy's research trades (`python -X utf8 tools/structure_manage.py split`,
+`research/lit/structure_trend_split.json`). These numbers are what the Live View's per-strategy structure notes quote.
+
+| Strategy, state at the entry | Trades | $ a trade | R a trade | Win % |
+|---|---:|---:|---:|---:|
+| LIT 2026, with the 1h trend | 44 | $492 | 1.02 | 57 |
+| LIT 2026, against the 1h trend | 76 | $292 | 0.72 | 55 |
+| LIT 2021-25, with / against the 1h trend | 178 / 333 | $13 / -$3 | 0.10 / 0.00 | 52 / 55 |
+| ATLAS members 2026 ($500 a trade), 15m + 1h both with the trade | 35 | $23 | 0.05 | 54 |
+| ATLAS 2026, mixed (15m against the 1h: a pullback) / both against | 86 / 54 | $561 / $526 | 1.12 / 1.05 | 59 / 50 |
+| ATLAS 2021-25, both with / mixed / both against | 263 / 508 / 449 | -$25 / $72 / $89 | -0.05 / 0.14 / 0.18 | 38 / 39 / 34 |
+| BLITZ 2026, with / against the 5m trend | 262 / 68 | - | 0.16 / 0.13 | 54 / 60 |
+
+- LIT trades with the 1h trend pay more per trade, but the ones against it still pay: skipping them is the -$22k row above.
+- ATLAS pays least when the 15m and 1h structure already agree with its trade (late in the move). In 2026 those 35 trades
+  still made $800, so a filter would cost money in 2026: context only.
+- BLITZ: no real difference.
+
 ## The discretion advisor (live from now on)
 
 - `engine/advisor.py` runs the six structure rules on every finished trade (PC: `narrator.tick` after each poll, once a new
