@@ -84,7 +84,27 @@ def research_note(rid: str) -> str:
 
 # ================================================================================================ bars + structure
 def _rows(x):
+    """Rows [[t, o, h, l, c], ...]: a list of rows passes through as is (no copy), anything else is converted."""
+    if isinstance(x, list) and (not x or (isinstance(x[0], list) and len(x[0]) >= 5)):
+        return x
     return ST.as_rows(x)
+
+
+def _bis(rows: list, t: int) -> int:
+    """First index whose bar time is >= t (binary search on rows[i][0])."""
+    lo, hi = 0, len(rows)
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if rows[mid][0] < t:
+            lo = mid + 1
+        else:
+            hi = mid
+    return lo
+
+
+def _window(rows: list, et: int, before: int = 7 * 86400, after: int = 86400) -> list:
+    """The rows from `before` seconds before et to `after` seconds after it."""
+    return rows[_bis(rows, et - before):_bis(rows, et + after)]
 
 
 def _arr(rows):
@@ -257,6 +277,9 @@ def score_trade(strategy: str, trade: dict, b1, rules: tuple | None = None) -> d
         return None
     if not rows or qty <= 0:
         return None
+    if rows[0][0] > et or rows[-1][0] + 60 < int(trade.get("exit_t") or 0):
+        return None                              # the bars do not cover the trade
+    rows = _window(rows, et)
     i0 = next((i for i, r in enumerate(rows) if r[0] + 60 > et), None)
     if i0 is None or rows[i0][0] > et + 120:
         return None
