@@ -185,6 +185,12 @@ def t_strategies(tmp):
     check("board next windows: Thu 02:00-12:45, Fri 02:00-13:00, Mon 11-30; after Christmas Eve the next is Mon 12-28",
           lab[:2] == ["Thu 02:00-12:45 ET", "Fri 02:00-13:00 ET"] and w[2]["day"] == "2026-11-30" and w2 and w2[0]["day"] == "2026-12-28",
           (lab, w2))
+    from engine import insight_api
+    n1 = insight_api.next_window([[120, 930]], ts(2026, 11, 26, 12, 0))
+    n2 = insight_api.next_window([[120, 930]], ts(2026, 12, 24, 14, 0))
+    check("AI Insights next window: Thanksgiving 12:00 -> open, closes 12:45 (45 min); Christmas Eve 14:00 -> next opens Mon 12-28 "
+          "02:00 (Christmas skipped)", n1["open"] and n1["end_hm"] == "12:45" and n1["closes_in_s"] == 2700
+          and not n2["open"] and n2["start_day"] == "Mon Dec 28" and n2["start_hm"] == "02:00", (n1, n2))
 
 
 def t_market_open():
