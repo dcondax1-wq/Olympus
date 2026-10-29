@@ -196,7 +196,7 @@
           <div><em>Room to floor</em><b data-dp-n="mc-${esc(A.key)}-room" class="${okN(A.roomFrac) && A.roomFrac < 0.35 ? 'dn' : ''}">${money(A.room)}</b></div><div><em>Today</em><b class="${cls(A.today)}">${smoney(A.today)}</b></div></div>`;
     const day = A.placeholder ? 'paper shadow' : okN(A.session) ? `eval day ${A.session} of ${A.sessions || 10}` : A.funded ? 'funded' : '';
     return `<article class="mc-orbit dp-tilt ${big ? 'big' : ''} st-${A.state} lt-${lt}${A.placeholder ? ' ph' : ''}" style="--c:${A.color}" data-mc-acct="${esc(A.key)}">
-      <div class="mc-planet" aria-hidden="true"><i class="mc-o1"></i><i class="mc-o2"></i><b class="mc-ball"></b><i class="mc-sat"></i></div>
+      <div class="mc-planet" aria-hidden="true" style="--p:${prog != null ? (prog * 100).toFixed(1) : 0}%"><i class="mc-prog"></i><i class="mc-o1"></i><i class="mc-o2"></i><b class="mc-ball"></b><i class="mc-sat"></i></div>
       <header><span class="mc-name"><b>${esc(A.name)}</b> · ${esc(A.size || '')}</span><span class="mc-light ${lt}" title="health">${LBL[A.state]}</span></header>
       <p class="mc-sub">${esc(A.plan)}${A.placeholder ? ' · <b>paper / not live yet</b>' : A.paper ? ' · paper' : ''}${day ? ' · ' + esc(day) : ''}</p>
       ${nums}
@@ -372,13 +372,25 @@
     ['runway', 'Eval runway', '$ to go per session left vs the backtest pace, winners needed at today\'s size'],
     ['limits', 'Daily loss & week pace', 'the daily loss limit used today, this week\'s trades vs the goal'],
     ['news', 'Next news', 'upcoming high-impact events with a countdown'],
+    ['telemetry', 'Telemetry strip', 'NQ price, ATR, VIX / VXN, the VIX-band objective and a ticking ET clock on top of Mission Control'],
     ['space', 'Deep space 3D', 'Earth, the eclipse, the Sun, stars; bot satellites glow when armed / in a trade, a shooting star on every closed trade, the aurora follows today\'s P&L'],
   ];
+  // telemetry: NQ price, ATR, VIX / VXN and the VIX-band objective up / down from the 18:00 open, the ET clock (ticks)
+  function telemetry(M) {
+    const mp = obj(M.board && M.board.map), vx = obj(mp.vix), now = M.now || nowS();
+    const it = [];
+    if (okN(+mp.price)) it.push(['NQ', px(+mp.price) + (mp.bar_hm ? ` · ${mp.bar_hm}` : '')]);
+    if (okN(+mp.atr)) it.push(['ATR', px(+mp.atr)]);
+    if (okN(+vx.vix)) it.push(['VIX', px(+vx.vix) + (okN(+vx.vxn) ? ` · VXN ${px(+vx.vxn)}` : '')]);
+    if (okN(+vx.up) && okN(+vx.dn)) it.push(['Band', `${px(+vx.dn)} – ${px(+vx.up)}`]);
+    it.push(['ET', `<span data-mc-clock>${etParts(now).hm}</span>`]);
+    return `<div class="mc-tele">${it.map(([k, v]) => `<span><em>${esc(k)}</em><b>${String(v).startsWith('<span') ? v : esc(v)}</b></span>`).join('')}</div>`;
+  }
   function page(M, opts = {}) {
     M = obj(M);
     const As = accounts(M);
     return `<div class="mc-page">
-      <header class="mc-hero"><div><span class="mc-eye">Mission Control · read-only</span><h2>Three bots in orbit</h2>${sessionCountdown(M)}
+      <header class="mc-hero"><div><span class="mc-eye">Mission Control · read-only</span><h2>Three bots in orbit</h2>${sessionCountdown(M)}${telemetry(M)}
         <p class="mc-skykey">In the sky behind: each bot is a satellite around the Earth (<span class="mc-lg" style="--c:#4f9bff"></span>Zlarior <span class="mc-lg" style="--c:#ff9a3d"></span>ATLAS <span class="mc-lg" style="--c:#b388ff"></span>BLITZ). It glows when armed, pulses with a beam to the ground while in a trade; a shooting star is a closed trade (green win, red loss); the aurora turns green or red with today's P&amp;L.</p></div></header>
       <div class="mc-orbits">${As.map((A) => orbitCard(A, M, true)).join('')}</div>
       <section class="card mc-card" data-mc-f="today"><header><h3>Today's mission</h3><p>What each bot is waiting for, right now</p></header>${missionList(M, As)}</section>
@@ -387,6 +399,7 @@
   }
   function tick(root) {
     (root || document).querySelectorAll('[data-mc-cd]').forEach((s) => { s.textContent = `${s.dataset.l ? s.dataset.l + ' ' : ''}${dur(+s.dataset.mcCd - nowS())}`; });
+    (root || document).querySelectorAll('[data-mc-clock]').forEach((s) => { const p = new Intl.DateTimeFormat('en-US', { timeZone: ET, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date()); s.textContent = p.replace(/^24/, '00'); });
   }
   let timer = null;
   function wire(el) {
@@ -396,7 +409,7 @@
       el.querySelectorAll('.mc-alerts li').forEach((li) => { li.hidden = v !== 'all' && li.dataset.lvl !== v; });
     }));
     clearInterval(timer);
-    timer = setInterval(() => { if (!document.hidden) tick(document); if (!document.querySelector('[data-mc-cd]')) { clearInterval(timer); timer = null; } }, 1000);
+    timer = setInterval(() => { if (!document.hidden) tick(document); if (!document.querySelector('[data-mc-cd], [data-mc-clock]')) { clearInterval(timer); timer = null; } }, 1000);
   }
   window.MissionUI = { version: 1, accounts, botStates, closed, strip, page, wire, tick, missionLine, whyNot, alertsList, healthNodes, nextSession, FEATURES };
 })();
