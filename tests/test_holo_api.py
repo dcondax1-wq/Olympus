@@ -326,6 +326,37 @@ def main():
           len(ve["trades"]) == 1 and not ve["trades"][0]["real"] and len(ve["fills"]) == 2 and not any(f["real"] for f in ve["fills"])
           and len(ve["trades"][0]["stop_path"]) == 2, ve["trades"])
 
+    # ---- today: the replay runs only for what the Brain cannot say, throttled
+    calls = []
+
+    def live_stub(day, errors=None, now=None):
+        calls.append((day, now))
+        return {"trades": [], "setups": [{"id": "1:-1", "t": T(4, 55), "dir": -1, "status": "tapped",
+                                          "detail": {"t_sweep": T(4, 15), "t_idm": T(3, 50), "t_disp": T(4, 50), "t_cisd": T(4, 55), "cisd": 30797.25}}],
+                "levels": [], "log": []}
+    H.model_day = live_stub
+    H._MODEL.clear()
+    H._LIVE_TRY.clear()
+    lb = F.bot(now)
+    lb.brain = F.brain(status="tapped")
+    lb.ledger, lb.adapter = [], None
+    v1 = H.build(lb, None, now)
+    v2 = H.build(lb, None, now + 60)
+    check("today: the Brain's new setup triggers one replay (throttled to one per 5 min while it is missing)",
+          len(calls) == 1 and calls[0] == (DAY, now) and v1["errors"] == [] and v2["live"], calls)
+    H._MODEL[DAY] = ("sig", live_stub(DAY))
+    calls.clear()
+    v3 = H.build(lb, None, T(5, 0))
+    lim = [o for o in v3["orders"] if o.get("model")]
+    check("today: no replay once the cache has the setup; the armed limit is a WORKING model order until it expires",
+          not calls and len(lim) == 1 and lim[0]["state"] == "WORKING" and lim[0]["t_end"] is None and lim[0]["px"] == 30797.25, (calls, lim))
+    lb.brain = F.brain(status="tapped", trade=None)
+    v4 = H.build(lb, None, T(5, 40))
+    check("today: the expired limit is CANCELLED at its expiry", [o["state"] for o in v4["orders"] if o.get("model")] == ["CANCELLED"]
+          and [o["t_end"] for o in v4["orders"] if o.get("model")] == [T(5, 25)])
+    H._MODEL.clear()
+    H.model_day = model_stub
+
     # ---- days list + routes
     dl = H.days(b, 30, now)
     check("days: newest first, with trades / real $", [d["day"] for d in dl][:2] == [DAY, PAST] and dl[0]["real_n"] >= 2
