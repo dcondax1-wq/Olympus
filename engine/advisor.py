@@ -33,6 +33,7 @@ import time
 
 import numpy as np
 
+from engine import fsutil
 from engine import structure as ST
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -394,7 +395,7 @@ def _jl_write(path, rows):
     with open(tmp, "w", encoding="utf-8") as fh:
         for r in rows:
             fh.write(json.dumps(r, default=str) + "\n")
-    os.replace(tmp, path)
+    fsutil.replace(tmp, path)                    # Windows: retried while a reader / antivirus holds the file
 
 
 def tally(records: list) -> dict:
@@ -437,10 +438,12 @@ def update(strategy: str, trades: list, b1, store: str | None = None, write: boo
         T = tally(recs)
         if write and new:
             _jl_write(path, recs)
+        if write and recs:
             allt = _read_json(_p(store, "tally.json"), {}) or {}
-            allt[strategy] = {"t": int(time.time()), "n_trades": len(recs), "rules": T}
-            _write_json(_p(store, "tally.json"), allt)
-        return {"new": len(new), "tally": T, "n_trades": len(recs)}
+            if new or (allt.get(strategy) or {}).get("rules") != T:     # also redoes a tally.json write that failed before
+                allt[strategy] = {"t": int(time.time()), "n_trades": len(recs), "rules": T}
+                _write_json(_p(store, "tally.json"), allt)
+        return {"new": len(new), "tally": T, "n_trades": len(recs), "keys": have}
     except Exception as e:
         return {"new": 0, "tally": {}, "error": f"{e.__class__.__name__}: {e}"[:200]}
 
@@ -458,7 +461,7 @@ def _write_json(path, obj):
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(obj, fh, indent=1, default=str)
-    os.replace(tmp, path)
+    fsutil.replace(tmp, path)
 
 
 def load_tally(store: str | None = None) -> dict:
@@ -616,9 +619,11 @@ def _score_job(todo: dict, st, last: int, store: str | None) -> dict:
     out = {}
     for strat, tr in todo.items():
         out[strat] = update(strat, tr, b1, store)
-        for t in tr:                             # scored, or too old for the 12-day store: never retried every bar
-            if out[strat].get("new") or int(t["exit_t"]) < last - 86400:
-                _PC["seen"][strat].add(_key(strat, t))
+        stored = out[strat].pop("keys", None) or ()
+        for t in tr:                             # in the store (scored now or before), or too old for the 12-day store: never
+            k = _key(strat, t)                   # retried every bar; not scored yet (its exit bar not in) / a failed write: next bar
+            if k in stored or int(t["exit_t"]) < last - 86400:
+                _PC["seen"][strat].add(k)
     _PC["result"] = out
     return out
 
