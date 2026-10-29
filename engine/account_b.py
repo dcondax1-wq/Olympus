@@ -1033,7 +1033,9 @@ class AccountB:
         k, t, nm, d, head, risk, sz, act = chosen
         why_c = self._c_yield(d, tb, sym, now, act.get("entry"))
         if why_c:
-            self.log("risk", f"{head} NOT routed on account B: {why_c}")
+            # BLITZ's close is in flight: B waits for it (probed again at the next poll while this open is fresh, MAX_AGE_S)
+            self.seen.discard(("probe", tb))
+            self.log("risk", f"{head} NOT routed on account B yet: {why_c} (tried again at the next poll while the open is fresh)")
             return
         q = int(sz["qty"])
         self.open_t = tb

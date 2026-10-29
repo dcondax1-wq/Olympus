@@ -1076,7 +1076,9 @@ class AccountC:
             self._push_outcome(pv, reason, pnl, x["exit_t"], q, int(et_))
         else:
             fl = pv.get("flat") or {}
-            if fl.get("reason") == "TIME" and reason == "TIME":   # the clock flattened it first: the model's own 15:55 price
+            if fl.get("reason") == "TIME" and reason == "TIME" and \
+                    int(x.get("exit_bar_t") or x["exit_t"]) <= int(fl.get("t") or 0):   # the clock flattened it first, after the model's
+                # own last bar (a late 15:54 bar): book the model's 15:55 price; an early-close flatten keeps its market price
                 with self.mx:
                     for row in reversed(self.ledger):
                         if row.get("side") == "exit" and row.get("entry_t") == int(et_) and row.get("pnl_est"):

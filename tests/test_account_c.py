@@ -262,7 +262,6 @@ def part2():
                 C.lock = None
     took = time.time() - t_start
     rows = [r for r in C.rows if r.get("model_entry_t") is not None]
-    key = lambda r: (int(r["model_entry_t"]), int(r["dir"]), round(float(r["entry"]), 2), round(float(r["stop"] if not r.get("routed") else r["stop"]), 2))
     same = len(rows) == len(ref)
     diffs = []
     for a, b in zip(rows, ref):        # prices within 0.001 pt (the live 5m ATR is summed bar by bar: ~1e-8 of float noise)
@@ -336,7 +335,6 @@ def _open_long(C, bot, day="2026-11-03", hh=11, mm=0, close=25000.0):
 
 
 def part3():
-    day = "2026-11-03"
     # blocked by LIT's armed short setup / LIT short position / LIT entering short / account B short
     for what, setter, word in (
             ("LIT's SHORT setup armed (limit)", lambda b: b.state.update(setups={"short": {"arm_t": 1}}), "LIT has a SHORT setup armed"),
@@ -710,9 +708,53 @@ def part10():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+# ================================================================================================ 11. dashboards data
+def part11():
+    from engine import accounts as A
+    from engine import heartbeat as HB
+    from engine import live_board as LB
+    from engine import narrator as NR
+    bot, C = make("2026-11-02")
+    tb = _open_long(C, bot)
+    C._events([{"ev": "entry", "entry_t": tb, "sig_t": tb - 60, "dir": 1, "entry": 25000.25, "stop": 24970.0, "risk": 30.25}], "NQ", tb + 62)
+    C._events([{"ev": "exit", "entry_t": tb, "exit_t": tb + 1860, "exit": 25030.0, "kind": "time", "pts": 29.75, "risk": 30.25,
+                "r": 0.9, "pnl_pm": 57.6, "bars": 31, "mae": 3.0}], "NQ", tb + 1862)
+    bot._now = tb + 1900
+    blk = HB._account_c(bot)
+    check("11. heartbeat account_c: label, kind, eval, scorecard, days, closed trades, no paths",
+          blk and blk["label"] == "BLITZ Sim103" and blk["days"] and blk["closed"] and blk["scorecard"]["n"] == 1
+          and "/tmp" not in json.dumps(blk), blk and list(blk))
+    pc = {"present": True, "t": bot._now, "running": True, "adapter": "paper", "account_c": blk}
+    secs = A.build_accounts({"pc": pc, "last_run": bot._now}, {}, bot._now)
+    sec = next((s for s in secs if s.get("id") == "acct_c"), None)
+    check("11. build_accounts: a 'BLITZ Sim103' section (source pc_blitz) with its eval, trades and P&L, before the cloud paper one",
+          sec and sec["source"] == "pc_blitz" and sec["trades"] and sec["eval"] and sec["pnl"]["today"] == blk["day_pnl"]
+          and secs[-1].get("source") == "cloud", sec)
+    off = A.build_accounts({"pc": {k: v for k, v in pc.items() if k != "account_c"}, "last_run": bot._now}, {}, bot._now)
+    check("11. ... without account_c: no BLITZ section (exactly the old list)", not any(s.get("id") == "acct_c" for s in off)
+          and len(off) == len(secs) - 1)
+    bd = LB.build({"pc": pc, "accounts": secs, "where": "pc"}, bot._now)
+    bd0 = LB.build({"pc": {k: v for k, v in pc.items() if k != "account_c"}, "accounts": off, "where": "pc"}, bot._now)
+    check("11. live board: a third card 'blitz' (balance, room, waiting, window, scorecard) + accts, BLITZ rows in the trade log",
+          isinstance(bd.get("blitz"), dict) and bd["blitz"].get("name") == "BLITZ" and bd.get("accts") == ["lit", "atlas", "blitz"]
+          and any(r.get("acct") == "blitz" for r in bd.get("trades") or []), {k: bd.get(k) for k in ("blitz", "accts")})
+    check("11. ... off: no blitz key, no accts, no BLITZ rows", "blitz" not in bd0 and "accts" not in bd0
+          and not any(r.get("acct") == "blitz" for r in bd0.get("trades") or []))
+    msgs, _ = NR.derive(bot, now=bot._now)
+    mine = [m for m in msgs if m.get("strat") == "scalp" and "PAPER · BLITZ" in str(m.get("title"))]
+    check("11. narrator: account C's rows labelled with the account word (PAPER here, REAL on a real account), apart from the shadow",
+          mine and all(not str(m.get("key") or m.get("id") or "").startswith("scalp:blitz:") for m in mine), [m.get("title") for m in msgs][:6])
+    from engine import pc_cc_api as CC
+    card = CC._blitz_card(bot, bot._now)
+    check("11. Mission Control: the BLITZ card (Builder 25K, 6 a day, scorecard)", card and card["max_trades_day"] == 6 and card["scorecard"]["n"] == 1)
+    bot2 = FakeBot()
+    check("11. Mission Control off: no card", CC._blitz_card(bot2, 0) is None)
+
+
 def main():
     quick = "--quick" in sys.argv
-    for name, fn in (("1", part1), ("3", part3), ("4", part4), ("5", part5), ("6", part6), ("7", part7), ("8", part8), ("10", part10)):
+    for name, fn in (("1", part1), ("3", part3), ("4", part4), ("5", part5), ("6", part6), ("7", part7), ("8", part8), ("10", part10),
+                     ("11", part11)):
         try:
             fn()
         except Exception as e:
