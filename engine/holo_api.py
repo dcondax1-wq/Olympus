@@ -70,6 +70,18 @@ def _g(obj, name, default=None):
         return default
 
 
+def _snap(seq) -> list:
+    """A copy of a list / deque the trading thread may be appending to right now (a deque raises while it changes)."""
+    for _ in range(3):
+        try:
+            return list(seq or [])
+        except RuntimeError:
+            continue
+        except Exception:
+            return []
+    return []
+
+
 def _J(obj, status=200):
     return Response(json.dumps(obj, separators=(",", ":"), default=str), media_type="application/json", status_code=status)
 
@@ -417,11 +429,11 @@ def _accounts(bot) -> list:
     except Exception:
         acct = None
     ad = _g(bot, "adapter", None)
-    out.append(("lit", bot, ad, list(_g(bot, "ledger", None) or []), acct or _g(ad, "account", None)))
+    out.append(("lit", bot, ad, _snap(_g(bot, "ledger", None)), acct or _g(ad, "account", None)))
     for key, attr in (("atlas", "acct_b"), ("blitz", "acct_c")):
         A = _g(bot, attr, None)
         if A is not None:
-            out.append((key, A, _g(A, "adapter", None), list(_g(A, "ledger", None) or []),
+            out.append((key, A, _g(A, "adapter", None), _snap(_g(A, "ledger", None)),
                         _g(A, "name", None) or _g(A, "label", None)))
     return out
 
@@ -489,7 +501,7 @@ def _legs(accts, bot) -> dict:
     out = {}
     for key, _A, ad, _l, _n in accts:
         seen = {}
-        for lg in list(_g(ad, "legs", None) or []) + list(_g(ad, "history", None) or []):
+        for lg in _snap(_g(ad, "legs", None)) + _snap(_g(ad, "history", None)):
             if isinstance(lg, dict) and lg.get("entry_id"):
                 old = seen.get(lg["entry_id"])
                 if old is None or int(lg.get("filled") or 0) >= int(old.get("filled") or 0):
