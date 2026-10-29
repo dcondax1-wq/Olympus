@@ -479,7 +479,9 @@ def part_d(b3, lvd, now, shots, perf):
         print("[SKIP] d. PC Playwright: playwright / uvicorn not installed")
         return
     from tests.shots_board import free_port, snapshot_files, restore_files
+    import atexit
     snap = snapshot_files()
+    atexit.register(restore_files, snap)          # the server refreshes data / cache files in the background: put them back at exit too
     for k, v in (("LE_NO_AUTOSTART", "1"), ("LE_HEARTBEAT", "0"), ("LE_LIVE_PUBLISH", "0"), ("LE_EXEC_AUDIT", "0")):
         os.environ[k] = v
     try:

@@ -379,7 +379,7 @@
     const As = accounts(M);
     return `<div class="mc-page">
       <header class="mc-hero"><div><span class="mc-eye">Mission Control · read-only</span><h2>Three bots in orbit</h2>${sessionCountdown(M)}
-        <p class="mc-legend">In the sky behind: each bot is a satellite around the Earth (<i style="--c:#4f9bff"></i>Zlarior <i style="--c:#ff9a3d"></i>ATLAS <i style="--c:#b388ff"></i>BLITZ). It glows when armed, pulses with a beam to the ground while in a trade; a shooting star is a closed trade (green win, red loss); the aurora turns green or red with today's P&amp;L.</p></div></header>
+        <p class="mc-skykey">In the sky behind: each bot is a satellite around the Earth (<span class="mc-lg" style="--c:#4f9bff"></span>Zlarior <span class="mc-lg" style="--c:#ff9a3d"></span>ATLAS <span class="mc-lg" style="--c:#b388ff"></span>BLITZ). It glows when armed, pulses with a beam to the ground while in a trade; a shooting star is a closed trade (green win, red loss); the aurora turns green or red with today's P&amp;L.</p></div></header>
       <div class="mc-orbits">${As.map((A) => orbitCard(A, M, true)).join('')}</div>
       <section class="card mc-card" data-mc-f="today"><header><h3>Today's mission</h3><p>What each bot is waiting for, right now</p></header>${missionList(M, As)}</section>
       <div class="mc-grid">${fStop(M, As)}${fWhy(M, As)}${fTimeline(M, As)}${fAlerts(M, As)}${fHealth(M)}${fRunway(M, As)}${fStreak(M, As)}${fLimits(M, As)}${fNews(M)}</div>
