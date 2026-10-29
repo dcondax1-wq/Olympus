@@ -9,7 +9,7 @@ runs: ab_blitz_later_break, ab_blitz_trendday_size, ab_blitz_1030_check, ab_atla
 
 ## Money first
 
-**BLITZ: one change worth switching on when its own 25K starts. ATLAS: keep it exactly as it is.**
+**BLITZ: one sizing change for the owner to approve before its own 25K starts. ATLAS: keep it exactly as it is.**
 
 - **BLITZ, the 25K eval size ("later-break size").** Trade the day's first band break on a side at half of today's size.
   Trade a later break on the same side (the move already broke out at an earlier check) at 1.75 x today's size, never more
