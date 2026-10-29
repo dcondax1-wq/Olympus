@@ -502,7 +502,8 @@ part yourself or fold it into a script.**
   `docs/PLAYBOOK.md` + `engine/playbook.py` (rules Z1-Z18, A1-A8, B1-B8 + structure advice Z-S / A-S / B-S; `now()` = the
   rule being applied, `applying()`, one check function per rule). `engine/advisor.py`: six rules (be_choch, exit_choch,
   trail_15m, trail_5m, tp_pool, skip_htf) scored on every finished trade by the difference method; PC via `narrator.tick`
-  (`logs/advisor/<strategy>.jsonl`, `tally.json`, gitignored), cloud via `live_learning.cloud_hook` (state "advisor");
+  (a key check on the poll, the scoring in a background thread; `logs/advisor/<strategy>.jsonl`, `tally.json`,
+  gitignored), cloud via `live_learning.cloud_hook` (state "advisor");
   cards in `live_learning.suggestions` (no approve command). Its backtest = the research (`tools/structure_manage.py
   advisor`). Tests `tests.test_structure`, `tests.test_advisor`.
 - **Dashboard 2026-10-28 (owner: "50 useful features", "what the bot is thinking", "very 3D"):** registry

@@ -381,8 +381,8 @@ def t_liveview():
                 {"t": TL.T(4, 10), "side": "exit", "qty": 2, "entry_t": et, "exit_t": TL.T(4, 10), "pnl": -80.0, "reason": "STOP"}]
     with tempfile.TemporaryDirectory() as tmp:
         AD._PC.update(last=None, seen=None, store=None)
-        r1 = AD.pc_tick(b, now, store=tmp)
-        r2 = AD.pc_tick(b, now, store=tmp)
+        r1 = AD.pc_tick(b, now, store=tmp, background=False)
+        r2 = AD.pc_tick(b, now, store=tmp, background=False)
         check("advisor.pc_tick: scores the finished routed trade into the temp store, nothing twice in the same bar",
               r1 and (r1.get("lit") or {}).get("new") == 1 and r2 is None and os.path.exists(os.path.join(tmp, "lit.jsonl")), (r1, r2))
         b._lit_1m_store = b._lit_1m_store.iloc[:-1]
@@ -390,6 +390,19 @@ def t_liveview():
         t1 = time.perf_counter()
         r3 = AD.pc_tick(b, now, store=tmp)
         ms_pc = (time.perf_counter() - t1) * 1000
+        b.ledger = b.ledger + [{"t": TL.T(4, 20), "side": "sell", "qty": 1, "entry_t": TL.T(4, 15), "entry": 30790.0, "stop": 30810.0,
+                                "target": 30700.0, "result": {"ok": True}},
+                               {"t": TL.T(4, 40), "side": "exit", "qty": 1, "entry_t": TL.T(4, 15), "exit_t": TL.T(4, 40), "pnl": 20.0, "reason": "TIME"}]
+        b._lit_1m_store = b._lit_1m_store.iloc[:-1]
+        AD._PC["last"] = None
+        t1 = time.perf_counter()
+        r4 = AD.pc_tick(b, now, store=tmp)
+        ms_q = (time.perf_counter() - t1) * 1000
+        th = AD._PC.get("thread")
+        if th is not None:
+            th.join(30)
+        check("advisor.pc_tick: a new finished trade is scored in a background thread (the poll only queues it)",
+              (r4 or {}).get("queued") == {"lit": 1} and len(AD._jl_read(os.path.join(tmp, "lit.jsonl"))) == 2, (r4, ms_q))
         check("advisor.pc_tick on a new bar with nothing new to score: no bars converted, < 20 ms", r3 == {} and ms_pc < 20, (r3, ms_pc))
 
 
