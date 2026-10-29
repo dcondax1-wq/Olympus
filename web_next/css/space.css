@@ -41,6 +41,15 @@
 .fx-bg .fx-space { opacity: 0; transition: opacity 1.4s ease; }
 .fx-bg .fx-space.on { opacity: 1; }
 body:has(.fx-space.on) .space-css { visibility: hidden; }
+/* the satellites' name tags (space.js labelStep): ride next to each bot's satellite, hidden behind the planet */
+.fx-labels { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.fx-lab { position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 5px; padding: 3px 8px 3px 6px; border-radius: 99px; white-space: nowrap;
+  font: 650 10px/1.2 Inter, system-ui, sans-serif; letter-spacing: .02em; color: #e8eefc; background: rgba(4,7,18,.55);
+  border: 1px solid color-mix(in srgb, var(--c) 55%, transparent); box-shadow: 0 0 14px -4px var(--c); transition: opacity .5s ease; will-change: transform; }
+.fx-lab i { width: 6px; height: 6px; border-radius: 50%; background: var(--c); box-shadow: 0 0 8px var(--c); }
+.fx-lab span { color: #aebbd6; font-weight: 600; text-transform: uppercase; font-size: 9px; letter-spacing: .08em; }
+.fx-lab[data-st="trade"] span, .fx-lab[data-st="armed"] span { color: var(--c); }
+.fx-lab.hid { opacity: 0; }
 :root[data-theme="light"] .space-css { display: none; }
 :root[data-theme="light"] .fx-bg.fx-bg-space { opacity: .08; }
 :root:not([data-theme="light"]) body { background-color: #02030a; }

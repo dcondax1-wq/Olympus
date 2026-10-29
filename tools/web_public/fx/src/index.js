@@ -125,6 +125,7 @@ export function background(kind) {
 export function bots(st) { lastBots = { ...(lastBots || {}), ...(st || {}) }; field?.bots?.(lastBots); }
 export function shoot(kind = 'win') { return field?.shoot ? field.shoot(kind) : false; }
 export function pnl(usd) { lastPnl = +usd || 0; field?.pnl?.(lastPnl); }
+export function labels(on) { field?.labels?.(on); }      // the satellites' name tags (on by default, off in Lite)
 export function stats() { return field?.stats ? { ...field.stats, kind: bgKind, level: Q.level, dpr: field.renderer.getPixelRatio(), soft: !!field.soft } : null; }
 export function pulse() { field?.pulse(); }
 export function sweep() { field?.sweep(); }

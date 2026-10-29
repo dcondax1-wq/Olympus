@@ -8,7 +8,8 @@
 //  - the Sun: corona with streamers, glare and lens ghosts that dim when the Moon covers it
 //  - stars in three depth layers (parallax), a baked Milky Way band with dust lanes, faint nebulae, a few spiked stars
 //  - three satellites orbit the Earth, one per bot (Zlarior blue, ATLAS orange, BLITZ purple): dim when off, breathing
-//    when waiting, pulsing with a ring when armed, bright with a beam to the ground while in a trade
+//    when waiting, pulsing with a ring when armed, bright with a beam to the ground while in a trade; a small HTML tag
+//    rides next to each one ("Zlarior · IN TRADE"), hidden behind the planet (labels(); off in Lite)
 //  - a shooting star when a trade closes (green win / red loss), star streaks on a page change (warp), a slow
 //    cinematic camera drift, parallax from the pointer, the scroll position and (opt-in) the phone's tilt
 // Cost: one canvas, ~10 draw calls; phones render at most 30 fps (the scene moves slowly), every device 30 fps after
@@ -227,6 +228,8 @@ const BOTS = [
 ];
 const TF = Math.tan(THREE.MathUtils.degToRad(45 / 2));   // the camera's resting field of view (45 degrees)
 const STATE_ON = { off: 0.0, idle: 0.35, armed: 0.7, trade: 1.0 };
+const NAMES = { lit: 'Zlarior', atlas: 'ATLAS', scalp: 'BLITZ' };
+const TAGS = { trade: 'IN TRADE', armed: 'ARMED', idle: 'watching', off: 'off' };
 // per-page shots: Earth's face (spin offset), sky turn, light warmth; blended over ~2 s with the warp
 const SHOTS = { today: [0, 0], chart: [1.2, 0.35], trades: [2.3, -0.4], results: [3.1, 0.6], lab: [4.0, -0.25], losses: [4.8, 0.5], eval: [5.5, -0.6], engine: [0.7, 0.8], settings: [1.8, -0.8] };
 function ringTexture() {
@@ -477,6 +480,35 @@ export class Space extends View {
     this.dirty = true; wake();
   }
   // states: { lit: 'trade' | 'armed' | 'idle' | 'off', atlas: ..., scalp: ... }
+  attach(el) {
+    super.attach(el);
+    if (this.labOn !== false && Q.level !== 'lite' && !this.labEl) {
+      this.labEl = document.createElement('div'); this.labEl.className = 'fx-labels'; this.labEl.setAttribute('aria-hidden', 'true');
+      for (const s of this.sats) {
+        const d = document.createElement('div'); d.className = 'fx-lab hid'; d.style.setProperty('--c', s.color);
+        d.innerHTML = `<i></i><b>${NAMES[s.key] || s.key}</b><span></span>`; s.lab = d; s.labTxt = null; this.labEl.appendChild(d);
+      }
+    }
+    if (this.labEl && this.labEl.parentElement !== el) el.appendChild(this.labEl);
+  }
+  labels(on) { this.labOn = !!on; if (this.labEl) this.labEl.style.display = on ? '' : 'none'; if (on && !this.labEl && this.el) this.attach(this.el); this.dirty = true; wake(); }
+  // the tag next to each satellite: projected every drawn frame, hidden behind the planet or off screen
+  labelStep() {
+    if (!this.labEl || this.labOn === false) return;
+    const cam = this.camera, E = this.earthG.position, w = this.w, h = this.h;
+    for (const s of this.sats) {
+      const d = s.lab; if (!d) continue;
+      const txt = s.key === 'scalp' && s.state === 'off' ? 'paper' : TAGS[s.state] || '';
+      if (txt !== s.labTxt) { d.lastElementChild.textContent = txt; d.dataset.st = s.state; s.labTxt = txt; }
+      _v.copy(s.pos).project(cam);
+      _ray.set(cam.position, _w.copy(s.pos).sub(cam.position).normalize()); _sph.set(E, 1.0);
+      const hit = _ray.intersectSphere(_sph, _p), behind = hit && hit.distanceTo(cam.position) < s.pos.distanceTo(cam.position) - 0.05;
+      const x = (_v.x * 0.5 + 0.5) * w, y = (-_v.y * 0.5 + 0.5) * h, off = _v.z > 1 || x < 8 || x > w - 8 || y < 8 || y > h - 8;
+      const hide = behind || off || (s.state === 'off' && s.key !== 'scalp');
+      if (hide !== s.labHid) { d.classList.toggle('hid', hide); s.labHid = hide; }
+      if (!hide) d.style.transform = `translate3d(${(x + 12).toFixed(1)}px, ${(y - 9).toFixed(1)}px, 0)`;
+    }
+  }
   bots(st = {}) {
     for (const s of this.sats) {
       const v = st[s.key] || st[s.key === 'scalp' ? 'blitz' : s.key];
@@ -588,6 +620,7 @@ export class Space extends View {
     }
     // satellites
     for (const s of this.sats) this.satStep(s, t, dt, still);
+    this.labelStep();
     this.meteorStep(t, dt);
   }
   // put the shadow centre where the line of sight through screen point (nx, ny) meets the Earth (or the nearest limb point)
@@ -658,5 +691,5 @@ export class Space extends View {
     this.mStreak.scale.set((M.kind === 'quiet' ? 4.2 : 8.5) * Math.min(1, s * 3), M.kind === 'quiet' ? 0.14 : 0.3, 1); this.mStreak.material.opacity = fade;
     if (M.s >= 1) this.meteor = null;
   }
-  dispose() { this.aura?.dispose(); for (const rt of [this.tA, this.tC, this.tS, this.tM]) rt?.dispose(); this.ov.traverse((o) => o.material?.dispose?.()); super.dispose(); }
+  dispose() { this.labEl?.remove(); this.aura?.dispose(); for (const rt of [this.tA, this.tC, this.tS, this.tM]) rt?.dispose(); this.ov.traverse((o) => o.material?.dispose?.()); super.dispose(); }
 }
