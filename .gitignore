@@ -135,6 +135,8 @@ data/account_c.json
 data/account_c.json.tmp
 data/live_state_acctc*.json
 data/live_state_acctc*.json.tmp
+data/account_c_sim.json
+data/account_c_sim.json.tmp
 # 2026-10-29: new MFFU account Names seen / dismissed, the autopilot tap log, the PC's last good push config
 data/new_accounts.json
 data/autopilot.jsonl

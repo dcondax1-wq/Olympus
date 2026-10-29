@@ -1066,6 +1066,18 @@ def part13():
     check("13. $600 soft daily loss: -$610 today -> locked, the 12:00 BLITZ signal NOT routed", C2.open_t is None and "locked out" in str(r2.get("skip")), r2)
     tb3 = _open_long(C2, bot2, day="2026-11-04", hh=11, mm=0)
     check("13. ... the next day trades again", C2.open_t == tb3, C2._row(et_=tb3))
+    # the $1,000 EOD trailing floor locks at start + $100 ($25,100) once an end-of-day balance reaches $26,100
+    bot4, C4 = make("2026-11-02")
+    C4.closes.append(["2026-11-02", at_et("2026-11-02", 11, 31), 1100.0, at_et("2026-11-02", 11, 0), 2.0])
+    bot4._now = at_et("2026-11-03", 10, 0)
+    ev = C4.eval_view(bot4._now)
+    C4.closes.append(["2026-11-03", at_et("2026-11-03", 11, 31), -300.0, at_et("2026-11-03", 11, 0), -1.0])
+    bot4._now = at_et("2026-11-04", 10, 0)
+    ev2 = C4.eval_view(bot4._now)
+    check(f"13. trailing floor lock: +$1,100 day 1 -> floor ${ev.get('floor'):,.0f} (locked at $25,100), room ${ev.get('room'):,.0f}; "
+          f"-$300 day 2 -> floor ${ev2.get('floor'):,.0f}, room ${ev2.get('room'):,.0f} (the floor never moves down)",
+          abs(ev["floor"] - 25100.0) < 0.01 and abs(ev["room"] - 1000.0) < 0.01 and abs(ev2["floor"] - 25100.0) < 0.01
+          and abs(ev2["room"] - 700.0) < 0.01, (ev, ev2))
     # Nov 1 2026 DST: the eval counts weekdays (Mon Nov 2 = session 1 for a Sunday Set); the checks stay 11:00 ... 15:30 New York
     from engine import sizing as SZ
     check("13. eval session count across the Nov 1 DST change: start Sun Nov 1 -> Mon Nov 2 = 1, Fri Nov 6 = 5, Mon Nov 9 = 6",
@@ -1118,6 +1130,23 @@ def part13():
               st["sim"]["state"] == "good" and "BLITZ traded 2 times on Sim101" in st["sim"]["detail"] and st["armed"]["state"] == "info", st["sim"])
         c = PF.compact(r)
         check("13. compact (launch checklist cut): count + the first red line", c["n_red"] >= 1 and c["first"]["state"] == "bad", c)
+        # the running bot: an order of Zlarior's NinjaTrader just took proves the route (no Sim roundtrip needed mid-week)
+        from types import SimpleNamespace
+        AC.write_local({"account": "MFFUEVBLDR777", "plan": "builder25k", "eval_start": "2026-11-02", "armed": True}, tmp)
+        os.remove(PF.sim_path(tmp))
+        rb = SimpleNamespace(running=True, cfg={"adapter": "ninjatrader", "nt_account": "MFFUEVBLDR602936016", "armed": True},
+                             health={"nt": {"connected": True}, "feed": {"age_1m_s": 20, "age_5m_s": 100, "stale": False, "market_open": True},
+                                     "account": {"armed": True}},
+                             ledger=[{"side": "buy", "t": now - 3600, "result": {"ok": True, "adapter": "ninjatrader", "account": "MFFUEVBLDR602936016"}}],
+                             acct_b=None, acct_c=None, blitz=None, clock=lambda: now)
+        old_env = os.environ.get("NINJATRADER_LIVE")
+        r = PF.check(rb, root=tmp, now=now, allowed={"MFFUEVBLDR777"}, nt_names=["MFFUEVBLDR777"], sim_rt={}, **kw)
+        st = {i["key"]: i for i in r["items"]}
+        check("13. ... running bot, no Sim test file: Zlarior's order NinjaTrader took an hour ago = the route line green",
+              st["sim"]["state"] == "good" and "Zlarior's order" in st["sim"]["detail"], st["sim"])
+        check("13. ... armed BLITZ but the server without the live switch = red (BLITZ would wait)",
+              old_env == "1" or (st["armed"]["state"] == "bad" and "not running live" in st["armed"]["detail"]), st["armed"])
+        check("13. ... the bot runs, BLITZ not picked up yet = wait (next poll)", st["bot"]["state"] == "wait", st["bot"])
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 

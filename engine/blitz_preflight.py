@@ -22,7 +22,7 @@ import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 VERSION = 1
-SIM_TEST_MAX_AGE_S = 14 * 86400           # a BLITZ Sim session counts for two weeks; the bot's Sim roundtrip for 7 days
+SIM_TEST_MAX_AGE_S = 14 * 86400           # a BLITZ Sim session or the bot's Sim roundtrip counts for two weeks
 SIM_FILE = os.path.join("data", "account_c_sim.json")
 CMD = "python -X utf8 -m engine.account_c --preflight"
 START = "Start page > Start trading"
@@ -181,6 +181,20 @@ def facts(bot=None, root: str | None = None, now=None, folder: str | None = None
     except Exception:
         f["sim_rt"] = None
     f["sim_c"] = _read(sim_path(root))
+    # the same NinjaTrader route taking a real order lately (Zlarior's / ATLAS's accepted entries on the running bot): proves the
+    # route BLITZ uses without stopping the live bot for a Sim roundtrip
+    try:
+        last = None
+        if f["running"] and cfg.get("adapter") == "ninjatrader":
+            for who, led in (("Zlarior", getattr(bot, "ledger", None) or []), ("ATLAS", getattr(getattr(bot, "acct_b", None), "ledger", None) or [])):
+                for r in led:
+                    res = r.get("result") if isinstance(r.get("result"), dict) else {}
+                    if r.get("side") in ("buy", "sell") and res.get("ok") is True and res.get("adapter") == "ninjatrader" and r.get("t"):
+                        if last is None or int(r["t"]) > last[0]:
+                            last = (int(r["t"]), who, res.get("account"))
+        f["route"] = None if last is None else {"t": last[0], "who": last[1], "account": last[2]}
+    except Exception:
+        f["route"] = None
     # the account itself: the running instance, else one built from the state file
     ac = getattr(bot, "acct_c", None) if bot is not None else None
     f["c_running"] = ac is not None
@@ -331,10 +345,11 @@ def lines(f: dict) -> dict:
                        ("a Sim account needs no allowlist" if f.get("sim") else f"{name} may receive orders") if al else
                        f"{name} is not on the allowlist: the bot refuses to send it orders", f'python -m engine.ninjatrader --allow-account "{name}"'))
     # the Sim test
-    rt, sc = f.get("sim_rt") or {}, f.get("sim_c") or {}
-    rt_ok = bool(rt.get("ok")) and now - int(rt.get("t") or 0) <= 7 * 86400
+    rt, sc, ro = f.get("sim_rt") or {}, f.get("sim_c") or {}, f.get("route") or {}
+    rt_ok = bool(rt.get("ok")) and now - int(rt.get("t") or 0) <= SIM_TEST_MAX_AGE_S
     sc_ok = bool(sc.get("ok")) and int(sc.get("trades") or 0) > 0 and now - int(sc.get("t") or 0) <= SIM_TEST_MAX_AGE_S
-    if sc_ok or rt_ok:
+    ro_ok = bool(ro.get("t")) and now - int(ro["t"]) <= 7 * 86400
+    if sc_ok or rt_ok or ro_ok:
         why = []
         if sc_ok:
             why.append(f"BLITZ traded {int(sc['trades'])} time{'s' if int(sc['trades']) != 1 else ''} on {sc.get('account')} on {sc.get('day')}, "
@@ -342,11 +357,14 @@ def lines(f: dict) -> dict:
         if rt_ok:
             why.append(f"the order route passed its Sim roundtrip on {rt.get('account') or 'Sim'} {_et(int(rt['t'])):%a %b %d} "
                        "(BLITZ uses the same route)")
-        items.append(_item("sim", "Sim test passed recently", "good", "; ".join(why)))
+        if ro_ok:
+            why.append(f"NinjaTrader took {ro.get('who')}'s order on {_et(int(ro['t'])):%a %b %d %H:%M} ET (the same route BLITZ uses)")
+        items.append(_item("sim", "Order route tested recently", "good", "; ".join(why)))
     else:
-        items.append(_item("sim", "Sim test passed recently", "bad",
-                           "no Sim test in the last 7 days (the bot's Sim roundtrip) and no BLITZ Sim session in the last 14",
-                           "Start page > Start trading (it runs the Sim test once), or python -m engine.ninjatrader --sim-roundtrip"))
+        items.append(_item("sim", "Order route tested recently", "bad",
+                           "no Sim roundtrip and no BLITZ Sim session in the last 14 days, no order of Zlarior / ATLAS taken by "
+                           "NinjaTrader in the last 7",
+                           "Start page > BLITZ · 25K > Sim test (Sim101) for one session, then set the 25K"))
     # armed / live
     if f.get("sim"):
         items.append(_item("armed", "Armed (you do this)", "info", f"{name} is a Sim account: no real money, nothing to arm"))

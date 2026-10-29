@@ -1215,6 +1215,8 @@ class AccountC:
             return
         ready = getattr(self.adapter, "has_open_bracket", None)
         if callable(ready) and not ready(et_):
+            self.note(("trail", et_), "warn", f"trail to {new:.2f} waits: NinjaTrader shows no protected bracket for the "
+                                              f"{_et(et_):%H:%M} ET trade yet (the stop at NinjaTrader stays {last:.2f})")
             return
         tries = sum(1 for r in self.ledger if r.get("entry_t") == et_ and r.get("side") == "modify" and r.get("stop") == new)
         if tries >= 3:
