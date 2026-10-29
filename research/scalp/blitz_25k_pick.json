@@ -3,7 +3,7 @@
  "date": "2026-10-29",
  "writeup": "research/writeups/blitz-25k.md",
  "verdict": "no-change",
- "why": "No stop / target / management / window / entry variant beat today's rule in 2026 H1, H2 AND 2021-25 (0 of 1,920 management variants, 0 of 45 stops, 0 of 26 window / entry ideas on avg R, $ / month and the 25K 2-week pass - fail together); the H1 picks lose in H2 or 2021-25. Today's rule stays. Only the 25K eval SIZING changes for its own account (below).",
+ "why": "No stop / target / management / window / entry variant beat today's rule in 2026 H1, H2 AND 2021-25 (0 of 1,920 management variants, 0 of 45 stops, 0 of 32 window / entry / structure-filter ideas on avg R, $ / month and the 25K 2-week pass - fail together); the H1 picks lose in H2 or 2021-25. Today's rule stays. Only the 25K eval SIZING changes for its own account (below).",
  "rule": {
   "name": "BLITZ",
   "version": "today (engine/blitz.py VERSION 2, research/writeups/scalp-na-mffu.md)",
@@ -502,6 +502,20 @@
   }
  },
  "ideas_beat_all": [],
+ "hybrid_eval_today_funded_structure": {
+  "funded_rule": "low60 d0.5-2.0 part-liq0.5 hold45 trail1.0@0.5",
+  "today": {
+   "H1": 270,
+   "H2": 37,
+   "R": -40
+  },
+  "h1t_clock": {
+   "H1": 276,
+   "H2": 49,
+   "R": -64
+  },
+  "verdict": "rejected (2021-25 worse)"
+ },
  "caveats": [
   "2021-25 is the same rule on 5m bars (fills coarser)",
   "LIT / ATLAS clashes use the research trades (2026 lit_live, 2021-25 REF rows)",

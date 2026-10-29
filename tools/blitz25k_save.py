@@ -135,7 +135,7 @@ def pick_file(pk, sz, base, mg, ck):
     out = {"name": "BLITZ on its own MFFU Builder 25K (account C)", "date": "2026-10-29", "writeup": "research/writeups/blitz-25k.md",
            "verdict": "no-change",
            "why": ("No stop / target / management / window / entry variant beat today's rule in 2026 H1, H2 AND 2021-25 (0 of 1,920 management "
-                   "variants, 0 of 45 stops, 0 of 26 window / entry ideas on avg R, $ / month and the 25K 2-week pass - fail together); "
+                   "variants, 0 of 45 stops, 0 of 32 window / entry / structure-filter ideas on avg R, $ / month and the 25K 2-week pass - fail together); "
                    "the H1 picks lose in H2 or 2021-25. Today's rule stays. Only the 25K eval SIZING changes for its own account (below)."),
            "rule": rule, "sizing": sizing, "numbers": nums,
            "paper_size_for_comparison": {"name": paper["name"], **{sp: {"p10": paper["today"][sp]["eval"]["p10"], "f10": paper["today"][sp]["eval"]["f10"],
@@ -155,6 +155,9 @@ def pick_file(pk, sz, base, mg, ck):
                              "rule_slots": {k: {"name": BG.vname(v["v"]), **{sp: v["slot"][sp]["life_pm"] for sp in ("H1", "H2", "R")}}
                                             for k, v in sizeg["picks"].items()}},
            "ideas_beat_all": ideas.get("beat_all"),
+           "hybrid_eval_today_funded_structure": (lambda h: {"funded_rule": BG.vname(h["funded_rule_v"]),
+                                                             **{k: {sp: v[sp]["life_pm"] for sp in ("H1", "H2", "R")} for k, v in h["final"].items()},
+                                                             "verdict": "rejected (2021-25 worse)"})(J("b25_hybrid.json")),
            "caveats": ["2021-25 is the same rule on 5m bars (fills coarser)", "LIT / ATLAS clashes use the research trades (2026 lit_live, 2021-25 REF rows)",
                        "the 25K slot still loses money in 2021-25 with every setting tested: BLITZ on its own 25K is a 2026-regime bet"]}
     json.dump(out, open(os.path.join(OUT, "blitz_25k_pick.json"), "w"), indent=1, default=float)

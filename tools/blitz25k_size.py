@@ -426,6 +426,108 @@ def cmd_today(procs=3, n_screen=300, n_final=1000, top_e=10):
     print(f"done in {time.time() - t0:.0f}s")
 
 
+def life_hybrid(Te, Tf, S, ez, fz, n=1000, length=126, gap=2, seed=23, plan="25k"):
+    """life() with one rule in the eval (trades Te) and another once funded (trades Tf): the same MC paths."""
+    be, bf, se, sf = _by(Te), _by(Tf), _stuck(Te), _stuck(Tf)
+    price = N.PLANS[plan]["price"]
+    nets, funded_n = [], []
+    for seq in N.mc_paths(S, n, length, seed=seed):
+        cash, nf, wait, acc = -price, 0, 0, Eval(ez, se, plan)
+        for d in seq:
+            if wait:
+                wait -= 1
+                continue
+            if isinstance(acc, Eval):
+                r = acc.step(be.get(d, ()))
+                if r == "pass":
+                    acc, wait, nf = N.Funded(plan, fz, sf), gap, nf + 1
+                elif r in ("fail", "stuck"):
+                    cash -= price
+                    acc = Eval(ez, se, plan)
+            else:
+                cash += acc.step(bf.get(d, ()))
+                if acc.done:
+                    cash -= price
+                    acc = Eval(ez, se, plan)
+        nets.append(cash / (length / 21.0))
+        funded_n.append(nf)
+    a = np.array(nets)
+    return {"life_pm": round(float(a.mean())), "life_p10": round(float(np.percentile(a, 10))), "life_lose": round(100.0 * float((a < 0).mean()), 1),
+            "funded_per_6m": round(float(np.mean(funded_n)), 2)}
+
+
+def _hyjob(a):
+    fk, fz, n = a
+    out = {"funded_rule": fk, "fz": fz, "name": f"funded rule {fk} [{zname(fz)}]"}
+    for sp, tf in K.SPANS:
+        Te, S = K.span(TTS["today"], sp, tf)
+        Tf, _ = K.span(TTS[fk], sp, tf)
+        out[sp] = life_hybrid(Te, Tf, S, EZ_PICK, fz, n=n)
+    return out
+
+
+EZ_PICK = {"mode": "frac", "f": 0.4, "cap": 600.0, "push": (5, 1.0)}
+
+
+def cmd_hybrid(procs=3, n_screen=300, n_final=1000):
+    """new idea: today's rule in the eval (the pick's size), a structure-management rule once FUNDED (less stuck at the floor?).
+    The funded rule = the stage-3 rule with the best H1 funded $ a month at today's funded size (1 micro, +$400 day stop);
+    then the funded size picked on H1 slot $; H2 / 2021-25 = the check, against today's rule funded too."""
+    from multiprocessing import Pool
+    from tools import blitz25k_grid as BG
+    t0 = time.time()
+    BG.prep()
+    R = load_rules()
+    fz0 = {"mode": "frac", "f": 0.1, "cap": 150.0, "day_tp": 400.0}
+    TTS["today"] = K.trades({}, "lit+atlas")
+    fund = {}
+    for rk, v in R.items():
+        TTS[rk] = TTS["today"] if rk == "today" else K.trades(v, "lit+atlas")
+        fund[rk] = {sp: funded_score(*K.span(TTS[rk], sp, tf), fz0) for sp, tf in K.SPANS}
+        print(f"{rk:14s} {BG.vname(v):62s} funded at 1 micro: " + " | ".join(f"{sp} ${fund[rk][sp].get('fund_pm')}/mo stuck {fund[rk][sp].get('fund_stuck')}%"
+                                                                          for sp, _ in K.SPANS), flush=True)
+    fk = max((k for k in R if k != "today"), key=lambda k: fund[k]["H1"].get("fund_pm", -1))
+    print("funded rule picked on H1:", fk, BG.vname(R[fk]), flush=True)
+    jobs = [(k, fz, n_screen) for k in ("today", fk) for fz in fund_specs()]
+    with Pool(procs) as P:
+        H = P.map(_hyjob, jobs, chunksize=2)
+    best = {k: max((h for h in H if h["funded_rule"] == k), key=lambda h: h["H1"]["life_pm"]) for k in ("today", fk)}
+    out = {"funded_at_1_micro": fund, "funded_rule": fk, "funded_rule_v": R[fk], "rows": H, "final": {}}
+    for k, b in best.items():
+        fin = _hyjob((k, b["fz"], n_final))
+        out["final"][k] = fin
+        print(f"== eval today's rule (push), funded {k}: {zname(b['fz'])}: " + " | ".join(f"{sp} slot ${fin[sp]['life_pm']}/mo lose {fin[sp]['life_lose']}% "
+                                                                                       f"funded {fin[sp]['funded_per_6m']}/6m" for sp, _ in K.SPANS), flush=True)
+    out["n_better_all"] = sum(1 for h in H if h["funded_rule"] == fk and all(h[sp]["life_pm"] > best["today"][sp]["life_pm"] for sp, _ in K.SPANS))
+    print(f"{out['n_better_all']} of {len(fund_specs())} funded sizes of the hybrid beat today's best slot in all three spans; {time.time() - t0:.0f}s")
+    json.dump(out, open(os.path.join(OUT, "b25_hybrid.json"), "w"), default=float, indent=1)
+
+
+def cmd_table(n=1000):
+    """the eval-speed / money frontier of today's rule as account C: a few eval sizes, the same funded size (the pick's), all at
+    n paths -> b25_size_table.json (the write-up's table)."""
+    from tools import blitz25k_grid as BG
+    BG.prep()
+    TTS["today"] = K.trades({}, "lit+atlas")
+    fz = {"mode": "frac", "f": 0.1, "cap": 150.0, "day_tp": 400.0}
+    rows = []
+    for lab, ez in (("40% of the room, <= $600 (today's paper size)", {"mode": "frac", "f": 0.4, "cap": 600.0}),
+                    ("60% of the room, <= $600 (scalp-na-mffu slot)", {"mode": "frac", "f": 0.6, "cap": 600.0}),
+                    ("100% of the room, <= $600", {"mode": "frac", "f": 1.0, "cap": 600.0}),
+                    ("40%, then 100% from session 5 (pick)", {"mode": "frac", "f": 0.4, "cap": 600.0, "push": (5, 1.0)}),
+                    ("40%, then 100% from session 8", {"mode": "frac", "f": 0.4, "cap": 600.0, "push": (8, 1.0)}),
+                    ("50%, no new trade after -$250 on the day", {"mode": "frac", "f": 0.5, "cap": 600.0, "day_loss": 250.0}),
+                    ("need: what is left to pass / 2, <= 80% of the room", {"mode": "need", "f": 0.8, "cap": 600.0, "k": 2.0})):
+        r = {"label": lab, "ez": ez, "fz": fz}
+        for sp, tf in K.SPANS:
+            T, S = K.span(TTS["today"], sp, tf)
+            r[sp] = {"eval": eval_score(T, S, ez, paths=True), "slot": life(T, S, ez, fz, n=n)}
+        rows.append(r)
+        print(f"{lab:52s} " + " | ".join(f"{sp} 2w {r[sp]['eval']['p10']}/{r[sp]['eval']['f10']} dec {r[sp]['eval']['dec10']} slow {r[sp]['eval']['slow_pass']} "
+                                          f"med {r[sp]['eval']['pass_med']} slot ${r[sp]['slot']['life_pm']}" for sp, _ in K.SPANS), flush=True)
+    json.dump(rows, open(os.path.join(OUT, "b25_size_table.json"), "w"), default=float, indent=1)
+
+
 if __name__ == "__main__":
     a = sys.argv[1:]
-    {"selfcheck": cmd_selfcheck, "grid": cmd_grid, "today": cmd_today}[a[0] if a else "selfcheck"]()
+    {"selfcheck": cmd_selfcheck, "grid": cmd_grid, "today": cmd_today, "table": cmd_table, "hybrid": cmd_hybrid}[a[0] if a else "selfcheck"]()

@@ -1,0 +1,635 @@
+[
+ {
+  "label": "40% of the room, <= $600 (today's paper size)",
+  "ez": {
+   "mode": "frac",
+   "f": 0.4,
+   "cap": 600.0
+  },
+  "fz": {
+   "mode": "frac",
+   "f": 0.1,
+   "cap": 150.0,
+   "day_tp": 400.0
+  },
+  "H1": {
+   "eval": {
+    "p10": 32.8,
+    "f10": 8.4,
+    "p15": 46.5,
+    "f15": 16.7,
+    "p20": 60.6,
+    "f20": 25.7,
+    "dec10": 41.2,
+    "dec15": 63.2,
+    "pass_med": 9.0,
+    "slow_pass": 23.2,
+    "pass20": 53.9,
+    "b2b": "5/2",
+    "med_qty": 2.0
+   },
+   "slot": {
+    "life_pm": 251,
+    "life_p10": -21,
+    "life_lose": 12.4,
+    "funded_per_6m": 1.24,
+    "evals_per_6m": 2.09,
+    "first_pay_med": 58.0
+   }
+  },
+  "H2": {
+   "eval": {
+    "p10": 36.2,
+    "f10": 2.9,
+    "p15": 43.8,
+    "f15": 18.8,
+    "p20": 42.4,
+    "f20": 39.0,
+    "dec10": 39.1,
+    "dec15": 62.6,
+    "pass_med": 6.5,
+    "slow_pass": 4.5,
+    "pass20": 56.4,
+    "b2b": "4/2",
+    "med_qty": 2.0
+   },
+   "slot": {
+    "life_pm": 40,
+    "life_p10": -32,
+    "life_lose": 54.3,
+    "funded_per_6m": 1.33,
+    "evals_per_6m": 2.18,
+    "first_pay_med": 79.0
+   }
+  },
+  "R": {
+   "eval": {
+    "p10": 15.8,
+    "f10": 13.1,
+    "p15": 20.1,
+    "f15": 26.3,
+    "p20": 22.7,
+    "f20": 36.1,
+    "dec10": 28.9,
+    "dec15": 46.4,
+    "pass_med": 6.0,
+    "slow_pass": 10.8,
+    "pass20": 22.3,
+    "b2b": "15/36",
+    "med_qty": 2.0
+   },
+   "slot": {
+    "life_pm": -34,
+    "life_p10": -63,
+    "life_lose": 91.3,
+    "funded_per_6m": 0.98,
+    "evals_per_6m": 3.96,
+    "first_pay_med": 90.5
+   }
+  }
+ },
+ {
+  "label": "60% of the room, <= $600 (scalp-na-mffu slot)",
+  "ez": {
+   "mode": "frac",
+   "f": 0.6,
+   "cap": 600.0
+  },
+  "fz": {
+   "mode": "frac",
+   "f": 0.1,
+   "cap": 150.0,
+   "day_tp": 400.0
+  },
+  "H1": {
+   "eval": {
+    "p10": 31.1,
+    "f10": 40.3,
+    "p15": 41.2,
+    "f15": 50.9,
+    "p20": 44.0,
+    "f20": 53.2,
+    "dec10": 71.4,
+    "dec15": 92.1,
+    "pass_med": 6.0,
+    "slow_pass": 10.9,
+    "pass20": 43.0,
+    "b2b": "6/6",
+    "med_qty": 3.0
+   },
+   "slot": {
+    "life_pm": 258,
+    "life_p10": -4,
+    "life_lose": 10.9,
+    "funded_per_6m": 1.27,
+    "evals_per_6m": 2.64,
+    "first_pay_med": 56.0
+   }
+  },
+  "H2": {
+   "eval": {
+    "p10": 29.0,
+    "f10": 33.3,
+    "p15": 26.6,
+    "f15": 56.2,
+    "p20": 22.0,
+    "f20": 76.3,
+    "dec10": 62.3,
+    "dec15": 82.8,
+    "pass_med": 5.0,
+    "slow_pass": 3.7,
+    "pass20": 34.6,
+    "b2b": "4/3",
+    "med_qty": 2.0
+   },
+   "slot": {
+    "life_pm": 39,
+    "life_p10": -52,
+    "life_lose": 52.4,
+    "funded_per_6m": 1.41,
+    "evals_per_6m": 2.89,
+    "first_pay_med": 80.0
+   }
+  },
+  "R": {
+   "eval": {
+    "p10": 18.4,
+    "f10": 38.0,
+    "p15": 20.8,
+    "f15": 54.8,
+    "p20": 22.1,
+    "f20": 65.5,
+    "dec10": 56.4,
+    "dec15": 75.6,
+    "pass_med": 4.0,
+    "slow_pass": 5.6,
+    "pass20": 21.7,
+    "b2b": "28/79",
+    "med_qty": 3.0
+   },
+   "slot": {
+    "life_pm": -42,
+    "life_p10": -94,
+    "life_lose": 87.4,
+    "funded_per_6m": 1.27,
+    "evals_per_6m": 5.14,
+    "first_pay_med": 86.5
+   }
+  }
+ },
+ {
+  "label": "100% of the room, <= $600",
+  "ez": {
+   "mode": "frac",
+   "f": 1.0,
+   "cap": 600.0
+  },
+  "fz": {
+   "mode": "frac",
+   "f": 0.1,
+   "cap": 150.0,
+   "day_tp": 400.0
+  },
+  "H1": {
+   "eval": {
+    "p10": 37.8,
+    "f10": 40.3,
+    "p15": 46.5,
+    "f15": 46.5,
+    "p20": 49.5,
+    "f20": 48.6,
+    "dec10": 78.1,
+    "dec15": 93.0,
+    "pass_med": 5.0,
+    "slow_pass": 9.5,
+    "pass20": 49.2,
+    "b2b": "8/10",
+    "med_qty": 3.0
+   },
+   "slot": {
+    "life_pm": 273,
+    "life_p10": 5,
+    "life_lose": 9.7,
+    "funded_per_6m": 1.31,
+    "evals_per_6m": 2.8,
+    "first_pay_med": 52.0
+   }
+  },
+  "H2": {
+   "eval": {
+    "p10": 30.4,
+    "f10": 42.0,
+    "p15": 26.6,
+    "f15": 67.2,
+    "p20": 20.3,
+    "f20": 79.7,
+    "dec10": 72.4,
+    "dec15": 93.8,
+    "pass_med": 5.0,
+    "slow_pass": 0.0,
+    "pass20": 33.3,
+    "b2b": "4/4",
+    "med_qty": 3.0
+   },
+   "slot": {
+    "life_pm": 36,
+    "life_p10": -63,
+    "life_lose": 52.2,
+    "funded_per_6m": 1.43,
+    "evals_per_6m": 3.47,
+    "first_pay_med": 79.0
+   }
+  },
+  "R": {
+   "eval": {
+    "p10": 20.8,
+    "f10": 54.3,
+    "p15": 23.9,
+    "f15": 66.2,
+    "p20": 25.0,
+    "f20": 71.7,
+    "dec10": 75.1,
+    "dec15": 90.1,
+    "pass_med": 4.0,
+    "slow_pass": 4.2,
+    "pass20": 24.6,
+    "b2b": "42/113",
+    "med_qty": 5.0
+   },
+   "slot": {
+    "life_pm": -42,
+    "life_p10": -105,
+    "life_lose": 86.4,
+    "funded_per_6m": 1.46,
+    "evals_per_6m": 5.45,
+    "first_pay_med": 88.0
+   }
+  }
+ },
+ {
+  "label": "40%, then 100% from session 5 (pick)",
+  "ez": {
+   "mode": "frac",
+   "f": 0.4,
+   "cap": 600.0,
+   "push": [
+    5,
+    1.0
+   ]
+  },
+  "fz": {
+   "mode": "frac",
+   "f": 0.1,
+   "cap": 150.0,
+   "day_tp": 400.0
+  },
+  "H1": {
+   "eval": {
+    "p10": 36.1,
+    "f10": 37.8,
+    "p15": 45.6,
+    "f15": 46.5,
+    "p20": 48.6,
+    "f20": 49.5,
+    "dec10": 73.9,
+    "dec15": 92.1,
+    "pass_med": 6.0,
+    "slow_pass": 9.8,
+    "pass20": 47.7,
+    "b2b": "8/8",
+    "med_qty": 3.0
+   },
+   "slot": {
+    "life_pm": 270,
+    "life_p10": 10,
+    "life_lose": 9.0,
+    "funded_per_6m": 1.3,
+    "evals_per_6m": 2.63,
+    "first_pay_med": 53.0
+   }
+  },
+  "H2": {
+   "eval": {
+    "p10": 36.2,
+    "f10": 34.8,
+    "p15": 32.8,
+    "f15": 57.8,
+    "p20": 27.1,
+    "f20": 72.9,
+    "dec10": 71.0,
+    "dec15": 90.6,
+    "pass_med": 5.0,
+    "slow_pass": 0.0,
+    "pass20": 43.6,
+    "b2b": "4/4",
+    "med_qty": 3.0
+   },
+   "slot": {
+    "life_pm": 37,
+    "life_p10": -52,
+    "life_lose": 52.4,
+    "funded_per_6m": 1.41,
+    "evals_per_6m": 3.23,
+    "first_pay_med": 80.0
+   }
+  },
+  "R": {
+   "eval": {
+    "p10": 20.4,
+    "f10": 50.2,
+    "p15": 23.8,
+    "f15": 64.8,
+    "p20": 25.3,
+    "f20": 70.8,
+    "dec10": 70.6,
+    "dec15": 88.6,
+    "pass_med": 6.0,
+    "slow_pass": 5.6,
+    "pass20": 24.9,
+    "b2b": "34/88",
+    "med_qty": 4.0
+   },
+   "slot": {
+    "life_pm": -40,
+    "life_p10": -94,
+    "life_lose": 87.9,
+    "funded_per_6m": 1.37,
+    "evals_per_6m": 5.09,
+    "first_pay_med": 88.0
+   }
+  }
+ },
+ {
+  "label": "40%, then 100% from session 8",
+  "ez": {
+   "mode": "frac",
+   "f": 0.4,
+   "cap": 600.0,
+   "push": [
+    8,
+    1.0
+   ]
+  },
+  "fz": {
+   "mode": "frac",
+   "f": 0.1,
+   "cap": 150.0,
+   "day_tp": 400.0
+  },
+  "H1": {
+   "eval": {
+    "p10": 35.3,
+    "f10": 21.8,
+    "p15": 45.6,
+    "f15": 43.0,
+    "p20": 50.5,
+    "f20": 47.7,
+    "dec10": 57.1,
+    "dec15": 88.6,
+    "pass_med": 8.0,
+    "slow_pass": 12.7,
+    "pass20": 49.2,
+    "b2b": "7/6",
+    "med_qty": 3.0
+   },
+   "slot": {
+    "life_pm": 266,
+    "life_p10": 3,
+    "life_lose": 9.6,
+    "funded_per_6m": 1.29,
+    "evals_per_6m": 2.5,
+    "first_pay_med": 54.0
+   }
+  },
+  "H2": {
+   "eval": {
+    "p10": 39.1,
+    "f10": 20.3,
+    "p15": 40.6,
+    "f15": 46.9,
+    "p20": 37.3,
+    "f20": 62.7,
+    "dec10": 59.4,
+    "dec15": 87.5,
+    "pass_med": 6.0,
+    "slow_pass": 2.4,
+    "pass20": 52.6,
+    "b2b": "4/3",
+    "med_qty": 3.0
+   },
+   "slot": {
+    "life_pm": 38,
+    "life_p10": -52,
+    "life_lose": 51.6,
+    "funded_per_6m": 1.4,
+    "evals_per_6m": 2.99,
+    "first_pay_med": 79.5
+   }
+  },
+  "R": {
+   "eval": {
+    "p10": 19.2,
+    "f10": 38.9,
+    "p15": 23.9,
+    "f15": 61.8,
+    "p20": 25.8,
+    "f20": 69.5,
+    "dec10": 58.1,
+    "dec15": 85.7,
+    "pass_med": 7.0,
+    "slow_pass": 7.0,
+    "pass20": 25.3,
+    "b2b": "28/74",
+    "med_qty": 3.0
+   },
+   "slot": {
+    "life_pm": -39,
+    "life_p10": -94,
+    "life_lose": 87.5,
+    "funded_per_6m": 1.28,
+    "evals_per_6m": 4.86,
+    "first_pay_med": 88.0
+   }
+  }
+ },
+ {
+  "label": "50%, no new trade after -$250 on the day",
+  "ez": {
+   "mode": "frac",
+   "f": 0.5,
+   "cap": 600.0,
+   "day_loss": 250.0
+  },
+  "fz": {
+   "mode": "frac",
+   "f": 0.1,
+   "cap": 150.0,
+   "day_tp": 400.0
+  },
+  "H1": {
+   "eval": {
+    "p10": 31.9,
+    "f10": 26.9,
+    "p15": 42.1,
+    "f15": 40.4,
+    "p20": 45.9,
+    "f20": 49.5,
+    "dec10": 58.8,
+    "dec15": 82.5,
+    "pass_med": 7.0,
+    "slow_pass": 12.3,
+    "pass20": 44.5,
+    "b2b": "6/5",
+    "med_qty": 2.0
+   },
+   "slot": {
+    "life_pm": 247,
+    "life_p10": -21,
+    "life_lose": 13.1,
+    "funded_per_6m": 1.25,
+    "evals_per_6m": 2.57,
+    "first_pay_med": 58.0
+   }
+  },
+  "H2": {
+   "eval": {
+    "p10": 34.8,
+    "f10": 1.4,
+    "p15": 48.4,
+    "f15": 12.5,
+    "p20": 54.2,
+    "f20": 25.4,
+    "dec10": 36.2,
+    "dec15": 60.9,
+    "pass_med": 8.5,
+    "slow_pass": 13.0,
+    "pass20": 59.0,
+    "b2b": "3/1",
+    "med_qty": 2.0
+   },
+   "slot": {
+    "life_pm": 42,
+    "life_p10": -42,
+    "life_lose": 53.4,
+    "funded_per_6m": 1.35,
+    "evals_per_6m": 2.38,
+    "first_pay_med": 78.0
+   }
+  },
+  "R": {
+   "eval": {
+    "p10": 16.6,
+    "f10": 22.1,
+    "p15": 19.6,
+    "f15": 38.6,
+    "p20": 21.3,
+    "f20": 51.2,
+    "dec10": 38.7,
+    "dec15": 58.2,
+    "pass_med": 5.0,
+    "slow_pass": 7.6,
+    "pass20": 20.9,
+    "b2b": "15/46",
+    "med_qty": 3.0
+   },
+   "slot": {
+    "life_pm": -39,
+    "life_p10": -84,
+    "life_lose": 89.6,
+    "funded_per_6m": 1.07,
+    "evals_per_6m": 4.57,
+    "first_pay_med": 90.0
+   }
+  }
+ },
+ {
+  "label": "need: what is left to pass / 2, <= 80% of the room",
+  "ez": {
+   "mode": "need",
+   "f": 0.8,
+   "cap": 600.0,
+   "k": 2.0
+  },
+  "fz": {
+   "mode": "frac",
+   "f": 0.1,
+   "cap": 150.0,
+   "day_tp": 400.0
+  },
+  "H1": {
+   "eval": {
+    "p10": 25.2,
+    "f10": 37.8,
+    "p15": 36.0,
+    "f15": 43.0,
+    "p20": 46.8,
+    "f20": 45.0,
+    "dec10": 63.0,
+    "dec15": 79.0,
+    "pass_med": 10.0,
+    "slow_pass": 26.3,
+    "pass20": 44.5,
+    "b2b": "6/3",
+    "med_qty": 2.0
+   },
+   "slot": {
+    "life_pm": 255,
+    "life_p10": -9,
+    "life_lose": 10.7,
+    "funded_per_6m": 1.26,
+    "evals_per_6m": 2.43,
+    "first_pay_med": 57.0
+   }
+  },
+  "H2": {
+   "eval": {
+    "p10": 17.4,
+    "f10": 31.9,
+    "p15": 21.9,
+    "f15": 54.7,
+    "p20": 16.9,
+    "f20": 76.3,
+    "dec10": 49.3,
+    "dec15": 76.6,
+    "pass_med": 9.0,
+    "slow_pass": 4.3,
+    "pass20": 29.5,
+    "b2b": "3/3",
+    "med_qty": 2.0
+   },
+   "slot": {
+    "life_pm": 36,
+    "life_p10": -52,
+    "life_lose": 53.3,
+    "funded_per_6m": 1.34,
+    "evals_per_6m": 2.91,
+    "first_pay_med": 80.0
+   }
+  },
+  "R": {
+   "eval": {
+    "p10": 10.6,
+    "f10": 44.2,
+    "p15": 15.7,
+    "f15": 56.3,
+    "p20": 19.7,
+    "f20": 62.8,
+    "dec10": 54.8,
+    "dec15": 72.0,
+    "pass_med": 9.5,
+    "slow_pass": 19.7,
+    "pass20": 19.3,
+    "b2b": "28/62",
+    "med_qty": 2.0
+   },
+   "slot": {
+    "life_pm": -37,
+    "life_p10": -84,
+    "life_lose": 88.2,
+    "funded_per_6m": 1.29,
+    "evals_per_6m": 4.58,
+    "first_pay_med": 90.0
+   }
+  }
+ }
+]
