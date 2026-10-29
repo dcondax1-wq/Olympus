@@ -2110,6 +2110,9 @@ def compact(b: dict | None, max_bytes: int = 12_000) -> dict | None:
 
 
 # ================================================================================================ hooks
+QUIET_S = (15, 45)                    # Mind's thread starts only 15-45 s into a minute (bar-close polls stay free)
+
+
 def pc_tick(bot, now=None, background: bool = True, spawn: bool = True, mind: Mind | None = None) -> bool | None:
     """engine/narrator.tick hook (PC, after routing): once per 5m bar start Mind's compute in a background thread; after
     16:05 ET on a weekday start the nightly research once (a low-priority child process). The poll thread only checks a
@@ -2119,6 +2122,8 @@ def pc_tick(bot, now=None, background: bool = True, spawn: bool = True, mind: Mi
     try:
         M = mind or MIND
         now = int(now if now is not None else (bot.clock() if callable(getattr(bot, "clock", None)) else time.time()))
+        if background and not (QUIET_S[0] <= now % 60 <= QUIET_S[1]):
+            return False                      # never right after a 1m close: those polls route LIT's entries
         return M.kick(bot, now, background=background, nightly=spawn)
     except Exception:
         return None
@@ -2141,7 +2146,8 @@ def api_view(bot, now: int | None = None, mind: Mind | None = None) -> dict:
     M = mind or MIND
     now = int(now or (bot.clock() if callable(getattr(bot, "clock", None)) else time.time()))
     try:
-        M.kick(bot, now, background=True)
+        if QUIET_S[0] <= now % 60 <= QUIET_S[1]:              # same quiet window as pc_tick
+            M.kick(bot, now, background=True)
     except Exception:
         pass
     C = load_calib()

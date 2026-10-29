@@ -332,8 +332,10 @@ def t_hooks(blk):
     from engine import narrator as N
     ld = tempfile.mkdtemp()
     M = MD.Mind(log_dir=ld)
-    now = T("2026-10-14", 16, 10)
+    now = T("2026-10-14", 16, 10) + 20                         # 20 s into the minute (Mind never starts right after a 1m close)
     bot = fake_bot(now, None)
+    check("pc_tick: never starts in the first 15 s after a 1m close (the polls that route entries)",
+          MD.pc_tick(bot, T("2026-10-14", 16, 10) + 3, mind=MD.Mind(log_dir=tempfile.mkdtemp())) is False)
     spawned = []
     orig = MD.spawn_research
     MD.spawn_research = lambda budget, log_dir=None: spawned.append((budget, log_dir)) or 4242
