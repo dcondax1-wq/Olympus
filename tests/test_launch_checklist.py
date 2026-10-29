@@ -263,8 +263,44 @@ def phone_model_checks():
     check("phone: #/launch page draws with the anchor, registered under More", o["page"] and o["pageReg"], o)
 
 
+def blitz_checks():
+    """2026-10-29: a "BLITZ (account C) ready" line when account C is configured (engine/blitz_preflight.py's go-live check in
+    one line: green when every line is, else the first red one with its fix); no line when it is off."""
+    f = good_facts()
+    cl = LC.checklist(f, good_health(), True, NOW)
+    check("BLITZ off: no BLITZ line (the 12 lines as before)", item(cl, "blitz") == {})
+    first = {"key": "armed", "label": "Armed (you do this)", "state": "bad", "detail": "MFFUEVBLDR777 is NOT armed",
+             "fix": "Start page > BLITZ · 25K > Arm BLITZ (type I ACCEPT LIVE RISK)"}
+    f["c"] = {"configured": True, "all_green": False, "n_red": 1, "n_wait": 0, "n": 14, "account": "MFFUEVBLDR777", "sim": False, "first": first}
+    cl = LC.checklist(f, good_health(), True, NOW)
+    it = item(cl, "blitz")
+    keys = [i["key"] for i in cl["items"]]
+    check("BLITZ configured, one red: its line red with that line's fix, right after account B",
+          it.get("state") == "bad" and "Arm BLITZ" in it.get("fix", "") and "NOT armed" in it.get("detail", "") and keys[keys.index("b") + 1] == "blitz"
+          and not cl["all_green"], it)
+    f["c"] = {**f["c"], "all_green": True, "n_red": 0, "first": None}
+    cl = LC.checklist(f, good_health(), True, NOW)
+    check("BLITZ all green: its line green, the checklist all green", item(cl, "blitz").get("state") == "good" and cl["all_green"], item(cl, "blitz"))
+    f["c"] = {**f["c"], "all_green": False, "n_wait": 1, "first": {"key": "bot", "label": "Bot running with BLITZ", "state": "wait", "detail": "next poll", "fix": ""}}
+    cl = LC.checklist(f, good_health(), True, NOW)
+    check("BLITZ only waiting: a wait line without a fix", item(cl, "blitz").get("state") == "wait" and not item(cl, "blitz").get("fix"), item(cl, "blitz"))
+    tmp = tempfile.mkdtemp(prefix="le_launch_c_")
+    try:
+        from engine import account_c as AC
+        bot = SimpleNamespace(cfg={"adapter": "ninjatrader", "nt_account": LIT}, running=False, health={}, _startup_ok=None, acct_b=None, state={})
+        check("facts: no data/account_c.json -> no 'c' fact", "c" not in LC.facts(bot, good_health(), NOW, c_root=tmp))
+        os.makedirs(os.path.join(tmp, "data"))
+        AC.write_local({"account": "MFFUEVBLDR777", "plan": "builder25k", "eval_start": "2026-11-02", "armed": False}, tmp)
+        fc = LC.facts(bot, good_health(), NOW, c_root=tmp).get("c") or {}
+        check("facts: account C configured -> its go-live check cut (count, first red line, account)",
+              fc.get("configured") and fc.get("account") == "MFFUEVBLDR777" and fc.get("n_red", 0) >= 1 and (fc.get("first") or {}).get("fix"), fc)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def main():
     pure_checks()
+    blitz_checks()
     file_checks()
     wiring_checks()
     phone_model_checks()

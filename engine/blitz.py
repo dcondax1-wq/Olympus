@@ -1327,6 +1327,43 @@ def today_rows(S: dict | None, day: str | None = None, ledger: str = "ledger") -
     return [r for r in S.get(ledger) or [] if r.get("day") == day]
 
 
+def day_filter(E: dict | None, date: str | None = None, pmin: float = PRNG_MIN, now: int | None = None) -> dict | None:
+    """Today's day filter in numbers (display only; the rule is Engine.day_ok): {"date", "ok", "ratio", "yday" (yesterday's
+    09:30-16:00 range, pts), "mean" (the mean of the last 14 such ranges, yesterday's included), "min", "text"}, and once
+    today's 09:30-16:00 range is final (after 16:00) the same for the next trading day ("next"). None before the engine
+    has a day / enough ranges (the first 10 sessions). 2026-10-29: the PC shadow's "closed" text hid why BLITZ did not
+    trade on a filtered day."""
+    if not isinstance(E, dict) or not E.get("date") or (date is not None and E.get("date") != date):
+        return None
+    rg = [float(x) for x in (E.get("rngs") or [])]
+    if len(rg) < PRNG_MIN_N:
+        return None
+    mean = float(np.mean(rg[-PRNG_N:]))
+    ratio = rg[-1] / mean if mean > 0 else None
+    out = {"date": E["date"], "ratio": None if ratio is None else round(ratio, 3), "yday": round(rg[-1], 2), "mean": round(mean, 2),
+           "min": pmin, "ok": ratio is not None and ratio >= pmin}
+    if out["ok"]:
+        out["text"] = (f"BLITZ trades today: yesterday's 09:30-16:00 range {rg[-1]:,.0f} pts = {ratio:.2f} x its 14-day mean "
+                       f"{mean:,.0f} pts (needs >= {pmin})")
+    else:
+        out["text"] = (f"BLITZ skipped today: yesterday's 09:30-16:00 range {rg[-1]:,.0f} pts < {pmin} x its 14-day mean {mean:,.0f} pts "
+                       f"({'?' if ratio is None else f'{ratio:.2f}'} x; a quiet day before is a weak day for BLITZ, so it does not trade)")
+    # today's range is final once its 16:00 bar is past (the engine keeps it in rhi / rlo until the next date starts)
+    if int(E.get("rn") or 0) >= PRNG_MIN_BARS and E.get("rhi") is not None and E.get("rlo") is not None and E.get("closed"):
+        today = float(E["rhi"]) - float(E["rlo"])
+        rg2 = (rg + [today])[-PRNG_N:]
+        m2 = float(np.mean(rg2))
+        r2 = today / m2 if m2 > 0 else None
+        ok2 = r2 is not None and r2 >= pmin
+        final = now is None or et_parts(int(now))[1] >= RTH1 or et_date(int(now)) != E["date"]
+        out["next"] = {"ratio": None if r2 is None else round(r2, 3), "today": round(today, 2), "mean": round(m2, 2), "ok": ok2,
+                       "final": bool(final),
+                       "text": (f"the next trading day {'trades' if ok2 else 'is skipped too' if not out['ok'] else 'is skipped'}"
+                                f"{'' if final else ' (so far, final at 16:00 ET)'}: today's range {today:,.0f} pts = "
+                                f"{0 if r2 is None else r2:.2f} x the 14-day mean {m2:,.0f}")}
+    return out
+
+
 def state_text(S: dict | None, now: int | None = None) -> dict:
     """{"stage", "text"}: what BLITZ is doing now, in plain words."""
     if not S:
@@ -1359,9 +1396,16 @@ def state_text(S: dict | None, now: int | None = None) -> dict:
     if E.get("date") == date and float(E.get("dR") or 0) <= -DAY_STOP_R:
         return {"stage": "done", "text": f"Done for today: day stop at {float(E['dR']):+.2f}R."}
     nxt = next((m for m in CHECKS if m + 1 > mod), None) if wk else None
+    # the day filter first (also after the last check): the dashboard says WHY BLITZ did not trade today, with the numbers
+    df_ = day_filter(E, date, now=now) if E.get("filter") else None
+    if df_ is not None and not df_["ok"]:
+        nx = (df_.get("next") or {}).get("text")
+        return {"stage": "filtered", "text": df_["text"] + "." + (f" {nx[0].upper() + nx[1:]}." if nx else ""), "day_filter": df_}
     if nxt is None or not wk:
-        return {"stage": "closed", "text": "No more checks today; the next at 11:00 ET on the next trading day."}
-    if E.get("date") == date and E.get("filter") and not Engine(E).day_ok():
+        nx = (df_ or {}).get("next", {}).get("text") if df_ else None
+        return {"stage": "closed", "text": "No more checks today; the next at 11:00 ET on the next trading day."
+                + (f" {nx[0].upper() + nx[1:]}." if nx else "")}
+    if E.get("date") == date and E.get("filter") and not Engine(E).day_ok() and df_ is None:
         pr = E.get("prng")
         return {"stage": "filtered", "text": "No BLITZ trades today: yesterday's 09:30-16:00 range was "
                                             + (f"{pr:.2f} x" if pr is not None else "unknown vs") + f" its 14-day mean (needs >= {PRNG_MIN})."}
@@ -1406,7 +1450,8 @@ def compact(S: dict | None, n: int = 8) -> dict | None:
                          "skipped": [x for x in (S.get("skipped50") or []) if x.get("date") == day][-6:],
                          "accounts": (S.get("accts50") or [])[-4:]},
             "signals": [x for x in (S.get("signals") or []) if x.get("date") == day][-10:],
-            "band": _band_compact(b), "evals": (S.get("evals") or [])[-6:], "error": S.get("error")}
+            "band": _band_compact(b), "evals": (S.get("evals") or [])[-6:], "error": S.get("error"),
+            "day_filter": day_filter(E, day, now=S.get("t")) if E.get("filter", S.get("filter")) else None}
 
 
 def _band_compact(b: dict | None):

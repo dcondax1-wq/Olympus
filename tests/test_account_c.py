@@ -52,7 +52,7 @@ T0 = time.time()
 
 def check(name, cond, info=""):
     RES.append(bool(cond))
-    print(("[PASS] " if cond else "[FAIL] ") + name + ("" if cond else f"  -> {str(info)[:400]}"), flush=True)
+    print(("[PASS] " if cond else "[FAIL] ") + name + ("" if cond else f"  -> {str(info)[:1400]}"), flush=True)
 
 
 class FakeBot:
@@ -974,10 +974,158 @@ def part12():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+# ================================================================================================ 13. the first real day (2026-10-29)
+def part13():
+    """What a first REAL BLITZ day on NinjaTrader needs that the paper / Sim parts do not show: the phone's entry / exit
+    notices name BLITZ's own 25K (labelled REAL), never Zlarior's 50K; NinjaTrader's fill reaches the FILLED line (the
+    adapter reports its own fills only for the bot's own account); the words fit BLITZ (no "15-minute check"); the go-live
+    check (engine/blitz_preflight.py) turns every line green / red with its fix; the 20-micro cap = MFFU's 25K (2 minis);
+    the $600 soft daily loss locks the day; the Nov 1 DST change and the eval's session count."""
+    from engine import blitz_preflight as PF
+    from engine import narrator as NR
+    from engine import account_b as AB
+
+    class NTStub(Stub):
+        reports_fills = True                          # = engine/ninjatrader.NinjaTraderAdapter
+
+        def send(self, action):
+            self.sent.append(dict(action))
+            if action.get("side") in ("buy", "sell"):
+                return {"ok": True, "adapter": "ninjatrader", "account": "MFFUEVBLDR777", "legs": [
+                    {"instrument": "MNQ 12-26", "qty": action["qty"], "filled": action["qty"], "fill_px": 25000.25, "ok": True}]}
+            return {"ok": True, "flat_confirmed": True}
+
+    bot = FakeBot(0, adapter="ninjatrader")
+    bot._push_account = lambda: "MFFU 50K"            # Zlarior's label (LiveBot._push_account)
+    C = AC.AccountC(bot, spec("2026-11-02", name="MFFUEVBLDR777", armed=True), state_path="")
+    C.adapter = NTStub()
+    bot.acct_c = C
+    check("13. a real account C reads REAL (kind LIVE)", C.kind() == "LIVE" and C.real_word() == "REAL", C.kind())
+    tb = _open_long(C, bot, day="2026-11-03")
+    check("13. ... its own entry notice is left to the fill report (reports_fills): nothing pushed by account C itself",
+          C.open_t == tb and not [p for p in bot.pushed if p.get("kind") == "fill"], texts(bot))
+    C._events([{"ev": "entry", "entry_t": tb, "sig_t": tb - 60, "dir": 1, "entry": 25000.25, "stop": 24970.0, "risk": 30.25}], "NQ", tb + 62)
+    C._events([{"ev": "exit", "entry_t": tb, "exit_t": tb + 1860, "exit": 25030.0, "kind": "time", "pts": 29.75, "risk": 30.25,
+                "r": 0.9, "pnl_pm": 57.6, "bars": 31, "mae": 3.0}], "NQ", tb + 1862)
+    bot._now = tb + 1900
+    info = C.info(bot._now)
+    ent = next((r for r in info["routed"] if r.get("side") == "buy"), {})
+    check("13. info() routed rows carry NinjaTrader's fill and the entry price", ent.get("fill") == 25000.25 and ent.get("entry") is not None, ent)
+    msgs, _ = NR.derive(bot, now=bot._now)
+    fm = next((m for m in msgs if m.get("strat") == "scalp" and m.get("kind") == "entry"), None)
+    xm = next((m for m in msgs if m.get("strat") == "scalp" and m.get("kind") == "exit"), None)
+    check("13. narrator: a FILLED line for BLITZ's real entry (NinjaTrader's fill price)", fm and fm.get("fill") == 25000.25 and
+          "REAL · BLITZ MFFUEVBLDR777" in fm["title"], [m.get("title") for m in msgs if m.get("strat") == "scalp"])
+    sent = []
+    bot._push_send = lambda p: sent.append(p) or True
+    for m in (fm, xm):
+        if m:
+            NR.send_push(m, bot)
+    pe = next((p for p in sent if p.get("kind") == "fill"), {})
+    po = next((p for p in sent if p.get("kind") == "outcome"), {})
+    check("13. phone entry notice: 'LONG · BLITZ MFFUEVBLDR777 (REAL)', body '(BLITZ scalp)', key fill:<t>:acctc, never 'MFFU 50K'",
+          pe.get("title") == "LONG · BLITZ MFFUEVBLDR777 (REAL)" and pe.get("body", "").endswith("(BLITZ scalp)")
+          and pe.get("key") == f"fill:{tb}:acctc" and "MFFU 50K" not in json.dumps(sent), sent)
+    check("13. phone exit notice: BLITZ's account, REAL, the account-C key (one notice with account C's own HEDGE / TIME push)",
+          po.get("title") == "LONG · BLITZ MFFUEVBLDR777 (REAL)" and po.get("key") == f"out:{tb}:acctc" and po.get("tag", "").endswith("-acctc"), po)
+    check("13. BLITZ's TIME exit is worded as its 30-minute clock, not LIT's 15-minute check",
+          xm and "30-minute clock" in xm["text"] and "15-minute" not in xm["text"], xm)
+    # account C's own outcome push (TIME) has the same key / tag: the phone gets one notice
+    own = []
+    bot._push_send = lambda p: own.append(p) or True
+    C._push_outcome({"dir": 1}, "TIME", 115.2, tb + 1860, 2, tb)
+    check("13. account C's own TIME notice = the same key and tag as the narrator's", own and own[0]["key"] == po.get("key")
+          and own[0]["tag"] == po.get("tag"), own)
+    # the notices the owner must act on are pushed (kind ops); "order NOT placed" is pushed by the narrator's refused line
+    bot._push_send = lambda p: own.append(p) or True
+    own.clear()
+    for k in (f"acctc:closing:{tb}", f"acctc:passed:2026-11-02:{C.name}", f"acctc:pause:{tb}", f"acctc:lock:2026-11-03",
+              f"acctc:unconfirmed:{tb}", f"acctc:notplaced:{tb}"):
+        C._push_text("t", "b", k)
+    kinds = [p.get("kind") for p in own]
+    check(f"13. CLOSE NOT CONFIRMED / EVAL PASSED / PAUSED / locked out / not confirmed reach the phone (kind ops); not placed via the "
+          f"narrator ({kinds})", kinds == ["ops", "ops", "ops", "ops", "ops", "risk"], kinds)
+    # account B rows get the fill too (its NinjaTrader entries had no FILLED line / phone notice either)
+    check("13. account B's routed rows: the same fill helper", AB._fill_of({"side": "sell", "result": {"ok": True, "legs": [{"fill_px": 1.5, "filled": 1}]}})
+          == {"fill": 1.5} and AB._fill_of({"side": "sell", "result": {"ok": False, "legs": [{"fill_px": 1.5, "filled": 1}]}}) == {})
+    # MFFU's 25K max = 2 minis = 20 micros; the cap holds at a tiny stop; the order check refuses 21
+    sz = AC.qty(spec("2026-11-02"), 2.0, {"room": 1000.0, "cum": 0.0, "session": 6})
+    check(f"13. the 25K's max contracts: {sz['qty']} micros at a 2-pt stop with the full room (MFFU Builder 25K: 2 minis = 20 micros)",
+          sz["qty"] == 20 and spec("2026-11-02")["rules"]["max_micros"] == 20, sz)
+    from engine import guards as G
+    act = {"side": "buy", "qty": 21, "stop": 24970.0, "target": 25600.0, "entry": 25000.25, "sym": "NQ"}
+    bad = G.sanity(act, 21, 20, {"max_stop_pts": AC.MAX_STOP_PTS})
+    check("13. order check: 21 micros refused on the 25K", bool(bad), bad)
+    # the $600 soft daily loss: after -$600 closed today no new BLITZ entry today; the next day trades again
+    bot2, C2 = make("2026-11-02")
+    day = "2026-11-03"
+    C2.closes.append([day, at_et(day, 11, 31), -610.0, at_et(day, 11, 0), -1.0])
+    C2.check_lock(at_et(day, 11, 32))
+    tb2 = _open_long(C2, bot2, day=day, hh=12, mm=0)
+    r2 = C2._row(et_=tb2)
+    check("13. $600 soft daily loss: -$610 today -> locked, the 12:00 BLITZ signal NOT routed", C2.open_t is None and "locked out" in str(r2.get("skip")), r2)
+    tb3 = _open_long(C2, bot2, day="2026-11-04", hh=11, mm=0)
+    check("13. ... the next day trades again", C2.open_t == tb3, C2._row(et_=tb3))
+    # Nov 1 2026 DST: the eval counts weekdays (Mon Nov 2 = session 1 for a Sunday Set); the checks stay 11:00 ... 15:30 New York
+    from engine import sizing as SZ
+    check("13. eval session count across the Nov 1 DST change: start Sun Nov 1 -> Mon Nov 2 = 1, Fri Nov 6 = 5, Mon Nov 9 = 6",
+          SZ.eval_session("2026-11-01", "2026-11-02") == 1 and SZ.eval_session("2026-11-01", "2026-11-06") == 5
+          and SZ.eval_session("2026-11-01", "2026-11-09") == 6)
+    t_edt, t_est = BZ.at_et("2026-10-30", 11 * 60), BZ.at_et("2026-11-02", 11 * 60)
+    check("13. BLITZ's 11:00 check is 11:00 New York on both sides of the change (15:00 UTC Fri Oct 30, 16:00 UTC Mon Nov 2)",
+          (t_edt % 86400) // 3600 == 15 and (t_est % 86400) // 3600 == 16 and BZ.et_parts(t_est)[1] == 660)
+    check("13. trading_day after 18:00 ET on Sun Nov 1 (EST) = Mon Nov 2", AC.trading_day(BZ.at_et("2026-11-01", 18 * 60 + 5)) == "2026-11-02")
+    # the go-live check: every line from fixture facts, green / red with a fix
+    tmp = tempfile.mkdtemp(prefix="acctc_pf_")
+    try:
+        os.makedirs(os.path.join(tmp, "data"))
+        now = BZ.at_et("2026-11-01", 19 * 60)
+        r = PF.check(None, root=tmp, now=now, names=("MFFUEVBLDR602936016", "MFFUEVBLDR602936017"), allowed=set(), nt_names=[],
+                     connected=True, feed_problem=None, sim_rt={})
+        check("13. preflight with BLITZ off: one red line 'BLITZ's account set' with the Start page fix",
+              not r["all_green"] and [i["key"] for i in r["items"]] == ["config"] and "Start page" in r["items"][0]["fix"], r)
+        AC.write_local({"account": "MFFUEVBLDR777", "plan": "builder25k", "eval_start": "2026-11-02", "armed": False}, tmp)
+        kw = dict(names=("MFFUEVBLDR602936016", "MFFUEVBLDR602936017"), connected=True, feed_problem=None)
+        r = PF.check(None, root=tmp, now=now, allowed={"MFFUEVBLDR777"}, nt_names=["MFFUEVBLDR777"],
+                     sim_rt={"roundtrip": {"t": now - 3600, "ok": True, "account": "Sim101"}}, **kw)
+        st = {i["key"]: i for i in r["items"]}
+        want = {"config", "own", "nt", "visible", "allow", "sim", "armed", "bot", "eval", "size", "hedge", "contract", "calendar", "feed"}
+        check(f"13. preflight lines: {sorted(st)}", want <= set(st), sorted(st))
+        check("13. ... not armed = red with the Arm BLITZ fix; bot not running = red; the rest green",
+              st["armed"]["state"] == "bad" and "Arm BLITZ" in st["armed"]["fix"] and st["bot"]["state"] == "bad"
+              and all(st[k]["state"] == "good" for k in ("config", "own", "nt", "visible", "allow", "sim", "size", "hedge", "contract", "calendar", "feed"))
+              and st["eval"]["state"] == "good" and "session 1 of 10" in st["eval"]["detail"], {k: (v["state"], v["detail"][:60]) for k, v in st.items()})
+        check(f"13. ... first trade's size at the fresh 25K's room: {st['size']['detail'][:90]}", "3 micros at a 60-pt stop" in st["size"]["detail"]
+              and "20" in st["size"]["detail"], st["size"])
+        check(f"13. ... the calendar names the DST change: {st['calendar']['detail'][:110]}", "clocks go back" in st["calendar"]["detail"]
+              or "Nov 01" in st["calendar"]["detail"] or "normal session" in st["calendar"]["detail"], st["calendar"])
+        check("13. ... the kill-switch line shows the 20-trade floor (-0.150 / 0.62)", "-0.150" in st["contract"]["detail"] and "0.62" in st["contract"]["detail"],
+              st["contract"])
+        r = PF.check(None, root=tmp, now=now, allowed=set(), nt_names=["OTHER1"], sim_rt={}, **kw)
+        st = {i["key"]: i for i in r["items"]}
+        check("13. ... Name not in NinjaTrader / not allowlisted / no Sim test = three red lines, each with its fix",
+              st["visible"]["state"] == "bad" and st["allow"]["state"] == "bad" and "--allow-account" in st["allow"]["fix"]
+              and st["sim"]["state"] == "bad" and st["sim"]["fix"], {k: st[k]["state"] for k in ("visible", "allow", "sim")})
+        AC.write_local({"account": "MFFUEVBLDR602936017", "plan": "builder25k", "eval_start": "2026-11-02"}, tmp)
+        r = PF.check(None, root=tmp, now=now, allowed=set(), nt_names=[], sim_rt={}, **kw)
+        st = {i["key"]: i for i in r["items"]}
+        check("13. ... ATLAS's own 25K as BLITZ's = red 'Its own account'", st["own"]["state"] == "bad" and "ATLAS" in st["own"]["detail"], st["own"])
+        AC.write_local({"account": "Sim101", "plan": "builder25k", "eval_start": "2026-11-02"}, tmp)
+        PF.record_sim("Sim101", "2026-11-02", True, 2, root=tmp, now=now)
+        r = PF.check(None, root=tmp, now=now, allowed=set(), nt_names=[], sim_rt={}, **kw)
+        st = {i["key"]: i for i in r["items"]}
+        check("13. ... BLITZ's own Sim session (data/account_c_sim.json) = the Sim line green; a Sim account needs no arming (info)",
+              st["sim"]["state"] == "good" and "BLITZ traded 2 times on Sim101" in st["sim"]["detail"] and st["armed"]["state"] == "info", st["sim"])
+        c = PF.compact(r)
+        check("13. compact (launch checklist cut): count + the first red line", c["n_red"] >= 1 and c["first"]["state"] == "bad", c)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def main():
     quick = "--quick" in sys.argv
     for name, fn in (("1", part1), ("3", part3), ("3b", part3b), ("4", part4), ("5", part5), ("6", part6), ("7", part7), ("8", part8), ("10", part10),
-                     ("11", part11), ("12", part12)):
+                     ("11", part11), ("12", part12), ("13", part13)):
         try:
             fn()
         except Exception as e:

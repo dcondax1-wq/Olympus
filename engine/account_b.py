@@ -1503,7 +1503,7 @@ class AccountB:
         now = int(now if now is not None else self.clock())
         today = trading_day(now)
         rows = [{**{k: r.get(k) for k in ("t", "side", "qty", "reason", "pnl", "entry_t", "src", "strategy", "stop", "target")},
-                 **_answer(r)} for r in self.ledger if r.get("side") in ("buy", "sell", "exit")][-8:]
+                 **_answer(r), **_fill_of(r)} for r in self.ledger if r.get("side") in ("buy", "sell", "exit")][-8:]
         out = {"label": self.label, "account": self.name, "plan": self.spec["plan"], "plan_label": self.spec["plan_label"],
                "kind": self.kind(), "sizing": self.spec["sizing"], "keys": list(self.spec["keys"]), "enabled": not self.disabled_reason(),
                "disabled": self.disabled_reason(), "eval": self.eval_view(now), "open": self.position(), "routed": rows,
@@ -1578,6 +1578,24 @@ def _answer(r: dict) -> dict:
     if r.get("void"):
         out["void"] = r["void"]
     return out
+
+
+def _fill_of(r: dict) -> dict:
+    """An entry row's NinjaTrader fill price ({"fill": px} from the result's legs, else {}): the narrator's FILLED line and
+    the phone's entry notice (2026-10-29: the NinjaTrader adapter reports its own fills only for the bot's own account, so
+    account B / C entries on NinjaTrader reached the phone as nothing; their info() rows dropped the legs)."""
+    if r.get("side") not in ("buy", "sell"):
+        return {}
+    res = r.get("result") if isinstance(r.get("result"), dict) else {}
+    if res.get("ok") is False:
+        return {}
+    for lg in res.get("legs") or []:
+        try:
+            if isinstance(lg, dict) and lg.get("fill_px") is not None and int(lg.get("filled") or 0) > 0:
+                return {"fill": float(lg["fill_px"])}
+        except (TypeError, ValueError):
+            continue
+    return {}
 
 
 TRACKER_KEYS = ("name", "plan", "label", "status", "text", "start", "today", "balance", "profit", "floor", "room", "locked", "mll_after_payout", "buffer", "buffer_balance",
