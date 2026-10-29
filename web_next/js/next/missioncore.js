@@ -216,7 +216,7 @@
   }
   function sessionCountdown(M) {
     const now = M.now || nowS(), open = inSessionNow(now);
-    return `<div class="mc-sess"><span class="mc-dot ${open ? 'good' : ''}"></span>${open ? `Market open · session ends 17:00 ET in ${cd(sessionEnd(now))}` : `Market closed · next session 18:00 ET in ${cd(nextSession(now))}`}</div>`;
+    return `<div class="mc-sess"><span class="mc-dot ${open ? 'good' : ''}"></span>${open ? `CME futures open · this session ends 17:00 ET in ${cd(sessionEnd(now))}` : `CME futures closed · next session opens 18:00 ET in ${cd(nextSession(now))}`}</div>`;
   }
   // strip: Home's top area
   function strip(M, opts = {}) {
