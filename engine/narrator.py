@@ -70,6 +70,7 @@ KINDS = {
     "model": ("Model trade (not routed)", False),
     "atlas": ("ATLAS paper", False),
     "blitz": ("BLITZ paper", False),
+    "structure": ("Market structure (advice)", False),
 }
 STRATS = {"lit": "Zlarior", "atlas": "ATLAS", "scalp": "BLITZ", "sys": "Bot"}
 EXIT_WORDS = {"TARGET": "hit the target", "STOP": "stopped out", "BE": "breakeven", "TIME": "closed at the 15-minute check",
@@ -514,6 +515,11 @@ def derive(bot, now=None, prev: dict | None = None) -> tuple[list, dict]:
         state["kill"] = k
     except Exception:
         pass
+    # market structure (engine/structure.py, advice only): 15m / 1h breaks today, the advisor's notes on an open Zlarior trade
+    try:
+        out += _structure_msgs(bot, now, day)
+    except Exception:
+        pass
     # daily summary: once, after the 15:55 flat (16:05-17:00 ET on a trading weekday)
     try:
         e = _et(now)
@@ -522,6 +528,41 @@ def derive(bot, now=None, prev: dict | None = None) -> tuple[list, dict]:
     except Exception:
         pass
     return out, state
+
+
+def _structure_msgs(bot, now: int, day: str) -> list:
+    """Kind "structure" (strat sys, never pushed by default): a 15m / 1h BOS or CHoCH today with what it means per strategy,
+    and on an open Zlarior trade the advisor's notes ("a structure trader would protect here"), each with the playbook rule.
+    Advice only: nothing here changes an order."""
+    from . import liveview_api as LV
+    from . import playbook as PB
+    out = []
+    S = LV.structure_block(bot, now, compute=False) or {}          # cached by the page / live_publish: no work on the poll
+    ps = S.get("per_strategy") or {}
+    for tf in ("15m", "1h"):
+        ev = ((S.get("frames") or {}).get(tf) or {}).get("last_event")
+        if not ev or trading_day(int(ev["t"])) != day:
+            continue
+        way = "up" if ev["dir"] > 0 else "down"
+        txt = (f"{tf} {ev['kind']} {way} through {px(ev['price'])} ({hm(ev['t'])} ET): the {tf} trend is now {way}. "
+               f"Zlarior: {(ps.get('lit') or {}).get('note', '')} ATLAS: {(ps.get('atlas') or {}).get('note', '')}")
+        out.append(msg(f"struct:{tf}:{int(ev['t'])}:{ev['dir']}", int(ev["t"]) + {"15m": 900, "1h": 3600}[tf], "sys", "structure",
+                       f"Structure {tf}: {ev['kind']} {way}", txt, "info"))
+    try:
+        from .accounts import _position
+        pos = _position(bot)
+    except Exception:
+        pos = None
+    if pos and pos.get("entry") is not None and pos.get("entry_t") and not getattr(bot, "_open_src", None):
+        from . import advisor as AD
+        for a in AD.cached_open_advice("lit", int(pos["entry_t"])):    # computed by the Live View (its own thread)
+            rid = a.get("playbook") or ""
+            r = PB.rule(rid) or {}
+            out.append(msg(f"advice:{int(pos['entry_t'])}:{a['rule']}:{a['t']}", int(a["t"]), "lit", "structure",
+                           f"Advice ({rid}): {r.get('title', a['rule'])}",
+                           f"{a['why']}. Advice only: the bot keeps its written rules (Z18); the advisor scores this note after the trade.",
+                           "info"))
+    return out
 
 
 def summary(bot, day, today_rows, now) -> dict:
@@ -718,6 +759,12 @@ def tick(bot, now=None) -> list:
         return []
     try:
         NARRATOR.enable_files(LOG_DIR)
-        return NARRATOR.observe(bot, now, push=True)
+        new = NARRATOR.observe(bot, now, push=True)
+        try:                                   # the discretion advisor (engine/advisor.py): scores finished trades, read-only
+            from . import advisor
+            advisor.pc_tick(bot, now)
+        except Exception:
+            pass
+        return new
     except Exception:
         return []

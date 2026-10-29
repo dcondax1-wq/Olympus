@@ -595,9 +595,12 @@ def weekly_payload(W: dict, t=None) -> dict:
 
 
 # ================================================================================================ 3. suggestions
-def suggestions(L: dict | None, journal: list | None, costs: dict | None = None, learn_costs: bool = False) -> list:
+def suggestions(L: dict | None, journal: list | None, costs: dict | None = None, learn_costs: bool = False,
+                advisor_store: str | None = None, advisor_tally: dict | None = None) -> list:
     """"The bot suggests" cards: the LIT learning loop's shadow knobs (observe mode) with their evidence and what they
-    would have changed in $ on the journal, and the cost reserve. Approval = an existing command; nothing is applied."""
+    would have changed in $ on the journal, the cost reserve, and the discretion advisor's structure rules (engine/advisor.py:
+    "would have saved / cost $X over N trades"; advice only, no approve command). Approval = an existing command; nothing is
+    applied."""
     out = []
     try:
         from engine import lit_learn as LL
@@ -632,6 +635,11 @@ def suggestions(L: dict | None, journal: list | None, costs: dict | None = None,
                         "would_text": "smaller size on the same $ risk (never larger)",
                         "approve": 'live_model.json + live_model_lit.json: lit_sizing "learn_costs": true',
                         "note": "Only makes sizing more conservative; off = today's exact sizing."})
+    try:                                       # the discretion advisor's running tally per structure rule (read-only)
+        from engine import advisor
+        out += advisor.cards(advisor_tally, store=advisor_store, backtest=True)
+    except Exception:
+        pass
     return out
 
 
@@ -743,11 +751,19 @@ def cloud_hook(new_state: dict, old_state: dict, res: dict | None, second_run: d
         out["weekly"] = [W[k] for k in sorted(W)][-12:]
     except Exception as ex:
         errs.append(f"weekly: {ex.__class__.__name__}: {ex}"[:160])
+    adv_tally = None
+    try:                                       # the discretion advisor (engine/advisor.py): structure advice scored in $, read-only
+        from engine import advisor
+        adv = advisor.cloud_block(new_state, old_state, d1, now)
+        new_state["advisor"] = adv
+        adv_tally = adv.get("tally") or {}
+    except Exception as ex:
+        errs.append(f"advisor: {ex.__class__.__name__}: {ex}"[:160])
     pc = new_state.get("pc") if isinstance(new_state.get("pc"), dict) else {}
     costs = (pc.get("learn") or {}).get("costs") if isinstance(pc.get("learn"), dict) else None
     out["costs"] = costs
     out["learn_costs"] = bool((lit_sizing or {}).get("learn_costs"))
-    out["suggest"] = suggestions(learning, lit_journal, costs, out["learn_costs"])
+    out["suggest"] = suggestions(learning, lit_journal, costs, out["learn_costs"], advisor_tally=adv_tally)
     if errs:
         out["errors"] = errs
     new_state["learning_live"] = {k: v for k, v in out.items() if k != "notices"}
