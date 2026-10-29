@@ -108,9 +108,9 @@ the news calendar); read-only. Tests: `python -X utf8 -m tests.test_space_ui`.
 | 64 | Streaks & consistency | new | Green / red booked days, the current streak, the best day as a share of the profit vs the MFFU 50% payout rule |
 | 65 | Daily loss & week pace | new | The daily loss limit used today (gauge) and this week's trades vs the 2-4 goal |
 | 66 | Next news | new | The next high-impact events with a countdown |
+| 67 | Live View market structure | new | When the data has `structure` (engine/liveview_api.view): premium / discount shading, liquidity pools (BSL / SSL, swept ticked), HH / HL / LH / LL swings of 5m / 15m / 1h, each frame's last BOS / CHoCH, protected high / low, a Structure switch and a "Market structure" card in the thinking panel; nothing is drawn without the block |
 | 68 | Telemetry strip | new | Mission Control's top: NQ price (last bar), ATR, VIX / VXN, the VIX-band objective down / up, a ticking ET clock (from the board's map) |
 | 69 | Satellite name tags | new | A small tag rides next to each bot's satellite in the 3D sky ("Zlarior · IN TRADE", "ATLAS · ARMED", "BLITZ · PAPER"), hidden behind the planet; each eval's progress to its target as a ring around its planet on Mission Control |
-| 67 | Live View market structure | new | When the data has `structure` (engine/liveview_api.view): premium / discount shading, liquidity pools (BSL / SSL, swept ticked), HH / HL / LH / LL swings of 5m / 15m / 1h, each frame's last BOS / CHoCH, protected high / low, a Structure switch and a "Market structure" card in the thinking panel; nothing is drawn without the block |
 
 ## Organization (2026-10-28)
 - PC sidebar Main (6 items): Home · Start · Zlarior · ATLAS · **Real results** · All tools; the backtest page is renamed
