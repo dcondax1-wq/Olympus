@@ -580,9 +580,9 @@ def _ledger_trades(bot) -> list:
         elif r.get("side") == "exit":
             et = r.get("entry_t")
             e = ent.get(int(et)) if et is not None else (list(ent.values())[-1] if ent else None)
-            if not e:
-                continue
-            res = e.get("result") or {}
+            res = (e or {}).get("result") or {}
+            if not e or r.get("reason") == "NO TRADE" or res.get("ok") is False:
+                continue                         # voided (guards: NO TRADE does not count) / refused (nothing was open from it)
             fill = next((x.get("fill_px") for x in (res.get("legs") or []) if isinstance(x, dict) and x.get("fill_px") is not None), None)
             out.append({"entry_t": int(e.get("entry_t") or e["t"]), "exit_t": int(r.get("exit_t") or r["t"]), "dir": 1 if e.get("side") == "buy" else -1,
                         "entry": fill or e.get("entry") or e.get("price"), "stop": e.get("stop"), "target": e.get("target"),
