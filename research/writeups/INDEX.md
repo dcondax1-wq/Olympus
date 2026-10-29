@@ -5,10 +5,10 @@ tool after adding a write-up. Every write-up's runs are in `research/runs/<id>.j
 
 | Group | Write-ups |
 |---|---:|
-| [Adopt-candidates (some are live now: see CLAUDE.md / STRATEGY.md)](#adopt-candidate) | 30 |
+| [Adopt-candidates (some are live now: see CLAUDE.md / STRATEGY.md)](#adopt-candidate) | 31 |
 | [Promising leads](#promising) | 15 |
 | [Findings](#finding) | 18 |
-| [Rejected](#rejected) | 36 |
+| [Rejected](#rejected) | 35 |
 | [Reference / info](#info) | 20 |
 
 <a id="adopt-candidate"></a>
@@ -16,6 +16,7 @@ tool after adding a write-up. Every write-up's runs are in `research/runs/<id>.j
 
 | Date | Write-up | Family | Verdict | Runs |
 |---|---|---|---|---:|
+| 2026-10-30 | [Zlarior edge night - 17 new ideas on the live LIT (realised-volatility targets, ATR…](lit-edge-2026-10-30.md) | other | one adopt-candidate, conditional on the scale-in Sim roundtrip (when scale-in is switched on - adds on the…<br><sub>Owner 2026-10-29 - "build every bot more than you can, find more edge, better rules for everything". 17 new ideas for Zlarior (the live LIT on the MFFU Builder 50K)…</sub> | 25 |
 | 2026-10-26 | [Funded-phase money from the payout rules - ask line, consistency-aware size, a stack…](payout-policy.md) | risk | adopt-candidate (pre-buy the replacement eval at an account's 4th payout; owner decides, check MFFU first) -…<br><sub>Owner order 2026-10-26, item 2 - more funded money from the MFFU / LucidPro / FundedNext payout mechanics without changing a trade. Played on the owner's copied stack…</sub> | 0 |
 | 2026-10-26 | [MNQ feed vs NQ backtest - does the bot trade the backtest's signals? (and the NQ signal…](mnq-vs-nq-feed.md) | other | adopt-candidate (owner decides; built, OFF) - decide on an NQ chart (signal_root NQ), keep every order on MNQ<br><sub>LIT is backtested on NQ1!, the PC decides on NinjaTrader MNQ. The PC's MNQ bars (27 heartbeat commits) equal TradingView MNQ1! on 95% of bars but are within a tick of…</sub> | 3 |
 | 2026-10-26 | [Cheaper evals - which eval sizing buys a funded account cheapest and fastest at the…](eval-cost.md) | risk | adopt-candidate (small; owner decides) - keep the two_week eval sizing after session 10 instead of switching…<br><sub>Owner order 2026-10-26, item 3 - the eval-sizing trade-off between pass speed and fail rate when many evals are bought, priced at the owner's prices (MFFU Builder 25K…</sub> | 0 |
@@ -97,7 +98,6 @@ tool after adding a write-up. Every write-up's runs are in `research/runs/<id>.j
 
 | Date | Write-up | Family | Verdict | Runs |
 |---|---|---|---|---:|
-| 2026-10-30 | [Zlarior edge night - 16 new ideas on the live LIT (realised-volatility targets, ATR…](lit-edge-2026-10-30.md) | other | no adopt-candidate - nothing beats live LIT in both 2026 halves on the eval path, the LIT size rule and the…<br><sub>Owner 2026-10-29 - "build every bot more than you can, find more edge, better rules for everything". 16 new ideas for Zlarior (the live LIT on the MFFU Builder 50K)…</sub> | 22 |
 | 2026-10-29 | [BLITZ on its own MFFU Builder 25K (account C) - keep today's rule; trading "like a…](blitz-25k.md) | other | no adopt-candidate - no BLITZ rule change holds in 2026 H1, H2 and 2021-25 (0 of 1,997 variants); verdict…<br><sub>Owner 2026-10-28/29 - BLITZ gets its own MFFU Builder 25K next week; make it trade "like a person, not a fixed rr" and "learn market structure", judged on money and…</sub> | 3 |
 | 2026-10-28 | [Mean-reversion scalps for a third account - none makes money in both 2026 and 2021-25…](scalp-mean-reversion.md) | other | rejected - nothing adopted; no mean-reversion scalp holds in 2026 H1, H2 and 2021-25 after costs<br><sub>Owner 2026-10-28 - a third strategy, a scalper that trades several times a day on its own MFFU account and makes money. Mean-reversion fades (VWAP / band / range-edge…</sub> | 1 |
 | 2026-10-28 | [LIT reversal exits - get out on a violent reversal, trail after 0.5-1R, breakeven near…](lit-reversal-exit.md) | management | rejected<br><sub>The first real live LIT trade (2026-10-28, short 5 MNQ at 29,945) went 0.95R in our favour, then four big green 1m candles took it to the full stop (-$437). The owner…</sub> | 13 |

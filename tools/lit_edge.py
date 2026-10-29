@@ -32,6 +32,9 @@ scale-in (built, OFF) re-measured on today's live; eval knobs (two_week_until, r
                                                   # -> research/lit/edge_grid.json (gitignored; EDGE_OUT=<file> per process)
   python -X utf8 tools/lit_edge.py merge          # edge_grid*.json -> edge_grid.json + research/lit/edge_results.json (committed)
   python -X utf8 tools/lit_edge.py save           # rl.save runs lit_edge_* (PICKS)
+  python -X utf8 tools/lit_edge.py save_si        # the eval-path runs lit_edge_eval_* (live / scale-in / from session 5)
+  python -X utf8 tools/lit_edge.py life           # account-slot model with scale-in -> research/lit/edge_life.json
+  python -X utf8 tools/lit_edge.py si_slip        # scale-in at +0/2/4 ticks on every add -> research/lit/edge_si_slip.json
 """
 from __future__ import annotations
 
@@ -852,6 +855,8 @@ def grid(fams=None):
         tp_family(res, bs, dump)
     if "ebank" in fams:
         ebank_family(res, bs, dump)
+    if "siguard" in fams:
+        siguard_family(res, bs, dump)
     if "scale" in fams:
         from tools import lit_adopt_combo as AC
         for nm, si in (("scale_in_live", SCALE), ("scale_in_pb0.35", {**SCALE, "pb": 0.35}), ("scale_in_pb0.15", {**SCALE, "pb": 0.15}),
@@ -919,6 +924,362 @@ def merge():
                for k, v in res.items()}, open(OUT_S, "w"), indent=0, separators=(",", ":"), default=float)
     print(len(res), "variants ->", OUT_S)
     return res
+
+
+# ================================================================================================ scale-in: eval guard + funded
+def si_units(si=None):
+    """Scale-in units (2026, tools/lit_adopt_combo.units of the engine run with scale_in) each linked to its live unit
+    (`_live`: the same trade without the scale-in); 2021-25 = the live units (no 1m bars there: scale-in never acts)."""
+    from tools import lit_adopt_combo as AC
+    si = si or SCALE
+    T = F.run({**LIVE, "scale_in": si})
+    live = {u["entry_t"]: u for u in trades({})}
+    out = []
+    for u in AC.units(T):
+        lu = live[u["entry_t"]]
+        if u.get("adds"):
+            out.append(dict(u, add_f=si["f"], tf=lu["tf"], _live=lu))
+        else:
+            out.append(lu)
+    out += [u for u in live.values() if u["day"] < "2026"]
+    return sorted(out, key=lambda u: u["entry_t"]), T
+
+
+def si_pnl(t, q, st, room_f=0.6, state=True):
+    """$ P&L, worst open $ and total micros of one trade at q base micros + its adds (engine/sizing.scale_in_qty)."""
+    adds = t["adds"]
+    qa = t.get("_qa") or SZ.scale_in_qty(q, q, t["risk"], adds, f=t.get("add_f", 1.0), state=st if state else None,
+                                         room_f=room_f)
+    tot = q + sum(qa)
+    g = q * t["pts"] * PV
+    lows = [q * t["w_pre"] * PV]
+    for i, a in enumerate(adds):
+        g += qa[i] * a["pts"] * PV
+        lows.append((q * a["w_ph"] + sum(qq * (a["w_ph"] - b["dist"]) for qq, b in zip(qa[:i + 1], adds))) * PV)
+    pnl = g - A.ECOMM * tot
+    return pnl, min(0.0, min(lows) - A.ECOMM * tot, pnl), tot
+
+
+def run_eval_si(seq, by, horizon=20, keep=None, cfg=None):
+    """run_eval_m for scale-in units with an eval-only guard cfg["_si"] = {"room_min": $, "sess_min": n, "profit_min": $,
+    "room_f": add budget share of the room (engine default 0.6)}: an add is allowed only when the eval state at the trade's
+    entry meets the guard, else the trade is the live one (no scale-in)."""
+    cfg = cfg or A.CFG
+    g = cfg.get("_si") or {}
+    tgt, mll, dll, lockv = A.A50["target"], A.A50["mll"], A.A50["dll"], A.A50["lock"]
+    bal = peak = 0.0
+    floor = -mll
+    for kk, si in enumerate(seq[:horizon]):
+        cum = 0.0
+        for t in by[si]:
+            if cum <= -dll:
+                break
+            st = {"profit": bal, "cum": cum, "room": bal + cum - floor, "session": kk + 1, "n_today": 0}
+            if t.get("adds") and not (st["room"] >= g.get("room_min", -1e9) and kk + 1 >= g.get("sess_min", 0)
+                                      and bal >= g.get("profit_min", -1e9)):
+                t = t["_live"]
+            m0 = lit.qty_for(t["risk"])
+            tr = {"risk_pts": t["risk"], "tgt_pts": t["tgt"], "size_mult": 1.0}
+            q = SZ.lit_qty(m0, tr, cfg, room=st["room"], state=st, learning=None)["qty"] if m0 else 0
+            if q <= 0:
+                continue
+            if t.get("adds"):
+                pnl, low, tot = si_pnl(t, q, st, room_f=g.get("room_f", 0.6))
+            else:
+                pnl = A.leg_pnl(t, q)
+                low, tot = min(0.0, t["w1"] * PV * q - A.ECOMM * q, pnl), q
+            if cum + low <= -dll:
+                pnl = -dll - cum - SLIP * PV * tot
+                low = pnl
+            rec = {**{k: t[k] for k in ("day", "entry_t", "exit_t", "dir", "exit", "risk", "tgt")}, "qty": tot, "pnl": round(pnl, 2),
+                   "low": round(low, 2), "risk_usd": round(t["risk"] * PV * q, 2)}
+            if bal + cum + low <= floor:
+                if keep is not None:
+                    keep.append(rec)
+                return "FAIL", kk + 1
+            cum += pnl
+            if keep is not None:
+                keep.append(rec)
+        bal += cum
+        if bal <= floor:
+            return "FAIL", kk + 1
+        peak = max(peak, bal)
+        floor = min(max(floor, peak - mll), lockv)
+        if bal >= tgt:
+            return "PASS", kk + 1
+    return "OPEN", min(len(seq), horizon)
+
+
+class FundedSI(UP.Funded):
+    """The live funded account with scale-in adds sized as engine/live.py does in mode funded (scale_in_qty without an eval
+    state: the adds' open risk inside the first entry's $ risk, 40 micros at most)."""
+
+    def qty(self, t, st):
+        cfg = self.cfg
+        self.cfg = {k: v for k, v in cfg.items() if not k.startswith("_si")}
+        try:
+            q = super().qty(t, st)
+        finally:
+            self.cfg = cfg
+        if q > 0 and t.get("_si"):
+            u = dict(t["_si"])
+            if cfg.get("_si_f") is not None:
+                u["add_f"] = cfg["_si_f"]
+            if cfg.get("_si_cap") and cfg.get("max_win"):
+                # the whole position's target pays at most max_win: each add trimmed to fit
+                cap = float(cfg["max_win"])
+                qa = SZ.scale_in_qty(q, q, u["risk"], u["adds"], f=u.get("add_f", 1.0), state=None)
+                pay = q * u["tgt"] * PV - UP.COMM * q
+                kept = []
+                for n_, a in zip(qa, u["adds"]):
+                    per = (u["tgt"] - a["dist"]) * PV - UP.COMM
+                    k_ = max(0, min(n_, int((cap - pay) / per))) if per > 0 else n_
+                    kept.append(k_)
+                    pay += k_ * per
+                u["_qa"] = kept
+            pnl, low, tot = si_pnl(u, q, None, state=False)           # $1.90 on every micro, base + adds
+            t["pts"] = (pnl + UP.COMM * q) / (PV * q)                 # funded_mc books pts x $2 x q - $1.90 x q
+            t["w1"] = (low + UP.COMM * q) / (PV * q)
+        return q
+
+
+def funded_si(U, spans=("H1", "H2", "REF"), n=None, extra=None):
+    c = ctx()
+    n = n or N_FUND
+    W = wk_mult([u.get("_live", u) for u in U])
+    by = collections.defaultdict(list)
+    for u in sorted(U, key=lambda u: u["entry_t"]):
+        x = {"day": u["day"], "risk": u["risk"], "risk_pts": u["risk"], "tgt": u["tgt"], "tgt_pts": u["tgt"], "pts": u["pts"],
+             "w1": u["w1"], "size_mult": W[u["entry_t"]]}
+        if u.get("adds"):
+            x["_si"] = u
+        by[u["day"]].append(x)
+    BY = [by.get(d, []) for d in c["S_up"]]
+    keep = UP.Funded
+    UP.Funded = lambda plan, cfg_, ask=None: FundedSI(plan, cfg_, ask)
+    try:
+        o = {}
+        for sp in spans:
+            if (sp, n) not in _FP:
+                _FP[(sp, n)] = UP.mc_paths(c["S_up"], sp, n)
+            r = UP.funded_mc(BY, _FP[(sp, n)], "builder50k", {**FUND_LIVE, **(extra or {})})
+            o[sp] = {k: r[k] for k in ("per_month", "paid_6m", "loss_6m", "first_med", "any_pay", "payouts", "max_risk", "trades_6m")}
+    finally:
+        UP.Funded = keep
+    return o
+
+
+def siguard_family(res, base, dump):
+    U, T = si_units()
+    U26 = [u for u in U if u["day"] >= "2026"]
+    keep = A.run_eval
+    for nm, ex in (("funded_scale_in", {}), ("funded_scale_in_capwin", {"_si_cap": True}), ("funded_scale_in_f0.5", {"_si_f": 0.5}),
+                   ("funded_scale_in_f0.5_capwin", {"_si_f": 0.5, "_si_cap": True})):
+        key = f"siguard:{nm}"
+        if key in res:
+            continue
+        f = funded_si(U, extra=ex)
+        res[key] = {"fund": f, "d_fund": {sp: f[sp]["per_month"] - base["fund"][sp]["per_month"] for sp in f}, "info": ex}
+        print(key, {sp: (f[sp]["per_month"], f[sp]["loss_6m"], f[sp]["first_med"], f[sp]["payouts"]) for sp in f},
+              res[key]["d_fund"], flush=True)
+        dump()
+    V = [("none", {}), ("room1800", {"room_min": 1800}), ("room1500", {"room_min": 1500}), ("room2000", {"room_min": 2000}),
+         ("sess3", {"sess_min": 3}), ("profit0", {"profit_min": 0.0}), ("profit500", {"profit_min": 500.0}),
+         ("budget0.4", {"room_f": 0.4}), ("budget0.3", {"room_f": 0.3}), ("room1800_budget0.4", {"room_min": 1800, "room_f": 0.4}),
+         ("profit0_budget0.4", {"profit_min": 0.0, "room_f": 0.4}), ("sess2", {"sess_min": 2}), ("sess4", {"sess_min": 4}),
+         ("sess5", {"sess_min": 5}), ("sess6", {"sess_min": 6}), ("sess3_budget0.4", {"sess_min": 3, "room_f": 0.4}),
+         ("sess3_room1500", {"sess_min": 3, "room_min": 1500})]
+    for nm, g in V:
+        key = f"siguard:{nm}"
+        if key in res:
+            continue
+        cfg = copy.deepcopy(A.CFG); cfg["_si"] = g
+        A.run_eval = lambda seq, by, horizon=20, keep=None, cfg_=None, _c=cfg: run_eval_si(seq, by, horizon, keep, _c)
+        A._MC.clear()
+        try:
+            ev = {s: R.eval_path(U26, s) for s in ("H1", "H2")}
+        finally:
+            A.run_eval = run_eval_m
+            A._MC.clear()
+        s_ = {"eval": {sp: {k: ev[sp][k] for k in ("n", "tpw", "pf", "net", "per_month", "dd", "p10", "f10", "dec10", "p15", "f15",
+                                                    "slow_pass", "pass_med", "b2b")} | {"mc_p10": ev[sp]["mc"]["p10"], "mc_f10": ev[sp]["mc"]["f10"]}
+                       for sp in ev}}
+        s_["d_eval"] = {sp: ev[sp]["net"] - base["eval"][sp]["net"] for sp in ev}
+        s_["d_p10"] = {sp: round(ev[sp]["p10"] - base["eval"][sp]["p10"], 1) for sp in ev}
+        s_["d_f10"] = {sp: round(ev[sp]["f10"] - base["eval"][sp]["f10"], 1) for sp in ev}
+        s_["info"] = g
+        res[key] = s_
+        print(key, {sp: (ev[sp]["net"], ev[sp]["p10"], ev[sp]["f10"], ev[sp]["mc"], ev[sp]["dec10"], ev[sp]["pass_med"]) for sp in ev},
+              flush=True)
+        dump()
+    A.run_eval = keep
+
+
+class EvalSI(UP.Eval):
+    """tools/uprisk.Eval (the slot model's MFFU eval: 'stuck' under $200 room = lost) + scale-in adds from eval session
+    cfg["_si_from"] on (None = no adds = UP.Eval exactly)."""
+
+    def step(self, ts):
+        c, E = self.cfg, self.E
+        self.s += 1
+        wkey = (self.s - 1) // 5
+        cum = 0.0
+        sub = {k: v for k, v in c.items() if not k.startswith("_")}
+        traded = False
+        fr = c.get("_si_from")
+        for t in ts:
+            if cum <= -E["dll"]:
+                break
+            m0 = lit.qty_for(t["risk"])
+            if not m0:
+                continue
+            st = {"profit": self.bal, "cum": cum, "room": self.bal + cum - self.floor, "session": self.s, "n_today": 0,
+                  "wk_pnl": self.wk.get(wkey, 0.0), "days_traded": self.dtr}
+            q = SZ.lit_qty(m0, {"risk_pts": t["risk"], "tgt_pts": t["tgt"], "size_mult": 1.0}, sub, room=st["room"],
+                           state=st, learning=None, max_micros=c["_maxq"])["qty"]
+            q = min(q, c["_maxq"])
+            if q <= 0:
+                continue
+            traded = True
+            if fr is not None and t.get("_si") and self.s >= fr:
+                pnl, low, tot = si_pnl(t["_si"], q, st)
+            else:
+                pnl = t["pts"] * PV * q - UP.COMM * q
+                low = min(0.0, t["w1"] * PV * q - UP.COMM * q, pnl)
+                tot = q
+            self.max_risk = max(self.max_risk, (t["risk"] + SLIP) * PV * q + UP.COMM * q)
+            if cum + low <= -E["dll"]:
+                pnl = -E["dll"] - cum - SLIP * PV * tot
+                low = pnl
+            if self.bal + cum + low <= self.floor:
+                return "fail"
+            cum += pnl
+        self.bal += cum
+        self.wk[wkey] = self.wk.get(wkey, 0.0) + cum
+        self.dtr += 1 if traded else 0
+        if self.bal <= self.floor:
+            return "fail"
+        self.peak = max(self.peak, self.bal)
+        self.floor = min(max(self.floor, self.peak - E["mll"]), E["lock"])
+        if self.bal >= E["tgt"]:
+            return "pass"
+        if self.bal - self.floor < c["_stuck"]:
+            return "stuck"
+        if c["_reset"] and self.s >= c["_reset"]:
+            return "reset"
+        return None
+
+
+def life_si(n=None):
+    """One account slot for 6 months (tools/uprisk.life: eval -> 2 sessions paperwork -> funded -> payouts or lost -> next
+    eval at $91.80), $ a month to the owner net of every eval; eval with scale-in from session N (None = live), funded
+    accounts without adds (live funded preset)."""
+    c = ctx()
+    n = n or N_FUND
+    U, T = si_units()
+    W = wk_mult([u.get("_live", u) for u in U])
+    by = collections.defaultdict(list)
+    for u in sorted(U, key=lambda u: u["entry_t"]):
+        lu = u.get("_live", u)
+        x = {"day": u["day"], "risk": lu["risk"], "risk_pts": lu["risk"], "tgt": lu["tgt"], "tgt_pts": lu["tgt"], "pts": lu["pts"],
+             "w1": lu["w1"], "size_mult": W[u["entry_t"]]}
+        if u.get("adds"):
+            x["_si"] = u
+        by[u["day"]].append(x)
+    BY = [by.get(d, []) for d in c["S_up"]]
+    keep = UP.Eval
+    UP.Eval = lambda cfg_, plan="builder50k": EvalSI(cfg_, plan)
+    out = {}
+    try:
+        for nm, fr in (("live", None), ("scale_in", 1), ("scale_in_s3", 3), ("scale_in_s5", 5), ("scale_in_s6", 6)):
+            ec = UP.ecfg_of({})
+            ec["_si_from"] = fr
+            out[nm] = {}
+            for sp in ("H1", "H2"):
+                if (sp, n) not in _FP:
+                    _FP[(sp, n)] = UP.mc_paths(c["S_up"], sp, n)
+                r = UP.life(BY, _FP[(sp, n)], ec, FUND_LIVE)
+                er = UP.eval_mc(BY, _FP[(sp, n)], ec)
+                out[nm][sp] = {"life": r, "eval": er}
+            print(nm, {sp: (out[nm][sp]["life"]["net_m"], out[nm][sp]["life"]["owner_m"], out[nm][sp]["life"]["p_neg"],
+                            out[nm][sp]["life"]["funded"], out[nm][sp]["life"]["first_pay_med"],
+                            {k: out[nm][sp]["eval"].get(k) for k in ("p10", "f10", "p_ever", "pass_med")}) for sp in ("H1", "H2")},
+                  flush=True)
+    finally:
+        UP.Eval = keep
+    json.dump(out, open(os.path.join(ROOT, "research", "lit", "edge_life.json"), "w"), indent=1, default=float)
+    return out
+
+
+def si_slip():
+    """Scale-in with worse add fills (+0 / 2 / 4 ticks on every add: its points and worst open lower, its risk higher), as
+    built and from eval session 5, on the eval path -> research/lit/edge_si_slip.json."""
+    U, T = si_units()
+    U26 = [u for u in U if u["day"] >= "2026"]
+    out = {}
+    for ticks in (0, 2, 4):
+        d = 0.25 * ticks
+        V = [dict(u, adds=[dict(a, pts=a["pts"] - d, w_ph=a["w_ph"] - d, rk=a["rk"] + d, dist=a["dist"] + d) for a in u["adds"]])
+             if u.get("adds") else u for u in U26]
+        for nm, g in (("all", {}), ("s5", {"sess_min": 5})):
+            cfg = copy.deepcopy(A.CFG)
+            cfg["_si"] = g
+            A.run_eval = lambda seq, by, horizon=20, keep=None, cfg_=None, _c=cfg: run_eval_si(seq, by, horizon, keep, _c)
+            A._MC.clear()
+            try:
+                ev = {s_: R.eval_path(V, s_) for s_ in ("H1", "H2")}
+            finally:
+                A.run_eval = run_eval_m
+                A._MC.clear()
+            out[f"{nm}_slip{ticks}"] = {s_: {k: ev[s_][k] for k in ("net", "p10", "f10")} | {"mc": ev[s_]["mc"]} for s_ in ev}
+            print(nm, ticks, {s_: (ev[s_]["net"], ev[s_]["p10"], ev[s_]["f10"], ev[s_]["mc"]) for s_ in ev}, flush=True)
+    json.dump(out, open(os.path.join(ROOT, "research", "lit", "edge_si_slip.json"), "w"), indent=1)
+    return out
+
+
+def save_si():
+    """Runs of the eval path (back-to-back evals, a new one after a pass, a fail or 10 sessions; live two_week sizing):
+    live, scale-in as built, scale-in with no adds before eval session 5 (the candidate)."""
+    res = json.load(open(OUT))
+    U, T = si_units()
+    U26 = [u for u in U if u["day"] >= "2026"]
+    L26 = [u for u in trades({}) if u["day"] >= "2026"]
+    Q = ("Owner 2026-10-29: more edge on Zlarior - scale-in (built, OFF) on today's eval settings, and an eval-only guard "
+         "(no adds before eval session N) that keeps the 2-week fails at live levels")
+    for rid, key, units, g, st in (("lit_edge_eval_live", "base", L26, None, "info"),
+                                   ("lit_edge_eval_scale_in", "siguard:none", U26, {}, "info"),
+                                   ("lit_edge_eval_scale_in_s5", "siguard:sess5", U26, {"sess_min": 5}, "adopt-candidate")):
+        cfg = copy.deepcopy(A.CFG)
+        if g is not None:
+            cfg["_si"] = g
+            A.run_eval = lambda seq, by, horizon=20, keep=None, cfg_=None, _c=cfg: run_eval_si(seq, by, horizon, keep, _c)
+        Tp = []
+        try:
+            for sp in ("H1", "H2"):
+                Tp += R.b2b10(units, sp)[0]
+        finally:
+            A.run_eval = run_eval_m
+        for t in Tp:
+            t["risk_pts"] = t["risk"]
+            t["r"] = round(t["pnl"] / t["risk_usd"], 3) if t["risk_usd"] else 0.0
+            t.update(half=False, trigger="LIT-1m", mfe=None, mae=None, bars_held=None, regime="", mult=None, tgt_pts=t["tgt"])
+        Tp = [{k: (v.item() if isinstance(v, np.generic) else v) for k, v in t.items()} for t in Tp]
+        e = res[key]["eval"]
+        f = lambda sp: (f"PF {e[sp]['pf']} net {e[sp]['net']:+,} (${e[sp]['per_month']:,}/mo) DD {e[sp]['dd']:,}; 2-week pass/fail "
+                        f"{e[sp]['p10']}/{e[sp]['f10']} (Monte Carlo {e[sp]['mc_p10']}/{e[sp]['mc_f10']}), decided in 2 weeks "
+                        f"{e[sp]['dec10']}, 3 weeks {e[sp]['p15']}/{e[sp]['f15']}, slow passes {e[sp]['slow_pass']}%, median "
+                        f"{e[sp]['pass_med']} sessions, b2b {e[sp]['b2b']}")
+        rl.save(rid, "LIT eval path: " + {"base": "live", "siguard:none": "scale-in as built",
+                                          "siguard:sess5": "scale-in, no adds before eval session 5"}[key],
+                "management", Q, params={**LIVE, **({"scale_in": SCALE, "x_si_guard": g} if g is not None else {})},
+                sizing={"mode": "two_week", **{k: v for k, v in A.CFG.items() if not k.startswith("_")}}, trades=Tp,
+                scored=rl.score(Tp, A.S26), status=st,
+                verdict=f"Eval path, live two_week sizing ($1.90). 2026 H1 (pick) {f('H1')}. 2026 H2 (check) {f('H2')}. "
+                        "2021-25: no 1m bars (scale-in never acts).",
+                notes="tools/lit_edge.py save_si: units of the engine run (scale_in) linked to the live trade; guard = an add only "
+                      "from eval session N (else the live trade); stored trades = the back-to-back eval path per half.",
+                writeup="lit-edge-2026-10-30", tags=["lit", "lit_edge"])
+        print("saved", rid, flush=True)
 
 
 # ================================================================================================ the cap as a take-profit
@@ -1261,3 +1622,9 @@ if __name__ == "__main__":
         merge()
     elif cmd == "save":
         save(PICKS)
+    elif cmd == "save_si":
+        save_si()
+    elif cmd == "life":
+        life_si()
+    elif cmd == "si_slip":
+        si_slip()
