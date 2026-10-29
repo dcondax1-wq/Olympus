@@ -414,6 +414,24 @@ def t_hooks(blk):
           and not MD.contract_errors(a["block"]), MD.contract_errors(a["block"]))
     check("server.py mounts the Mind router with one line", "from engine.mind import router as mind_router; app.include_router(mind_router)"
           in open(os.path.join(ROOT, "server.py"), encoding="utf-8").read())
+    try:
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+        app = FastAPI()
+        app.include_router(MD.router)
+        ob, om = MD._bot, MD.MIND
+        MD._bot = lambda: fake_bot(now, None)
+        MD.MIND = MD.Mind(log_dir=tempfile.mkdtemp())
+        MD.MIND.block = blk
+        try:
+            r = TestClient(app).get("/api/next/mind")
+            js = r.json()
+        finally:
+            MD._bot, MD.MIND = ob, om
+        check("GET /api/next/mind answers 200 with the cached block (JSON, read-only)", r.status_code == 200 and js["block"]["t"] == blk["t"]
+              and not MD.contract_errors(js["block"]), r.status_code)
+    except ImportError:
+        print("[SKIP] fastapi not installed")
 
 
 def t_never_raises():
