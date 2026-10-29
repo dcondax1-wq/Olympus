@@ -83,6 +83,35 @@ ledger check, the H2 backtest cone). Group C (21-30, AI / strategy insight) is b
 | 49 | Weekly report card | new + existed | Real results "This week" grade (A-D) with trades vs the goal; Sunday weekly review (`review` / phone Weekly) |
 | 50 | What changed today | new | Home "What happened today": every order, fill, exit, refusal and ledger check of both accounts today, newest first (software changes: phone More > What's new) |
 
+## F. Deep space + Mission Control (2026-10-29, owner: "make it look cooler ... features I should have had")
+
+Shared renderer `missioncore.js` (window.MissionUI, byte-identical in both apps), styles `mission.css` + `space.css` (byte-identical),
+the 3D scene `tools/web_public/fx/src/space.js` (in fx.js). Phone: `mission.js` (Home strip + `#/mission`, More > Today); PC:
+`js/next/mission.js` (page `mission`, Main group right after Home). Data: the live board only (+ the Live View data for BLITZ's line,
+the news calendar); read-only. Tests: `python -X utf8 -m tests.test_space_ui`.
+
+| # | Feature | Status | Where |
+|---|---|---|---|
+| 51 | Deep space 3D background | new | Both apps by default: Earth (oceans, continents, clouds, night-side city lights), the Moon crossing the Sun with its round shadow sliding over the Earth (city lights come on inside it), the Sun's corona + glare + lens ghosts, three-layer parallax stars, Milky Way, nebulae; slow camera drift, pointer / scroll / tilt parallax; warp streaks on a page change. Settings Max / Lite / Off (+ Deep space / Galaxy) |
+| 52 | Bot satellites | new | Three satellites orbit the Earth: Zlarior blue, ATLAS orange, BLITZ purple; dim when off, breathing when waiting, a ring ping when armed, bright with a beam to the ground while in a trade (from the live board) |
+| 53 | Shooting star per closed trade | new | Green for a win, red for a loss, once per newly closed trade (the board's trade log, remembered per device) |
+| 54 | Aurora follows today's P&L | new | The atmosphere rim and the night-side aurora turn green on a green day, red on a red day, cyan when flat (sum of today's real P&L of the accounts) |
+| 55 | Mission Control | new | The three accounts as orbits / planets (Zlarior 50K, ATLAS 25K, BLITZ 25K "paper / not live yet" until its account exists): balance, $ to target, room to the floor, today's P&L, the open position with $ at stop / target, eval day N of 10, next window countdown, the bot's thinking line, a health light. Phone: Home strip + #/mission; PC: Main > Mission Control |
+| 56 | Today's mission | new | One line per bot: what it is waiting for or doing right now (Home strip + Mission Control) |
+| 57 | Next-session countdown | new | Market open / closed and the time to the next 18:00 ET session (Home strip + Mission Control) |
+| 58 | If it stops out now | new | Per account: $ lost at the stop and the room to the floor after it (flat: one full stop at today's size), the day-loss used |
+| 59 | Why no trade yet? | new | Per bot: market closed, outside its hours (next window), daily limit, every guard with its fix, the setup stage, rules (Monday), news close by |
+| 60 | Session timeline | new | 18:00 → 17:00 ET with Asia / London / New York, each bot's entry hours (ATLAS per member), the news, now, the 15:55 flat |
+| 61 | Alerts center | new | Every red / amber item (board lines, guards, health strip, a stop-out that would leave little room, the bot's feed) with All / Red / Amber filters |
+| 62 | Health constellation | new | PC bot · NinjaTrader · feed · heartbeat · phone feed · cloud as linked stars, red links where the chain breaks |
+| 63 | Eval runway | new | $ to go per session left vs the backtest's $ per session, and how many winners at today's size it takes |
+| 64 | Streaks & consistency | new | Green / red booked days, the current streak, the best day as a share of the profit vs the MFFU 50% payout rule |
+| 65 | Daily loss & week pace | new | The daily loss limit used today (gauge) and this week's trades vs the 2-4 goal |
+| 66 | Next news | new | The next high-impact events with a countdown |
+| 67 | Live View market structure | new | When the data has `structure` (engine/liveview_api.view): premium / discount shading, liquidity pools (BSL / SSL, swept ticked), HH / HL / LH / LL swings of 5m / 15m / 1h, each frame's last BOS / CHoCH, protected high / low, a Structure switch and a "Market structure" card in the thinking panel; nothing is drawn without the block |
+| 68 | Telemetry strip | new | Mission Control's top: NQ price (last bar), ATR, VIX / VXN, the VIX-band objective down / up, a ticking ET clock (from the board's map) |
+| 69 | Satellite name tags | new | A small tag rides next to each bot's satellite in the 3D sky ("Zlarior · IN TRADE", "ATLAS · ARMED", "BLITZ · PAPER"), hidden behind the planet; each eval's progress to its target as a ring around its planet on Mission Control |
+
 ## Organization (2026-10-28)
 - PC sidebar Main (6 items): Home · Start · Zlarior · ATLAS · **Real results** · All tools; the backtest page is renamed
   **Backtest & research** (was "Results") and sits under Advanced > Results; everything else stays under Advanced. Strategy 3 has a placeholder card on Home ("Strategy 3 (research)", paper only).

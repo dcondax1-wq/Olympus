@@ -505,6 +505,28 @@ part yourself or fold it into a script.**
   (`engine/narrator.py`, hooked in `LiveBot._alerts_tick`, real bot only, never raises): plain-language feed,
   `logs/narrator/<day>.jsonl`; phone pushes only for armed / entry / exit / refused (`data/narrator.json`, `LE_NARRATOR_PUSH=0`).
   Tests: test_real_ui, test_insight_api, test_liveview_api, test_narrator.
+- **Deep space + Mission Control (2026-10-29, owner: "make it look cooler ... almost like 3D space"; read-only):** the default
+  look of both dashboards. 3D: `tools/web_public/fx/src/space.js` (in fx.js; `FX.init({ level, bg: 'space' | 'galaxy' })`):
+  Earth (continents / clouds / city lights baked once from noise into textures, then texture reads + lighting), the Moon
+  crossing the Sun (a real sphere over the corona; glare + lens ghosts dim with the cover) and its soft shadow sliding over
+  the lit side (city lights come on inside it), analytic atmosphere rim, 3-layer parallax stars + baked Milky Way, one
+  satellite per bot (`FX.bots({ lit, atlas, scalp: 'trade' | 'armed' | 'idle' | 'off' })`), a shooting star per newly closed
+  trade (`FX.shoot('win' | 'loss')`), the aurora / rim tint from today's real P&L (`FX.pnl(usd)`), warp streaks on a page
+  change, `FX.stats()`. Cost: DPR cap 1.5 phone / 2 PC, phones <= 30 fps, everything 30 fps after 20 s idle, nothing while
+  hidden or under a full-screen view (Live View), reduced motion = one still frame, software GPU = small bakes, a phone below
+  17 fps drops to ~16 fps; no backdrop blur over it on phones; name tags ride next to the satellites (`FX.labels(on)`). 3D is ON by
+  default again (one-time reset of a stored Off: `clean.fx2` phone, `nx.fx2` PC); automated browsers (`navigator.webdriver`)
+  start Off unless the URL says `?fx=max|lite`. Off / no WebGL 2 = the static CSS sky (`space.css`, painted at first load).
+  Harness: `fx/space.html?lit=trade&atlas=armed&pnl=300&eclipse=0&fxfixed`. Mission Control: shared renderer
+  `missioncore.js` (window.MissionUI, byte-identical copies like boardcore.js; `mission.css`, `space.css` too, copied by the fx
+  build) reads only the live board (+ Live View data for BLITZ's line, the news); renders every account-shaped board block
+  generically (lit, atlas, a third one such as `blitz` / `scalp` or `board.accounts`; a BLITZ placeholder "paper / not live
+  yet" otherwise). Phone `mission.js` (Home strip on top + `#/mission`, More > Today); PC `js/next/mission.js` (Main >
+  Mission Control after Home; `initMissionSync()` drives the satellites / stars / aurora every 15 s). Features 51-67 in
+  `web_next/FEATURES.md` (stop-out now, why no trade yet, session timeline, alerts center, health constellation, eval runway,
+  streaks & consistency, daily loss & week pace, next news). Live View draws `view()["structure"]` when present (zone, pools,
+  swings, BOS / CHoCH, protected; a Structure switch + a "Market structure" thinking card). Caches le-public-v43 /
+  le-shell-next-v25. Test `python -X utf8 -m tests.test_space_ui [--shots <dir>]` (static, node render, phone + PC Playwright).
 - **Start & Accounts page (2026-10-26, PC dashboard sidebar "Start", page `start`):** START BOT as one checklist, one button
   per red line: NinjaTrader connected · live bars from NinjaTrader (`go.feed_problem`, fix "right-click the MNQ 5-minute chart > Reload NinjaScript (or re-add LE_BarFeed)"; the Sim job is refused while stale) · accounts set (50K -> Zlarior, 25K -> ATLAS) · setup done · Sim tests passed · armed ·
   running and routes verified, plus the plain line `Zlarior -> 50K <name> · ATLAS -> 25K <name> · both armed · running`.
@@ -775,7 +797,7 @@ part yourself or fold it into a script.**
    study trades. The scheduled run uses the workflow on the default branch, so merge changes there.
    - **3D layer (2026-10-17):** three.js source in `tools/web_public/fx/src/` (`core.js` loop + quality, `field.js` galaxy background,
      `aura.js` card glow, `taps.js` tap sparks, `orb.js` Live Oracle, `candles.js` 3D chart + replay, `galaxy.js` trade galaxy,
-     `city.js` month city). Build with `cd tools/web_public/fx && npm install && npm run build`: it writes the one bundle
+     `city.js` month city; 2026-10-29: `space.js` deep-space background, the default, see Infrastructure). Build with `cd tools/web_public/fx && npm install && npm run build`: it writes the one bundle
      `tools/web_public/fx.js`, copies it to `web_next/js/fx.js` and stamps its hash into both import URLs (commit all of it). Lazy-loaded after first paint; Settings has
      Max / Lite / Off; off or no WebGL2 leaves the 2D page. `fx/dev.html?view=orb|galaxy|city|candles` is a test harness;
      add `?fxfixed` to a page URL to stop the auto resolution drop in screenshots. PC side: `web_next/js/next/fx3d.js`.

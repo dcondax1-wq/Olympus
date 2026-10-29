@@ -20,6 +20,10 @@ copyFileSync(out, path.join(root, 'web_next', 'js', 'fx.js'));
 copyFileSync(path.join(here, '..', 'litkit.js'), path.join(root, 'web_next', 'js', 'litkit.js'));
 // the trade chart (plain ES module, not bundled): one source for both dashboards
 copyFileSync(path.join(here, '..', 'tradechart.js'), path.join(root, 'web_next', 'js', 'tradechart.js'));
+// deep space + Mission Control (2026-10-29): the CSS sky / glass, the Mission Control styles and renderer, one source each
+copyFileSync(path.join(here, '..', 'space.css'), path.join(root, 'web_next', 'css', 'space.css'));
+copyFileSync(path.join(here, '..', 'mission.css'), path.join(root, 'web_next', 'css', 'mission.css'));
+copyFileSync(path.join(here, '..', 'missioncore.js'), path.join(root, 'web_next', 'js', 'next', 'missioncore.js'));
 const v = createHash('sha1').update(readFileSync(out)).digest('hex').slice(0, 8);
 const stamp = (file, re, rep, soft = false) => {
   const p = path.join(root, file), s = readFileSync(p, 'utf8'), t = s.replace(re, rep);

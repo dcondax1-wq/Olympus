@@ -1,0 +1,45 @@
+<!doctype html><!-- Test harness for the deep-space background (fx/src/space.js), 2026-10-29.
+  Serve tools/web_public (python -m http.server 8797) and open http://127.0.0.1:8797/fx/space.html
+  Options: &level=max|lite|off  &bg=space|galaxy  &lit=trade|armed|idle|off &atlas=... &scalp=...  &pnl=<usd>
+           &shoot=win|loss (after 1.5 s)  &scene=<page>  &warp=1 (after 2 s)  &cards=0 (no glass cards)  &fxfixed (full quality
+           in a software GPU)  &reduced=1 is the browser setting prefers-reduced-motion. Off / no WebGL 2 shows the CSS fallback. -->
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>space dev</title>
+<link rel="stylesheet" href="../space.css">
+<style>
+  :root { --page:#02030a; --accent:#6d7cff; --accent-2:#3ee0c8; --good:#2ee59d; --bad:#ff5a7a; --ink:#eef1f8; --muted:#9aa3b8; }
+  html,body{margin:0;background:#02030a;color:#eef1f8;font:14px Inter,system-ui,sans-serif;min-height:100%}
+  .fx-bg{position:fixed;inset:0;z-index:0;pointer-events:none}.fx-bg .fx-canvas{width:100%!important;height:100%!important;display:block}
+  main{position:relative;z-index:1;padding:76px 16px 120px;max-width:980px}
+  .card{border-radius:18px;padding:16px 18px;margin:0 0 14px}
+  .card b{font-size:22px} .card p{margin:6px 0 0;color:#9aa3b8}
+  #log{position:fixed;bottom:0;left:0;right:0;font:11px monospace;color:#f88;white-space:pre-wrap;z-index:5}
+</style></head><body>
+<div class="space-css" aria-hidden="true"><i class="sc-stars"></i><i class="sc-stars sc-b"></i><i class="sc-mw"></i><i class="sc-sun"></i><i class="sc-moon"></i><i class="sc-earth"></i></div>
+<main id="cards">
+  <div class="card"><div style="font-size:12px;color:#9aa3b8;letter-spacing:.08em;text-transform:uppercase">Zlarior · 50K</div><b>$2,140</b><p>to the +$3,000 target · room $1,542 · day 6 of 10</p></div>
+  <div class="card"><div style="font-size:12px;color:#9aa3b8;letter-spacing:.08em;text-transform:uppercase">ATLAS · 25K</div><b>$1,500</b><p>to the +$1,500 target · room $1,000 · day 1 of 10</p></div>
+  <div class="card"><div style="font-size:12px;color:#9aa3b8;letter-spacing:.08em;text-transform:uppercase">Today's mission</div><p>Zlarior: waiting for a sweep of a LIT level · ATLAS: MACD armed long · BLITZ: paper</p></div>
+</main>
+<div id="log"></div>
+<script type="module">
+const q = new URLSearchParams(location.search), log = (t) => { document.getElementById('log').textContent += t + '\n'; };
+addEventListener('error', (e) => log('ERR ' + e.message));
+if (q.get('cards') === '0') document.getElementById('cards').style.display = 'none';
+const level = q.get('level') || 'max';
+document.documentElement.dataset.fx = 'off';
+window.__ready = false;
+if (level !== 'off') {
+  const FX = await import('../fx.js?' + Date.now());
+  window.FX = FX;
+  FX.init({ level, bg: q.get('bg') || 'space' });
+  if (q.get('scene')) FX.scene(q.get('scene'));
+  const b = {}; for (const k of ['lit', 'atlas', 'scalp']) if (q.get(k)) b[k] = q.get(k);
+  FX.bots(b);
+  if (q.get('pnl')) FX.pnl(+q.get('pnl'));
+  if (q.get('eclipse') && window.__LEFX.space) window.__LEFX.space.hold = +q.get('eclipse');
+  if (q.get('shoot')) setTimeout(() => FX.shoot(q.get('shoot')), 1500);
+  if (q.get('warp')) setTimeout(() => FX.warp(), 2000);
+}
+window.__ready = true;
+</script></body></html>
