@@ -1,0 +1,63 @@
+{
+  "v": 1,
+  "kind": "le-mind",
+  "t": 1793300000,
+  "_note": "UI fixture for tests/test_blitz_tab.py, written from the Mind block's agreed shape (2026-10-29). The bot's own sample is tests/fixtures/mind_sample.json once it exists; the test prefers that one.",
+  "regime": {
+    "label": "Trending up, high volatility",
+    "trend": "up (15m and 1h higher highs)",
+    "vol": "VXN 28.3 (high)",
+    "day_type": {"p_trend": 0.64, "label": "likely trend day", "acc_note": "this day-type call was right 61% of the time in 2026 H2"},
+    "why": "Overnight range 1.4 x its mean, London broke the Asia high and held it; CPI is out of the way."
+  },
+  "plans": {
+    "lit": {"t": 1793298000, "headline": "Waiting for a sweep of the Asia low (29,040) to buy back into the uptrend.",
+            "scenarios": [
+              {"if": "price sweeps 29,040 by 0.5 ATR and a 5m CISD closes back above", "then": "limit long at the CISD open, stop 1 tick under the sweep low", "levels": [29040, 29018.5], "exp_usd": 1450, "odds": 0.38},
+              {"if": "price runs the London high (29,310) first", "then": "no long: wait for a sweep of the high and a short CISD", "levels": [29310], "exp_usd": 0, "odds": 0.27},
+              {"if": "nothing swept by 10:30", "then": "stand aside: no trade is a good trade", "levels": [], "exp_usd": 0, "odds": 0.35}],
+            "change_mind": "a 15m close under 28,980 (the protected low) flips the plan to shorts"},
+    "atlas": {"t": 1793298600, "headline": "MACD armed long on the 5m divergence; EMA waits for a pullback to the 20 EMA.",
+              "scenarios": [
+                {"if": "the 5m MACD crosses up with price above 29,120", "then": "MACD long, stop 29,071, target 29,260", "levels": [29120, 29071, 29260], "exp_usd": 310, "odds": 0.52},
+                {"if": "price loses 29,050", "then": "no ATLAS long today", "levels": [29050], "exp_usd": 0, "odds": 0.2}],
+              "change_mind": "Zlarior arms a short: ATLAS never trades against it"},
+    "blitz": {"t": 1793299000, "headline": "Day filter passed (1.18 x): watching the 11:00 close vs the band 29,236 / 28,964.",
+              "scenarios": [
+                {"if": "the 11:00 close is above 29,236", "then": "PAPER LONG at the next open, stop 1.5 ATR (~62 pts)", "levels": [29236], "exp_usd": 95, "odds": 0.31},
+                {"if": "the close is inside the band", "then": "wait for 11:30", "levels": [28964, 29236], "exp_usd": 0, "odds": 0.62}],
+              "change_mind": "Zlarior enters: BLITZ steps aside (Zlarior first)"}
+  },
+  "similar": {
+    "lit": {"n": 23, "win": 0.43, "avg_r": 0.91, "usd": 412, "conf": "medium", "valid": true,
+            "examples": [{"day": "2026-09-15", "r": 3.2, "usd": 1510}, {"day": "2026-08-27", "r": -1.0, "usd": -470}, {"day": "2026-07-22", "r": 8.0, "usd": 3604}]},
+    "atlas": {"n": 41, "win": 0.56, "avg_r": 0.22, "usd": 64, "conf": 0.7, "valid": true,
+              "examples": [{"day": "2026-10-02", "r": 1.4, "usd": 210}, {"day": "2026-09-29", "r": -1.0, "usd": -150}]},
+    "blitz": {"n": 9, "win": 0.55, "avg_r": 0.12, "usd": 18, "conf": "low", "valid": false,
+              "examples": [{"day": "2026-09-15", "r": 1.9, "usd": 285}, {"day": "2026-09-10", "r": -1.0, "usd": -150}]}
+  },
+  "reviews": [
+    {"t": 1793290000, "bot": "lit", "trade": {"day": "2026-10-28", "side": "SHORT", "usd": 800, "r": 5.0, "entry_t": 1793224200},
+     "grade": "A", "right": ["entered on the 1m CISD after a clean sweep", "stop 1 tick beyond the sweep high"], "wrong": [],
+     "lesson": "The sweep of a buildup into the VIX band paid the full target.", "luck": "low: price never came within 0.3R of the stop"},
+    {"t": 1793200000, "bot": "atlas", "trade": {"day": "2026-10-27", "side": "LONG", "usd": -150, "r": -1.0},
+     "grade": "C", "right": ["sized from the stop"], "wrong": ["took the MACD long into the 15m premium zone"],
+     "lesson": "MACD longs in premium after 10:30 have been weak; the rule allowed it.", "luck": "medium"},
+    {"t": 1793120000, "bot": "blitz", "trade": "2026-10-26",
+     "grade": "B", "right": ["exited on the 30-minute clock as written"], "wrong": ["the 11:30 signal was 40 s late"],
+     "lesson": "Late signals give back about a third of the edge.", "luck": 0.4}
+  ],
+  "proposals": [
+    {"id": "p-lit-be-choch", "bot": "lit", "idea": "Move to break-even on a 5m CHoCH against the trade", "evidence": {"h1": "PF 4.31 vs 4.19", "h2": "PF 2.88 vs 2.91", "r2125": "PF 1.92 vs 1.95", "usd_month": -40},
+     "status": "rejected (worse in H2)", "t": 1793100000, "change": "live_model.json lit.be_choch = true"},
+    {"id": "p-blitz-late", "bot": "blitz", "idea": "Skip a BLITZ signal first seen more than 30 s late (now 50 s)", "evidence": {"h1": "+0.02R a trade", "h2": "+0.03R a trade", "r2125": "n/a (5m bars)", "usd_month": 35},
+     "status": "testing", "t": 1793280000, "change": "account_c params late_s 30"}
+  ],
+  "alerts": [
+    {"t": 1793299500, "bot": "lit", "text": "Asia low 29,040 is 31 points away: a sweep is possible in the next hour.", "level": "info"},
+    {"t": 1793299200, "bot": "atlas", "text": "ATLAS and Zlarior would be opposite if the London high is swept: the no-hedging rule blocks ATLAS.", "level": "warn"},
+    {"t": 1793295000, "bot": "blitz", "text": "BLITZ paper ledger: 3 losing days in a row (the 2026 worst was 3).", "level": "warn"}
+  ],
+  "iq": {"store_n": {"lit": 312, "atlas": 540, "blitz": 330},
+         "calibration": [{"bin": "30-40%", "hit": "36%", "n": 41}, {"bin": "40-50%", "hit": "47%", "n": 58}, {"bin": "50-60%", "hit": "52%", "n": 37}]}
+}

@@ -120,19 +120,22 @@ function buildModules() {
 // the bot pages (2026-10-25 PM): Zlarior / ATLAS sections as a segmented control, then the section's pages as chips.
 // ATLAS parts ("atlas:brain") open the one ATLAS page on that part (store nx.atPart, read by second.js).
 export const atPart = () => store.get('nx.atPart', 'today');
+export const bzPart = () => store.get('nx.bzPart', 'today');     // BLITZ's part (js/next/blitz.js), 2026-10-29
 const botTitle = (it) => BOT_CHIP[it] || TITLES[it.split(':')[0]] || it;
 function botBar(b, page) {
-  const B = BOTS[b], key = page === 'atlas' && atPart() !== 'today' ? 'atlas:' + atPart() : page;
+  const B = BOTS[b], key = page === 'atlas' && atPart() !== 'today' ? 'atlas:' + atPart() : page === 'blitz' && bzPart() !== 'today' ? 'blitz:' + bzPart() : page;
   let si = B.segs.findIndex(s => s[1].includes(key)); if (si < 0) si = 0;
-  const attr = (it) => { const [id, part] = it.split(':'); return `data-goto="${esc(id)}"${id === 'atlas' ? ` data-atpart="${esc(part || 'today')}"` : ''}`; };
+  const attr = (it) => { const [id, part] = it.split(':'); return `data-goto="${esc(id)}"${id === 'atlas' ? ` data-atpart="${esc(part || 'today')}"` : id === 'blitz' ? ` data-bzpart="${esc(part || 'today')}"` : ''}`; };
   const S = B.segs[si];
   return `<div class="nx-botbar"><div class="nx-botname"><b>${esc(B.name)}</b><span>${esc(B.sub)}</span></div>
     <div class="seg nx-botseg" role="tablist" aria-label="${esc(B.name)} sections">${B.segs.map((s, i) => `<button type="button" role="tab" aria-selected="${i === si}" class="${i === si ? 'on' : ''}" ${attr(s[1][0])}>${esc(s[0])}</button>`).join('')}</div></div>
     ${S[1].length > 1 ? `<div class="nx-strip nx-botchips">${S[1].map(it => `<button type="button" ${attr(it)} class="${it === key ? 'on' : ''}"><span>${esc(botTitle(it))}</span></button>`).join('')}</div>` : ''}`;
 }
 document.addEventListener('click', (e) => {          // capture: runs before app.js go(), so the ATLAS page draws the asked part
-  const t = e.target.closest('[data-goto="atlas"]'); if (!t) return;
-  store.set('nx.atPart', t.dataset.atpart || 'today');
+  const t = e.target.closest('[data-goto="atlas"]');
+  if (t) store.set('nx.atPart', t.dataset.atpart || 'today');
+  const z = e.target.closest('[data-goto="blitz"]');
+  if (z) store.set('nx.bzPart', z.dataset.bzpart || 'today');
 }, true);
 
 function buildSub(page) {
@@ -173,7 +176,7 @@ export function onPage(page) {
   paintNav();                                   // a page inside the folded "Advanced" group still shows its own entry
   $('#nxSetBtn')?.classList.toggle('active', page === 'settings');
   $$('#nxTabs .nx-tab').forEach(t => t.classList.toggle('on', t.dataset.tab === g || ((g === 'settings' || g === 'archive') && t.dataset.tab === 'modules')));
-  $('#nxCrumb').textContent = BOTS[g] && page !== 'atlas' ? BOTS[g].name : g === 'data' ? 'Results' : g === 'modules' && page !== 'modules' ? 'Modules' : g === 'archive' ? 'Archive · previous strategy' : '';
+  $('#nxCrumb').textContent = BOTS[g] && page !== 'atlas' && page !== 'blitz' ? BOTS[g].name : g === 'data' ? 'Results' : g === 'modules' && page !== 'modules' ? 'Modules' : g === 'archive' ? 'Archive · previous strategy' : '';
   buildSub(page);
   requestAnimationFrame(() => { $('#page-' + page)?.scrollTo?.(0, 0); });
   document.title = `${TITLES[page] || 'Liquidity Engine'} · Liquidity Engine`;   // the app's name; the strategy is LIT
