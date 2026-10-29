@@ -115,6 +115,15 @@
     w.__mc = true;
     VIEWS.today = w;
   }
+  // More > What's new (features.js): the deep-space / Mission Control features, marked new
+  try {
+    const FL = window.Features && Array.isArray(window.Features.list) ? window.Features.list : null;
+    if (FL && !FL.some((f) => f.group === 'Deep space & Mission Control')) {
+      const go = { space: 'settings', today: 'today', session: 'today' };
+      MU.FEATURES.slice().reverse().forEach(([k, name, line]) => FL.unshift({ group: 'Deep space & Mission Control', name, line: line.charAt(0).toUpperCase() + line.slice(1) + '.', go: go[k] || ID, isNew: true }));
+      window.Features.count = FL.length; window.Features.newCount = FL.filter((f) => f.isNew).length;
+    }
+  } catch (e) { /* the list is optional */ }
   if (typeof nav === 'function') { nav(); if (typeof route === 'function' && /^#\/(mission|mc|missioncontrol|orbit)\b/.test(location.hash)) route(); }
   if (typeof render === 'function' && typeof PAGE !== 'undefined' && PAGE === 'today' && HD()) render(true);
 })();

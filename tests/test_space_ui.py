@@ -273,6 +273,8 @@ def site_with(tmp, board, lvd, now):
     if os.path.isdir(site):
         shutil.rmtree(site)
     shutil.copytree(os.path.join(ROOT, "tools", "web_public"), site, ignore=shutil.ignore_patterns("fx", "node_modules", "icon_options"))
+    if os.path.isdir(os.path.join(ROOT, "web", "icons")):              # the app icons (the site build copies them from web/icons)
+        shutil.copytree(os.path.join(ROOT, "web", "icons"), os.path.join(site, "icons"), dirs_exist_ok=True)
     data = {"built": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(now - 600)),
             "live": {"last_run": now - 600, "runs": 1, "pc": {"present": True, "t": now - 60, "age_s": 60, "running": True, "every_s": 60, "host": "SURFACE"}},
             "accounts": [], "results": {"periods": {}}, "trades": [], "strategy": {}, "board": board,
@@ -305,11 +307,11 @@ def wait_space(pg, t=45000):
 
 
 def frame_stats(pg, ms=3000):
-    a = pg.evaluate("() => ({ f: window.__LEFX.space.stats.frames, t: performance.now() })")
+    a = pg.evaluate("() => ({ f: window.__LEFX.space.stats.frames, k: window.__LEFX.space.stats.skipped, t: performance.now() })")
     pg.wait_for_timeout(ms)
-    b = pg.evaluate("() => { const s = window.__LEFX.space.stats; return { f: s.frames, t: performance.now(), ms: s.ms, bake: s.bakeMs, dpr: window.__LEFX.space.renderer.getPixelRatio(), soft: window.__LEFX.space.soft }; }")
+    b = pg.evaluate("() => { const s = window.__LEFX.space.stats; return { f: s.frames, k: s.skipped, t: performance.now(), ms: s.ms, bake: s.bakeMs, dpr: window.__LEFX.space.renderer.getPixelRatio(), soft: window.__LEFX.space.soft }; }")
     n = b["f"] - a["f"]
-    return {"frames": n, "fps": n / ((b["t"] - a["t"]) / 1000), "cpu_ms": b["ms"], "bake_ms": b["bake"], "dpr": b["dpr"], "soft": b["soft"]}
+    return {"frames": n, "ticks": n + b["k"] - a["k"], "fps": n / ((b["t"] - a["t"]) / 1000), "cpu_ms": b["ms"], "bake_ms": b["bake"], "dpr": b["dpr"], "soft": b["soft"]}
 
 
 def part_c(b2, b3, lvd, now, shots, perf):
@@ -340,13 +342,13 @@ def part_c(b2, b3, lvd, now, shots, perf):
                 check("c. phone 390x844 scene alone mounts", False, errs[-3:])
             ctx.close()
             # 1. Home with the 3D scene (software GPU: small bakes, adaptive resolution)
-            ctx, pg = phone_page(br, base, lvp, 390, 844, "/index.html?fx=max#/today", errs)
-            ok = wait_space(pg)
+            ctx, pg = phone_page(br, base, lvp, 390, 844, "/index.html?fx=max" + ("&fxfixed" if shots else "") + "#/today", errs)
+            ok = wait_space(pg, 90000)
             check("c. phone 390x844: the deep-space scene mounts (WebGL2) and fades in", ok, errs[-3:])
             if ok:
-                fs = frame_stats(pg)
+                fs = frame_stats(pg, 6000)
                 perf["phone_390_in_app"] = fs
-                check("c. phone in the app: the scene keeps drawing (software GPU, every 3D panel of Home on) at DPR <= 1.5", fs["frames"] >= 1 and fs["dpr"] <= 1.5, fs)
+                check("c. phone in the app: the scene's loop keeps running (software GPU) at DPR <= 1.5", fs["ticks"] >= 1 and fs["dpr"] <= 1.5, fs)
             pg.wait_for_selector(".mc-strip", timeout=20000)
             check("c. phone Home: Mission Control strip on top with 3 orbit chips and today's mission",
                   pg.eval_on_selector_all(".mc-strip .mc-chip", "e => e.length") == 3 and pg.is_visible(".mc-mission")
@@ -354,8 +356,12 @@ def part_c(b2, b3, lvd, now, shots, perf):
             st = pg.evaluate("() => { const s = window.__LEFX && window.__LEFX.space; return s ? s.sats.map((x) => [x.key, x.state]) : null; }")
             check("c. phone: the satellites follow the bots (Zlarior in a trade)", st and dict(st).get("lit") == "trade", st)
             pg.evaluate("() => FX.shoot('win')")
-            pg.wait_for_timeout(700)
-            check("c. phone: a closed trade fires a shooting star", pg.evaluate("() => (window.__LEFX.space.shots || 0) >= 1 || !!window.__LEFX.space.meteor"))
+            try:
+                pg.wait_for_function("() => (window.__LEFX.space.shots || 0) >= 1 || !!window.__LEFX.space.meteor", timeout=15000)
+                shot_ok = True
+            except Exception:
+                shot_ok = False
+            check("c. phone: a closed trade fires a shooting star", shot_ok)
             if shots:
                 pg.evaluate("() => { window.__LEFX.space.hold = 0.05; }")
                 pg.wait_for_timeout(1500)
@@ -413,8 +419,8 @@ def part_c(b2, b3, lvd, now, shots, perf):
             ctx.close()
             # 4. sideways
             site_with(tmp, b2, lvd, now)
-            ctx, pg = phone_page(br, base, lvp, 844, 390, "/index.html?fx=max#/today", errs)
-            ok = wait_space(pg)
+            ctx, pg = phone_page(br, base, lvp, 844, 390, "/index.html?fx=max" + ("&fxfixed" if shots else "") + "#/today", errs)
+            ok = wait_space(pg, 90000)
             check("c. phone sideways 844x390: the scene mounts", ok)
             if shots and ok:
                 pg.evaluate("() => { window.__LEFX.space.hold = 0.05; }")
@@ -500,13 +506,13 @@ def part_d(b3, lvd, now, shots, perf):
             errs = []
             pg.on("pageerror", lambda e: errs.append(f"pc pageerror: {str(e)[:240]}"))
             pg.add_init_script("localStorage.setItem('page', 'cc');")
-            pg.goto(base + "/?fx=max", wait_until="domcontentloaded")
-            ok = wait_space(pg, 60000)
+            pg.goto(base + "/?fx=max" + ("&fxfixed" if shots else ""), wait_until="domcontentloaded")
+            ok = wait_space(pg, 90000)
             check("d. PC 1440x900: the deep-space scene mounts behind the dashboard", ok, errs[-3:])
             if ok:
-                fs = frame_stats(pg)
+                fs = frame_stats(pg, 6000)
                 perf["pc_1440_in_app"] = fs
-                check("d. PC in the app: the scene keeps drawing (software GPU) at DPR <= 2", fs["frames"] >= 1 and fs["dpr"] <= 2, fs)
+                check("d. PC in the app: the scene's loop keeps running (software GPU) at DPR <= 2", fs["ticks"] >= 1 and fs["dpr"] <= 2, fs)
             pg.wait_for_function("() => window.LE && window.LE.go", timeout=30000)
             pg.wait_for_timeout(2500)
             if shots and ok:

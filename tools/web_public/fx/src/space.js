@@ -271,7 +271,7 @@ export class Space extends View {
     this.dirty = true; this.lastDraw = -1;
     this.u = { uTime: { value: 0 }, uPix: { value: 300 } };
     this.mood = { aurK: 0.15, aurKT: 0.15, aur: new THREE.Color('#38d6ff'), aurT: new THREE.Color('#38d6ff'), bright: 1, brightT: 1, speed: 1 };
-    this.warpV = 0; this.pingV = 0; this.t0 = 0;
+    this.warpV = 0; this.pingV = 0; this.t0 = 0; this.flashV = 0; this.flashCol = new THREE.Color();
     this.shot = { spin: 0, sky: 0, spinT: 0, skyT: 0 };
     this.spin = 0.9;
     this.cfg = { x: 0, y: -1, r: 0.9, sx: 0.55, sy: 0.6, shx: 0.3, shy: -0.4 };
@@ -491,6 +491,7 @@ export class Space extends View {
   shoot(kind = 'win') {
     if (Q.reduced) return false;
     this.queue.push(kind); if (this.queue.length > 3) this.queue.shift();
+    if (kind !== 'quiet') { this.flashCol = kind === 'win' ? theme.good.clone() : new THREE.Color('#ff4d6d'); this.flashV = 1; }   // the atmosphere flashes with it
     wake(); return true;
   }
   warp() { if (!Q.reduced) this.warpV = 1; wake(); }
@@ -530,6 +531,7 @@ export class Space extends View {
     m.aurK += (m.aurKT - m.aurK) * (still ? 1 : k); m.aur.lerp(m.aurT, still ? 1 : k); m.bright += (m.brightT - m.bright) * (still ? 1 : k);
     this.warpV = Math.max(0, this.warpV - dt * 1.25); const w = this.warpV * this.warpV * (3 - 2 * this.warpV);
     this.pingV = Math.max(0, this.pingV - dt * 0.8);
+    if (this.flashV > 0) { this.flashV = Math.max(0, this.flashV - dt * 0.5); this.pingV = Math.max(this.pingV, this.flashV * 0.8); }
     const sh = this.shot, ks = still ? 1 : 1 - Math.exp(-dt * 1.6);
     sh.spin += (sh.spinT - sh.spin) * ks; sh.sky += (sh.skyT - sh.sky) * ks;
     this.u.uTime.value = t;
@@ -551,6 +553,8 @@ export class Space extends View {
     this.earth.rotation.y = this.spin + sh.spin;
     this.earthU.uCloud.value = (t * 0.0022 * drift) % 1;
     this.earthU.uAurK.value = m.aurK; this.atmoU.uTintK.value = Math.min(0.75, m.aurK * 0.55);
+    if (this.flashV > 0) { this.atmoU.uTint.value = this._fl || (this._fl = new THREE.Color()); this._fl.copy(m.aur).lerp(this.flashCol, this.flashV); this.atmoU.uTintK.value = Math.max(this.atmoU.uTintK.value, this.flashV * 0.85); }
+    else if (this.atmoU.uTint.value !== m.aur) this.atmoU.uTint.value = m.aur;
     this.earthU.uBright.value = m.bright; this.atmoU.uBright.value = m.bright;
     this.earthU.uPing.value = this.pingV; this.atmoU.uPing.value = this.pingV * 0.9;
     this.tilt.updateMatrixWorld();
