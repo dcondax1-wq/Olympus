@@ -13,7 +13,7 @@ notices it and offers it to the owner; it never assigns, arms or trades anything
                          the slot's eval PASSED -> "funded:zlarior" / "funded:atlas": the Name joins as that slot's FUNDED
                            account (engine/go.to_funded: funded sizing, the eval kept as history);
                          otherwise (failed, a new purchase) -> "zlarior" / "atlas": the Name is the slot's new eval
-                           (engine/go.set_names, its mix-up checks); "blitz" once BLITZ's slot registers ROLE_SETTERS["blitz"].
+                           (engine/go.set_names, its mix-up checks); "blitz" = BLITZ's own 25K (ROLE_SETTERS["blitz"] -> engine/go.set_blitz).
   status(rows)         {"new": [...]} for the Start page's one line ("New account <Name> ($50,000): ...").
   use(name, act)       the owner's tap (PC only, bot stopped). Nothing is armed: the next "Start trading" runs the setup for
                        the Name and asks for the live phrase (the auto-resume opt-in belongs to the old Name).
@@ -43,6 +43,15 @@ def _path(path=None) -> str:
 ROLE_LABEL = {"zlarior": "Zlarior", "atlas": "ATLAS", "blitz": "BLITZ"}
 SIZE_SPLIT = 35000.0                       # a balance at / above this is a 50K account, below it a 25K one (= go.slot_problem)
 ROLE_SETTERS: dict = {}                    # role -> fn(name) -> {"ok", "say" | "error"} (BLITZ's slot registers its own)
+
+
+def _set_blitz(name: str) -> dict:
+    """BLITZ's own 25K slot (engine/go.set_blitz -> engine/account_c.py): assigns the Name, NOT armed (Sim until the owner arms)."""
+    from . import go
+    return go.set_blitz(name)
+
+
+ROLE_SETTERS["blitz"] = _set_blitz
 
 
 def _load(path: str | None = None) -> dict:

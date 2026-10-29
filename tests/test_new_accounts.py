@@ -84,19 +84,19 @@ def main():
         o50 = next(x for x in st["new"] if x["name"] == NEW50)["options"]
         o25 = next(x for x in st["new"] if x["name"] == NEW25)["options"]
         check("status: one line per Name, e.g. 'New account MFFUFBLDR700000001 ($50,000) in NinjaTrader: use it for Zlarior?'; "
-              "no outcome known -> a new eval (Zlarior / ATLAS); BLITZ not tappable until its slot registers",
+              "no outcome known -> a new eval (Zlarior / ATLAS / BLITZ for a 25K: its own slot, engine/go.set_blitz)",
               any(x["say"] == f"New account {NEW50} ($50,000) in NinjaTrader: use it for Zlarior?" for x in st["new"])
-              and [o["act"] for o in o50] == ["zlarior"] and [o["act"] for o in o25] == ["atlas"] and st["blitz_ready"] is False, st)
+              and [o["act"] for o in o50] == ["zlarior"] and [o["act"] for o in o25] == ["atlas", "blitz"] and st["blitz_ready"] is True, st)
         # Zlarior's eval PASSED (the running bot's card): the new 50K is offered as its FUNDED account; remembered after a stop
         st2 = NA.status(nt, state, rows=[{"name": L50, "state": "eval", "eval_status": "passed"},
                                          {"name": L25, "state": "eval", "eval_status": "active"}])
         st3 = NA.status(nt, state)                    # bot stopped: no rows, the outcome is remembered
         o50b = next(x for x in st3["new"] if x["name"] == NEW50)
         check("after Zlarior's pass: the new 50K is offered as 'Use as Zlarior's funded account' (funded sizing via go.to_funded), "
-              "still after the bot is stopped (outcome remembered); the 25K stays a new ATLAS eval",
+              "still after the bot is stopped (outcome remembered); the 25K stays a new ATLAS / BLITZ eval",
               [o["act"] for o in next(x for x in st2["new"] if x["name"] == NEW50)["options"]] == ["funded:zlarior"]
               and [o["act"] for o in o50b["options"]] == ["funded:zlarior"] and "funded account after the pass" in o50b["say"]
-              and [o["act"] for o in next(x for x in st3["new"] if x["name"] == NEW25)["options"]] == ["atlas"], (st2, st3))
+              and [o["act"] for o in next(x for x in st3["new"] if x["name"] == NEW25)["options"]] == ["atlas", "blitz"], (st2, st3))
         # pushes: one per Name, through the ops helper's key store (never twice)
         sent = []
         ostate = {"sent": {}}
@@ -137,15 +137,14 @@ def main():
               and not any(k in cfg for k in ("armed", "confirm")) and not os.path.exists(os.path.join(tmp, "auto_resume.json"))
               and L50 not in {x["name"] for x in NA.candidates(nt, state)} and NEW50 not in {x["name"] for x in NA.candidates(nt, state)}
               and "live phrase" in r["say"], (r, cfg))
-        r_bl = NA.use(NEW25, "blitz", path=state, folder=nt)
-        got = []
+        check("BLITZ's slot is registered: engine/go.set_blitz (account C, never armed)", NA.ROLE_SETTERS.get("blitz") is NA._set_blitz)
+        got, keep_bl = [], NA.ROLE_SETTERS.get("blitz")
         NA.ROLE_SETTERS["blitz"] = lambda name: (got.append(name), {"ok": True})[1]
         try:
             r_bl2 = NA.use(NEW25, "blitz", path=state, folder=nt)
         finally:
-            NA.ROLE_SETTERS.pop("blitz", None)
-        check("Use for BLITZ: refused until BLITZ's slot registers its setter, then handed to it (the Name only)",
-              not r_bl["ok"] and r_bl2["ok"] and got == [NEW25], (r_bl, r_bl2))
+            NA.ROLE_SETTERS["blitz"] = keep_bl
+        check("Use for BLITZ: handed to BLITZ's slot setter (the Name only)", r_bl2["ok"] and got == [NEW25], r_bl2)
         d = NA.dismiss(FUNDED, path=state)
         check("Not for the bot: the Name is never offered again", d["ok"] and FUNDED not in {x["name"] for x in NA.candidates(nt, state)})
         # the Start page API: the block in status, the tap PC-only
