@@ -624,6 +624,12 @@ def part_j():
     f = BZ.day_filter(S["eng"], "2026-10-15", now=now)
     check(f"j. 2026-10-15 (a trading day, {r15:.2f} x): not filtered, stage {st['stage']}; the day filter block says it trades",
           st["stage"] not in ("filtered",) and f["ok"] and "BLITZ trades today" in f["text"], st)
+    now = BZ.at_et("2026-10-11", 20 * 60)                 # Sunday evening: the verdict is Monday's, never "skipped today"
+    S = engine_at(now)
+    st = BZ.state_text(S, now)
+    r12 = float(pr[dates.index("2026-10-12")])
+    check(f"j. Sunday 2026-10-11 evening: stage {st['stage']}, names the next session's verdict ({r12:.2f} x): \"{st['text'][:140]}\"",
+          st["stage"] == "closed" and "next session" in st["text"] and "skipped today" not in st["text"] and f"{r12:.2f} x" in st["text"], st)
     S2 = BZ.step(None, df[df["time"] < BZ.at_et("2026-10-14", 20 * 60) - 60], BZ.at_et("2026-10-14", 20 * 60),
                  res={"trades": [], "state": {}, "signals": []}, second={"strategies": {}})
     cp = BZ.compact(S2)

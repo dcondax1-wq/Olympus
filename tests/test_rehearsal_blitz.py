@@ -455,7 +455,7 @@ class Rehearsal:
                     running = False
             m += 60
         _real_sleep(0.5)
-        info.update(self.compare(day, kind, n0, f0, killed="kill" in info, restarted="restart" in info, early=early,
+        info.update(self.compare(day, kind, n0, f0, killed="kill" in info, restarted="restart" in info, early=early, t_end=t_end,
                                  pause=info.get("pause")))
         info["hedge_viol"] = self.nt.hedge_viol[h0:]
         check(f"{day} never long + short across the accounts: no NinjaTrader fill opened a position while another account "
@@ -539,14 +539,14 @@ class Rehearsal:
     def oif_lines(self, a=None, z=None):
         return [(t, ln) for t, _, ls in self.nt.log for ln in ls if (a is None or t >= a) and (z is None or t < z)]
 
-    def compare(self, day, kind, n0, f0, killed=False, restarted=False, early=None, pause=None):
+    def compare(self, day, kind, n0, f0, killed=False, restarted=False, early=None, pause=None, t_end=None):
         from engine.live import tick_px
         BZ = self.X.BZ
         blob = self.c_blob()
         bblob = self.b_blob()
         rows = [r for r in blob.get("rows") or [] if r.get("day") == day]
         masked = [r for r in rows if r.get("masked")]
-        exp = self.X.day(day, masked=[r["sig_t"] for r in masked])
+        exp = [t for t in self.X.day(day, masked=[r["sig_t"] for r in masked]) if t_end is None or int(t["entry_t"]) < t_end]
         led = [r for r in blob.get("ledger") or [] if r.get("entry_t") and str(dt.datetime.fromtimestamp(int(r["entry_t"]), ET).date()) == day]
         ent = [r for r in led if r.get("side") in ("buy", "sell")]
         exits = [r for r in led if r.get("side") == "exit"]

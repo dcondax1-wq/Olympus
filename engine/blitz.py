@@ -1342,6 +1342,11 @@ def day_filter(E: dict | None, date: str | None = None, pmin: float = PRNG_MIN, 
     ratio = rg[-1] / mean if mean > 0 else None
     out = {"date": E["date"], "ratio": None if ratio is None else round(ratio, 3), "yday": round(rg[-1], 2), "mean": round(mean, 2),
            "min": pmin, "ok": ratio is not None and ratio >= pmin}
+    if _dt.date.fromisoformat(str(E["date"])[:10]).weekday() >= 5:     # Sunday evening's bars: the verdict is the next session's
+        out["weekend"] = True
+        out["text"] = (f"BLITZ {'trades' if out['ok'] else 'skips'} the next session: the last session's 09:30-16:00 range "
+                       f"{rg[-1]:,.0f} pts = {0 if ratio is None else ratio:.2f} x its 14-day mean {mean:,.0f} pts (needs >= {pmin})")
+        return out
     if out["ok"]:
         out["text"] = (f"BLITZ trades today: yesterday's 09:30-16:00 range {rg[-1]:,.0f} pts = {ratio:.2f} x its 14-day mean "
                        f"{mean:,.0f} pts (needs >= {pmin})")
@@ -1398,11 +1403,11 @@ def state_text(S: dict | None, now: int | None = None) -> dict:
     nxt = next((m for m in CHECKS if m + 1 > mod), None) if wk else None
     # the day filter first (also after the last check): the dashboard says WHY BLITZ did not trade today, with the numbers
     df_ = day_filter(E, date, now=now) if E.get("filter") else None
-    if df_ is not None and not df_["ok"]:
+    if df_ is not None and not df_["ok"] and wk:
         nx = (df_.get("next") or {}).get("text")
         return {"stage": "filtered", "text": df_["text"] + "." + (f" {nx[0].upper() + nx[1:]}." if nx else ""), "day_filter": df_}
     if nxt is None or not wk:
-        nx = (df_ or {}).get("next", {}).get("text") if df_ else None
+        nx = (df_ or {}).get("text") if (df_ or {}).get("weekend") else ((df_ or {}).get("next") or {}).get("text") if df_ else None
         return {"stage": "closed", "text": "No more checks today; the next at 11:00 ET on the next trading day."
                 + (f" {nx[0].upper() + nx[1:]}." if nx else "")}
     if E.get("date") == date and E.get("filter") and not Engine(E).day_ok() and df_ is None:
