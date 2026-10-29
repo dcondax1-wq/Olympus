@@ -1147,6 +1147,29 @@ def part13():
         check("13. ... armed BLITZ but the server without the live switch = red (BLITZ would wait)",
               old_env == "1" or (st["armed"]["state"] == "bad" and "not running live" in st["armed"]["detail"]), st["armed"])
         check("13. ... the bot runs, BLITZ not picked up yet = wait (next poll)", st["bot"]["state"] == "wait", st["bot"])
+        # the GET route the Start page's BLITZ card reads (engine/start_api.py), read-only: the phone may read it too
+        from fastapi import FastAPI
+        from fastapi.testclient import TestClient
+        from engine import go as G
+        from engine import start_api as SA
+        old = (G.SECOND_PATH, SA._bot, SA._connected, SA._feed)
+        try:
+            G.SECOND_PATH = os.path.join(tmp, "second_model.json")        # go._c_root() = tmp
+            SA._bot = lambda: SimpleNamespace(running=False, cfg={})
+            SA._connected, SA._feed = (lambda: True), (lambda: None)
+            SA._CPF.update(t=0.0, v=None)
+            app = FastAPI()
+            app.include_router(SA.router)
+            js = TestClient(app, base_url="http://192.168.1.20:8766", client=("192.168.1.50", 50003)).get(
+                "/api/next/start/blitz/preflight?fresh=1").json()
+            st = {i["key"]: i for i in js.get("items") or []}
+            check("13. GET /api/next/start/blitz/preflight (also from the phone): the lines for the saved account, a cmd, not all green "
+                  "(bot not running)", st.get("config", {}).get("state") == "good" and "MFFUEVBLDR777" in st["config"]["detail"]
+                  and st.get("bot", {}).get("state") == "bad" and js.get("cmd") == PF.CMD and js.get("all_green") is False,
+                  {k: v.get("state") for k, v in st.items()})
+        finally:
+            G.SECOND_PATH, SA._bot, SA._connected, SA._feed = old
+            SA._CPF.update(t=0.0, v=None)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
