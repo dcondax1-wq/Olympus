@@ -283,6 +283,8 @@ def main():
           v["levels"][:3])
     check("structure block of today (from the bot's bars)", isinstance(v["structure"], dict) and "summary" in v["structure"], str(v["structure"])[:200])
     check("unclear refusal (answer not OK, yet a leg filled): kept as a fill", _unclear_case(now))
+    ok, info = _close_case(now)
+    check("scale-in add fill + a TIME exit closed at market (CLOSEPOSITION: no broker price -> priced from the booked $, src model)", ok, info)
     check(f"build is fast ({ms:.0f} ms < 1500)", ms < 1500, ms)
     # ---- read-only
     v2 = H.build(b, None, now)
@@ -466,6 +468,25 @@ def main():
     n, k = len(RES), sum(RES)
     print(f"\n{k}/{n} passed ({time.time() - t_start:.1f} s)")
     return 0 if k == n else 1
+
+
+def _close_case(now):
+    e = T(8, 40)
+    add = {"id": f"LE{e}ADDSMA1", "qty": 2, "filled": 2, "fill_px": 30812.0, "status": "filled", "sent_at": e + 600.5, "n": 1}
+    lg = leg(e, 1, 3, 30800.25, e + 1.75, 30780.0, 30780.0, 30900.0, "ADDS", adds=[add])
+    b = F.bot(now)
+    b.adapter = FakeNT("Sim101", history=[lg])
+    pnl = round((30815.0 - 30800.25) * 2 * 3 + (30815.0 - 30812.0) * 2 * 2 - 1.90 * 5, 2)
+    b.ledger = [row(e + 1, "buy", 3, e, account="Sim101", entry=30800.0, stop=30780.0, target=30900.0, legs=[{"filled": 3, "fill_px": 30800.25}]),
+                row(e + 600, "add", 2, e, account="Sim101"),
+                row(T(9, 55) + 4, "exit", 5, e, account="Sim101", reason="TIME", pnl=pnl, exit_t=T(9, 55))]
+    R = H.real_trades(b, DAY, now, [])
+    f = {x["kind"]: x for x in R["fills"]}
+    tr = R["trades"][0] if R["trades"] else {}
+    ok = (set(f) == {"entry", "add", "exit"} and f["add"]["px"] == 30812.0 and f["add"]["qty"] == 2 and f["add"]["t"] == e + 600.5
+          and tr.get("qty") == 5 and f["exit"]["t"] == float(T(9, 55) + 4) and f["exit"]["src"] == "model" and f["exit"]["real"] is False
+          and abs(f["exit"]["px"] - 30815.0) < 0.01 and tr["exit"]["reason"] == "TIME" and tr["usd"] == pnl)
+    return ok, (R["fills"], tr)
 
 
 def _unclear_case(now) -> bool:

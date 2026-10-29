@@ -668,12 +668,14 @@ def _one_real(key, A, ad, acct_name, et_, x, legs, orders, now, comm, fills, ord
     for m in sorted(x["mods"], key=lambda r: r["t"]):
         if (m.get("result") or {}).get("ok") is not False and m.get("stop") is not None and (not path or path[-1][1] != _f(m["stop"])):
             path.append([int(m["t"]), _f(m["stop"])])
-    cur = _f(next((lg.get("stop") for lg in legs if lg.get("stop") is not None), None))
-    if cur is not None and path and path[-1][1] != cur:
-        path.append([int(now), cur])
     t_prot = round(e_t, 3)
     stop_ids = [lg.get("stop_id") for lg in legs if lg.get("stop_id")]
     tgt_ids = [lg.get("target_id") for lg in legs if lg.get("target_id")]
+    cur = _f(next((lg.get("stop") for lg in legs if lg.get("stop") is not None), None))
+    if cur is not None and path and path[-1][1] != cur:
+        # the leg's stop moved without a ledger row for it (an archive gap): known only to be before its fill / now
+        sf = [float(orders[o]["mtime"]) for o in stop_ids if (orders.get(o) or {}).get("state") == "FILLED" and orders[o].get("mtime")]
+        path.append([int(min(sf + [now])), cur])
     # exits: the stop / target order filled at NinjaTrader, else the bot's exit row (a CLOSEPOSITION: no broker price)
     xf = []
     for ids, kind, ref in ((stop_ids, "stop", None), (tgt_ids, "target", target)):
@@ -693,9 +695,13 @@ def _one_real(key, A, ad, acct_name, et_, x, legs, orders, now, comm, fills, ord
         fpx = next((_f(lg.get("fill_px")) for lg in rr.get("legs") or [] if isinstance(lg, dict) and lg.get("fill_px")), None)
         kind = _exit_kind(r.get("reason"))
         mpx = (path[-1][1] if path else None) if kind == "stop" else target if kind == "target" else None
-        px = fpx if fpx is not None else (_px_from_pnl(r.get("pnl"), e_px, d, qty, comm) if r.get("pnl") is not None else mpx)
+        allq = [(f["px"], f["qty"]) for f in fills if f["trade"] == tid and f["kind"] in ("entry", "add")]
+        avg_all = sum(p_ * q_ for p_, q_ in allq) / max(1, sum(q_ for _, q_ in allq))
+        booked = fpx is None and r.get("pnl") is not None
+        px = fpx if fpx is not None else (_px_from_pnl(r.get("pnl"), avg_all, d, qty, comm) if booked else mpx)
         if px is not None and rr.get("ok") is not False:
-            xf.append({"id": f"{tid}:X", "t": float(int(r.get("exit_t") or r["t"]) if not fpx else r["t"]), "px": round(px, 2),
+            t_x = r["t"] if real else (r.get("exit_t") or r["t"])        # a routed close fills when sent; paper books the model's bar
+            xf.append({"id": f"{tid}:X", "t": float(int(t_x)), "px": round(px, 2),
                        "qty": int(r.get("qty") or qty), "side": "SELL" if d == 1 else "BUY", "kind": kind, "bot": bot_key, "acct": acct,
                        "real": real and fpx is not None, "src": src if fpx is not None else ("paper" if not real else "model"),
                        "model_px": mpx, "slip_ticks": _ticks(mpx, px, d) if mpx is not None and fpx is not None else None, "trade": tid})
@@ -706,7 +712,9 @@ def _one_real(key, A, ad, acct_name, et_, x, legs, orders, now, comm, fills, ord
     if xf and not reason:
         reason = "BE" if xf[0]["kind"] == "stop" and len(path) > 1 else xf[0]["kind"].upper()
     usd = None
-    if x_px is not None:
+    if xf and xf[0]["id"] == f"{tid}:X" and xr and xr[-1].get("pnl") is not None and xf[0]["src"] != src:
+        usd = _f(xr[-1]["pnl"])                         # priced from the booked $: the booked $ is the truth
+    elif x_px is not None:
         usd = round(sum((x_px - f["px"]) * d * PV * f["qty"] for f in fills if f["trade"] == tid and f["kind"] in ("entry", "add"))
                     - comm * qty, 2)
     elif xr and xr[-1].get("pnl") is not None:
