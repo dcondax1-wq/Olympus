@@ -350,8 +350,12 @@ def t_hooks(blk):
     M = MD.Mind(log_dir=ld)
     now = T("2026-10-14", 16, 10) + 20                         # 20 s into the minute (Mind never starts right after a 1m close)
     bot = fake_bot(now, None)
-    check("pc_tick: never starts in the first 15 s after a 1m close (the polls that route entries)",
-          MD.pc_tick(bot, T("2026-10-14", 16, 10) + 3, mind=MD.Mind(log_dir=tempfile.mkdtemp())) is False)
+    Mq = MD.Mind(log_dir=tempfile.mkdtemp())
+    q1 = [MD.pc_tick(bot, T("2026-10-14", 16, 10) + 60 * j + 2, spawn=False, mind=Mq) for j in range(9)]   # only 2 s polls
+    q2 = MD.pc_tick(bot, T("2026-10-14", 16, 20) + 2, spawn=False, mind=Mq)
+    Mq.thread.join(30) if Mq.thread else None
+    check("pc_tick: never starts in the first 15 s after a 1m close (the polls that route entries); with no other poll for "
+          "10 min it starts anyway", q1 == [False] * 9 and q2 is True, (q1, q2))
     spawned = []
     orig = MD.spawn_research
     MD.spawn_research = lambda budget, log_dir=None: spawned.append((budget, log_dir)) or 4242

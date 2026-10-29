@@ -1847,6 +1847,7 @@ class Mind:
         self.last_regime = None
         self.ms = None
         self.research_day = None
+        self.last_t = None
         self.err = None
 
     @property
@@ -2043,6 +2044,7 @@ class Mind:
             if self.key == key or self.busy():
                 return False
             self.key = key
+            self.last_t = int(now)
         if not background:
             self._job(bot, int(now), nightly)
             return True
@@ -2186,6 +2188,7 @@ def compact(b: dict | None, max_bytes: int = 12_000) -> dict | None:
 
 # ================================================================================================ hooks
 QUIET_S = (15, 45)                    # Mind's thread starts only 15-45 s into a minute (bar-close polls stay free)
+QUIET_MAX_S = 600                     # ... unless no poll landed in that window for 10 minutes (other poll offsets)
 
 
 def pc_tick(bot, now=None, background: bool = True, spawn: bool = True, mind: Mind | None = None) -> bool | None:
@@ -2197,8 +2200,11 @@ def pc_tick(bot, now=None, background: bool = True, spawn: bool = True, mind: Mi
     try:
         M = mind or MIND
         now = int(now if now is not None else (bot.clock() if callable(getattr(bot, "clock", None)) else time.time()))
-        if background and not (QUIET_S[0] <= now % 60 <= QUIET_S[1]):
-            return False                      # never right after a 1m close: those polls route LIT's entries
+        if M.last_t is None:
+            M.last_t = now                    # the 10-minute fallback counts from the first look
+        if background and not (QUIET_S[0] <= now % 60 <= QUIET_S[1]) and now - int(M.last_t) < QUIET_MAX_S:
+            return False                      # never right after a 1m close: those polls route LIT's entries (the PC polls at
+            #                                   2 s and 32 s: Mind starts on the 32 s poll; no such poll for 10 min: any poll)
         return M.kick(bot, now, background=background, nightly=spawn)
     except Exception:
         return None
