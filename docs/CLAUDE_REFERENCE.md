@@ -252,6 +252,14 @@ part yourself or fold it into a script.**
   not paid money (blitz-25k.md whole slot: $270 / $37 / -$40 a month; the losing-days streak counts all of a day's model
   trades, routed or not: the routed ones alone hit 6 in May 2026 because the eval / daily loss stopped days early). Test `python -X utf8 -m
   tests.test_account_c [--quick]`.
+  **Adopt-candidate, NOT built (2026-10-30, `atlas-blitz-edge-2026-10-30.md`, `research/scalp/blitz_25k_pick_v2.json`):**
+  the later-break eval size, rule unchanged:
+  - x0.5 on the day's first band break on a side, x1.75 on a later same-side break (the day's count of check closes beyond
+    the band on that side, every check counted, >= 2);
+  - f x m capped at 1.0 of the room, $600 cap x m; funded unchanged.
+  - 25K 2-week pass / fail 47.9 / 23.5, 36.2 / 21.7, 24.7 / 48.4 (today 36.1 / 37.8, 36.2 / 34.8, 20.4 / 50.2); slot
+    $286 / $52 / -$39 a month (today $270 / $37 / -$40).
+  - Needs a per-day break counter in `blitz.Engine` + `account_c.qty`; owner decides.
   **Owner's turn-on (next week):** 1. buy the Builder 25K for BLITZ and connect it in NinjaTrader; 2. Start page > BLITZ ·
   25K: its Name, Set BLITZ's 25K, Arm BLITZ (type I ACCEPT LIVE RISK); 3. Start trading. Console for step 2:
   `python -X utf8 -m engine.account_c --account "<the 25K Name>" --plan builder25k --start 2026-11-02`.
@@ -474,6 +482,18 @@ part yourself or fold it into a script.**
   the 15m protected-swing stop passes the 25K account gates but its trades lose R in every span at a fixed risk (sizing
   path): rejected; every ATLAS exit / trail loses in 2026. The executors' base = live exactly (LIT 0 mismatches; ATLAS 96%
   within 0.5 pt, difference method).
+- **ATLAS + BLITZ edge night (2026-10-30, `atlas-blitz-edge-2026-10-30.md`, `tools/ab_edge.py`, runs `ab_*`):**
+  - BLITZ trend-day SIZE (range so far, first-hour range / volume, overnight range / open's place in it, gap, VIX change,
+    2-sigma excursion, VWAP side / distance, held at the previous check, time; 430 tilts): 39 survivors vs 36 on shuffled
+    facts = chance.
+  - BLITZ + a 10:30 check: H1 25K slot $270 -> $54.
+  - The later-break size on LIT's funded 50K: neutral.
+  - ATLAS (110, none passes the v2 test): member weights from the member's last 5-20 trades; member agreement; the 2nd
+    trade sized by the 1st's result; LIT copied in as a member (x0.25: both 2026 halves better, 2021-24 -$3.0k vs -$1.4k,
+    and the two accounts become one LIT bet); the NA day-hold as a 4th member (dead evals up); S/R level count / EMA sweep
+    depth / EMA distance as size; London-clock windows in the DST gap weeks (the volume surge does move to 04:00 ET, but
+    EMA / MACD lose there).
+  - The one adopt-candidate is BLITZ's 25K later-break eval size (`research/scalp/blitz_25k_pick_v2.json`, owner decides).
 
 ## Key commands (run from the repo root)
 - **START BOT (owner's one start, 2026-10-26):** the owner now starts from the dashboard only (desktop **LE START** -> the
