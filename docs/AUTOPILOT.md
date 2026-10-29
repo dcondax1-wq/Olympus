@@ -52,5 +52,5 @@ resuming itself.
    compile on the PC); the bot keeps refusing entries on stale bars either way.
 4. **BLITZ's own 25K** (next week): its slot registers `new_accounts.ROLE_SETTERS["blitz"]` so the new-account line can
    offer "Use for BLITZ"; its router uses the NinjaTrader adapter (holiday cut-offs and the roll guard come with it;
-   `engine/blitz.route_limits` gives the same limits for its own checks).
+   `engine/cme_calendar.route_limits` gives the same limits for its own checks).
 5. Watch the score: a week at 100 (hands-free) is the target; every manual step it lists is the next thing to automate.

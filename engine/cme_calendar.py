@@ -162,6 +162,16 @@ def flat_ts(day, flat_mod: int = 955) -> int:
     return int(dt.datetime.combine(d, dt.time(m // 60, m % 60), ET).timestamp())
 
 
+def route_limits(day, flat_mod: int = 955) -> dict:
+    """One day's limits for a router (BLITZ's own 25K next week: `route_limits(day, blitz.LAST_IN + 1)`; engine/blitz.py
+    itself stays import-isolated, tests/test_blitz.py f): {"closed": no session that date, "halt": the early-close minute
+    or None, "entry_cut": no new entry at / after this ET minute (15 min before a halt, else flat_mod), "flat": flatten at
+    this ET minute (5 min before a halt, else flat_mod)}. The NinjaTrader adapter applies the same cut / flat to every
+    account it routes (engine/ninjatrader._flat_today / _tick_flat_time)."""
+    return {"closed": full_closure(day), "halt": early_close(day), "entry_cut": entry_cut(day, flat_mod),
+            "flat": flat_cut(day, flat_mod)}
+
+
 def calendar(start, days: int = 60) -> list:
     """[{"day", "weekday", "kind": "closed" | "early", "halt": "HH:MM" | None}] for the weekdays from `start`."""
     d, out = _date(start), []

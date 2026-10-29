@@ -129,7 +129,8 @@ def t_disk(tmp):
 
 def t_saves():
     print("4. state saves through fsutil.replace", flush=True)
-    allow = {("ninjatrader.py", "os.replace(src, dst)"), ("ninjatrader.py", "os.replace(self.state_path, bad)"), ("fsutil.py", None)}
+    allow = {("ninjatrader.py", "os.replace(src, dst)"), ("ninjatrader.py", "os.replace(self.state_path, bad)"), ("fsutil.py", None),
+             ("blitz.py", None)}                         # BLITZ's paper shadow stays import-isolated (tests/test_blitz.py f)
     hits = []
     for p in sorted(glob.glob(os.path.join(ROOT, "engine", "*.py"))):
         b = os.path.basename(p)
@@ -139,7 +140,8 @@ def t_saves():
             code = ln.split("#", 1)[0]
             if re.search(r"\bos\.replace\(", code) and not any(b == a and s in ln for a, s in allow if s):
                 hits.append(f"{b}:{i}")
-    check("no engine module replaces a state file with a bare os.replace (Windows / OneDrive lock: fsutil.replace retries)",
+    check("no engine module replaces a state file with a bare os.replace (Windows / OneDrive lock: fsutil.replace retries; "
+          "BLITZ's paper state excepted: its module imports nothing of the engine)",
           not hits, hits)
 
 

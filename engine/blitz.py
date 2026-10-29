@@ -189,18 +189,6 @@ def at_et(day: str, mod: int) -> int:
     return int(_dt.datetime(d.year, d.month, d.day, mod // 60, mod % 60, tzinfo=ET).timestamp())
 
 
-def route_limits(day: str) -> dict:
-    """CME calendar limits for ROUTING BLITZ to a real account (2026-10-29, engine/cme_calendar.py; the paper Engine above is
-    unchanged and keeps the research's day-last-bar exit). {"closed": no session that date, "halt": early-close minute or
-    None, "entry_cut": no new entry at / after this ET minute (15 min before a halt, else 15:55), "flat": flatten at this ET
-    minute (5 min before a halt, else 15:55)}. The NinjaTrader adapter applies the same cut / flat to every account it
-    routes (engine/ninjatrader._flat_today / _tick_flat_time), so a BLITZ router on it is covered either way."""
-    from . import cme_calendar as cc
-    ec = cc.early_close(day)
-    return {"closed": cc.full_closure(day), "halt": ec, "entry_cut": cc.entry_cut(day, LAST_IN + 1),
-            "flat": cc.flat_cut(day, LAST_IN + 1)}
-
-
 # ================================================================================================ one bar of an open trade
 def manage(p: dict, o: float, h: float, l: float, c: float, first: bool, flat_bar: bool):
     """tools/scalp_mo_lib._sim's loop body for one bar of an open market-entry trade. p: {"dir", "fill", "stp", "tg", "risk",
@@ -1473,8 +1461,7 @@ def pc_step(path: str, df1, now: int, res: dict | None = None, second: dict | No
             tmp = path + ".tmp"
             with open(tmp, "w", encoding="utf-8") as fh:
                 json.dump(S, fh, separators=(",", ":"), default=str)
-            from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
-            _fs_replace(tmp, path)
+            os.replace(tmp, path)
             st_ = os.stat(path)
             _MEM[path] = ((st_.st_mtime_ns, st_.st_size), S)
         return S

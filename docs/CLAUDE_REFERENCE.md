@@ -635,8 +635,8 @@ part yourself or fold it into a script.**
   data/NQ_5m.csv 2021-2026 (`tests/test_holidays.py` 15; Good Fridays without a jobs report are closed but kept as a
   09:15 close). `live` / `ops_checks` / `go.market_open` know the holidays (no FEED STALE / gap alarms after an early
   halt or on Christmas); account B and the second strategies flat 5 min before an early close (as the adapter); the
-  adapter and the extra accounts refuse entries on a full closure; `blitz.route_limits(day)` for BLITZ's router (the
-  paper engine unchanged). Self-healing (`tests/test_selfheal.py` 12): every engine state save goes through
+  adapter and the extra accounts refuse entries on a full closure; `cme_calendar.route_limits(day, flat_mod)` for BLITZ's router (the
+  paper engine unchanged and import-isolated). Self-healing (`tests/test_selfheal.py` 12): every engine state save goes through
   `fsutil.replace`; `AccountB.void_refused_days` (like the 50K's eval_fix, once per process); narrator feeds
   gzipped after 3 days, deleted after 120 (`ops_checks.rotate_feed`); weekend DISCONNECTED -> entries resume on
   reconnect; **Actions minutes** `engine/actions_budget.py` (state.json "actions", budget.json on the dashboard branch;

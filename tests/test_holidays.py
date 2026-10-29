@@ -11,7 +11,7 @@
  3. Every strategy stops entering 15 min before an early close and is flat 5 min before it; no entry on a closed date:
     guards.calendar (LIT's and ATLAS / account B's route guard), the NinjaTrader adapter's entry gate (every account it
     routes: Zlarior, ATLAS, extra accounts, a BLITZ router) + its flat watch, account B's / the second strategies' own
-    flat, the extra accounts' entry_block, the ATLAS paper session end, BLITZ route_limits, the board's next windows.
+    flat, the extra accounts' entry_block, the ATLAS paper session end, cme_calendar.route_limits for BLITZ's router, the board's next windows.
  4. Market-open checks know the holidays: no FEED STALE / gap alarms on Thanksgiving afternoon or Christmas Day
     (live / ops_checks / go market_open, pcbars.hist_gap over the Thanksgiving halt).
 Temp dirs only.
@@ -185,12 +185,13 @@ def t_strategies(tmp):
     ok = (second._session_open("2026-11-26", ts(2026, 11, 26, 12, 50), ts(2026, 11, 26, 12, 50))
           and not second._session_open("2026-11-26", ts(2026, 11, 26, 13, 6), ts(2026, 11, 26, 13, 0)))
     check("ATLAS paper members: 11-26 open at 12:50, session over at 13:06 with the feed stopped at the 13:00 halt", ok)
-    # BLITZ (paper Engine unchanged; route_limits for the router)
-    r = {d: blitz.route_limits(d) for d in ("2026-11-26", "2026-11-27", "2026-12-24", "2026-12-25", "2026-12-31")}
+    # BLITZ (paper Engine unchanged and import-isolated; cme_calendar.route_limits for its router)
+    from engine import cme_calendar as CC
+    r = {d: CC.route_limits(d, blitz.LAST_IN + 1) for d in ("2026-11-26", "2026-11-27", "2026-12-24", "2026-12-25", "2026-12-31")}
     ok = (r["2026-11-26"] == {"closed": False, "halt": 780, "entry_cut": 765, "flat": 775}
           and r["2026-11-27"]["entry_cut"] == 780 and r["2026-11-27"]["flat"] == 790 and r["2026-12-24"]["flat"] == 790
           and r["2026-12-25"]["closed"] and r["2026-12-31"] == {"closed": False, "halt": None, "entry_cut": 955, "flat": 955})
-    check("BLITZ route_limits: 11-26 entries to 12:45 / flat 12:55, 11-27 + 12-24 to 13:00 / 13:10, 12-25 closed, 12-31 normal "
+    check("BLITZ router limits (cme_calendar.route_limits at BLITZ's 15:55): 11-26 entries to 12:45 / flat 12:55, 11-27 + 12-24 to 13:00 / 13:10, 12-25 closed, 12-31 normal "
           "(15:55); BLITZ's 12:30 check still trades on 11-26, its 13:00 / 13:30 checks on 11-27 do not", ok, r)
     w = live_board.next_windows(ts(2026, 11, 26, 0, 30), [[120, 930]], n=3)
     lab = [x["label"] for x in w]

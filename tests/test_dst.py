@@ -469,9 +469,11 @@ def t_replay():
         x = dt.datetime.fromtimestamp(int(t["exit_t"]), ET)
         m, xm = e.hour * 60 + e.minute, x.hour * 60 + x.minute
         ec = cme_calendar.early_close(t["day"])
-        if not (120 <= m < (ec - 15 if ec is not None else 955)) or xm > (ec if ec is not None else 960) or e.date().isoformat() != t["day"]:
+        # (the backtest has no 15-min cut before an early close: 2025-07-03 entered 13:05 before the 13:15 halt; the live
+        # calendar guard refuses that one; this check is about the clock, not that rule)
+        if not (120 <= m < (ec if ec is not None else 955)) or xm > (ec if ec is not None else 960) or e.date().isoformat() != t["day"]:
             badw.append((t["day"], f"{e:%H:%M}", f"{x:%H:%M}"))
-    check(f"all {len(REF)} backtest trades 2021-11 -> 2026-10 (10 DST switches): entry from 02:00 ET (a 15:30 setup's limit may fill to 15:54) before the flat, "
+    check(f"all {len(REF)} backtest trades 2021-11 -> 2026-10 (10 DST switches): entry from 02:00 ET before the flat / halt (a 15:30 setup's limit may fill to 15:54), "
           "exit by the 15:55 flat (exit stamp <= 16:00, the 15:55 bar's close on 5m) or the early close", not badw and len(REF) > 500, badw[:5])
 
 
