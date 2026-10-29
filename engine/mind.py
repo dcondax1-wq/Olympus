@@ -811,8 +811,11 @@ def regime(H: Hist | None, now: int, C: dict | None = None) -> dict:
     t15, t1h = H.trend("15m", now), H.trend("1h", now)
     trend = ("up" if t1h > 0 else "down") if (t15 == t1h and t1h != 0) or (t1h != 0 and t15 == 0) else "range"
     a = float(H.atr[i])
-    lo = max(0, i - 2016)
-    med = float(np.median(H.atr[lo:i])) if i - lo > 50 else a
+    lo = max(0, i - 10 * 288)                              # the same time of day (+/- 30 min) over the last 10 sessions
+    m_now = int(H.mod[i])
+    near = np.abs(((H.mod[lo:i] - m_now) + 720) % 1440 - 720) <= 30
+    pool = H.atr[lo:i][near]
+    med = float(np.median(pool)) if len(pool) > 20 else (float(np.median(H.atr[max(0, i - 2016):i])) if i > 50 else a)
     ar = a / med if med else 1.0
     k = int(H.k_of[i])
     day = str(np.datetime64(int(H.days[k]), "D"))
@@ -826,7 +829,7 @@ def regime(H: Hist | None, now: int, C: dict | None = None) -> dict:
         if j >= 0:
             why.append(f"last 1h {'CHoCH' if int(ev['kind'][j]) == 2 else 'BOS'} {'up' if int(ev['dir'][j]) > 0 else 'down'} "
                        f"through {px(ev['level'][j])} at {_et(int(ev['known_t'][j])):%a %H:%M} ET")
-    why.append(f"5m ATR {a:.1f} pts = {ar:.2f}x its 7-day median")
+    why.append(f"5m ATR {a:.1f} pts = {ar:.2f}x its usual at this time of day (10 sessions)")
     if vx is not None:
         why.append(f"VIX {vx:.1f}")
     lab = {"up": "Trending up", "down": "Trending down", "range": "Range"}[trend] + " · " + \
@@ -1113,8 +1116,15 @@ def plan_lit(bot, H: Hist, now: int, reg: dict, store=None, log_dir=None) -> dic
                      "exp_usd": exp, "odds": odds})
     S = _struct(bot, now)
     fr = (S.get("frames") or {}).get("1h") or {}
-    prot = fr.get("protected") or {}
-    t1h = fr.get("trend") or reg.get("trend")
+    prot = dict(fr.get("protected") or {})
+    t1h = fr.get("trend")
+    if not fr and H is not None and H.ev.get("1h") is not None and len(H.ev["1h"]["known_t"]):
+        ev = H.ev["1h"]                                    # no Live View structure cached: Mind's own 1h frame (same rules)
+        j = int(np.searchsorted(ev["known_t"], int(now), side="right")) - 1
+        if j >= 0:
+            t1h = "up" if int(ev["dir"][j]) > 0 else "down"
+            prot = {"low" if t1h == "up" else "high": _f(ev["prot"][j], 2)}
+    t1h = t1h or reg.get("trend")
     cm = []
     if t1h == "down" and _f(prot.get("high")):
         cm.append(f"A 1h close above {px(prot['high'])} (the 1h protected high) turns the 1h structure up: shorts would then be against it")
@@ -1137,13 +1147,16 @@ def plan_lit(bot, H: Hist, now: int, reg: dict, store=None, log_dir=None) -> dic
 def plan_atlas(bot, H: Hist, now: int, reg: dict, store=None, log_dir=None) -> dict | None:
     sec = getattr(bot, "second", None) or {}
     mem_ok = memory("atlas", store, log_dir) is not None
-    scen = []
+    scen, idle = [], []
     for k, s in ((sec.get("strategies") or {}) if isinstance(sec, dict) else {}).items():
         m = member_of(k)
         if not m or not isinstance(s, dict) or s.get("on") is False:
             continue
         st = s.get("state") or {}
         br = s.get("brain") or {}
+        if st.get("stage") in ("off", "done", "error"):
+            idle.append(f"{s.get('short') or k} {'done for today' if st.get('stage') == 'done' else 'off now'}")
+            continue
         lv = [round(float(x["px"]), 2) for x in br.get("levels") or [] if isinstance(x, dict) and _f(x.get("px")) is not None][:3]
         pl = br.get("plan") if isinstance(br.get("plan"), dict) else {}
         d = _dir_from_text(st.get("text"))
@@ -1153,17 +1166,18 @@ def plan_atlas(bot, H: Hist, now: int, reg: dict, store=None, log_dir=None) -> d
             " (account B sizes it; paper here)"
         if hs:
             then += f". History: {hs['n']} {m} trades like it won {hs['win']:.0%}, average {hs['avg_r']:+.2f}R"
-        scen.append({"if": str(st.get("text") or ff or f"{s.get('short') or k} waits for its signal")[:200], "then": then,
+        scen.append({"if": f"{s.get('short') or k}: " + str(st.get("text") or ff or "waits for its signal")[:200], "then": then,
                      "levels": lv + ([round(float(pl["entry"]), 2)] if _f(pl.get("entry")) is not None else []),
                      "exp_usd": round(hs["avg_usd"], 0) if hs and hs.get("avg_usd") is not None else None,
                      "odds": round(hs["win"], 3) if hs else None})
-    if not scen:
+    if not scen and not idle:
         return None
     S = _struct(bot, now)
     note = ((S.get("per_strategy") or {}).get("atlas") or {}).get("note")
-    return {"t": int(now), "headline": f"ATLAS game plan: {len(scen)} members on watch; {reg.get('label')}",
-            "scenarios": scen[:4], "change_mind": (note or "A 15m / 1h break against the members' side would put them on the other side") +
-            " A 1h trend flip changes which members can fire."}
+    note = (note or "A 15m / 1h break against the members' side would put them on the other side").rstrip(".") + "."
+    return {"t": int(now), "headline": f"ATLAS game plan: {len(scen)} member{'s' if len(scen) != 1 else ''} on watch"
+                                       + (f" ({', '.join(idle)})" if idle else "") + f"; {reg.get('label')}",
+            "scenarios": scen[:4], "change_mind": note + " A 1h trend flip changes which members can fire."}
 
 
 def plan_blitz(bot, H: Hist, now: int, reg: dict, store=None, log_dir=None) -> dict | None:
@@ -1226,6 +1240,7 @@ PLANNERS = {"lit": plan_lit, "atlas": plan_atlas, "blitz": plan_blitz}
 
 # ================================================================================================ reviews (after each close)
 RULE_EXITS = {"TARGET", "STOP", "BE", "TIME", "TCHECK", "T15", "EOD", "FLAT", "BANK", "CUT", "HEDGE", "LIT FIRST", "TRAIL"}
+REVIEW_BACK_S = 2 * 86400                                    # trades that closed longer ago are not reviewed (first start)
 
 
 def closed_trades(bot) -> list:
@@ -1245,29 +1260,38 @@ def closed_trades(bot) -> list:
     return out
 
 
+def _risk_pts(t: dict):
+    """The trade's planned risk in points: its own risk_pts (ATLAS / BLITZ rows; the stop may since have moved to BE), else
+    |entry - first stop|."""
+    rp = _f(t.get("risk_pts"))
+    if rp and rp > 0:
+        return rp
+    e, s = _f(t.get("entry")), _f(t.get("stop0")) or _f(t.get("stop"))
+    return abs(e - s) if e is not None and s is not None and e != s else None
+
+
 def _r_of(t: dict):
     r = _f(t.get("r"))
     if r is not None:
         return r
-    e, s, q, u = _f(t.get("entry")), _f(t.get("stop")), _f(t.get("qty")), _f(t.get("usd"))
-    if e is None or s is None or not q or u is None or abs(e - s) <= 0:
+    rp, q, u = _risk_pts(t), _f(t.get("qty")), _f(t.get("usd"))
+    if not rp or not q or u is None:
         return None
-    return u / (abs(e - s) * PV * q)
+    return u / (rp * PV * q)
 
 
 def _path(H: Hist | None, t: dict):
     """(MFE R, MAE R) from the 5m bars between entry and exit (approximate: 5m highs / lows)."""
     if H is None:
         return None, None
-    e, s = _f(t.get("entry")), _f(t.get("stop"))
-    if e is None or s is None or e == s:
+    e, risk = _f(t.get("entry")), _risk_pts(t)
+    if e is None or not risk:
         return None, None
     d = int(t.get("dir") or 1)
     a = int(np.searchsorted(H.t, int(t["entry_t"]) // 300 * 300))
     z = int(np.searchsorted(H.t, int(t["exit_t"]), side="right"))
     if z <= a:
         return None, None
-    risk = abs(e - s)
     fav = ((H.h[a:z] - e) if d == 1 else (e - H.l[a:z])).max() / risk
     adv = ((e - H.l[a:z]) if d == 1 else (H.h[a:z] - e)).max() / risk
     return round(float(fav), 2), round(float(max(0.0, adv)), 2)
@@ -1297,7 +1321,7 @@ def review(t: dict, H: Hist | None, store=None, C=None, log_dir=None, adv_dir=No
             if bot == "atlas":
                 f["member"] = member_of(t.get("key"))
             if t.get("entry") is not None and t.get("stop") is not None and f.get("atr"):
-                f["stop_atr"] = round(abs(float(t["entry"]) - float(t["stop"])) / f["atr"], 3)
+                f["stop_atr"] = round(_risk_pts(t) / f["atr"], 3) if _risk_pts(t) else None
             mem = memory(bot, store, log_dir)
             if mem is not None:
                 q = mem.query(f, exclude_day=t.get("day") or trading_day(int(t["entry_t"])))
@@ -1321,9 +1345,12 @@ def review(t: dict, H: Hist | None, store=None, C=None, log_dir=None, adv_dir=No
             score -= w
             wrong.append(f"Weak setup: {exp['n']} similar setups averaged {exp['avg_r']:+.2f}R" + ("" if valid else " (context only)"))
     if r is not None:
-        if r > 0:
+        if r >= 0.1:
             score += 1.0
             right.append(f"Result {r:+.2f}R ({usd(t.get('usd')) if t.get('usd') is not None else 'paper'})")
+        elif r > -0.1:
+            score += 0.5
+            right.append(f"Scratch {r:+.2f}R ({usd(t.get('usd')) if t.get('usd') is not None else 'paper'}): the risk came off")
         elif r < -0.5:
             score -= 0.5
             wrong.append(f"Result {r:+.2f}R ({usd(t.get('usd')) if t.get('usd') is not None else 'paper'})")
@@ -1336,15 +1363,17 @@ def review(t: dict, H: Hist | None, store=None, C=None, log_dir=None, adv_dir=No
     if rec:
         fired = [a for a in rec.get("advice") or [] if a.get("fired")]
         best = max(fired, key=lambda a: a.get("delta_usd") or 0, default=None)
-        risk_usd = abs(float(t.get("entry") or 0) - float(t.get("stop") or 0)) * PV * float(t.get("qty") or 1)
+        risk_usd = (_risk_pts(t) or 0.0) * PV * float(t.get("qty") or 1)
         if best and (best.get("delta_usd") or 0) > 0.25 * max(risk_usd, 1):
             score -= 0.5
             wrong.append(f"Management: the advisor's {best['rule']} would have made {usd(best['delta_usd'])} more")
         elif fired and all((a.get("delta_usd") or 0) <= 0 for a in fired):
             score += 0.5
             right.append("Management beat every structure rule the advisor tried")
-    if mfe is not None and r is not None and r <= 0 and mfe >= 1.0:
+    if mfe is not None and r is not None and r < 0.1 and mfe >= 1.0:
         wrong.append(f"It was +{mfe:.1f}R first and still closed at {r:+.2f}R")
+        if mfe >= 2.0:
+            score -= 0.5
     grade = "A" if score >= 3.5 else "B" if score >= 2.5 else "C" if score >= 1.5 else "D" if score >= 0.5 else "F"
     # luck or skill: outcome vs what similar setups made (only when similarity predicts), else the trade's own path
     if valid and exp and r is not None:
@@ -1366,7 +1395,9 @@ def review(t: dict, H: Hist | None, store=None, C=None, log_dir=None, adv_dir=No
         luck = "mixed"
         why = "a scratch (about 0R): no money either way" + (f"; it was +{mfe:.1f}R first" if mfe else "")
     if scratch:
-        lesson = (f"Scratch: it was +{mfe:.1f}R first and the breakeven stop took the risk off - the rule did its job." if (mfe or 0) >= 1.0
+        lesson = (f"Scratch, but it was +{mfe:.1f}R first and gave it all back: a structure trail (the advisor's trail_15m / trail_5m) "
+                  "would have kept part of it - advice only, the rules decide." if (mfe or 0) >= 2.0 else
+                  f"Scratch: it was +{mfe:.1f}R first and the breakeven stop took the risk off - the rule did its job." if (mfe or 0) >= 1.0
                   else "Scratch trade: nothing to learn from the result itself.")
     elif r is not None and r > 0:
         lesson = ("Clean setup, clean result: the trade to repeat." if luck == "skill" else
@@ -1772,10 +1803,13 @@ class Mind:
 
     def _reviews(self, bot, H, store, C, now):
         try:
-            todo = [t for t in closed_trades(bot) if _trade_key(t) not in self.reviewed]
+            todo = sorted([t for t in closed_trades(bot) if _trade_key(t) not in self.reviewed], key=lambda t: int(t.get("exit_t") or 0))
         except Exception:
             todo = []
-        for t in todo[-20:]:
+        old = [t for t in todo if int(t.get("exit_t") or 0) < now - REVIEW_BACK_S]
+        for t in old:                              # older than 2 days (a first start, a long paper ledger): not reviewed now
+            self.reviewed.add(_trade_key(t))
+        for t in [t for t in todo if int(t.get("exit_t") or 0) >= now - REVIEW_BACK_S][-20:]:
             k = _trade_key(t)
             self.reviewed.add(k)
             try:
@@ -1805,11 +1839,11 @@ class Mind:
             if bk == "atlas":
                 f["member"] = member_of(t.get("key"))
             if t.get("entry") is not None and t.get("stop") is not None and f.get("atr"):
-                f["stop_atr"] = round(abs(float(t["entry"]) - float(t["stop"])) / f["atr"], 3)
+                f["stop_atr"] = round(_risk_pts(t) / f["atr"], 3) if _risk_pts(t) else None
             e = _et(int(t["entry_t"]))
             base = {"day": t.get("day") or trading_day(int(t["entry_t"])), "t": int(t["entry_t"]), "dir": d, "r": rv["r"], "usd": _f(t.get("usd"), 2),
                     "exit": str(t.get("exit_kind") or "").upper(), "src": "live", "qty": _i(t.get("qty")),
-                    "risk_pts": _f(abs(float(t.get("entry") or 0) - float(t.get("stop") or 0)), 2), "hm": e.strftime("%H:%M"), "dow": e.weekday()}
+                    "risk_pts": _f(_risk_pts(t), 2), "hm": e.strftime("%H:%M"), "dow": e.weekday()}
             row = [base[c] if c in base else f.get(c) for c in blk["cols"]]
             _jl_append(os.path.join(self.ld, f"{bk}_live.jsonl"), [{"key": _trade_key(t), "row": row}])
         except Exception:

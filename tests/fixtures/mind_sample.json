@@ -1,77 +1,423 @@
 {
- "t": 1792303500,
+ "t": 1791989400,
  "v": 1,
  "kind": "le-mind",
  "regime": {
-  "label": "Trending down · normal volatility",
+  "label": "Trending down \u00b7 high volatility",
   "trend": "down",
-  "vol": "normal",
-  "day_type": {"p_trend": 0.41, "label": "Unclear day (41% trend-day odds at 10:30)",
-               "acc_note": "Trend-day model (fit 2026 H1): 2026 H2 AUC 0.66, 2021-25 AUC 0.64; base rate 31%. Weak but real: shown as odds, not a call."},
-  "why": "15m and 1h structure both down (last 1h BOS down through 30,712); 5m ATR 12.4 pts = 1.02x its 7-day median; VIX 18.2"
+  "vol": "high",
+  "day_type": {
+   "p_trend": 0.295,
+   "label": "Unclear day (29% trend-day odds)",
+   "acc_note": "Trend-day model (fit 2026 H1, 127 days): 2026 H2 AUC 0.655, 2021-25 AUC 0.633 (0.5 = coin flip); base rate 32% of days; when it said >= 60%, 51% were trend days in 2021-25 (n 73). Weak but real: odds, not a call (as a yes/no call it is no better than 'not a trend day').",
+   "x": {
+    "fh_ratio": 1.013,
+    "fh_eff": 0.365,
+    "on_ext": 1.33,
+    "gap": 1.062,
+    "prev_rng": 0.771,
+    "vix": 0.763
+   }
+  },
+  "why": "15m structure down, 1h down; last 1h CHoCH down through 30,705.25 at Wed 09:00 ET; 5m ATR 54.5 pts = 1.46x its usual at this time of day (10 sessions); VIX 15.3",
+  "atr": 54.5,
+  "atr_r": 1.46,
+  "vix": 15.27
  },
  "plans": {
   "lit": {
-   "t": 1792302300,
-   "headline": "Zlarior game plan for Fri 2026-10-30: both sides open, structure favours shorts (15m + 1h down)",
+   "t": 1791989400,
+   "headline": "Zlarior game plan for 2026-10-14: structure favours shorts (Trending down \u00b7 high volatility); VIX band 30,495.31 / 31,087.69",
    "scenarios": [
-    {"if": "Price sweeps the Asia high 30,891 by >= 0.5 ATR (to ~30,897) and a 5m candle closes back below 30,860",
-     "then": "Zlarior looks for a SHORT 5m CISD; target band 30,495; stop ~65 pts -> 7 micros at today's room = about +$5,400 / -$920",
-     "levels": [30891.0, 30860.0, 30495.0], "exp_usd": 310.0, "odds": 0.43},
-    {"if": "Price sweeps the London low 30,640 by >= 0.5 ATR (to ~30,634) and a 5m candle closes back above 30,672",
-     "then": "Zlarior looks for a LONG 5m CISD; target band 31,287; stop ~45 pts -> 10 micros = about +$12,900 / -$910",
-     "levels": [30640.0, 30672.0, 31287.0], "exp_usd": 120.0, "odds": 0.38}
+    {
+     "if": "Price sweeps the NY 09:30-10 high 30,660.75 by >= 0.5 ATR (to ~30,688) and a 5m candle closes back below ~30,633.5 (the CISD)",
+     "then": "Zlarior looks for a SHORT 5m CISD then the 1m CISD; stop ~80 pts (1 tick beyond the sweep extreme); target band 30,495.31 (1.7R) -> 6 micros at today's room = about +$1,647 / -$974. History: 332 Zlarior shorts like it won 53%, average +0.19R",
+     "levels": [
+      30660.75,
+      30633.5,
+      30495.31
+     ],
+     "exp_usd": 183.0,
+     "odds": 0.533
+    },
+    {
+     "if": "Price sweeps the equal lows 30,453 by >= 0.5 ATR (to ~30,425.75) and a 5m candle closes back above ~30,480.25 (the CISD)",
+     "then": "Zlarior looks for a LONG 5m CISD then the 1m CISD; stop ~80 pts (1 tick beyond the sweep extreme); target band 31,087.69 (7.6R) -> 3 micros at today's room = about +$3,639 / -$487. History: 163 Zlarior longs like it won 58%, average +0.24R",
+     "levels": [
+      30453.0,
+      30480.25,
+      31087.69
+     ],
+     "exp_usd": 115.0,
+     "odds": 0.583
+    }
    ],
-   "change_mind": "A 1h close above 30,950 (the 1h protected high) would turn the 1h trend up: shorts would then be against the trend. VIX above 25 or a high-impact release at 08:30 would make the first hour noisy."
+   "change_mind": "A 1h close above 30,861.75 (the 1h protected high) turns the 1h structure up: shorts would then be against it; (history: with the 1h trend +0.25R a trade, n 224; against +0.12R, n 407: both pay); VIX above 25 or a high-impact release would change the size of the move."
   },
   "atlas": {
-   "t": 1792302300,
-   "headline": "ATLAS game plan: EMA trend member watches the 5m EMA 21/50 (down), S/R levels 30,780 / 30,640",
+   "t": 1791989400,
+   "headline": "ATLAS game plan: 2 members on watch (EMA off now); Trending down \u00b7 high volatility",
    "scenarios": [
-    {"if": "5m closes stay below the EMA 50 (30,812) and MACD sweeps a high",
-     "then": "ATLAS MACD member looks for a short (paper plan; account B sizes it)",
-     "levels": [30812.0, 30780.0], "exp_usd": null, "odds": 0.47}
+    {
+     "if": "MACD: Armed (long): a level at 30,535.00 was swept at 09:30 ET (extreme 30,453.00); waiting until 11:30 ET for a 5m CISD close with MACD divergence",
+     "then": "ATLAS MACD takes the long (account B sizes it; paper here). History: 124 MD trades like it won 24%, average +0.21R",
+     "levels": [],
+     "exp_usd": 20.0,
+     "odds": 0.242
+    },
+    {
+     "if": "S/R: Waiting for a level of the day (yesterday's RTH high/low, overnight, Asia / London box, last week, opening range) to be swept after an inducement, then a strong 5m close back over it",
+     "then": "ATLAS S/R looks for its entry (account B sizes it; paper here). History: 290 SR trades like it won 38%, average +0.12R",
+     "levels": [
+      30814.75,
+      30591.25,
+      30891.5
+     ],
+     "exp_usd": 18.0,
+     "odds": 0.379
+    }
    ],
-   "change_mind": "A 15m BOS up through 30,860 would put the trend members on the long side."
+   "change_mind": "A 15m / 1h break against the members' side would put them on the other side. A 1h trend flip changes which members can fire."
   },
   "blitz": {
-   "t": 1792330800,
-   "headline": "BLITZ game plan: day filter ON (yesterday's range 1.12x its average), trend-day odds 41%",
-   "scenarios": [
-    {"if": "A 1m close at a check from 11:00 goes above 30,912 (the upper noise band)",
-     "then": "BLITZ PAPER LONG at the next open, stop 1.5 x 5m ATR (~19 pts) -> 6 micros on the paper 25K = -$230 if stopped",
-     "levels": [30912.0], "exp_usd": 20.0, "odds": 0.36},
-    {"if": "A 1m close at a check from 11:00 goes below 30,688 (the lower noise band)",
-     "then": "BLITZ PAPER SHORT at the next open, stop 1.5 x 5m ATR (~19 pts) -> 6 micros = -$230 if stopped",
-     "levels": [30688.0], "exp_usd": 25.0, "odds": 0.37}
-   ],
-   "change_mind": "A first hour inside its 14-day average range with no close outside the band by 12:00 points to a range day: BLITZ's best days are trend days."
+   "t": 1791989400,
+   "headline": "BLITZ game plan: NO trades today: the day filter is off (yesterday's range 0.77x its 14-day average, needs 0.8x)",
+   "scenarios": [],
+   "change_mind": "Nothing changes it today: the filter is decided before the open."
   }
  },
  "similar": {
-  "lit": {"n": 20, "win": 0.4, "avg_r": 0.62, "usd": 480.0, "conf": "low", "valid": false,
-          "examples": [{"day": "2026-03-12", "r": 4.1, "usd": 2210.0}, {"day": "2025-06-04", "r": -1.02, "usd": -380.0},
-                       {"day": "2026-08-19", "r": 0.05, "usd": 12.0}]},
-  "atlas": null,
+  "lit": null,
+  "atlas": {
+   "n": 20,
+   "win": 0.35,
+   "avg_r": 0.15,
+   "usd": null,
+   "conf": "low",
+   "valid": false,
+   "examples": [
+    {
+     "day": "2024-01-04",
+     "r": -0.89,
+     "usd": -146.0
+    },
+    {
+     "day": "2023-09-25",
+     "r": 0.87,
+     "usd": 104.0
+    },
+    {
+     "day": "2022-04-11",
+     "r": -0.49,
+     "usd": -75.0
+    }
+   ],
+   "text": "Resembles 20 past ATLAS setups (MACD LONG (armed)): 35% won, average +0.15R (spread 1.69R). Context only: out of sample, similar setups did not predict the outcome (does NOT predict out of sample on H2 and 2021-25: shown as context only)."
+  },
   "blitz": null
  },
  "reviews": [
-  {"t": 1792186000, "bot": "lit", "trade": "2026-10-14 SHORT 09:44 -> TARGET +3.80R",
-   "grade": "B", "right": ["Followed the written plan: 1m CISD entry, stop 1 tick beyond the sweep high, VIX-band target",
-                           "Similar setups averaged +0.6R: a fair setup"],
-   "wrong": ["Wide 76-pt stop: only 1 micro"],
-   "lesson": "Wide stops pay the same R with less money: the size rule did its job.",
-   "luck": "mixed"}
+  {
+   "t": 1791989400,
+   "bot": "lit",
+   "trade": "2026-10-14 Zlarior SHORT 05:24 -> TARGET +3.80R",
+   "grade": "A",
+   "right": [
+    "Plan followed: the written rules closed it (target)",
+    "Good setup: 15 similar setups averaged +1.26R (context only)",
+    "Result +3.80R (+$579)"
+   ],
+   "wrong": [],
+   "lesson": "Won, but it nearly stopped first: don't read too much into it.",
+   "luck": "luck",
+   "why": "it went 0.9R against first - nearly stopped",
+   "entry_t": 1791969840,
+   "r": 3.8,
+   "usd": 579.48,
+   "exp_r": 1.264,
+   "exp_n": 15,
+   "mfe": 4.2,
+   "mae": 0.88
+  },
+  {
+   "t": 1791989400,
+   "bot": "atlas",
+   "trade": "2026-10-13 ATLAS sr_nyreclaim LONG 09:35 -> TARGET +1.98R",
+   "grade": "B",
+   "right": [
+    "Plan followed: the written rules closed it (target)",
+    "Result +1.98R (+$916)"
+   ],
+   "wrong": [
+    "Weak setup: 20 similar setups averaged -0.13R (context only)"
+   ],
+   "lesson": "Clean setup, clean result: the trade to repeat.",
+   "luck": "skill",
+   "why": "it went 0.4R against first",
+   "entry_t": 1791898500,
+   "r": 1.984,
+   "usd": 916.4,
+   "exp_r": -0.132,
+   "exp_n": 20,
+   "mfe": 2.63,
+   "mae": 0.36
+  },
+  {
+   "t": 1791989400,
+   "bot": "atlas",
+   "trade": "2026-10-13 ATLAS ema_lon_vix SHORT 05:45 -> BE +0.00R",
+   "grade": "C",
+   "right": [
+    "Plan followed: the written rules closed it (be)",
+    "Scratch +0.00R (+$1): the risk came off"
+   ],
+   "wrong": [
+    "Weak setup: 20 similar setups averaged -0.34R (context only)",
+    "It was +6.6R first and still closed at +0.00R"
+   ],
+   "lesson": "Scratch, but it was +6.6R first and gave it all back: a structure trail (the advisor's trail_15m / trail_5m) would have kept part of it - advice only, the rules decide.",
+   "luck": "mixed",
+   "why": "a scratch (about 0R): no money either way; it was +6.6R first",
+   "entry_t": 1791884700,
+   "r": 0.002,
+   "usd": 1.01,
+   "exp_r": -0.337,
+   "exp_n": 20,
+   "mfe": 6.6,
+   "mae": 1.75
+  }
  ],
  "proposals": [
-  {"id": "lit-kz-london-late-half", "bot": "lit", "idea": "Half size for LIT entries in London after 03:30 ET",
-   "evidence": {"h1": "2026 H1: +$1,240 vs live (n 31, PF 4.3 -> 4.6)", "h2": "2026 H2: -$410 vs live (n 12)",
-                "r2125": "2021-25 (reference): +$2,100", "usd_month": -95.0},
-   "status": "rejected", "t": 1792202700, "change": null}
+  {
+   "id": "lit-lvl-buildup-half",
+   "bot": "lit",
+   "idea": "Half size for Zlarior trades after a buildup level sweep",
+   "evidence": {
+    "h1": "2026 H1 (pick): -6,097 $ vs live (38 of 80 trades hit; PF 4.98 -> 5.49, 3.2/wk, +4,836 $/mo, max DD -1,740)",
+    "h2": "2026 H2 (check): -1,875 $ vs live (22 of 40 trades hit; PF 2.91 -> 3.23, 2.67/wk, +2,332 $/mo, max DD -1,054)",
+    "r2125": "2021-25 (reference): -9,128 $ vs live (271 of 511 trades hit; PF 1.01 -> 0.89, 2.36/wk, -158 $/mo, max DD -17,602)",
+    "usd_month": -544.0
+   },
+   "status": "rejected",
+   "t": 1793315040,
+   "change": null,
+   "why": "14 of the last 20 Zlarior losses came after a buildup level sweep (22 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793315040
+  },
+  {
+   "id": "lit-lvl-buildup-skip",
+   "bot": "lit",
+   "idea": "Skip Zlarior trades after a buildup level sweep",
+   "evidence": {
+    "h1": "2026 H1 (pick): -10,864 $ vs live (38 of 80 trades hit; PF 4.98 -> 7.0, 1.68/wk, +4,007 $/mo, max DD -1,673)",
+    "h2": "2026 H2 (check): -2,991 $ vs live (22 of 40 trades hit; PF 2.91 -> 5.25, 1.2/wk, +2,009 $/mo, max DD -878)",
+    "r2125": "2021-25 (reference): -16,637 $ vs live (271 of 511 trades hit; PF 1.01 -> 0.68, 1.11/wk, -309 $/mo, max DD -17,530)",
+    "usd_month": -867.0
+   },
+   "status": "rejected",
+   "t": 1793315040,
+   "change": null,
+   "why": "14 of the last 20 Zlarior losses came after a buildup level sweep (22 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793315040
+  },
+  {
+   "id": "atlas-vix-low-half",
+   "bot": "atlas",
+   "idea": "Half size for ATLAS trades with VIX under 15.8",
+   "evidence": {
+    "h1": "2026 H1 (pick): +381 $ vs live (10 of 101 trades hit; PF 2.92 -> 3.1, 3.93/wk, +2,219 $/mo, max DD -1,032)",
+    "h2": "2026 H2 (check): -1,636 $ vs live (24 of 45 trades hit; PF 3.18 -> 3.24, 3.28/wk, +1,508 $/mo, max DD -785)",
+    "r2125": "2021-25: -854 $ vs live (340 of 983 trades hit; PF 1.01 -> 1.0, 4.54/wk, -6 $/mo, max DD -8,475)",
+    "usd_month": -519.0
+   },
+   "status": "rejected",
+   "t": 1793315040,
+   "change": null,
+   "why": "14 of the last 17 ATLAS losses came with VIX under 15.8 (24 of its last 40 trades, history + live, were there). Verdict: helped H1 but not the H2 check: a fit to H1.",
+   "first_t": 1793315040
+  },
+  {
+   "id": "atlas-vix-low-skip",
+   "bot": "atlas",
+   "idea": "Skip ATLAS trades with VIX under 15.8",
+   "evidence": {
+    "h1": "2026 H1 (pick): +213 $ vs live (10 of 101 trades hit; PF 2.92 -> 3.19, 3.54/wk, +2,191 $/mo, max DD -1,032)",
+    "h2": "2026 H2 (check): -2,496 $ vs live (24 of 45 trades hit; PF 3.18 -> 6.0, 1.53/wk, +1,235 $/mo, max DD -214)",
+    "r2125": "2021-25: -619 $ vs live (340 of 983 trades hit; PF 1.01 -> 1.0, 2.97/wk, -1 $/mo, max DD -8,364)",
+    "usd_month": -792.0
+   },
+   "status": "rejected",
+   "t": 1793315040,
+   "change": null,
+   "why": "14 of the last 17 ATLAS losses came with VIX under 15.8 (24 of its last 40 trades, history + live, were there). Verdict: helped H1 but not the H2 check: a fit to H1.",
+   "first_t": 1793315040
+  },
+  {
+   "id": "atlas-dir-long-half",
+   "bot": "atlas",
+   "idea": "Half size for ATLAS trades on longs",
+   "evidence": {
+    "h1": "2026 H1 (pick): -1,636 $ vs live (57 of 101 trades hit; PF 2.92 -> 3.16, 3.93/wk, +1,878 $/mo, max DD -652)",
+    "h2": "2026 H2 (check): -847 $ vs live (21 of 45 trades hit; PF 3.18 -> 3.32, 3.28/wk, +1,758 $/mo, max DD -990)",
+    "r2125": "2021-25: -3,004 $ vs live (496 of 983 trades hit; PF 1.01 -> 0.97, 4.54/wk, -49 $/mo, max DD -10,776)",
+    "usd_month": -269.0
+   },
+   "status": "rejected",
+   "t": 1793315040,
+   "change": null,
+   "why": "9 of the last 17 ATLAS losses came on longs (19 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793315040
+  },
+  {
+   "id": "atlas-dir-long-skip",
+   "bot": "atlas",
+   "idea": "Skip ATLAS trades on longs",
+   "evidence": {
+    "h1": "2026 H1 (pick): -4,107 $ vs live (57 of 101 trades hit; PF 2.92 -> 4.45, 1.71/wk, +1,460 $/mo, max DD -475)",
+    "h2": "2026 H2 (check): -1,845 $ vs live (21 of 45 trades hit; PF 3.18 -> 4.27, 1.75/wk, +1,442 $/mo, max DD -504)",
+    "r2125": "2021-25: -8,181 $ vs live (496 of 983 trades hit; PF 1.01 -> 0.85, 2.25/wk, -153 $/mo, max DD -13,078)",
+    "usd_month": -585.0
+   },
+   "status": "rejected",
+   "t": 1793315040,
+   "change": null,
+   "why": "9 of the last 17 ATLAS losses came on longs (19 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793315040
+  },
+  {
+   "id": "atlas-tr1h-against-half",
+   "bot": "atlas",
+   "idea": "Half size for ATLAS trades against the 1h structure trend",
+   "evidence": {
+    "h1": "2026 H1 (pick): -2,901 $ vs live (39 of 101 trades hit; PF 2.92 -> 2.65, 3.93/wk, +1,664 $/mo, max DD -915)",
+    "h2": "2026 H2 (check): -334 $ vs live (20 of 45 trades hit; PF 3.18 -> 3.96, 3.28/wk, +1,921 $/mo, max DD -785)",
+    "r2125": "2021-25: +368 $ vs live (426 of 983 trades hit; PF 1.01 -> 1.01, 4.54/wk, +19 $/mo, max DD -8,548)",
+    "usd_month": -106.0
+   },
+   "status": "rejected",
+   "t": 1793315040,
+   "change": null,
+   "why": "9 of the last 17 ATLAS losses came against the 1h structure trend (18 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793315040
+  },
+  {
+   "id": "atlas-tr1h-against-skip",
+   "bot": "atlas",
+   "idea": "Skip ATLAS trades against the 1h structure trend",
+   "evidence": {
+    "h1": "2026 H1 (pick): -6,526 $ vs live (39 of 101 trades hit; PF 2.92 -> 2.49, 2.41/wk, +1,051 $/mo, max DD -738)",
+    "h2": "2026 H2 (check): -2,753 $ vs live (20 of 45 trades hit; PF 3.18 -> 4.64, 1.82/wk, +1,154 $/mo, max DD -284)",
+    "r2125": "2021-25: -4,457 $ vs live (426 of 983 trades hit; PF 1.01 -> 0.92, 2.57/wk, -78 $/mo, max DD -8,777)",
+    "usd_month": -873.0
+   },
+   "status": "rejected",
+   "t": 1793315040,
+   "change": null,
+   "why": "9 of the last 17 ATLAS losses came against the 1h structure trend (18 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793315040
+  },
+  {
+   "id": "atlas-atr-hot-half",
+   "bot": "atlas",
+   "idea": "Half size for ATLAS trades when the 5m ATR is above 1.34x its 7-day median (its top third)",
+   "evidence": {
+    "h1": "2026 H1 (pick): -2,131 $ vs live (30 of 101 trades hit; PF 2.92 -> 2.79, 3.93/wk, +1,794 $/mo, max DD -869)",
+    "h2": "2026 H2 (check): -588 $ vs live (18 of 45 trades hit; PF 3.18 -> 3.67, 3.28/wk, +1,840 $/mo, max DD -785)",
+    "r2125": "2021-25: +257 $ vs live (328 of 983 trades hit; PF 1.01 -> 1.01, 4.54/wk, +17 $/mo, max DD -8,757)",
+    "usd_month": -187.0
+   },
+   "status": "rejected",
+   "t": 1793315040,
+   "change": null,
+   "why": "9 of the last 17 ATLAS losses came when the 5m ATR is above 1.34x its 7-day median (its top third) (16 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793315040
+  },
+  {
+   "id": "atlas-atr-hot-skip",
+   "bot": "atlas",
+   "idea": "Skip ATLAS trades when the 5m ATR is above 1.34x its 7-day median (its top third)",
+   "evidence": {
+    "h1": "2026 H1 (pick): -6,227 $ vs live (30 of 101 trades hit; PF 2.92 -> 2.45, 2.76/wk, +1,102 $/mo, max DD -838)",
+    "h2": "2026 H2 (check): -1,370 $ vs live (18 of 45 trades hit; PF 3.18 -> 5.89, 1.97/wk, +1,592 $/mo, max DD -252)",
+    "r2125": "2021-25: -1,510 $ vs live (328 of 983 trades hit; PF 1.01 -> 0.98, 3.03/wk, -19 $/mo, max DD -7,145)",
+    "usd_month": -435.0
+   },
+   "status": "rejected",
+   "t": 1793315040,
+   "change": null,
+   "why": "9 of the last 17 ATLAS losses came when the 5m ATR is above 1.34x its 7-day median (its top third) (16 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793315040
+  },
+  {
+   "id": "blitz-vix-low-focus",
+   "bot": "blitz",
+   "idea": "Half size for BLITZ trades NOT with VIX under 16.9",
+   "evidence": {
+    "h1": "2026 H1 (pick): -1,382 $ vs live (189 of 221 trades hit; PF 1.54 -> 1.72, 9.61/wk, +677 $/mo, max DD -686)",
+    "h2": "2026 H2 (check): -26 $ vs live (32 of 109 trades hit; PF 1.66 -> 1.81, 8.2/wk, +906 $/mo, max DD -946)",
+    "r2125": "2021-25: no trades",
+    "usd_month": -9.0,
+    "note": "BLITZ $ at $150 risk a trade (the store has R only)"
+   },
+   "status": "rejected",
+   "t": 1793315040,
+   "change": null,
+   "why": "BLITZ trades with VIX under 16.9 made 64% of its 2026 R with 33% of the trades. Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793315040
+  },
+  {
+   "id": "blitz-kz-lunch-half",
+   "bot": "blitz",
+   "idea": "Half size for BLITZ trades in New York lunch",
+   "evidence": {
+    "h1": "2026 H1 (pick): -1,671 $ vs live (114 of 221 trades hit; PF 1.54 -> 1.47, 9.61/wk, +622 $/mo, max DD -910)",
+    "h2": "2026 H2 (check): -383 $ vs live (62 of 109 trades hit; PF 1.66 -> 1.84, 8.2/wk, +789 $/mo, max DD -606)",
+    "r2125": "2021-25: no trades",
+    "usd_month": -126.0,
+    "note": "BLITZ $ at $150 risk a trade (the store has R only)"
+   },
+   "status": "rejected",
+   "t": 1793315040,
+   "change": null,
+   "why": "7 of the last 12 BLITZ losses came in New York lunch (21 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793315040
+  }
  ],
  "alerts": [
-  {"t": 1792302300, "bot": "lit", "text": "Game plan ready: shorts favoured (15m + 1h down).", "level": "info"}
+  {
+   "t": 1791989400,
+   "bot": "lit",
+   "text": "Reviewed 2026-10-14 Zlarior SHORT 05:24 -> TARGET +3.80R: A",
+   "level": "info"
+  },
+  {
+   "t": 1791989400,
+   "bot": "blitz",
+   "text": "Game plan ready: BLITZ game plan: NO trades today: the day filter is off (yesterday's range 0.77x its 14-day average, needs 0.8x)",
+   "level": "info"
+  },
+  {
+   "t": 1791989400,
+   "bot": "atlas",
+   "text": "Game plan ready: ATLAS game plan: 2 members on watch (EMA off now); Trending down \u00b7 high volatility",
+   "level": "info"
+  },
+  {
+   "t": 1791989400,
+   "bot": "lit",
+   "text": "Game plan ready: Zlarior game plan for 2026-10-14: structure favours shorts (Trending down \u00b7 high volatility); VIX band 30,495.31 / 31,087.69",
+   "level": "info"
+  }
  ],
- "iq": {"store_n": {"lit": 631, "atlas": 1129, "blitz": 330},
-        "calibration": "Similar-setup memory (fit 2026 H1): LIT H2 rank corr +0.05, 2021-25 +0.02: does NOT predict outcomes yet, shown as context only."}
+ "iq": {
+  "store_n": {
+   "lit": 632,
+   "atlas": 1131,
+   "blitz": 330
+  },
+  "calibration": "Similar-setup memory, out of sample: Zlarior: does NOT predict (fit 2026 H1; H2 rank corr +0.00, top-third minus bottom-third -0.30R; 2021-25 rank corr +0.03, top-third minus bottom-third +0.25R); with 2021-25 as memory: 2026 H1 +1.02R (p 0.09), 2026 H2 +1.10R (p 0.13) | ATLAS: does NOT predict (fit 2026 H1; H2 rank corr -0.25, top-third minus bottom-third -0.30R; 2021-25 rank corr -0.05, top-third minus bottom-third +0.13R); with 2021-25 as memory: 2026 H1 +1.17R (p 0.03), 2026 H2 +1.56R (p 0.03) | BLITZ: does NOT predict (fit 2026 H1; H2 rank corr -0.07, top-third minus bottom-third -0.14R). Not predictive = shown as context only, no confidence claims.",
+  "daytype": "Trend-day model (fit 2026 H1, 127 days): 2026 H2 AUC 0.655, 2021-25 AUC 0.633 (0.5 = coin flip); base rate 32% of days; when it said >= 60%, 51% were trend days in 2021-25 (n 73). Weak but real: odds, not a call (as a yes/no call it is no better than 'not a trend day').",
+  "ms": 206,
+  "error": null
+ }
 }

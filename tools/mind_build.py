@@ -200,7 +200,57 @@ def calibrate(store):
     return out
 
 
+def sample(day="2026-10-14", hh=10, mm=50, path=None):
+    """tests/fixtures/mind_sample.json: the real block of a replayed day (the Bot Brain at hh:mm from the stored bars, the
+    ATLAS paper members and the BLITZ paper shadow run on the same bars, LIT's closed trade of that day in the ledger), so the
+    dashboards render exactly what the PC bot will publish."""
+    import tempfile
+    from types import SimpleNamespace
+    from engine import blitz as BZ, brain as BR, second as SE
+    d = dt.date.fromisoformat(day)
+    now = int(dt.datetime(d.year, d.month, d.day, hh, mm, tzinfo=ET).timestamp())
+    df5 = pd.read_csv(os.path.join(ROOT, "data", "NQ_5m.csv"))
+    df1 = pd.read_csv(os.path.join(ROOT, "data", "NQ_1m.csv"))
+    c5 = df5[(df5["time"] + 300 <= now) & (df5["time"] >= now - 75 * 86400)].reset_index(drop=True)
+    c1 = df1[(df1["time"] + 60 <= now) & (df1["time"] >= now - 20 * 86400)].reset_index(drop=True)
+    b = BR.replay(day, now)
+    sec = SE.run(c5, c1, now)
+    t0 = int(dt.datetime(d.year, d.month, d.day, 0, 0, tzinfo=ET).timestamp())
+    bz = BZ.step(None, c1, now, first_run=t0)
+    led = []
+    run = json.load(open(os.path.join(ROOT, "research", "runs", "lit_live.json"), encoding="utf-8"))
+    cc = run["trade_cols"]
+    for r in run["trades"]:
+        t = dict(zip(cc, r))
+        if t["day"] == day and int(t["exit_t"]) <= now:
+            side = "buy" if int(t["dir"]) == 1 else "sell"
+            stop_px = px_ = tgt = None
+            for x in b.get("setups") or []:
+                if (x.get("trade") or {}).get("entry_t") == int(t["entry_t"]):
+                    stop_px, tgt, px_ = (x.get("plan") or {}).get("stop"), (x.get("plan") or {}).get("target"), x["trade"].get("entry")
+            led += [{"t": int(t["entry_t"]), "side": side, "entry_t": int(t["entry_t"]), "qty": int(t["qty"]), "entry": px_,
+                     "stop": stop_px, "target": tgt, "result": {"ok": True}},
+                    {"t": int(t["exit_t"]), "side": "exit", "entry_t": int(t["entry_t"]), "exit_t": int(t["exit_t"]), "qty": int(t["qty"]),
+                     "pnl": float(t["pnl"]), "reason": t["exit"]}]
+    _lp, ls = BR._live_params()
+    fresh = {"profit": 0.0, "cum": 0.0, "room": 2000.0, "session": 1, "n_today": 0, "days_traded": 0}   # as brain.replay: a fresh eval
+    bot = SimpleNamespace(brain=b, second=sec, blitz=bz, ledger=led, bars_tail=[], _lit_1m_store=None, cfg={}, state={}, clock=lambda: now,
+                          _lit_sizing=ls, eval_state=lambda: dict(fresh))
+    M = MD.Mind(log_dir=tempfile.mkdtemp())
+    blk = M.compute(bot, now)
+    errs = MD.contract_errors(blk)
+    if errs:
+        raise SystemExit(f"contract errors: {errs}")
+    with open(path or os.path.join(ROOT, "tests", "fixtures", "mind_sample.json"), "w", encoding="utf-8") as fh:
+        json.dump(blk, fh, indent=1, default=MD._jd)
+    print("sample", day, f"{hh:02d}:{mm:02d}", "plans", list(blk["plans"]), "similar", {k: bool(v) for k, v in blk["similar"].items()},
+          "reviews", len(blk["reviews"]), "ms", M.ms, flush=True)
+    return blk
+
+
 def main(cmd="all"):
+    if cmd == "sample":
+        return sample()
     t0 = time.time()
     os.makedirs(OUT, exist_ok=True)
     H = _hist()
