@@ -173,6 +173,12 @@ CC.push(LIVEVIEW);
 TITLES.liveview = LIVEVIEW.label;
 { const g = GROUPS.find((x) => x.label === 'Main'); if (g?.ids && !g.ids.includes('liveview')) g.ids.splice(Math.max(0, g.ids.indexOf('cc') + 1), 0, 'liveview'); }
 
+// Holodeck (js/next/holo.js + holocore.js, fx.js holo.js, 2026-10-29; read-only): the day in 3D, right after Live View
+export const HOLO = { id: 'holo', label: 'Holodeck', icon: 'chart', desc: 'The day in 3D: every fill at its exact second and price (real solid, paper hollow, slippage vs the model), trades as glass volumes, each setup drawn step by step, what every bot is thinking, replay 1x-120x' };
+CC.push(HOLO);
+TITLES.holo = HOLO.label;
+{ const g = GROUPS.find((x) => x.label === 'Main'); if (g?.ids && !g.ids.includes('holo')) { const i = g.ids.indexOf('liveview'); g.ids.splice(i >= 0 ? i + 1 : Math.max(0, g.ids.indexOf('cc') + 1), 0, 'holo'); } }
+
 // Mission Control (js/next/mission.js + missioncore.js, 2026-10-29; read-only): the three bots in orbit, right after Home
 export const MISSION = { id: 'mission', label: 'Mission Control', icon: 'target', desc: 'The three bots in orbit (Zlarior 50K, ATLAS 25K, BLITZ 25K): every number, today\'s mission, if it stops out now, why no trade yet, session timeline, alerts center, health constellation' };
 CC.push(MISSION);

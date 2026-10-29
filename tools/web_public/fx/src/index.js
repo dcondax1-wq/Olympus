@@ -15,6 +15,9 @@
 //     FX.stats()  the background's frame numbers ({ frames, ms, fps, bakeMs, ... }) for tests and Settings.
 // Kinds for FX.mount (data shapes in each file's header): orb galaxy city candles constellation ribbon reactor pipeline losses jarvis
 //   newsradar montecarlo heat liqmap weekring dayclock.
+// Holodeck (2026-10-29, holo.js): FX.holo(el, { phone, lite, onPick, onCam }) -> the 3D day view with every fill, trade,
+//   setup, thought, order, level and structure of holo.json (its own loop, works with the background off); FX.Holo the class,
+//   FX.holoFmt the label formatters (shared with the 2D fallback). Not kept in the mount registry (one per page).
 import { THREE, Q, setLevel as setQuality, readTheme, theme, enableGyro, wake, toScreen } from './core.js';
 import { Field } from './field.js';
 import { Space } from './space.js';
@@ -36,6 +39,7 @@ import { HeatCube } from './heat.js';
 import { LiquidityMap } from './liqmap.js';
 import { WeekRing } from './weekring.js';
 import { DayClock } from './dayclock.js';
+import { Holo, fillText, etHMS, fmtPx, fmtUsd, BOTC, BOTN } from './holo.js';
 
 export const version = 1;
 const KINDS = { orb: Orb, galaxy: Galaxy, city: City, candles: Candles, constellation: Constellation, ribbon: Ribbon, reactor: Reactor, pipeline: Pipeline, losses: Losses, jarvis: Jarvis,
@@ -132,3 +136,10 @@ export function sweep() { field?.sweep(); }
 export function burst(x, y, n, power) { spark(x, y, n, undefined, power); }
 export function retheme() { readTheme(); setTapColors(tapColors()); }
 export { enableGyro, Q };
+
+// the Holodeck view (holo.js): independent of the background level, so the main feature works with the space scene off
+export function holo(el, opts = {}) {
+  const v = new Holo(opts); v.kind = 'holo'; v.attach(el); return v;
+}
+export const holoFmt = { fillText, etHMS, fmtPx, fmtUsd, BOTC, BOTN };
+export { Holo };

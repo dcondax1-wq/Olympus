@@ -64,6 +64,7 @@ function shell(el) {
         <button type="button" class="lv-btn" id="lvThinkB" aria-pressed="${L.think}" title="What the bot is thinking">🧠 Thinking</button>
         <button type="button" class="lv-btn" id="lvFeedB" aria-pressed="${L.feed}" title="The bot's running feed">Feed</button>
         <button type="button" class="lv-btn" id="lvTheme" title="Dark / light"></button>
+        <button type="button" class="lv-btn lv-3d" data-goto="holo" title="Open the Holodeck: the day in 3D, every fill exact, what each bot is thinking">3D</button>
         <button type="button" class="lv-btn lv-fs" id="lvFs" title="Full screen (F)">⛶ <span>Full screen</span> <kbd>F</kbd></button>
       </div>
     </header>
