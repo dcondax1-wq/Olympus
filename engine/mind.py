@@ -1532,6 +1532,53 @@ def test_rule(bot: str, R: list, pred, mult: float) -> dict:
         if b.get("n"):
             out[nm] = {"base": b, "rule": a, "d_net": a["net"] - b["net"], "d_month": a["per_month"] - b["per_month"],
                        "n_hit": int(sum(1 for r in R if _span(r["day"], sp) and pred(r)))}
+            if bot == "lit":                                  # the owner's eval-speed numbers on the MFFU 50K (runlib.eval_speed)
+                try:
+                    out[nm]["eval"] = {"base": eval_speed(R, base, kept_b, sp), "rule": eval_speed(R, alt, kept_a, sp)}
+                except Exception:
+                    pass
+    return out
+
+
+_SESS: dict = {}
+
+
+def sessions() -> list:
+    """Every trading session of the research history (run lit_live's day list), for the eval-speed simulation."""
+    if "v" not in _SESS:
+        d = _read_json(os.path.join(ROOT, "research", "runs", "lit_live.json"), {}) or {}
+        _SESS["v"] = [r[0] for r in d.get("days") or []]
+    return _SESS["v"]
+
+
+def eval_speed(R: list, U: np.ndarray, kept: np.ndarray, sp, horizon: int = 60) -> dict | None:
+    """tools/runlib.eval_speed on the rule's day P&L (a fresh MFFU Builder 50K eval started on every session of the span):
+    p10 / f10, p15 / f15 (% passed / failed within 10 / 15 sessions), dec10, slow_pass, pass_med."""
+    from .analytics import PLANS, simulate_eval
+    ss = [d for d in sessions() if _span(d, sp)]
+    if not ss:
+        return None
+    by: dict = {}
+    for j, r in enumerate(R):
+        if kept[j] and _span(r["day"], sp):
+            by.setdefault(r["day"], []).append(float(U[j]))
+    pn, lo = [], []
+    for d in ss:
+        cum = low = 0.0
+        for p in by.get(d, []):
+            low = min(low, cum + min(0.0, p)); cum += p; low = min(low, cum)
+        pn.append(cum); lo.append(low)
+    plan = PLANS["builder_50k"]
+    res = [simulate_eval(pn[i:i + horizon], plan, lo[i:i + horizon]) for i in range(len(ss))]
+    n = len(res) or 1
+    passes = [x["days"] for x in res if x["result"] == "PASS"]
+    out = {}
+    for Hh in (10, 15):
+        out[f"p{Hh}"] = round(100 * sum(1 for x in res if x["result"] == "PASS" and x["days"] <= Hh) / n, 1)
+        out[f"f{Hh}"] = round(100 * sum(1 for x in res if x["result"] == "FAIL" and x["days"] <= Hh) / n, 1)
+    out["dec10"] = round(out["p10"] + out["f10"], 1)
+    out["slow_pass"] = round(100 * sum(1 for d in passes if d > 15) / len(passes), 1) if passes else None
+    out["pass_med"] = float(np.median(passes)) if passes else None
     return out
 
 
@@ -1539,8 +1586,14 @@ def _ev_txt(nm, x, unit="$") -> str:
     if not x:
         return f"{nm}: no trades"
     b, a = x["base"], x["rule"]
-    return (f"{nm}: {x['d_net']:+,.0f} {unit} vs live ({x['n_hit']} of {b['n']} trades hit; PF {b['pf']} -> {a['pf']}, "
-            f"{a['tpw']}/wk, {a['per_month']:+,.0f} {unit}/mo, max DD {a['dd']:,})")
+    s = (f"{nm}: {x['d_net']:+,.0f} {unit} vs live ({x['n_hit']} of {b['n']} trades hit; PF {b['pf']} -> {a['pf']}, "
+         f"{a['tpw']}/wk, {a['per_month']:+,.0f} {unit}/mo, max DD {a['dd']:,})")
+    e = x.get("eval") or {}
+    if e.get("base") and e.get("rule"):
+        eb, ea = e["base"], e["rule"]
+        s += (f"; 50K eval in 2 weeks pass/fail {eb['p10']:.0f}/{eb['f10']:.0f}% -> {ea['p10']:.0f}/{ea['f10']:.0f}%, "
+              f"median pass {eb['pass_med']} -> {ea['pass_med']} sessions")
+    return s
 
 
 def judge_rule(bot: str, ev: dict, mult: float) -> tuple:
