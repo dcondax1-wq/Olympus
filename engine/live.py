@@ -1671,6 +1671,16 @@ class LiveBot:
             gb = self._guard_entry(ent, q, sym, now)
             if gb:
                 why = f"GUARD {gb}"
+        ac = getattr(self, "acct_c", None)
+        if not why and ac is not None:
+            # account C (BLITZ, OFF by default) holding the other side is closed at market first, as for LIT / ATLAS; its close
+            # not confirmed flat = this entry is not routed (MFFU: no long + short across your own accounts)
+            try:
+                if ac.yield_to(d, f"second strategy {nm}", sym, now, px=ent["entry"], entry_t=tb) is False:
+                    why = "no hedging: BLITZ's (account C) opposite close is not confirmed yet"
+            except Exception as e:
+                if getattr(ac, "open_t", None) is not None:
+                    why = f"no hedging: account C check failed ({e.__class__.__name__}), fails closed"
         if why:
             self._log("risk", f"{head} NOT routed: {why}")
             return
@@ -2608,10 +2618,14 @@ class LiveBot:
         if cid in self._hedge_crit:
             return
         title = "HEDGE BLOCKED: ATLAS close not confirmed"
-        if getattr(self, "_hedge_who", {}).get(et_) == "BLITZ":
-            title = "HEDGE BLOCKED: BLITZ close not confirmed"
         body = (f"LIT's entry at {_et(et_):%H:%M} ET was skipped: account B's opposite position was not confirmed flat within "
                 f"the entry deadline. Check account B in NinjaTrader now (it may still be open; the bot keeps managing it).")
+        if getattr(self, "_hedge_who", {}).get(et_) == "BLITZ":
+            ac = getattr(self, "acct_c", None)
+            title = "HEDGE BLOCKED: BLITZ close not confirmed"
+            body = (f"LIT's entry at {_et(et_):%H:%M} ET was skipped: BLITZ's (account C) opposite position was not confirmed flat "
+                    f"within the entry deadline. Check BLITZ's account {getattr(ac, 'name', None) or ''} in NinjaTrader now (it may "
+                    "still be open; the bot keeps managing it).")
         self._hedge_crit[cid] = {"title": title, "body": body, "day": trading_day(et_)}
         self._log("risk", f"{title}: {body}")
         if self.state_path == STATE_PATH:                 # the real bot only (test harnesses never alert)

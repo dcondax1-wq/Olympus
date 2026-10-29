@@ -126,6 +126,23 @@ def _side(d) -> str:
     return "LONG" if int(d or 0) > 0 else "SHORT"
 
 
+def _leg_opposite(ad, d: int):
+    """The first leg of another account's NinjaTrader adapter that is still open / pending / closing in direction -d (None =
+    none; the paper adapter has no legs)."""
+    legs = getattr(ad, "legs", None) if ad is not None else None
+    if not isinstance(legs, list) or not legs:
+        return None
+    from .ninjatrader import OPEN_STATUSES
+    for lg in legs:
+        if not isinstance(lg, dict) or lg.get("status") not in OPEN_STATUSES:
+            continue
+        side = str(lg.get("side") or "").upper()
+        ld = int(lg.get("dir") or (1 if side == "BUY" else -1 if side == "SELL" else 0))
+        if ld == -d:
+            return lg
+    return None
+
+
 # ---------------------------------------------------------------------------------------------------------------- config
 def local_path(root: str | None = None) -> str:
     return os.path.join(root or ROOT, LOCAL_REL)
@@ -184,9 +201,9 @@ def normalize(blk: dict | None, lit_account: str | None = None, b_account: str |
         out["problem"] = f"unknown plan {plan!r} (BLITZ trades a builder25k: MFFU allows one funded 50K per person, that is LIT's)"
     elif not nm or any(c in nm for c in ";,\r\n|"):
         out["problem"] = "account name missing or invalid"
-    elif lit_account and nm == str(lit_account).strip():
+    elif lit_account and nm.lower() == str(lit_account).strip().lower():    # case-blind: NinjaTrader's position files are
         out["problem"] = f"{nm} is Zlarior's (LIT's) own account: BLITZ needs its own account"
-    elif b_account and nm == str(b_account).strip():
+    elif b_account and nm.lower() == str(b_account).strip().lower():        # matched case-blind (engine/ninjatrader.positions)
         out["problem"] = f"{nm} is ATLAS's account (account B): BLITZ needs its own account"
     elif out["sizing"] not in SIZINGS:
         out["problem"] = f"unknown sizing {out['sizing']!r} (speed or paper)"
@@ -795,6 +812,16 @@ class AccountC:
                         return f"ATLAS (account B) is closing a {_side(-d)} position (not confirmed yet)"
             except Exception:
                 return "account B state unreadable (fails closed)"
+        # NinjaTrader's own book of LIT's / ATLAS's account: a CLOSEPOSITION NinjaTrader has not confirmed keeps the leg
+        # "closing" while the model (and _open_routed / B's open_t) already show them flat (LIT's TIME exit, a model stop exit's
+        # sync close): the position may still be open there, so C does not enter the other way (reviewer 2026-10-29)
+        for who, ad in (("LIT's account", getattr(b, "adapter", None)), ("ATLAS's account (account B)", getattr(ab, "adapter", None))):
+            try:
+                lg = _leg_opposite(ad, d)
+            except Exception:
+                return f"{who}: NinjaTrader state unreadable (fails closed)"
+            if lg:
+                return f"{who} still shows a {_side(-d)} bracket at NinjaTrader ({lg.get('status')}: not confirmed flat)"
         ac = getattr(b, "accts", None)
         if ac is not None:
             try:
@@ -1112,11 +1139,15 @@ class AccountC:
             if (self.bot.cfg or {}).get("adapter") == "paper" or reason == "TIME" or getattr(self.adapter, "route_all_exits", False):
                 res = self.route({"sym": sym, "side": "exit", "qty": q, "reason": reason, "pnl": pnl, "entry_t": int(et_),
                                   "exit_t": int(x["exit_t"]), "src": "blitz", "strategy": "BLITZ"})
-                if reason == "TIME" and not self._close_ok(res, et_):
+                # every routed model exit (TIME, and the STOP / TARGET sync close: a trail NinjaTrader refused leaves its old
+                # stop there) is booked only once NinjaTrader confirms flat; until then C stays "closing" (re-sent) and an
+                # opposite LIT / ATLAS entry waits (reviewer 2026-10-29: a STOP exit used to mark C flat unconfirmed)
+                if not self._close_ok(res, et_):
                     pv["closing"] = {"reason": reason, "t": int(now), "last": int(now), "px": x["exit"], "pnl": pnl, "q": q, "done": False,
                                      "tries": 1, "error": str((res or {}).get("error") or "no flat confirmation")[:160], "r": float(x["r"])}
-                    self.log("risk", f"CLOSE NOT CONFIRMED (TIME): BLITZ {q} MNQ on {self.name}: {pv['closing']['error']} - re-sent")
-                    self._push_text(f"{self.label}: CLOSE NOT CONFIRMED (TIME)", f"{q} MNQ on {self.name} may still be open "
+                    pv["model_done"] = True
+                    self.log("risk", f"CLOSE NOT CONFIRMED ({reason}): BLITZ {q} MNQ on {self.name}: {pv['closing']['error']} - re-sent")
+                    self._push_text(f"{self.label}: CLOSE NOT CONFIRMED ({reason})", f"{q} MNQ on {self.name} may still be open "
                                     f"({pv['closing']['error']}). The bot re-sends the close; check NinjaTrader.", f"acctc:closing:{int(et_)}")
                     return
             self.open_t = None
@@ -1712,6 +1743,11 @@ def set_account_c(account: str | None, plan: str = "builder25k", start: str | No
         ok, line = (selftest or _selftest_ok)()
         if not ok:
             return {"ok": False, "error": f"engine.ninjatrader --selftest failed ({line}): account C NOT switched on"}
+    cur = str(old.get("account") or "").strip() if isinstance(old, dict) else ""
+    if cur and (new is None or new["account"] != cur):
+        why = open_trade(root, cur)
+        if why:
+            return {"ok": False, "error": why}
     write_local(new, root)
     if raw_cfg(root) != new:
         return {"ok": False, "error": f"{LOCAL_REL} write check failed: account C not changed"}
@@ -1748,6 +1784,28 @@ def resume(root: str | None = None) -> dict:
 
 def state_file(root: str | None = None) -> str:
     return os.path.join(root or ROOT, "data", "live_state_acctc.json")
+
+
+def open_trade(root: str | None = None, account: str | None = None) -> str | None:
+    """Why account C may not leave `account` now (None = it may): its state file shows an open BLITZ trade or a close
+    NinjaTrader has not confirmed. Switched off / to another Name then, the bot's next start would no longer manage that
+    position (no 30-minute exit, no 15:55 flat, no hold on an opposite Zlarior / ATLAS entry). Reviewer 2026-10-29."""
+    try:
+        with open(state_file(root), encoding="utf-8") as fh:
+            b = json.load(fh)
+    except Exception:
+        return None                                   # no / unreadable state file: the bot would not restore it either
+    if not isinstance(b, dict) or str(b.get("account") or "").strip() != str(account or "").strip():
+        return None
+    ot = b.get("open_t")
+    cl = sorted(int(k) for k, pv in (b.get("prov") or {}).items()
+                if isinstance(pv, dict) and isinstance(pv.get("closing"), dict) and pv["closing"] and not pv["closing"].get("done"))
+    if ot is None and not cl:
+        return None
+    t = int(ot) if ot is not None else cl[0]
+    return (f"BLITZ still has an open trade on {account} (entered {_et(t):%m-%d %H:%M} ET"
+            + ("" if ot is not None else ", its close not confirmed by NinjaTrader yet")
+            + "): switch BLITZ off or to another account once it is flat (the bot closes it within 30 minutes, by 15:55 at the latest)")
 
 
 def to_funded(account: str, start: str, balance=None, root: str | None = None, selftest=None, allow_path: str | None = None,
@@ -1788,6 +1846,9 @@ def to_funded(account: str, start: str, balance=None, root: str | None = None, s
     ok, line = (selftest or _selftest_ok)()
     if not ok:
         return {"ok": False, "error": f"engine.ninjatrader --selftest failed ({line}): BLITZ NOT switched to funded"}
+    why = open_trade(root, cur)
+    if why:
+        return {"ok": False, "error": why}
     archived = None
     if stage != "funded":
         sp = state_file(root)

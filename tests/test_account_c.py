@@ -24,6 +24,9 @@
   9. LiveBot (engine/live.py) on 2026-10-13..15 with account C on (paper): LIT's routes identical to the backtest (and to the
      run without C); C routes BLITZ's model trades on its own ledger.
  10. switches: CLI / set_account_c / arm (only after the phrase) / resume / off; the Start page API (engine/go.py) slot.
+ 12. review 2026-10-29: no BLITZ entry against LIT's / ATLAS's bracket NinjaTrader has not confirmed flat; a model STOP exit's
+     unconfirmed close keeps C "closing" (LIT waits); HEDGE BLOCKED names BLITZ's account; a LIT-account second strategy
+     yields to C; LIT's / ATLAS's Name in another case refused; no switch off / to another Name while C holds a trade.
 """
 from __future__ import annotations
 
@@ -845,10 +848,136 @@ def part11():
     check("11. Mission Control off: no card", CC._blitz_card(bot2, 0) is None)
 
 
+# ================================================================================================ 12. review 2026-10-29
+def part12():
+    """Independent review (2026-10-29): the hedging / isolation gaps found and closed."""
+    from engine import live
+
+    class Ad:                                        # another account's NinjaTrader adapter: its own book of brackets
+        name = "ninjatrader"
+
+        def __init__(self, legs):
+            self.legs = legs
+
+    # a) LIT's TIME exit CLOSEPOSITION not confirmed by NinjaTrader: its leg stays "closing" while LIT's model and
+    #    _open_routed already show it flat -> no BLITZ entry the other way
+    bot, C = make("2026-11-02")
+    bot.adapter = Ad([{"entry_t": 1, "dir": -1, "side": "SELL", "status": "closing"}])
+    tb = _open_long(C, bot)
+    check("12a. LIT's SHORT close not confirmed at NinjaTrader (leg 'closing', model flat): BLITZ LONG NOT routed",
+          C.open_t is None and not C.adapter.sent and "LIT's account still shows a SHORT" in str(C._row(et_=tb).get("skip")),
+          C._row(et_=tb))
+    bot, C = make("2026-11-02")
+    bot.adapter = Ad([{"entry_t": 1, "side": "SELL", "status": "closing"}])           # an older leg without "dir"
+    tb = _open_long(C, bot)
+    check("12a. ... the same from the leg's side when it has no dir", C.open_t is None)
+    bot, C = make("2026-11-02")
+    bot.adapter = Ad([{"entry_t": 1, "dir": 1, "status": "closing"}, {"entry_t": 2, "dir": -1, "status": "closed"}])
+    tb = _open_long(C, bot)
+    check("12a. ... a LONG close in flight (same side) or a retired leg: BLITZ LONG allowed", C.open_t == tb)
+
+    # b) ATLAS's model exit with an unconfirmed sync close: B shows flat (open_t None, nothing "closing") but its adapter
+    #    still holds the leg
+    class B:
+        def __init__(self, legs):
+            self.open_t = None
+            self.prov = {}
+            self.adapter = Ad(legs)
+
+        def closing_open(self):
+            return []
+    bot, C = make("2026-11-02")
+    bot.acct_b = B([{"entry_t": 2, "dir": -1, "status": "closing"}])
+    tb = _open_long(C, bot)
+    check("12b. ATLAS's SHORT not confirmed flat at NinjaTrader: BLITZ LONG NOT routed", C.open_t is None
+          and "ATLAS's account (account B) still shows a SHORT" in str(C._row(et_=tb).get("skip")))
+
+    # c) BLITZ's own model STOP exit (a trail NinjaTrader refused leaves the old stop there): the sync close is not
+    #    confirmed -> C is NOT marked flat; LIT's opposite entry waits; booked once when NinjaTrader shows flat
+    st = Stub(exit_answer={"ok": False, "flat_confirmed": False, "error": "flatten sent, not confirmed by NinjaTrader yet"})
+    bot, C = make("2026-11-02", adapter=st)
+    bot.cfg["adapter"] = "ninjatrader"
+    tb = _open_long(C, bot)
+    pv = C.prov[tb]
+    C._events([{"ev": "entry", "entry_t": tb, "sig_t": pv["sig_t"], "dir": 1, "entry": pv["entry"], "stop": pv["stop"], "risk": 30.0}],
+              "NQ", tb + 62)
+    st.legs = [{"entry_t": tb, "dir": 1, "status": "closing"}]
+    bot._now = tb + 662
+    C._events([{"ev": "exit", "entry_t": tb, "sig_t": pv["sig_t"], "dir": 1, "entry": pv["entry"], "stop": pv["stop"], "exit_bar_t": tb + 600,
+                "exit_t": tb + 660, "exit": pv["entry"] + 10, "kind": "stop", "pts": 10.0, "risk": 30.0, "r": 0.33, "pnl_pm": 18.1,
+                "bars": 10}], "NQ", bot._now)
+    check("12c. BLITZ's model STOP exit, sync close NOT confirmed: C still open / closing, nothing booked",
+          C.open_t == tb and C.closing_open() and not C.closes and any("CLOSE NOT CONFIRMED (STOP)" in t for _, t in bot.logs))
+    ent = {"entry_t": tb + 720, "dir": -1, "entry": 25010.0}
+    ok = live.LiveBot._hedge_clear(bot, ent, "NQ", tb + 722)
+    check("12c. ... LIT's SHORT entry meanwhile is NOT routed (HEDGE WAIT on BLITZ)", ok is False and bot._hedge_who.get(tb + 720) == "BLITZ")
+    st.exit_answer, st.legs = {"ok": True}, []
+    ok = live.LiveBot._hedge_clear(bot, ent, "NQ", tb + 740)
+    check("12c. ... once NinjaTrader shows it flat: booked once (the model's $), LIT routes", ok is True and C.open_t is None
+          and len(C.closes) == 1 and abs(C.closes[0][2] - round(pv["qty"] * 18.1, 2)) < 0.01 and C.prov[tb].get("final"))
+    bot, C = make("2026-11-02")
+    tb = _open_long(C, bot)
+    pv = C.prov[tb]
+    C._events([{"ev": "entry", "entry_t": tb, "sig_t": pv["sig_t"], "dir": 1, "entry": pv["entry"], "stop": pv["stop"], "risk": 30.0}],
+              "NQ", tb + 62)
+    C._events([{"ev": "exit", "entry_t": tb, "sig_t": pv["sig_t"], "dir": 1, "entry": pv["entry"], "stop": pv["stop"], "exit_bar_t": tb + 600,
+                "exit_t": tb + 660, "exit": pv["entry"] - 30, "kind": "stop", "pts": -30.0, "risk": 30.0, "r": -1.0, "pnl_pm": -61.9,
+                "bars": 10}], "NQ", tb + 662)
+    check("12c. paper: a STOP exit is booked at once as before", C.open_t is None and len(C.closes) == 1)
+
+    # d) the critical HEDGE BLOCKED alert names BLITZ's account (not "account B") when BLITZ held LIT back
+    bot, C = make("2026-11-02")
+    bot._hedge_wait, bot._hedge_who = {5000: 4990}, {5000: "BLITZ"}
+    live.LiveBot._hedge_blocked(bot, 5000, 5100)
+    t = texts(bot)
+    check("12d. HEDGE BLOCKED for BLITZ: the body says BLITZ's account C (Sim103), not account B",
+          t and "BLITZ's (account C)" in t[-1] and "Sim103" in t[-1] and "account B" not in t[-1], t)
+
+    # e) a second strategy routed on LIT's own account (OFF by default) yields to BLITZ like LIT / ATLAS
+    src = open(os.path.join(ROOT, "engine", "live.py"), encoding="utf-8").read()
+    i = src.find("def _second_entry")
+    j = src.find("self._open_routed, self._open_src, self._open_qty, self._open_adds = tb, k, q, []", i)
+    check("12e. LiveBot._second_entry asks account C to yield before it routes on LIT's account", i > 0 and j > i
+          and "ac.yield_to(d" in src[i:j])
+
+    # f) one account Name for two bots is refused whatever its case (NinjaTrader's position files match it case-blind)
+    s1 = AC.normalize({"account": "mffuevbldr602936016", "plan": "builder25k"}, lit_account="MFFUEVBLDR602936016")
+    s2 = AC.normalize({"account": "Mffu25kAtlas ", "plan": "builder25k"}, b_account="MFFU25KATLAS")
+    check("12f. LIT's / ATLAS's Name in another case is refused as account C", s1["problem"] and "Zlarior" in s1["problem"]
+          and s2["problem"] and "ATLAS" in s2["problem"])
+
+    # g) switching account C off / to another Name while its state file shows an open BLITZ trade (or a close in flight)
+    #    is refused: after a restart nobody would manage that position (no time exit, no 15:55 flat, no hedge hold)
+    tmp = tempfile.mkdtemp(prefix="acctc_open_")
+    try:
+        ok_ = lambda: (True, "ok")
+        AC.set_account_c("Sim103", start="2026-11-02", root=tmp, selftest=ok_, lit_account="L", b_account="B")
+        sp = AC.state_file(tmp)
+        os.makedirs(os.path.dirname(sp), exist_ok=True)
+        with open(sp, "w", encoding="utf-8") as fh:
+            json.dump({"account": "Sim103", "open_t": 1793721600, "prov": {"1793721600": {"dir": 1, "qty": 2}}}, fh)
+        r_off = AC.set_account_c("off", root=tmp)
+        r_new = AC.set_account_c("Sim104", start="2026-11-02", root=tmp, selftest=ok_, lit_account="L", b_account="B")
+        r_same = AC.set_account_c("Sim103", start="2026-11-03", root=tmp, selftest=ok_, lit_account="L", b_account="B")
+        check("12g. BLITZ in a trade: 'off' / another Name refused, the same Name (new start) allowed",
+              not r_off["ok"] and "open" in r_off["error"] and not r_new["ok"] and r_same["ok"]
+              and AC.raw_cfg(tmp)["account"] == "Sim103", (r_off, r_new, r_same))
+        with open(sp, "w", encoding="utf-8") as fh:
+            json.dump({"account": "Sim103", "open_t": None, "prov": {"1793721600": {"dir": 1, "closing": {"done": False}}}}, fh)
+        r = AC.set_account_c("off", root=tmp)
+        check("12g. ... a close not confirmed yet: 'off' refused too", not r["ok"])
+        with open(sp, "w", encoding="utf-8") as fh:
+            json.dump({"account": "Sim103", "open_t": None, "prov": {"1793721600": {"dir": 1, "closing": {"done": True}, "final": True}}}, fh)
+        r = AC.set_account_c("off", root=tmp)
+        check("12g. ... flat: 'off' works", r["ok"] and AC.raw_cfg(tmp) is None)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def main():
     quick = "--quick" in sys.argv
     for name, fn in (("1", part1), ("3", part3), ("3b", part3b), ("4", part4), ("5", part5), ("6", part6), ("7", part7), ("8", part8), ("10", part10),
-                     ("11", part11)):
+                     ("11", part11), ("12", part12)):
         try:
             fn()
         except Exception as e:
