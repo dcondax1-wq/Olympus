@@ -2,9 +2,9 @@
 title: ATLAS + BLITZ edge night (2026-10-30) - BLITZ - size the 25K eval by the day's break count (first band break small, later breaks bigger); ATLAS - 110 new ideas, nothing beats today
 family: risk
 date: 2026-10-30
-status: adopt-candidate (BLITZ 25K eval size only, research/scalp/blitz_25k_pick_v2.json; the rule and the funded size stay; owner decides) - ATLAS no change; BLITZ trend-day size, 10:30 check, ATLAS member weights, member agreement, LIT copy, NA member, setup-geometry size and London-clock windows rejected
-summary: Owner 2026-10-29 - "build every bot more than you can, find more edge, better rules for everything" for ATLAS (account B, Builder 25K) and BLITZ (the 1m noise-area scalp, its own 25K next week). 20 hypotheses were written down first, then tested with costs in on CME NQ futures (2026 1m pick on H1 / check on H2, 2021-25 5m reference), random controls, neighbours and per-year checks. BLITZ - one sizing change holds - on the 25K eval, the day's FIRST band break on a side trades half size and a LATER same-side break 1.75 x today's size (never more than the room). Same trades. 2-week pass / fail 47.9 / 23.5 (today 36.1 / 37.8), 36.2 / 21.7 (36.2 / 34.8), 24.7 / 48.4 (20.4 / 50.2) in H1 / H2 / 2021-25; whole 25K slot $286 / $52 / -$39 a month (today $270 / $37 / -$40); 54 of 54 room-capped neighbours do the same; shuffled sizes reach it in 0-7.5% of draws; random directions with the same sizes do not. Weak spots - H2 decides fewer evals in 2 weeks (58% vs 71%: fewer fail), a later break can risk up to $1,050, and the 25K slot still loses ~$40 a month in 2021-25. Rejected - trend-day size from the range so far / first hour / overnight range / gap / VIX change / 2-sigma excursion / VWAP (430 tilts, survivors at chance), the 10:30 check (H1 slot $270 -> $54). BLITZ's 2021-25 edge is gone at +1 tick a side. ATLAS - member weights from recent trades, member agreement, 2nd trade by the 1st's result, LIT copied in, the NA day-hold as 4th member, S/R level count and EMA pullback geometry as size, London-clock windows in the DST gap weeks (the volume surge does move to 04:00 ET there, but the members lose) - 0 of 110 pass; the stop-hunt members at half size (atlas-v2.md) still the only lead.
-runs: ab_blitz_later_break, ab_blitz_trendday_size, ab_blitz_1030_check, ab_atlas_dyn_weights, ab_atlas_agree, ab_atlas_lit_copy, ab_atlas_na_member, ab_atlas_london_clock
+status: adopt-candidate (BLITZ 25K eval size only, research/scalp/blitz_25k_pick_v2.json; the rule and the funded size stay; owner decides) - ATLAS no change, one promising paper lead (the hunts + the NA day-hold member at half size); BLITZ trend-day size, 10:30 check, ATLAS member weights, member agreement, LIT copy, NA member, setup-geometry size and London-clock windows rejected
+summary: Owner 2026-10-29 - "build every bot more than you can, find more edge, better rules for everything" for ATLAS (account B, Builder 25K) and BLITZ (the 1m noise-area scalp, its own 25K next week). 20 hypotheses were written down first, then tested with costs in on CME NQ futures (2026 1m pick on H1 / check on H2, 2021-25 5m reference), random controls, neighbours and per-year checks. BLITZ - one sizing change holds - on the 25K eval, the day's FIRST band break on a side trades half size and a LATER same-side break 1.75 x today's size (never more than the room). Same trades. 2-week pass / fail 47.9 / 23.5 (today 36.1 / 37.8), 36.2 / 21.7 (36.2 / 34.8), 24.7 / 48.4 (20.4 / 50.2) in H1 / H2 / 2021-25; whole 25K slot $286 / $52 / -$39 a month (today $270 / $37 / -$40); 54 of 54 room-capped neighbours do the same; shuffled sizes reach it in 0-7.5% of draws; random directions with the same sizes do not. Weak spots - H2 decides fewer evals in 2 weeks (58% vs 71%: fewer fail), a later break can risk up to $1,050, and the 25K slot still loses ~$40 a month in 2021-25. Rejected - trend-day size from the range so far / first hour / overnight range / gap / VIX change / 2-sigma excursion / VWAP (430 tilts, survivors at chance), the 10:30 check (H1 slot $270 -> $54). BLITZ's 2021-25 edge is gone at +1 tick a side. ATLAS - member weights from recent trades, member agreement, 2nd trade by the 1st's result, LIT copied in, the NA day-hold as 4th member, S/R level count and EMA pullback geometry as size, London-clock windows in the DST gap weeks (the volume surge does move to 04:00 ET there, but the members lose) - 0 of 110 pass. New paper lead - the hunts (atlas-v2.md) + the NA day-hold member at half size make more passes a month and more eval-path $ in all four spans (H1 $2,046 vs $1,394 a month, H2 $1,584 vs $547, 2025 +$47 vs -$148, 2021-24 +$194 vs -$36; 13 of 15 neighbours) but fail the H1 2-week test (62.2% pass / 5.9% dead vs 65.5 / 0.8).
+runs: ab_blitz_later_break, ab_blitz_trendday_size, ab_blitz_1030_check, ab_atlas_na_hunts_lead, ab_atlas_dyn_weights, ab_atlas_agree, ab_atlas_lit_copy, ab_atlas_na_member, ab_atlas_london_clock
 ---
 
 ## Money first
@@ -22,6 +22,11 @@ runs: ab_blitz_later_break, ab_blitz_trendday_size, ab_blitz_1030_check, ab_atla
 - **ATLAS: 110 new variants, 0 pass the test.** Member weights, member agreement, LIT copied in, a 4th member, size by
   setup quality, London-clock windows in the DST weeks. ATLAS stays as it is. The best lead is still the two stop-hunt
   members at half size (atlas-v2.md), which passed again tonight.
+- **One new ATLAS lead for paper only: the hunts + the noise-area day-hold member at half size.**
+  - It makes more passes a month and more eval-path $ than today in all four periods: H1 $2,046 vs $1,394 a month, H2
+    $1,584 vs $547, 2025 +$47 vs -$148, 2021-24 +$194 vs -$36. 13 of 15 neighbouring weights do the same.
+  - But it fails the 2-week test in H1: 62.2% pass with 5.9% dead, against today's 65.5% and 0.8%.
+  - It is a lead for the ATLAS v2 paper shadow, not a switch.
 - **Slippage is BLITZ's real enemy.** With 1 tick more per side, 2026 keeps most of its edge (avg R +0.155 / +0.191
   instead of +0.165 / +0.200). 2021-25 drops to zero (+0.000). One bar late kills H2 (the 25K slot goes from +$37 to
   -$36 a month). The entry must go in within the minute of the check.
@@ -61,7 +66,7 @@ unit of risk the gain is small: +0.189 / +0.205 / +0.016 R instead of +0.165 / +
 | 12 | ATLAS | Member agreement: another member already took the same side today -> bigger, the other side -> smaller | two independent setups agreeing | rejected: H2 up, H1 down |
 | 13 | ATLAS | The day's 2nd trade sized by the 1st trade's result | a loss warns, a win confirms | rejected (0 of 7) |
 | 14 | ATLAS | A 4th member: LIT itself, copied onto the 25K (account-B size) | LIT is the strongest edge | rejected: 2021-24 worse, and it ties the two accounts together |
-| 15 | ATLAS | A 4th member: the noise-area day-hold strategy (diversifier-search.md, positive in all four spans alone) | a proven, uncorrelated family | rejected: dead evals up |
+| 15 | ATLAS | A 4th member: the noise-area day-hold strategy (diversifier-search.md, positive in all four spans alone) | a proven, uncorrelated family | alone: rejected (dead evals up); **on top of the hunts lead: promising** |
 | 16 | ATLAS | S/R level quality -> size (how many levels sit inside the sweep; a prior-day / week level among them) | stacked liquidity = a stronger level | rejected (0 of 16) |
 | 17 | ATLAS | EMA pullback depth -> size (sweep depth below the swing, distance from the EMA 50) | a deeper stop hunt = a better entry | rejected (0 of 32) |
 | 18 | ATLAS | Windows on the London clock in the US / UK DST gap weeks (EMA 04:00-09:30, MACD 03:00-06:00) | London opens at 04:00 ET in those weeks (this week is one) | rejected: the fact is true, the members lose |
@@ -235,6 +240,31 @@ lose more than today. "$ / month" = back-to-back eval paths started every 5th se
     from 52 to 41 and from +3.7R to -0.4R; MACD's go from +18.8R to +14.9R.
   - The windows stay on the New York clock, including this week (2026-10-26 to 10-30 is a gap week).
 
+### The one ATLAS lead (promising, paper only): the hunts + the NA day-hold member
+
+The NA day-hold member is the noise-area intraday momentum held to the close (Zarattini 2024; diversifier-search.md's
+joint pick, positive as futures trading in all four spans, random-entry placebo p 0.007 in 2026). Alone it adds dead evals.
+On top of atlas-v2.md's lead (sh_asia + sh_trend at half size) it changes the account:
+
+| ATLAS 25K | H1 2-wk pass / dead | passes a month H1 / H2 / 2025 / 2021-24 | eval-path $ a month H1 / H2 / 2025 / 2021-24 |
+|---|---:|---:|---:|
+| today | 65.5 / 0.8 | 1.40 / 0.49 / 0.18 / 0.45 | $1,394 / $547 / -$148 / -$36 |
+| + hunts x0.5 (atlas-v2.md) | 67.2 / 0.0 | 1.61 / 0.73 / 0.21 / 0.37 | $1,655 / $665 / -$69 / +$16 |
+| **+ hunts x0.5 + NA day-hold x0.5** | **62.2 / 5.9** | **2.12 / 1.50 / 0.34 / 0.68** | **$2,046 / $1,584 / +$47 / +$194** |
+
+- **Neighbours:** 13 of 15 weight pairs (NA x0.25-0.75 by hunts x0.4-0.6) have more passes a month and more eval-path $
+  than today in all four spans.
+- **Why it fails the test:** in H1 it passes 2-4 points less in 2 weeks and kills 5-8% of evals in 2 weeks. A trend trade
+  held to the close with 26-30% winners sometimes eats the room early. H2's 2-week pass is 55.1% (today 43.5%).
+- **Caveats:**
+  - the hunts' own caveats carry over (picked on H1 + 2025 + 2021-24; sh_trend needs a limit entry account B cannot place);
+  - the NA member has no bar path in this executor, so an opposite LIT entry drops the whole trade (conservative);
+  - more ATLAS positions mean BLITZ (account C) yields more often;
+  - eval-path $ is not withdrawable money, and MFFU allows at most 2 funded 25Ks per person, so more passes a month help
+    only while a funded slot is free.
+- **Next step:** add it to the ATLAS v2 paper shadow (`engine/atlas_v2.py`) as an optional member (owner's call). Decide
+  after 20+ paper NA trades. Run `ab_atlas_na_hunts_lead`.
+
 ## Honesty checks
 
 - **Costs in everywhere:** $1.90 a micro round trip, 1 tick on every market and stop fill, a same-bar tie counts as a loss,
@@ -262,8 +292,10 @@ lose more than today. "$ / month" = back-to-back eval paths started every 5th se
 - **If the owner approves the BLITZ v2 eval size,** build it in `engine/account_c.py` + `engine/blitz.py` (break counter,
   `later_break` block). Replay 2026 through account C's live loop (`tests/test_account_c`) against these numbers before the
   25K starts. Paper first.
-- **ATLAS:** the stop-hunt members at half size stay the only lead (atlas-v2.md: paper first; sh_trend needs a limit entry
-  account B cannot place yet). Nothing else to switch.
+- **ATLAS:** nothing to switch. Two leads stay on paper.
+  - The stop-hunt members at half size (atlas-v2.md; sh_trend needs a limit entry account B cannot place yet).
+  - The new one: the same + the NA day-hold member at half size.
+  Next step: add the NA member to the ATLAS v2 paper shadow (owner's call).
 - **BLITZ in 2021-25:** BLITZ itself is near break-even there, and +1 tick erases it. A 25K for BLITZ is a bet that 2026's
   intraday momentum continues; watch account C's performance contract (BLITZ_STRATEGY.md) from the first week.
 
@@ -277,7 +309,8 @@ lose more than today. "$ / month" = back-to-back eval paths started every 5th se
   `ab_blitz_eval.json`, `ab_blitz_nth.json`, `ab_blitz_pick.json`, `ab_blitz_safe.json`, `ab_blitz_final.json`,
   `ab_blitz_final_safe.json` (the pick's numbers and checks), `ab_blitz_x.json` (slippage / late / 10:30),
   `ab_blitz_lit50k.json`.
-- **ATLAS results (`research/second/`):** `ab_atlas.json`, `ab_atlas_geo.json`, `ab_atlas_na.json`, `ab_atlas_dst.json`.
+- **ATLAS results (`research/second/`):** `ab_atlas.json`, `ab_atlas_geo.json`, `ab_atlas_na.json`, `ab_atlas_na_hunts.json`
+  (the lead's neighbour grid), `ab_atlas_dst.json`. Command `atlas_na_hunts`.
 - **The adopt-candidate:** `research/scalp/blitz_25k_pick_v2.json`, the same shape as `blitz_25k_pick.json`. The new keys are
   `engine.eval_25k.later_break`, `sizing.eval.later_break` and `checks`.
 - **Runs:** `research/runs/ab_*.json`. BLITZ runs are stored at $500 x the size multiplier a trade; ATLAS runs store the

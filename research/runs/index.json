@@ -1,7 +1,7 @@
 {
- "built": "2026-10-29 23:08",
+ "built": "2026-10-29 23:21",
  "baseline": "baseline",
- "count": 2157,
+ "count": 2158,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -16113,6 +16113,124 @@
      "slow_pass": 70.7,
      "pass_med": 28.0,
      "b2b": "12/19"
+    }
+   }
+  },
+  {
+   "id": "ab_atlas_na_hunts_lead",
+   "title": "ATLAS v2 + the NA day-hold member x0.5 - promising (more passes and $ in all four spans, H1 2-week test fails)",
+   "family": "other",
+   "question": "A 4th / 6th member from a family that passed alone (the noise-area day-hold, diversifier-search.md) on top of the hunts lead?",
+   "status": "promising",
+   "verdict": "ATLAS + the stop hunts x0.5 (atlas-v2.md) + the noise-area day-hold member x0.5. 2-week pass / dead, passes a month, eval-path $ a month less fees: H1 62.2/5.9, 2.12 passes a month, $2,046 a month (today 65.5/0.8, 1.4 passes a month, $1,394 a month); H2 55.1/0.0, 1.5 passes a month, $1,584 a month (today 43.5/0.0, 0.49 passes a month, $547 a month); 2025 31.3/30.1, 0.34 passes a month, $47 a month (today 30.1/23.3, 0.18 passes a month, $-148 a month); 2021-24 31.1/28.6, 0.68 passes a month, $194 a month (today 22.9/27.1, 0.45 passes a month, $-36 a month). 13 of 15 weight pairs (NA 0.25-0.75 x hunts 0.4-0.6) have more passes and more $ than today in all four spans. Fails the v2 2-week test in H1 (pass down, dead up): a lead for the ATLAS v2 paper shadow, not switched.",
+   "writeup": "atlas-blitz-edge-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "stop_hunt",
+    "noise_area"
+   ],
+   "params": {
+    "members": [
+     "EMA",
+     "MD",
+     "SR",
+     "NAD",
+     "SHA",
+     "SHT"
+    ],
+    "w": {
+     "NAD": 0.5,
+     "SHA": 0.5,
+     "SHT": 0.5
+    },
+    "armed": true,
+    "flt": {},
+    "sets": {},
+    "size": "need",
+    "tw": {},
+    "cfg": {}
+   },
+   "sizing": {
+    "account_b": "need size (engine/account_b.qty)"
+   },
+   "built": "2026-10-29 23:21",
+   "spans": {
+    "2026": {
+     "n": 174,
+     "tpw": 4.22,
+     "wk2": 71,
+     "win": 48.9,
+     "pf": 2.71,
+     "net": 22014,
+     "dd": -1071,
+     "avg_r": 0.706,
+     "stop": 39.0,
+     "worst_day": -512,
+     "risk": 137.0,
+     "half": 0,
+     "per_month": 2244,
+     "p10": 18.0,
+     "f10": 0.0,
+     "p15": 26.2,
+     "f15": 0.0,
+     "p20": 35.0,
+     "f20": 0.0,
+     "dec10": 18.0,
+     "slow_pass": 67.5,
+     "pass_med": 23.5,
+     "b2b": "6/0"
+    },
+    "2021-25": {
+     "n": 1342,
+     "tpw": 6.26,
+     "wk2": 87,
+     "win": 42.6,
+     "pf": 1.3,
+     "net": 28582,
+     "dd": -4917,
+     "avg_r": 0.142,
+     "stop": 23.0,
+     "worst_day": -579,
+     "risk": 105.0,
+     "half": 0,
+     "per_month": 560,
+     "p10": 4.8,
+     "f10": 0.0,
+     "p15": 8.2,
+     "f15": 1.1,
+     "p20": 11.6,
+     "f20": 2.2,
+     "dec10": 4.8,
+     "slow_pass": 75.2,
+     "pass_med": 27.0,
+     "b2b": "12/10"
+    },
+    "all": {
+     "n": 1516,
+     "tpw": 5.93,
+     "wk2": 84,
+     "win": 43.3,
+     "pf": 1.47,
+     "net": 50595,
+     "dd": -4917,
+     "avg_r": 0.207,
+     "stop": 24.6,
+     "worst_day": -579,
+     "risk": 108.0,
+     "half": 0,
+     "per_month": 831,
+     "p10": 6.9,
+     "f10": 0.0,
+     "p15": 11.1,
+     "f15": 0.9,
+     "p20": 15.3,
+     "f20": 1.9,
+     "dec10": 6.9,
+     "slow_pass": 72.7,
+     "pass_med": 26.0,
+     "b2b": "18/10"
     }
    }
   },

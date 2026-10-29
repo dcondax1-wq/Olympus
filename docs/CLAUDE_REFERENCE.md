@@ -494,6 +494,10 @@ part yourself or fold it into a script.**
     depth / EMA distance as size; London-clock windows in the DST gap weeks (the volume surge does move to 04:00 ET, but
     EMA / MACD lose there).
   - The one adopt-candidate is BLITZ's 25K later-break eval size (`research/scalp/blitz_25k_pick_v2.json`, owner decides).
+  - ATLAS paper lead (run `ab_atlas_na_hunts_lead`): the hunts x0.5 + the NA day-hold member x0.5.
+    - More passes a month and more eval-path $ in all four spans: $2,046 / $1,584 / +$47 / +$194 a month vs $1,394 /
+      $547 / -$148 / -$36; 13 of 15 neighbours do the same.
+    - Fails the H1 2-week test: 62.2 / 5.9 vs 65.5 / 0.8.
 
 ## Key commands (run from the repo root)
 - **START BOT (owner's one start, 2026-10-26):** the owner now starts from the dashboard only (desktop **LE START** -> the

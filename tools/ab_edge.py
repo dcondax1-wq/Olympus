@@ -1389,6 +1389,58 @@ def cmd_atlas_na():
     return out
 
 
+MONTHS_A = {"H1": 6.1, "H2": 3.71, "2025": 12.29, "2021-24": 38.76}       # sessions / 21 of each ATLAS span
+
+
+def cmd_atlas_na_hunts(save=True):
+    """the lead of cmd_atlas_na: ATLAS + the stop hunts x0.5 (atlas-v2.md) + the NA day-hold member, weights 0.25-0.75 x hunts
+    0.4-0.6 (a neighbour grid), passes a month and $ per eval bought next to the v2 test; stores run ab_atlas_na_hunts_lead."""
+    V2, A, M, EAB = atlas_libs()
+    U = M.units()
+    if "NAD" not in U:
+        U["NAD"] = nad_units()
+    MEM = ["EMA", "MD", "SR"]
+    keys = ("p10", "dead10", "dec10", "pass_med", "mp_passes", "mp_pass_per_month", "mp_per_eval", "mp_bought", "mp_net_less_fees",
+            "fund_paid_3m", "sig_tpw", "sig_wk2", "pf", "net")
+    base = a_score(V2.V_())
+    rows = [{"name": "today", "o": {s: {k: base[s].get(k) for k in keys} for s in base}}]
+    hv = V2.V_(members=MEM + ["SHA", "SHT"], w={"SHA": 0.5, "SHT": 0.5})
+    o = a_score(hv)
+    rows.append({"name": "hunts x0.5", "o": {s: {k: o[s].get(k) for k in keys} for s in o}})
+    for wn, wh in itertools.product((0.25, 0.4, 0.5, 0.6, 0.75), (0.4, 0.5, 0.6)):
+        V = V2.V_(members=MEM + ["NAD", "SHA", "SHT"], w={"NAD": wn, "SHA": wh, "SHT": wh})
+        o = a_score(V)
+        rows.append({"name": f"NA x{wn} + hunts x{wh}", "o": {s: {k: o[s].get(k) for k in keys} for s in o}, "verdict": V2.verdict(o, base)})
+    for r in rows:
+        o = r["o"]
+        print(f"{r['name']:24s} " + " | ".join(f"{s} {o[s]['p10']}/{o[s]['dead10']} passes {o[s]['mp_pass_per_month']}/mo "
+                                              f"${round(o[s]['mp_net_less_fees'] / MONTHS_A[s])}/mo" for s in o), flush=True)
+    grid = rows[2:]
+    more = sum(1 for r in grid if all(r["o"][s]["mp_pass_per_month"] > rows[0]["o"][s]["mp_pass_per_month"]
+                                      and r["o"][s]["mp_net_less_fees"] > rows[0]["o"][s]["mp_net_less_fees"] for s in MONTHS_A))
+    out = {"built": time.strftime("%Y-%m-%d %H:%M"), "rows": rows, "n_more_passes_and_money_all_four": more, "n": len(grid)}
+    print(f"{more} of {len(grid)} NA + hunts weights have more passes a month AND more eval-path $ than today in all four spans", flush=True)
+    dump(out, os.path.join(OUT_A, "ab_atlas_na_hunts.json"))
+    if save:
+        from tools import runlib as rl
+        sess = sorted(set(U["sessions"]))
+        V = V2.V_(members=MEM + ["NAD", "SHA", "SHT"], w={"NAD": 0.5, "SHA": 0.5, "SHT": 0.5})
+        o, T = _atlas_store(V)
+        b = rows[0]["o"]
+        f = lambda x, s: f"{x[s]['p10']}/{x[s]['dead10']}, {x[s]['mp_pass_per_month']} passes a month, ${round(x[s]['mp_net_less_fees'] / MONTHS_A[s]):,} a month"
+        vt = ("ATLAS + the stop hunts x0.5 (atlas-v2.md) + the noise-area day-hold member x0.5. 2-week pass / dead, passes a month, eval-path $ a month "
+              "less fees: " + "; ".join(f"{s} {f(o, s)} (today {f(b, s)})" for s in MONTHS_A) +
+              f". {more} of {len(grid)} weight pairs (NA 0.25-0.75 x hunts 0.4-0.6) have more passes and more $ than today in all four spans. "
+              "Fails the v2 2-week test in H1 (pass down, dead up): a lead for the ATLAS v2 paper shadow, not switched.")
+        rl.save("ab_atlas_na_hunts_lead", "ATLAS v2 + the NA day-hold member x0.5 - promising (more passes and $ in all four spans, H1 2-week test fails)",
+                "other", "A 4th / 6th member from a family that passed alone (the noise-area day-hold, diversifier-search.md) on top of the hunts lead?",
+                params=V, sizing={"account_b": "need size (engine/account_b.qty)"}, trades=T, scored=rl.score(T, sess), status="promising",
+                verdict=vt, notes="tools/ab_edge.py atlas_na_hunts (eval-path trades, 4 spans)", writeup="atlas-blitz-edge-2026-10-30",
+                tags=["atlas", "account_b", "25k", "stop_hunt", "noise_area"])
+        print("saved ab_atlas_na_hunts_lead", flush=True)
+    return out
+
+
 # ================================================================================================ ATLAS: setup geometry -> size
 def _stored(name):
     f = {"EMA": "ema_best.json", "MD": "md_best.json", "SR": "sr_best.json"}[name]
@@ -1807,4 +1859,4 @@ if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "blitz"
     {"blitz": cmd_blitz, "blitz2": cmd_blitz2, "blitz_eval": cmd_blitz_eval, "blitz_nth": cmd_blitz_nth, "atlas": cmd_atlas,
      "dst": cmd_dst, "blitz50": cmd_blitz50, "blitzx": cmd_blitzx, "atlas_geo": cmd_atlas_geo, "blitz_pick": cmd_blitz_pick, "atlas_na": cmd_atlas_na, "blitz_final": cmd_blitz_final, "blitz_safe": cmd_blitz_safe, "blitz_final_safe": cmd_blitz_final_safe,
-     "save": cmd_save, "pick_v2": cmd_pick_v2}[cmd]()
+     "save": cmd_save, "pick_v2": cmd_pick_v2, "atlas_na_hunts": cmd_atlas_na_hunts}[cmd]()
