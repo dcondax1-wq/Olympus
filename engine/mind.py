@@ -702,8 +702,10 @@ def calibration_line(C: dict | None = None) -> str:
                 for k, v in sp.items() if v and v.get("n")]
         rev = ((c.get("reverse") or {}).get("spans") or {})
         rv = [f"{k} {float((v or {}).get('spread_r') or 0):+.2f}R (p {float((v or {}).get('p_perm') or 1):.2f})" for k, v in rev.items() if v and v.get("n")]
+        rp = (c.get("reverse") or {}).get("passes")
         out.append(f"{nm}: " + ("PREDICTS" if c.get("valid") else "does NOT predict") + " (fit 2026 H1; " + "; ".join(bits) + ")"
-                   + (f"; with 2021-25 as memory: {', '.join(rv)}" if rv else ""))
+                   + (f"; with years of memory (fit 2021-25 / 2021-24): {', '.join(rv)}"
+                      + (" - holds" if rp else " - not confirmed") if rv else ""))
     if not out:
         return "No calibration yet (python -X utf8 tools/mind_build.py)."
     return "Similar-setup memory, out of sample: " + " | ".join(out) + ". Not predictive = shown as context only, no confidence claims."

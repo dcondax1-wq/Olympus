@@ -559,8 +559,8 @@ part yourself or fold it into a script.**
   trend vs the trade, prior-day range ratio, day position, ATR ratio; LIT depth / displacement / inducements / stop ATR / R to
   the band / level family; ATLAS member; BLITZ first-hour ratio) + live / paper trades as they close
   (`logs/mind/<bot>_live.jsonl`); k nearest -> `similar[bot]`. Calibration `research/mind/calibration.json` (fit 2026 H1,
-  check H2 + 2021-25): NOT predictive for any bot -> `valid: false`, conf "low", "context only" (reverse check fit 2021-25:
-  ATLAS separates 2026, p 0.03 both halves: a lead). (2) Regime per 5m bar + trend-day odds from 10:30 ET (logistic, fit H1:
+  check H2 + 2021-25): NOT predictive for any bot -> `valid: false`, conf "low", "context only" (fit 2021-25 -> 2026:
+  ATLAS separates 2026, p 0.03 both halves, but fit 2021-24 -> 2025 shows nothing: not confirmed). (2) Regime per 5m bar + trend-day odds from 10:30 ET (logistic, fit H1:
   AUC 0.66 H2 / 0.63 2021-25). (3) Game plans 01:45 ET (Zlarior, ATLAS) / 10:45 ET (BLITZ), sizes from `brain._sizing`,
   journal `logs/mind/plans.jsonl`. (4) Reviews of each closed trade (grade, luck / skill), `logs/mind/reviews.jsonl`
   (trades closed > 2 days ago are skipped). (5) Nightly research child after 16:05 ET (`python -m engine.mind research`,

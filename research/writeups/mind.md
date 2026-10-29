@@ -3,7 +3,7 @@ title: Mind - a thinking layer for Zlarior, ATLAS and BLITZ (similar-setup memor
 family: other
 date: 2026-10-29
 status: finding - read-only; similar-setup memory does NOT predict outcomes out of sample (shown as context only); the trend-day model is weak but real (AUC 0.66 H2, 0.63 2021-25); the first self-research run rejected all 22 of its own ideas; nothing adopted
-summary: Owner (2026-10-29) - "Give it a brain that's very smart. Can think for itself." engine/mind.py remembers every historical setup of each bot (631 Zlarior, 1,129 ATLAS, 330 BLITZ) with the features the live bot can compute, and for a live setup shows the nearest past setups (win %, average R, $ at today's size, 3 example days). Tested honestly (fit on 2026 H1, checked on 2026 H2 and 2021-25), similarity does not predict the outcome for any bot (Zlarior H2 rank correlation +0.00, top third of predictions made -0.30R less than the bottom third; ATLAS -0.25; BLITZ -0.05), so the dashboards show it as context only and it never claims confidence. With 5 years as memory (fit 2021-25) ATLAS similarity does separate 2026 (top third +1.7R / +1.8R vs bottom +0.5R / +0.2R, p 0.03 in each half): a lead, not a gate passed. A small logistic model gives the trend-day odds at 10:30 ET: AUC 0.66 on 2026 H2 and 0.63 on 2021-25; when it said >= 60%, 51% of 2021-25 days were trend days (base rate 33%). Mind writes an if-then game plan per bot at 01:45 / 10:45 ET, reviews every closed trade (grade, right / wrong, lesson, luck or skill) and runs a nightly self-research job that tests its own ideas on 2026 H1 (pick) / H2 (check) / 2021-25: the first run noticed 9 patterns, tested 22 size / skip rules (with its standing questions) and rejected all of them.
+summary: Owner (2026-10-29) - "Give it a brain that's very smart. Can think for itself." engine/mind.py remembers every historical setup of each bot (631 Zlarior, 1,129 ATLAS, 330 BLITZ) with the features the live bot can compute, and for a live setup shows the nearest past setups (win %, average R, $ at today's size, 3 example days). Tested honestly (fit on 2026 H1, checked on 2026 H2 and 2021-25), similarity does not predict the outcome for any bot (Zlarior H2 rank correlation +0.00, top third of predictions made -0.30R less than the bottom third; ATLAS -0.25; BLITZ -0.05), so the dashboards show it as context only and it never claims confidence. With 5 years as memory (fit 2021-25) ATLAS similarity did separate 2026 (top third +1.7R / +1.8R vs bottom +0.5R / +0.2R, p 0.03 in each half), but the same check a year earlier (fit 2021-24, check 2025) shows nothing (+0.23R / +0.24R): not confirmed. A small logistic model gives the trend-day odds at 10:30 ET: AUC 0.66 on 2026 H2 and 0.63 on 2021-25; when it said >= 60%, 51% of 2021-25 days were trend days (base rate 33%). Mind writes an if-then game plan per bot at 01:45 / 10:45 ET, reviews every closed trade (grade, right / wrong, lesson, luck or skill) and runs a nightly self-research job that tests its own ideas on 2026 H1 (pick) / H2 (check) / 2021-25: the first run noticed 9 patterns, tested 22 size / skip rules (with its standing questions) and rejected all of them.
 runs: none (no strategy change; research/mind/calibration.json, research/mind/proposals_seed.json)
 ---
 
@@ -58,16 +58,17 @@ bottom spread and p < 0.10. **No bot passes.** So the block carries `"valid": fa
 The checker itself works: on a synthetic store where R follows one feature it says "valid", on noise it says "not valid"
 (tests/test_mind.py).
 
-**The lead (not a pass):** the other way round, 5 years as memory (fit 2021-25) and 2026 as the check:
+**A lead that did not hold:** the other way round, years of memory and a later period as the check:
 
-| Bot | 2026 H1: top third / bottom third (p) | 2026 H2: top third / bottom third (p) |
-|---|---|---|
-| ATLAS | +1.71R / +0.54R (0.03) | +1.80R / +0.24R (0.03) |
-| Zlarior | +1.40R / +0.38R (0.09) | +1.72R / +0.62R (0.13) |
+| Bot | 2026 H1 (fit 2021-25): top / bottom third (p) | 2026 H2 (fit 2021-25) | 2025 (fit 2021-24) |
+|---|---|---|---|
+| ATLAS | +1.71R / +0.54R (0.03) | +1.80R / +0.24R (0.03) | +0.23R / +0.24R (0.50) |
+| Zlarior | +1.40R / +0.38R (0.09) | +1.72R / +0.62R (0.13) | +0.12R / -0.00R (0.34) |
 
-80-221 setups (one half-year) are too few to find neighbours; 1,000 setups may be enough for ATLAS. It is reported in the
-block's calibration line, but the verdict stays "context only" until the H1 protocol passes too (more live trades join the
-memory every day: `logs/mind/<bot>_live.jsonl`).
+With 5 years as memory ATLAS similarity separated both 2026 halves, but the same check one year earlier (2021-24 as memory,
+2025 as the check) shows nothing: the 2026 separation is more likely "2026 looked like the good years" than a skill of the
+memory. So: not predictive anywhere, context only. The memory keeps growing with every live / paper trade
+(`logs/mind/<bot>_live.jsonl`) and `python -X utf8 tools/mind_build.py` re-runs all three checks.
 
 ## 2. Regime and trend-day odds
 

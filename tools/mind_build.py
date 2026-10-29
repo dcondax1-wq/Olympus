@@ -189,8 +189,14 @@ def calibrate(store):
                 m = (days >= sp[0]) & (days <= sp[1])
                 if m.sum() >= 9:
                     alt[nm] = MD.evaluate(mem2, f2, m)
+        f3 = (days >= "2021-01-01") & (days <= "2024-12-31")             # a third, independent split: 2021-24 memory -> 2025
+        m3 = (days >= "2025-01-01") & (days <= "2025-12-31")
+        if f3.sum() >= 50 and m3.sum() >= 9:
+            alt["2025 (fit 2021-24)"] = MD.evaluate(MD.Memory(bot, cols, rows, fit=f3), f3, m3)
+        big_ok, big_note = MD.judge(alt) if alt else (False, "no 5-year history")
         out[bot] = {"fit": "2026 H1", "k": MD.SPEC[bot]["k"], "n_fit": int(fit.sum()), "n": len(rows), "spans": spans,
-                    "valid": bool(valid), "note": note, "reverse": {"fit": "2021-25", "spans": alt}}
+                    "valid": bool(valid), "note": note,
+                    "reverse": {"fit": "2021-25 (2025: fit 2021-24)", "spans": alt, "passes": bool(big_ok), "note": big_note}}
         print(bot, json.dumps(out[bot]), flush=True)
     return out
 
