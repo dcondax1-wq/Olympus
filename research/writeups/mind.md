@@ -131,8 +131,11 @@ was not noticed on before the H2 check counts.
 
 ## Numbers that matter for the PC
 
-- Compute: about 0.2-0.3 s per new 5m bar in Mind's own thread (bars rebuilt, features, memory, plans, reviews); the poll
-  thread only checks a key (pc_tick 0.9 ms). Nothing in the trading poll: tests/test_poll_speed unchanged.
+- Compute: about 45-80 ms per new 5m bar in Mind's own thread (bars rebuilt, features, memory, plans, reviews; 200 ms the
+  first time, when the TradingView export is read), measured with a 12-day 1m store and 400 5m bars. The poll thread only
+  checks a key (pc_tick 1-3 ms) and Mind only starts 15-45 s into a minute, never on the polls right after a bar close.
+  While Mind computes, a 5 ms loop on the main thread was delayed by at most 5.7 ms (p99 5.0 ms: Python's thread switch).
+  Nothing in the trading poll: tests/test_poll_speed unchanged.
 - Sizes: the heartbeat / phone cut stays under 12 KB (a huge synthetic block: 11.7 KB); the memory file is 280 KB.
 
 ## What is left
