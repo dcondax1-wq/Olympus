@@ -425,7 +425,8 @@ def save_last(payload: dict, res: dict, path: str = LAST_PATH):
         with open(tmp, "w", encoding="utf-8") as fh:
             json.dump({"saved_t": int(time.time()), "push": {"at": int(time.time()), **(res or {})}, "payload": payload}, fh,
                       separators=(",", ":"), default=str)
-        os.replace(tmp, path)
+        from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+        _fs_replace(tmp, path)
     except Exception:
         pass
 

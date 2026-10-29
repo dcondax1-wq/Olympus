@@ -21,9 +21,12 @@
 // ------------------------------------------------------------------ helpers
 const ETF = (() => { try { return new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }); } catch { return null; } })();
 const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+// US Eastern UTC offset (s) by the US rule (EDT from the 2nd Sunday of March 07:00 UTC to the 1st Sunday of November 06:00 UTC):
+// only for a browser without Intl time zones (was a fixed -4 h: an hour off from Nov 1 to Mar 8)
+function usEtOff(t) { const y = new Date(t * 1000).getUTCFullYear(), sun = (m, n) => 1 + ((7 - new Date(Date.UTC(y, m, 1)).getUTCDay()) % 7) + 7 * (n - 1); return t >= Date.UTC(y, 2, sun(2, 2), 7) / 1000 && t < Date.UTC(y, 10, sun(10, 1), 6) / 1000 ? -4 * 3600 : -5 * 3600; }
 export function et(ts) {
   const d = new Date(ts * 1000);
-  if (!ETF) { const e = new Date(d.getTime() - 4 * 3600e3); return { y: e.getUTCFullYear(), mo: e.getUTCMonth() + 1, d: e.getUTCDate(), h: e.getUTCHours(), mi: e.getUTCMinutes(), wd: WD[e.getUTCDay()], dow: (e.getUTCDay() + 6) % 7, date: e.toISOString().slice(0, 10), min: e.getUTCHours() * 60 + e.getUTCMinutes() }; }
+  if (!ETF) { const e = new Date(d.getTime() + usEtOff(ts) * 1000); return { y: e.getUTCFullYear(), mo: e.getUTCMonth() + 1, d: e.getUTCDate(), h: e.getUTCHours(), mi: e.getUTCMinutes(), wd: WD[e.getUTCDay()], dow: (e.getUTCDay() + 6) % 7, date: e.toISOString().slice(0, 10), min: e.getUTCHours() * 60 + e.getUTCMinutes() }; }
   const P = {}; for (const p of ETF.formatToParts(d)) P[p.type] = p.value;
   const h = (+P.hour) % 24, mi = +P.minute;
   return { y: +P.year, mo: +P.month, d: +P.day, h, mi, wd: P.weekday, dow: (WD.indexOf(P.weekday) + 6) % 7, date: `${P.year}-${P.month}-${P.day}`, min: h * 60 + mi };

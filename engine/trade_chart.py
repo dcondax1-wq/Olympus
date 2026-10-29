@@ -1377,7 +1377,8 @@ class Store:
         tmp = os.path.join(self.root, "index.json.tmp")
         with open(tmp, "w", encoding="utf-8") as fh:
             json.dump(self.ix, fh, indent=1, default=str)
-        os.replace(tmp, os.path.join(self.root, "index.json"))
+        from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+        _fs_replace(tmp, os.path.join(self.root, "index.json"))
 
 
 SLIM = ("id", "key", "short", "tid", "day", "entry_t", "exit_t", "side", "dir", "entry", "stop", "target", "exit", "exit_kind", "r",

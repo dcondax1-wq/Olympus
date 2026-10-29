@@ -638,7 +638,8 @@ def _save(reg):
     tmp = REG_PATH + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(reg, fh, indent=1, default=lambda o: float(o) if isinstance(o, np.floating) else int(o) if isinstance(o, np.integer) else str(o))
-    os.replace(tmp, REG_PATH)
+    from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+    _fs_replace(tmp, REG_PATH)
 
 
 def _merge_history(old, new, today, run_id):

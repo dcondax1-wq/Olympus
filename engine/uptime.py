@@ -176,7 +176,8 @@ def pc_hook(payload: dict, path: str | None = None, now: int | None = None) -> d
         tmp = path + ".tmp"
         with open(tmp, "w", encoding="utf-8") as fh:
             json.dump(U, fh, separators=(",", ":"))
-        os.replace(tmp, path)
+        from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+        _fs_replace(tmp, path)
         return U
     except Exception:
         return None

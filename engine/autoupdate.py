@@ -79,7 +79,8 @@ def save_state(s: dict, path: str = STATE_PATH):
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(s, f, indent=1)
-    os.replace(tmp, path)
+    from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+    _fs_replace(tmp, path)
 
 
 def is_enabled(state: dict | None = None, env=None) -> bool:

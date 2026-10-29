@@ -257,7 +257,8 @@ def archive_add(sym: str, tf: str, df, root: str | None = None, now: int | None 
             out = out[out["time"] >= now - keep_s]
             tmp = p + ".tmp"
             out.to_csv(tmp, index=False)
-            os.replace(tmp, p)
+            from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+            _fs_replace(tmp, p)
             return {"added": len(out) - len(old), "shift": sh, "rewritten": True}
         add = new[new["time"] > last]
         if len(add):

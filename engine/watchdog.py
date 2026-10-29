@@ -69,7 +69,8 @@ def save(cfg: dict, tradovate_env: str = "demo", path: str = AUTOSTART_PATH, now
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(rec, f, indent=1)
-    os.replace(tmp, path)
+    from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+    _fs_replace(tmp, path)
     return rec
 
 

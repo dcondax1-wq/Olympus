@@ -169,7 +169,8 @@ def save_done(d: dict, path: str = DONE_PATH):
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(d, f, indent=1)
-    os.replace(tmp, path)
+    from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+    _fs_replace(tmp, path)
 
 
 def hb_field(path: str | None = None, env=None, now=None) -> dict:

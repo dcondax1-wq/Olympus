@@ -215,7 +215,8 @@ class Broker:
             tmp = self.state_path + ".tmp"
             with open(tmp, "w", encoding="utf-8") as fh:
                 json.dump(self.state, fh, indent=1)
-            os.replace(tmp, self.state_path)
+            from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+            _fs_replace(tmp, self.state_path)
         except OSError:
             pass
 

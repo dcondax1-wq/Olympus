@@ -416,27 +416,12 @@ def early_close(day: str) -> int | None:
     """ET minute at which CME equity futures halt early on this trading date (US holidays 13:00 = 12:00 CT; the day after
     Thanksgiving and Christmas Eve 13:15 = 12:15 CT, CME product calendar per the LIT report ch.28; Good Friday 09:15 when
     it trades at all), else None. Closes a paper position the backtest closes at the day's last bar, and moves the
-    NinjaTrader adapter's flat time / entry cutoff before the halt (engine/ninjatrader.py)."""
-    d = dt.date.fromisoformat(day)
-    y = d.year
-    jul4 = dt.date(y, 7, 4)
-    jul4 = jul4 + dt.timedelta(days=1) if jul4.weekday() == 6 else jul4 - dt.timedelta(days=1) if jul4.weekday() == 5 else jul4
-    jun19 = dt.date(y, 6, 19)
-    jun19 = jun19 + dt.timedelta(days=1) if jun19.weekday() == 6 else jun19 - dt.timedelta(days=1) if jun19.weekday() == 5 else jun19
-    hol = {_nth_weekday(y, 1, 0, 3), _nth_weekday(y, 2, 0, 3), _nth_weekday(y, 5, 0, -1), jun19, jul4, _nth_weekday(y, 9, 0, 1),
-           _nth_weekday(y, 11, 3, 4), _nth_weekday(y, 11, 3, 4) + dt.timedelta(days=1), dt.date(y, 12, 24)}
-    if d == _nth_weekday(y, 11, 3, 4) + dt.timedelta(days=1) or d == dt.date(y, 12, 24):
-        return 13 * 60 + 15
-    # BUG_FIX (A1 audit 2026-10-25, tests/test_a1_timing.py): July 3 closes 12:15 CT = 13:15 ET when July 4 itself is a
-    # Tuesday-Friday (data/NQ_5m.csv: 2023-07-03, 2024-07-03, 2025-07-03 end with the 13:10 bar). No 2026 date changes
-    # (July 4 2026 is a Saturday: July 3 is the observed holiday, 13:00 below).
-    if d == dt.date(y, 7, 3) and 1 <= dt.date(y, 7, 4).weekday() <= 4:
-        return 13 * 60 + 15
-    if d in hol:
-        return 13 * 60
-    if d == _easter(y) - dt.timedelta(days=2):
-        return 9 * 60 + 15
-    return None
+    NinjaTrader adapter's flat time / entry cutoff before the halt (engine/ninjatrader.py).
+    2026-10-29: the calendar lives in engine/cme_calendar.py (one source for every strategy and the market-open checks);
+    same values on every date with bars (tests/test_holidays.py: 2015-2040 vs the old rule, only the Christmas-on-Saturday
+    Fridays differ: 2021-12-24 / 2027-12-24 are full closures, not 13:15 closes)."""
+    from engine import cme_calendar
+    return cme_calendar.early_close(day)
 
 
 def _session_over(day: str, now: int, last_close: int | None = None) -> bool:

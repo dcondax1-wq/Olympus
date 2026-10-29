@@ -197,7 +197,8 @@ def save_file(rows: list, path: str = ACCOUNTS_PATH):
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump({"v": VERSION, "accounts": clean}, fh, indent=1)
-    os.replace(tmp, path)
+    from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+    _fs_replace(tmp, path)
 
 
 def rules_of(spec: dict) -> dict:
@@ -570,6 +571,16 @@ class Account:
         r = self.in_news(now)
         if r is not None:
             return f"news ban: Tier-1 release at {_et(r):%H:%M} ET"
+        try:                              # 2026-10-29: CME holidays (engine/cme_calendar.py), like LIT's / ATLAS's calendar guard
+            from . import cme_calendar as _cc
+            if _cc.full_closure(today):
+                return f"CME holiday ({today}: no session)"
+            e_ = _et(now)
+            m_ = e_.hour * 60 + e_.minute
+            if _cc.early_close(today) is not None and m_ < 1080 and m_ >= _cc.entry_cut(today, 955):
+                return f"CME early close today (no entry after {_cc.entry_cut(today) // 60:02d}:{_cc.entry_cut(today) % 60:02d} ET)"
+        except Exception:
+            pass
         if self.mode in EVAL_MODES + ("funded", "auto"):
             st = None
             try:
@@ -1063,7 +1074,8 @@ class AccountRouter:
                 tmp = self.state_path + ".tmp"
                 with open(tmp, "w", encoding="utf-8") as fh:
                     json.dump(blob, fh, default=str)
-                os.replace(tmp, self.state_path)
+                from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+                _fs_replace(tmp, self.state_path)
             except Exception as e:
                 self.log("warn", f"accounts state save failed: {e.__class__.__name__}: {e}")
 

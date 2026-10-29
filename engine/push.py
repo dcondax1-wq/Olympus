@@ -110,7 +110,8 @@ def _write_private(path, obj):
     fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(fd, "w", encoding="utf-8") as fh:
         json.dump(obj, fh)
-    os.replace(tmp, path)
+    from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+    _fs_replace(tmp, path)
 
 
 def ensure_key_file(path: str) -> dict:
@@ -651,7 +652,8 @@ class Notifier:
             tmp = self.path + ".tmp"
             with open(tmp, "w", encoding="utf-8") as fh:
                 json.dump(self.sent, fh)
-            os.replace(tmp, self.path)
+            from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+            _fs_replace(tmp, self.path)
         except Exception:
             pass
 

@@ -1890,7 +1890,8 @@ def set_route(key: str, on: bool, path: str | None = None, selftest=_selftest_ok
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         fh.write(new)
-    os.replace(tmp, path)
+    from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+    _fs_replace(tmp, path)
     return {"ok": True, "key": key, "from": old, "to": bool(on), "label": sc.get("label") or key}
 
 

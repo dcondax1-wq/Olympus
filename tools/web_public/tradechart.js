@@ -28,12 +28,15 @@ const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 // ET wall clock of epoch t with the record's fixed day offset (exact for a session: DST never changes inside one)
 function etc(t, off) { const d = new Date((t + off) * 1000); return { h: d.getUTCHours(), mi: d.getUTCMinutes(), wd: WD[d.getUTCDay()], date: d.toISOString().slice(0, 10) }; }
 const hm = (t, off) => { const e = etc(t, off); return `${pad2(e.h)}:${pad2(e.mi)}`; };
+// US Eastern UTC offset (s) by the US rule (EDT from the 2nd Sunday of March 07:00 UTC to the 1st Sunday of November 06:00 UTC):
+// only for a browser without Intl time zones (was a fixed -4 h: an hour off from Nov 1 to Mar 8)
+function usEtOff(t) { const y = new Date(t * 1000).getUTCFullYear(), sun = (m, n) => 1 + ((7 - new Date(Date.UTC(y, m, 1)).getUTCDay()) % 7) + 7 * (n - 1); return t >= Date.UTC(y, 2, sun(2, 2), 7) / 1000 && t < Date.UTC(y, 10, sun(10, 1), 6) / 1000 ? -4 * 3600 : -5 * 3600; }
 function etOffset(t) {
   try {
     const f = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
     const P = {}; for (const p of f.formatToParts(new Date(t * 1000))) P[p.type] = p.value;
     return Math.round((Date.UTC(+P.year, +P.month - 1, +P.day, +P.hour % 24, +P.minute) / 1000 - Math.floor(t / 60) * 60) / 3600) * 3600;
-  } catch { return -4 * 3600; }
+  } catch { return usEtOff(t); }
 }
 export function idOf(t) {
   const off = etOffset(+t.entry_t), e = etc(+t.entry_t, off);
