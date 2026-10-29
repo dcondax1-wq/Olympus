@@ -3,7 +3,7 @@ title: BLITZ on its own MFFU Builder 25K (account C) - keep today's rule; tradin
 family: other
 date: 2026-10-29
 status: no adopt-candidate - no BLITZ rule change holds in 2026 H1, H2 and 2021-25 (0 of 1,997 variants); verdict no-change (research/scalp/blitz_25k_pick.json). Only the 25K eval size for its own account changes (40% of the room, then 100% from session 5): about 72% of evals decided in 2 weeks instead of 40%, same money. The 25K slot still loses about $40 a month in 2021-25 with every setting. Paper only, nothing switched.
-summary: Owner 2026-10-28/29 - BLITZ gets its own MFFU Builder 25K next week; make it trade "like a person, not a fixed rr" and "learn market structure", judged on money and eval speed. Every variant ran as account C (never opposite LIT or ATLAS, closed first at their opposite entry), 2026 on 1m bars (pick on Jan-Jun, check on Jul-Oct 16), 2021-25 the same rule on 5m bars, costs in ($1.90 a micro, 1 tick on market / stop fills, same-bar tie = loss). The anti-hedge rule costs nothing in 2026 (+$51 / +$90 a month at $150 a trade, 14 of 330 trades change) and $16 a month in 2021-25. Structure stops (45: last 1m / 5m swing, the move's low, min / max caps) are worse in H1 and lose in 2021-25. Targets at the next liquidity, partials at the first level, swing trails, change-of-character exits and no clock (1,920 variants on 5 stops): 18 beat today in H1 on avg R and $ a month, 4 also in H2 and 2021-25, none also on the 25K eval. Opening drive, London continuation, retest limit entries and 15m / 1h structure filters (32): none. Today's rule on the 25K, best size picked on H1 (40% of the room, 100% from session 5; funded 1 micro, +$400 day stop): 2-week pass / fail 36.1 / 37.8, 36.2 / 34.8, 20.4 / 50.2 (H1 / H2 / 2021-25), decided in 2 weeks 74 / 71 / 71%, slot $270 / $37 / -$40 a month; today's paper size $251 / $40 / -$34 with only 29-41% decided. Random-direction trades make the same H2 slot money ($30): outside H1 the 25K is an eval lottery.
+summary: Owner 2026-10-28/29 - BLITZ gets its own MFFU Builder 25K next week; make it trade "like a person, not a fixed rr" and "learn market structure", judged on money and eval speed. Every variant ran as account C (never opposite LIT or ATLAS, closed first at their opposite entry), 2026 on 1m bars (pick on Jan-Jun, check on Jul-Oct 16), 2021-25 the same rule on 5m bars, costs in ($1.90 a micro, 1 tick on market / stop fills, same-bar tie = loss). The anti-hedge rule costs nothing in 2026 (+$51 / +$90 a month at $150 a trade; of 330 trades 12 skipped, 5 added, 1 closed early) and $16 a month in 2021-25. Structure stops (45: last 1m / 5m swing, the move's low, min / max caps) make less than today in H1 and 2021-25 (most lose in 2021-25). Targets at the next liquidity, partials at the first level, swing trails, change-of-character exits and no clock (1,920 variants on 5 stops): 18 beat today in H1 on avg R and $ a month, 4 also in H2 and 2021-25, none also on the 25K eval. Opening drive, London continuation, retest limit entries and 15m / 1h structure filters (32): none. Today's rule on the 25K, best size picked on H1 (40% of the room, 100% from session 5; funded 1 micro, +$400 day stop): 2-week pass / fail 36.1 / 37.8, 36.2 / 34.8, 20.4 / 50.2 (H1 / H2 / 2021-25), decided in 2 weeks 74 / 71 / 71%, slot $270 / $37 / -$40 a month; today's paper size $251 / $40 / -$34 with only 29-41% decided. Random-direction trades make the same H2 slot money ($30): outside H1 the 25K is an eval lottery.
 runs: blitz25k_today_acct_c, blitz25k_h1pick, blitz25k_structure
 ---
 
@@ -65,9 +65,9 @@ In plain words:
 
 "Added" = a later check that could trade because the skipped one no longer held the slot. **It costs nothing in 2026** (the
 12 skipped 2026 trades averaged -0.14R: against LIT's or ATLAS's open side BLITZ mostly lost) and about $16 a month at $150
-a trade in 2021-25 (there the 44 skipped trades averaged +0.11R). The stricter
-version, also never opposite a LIT setup that is armed (limit working / waiting for its 1m CISD), is as good: $1,006 /
-$661 / $100 a month at $150. The engine can use the strict version.
+a trade in 2021-25 (there the 44 skipped trades averaged +0.11R). The stricter version, also never opposite a LIT setup
+that is armed (limit working / waiting for its 1m CISD), is as good: $1,006 / $661 / $100 a month at $150. The engine can
+use the strict version.
 
 ## The rule (exact) - unchanged, plus account C and the 25K size
 
@@ -109,8 +109,9 @@ skipped). Size follows the stop (the same $ risk, more micros on a tight stop).
 | 1.0 x ATR / 2.0 x ATR | +0.120 / $498, +0.113 / $881 | +0.052 / $104, +0.102 / $266 | +0.005 / $64, +0.015 / $109 | |
 
 **Every structure stop makes less than today in 2021-25 (most lose money: -$168 to +$44 a month vs +$73)** and none
-beats today's H1 t-stat. A swing right behind a momentum close is inside the normal noise of the move: a tight structure stop gets hit by the next wiggle (raw 1m swings: about 26 points,
--0.10R a trade in H1). The fixed-ATR stop is the "protected" distance for this kind of entry.
+beats today's H1 t-stat. A swing right behind a momentum close is inside the normal noise of the move: a tight structure
+stop gets hit by the next wiggle (raw 1m swings: about 26 points, -0.10R a trade in H1). The fixed-ATR stop is the
+"protected" distance for this kind of entry.
 
 **2. Targets and management "like a person" (1,920 variants on 5 stops: today's, 1.0 / 2.0 x ATR, the two best structure
 stops).** Three families:
@@ -128,15 +129,17 @@ stops).** Three families:
 |---|---:|---:|---:|---:|
 | **today** | **+0.165 / $963** | **+0.200 / $667** | **+0.013 / $73** | **$266 / $38 / -$39** |
 | clock: 60-min low stop, half at the first liquidity level, 45 min, trail 1R from +0.5R (the overall H1 pick) | +0.256 / $770 | +0.172 / $410 | -0.038 / -$128 | $284 / $17 / -$69 |
-| structure target: 60-min low stop, half at the first level, runner to equal highs / lows (1-4R), 60 min | +0.357 / $901 | +0.453 / $685 | +0.026 / $59 | $224 / $137 / -$33 |
-| structure management: 1m swing trail from +0.5R, out on a 1m change of character, half at the first level, runner to equal highs / lows, no clock | +0.146 / $746 | +0.098 / $462 | +0.024 / $127 | $249 / $55 / -$38 |
-| best for the 25K eval on H1: 5m swing trail, 1m change of character, half at the first level, no clock | +0.127 / $610 | +0.063 / $229 | +0.015 / $84 | $167 / -$28 / -$41 |
+| structure target: 60-min low stop, half at the first level >= 1R (then breakeven), runner to equal highs / lows (1-4R), 60 min | +0.357 / $901 | +0.453 / $685 | +0.026 / $59 | $224 / $137 / -$33 |
+| structure management: 1m swing trail from +0.5R, out on a 1m change of character, half at the first level >= 0.5R (then breakeven), runner to equal highs / lows >= 1.5R, no clock | +0.146 / $746 | +0.098 / $462 | +0.024 / $127 | $249 / $55 / -$38 |
+| best for the 25K eval on H1: 5m swing trail from entry, 1m change of character, half at the first level >= 0.5R, no clock | +0.127 / $610 | +0.063 / $229 | +0.015 / $84 | $167 / -$28 / -$41 |
 
+- Today's own H1 size pick in this stage was the push from session 8 ($266 / $38 / -$39); the finer grid of today's rule
+  picked the push from session 5 ($270 / $37 / -$40, the tables above).
 - **Carry-over:** 18 of the 1,920 beat today in H1 on both avg R and $ a month; 4 of those also in H2 and 2021-25 (all with
   the 1.0 x ATR stop: three with a 45-minute clock and no trail, e.g. +$1,009 / +$1,043 / +$283 a month at $150 a trade, one
   with a 5m swing trail and change-of-character exit); **none also on the 25K eval** (their H2 2-week fail is 38-49% vs 33%
-  at 60% of the room: a tighter stop loses more often in a row). Their whole 25K
-  slot is $234 / $62 / $12 a month, worse than today in H1, so they fail the H1 gate too.
+  at 60% of the room: a tighter stop loses more often in a row). Their whole 25K slot is $234 / $62 / $12 a month, worse
+  than today in H1, so they fail the H1 gate too.
 - Structure management ("like a person") lowers the swings: on a funded 25K at the same size (1 micro, +$400 day stop) the
   accounts got stuck far less in 2026 (H1 0% vs 45%, H2 33% vs 100%; 2021-25 38% vs 29%). But it cuts the winners on trend
   days, where BLITZ earns: about -$200 a month in H1 and -$80 to -$200 in H2 at $150 a trade, and the eval passes less.
@@ -199,8 +202,8 @@ in both stages; 0 of 24 funded sizes beat today's slot in all three spans. Rejec
   the eval engine equals scalp_na_lib's eval and slot (`tools/blitz25k_size.py selfcheck`). Hand-checked skips and hedge
   cuts (e.g. 2026-03-20 11:30 short skipped while LIT was long 11:25-12:32; 2026-08-06 11:00 long closed at 11:15 when the
   other account went short).
-- **Multiple testing**: 1,997 rule variants (+ 24 eval / funded hybrids). Picking on H1 alone found nothing that held; the 4 that held on money in all
-  three spans were found by looking at all three, and they fail the 25K eval anyway.
+- **Multiple testing**: 1,997 rule variants (+ 24 eval / funded hybrids). Picking on H1 alone found nothing that held; the
+  4 that held on money in all three spans were found by looking at all three, and they fail the 25K eval anyway.
 - **What is not modelled**: 2021-25 is the same rule on 5m bars (coarser fills; the 1m swings are 5m swings of strength 1
   there); LIT / ATLAS clashes come from their research trades (2026 lit_live, 2021-25 5m REF rows; ATLAS = account B's
   research trades); MFFU's funded payout rules as in scalp_na_lib (50% best-day, 5 payouts); H2 funded = only 6 starts.

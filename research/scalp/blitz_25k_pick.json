@@ -4,6 +4,48 @@
  "writeup": "research/writeups/blitz-25k.md",
  "verdict": "no-change",
  "why": "No stop / target / management / window / entry variant beat today's rule in 2026 H1, H2 AND 2021-25 (0 of 1,920 management variants, 0 of 45 stops, 0 of 32 window / entry / structure-filter ideas on avg R, $ / month and the 25K 2-week pass - fail together); the H1 picks lose in H2 or 2021-25. Today's rule stays. Only the 25K eval SIZING changes for its own account (below).",
+ "engine": {
+  "blitz_rule": {
+   "vm": 1.0,
+   "every": 30,
+   "win": [
+    630,
+    930
+   ],
+   "lookback": 14,
+   "stop_atr": 1.5,
+   "trail_r": 1.5,
+   "trail_start_r": 1.0,
+   "hold_bars": 30,
+   "target_r": null,
+   "maxday": 6,
+   "day_stop_r": 3.0,
+   "prng_min": 0.8,
+   "entry": "market next open"
+  },
+  "account_c": {
+   "no_hedge_with": [
+    "lit",
+    "atlas"
+   ],
+   "skip_entry_if_opposite_open": true,
+   "close_first_on_opposite_entry": true,
+   "strict_lit_armed": false
+  },
+  "eval_25k": {
+   "f": 0.4,
+   "cap_usd": 600.0,
+   "push_from_session": 5,
+   "push_f": 1.0,
+   "dll_frac": 0.9,
+   "min1_micro": true
+  },
+  "funded_25k": {
+   "f": 0.1,
+   "cap_usd": 150.0,
+   "day_profit_stop_usd": 400.0
+  }
+ },
  "rule": {
   "name": "BLITZ",
   "version": "today (engine/blitz.py VERSION 2, research/writeups/scalp-na-mffu.md)",
@@ -244,6 +286,23 @@
    "real": 0.013,
    "mean": -0.044,
    "p": 0.024
+  }
+ },
+ "random_directions_slot_usd_month": {
+  "H1": {
+   "mean": -49,
+   "max": 116,
+   "real": 270
+  },
+  "H2": {
+   "mean": 30,
+   "max": 282,
+   "real": 37
+  },
+  "R": {
+   "mean": -67,
+   "max": -50,
+   "real": -40
   }
  },
  "stress": {

@@ -137,6 +137,13 @@ def pick_file(pk, sz, base, mg, ck):
            "why": ("No stop / target / management / window / entry variant beat today's rule in 2026 H1, H2 AND 2021-25 (0 of 1,920 management "
                    "variants, 0 of 45 stops, 0 of 32 window / entry / structure-filter ideas on avg R, $ / month and the 25K 2-week pass - fail together); "
                    "the H1 picks lose in H2 or 2021-25. Today's rule stays. Only the 25K eval SIZING changes for its own account (below)."),
+           "engine": {"blitz_rule": {"vm": 1.0, "every": 30, "win": [630, 930], "lookback": 14, "stop_atr": 1.5, "trail_r": 1.5, "trail_start_r": 1.0,
+                                     "hold_bars": 30, "target_r": None, "maxday": 6, "day_stop_r": 3.0, "prng_min": 0.8, "entry": "market next open"},
+                      "account_c": {"no_hedge_with": ["lit", "atlas"], "skip_entry_if_opposite_open": True, "close_first_on_opposite_entry": True,
+                                    "strict_lit_armed": False},
+                      "eval_25k": {"f": ez["f"], "cap_usd": ez["cap"], "push_from_session": ez["push"][0] if ez.get("push") else None,
+                                   "push_f": ez["push"][1] if ez.get("push") else None, "dll_frac": 0.9, "min1_micro": True},
+                      "funded_25k": {"f": fz["f"], "cap_usd": fz["cap"], "day_profit_stop_usd": fz.get("day_tp")}},
            "rule": rule, "sizing": sizing, "numbers": nums,
            "paper_size_for_comparison": {"name": paper["name"], **{sp: {"p10": paper["today"][sp]["eval"]["p10"], "f10": paper["today"][sp]["eval"]["f10"],
                                                                          "dec10": paper["today"][sp]["eval"]["dec10"], "slow_pass": paper["today"][sp]["eval"]["slow_pass"],
@@ -150,7 +157,7 @@ def pick_file(pk, sz, base, mg, ck):
            "account_c_cost": {sp: {"alone_usd_month_150": base["alone"][sp]["per_month"], "account_c_usd_month_150": base["lit+atlas"][sp]["per_month"],
                                    "alone_slot": pk["today_alone"][sp]["slot"]["life_pm"], "account_c_slot": pk["today"][sp]["slot"]["life_pm"]}
                               for sp in ("H1", "H2", "R")},
-           "random_directions": ck["placebo"], "stress": ck["stress"],
+           "random_directions": ck["placebo"], "random_directions_slot_usd_month": sz["placebo"], "stress": ck["stress"],
            "rejected_best": {"h1_pick": BG.vname(mg["pick"]["v"]) if mg.get("pick") else None,
                              "rule_slots": {k: {"name": BG.vname(v["v"]), **{sp: v["slot"][sp]["life_pm"] for sp in ("H1", "H2", "R")}}
                                             for k, v in sizeg["picks"].items()}},
