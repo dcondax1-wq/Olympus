@@ -192,10 +192,10 @@
         <span>stop ${px(A.pos.stop)} = <i class="dn">${smoney(A.pos.atStop)}</i></span><span>target ${px(A.pos.target)} = <i class="up">${smoney(A.pos.atTgt)}</i></span>${okN(A.pos.unreal) ? `<span>now <i class="${cls(A.pos.unreal)}">${smoney(A.pos.unreal)}</i></span>` : ''}</div>` : '';
     const nums = A.placeholder
       ? `<div class="mc-nums"><div><em>Account</em><b>not live yet</b></div><div><em>Mode</em><b>paper</b></div></div>`
-      : `<div class="mc-nums"><div><em>Balance</em><b>${money(A.balance)}</b></div><div><em>To target</em><b>${okN(A.toTarget) && A.toTarget <= 0 ? 'passed' : money(A.toTarget)}</b></div>
-          <div><em>Room to floor</em><b class="${okN(A.roomFrac) && A.roomFrac < 0.35 ? 'dn' : ''}">${money(A.room)}</b></div><div><em>Today</em><b class="${cls(A.today)}">${smoney(A.today)}</b></div></div>`;
+      : `<div class="mc-nums"><div><em>Balance</em><b data-dp-n="mc-${esc(A.key)}-bal">${money(A.balance)}</b></div><div><em>To target</em><b data-dp-n="mc-${esc(A.key)}-tgt">${okN(A.toTarget) && A.toTarget <= 0 ? 'passed' : money(A.toTarget)}</b></div>
+          <div><em>Room to floor</em><b data-dp-n="mc-${esc(A.key)}-room" class="${okN(A.roomFrac) && A.roomFrac < 0.35 ? 'dn' : ''}">${money(A.room)}</b></div><div><em>Today</em><b class="${cls(A.today)}">${smoney(A.today)}</b></div></div>`;
     const day = A.placeholder ? 'paper shadow' : okN(A.session) ? `eval day ${A.session} of ${A.sessions || 10}` : A.funded ? 'funded' : '';
-    return `<article class="mc-orbit ${big ? 'big' : ''} st-${A.state} lt-${lt}${A.placeholder ? ' ph' : ''}" style="--c:${A.color}" data-mc-acct="${esc(A.key)}">
+    return `<article class="mc-orbit dp-tilt ${big ? 'big' : ''} st-${A.state} lt-${lt}${A.placeholder ? ' ph' : ''}" style="--c:${A.color}" data-mc-acct="${esc(A.key)}">
       <div class="mc-planet" aria-hidden="true"><i class="mc-o1"></i><i class="mc-o2"></i><b class="mc-ball"></b><i class="mc-sat"></i></div>
       <header><span class="mc-name"><b>${esc(A.name)}</b> · ${esc(A.size || '')}</span><span class="mc-light ${lt}" title="health">${LBL[A.state]}</span></header>
       <p class="mc-sub">${esc(A.plan)}${A.placeholder ? ' · <b>paper / not live yet</b>' : A.paper ? ' · paper' : ''}${day ? ' · ' + esc(day) : ''}</p>
@@ -290,7 +290,8 @@
   function alertsList(M, As) {
     const B = obj(M.board), out = [];
     for (const l of arr(B.lines)) out.push({ lvl: l.level || 'warn', text: l.text });
-    for (const it of arr(obj(B.health).items)) if (it && (it.ok === false || it.warn)) out.push({ lvl: it.ok === false ? 'bad' : 'warn', text: `${it.label}: ${it.value}${it.detail ? ' · ' + it.detail : ''}${it.fix ? ' · Fix: ' + it.fix : ''}` });
+    const kinds = new Set(arr(B.lines).map((l) => l && (l.kind === 'poll' ? 'poll_ms' : l.kind)));     // a health item the board's lines already say
+    for (const it of arr(obj(B.health).items)) if (it && (it.ok === false || it.warn) && !kinds.has(it.key)) out.push({ lvl: it.ok === false ? 'bad' : 'warn', text: `${it.label}: ${it.value}${it.detail ? ' · ' + it.detail : ''}${it.fix ? ' · Fix: ' + it.fix : ''}` });
     for (const A of As) if (A.pos && okN(A.room) && okN(A.pos.atStop) && A.room + A.pos.atStop < (A.mll || 0) * 0.25) out.push({ lvl: 'warn', text: `${A.name}: a stop-out now leaves only ${money(A.room + A.pos.atStop)} of room.` });
     const nar = arr(M.lv && M.lv.narrator).filter((m) => m.level && m.level !== 'dim').slice(0, 6);
     for (const m of nar) out.push({ lvl: m.level === 'bad' ? 'bad' : m.level === 'good' ? 'good' : 'info', text: `${m.hm || ''} ${m.title || ''}: ${m.text || ''}`.trim() });
@@ -357,7 +358,7 @@
     const body = N.length ? `<ul class="mc-rows">${N.map((n) => `<li class="${esc(n.impact || '')}"><b>${etParts(n.t).wd} ${etParts(n.t).hm}</b><span>${esc(n.title)} · ${n.t > now ? cd(n.t, 'in') : 'now'}</span></li>`).join('')}</ul>` : '<p class="mc-muted">No big US news on the calendar for today.</p>';
     return card('news', 'Next news', 'High-impact events coming up, with a countdown', body);
   }
-  const card = (id, title, sub, body) => `<section class="card mc-card" data-mc-f="${id}"><header><h3>${esc(title)}</h3><p>${esc(sub)}</p></header>${body}</section>`;
+  const card = (id, title, sub, body) => `<section class="card mc-card dp-tilt" data-mc-f="${id}"><header><h3>${esc(title)}</h3><p>${esc(sub)}</p></header>${body}</section>`;
   const FEATURES = [
     ['mission', 'Mission Control', 'the three accounts as orbits with balance, $ to target, room, today, the open position with $ at stop / target, eval day, next window, the thinking line, a health light'],
     ['today', "Today's mission", 'one line per bot: what it is waiting for or doing right now'],

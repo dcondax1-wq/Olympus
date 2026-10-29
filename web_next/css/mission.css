@@ -138,6 +138,14 @@
 :root[data-theme="light"] .mc-strip, :root[data-theme="light"] .mc-page { --mc-ink: var(--ink, #0f172a); --mc-glass: linear-gradient(180deg, rgba(255,255,255,.92), rgba(248,250,255,.88)); }
 :root[data-theme="light"] .mc-mission li span, :root[data-theme="light"] .mc-think, :root[data-theme="light"] .mc-why ul { color: #334155; }
 :root[data-theme="light"] .mc-orbit, :root[data-theme="light"] .mc-chip { background: linear-gradient(170deg, color-mix(in srgb, var(--c) 10%, #fff), #f8fafc); }
+/* PC: cards lean toward the mouse with a light that follows it (web_next/js/next/depth.js sets --rx --ry --mx --my) */
+@media (hover: hover) and (pointer: fine) {
+  .mc-page .dp-tilt { transition: transform .3s ease; }
+  .mc-page .dp-tilt.dp-tilting { transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translate3d(0, -3px, 0); transition: transform .12s linear; }
+  .mc-page .dp-tilt.dp-tilting::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,.08), transparent 45%); }
+  .mc-page .dp-tilting .mc-planet { transform: translate3d(calc(var(--px, 0) * 7px), calc(var(--py, 0) * 6px), 0); transition: transform .12s linear; }
+}
 @media (max-width: 760px) {
   .mc-orbits { grid-template-columns: 1fr; gap: 12px; } .mc-grid { grid-template-columns: 1fr; gap: 12px; }
   .mc-hero h2 { font-size: 22px; } .mc-rows li { grid-template-columns: 66px 1fr; }

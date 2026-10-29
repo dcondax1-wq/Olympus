@@ -10,6 +10,7 @@
 import { $, esc } from '../util.js';
 import { boardData } from './board.js';
 import { fxBots, fxShoot, fxPnl, fxReady } from './fx3d.js';
+import { depth } from './depth.js';
 
 (function ensure() {
   for (const [href, v] of [['/css/mission.css', 1]]) {
@@ -64,6 +65,7 @@ async function draw(force) {
     : `<div class="card"><h3>Mission Control</h3><p class="muted">Waiting for the live board (GET /api/next/board).</p></div>`;
   if (open.length) el.querySelectorAll('details.mc-why').forEach((d, i) => { if (open[i] != null) d.open = open[i]; });
   window.MissionUI.wire(el);
+  depth(el.querySelector('.mc-page'), 'mission');          // count-up numbers + the mouse tilt (depth.js)
   if (!force) window.scrollTo(0, y);
   sync(M);
 }
