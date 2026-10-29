@@ -102,6 +102,10 @@ traded in H1 had a later break (23 of 28 in H2, 417 of 502 in 2021-25).
   pressed with the day's profit.
 - **Years (2021-25, 5m bars), 2-week pass / fail:** 2022 30.1 / 49.8 (today 24.9 / 50.2), 2023 25.3 / 49.0 (24.9 / 47.0),
   2024 22.0 / 61.2 (15.2 / 58.4), 2025 26.1 / 39.4 (20.9 / 48.2). Passes go up every year; fails go up in 2023 and 2024.
+- **Half-years and 2026 quarters:** pass minus fail is better in 9 of 13 periods. 2026 Q1 29.6 / 22.2 (today 31.5 / 40.7),
+  Q2 57.1 / 28.6 (37.5 / 33.9), Q3 22.8 / 26.3 (24.6 / 38.6). It is worse in 2021 H2 (44 sessions), 2023 H2 (17.5 / 56.7 vs
+  20.0 / 49.2) and 2024 H2 (15.6 / 69.7 vs 13.9 / 61.5); Oct 1-16 is the same. In a choppy half-year the press on later
+  breaks adds fails.
 - **Stress, 25K slot $ a month (pick vs today):**
   - +1 tick a side: $272 / $42 / -$48 vs $257 / $28 / -$49;
   - +2 ticks: $251 / $33 / -$54 vs $236 / $20 / -$59;
