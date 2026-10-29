@@ -118,8 +118,8 @@
         const at = el.querySelector(':scope > .cl-list');                // before "One tap away" (the hero cards stay first)
         if (at) el.insertBefore(box, at); else el.appendChild(box);
         if (DU && !w.__seen) { w.__seen = true; setTimeout(() => DU.markSeen(Date.now() / 1000), 8000); }   // "last looked" = this visit, after a moment
-        // the Mind and BLITZ's live layer ride in liveview.json: Home fetches it once (Live View's loader), at most every 5 min
-        if (!LV() && Date.now() - (w.__lvAt || 0) > 300000) { w.__lvAt = Date.now(); needLv(() => { if (typeof PAGE !== 'undefined' && PAGE === 'today' && typeof render === 'function') render(true); }); }
+        // Home never fetches liveview.json itself (the GitHub API's hourly budget is shared with live.json / the Holodeck): the
+        // Mind card shows from live.json / data.json, or from liveview.json once the BLITZ tab, Live View or the Mind page loaded it
       } catch (e) { console.warn('blitz home cards', e); }
     };
     Object.keys(h0).forEach((k) => { w[k] = h0[k]; });

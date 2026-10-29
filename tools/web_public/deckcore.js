@@ -140,8 +140,8 @@
         const C = arr(cone.cols), last = cone.rows[cone.rows.length - 1], s = +last[0], ix = (k) => C.indexOf(k);
         const mu = last[ix('p50')] / s, sd = (last[ix('p75')] - last[ix('p25')]) / 1.349 / Math.sqrt(s);
         est = walk(mu, sd, x.to_target, x.room, left); how = 'a random walk at the 2026 H2 pace (bootstrap cone), from today\'s balance';
-      } else if (ok(n(obj(pg.expected) && pg.expected.per_session))) {
-        const mu = n(pg.expected.per_session); est = walk(mu, Math.max(Math.abs(mu) * 4, 150), x.to_target, x.room, left); how = 'a random walk at the backtest\'s $ per session (rough spread)';
+      } else if (ok(n(obj(pg.expected) && (pg.expected.per_session != null ? pg.expected.per_session : pg.expected.per_month)))) {
+        const mu = ok(n(pg.expected.per_session)) ? n(pg.expected.per_session) : n(pg.expected.per_month) / 21; est = walk(mu, Math.max(Math.abs(mu) * 4, 150), x.to_target, x.room, left); how = 'a random walk at the backtest\'s $ per session (rough spread)';
       }
       const bz = x.k === 'blitz' && window.BlitzUI ? window.BlitzUI.RESEARCH.find((r) => r.main) : null;
       const startTxt = h2 ? `from the start: pass ${h2.p10}% / fail ${h2.f10}% in 2 weeks (${esc(h2.label || 'H2')})` : bz ? `from the start: pass ${bz.p2}% / fail ${bz.f2}% in 2 weeks (2026 H2)` : '';
@@ -221,7 +221,8 @@
   function digestData(M) {
     const last = st.get(SEEN_K, null), B = obj(M.board) || {}, mind = obj(M.mind) || {};
     if (!last || !ok(+last.t)) return { first: true, last: null };
-    const since = +last.t, T = arr(B.trades);
+    // within one visit (Home opened again less than 30 min later) the digest keeps comparing to the visit before
+    const since = M.now - +last.t < 1800 && ok(+last.prev) ? +last.prev : +last.t, T = arr(B.trades);
     const newT = T.filter((t) => t && !t.open && (n(t.exit_t) || 0) > since);
     const opened = T.filter((t) => t && (n(t.entry_t) || 0) > since);
     const al = arr(mind.alerts).filter((a) => a && (n(a.t) || 0) > since);
@@ -243,7 +244,12 @@
     G.pr.slice(0, 3).forEach((p) => li.push(`<li>${tag(p.bot)}<span>new idea: ${esc(p.idea || '')}</span><b>${esc(p.status || 'idea')}</b></li>`));
     return card('digest', 'Since you last looked', `${esc(ago)} ago`, `<div class="dk-dig-n"><b>${G.n}</b><span>new: ${G.newT.length} closed trade${G.newT.length === 1 ? '' : 's'}${G.usdNew ? ' (' + usd(G.usdNew, true) + ' real)' : ''} · ${G.opened.length} opened · ${G.al.length} alert${G.al.length === 1 ? '' : 's'} · ${G.rv.length} review${G.rv.length === 1 ? '' : 's'} · ${G.pr.length} idea${G.pr.length === 1 ? '' : 's'}</span></div><ul class="dk-dl">${li.join('')}</ul>`, 'dk-dig');
   }
-  function markSeen(now) { st.set(SEEN_K, { t: Math.round(now || Date.now() / 1000) }); }
+  function markSeen(now) {
+    now = Math.round(now || Date.now() / 1000);
+    const last = st.get(SEEN_K, null);
+    if (!last || !ok(+last.t)) return st.set(SEEN_K, { t: now });
+    st.set(SEEN_K, now - +last.t > 1800 ? { t: now, prev: +last.t } : { t: now, prev: ok(+last.prev) ? +last.prev : +last.t });
+  }
 
   // 8. Holodeck replay links (Mission Control)
   function replays(M, o, max = 10) {

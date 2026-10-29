@@ -622,6 +622,24 @@ part yourself or fold it into a script.**
   streaks & consistency, daily loss & week pace, next news). Live View draws `view()["structure"]` when present (zone, pools,
   swings, BOS / CHoCH, protected; a Structure switch + a "Market structure" thinking card). Caches le-public-v43 /
   le-shell-next-v25. Test `python -X utf8 -m tests.test_space_ui [--shots <dir>]` (static, node render, phone + PC Playwright).
+- **BLITZ tab, Mind, Trader's deck (2026-10-29 night, owner: "make a separate tab at the bottom ... improve dashboard
+  features"; read-only, links only):** shared renderers, byte-identical in `tools/web_public/` and `web_next/js/next/`:
+  `blitzcore.js` (window.BlitzUI: `model(src)` -> `page(M, part, opts)`, parts today / brain / trades / results / rules /
+  golive; `acctC` off / Sim test / armed / paused / funded), `mindcore.js` (window.MindUI: draws the Mind block, nothing when
+  it is absent: `bot`, `home`, `page`, `reviewFor`), `deckcore.js` (window.DeckUI: risk meter, next 24 h with the DST notice,
+  eval odds from today's balance (random walk at the H2 pace, labelled an estimate), real P&L calendar, journal, notification
+  center with a per-bot mute in localStorage `le.deck.mute`, "since you last looked" `le.deck.seen`, Holodeck replay links).
+  Phone: `blitz.js` (loaded last, after holo.js): **six tabs Home · Zlarior · ATLAS · BLITZ · Money · More** (clean.js BZ_SEGS,
+  `#/blitz/<part>`), `#/mind` and `#/deck` (the old aliases mind -> brain, deck -> holo are dropped), Home cards before "One
+  tap away", Mind cards on the Zlarior Bot Brain / ATLAS > Brain / BLITZ > Brain, Mission Control replay links; `#/holo/<day>`
+  opens that day (holo.js `H.want`; its hash re-stamped in index.html). Data: data.json `blitz` (= `engine/blitz.card` of the
+  cloud state + the PC heartbeat's block, `tools/build_web_dashboard.py`), live.json `pc.account_c`, liveview.json
+  `strategies.scalp` (+ `mind`), the board. PC: `js/next/blitz.js` (pages `blitz` (Main after ATLAS, part in `nx.bzPart`,
+  shell.js), `mind`, `deck` (after Real results), slots re-placed after cc / brain / second / mission redraws), `GET
+  /api/next/blitz` in server.py (`blitz.card(BOT.blitz)` + `acct_c.hb_block()`), `/api/next/mind` when the Mind agent ships
+  it, Holodeck links via `nx.holoDay` (js/next/holo.js). Features 71-80 in `web_next/FEATURES.md`. Caches le-public-v45 /
+  le-shell-next-v27. Test `python -X utf8 -m tests.test_blitz_tab [--shots <dir>]` (static, node render, phone 390x844,
+  PC 1440x900; the Mind fixture `tests/fixtures/mind_ui_sample.json`, `mind_sample.json` preferred once it exists).
 - **Start & Accounts page (2026-10-26, PC dashboard sidebar "Start", page `start`):** START BOT as one checklist, one button
   per red line: NinjaTrader connected · live bars from NinjaTrader (`go.feed_problem`, fix "right-click the MNQ 5-minute chart > Reload NinjaScript (or re-add LE_BarFeed)"; the Sim job is refused while stale) · accounts set (50K -> Zlarior, 25K -> ATLAS) · setup done · Sim tests passed · armed ·
   running and routes verified, plus the plain line `Zlarior -> 50K <name> · ATLAS -> 25K <name> · both armed · running`.
@@ -701,7 +719,7 @@ part yourself or fold it into a script.**
   Tests `python -X utf8 -m tests.test_pc_command_center`; shots `tests/shots_pc_cc.py` -> `research/handoff/2026-10-25/ui_pc/`.
   **"Zlarior" (owner 2026-10-25 PM): the display name of the LIT bot only** (like ATLAS for "second"): every key, file,
   config, push kind and route id stays `lit`; "LIT" stays where it names the method ("Zlarior trades the LIT method").
-  Phone (`tools/web_public/clean.js` v2): tabs Home · Zlarior · ATLAS · Money · More; the Zlarior tab (group `lit`, page
+  Phone (`tools/web_public/clean.js` v2): tabs Home · Zlarior · ATLAS · (BLITZ, 2026-10-29) · Money · More; the Zlarior tab (group `lit`, page
   `#/lit`) has sections Today (+ 50K eval pages) · Brain · Trades · Plan · Results · Strategy (ZL_SEGS), the ATLAS tab
   Today · Brain · Trades · Setups · Results = the one ATLAS page cut into parts (`#/atlas/<part>`, atlasTag). PC
   (`routes.js` BOTS): sidebar Home · Zlarior · ATLAS · Results · All tools; `zlarior` is a virtual entry that opens its last

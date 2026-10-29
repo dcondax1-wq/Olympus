@@ -263,7 +263,8 @@ def live_json(F, case):
     T = F["T"]
     return {"v": 1, "kind": "le-live", "t": T - 20, "every_s": 60, "host": "SURFACE",
             "pc": {"running": True, "adapter": "ninjatrader", "present": True, "t": T - 20, "age_s": 0, "live": True, **({"account_c": F["cases"][case]} if F["cases"][case] else {})},
-            "pc_verdict": {"code": "LIVE", "label": "TRADING YOUR EVAL", "level": "good", "reason": "ok", "checks": [], "t": T}, "accounts": [], "board": F["board"]}
+            "pc_verdict": {"code": "LIVE", "label": "TRADING YOUR EVAL", "level": "good", "reason": "ok", "checks": [], "t": T}, "accounts": [], "board": F["board"],
+            "mind": F["mind"]}
 
 
 def phone_ctx(br, F, lvp, case, errs, seen=None):
@@ -303,7 +304,7 @@ def part_c(F, tmp, shots):
         ctx, pg = phone_ctx(br, F, lvp, "off", errs, seen=F["T"] - 4 * 3600)
         pg.goto(base + "?fxoff#/today")
         pg.wait_for_selector(".cl-hero", timeout=30000)
-        pg.wait_for_function("() => window.LIVE && window.LIVE.j && window.LVP && window.LVP.d", timeout=30000)
+        pg.wait_for_function("() => window.LIVE && window.LIVE.j", timeout=30000)
         pg.wait_for_timeout(1200)
         pg.evaluate("() => { if (typeof render === 'function') render(true); }")
         pg.wait_for_timeout(500)
@@ -478,9 +479,7 @@ def part_d(F, shots):
         check("d. PC Home: since you last looked, risk meter, next 24 h + the Mind card under the Safety card", home_ok
               and "RISK METER" in ct and "MIND · TODAY" in ct and "SINCE YOU LAST LOOKED" in ct and "NEXT 24 HOURS" in ct, (home_ok, ct[:300]))
         if shots and home_ok:
-            pg.evaluate("() => document.querySelector('#nxDeckHome').scrollIntoView()")
-            pg.wait_for_timeout(400)
-            pg.screenshot(path=os.path.join(shots, "pc_home_deck_1440.png"))
+            pg.query_selector("#nxDeckHome").screenshot(path=os.path.join(shots, "pc_home_deck_1440.png"))
         pc_go(pg, "blitz")
         pg.click("#nav a[data-page='blitz']")
         pg.wait_for_selector("#page-blitz .bl-hero", timeout=30000)
@@ -500,6 +499,13 @@ def part_d(F, shots):
             check(f"d. PC BLITZ > {label}: drawn, its section lit", on == label, on)
             if shots:
                 pg.screenshot(path=os.path.join(shots, f"pc_blitz_{part}_1440.png"), full_page=part in ("results",))
+        pc_go(pg, "brain")
+        try:
+            pg.wait_for_selector("#page-brain #nxMindLit [data-mind='lit']", timeout=30000)
+            br_ok = True
+        except Exception:
+            br_ok = False
+        check("d. PC Bot Brain: the Mind's Zlarior cards on top (kept through the page's redraws)", br_ok)
         pc_go(pg, "mind")
         pg.wait_for_selector("#page-mind .mn-page", timeout=20000)
         mt = pg.inner_text("#page-mind").upper()

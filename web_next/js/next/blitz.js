@@ -13,6 +13,7 @@
 // /api/next/mind (the Mind; 404 = not built yet), /api/next/goals (calendar), /api/next/news?compact=1.
 import { $, esc, store } from '../util.js';
 import { boardData } from './board.js';
+import { charts } from './pics.js';
 
 const V = 1;
 const ensureSec = (id, txt, after) => {
@@ -76,9 +77,15 @@ async function drawBlitz() {
   const S = await sources(true);
   const part = store.get('nx.bzPart', 'today');
   const P = window.BlitzUI.PARTS.map((p) => p[0]).includes(part) ? part : 'today';
+  let pics = '';
+  if (P === 'trades') {                    // trade pictures (engine/trade_chart.py) when BLITZ has any
+    const CH = await charts().catch(() => null), T = window.TradePics;
+    try { const L = T && CH ? T.list(CH, 'blitz') || [] : []; if (L.length) pics = `<section class="bl-card"><div class="bl-h"><h3>Trade pictures · BLITZ</h3><span class="bl-meta">click for full screen</span></div>${T.strip(L.slice(0, 16), { label: 'BLITZ trade pictures' })}</section>`; } catch { pics = ''; }
+  }
   const y = el.scrollTop;
-  el.innerHTML = `<div class="nx-bz">${window.BlitzUI.page(bModel(S), P, { go, mind: P === 'brain' ? window.MindUI.bot(S.mind, 'blitz', { go }) : '' })}</div>`;
+  el.innerHTML = `<div class="nx-bz">${window.BlitzUI.page(bModel(S), P, { go, pics, mind: P === 'brain' ? window.MindUI.bot(S.mind, 'blitz', { go }) : '' })}</div>`;
   window.BlitzUI.wire(el);
+  if (pics && window.TradePics && window.TradePics.settle) { try { window.TradePics.settle(el); } catch { /* optional */ } }
   el.scrollTop = y;
 }
 export const blitz = { show: () => { const el = $('#page-blitz'); if (el && !el.querySelector('.bl-wrap')) el.innerHTML = '<div class="nx-skel"><i></i><i></i></div>'; drawBlitz(); every('blitz', 15000, drawBlitz); } };

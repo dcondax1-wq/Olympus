@@ -190,8 +190,9 @@ def part_c(shots):
                 pg.wait_for_selector(".cl-hero", timeout=10000)
             pg.wait_for_timeout(800)
             tabs = pg.eval_on_selector_all("#tabs a span", "els => els.map(e => e.textContent.trim())")
-            # 2026-10-25 PM (clean.js v2): the LIT bot is "Zlarior"; five tabs, each bot tab holds all of that bot (#/brain, #/trades still open)
-            check("c. phone bottom bar = Home · Zlarior · ATLAS · Money · More", tabs == ["Home", "Zlarior", "ATLAS", "Money", "More"], tabs)
+            # 2026-10-25 PM (clean.js v2): the LIT bot is "Zlarior"; each bot tab holds all of that bot (#/brain, #/trades still open)
+            # 2026-10-29 (layout deliberately changed): six tabs, BLITZ (the scalper, blitz.js) gets its own tab after ATLAS
+            check("c. phone bottom bar = Home · Zlarior · ATLAS · BLITZ · Money · More", tabs == ["Home", "Zlarior", "ATLAS", "BLITZ", "Money", "More"], tabs)
             cards = pg.eval_on_selector_all(".cl-hero", "els => els.map(e => e.innerText)")
             check("c. Home: one hero card per account, 'Zlarior · 50K' then 'ATLAS · 25K' (big $ to the target, status chip)", len(cards) == 2 and cards[0].upper().startswith("ZLARIOR")
                   and cards[1].upper().startswith("ATLAS") and "TARGET" in cards[0].upper() and "SIM" in cards[1].upper(), cards)

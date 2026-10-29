@@ -47,7 +47,7 @@
     const d = obj(R.day_type);
     return `<div class="mn-regime"><div class="mn-rg-h"><span class="mn-eye">Market regime</span><b>${esc(R.label || '—')}</b></div>
       <div class="mn-rg-c">${R.trend != null ? `<span>Trend <b>${esc(val(R.trend))}</b></span>` : ''}${R.vol != null ? `<span>Volatility <b>${esc(val(R.vol))}</b></span>` : ''}
-        ${d ? `<span>Day type <b>${esc(d.label || '—')}</b>${d.p_trend != null ? ` · trend day ${esc(pctv(d.p_trend))}` : ''}</span>` : ''}</div>
+        ${d ? `<span>Day type <b>${esc(d.label || '—')}</b>${d.p_trend != null && !/%/.test(String(d.label || '')) ? ` · trend day ${esc(pctv(d.p_trend))}` : ''}</span>` : ''}</div>
       ${d && d.acc_note ? `<p class="mn-mut">${esc(d.acc_note)}</p>` : ''}${R.why ? `<p class="mn-why">${esc(val(R.why))}</p>` : ''}</div>`;
   }
   function planCard(P, b) {
@@ -67,16 +67,18 @@
       <div class="mn-tiles"><div><span>Seen</span><b>${esc(val(Sm.n))}</b></div><div><span>Won</span><b>${Number.isFinite(winN) ? pctv(winN) : '—'}</b></div>
         <div><span>Avg R</span><b class="${cls(Sm.avg_r)}">${rr(Sm.avg_r)}</b></div><div><span>Avg $</span><b class="${cls(Sm.usd)}">${usd(Sm.usd)}</b></div></div>
       ${Number.isFinite(winN) ? `<div class="mn-winbar" aria-hidden="true"><i style="width:${Math.max(0, Math.min(100, Math.abs(winN) <= 1 ? winN * 100 : winN)).toFixed(0)}%"></i></div>` : ''}
-      ${E.length ? `<ul class="mn-ex">${E.slice(0, 6).map((x) => `<li><span>${esc(x.day || '')}</span><b class="${cls(x.r)}">${rr(x.r)}</b><em class="${cls(x.usd)}">${usd(x.usd)}</em></li>`).join('')}</ul>` : ''}</section>`;
+      ${E.length ? `<ul class="mn-ex">${E.slice(0, 6).map((x) => `<li><span>${esc(x.day || '')}</span><b class="${cls(x.r)}">${rr(x.r)}</b><em class="${cls(x.usd)}">${usd(x.usd)}</em></li>`).join('')}</ul>` : ''}
+      ${Sm.text ? `<p class="mn-mut">${esc(val(Sm.text))}</p>` : ''}</section>`;
   }
   function reviewCard(r, o) {
     if (!obj(r)) return '';
     const tr = obj(r.trade);
-    const tline = tr ? [tr.day, tr.side, tr.usd != null ? usd(tr.usd) : '', tr.r != null ? rr(tr.r) : ''].filter(Boolean).join(' · ') : r.trade != null ? String(r.trade) : '';
+    const tline = tr ? [tr.day, tr.side, tr.usd != null ? usd(tr.usd) : '', tr.r != null ? rr(tr.r) : ''].filter(Boolean).join(' · ')
+      : r.trade != null ? String(r.trade) + (r.usd != null && !/\$/.test(String(r.trade)) ? ' · ' + usd(r.usd) : '') : '';
     const day = tr && tr.day ? tr.day : /^\d{4}-\d\d-\d\d/.test(String(r.trade || '')) ? String(r.trade).slice(0, 10) : '';
     return `<li class="mn-rev" style="--c:${col(r.bot)}">${grade(r.grade)}<div class="mn-rev-b"><div class="mn-rev-h">${tag(r.bot)}<span>${esc(tline)}</span>${r.t ? `<em>${esc(hm(r.t))}</em>` : ''}</div>
       ${arr(r.right).length ? `<p><b class="up">Right:</b> ${esc(arr(r.right).join('; '))}</p>` : ''}${arr(r.wrong).length ? `<p><b class="dn">Wrong:</b> ${esc(arr(r.wrong).join('; '))}</p>` : ''}
-      ${r.lesson ? `<p><b>Lesson:</b> ${esc(val(r.lesson))}</p>` : ''}${r.luck != null && r.luck !== '' ? `<p class="mn-mut"><b>Luck:</b> ${esc(val(r.luck))}</p>` : ''}
+      ${r.lesson ? `<p><b>Lesson:</b> ${esc(val(r.lesson))}</p>` : ''}${r.luck != null && r.luck !== '' ? `<p class="mn-mut"><b>Luck or skill:</b> ${esc(val(r.luck))}${r.why ? ' · ' + esc(val(r.why)) : ''}</p>` : r.why ? `<p class="mn-mut">${esc(val(r.why))}</p>` : ''}
       ${day && o && typeof o.go === 'function' ? `<a class="mn-link" ${o.go('holo', day)}>Replay ${esc(day)} in the Holodeck</a>` : ''}</div></li>`;
   }
   function reviews(m, b, o, max = 6) {
@@ -87,10 +89,10 @@
   function proposals(m, b, max = 6) {
     const L = arr(m && m.proposals).filter((p) => !b || KEY(p.bot) === KEY(b)).sort((x, y) => (n(y.t) || 0) - (n(x.t) || 0));
     if (!L.length) return '';
-    const ev = (e) => { const E = obj(e); if (!E) return e != null ? `<em>${esc(val(e))}</em>` : ''; return [['h1', '2026 H1'], ['h2', '2026 H2'], ['r2125', '2021-25'], ['usd_month', '$ / month']].filter(([k]) => E[k] != null).map(([k, l]) => `<span><i>${l}</i><b>${k === 'usd_month' ? usd(E[k]) : esc(val(E[k]))}</b></span>`).join(''); };
+    const ev = (e) => { const E = obj(e); if (!E) return e != null ? `<em>${esc(val(e))}</em>` : ''; return [['h1', '2026 H1'], ['h2', '2026 H2'], ['r2125', '2021-25'], ['usd_month', '$ / month']].filter(([k]) => E[k] != null).map(([k, l]) => `<span class="${String(E[k]).length > 40 ? 'long' : ''}"><i>${l}</i><b>${k === 'usd_month' ? usd(E[k]) : esc(val(E[k]))}</b></span>`).join(''); };
     return `<section class="mn-card"><div class="mn-h"><h3>${b ? esc(name(b)) + ' · ' : ''}self-research ideas</h3><span class="mn-meta">evidence first; you adopt, never the bot</span></div>
       <ul class="mn-props">${L.slice(0, max).map((p) => `<li style="--c:${col(p.bot)}"><div class="mn-prop-h">${tag(p.bot)}<b>${esc(p.idea || p.id || 'idea')}</b><span class="mn-chip ${/adopt|pass|ok|done/i.test(p.status) ? 'good' : /reject|fail/i.test(p.status) ? 'bad' : /test|run|wait|pend/i.test(p.status) ? 'warn' : ''}">${esc(p.status || 'idea')}</span></div>
-        <div class="mn-ev">${ev(p.evidence)}</div>${p.change ? `<p class="mn-mut">Change: ${esc(val(p.change))}</p>` : ''}</li>`).join('')}</ul></section>`;
+        ${p.why ? `<p class="mn-mut">${esc(val(p.why))}</p>` : ''}<div class="mn-ev">${ev(p.evidence)}</div>${p.change ? `<p class="mn-mut">Change: ${esc(val(p.change))}</p>` : ''}</li>`).join('')}</ul></section>`;
   }
   function alerts(m, b, max = 8) {
     const L = arr(m && m.alerts).filter((a) => !b || KEY(a.bot) === KEY(b)).sort((x, y) => (n(y.t) || 0) - (n(x.t) || 0));
@@ -103,8 +105,9 @@
     const S = obj(Q.store_n) || {}, C = Q.calibration;
     const cal = Array.isArray(C) ? `<ul class="mn-cal">${C.slice(0, 8).map((x) => obj(x) ? `<li><span>${esc(val(x.bin != null ? x.bin : x.p != null ? x.p : x.label))}</span><b>${esc(val(x.hit != null ? x.hit : x.obs != null ? x.obs : x.rate))}</b>${x.n != null ? `<em>n ${esc(val(x.n))}</em>` : ''}</li>` : `<li><span>${esc(val(x))}</span></li>`).join('')}</ul>`
       : C != null ? `<p class="mn-mut">Calibration: ${esc(val(C))}</p>` : '';
+    const dt = Q.daytype ? `<p class="mn-mut">Day type: ${esc(val(Q.daytype))}</p>` : '';
     return `<section class="mn-card"><div class="mn-h"><h3>Mind IQ</h3><span class="mn-meta">what it remembers</span></div>
-      <div class="mn-tiles">${['lit', 'atlas', 'blitz'].map((k) => `<div style="--c:${col(k)}"><span>${esc(name(k))}</span><b>${esc(val(S[k] != null ? S[k] : S[k === 'blitz' ? 'scalp' : k]))}</b><em>setups stored</em></div>`).join('')}</div>${cal}</section>`;
+      <div class="mn-tiles">${['lit', 'atlas', 'blitz'].map((k) => `<div style="--c:${col(k)}"><span>${esc(name(k))}</span><b>${esc(val(S[k] != null ? S[k] : S[k === 'blitz' ? 'scalp' : k]))}</b><em>setups stored</em></div>`).join('')}</div>${cal}${dt}</section>`;
   }
 
   function bot(m, b, o) {
@@ -120,7 +123,7 @@
     const rv = arr(m.reviews).slice().sort((x, y) => (n(y.t) || 0) - (n(x.t) || 0))[0];
     const go = o && typeof o.go === 'function' ? o.go('mind') : '';
     return `<section class="mn-card mn-home" aria-label="Mind"><div class="mn-h"><h3><span class="mn-logo" aria-hidden="true"></span>Mind · today</h3>${R && R.label ? `<span class="mn-chip">${esc(R.label)}</span>` : ''}</div>
-      ${R && (R.day_type || R.why) ? `<p class="mn-mut">${R.day_type && R.day_type.label ? esc(R.day_type.label) + (R.day_type.p_trend != null ? ` (trend day ${esc(pctv(R.day_type.p_trend))})` : '') + ' · ' : ''}${esc(val(R.why || ''))}</p>` : ''}
+      ${R && (R.day_type || R.why) ? `<p class="mn-mut">${R.day_type && R.day_type.label ? esc(R.day_type.label) + (R.day_type.p_trend != null && !/%/.test(String(R.day_type.label)) ? ` (trend day ${esc(pctv(R.day_type.p_trend))})` : '') + ' · ' : ''}${esc(val(R.why || ''))}</p>` : ''}
       ${lines ? `<ul class="mn-lines">${lines}</ul>` : ''}
       ${al ? `<p class="mn-al ${lvlOf(al.level)}"><i></i>${tag(al.bot)} ${esc(al.text || '')}</p>` : ''}
       ${rv ? `<p class="mn-rv1">${grade(rv.grade)}<span>${tag(rv.bot)} last review: ${esc(val(rv.lesson || (arr(rv.wrong)[0]) || (arr(rv.right)[0]) || ''))}</span></p>` : ''}
@@ -138,6 +141,7 @@
     return arr(m.reviews).find((r) => {
       const tr = obj(r.trade);
       if (tr) return (tr.entry_t != null && key(tr.entry_t) === key(t.entry_t)) || (tr.id != null && key(tr.id) === key(t.id)) || (tr.day && tr.day === t.day && KEY(r.bot) === KEY(t.acct || t.bot));
+      if (r.entry_t != null && t.entry_t != null && key(r.entry_t) === key(t.entry_t)) return true;
       return r.trade != null && (key(r.trade) === key(t.id) || key(r.trade) === key(t.entry_t) || (key(r.trade).slice(0, 10) === key(t.day) && KEY(r.bot) === KEY(t.acct || t.bot)));
     }) || null;
   }
@@ -175,7 +179,7 @@
 .mn-bot{display:inline-flex;align-items:center;gap:5px;font:700 11px var(--sans,Inter,sans-serif);color:var(--c);white-space:nowrap}.mn-bot i{width:7px;height:7px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c)}
 .mn-link,.mn-more{display:inline-flex;align-items:center;min-height:44px;margin-top:6px;padding:0 12px;border-radius:12px;border:1px solid rgba(125,211,252,.35);color:#bfe9ff;font:650 13px var(--sans,Inter,sans-serif);text-decoration:none;cursor:pointer;background:rgba(125,211,252,.08)}
 .mn-props li{padding:10px 0;border-top:1px solid var(--mn-line)}.mn-props li:first-child{border-top:0}.mn-prop-h{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.mn-prop-h b{flex:1;min-width:140px;font-size:14px}
-.mn-ev{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.mn-ev span{display:flex;flex-direction:column;padding:6px 8px;border-radius:10px;border:1px solid var(--mn-line);font-size:12.5px;min-width:0}.mn-ev i{font-style:normal;font-size:10.5px;color:var(--mn-mut);letter-spacing:.06em;text-transform:uppercase}
+.mn-ev{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.mn-ev span{display:flex;flex-direction:column;padding:6px 8px;border-radius:10px;border:1px solid var(--mn-line);font-size:12.5px;min-width:0;overflow-wrap:anywhere}.mn-ev span.long{flex:1 1 100%}.mn-ev span.long b{font-weight:500;line-height:1.45}.mn-ev i{font-style:normal;font-size:10.5px;color:var(--mn-mut);letter-spacing:.06em;text-transform:uppercase}
 .mn-alerts li{display:grid;grid-template-columns:10px auto 1fr;gap:4px 8px;align-items:center;padding:8px 0;border-top:1px solid var(--mn-line);font-size:13px}.mn-alerts li:first-child{border-top:0}.mn-alerts li>i{width:8px;height:8px;border-radius:50%;background:#64748b}
 .mn-alerts li.bad>i{background:var(--bad,#ff5a7a);box-shadow:0 0 8px var(--bad,#ff5a7a)}.mn-alerts li.warn>i{background:var(--warn,#ffb547)}.mn-alerts li.good>i{background:var(--good,#2ee59d)}.mn-alerts li em{grid-column:3;font-style:normal;font-size:11.5px;color:var(--mn-mut)}.mn-alerts li span{min-width:0;overflow-wrap:anywhere}
 .mn-lines li{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:baseline;padding:7px 0;border-top:1px solid var(--mn-line);font-size:13.5px;line-height:1.4}.mn-lines li:first-child{border-top:0}.mn-lines li span{min-width:0;overflow-wrap:anywhere}

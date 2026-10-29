@@ -140,7 +140,8 @@
     return { v: V, now, where: src.where || 'phone', sc, card, ac, board, lv: lvd, stage, text, band, signals: sig, pos25, pos50, posC, price, ev, money, f50,
       today25, today50, hist25, hist50, holo: arr(src.holo), rule, structure: (sc && sc.structure_note) || (th && th.structure) || null, thinking: th,
       evals: arr(card && card.evals), preflight: arr(src.preflight).length ? arr(src.preflight) : arr(ac && ac.preflight).length ? arr(ac.preflight) : arr(card && card.preflight),
-      t, source: card && card.source ? card.source : sc ? 'PC (Live View)' : null, research: card && obj(card.research) };
+      t, source: src.where === 'pc' ? 'PC bot' : card && card.source ? (card.source === 'PC' ? 'PC heartbeat' : card.source === 'cloud' ? 'cloud monitor' : card.source) : sc ? 'PC (Live View)' : null,
+      research: card && obj(card.research) };
   }
 
   // account C: off / Sim test / armed / paused / funded
@@ -189,7 +190,7 @@
     const area = up + rows.slice().reverse().map((r) => `L${X(r.t).toFixed(1)},${Y(r.lo).toFixed(1)}`).join('') + 'Z';
     const nowX = M.now >= t0 && M.now <= t1 + 1800 ? Math.min(W - R, X(Math.min(M.now, t1))) : null;
     const dots = M.signals.filter((s) => s.t >= t0 - 60 && s.t <= t1 + 60 && ok(s.price)).map((s) => `<circle cx="${X(s.t).toFixed(1)}" cy="${Y(s.price).toFixed(1)}" r="4.5" class="${s.taken ? 'tk' : 'sk'} ${s.side === 'LONG' ? 'l' : 's'}"><title>${esc(hm(s.ct))} ${esc(s.side)} signal ${s.taken ? 'taken' : 'not taken'}</title></circle>`).join('');
-    const ticks = rows.map((r, i) => (i % 2 === 0 || rows.length < 6 ? `<text x="${X(r.t).toFixed(1)}" y="${H - 4}" text-anchor="middle">${esc(r.hm)}</text>` : '')).join('');
+    const ticks = rows.map((r, i) => (i % 2 === 0 || rows.length < 6 || i === rows.length - 1 ? `<text x="${X(r.t).toFixed(1)}" y="${H - 4}" text-anchor="${i === 0 ? 'start' : i === rows.length - 1 ? 'end' : 'middle'}">${esc(r.hm)}</text>` : '')).join('');
     return `<svg class="bl-band" viewBox="0 0 ${W} ${H}" role="img" aria-label="Today's noise band at each check">
       <defs><linearGradient id="blG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${PURPLE}" stop-opacity=".30"/><stop offset="1" stop-color="${PURPLE}" stop-opacity=".06"/></linearGradient></defs>
       <path d="${area}" fill="url(#blG)"/><path d="${up}" class="u"/><path d="${dn}" class="d"/>
@@ -211,8 +212,9 @@
   }
   function posCard(p, M) {
     const real = !!p.real, tag = real ? (M.ac && M.ac.kind === 'LIVE' ? 'REAL' : M.ac && M.ac.kind === 'SIM' ? 'SIM' : 'PAPER') : 'PAPER';
+    const also = !real && p.tag === '25K eval' && M.pos50 && M.pos50.entry_t === p.entry_t && ok(M.pos50.qty) ? `<span>+ ${M.pos50.qty} MNQ on the 50K + LIT</span>` : '';
     const trail = ok(p.stop0) && ok(p.stop) && p.stop !== p.stop0 ? 'trailing 1.5R behind the best price' : ok(p.stop0) && ok(p.entry) ? `trail starts at +1R (${px(p.entry + p.dir * Math.abs(p.entry - p.stop0))})` : 'trail 1.5R after +1R';
-    return `<div class="bl-pos ${p.dir > 0 ? 'lg' : 'sh'}"><div class="bl-pos-h"><b>${esc(tag)} ${esc(p.side)}</b><span>${esc(p.tag)}</span>${ok(p.qty) ? `<span>${p.qty} MNQ</span>` : '<span>no size</span>'}</div>
+    return `<div class="bl-pos ${p.dir > 0 ? 'lg' : 'sh'}"><div class="bl-pos-h"><b>${esc(tag)} ${esc(p.side)}</b><span>${esc(p.tag)}</span>${ok(p.qty) ? `<span>${p.qty} MNQ</span>` : '<span>no size</span>'}${also}</div>
       <div class="bl-kv"><div><span>Entry</span><b>${px(p.entry)}</b><em>${esc(hm(p.entry_t))} ET</em></div>
         <div><span>Stop</span><b>${px(p.stop)}</b><em class="${cls(p.stop_usd)}">${ok(p.stop_usd) ? usd(p.stop_usd, true) + ' at the stop' : ''}</em></div>
         <div><span>Target</span><b>none</b><em>${esc(trail)}</em></div>
@@ -239,6 +241,7 @@
     return `<section class="bl-hero" aria-label="BLITZ status"><div class="bl-orb" aria-hidden="true"><i></i></div>
       <div class="bl-hero-h"><div><div class="bl-eye">Bot 3 · the scalper · 25K</div><h2>BLITZ</h2></div><div class="bl-chips">${chip(S.word, S.lvl)}${chip(c.label, c.lvl)}</div></div>
       <p class="bl-think">${esc(M.text || 'BLITZ has not reported yet: it runs after each Zlarior poll while the PC bot runs (paper).')}</p>
+      ${M.ac && c.mode !== 'off' && M.ac.state && M.ac.state.text && M.ac.state.text !== M.text ? `<p class="bl-line bl-acline"><b>Account C${M.ac.account ? ' · ' + esc(M.ac.account) : ''}:</b> ${esc(M.ac.state.text)}</p>` : ''}
       <div class="bl-hero-r">${nc ? `<div><span>Next check</span><b>${nc.today ? '' : esc(dayLbl(nc.t)) + ' '}${esc(modHM(nc.mod))} ET</b><em data-bl-cd="${Math.round(nc.t)}">in ${esc(dur(nc.t - M.now))}</em></div>` : ''}
         <div><span>Paper 25K</span><b>${M.ev && ok(num(M.ev.balance)) ? usd(M.ev.balance) : '—'}</b><em>${M.ev && ok(num(M.ev.to_target)) ? usd(M.ev.to_target) + ' to pass' : 'not started'}</em></div>
         <div><span>Paper trades</span><b>${M.money && ok(num(M.money.n)) ? M.money.n : 0}</b><em>${M.money && ok(num(M.money.usd)) ? usd(M.money.usd, true) + ' on the eval' : 'since the first run'}</em></div></div>
@@ -340,19 +343,22 @@
     const m = M.money || {};
     const liveSrc = sc && ok(num(sc.n)) && sc.n > 0 ? 'account C (its own fills)' : 'the paper 25K ledger ($150 a trade view)';
     const n = sc && sc.n ? +sc.n : num(m.n);
-    const win = sc && sc.n ? num(sc.win_pct) : ok(num(m.n)) && m.n ? num(m.wins) / num(m.n) * 100 : NaN;
-    const avgR = sc && sc.n ? num(sc.avg_r) : num(m.avg_r);
-    const pf = sc && sc.n ? num(sc.pf_r) : num(m.pf150);
+    const MIN_N = 5;                    // under 5 finished trades a live number says nothing: no marker on the bands
+    const enough = ok(n) && n >= MIN_N;
+    const win = !enough ? NaN : sc && sc.n ? num(sc.win_pct) : num(m.wins) / num(m.n) * 100;
+    const avgR = !enough ? NaN : sc && sc.n ? num(sc.avg_r) : num(m.avg_r);
+    const pf = !enough ? NaN : sc && sc.n ? num(sc.pf_r) : num(m.pf150);
     const months = M.card && M.card.first_run ? Math.max(1 / 21, (M.now - Date.parse(String(M.card.first_run).length <= 10 ? M.card.first_run + 'T12:00:00Z' : M.card.first_run) / 1000) / (30.4 * 86400)) : NaN;
-    const pm = ok(num(m.usd150)) && ok(months) ? num(m.usd150) / months : NaN;
-    const tpw = ok(n) && ok(months) ? n / (months * 30.4 / 7) : NaN;
+    const pm = enough && ok(num(m.usd150)) && ok(months) ? num(m.usd150) / months : NaN;
+    const tpw = enough && ok(months) ? n / (months * 30.4 / 7) : NaN;
     const fl = (sc && obj(sc.floor)) || killAt(n);
+    const avgK = sc && sc.n ? num(sc.avg_r) : num(m.avg_r), pfK = sc && sc.n ? num(sc.pf_r) : num(m.pf150);
     const ld = sc ? num(sc.lose_days) : NaN;
     const tbl = `<div class="bl-scroll"><table class="bl-tbl"><thead><tr><th>Span</th><th>Trades</th><th>/ wk</th><th>Win</th><th>Avg R</th><th>PF</th><th>Net</th><th>$ / mo</th><th>Max DD</th></tr></thead>
       <tbody>${RESEARCH.map((r) => `<tr class="${r.main ? 'on' : ''}"><td>${esc(r.label)}</td><td>${r.n.toLocaleString('en-US')}</td><td>${r.tpw}</td><td>${r.win}%</td><td>${fr(r.avg_r, 3)}</td><td>${r.pf.toFixed(2)}</td><td>${usd(r.net, true)}</td><td><b>${usd(r.pm, true)}</b></td><td class="dn">${usd(r.dd)}</td></tr>`).join('')}</tbody></table></div>`;
     const ev = `<div class="bl-scroll"><table class="bl-tbl"><thead><tr><th>Builder 25K eval</th><th>2 weeks pass / fail</th><th>1 month pass / fail</th><th>Whole slot $ / mo</th></tr></thead>
       <tbody>${RESEARCH.map((r) => `<tr class="${r.main ? 'on' : ''}"><td>${esc(r.label)}</td><td>${r.p2}% / ${r.f2}%</td><td>${r.p1m}% / ${r.f1m}%</td><td>${usd(r.slot, true)}</td></tr>`).join('')}</tbody></table></div>`;
-    const closeAvg = fl && ok(avgR) ? avgR - fl.avg_r_p5 : NaN, closePf = fl && ok(pf) ? pf - fl.pf_p5 : NaN;
+    const closeAvg = fl && ok(avgK) ? avgK - fl.avg_r_p5 : NaN, closePf = fl && ok(pfK) ? pfK - fl.pf_p5 : NaN;
     const kl = sc && sc.status === 'below' ? 'bad' : sc && sc.status === 'ok' ? 'good' : '';
     return `<section class="bl-card"><div class="bl-h"><h3>Research bands</h3><span class="bl-meta">$150 a trade, costs in</span></div>
         <p class="bl-mut">Picked on 2026 H1, checked on 2026 H2 (the honest line), 2021-25 on 5-minute bars as the reference. BLITZ_STRATEGY.md.</p>${tbl}
@@ -363,7 +369,7 @@
         ${bandBar('PF (in R)', pf, RF.pf, H2.pf, H1.pf, (v) => v.toFixed(2))}
         ${bandBar('$ a month at $150 a trade', pm, RF.pm, H2.pm, H1.pm, (v) => usd(v, true))}
         ${bandBar('Trades a week', tpw, Math.min(RF.tpw, 6.8), H2.tpw, H1.tpw, (v) => v.toFixed(1))}
-        <p class="bl-mut">${ok(n) ? `${n} finished trade${n === 1 ? '' : 's'} so far: under 20 the numbers swing a lot.` : 'No finished trades yet.'}</p></section>
+        <p class="bl-mut">${ok(n) && n > 0 ? `${n} finished trade${n === 1 ? '' : 's'} so far${enough ? ': under 20 the numbers swing a lot.' : `: the live markers show from ${MIN_N} trades.`}` : 'No finished trades yet.'}</p></section>
       <section class="bl-card bl-kill ${kl}"><div class="bl-h"><h3>Kill switch · the performance contract</h3>${chip(sc ? (sc.status === 'below' ? 'BELOW THE FLOOR' : sc.status === 'ok' ? 'ABOVE THE FLOOR' : sc.status === 'warming' ? 'WARMING UP' : String(sc.status || '').toUpperCase()) : 'ACCOUNT C OFF', kl)}</div>
         <p class="bl-line">After 20+ finished trades on account C, an average R or a PF (R) under the 2026 5th percentile for that many trades, or 6 losing days in a row, pauses BLITZ on its account (Zlarior and ATLAS keep trading). Resume is your decision.</p>
         <div class="bl-tiles sm"><div><span>Trades</span><b>${ok(n) ? n : 0}</b><em>${ok(n) && n < 20 ? (20 - n) + ' to the first check' : 'checked every trade'}</em></div>
@@ -473,6 +479,7 @@
 .bl-hero-r b,.bl-tiles b,.bl-kv b{font:750 17px/1.15 var(--sans,Inter,sans-serif);font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bl-hero-r em,.bl-tiles em,.bl-kv em{font-style:normal;font-size:11.5px;color:var(--bl-mut);overflow:hidden;text-overflow:ellipsis}
 .bl-src,.bl-foot{margin:10px 0 0;font-size:12px;color:var(--bl-mut)}.bl-foot{text-align:center}
+.bl-acline{padding:8px 10px;border-radius:10px;background:rgba(179,136,255,.12);border:1px solid rgba(179,136,255,.3)}
 .bl-h{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
 .bl-h h3{margin:0;font:700 15px/1.3 var(--sans,Inter,sans-serif);color:var(--bl-ink)}
 .bl-meta{font-size:12px;color:var(--bl-mut)}
