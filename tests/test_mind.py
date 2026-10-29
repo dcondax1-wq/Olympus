@@ -235,6 +235,9 @@ def t_block_replay():
     check(f"compact: contract shape and < 12 KB ({sz} bytes)", not MD.contract_errors(c) and sz < 12_000, MD.contract_errors(c))
     sample = json.load(open(os.path.join(ROOT, "tests", "fixtures", "mind_sample.json"), encoding="utf-8"))
     check("the committed sample (tests/fixtures/mind_sample.json) matches the contract", not MD.contract_errors(sample), MD.contract_errors(sample))
+    sc = json.load(open(os.path.join(ROOT, "tests", "fixtures", "mind_sample_compact.json"), encoding="utf-8"))
+    check("the committed compact sample (phone / heartbeat cut) matches the contract and is < 12 KB", not MD.contract_errors(sc)
+          and len(json.dumps(sc, separators=(",", ":"))) < 12_000, MD.contract_errors(sc))
     # 10:50: the regime has day-type odds; the BLITZ plan needs BLITZ's state (absent here) -> no BLITZ plan
     now2 = T("2026-10-14", 10, 50)
     b2 = BR.replay("2026-10-14", now2)

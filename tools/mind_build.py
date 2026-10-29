@@ -244,6 +244,9 @@ def sample(day="2026-10-14", hh=10, mm=50, path=None):
         raise SystemExit(f"contract errors: {errs}")
     with open(path or os.path.join(ROOT, "tests", "fixtures", "mind_sample.json"), "w", encoding="utf-8") as fh:
         json.dump(blk, fh, indent=1, default=MD._jd)
+    if path is None:                         # the phone / heartbeat cut (liveview.json "mind", heartbeat "mind", holo "mind")
+        with open(os.path.join(ROOT, "tests", "fixtures", "mind_sample_compact.json"), "w", encoding="utf-8") as fh:
+            json.dump(MD.compact(blk), fh, indent=1, default=MD._jd)
     print("sample", day, f"{hh:02d}:{mm:02d}", "plans", list(blk["plans"]), "similar", {k: bool(v) for k, v in blk["similar"].items()},
           "reviews", len(blk["reviews"]), "ms", M.ms, flush=True)
     return blk
