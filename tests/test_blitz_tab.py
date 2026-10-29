@@ -471,6 +471,13 @@ def part_d(F, shots):
     board_api.board_view = lambda bot, now=None: copy.deepcopy(F["board"])
     lv = copy.deepcopy(F["lv"])
     liveview_api.view = lambda bot, tf="1m", now=None, narr=None, n_feed=100: copy.deepcopy(lv)
+    try:                                     # the real route (before the fixture answers it): the card + the Start page slot, no phrase
+        rr = server.blitz_view()
+        body = json.loads(rr.body)
+        check("d. GET /api/next/blitz (server.py): 200, blitz.card + the BLITZ slot, never the live phrase", rr.status_code == 200 and body.get("card", {}).get("paper")
+              and "slot" in body and "I ACCEPT" not in rr.body.decode(), str(rr.body)[:300])
+    except Exception as e:
+        check("d. GET /api/next/blitz (server.py) answers", False, e)
     blz = {"card": F["card"], "account_c": F["cases"]["armed"], "t": F["T"]}
     server.app.router.routes.insert(0, Route("/api/next/blitz", lambda req: JSONResponse(json.loads(json.dumps(blz, default=str)))))
     server.app.router.routes.insert(0, Route("/api/next/mind", lambda req: JSONResponse(F["mind"])))

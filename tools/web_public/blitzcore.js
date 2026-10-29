@@ -87,6 +87,7 @@
     const sc = scRaw && !scRaw.placeholder ? scRaw : null;
     const card = obj(src.card) && !src.card.error ? src.card : null;
     const ac = obj(src.ac) && (src.ac.account || src.ac.label || src.ac.eval) ? src.ac : null;
+    const slot = obj(src.slot) && !src.slot.error ? src.slot : null;          // the Start page's BLITZ slot (PC: GET /api/next/blitz)
     const board = obj(src.board);
     const th = obj(sc && sc.thinking) || {};
     const st = (card && obj(card.state)) || {};
@@ -137,7 +138,7 @@
     const hist25 = arr(card && card.trades), hist50 = arr(card && card.trades50);
     const rule = obj(sc && sc.rule) || (() => { const id = STAGE_RULE[stage] || 'B2', r = RULES.find((x) => x[0] === id); return { id, title: r[1], text: r[2], derived: true }; })();
     const t = Math.max(+(lvd && lvd.t) || 0, +(card && card.t) || 0, +(ac && ac.t) || 0) || null;
-    return { v: V, now, where: src.where || 'phone', sc, card, ac, board, lv: lvd, stage, text, band, signals: sig, pos25, pos50, posC, price, ev, money, f50,
+    return { v: V, now, where: src.where || 'phone', sc, card, ac, slot, board, lv: lvd, stage, text, band, signals: sig, pos25, pos50, posC, price, ev, money, f50,
       today25, today50, hist25, hist50, holo: arr(src.holo), rule, structure: (sc && sc.structure_note) || (th && th.structure) || null, thinking: th,
       evals: arr(card && card.evals), preflight: arr(src.preflight).length ? arr(src.preflight) : arr(ac && ac.preflight).length ? arr(ac.preflight) : arr(card && card.preflight),
       t, source: src.where === 'pc' ? 'PC bot' : card && card.source ? (card.source === 'PC' ? 'PC heartbeat' : card.source === 'cloud' ? 'cloud monitor' : card.source) : sc ? 'PC (Live View)' : null,
@@ -146,7 +147,9 @@
 
   // account C: off / Sim test / armed / paused / funded
   function acctC(M) {
-    const a = M.ac;
+    const a = M.ac, sl = M.slot;
+    if (!a && sl && sl.on) return { mode: 'set', label: sl.sim ? 'SET · SIM TEST' : sl.armed ? 'SET · ARMED' : 'SET · NOT ARMED', lvl: 'warn',
+      line: `${sl.say || 'Account C is set'}${sl.problem ? ' · ' + sl.problem : ''}. The bot picks it up at its next poll once it runs (Start trading).` };
     if (!a) return { mode: 'off', label: 'OFF · paper shadow', lvl: '', line: 'Account C (BLITZ\'s own 25K) is off: BLITZ runs two PAPER ledgers on the PC and nothing is routed.' };
     const name = a.account ? ` on ${a.account}` : '';
     if (a.paused) return { mode: 'paused', label: 'PAUSED', lvl: 'bad', line: `Paused by the performance contract${a.paused.why ? ': ' + a.paused.why : ''}. Resume is your decision.` };
@@ -405,9 +408,9 @@
     const auto = [
       ['BLITZ paper shadow runs on the PC', stg && !['off', 'error'].includes(stg) ? true : M.sc || M.card ? false : null, M.text],
       ['1-minute bars from NinjaTrader are fresh', stg === 'stale' ? false : M.t ? M.now - M.t < 20 * 60 : null, stg === 'stale' ? M.text : M.t ? `last BLITZ data ${dur(M.now - M.t)} ago` : 'no data yet'],
-      ['Account C is set (its 25K Name)', a ? true : false, a ? (a.account || 'set') : 'Start page > BLITZ · 25K > Set BLITZ\'s 25K'],
+      ['Account C is set (its 25K Name)', a || (M.slot && M.slot.on) ? true : M.slot || M.where !== 'pc' ? false : null, a ? (a.account || 'set') : M.slot && M.slot.on ? (M.slot.say || M.slot.name) : 'Start page > BLITZ · 25K > Set BLITZ\'s 25K'],
       ['Sim test seen', a ? (a.kind === 'SIM' ? (arr(a.closed).length || arr(a.trades_today).length ? true : null) : a.kind === 'LIVE' ? true : null) : null, a && a.kind === 'SIM' ? `${arr(a.closed).length} Sim trades so far` : 'optional: Sim test = Sim101 for a day'],
-      ['Armed on the real 25K', a ? (a.kind === 'LIVE' && a.armed) : false, a ? (a.armed ? 'armed' : 'not armed') : 'type I ACCEPT LIVE RISK on the Start page'],
+      ['Armed on the real 25K', a ? (a.kind === 'LIVE' && a.armed) : M.slot && M.slot.on ? !!(M.slot.armed && !M.slot.sim) : false, a ? (a.armed ? 'armed' : 'not armed') : M.slot && M.slot.on ? (M.slot.armed ? 'armed' : 'not armed') : 'Start page: Arm BLITZ (the typed phrase)'],
       ['Performance contract not paused', a ? !a.paused : null, a && a.paused ? 'PAUSED: resume is your decision' : sc ? `${sc.status || ''}` : 'checks from 20 trades'],
     ];
     const rows = (pf.length ? pf.map((x) => [x.label || x.name || x.key, x.ok === true ? true : x.ok === false ? false : null, x.fix || x.text || x.detail || '']) : auto);

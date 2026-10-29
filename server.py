@@ -429,6 +429,12 @@ def blitz_view():
                 out["account_c"] = ac.hb_block()
             except Exception as e:
                 out["account_c"] = {"error": f"{e.__class__.__name__}: {e}"[:200]}
+        try:                                                 # the Start page's BLITZ slot (data/account_c.json), never the phrase
+            from engine import go as GO
+            sl = GO.blitz_status()
+            out["slot"] = {k: sl.get(k) for k in ("on", "name", "sim", "armed", "start", "stage", "problem", "say")}
+        except Exception as e:
+            out["slot"] = {"error": f"{e.__class__.__name__}: {e}"[:200]}
         return J(out)
     except Exception as e:                                   # never 500 the dashboard over a page
         return J({"error": f"{e.__class__.__name__}: {e}"[:200]}, 500)

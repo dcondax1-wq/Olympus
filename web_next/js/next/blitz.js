@@ -64,7 +64,7 @@ async function sources(withLv = true) {
   const bd = board && !board.error ? board : null;
   return { blz, lv, board: bd, mind: mn, cal: goals && goals.calendar ? goals.calendar : null, news: ev, acc: (blz && blz.account_c) || null };
 }
-const bModel = (S) => window.BlitzUI.model({ now: Date.now() / 1000, where: 'pc', lv: S.lv, card: S.blz && S.blz.card ? S.blz.card : S.blz, ac: S.acc, board: S.board && S.board.blitz, preflight: S.blz && S.blz.preflight });
+const bModel = (S) => window.BlitzUI.model({ now: Date.now() / 1000, where: 'pc', lv: S.lv, card: S.blz && S.blz.card ? S.blz.card : S.blz, ac: S.acc, slot: S.blz && S.blz.slot, board: S.board && S.board.blitz, preflight: S.blz && S.blz.preflight });
 const dModel = (S) => ({ now: Date.now() / 1000, where: 'pc', board: S.board, lv: S.lv, mind: S.mind, news: S.news, cal: S.cal, acc: S.acc });
 const active = (id) => document.getElementById('page-' + id)?.classList.contains('active');
 const timers = {};
