@@ -115,6 +115,10 @@ async function frames(p, tag) {
   await p.waitForTimeout(1200);
   const s = await p.evaluate(V('v.stats()'));
   perf[tag] = s;
+  // 3D Lite (no bloom, no reflection): the frame time there too, then back to Max
+  await p.evaluate(V('(v.setQuality("lite"), 1)')); await p.waitForTimeout(1500);
+  perf[tag + '_lite'] = await p.evaluate(V('v.stats()'));
+  await p.evaluate(V('(v.setQuality("max"), 1)')); await p.waitForTimeout(300);
   step(`${tag}: frame time sane (${s.msAvg} ms a frame, ${s.fps} fps, ${s.calls} draw calls, bloom ${s.bloom})`, s.msAvg > 0 && s.msAvg < 400 && s.frames > 10, JSON.stringify(s));
 }
 
@@ -185,7 +189,9 @@ async function frames(p, tag) {
       await p.waitForTimeout(1500);
       await shot(p, 'pc_live.png');
       await core(p, 'pc');
-      // click a thought panel: the card opens
+      // a thought from the Minds timeline: the replay jumps there, then its holographic panel (3D label) opens the card
+      await p.evaluate(() => document.querySelector('.hd-tl button[data-jump="thought"]')?.click()); await p.waitForTimeout(1200);
+      await p.evaluate(() => document.querySelector('#hdX')?.click()); await p.waitForTimeout(200);
       const thId = await p.evaluate(() => [...document.querySelectorAll('.hd-labs .hd-thought')].find((e) => e.style.visibility === 'visible')?.dataset.id);
       if (thId) { await p.evaluate((id) => document.querySelector(`.hd-labs .hd-thought[data-id="${id}"]`).click(), thId); await p.waitForTimeout(500); }
       step('pc: click a thought panel -> its card', await p.evaluate(() => document.querySelector('#hdCard')?.dataset.kind === 'thought' && !document.querySelector('#hdCard').hidden), thId);
@@ -202,6 +208,11 @@ async function frames(p, tag) {
       await dayPicker(p, 'pc');
       for (const cam of ['flat', '3d']) { await p.click(`#hdCam button[data-v="${cam}"]`); await p.waitForTimeout(1200); if (cam === 'flat') await shot(p, 'pc_flat.png'); }
       step('pc: camera presets Flat / 3D', await p.evaluate(V('v.counts().preset')) === '3d');
+      await p.click('#hdCam button[data-v="fly"]'); await p.waitForTimeout(2500);
+      const fly = await p.evaluate(V('v.counts()'));
+      await shot(p, 'pc_fly.png');
+      step('pc: Fly: the cinematic fly-through runs with the replay', fly.mode === 'fly' && await p.evaluate(V('H.state.playing')), JSON.stringify(fly));
+      await p.evaluate(V('(H.pause(), v.preset("3d"), 1)'));
       await frames(p, 'pc');
       await p.evaluate(() => { Element.prototype.requestFullscreen = undefined; Element.prototype.webkitRequestFullscreen = undefined; });
       await p.click('#hdFs'); await p.waitForTimeout(1200);

@@ -27,7 +27,7 @@
 
   function ensureCss() {
     if (document.querySelector('link[data-hd]')) return;
-    const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'holo.css?v=3179a369'; l.dataset.hd = '1';
+    const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'holo.css?v=5c6032ef'; l.dataset.hd = '1';
     document.head.appendChild(l);
   }
   ensureCss();
@@ -87,7 +87,7 @@
   };
   Object.defineProperty(env, 'every', { get: () => H.every });
   let core = null;
-  const coreMod = () => core || (core = import('./holocore.js?v=179d0e69').catch((e) => { core = null; throw e; }));
+  const coreMod = () => core || (core = import('./holocore.js?v=f32bdf59').catch((e) => { core = null; throw e; }));
 
   // ------------------------------------------------------------------ the page (#/holo)
   function view(el) {

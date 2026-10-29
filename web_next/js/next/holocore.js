@@ -126,6 +126,8 @@ export function mountHolodeck(host, env) {
         else { const tr = (d.trades || []).map((x) => x.entry?.t).filter(ok); S.T = tEnd(); S.playing = false; S.start = tr.length ? Math.max(t0(), Math.min(...tr) - 5400) : t0(); }
       } else if (S.live && !S.playing) S.T = Infinity;
       apply(true); seg();
+      // a past day opens on Zlarior's trade (the money), today follows the newest bar
+      if (!same && !S.live && view) { const tr = (d.trades || []).filter((x) => bk(x.bot) === 'lit' && x.entry).at(-1) || (d.trades || []).at(-1); if (tr) { view.focus('trade', tr.id, { quiet: true }); S.cam = 'free'; seg(); } }
       if (o.replay) replay();
     } catch (e) { S.err = e.message || String(e); note(S.err); }
     $('#hdMode').textContent = S.err ? 'no data' : S.live ? 'LIVE' : 'REPLAY';
@@ -353,7 +355,11 @@ export function mountHolodeck(host, env) {
   root.addEventListener('click', (e) => {
     const t = e.target.closest('button, [data-kind]'); if (!t || !root.contains(t)) return;
     if (t.dataset.v && t.parentNode.id === 'hdLR') { if (t.dataset.v === 'live') goLive(); else replay(S.start ?? t0()); return; }
-    if (t.dataset.v && t.parentNode.id === 'hdCam') { S.cam = t.dataset.v; if (view) { if (S.cam === 'fly' && !S.playing && !reduced()) { replay(S.start ?? t0()); S.speed = Math.max(S.speed, 60); } view.preset(S.cam); } seg(); return; }
+    if (t.dataset.v && t.parentNode.id === 'hdCam') {
+      const cam = t.dataset.v;
+      if (view) { if (cam === 'fly' && !S.playing && !reduced()) { S.speed = Math.max(S.speed, 60); replay(S.start ?? t0()); } view.preset(cam); }
+      S.cam = cam; seg(); return;
+    }
     if (t.dataset.v && t.parentNode.id === 'hdTf') { S.tf = t.dataset.v; store.set('holo.tf', S.tf); if (view) view.setTF(S.tf); apply(false); seg(); return; }
     if (t.id === 'hdLayB') { const p = $('#hdLayers'); p.hidden = !p.hidden; t.setAttribute('aria-expanded', String(!p.hidden)); return; }
     if (t.id === 'hdSideB') { S.side = !S.side; store.set('holo.side', S.side); seg(); setTimeout(() => view?.resize(), 60); return; }

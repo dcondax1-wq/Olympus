@@ -7,14 +7,14 @@
 // The page: ./holocore.js (byte-identical to tools/web_public/holocore.js) + /css/holo.css. No WebGL 2 (or quality "2D"):
 // the Live View chart (./liveviewchart.js) with the fills drawn on it. Page section is created here (no index.html change).
 import { store } from '../util.js';
-import { mountHolodeck } from './holocore.js?v=179d0e69';
+import { mountHolodeck } from './holocore.js?v=f32bdf59';
 import { fxModule, fxLevel } from './fx3d.js';
 
 const ID = 'holo';
 let H = null;
 function ensure() {
   if (!document.querySelector('link[data-hd]')) {
-    const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('../../css/holo.css?v=3179a369', import.meta.url).href; l.dataset.hd = '1';
+    const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('../../css/holo.css?v=5c6032ef', import.meta.url).href; l.dataset.hd = '1';
     document.head.appendChild(l);
   }
   if (document.getElementById('page-' + ID)) return;

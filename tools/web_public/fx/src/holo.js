@@ -56,7 +56,7 @@ export class Holo extends View {
     this.phone = !!opts.phone;
     this.lite = !!opts.lite || Q.level === 'lite';
     const R = this.renderer;
-    R.localClippingEnabled = true;
+    R.localClippingEnabled = true; R.info.autoReset = false;      // draw calls counted over every pass of a frame (stats)
     R.setClearColor(new THREE.Color('#03050f'), 1);
     this.scene.background = new THREE.Color('#03050f');
     this.scene.fog = new THREE.Fog(0x03050f, 26, 70);
@@ -78,12 +78,12 @@ export class Holo extends View {
       transparent: true, opacity: 0.93, clippingPlanes: [this.clipUp] });
     this.mUp = glass('#22f0a6', '#0c9a64'); this.mDn = glass('#ff3d71', '#a3123d');
     this.mWick = new THREE.MeshBasicMaterial({ color: 0xffffff, clippingPlanes: [this.clipUp] });
-    this.mMirUp = new THREE.MeshBasicMaterial({ color: new THREE.Color('#22f0a6').multiplyScalar(0.32), transparent: true, opacity: 0.55, depthWrite: false, clippingPlanes: [this.clipDn] });
-    this.mMirDn = new THREE.MeshBasicMaterial({ color: new THREE.Color('#ff3d71').multiplyScalar(0.32), transparent: true, opacity: 0.55, depthWrite: false, clippingPlanes: [this.clipDn] });
+    this.mMirUp = new THREE.MeshBasicMaterial({ color: new THREE.Color('#22f0a6').multiplyScalar(0.5), transparent: true, opacity: 0.6, depthWrite: false, clippingPlanes: [this.clipDn] });
+    this.mMirDn = new THREE.MeshBasicMaterial({ color: new THREE.Color('#ff3d71').multiplyScalar(0.5), transparent: true, opacity: 0.6, depthWrite: false, clippingPlanes: [this.clipDn] });
     this.mVol = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false });
     // floor: dark glossy glass + neon grid; the back wall: the price / time grid
     this.fU = { uC: { value: new THREE.Color('#3b5bff') }, uT: { value: new THREE.Vector3() }, uSX: { value: DX * 15 }, uOX: { value: 0 } };
-    this.floorBase = new THREE.Mesh(new THREE.PlaneGeometry(400, 60), new THREE.MeshStandardMaterial({ color: 0x050816, roughness: 0.25, metalness: 0.6, transparent: true, opacity: 0.78, depthWrite: false }));
+    this.floorBase = new THREE.Mesh(new THREE.PlaneGeometry(400, 60), new THREE.MeshStandardMaterial({ color: 0x050816, roughness: 0.25, metalness: 0.6, transparent: true, opacity: 0.66, depthWrite: false }));
     this.floorBase.rotation.x = -Math.PI / 2; this.floorBase.renderOrder = -2; env.add(this.floorBase);
     this.floor = new THREE.Mesh(new THREE.PlaneGeometry(400, 60), new THREE.ShaderMaterial({ uniforms: this.fU, vertexShader: FLOOR_V, fragmentShader: FLOOR_F, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, extensions: { derivatives: true } }));
     this.floor.rotation.x = -Math.PI / 2; this.floor.renderOrder = -1; env.add(this.floor);
@@ -122,7 +122,7 @@ export class Holo extends View {
     const dt = Math.min(0.1, (now - (this._lt || now)) / 1000 || 0.016); this._lt = now;
     if (this.visible) {
       const t0 = performance.now();
-      try { this.update(now / 1000, dt); this._render(); this._errs = 0; }
+      try { this.renderer.info.reset(); this.update(now / 1000, dt); this._render(); this._errs = 0; }
       catch (e) { console.warn('holo frame', e); if ((this._errs = (this._errs || 0) + 1) > 30) { this.broken = true; return; } }
       const ms = performance.now() - t0, S = this.st;
       S.frames++; S.ms = ms; S.msAvg = S.msAvg ? S.msAvg * 0.92 + ms * 0.08 : ms; S.acc += dt; S.n++;
@@ -350,8 +350,8 @@ export class Holo extends View {
       const edgeMat = (c) => new THREE.LineBasicMaterial({ color: new THREE.Color(c).multiplyScalar(1.4), transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false });
       const mkBox = (c, op) => { const m = new THREE.Mesh(this.unit, boxMat(c, op)); const e = new THREE.LineSegments(this.edgeG, edgeMat(c)); m.add(e); m.userData.pick = { kind: 'trade', id: tr.id }; g.add(m); return m; };
       const steps = (Array.isArray(tr.stop_path) && tr.stop_path.length ? tr.stop_path : []).filter((s) => ok(s[0]) && ok(s[1]));
-      const risk = steps.map((s) => ({ t: s[0], px: s[1], m: mkBox(((long && s[1] >= E) || (!long && s[1] <= E)) ? '#22f0a6' : '#ff3d71', 0.17) }));
-      const reward = ok(tr.target) ? mkBox('#22f0a6', 0.11) : null;
+      const risk = steps.map((s) => ({ t: s[0], px: s[1], m: mkBox(((long && s[1] >= E) || (!long && s[1] <= E)) ? '#22f0a6' : '#ff3d71', 0.15) }));
+      const reward = ok(tr.target) ? mkBox('#22f0a6', 0.075) : null;
       // the stop path as a neon step line
       const sp = steps.map((s) => ({ t: s[0], px: s[1], h: this._hbar(g, this._neon('#ff7a59', 1.5, 1), 0, 0, this.Y(s[1]), dep / 2 + 0.01, 0.03) }));
       const vSteps = sp.slice(1).map((s, i) => this._vbar(g, this._neon('#ffb347', 1.6, 1), this.X(s.t), this.Y(sp[i].px), this.Y(s.px), dep / 2 + 0.01, 0.03));
@@ -598,16 +598,22 @@ export class Holo extends View {
     this.fly = null; this.mode = 'follow'; this._frameNow(false);
   }
   follow(on = true) { this.mode = on ? 'follow' : 'free'; if (on) this._frameNow(false); }
-  focus(kind, id) {
+  focus(kind, id, o = {}) {
     let x = null, y = null;
     if (kind === 'fill') { const F = this.fills.find((q) => q.f.id === id); if (F) { x = this.X(F.f.t); y = this.Y(F.f.px); this._focusIt = F.it; } }
-    if (kind === 'trade') { const Tr = this.trades.find((q) => q.tr.id === id); if (Tr) { const t1 = Tr.ex ? Tr.ex.t : Tr.tr.entry.t + 1800; x = (this.X(Tr.tr.entry.t) + this.X(t1)) / 2; y = (Tr.hiY + Tr.loY) / 2; this._focusIt = Tr.it; } }
+    let wTr = 0;
+    if (kind === 'trade') { const Tr = this.trades.find((q) => q.tr.id === id); if (Tr) { const cap = (this.phone ? 70 : 240) * 60, t0 = Tr.tr.setup && ok(Tr.tr.setup.t_sweep) ? Math.max(Tr.tr.setup.t_sweep - 600, Tr.tr.entry.t - cap / 2) : Tr.tr.entry.t - 900, t1 = Math.min(Tr.ex ? Tr.ex.t : Tr.tr.entry.t + 1800, t0 + cap);
+      x = (this.X(t0) + this.X(t1)) / 2; wTr = this.X(t1) - this.X(t0) + 1.2;
+      const b = this.bars(); let lo = Infinity, hi = -Infinity; for (let i = Math.max(0, this.barAt(t0)); i <= Math.max(0, this.barAt(t1)) && i < b.length; i++) { lo = Math.min(lo, b[i][3]); hi = Math.max(hi, b[i][2]); }
+      const yl = Math.min(this.Y(lo), Tr.loY), yh = Math.max(this.Y(hi), this.phone ? Math.min(Tr.hiY, this.Y(hi) + 2) : Tr.hiY); y = (yl + yh) / 2; this._trH = yh - yl; this._focusIt = Tr.it; } }
     if (kind === 'thought') { const th = this.thoughts.find((q) => q.id === id); if (th) { x = th.g.position.x; y = th.g.position.y + 0.4; this._focusIt = th.it; } }
     if (x == null) return false;
     this.mode = 'free'; this.fly = null;
-    Object.assign(this.goal, { tx: x, ty: y, dist: kind === 'trade' ? Math.max(3, this._fitDist(this._winW(), this.goal.fov) * 0.55) : (this.phone ? 2.6 : 2.2), yaw: this.presetName === 'flat' ? 0 : -0.38, pitch: this.presetName === 'flat' ? 0.02 : 0.2 });
-    if (kind === 'trade') { const Tr = this.trades.find((q) => q.tr.id === id); const wTr = Math.abs(this.X(Tr.ex ? Tr.ex.t : Tr.tr.entry.t + 1800) - this.X(Tr.tr.entry.t)) + 2; this.goal.dist = Math.max(this.goal.dist, this._fitDist(wTr, this.goal.fov) * 0.9, (Tr.hiY - Tr.loY) * 1.4 / (2 * Math.tan(THREE.MathUtils.degToRad(this.goal.fov / 2)))); }
-    for (const it of this.items) it.el.classList.toggle('focus', it === this._focusIt);
+    Object.assign(this.goal, { tx: x, ty: y, dist: kind === 'trade' ? Math.max(3, this._fitDist(this._winW(), this.goal.fov) * 0.55) : (this.phone ? 3.4 : 3.8), yaw: this.presetName === 'flat' ? 0 : -0.38, pitch: this.presetName === 'flat' ? 0.02 : 0.2 });
+    // phone: the detail card covers the lower part of the stage, so the picked fill / thought sits in the upper part
+    if (this.phone && kind !== 'trade') this.goal.ty = y - this.goal.dist * Math.tan(THREE.MathUtils.degToRad(this.goal.fov / 2)) * 0.5;
+    if (kind === 'trade') this.goal.dist = Math.max(3, this._fitDist(wTr, this.goal.fov) * 0.9, (this._trH || 1) * 1.25 / (2 * Math.tan(THREE.MathUtils.degToRad(this.goal.fov / 2))));
+    for (const it of this.items) it.el.classList.toggle('focus', it === this._focusIt && !o.quiet);
     this.dirty = true; return true;
   }
   _bindInput() {
@@ -780,8 +786,11 @@ export class Holo extends View {
     if (kY !== this._kY) { this.axY.innerHTML = kY; this._kY = kY; }
     this.wU.uSY.value = step * this.ys; this.wU.uOY.value = this.Y(p0);
     // time ticks along the floor
-    const Wv = this._winW(), mins = Wv / DX, tstep = [5, 10, 15, 30, 60, 120].find((s) => mins / s <= (this.phone ? 5 : 9)) || 240;
-    const ta = this.tAt(C.tx - Wv * 1.2), tb = this.tAt(C.tx + Wv * 1.2), ts = tstep * 60, xs = [];
+    const Wv = this._winW(), fy0 = this.floorY ?? 0, gap = this.phone ? 62 : 74;
+    const px1 = (m) => { const a = proj(C.tx, fy0, 1.2), c = proj(C.tx + m * DX, fy0, 1.2); return Math.hypot(c.x - a.x, c.y - a.y); };
+    const tstep = [5, 10, 15, 30, 60, 120, 240].find((s) => px1(s) >= gap) || 480;
+    const spanX = Math.max(Wv, C.dist * 1.6);
+    const ta = this.tAt(C.tx - spanX * 1.2), tb = this.tAt(C.tx + spanX * 1.2), ts = tstep * 60, xs = [];
     for (let t = Math.ceil(ta / ts) * ts; t <= tb && xs.length < 24; t += ts) {
       if (t < this.t0 || t > this.tEnd) continue;
       const q = proj(this.X(t), this.floorY ?? 0, 1.2);

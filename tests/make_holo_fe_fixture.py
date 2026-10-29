@@ -119,7 +119,7 @@ def mk_trade_lit(day: str, tr: dict, b1: list, b5: list, fid: list, thoughts: li
     sw = min(win, key=lambda x: abs((x[2] if short else x[3]) - ext)) if win else b1[0]
     t_sweep = sw[0] + 30
     depth = tr.get("depth_atr") or 1.0
-    level = rnd(ext + sgn * depth * a5)
+    level = rnd(ext + sgn * min(depth * a5, 0.35 * risk))      # the swept level: just inside the extreme
     pools = tr.get("pools") or ["level"]
     swept = [{"px": rnd(level + sgn * k * 3.5), "label": p} for k, p in enumerate(pools)]
     pre = [x for x in b1 if t_sweep - 50 * 60 <= x[0] < t_sweep - 6 * 60]
