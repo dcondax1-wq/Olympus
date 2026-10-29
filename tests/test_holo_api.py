@@ -193,6 +193,16 @@ def past_logs():
         json.dump({lg["entry_id"]: lg}, fh)
     with open(os.path.join(STORE, "orders.jsonl"), "a", encoding="utf-8") as fh:
         fh.write(json.dumps({"id": lg["target_id"], "state": "FILLED", "filled": 5, "avg": 30700.0, "mtime": T13(4, 0) + 31.0, "seen": T13(4, 1)}) + "\n")
+    # account B's own state file (data/live_state_acctb.json next to the bot's): no leg kept, the order states archived
+    eb = T13(9, 45)
+    with open(os.path.join(TMP, "live_state_acctb.json"), "w", encoding="utf-8") as fh:
+        json.dump({"ledger": [row(eb + 1, "sell", 3, eb, account="Sim102", entry=30720.0, stop=30740.0, target=30660.0, src="sr_nyreclaim",
+                                  strategy="S/R", legs=[{"filled": 3, "fill_px": 30719.75}]),
+                              row(T13(10, 20), "exit", 3, eb, account="Sim102", reason="TARGET", pnl=354.0, src="sr_nyreclaim")]}, fh)
+    with open(os.path.join(STORE, "orders.jsonl"), "a", encoding="utf-8") as fh:
+        for oid, st, avg, mt in ((f"LE{eb}QQQQME", "FILLED", 30719.75, eb + 2.5), (f"LE{eb}QQQQMT", "FILLED", 30660.0, T13(10, 19) + 8.0),
+                                 (f"LE{eb}QQQQMS", "CANCELLED", None, T13(10, 19) + 8.4)):
+            fh.write(json.dumps({"id": oid, "state": st, "filled": 3 if avg else 0, "avg": avg, "mtime": mt, "seen": int(mt) + 3}) + "\n")
     os.makedirs(H.NARR_DIR, exist_ok=True)
     with open(os.path.join(H.NARR_DIR, f"{PAST}.jsonl"), "w", encoding="utf-8") as fh:
         for m in (N.msg("lit:sweep:1", T13(2, 40), "lit", "swept", "Level swept", "Swept Asia low 30,640.25 (0.9 ATR deep)", "info"),
@@ -299,12 +309,18 @@ def main():
     check("past day: the model trade the bot did not take shows as real=false src model", len(miss) == 1 and miss[0]["src"] == "model"
           and all(not f["real"] and f["src"] == "model" for f in vp["fills"] if f["trade"] == miss[0]["id"]), miss)
     ml = [o for o in vp["orders"] if o.get("model")]
+    tb = next((t for t in vp["trades"] if t["bot"] == "atlas" and t["real"]), None)
+    fb = [f for f in vp["fills"] if tb and f["trade"] == tb["id"]]
+    check("past day, account B from its state file + the archived order states: exact fill time, target fill, ATLAS",
+          tb and tb["acct"] == "Sim102" and tb["side"] == "SHORT" and [f["kind"] for f in fb] == ["entry", "target"]
+          and fb[0]["t"] == T13(9, 45) + 2.5 and fb[0]["px"] == 30719.75 and fb[1]["t"] == T13(10, 19) + 8.0 and fb[1]["px"] == 30660.0
+          and tb["exit"]["reason"] == "TARGET", (tb, fb))
     check("past day: the armed LIT limit as the model's order (not routed), FILLED at the entry",
           len(ml) == 1 and ml[0]["type"] == "LIMIT" and ml[0]["state"] == "FILLED" and ml[0]["t"] == e - 300 and ml[0]["t_end"] == e
           and ml[0]["acct"] is None and ml[0]["px"] == 30645.0, ml)
     check("past day: the narrator's feed from logs/narrator/<day>.jsonl (+ BLITZ as blitz)",
           any(x["title"] == "Level swept" and x["px"] == 30640.25 for x in vp["thoughts"]) and any(x["bot"] == "blitz" for x in vp["thoughts"])
-          and sum(1 for x in vp["thoughts"] if x["stage"] == "entry") == 1, [(x["bot"], x["stage"], x["title"]) for x in vp["thoughts"]])
+          and sum(1 for x in vp["thoughts"] if x["stage"] == "entry" and x["bot"] == "lit") == 1, [(x["bot"], x["stage"], x["title"]) for x in vp["thoughts"]])
     ve = H.build(pb, EMPTY, now)
     check("a day without real fills: the model's trades (real=false) so a replay always has something",
           len(ve["trades"]) == 1 and not ve["trades"][0]["real"] and len(ve["fills"]) == 2 and not any(f["real"] for f in ve["fills"])
@@ -313,7 +329,7 @@ def main():
     # ---- days list + routes
     dl = H.days(b, 30, now)
     check("days: newest first, with trades / real $", [d["day"] for d in dl][:2] == [DAY, PAST] and dl[0]["real_n"] >= 2
-          and dl[1]["real_usd"] == 487.0, dl[:3])
+          and dl[1]["real_usd"] == 487.0 + 354.0, dl[:3])
     app = FastAPI()
     app.include_router(H.router)
     H._bot = lambda: b

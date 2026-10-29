@@ -582,8 +582,10 @@ def real_trades(bot, day: str, now: int, errors: list, accts=None) -> dict:
             groups = [(bk, [r for r in srt if not (key == "lit" and r.get("src"))])]
             if key == "lit":                         # ATLAS members routed on LIT's own account
                 groups.append(("atlas", [r for r in srt if r.get("src")]))
+            who = acct_name or next((str((r.get("result") or {}).get("account")) for r in srt
+                                     if isinstance(r.get("result"), dict) and r["result"].get("account")), "")
             for strat, rs in groups:
-                for m in N._route_rows(rs, strat, acct_name or "", paper=False):
+                for m in N._route_rows(rs, strat, who, paper=False):
                     thoughts.append(_thought_of(m))
         except Exception as e:
             _err(errors, f"{key} order events", e)
@@ -602,6 +604,8 @@ def _one_real(key, A, ad, acct_name, et_, x, legs, orders, now, comm, fills, ord
     real, src = _src_of(res.get("adapter") or _g(ad, "name", None), acct)
     bot_key = "atlas" if key == "lit" and e.get("src") else key
     t_route = int(e["t"])
+    if not legs:
+        legs = _legs_from_orders(orders, et_, e)
     filled_legs = [lg for lg in legs if int(lg.get("filled") or 0) > 0 and lg.get("fill_px") is not None]
     rlegs = [lg for lg in (res.get("legs") or []) if isinstance(lg, dict) and int(lg.get("filled") or 0) > 0 and lg.get("fill_px") is not None]
     ent_ord = [orders.get(lg.get("entry_id")) for lg in legs if orders.get(lg.get("entry_id"))]
@@ -732,6 +736,27 @@ def _one_real(key, A, ad, acct_name, et_, x, legs, orders, now, comm, fills, ord
                       "t_sweep": None, "sweep_ext": None, "swept": [], "t_idm": None, "t_disp": None, "t_cisd": None, "cisd": None,
                       "notes": [n for n in (e.get("strategy"), e.get("reason")) if n]},
             "entry_t": et_, "dir": d, "routed_t": t_route, "_src": e.get("src")}
+
+
+def _legs_from_orders(orders: dict, et_: int, e: dict) -> list:
+    """No leg of this entry is known (an account B / C day before a restart): its brackets from NinjaTrader's archived order
+    states, by the order ids LE<entry_t><tag><N|M><E|S|T> (tools/fill_audit.parse_oid)."""
+    try:
+        from tools import fill_audit as tfa
+    except Exception:
+        return []
+    by = {}
+    for oid, st in orders.items():
+        p = tfa.parse_oid(oid)
+        if p and int(p["entry_t"]) == int(et_):
+            by.setdefault(oid[:-1], {})[p["leg"]] = st
+    out = []
+    for base, x in sorted(by.items()):
+        en = x.get("entry") or {}
+        out.append({"entry_id": base + "E", "stop_id": base + "S", "target_id": base + "T", "entry_t": int(et_),
+                    "filled": int(en.get("filled") or 0) if en.get("state") in ("FILLED", "PARTFILLED") else 0, "fill_px": en.get("avg"),
+                    "fill_mtime": en.get("mtime"), "stop0": _f(e.get("stop")), "target": _f(e.get("target")), "from_orders": True})
+    return out
 
 
 def _px_from_pnl(pnl, e_px, d, qty, comm):

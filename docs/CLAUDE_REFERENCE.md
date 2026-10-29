@@ -586,7 +586,7 @@ part yourself or fold it into a script.**
   `holo_hist.json` (last 10 trading days' trades with fills / thoughts / a ±45 min 1m window, <= 400 KB; cached 10 min or until
   a ledger changes, at most 1 rebuild a minute) in the live commit; `Publisher.extra_ms` / `--status` show the ms (here: holo
   ~12 ms warm, hist ~2.7 s cold / ~60 ms warm). Sample day for the 3D page: `tests/fixtures/holo_sample.json` (2026-10-13 from
-  real data, fake Sim fills 1 tick off; rebuild `python -X utf8 tools/holo_fixture.py`). Test `tests.test_holo_api` (45).
+  real data, fake Sim fills 1 tick off; rebuild `python -X utf8 tools/holo_fixture.py`). Test `tests.test_holo_api` (47).
 - **Deep space + Mission Control (2026-10-29, owner: "make it look cooler ... almost like 3D space"; read-only):** the default
   look of both dashboards. 3D: `tools/web_public/fx/src/space.js` (in fx.js; `FX.init({ level, bg: 'space' | 'galaxy' })`):
   Earth (continents / clouds / city lights baked once from noise into textures, then texture reads + lighting), the Moon
