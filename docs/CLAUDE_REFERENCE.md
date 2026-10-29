@@ -619,7 +619,35 @@ part yourself or fold it into a script.**
   `ops_checks.roll_late_notice` at 01:40 ET, and the cloud monitor `roll_watch.cloud_notices` when the PC's ops tick is
   older than 1 h). The test simulates the roll with a constant 301.25-pt offset (TradingView export + archive old, chart
   switched Wed 17:00): on every session after the switch the LIT window = the adjusted series bar for bar and LIT's
-  signals / trades are identical (MNQ and NQ charts).
+  signals / trades are identical (MNQ and NQ charts). 2026-10-29 (test D, 29 checks): every account (Zlarior, ATLAS, an
+  account C) builds its NinjaTraderAdapter from `live.ADAPTERS`, so each carries the guard; an order contract pinned in a
+  config (`nt_instrument` / `nt_instrument_mini`) is refused once it is past its roll (`_contract_mismatch`), even with
+  the chart left on the same old contract.
+- **DST / CME holidays / self-healing (2026-10-29, `docs/AUTOPILOT.md`):** US clocks go back Sun 2026-11-01; every live
+  time decision is America/New_York wall clock (25 trading_day functions, market_open, entry / flat windows, auto-update,
+  ops pushes, the cloud's UTC crons through its real bash guard, LIT replays over the 2025-11-02 / 2025-03-09 /
+  2026-03-08 weeks identical to the backtest: `tests/test_dst.py` 49, `--quick` 45). The JS fallback for browsers without
+  Intl time zones (`litkit.js`, `tradechart.js`, both copies) uses the US rule (`usEtOff`), not a fixed -4 h. Known
+  fixed offsets left on purpose: the old engine's 4h buckets (`engine/data.resample`, `engine/mtf.build_4h`, shadow
+  only, identical in the backtest). **One CME calendar** `engine/cme_calendar.py` (`early_close`, `full_closure`,
+  `halted`, `entry_cut` / `flat_cut` / `flat_ts`; `lit_live.early_close` and `guards.full_closure` delegate, same values;
+  Christmas on a Saturday = Fri 12-24 closed); checked against every short session and missing weekday of
+  data/NQ_5m.csv 2021-2026 (`tests/test_holidays.py` 15; Good Fridays without a jobs report are closed but kept as a
+  09:15 close). `live` / `ops_checks` / `go.market_open` know the holidays (no FEED STALE / gap alarms after an early
+  halt or on Christmas); account B and the second strategies flat 5 min before an early close (as the adapter); the
+  adapter and the extra accounts refuse entries on a full closure; `blitz.route_limits(day)` for BLITZ's router (the
+  paper engine unchanged). Self-healing (`tests/test_selfheal.py` 12): every engine state save goes through
+  `fsutil.replace`; `AccountB.void_refused_days` (like the 50K's eval_fix, once per process); narrator feeds
+  gzipped after 3 days, deleted after 120 (`ops_checks.rotate_feed`); weekend DISCONNECTED -> entries resume on
+  reconnect; **Actions minutes** `engine/actions_budget.py` (state.json "actions", budget.json on the dashboard branch;
+  saver at 85% of 2,000: the guard keeps the night check + one run an hour; only on a GitHub runner). **New MFFU Names**
+  `engine/new_accounts.py` (ops tick push once per Name; Start page line `newAcctLine` / `wireNewAcct`; POST
+  `/api/next/start/newacct` PC only: a funded account after the slot's pass via `go.to_funded`, else a new eval via
+  `go.set_names`; BLITZ via `ROLE_SETTERS["blitz"]`; never arms; `tests/test_new_accounts.py` 12). **Autopilot score**
+  `engine/autopilot.py` (Start page writes + hands-off events, 100 - 10 a step, heartbeat `remote.autopilot`;
+  `tests/test_autopilot.py` 7). Finding (heartbeat 2026-10-28): NinjaTrader's outgoing folder shows only
+  `Simulation=CONNECTED`, so the "every connection DISCONNECTED" checks cannot see the MFFU connection drop; orders
+  NinjaTrader refuses are still handled as "not placed".
 - **Execution audit (2026-10-25, `research/handoff/2026-10-25/A5_execution.md`, test `tests/test_nt_exec_audit.py`):** kill is
   account-scoped (CLOSEPOSITION + CANCEL by id) unless the action carries `"scope": "global"` (only `LiveBot.kill_switch`,
   the owner's kill -> FLATTENEVERYTHING); the OIF writer refuses FLATTENEVERYTHING / CANCELALLORDERS outside that, a line

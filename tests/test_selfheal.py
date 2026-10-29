@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import datetime as dt
 import glob
+import json
 import gzip
 import os
 import re
@@ -201,6 +202,56 @@ def t_actions(tmp):
           "09:02 and the 01:32 night check still run", res == [True, True, True, False, True, True], res)
 
 
+def t_credentials(tmp):
+    print("6. GitHub login refused on the PC (heartbeat) / the PC's phone-push config", flush=True)
+    from types import SimpleNamespace
+    from engine import heartbeat as HB, push
+    clock = [ts(2026, 11, 2, 9, 0)]
+    sent = []
+    hb = HB.Heartbeat(SimpleNamespace(running=True, cfg={}), push_fn=lambda pl, files=None: {"ok": False}, clock=lambda: clock[0],
+                      log=lambda t: None, notify_fn=lambda title, body, key: sent.append((title, key)))
+    auth = {"ok": False, "error": "remote: Invalid username or password. fatal: Authentication failed for 'https://github.com/x'"}
+    for i in range(40):                                        # one failed push a minute for 40 min
+        clock[0] = ts(2026, 11, 2, 9, 0) + 60 * i
+        hb._note(auth)
+    n1 = list(sent)
+    clock[0] = ts(2026, 11, 2, 14, 0)
+    hb._note(auth)
+    hb2 = HB.Heartbeat(SimpleNamespace(running=True, cfg={}), push_fn=lambda pl, files=None: {"ok": False}, clock=lambda: clock[0],
+                       log=lambda t: None, notify_fn=lambda title, body, key: sent.append((title, key)))
+    for i in range(40):
+        clock[0] = ts(2026, 11, 3, 9, 0) + 60 * i
+        hb2._note({"ok": False, "error": "fatal: unable to access 'https://github.com/x/': Could not resolve host: github.com"})
+    hb3 = HB.Heartbeat(SimpleNamespace(running=True, cfg={}), push_fn=lambda pl, files=None: {"ok": False}, log=lambda t: None)
+    check("heartbeat: GitHub refusing the login for 30 min -> one phone push 'Surface can't upload to GitHub' a day (the bot "
+          "keeps trading); a network error -> none (the cloud's alarm covers it); a test's fake push never notifies",
+          len(n1) == 1 and n1[0][0] == "Surface can't upload to GitHub" and len(sent) == 1 and hb3.notify_fn is None, sent)
+    # the PC's push config: a failed fetch keeps the last good answer (memory, then the file) and asks again in 2 min
+    keep = dict(push._PC)
+    try:
+        pc_key = os.path.join(tmp, "pc_key.json")
+        cache = os.path.join(tmp, "push_pc_sync.json")
+        priv, pub = push.pc_keypair() if hasattr(push, "pc_keypair") else (None, None)
+        st = {"push_subs": [{"sub": {"endpoint": "https://push.example/abc", "keys": {"p256dh": "x", "auth": "y"}}}]}
+        if priv:
+            open(pc_key, "w").write(json.dumps({"private": priv}))
+        ok = push.pc_sync(force=True, fetch=lambda: st, key_path=pc_key, cache_path=cache)
+
+        def boom():
+            raise RuntimeError("fatal: Authentication failed")
+        bad = push.pc_sync(force=True, fetch=boom, key_path=pc_key, cache_path=cache)
+        retry_in = push.SYNC_EVERY_S - (time.time() - push._PC["sync_t"])
+        push._PC.pop("good", None)                             # a restart: nothing in memory, the file is there
+        bad2 = push.pc_sync(force=True, fetch=boom, key_path=pc_key, cache_path=cache)
+        check("PC push config: a failed GitHub fetch keeps the phones (last good: this process, then data/push_pc_sync.json "
+              "after a restart) and tries again in ~2 min (was: nothing for 20 min)",
+              ok["subs"] and bad["subs"] == ok["subs"] and bad.get("stale") and bad2["subs"] == ok["subs"] and 0 < retry_in <= 130,
+              (ok, bad, bad2, retry_in))
+    finally:
+        push._PC.clear()
+        push._PC.update(keep)
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix="le_selfheal_")
     try:
@@ -208,6 +259,7 @@ def main():
         t_disk(tmp)
         t_saves()
         t_actions(tmp)
+        t_credentials(tmp)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     n = sum(RES)
