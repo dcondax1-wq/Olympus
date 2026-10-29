@@ -169,7 +169,8 @@ def write_local(block, root: str | None = None, why: str = "") -> str:
     tmp = p + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(rec, fh, indent=1, ensure_ascii=False)
-    os.replace(tmp, p)
+    from .fsutil import replace as _fs_replace            # retried: Windows / OneDrive lock the target a moment
+    _fs_replace(tmp, p)
     return p
 
 
