@@ -1852,6 +1852,7 @@ class Mind:
                     self._alert(int(p.get("t") or now), p.get("bot") or "lit", f"New idea to approve: {p.get('idea')}", "good")
             n = {bk: len(((store.get("bots") or {}).get(bk) or {}).get("rows") or []) + len(live_rows(bk, self.ld)) for bk in BOTS}
             self.ms = int((time.perf_counter() - t0) * 1000)
+            self.plans = {k: p for k, p in self.plans.items() if trading_day(int(p.get("t") or 0)) == day}   # today's plans only
             blk = {"t": now, "v": VERSION, "kind": KIND, "regime": reg, "plans": dict(self.plans), "similar": sim,
                    "reviews": list(self.reviews)[-10:][::-1], "proposals": props[:12], "alerts": list(self.alerts)[-10:][::-1],
                    "iq": {"store_n": n, "calibration": calibration_line(C), "daytype": daytype_note(C), "ms": self.ms,

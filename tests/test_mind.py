@@ -227,6 +227,8 @@ def t_block_replay():
     M.key = None
     M.compute(bot, now + 300)
     check("plan: not frozen twice the same day", len(MD._jl_read(os.path.join(ld, "plans.jsonl"))) == 1)
+    nxt = M.compute(fake_bot(now + 86400, None), now + 86400)
+    check("plan: yesterday's plan is not shown the next day", nxt is not None and "lit" not in nxt["plans"], (nxt or {}).get("plans"))
     check("read-only: the bot's brain / ledger unchanged", copy.deepcopy((bot.brain, bot.ledger)) == before)
     c = MD.compact(blk)
     sz = len(json.dumps(c, separators=(",", ":"), default=str))
