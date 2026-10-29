@@ -81,6 +81,9 @@
       MU.wire(el);
     };
     draw();
+    // BLITZ's thinking line and the bot's feed live in liveview.json: fetch it once (Live View's own loader) when not loaded yet
+    const LV = window.LVP;
+    if (LV && !LV.d && typeof LV.load === 'function' && !LV.busy) Promise.resolve(LV.load(true)).then(() => { if (LV.d && PAGE === ID && el.isConnected) draw(); }).catch(() => null);
     clearInterval(tmr);
     tmr = setInterval(() => { if (typeof PAGE === 'undefined' || PAGE !== ID || !el.isConnected) { clearInterval(tmr); tmr = null; return; } if (!document.hidden && !el.querySelector('details[open]:hover')) draw(); }, 30000);
     Sync.fx();
