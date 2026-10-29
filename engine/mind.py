@@ -1696,7 +1696,7 @@ def change_text(bot: str, words: str, mult: float, focus: bool) -> str:
 
 
 def research(budget_s: float = 600.0, store: dict | None = None, log_dir: str | None = None, now: int | None = None,
-             write: bool = True) -> dict:
+             write: bool = True, adv_dir: str | None = None) -> dict:
     """The nightly self-research: observations -> hypotheses -> tests -> proposals. Never adopts anything."""
     t_start = time.monotonic()
     now = int(now or time.time())
@@ -1745,6 +1745,7 @@ def research(budget_s: float = 600.0, store: dict | None = None, log_dir: str | 
                                        **({"note": "BLITZ $ at $150 risk a trade (the store has R only)"} if bot == "blitz" else {})},
                           "status": st, "t": now, "change": change_text(bot, words, mult, focus) if st == "candidate" else None,
                           "why": f"{why.rstrip('.')}{'' if why.endswith('?') else '.'} Verdict: {verdict}.", "first_t": (prev.get(hid) or {}).get("first_t") or now})
+    props += advisor_leads(now, adv_dir, prev)
     took = round(time.monotonic() - t_start, 2)
     order = {"candidate": 0, "testing": 1, "rejected": 2}
     keep = {p["id"]: p for p in prev.values()}
@@ -1756,6 +1757,39 @@ def research(budget_s: float = 600.0, store: dict | None = None, log_dir: str | 
                    "owner decides, then it is built and re-tested in the run library (tools/runlib.py)."}
     if write:
         _write_json(os.path.join(ld, "proposals.json"), out)
+    return out
+
+
+ADV_MIN_TRADES = 10
+
+
+def advisor_leads(now: int, adv_dir: str | None = None, prev: dict | None = None) -> list:
+    """The discretion advisor's live tally (engine/advisor.py, logs/advisor/tally.json) read as leads: a structure rule that
+    kept saving money on >= 10 real / paper trades is filed as "testing" next to what its research said; it never becomes a
+    candidate here (the run library's H1 / H2 / 2021-25 gates decide that, tools/structure_manage.py)."""
+    out = []
+    try:
+        from . import advisor as AD
+        T = AD.load_tally(adv_dir)
+    except Exception:
+        return out
+    bot_of = {"lit": "lit", "atlas": "atlas", "scalp": "blitz"}
+    for strat, blk in (T or {}).items():
+        for rid, x in ((blk or {}).get("rules") or {}).items():
+            if not isinstance(x, dict) or int(x.get("n") or 0) < ADV_MIN_TRADES or float(x.get("net") or 0) <= 0 \
+                    or int(x.get("better") or 0) <= int(x.get("worse") or 0):
+                continue
+            pid = f"advisor-{strat}-{rid}"
+            try:
+                note = AD.research_note(rid)
+            except Exception:
+                note = ""
+            out.append({"id": pid, "bot": bot_of.get(strat, strat), "idea": f"{x.get('label') or rid} (the advisor's live tally)",
+                        "evidence": {"h1": _cut(note, 300) or "research: see research/writeups/structure-management.md", "h2": _cut(x.get("text"), 300),
+                                     "r2125": "2021-25: in the structure research (tools/structure_manage.py)", "usd_month": None},
+                        "status": "testing", "t": int(now), "change": None,
+                        "why": f"Noticed in the live advisor tally: {x.get('text')}. It goes back to the run library before anything changes.",
+                        "first_t": ((prev or {}).get(pid) or {}).get("first_t") or int(now)})
     return out
 
 

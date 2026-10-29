@@ -275,7 +275,7 @@ def main(cmd="all"):
     cal = {"v": MD.VERSION, "built": int(time.time()), "similar": calibrate(store), "daytype": model}
     with open(MD.CALIB_PATH, "w", encoding="utf-8") as fh:
         json.dump(cal, fh, indent=1, default=MD._jd)
-    seed = MD.research(600, store=store, log_dir=os.path.join(OUT, "_none"), write=False)   # the first self-research run
+    seed = MD.research(600, store=store, log_dir=os.path.join(OUT, "_none"), write=False, adv_dir=os.path.join(OUT, "_none"))   # the first run
     with open(MD.SEED_PROPOSALS, "w", encoding="utf-8") as fh:
         json.dump(seed, fh, indent=1, default=MD._jd)
     print("seed proposals", len(seed["proposals"]), sum(p["status"] == "candidate" for p in seed["proposals"]), flush=True)

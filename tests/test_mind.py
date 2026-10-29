@@ -292,7 +292,7 @@ def t_reviews():
 def t_research():
     ld = tempfile.mkdtemp()
     t0 = time.perf_counter()
-    out = MD.research(600, log_dir=ld, now=T("2026-10-29", 16, 10))
+    out = MD.research(600, log_dir=ld, now=T("2026-10-29", 16, 10), adv_dir=tempfile.mkdtemp())
     took = time.perf_counter() - t0
     st = {p["status"] for p in out["proposals"]}
     print(f"   research on the real store: {out['tested']} tests in {took:.2f} s; statuses {sorted(st)}; "
@@ -323,6 +323,17 @@ def t_research():
     check("research: a rule that helps both 2026 halves is a LIT candidate with the exact change to approve (never adopted)",
           any("london" in p["id"] for p in lit_c) and all("approves" in (p["change"] or "") for p in lit_c), lit_c[:1])
     check("research: the same rule is rejected for ATLAS because it hurts 2021-25", not any("london" in p["id"] for p in atl_c), atl_c[:1])
+    # the advisor's live tally: a structure rule that kept saving money is filed as a lead ("testing"), never a candidate
+    ad = tempfile.mkdtemp()
+    with open(os.path.join(ad, "tally.json"), "w", encoding="utf-8") as fh:
+        json.dump({"lit": {"rules": {"trail_15m": {"n": 12, "fired": 6, "net": 640.0, "better": 5, "worse": 1, "label": "Trail to the 15m swing",
+                                                   "text": "Trail: would have saved $640 over 12 trades"},
+                                     "be_choch": {"n": 12, "fired": 4, "net": -200.0, "better": 1, "worse": 3, "label": "BE on CHoCH", "text": "x"}}}}, fh)
+    o3 = MD.research(60, store={"bots": {}}, log_dir=tempfile.mkdtemp(), now=T("2026-10-29", 16, 10), adv_dir=ad)
+    leads = [p for p in o3["proposals"] if p["id"].startswith("advisor-")]
+    check("research: the advisor's live tally becomes a lead (status testing, no change) only for a rule that kept saving money",
+          [p["id"] for p in leads] == ["advisor-lit-trail_15m"] and leads[0]["status"] == "testing" and leads[0]["change"] is None
+          and not MD.contract_errors({**MD.skeleton(1), "proposals": leads}), leads)
     # the shipped seed proposals (the first research run) match the contract
     seed = MD._read_json(MD.SEED_PROPOSALS) or {}
     check("seed proposals: committed, contract shape", seed.get("proposals") is not None and
