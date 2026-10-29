@@ -109,6 +109,19 @@ def t_one_source():
         d += dt.timedelta(days=1)
     check("lit_live.early_close and guards.full_closure == engine/cme_calendar on every date 2021-2030", not bad, bad[:5])
 
+    def ref(t):                                   # halted() without its per-hour cache
+        e = dt.datetime.fromtimestamp(t, ET)
+        td = (e + dt.timedelta(hours=6)).date()
+        if C._full(td):
+            return True
+        m = e.hour * 60 + e.minute
+        ec = C._early(td)
+        return m < 1080 and ec is not None and m >= ec
+    a, z = ts(2025, 1, 1, 0, 0), ts(2028, 1, 1, 0, 0)
+    bad = [t for t in range(a, z, 300) if ref(t) != C.halted(t)]
+    check("cme_calendar.halted (cached per UTC hour) == the plain rule on every 5 minutes 2025-2027 (both DST switches a year)",
+          not bad, bad[:3])
+
 
 def t_strategies(tmp):
     print("3. every strategy: entries stop 15 min before a halt, flat 5 min before; no entry on a closed date", flush=True)

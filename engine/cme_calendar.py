@@ -118,17 +118,30 @@ def trading_date(ts) -> dt.date:
     return (dt.datetime.fromtimestamp(int(ts), ET) + dt.timedelta(hours=6)).date()
 
 
+_HC: dict = {}                                         # UTC hour -> (full closure, halt time or None)
+
+
 def halted(ts) -> bool:
-    """CME is shut for a holiday at ts: a full-closure trading date, or past an early close's halt (until 18:00 ET)."""
-    e = dt.datetime.fromtimestamp(int(ts), ET)
-    td = (e + dt.timedelta(hours=6)).date()
-    if _full(td):
-        return True
-    mod = e.hour * 60 + e.minute
-    if mod >= 1080:
-        return False                                   # 18:00-24:00 belongs to the next date, which is not a full closure
-    ec = _early(td)
-    return ec is not None and mod >= ec
+    """CME is shut for a holiday at ts: a full-closure trading date, or past an early close's halt (until 18:00 ET).
+    Cached per UTC hour (ET offsets are whole hours, so the ET hour and the trading date are fixed inside one): the bars'
+    gap checks call this for every minute slot of a poll."""
+    ts = int(ts)
+    k = ts // 3600
+    v = _HC.get(k)
+    if v is None:
+        e = dt.datetime.fromtimestamp(k * 3600, ET)
+        td = (e + dt.timedelta(hours=6)).date()
+        if _full(td):
+            v = (True, None)
+        elif e.hour >= 18:
+            v = (False, None)                          # 18:00-24:00 belongs to the next date, which is not a full closure
+        else:
+            ec = _early(td)
+            v = (False, int(dt.datetime.combine(td, dt.time(ec // 60, ec % 60), ET).timestamp()) if ec is not None else None)
+        if len(_HC) > 100_000:
+            _HC.clear()
+        _HC[k] = v
+    return v[0] or (v[1] is not None and ts >= v[1])
 
 
 def entry_cut(day, flat_mod: int = 955) -> int:
