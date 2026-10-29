@@ -552,6 +552,25 @@ part yourself or fold it into a script.**
   gitignored), cloud via `live_learning.cloud_hook` (state "advisor");
   cards in `live_learning.suggestions` (live tally + the 2026 backtest cards `research/lit/advisor_backtest.json`; no approve command). Its backtest = the research (`tools/structure_manage.py
   advisor`). Tests `tests.test_structure`, `tests.test_advisor`.
+- **Mind (2026-10-29, owner: "a brain that's very smart, can think for itself"; read-only, never a rule / size / order):**
+  `engine/mind.py`, write-up `research/writeups/mind.md`. (1) Memory: every historical setup per bot in
+  `research/mind/store.json` (Zlarior 631 = run lit_live settings, ATLAS 1,129 = run atlas_funded_live, BLITZ 330 =
+  na_best_trades) with live-computable features (`Hist` on 5m bars: time since 18:00, killzone, VIX, 15m / 1h structure
+  trend vs the trade, prior-day range ratio, day position, ATR ratio; LIT depth / displacement / inducements / stop ATR / R to
+  the band / level family; ATLAS member; BLITZ first-hour ratio) + live / paper trades as they close
+  (`logs/mind/<bot>_live.jsonl`); k nearest -> `similar[bot]`. Calibration `research/mind/calibration.json` (fit 2026 H1,
+  check H2 + 2021-25): NOT predictive for any bot -> `valid: false`, conf "low", "context only" (reverse check fit 2021-25:
+  ATLAS separates 2026, p 0.03 both halves: a lead). (2) Regime per 5m bar + trend-day odds from 10:30 ET (logistic, fit H1:
+  AUC 0.66 H2 / 0.63 2021-25). (3) Game plans 01:45 ET (Zlarior, ATLAS) / 10:45 ET (BLITZ), sizes from `brain._sizing`,
+  journal `logs/mind/plans.jsonl`. (4) Reviews of each closed trade (grade, luck / skill), `logs/mind/reviews.jsonl`
+  (trades closed > 2 days ago are skipped). (5) Nightly research child after 16:05 ET (`python -m engine.mind research`,
+  nice 15, <= 10 min; observations -> size / skip rules -> H1 pick / H2 check / 2021-25, eval speed for LIT) ->
+  `logs/mind/proposals.json` (seed `research/mind/proposals_seed.json`: 17 tested, 0 candidates). Wiring: `narrator.tick`
+  -> `mind.pc_tick` (key check; compute in a thread once per 5m bar, ~0.2-0.3 s; `LE_MIND=0` off, `LE_MIND_RESEARCH=0` no
+  nightly), `liveview_api.view()["mind"]` (cached block), phone_view + heartbeat "mind" + holo "mind" = `mind.compact`
+  (< 12 KB), `GET /api/next/mind` (block + history + calibration), narrator kind `brain` (not pushed by default). Contract
+  checker `mind.contract_errors`, sample `tests/fixtures/mind_sample.json` (`python tools/mind_build.py sample`). Rebuild
+  memory + calibration + seed: `python -X utf8 tools/mind_build.py` (~10 s). Tests `tests.test_mind`.
 - **Dashboard 2026-10-28 (owner: "50 useful features", "what the bot is thinking", "very 3D"):** registry
   `web_next/FEATURES.md` (status of all 50). Home "Today · real accounts" (`realcore.js`, `cc.js`; phone
   `tools/web_public/realcore.js`): one card per REAL account (ledger + NinjaTrader fills only, never paper $), gauges, health
