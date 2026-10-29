@@ -190,14 +190,14 @@ def walk(rows: list, i0: int, d: int, entry: float, stop: float, target: float |
                     if rule["act"] == "exit":
                         cut = "CHOCH"
                         fired.append({"t": int(t) + secs, "action": "EXIT", "price": round(c, 2),
-                                      "why": f"5m CHoCH {'down' if dr < 0 else 'up'} through {lvl:,.2f} after +{mfe:.2f}R: out at the next open"})
+                                      "why": f"{rule['tf']} CHoCH {'down' if dr < 0 else 'up'} through {lvl:,.2f} after +{mfe:.2f}R: out at the next open"})
                     elif e + BE_OFF > cur:
                         if c_d <= e + BE_OFF:
                             cut = "CHOCH_BE"
                         else:
                             cur, moved = e + BE_OFF, True
                         fired.append({"t": int(t) + secs, "action": "BE", "price": round((e + BE_OFF) * d, 2),
-                                      "why": f"5m CHoCH {'down' if dr < 0 else 'up'} through {lvl:,.2f} after +{mfe:.2f}R: stop to entry + 1.25"})
+                                      "why": f"{rule['tf']} CHoCH {'down' if dr < 0 else 'up'} through {lvl:,.2f} after +{mfe:.2f}R: stop to entry + 1.25"})
                 elif rule["kind"] == "trail" and dr == d and (rule.get("kinds") == "any" or kd == 1) and mfe >= rule["k"]:
                     lv = float(E["prot"][i]) * d - TICK
                     if lv > cur and lv < c_d:
