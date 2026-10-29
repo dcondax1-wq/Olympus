@@ -1282,11 +1282,14 @@ class LiveBot:
         self.health["ok"] = not (self.health["stale"] and mopen) and not self.health["desync"]
         self._save_state()
         if model == "lit":                    # after routing and the state save: never delays an order
+            # account C (OFF by default): BLITZ on its own account right after LIT's routing, before the slower read-only
+            # work: its edge needs the entry at the next bar's open (research/writeups/blitz-25k.md: 1 minute late halves the
+            # 2-week pass). ATLAS still goes first on the other side: its opposite entry closes C first (AccountB._c_yield).
+            self._account_c_tick(df_full, df1, sym, now)
             self._learn_es(sym, tf, now, secs, refresh=True)       # ES bars for the next polls' learning features
             self._brain_tick(res, lit_p, now, brain_keep)
             self._second_route_tick(df_full, df1, res, sym, now)   # routed second strategies (OFF by default): LIT routed first
             self._account_b_tick(df_full, df1, sym, now)           # account B (OFF by default): its own account, after LIT
-            self._account_c_tick(df_full, df1, sym, now)           # account C (OFF by default): BLITZ on its own account, after B
             self._second_tick(df_full, df1, res, now)
             self._chart_tick(df_full, df1, res, now, brain_keep)  # trade pictures, background thread (read-only)
         return self.state
@@ -2356,7 +2359,7 @@ class LiveBot:
             self._note_error(f"account C NOT started: {e.__class__.__name__}: {e}")
 
     def _account_c_tick(self, df5, df1, sym, now):
-        """After LIT's routing and account B: account C's poll (BLITZ on the closed 1m bars). Never raises."""
+        """Right after LIT's routing (before account B and the read-only work): account C's poll (BLITZ on the closed 1m bars). Never raises."""
         try:
             self._sync_account_c()
             ac = getattr(self, "acct_c", None)

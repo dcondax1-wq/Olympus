@@ -16,7 +16,7 @@ off: the bot is exactly today's (no adapter, no state file, no heartbeat block, 
 Owner switch:  python -X utf8 -m engine.account_c --account "<Name>" --plan builder25k --start <day>   |   off
                (refused when engine.ninjatrader --selftest fails), or the Start page's "BLITZ · 25K" slot.
 
-What it does (engine/live.py LiveBot.acct_c, _account_c_tick after LIT's routing and account B; an exception is logged and
+What it does (engine/live.py LiveBot.acct_c, _account_c_tick right after LIT's routing (before the read-only work and account B); an exception is logged and
 never touches LIT or ATLAS):
   * its own NinjaTrader account: own adapter (order-file tag "acctc_", own NinjaTrader state file), own ledger and state
     file (live_state_acctc.json next to the bot's), own guards, own startup reconcile; paper when the bot is on paper;
@@ -863,7 +863,7 @@ class AccountC:
 
     # ---- one poll
     def tick(self, df1, sym, now):
-        """After LIT's routing and account B: C's poll. Feeds the closed 1m bars to BLITZ's Engine, routes its decisions,
+        """Right after LIT's routing (before account B and the read-only work): C's poll. Feeds the closed 1m bars to BLITZ's Engine, routes its decisions,
         manages the open position. Never raises."""
         if self.problem or self.adapter is None:
             return
