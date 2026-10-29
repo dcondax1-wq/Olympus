@@ -19,6 +19,8 @@
   'use strict';
   const ET = 'America/New_York';
   const okN = (v) => typeof v === 'number' && Number.isFinite(v);
+  const arr = (x) => (Array.isArray(x) ? x : []);
+  const obj = (x) => (x && typeof x === 'object' && !Array.isArray(x) ? x : {});
   const num = (v) => (v == null || v === '' ? null : okN(+v) ? +v : null);
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const money = (v) => (okN(v) ? (v < 0 ? '-' : '') + '$' + Math.abs(Math.round(v)).toLocaleString('en-US') : '—');
@@ -55,7 +57,8 @@
   const NOT_ACCT = new Set(['map', 'health', 'progress', 'real', 'week_real', 'lines', 'blocks', 'trades']);
   // every account-shaped block of the board, Zlarior / ATLAS / BLITZ first; a BLITZ placeholder until it has an account
   function accounts(M) {
-    const B = (M && M.board) || {}, seen = new Map();
+    M = obj(M);
+    const B = obj(M && M.board), seen = new Map();
     const take = (k, a) => {
       if (!a || typeof a !== 'object' || Array.isArray(a) || a.error) return;
       if (!(a.id || a.name) || !('balance' in a || 'waiting' in a || 'plan' in a || 'room' in a)) return;
@@ -69,7 +72,7 @@
     if (!seen.has('blitz')) out.push(norm('blitz', null, M));
     return out;
   }
-  function lvOf(M, sat) { const s = M && M.lv && M.lv.strategies; return (s && s[sat]) || null; }
+  function lvOf(M, sat) { const s = obj(M && M.lv && M.lv.strategies); return s[sat] && typeof s[sat] === 'object' ? s[sat] : null; }
   function norm(k, a, M) {
     const meta = BOT[k] || { name: (a && a.name) || k, size: '', color: '#8aa0ff', sat: k, method: (a && a.method) || '', hours: [] };
     const L = lvOf(M, meta.sat);
@@ -89,7 +92,7 @@
     const members = a && Array.isArray(a.members) ? a.members : (L && Array.isArray(L.members) ? L.members : []);
     const armed = !!(st && ['limit', 'cisd1m', 'entry'].includes(st.key)) || members.some((m) => /armed|tapped|pending|limit/i.test(String(m.stage || '')));
     const status = String((a && a.status) || (ph ? 'paper' : 'open'));
-    const blocks = (a && Array.isArray(a.blocks) ? a.blocks : []).filter(Boolean);
+    const blocks = arr(a && a.blocks).filter((b) => b && typeof b === 'object');
     const configured = ph ? false : a.configured !== false;
     const ended = /passed|failed|lost|stuck|graduated/.test(status);
     const state = pos ? 'trade' : ph || !configured || ended ? 'off' : armed ? 'armed' : 'idle';
@@ -109,13 +112,14 @@
   // health light per account: red on a block or a red health strip, amber on stale / warn, green when trading normally
   function light(A, M) {
     if (A.placeholder) return 'idle';
-    const H = (M.board && M.board.health) || {};
-    if (A.blocks.some((b) => b.kind !== 'passed') || (M.board && (M.board.blocks || []).length)) return 'bad';
+    const H = obj(M.board && M.board.health);
+    if (A.blocks.some((b) => b.kind !== 'passed') || (M.board && arr(M.board.blocks).length)) return 'bad';
     if (H.level === 'bad') return 'bad';
     if (H.level === 'warn' || A.state === 'off') return 'warn';
     return 'good';
   }
   function botStates(M) {
+    M = obj(M);
     const o = { lit: 'idle', atlas: 'idle', scalp: 'off' };
     for (const A of accounts(M)) if (BOT[A.key]) o[A.sat] = A.state;
     const L = lvOf(M, 'scalp');
@@ -124,7 +128,8 @@
   }
   // closed trades, newest first, each with a stable id (for the shooting stars: one per new close)
   function closed(M) {
-    const T = (M.board && Array.isArray(M.board.trades) ? M.board.trades : []).filter((t) => t && t.open === false && (okN(+t.exit_t) || t.exit));
+    M = obj(M);
+    const T = arr(M && M.board && M.board.trades).filter((t) => t && t.open === false && (okN(+t.exit_t) || t.exit));
     return T.map((t) => ({ id: `${t.acct}|${t.entry_t}|${t.exit_t || ''}`, acct: t.acct, usd: num(t.usd), r: num(t.r), t: num(t.exit_t) || num(t.entry_t) || 0, src: t.src }))
       .sort((a, b) => b.t - a.t);
   }
@@ -164,11 +169,11 @@
     else if (A.win && A.win.open) out.push({ ok: true, text: 'Entry window open now.' });
     if (A.doneToday) out.push({ ok: false, text: `Daily trade limit reached (${A.tradesToday} / ${A.maxDay || 1}).` });
     for (const b of A.blocks) out.push({ ok: false, text: `${b.text}${b.fix ? ' · ' + b.fix : ''}` });
-    for (const b of (M.board && M.board.blocks) || []) out.push({ ok: false, text: `${b.text}${b.fix ? ' · ' + b.fix : ''}` });
+    for (const b of arr(M && M.board && M.board.blocks)) out.push({ ok: false, text: `${b.text}${b.fix ? ' · ' + b.fix : ''}` });
     if (A.stage && A.stage.label) out.push({ ok: null, text: `Setup stage: ${A.stage.label}${A.stage.n && A.stage.of ? ` (${A.stage.n} of ${A.stage.of})` : ''}. ${A.waiting || ''}`.trim() });
     else if (A.members.length) for (const m of A.members.slice(0, 4)) out.push({ ok: /armed|tapped/i.test(m.stage || '') ? true : null, text: `${m.short || m.key}: ${m.text || m.stage || ''}` });
     if (A.ruleNote) out.push({ ok: null, text: A.ruleNote });
-    const news = (M.news || []).filter((n) => okN(n.t) && n.t > now - 1800 && n.t < now + 3 * 3600);
+    const news = arr(M.news).filter((n) => okN(n.t) && n.t > now - 1800 && n.t < now + 3 * 3600);
     if (news.length) out.push({ ok: null, text: `News close by: ${news.slice(0, 2).map((n) => `${etParts(n.t).hm} ${n.title}`).join(', ')}.` });
     if (!out.length) out.push({ ok: null, text: A.waiting || 'Waiting for its setup. Most days have no trade: the plan is 2-4 a week.' });
     return out;
@@ -204,12 +209,18 @@
   function missionList(M, As) {
     return `<ol class="mc-mission">${As.map((A) => `<li style="--c:${A.color}"><i></i><b>${esc(A.name)}</b><span>${esc(missionLine(A, M))}</span></li>`).join('')}</ol>`;
   }
+  // the session's end (17:00 ET) while open, else the next 18:00 ET open
+  function sessionEnd(now) {
+    for (let i = 0; i < 2 * 24 * 4; i++) { const t = Math.floor(now / 900) * 900 + 900 * (i + 1), p = etParts(t); if (p.min === 17 * 60 && !['Sat', 'Sun'].includes(p.wd)) return t; }
+    return null;
+  }
   function sessionCountdown(M) {
-    const now = M.now || nowS(), t = nextSession(now), open = inSessionNow(now);
-    return `<div class="mc-sess"><span class="mc-dot ${open ? 'good' : ''}"></span>${open ? 'Market open' : 'Market closed'} · next session (18:00 ET) in ${cd(t)}</div>`;
+    const now = M.now || nowS(), open = inSessionNow(now);
+    return `<div class="mc-sess"><span class="mc-dot ${open ? 'good' : ''}"></span>${open ? `Market open · session ends 17:00 ET in ${cd(sessionEnd(now))}` : `Market closed · next session 18:00 ET in ${cd(nextSession(now))}`}</div>`;
   }
   // strip: Home's top area
   function strip(M, opts = {}) {
+    M = obj(M);
     const As = accounts(M);
     const chips = As.map((A) => {
       const lt = light(A, M);
@@ -266,7 +277,7 @@
       const H = (A.key === 'atlas' && A.members.length ? A.members.flatMap((m) => parseHours(m.hours)) : null) || A.meta.hours || [];
       return `<div class="mc-tl-row" style="--c:${A.color}"><b>${esc(A.name)}</b><div class="mc-tl-track">${H.map(([a, b]) => `<i style="${span(a, b)}"></i>`).join('')}</div></div>`;
     }).join('');
-    const news = (M.news || []).filter((n) => okN(n.t) && Math.abs(n.t - now) < 20 * 3600).map((n) => { const q = etParts(n.t); return `<i class="mc-news ${esc(n.impact || '')}" style="left:${x(q.min)}%" title="${esc(q.hm + ' ' + n.title)}"></i>`; }).join('');
+    const news = arr(M.news).filter((n) => okN(n.t) && Math.abs(n.t - now) < 20 * 3600).map((n) => { const q = etParts(n.t); return `<i class="mc-news ${esc(n.impact || '')}" style="left:${x(q.min)}%" title="${esc(q.hm + ' ' + n.title)}"></i>`; }).join('');
     const nowX = inSessionNow(now) ? `<i class="mc-now" style="left:${x(p.min)}%"><em>${p.hm}</em></i>` : '';
     const ticks = [18, 21, 0, 3, 6, 9, 12, 15].map((h) => `<span style="left:${x(h * 60)}%">${String(h).padStart(2, '0')}</span>`).join('');
     return card('timeline', 'Session timeline', 'Today 18:00 → 17:00 ET: the sessions, each bot\'s entry hours, the news, the flat-by 15:55', `<div class="mc-tl"><div class="mc-tl-bands">${bands}${news}${nowX}<i class="mc-flat" style="left:${x(15 * 60 + 55)}%" title="flat by 15:55 ET"></i></div>${rows}<div class="mc-tl-ticks">${ticks}</div></div>`);
@@ -277,11 +288,11 @@
   }
   // 5. Alerts center: everything that needs attention, most urgent first
   function alertsList(M, As) {
-    const B = M.board || {}, out = [];
-    for (const l of B.lines || []) out.push({ lvl: l.level || 'warn', text: l.text });
-    for (const it of ((B.health && B.health.items) || [])) if (it.ok === false || it.warn) out.push({ lvl: it.ok === false ? 'bad' : 'warn', text: `${it.label}: ${it.value}${it.detail ? ' · ' + it.detail : ''}${it.fix ? ' · Fix: ' + it.fix : ''}` });
+    const B = obj(M.board), out = [];
+    for (const l of arr(B.lines)) out.push({ lvl: l.level || 'warn', text: l.text });
+    for (const it of arr(obj(B.health).items)) if (it && (it.ok === false || it.warn)) out.push({ lvl: it.ok === false ? 'bad' : 'warn', text: `${it.label}: ${it.value}${it.detail ? ' · ' + it.detail : ''}${it.fix ? ' · Fix: ' + it.fix : ''}` });
     for (const A of As) if (A.pos && okN(A.room) && okN(A.pos.atStop) && A.room + A.pos.atStop < (A.mll || 0) * 0.25) out.push({ lvl: 'warn', text: `${A.name}: a stop-out now leaves only ${money(A.room + A.pos.atStop)} of room.` });
-    const nar = (M.lv && Array.isArray(M.lv.narrator) ? M.lv.narrator : []).filter((m) => m.level && m.level !== 'dim').slice(0, 6);
+    const nar = arr(M.lv && M.lv.narrator).filter((m) => m.level && m.level !== 'dim').slice(0, 6);
     for (const m of nar) out.push({ lvl: m.level === 'bad' ? 'bad' : m.level === 'good' ? 'good' : 'info', text: `${m.hm || ''} ${m.title || ''}: ${m.text || ''}`.trim() });
     const seen = new Set();
     return out.filter((a) => { const k = a.text; if (seen.has(k)) return false; seen.add(k); return true; })
@@ -295,7 +306,7 @@
   }
   // 6. Health constellation: PC · NinjaTrader · feed · heartbeat · phone feed · cloud as connected stars
   function healthNodes(M) {
-    const B = M.board || {}, I = {}; for (const it of ((B.health && B.health.items) || [])) I[it.key] = it;
+    const B = obj(M.board), I = {}; for (const it of arr(obj(B.health).items)) if (it && it.key) I[it.key] = it;
     const lv = (it) => (!it ? 'idle' : it.ok === false ? 'bad' : it.warn ? 'warn' : it.ok ? 'good' : 'idle');
     const now = M.now || nowS(), hbAge = okN(+B.data_t) ? now - B.data_t : null;
     const pc = B.running === false ? { l: 'bad', v: 'stopped' } : I.loop ? { l: lv(I.loop), v: I.loop.value } : { l: hbAge != null && hbAge < 900 ? 'good' : hbAge != null ? 'warn' : 'idle', v: hbAge != null ? dur(hbAge) + ' ago' : 'no data' };
@@ -321,7 +332,7 @@
   }
   // 7. Eval runway: $ to go per session left vs the backtest's $ per session
   function fRunway(M, As) {
-    const P = (M.board && M.board.progress) || {};
+    const P = obj(M.board && M.board.progress);
     const rows = As.filter((A) => !A.placeholder && okN(A.toTarget)).map((A) => {
       const pr = P[A.key] || {}, left = okN(pr.sessions_left) ? pr.sessions_left : okN(A.session) ? Math.max(0, (A.sessions || 10) - A.session + 1) : null;
       const per = okN(left) && left > 0 ? Math.max(0, A.toTarget) / left : null, exp = pr.expected && okN(+pr.expected.per_session) ? +pr.expected.per_session : null;
@@ -332,7 +343,7 @@
   }
   // 8. Daily loss gauge + 9. week pace
   function fLimits(M, As) {
-    const P = (M.board && M.board.progress) || {};
+    const P = obj(M.board && M.board.progress);
     const rows = As.filter((A) => !A.placeholder).map((A) => {
       const used = okN(A.dllUsed) ? A.dllUsed : okN(A.today) && A.today < 0 ? -A.today : 0, f = A.dll ? Math.min(1, used / A.dll) : 0;
       const wk = (P[A.key] || {}).week || null;
@@ -342,7 +353,7 @@
   }
   // 10. Next news
   function fNews(M) {
-    const now = M.now || nowS(), N = (M.news || []).filter((n) => okN(n.t) && n.t > now - 600).sort((a, b) => a.t - b.t).slice(0, 4);
+    const now = M.now || nowS(), N = arr(M.news).filter((n) => okN(n.t) && n.t > now - 600).sort((a, b) => a.t - b.t).slice(0, 4);
     const body = N.length ? `<ul class="mc-rows">${N.map((n) => `<li class="${esc(n.impact || '')}"><b>${etParts(n.t).wd} ${etParts(n.t).hm}</b><span>${esc(n.title)} · ${n.t > now ? cd(n.t, 'in') : 'now'}</span></li>`).join('')}</ul>` : '<p class="mc-muted">No big US news on the calendar for today.</p>';
     return card('news', 'Next news', 'High-impact events coming up, with a countdown', body);
   }
@@ -363,6 +374,7 @@
     ['space', 'Deep space 3D', 'Earth, the eclipse, the Sun, stars; bot satellites glow when armed / in a trade, a shooting star on every closed trade, the aurora follows today\'s P&L'],
   ];
   function page(M, opts = {}) {
+    M = obj(M);
     const As = accounts(M);
     return `<div class="mc-page">
       <header class="mc-hero"><div><span class="mc-eye">Mission Control · read-only</span><h2>Three bots in orbit</h2>${sessionCountdown(M)}</div></header>
