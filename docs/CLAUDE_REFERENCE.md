@@ -93,7 +93,7 @@ part yourself or fold it into a script.**
   `docs/DAILY_CHECKLIST.md` "Switch on scale-in"; on = `{"pb":0.25,"f":1.0,"rat_k":1.0,"min_rk":2.0,"n":1}` in both files). Built
   2026-10-30, OFF: "lit_sizing" `"scale_in_from_session": 5` (no add before eval session 5) and `"scale_in_funded": false` (no add once
   funded) in `live.py _add_qty` + `cloud_monitor.lit_add_usd` (`tests.test_scale_in_switches`); `lit-edge-2026-10-30.md`: with scale-in
-  on, eval path +$3.9k / +$8.6k vs scale-in as built, 2-week pass 60.5 / 58.0 (owner decides, after the Sim roundtrip).
+  on, eval path +$3.9k / +$8.6k (H1 / H2) vs today, 2-week pass 60.5 / 58.0 vs 57.1 / 52.2 (owner decides, after the Sim roundtrip).
   Switch one off/on in live_model.json / live_model_lit.json "lit", rerun `tools/lit_losses.py live` (checks the trades
   against the stored run of the switch set) + dashboard data.
 - **Results LIT + pack + t_check + be_off** (run `lit_live`, rebuilt 2026-10-20 = `lit_adopt_t15_be_off`; the 2026-10-18
