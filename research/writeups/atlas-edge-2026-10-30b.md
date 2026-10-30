@@ -2,8 +2,8 @@
 title: ATLAS edge, day session (2026-10-30 b) - the stop hunts pay most on the FUNDED 25K; the NA day-hold member's extra money was eval-path money, not owner money; funded size rules are noise
 family: risk
 date: 2026-10-30
-status: promising - nothing passes cleanly. One structure passes every numeric gate (the two stop hunts at x0.5 added on ATLAS's FUNDED 25K only, eval untouched), but the hunts' own rules were picked on H1 + 2025 + 2021-24, so only 2026 H2 is a clean check, and most of the H2 gain comes from sh_trend (audit - not real; needs a limit entry account B cannot place). Paper first. Rejected - the NA day-hold member in any schedule (it adds no owner money over the hunts alone and gets 28-32% of funded accounts stuck), buffer-first funded size, payout ask lines, winner caps, the 50% best-day size cap, member day limits
-summary: Owner 2026-10-30 - "make ATLAS way better". Two directions (the coordinator moved windows and entry execution to another agent at 13:00) - (1) make last night's paper lead (the stop hunts x0.5 + the NA day-hold member x0.5, run ab_atlas_na_hunts_lead) pass every gate, (2) funded-stage money. New tool - a whole-account SLOT simulator (eval -> funded -> MFFU payouts -> a new $63 eval; 300 block-bootstrap paths x 6 months per span) that measures $ to the owner a month net of every eval bought, next to the eval-path $ and the 25K 2-week pass / dead. Main finding - the lead's extra money was profit INSIDE evals, which is never paid; on the funded account the NA member gets 28-32% of accounts stuck in 6 months (hunts alone 3-9%), so the lead pays the owner LESS than today in H1 ($532 vs $568 a month). It can be made to pass every gate (NA only from eval session 11 / only while the room is >= $1,500, never once funded - 20 of 33 neighbours pass), but then it pays the same as the hunts alone (0 of 33 beat them). The money is in the hunts, and most of it on the funded account - eval = today's ATLAS exactly, once funded + sh_asia + sh_trend at x0.5 - slot $661 / $510 / $23 a month (H1 / H2 / 2021-25) vs today $568 / $382 / -$2; every funded weight 0.4-1.0 passes; 12 random-time twins of the hunts pass 0 times (their H2 slot averages $246); a second path set and every year 2022-25 agree. Hunts x0.5 in the eval as well + x1.0 once funded - $758 / $595 / $30 (6 of 8 neighbours). Funded size rules (buffer-first, a $1,000 cap after the lock, ask lines $250-$1,500, winner caps, the 50% best-day size cap) move the slot by noise (+-$30) - MFFU's payout rules bind, not the size. Paper research only.
+status: promising - nothing passes cleanly. One structure passes every numeric gate (the two stop hunts at x0.5 added on ATLAS's FUNDED 25K only, eval untouched), but the hunts' own rules were picked on H1 + 2025 + 2021-24, so only 2026 H2 is a clean check, and most of the H2 gain comes from sh_trend (audit - not real; needs a limit entry account B cannot place). Paper first. Rejected - the NA day-hold member in any schedule (it adds no owner money over the hunts alone and gets 28-32% of funded accounts stuck), buffer-first funded size, payout ask lines, winner caps, the 50% best-day size cap, giving up a funded account sooner, a funded day take-profit or day stop, member day limits
+summary: Owner 2026-10-30 - "make ATLAS way better". Two directions (the coordinator moved windows and entry execution to another agent at 13:00) - (1) make last night's paper lead (the stop hunts x0.5 + the NA day-hold member x0.5, run ab_atlas_na_hunts_lead) pass every gate, (2) funded-stage money. New tool - a whole-account SLOT simulator (eval -> funded -> MFFU payouts -> a new $63 eval; 300 block-bootstrap paths x 6 months per span) that measures $ to the owner a month net of every eval bought, next to the eval-path $ and the 25K 2-week pass / dead. Main finding - the lead's extra money was profit INSIDE evals, which is never paid; on the funded account the NA member gets 28-32% of accounts stuck in 6 months (hunts alone 3-9%), so the lead pays the owner LESS than today in H1 ($532 vs $568 a month). It can be made to pass every gate (NA only from eval session 11 / only while the room is >= $1,500, never once funded - 20 of 33 neighbours pass), but then it pays the same as the hunts alone (0 of 33 beat them). The money is in the hunts, and most of it on the funded account - eval = today's ATLAS exactly, once funded + sh_asia + sh_trend at x0.5 - slot $661 / $510 / $23 a month (H1 / H2 / 2021-25) vs today $568 / $382 / -$2; every funded weight 0.4-1.0 passes; 12 random-time twins of the hunts pass 0 times (their H2 slot averages $246); a second path set and every year 2022-25 agree. Hunts x0.5 in the eval as well + x1.0 once funded - $758 / $595 / $30 (6 of 8 neighbours). Funded rules (buffer-first, a $1,000 cap after the lock, ask lines $250-$1,500, winner caps, the 50% best-day size cap, giving up sooner, a day take-profit or day stop) move the slot by noise (+-$30) - MFFU's payout rules bind, not the size. Paper research only.
 runs: atx_today, atx_funded_hunts_w05, atx_funded_hunts_w075, atx_hunts_w05_funded_w1, atx_hunts_w075, atx_lead_na_s11_funded_hunts, atx_lead_as_is
 ---
 
@@ -42,9 +42,14 @@ less the fees (last night's measure). **Eval profit is never paid out; slot $ is
 - **B and C make more on the slot paths, but they change the eval** (the atlas-v2 lead). Their single real H2 path is worse:
   the eval started on 2026-07-01 with the hunts never passes inside H2 (-$34 a month vs today's +$414). A keeps today's eval
   and has no such hole.
-- **Funded size rules do nothing worth switching.** Buffer-first, a $1,000 cap after the lock, other payout ask lines,
-  other winner caps and the 50% best-day size cap move the slot by about +-$30 a month. MFFU's payout rules limit what comes
-  out, not the size. Keep today's funded preset.
+- **Funded rules do nothing worth switching.** These move the slot by about +-$30 a month or make it worse:
+  - buffer-first size, and a $1,000 cap after the lock;
+  - other payout ask lines and other winner caps;
+  - the 50% best-day size cap;
+  - giving up a funded account sooner;
+  - a day take-profit or a day stop.
+
+  MFFU's payout rules limit what comes out, not the size. Keep today's funded preset.
 
 **Frequency and risk** (the slot on the real days, eval + funded trades together; A vs today):
 
@@ -82,6 +87,9 @@ passes slower than 3 weeks 4.3 / 13.3 / 2.4 / 3.3%.
 | F3 | 2 | ask for a payout at $250 / $500 / $1,000 / $1,500 above the buffer (live $750) | 4 x 2 | $750 stays best |
 | F4 | 2 | funded winner cap $750 / $1,500 (live $1,000) | 2 x 2 | worse in H2 ($750: -$92 a month) |
 | F5 | 2 | the 50% best-day rule in the size (`cons_aware`, always / after the 1st payout) | 2 x 2 | noise |
+| F6 | 2 | give up a funded account under $200 / $300 / $400 of room (live $100) and buy the next eval sooner | 3 x 2 | worse |
+| F7 | 2 | funded day take-profit: no new entry once the day is +$300 / $400 / $500 / $750 | 4 x 2 | noise (+$4 a month) |
+| F8 | 2 | funded day stop at -$200 / $300 / $400 (live: the $600 soft daily loss) | 3 x 2 | worse or flat |
 | W / D | 3 / 4 | per-member windows, member day limits (run before the scope change, not pursued) | 7 + 4 | see the end |
 
 Gate (strict, the owner's): in H1 (pick), H2 (check) and 2021-25 (reference) all of - the 2-week pass not lower and dead
@@ -132,6 +140,9 @@ an eval NA adds a little eval-path $, and that is not money. **Drop the NA membe
 | ask at $250 / $1,500 above the buffer | $557 / $540 | $371 / $357 | -$2 / -$10 | 3.07 / 2.78 |
 | winner cap $750 / $1,500 | $573 / $568 | **$290** / $348 | -$1 / -$7 | 2.35 / 2.74 |
 | 50% best-day rule in the size (cons_aware) | $561 | $387 | $6 | |
+| give up a funded account under $200 / $400 of room (live $100) | $567 / $549 | $377 / $353 | -$5 / -$20 | |
+| day take-profit: no new entry once the day is +$400 | $572 | $388 | $0 | |
+| day stop at -$200 (live: the $600 soft daily loss) | $560 | $371 | -$3 | |
 | **+ the hunts x0.5 once funded (A)** | **$661** | **$510** | **$23** | **4.01** |
 | + the hunts x0.75 once funded (A') | $715 | $528 | $30 | 4.15 |
 | + the hunts x1.0 once funded | $735 | $466 | $29 | |
@@ -140,6 +151,9 @@ an eval NA adds a little eval-path $, and that is not money. **Drop the NA membe
 
 - The two size rules that "pass" on today's account (60% -> 80% after the lock, with or without a $1,000 cap) gain +$6 to
   +$32 / +$1 to +$3 / +$2 a month: that is path noise (a second path set moves today's slot by up to $16).
+- The day take-profit "passes" on today's account by +$4 / +$3 to +$7 / +$1: ATLAS rarely takes a 2nd trade after a
+  +$300 day. On top of A it costs H2 up to -$34.
+- Giving up a funded account sooner buys more evals and pays less in every span.
 - On top of A, the same rules move the slot by -$47 to +$28 a month. Only "60% -> 80%, $1,000 cap after the lock" beats A in
   all three spans (+$28 / +$12 / +$2): noise again.
 - **Graduation at 5 payouts** is not changed: the simulator buys a new eval after a graduation (MFFU's live stage is not
@@ -194,8 +208,9 @@ run; they are recorded, not pursued.
   second path set moves the slot by $10-25.
 - **No look-ahead:** the schedule uses the eval tracker's own numbers at the entry (session number, room with the day's
   closed P&L). The funded size uses only the account's own past.
-- **Multiple testing:** 151 variant rows (sched 30, stage 22, round 4 39, funded 34, e4 grid 8, finalists 7, windows 7,
-  day limits 4), plus 26 placebo rows and 84 window-control rows.
+- **Multiple testing:** 171 variant rows, plus 26 placebo rows and 84 window-control rows:
+  - sched 30, stage 22, round 4 39, funded 34, give-up / day limits 20;
+  - e4 grid 8, finalists 7, windows 7, day limits 4.
 - **Not modelled:**
   - MFFU's live stage after 5 payouts;
   - the second funded 25K (MFFU allows 2 a person; BLITZ is planned for the other);
@@ -219,10 +234,10 @@ run; they are recorded, not pursued.
 ## Files
 
 - **Code:** `tools/atx_edge.py`. Commands:
-  - `base`, `sched`, `stage`, `round4`, `e4grid`, `funded`, `placebo`, `why`, `final`, `checks`, `save`;
+  - `base`, `sched`, `stage`, `round4`, `e4grid`, `funded`, `fmin`, `placebo`, `why`, `final`, `checks`, `save`;
   - `win` and `maxd` (directions 3 and 4, before the scope change).
 - **Results (`research/second/`):** `atx_base.json`, `atx_sched.json`, `atx_stage.json`, `atx_round4.json`,
-  `atx_e4grid.json`, `atx_funded.json`, `atx_placebo.json`, `atx_why.json`, `atx_final.json`, `atx_checks.json`,
+  `atx_e4grid.json`, `atx_funded.json`, `atx_fmin.json`, `atx_placebo.json`, `atx_why.json`, `atx_final.json`, `atx_checks.json`,
   `atx_win.json`, `atx_maxd.json`.
 - **Runs:** `research/runs/atx_*.json`. Trades = the slot on each span's real sessions (eval + funded trades, tagged
   `atlas-eval:<member>` / `atlas-funded:<member>`). The slot-path numbers are in each run's verdict.

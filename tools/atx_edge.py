@@ -196,7 +196,7 @@ class Funded:
             self.days[cd] = round(cum, 2)
         self.peak = max(self.peak, self.bal)
         self.floor = min(max(self.floor, self.peak - float(P["mll"])), self.lock)
-        if self.bal - self.floor < 100.0:
+        if self.bal - self.floor < float(P.get("fmin", 100.0)):     # stuck: the bot stops (live $100); "fmin" = give up earlier
             self.done, self.why = True, "stuck"
             return 0.0, recs
         tr = FL.track(self.days, self.pays, P, today=cd)
@@ -232,8 +232,13 @@ def funded_q(fz, Vf):
     W = Vf.get("w") or {}
     sc = Vf.get("sched")
 
+    day_tp, day_sl = fz.get("day_tp"), fz.get("day_sl")
+
     def q(t, st):
         r = float(t["risk"])
+        cum = float(st.get("cum", 0.0))
+        if (day_tp is not None and cum >= float(day_tp)) or (day_sl is not None and cum <= -float(day_sl)):
+            return 0                                     # funded day take-profit / day stop: no new entry today
         c = post if st.get("locked") else pre
         n = SZ.funded_qty({"risk_pts": r, "tgt_pts": float(t["tgt"]), "size_mult": 1.0}, dict(st), c, acct=AF.ACCT)
         n = min(int(AF.ACCT["max_micros"]), int(n))
@@ -264,6 +269,8 @@ def slot(Ve, Vf=None, fz=None, ask=None, spans=tuple(MONTHS), n=300, length=126,
     P = dict(FL.plan_of("builder25k"))
     if ask is not None:
         P["ask_above"] = float(ask)
+    if "fmin" in fz:
+        P["fmin"] = float(fz["fmin"])
     be = M.by_day(A.account_units(Ve))
     bf = be if Vf is Ve else M.by_day(A.account_units(Vf))
     qf = funded_q(fz, Vf)
@@ -809,6 +816,36 @@ def cmd_e4grid(n=300, procs=2):
     return out
 
 
+def cmd_fmin(n=300, procs=2):
+    """When to give up a funded 25K: the bot stops it under $100 of room (live); give up under $200 / $300 / $400 instead
+    (buy the next $63 eval sooner) - on today's funded account and on the funded-only hunts candidate."""
+    t0 = time.time()
+    libs()
+    base = full(today(), n=n)
+    cand = full(today(), Vf=H_(0.5), n=n)
+    jobs = []
+    for fm in (200.0, 300.0, 400.0):
+        jobs.append((f"F6 give up a funded account under ${fm:,.0f} of room", "full", {"V": today(), "fz": {"fmin": fm}, "n": n}))
+        jobs.append((f"F6 give up under ${fm:,.0f} | funded + hunts x0.5", "full", {"V": today(), "Vf": H_(0.5), "fz": {"fmin": fm}, "n": n}))
+    for tp in (300.0, 400.0, 500.0, 750.0):                 # F7 funded day take-profit (the 50% best-day rule; BLITZ's funded uses $400)
+        jobs.append((f"F7 funded: no new entry once the day is +${tp:,.0f}", "full", {"V": today(), "fz": {"day_tp": tp}, "n": n}))
+        jobs.append((f"F7 day +${tp:,.0f} | funded + hunts x0.5", "full", {"V": today(), "Vf": H_(0.5), "fz": {"day_tp": tp}, "n": n}))
+    for sl in (200.0, 300.0, 400.0):                         # F8 funded day stop below the $600 soft daily loss
+        jobs.append((f"F8 funded: no new entry once the day is -${sl:,.0f}", "full", {"V": today(), "fz": {"day_sl": sl}, "n": n}))
+        jobs.append((f"F8 day -${sl:,.0f} | funded + hunts x0.5", "full", {"V": today(), "Vf": H_(0.5), "fz": {"day_sl": sl}, "n": n}))
+    rows = []
+    for nm, o in pool_map(jobs, procs):
+        g = gate(o, base, eval_same=True)
+        gc = gate(o, cand, eval_same=True) if nm.endswith("hunts x0.5") else None
+        rows.append({"name": nm, "o": o, "gate": g, "gate_vs_cand": gc})
+        print(line(nm, o, g), ("| vs cand " + ("PASS" if gc["pass"] else "-")) if gc else "",
+              " | ".join(f"{s} evals {o[s]['slot']['evals_6m']} lose {o[s]['slot']['lose']}%" for s in GATE_SPANS), flush=True)
+    out = {"built": time.strftime("%Y-%m-%d %H:%M"), "base": base, "cand": cand, "rows": rows}
+    dump(out, "atx_fmin.json")
+    print(f"done ({time.time() - t0:.0f}s)", flush=True)
+    return out
+
+
 def cmd_why(n=300):
     """Why the NA member costs funded money: the funded account with and without it (eval = hunts x0.5 for both), payouts,
     stuck / lost, and how often the 50% best-day rule holds a payout back (tools/atlas_funded.mc on its 1,000 paths)."""
@@ -991,4 +1028,4 @@ def path_stats(T, s):
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "base"
     {"base": cmd_base, "sched": cmd_sched, "funded": cmd_funded, "win": cmd_win, "maxd": lambda: cmd_family("maxd"),
-     "stage": lambda: cmd_family("stage"), "placebo": cmd_placebo, "final": cmd_final, "checks": cmd_checks, "save": cmd_save, "round4": cmd_round4, "why": cmd_why, "e4grid": cmd_e4grid}[cmd]()
+     "stage": lambda: cmd_family("stage"), "placebo": cmd_placebo, "final": cmd_final, "checks": cmd_checks, "save": cmd_save, "round4": cmd_round4, "why": cmd_why, "e4grid": cmd_e4grid, "fmin": cmd_fmin}[cmd]()
