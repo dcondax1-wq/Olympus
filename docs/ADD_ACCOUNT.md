@@ -9,7 +9,7 @@ It is **off** until you add an account, and it never arms anything for you.
 1. **Buy the account.** Use your own price with the firm's current code (never the list price). Check first that the firm
    allows a bot on NinjaTrader (the table below).
 2. **Log it in NinjaTrader 8.** Its Name shows in the Accounts tab. Test on a Sim account first if you like (Sim101, Sim102 ...).
-3. **Add it on the PC:** dashboard > All tools > **Fleet** > "Add an account" (short id, which bot it copies, firm + plan,
+3. **Add it on the PC:** dashboard > All tools > More > **Fleet** > "Add an account" (short id, which bot it copies, firm + plan,
    the NinjaTrader Name, the first day) > **Add it**. Or one console line:
 
 ```
@@ -50,7 +50,7 @@ payout, Remove) and "Kill ALL followers" at the top. Arming is never a button: i
 | Try a past day on paper | `--dry-run 2026-10-13` |
 | A firm's rules | `python -X utf8 -m engine.firms --show <plan>` (`--stage funded`) |
 
-The Fleet page (phone: System > Fleet, or open `#/fleet`; PC: All tools > Fleet, or open `#fleet`) shows every account: balance, room, today, the open
+The Fleet page (phone: System > Fleet, or open `#/fleet`; PC: All tools > More > Fleet, or Ctrl K "Fleet", or http://localhost:8766/?page=fleet) shows every account: balance, room, today, the open
 copy, slippage vs the lead, why a copy was skipped, and rules we could not verify.
 
 ## The firms' rules in plain words

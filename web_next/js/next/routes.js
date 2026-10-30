@@ -203,6 +203,6 @@ TITLES.deck = DECK.label;
   if (g && g.ids && !g.ids.includes('blitz')) { const i = g.ids.indexOf('atlas'); g.ids.splice(i >= 0 ? i + 1 : g.ids.length, 0, 'blitz'); }
   if (g && g.ids && !g.ids.includes('mind')) { const i = g.ids.indexOf('real'); g.ids.splice(i >= 0 ? i + 1 : g.ids.length, 0, 'mind', 'deck'); } }
 
-// Fleet (js/next/fleet.js, 2026-10-30; read-only): copy trading to the follower accounts (engine/fleet.py, GET /api/next/fleet)
+// Fleet (js/next/fleet.js, 2026-10-30): copy trading to the follower accounts (engine/fleet.py, GET /api/next/fleet)
 export const FLEET = { id: 'fleet', label: 'Fleet', icon: 'modules', desc: 'Copy trading: every follower account (prop firms, Sim, your LIVE account), room the firm\'s way, today, slippage vs the lead, rule warnings, the firm rules' };
-CC.push(FLEET); TITLES.fleet = FLEET.label;
+MODULES.push(FLEET); TITLES.fleet = FLEET.label;   // All tools > More (a tile), Ctrl K

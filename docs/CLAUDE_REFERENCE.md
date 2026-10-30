@@ -465,7 +465,7 @@ part yourself or fold it into a script.**
     catalog; off = {on: false} + the catalog), POST `/api/next/fleet/set` (the PC page's buttons = `fleet.run`, the CLI
     without printing: add / remove / on / off / kill / unkill / to_funded / payout; PC only via `cloud_guard.local_only`,
     `cloud_guard.FLEET_WRITES` in CLOUD_BLOCKED; every field checked; "arm" refused: arming stays the console `--arm`).
-    Phone `tools/web_public/fleet.js` (#/fleet, System group, read-only), PC `web_next/js/next/fleet.js` (#fleet, CC
+    Phone `tools/web_public/fleet.js` (#/fleet, System group, read-only), PC `web_next/js/next/fleet.js` (All tools tile: MODULES
     entry in routes.js, PAGES.fleet in app.js; cards + Add form + per-account buttons with confirms + Kill ALL; never
     redraws under typing). Tests `python -X utf8 -m tests.test_firms` (58) and `tests.test_fleet [--quick]` (103 unit
     incl. a Sim follower on the real NinjaTrader adapter against `_FakeNT`, node renders of both pages, the POST guard;

@@ -763,8 +763,8 @@ def ui_checks(tmp):
     check("phone index.html: fleet.js is one <script defer> line after the last script", scripts and scripts[-1].startswith("fleet.js"), scripts[-3:])
     app = open(os.path.join(ROOT, "web_next", "js", "app.js"), encoding="utf-8").read()
     rts = open(os.path.join(ROOT, "web_next", "js", "next", "routes.js"), encoding="utf-8").read()
-    check("PC: PAGES.fleet in app.js + the route entry (CC / TITLES) in routes.js, no layout list changed",
-          "PAGES.fleet = fleetPage;" in app and "CC.push(FLEET); TITLES.fleet = FLEET.label;" in rts and "'fleet'" not in rts.split("export const GROUPS")[1].split("];")[0])
+    check("PC: PAGES.fleet in app.js + the route entry (All tools tile / TITLES) in routes.js, no layout list changed",
+          "PAGES.fleet = fleetPage;" in app and "MODULES.push(FLEET); TITLES.fleet = FLEET.label;" in rts and "'fleet'" not in rts.split("export const GROUPS")[1].split("];")[0])
 
 
 # ------------------------------------------------------------------------------------------------------------- replay
