@@ -93,7 +93,7 @@
     fold.onclick = () => { const on = !el.classList.contains('pl-all'); el.classList.toggle('pl-all', on); store.set('pl.homeAll', on); fold.setAttribute('aria-expanded', String(on)); fold.querySelector('b').textContent = on ? 'Hide' : 'Everything else on Home'; if (on) enter(el, ':scope > .pl-fold ~ *'); };
     box.after(fold);
     SU.wire(el); SU.tick(box);
-    if (first) { countUp(box); enter(box, ':scope > *'); }
+    if (first) { box.classList.add('pl-first'); countUp(box); enter(box, ':scope > *'); }   // rings / sparklines draw in once, not on every live redraw
   }
   const h0 = VIEWS.today;
   if (h0 && !h0.__pl) {
@@ -108,7 +108,7 @@
   }
 
   // ------------------------------------------------------------------ the bot tabs: the same account card on top of Today
-  function botTop(el) {
+  function botTop(el, soft) {
     const g = typeof groupOf === 'function' ? groupOf(PAGE) : '';
     const today = (PAGE === 'lit') || ((PAGE === 'atlas' || PAGE === 'blitz') && (!ARG || ARG === 'today'));
     el.querySelectorAll(':scope > .pl-bot').forEach((x) => x.remove());
@@ -117,7 +117,7 @@
     let A = null;
     try { A = (window.MissionUI.accounts(M) || []).find((a) => a.key === k) || null; } catch (e) { A = null; }
     if (!A) return;
-    const box = document.createElement('div'); box.className = 'pl-bot';
+    const box = document.createElement('div'); box.className = 'pl-bot' + (soft ? '' : ' pl-first');
     box.innerHTML = SU.acctCard(A, M, { where: 'phone', go: () => `data-go="${k === 'lit' ? 'evalhq' : k}"${k === 'lit' ? '' : ' data-arg="results"'}` });
     const after = [...el.children].filter((c) => c.classList.contains('mo-strip')).pop();
     if (after) after.after(box); else el.prepend(box);
@@ -133,7 +133,7 @@
       const el = document.getElementById('page');
       if (el && PAGE !== 'today') el.classList.remove('pl-h', 'pl-all');
       const out = r0.apply(this, arguments);
-      try { if (el) { botTop(el); if (!soft && PAGE !== 'today') enter(el, ':scope > *'); } } catch (e) { console.warn('polish render', e); }
+      try { if (el) { botTop(el, soft); if (!soft && PAGE !== 'today') enter(el, ':scope > *'); } } catch (e) { console.warn('polish render', e); }
       return out;
     };
     render.__pl = true;

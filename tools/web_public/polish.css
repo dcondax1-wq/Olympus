@@ -110,9 +110,9 @@
 :root[data-polish="on"] :is(button.card, a.card, .cl-row, .pl-now-r, .pl-quick a, .tabs a, .zl-seg button, .strip button, .pl-fold, .st-sum, .iconbtn):active { transform: scale(.975); transition: transform .08s; }
 :root[data-polish="on"] :is(button.card, .cl-row, .pl-quick a, .tabs a) { transition: transform .22s var(--spring), background .2s, border-color .2s; }
 .st-ring .v { transition: stroke-dasharray .9s var(--out); }
-:root[data-polish="on"] .st-ring .v { animation: pl-ringin 1.1s var(--out) both; }
+.pl-first .st-ring .v { animation: pl-ringin 1.1s var(--out) both; }
 @keyframes pl-ringin { from { stroke-dasharray: 0 var(--C); } }
-:root[data-polish="on"] .st-spark .ln { stroke-dasharray: 240; animation: pl-draw 1.2s .15s var(--out) both; }
+.pl-first .st-spark .ln { stroke-dasharray: 240; animation: pl-draw 1.2s .15s var(--out) both; }
 @keyframes pl-draw { from { stroke-dashoffset: 240; } to { stroke-dashoffset: 0; } }
 
 /* ---------- the palette ---------- */
