@@ -415,6 +415,10 @@ class Follower:
             self.skips = self.skips[-30:]
         self.log("risk", f"lead entry at {_et(et_):%H:%M} ET NOT copied: {why}")
 
+    def ledger_dir(self, et_):
+        e = _entry_row(self.ledger, et_)
+        return (1 if e.get("side") == "buy" else -1) if e else None
+
     def closes3(self):
         start = self.start_day()
         return [(d, t, p) for d, t, p, *_ in self.closes if not start or d >= start]
@@ -609,6 +613,7 @@ class Follower:
                               f"fleet:{self.id}:refused:{et_}")
             return
         self._slip()
+        self.fleet.notify_entry(self, q)
         self.log("system", f"copied {LEAD_NAMES.get(self.lead)} {_side(op['dir'])} {q} micros (lead {op.get('qty')}), stop "
                            f"{order['stop']}, target {order['target']}")
         self.fleet.save()
@@ -881,7 +886,10 @@ class Fleet:
                 out[str(a.spec["nt_account"])] = f"the extra account {a.name}"
         return out
 
-    def notify(self, title, body, key, kind="risk"):
+    def notify(self, title, body, key, kind="ops", payload=None):
+        """One notice: kept on the Fleet page (notes) and, for the real bot only, pushed to the phone (kind "ops" = the
+        owner's PC notices that are pushed: copy NOT placed / NOT confirmed, eval passed / failed, payout ready; entries
+        "fill" and exits "outcome" as every account's). Tests: the notify hook gets (title, body, key)."""
         self.notes.append({"title": title, "body": body, "key": key, "kind": kind, "t": int(self.clock())})
         self.notes = self.notes[-100:]
         if self._notify_hook is not None:
@@ -894,13 +902,35 @@ class Fleet:
             return
         try:
             from . import push
-            push.pc_notify(push.text_payload("PC", kind, title, body, key=key, t=int(self.clock()), url="#/fleet"))
+            p = payload or push.text_payload("PC", kind, title, body, key=key, t=int(self.clock()), url="#/fleet")
+            push.pc_notify(p)
         except Exception:
             pass
 
+    def _acct_label(self, f) -> str:
+        return f"FLEET {f.spec.get('label')} {f.name}"
+
+    def notify_entry(self, f, q):
+        p = f.pos or {}
+        try:
+            from . import push
+            pl = push.entry_payload(self._acct_label(f), _side(p.get("dir", 1)), q, p.get("entry_t"), src="pc", contract="MNQ",
+                                    entry=p.get("entry"), stop=p.get("stop"), target=p.get("target"))
+            pl.update(key=f"{pl['key']}:fleet:{f.id}", tag=f"{pl.get('tag', '')}-fleet-{f.id}", url="#/fleet")
+        except Exception:
+            pl = None
+        self.notify(f"{_side(p.get('dir', 1))} · {self._acct_label(f)}", f"Entered {q} MNQ (copy of {LEAD_NAMES.get(f.lead)})",
+                    f"fleet:{f.id}:entry:{p.get('entry_t')}", kind="fill", payload=pl)
+
     def notify_outcome(self, f, reason, pnl, et_):
-        self.notify(f"FLEET {f.spec.get('label')} {f.name}: {reason} ${pnl:+,.0f}", f"copy of {LEAD_NAMES.get(f.lead)} "
-                    f"({f.profile.get('label') if f.profile else ''})", f"fleet:{f.id}:exit:{et_}", kind="trade")
+        try:
+            from . import push
+            pl = push.outcome_payload(self._acct_label(f), _side((f.ledger_dir(et_) or 1)), reason, pnl, et_, int(self.clock()), src="pc")
+            pl.update(key=f"{pl['key']}:fleet:{f.id}", tag=f"{pl.get('tag', '')}-fleet-{f.id}", url="#/fleet")
+        except Exception:
+            pl = None
+        self.notify(f"{self._acct_label(f)}: {reason} ${pnl:+,.0f}", f"copy of {LEAD_NAMES.get(f.lead)} "
+                    f"({f.profile.get('label') if f.profile else ''})", f"fleet:{f.id}:exit:{et_}", kind="outcome", payload=pl)
 
     # ---- lifecycle
     def adapter_cfg(self, f: Follower) -> dict:
