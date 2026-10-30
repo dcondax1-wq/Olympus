@@ -729,7 +729,7 @@ part yourself or fold it into a script.**
   piled up on every live redraw (real.js `.rc-moved`). PC `js/next/polish.js` (`initPolish()` in app.js): `#nxStatusHome`
   on top of `#page-cc` (bar + Sunday card, MutationObserver keeps it first), sidebar `MAIN_SECTIONS` in routes.js (Bots ·
   Live · Money · Insight; shell.js `mainLinks`), BOTS = the same five sections, `css/polish.css`. fx: Earth bake 1536 on a
-  Retina phone at Max, crisper star points. Features 82-99 + "Organization (2026-10-30)" in `web_next/FEATURES.md`. Caches
+  Retina phone at Max, crisper star points. Features 82-103 + "Organization (2026-10-30)" in `web_next/FEATURES.md`. Caches
   le-public-v46 / le-shell-next-v28. Test `python -X utf8 -m tests.test_ui_polish [--shots <dir>]` (static, node, phone
   390x844 every tab + palette + intro + reduced motion + frame time + light, PC 1440x900 + Ctrl K).
   StatusUI's classes are `su-*` / `data-su-*` (NOT `st-`: the PC Start page owns `.st-go`, `.st-acct`, `.st-list` ...; the

@@ -153,6 +153,10 @@ absent). Read-only: no new control, only links. Tests: `python -X utf8 -m tests.
 | 97 | Recent pages | new | More: the pages you opened last as chips under the search box (`le.pl.visits`, this device only) |
 | 98 | Cinematic sky | new | Both apps: a soft vignette and a faint top light over the deep-space sky (the CSS sky and the 3D scene), dark theme only; the CSS sky drifts a little with scroll / tilt / the mouse |
 | 99 | Ctrl K knows the bots | new | PC palette: each bot's five sections ("ATLAS · Rules", "BLITZ · Trades" ...) and "Status: <verdict>" (opens Home with the status bar open) next to every page |
+| 100 | Bot lights on the tabs and the sidebar | new | Phone bottom bar + PC sidebar: a small light on Zlarior / ATLAS / BLITZ while it is in a trade (green, breathing), armed (amber) or blocked (red); nothing while it waits |
+| 101 | Why no trade yet, under each bot | new | Phone bot tabs > Today: under the account card, the first three reasons from Mission Control (market closed, outside its hours, daily limit, blocks, setup stage), plain words |
+| 102 | Acknowledge from the status bar | new | Phone Home: the critical alert (eval near the floor, feed stale ...) is one red row in the status bar with one tap to Got it; the old banner moved under the quick tiles so it never pushes the first screen down |
+| 103 | In-a-trade glow | new | An account card whose bot is in a trade glows softly in the bot's colour (an opacity layer, no repaint); reduced motion = a still glow |
 
 ## Organization (2026-10-30, night 3: "organized, clean")
 - One information architecture on both apps. **Home** = the status bar, the three accounts, what matters now (+ the Sunday
