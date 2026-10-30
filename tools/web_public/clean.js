@@ -1,9 +1,11 @@
 // Calm layout (phone, 2026-10-25; loaded by index.html with one <script defer> LAST, after features.js; read-only UI).
 // The owner: "too many buttons, make it look like a maid swept and cleaned it". Nothing is deleted, only moved:
-//   Bottom bar   five tabs: Home · Zlarior · ATLAS · Money · More (v2, 2026-10-25 PM: the LIT bot is called "Zlarior";
-//                display name only, every key, file and setting stays "lit"). Each bot tab holds ALL of that bot:
+//   Bottom bar   six tabs: Home · Zlarior · ATLAS · BLITZ · Money · More (v2, 2026-10-25 PM: the LIT bot is called "Zlarior";
+//                display name only, every key, file and setting stays "lit"; 2026-10-29: + BLITZ, the scalper, blitz.js).
+//                Each bot tab holds ALL of that bot:
 //                  Zlarior  Today (+ the 50K eval pages) · Brain · Trades · Plan & levels · Results · Strategy
 //                  ATLAS    Today · Brain · Trades · Setups · Results (the one ATLAS page in parts: #/atlas/<part>)
+//                  BLITZ    Today · Brain · Trades · Results · Rules · Go live (the one BLITZ page in parts: #/blitz/<part>)
 //                a small segmented control on top picks the section; a section with several pages shows them as chips.
 //                Old links (#/trades, #/brain, #/plan, #/second ...) open the same pages, now inside the bot's tab.
 //   Home         only what matters, in this order: the launch checklist (only while a line is not green), one hero card
@@ -181,7 +183,10 @@
     ['Today', ['atlas'], []], ['Brain', ['atlas/brain'], []], ['Trades', ['atlas/trades'], []],
     ['Setups', ['atlas/setups', 'atstats'], []], ['Results', ['atlas/results', 'atlearn'], []],
   ];
-  const BOTS = { lit: { name: 'Zlarior', segs: ZL_SEGS }, atlas: { name: 'ATLAS', segs: AT_SEGS } };
+  // BLITZ (2026-10-29): the one BLITZ page (blitz.js + blitzcore.js) in parts, #/blitz/<part>
+  const BZ_SEGS = [['Today', ['blitz'], []], ['Brain', ['blitz/brain'], []], ['Trades', ['blitz/trades'], []], ['Results', ['blitz/results'], []],
+    ['Rules', ['blitz/rules'], []], ['Go live', ['blitz/golive'], []]];
+  const BOTS = { lit: { name: 'Zlarior', segs: ZL_SEGS }, atlas: { name: 'ATLAS', segs: AT_SEGS }, blitz: { name: 'BLITZ', segs: BZ_SEGS } };
   const CHIP = { lit: 'Today', eval: '50K eval', evalhq: 'Eval HQ', cockpit: 'Eval cockpit', curve: 'Eval curve', trades: 'All trades', intel: 'Trade intel',
     plan: 'Plan', day: 'Day plan', levels: 'Levels', radar: 'Radar', brief: 'Briefing', perf: 'Performance', results: 'Replay', pnlcal: 'Calendar',
     execq: 'Execution', risk: 'Risk & sizing', mffurules: 'MFFU rules', 'atlas/setups': 'Rules & members', atstats: 'Setup stats',
@@ -190,7 +195,7 @@
   const goAttr = (it) => { const [id, arg] = it.split('/'); return `data-go="${esc(id)}"${arg ? ` data-arg="${esc(arg)}"` : ''}`; };
   const botIds = (b) => BOTS[b].segs.flatMap((s) => s[1].concat(s[2])).map((it) => it.split('/')[0]);
   function segBar(g, p, arg) {
-    const B = BOTS[g], key = p === 'atlas' && arg && arg !== 'today' ? 'atlas/' + arg : p;
+    const B = BOTS[g], key = (p === 'atlas' || p === 'blitz') && arg && arg !== 'today' ? p + '/' + arg : p;
     let si = B.segs.findIndex((s) => s[1].includes(key) || s[2].includes(key)); if (si < 0) si = 0;
     const S = B.segs[si], extra = S[2].includes(key) ? [key] : [];
     const chips = S[1].length > 1 || extra.length ? `<div class="strip cl-strip zl-chips">${S[1].concat(extra).map((it) => `<button type="button" ${goAttr(it)} class="${it === key ? 'on' : ''}">${esc(chipLabel(it))}</button>`).join('')}</div>` : '';
@@ -245,7 +250,7 @@
 
   // ------------------------------------------------------------------ More: one grouped list, Advanced collapsed
   const SECTIONS = [
-    ['Today', ['liveview', 'holo', 'mission', 'goals', 'market', 'news', 'live', 'homefull']],   // liveview: Live View (liveview.js) 2026-10-28; mission: Mission Control (mission.js) 2026-10-29; holo: Holodeck (holo.js) 2026-10-29
+    ['Today', ['liveview', 'holo', 'mission', 'mind', 'deck', 'goals', 'market', 'news', 'live', 'homefull']],   // liveview: Live View (liveview.js) 2026-10-28; mission: Mission Control (mission.js) 2026-10-29; holo: Holodeck (holo.js) 2026-10-29; mind / deck: Mind + Trader's deck (blitz.js) 2026-10-29
     ['Bot and health', ['launch', 'lights', 'ops', 'engine', 'alerts', 'activity', 'remote', 'aiwatch']],
     ['Trades', ['tplay', 'weekcal', 'replays', 'accounts']],
     ['Money', ['share', 'evals', 'stops']],
@@ -253,7 +258,7 @@
   ];
   const ADV = ['lab', 'experiments', 'writeups', 'losses', 'intraday', 'setups', 'learned', 'chart', 'sources', 'parts', 'archive'];
   const TAB_MAIN = { money: ['money', 'real', 'evaltl', 'props', 'whatif', 'scale'] };   // 'real' (Real results, real.js) 2026-10-28
-  const ON_TABS = () => [...new Set(ZL_SEGS.flatMap((s) => s[1]).concat(['atlas', 'atstats'], TAB_MAIN.money))];
+  const ON_TABS = () => [...new Set(ZL_SEGS.flatMap((s) => s[1]).concat(['atlas', 'atstats', 'blitz'], TAB_MAIN.money))];
   function moreView(el) {
     const used = new Set(['today', 'system']);
     const row = (id) => {
@@ -323,14 +328,15 @@
     if (typeof P !== 'undefined') {
       P.home = '<path d="M4 10.5L12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/>';
       P.zlarior = '<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><path d="M8.5 8.5h7l-7 7h7"/>';
+      if (!P.blitz) P.blitz = '<path d="M13.5 2.5L5 13.5h6l-1.5 8 8.5-11h-6z"/>';
       if (!P.wallet) P.wallet = '<rect x="3.5" y="6" width="17" height="13" rx="2.5"/><path d="M16 12.5h4.5"/><path d="M6 6l9-2.5 1 2.5"/>';
     }
-    // 1. five tabs: Brain folds into Home (its page and deep link stay), any other extra tab folds into More
+    // 1. six tabs (2026-10-29: + BLITZ): Brain folds into Home (its page and deep link stay), any other extra tab folds into More
     const H = GROUPS.find((g) => g.id === 'today'), M = GROUPS.find((g) => g.id === 'system');
     if (H && M) {
       for (let i = GROUPS.length - 1; i >= 0; i--) {
         const g = GROUPS[i];
-        if (['today', 'trades', 'atlas', 'money', 'system'].includes(g.id)) continue;
+        if (['today', 'trades', 'atlas', 'blitz', 'money', 'system'].includes(g.id)) continue;
         const into = g.id === 'brain' ? H : M;
         g.pages.forEach((p) => { if (!into.pages.some((q) => q[0] === p[0])) into.pages.splice(1, 0, p); if (PAGES[p[0]]) PAGES[p[0]].group = into.id; });
         if (typeof DETAIL !== 'undefined') Object.values(DETAIL).forEach((d) => { if (d.group === g.id) d.group = into.id; });
@@ -351,12 +357,16 @@
         GROUPS.splice(ti, 1);
       }
       if (!GROUPS.some((g) => g.id === 'lit')) GROUPS.push({ id: 'lit', label: 'Zlarior', icon: 'zlarior', pages: zPages });
-      const order = ['today', 'lit', 'atlas', 'money', 'system'];
+      // BLITZ, the scalper (2026-10-29): its own tab; the page itself is blitz.js (loaded after this file)
+      const bzDesc = 'BLITZ, the scalper, on its own 25K: today, brain, trades, results, rules, go live';
+      if (!GROUPS.some((g) => g.id === 'blitz')) GROUPS.push({ id: 'blitz', label: 'BLITZ', icon: 'blitz', pages: [['blitz', 'BLITZ', 'blitz', bzDesc]] });
+      if (!PAGES.blitz) PAGES.blitz = { id: 'blitz', label: 'BLITZ', icon: 'blitz', desc: bzDesc, group: 'blitz' };
+      const order = ['today', 'lit', 'atlas', 'blitz', 'money', 'system'];
       GROUPS.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
-      const LBL = { today: ['Home', 'home'], lit: ['Zlarior', 'zlarior'], atlas: ['ATLAS', 'atlas'], money: ['Money', 'wallet'], system: ['More', 'modules'] };
+      const LBL = { today: ['Home', 'home'], lit: ['Zlarior', 'zlarior'], atlas: ['ATLAS', 'atlas'], blitz: ['BLITZ', 'blitz'], money: ['Money', 'wallet'], system: ['More', 'modules'] };
       GROUPS.forEach((g) => { if (LBL[g.id]) { g.label = LBL[g.id][0]; g.icon = LBL[g.id][1]; } });
       // the tab opens its main page first
-      GROUPS.forEach((g) => { const main = { today: 'today', lit: 'lit', atlas: 'atlas', money: 'money', system: 'system' }[g.id]; const k = g.pages.findIndex((p) => p[0] === main); if (k > 0) g.pages.unshift(g.pages.splice(k, 1)[0]); });
+      GROUPS.forEach((g) => { const main = { today: 'today', lit: 'lit', atlas: 'atlas', blitz: 'blitz', money: 'money', system: 'system' }[g.id]; const k = g.pages.findIndex((p) => p[0] === main); if (k > 0) g.pages.unshift(g.pages.splice(k, 1)[0]); });
       VIEWS.lit = litView;
       if (typeof SCENE !== 'undefined') SCENE.lit = 'today';
       if (typeof ALIAS !== 'undefined') Object.assign(ALIAS, { zlarior: 'lit', zl: 'lit', bot1: 'lit', lit50k: 'lit' });
@@ -389,7 +399,7 @@
     const st = document.createElement('style'); st.id = 'clean-css'; st.textContent = CSS; document.head.appendChild(st);
     if (typeof nav === 'function') {
       nav();
-      // the tab bar: icon + label, five items
+      // the tab bar: icon + label, six items
       if (typeof route === 'function') route();
     }
   }
@@ -416,8 +426,10 @@
 @media (max-width:760px){
   :root[data-clean="on"] .chipbtn{width:44px;height:44px}:root[data-clean="on"] .chipbtn.back{width:auto;height:40px;min-height:40px;padding:0 14px 0 10px}
   :root[data-clean="on"] .page{padding:12px 16px calc(104px + env(safe-area-inset-bottom))}
-  :root[data-clean="on"] .tabs{left:8px;right:8px;height:64px;padding:6px;border-radius:20px;background:color-mix(in srgb,var(--surface) 94%,transparent);box-shadow:0 8px 30px rgba(0,0,0,.35)}
-  :root[data-clean="on"] .tabs a{font-size:11px;gap:4px;border-radius:14px}
+  :root[data-clean="on"] .tabs{left:6px;right:6px;height:64px;padding:5px;gap:2px;border-radius:20px;background:color-mix(in srgb,var(--surface) 94%,transparent);box-shadow:0 8px 30px rgba(0,0,0,.35)}
+  :root[data-clean="on"] .tabs a{font-size:11px;gap:4px;border-radius:14px;min-width:44px;min-height:44px;letter-spacing:-.01em}
+  :root[data-clean="on"] .tabs a span{white-space:nowrap;overflow:hidden;text-overflow:clip;max-width:100%}
+  :root[data-clean="on"] .tabs a[data-t="blitz"].on{background:color-mix(in srgb,#b388ff 18%,transparent)}:root[data-clean="on"] .tabs a[data-t="blitz"].on .ico{color:#b388ff}
   :root[data-clean="on"] .tabs a.on{background:color-mix(in srgb,var(--accent) 14%,transparent);box-shadow:none}
   :root[data-clean="on"] .tabs a .ico{width:22px;height:22px}
   :root[data-clean="on"] .sub{background:color-mix(in srgb,var(--page) 94%,transparent)}

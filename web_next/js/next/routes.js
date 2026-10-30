@@ -9,6 +9,7 @@ export const TOP = [
   { id: 'command', label: 'Today', icon: 'today' },
   { id: 'brain', label: 'Bot Brain', icon: 'brain' },          // js/next/brain.js: what the bot is thinking (read-only)
   { id: 'atlas', label: 'ATLAS', icon: 'atlas' },              // js/next/second.js: strategy 2 on the 25K (EMA + MACD + S/R)
+  { id: 'blitz', label: 'BLITZ', icon: 'blitz' },              // js/next/blitz.js + blitzcore.js: strategy 3, the scalper (2026-10-29)
   { id: 'botctl', label: 'Bot', icon: 'power' },
   { id: 'accounts', label: 'Accounts', icon: 'wallet' },
   { id: 'chart', label: 'Chart', icon: 'chart' },
@@ -141,6 +142,11 @@ export const BOTS = {
     ['Today', ['atlas']], ['Brain', ['atlas:brain']], ['Trades', ['atlas:trades']],
     ['Setups', ['atlas:setups', 'atlassetups']], ['Results', ['atlas:results', 'learnatlas']],
   ] },
+  // BLITZ (2026-10-29): the one BLITZ page in parts ("blitz:brain" = blitz.js part, store nx.bzPart), like ATLAS
+  blitz: { name: 'BLITZ', sub: 'scalper · 25K', segs: [
+    ['Today', ['blitz']], ['Brain', ['blitz:brain']], ['Trades', ['blitz:trades']], ['Results', ['blitz:results']],
+    ['Rules', ['blitz:rules']], ['Go live', ['blitz:golive']],
+  ] },
 };
 export const BOT_CHIP = { botctl: 'Bot control', accounts: '50K account', evalhq: 'Eval HQ', evaltl: 'Eval timeline', litcockpit: 'Eval cockpit', command: 'Today (classic)',
   trades: 'Trades', tradelog: 'Trade log', journal: 'Journal', review: 'Weekly review', memory: 'Memory', litday: 'Day plan', litlevels: 'Levels', livechart: 'Live chart',
@@ -158,6 +164,7 @@ for (const p of [...DATA, ...MODULES, ...CC]) TITLES[p.id] = p.label;
 for (const p of ARCHIVE) TITLES[p.id] = p.label + ' · archive';
 TITLES.learnlit = 'Zlarior · Learning';
 TITLES.learnatlas = 'ATLAS · Learning';
+TITLES.blitz = 'BLITZ · strategy 3 (25K)';
 
 export const groupOf = (id) => id === 'zlarior' ? 'zlarior' : botOf(id) ? botOf(id) : DATA.some(p => p.id === id) ? 'data' : MODULES.some(p => p.id === id) ? 'modules' : ARCHIVE.some(p => p.id === id) ? 'archive' : id;
 
@@ -184,3 +191,14 @@ export const MISSION = { id: 'mission', label: 'Mission Control', icon: 'target'
 CC.push(MISSION);
 TITLES.mission = MISSION.label;
 { const g = GROUPS.find((x) => x.label === 'Main'); if (g?.ids && !g.ids.includes('mission')) g.ids.splice(Math.max(0, g.ids.indexOf('cc') + 1), 0, 'mission'); }
+
+// BLITZ, the Mind and Trader's deck (2026-10-29 night, js/next/blitz.js + blitzcore.js / mindcore.js / deckcore.js; read-only):
+// BLITZ right after ATLAS in Main (its sections in BOTS.blitz); Mind and Trader's deck after Real results
+export const MIND = { id: 'mind', label: 'Mind', icon: 'mind', desc: 'Brain v2: the market regime, each bot\'s if-then game plan, similar past setups (win %, avg R, $), A-F trade reviews, research ideas with evidence, alerts, IQ' };
+export const DECK = { id: 'deck', label: 'Trader\'s deck', icon: 'deck', desc: 'Risk meter on all accounts, the next 24 h (windows, checks, news, early closes, the clock change), eval odds from today\'s balance, real P&L calendar, trade journal, notification center, since you last looked, Holodeck replays' };
+CC.push(MIND, DECK);
+TITLES.mind = MIND.label;
+TITLES.deck = DECK.label;
+{ const g = GROUPS.find((x) => x.label === 'Main');
+  if (g && g.ids && !g.ids.includes('blitz')) { const i = g.ids.indexOf('atlas'); g.ids.splice(i >= 0 ? i + 1 : g.ids.length, 0, 'blitz'); }
+  if (g && g.ids && !g.ids.includes('mind')) { const i = g.ids.indexOf('real'); g.ids.splice(i >= 0 ? i + 1 : g.ids.length, 0, 'mind', 'deck'); } }

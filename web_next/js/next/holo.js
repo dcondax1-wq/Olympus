@@ -34,7 +34,7 @@ const env = {
   platform: 'pc', store, every: 5,
   loadFX: () => fxModule(),
   loadChart: () => import('./liveviewchart.js'),
-  getDay: (day) => getJSON('/api/next/holo' + (day ? '?day=' + encodeURIComponent(day) : '')),
+  getDay: (day) => { if (!day && WANT) { day = WANT; WANT = null; } return getJSON('/api/next/holo' + (day ? '?day=' + encodeURIComponent(day) : '')); },
   getDays: async () => {
     const j = await getJSON('/api/next/holo/days');
     const L = Array.isArray(j) ? j : Array.isArray(j.days) ? j.days : [];
@@ -44,14 +44,19 @@ const env = {
   },
   quality: fxLevel() === 'lite' ? 'lite' : 'max',
 };
+// a replay link (Trader's deck, Mission Control, BLITZ trades, the Mind: data-goto="holo" data-day) opens that day once
+let WANT = null;
+const wanted = () => { const d = store.get('nx.holoDay', ''); if (d) store.set('nx.holoDay', ''); return /^\d{4}-\d\d-\d\d$/.test(String(d)) ? String(d) : null; };
 export const holo = {
   show: () => {
     ensure();
+    WANT = wanted();
+    if (WANT && H) { H.state.pickedDay = WANT; const d = WANT; WANT = null; if (H.root.isConnected) H.load(d); }
     const el = document.getElementById('page-' + ID);
     if (H && H.root.classList.contains('hd-max') && H.root.isConnected) return;
     if (!H || !el.contains(H.root)) {
       if (H) { el.innerHTML = ''; el.appendChild(H.root); H.resume(); H.load(H.state.pickedDay || null); }
-      else { el.innerHTML = ''; H = mountHolodeck(el, env); }
+      else { el.innerHTML = ''; const d = WANT; H = mountHolodeck(el, env); if (d) H.state.pickedDay = d; }
     } else H.resume();
     window.LE = Object.assign(window.LE || {}, { holo: H });
   },

@@ -94,6 +94,9 @@ const P = {
   map: '<path d="M4 7l5-2 6 2 5-2v12l-5 2-6-2-5 2z"/><path d="M9 5v12M15 7v12"/>',
   money: '<rect x="3" y="6" width="18" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.6"/><path d="M6.5 9.5h.1M17.5 14.5h.1"/>',
   zlarior: '<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><path d="M8.5 8.5h7l-7 7h7"/>',
+  blitz: '<path d="M13.5 2.5L5 13.5h6l-1.5 8 8.5-11h-6z"/>',   // BLITZ, the scalper (2026-10-29)
+  mind: '<circle cx="12" cy="12" r="3"/><path d="M12 3.5a8.5 8.5 0 1 0 8.5 8.5"/><path d="M12 7.5a4.5 4.5 0 1 0 4.5 4.5"/><path d="M18 3.5v3h3"/>',   // the Mind (Brain v2)
+  deck: '<rect x="3.5" y="4" width="17" height="16" rx="3"/><path d="M3.5 9h17M8 13.5h3M8 16.5h6"/><circle cx="16" cy="14.5" r="1.6"/>',   // Trader's deck
   atlas: '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.4 3.9 5.2 3.9 8.5s-1.3 6.1-3.9 8.5c-2.6-2.4-3.9-5.2-3.9-8.5s1.3-6.1 3.9-8.5z"/>',
   brain: '<path d="M12 5.2a3 3 0 0 0-5.6-1A3 3 0 0 0 4.5 9a3.2 3.2 0 0 0 .3 5.6A3 3 0 0 0 9 19.3a3 3 0 0 0 3-1.3z"/><path d="M12 5.2a3 3 0 0 1 5.6-1A3 3 0 0 1 19.5 9a3.2 3.2 0 0 1-.3 5.6A3 3 0 0 1 15 19.3a3 3 0 0 1-3-1.3"/><path d="M12 5.2V18M8.5 9.5c1 0 1.8.6 2 1.5M15.5 9.5c-1 0-1.8.6-2 1.5M8 14.5h1.5M16 14.5h-1.5"/>',
 };
