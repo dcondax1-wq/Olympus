@@ -1136,6 +1136,7 @@ class LiveBot:
             self._week_prev = [r for r in (s.get("week_exits") or []) if r.get("day") and r["day"] != today and iso_week(r["day"]) == wk]
             self._eval_prev = {d: float(v) for d, v in (s.get("eval_days") or {}).items() if d != today}
             self._void_refused_days()
+            self._repair_recounted_days(s.get("ledger") or [], today)
         if s.get("day") != today or s.get("sym") != self.cfg.get("sym") or s.get("tf") != self.cfg.get("tf"):
             self._log("system", f"Ignoring live_state.json from {s.get('day')} {s.get('sym')} {s.get('tf')} (today is {today})")
             return
@@ -1184,6 +1185,7 @@ class LiveBot:
         if not getattr(self, "_unplaced_scanned", False):
             self._unplaced_scanned = True
             self._void_unplaced_exits()
+            self._push_recount_fix()
         self._refresh_guard()
         df, drops = self._merged(sym, tf, now, secs)
         if len(df) == 0:
@@ -2016,10 +2018,16 @@ class LiveBot:
         days = {d: v for d, v in self._eval_prev.items() if not start or d >= start}
         today = trading_day(self.clock())
         days.pop(today, None)
+        led = {}
         for r in self.ledger:
             if r.get("side") == "exit" and (not start or trading_day(r["t"]) >= start):
                 d = trading_day(r["t"])
-                days[d] = round(days.get(d, 0.0) + float(r.get("pnl") or 0), 2)
+                led[d] = round(led.get(d, 0.0) + float(r.get("pnl") or 0), 2)
+        for d, v in led.items():
+            # an earlier day restored from live_state.json already holds its exits (the ledger keeps them past the 18:00
+            # roll): adding them again counted 2026-10-28's one -$437 stop-out 3 times on the 50K after two restarts
+            if d == today or d not in days:
+                days[d] = v
         prior = float(self.cfg.get("eval_prior_pnl") or (getattr(self, "_lit_sizing", None) or {}).get("eval_prior_pnl") or 0.0)
         if prior:                            # the eval's P&L before eval_start (owner's account, e.g. -$100): one day before all
             days["0000-00-00"] = prior
@@ -2869,6 +2877,56 @@ class LiveBot:
         except Exception as e:
             self._note_error(f"refused-day check failed: {e.__class__.__name__}: {e}")
 
+    def _repair_recounted_days(self, ledger, today):
+        """An earlier eval day that booked a whole multiple (2x, 3x, ...) of its own exits -> the sum of its exits (2026-10-28
+        on the 50K: one real -$437.00 stop-out booked as -$1,311.00, room $232 instead of ~$1,106: eval_days() re-added the
+        restored ledger's earlier-day exits at every restart after the 18:00 roll). ledger = the saved ledger rows (they
+        outlive the roll). Only that exact signature is changed; the push goes out on the first poll. Never raises."""
+        try:
+            led, seen = {}, set()
+            for r in ledger:
+                if not isinstance(r, dict) or r.get("side") != "exit" or r.get("t") is None:
+                    continue
+                k = (r.get("entry_t"), r.get("t"), r.get("reason"))
+                d = trading_day(r["t"])
+                if k in seen or d == today:
+                    continue
+                seen.add(k)
+                led[d] = round(led.get(d, 0.0) + float(r.get("pnl") or 0), 2)
+            fixed = []
+            for d, v in sorted(led.items()):
+                s = self._eval_prev.get(d)
+                if s is None or abs(v) < 0.01:
+                    continue
+                n = round(s / v)
+                if n >= 2 and abs(s - n * v) <= 0.01 * n:
+                    self._eval_prev[d] = v
+                    fixed.append((d, s, v, n))
+            if not fixed:
+                return
+            txt = ", ".join(f"{d}: {v:+,.2f} was counted {n} times ({s:+,.2f})" for d, s, v, n in fixed)
+            self._log("risk", f"Eval ledger repaired: {txt}. Each day now books its real exits once")
+            self._recount_fix = fixed
+        except Exception as e:
+            self._note_error(f"recount repair failed: {e.__class__.__name__}: {e}")
+
+    def _push_recount_fix(self):
+        """The one phone push for _repair_recounted_days (sent from the first poll, when the push route is up)."""
+        fixed = getattr(self, "_recount_fix", None)
+        if not fixed:
+            return
+        self._recount_fix = None
+        try:
+            from . import push
+            usd = sum(v - s for _, s, v, _ in fixed)
+            txt = "; ".join(f"{d}: the {v:+,.2f} loss was counted {n} times" for d, s, v, n in fixed)
+            self._save_state()
+            self._push_send(push.text_payload("PC", "risk", f"{self._push_account()}: eval balance fixed",
+                                              f"{txt}. Fixed ({usd:+,.2f}): the bot's balance, room and sizing match the real "
+                                              "account again.", key=f"recount:{fixed[-1][0]}", t=int(self.clock())))
+        except Exception as e:
+            self._log("warn", f"phone notification failed: {e.__class__.__name__}")
+
     def _void_unplaced_exits(self):
         """Once per process: an exit row that booked $ for an entry NinjaTrader never took (an older version booked the
         backtest's $: Zlarior's 06:12 SELL 7 on 2026-10-27, -$965.30 on the 50K eval, never filled) books $0 now (the old
@@ -2883,6 +2941,11 @@ class LiveBot:
                     fixed.append(r)
             if not fixed:
                 return
+            today = trading_day(self.clock())
+            for r in fixed:                  # an earlier day's total is restored, not rebuilt from the ledger: take it off there
+                d = trading_day(r["t"])
+                if d != today and abs(self._eval_prev.get(d) or 0.0) > 0.005:       # 0 = the whole day already voided
+                    self._eval_prev[d] = round(self._eval_prev[d] - float(r["pnl_void"]), 2)
             usd = sum(float(r["pnl_void"]) for r in fixed)
             txt = ", ".join(f"{_et(int(r['entry_t'])):%H:%M} ET {float(r['pnl_void']):+,.2f}" for r in fixed)
             self._log("risk", f"Voided {len(fixed)} booked exit(s) of entries NinjaTrader never took ({txt}): the eval ledger "

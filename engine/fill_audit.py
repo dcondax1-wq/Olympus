@@ -263,6 +263,29 @@ def _vwap(pairs):
     return (sum(px * n for px, n in pairs) / q) if q else None
 
 
+def _filled_in_nt_log(entry_t, cache: dict | None = None) -> bool:
+    """NinjaTrader's Log shows an order of this entry's bracket (Oco LE<entry_t>...) Filled. cache = {date: the day's filled
+    lines} shared within one live_trades() call (a log file is read once). Never raises."""
+    try:
+        from engine import eval_fix
+        from engine.ninjatrader import default_folder
+        cache = {} if cache is None else cache
+        folder = cache.setdefault("_folder", default_folder())
+        if not folder:
+            return False
+        tag = f"le{int(entry_t)}"
+        for d in {dt.datetime.fromtimestamp(int(entry_t), ET).date(), dt.datetime.fromtimestamp(int(entry_t) + 86400, ET).date()}:
+            k = d.isoformat()
+            if k not in cache:
+                txt = (eval_fix._log_text(folder, k) or "").lower()
+                cache[k] = [ln for ln in txt.splitlines() if "new state='filled'" in ln]
+            if any(tag in ln for ln in cache[k]):
+                return True
+    except Exception:
+        pass
+    return False
+
+
 def live_trades(store=None, journal_path=None) -> dict:
     """entry_t -> what the bot routed and what the broker filled (ledger archive + NinjaTrader legs / orders + journal)."""
     rows = _jl_read(_p(store, "ledger.jsonl"))
@@ -282,7 +305,7 @@ def live_trades(store=None, journal_path=None) -> dict:
                 jr[int(j["entry_t"])] = j
     except Exception:
         pass
-    out = {}
+    out, ntlog = {}, {}
     for et_, x in by.items():
         if not x["entries"]:
             continue
@@ -327,6 +350,11 @@ def live_trades(store=None, journal_path=None) -> dict:
                 rec["exit_px"], rec["exit_src"] = float(o["avg"]), "broker"
                 rec["exit_kind"] = "BE" if (kind == "STOP" and rec["be_t"]) else kind
                 rec["exit_t"] = int(o.get("mtime") or rec["exit_t"] or 0) or rec["exit_t"]
+        if not rec["ok"] and (rec["exit_src"] == "broker" or (adapter == "ninjatrader" and _filled_in_nt_log(et_, ntlog))):
+            # the entry answered NOT OK ("fill not reported yet") yet NinjaTrader filled it and its stop / target: a real
+            # trade, not a missed one (2026-10-28 03:43 SHORT 5 on the 50K, stopped at 29,987.75 at 04:01)
+            rec["ok"], rec["error"] = True, None
+            rec["fill_src"] = rec["fill_src"] or "broker (entry price not reported)"
         j = jr.get(et_)
         if rec["exit_px"] is None and j and j.get("exit_px") is not None:
             # paper: the model's exit is the fill; a broker CLOSEPOSITION has no price in outgoing\ (flagged unpriced)

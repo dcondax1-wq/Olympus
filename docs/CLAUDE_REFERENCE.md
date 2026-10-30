@@ -1012,7 +1012,12 @@ part yourself or fold it into a script.**
   halt or on Christmas); account B and the second strategies flat 5 min before an early close (as the adapter); the
   adapter and the extra accounts refuse entries on a full closure; `cme_calendar.route_limits(day, flat_mod)` for BLITZ's router (the
   paper engine unchanged and import-isolated). Self-healing (`tests/test_selfheal.py` 12): every engine state save goes through
-  `fsutil.replace`; `AccountB.void_refused_days` (like the 50K's eval_fix, once per process); narrator feeds
+  `fsutil.replace`; `AccountB.void_refused_days` (like the 50K's eval_fix, once per process); **50K eval recount
+  (2026-10-30)**: `LiveBot.eval_days()` keeps an earlier day's restored total (it re-added the ledger's earlier-day exits at
+  every restart after the roll: 2026-10-28's real -$437 stop-out became -$1,311, room $232 instead of ~$1,106);
+  `_repair_recounted_days` on restore sets a day booked as an exact 2x / 3x ... multiple of its own exits back to them
+  (one push "eval balance fixed"); a per-trade void after the roll also comes off the restored day; `fill_audit` counts
+  a NOT OK ("fill not reported yet") entry whose bracket filled at the broker as a trade (`tests/test_eval_recount.py` 12); narrator feeds
   gzipped after 3 days, deleted after 120 (`ops_checks.rotate_feed`); weekend DISCONNECTED -> entries resume on
   reconnect; **Actions minutes** `engine/actions_budget.py` (state.json "actions", budget.json on the dashboard branch;
   saver at 85% of 2,000: the guard keeps the night check + one run an hour; only on a GitHub runner). **New MFFU Names**
