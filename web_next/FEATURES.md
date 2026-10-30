@@ -133,6 +133,7 @@ absent). Read-only: no new control, only links. Tests: `python -X utf8 -m tests.
 | 77 | Trade journal | new | Trader's deck: every trade on the board (REAL / PAPER) with its Mind review grade and lesson, and a "Replay in 3D" link (Holodeck on that day) |
 | 78 | Notification center | new | Trader's deck: every red / amber board line, health item, guard, Mind alert, the paused contract and the bot's feed in one list, All / Red / Amber, a mute per bot (Zlarior / ATLAS / BLITZ / System) kept on this device only (pushes keep their own settings) |
 | 79 | Since you last looked | new | Home (both apps) + Trader's deck: closed / opened trades (real $), alerts, reviews and ideas since this device last opened Home (localStorage) |
+| 81 | Live board: BLITZ's own card | new | `boardcore.js` (both apps): once account C is on (the board's `blitz` block), "Right now" shows a third card (balance, room, today, session, the open position, what it waits for, the blocks), the Home cut a third mini card, the trade log a BLITZ filter, "Week and eval" its progress; two accounts exactly as before otherwise |
 | 80 | Holodeck replay links | new | Mission Control (both apps) + Trader's deck + BLITZ trades + Mind reviews: "Replay a day in the Holodeck" per traded day; the phone opens `#/holo/<day>`, the PC opens the Holodeck on that day |
 
 ## Organization (2026-10-28)

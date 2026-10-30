@@ -241,8 +241,8 @@ part yourself or fold it into a script.**
   `account_c.score`: 20+ finished trades with avg R or PF(R) under the 2026 bootstrap p5 (20: -0.150 / 0.62, 40: -0.061 /
   0.83, 100: +0.019 / 1.06), or 6 losing R-days in a row -> PAUSED (no entry on C, push); `--resume` = "resume_after" in the
   block. Data (only when on): heartbeat `account_c` (`AccountC.hb_block`), `accounts.blitz_section` (source `pc_blitz`, so
-  Zlarior-only views never read it), live board `blitz` card + `accts` + trade log acct "blitz" (`boardcore.js` does not
-  draw the third card yet: renderer work), Mission Control `pc_cc_api` home `blitz`, /api/next/board, narrator REAL / SIM
+  Zlarior-only views never read it), live board `blitz` card + `accts` + trade log acct "blitz" (`boardcore.js` draws the third
+  card, mini card and a BLITZ trade filter when the block is there, 2026-10-29 night), Mission Control `pc_cc_api` home `blitz`, /api/next/board, narrator REAL / SIM
   rows + pause, live.json / cloud state `pc.account_c`. Start page: card "BLITZ · 25K" (Set its 25K, Sim test = Sim101,
   Arm BLITZ with the typed phrase, Off; Add account bot BLITZ; Passed → funded; `go.set_blitz` / `arm_c` / `blitz_status` /
   `_c_to_funded`, POST `/api/next/start/blitz`, `/blitz/arm`; a running bot picks a change up once C is flat). Replay of

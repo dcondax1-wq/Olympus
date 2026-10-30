@@ -112,12 +112,13 @@ def build(shots=""):
     from tests import test_space_ui as SU
     b2, b3 = SU.boards(T)
     b3 = json.loads(json.dumps(b3, default=str))
+    b2 = json.loads(json.dumps(b2, default=str))
     op = card.get("open") or {}
     pos = {"entry_t": op.get("entry_t") or T - 600, "dir": op.get("dir") or 1, "side": op.get("side") or "LONG", "qty": 3, "entry": op.get("entry") or 24402.25,
            "stop": op.get("stop_now") or op.get("stop") or 24341.0, "target": None, "strategy": "BLITZ", "key": "blitz",
            "time_exit_t": op.get("time_exit_t") or T + 1200}
     cases = {"off": None, "sim": acct_c("SIM", T), "armed": acct_c("LIVE", T, armed=True, pos=pos)}
-    return {"T": T, "S": S_, "lv": lv, "card": card, "mind": mind, "mind_c": mind_c, "mind_src": mind_src, "board": b3, "cases": cases}
+    return {"T": T, "S": S_, "lv": lv, "card": card, "mind": mind, "mind_c": mind_c, "mind_src": mind_src, "board": b3, "board2": b2, "cases": cases}
 
 
 # ------------------------------------------------------------------------------------------------ a. static
@@ -148,6 +149,8 @@ NODE_JS = r"""
 global.window = {}; global.document = undefined;
 const dir = process.argv[2], fs = require('fs');
 for (const n of ['blitzcore.js', 'mindcore.js', 'deckcore.js']) require(dir + '/' + n);
+global.document = { getElementById: () => ({}), querySelectorAll: () => [], head: { appendChild() {} }, createElement: () => ({}) };
+require(dir + '/boardcore.js');
 const F = JSON.parse(fs.readFileSync(process.argv[3], 'utf8'));
 const B = window.BlitzUI, M = window.MindUI, K = window.DeckUI, out = { parts: {}, bad: 0 };
 const go = (id, arg) => `data-go="${id}"${arg ? ` data-arg="${arg}"` : ''}`;
@@ -167,7 +170,10 @@ out.deck = { page: K.page(DM, { go }), home: K.home(DM, { go }), replays: K.repl
 for (const g of [null, {}, { lv: 5, card: 'x', ac: [], board: 7 }, { lv: { strategies: { scalp: { band: 'no', signals: {}, position: 3 } } }, card: { band: { checks: 4 }, signals: 'x', today: {}, eval: 9 }, ac: { account: 'x', eval: 'y', closed: 3, scorecard: [] } }]) {
   try { const m = B.model(g || {}); for (const [p] of B.PARTS) B.page(m, p, {}); M.page(g); M.home(g); M.bot(g, 'lit'); K.page(g || {}, {}); K.home(g || {}, {}); } catch (e) { out.bad++; out.err = String(e.stack).slice(0, 400); }
 }
-console.log(JSON.stringify(out));
+{ const U = window.BoardUI, p3 = U.page(F.board, {}), p2 = U.page(F.board2, {}), h3 = U.home(F.board, {});
+  out.board = { acct3: (p3.match(/bd-card bd-acct/g) || []).length, acct2: (p2.match(/bd-card bd-acct/g) || []).length, mini3: (h3.match(/class="bd-mini /g) || []).length,
+    three: /all three accounts/.test(p3), seg3: /BLITZ<\/button>/.test(p3), seg2: /BLITZ<\/button>/.test(p2) }; }
+process.stdout.write(JSON.stringify(out) + '\n', () => process.exit(0));    // boardcore keeps a timer: exit once the line is out
 """
 
 
@@ -229,6 +235,9 @@ def part_b(F, tmp):
           and any("BLITZ checks" in x for x in d["ev"]) and any(x == "CPI" for x in d["ev"]) and d["dst"]["day"] == "2026-11-01" and d["dst"]["way"] == "back", d["ev"][:8])
     check("b. deck: risk meter reads the open trades (Zlarior's $450, BLITZ armed)", ["lit", 450] in d["risk"], d["risk"])
     check("b. garbage in: no exception from any renderer", o["bad"] == 0, o.get("err"))
+    bd = o.get("board") or {}
+    check("b. live board (boardcore.js): a third card for BLITZ when account C is on (Right now, the Home cut, the trade filter); two without",
+          bd.get("acct3") == 3 and bd.get("acct2") == 2 and bd.get("mini3") == 3 and bd.get("three") and bd.get("seg3") and not bd.get("seg2"), bd)
     return o
 
 
