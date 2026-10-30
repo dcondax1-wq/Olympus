@@ -276,7 +276,8 @@ part yourself or fold it into a script.**
   rows dropped the legs -> no FILLED line, no entry notice for ATLAS / BLITZ on NinjaTrader, and BLITZ's exit notice read
   LIT's label "MFFU 50K". Now `account_b._fill_of` adds "fill" to B / C rows (C also "entry"), narrator._route_rows uses it,
   narrator.send_push labels strat scalp "BLITZ <Name> (REAL|SIM)" and `_scalp` suffixes key ":acctc" / tag "-acctc" (= C's own
-  HEDGE / TIME / kill notices: one notice per trade), BLITZ wording (SCALP_EXIT_WORDS: 30-minute clock, not LIT's 15-minute
+  HEDGE / TIME / kill notices: one notice per trade; ATLAS's feed notices get account B's own ":acctb" key the same way, the
+  tag unchanged), BLITZ wording (SCALP_EXIT_WORDS: 30-minute clock, not LIT's 15-minute
   check; "stop trailed past the entry"). (2) AccountC._push_text: keys in PUSH_NOW (closing, unconfirmed, trail, passed,
   failed, stuck, pause, lock) are kind "ops" (pushed like ops_checks' eval notices); "order NOT placed" stays "risk" (the
   narrator's refused line pushes it). (3) Why no trade: `blitz.day_filter(E, date, now=)` = {ok, ratio, yday, mean, next};
