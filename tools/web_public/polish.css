@@ -246,3 +246,4 @@
 :root[data-theme="light"] .pl-fold { border-color: rgba(20, 30, 60, .18); }
 :root[data-theme="light"] .toast { color: #eef1f8; }          /* the toast keeps its dark glass: light ink on it */
 :root[data-theme="light"] .pl-quick a i { color: #2b3a8f; }
+:root[data-theme="light"] :is(.pl-why-go, .su-a-h b, .su-week li > b, .su-first b) { filter: saturate(1.15) brightness(.8); }   /* the bot colours, readable on white */
