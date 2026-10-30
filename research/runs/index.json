@@ -1,7 +1,7 @@
 {
- "built": "2026-10-30 16:52",
+ "built": "2026-10-30 17:12",
  "baseline": "baseline",
- "count": 2194,
+ "count": 2205,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -120102,6 +120102,630 @@
      "slow_pass": 72.5,
      "pass_med": 26.0,
      "b2b": "18/21"
+    }
+   }
+  },
+  {
+   "id": "atw_entry_mid_30m_mkt",
+   "title": "ATLAS entry: limit mid 30m else mkt - rejected",
+   "family": "other",
+   "question": "Owner 2026-10-30: enter ATLAS with a limit at a better price instead of market at the next open?",
+   "status": "rejected",
+   "verdict": "ATLAS limit mid 30m else mkt: fill rate 92.0 / 94.4 / 96.1 / 97.9% (H1 / H2 / 2025 / 2021-24); H1 2-week pass/dead 47.1/3.4 (today 65.5/0.8), eval paths $676/mo (today $1394), R/risk +0.762 (today +0.884); H2 2-week pass/dead 46.4/0.0 (today 43.5/0.0), eval paths $387/mo (today $547), R/risk +0.680 (today +0.620); 2025 2-week pass/dead 32.5/18.5 (today 30.1/23.3), eval paths $311/mo (today $-148), R/risk +0.200 (today +0.084); 2021-24 2-week pass/dead 22.6/35.2 (today 22.9/27.1), eval paths $-68/mo (today $-36), R/risk -0.009 (today +0.045). v2 test: fails.",
+   "writeup": "atlas-windows-entries-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "entry"
+   ],
+   "params": {
+    "entry": {
+     "px": "mid",
+     "wait": 30,
+     "else": "mkt",
+     "mg": "r"
+    }
+   },
+   "sizing": {
+    "account_b": "need size on the (smaller) limit-fill risk"
+   },
+   "built": "2026-10-30 17:12",
+   "spans": {
+    "2026": {
+     "n": 90,
+     "tpw": 2.18,
+     "wk2": 57,
+     "win": 48.9,
+     "pf": 2.1,
+     "net": 9316,
+     "dd": -1176,
+     "avg_r": 0.977,
+     "stop": 35.0,
+     "worst_day": -553,
+     "risk": 153.0,
+     "half": 0,
+     "per_month": 950,
+     "p10": 1.0,
+     "f10": 0.0,
+     "p15": 2.4,
+     "f15": 0.0,
+     "p20": 7.3,
+     "f20": 0.0,
+     "dec10": 1.0,
+     "slow_pass": 95.1,
+     "pass_med": 38.5,
+     "b2b": "3/0"
+    },
+    "2021-25": {
+     "n": 766,
+     "tpw": 3.57,
+     "wk2": 86,
+     "win": 32.1,
+     "pf": 1.13,
+     "net": 9562,
+     "dd": -8612,
+     "avg_r": 0.036,
+     "stop": 20.2,
+     "worst_day": -599,
+     "risk": 120.0,
+     "half": 0,
+     "per_month": 187,
+     "p10": 3.6,
+     "f10": 0.4,
+     "p15": 5.4,
+     "f15": 3.1,
+     "p20": 7.9,
+     "f20": 6.7,
+     "dec10": 4.0,
+     "slow_pass": 74.2,
+     "pass_med": 26.0,
+     "b2b": "6/14"
+    },
+    "all": {
+     "n": 856,
+     "tpw": 3.35,
+     "wk2": 81,
+     "win": 33.9,
+     "pf": 1.23,
+     "net": 18878,
+     "dd": -8612,
+     "avg_r": 0.135,
+     "stop": 21.0,
+     "worst_day": -599,
+     "risk": 126.0,
+     "half": 0,
+     "per_month": 310,
+     "p10": 3.2,
+     "f10": 0.3,
+     "p15": 4.9,
+     "f15": 2.6,
+     "p20": 7.8,
+     "f20": 5.6,
+     "dec10": 3.5,
+     "slow_pass": 81.8,
+     "pass_med": 32.0,
+     "b2b": "9/14"
+    }
+   }
+  },
+  {
+   "id": "atw_entry_mid_30m_skip",
+   "title": "ATLAS entry: limit mid 30m else skip - rejected",
+   "family": "other",
+   "question": "Owner 2026-10-30: enter ATLAS with a limit at a better price instead of market at the next open?",
+   "status": "rejected",
+   "verdict": "ATLAS limit mid 30m else skip: fill rate 75.9 / 79.6 / 73.3 / 79.7% (H1 / H2 / 2025 / 2021-24); H1 2-week pass/dead 47.1/2.5 (today 65.5/0.8), eval paths $1077/mo (today $1394), R/risk +0.857 (today +0.884); H2 2-week pass/dead 46.4/0.0 (today 43.5/0.0), eval paths $317/mo (today $547), R/risk +0.819 (today +0.620); 2025 2-week pass/dead 30.9/14.1 (today 30.1/23.3), eval paths $57/mo (today $-148), R/risk +0.185 (today +0.084); 2021-24 2-week pass/dead 23.0/31.3 (today 22.9/27.1), eval paths $52/mo (today $-36), R/risk -0.006 (today +0.045). v2 test: fails.",
+   "writeup": "atlas-windows-entries-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "entry"
+   ],
+   "params": {
+    "entry": {
+     "px": "mid",
+     "wait": 30,
+     "else": "skip",
+     "mg": "r"
+    }
+   },
+   "sizing": {
+    "account_b": "need size on the (smaller) limit-fill risk"
+   },
+   "built": "2026-10-30 17:11",
+   "spans": {
+    "2026": {
+     "n": 107,
+     "tpw": 2.6,
+     "wk2": 76,
+     "win": 50.5,
+     "pf": 2.14,
+     "net": 10720,
+     "dd": -1116,
+     "avg_r": 0.879,
+     "stop": 34.0,
+     "worst_day": -511,
+     "risk": 164.0,
+     "half": 0,
+     "per_month": 1093,
+     "p10": 4.9,
+     "f10": 0.0,
+     "p15": 7.8,
+     "f15": 0.0,
+     "p20": 9.7,
+     "f20": 0.0,
+     "dec10": 4.9,
+     "slow_pass": 82.0,
+     "pass_med": 37.0,
+     "b2b": "3/0"
+    },
+    "2021-25": {
+     "n": 667,
+     "tpw": 3.11,
+     "wk2": 83,
+     "win": 31.9,
+     "pf": 1.07,
+     "net": 4647,
+     "dd": -6781,
+     "avg_r": 0.065,
+     "stop": 17.8,
+     "worst_day": -593,
+     "risk": 109.0,
+     "half": 0,
+     "per_month": 91,
+     "p10": 2.3,
+     "f10": 0.0,
+     "p15": 3.5,
+     "f15": 0.2,
+     "p20": 5.2,
+     "f20": 2.4,
+     "dec10": 2.3,
+     "slow_pass": 80.4,
+     "pass_med": 30.0,
+     "b2b": "6/12"
+    },
+    "all": {
+     "n": 774,
+     "tpw": 3.03,
+     "wk2": 82,
+     "win": 34.5,
+     "pf": 1.21,
+     "net": 15367,
+     "dd": -6781,
+     "avg_r": 0.178,
+     "stop": 19.5,
+     "worst_day": -593,
+     "risk": 120.0,
+     "half": 0,
+     "per_month": 253,
+     "p10": 2.7,
+     "f10": 0.0,
+     "p15": 4.1,
+     "f15": 0.2,
+     "p20": 5.9,
+     "f20": 2.0,
+     "dec10": 2.7,
+     "slow_pass": 80.9,
+     "pass_med": 32.0,
+     "b2b": "8/12"
+    }
+   }
+  },
+  {
+   "id": "atw_entry_q25_30m_mkt",
+   "title": "ATLAS entry: limit q25 30m else mkt - rejected",
+   "family": "other",
+   "question": "Owner 2026-10-30: enter ATLAS with a limit at a better price instead of market at the next open?",
+   "status": "rejected",
+   "verdict": "ATLAS limit q25 30m else mkt: fill rate 90.7 / 100.0 / 97.4 / 98.2% (H1 / H2 / 2025 / 2021-24); H1 2-week pass/dead 31.9/0.0 (today 65.5/0.8), eval paths $227/mo (today $1394), R/risk +0.511 (today +0.884); H2 2-week pass/dead 60.9/0.0 (today 43.5/0.0), eval paths $1465/mo (today $547), R/risk +0.846 (today +0.620); 2025 2-week pass/dead 27.7/22.5 (today 30.1/23.3), eval paths $109/mo (today $-148), R/risk +0.189 (today +0.084); 2021-24 2-week pass/dead 21.4/33.8 (today 22.9/27.1), eval paths $-181/mo (today $-36), R/risk -0.021 (today +0.045). v2 test: fails.",
+   "writeup": "atlas-windows-entries-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "entry"
+   ],
+   "params": {
+    "entry": {
+     "px": "q25",
+     "wait": 30,
+     "else": "mkt",
+     "mg": "r"
+    }
+   },
+   "sizing": {
+    "account_b": "need size on the (smaller) limit-fill risk"
+   },
+   "built": "2026-10-30 17:12",
+   "spans": {
+    "2026": {
+     "n": 108,
+     "tpw": 2.62,
+     "wk2": 86,
+     "win": 50.0,
+     "pf": 2.62,
+     "net": 14005,
+     "dd": -1476,
+     "avg_r": 0.754,
+     "stop": 34.0,
+     "worst_day": -458,
+     "risk": 164.0,
+     "half": 0,
+     "per_month": 1428,
+     "p10": 9.7,
+     "f10": 0.0,
+     "p15": 13.6,
+     "f15": 0.0,
+     "p20": 19.4,
+     "f20": 0.0,
+     "dec10": 9.7,
+     "slow_pass": 81.1,
+     "pass_med": 32.0,
+     "b2b": "4/0"
+    },
+    "2021-25": {
+     "n": 736,
+     "tpw": 3.43,
+     "wk2": 83,
+     "win": 33.3,
+     "pf": 0.9,
+     "net": -6982,
+     "dd": -14107,
+     "avg_r": -0.018,
+     "stop": 19.8,
+     "worst_day": -582,
+     "risk": 121.0,
+     "half": 0,
+     "per_month": -137,
+     "p10": 0.9,
+     "f10": 0.2,
+     "p15": 1.8,
+     "f15": 1.5,
+     "p20": 2.8,
+     "f20": 5.2,
+     "dec10": 1.1,
+     "slow_pass": 86.2,
+     "pass_med": 35.5,
+     "b2b": "3/14"
+    },
+    "all": {
+     "n": 844,
+     "tpw": 3.3,
+     "wk2": 84,
+     "win": 35.4,
+     "pf": 1.09,
+     "net": 7023,
+     "dd": -14107,
+     "avg_r": 0.081,
+     "stop": 21.0,
+     "worst_day": -582,
+     "risk": 129.0,
+     "half": 0,
+     "per_month": 115,
+     "p10": 2.3,
+     "f10": 0.2,
+     "p15": 3.7,
+     "f15": 1.3,
+     "p20": 5.5,
+     "f20": 4.4,
+     "dec10": 2.5,
+     "slow_pass": 83.6,
+     "pass_med": 34.0,
+     "b2b": "6/15"
+    }
+   }
+  },
+  {
+   "id": "atw_entry_q25_30m_skip",
+   "title": "ATLAS entry: limit q25 30m else skip - rejected",
+   "family": "other",
+   "question": "Owner 2026-10-30: enter ATLAS with a limit at a better price instead of market at the next open?",
+   "status": "rejected",
+   "verdict": "ATLAS limit q25 30m else skip: fill rate 69.5 / 80.7 / 73.6 / 77.6% (H1 / H2 / 2025 / 2021-24); H1 2-week pass/dead 31.9/0.0 (today 65.5/0.8), eval paths $559/mo (today $1394), R/risk +0.517 (today +0.884); H2 2-week pass/dead 44.9/0.0 (today 43.5/0.0), eval paths $1192/mo (today $547), R/risk +0.867 (today +0.620); 2025 2-week pass/dead 28.9/13.3 (today 30.1/23.3), eval paths $281/mo (today $-148), R/risk +0.215 (today +0.084); 2021-24 2-week pass/dead 22.1/29.2 (today 22.9/27.1), eval paths $-19/mo (today $-36), R/risk -0.019 (today +0.045). v2 test: fails.",
+   "writeup": "atlas-windows-entries-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "entry"
+   ],
+   "params": {
+    "entry": {
+     "px": "q25",
+     "wait": 30,
+     "else": "skip",
+     "mg": "r"
+    }
+   },
+   "sizing": {
+    "account_b": "need size on the (smaller) limit-fill risk"
+   },
+   "built": "2026-10-30 17:12",
+   "spans": {
+    "2026": {
+     "n": 66,
+     "tpw": 1.6,
+     "wk2": 48,
+     "win": 53.0,
+     "pf": 2.36,
+     "net": 7623,
+     "dd": -1908,
+     "avg_r": 0.595,
+     "stop": 31.5,
+     "worst_day": -458,
+     "risk": 178.0,
+     "half": 0,
+     "per_month": 777,
+     "p10": 2.9,
+     "f10": 0.0,
+     "p15": 4.9,
+     "f15": 0.0,
+     "p20": 5.3,
+     "f20": 0.0,
+     "dec10": 2.9,
+     "slow_pass": 87.8,
+     "pass_med": 36.5,
+     "b2b": "2/1"
+    },
+    "2021-25": {
+     "n": 605,
+     "tpw": 2.82,
+     "wk2": 74,
+     "win": 32.2,
+     "pf": 1.08,
+     "net": 4584,
+     "dd": -13205,
+     "avg_r": -0.006,
+     "stop": 17.0,
+     "worst_day": -580,
+     "risk": 111.0,
+     "half": 0,
+     "per_month": 90,
+     "p10": 3.2,
+     "f10": 0.0,
+     "p15": 5.6,
+     "f15": 0.4,
+     "p20": 7.9,
+     "f20": 3.1,
+     "dec10": 3.2,
+     "slow_pass": 72.9,
+     "pass_med": 26.0,
+     "b2b": "6/11"
+    },
+    "all": {
+     "n": 671,
+     "tpw": 2.63,
+     "wk2": 70,
+     "win": 34.3,
+     "pf": 1.19,
+     "net": 12207,
+     "dd": -13205,
+     "avg_r": 0.053,
+     "stop": 18.0,
+     "worst_day": -580,
+     "risk": 118.0,
+     "half": 0,
+     "per_month": 201,
+     "p10": 3.1,
+     "f10": 0.0,
+     "p15": 5.5,
+     "f15": 0.3,
+     "p20": 7.5,
+     "f20": 2.6,
+     "dec10": 3.1,
+     "slow_pass": 76.9,
+     "pass_med": 31.0,
+     "b2b": "8/12"
+    }
+   }
+  },
+  {
+   "id": "atw_entry_q50_30m_mkt",
+   "title": "ATLAS entry: limit q50 30m else mkt - rejected",
+   "family": "other",
+   "question": "Owner 2026-10-30: enter ATLAS with a limit at a better price instead of market at the next open?",
+   "status": "rejected",
+   "verdict": "ATLAS limit q50 30m else mkt: fill rate 89.0 / 93.0 / 95.6 / 97.0% (H1 / H2 / 2025 / 2021-24); H1 2-week pass/dead 42.9/4.2 (today 65.5/0.8), eval paths $540/mo (today $1394), R/risk +0.771 (today +0.884); H2 2-week pass/dead 40.6/1.4 (today 43.5/0.0), eval paths $629/mo (today $547), R/risk +0.585 (today +0.620); 2025 2-week pass/dead 35.7/23.7 (today 30.1/23.3), eval paths $-104/mo (today $-148), R/risk +0.136 (today +0.084); 2021-24 2-week pass/dead 25.3/32.7 (today 22.9/27.1), eval paths $24/mo (today $-36), R/risk -0.015 (today +0.045). v2 test: fails.",
+   "writeup": "atlas-windows-entries-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "entry"
+   ],
+   "params": {
+    "entry": {
+     "px": "q50",
+     "wait": 30,
+     "else": "mkt",
+     "mg": "r"
+    }
+   },
+   "sizing": {
+    "account_b": "need size on the (smaller) limit-fill risk"
+   },
+   "built": "2026-10-30 17:12",
+   "spans": {
+    "2026": {
+     "n": 77,
+     "tpw": 1.87,
+     "wk2": 60,
+     "win": 46.8,
+     "pf": 1.95,
+     "net": 6243,
+     "dd": -2228,
+     "avg_r": 0.483,
+     "stop": 23.0,
+     "worst_day": -504,
+     "risk": 118.0,
+     "half": 0,
+     "per_month": 636,
+     "p10": 3.4,
+     "f10": 0.0,
+     "p15": 7.3,
+     "f15": 0.0,
+     "p20": 9.7,
+     "f20": 0.0,
+     "dec10": 3.4,
+     "slow_pass": 75.0,
+     "pass_med": 28.0,
+     "b2b": "2/1"
+    },
+    "2021-25": {
+     "n": 795,
+     "tpw": 3.71,
+     "wk2": 91,
+     "win": 32.6,
+     "pf": 1.1,
+     "net": 7593,
+     "dd": -7360,
+     "avg_r": -0.013,
+     "stop": 16.2,
+     "worst_day": -597,
+     "risk": 108.0,
+     "half": 0,
+     "per_month": 149,
+     "p10": 2.9,
+     "f10": 0.5,
+     "p15": 6.1,
+     "f15": 3.6,
+     "p20": 8.9,
+     "f20": 7.6,
+     "dec10": 3.4,
+     "slow_pass": 74.9,
+     "pass_med": 27.0,
+     "b2b": "8/16"
+    },
+    "all": {
+     "n": 872,
+     "tpw": 3.41,
+     "wk2": 86,
+     "win": 33.8,
+     "pf": 1.17,
+     "net": 13836,
+     "dd": -7360,
+     "avg_r": 0.031,
+     "stop": 17.2,
+     "worst_day": -597,
+     "risk": 110.0,
+     "half": 0,
+     "per_month": 227,
+     "p10": 3.0,
+     "f10": 0.4,
+     "p15": 6.3,
+     "f15": 3.1,
+     "p20": 9.0,
+     "f20": 6.4,
+     "dec10": 3.4,
+     "slow_pass": 74.9,
+     "pass_med": 27.0,
+     "b2b": "10/18"
+    }
+   }
+  },
+  {
+   "id": "atw_entry_q50_30m_skip",
+   "title": "ATLAS entry: limit q50 30m else skip - rejected",
+   "family": "other",
+   "question": "Owner 2026-10-30: enter ATLAS with a limit at a better price instead of market at the next open?",
+   "status": "rejected",
+   "verdict": "ATLAS limit q50 30m else skip: fill rate 53.4 / 52.6 / 55.3 / 59.1% (H1 / H2 / 2025 / 2021-24); H1 2-week pass/dead 39.5/1.7 (today 65.5/0.8), eval paths $729/mo (today $1394), R/risk +1.017 (today +0.884); H2 2-week pass/dead 14.5/0.0 (today 43.5/0.0), eval paths $308/mo (today $547), R/risk +0.896 (today +0.620); 2025 2-week pass/dead 26.1/8.8 (today 30.1/23.3), eval paths $-207/mo (today $-148), R/risk +0.064 (today +0.084); 2021-24 2-week pass/dead 23.1/19.6 (today 22.9/27.1), eval paths $-19/mo (today $-36), R/risk -0.082 (today +0.045). v2 test: fails.",
+   "writeup": "atlas-windows-entries-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "entry"
+   ],
+   "params": {
+    "entry": {
+     "px": "q50",
+     "wait": 30,
+     "else": "skip",
+     "mg": "r"
+    }
+   },
+   "sizing": {
+    "account_b": "need size on the (smaller) limit-fill risk"
+   },
+   "built": "2026-10-30 17:12",
+   "spans": {
+    "2026": {
+     "n": 77,
+     "tpw": 1.87,
+     "wk2": 62,
+     "win": 45.5,
+     "pf": 1.93,
+     "net": 6529,
+     "dd": -1622,
+     "avg_r": 0.927,
+     "stop": 20.5,
+     "worst_day": -550,
+     "risk": 124.0,
+     "half": 0,
+     "per_month": 666,
+     "p10": 3.9,
+     "f10": 0.0,
+     "p15": 6.3,
+     "f15": 0.0,
+     "p20": 9.7,
+     "f20": 0.0,
+     "dec10": 3.9,
+     "slow_pass": 78.3,
+     "pass_med": 30.5,
+     "b2b": "2/0"
+    },
+    "2021-25": {
+     "n": 572,
+     "tpw": 2.67,
+     "wk2": 74,
+     "win": 29.4,
+     "pf": 0.95,
+     "net": -2640,
+     "dd": -9847,
+     "avg_r": -0.068,
+     "stop": 11.8,
+     "worst_day": -566,
+     "risk": 102.0,
+     "half": 0,
+     "per_month": -52,
+     "p10": 2.5,
+     "f10": 0.0,
+     "p15": 3.5,
+     "f15": 0.1,
+     "p20": 4.5,
+     "f20": 1.9,
+     "dec10": 2.5,
+     "slow_pass": 71.6,
+     "pass_med": 29.0,
+     "b2b": "4/11"
+    },
+    "all": {
+     "n": 649,
+     "tpw": 2.54,
+     "wk2": 72,
+     "win": 31.3,
+     "pf": 1.06,
+     "net": 3890,
+     "dd": -9847,
+     "avg_r": 0.05,
+     "stop": 12.5,
+     "worst_day": -566,
+     "risk": 104.0,
+     "half": 0,
+     "per_month": 64,
+     "p10": 2.7,
+     "f10": 0.0,
+     "p15": 4.0,
+     "f15": 0.1,
+     "p20": 5.3,
+     "f20": 1.6,
+     "dec10": 2.7,
+     "slow_pass": 73.7,
+     "pass_med": 29.5,
+     "b2b": "6/11"
     }
    }
   },
@@ -273456,6 +274080,730 @@
    }
   },
   {
+   "id": "atw_win_dow",
+   "title": "ATLAS per-member window cut (dow: MD no Fri, SR no Wed) - rejected",
+   "family": "timing",
+   "question": "Owner 2026-10-30: skip each ATLAS member's weakest time-of-day / weekday window?",
+   "status": "rejected",
+   "verdict": "Per-member window cut picked on 2026 H1 (dow: MD no Fri, SR no Wed): H1 2-week pass/dead 65.5/0.0 (today 65.5/0.8), eval paths $1783/mo (today $1394), R/risk +1.066 (today +0.884); H2 2-week pass/dead 43.5/0.0 (today 43.5/0.0), eval paths $628/mo (today $547), R/risk +0.760 (today +0.620); 2025 2-week pass/dead 27.7/14.9 (today 30.1/23.3), eval paths $-139/mo (today $-148), R/risk +0.100 (today +0.084); 2021-24 2-week pass/dead 21.9/21.9 (today 22.9/27.1), eval paths $69/mo (today $-36), R/risk +0.048 (today +0.045). v2 test: passes; random windows pass it 3% of the time (30 draws). Rejected: neither weekday cut passes alone, every neighbour fails, the skipped S/R Wednesday trades made +10.3R in 2021-25, and weekday rules are what calendar-effects.md / atlas.md already found to be chance.",
+   "writeup": "atlas-windows-entries-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "timing"
+   ],
+   "params": {
+    "family": "dow",
+    "picks": {
+     "MD": {
+      "bucket": 4,
+      "label": "Fri",
+      "h1_n": 10,
+      "h1_R": -4.46,
+      "per_year": {
+       "2021": [
+        3,
+        -2.1
+       ],
+       "2022": [
+        16,
+        3.27
+       ],
+       "2023": [
+        15,
+        -13.59
+       ],
+       "2024": [
+        12,
+        7.7
+       ],
+       "2025": [
+        11,
+        -5.52
+       ],
+       "2026H1": [
+        10,
+        -4.46
+       ],
+       "2026H2": [
+        3,
+        -1.08
+       ]
+      }
+     },
+     "SR": {
+      "bucket": 2,
+      "label": "Wed",
+      "h1_n": 4,
+      "h1_R": -1.05,
+      "per_year": {
+       "2021": [
+        1,
+        1.57
+       ],
+       "2022": [
+        16,
+        5.55
+       ],
+       "2023": [
+        16,
+        -1.05
+       ],
+       "2024": [
+        6,
+        0.18
+       ],
+       "2025": [
+        14,
+        4.04
+       ],
+       "2026H1": [
+        4,
+        -1.05
+       ],
+       "2026H2": [
+        4,
+        -0.75
+       ]
+      }
+     }
+    }
+   },
+   "sizing": {
+    "account_b": "need size (engine/account_b.qty)"
+   },
+   "built": "2026-10-30 17:11",
+   "spans": {
+    "2026": {
+     "n": 82,
+     "tpw": 1.99,
+     "wk2": 50,
+     "win": 53.7,
+     "pf": 3.12,
+     "net": 15213,
+     "dd": -971,
+     "avg_r": 1.014,
+     "stop": 36.5,
+     "worst_day": -462,
+     "risk": 190.0,
+     "half": 0,
+     "per_month": 1551,
+     "p10": 10.7,
+     "f10": 0.0,
+     "p15": 18.9,
+     "f15": 0.0,
+     "p20": 26.7,
+     "f20": 0.0,
+     "dec10": 10.7,
+     "slow_pass": 70.9,
+     "pass_med": 25.0,
+     "b2b": "4/0"
+    },
+    "2021-25": {
+     "n": 599,
+     "tpw": 2.79,
+     "wk2": 69,
+     "win": 39.2,
+     "pf": 1.17,
+     "net": 8609,
+     "dd": -6381,
+     "avg_r": 0.08,
+     "stop": 20.8,
+     "worst_day": -591,
+     "risk": 108.0,
+     "half": 0,
+     "per_month": 169,
+     "p10": 4.0,
+     "f10": 0.0,
+     "p15": 6.7,
+     "f15": 0.4,
+     "p20": 8.8,
+     "f20": 1.7,
+     "dec10": 4.0,
+     "slow_pass": 71.0,
+     "pass_med": 28.0,
+     "b2b": "6/9"
+    },
+    "all": {
+     "n": 681,
+     "tpw": 2.66,
+     "wk2": 66,
+     "win": 41.0,
+     "pf": 1.41,
+     "net": 23822,
+     "dd": -6381,
+     "avg_r": 0.192,
+     "stop": 22.0,
+     "worst_day": -591,
+     "risk": 117.0,
+     "half": 0,
+     "per_month": 391,
+     "p10": 5.1,
+     "f10": 0.0,
+     "p15": 8.7,
+     "f15": 0.3,
+     "p20": 11.7,
+     "f20": 1.4,
+     "dec10": 5.1,
+     "slow_pass": 70.9,
+     "pass_med": 27.0,
+     "b2b": "10/10"
+    }
+   }
+  },
+  {
+   "id": "atw_win_m30",
+   "title": "ATLAS per-member window cut (m30: EMA no 04:00-04:30, MD no 04:30-05:00, SR no 11:00-11:30) - rejected",
+   "family": "timing",
+   "question": "Owner 2026-10-30: skip each ATLAS member's weakest time-of-day / weekday window?",
+   "status": "rejected",
+   "verdict": "Per-member window cut picked on 2026 H1 (m30: EMA no 04:00-04:30, MD no 04:30-05:00, SR no 11:00-11:30): H1 2-week pass/dead 72.3/0.0 (today 65.5/0.8), eval paths $2355/mo (today $1394), R/risk +1.101 (today +0.884); H2 2-week pass/dead 43.5/0.0 (today 43.5/0.0), eval paths $610/mo (today $547), R/risk +0.701 (today +0.620); 2025 2-week pass/dead 28.9/8.4 (today 30.1/23.3), eval paths $-1/mo (today $-148), R/risk +0.123 (today +0.084); 2021-24 2-week pass/dead 21.6/23.1 (today 22.9/27.1), eval paths $-67/mo (today $-36), R/risk +0.056 (today +0.045). v2 test: fails; random windows pass it 0% of the time (30 draws). The combined cut fails the 2021-24 tier (-$67 vs -$36 a month).",
+   "writeup": "atlas-windows-entries-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "timing"
+   ],
+   "params": {
+    "family": "m30",
+    "picks": {
+     "EMA": {
+      "bucket": 8,
+      "label": "04:00-04:30",
+      "h1_n": 4,
+      "h1_R": -3.0,
+      "per_year": {
+       "2021": [
+        2,
+        7.47
+       ],
+       "2022": [
+        10,
+        1.69
+       ],
+       "2023": [
+        16,
+        -0.97
+       ],
+       "2024": [
+        19,
+        11.28
+       ],
+       "2025": [
+        19,
+        -11.98
+       ],
+       "2026H1": [
+        4,
+        -3.0
+       ],
+       "2026H2": [
+        3,
+        -0.49
+       ]
+      }
+     },
+     "MD": {
+      "bucket": 9,
+      "label": "04:30-05:00",
+      "h1_n": 6,
+      "h1_R": -4.09,
+      "per_year": {
+       "2021": [
+        1,
+        -1.0
+       ],
+       "2022": [
+        5,
+        -4.24
+       ],
+       "2023": [
+        10,
+        -7.22
+       ],
+       "2024": [
+        1,
+        -1.0
+       ],
+       "2025": [
+        5,
+        8.44
+       ],
+       "2026H1": [
+        6,
+        -4.09
+       ],
+       "2026H2": [
+        1,
+        -0.36
+       ]
+      }
+     },
+     "SR": {
+      "bucket": 22,
+      "label": "11:00-11:30",
+      "h1_n": 3,
+      "h1_R": -3.0,
+      "per_year": {
+       "2021": [
+        2,
+        0.91
+       ],
+       "2022": [
+        10,
+        -7.05
+       ],
+       "2023": [
+        8,
+        -3.54
+       ],
+       "2024": [
+        6,
+        -0.7
+       ],
+       "2025": [
+        8,
+        -2.23
+       ],
+       "2026H1": [
+        3,
+        -3.0
+       ],
+       "2026H2": [
+        2,
+        0.92
+       ]
+      }
+     }
+    }
+   },
+   "sizing": {
+    "account_b": "need size (engine/account_b.qty)"
+   },
+   "built": "2026-10-30 17:11",
+   "spans": {
+    "2026": {
+     "n": 71,
+     "tpw": 1.72,
+     "wk2": 45,
+     "win": 53.5,
+     "pf": 3.32,
+     "net": 15215,
+     "dd": -938,
+     "avg_r": 1.165,
+     "stop": 37.0,
+     "worst_day": -586,
+     "risk": 185.0,
+     "half": 0,
+     "per_month": 1551,
+     "p10": 11.7,
+     "f10": 0.0,
+     "p15": 19.4,
+     "f15": 0.0,
+     "p20": 27.7,
+     "f20": 0.0,
+     "dec10": 11.7,
+     "slow_pass": 67.5,
+     "pass_med": 22.0,
+     "b2b": "4/0"
+    },
+    "2021-25": {
+     "n": 560,
+     "tpw": 2.61,
+     "wk2": 67,
+     "win": 37.9,
+     "pf": 1.05,
+     "net": 2218,
+     "dd": -6308,
+     "avg_r": 0.028,
+     "stop": 20.9,
+     "worst_day": -579,
+     "risk": 105.0,
+     "half": 0,
+     "per_month": 43,
+     "p10": 3.0,
+     "f10": 0.0,
+     "p15": 4.4,
+     "f15": 0.1,
+     "p20": 5.7,
+     "f20": 1.6,
+     "dec10": 3.0,
+     "slow_pass": 69.7,
+     "pass_med": 27.0,
+     "b2b": "3/8"
+    },
+    "all": {
+     "n": 631,
+     "tpw": 2.47,
+     "wk2": 64,
+     "win": 39.6,
+     "pf": 1.33,
+     "net": 17433,
+     "dd": -6308,
+     "avg_r": 0.156,
+     "stop": 22.0,
+     "worst_day": -586,
+     "risk": 110.0,
+     "half": 0,
+     "per_month": 286,
+     "p10": 4.4,
+     "f10": 0.0,
+     "p15": 6.8,
+     "f15": 0.1,
+     "p20": 9.2,
+     "f20": 1.3,
+     "dec10": 4.4,
+     "slow_pass": 68.7,
+     "pass_med": 24.5,
+     "b2b": "7/9"
+    }
+   }
+  },
+  {
+   "id": "atw_win_m30_sr",
+   "title": "ATLAS per-member window cut (m30: SR no 11:00-11:30) - rejected",
+   "family": "timing",
+   "question": "Owner 2026-10-30: skip each ATLAS member's weakest time-of-day / weekday window?",
+   "status": "rejected",
+   "verdict": "Per-member window cut picked on 2026 H1 (m30: SR no 11:00-11:30): H1 2-week pass/dead 68.9/0.8 (today 65.5/0.8), eval paths $1598/mo (today $1394), R/risk +0.935 (today +0.884); H2 2-week pass/dead 43.5/0.0 (today 43.5/0.0), eval paths $591/mo (today $547), R/risk +0.626 (today +0.620); 2025 2-week pass/dead 30.1/16.1 (today 30.1/23.3), eval paths $-99/mo (today $-148), R/risk +0.096 (today +0.084); 2021-24 2-week pass/dead 22.7/24.7 (today 22.9/27.1), eval paths $-23/mo (today $-36), R/risk +0.059 (today +0.045). v2 test: passes; random windows pass it 0% of the time (30 draws). Rejected: it is the S/R 11:00 spike of atlas.md (the 3 H1 trades all entered at 11:00 and stopped out), both neighbours fail, and 3 of all 25 single 30-minute cuts pass the same test (research/second/atw_singles_m30.json).",
+   "writeup": "atlas-windows-entries-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "timing"
+   ],
+   "params": {
+    "family": "m30",
+    "picks": {
+     "SR": {
+      "bucket": 22,
+      "label": "11:00-11:30",
+      "h1_n": 3,
+      "h1_R": -3.0,
+      "per_year": {
+       "2021": [
+        2,
+        0.91
+       ],
+       "2022": [
+        10,
+        -7.05
+       ],
+       "2023": [
+        8,
+        -3.54
+       ],
+       "2024": [
+        6,
+        -0.7
+       ],
+       "2025": [
+        8,
+        -2.23
+       ],
+       "2026H1": [
+        3,
+        -3.0
+       ],
+       "2026H2": [
+        2,
+        0.92
+       ]
+      }
+     }
+    }
+   },
+   "sizing": {
+    "account_b": "need size (engine/account_b.qty)"
+   },
+   "built": "2026-10-30 17:11",
+   "spans": {
+    "2026": {
+     "n": 78,
+     "tpw": 1.89,
+     "wk2": 48,
+     "win": 47.4,
+     "pf": 2.31,
+     "net": 9356,
+     "dd": -938,
+     "avg_r": 0.854,
+     "stop": 36.4,
+     "worst_day": -586,
+     "risk": 159.0,
+     "half": 0,
+     "per_month": 954,
+     "p10": 5.8,
+     "f10": 0.0,
+     "p15": 10.7,
+     "f15": 0.0,
+     "p20": 16.5,
+     "f20": 0.0,
+     "dec10": 5.8,
+     "slow_pass": 75.8,
+     "pass_med": 26.0,
+     "b2b": "2/0"
+    },
+    "2021-25": {
+     "n": 606,
+     "tpw": 2.83,
+     "wk2": 68,
+     "win": 37.5,
+     "pf": 1.04,
+     "net": 2061,
+     "dd": -5507,
+     "avg_r": 0.075,
+     "stop": 21.1,
+     "worst_day": -595,
+     "risk": 113.0,
+     "half": 0,
+     "per_month": 40,
+     "p10": 3.2,
+     "f10": 0.2,
+     "p15": 4.4,
+     "f15": 0.8,
+     "p20": 5.7,
+     "f20": 3.4,
+     "dec10": 3.4,
+     "slow_pass": 72.2,
+     "pass_med": 30.0,
+     "b2b": "4/9"
+    },
+    "all": {
+     "n": 684,
+     "tpw": 2.68,
+     "wk2": 65,
+     "win": 38.6,
+     "pf": 1.19,
+     "net": 11417,
+     "dd": -5507,
+     "avg_r": 0.164,
+     "stop": 22.0,
+     "worst_day": -595,
+     "risk": 117.0,
+     "half": 0,
+     "per_month": 188,
+     "p10": 3.6,
+     "f10": 0.2,
+     "p15": 5.4,
+     "f15": 0.7,
+     "p20": 7.4,
+     "f20": 2.8,
+     "dec10": 3.8,
+     "slow_pass": 73.5,
+     "pass_med": 28.0,
+     "b2b": "6/9"
+    }
+   }
+  },
+  {
+   "id": "atw_win_m60",
+   "title": "ATLAS per-member window cut (m60: EMA no 05:00-06:00, MD no 10:00-11:00, SR no 11:00-12:00) - rejected",
+   "family": "timing",
+   "question": "Owner 2026-10-30: skip each ATLAS member's weakest time-of-day / weekday window?",
+   "status": "rejected",
+   "verdict": "Per-member window cut picked on 2026 H1 (m60: EMA no 05:00-06:00, MD no 10:00-11:00, SR no 11:00-12:00): H1 2-week pass/dead 73.1/0.8 (today 65.5/0.8), eval paths $2065/mo (today $1394), R/risk +1.026 (today +0.884); H2 2-week pass/dead 50.7/0.0 (today 43.5/0.0), eval paths $480/mo (today $547), R/risk +0.618 (today +0.620); 2025 2-week pass/dead 28.1/14.1 (today 30.1/23.3), eval paths $-70/mo (today $-148), R/risk +0.122 (today +0.084); 2021-24 2-week pass/dead 24.1/19.6 (today 22.9/27.1), eval paths $-24/mo (today $-36), R/risk +0.106 (today +0.045). v2 test: fails; random windows pass it 3% of the time (30 draws). H2 eval-path $ is lower than today (fails H2).",
+   "writeup": "atlas-windows-entries-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "timing"
+   ],
+   "params": {
+    "family": "m60",
+    "picks": {
+     "EMA": {
+      "bucket": 5,
+      "label": "05:00-06:00",
+      "h1_n": 4,
+      "h1_R": -2.61,
+      "per_year": {
+       "2021": [
+        1,
+        -1.0
+       ],
+       "2022": [
+        15,
+        -3.97
+       ],
+       "2023": [
+        19,
+        -8.52
+       ],
+       "2024": [
+        12,
+        -7.25
+       ],
+       "2025": [
+        14,
+        0.17
+       ],
+       "2026H1": [
+        4,
+        -2.61
+       ],
+       "2026H2": [
+        5,
+        4.35
+       ]
+      }
+     },
+     "MD": {
+      "bucket": 10,
+      "label": "10:00-11:00",
+      "h1_n": 3,
+      "h1_R": -1.0,
+      "per_year": {
+       "2022": [
+        12,
+        -2.96
+       ],
+       "2023": [
+        11,
+        -0.33
+       ],
+       "2024": [
+        4,
+        -2.92
+       ],
+       "2025": [
+        4,
+        -1.86
+       ],
+       "2026H1": [
+        3,
+        -1.0
+       ],
+       "2026H2": [
+        1,
+        1.36
+       ]
+      }
+     },
+     "SR": {
+      "bucket": 11,
+      "label": "11:00-12:00",
+      "h1_n": 4,
+      "h1_R": -1.07,
+      "per_year": {
+       "2021": [
+        4,
+        1.71
+       ],
+       "2022": [
+        18,
+        -5.99
+       ],
+       "2023": [
+        14,
+        -3.22
+       ],
+       "2024": [
+        11,
+        -5.7
+       ],
+       "2025": [
+        14,
+        -3.74
+       ],
+       "2026H1": [
+        4,
+        -1.07
+       ],
+       "2026H2": [
+        3,
+        -0.08
+       ]
+      }
+     }
+    }
+   },
+   "sizing": {
+    "account_b": "need size (engine/account_b.qty)"
+   },
+   "built": "2026-10-30 17:11",
+   "spans": {
+    "2026": {
+     "n": 77,
+     "tpw": 1.87,
+     "wk2": 50,
+     "win": 48.1,
+     "pf": 2.93,
+     "net": 13503,
+     "dd": -926,
+     "avg_r": 0.984,
+     "stop": 39.5,
+     "worst_day": -586,
+     "risk": 185.0,
+     "half": 0,
+     "per_month": 1377,
+     "p10": 5.8,
+     "f10": 0.0,
+     "p15": 10.2,
+     "f15": 0.0,
+     "p20": 17.0,
+     "f20": 0.0,
+     "dec10": 5.8,
+     "slow_pass": 80.4,
+     "pass_med": 25.0,
+     "b2b": "4/0"
+    },
+    "2021-25": {
+     "n": 566,
+     "tpw": 2.64,
+     "wk2": 68,
+     "win": 38.2,
+     "pf": 1.06,
+     "net": 2989,
+     "dd": -7269,
+     "avg_r": 0.094,
+     "stop": 22.0,
+     "worst_day": -574,
+     "risk": 116.0,
+     "half": 0,
+     "per_month": 59,
+     "p10": 1.5,
+     "f10": 0.0,
+     "p15": 2.0,
+     "f15": 0.6,
+     "p20": 2.3,
+     "f20": 2.1,
+     "dec10": 1.5,
+     "slow_pass": 75.3,
+     "pass_med": 35.0,
+     "b2b": "3/8"
+    },
+    "all": {
+     "n": 643,
+     "tpw": 2.52,
+     "wk2": 65,
+     "win": 39.3,
+     "pf": 1.3,
+     "net": 16493,
+     "dd": -7269,
+     "avg_r": 0.201,
+     "stop": 22.8,
+     "worst_day": -586,
+     "risk": 122.0,
+     "half": 0,
+     "per_month": 271,
+     "p10": 2.2,
+     "f10": 0.0,
+     "p15": 3.3,
+     "f15": 0.5,
+     "p20": 4.7,
+     "f20": 1.7,
+     "dec10": 2.2,
+     "slow_pass": 78.1,
+     "pass_med": 28.0,
+     "b2b": "7/8"
+    }
+   }
+  },
+  {
    "id": "cal_first_week_half",
    "title": "Half size on the first trade of the week",
    "family": "timing",
@@ -288211,6 +289559,109 @@
      "slow_pass": 75.1,
      "pass_med": 29.0,
      "b2b": "7/10"
+    }
+   }
+  },
+  {
+   "id": "atw_entry_q0_15m_skip",
+   "title": "ATLAS entry: limit q0 15m else skip (executor check) - info",
+   "family": "other",
+   "question": "Owner 2026-10-30: enter ATLAS with a limit at a better price instead of market at the next open?",
+   "status": "info",
+   "verdict": "ATLAS limit q0 15m else skip (executor check): fill rate 100.0 / 100.0 / 100.0 / 100.0% (H1 / H2 / 2025 / 2021-24); H1 2-week pass/dead 63.9/0.8 (today 65.5/0.8), eval paths $1256/mo (today $1394), R/risk +0.891 (today +0.884); H2 2-week pass/dead 44.9/0.0 (today 43.5/0.0), eval paths $592/mo (today $547), R/risk +0.638 (today +0.620); 2025 2-week pass/dead 27.7/24.1 (today 30.1/23.3), eval paths $-224/mo (today $-148), R/risk +0.106 (today +0.084); 2021-24 2-week pass/dead 22.1/28.1 (today 22.9/27.1), eval paths $52/mo (today $-36), R/risk +0.045 (today +0.045). v2 test: fails.",
+   "writeup": "atlas-windows-entries-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "entry"
+   ],
+   "params": {
+    "entry": {
+     "px": "q0",
+     "wait": 15,
+     "else": "skip"
+    }
+   },
+   "sizing": {
+    "account_b": "need size on the (smaller) limit-fill risk"
+   },
+   "built": "2026-10-30 17:12",
+   "spans": {
+    "2026": {
+     "n": 76,
+     "tpw": 1.84,
+     "wk2": 45,
+     "win": 50.0,
+     "pf": 2.51,
+     "net": 10728,
+     "dd": -985,
+     "avg_r": 1.018,
+     "stop": 38.2,
+     "worst_day": -581,
+     "risk": 172.0,
+     "half": 0,
+     "per_month": 1094,
+     "p10": 5.8,
+     "f10": 0.0,
+     "p15": 11.2,
+     "f15": 0.0,
+     "p20": 16.5,
+     "f20": 0.0,
+     "dec10": 5.8,
+     "slow_pass": 75.5,
+     "pass_med": 27.0,
+     "b2b": "3/0"
+    },
+    "2021-25": {
+     "n": 656,
+     "tpw": 3.06,
+     "wk2": 70,
+     "win": 36.6,
+     "pf": 1.07,
+     "net": 4344,
+     "dd": -6274,
+     "avg_r": 0.006,
+     "stop": 21.2,
+     "worst_day": -588,
+     "risk": 131.0,
+     "half": 0,
+     "per_month": 85,
+     "p10": 3.4,
+     "f10": 0.0,
+     "p15": 5.5,
+     "f15": 1.0,
+     "p20": 6.5,
+     "f20": 4.0,
+     "dec10": 3.4,
+     "slow_pass": 77.6,
+     "pass_med": 32.0,
+     "b2b": "6/11"
+    },
+    "all": {
+     "n": 732,
+     "tpw": 2.86,
+     "wk2": 66,
+     "win": 38.0,
+     "pf": 1.21,
+     "net": 15072,
+     "dd": -6846,
+     "avg_r": 0.111,
+     "stop": 22.0,
+     "worst_day": -588,
+     "risk": 136.0,
+     "half": 0,
+     "per_month": 248,
+     "p10": 3.8,
+     "f10": 0.0,
+     "p15": 6.4,
+     "f15": 0.9,
+     "p20": 8.1,
+     "f20": 3.4,
+     "dec10": 3.8,
+     "slow_pass": 77.0,
+     "pass_med": 30.0,
+     "b2b": "9/11"
     }
    }
   },
