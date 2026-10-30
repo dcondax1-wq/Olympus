@@ -1,0 +1,1629 @@
+{
+ "built": "2026-10-30 17:00",
+ "base": {
+  "H1": {
+   "p10": 65.5,
+   "f10": 0.0,
+   "s10": 0.8,
+   "dead10": 0.8,
+   "dec10": 66.3,
+   "p15": 73.7,
+   "f15": 0.0,
+   "p20": 76.1,
+   "f20": 0.0,
+   "dead20": 0.9,
+   "pass_med": 5.0,
+   "slow_pass": 4.3,
+   "mp_net_less_fees": 8504,
+   "mp_per_eval": 1546,
+   "mp_passes": 4.45,
+   "mp_pass_per_month": 1.4,
+   "net": 6485,
+   "per_month": 1064,
+   "pf": 2.3,
+   "dd": -926,
+   "tpw": 2.11,
+   "sig_tpw": 4.38,
+   "sig_wk2": 96.3,
+   "wk2": 48.1,
+   "n": 54,
+   "fund_paid_3m": 1842,
+   "by_src": {
+    "EMA": [
+     29,
+     2658
+    ],
+    "MD": [
+     14,
+     1812
+    ],
+    "SR": [
+     11,
+     2014
+    ]
+   },
+   "starts": 128,
+   "max_risk": 472,
+   "pm": 1394,
+   "slot": {
+    "pm": 568,
+    "p10": 195,
+    "lose": 6.7,
+    "funded_6m": 1.45,
+    "evals_6m": 1.82,
+    "payouts_6m": 4.45,
+    "first_pay_med": 31.0,
+    "eval_trading_pm": 432,
+    "funded_trading_pm": 1641
+   }
+  },
+  "H2": {
+   "p10": 43.5,
+   "f10": 0.0,
+   "s10": 0.0,
+   "dead10": 0.0,
+   "dec10": 43.5,
+   "p15": 54.7,
+   "f15": 0.0,
+   "p20": 61.0,
+   "f20": 0.0,
+   "dead20": 0.0,
+   "pass_med": 6.0,
+   "slow_pass": 13.3,
+   "mp_net_less_fees": 2029,
+   "mp_per_eval": 839,
+   "mp_passes": 1.42,
+   "mp_pass_per_month": 0.49,
+   "net": 4434,
+   "per_month": 1194,
+   "pf": 3.18,
+   "dd": -816,
+   "tpw": 1.6,
+   "sig_tpw": 3.27,
+   "sig_wk2": 93.8,
+   "wk2": 37.5,
+   "n": 25,
+   "fund_paid_3m": 1349,
+   "by_src": {
+    "EMA": [
+     12,
+     2956
+    ],
+    "MD": [
+     5,
+     477
+    ],
+    "SR": [
+     8,
+     1001
+    ]
+   },
+   "starts": 78,
+   "max_risk": 429,
+   "pm": 547,
+   "slot": {
+    "pm": 382,
+    "p10": -10,
+    "lose": 18.0,
+    "funded_6m": 1.09,
+    "evals_6m": 1.44,
+    "payouts_6m": 3.01,
+    "first_pay_med": 45.0,
+    "eval_trading_pm": 300,
+    "funded_trading_pm": 1120
+   }
+  },
+  "2025": {
+   "p10": 30.1,
+   "f10": 0.0,
+   "s10": 23.3,
+   "dead10": 23.3,
+   "dec10": 53.4,
+   "p15": 32.4,
+   "f15": 0.0,
+   "p20": 33.9,
+   "f20": 0.0,
+   "dead20": 34.7,
+   "pass_med": 4.0,
+   "slow_pass": 2.4,
+   "mp_net_less_fees": -1816,
+   "mp_per_eval": -396,
+   "mp_passes": 0.81,
+   "mp_pass_per_month": 0.18,
+   "net": -2152,
+   "per_month": -175,
+   "pf": 0.82,
+   "dd": -5816,
+   "tpw": 2.58,
+   "sig_tpw": 4.84,
+   "sig_wk2": 94.3,
+   "wk2": 62.3,
+   "n": 133,
+   "fund_paid_3m": 190,
+   "by_src": {
+    "EMA": [
+     75,
+     -649
+    ],
+    "MD": [
+     33,
+     -804
+    ],
+    "SR": [
+     25,
+     -699
+    ]
+   },
+   "starts": 258,
+   "max_risk": 468,
+   "pm": -148,
+   "slot": {
+    "pm": 15,
+    "p10": -74,
+    "lose": 69.3,
+    "funded_6m": 1.35,
+    "evals_6m": 4.44,
+    "payouts_6m": 0.48,
+    "first_pay_med": 57.5,
+    "eval_trading_pm": 59,
+    "funded_trading_pm": 95
+   }
+  },
+  "2021-24": {
+   "p10": 22.9,
+   "f10": 0.0,
+   "s10": 27.1,
+   "dead10": 27.1,
+   "dec10": 50.0,
+   "p15": 25.5,
+   "f15": 0.0,
+   "p20": 26.4,
+   "f20": 0.0,
+   "dead20": 36.1,
+   "pass_med": 4.0,
+   "slow_pass": 3.3,
+   "mp_net_less_fees": -1388,
+   "mp_per_eval": -49,
+   "mp_passes": 9.31,
+   "mp_pass_per_month": 0.45,
+   "net": 2457,
+   "per_month": 63,
+   "pf": 1.05,
+   "dd": -7805,
+   "tpw": 3.05,
+   "sig_tpw": 5.37,
+   "sig_wk2": 99.4,
+   "wk2": 72.1,
+   "n": 496,
+   "fund_paid_3m": 246,
+   "by_src": {
+    "EMA": [
+     256,
+     7148
+    ],
+    "MD": [
+     134,
+     -3305
+    ],
+    "SR": [
+     106,
+     -1386
+    ]
+   },
+   "starts": 814,
+   "max_risk": 486,
+   "pm": -36,
+   "slot": {
+    "pm": -7,
+    "p10": -84,
+    "lose": 73.7,
+    "funded_6m": 1.52,
+    "evals_6m": 5.23,
+    "payouts_6m": 0.37,
+    "first_pay_med": 57.0,
+    "eval_trading_pm": 33,
+    "funded_trading_pm": 35
+   }
+  },
+  "2021-25": {
+   "p10": 24.6,
+   "f10": 0.0,
+   "s10": 26.2,
+   "dead10": 26.2,
+   "dec10": 50.8,
+   "p15": 27.2,
+   "f15": 0.0,
+   "p20": 28.2,
+   "f20": 0.0,
+   "dead20": 35.8,
+   "slow_pass": 3.1,
+   "sig_tpw": 5.2,
+   "sig_wk2": 98.2,
+   "wk2": 69.7,
+   "tpw": 2.9,
+   "pass_med": 4.0,
+   "mp_net_less_fees": -3204,
+   "net": 305,
+   "n": 629,
+   "per_month": 6,
+   "pf": null,
+   "dd": -7805,
+   "starts": 1072,
+   "mp_per_eval": null,
+   "mp_pass_per_month": 0.39,
+   "fund_paid_3m": null,
+   "by_src": null,
+   "pm": -63,
+   "slot": {
+    "pm": -2,
+    "lose": 72.6,
+    "funded_6m": 1.48,
+    "evals_6m": 5.04,
+    "payouts_6m": 0.4,
+    "p10": null,
+    "first_pay_med": null,
+    "eval_trading_pm": 39,
+    "funded_trading_pm": 49
+   }
+  }
+ },
+ "rows": [
+  {
+   "name": "D1 extras never after a losing trade today",
+   "o": {
+    "H1": {
+     "p10": 62.2,
+     "f10": 0.0,
+     "s10": 3.4,
+     "dead10": 3.4,
+     "dec10": 65.6,
+     "p15": 71.9,
+     "f15": 0.0,
+     "p20": 77.1,
+     "f20": 0.0,
+     "dead20": 3.7,
+     "pass_med": 5.0,
+     "slow_pass": 7.4,
+     "mp_net_less_fees": 10982,
+     "mp_per_eval": 1622,
+     "mp_passes": 5.59,
+     "mp_pass_per_month": 1.68,
+     "net": 15116,
+     "per_month": 2480,
+     "pf": 2.4,
+     "dd": -883,
+     "tpw": 5.59,
+     "sig_tpw": 11.02,
+     "sig_wk2": 100.0,
+     "wk2": 92.6,
+     "n": 143,
+     "fund_paid_3m": 2138,
+     "by_src": {
+      "EMA": [
+       36,
+       3583
+      ],
+      "MD": [
+       21,
+       6125
+      ],
+      "NAD": [
+       22,
+       -618
+      ],
+      "SHA": [
+       31,
+       1317
+      ],
+      "SHT": [
+       17,
+       716
+      ],
+      "SR": [
+       16,
+       3992
+      ]
+     },
+     "starts": 128,
+     "max_risk": 470,
+     "pm": 1800,
+     "slot": {
+      "pm": 540,
+      "p10": 97,
+      "lose": 8.0,
+      "funded_6m": 1.8,
+      "evals_6m": 2.19,
+      "payouts_6m": 4.28,
+      "first_pay_med": 33.5,
+      "eval_trading_pm": 530,
+      "funded_trading_pm": 1515
+     }
+    },
+    "H2": {
+     "p10": 53.6,
+     "f10": 0.0,
+     "s10": 8.7,
+     "dead10": 8.7,
+     "dec10": 62.3,
+     "p15": 67.2,
+     "f15": 0.0,
+     "p20": 66.1,
+     "f20": 0.0,
+     "dead20": 11.9,
+     "pass_med": 6.0,
+     "slow_pass": 1.9,
+     "mp_net_less_fees": 2383,
+     "mp_per_eval": 752,
+     "mp_passes": 1.83,
+     "mp_pass_per_month": 0.93,
+     "net": 1934,
+     "per_month": 521,
+     "pf": 1.98,
+     "dd": -1249,
+     "tpw": 1.86,
+     "sig_tpw": 10.51,
+     "sig_wk2": 100.0,
+     "wk2": 43.8,
+     "n": 29,
+     "fund_paid_3m": 1774,
+     "by_src": {
+      "EMA": [
+       6,
+       316
+      ],
+      "MD": [
+       3,
+       -310
+      ],
+      "NAD": [
+       8,
+       1901
+      ],
+      "SHA": [
+       7,
+       178
+      ],
+      "SHT": [
+       4,
+       158
+      ],
+      "SR": [
+       1,
+       -308
+      ]
+     },
+     "starts": 78,
+     "max_risk": 303,
+     "pm": 642,
+     "slot": {
+      "pm": 461,
+      "p10": -10,
+      "lose": 11.0,
+      "funded_6m": 1.58,
+      "evals_6m": 2.2,
+      "payouts_6m": 3.66,
+      "first_pay_med": 38.0,
+      "eval_trading_pm": 420,
+      "funded_trading_pm": 1623
+     }
+    },
+    "2025": {
+     "p10": 32.5,
+     "f10": 0.0,
+     "s10": 24.5,
+     "dead10": 24.5,
+     "dec10": 57.0,
+     "p15": 34.4,
+     "f15": 0.0,
+     "p20": 38.1,
+     "f20": 0.0,
+     "dead20": 37.7,
+     "pass_med": 5.0,
+     "slow_pass": 7.4,
+     "mp_net_less_fees": 838,
+     "mp_per_eval": 70,
+     "mp_passes": 4.02,
+     "mp_pass_per_month": 0.57,
+     "net": 3436,
+     "per_month": 280,
+     "pf": 1.16,
+     "dd": -2723,
+     "tpw": 4.79,
+     "sig_tpw": 11.96,
+     "sig_wk2": 100.0,
+     "wk2": 77.4,
+     "n": 247,
+     "fund_paid_3m": 359,
+     "by_src": {
+      "EMA": [
+       65,
+       -545
+      ],
+      "MD": [
+       35,
+       1480
+      ],
+      "NAD": [
+       28,
+       1431
+      ],
+      "SHA": [
+       68,
+       1758
+      ],
+      "SHT": [
+       28,
+       486
+      ],
+      "SR": [
+       23,
+       -1174
+      ]
+     },
+     "starts": 258,
+     "max_risk": 462,
+     "pm": 68,
+     "slot": {
+      "pm": 18,
+      "p10": -74,
+      "lose": 66.0,
+      "funded_6m": 1.65,
+      "evals_6m": 4.87,
+      "payouts_6m": 0.53,
+      "first_pay_med": 67.5,
+      "eval_trading_pm": 289,
+      "funded_trading_pm": 474
+     }
+    },
+    "2021-24": {
+     "p10": 29.1,
+     "f10": 0.0,
+     "s10": 29.2,
+     "dead10": 29.2,
+     "dec10": 58.3,
+     "p15": 33.0,
+     "f15": 0.0,
+     "p20": 34.5,
+     "f20": 0.0,
+     "dead20": 43.9,
+     "pass_med": 4.0,
+     "slow_pass": 4.0,
+     "mp_net_less_fees": 5108,
+     "mp_per_eval": 139,
+     "mp_passes": 14.19,
+     "mp_pass_per_month": 0.75,
+     "net": 18316,
+     "per_month": 473,
+     "pf": 1.24,
+     "dd": -6326,
+     "tpw": 6.0,
+     "sig_tpw": 13.28,
+     "sig_wk2": 100.0,
+     "wk2": 89.1,
+     "n": 977,
+     "fund_paid_3m": 294,
+     "by_src": {
+      "EMA": [
+       243,
+       5026
+      ],
+      "MD": [
+       132,
+       6230
+      ],
+      "NAD": [
+       126,
+       4130
+      ],
+      "SHA": [
+       267,
+       2572
+      ],
+      "SHT": [
+       107,
+       1875
+      ],
+      "SR": [
+       102,
+       -1518
+      ]
+     },
+     "starts": 814,
+     "max_risk": 540,
+     "pm": 132,
+     "slot": {
+      "pm": 28,
+      "p10": -84,
+      "lose": 61.0,
+      "funded_6m": 1.92,
+      "evals_6m": 5.71,
+      "payouts_6m": 0.68,
+      "first_pay_med": 64.0,
+      "eval_trading_pm": 164,
+      "funded_trading_pm": 203
+     }
+    },
+    "2021-25": {
+     "p10": 29.9,
+     "f10": 0.0,
+     "s10": 28.1,
+     "dead10": 28.1,
+     "dec10": 58.0,
+     "p15": 33.3,
+     "f15": 0.0,
+     "p20": 35.4,
+     "f20": 0.0,
+     "dead20": 42.4,
+     "slow_pass": 4.8,
+     "sig_tpw": 13.0,
+     "sig_wk2": 100.0,
+     "wk2": 86.3,
+     "tpw": 5.7,
+     "pass_med": 4.0,
+     "mp_net_less_fees": 5946,
+     "net": 21752,
+     "n": 1224,
+     "per_month": 426,
+     "pf": null,
+     "dd": -6326,
+     "starts": 1072,
+     "mp_per_eval": null,
+     "mp_pass_per_month": 0.71,
+     "fund_paid_3m": null,
+     "by_src": null,
+     "pm": 116,
+     "slot": {
+      "pm": 26,
+      "lose": 62.2,
+      "funded_6m": 1.85,
+      "evals_6m": 5.51,
+      "payouts_6m": 0.64,
+      "p10": null,
+      "first_pay_med": null,
+      "eval_trading_pm": 194,
+      "funded_trading_pm": 268
+     }
+    }
+   },
+   "gate": {
+    "H1": {
+     "eval": false,
+     "money": false,
+     "freq": true,
+     "ok": false
+    },
+    "H2": {
+     "eval": false,
+     "money": true,
+     "freq": true,
+     "ok": false
+    },
+    "2021-25": {
+     "eval": true,
+     "money": true,
+     "freq": true,
+     "ok": true
+    },
+    "pass": false
+   }
+  },
+  {
+   "name": "D2 extras only as the day's first trade (nothing closed yet)",
+   "o": {
+    "H1": {
+     "p10": 67.2,
+     "f10": 0.0,
+     "s10": 3.4,
+     "dead10": 3.4,
+     "dec10": 70.6,
+     "p15": 78.1,
+     "f15": 0.0,
+     "p20": 80.7,
+     "f20": 0.0,
+     "dead20": 3.7,
+     "pass_med": 5.0,
+     "slow_pass": 4.1,
+     "mp_net_less_fees": 12510,
+     "mp_per_eval": 1488,
+     "mp_passes": 6.82,
+     "mp_pass_per_month": 1.94,
+     "net": 21489,
+     "per_month": 3526,
+     "pf": 2.92,
+     "dd": -930,
+     "tpw": 5.31,
+     "sig_tpw": 11.02,
+     "sig_wk2": 100.0,
+     "wk2": 92.6,
+     "n": 136,
+     "fund_paid_3m": 2138,
+     "by_src": {
+      "EMA": [
+       39,
+       4925
+      ],
+      "MD": [
+       21,
+       8867
+      ],
+      "NAD": [
+       13,
+       416
+      ],
+      "SHA": [
+       33,
+       1868
+      ],
+      "SHT": [
+       12,
+       903
+      ],
+      "SR": [
+       18,
+       4510
+      ]
+     },
+     "starts": 128,
+     "max_risk": 470,
+     "pm": 2051,
+     "slot": {
+      "pm": 569,
+      "p10": 214,
+      "lose": 5.3,
+      "funded_6m": 1.95,
+      "evals_6m": 2.29,
+      "payouts_6m": 4.51,
+      "first_pay_med": 31.5,
+      "eval_trading_pm": 573,
+      "funded_trading_pm": 1599
+     }
+    },
+    "H2": {
+     "p10": 52.2,
+     "f10": 0.0,
+     "s10": 7.2,
+     "dead10": 7.2,
+     "dec10": 59.4,
+     "p15": 64.1,
+     "f15": 0.0,
+     "p20": 71.2,
+     "f20": 0.0,
+     "dead20": 10.2,
+     "pass_med": 7.0,
+     "slow_pass": 8.2,
+     "mp_net_less_fees": 1732,
+     "mp_per_eval": 670,
+     "mp_passes": 1.33,
+     "mp_pass_per_month": 0.62,
+     "net": 225,
+     "per_month": 61,
+     "pf": 1.07,
+     "dd": -1223,
+     "tpw": 3.65,
+     "sig_tpw": 10.51,
+     "sig_wk2": 100.0,
+     "wk2": 75.0,
+     "n": 57,
+     "fund_paid_3m": 1774,
+     "by_src": {
+      "EMA": [
+       12,
+       816
+      ],
+      "MD": [
+       5,
+       -366
+      ],
+      "NAD": [
+       10,
+       880
+      ],
+      "SHA": [
+       13,
+       -511
+      ],
+      "SHT": [
+       10,
+       -187
+      ],
+      "SR": [
+       7,
+       -407
+      ]
+     },
+     "starts": 78,
+     "max_risk": 303,
+     "pm": 467,
+     "slot": {
+      "pm": 437,
+      "p10": -21,
+      "lose": 15.0,
+      "funded_6m": 1.47,
+      "evals_6m": 2.12,
+      "payouts_6m": 3.47,
+      "first_pay_med": 41.0,
+      "eval_trading_pm": 401,
+      "funded_trading_pm": 1551
+     }
+    },
+    "2025": {
+     "p10": 29.3,
+     "f10": 0.0,
+     "s10": 24.9,
+     "dead10": 24.9,
+     "dec10": 54.2,
+     "p15": 31.1,
+     "f15": 0.0,
+     "p20": 33.1,
+     "f20": 0.0,
+     "dead20": 38.1,
+     "pass_med": 5.0,
+     "slow_pass": 3.6,
+     "mp_net_less_fees": -274,
+     "mp_per_eval": -32,
+     "mp_passes": 2.19,
+     "mp_pass_per_month": 0.31,
+     "net": 5272,
+     "per_month": 429,
+     "pf": 1.3,
+     "dd": -2253,
+     "tpw": 4.44,
+     "sig_tpw": 11.96,
+     "sig_wk2": 100.0,
+     "wk2": 79.2,
+     "n": 229,
+     "fund_paid_3m": 359,
+     "by_src": {
+      "EMA": [
+       65,
+       -1186
+      ],
+      "MD": [
+       33,
+       3244
+      ],
+      "NAD": [
+       18,
+       817
+      ],
+      "SHA": [
+       59,
+       2448
+      ],
+      "SHT": [
+       26,
+       964
+      ],
+      "SR": [
+       28,
+       -1015
+      ]
+     },
+     "starts": 258,
+     "max_risk": 483,
+     "pm": -22,
+     "slot": {
+      "pm": 17,
+      "p10": -74,
+      "lose": 68.3,
+      "funded_6m": 1.53,
+      "evals_6m": 4.86,
+      "payouts_6m": 0.53,
+      "first_pay_med": 63.0,
+      "eval_trading_pm": 125,
+      "funded_trading_pm": 468
+     }
+    },
+    "2021-24": {
+     "p10": 26.1,
+     "f10": 0.0,
+     "s10": 30.7,
+     "dead10": 30.7,
+     "dec10": 56.8,
+     "p15": 28.0,
+     "f15": 0.0,
+     "p20": 29.7,
+     "f20": 0.0,
+     "dead20": 44.8,
+     "pass_med": 4.0,
+     "slow_pass": 5.5,
+     "mp_net_less_fees": 4937,
+     "mp_per_eval": 135,
+     "mp_passes": 13.72,
+     "mp_pass_per_month": 0.71,
+     "net": 15165,
+     "per_month": 391,
+     "pf": 1.21,
+     "dd": -5301,
+     "tpw": 5.69,
+     "sig_tpw": 13.28,
+     "sig_wk2": 100.0,
+     "wk2": 91.5,
+     "n": 926,
+     "fund_paid_3m": 294,
+     "by_src": {
+      "EMA": [
+       256,
+       9546
+      ],
+      "MD": [
+       142,
+       1900
+      ],
+      "NAD": [
+       59,
+       -308
+      ],
+      "SHA": [
+       281,
+       2576
+      ],
+      "SHT": [
+       86,
+       2120
+      ],
+      "SR": [
+       102,
+       -670
+      ]
+     },
+     "starts": 814,
+     "max_risk": 616,
+     "pm": 127,
+     "slot": {
+      "pm": 30,
+      "p10": -84,
+      "lose": 62.3,
+      "funded_6m": 1.67,
+      "evals_6m": 5.53,
+      "payouts_6m": 0.68,
+      "first_pay_med": 65.0,
+      "eval_trading_pm": 98,
+      "funded_trading_pm": 226
+     }
+    },
+    "2021-25": {
+     "p10": 26.9,
+     "f10": 0.0,
+     "s10": 29.3,
+     "dead10": 29.3,
+     "dec10": 56.2,
+     "p15": 28.7,
+     "f15": 0.0,
+     "p20": 30.5,
+     "f20": 0.0,
+     "dead20": 43.2,
+     "slow_pass": 5.0,
+     "sig_tpw": 13.0,
+     "sig_wk2": 100.0,
+     "wk2": 88.5,
+     "tpw": 5.4,
+     "pass_med": 4.0,
+     "mp_net_less_fees": 4663,
+     "net": 20437,
+     "n": 1155,
+     "per_month": 400,
+     "pf": null,
+     "dd": -5301,
+     "starts": 1072,
+     "mp_per_eval": null,
+     "mp_pass_per_month": 0.61,
+     "fund_paid_3m": null,
+     "by_src": null,
+     "pm": 91,
+     "slot": {
+      "pm": 27,
+      "lose": 63.7,
+      "funded_6m": 1.64,
+      "evals_6m": 5.37,
+      "payouts_6m": 0.64,
+      "p10": null,
+      "first_pay_med": null,
+      "eval_trading_pm": 105,
+      "funded_trading_pm": 284
+     }
+    }
+   },
+   "gate": {
+    "H1": {
+     "eval": false,
+     "money": true,
+     "freq": true,
+     "ok": false
+    },
+    "H2": {
+     "eval": false,
+     "money": false,
+     "freq": true,
+     "ok": false
+    },
+    "2021-25": {
+     "eval": false,
+     "money": true,
+     "freq": true,
+     "ok": false
+    },
+    "pass": false
+   }
+  },
+  {
+   "name": "D3 NA never after a losing trade today",
+   "o": {
+    "H1": {
+     "p10": 62.2,
+     "f10": 0.0,
+     "s10": 3.4,
+     "dead10": 3.4,
+     "dec10": 65.6,
+     "p15": 71.1,
+     "f15": 0.0,
+     "p20": 73.4,
+     "f20": 0.0,
+     "dead20": 3.7,
+     "pass_med": 5.0,
+     "slow_pass": 4.4,
+     "mp_net_less_fees": 11015,
+     "mp_per_eval": 1626,
+     "mp_passes": 5.59,
+     "mp_pass_per_month": 1.68,
+     "net": 15207,
+     "per_month": 2495,
+     "pf": 2.43,
+     "dd": -883,
+     "tpw": 5.62,
+     "sig_tpw": 11.02,
+     "sig_wk2": 100.0,
+     "wk2": 92.6,
+     "n": 144,
+     "fund_paid_3m": 2138,
+     "by_src": {
+      "EMA": [
+       36,
+       3583
+      ],
+      "MD": [
+       19,
+       6513
+      ],
+      "NAD": [
+       22,
+       -618
+      ],
+      "SHA": [
+       32,
+       1376
+      ],
+      "SHT": [
+       19,
+       520
+      ],
+      "SR": [
+       16,
+       3833
+      ]
+     },
+     "starts": 128,
+     "max_risk": 470,
+     "pm": 1806,
+     "slot": {
+      "pm": 534,
+      "p10": 90,
+      "lose": 8.0,
+      "funded_6m": 1.8,
+      "evals_6m": 2.2,
+      "payouts_6m": 4.24,
+      "first_pay_med": 35.0,
+      "eval_trading_pm": 532,
+      "funded_trading_pm": 1499
+     }
+    },
+    "H2": {
+     "p10": 58.0,
+     "f10": 0.0,
+     "s10": 0.0,
+     "dead10": 0.0,
+     "dec10": 58.0,
+     "p15": 70.3,
+     "f15": 0.0,
+     "p20": 69.5,
+     "f20": 0.0,
+     "dead20": 0.0,
+     "pass_med": 6.0,
+     "slow_pass": 1.8,
+     "mp_net_less_fees": 3407,
+     "mp_per_eval": 870,
+     "mp_passes": 2.33,
+     "mp_pass_per_month": 1.14,
+     "net": 1935,
+     "per_month": 521,
+     "pf": 1.98,
+     "dd": -1249,
+     "tpw": 1.99,
+     "sig_tpw": 10.51,
+     "sig_wk2": 100.0,
+     "wk2": 43.8,
+     "n": 31,
+     "fund_paid_3m": 1774,
+     "by_src": {
+      "EMA": [
+       6,
+       316
+      ],
+      "MD": [
+       3,
+       -310
+      ],
+      "NAD": [
+       8,
+       1901
+      ],
+      "SHA": [
+       8,
+       179
+      ],
+      "SHT": [
+       5,
+       158
+      ],
+      "SR": [
+       1,
+       -308
+      ]
+     },
+     "starts": 78,
+     "max_risk": 303,
+     "pm": 918,
+     "slot": {
+      "pm": 504,
+      "p10": 102,
+      "lose": 6.7,
+      "funded_6m": 1.68,
+      "evals_6m": 2.14,
+      "payouts_6m": 3.98,
+      "first_pay_med": 37.0,
+      "eval_trading_pm": 462,
+      "funded_trading_pm": 1765
+     }
+    },
+    "2025": {
+     "p10": 32.1,
+     "f10": 0.0,
+     "s10": 25.3,
+     "dead10": 25.3,
+     "dec10": 57.4,
+     "p15": 34.4,
+     "f15": 0.0,
+     "p20": 38.1,
+     "f20": 0.0,
+     "dead20": 36.8,
+     "pass_med": 5.0,
+     "slow_pass": 7.4,
+     "mp_net_less_fees": -1057,
+     "mp_per_eval": -92,
+     "mp_passes": 3.08,
+     "mp_pass_per_month": 0.46,
+     "net": 720,
+     "per_month": 59,
+     "pf": 1.04,
+     "dd": -4235,
+     "tpw": 5.0,
+     "sig_tpw": 11.96,
+     "sig_wk2": 100.0,
+     "wk2": 79.2,
+     "n": 258,
+     "fund_paid_3m": 359,
+     "by_src": {
+      "EMA": [
+       68,
+       -1470
+      ],
+      "MD": [
+       39,
+       1284
+      ],
+      "NAD": [
+       26,
+       513
+      ],
+      "SHA": [
+       61,
+       771
+      ],
+      "SHT": [
+       42,
+       890
+      ],
+      "SR": [
+       22,
+       -1269
+      ]
+     },
+     "starts": 258,
+     "max_risk": 462,
+     "pm": -86,
+     "slot": {
+      "pm": 19,
+      "p10": -74,
+      "lose": 65.7,
+      "funded_6m": 1.6,
+      "evals_6m": 4.74,
+      "payouts_6m": 0.54,
+      "first_pay_med": 71.0,
+      "eval_trading_pm": 280,
+      "funded_trading_pm": 506
+     }
+    },
+    "2021-24": {
+     "p10": 28.8,
+     "f10": 0.0,
+     "s10": 26.6,
+     "dead10": 26.6,
+     "dec10": 55.4,
+     "p15": 33.5,
+     "f15": 0.0,
+     "p20": 35.0,
+     "f20": 0.0,
+     "dead20": 40.1,
+     "pass_med": 4.0,
+     "slow_pass": 3.9,
+     "mp_net_less_fees": 3051,
+     "mp_per_eval": 97,
+     "mp_passes": 10.92,
+     "mp_pass_per_month": 0.59,
+     "net": 13133,
+     "per_month": 339,
+     "pf": 1.17,
+     "dd": -7249,
+     "tpw": 6.33,
+     "sig_tpw": 13.28,
+     "sig_wk2": 100.0,
+     "wk2": 90.9,
+     "n": 1031,
+     "fund_paid_3m": 294,
+     "by_src": {
+      "EMA": [
+       231,
+       861
+      ],
+      "MD": [
+       139,
+       3968
+      ],
+      "NAD": [
+       123,
+       1183
+      ],
+      "SHA": [
+       293,
+       1435
+      ],
+      "SHT": [
+       147,
+       3721
+      ],
+      "SR": [
+       98,
+       1964
+      ]
+     },
+     "starts": 814,
+     "max_risk": 558,
+     "pm": 79,
+     "slot": {
+      "pm": 34,
+      "p10": -84,
+      "lose": 62.0,
+      "funded_6m": 1.91,
+      "evals_6m": 5.47,
+      "payouts_6m": 0.7,
+      "first_pay_med": 60.5,
+      "eval_trading_pm": 203,
+      "funded_trading_pm": 211
+     }
+    },
+    "2021-25": {
+     "p10": 29.6,
+     "f10": 0.0,
+     "s10": 26.3,
+     "dead10": 26.3,
+     "dec10": 55.9,
+     "p15": 33.7,
+     "f15": 0.0,
+     "p20": 35.7,
+     "f20": 0.0,
+     "dead20": 39.3,
+     "slow_pass": 4.7,
+     "sig_tpw": 13.0,
+     "sig_wk2": 100.0,
+     "wk2": 88.1,
+     "tpw": 6.0,
+     "pass_med": 4.0,
+     "mp_net_less_fees": 1994,
+     "net": 13853,
+     "n": 1289,
+     "per_month": 271,
+     "pf": null,
+     "dd": -7249,
+     "starts": 1072,
+     "mp_per_eval": null,
+     "mp_pass_per_month": 0.56,
+     "fund_paid_3m": null,
+     "by_src": null,
+     "pm": 39,
+     "slot": {
+      "pm": 30,
+      "lose": 62.9,
+      "funded_6m": 1.84,
+      "evals_6m": 5.29,
+      "payouts_6m": 0.66,
+      "p10": null,
+      "first_pay_med": null,
+      "eval_trading_pm": 222,
+      "funded_trading_pm": 282
+     }
+    }
+   },
+   "gate": {
+    "H1": {
+     "eval": false,
+     "money": false,
+     "freq": true,
+     "ok": false
+    },
+    "H2": {
+     "eval": true,
+     "money": true,
+     "freq": true,
+     "ok": true
+    },
+    "2021-25": {
+     "eval": true,
+     "money": true,
+     "freq": true,
+     "ok": true
+    },
+    "pass": false
+   }
+  },
+  {
+   "name": "D4 NA only as the day's first trade",
+   "o": {
+    "H1": {
+     "p10": 63.0,
+     "f10": 0.0,
+     "s10": 3.4,
+     "dead10": 3.4,
+     "dec10": 66.4,
+     "p15": 71.9,
+     "f15": 0.0,
+     "p20": 75.2,
+     "f20": 0.0,
+     "dead20": 3.7,
+     "pass_med": 5.0,
+     "slow_pass": 5.4,
+     "mp_net_less_fees": 10689,
+     "mp_per_eval": 1488,
+     "mp_passes": 6.05,
+     "mp_pass_per_month": 1.77,
+     "net": 16362,
+     "per_month": 2684,
+     "pf": 2.6,
+     "dd": -877,
+     "tpw": 5.43,
+     "sig_tpw": 11.02,
+     "sig_wk2": 100.0,
+     "wk2": 92.6,
+     "n": 139,
+     "fund_paid_3m": 2138,
+     "by_src": {
+      "EMA": [
+       38,
+       2887
+      ],
+      "MD": [
+       20,
+       6560
+      ],
+      "NAD": [
+       13,
+       448
+      ],
+      "SHA": [
+       33,
+       1613
+      ],
+      "SHT": [
+       18,
+       596
+      ],
+      "SR": [
+       17,
+       4258
+      ]
+     },
+     "starts": 128,
+     "max_risk": 470,
+     "pm": 1752,
+     "slot": {
+      "pm": 550,
+      "p10": 111,
+      "lose": 6.3,
+      "funded_6m": 1.86,
+      "evals_6m": 2.23,
+      "payouts_6m": 4.37,
+      "first_pay_med": 33.0,
+      "eval_trading_pm": 549,
+      "funded_trading_pm": 1549
+     }
+    },
+    "H2": {
+     "p10": 56.5,
+     "f10": 0.0,
+     "s10": 0.0,
+     "dead10": 0.0,
+     "dec10": 56.5,
+     "p15": 68.8,
+     "f15": 0.0,
+     "p20": 76.3,
+     "f20": 0.0,
+     "dead20": 0.0,
+     "pass_med": 7.0,
+     "slow_pass": 9.4,
+     "mp_net_less_fees": 2834,
+     "mp_per_eval": 919,
+     "mp_passes": 1.67,
+     "mp_pass_per_month": 0.8,
+     "net": 2082,
+     "per_month": 561,
+     "pf": 1.49,
+     "dd": -1093,
+     "tpw": 5.19,
+     "sig_tpw": 10.51,
+     "sig_wk2": 100.0,
+     "wk2": 93.8,
+     "n": 81,
+     "fund_paid_3m": 1774,
+     "by_src": {
+      "EMA": [
+       15,
+       1354
+      ],
+      "MD": [
+       7,
+       -185
+      ],
+      "NAD": [
+       9,
+       549
+      ],
+      "SHA": [
+       29,
+       -171
+      ],
+      "SHT": [
+       14,
+       742
+      ],
+      "SR": [
+       7,
+       -207
+      ]
+     },
+     "starts": 78,
+     "max_risk": 303,
+     "pm": 764,
+     "slot": {
+      "pm": 502,
+      "p10": 102,
+      "lose": 7.7,
+      "funded_6m": 1.68,
+      "evals_6m": 2.07,
+      "payouts_6m": 3.96,
+      "first_pay_med": 38.0,
+      "eval_trading_pm": 470,
+      "funded_trading_pm": 1763
+     }
+    },
+    "2025": {
+     "p10": 30.1,
+     "f10": 0.0,
+     "s10": 26.1,
+     "dead10": 26.1,
+     "dec10": 56.2,
+     "p15": 32.8,
+     "f15": 0.0,
+     "p20": 34.7,
+     "f20": 0.0,
+     "dead20": 37.2,
+     "pass_med": 5.0,
+     "slow_pass": 3.4,
+     "mp_net_less_fees": -2102,
+     "mp_per_eval": -210,
+     "mp_passes": 2.23,
+     "mp_pass_per_month": 0.33,
+     "net": 730,
+     "per_month": 59,
+     "pf": 1.04,
+     "dd": -4567,
+     "tpw": 4.9,
+     "sig_tpw": 11.96,
+     "sig_wk2": 100.0,
+     "wk2": 83.0,
+     "n": 253,
+     "fund_paid_3m": 359,
+     "by_src": {
+      "EMA": [
+       66,
+       -919
+      ],
+      "MD": [
+       33,
+       1490
+      ],
+      "NAD": [
+       19,
+       759
+      ],
+      "SHA": [
+       75,
+       -184
+      ],
+      "SHT": [
+       40,
+       530
+      ],
+      "SR": [
+       20,
+       -946
+      ]
+     },
+     "starts": 258,
+     "max_risk": 462,
+     "pm": -171,
+     "slot": {
+      "pm": 23,
+      "p10": -74,
+      "lose": 68.0,
+      "funded_6m": 1.49,
+      "evals_6m": 4.7,
+      "payouts_6m": 0.55,
+      "first_pay_med": 61.0,
+      "eval_trading_pm": 133,
+      "funded_trading_pm": 456
+     }
+    },
+    "2021-24": {
+     "p10": 26.1,
+     "f10": 0.0,
+     "s10": 27.5,
+     "dead10": 27.5,
+     "dec10": 53.6,
+     "p15": 28.8,
+     "f15": 0.0,
+     "p20": 30.9,
+     "f20": 0.0,
+     "dead20": 40.5,
+     "pass_med": 5.0,
+     "slow_pass": 6.9,
+     "mp_net_less_fees": 1789,
+     "mp_per_eval": 60,
+     "mp_passes": 10.14,
+     "mp_pass_per_month": 0.53,
+     "net": 10262,
+     "per_month": 265,
+     "pf": 1.14,
+     "dd": -8689,
+     "tpw": 6.03,
+     "sig_tpw": 13.28,
+     "sig_wk2": 100.0,
+     "wk2": 90.3,
+     "n": 982,
+     "fund_paid_3m": 294,
+     "by_src": {
+      "EMA": [
+       247,
+       1072
+      ],
+      "MD": [
+       144,
+       1221
+      ],
+      "NAD": [
+       58,
+       -528
+      ],
+      "SHA": [
+       293,
+       2513
+      ],
+      "SHT": [
+       146,
+       3667
+      ],
+      "SR": [
+       94,
+       2317
+      ]
+     },
+     "starts": 814,
+     "max_risk": 616,
+     "pm": 46,
+     "slot": {
+      "pm": 32,
+      "p10": -84,
+      "lose": 61.0,
+      "funded_6m": 1.81,
+      "evals_6m": 5.29,
+      "payouts_6m": 0.68,
+      "first_pay_med": 65.0,
+      "eval_trading_pm": 169,
+      "funded_trading_pm": 215
+     }
+    },
+    "2021-25": {
+     "p10": 27.1,
+     "f10": 0.0,
+     "s10": 27.2,
+     "dead10": 27.2,
+     "dec10": 54.2,
+     "p15": 29.8,
+     "f15": 0.0,
+     "p20": 31.8,
+     "f20": 0.0,
+     "dead20": 39.7,
+     "slow_pass": 6.1,
+     "sig_tpw": 13.0,
+     "sig_wk2": 100.0,
+     "wk2": 88.5,
+     "tpw": 5.8,
+     "pass_med": 5.0,
+     "mp_net_less_fees": -313,
+     "net": 10992,
+     "n": 1235,
+     "per_month": 215,
+     "pf": null,
+     "dd": -8689,
+     "starts": 1072,
+     "mp_per_eval": null,
+     "mp_pass_per_month": 0.48,
+     "fund_paid_3m": null,
+     "by_src": null,
+     "pm": -6,
+     "slot": {
+      "pm": 30,
+      "lose": 62.7,
+      "funded_6m": 1.73,
+      "evals_6m": 5.15,
+      "payouts_6m": 0.65,
+      "p10": null,
+      "first_pay_med": null,
+      "eval_trading_pm": 160,
+      "funded_trading_pm": 273
+     }
+    }
+   },
+   "gate": {
+    "H1": {
+     "eval": false,
+     "money": false,
+     "freq": true,
+     "ok": false
+    },
+    "H2": {
+     "eval": true,
+     "money": true,
+     "freq": true,
+     "ok": true
+    },
+    "2021-25": {
+     "eval": true,
+     "money": true,
+     "freq": true,
+     "ok": true
+    },
+    "pass": false
+   }
+  }
+ ],
+ "n_pass": 0
+}
