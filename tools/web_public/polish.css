@@ -202,6 +202,14 @@
 #splash .sp-line[data-lvl="bad"] { color: #ffb3c1; } #splash .sp-line[data-lvl="warn"] { color: #ffe1a8; }
 #splash .sp-skip { position: absolute; right: 16px; bottom: calc(22px + env(safe-area-inset-bottom)); all: unset; position: absolute; cursor: pointer; font: 600 13px var(--sans); color: rgba(255, 255, 255, .7);
   padding: 10px 16px; border-radius: 99px; border: 1px solid rgba(255, 255, 255, .16); background: rgba(255, 255, 255, .05); right: 16px; bottom: calc(22px + env(safe-area-inset-bottom)); }
+/* the Earth's limb rises at the bottom while the stars settle (one layer, transform only) */
+#splash::after { content: ""; position: absolute; left: 50%; bottom: 0; z-index: 1; width: 240vw; height: 240vw; margin-left: -120vw; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle at 50% 0%, #0d2048, #040814 38%, #02040a 60%);
+  box-shadow: 0 -1px 0 rgba(160, 205, 255, .75), 0 -14px 70px rgba(79, 155, 255, .45), inset 0 22px 60px rgba(79, 155, 255, .35);
+  transform: translate3d(0, calc(100% - 20vh), 0); animation: sp-limb 2.4s var(--out) .15s both; }
+@keyframes sp-limb { from { transform: translate3d(0, calc(100% + 6vh), 0); } to { transform: translate3d(0, calc(100% - 20vh), 0); } }
+#splash .sp-in, #splash .sp-orbs, #splash .sp-skip { z-index: 2; }
+@media (prefers-reduced-motion: reduce) { #splash::after { animation: none; } }
 #splash .sp-orbs { position: absolute; left: 50%; top: calc(50% - 40px); width: 0; height: 0; }
 #splash .sp-orbs i { position: absolute; left: -7px; top: -7px; width: 14px; height: 14px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, var(--c) 45%, color-mix(in srgb, var(--c) 40%, #000));
   box-shadow: 0 0 18px var(--c), 0 0 40px color-mix(in srgb, var(--c) 50%, transparent); animation: sp-orbit 2.6s var(--out) both; animation-delay: var(--dl); }
