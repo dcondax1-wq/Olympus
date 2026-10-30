@@ -407,6 +407,15 @@ def part_c(F, tmp, shots):
         pg.wait_for_timeout(800)
         check("c. Mission Control: 'Replay a day in the Holodeck' opens #/holo/<day>", re.match(r"#/holo/\d{4}-\d\d-\d\d$", pg.evaluate("() => location.hash") or "") is not None
               and day in pg.evaluate("() => location.hash"), (day, pg.evaluate("() => location.hash")))
+        pg.goto(base + "?fxoff#/liveview")
+        try:
+            pg.wait_for_selector("#lvThink .lv-bzlink", timeout=20000)
+            pg.click("#lvThink .lv-bzlink")
+            pg.wait_for_timeout(800)
+            lv_ok = pg.evaluate("() => location.hash") == "#/blitz" and pg.query_selector(".bl-wrap .bl-hero") is not None
+        except Exception as e:
+            lv_ok = False
+        check("c. Live View's BLITZ card links to the BLITZ tab", lv_ok, pg.evaluate("() => location.hash"))
         check("c. phone (account C off): no page errors", not errs, errs[:4])
         ctx.close()
         for case, want in (("sim", "SIM TEST"), ("armed", "ARMED · REAL")):
