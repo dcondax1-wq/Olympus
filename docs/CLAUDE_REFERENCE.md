@@ -801,7 +801,16 @@ part yourself or fold it into a script.**
 - **DST / CME holidays / self-healing (2026-10-29, `docs/AUTOPILOT.md`):** US clocks go back Sun 2026-11-01; every live
   time decision is America/New_York wall clock (25 trading_day functions, market_open, entry / flat windows, auto-update,
   ops pushes, the cloud's UTC crons through its real bash guard, LIT replays over the 2025-11-02 / 2025-03-09 /
-  2026-03-08 weeks identical to the backtest: `tests/test_dst.py` 49, `--quick` 45). The JS fallback for browsers without
+  2026-03-08 weeks identical to the backtest: `tests/test_dst.py` 49, `--quick` 45). **Sunday 2026-11-01 run end to end**
+  (`tests/test_dst_sunday.py`, 29 checks, ~4 min, `--quick` 15): BLITZ on 2026 bars re-dated 3 weeks with their NY wall
+  times kept (Nov 2-6 EST = Oct 12-16 EDT trade for trade, live Engine = backtest across the switch, Monday's day filter =
+  Friday's range); the timers minute by minute Sat 17:00 -> Mon 16:30 (the 01:00 hour walked twice: trading day flips once
+  at Sun 18:00 EST, market opens once at 23:00 UTC, auto-update hourly once per ET hour and once in the doubled hour, ops /
+  live-learning weekly once, Monday's LIT 02:00 / ATLAS 03:00 / BLITZ 11:00 checks / 15:55 flat on the right UTC instants);
+  the real server.py on the virtual clock Sun 00:00 EDT -> 20:00 EST with LIT / ATLAS / BLITZ on Sim (polls every step
+  incl. 120 in the doubled hour, no "clock moved backwards", no order, heartbeat on the virtual clock, market open + fresh
+  bars after 18:00, saved day 2026-11-02, BLITZ eval session 1, the go-live check names Monday's normal session, the board
+  Monday's 02:00 window, no push / auto-update check twice in the doubled hour). The JS fallback for browsers without
   Intl time zones (`litkit.js`, `tradechart.js`, both copies) uses the US rule (`usEtOff`), not a fixed -4 h. Known
   fixed offsets left on purpose: the old engine's 4h buckets (`engine/data.resample`, `engine/mtf.build_4h`, shadow
   only, identical in the backtest). **One CME calendar** `engine/cme_calendar.py` (`early_close`, `full_closure`,
