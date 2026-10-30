@@ -138,7 +138,8 @@
     const lvl = bad.length ? 'bad' : warn.length ? 'warn' : 'good';
     const nx = L.find((x) => x.k === 'next');
     const title = bad.length ? `${bad.length} thing${bad.length === 1 ? '' : 's'} need${bad.length === 1 ? 's' : ''} you` : warn.length ? `All running · ${warn.length} to watch` : 'All good';
-    const why = (bad[0] || warn[0]) ? `${(bad[0] || warn[0]).label}: ${(bad[0] || warn[0]).value}` : (nx ? nx.detail : 'Every light is green.');
+    const top = bad[0] || warn[0];
+    const why = !top ? (nx ? nx.detail : 'Every light is green.') : top.k === 'alerts' && top.list && top.list[0] ? String(top.list[0].text).slice(0, 90) : `${top.label}: ${top.value}`;
     return { lvl, title, why, items: L, next: nx || null };
   }
 
@@ -147,7 +148,7 @@
   // a sparkline of the last days' real P&L, cumulative (an area under the line, the last point glows)
   function spark(vals, color, w = 96, h = 28) {
     const v = arr(vals).map(num).filter(okN);
-    if (v.length < 2) return '';
+    if (v.length < 3) return '';          // a line needs a few days to mean something
     const c = []; let s = 0; for (const x of v) { s += x; c.push(s); }
     const lo = Math.min(0, ...c), hi = Math.max(0, ...c), span = hi - lo || 1;
     const X = (i) => (i / (c.length - 1)) * (w - 4) + 2, Y = (y) => h - 3 - ((y - lo) / span) * (h - 6);
@@ -242,9 +243,11 @@
         ${ring(0, c, '<i>off</i>')}<span class="su-a-m"><span class="su-big"><b>Paper</b><em>until its own 25K</em></span><span class="su-sub">never routed · watches the 09:30 noise band</span></span>
         <span class="su-line">${dot('idle')}${esc(L.text)}</span></a>`;
     }
-    const days = arr(A.days).map((d) => (Array.isArray(d) ? num(d[1]) : num(obj(d).usd)));
+    // the sparkline: the account's real P&L per day, or this week's days (Mon -> today) while it has fewer than 3
+    let days = arr(A.days).map((d) => (Array.isArray(d) ? num(d[1]) : num(obj(d).usd)));
+    if (days.length < 3) { const wk = arr(obj(obj(obj(obj(M.board).progress)[k]).week).days).filter((d) => d && !d.future).map((d) => num(d.usd) || 0); if (wk.length >= 3) days = wk; }
     const big = passed ? 'Passed' : okN(A.toTarget) ? money(A.toTarget) : '—';
-    const sub = [okN(A.room) ? `Room ${money(A.room)}` : '', okN(A.session) && okN(A.sessions) ? `eval day ${A.session}/${A.sessions}` : ''].filter(Boolean).join(' · ');
+    const sub = [okN(A.room) ? `Room ${money(A.room)}` : '', okN(A.session) && okN(A.sessions) ? `day ${A.session} of ${A.sessions}` : ''].filter(Boolean).join(' · ');
     const roomLvl = okN(A.roomFrac) ? (A.roomFrac < 0.25 ? 'bad' : A.roomFrac < 0.5 ? 'warn' : 'good') : 'idle';
     const tc = okN(A.today) && A.today > 0 ? 'up' : okN(A.today) && A.today < 0 ? 'dn' : '';
     return `<a class="su-acct" data-bot="${k}" style="--c:${c}" ${goA(o, page)} aria-label="${NAME[k]} ${esc(A.size || '')}: ${esc(big)} to the target">

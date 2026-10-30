@@ -157,6 +157,16 @@
     SU.tick(box);
   }
 
+  // Home's status bar again once the page is drawn: the critical-alert banner (alerts.js) lands after the page itself
+  function refreshBar() {
+    if (typeof PAGE === 'undefined' || PAGE !== 'today') return;
+    const b = document.querySelector('#page > .pl-home > .su-bar'); if (!b) return;
+    const more = `<a class="pl-btn" data-go="mission">Mission Control</a><a class="pl-btn" data-go="board">Live board</a><a class="pl-btn" data-go="launch">Launch checklist</a>`;
+    const h = SU.bar(model(), { open: SU.isOpen(), more, where: 'phone' });
+    if (b.__h === h) return;
+    const t = document.createElement('div'); t.innerHTML = h;
+    const nb = t.firstElementChild; nb.__h = h; b.replaceWith(nb); SU.tick(nb);
+  }
   // a bot page that draws itself again later (BLITZ once its Live View data lands, ATLAS on a poll) keeps its card on top
   function keepBotTop() {
     const el = document.getElementById('page'); if (!el || el.__plObs || typeof MutationObserver === 'undefined') return;
@@ -168,6 +178,9 @@
         const g = typeof groupOf === 'function' ? groupOf(PAGE) : '';
         const today = (PAGE === 'lit') || ((PAGE === 'atlas' || PAGE === 'blitz') && (!ARG || ARG === 'today'));
         if (BOTG[g] && today && !el.querySelector(':scope > .pl-bot')) { try { botTop(el, true); } catch (e) { /* the page still works */ } }
+        // the critical-alert banner (alerts.js) can land after the page: the status bar and the header dot follow it
+        const ban = !!document.getElementById('apBan');
+        if (ban !== el.__plBan) { el.__plBan = ban; try { refreshBar(); headerDot(); } catch (e) { /* optional */ } }
       });
     });
     el.__plObs.observe(el, { childList: true });
@@ -182,7 +195,7 @@
       const el = document.getElementById('page');
       if (el && PAGE !== 'today') el.classList.remove('pl-h', 'pl-all');
       const out = r0.apply(this, arguments);
-      try { if (el) { botTop(el, soft); if (!soft && PAGE !== 'today') enter(el, ':scope > *'); } tabInd(); headerDot(); } catch (e) { console.warn('polish render', e); }
+      try { if (el) { botTop(el, soft); if (!soft && PAGE !== 'today') enter(el, ':scope > *'); } tabInd(); refreshBar(); headerDot(); } catch (e) { console.warn('polish render', e); }
       return out;
     };
     render.__pl = true;

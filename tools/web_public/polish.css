@@ -32,7 +32,9 @@
 @keyframes pl-breathe { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .55; transform: scale(.82); } }
 #plFind .ico { width: 18px; height: 18px; }
 .pl-stat { display: grid; place-items: center; width: 36px !important; } .pl-stat .su-dot { width: 11px; height: 11px; }
-@media (max-width: 760px) { :root[data-polish="on"] .ttl { min-width: 0; } :root[data-polish="on"] .ttl h1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
+@media (max-width: 760px) { :root[data-polish="on"] .ttl { min-width: 0; } :root[data-polish="on"] .ttl h1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  :root[data-polish="on"] header.top { gap: 6px; } :root[data-polish="on"] header.top .iconbtn { width: 38px; height: 38px; border-radius: 12px; }
+  :root[data-polish="on"] header.top .status { height: 38px; padding: 0 11px; } }
 @media (max-width: 360px) { header.top .pl-stat { display: none; } }
 
 /* ---------- every page: the refresh line folds into the header pill (offline / stale banners still show) ---------- */
