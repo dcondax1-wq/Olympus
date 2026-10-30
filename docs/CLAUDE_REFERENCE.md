@@ -719,7 +719,9 @@ part yourself or fold it into a script.**
   palette (`#plFind`, "/" / Ctrl+K, `le.pl.recent`), Money tab = `real` · `realtoday` (new page: RealUI.today + safety) ·
   `evaltl` (money / props / whatif / scale / accounts moved to More > Money planning), entrances / count-ups (first paint
   only; rings / sparklines draw in once via `.pl-first`), the sliding tab pill (`.pl-tabind`, the tab's colour), More's
-  "Recent" chips (`le.pl.visits`), the CSS sky's parallax + a vignette. ONE page transition on the phone
+  "Recent" chips (`le.pl.visits`), "On this page" chips on pages of 3+ screens (`.pl-toc`, one per card's first h3,
+  rebuilt when a page redraws itself; not on Home / More / Live View / Holodeck), Settings > Intro (`le.intro`),
+  the CSS sky's parallax + a vignette. ONE page transition on the phone
   (`#page.page` pl-page / pl-page-l / pl-page-r by `#page[data-dir]`, set in polish.js's render wrapper from the tab order)
   wins over clean.js's cl-in, space.css's sp-warp (a full-page blur + transform held for 1 s by `.entering`: it cost
   frames and mis-placed the Holodeck's fixed labels) and index.html's 3D card rise. Page animations have NO fill-mode on purpose: a
@@ -732,7 +734,7 @@ part yourself or fold it into a script.**
   piled up on every live redraw (real.js `.rc-moved`). PC `js/next/polish.js` (`initPolish()` in app.js): `#nxStatusHome`
   on top of `#page-cc` (bar + Sunday card, MutationObserver keeps it first), sidebar `MAIN_SECTIONS` in routes.js (Bots ·
   Live · Money · Insight; shell.js `mainLinks`), BOTS = the same five sections, `css/polish.css`. fx: Earth bake 1536 on a
-  Retina phone at Max, crisper star points. Features 82-106 + "Organization (2026-10-30)" in `web_next/FEATURES.md`. Caches
+  Retina phone at Max, crisper star points. Features 82-108 + "Organization (2026-10-30)" in `web_next/FEATURES.md`. Caches
   le-public-v46 / le-shell-next-v28. Test `python -X utf8 -m tests.test_ui_polish [--shots <dir>]` (static, node, phone
   390x844 every tab + palette + intro + reduced motion + frame time + light, PC 1440x900 + Ctrl K).
   StatusUI's classes are `su-*` / `data-su-*` (NOT `st-`: the PC Start page owns `.st-go`, `.st-acct`, `.st-list` ...; the

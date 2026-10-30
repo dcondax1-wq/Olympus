@@ -144,6 +144,12 @@
 .pl-chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; } .pl-chips::-webkit-scrollbar { display: none; }
 .pl-chips a { flex: none; height: 34px; padding: 0 14px; display: inline-flex; align-items: center; border-radius: 99px; font-size: 13px; font-weight: 600; color: var(--ink); text-decoration: none; cursor: pointer;
   background: rgba(255, 255, 255, .05); border: 1px solid var(--rim); }
+.pl-toc { margin: 0 0 var(--s3); } .pl-toc .pl-h3 { display: block; margin: 0 4px var(--s2); }
+.pl-chips button { all: unset; box-sizing: border-box; flex: none; height: 32px; padding: 0 12px; display: inline-flex; align-items: center; border-radius: 99px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); cursor: pointer;
+  background: rgba(255, 255, 255, .04); border: 1px solid var(--rim); }
+.pl-chips button:focus-visible { outline: 2px solid color-mix(in srgb, var(--accent) 85%, transparent); outline-offset: 2px; }
+:root[data-bot] .pl-toc .pl-chips button { border-color: color-mix(in srgb, var(--bot) 22%, var(--rim)); }
+:root[data-theme="light"] .pl-chips button { background: rgba(20, 30, 60, .04); border-color: rgba(20, 30, 60, .12); color: #2a3346; }
 :root[data-theme="light"] .pl-chips a { background: rgba(20, 30, 60, .04); border-color: rgba(20, 30, 60, .12); }
 
 /* ---------- empty states: say what will appear, and when ---------- */

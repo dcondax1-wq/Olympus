@@ -226,6 +226,15 @@ def part_c(F, tmp, shots):
             if st["x"] > 1 or st["n"] < 1 or st["t"] < 40 or st["err"]:
                 bad.append((name, st))
         check(f"c. all {len(ROUTES)} tab / section pages render, no 'could not draw', no sideways scroll at 390 px", not bad, bad)
+        pg.evaluate("() => { location.hash = '#/deck'; }")
+        pg.wait_for_timeout(2400)
+        nt = pg.evaluate("() => document.querySelectorAll('#page > .pl-toc button').length")
+        if nt >= 3:
+            pg.click("#page > .pl-toc button:nth-child(3)")
+            pg.wait_for_timeout(900)
+        sy = pg.evaluate("() => scrollY")
+        check("c. long pages: 'On this page' chips (Trader's deck), a tap scrolls to that card", nt >= 5 and sy > 200, (nt, sy))
+        pg.evaluate("() => scrollTo(0, 0)")
         segs = {}
         for k, h in (("lit", "#/lit"), ("atlas", "#/atlas"), ("blitz", "#/blitz")):
             pg.evaluate(f"() => {{ location.hash = '{h}'; }}")

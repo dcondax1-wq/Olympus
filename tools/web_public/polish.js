@@ -196,6 +196,7 @@
         const g = typeof groupOf === 'function' ? groupOf(PAGE) : '';
         const today = (PAGE === 'lit') || ((PAGE === 'atlas' || PAGE === 'blitz') && (!ARG || ARG === 'today'));
         if (BOTG[g] && today && !el.querySelector(':scope > .pl-bot')) { try { botTop(el, true); } catch (e) { /* the page still works */ } }
+        if (!el.querySelector(':scope > .pl-toc') && !TOC_SKIP.has(PAGE)) { try { toc(el); } catch (e) { /* optional */ } }   // a page that redrew itself
         // the critical-alert banner (alerts.js) can land after the page: the status bar and the header dot follow it
         const ban = !!document.getElementById('apBan');
         if (ban !== el.__plBan) { el.__plBan = ban; try { refreshBar(); headerDot(); } catch (e) { /* optional */ } }
@@ -220,9 +221,39 @@
       const out = r0.apply(this, arguments);
       try { if (el) { botTop(el, soft); if (!soft && PAGE !== 'today') enter(el, ':scope > *'); eyebrow(el, g); tabStops(el); } tabInd(); refreshBar(); headerDot(); } catch (e) { console.warn('polish render', e); }
       try { const t = document.getElementById('title'); if (t) t.classList.toggle('pl-long', (t.textContent || '').trim().length > 11); } catch (e) { /* header only */ }
+      try {                                  // the page's cards land over the next second (fetches): build the chips now and once more
+        if (el) { toc(el); const p0 = PAGE; clearTimeout(render.__toc); render.__toc = setTimeout(() => { if (PAGE === p0) toc(el); }, 1600); }
+      } catch (e) { /* optional */ }
       return out;
     };
     render.__pl = true;
+  }
+  // long pages: "On this page" chips under the section bar, one per card heading; a tap scrolls to it
+  const TOC_SKIP = new Set(['today', 'system', 'liveview', 'holo', 'realtoday']);
+  function toc(el) {
+    el.querySelectorAll(':scope > .pl-toc').forEach((x) => x.remove());
+    if (!el || TOC_SKIP.has(PAGE) || document.documentElement.scrollHeight < innerHeight * 3) return;
+    const W = el.clientWidth, seen = new Set(), H = [];
+    for (const h of el.querySelectorAll('h3')) {
+      if (H.length >= 14 || h.closest('.pl-bot, .su-bar, details:not([open]), .sheet-wrap')) continue;
+      const card = h.closest('.card, section, [class*="-card"], [class*="card "]') || h.parentElement;
+      if (!card || card.offsetParent === null || card.getBoundingClientRect().width < W * 0.6) continue;
+      const first = card.querySelector('h3'); if (first !== h) continue;      // one chip per card: its first heading
+      const t = (h.firstChild && h.firstChild.nodeType === 3 ? h.firstChild.textContent : h.textContent).replace(/\s+/g, ' ').trim().replace(/[·:]\s*$/, '');
+      if (!t || t.length < 3 || seen.has(t)) continue;
+      seen.add(t); H.push([t.length > 26 ? t.slice(0, 25) + '…' : t, h]);
+    }
+    if (H.length < 5) return;
+    const box = document.createElement('nav'); box.className = 'pl-toc'; box.setAttribute('aria-label', 'On this page');
+    box.innerHTML = `<span class="pl-h3">On this page</span><div class="pl-chips">${H.map(([t], i) => `<button type="button" data-toc="${i}">${esc(t)}</button>`).join('')}</div>`;
+    box.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-toc]'); if (!b) return;
+      const h = H[+b.dataset.toc][1]; if (!h || !h.isConnected) return;
+      const top = h.getBoundingClientRect().top + scrollY - ((document.querySelector('header.top')?.offsetHeight || 0) + (document.getElementById('sub')?.offsetHeight || 0) + 12);
+      scrollTo({ top, behavior: calm() ? 'auto' : 'smooth' });
+    });
+    const at = [...el.children].filter((c) => c.matches('.mo-strip, .pl-bot')).pop();
+    if (at) at.after(box); else el.prepend(box);
   }
   // keyboard: an <a data-go> without href is no tab stop by itself; give it one, Enter / Space opens it (read-only links)
   function tabStops(root) { root.querySelectorAll('a[data-go]:not([href]):not([tabindex])').forEach((a) => { a.tabIndex = 0; if (!a.getAttribute('role')) a.setAttribute('role', 'link'); }); }

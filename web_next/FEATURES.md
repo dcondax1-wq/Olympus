@@ -160,6 +160,8 @@ absent). Read-only: no new control, only links. Tests: `python -X utf8 -m tests.
 | 104 | NQ now, between its levels | new | `StatusUI.market` (phone Home, PC Home under the status bar): NQ's price and bar time, VIX / ATR, a ladder from the nearest untaken level below to the one above (labels, prices, points away) with Zlarior's VIX day band drawn on it (the board's `map`) |
 | 105 | Direction-aware tab transitions | new | Phone: a tab change slides the page in from the side of the new tab (Home → More = from the right), a section change rises in; reduced motion = none |
 | 106 | Keyboard and focus | new | Both apps: every new card and row is a tab stop with a visible focus ring; Enter / Space opens it; the phone palette matches every word ("atlas trades") |
+| 107 | On this page | new | Phone: long pages (3+ screens: Trader's deck, Mind, Mission Control, Settings, the Brains, Rules ...) get a row of chips under the section bar, one per card; a tap scrolls to it |
+| 108 | Intro switch | new | Phone Settings > Intro: the once-a-day intro on / off for this device |
 
 ## Organization (2026-10-30, night 3: "organized, clean")
 - One information architecture on both apps. **Home** = the status bar, the three accounts, what matters now (+ the Sunday
