@@ -155,6 +155,7 @@
     el.querySelectorAll(':scope > .pl-bot').forEach((x) => x.remove());
     if (!BOTG[g] || !today) return;
     const M = model(), k = g === 'lit' ? 'lit' : g;
+    if (k === 'blitz') M.blitz = null;          // the BLITZ hero right below says what it is doing: the card keeps to "paper until its own 25K"
     let A = null;
     try { A = (window.MissionUI.accounts(M) || []).find((a) => a.key === k) || null; } catch (e) { A = null; }
     if (!A) return;
@@ -476,8 +477,41 @@
     if (typeof ALIAS !== 'undefined') Object.assign(ALIAS, { accountstoday: 'realtoday', realnow: 'realtoday', today_real: 'realtoday' });
   }
 
+  // ------------------------------------------------------------------ More > All features: tonight's features, marked new
+  function whatsNew() {
+    const FL = window.Features && Array.isArray(window.Features.list) ? window.Features.list : null;
+    const G = 'Calm & clear (Oct 30)';
+    if (!FL || FL.some((f) => f.group === G)) return;
+    [['today', 'Status bar', 'One line on top of Home says if everything is OK right now (PC, NinjaTrader, feed, each bot, the next window, alerts); a tap opens every line with its fix'],
+      ['today', 'The three accounts', 'Zlarior, ATLAS and BLITZ as one card each: eval ring, $ to the target, room, today\'s real $, a sparkline, the day in one line'],
+      ['today', 'What matters now', 'Open trades, since you last looked, the next window, the next big news, the last real trade'],
+      ['today', 'NQ now', 'The price between its nearest levels, with the VIX band'],
+      ['today', 'This week', 'Real trades against each bot\'s goal, Mon-Fri'],
+      ['today', 'Sunday open', 'Weekends: the CME reopen, the clock change, what each bot does first'],
+      ['lit', 'One order on every bot', 'Today · Brain · Trades · Results · Rules on Zlarior, ATLAS and BLITZ, with "why no trade yet" under the account card'],
+      ['real', 'Money = real money', 'Real results · Accounts today · Eval timeline; the research $ pages are under More > Money planning'],
+      ['system', 'Search everything', 'The magnifier in the header (or "/"): pages, each bot\'s sections and the live numbers'],
+      ['settings', 'Motion and intro', 'Smooth page and tab transitions, a short intro once a day (Skip), all off with Settings > Motion or reduced motion'],
+    ].reverse().forEach(([go, name, line]) => FL.unshift({ group: G, name, line: line + '.', go, isNew: true }));
+    window.Features.count = FL.length; window.Features.newCount = FL.filter((f) => f.isNew).length;
+  }
+
+  // ------------------------------------------------------------------ Settings: the intro on / off (this device)
+  const s0 = VIEWS.settings;
+  if (s0 && !s0.__pl) {
+    const w = function (el) {
+      s0.apply(this, arguments);
+      try {
+        el.insertAdjacentHTML('beforeend', `<div class="card"><div class="card-h"><h3>${ic('star')}Intro</h3></div><label class="row"><span><b>Intro on the first open of the day</b><span class="small mut">A two-second space intro with today's status line, at most once a day; tap Skip any time. Never with Motion off or reduced motion.</span></span><input type="checkbox" class="switch" id="plIntro" ${store.get('intro', true) !== false ? 'checked' : ''}></label></div>`);
+        el.querySelector('#plIntro').onchange = (e) => store.set('intro', !!e.target.checked);
+      } catch (e) { console.warn('settings intro', e); }
+    };
+    Object.keys(s0).forEach((k) => { w[k] = s0[k]; }); w.__pl = true; VIEWS.settings = w;
+  }
+
   // ------------------------------------------------------------------ install
   function install() {
+    try { whatsNew(); } catch (e) { /* the list is optional */ }
     try { moneyTab(); } catch (e) { console.warn('polish money', e); }
     keepBotTop();
     if (typeof nav === 'function') nav();

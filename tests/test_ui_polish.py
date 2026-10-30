@@ -308,6 +308,14 @@ def part_c(F, tmp, shots):
         again = pg.query_selector("#splash") is not None
         check("c. the intro: shows on the first open of the day, Skip removes it at once, not again the same day", vis and fading and not again and not e2, (vis, fading, again, gone_s, e2[:2]))
         ctx.close()
+        # Settings > Intro off: no intro even on a new day
+        e5 = []
+        ctx, pg = page(br, e5, init=real + "try { localStorage.setItem('le.intro', 'false'); } catch (e) {}")
+        pg.goto(base + "#/settings")
+        pg.wait_for_selector("#plIntro", timeout=30000)
+        off = pg.evaluate("() => ({ intro: !!document.getElementById('splash'), box: document.getElementById('plIntro').checked })")
+        check("c. Settings > Intro: the switch is there; off = no intro", not off["intro"] and off["box"] is False and not e5, (off, e5[:2]))
+        ctx.close()
         # reduced motion: no intro, no animation on the new parts
         e3 = []
         ctx, pg = page(br, e3, motion="reduce", init=real)

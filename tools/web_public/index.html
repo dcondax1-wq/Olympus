@@ -4446,7 +4446,7 @@ let splashGone = false;
   const force = /[?&]intro=1\b/.test(location.search), day = et(Date.now() / 1000).date;
   let seen = false; try { seen = localStorage.getItem('le.intro.day') === JSON.stringify(day); } catch { }
   const calm = matchMedia('(prefers-reduced-motion: reduce)').matches || store.get('motion', true) === false;
-  if (!force && (seen || calm || navigator.webdriver)) { el.remove(); splashGone = true; return; }
+  if (!force && (seen || calm || navigator.webdriver || store.get('intro', true) === false)) { el.remove(); splashGone = true; return; }   // Settings > Intro
   store.set('intro.day', day);
   el.removeAttribute('aria-hidden'); el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Intro');
   const skip = () => splashDone(true);

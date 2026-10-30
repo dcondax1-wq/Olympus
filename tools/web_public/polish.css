@@ -48,6 +48,7 @@
 #page.pl-h > * { order: 30; }
 #page.pl-h > #moInst { order: -3; } #page.pl-h > #moStrip { order: -2; } #page.pl-h > #apBan { order: 1; }
 #page.pl-h > .pl-home { order: 0; } #page.pl-h > .pl-fold { order: 5; }
+#page.pl-h:has(> .pl-home .su-ack) > #apBan:not(:has(.mo-ban:not(.ap-ban))) { display: none; }   /* the status bar carries the alert and its Got it link */
 #page.pl-h > .mc-strip { order: 10; } #page.pl-h > .rc-homebox { order: 11; } #page.pl-h > .rc-wrap { order: 12; } #page.pl-h > .bd-homecut { order: 13; }
 #page.pl-h > .cl-launch { order: 14; } #page.pl-h > .bz-home { order: 15; } #page.pl-h > .cl-plan { order: 16; } #page.pl-h > .lv-home { order: 17; }
 #page.pl-h > .hd-home { order: 18; } #page.pl-h > .cl-trade { order: 19; } #page.pl-h > .cl-list { order: 20; } #page.pl-h > .cl-foot { order: 40; }
