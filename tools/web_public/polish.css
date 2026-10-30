@@ -151,12 +151,12 @@
 :root[data-polish="on"] .empty b { display: block; color: var(--ink); margin-bottom: 4px; }
 
 /* ---------- motion: page transition, card entrances, press states ---------- */
-:root[data-polish="on"] .page { animation: pl-page .34s var(--out); }   /* no fill: a finished transform animation must not stay "in effect" (it would be the containing block of fixed full-screen views) */
+:root[data-polish="on"] #page.page { animation: pl-page .34s var(--out); }   /* ONE page transition (wins over clean.js cl-in and space.css sp-warp, a full-page blur that costs frames on a phone); no fill: a finished transform must not stay "in effect" (it would be the containing block of fixed full-screen views) */
 @keyframes pl-page { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: none; } }
-:root[data-polish="on"] #page[data-dir="r"] { animation-name: pl-page-r; } :root[data-polish="on"] #page[data-dir="l"] { animation-name: pl-page-l; }
+:root[data-polish="on"] #page.page[data-dir="r"] { animation-name: pl-page-r; } :root[data-polish="on"] #page.page[data-dir="l"] { animation-name: pl-page-l; }
 @keyframes pl-page-r { from { opacity: 0; transform: translate3d(28px, 0, 0); } to { opacity: 1; transform: none; } }
 @keyframes pl-page-l { from { opacity: 0; transform: translate3d(-28px, 0, 0); } to { opacity: 1; transform: none; } }
-.pl-in { animation: pl-rise .52s var(--out) both; animation-delay: var(--d, 0ms); }
+:root[data-polish="on"] #page .pl-in { animation: pl-rise .52s var(--out) both; animation-delay: var(--d, 0ms); }   /* one card entrance (wins over the older 3D "rise") */
 @keyframes pl-rise { from { opacity: 0; transform: translate3d(0, 14px, 0) scale(.985); } to { opacity: 1; transform: none; } }
 :root[data-polish="on"] :is(button.card, a.card, .cl-row, .pl-now-r, .pl-quick a, .tabs a, .zl-seg button, .strip button, .pl-fold, .su-sum, .iconbtn):active { transform: scale(.975); transition: transform .08s; }
 :root[data-polish="on"] :is(button.card, .cl-row, .pl-quick a, .tabs a) { transition: transform .22s var(--spring), background .2s, border-color .2s; }
