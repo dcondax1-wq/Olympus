@@ -137,7 +137,8 @@
     const L = items(M), bad = L.filter((x) => x.lvl === 'bad'), warn = L.filter((x) => x.lvl === 'warn');
     const lvl = bad.length ? 'bad' : warn.length ? 'warn' : 'good';
     const nx = L.find((x) => x.k === 'next');
-    const title = bad.length ? `${bad.length} thing${bad.length === 1 ? '' : 's'} need${bad.length === 1 ? 's' : ''} you` : warn.length ? `All running · ${warn.length} to watch` : 'All good';
+    const pcOk = (L.find((x) => x.k === 'pc') || {}).lvl === 'good';
+    const title = bad.length ? `${bad.length} thing${bad.length === 1 ? '' : 's'} need${bad.length === 1 ? 's' : ''} you` : warn.length ? `${pcOk ? 'All running · ' : ''}${warn.length} thing${warn.length === 1 ? '' : 's'} to watch` : 'All good';
     const top = bad[0] || warn[0];
     const why = !top ? (nx ? nx.detail : 'Every light is green.') : top.k === 'alerts' && top.list && top.list[0] ? String(top.list[0].text).slice(0, 90) : `${top.label}: ${top.value}`;
     return { lvl, title, why, items: L, next: nx || null };
@@ -250,7 +251,7 @@
     const sub = [okN(A.room) ? `Room ${money(A.room)}` : '', okN(A.session) && okN(A.sessions) ? `day ${A.session} of ${A.sessions}` : ''].filter(Boolean).join(' · ');
     const roomLvl = okN(A.roomFrac) ? (A.roomFrac < 0.25 ? 'bad' : A.roomFrac < 0.5 ? 'warn' : 'good') : 'idle';
     const tc = okN(A.today) && A.today > 0 ? 'up' : okN(A.today) && A.today < 0 ? 'dn' : '';
-    return `<a class="su-acct" data-bot="${k}" style="--c:${c}" ${goA(o, page)} aria-label="${NAME[k]} ${esc(A.size || '')}: ${esc(big)} to the target">
+    return `<a class="su-acct${A.pos ? ' trading' : ''}" data-bot="${k}" style="--c:${c}" ${goA(o, page)} aria-label="${NAME[k]} ${esc(A.size || '')}: ${esc(big)} to the target">
       ${head(`${A.size || ''} · ${String(A.plan || '').replace(/\s*\d+K$/i, '')}`)}
       ${ring(frac, down ? 'var(--bad,#ff5a7a)' : c, kmoney(A.profit), down)}
       <span class="su-a-m"><span class="su-big"><b data-su-count="${okN(A.toTarget) && !passed ? Math.round(A.toTarget) : ''}">${esc(big)}</b><em>${passed ? 'target reached' : 'to the target'}</em></span>
@@ -354,6 +355,10 @@
   border:1px solid color-mix(in srgb,var(--c) 26%,rgba(160,170,220,.12));box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 18px 44px -28px color-mix(in srgb,var(--c) 60%,transparent);transition:transform .18s cubic-bezier(.2,.8,.2,1),border-color .2s}
 .su-acct::after{content:"";position:absolute;left:16px;right:16px;top:0;height:1px;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--c) 70%,#fff),transparent);opacity:.55}
 .su-acct:active{transform:scale(.985)}
+@property --su-a{syntax:"<angle>";inherits:false;initial-value:0deg}
+.su-acct.trading{border-color:transparent;background:radial-gradient(120% 140% at 0% 0%,color-mix(in srgb,var(--c) 18%,transparent),transparent 55%) padding-box,linear-gradient(180deg,rgba(22,26,38,.86),rgba(11,13,21,.82)) padding-box,conic-gradient(from var(--su-a),transparent 0 62%,color-mix(in srgb,var(--c) 90%,#fff) 78%,transparent 92%) border-box,linear-gradient(color-mix(in srgb,var(--c) 30%,transparent),color-mix(in srgb,var(--c) 30%,transparent)) border-box;
+  border:1.5px solid transparent;animation:su-orbit 4.5s linear infinite;box-shadow:0 0 0 1px color-mix(in srgb,var(--c) 18%,transparent),0 18px 50px -24px var(--c)}
+@keyframes su-orbit{to{--su-a:360deg}}
 @media (hover:hover){.su-acct:hover{border-color:color-mix(in srgb,var(--c) 50%,transparent)}}
 .su-acct.ph{opacity:.88}
 .su-a-h{grid-area:h;display:flex;align-items:center;gap:8px;min-width:0}.su-a-h b{font-size:15px;font-weight:750;color:var(--c);letter-spacing:.01em}
@@ -410,7 +415,7 @@
 :root[data-theme="light"] .su-acct{background:radial-gradient(120% 140% at 0% 0%,color-mix(in srgb,var(--c) 12%,transparent),transparent 55%),linear-gradient(180deg,#fff,#f6f8fc)}
 :root[data-theme="light"] .su-chip{background:rgba(20,30,60,.04);border-color:rgba(20,30,60,.1)}
 :root[data-theme="light"] .su-ring .bg{stroke:rgba(20,30,60,.08)}:root[data-theme="light"] .su-ring.down b{color:#c8264a}:root[data-theme="light"] .su-wd em{color:#5b6478}
-@media (prefers-reduced-motion:reduce){.su-dot.live::after{animation:none}.su-more,.su-acct,.su-chev{transition:none}}
+@media (prefers-reduced-motion:reduce){.su-acct.trading{animation:none}.su-dot.live::after{animation:none}.su-more,.su-acct,.su-chev{transition:none}}
 `;
   function css() { if (typeof document === 'undefined' || document.getElementById('su-css')) return; const s = document.createElement('style'); s.id = 'su-css'; s.textContent = CSS; document.head.appendChild(s); }
 

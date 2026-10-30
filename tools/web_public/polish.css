@@ -95,6 +95,12 @@
 /* ---------- the bot tabs: the same account card on top, the bot's own colour on the section bar ---------- */
 .pl-bot { margin: 0 0 var(--s3); }
 .pl-bot .su-acct { padding: 18px 16px; }
+.pl-why { margin: 8px 0 0; padding: 12px 16px; border-radius: 16px; background: rgba(255, 255, 255, .03); border: 1px solid var(--rim); }
+.pl-why ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.pl-why li { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; line-height: 1.45; color: var(--ink-2); }
+.pl-why li i { flex: none; width: 7px; height: 7px; border-radius: 50%; margin-top: 6px; background: var(--muted); }
+.pl-why li.ok i { background: var(--good); box-shadow: 0 0 8px var(--good); } .pl-why li.no i { background: var(--warn); } .pl-why li.ok span { color: var(--ink); }
+:root[data-theme="light"] .pl-why { background: rgba(20, 30, 60, .03); border-color: rgba(20, 30, 60, .1); }
 :root[data-bot="lit"][data-page="lit"] #page:has(> .pl-bot) > .hero, :root[data-bot="lit"][data-page="lit"] #page:has(> .pl-bot) > .cl-hero { display: none; }   /* only once the account card is there */
 :root[data-bot="atlas"][data-page="atlas"] #page:has(> .pl-bot) > .hero { display: none; }
 :root[data-bot="blitz"] .bl-hero-h h2 { display: none; }

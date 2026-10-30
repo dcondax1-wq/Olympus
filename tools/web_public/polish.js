@@ -72,7 +72,7 @@
           const parts = [G.newT.length ? `${G.newT.length} closed trade${G.newT.length === 1 ? '' : 's'}${G.usdNew ? ` (${smoney(G.usdNew)} real)` : ''}` : '',
             G.opened.filter((t) => t.open).length ? `${G.opened.filter((t) => t.open).length} opened` : '', G.al.length ? `${G.al.length} alert${G.al.length === 1 ? '' : 's'}` : '',
             G.rv.length ? `${G.rv.length} review${G.rv.length === 1 ? '' : 's'}` : '', G.pr.length ? `${G.pr.length} idea${G.pr.length === 1 ? '' : 's'}` : ''].filter(Boolean).join(' · ');
-          rows.unshift(`<a class="pl-now-r" data-go="deck"><i class="pl-now-i new">${ic('alerts')}</i><span><b>Since you last looked · ${esc(ago)} ago</b><em>${esc(parts || 'something changed')}</em></span><strong class="pl-badge">${G.n}</strong></a>`);
+          rows.splice(As.filter((a) => a.pos).length, 0, `<a class="pl-now-r" data-go="deck"><i class="pl-now-i new">${ic('alerts')}</i><span><b>Since you last looked · ${esc(ago)} ago</b><em>${esc(parts || 'something changed')}</em></span><strong class="pl-badge">${G.n}</strong></a>`);
         }
       }
     } catch (e) { /* the digest is optional */ }
@@ -156,7 +156,12 @@
     try { A = (window.MissionUI.accounts(M) || []).find((a) => a.key === k) || null; } catch (e) { A = null; }
     if (!A) return;
     const box = document.createElement('div'); box.className = 'pl-bot' + (soft ? '' : ' pl-first');
-    box.innerHTML = SU.acctCard(A, M, { where: 'phone', go: () => `data-go="${k === 'lit' ? 'evalhq' : k}"${k === 'lit' ? '' : ' data-arg="results"'}` });
+    let why = '';
+    try {
+      const R = !A.pos && !A.placeholder && window.MissionUI.whyNot ? window.MissionUI.whyNot(A, M).slice(0, 3) : [];
+      if (R.length) why = `<div class="pl-why"><span class="pl-h3">Why no trade yet</span><ul>${R.map((r) => `<li class="${r.ok === true ? 'ok' : r.ok === false ? 'no' : 'mid'}"><i></i><span>${esc(r.text)}</span></li>`).join('')}</ul></div>`;
+    } catch (e) { why = ''; }
+    box.innerHTML = SU.acctCard(A, M, { where: 'phone', go: () => `data-go="${k === 'lit' ? 'evalhq' : k}"${k === 'lit' ? '' : ' data-arg="results"'}` }) + why;
     const after = [...el.children].filter((c) => c.classList.contains('mo-strip')).pop();
     if (after) after.after(box); else el.prepend(box);
     SU.tick(box);
@@ -200,7 +205,7 @@
       const el = document.getElementById('page');
       if (el && PAGE !== 'today') el.classList.remove('pl-h', 'pl-all');
       const out = r0.apply(this, arguments);
-      try { if (el) { botTop(el, soft); if (!soft && PAGE !== 'today') enter(el, ':scope > *'); } tabInd(); refreshBar(); headerDot(); } catch (e) { console.warn('polish render', e); }
+      try { if (el) { botTop(el, soft); if (!soft && PAGE !== 'today') enter(el, ':scope > *'); eyebrow(el, g); } tabInd(); refreshBar(); headerDot(); } catch (e) { console.warn('polish render', e); }
       return out;
     };
     render.__pl = true;
@@ -218,6 +223,16 @@
   }
   addEventListener('resize', () => requestAnimationFrame(tabInd), { passive: true });
   window.POLISH.tabInd = tabInd;
+  const PLAN = new Set(['money', 'props', 'whatif', 'scale', 'share']);
+  function eyebrow(el, g) {
+    const e = el.querySelector(':scope > .hero .eyebrow'); if (!e) return;
+    const t = (e.textContent || '').trim();
+    if (BOTG[g]) {
+      const seg = (document.querySelector('#sub .zl-seg button.on') || {}).textContent || '';
+      const nm = SU.NAME[g === 'lit' ? 'lit' : g];
+      if (seg && /^(Money|System|Today|Trades|Lab)\b/i.test(t)) e.textContent = `${nm} · ${seg.trim()}`;
+    } else if (PLAN.has(PAGE) && /^Money\b/.test(t)) e.textContent = t.replace(/^Money\b/, 'Money planning');
+  }
   // card entrances: the first 10 visible children rise in, 40 ms apart (a class, so nothing is left half-drawn)
   function enter(root, sel) {
     if (calm() || !root) return;
@@ -412,6 +427,7 @@
     });
     Mo.pages.sort((a, b) => keep.indexOf(a[0]) - keep.indexOf(b[0]));
     if (typeof SCENE !== 'undefined') SCENE.realtoday = 'results';
+    if (PAGES.money) PAGES.money.label = 'Money plan';     // the research $ / month, goal and funded plan (the tab is "Money")
     if (typeof ALIAS !== 'undefined') Object.assign(ALIAS, { accountstoday: 'realtoday', realnow: 'realtoday', today_real: 'realtoday' });
   }
 

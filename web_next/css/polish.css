@@ -7,6 +7,7 @@
 .nx-st-row { display: grid; gap: 14px; }
 @media (min-width: 1180px) { .nx-st-row:has(> :nth-child(2)) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } }
 .nx-st-home .su-bar, .nx-st-home .su-sun, .nx-st-home .su-week { margin: 0; }
+.nx-st-row > .su-week:only-child { max-width: 720px; }
 .nx-st-home .su-chips { flex-wrap: wrap; overflow: visible; -webkit-mask-image: none; mask-image: none; }
 .pl-btn { display: inline-flex; align-items: center; height: 34px; padding: 0 14px; border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--ink, #eef1f8); text-decoration: none; cursor: pointer;
   background: rgba(255, 255, 255, .05); border: 1px solid rgba(170, 182, 235, .14); }

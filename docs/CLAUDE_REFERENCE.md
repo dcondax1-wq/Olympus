@@ -731,7 +731,12 @@ part yourself or fold it into a script.**
   Live · Money · Insight; shell.js `mainLinks`), BOTS = the same five sections, `css/polish.css`. fx: Earth bake 1536 on a
   Retina phone at Max, crisper star points. Features 82-99 + "Organization (2026-10-30)" in `web_next/FEATURES.md`. Caches
   le-public-v46 / le-shell-next-v28. Test `python -X utf8 -m tests.test_ui_polish [--shots <dir>]` (static, node, phone
-  390x844 every tab + palette + intro + reduced motion + frame time + light, PC 1440x900).
+  390x844 every tab + palette + intro + reduced motion + frame time + light, PC 1440x900 + Ctrl K).
+  StatusUI's classes are `su-*` / `data-su-*` (NOT `st-`: the PC Start page owns `.st-go`, `.st-acct`, `.st-list` ...; the
+  first version broke its START button). Phone header: one status dot `#plStat` (the bar's verdict; a tap opens it on
+  Home); the critical-alert banner (#apBan) counts for 3 min after a page redraw wipes it. PC Ctrl K: each bot's five
+  sections + "Status: ..." (`addPaletteItems`). Known, not from this change: test_holo_ui's PC "fill label shows the exact
+  price" step fails in this container on the base commit too (timing of the camera focus).
 - **Start & Accounts page (2026-10-26, PC dashboard sidebar "Start", page `start`):** START BOT as one checklist, one button
   per red line: NinjaTrader connected · live bars from NinjaTrader (`go.feed_problem`, fix "right-click the MNQ 5-minute chart > Reload NinjaScript (or re-add LE_BarFeed)"; the Sim job is refused while stale) · accounts set (50K -> Zlarior, 25K -> ATLAS) · setup done · Sim tests passed · armed ·
   running and routes verified, plus the plain line `Zlarior -> 50K <name> · ATLAS -> 25K <name> · both armed · running`.

@@ -4457,7 +4457,7 @@ let splashGone = false;
   const S = Array.from({ length: Math.min(320, Math.round(W * H / 2200)) }, () => ({ a: Math.random() * 6.283, z: Math.random(), s: 0.5 + Math.random() * 1.4, c: Math.random() < 0.12 ? '#9fc2ff' : Math.random() < 0.2 ? '#ffd9b0' : '#ffffff' }));
   const t0 = performance.now();
   (function frame(now) {
-    if (splashGone || !el.isConnected) return;
+    if (!el.isConnected || el.classList.contains('out')) return;
     const t = (now - t0) / 1000, v = 1.6 * Math.exp(-t * 2.2) + 0.03;           // light speed, then a calm drift
     g.clearRect(0, 0, W, H); g.globalCompositeOperation = 'lighter';
     for (const p of S) {
@@ -4472,12 +4472,17 @@ let splashGone = false;
     requestAnimationFrame(frame);
   })(t0);
 })();
+// the data is in: the intro finishes its short show (2.3 s from the open) and dissolves; a tap on Skip ends it at once,
+// also while that short wait is running (the star field keeps moving until it fades)
+let splashT = null;
 function splashDone(now) {
-  if (splashGone) return; splashGone = true;
-  const el = $('#splash'); if (!el) return;
-  if (window.POLISH && window.POLISH.introLine) window.POLISH.introLine();
+  const el = $('#splash'); if (!el) { splashGone = true; return; }
+  if (splashGone && (now !== true || el.classList.contains('out'))) return;
+  if (!splashGone && window.POLISH && window.POLISH.introLine) window.POLISH.introLine();
+  splashGone = true;
   const wait = now === true ? 0 : Math.max(0, 2300 - (performance.now() - SPLASH_T0));
-  setTimeout(() => { el.classList.add('out'); FX?.warp(); setTimeout(() => el.remove(), 650); }, wait);
+  clearTimeout(splashT);
+  splashT = setTimeout(() => { el.classList.add('out'); FX?.warp(); setTimeout(() => el.remove(), 650); }, wait);
 }
 setTimeout(splashDone, 4200);   // never stay on the intro, even offline
 document.addEventListener('pointermove', (e) => {
