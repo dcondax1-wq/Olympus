@@ -75,7 +75,10 @@ async function core(p, tag) {
   const f = HOLO.fills.find((x) => x.real && x.kind === 'entry') || HOLO.fills[0];
   await p.click('.hd-tabs button[data-t="fills"]');
   await p.click(`.hd-list button[data-id="${f.id}"]`);
+  // the camera flies to the fill first; the software GPU runs ~4 fps right after the Holodeck opens, so a fixed 1.6 s was
+  // borderline (the label still off screen, on the base build too). Wait until it shows (at most 8 s), then read it.
   await p.waitForTimeout(1600);
+  await p.waitForFunction((id) => { const e = document.querySelector(`.hd-labs .hd-fill[data-id="${id}"]`); return !!e && e.style.visibility === 'visible'; }, f.id, { timeout: 8000 }).catch(() => null);
   await p.evaluate(() => document.querySelector('#hdStage').scrollIntoView({ block: 'start' })); await p.waitForTimeout(300);
   const lab = await p.evaluate((id) => { const e = document.querySelector(`.hd-labs .hd-fill[data-id="${id}"]`); const r = e.getBoundingClientRect(); return { txt: e.textContent, vis: e.style.visibility, x: r.x, y: r.y, w: r.width, focus: e.classList.contains('focus'), card: document.querySelector('#hdCard:not([hidden]) #hdFillTxt')?.textContent || '' }; }, f.id);
   step(`${tag}: fill label shows the exact price + time (${fmtPx(f.px)} · ${etHMS(f.t)})`, lab.txt.includes(fmtPx(f.px)) && lab.txt.includes(etHMS(f.t)) && lab.vis === 'visible' && lab.focus, JSON.stringify(lab));

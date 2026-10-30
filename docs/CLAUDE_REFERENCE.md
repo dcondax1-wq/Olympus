@@ -734,14 +734,18 @@ part yourself or fold it into a script.**
   piled up on every live redraw (real.js `.rc-moved`). PC `js/next/polish.js` (`initPolish()` in app.js): `#nxStatusHome`
   on top of `#page-cc` (bar + Sunday card, MutationObserver keeps it first), sidebar `MAIN_SECTIONS` in routes.js (Bots ·
   Live · Money · Insight; shell.js `mainLinks`), BOTS = the same five sections, `css/polish.css`. fx: Earth bake 1536 on a
-  Retina phone at Max, crisper star points. Features 82-108 + "Organization (2026-10-30)" in `web_next/FEATURES.md`. Caches
+  Retina phone at Max, crisper star points. Features 82-109 + "Organization (2026-10-30)" in `web_next/FEATURES.md`. Caches
   le-public-v46 / le-shell-next-v28. Test `python -X utf8 -m tests.test_ui_polish [--shots <dir>]` (static, node, phone
   390x844 every tab + palette + intro + reduced motion + frame time + light, PC 1440x900 + Ctrl K).
   StatusUI's classes are `su-*` / `data-su-*` (NOT `st-`: the PC Start page owns `.st-go`, `.st-acct`, `.st-list` ...; the
   first version broke its START button). Phone header: one status dot `#plStat` (the bar's verdict; a tap opens it on
   Home); the critical-alert banner (#apBan) counts for 3 min after a page redraw wipes it. PC Ctrl K: each bot's five
-  sections + "Status: ..." (`addPaletteItems`). Known, not from this change: test_holo_ui's PC "fill label shows the exact
-  price" step failed in this container on the base commit too; with the one page transition it passed 62/62 here.
+  sections + "Status: ..." (`addPaletteItems`). test_holo_ui's "fill label shows the exact price" steps (phone + PC) read
+  the label a fixed 1.6 s after the camera fly starts; the software GPU runs ~4 fps right after the Holodeck opens (base and
+  this branch alike), so the label was sometimes still just off screen (PC failed on the base commit too).
+  `tests/holo_ui_check.js` now also waits until the label shows (max 8 s). Still flaky there and on base: PC "fills pop
+  exactly when they happened" (the replay at ~10 fps ends before a fill) and once the PC day picker. No looping animation
+  runs on the Holodeck / Live View pages (polish.css; the header / tab lights stay lit but still), no card entrance there.
 - **Start & Accounts page (2026-10-26, PC dashboard sidebar "Start", page `start`):** START BOT as one checklist, one button
   per red line: NinjaTrader connected · live bars from NinjaTrader (`go.feed_problem`, fix "right-click the MNQ 5-minute chart > Reload NinjaScript (or re-add LE_BarFeed)"; the Sim job is refused while stale) · accounts set (50K -> Zlarior, 25K -> ATLAS) · setup done · Sim tests passed · armed ·
   running and routes verified, plus the plain line `Zlarior -> 50K <name> · ATLAS -> 25K <name> · both armed · running`.

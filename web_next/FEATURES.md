@@ -162,6 +162,7 @@ absent). Read-only: no new control, only links. Tests: `python -X utf8 -m tests.
 | 106 | Keyboard and focus | new | Both apps: every new card and row is a tab stop with a visible focus ring; Enter / Space opens it; the phone palette matches every word ("atlas trades") |
 | 107 | On this page | new | Phone: long pages (3+ screens: Trader's deck, Mind, Mission Control, Settings, the Brains, Rules ...) get a row of chips under the section bar, one per card; a tap scrolls to it |
 | 108 | Intro switch | new | Phone Settings > Intro: the once-a-day intro on / off for this device |
+| 109 | Crisp icons | new | Both apps: every line icon a touch heavier (1.9 on the 24 grid, 2.1 on the open tab / sidebar item) and drawn with geometric precision, so an 18 px icon stays sharp on a plain screen |
 
 ## Organization (2026-10-30, night 3: "organized, clean")
 - One information architecture on both apps. **Home** = the status bar, the three accounts, what matters now (+ the Sunday

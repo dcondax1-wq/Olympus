@@ -42,6 +42,10 @@
 .space-css > .sc-stars.sc-b { transform: translate3d(calc(var(--px, 0) * 2px), calc(var(--py, 0) * 2px), 0); }
 .space-css > .sc-earth { transform: translate3d(calc(var(--px, 0) * -1.5px), calc(var(--py, 0) * -1px), 0); transition: transform .8s var(--pl-out); }
 
+/* crisp icons: an 18 px icon on the 24 grid draws a 1.3 px line (soft on a plain screen); a touch heavier, exact */
+.nx svg.ico { stroke-width: 1.9; shape-rendering: geometricPrecision; }
+#nav > a.active svg.ico { stroke-width: 2.1; }
+
 :root[data-motion="off"] .nx .page.active, :root[data-motion="off"] .nx .page.active > * { animation: none !important; }
 @media (prefers-reduced-motion: reduce) {
   .nx .page.active, .nx .page.active > *, .su-ring .v { animation: none !important; }

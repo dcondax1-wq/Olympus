@@ -19,6 +19,8 @@
   const okN = (v) => typeof v === 'number' && Number.isFinite(v);
   const calm = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches || store.get('motion', true) === false; } catch (e) { return false; } };
   const BOTG = { lit: 'lit', atlas: 'atlas', blitz: 'blitz' };
+  // full-screen app pages (their own canvas, camera and fixed labels): no card entrance on their root
+  const NO_ENTER = new Set(['today', 'holo', 'liveview']);
   SU.css();
 
   // ------------------------------------------------------------------ the data (the same picks as board.js / mission.js / blitz.js)
@@ -219,7 +221,7 @@
       }
       if (el && PAGE !== 'today') el.classList.remove('pl-h', 'pl-all');
       const out = r0.apply(this, arguments);
-      try { if (el) { botTop(el, soft); if (!soft && PAGE !== 'today') enter(el, ':scope > *'); eyebrow(el, g); tabStops(el); } tabInd(); refreshBar(); headerDot(); } catch (e) { console.warn('polish render', e); }
+      try { if (el) { botTop(el, soft); if (!soft && !NO_ENTER.has(PAGE)) enter(el, ':scope > *'); eyebrow(el, g); tabStops(el); } tabInd(); refreshBar(); headerDot(); } catch (e) { console.warn('polish render', e); }
       try { const t = document.getElementById('title'); if (t) t.classList.toggle('pl-long', (t.textContent || '').trim().length > 11); } catch (e) { /* header only */ }
       try {                                  // the page's cards land over the next second (fetches): build the chips now and once more
         if (el) { toc(el); const p0 = PAGE; clearTimeout(render.__toc); render.__toc = setTimeout(() => { if (PAGE === p0) toc(el); }, 1600); }

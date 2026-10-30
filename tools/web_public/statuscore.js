@@ -254,7 +254,7 @@
     const head = (plan) => `<span class="su-a-h"><b>${NAME[k]}</b>${tag ? `<i class="su-tag ${tag === 'REAL' ? 'real' : ''}">${esc(tag)}</i>` : ''}<em>${esc(plan)}</em>${stateChip(A, L)}</span>`;
     if (A.placeholder) {
       return `<a class="su-acct ph" data-bot="${k}" style="--c:${c}" ${goA(o, page)} aria-label="${NAME[k]}: paper only">${head('25K · paper shadow')}
-        ${ring(0, c, '<i>off</i>')}<span class="su-a-m"><span class="su-big"><b>Paper</b><em>until its own 25K</em></span><span class="su-sub">never routed · watches the 09:30 noise band</span></span>
+        ${ring(0, c, '<i>off</i>')}<span class="su-a-m"><span class="su-big"><b>Paper</b><em>until its own 25K</em></span><span class="su-sub">never routed · 09:30 noise band</span></span>
         <span class="su-line">${dot('idle')}${esc(L.text)}</span></a>`;
     }
     // the sparkline: the account's real P&L per day, or this week's days (Mon -> today) while it has fewer than 3

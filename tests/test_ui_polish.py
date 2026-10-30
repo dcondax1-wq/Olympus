@@ -70,6 +70,12 @@ def part_a():
     check("a. Money tab = real money only (Real results, Accounts today, Eval timeline)", "const TAB_MAIN = { money: ['real', 'realtoday', 'evaltl'] }" in cl)
     fm = rd("web_next", "FEATURES.md")
     check("a. FEATURES.md lists the night-3 features (82+)", "| 82 |" in fm and "Status bar" in fm and "Sunday open" in fm and "palette" in fm.lower())
+    pc, nc = rd("tools", "web_public", "polish.css"), rd("web_next", "css", "polish.css")
+    check("a. no looping polish animation and no card entrance on the 3D / chart pages (Holodeck, Live View)",
+          ':root[data-page="holo"] .pl-tdot' in pc and ':root[data-page="liveview"] .su-dot.live::after' in pc
+          and "NO_ENTER = new Set(['today', 'holo', 'liveview'])" in rd("tools", "web_public", "polish.js"))
+    check("a. crisp icons on both apps (a heavier, exact stroke on the 24 grid)", "svg.ico { stroke-width: 1.9; shape-rendering: geometricPrecision; }" in pc
+          and ".nx svg.ico { stroke-width: 1.9; shape-rendering: geometricPrecision; }" in nc)
 
 
 # ------------------------------------------------------------------------------------------------ b. node

@@ -225,6 +225,16 @@
   30% { opacity: 1; }
   100% { transform: rotate(calc(var(--a0) + 300deg)) translateX(98px) scale(1); opacity: 1; } }
 
+/* ---------- endless decorative motion only where it helps (Home); never next to a live 3D canvas ---------- */
+/* a looping animation in the header or the tab bar repaints the page every frame; on the Holodeck / Live View that steals
+   frames from the WebGL view (measured: ~2 fps in a software GPU), so the dots stay lit but still there */
+:root[data-polish="on"]:not([data-page="today"]) .live-chip .dot, :root[data-polish="on"]:not([data-page="today"]) header .su-dot.live::after { animation: none; }
+:root[data-page="holo"] .pl-tdot, :root[data-page="liveview"] .pl-tdot, :root[data-page="holo"] .su-dot.live::after, :root[data-page="liveview"] .su-dot.live::after { animation: none !important; }
+
+/* ---------- crisp icons: an 18 px icon on the 24 grid draws a 1.3 px line (soft on a plain screen); a touch heavier, exact ---------- */
+:root[data-polish="on"] svg.ico { stroke-width: 1.9; shape-rendering: geometricPrecision; }
+:root[data-polish="on"] .tabs a.on svg.ico { stroke-width: 2.15; }
+
 /* ---------- reduced motion: no animation at all ---------- */
 @media (prefers-reduced-motion: reduce) {
   :root[data-polish="on"] .page, .pl-in, :root[data-polish="on"] .su-ring .v, :root[data-polish="on"] .su-spark .ln, .pl-now-i.live::after, :root[data-polish="on"] .live-chip .dot { animation: none !important; }
