@@ -711,20 +711,25 @@ part yourself or fold it into a script.**
   reopens Sun 18:00 ET, the clock change, each bot's first step via `DeckUI.events24` from the reopen, readiness list),
   `oneLine` (each bot's day), `accounts` / `acctCard` (eval ring: progress to the target, or the max-loss share in red;
   $ to the target, room, eval day, today's real $, sparkline of `days`, REAL / SIM / PAPER tag from the board's `badge`),
-  `empty(kind)`. Phone `polish.js` + `polish.css` (loaded last after blitz.js; `blitz.js` exports `window.PhoneData`,
-  `real.js` exports `RealPages.core/board/opts`): Home = `.pl-home` (status bar, the three cards, "What matters now",
-  Sunday card, quick tiles) + `.pl-fold` "Everything else on Home" (CSS `order` + hide, `le.pl.homeAll`; every older card
+  `week` (this week's real trades vs each bot's goal, Mon-Fri dots, from the board's `progress`), `empty(kind)`. Phone `polish.js` + `polish.css` (loaded last after blitz.js; `blitz.js` exports `window.PhoneData`,
+  `real.js` exports `RealPages.core/board/opts`): Home = `.pl-home` (greeting + ET clock, status bar, the three cards,
+  "What matters now" (+ the deck's "since you last looked" digest in one row), this week, Sunday card, quick tiles; with no
+  board yet clean.js's hero cards take the account-card slot) + `.pl-fold` "Everything else on Home" (CSS `order` + hide, `le.pl.homeAll`; every older card
   stays in the DOM), bot tabs open on the same card (`.pl-bot`), `<html data-page data-bot>` colour roles, the search
   palette (`#plFind`, "/" / Ctrl+K, `le.pl.recent`), Money tab = `real` · `realtoday` (new page: RealUI.today + safety) ·
   `evaltl` (money / props / whatif / scale / accounts moved to More > Money planning), entrances / count-ups (first paint
-  only; rings / sparklines draw in once via `.pl-first`), the CSS sky's parallax. `clean.js` (still ?v=3): Today · Brain ·
+  only; rings / sparklines draw in once via `.pl-first`), the sliding tab pill (`.pl-tabind`, the tab's colour), More's
+  "Recent" chips (`le.pl.visits`), the CSS sky's parallax + a vignette. Page animations have NO fill-mode on purpose: a
+  finished transform animation that stays "in effect" makes `.page` the containing block of fixed full-screen views
+  (it broke the Holodeck fill labels on the phone). A bot page that redraws itself later (BLITZ) gets its card back
+  (MutationObserver on #page). `clean.js` (still ?v=3): Today · Brain ·
   Trades · Results · Rules on all three bots (ZL / AT / BZ_SEGS), More sections Today · Insight · Bot and health · Trades ·
   Money planning · This app. index.html: the splash is now the once-a-day intro (`le.intro.day`, skippable, `?intro=1`
   forces, never under reduced motion / Motion off / webdriver); `#spLine` = `POLISH.introLine()`. Fixed: the Safety card
   piled up on every live redraw (real.js `.rc-moved`). PC `js/next/polish.js` (`initPolish()` in app.js): `#nxStatusHome`
   on top of `#page-cc` (bar + Sunday card, MutationObserver keeps it first), sidebar `MAIN_SECTIONS` in routes.js (Bots ·
   Live · Money · Insight; shell.js `mainLinks`), BOTS = the same five sections, `css/polish.css`. fx: Earth bake 1536 on a
-  Retina phone at Max, crisper star points. Features 82-91 + "Organization (2026-10-30)" in `web_next/FEATURES.md`. Caches
+  Retina phone at Max, crisper star points. Features 82-98 + "Organization (2026-10-30)" in `web_next/FEATURES.md`. Caches
   le-public-v46 / le-shell-next-v28. Test `python -X utf8 -m tests.test_ui_polish [--shots <dir>]` (static, node, phone
   390x844 every tab + palette + intro + reduced motion + frame time + light, PC 1440x900).
 - **Start & Accounts page (2026-10-26, PC dashboard sidebar "Start", page `start`):** START BOT as one checklist, one button

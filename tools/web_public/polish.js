@@ -57,12 +57,26 @@
         <span><b>${esc(A.name)} is in a ${esc(A.pos.side)} · ${A.pos.qty || ''} MNQ</b><em>at ${A.pos.entry != null ? A.pos.entry.toLocaleString('en-US', { maximumFractionDigits: 2 }) : '—'} · stop ${okN(A.pos.atStop) ? money(A.pos.atStop) : '—'} · target ${okN(A.pos.atTgt) ? '+' + money(A.pos.atTgt) : '—'}</em></span>
         <strong class="${okN(A.pos.unreal) ? (A.pos.unreal >= 0 ? 'up' : 'dn') : ''}">${okN(A.pos.unreal) ? smoney(A.pos.unreal) : ''}</strong></a>`);
     }
+    // since you last looked (the deck's digest: closed / opened trades, alerts, reviews, ideas) when something changed
+    try {
+      const DU = window.DeckUI;
+      if (DU && DU.digestData && PD.dModel) {
+        const G = DU.digestData(PD.dModel());
+        if (G && !G.first && G.n) {
+          const ago = ((s) => (s < 5400 ? Math.round(s / 60) + ' min' : Math.round(s / 3600) + ' h'))(M.now - G.last);
+          const parts = [G.newT.length ? `${G.newT.length} closed trade${G.newT.length === 1 ? '' : 's'}${G.usdNew ? ` (${smoney(G.usdNew)} real)` : ''}` : '',
+            G.opened.filter((t) => t.open).length ? `${G.opened.filter((t) => t.open).length} opened` : '', G.al.length ? `${G.al.length} alert${G.al.length === 1 ? '' : 's'}` : '',
+            G.rv.length ? `${G.rv.length} review${G.rv.length === 1 ? '' : 's'}` : '', G.pr.length ? `${G.pr.length} idea${G.pr.length === 1 ? '' : 's'}` : ''].filter(Boolean).join(' · ');
+          rows.unshift(`<a class="pl-now-r" data-go="deck"><i class="pl-now-i new">${ic('alerts')}</i><span><b>Since you last looked · ${esc(ago)} ago</b><em>${esc(parts || 'something changed')}</em></span><strong class="pl-badge">${G.n}</strong></a>`);
+        }
+      }
+    } catch (e) { /* the digest is optional */ }
     // the next window (or the open one)
     const S = SU.summary(M), nx = S.next;
-    if (nx && nx.t) rows.push(`<a class="pl-now-r" data-go="deck"><i class="pl-now-i">${ic('clock')}</i><span><b>${esc(nx.label)} · ${esc(nx.detail.split(':')[0])}</b><em>${esc(nx.detail.replace(/^[^:]*:\s*/, ''))}</em></span><strong><span class="st-cd" data-st-cd="${Math.round(nx.t)}"></span></strong></a>`);
+    if (nx && nx.t) rows.push(`<a class="pl-now-r" data-go="deck"><i class="pl-now-i">${ic('clock')}</i><span><b>${esc(nx.label)} · ${esc(nx.detail.split(':')[0])}</b><em>${esc(nx.detail.replace(/^[^:]*:\s*/, ''))}</em></span><strong><span class="su-cd" data-su-cd="${Math.round(nx.t)}"></span></strong></a>`);
     // the next high-impact news in 24 h
     const nw = (M.news || []).filter((n) => okN(n.t) && n.t > M.now - 600 && n.t < M.now + 86400 && /high|fomc/i.test(n.impact || 'high')).sort((a, b) => a.t - b.t)[0];
-    rows.push(nw ? `<a class="pl-now-r" data-go="news"><i class="pl-now-i warn">${ic('news')}</i><span><b>${esc(nw.title)}</b><em>${esc(tm(nw.t))} · high-impact news</em></span><strong><span class="st-cd" data-st-cd="${Math.round(nw.t)}"></span></strong></a>`
+    rows.push(nw ? `<a class="pl-now-r" data-go="news"><i class="pl-now-i warn">${ic('news')}</i><span><b>${esc(nw.title)}</b><em>${esc(tm(nw.t))} · high-impact news</em></span><strong><span class="su-cd" data-su-cd="${Math.round(nw.t)}"></span></strong></a>`
       : `<a class="pl-now-r" data-go="news"><i class="pl-now-i">${ic('news')}</i><span><b>No big US news in the next 24 h</b><em>The calendar the bots read</em></span></a>`);
     // the last real trade (NinjaTrader fills only)
     const B = M.board || {}, lt = (B.trades || []).filter((t) => t && t.src === 'live' && t.open === false).sort((a, b) => (+b.exit_t || 0) - (+a.exit_t || 0))[0];
@@ -71,6 +85,17 @@
       rows.push(`<a class="pl-now-r" data-go="real" style="--c:${SU.COLOR[lt.acct] || '#8aa0ff'}"><i class="pl-now-i">${ic(lt.side === 'LONG' ? 'long' : 'short')}</i><span><b>Last real trade · ${esc(nm)}</b><em>${esc(tm(+lt.exit_t || +lt.entry_t))} · ${esc(lt.side)} ${lt.qty || ''} MNQ · ${esc(lt.exit || '')}${okN(+lt.r) ? ' · ' + (+lt.r > 0 ? '+' : '') + (+lt.r).toFixed(2) + 'R' : ''}</em></span><strong class="${+lt.usd > 0 ? 'up' : +lt.usd < 0 ? 'dn' : ''}">${smoney(+lt.usd)}</strong></a>`);
     } else rows.push(`<a class="pl-now-r" data-go="real"><i class="pl-now-i">${ic('results')}</i><span><b>No real trade yet</b><em>The first NinjaTrader fill shows here within a minute</em></span></a>`);
     return `<section class="pl-now" aria-label="What matters now"><h3 class="pl-h3">What matters now</h3>${rows.join('')}</section>`;
+  }
+  // the greeting: the time of day and the date in ET (the bots' clock), one calm line above the status bar
+  function hello() {
+    try {
+      const d = new Date(), o = { timeZone: 'America/New_York' };
+      const h = +d.toLocaleString('en-US', { ...o, hour: '2-digit', hour12: false }) % 24;
+      const hi = h < 5 ? 'Late night' : h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+      const day = d.toLocaleDateString('en-US', { ...o, weekday: 'long', month: 'short', day: 'numeric' });
+      const hm = d.toLocaleTimeString('en-US', { ...o, hour: '2-digit', minute: '2-digit', hour12: false });
+      return `<div class="pl-hi"><b>${hi}</b><span>${esc(day)} · <span data-pl-clock>${esc(hm)}</span> ET</span></div>`;
+    } catch (e) { return ''; }
   }
   function quick() {
     const T = [['liveview', 'Live View', 'chart', 'live chart'], ['holo', 'Holodeck', 'layers', 'fills in 3D'], ['mission', 'Mission', 'radar', 'control'], ['mind', 'Mind', 'brain', 'game plans']];
@@ -83,15 +108,15 @@
     const M = model();
     const box = document.createElement('div'); box.className = 'pl-home';
     const more = `<a class="pl-btn" data-go="mission">Mission Control</a><a class="pl-btn" data-go="board">Live board</a><a class="pl-btn" data-go="launch">Launch checklist</a>`;
-    box.innerHTML = SU.bar(M, { open: SU.isOpen(), more, where: 'phone' }) + SU.accounts(M, { where: 'phone' }) + nowCard(M) + SU.sunday(M) + quick();
+    box.innerHTML = hello() + SU.bar(M, { open: SU.isOpen(), more, where: 'phone' }) + SU.accounts(M, { where: 'phone' }) + nowCard(M) + SU.week(M) + SU.sunday(M) + quick();
     el.prepend(box);
     // no live board yet (the PC never reported, an older data.json): the account cards come from clean.js's hero cards
     // (eval tracker + goals + ATLAS card), placed where the board's cards would be; BLITZ keeps its paper card
-    const have = new Set([...box.querySelectorAll('.st-acct')].map((a) => a.dataset.bot));
+    const have = new Set([...box.querySelectorAll('.su-acct')].map((a) => a.dataset.bot));
     const heroes = el.querySelector(':scope > .cl-heroes');
     if (heroes && !(have.has('lit') && have.has('atlas'))) {
       heroes.hidden = false; heroes.classList.add('pl-fallback');
-      const at = box.querySelector('.st-accts'); if (at) at.before(heroes); else box.querySelector('.st-bar')?.after(heroes);
+      const at = box.querySelector('.su-accts'); if (at) at.before(heroes); else box.querySelector('.su-bar')?.after(heroes);
     }
     const all = !!store.get('pl.homeAll', false);
     el.classList.add('pl-h'); el.classList.toggle('pl-all', all);
@@ -132,6 +157,22 @@
     SU.tick(box);
   }
 
+  // a bot page that draws itself again later (BLITZ once its Live View data lands, ATLAS on a poll) keeps its card on top
+  function keepBotTop() {
+    const el = document.getElementById('page'); if (!el || el.__plObs || typeof MutationObserver === 'undefined') return;
+    let q = 0;
+    el.__plObs = new MutationObserver(() => {
+      if (q) return;
+      q = requestAnimationFrame(() => {
+        q = 0;
+        const g = typeof groupOf === 'function' ? groupOf(PAGE) : '';
+        const today = (PAGE === 'lit') || ((PAGE === 'atlas' || PAGE === 'blitz') && (!ARG || ARG === 'today'));
+        if (BOTG[g] && today && !el.querySelector(':scope > .pl-bot')) { try { botTop(el, true); } catch (e) { /* the page still works */ } }
+      });
+    });
+    el.__plObs.observe(el, { childList: true });
+  }
+
   // ------------------------------------------------------------------ every page: the page / bot on <html>, entrances, count-ups
   const r0 = typeof render === 'function' ? render : null;
   if (r0 && !r0.__pl) {
@@ -141,11 +182,24 @@
       const el = document.getElementById('page');
       if (el && PAGE !== 'today') el.classList.remove('pl-h', 'pl-all');
       const out = r0.apply(this, arguments);
-      try { if (el) { botTop(el, soft); if (!soft && PAGE !== 'today') enter(el, ':scope > *'); } } catch (e) { console.warn('polish render', e); }
+      try { if (el) { botTop(el, soft); if (!soft && PAGE !== 'today') enter(el, ':scope > *'); } tabInd(); headerDot(); } catch (e) { console.warn('polish render', e); }
       return out;
     };
     render.__pl = true;
   }
+  // the bottom bar: one glass pill slides to the open tab, in that tab's colour (Zlarior blue, ATLAS orange, BLITZ purple)
+  function tabInd() {
+    const T = document.getElementById('tabs'); if (!T || getComputedStyle(T).display === 'none') return;     // (a fixed bar has no offsetParent)
+    let i = T.querySelector(':scope > .pl-tabind');
+    if (!i) { i = document.createElement('i'); i.className = 'pl-tabind'; i.setAttribute('aria-hidden', 'true'); T.prepend(i); }
+    const a = T.querySelector('a.on');
+    T.classList.toggle('pl-slide', !!a);
+    if (!a) { i.style.opacity = '0'; return; }
+    i.dataset.t = a.dataset.t || '';
+    i.style.width = a.offsetWidth + 'px'; i.style.transform = `translate3d(${a.offsetLeft}px,0,0)`; i.style.opacity = '1';
+  }
+  addEventListener('resize', () => requestAnimationFrame(tabInd), { passive: true });
+  window.POLISH.tabInd = tabInd;
   // card entrances: the first 10 visible children rise in, 40 ms apart (a class, so nothing is left half-drawn)
   function enter(root, sel) {
     if (calm() || !root) return;
@@ -156,8 +210,8 @@
   // count-ups: $ numbers roll up from 0 on the first paint (600 ms, ease-out), the final text is the real one
   function countUp(root) {
     if (calm()) return;
-    root.querySelectorAll('[data-st-count]').forEach((e) => {
-      const v = +e.dataset.stCount; if (!e.dataset.stCount || !okN(v) || v === 0) return;
+    root.querySelectorAll('[data-su-count]').forEach((e) => {
+      const v = +e.dataset.suCount; if (!e.dataset.suCount || !okN(v) || v === 0) return;
       const fin = e.textContent, t0 = performance.now(), D_ = 650;
       const f = (t) => { const k = Math.min(1, (t - t0) / D_), x = 1 - Math.pow(1 - k, 3); e.textContent = k < 1 ? '$' + Math.round(v * x).toLocaleString('en-US') : fin; if (k < 1) requestAnimationFrame(f); };
       requestAnimationFrame(f);
@@ -225,6 +279,23 @@
     requestAnimationFrame(() => { P.classList.add('on'); inp.focus({ preventScroll: true }); });
   }
   window.POLISH.palette = palette;
+  // the header: one status dot on every page (green / amber / red = the status bar's verdict); a tap opens it on Home
+  function headerDot() {
+    const ref = document.getElementById('plFind'); if (!ref) return;
+    let b = document.getElementById('plStat');
+    if (!b) {
+      b = document.createElement('button'); b.id = 'plStat'; b.type = 'button'; b.className = 'iconbtn pl-stat';
+      b.onclick = () => { try { localStorage.setItem('le.st.open', '1'); } catch (e) { /* private */ } if (typeof PAGE !== 'undefined' && PAGE === 'today' && typeof render === 'function') render(true); else location.hash = '#/today'; };
+      ref.before(b);
+    }
+    let S = null; try { const M = model(); if (M.board) S = SU.summary(M); } catch (e) { S = null; }
+    const lvl = S ? S.lvl : 'idle';
+    b.className = 'iconbtn pl-stat ' + lvl;
+    b.title = S ? `${S.title} · ${S.why}` : 'Status: waiting for the first report';
+    b.setAttribute('aria-label', 'Status: ' + (S ? S.title : 'waiting for the first report'));
+    b.innerHTML = `<i class="su-dot ${lvl}${lvl === 'good' ? ' live' : ''}"></i>`;
+  }
+  window.POLISH.headerDot = headerDot;
   function headerButton() {
     const top = document.querySelector('header.top'), ref = document.getElementById('refresh');
     if (!top || !ref || document.getElementById('plFind')) return;
@@ -236,6 +307,29 @@
     const t = e.target, typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
     if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || (e.key === '/' && !typing)) { e.preventDefault(); palette(true); }
   });
+
+  // More: the pages you opened last, as chips under the search box (from the palette's picks and your visits)
+  addEventListener('hashchange', () => {
+    try {
+      const id = (location.hash || '').replace(/^#\/?/, '').split('/')[0];
+      if (!id || id === 'system' || id === 'today' || !PAGES[id]) return;
+      const R = (store.get('pl.visits', []) || []).filter((x) => x !== id); R.unshift(id); store.set('pl.visits', R.slice(0, 8));
+    } catch (e) { /* private window */ }
+  });
+  const m0 = VIEWS.system;
+  if (m0 && !m0.__pl) {
+    const w = function (el) {
+      m0.apply(this, arguments);
+      try {
+        const R = (store.get('pl.visits', []) || []).filter((id) => PAGES[id]).slice(0, 6);
+        if (!R.length) return;
+        const box = document.createElement('div'); box.className = 'pl-recent';
+        box.innerHTML = `<span class="pl-h3">Recent</span><div class="pl-chips">${R.map((id) => `<a data-go="${esc(id)}">${esc(PAGES[id].label)}</a>`).join('')}</div>`;
+        const s = el.querySelector('.cl-search'); if (s) s.after(box); else el.prepend(box);
+      } catch (e) { /* optional */ }
+    };
+    Object.keys(m0).forEach((k) => { w[k] = m0[k]; }); w.__pl = true; VIEWS.system = w;
+  }
 
   // ------------------------------------------------------------------ the sky: a little parallax with scroll and tilt
   function sky() {
@@ -264,6 +358,10 @@
     } catch (e) { /* the intro shows without it */ }
   }
   window.POLISH.introLine = introLine;
+  setInterval(() => {
+    const e = document.querySelector('[data-pl-clock]'); if (!e || document.hidden) return;
+    try { e.textContent = new Date().toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: false }); } catch (er) { /* static */ }
+  }, 15000);
 
   // ------------------------------------------------------------------ Money = real money only
   // Real results first, then "Accounts today" (the real-account cards Home used to show in full) and the eval timeline;
@@ -302,6 +400,7 @@
   // ------------------------------------------------------------------ install
   function install() {
     try { moneyTab(); } catch (e) { console.warn('polish money', e); }
+    keepBotTop();
     if (typeof nav === 'function') nav();
     headerButton();
     sky();

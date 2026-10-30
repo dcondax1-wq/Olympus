@@ -324,7 +324,7 @@ def part_c(F, tmp, shots):
         errs = []
         ctx, pg = phone_ctx(br, F, lvp, "off", errs, seen=F["T"] - 4 * 3600)
         pg.goto(base + "?fxoff#/today")
-        pg.wait_for_selector(".st-acct", timeout=30000)
+        pg.wait_for_selector(".su-acct", timeout=30000)
         pg.wait_for_function("() => window.LIVE && window.LIVE.j", timeout=30000)
         pg.wait_for_timeout(1200)
         pg.evaluate("() => { if (typeof render === 'function') render(true); }")
@@ -337,8 +337,8 @@ def part_c(F, tmp, shots):
         check("c. six tabs fit 390 px: each >= 44 x 44 px, every label readable (not clipped)", all(t[1] >= 44 and t[2] >= 44 and t[3] for t in tabs), tabs)
         # 2026-10-30 (night 3, layout deliberately changed): the status bar, then Zlarior · ATLAS · BLITZ account cards
         check("c. Home: the status bar first, then the three account cards (Zlarior, ATLAS, BLITZ)", pg.evaluate(
-            "() => { const h = document.querySelector('#page > .pl-home'); if (!h) return false; const A = [...h.querySelectorAll('.st-acct')].map(e => e.dataset.bot); "
-            "return h.children[0].classList.contains('st-bar') && A.join() === 'lit,atlas,blitz'; }"))
+            "() => { const h = document.querySelector('#page > .pl-home'); if (!h) return false; const A = [...h.querySelectorAll('.su-acct')].map(e => e.dataset.bot); "
+            "return [...h.children].filter((c) => !c.classList.contains('pl-hi'))[0].classList.contains('su-bar') && A.join() === 'lit,atlas,blitz'; }"))
         pg.click("#page > .pl-fold")            # the deck + Mind cards sit under "Everything else on Home" (one tap)
         pg.wait_for_timeout(400)
         ht = pg.inner_text("#page")

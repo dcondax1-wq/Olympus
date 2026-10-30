@@ -145,6 +145,13 @@ absent). Read-only: no new control, only links. Tests: `python -X utf8 -m tests.
 | 89 | Once-a-day intro | new | Phone: the first open of the day only (ET date in `le.intro.day`), skippable (tap, any key, Skip): a light-speed star field settles, the three bots' orbs swing into orbit, the day's status line; never under reduced motion / Motion off / an automated browser (unless `?intro=1`) |
 | 90 | Motion system | new | Page transitions, card entrances (40 ms apart, first visit only), count-ups, press states, rings / sparklines drawn in once per visit (not on every live redraw), glowing live dots, the sky's parallax with scroll / tilt / mouse; reduced motion = none (both apps) |
 | 91 | Sharper deep space | new | fx.js: the Earth bake at 1536 px on a Retina phone at Max (was 1024; Lite / small screens unchanged), crisper pin-point stars |
+| 92 | This week vs the goal | new | `StatusUI.week` (phone Home, PC Home under the status bar): per bot this week's real trades against its goal (Zlarior 2-4, ATLAS 3-4), Mon-Fri as dots (green / red day, today ringed, future dashed) and the week's real $ (the board's `progress`) |
+| 93 | Since you last looked, in one line | new | Phone Home > What matters now: the deck's digest (closed / opened trades with real $, alerts, reviews, ideas since this device last looked) as one row with a count, one tap to the deck |
+| 94 | Greeting + ET clock | new | Phone Home: "Good evening" and the date + time in ET (the bots' clock) above the status bar, ticking |
+| 95 | Sliding tab pill | new | Phone bottom bar: one glass pill slides to the open tab in that tab's colour (Zlarior blue, ATLAS orange, BLITZ purple); reduced motion = it jumps |
+| 96 | Status dot on every page | new | Phone header: one dot with the status bar's verdict (green / amber / red, a soft pulse when all good) on every page; a tap opens the full status on Home |
+| 97 | Recent pages | new | More: the pages you opened last as chips under the search box (`le.pl.visits`, this device only) |
+| 98 | Cinematic sky | new | Both apps: a soft vignette and a faint top light over the deep-space sky (the CSS sky and the 3D scene), dark theme only; the CSS sky drifts a little with scroll / tilt / the mouse |
 
 ## Organization (2026-10-30, night 3: "organized, clean")
 - One information architecture on both apps. **Home** = the status bar, the three accounts, what matters now (+ the Sunday

@@ -118,15 +118,15 @@ def part_b(tmp):
     check("b. one summary: a level and one sentence", o["sum2"]["lvl"] in ("good", "warn", "bad") and o["sum2"]["title"], o["sum2"])
     a2, a3 = o["acc2"], o["acc3"]
     check("b. account cards: Zlarior · ATLAS · BLITZ (a paper placeholder until its 25K), the eval ring, $ to the target, the REAL / SIM tag",
-          a2.count('<a class="st-acct') == 3 and 'st-acct ph' in a2 and a2.count("st-ring") >= 3 and "to the target" in a2 and ">REAL<" in a2 and ">SIM<" in a2, a2[:400])
-    check("b. three real accounts: BLITZ gets its own card with numbers (no placeholder)", a3.count('<a class="st-acct') == 3 and 'st-acct ph' not in a3)
+          a2.count('<a class="su-acct') == 3 and 'su-acct ph' in a2 and a2.count("su-ring") >= 3 and "to the target" in a2 and ">REAL<" in a2 and ">SIM<" in a2, a2[:400])
+    check("b. three real accounts: BLITZ gets its own card with numbers (no placeholder)", a3.count('<a class="su-acct') == 3 and 'su-acct ph' not in a3)
     check("b. the day in one line per bot (Zlarior in a trade)", o["one"][0] and o["one"][0].startswith("In a LONG") and all(o["one"]), o["one"])
-    check("b. the status bar: a fold with every line and its fix, the extra links", 'data-st-toggle' in o["bar"] and 'st-list' in o["bar"] and '<a>x</a>' in o["bar"])
+    check("b. the status bar: a fold with every line and its fix, the extra links", 'data-su-toggle' in o["bar"] and 'su-list' in o["bar"] and '<a>x</a>' in o["bar"])
     st = re.sub(r"<[^>]+>", " ", o["sunThu"])
     check("b. Sunday open (Thu 21:15 ET before the clock change): clocks back 1 hour on Sun Nov 1, CME reopens Sun 18:00 ET, each bot's first step, BLITZ off",
           "Clocks go back 1 hour" in st and "Sun Nov 1" in st and "Sun 18:00 ET" in st and "Mon 02:00 ET" in st and "Off until its own 25K" in st and "Set time automatically" in st, st[:500])
     check("b. Sunday open: not on a Tuesday; the next clock change is 2026-11-01 06:00 UTC (back)", o["sunTue"] == "" and o["dst"]["t"] == 1793512800 and o["dst"]["way"] == "back", (o["sunTue"][:80], o["dst"]))
-    check("b. smart empty states say what will appear and when", all("st-empty" in e for e in o["empty"]) and "within a minute" in o["empty"][0] and "never routed" in o["empty"][2])
+    check("b. smart empty states say what will appear and when", all("su-empty" in e for e in o["empty"]) and "within a minute" in o["empty"][0] and "never routed" in o["empty"][2])
     check("b. garbage in: no exception", o["bad"] == 0, o.get("err"))
 
 
@@ -171,25 +171,28 @@ def part_c(F, tmp, shots):
         errs = []
         ctx, pg = page(br, errs)
         pg.goto(base + "?fxoff#/today")
-        pg.wait_for_selector(".pl-home .st-bar", timeout=30000)
+        pg.wait_for_selector(".pl-home .su-bar", timeout=30000)
         pg.wait_for_function("() => window.LIVE && window.LIVE.j", timeout=30000)
         pg.wait_for_timeout(1200)
         if pg.query_selector("#moInstX"):
             pg.click("#moInstX")
             pg.wait_for_timeout(300)
-        H = pg.evaluate("() => { const h = document.querySelector('#page > .pl-home'); return { kids: [...h.children].map(c => c.className.split(' ')[0]), accts: [...h.querySelectorAll('.st-acct')].map(a => a.dataset.bot), height: document.documentElement.scrollHeight }; }")
-        check("c. Home: status bar, the three account cards (Zlarior · ATLAS · BLITZ), what matters now, quick tiles", H["kids"][:3] == ["st-bar", "st-accts", "pl-now"] and "pl-quick" in H["kids"]
+        H = pg.evaluate("() => { const h = document.querySelector('#page > .pl-home'); return { kids: [...h.children].map(c => c.className.split(' ')[0]), accts: [...h.querySelectorAll('.su-acct')].map(a => a.dataset.bot), height: document.documentElement.scrollHeight }; }")
+        check("c. Home: the greeting, status bar, the three account cards (Zlarior · ATLAS · BLITZ), what matters now, quick tiles", H["kids"][:4] == ["pl-hi", "su-bar", "su-accts", "pl-now"] and "pl-quick" in H["kids"]
               and H["accts"] == ["lit", "atlas", "blitz"], H)
         PERF["home_height_px"] = H["height"]
         check("c. Home is short and calm (under 2,600 px at 390 wide with everything else folded)", H["height"] < 2600, H["height"])
+        wk = pg.evaluate("() => { const w = document.querySelector('.pl-home .su-week'); return w ? [...w.querySelectorAll('li > b')].map(b => b.textContent) : null; }")
+        prog = (F["board"].get("progress") or {})
+        check("c. Home: this week's real trades vs each bot's goal (Mon-Fri dots), when the board has its progress", (wk is None and not prog) or (wk and "Zlarior" in wk), (wk, list(prog)))
         hid = pg.evaluate("() => [...document.querySelectorAll('#page > .mc-strip, #page > .rc-homebox, #page > .bz-home, #page > .cl-list')].map(e => [e.className.split(' ')[0], e.offsetParent === null])")
         check("c. Home: every older card is still there, folded (Mission strip, real accounts, deck + Mind, one tap away)", len(hid) >= 3 and all(x[1] for x in hid), hid)
-        pg.click("[data-st-toggle]")
+        pg.click("[data-su-toggle]")
         pg.wait_for_timeout(450)
-        op = pg.evaluate("() => { const b = document.querySelector('.st-bar'); return { open: b.classList.contains('open'), h: b.querySelector('.st-list').getBoundingClientRect().height, rows: b.querySelectorAll('.st-list > li').length }; }")
+        op = pg.evaluate("() => { const b = document.querySelector('.su-bar'); return { open: b.classList.contains('open'), h: b.querySelector('.su-list').getBoundingClientRect().height, rows: b.querySelectorAll('.su-list > li').length }; }")
         check("c. the status bar opens every line (PC bot, NinjaTrader, feed, each bot, alerts)", op["open"] and op["h"] > 100 and op["rows"] >= 6, op)
         sh(pg, "polish_phone_status_open.png")
-        pg.click("[data-st-toggle]")
+        pg.click("[data-su-toggle]")
         pg.click("#page > .pl-fold")
         pg.wait_for_timeout(400)
         shown = pg.evaluate("() => [...document.querySelectorAll('#page > .mc-strip, #page > .bz-home')].every(e => e.offsetParent !== null)")
@@ -212,8 +215,10 @@ def part_c(F, tmp, shots):
             pg.wait_for_timeout(700)
             segs[k] = pg.eval_on_selector_all("#sub .zl-seg button", "els => els.map(e => e.textContent.trim())")
         check("c. Zlarior, ATLAS and BLITZ: the same five sections in the same order", all(v == ["Today", "Brain", "Trades", "Results", "Rules"] for v in segs.values()), segs)
+        ind = pg.evaluate("() => { const i = document.querySelector('#tabs > .pl-tabind'), a = document.querySelector('#tabs a.on'); return i && a ? { t: i.dataset.t, on: a.dataset.t, w: Math.round(parseFloat(i.style.width)), aw: a.offsetWidth } : null; }")
+        check("c. the bottom bar: one pill slides to the open tab, in its colour (BLITZ)", ind and ind["t"] == "blitz" == ind["on"] and abs(ind["w"] - ind["aw"]) <= 1, ind)
         col = pg.evaluate("() => getComputedStyle(document.documentElement).getPropertyValue('--bot').trim()")
-        top = pg.query_selector("#page > .pl-bot .st-acct[data-bot='blitz']")
+        top = pg.query_selector("#page > .pl-bot .su-acct[data-bot='blitz']")
         check("c. a bot tab opens on its account card, in the bot's colour (BLITZ purple)", top is not None and col.lower() in ("#b388ff", "var(--bz)") , col)
         pg.click("#tabs a[data-t='money']")
         pg.wait_for_timeout(900)
@@ -240,6 +245,13 @@ def part_c(F, tmp, shots):
         pg.keyboard.press("Escape")
         pg.wait_for_timeout(300)
         check("c. the palette: '/' opens it, Escape closes it", not pg.query_selector("#plPal.on"))
+        # the header status dot on every page: its verdict, a tap opens the status bar on Home
+        dot = pg.evaluate("() => { const b = document.getElementById('plStat'); return b ? b.className : null; }")
+        pg.click("#plStat")
+        pg.wait_for_timeout(900)
+        opened = pg.evaluate("() => location.hash === '#/today' && !!document.querySelector('.pl-home .su-bar.open')")
+        check("c. the header status dot (green / amber / red) on every page; a tap opens the status bar on Home", dot and re.search(r"\b(good|warn|bad)\b", dot) and opened, (dot, opened))
+        pg.click("[data-su-toggle]")
         # frame time while scrolling Home (the UI itself; the 3D scene is measured by tests.test_space_ui)
         pg.evaluate("() => { location.hash = '#/today'; }")
         pg.wait_for_timeout(1200)
@@ -258,7 +270,8 @@ def part_c(F, tmp, shots):
         real = "Object.defineProperty(Navigator.prototype, 'webdriver', { get: () => false });"
         ctx, pg = page(br, e2, init=real)
         t0 = time.time()
-        pg.goto(base + "#/today")
+        pg.route("**/fonts.g*/**", lambda r: r.abort())       # no web fonts here: the page loads at once, like the installed app
+        pg.goto(base + "#/today", wait_until="commit")
         pg.wait_for_selector("#splash #spSkip", timeout=10000)
         vis = pg.is_visible("#splash")
         sh(pg, "polish_phone_intro.png")
@@ -276,7 +289,7 @@ def part_c(F, tmp, shots):
         e3 = []
         ctx, pg = page(br, e3, motion="reduce", init=real)
         pg.goto(base + "#/today")
-        pg.wait_for_selector(".pl-home .st-acct", timeout=30000)
+        pg.wait_for_selector(".pl-home .su-acct", timeout=30000)
         pg.wait_for_timeout(800)
         rm = pg.evaluate("() => ({ intro: !!document.getElementById('splash'), anims: [...document.querySelectorAll('#page, #page .pl-home, #page .pl-home *')].reduce((n, e) => n + e.getAnimations().length, 0) })")
         check("c. reduced motion: no intro, no animation on the page or its new cards", not rm["intro"] and rm["anims"] == 0 and not e3, (rm, e3[:2]))
@@ -285,9 +298,9 @@ def part_c(F, tmp, shots):
         e4 = []
         ctx, pg = page(br, e4, 844, 390, init="try { localStorage.setItem('le.theme', JSON.stringify('light')); } catch (e) {}")
         pg.goto(base + "?fxoff#/today")
-        pg.wait_for_selector(".pl-home .st-acct", timeout=30000)
+        pg.wait_for_selector(".pl-home .su-acct", timeout=30000)
         pg.wait_for_timeout(600)
-        ink = pg.evaluate("() => getComputedStyle(document.querySelector('.st-sum b')).color")
+        ink = pg.evaluate("() => getComputedStyle(document.querySelector('.su-sum b')).color")
         check("c. light theme, sideways 844x390: dark ink on light glass, no sideways scroll, no errors", sum(int(x) for x in re.findall(r"\d+", ink)[:3]) < 300 and no_x(pg) <= 1 and not e4, (ink, no_x(pg), e4[:2]))
         sh(pg, "polish_phone_light_landscape.png")
         ctx.close()
@@ -341,7 +354,7 @@ def part_d(F, shots):
         for _ in range(3):
             TB.pc_go(pg, "cc")
             try:
-                pg.wait_for_selector("#page-cc.active > #nxStatusHome .st-bar", timeout=30000)
+                pg.wait_for_selector("#page-cc.active > #nxStatusHome .su-bar", timeout=30000)
                 ok = True
                 break
             except Exception:

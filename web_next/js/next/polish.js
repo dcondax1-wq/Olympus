@@ -47,7 +47,8 @@ function place() {
   if (!box) { box = document.createElement('div'); box.id = 'nxStatusHome'; box.className = 'nx-st-home'; el.prepend(box); }
   else if (el.firstElementChild !== box) el.prepend(box);
   const more = `<a class="pl-btn" ${go('mission')}>Mission Control</a><a class="pl-btn" ${go('board')}>Live board</a><a class="pl-btn" ${go('start')}>Start page</a>`;
-  const html = SU.bar(LAST, { open: SU.isOpen(), more, where: 'pc', go }) + SU.sunday(LAST, { where: 'pc' });
+  const row = (SU.week ? SU.week(LAST) : '') + SU.sunday(LAST, { where: 'pc' });
+  const html = SU.bar(LAST, { open: SU.isOpen(), more, where: 'pc', go }) + (row ? `<div class="nx-st-row">${row}</div>` : '');
   if (box.__h !== html) { box.innerHTML = html; box.__h = html; SU.tick(box); }
   SU.wire(box);
 }
