@@ -1,0 +1,520 @@
+{
+ "atx_today": {
+  "seed7": {
+   "H1": {
+    "pm": 580,
+    "p10": 256,
+    "lose": 4.8,
+    "funded_6m": 1.52,
+    "evals_6m": 1.81,
+    "payouts_6m": 4.55,
+    "first_pay_med": 30.0,
+    "eval_trading_pm": 456,
+    "funded_trading_pm": 1665
+   },
+   "H2": {
+    "pm": 398,
+    "p10": -10,
+    "lose": 16.6,
+    "funded_6m": 1.11,
+    "evals_6m": 1.43,
+    "payouts_6m": 3.14,
+    "first_pay_med": 44.0,
+    "eval_trading_pm": 318,
+    "funded_trading_pm": 1179
+   },
+   "2025": {
+    "pm": 14,
+    "p10": -74,
+    "lose": 66.8,
+    "funded_6m": 1.43,
+    "evals_6m": 4.53,
+    "payouts_6m": 0.47,
+    "first_pay_med": 64.0,
+    "eval_trading_pm": 73,
+    "funded_trading_pm": 75
+   },
+   "2021-24": {
+    "pm": -18,
+    "p10": -84,
+    "lose": 78.8,
+    "funded_6m": 1.55,
+    "evals_6m": 5.49,
+    "payouts_6m": 0.31,
+    "first_pay_med": 61.5,
+    "eval_trading_pm": 15,
+    "funded_trading_pm": 0
+   }
+  },
+  "years": {
+   "2022": {
+    "p10": 23.7,
+    "dead10": 30.1,
+    "eval_pm": -107,
+    "slot_pm": -22
+   },
+   "2023": {
+    "p10": 24.9,
+    "dead10": 27.3,
+    "eval_pm": -145,
+    "slot_pm": 23
+   },
+   "2024": {
+    "p10": 19.2,
+    "dead10": 26.8,
+    "eval_pm": -69,
+    "slot_pm": -16
+   },
+   "2025": {
+    "p10": 30.1,
+    "dead10": 23.3,
+    "eval_pm": -148,
+    "slot_pm": 15
+   }
+  }
+ },
+ "atx_funded_hunts_w05": {
+  "seed7": {
+   "H1": {
+    "pm": 675,
+    "p10": 382,
+    "lose": 4.8,
+    "funded_6m": 1.65,
+    "evals_6m": 1.92,
+    "payouts_6m": 5.28,
+    "first_pay_med": 28.0,
+    "eval_trading_pm": 495,
+    "funded_trading_pm": 1896
+   },
+   "H2": {
+    "pm": 528,
+    "p10": -10,
+    "lose": 15.4,
+    "funded_6m": 1.37,
+    "evals_6m": 1.83,
+    "payouts_6m": 4.16,
+    "first_pay_med": 37.0,
+    "eval_trading_pm": 391,
+    "funded_trading_pm": 1495
+   },
+   "2025": {
+    "pm": 30,
+    "p10": -74,
+    "lose": 66.0,
+    "funded_6m": 1.45,
+    "evals_6m": 4.44,
+    "payouts_6m": 0.61,
+    "first_pay_med": 56.0,
+    "eval_trading_pm": 92,
+    "funded_trading_pm": 106
+   },
+   "2021-24": {
+    "pm": 6,
+    "p10": -84,
+    "lose": 67.0,
+    "funded_6m": 1.5,
+    "evals_6m": 5.29,
+    "payouts_6m": 0.49,
+    "first_pay_med": 74.0,
+    "eval_trading_pm": 23,
+    "funded_trading_pm": 65
+   }
+  },
+  "years": {
+   "2022": {
+    "p10": 23.7,
+    "dead10": 30.1,
+    "eval_pm": -107,
+    "slot_pm": -15
+   },
+   "2023": {
+    "p10": 24.9,
+    "dead10": 27.3,
+    "eval_pm": -145,
+    "slot_pm": 38
+   },
+   "2024": {
+    "p10": 19.2,
+    "dead10": 26.8,
+    "eval_pm": -69,
+    "slot_pm": 15
+   },
+   "2025": {
+    "p10": 30.1,
+    "dead10": 23.3,
+    "eval_pm": -148,
+    "slot_pm": 19
+   }
+  }
+ },
+ "atx_funded_hunts_w075": {
+  "seed7": {
+   "H1": {
+    "pm": 727,
+    "p10": 390,
+    "lose": 4.4,
+    "funded_6m": 1.76,
+    "evals_6m": 2.04,
+    "payouts_6m": 5.68,
+    "first_pay_med": 26.5,
+    "eval_trading_pm": 526,
+    "funded_trading_pm": 2071
+   },
+   "H2": {
+    "pm": 554,
+    "p10": -10,
+    "lose": 15.8,
+    "funded_6m": 1.43,
+    "evals_6m": 1.89,
+    "payouts_6m": 4.35,
+    "first_pay_med": 35.0,
+    "eval_trading_pm": 400,
+    "funded_trading_pm": 1632
+   },
+   "2025": {
+    "pm": 44,
+    "p10": -74,
+    "lose": 64.2,
+    "funded_6m": 1.48,
+    "evals_6m": 4.56,
+    "payouts_6m": 0.72,
+    "first_pay_med": 56.0,
+    "eval_trading_pm": 92,
+    "funded_trading_pm": 141
+   },
+   "2021-24": {
+    "pm": 8,
+    "p10": -84,
+    "lose": 68.0,
+    "funded_6m": 1.51,
+    "evals_6m": 5.44,
+    "payouts_6m": 0.51,
+    "first_pay_med": 62.5,
+    "eval_trading_pm": 21,
+    "funded_trading_pm": 80
+   }
+  },
+  "years": {
+   "2022": {
+    "p10": 23.7,
+    "dead10": 30.1,
+    "eval_pm": -107,
+    "slot_pm": -22
+   },
+   "2023": {
+    "p10": 24.9,
+    "dead10": 27.3,
+    "eval_pm": -145,
+    "slot_pm": 49
+   },
+   "2024": {
+    "p10": 19.2,
+    "dead10": 26.8,
+    "eval_pm": -69,
+    "slot_pm": 10
+   },
+   "2025": {
+    "p10": 30.1,
+    "dead10": 23.3,
+    "eval_pm": -148,
+    "slot_pm": 43
+   }
+  }
+ },
+ "atx_hunts_w05_funded_w1": {
+  "seed7": {
+   "H1": {
+    "pm": 766,
+    "p10": 523,
+    "lose": 2.4,
+    "funded_6m": 1.83,
+    "evals_6m": 2.05,
+    "payouts_6m": 5.95,
+    "first_pay_med": 26.0,
+    "eval_trading_pm": 565,
+    "funded_trading_pm": 2378
+   },
+   "H2": {
+    "pm": 605,
+    "p10": 235,
+    "lose": 6.0,
+    "funded_6m": 1.73,
+    "evals_6m": 2.13,
+    "payouts_6m": 4.74,
+    "first_pay_med": 33.0,
+    "eval_trading_pm": 494,
+    "funded_trading_pm": 2047
+   },
+   "2025": {
+    "pm": 68,
+    "p10": -74,
+    "lose": 57.2,
+    "funded_6m": 1.5,
+    "evals_6m": 4.57,
+    "payouts_6m": 0.89,
+    "first_pay_med": 56.0,
+    "eval_trading_pm": 146,
+    "funded_trading_pm": 241
+   },
+   "2021-24": {
+    "pm": 27,
+    "p10": -74,
+    "lose": 65.2,
+    "funded_6m": 1.74,
+    "evals_6m": 5.19,
+    "payouts_6m": 0.62,
+    "first_pay_med": 56.0,
+    "eval_trading_pm": 174,
+    "funded_trading_pm": 115
+   }
+  },
+  "years": {
+   "2022": {
+    "p10": 24.1,
+    "dead10": 22.9,
+    "eval_pm": -271,
+    "slot_pm": -10
+   },
+   "2023": {
+    "p10": 27.7,
+    "dead10": 30.5,
+    "eval_pm": -70,
+    "slot_pm": 50
+   },
+   "2024": {
+    "p10": 21.2,
+    "dead10": 22.8,
+    "eval_pm": 258,
+    "slot_pm": 36
+   },
+   "2025": {
+    "p10": 26.5,
+    "dead10": 20.5,
+    "eval_pm": -69,
+    "slot_pm": 56
+   }
+  }
+ },
+ "atx_hunts_w075": {
+  "seed7": {
+   "H1": {
+    "pm": 764,
+    "p10": 523,
+    "lose": 2.0,
+    "funded_6m": 1.83,
+    "evals_6m": 2.03,
+    "payouts_6m": 5.96,
+    "first_pay_med": 26.0,
+    "eval_trading_pm": 545,
+    "funded_trading_pm": 2178
+   },
+   "H2": {
+    "pm": 674,
+    "p10": 379,
+    "lose": 3.4,
+    "funded_6m": 1.74,
+    "evals_6m": 2.16,
+    "payouts_6m": 5.29,
+    "first_pay_med": 32.0,
+    "eval_trading_pm": 479,
+    "funded_trading_pm": 1973
+   },
+   "2025": {
+    "pm": 67,
+    "p10": -74,
+    "lose": 55.8,
+    "funded_6m": 1.66,
+    "evals_6m": 4.52,
+    "payouts_6m": 0.9,
+    "first_pay_med": 60.0,
+    "eval_trading_pm": 208,
+    "funded_trading_pm": 187
+   },
+   "2021-24": {
+    "pm": 30,
+    "p10": -84,
+    "lose": 62.2,
+    "funded_6m": 1.77,
+    "evals_6m": 5.31,
+    "payouts_6m": 0.66,
+    "first_pay_med": 64.0,
+    "eval_trading_pm": 163,
+    "funded_trading_pm": 120
+   }
+  },
+  "years": {
+   "2022": {
+    "p10": 24.5,
+    "dead10": 23.3,
+    "eval_pm": -277,
+    "slot_pm": -18
+   },
+   "2023": {
+    "p10": 31.3,
+    "dead10": 32.9,
+    "eval_pm": 21,
+    "slot_pm": 49
+   },
+   "2024": {
+    "p10": 25.6,
+    "dead10": 22.0,
+    "eval_pm": 257,
+    "slot_pm": 45
+   },
+   "2025": {
+    "p10": 30.5,
+    "dead10": 21.3,
+    "eval_pm": -136,
+    "slot_pm": 64
+   }
+  }
+ },
+ "atx_lead_na_s11_funded_hunts": {
+  "seed7": {
+   "H1": {
+    "pm": 685,
+    "p10": 390,
+    "lose": 4.2,
+    "funded_6m": 1.64,
+    "evals_6m": 1.92,
+    "payouts_6m": 5.35,
+    "first_pay_med": 28.0,
+    "eval_trading_pm": 487,
+    "funded_trading_pm": 1922
+   },
+   "H2": {
+    "pm": 613,
+    "p10": 256,
+    "lose": 5.8,
+    "funded_6m": 1.64,
+    "evals_6m": 2.04,
+    "payouts_6m": 4.82,
+    "first_pay_med": 34.0,
+    "eval_trading_pm": 461,
+    "funded_trading_pm": 1735
+   },
+   "2025": {
+    "pm": 37,
+    "p10": -74,
+    "lose": 59.8,
+    "funded_6m": 1.53,
+    "evals_6m": 4.53,
+    "payouts_6m": 0.67,
+    "first_pay_med": 64.0,
+    "eval_trading_pm": 183,
+    "funded_trading_pm": 119
+   },
+   "2021-24": {
+    "pm": 22,
+    "p10": -75,
+    "lose": 64.0,
+    "funded_6m": 1.8,
+    "evals_6m": 5.21,
+    "payouts_6m": 0.61,
+    "first_pay_med": 65.5,
+    "eval_trading_pm": 184,
+    "funded_trading_pm": 88
+   }
+  },
+  "years": {
+   "2022": {
+    "p10": 24.1,
+    "dead10": 22.9,
+    "eval_pm": -265,
+    "slot_pm": -15
+   },
+   "2023": {
+    "p10": 27.7,
+    "dead10": 30.5,
+    "eval_pm": -170,
+    "slot_pm": 48
+   },
+   "2024": {
+    "p10": 21.2,
+    "dead10": 22.8,
+    "eval_pm": 296,
+    "slot_pm": 42
+   },
+   "2025": {
+    "p10": 26.5,
+    "dead10": 20.5,
+    "eval_pm": 77,
+    "slot_pm": 30
+   }
+  }
+ },
+ "atx_lead_as_is": {
+  "seed7": {
+   "H1": {
+    "pm": 532,
+    "p10": 70,
+    "lose": 9.2,
+    "funded_6m": 1.84,
+    "evals_6m": 2.31,
+    "payouts_6m": 4.23,
+    "first_pay_med": 31.0,
+    "eval_trading_pm": 549,
+    "funded_trading_pm": 1491
+   },
+   "H2": {
+    "pm": 515,
+    "p10": 83,
+    "lose": 9.4,
+    "funded_6m": 1.66,
+    "evals_6m": 2.15,
+    "payouts_6m": 4.07,
+    "first_pay_med": 36.0,
+    "eval_trading_pm": 451,
+    "funded_trading_pm": 1813
+   },
+   "2025": {
+    "pm": 23,
+    "p10": -74,
+    "lose": 63.8,
+    "funded_6m": 1.78,
+    "evals_6m": 4.87,
+    "payouts_6m": 0.58,
+    "first_pay_med": 66.0,
+    "eval_trading_pm": 333,
+    "funded_trading_pm": 367
+   },
+   "2021-24": {
+    "pm": 33,
+    "p10": -84,
+    "lose": 56.0,
+    "funded_6m": 2.03,
+    "evals_6m": 5.55,
+    "payouts_6m": 0.7,
+    "first_pay_med": 64.5,
+    "eval_trading_pm": 233,
+    "funded_trading_pm": 256
+   }
+  },
+  "years": {
+   "2022": {
+    "p10": 29.3,
+    "dead10": 30.5,
+    "eval_pm": 9,
+    "slot_pm": 10
+   },
+   "2023": {
+    "p10": 28.5,
+    "dead10": 32.1,
+    "eval_pm": 87,
+    "slot_pm": 16
+   },
+   "2024": {
+    "p10": 32.0,
+    "dead10": 25.6,
+    "eval_pm": 238,
+    "slot_pm": 57
+   },
+   "2025": {
+    "p10": 31.3,
+    "dead10": 30.1,
+    "eval_pm": 47,
+    "slot_pm": 17
+   }
+  }
+ }
+}

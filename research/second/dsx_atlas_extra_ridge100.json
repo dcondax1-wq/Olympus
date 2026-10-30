@@ -1,0 +1,261 @@
+{
+ "built": "2026-10-30 16:53",
+ "rows": {
+  "ridge fit on 2021-24": {
+   "fit": {
+    "model": "ridge",
+    "alpha_per_trade": 1.0,
+    "clip": [
+     -1.5,
+     3.0
+    ],
+    "weights_per_sd": {
+     "stop_atr": -0.0017,
+     "vix": 0.0133,
+     "atrp": -0.0014,
+     "liq_room": 0.0015,
+     "st15_with": -0.0223,
+     "day_prev": -0.0087
+    },
+    "h1_mean": {
+     "stop_atr": 2.2229,
+     "vix": 19.0136,
+     "atrp": 44.7249,
+     "liq_room": 3.7736,
+     "st15_with": -0.4663,
+     "day_prev": -0.0914
+    },
+    "h1_sd": {
+     "stop_atr": 1.0262,
+     "vix": 5.4881,
+     "atrp": 31.4145,
+     "liq_room": 1.7846,
+     "st15_with": 0.8814,
+     "day_prev": 0.4693
+    }
+   },
+   "o": {
+    "H1": {
+     "p10": 66.4,
+     "f10": 0.0,
+     "s10": 4.2,
+     "dead10": 4.2,
+     "dec10": 70.6,
+     "p15": 75.4,
+     "f15": 0.0,
+     "pass_med": 5.0,
+     "slow_pass": 5.2,
+     "mp_net_less_fees": 11695,
+     "mp_per_eval": 1864,
+     "mp_passes": 5.23,
+     "net": 4310,
+     "per_month": 707,
+     "pf": 1.88,
+     "dd": -926,
+     "tpw": 2.07,
+     "sig_tpw": 4.38,
+     "sig_wk2": 96.3,
+     "n": 53,
+     "fund_paid_3m": 1842,
+     "by_src": {
+      "EMA": [
+       27,
+       404
+      ],
+      "MD": [
+       14,
+       2459
+      ],
+      "SR": [
+       12,
+       1448
+      ]
+     }
+    },
+    "H2": {
+     "p10": 39.1,
+     "f10": 0.0,
+     "s10": 0.0,
+     "dead10": 0.0,
+     "dec10": 39.1,
+     "p15": 48.4,
+     "f15": 0.0,
+     "pass_med": 7.5,
+     "slow_pass": 16.7,
+     "mp_net_less_fees": 1963,
+     "mp_per_eval": 1024,
+     "mp_passes": 0.92,
+     "net": 1850,
+     "per_month": 498,
+     "pf": 1.83,
+     "dd": -769,
+     "tpw": 2.12,
+     "sig_tpw": 3.27,
+     "sig_wk2": 93.8,
+     "n": 33,
+     "fund_paid_3m": 1349,
+     "by_src": {
+      "EMA": [
+       16,
+       2466
+      ],
+      "MD": [
+       7,
+       -768
+      ],
+      "SR": [
+       10,
+       152
+      ]
+     }
+    },
+    "2025": {
+     "p10": 21.3,
+     "f10": 0.0,
+     "s10": 18.5,
+     "dead10": 18.5,
+     "dec10": 39.8,
+     "p15": 23.4,
+     "f15": 0.0,
+     "pass_med": 3.0,
+     "slow_pass": 0.0,
+     "mp_net_less_fees": -1444,
+     "mp_per_eval": -267,
+     "mp_passes": 0.9,
+     "net": -1596,
+     "per_month": -130,
+     "pf": 0.86,
+     "dd": -2188,
+     "tpw": 2.69,
+     "sig_tpw": 4.84,
+     "sig_wk2": 94.3,
+     "n": 139,
+     "fund_paid_3m": 190,
+     "by_src": {
+      "EMA": [
+       76,
+       -1429
+      ],
+      "MD": [
+       29,
+       630
+      ],
+      "SR": [
+       34,
+       -797
+      ]
+     }
+    },
+    "2021-24": {
+     "p10": 19.1,
+     "f10": 0.0,
+     "s10": 29.3,
+     "dead10": 29.3,
+     "dec10": 48.4,
+     "p15": 21.8,
+     "f15": 0.0,
+     "pass_med": 4.0,
+     "slow_pass": 10.3,
+     "mp_net_less_fees": 1258,
+     "mp_per_eval": 69,
+     "mp_passes": 4.66,
+     "net": 1205,
+     "per_month": 31,
+     "pf": 1.03,
+     "dd": -8476,
+     "tpw": 3.27,
+     "sig_tpw": 5.37,
+     "sig_wk2": 99.4,
+     "n": 532,
+     "fund_paid_3m": 246,
+     "by_src": {
+      "EMA": [
+       266,
+       4530
+      ],
+      "MD": [
+       152,
+       45
+      ],
+      "SR": [
+       114,
+       -3370
+      ]
+     }
+    }
+   },
+   "verdict": {
+    "h1": false,
+    "h2": false,
+    "both": false,
+    "ref": "B",
+    "freq": true,
+    "pass": false
+   },
+   "view": {
+    "H1": {
+     "n": 112,
+     "avg_r": 0.884,
+     "r_per_risk": 1.038,
+     "mean_mult": 0.978,
+     "pf": 3.4,
+     "net": 56811,
+     "per_month": 9313,
+     "dd": -2514
+    },
+    "H2": {
+     "n": 51,
+     "avg_r": 0.62,
+     "r_per_risk": 0.723,
+     "mean_mult": 0.902,
+     "pf": 3.17,
+     "net": 16631,
+     "per_month": 4483,
+     "dd": -1722
+    },
+    "2025": {
+     "n": 250,
+     "avg_r": 0.084,
+     "r_per_risk": 0.091,
+     "mean_mult": 0.936,
+     "pf": 1.16,
+     "net": 10591,
+     "per_month": 862,
+     "dd": -11546
+    },
+    "2021-24": {
+     "n": 875,
+     "avg_r": 0.045,
+     "r_per_risk": 0.069,
+     "mean_mult": 1.0,
+     "pf": 1.12,
+     "net": 30058,
+     "per_month": 775,
+     "dd": -22381
+    }
+   },
+   "placebo": {
+    "H1": {
+     "p_r_per_risk": 0.06,
+     "p_eval_path": 0.0,
+     "pl_mean_eval_path": 7918
+    },
+    "H2": {
+     "p_r_per_risk": 0.19,
+     "p_eval_path": 0.51,
+     "pl_mean_eval_path": 1969
+    },
+    "2025": {
+     "p_r_per_risk": 0.43,
+     "p_eval_path": 0.52,
+     "pl_mean_eval_path": -1286
+    },
+    "2021-24": {
+     "p_r_per_risk": 0.03,
+     "p_eval_path": 0.16,
+     "pl_mean_eval_path": -1341
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,4259 @@
+{
+ "built": "2026-10-30 16:48",
+ "rows": [
+  {
+   "name": "eval today | funded today",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ]
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "lb": false,
+   "H1": {
+    "ev": {
+     "p10": 36.1,
+     "f10": 37.8,
+     "p15": 45.6,
+     "f15": 46.5,
+     "p20": 48.6,
+     "f20": 49.5,
+     "dec10": 73.9,
+     "pass_med": 6.0,
+     "slow_pass": 9.8
+    },
+    "slot": {
+     "life_pm": 270,
+     "life_p10": 10,
+     "life_lose": 9.0,
+     "funded_per_6m": 1.3,
+     "pay_per_6m": 2.83,
+     "f_end": {
+      "max": 13.2,
+      "open": 69.1,
+      "stuck": 17.7
+     }
+    },
+    "fund": {
+     "fund_pm": 108,
+     "fund_pay_pm": 0.26,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 36.2,
+     "f10": 34.8,
+     "p15": 32.8,
+     "f15": 57.8,
+     "p20": 27.1,
+     "f20": 72.9,
+     "dec10": 71.0,
+     "pass_med": 5.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 37,
+     "life_p10": -52,
+     "life_lose": 52.4,
+     "funded_per_6m": 1.41,
+     "pay_per_6m": 0.92,
+     "f_end": {
+      "max": 0.9,
+      "open": 61.3,
+      "stuck": 37.8
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 20.4,
+     "f10": 50.2,
+     "p15": 23.8,
+     "f15": 64.8,
+     "p20": 25.3,
+     "f20": 70.8,
+     "dec10": 70.6,
+     "pass_med": 6.0,
+     "slow_pass": 5.6
+    },
+    "slot": {
+     "life_pm": -40,
+     "life_p10": -94,
+     "life_lose": 87.9,
+     "funded_per_6m": 1.37,
+     "pay_per_6m": 0.2,
+     "f_end": {
+      "open": 58.0,
+      "stuck": 42.0
+     }
+    },
+    "fund": {
+     "fund_pm": 2,
+     "fund_pay_pm": 0.01,
+     "fund_lost": 0.0,
+     "fund_stuck": 28.9,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval today + win stop s1-2 | funded today",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "win_stop": 2
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "lb": false,
+   "H1": {
+    "ev": {
+     "p10": 33.6,
+     "f10": 39.5,
+     "p15": 43.9,
+     "f15": 49.1,
+     "p20": 45.9,
+     "f20": 52.3,
+     "dec10": 73.1,
+     "pass_med": 8.0,
+     "slow_pass": 8.3
+    },
+    "slot": {
+     "life_pm": 250,
+     "life_p10": -21,
+     "life_lose": 13.1,
+     "funded_per_6m": 1.26,
+     "pay_per_6m": 2.67,
+     "f_end": {
+      "max": 11.9,
+      "open": 70.6,
+      "stuck": 17.5
+     }
+    },
+    "fund": {
+     "fund_pm": 108,
+     "fund_pay_pm": 0.26,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 27.5,
+     "f10": 34.8,
+     "p15": 29.7,
+     "f15": 59.4,
+     "p20": 23.7,
+     "f20": 76.3,
+     "dec10": 62.3,
+     "pass_med": 7.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 33,
+     "life_p10": -63,
+     "life_lose": 54.0,
+     "funded_per_6m": 1.38,
+     "pay_per_6m": 0.89,
+     "f_end": {
+      "max": 0.8,
+      "open": 61.8,
+      "stuck": 37.4
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 18.4,
+     "f10": 46.9,
+     "p15": 23.0,
+     "f15": 63.7,
+     "p20": 25.0,
+     "f20": 70.7,
+     "dec10": 65.3,
+     "pass_med": 7.0,
+     "slow_pass": 7.2
+    },
+    "slot": {
+     "life_pm": -44,
+     "life_p10": -105,
+     "life_lose": 88.6,
+     "funded_per_6m": 1.3,
+     "pay_per_6m": 0.18,
+     "f_end": {
+      "open": 59.0,
+      "stuck": 41.0
+     }
+    },
+    "fund": {
+     "fund_pm": 2,
+     "fund_pay_pm": 0.01,
+     "fund_lost": 0.0,
+     "fund_stuck": 28.9,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval today + win stop s1-3 | funded today",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "win_stop": 3
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "lb": false,
+   "H1": {
+    "ev": {
+     "p10": 32.8,
+     "f10": 37.8,
+     "p15": 43.0,
+     "f15": 49.1,
+     "p20": 45.9,
+     "f20": 52.3,
+     "dec10": 70.6,
+     "pass_med": 8.0,
+     "slow_pass": 9.8
+    },
+    "slot": {
+     "life_pm": 242,
+     "life_p10": -21,
+     "life_lose": 13.8,
+     "funded_per_6m": 1.25,
+     "pay_per_6m": 2.61,
+     "f_end": {
+      "max": 11.6,
+      "open": 70.9,
+      "stuck": 17.5
+     }
+    },
+    "fund": {
+     "fund_pm": 108,
+     "fund_pay_pm": 0.26,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 24.6,
+     "f10": 33.3,
+     "p15": 29.7,
+     "f15": 57.8,
+     "p20": 23.7,
+     "f20": 76.3,
+     "dec10": 57.9,
+     "pass_med": 8.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 32,
+     "life_p10": -63,
+     "life_lose": 54.9,
+     "funded_per_6m": 1.38,
+     "pay_per_6m": 0.88,
+     "f_end": {
+      "max": 0.7,
+      "open": 61.4,
+      "stuck": 37.9
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 17.7,
+     "f10": 45.3,
+     "p15": 22.5,
+     "f15": 62.7,
+     "p20": 24.7,
+     "f20": 70.6,
+     "dec10": 63.0,
+     "pass_med": 7.0,
+     "slow_pass": 8.4
+    },
+    "slot": {
+     "life_pm": -44,
+     "life_p10": -105,
+     "life_lose": 88.8,
+     "funded_per_6m": 1.28,
+     "pay_per_6m": 0.18,
+     "f_end": {
+      "open": 58.6,
+      "stuck": 41.4
+     }
+    },
+    "fund": {
+     "fund_pm": 2,
+     "fund_pay_pm": 0.01,
+     "fund_lost": 0.0,
+     "fund_stuck": 28.9,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval today + win stop s1-4 | funded today",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "win_stop": 4
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "lb": false,
+   "H1": {
+    "ev": {
+     "p10": 29.4,
+     "f10": 37.8,
+     "p15": 39.5,
+     "f15": 50.9,
+     "p20": 43.1,
+     "f20": 54.1,
+     "dec10": 67.2,
+     "pass_med": 8.0,
+     "slow_pass": 11.9
+    },
+    "slot": {
+     "life_pm": 240,
+     "life_p10": -32,
+     "life_lose": 14.3,
+     "funded_per_6m": 1.24,
+     "pay_per_6m": 2.59,
+     "f_end": {
+      "max": 11.8,
+      "open": 70.9,
+      "stuck": 17.3
+     }
+    },
+    "fund": {
+     "fund_pm": 108,
+     "fund_pay_pm": 0.26,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 21.7,
+     "f10": 33.3,
+     "p15": 28.1,
+     "f15": 57.8,
+     "p20": 22.0,
+     "f20": 78.0,
+     "dec10": 55.0,
+     "pass_med": 8.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 27,
+     "life_p10": -63,
+     "life_lose": 57.2,
+     "funded_per_6m": 1.34,
+     "pay_per_6m": 0.83,
+     "f_end": {
+      "max": 0.7,
+      "open": 61.8,
+      "stuck": 37.4
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 16.0,
+     "f10": 43.8,
+     "p15": 20.7,
+     "f15": 62.7,
+     "p20": 23.2,
+     "f20": 71.7,
+     "dec10": 59.8,
+     "pass_med": 8.0,
+     "slow_pass": 10.2
+    },
+    "slot": {
+     "life_pm": -45,
+     "life_p10": -105,
+     "life_lose": 88.7,
+     "funded_per_6m": 1.25,
+     "pay_per_6m": 0.17,
+     "f_end": {
+      "open": 59.5,
+      "stuck": 40.5
+     }
+    },
+    "fund": {
+     "fund_pm": 2,
+     "fund_pay_pm": 0.01,
+     "fund_lost": 0.0,
+     "fund_stuck": 28.9,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval today + win stop s1-5 | funded today",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "win_stop": 5
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "lb": false,
+   "H1": {
+    "ev": {
+     "p10": 26.9,
+     "f10": 37.8,
+     "p15": 37.7,
+     "f15": 51.8,
+     "p20": 41.3,
+     "f20": 56.0,
+     "dec10": 64.7,
+     "pass_med": 9.0,
+     "slow_pass": 12.1
+    },
+    "slot": {
+     "life_pm": 230,
+     "life_p10": -32,
+     "life_lose": 15.6,
+     "funded_per_6m": 1.23,
+     "pay_per_6m": 2.51,
+     "f_end": {
+      "max": 11.4,
+      "open": 71.3,
+      "stuck": 17.2
+     }
+    },
+    "fund": {
+     "fund_pm": 108,
+     "fund_pay_pm": 0.26,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 17.4,
+     "f10": 30.4,
+     "p15": 26.6,
+     "f15": 57.8,
+     "p20": 20.3,
+     "f20": 79.7,
+     "dec10": 47.8,
+     "pass_med": 9.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 25,
+     "life_p10": -63,
+     "life_lose": 58.0,
+     "funded_per_6m": 1.31,
+     "pay_per_6m": 0.82,
+     "f_end": {
+      "max": 0.6,
+      "open": 62.5,
+      "stuck": 36.9
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 15.7,
+     "f10": 41.3,
+     "p15": 20.4,
+     "f15": 61.8,
+     "p20": 23.3,
+     "f20": 71.3,
+     "dec10": 57.0,
+     "pass_med": 8.0,
+     "slow_pass": 11.8
+    },
+    "slot": {
+     "life_pm": -43,
+     "life_p10": -94,
+     "life_lose": 88.2,
+     "funded_per_6m": 1.23,
+     "pay_per_6m": 0.17,
+     "f_end": {
+      "open": 59.8,
+      "stuck": 40.2
+     }
+    },
+    "fund": {
+     "fund_pm": 2,
+     "fund_pay_pm": 0.01,
+     "fund_lost": 0.0,
+     "fund_stuck": 28.9,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval today + win stop s1-6 | funded today",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "win_stop": 6
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "lb": false,
+   "H1": {
+    "ev": {
+     "p10": 25.2,
+     "f10": 36.1,
+     "p15": 36.8,
+     "f15": 52.6,
+     "p20": 39.4,
+     "f20": 57.8,
+     "dec10": 61.3,
+     "pass_med": 10.0,
+     "slow_pass": 10.7
+    },
+    "slot": {
+     "life_pm": 226,
+     "life_p10": -32,
+     "life_lose": 15.6,
+     "funded_per_6m": 1.21,
+     "pay_per_6m": 2.48,
+     "f_end": {
+      "max": 11.0,
+      "open": 72.2,
+      "stuck": 16.8
+     }
+    },
+    "fund": {
+     "fund_pm": 108,
+     "fund_pay_pm": 0.26,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 13.0,
+     "f10": 26.1,
+     "p15": 26.6,
+     "f15": 56.2,
+     "p20": 20.3,
+     "f20": 79.7,
+     "dec10": 39.1,
+     "pass_med": 11.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 21,
+     "life_p10": -63,
+     "life_lose": 59.8,
+     "funded_per_6m": 1.28,
+     "pay_per_6m": 0.79,
+     "f_end": {
+      "max": 0.6,
+      "open": 62.3,
+      "stuck": 37.0
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 14.6,
+     "f10": 39.0,
+     "p15": 19.6,
+     "f15": 60.9,
+     "p20": 22.4,
+     "f20": 71.4,
+     "dec10": 53.6,
+     "pass_med": 9.0,
+     "slow_pass": 12.2
+    },
+    "slot": {
+     "life_pm": -44,
+     "life_p10": -94,
+     "life_lose": 89.2,
+     "funded_per_6m": 1.21,
+     "pay_per_6m": 0.16,
+     "f_end": {
+      "open": 59.0,
+      "stuck": 41.0
+     }
+    },
+    "fund": {
+     "fund_pm": 2,
+     "fund_pay_pm": 0.01,
+     "fund_lost": 0.0,
+     "fund_stuck": 28.9,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval today + skip first breaks s1-4 | funded today",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "first_skip_s": 4
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "lb": false,
+   "H1": {
+    "ev": {
+     "p10": 37.0,
+     "f10": 37.0,
+     "p15": 46.5,
+     "f15": 43.0,
+     "p20": 52.3,
+     "f20": 45.9,
+     "dec10": 74.0,
+     "pass_med": 7.0,
+     "slow_pass": 9.8
+    },
+    "slot": {
+     "life_pm": 263,
+     "life_p10": -1,
+     "life_lose": 10.2,
+     "funded_per_6m": 1.3,
+     "pay_per_6m": 2.77,
+     "f_end": {
+      "max": 12.7,
+      "open": 70.0,
+      "stuck": 17.3
+     }
+    },
+    "fund": {
+     "fund_pm": 108,
+     "fund_pay_pm": 0.26,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 33.3,
+     "f10": 30.4,
+     "p15": 29.7,
+     "f15": 60.9,
+     "p20": 23.7,
+     "f20": 76.3,
+     "dec10": 63.7,
+     "pass_med": 6.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 39,
+     "life_p10": -52,
+     "life_lose": 51.0,
+     "funded_per_6m": 1.43,
+     "pay_per_6m": 0.94,
+     "f_end": {
+      "max": 1.0,
+      "open": 60.6,
+      "stuck": 38.4
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 20.5,
+     "f10": 47.0,
+     "p15": 23.9,
+     "f15": 63.4,
+     "p20": 25.4,
+     "f20": 69.8,
+     "dec10": 67.5,
+     "pass_med": 6.0,
+     "slow_pass": 5.6
+    },
+    "slot": {
+     "life_pm": -41,
+     "life_p10": -94,
+     "life_lose": 87.6,
+     "funded_per_6m": 1.33,
+     "pay_per_6m": 0.19,
+     "f_end": {
+      "open": 58.7,
+      "stuck": 41.3
+     }
+    },
+    "fund": {
+     "fund_pm": 2,
+     "fund_pay_pm": 0.01,
+     "fund_lost": 0.0,
+     "fund_stuck": 28.9,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval today + skip first breaks s1-99 | funded today",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "first_skip_s": 99
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "lb": false,
+   "H1": {
+    "ev": {
+     "p10": 29.4,
+     "f10": 19.3,
+     "p15": 45.6,
+     "f15": 25.4,
+     "p20": 55.0,
+     "f20": 31.2,
+     "dec10": 48.7,
+     "pass_med": 10.0,
+     "slow_pass": 16.1
+    },
+    "slot": {
+     "life_pm": 262,
+     "life_p10": -1,
+     "life_lose": 10.1,
+     "funded_per_6m": 1.28,
+     "pay_per_6m": 2.71,
+     "f_end": {
+      "max": 12.4,
+      "open": 69.7,
+      "stuck": 17.9
+     }
+    },
+    "fund": {
+     "fund_pm": 108,
+     "fund_pay_pm": 0.26,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 27.5,
+     "f10": 15.9,
+     "p15": 34.4,
+     "f15": 34.4,
+     "p20": 39.0,
+     "f20": 50.8,
+     "dec10": 43.4,
+     "pass_med": 7.0,
+     "slow_pass": 11.1
+    },
+    "slot": {
+     "life_pm": 39,
+     "life_p10": -52,
+     "life_lose": 51.9,
+     "funded_per_6m": 1.39,
+     "pay_per_6m": 0.91,
+     "f_end": {
+      "max": 0.9,
+      "open": 61.1,
+      "stuck": 37.9
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 20.2,
+     "f10": 35.7,
+     "p15": 27.7,
+     "f15": 49.9,
+     "p20": 32.2,
+     "f20": 57.6,
+     "dec10": 55.9,
+     "pass_med": 8.0,
+     "slow_pass": 13.8
+    },
+    "slot": {
+     "life_pm": -35,
+     "life_p10": -84,
+     "life_lose": 86.5,
+     "funded_per_6m": 1.32,
+     "pay_per_6m": 0.19,
+     "f_end": {
+      "open": 58.0,
+      "stuck": 42.0
+     }
+    },
+    "fund": {
+     "fund_pm": 2,
+     "fund_pay_pm": 0.01,
+     "fund_lost": 0.0,
+     "fund_stuck": 28.9,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval today + 2 losers end the day | funded today",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "loss2_stop": true
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "lb": false,
+   "H1": {
+    "ev": {
+     "p10": 37.0,
+     "f10": 32.8,
+     "p15": 47.4,
+     "f15": 44.7,
+     "p20": 50.5,
+     "f20": 47.7,
+     "dec10": 69.8,
+     "pass_med": 7.0,
+     "slow_pass": 9.8
+    },
+    "slot": {
+     "life_pm": 272,
+     "life_p10": 10,
+     "life_lose": 8.8,
+     "funded_per_6m": 1.3,
+     "pay_per_6m": 2.82,
+     "f_end": {
+      "max": 12.9,
+      "open": 69.3,
+      "stuck": 17.8
+     }
+    },
+    "fund": {
+     "fund_pm": 108,
+     "fund_pay_pm": 0.26,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 34.8,
+     "f10": 29.0,
+     "p15": 32.8,
+     "f15": 54.7,
+     "p20": 27.1,
+     "f20": 72.9,
+     "dec10": 63.8,
+     "pass_med": 6.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 38,
+     "life_p10": -52,
+     "life_lose": 52.5,
+     "funded_per_6m": 1.41,
+     "pay_per_6m": 0.92,
+     "f_end": {
+      "max": 1.0,
+      "open": 61.4,
+      "stuck": 37.7
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 21.3,
+     "f10": 44.5,
+     "p15": 26.6,
+     "f15": 61.3,
+     "p20": 27.8,
+     "f20": 68.1,
+     "dec10": 65.8,
+     "pass_med": 6.0,
+     "slow_pass": 3.7
+    },
+    "slot": {
+     "life_pm": -39,
+     "life_p10": -94,
+     "life_lose": 87.5,
+     "funded_per_6m": 1.37,
+     "pay_per_6m": 0.2,
+     "f_end": {
+      "open": 58.3,
+      "stuck": 41.7
+     }
+    },
+    "fund": {
+     "fund_pm": 2,
+     "fund_pay_pm": 0.01,
+     "fund_lost": 0.0,
+     "fund_stuck": 28.9,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval later-break | funded today",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "fmax": 1.0
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "lb": true,
+   "H1": {
+    "ev": {
+     "p10": 47.9,
+     "f10": 23.5,
+     "p15": 63.2,
+     "f15": 24.6,
+     "p20": 70.6,
+     "f20": 25.7,
+     "dec10": 71.4,
+     "pass_med": 7.0,
+     "slow_pass": 12.0
+    },
+    "slot": {
+     "life_pm": 286,
+     "life_p10": 14,
+     "life_lose": 7.6,
+     "funded_per_6m": 1.34,
+     "pay_per_6m": 2.93,
+     "f_end": {
+      "max": 14.0,
+      "open": 68.2,
+      "stuck": 17.8
+     }
+    },
+    "fund": {
+     "fund_pm": 108,
+     "fund_pay_pm": 0.26,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 36.2,
+     "f10": 21.7,
+     "p15": 35.9,
+     "f15": 39.1,
+     "p20": 30.5,
+     "f20": 59.3,
+     "dec10": 57.9,
+     "pass_med": 5.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 52,
+     "life_p10": -52,
+     "life_lose": 45.9,
+     "funded_per_6m": 1.53,
+     "pay_per_6m": 1.05,
+     "f_end": {
+      "max": 1.1,
+      "open": 58.8,
+      "stuck": 40.1
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 24.7,
+     "f10": 48.4,
+     "p15": 29.0,
+     "f15": 60.9,
+     "p20": 30.0,
+     "f20": 65.9,
+     "dec10": 73.1,
+     "pass_med": 5.0,
+     "slow_pass": 2.8
+    },
+    "slot": {
+     "life_pm": -39,
+     "life_p10": -105,
+     "life_lose": 86.0,
+     "funded_per_6m": 1.43,
+     "pay_per_6m": 0.22,
+     "f_end": {
+      "open": 57.4,
+      "stuck": 42.6
+     }
+    },
+    "fund": {
+     "fund_pm": 2,
+     "fund_pay_pm": 0.01,
+     "fund_lost": 0.0,
+     "fund_stuck": 28.9,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval later-break + win stop s1-2 | funded today",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "fmax": 1.0,
+    "win_stop": 2
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "lb": true,
+   "H1": {
+    "ev": {
+     "p10": 42.9,
+     "f10": 21.8,
+     "p15": 58.8,
+     "f15": 27.2,
+     "p20": 67.9,
+     "f20": 28.4,
+     "dec10": 64.7,
+     "pass_med": 8.0,
+     "slow_pass": 14.1
+    },
+    "slot": {
+     "life_pm": 273,
+     "life_p10": 0,
+     "life_lose": 10.0,
+     "funded_per_6m": 1.3,
+     "pay_per_6m": 2.82,
+     "f_end": {
+      "max": 12.8,
+      "open": 68.8,
+      "stuck": 18.4
+     }
+    },
+    "fund": {
+     "fund_pm": 108,
+     "fund_pay_pm": 0.26,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 30.4,
+     "f10": 23.2,
+     "p15": 34.4,
+     "f15": 37.5,
+     "p20": 28.8,
+     "f20": 57.6,
+     "dec10": 53.6,
+     "pass_med": 6.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 47,
+     "life_p10": -52,
+     "life_lose": 47.8,
+     "funded_per_6m": 1.47,
+     "pay_per_6m": 0.99,
+     "f_end": {
+      "max": 1.0,
+      "open": 59.5,
+      "stuck": 39.5
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 21.4,
+     "f10": 43.9,
+     "p15": 26.6,
+     "f15": 60.4,
+     "p20": 28.2,
+     "f20": 67.3,
+     "dec10": 65.3,
+     "pass_med": 6.0,
+     "slow_pass": 5.0
+    },
+    "slot": {
+     "life_pm": -39,
+     "life_p10": -94,
+     "life_lose": 86.9,
+     "funded_per_6m": 1.35,
+     "pay_per_6m": 0.2,
+     "f_end": {
+      "open": 58.4,
+      "stuck": 41.6
+     }
+    },
+    "fund": {
+     "fund_pm": 2,
+     "fund_pay_pm": 0.01,
+     "fund_lost": 0.0,
+     "fund_stuck": 28.9,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval later-break + win stop s1-3 | funded today",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "fmax": 1.0,
+    "win_stop": 3
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "lb": true,
+   "H1": {
+    "ev": {
+     "p10": 40.3,
+     "f10": 22.7,
+     "p15": 56.1,
+     "f15": 28.9,
+     "p20": 66.1,
+     "f20": 30.3,
+     "dec10": 63.0,
+     "pass_med": 8.0,
+     "slow_pass": 15.6
+    },
+    "slot": {
+     "life_pm": 264,
+     "life_p10": -8,
+     "life_lose": 10.6,
+     "funded_per_6m": 1.28,
+     "pay_per_6m": 2.75,
+     "f_end": {
+      "max": 12.4,
+      "open": 69.1,
+      "stuck": 18.6
+     }
+    },
+    "fund": {
+     "fund_pm": 108,
+     "fund_pay_pm": 0.26,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 27.5,
+     "f10": 20.3,
+     "p15": 34.4,
+     "f15": 35.9,
+     "p20": 28.8,
+     "f20": 55.9,
+     "dec10": 47.8,
+     "pass_med": 7.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 39,
+     "life_p10": -52,
+     "life_lose": 52.1,
+     "funded_per_6m": 1.39,
+     "pay_per_6m": 0.92,
+     "f_end": {
+      "max": 0.9,
+      "open": 60.3,
+      "stuck": 38.7
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 20.2,
+     "f10": 41.5,
+     "p15": 25.9,
+     "f15": 59.8,
+     "p20": 27.7,
+     "f20": 67.4,
+     "dec10": 61.7,
+     "pass_med": 7.0,
+     "slow_pass": 6.1
+    },
+    "slot": {
+     "life_pm": -40,
+     "life_p10": -94,
+     "life_lose": 87.9,
+     "funded_per_6m": 1.33,
+     "pay_per_6m": 0.19,
+     "f_end": {
+      "open": 58.2,
+      "stuck": 41.8
+     }
+    },
+    "fund": {
+     "fund_pm": 2,
+     "fund_pay_pm": 0.01,
+     "fund_lost": 0.0,
+     "fund_stuck": 28.9,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval later-break + win stop s1-4 | funded today",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "fmax": 1.0,
+    "win_stop": 4
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "lb": true,
+   "H1": {
+    "ev": {
+     "p10": 37.8,
+     "f10": 23.5,
+     "p15": 54.4,
+     "f15": 31.6,
+     "p20": 63.3,
+     "f20": 33.0,
+     "dec10": 61.3,
+     "pass_med": 9.0,
+     "slow_pass": 16.0
+    },
+    "slot": {
+     "life_pm": 262,
+     "life_p10": -1,
+     "life_lose": 10.1,
+     "funded_per_6m": 1.27,
+     "pay_per_6m": 2.73,
+     "f_end": {
+      "max": 12.5,
+      "open": 69.8,
+      "stuck": 17.7
+     }
+    },
+    "fund": {
+     "fund_pm": 108,
+     "fund_pay_pm": 0.26,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 24.6,
+     "f10": 17.4,
+     "p15": 32.8,
+     "f15": 35.9,
+     "p20": 27.1,
+     "f20": 55.9,
+     "dec10": 42.0,
+     "pass_med": 7.5,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 37,
+     "life_p10": -52,
+     "life_lose": 53.6,
+     "funded_per_6m": 1.34,
+     "pay_per_6m": 0.9,
+     "f_end": {
+      "max": 0.9,
+      "open": 61.2,
+      "stuck": 37.9
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 19.0,
+     "f10": 38.2,
+     "p15": 24.8,
+     "f15": 59.4,
+     "p20": 26.7,
+     "f20": 67.2,
+     "dec10": 57.2,
+     "pass_med": 8.0,
+     "slow_pass": 6.7
+    },
+    "slot": {
+     "life_pm": -41,
+     "life_p10": -94,
+     "life_lose": 88.5,
+     "funded_per_6m": 1.27,
+     "pay_per_6m": 0.17,
+     "f_end": {
+      "open": 59.6,
+      "stuck": 40.4
+     }
+    },
+    "fund": {
+     "fund_pm": 2,
+     "fund_pay_pm": 0.01,
+     "fund_lost": 0.0,
+     "fund_stuck": 28.9,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval later-break + win stop s1-5 | funded today",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "fmax": 1.0,
+    "win_stop": 5
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "lb": true,
+   "H1": {
+    "ev": {
+     "p10": 35.3,
+     "f10": 23.5,
+     "p15": 50.9,
+     "f15": 33.3,
+     "p20": 60.6,
+     "f20": 35.8,
+     "dec10": 58.8,
+     "pass_med": 9.0,
+     "slow_pass": 18.1
+    },
+    "slot": {
+     "life_pm": 256,
+     "life_p10": -6,
+     "life_lose": 10.4,
+     "funded_per_6m": 1.25,
+     "pay_per_6m": 2.69,
+     "f_end": {
+      "max": 12.5,
+      "open": 70.5,
+      "stuck": 17.1
+     }
+    },
+    "fund": {
+     "fund_pm": 108,
+     "fund_pay_pm": 0.26,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 20.3,
+     "f10": 15.9,
+     "p15": 31.2,
+     "f15": 35.9,
+     "p20": 25.4,
+     "f20": 55.9,
+     "dec10": 36.2,
+     "pass_med": 8.5,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 35,
+     "life_p10": -52,
+     "life_lose": 55.0,
+     "funded_per_6m": 1.31,
+     "pay_per_6m": 0.88,
+     "f_end": {
+      "max": 0.9,
+      "open": 62.0,
+      "stuck": 37.1
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 17.6,
+     "f10": 34.1,
+     "p15": 24.2,
+     "f15": 57.9,
+     "p20": 26.4,
+     "f20": 66.7,
+     "dec10": 51.7,
+     "pass_med": 8.0,
+     "slow_pass": 7.9
+    },
+    "slot": {
+     "life_pm": -40,
+     "life_p10": -94,
+     "life_lose": 88.4,
+     "funded_per_6m": 1.23,
+     "pay_per_6m": 0.17,
+     "f_end": {
+      "open": 60.1,
+      "stuck": 39.9
+     }
+    },
+    "fund": {
+     "fund_pm": 2,
+     "fund_pay_pm": 0.01,
+     "fund_lost": 0.0,
+     "fund_stuck": 28.9,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval later-break + win stop s1-6 | funded today",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "fmax": 1.0,
+    "win_stop": 6
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "lb": true,
+   "H1": {
+    "ev": {
+     "p10": 33.6,
+     "f10": 18.5,
+     "p15": 50.9,
+     "f15": 31.6,
+     "p20": 60.6,
+     "f20": 34.9,
+     "dec10": 52.1,
+     "pass_med": 10.0,
+     "slow_pass": 18.1
+    },
+    "slot": {
+     "life_pm": 251,
+     "life_p10": -21,
+     "life_lose": 11.4,
+     "funded_per_6m": 1.23,
+     "pay_per_6m": 2.64,
+     "f_end": {
+      "max": 11.8,
+      "open": 71.6,
+      "stuck": 16.7
+     }
+    },
+    "fund": {
+     "fund_pm": 108,
+     "fund_pay_pm": 0.26,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 15.9,
+     "f10": 15.9,
+     "p15": 28.1,
+     "f15": 37.5,
+     "p20": 23.7,
+     "f20": 55.9,
+     "dec10": 31.8,
+     "pass_med": 9.5,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 31,
+     "life_p10": -52,
+     "life_lose": 56.7,
+     "funded_per_6m": 1.29,
+     "pay_per_6m": 0.83,
+     "f_end": {
+      "max": 0.9,
+      "open": 61.9,
+      "stuck": 37.2
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 15.5,
+     "f10": 30.0,
+     "p15": 23.0,
+     "f15": 55.5,
+     "p20": 25.8,
+     "f20": 66.4,
+     "dec10": 45.5,
+     "pass_med": 9.0,
+     "slow_pass": 10.3
+    },
+    "slot": {
+     "life_pm": -40,
+     "life_p10": -94,
+     "life_lose": 89.1,
+     "funded_per_6m": 1.19,
+     "pay_per_6m": 0.16,
+     "f_end": {
+      "open": 60.0,
+      "stuck": 40.0
+     }
+    },
+    "fund": {
+     "fund_pm": 2,
+     "fund_pay_pm": 0.01,
+     "fund_lost": 0.0,
+     "fund_stuck": 28.9,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval later-break + skip first breaks s1-4 | funded today",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "fmax": 1.0,
+    "first_skip_s": 4
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "lb": true,
+   "H1": {
+    "ev": {
+     "p10": 42.0,
+     "f10": 30.3,
+     "p15": 55.3,
+     "f15": 33.3,
+     "p20": 64.2,
+     "f20": 34.9,
+     "dec10": 72.3,
+     "pass_med": 6.0,
+     "slow_pass": 12.5
+    },
+    "slot": {
+     "life_pm": 283,
+     "life_p10": 14,
+     "life_lose": 8.1,
+     "funded_per_6m": 1.33,
+     "pay_per_6m": 2.91,
+     "f_end": {
+      "max": 13.9,
+      "open": 68.3,
+      "stuck": 17.8
+     }
+    },
+    "fund": {
+     "fund_pm": 108,
+     "fund_pay_pm": 0.26,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 37.7,
+     "f10": 20.3,
+     "p15": 37.5,
+     "f15": 37.5,
+     "p20": 32.2,
+     "f20": 57.6,
+     "dec10": 58.0,
+     "pass_med": 5.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 53,
+     "life_p10": -42,
+     "life_lose": 46.1,
+     "funded_per_6m": 1.51,
+     "pay_per_6m": 1.05,
+     "f_end": {
+      "max": 1.1,
+      "open": 58.7,
+      "stuck": 40.2
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 25.7,
+     "f10": 45.7,
+     "p15": 30.5,
+     "f15": 59.6,
+     "p20": 31.1,
+     "f20": 64.7,
+     "dec10": 71.4,
+     "pass_med": 5.0,
+     "slow_pass": 1.5
+    },
+    "slot": {
+     "life_pm": -38,
+     "life_p10": -94,
+     "life_lose": 86.0,
+     "funded_per_6m": 1.45,
+     "pay_per_6m": 0.22,
+     "f_end": {
+      "open": 57.4,
+      "stuck": 42.6
+     }
+    },
+    "fund": {
+     "fund_pm": 2,
+     "fund_pay_pm": 0.01,
+     "fund_lost": 0.0,
+     "fund_stuck": 28.9,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval later-break + skip first breaks s1-99 | funded today",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "fmax": 1.0,
+    "first_skip_s": 99
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "lb": true,
+   "H1": {
+    "ev": {
+     "p10": 45.4,
+     "f10": 26.1,
+     "p15": 57.0,
+     "f15": 28.9,
+     "p20": 64.2,
+     "f20": 30.3,
+     "dec10": 71.5,
+     "pass_med": 6.5,
+     "slow_pass": 9.7
+    },
+    "slot": {
+     "life_pm": 280,
+     "life_p10": 12,
+     "life_lose": 8.8,
+     "funded_per_6m": 1.33,
+     "pay_per_6m": 2.88,
+     "f_end": {
+      "max": 13.7,
+      "open": 67.9,
+      "stuck": 18.4
+     }
+    },
+    "fund": {
+     "fund_pm": 108,
+     "fund_pay_pm": 0.26,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 37.7,
+     "f10": 20.3,
+     "p15": 37.5,
+     "f15": 37.5,
+     "p20": 32.2,
+     "f20": 57.6,
+     "dec10": 58.0,
+     "pass_med": 4.5,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 54,
+     "life_p10": -42,
+     "life_lose": 45.2,
+     "funded_per_6m": 1.5,
+     "pay_per_6m": 1.05,
+     "f_end": {
+      "max": 1.2,
+      "open": 58.8,
+      "stuck": 40.0
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 27.2,
+     "f10": 43.4,
+     "p15": 31.8,
+     "f15": 56.1,
+     "p20": 33.6,
+     "f20": 61.2,
+     "dec10": 70.6,
+     "pass_med": 5.0,
+     "slow_pass": 5.1
+    },
+    "slot": {
+     "life_pm": -35,
+     "life_p10": -94,
+     "life_lose": 85.7,
+     "funded_per_6m": 1.45,
+     "pay_per_6m": 0.22,
+     "f_end": {
+      "open": 56.7,
+      "stuck": 43.3
+     }
+    },
+    "fund": {
+     "fund_pm": 2,
+     "fund_pay_pm": 0.01,
+     "fund_lost": 0.0,
+     "fund_stuck": 28.9,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval later-break + 2 losers end the day | funded today",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "fmax": 1.0,
+    "loss2_stop": true
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "lb": true,
+   "H1": {
+    "ev": {
+     "p10": 47.1,
+     "f10": 18.5,
+     "p15": 58.8,
+     "f15": 24.6,
+     "p20": 62.4,
+     "f20": 30.3,
+     "dec10": 65.6,
+     "pass_med": 6.0,
+     "slow_pass": 8.1
+    },
+    "slot": {
+     "life_pm": 290,
+     "life_p10": 22,
+     "life_lose": 6.6,
+     "funded_per_6m": 1.33,
+     "pay_per_6m": 2.94,
+     "f_end": {
+      "max": 14.1,
+      "open": 68.4,
+      "stuck": 17.5
+     }
+    },
+    "fund": {
+     "fund_pm": 108,
+     "fund_pay_pm": 0.26,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 37.7,
+     "f10": 14.5,
+     "p15": 37.5,
+     "f15": 40.6,
+     "p20": 32.2,
+     "f20": 64.4,
+     "dec10": 52.2,
+     "pass_med": 5.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 53,
+     "life_p10": -42,
+     "life_lose": 46.6,
+     "funded_per_6m": 1.48,
+     "pay_per_6m": 1.04,
+     "f_end": {
+      "max": 1.2,
+      "open": 59.5,
+      "stuck": 39.3
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 25.5,
+     "f10": 44.1,
+     "p15": 30.3,
+     "f15": 57.5,
+     "p20": 31.8,
+     "f20": 62.9,
+     "dec10": 69.6,
+     "pass_med": 5.0,
+     "slow_pass": 4.2
+    },
+    "slot": {
+     "life_pm": -38,
+     "life_p10": -94,
+     "life_lose": 86.5,
+     "funded_per_6m": 1.4,
+     "pay_per_6m": 0.21,
+     "f_end": {
+      "open": 57.3,
+      "stuck": 42.7
+     }
+    },
+    "fund": {
+     "fund_pm": 2,
+     "fund_pay_pm": 0.01,
+     "fund_lost": 0.0,
+     "fund_stuck": 28.9,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval today | funded C1",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ]
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "lb": false,
+   "H1": {
+    "ev": {
+     "p10": 36.1,
+     "f10": 37.8,
+     "p15": 45.6,
+     "f15": 46.5,
+     "p20": 48.6,
+     "f20": 49.5,
+     "dec10": 73.9,
+     "pass_med": 6.0,
+     "slow_pass": 9.8
+    },
+    "slot": {
+     "life_pm": 314,
+     "life_p10": -2,
+     "life_lose": 10.4,
+     "funded_per_6m": 1.76,
+     "pay_per_6m": 2.91,
+     "f_end": {
+      "max": 11.7,
+      "open": 47.2,
+      "stuck": 41.1
+     }
+    },
+    "fund": {
+     "fund_pm": 226,
+     "fund_pay_pm": 0.32,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 36.2,
+     "f10": 34.8,
+     "p15": 32.8,
+     "f15": 57.8,
+     "p20": 27.1,
+     "f20": 72.9,
+     "dec10": 71.0,
+     "pass_med": 5.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 93,
+     "life_p10": -74,
+     "life_lose": 45.5,
+     "funded_per_6m": 1.9,
+     "pay_per_6m": 1.28,
+     "f_end": {
+      "max": 2.0,
+      "open": 39.7,
+      "stuck": 58.3
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 20.4,
+     "f10": 50.2,
+     "p15": 23.8,
+     "f15": 64.8,
+     "p20": 25.3,
+     "f20": 70.8,
+     "dec10": 70.6,
+     "pass_med": 6.0,
+     "slow_pass": 5.6
+    },
+    "slot": {
+     "life_pm": -40,
+     "life_p10": -116,
+     "life_lose": 78.1,
+     "funded_per_6m": 2.0,
+     "pay_per_6m": 0.43,
+     "f_end": {
+      "open": 27.8,
+      "stuck": 72.2
+     }
+    },
+    "fund": {
+     "fund_pm": 52,
+     "fund_pay_pm": 0.1,
+     "fund_lost": 0.0,
+     "fund_stuck": 81.1,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval today + win stop s1-2 | funded C1",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "win_stop": 2
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "lb": false,
+   "H1": {
+    "ev": {
+     "p10": 33.6,
+     "f10": 39.5,
+     "p15": 43.9,
+     "f15": 49.1,
+     "p20": 45.9,
+     "f20": 52.3,
+     "dec10": 73.1,
+     "pass_med": 8.0,
+     "slow_pass": 8.3
+    },
+    "slot": {
+     "life_pm": 284,
+     "life_p10": -42,
+     "life_lose": 14.4,
+     "funded_per_6m": 1.67,
+     "pay_per_6m": 2.67,
+     "f_end": {
+      "max": 10.4,
+      "open": 49.6,
+      "stuck": 40.0
+     }
+    },
+    "fund": {
+     "fund_pm": 226,
+     "fund_pay_pm": 0.32,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 27.5,
+     "f10": 34.8,
+     "p15": 29.7,
+     "f15": 59.4,
+     "p20": 23.7,
+     "f20": 76.3,
+     "dec10": 62.3,
+     "pass_med": 7.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 87,
+     "life_p10": -74,
+     "life_lose": 47.7,
+     "funded_per_6m": 1.82,
+     "pay_per_6m": 1.23,
+     "f_end": {
+      "max": 2.0,
+      "open": 40.2,
+      "stuck": 57.8
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 18.4,
+     "f10": 46.9,
+     "p15": 23.0,
+     "f15": 63.7,
+     "p20": 25.0,
+     "f20": 70.7,
+     "dec10": 65.3,
+     "pass_med": 7.0,
+     "slow_pass": 7.2
+    },
+    "slot": {
+     "life_pm": -44,
+     "life_p10": -116,
+     "life_lose": 80.1,
+     "funded_per_6m": 1.87,
+     "pay_per_6m": 0.39,
+     "f_end": {
+      "max": 0.1,
+      "open": 28.5,
+      "stuck": 71.4
+     }
+    },
+    "fund": {
+     "fund_pm": 52,
+     "fund_pay_pm": 0.1,
+     "fund_lost": 0.0,
+     "fund_stuck": 81.1,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval today + win stop s1-3 | funded C1",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "win_stop": 3
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "lb": false,
+   "H1": {
+    "ev": {
+     "p10": 32.8,
+     "f10": 37.8,
+     "p15": 43.0,
+     "f15": 49.1,
+     "p20": 45.9,
+     "f20": 52.3,
+     "dec10": 70.6,
+     "pass_med": 8.0,
+     "slow_pass": 9.8
+    },
+    "slot": {
+     "life_pm": 272,
+     "life_p10": -52,
+     "life_lose": 16.1,
+     "funded_per_6m": 1.64,
+     "pay_per_6m": 2.59,
+     "f_end": {
+      "max": 9.9,
+      "open": 49.5,
+      "stuck": 40.6
+     }
+    },
+    "fund": {
+     "fund_pm": 226,
+     "fund_pay_pm": 0.32,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 24.6,
+     "f10": 33.3,
+     "p15": 29.7,
+     "f15": 57.8,
+     "p20": 23.7,
+     "f20": 76.3,
+     "dec10": 57.9,
+     "pass_med": 8.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 85,
+     "life_p10": -74,
+     "life_lose": 49.0,
+     "funded_per_6m": 1.8,
+     "pay_per_6m": 1.21,
+     "f_end": {
+      "max": 2.1,
+      "open": 39.8,
+      "stuck": 58.0
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 17.7,
+     "f10": 45.3,
+     "p15": 22.5,
+     "f15": 62.7,
+     "p20": 24.7,
+     "f20": 70.6,
+     "dec10": 63.0,
+     "pass_med": 7.0,
+     "slow_pass": 8.4
+    },
+    "slot": {
+     "life_pm": -46,
+     "life_p10": -116,
+     "life_lose": 80.6,
+     "funded_per_6m": 1.83,
+     "pay_per_6m": 0.36,
+     "f_end": {
+      "max": 0.1,
+      "open": 28.9,
+      "stuck": 71.1
+     }
+    },
+    "fund": {
+     "fund_pm": 52,
+     "fund_pay_pm": 0.1,
+     "fund_lost": 0.0,
+     "fund_stuck": 81.1,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval today + win stop s1-4 | funded C1",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "win_stop": 4
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "lb": false,
+   "H1": {
+    "ev": {
+     "p10": 29.4,
+     "f10": 37.8,
+     "p15": 39.5,
+     "f15": 50.9,
+     "p20": 43.1,
+     "f20": 54.1,
+     "dec10": 67.2,
+     "pass_med": 8.0,
+     "slow_pass": 11.9
+    },
+    "slot": {
+     "life_pm": 271,
+     "life_p10": -52,
+     "life_lose": 16.3,
+     "funded_per_6m": 1.63,
+     "pay_per_6m": 2.58,
+     "f_end": {
+      "max": 10.1,
+      "open": 49.7,
+      "stuck": 40.2
+     }
+    },
+    "fund": {
+     "fund_pm": 226,
+     "fund_pay_pm": 0.32,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 21.7,
+     "f10": 33.3,
+     "p15": 28.1,
+     "f15": 57.8,
+     "p20": 22.0,
+     "f20": 78.0,
+     "dec10": 55.0,
+     "pass_med": 8.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 79,
+     "life_p10": -74,
+     "life_lose": 49.8,
+     "funded_per_6m": 1.7,
+     "pay_per_6m": 1.17,
+     "f_end": {
+      "max": 2.1,
+      "open": 40.9,
+      "stuck": 57.1
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 16.0,
+     "f10": 43.8,
+     "p15": 20.7,
+     "f15": 62.7,
+     "p20": 23.2,
+     "f20": 71.7,
+     "dec10": 59.8,
+     "pass_med": 8.0,
+     "slow_pass": 10.2
+    },
+    "slot": {
+     "life_pm": -47,
+     "life_p10": -116,
+     "life_lose": 81.2,
+     "funded_per_6m": 1.76,
+     "pay_per_6m": 0.35,
+     "f_end": {
+      "max": 0.1,
+      "open": 28.9,
+      "stuck": 71.0
+     }
+    },
+    "fund": {
+     "fund_pm": 52,
+     "fund_pay_pm": 0.1,
+     "fund_lost": 0.0,
+     "fund_stuck": 81.1,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval today + win stop s1-5 | funded C1",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "win_stop": 5
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "lb": false,
+   "H1": {
+    "ev": {
+     "p10": 26.9,
+     "f10": 37.8,
+     "p15": 37.7,
+     "f15": 51.8,
+     "p20": 41.3,
+     "f20": 56.0,
+     "dec10": 64.7,
+     "pass_med": 9.0,
+     "slow_pass": 12.1
+    },
+    "slot": {
+     "life_pm": 260,
+     "life_p10": -63,
+     "life_lose": 17.7,
+     "funded_per_6m": 1.58,
+     "pay_per_6m": 2.5,
+     "f_end": {
+      "max": 9.6,
+      "open": 50.5,
+      "stuck": 39.9
+     }
+    },
+    "fund": {
+     "fund_pm": 226,
+     "fund_pay_pm": 0.32,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 17.4,
+     "f10": 30.4,
+     "p15": 26.6,
+     "f15": 57.8,
+     "p20": 20.3,
+     "f20": 79.7,
+     "dec10": 47.8,
+     "pass_med": 9.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 77,
+     "life_p10": -74,
+     "life_lose": 51.2,
+     "funded_per_6m": 1.65,
+     "pay_per_6m": 1.15,
+     "f_end": {
+      "max": 2.2,
+      "open": 40.2,
+      "stuck": 57.6
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 15.7,
+     "f10": 41.3,
+     "p15": 20.4,
+     "f15": 61.8,
+     "p20": 23.3,
+     "f20": 71.3,
+     "dec10": 57.0,
+     "pass_med": 8.0,
+     "slow_pass": 11.8
+    },
+    "slot": {
+     "life_pm": -47,
+     "life_p10": -116,
+     "life_lose": 81.9,
+     "funded_per_6m": 1.7,
+     "pay_per_6m": 0.34,
+     "f_end": {
+      "max": 0.1,
+      "open": 29.1,
+      "stuck": 70.8
+     }
+    },
+    "fund": {
+     "fund_pm": 52,
+     "fund_pay_pm": 0.1,
+     "fund_lost": 0.0,
+     "fund_stuck": 81.1,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval today + win stop s1-6 | funded C1",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "win_stop": 6
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "lb": false,
+   "H1": {
+    "ev": {
+     "p10": 25.2,
+     "f10": 36.1,
+     "p15": 36.8,
+     "f15": 52.6,
+     "p20": 39.4,
+     "f20": 57.8,
+     "dec10": 61.3,
+     "pass_med": 10.0,
+     "slow_pass": 10.7
+    },
+    "slot": {
+     "life_pm": 254,
+     "life_p10": -63,
+     "life_lose": 17.5,
+     "funded_per_6m": 1.54,
+     "pay_per_6m": 2.44,
+     "f_end": {
+      "max": 9.4,
+      "open": 50.5,
+      "stuck": 40.1
+     }
+    },
+    "fund": {
+     "fund_pm": 226,
+     "fund_pay_pm": 0.32,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 13.0,
+     "f10": 26.1,
+     "p15": 26.6,
+     "f15": 56.2,
+     "p20": 20.3,
+     "f20": 79.7,
+     "dec10": 39.1,
+     "pass_med": 11.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 70,
+     "life_p10": -74,
+     "life_lose": 53.2,
+     "funded_per_6m": 1.61,
+     "pay_per_6m": 1.09,
+     "f_end": {
+      "max": 2.1,
+      "open": 40.7,
+      "stuck": 57.1
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 14.6,
+     "f10": 39.0,
+     "p15": 19.6,
+     "f15": 60.9,
+     "p20": 22.4,
+     "f20": 71.4,
+     "dec10": 53.6,
+     "pass_med": 9.0,
+     "slow_pass": 12.2
+    },
+    "slot": {
+     "life_pm": -46,
+     "life_p10": -105,
+     "life_lose": 82.4,
+     "funded_per_6m": 1.66,
+     "pay_per_6m": 0.32,
+     "f_end": {
+      "max": 0.1,
+      "open": 28.3,
+      "stuck": 71.7
+     }
+    },
+    "fund": {
+     "fund_pm": 52,
+     "fund_pay_pm": 0.1,
+     "fund_lost": 0.0,
+     "fund_stuck": 81.1,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval today + skip first breaks s1-4 | funded C1",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "first_skip_s": 4
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "lb": false,
+   "H1": {
+    "ev": {
+     "p10": 37.0,
+     "f10": 37.0,
+     "p15": 46.5,
+     "f15": 43.0,
+     "p20": 52.3,
+     "f20": 45.9,
+     "dec10": 74.0,
+     "pass_med": 7.0,
+     "slow_pass": 9.8
+    },
+    "slot": {
+     "life_pm": 302,
+     "life_p10": -32,
+     "life_lose": 12.1,
+     "funded_per_6m": 1.71,
+     "pay_per_6m": 2.82,
+     "f_end": {
+      "max": 11.3,
+      "open": 48.1,
+      "stuck": 40.6
+     }
+    },
+    "fund": {
+     "fund_pm": 226,
+     "fund_pay_pm": 0.32,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 33.3,
+     "f10": 30.4,
+     "p15": 29.7,
+     "f15": 60.9,
+     "p20": 23.7,
+     "f20": 76.3,
+     "dec10": 63.7,
+     "pass_med": 6.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 101,
+     "life_p10": -74,
+     "life_lose": 44.1,
+     "funded_per_6m": 1.93,
+     "pay_per_6m": 1.33,
+     "f_end": {
+      "max": 2.1,
+      "open": 39.4,
+      "stuck": 58.5
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 20.5,
+     "f10": 47.0,
+     "p15": 23.9,
+     "f15": 63.4,
+     "p20": 25.4,
+     "f20": 69.8,
+     "dec10": 67.5,
+     "pass_med": 6.0,
+     "slow_pass": 5.6
+    },
+    "slot": {
+     "life_pm": -39,
+     "life_p10": -116,
+     "life_lose": 77.8,
+     "funded_per_6m": 1.96,
+     "pay_per_6m": 0.42,
+     "f_end": {
+      "open": 29.1,
+      "stuck": 70.9
+     }
+    },
+    "fund": {
+     "fund_pm": 52,
+     "fund_pay_pm": 0.1,
+     "fund_lost": 0.0,
+     "fund_stuck": 81.1,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval today + skip first breaks s1-99 | funded C1",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "first_skip_s": 99
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "lb": false,
+   "H1": {
+    "ev": {
+     "p10": 29.4,
+     "f10": 19.3,
+     "p15": 45.6,
+     "f15": 25.4,
+     "p20": 55.0,
+     "f20": 31.2,
+     "dec10": 48.7,
+     "pass_med": 10.0,
+     "slow_pass": 16.1
+    },
+    "slot": {
+     "life_pm": 303,
+     "life_p10": -32,
+     "life_lose": 12.2,
+     "funded_per_6m": 1.69,
+     "pay_per_6m": 2.77,
+     "f_end": {
+      "max": 11.0,
+      "open": 48.6,
+      "stuck": 40.4
+     }
+    },
+    "fund": {
+     "fund_pm": 226,
+     "fund_pay_pm": 0.32,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 27.5,
+     "f10": 15.9,
+     "p15": 34.4,
+     "f15": 34.4,
+     "p20": 39.0,
+     "f20": 50.8,
+     "dec10": 43.4,
+     "pass_med": 7.0,
+     "slow_pass": 11.1
+    },
+    "slot": {
+     "life_pm": 101,
+     "life_p10": -63,
+     "life_lose": 45.4,
+     "funded_per_6m": 1.83,
+     "pay_per_6m": 1.29,
+     "f_end": {
+      "max": 2.1,
+      "open": 40.2,
+      "stuck": 57.7
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 20.2,
+     "f10": 35.7,
+     "p15": 27.7,
+     "f15": 49.9,
+     "p20": 32.2,
+     "f20": 57.6,
+     "dec10": 55.9,
+     "pass_med": 8.0,
+     "slow_pass": 13.8
+    },
+    "slot": {
+     "life_pm": -30,
+     "life_p10": -105,
+     "life_lose": 77.2,
+     "funded_per_6m": 1.9,
+     "pay_per_6m": 0.42,
+     "f_end": {
+      "max": 0.1,
+      "open": 28.2,
+      "stuck": 71.8
+     }
+    },
+    "fund": {
+     "fund_pm": 52,
+     "fund_pay_pm": 0.1,
+     "fund_lost": 0.0,
+     "fund_stuck": 81.1,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval today + 2 losers end the day | funded C1",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "loss2_stop": true
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "lb": false,
+   "H1": {
+    "ev": {
+     "p10": 37.0,
+     "f10": 32.8,
+     "p15": 47.4,
+     "f15": 44.7,
+     "p20": 50.5,
+     "f20": 47.7,
+     "dec10": 69.8,
+     "pass_med": 7.0,
+     "slow_pass": 9.8
+    },
+    "slot": {
+     "life_pm": 313,
+     "life_p10": 0,
+     "life_lose": 10.1,
+     "funded_per_6m": 1.76,
+     "pay_per_6m": 2.87,
+     "f_end": {
+      "max": 11.4,
+      "open": 47.8,
+      "stuck": 40.8
+     }
+    },
+    "fund": {
+     "fund_pm": 226,
+     "fund_pay_pm": 0.32,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 34.8,
+     "f10": 29.0,
+     "p15": 32.8,
+     "f15": 54.7,
+     "p20": 27.1,
+     "f20": 72.9,
+     "dec10": 63.8,
+     "pass_med": 6.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 96,
+     "life_p10": -74,
+     "life_lose": 46.1,
+     "funded_per_6m": 1.88,
+     "pay_per_6m": 1.28,
+     "f_end": {
+      "max": 2.0,
+      "open": 39.9,
+      "stuck": 58.1
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 21.3,
+     "f10": 44.5,
+     "p15": 26.6,
+     "f15": 61.3,
+     "p20": 27.8,
+     "f20": 68.1,
+     "dec10": 65.8,
+     "pass_med": 6.0,
+     "slow_pass": 3.7
+    },
+    "slot": {
+     "life_pm": -37,
+     "life_p10": -116,
+     "life_lose": 77.8,
+     "funded_per_6m": 2.0,
+     "pay_per_6m": 0.43,
+     "f_end": {
+      "open": 28.1,
+      "stuck": 71.9
+     }
+    },
+    "fund": {
+     "fund_pm": 52,
+     "fund_pay_pm": 0.1,
+     "fund_lost": 0.0,
+     "fund_stuck": 81.1,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval later-break | funded C1",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "fmax": 1.0
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "lb": true,
+   "H1": {
+    "ev": {
+     "p10": 47.9,
+     "f10": 23.5,
+     "p15": 63.2,
+     "f15": 24.6,
+     "p20": 70.6,
+     "f20": 25.7,
+     "dec10": 71.4,
+     "pass_med": 7.0,
+     "slow_pass": 12.0
+    },
+    "slot": {
+     "life_pm": 333,
+     "life_p10": 16,
+     "life_lose": 8.2,
+     "funded_per_6m": 1.84,
+     "pay_per_6m": 3.05,
+     "f_end": {
+      "max": 11.6,
+      "open": 47.6,
+      "stuck": 40.8
+     }
+    },
+    "fund": {
+     "fund_pm": 226,
+     "fund_pay_pm": 0.32,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 36.2,
+     "f10": 21.7,
+     "p15": 35.9,
+     "f15": 39.1,
+     "p20": 30.5,
+     "f20": 59.3,
+     "dec10": 57.9,
+     "pass_med": 5.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 122,
+     "life_p10": -63,
+     "life_lose": 38.9,
+     "funded_per_6m": 2.1,
+     "pay_per_6m": 1.49,
+     "f_end": {
+      "max": 2.3,
+      "open": 38.9,
+      "stuck": 58.8
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 24.7,
+     "f10": 48.4,
+     "p15": 29.0,
+     "f15": 60.9,
+     "p20": 30.0,
+     "f20": 65.9,
+     "dec10": 73.1,
+     "pass_med": 5.0,
+     "slow_pass": 2.8
+    },
+    "slot": {
+     "life_pm": -36,
+     "life_p10": -126,
+     "life_lose": 76.1,
+     "funded_per_6m": 2.18,
+     "pay_per_6m": 0.48,
+     "f_end": {
+      "open": 28.0,
+      "stuck": 72.0
+     }
+    },
+    "fund": {
+     "fund_pm": 52,
+     "fund_pay_pm": 0.1,
+     "fund_lost": 0.0,
+     "fund_stuck": 81.1,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval later-break + win stop s1-2 | funded C1",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "fmax": 1.0,
+    "win_stop": 2
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "lb": true,
+   "H1": {
+    "ev": {
+     "p10": 42.9,
+     "f10": 21.8,
+     "p15": 58.8,
+     "f15": 27.2,
+     "p20": 67.9,
+     "f20": 28.4,
+     "dec10": 64.7,
+     "pass_med": 8.0,
+     "slow_pass": 14.1
+    },
+    "slot": {
+     "life_pm": 314,
+     "life_p10": -10,
+     "life_lose": 10.4,
+     "funded_per_6m": 1.77,
+     "pay_per_6m": 2.89,
+     "f_end": {
+      "max": 10.9,
+      "open": 47.7,
+      "stuck": 41.4
+     }
+    },
+    "fund": {
+     "fund_pm": 226,
+     "fund_pay_pm": 0.32,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 30.4,
+     "f10": 23.2,
+     "p15": 34.4,
+     "f15": 37.5,
+     "p20": 28.8,
+     "f20": 57.6,
+     "dec10": 53.6,
+     "pass_med": 6.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 115,
+     "life_p10": -63,
+     "life_lose": 41.4,
+     "funded_per_6m": 1.97,
+     "pay_per_6m": 1.41,
+     "f_end": {
+      "max": 2.3,
+      "open": 39.5,
+      "stuck": 58.2
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 21.4,
+     "f10": 43.9,
+     "p15": 26.6,
+     "f15": 60.4,
+     "p20": 28.2,
+     "f20": 67.3,
+     "dec10": 65.3,
+     "pass_med": 6.0,
+     "slow_pass": 5.0
+    },
+    "slot": {
+     "life_pm": -35,
+     "life_p10": -116,
+     "life_lose": 76.5,
+     "funded_per_6m": 2.01,
+     "pay_per_6m": 0.45,
+     "f_end": {
+      "open": 27.5,
+      "stuck": 72.5
+     }
+    },
+    "fund": {
+     "fund_pm": 52,
+     "fund_pay_pm": 0.1,
+     "fund_lost": 0.0,
+     "fund_stuck": 81.1,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval later-break + win stop s1-3 | funded C1",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "fmax": 1.0,
+    "win_stop": 3
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "lb": true,
+   "H1": {
+    "ev": {
+     "p10": 40.3,
+     "f10": 22.7,
+     "p15": 56.1,
+     "f15": 28.9,
+     "p20": 66.1,
+     "f20": 30.3,
+     "dec10": 63.0,
+     "pass_med": 8.0,
+     "slow_pass": 15.6
+    },
+    "slot": {
+     "life_pm": 301,
+     "life_p10": -32,
+     "life_lose": 12.0,
+     "funded_per_6m": 1.72,
+     "pay_per_6m": 2.77,
+     "f_end": {
+      "max": 10.9,
+      "open": 48.3,
+      "stuck": 40.8
+     }
+    },
+    "fund": {
+     "fund_pm": 226,
+     "fund_pay_pm": 0.32,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 27.5,
+     "f10": 20.3,
+     "p15": 34.4,
+     "f15": 35.9,
+     "p20": 28.8,
+     "f20": 55.9,
+     "dec10": 47.8,
+     "pass_med": 7.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 98,
+     "life_p10": -63,
+     "life_lose": 46.5,
+     "funded_per_6m": 1.82,
+     "pay_per_6m": 1.27,
+     "f_end": {
+      "max": 2.3,
+      "open": 40.0,
+      "stuck": 57.7
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 20.2,
+     "f10": 41.5,
+     "p15": 25.9,
+     "f15": 59.8,
+     "p20": 27.7,
+     "f20": 67.4,
+     "dec10": 61.7,
+     "pass_med": 7.0,
+     "slow_pass": 6.1
+    },
+    "slot": {
+     "life_pm": -36,
+     "life_p10": -116,
+     "life_lose": 76.9,
+     "funded_per_6m": 1.94,
+     "pay_per_6m": 0.42,
+     "f_end": {
+      "open": 28.3,
+      "stuck": 71.7
+     }
+    },
+    "fund": {
+     "fund_pm": 52,
+     "fund_pay_pm": 0.1,
+     "fund_lost": 0.0,
+     "fund_stuck": 81.1,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval later-break + win stop s1-4 | funded C1",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "fmax": 1.0,
+    "win_stop": 4
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "lb": true,
+   "H1": {
+    "ev": {
+     "p10": 37.8,
+     "f10": 23.5,
+     "p15": 54.4,
+     "f15": 31.6,
+     "p20": 63.3,
+     "f20": 33.0,
+     "dec10": 61.3,
+     "pass_med": 9.0,
+     "slow_pass": 16.0
+    },
+    "slot": {
+     "life_pm": 298,
+     "life_p10": -36,
+     "life_lose": 12.2,
+     "funded_per_6m": 1.69,
+     "pay_per_6m": 2.75,
+     "f_end": {
+      "max": 10.9,
+      "open": 48.6,
+      "stuck": 40.5
+     }
+    },
+    "fund": {
+     "fund_pm": 226,
+     "fund_pay_pm": 0.32,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 24.6,
+     "f10": 17.4,
+     "p15": 32.8,
+     "f15": 35.9,
+     "p20": 27.1,
+     "f20": 55.9,
+     "dec10": 42.0,
+     "pass_med": 7.5,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 93,
+     "life_p10": -63,
+     "life_lose": 47.1,
+     "funded_per_6m": 1.75,
+     "pay_per_6m": 1.23,
+     "f_end": {
+      "max": 2.3,
+      "open": 40.5,
+      "stuck": 57.2
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 19.0,
+     "f10": 38.2,
+     "p15": 24.8,
+     "f15": 59.4,
+     "p20": 26.7,
+     "f20": 67.2,
+     "dec10": 57.2,
+     "pass_med": 8.0,
+     "slow_pass": 6.7
+    },
+    "slot": {
+     "life_pm": -38,
+     "life_p10": -116,
+     "life_lose": 78.6,
+     "funded_per_6m": 1.8,
+     "pay_per_6m": 0.4,
+     "f_end": {
+      "open": 28.8,
+      "stuck": 71.2
+     }
+    },
+    "fund": {
+     "fund_pm": 52,
+     "fund_pay_pm": 0.1,
+     "fund_lost": 0.0,
+     "fund_stuck": 81.1,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval later-break + win stop s1-5 | funded C1",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "fmax": 1.0,
+    "win_stop": 5
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "lb": true,
+   "H1": {
+    "ev": {
+     "p10": 35.3,
+     "f10": 23.5,
+     "p15": 50.9,
+     "f15": 33.3,
+     "p20": 60.6,
+     "f20": 35.8,
+     "dec10": 58.8,
+     "pass_med": 9.0,
+     "slow_pass": 18.1
+    },
+    "slot": {
+     "life_pm": 291,
+     "life_p10": -32,
+     "life_lose": 12.1,
+     "funded_per_6m": 1.64,
+     "pay_per_6m": 2.69,
+     "f_end": {
+      "max": 10.1,
+      "open": 49.6,
+      "stuck": 40.2
+     }
+    },
+    "fund": {
+     "fund_pm": 226,
+     "fund_pay_pm": 0.32,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 20.3,
+     "f10": 15.9,
+     "p15": 31.2,
+     "f15": 35.9,
+     "p20": 25.4,
+     "f20": 55.9,
+     "dec10": 36.2,
+     "pass_med": 8.5,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 89,
+     "life_p10": -63,
+     "life_lose": 48.8,
+     "funded_per_6m": 1.69,
+     "pay_per_6m": 1.2,
+     "f_end": {
+      "max": 2.1,
+      "open": 41.6,
+      "stuck": 56.2
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 17.6,
+     "f10": 34.1,
+     "p15": 24.2,
+     "f15": 57.9,
+     "p20": 26.4,
+     "f20": 66.7,
+     "dec10": 51.7,
+     "pass_med": 8.0,
+     "slow_pass": 7.9
+    },
+    "slot": {
+     "life_pm": -37,
+     "life_p10": -105,
+     "life_lose": 79.6,
+     "funded_per_6m": 1.74,
+     "pay_per_6m": 0.39,
+     "f_end": {
+      "max": 0.1,
+      "open": 29.2,
+      "stuck": 70.8
+     }
+    },
+    "fund": {
+     "fund_pm": 52,
+     "fund_pay_pm": 0.1,
+     "fund_lost": 0.0,
+     "fund_stuck": 81.1,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval later-break + win stop s1-6 | funded C1",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "fmax": 1.0,
+    "win_stop": 6
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "lb": true,
+   "H1": {
+    "ev": {
+     "p10": 33.6,
+     "f10": 18.5,
+     "p15": 50.9,
+     "f15": 31.6,
+     "p20": 60.6,
+     "f20": 34.9,
+     "dec10": 52.1,
+     "pass_med": 10.0,
+     "slow_pass": 18.1
+    },
+    "slot": {
+     "life_pm": 284,
+     "life_p10": -42,
+     "life_lose": 12.8,
+     "funded_per_6m": 1.6,
+     "pay_per_6m": 2.63,
+     "f_end": {
+      "max": 9.9,
+      "open": 49.8,
+      "stuck": 40.3
+     }
+    },
+    "fund": {
+     "fund_pm": 226,
+     "fund_pay_pm": 0.32,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 15.9,
+     "f10": 15.9,
+     "p15": 28.1,
+     "f15": 37.5,
+     "p20": 23.7,
+     "f20": 55.9,
+     "dec10": 31.8,
+     "pass_med": 9.5,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 83,
+     "life_p10": -63,
+     "life_lose": 50.3,
+     "funded_per_6m": 1.65,
+     "pay_per_6m": 1.14,
+     "f_end": {
+      "max": 2.1,
+      "open": 41.6,
+      "stuck": 56.3
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 15.5,
+     "f10": 30.0,
+     "p15": 23.0,
+     "f15": 55.5,
+     "p20": 25.8,
+     "f20": 66.4,
+     "dec10": 45.5,
+     "pass_med": 9.0,
+     "slow_pass": 10.3
+    },
+    "slot": {
+     "life_pm": -36,
+     "life_p10": -105,
+     "life_lose": 80.3,
+     "funded_per_6m": 1.66,
+     "pay_per_6m": 0.36,
+     "f_end": {
+      "max": 0.1,
+      "open": 29.6,
+      "stuck": 70.4
+     }
+    },
+    "fund": {
+     "fund_pm": 52,
+     "fund_pay_pm": 0.1,
+     "fund_lost": 0.0,
+     "fund_stuck": 81.1,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval later-break + skip first breaks s1-4 | funded C1",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "fmax": 1.0,
+    "first_skip_s": 4
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "lb": true,
+   "H1": {
+    "ev": {
+     "p10": 42.0,
+     "f10": 30.3,
+     "p15": 55.3,
+     "f15": 33.3,
+     "p20": 64.2,
+     "f20": 34.9,
+     "dec10": 72.3,
+     "pass_med": 6.0,
+     "slow_pass": 12.5
+    },
+    "slot": {
+     "life_pm": 328,
+     "life_p10": 7,
+     "life_lose": 9.3,
+     "funded_per_6m": 1.81,
+     "pay_per_6m": 3.0,
+     "f_end": {
+      "max": 11.8,
+      "open": 47.2,
+      "stuck": 41.0
+     }
+    },
+    "fund": {
+     "fund_pm": 226,
+     "fund_pay_pm": 0.32,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 37.7,
+     "f10": 20.3,
+     "p15": 37.5,
+     "f15": 37.5,
+     "p20": 32.2,
+     "f20": 57.6,
+     "dec10": 58.0,
+     "pass_med": 5.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 121,
+     "life_p10": -63,
+     "life_lose": 39.3,
+     "funded_per_6m": 2.06,
+     "pay_per_6m": 1.46,
+     "f_end": {
+      "max": 2.4,
+      "open": 39.1,
+      "stuck": 58.5
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 25.7,
+     "f10": 45.7,
+     "p15": 30.5,
+     "f15": 59.6,
+     "p20": 31.1,
+     "f20": 64.7,
+     "dec10": 71.4,
+     "pass_med": 5.0,
+     "slow_pass": 1.5
+    },
+    "slot": {
+     "life_pm": -33,
+     "life_p10": -116,
+     "life_lose": 76.5,
+     "funded_per_6m": 2.21,
+     "pay_per_6m": 0.5,
+     "f_end": {
+      "max": 0.0,
+      "open": 27.6,
+      "stuck": 72.3
+     }
+    },
+    "fund": {
+     "fund_pm": 52,
+     "fund_pay_pm": 0.1,
+     "fund_lost": 0.0,
+     "fund_stuck": 81.1,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval later-break + skip first breaks s1-99 | funded C1",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "fmax": 1.0,
+    "first_skip_s": 99
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "lb": true,
+   "H1": {
+    "ev": {
+     "p10": 45.4,
+     "f10": 26.1,
+     "p15": 57.0,
+     "f15": 28.9,
+     "p20": 64.2,
+     "f20": 30.3,
+     "dec10": 71.5,
+     "pass_med": 6.5,
+     "slow_pass": 9.7
+    },
+    "slot": {
+     "life_pm": 325,
+     "life_p10": 11,
+     "life_lose": 8.7,
+     "funded_per_6m": 1.81,
+     "pay_per_6m": 2.97,
+     "f_end": {
+      "max": 11.3,
+      "open": 47.2,
+      "stuck": 41.5
+     }
+    },
+    "fund": {
+     "fund_pm": 226,
+     "fund_pay_pm": 0.32,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 37.7,
+     "f10": 20.3,
+     "p15": 37.5,
+     "f15": 37.5,
+     "p20": 32.2,
+     "f20": 57.6,
+     "dec10": 58.0,
+     "pass_med": 4.5,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 123,
+     "life_p10": -63,
+     "life_lose": 39.3,
+     "funded_per_6m": 2.07,
+     "pay_per_6m": 1.48,
+     "f_end": {
+      "max": 2.4,
+      "open": 38.6,
+      "stuck": 59.0
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 27.2,
+     "f10": 43.4,
+     "p15": 31.8,
+     "f15": 56.1,
+     "p20": 33.6,
+     "f20": 61.2,
+     "dec10": 70.6,
+     "pass_med": 5.0,
+     "slow_pass": 5.1
+    },
+    "slot": {
+     "life_pm": -27,
+     "life_p10": -116,
+     "life_lose": 74.4,
+     "funded_per_6m": 2.24,
+     "pay_per_6m": 0.52,
+     "f_end": {
+      "max": 0.0,
+      "open": 27.2,
+      "stuck": 72.8
+     }
+    },
+    "fund": {
+     "fund_pm": 52,
+     "fund_pay_pm": 0.1,
+     "fund_lost": 0.0,
+     "fund_stuck": 81.1,
+     "fund_starts": 339
+    }
+   }
+  },
+  {
+   "name": "eval later-break + 2 losers end the day | funded C1",
+   "ez": {
+    "mode": "frac",
+    "f": 0.4,
+    "cap": 600.0,
+    "push": [
+     5,
+     1.0
+    ],
+    "fmax": 1.0,
+    "loss2_stop": true
+   },
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "lb": true,
+   "H1": {
+    "ev": {
+     "p10": 47.1,
+     "f10": 18.5,
+     "p15": 58.8,
+     "f15": 24.6,
+     "p20": 62.4,
+     "f20": 30.3,
+     "dec10": 65.6,
+     "pass_med": 6.0,
+     "slow_pass": 8.1
+    },
+    "slot": {
+     "life_pm": 338,
+     "life_p10": 31,
+     "life_lose": 6.9,
+     "funded_per_6m": 1.83,
+     "pay_per_6m": 3.05,
+     "f_end": {
+      "max": 11.8,
+      "open": 47.5,
+      "stuck": 40.7
+     }
+    },
+    "fund": {
+     "fund_pm": 226,
+     "fund_pay_pm": 0.32,
+     "fund_lost": 0.0,
+     "fund_stuck": 45.5,
+     "fund_starts": 22
+    }
+   },
+   "H2": {
+    "ev": {
+     "p10": 37.7,
+     "f10": 14.5,
+     "p15": 37.5,
+     "f15": 40.6,
+     "p20": 32.2,
+     "f20": 64.4,
+     "dec10": 52.2,
+     "pass_med": 5.0,
+     "slow_pass": 0.0
+    },
+    "slot": {
+     "life_pm": 125,
+     "life_p10": -63,
+     "life_lose": 39.0,
+     "funded_per_6m": 2.01,
+     "pay_per_6m": 1.49,
+     "f_end": {
+      "max": 2.4,
+      "open": 39.5,
+      "stuck": 58.1
+     }
+    },
+    "fund": {
+     "fund_pm": 0,
+     "fund_pay_pm": 0.0,
+     "fund_lost": 0.0,
+     "fund_stuck": 100.0,
+     "fund_starts": 6
+    }
+   },
+   "R": {
+    "ev": {
+     "p10": 25.5,
+     "f10": 44.1,
+     "p15": 30.3,
+     "f15": 57.5,
+     "p20": 31.8,
+     "f20": 62.9,
+     "dec10": 69.6,
+     "pass_med": 5.0,
+     "slow_pass": 4.2
+    },
+    "slot": {
+     "life_pm": -36,
+     "life_p10": -116,
+     "life_lose": 77.7,
+     "funded_per_6m": 2.14,
+     "pay_per_6m": 0.47,
+     "f_end": {
+      "open": 27.7,
+      "stuck": 72.3
+     }
+    },
+    "fund": {
+     "fund_pm": 52,
+     "fund_pay_pm": 0.1,
+     "fund_lost": 0.0,
+     "fund_stuck": 81.1,
+     "fund_starts": 339
+    }
+   }
+  }
+ ]
+}

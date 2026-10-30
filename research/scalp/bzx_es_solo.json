@@ -1,0 +1,195 @@
+{
+ "built": "2026-10-30 17:14",
+ "data": {
+  "es": "2025-04-13..2026-10-16 5m"
+ },
+ "spans": {
+  "2025": {
+   "sessions": 174,
+   "es": {
+    "n": 313,
+    "tpw": 8.99,
+    "wk2": 80.6,
+    "win": 47.0,
+    "pf": 0.94,
+    "net": -795,
+    "per_month": -96,
+    "dd": -1881,
+    "avg_r": -0.035,
+    "med_stop": 9.1
+   },
+   "nq5_account_c": {
+    "n": 296,
+    "tpw": 8.51,
+    "wk2": 83.3,
+    "win": 51.4,
+    "pf": 1.13,
+    "net": 1458,
+    "per_month": 176,
+    "dd": -1647,
+    "avg_r": 0.026,
+    "med_stop": 41.4
+   },
+   "nq5_alone": {
+    "n": 299,
+    "tpw": 8.59,
+    "wk2": 83.3,
+    "win": 52.2,
+    "pf": 1.14,
+    "net": 1542,
+    "per_month": 186,
+    "dd": -1739,
+    "avg_r": 0.029,
+    "med_stop": 41.3
+   },
+   "corr_daily_nq5": 0.66,
+   "corr_daily_nq5_both_traded": 0.71,
+   "days_both_traded": 69,
+   "same_dir_share": 0.88,
+   "es_gross": {
+    "pf": 1.21,
+    "avg_r": 0.059,
+    "cost_share_of_1R": 0.09
+   },
+   "nq5_account_c_gross": {
+    "pf": 1.22,
+    "avg_r": 0.062,
+    "cost_share_of_1R": 0.034
+   }
+  },
+  "H1": {
+   "sessions": 128,
+   "es": {
+    "n": 235,
+    "tpw": 9.18,
+    "wk2": 85.2,
+    "win": 44.3,
+    "pf": 1.03,
+    "net": 255,
+    "per_month": 42,
+    "dd": -1318,
+    "avg_r": 0.005,
+    "med_stop": 12.0
+   },
+   "nq5_account_c": {
+    "n": 255,
+    "tpw": 9.96,
+    "wk2": 100.0,
+    "win": 55.7,
+    "pf": 1.48,
+    "net": 5058,
+    "per_month": 830,
+    "dd": -1020,
+    "avg_r": 0.12,
+    "med_stop": 55.7
+   },
+   "nq5_alone": {
+    "n": 259,
+    "tpw": 10.12,
+    "wk2": 100.0,
+    "win": 54.8,
+    "pf": 1.4,
+    "net": 4457,
+    "per_month": 731,
+    "dd": -1228,
+    "avg_r": 0.099,
+    "med_stop": 55.5
+   },
+   "nq1_account_c": {
+    "n": 217,
+    "tpw": 8.48,
+    "wk2": 88.9,
+    "win": 56.7,
+    "pf": 1.7,
+    "net": 5873,
+    "per_month": 963,
+    "dd": -1152,
+    "avg_r": 0.165,
+    "med_stop": 59.6
+   },
+   "corr_daily_nq5": 0.64,
+   "corr_daily_nq5_both_traded": 0.67,
+   "days_both_traded": 52,
+   "same_dir_share": 0.94,
+   "corr_daily_nq1": 0.6,
+   "es_gross": {
+    "pf": 1.28,
+    "avg_r": 0.083,
+    "cost_share_of_1R": 0.07
+   },
+   "nq5_account_c_gross": {
+    "pf": 1.52,
+    "avg_r": 0.148,
+    "cost_share_of_1R": 0.025
+   }
+  },
+  "H2": {
+   "sessions": 78,
+   "es": {
+    "n": 148,
+    "tpw": 9.49,
+    "wk2": 87.5,
+    "win": 46.6,
+    "pf": 0.82,
+    "net": -1155,
+    "per_month": -311,
+    "dd": -1740,
+    "avg_r": -0.054,
+    "med_stop": 9.6
+   },
+   "nq5_account_c": {
+    "n": 106,
+    "tpw": 6.79,
+    "wk2": 75.0,
+    "win": 51.9,
+    "pf": 1.5,
+    "net": 2120,
+    "per_month": 571,
+    "dd": -799,
+    "avg_r": 0.175,
+    "med_stop": 63.7
+   },
+   "nq5_alone": {
+    "n": 109,
+    "tpw": 6.99,
+    "wk2": 75.0,
+    "win": 50.5,
+    "pf": 1.39,
+    "net": 1789,
+    "per_month": 482,
+    "dd": -957,
+    "avg_r": 0.147,
+    "med_stop": 63.2
+   },
+   "nq1_account_c": {
+    "n": 106,
+    "tpw": 6.79,
+    "wk2": 75.0,
+    "win": 56.6,
+    "pf": 1.62,
+    "net": 2478,
+    "per_month": 667,
+    "dd": -815,
+    "avg_r": 0.2,
+    "med_stop": 63.7
+   },
+   "corr_daily_nq5": 0.58,
+   "corr_daily_nq5_both_traded": 0.69,
+   "days_both_traded": 22,
+   "same_dir_share": 0.86,
+   "corr_daily_nq1": 0.56,
+   "es_gross": {
+    "pf": 1.11,
+    "avg_r": 0.034,
+    "cost_share_of_1R": 0.086
+   },
+   "nq5_account_c_gross": {
+    "pf": 1.79,
+    "avg_r": 0.201,
+    "cost_share_of_1R": 0.022
+   }
+  }
+ },
+ "es_stop_pts_median": 10.285,
+ "es_risk_pm_median": 54.57876646701097
+}

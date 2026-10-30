@@ -1,0 +1,8 @@
+[
+ {"name": "C1 funded first 1->2 later 3->3 micros <=50% room", "lb": true, "fz": {"mode": "frac", "f": 0.1, "cap": 150.0, "day_tp": 400.0, "q1": 1, "q2": 3, "q1b": 2, "q2b": 3, "rq": 0.5}},
+ {"name": "C2 funded first 1->2 later 2->3 micros <=50% room", "lb": true, "fz": {"mode": "frac", "f": 0.1, "cap": 150.0, "day_tp": 400.0, "q1": 1, "q2": 2, "q1b": 2, "q2b": 3, "rq": 0.5}},
+ {"name": "C3 funded first 1 later 2 micros <=25% room, abandon at 1x stop", "lb": true, "fz": {"mode": "frac", "f": 0.1, "cap": 150.0, "day_tp": 400.0, "q1": 1, "q2": 2, "q1b": 1, "q2b": 2, "rq": 0.25, "stuck_k": 1.0}},
+ {"name": "C4 funded first 1->2 later 2->2 micros <=35% room", "lb": true, "fz": {"mode": "frac", "f": 0.1, "cap": 150.0, "day_tp": 400.0, "q1": 1, "q2": 2, "q1b": 2, "q2b": 2, "rq": 0.35}},
+ {"name": "H1-top funded first 1 later 2 micros <=50% room", "lb": true, "fz": {"mode": "frac", "f": 0.1, "cap": 150.0, "day_tp": 400.0, "q1": 1, "q2": 2, "q1b": 1, "q2b": 2, "rq": 0.5}},
+ {"name": "C1 funded on today's eval", "lb": false, "fz": {"mode": "frac", "f": 0.1, "cap": 150.0, "day_tp": 400.0, "q1": 1, "q2": 3, "q1b": 2, "q2b": 3, "rq": 0.5}}
+]

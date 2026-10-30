@@ -1,0 +1,1507 @@
+{
+ "built": "2026-10-30 16:52",
+ "rows": [
+  {
+   "label": "C1",
+   "kind": "placebo",
+   "arg": 0,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "H1": {
+    "base": 134,
+    "cand": 164,
+    "later_share": 0.733
+   },
+   "H2": {
+    "base": 286,
+    "cand": 370,
+    "later_share": 0.725
+   },
+   "R": {
+    "base": -80,
+    "cand": -88,
+    "later_share": 0.734
+   }
+  },
+  {
+   "label": "C1",
+   "kind": "placebo",
+   "arg": 1,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "H1": {
+    "base": -99,
+    "cand": -117,
+    "later_share": 0.727
+   },
+   "H2": {
+    "base": -120,
+    "cand": -121,
+    "later_share": 0.739
+   },
+   "R": {
+    "base": -63,
+    "cand": -57,
+    "later_share": 0.731
+   }
+  },
+  {
+   "label": "C1",
+   "kind": "placebo",
+   "arg": 2,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "H1": {
+    "base": -58,
+    "cand": -49,
+    "later_share": 0.735
+   },
+   "H2": {
+    "base": 113,
+    "cand": 157,
+    "later_share": 0.734
+   },
+   "R": {
+    "base": -80,
+    "cand": -91,
+    "later_share": 0.738
+   }
+  },
+  {
+   "label": "C1",
+   "kind": "placebo",
+   "arg": 3,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "H1": {
+    "base": -123,
+    "cand": -129,
+    "later_share": 0.723
+   },
+   "H2": {
+    "base": -133,
+    "cand": -135,
+    "later_share": 0.739
+   },
+   "R": {
+    "base": -68,
+    "cand": -71,
+    "later_share": 0.731
+   }
+  },
+  {
+   "label": "C1",
+   "kind": "placebo",
+   "arg": 4,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "H1": {
+    "base": -84,
+    "cand": -88,
+    "later_share": 0.73
+   },
+   "H2": {
+    "base": -95,
+    "cand": -98,
+    "later_share": 0.718
+   },
+   "R": {
+    "base": -57,
+    "cand": -54,
+    "later_share": 0.739
+   }
+  },
+  {
+   "label": "C1",
+   "kind": "placebo",
+   "arg": 5,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "H1": {
+    "base": -104,
+    "cand": -101,
+    "later_share": 0.729
+   },
+   "H2": {
+    "base": -67,
+    "cand": -61,
+    "later_share": 0.722
+   },
+   "R": {
+    "base": -69,
+    "cand": -83,
+    "later_share": 0.73
+   }
+  },
+  {
+   "label": "C1",
+   "kind": "placebo",
+   "arg": 6,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "H1": {
+    "base": -89,
+    "cand": -82,
+    "later_share": 0.731
+   },
+   "H2": {
+    "base": 276,
+    "cand": 329,
+    "later_share": 0.721
+   },
+   "R": {
+    "base": -53,
+    "cand": -61,
+    "later_share": 0.733
+   }
+  },
+  {
+   "label": "C1",
+   "kind": "placebo",
+   "arg": 7,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "H1": {
+    "base": -50,
+    "cand": -35,
+    "later_share": 0.725
+   },
+   "H2": {
+    "base": -44,
+    "cand": -54,
+    "later_share": 0.725
+   },
+   "R": {
+    "base": -61,
+    "cand": -72,
+    "later_share": 0.734
+   }
+  },
+  {
+   "label": "C1",
+   "kind": "slip",
+   "arg": 1,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "H1": {
+    "base": 272,
+    "cand": 318,
+    "later_share": 0.719
+   },
+   "H2": {
+    "base": 42,
+    "cand": 106,
+    "later_share": 0.717
+   },
+   "R": {
+    "base": -48,
+    "cand": -50,
+    "later_share": 0.724
+   }
+  },
+  {
+   "label": "C1",
+   "kind": "slip",
+   "arg": 2,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "H1": {
+    "base": 251,
+    "cand": 290,
+    "later_share": 0.719
+   },
+   "H2": {
+    "base": 33,
+    "cand": 101,
+    "later_share": 0.717
+   },
+   "R": {
+    "base": -54,
+    "cand": -65,
+    "later_share": 0.724
+   }
+  },
+  {
+   "label": "C1",
+   "kind": "late",
+   "arg": 1,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "H1": {
+    "base": 192,
+    "cand": 192,
+    "later_share": 0.0
+   },
+   "H2": {
+    "base": -36,
+    "cand": -44,
+    "later_share": 0.0
+   },
+   "R": {
+    "base": -67,
+    "cand": -65,
+    "later_share": 0.0
+   }
+  },
+  {
+   "label": "C1",
+   "kind": "year",
+   "arg": "2022",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "Y": {
+    "base": 13,
+    "cand": 50
+   }
+  },
+  {
+   "label": "C1",
+   "kind": "year",
+   "arg": "2023",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "Y": {
+    "base": -29,
+    "cand": -13
+   }
+  },
+  {
+   "label": "C1",
+   "kind": "year",
+   "arg": "2024",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "Y": {
+    "base": -65,
+    "cand": -87
+   }
+  },
+  {
+   "label": "C1",
+   "kind": "year",
+   "arg": "2025",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 3,
+    "q1b": 2,
+    "q2b": 3,
+    "rq": 0.5
+   },
+   "Y": {
+    "base": -45,
+    "cand": -48
+   }
+  },
+  {
+   "label": "C3",
+   "kind": "placebo",
+   "arg": 0,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.25,
+    "stuck_k": 1.0
+   },
+   "H1": {
+    "base": 134,
+    "cand": 154,
+    "later_share": 0.733
+   },
+   "H2": {
+    "base": 286,
+    "cand": 334,
+    "later_share": 0.725
+   },
+   "R": {
+    "base": -80,
+    "cand": -69,
+    "later_share": 0.734
+   }
+  },
+  {
+   "label": "C3",
+   "kind": "placebo",
+   "arg": 1,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.25,
+    "stuck_k": 1.0
+   },
+   "H1": {
+    "base": -99,
+    "cand": -89,
+    "later_share": 0.727
+   },
+   "H2": {
+    "base": -120,
+    "cand": -119,
+    "later_share": 0.739
+   },
+   "R": {
+    "base": -63,
+    "cand": -49,
+    "later_share": 0.731
+   }
+  },
+  {
+   "label": "C3",
+   "kind": "placebo",
+   "arg": 2,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.25,
+    "stuck_k": 1.0
+   },
+   "H1": {
+    "base": -58,
+    "cand": -46,
+    "later_share": 0.735
+   },
+   "H2": {
+    "base": 113,
+    "cand": 98,
+    "later_share": 0.734
+   },
+   "R": {
+    "base": -80,
+    "cand": -68,
+    "later_share": 0.738
+   }
+  },
+  {
+   "label": "C3",
+   "kind": "placebo",
+   "arg": 3,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.25,
+    "stuck_k": 1.0
+   },
+   "H1": {
+    "base": -123,
+    "cand": -100,
+    "later_share": 0.723
+   },
+   "H2": {
+    "base": -133,
+    "cand": -130,
+    "later_share": 0.739
+   },
+   "R": {
+    "base": -68,
+    "cand": -57,
+    "later_share": 0.731
+   }
+  },
+  {
+   "label": "C3",
+   "kind": "placebo",
+   "arg": 4,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.25,
+    "stuck_k": 1.0
+   },
+   "H1": {
+    "base": -84,
+    "cand": -75,
+    "later_share": 0.73
+   },
+   "H2": {
+    "base": -95,
+    "cand": -85,
+    "later_share": 0.718
+   },
+   "R": {
+    "base": -57,
+    "cand": -43,
+    "later_share": 0.739
+   }
+  },
+  {
+   "label": "C3",
+   "kind": "placebo",
+   "arg": 5,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.25,
+    "stuck_k": 1.0
+   },
+   "H1": {
+    "base": -104,
+    "cand": -96,
+    "later_share": 0.729
+   },
+   "H2": {
+    "base": -67,
+    "cand": -61,
+    "later_share": 0.722
+   },
+   "R": {
+    "base": -69,
+    "cand": -65,
+    "later_share": 0.73
+   }
+  },
+  {
+   "label": "C3",
+   "kind": "placebo",
+   "arg": 6,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.25,
+    "stuck_k": 1.0
+   },
+   "H1": {
+    "base": -89,
+    "cand": -71,
+    "later_share": 0.731
+   },
+   "H2": {
+    "base": 276,
+    "cand": 298,
+    "later_share": 0.721
+   },
+   "R": {
+    "base": -53,
+    "cand": -42,
+    "later_share": 0.733
+   }
+  },
+  {
+   "label": "C3",
+   "kind": "placebo",
+   "arg": 7,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.25,
+    "stuck_k": 1.0
+   },
+   "H1": {
+    "base": -50,
+    "cand": -22,
+    "later_share": 0.725
+   },
+   "H2": {
+    "base": -44,
+    "cand": -28,
+    "later_share": 0.725
+   },
+   "R": {
+    "base": -61,
+    "cand": -53,
+    "later_share": 0.734
+   }
+  },
+  {
+   "label": "C3",
+   "kind": "slip",
+   "arg": 1,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.25,
+    "stuck_k": 1.0
+   },
+   "H1": {
+    "base": 272,
+    "cand": 285,
+    "later_share": 0.719
+   },
+   "H2": {
+    "base": 42,
+    "cand": 83,
+    "later_share": 0.717
+   },
+   "R": {
+    "base": -48,
+    "cand": -39,
+    "later_share": 0.724
+   }
+  },
+  {
+   "label": "C3",
+   "kind": "slip",
+   "arg": 2,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.25,
+    "stuck_k": 1.0
+   },
+   "H1": {
+    "base": 251,
+    "cand": 260,
+    "later_share": 0.719
+   },
+   "H2": {
+    "base": 33,
+    "cand": 71,
+    "later_share": 0.717
+   },
+   "R": {
+    "base": -54,
+    "cand": -48,
+    "later_share": 0.724
+   }
+  },
+  {
+   "label": "C3",
+   "kind": "late",
+   "arg": 1,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.25,
+    "stuck_k": 1.0
+   },
+   "H1": {
+    "base": 192,
+    "cand": 212,
+    "later_share": 0.0
+   },
+   "H2": {
+    "base": -36,
+    "cand": -31,
+    "later_share": 0.0
+   },
+   "R": {
+    "base": -67,
+    "cand": -60,
+    "later_share": 0.0
+   }
+  },
+  {
+   "label": "C3",
+   "kind": "year",
+   "arg": "2022",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.25,
+    "stuck_k": 1.0
+   },
+   "Y": {
+    "base": 13,
+    "cand": 35
+   }
+  },
+  {
+   "label": "C3",
+   "kind": "year",
+   "arg": "2023",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.25,
+    "stuck_k": 1.0
+   },
+   "Y": {
+    "base": -29,
+    "cand": -17
+   }
+  },
+  {
+   "label": "C3",
+   "kind": "year",
+   "arg": "2024",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.25,
+    "stuck_k": 1.0
+   },
+   "Y": {
+    "base": -65,
+    "cand": -58
+   }
+  },
+  {
+   "label": "C3",
+   "kind": "year",
+   "arg": "2025",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.25,
+    "stuck_k": 1.0
+   },
+   "Y": {
+    "base": -45,
+    "cand": -31
+   }
+  },
+  {
+   "label": "H1-top",
+   "kind": "placebo",
+   "arg": 0,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.5
+   },
+   "H1": {
+    "base": 134,
+    "cand": 155,
+    "later_share": 0.733
+   },
+   "H2": {
+    "base": 286,
+    "cand": 303,
+    "later_share": 0.725
+   },
+   "R": {
+    "base": -80,
+    "cand": -86,
+    "later_share": 0.734
+   }
+  },
+  {
+   "label": "H1-top",
+   "kind": "placebo",
+   "arg": 1,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.5
+   },
+   "H1": {
+    "base": -99,
+    "cand": -103,
+    "later_share": 0.727
+   },
+   "H2": {
+    "base": -120,
+    "cand": -121,
+    "later_share": 0.739
+   },
+   "R": {
+    "base": -63,
+    "cand": -61,
+    "later_share": 0.731
+   }
+  },
+  {
+   "label": "H1-top",
+   "kind": "placebo",
+   "arg": 2,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.5
+   },
+   "H1": {
+    "base": -58,
+    "cand": -58,
+    "later_share": 0.735
+   },
+   "H2": {
+    "base": 113,
+    "cand": 128,
+    "later_share": 0.734
+   },
+   "R": {
+    "base": -80,
+    "cand": -85,
+    "later_share": 0.738
+   }
+  },
+  {
+   "label": "H1-top",
+   "kind": "placebo",
+   "arg": 3,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.5
+   },
+   "H1": {
+    "base": -123,
+    "cand": -131,
+    "later_share": 0.723
+   },
+   "H2": {
+    "base": -133,
+    "cand": -135,
+    "later_share": 0.739
+   },
+   "R": {
+    "base": -68,
+    "cand": -71,
+    "later_share": 0.731
+   }
+  },
+  {
+   "label": "H1-top",
+   "kind": "placebo",
+   "arg": 4,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.5
+   },
+   "H1": {
+    "base": -84,
+    "cand": -80,
+    "later_share": 0.73
+   },
+   "H2": {
+    "base": -95,
+    "cand": -98,
+    "later_share": 0.718
+   },
+   "R": {
+    "base": -57,
+    "cand": -58,
+    "later_share": 0.739
+   }
+  },
+  {
+   "label": "H1-top",
+   "kind": "placebo",
+   "arg": 5,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.5
+   },
+   "H1": {
+    "base": -104,
+    "cand": -107,
+    "later_share": 0.729
+   },
+   "H2": {
+    "base": -67,
+    "cand": -62,
+    "later_share": 0.722
+   },
+   "R": {
+    "base": -69,
+    "cand": -79,
+    "later_share": 0.73
+   }
+  },
+  {
+   "label": "H1-top",
+   "kind": "placebo",
+   "arg": 6,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.5
+   },
+   "H1": {
+    "base": -89,
+    "cand": -91,
+    "later_share": 0.731
+   },
+   "H2": {
+    "base": 276,
+    "cand": 225,
+    "later_share": 0.721
+   },
+   "R": {
+    "base": -53,
+    "cand": -56,
+    "later_share": 0.733
+   }
+  },
+  {
+   "label": "H1-top",
+   "kind": "placebo",
+   "arg": 7,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.5
+   },
+   "H1": {
+    "base": -50,
+    "cand": -41,
+    "later_share": 0.725
+   },
+   "H2": {
+    "base": -44,
+    "cand": -56,
+    "later_share": 0.725
+   },
+   "R": {
+    "base": -61,
+    "cand": -70,
+    "later_share": 0.734
+   }
+  },
+  {
+   "label": "H1-top",
+   "kind": "slip",
+   "arg": 1,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.5
+   },
+   "H1": {
+    "base": 272,
+    "cand": 336,
+    "later_share": 0.719
+   },
+   "H2": {
+    "base": 42,
+    "cand": 25,
+    "later_share": 0.717
+   },
+   "R": {
+    "base": -48,
+    "cand": -54,
+    "later_share": 0.724
+   }
+  },
+  {
+   "label": "H1-top",
+   "kind": "slip",
+   "arg": 2,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.5
+   },
+   "H1": {
+    "base": 251,
+    "cand": 314,
+    "later_share": 0.719
+   },
+   "H2": {
+    "base": 33,
+    "cand": 16,
+    "later_share": 0.717
+   },
+   "R": {
+    "base": -54,
+    "cand": -63,
+    "later_share": 0.724
+   }
+  },
+  {
+   "label": "H1-top",
+   "kind": "late",
+   "arg": 1,
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.5
+   },
+   "H1": {
+    "base": 192,
+    "cand": 214,
+    "later_share": 0.0
+   },
+   "H2": {
+    "base": -36,
+    "cand": -45,
+    "later_share": 0.0
+   },
+   "R": {
+    "base": -67,
+    "cand": -65,
+    "later_share": 0.0
+   }
+  },
+  {
+   "label": "H1-top",
+   "kind": "year",
+   "arg": "2022",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.5
+   },
+   "Y": {
+    "base": 13,
+    "cand": 37
+   }
+  },
+  {
+   "label": "H1-top",
+   "kind": "year",
+   "arg": "2023",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.5
+   },
+   "Y": {
+    "base": -29,
+    "cand": -30
+   }
+  },
+  {
+   "label": "H1-top",
+   "kind": "year",
+   "arg": "2024",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.5
+   },
+   "Y": {
+    "base": -65,
+    "cand": -76
+   }
+  },
+  {
+   "label": "H1-top",
+   "kind": "year",
+   "arg": "2025",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "q1": 1,
+    "q2": 2,
+    "q1b": 1,
+    "q2b": 2,
+    "rq": 0.5
+   },
+   "Y": {
+    "base": -45,
+    "cand": -54
+   }
+  }
+ ],
+ "summary": {
+  "C1": {
+   "placebo": {
+    "H1": {
+     "base": -59,
+     "cand": -55
+    },
+    "H2": {
+     "base": 27,
+     "cand": 48
+    },
+    "R": {
+     "base": -66,
+     "cand": -72
+    }
+   },
+   "slip1": {
+    "H1": [
+     272,
+     318
+    ],
+    "H2": [
+     42,
+     106
+    ],
+    "R": [
+     -48,
+     -50
+    ]
+   },
+   "slip2": {
+    "H1": [
+     251,
+     290
+    ],
+    "H2": [
+     33,
+     101
+    ],
+    "R": [
+     -54,
+     -65
+    ]
+   },
+   "late1": {
+    "H1": [
+     192,
+     192
+    ],
+    "H2": [
+     -36,
+     -44
+    ],
+    "R": [
+     -67,
+     -65
+    ]
+   },
+   "y2022": [
+    13,
+    50
+   ],
+   "y2023": [
+    -29,
+    -13
+   ],
+   "y2024": [
+    -65,
+    -87
+   ],
+   "y2025": [
+    -45,
+    -48
+   ]
+  },
+  "C3": {
+   "placebo": {
+    "H1": {
+     "base": -59,
+     "cand": -43
+    },
+    "H2": {
+     "base": 27,
+     "cand": 38
+    },
+    "R": {
+     "base": -66,
+     "cand": -56
+    }
+   },
+   "slip1": {
+    "H1": [
+     272,
+     285
+    ],
+    "H2": [
+     42,
+     83
+    ],
+    "R": [
+     -48,
+     -39
+    ]
+   },
+   "slip2": {
+    "H1": [
+     251,
+     260
+    ],
+    "H2": [
+     33,
+     71
+    ],
+    "R": [
+     -54,
+     -48
+    ]
+   },
+   "late1": {
+    "H1": [
+     192,
+     212
+    ],
+    "H2": [
+     -36,
+     -31
+    ],
+    "R": [
+     -67,
+     -60
+    ]
+   },
+   "y2022": [
+    13,
+    35
+   ],
+   "y2023": [
+    -29,
+    -17
+   ],
+   "y2024": [
+    -65,
+    -58
+   ],
+   "y2025": [
+    -45,
+    -31
+   ]
+  },
+  "H1-top": {
+   "placebo": {
+    "H1": {
+     "base": -59,
+     "cand": -57
+    },
+    "H2": {
+     "base": 27,
+     "cand": 23
+    },
+    "R": {
+     "base": -66,
+     "cand": -71
+    }
+   },
+   "slip1": {
+    "H1": [
+     272,
+     336
+    ],
+    "H2": [
+     42,
+     25
+    ],
+    "R": [
+     -48,
+     -54
+    ]
+   },
+   "slip2": {
+    "H1": [
+     251,
+     314
+    ],
+    "H2": [
+     33,
+     16
+    ],
+    "R": [
+     -54,
+     -63
+    ]
+   },
+   "late1": {
+    "H1": [
+     192,
+     214
+    ],
+    "H2": [
+     -36,
+     -45
+    ],
+    "R": [
+     -67,
+     -65
+    ]
+   },
+   "y2022": [
+    13,
+    37
+   ],
+   "y2023": [
+    -29,
+    -30
+   ],
+   "y2024": [
+    -65,
+    -76
+   ],
+   "y2025": [
+    -45,
+    -54
+   ]
+  }
+ }
+}

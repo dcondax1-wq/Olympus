@@ -1,7 +1,7 @@
 {
- "built": "2026-10-30 15:15",
+ "built": "2026-10-30 17:45",
  "baseline": "baseline",
- "count": 2184,
+ "count": 2224,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -114,6 +114,121 @@
      "slow_pass": 75.9,
      "pass_med": 31.0,
      "b2b": "12/11"
+    }
+   }
+  },
+  {
+   "id": "atx_today",
+   "title": "ATLAS today (baseline for the slot)",
+   "family": "risk",
+   "question": "ATLAS 2026-10-30 b: can a stage-aware member set (extra members by eval session / room / funded stage) keep the hunts' and the NA lead's money without breaking the 25K eval?",
+   "status": "baseline",
+   "verdict": "Today's ATLAS on the whole-slot simulator (eval -> funded -> MFFU payouts -> new $63 evals). H1: 2-week pass/dead 65.5/0.8, eval-path $1,394/mo less fees, slot $568/mo to the owner net of evals, 4.38 trades/wk; H2: 2-week pass/dead 43.5/0.0, eval-path $547/mo less fees, slot $382/mo to the owner net of evals, 3.27 trades/wk; 2021-25: 2-week pass/dead 24.6/26.2, eval-path $-63/mo less fees, slot $-2/mo to the owner net of evals, 5.2 trades/wk. Real-session slot (one path from each span's first session): H1 $596/mo (5 payouts, 3 evals); H2 $414/mo (2 payouts, 1 evals); 2025 $-36/mo (0 payouts, 7 evals); 2021-24 $23/mo (3 payouts, 24 evals)",
+   "writeup": "atlas-edge-2026-10-30b",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "stop_hunt",
+    "funded",
+    "slot"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "eval": "engine/account_b.qty need (tools/atlas.q_variant) x the member weight / schedule",
+    "funded": "engine/sizing.funded_qty on the 25K preset (60% room, $50-$750, ref 20, winner <= $1,000) x the member weight (<= 1)"
+   },
+   "built": "2026-10-30 17:14",
+   "spans": {
+    "2026": {
+     "n": 142,
+     "tpw": 3.45,
+     "wk2": 88,
+     "win": 53.5,
+     "pf": 2.99,
+     "net": 19607,
+     "dd": -1047,
+     "avg_r": 0.807,
+     "stop": 43.9,
+     "worst_day": -586,
+     "risk": 128.0,
+     "half": 0,
+     "per_month": 1999,
+     "p10": 4.9,
+     "f10": 0.0,
+     "p15": 11.2,
+     "f15": 0.0,
+     "p20": 20.4,
+     "f20": 0.0,
+     "dec10": 4.9,
+     "slow_pass": 85.2,
+     "pass_med": 26.0,
+     "b2b": "6/0"
+    },
+    "2021-25": {
+     "n": 804,
+     "tpw": 3.75,
+     "wk2": 86,
+     "win": 38.1,
+     "pf": 1.09,
+     "net": 6748,
+     "dd": -9173,
+     "avg_r": 0.075,
+     "stop": 25.2,
+     "worst_day": -593,
+     "risk": 116.0,
+     "half": 0,
+     "per_month": 132,
+     "p10": 1.2,
+     "f10": 1.3,
+     "p15": 2.8,
+     "f15": 2.9,
+     "p20": 3.9,
+     "f20": 4.9,
+     "dec10": 2.5,
+     "slow_pass": 88.4,
+     "pass_med": 40.0,
+     "b2b": "7/12"
+    },
+    "all": {
+     "n": 946,
+     "tpw": 3.7,
+     "wk2": 86,
+     "win": 40.4,
+     "pf": 1.32,
+     "net": 26354,
+     "dd": -9173,
+     "avg_r": 0.185,
+     "stop": 27.6,
+     "worst_day": -593,
+     "risk": 119.0,
+     "half": 0,
+     "per_month": 433,
+     "p10": 1.8,
+     "f10": 1.1,
+     "p15": 4.1,
+     "f15": 2.4,
+     "p20": 6.6,
+     "f20": 4.1,
+     "dec10": 2.9,
+     "slow_pass": 87.8,
+     "pass_med": 34.0,
+     "b2b": "12/12"
     }
    }
   },
@@ -35981,6 +36096,1135 @@
    }
   },
   {
+   "id": "atx2_funded_asia_w05",
+   "title": "Eval = today; once funded + sh_asia x0.5 (round 2, config A clean)",
+   "family": "risk",
+   "question": "ATLAS 2026-10-30 b round 2: which members should trade ATLAS's FUNDED 25K (eval unchanged)?",
+   "status": "promising",
+   "verdict": "Eval = today's ATLAS; once funded + sh_asia x0.5 (market entry). Slot $/mo (20 seeds x 200 paths): H1 $697 vs $574 (+124, 100% of seeds up); H2 $399 vs $374 (+26, 100% of seeds up); 2021-25 $4 vs $-7 (+11, 100% of seeds up); 2022 $-6 vs $-25 (+20, 100% of seeds up); 2023 $1 vs $2 (-1, 30% of seeds up); 2024 $-4 vs $-13 (+9, 90% of seeds up); 2025 $20 vs $10 (+10, 95% of seeds up). Random-time sh_asia x0.5 (12 copies): H1 $532, H2 $306. Passes the slot gate; the clean H2 gain is small and the real calendar path is flat in H2. Real-session slot: H1 $625/mo (5 payouts); H2 $414/mo (2 payouts); 2025 $-31/mo (0 payouts); 2021-24 $-1/mo (2 payouts)",
+   "writeup": "atlas-edge-2026-10-30b",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "funded",
+    "slot",
+    "round2"
+   ],
+   "params": {
+    "eval": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "funded": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "SHA"
+     ],
+     "w": {
+      "SHA": 0.5
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "fz": {}
+   },
+   "sizing": {
+    "eval": "engine/account_b.qty need",
+    "funded": "funded preset x weight; BLITZ: its own 10% / $150"
+   },
+   "built": "2026-10-30 17:44",
+   "spans": {
+    "2026": {
+     "n": 181,
+     "tpw": 4.39,
+     "wk2": 88,
+     "win": 59.1,
+     "pf": 2.78,
+     "net": 19965,
+     "dd": -1377,
+     "avg_r": 0.663,
+     "stop": 46.5,
+     "worst_day": -586,
+     "risk": 134.0,
+     "half": 0,
+     "per_month": 2035,
+     "p10": 3.9,
+     "f10": 0.0,
+     "p15": 9.2,
+     "f15": 0.0,
+     "p20": 24.8,
+     "f20": 0.0,
+     "dec10": 3.9,
+     "slow_pass": 90.0,
+     "pass_med": 25.0,
+     "b2b": "6/0"
+    },
+    "2021-25": {
+     "n": 847,
+     "tpw": 3.95,
+     "wk2": 80,
+     "win": 40.7,
+     "pf": 1.08,
+     "net": 5083,
+     "dd": -6309,
+     "avg_r": 0.036,
+     "stop": 24.8,
+     "worst_day": -575,
+     "risk": 110.0,
+     "half": 0,
+     "per_month": 100,
+     "p10": 1.0,
+     "f10": 0.1,
+     "p15": 2.2,
+     "f15": 1.3,
+     "p20": 2.7,
+     "f20": 3.5,
+     "dec10": 1.1,
+     "slow_pass": 82.9,
+     "pass_med": 38.0,
+     "b2b": "4/8"
+    },
+    "all": {
+     "n": 1028,
+     "tpw": 4.02,
+     "wk2": 81,
+     "win": 44.0,
+     "pf": 1.32,
+     "net": 25049,
+     "dd": -6309,
+     "avg_r": 0.146,
+     "stop": 27.8,
+     "worst_day": -586,
+     "risk": 114.0,
+     "half": 0,
+     "per_month": 412,
+     "p10": 1.5,
+     "f10": 0.1,
+     "p15": 3.4,
+     "f15": 1.1,
+     "p20": 6.3,
+     "f20": 2.9,
+     "dec10": 1.6,
+     "slow_pass": 87.9,
+     "pass_med": 30.0,
+     "b2b": "10/8"
+    }
+   }
+  },
+  {
+   "id": "atx2_funded_asia_w075",
+   "title": "Eval = today; once funded + sh_asia x0.75 (round 2, config A clean)",
+   "family": "risk",
+   "question": "ATLAS 2026-10-30 b round 2: which members should trade ATLAS's FUNDED 25K (eval unchanged)?",
+   "status": "promising",
+   "verdict": "Eval = today's ATLAS; once funded + sh_asia x0.75 (market entry). Slot $/mo (20 seeds x 200 paths): H1 $745 vs $574 (+172, 100% of seeds up); H2 $403 vs $374 (+29, 100% of seeds up); 2021-25 $10 vs $-7 (+17, 100% of seeds up); 2022 $0 vs $-25 (+26, 100% of seeds up); 2023 $6 vs $2 (+4, 60% of seeds up); 2024 $5 vs $-13 (+18, 95% of seeds up); 2025 $31 vs $10 (+21, 100% of seeds up). Random-time sh_asia x0.5 (12 copies): H1 $532, H2 $306. Passes the slot gate; the clean H2 gain is small and the real calendar path is flat in H2. Real-session slot: H1 $881/mo (7 payouts); H2 $160/mo (1 payouts); 2025 $22/mo (1 payouts); 2021-24 $10/mo (3 payouts)",
+   "writeup": "atlas-edge-2026-10-30b",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "funded",
+    "slot",
+    "round2"
+   ],
+   "params": {
+    "eval": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "funded": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "SHA"
+     ],
+     "w": {
+      "SHA": 0.75
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "fz": {}
+   },
+   "sizing": {
+    "eval": "engine/account_b.qty need",
+    "funded": "funded preset x weight; BLITZ: its own 10% / $150"
+   },
+   "built": "2026-10-30 17:44",
+   "spans": {
+    "2026": {
+     "n": 162,
+     "tpw": 3.93,
+     "wk2": 86,
+     "win": 56.8,
+     "pf": 2.85,
+     "net": 18544,
+     "dd": -1678,
+     "avg_r": 0.651,
+     "stop": 45.5,
+     "worst_day": -586,
+     "risk": 130.0,
+     "half": 0,
+     "per_month": 1890,
+     "p10": 3.9,
+     "f10": 0.0,
+     "p15": 13.6,
+     "f15": 0.0,
+     "p20": 30.6,
+     "f20": 0.0,
+     "dec10": 3.9,
+     "slow_pass": 80.8,
+     "pass_med": 21.5,
+     "b2b": "6/0"
+    },
+    "2021-25": {
+     "n": 934,
+     "tpw": 4.36,
+     "wk2": 84,
+     "win": 40.7,
+     "pf": 1.09,
+     "net": 7788,
+     "dd": -8923,
+     "avg_r": 0.056,
+     "stop": 26.8,
+     "worst_day": -598,
+     "risk": 119.0,
+     "half": 0,
+     "per_month": 153,
+     "p10": 1.0,
+     "f10": 1.0,
+     "p15": 2.5,
+     "f15": 3.8,
+     "p20": 3.5,
+     "f20": 6.3,
+     "dec10": 2.0,
+     "slow_pass": 87.9,
+     "pass_med": 39.0,
+     "b2b": "6/11"
+    },
+    "all": {
+     "n": 1096,
+     "tpw": 4.29,
+     "wk2": 84,
+     "win": 43.1,
+     "pf": 1.28,
+     "net": 26332,
+     "dd": -8923,
+     "avg_r": 0.144,
+     "stop": 29.2,
+     "worst_day": -598,
+     "risk": 121.0,
+     "half": 0,
+     "per_month": 433,
+     "p10": 1.5,
+     "f10": 0.9,
+     "p15": 4.3,
+     "f15": 3.2,
+     "p20": 7.9,
+     "f20": 5.3,
+     "dec10": 2.4,
+     "slow_pass": 86.1,
+     "pass_med": 31.0,
+     "b2b": "11/11"
+    }
+   }
+  },
+  {
+   "id": "atx_funded_hunts_w05",
+   "title": "Eval = today's ATLAS; once funded, + the two stop hunts x0.5",
+   "family": "risk",
+   "question": "ATLAS 2026-10-30 b: can a stage-aware member set (extra members by eval session / room / funded stage) keep the hunts' and the NA lead's money without breaking the 25K eval?",
+   "status": "promising",
+   "verdict": "Passes every numeric gate with the eval unchanged (funded-only); weights 0.4-1.0 all pass; 12 random-time hunt twins pass 0 times. Not an adopt-candidate: the hunts were picked on H1 + 2025 + 2021-24 (only H2 is clean) and most of the H2 gain is sh_trend (audit: not real; needs a limit entry account B cannot place). Paper first. H1: 2-week pass/dead 65.5/0.8, eval-path $1,394/mo less fees, slot $661/mo to the owner net of evals, 4.38 trades/wk; H2: 2-week pass/dead 43.5/0.0, eval-path $547/mo less fees, slot $510/mo to the owner net of evals, 3.27 trades/wk; 2021-25: 2-week pass/dead 24.6/26.2, eval-path $-63/mo less fees, slot $23/mo to the owner net of evals, 5.2 trades/wk. Real-session slot (one path from each span's first session): H1 $866/mo (7 payouts, 3 evals); H2 $1,044/mo (5 payouts, 2 evals); 2025 $70/mo (2 payouts, 6 evals); 2021-24 $33/mo (4 payouts, 27 evals)",
+   "writeup": "atlas-edge-2026-10-30b",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "stop_hunt",
+    "funded",
+    "slot"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "Vf": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "SHA",
+      "SHT"
+     ],
+     "w": {
+      "SHA": 0.5,
+      "SHT": 0.5
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "eval": "engine/account_b.qty need (tools/atlas.q_variant) x the member weight / schedule",
+    "funded": "engine/sizing.funded_qty on the 25K preset (60% room, $50-$750, ref 20, winner <= $1,000) x the member weight (<= 1)"
+   },
+   "built": "2026-10-30 17:14",
+   "spans": {
+    "2026": {
+     "n": 212,
+     "tpw": 5.15,
+     "wk2": 95,
+     "win": 60.8,
+     "pf": 3.15,
+     "net": 25598,
+     "dd": -926,
+     "avg_r": 0.644,
+     "stop": 46.5,
+     "worst_day": -586,
+     "risk": 134.0,
+     "half": 0,
+     "per_month": 2609,
+     "p10": 6.8,
+     "f10": 0.0,
+     "p15": 17.0,
+     "f15": 0.0,
+     "p20": 35.0,
+     "f20": 0.0,
+     "dec10": 6.8,
+     "slow_pass": 81.6,
+     "pass_med": 24.0,
+     "b2b": "7/0"
+    },
+    "2021-25": {
+     "n": 1018,
+     "tpw": 4.75,
+     "wk2": 85,
+     "win": 42.7,
+     "pf": 1.04,
+     "net": 3468,
+     "dd": -8235,
+     "avg_r": 0.066,
+     "stop": 27.0,
+     "worst_day": -593,
+     "risk": 121.0,
+     "half": 0,
+     "per_month": 68,
+     "p10": 2.0,
+     "f10": 0.5,
+     "p15": 2.4,
+     "f15": 3.2,
+     "p20": 3.9,
+     "f20": 6.4,
+     "dec10": 2.5,
+     "slow_pass": 87.9,
+     "pass_med": 35.5,
+     "b2b": "6/12"
+    },
+    "all": {
+     "n": 1230,
+     "tpw": 4.81,
+     "wk2": 87,
+     "win": 45.9,
+     "pf": 1.29,
+     "net": 29065,
+     "dd": -8235,
+     "avg_r": 0.165,
+     "stop": 30.8,
+     "worst_day": -593,
+     "risk": 124.0,
+     "half": 0,
+     "per_month": 478,
+     "p10": 2.7,
+     "f10": 0.4,
+     "p15": 4.8,
+     "f15": 2.7,
+     "p20": 8.9,
+     "f20": 5.4,
+     "dec10": 3.1,
+     "slow_pass": 85.7,
+     "pass_med": 29.0,
+     "b2b": "13/12"
+    }
+   }
+  },
+  {
+   "id": "atx_funded_hunts_w075",
+   "title": "Eval = today's ATLAS; once funded, + the two stop hunts x0.75",
+   "family": "risk",
+   "question": "ATLAS 2026-10-30 b: can a stage-aware member set (extra members by eval session / room / funded stage) keep the hunts' and the NA lead's money without breaking the 25K eval?",
+   "status": "promising",
+   "verdict": "Neighbour of atx_funded_hunts_w05 (funded hunts x0.75): passes; same caveats. H1: 2-week pass/dead 65.5/0.8, eval-path $1,394/mo less fees, slot $715/mo to the owner net of evals, 4.38 trades/wk; H2: 2-week pass/dead 43.5/0.0, eval-path $547/mo less fees, slot $528/mo to the owner net of evals, 3.27 trades/wk; 2021-25: 2-week pass/dead 24.6/26.2, eval-path $-63/mo less fees, slot $30/mo to the owner net of evals, 5.2 trades/wk. Real-session slot (one path from each span's first session): H1 $756/mo (6 payouts, 3 evals); H2 $628/mo (3 payouts, 1 evals); 2025 $105/mo (2 payouts, 5 evals); 2021-24 $21/mo (3 payouts, 25 evals)",
+   "writeup": "atlas-edge-2026-10-30b",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "stop_hunt",
+    "funded",
+    "slot"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "Vf": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "SHA",
+      "SHT"
+     ],
+     "w": {
+      "SHA": 0.75,
+      "SHT": 0.75
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "eval": "engine/account_b.qty need (tools/atlas.q_variant) x the member weight / schedule",
+    "funded": "engine/sizing.funded_qty on the 25K preset (60% room, $50-$750, ref 20, winner <= $1,000) x the member weight (<= 1)"
+   },
+   "built": "2026-10-30 17:14",
+   "spans": {
+    "2026": {
+     "n": 212,
+     "tpw": 5.15,
+     "wk2": 95,
+     "win": 60.4,
+     "pf": 3.2,
+     "net": 26124,
+     "dd": -926,
+     "avg_r": 0.603,
+     "stop": 46.5,
+     "worst_day": -586,
+     "risk": 135.0,
+     "half": 0,
+     "per_month": 2663,
+     "p10": 7.3,
+     "f10": 0.0,
+     "p15": 25.7,
+     "f15": 0.0,
+     "p20": 43.7,
+     "f20": 0.0,
+     "dec10": 7.3,
+     "slow_pass": 72.5,
+     "pass_med": 21.0,
+     "b2b": "8/0"
+    },
+    "2021-25": {
+     "n": 994,
+     "tpw": 4.64,
+     "wk2": 85,
+     "win": 42.9,
+     "pf": 1.04,
+     "net": 3645,
+     "dd": -11814,
+     "avg_r": 0.086,
+     "stop": 27.8,
+     "worst_day": -598,
+     "risk": 124.0,
+     "half": 0,
+     "per_month": 71,
+     "p10": 1.7,
+     "f10": 1.2,
+     "p15": 3.2,
+     "f15": 4.5,
+     "p20": 4.4,
+     "f20": 7.4,
+     "dec10": 2.9,
+     "slow_pass": 88.0,
+     "pass_med": 37.0,
+     "b2b": "6/12"
+    },
+    "all": {
+     "n": 1206,
+     "tpw": 4.72,
+     "wk2": 87,
+     "win": 45.9,
+     "pf": 1.3,
+     "net": 29770,
+     "dd": -11814,
+     "avg_r": 0.177,
+     "stop": 31.0,
+     "worst_day": -598,
+     "risk": 126.0,
+     "half": 0,
+     "per_month": 489,
+     "p10": 2.6,
+     "f10": 1.0,
+     "p15": 6.8,
+     "f15": 3.8,
+     "p20": 10.7,
+     "f20": 6.2,
+     "dec10": 3.6,
+     "slow_pass": 82.6,
+     "pass_med": 31.0,
+     "b2b": "14/12"
+    }
+   }
+  },
+  {
+   "id": "atx_hunts_w05_funded_w1",
+   "title": "Hunts x0.5 in the eval, x1.0 once funded",
+   "family": "risk",
+   "question": "ATLAS 2026-10-30 b: can a stage-aware member set (extra members by eval session / room / funded stage) keep the hunts' and the NA lead's money without breaking the 25K eval?",
+   "status": "promising",
+   "verdict": "Hunts x0.5 in the eval (atlas-v2 lead) + x1.0 once funded: passes; 6 of 8 neighbours (x0.6 in the eval fails H2 by 1 stuck eval); the real H2 path never passes its Jul-1 eval. Same hunt caveats. H1: 2-week pass/dead 67.2/0.0, eval-path $1,655/mo less fees, slot $758/mo to the owner net of evals, 7.19 trades/wk; H2: 2-week pass/dead 55.1/0.0, eval-path $665/mo less fees, slot $595/mo to the owner net of evals, 7.31 trades/wk; 2021-25: 2-week pass/dead 25.0/23.9, eval-path $-4/mo less fees, slot $30/mo to the owner net of evals, 9.3 trades/wk. Real-session slot (one path from each span's first session): H1 $766/mo (6 payouts, 2 evals); H2 $-34/mo (0 payouts, 2 evals); 2025 $66/mo (2 payouts, 10 evals); 2021-24 $-7/mo (2 payouts, 29 evals)",
+   "writeup": "atlas-edge-2026-10-30b",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "stop_hunt",
+    "funded",
+    "slot"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "SHA",
+      "SHT"
+     ],
+     "w": {
+      "SHA": 0.5,
+      "SHT": 0.5
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "Vf": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "SHA",
+      "SHT"
+     ],
+     "w": {
+      "SHA": 1.0,
+      "SHT": 1.0
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "eval": "engine/account_b.qty need (tools/atlas.q_variant) x the member weight / schedule",
+    "funded": "engine/sizing.funded_qty on the 25K preset (60% room, $50-$750, ref 20, winner <= $1,000) x the member weight (<= 1)"
+   },
+   "built": "2026-10-30 17:14",
+   "spans": {
+    "2026": {
+     "n": 197,
+     "tpw": 4.78,
+     "wk2": 93,
+     "win": 58.4,
+     "pf": 2.62,
+     "net": 18768,
+     "dd": -1276,
+     "avg_r": 0.502,
+     "stop": 45.5,
+     "worst_day": -513,
+     "risk": 132.0,
+     "half": 0,
+     "per_month": 1913,
+     "p10": 8.7,
+     "f10": 0.0,
+     "p15": 18.9,
+     "f15": 0.0,
+     "p20": 31.6,
+     "f20": 0.0,
+     "dec10": 8.7,
+     "slow_pass": 65.2,
+     "pass_med": 18.5,
+     "b2b": "5/0"
+    },
+    "2021-25": {
+     "n": 1268,
+     "tpw": 5.91,
+     "wk2": 95,
+     "win": 47.2,
+     "pf": 1.2,
+     "net": 21148,
+     "dd": -6996,
+     "avg_r": 0.128,
+     "stop": 26.2,
+     "worst_day": -598,
+     "risk": 120.0,
+     "half": 0,
+     "per_month": 414,
+     "p10": 1.4,
+     "f10": 1.1,
+     "p15": 3.7,
+     "f15": 3.6,
+     "p20": 7.3,
+     "f20": 6.4,
+     "dec10": 2.5,
+     "slow_pass": 90.3,
+     "pass_med": 34.0,
+     "b2b": "9/10"
+    },
+    "all": {
+     "n": 1465,
+     "tpw": 5.73,
+     "wk2": 95,
+     "win": 48.7,
+     "pf": 1.34,
+     "net": 39916,
+     "dd": -6996,
+     "avg_r": 0.178,
+     "stop": 28.2,
+     "worst_day": -598,
+     "risk": 122.0,
+     "half": 0,
+     "per_month": 656,
+     "p10": 2.6,
+     "f10": 0.9,
+     "p15": 6.2,
+     "f15": 3.1,
+     "p20": 11.2,
+     "f20": 5.4,
+     "dec10": 3.5,
+     "slow_pass": 85.9,
+     "pass_med": 31.0,
+     "b2b": "15/10"
+    }
+   }
+  },
+  {
+   "id": "atx_hunts_w075",
+   "title": "Hunts x0.75 in the eval and once funded",
+   "family": "risk",
+   "question": "ATLAS 2026-10-30 b: can a stage-aware member set (extra members by eval session / room / funded stage) keep the hunts' and the NA lead's money without breaking the 25K eval?",
+   "status": "promising",
+   "verdict": "Hunts x0.75 in the eval and once funded: passes; its x0.6 neighbour fails H2; same hunt caveats. H1: 2-week pass/dead 68.1/0.0, eval-path $1,922/mo less fees, slot $750/mo to the owner net of evals, 7.19 trades/wk; H2: 2-week pass/dead 59.4/0.0, eval-path $942/mo less fees, slot $650/mo to the owner net of evals, 7.31 trades/wk; 2021-25: 2-week pass/dead 28.2/24.2, eval-path $80/mo less fees, slot $36/mo to the owner net of evals, 9.3 trades/wk. Real-session slot (one path from each span's first session): H1 $766/mo (6 payouts, 2 evals); H2 $-17/mo (0 payouts, 1 evals); 2025 $89/mo (2 payouts, 8 evals); 2021-24 $97/mo (7 payouts, 25 evals)",
+   "writeup": "atlas-edge-2026-10-30b",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "stop_hunt",
+    "funded",
+    "slot"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "SHA",
+      "SHT"
+     ],
+     "w": {
+      "SHA": 0.75,
+      "SHT": 0.75
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "eval": "engine/account_b.qty need (tools/atlas.q_variant) x the member weight / schedule",
+    "funded": "engine/sizing.funded_qty on the 25K preset (60% room, $50-$750, ref 20, winner <= $1,000) x the member weight (<= 1)"
+   },
+   "built": "2026-10-30 17:14",
+   "spans": {
+    "2026": {
+     "n": 207,
+     "tpw": 5.02,
+     "wk2": 98,
+     "win": 60.4,
+     "pf": 2.71,
+     "net": 19698,
+     "dd": -1290,
+     "avg_r": 0.594,
+     "stop": 45.8,
+     "worst_day": -345,
+     "risk": 132.0,
+     "half": 0,
+     "per_month": 2008,
+     "p10": 4.4,
+     "f10": 0.0,
+     "p15": 12.6,
+     "f15": 0.0,
+     "p20": 27.7,
+     "f20": 0.0,
+     "dec10": 4.4,
+     "slow_pass": 81.9,
+     "pass_med": 23.0,
+     "b2b": "6/0"
+    },
+    "2021-25": {
+     "n": 1264,
+     "tpw": 5.9,
+     "wk2": 94,
+     "win": 46.5,
+     "pf": 1.2,
+     "net": 21371,
+     "dd": -5422,
+     "avg_r": 0.111,
+     "stop": 26.4,
+     "worst_day": -594,
+     "risk": 124.0,
+     "half": 0,
+     "per_month": 419,
+     "p10": 1.2,
+     "f10": 1.1,
+     "p15": 3.1,
+     "f15": 3.3,
+     "p20": 5.9,
+     "f20": 5.6,
+     "dec10": 2.3,
+     "slow_pass": 90.8,
+     "pass_med": 33.0,
+     "b2b": "10/11"
+    },
+    "all": {
+     "n": 1471,
+     "tpw": 5.76,
+     "wk2": 95,
+     "win": 48.5,
+     "pf": 1.35,
+     "net": 41069,
+     "dd": -5422,
+     "avg_r": 0.179,
+     "stop": 28.8,
+     "worst_day": -594,
+     "risk": 126.0,
+     "half": 0,
+     "per_month": 675,
+     "p10": 1.7,
+     "f10": 0.9,
+     "p15": 4.6,
+     "f15": 2.7,
+     "p20": 9.4,
+     "f20": 4.8,
+     "dec10": 2.6,
+     "slow_pass": 88.7,
+     "pass_med": 30.0,
+     "b2b": "15/11"
+    }
+   }
+  },
+  {
+   "id": "bzx_c3_robust",
+   "title": "BLITZ funded 25K: C3 robustness (20 seeds, neighbour grid, H1-only selection, size vs give-up line) - promising, not adopted",
+   "family": "risk",
+   "question": "Coordinator round 3: can the funded later-break size + give-up line become an adopt-candidate?",
+   "status": "promising",
+   "verdict": "20 Monte Carlo seeds, slot $ a month vs v2 (H1 / H2 / 2021-25, seeds better): C3 +16.9 (20/20) / +42.2 (20/20) / +9.8 (20/20); C1 +44.0 (20/20) / +76.3 (20/20) / +4.2 (19/20); (a) the later-break funded size alone +23.4 (20/20) / +35.3 (20/20) / +0.3 (8/20); (b) the give-up line at 1x alone -3.9 (0/20) / +6.8 (20/20) / +6.9 (20/20). Random directions: (b) alone +13 / +2 / +10 = fee saving, not edge. H1-only selection rules (plateau / worst seed / median, written before H2 / 2021-25) all pick room share 0.35, give-up 1.5x, later 2 micros (not C3): 20 seeds +51.8 / +11.7 / +3.2 (20/20 each), but +1 tick 2021-25 -2, 1 bar late H2 -2, 2024 -8, room share 0.5 next door H2 -8.6 (0/5), shuffled labels beat it in H2 (0.95). Not an adopt-candidate.",
+   "writeup": "blitz-edge-2026-10-30b",
+   "tags": [
+    "scalp",
+    "blitz",
+    "account_c",
+    "25k",
+    "bzx",
+    "funded",
+    "sizing"
+   ],
+   "params": {
+    "stop": "atr",
+    "k": 1.5,
+    "tgt": null,
+    "part": null,
+    "hold": 30,
+    "trail": 1.5,
+    "tstart": 1.0,
+    "be": null,
+    "be_off": 0.25,
+    "sw_trail": 0,
+    "sw_start": 1.0,
+    "choch": 0,
+    "maxday": 6,
+    "day_stop": 3.0,
+    "dmin": 0.0,
+    "dmax": 99.0,
+    "r_min": 1.0,
+    "r_max": 99.0,
+    "p_min": 0.5,
+    "part_f": 0.5,
+    "part_be": false,
+    "liq": "all",
+    "filter": "prng>=0.8",
+    "late": 0,
+    "wins": [
+     "rth"
+    ],
+    "last_mod": 930,
+    "lim": null,
+    "lim_w": 10
+   },
+   "sizing": {
+    "usd_per_trade": 150.0,
+    "x": "2 on a later break, 1 on a first break",
+    "eval_25k": {
+     "mode": "frac",
+     "f": 0.4,
+     "cap": 600.0,
+     "push": [
+      5,
+      1.0
+     ],
+     "fmax": 1.0
+    },
+    "funded_c3": {
+     "mode": "frac",
+     "f": 0.1,
+     "cap": 150.0,
+     "day_tp": 400.0,
+     "q1": 1,
+     "q2": 2,
+     "q1b": 1,
+     "q2b": 2,
+     "rq": 0.25,
+     "stuck_k": 1.0
+    },
+    "funded_rule_pick": {
+     "mode": "frac",
+     "f": 0.1,
+     "cap": 150.0,
+     "day_tp": 400.0,
+     "q1": 1,
+     "q2": 2,
+     "q1b": 1,
+     "q2b": 2,
+     "rq": 0.35,
+     "stuck_k": 1.5
+    }
+   },
+   "built": "2026-10-30 17:10",
+   "spans": {
+    "2026": {
+     "n": 323,
+     "tpw": 7.84,
+     "wk2": 86,
+     "win": 56.7,
+     "pf": 1.72,
+     "net": 13086,
+     "dd": -1085,
+     "avg_r": 0.176,
+     "stop": 61.1,
+     "worst_day": -663,
+     "risk": 229.0,
+     "half": 0,
+     "per_month": 1334,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 2.4,
+     "f15": 0.0,
+     "p20": 8.3,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": 96.8,
+     "pass_med": 39.0,
+     "b2b": "3/0"
+    },
+    "2021-25": {
+     "n": 1841,
+     "tpw": 8.55,
+     "wk2": 80,
+     "win": 50.1,
+     "pf": 1.04,
+     "net": 6478,
+     "dd": -9550,
+     "avg_r": 0.013,
+     "stop": 38.9,
+     "worst_day": -835,
+     "risk": 247.0,
+     "half": 0,
+     "per_month": 126,
+     "p10": 0.0,
+     "f10": 0.6,
+     "p15": 0.0,
+     "f15": 2.0,
+     "p20": 0.1,
+     "f20": 4.9,
+     "dec10": 0.6,
+     "slow_pass": 100.0,
+     "pass_med": 45.0,
+     "b2b": "4/11"
+    },
+    "all": {
+     "n": 2164,
+     "tpw": 8.43,
+     "wk2": 81,
+     "win": 51.1,
+     "pf": 1.12,
+     "net": 19564,
+     "dd": -9550,
+     "avg_r": 0.037,
+     "stop": 41.2,
+     "worst_day": -835,
+     "risk": 245.0,
+     "half": 0,
+     "per_month": 320,
+     "p10": 0.0,
+     "f10": 0.5,
+     "p15": 0.4,
+     "f15": 1.7,
+     "p20": 1.4,
+     "f20": 4.1,
+     "dec10": 0.5,
+     "slow_pass": 97.8,
+     "pass_med": 41.0,
+     "b2b": "8/11"
+    }
+   }
+  },
+  {
+   "id": "bzx_funded_later2",
+   "title": "BLITZ funded 25K: later band breaks 2 micros, first breaks 1 (+ abandon at 1x) - promising, H1 pick fails H2",
+   "family": "risk",
+   "question": "Owner 2026-10-30: the funded stage is where the 25K slot loses its money (stuck before a payout) - can the funded size fix it?",
+   "status": "promising",
+   "verdict": "Funded 25K, later-break size in whole micros (a later band break 2 micros, a first break 1). H1-only pick (best worst quarter of 123): 'first 1->1 later 2->2 micros, <= 50% room' = slot d H1 +72 / H2 -19 / 2021-25 -3 $ a month vs today's funded size on the later-break eval -> fails H2 and 2021-25 (3 seeds). 25 of 123 beat today in both H1 quarters, 18 of those also in H2 and 2021-25. Most robust member C3 (later 2 micros while <= 25% of the room, abandon the account at 1 x the median stop instead of 2 x): seeds {'23': {'H1': [286, 308], 'H2': [52, 94], 'R': [-39, -30]}, '24': {'H1': [279, 296], 'H2': [49, 89], 'R': [-41, -30]}, '25': {'H1': [270, 281], 'H2': [66, 108], 'R': [-39, -28]}}, +1 tick {'H1': [272, 285], 'H2': [42, 83], 'R': [-48, -39]}, 1 bar late {'H1': [192, 212], 'H2': [-36, -31], 'R': [-67, -60]}, years 2022-25 [[13, 35], [-29, -17], [-65, -58], [-45, -31]]; but not the H1 pick, and random directions get part of the gain ({'H1': {'base': -59, 'cand': -43}, 'H2': {'base': 27, 'cand': 38}, 'R': {'base': -66, 'cand': -56}}). C1 (later 3 micros, all trades 2 after the lock, <= 50%): seeds {'23': {'H1': [286, 333], 'H2': [52, 122], 'R': [-39, -36]}, '24': {'H1': [279, 319], 'H2': [49, 121], 'R': [-41, -41]}, '25': {'H1': [270, 314], 'H2': [66, 143], 'R': [-39, -34]}} - 2021-25 ties on seed 24 and loses at +1 / +2 ticks. Promising lead, not an adopt-candidate.",
+   "writeup": "blitz-edge-2026-10-30b",
+   "tags": [
+    "scalp",
+    "blitz",
+    "account_c",
+    "25k",
+    "bzx",
+    "funded",
+    "sizing"
+   ],
+   "params": {
+    "stop": "atr",
+    "k": 1.5,
+    "tgt": null,
+    "part": null,
+    "hold": 30,
+    "trail": 1.5,
+    "tstart": 1.0,
+    "be": null,
+    "be_off": 0.25,
+    "sw_trail": 0,
+    "sw_start": 1.0,
+    "choch": 0,
+    "maxday": 6,
+    "day_stop": 3.0,
+    "dmin": 0.0,
+    "dmax": 99.0,
+    "r_min": 1.0,
+    "r_max": 99.0,
+    "p_min": 0.5,
+    "part_f": 0.5,
+    "part_be": false,
+    "liq": "all",
+    "filter": "prng>=0.8",
+    "late": 0,
+    "wins": [
+     "rth"
+    ],
+    "last_mod": 930,
+    "lim": null,
+    "lim_w": 10,
+    "account_c": "never opposite LIT / ATLAS"
+   },
+   "sizing": {
+    "usd_per_trade": 150.0,
+    "x": "2 on a later break, 1 on a first break (the funded micro ratio)",
+    "eval_25k": {
+     "mode": "frac",
+     "f": 0.4,
+     "cap": 600.0,
+     "push": [
+      5,
+      1.0
+     ],
+     "fmax": 1.0
+    },
+    "eval_mult": {
+     "later_x": 1.75,
+     "first_x": 0.5
+    },
+    "funded_c3": {
+     "mode": "frac",
+     "f": 0.1,
+     "cap": 150.0,
+     "day_tp": 400.0,
+     "q1": 1,
+     "q2": 2,
+     "q1b": 1,
+     "q2b": 2,
+     "rq": 0.25,
+     "stuck_k": 1.0
+    },
+    "funded_h1_pick": {
+     "mode": "frac",
+     "f": 0.1,
+     "cap": 150.0,
+     "day_tp": 400.0,
+     "q1": 1,
+     "q2": 2,
+     "q1b": 1,
+     "q2b": 2,
+     "rq": 0.5
+    }
+   },
+   "built": "2026-10-30 16:54",
+   "spans": {
+    "2026": {
+     "n": 323,
+     "tpw": 7.84,
+     "wk2": 86,
+     "win": 56.7,
+     "pf": 1.72,
+     "net": 13086,
+     "dd": -1085,
+     "avg_r": 0.176,
+     "stop": 61.1,
+     "worst_day": -663,
+     "risk": 229.0,
+     "half": 0,
+     "per_month": 1334,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 2.4,
+     "f15": 0.0,
+     "p20": 8.3,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": 96.8,
+     "pass_med": 39.0,
+     "b2b": "3/0"
+    },
+    "2021-25": {
+     "n": 1841,
+     "tpw": 8.55,
+     "wk2": 80,
+     "win": 50.1,
+     "pf": 1.04,
+     "net": 6478,
+     "dd": -9550,
+     "avg_r": 0.013,
+     "stop": 38.9,
+     "worst_day": -835,
+     "risk": 247.0,
+     "half": 0,
+     "per_month": 126,
+     "p10": 0.0,
+     "f10": 0.6,
+     "p15": 0.0,
+     "f15": 2.0,
+     "p20": 0.1,
+     "f20": 4.9,
+     "dec10": 0.6,
+     "slow_pass": 100.0,
+     "pass_med": 45.0,
+     "b2b": "4/11"
+    },
+    "all": {
+     "n": 2164,
+     "tpw": 8.43,
+     "wk2": 81,
+     "win": 51.1,
+     "pf": 1.12,
+     "net": 19564,
+     "dd": -9550,
+     "avg_r": 0.037,
+     "stop": 41.2,
+     "worst_day": -835,
+     "risk": 245.0,
+     "half": 0,
+     "per_month": 320,
+     "p10": 0.0,
+     "f10": 0.5,
+     "p15": 0.4,
+     "f15": 1.7,
+     "p20": 1.4,
+     "f20": 4.1,
+     "dec10": 0.5,
+     "slow_pass": 97.8,
+     "pass_med": 41.0,
+     "b2b": "8/11"
+    }
+   }
+  },
+  {
    "id": "hq_lit_grade_single_a15",
    "title": "LIT + grade sizing: single best H1 feature: age of the nearest inducement (bars, lower = fresher) <= 6.5 = A, else C, scheme a15",
    "family": "risk",
@@ -45066,6 +46310,273 @@
      "slow_pass": 73.1,
      "pass_med": 27.0,
      "b2b": "15/15"
+    }
+   }
+  },
+  {
+   "id": "bzx_regime_gate",
+   "title": "BLITZ momentum-regime day gate (market autocorrelation / variance ratio / break follow-through) - rejected",
+   "family": "filters",
+   "question": "Coordinator round 3: trade BLITZ only when intraday moves persist (a market-only regime known before 11:00)?",
+   "status": "rejected",
+   "verdict": "Momentum-regime day gate from the market only (30-min return autocorrelation, variance ratio, 11:00-12:00 band-break follow-through to the close; 20 / 40 sessions; known before the open): 0 of 30 skip gates and 0 of 30 half-size gates beat today in $ in H1, H2 and 2021-25. H1-only pick ft40 >= H1 p35: $ a month at $150 908 / -16 / -4 (today 963 / 667 / 73), trades a week 5.55 / 0.96 / 5.74; shuffled days do better in 2021-25 (0.75). 2026 H2 reads as a LOW-momentum market on these measures, yet BLITZ made PF 1.62 there: the market regime does not explain BLITZ's 2026 vs 2021-25 gap. Rejected.",
+   "writeup": "blitz-edge-2026-10-30b",
+   "tags": [
+    "scalp",
+    "blitz",
+    "account_c",
+    "25k",
+    "bzx",
+    "filters",
+    "regime"
+   ],
+   "params": {
+    "stop": "atr",
+    "k": 1.5,
+    "tgt": null,
+    "part": null,
+    "hold": 30,
+    "trail": 1.5,
+    "tstart": 1.0,
+    "be": null,
+    "be_off": 0.25,
+    "sw_trail": 0,
+    "sw_start": 1.0,
+    "choch": 0,
+    "maxday": 6,
+    "day_stop": 3.0,
+    "dmin": 0.0,
+    "dmax": 99.0,
+    "r_min": 1.0,
+    "r_max": 99.0,
+    "p_min": 0.5,
+    "part_f": 0.5,
+    "part_be": false,
+    "liq": "all",
+    "filter": "prng>=0.8",
+    "late": 0,
+    "wins": [
+     "rth"
+    ],
+    "last_mod": 930,
+    "lim": null,
+    "lim_w": 10,
+    "gate": {
+     "measure": "ft40",
+     "pct": 35,
+     "cut": 0.5384615384615384
+    }
+   },
+   "sizing": {
+    "usd_per_trade": 150.0
+   },
+   "built": "2026-10-30 17:10",
+   "spans": {
+    "2026": {
+     "n": 157,
+     "tpw": 3.81,
+     "wk2": 45,
+     "win": 60.5,
+     "pf": 1.86,
+     "net": 5474,
+     "dd": -564,
+     "avg_r": 0.216,
+     "stop": 65.5,
+     "worst_day": -392,
+     "risk": 141.0,
+     "half": 0,
+     "per_month": 558,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.0,
+     "f15": 0.0,
+     "p20": 1.5,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": 100.0,
+     "pass_med": 39.5,
+     "b2b": "1/0"
+    },
+    "2021-25": {
+     "n": 1236,
+     "tpw": 5.74,
+     "wk2": 56,
+     "win": 48.5,
+     "pf": 1.0,
+     "net": -198,
+     "dd": -3894,
+     "avg_r": -0.009,
+     "stop": 39.3,
+     "worst_day": -423,
+     "risk": 117.0,
+     "half": 0,
+     "per_month": -4,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.0,
+     "f15": 0.0,
+     "p20": 0.0,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": null,
+     "pass_med": null,
+     "b2b": "0/1"
+    },
+    "all": {
+     "n": 1393,
+     "tpw": 5.43,
+     "wk2": 55,
+     "win": 49.8,
+     "pf": 1.09,
+     "net": 5277,
+     "dd": -3894,
+     "avg_r": 0.017,
+     "stop": 41.4,
+     "worst_day": -423,
+     "risk": 120.0,
+     "half": 0,
+     "per_month": 86,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.0,
+     "f15": 0.0,
+     "p20": 0.2,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": 100.0,
+     "pass_med": 39.5,
+     "b2b": "1/1"
+    }
+   }
+  },
+  {
+   "id": "bzx_signal_facts",
+   "title": "BLITZ signal facts: relative volume, band width, opposite break, yesterday's result - rejected",
+   "family": "filters",
+   "question": "Signal-level facts not in the rejected list, each as a size tilt with a shuffled control",
+   "status": "rejected",
+   "verdict": "Signal-level facts as size tilts / skips (cut on 2026 H1): 0 of 120 better per unit of risk AND in $ in H1, H2 and 2021-25 (shuffled facts give 4.9 on average). Signal-bar volume vs the same minute's 14-day mean, avg R by H1 tercile [0.019, 0.243, 0.23] / [0.259, 0.29, 0.088] / [0.115, -0.005, -0.031]; band width / ATR [0.281, 0.226, -0.015] / [-0.034, 0.253, 0.628] / [0.005, 0.016, 0.021]; an earlier opposite-side break today is rare (3 / 5 / 27 trades); after a winning BLITZ day 0.207 vs 0.11 (H1), 0.292 vs 0.014 (H2) but -0.011 vs 0.033 (2021-25). Stored: x1 after a winning BLITZ day, x0.5 otherwise. Rejected.",
+   "writeup": "blitz-edge-2026-10-30b",
+   "tags": [
+    "scalp",
+    "blitz",
+    "account_c",
+    "25k",
+    "bzx",
+    "filters"
+   ],
+   "params": {
+    "stop": "atr",
+    "k": 1.5,
+    "tgt": null,
+    "part": null,
+    "hold": 30,
+    "trail": 1.5,
+    "tstart": 1.0,
+    "be": null,
+    "be_off": 0.25,
+    "sw_trail": 0,
+    "sw_start": 1.0,
+    "choch": 0,
+    "maxday": 6,
+    "day_stop": 3.0,
+    "dmin": 0.0,
+    "dmax": 99.0,
+    "r_min": 1.0,
+    "r_max": 99.0,
+    "p_min": 0.5,
+    "part_f": 0.5,
+    "part_be": false,
+    "liq": "all",
+    "filter": "prng>=0.8",
+    "late": 0,
+    "wins": [
+     "rth"
+    ],
+    "last_mod": 930,
+    "lim": null,
+    "lim_w": 10,
+    "tilt": "prev_win x1 / x0.5 (stored example)"
+   },
+   "sizing": {
+    "usd_per_trade": 150.0
+   },
+   "built": "2026-10-30 16:54",
+   "spans": {
+    "2026": {
+     "n": 323,
+     "tpw": 7.84,
+     "wk2": 86,
+     "win": 56.7,
+     "pf": 1.72,
+     "net": 8433,
+     "dd": -772,
+     "avg_r": 0.176,
+     "stop": 61.1,
+     "worst_day": -392,
+     "risk": 128.0,
+     "half": 0,
+     "per_month": 860,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.0,
+     "f15": 0.0,
+     "p20": 1.5,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": 100.0,
+     "pass_med": 39.0,
+     "b2b": "2/0"
+    },
+    "2021-25": {
+     "n": 1841,
+     "tpw": 8.55,
+     "wk2": 80,
+     "win": 50.1,
+     "pf": 1.04,
+     "net": 2924,
+     "dd": -4533,
+     "avg_r": 0.013,
+     "stop": 38.9,
+     "worst_day": -447,
+     "risk": 101.0,
+     "half": 0,
+     "per_month": 57,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.0,
+     "f15": 0.0,
+     "p20": 0.0,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": null,
+     "pass_med": null,
+     "b2b": "2/3"
+    },
+    "all": {
+     "n": 2164,
+     "tpw": 8.43,
+     "wk2": 81,
+     "win": 51.1,
+     "pf": 1.14,
+     "net": 11357,
+     "dd": -4533,
+     "avg_r": 0.037,
+     "stop": 41.2,
+     "worst_day": -447,
+     "risk": 105.0,
+     "half": 0,
+     "per_month": 186,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.0,
+     "f15": 0.0,
+     "p20": 0.2,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": 100.0,
+     "pass_med": 39.0,
+     "b2b": "4/3"
     }
    }
   },
@@ -120106,6 +121617,630 @@
    }
   },
   {
+   "id": "atw_entry_mid_30m_mkt",
+   "title": "ATLAS entry: limit mid 30m else mkt - rejected",
+   "family": "other",
+   "question": "Owner 2026-10-30: enter ATLAS with a limit at a better price instead of market at the next open?",
+   "status": "rejected",
+   "verdict": "ATLAS limit mid 30m else mkt: fill rate 92.0 / 94.4 / 96.1 / 97.9% (H1 / H2 / 2025 / 2021-24); H1 2-week pass/dead 47.1/3.4 (today 65.5/0.8), eval paths $676/mo (today $1394), R/risk +0.762 (today +0.884); H2 2-week pass/dead 46.4/0.0 (today 43.5/0.0), eval paths $387/mo (today $547), R/risk +0.680 (today +0.620); 2025 2-week pass/dead 32.5/18.5 (today 30.1/23.3), eval paths $311/mo (today $-148), R/risk +0.200 (today +0.084); 2021-24 2-week pass/dead 22.6/35.2 (today 22.9/27.1), eval paths $-68/mo (today $-36), R/risk -0.009 (today +0.045). v2 test: fails.",
+   "writeup": "atlas-windows-entries-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "entry"
+   ],
+   "params": {
+    "entry": {
+     "px": "mid",
+     "wait": 30,
+     "else": "mkt",
+     "mg": "r"
+    }
+   },
+   "sizing": {
+    "account_b": "need size on the (smaller) limit-fill risk"
+   },
+   "built": "2026-10-30 17:12",
+   "spans": {
+    "2026": {
+     "n": 90,
+     "tpw": 2.18,
+     "wk2": 57,
+     "win": 48.9,
+     "pf": 2.1,
+     "net": 9316,
+     "dd": -1176,
+     "avg_r": 0.977,
+     "stop": 35.0,
+     "worst_day": -553,
+     "risk": 153.0,
+     "half": 0,
+     "per_month": 950,
+     "p10": 1.0,
+     "f10": 0.0,
+     "p15": 2.4,
+     "f15": 0.0,
+     "p20": 7.3,
+     "f20": 0.0,
+     "dec10": 1.0,
+     "slow_pass": 95.1,
+     "pass_med": 38.5,
+     "b2b": "3/0"
+    },
+    "2021-25": {
+     "n": 766,
+     "tpw": 3.57,
+     "wk2": 86,
+     "win": 32.1,
+     "pf": 1.13,
+     "net": 9562,
+     "dd": -8612,
+     "avg_r": 0.036,
+     "stop": 20.2,
+     "worst_day": -599,
+     "risk": 120.0,
+     "half": 0,
+     "per_month": 187,
+     "p10": 3.6,
+     "f10": 0.4,
+     "p15": 5.4,
+     "f15": 3.1,
+     "p20": 7.9,
+     "f20": 6.7,
+     "dec10": 4.0,
+     "slow_pass": 74.2,
+     "pass_med": 26.0,
+     "b2b": "6/14"
+    },
+    "all": {
+     "n": 856,
+     "tpw": 3.35,
+     "wk2": 81,
+     "win": 33.9,
+     "pf": 1.23,
+     "net": 18878,
+     "dd": -8612,
+     "avg_r": 0.135,
+     "stop": 21.0,
+     "worst_day": -599,
+     "risk": 126.0,
+     "half": 0,
+     "per_month": 310,
+     "p10": 3.2,
+     "f10": 0.3,
+     "p15": 4.9,
+     "f15": 2.6,
+     "p20": 7.8,
+     "f20": 5.6,
+     "dec10": 3.5,
+     "slow_pass": 81.8,
+     "pass_med": 32.0,
+     "b2b": "9/14"
+    }
+   }
+  },
+  {
+   "id": "atw_entry_mid_30m_skip",
+   "title": "ATLAS entry: limit mid 30m else skip - rejected",
+   "family": "other",
+   "question": "Owner 2026-10-30: enter ATLAS with a limit at a better price instead of market at the next open?",
+   "status": "rejected",
+   "verdict": "ATLAS limit mid 30m else skip: fill rate 75.9 / 79.6 / 73.3 / 79.7% (H1 / H2 / 2025 / 2021-24); H1 2-week pass/dead 47.1/2.5 (today 65.5/0.8), eval paths $1077/mo (today $1394), R/risk +0.857 (today +0.884); H2 2-week pass/dead 46.4/0.0 (today 43.5/0.0), eval paths $317/mo (today $547), R/risk +0.819 (today +0.620); 2025 2-week pass/dead 30.9/14.1 (today 30.1/23.3), eval paths $57/mo (today $-148), R/risk +0.185 (today +0.084); 2021-24 2-week pass/dead 23.0/31.3 (today 22.9/27.1), eval paths $52/mo (today $-36), R/risk -0.006 (today +0.045). v2 test: fails.",
+   "writeup": "atlas-windows-entries-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "entry"
+   ],
+   "params": {
+    "entry": {
+     "px": "mid",
+     "wait": 30,
+     "else": "skip",
+     "mg": "r"
+    }
+   },
+   "sizing": {
+    "account_b": "need size on the (smaller) limit-fill risk"
+   },
+   "built": "2026-10-30 17:11",
+   "spans": {
+    "2026": {
+     "n": 107,
+     "tpw": 2.6,
+     "wk2": 76,
+     "win": 50.5,
+     "pf": 2.14,
+     "net": 10720,
+     "dd": -1116,
+     "avg_r": 0.879,
+     "stop": 34.0,
+     "worst_day": -511,
+     "risk": 164.0,
+     "half": 0,
+     "per_month": 1093,
+     "p10": 4.9,
+     "f10": 0.0,
+     "p15": 7.8,
+     "f15": 0.0,
+     "p20": 9.7,
+     "f20": 0.0,
+     "dec10": 4.9,
+     "slow_pass": 82.0,
+     "pass_med": 37.0,
+     "b2b": "3/0"
+    },
+    "2021-25": {
+     "n": 667,
+     "tpw": 3.11,
+     "wk2": 83,
+     "win": 31.9,
+     "pf": 1.07,
+     "net": 4647,
+     "dd": -6781,
+     "avg_r": 0.065,
+     "stop": 17.8,
+     "worst_day": -593,
+     "risk": 109.0,
+     "half": 0,
+     "per_month": 91,
+     "p10": 2.3,
+     "f10": 0.0,
+     "p15": 3.5,
+     "f15": 0.2,
+     "p20": 5.2,
+     "f20": 2.4,
+     "dec10": 2.3,
+     "slow_pass": 80.4,
+     "pass_med": 30.0,
+     "b2b": "6/12"
+    },
+    "all": {
+     "n": 774,
+     "tpw": 3.03,
+     "wk2": 82,
+     "win": 34.5,
+     "pf": 1.21,
+     "net": 15367,
+     "dd": -6781,
+     "avg_r": 0.178,
+     "stop": 19.5,
+     "worst_day": -593,
+     "risk": 120.0,
+     "half": 0,
+     "per_month": 253,
+     "p10": 2.7,
+     "f10": 0.0,
+     "p15": 4.1,
+     "f15": 0.2,
+     "p20": 5.9,
+     "f20": 2.0,
+     "dec10": 2.7,
+     "slow_pass": 80.9,
+     "pass_med": 32.0,
+     "b2b": "8/12"
+    }
+   }
+  },
+  {
+   "id": "atw_entry_q25_30m_mkt",
+   "title": "ATLAS entry: limit q25 30m else mkt - rejected",
+   "family": "other",
+   "question": "Owner 2026-10-30: enter ATLAS with a limit at a better price instead of market at the next open?",
+   "status": "rejected",
+   "verdict": "ATLAS limit q25 30m else mkt: fill rate 90.7 / 100.0 / 97.4 / 98.2% (H1 / H2 / 2025 / 2021-24); H1 2-week pass/dead 31.9/0.0 (today 65.5/0.8), eval paths $227/mo (today $1394), R/risk +0.511 (today +0.884); H2 2-week pass/dead 60.9/0.0 (today 43.5/0.0), eval paths $1465/mo (today $547), R/risk +0.846 (today +0.620); 2025 2-week pass/dead 27.7/22.5 (today 30.1/23.3), eval paths $109/mo (today $-148), R/risk +0.189 (today +0.084); 2021-24 2-week pass/dead 21.4/33.8 (today 22.9/27.1), eval paths $-181/mo (today $-36), R/risk -0.021 (today +0.045). v2 test: fails.",
+   "writeup": "atlas-windows-entries-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "entry"
+   ],
+   "params": {
+    "entry": {
+     "px": "q25",
+     "wait": 30,
+     "else": "mkt",
+     "mg": "r"
+    }
+   },
+   "sizing": {
+    "account_b": "need size on the (smaller) limit-fill risk"
+   },
+   "built": "2026-10-30 17:12",
+   "spans": {
+    "2026": {
+     "n": 108,
+     "tpw": 2.62,
+     "wk2": 86,
+     "win": 50.0,
+     "pf": 2.62,
+     "net": 14005,
+     "dd": -1476,
+     "avg_r": 0.754,
+     "stop": 34.0,
+     "worst_day": -458,
+     "risk": 164.0,
+     "half": 0,
+     "per_month": 1428,
+     "p10": 9.7,
+     "f10": 0.0,
+     "p15": 13.6,
+     "f15": 0.0,
+     "p20": 19.4,
+     "f20": 0.0,
+     "dec10": 9.7,
+     "slow_pass": 81.1,
+     "pass_med": 32.0,
+     "b2b": "4/0"
+    },
+    "2021-25": {
+     "n": 736,
+     "tpw": 3.43,
+     "wk2": 83,
+     "win": 33.3,
+     "pf": 0.9,
+     "net": -6982,
+     "dd": -14107,
+     "avg_r": -0.018,
+     "stop": 19.8,
+     "worst_day": -582,
+     "risk": 121.0,
+     "half": 0,
+     "per_month": -137,
+     "p10": 0.9,
+     "f10": 0.2,
+     "p15": 1.8,
+     "f15": 1.5,
+     "p20": 2.8,
+     "f20": 5.2,
+     "dec10": 1.1,
+     "slow_pass": 86.2,
+     "pass_med": 35.5,
+     "b2b": "3/14"
+    },
+    "all": {
+     "n": 844,
+     "tpw": 3.3,
+     "wk2": 84,
+     "win": 35.4,
+     "pf": 1.09,
+     "net": 7023,
+     "dd": -14107,
+     "avg_r": 0.081,
+     "stop": 21.0,
+     "worst_day": -582,
+     "risk": 129.0,
+     "half": 0,
+     "per_month": 115,
+     "p10": 2.3,
+     "f10": 0.2,
+     "p15": 3.7,
+     "f15": 1.3,
+     "p20": 5.5,
+     "f20": 4.4,
+     "dec10": 2.5,
+     "slow_pass": 83.6,
+     "pass_med": 34.0,
+     "b2b": "6/15"
+    }
+   }
+  },
+  {
+   "id": "atw_entry_q25_30m_skip",
+   "title": "ATLAS entry: limit q25 30m else skip - rejected",
+   "family": "other",
+   "question": "Owner 2026-10-30: enter ATLAS with a limit at a better price instead of market at the next open?",
+   "status": "rejected",
+   "verdict": "ATLAS limit q25 30m else skip: fill rate 69.5 / 80.7 / 73.6 / 77.6% (H1 / H2 / 2025 / 2021-24); H1 2-week pass/dead 31.9/0.0 (today 65.5/0.8), eval paths $559/mo (today $1394), R/risk +0.517 (today +0.884); H2 2-week pass/dead 44.9/0.0 (today 43.5/0.0), eval paths $1192/mo (today $547), R/risk +0.867 (today +0.620); 2025 2-week pass/dead 28.9/13.3 (today 30.1/23.3), eval paths $281/mo (today $-148), R/risk +0.215 (today +0.084); 2021-24 2-week pass/dead 22.1/29.2 (today 22.9/27.1), eval paths $-19/mo (today $-36), R/risk -0.019 (today +0.045). v2 test: fails.",
+   "writeup": "atlas-windows-entries-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "entry"
+   ],
+   "params": {
+    "entry": {
+     "px": "q25",
+     "wait": 30,
+     "else": "skip",
+     "mg": "r"
+    }
+   },
+   "sizing": {
+    "account_b": "need size on the (smaller) limit-fill risk"
+   },
+   "built": "2026-10-30 17:12",
+   "spans": {
+    "2026": {
+     "n": 66,
+     "tpw": 1.6,
+     "wk2": 48,
+     "win": 53.0,
+     "pf": 2.36,
+     "net": 7623,
+     "dd": -1908,
+     "avg_r": 0.595,
+     "stop": 31.5,
+     "worst_day": -458,
+     "risk": 178.0,
+     "half": 0,
+     "per_month": 777,
+     "p10": 2.9,
+     "f10": 0.0,
+     "p15": 4.9,
+     "f15": 0.0,
+     "p20": 5.3,
+     "f20": 0.0,
+     "dec10": 2.9,
+     "slow_pass": 87.8,
+     "pass_med": 36.5,
+     "b2b": "2/1"
+    },
+    "2021-25": {
+     "n": 605,
+     "tpw": 2.82,
+     "wk2": 74,
+     "win": 32.2,
+     "pf": 1.08,
+     "net": 4584,
+     "dd": -13205,
+     "avg_r": -0.006,
+     "stop": 17.0,
+     "worst_day": -580,
+     "risk": 111.0,
+     "half": 0,
+     "per_month": 90,
+     "p10": 3.2,
+     "f10": 0.0,
+     "p15": 5.6,
+     "f15": 0.4,
+     "p20": 7.9,
+     "f20": 3.1,
+     "dec10": 3.2,
+     "slow_pass": 72.9,
+     "pass_med": 26.0,
+     "b2b": "6/11"
+    },
+    "all": {
+     "n": 671,
+     "tpw": 2.63,
+     "wk2": 70,
+     "win": 34.3,
+     "pf": 1.19,
+     "net": 12207,
+     "dd": -13205,
+     "avg_r": 0.053,
+     "stop": 18.0,
+     "worst_day": -580,
+     "risk": 118.0,
+     "half": 0,
+     "per_month": 201,
+     "p10": 3.1,
+     "f10": 0.0,
+     "p15": 5.5,
+     "f15": 0.3,
+     "p20": 7.5,
+     "f20": 2.6,
+     "dec10": 3.1,
+     "slow_pass": 76.9,
+     "pass_med": 31.0,
+     "b2b": "8/12"
+    }
+   }
+  },
+  {
+   "id": "atw_entry_q50_30m_mkt",
+   "title": "ATLAS entry: limit q50 30m else mkt - rejected",
+   "family": "other",
+   "question": "Owner 2026-10-30: enter ATLAS with a limit at a better price instead of market at the next open?",
+   "status": "rejected",
+   "verdict": "ATLAS limit q50 30m else mkt: fill rate 89.0 / 93.0 / 95.6 / 97.0% (H1 / H2 / 2025 / 2021-24); H1 2-week pass/dead 42.9/4.2 (today 65.5/0.8), eval paths $540/mo (today $1394), R/risk +0.771 (today +0.884); H2 2-week pass/dead 40.6/1.4 (today 43.5/0.0), eval paths $629/mo (today $547), R/risk +0.585 (today +0.620); 2025 2-week pass/dead 35.7/23.7 (today 30.1/23.3), eval paths $-104/mo (today $-148), R/risk +0.136 (today +0.084); 2021-24 2-week pass/dead 25.3/32.7 (today 22.9/27.1), eval paths $24/mo (today $-36), R/risk -0.015 (today +0.045). v2 test: fails.",
+   "writeup": "atlas-windows-entries-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "entry"
+   ],
+   "params": {
+    "entry": {
+     "px": "q50",
+     "wait": 30,
+     "else": "mkt",
+     "mg": "r"
+    }
+   },
+   "sizing": {
+    "account_b": "need size on the (smaller) limit-fill risk"
+   },
+   "built": "2026-10-30 17:12",
+   "spans": {
+    "2026": {
+     "n": 77,
+     "tpw": 1.87,
+     "wk2": 60,
+     "win": 46.8,
+     "pf": 1.95,
+     "net": 6243,
+     "dd": -2228,
+     "avg_r": 0.483,
+     "stop": 23.0,
+     "worst_day": -504,
+     "risk": 118.0,
+     "half": 0,
+     "per_month": 636,
+     "p10": 3.4,
+     "f10": 0.0,
+     "p15": 7.3,
+     "f15": 0.0,
+     "p20": 9.7,
+     "f20": 0.0,
+     "dec10": 3.4,
+     "slow_pass": 75.0,
+     "pass_med": 28.0,
+     "b2b": "2/1"
+    },
+    "2021-25": {
+     "n": 795,
+     "tpw": 3.71,
+     "wk2": 91,
+     "win": 32.6,
+     "pf": 1.1,
+     "net": 7593,
+     "dd": -7360,
+     "avg_r": -0.013,
+     "stop": 16.2,
+     "worst_day": -597,
+     "risk": 108.0,
+     "half": 0,
+     "per_month": 149,
+     "p10": 2.9,
+     "f10": 0.5,
+     "p15": 6.1,
+     "f15": 3.6,
+     "p20": 8.9,
+     "f20": 7.6,
+     "dec10": 3.4,
+     "slow_pass": 74.9,
+     "pass_med": 27.0,
+     "b2b": "8/16"
+    },
+    "all": {
+     "n": 872,
+     "tpw": 3.41,
+     "wk2": 86,
+     "win": 33.8,
+     "pf": 1.17,
+     "net": 13836,
+     "dd": -7360,
+     "avg_r": 0.031,
+     "stop": 17.2,
+     "worst_day": -597,
+     "risk": 110.0,
+     "half": 0,
+     "per_month": 227,
+     "p10": 3.0,
+     "f10": 0.4,
+     "p15": 6.3,
+     "f15": 3.1,
+     "p20": 9.0,
+     "f20": 6.4,
+     "dec10": 3.4,
+     "slow_pass": 74.9,
+     "pass_med": 27.0,
+     "b2b": "10/18"
+    }
+   }
+  },
+  {
+   "id": "atw_entry_q50_30m_skip",
+   "title": "ATLAS entry: limit q50 30m else skip - rejected",
+   "family": "other",
+   "question": "Owner 2026-10-30: enter ATLAS with a limit at a better price instead of market at the next open?",
+   "status": "rejected",
+   "verdict": "ATLAS limit q50 30m else skip: fill rate 53.4 / 52.6 / 55.3 / 59.1% (H1 / H2 / 2025 / 2021-24); H1 2-week pass/dead 39.5/1.7 (today 65.5/0.8), eval paths $729/mo (today $1394), R/risk +1.017 (today +0.884); H2 2-week pass/dead 14.5/0.0 (today 43.5/0.0), eval paths $308/mo (today $547), R/risk +0.896 (today +0.620); 2025 2-week pass/dead 26.1/8.8 (today 30.1/23.3), eval paths $-207/mo (today $-148), R/risk +0.064 (today +0.084); 2021-24 2-week pass/dead 23.1/19.6 (today 22.9/27.1), eval paths $-19/mo (today $-36), R/risk -0.082 (today +0.045). v2 test: fails.",
+   "writeup": "atlas-windows-entries-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "entry"
+   ],
+   "params": {
+    "entry": {
+     "px": "q50",
+     "wait": 30,
+     "else": "skip",
+     "mg": "r"
+    }
+   },
+   "sizing": {
+    "account_b": "need size on the (smaller) limit-fill risk"
+   },
+   "built": "2026-10-30 17:12",
+   "spans": {
+    "2026": {
+     "n": 77,
+     "tpw": 1.87,
+     "wk2": 62,
+     "win": 45.5,
+     "pf": 1.93,
+     "net": 6529,
+     "dd": -1622,
+     "avg_r": 0.927,
+     "stop": 20.5,
+     "worst_day": -550,
+     "risk": 124.0,
+     "half": 0,
+     "per_month": 666,
+     "p10": 3.9,
+     "f10": 0.0,
+     "p15": 6.3,
+     "f15": 0.0,
+     "p20": 9.7,
+     "f20": 0.0,
+     "dec10": 3.9,
+     "slow_pass": 78.3,
+     "pass_med": 30.5,
+     "b2b": "2/0"
+    },
+    "2021-25": {
+     "n": 572,
+     "tpw": 2.67,
+     "wk2": 74,
+     "win": 29.4,
+     "pf": 0.95,
+     "net": -2640,
+     "dd": -9847,
+     "avg_r": -0.068,
+     "stop": 11.8,
+     "worst_day": -566,
+     "risk": 102.0,
+     "half": 0,
+     "per_month": -52,
+     "p10": 2.5,
+     "f10": 0.0,
+     "p15": 3.5,
+     "f15": 0.1,
+     "p20": 4.5,
+     "f20": 1.9,
+     "dec10": 2.5,
+     "slow_pass": 71.6,
+     "pass_med": 29.0,
+     "b2b": "4/11"
+    },
+    "all": {
+     "n": 649,
+     "tpw": 2.54,
+     "wk2": 72,
+     "win": 31.3,
+     "pf": 1.06,
+     "net": 3890,
+     "dd": -9847,
+     "avg_r": 0.05,
+     "stop": 12.5,
+     "worst_day": -566,
+     "risk": 104.0,
+     "half": 0,
+     "per_month": 64,
+     "p10": 2.7,
+     "f10": 0.0,
+     "p15": 4.0,
+     "f15": 0.1,
+     "p20": 5.3,
+     "f20": 1.6,
+     "dec10": 2.7,
+     "slow_pass": 73.7,
+     "pass_med": 29.5,
+     "b2b": "6/11"
+    }
+   }
+  },
+  {
    "id": "bholds_b_holds_b",
    "title": "ATLAS 25K under rule b_holds (B-holds vs LIT priority)",
    "family": "other",
@@ -120560,6 +122695,136 @@
      "slow_pass": 100.0,
      "pass_med": 59.0,
      "b2b": "3/2"
+    }
+   }
+  },
+  {
+   "id": "bzx_es_solo",
+   "title": "BLITZ on ES (MES, 5m) as a second market - rejected (PF 0.94 / 1.03 / 0.82, correlated 0.6 with NQ BLITZ)",
+   "family": "other",
+   "question": "Coordinator round 4: does BLITZ work on ES as a second market for the same 25K?",
+   "status": "rejected",
+   "verdict": "Today's BLITZ rule on CME ES1! 5m bars (MES $5 a point, $1.90 a micro, 1 tick fills), at $150 a trade - 2025 May-Dec / 2026 H1 / 2026 H2: PF 0.94, $-96 a month, 8.99 a week / PF 1.03, $42 a month, 9.18 a week / PF 0.82, $-311 a month, 9.49 a week; NQ BLITZ on the same 5m bars: PF 1.13, $176 / PF 1.48, $830 / PF 1.5, $571. Daily P&L correlation with NQ BLITZ 0.66 / 0.64 / 0.58 (same side on 0.88, 0.94, 0.86 of the days both trade). Before costs ES is PF 1.21 / 1.28 / 1.11. ES fails (PF < 1.1 in every span), so the NQ + ES 25K was not built. Short history (18 months): a caveat. Rejected.",
+   "writeup": "blitz-edge-2026-10-30b",
+   "tags": [
+    "scalp",
+    "blitz",
+    "es",
+    "bzx",
+    "second-market"
+   ],
+   "params": {
+    "stop": "atr",
+    "k": 1.5,
+    "tgt": null,
+    "part": null,
+    "hold": 30,
+    "trail": 1.5,
+    "tstart": 1.0,
+    "be": null,
+    "be_off": 0.25,
+    "sw_trail": 0,
+    "sw_start": 1.0,
+    "choch": 0,
+    "maxday": 6,
+    "day_stop": 3.0,
+    "dmin": 0.0,
+    "dmax": 99.0,
+    "r_min": 1.0,
+    "r_max": 99.0,
+    "p_min": 0.5,
+    "part_f": 0.5,
+    "part_be": false,
+    "liq": "all",
+    "filter": "prng>=0.8",
+    "late": 0,
+    "wins": [
+     "rth"
+    ],
+    "last_mod": 930,
+    "lim": null,
+    "lim_w": 10,
+    "market": "ES1! 5m, MES $5 a point"
+   },
+   "sizing": {
+    "usd_per_trade": 150.0
+   },
+   "built": "2026-10-30 17:14",
+   "spans": {
+    "2026": {
+     "n": 383,
+     "tpw": 9.3,
+     "wk2": 86,
+     "win": 45.2,
+     "pf": 0.94,
+     "net": -900,
+     "dd": -2050,
+     "avg_r": -0.018,
+     "stop": 11.3,
+     "worst_day": -414,
+     "risk": 124.0,
+     "half": 0,
+     "per_month": -92,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.0,
+     "f15": 0.0,
+     "p20": 0.0,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": null,
+     "pass_med": null,
+     "b2b": "0/1"
+    },
+    "2021-25": {
+     "n": 313,
+     "tpw": 8.99,
+     "wk2": 81,
+     "win": 47.0,
+     "pf": 0.94,
+     "net": -795,
+     "dd": -1808,
+     "avg_r": -0.035,
+     "stop": 9.1,
+     "worst_day": -330,
+     "risk": 125.0,
+     "half": 0,
+     "per_month": -96,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.0,
+     "f15": 0.0,
+     "p20": 0.0,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": null,
+     "pass_med": null,
+     "b2b": "0/0"
+    },
+    "all": {
+     "n": 696,
+     "tpw": 9.16,
+     "wk2": 84,
+     "win": 46.0,
+     "pf": 0.94,
+     "net": -1695,
+     "dd": -2294,
+     "avg_r": -0.026,
+     "stop": 10.3,
+     "worst_day": -414,
+     "risk": 124.0,
+     "half": 0,
+     "per_month": -94,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.0,
+     "f15": 0.0,
+     "p20": 0.0,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": null,
+     "pass_med": null,
+     "b2b": "0/2"
     }
    }
   },
@@ -219563,6 +221828,2281 @@
    }
   },
   {
+   "id": "atx2_funded_asia_w10",
+   "title": "Eval = today; once funded + sh_asia x1 (round 2, config A clean)",
+   "family": "risk",
+   "question": "ATLAS 2026-10-30 b round 2: which members should trade ATLAS's FUNDED 25K (eval unchanged)?",
+   "status": "rejected",
+   "verdict": "Eval = today's ATLAS; once funded + sh_asia x1 (market entry). Slot $/mo (20 seeds x 200 paths): H1 $772 vs $574 (+198, 100% of seeds up); H2 $364 vs $374 (-10, 10% of seeds up); 2021-25 $14 vs $-7 (+21, 100% of seeds up); 2022 $9 vs $-25 (+34, 100% of seeds up); 2023 $4 vs $2 (+2, 60% of seeds up); 2024 $7 vs $-13 (+20, 95% of seeds up); 2025 $38 vs $10 (+28, 100% of seeds up). Random-time sh_asia x0.5 (12 copies): H1 $532, H2 $306. H2 below today: rejected. Real-session slot: H1 $887/mo (7 payouts); H2 $182/mo (1 payouts); 2025 $-36/mo (0 payouts); 2021-24 $-52/mo (0 payouts)",
+   "writeup": "atlas-edge-2026-10-30b",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "funded",
+    "slot",
+    "round2"
+   ],
+   "params": {
+    "eval": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "funded": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "SHA"
+     ],
+     "w": {
+      "SHA": 1.0
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "fz": {}
+   },
+   "sizing": {
+    "eval": "engine/account_b.qty need",
+    "funded": "funded preset x weight; BLITZ: its own 10% / $150"
+   },
+   "built": "2026-10-30 17:44",
+   "spans": {
+    "2026": {
+     "n": 148,
+     "tpw": 3.59,
+     "wk2": 79,
+     "win": 56.1,
+     "pf": 2.94,
+     "net": 20444,
+     "dd": -1435,
+     "avg_r": 0.716,
+     "stop": 45.5,
+     "worst_day": -586,
+     "risk": 141.0,
+     "half": 0,
+     "per_month": 2084,
+     "p10": 6.3,
+     "f10": 0.0,
+     "p15": 18.4,
+     "f15": 0.0,
+     "p20": 37.4,
+     "f20": 0.0,
+     "dec10": 6.3,
+     "slow_pass": 74.0,
+     "pass_med": 20.0,
+     "b2b": "6/0"
+    },
+    "2021-25": {
+     "n": 718,
+     "tpw": 3.35,
+     "wk2": 76,
+     "win": 38.3,
+     "pf": 0.88,
+     "net": -8145,
+     "dd": -10990,
+     "avg_r": 0.003,
+     "stop": 22.4,
+     "worst_day": -594,
+     "risk": 112.0,
+     "half": 0,
+     "per_month": -160,
+     "p10": 0.9,
+     "f10": 0.0,
+     "p15": 1.6,
+     "f15": 2.1,
+     "p20": 2.6,
+     "f20": 5.2,
+     "dec10": 0.9,
+     "slow_pass": 86.7,
+     "pass_med": 32.0,
+     "b2b": "3/12"
+    },
+    "all": {
+     "n": 866,
+     "tpw": 3.39,
+     "wk2": 76,
+     "win": 41.3,
+     "pf": 1.16,
+     "net": 12299,
+     "dd": -10990,
+     "avg_r": 0.125,
+     "stop": 25.1,
+     "worst_day": -594,
+     "risk": 120.0,
+     "half": 0,
+     "per_month": 202,
+     "p10": 1.8,
+     "f10": 0.0,
+     "p15": 4.3,
+     "f15": 1.7,
+     "p20": 8.2,
+     "f20": 4.4,
+     "dec10": 1.8,
+     "slow_pass": 81.8,
+     "pass_med": 25.0,
+     "b2b": "9/13"
+    }
+   }
+  },
+  {
+   "id": "atx2_funded_blitz_1micro",
+   "title": "Eval = today; once funded + BLITZ 1 micro (round 2)",
+   "family": "risk",
+   "question": "ATLAS 2026-10-30 b round 2: which members should trade ATLAS's FUNDED 25K (eval unchanged)?",
+   "status": "rejected",
+   "verdict": "Eval = today's ATLAS; once funded + BLITZ (BLITZ 1 micro). Slot $/mo (10 seeds x 200 paths): H1 $755 vs $569 (+186); H2 $395 vs $375 (+19); 2021-25 $-7 vs $-9 (+2). Passes the slot gate. Rejected: its random-direction twins reach its H2 slot in 2 of 6 draws, 2021-25 is +$2-3 (70% of seeds), 2024 is below today on every seed, and the real H2 calendar path pays $182 vs $414 a month. Real-session slot: H1 $1,017/mo (8 payouts); H2 $182/mo (1 payouts); 2025 $-31/mo (0 payouts); 2021-24 $28/mo (4 payouts)",
+   "writeup": "atlas-edge-2026-10-30b",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "funded",
+    "slot",
+    "round2"
+   ],
+   "params": {
+    "eval": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "funded": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "BLZ"
+     ],
+     "w": {
+      "BLZ": 1.0
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "fz": {
+     "blz_1micro": true
+    }
+   },
+   "sizing": {
+    "eval": "engine/account_b.qty need",
+    "funded": "funded preset x weight; BLITZ: its own 10% / $150"
+   },
+   "built": "2026-10-30 17:44",
+   "spans": {
+    "2026": {
+     "n": 331,
+     "tpw": 8.03,
+     "wk2": 98,
+     "win": 55.6,
+     "pf": 2.59,
+     "net": 24844,
+     "dd": -1393,
+     "avg_r": 0.455,
+     "stop": 51.2,
+     "worst_day": -586,
+     "risk": 123.0,
+     "half": 0,
+     "per_month": 2533,
+     "p10": 8.7,
+     "f10": 0.0,
+     "p15": 22.3,
+     "f15": 0.0,
+     "p20": 36.9,
+     "f20": 0.0,
+     "dec10": 8.7,
+     "slow_pass": 69.9,
+     "pass_med": 21.0,
+     "b2b": "7/0"
+    },
+    "2021-25": {
+     "n": 1221,
+     "tpw": 5.69,
+     "wk2": 82,
+     "win": 43.3,
+     "pf": 1.03,
+     "net": 2532,
+     "dd": -7493,
+     "avg_r": 0.039,
+     "stop": 31.8,
+     "worst_day": -593,
+     "risk": 102.0,
+     "half": 0,
+     "per_month": 50,
+     "p10": 1.0,
+     "f10": 0.4,
+     "p15": 2.2,
+     "f15": 2.7,
+     "p20": 3.1,
+     "f20": 5.1,
+     "dec10": 1.4,
+     "slow_pass": 86.9,
+     "pass_med": 42.0,
+     "b2b": "5/10"
+    },
+    "all": {
+     "n": 1552,
+     "tpw": 6.07,
+     "wk2": 85,
+     "win": 45.9,
+     "pf": 1.28,
+     "net": 27375,
+     "dd": -7493,
+     "avg_r": 0.127,
+     "stop": 35.3,
+     "worst_day": -593,
+     "risk": 105.0,
+     "half": 0,
+     "per_month": 450,
+     "p10": 2.3,
+     "f10": 0.3,
+     "p15": 5.5,
+     "f15": 2.3,
+     "p20": 8.5,
+     "f20": 4.3,
+     "dec10": 2.6,
+     "slow_pass": 80.9,
+     "pass_med": 30.0,
+     "b2b": "12/11"
+    }
+   }
+  },
+  {
+   "id": "atx2_funded_blitz_w05",
+   "title": "Eval = today; once funded + BLITZ x0.5 (round 2)",
+   "family": "risk",
+   "question": "ATLAS 2026-10-30 b round 2: which members should trade ATLAS's FUNDED 25K (eval unchanged)?",
+   "status": "rejected",
+   "verdict": "Eval = today's ATLAS; once funded + BLITZ (BLITZ x0.5). Slot $/mo (10 seeds x 200 paths): H1 $756 vs $569 (+186); H2 $395 vs $375 (+19); 2021-25 $-7 vs $-9 (+2). Passes the slot gate. Rejected: its random-direction twins reach its H2 slot in 2 of 6 draws, 2021-25 is +$2-3 (70% of seeds), 2024 is below today on every seed, and the real H2 calendar path pays $182 vs $414 a month. Real-session slot: H1 $1,017/mo (8 payouts); H2 $182/mo (1 payouts); 2025 $-31/mo (0 payouts); 2021-24 $28/mo (4 payouts)",
+   "writeup": "atlas-edge-2026-10-30b",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "funded",
+    "slot",
+    "round2"
+   ],
+   "params": {
+    "eval": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "funded": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "BLZ"
+     ],
+     "w": {
+      "BLZ": 0.5
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "fz": {}
+   },
+   "sizing": {
+    "eval": "engine/account_b.qty need",
+    "funded": "funded preset x weight; BLITZ: its own 10% / $150"
+   },
+   "built": "2026-10-30 17:44",
+   "spans": {
+    "2026": {
+     "n": 331,
+     "tpw": 8.03,
+     "wk2": 98,
+     "win": 55.6,
+     "pf": 2.59,
+     "net": 24881,
+     "dd": -1393,
+     "avg_r": 0.455,
+     "stop": 51.2,
+     "worst_day": -586,
+     "risk": 123.0,
+     "half": 0,
+     "per_month": 2536,
+     "p10": 8.7,
+     "f10": 0.0,
+     "p15": 22.3,
+     "f15": 0.0,
+     "p20": 36.9,
+     "f20": 0.0,
+     "dec10": 8.7,
+     "slow_pass": 69.9,
+     "pass_med": 21.0,
+     "b2b": "7/0"
+    },
+    "2021-25": {
+     "n": 1221,
+     "tpw": 5.69,
+     "wk2": 82,
+     "win": 43.3,
+     "pf": 1.03,
+     "net": 2532,
+     "dd": -7493,
+     "avg_r": 0.039,
+     "stop": 31.8,
+     "worst_day": -593,
+     "risk": 102.0,
+     "half": 0,
+     "per_month": 50,
+     "p10": 1.0,
+     "f10": 0.4,
+     "p15": 2.2,
+     "f15": 2.7,
+     "p20": 3.1,
+     "f20": 5.1,
+     "dec10": 1.4,
+     "slow_pass": 86.9,
+     "pass_med": 42.0,
+     "b2b": "5/10"
+    },
+    "all": {
+     "n": 1552,
+     "tpw": 6.07,
+     "wk2": 85,
+     "win": 45.9,
+     "pf": 1.28,
+     "net": 27413,
+     "dd": -7493,
+     "avg_r": 0.127,
+     "stop": 35.3,
+     "worst_day": -593,
+     "risk": 105.0,
+     "half": 0,
+     "per_month": 450,
+     "p10": 2.3,
+     "f10": 0.3,
+     "p15": 5.5,
+     "f15": 2.3,
+     "p20": 8.5,
+     "f20": 4.3,
+     "dec10": 2.6,
+     "slow_pass": 80.9,
+     "pass_med": 30.0,
+     "b2b": "12/11"
+    }
+   }
+  },
+  {
+   "id": "atx_lead_as_is",
+   "title": "The NA + hunts lead as is (ab_atlas_na_hunts_lead) on the slot",
+   "family": "risk",
+   "question": "ATLAS 2026-10-30 b: can a stage-aware member set (extra members by eval session / room / funded stage) keep the hunts' and the NA lead's money without breaking the 25K eval?",
+   "status": "rejected",
+   "verdict": "Last night's lead on the slot: H1 pays the owner less than today ($532 vs $568 a month); NA gets 28-32% of funded accounts stuck in 6 months. Rejected. H1: 2-week pass/dead 62.2/5.9, eval-path $2,046/mo less fees, slot $532/mo to the owner net of evals, 11.02 trades/wk; H2: 2-week pass/dead 55.1/0.0, eval-path $1,584/mo less fees, slot $488/mo to the owner net of evals, 10.51 trades/wk; 2021-25: 2-week pass/dead 31.1/29.0, eval-path $159/mo less fees, slot $30/mo to the owner net of evals, 13.0 trades/wk. Real-session slot (one path from each span's first session): H1 $383/mo (3 payouts, 1 evals); H2 $-34/mo (0 payouts, 2 evals); 2025 $-56/mo (0 payouts, 11 evals); 2021-24 $114/mo (6 payouts, 6 evals)",
+   "writeup": "atlas-edge-2026-10-30b",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "stop_hunt",
+    "funded",
+    "slot"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "NAD",
+      "SHA",
+      "SHT"
+     ],
+     "w": {
+      "NAD": 0.5,
+      "SHA": 0.5,
+      "SHT": 0.5
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "eval": "engine/account_b.qty need (tools/atlas.q_variant) x the member weight / schedule",
+    "funded": "engine/sizing.funded_qty on the 25K preset (60% room, $50-$750, ref 20, winner <= $1,000) x the member weight (<= 1)"
+   },
+   "built": "2026-10-30 17:14",
+   "spans": {
+    "2026": {
+     "n": 186,
+     "tpw": 4.51,
+     "wk2": 71,
+     "win": 48.4,
+     "pf": 1.95,
+     "net": 12562,
+     "dd": -1738,
+     "avg_r": 0.48,
+     "stop": 43.8,
+     "worst_day": -467,
+     "risk": 131.0,
+     "half": 0,
+     "per_month": 1281,
+     "p10": 6.8,
+     "f10": 0.0,
+     "p15": 11.2,
+     "f15": 0.0,
+     "p20": 18.4,
+     "f20": 0.0,
+     "dec10": 6.8,
+     "slow_pass": 77.2,
+     "pass_med": 26.0,
+     "b2b": "3/0"
+    },
+    "2021-25": {
+     "n": 1657,
+     "tpw": 7.73,
+     "wk2": 97,
+     "win": 42.8,
+     "pf": 1.2,
+     "net": 33231,
+     "dd": -9006,
+     "avg_r": 0.141,
+     "stop": 26.8,
+     "worst_day": -593,
+     "risk": 148.0,
+     "half": 0,
+     "per_month": 651,
+     "p10": 5.6,
+     "f10": 5.2,
+     "p15": 10.4,
+     "f15": 12.5,
+     "p20": 14.7,
+     "f20": 20.7,
+     "dec10": 10.8,
+     "slow_pass": 65.4,
+     "pass_med": 21.0,
+     "b2b": "13/19"
+    },
+    "all": {
+     "n": 1843,
+     "tpw": 7.21,
+     "wk2": 93,
+     "win": 43.4,
+     "pf": 1.26,
+     "net": 45793,
+     "dd": -9006,
+     "avg_r": 0.175,
+     "stop": 28.2,
+     "worst_day": -593,
+     "risk": 144.0,
+     "half": 0,
+     "per_month": 752,
+     "p10": 5.8,
+     "f10": 4.4,
+     "p15": 10.6,
+     "f15": 10.5,
+     "p20": 15.3,
+     "f20": 17.6,
+     "dec10": 10.2,
+     "slow_pass": 68.2,
+     "pass_med": 22.0,
+     "b2b": "16/19"
+    }
+   }
+  },
+  {
+   "id": "atx_lead_na_s11_funded_hunts",
+   "title": "The NA + hunts lead fixed: NA only from eval session 11, no NA once funded",
+   "family": "risk",
+   "question": "ATLAS 2026-10-30 b: can a stage-aware member set (extra members by eval session / room / funded stage) keep the hunts' and the NA lead's money without breaking the 25K eval?",
+   "status": "rejected",
+   "verdict": "The NA + hunts lead fixed (NA only from eval session 11, no NA once funded): passes vs today (20 of 33 neighbours) but 0 of 33 beat the hunts alone on the slot: NA adds only eval-path $ (never paid). Rejected: drop NA. H1: 2-week pass/dead 67.2/0.0, eval-path $1,923/mo less fees, slot $671/mo to the owner net of evals, 11.02 trades/wk; H2: 2-week pass/dead 55.1/0.0, eval-path $861/mo less fees, slot $610/mo to the owner net of evals, 10.51 trades/wk; 2021-25: 2-week pass/dead 25.0/23.9, eval-path $45/mo less fees, slot $30/mo to the owner net of evals, 13.0 trades/wk. Real-session slot (one path from each span's first session): H1 $897/mo (7 payouts, 2 evals); H2 $-34/mo (0 payouts, 2 evals); 2025 $55/mo (2 payouts, 9 evals); 2021-24 $88/mo (6 payouts, 21 evals)",
+   "writeup": "atlas-edge-2026-10-30b",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "stop_hunt",
+    "funded",
+    "slot"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "NAD",
+      "SHA",
+      "SHT"
+     ],
+     "w": {
+      "NAD": 0.5,
+      "SHA": 0.5,
+      "SHT": 0.5
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {},
+     "sched": {
+      "members": [
+       "NAD"
+      ],
+      "from": 11,
+      "early": 0.0,
+      "late": 0.5
+     }
+    },
+    "Vf": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "SHA",
+      "SHT"
+     ],
+     "w": {
+      "SHA": 0.5,
+      "SHT": 0.5
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "eval": "engine/account_b.qty need (tools/atlas.q_variant) x the member weight / schedule",
+    "funded": "engine/sizing.funded_qty on the 25K preset (60% room, $50-$750, ref 20, winner <= $1,000) x the member weight (<= 1)"
+   },
+   "built": "2026-10-30 17:14",
+   "spans": {
+    "2026": {
+     "n": 160,
+     "tpw": 3.88,
+     "wk2": 76,
+     "win": 57.5,
+     "pf": 2.9,
+     "net": 17020,
+     "dd": -1581,
+     "avg_r": 0.618,
+     "stop": 45.5,
+     "worst_day": -326,
+     "risk": 132.0,
+     "half": 0,
+     "per_month": 1735,
+     "p10": 5.8,
+     "f10": 0.0,
+     "p15": 10.7,
+     "f15": 0.0,
+     "p20": 22.8,
+     "f20": 0.0,
+     "dec10": 5.8,
+     "slow_pass": 80.4,
+     "pass_med": 22.0,
+     "b2b": "5/0"
+    },
+    "2021-25": {
+     "n": 1421,
+     "tpw": 6.63,
+     "wk2": 99,
+     "win": 44.9,
+     "pf": 1.09,
+     "net": 10274,
+     "dd": -6984,
+     "avg_r": 0.113,
+     "stop": 27.0,
+     "worst_day": -593,
+     "risk": 117.0,
+     "half": 0,
+     "per_month": 201,
+     "p10": 0.2,
+     "f10": 0.7,
+     "p15": 1.6,
+     "f15": 3.5,
+     "p20": 3.3,
+     "f20": 7.7,
+     "dec10": 0.9,
+     "slow_pass": 92.9,
+     "pass_med": 38.0,
+     "b2b": "9/13"
+    },
+    "all": {
+     "n": 1581,
+     "tpw": 6.19,
+     "wk2": 95,
+     "win": 46.2,
+     "pf": 1.23,
+     "net": 27295,
+     "dd": -6984,
+     "avg_r": 0.164,
+     "stop": 28.5,
+     "worst_day": -593,
+     "risk": 118.0,
+     "half": 0,
+     "per_month": 449,
+     "p10": 1.1,
+     "f10": 0.6,
+     "p15": 3.1,
+     "f15": 2.9,
+     "p20": 6.4,
+     "f20": 6.5,
+     "dec10": 1.7,
+     "slow_pass": 89.6,
+     "pass_med": 32.0,
+     "b2b": "14/13"
+    }
+   }
+  },
+  {
+   "id": "bzx_eval_rules",
+   "title": "BLITZ 25K eval: first winner ends the day (sessions 1-4), skip first breaks early, 2 losers end the day - rejected",
+   "family": "risk",
+   "question": "Eval-stage ideas not tested before, on top of the later-break eval size",
+   "status": "rejected",
+   "verdict": "25K eval ideas (with today's funded size): eval later-break: 2w 47.9-23.5 slot $286 / 36.2-21.7 slot $52 / 24.7-48.4 slot $-39; eval later-break + win stop s1-4: 2w 37.8-23.5 slot $262 / 24.6-17.4 slot $37 / 19.0-38.2 slot $-41; eval later-break + skip first breaks s1-4: 2w 42.0-30.3 slot $283 / 37.7-20.3 slot $53 / 25.7-45.7 slot $-38; eval later-break + 2 losers end the day: 2w 47.1-18.5 slot $290 / 37.7-14.5 slot $53 / 25.5-44.1 slot $-38; eval today: 2w 36.1-37.8 slot $270 / 36.2-34.8 slot $37 / 20.4-50.2 slot $-40; eval today + win stop s1-4: 2w 29.4-37.8 slot $240 / 21.7-33.3 slot $27 / 16.0-43.8 slot $-45. The first winner ending the day on sessions 1-4 slows the eval and loses slot $ everywhere; 2 losers ending the day cuts 2-week fails but only delays them (H1 4-week pass 62.4% vs 70.6%). Rejected.",
+   "writeup": "blitz-edge-2026-10-30b",
+   "tags": [
+    "scalp",
+    "blitz",
+    "account_c",
+    "25k",
+    "bzx",
+    "eval"
+   ],
+   "params": {
+    "stop": "atr",
+    "k": 1.5,
+    "tgt": null,
+    "part": null,
+    "hold": 30,
+    "trail": 1.5,
+    "tstart": 1.0,
+    "be": null,
+    "be_off": 0.25,
+    "sw_trail": 0,
+    "sw_start": 1.0,
+    "choch": 0,
+    "maxday": 6,
+    "day_stop": 3.0,
+    "dmin": 0.0,
+    "dmax": 99.0,
+    "r_min": 1.0,
+    "r_max": 99.0,
+    "p_min": 0.5,
+    "part_f": 0.5,
+    "part_be": false,
+    "liq": "all",
+    "filter": "prng>=0.8",
+    "late": 0,
+    "wins": [
+     "rth"
+    ],
+    "last_mod": 930,
+    "lim": null,
+    "lim_w": 10
+   },
+   "sizing": {
+    "usd_per_trade": 150.0,
+    "eval_25k": {
+     "mode": "frac",
+     "f": 0.4,
+     "cap": 600.0,
+     "push": [
+      5,
+      1.0
+     ],
+     "fmax": 1.0
+    },
+    "funded_25k": {
+     "mode": "frac",
+     "f": 0.1,
+     "cap": 150.0,
+     "day_tp": 400.0
+    }
+   },
+   "built": "2026-10-30 16:54",
+   "spans": {
+    "2026": {
+     "n": 323,
+     "tpw": 7.84,
+     "wk2": 86,
+     "win": 56.7,
+     "pf": 1.67,
+     "net": 8351,
+     "dd": -952,
+     "avg_r": 0.176,
+     "stop": 61.1,
+     "worst_day": -392,
+     "risk": 135.0,
+     "half": 0,
+     "per_month": 851,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.0,
+     "f15": 0.0,
+     "p20": 1.5,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": 100.0,
+     "pass_med": 38.5,
+     "b2b": "2/0"
+    },
+    "2021-25": {
+     "n": 1841,
+     "tpw": 8.55,
+     "wk2": 80,
+     "win": 50.1,
+     "pf": 1.05,
+     "net": 3765,
+     "dd": -5084,
+     "avg_r": 0.013,
+     "stop": 38.9,
+     "worst_day": -447,
+     "risk": 118.0,
+     "half": 0,
+     "per_month": 73,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.0,
+     "f15": 0.0,
+     "p20": 0.0,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": null,
+     "pass_med": null,
+     "b2b": "2/3"
+    },
+    "all": {
+     "n": 2164,
+     "tpw": 8.43,
+     "wk2": 81,
+     "win": 51.1,
+     "pf": 1.13,
+     "net": 12116,
+     "dd": -5084,
+     "avg_r": 0.037,
+     "stop": 41.2,
+     "worst_day": -447,
+     "risk": 121.0,
+     "half": 0,
+     "per_month": 198,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.0,
+     "f15": 0.0,
+     "p20": 0.2,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": 100.0,
+     "pass_med": 39.0,
+     "b2b": "4/3"
+    }
+   }
+  },
+  {
+   "id": "bzx_funded_rules",
+   "title": "BLITZ funded 25K: buffer-first size, day / week stops, payout ask, abandon line, near-floor skip - rejected",
+   "family": "risk",
+   "question": "Buffer-first funded size (bigger once the floor locks), funded day / week stops, payout-ask timing and amount, the abandon line?",
+   "status": "rejected",
+   "verdict": "Funded 25K rules on the later-break eval, slot $ a month vs today's funded size (H1 / H2 / 2021-25, 600 paths): lock -> f0.3 cap300: -35 / +41 / +4; lock -> f0.2 cap300: -24 / +37 / +3; day loss 150: +39 / -1 / -3; 2 losing trades a day: -17 / -21 / -3; max 3 trades a day: -59 / -54 / -4; week loss 250: -11 / -1 / +0; ask max 500: -125 / -22 / -3; ask wait 750: +14 / -4 / -2; stuck 1.0x: -4 / +8 / +7; stuck 0.0x: -10 / +9 / +16; no day tp: -25 / +9 / -3. Near the floor, skipping a 1-micro trade whose stop is > 0.2-0.35 x the room: H1 -35 to -149. None better in all three: rejected.",
+   "writeup": "blitz-edge-2026-10-30b",
+   "tags": [
+    "scalp",
+    "blitz",
+    "account_c",
+    "25k",
+    "bzx",
+    "funded"
+   ],
+   "params": {
+    "stop": "atr",
+    "k": 1.5,
+    "tgt": null,
+    "part": null,
+    "hold": 30,
+    "trail": 1.5,
+    "tstart": 1.0,
+    "be": null,
+    "be_off": 0.25,
+    "sw_trail": 0,
+    "sw_start": 1.0,
+    "choch": 0,
+    "maxday": 6,
+    "day_stop": 3.0,
+    "dmin": 0.0,
+    "dmax": 99.0,
+    "r_min": 1.0,
+    "r_max": 99.0,
+    "p_min": 0.5,
+    "part_f": 0.5,
+    "part_be": false,
+    "liq": "all",
+    "filter": "prng>=0.8",
+    "late": 0,
+    "wins": [
+     "rth"
+    ],
+    "last_mod": 930,
+    "lim": null,
+    "lim_w": 10
+   },
+   "sizing": {
+    "usd_per_trade": 150.0,
+    "eval_25k": {
+     "mode": "frac",
+     "f": 0.4,
+     "cap": 600.0,
+     "push": [
+      5,
+      1.0
+     ],
+     "fmax": 1.0
+    },
+    "funded_25k": {
+     "mode": "frac",
+     "f": 0.1,
+     "cap": 150.0,
+     "day_tp": 400.0
+    }
+   },
+   "built": "2026-10-30 16:54",
+   "spans": {
+    "2026": {
+     "n": 323,
+     "tpw": 7.84,
+     "wk2": 86,
+     "win": 56.7,
+     "pf": 1.67,
+     "net": 8351,
+     "dd": -952,
+     "avg_r": 0.176,
+     "stop": 61.1,
+     "worst_day": -392,
+     "risk": 135.0,
+     "half": 0,
+     "per_month": 851,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.0,
+     "f15": 0.0,
+     "p20": 1.5,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": 100.0,
+     "pass_med": 38.5,
+     "b2b": "2/0"
+    },
+    "2021-25": {
+     "n": 1841,
+     "tpw": 8.55,
+     "wk2": 80,
+     "win": 50.1,
+     "pf": 1.05,
+     "net": 3765,
+     "dd": -5084,
+     "avg_r": 0.013,
+     "stop": 38.9,
+     "worst_day": -447,
+     "risk": 118.0,
+     "half": 0,
+     "per_month": 73,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.0,
+     "f15": 0.0,
+     "p20": 0.0,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": null,
+     "pass_med": null,
+     "b2b": "2/3"
+    },
+    "all": {
+     "n": 2164,
+     "tpw": 8.43,
+     "wk2": 81,
+     "win": 51.1,
+     "pf": 1.13,
+     "net": 12116,
+     "dd": -5084,
+     "avg_r": 0.037,
+     "stop": 41.2,
+     "worst_day": -447,
+     "risk": 121.0,
+     "half": 0,
+     "per_month": 198,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.0,
+     "f15": 0.0,
+     "p20": 0.2,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": 100.0,
+     "pass_med": 39.0,
+     "b2b": "4/3"
+    }
+   }
+  },
+  {
+   "id": "dsx_atlas_check_skip",
+   "title": "ATLAS discretion score (check, skip) - rejected (at chance)",
+   "family": "risk",
+   "question": "Owner 2026-10-30: give ATLAS good discretion - judge each trade from what is known at entry, size the good ones up and the bad ones down?",
+   "status": "rejected",
+   "verdict": "ATLAS discretion score, points checklist (6 facts, H1 medians), fit on 2026 H1 only, bottom third skipped: H1 2-week pass/dead 55.5/0.0 (today 65.5/0.8), eval paths $10,448 (today $8,504, shuffled p 0.1), R/risk +1.108 (today +0.884); H2 2-week pass/dead 27.5/0.0 (today 43.5/0.0), eval paths $1,243 (today $2,029, shuffled p 0.725), R/risk +0.560 (today +0.620); 2025 2-week pass/dead 24.5/13.3 (today 30.1/23.3), eval paths $-755 (today $-1,816, shuffled p 0.425), R/risk +0.114 (today +0.084); 2021-24 2-week pass/dead 14.7/9.9 (today 22.9/27.1), eval paths $-2,744 (today $-1,388, shuffled p 0.725), R/risk +0.040 (today +0.045). v2 test: fails. At chance, rejected.",
+   "writeup": "discretion-score-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "sizing",
+    "discretion"
+   ],
+   "params": {
+    "features": [
+     "stop_atr",
+     "vix",
+     "atrp",
+     "liq_room",
+     "st15_with",
+     "day_prev"
+    ],
+    "fit": {
+     "model": "check",
+     "h1_median": {
+      "stop_atr": 1.8635,
+      "vix": 18.095,
+      "atrp": 72.0238,
+      "liq_room": 4.917,
+      "st15_with": -1.0,
+      "day_prev": 0.0
+     },
+     "point_side": {
+      "stop_atr": "low",
+      "vix": "high",
+      "atrp": "high",
+      "liq_room": "high",
+      "st15_with": "low",
+      "day_prev": "low"
+     }
+    },
+    "cuts": [
+     2.0,
+     3.0
+    ],
+    "rule": [
+     0.0,
+     1.0,
+     1.0
+    ]
+   },
+   "sizing": {
+    "account_b": "need size (engine/account_b.qty) x score tercile mult"
+   },
+   "built": "2026-10-30 16:52",
+   "spans": {
+    "2026": {
+     "n": 97,
+     "tpw": 2.35,
+     "wk2": 71,
+     "win": 56.7,
+     "pf": 3.46,
+     "net": 21000,
+     "dd": -748,
+     "avg_r": 1.064,
+     "stop": 43.2,
+     "worst_day": -509,
+     "risk": 189.0,
+     "half": 0,
+     "per_month": 2141,
+     "p10": 10.2,
+     "f10": 0.0,
+     "p15": 20.9,
+     "f15": 0.0,
+     "p20": 33.0,
+     "f20": 0.0,
+     "dec10": 10.2,
+     "slow_pass": 70.5,
+     "pass_med": 22.0,
+     "b2b": "6/0"
+    },
+    "2021-25": {
+     "n": 339,
+     "tpw": 1.57,
+     "wk2": 42,
+     "win": 37.2,
+     "pf": 0.97,
+     "net": -875,
+     "dd": -5848,
+     "avg_r": 0.033,
+     "stop": 21.0,
+     "worst_day": -532,
+     "risk": 89.0,
+     "half": 0,
+     "per_month": -17,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.2,
+     "f15": 0.0,
+     "p20": 0.5,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": 60.0,
+     "pass_med": 16.0,
+     "b2b": "2/4"
+    },
+    "all": {
+     "n": 436,
+     "tpw": 1.7,
+     "wk2": 47,
+     "win": 41.5,
+     "pf": 1.56,
+     "net": 20125,
+     "dd": -5848,
+     "avg_r": 0.263,
+     "stop": 24.5,
+     "worst_day": -532,
+     "risk": 110.0,
+     "half": 0,
+     "per_month": 329,
+     "p10": 1.6,
+     "f10": 0.0,
+     "p15": 3.5,
+     "f15": 0.0,
+     "p20": 5.7,
+     "f20": 0.0,
+     "dec10": 1.6,
+     "slow_pass": 75.3,
+     "pass_med": 24.0,
+     "b2b": "8/5"
+    }
+   }
+  },
+  {
+   "id": "dsx_atlas_check_t3",
+   "title": "ATLAS discretion score (check, t3) - rejected (at chance)",
+   "family": "risk",
+   "question": "Owner 2026-10-30: give ATLAS good discretion - judge each trade from what is known at entry, size the good ones up and the bad ones down?",
+   "status": "rejected",
+   "verdict": "ATLAS discretion score, points checklist (6 facts, H1 medians), fit on 2026 H1 only, bottom third x0.5 / middle x1 / top third x1.5: H1 2-week pass/dead 63.0/0.8 (today 65.5/0.8), eval paths $10,075 (today $8,504, shuffled p 0.325), R/risk +1.020 (today +0.884); H2 2-week pass/dead 39.1/0.0 (today 43.5/0.0), eval paths $2,819 (today $2,029, shuffled p 0.05), R/risk +0.698 (today +0.620); 2025 2-week pass/dead 20.5/21.7 (today 30.1/23.3), eval paths $-3,397 (today $-1,816, shuffled p 1.0), R/risk +0.105 (today +0.084); 2021-24 2-week pass/dead 15.7/23.4 (today 22.9/27.1), eval paths $-216 (today $-1,388, shuffled p 0.425), R/risk +0.035 (today +0.045). v2 test: fails. At chance, rejected.",
+   "writeup": "discretion-score-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "sizing",
+    "discretion"
+   ],
+   "params": {
+    "features": [
+     "stop_atr",
+     "vix",
+     "atrp",
+     "liq_room",
+     "st15_with",
+     "day_prev"
+    ],
+    "fit": {
+     "model": "check",
+     "h1_median": {
+      "stop_atr": 1.8635,
+      "vix": 18.095,
+      "atrp": 72.0238,
+      "liq_room": 4.917,
+      "st15_with": -1.0,
+      "day_prev": 0.0
+     },
+     "point_side": {
+      "stop_atr": "low",
+      "vix": "high",
+      "atrp": "high",
+      "liq_room": "high",
+      "st15_with": "low",
+      "day_prev": "low"
+     }
+    },
+    "cuts": [
+     2.0,
+     3.0
+    ],
+    "rule": [
+     0.5,
+     1.0,
+     1.5
+    ]
+   },
+   "sizing": {
+    "account_b": "need size (engine/account_b.qty) x score tercile mult"
+   },
+   "built": "2026-10-30 16:52",
+   "spans": {
+    "2026": {
+     "n": 111,
+     "tpw": 2.69,
+     "wk2": 71,
+     "win": 51.4,
+     "pf": 2.5,
+     "net": 14736,
+     "dd": -1205,
+     "avg_r": 0.844,
+     "stop": 39.5,
+     "worst_day": -582,
+     "risk": 124.0,
+     "half": 0,
+     "per_month": 1502,
+     "p10": 8.7,
+     "f10": 0.0,
+     "p15": 14.6,
+     "f15": 0.0,
+     "p20": 23.8,
+     "f20": 0.0,
+     "dec10": 8.7,
+     "slow_pass": 74.8,
+     "pass_med": 24.0,
+     "b2b": "4/0"
+    },
+    "2021-25": {
+     "n": 678,
+     "tpw": 3.15,
+     "wk2": 73,
+     "win": 35.0,
+     "pf": 0.92,
+     "net": -4334,
+     "dd": -8675,
+     "avg_r": -0.055,
+     "stop": 22.0,
+     "worst_day": -587,
+     "risk": 96.0,
+     "half": 0,
+     "per_month": -85,
+     "p10": 0.6,
+     "f10": 0.0,
+     "p15": 1.1,
+     "f15": 1.0,
+     "p20": 1.7,
+     "f20": 2.9,
+     "dec10": 0.6,
+     "slow_pass": 89.7,
+     "pass_med": 39.0,
+     "b2b": "2/10"
+    },
+    "all": {
+     "n": 789,
+     "tpw": 3.07,
+     "wk2": 73,
+     "win": 37.3,
+     "pf": 1.16,
+     "net": 10402,
+     "dd": -8675,
+     "avg_r": 0.072,
+     "stop": 23.5,
+     "worst_day": -587,
+     "risk": 99.0,
+     "half": 0,
+     "per_month": 170,
+     "p10": 1.9,
+     "f10": 0.0,
+     "p15": 3.3,
+     "f15": 0.9,
+     "p20": 5.2,
+     "f20": 2.4,
+     "dec10": 1.9,
+     "slow_pass": 83.4,
+     "pass_med": 33.0,
+     "b2b": "6/11"
+    }
+   }
+  },
+  {
+   "id": "dsx_atlas_prior",
+   "title": "ATLAS trader's checklist size (no fit) - rejected (at chance)",
+   "family": "risk",
+   "question": "Does a trader's written-down checklist (no fitting at all) size ATLAS better?",
+   "status": "rejected",
+   "verdict": "ATLAS trader's checklist (no fit: tight stop in ATR, a moving market, room to the next pool, with the 15m structure, not after a loss today): H1 2-week pass/dead 63.0/0.0 (today 65.5/0.8), eval paths $9,178 (today $8,504); H2 2-week pass/dead 40.6/0.0 (today 43.5/0.0), eval paths $2,011 (today $2,029); 2025 2-week pass/dead 25.3/23.7 (today 30.1/23.3), eval paths $-1,686 (today $-1,816); 2021-24 2-week pass/dead 18.6/24.6 (today 22.9/27.1), eval paths $-1,119 (today $-1,388). Rank among the 32 sign choices of the same boxes (R per risk): [14, 9, 13, 23]; v2 test fails. At chance, rejected.",
+   "writeup": "discretion-score-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "sizing",
+    "discretion"
+   ],
+   "params": {
+    "prior": [
+     [
+      "stop_atr",
+      "<",
+      "med"
+     ],
+     [
+      "atrp",
+      ">",
+      "med"
+     ],
+     [
+      "liq_room",
+      ">",
+      "med"
+     ],
+     [
+      "st15_with",
+      ">=",
+      1.0
+     ],
+     [
+      "day_prev",
+      ">=",
+      0.0
+     ]
+    ],
+    "bands": [
+     [
+      0,
+      1,
+      0.5
+     ],
+     [
+      2,
+      3,
+      1.0
+     ],
+     [
+      4,
+      5,
+      1.5
+     ]
+    ]
+   },
+   "sizing": {
+    "account_b": "need size x checklist mult"
+   },
+   "built": "2026-10-30 16:52",
+   "spans": {
+    "2026": {
+     "n": 82,
+     "tpw": 1.99,
+     "wk2": 52,
+     "win": 50.0,
+     "pf": 2.59,
+     "net": 11754,
+     "dd": -980,
+     "avg_r": 0.941,
+     "stop": 34.9,
+     "worst_day": -442,
+     "risk": 138.0,
+     "half": 0,
+     "per_month": 1198,
+     "p10": 7.3,
+     "f10": 0.0,
+     "p15": 13.6,
+     "f15": 0.0,
+     "p20": 18.9,
+     "f20": 0.0,
+     "dec10": 7.3,
+     "slow_pass": 76.1,
+     "pass_med": 27.0,
+     "b2b": "3/0"
+    },
+    "2021-25": {
+     "n": 627,
+     "tpw": 2.91,
+     "wk2": 69,
+     "win": 36.8,
+     "pf": 0.93,
+     "net": -3349,
+     "dd": -7413,
+     "avg_r": 0.003,
+     "stop": 21.5,
+     "worst_day": -579,
+     "risk": 100.0,
+     "half": 0,
+     "per_month": -65,
+     "p10": 1.7,
+     "f10": 0.0,
+     "p15": 2.1,
+     "f15": 0.1,
+     "p20": 3.1,
+     "f20": 1.9,
+     "dec10": 1.7,
+     "slow_pass": 75.5,
+     "pass_med": 30.0,
+     "b2b": "2/8"
+    },
+    "all": {
+     "n": 709,
+     "tpw": 2.76,
+     "wk2": 66,
+     "win": 38.4,
+     "pf": 1.14,
+     "net": 8405,
+     "dd": -8174,
+     "avg_r": 0.112,
+     "stop": 22.2,
+     "worst_day": -579,
+     "risk": 104.0,
+     "half": 0,
+     "per_month": 138,
+     "p10": 2.6,
+     "f10": 0.0,
+     "p15": 4.0,
+     "f15": 0.1,
+     "p20": 5.6,
+     "f20": 1.6,
+     "dec10": 2.6,
+     "slow_pass": 75.8,
+     "pass_med": 28.0,
+     "b2b": "5/8"
+    }
+   }
+  },
+  {
+   "id": "dsx_atlas_ridge_skip",
+   "title": "ATLAS discretion score (ridge, skip) - rejected (at chance)",
+   "family": "risk",
+   "question": "Owner 2026-10-30: give ATLAS good discretion - judge each trade from what is known at entry, size the good ones up and the bad ones down?",
+   "status": "rejected",
+   "verdict": "ATLAS discretion score, ridge score (6 facts, strong shrinkage), fit on 2026 H1 only, bottom third skipped: H1 2-week pass/dead 55.5/0.0 (today 65.5/0.8), eval paths $9,834 (today $8,504, shuffled p 0.1), R/risk +1.131 (today +0.884); H2 2-week pass/dead 27.5/0.0 (today 43.5/0.0), eval paths $483 (today $2,029, shuffled p 0.875), R/risk +0.450 (today +0.620); 2025 2-week pass/dead 20.5/9.2 (today 30.1/23.3), eval paths $-266 (today $-1,816, shuffled p 0.325), R/risk +0.132 (today +0.084); 2021-24 2-week pass/dead 15.7/8.9 (today 22.9/27.1), eval paths $-4,138 (today $-1,388, shuffled p 0.9), R/risk +0.052 (today +0.045). v2 test: fails. At chance, rejected.",
+   "writeup": "discretion-score-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "sizing",
+    "discretion"
+   ],
+   "params": {
+    "features": [
+     "stop_atr",
+     "vix",
+     "atrp",
+     "liq_room",
+     "st15_with",
+     "day_prev"
+    ],
+    "fit": {
+     "model": "ridge",
+     "alpha_per_trade": 1.0,
+     "clip": [
+      -1.5,
+      3.0
+     ],
+     "weights_per_sd": {
+      "stop_atr": -0.1138,
+      "vix": -0.0036,
+      "atrp": 0.0751,
+      "liq_room": 0.0485,
+      "st15_with": -0.0669,
+      "day_prev": -0.0772
+     },
+     "h1_mean": {
+      "stop_atr": 2.0118,
+      "vix": 18.8862,
+      "atrp": 70.3338,
+      "liq_room": 4.2987,
+      "st15_with": -0.4464,
+      "day_prev": -0.1071
+     },
+     "h1_sd": {
+      "stop_atr": 0.8639,
+      "vix": 3.0897,
+      "atrp": 21.0753,
+      "liq_room": 1.8062,
+      "st15_with": 0.8948,
+      "day_prev": 0.4503
+     }
+    },
+    "cuts": [
+     -0.07739111943085594,
+     0.09900855641451013
+    ],
+    "rule": [
+     0.0,
+     1.0,
+     1.0
+    ]
+   },
+   "sizing": {
+    "account_b": "need size (engine/account_b.qty) x score tercile mult"
+   },
+   "built": "2026-10-30 16:52",
+   "spans": {
+    "2026": {
+     "n": 91,
+     "tpw": 2.21,
+     "wk2": 67,
+     "win": 54.9,
+     "pf": 3.12,
+     "net": 15888,
+     "dd": -1000,
+     "avg_r": 1.042,
+     "stop": 37.0,
+     "worst_day": -429,
+     "risk": 162.0,
+     "half": 0,
+     "per_month": 1620,
+     "p10": 9.7,
+     "f10": 0.0,
+     "p15": 19.4,
+     "f15": 0.0,
+     "p20": 28.6,
+     "f20": 0.0,
+     "dec10": 9.7,
+     "slow_pass": 66.4,
+     "pass_med": 21.0,
+     "b2b": "4/0"
+    },
+    "2021-25": {
+     "n": 339,
+     "tpw": 1.57,
+     "wk2": 44,
+     "win": 37.2,
+     "pf": 0.95,
+     "net": -1607,
+     "dd": -9780,
+     "avg_r": -0.004,
+     "stop": 19.5,
+     "worst_day": -561,
+     "risk": 105.0,
+     "half": 0,
+     "per_month": -31,
+     "p10": 1.0,
+     "f10": 0.0,
+     "p15": 1.5,
+     "f15": 0.0,
+     "p20": 1.9,
+     "f20": 0.0,
+     "dec10": 1.0,
+     "slow_pass": 74.6,
+     "pass_med": 30.0,
+     "b2b": "2/6"
+    },
+    "all": {
+     "n": 430,
+     "tpw": 1.68,
+     "wk2": 48,
+     "win": 40.9,
+     "pf": 1.38,
+     "net": 14282,
+     "dd": -9780,
+     "avg_r": 0.217,
+     "stop": 22.2,
+     "worst_day": -561,
+     "risk": 120.0,
+     "half": 0,
+     "per_month": 234,
+     "p10": 2.4,
+     "f10": 0.0,
+     "p15": 4.4,
+     "f15": 0.0,
+     "p20": 6.2,
+     "f20": 0.0,
+     "dec10": 2.4,
+     "slow_pass": 72.9,
+     "pass_med": 25.0,
+     "b2b": "6/7"
+    }
+   }
+  },
+  {
+   "id": "dsx_atlas_ridge_t3",
+   "title": "ATLAS discretion score (ridge, t3) - rejected (at chance)",
+   "family": "risk",
+   "question": "Owner 2026-10-30: give ATLAS good discretion - judge each trade from what is known at entry, size the good ones up and the bad ones down?",
+   "status": "rejected",
+   "verdict": "ATLAS discretion score, ridge score (6 facts, strong shrinkage), fit on 2026 H1 only, bottom third x0.5 / middle x1 / top third x1.5: H1 2-week pass/dead 62.2/0.0 (today 65.5/0.8), eval paths $10,659 (today $8,504, shuffled p 0.15), R/risk +1.089 (today +0.884); H2 2-week pass/dead 39.1/0.0 (today 43.5/0.0), eval paths $1,688 (today $2,029, shuffled p 0.7), R/risk +0.603 (today +0.620); 2025 2-week pass/dead 19.3/24.5 (today 30.1/23.3), eval paths $468 (today $-1,816, shuffled p 0.05), R/risk +0.127 (today +0.084); 2021-24 2-week pass/dead 13.8/21.5 (today 22.9/27.1), eval paths $-2,085 (today $-1,388, shuffled p 0.65), R/risk +0.028 (today +0.045). v2 test: fails. At chance, rejected.",
+   "writeup": "discretion-score-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "sizing",
+    "discretion"
+   ],
+   "params": {
+    "features": [
+     "stop_atr",
+     "vix",
+     "atrp",
+     "liq_room",
+     "st15_with",
+     "day_prev"
+    ],
+    "fit": {
+     "model": "ridge",
+     "alpha_per_trade": 1.0,
+     "clip": [
+      -1.5,
+      3.0
+     ],
+     "weights_per_sd": {
+      "stop_atr": -0.1138,
+      "vix": -0.0036,
+      "atrp": 0.0751,
+      "liq_room": 0.0485,
+      "st15_with": -0.0669,
+      "day_prev": -0.0772
+     },
+     "h1_mean": {
+      "stop_atr": 2.0118,
+      "vix": 18.8862,
+      "atrp": 70.3338,
+      "liq_room": 4.2987,
+      "st15_with": -0.4464,
+      "day_prev": -0.1071
+     },
+     "h1_sd": {
+      "stop_atr": 0.8639,
+      "vix": 3.0897,
+      "atrp": 21.0753,
+      "liq_room": 1.8062,
+      "st15_with": 0.8948,
+      "day_prev": 0.4503
+     }
+    },
+    "cuts": [
+     -0.07739111943085594,
+     0.09900855641451013
+    ],
+    "rule": [
+     0.5,
+     1.0,
+     1.5
+    ]
+   },
+   "sizing": {
+    "account_b": "need size (engine/account_b.qty) x score tercile mult"
+   },
+   "built": "2026-10-30 16:51",
+   "spans": {
+    "2026": {
+     "n": 79,
+     "tpw": 1.92,
+     "wk2": 48,
+     "win": 48.1,
+     "pf": 1.99,
+     "net": 6270,
+     "dd": -1227,
+     "avg_r": 0.831,
+     "stop": 36.0,
+     "worst_day": -582,
+     "risk": 110.0,
+     "half": 0,
+     "per_month": 639,
+     "p10": 4.9,
+     "f10": 0.0,
+     "p15": 7.3,
+     "f15": 0.0,
+     "p20": 9.7,
+     "f20": 0.0,
+     "dec10": 4.9,
+     "slow_pass": 76.2,
+     "pass_med": 32.0,
+     "b2b": "2/0"
+    },
+    "2021-25": {
+     "n": 712,
+     "tpw": 3.31,
+     "wk2": 78,
+     "win": 36.9,
+     "pf": 1.02,
+     "net": 1238,
+     "dd": -9481,
+     "avg_r": 0.027,
+     "stop": 22.8,
+     "worst_day": -597,
+     "risk": 97.0,
+     "half": 0,
+     "per_month": 24,
+     "p10": 3.1,
+     "f10": 0.2,
+     "p15": 4.2,
+     "f15": 1.7,
+     "p20": 5.8,
+     "f20": 5.1,
+     "dec10": 3.3,
+     "slow_pass": 74.6,
+     "pass_med": 29.0,
+     "b2b": "2/7"
+    },
+    "all": {
+     "n": 791,
+     "tpw": 3.08,
+     "wk2": 73,
+     "win": 38.1,
+     "pf": 1.11,
+     "net": 7508,
+     "dd": -9481,
+     "avg_r": 0.108,
+     "stop": 23.5,
+     "worst_day": -597,
+     "risk": 98.0,
+     "half": 0,
+     "per_month": 123,
+     "p10": 3.4,
+     "f10": 0.2,
+     "p15": 4.7,
+     "f15": 1.4,
+     "p20": 6.4,
+     "f20": 4.3,
+     "dec10": 3.6,
+     "slow_pass": 75.0,
+     "pass_med": 30.0,
+     "b2b": "4/8"
+    }
+   }
+  },
+  {
+   "id": "dsx_blitz_check_skip",
+   "title": "BLITZ discretion score (check, skip) - rejected (at chance)",
+   "family": "risk",
+   "question": "Owner 2026-10-30: give BLITZ good discretion - judge each trade from what is known at entry, size the good ones up and the bad ones down?",
+   "status": "rejected",
+   "verdict": "BLITZ discretion score, points checklist (6 facts, H1 medians), fit on 2026 H1 only, bottom third skipped: H1 R/risk +0.180 (today +0.165, shuffled p 0.4), 25K 2-week pass/fail 33.6/27.7 (today 36.1/37.8), slot $317/mo (today $277); H2 R/risk +0.245 (today +0.200, shuffled p 0.2), 25K 2-week pass/fail 40.6/21.7 (today 36.2/34.8), slot $76/mo (today $30); 2021-25 R/risk +0.006 (today +0.013, shuffled p 0.84), 25K 2-week pass/fail 20.3/46.5 (today 20.4/50.2), slot $-46/mo (today $-41). Not better in all three spans and inside its shuffled-label controls: at chance, rejected.",
+   "writeup": "discretion-score-2026-10-30",
+   "tags": [
+    "blitz",
+    "scalp",
+    "sizing",
+    "discretion"
+   ],
+   "params": {
+    "features": [
+     "exc",
+     "rng_sofar",
+     "vix",
+     "nth",
+     "liq_room",
+     "st15_with"
+    ],
+    "fit": {
+     "model": "check",
+     "h1_median": {
+      "exc": 1.4949,
+      "rng_sofar": 0.9742,
+      "vix": 18.41,
+      "nth": 3.0,
+      "liq_room": 1.2987,
+      "st15_with": 1.0
+     },
+     "point_side": {
+      "exc": "high",
+      "rng_sofar": "low",
+      "vix": "low",
+      "nth": "high",
+      "liq_room": "low",
+      "st15_with": "low"
+     }
+    },
+    "cuts": [
+     2.0,
+     3.0
+    ],
+    "rule": [
+     0.0,
+     1.0,
+     1.0
+    ]
+   },
+   "sizing": {
+    "usd_per_trade": 500.0,
+    "x": "score tercile mult",
+    "eval_25k": {
+     "mode": "frac",
+     "f": 0.4,
+     "cap": 600.0,
+     "push": [
+      5,
+      1.0
+     ]
+    }
+   },
+   "built": "2026-10-30 16:51",
+   "spans": {
+    "2026": {
+     "n": 323,
+     "tpw": 7.84,
+     "wk2": 86,
+     "win": 56.7,
+     "pf": 1.76,
+     "net": 24828,
+     "dd": -2060,
+     "avg_r": 0.176,
+     "stop": 61.1,
+     "worst_day": -1102,
+     "risk": 438.0,
+     "half": 0,
+     "per_month": 2531,
+     "p10": 20.4,
+     "f10": 0.5,
+     "p15": 36.9,
+     "f15": 3.4,
+     "p20": 49.5,
+     "f20": 8.7,
+     "dec10": 20.9,
+     "slow_pass": 53.7,
+     "pass_med": 16.0,
+     "b2b": "7/2"
+    },
+    "2021-25": {
+     "n": 1841,
+     "tpw": 8.55,
+     "wk2": 80,
+     "win": 50.1,
+     "pf": 1.02,
+     "net": 4529,
+     "dd": -20448,
+     "avg_r": 0.013,
+     "stop": 38.9,
+     "worst_day": -1552,
+     "risk": 456.0,
+     "half": 0,
+     "per_month": 88,
+     "p10": 4.9,
+     "f10": 14.8,
+     "p15": 8.4,
+     "f15": 26.1,
+     "p20": 11.0,
+     "f20": 35.3,
+     "dec10": 19.7,
+     "slow_pass": 67.4,
+     "pass_med": 24.0,
+     "b2b": "12/36"
+    },
+    "all": {
+     "n": 2164,
+     "tpw": 8.43,
+     "wk2": 81,
+     "win": 51.1,
+     "pf": 1.1,
+     "net": 29357,
+     "dd": -20448,
+     "avg_r": 0.037,
+     "stop": 41.2,
+     "worst_day": -1552,
+     "risk": 454.0,
+     "half": 0,
+     "per_month": 481,
+     "p10": 7.4,
+     "f10": 12.5,
+     "p15": 12.9,
+     "f15": 22.4,
+     "p20": 17.2,
+     "f20": 31.0,
+     "dec10": 19.9,
+     "slow_pass": 64.8,
+     "pass_med": 22.0,
+     "b2b": "20/38"
+    }
+   }
+  },
+  {
+   "id": "dsx_blitz_check_t3",
+   "title": "BLITZ discretion score (check, t3) - rejected (at chance)",
+   "family": "risk",
+   "question": "Owner 2026-10-30: give BLITZ good discretion - judge each trade from what is known at entry, size the good ones up and the bad ones down?",
+   "status": "rejected",
+   "verdict": "BLITZ discretion score, points checklist (6 facts, H1 medians), fit on 2026 H1 only, bottom third x0.5 / middle x1 / top third x1.5: H1 R/risk +0.178 (today +0.165, shuffled p 0.395), 25K 2-week pass/fail 32.8/36.1 (today 36.1/37.8), slot $261/mo (today $277); H2 R/risk +0.234 (today +0.200, shuffled p 0.2), 25K 2-week pass/fail 33.3/29.0 (today 36.2/34.8), slot $73/mo (today $30); 2021-25 R/risk +0.004 (today +0.013, shuffled p 1.0), 25K 2-week pass/fail 23.8/52.6 (today 20.4/50.2), slot $-40/mo (today $-41). Not better in all three spans and inside its shuffled-label controls: at chance, rejected.",
+   "writeup": "discretion-score-2026-10-30",
+   "tags": [
+    "blitz",
+    "scalp",
+    "sizing",
+    "discretion"
+   ],
+   "params": {
+    "features": [
+     "exc",
+     "rng_sofar",
+     "vix",
+     "nth",
+     "liq_room",
+     "st15_with"
+    ],
+    "fit": {
+     "model": "check",
+     "h1_median": {
+      "exc": 1.4949,
+      "rng_sofar": 0.9742,
+      "vix": 18.41,
+      "nth": 3.0,
+      "liq_room": 1.2987,
+      "st15_with": 1.0
+     },
+     "point_side": {
+      "exc": "high",
+      "rng_sofar": "low",
+      "vix": "low",
+      "nth": "high",
+      "liq_room": "low",
+      "st15_with": "low"
+     }
+    },
+    "cuts": [
+     2.0,
+     3.0
+    ],
+    "rule": [
+     0.5,
+     1.0,
+     1.5
+    ]
+   },
+   "sizing": {
+    "usd_per_trade": 500.0,
+    "x": "score tercile mult",
+    "eval_25k": {
+     "mode": "frac",
+     "f": 0.4,
+     "cap": 600.0,
+     "push": [
+      5,
+      1.0
+     ]
+    }
+   },
+   "built": "2026-10-30 16:51",
+   "spans": {
+    "2026": {
+     "n": 323,
+     "tpw": 7.84,
+     "wk2": 86,
+     "win": 56.7,
+     "pf": 1.8,
+     "net": 34887,
+     "dd": -3021,
+     "avg_r": 0.176,
+     "stop": 61.1,
+     "worst_day": -1395,
+     "risk": 627.0,
+     "half": 0,
+     "per_month": 3556,
+     "p10": 25.2,
+     "f10": 14.6,
+     "p15": 37.9,
+     "f15": 25.2,
+     "p20": 45.6,
+     "f20": 35.4,
+     "dec10": 39.8,
+     "slow_pass": 27.1,
+     "pass_med": 11.0,
+     "b2b": "9/5"
+    },
+    "2021-25": {
+     "n": 1841,
+     "tpw": 8.55,
+     "wk2": 80,
+     "win": 50.1,
+     "pf": 1.0,
+     "net": 1346,
+     "dd": -29150,
+     "avg_r": 0.013,
+     "stop": 38.9,
+     "worst_day": -2355,
+     "risk": 674.0,
+     "half": 0,
+     "per_month": 26,
+     "p10": 8.6,
+     "f10": 31.6,
+     "p15": 12.0,
+     "f15": 47.7,
+     "p20": 14.6,
+     "f20": 59.8,
+     "dec10": 40.2,
+     "slow_pass": 36.8,
+     "pass_med": 12.0,
+     "b2b": "16/59"
+    },
+    "all": {
+     "n": 2164,
+     "tpw": 8.43,
+     "wk2": 81,
+     "win": 51.1,
+     "pf": 1.09,
+     "net": 36233,
+     "dd": -29150,
+     "avg_r": 0.037,
+     "stop": 41.2,
+     "worst_day": -2355,
+     "risk": 667.0,
+     "half": 0,
+     "per_month": 593,
+     "p10": 11.3,
+     "f10": 28.8,
+     "p15": 16.1,
+     "f15": 44.1,
+     "p20": 19.6,
+     "f20": 55.9,
+     "dec10": 40.1,
+     "slow_pass": 36.5,
+     "pass_med": 12.0,
+     "b2b": "25/64"
+    }
+   }
+  },
+  {
+   "id": "dsx_blitz_ridge_skip",
+   "title": "BLITZ discretion score (ridge, skip) - rejected (at chance)",
+   "family": "risk",
+   "question": "Owner 2026-10-30: give BLITZ good discretion - judge each trade from what is known at entry, size the good ones up and the bad ones down?",
+   "status": "rejected",
+   "verdict": "BLITZ discretion score, ridge score (6 facts, strong shrinkage), fit on 2026 H1 only, bottom third skipped: H1 R/risk +0.201 (today +0.165, shuffled p 0.16), 25K 2-week pass/fail 31.9/23.5 (today 36.1/37.8), slot $241/mo (today $277); H2 R/risk +0.224 (today +0.200, shuffled p 0.41), 25K 2-week pass/fail 24.6/21.7 (today 36.2/34.8), slot $7/mo (today $30); 2021-25 R/risk +0.002 (today +0.013, shuffled p 0.87), 25K 2-week pass/fail 18.2/39.4 (today 20.4/50.2), slot $-46/mo (today $-41). Not better in all three spans and inside its shuffled-label controls: at chance, rejected.",
+   "writeup": "discretion-score-2026-10-30",
+   "tags": [
+    "blitz",
+    "scalp",
+    "sizing",
+    "discretion"
+   ],
+   "params": {
+    "features": [
+     "exc",
+     "rng_sofar",
+     "vix",
+     "nth",
+     "liq_room",
+     "st15_with"
+    ],
+    "fit": {
+     "model": "ridge",
+     "alpha_per_trade": 1.0,
+     "clip": [
+      -1.5,
+      3.0
+     ],
+     "weights_per_sd": {
+      "exc": 0.0305,
+      "rng_sofar": -0.0122,
+      "vix": -0.0021,
+      "nth": 0.0123,
+      "liq_room": -0.0181,
+      "st15_with": -0.0053
+     },
+     "h1_mean": {
+      "exc": 1.8489,
+      "rng_sofar": 1.1381,
+      "vix": 19.9723,
+      "nth": 2.8848,
+      "liq_room": 1.7698,
+      "st15_with": 0.9078
+     },
+     "h1_sd": {
+      "exc": 1.0176,
+      "rng_sofar": 0.5895,
+      "vix": 4.0038,
+      "nth": 1.2846,
+      "liq_room": 1.5877,
+      "st15_with": 0.4193
+     }
+    },
+    "cuts": [
+     -0.01425263575106127,
+     0.012839975314680278
+    ],
+    "rule": [
+     0.0,
+     1.0,
+     1.0
+    ]
+   },
+   "sizing": {
+    "usd_per_trade": 500.0,
+    "x": "score tercile mult",
+    "eval_25k": {
+     "mode": "frac",
+     "f": 0.4,
+     "cap": 600.0,
+     "push": [
+      5,
+      1.0
+     ]
+    }
+   },
+   "built": "2026-10-30 16:51",
+   "spans": {
+    "2026": {
+     "n": 323,
+     "tpw": 7.84,
+     "wk2": 86,
+     "win": 56.7,
+     "pf": 1.78,
+     "net": 21143,
+     "dd": -2056,
+     "avg_r": 0.176,
+     "stop": 61.1,
+     "worst_day": -791,
+     "risk": 411.0,
+     "half": 0,
+     "per_month": 2155,
+     "p10": 17.0,
+     "f10": 2.9,
+     "p15": 26.7,
+     "f15": 5.3,
+     "p20": 38.8,
+     "f20": 7.3,
+     "dec10": 19.9,
+     "slow_pass": 65.0,
+     "pass_med": 20.0,
+     "b2b": "5/2"
+    },
+    "2021-25": {
+     "n": 1841,
+     "tpw": 8.55,
+     "wk2": 80,
+     "win": 50.1,
+     "pf": 1.01,
+     "net": 1581,
+     "dd": -21250,
+     "avg_r": 0.013,
+     "stop": 38.9,
+     "worst_day": -1453,
+     "risk": 448.0,
+     "half": 0,
+     "per_month": 31,
+     "p10": 4.8,
+     "f10": 10.5,
+     "p15": 7.1,
+     "f15": 23.6,
+     "p20": 9.7,
+     "f20": 34.4,
+     "dec10": 15.3,
+     "slow_pass": 68.0,
+     "pass_med": 24.0,
+     "b2b": "9/31"
+    },
+    "all": {
+     "n": 2164,
+     "tpw": 8.43,
+     "wk2": 81,
+     "win": 51.1,
+     "pf": 1.09,
+     "net": 22725,
+     "dd": -21250,
+     "avg_r": 0.037,
+     "stop": 41.2,
+     "worst_day": -1453,
+     "risk": 444.0,
+     "half": 0,
+     "per_month": 372,
+     "p10": 6.8,
+     "f10": 9.3,
+     "p15": 10.3,
+     "f15": 20.7,
+     "p20": 14.4,
+     "f20": 30.1,
+     "dec10": 16.1,
+     "slow_pass": 68.2,
+     "pass_med": 23.0,
+     "b2b": "14/32"
+    }
+   }
+  },
+  {
+   "id": "dsx_blitz_ridge_t3",
+   "title": "BLITZ discretion score (ridge, t3) - rejected (at chance)",
+   "family": "risk",
+   "question": "Owner 2026-10-30: give BLITZ good discretion - judge each trade from what is known at entry, size the good ones up and the bad ones down?",
+   "status": "rejected",
+   "verdict": "BLITZ discretion score, ridge score (6 facts, strong shrinkage), fit on 2026 H1 only, bottom third x0.5 / middle x1 / top third x1.5: H1 R/risk +0.180 (today +0.165, shuffled p 0.205), 25K 2-week pass/fail 37.0/26.1 (today 36.1/37.8), slot $273/mo (today $277); H2 R/risk +0.246 (today +0.200, shuffled p 0.14), 25K 2-week pass/fail 30.4/27.5 (today 36.2/34.8), slot $52/mo (today $30); 2021-25 R/risk +0.009 (today +0.013, shuffled p 0.785), 25K 2-week pass/fail 23.8/47.4 (today 20.4/50.2), slot $-37/mo (today $-41). Not better in all three spans and inside its shuffled-label controls: at chance, rejected.",
+   "writeup": "discretion-score-2026-10-30",
+   "tags": [
+    "blitz",
+    "scalp",
+    "sizing",
+    "discretion"
+   ],
+   "params": {
+    "features": [
+     "exc",
+     "rng_sofar",
+     "vix",
+     "nth",
+     "liq_room",
+     "st15_with"
+    ],
+    "fit": {
+     "model": "ridge",
+     "alpha_per_trade": 1.0,
+     "clip": [
+      -1.5,
+      3.0
+     ],
+     "weights_per_sd": {
+      "exc": 0.0305,
+      "rng_sofar": -0.0122,
+      "vix": -0.0021,
+      "nth": 0.0123,
+      "liq_room": -0.0181,
+      "st15_with": -0.0053
+     },
+     "h1_mean": {
+      "exc": 1.8489,
+      "rng_sofar": 1.1381,
+      "vix": 19.9723,
+      "nth": 2.8848,
+      "liq_room": 1.7698,
+      "st15_with": 0.9078
+     },
+     "h1_sd": {
+      "exc": 1.0176,
+      "rng_sofar": 0.5895,
+      "vix": 4.0038,
+      "nth": 1.2846,
+      "liq_room": 1.5877,
+      "st15_with": 0.4193
+     }
+    },
+    "cuts": [
+     -0.01425263575106127,
+     0.012839975314680278
+    ],
+    "rule": [
+     0.5,
+     1.0,
+     1.5
+    ]
+   },
+   "sizing": {
+    "usd_per_trade": 500.0,
+    "x": "score tercile mult",
+    "eval_25k": {
+     "mode": "frac",
+     "f": 0.4,
+     "cap": 600.0,
+     "push": [
+      5,
+      1.0
+     ]
+    }
+   },
+   "built": "2026-10-30 16:51",
+   "spans": {
+    "2026": {
+     "n": 323,
+     "tpw": 7.84,
+     "wk2": 86,
+     "win": 56.7,
+     "pf": 1.86,
+     "net": 29623,
+     "dd": -2422,
+     "avg_r": 0.176,
+     "stop": 61.1,
+     "worst_day": -828,
+     "risk": 443.0,
+     "half": 0,
+     "per_month": 3020,
+     "p10": 18.9,
+     "f10": 2.9,
+     "p15": 34.0,
+     "f15": 6.3,
+     "p20": 50.0,
+     "f20": 11.7,
+     "dec10": 21.8,
+     "slow_pass": 55.1,
+     "pass_med": 17.0,
+     "b2b": "8/2"
+    },
+    "2021-25": {
+     "n": 1841,
+     "tpw": 8.55,
+     "wk2": 80,
+     "win": 50.1,
+     "pf": 1.02,
+     "net": 6867,
+     "dd": -21980,
+     "avg_r": 0.013,
+     "stop": 38.9,
+     "worst_day": -1855,
+     "risk": 469.0,
+     "half": 0,
+     "per_month": 134,
+     "p10": 8.0,
+     "f10": 22.7,
+     "p15": 10.6,
+     "f15": 37.7,
+     "p20": 14.5,
+     "f20": 48.8,
+     "dec10": 30.7,
+     "slow_pass": 59.6,
+     "pass_med": 19.0,
+     "b2b": "15/46"
+    },
+    "all": {
+     "n": 2164,
+     "tpw": 8.43,
+     "wk2": 81,
+     "win": 51.1,
+     "pf": 1.11,
+     "net": 36490,
+     "dd": -21980,
+     "avg_r": 0.037,
+     "stop": 41.2,
+     "worst_day": -1855,
+     "risk": 466.0,
+     "half": 0,
+     "per_month": 597,
+     "p10": 9.7,
+     "f10": 19.6,
+     "p15": 14.3,
+     "f15": 32.7,
+     "p20": 20.2,
+     "f20": 42.9,
+     "dec10": 29.3,
+     "slow_pass": 59.1,
+     "pass_med": 18.0,
+     "b2b": "23/48"
+    }
+   }
+  },
+  {
    "id": "funded_path_atlas25_cons",
    "title": "ATLAS 25K: 25K rule + consistency-aware cap",
    "family": "risk",
@@ -272145,6 +276685,730 @@
    }
   },
   {
+   "id": "atw_win_dow",
+   "title": "ATLAS per-member window cut (dow: MD no Fri, SR no Wed) - rejected",
+   "family": "timing",
+   "question": "Owner 2026-10-30: skip each ATLAS member's weakest time-of-day / weekday window?",
+   "status": "rejected",
+   "verdict": "Per-member window cut picked on 2026 H1 (dow: MD no Fri, SR no Wed): H1 2-week pass/dead 65.5/0.0 (today 65.5/0.8), eval paths $1783/mo (today $1394), R/risk +1.066 (today +0.884); H2 2-week pass/dead 43.5/0.0 (today 43.5/0.0), eval paths $628/mo (today $547), R/risk +0.760 (today +0.620); 2025 2-week pass/dead 27.7/14.9 (today 30.1/23.3), eval paths $-139/mo (today $-148), R/risk +0.100 (today +0.084); 2021-24 2-week pass/dead 21.9/21.9 (today 22.9/27.1), eval paths $69/mo (today $-36), R/risk +0.048 (today +0.045). v2 test: passes; random windows pass it 3% of the time (30 draws). Rejected: neither weekday cut passes alone, every neighbour fails, the skipped S/R Wednesday trades made +10.3R in 2021-25, and weekday rules are what calendar-effects.md / atlas.md already found to be chance.",
+   "writeup": "atlas-windows-entries-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "timing"
+   ],
+   "params": {
+    "family": "dow",
+    "picks": {
+     "MD": {
+      "bucket": 4,
+      "label": "Fri",
+      "h1_n": 10,
+      "h1_R": -4.46,
+      "per_year": {
+       "2021": [
+        3,
+        -2.1
+       ],
+       "2022": [
+        16,
+        3.27
+       ],
+       "2023": [
+        15,
+        -13.59
+       ],
+       "2024": [
+        12,
+        7.7
+       ],
+       "2025": [
+        11,
+        -5.52
+       ],
+       "2026H1": [
+        10,
+        -4.46
+       ],
+       "2026H2": [
+        3,
+        -1.08
+       ]
+      }
+     },
+     "SR": {
+      "bucket": 2,
+      "label": "Wed",
+      "h1_n": 4,
+      "h1_R": -1.05,
+      "per_year": {
+       "2021": [
+        1,
+        1.57
+       ],
+       "2022": [
+        16,
+        5.55
+       ],
+       "2023": [
+        16,
+        -1.05
+       ],
+       "2024": [
+        6,
+        0.18
+       ],
+       "2025": [
+        14,
+        4.04
+       ],
+       "2026H1": [
+        4,
+        -1.05
+       ],
+       "2026H2": [
+        4,
+        -0.75
+       ]
+      }
+     }
+    }
+   },
+   "sizing": {
+    "account_b": "need size (engine/account_b.qty)"
+   },
+   "built": "2026-10-30 17:11",
+   "spans": {
+    "2026": {
+     "n": 82,
+     "tpw": 1.99,
+     "wk2": 50,
+     "win": 53.7,
+     "pf": 3.12,
+     "net": 15213,
+     "dd": -971,
+     "avg_r": 1.014,
+     "stop": 36.5,
+     "worst_day": -462,
+     "risk": 190.0,
+     "half": 0,
+     "per_month": 1551,
+     "p10": 10.7,
+     "f10": 0.0,
+     "p15": 18.9,
+     "f15": 0.0,
+     "p20": 26.7,
+     "f20": 0.0,
+     "dec10": 10.7,
+     "slow_pass": 70.9,
+     "pass_med": 25.0,
+     "b2b": "4/0"
+    },
+    "2021-25": {
+     "n": 599,
+     "tpw": 2.79,
+     "wk2": 69,
+     "win": 39.2,
+     "pf": 1.17,
+     "net": 8609,
+     "dd": -6381,
+     "avg_r": 0.08,
+     "stop": 20.8,
+     "worst_day": -591,
+     "risk": 108.0,
+     "half": 0,
+     "per_month": 169,
+     "p10": 4.0,
+     "f10": 0.0,
+     "p15": 6.7,
+     "f15": 0.4,
+     "p20": 8.8,
+     "f20": 1.7,
+     "dec10": 4.0,
+     "slow_pass": 71.0,
+     "pass_med": 28.0,
+     "b2b": "6/9"
+    },
+    "all": {
+     "n": 681,
+     "tpw": 2.66,
+     "wk2": 66,
+     "win": 41.0,
+     "pf": 1.41,
+     "net": 23822,
+     "dd": -6381,
+     "avg_r": 0.192,
+     "stop": 22.0,
+     "worst_day": -591,
+     "risk": 117.0,
+     "half": 0,
+     "per_month": 391,
+     "p10": 5.1,
+     "f10": 0.0,
+     "p15": 8.7,
+     "f15": 0.3,
+     "p20": 11.7,
+     "f20": 1.4,
+     "dec10": 5.1,
+     "slow_pass": 70.9,
+     "pass_med": 27.0,
+     "b2b": "10/10"
+    }
+   }
+  },
+  {
+   "id": "atw_win_m30",
+   "title": "ATLAS per-member window cut (m30: EMA no 04:00-04:30, MD no 04:30-05:00, SR no 11:00-11:30) - rejected",
+   "family": "timing",
+   "question": "Owner 2026-10-30: skip each ATLAS member's weakest time-of-day / weekday window?",
+   "status": "rejected",
+   "verdict": "Per-member window cut picked on 2026 H1 (m30: EMA no 04:00-04:30, MD no 04:30-05:00, SR no 11:00-11:30): H1 2-week pass/dead 72.3/0.0 (today 65.5/0.8), eval paths $2355/mo (today $1394), R/risk +1.101 (today +0.884); H2 2-week pass/dead 43.5/0.0 (today 43.5/0.0), eval paths $610/mo (today $547), R/risk +0.701 (today +0.620); 2025 2-week pass/dead 28.9/8.4 (today 30.1/23.3), eval paths $-1/mo (today $-148), R/risk +0.123 (today +0.084); 2021-24 2-week pass/dead 21.6/23.1 (today 22.9/27.1), eval paths $-67/mo (today $-36), R/risk +0.056 (today +0.045). v2 test: fails; random windows pass it 0% of the time (30 draws). The combined cut fails the 2021-24 tier (-$67 vs -$36 a month).",
+   "writeup": "atlas-windows-entries-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "timing"
+   ],
+   "params": {
+    "family": "m30",
+    "picks": {
+     "EMA": {
+      "bucket": 8,
+      "label": "04:00-04:30",
+      "h1_n": 4,
+      "h1_R": -3.0,
+      "per_year": {
+       "2021": [
+        2,
+        7.47
+       ],
+       "2022": [
+        10,
+        1.69
+       ],
+       "2023": [
+        16,
+        -0.97
+       ],
+       "2024": [
+        19,
+        11.28
+       ],
+       "2025": [
+        19,
+        -11.98
+       ],
+       "2026H1": [
+        4,
+        -3.0
+       ],
+       "2026H2": [
+        3,
+        -0.49
+       ]
+      }
+     },
+     "MD": {
+      "bucket": 9,
+      "label": "04:30-05:00",
+      "h1_n": 6,
+      "h1_R": -4.09,
+      "per_year": {
+       "2021": [
+        1,
+        -1.0
+       ],
+       "2022": [
+        5,
+        -4.24
+       ],
+       "2023": [
+        10,
+        -7.22
+       ],
+       "2024": [
+        1,
+        -1.0
+       ],
+       "2025": [
+        5,
+        8.44
+       ],
+       "2026H1": [
+        6,
+        -4.09
+       ],
+       "2026H2": [
+        1,
+        -0.36
+       ]
+      }
+     },
+     "SR": {
+      "bucket": 22,
+      "label": "11:00-11:30",
+      "h1_n": 3,
+      "h1_R": -3.0,
+      "per_year": {
+       "2021": [
+        2,
+        0.91
+       ],
+       "2022": [
+        10,
+        -7.05
+       ],
+       "2023": [
+        8,
+        -3.54
+       ],
+       "2024": [
+        6,
+        -0.7
+       ],
+       "2025": [
+        8,
+        -2.23
+       ],
+       "2026H1": [
+        3,
+        -3.0
+       ],
+       "2026H2": [
+        2,
+        0.92
+       ]
+      }
+     }
+    }
+   },
+   "sizing": {
+    "account_b": "need size (engine/account_b.qty)"
+   },
+   "built": "2026-10-30 17:11",
+   "spans": {
+    "2026": {
+     "n": 71,
+     "tpw": 1.72,
+     "wk2": 45,
+     "win": 53.5,
+     "pf": 3.32,
+     "net": 15215,
+     "dd": -938,
+     "avg_r": 1.165,
+     "stop": 37.0,
+     "worst_day": -586,
+     "risk": 185.0,
+     "half": 0,
+     "per_month": 1551,
+     "p10": 11.7,
+     "f10": 0.0,
+     "p15": 19.4,
+     "f15": 0.0,
+     "p20": 27.7,
+     "f20": 0.0,
+     "dec10": 11.7,
+     "slow_pass": 67.5,
+     "pass_med": 22.0,
+     "b2b": "4/0"
+    },
+    "2021-25": {
+     "n": 560,
+     "tpw": 2.61,
+     "wk2": 67,
+     "win": 37.9,
+     "pf": 1.05,
+     "net": 2218,
+     "dd": -6308,
+     "avg_r": 0.028,
+     "stop": 20.9,
+     "worst_day": -579,
+     "risk": 105.0,
+     "half": 0,
+     "per_month": 43,
+     "p10": 3.0,
+     "f10": 0.0,
+     "p15": 4.4,
+     "f15": 0.1,
+     "p20": 5.7,
+     "f20": 1.6,
+     "dec10": 3.0,
+     "slow_pass": 69.7,
+     "pass_med": 27.0,
+     "b2b": "3/8"
+    },
+    "all": {
+     "n": 631,
+     "tpw": 2.47,
+     "wk2": 64,
+     "win": 39.6,
+     "pf": 1.33,
+     "net": 17433,
+     "dd": -6308,
+     "avg_r": 0.156,
+     "stop": 22.0,
+     "worst_day": -586,
+     "risk": 110.0,
+     "half": 0,
+     "per_month": 286,
+     "p10": 4.4,
+     "f10": 0.0,
+     "p15": 6.8,
+     "f15": 0.1,
+     "p20": 9.2,
+     "f20": 1.3,
+     "dec10": 4.4,
+     "slow_pass": 68.7,
+     "pass_med": 24.5,
+     "b2b": "7/9"
+    }
+   }
+  },
+  {
+   "id": "atw_win_m30_sr",
+   "title": "ATLAS per-member window cut (m30: SR no 11:00-11:30) - rejected",
+   "family": "timing",
+   "question": "Owner 2026-10-30: skip each ATLAS member's weakest time-of-day / weekday window?",
+   "status": "rejected",
+   "verdict": "Per-member window cut picked on 2026 H1 (m30: SR no 11:00-11:30): H1 2-week pass/dead 68.9/0.8 (today 65.5/0.8), eval paths $1598/mo (today $1394), R/risk +0.935 (today +0.884); H2 2-week pass/dead 43.5/0.0 (today 43.5/0.0), eval paths $591/mo (today $547), R/risk +0.626 (today +0.620); 2025 2-week pass/dead 30.1/16.1 (today 30.1/23.3), eval paths $-99/mo (today $-148), R/risk +0.096 (today +0.084); 2021-24 2-week pass/dead 22.7/24.7 (today 22.9/27.1), eval paths $-23/mo (today $-36), R/risk +0.059 (today +0.045). v2 test: passes; random windows pass it 0% of the time (30 draws). Rejected: it is the S/R 11:00 spike of atlas.md (the 3 H1 trades all entered at 11:00 and stopped out), both neighbours fail, and 3 of all 25 single 30-minute cuts pass the same test (research/second/atw_singles_m30.json).",
+   "writeup": "atlas-windows-entries-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "timing"
+   ],
+   "params": {
+    "family": "m30",
+    "picks": {
+     "SR": {
+      "bucket": 22,
+      "label": "11:00-11:30",
+      "h1_n": 3,
+      "h1_R": -3.0,
+      "per_year": {
+       "2021": [
+        2,
+        0.91
+       ],
+       "2022": [
+        10,
+        -7.05
+       ],
+       "2023": [
+        8,
+        -3.54
+       ],
+       "2024": [
+        6,
+        -0.7
+       ],
+       "2025": [
+        8,
+        -2.23
+       ],
+       "2026H1": [
+        3,
+        -3.0
+       ],
+       "2026H2": [
+        2,
+        0.92
+       ]
+      }
+     }
+    }
+   },
+   "sizing": {
+    "account_b": "need size (engine/account_b.qty)"
+   },
+   "built": "2026-10-30 17:11",
+   "spans": {
+    "2026": {
+     "n": 78,
+     "tpw": 1.89,
+     "wk2": 48,
+     "win": 47.4,
+     "pf": 2.31,
+     "net": 9356,
+     "dd": -938,
+     "avg_r": 0.854,
+     "stop": 36.4,
+     "worst_day": -586,
+     "risk": 159.0,
+     "half": 0,
+     "per_month": 954,
+     "p10": 5.8,
+     "f10": 0.0,
+     "p15": 10.7,
+     "f15": 0.0,
+     "p20": 16.5,
+     "f20": 0.0,
+     "dec10": 5.8,
+     "slow_pass": 75.8,
+     "pass_med": 26.0,
+     "b2b": "2/0"
+    },
+    "2021-25": {
+     "n": 606,
+     "tpw": 2.83,
+     "wk2": 68,
+     "win": 37.5,
+     "pf": 1.04,
+     "net": 2061,
+     "dd": -5507,
+     "avg_r": 0.075,
+     "stop": 21.1,
+     "worst_day": -595,
+     "risk": 113.0,
+     "half": 0,
+     "per_month": 40,
+     "p10": 3.2,
+     "f10": 0.2,
+     "p15": 4.4,
+     "f15": 0.8,
+     "p20": 5.7,
+     "f20": 3.4,
+     "dec10": 3.4,
+     "slow_pass": 72.2,
+     "pass_med": 30.0,
+     "b2b": "4/9"
+    },
+    "all": {
+     "n": 684,
+     "tpw": 2.68,
+     "wk2": 65,
+     "win": 38.6,
+     "pf": 1.19,
+     "net": 11417,
+     "dd": -5507,
+     "avg_r": 0.164,
+     "stop": 22.0,
+     "worst_day": -595,
+     "risk": 117.0,
+     "half": 0,
+     "per_month": 188,
+     "p10": 3.6,
+     "f10": 0.2,
+     "p15": 5.4,
+     "f15": 0.7,
+     "p20": 7.4,
+     "f20": 2.8,
+     "dec10": 3.8,
+     "slow_pass": 73.5,
+     "pass_med": 28.0,
+     "b2b": "6/9"
+    }
+   }
+  },
+  {
+   "id": "atw_win_m60",
+   "title": "ATLAS per-member window cut (m60: EMA no 05:00-06:00, MD no 10:00-11:00, SR no 11:00-12:00) - rejected",
+   "family": "timing",
+   "question": "Owner 2026-10-30: skip each ATLAS member's weakest time-of-day / weekday window?",
+   "status": "rejected",
+   "verdict": "Per-member window cut picked on 2026 H1 (m60: EMA no 05:00-06:00, MD no 10:00-11:00, SR no 11:00-12:00): H1 2-week pass/dead 73.1/0.8 (today 65.5/0.8), eval paths $2065/mo (today $1394), R/risk +1.026 (today +0.884); H2 2-week pass/dead 50.7/0.0 (today 43.5/0.0), eval paths $480/mo (today $547), R/risk +0.618 (today +0.620); 2025 2-week pass/dead 28.1/14.1 (today 30.1/23.3), eval paths $-70/mo (today $-148), R/risk +0.122 (today +0.084); 2021-24 2-week pass/dead 24.1/19.6 (today 22.9/27.1), eval paths $-24/mo (today $-36), R/risk +0.106 (today +0.045). v2 test: fails; random windows pass it 3% of the time (30 draws). H2 eval-path $ is lower than today (fails H2).",
+   "writeup": "atlas-windows-entries-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "timing"
+   ],
+   "params": {
+    "family": "m60",
+    "picks": {
+     "EMA": {
+      "bucket": 5,
+      "label": "05:00-06:00",
+      "h1_n": 4,
+      "h1_R": -2.61,
+      "per_year": {
+       "2021": [
+        1,
+        -1.0
+       ],
+       "2022": [
+        15,
+        -3.97
+       ],
+       "2023": [
+        19,
+        -8.52
+       ],
+       "2024": [
+        12,
+        -7.25
+       ],
+       "2025": [
+        14,
+        0.17
+       ],
+       "2026H1": [
+        4,
+        -2.61
+       ],
+       "2026H2": [
+        5,
+        4.35
+       ]
+      }
+     },
+     "MD": {
+      "bucket": 10,
+      "label": "10:00-11:00",
+      "h1_n": 3,
+      "h1_R": -1.0,
+      "per_year": {
+       "2022": [
+        12,
+        -2.96
+       ],
+       "2023": [
+        11,
+        -0.33
+       ],
+       "2024": [
+        4,
+        -2.92
+       ],
+       "2025": [
+        4,
+        -1.86
+       ],
+       "2026H1": [
+        3,
+        -1.0
+       ],
+       "2026H2": [
+        1,
+        1.36
+       ]
+      }
+     },
+     "SR": {
+      "bucket": 11,
+      "label": "11:00-12:00",
+      "h1_n": 4,
+      "h1_R": -1.07,
+      "per_year": {
+       "2021": [
+        4,
+        1.71
+       ],
+       "2022": [
+        18,
+        -5.99
+       ],
+       "2023": [
+        14,
+        -3.22
+       ],
+       "2024": [
+        11,
+        -5.7
+       ],
+       "2025": [
+        14,
+        -3.74
+       ],
+       "2026H1": [
+        4,
+        -1.07
+       ],
+       "2026H2": [
+        3,
+        -0.08
+       ]
+      }
+     }
+    }
+   },
+   "sizing": {
+    "account_b": "need size (engine/account_b.qty)"
+   },
+   "built": "2026-10-30 17:11",
+   "spans": {
+    "2026": {
+     "n": 77,
+     "tpw": 1.87,
+     "wk2": 50,
+     "win": 48.1,
+     "pf": 2.93,
+     "net": 13503,
+     "dd": -926,
+     "avg_r": 0.984,
+     "stop": 39.5,
+     "worst_day": -586,
+     "risk": 185.0,
+     "half": 0,
+     "per_month": 1377,
+     "p10": 5.8,
+     "f10": 0.0,
+     "p15": 10.2,
+     "f15": 0.0,
+     "p20": 17.0,
+     "f20": 0.0,
+     "dec10": 5.8,
+     "slow_pass": 80.4,
+     "pass_med": 25.0,
+     "b2b": "4/0"
+    },
+    "2021-25": {
+     "n": 566,
+     "tpw": 2.64,
+     "wk2": 68,
+     "win": 38.2,
+     "pf": 1.06,
+     "net": 2989,
+     "dd": -7269,
+     "avg_r": 0.094,
+     "stop": 22.0,
+     "worst_day": -574,
+     "risk": 116.0,
+     "half": 0,
+     "per_month": 59,
+     "p10": 1.5,
+     "f10": 0.0,
+     "p15": 2.0,
+     "f15": 0.6,
+     "p20": 2.3,
+     "f20": 2.1,
+     "dec10": 1.5,
+     "slow_pass": 75.3,
+     "pass_med": 35.0,
+     "b2b": "3/8"
+    },
+    "all": {
+     "n": 643,
+     "tpw": 2.52,
+     "wk2": 65,
+     "win": 39.3,
+     "pf": 1.3,
+     "net": 16493,
+     "dd": -7269,
+     "avg_r": 0.201,
+     "stop": 22.8,
+     "worst_day": -586,
+     "risk": 122.0,
+     "half": 0,
+     "per_month": 271,
+     "p10": 2.2,
+     "f10": 0.0,
+     "p15": 3.3,
+     "f15": 0.5,
+     "p20": 4.7,
+     "f20": 1.7,
+     "dec10": 2.2,
+     "slow_pass": 78.1,
+     "pass_med": 28.0,
+     "b2b": "7/8"
+    }
+   }
+  },
+  {
    "id": "cal_first_week_half",
    "title": "Half size on the first trade of the week",
    "family": "timing",
@@ -286900,6 +292164,109 @@
      "slow_pass": 75.1,
      "pass_med": 29.0,
      "b2b": "7/10"
+    }
+   }
+  },
+  {
+   "id": "atw_entry_q0_15m_skip",
+   "title": "ATLAS entry: limit q0 15m else skip (executor check) - info",
+   "family": "other",
+   "question": "Owner 2026-10-30: enter ATLAS with a limit at a better price instead of market at the next open?",
+   "status": "info",
+   "verdict": "ATLAS limit q0 15m else skip (executor check): fill rate 100.0 / 100.0 / 100.0 / 100.0% (H1 / H2 / 2025 / 2021-24); H1 2-week pass/dead 63.9/0.8 (today 65.5/0.8), eval paths $1256/mo (today $1394), R/risk +0.891 (today +0.884); H2 2-week pass/dead 44.9/0.0 (today 43.5/0.0), eval paths $592/mo (today $547), R/risk +0.638 (today +0.620); 2025 2-week pass/dead 27.7/24.1 (today 30.1/23.3), eval paths $-224/mo (today $-148), R/risk +0.106 (today +0.084); 2021-24 2-week pass/dead 22.1/28.1 (today 22.9/27.1), eval paths $52/mo (today $-36), R/risk +0.045 (today +0.045). v2 test: fails.",
+   "writeup": "atlas-windows-entries-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "entry"
+   ],
+   "params": {
+    "entry": {
+     "px": "q0",
+     "wait": 15,
+     "else": "skip"
+    }
+   },
+   "sizing": {
+    "account_b": "need size on the (smaller) limit-fill risk"
+   },
+   "built": "2026-10-30 17:12",
+   "spans": {
+    "2026": {
+     "n": 76,
+     "tpw": 1.84,
+     "wk2": 45,
+     "win": 50.0,
+     "pf": 2.51,
+     "net": 10728,
+     "dd": -985,
+     "avg_r": 1.018,
+     "stop": 38.2,
+     "worst_day": -581,
+     "risk": 172.0,
+     "half": 0,
+     "per_month": 1094,
+     "p10": 5.8,
+     "f10": 0.0,
+     "p15": 11.2,
+     "f15": 0.0,
+     "p20": 16.5,
+     "f20": 0.0,
+     "dec10": 5.8,
+     "slow_pass": 75.5,
+     "pass_med": 27.0,
+     "b2b": "3/0"
+    },
+    "2021-25": {
+     "n": 656,
+     "tpw": 3.06,
+     "wk2": 70,
+     "win": 36.6,
+     "pf": 1.07,
+     "net": 4344,
+     "dd": -6274,
+     "avg_r": 0.006,
+     "stop": 21.2,
+     "worst_day": -588,
+     "risk": 131.0,
+     "half": 0,
+     "per_month": 85,
+     "p10": 3.4,
+     "f10": 0.0,
+     "p15": 5.5,
+     "f15": 1.0,
+     "p20": 6.5,
+     "f20": 4.0,
+     "dec10": 3.4,
+     "slow_pass": 77.6,
+     "pass_med": 32.0,
+     "b2b": "6/11"
+    },
+    "all": {
+     "n": 732,
+     "tpw": 2.86,
+     "wk2": 66,
+     "win": 38.0,
+     "pf": 1.21,
+     "net": 15072,
+     "dd": -6846,
+     "avg_r": 0.111,
+     "stop": 22.0,
+     "worst_day": -588,
+     "risk": 136.0,
+     "half": 0,
+     "per_month": 248,
+     "p10": 3.8,
+     "f10": 0.0,
+     "p15": 6.4,
+     "f15": 0.9,
+     "p20": 8.1,
+     "f20": 3.4,
+     "dec10": 3.8,
+     "slow_pass": 77.0,
+     "pass_med": 30.0,
+     "b2b": "9/11"
     }
    }
   },
@@ -303937,6 +309304,157 @@
      "slow_pass": 100.0,
      "pass_med": 41.0,
      "b2b": "6/6"
+    }
+   }
+  },
+  {
+   "id": "dsx_blitz_prior",
+   "title": "BLITZ trader's checklist size (no fit) - thin lead, not adopted",
+   "family": "risk",
+   "question": "Does a trader's written-down checklist (no fitting at all) size BLITZ better than a fitted score?",
+   "status": "info",
+   "verdict": "BLITZ trader's checklist (no fit: strong break, day already moving, not the first signal, room to the next pool, with the 15m structure; 0-1 boxes x0.5, 2-3 x1, 4-5 x1.5): H1 R/risk +0.195 (today +0.165, multiplier-shuffle p 0.033), 25K 2-week pass/fail 42.9/36.1 (today 36.1/37.8), slot $287/mo (today $270); H2 R/risk +0.222 (today +0.200, multiplier-shuffle p 0.097), 25K 2-week pass/fail 33.3/34.8 (today 36.2/34.8), slot $50/mo (today $37); 2021-25 R/risk +0.019 (today +0.013, multiplier-shuffle p 0.123), 25K 2-week pass/fail 23.6/48.3 (today 20.4/50.2), slot $-38/mo (today $-40). Better per unit of risk in every span and 6 of 7 years, but the out-of-sample shuffles reach it 10-12% of the time, the H2 2-week pass drops, and it was written after the fact table was seen (two boxes are the known later-break / trend-day facts). Thin lead, not adopted.",
+   "writeup": "discretion-score-2026-10-30",
+   "tags": [
+    "blitz",
+    "scalp",
+    "sizing",
+    "discretion"
+   ],
+   "params": {
+    "prior": [
+     [
+      "exc",
+      ">",
+      "med"
+     ],
+     [
+      "rng_sofar",
+      ">",
+      "med"
+     ],
+     [
+      "nth",
+      ">=",
+      2.0
+     ],
+     [
+      "liq_room",
+      ">",
+      "med"
+     ],
+     [
+      "st15_with",
+      ">=",
+      1.0
+     ]
+    ],
+    "bands": [
+     [
+      0,
+      1,
+      0.5
+     ],
+     [
+      2,
+      3,
+      1.0
+     ],
+     [
+      4,
+      5,
+      1.5
+     ]
+    ]
+   },
+   "sizing": {
+    "usd_per_trade": 500.0,
+    "eval_25k": {
+     "mode": "frac",
+     "f": 0.4,
+     "cap": 600.0,
+     "push": [
+      5,
+      1.0
+     ]
+    }
+   },
+   "built": "2026-10-30 16:52",
+   "spans": {
+    "2026": {
+     "n": 323,
+     "tpw": 7.84,
+     "wk2": 86,
+     "win": 56.7,
+     "pf": 1.83,
+     "net": 35683,
+     "dd": -2456,
+     "avg_r": 0.176,
+     "stop": 61.1,
+     "worst_day": -1546,
+     "risk": 486.0,
+     "half": 0,
+     "per_month": 3638,
+     "p10": 27.7,
+     "f10": 9.7,
+     "p15": 43.7,
+     "f15": 19.4,
+     "p20": 53.4,
+     "f20": 26.7,
+     "dec10": 37.4,
+     "slow_pass": 23.7,
+     "pass_med": 11.0,
+     "b2b": "10/4"
+    },
+    "2021-25": {
+     "n": 1841,
+     "tpw": 8.55,
+     "wk2": 80,
+     "win": 50.1,
+     "pf": 1.05,
+     "net": 19410,
+     "dd": -19649,
+     "avg_r": 0.013,
+     "stop": 38.9,
+     "worst_day": -2180,
+     "risk": 491.0,
+     "half": 0,
+     "per_month": 378,
+     "p10": 9.1,
+     "f10": 26.6,
+     "p15": 13.9,
+     "f15": 39.6,
+     "p20": 17.9,
+     "f20": 49.7,
+     "dec10": 35.7,
+     "slow_pass": 53.7,
+     "pass_med": 17.0,
+     "b2b": "14/43"
+    },
+    "all": {
+     "n": 2164,
+     "tpw": 8.43,
+     "wk2": 81,
+     "win": 51.1,
+     "pf": 1.14,
+     "net": 55094,
+     "dd": -19649,
+     "avg_r": 0.037,
+     "stop": 41.2,
+     "worst_day": -2180,
+     "risk": 491.0,
+     "half": 0,
+     "per_month": 902,
+     "p10": 12.1,
+     "f10": 23.9,
+     "p15": 18.7,
+     "f15": 36.4,
+     "p20": 23.6,
+     "f20": 46.0,
+     "dec10": 36.0,
+     "slow_pass": 47.4,
+     "pass_med": 15.0,
+     "b2b": "25/47"
     }
    }
   },
