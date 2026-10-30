@@ -260,9 +260,15 @@ def part_c(F, tmp, shots):
           requestAnimationFrame(f); })""")
         PERF["phone_scroll_frame_ms"] = fr
         check("c. frame time while scrolling Home: median <= 20 ms, p95 <= 50 ms (headless, software GPU)", fr["p50"] <= 20 and fr["p95"] <= 50, fr)
+        # layout shift of a fresh open of Home (the first 4 s: home.json, data.json, live.json and the late cards landing);
+        # the scroll above scrolls the page, which is no shift. The scrolled position is reset first.
+        pg.evaluate("() => scrollTo(0, 0)")
+        pg.goto(base + "?fxoff#/today")
+        pg.wait_for_selector(".pl-home .su-acct", timeout=30000)
+        pg.wait_for_timeout(4000)
         cls_ = pg.evaluate("""() => new Promise((res) => { let s = 0; try { new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput) s += e.value; }).observe({ type: 'layout-shift', buffered: true }); } catch (e) {} setTimeout(() => res(s), 600); })""")
         PERF["phone_layout_shift"] = round(cls_, 4)
-        check("c. no layout shift to speak of on Home (CLS < 0.1)", cls_ < 0.1, cls_)
+        check("c. no layout shift to speak of on a fresh open of Home (CLS < 0.1)", cls_ < 0.1, cls_)
         check("c. phone: no page errors", not errs, errs[:4])
         ctx.close()
         # the intro: once a day, skippable (a real phone, not an automated browser)
@@ -366,9 +372,13 @@ def part_d(F, shots):
               and side.index("blitz") == side.index("atlas") + 1, (subs, side))
         if shots:
             pg.screenshot(path=os.path.join(shots, "polish_pc_home_1440.png"))
-        TB.pc_go(pg, "blitz")
-        pg.wait_for_timeout(1500)
-        seg = pg.eval_on_selector_all("#nxSub .nx-botseg button", "els => els.map(e => e.textContent.trim())")
+        seg = []
+        for _ in range(3):                   # the PC app may open Start by itself on its first health ping: go again
+            TB.pc_go(pg, "blitz")
+            pg.wait_for_timeout(1500)
+            seg = pg.eval_on_selector_all("#nxSub .nx-botseg button", "els => els.map(e => e.textContent.trim())")
+            if seg:
+                break
         check("d. PC BLITZ: Today · Brain · Trades · Results · Rules", seg == ["Today", "Brain", "Trades", "Results", "Rules"], seg)
         # Ctrl K finds each bot's sections and the status verdict
         pg.keyboard.press("Control+k")

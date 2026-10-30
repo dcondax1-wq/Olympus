@@ -215,13 +215,20 @@
     const T = document.getElementById('tabs'); if (!T || getComputedStyle(T).display === 'none') return;     // (a fixed bar has no offsetParent)
     let i = T.querySelector(':scope > .pl-tabind');
     if (!i) { i = document.createElement('i'); i.className = 'pl-tabind'; i.setAttribute('aria-hidden', 'true'); T.prepend(i); }
-    const a = T.querySelector('a.on');
+    let a = T.querySelector('a.on');
+    // a late nav() (mission.js / blitz.js redraw the bar once they load) leaves no tab lit: light the page's own tab again
+    if (!a && typeof PAGE !== 'undefined' && PAGE && typeof groupOf === 'function') { a = T.querySelector(`a[data-t="${groupOf(PAGE)}"]`); if (a) a.classList.add('on'); }
     T.classList.toggle('pl-slide', !!a);
     if (!a) { i.style.opacity = '0'; return; }
     i.dataset.t = a.dataset.t || '';
     i.style.width = a.offsetWidth + 'px'; i.style.transform = `translate3d(${a.offsetLeft}px,0,0)`; i.style.opacity = '1';
   }
   addEventListener('resize', () => requestAnimationFrame(tabInd), { passive: true });
+  (function watchTabs() {          // the bar is rebuilt by nav() (another module loading): put the pill back on the open tab
+    const T = document.getElementById('tabs'); if (!T || typeof MutationObserver === 'undefined') return;
+    let q = 0;
+    new MutationObserver(() => { if (!q) q = requestAnimationFrame(() => { q = 0; try { tabInd(); } catch (e) { /* optional */ } }); }).observe(T, { childList: true });
+  })();
   window.POLISH.tabInd = tabInd;
   const PLAN = new Set(['money', 'props', 'whatif', 'scale', 'share']);
   function eyebrow(el, g) {
