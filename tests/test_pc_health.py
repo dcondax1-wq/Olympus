@@ -79,7 +79,17 @@ class FakePs:
 
     def process_iter(self, attrs=None):
         self._r()
-        return [SimpleNamespace(info={"name": n, "memory_info": SimpleNamespace(rss=mb * 2 ** 20)}) for n, mb in self.procs]
+        self.scans = getattr(self, "scans", 0) + 1
+        me = self
+
+        def proc(n, mb):
+            def mi():
+                live = dict(me.procs)
+                if n not in live:
+                    raise ProcessLookupError(n)          # psutil.NoSuchProcess stand-in: that process is gone
+                return SimpleNamespace(rss=live[n] * 2 ** 20)
+            return SimpleNamespace(info={"name": n, "memory_info": SimpleNamespace(rss=mb * 2 ** 20)}, memory_info=mi)
+        return [proc(n, mb) for n, mb in self.procs]
 
 
 def t_lines():
@@ -125,8 +135,18 @@ def t_sampler():
         f = s.facts(t0 + 400)
         check("NinjaTrader.exe found with its memory (Windows)", f["nt"]["running"] and f["nt"]["mb"] == 1200 and f["nt"]["market_open"]
               and f["nt"]["routes"], f["nt"])
+        n0 = ps.scans
+        ps.procs = [("NinjaTrader.exe", 1500), ("chrome.exe", 300)]
+        f = s.facts(t0 + 420)
+        check("NinjaTrader: between full scans only its own process is asked (memory 1,500 MB, no new process-list read)",
+              ps.scans == n0 and f["nt"]["mb"] == 1500, (ps.scans, n0, f["nt"]))
         ps.procs = [("chrome.exe", 300)]
-        check("NinjaTrader not running in the session while the bot routes -> red", lv(s.block(t0 + 460)["lines"], "nt") == "red")
+        check("NinjaTrader not running in the session while the bot routes -> red (its process gone = scan at once)",
+              lv(s.block(t0 + 460)["lines"], "nt") == "red" and ps.scans == n0 + 1)
+        s.facts(t0 + 470)
+        check("not found: the next full scan only after 60 s", ps.scans == n0 + 1)
+        s.facts(t0 + 530)
+        check("... and then again", ps.scans == n0 + 2)
         check("bot memory: no growth figure before the 10-minute warm-up", s.facts(t0 + 500).get("bot_base_mb") is None)
         sat = ts(2026, 10, 31, 12, 0)
         check("... on a Saturday (market closed) -> amber", lv(H.Sampler(bot, ps=ps, root=tmp, is_windows=True, t0=t0).block(sat)["lines"], "nt") == "amber")

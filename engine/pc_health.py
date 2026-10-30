@@ -45,6 +45,7 @@ BLOCK_PATH = os.path.join(LOG_DIR, "pc_health.json")      # gitignored (logs/): 
 STATE_PATH = os.path.join(LOG_DIR, "pc_watch.json")       # gitignored: pushes sent (key -> t), the schedules' last dates
 SAMPLE_S = 60.0
 ONEDRIVE_EVERY_S = 600.0
+NT_SCAN_S = 300.0                                         # the full process list (the NinjaTrader line) at most this often
 GREEN, AMBER, RED, SKIP = "green", "amber", "red", "skip"
 ORDER = {GREEN: 0, AMBER: 1, RED: 2}
 T = {"cpu_amber": 85.0, "cpu_red": 95.0, "ram_amber": 88.0, "ram_red": 95.0, "disk_amber_gb": 10.0, "disk_red_gb": 2.0,
@@ -242,6 +243,8 @@ class Sampler:
         self.base_mb = None
         self._last_poll = None
         self._od = {"t": 0.0, "files": []}
+        self._nt_procs: list = []
+        self._nt_scan_t = -1e18
         self._proc = None
         try:
             if self.ps is not None:
@@ -261,19 +264,33 @@ class Sampler:
             return None
 
     def _nt(self, now) -> dict | None:
+        """NinjaTrader.exe running + its memory. The full process list is read at most every NT_SCAN_S (60 s while it is
+        not found); in between only the known NinjaTrader processes are asked (a dead one = scan again). Windows only."""
         if not self.is_windows or self.ps is None:
             return None
-        running, mb = False, None
-        try:
-            for p in self.ps.process_iter(["name", "memory_info"]):
-                info = getattr(p, "info", None) or {}
-                if str(info.get("name") or "").lower() == "ninjatrader.exe":
-                    running = True
-                    mi = info.get("memory_info")
-                    if mi is not None:
-                        mb = (mb or 0.0) + float(getattr(mi, "rss", 0)) / 2 ** 20
-        except Exception:
-            return None
+        procs, mb = self._nt_procs, None
+        scan = now - self._nt_scan_t >= (NT_SCAN_S if procs else 60.0)
+        if procs and not scan:
+            try:
+                mb = sum(float(p.memory_info().rss) for p in procs) / 2 ** 20
+            except Exception:                    # NinjaTrader closed (or restarted): look again now
+                scan = True
+        if scan:
+            self._nt_scan_t = now
+            procs, mb = [], None
+            try:
+                for p in self.ps.process_iter(["name", "memory_info"]):
+                    info = getattr(p, "info", None) or {}
+                    if str(info.get("name") or "").lower() == "ninjatrader.exe":
+                        procs.append(p)
+                        mi = info.get("memory_info")
+                        if mi is not None:
+                            mb = (mb or 0.0) + float(getattr(mi, "rss", 0)) / 2 ** 20
+            except Exception:
+                self._nt_procs = []
+                return None
+            self._nt_procs = procs
+        running = bool(procs)
         try:
             from .ops_checks import market_open
             mo = market_open(now)
