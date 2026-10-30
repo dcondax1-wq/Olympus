@@ -1,0 +1,695 @@
+{
+ "built": "2026-10-30 16:42",
+ "rows": {
+  "ridge01 fit on H1": {
+   "fit": {
+    "model": "ridge01",
+    "fit_on": "H1",
+    "weights_per_sd": {
+     "exc": 0.0951,
+     "rng_sofar": -0.0732,
+     "vix": -0.0102,
+     "nth": 0.0232,
+     "liq_room": -0.0238,
+     "st15_with": -0.0209
+    }
+   },
+   "t3": {
+    "H1": {
+     "usd500": {
+      "n": 217,
+      "tpw": 8.48,
+      "wk2": 88.9,
+      "avg_r": 0.165,
+      "r_per_risk": 0.184,
+      "mean_mult": 1.002,
+      "pf": 1.72,
+      "net": 20058,
+      "per_month": 3291,
+      "dd": -2935,
+      "win": 56.7,
+      "tpw_taken": 8.48,
+      "wk2_taken": 88.9
+     },
+     "ev": {
+      "p10": 41.2,
+      "f10": 29.4,
+      "dec10": 70.6,
+      "p15": 50.9,
+      "f15": 34.2,
+      "pass_med": 6.0,
+      "slow_pass": 7.6,
+      "pass20": 51.6
+     },
+     "slot": {
+      "life_pm": 266,
+      "life_p10": 4,
+      "life_lose": 9.0,
+      "funded_per_6m": 1.45,
+      "evals_per_6m": 2.62,
+      "first_pay_med": 53.0
+     }
+    },
+    "H2": {
+     "usd500": {
+      "n": 106,
+      "tpw": 6.79,
+      "wk2": 75.0,
+      "avg_r": 0.2,
+      "r_per_risk": 0.223,
+      "mean_mult": 1.066,
+      "pf": 1.95,
+      "net": 12611,
+      "per_month": 3395,
+      "dd": -3717,
+      "win": 56.6,
+      "tpw_taken": 6.79,
+      "wk2_taken": 75.0
+     },
+     "ev": {
+      "p10": 30.4,
+      "f10": 29.0,
+      "dec10": 59.4,
+      "p15": 26.6,
+      "f15": 46.9,
+      "pass_med": 4.0,
+      "slow_pass": 3.1,
+      "pass20": 41.0
+     },
+     "slot": {
+      "life_pm": 66,
+      "life_p10": -52,
+      "life_lose": 44.3,
+      "funded_per_6m": 1.47,
+      "evals_per_6m": 3.07,
+      "first_pay_med": 67.0
+     }
+    },
+    "R": {
+     "usd500": {
+      "n": 1841,
+      "tpw": 8.55,
+      "wk2": 80.3,
+      "avg_r": 0.013,
+      "r_per_risk": 0.003,
+      "mean_mult": 1.086,
+      "pf": 1.01,
+      "net": 2904,
+      "per_month": 57,
+      "dd": -23842,
+      "win": 50.1,
+      "tpw_taken": 8.55,
+      "wk2_taken": 80.3
+     },
+     "ev": {
+      "p10": 23.2,
+      "f10": 50.5,
+      "dec10": 73.7,
+      "p15": 25.7,
+      "f15": 65.3,
+      "pass_med": 5.0,
+      "slow_pass": 3.2,
+      "pass20": 26.2
+     },
+     "slot": {
+      "life_pm": -41,
+      "life_p10": -105,
+      "life_lose": 85.7,
+      "funded_per_6m": 1.42,
+      "evals_per_6m": 5.61,
+      "first_pay_med": 79.0
+     }
+    }
+   },
+   "placebo": {
+    "H1": {
+     "p": 0.15,
+     "pl_mean": 0.165,
+     "pl_q95": 0.189
+    },
+    "H2": {
+     "p": 0.28,
+     "pl_mean": 0.201,
+     "pl_q95": 0.274
+    },
+    "R": {
+     "p": 0.92,
+     "pl_mean": 0.014,
+     "pl_q95": 0.027
+    }
+   }
+  },
+  "ridge10 fit on H1": {
+   "fit": {
+    "model": "ridge10",
+    "fit_on": "H1",
+    "weights_per_sd": {
+     "exc": 0.005,
+     "rng_sofar": -0.0004,
+     "vix": -0.0004,
+     "nth": 0.0023,
+     "liq_room": -0.0033,
+     "st15_with": -0.0005
+    }
+   },
+   "t3": {
+    "H1": {
+     "usd500": {
+      "n": 217,
+      "tpw": 8.48,
+      "wk2": 88.9,
+      "avg_r": 0.165,
+      "r_per_risk": 0.185,
+      "mean_mult": 1.002,
+      "pf": 1.72,
+      "net": 20078,
+      "per_month": 3294,
+      "dd": -2633,
+      "win": 56.7,
+      "tpw_taken": 8.48,
+      "wk2_taken": 88.9
+     },
+     "ev": {
+      "p10": 38.7,
+      "f10": 26.1,
+      "dec10": 64.8,
+      "p15": 50.0,
+      "f15": 36.0,
+      "pass_med": 7.0,
+      "slow_pass": 7.9,
+      "pass20": 49.2
+     },
+     "slot": {
+      "life_pm": 282,
+      "life_p10": 15,
+      "life_lose": 7.7,
+      "funded_per_6m": 1.33,
+      "evals_per_6m": 2.43,
+      "first_pay_med": 53.0
+     }
+    },
+    "H2": {
+     "usd500": {
+      "n": 106,
+      "tpw": 6.79,
+      "wk2": 75.0,
+      "avg_r": 0.2,
+      "r_per_risk": 0.264,
+      "mean_mult": 1.005,
+      "pf": 2.23,
+      "net": 14060,
+      "per_month": 3785,
+      "dd": -1981,
+      "win": 56.6,
+      "tpw_taken": 6.79,
+      "wk2_taken": 75.0
+     },
+     "ev": {
+      "p10": 30.4,
+      "f10": 20.3,
+      "dec10": 50.7,
+      "p15": 28.1,
+      "f15": 45.3,
+      "pass_med": 5.0,
+      "slow_pass": 3.0,
+      "pass20": 42.3
+     },
+     "slot": {
+      "life_pm": 57,
+      "life_p10": -52,
+      "life_lose": 48.0,
+      "funded_per_6m": 1.46,
+      "evals_per_6m": 2.9,
+      "first_pay_med": 69.0
+     }
+    },
+    "R": {
+     "usd500": {
+      "n": 1841,
+      "tpw": 8.55,
+      "wk2": 80.3,
+      "avg_r": 0.013,
+      "r_per_risk": 0.012,
+      "mean_mult": 1.033,
+      "pf": 1.04,
+      "net": 11875,
+      "per_month": 232,
+      "dd": -23663,
+      "win": 50.1,
+      "tpw_taken": 8.55,
+      "wk2_taken": 80.3
+     },
+     "ev": {
+      "p10": 24.1,
+      "f10": 44.7,
+      "dec10": 68.8,
+      "p15": 28.4,
+      "f15": 59.8,
+      "pass_med": 6.0,
+      "slow_pass": 3.2,
+      "pass20": 29.0
+     },
+     "slot": {
+      "life_pm": -36,
+      "life_p10": -94,
+      "life_lose": 86.0,
+      "funded_per_6m": 1.42,
+      "evals_per_6m": 5.06,
+      "first_pay_med": 79.5
+     }
+    }
+   },
+   "placebo": {
+    "H1": {
+     "p": 0.19,
+     "pl_mean": 0.164,
+     "pl_q95": 0.197
+    },
+    "H2": {
+     "p": 0.03,
+     "pl_mean": 0.195,
+     "pl_q95": 0.261
+    },
+    "R": {
+     "p": 0.57,
+     "pl_mean": 0.013,
+     "pl_q95": 0.025
+    }
+   }
+  },
+  "logit fit on H1": {
+   "fit": {
+    "model": "logit",
+    "fit_on": "H1",
+    "weights_per_sd": {
+     "exc": 0.0746,
+     "rng_sofar": -0.2179,
+     "vix": -0.0658,
+     "nth": 0.1621,
+     "liq_room": -0.0258,
+     "st15_with": -0.0484
+    }
+   },
+   "t3": {
+    "H1": {
+     "usd500": {
+      "n": 217,
+      "tpw": 8.48,
+      "wk2": 88.9,
+      "avg_r": 0.165,
+      "r_per_risk": 0.163,
+      "mean_mult": 1.002,
+      "pf": 1.63,
+      "net": 17764,
+      "per_month": 2914,
+      "dd": -2857,
+      "win": 56.7,
+      "tpw_taken": 8.48,
+      "wk2_taken": 88.9
+     },
+     "ev": {
+      "p10": 44.5,
+      "f10": 27.7,
+      "dec10": 72.2,
+      "p15": 57.0,
+      "f15": 29.8,
+      "pass_med": 7.0,
+      "slow_pass": 13.0,
+      "pass20": 60.2
+     },
+     "slot": {
+      "life_pm": 269,
+      "life_p10": -5,
+      "life_lose": 11.0,
+      "funded_per_6m": 1.39,
+      "evals_per_6m": 2.62,
+      "first_pay_med": 52.0
+     }
+    },
+    "H2": {
+     "usd500": {
+      "n": 106,
+      "tpw": 6.79,
+      "wk2": 75.0,
+      "avg_r": 0.2,
+      "r_per_risk": 0.229,
+      "mean_mult": 1.075,
+      "pf": 2.02,
+      "net": 13080,
+      "per_month": 3521,
+      "dd": -3093,
+      "win": 56.6,
+      "tpw_taken": 6.79,
+      "wk2_taken": 75.0
+     },
+     "ev": {
+      "p10": 37.7,
+      "f10": 20.3,
+      "dec10": 58.0,
+      "p15": 37.5,
+      "f15": 37.5,
+      "pass_med": 4.5,
+      "slow_pass": 0.0,
+      "pass20": 43.6
+     },
+     "slot": {
+      "life_pm": 79,
+      "life_p10": -42,
+      "life_lose": 41.7,
+      "funded_per_6m": 1.49,
+      "evals_per_6m": 2.79,
+      "first_pay_med": 66.0
+     }
+    },
+    "R": {
+     "usd500": {
+      "n": 1841,
+      "tpw": 8.55,
+      "wk2": 80.3,
+      "avg_r": 0.013,
+      "r_per_risk": 0.008,
+      "mean_mult": 1.039,
+      "pf": 1.02,
+      "net": 8100,
+      "per_month": 158,
+      "dd": -22120,
+      "win": 50.1,
+      "tpw_taken": 8.55,
+      "wk2_taken": 80.3
+     },
+     "ev": {
+      "p10": 22.0,
+      "f10": 46.0,
+      "dec10": 68.0,
+      "p15": 25.5,
+      "f15": 61.0,
+      "pass_med": 6.0,
+      "slow_pass": 9.4,
+      "pass20": 27.8
+     },
+     "slot": {
+      "life_pm": -37,
+      "life_p10": -94,
+      "life_lose": 84.0,
+      "funded_per_6m": 1.43,
+      "evals_per_6m": 5.23,
+      "first_pay_med": 74.0
+     }
+    }
+   },
+   "placebo": {
+    "H1": {
+     "p": 0.57,
+     "pl_mean": 0.164,
+     "pl_q95": 0.188
+    },
+    "H2": {
+     "p": 0.27,
+     "pl_mean": 0.203,
+     "pl_q95": 0.268
+    },
+    "R": {
+     "p": 0.8,
+     "pl_mean": 0.014,
+     "pl_q95": 0.026
+    }
+   }
+  },
+  "ridge fit on R": {
+   "fit": {
+    "model": "ridge",
+    "fit_on": "R",
+    "weights_per_sd": {
+     "exc": -0.0036,
+     "rng_sofar": 0.0043,
+     "vix": 0.0149,
+     "nth": 0.0028,
+     "liq_room": 0.0037,
+     "st15_with": 0.0071
+    }
+   },
+   "t3": {
+    "H1": {
+     "usd500": {
+      "n": 217,
+      "tpw": 8.48,
+      "wk2": 88.9,
+      "avg_r": 0.165,
+      "r_per_risk": 0.145,
+      "mean_mult": 1.071,
+      "pf": 1.52,
+      "net": 16808,
+      "per_month": 2758,
+      "dd": -5082,
+      "win": 56.7,
+      "tpw_taken": 8.48,
+      "wk2_taken": 88.9
+     },
+     "ev": {
+      "p10": 32.8,
+      "f10": 44.5,
+      "dec10": 77.3,
+      "p15": 43.0,
+      "f15": 49.1,
+      "pass_med": 7.0,
+      "slow_pass": 12.3,
+      "pass20": 44.5
+     },
+     "slot": {
+      "life_pm": 257,
+      "life_p10": -21,
+      "life_lose": 14.3,
+      "funded_per_6m": 1.32,
+      "evals_per_6m": 2.95,
+      "first_pay_med": 55.0
+     }
+    },
+    "H2": {
+     "usd500": {
+      "n": 106,
+      "tpw": 6.79,
+      "wk2": 75.0,
+      "avg_r": 0.2,
+      "r_per_risk": 0.215,
+      "mean_mult": 0.849,
+      "pf": 1.94,
+      "net": 9654,
+      "per_month": 2599,
+      "dd": -1983,
+      "win": 56.6,
+      "tpw_taken": 6.79,
+      "wk2_taken": 75.0
+     },
+     "ev": {
+      "p10": 27.5,
+      "f10": 18.8,
+      "dec10": 46.3,
+      "p15": 35.9,
+      "f15": 31.2,
+      "pass_med": 9.0,
+      "slow_pass": 17.9,
+      "pass20": 50.0
+     },
+     "slot": {
+      "life_pm": 20,
+      "life_p10": -52,
+      "life_lose": 60.7,
+      "funded_per_6m": 1.37,
+      "evals_per_6m": 3.01,
+      "first_pay_med": 76.0
+     }
+    },
+    "R": {
+     "usd500": {
+      "n": 1841,
+      "tpw": 8.55,
+      "wk2": 80.3,
+      "avg_r": 0.013,
+      "r_per_risk": 0.022,
+      "mean_mult": 1.0,
+      "pf": 1.06,
+      "net": 20258,
+      "per_month": 395,
+      "dd": -16497,
+      "win": 50.1,
+      "tpw_taken": 8.55,
+      "wk2_taken": 80.3
+     },
+     "ev": {
+      "p10": 17.2,
+      "f10": 44.2,
+      "dec10": 61.4,
+      "p15": 20.7,
+      "f15": 61.6,
+      "pass_med": 6.0,
+      "slow_pass": 7.9,
+      "pass20": 22.2
+     },
+     "slot": {
+      "life_pm": -42,
+      "life_p10": -94,
+      "life_lose": 85.7,
+      "funded_per_6m": 1.33,
+      "evals_per_6m": 5.33,
+      "first_pay_med": 90.0
+     }
+    }
+   },
+   "placebo": {
+    "H1": {
+     "p": 0.89,
+     "pl_mean": 0.164,
+     "pl_q95": 0.193
+    },
+    "H2": {
+     "p": 0.32,
+     "pl_mean": 0.196,
+     "pl_q95": 0.254
+    },
+    "R": {
+     "p": 0.1,
+     "pl_mean": 0.013,
+     "pl_q95": 0.024
+    }
+   }
+  },
+  "check fit on R": {
+   "fit": {
+    "model": "check",
+    "fit_on": "R",
+    "point_side": {
+     "exc": -1,
+     "rng_sofar": 1,
+     "vix": 1,
+     "nth": 1,
+     "liq_room": 1,
+     "st15_with": 1
+    }
+   },
+   "t3": {
+    "H1": {
+     "usd500": {
+      "n": 217,
+      "tpw": 8.48,
+      "wk2": 88.9,
+      "avg_r": 0.165,
+      "r_per_risk": 0.161,
+      "mean_mult": 1.166,
+      "pf": 1.59,
+      "net": 20354,
+      "per_month": 3339,
+      "dd": -4824,
+      "win": 56.7,
+      "tpw_taken": 8.48,
+      "wk2_taken": 88.9
+     },
+     "ev": {
+      "p10": 34.5,
+      "f10": 39.5,
+      "dec10": 74.0,
+      "p15": 43.0,
+      "f15": 47.4,
+      "pass_med": 7.0,
+      "slow_pass": 12.3,
+      "pass20": 44.5
+     },
+     "slot": {
+      "life_pm": 278,
+      "life_p10": -4,
+      "life_lose": 11.0,
+      "funded_per_6m": 1.47,
+      "evals_per_6m": 3.14,
+      "first_pay_med": 55.0
+     }
+    },
+    "H2": {
+     "usd500": {
+      "n": 106,
+      "tpw": 6.79,
+      "wk2": 75.0,
+      "avg_r": 0.2,
+      "r_per_risk": 0.21,
+      "mean_mult": 1.127,
+      "pf": 1.87,
+      "net": 12567,
+      "per_month": 3383,
+      "dd": -3549,
+      "win": 56.6,
+      "tpw_taken": 6.79,
+      "wk2_taken": 75.0
+     },
+     "ev": {
+      "p10": 37.7,
+      "f10": 20.3,
+      "dec10": 58.0,
+      "p15": 42.2,
+      "f15": 39.1,
+      "pass_med": 7.0,
+      "slow_pass": 4.7,
+      "pass20": 55.1
+     },
+     "slot": {
+      "life_pm": 53,
+      "life_p10": -52,
+      "life_lose": 50.3,
+      "funded_per_6m": 1.46,
+      "evals_per_6m": 3.1,
+      "first_pay_med": 76.0
+     }
+    },
+    "R": {
+     "usd500": {
+      "n": 1841,
+      "tpw": 8.55,
+      "wk2": 80.3,
+      "avg_r": 0.013,
+      "r_per_risk": 0.022,
+      "mean_mult": 1.147,
+      "pf": 1.06,
+      "net": 22835,
+      "per_month": 445,
+      "dd": -21608,
+      "win": 50.1,
+      "tpw_taken": 8.55,
+      "wk2_taken": 80.3
+     },
+     "ev": {
+      "p10": 21.3,
+      "f10": 50.4,
+      "dec10": 71.7,
+      "p15": 24.5,
+      "f15": 65.6,
+      "pass_med": 5.0,
+      "slow_pass": 4.1,
+      "pass20": 25.2
+     },
+     "slot": {
+      "life_pm": -40,
+      "life_p10": -94,
+      "life_lose": 84.7,
+      "funded_per_6m": 1.42,
+      "evals_per_6m": 5.42,
+      "first_pay_med": 90.0
+     }
+    }
+   },
+   "placebo": {
+    "H1": {
+     "p": 0.61,
+     "pl_mean": 0.164,
+     "pl_q95": 0.198
+    },
+    "H2": {
+     "p": 0.47,
+     "pl_mean": 0.203,
+     "pl_q95": 0.264
+    },
+    "R": {
+     "p": 0.09,
+     "pl_mean": 0.013,
+     "pl_q95": 0.022
+    }
+   }
+  }
+ }
+}
