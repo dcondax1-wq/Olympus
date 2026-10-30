@@ -373,6 +373,8 @@ class LiveBot:
         self.acct_c = None               # engine/account_c.AccountC: BLITZ, the scalper, on its own account (None = off)
         self._acct_c_sig = None          # the account_c block it was built from (rebuilt when it changes and C is flat)
         self._hedge_who = {}             # LIT entry_t -> whose opposite close it waits for ("BLITZ"; absent = account B)
+        self.fleet = None                # engine/fleet.Fleet: copy trading to the follower accounts (None = off: no data/fleet.json)
+        self._fleet_sig = None           # the fleet block it was built from
 
     # ------------------------------------------------------------------ plumbing
     def _log(self, kind, text, **kw):
@@ -619,6 +621,8 @@ class LiveBot:
         self._sync_account_b()
         self.acct_c, self._acct_c_sig = None, None
         self._sync_account_c()                          # account C (engine/account_c.py, OFF by default: data/account_c.json)
+        self.fleet, self._fleet_sig = None, None        # the fleet (engine/fleet.py, OFF by default: no block = nothing)
+        self._fleet_build()                             # built here, not at the first poll: see _fleet_build
         self.running = True
         self.stop_flag.clear()
         if spawn:
@@ -645,6 +649,8 @@ class LiveBot:
                     ad.release_lock()
             except Exception:
                 pass
+        if getattr(self, "fleet", None) is not None:      # the fleet's followers (engine/fleet.py)
+            self.fleet.release()
         self._log("system", "Bot stopped")
         self._save_state()
         return {"ok": True}
@@ -682,6 +688,8 @@ class LiveBot:
             self.acct_b.kill(self.cfg.get("sym", "NQ"))
         if getattr(self, "acct_c", None) is not None:   # and account C (engine/account_c.py, BLITZ)
             self.acct_c.kill(self.cfg.get("sym", "NQ"))
+        if getattr(self, "fleet", None) is not None:    # and every fleet follower (engine/fleet.py)
+            self.fleet.kill(self.cfg.get("sym", "NQ"))
         self.stop()
         self._log("risk", "KILL SWITCH: flattened and stopped")
         self._save_state()
@@ -730,6 +738,8 @@ class LiveBot:
         if ac is not None and ac.open_t is not None:                       # account C (engine/account_c.py, BLITZ)
             r = ac.kill(sym)
             extras.append({"id": "account_c", "ok": bool(r.get("ok")), "error": r.get("error")})
+        if getattr(self, "fleet", None) is not None:                       # the fleet's followers (engine/fleet.py)
+            extras.extend(self.fleet.flatten_all(reason, sym))
         self._log("risk", f"{reason}: " + ("position closed" if pos else "no open position") +
                   "; the bot keeps running, no new entries until the next trading day")
         self._save_state()
@@ -779,6 +789,11 @@ class LiveBot:
             self.adapter = ADAPTERS["paper"](self.cfg)
         hedge = self.accts.opposite_open(1 if action.get("side") == "buy" else -1) \
             if self.accts is not None and action.get("side") in ("buy", "sell") else None
+        if not hedge and getattr(self, "fleet", None) is not None and action.get("side") in ("buy", "sell"):
+            try:                                          # engine/fleet.py: no hedge vs a follower (an error fails closed)
+                hedge = self.fleet.opposite_open(1 if action.get("side") == "buy" else -1)
+            except Exception as e:
+                hedge = f"hedging guard: the fleet's positions are unreadable ({e.__class__.__name__}): not routed"
         try:
             # extra accounts: never long on one account and short on another (engine/multi_account.opposite_open)
             res = {"ok": False, "error": "REFUSED: " + hedge} if hedge else self.adapter.send(action)
@@ -800,6 +815,8 @@ class LiveBot:
             self.acct_b.adapter_tick()              # account B's adapter (never raises)
         if getattr(self, "acct_c", None) is not None and not self.kill:
             self.acct_c.adapter_tick()              # account C's adapter (never raises)
+        if getattr(self, "fleet", None) is not None and not self.kill:
+            self.fleet.adapter_tick()               # the fleet followers' adapters (engine/fleet.py, never raises)
         if self.kill or not getattr(ad, "loop_tick", False) or not callable(getattr(ad, "tick", None)):
             return
         try:
@@ -875,7 +892,8 @@ class LiveBot:
         model's size. Eval modes (two_week / eval / safe_eval, as the research eval path tools/lit_big_ideas.py sizes them):
         engine/sizing.scale_in_qty at the ROUTED size: the add's open risk inside the first entry's $ risk, 60% of the room
         to the trailing floor and the $1,000 soft daily loss left today. The whole position at most max_micros.
-        Fails closed (0) in an eval mode."""
+        Fails closed (0) in an eval mode. Optional live_model.json "lit_sizing" switches (absent = today's behaviour):
+        "scale_in_from_session": N = no add before eval session N; "scale_in_funded": false = no add on a funded account."""
         from . import sizing as _sz
         lsz = getattr(self, "_lit_sizing", None) or {}
         mode = str(lsz.get("mode") or "")
@@ -888,8 +906,12 @@ class LiveBot:
                 n = int(int(an.get("qty") or 0) * q0 / qm + 1e-9) if qm else 0
                 return max(0, min(n, maxq - q0 - self._adds_qty(pos.get("entry_t"))))
             state = None
+            if mode == "funded" and lsz.get("scale_in_funded") is False:
+                return 0                          # owner switch (research/writeups/lit-edge-2026-10-30.md): no adds once funded
             if mode in ("two_week", "eval", "safe_eval"):
                 st = self.eval_state() or {}
+                if int(lsz.get("scale_in_from_session") or 0) > int(st.get("session") or 1):
+                    return 0                      # owner switch: adds on the eval only from this eval session on
                 if st and lsz.get("pass_lock") is not False and float(st.get("profit") or 0) + float(st.get("cum") or 0) \
                         >= float(((lsz.get("two_week") or {}).get("acct") or {}).get("target", _sz.TW_50K["target"])):
                     return 0                      # a passed eval (the 1-micro minimum-days trade): never add to it
@@ -1297,6 +1319,7 @@ class LiveBot:
             self._brain_tick(res, lit_p, now, brain_keep)
             self._second_route_tick(df_full, df1, res, sym, now)   # routed second strategies (OFF by default): LIT routed first
             self._account_b_tick(df_full, df1, sym, now)           # account B (OFF by default): its own account, after LIT
+            self._fleet_tick(sym, now)                             # the fleet (OFF by default): copies of LIT / ATLAS / BLITZ
             self._second_tick(df_full, df1, res, now)
             self._chart_tick(df_full, df1, res, now, brain_keep)  # trade pictures, background thread (read-only)
         return self.state
@@ -2396,8 +2419,8 @@ class LiveBot:
         """Account C (BLITZ, engine/account_c.py) holds the direction opposite to this LIT entry: closed at market first; LIT
         routes only once that close is CONFIRMED flat. C off / flat / same side: True at once (LIT never held back)."""
         ac = getattr(self, "acct_c", None)
-        if ac is None:
-            return True
+        if ac is None:                                  # then the fleet's followers (engine/fleet.py): off = True at once
+            return True if getattr(self, "fleet", None) is None else self._hedge_clear_fleet(ent, sym, now)
         et_ = int(ent["entry_t"])
         try:
             ok = ac.yield_to(1 if int(ent.get("dir") or 1) == 1 else -1, "LIT", sym, now, px=ent.get("entry"), entry_t=et_) is not False
@@ -2407,7 +2430,8 @@ class LiveBot:
         if ok:
             if self._hedge_who.get(et_) == "BLITZ":
                 self._log("risk", f"Account C's (BLITZ) close confirmed: LIT's entry at {_et(et_):%H:%M} ET is routed")
-            return True
+            # then the fleet's followers (engine/fleet.py): off = True at once
+            return True if getattr(self, "fleet", None) is None else self._hedge_clear_fleet(ent, sym, now)
         first = et_ not in self._hedge_wait
         self._hedge_wait.setdefault(et_, int(now))
         self._hedge_who[et_] = "BLITZ"
@@ -2416,6 +2440,84 @@ class LiveBot:
                               "routed until account C's (BLITZ) opposite position is confirmed flat (the close is re-sent; LIT gives "
                               "up at its entry deadline)")
         return False
+
+    def _hedge_clear_fleet(self, ent, sym, now) -> bool:
+        """A fleet follower (engine/fleet.py) holds the direction opposite to this LIT entry: closed at market first; LIT
+        routes only once every such close went out. Fleet off / no follower opposite: True at once (LIT never held back)."""
+        fl = getattr(self, "fleet", None)
+        if fl is None:
+            return True
+        et_ = int(ent["entry_t"])
+        try:
+            ok = fl.yield_to(1 if int(ent.get("dir") or 1) == 1 else -1, 0, sym, now, who="LIT") is not False
+        except Exception as e:
+            self._note_error(f"fleet hedge close failed: {e.__class__.__name__}: {e}")
+            ok = fl.opposite_open(1 if int(ent.get("dir") or 1) == 1 else -1) is None
+        if ok:
+            return True
+        if et_ not in self._hedge_wait:
+            self._log("risk", f"HEDGE WAIT: LIT at {_et(et_):%H:%M} ET is NOT routed until the fleet follower's opposite close goes out")
+        self._hedge_wait.setdefault(et_, int(now))
+        self._hedge_who[et_] = "FLEET"
+        return False
+
+    # ------------------------------------------------------------------ the fleet (engine/fleet.py, off by default)
+    def _fleet_block(self):
+        """The fleet block: the start cfg's "fleet" (test harnesses; null = off) when the key is there, else data/fleet.json
+        for the real bot. None = off."""
+        if "fleet" in (self.cfg or {}):
+            blk = self.cfg.get("fleet")
+        elif self.state_path != STATE_PATH:
+            return None                       # test harnesses: off unless their start cfg carries the block
+        else:
+            from . import fleet as _fl
+            blk = _fl.raw_cfg()
+        return blk if isinstance(blk, dict) and blk.get("accounts") else None
+
+    def _fleet_build(self):
+        """start(): the fleet built at once (with the followers' open copies restored from its state file). poll_once routes
+        LIT, account C and account B BEFORE _fleet_tick: built only there, a copy still open after a restart was invisible to
+        their no-hedge checks for the whole first poll (an opposite entry could go out while it was open; reviewer
+        2026-10-30). Off (no block) = nothing; a failure leaves it to _fleet_tick at the first poll. Never raises."""
+        try:
+            blk = self._fleet_block()
+            if blk is None:
+                return
+            from . import fleet as _fl
+            self.fleet = _fl.build(self, blk)
+            self._fleet_sig = json.dumps(blk, sort_keys=True, default=str)
+        except Exception as e:
+            self.fleet, self._fleet_sig = None, None
+            self._note_error(f"fleet not started yet: {e.__class__.__name__}: {e}")
+
+    def _fleet_tick(self, sym, now):
+        """After LIT, account C and account B routed: every follower copies its lead. Never raises; off = returns at once."""
+        try:
+            blk = self._fleet_block()
+            if blk is None and self.fleet is None:
+                return
+            sig = json.dumps(blk, sort_keys=True, default=str) if blk else None
+            if sig != self._fleet_sig:
+                from . import fleet as _fl
+                if blk is None:
+                    if not self.fleet.busy():
+                        self._log("system", "Fleet switched off (no follower accounts)")
+                        self.fleet = None
+                        self._fleet_sig = None
+                        return
+                elif self.fleet is None:
+                    self.fleet = _fl.build(self, blk)
+                    self._fleet_sig = sig
+                else:
+                    try:
+                        self.fleet.update_cfg(blk)
+                        self._fleet_sig = sig
+                    except Exception as e:      # a broken data/fleet.json entry: the running fleet still manages its copies
+                        self._note_error(f"fleet change NOT applied: {e.__class__.__name__}: {e}")
+            if self.fleet is not None:
+                self.fleet.tick(sym, now)
+        except Exception as e:
+            self._note_error(f"fleet failed: {e.__class__.__name__}: {e}")
 
     def _route_signals(self, res, sym, now, secs):
         """The bot's own account (_route_primary) and, when configured, every extra account at the same time."""
@@ -2620,6 +2722,10 @@ class LiveBot:
         title = "HEDGE BLOCKED: ATLAS close not confirmed"
         body = (f"LIT's entry at {_et(et_):%H:%M} ET was skipped: account B's opposite position was not confirmed flat within "
                 f"the entry deadline. Check account B in NinjaTrader now (it may still be open; the bot keeps managing it).")
+        if getattr(self, "_hedge_who", {}).get(et_) == "FLEET":
+            title = "HEDGE BLOCKED: fleet follower close not confirmed"
+            body = (f"LIT's entry at {_et(et_):%H:%M} ET was skipped: a fleet follower's opposite position was not confirmed flat "
+                    "within the entry deadline. Check the follower accounts in NinjaTrader now (python -X utf8 -m engine.fleet --status).")
         if getattr(self, "_hedge_who", {}).get(et_) == "BLITZ":
             ac = getattr(self, "acct_c", None)
             title = "HEDGE BLOCKED: BLITZ close not confirmed"

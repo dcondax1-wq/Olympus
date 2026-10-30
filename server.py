@@ -416,6 +416,30 @@ def live_state():
     return J(BOT.snapshot())
 
 
+@app.get("/api/next/blitz")
+def blitz_view():
+    """BLITZ, the scalper (read-only; the PC dashboard's BLITZ page, web_next/js/next/blitz.js): engine/blitz.card of the
+    bot's PAPER shadow (state, band, signals, both paper ledgers, evals) + account C's block when it is on (no secrets)."""
+    try:
+        from engine import blitz as BZ
+        out = {"card": BZ.card(getattr(BOT, "blitz", None)), "t": int(time.time())}
+        ac = getattr(BOT, "acct_c", None)
+        if ac is not None:
+            try:
+                out["account_c"] = ac.hb_block()
+            except Exception as e:
+                out["account_c"] = {"error": f"{e.__class__.__name__}: {e}"[:200]}
+        try:                                                 # the Start page's BLITZ slot (data/account_c.json), never the phrase
+            from engine import go as GO
+            sl = GO.blitz_status()
+            out["slot"] = {k: sl.get(k) for k in ("on", "name", "sim", "armed", "start", "stage", "problem", "say")}
+        except Exception as e:
+            out["slot"] = {"error": f"{e.__class__.__name__}: {e}"[:200]}
+        return J(out)
+    except Exception as e:                                   # never 500 the dashboard over a page
+        return J({"error": f"{e.__class__.__name__}: {e}"[:200]}, 500)
+
+
 # ------------------------------------------------------------------ phone access: this computer's private addresses
 @app.get("/api/net")
 def api_net(request: Request):
@@ -736,6 +760,12 @@ from engine import fill_audit as _fa
 # execution quality (engine/fill_audit.py): copies the ledger / NinjaTrader fills each minute, compares them with the LIT backtest
 # on the same bars after each exit and each session, pushes slipped fills / missed trades; read-only (LE_EXEC_AUDIT=0 = off)
 EXEC_AUDIT = _fa.Watcher(BOT, log=lambda t: print(t, flush=True))
+from engine import pc_health as _pch
+# PC health watchdog + weekly schedules (engine/pc_health.py, read-only, its own thread, never in the poll): CPU / RAM / disk /
+# NinjaTrader / bot memory / OneDrive / clock / poll lines in the heartbeat ("pc_health"), the Sunday 15:30 ET PC self-test
+# and the 17:30 ET readiness push (engine/pc_selftest.py, engine/readiness.py); LE_PC_WATCH=0 = off
+PCWATCH = _pch.Watcher(BOT)
+_pch.WATCHER = PCWATCH
 
 
 def _open_nt():
@@ -862,6 +892,7 @@ def _autostart_startup():
     LIVEPUB.start()                      # phone live.json every minute (engine/live_publish.py)
     EXEC_AUDIT.start()
     AUTOUPDATE.start()                   # daily check in the CME halt + hourly outside trading time; nothing until --enable
+    PCWATCH.start()                      # PC health + Sunday self-test / readiness (engine/pc_health.py; off in a dev / test server)
 
 
 app.router.add_event_handler("startup", _autostart_startup)
@@ -1155,6 +1186,7 @@ from engine.next_api import router as next_router; app.include_router(next_route
 from engine.insight_api import router as insight_router; app.include_router(insight_router)   # AI Insights page (read-only GET /api/next/insight)
 from engine.liveview_api import router as liveview_router; app.include_router(liveview_router)   # Live View page (read-only GET /api/next/liveview)
 from engine.holo_api import router as holo_router; app.include_router(holo_router)   # Holodeck (read-only GET /api/next/holo, /api/next/holo/days)
+from engine.mind import router as mind_router; app.include_router(mind_router)   # Mind (read-only GET /api/next/mind: regime, plans, similar setups, reviews, proposals)
 # the PC pages' LIT backtest (/api/next/lit_backtest: LIT replay + levels / session boxes of every 2026 day, ~5-25 s) is built
 # in the background at start, so the first dashboard load does not wait for it (LE_PREWARM=0 skips it)
 if os.environ.get("LE_PREWARM", "1") != "0":

@@ -113,6 +113,80 @@ the news calendar); read-only. Tests: `python -X utf8 -m tests.test_space_ui`.
 | 69 | Satellite name tags | new | A small tag rides next to each bot's satellite in the 3D sky ("Zlarior · IN TRADE", "ATLAS · ARMED", "BLITZ · PAPER"), hidden behind the planet; each eval's progress to its target as a ring around its planet on Mission Control |
 | 70 | Holodeck | new | The day in 3D on both apps (PC Main > Holodeck after Live View, phone #/holo + Home button): every fill at its exact second and price (real solid, paper hollow, slip vs the model), trades as glass volumes with the stop stepping to break-even, each LIT setup step by step, what every bot is thinking (panels in the scene + the Minds panel), working orders, levels, structure; Flat / 3D / Fly camera, replay 1x-120x, day picker, full screen; 2D fallback without WebGL (tests.test_holo_ui) |
 
+## G. BLITZ tab, the Mind, Trader's deck (2026-10-29 night, owner: "How's the scalp bot coming along? Make a separate tab at the bottom ... keep finding stuff to add")
+
+Shared renderers, each a byte-identical copy in both apps: `blitzcore.js` (window.BlitzUI), `mindcore.js` (window.MindUI),
+`deckcore.js` (window.DeckUI); phone `tools/web_public/blitz.js`, PC `web_next/js/next/blitz.js`. Data the apps already have:
+the BLITZ paper shadow (`engine/blitz.card`: data.json "blitz" on the phone, `GET /api/next/blitz` on the PC = the card + account
+C's block), the Live View BLITZ layer (liveview.json / `/api/next/liveview`), account C (live.json `pc.account_c`), the live
+board, goals.calendar, the news; the Mind block (liveview.json / live.json "mind", `/api/next/mind`; nothing drawn while it is
+absent). Read-only: no new control, only links. Tests: `python -X utf8 -m tests.test_blitz_tab [--shots <dir>]`.
+
+| # | Feature | Status | Where |
+|---|---|---|---|
+| 71 | BLITZ tab | new | Phone: a sixth bottom tab (Home · Zlarior · ATLAS · BLITZ · Money · More, 44 px targets at 390 px), `#/blitz/<part>`; PC: Main > BLITZ right after ATLAS. Sections: **Today** (state, next check with a countdown, today's noise band drawn per check with the price and the signals, the day filter verdict "trading today" / "skipped: yesterday's range X x its 14-day mean", signals, the open PAPER / SIM / REAL position with $ at the stop and the trail, account C off / Sim test / armed / paused with its eval and scorecard), **Brain** (what it is thinking, the playbook rule now B1-B8 with the ladder, structure note, the two paper ledgers, the Mind's BLITZ cards), **Trades** (account C's real / Sim trades, the paper 25K eval and 50K + LIT ledgers, a 3D replay link per trade, pictures when they exist), **Results** (the research bands of BLITZ_STRATEGY.md with $ a month, live vs the band per metric, the kill-switch contract with the floors and how close it is, paper evals), **Rules** (BLITZ_STRATEGY.md in plain words), **Go live** (the 3 steps for next week, the console line, preflight from the data) |
+| 72 | Mind (Brain v2) | new | Phone `#/mind` (More > Today) + PC Main > Mind: market regime (trend, volatility, day type with its accuracy note), each bot's if-then game plan (scenarios with levels, $ expected, odds, what changes its mind), similar past setups (n, win %, avg R, $, confidence, examples), A-F trade reviews (right / wrong / lesson / luck, Holodeck link), self-research ideas with their H1 / H2 / 2021-25 evidence and status, alerts, IQ (setups stored, calibration). Per bot on the Zlarior Bot Brain, ATLAS > Brain and BLITZ > Brain; a compact card on Home (both apps) |
+| 73 | Risk meter (all accounts) | new | Home (both apps) + Trader's deck: open risk $ on Zlarior / ATLAS / BLITZ vs each room to the floor, today's daily loss used + the open risk vs each limit, and "if every open trade stops out now" vs the combined daily loss |
+| 74 | Next 24 hours | new | Home (compact) + Trader's deck: a 24 h track per bot (Zlarior 02:00-15:30, each ATLAS member's hours, BLITZ's 10 checks as ticks), the 15:55 flat, the CME halt and the 18:00 open, the news, early closes (flat 5 min before the halt), the US clock change within 7 days (Sun Nov 1: clocks back; every time stays ET) |
+| 75 | Eval odds from today's balance | new | Trader's deck: pass / undecided / fail within the sessions left, from today's $ to go and room (a random walk at the 2026 H2 pace: Zlarior from the backtest cone, the others from their $ per session), next to the research odds from the start; labelled an estimate |
+| 76 | Real P&L calendar per bot | new | Trader's deck: the last 6 weeks as day squares per bot (green / red, brighter = bigger), green / red days and the total; real fills only (the board's real trades, account C when it is live), never paper |
+| 77 | Trade journal | new | Trader's deck: every trade on the board (REAL / PAPER) with its Mind review grade and lesson, and a "Replay in 3D" link (Holodeck on that day) |
+| 78 | Notification center | new | Trader's deck: every red / amber board line, health item, guard, Mind alert, the paused contract and the bot's feed in one list, All / Red / Amber, a mute per bot (Zlarior / ATLAS / BLITZ / System) kept on this device only (pushes keep their own settings) |
+| 79 | Since you last looked | new | Home (both apps) + Trader's deck: closed / opened trades (real $), alerts, reviews and ideas since this device last opened Home (localStorage) |
+| 81 | Live board: BLITZ's own card | new | `boardcore.js` (both apps): once account C is on (the board's `blitz` block), "Right now" shows a third card (balance, room, today, session, the open position, what it waits for, the blocks), the Home cut a third mini card, the trade log a BLITZ filter, "Week and eval" its progress; two accounts exactly as before otherwise |
+| 80 | Holodeck replay links | new | Mission Control (both apps) + Trader's deck + BLITZ trades + Mind reviews: "Replay a day in the Holodeck" per traded day; the phone opens `#/holo/<day>`, the PC opens the Holodeck on that day |
+| 82 | Status bar | new | Night 3 (2026-10-30), `statuscore.js` (both apps, byte-identical): one bar on top of Home answers "is everything OK right now?" (PC bot, NinjaTrader, feed, Zlarior / ATLAS / BLITZ, the next window with a countdown, alerts) in one sentence + chips; a tap opens every line with its fix. A quiet PC is amber until 30 min before a window, then red |
+| 83 | Sunday open readiness | new | Home (both apps), Fri 00:00 -> Sun 20:00 ET (from Thu 18:00 on a clock-change weekend): CME reopens Sun 18:00 ET, "clocks go back 1 hour" on Sun Nov 1 2026, what each bot does first (Zlarior Mon 02:00 ET, ATLAS's first member window, BLITZ off until its 25K), a readiness list (PC + bot, NinjaTrader, bars, Windows clock) |
+| 84 | Account cards with eval rings | new | Phone Home + the top of each bot tab: one card per bot (Zlarior 50K, ATLAS 25K, BLITZ 25K) with an animated ring (progress to the target, or the share of the max loss used in red), $ to the target (count-up), room + eval day, today's real $, a sparkline of the real days, a REAL / SIM / PAPER tag, a state chip |
+| 85 | Each bot's day in one line | new | `StatusUI.oneLine`: in a trade / armed / window open until hh:mm / next window with a countdown / done for today / blocked, on the account cards and in the status bar |
+| 86 | What matters now | new | Phone Home: the open trades ($ at the stop and target), the next window (countdown), the next high-impact news in 24 h, the last REAL trade (NinjaTrader fills only) |
+| 87 | Search palette | new | Phone: a search button in the header (and "/" or Ctrl/Cmd+K): every page, each bot's five sections and live numbers ("Zlarior: $4,600 to the target"), letters-in-order matching, recent picks first, arrow keys + Enter (the PC keeps its Ctrl K palette) |
+| 88 | Smart empty states | new | `StatusUI.empty(kind)`: what will appear and when (trades, real results, BLITZ paper, Mind, the PC feed); every older empty box gets the same calm style |
+| 89 | Once-a-day intro | new | Phone: the first open of the day only (ET date in `le.intro.day`), skippable (tap, any key, Skip): a light-speed star field settles, the three bots' orbs swing into orbit, the day's status line; never under reduced motion / Motion off / an automated browser (unless `?intro=1`) |
+| 90 | Motion system | new | Page transitions, card entrances (40 ms apart, first visit only), count-ups, press states, rings / sparklines drawn in once per visit (not on every live redraw), glowing live dots, the sky's parallax with scroll / tilt / mouse; reduced motion = none (both apps) |
+| 91 | Sharper deep space | new | fx.js: the Earth bake at 1536 px on a Retina phone at Max (was 1024; Lite / small screens unchanged), crisper pin-point stars |
+| 92 | This week vs the goal | new | `StatusUI.week` (phone Home, PC Home under the status bar): per bot this week's real trades against its goal (Zlarior 2-4, ATLAS 3-4), Mon-Fri as dots (green / red day, today ringed, future dashed) and the week's real $ (the board's `progress`) |
+| 93 | Since you last looked, in one line | new | Phone Home > What matters now: the deck's digest (closed / opened trades with real $, alerts, reviews, ideas since this device last looked) as one row with a count, one tap to the deck |
+| 94 | Greeting + ET clock | new | Phone Home: "Good evening" and the date + time in ET (the bots' clock) above the status bar, ticking |
+| 95 | Sliding tab pill | new | Phone bottom bar: one glass pill slides to the open tab in that tab's colour (Zlarior blue, ATLAS orange, BLITZ purple); reduced motion = it jumps |
+| 96 | Status dot on every page | new | Phone header: one dot with the status bar's verdict (green / amber / red, a soft pulse when all good) on every page; a tap opens the full status on Home |
+| 97 | Recent pages | new | More: the pages you opened last as chips under the search box (`le.pl.visits`, this device only) |
+| 98 | Cinematic sky | new | Both apps: a soft vignette and a faint top light over the deep-space sky (the CSS sky and the 3D scene), dark theme only; the CSS sky drifts a little with scroll / tilt / the mouse |
+| 99 | Ctrl K knows the bots | new | PC palette: each bot's five sections ("ATLAS · Rules", "BLITZ · Trades" ...) and "Status: <verdict>" (opens Home with the status bar open) next to every page |
+| 100 | Bot lights on the tabs and the sidebar | new | Phone bottom bar + PC sidebar: a small light on Zlarior / ATLAS / BLITZ while it is in a trade (green, breathing), armed (amber) or blocked (red); nothing while it waits |
+| 101 | Why no trade yet, under each bot | new | Phone bot tabs > Today: under the account card, the first three reasons from Mission Control (market closed, outside its hours, daily limit, blocks, setup stage), plain words |
+| 102 | Acknowledge from the status bar | new | Phone Home: the critical alert (eval near the floor, feed stale ...) is one red row in the status bar with one tap to Got it; the old banner hides on Home while the bar carries it (other pages keep the one-line banner) |
+| 103 | In-a-trade glow | new | An account card whose bot is in a trade glows softly in the bot's colour (an opacity layer, no repaint); reduced motion = a still glow |
+| 104 | NQ now, between its levels | new | `StatusUI.market` (phone Home, PC Home under the status bar): NQ's price and bar time, VIX / ATR, a ladder from the nearest untaken level below to the one above (labels, prices, points away) with Zlarior's VIX day band drawn on it (the board's `map`) |
+| 105 | Direction-aware tab transitions | new | Phone: a tab change slides the page in from the side of the new tab (Home → More = from the right), a section change rises in; reduced motion = none |
+| 106 | Keyboard and focus | new | Both apps: every new card and row is a tab stop with a visible focus ring; Enter / Space opens it; the phone palette matches every word ("atlas trades") |
+| 107 | On this page | new | Phone: long pages (3+ screens: Trader's deck, Mind, Mission Control, Settings, the Brains, Rules ...) get a row of chips under the section bar, one per card; a tap scrolls to it |
+| 108 | Intro switch | new | Phone Settings > Intro: the once-a-day intro on / off for this device |
+| 109 | Crisp icons | new | Both apps: every line icon a touch heavier (1.9 on the 24 grid, 2.1 on the open tab / sidebar item) and drawn with geometric precision, so an 18 px icon stays sharp on a plain screen |
+
+## Organization (2026-10-30, night 3: "organized, clean")
+- One information architecture on both apps. **Home** = the status bar, the three accounts, what matters now (+ the Sunday
+  open card on weekends, quick tiles to Live View · Holodeck · Mission Control · Mind); every older Home card (Mission
+  strip, the real accounts in full, Safety, Right now, the deck + Mind, launch checklist, plan, one tap away) is under
+  **Everything else on Home** (one tap, remembered). **Each bot tab** = Today · Brain · Trades · Results · Rules in the same
+  order and words (Zlarior: Plan / Levels are chips under Today, Strategy is Rules; ATLAS: Setups is Rules, Setup stats under
+  Results; BLITZ: Go live is a chip under Rules). **Money** = real money only (Real results · Accounts today · Eval timeline);
+  the research $ pages (Money plan, prop firms, what-if, scale, accounts) moved to More > Money planning with their links.
+  **More** = Today · Insight · Bot and health · Trades · Money planning · This app, Advanced folded, searchable.
+- PC sidebar Main in plain sections: Home · Start, **Bots** (Zlarior · ATLAS · BLITZ, in their colours), **Live** (Mission
+  Control · Live View · Holodeck), **Money** (Real results), **Insight** (Mind · Trader's deck · AI Insights), All tools.
+- Duplicates out: one freshness pill in the phone header (the PC's live chip wins over the cloud one; offline / stale
+  banners still show), the per-page refresh line folded into it, the Zlarior Today plan line (same as "Right now"), the
+  Safety card no longer piles up on every live redraw (real.js), the critical alert one line on every page but Home (on
+  Home it is a row in the status bar), three stacked page animations (clean.js fade, the space.css blur warp, the 3D card
+  rise) replaced by ONE transition, the BLITZ / ATLAS hero numbers the account card already shows.
+- Colour roles: Zlarior blue #4f9bff, ATLAS orange #ff9a3d, BLITZ purple #b388ff on the tab bar, section bar, cards and
+  sidebar; good / warn / bad for state only. Nothing was deleted; every old link (#/plan, #/strategy, #/money, #/second ...)
+  still opens its page.
+- Small clean-ups: the browser-only "Add to Home Screen" guide sits under what matters now (it no longer pushes the status
+  bar down on a first visit), More's sticky search has no flat dark band over the sky, the Holodeck has its own icon in More
+  (3D layers, no longer Live View's chart), Full overview the archive icon.
+
 ## Organization (2026-10-28)
 - PC sidebar Main (6 items): Home · Start · Zlarior · ATLAS · **Real results** · All tools; the backtest page is renamed
   **Backtest & research** (was "Results") and sits under Advanced > Results; everything else stays under Advanced. Strategy 3 has a placeholder card on Home ("Strategy 3 (research)", paper only).

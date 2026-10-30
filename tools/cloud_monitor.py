@@ -263,6 +263,12 @@ def lit_add_usd(ledger, t, qty, lit_sizing=None, f=1.0, max_micros=40):
     adds = t.get("adds") or []
     cm = float(t.get("comm_rt", sizing.LIVE_COMM))        # the broker's $1.90 a micro (engine/lit_live books every trade at it)
     q0, qm = int(qty), int(t["qty"])
+    lsz = lit_sizing or {}
+    no_add = (mode == "funded" and lsz.get("scale_in_funded") is False) or (
+        mode in ("two_week", "eval", "safe_eval") and int(lsz.get("scale_in_from_session") or 0) >
+        max(1, sizing.eval_session(lsz.get("eval_start"), tday(t["entry_t"])) or 1))
+    if no_add:                       # the owner's switches (engine/live.py _add_qty): no add before that eval session / once funded
+        return round(q0 * (float(t["pts"]) * _lit.PV - cm), 2), [0 for _ in adds]
     if mode in ("two_week", "eval", "safe_eval"):
         start = (lit_sizing or {}).get("eval_start")
         before = {k: v for k, v in ledger.items() if int(k) < int(t["entry_t"])}

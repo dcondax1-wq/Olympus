@@ -73,12 +73,16 @@ KINDS = {
     "atlas": ("ATLAS paper", False),
     "blitz": ("BLITZ paper", False),
     "structure": ("Market structure (advice)", False),
+    "brain": ("Mind: game plans, trade reviews, ideas", False),
 }
 STRATS = {"lit": "Zlarior", "atlas": "ATLAS", "scalp": "BLITZ", "sys": "Bot"}
 EXIT_WORDS = {"TARGET": "hit the target", "STOP": "stopped out", "BE": "breakeven", "TIME": "closed at the 15-minute check",
               "TCHECK": "cut at the 15-minute check", "EOD": "closed 15:55 (flat)", "FLAT": "closed 15:55 (flat)",
               "BANK": "banked at 8R", "KILL": "closed by the kill switch", "KILL SWITCH": "closed by the kill switch",
               "TIME SAFETY": "closed by the clock safety", "REMOTE FLATTEN": "flattened from the phone", "NO TRADE": "no trade (voided)"}
+# BLITZ (account C) has no 15-minute check: its TIME exit is the 30-minute clock or the 15:55 flat (5 min before an early close)
+SCALP_EXIT_WORDS = {"TIME": "closed by BLITZ's 30-minute clock (or the 15:55 flat)", "STOP": "stopped out (its stop or its trail)",
+                    "HEDGE": "closed first: Zlarior / ATLAS entered the other way", "TARGET": "hit the 20R target"}
 
 
 # ---------------------------------------------------------------------------------------------- small helpers
@@ -259,6 +263,8 @@ def _route_rows(rows, strat, account, open_pos=None, paper=False) -> list:
                            + (f" · {usd(risk, False)} at risk" if risk else ""), "info", entry_t=et_, dir=d))
             legs = [x for x in (res.get("legs") or []) if isinstance(x, dict)]
             fill = next((_f(x.get("fill_px")) for x in legs if _f(x.get("fill_px")) is not None), None)
+            if fill is None and _f(r.get("fill")) is not None:
+                fill = _f(r.get("fill"))         # account B / C rows carry NinjaTrader's fill as "fill" (their info() drops the legs)
             pos = open_pos if (open_pos and _i(open_pos.get("entry_t")) == et_) else None
             if pos is not None and fill is None:
                 b = pos.get("broker") or {}
@@ -281,6 +287,10 @@ def _route_rows(rows, strat, account, open_pos=None, paper=False) -> list:
                 out.append(msg(f"{strat}:modfail:{et_}:{t}", t, strat, "stop", f"{who}stop move NOT confirmed",
                                f"The stop move to {px(r.get('stop'))} was not confirmed" + (f": {err}" if err else "")
                                + ". The old stop stays; check NinjaTrader.", "warn", entry_t=et_))
+            elif reason == "BE" and strat == "scalp":
+                out.append(msg(f"{strat}:be:{et_}:{t}", t, strat, "be", f"{who}stop trailed past the entry",
+                               f"BLITZ's trail moved the stop to {px(r.get('stop'))}, past the entry (it trails 1.5R behind the best price "
+                               "after +1R).", "good", entry_t=et_))
             elif reason == "BE":
                 out.append(msg(f"{strat}:be:{et_}:{t}", t, strat, "be", f"{who}stop moved to breakeven",
                                f"+1R reached: stop moved to {px(r.get('stop'))} (entry + costs). This trade can no longer lose money.",
@@ -295,7 +305,7 @@ def _route_rows(rows, strat, account, open_pos=None, paper=False) -> list:
         elif side == "exit":
             reason = str(r.get("reason") or "").upper()
             pnl = _f(r.get("pnl"))
-            words = EXIT_WORDS.get(reason, reason.lower() or "closed")
+            words = (SCALP_EXIT_WORDS.get(reason) if strat == "scalp" else None) or EXIT_WORDS.get(reason, reason.lower() or "closed")
             if r.get("void"):
                 text = f"Closed {q} {contract} ({words}): booked $0 — NinjaTrader never took this order (was {usd(r.get('pnl_void'))})."
             else:
@@ -537,6 +547,11 @@ def derive(bot, now=None, prev: dict | None = None) -> tuple[list, dict]:
         out += _structure_msgs(bot, now, day)
     except Exception:
         pass
+    # Mind (engine/mind.py, read-only): game plans, trade reviews, research proposals; kind "brain", no phone push by default
+    try:
+        out += _mind_msgs(day)
+    except Exception:
+        pass
     # daily summary: once, after the 15:55 flat (16:05-17:00 ET on a trading weekday)
     try:
         e = _et(now)
@@ -580,6 +595,15 @@ def _structure_msgs(bot, now: int, day: str) -> list:
                            f"{a['why']}. Advice only: the bot keeps its written rules (Z18); the advisor scores this note after the trade.",
                            "info"))
     return out
+
+
+def _mind_msgs(day: str) -> list:
+    """Kind "brain": Mind's game plan per bot (01:45 / 10:45 ET), its review of each closed trade, a new research candidate.
+    Read from Mind's cached events (computed in its own thread): no work on the poll."""
+    from . import mind
+    strat = {"lit": "lit", "atlas": "atlas", "blitz": "scalp"}
+    return [msg(e["key"], e["t"], strat.get(e.get("bot"), "sys"), "brain", e.get("title") or "Mind", e.get("text") or "",
+                e.get("level") or "info", push_key=e["key"]) for e in mind.narrator_msgs(day)]
 
 
 def summary(bot, day, today_rows, now) -> dict:
@@ -730,6 +754,17 @@ class Narrator:
         return rows[:max(1, min(int(n or 100), KEEP))]
 
 
+def _scalp(p: dict) -> dict:
+    """An entry / outcome notice of account C (BLITZ on its own 25K, engine/account_c.py): "(BLITZ scalp)" in the body and the
+    keys / tag account C's own notices use (":acctc"), so the phone never shows a BLITZ fill as Zlarior's 50K and the two
+    paths (this feed and account C's own HEDGE / TIME / kill notices) send one notice per trade, never two."""
+    p["body"] = f"{p.get('body') or ''} (BLITZ scalp)"
+    p["key"] = f"{p.get('key')}:acctc"
+    p["tag"] = f"{p.get('tag')}-acctc"
+    p["strategy"] = "BLITZ"
+    return p
+
+
 def payload_for(m: dict, account: str = "") -> tuple[dict | None, str]:
     """(push payload, route) for one message: entries / exits as the bot's standard entry / outcome payloads (same keys
     fill:<t> / out:<t>: the phone shows one notice per trade), setups armed with alerts_plus's key, refusals as risk."""
@@ -740,10 +775,18 @@ def payload_for(m: dict, account: str = "") -> tuple[dict | None, str]:
                                stop=m.get("stop"), target=m.get("target"))
         if m.get("strat") == "atlas":
             p["body"] += " (ATLAS)"
+            p["key"] = f"{p['key']}:acctb"      # = account B's own notices (engine/account_b): one per trade, never LIT's key
+        if m.get("strat") == "scalp":
+            _scalp(p)
         return p, "notify"
     if k == "exit" and m.get("entry_t"):
-        return push.outcome_payload(account, side_word(m.get("dir")) if m.get("dir") else "", m.get("reason"), m.get("usd") or 0, m["entry_t"], m.get("t"), src="pc",
-                                    qty=m.get("qty")), "notify"
+        p = push.outcome_payload(account, side_word(m.get("dir")) if m.get("dir") else "", m.get("reason"), m.get("usd") or 0, m["entry_t"], m.get("t"),
+                                 src="pc", qty=m.get("qty"))
+        if m.get("strat") == "atlas":
+            p["key"] = f"{p['key']}:acctb"
+        if m.get("strat") == "scalp":
+            _scalp(p)
+        return p, "notify"
     key = m.get("push_key") or f"nar:{m['key']}"
     kind = {"armed": "armed", "expired": "armed", "refused": "risk", "stale": "feed_stale"}.get(k, "narrator")
     p = push.text_payload("PC", kind, m.get("title") or "", m.get("text") or "", key=key, t=m.get("t"), url="#/liveview")
@@ -764,6 +807,14 @@ def send_push(m: dict, bot) -> bool:
                 acct = (bot.acct_b.info() or {}).get("label") or acct
             except Exception:
                 pass
+        if m.get("strat") == "scalp" and m.get("kind") in ("entry", "exit"):
+            # BLITZ's own account: "BLITZ <its Name> (REAL)" / "(SIM)", never Zlarior's account label (2026-10-29: a BLITZ fill
+            # on the real 25K would have read "LONG · MFFU 50K")
+            try:
+                ac = bot.acct_c
+                acct = f"{ac.label} ({ac.real_word()})"
+            except Exception:
+                acct = "BLITZ"
         p, route = payload_for(m, acct)
         if p is None:
             return False
@@ -788,6 +839,11 @@ def tick(bot, now=None) -> list:
         try:                                   # the discretion advisor (engine/advisor.py): scores finished trades, read-only
             from . import advisor
             advisor.pc_tick(bot, now)
+        except Exception:
+            pass
+        try:                                   # Mind (engine/mind.py): once per 5m bar in its own thread; nightly research child
+            from . import mind
+            mind.pc_tick(bot, now)
         except Exception:
             pass
         return new

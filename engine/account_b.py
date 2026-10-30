@@ -869,6 +869,14 @@ class AccountB:
                     return h
             except Exception:
                 pass
+        fl = getattr(b, "fleet", None)                 # engine/fleet.py (off = None): a Zlarior follower holds the other side
+        if fl is not None:
+            try:
+                h = fl.opposite_open(d, max_rank=0)
+                if h:
+                    return h
+            except Exception:
+                return "fleet state unreadable (fails closed)"
         return None
 
     def lit_entering(self, ent: dict, sym: str, now: int) -> bool:
@@ -1059,15 +1067,28 @@ class AccountB:
         FIRST; B's entry goes out only once that close is CONFIRMED flat. None = route (C off / flat / same side)."""
         ac = getattr(self.bot, "acct_c", None)
         if ac is None:
-            return None
+            return self._fleet_yield(d, sym, now)
         try:
             if ac.yield_to(d, "ATLAS", sym, now, px=px, entry_t=tb) is not False:
-                return None
+                return self._fleet_yield(d, sym, now)
         except Exception as e:
             self.log("error", f"account C hedge close failed: {e.__class__.__name__}: {e}")
             if getattr(ac, "open_t", None) is None:
-                return None
+                return self._fleet_yield(d, sym, now)
         return "no hedging: BLITZ's (account C) opposite close is not confirmed yet"
+
+    def _fleet_yield(self, d, sym, now):
+        """The fleet (engine/fleet.py, off = None): ATLAS's / BLITZ's followers holding the other side are closed at market
+        first. None = route."""
+        fl = getattr(self.bot, "fleet", None)
+        if fl is None:
+            return None
+        try:
+            if fl.yield_to(d, 1, sym, now, who="ATLAS") is not False:
+                return None
+        except Exception as e:
+            self.log("error", f"fleet hedge close failed: {e.__class__.__name__}: {e}")
+        return "no hedging: a fleet follower's opposite close is not confirmed yet"
 
     # ---- an entry the broker never took (2026-10-27: the 03:30 MACD LONG 3 on the 25K was refused, yet B kept it "open"
     # to its exit: B's other entries blocked all day, its paper P&L booked on B's eval, the phone showed a trade that
@@ -1503,7 +1524,7 @@ class AccountB:
         now = int(now if now is not None else self.clock())
         today = trading_day(now)
         rows = [{**{k: r.get(k) for k in ("t", "side", "qty", "reason", "pnl", "entry_t", "src", "strategy", "stop", "target")},
-                 **_answer(r)} for r in self.ledger if r.get("side") in ("buy", "sell", "exit")][-8:]
+                 **_answer(r), **_fill_of(r)} for r in self.ledger if r.get("side") in ("buy", "sell", "exit")][-8:]
         out = {"label": self.label, "account": self.name, "plan": self.spec["plan"], "plan_label": self.spec["plan_label"],
                "kind": self.kind(), "sizing": self.spec["sizing"], "keys": list(self.spec["keys"]), "enabled": not self.disabled_reason(),
                "disabled": self.disabled_reason(), "eval": self.eval_view(now), "open": self.position(), "routed": rows,
@@ -1578,6 +1599,24 @@ def _answer(r: dict) -> dict:
     if r.get("void"):
         out["void"] = r["void"]
     return out
+
+
+def _fill_of(r: dict) -> dict:
+    """An entry row's NinjaTrader fill price ({"fill": px} from the result's legs, else {}): the narrator's FILLED line and
+    the phone's entry notice (2026-10-29: the NinjaTrader adapter reports its own fills only for the bot's own account, so
+    account B / C entries on NinjaTrader reached the phone as nothing; their info() rows dropped the legs)."""
+    if r.get("side") not in ("buy", "sell"):
+        return {}
+    res = r.get("result") if isinstance(r.get("result"), dict) else {}
+    if res.get("ok") is False:
+        return {}
+    for lg in res.get("legs") or []:
+        try:
+            if isinstance(lg, dict) and lg.get("fill_px") is not None and int(lg.get("filled") or 0) > 0:
+                return {"fill": float(lg["fill_px"])}
+        except (TypeError, ValueError):
+            continue
+    return {}
 
 
 TRACKER_KEYS = ("name", "plan", "label", "status", "text", "start", "today", "balance", "profit", "floor", "room", "locked", "mll_after_payout", "buffer", "buffer_balance",

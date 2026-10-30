@@ -297,7 +297,8 @@ function think() {
       ${p1 || p2 ? `<div class="lv-pos lv-paper" style="--c:${col('scalp')}"><div class="lv-paper-t">PAPER position · simulated accounts</div>${pp(p1)}${pp(p2)}</div>` : ''}
       ${th.eval ? `<p class="small">${esc(th.eval)}</p>` : ''}${th.funded50 ? `<p class="small">${esc(th.funded50)}</p>` : ''}
       ${sigs.length ? `<ul class="lv-checks">${sigs.map((x) => `<li>${tick(x.taken ? true : null)}<div><b>${esc(new Date(x.t * 1000).toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: false }))} ${esc(x.side)} signal</b><small>${esc(x.text)}</small></div></li>`).join('')}</ul>` : ''}
-      ${sc.placeholder ? `<p class="lv-muted">${esc(sc.text || '')}</p>` : ''}</article>`);
+      ${sc.placeholder ? `<p class="lv-muted">${esc(sc.text || '')}</p>` : ''}
+      <p class="small lv-bzgo"><a class="lv-bzlink" data-goto="blitz" style="display:inline-flex;align-items:center;min-height:44px;color:inherit;font-weight:650;text-decoration:none;cursor:pointer">Open BLITZ: band, trades, results, go live ›</a></p></article>`);
   }
   // market structure (2026-10-29, liveview_api.view() "structure" when present): the summary + each frame's trend / last break
   const st = L.d.structure;

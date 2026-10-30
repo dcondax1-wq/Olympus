@@ -7,7 +7,7 @@
 import { $, esc, toast } from '../util.js';
 import { icon } from './icons.js';
 
-const P = { d: null, timer: null, open: null, busy: false, offline: 0, retryAt: 0, tick: null, clockMsg: null };
+const P = { d: null, timer: null, open: null, busy: false, offline: 0, retryAt: 0, tick: null, clockMsg: null, cpf: null };
 const SS = { get: (k) => { try { return sessionStorage.getItem('st.' + k); } catch { return null; } },
   set: (k, v) => { try { if (v == null) sessionStorage.removeItem('st.' + k); else sessionStorage.setItem('st.' + k, String(v)); } catch { /* private mode */ } } };
 const MAX_TRIES = 30;
@@ -204,10 +204,30 @@ function blitzCard(d) {
   return `<div class="card nx-glass cc-card st-blitz"><div class="card-h"><h3>BLITZ · 25K</h3><div class="card-tools">${state}</div></div>
     <p>${esc(b.say || 'BLITZ · 25K is off')}</p>${b.problem ? `<p class="st-note">${icon('info')}<span>${esc(b.problem)}</span></p>` : ''}
     <p class="muted">The scalper on its own MFFU 25K: up to 6 trades a day, flat by 15:55, never opposite to Zlarior or ATLAS (they go first). Off = paper only. Every rule and what to expect: BLITZ_STRATEGY.md.</p>
-    ${form}${arm}</div>`;
+    ${form}${arm}${b.on ? cpfBlock() : ''}</div>`;
 }
 
 function cArmBtn() { const b = $('#stCArm'); if (b) b.disabled = norm($('#stCPhrase')?.value) !== norm(P.d?.blitz?.phrase || P.d?.phrase); }
+
+// BLITZ's go-live check (GET /api/next/start/blitz/preflight = engine/blitz_preflight.py; also
+// `python -X utf8 -m engine.account_c --preflight`): one green / red line each, every red line with its one fix.
+async function loadCpf(fresh = false) {
+  try {
+    const r = await fetch('/api/next/start/blitz/preflight' + (fresh ? '?fresh=1' : ''));
+    const v = await r.json();
+    P.cpf = r.ok && Array.isArray(v.items) ? v : null;
+  } catch { P.cpf = null; }
+}
+
+function cpfBlock() {
+  const v = P.cpf;
+  if (!v) return '';
+  const st = (s) => (s === 'good' ? 'good' : s === 'bad' ? 'bad' : s === 'wait' ? 'warn' : 'info');
+  const rows = v.items.map((i) => `<div class="st-row ${i.state === 'good' ? 'done' : i.state === 'bad' ? 'red' : ''}" data-cpf="${esc(i.key)}">
+      <span class="op-dot ${st(i.state)}"></span><div class="st-txt"><b>${esc(i.label)}</b><span>${esc(i.detail)}</span>${i.state !== 'good' && i.fix ? `<em>${esc(i.fix)}</em>` : ''}</div></div>`).join('');
+  return `<div class="st-cpf"><p><b>Go-live check</b> ${chip(v.all_green ? 'all green' : `${v.n_red} red`, v.all_green ? 'good' : 'bad')}</p>${rows}
+    <p class="muted">Same check in a console: <code>${esc(v.cmd || 'python -X utf8 -m engine.account_c --preflight')}</code></p></div>`;
+}
 
 // ------------------------------------------------------------------ new MFFU account Names (engine/new_accounts.py)
 // 2026-10-29: after a pass / fail MFFU issues a new account Name; when NinjaTrader shows a Name no bot uses, one line per Name
@@ -235,6 +255,27 @@ function wireNewAcct(el) {
   });
 }
 
+// ------------------------------------------------------------------ PC self-test (engine/pc_selftest.py, 2026-10-30)
+// One line: the last result (Sunday 15:30 ET, after each update, or this button) + "Run self-test" (PC only, 1-3 min at
+// low priority; read-only: it never arms, routes or stops anything). Kept in these two functions.
+function selftestLine(d) {
+  const t = d.selftest;
+  if (!t) return '';
+  const bad = t.failed > 0;
+  const when = t.t ? new Date(t.t * 1000).toLocaleString('en-US', { weekday: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+  const why = bad && t.first?.length ? ` · ${t.first.map((x) => `${x.label}: ${x.why || 'failed'}`).join(' · ')}` : '';
+  return `<div class="st-ro ${bad ? 'warn' : ''} st-selftest" style="flex-wrap:wrap">${icon(bad ? 'info' : 'check')}<span style="flex:1 1 220px;min-width:0">PC self-test: ${esc(t.running ? 'running now (1-3 min)…' : t.say || 'not run yet')}${when && !t.running ? ` (${esc(when)})` : ''}${esc(why)}</span>${d.local ? `<span class="st-acts"><button type="button" class="btn ghost sm" data-st-selftest ${t.running ? 'disabled' : ''}>Run self-test</button></span>` : ''}</div>`;
+}
+
+function wireSelftest(el) {
+  el.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-st-selftest]');
+    if (!b || b.disabled) return;
+    b.disabled = true;
+    post('selftest').then(() => { toast('Self-test started (1-3 min, low priority)'); load(); }, (err) => { toast(err.message); b.disabled = false; });
+  });
+}
+
 // ------------------------------------------------------------------ draw
 function draw() {
   const el = $('#page-start');
@@ -251,6 +292,7 @@ function draw() {
       ${P.offline ? `<div class="st-ro warn">${icon('refresh')}<span>Reconnecting to the bot server…</span></div>` : ''}</div></div>
     ${goCard(d)}
     ${newAcctLine(d)}
+    ${selftestLine(d)}
     ${picks(d)}
     <div class="st-cols"><div class="card nx-glass cc-card st-list"><div class="card-h"><h3>Checklist</h3><div class="card-tools">${chip(`${n}/${d.steps.length}`, d.all_green ? 'good' : '')}</div></div>
       ${d.steps.map((s, i) => stepRow(s, d, i === d.steps.findIndex((x) => x.action === P.open && !x.done))).join('')}
@@ -283,6 +325,7 @@ async function load(fresh = false) {
     const d = await r.json();
     if (!r.ok || d.error) throw new Error(d.error || 'HTTP ' + r.status);
     P.d = d; P.offline = 0;
+    if (d.blitz?.on) await loadCpf(fresh); else P.cpf = null;
   } catch (e) {
     P.offline += 1;
     if (!P.d) { const el = $('#page-start'); if (el) el.innerHTML = `<div class="card nx-glass cc-card"><div class="pc-empty"><b>Bot server not reachable</b><span>${esc(e.message)}. It may be restarting: this page tries again.</span></div></div>`; }
@@ -373,7 +416,7 @@ function wire(el) {
 export const start = {
   show() {
     const el = $('#page-start');
-    if (el && !el.dataset.wired) { el.dataset.wired = '1'; wire(el); wireNewAcct(el); }
+    if (el && !el.dataset.wired) { el.dataset.wired = '1'; wire(el); wireNewAcct(el); wireSelftest(el); }
     if (!P.d && el) el.innerHTML = '<div class="empty">Loading the start list…</div>';
     load();
   },

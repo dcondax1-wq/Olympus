@@ -54,6 +54,7 @@ never touches LIT or ATLAS):
     python -X utf8 -m engine.account_c off
     python -X utf8 -m engine.account_c --status                # eval + scorecard from the state file
     python -X utf8 -m engine.account_c --resume                # after a scorecard pause (the owner's decision)
+    python -X utf8 -m engine.account_c --preflight             # the go-live check, line by line (engine/blitz_preflight.py)
     python -X utf8 -m engine.account_c --to-funded --account "<funded Name>" --start <day>
 """
 from __future__ import annotations
@@ -86,6 +87,12 @@ SIZE_EVAL = {"f": 0.4, "cap": 600.0, "dll_frac": 0.9, "day_tp": None, "push_from
 SIZE_PAPER = {"f": 0.4, "cap": 600.0, "dll_frac": 0.9, "day_tp": None, "push_from": None, "push_f": None}
 SIZE_FUNDED = {"f": 0.1, "cap": 150.0, "dll_frac": 0.9, "day_tp": 400.0, "push_from": None, "push_f": None}
 SIZINGS = ("speed", "paper")
+# OWNER SWITCH, OFF (research/writeups/atlas-blitz-edge-2026-10-30.md, research/scalp/blitz_25k_pick_v2.json): "later_break": true
+# in data/account_c.json = on the 25K EVAL the day's first band break on a side trades x0.5, a later same-side break (the day's
+# count of check closes beyond the band on that side >= 2, engine/blitz "brk_n") x1.75: f and the $ cap scale, f <= 1.0 (never
+# more than the room). Funded and "paper" sizing unchanged. 2-week pass / fail H1 47.9 / 23.5 (36.1 / 37.8), H2 36.2 / 21.7
+# (36.2 / 34.8), 2021-25 24.7 / 48.4 (20.4 / 50.2); a later break can risk up to $1,050.
+LATER_BREAK = {"first_x": 0.5, "later_x": 1.75, "f_max": 1.0}
 # the performance contract (BLITZ_STRATEGY.md): bands = bootstrap of the 330 research trades of 2026 (na_best_trades.json)
 SCORE_MIN_TRADES = 20
 SCORE_LOSE_DAYS = 6             # losing days in a row (2026 worst 3; p95 of a 40-traded-day stretch 6)
@@ -191,7 +198,8 @@ def normalize(blk: dict | None, lit_account: str | None = None, b_account: str |
     out = {"account": str(blk.get("account") or "").strip(), "plan": plan, "eval_start": str(blk.get("eval_start") or ""),
            "armed": blk.get("armed") is True, "prior_pnl": float(_num(blk.get("prior_pnl"), 0.0)), "eval_anchor": blk.get("eval_anchor"),
            "filtered": blk.get("unfiltered") is not True, "params": None, "problem": None,
-           "resume_after": _num(blk.get("resume_after")), "sizing": str(blk.get("sizing") or "speed")}
+           "resume_after": _num(blk.get("resume_after")), "sizing": str(blk.get("sizing") or "speed"),
+           "later_break": blk.get("later_break") is True}
     out["preset"] = (P or PLANS["builder25k"])["preset"]
     out["plan_label"] = (P or {}).get("label") or plan
     out["rules"] = MA.rules_of({"preset": out["preset"]})
@@ -258,8 +266,10 @@ def frac_qty(risk_pm: float, room: float, cum: float, f: float, cap: float, dll:
     return q
 
 
-def qty(spec: dict, risk_pts: float, state: dict | None) -> dict:
-    """Micros for one BLITZ entry on account C: {"qty", "reasons"}. risk_pts = the estimated fill to the stop. Fails closed."""
+def qty(spec: dict, risk_pts: float, state: dict | None, brk_n: int | None = None) -> dict:
+    """Micros for one BLITZ entry on account C: {"qty", "reasons"}. risk_pts = the estimated fill to the stop. brk_n = the
+    day's count of check closes beyond the band on the signal's side (engine/blitz signal "brk_n"; only read with the owner's
+    "later_break" switch on an eval). Fails closed."""
     R = spec["rules"]
     S = size_rule(spec)
     if state is None:
@@ -278,10 +288,16 @@ def qty(spec: dict, risk_pts: float, state: dict | None) -> dict:
     sess = _num(state.get("session"))
     if S.get("push_from") and sess is not None and sess >= int(S["push_from"]):
         f = float(S["push_f"])                           # the speed pick: the full room from session 5
-    q = frac_qty(risk_pm, room, cum, f, S["cap"], float(R["dll"]), int(R["max_micros"]), S["dll_frac"])
-    why = [f"{f:.0%} of the ${room:,.0f} room" + (f" (session {int(sess)}: from session {int(S['push_from'])} the full room)"
+    cap = float(S["cap"])
+    lb = None
+    if spec.get("later_break") and not is_funded(spec) and spec.get("sizing", "speed") == "speed" and brk_n is not None:
+        m = LATER_BREAK["later_x"] if int(brk_n) >= 2 else LATER_BREAK["first_x"]
+        f, cap = min(f * m, LATER_BREAK["f_max"]), cap * m
+        lb = f"later-break size x{m:g} (break {int(brk_n)} on this side today)"
+    q = frac_qty(risk_pm, room, cum, f, cap, float(R["dll"]), int(R["max_micros"]), S["dll_frac"])
+    why = ([lb] if lb else []) + [f"{f:.0%} of the ${room:,.0f} room" + (f" (session {int(sess)}: from session {int(S['push_from'])} the full room)"
                                                   if S.get("push_from") and sess is not None and sess >= int(S["push_from"]) else "")
-           + f", <= ${S['cap']:,.0f}, <= {S['dll_frac']:.0%} of the ${float(R['dll']) + cum:,.0f} daily loss left: ${risk_pm:,.2f} a micro "
+           + f", <= ${cap:,.0f}, <= {S['dll_frac']:.0%} of the ${float(R['dll']) + cum:,.0f} daily loss left: ${risk_pm:,.2f} a micro "
            f"at a {float(risk):.2f}-pt stop -> {q}"]
     return {"qty": int(q), "reasons": why}
 
@@ -831,6 +847,14 @@ class AccountC:
                     return h
             except Exception:
                 pass
+        fl = getattr(b, "fleet", None)                 # engine/fleet.py (off = None): any follower holding the other side
+        if fl is not None:
+            try:
+                h = fl.opposite_open(d)
+                if h:
+                    return h
+            except Exception:
+                return "fleet state unreadable (fails closed)"
         return None
 
     def yield_to(self, d: int, who: str, sym: str, now: int, px=None, entry_t=None) -> bool:
@@ -1073,7 +1097,7 @@ class AccountC:
         sz = {"qty": 0, "reasons": []}
         if not why:
             try:
-                sz = qty(self.spec, risk, self.eval_state(now))
+                sz = qty(self.spec, risk, self.eval_state(now), brk_n=x.get("brk_n"))
             except Exception as e:
                 sz = {"qty": 0, "reasons": [f"sizing failed ({e.__class__.__name__}: {e}): not traded"]}
             self.last_size = {"qty": sz["qty"], "reasons": [str(r)[:160] for r in sz["reasons"]][-4:], "t": int(now)}
@@ -1214,6 +1238,8 @@ class AccountC:
             return
         ready = getattr(self.adapter, "has_open_bracket", None)
         if callable(ready) and not ready(et_):
+            self.note(("trail", et_), "warn", f"trail to {new:.2f} waits: NinjaTrader shows no protected bracket for the "
+                                              f"{_et(et_):%H:%M} ET trade yet (the stop at NinjaTrader stays {last:.2f})")
             return
         tries = sum(1 for r in self.ledger if r.get("entry_t") == et_ and r.get("side") == "modify" and r.get("stop") == new)
         if tries >= 3:
@@ -1456,6 +1482,13 @@ class AccountC:
                 return
             self.closes.append([trading_day(exit_t), int(exit_t), float(pnl), int(entry_t), None if r is None else float(r)])
             self.closes = self.closes[-1500:]
+        if self.kind() == "SIM" and self.real_bot():          # BLITZ's own Sim test (the go-live check, engine/blitz_preflight)
+            try:
+                from . import blitz_preflight
+                ok = (self.entry_result(entry_t) or {}).get("ok") is not False
+                blitz_preflight.record_sim(self.name, trading_day(exit_t), ok, 1, now=now)
+            except Exception:
+                pass
         self.check_lock(now)
         self._score_check(now)
         self.save()
@@ -1482,10 +1515,18 @@ class AccountC:
         except Exception:
             pass
 
+    # notices the owner must act on reach the phone as a push (kind "ops", as engine/ops_checks' eval passed / failed); the
+    # rest stay in the app's Activity feed (kind "risk": engine/push.pc_notify pushes those only with LE_PUSH_EXTRA=1). "order
+    # NOT placed" stays "risk": the narrator's "refused" line already pushes it (engine/alerts_plus). 2026-10-29: a real
+    # BLITZ day's CLOSE NOT CONFIRMED / EVAL PASSED / PAUSED would otherwise have reached no phone.
+    PUSH_NOW = ("acctc:closing:", "acctc:unconfirmed:", "acctc:trail:", "acctc:passed:", "acctc:failed:", "acctc:stuck:", "acctc:flost:",
+                "acctc:fstuck:", "acctc:pause:", "acctc:lock:")
+
     def _push_text(self, title, body, key):
         try:
             from . import push
-            self._send(push.text_payload("PC", "risk", title, body, key=key, t=int(self.clock()), url="#/second"))
+            kind = "ops" if str(key or "").startswith(self.PUSH_NOW) else "risk"
+            self._send(push.text_payload("PC", kind, title, body, key=key, t=int(self.clock()), url="#/second"))
         except Exception:
             pass
 
@@ -1497,7 +1538,7 @@ class AccountC:
             p = push.entry_payload(f"{self.label} ({self.real_word()})", "LONG" if act["side"] == "buy" else "SHORT", q, act["entry_t"], src="pc",
                                    entry=act.get("entry"), stop=act.get("stop"), target=act.get("target"), strategy="BLITZ")
             p["body"] = f"{p['body']} (BLITZ scalp)"
-            p["key"] = f"{p['key']}:acctc"
+            p["key"], p["tag"] = f"{p['key']}:acctc", f"{p.get('tag')}-acctc"
             self._send(p)
         except Exception:
             pass
@@ -1510,7 +1551,7 @@ class AccountC:
             p = push.outcome_payload(f"{self.label} ({self.real_word()})", _side(pv.get("dir")), reason, usd, int(et_), exit_t, src="pc",
                                      qty=q, strategy="BLITZ")
             p["body"] = f"{p['body']} (BLITZ scalp)"
-            p["key"] = f"{p['key']}:acctc"
+            p["key"], p["tag"] = f"{p['key']}:acctc", f"{p.get('tag')}-acctc"
             self._send(p)
         except Exception:
             pass
@@ -1551,8 +1592,8 @@ class AccountC:
         from . import account_b as AB
         now = int(now if now is not None else self.clock())
         today = trading_day(now)
-        rows = [{**{k: r.get(k) for k in ("t", "side", "qty", "reason", "pnl", "entry_t", "src", "strategy", "stop", "target")},
-                 **AB._answer(r)} for r in self.ledger if r.get("side") in ("buy", "sell", "exit", "modify")][-10:]
+        rows = [{**{k: r.get(k) for k in ("t", "side", "qty", "reason", "pnl", "entry_t", "src", "strategy", "stop", "target", "entry")},
+                 **AB._answer(r), **AB._fill_of(r)} for r in self.ledger if r.get("side") in ("buy", "sell", "exit", "modify")][-10:]
         tr = [{k: r.get(k) for k in ("id", "day", "entry_t", "dir", "side", "qty", "routed", "skip", "entry", "stop", "target", "exit_t",
                                       "exit", "exit_kind", "usd", "r", "not_placed", "closed_early")} for r in self.rows if r.get("day") == today][-8:]
         ev = self.eval_view(now)
@@ -1932,7 +1973,13 @@ def main(argv=None) -> int:
     ap.add_argument("--to-funded", action="store_true", help="after a pass: trade the NEW funded account (--account, --start), disarmed")
     ap.add_argument("--balance", type=float, default=None, help="--to-funded: its balance that day (default $25,000)")
     ap.add_argument("--payout", help="record one payout MFFU paid on the funded account: yyyy-mm-dd=$")
+    ap.add_argument("--preflight", action="store_true", help="BLITZ's go-live check: every line green / red with its fix "
+                                                              "(asks the running bot, else checks the files)")
+    ap.add_argument("--files", action="store_true", help="--preflight without asking the running bot")
     a = ap.parse_args(argv)
+    if a.preflight:
+        from . import blitz_preflight
+        return blitz_preflight.main(["--files"] if a.files else [])
     if a.off is not None and a.off.lower() != "off":
         print(f"unknown argument {a.off!r} (only 'off')")
         return 2

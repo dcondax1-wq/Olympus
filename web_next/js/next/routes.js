@@ -9,6 +9,7 @@ export const TOP = [
   { id: 'command', label: 'Today', icon: 'today' },
   { id: 'brain', label: 'Bot Brain', icon: 'brain' },          // js/next/brain.js: what the bot is thinking (read-only)
   { id: 'atlas', label: 'ATLAS', icon: 'atlas' },              // js/next/second.js: strategy 2 on the 25K (EMA + MACD + S/R)
+  { id: 'blitz', label: 'BLITZ', icon: 'blitz' },              // js/next/blitz.js + blitzcore.js: strategy 3, the scalper (2026-10-29)
   { id: 'botctl', label: 'Bot', icon: 'power' },
   { id: 'accounts', label: 'Accounts', icon: 'wallet' },
   { id: 'chart', label: 'Chart', icon: 'chart' },
@@ -128,36 +129,48 @@ export const NAV_NAMES = { cc: 'Home', start: 'Start', real: 'Real results', dat
 
 // The two bot pages (2026-10-25 PM): a segmented control on top picks the section; a section with several pages shows
 // them as chips. "atlas:brain" = the one ATLAS page showing one part (second.js atlasPart). Each page belongs to one bot.
+// 2026-10-30 (night 3, "organized, clean"): the three bots share ONE order and the same words as the phone:
+//   Today · Brain · Trades · Results · Rules  (Zlarior's Plan & levels pages are chips under Today, its Strategy is Rules;
+//   ATLAS's Setups is Rules; BLITZ's Go live is a chip under Rules). Every page keeps its id and link.
 export const BOTS = {
   zlarior: { name: 'Zlarior', sub: 'LIT method · 50K', segs: [
-    ['Today', ['botctl', 'accounts', 'evalhq', 'evaltl', 'litcockpit', 'command']],
+    ['Today', ['botctl', 'accounts', 'evalhq', 'evaltl', 'litcockpit', 'litday', 'litlevels', 'livechart', 'briefing', 'chart', 'command']],
     ['Brain', ['brain']],
     ['Trades', ['trades', 'tradelog', 'journal', 'review', 'memory']],
-    ['Plan & levels', ['litday', 'litlevels', 'livechart', 'chart', 'briefing']],
     ['Results', ['perf', 'pnlcal', 'edge', 'learnlit']],
-    ['Strategy', ['strategy', 'rules', 'risk', 'mffurules', 'livesettings']],
+    ['Rules', ['strategy', 'rules', 'risk', 'mffurules', 'livesettings']],
   ] },
   atlas: { name: 'ATLAS', sub: '25K', segs: [
     ['Today', ['atlas']], ['Brain', ['atlas:brain']], ['Trades', ['atlas:trades']],
-    ['Setups', ['atlas:setups', 'atlassetups']], ['Results', ['atlas:results', 'learnatlas']],
+    ['Results', ['atlas:results', 'atlassetups', 'learnatlas']], ['Rules', ['atlas:setups']],
+  ] },
+  // BLITZ (2026-10-29): the one BLITZ page in parts ("blitz:brain" = blitz.js part, store nx.bzPart), like ATLAS
+  blitz: { name: 'BLITZ', sub: 'scalper · 25K', segs: [
+    ['Today', ['blitz']], ['Brain', ['blitz:brain']], ['Trades', ['blitz:trades']], ['Results', ['blitz:results']],
+    ['Rules', ['blitz:rules', 'blitz:golive']],
   ] },
 };
 export const BOT_CHIP = { botctl: 'Bot control', accounts: '50K account', evalhq: 'Eval HQ', evaltl: 'Eval timeline', litcockpit: 'Eval cockpit', command: 'Today (classic)',
   trades: 'Trades', tradelog: 'Trade log', journal: 'Journal', review: 'Weekly review', memory: 'Memory', litday: 'Day plan', litlevels: 'Levels', livechart: 'Live chart',
   chart: 'Chart', briefing: 'Briefing', perf: 'Performance', pnlcal: 'P&L calendar', edge: 'Edge', strategy: 'Strategy', rules: 'Rules (STRATEGY.md)', risk: 'Risk & sizing',
   mffurules: 'MFFU rules', livesettings: 'Live settings', 'atlas:setups': 'Rules & members', atlassetups: 'Per setup',
-  'atlas:results': 'Results', learnlit: 'Learning', learnatlas: 'Learning' };
+  'atlas:results': 'Results', learnlit: 'Learning', learnatlas: 'Learning', 'blitz:rules': 'Rules', 'blitz:golive': 'Go live' };
 export const botOf = (id) => Object.keys(BOTS).find((b) => BOTS[b].segs.some((s) => s[1].some((it) => it.split(':')[0] === id))) || null;
 export const groupIds = (g) => g.ids || (g.sections || []).flatMap((s) => s.ids);
 // phone tab bar (the PC sidebar shows the groups)
 // 2026-10-28: 'real' (Real results, js/next/real.js) in Main; the backtest 'data' page is named "Backtest & research"
 export const TABS = ['cc', 'zlarior', 'atlas', 'real', 'modules'];   // 2026-10-28: Real results replaces the backtest Results tab
+// 2026-10-30 (night 3, "organized, clean"): the Main items in plain sections, the same words as the phone. Each id once;
+// any Main id not listed here is drawn at the end (shell.js buildNav).
+export const MAIN_SECTIONS = [['', ['cc', 'start']], ['Bots', ['zlarior', 'atlas', 'blitz']], ['Live', ['mission', 'liveview', 'holo']],
+  ['Money', ['real']], ['Insight', ['mind', 'deck', 'insight']], ['', ['modules']]];
 
 export const TITLES = { cc: 'Home', zlarior: 'Zlarior', data: 'Backtest & research', command: 'Today', brain: 'Bot Brain', atlas: 'ATLAS · strategy 2 (25K)', botctl: 'Bot Control', accounts: 'Accounts', chart: 'Chart', trades: 'Trades', modules: 'All tools', settings: 'Settings' };
 for (const p of [...DATA, ...MODULES, ...CC]) TITLES[p.id] = p.label;
 for (const p of ARCHIVE) TITLES[p.id] = p.label + ' · archive';
 TITLES.learnlit = 'Zlarior · Learning';
 TITLES.learnatlas = 'ATLAS · Learning';
+TITLES.blitz = 'BLITZ · strategy 3 (25K)';
 
 export const groupOf = (id) => id === 'zlarior' ? 'zlarior' : botOf(id) ? botOf(id) : DATA.some(p => p.id === id) ? 'data' : MODULES.some(p => p.id === id) ? 'modules' : ARCHIVE.some(p => p.id === id) ? 'archive' : id;
 
@@ -184,3 +197,18 @@ export const MISSION = { id: 'mission', label: 'Mission Control', icon: 'target'
 CC.push(MISSION);
 TITLES.mission = MISSION.label;
 { const g = GROUPS.find((x) => x.label === 'Main'); if (g?.ids && !g.ids.includes('mission')) g.ids.splice(Math.max(0, g.ids.indexOf('cc') + 1), 0, 'mission'); }
+
+// BLITZ, the Mind and Trader's deck (2026-10-29 night, js/next/blitz.js + blitzcore.js / mindcore.js / deckcore.js; read-only):
+// BLITZ right after ATLAS in Main (its sections in BOTS.blitz); Mind and Trader's deck after Real results
+export const MIND = { id: 'mind', label: 'Mind', icon: 'mind', desc: 'Brain v2: the market regime, each bot\'s if-then game plan, similar past setups (win %, avg R, $), A-F trade reviews, research ideas with evidence, alerts, IQ' };
+export const DECK = { id: 'deck', label: 'Trader\'s deck', icon: 'deck', desc: 'Risk meter on all accounts, the next 24 h (windows, checks, news, early closes, the clock change), eval odds from today\'s balance, real P&L calendar, trade journal, notification center, since you last looked, Holodeck replays' };
+CC.push(MIND, DECK);
+TITLES.mind = MIND.label;
+TITLES.deck = DECK.label;
+{ const g = GROUPS.find((x) => x.label === 'Main');
+  if (g && g.ids && !g.ids.includes('blitz')) { const i = g.ids.indexOf('atlas'); g.ids.splice(i >= 0 ? i + 1 : g.ids.length, 0, 'blitz'); }
+  if (g && g.ids && !g.ids.includes('mind')) { const i = g.ids.indexOf('real'); g.ids.splice(i >= 0 ? i + 1 : g.ids.length, 0, 'mind', 'deck'); } }
+
+// Fleet (js/next/fleet.js, 2026-10-30): copy trading to the follower accounts (engine/fleet.py, GET /api/next/fleet)
+export const FLEET = { id: 'fleet', label: 'Fleet', icon: 'modules', desc: 'Copy trading: every follower account (prop firms, Sim, your LIVE account), room the firm\'s way, today, slippage vs the lead, rule warnings, the firm rules' };
+MODULES.push(FLEET); TITLES.fleet = FLEET.label;   // All tools > More (a tile), Ctrl K

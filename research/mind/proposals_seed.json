@@ -1,0 +1,434 @@
+{
+ "v": 1,
+ "t": 1793316860,
+ "took_s": 1.01,
+ "tested": 22,
+ "observations": [
+  {
+   "kind": "losses",
+   "bucket": "lvl-buildup",
+   "text": "14 of the last 20 Zlarior losses came after a buildup level sweep (22 of its last 40 trades, history + live, were there)",
+   "score": 0.7,
+   "bot": "lit"
+  },
+  {
+   "kind": "losses",
+   "bucket": "vix-low",
+   "text": "14 of the last 17 ATLAS losses came with VIX under 15.8 (24 of its last 40 trades, history + live, were there)",
+   "score": 0.8235294117647058,
+   "bot": "atlas"
+  },
+  {
+   "kind": "losses",
+   "bucket": "dir-long",
+   "text": "9 of the last 17 ATLAS losses came on longs (19 of its last 40 trades, history + live, were there)",
+   "score": 0.5294117647058824,
+   "bot": "atlas"
+  },
+  {
+   "kind": "losses",
+   "bucket": "tr1h-against",
+   "text": "9 of the last 17 ATLAS losses came against the 1h structure trend (18 of its last 40 trades, history + live, were there)",
+   "score": 0.5294117647058824,
+   "bot": "atlas"
+  },
+  {
+   "kind": "losses",
+   "bucket": "atr-hot",
+   "text": "9 of the last 17 ATLAS losses came when the 5m ATR is above 1.34x its 7-day median (its top third) (16 of its last 40 trades, history + live, were there)",
+   "score": 0.5294117647058824,
+   "bot": "atlas"
+  },
+  {
+   "kind": "money",
+   "bucket": "vix-low",
+   "text": "BLITZ trades with VIX under 16.9 made 64% of its 2026 R with 33% of the trades",
+   "score": 0.63698444633599,
+   "bot": "blitz"
+  },
+  {
+   "kind": "losses",
+   "bucket": "kz-lunch",
+   "text": "7 of the last 12 BLITZ losses came in New York lunch (21 of its last 40 trades, history + live, were there)",
+   "score": 0.5833333333333334,
+   "bot": "blitz"
+  },
+  {
+   "kind": "losses",
+   "bucket": "dir-short",
+   "text": "7 of the last 12 BLITZ losses came on shorts (20 of its last 40 trades, history + live, were there)",
+   "score": 0.5833333333333334,
+   "bot": "blitz"
+  },
+  {
+   "kind": "losses",
+   "bucket": "atr-hot",
+   "text": "7 of the last 12 BLITZ losses came when the 5m ATR is above 2.04x its 7-day median (its top third) (20 of its last 40 trades, history + live, were there)",
+   "score": 0.5833333333333334,
+   "bot": "blitz"
+  }
+ ],
+ "proposals": [
+  {
+   "id": "lit-lvl-buildup-half",
+   "bot": "lit",
+   "idea": "Half size for Zlarior trades after a buildup level sweep",
+   "evidence": {
+    "h1": "2026 H1 (pick): -6,097 $ vs live (38 of 80 trades hit; PF 4.98 -> 5.49, 3.2/wk, +4,836 $/mo, max DD -1,740); 50K eval in 2 weeks pass/fail 37/0% -> 29/0%, median pass 11.5 -> 14.5 sessions",
+    "h2": "2026 H2 (check): -1,875 $ vs live (22 of 40 trades hit; PF 2.91 -> 3.23, 2.67/wk, +2,332 $/mo, max DD -1,054); 50K eval in 2 weeks pass/fail 23/0% -> 13/0%, median pass 21.0 -> 22.5 sessions",
+    "r2125": "2021-25 (reference): -9,128 $ vs live (271 of 511 trades hit; PF 1.01 -> 0.89, 2.36/wk, -158 $/mo, max DD -17,602); 50K eval in 2 weeks pass/fail 7/6% -> 1/1%, median pass 21.0 -> 25.5 sessions",
+    "usd_month": -544.0
+   },
+   "status": "rejected",
+   "t": 1793316860,
+   "change": null,
+   "why": "14 of the last 20 Zlarior losses came after a buildup level sweep (22 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793316860
+  },
+  {
+   "id": "lit-lvl-buildup-skip",
+   "bot": "lit",
+   "idea": "Skip Zlarior trades after a buildup level sweep",
+   "evidence": {
+    "h1": "2026 H1 (pick): -10,864 $ vs live (38 of 80 trades hit; PF 4.98 -> 7.0, 1.68/wk, +4,007 $/mo, max DD -1,673); 50K eval in 2 weeks pass/fail 37/0% -> 27/0%, median pass 11.5 -> 16.5 sessions",
+    "h2": "2026 H2 (check): -2,991 $ vs live (22 of 40 trades hit; PF 2.91 -> 5.25, 1.2/wk, +2,009 $/mo, max DD -878); 50K eval in 2 weeks pass/fail 23/0% -> 6/0%, median pass 21.0 -> 23.0 sessions",
+    "r2125": "2021-25 (reference): -16,637 $ vs live (271 of 511 trades hit; PF 1.01 -> 0.68, 1.11/wk, -309 $/mo, max DD -17,530); 50K eval in 2 weeks pass/fail 7/6% -> 0/1%, median pass 21.0 -> 26.0 sessions",
+    "usd_month": -867.0
+   },
+   "status": "rejected",
+   "t": 1793316860,
+   "change": null,
+   "why": "14 of the last 20 Zlarior losses came after a buildup level sweep (22 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793316860
+  },
+  {
+   "id": "lit-kz-london-late-half",
+   "bot": "lit",
+   "idea": "Half size for Zlarior trades in London after 03:30 ET",
+   "evidence": {
+    "h1": "2026 H1 (pick): -6,430 $ vs live (17 of 80 trades hit; PF 4.98 -> 4.39, 3.2/wk, +4,778 $/mo, max DD -2,015); 50K eval in 2 weeks pass/fail 37/0% -> 23/0%, median pass 11.5 -> 15.0 sessions",
+    "h2": "2026 H2 (check): -457 $ vs live (9 of 40 trades hit; PF 2.91 -> 3.0, 2.67/wk, +2,743 $/mo, max DD -1,231); 50K eval in 2 weeks pass/fail 23/0% -> 23/0%, median pass 21.0 -> 28.5 sessions",
+    "r2125": "2021-25 (reference): +752 $ vs live (94 of 511 trades hit; PF 1.01 -> 1.02, 2.36/wk, +41 $/mo, max DD -15,050); 50K eval in 2 weeks pass/fail 7/6% -> 6/3%, median pass 21.0 -> 21.0 sessions",
+    "usd_month": -133.0
+   },
+   "status": "rejected",
+   "t": 1793316860,
+   "change": null,
+   "why": "Standing question: do Zlarior trades in London after 03:30 ET deserve less size? Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793316860
+  },
+  {
+   "id": "lit-tr1h-against-half",
+   "bot": "lit",
+   "idea": "Half size for Zlarior trades against the 1h structure trend",
+   "evidence": {
+    "h1": "2026 H1 (pick): -6,973 $ vs live (52 of 80 trades hit; PF 4.98 -> 5.74, 3.2/wk, +4,684 $/mo, max DD -1,502); 50K eval in 2 weeks pass/fail 37/0% -> 29/0%, median pass 11.5 -> 15.0 sessions",
+    "h2": "2026 H2 (check): -3,526 $ vs live (24 of 40 trades hit; PF 2.91 -> 2.61, 2.67/wk, +1,853 $/mo, max DD -1,109); 50K eval in 2 weeks pass/fail 23/0% -> 1/0%, median pass 21.0 -> 32.0 sessions",
+    "r2125": "2021-25 (reference): -135 $ vs live (331 of 511 trades hit; PF 1.01 -> 1.02, 2.36/wk, +23 $/mo, max DD -13,848); 50K eval in 2 weeks pass/fail 7/6% -> 2/0%, median pass 21.0 -> 38.0 sessions",
+    "usd_month": -1023.0
+   },
+   "status": "rejected",
+   "t": 1793316860,
+   "change": null,
+   "why": "Standing question: do Zlarior trades against the 1h structure trend deserve less size? Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793316860
+  },
+  {
+   "id": "atlas-vix-low-half",
+   "bot": "atlas",
+   "idea": "Half size for ATLAS trades with VIX under 15.8",
+   "evidence": {
+    "h1": "2026 H1 (pick): +381 $ vs live (10 of 101 trades hit; PF 2.92 -> 3.1, 3.93/wk, +2,219 $/mo, max DD -1,032)",
+    "h2": "2026 H2 (check): -1,636 $ vs live (24 of 45 trades hit; PF 3.18 -> 3.24, 3.28/wk, +1,508 $/mo, max DD -785)",
+    "r2125": "2021-25: -854 $ vs live (340 of 983 trades hit; PF 1.01 -> 1.0, 4.54/wk, -6 $/mo, max DD -8,475)",
+    "usd_month": -519.0
+   },
+   "status": "rejected",
+   "t": 1793316860,
+   "change": null,
+   "why": "14 of the last 17 ATLAS losses came with VIX under 15.8 (24 of its last 40 trades, history + live, were there). Verdict: helped H1 but not the H2 check: a fit to H1.",
+   "first_t": 1793316860
+  },
+  {
+   "id": "atlas-vix-low-skip",
+   "bot": "atlas",
+   "idea": "Skip ATLAS trades with VIX under 15.8",
+   "evidence": {
+    "h1": "2026 H1 (pick): +213 $ vs live (10 of 101 trades hit; PF 2.92 -> 3.19, 3.54/wk, +2,191 $/mo, max DD -1,032)",
+    "h2": "2026 H2 (check): -2,496 $ vs live (24 of 45 trades hit; PF 3.18 -> 6.0, 1.53/wk, +1,235 $/mo, max DD -214)",
+    "r2125": "2021-25: -619 $ vs live (340 of 983 trades hit; PF 1.01 -> 1.0, 2.97/wk, -1 $/mo, max DD -8,364)",
+    "usd_month": -792.0
+   },
+   "status": "rejected",
+   "t": 1793316860,
+   "change": null,
+   "why": "14 of the last 17 ATLAS losses came with VIX under 15.8 (24 of its last 40 trades, history + live, were there). Verdict: helped H1 but not the H2 check: a fit to H1.",
+   "first_t": 1793316860
+  },
+  {
+   "id": "atlas-dir-long-half",
+   "bot": "atlas",
+   "idea": "Half size for ATLAS trades on longs",
+   "evidence": {
+    "h1": "2026 H1 (pick): -1,636 $ vs live (57 of 101 trades hit; PF 2.92 -> 3.16, 3.93/wk, +1,878 $/mo, max DD -652)",
+    "h2": "2026 H2 (check): -847 $ vs live (21 of 45 trades hit; PF 3.18 -> 3.32, 3.28/wk, +1,758 $/mo, max DD -990)",
+    "r2125": "2021-25: -3,004 $ vs live (496 of 983 trades hit; PF 1.01 -> 0.97, 4.54/wk, -49 $/mo, max DD -10,776)",
+    "usd_month": -269.0
+   },
+   "status": "rejected",
+   "t": 1793316860,
+   "change": null,
+   "why": "9 of the last 17 ATLAS losses came on longs (19 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793316860
+  },
+  {
+   "id": "atlas-dir-long-skip",
+   "bot": "atlas",
+   "idea": "Skip ATLAS trades on longs",
+   "evidence": {
+    "h1": "2026 H1 (pick): -4,107 $ vs live (57 of 101 trades hit; PF 2.92 -> 4.45, 1.71/wk, +1,460 $/mo, max DD -475)",
+    "h2": "2026 H2 (check): -1,845 $ vs live (21 of 45 trades hit; PF 3.18 -> 4.27, 1.75/wk, +1,442 $/mo, max DD -504)",
+    "r2125": "2021-25: -8,181 $ vs live (496 of 983 trades hit; PF 1.01 -> 0.85, 2.25/wk, -153 $/mo, max DD -13,078)",
+    "usd_month": -585.0
+   },
+   "status": "rejected",
+   "t": 1793316860,
+   "change": null,
+   "why": "9 of the last 17 ATLAS losses came on longs (19 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793316860
+  },
+  {
+   "id": "atlas-tr1h-against-half",
+   "bot": "atlas",
+   "idea": "Half size for ATLAS trades against the 1h structure trend",
+   "evidence": {
+    "h1": "2026 H1 (pick): -2,901 $ vs live (39 of 101 trades hit; PF 2.92 -> 2.65, 3.93/wk, +1,664 $/mo, max DD -915)",
+    "h2": "2026 H2 (check): -334 $ vs live (20 of 45 trades hit; PF 3.18 -> 3.96, 3.28/wk, +1,921 $/mo, max DD -785)",
+    "r2125": "2021-25: +368 $ vs live (426 of 983 trades hit; PF 1.01 -> 1.01, 4.54/wk, +19 $/mo, max DD -8,548)",
+    "usd_month": -106.0
+   },
+   "status": "rejected",
+   "t": 1793316860,
+   "change": null,
+   "why": "9 of the last 17 ATLAS losses came against the 1h structure trend (18 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793316860
+  },
+  {
+   "id": "atlas-tr1h-against-skip",
+   "bot": "atlas",
+   "idea": "Skip ATLAS trades against the 1h structure trend",
+   "evidence": {
+    "h1": "2026 H1 (pick): -6,526 $ vs live (39 of 101 trades hit; PF 2.92 -> 2.49, 2.41/wk, +1,051 $/mo, max DD -738)",
+    "h2": "2026 H2 (check): -2,753 $ vs live (20 of 45 trades hit; PF 3.18 -> 4.64, 1.82/wk, +1,154 $/mo, max DD -284)",
+    "r2125": "2021-25: -4,457 $ vs live (426 of 983 trades hit; PF 1.01 -> 0.92, 2.57/wk, -78 $/mo, max DD -8,777)",
+    "usd_month": -873.0
+   },
+   "status": "rejected",
+   "t": 1793316860,
+   "change": null,
+   "why": "9 of the last 17 ATLAS losses came against the 1h structure trend (18 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793316860
+  },
+  {
+   "id": "atlas-atr-hot-half",
+   "bot": "atlas",
+   "idea": "Half size for ATLAS trades when the 5m ATR is above 1.34x its 7-day median (its top third)",
+   "evidence": {
+    "h1": "2026 H1 (pick): -2,131 $ vs live (30 of 101 trades hit; PF 2.92 -> 2.79, 3.93/wk, +1,794 $/mo, max DD -869)",
+    "h2": "2026 H2 (check): -588 $ vs live (18 of 45 trades hit; PF 3.18 -> 3.67, 3.28/wk, +1,840 $/mo, max DD -785)",
+    "r2125": "2021-25: +257 $ vs live (328 of 983 trades hit; PF 1.01 -> 1.01, 4.54/wk, +17 $/mo, max DD -8,757)",
+    "usd_month": -187.0
+   },
+   "status": "rejected",
+   "t": 1793316860,
+   "change": null,
+   "why": "9 of the last 17 ATLAS losses came when the 5m ATR is above 1.34x its 7-day median (its top third) (16 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793316860
+  },
+  {
+   "id": "atlas-atr-hot-skip",
+   "bot": "atlas",
+   "idea": "Skip ATLAS trades when the 5m ATR is above 1.34x its 7-day median (its top third)",
+   "evidence": {
+    "h1": "2026 H1 (pick): -6,227 $ vs live (30 of 101 trades hit; PF 2.92 -> 2.45, 2.76/wk, +1,102 $/mo, max DD -838)",
+    "h2": "2026 H2 (check): -1,370 $ vs live (18 of 45 trades hit; PF 3.18 -> 5.89, 1.97/wk, +1,592 $/mo, max DD -252)",
+    "r2125": "2021-25: -1,510 $ vs live (328 of 983 trades hit; PF 1.01 -> 0.98, 3.03/wk, -19 $/mo, max DD -7,145)",
+    "usd_month": -435.0
+   },
+   "status": "rejected",
+   "t": 1793316860,
+   "change": null,
+   "why": "9 of the last 17 ATLAS losses came when the 5m ATR is above 1.34x its 7-day median (its top third) (16 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793316860
+  },
+  {
+   "id": "atlas-ptrend-lo-half",
+   "bot": "atlas",
+   "idea": "Half size for ATLAS trades on days with trend-day odds under 20% at 10:30",
+   "evidence": {
+    "h1": "2026 H1 (pick): +112 $ vs live (1 of 101 trades hit; PF 2.92 -> 2.97, 3.93/wk, +2,174 $/mo, max DD -1,032)",
+    "h2": "2026 H2 (check): +118 $ vs live (1 of 45 trades hit; PF 3.18 -> 3.32, 3.28/wk, +2,064 $/mo, max DD -1,277)",
+    "r2125": "2021-25: -915 $ vs live (34 of 983 trades hit; PF 1.01 -> 1.0, 4.54/wk, -7 $/mo, max DD -11,558)",
+    "usd_month": 37.0
+   },
+   "status": "rejected",
+   "t": 1793316860,
+   "change": null,
+   "why": "Standing question: do ATLAS trades on days with trend-day odds under 20% at 10:30 deserve less size? Verdict: too few trades hit (1 in H1, 1 in H2) to trust.",
+   "first_t": 1793316860
+  },
+  {
+   "id": "atlas-tr1h-with-half",
+   "bot": "atlas",
+   "idea": "Half size for ATLAS trades with the 1h structure trend",
+   "evidence": {
+    "h1": "2026 H1 (pick): -2,134 $ vs live (62 of 101 trades hit; PF 2.92 -> 3.17, 3.93/wk, +1,794 $/mo, max DD -770)",
+    "h2": "2026 H2 (check): -2,253 $ vs live (25 of 45 trades hit; PF 3.18 -> 2.53, 3.28/wk, +1,312 $/mo, max DD -1,396)",
+    "r2125": "2021-25: +3,533 $ vs live (557 of 983 trades hit; PF 1.01 -> 1.06, 4.54/wk, +83 $/mo, max DD -6,864)",
+    "usd_month": -715.0
+   },
+   "status": "rejected",
+   "t": 1793316860,
+   "change": null,
+   "why": "Standing question: do ATLAS trades with the 1h structure trend deserve less size? Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793316860
+  },
+  {
+   "id": "blitz-vix-low-focus",
+   "bot": "blitz",
+   "idea": "Half size for BLITZ trades NOT with VIX under 16.9",
+   "evidence": {
+    "h1": "2026 H1 (pick): -1,382 $ vs live (189 of 221 trades hit; PF 1.54 -> 1.72, 9.61/wk, +677 $/mo, max DD -686)",
+    "h2": "2026 H2 (check): -26 $ vs live (32 of 109 trades hit; PF 1.66 -> 1.81, 8.2/wk, +906 $/mo, max DD -946)",
+    "r2125": "2021-25: no trades",
+    "usd_month": -9.0,
+    "note": "BLITZ $ at $150 risk a trade (the store has R only)"
+   },
+   "status": "rejected",
+   "t": 1793316860,
+   "change": null,
+   "why": "BLITZ trades with VIX under 16.9 made 64% of its 2026 R with 33% of the trades. Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793316860
+  },
+  {
+   "id": "blitz-kz-lunch-half",
+   "bot": "blitz",
+   "idea": "Half size for BLITZ trades in New York lunch",
+   "evidence": {
+    "h1": "2026 H1 (pick): -1,671 $ vs live (114 of 221 trades hit; PF 1.54 -> 1.47, 9.61/wk, +622 $/mo, max DD -910)",
+    "h2": "2026 H2 (check): -383 $ vs live (62 of 109 trades hit; PF 1.66 -> 1.84, 8.2/wk, +789 $/mo, max DD -606)",
+    "r2125": "2021-25: no trades",
+    "usd_month": -126.0,
+    "note": "BLITZ $ at $150 risk a trade (the store has R only)"
+   },
+   "status": "rejected",
+   "t": 1793316860,
+   "change": null,
+   "why": "7 of the last 12 BLITZ losses came in New York lunch (21 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793316860
+  },
+  {
+   "id": "blitz-kz-lunch-skip",
+   "bot": "blitz",
+   "idea": "Skip BLITZ trades in New York lunch",
+   "evidence": {
+    "h1": "2026 H1 (pick): -3,342 $ vs live (114 of 221 trades hit; PF 1.54 -> 1.33, 4.65/wk, +306 $/mo, max DD -766)",
+    "h2": "2026 H2 (check): -767 $ vs live (62 of 109 trades hit; PF 1.66 -> 2.38, 3.54/wk, +663 $/mo, max DD -486)",
+    "r2125": "2021-25: no trades",
+    "usd_month": -252.0,
+    "note": "BLITZ $ at $150 risk a trade (the store has R only)"
+   },
+   "status": "rejected",
+   "t": 1793316860,
+   "change": null,
+   "why": "7 of the last 12 BLITZ losses came in New York lunch (21 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793316860
+  },
+  {
+   "id": "blitz-dir-short-half",
+   "bot": "blitz",
+   "idea": "Half size for BLITZ trades on shorts",
+   "evidence": {
+    "h1": "2026 H1 (pick): -1,477 $ vs live (75 of 221 trades hit; PF 1.54 -> 1.46, 9.61/wk, +658 $/mo, max DD -1,140)",
+    "h2": "2026 H2 (check): -330 $ vs live (51 of 109 trades hit; PF 1.66 -> 1.8, 8.2/wk, +807 $/mo, max DD -942)",
+    "r2125": "2021-25: no trades",
+    "usd_month": -108.0,
+    "note": "BLITZ $ at $150 risk a trade (the store has R only)"
+   },
+   "status": "rejected",
+   "t": 1793316860,
+   "change": null,
+   "why": "7 of the last 12 BLITZ losses came on shorts (20 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793316860
+  },
+  {
+   "id": "blitz-dir-short-skip",
+   "bot": "blitz",
+   "idea": "Skip BLITZ trades on shorts",
+   "evidence": {
+    "h1": "2026 H1 (pick): -2,954 $ vs live (75 of 221 trades hit; PF 1.54 -> 1.33, 6.35/wk, +379 $/mo, max DD -1,163)",
+    "h2": "2026 H2 (check): -660 $ vs live (51 of 109 trades hit; PF 1.66 -> 2.12, 4.37/wk, +699 $/mo, max DD -929)",
+    "r2125": "2021-25: no trades",
+    "usd_month": -216.0,
+    "note": "BLITZ $ at $150 risk a trade (the store has R only)"
+   },
+   "status": "rejected",
+   "t": 1793316860,
+   "change": null,
+   "why": "7 of the last 12 BLITZ losses came on shorts (20 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793316860
+  },
+  {
+   "id": "blitz-atr-hot-half",
+   "bot": "blitz",
+   "idea": "Half size for BLITZ trades when the 5m ATR is above 2.04x its 7-day median (its top third)",
+   "evidence": {
+    "h1": "2026 H1 (pick): -1,535 $ vs live (71 of 221 trades hit; PF 1.54 -> 1.43, 9.61/wk, +647 $/mo, max DD -997)",
+    "h2": "2026 H2 (check): -538 $ vs live (38 of 109 trades hit; PF 1.66 -> 1.64, 8.2/wk, +738 $/mo, max DD -919)",
+    "r2125": "2021-25: no trades",
+    "usd_month": -177.0,
+    "note": "BLITZ $ at $150 risk a trade (the store has R only)"
+   },
+   "status": "rejected",
+   "t": 1793316860,
+   "change": null,
+   "why": "7 of the last 12 BLITZ losses came when the 5m ATR is above 2.04x its 7-day median (its top third) (20 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793316860
+  },
+  {
+   "id": "blitz-atr-hot-skip",
+   "bot": "blitz",
+   "idea": "Skip BLITZ trades when the 5m ATR is above 2.04x its 7-day median (its top third)",
+   "evidence": {
+    "h1": "2026 H1 (pick): -3,070 $ vs live (71 of 221 trades hit; PF 1.54 -> 1.28, 6.52/wk, +357 $/mo, max DD -862)",
+    "h2": "2026 H2 (check): -1,076 $ vs live (38 of 109 trades hit; PF 1.66 -> 1.62, 5.34/wk, +562 $/mo, max DD -831)",
+    "r2125": "2021-25: no trades",
+    "usd_month": -353.0,
+    "note": "BLITZ $ at $150 risk a trade (the store has R only)"
+   },
+   "status": "rejected",
+   "t": 1793316860,
+   "change": null,
+   "why": "7 of the last 12 BLITZ losses came when the 5m ATR is above 2.04x its 7-day median (its top third) (20 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793316860
+  },
+  {
+   "id": "blitz-ptrend-lo-half",
+   "bot": "blitz",
+   "idea": "Half size for BLITZ trades on days with trend-day odds under 20% at 10:30",
+   "evidence": {
+    "h1": "2026 H1 (pick): -209 $ vs live (58 of 221 trades hit; PF 1.54 -> 1.61, 9.61/wk, +898 $/mo, max DD -1,267)",
+    "h2": "2026 H2 (check): +11 $ vs live (20 of 109 trades hit; PF 1.66 -> 1.74, 8.2/wk, +918 $/mo, max DD -1,072)",
+    "r2125": "2021-25: no trades",
+    "usd_month": 3.0,
+    "note": "BLITZ $ at $150 risk a trade (the store has R only)"
+   },
+   "status": "rejected",
+   "t": 1793316860,
+   "change": null,
+   "why": "Standing question: do BLITZ trades on days with trend-day odds under 20% at 10:30 deserve less size? Verdict: does not help 2026 H1 (the pick half).",
+   "first_t": 1793316860
+  }
+ ],
+ "note": "Mind's own research: it never adopts anything. A candidate holds on the pick half and the check half; the owner decides, then it is built and re-tested in the run library (tools/runlib.py)."
+}

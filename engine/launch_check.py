@@ -109,8 +109,22 @@ def _lit_name(bot, health) -> str | None:
     return (str(a.get("nt_account") or "").strip() or None)
 
 
+def blitz_fact(bot, now, root: str | None = None) -> dict | None:
+    """Account C (BLITZ on its own 25K, engine/account_c.py): None when it is off; else its go-live check cut
+    (engine/blitz_preflight.compact: the count and the first red line with its fix). Never raises."""
+    try:
+        from . import account_c as _ac
+        if not _ac.raw_cfg(root):
+            return None
+        from . import blitz_preflight as _pf
+        r = _pf.check(bot if getattr(bot, "running", False) else None, root=root, now=now)
+        return {"configured": True, **_pf.compact(r)}
+    except Exception as e:
+        return {"configured": True, "error": _clean(f"{e.__class__.__name__}: {e}", 120)}
+
+
 def facts(bot, health: dict | None = None, now=None, sim_path: str | None = None, second_path: str | None = None,
-          allow_path: str | None = None, anchor_path: str | None = None) -> dict:
+          allow_path: str | None = None, anchor_path: str | None = None, c_root: str | None = None) -> dict:
     """The raw launch facts on the PC. Never raises (a broken part is None / an "error" text)."""
     now = int(now or time.time())
     h = health or {}
@@ -137,6 +151,10 @@ def facts(bot, health: dict | None = None, now=None, sim_path: str | None = None
                     "armed": bool((ab or {}).get("armed") is True), "running": getattr(bot, "acct_b", None) is not None}
     except Exception as e:
         out["b"] = {"configured": False, "error": _clean(f"{e.__class__.__name__}: {e}", 120)}
+    # 2b. account C (BLITZ): only when it is configured (data/account_c.json), the BLITZ go-live check's count + first red
+    c = blitz_fact(bot, now, c_root)
+    if c is not None:
+        out["c"] = c
     # 3. allowlist: is each real account listed (a Sim account never needs it)
     try:
         from . import ninjatrader
@@ -260,6 +278,21 @@ def checklist(f: dict | None, health: dict | None, running: bool, now=None) -> d
                            f"ATLAS on {b.get('account')}, {b.get('plan') or 'builder25k'}, first session {b.get('eval_start') or '?'}"))
     else:
         items.append(_item("b", "Account B (ATLAS) set up", "bad", "ATLAS has no account yet (second_model.json account_b)", prep))
+    # 3b. BLITZ (account C), only when it is configured: its go-live check (engine/blitz_preflight.py) in one line
+    c = f.get("c") or {}
+    if c.get("configured"):
+        who = f"BLITZ on {c.get('account') or '?'}" + (" (Sim test)" if c.get("sim") else "")
+        fx = c.get("first") or {}
+        cmd = "python -X utf8 -m engine.account_c --preflight"
+        if c.get("error"):
+            items.append(_item("blitz", "BLITZ (account C) ready", "bad", f"{who}: check failed ({c['error']})", cmd))
+        elif c.get("all_green"):
+            items.append(_item("blitz", "BLITZ (account C) ready", "good", f"{who}: all {c.get('n') or ''} go-live lines green".replace("  ", " ")))
+        elif fx.get("state") == "wait" and not c.get("n_red"):
+            items.append(_item("blitz", "BLITZ (account C) ready", "wait", f"{who}: {fx.get('label')}: {fx.get('detail')}"))
+        else:
+            items.append(_item("blitz", "BLITZ (account C) ready", "bad",
+                               f"{who}: {c.get('n_red')} red: {fx.get('label')}: {fx.get('detail')}", fx.get("fix") or cmd))
     # 4. startup reconciled
     st = f.get("startup") or {}
     if not running:

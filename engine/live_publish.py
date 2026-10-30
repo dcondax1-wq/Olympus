@@ -149,10 +149,12 @@ def build(hb_payload: dict, now=None, lm: dict | None = None, hb_last: dict | No
     now = int(now or time.time())
     hb = dict(hb_payload or {})
     pc = {k: hb.get(k) for k in ("running", "adapter", "position", "model_state", "host", "model", "health", "ops", "remote", "acct",
-                                 "brain", "second", "ai", "launch")}   # brain: the Bot Brain's phone cut (< 16 KB); second: paper EMA / MACD
+                                 "brain", "second", "ai", "launch", "mind")}   # brain: the Bot Brain's phone cut (< 16 KB); second: paper EMA / MACD; mind: engine/mind.compact (< 12 KB)
     pc.update(present=True, t=now, age_s=0, silent=False, every_s=int(every_s), live=True)
     if isinstance(hb.get("account_c"), dict):           # BLITZ on its own account (engine/account_c.py): only when it is on
         pc["account_c"] = hb["account_c"]
+    if isinstance(hb.get("fleet"), dict):               # the follower accounts (engine/fleet.py): only when configured
+        pc["fleet"] = hb["fleet"]
     if isinstance(pc.get("health"), dict) and isinstance(pc["health"].get("poll"), dict) and "stages" in pc["health"]["poll"]:
         # the poll's stage table (engine/poll_timing.py) stays in the heartbeat: the phone shows only the poll time
         pc["health"] = {**pc["health"], "poll": {k: v for k, v in pc["health"]["poll"].items() if k != "stages"}}
@@ -215,7 +217,7 @@ def fit(p: dict, max_bytes: int = MAX_BYTES) -> dict:
     if bd and size() > max_bytes and len(bd.get("trades") or []) > 4:     # the live board: its trade list first
         bd["trades"] = bd["trades"][:4]
         p["trimmed"] = True
-    for k in ("ai", "second", "ops", "remote", "brain"):
+    for k in ("mind", "fleet", "ai", "second", "ops", "remote", "brain"):     # mind first: liveview.json carries it too; fleet: the PC page has it
         if size() > max_bytes and isinstance(p.get("pc"), dict):
             p["pc"].pop(k, None)
             p["trimmed"] = True

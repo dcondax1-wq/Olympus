@@ -58,7 +58,7 @@
       core(() => {
         try {
           const B = board(); if (!B || !window.RealUI) return;
-          el.querySelectorAll('.rc-homebox').forEach((x) => x.remove());
+          el.querySelectorAll('.rc-homebox, :scope > .rc-wrap.rc-moved').forEach((x) => x.remove());   // the safety card moved out of the box last time (it piled up on every redraw)
           const box = document.createElement('div'); box.className = 'rc-homebox';
           box.innerHTML = window.RealUI.today(B, opts()) + window.RealUI.safety(B, opts());
           const heroes = el.querySelector('.cl-heroes');
@@ -67,7 +67,7 @@
           const tr = el.querySelector('.cl-trade'); if (tr) tr.hidden = true;   // "last trade" could be a paper / backtest one
           // the safety card sits after the live board's "Right now" cut when it is there
           const safe = box.lastElementChild, cut = el.querySelector('.bd-homecut');
-          if (safe && cut) cut.after(safe);
+          if (safe && cut) { safe.classList.add('rc-moved'); cut.after(safe); }
           window.RealUI.wire(box, B, opts());
         } catch (e) { console.warn('real home', e); }
       });
@@ -76,5 +76,5 @@
     w.__real = true;
     VIEWS.today = w;
   }
-  window.RealPages = { version: 1 };
+  window.RealPages = { version: 1, core, board, opts };
 })();

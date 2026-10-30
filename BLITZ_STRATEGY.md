@@ -106,6 +106,12 @@ this rule until a research pick passes both 2026 halves and 2021-25 and the owne
   paper, so BLITZ waits for it and never chases a later price.
 - Order checks: at most 20 micros, a stop over 250 points is refused (BLITZ's stop is 1.5 x the 5m ATR: 37 of 2026's 330
   stops were wider than Zlarior's 100-point cap, the widest 202).
+- **Owner switch, OFF: the later-break size** (research/writeups/atlas-blitz-edge-2026-10-30.md, 2026-10-30). With
+  `"later_break": true` in data/account_c.json, on the eval the day's FIRST band break on a side trades at half size and a
+  LATER same-side break (2nd, 3rd ... check close beyond the band that day) at 1.75 x (never more than the room; the $600 cap
+  scales to $1,050). Same trades, different sizes: 25K 2-week pass / fail H1 47.9 / 23.5 (today 36.1 / 37.8), H2 36.2 / 21.7
+  (36.2 / 34.8), 2021-25 24.7 / 48.4 (20.4 / 50.2); account slot +$286 / +$52 / -$39 a month (+$270 / +$37 / -$40). Per
+  trade the gain is within chance; a later break can lose up to ~$1,050. You decide; the bot never turns it on.
 
 ## How it should perform (the bands to judge it by)
 
@@ -142,11 +148,17 @@ day. **Resume is the owner's decision:** `python -X utf8 -m engine.account_c --r
 What to watch on the dashboards: the account card's scorecard (trades, win %, avg R, PF, $, losing days) next to the
 floor; BLITZ's paper shadow keeps running as the comparison.
 
+## Why BLITZ did not trade today
+
+The BLITZ card says why. On a filtered day it says, for example, *"BLITZ skipped today: yesterday's 09:30-16:00 range 239 pts < 0.8 x
+its 14-day mean 404 pts"*. That was 2026-10-29, and Oct 30 is skipped too (0.66 x). On other days no 1-minute close left the band
+at the 10 checks. On 2026-10-28 the nearest was the 11:00 close, 25 points inside the lower band. In 2026, 1 day in 3 was filtered,
+and BLITZ traded on 45% of days.
+
 ## Turn it on (owner, next week)
 
-1. Buy the MFFU Builder 25K for BLITZ (your price, $63 or $43 with a code) and connect it in NinjaTrader.
-2. Start page > **BLITZ · 25K**: type its Name exactly as NinjaTrader shows it, press **Set BLITZ's 25K**, then **Arm BLITZ**
-   (type I ACCEPT LIVE RISK). Try **Sim test** first if you want to watch it on Sim101 for a day.
-3. Press **Start trading**.
+The steps are in **`docs/BLITZ_GO_LIVE.md`**: 3 steps, then the go-live check
+(`python -X utf8 -m engine.account_c --preflight`, or the Start page card's Go-live check). That file also shows what the
+phone says on the first day.
 
-(Console instead of step 2: `python -X utf8 -m engine.account_c --account "<the 25K Name>" --plan builder25k --start 2026-11-02`.)
+(Console instead of the Start page: `python -X utf8 -m engine.account_c --account "<the 25K Name>" --plan builder25k --start 2026-11-02`.)

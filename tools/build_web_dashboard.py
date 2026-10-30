@@ -1074,6 +1074,11 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
         data["scale"] = _scale.cloud_view(st)
     except Exception as e:
         data["scale"] = {"error": f"{e.__class__.__name__}: {e}"}
+    try:                                   # BLITZ, the scalper PAPER shadow (engine/blitz.card, read-only): the phone's BLITZ tab
+        from engine import blitz as _blz
+        data["blitz"] = _blz.card(st.get("blitz"), pc=(st.get("pc") or {}).get("blitz"))
+    except Exception as e:
+        data["blitz"] = {"error": f"{e.__class__.__name__}: {e}"}
     try:                                   # Goals (engine/goals.py, read-only): each account vs the owner's goals, in sentences
         from engine import goals as _goals
         # + "money" (Road to $10K / Stingray 3LT, engine/money_goal.py) from the owner's figures in the PC heartbeat

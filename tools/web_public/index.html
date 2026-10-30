@@ -994,13 +994,16 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
   .acc-grid i { height: 36px; }
 }
 </style>
-<link rel="stylesheet" href="space.css?v=1"><link rel="stylesheet" href="mission.css?v=1">
+<link rel="stylesheet" href="space.css?v=1"><link rel="stylesheet" href="mission.css?v=1"><link rel="stylesheet" href="polish.css?v=1">
 </head>
 <body>
 <!-- deep space (2026-10-29): the static CSS sky paints at once; the WebGL scene (fx.js, space.js) fades in over it -->
 <div class="space-css" aria-hidden="true"><i class="sc-stars"></i><i class="sc-stars sc-b"></i><i class="sc-mw"></i><i class="sc-sun"></i><i class="sc-moon"></i><i class="sc-earth"></i></div>
-<div id="splash" aria-hidden="true"><canvas id="spCv"></canvas><div class="sp-in"><img src="icons/icon-512.png?v=k31025" alt="">
-  <div class="sp-t">LIQUIDITY ENGINE</div><div class="sp-s">Zlarior · the LIT method · NQ futures · paper · works with the PC off</div><div class="sp-bar"><i></i></div></div></div>
+<!-- the intro (2026-10-30): first open of the day only, skippable (tap / any key / Skip), never with reduced motion -->
+<div id="splash" aria-hidden="true"><canvas id="spCv"></canvas><div class="sp-orbs"><i style="--c:#4f9bff;--a0:0deg;--dl:0s"></i><i style="--c:#ff9a3d;--a0:120deg;--dl:.1s"></i><i style="--c:#b388ff;--a0:240deg;--dl:.2s"></i></div>
+  <div class="sp-in"><img src="icons/icon-512.png?v=k31025" alt="">
+  <div class="sp-t">LIQUIDITY ENGINE</div><div class="sp-s">Zlarior · ATLAS · BLITZ · NQ futures · read-only</div><div class="sp-line" id="spLine"></div><div class="sp-bar"><i></i></div></div>
+  <button type="button" class="sp-skip" id="spSkip">Skip</button></div>
 <div class="app">
   <aside class="side">
     <div class="brand">
@@ -1743,7 +1746,7 @@ const STEP_L = ['Sweep', 'IFVG', 'Order', 'Trade', 'Done'];
 
 // ===================================================================== 3D layer (fx.js: three.js views, particle field, card auras, tap sparks)
 let FX = null, FXP = null;
-const FXV = 'd4f02163';
+const FXV = '3b39194c';
 // Deep space by default (owner 2026-10-29: "make it look cooler ... almost like 3D space"; before: calm, OFF since 2026-10-25).
 // One-time: an 'off' saved under the calm default is cleared once so the phone opens on the space scene; a choice made after
 // this version is kept. Settings > 3D effects: Max / Lite / Off (Off = the static CSS sky). Automated browsers (tests) start
@@ -4432,38 +4435,57 @@ $('#refresh').onclick = () => load(true);
 let rz, rzW = innerWidth;
 addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (Math.abs(innerWidth - rzW) < 2) return; rzW = innerWidth; if (D && !(PAGE === 'replays' && RP?.timer)) render(true); }, 200); });
 
-// ===================================================================== splash (first open per session) + desktop tilt
+// ===================================================================== the intro (first open of the day) + desktop tilt
+// 2026-10-30: at most once a day (ET date in localStorage le.intro.day), skippable with a tap, any key or Skip; never under
+// reduced motion / Settings > Motion off / an automated browser (unless ?intro=1). A light-speed star field settles, the
+// three bots' orbs swing into orbit around the mark, the day's status line appears (polish.js), then it dissolves.
 const SPLASH_T0 = performance.now();
 let splashGone = false;
 (function splash() {
   const el = $('#splash');
-  let seen = false; try { seen = sessionStorage.getItem('le.splash') === '1'; sessionStorage.setItem('le.splash', '1'); } catch { }
-  if (seen || store.get('fx', 'off') === 'off' || matchMedia('(prefers-reduced-motion: reduce)').matches) { el.remove(); splashGone = true; return; }
+  const force = /[?&]intro=1\b/.test(location.search), day = et(Date.now() / 1000).date;
+  let seen = false; try { seen = localStorage.getItem('le.intro.day') === JSON.stringify(day); } catch { }
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches || store.get('motion', true) === false;
+  if (!force && (seen || calm || navigator.webdriver || store.get('intro', true) === false)) { el.remove(); splashGone = true; return; }   // Settings > Intro
+  store.set('intro.day', day);
+  el.removeAttribute('aria-hidden'); el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Intro');
+  const skip = () => splashDone(true);
+  el.addEventListener('click', skip); addEventListener('keydown', skip, { once: true });
   const cv = $('#spCv'), g = cv.getContext('2d'), dpr = Math.min(2, devicePixelRatio || 1);
   const W = innerWidth, H = innerHeight; cv.width = W * dpr; cv.height = H * dpr; g.scale(dpr, dpr);
-  const cx = W / 2, cy = H / 2 - 40, cols = ['#8b5cf6', '#ff2bd6', '#3ee0c8', '#c084fc', '#ffffff'];
-  const Pp = Array.from({ length: Math.min(260, Math.round(W * H / 2600)) }, (_, i) => { const a = Math.random() * Math.PI * 2, r = Math.max(W, H) * (0.55 + Math.random() * 0.5);
-    return { x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r, a, r, s: 0.8 + Math.random() * 2, c: cols[i % cols.length], d: Math.random() * 0.5 }; });
+  const cx = W / 2, cy = H / 2 - 40, R = Math.hypot(W, H) / 2;
+  const S = Array.from({ length: Math.min(320, Math.round(W * H / 2200)) }, () => ({ a: Math.random() * 6.283, z: Math.random(), s: 0.5 + Math.random() * 1.4, c: Math.random() < 0.12 ? '#9fc2ff' : Math.random() < 0.2 ? '#ffd9b0' : '#ffffff' }));
   const t0 = performance.now();
   (function frame(now) {
-    if (splashGone) return;
-    const t = (now - t0) / 1000; g.clearRect(0, 0, W, H); g.globalCompositeOperation = 'lighter';
-    for (const p of Pp) {
-      const k = Math.min(1, Math.max(0, (t - p.d) / 1.15)), e = 1 - Math.pow(1 - k, 3), rr = p.r * (1 - e) + 74 + Math.sin(t * 2 + p.a * 5) * 6, aa = p.a + e * 2.4 + t * 0.35;
-      const x = cx + Math.cos(aa) * rr, y = cy + Math.sin(aa) * rr * (0.55 + 0.45 * (1 - e));
-      g.globalAlpha = 0.35 + 0.65 * e; g.fillStyle = p.c; g.beginPath(); g.arc(x, y, p.s * (1 + e * 0.6), 0, 6.283); g.fill();
-      g.globalAlpha = 0.18 * e; g.beginPath(); g.arc(x, y, p.s * 4, 0, 6.283); g.fill();
+    if (!el.isConnected || el.classList.contains('out')) return;
+    const t = (now - t0) / 1000, v = 1.6 * Math.exp(-t * 2.2) + 0.03;           // light speed, then a calm drift
+    g.clearRect(0, 0, W, H); g.globalCompositeOperation = 'lighter';
+    for (const p of S) {
+      p.z += v * 0.016 * (0.6 + p.z); if (p.z > 1) { p.z = 0.02 + Math.random() * 0.1; p.a = Math.random() * 6.283; }
+      const r0 = p.z * p.z * R * 1.2, r1 = Math.max(0, r0 - v * 60 * p.z);
+      const x0 = cx + Math.cos(p.a) * r0, y0 = cy + Math.sin(p.a) * r0, x1 = cx + Math.cos(p.a) * r1, y1 = cy + Math.sin(p.a) * r1;
+      g.globalAlpha = Math.min(1, 0.25 + p.z); g.strokeStyle = p.c; g.lineWidth = p.s * (0.6 + p.z);
+      g.beginPath(); g.moveTo(x1, y1); g.lineTo(x0 + 0.01, y0); g.stroke();
     }
-    g.globalAlpha = 1; requestAnimationFrame(frame);
+    const halo = g.createRadialGradient(cx, cy, 0, cx, cy, 190); halo.addColorStop(0, `rgba(120,140,255,${0.22 * Math.min(1, t)})`); halo.addColorStop(1, 'rgba(0,0,0,0)');
+    g.globalAlpha = 1; g.fillStyle = halo; g.fillRect(0, 0, W, H);
+    requestAnimationFrame(frame);
   })(t0);
 })();
-function splashDone() {
-  if (splashGone) return; splashGone = true;
-  const el = $('#splash'); if (!el) return;
-  const wait = Math.max(0, 1400 - (performance.now() - SPLASH_T0));
-  setTimeout(() => { el.classList.add('out'); FX?.warp(); setTimeout(() => el.remove(), 650); }, wait);
+// the data is in: the intro finishes its short show (2.3 s from the open) and dissolves; a tap on Skip ends it at once,
+// also while that short wait is running (the star field keeps moving until it fades)
+let splashT = null;
+function splashDone(now) {
+  const el = $('#splash'); if (!el) { splashGone = true; return; }
+  if (splashGone && (now !== true || el.classList.contains('out'))) return;
+  if (!splashGone && window.POLISH && window.POLISH.introLine) window.POLISH.introLine();
+  splashGone = true;
+  const wait = now === true ? 0 : Math.max(0, 2300 - (performance.now() - SPLASH_T0));
+  clearTimeout(splashT);
+  const fade = () => { el.classList.add('out'); FX?.warp(); setTimeout(() => el.remove(), 650); };
+  if (now === true) fade(); else splashT = setTimeout(fade, wait);      // Skip: at once, even on a busy first load
 }
-setTimeout(splashDone, 6000);   // never stay on the splash, even offline
+setTimeout(splashDone, 4200);   // never stay on the intro, even offline
 document.addEventListener('pointermove', (e) => {
   if (e.pointerType !== 'mouse') return;
   const t = e.target.closest?.('.tile'); $$('.tile.tilt').forEach(x => { if (x !== t) { x.classList.remove('tilt'); x.style.removeProperty('--rx'); x.style.removeProperty('--ry'); } });
@@ -4547,8 +4569,15 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.se
 <script src="board.js?v=2" defer></script>
 <script src="real.js?v=2" defer></script>
 <script src="liveview.js?v=2" defer></script>
-<script src="missioncore.js?v=1" defer></script>
+<script src="missioncore.js?v=2" defer></script>
 <script src="mission.js?v=1" defer></script>
-<script src="holo.js?v=29a8ef09" defer></script>
+<script src="holo.js?v=6e1b6af9" defer></script>
+<script src="blitzcore.js?v=1" defer></script>
+<script src="mindcore.js?v=1" defer></script>
+<script src="deckcore.js?v=1" defer></script>
+<script src="blitz.js?v=1" defer></script>
+<script src="fleet.js?v=1" defer></script>
+<script src="statuscore.js?v=1" defer></script>
+<script src="polish.js?v=1" defer></script>
 </body>
 </html>

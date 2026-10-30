@@ -55,7 +55,16 @@
 // v44 (2026-10-29): the Holodeck (holo.js + holocore.js + holo.css, #/holo: the day in 3D, every fill at its exact second and
 // price, the trades as glass volumes, each setup step by step, what every bot is thinking, replay; holo.json / holo_hist.json
 // from the live branch, cross-origin = never cached here; fx.js holo.js: the 3D scene). New cache name so every iPhone refreshes.
-const CACHE = 'le-public-v44';
+// v45 (2026-10-29 night): the BLITZ bottom tab (six tabs: Home · Zlarior · ATLAS · BLITZ · Money · More; blitz.js + blitzcore.js,
+// #/blitz/<part>: Today · Brain · Trades · Results · Rules · Go live), the Mind (mindcore.js, #/mind + cards on each bot's Brain and
+// Home), Trader's deck (deckcore.js, #/deck: risk meter, next 24 h, eval odds from today's balance, real P&L calendar, trade journal,
+// notification center, since you last looked, Holodeck replays), holo.js (#/holo/<day> opens that day), clean.js (the sixth tab;
+// ?v=3 kept, the new cache name refreshes it). New cache name so every iPhone refreshes.
+// v46 (2026-10-30 night 3, "organized, clean ... shock me"): statuscore.js + polish.js + polish.css (one status bar, the three
+// account cards with eval rings + sparklines, what matters now, the Sunday open card, quick tiles, everything else folded;
+// one section order on every bot tab: Today · Brain · Trades · Results · Rules; Money = real money only; the search palette;
+// the motion system and the once-a-day intro). New cache name so every iPhone refreshes (clean.js?v=3 kept).
+const CACHE = 'le-public-v46';
 const BADGE = 'le-badge', BADGE_URL = './__badge';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=k31025', './icons/apple-touch-icon.png?v=k31025', './icons/icon-512.png?v=k31025'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });

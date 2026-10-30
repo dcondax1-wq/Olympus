@@ -66,6 +66,9 @@ import { real as realPage } from './next/real.js';
 import { liveview as liveviewPage } from './next/liveview.js';   // Live View page (engine/liveview_api.py, read-only)
 import { mission as missionPage, initMissionSync } from './next/mission.js';   // Mission Control (missioncore.js, read-only, 2026-10-29)
 import { holo as holoPage } from './next/holo.js';   // Holodeck: the day in 3D (holocore.js, fx.js holo.js; read-only, 2026-10-29)
+import { blitz as blitzPage, mind as mindPage, deck as deckPage, initBlitzSync } from './next/blitz.js';   // BLITZ, the Mind, Trader's deck (read-only, 2026-10-29)
+import { fleet as fleetPage } from './next/fleet.js';   // Fleet: copy trading to the follower accounts (engine/fleet_api.py, read-only, 2026-10-30)
+import { initPolish } from './next/polish.js';   // status bar + Sunday open on Home, sidebar sections, motion (statuscore.js, read-only, 2026-10-30)
 
 const TITLES_CLASSIC = { command: 'Command Center', briefing: 'Pre-market Briefing', chart: 'Chart', replay: 'Replay', backtest: 'Backtest Lab',
   prop: 'Prop Firms', robust: 'Robustness', conf: 'Confluence Lab', news: 'Markets & News', live: 'Live Bot', journal: 'Journal',
@@ -88,6 +91,10 @@ PAGES.insight = insightPage;
 PAGES.liveview = liveviewPage;
 PAGES.mission = missionPage;
 PAGES.holo = holoPage;
+PAGES.blitz = blitzPage;
+PAGES.mind = mindPage;
+PAGES.deck = deckPage;
+PAGES.fleet = fleetPage;
 const TITLES = { ...TITLES_CLASSIC, ...NX_TITLES };
 
 // installable home-screen app: register the service worker (no-op where unsupported, e.g. plain http on a LAN IP in some browsers).
@@ -563,6 +570,8 @@ async function boot() {
   initControls();
   initFX();
   initMissionSync();                  // the deep-space satellites / shooting stars / aurora follow the bots (mission.js)
+  initBlitzSync();                    // Home / Bot Brain / ATLAS > Brain / Mission Control cards: Trader's deck + the Mind (blitz.js)
+  initPolish();                       // Home's status bar + the Sunday open card, the motion layer (polish.js)
   applyAppearance();
   installSpotlight();
   startSoundWatch();

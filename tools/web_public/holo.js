@@ -65,6 +65,7 @@
   }
   const hist = async (maxAge) => (H.cache['holo_hist.json'] && Date.now() - H.at['holo_hist.json'] < maxAge ? H.cache['holo_hist.json'] : fetchFile('holo_hist.json', 'le-holo-hist'));
   async function getDay(day) {
+    if (!day && H.want) { day = H.want; H.want = null; }      // #/holo/<day> (a replay link): the first load opens that day
     const today = await fetchFile('holo.json', 'le-holo').catch((e) => { if (!day) throw e; return H.cache['holo.json'] || null; });
     if (!day || (today && today.day === day)) return today;
     const h = await hist(5 * 60e3), D = (h.days || []).find((x) => x.day === day);
@@ -96,15 +97,18 @@
 
   // ------------------------------------------------------------------ the page (#/holo)
   function view(el) {
+    const want = typeof ARG !== 'undefined' && /^\d{4}-\d\d-\d\d$/.test(String(ARG || '')) ? String(ARG) : null;   // #/holo/2026-10-13
+    if (want) { H.want = want; if (H.ui) H.ui.state.pickedDay = want; }
     el.innerHTML = '<div class="hd-host"></div>';
     const hostEl = el.querySelector('.hd-host');
     if (H.ui && H.ui.root.classList.contains('hd-max') && H.ui.root.isConnected) return;     // full screen over the app: keep it
-    if (H.ui) { hostEl.appendChild(H.ui.root); H.ui.resume(); H.ui.load(H.ui.state.pickedDay || null); return; }
+    if (H.ui) { hostEl.appendChild(H.ui.root); H.ui.resume(); H.want = null; H.ui.load(H.ui.state.pickedDay || null); return; }
     hostEl.innerHTML = '<div class="card"><b>Holodeck</b><p class="mut">Loading the 3D deck…</p></div>';
     coreMod().then((m) => {
       if (!hostEl.isConnected) return;
       hostEl.innerHTML = '';
       H.ui = m.mountHolodeck(hostEl, env);
+      if (want) H.ui.state.pickedDay = want;
     }).catch(() => { hostEl.innerHTML = '<div class="card"><b>Holodeck</b><p class="mut">Could not load the Holodeck. Pull down to refresh.</p></div>'; });
   }
   addEventListener('hashchange', () => setTimeout(() => {

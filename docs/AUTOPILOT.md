@@ -17,7 +17,7 @@ resuming itself.
 | 1 | Start the bot after a reboot or a Windows update | **automatic** | Startup shortcuts open NinjaTrader and the bot server; with the Run switch on, auto-resume restarts the bot (it keeps waiting for NinjaTrader to connect, no time limit) |
 | 2 | NinjaTrader log-in / connect | **automatic** | NinjaTrader's *Connect on startup*; the bot waits and retries every 10 s |
 | 3 | Weekend disconnect, Sunday 18:00 reconnect | **automatic** | entries wait while NinjaTrader reports every connection DISCONNECTED and resume by themselves when it reconnects (`tests/test_selfheal.py`) |
-| 4 | Install updates | **automatic** | hourly / daily auto-update outside 01:50-16:00 ET, only when flat; a dirty file no longer blocks it |
+| 4 | Install updates | **automatic** | hourly / daily auto-update outside 01:50-16:00 ET, only when flat; a dirty file no longer blocks it; the PC self-test runs on the new version first and a regression holds it back ("Update held back: <check>", the old version keeps trading) |
 | 5 | Clock change (Sun 2026-11-01, Sun 2027-03-14) | **automatic** | every time is New York time; the cloud's UTC crons were checked on both sides (`tests/test_dst.py`) |
 | 6 | Holiday hours (Thanksgiving 11-26 13:00, 11-27 13:15, Christmas Eve 13:15, Christmas + New Year closed) | **automatic** | no entry 15 min before an early close, flat 5 min before, no entry on a closed day, for Zlarior, ATLAS, the extra accounts and a BLITZ router; no false "feed stale" alarms on those afternoons (`engine/cme_calendar.py`, `tests/test_holidays.py`) |
 | 7 | Remove a fake P&L after NinjaTrader refused every order | **automatic** | at start the bot voids an earlier day that NinjaTrader's log proves filled nothing (50K since 10-28, ATLAS since 10-29) |
@@ -27,7 +27,9 @@ resuming itself.
 | 11 | Check the MFFU balance (17:05 push "Check MFFU: bot thinks ...") | manual, a glance | becomes automatic once LE_BarFeed's account writer is compiled on the PC (it reads the real balance from NinjaTrader: `engine/broker_balance.py`); until then type the MFFU numbers on the Start page only when they differ |
 | 12 | Reload the NinjaTrader chart when the bars stop | manual, rare | a push and a red Start page line with the exact click; no bars = no new entries |
 | 13 | Sync the PC clock | manual, rare | one tap (Sync the clock) only when the clock guard turns red |
-| 14 | Windows Update pause (every 5 weeks) + a NinjaTrader restart once a week | manual, optional | the HEALTH CHECK line turns yellow when the pause runs out; a restart outside 00:00-18:00 ET is resumed by item 1 |
+| 14 | Windows Update pause (every 5 weeks) + a NinjaTrader restart once a week | manual, optional | the HEALTH CHECK line turns yellow when the pause runs out; a restart outside 00:00-18:00 ET is resumed by item 1; the PC health line "NinjaTrader" turns amber when its memory grows past 2.5 GB |
+| 15 | Weekly check-up before the open | **automatic** | Sunday 15:30 ET the PC self-test (27 of the repo's own suites + 3 checks, ~1-3 min at low priority; one push if anything fails, else a short "all green"); Sunday 17:30 ET one "Ready for Monday" push: version, self-test, Run switch, both accounts' room and eval day, BLITZ's account, the week's big US news, early closes, the clock change; "Run self-test" on the Start page any time |
+| 16 | Watch the PC itself | **automatic** | CPU, RAM, disk, NinjaTrader running + its memory, the bot's memory growth, OneDrive conflict copies, clock drift, poll time: green / amber / red in the heartbeat, a push once a day per red line (`python -X utf8 -m engine.pc_health` shows them) |
 
 ## When an eval ends
 

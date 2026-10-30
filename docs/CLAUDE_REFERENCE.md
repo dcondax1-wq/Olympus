@@ -90,7 +90,10 @@ part yourself or fold it into a script.**
   {"at":15,"x":0.3,"mfe":0.5}` (15-minute cut), `be_off 1.25` (BE = entry + 1.25). **Scale-in built and safety-reviewed,
   OFF** (`"scale_in": null`) until the owner's Sim roundtrip passes (`python -m engine.ninjatrader --sim-roundtrip-add` on
   Sim101, market open; the OIF quantity-only CHANGE `CHANGE;;;;N;;0;0;;;id;;` is unconfirmed on a real install;
-  `docs/DAILY_CHECKLIST.md` "Switch on scale-in"; on = `{"pb":0.25,"f":1.0,"rat_k":1.0,"min_rk":2.0,"n":1}` in both files).
+  `docs/DAILY_CHECKLIST.md` "Switch on scale-in"; on = `{"pb":0.25,"f":1.0,"rat_k":1.0,"min_rk":2.0,"n":1}` in both files). Built
+  2026-10-30, OFF: "lit_sizing" `"scale_in_from_session": 5` (no add before eval session 5) and `"scale_in_funded": false` (no add once
+  funded) in `live.py _add_qty` + `cloud_monitor.lit_add_usd` (`tests.test_scale_in_switches`); `lit-edge-2026-10-30.md`: with scale-in
+  on, eval path +$3.9k / +$8.6k (H1 / H2) vs today, 2-week pass 60.5 / 58.0 vs 57.1 / 52.2 (owner decides, after the Sim roundtrip).
   Switch one off/on in live_model.json / live_model_lit.json "lit", rerun `tools/lit_losses.py live` (checks the trades
   against the stored run of the switch set) + dashboard data.
 - **Results LIT + pack + t_check + be_off** (run `lit_live`, rebuilt 2026-10-20 = `lit_adopt_t15_be_off`; the 2026-10-18
@@ -220,7 +223,9 @@ part yourself or fold it into a script.**
   [--cloud]` (~65 s).
 - **Account C = BLITZ routed to its OWN MFFU Builder 25K (2026-10-29, owner "the scalping on a 25"), built, OFF:**
   `engine/account_c.py` (LiveBot.acct_c, `_account_c_tick` right after LIT's routing, before account B and the read-only work: the entry latency matters), plain-language rules + bands + kill switch in
-  `BLITZ_STRATEGY.md`. Switch = local `data/account_c.json` (gitignored; absent / null = the bot is exactly as before: no
+  `BLITZ_STRATEGY.md`. Owner switch OFF (2026-10-30): `"later_break": true` = eval size x0.5 on the day's first band break of a
+  side, x1.75 on a later one (`engine/blitz` signal `brk_n`, `account_c.qty`, `tests.test_blitz_later_break`, pick v2).
+  Switch = local `data/account_c.json` (gitignored; absent / null = the bot is exactly as before: no
   adapter, no heartbeat key) `{"account", "plan": "builder25k", "eval_start", "armed": false}`; CLI `python -X utf8 -m
   engine.account_c --account "<Name>" --plan builder25k --start <day>` | `off` | `--status` | `--resume` | `--to-funded`
   (refused when the NinjaTrader self-test fails; a real Name is allowlisted, never armed). Own adapter (OIF tag `acctc_`,
@@ -241,8 +246,8 @@ part yourself or fold it into a script.**
   `account_c.score`: 20+ finished trades with avg R or PF(R) under the 2026 bootstrap p5 (20: -0.150 / 0.62, 40: -0.061 /
   0.83, 100: +0.019 / 1.06), or 6 losing R-days in a row -> PAUSED (no entry on C, push); `--resume` = "resume_after" in the
   block. Data (only when on): heartbeat `account_c` (`AccountC.hb_block`), `accounts.blitz_section` (source `pc_blitz`, so
-  Zlarior-only views never read it), live board `blitz` card + `accts` + trade log acct "blitz" (`boardcore.js` does not
-  draw the third card yet: renderer work), Mission Control `pc_cc_api` home `blitz`, /api/next/board, narrator REAL / SIM
+  Zlarior-only views never read it), live board `blitz` card + `accts` + trade log acct "blitz" (`boardcore.js` draws the third
+  card, mini card and a BLITZ trade filter when the block is there, 2026-10-29 night), Mission Control `pc_cc_api` home `blitz`, /api/next/board, narrator REAL / SIM
   rows + pause, live.json / cloud state `pc.account_c`. Start page: card "BLITZ · 25K" (Set its 25K, Sim test = Sim101,
   Arm BLITZ with the typed phrase, Off; Add account bot BLITZ; Passed → funded; `go.set_blitz` / `arm_c` / `blitz_status` /
   `_c_to_funded`, POST `/api/next/start/blitz`, `/blitz/arm`; a running bot picks a change up once C is flat). Replay of
@@ -252,9 +257,70 @@ part yourself or fold it into a script.**
   not paid money (blitz-25k.md whole slot: $270 / $37 / -$40 a month; the losing-days streak counts all of a day's model
   trades, routed or not: the routed ones alone hit 6 in May 2026 because the eval / daily loss stopped days early). Test `python -X utf8 -m
   tests.test_account_c [--quick]`.
+  **Adopt-candidate, NOT built (2026-10-30, `atlas-blitz-edge-2026-10-30.md`, `research/scalp/blitz_25k_pick_v2.json`):**
+  the later-break eval size, rule unchanged:
+  - x0.5 on the day's first band break on a side, x1.75 on a later same-side break (the day's count of check closes beyond
+    the band on that side, every check counted, >= 2);
+  - f x m capped at 1.0 of the room, $600 cap x m; funded unchanged.
+  - 25K 2-week pass / fail 47.9 / 23.5, 36.2 / 21.7, 24.7 / 48.4 (today 36.1 / 37.8, 36.2 / 34.8, 20.4 / 50.2); slot
+    $286 / $52 / -$39 a month (today $270 / $37 / -$40).
+  - Needs a per-day break counter in `blitz.Engine` + `account_c.qty`; owner decides.
   **Owner's turn-on (next week):** 1. buy the Builder 25K for BLITZ and connect it in NinjaTrader; 2. Start page > BLITZ ·
   25K: its Name, Set BLITZ's 25K, Arm BLITZ (type I ACCEPT LIVE RISK); 3. Start trading. Console for step 2:
+  **Owner's turn-on (next week): `docs/BLITZ_GO_LIVE.md`** (3 steps: buy + log in the 25K in NinjaTrader; Start page > BLITZ
+  · 25K: its Name, Set BLITZ's 25K, Arm BLITZ with I ACCEPT LIVE RISK; the Go-live check all green, console `python -X utf8 -m
+  engine.account_c --preflight`; plus what the phone shows on day 1). Console for step 2:
   `python -X utf8 -m engine.account_c --account "<the 25K Name>" --plan builder25k --start 2026-11-02`.
+  **Go-live check (2026-10-29, `engine/blitz_preflight.py`, read-only):** `facts(bot | None)` + pure `lines(facts)` -> one item
+  each {key, label, state good|bad|wait|info, detail, fix}: config, own (not Zlarior's / ATLAS's Name), nt (connected), visible
+  (the Name in go.nt_names: accounts.csv + Position files; Sim always), allow (allowlist; Sim none), sim ("Order route tested
+  recently": the bot's Sim roundtrip <= 14 d, OR a BLITZ Sim session <= 14 d: `data/account_c_sim.json`, gitignored, written
+  by AccountC._close on a Sim account of the real bot, OR on the running bot an entry NinjaTrader took for Zlarior / ATLAS in
+  the last 7 d: the same ATI route, no need to stop the live bot for a roundtrip), armed (real: armed AND the bot running live = NINJATRADER_LIVE + the phrase; Sim: info), bot
+  (acct_c running, not disabled), eval (session via sizing.eval_session: 0 before the first day), size (AccountC.qty at today's
+  room, the stop = 1.5 x the engine's 5m ATR else 60 pts, + 40 / 90 / 150-pt rows; 20 micros = MFFU 25K 2 minis), hedge,
+  contract (bands loaded, the 20-trade floor -0.150 / 0.62, paused = red with --resume), calendar (cme_calendar: full closure /
+  early close flat -5 / entry -15; a DST change within 7 days named), feed (bot health, else go.feed_problem), day (the day
+  filter, info). CLI `--preflight` asks the running server first (GET `/api/next/start/blitz/preflight`, engine/start_api.py,
+  cached 10 s), `--files` = without it; exit 1 unless all green. Start page BLITZ card draws it (start.js `cpfBlock`, fetched
+  with the status when BLITZ is on). Launch checklist: line `blitz` "BLITZ (account C) ready" right after `b`, only when
+  data/account_c.json is set (`launch_check.blitz_fact` -> blitz_preflight.compact: green = all green, else the first red line
+  + its fix). Tests: test_account_c part 13, test_launch_checklist blitz_checks.
+  **First-real-day fixes (2026-10-29):** (1) phone: on NinjaTrader the adapter reports its own fills only for the bot's own
+  account (state_path == STATE_PATH) and AccountB / AccountC skip their own entry push (reports_fills), while their info()
+  rows dropped the legs -> no FILLED line, no entry notice for ATLAS / BLITZ on NinjaTrader, and BLITZ's exit notice read
+  LIT's label "MFFU 50K". Now `account_b._fill_of` adds "fill" to B / C rows (C also "entry"), narrator._route_rows uses it,
+  narrator.send_push labels strat scalp "BLITZ <Name> (REAL|SIM)" and `_scalp` suffixes key ":acctc" / tag "-acctc" (= C's own
+  HEDGE / TIME / kill notices: one notice per trade; ATLAS's feed notices get account B's own ":acctb" key the same way, the
+  tag unchanged), BLITZ wording (SCALP_EXIT_WORDS: 30-minute clock, not LIT's 15-minute
+  check; "stop trailed past the entry"). (2) AccountC._push_text: keys in PUSH_NOW (closing, unconfirmed, trail, passed,
+  failed, stuck, pause, lock) are kind "ops" (pushed like ops_checks' eval notices); "order NOT placed" stays "risk" (the
+  narrator's refused line pushes it). (3) Why no trade: `blitz.day_filter(E, date, now=)` = {ok, ratio, yday, mean, next};
+  state_text says "BLITZ skipped today: yesterday's 09:30-16:00 range X pts < 0.8 x its 14-day mean Y pts" also after the
+  last check (it used to say only "No more checks today"), + the next day's verdict once today's range is final; heartbeat
+  compact "day_filter". **Oct 28 / 29 0-trade verdict (PC pushed bars + 5m for Oct 19-26):** Oct 28 passed the day filter
+  (Oct 27 range 387.5 = 0.90 x 428.5) but had no close outside the band at any of the 10 checks (nearest: 11:00 close 29,804.5
+  vs lower band 29,779.65), and the shadow's first run was 16:06 ET that day; Oct 29 filtered (Oct 28 range 239.0 = 0.59 x
+  404.3; the PC's band 0.59 matched the rebuild to 0.1 pt); Oct 30 filtered too (0.66). Correct: no bug.
+  **BLITZ dress rehearsal (2026-10-29, `tests/test_rehearsal_blitz.py`, built on tests/test_rehearsal.py's sandbox / fake
+  NinjaTrader / virtual clock):** the real server.py with LIT on Sim101, ATLAS (data/account_b.json) on Sim102, BLITZ
+  (data/account_c.json) on Sim103; each day a fresh eval, the bot started late (10:15 / 10:50) so the live loop rebuilds the
+  morning. Expected = engine.blitz.execute on the 2026 1m bars minus the signals the live account masked (each mask must
+  name LIT / ATLAS), the eval's own stops (+$1,500 pass, -$600 lock) and the scenario's blocks; per trade: entry minute,
+  side, micros (`expected_qty`: account C's eval size written out), the MARKET fill, STOPMARKET + LIMIT OCO, the trail CHANGEs
+  (tighter only, the model's stops in order, the last = the model's last; an intermediate step can fold into the next
+  minute's), exit reason / minute, booked $ = micros x the backtest's $ a micro; the fake NinjaTrader records any fill that
+  opens a position while another account holds the other side (must be none). Days: 08-03 normal (6 trades, trail stop-out,
+  15:55 flat), 06-05 pass (3 wins = +$1,525, EVAL PASSED, no trade after), 08-06 ATLAS S/R short 11:15 into BLITZ's long
+  (HEDGE first), 05-14 ATLAS short at the same 11:00 close, 04-01 LIT short (masks), 10-15 / 06-09 injected CME early closes
+  13:00 / 13:15 (LE_RH_EARLY in the sandbox server; 2026's real half days had no BLITZ trade), 10-16 restart mid-trade,
+  08-28 NinjaTrader refuses the first entry, 05-18 owner pause + HOLD TO KILL. **Result 2026-10-29: 345/345 checks**, 27 routed
+  BLITZ trades (78 micros, 63 trail CHANGEs, exits 20 TIME / 3 STOP / 1 15:55 flat / 2 HEDGE / 1 KILL) = the backtest trade
+  for trade, booked +$4,175.13 vs the fake broker's fills +$4,151.80 (stop / market fills 1 tick against), 1 LIT mask, 1
+  eval-pass block, 2 early-close blocks, 1 refused, 1 paused, 0 opposite fills across the three accounts; the go-live
+  check over HTTP all green after a Sim trade. `--jobs=4` 1,220 s on a loaded 4-core box; a day re-run into a parts folder
+  + `--summary=<folder>` rebuilds research/scalp/blitz_rehearsal.json. The sandbox serve patches bg_worker.JOB_TIMEOUT_S
+  (its timer runs on the virtual clock) and turns off the dashboards' 5-year backtest jobs (dash_data.JOBS_MGR.submit).
 - Same code as the research: engine/second.py calls tools/second_ema.py / second_md.py / second_sr.py on LIT's live
   window (retail_standalone.load_frame live_cut, the simulators' live/OPEN mode). "With LIT" view = LIT first, no entry
   while LIT is in a trade, max 2 a day (MACD closed when LIT enters).
@@ -344,6 +410,69 @@ part yourself or fold it into a script.**
   `test_run_switch`). The bot server runs hidden. After a reboot `autoresume.resume_live(still_on=, open_nt=)` opens
   NinjaTrader and waits for it with no time limit while the switch is on Run (autostart record present).
   `engine/fsutil.replace` retries state-file replaces on Windows file locks.
+- **Fleet = in-house copy trading (2026-10-30, owner "copy trading, prop firms, live accounts"), built, OFF** (no
+  `data/fleet.json`, gitignored = `LiveBot.fleet` None, no heartbeat / live.json key; `tests.test_lit_live` identical).
+  Owner guide `docs/ADD_ACCOUNT.md` (3 steps + each firm's rules in plain words).
+  - **Firm rules as data:** `research/props/firm_rules.json` (rebuild / check: `python tools/build_firm_rules.py [--check]`,
+    from `research/lit/mffu_rules.json` + `research/lit/prop_firms.json` + `research/props/firms.json`; nothing fetched):
+    7 firms (MFFU Builder 25K-150K / Rapid / Rapid EOD / Pro, Lucid Pro / Flex, FundedNext Rapid Daily / Pro / Legacy, Apex
+    4.0 EOD, Topstep Combine, Take Profit Trader Test, Alpha Futures), 47 plans; per value `{v, verified, date, src?, n?}`:
+    verified = the repo's research marks it confirmed (firm page via search, or the owner's MFFU screenshots), v null =
+    unknown (assumed in research = never guessed here), "none" = no such rule. 161 verified / 376 unknown of 1,457 (outside MFFU only Lucid Pro 50K, FundedNext
+    Rapid Daily 50K and Topstep's payout figures are verified; funded `max_active` per person: MFFU 50K 1, 25K 2). MFFU
+    Builder 25K / 50K verified from mffu_rules.json (min days = conflict, unverified). Prices: only the owner's ($91.80 /
+    $63); every other price null. Firm rules: bots (Apex prohibited, Alpha semi-only, Topstep no NinjaTrader), hedging
+    (MFFU banned across all accounts, verified), flat_by (MFFU 16:10).
+  - **Rule engine `engine/firms.py`:** `profile(plan, stage)` (flat values + verified / unknown / warn), `live_profile(cfg)`
+    (the owner's personal LIVE account: max $ a trade, daily / weekly stop, max micros; defaults 150 / 300 / 600 / 5),
+    `book(start, closes, today, prior, payouts)` -> balance / eod_high / intra_high / day / week / best day,
+    `floor_room` (EOD trailing = best closing balance - max loss, open losses count; intraday = best equity incl. open
+    profit; static; trailing stops at start + lock; unknown type = intraday, unknown lock = never locks, unknown amount =
+    no room), `check(profile, state, order, positions, now)` -> {ok, block, warn, max_qty, room, floor, day_left}: contracts
+    (micros, minis x 10), the floor at the stop (+2 ticks, $1.90), daily loss (hard / soft named), weekly stop / max risk
+    (live), best day (eval: a winner <= share x target x 0.95), Tier-1 news window (stage rule), the firm's flat time - 5
+    min, hedging vs ANY other account on the same underlying (MNQ = NQ); `status` (passed needs min days + consistency;
+    failed at the floor; funded payout readiness); `describe` (plain words). CLI `python -X utf8 -m engine.firms --list |
+    --show <plan> [--stage funded]`.
+  - **Copy layer `engine/fleet.py`** (`LiveBot._fleet_tick` after account B in the poll; `_fleet_block` = start cfg
+    "fleet" in test harnesses, else data/fleet.json for the real bot, cached by mtime): each follower copies its LEAD
+    account's routed rows (zlarior = LIT's ledger / `_open_routed`, atlas = `acct_b`, blitz = `acct_c`: entry only once
+    the lead's answer is OK, never > 90 s late; stop moves as modify on broker adapters; the lead's exit -> exit + the lead's
+    $ a micro x own micros; lead trade gone without a close -> flat after 120 s "LEAD GONE"; 15:58 TIME SAFETY). Size =
+    the lead bot's own sizer on the follower's plan (zlarior: `sizing.lit_qty` via multi_account two_week / funded on the
+    plan's sizing preset 25K / 50K; atlas: `account_b.qty` / funded; blitz: `account_c.qty`), or `"sizing": "fixed"` +
+    `risk_usd`; LIVE = fixed risk only; then `firms.check` caps it. The lead's day limit (LIT 1, ATLAS 2, BLITZ 6). No
+    hedge fleet-wide: a follower never opposite any account (LIT / extra accounts / B / C incl. closing / other followers,
+    under one entry lock); hooks (all `getattr(..., "fleet", None)`, off = identical): `LiveBot._route` refuses a lead
+    entry opposite a follower, `_hedge_clear_c` -> `_hedge_clear_fleet` (LIT entering closes opposite followers first, HEDGE
+    WAIT / "HEDGE BLOCKED: fleet follower close not confirmed"), `AccountB.lit_opposite` (Zlarior followers hold ATLAS back)
+    + `_c_yield` -> `_fleet_yield` (ATLAS / BLITZ followers closed first), `AccountC.opposite` (any follower masks BLITZ),
+    `multi_account.Account._process` (extra accounts never opposite a follower). Refused copy (NOT OK + provably never
+    placed, `ninjatrader.entry_never_placed`) = nothing booked, push "copy NOT placed", the others trade; NOT OK but unclear
+    = kept "unconfirmed" + push, dropped unbooked once never placed. Kill: per account `"killed"`, fleet `"kill": true`, the
+    bot's kill switch / remote flatten. Live gate (`fleet.live_gate`): a non-Sim NinjaTrader follower needs `"armed": true`
+    + the phrase at the bot's start + NINJATRADER_LIVE=1 (else no adapter), then the adapter's own gate + allowlist; firms
+    that ban the bot (Apex, Alpha, Topstep / no NinjaTrader) = paper only; a lead's own Name refused. Own adapter per
+    follower (OIF tag `fl<id>_`, `ninjatrader_state_fleet_<id>.json`), state `live_state_fleet.json` (restart safe).
+    `stagger_ms` (<= 5 s, before the entry), slippage ticks vs the lead's fill. Lifecycle pushes once: EVAL PASSED (then
+    `--to-funded`), FAILED, PAYOUT READY (never requested). CLI `python -X utf8 -m engine.fleet --status | --add --id --lead
+    --plan --account --start [--balance --max-risk --daily-stop --weekly-stop --max-micros --risk-usd --stagger-ms] |
+    --remove | --on | --off | --kill <id>|all | --unkill | --arm | --disarm | --to-funded <id> --account --start | --payout
+    <id> <day>=<$> | --dry-run <day> | --preflight <id>` (dry run = the day's LIT trades of research/lab/backtest_live.json
+    on paper; `--arm` of a real Name also allowlists it, the owner's command only). `fleet.preflight` (read-only, as
+    blitz_preflight): settings, the firm allows the bot on NinjaTrader, copy trading confirmed, the plan's rules known /
+    verified, NinjaTrader shows the Name (go.nt_names), allowlist, armed, the bot live (NINJATRADER_LIVE), the lead running;
+    GET `/api/next/fleet/preflight/<id>`, PC card "Check before arming".
+  - **Data / pages:** heartbeat `fleet` (`Fleet.hb_block`, < 6 KB, only when configured), live.json `pc.fleet` (dropped
+    after `mind` when over 64 KB), GET `/api/next/fleet` (`engine/fleet_api.py`: rows + leads + totals + notices + the firm
+    catalog; off = {on: false} + the catalog), POST `/api/next/fleet/set` (the PC page's buttons = `fleet.run`, the CLI
+    without printing: add / remove / on / off / kill / unkill / to_funded / payout; PC only via `cloud_guard.local_only`,
+    `cloud_guard.FLEET_WRITES` in CLOUD_BLOCKED; every field checked; "arm" refused: arming stays the console `--arm`).
+    Phone `tools/web_public/fleet.js` (#/fleet, System group, read-only), PC `web_next/js/next/fleet.js` (All tools tile: MODULES
+    entry in routes.js, PAGES.fleet in app.js; cards + Add form + per-account buttons with confirms + Kill ALL; never
+    redraws under typing). Tests `python -X utf8 -m tests.test_firms` (58) and `tests.test_fleet [--quick]` (103 unit
+    incl. a Sim follower on the real NinjaTrader adapter against `_FakeNT`, node renders of both pages, the POST guard;
+    + the LiveBot replay: the primary's ledger identical with 3 followers, each copies every trade once).
 
 ## Trade pictures (2026-10-23, `engine/trade_chart.py`, read-only)
 - One renderer for every strategy's trades (LIT, LIT+Asia, ema / macd / sr, sh_asia / sh_trend): 1600x900 dark PNG (~90 KB),
@@ -474,6 +603,39 @@ part yourself or fold it into a script.**
   the 15m protected-swing stop passes the 25K account gates but its trades lose R in every span at a fixed risk (sizing
   path): rejected; every ATLAS exit / trail loses in 2026. The executors' base = live exactly (LIT 0 mismatches; ATLAS 96%
   within 0.5 pt, difference method).
+- **ATLAS + BLITZ edge night (2026-10-30, `atlas-blitz-edge-2026-10-30.md`, `tools/ab_edge.py`, runs `ab_*`):**
+  - BLITZ trend-day SIZE (range so far, first-hour range / volume, overnight range / open's place in it, gap, VIX change,
+    2-sigma excursion, VWAP side / distance, held at the previous check, time; 430 tilts): 39 survivors vs 36 on shuffled
+    facts = chance.
+  - BLITZ + a 10:30 check: H1 25K slot $270 -> $54.
+  - The later-break size on LIT's funded 50K: neutral.
+  - ATLAS (110, none passes the v2 test): member weights from the member's last 5-20 trades; member agreement; the 2nd
+    trade sized by the 1st's result; LIT copied in as a member (x0.25: both 2026 halves better, 2021-24 -$3.0k vs -$1.4k,
+    and the two accounts become one LIT bet); the NA day-hold as a 4th member (dead evals up); S/R level count / EMA sweep
+    depth / EMA distance as size; London-clock windows in the DST gap weeks (the volume surge does move to 04:00 ET, but
+    EMA / MACD lose there).
+  - The one adopt-candidate is BLITZ's 25K later-break eval size (`research/scalp/blitz_25k_pick_v2.json`, owner decides).
+  - ATLAS paper lead (run `ab_atlas_na_hunts_lead`): the hunts x0.5 + the NA day-hold member x0.5.
+    - More passes a month and more eval-path $ in all four spans: $2,046 / $1,584 / +$47 / +$194 a month vs $1,394 /
+      $547 / -$148 / -$36; 13 of 15 neighbours do the same.
+    - Fails the H1 2-week test: 62.2 / 5.9 vs 65.5 / 0.8.
+- **Zlarior edge night (2026-10-30, `lit-edge-2026-10-30.md`, `tools/lit_edge.py` 190 variants, runs `lit_edge_*`,
+  headline numbers `research/lit/edge_results.json`; LIT size + live two_week eval path + funded 50K $/mo):** target band
+  from NQ's 5/10/20-day range or a VIX/range blend, re-anchored at the entry / midnight open / time left; BE at max or
+  min(1R, k ATR or X pts); 15-minute check threshold in ATR; slow-trade nearer target; pre-registered A+ quality score and 13
+  single-fact / mined size tilts (200-draw placebo; also on the funded path: size-ups -$16..+$16/mo, cuts cost up to
+  -$109/mo); weekly catch-up (looser setup Thu/Fri when < 2 trades: +0.13 tr/wk); re-entry after the 15-minute cut or a BE
+  (30 trades, -3.35R); a 2nd trade a day re-run (H1 -$1.0k..-5.0k); funded $2,000 cap as a take-profit (-$37 / -$70/mo);
+  eval room-cap size + take-profit at the need (H2 2-week pass 33%); eval-only 3-6R bank; need buffer 0.8 / 1.2, clock
+  press, room share by session: all rejected. Thin leads, not switched: afternoon target cap (from 14:00 at most 3R: LIT
+  +$460 / +$311, eval +$606 / +$3,913, 2+1 trades) and lifting the 8R bank after +2R within 15 min (3 trades, funded
+  -$143 / -$52/mo). Room share 0.7: same money, H2 2-week fails 5.8 -> 0.0% but slower passes (owner chose 0.8). Scale-in
+  re-measured: eval +$13.8k / +$14.6k, 2-week pass 58.8 / 59.4%, but H1 fails 1.7 -> 3.4% and on a funded 50K -$149 / +$49
+  a month (adds capped at the $2,000 winner -$22 / +$73). **Adopt-candidate (with the scale-in switch, after the Sim
+  roundtrip): adds on the eval only from eval session 5, none on funded accounts** (run `lit_edge_eval_scale_in_s5`: eval
+  +$38.7k / +$24.9k vs +$34.8k / +$16.3k, 2-week pass/fail 60.5/1.7 and 58.0/5.8 vs 57.1/1.7 and 52.2/5.8, sessions 2-6 and
+  +4 ticks an add all hold; owner $/slot $827 / $815 vs $827 / $804 a month). Needs new code first: `lit_sizing`
+  `scale_in_from_session` / `scale_in_funded` in `engine/live.py _add_qty` + `cloud_monitor.lit_add_usd` (not built).
 
 ## Key commands (run from the repo root)
 - **START BOT (owner's one start, 2026-10-26):** the owner now starts from the dashboard only (desktop **LE START** -> the
@@ -552,6 +714,25 @@ part yourself or fold it into a script.**
   gitignored), cloud via `live_learning.cloud_hook` (state "advisor");
   cards in `live_learning.suggestions` (live tally + the 2026 backtest cards `research/lit/advisor_backtest.json`; no approve command). Its backtest = the research (`tools/structure_manage.py
   advisor`). Tests `tests.test_structure`, `tests.test_advisor`.
+- **Mind (2026-10-29, owner: "a brain that's very smart, can think for itself"; read-only, never a rule / size / order):**
+  `engine/mind.py`, write-up `research/writeups/mind.md`. (1) Memory: every historical setup per bot in
+  `research/mind/store.json` (Zlarior 631 = run lit_live settings, ATLAS 1,129 = run atlas_funded_live, BLITZ 330 =
+  na_best_trades) with live-computable features (`Hist` on 5m bars: time since 18:00, killzone, VIX, 15m / 1h structure
+  trend vs the trade, prior-day range ratio, day position, ATR ratio; LIT depth / displacement / inducements / stop ATR / R to
+  the band / level family; ATLAS member; BLITZ first-hour ratio) + live / paper trades as they close
+  (`logs/mind/<bot>_live.jsonl`); k nearest -> `similar[bot]`. Calibration `research/mind/calibration.json` (fit 2026 H1,
+  check H2 + 2021-25): NOT predictive for any bot -> `valid: false`, conf "low", "context only" (fit 2021-25 -> 2026:
+  ATLAS separates 2026, p 0.03 both halves, but fit 2021-24 -> 2025 shows nothing: not confirmed). (2) Regime per 5m bar + trend-day odds from 10:30 ET (logistic, fit H1:
+  AUC 0.66 H2 / 0.63 2021-25). (3) Game plans 01:45 ET (Zlarior, ATLAS) / 10:45 ET (BLITZ), sizes from `brain._sizing`,
+  journal `logs/mind/plans.jsonl`. (4) Reviews of each closed trade (grade, luck / skill), `logs/mind/reviews.jsonl`
+  (trades closed > 2 days ago are skipped). (5) Nightly research child after 16:05 ET (`python -m engine.mind research`,
+  nice 15, <= 10 min; observations -> size / skip rules -> H1 pick / H2 check / 2021-25, eval speed for LIT) ->
+  `logs/mind/proposals.json` (seed `research/mind/proposals_seed.json`: 22 tested, 0 candidates). Wiring: `narrator.tick`
+  -> `mind.pc_tick` (key check; compute in a thread once per 5m bar, started 15-45 s into a minute, ~50 ms; `LE_MIND=0` off, `LE_MIND_RESEARCH=0` no
+  nightly), `liveview_api.view()["mind"]` (cached block), phone_view + heartbeat "mind" + holo "mind" = `mind.compact`
+  (< 12 KB), `GET /api/next/mind` (block + history + calibration), narrator kind `brain` (not pushed by default). Contract
+  checker `mind.contract_errors`, sample `tests/fixtures/mind_sample.json` (`python tools/mind_build.py sample`). Rebuild
+  memory + calibration + seed: `python -X utf8 tools/mind_build.py` (~10 s). Tests `tests.test_mind`.
 - **Dashboard 2026-10-28 (owner: "50 useful features", "what the bot is thinking", "very 3D"):** registry
   `web_next/FEATURES.md` (status of all 50). Home "Today · real accounts" (`realcore.js`, `cc.js`; phone
   `tools/web_public/realcore.js`): one card per REAL account (ledger + NinjaTrader fills only, never paper $), gauges, health
@@ -622,6 +803,67 @@ part yourself or fold it into a script.**
   streaks & consistency, daily loss & week pace, next news). Live View draws `view()["structure"]` when present (zone, pools,
   swings, BOS / CHoCH, protected; a Structure switch + a "Market structure" thinking card). Caches le-public-v43 /
   le-shell-next-v25. Test `python -X utf8 -m tests.test_space_ui [--shots <dir>]` (static, node render, phone + PC Playwright).
+- **BLITZ tab, Mind, Trader's deck (2026-10-29 night, owner: "make a separate tab at the bottom ... improve dashboard
+  features"; read-only, links only):** shared renderers, byte-identical in `tools/web_public/` and `web_next/js/next/`:
+  `blitzcore.js` (window.BlitzUI: `model(src)` -> `page(M, part, opts)`, parts today / brain / trades / results / rules /
+  golive; `acctC` off / Sim test / armed / paused / funded), `mindcore.js` (window.MindUI: draws the Mind block, nothing when
+  it is absent: `bot`, `home`, `page`, `reviewFor`), `deckcore.js` (window.DeckUI: risk meter, next 24 h with the DST notice,
+  eval odds from today's balance (random walk at the H2 pace, labelled an estimate), real P&L calendar, journal, notification
+  center with a per-bot mute in localStorage `le.deck.mute`, "since you last looked" `le.deck.seen`, Holodeck replay links).
+  Phone: `blitz.js` (loaded last, after holo.js): **six tabs Home · Zlarior · ATLAS · BLITZ · Money · More** (clean.js BZ_SEGS,
+  `#/blitz/<part>`), `#/mind` and `#/deck` (the old aliases mind -> brain, deck -> holo are dropped), Home cards before "One
+  tap away", Mind cards on the Zlarior Bot Brain / ATLAS > Brain / BLITZ > Brain, Mission Control replay links; `#/holo/<day>`
+  opens that day (holo.js `H.want`; its hash re-stamped in index.html). Data: data.json `blitz` (= `engine/blitz.card` of the
+  cloud state + the PC heartbeat's block, `tools/build_web_dashboard.py`), live.json `pc.account_c`, liveview.json
+  `strategies.scalp` (+ `mind`), the board. PC: `js/next/blitz.js` (pages `blitz` (Main after ATLAS, part in `nx.bzPart`,
+  shell.js), `mind`, `deck` (after Real results), slots re-placed after cc / brain / second / mission redraws), `GET
+  /api/next/blitz` in server.py (`blitz.card(BOT.blitz)` + `acct_c.hb_block()`), `/api/next/mind` when the Mind agent ships
+  it, Holodeck links via `nx.holoDay` (js/next/holo.js). Features 71-80 in `web_next/FEATURES.md`. Caches le-public-v45 /
+  le-shell-next-v27. Test `python -X utf8 -m tests.test_blitz_tab [--shots <dir>]` (static, node render, phone 390x844,
+  PC 1440x900; renders the Mind agent's `tests/fixtures/mind_sample.json` (PC) and `mind_sample_compact.json` (phone cut); `LE_MIND_FIXTURE=<path>` another one).
+- **Night 3: one calm product (2026-10-30, owner: "more very useful features ... clean it up, organized ... the UI, quality,
+  the effects ... I wanna be shocked"; read-only, links only).** Shared renderer `statuscore.js` (window.StatusUI,
+  byte-identical `tools/web_public/` = `web_next/js/next/`, copied by the fx build; on MissionUI's accounts): `items` /
+  `summary` / `bar` (the status bar: PC bot, NinjaTrader, feed, each bot, next window, alerts; a quiet PC is amber until
+  30 min before a window, then red), `sunday` (Fri 00:00 -> Sun 20:00 ET, from Thu 18:00 on a clock-change weekend: CME
+  reopens Sun 18:00 ET, the clock change, each bot's first step via `DeckUI.events24` from the reopen, readiness list),
+  `oneLine` (each bot's day), `accounts` / `acctCard` (eval ring: progress to the target, or the max-loss share in red;
+  $ to the target, room, eval day, today's real $, sparkline of `days`, REAL / SIM / PAPER tag from the board's `badge`),
+  `week` (this week's real trades vs each bot's goal, Mon-Fri dots, from the board's `progress`), `empty(kind)`. Phone `polish.js` + `polish.css` (loaded last after blitz.js; `blitz.js` exports `window.PhoneData`,
+  `real.js` exports `RealPages.core/board/opts`): Home = `.pl-home` (greeting + ET clock, status bar, the three cards,
+  "What matters now" (+ the deck's "since you last looked" digest in one row), this week, Sunday card, quick tiles; with no
+  board yet clean.js's hero cards take the account-card slot) + `.pl-fold` "Everything else on Home" (CSS `order` + hide, `le.pl.homeAll`; every older card
+  stays in the DOM), bot tabs open on the same card (`.pl-bot`), `<html data-page data-bot>` colour roles, the search
+  palette (`#plFind`, "/" / Ctrl+K, `le.pl.recent`), Money tab = `real` · `realtoday` (new page: RealUI.today + safety) ·
+  `evaltl` (money / props / whatif / scale / accounts moved to More > Money planning), entrances / count-ups (first paint
+  only; rings / sparklines draw in once via `.pl-first`), the sliding tab pill (`.pl-tabind`, the tab's colour), More's
+  "Recent" chips (`le.pl.visits`), "On this page" chips on pages of 3+ screens (`.pl-toc`, one per card's first h3,
+  rebuilt when a page redraws itself; not on Home / More / Live View / Holodeck), Settings > Intro (`le.intro`),
+  the CSS sky's parallax + a vignette. ONE page transition on the phone
+  (`#page.page` pl-page / pl-page-l / pl-page-r by `#page[data-dir]`, set in polish.js's render wrapper from the tab order)
+  wins over clean.js's cl-in, space.css's sp-warp (a full-page blur + transform held for 1 s by `.entering`: it cost
+  frames and mis-placed the Holodeck's fixed labels) and index.html's 3D card rise. Page animations have NO fill-mode on purpose: a
+  finished transform animation that stays "in effect" makes `.page` the containing block of fixed full-screen views
+  (it broke the Holodeck fill labels on the phone). A bot page that redraws itself later (BLITZ) gets its card back
+  (MutationObserver on #page). `clean.js` (still ?v=3): Today · Brain ·
+  Trades · Results · Rules on all three bots (ZL / AT / BZ_SEGS), More sections Today · Insight · Bot and health · Trades ·
+  Money planning · This app. index.html: the splash is now the once-a-day intro (`le.intro.day`, skippable, `?intro=1`
+  forces, never under reduced motion / Motion off / webdriver); `#spLine` = `POLISH.introLine()`. Fixed: the Safety card
+  piled up on every live redraw (real.js `.rc-moved`). PC `js/next/polish.js` (`initPolish()` in app.js): `#nxStatusHome`
+  on top of `#page-cc` (bar + Sunday card, MutationObserver keeps it first), sidebar `MAIN_SECTIONS` in routes.js (Bots ·
+  Live · Money · Insight; shell.js `mainLinks`), BOTS = the same five sections, `css/polish.css`. fx: Earth bake 1536 on a
+  Retina phone at Max, crisper star points. Features 82-109 + "Organization (2026-10-30)" in `web_next/FEATURES.md`. Caches
+  le-public-v46 / le-shell-next-v28. Test `python -X utf8 -m tests.test_ui_polish [--shots <dir>]` (static, node, phone
+  390x844 every tab + palette + intro + reduced motion + frame time + light, PC 1440x900 + Ctrl K).
+  StatusUI's classes are `su-*` / `data-su-*` (NOT `st-`: the PC Start page owns `.st-go`, `.st-acct`, `.st-list` ...; the
+  first version broke its START button). Phone header: one status dot `#plStat` (the bar's verdict; a tap opens it on
+  Home); the critical-alert banner (#apBan) counts for 3 min after a page redraw wipes it. PC Ctrl K: each bot's five
+  sections + "Status: ..." (`addPaletteItems`). test_holo_ui's "fill label shows the exact price" steps (phone + PC) read
+  the label a fixed 1.6 s after the camera fly starts; the software GPU runs ~4 fps right after the Holodeck opens (base and
+  this branch alike), so the label was sometimes still just off screen (PC failed on the base commit too).
+  `tests/holo_ui_check.js` now also waits until the label shows (max 8 s). Still flaky there and on base: PC "fills pop
+  exactly when they happened" (the replay at ~10 fps ends before a fill) and once the PC day picker. No looping animation
+  runs on the Holodeck / Live View pages (polish.css; the header / tab lights stay lit but still), no card entrance there.
 - **Start & Accounts page (2026-10-26, PC dashboard sidebar "Start", page `start`):** START BOT as one checklist, one button
   per red line: NinjaTrader connected · live bars from NinjaTrader (`go.feed_problem`, fix "right-click the MNQ 5-minute chart > Reload NinjaScript (or re-add LE_BarFeed)"; the Sim job is refused while stale) · accounts set (50K -> Zlarior, 25K -> ATLAS) · setup done · Sim tests passed · armed ·
   running and routes verified, plus the plain line `Zlarior -> 50K <name> · ATLAS -> 25K <name> · both armed · running`.
@@ -701,9 +943,9 @@ part yourself or fold it into a script.**
   Tests `python -X utf8 -m tests.test_pc_command_center`; shots `tests/shots_pc_cc.py` -> `research/handoff/2026-10-25/ui_pc/`.
   **"Zlarior" (owner 2026-10-25 PM): the display name of the LIT bot only** (like ATLAS for "second"): every key, file,
   config, push kind and route id stays `lit`; "LIT" stays where it names the method ("Zlarior trades the LIT method").
-  Phone (`tools/web_public/clean.js` v2): tabs Home · Zlarior · ATLAS · Money · More; the Zlarior tab (group `lit`, page
-  `#/lit`) has sections Today (+ 50K eval pages) · Brain · Trades · Plan · Results · Strategy (ZL_SEGS), the ATLAS tab
-  Today · Brain · Trades · Setups · Results = the one ATLAS page cut into parts (`#/atlas/<part>`, atlasTag). PC
+  Phone (`tools/web_public/clean.js` v2): tabs Home · Zlarior · ATLAS · (BLITZ, 2026-10-29) · Money · More; the Zlarior tab (group `lit`, page
+  `#/lit`) has sections Today (+ 50K eval, Plan, Levels chips) · Brain · Trades · Results · Rules (ZL_SEGS; since 2026-10-30 the same five on all three bots), the ATLAS tab
+  Today · Brain · Trades · Results · Rules = the one ATLAS page cut into parts (`#/atlas/<part>`, atlasTag). PC
   (`routes.js` BOTS): sidebar Home · Zlarior · ATLAS · Results · All tools; `zlarior` is a virtual entry that opens its last
   section page (`zlSub`), the ATLAS part sits in `nx.atPart` (shell.js / second.js). Old links (#/trades, #/brain, #/second)
   still open. Push titles say "Zlarior setup armed" (kind `armed` unchanged). Shots `research/handoff/2026-10-25/ui_zlarior/`.
@@ -750,7 +992,16 @@ part yourself or fold it into a script.**
 - **DST / CME holidays / self-healing (2026-10-29, `docs/AUTOPILOT.md`):** US clocks go back Sun 2026-11-01; every live
   time decision is America/New_York wall clock (25 trading_day functions, market_open, entry / flat windows, auto-update,
   ops pushes, the cloud's UTC crons through its real bash guard, LIT replays over the 2025-11-02 / 2025-03-09 /
-  2026-03-08 weeks identical to the backtest: `tests/test_dst.py` 49, `--quick` 45). The JS fallback for browsers without
+  2026-03-08 weeks identical to the backtest: `tests/test_dst.py` 49, `--quick` 45). **Sunday 2026-11-01 run end to end**
+  (`tests/test_dst_sunday.py`, 29 checks, ~4 min, `--quick` 15): BLITZ on 2026 bars re-dated 3 weeks with their NY wall
+  times kept (Nov 2-6 EST = Oct 12-16 EDT trade for trade, live Engine = backtest across the switch, Monday's day filter =
+  Friday's range); the timers minute by minute Sat 17:00 -> Mon 16:30 (the 01:00 hour walked twice: trading day flips once
+  at Sun 18:00 EST, market opens once at 23:00 UTC, auto-update hourly once per ET hour and once in the doubled hour, ops /
+  live-learning weekly once, Monday's LIT 02:00 / ATLAS 03:00 / BLITZ 11:00 checks / 15:55 flat on the right UTC instants);
+  the real server.py on the virtual clock Sun 00:00 EDT -> 20:00 EST with LIT / ATLAS / BLITZ on Sim (polls every step
+  incl. 120 in the doubled hour, no "clock moved backwards", no order, heartbeat on the virtual clock, market open + fresh
+  bars after 18:00, saved day 2026-11-02, BLITZ eval session 1, the go-live check names Monday's normal session, the board
+  Monday's 02:00 window, no push / auto-update check twice in the doubled hour). The JS fallback for browsers without
   Intl time zones (`litkit.js`, `tradechart.js`, both copies) uses the US rule (`usEtOff`), not a fixed -4 h. Known
   fixed offsets left on purpose: the old engine's 4h buckets (`engine/data.resample`, `engine/mtf.build_4h`, shadow
   only, identical in the backtest). **One CME calendar** `engine/cme_calendar.py` (`early_close`, `full_closure`,
@@ -882,6 +1133,31 @@ part yourself or fold it into a script.**
   edit still blocks. A server older than the checkout (`go.server_stale`, `/api/next/start/boot`) is restarted before the
   bot starts. Tests `tests.test_account_b_local` (migration + same ATLAS / LIT routes), `tests.test_autorun` (the Surface case
   on real temp repos).
+- **PC self-test, PC health, readiness (2026-10-30, read-only; only the update hold-back acts):** `engine/pc_selftest.py`
+  runs 27 of the repo's suites + 3 checks (timezone/tzdata, config, no blocking local edit) ON the PC: each suite a
+  sealed child (BELOW_NORMAL, no window, temp TMP + `NINJATRADER_FOLDER`, no live env / push keys, `LE_SELFTEST_CHILD=1`
+  = `engine/push` sends nothing real, no relay / GitHub, temp key files), 2 at a time, 240 s budget; ~45 s here (sum 87 s,
+  `MEASURED_S`). Left out (measured): test_dst, test_acctb_not_placed, test_lit_oif, test_win_scripts, test_accounts,
+  test_alerts_plus, test_eval_anchor, test_poll_speed, test_lit_live, browser tests. When: (a) after every auto-update
+  (`autoupdate.selftest_step` after the 3 old tests, mode update, `--base <old sha>`): exit 1 only on a REGRESSION (a check
+  that passed in the old version's last result, or has none) -> the existing rollback + `bad_sha` + push "Update held back:
+  <check>"; a check that failed before too is "known" (never holds: a Windows-only failure must not block every update);
+  skipped when the checkout has no pc_selftest.py. (b) Sunday 15:30 ET, (c) Start page "Run self-test" (`GET/POST
+  /api/next/start/selftest`, POST local only, not an autopilot step; `start.js` selftestLine / wireSelftest) or `python
+  -X utf8 -m engine.pc_selftest [--list|--status|--only k]`, (d) a baseline once per version after a server start (outside
+  01:50-16:00 ET weekdays). Result `logs/selftest.json` + `selftest_history.jsonl` (60); heartbeat "selftest". Pushes kind
+  `selftest` (fail / could not run) and `selftest_ok` (Sunday all green), via `alerts_plus.pc_send` (app levels).
+  `engine/pc_health.py`: lines cpu (median of 5) / ram / disk / nt (NinjaTrader.exe + MB, Windows; red when closed in the
+  session while the bot routes) / bot_mem (growth after a 10-min warm-up, MB an hour) / onedrive (" (1)." and
+  "-<COMPUTER>." copies, red in data/) / clock (`guards._CLOCK`, never probed here) / poll (15-min median vs the hour
+  before); psutil missing or Windows-only -> the line is skipped. Red twice in a row -> push kind `pc_health` once per
+  issue per ET day. `Watcher` thread (server.py `PCWATCH`, every 60 s, `LE_PC_WATCH=0` off, never with LE_NO_AUTOSTART /
+  in a self-test child) writes `logs/pc_health.json` (heartbeat "pc_health") and runs the schedules (ET wall clock).
+  `engine/readiness.py`: Sunday 17:30 ET push kind `readiness` (version + self-test, Run switch, both accounts' room + eval
+  day N of 10 from `board_api.board_view`, BLITZ from `go.blitz_status`, high-impact USD news Mon-Fri, early closes /
+  closed days, the DST line); `python -X utf8 -m engine.pc_health --readiness [--send]`. Kinds are in
+  `alerts_plus.KINDS`; the phone's Alert levels list (`tools/web_public/alerts.js` KINDS) does not show them yet.
+  Tests `tests.test_pc_selftest` (64), `tests.test_pc_health` (76).
 - **Alerts plus (2026-10-21, `engine/alerts_plus.py`, `tests/test_alerts_plus.py`, `docs/NOTIFICATIONS.md`):** "LIT setup armed"
   / "Setup expired" pushes (PC `LiveBot._alerts_tick` after routing + cloud, same keys, relay de-dup); critical alerts repeat
   every 10 min (max 6) until "Got it" (phone `tools/web_public/alerts.js` #/ack posts `{"le":"ack"}` to the ntfy relay) or
