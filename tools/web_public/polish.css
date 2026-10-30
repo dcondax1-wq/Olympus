@@ -96,6 +96,9 @@
 .pl-bot { margin: 0 0 var(--s3); }
 .pl-bot .su-acct { padding: 18px 16px; }
 .pl-why { margin: 8px 0 0; padding: 12px 16px; border-radius: 16px; background: rgba(255, 255, 255, .03); border: 1px solid var(--rim); }
+.pl-why-go { display: inline-block; margin-top: 8px; font-size: 12.5px; font-weight: 650; color: var(--bot, var(--accent)); text-decoration: none; cursor: pointer; }
+/* Zlarior Today: the "Right now" card says what the why list says; its Brain link is in the list now */
+:root[data-page="lit"] #page:has(> .pl-bot .pl-why) > .cl-plan { display: none; }
 .pl-why ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .pl-why li { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; line-height: 1.45; color: var(--ink-2); }
 .pl-why li i { flex: none; width: 7px; height: 7px; border-radius: 50%; margin-top: 6px; background: var(--muted); }

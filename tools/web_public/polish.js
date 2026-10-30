@@ -161,8 +161,9 @@
     const box = document.createElement('div'); box.className = 'pl-bot' + (soft ? '' : ' pl-first');
     let why = '';
     try {
-      const R = !A.pos && !A.placeholder && window.MissionUI.whyNot ? window.MissionUI.whyNot(A, M).slice(0, 3) : [];
-      if (R.length) why = `<div class="pl-why"><span class="pl-h3">Why no trade yet</span><ul>${R.map((r) => `<li class="${r.ok === true ? 'ok' : r.ok === false ? 'no' : 'mid'}"><i></i><span>${esc(r.text)}</span></li>`).join('')}</ul></div>`;
+      const R = !A.pos && !A.placeholder && window.MissionUI.whyNot ? window.MissionUI.whyNot(A, M).filter((r) => r && r.text && !/^[^:]{0,30}:\s*$/.test(String(r.text).trim())).slice(0, 3) : [];
+      const brain = k === 'lit' ? 'data-go="brain"' : `data-go="${k}" data-arg="brain"`;
+      if (R.length) why = `<div class="pl-why"><span class="pl-h3">Why no trade yet</span><ul>${R.map((r) => `<li class="${r.ok === true ? 'ok' : r.ok === false ? 'no' : 'mid'}"><i></i><span>${esc(r.text)}</span></li>`).join('')}</ul><a class="pl-why-go" ${brain}>Every rule it checks, in its Brain ›</a></div>`;
     } catch (e) { why = ''; }
     box.innerHTML = SU.acctCard(A, M, { where: 'phone', go: () => `data-go="${k === 'lit' ? 'evalhq' : k}"${k === 'lit' ? '' : ' data-arg="results"'}` }) + why;
     const after = [...el.children].filter((c) => c.classList.contains('mo-strip')).pop();
