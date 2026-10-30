@@ -83,8 +83,8 @@
 /* ---------- the bot tabs: the same account card on top, the bot's own colour on the section bar ---------- */
 .pl-bot { margin: 0 0 var(--s3); }
 .pl-bot .st-acct { padding: 18px 16px; }
-:root[data-bot="lit"][data-page="lit"] #page > .hero, :root[data-bot="lit"][data-page="lit"] #page > .cl-hero { display: none; }
-:root[data-bot="atlas"][data-page="atlas"] #page > .hero, :root[data-bot="atlas"] #page .at-root > .hero { display: none; }
+:root[data-bot="lit"][data-page="lit"] #page:has(> .pl-bot) > .hero, :root[data-bot="lit"][data-page="lit"] #page:has(> .pl-bot) > .cl-hero { display: none; }   /* only once the account card is there */
+:root[data-bot="atlas"][data-page="atlas"] #page:has(> .pl-bot) > .hero { display: none; }
 :root[data-bot="blitz"] .bl-hero-h h2 { display: none; }
 :root[data-bot] .zl-seg button.on { color: var(--ink); background: linear-gradient(180deg, color-mix(in srgb, var(--bot) 30%, transparent), color-mix(in srgb, var(--bot) 12%, transparent));
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bot) 45%, transparent), 0 6px 18px -10px var(--bot); }

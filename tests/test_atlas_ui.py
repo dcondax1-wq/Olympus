@@ -195,14 +195,15 @@ def part_c(shots):
             check("c. phone bottom bar = Home · Zlarior · ATLAS · BLITZ · Money · More", tabs == ["Home", "Zlarior", "ATLAS", "BLITZ", "Money", "More"], tabs)
             # 2026-10-30 (night 3, layout deliberately changed): Home = the status bar, then one account card per bot
             # (Zlarior 50K, ATLAS 25K, BLITZ 25K: eval ring, big $ to the target, REAL / SIM tag, the day in one line)
-            cards = pg.eval_on_selector_all(".pl-home .st-acct", "els => els.map(e => e.innerText)")
+            # this fixture has no live board (an older data.json): the Zlarior / ATLAS cards fall back to clean.js's hero cards
+            cards = pg.eval_on_selector_all(".pl-home :is(.st-acct, .cl-hero)", "els => els.map(e => e.innerText)")
             check("c. Home: one account card per bot, Zlarior then ATLAS then BLITZ (big $ to the target, SIM / REAL tag)", len(cards) == 3 and cards[0].upper().startswith("ZLARIOR")
                   and cards[1].upper().startswith("ATLAS") and cards[2].upper().startswith("BLITZ") and "TARGET" in cards[0].upper() and "SIM" in cards[1].upper(), cards)
             check("c. Home: the status bar comes first, then the account cards", pg.evaluate(
-                "() => { const h = document.querySelector('#page > .pl-home'); return !!h && h.children[0].classList.contains('st-bar') && h.children[1].classList.contains('st-accts'); }"))
+                "() => { const h = document.querySelector('#page > .pl-home'); return !!h && h.children[0].classList.contains('st-bar') && /(st-accts|cl-heroes)/.test(h.children[1].className); }"))
             check("c. Home: the old Home (goals, 'Is the bot trading my eval?') is one tap away on #/homefull",
                   pg.evaluate("() => !!document.querySelector('#page [data-go=homefull]') && !document.querySelector('#page .hb-hero')"))
-            box = pg.evaluate("() => [...document.querySelectorAll('.pl-home .st-acct')].map(e => { const r = e.getBoundingClientRect(); return [Math.round(r.top), Math.round(r.width)]; })")
+            box = pg.evaluate("() => [...document.querySelectorAll('.pl-home :is(.st-acct, .cl-hero)')].map(e => { const r = e.getBoundingClientRect(); return [Math.round(r.top), Math.round(r.width)]; })")
             check("c. Home: the account cards are full width, stacked at 390 px", len(box) == 3 and box[0][0] < box[1][0] < box[2][0] and all(w > 300 for _, w in box), box)
             ov = pg.evaluate("() => document.documentElement.scrollWidth - innerWidth")
             check("c. Home: no horizontal scroll at 390 px", ov <= 1, ov)
@@ -242,8 +243,9 @@ def part_c(shots):
             pg.wait_for_timeout(900)
             zs = pg.eval_on_selector_all("#sub .zl-seg button", "els => els.map(e => e.textContent.trim())")
             check("c. Zlarior tab sections: Today · Brain · Trades · Results · Rules (Plan is a chip under Today, Strategy is Rules)", zs == ["Today", "Brain", "Trades", "Results", "Rules"], zs)
-            check("c. Zlarior > Today: the 50K account card on top (the same card as Home)", pg.query_selector("#page > .pl-bot .st-acct[data-bot='lit']") is not None
-                  and "TO THE TARGET" in pg.inner_text("#page > .pl-bot").upper())
+            zt = pg.inner_text("#page").upper()
+            check("c. Zlarior > Today: the 50K account card on top (the board's card, or the hero card without a board)",
+                  (pg.query_selector("#page > .pl-bot .st-acct[data-bot='lit']") is not None or pg.is_visible("#page > .cl-hero")) and "TO THE" in zt and "TARGET" in zt, zt[:300])
             ov = pg.evaluate("() => document.documentElement.scrollWidth - innerWidth")
             check("c. Zlarior tab: no horizontal scroll at 390 px", ov <= 1, ov)
             pg.goto(url + "?fxoff#/brain")

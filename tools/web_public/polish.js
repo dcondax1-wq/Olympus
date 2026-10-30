@@ -85,6 +85,14 @@
     const more = `<a class="pl-btn" data-go="mission">Mission Control</a><a class="pl-btn" data-go="board">Live board</a><a class="pl-btn" data-go="launch">Launch checklist</a>`;
     box.innerHTML = SU.bar(M, { open: SU.isOpen(), more, where: 'phone' }) + SU.accounts(M, { where: 'phone' }) + nowCard(M) + SU.sunday(M) + quick();
     el.prepend(box);
+    // no live board yet (the PC never reported, an older data.json): the account cards come from clean.js's hero cards
+    // (eval tracker + goals + ATLAS card), placed where the board's cards would be; BLITZ keeps its paper card
+    const have = new Set([...box.querySelectorAll('.st-acct')].map((a) => a.dataset.bot));
+    const heroes = el.querySelector(':scope > .cl-heroes');
+    if (heroes && !(have.has('lit') && have.has('atlas'))) {
+      heroes.hidden = false; heroes.classList.add('pl-fallback');
+      const at = box.querySelector('.st-accts'); if (at) at.before(heroes); else box.querySelector('.st-bar')?.after(heroes);
+    }
     const all = !!store.get('pl.homeAll', false);
     el.classList.add('pl-h'); el.classList.toggle('pl-all', all);
     const fold = document.createElement('button'); fold.type = 'button'; fold.className = 'pl-fold'; fold.setAttribute('aria-expanded', String(all));
