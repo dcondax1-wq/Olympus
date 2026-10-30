@@ -585,6 +585,85 @@ def api_checks(tmp):
     check("GET /api/next/fleet: every account with firm / plan / stage / balance / room / today / open / slippage / warnings",
           r.get("on") is True and r["accounts"][0]["firm"].startswith("MyFundedFutures") and "room" in r["accounts"][0], r)
     check("GET /api/next/fleet: the firm catalog for the add guide", r.get("firms") and any(x["id"] == "lucid" for x in r["firms"]), list(r))
+    # POST /api/next/fleet/set: the page's buttons = the CLI on data/fleet.json, PC only, never arms
+    from engine import cloud_guard as CG
+    keep = FL.FLEET_PATH
+    FL.FLEET_PATH = os.path.join(tmp, "api_post", "fleet.json")
+    try:
+        loc = TestClient(app, base_url="http://127.0.0.1:8766", client=("127.0.0.1", 50001))
+        phone = TestClient(app, base_url="http://192.168.1.20:8766", client=("192.168.1.50", 50003))
+        tunnel = TestClient(app, base_url="http://127.0.0.1:8766", client=("127.0.0.1", 50005), headers={"X-Forwarded-For": "203.0.113.9"})
+        body = {"action": "add", "id": "luc", "lead": "zlarior", "plan": "lucid_pro_50k", "account": "Sim112", "start": "2026-11-02"}
+        rp, rt = phone.post("/api/next/fleet/set", json=body), tunnel.post("/api/next/fleet/set", json=body)
+        check("POST /api/next/fleet/set from the phone / through a proxy: 403, nothing written",
+              rp.status_code == 403 and rt.status_code == 403 and not os.path.exists(FL.FLEET_PATH), (rp.text, rt.text))
+        rl = loc.post("/api/next/fleet/set", json=body)
+        d = FL.load_file()
+        check("POST add from the PC: saved, not armed", rl.status_code == 200 and rl.json().get("ok") and d["accounts"][0]["id"] == "luc"
+              and d["accounts"][0]["armed"] is False and d["accounts"][0]["nt_account"] == "Sim112", rl.text)
+        ra = loc.post("/api/next/fleet/set", json={"action": "arm", "id": "luc"})
+        check("POST arm is refused (arming is never done from a page)", ra.status_code == 400 and FL.load_file()["accounts"][0]["armed"] is False, ra.text)
+        rb = loc.post("/api/next/fleet/set", json={**body, "id": "x2", "account": 'Sim1;PLACE;"'})
+        rc = loc.post("/api/next/fleet/set", json={**body, "id": "x3", "plan": "nope"})
+        rd = loc.post("/api/next/fleet/set", json={**body, "id": "../x", "account": "Sim113"})
+        check("POST refuses a Name with ; / quotes, an unknown plan, a bad id (400, nothing saved)",
+              rb.status_code == 400 and rc.status_code == 400 and rd.status_code == 400 and len(FL.load_file()["accounts"]) == 1, (rb.text, rc.text, rd.text))
+        rk = loc.post("/api/next/fleet/set", json={"action": "kill", "id": "all"})
+        rf = loc.post("/api/next/fleet/set", json={"action": "to_funded", "id": "luc", "account": "Sim114", "start": "2026-11-20"})
+        ry = loc.post("/api/next/fleet/set", json={"action": "payout", "id": "luc", "usd": "1000", "day": "2026-12-01"})
+        d = FL.load_file()
+        check("POST kill all / to_funded / payout work like the CLI", rk.json().get("ok") and rf.json().get("ok") and ry.json().get("ok")
+              and d["kill"] is True and d["accounts"][0]["stage"] == "funded" and d["accounts"][0]["payouts"] == {"2026-12-01": 1000.0}, d)
+        check("the POST route is cloud-blocked", "/api/next/fleet/set" in CG.CLOUD_BLOCKED and set(r.path for r in FA.router.routes
+                                                                                                  if "POST" in getattr(r, "methods", set())) == set(CG.FLEET_WRITES))
+    finally:
+        FL.FLEET_PATH = keep
+
+
+def nt_checks(tmp):
+    """A Sim follower on the real NinjaTrader adapter against a simulated NinjaTrader 8 folder (engine/ninjatrader._FakeNT,
+    as tests/test_multi_account): the order files carry the follower's own Name and OIF tag, the fill gives the slippage vs
+    the lead, the lead's exit closes it."""
+    from engine.ninjatrader import NinjaTraderAdapter, _FakeNT
+    fake = _FakeNT(os.path.join(tmp, "nt", "NinjaTrader 8"), price=20000.5)
+    folder = os.path.dirname(fake.inc)
+    now = ts(DAY, 9, 40)
+    clock = type("Clk", (), {"t": now, "__call__": lambda self: self.t})()
+
+    def fac(f, cfg):
+        ad = NinjaTraderAdapter({**cfg, "nt_folder": folder}, clock=clock)
+        ad._sleep = lambda s: fake.process()
+        ad._alert_fn = lambda text: None
+        return ad
+    acc = [{"id": "nts", "name": "Sim copy", "lead": "zlarior", "plan": "mffu_builder_50k", "start": DAY, "adapter": "ninjatrader",
+            "nt_account": "Sim102"}]
+    b = Bot(os.path.join(tmp, "nt"), now, cfg={"adapter": "paper", "sym": "NQ", "instrument": "MNQ 12-26"})
+    b.clock = clock
+    b, fl, ads, notes = make(os.path.join(tmp, "nt"), acc, now, bot=b, factory=fac)
+    f = fol(fl, "nts")
+    check("NinjaTrader Sim follower: the adapter is built and not disabled", f.adapter is not None and not getattr(f.adapter, "disabled", None),
+          (f.problem, getattr(f.adapter, "disabled", None)))
+    b.lit_enter(1, 20000.0, 19980.0, 20120.0, qty=10)
+    b.adapter = type("A", (), {"legs": [{"entry_t": b._open_routed, "fill_px": 20000.25}]})()
+    clock.t = now + 3
+    fl.tick("NQ", clock.t)
+    fake.process()
+    names = " ".join(n for n, _ in fake.files)
+    lines = " ".join(" ".join(ln) for _, ln in fake.files)
+    check("the order file is tagged with the follower's own tag and routed to Sim102 only", "flnts_" in names and "Sim102" in lines
+          and "Sim101" not in lines, (names[:200], lines[:300]))
+    check("the copy is open on the follower", f.pos is not None and f.pos["qty"] > 0, (f.pos, f.skips))
+    fl.adapter_tick()
+    clock.t += 60
+    fl.tick("NQ", clock.t)
+    check("the fill is read back and the slippage vs the lead's fill recorded", f.slips and f.slips[-1]["ticks"] is not None, (f.slips, f.pos))
+    clock.t += 600
+    b.lit_exit(10 * (20 * 2 - 1.9), "TARGET", qty=10, t=clock.t)
+    fl.tick("NQ", clock.t)
+    fake.process()
+    check("the lead's exit closes the follower on NinjaTrader (CLOSEPOSITION) and books it", f.pos is None and f.closes
+          and "CLOSEPOSITION" in " ".join(" ".join(ln) for _, ln in fake.files), (f.pos, f.closes))
+    check("the simulated NinjaTrader saw no grammar error", not fake.errors, fake.errors[:3])
 
 
 def ui_checks(tmp):
@@ -621,8 +700,12 @@ def ui_checks(tmp):
           "Lucid 50K" in pc and "Firm rules" in pc and "Add an account" in pc and "nx-glass" in pc, out.get("error") or pc[:300])
     js_p = open(os.path.join(ROOT, "tools", "web_public", "fleet.js"), encoding="utf-8").read()
     js_c = open(os.path.join(ROOT, "web_next", "js", "next", "fleet.js"), encoding="utf-8").read()
-    check("both pages are read-only (no POST / arm / kill call)", all("method: 'POST'" not in s and "/arm" not in s and "fetch('/api/next/fleet/" not in s
-                                                                       for s in (js_p, js_c)))
+    check("phone page is read-only (no POST, no arm, no kill call)", "method: 'POST'" not in js_p and "/arm" not in js_p and "fetch(" not in js_p)
+    posts = re.findall(r"fetch\('([^']+)', \{ method: 'POST'", js_c)
+    check("PC page: its only POST is /api/next/fleet/set, it never sends an arm action",
+          posts == ["/api/next/fleet/set"] and "action: 'arm'" not in js_c and "'arm'" not in js_c and "/arm" not in js_c, posts)
+    check("PC page: Add / Off / Kill / Remove / Kill ALL ask before they post; the add says NOT armed",
+          "window.confirm(confirmText)" in js_c and "It is NOT armed" in js_c and "Kill EVERY follower?" in js_c)
     idx = open(os.path.join(ROOT, "tools", "web_public", "index.html"), encoding="utf-8").read()
     scripts = re.findall(r'<script src="([^"]+)" defer></script>', idx)
     check("phone index.html: fleet.js is one <script defer> line after the last script", scripts and scripts[-1].startswith("fleet.js"), scripts[-3:])
@@ -704,6 +787,7 @@ def main() -> int:
         misc_checks(tmp)
         cli_checks(tmp)
         api_checks(tmp)
+        nt_checks(tmp)
         ui_checks(tmp)
         if "--quick" not in sys.argv:
             replay(tmp)

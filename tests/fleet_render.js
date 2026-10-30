@@ -36,8 +36,9 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 (async () => {
   const src = fs.readFileSync(path.join(root, 'web_next', 'js', 'next', 'fleet.js'), 'utf8')
     .replace(/^import .*$/m, '').replace(/^export const fleet/m, 'const fleet');
-  const page = { id: 'page-fleet', innerHTML: '', classList: { contains: () => true }, querySelectorAll: () => [] };
-  const document = { getElementById: (id) => (id === 'page-fleet' ? page : null), querySelector: () => null, createElement: () => ({}),
+  const page = { id: 'page-fleet', innerHTML: '', classList: { contains: () => true }, querySelectorAll: () => [], querySelector: () => null,
+                 contains: () => false };
+  const document = { activeElement: null, getElementById: (id) => (id === 'page-fleet' ? page : null), querySelector: () => null, createElement: () => ({}),
                      body: { appendChild: () => 0 } };
   const fetch = async () => ({ json: async () => data.api });
   const $ = (s) => (s === '#page-fleet' ? page : null);

@@ -458,10 +458,14 @@ part yourself or fold it into a script.**
     <id> <day>=<$> | --dry-run <day>` (the day's LIT trades of research/lab/backtest_live.json on paper).
   - **Data / pages:** heartbeat `fleet` (`Fleet.hb_block`, < 6 KB, only when configured), live.json `pc.fleet` (dropped
     after `mind` when over 64 KB), GET `/api/next/fleet` (`engine/fleet_api.py`: rows + leads + totals + notices + the firm
-    catalog; off = {on: false} + the catalog). Phone `tools/web_public/fleet.js` (#/fleet, System group), PC
-    `web_next/js/next/fleet.js` (#fleet, CC entry in routes.js, PAGES.fleet in app.js). Tests `python -X utf8 -m
-    tests.test_firms` (58) and `tests.test_fleet [--quick]` (unit 81 + the LiveBot replay: the primary's ledger identical
-    with 3 followers, each copies every trade once).
+    catalog; off = {on: false} + the catalog), POST `/api/next/fleet/set` (the PC page's buttons = `fleet.run`, the CLI
+    without printing: add / remove / on / off / kill / unkill / to_funded / payout; PC only via `cloud_guard.local_only`,
+    `cloud_guard.FLEET_WRITES` in CLOUD_BLOCKED; every field checked; "arm" refused: arming stays the console `--arm`).
+    Phone `tools/web_public/fleet.js` (#/fleet, System group, read-only), PC `web_next/js/next/fleet.js` (#fleet, CC
+    entry in routes.js, PAGES.fleet in app.js; cards + Add form + per-account buttons with confirms + Kill ALL; never
+    redraws under typing). Tests `python -X utf8 -m tests.test_firms` (58) and `tests.test_fleet [--quick]` (103 unit
+    incl. a Sim follower on the real NinjaTrader adapter against `_FakeNT`, node renders of both pages, the POST guard;
+    + the LiveBot replay: the primary's ledger identical with 3 followers, each copies every trade once).
 
 ## Trade pictures (2026-10-23, `engine/trade_chart.py`, read-only)
 - One renderer for every strategy's trades (LIT, LIT+Asia, ema / macd / sr, sh_asia / sh_trend): 1600x900 dark PNG (~90 KB),

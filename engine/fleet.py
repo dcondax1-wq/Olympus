@@ -761,6 +761,8 @@ class Follower:
         P = self.profile or {}
         sl = [x["ticks"] for x in self.slips if x.get("ticks") is not None]
         warn = list(P.get("warn") or [])[:4]
+        if self.lead != "zlarior" and getattr(self.fleet.bot, "acct_b" if self.lead == "atlas" else "acct_c", None) is None:
+            warn.insert(0, f"{LEAD_NAMES.get(self.lead)} is not running on this PC: nothing to copy")
         if self.problem:
             warn.insert(0, self.problem)
         p = self.pos
@@ -1048,15 +1050,19 @@ class Fleet:
         return ok
 
     # ---- one poll
-    def tick(self, sym="NQ", now=None):
-        now = int(now or self.clock())
+    def adapter_tick(self):
+        """LiveBot._adapter_tick, before the data fetch: each follower's broker adapter gets its tick (late fills, bracket
+        health). Never raises."""
         for f in self.followers:
             ad = f.adapter
-            if f.problem is None and ad is not None and getattr(ad, "loop_tick", False) and callable(getattr(ad, "tick", None)):
+            if ad is not None and getattr(ad, "loop_tick", False) and callable(getattr(ad, "tick", None)):
                 try:
                     ad.tick()
                 except Exception as e:
                     f.log("error", f"adapter tick failed: {e.__class__.__name__}: {e}")
+
+    def tick(self, sym="NQ", now=None):
+        now = int(now or self.clock())
         leads = {k: lead_snapshot(self.bot, k) for k in LEADS if any(f.lead == k for f in self.followers)}
         ctx = {"now": now, "sym": sym, "leads": leads, "price": self.price(), "started_at": int(getattr(self.bot, "started_at", 0) or 0)}
         live = [f for f in self.followers if f.adapter is not None or f.pos is not None]
@@ -1296,35 +1302,34 @@ def dry_run(day: str, cfg: dict, trades: list | None = None) -> dict:
 
 
 # ---------------------------------------------------------------------------------------------------------------- CLI
-def _print_status(path):
+def _status_lines(path) -> list:
     d = load_file(path)
     rows = d.get("accounts") or []
     if not rows:
-        print("Fleet OFF: no follower accounts (data/fleet.json is empty). The bot trades its own accounts only.")
-        return 0
-    print(f"Fleet: {len(rows)} follower account(s)" + ("  ** FLEET KILL ON **" if d.get("kill") else ""))
+        return ["Fleet OFF: no follower accounts (data/fleet.json is empty). The bot trades its own accounts only."]
+    out = [f"Fleet: {len(rows)} follower account(s)" + ("  ** FLEET KILL ON **" if d.get("kill") else "")]
     ids, names = set(), set()
     for r in rows:
         n = normalize(r, ids, names)
         ids.add(n["id"])
         P = profile_of(n) or {}
-        print(f"  {n['id']:14s} {n['label']:5s} follows {LEAD_NAMES.get(n['lead'], n['lead']):8s} {P.get('label') or n['plan']:28s} "
-              f"{n['stage']:6s} {n['nt_account'] or '-':16s} from {n['start'] or '?'}"
-              + ("  KILLED" if n["killed"] else "") + (f"  ({n['problem']})" if n["problem"] else ""))
+        out.append(f"  {n['id']:14s} {n['label']:5s} follows {LEAD_NAMES.get(n['lead'], n['lead']):8s} {P.get('label') or n['plan']:28s} "
+                   f"{n['stage']:6s} {n['nt_account'] or '-':16s} from {n['start'] or '?'}"
+                   + ("  KILLED" if n["killed"] else "") + (f"  ({n['problem']})" if n["problem"] else ""))
     try:
         sp = _state_path_for(None)
         with open(sp, encoding="utf-8") as fh:
             sv = json.load(fh)
         for fid, b in (sv.get("followers") or {}).items():
             cl = b.get("closes") or []
-            print(f"  {fid}: {len(cl)} closed copies, ${sum(float(c[2]) for c in cl):+,.2f} booked, "
-                  + ("open " + _side((b.get('pos') or {}).get('dir', 1)) if b.get("pos") else "flat"))
+            out.append(f"  {fid}: {len(cl)} closed copies, ${sum(float(c[2]) for c in cl):+,.2f} booked, "
+                       + ("open " + _side((b.get('pos') or {}).get('dir', 1)) if b.get("pos") else "flat"))
     except Exception:
         pass
-    return 0
+    return out
 
 
-def main(argv=None) -> int:
+def _parser():
     import argparse
     ap = argparse.ArgumentParser(prog="python -X utf8 -m engine.fleet", description="copy trading: the owner's follower accounts (data/fleet.json)")
     ap.add_argument("--status", action="store_true")
@@ -1353,29 +1358,38 @@ def main(argv=None) -> int:
     ap.add_argument("--weekly-stop", type=float, help="live: weekly stop $")
     ap.add_argument("--max-micros", type=int, help="live: max micros")
     ap.add_argument("--file", default=None)
-    a = ap.parse_args(argv)
+    return ap
+
+
+def run(argv=None) -> tuple:
+    """The CLI's work without printing: (exit code, lines). Used by main() and the Fleet page (engine/fleet_api.py)."""
+    a = _parser().parse_args(argv)
+    lines = []
+    say = lines.append
     d = load_file(a.file)
     rows = d.setdefault("accounts", [])
     find = lambda i: next((r for r in rows if r.get("id") == i), None)
 
     def saved(msg):
         save_file(d, a.file)
-        print(msg + " The running bot picks it up at its next poll (an open copy keeps its old settings until it is flat).")
-        return 0
+        say(msg + " The running bot picks it up at its next poll (an open copy keeps its old settings until it is flat).")
+        return 0, lines
+
+    def fail(msg):
+        say(msg)
+        return 1, lines
     if a.dry_run:
         out = dry_run(a.dry_run, d)
-        print(f"Dry run {out['day']}: {out['lead_trades']} lead trade(s) replayed on paper (nothing routed, no bot file written)")
+        say(f"Dry run {out['day']}: {out['lead_trades']} lead trade(s) replayed on paper (nothing routed, no bot file written)")
         for r in out["accounts"]:
-            print(f"  {r.get('id')}: {r.get('trades')} copies, today ${float(r.get('today') or 0):+,.2f}, status {r.get('status')}"
-                  + (f", last skip: {r['last_skip']['why']}" if r.get("last_skip") else ""))
-        return 0
+            say(f"  {r.get('id')}: {r.get('trades')} copies, today ${float(r.get('today') or 0):+,.2f}, status {r.get('status')}"
+                + (f", last skip: {r['last_skip']['why']}" if r.get("last_skip") else ""))
+        return 0, lines
     if a.add:
         if not a.id or not a.plan:
-            print("--add needs --id and --plan (and --account for NinjaTrader, --start)")
-            return 1
+            return fail("--add needs --id and --plan (and --account for NinjaTrader, --start)")
         if find(a.id):
-            print(f"{a.id} exists (use --remove first)")
-            return 1
+            return fail(f"{a.id} exists (use --remove first)")
         live = a.plan == "live"
         r = {"id": a.id, "name": a.name or a.id, "lead": a.lead or "zlarior", "plan": a.plan, "stage": "live" if live else "eval",
              "adapter": "ninjatrader" if a.account else "paper", "nt_account": a.account or "", "start": a.start or "",
@@ -1388,12 +1402,11 @@ def main(argv=None) -> int:
             r["balance"] = a.balance
         n = normalize(r, {x.get("id") for x in rows}, {x.get("nt_account") for x in rows if x.get("nt_account")})
         if n["problem"] and not n["problem"].startswith("switched off"):
-            print(f"NOT saved: {n['problem']}")
-            return 1
+            return fail(f"NOT saved: {n['problem']}")
         rows.append(r)
         P = profile_of(n) or {}
         for w in P.get("warn") or []:
-            print("  ! " + w)
+            say("  ! " + w)
         return saved(f"saved {a.id}: {n['label']} follows {LEAD_NAMES[n['lead']]} on {P.get('label')} ({n['stage']}), "
                      f"{'NOT armed' if n['label'] in ('REAL', 'LIVE') else 'no arming needed'}.")
     for flag, fn in (("remove", None), ("on", True), ("off", False)):
@@ -1401,8 +1414,7 @@ def main(argv=None) -> int:
         if i:
             r = find(i)
             if r is None:
-                print(f"no follower {i}")
-                return 1
+                return fail(f"no follower {i}")
             if flag == "remove":
                 d["accounts"] = [x for x in rows if x.get("id") != i]
                 return saved(f"removed {i}.")
@@ -1415,26 +1427,23 @@ def main(argv=None) -> int:
             return saved(f"fleet kill {'ON: every follower is flattened and stops' if v else 'off'}.")
         r = find(i)
         if r is None:
-            print(f"no follower {i}")
-            return 1
+            return fail(f"no follower {i}")
         r["killed"] = v
         return saved(f"{i} {'KILLED: flattened at the next poll, no new entry' if v else 'un-killed'}.")
     if a.arm or a.disarm:
         i = a.arm or a.disarm
         r = find(i)
         if r is None:
-            print(f"no follower {i}")
-            return 1
+            return fail(f"no follower {i}")
         r["armed"] = bool(a.arm)
         if a.arm:
-            print("Armed in the file only. It trades real money only when the bot is started with the typed phrase "
-                  "(I ACCEPT LIVE RISK) AND NINJATRADER_LIVE=1, and its Name is on NinjaTrader's allowlist.")
+            say("Armed in the file only. It trades real money only when the bot is started with the typed phrase "
+                "(I ACCEPT LIVE RISK) AND NINJATRADER_LIVE=1, and its Name is on NinjaTrader's allowlist.")
         return saved(f"{i} {'armed' if a.arm else 'disarmed'}.")
     if a.to_funded:
         r = find(a.to_funded)
         if r is None or not a.start:
-            print("--to-funded <id> needs --start <first funded session> (and --account \"<funded Name>\" when it changes)")
-            return 1
+            return fail("--to-funded <id> needs --start <first funded session> (and --account \"<funded Name>\" when it changes)")
         r["eval_account"] = r.get("nt_account")
         if a.account:
             r["nt_account"] = a.account
@@ -1445,11 +1454,17 @@ def main(argv=None) -> int:
         r = find(i)
         day, _, usd = dv.partition("=")
         if r is None or _num(usd) is None:
-            print("--payout <id> <day>=<$>")
-            return 1
+            return fail("--payout <id> <day>=<$>")
         r.setdefault("payouts", {})[day.strip()] = float(usd)
         return saved(f"payout {day.strip()} ${float(usd):,.2f} recorded on {i}.")
-    return _print_status(a.file)
+    return 0, _status_lines(a.file)
+
+
+def main(argv=None) -> int:
+    rc, lines = run(argv)
+    for ln in lines:
+        print(ln)
+    return rc
 
 
 if __name__ == "__main__":

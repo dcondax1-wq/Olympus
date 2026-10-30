@@ -810,6 +810,8 @@ class LiveBot:
             self.acct_b.adapter_tick()              # account B's adapter (never raises)
         if getattr(self, "acct_c", None) is not None and not self.kill:
             self.acct_c.adapter_tick()              # account C's adapter (never raises)
+        if getattr(self, "fleet", None) is not None and not self.kill:
+            self.fleet.adapter_tick()               # the fleet followers' adapters (engine/fleet.py, never raises)
         if self.kill or not getattr(ad, "loop_tick", False) or not callable(getattr(ad, "tick", None)):
             return
         try:

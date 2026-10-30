@@ -9,7 +9,8 @@ It is **off** until you add an account, and it never arms anything for you.
 1. **Buy the account.** Use your own price with the firm's current code (never the list price). Check first that the firm
    allows a bot on NinjaTrader (the table below).
 2. **Log it in NinjaTrader 8.** Its Name shows in the Accounts tab. Test on a Sim account first if you like (Sim101, Sim102 ...).
-3. **Add it on the PC** with one line (put in your account's Name, the plan from the table, and the first day):
+3. **Add it on the PC:** dashboard > All tools > **Fleet** > "Add an account" (short id, which bot it copies, firm + plan,
+   the NinjaTrader Name, the first day) > **Add it**. Or one console line:
 
 ```
 python -X utf8 -m engine.fleet --add --id lucid50k --lead zlarior --plan lucid_pro_50k --account "<Name>" --start 2026-11-02
@@ -34,9 +35,13 @@ starts, as for ATLAS and BLITZ. The fleet never turns on live trading on its own
 
 ## Other lines (on the PC)
 
+The Fleet page on the PC has the same buttons on every account card (Switch off / on, Kill, Passed → funded, Record a
+payout, Remove) and "Kill ALL followers" at the top. Arming is never a button: it is the console line below.
+
 | What | Line |
 |---|---|
 | See every account | `python -X utf8 -m engine.fleet --status` |
+| Arm a real account (you only) | `python -X utf8 -m engine.fleet --arm <id>`, then start the bot with the live phrase |
 | Stop one account / all now | `python -X utf8 -m engine.fleet --kill <id>` / `--kill all` (`--unkill` to undo) |
 | Switch one off / on | `--off <id>` / `--on <id>` |
 | Passed: now funded | `--to-funded <id> --account "<funded Name>" --start <day>` |
