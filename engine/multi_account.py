@@ -744,6 +744,8 @@ class Account:
             age = now - (ent["entry_t"] + secs)
             why = ctx.get("entry_block") or (f"seen {age // 60} min late" if age > 2 * secs + 60 else None) or self.entry_block(now)
             why = why or self.router.opposite_open(1 if ent["dir"] == 1 else -1, exclude=self)
+            fl = getattr(self.router.bot, "fleet", None)           # engine/fleet.py (off = None): no hedge vs a follower
+            why = why or (fl.opposite_open(1 if ent["dir"] == 1 else -1) if fl is not None else None)
             q = 0 if why else self.qty_for(ent, now)
             if why or not q:
                 self.blocked.add(ent["entry_t"])

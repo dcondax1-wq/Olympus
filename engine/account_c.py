@@ -847,6 +847,14 @@ class AccountC:
                     return h
             except Exception:
                 pass
+        fl = getattr(b, "fleet", None)                 # engine/fleet.py (off = None): any follower holding the other side
+        if fl is not None:
+            try:
+                h = fl.opposite_open(d)
+                if h:
+                    return h
+            except Exception:
+                return "fleet state unreadable (fails closed)"
         return None
 
     def yield_to(self, d: int, who: str, sym: str, now: int, px=None, entry_t=None) -> bool:
