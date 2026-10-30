@@ -8,8 +8,8 @@
 <title>Liquidity Engine</title>
 <meta name="description" content="NQ futures paper bot on the LIT strategy: bot status, MFFU eval tracker, trades, replays, backtest results and the research lab. The previous strategy is kept in the Archive.">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/svg+xml" href="icons/icon.svg?v=k31025">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=k31025">
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg?v=p111030">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=p111030">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1001,13 +1001,13 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
 <div class="space-css" aria-hidden="true"><i class="sc-stars"></i><i class="sc-stars sc-b"></i><i class="sc-mw"></i><i class="sc-sun"></i><i class="sc-moon"></i><i class="sc-earth"></i></div>
 <!-- the intro (2026-10-30): first open of the day only, skippable (tap / any key / Skip), never with reduced motion -->
 <div id="splash" aria-hidden="true"><canvas id="spCv"></canvas><div class="sp-orbs"><i style="--c:#4f9bff;--a0:0deg;--dl:0s"></i><i style="--c:#ff9a3d;--a0:120deg;--dl:.1s"></i><i style="--c:#b388ff;--a0:240deg;--dl:.2s"></i></div>
-  <div class="sp-in"><img src="icons/icon-512.png?v=k31025" alt="">
+  <div class="sp-in"><img src="icons/icon-512.png?v=p111030" alt="">
   <div class="sp-t">LIQUIDITY ENGINE</div><div class="sp-s">Zlarior · ATLAS · BLITZ · NQ futures · read-only</div><div class="sp-line" id="spLine"></div><div class="sp-bar"><i></i></div></div>
   <button type="button" class="sp-skip" id="spSkip">Skip</button></div>
 <div class="app">
   <aside class="side">
     <div class="brand">
-      <div class="mark"><img src="icons/icon-192.png?v=k31025" alt="" width="38" height="38"></div>
+      <div class="mark"><img src="icons/icon-192.png?v=p111030" alt="" width="38" height="38"></div>
       <div><b>Liquidity Engine</b><span id="sideStrat">Zlarior · LIT method · NQ · MFFU Builder 50K · paper</span></div>
     </div>
     <nav class="nav" id="nav" aria-label="Sections"></nav>
@@ -1972,7 +1972,7 @@ VIEWS.today = (el) => {
   const todays = (lv.ledger || []).filter(v => v.day === lv.today), dayPnl = todays.reduce((a, v) => a + (v.usd || 0), 0);
   const y = D.results?.periods?.['2026 YTD'], RD = reactorData(), WK = weekData(), LQ = liqData();
   el.innerHTML = `<div id="lpToday" class="lp-slot"></div>
-    <div class="card hero-card"><div class="hero3d" id="tdOrb"><img class="hero-fallback" src="icons/icon-512.png?v=k31025" alt="">
+    <div class="card hero-card"><div class="hero3d" id="tdOrb"><img class="hero-fallback" src="icons/icon-512.png?v=p111030" alt="">
         <span class="hero-tag">${icon('engine')}LIVE ORACLE · last ${Math.min(12, (lv.bars || []).length)} bars</span></div>
       <div class="state">
         <div><div class="eyebrow">Cloud paper bot · ${esc(stratName())} · ${s.inkz ? esc(s.inkz[2]) + ' live' : s.next ? `${esc(s.next[0])} in ${Math.floor(s.next[1] / 60)}h ${String(s.next[1] % 60).padStart(2, '0')}m` : s.wk ? 'session over' : 'weekend'}</div>
@@ -4242,7 +4242,7 @@ async function pushFill(cardId) {
   const b = box(); if (!b) return;
   b.querySelector('#puOn')?.addEventListener('click', async () => { try { const r = await pushEnsure(true); toast(r?.state === 'on' ? 'Notifications on' : 'Allowed: the cloud picks this phone up on its next run'); haptic(14); } catch (e) { toast(e.message || String(e), 5200); } pushFill(cardId); });
   b.querySelector('#puTest')?.addEventListener('click', async () => {
-    try { const r = await swReg(); await r.showNotification('LONG · MFFU 50K', { body: 'Entered 4 MNQ (test on this phone)', icon: 'icons/icon-192.png?v=k31025', badge: 'icons/icon-192.png?v=k31025', tag: 'le-local-test', data: { url: '#/activity' } }); toast('Test shown'); } catch (e) { toast(e.message || String(e)); }
+    try { const r = await swReg(); await r.showNotification('LONG · MFFU 50K', { body: 'Entered 4 MNQ (test on this phone)', icon: 'icons/icon-192.png?v=p111030', badge: 'icons/icon-192.png?v=p111030', tag: 'le-local-test', data: { url: '#/activity' } }); toast('Test shown'); } catch (e) { toast(e.message || String(e)); }
   });
   b.querySelector('#puOff')?.addEventListener('click', async () => { try { await pushOff(); toast('Notifications off on this phone'); } catch (e) { toast(e.message || String(e)); } pushFill(cardId); });
 }

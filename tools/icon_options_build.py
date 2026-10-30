@@ -50,6 +50,11 @@ OPTIONS.update({
     "k2": ("Orbit Sovereign", "Bold-premium: a wide glowing glass candle, one heavy polished gold ring and one fine teal ring, a big bright comet head."),
     "k3": ("Orbit Halo", "Balanced: teal glass candle with refraction and inner light inside a thin teal halo, a steep gold ring with a fine teal ring, short particle trail."),
 })
+try:                                                      # the minimal p1..p6 (owner 2026-10-30)
+    from tools.icon_options_minimal import OPTIONS as _MIN  # noqa: E402
+except ImportError:                                       # run as a script: tools/ is on the path
+    from icon_options_minimal import OPTIONS as _MIN  # noqa: E402
+OPTIONS.update(_MIN)
 FIRST, MORE, FINAL = list("abc"), list("defghijklm"), ["j1", "j2", "j3", "k1", "k2", "k3"]
 SIZES = {"icon-512.png": 512, "icon-192.png": 192, "apple-touch-icon.png": 180, "icon-152.png": 152, "icon-120.png": 120}
 

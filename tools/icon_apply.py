@@ -1,4 +1,4 @@
-"""Switch the live Home Screen icon to one of the options in tools/web_public/icon_options/<a..m, j1..k3>/ (preview sheets: research/handoff/2026-10-25/icon_options*.png).
+"""Switch the live Home Screen icon to one of the options in tools/web_public/icon_options/<a..m, j1..k3, p1..p14>/ (preview sheets: research/handoff/2026-10-25/icon_options*.png).
 
     python tools/icon_apply.py b             # apply option B
     python tools/icon_apply.py b --dry-run   # show what would change, write nothing
@@ -86,7 +86,7 @@ def apply(key, root=ROOT, dry=False, today=None):
 
 def main():
     ap = argparse.ArgumentParser(description="Switch the live Home Screen icon to option a..m or j1..k3.")
-    ap.add_argument("option", choices=list("abcdefghijklm") + ["j1", "j2", "j3", "k1", "k2", "k3"])
+    ap.add_argument("option", choices=list("abcdefghijklm") + ["j1", "j2", "j3", "k1", "k2", "k3"] + [f"p{i}" for i in range(1, 15)])
     ap.add_argument("--root", default=ROOT, help="repo root to act on (default: this repo)")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()

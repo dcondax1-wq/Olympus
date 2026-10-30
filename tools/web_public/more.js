@@ -112,7 +112,7 @@
         if (!('serviceWorker' in navigator) || !('Notification' in window)) throw new Error('This browser cannot show notifications (open the Home Screen app)');
         if (Notification.permission !== 'granted' && (await Notification.requestPermission()) !== 'granted') throw new Error('Notifications are not allowed for this app');
         const r = await navigator.serviceWorker.ready;
-        await r.showNotification('Test · Liquidity', { body: 'Test on this phone: notifications work.', icon: 'icons/icon-192.png?v=k31025', badge: 'icons/icon-192.png?v=k31025', tag: 'le-local-test', data: { url: '#/settings' } });
+        await r.showNotification('Test · Liquidity', { body: 'Test on this phone: notifications work.', icon: 'icons/icon-192.png?v=p111030', badge: 'icons/icon-192.png?v=p111030', tag: 'le-local-test', data: { url: '#/settings' } });
         toast('Test shown');
       } catch (e) { toast(e.message || String(e), 4200); }
     };
