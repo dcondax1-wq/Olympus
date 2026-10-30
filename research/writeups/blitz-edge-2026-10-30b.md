@@ -1,17 +1,30 @@
 ---
-title: BLITZ edge, round 2 (2026-10-30 afternoon) - funded size, eval rules and new signal facts - nothing passes every gate; one promising funded lead (later breaks 2 micros + abandon at 1 stop) for paper
+title: BLITZ edge, rounds 2-3 (2026-10-30 afternoon) - funded size, eval rules, signal facts, a momentum-regime gate - nothing passes every gate; the funded later-break size stays a paper lead
 family: risk
 date: 2026-10-30
-status: rejected (no change; nothing passes every gate) - promising paper lead - the funded 25K sizes a later band break at 2 micros (a first break 1) while that risks at most 25% of the room, and gives up a funded account at 1 x the median stop instead of 2 x; it beats today in H1, H2 and 2021-25 on 3 seeds, +1 / +2 ticks, 1 bar late and every 2021-25 year, but it was not the H1 pick (the H1 pick fails H2) and random directions get part of its gain
-summary: Owner 2026-10-30 12:30 - "make BLITZ way better - good rules, good strategy, good discretion", BLITZ's own 25K (account C) starts next week. Same trades as today (engine/blitz.py v2 as account C, costs in, CME NQ 1m 2026 / 5m 2021-25); 2026 H1 = pick, H2 = check, 2021-25 = the 5-year gate. 1. Funded stage (where the slot loses its money - funded accounts at 1 micro mostly sit open or get stuck before a payout) - 66 rules + 123 later-break micro sizes + stress - buffer-first size (bigger once the floor locks) H1 -$24 to -$142 a month, funded day / week stops, max trades a day, smaller payout asks, waiting for bigger asks and skipping big stops near the floor all lose in H1; the later-break size in whole micros (later break 2 micros, first break 1) is the one family that helps - its H1 pick (<= 50% of the room) makes +$71 to +$77 a month in H1 but -$16 to -$19 in H2 and -$3 in 2021-25 (3 seeds), so it fails. 18 of the 25 variants that beat today in both H1 quarters also beat it in H2 and 2021-25; the sturdiest, C3 (<= 25% of the room, abandon at 1 x the median stop), is +$22 / +$42 / +$9 a month (slot $308 / $94 / -$30 vs $286 / $52 / -$39) - a paper lead, not adopted. 2. Eval - the first winner ending the day on sessions 1-4 slows the eval and loses slot $ everywhere; 2 losers ending the day cuts 2-week fails but only delays them; skipping first breaks early is mixed - the later-break eval size (blitz_25k_pick_v2.json) stays the only eval change. 3. Signal facts - relative volume of the signal bar, band width / ATR, the sigma regime, an earlier opposite-side break, yesterday's BLITZ result, the last 10 trades - 0 of 120 tilts beat today in all three spans (shuffled facts give 4.9). BLITZ's 2021-25 slot stays negative with any size.
-runs: bzx_funded_later2, bzx_funded_rules, bzx_eval_rules, bzx_signal_facts
+status: rejected (no change; nothing passes every gate; no pick v3) - promising paper lead - the funded 25K sizes a later band break at 2 micros (a first break 1). Round 3 - on 20 seeds C3 (<= 25% of the room, give up at 1 x the median stop) beats v2 in H1, H2 and 2021-25 on every seed, but the H1-only selection rules (written before H2) pick a different cell (<= 35% of the room, give up at 1.5 x) which passes the 3 spans on 20 seeds yet fails +1 tick in 2021-25, 1 bar late in H2, 2024, the H2 shuffled-label control and the next cell out; the later give-up line alone is fee saving (random directions gain as much) and loses in H1; the momentum-regime day gate (0 of 60) is rejected
+summary: Round 3 (coordinator 13:00) - (1) C3 robustness on 20 Monte Carlo seeds, slot $ a month vs v2 (H1 / H2 / 2021-25) - C3 +16.9 / +42.2 / +9.8 (20 / 20 / 20 seeds better); the later-break funded size alone +23.4 / +35.3 / +0.3 (2021-25 8 of 20); the give-up line at 1 x alone -3.9 / +6.8 / +6.9 (H1 0 of 20; random directions +13 / +2 / +10 = fee saving, not edge). Three H1-only selection rules on a 40-cell grid (room 15-35%, give-up 0.75-1.5 x, later 2-3 micros), fixed before H2 / 2021-25 were computed, all pick 35% / 1.5 x / 2 micros (not C3) - +51.8 / +11.7 / +3.2 on 20 of 20 seeds, but +1 tick 2021-25 -2, 1 bar late H2 -2, 2024 -8, 50% of the room next door H2 -8.6, and random first / later labels do better in H2 - not adopted. (2) Momentum-regime day gate from the market only (30-min return autocorrelation, variance ratio, 11:00-12:00 band-break follow-through; 20 / 40 sessions) - 0 of 30 skip and 0 of 30 half-size gates beat today in H1, H2 and 2021-25; the H1 pick (follow-through 40 >= H1 p35) makes $908 / -$16 / -$4 a month at $150 (today $963 / $667 / $73) with 0.96 trades a week in H2; 2026 H2 reads as a low-momentum market yet BLITZ made PF 1.62 there. Round 2 - Owner 2026-10-30 12:30 - "make BLITZ way better - good rules, good strategy, good discretion", BLITZ's own 25K (account C) starts next week. Same trades as today (engine/blitz.py v2 as account C, costs in, CME NQ 1m 2026 / 5m 2021-25); 2026 H1 = pick, H2 = check, 2021-25 = the 5-year gate. 1. Funded stage (where the slot loses its money - funded accounts at 1 micro mostly sit open or get stuck before a payout) - 66 rules + 123 later-break micro sizes + stress - buffer-first size (bigger once the floor locks) H1 -$24 to -$142 a month, funded day / week stops, max trades a day, smaller payout asks, waiting for bigger asks and skipping big stops near the floor all lose in H1; the later-break size in whole micros (later break 2 micros, first break 1) is the one family that helps - its H1 pick (<= 50% of the room) makes +$71 to +$77 a month in H1 but -$16 to -$19 in H2 and -$3 in 2021-25 (3 seeds), so it fails. 18 of the 25 variants that beat today in both H1 quarters also beat it in H2 and 2021-25; the sturdiest, C3 (<= 25% of the room, abandon at 1 x the median stop), is +$22 / +$42 / +$9 a month (slot $308 / $94 / -$30 vs $286 / $52 / -$39) - a paper lead, not adopted. 2. Eval - the first winner ending the day on sessions 1-4 slows the eval and loses slot $ everywhere; 2 losers ending the day cuts 2-week fails but only delays them; skipping first breaks early is mixed - the later-break eval size (blitz_25k_pick_v2.json) stays the only eval change. 3. Signal facts - relative volume of the signal bar, band width / ATR, the sigma regime, an earlier opposite-side break, yesterday's BLITZ result, the last 10 trades - 0 of 120 tilts beat today in all three spans (shuffled facts give 4.9). BLITZ's 2021-25 slot stays negative with any size.
+runs: bzx_c3_robust, bzx_regime_gate, bzx_funded_later2, bzx_funded_rules, bzx_eval_rules, bzx_signal_facts
 ---
 
 ## Money first
 
-**Nothing passes every gate, so nothing changes.** BLITZ's trades stay exactly as they are. The later-break eval size
-(`research/scalp/blitz_25k_pick_v2.json`, still waiting for your OK) remains the one change on the table. There is one new
-lead for the funded 25K, for paper only.
+**Nothing passes every gate, so nothing changes, and there is no pick v3.** BLITZ's trades stay exactly as they are. The
+later-break eval size (`research/scalp/blitz_25k_pick_v2.json`, still waiting for your OK) remains the one change on the
+table. There is one lead for the funded 25K, for paper only.
+
+**Round 3 in one table** (20 Monte Carlo seeds; slot $ a month to you, net of every $63 eval):
+
+| Set-up | Slot H1 / H2 / 2021-25 (mean of 20 seeds) | vs v2: seeds better H1 / H2 / 2021-25 | Verdict |
+|---|---|---|---|
+| Today | $257 / $43 / -$40 | | baseline |
+| v2 (later-break eval size) | $276 / $57 / -$38 | | adopt-candidate since this morning |
+| (a) v2 + the funded later-break size only (later 2 micros, <= 25% of the room) | $299 / $93 / -$38 | 20 / 20 / 8 | 2021-25 flat |
+| (b) v2 + the later give-up line only (1 x the median stop) | $272 / $64 / -$31 | 0 / 20 / 20 | loses in H1; fee saving, not edge |
+| C3 = (a) + (b) | $293 / $99 / -$28 | 20 / 20 / 20 | not what the H1 rules pick |
+| C1 (later 3 micros, 2 on every trade after the lock, <= 50%) | $320 / $134 / -$34 | 20 / 20 / 19 | not the H1 pick; weak under stress |
+| **H1-rule pick (later 2 micros, <= 35% of the room, give up at 1.5 x)** | $328 / $69 / -$35 (+51.8 / +11.7 / +3.2) | 20 / 20 / 20 | **fails the stress / year / control checks** |
+| Momentum-regime day gate (H1 pick) | at $150: $908 / -$16 / -$4 a month (today $963 / $667 / $73) | | rejected |
 
 **BLITZ's trades at $150 a trade** (unchanged by everything below; costs in):
 
@@ -35,6 +48,118 @@ lead for the funded 25K, for paper only.
 In money: the C3 lead would add about **+$22 / +$42 / +$9 a month** to v2's slot (H1 / H2 / 2021-25, the mean of 3
 Monte Carlo seeds +$17 / +$41 / +$10). Against today's whole set-up (today's eval and funded size) that is +$38 / +$57 /
 +$10 a month. The BLITZ 25K slot still loses about $30 a month in a 2021-25-like market.
+
+## Round 3 (13:00): can C3 become an adopt-candidate? And a momentum-regime gate
+
+### C3 on 20 seeds, and its two parts
+
+Slot $ a month vs v2 on the same seed. 20 Monte Carlo seeds (23-42), 1,000 paths each. Columns: mean gain (worst / best
+seed, seeds better).
+
+| | H1 | H2 | 2021-25 |
+|---|---|---|---|
+| C3 (a + b) | +16.9 (+11 / +24, 20/20) | +42.2 (+39 / +45, 20/20) | +9.8 (+8 / +12, 20/20) |
+| (a) later-break funded size alone | +23.4 (+19 / +30, 20/20) | +35.3 (+33 / +38, 20/20) | +0.3 (-2 / +3, 8/20) |
+| (b) give-up at 1 x the median stop alone | -3.9 (-5 / -1, 0/20) | +6.8 (+5 / +9, 20/20) | +6.9 (+5 / +8, 20/20) |
+| C1 | +44.0 (+37 / +53, 20/20) | +76.3 (+70 / +84, 20/20) | +4.2 (+0 / +8, 19/20) |
+
+Random directions (8 seeds, the same sizes on coin-flip trades), gain vs v2:
+
+| | H1 | H2 | 2021-25 |
+|---|---:|---:|---:|
+| (a) | +3 | +8 | -2 |
+| (b) | +13 | +2 | +10 |
+| C3 | +16 | +11 | +10 |
+
+- **(b) is fee saving, not edge.** Keeping a funded account alive until it is down to 1 stop-out, instead of 2, delays
+  buying the next $63 eval. It earns as much on random trades as on BLITZ's trades. Alone it loses $1-5 a month in H1
+  on every seed, so it cannot be adopted alone.
+- **(a) is real in 2026 and zero in 2021-25.** It needs BLITZ's edge: random trades gain nothing. But in 2021-25 it is
+  +0.3 a month and better on only 8 of 20 seeds.
+- **C3's 2021-25 gain is almost all (b).**
+
+### Would an H1-only rule pick C3?
+
+The grid (40 cells): room share 15 / 20 / 25 / 30 / 35%, give-up line 0.75 / 1.0 / 1.25 / 1.5 x the median stop, later
+break 2 or 3 micros. First break 1 micro.
+
+Three selection rules were written into `research/scalp/bzx_c3_pick.json` before any H2 or 2021-25 number of the grid
+was computed. Each uses 10 H1 seeds, gain vs v2:
+
+- A = the best worst-case over the cell and its grid neighbours (plateau);
+- B = the best worst seed;
+- C = the best median.
+
+**All three pick the same cell: later 2 micros, <= 35% of the room, give up at 1.5 x.** That is not C3: it is two steps
+up in room share and two steps up in the give-up line, and it is the corner of the grid.
+
+Median H1 gain vs v2 (10 seeds), later 2 micros. Rows = give-up line, columns = room share 15 / 20 / 25 / 30 / 35%:
+
+| give-up | 15% | 20% | 25% | 30% | 35% |
+|---|---:|---:|---:|---:|---:|
+| 0.75 x | -5.0 | +4.0 | +10.0 | +24.5 | +33.5 |
+| 1.0 x | +0.0 | +8.0 | **+17.0 (C3)** | +32.5 | +44.0 |
+| 1.25 x | +3.5 | +12.5 | +20.5 | +37.0 | +49.5 |
+| 1.5 x | +5.0 | +15.0 | +23.0 | +40.0 | **+52.5 (pick)** |
+
+The same cells in H2: +33 to +44.5 at 15-25% of the room, falling to +12 to +21.5 at 30-35%. In 2021-25: +2 to +19.5,
+set mostly by the give-up line (0.75 x the most). Later 3 micros lose in H1 in 17 of 20 cells. 21 of the 40 cells have a
+positive median gain in all three spans.
+
+**The rule's pick, checked** (gain vs v2):
+
+| Check | H1 | H2 | 2021-25 |
+|---|---:|---:|---:|
+| 20 seeds (mean, worst, seeds better) | +51.8 (+48, 20/20) | +11.7 (+7, 20/20) | +3.2 (+1, 20/20) |
+| +1 tick a side | +44 | +7 | **-2** |
+| +2 ticks a side | +42 | +7 | **-5** |
+| 1 bar late | +23 | **-2** | +4 |
+| 2021-25 by year (2022 / 2023 / 2024 / 2025) | | | +22 / +4 / **-8** / +6 |
+| random directions | +5 | +5 | 0 |
+| shuffled first / later labels: real vs shuffled mean (share of shuffles as good) | $335 vs $296 (0.00) | $61 vs **$84 (0.95)** | -$37 vs -$37 (0.60) |
+| next cell out: room share 50% (5 seeds) | +74.2 | **-8.6 (0/5)** | -0.4 |
+
+- It passes the plain three-span test on all 20 seeds. It needs BLITZ's edge: random directions gain about nothing.
+- It fails the checks around it:
+  - In 2021-25 it turns negative with one extra tick of slippage, and it loses in 2024.
+  - It loses in H2 when the entry is one bar late.
+  - In H2, putting the 2nd micro on random trades does better than putting it on later breaks.
+  - One step past the grid edge (50% of the room) fails H2.
+- **Not an adopt-candidate. C3 itself is dropped as a candidate:** the H1 data would not have chosen it.
+- What remains is a paper lead: "a later band break gets the 2nd micro in the funded 25K". It is worth watching on BLITZ's
+  funded paper ledger, not switching.
+
+### The momentum-regime day gate (new family)
+
+The measures come from the market only (CME NQ 5m, every session 2021-11 to 2026-10). They use the prior 20 or 40
+sessions, so they are known before the open:
+
+- **ac** = the lag-1 autocorrelation of the thirteen 30-minute RTH returns;
+- **vr** = the variance ratio of the day's return vs its 30-minute pieces (> 1 = moves persist);
+- **ft** = the share of days whose first noise-band break at 11:00 / 11:30 / 12:00 kept going to the 16:00 close.
+
+The gate: no BLITZ trade on an "off" day, or half size. "On" = the measure at or above its 20 / 35 / 50 / 65 / 80th
+percentile over 2026 H1 BLITZ days. Pick rules were written before H2 / 2021-25 were computed (`bzx_regime_pick.json`):
+
+- G1 = the best H1 $ a month with >= 2 trades a week;
+- G2 = the strictest gate that keeps >= 95% of H1's $.
+
+| At $150 a trade | H1: on / trades a week / PF / $ a month | H2 | 2021-25 |
+|---|---|---|---|
+| No gate (today) | 100% / 8.5 / 1.70 / $963 | 100% / 6.8 / 1.62 / $667 | 100% / 8.6 / 1.05 / $73 |
+| G1: ft40 >= H1 p35 (0.54) | 65% / 5.6 / 2.02 / $908 | **14% / 0.96 / 0.94 / -$16** | 67% / 5.7 / 1.00 / -$4 |
+| best 2021-25 gate: vr40 >= p20 | 80% / 6.8 / 1.42 / $510 | 54% / 3.7 / 1.41 / $291 | 88% / 7.5 / 1.04 / $60 |
+
+- **0 of 30 skip gates and 0 of 30 half-size gates beat today in all three spans.** Not one gate raises 2021-25 above
+  $73 a month.
+- G2 does not exist: every gate costs more than 5% of H1's $.
+- G1 by year (2021-25): 2022 $244 -> $59, 2023 $131 -> $58, 2024 -$200 -> -$153, 2025 $140 -> $28. Trades a week stay at
+  4.6-6.8.
+- Shuffled days (the measure's values on random dates, 20 seeds): $35 a month in 2021-25 vs the real gate's -$4. The
+  real gate is worse than random.
+- The fact behind it: **2026 H2 reads as a low-momentum market on all three measures.** The H1 cut leaves only 14% of H2
+  days "on". Yet BLITZ made PF 1.62 there. The market's own momentum does not explain why BLITZ works in 2026 and not in
+  2021-25. Rejected.
 
 ## Why the funded stage loses the money
 
