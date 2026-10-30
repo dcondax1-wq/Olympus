@@ -1,0 +1,254 @@
+{
+ "seeds": [
+  23,
+  24,
+  25,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32,
+  33,
+  34,
+  35,
+  36,
+  37,
+  38,
+  39,
+  40,
+  41,
+  42
+ ],
+ "rows": {
+  "today": {
+   "H1": {
+    "mean": 257,
+    "min": 249,
+    "max": 271,
+    "d_v2_mean": -18.6,
+    "d_v2_min": -23,
+    "d_v2_max": -14,
+    "seeds_better_than_v2": 0,
+    "seeds_tied": 0,
+    "d_today_mean": 0.0,
+    "seeds_better_than_today": 0
+   },
+   "H2": {
+    "mean": 43,
+    "min": 33,
+    "max": 49,
+    "d_v2_mean": -14.7,
+    "d_v2_min": -17,
+    "d_v2_max": -13,
+    "seeds_better_than_v2": 0,
+    "seeds_tied": 0,
+    "d_today_mean": 0.0,
+    "seeds_better_than_today": 0
+   },
+   "R": {
+    "mean": -40,
+    "min": -44,
+    "max": -37,
+    "d_v2_mean": -2.1,
+    "d_v2_min": -4,
+    "d_v2_max": -1,
+    "seeds_better_than_v2": 0,
+    "seeds_tied": 0,
+    "d_today_mean": 0.0,
+    "seeds_better_than_today": 0
+   }
+  },
+  "v2": {
+   "H1": {
+    "mean": 276,
+    "min": 267,
+    "max": 291,
+    "d_v2_mean": 0.0,
+    "d_v2_min": 0,
+    "d_v2_max": 0,
+    "seeds_better_than_v2": 0,
+    "seeds_tied": 20,
+    "d_today_mean": 18.6,
+    "seeds_better_than_today": 20
+   },
+   "H2": {
+    "mean": 57,
+    "min": 49,
+    "max": 66,
+    "d_v2_mean": 0.0,
+    "d_v2_min": 0,
+    "d_v2_max": 0,
+    "seeds_better_than_v2": 0,
+    "seeds_tied": 20,
+    "d_today_mean": 14.7,
+    "seeds_better_than_today": 20
+   },
+   "R": {
+    "mean": -38,
+    "min": -41,
+    "max": -34,
+    "d_v2_mean": 0.0,
+    "d_v2_min": 0,
+    "d_v2_max": 0,
+    "seeds_better_than_v2": 0,
+    "seeds_tied": 20,
+    "d_today_mean": 2.1,
+    "seeds_better_than_today": 20
+   }
+  },
+  "C3": {
+   "H1": {
+    "mean": 293,
+    "min": 281,
+    "max": 308,
+    "d_v2_mean": 16.9,
+    "d_v2_min": 11,
+    "d_v2_max": 24,
+    "seeds_better_than_v2": 20,
+    "seeds_tied": 0,
+    "d_today_mean": 35.4,
+    "seeds_better_than_today": 20
+   },
+   "H2": {
+    "mean": 99,
+    "min": 89,
+    "max": 108,
+    "d_v2_mean": 42.2,
+    "d_v2_min": 39,
+    "d_v2_max": 45,
+    "seeds_better_than_v2": 20,
+    "seeds_tied": 0,
+    "d_today_mean": 56.9,
+    "seeds_better_than_today": 20
+   },
+   "R": {
+    "mean": -28,
+    "min": -31,
+    "max": -25,
+    "d_v2_mean": 9.8,
+    "d_v2_min": 8,
+    "d_v2_max": 12,
+    "seeds_better_than_v2": 20,
+    "seeds_tied": 0,
+    "d_today_mean": 12.0,
+    "seeds_better_than_today": 20
+   }
+  },
+  "C1": {
+   "H1": {
+    "mean": 320,
+    "min": 308,
+    "max": 341,
+    "d_v2_mean": 44.0,
+    "d_v2_min": 37,
+    "d_v2_max": 53,
+    "seeds_better_than_v2": 20,
+    "seeds_tied": 0,
+    "d_today_mean": 62.5,
+    "seeds_better_than_today": 20
+   },
+   "H2": {
+    "mean": 134,
+    "min": 121,
+    "max": 146,
+    "d_v2_mean": 76.3,
+    "d_v2_min": 70,
+    "d_v2_max": 84,
+    "seeds_better_than_v2": 20,
+    "seeds_tied": 0,
+    "d_today_mean": 91.0,
+    "seeds_better_than_today": 20
+   },
+   "R": {
+    "mean": -34,
+    "min": -41,
+    "max": -29,
+    "d_v2_mean": 4.2,
+    "d_v2_min": 0,
+    "d_v2_max": 8,
+    "seeds_better_than_v2": 19,
+    "seeds_tied": 1,
+    "d_today_mean": 6.3,
+    "seeds_better_than_today": 20
+   }
+  },
+  "a: later-break funded size alone": {
+   "H1": {
+    "mean": 299,
+    "min": 287,
+    "max": 314,
+    "d_v2_mean": 23.4,
+    "d_v2_min": 19,
+    "d_v2_max": 30,
+    "seeds_better_than_v2": 20,
+    "seeds_tied": 0,
+    "d_today_mean": 42.0,
+    "seeds_better_than_today": 20
+   },
+   "H2": {
+    "mean": 93,
+    "min": 82,
+    "max": 100,
+    "d_v2_mean": 35.3,
+    "d_v2_min": 33,
+    "d_v2_max": 38,
+    "seeds_better_than_v2": 20,
+    "seeds_tied": 0,
+    "d_today_mean": 50.0,
+    "seeds_better_than_today": 20
+   },
+   "R": {
+    "mean": -38,
+    "min": -43,
+    "max": -34,
+    "d_v2_mean": 0.3,
+    "d_v2_min": -2,
+    "d_v2_max": 3,
+    "seeds_better_than_v2": 8,
+    "seeds_tied": 8,
+    "d_today_mean": 2.5,
+    "seeds_better_than_today": 18
+   }
+  },
+  "b: give-up at 1x alone": {
+   "H1": {
+    "mean": 272,
+    "min": 262,
+    "max": 286,
+    "d_v2_mean": -3.9,
+    "d_v2_min": -5,
+    "d_v2_max": -1,
+    "seeds_better_than_v2": 0,
+    "seeds_tied": 0,
+    "d_today_mean": 14.7,
+    "seeds_better_than_today": 20
+   },
+   "H2": {
+    "mean": 64,
+    "min": 56,
+    "max": 72,
+    "d_v2_mean": 6.8,
+    "d_v2_min": 5,
+    "d_v2_max": 9,
+    "seeds_better_than_v2": 20,
+    "seeds_tied": 0,
+    "d_today_mean": 21.5,
+    "seeds_better_than_today": 20
+   },
+   "R": {
+    "mean": -31,
+    "min": -34,
+    "max": -27,
+    "d_v2_mean": 6.9,
+    "d_v2_min": 5,
+    "d_v2_max": 8,
+    "seeds_better_than_v2": 20,
+    "seeds_tied": 0,
+    "d_today_mean": 9.1,
+    "seeds_better_than_today": 20
+   }
+  }
+ }
+}

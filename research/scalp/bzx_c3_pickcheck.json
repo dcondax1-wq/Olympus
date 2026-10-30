@@ -1,0 +1,219 @@
+{
+ "fz": {
+  "mode": "frac",
+  "f": 0.1,
+  "cap": 150.0,
+  "day_tp": 400.0,
+  "q1": 1,
+  "q2": 2,
+  "q1b": 1,
+  "q2b": 2,
+  "rq": 0.35,
+  "stuck_k": 1.5
+ },
+ "beyond": {
+  "H1": {
+   "d_mean": 74.2,
+   "better": 5
+  },
+  "H2": {
+   "d_mean": -8.6,
+   "better": 0
+  },
+  "R": {
+   "d_mean": -0.4,
+   "better": 1
+  }
+ },
+ "seeds": {
+  "H1": {
+   "d_mean": 51.8,
+   "d_min": 48,
+   "better": 20
+  },
+  "H2": {
+   "d_mean": 11.7,
+   "d_min": 7,
+   "better": 20
+  },
+  "R": {
+   "d_mean": 3.2,
+   "d_min": 1,
+   "better": 20
+  }
+ },
+ "placebo": {
+  "H1": {
+   "base": -59,
+   "pick": -54
+  },
+  "H2": {
+   "base": 27,
+   "pick": 32
+  },
+  "R": {
+   "base": -66,
+   "pick": -66
+  }
+ },
+ "shuffled_labels": {
+  "H1": {
+   "mean": 296,
+   "real": 335,
+   "share_ge": 0.0
+  },
+  "H2": {
+   "mean": 84,
+   "real": 61,
+   "share_ge": 0.95
+  },
+  "R": {
+   "mean": -37,
+   "real": -37,
+   "share_ge": 0.6
+  }
+ },
+ "slip1": {
+  "H1": [
+   272,
+   316
+  ],
+  "H2": [
+   42,
+   49
+  ],
+  "R": [
+   -48,
+   -50
+  ]
+ },
+ "slip2": {
+  "H1": [
+   251,
+   293
+  ],
+  "H2": [
+   33,
+   40
+  ],
+  "R": [
+   -54,
+   -59
+  ]
+ },
+ "late1": {
+  "H1": [
+   192,
+   215
+  ],
+  "H2": [
+   -36,
+   -38
+  ],
+  "R": [
+   -67,
+   -63
+  ]
+ },
+ "y2022": [
+  13,
+  35
+ ],
+ "y2023": [
+  -29,
+  -25
+ ],
+ "y2024": [
+  -65,
+  -73
+ ],
+ "y2025": [
+  -45,
+  -39
+ ],
+ "eval": {
+  "H1": {
+   "p10": 47.9,
+   "f10": 23.5,
+   "p15": 63.2,
+   "f15": 24.6,
+   "p20": 70.6,
+   "f20": 25.7,
+   "dec10": 71.4,
+   "pass_med": 7.0,
+   "slow_pass": 12.0
+  },
+  "H2": {
+   "p10": 36.2,
+   "f10": 21.7,
+   "p15": 35.9,
+   "f15": 39.1,
+   "p20": 30.5,
+   "f20": 59.3,
+   "dec10": 57.9,
+   "pass_med": 5.0,
+   "slow_pass": 0.0
+  },
+  "R": {
+   "p10": 24.7,
+   "f10": 48.4,
+   "p15": 29.0,
+   "f15": 60.9,
+   "p20": 30.0,
+   "f20": 65.9,
+   "dec10": 73.1,
+   "pass_med": 5.0,
+   "slow_pass": 2.8
+  }
+ },
+ "funded_only": {
+  "H1": {
+   "pick": {
+    "fund_pm": 179,
+    "fund_pay_pm": 0.3,
+    "fund_lost": 0.0,
+    "fund_stuck": 31.8,
+    "fund_starts": 22
+   },
+   "today": {
+    "fund_pm": 108,
+    "fund_pay_pm": 0.26,
+    "fund_lost": 0.0,
+    "fund_stuck": 45.5,
+    "fund_starts": 22
+   }
+  },
+  "H2": {
+   "pick": {
+    "fund_pm": 33,
+    "fund_pay_pm": 0.06,
+    "fund_lost": 0.0,
+    "fund_stuck": 0.0,
+    "fund_starts": 6
+   },
+   "today": {
+    "fund_pm": 0,
+    "fund_pay_pm": 0.0,
+    "fund_lost": 0.0,
+    "fund_stuck": 100.0,
+    "fund_starts": 6
+   }
+  },
+  "R": {
+   "pick": {
+    "fund_pm": 18,
+    "fund_pay_pm": 0.05,
+    "fund_lost": 0.0,
+    "fund_stuck": 50.4,
+    "fund_starts": 339
+   },
+   "today": {
+    "fund_pm": 2,
+    "fund_pay_pm": 0.01,
+    "fund_lost": 0.0,
+    "fund_stuck": 28.9,
+    "fund_starts": 339
+   }
+  }
+ }
+}

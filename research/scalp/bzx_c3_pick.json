@@ -1,0 +1,47 @@
+{
+ "built": "2026-10-30 17:03:17",
+ "rule": "Selection rules, fixed before any H2 / 2021-25 number of this grid is computed (H1 only, 10 seeds, vs v2 on the\nsame seed):  A \"plateau\" = argmax over the grid of min(median d_H1) over the cell and its neighbours (rq +-1 step,\ngive-up +-1 step, the other later-break micros);  B \"worst seed\" = argmax of min over seeds of d_H1;  C \"median\" =\nargmax of the median d_H1.",
+ "seeds": [
+  23,
+  24,
+  25,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32
+ ],
+ "picks": {
+  "A_plateau": {
+   "rq": 0.35,
+   "stuck_k": 1.5,
+   "later_micros": 2,
+   "h1_median": 52.5,
+   "h1_worst": 50.0,
+   "h1_plateau": 5.0
+  },
+  "B_worst_seed": {
+   "rq": 0.35,
+   "stuck_k": 1.5,
+   "later_micros": 2,
+   "h1_median": 52.5,
+   "h1_worst": 50.0,
+   "h1_plateau": 5.0
+  },
+  "C_median": {
+   "rq": 0.35,
+   "stuck_k": 1.5,
+   "later_micros": 2,
+   "h1_median": 52.5,
+   "h1_worst": 50.0,
+   "h1_plateau": 5.0
+  }
+ },
+ "c3_h1": {
+  "median": 17.0,
+  "worst": 11.0,
+  "plateau": -17.0
+ }
+}

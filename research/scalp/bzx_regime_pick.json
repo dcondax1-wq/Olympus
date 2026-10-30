@@ -1,0 +1,30 @@
+{
+ "built": "2026-10-30 17:09:26",
+ "rule": "the momentum-regime gate. Pick rules fixed BEFORE any H2 / 2021-25 number (H1 only, skip mode = no BLITZ trade on an\n'off' day): G1 = the gate with the highest H1 $ / month at $150 among gates with >= 2 trades / week in H1 (ties: the\nlooser one); G2 = the strictest gate (the highest H1 percentile cut) whose H1 $ / month is >= 95% of the ungated H1 and\n>= 2 trades / week (ties: G1's order). Gates: ac / vr / ft x 20 / 40 sessions x 'on' at >= the 20 / 35 / 50 / 65 / 80th\npercentile of the measure over 2026 H1 BLITZ trade days.",
+ "G1": {
+  "measure": "ft40",
+  "pct": 35,
+  "cut": 0.5384615384615384,
+  "H1": {
+   "n": 142,
+   "tpw": 5.55,
+   "wk2": 59.3,
+   "pf": 2.02,
+   "net": 5534,
+   "per_month": 908,
+   "dd": -931,
+   "share_on": 0.654
+  }
+ },
+ "G2": null,
+ "base_H1": {
+  "n": 217,
+  "tpw": 8.48,
+  "wk2": 88.9,
+  "pf": 1.7,
+  "net": 5873,
+  "per_month": 963,
+  "dd": -1152,
+  "share_on": 1.0
+ }
+}
