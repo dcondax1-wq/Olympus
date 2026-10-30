@@ -370,6 +370,17 @@ def part_d(F, shots):
         pg.wait_for_timeout(1500)
         seg = pg.eval_on_selector_all("#nxSub .nx-botseg button", "els => els.map(e => e.textContent.trim())")
         check("d. PC BLITZ: Today · Brain · Trades · Results · Rules", seg == ["Today", "Brain", "Trades", "Results", "Rules"], seg)
+        # Ctrl K finds each bot's sections and the status verdict
+        pg.keyboard.press("Control+k")
+        pg.wait_for_timeout(500)
+        pg.fill("#cpInput", "atlas rules")
+        pg.wait_for_timeout(400)
+        first = pg.evaluate("() => (document.querySelector('#cpList .cp-it.on b') || {}).textContent || ''")
+        pg.fill("#cpInput", "status")
+        pg.wait_for_timeout(400)
+        st = pg.evaluate("() => [...document.querySelectorAll('#cpList .cp-it b')].map(b => b.textContent).join(' | ')")
+        pg.keyboard.press("Escape")
+        check("d. PC Ctrl K: 'atlas rules' -> ATLAS · Rules; 'status' -> the status verdict", "ATLAS · Rules" in first and "Status:" in st, (first, st[:200]))
         check("d. PC: no page errors", not errs, errs[:4])
         br.close()
     srv.should_exit = True

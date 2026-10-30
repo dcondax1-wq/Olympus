@@ -152,6 +152,7 @@ absent). Read-only: no new control, only links. Tests: `python -X utf8 -m tests.
 | 96 | Status dot on every page | new | Phone header: one dot with the status bar's verdict (green / amber / red, a soft pulse when all good) on every page; a tap opens the full status on Home |
 | 97 | Recent pages | new | More: the pages you opened last as chips under the search box (`le.pl.visits`, this device only) |
 | 98 | Cinematic sky | new | Both apps: a soft vignette and a faint top light over the deep-space sky (the CSS sky and the 3D scene), dark theme only; the CSS sky drifts a little with scroll / tilt / the mouse |
+| 99 | Ctrl K knows the bots | new | PC palette: each bot's five sections ("ATLAS · Rules", "BLITZ · Trades" ...) and "Status: <verdict>" (opens Home with the status bar open) next to every page |
 
 ## Organization (2026-10-30, night 3: "organized, clean")
 - One information architecture on both apps. **Home** = the status bar, the three accounts, what matters now (+ the Sunday

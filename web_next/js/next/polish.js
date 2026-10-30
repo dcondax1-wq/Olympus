@@ -5,9 +5,12 @@
 //             byte-identical to tools/web_public/statuscore.js), on MissionUI's accounts so every number matches.
 //   motion    page entrances and card rises (css/polish.css); reduced motion = none
 //   sky       a little parallax from the mouse (fx3d's FX.parallax when the 3D scene has it, the CSS sky otherwise)
+//   palette   Ctrl K also finds each bot's five sections (Zlarior · Trades, ATLAS · Rules ...) and answers 'status'
 // Data: GET /api/next/board (board.js, cached) and /api/next/news?compact=1. Nothing here talks to the bot.
 import { boardData } from './board.js';
 import { loadMissionCore } from './mission.js';
+import { BOTS } from './routes.js';
+import { addPaletteItems } from '../palette.js';
 
 const V = 1;
 let SP = null;
@@ -58,7 +61,26 @@ async function refresh() {
   window.StatusUI.css();
   if (active('cc')) place();
 }
+// Ctrl K: each bot's five sections and the status verdict, next to the pages the palette already lists
+function paletteItems() {
+  const go = (it) => () => {
+    const [id, part] = String(it).split(':');
+    try { if (id === 'atlas') localStorage.setItem('le.nx.atPart', JSON.stringify(part || 'today')); if (id === 'blitz') localStorage.setItem('le.nx.bzPart', JSON.stringify(part || 'today')); } catch (e) { /* private */ }
+    if (window.LE && window.LE.go) window.LE.go(id);
+  };
+  const out = [];
+  for (const [k, B] of Object.entries(BOTS || {})) for (const [label, ids] of B.segs || []) {
+    if (!ids || !ids.length) continue;
+    out.push({ kind: 'page', key: 'sec-' + k + '-' + label, label: `${B.name} · ${label}`, icon: '◆', hint: B.sub || '', do: go(ids[0]) });
+  }
+  try {
+    const SU = window.StatusUI;
+    if (SU && LAST) { const S = SU.summary(LAST); out.unshift({ kind: 'action', key: 'status', label: `Status: ${S.title}`, icon: '●', hint: S.why, do: () => { try { localStorage.setItem('le.st.open', '1'); } catch (e) { /* private */ } if (window.LE && window.LE.go) window.LE.go('cc'); setTimeout(place, 300); } }); }
+  } catch (e) { /* optional */ }
+  return out;
+}
 export function initPolish() {
+  try { addPaletteItems(paletteItems); } catch (e) { /* the palette keeps its own list */ }
   const el = document.getElementById('page-cc');
   if (el && !el.__stObs) {
     el.__stObs = new MutationObserver(() => { if (LAST && active('cc') && el.firstElementChild?.id !== 'nxStatusHome') place(); });
