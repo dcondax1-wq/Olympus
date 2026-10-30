@@ -63,6 +63,7 @@ function navDots() {
     const a = document.querySelector(`#nav > a.nx-gl[data-page="${page}"]`); if (!a) continue;
     const A = As.find((x) => x.key === k);
     const st = !A || A.placeholder ? '' : A.pos ? 'trade' : A.blocks && A.blocks.length ? 'blocked' : A.armed ? 'armed' : '';
+    try { if (A && window.StatusUI) a.title = `${A.name}: ${window.StatusUI.oneLine(A, LAST).text}`; } catch (e) { /* tooltip only */ }   // hover = the bot's day in one line
     let d = a.querySelector(':scope > .nx-bdot');
     if (!st) { if (d) d.remove(); continue; }
     if (!d) { d = document.createElement('i'); d.className = 'nx-bdot'; d.setAttribute('aria-hidden', 'true'); a.appendChild(d); }
