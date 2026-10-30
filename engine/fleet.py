@@ -1325,7 +1325,7 @@ def dry_run(day: str, cfg: dict, trades: list | None = None) -> dict:
         fl.tick("NQ", et_ + 5)
         xt = int(t.get("exit_t") or et_ + 600)
         bot.now = xt
-        bot.ledger.append({"t": xt, "sym": "NQ", "side": "exit", "qty": int(t.get("qty") or 1), "reason": t.get("exit_reason"),
+        bot.ledger.append({"t": xt, "sym": "NQ", "side": "exit", "qty": int(t.get("qty") or 1), "reason": t.get("exit_reason") or t.get("exit"),
                            "pnl": float(t.get("pnl") or 0.0), "entry_t": et_, "exit_t": xt, "result": {"ok": True}})
         bot._open_routed = None
         fl.tick("NQ", xt + 5)
