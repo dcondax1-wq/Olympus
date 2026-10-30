@@ -212,6 +212,11 @@ def status_checks():
     check("funded: $2,700 profit, $2,100 buffer -> $600 above, payout ready ($500 minimum)", s["payout"]["ready"] and s["payout"]["above_buffer"] == 600.0, s)
     s = FM.status(PF, FM.book(50000.0, [("2026-10-20", 1, 2700.0)], "2026-10-21", payouts={"2026-10-20": 500.0}))
     check("funded: after a $500 payout only $100 above the buffer -> not ready", not s["payout"]["ready"], s)
+    P25 = FM.profile("mffu_builder_25k", "funded")
+    st = FM.book(25000.0, [("2026-10-20", 1, 800.0)], "2026-10-21", payouts={"2026-10-20": 300.0})
+    fr = FM.floor_room(P25, st)
+    check("a payout lowers the balance, never the floor (the day's close before the payout sets the EOD high): floor 24,800, room 700",
+          fr["floor"] == 24800.0 and fr["room"] == 700.0 and st["balance"] == 25500.0 and st["profit"] == 800.0, (fr, st))
     lines = FM.describe(FM.profile("mffu_builder_25k"))
     check("describe(): plain words (EOD trailing, the lock, the daily loss, contracts, hedging)",
           any("end-of-day trailing" in x for x in lines) and any("Daily loss $600" in x for x in lines)

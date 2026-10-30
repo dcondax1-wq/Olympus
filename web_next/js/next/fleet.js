@@ -26,6 +26,7 @@ const usd = (v) => (!ok(v) ? '—' : (+v < 0 ? '−$' : '$') + Math.abs(+v).toLo
 const susd = (v) => (!ok(v) ? '—' : (+v > 0 ? '+' : '') + usd(v));
 const tone = (v) => (+v > 0 ? 'good' : +v < 0 ? 'bad' : '');
 const stat = (label, value, sub = '', k = '') => `<div class="nx-stat"><span>${esc(label)}</span><b class="${k}">${value}</b>${sub ? `<em>${sub}</em>` : ''}</div>`;
+const WRAP = ' style="white-space:normal;height:auto;min-height:24px;padding:3px 9px;max-width:100%"';   // long warnings wrap on a phone-width window
 const STATUS = { running: ['Running', ''], passed: ['EVAL PASSED', 'good'], failed: ['FAILED', 'bad'], killed: ['KILLED', 'bad'], off: ['Off', ''], 'not running': ['Bot not running', ''] };
 const STEPS = `<ol class="muted"><li>Buy the account (your own price + the firm's current code; never the list price).</li>
   <li>Log it in NinjaTrader 8 (its Name shows in the Accounts tab); test it on Sim first.</li>
@@ -67,13 +68,13 @@ function card(a) {
   ].join('');
   const chips = [
     `<span class="nx-chip">${o ? `${esc(o.side)} ${esc(o.qty)} @ ${esc(o.entry)}` : 'flat'}</span>`,
-    ok(a.slip_ticks) ? `<span class="nx-chip">slippage vs lead ${+a.slip_ticks > 0 ? '+' : ''}${esc(a.slip_ticks)} ticks (${esc(a.slip_n)})</span>` : '',
+    ok(a.slip_ticks) ? `<span class="nx-chip"${WRAP}>slippage vs lead ${+a.slip_ticks > 0 ? '+' : ''}${esc(a.slip_ticks)} ticks (${esc(a.slip_n)})</span>` : '',
     a.stagger_ms ? `<span class="nx-chip">stagger ${esc(a.stagger_ms)} ms</span>` : '',
-    a.unknown && a.unknown.length ? `<span class="nx-chip warn">unknown rules: ${esc(a.unknown.slice(0, 4).join(', '))}</span>` : '',
+    a.unknown && a.unknown.length ? `<span class="nx-chip warn"${WRAP}>unknown rules: ${esc(a.unknown.slice(0, 4).join(', '))}</span>` : '',
   ].join('');
   const sz = a.size ? `<p class="muted">Last size: ${esc(a.size.qty)} micros (lead ${esc(a.size.lead_qty)}) · ${esc((a.size.reasons || []).slice(-1)[0] || '')}</p>` : '';
   const sk = a.last_skip ? `<p class="muted">Last copy skipped: ${esc(a.last_skip.why)}</p>` : '';
-  const warn = (a.warn || []).map((w) => `<span class="nx-chip warn">${esc(w)}</span>`).join(' ');
+  const warn = (a.warn || []).map((w) => `<span class="nx-chip warn"${WRAP}>${esc(w)}</span>`).join(' ');
   return `<div class="card nx-glass fx-card"><div class="card-h"><h3>${esc(a.name || a.id)} <span class="nx-badge ${lab === 'LIVE' || lab === 'REAL' ? 'bad' : ''}">${esc(lab)}</span></h3>
     <div class="card-tools"><span class="nx-badge ${st[1]}">${esc(st[0])}</span></div></div>
     <p class="muted">${esc(a.firm || '')} ${esc(a.plan || '')} · ${esc(isLive ? 'LIVE account' : a.stage === 'funded' ? 'funded' : 'eval')} · copies ${esc(a.lead_name || a.lead)}${a.nt_account ? ` · ${esc(a.nt_account)}` : ''}${a.why ? ` · ${esc(a.why)}` : ''}</p>
@@ -161,7 +162,7 @@ async function draw() {
     ${acc.length ? `<div class="hero-r"><button class="nx-chip warn" data-killall="${d.kill ? 'unkill' : 'kill'}">${d.kill ? 'Un-kill the fleet' : 'Kill ALL followers'}</button></div>` : ''}</header>`;
   const msg = S.msg ? `<div class="card nx-glass"><p class="muted">${esc(S.msg).replace(/\n/g, '<br>')}</p></div>` : '';
   const kill = d.kill ? `<div class="card nx-glass"><div class="card-h"><h3>FLEET KILL ON</h3></div><p class="muted">Every follower is flat and copies nothing.</p></div>` : '';
-  const warns = (d.warnings || []).length ? `<div class="card nx-glass"><div class="card-h"><h3>Rule warnings</h3></div>${d.warnings.map((w) => `<span class="nx-chip warn">${esc(w)}</span>`).join(' ')}</div>` : '';
+  const warns = (d.warnings || []).length ? `<div class="card nx-glass"><div class="card-h"><h3>Rule warnings</h3></div>${d.warnings.map((w) => `<span class="nx-chip warn"${WRAP}>${esc(w)}</span>`).join(' ')}</div>` : '';
   const tot = acc.length ? `<div class="nx-kv">${stat('Followers', esc(acc.length), `${esc(T.open || 0)} open now`)}${stat('Today, all', susd(T.today), '', tone(T.today))}${stat('This week, all', susd(T.week), '', tone(T.week))}${stat('Passed / failed', `${esc(T.passed || 0)} / ${esc(T.failed || 0)}`, T.live ? `${esc(T.live)} real / LIVE` : 'paper / Sim')}</div>` : '';
   const leads = (d.leads || []).length ? `<div class="card nx-glass"><div class="card-h"><h3>Leads</h3></div><p class="muted">${(d.leads || []).map((l) => `${esc(l.name)} (${esc(l.account || '')}, ${esc(l.plan || '')}): ${l.open ? esc(l.open.side + ' ' + l.open.qty) : 'flat'}`).join(' · ')}</p></div>` : '';
   const notes = (d.notes || []).length ? `<div class="card nx-glass"><div class="card-h"><h3>Fleet notices</h3></div>${(d.notes || []).slice(-8).reverse().map((n) => `<p class="muted"><b>${esc(n.title)}</b> ${esc(n.body)}</p>`).join('')}</div>` : '';

@@ -766,6 +766,13 @@ def replay(tmp):
         skipped = {int(s["entry_t"]) for s in f.skips}
         check(f"replay follower {f.id}: every lead trade copied once and closed once (or skipped with a reason)",
               got | skipped == want and not (got & skipped) and f.pos is None, (sorted(got), sorted(skipped), sorted(want), f.skips[-2:]))
+    check("replay: every follower booked at least one copy (not only skips)", all(f.closes for f in fl.followers),
+          [(f.id, len(f.closes), [s["why"][:60] for s in f.skips]) for f in fl.followers])
+    lead_pm = {int(r["entry_t"]): float(r.get("pnl") or 0) / max(1, int(r.get("qty") or 1)) for r in b1.ledger if r.get("side") == "exit"}
+    check("replay: each copy booked the lead's $ a micro x its own micros",
+          all(abs(c[2] - round(lead_pm[int(c[3])] * next(int(r["qty"]) for r in f.ledger if r.get("side") in ("buy", "sell")
+                                                            and int(r["entry_t"]) == int(c[3])), 2)) < 0.05
+              for f in fl.followers for c in f.closes if int(c[3]) in lead_pm))
     lv = fol(fl, "plv")
     check("replay: the LIVE follower never above its 5 micros / $150 a trade",
           all(r["qty"] <= 5 for r in lv.ledger if r.get("side") in ("buy", "sell")))

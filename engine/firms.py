@@ -216,18 +216,19 @@ def book(start: float, closes, today: str, prior: float = 0.0, payouts: dict | N
     bal = start + float(prior or 0.0)
     eod_hi = intra_hi = bal
     days, cur_day = {}, None
-    events = [(d, t, p, "trade") for d, t, p in rows] + [(d, 0, -v, "payout") for d, v in pays.items()]
-    events.sort(key=lambda e: (e[0], e[1], e[3] != "payout"))
-    for d, t, p, kind in events:
-        if cur_day is not None and d != cur_day and cur_day < today:
-            eod_hi = max(eod_hi, bal)
-        cur_day = d
-        bal += p
-        if kind == "trade":
+    # day by day: the day's trades, then (an earlier day) its closing balance sets the EOD high, then that day's payout is
+    # withdrawn (it lowers the balance, never the floor: engine/sizing.funded_state)
+    by_day = {}
+    for d, t, p in rows:
+        by_day.setdefault(d, []).append((t, p))
+    for d in sorted(set(by_day) | set(pays)):
+        for t, p in sorted(by_day.get(d, [])):
+            bal += p
             days[d] = round(days.get(d, 0.0) + p, 2)
             intra_hi = max(intra_hi, bal)
-    if cur_day is not None and cur_day < today:
-        eod_hi = max(eod_hi, bal)
+        if d < today:
+            eod_hi = max(eod_hi, bal)
+        bal -= pays.get(d, 0.0)
     wk = week_of(today)
     day_pnl = days.get(today, 0.0)
     week_pnl = round(sum(v for d, v in days.items() if d <= today and week_of(d) == wk), 2)
