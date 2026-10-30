@@ -1,7 +1,7 @@
 {
- "built": "2026-10-30 15:15",
+ "built": "2026-10-30 16:52",
  "baseline": "baseline",
- "count": 2184,
+ "count": 2194,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -219563,6 +219563,1317 @@
    }
   },
   {
+   "id": "dsx_atlas_check_skip",
+   "title": "ATLAS discretion score (check, skip) - rejected (at chance)",
+   "family": "risk",
+   "question": "Owner 2026-10-30: give ATLAS good discretion - judge each trade from what is known at entry, size the good ones up and the bad ones down?",
+   "status": "rejected",
+   "verdict": "ATLAS discretion score, points checklist (6 facts, H1 medians), fit on 2026 H1 only, bottom third skipped: H1 2-week pass/dead 55.5/0.0 (today 65.5/0.8), eval paths $10,448 (today $8,504, shuffled p 0.1), R/risk +1.108 (today +0.884); H2 2-week pass/dead 27.5/0.0 (today 43.5/0.0), eval paths $1,243 (today $2,029, shuffled p 0.725), R/risk +0.560 (today +0.620); 2025 2-week pass/dead 24.5/13.3 (today 30.1/23.3), eval paths $-755 (today $-1,816, shuffled p 0.425), R/risk +0.114 (today +0.084); 2021-24 2-week pass/dead 14.7/9.9 (today 22.9/27.1), eval paths $-2,744 (today $-1,388, shuffled p 0.725), R/risk +0.040 (today +0.045). v2 test: fails. At chance, rejected.",
+   "writeup": "discretion-score-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "sizing",
+    "discretion"
+   ],
+   "params": {
+    "features": [
+     "stop_atr",
+     "vix",
+     "atrp",
+     "liq_room",
+     "st15_with",
+     "day_prev"
+    ],
+    "fit": {
+     "model": "check",
+     "h1_median": {
+      "stop_atr": 1.8635,
+      "vix": 18.095,
+      "atrp": 72.0238,
+      "liq_room": 4.917,
+      "st15_with": -1.0,
+      "day_prev": 0.0
+     },
+     "point_side": {
+      "stop_atr": "low",
+      "vix": "high",
+      "atrp": "high",
+      "liq_room": "high",
+      "st15_with": "low",
+      "day_prev": "low"
+     }
+    },
+    "cuts": [
+     2.0,
+     3.0
+    ],
+    "rule": [
+     0.0,
+     1.0,
+     1.0
+    ]
+   },
+   "sizing": {
+    "account_b": "need size (engine/account_b.qty) x score tercile mult"
+   },
+   "built": "2026-10-30 16:52",
+   "spans": {
+    "2026": {
+     "n": 97,
+     "tpw": 2.35,
+     "wk2": 71,
+     "win": 56.7,
+     "pf": 3.46,
+     "net": 21000,
+     "dd": -748,
+     "avg_r": 1.064,
+     "stop": 43.2,
+     "worst_day": -509,
+     "risk": 189.0,
+     "half": 0,
+     "per_month": 2141,
+     "p10": 10.2,
+     "f10": 0.0,
+     "p15": 20.9,
+     "f15": 0.0,
+     "p20": 33.0,
+     "f20": 0.0,
+     "dec10": 10.2,
+     "slow_pass": 70.5,
+     "pass_med": 22.0,
+     "b2b": "6/0"
+    },
+    "2021-25": {
+     "n": 339,
+     "tpw": 1.57,
+     "wk2": 42,
+     "win": 37.2,
+     "pf": 0.97,
+     "net": -875,
+     "dd": -5848,
+     "avg_r": 0.033,
+     "stop": 21.0,
+     "worst_day": -532,
+     "risk": 89.0,
+     "half": 0,
+     "per_month": -17,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.2,
+     "f15": 0.0,
+     "p20": 0.5,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": 60.0,
+     "pass_med": 16.0,
+     "b2b": "2/4"
+    },
+    "all": {
+     "n": 436,
+     "tpw": 1.7,
+     "wk2": 47,
+     "win": 41.5,
+     "pf": 1.56,
+     "net": 20125,
+     "dd": -5848,
+     "avg_r": 0.263,
+     "stop": 24.5,
+     "worst_day": -532,
+     "risk": 110.0,
+     "half": 0,
+     "per_month": 329,
+     "p10": 1.6,
+     "f10": 0.0,
+     "p15": 3.5,
+     "f15": 0.0,
+     "p20": 5.7,
+     "f20": 0.0,
+     "dec10": 1.6,
+     "slow_pass": 75.3,
+     "pass_med": 24.0,
+     "b2b": "8/5"
+    }
+   }
+  },
+  {
+   "id": "dsx_atlas_check_t3",
+   "title": "ATLAS discretion score (check, t3) - rejected (at chance)",
+   "family": "risk",
+   "question": "Owner 2026-10-30: give ATLAS good discretion - judge each trade from what is known at entry, size the good ones up and the bad ones down?",
+   "status": "rejected",
+   "verdict": "ATLAS discretion score, points checklist (6 facts, H1 medians), fit on 2026 H1 only, bottom third x0.5 / middle x1 / top third x1.5: H1 2-week pass/dead 63.0/0.8 (today 65.5/0.8), eval paths $10,075 (today $8,504, shuffled p 0.325), R/risk +1.020 (today +0.884); H2 2-week pass/dead 39.1/0.0 (today 43.5/0.0), eval paths $2,819 (today $2,029, shuffled p 0.05), R/risk +0.698 (today +0.620); 2025 2-week pass/dead 20.5/21.7 (today 30.1/23.3), eval paths $-3,397 (today $-1,816, shuffled p 1.0), R/risk +0.105 (today +0.084); 2021-24 2-week pass/dead 15.7/23.4 (today 22.9/27.1), eval paths $-216 (today $-1,388, shuffled p 0.425), R/risk +0.035 (today +0.045). v2 test: fails. At chance, rejected.",
+   "writeup": "discretion-score-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "sizing",
+    "discretion"
+   ],
+   "params": {
+    "features": [
+     "stop_atr",
+     "vix",
+     "atrp",
+     "liq_room",
+     "st15_with",
+     "day_prev"
+    ],
+    "fit": {
+     "model": "check",
+     "h1_median": {
+      "stop_atr": 1.8635,
+      "vix": 18.095,
+      "atrp": 72.0238,
+      "liq_room": 4.917,
+      "st15_with": -1.0,
+      "day_prev": 0.0
+     },
+     "point_side": {
+      "stop_atr": "low",
+      "vix": "high",
+      "atrp": "high",
+      "liq_room": "high",
+      "st15_with": "low",
+      "day_prev": "low"
+     }
+    },
+    "cuts": [
+     2.0,
+     3.0
+    ],
+    "rule": [
+     0.5,
+     1.0,
+     1.5
+    ]
+   },
+   "sizing": {
+    "account_b": "need size (engine/account_b.qty) x score tercile mult"
+   },
+   "built": "2026-10-30 16:52",
+   "spans": {
+    "2026": {
+     "n": 111,
+     "tpw": 2.69,
+     "wk2": 71,
+     "win": 51.4,
+     "pf": 2.5,
+     "net": 14736,
+     "dd": -1205,
+     "avg_r": 0.844,
+     "stop": 39.5,
+     "worst_day": -582,
+     "risk": 124.0,
+     "half": 0,
+     "per_month": 1502,
+     "p10": 8.7,
+     "f10": 0.0,
+     "p15": 14.6,
+     "f15": 0.0,
+     "p20": 23.8,
+     "f20": 0.0,
+     "dec10": 8.7,
+     "slow_pass": 74.8,
+     "pass_med": 24.0,
+     "b2b": "4/0"
+    },
+    "2021-25": {
+     "n": 678,
+     "tpw": 3.15,
+     "wk2": 73,
+     "win": 35.0,
+     "pf": 0.92,
+     "net": -4334,
+     "dd": -8675,
+     "avg_r": -0.055,
+     "stop": 22.0,
+     "worst_day": -587,
+     "risk": 96.0,
+     "half": 0,
+     "per_month": -85,
+     "p10": 0.6,
+     "f10": 0.0,
+     "p15": 1.1,
+     "f15": 1.0,
+     "p20": 1.7,
+     "f20": 2.9,
+     "dec10": 0.6,
+     "slow_pass": 89.7,
+     "pass_med": 39.0,
+     "b2b": "2/10"
+    },
+    "all": {
+     "n": 789,
+     "tpw": 3.07,
+     "wk2": 73,
+     "win": 37.3,
+     "pf": 1.16,
+     "net": 10402,
+     "dd": -8675,
+     "avg_r": 0.072,
+     "stop": 23.5,
+     "worst_day": -587,
+     "risk": 99.0,
+     "half": 0,
+     "per_month": 170,
+     "p10": 1.9,
+     "f10": 0.0,
+     "p15": 3.3,
+     "f15": 0.9,
+     "p20": 5.2,
+     "f20": 2.4,
+     "dec10": 1.9,
+     "slow_pass": 83.4,
+     "pass_med": 33.0,
+     "b2b": "6/11"
+    }
+   }
+  },
+  {
+   "id": "dsx_atlas_prior",
+   "title": "ATLAS trader's checklist size (no fit) - rejected (at chance)",
+   "family": "risk",
+   "question": "Does a trader's written-down checklist (no fitting at all) size ATLAS better?",
+   "status": "rejected",
+   "verdict": "ATLAS trader's checklist (no fit: tight stop in ATR, a moving market, room to the next pool, with the 15m structure, not after a loss today): H1 2-week pass/dead 63.0/0.0 (today 65.5/0.8), eval paths $9,178 (today $8,504); H2 2-week pass/dead 40.6/0.0 (today 43.5/0.0), eval paths $2,011 (today $2,029); 2025 2-week pass/dead 25.3/23.7 (today 30.1/23.3), eval paths $-1,686 (today $-1,816); 2021-24 2-week pass/dead 18.6/24.6 (today 22.9/27.1), eval paths $-1,119 (today $-1,388). Rank among the 32 sign choices of the same boxes (R per risk): [14, 9, 13, 23]; v2 test fails. At chance, rejected.",
+   "writeup": "discretion-score-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "sizing",
+    "discretion"
+   ],
+   "params": {
+    "prior": [
+     [
+      "stop_atr",
+      "<",
+      "med"
+     ],
+     [
+      "atrp",
+      ">",
+      "med"
+     ],
+     [
+      "liq_room",
+      ">",
+      "med"
+     ],
+     [
+      "st15_with",
+      ">=",
+      1.0
+     ],
+     [
+      "day_prev",
+      ">=",
+      0.0
+     ]
+    ],
+    "bands": [
+     [
+      0,
+      1,
+      0.5
+     ],
+     [
+      2,
+      3,
+      1.0
+     ],
+     [
+      4,
+      5,
+      1.5
+     ]
+    ]
+   },
+   "sizing": {
+    "account_b": "need size x checklist mult"
+   },
+   "built": "2026-10-30 16:52",
+   "spans": {
+    "2026": {
+     "n": 82,
+     "tpw": 1.99,
+     "wk2": 52,
+     "win": 50.0,
+     "pf": 2.59,
+     "net": 11754,
+     "dd": -980,
+     "avg_r": 0.941,
+     "stop": 34.9,
+     "worst_day": -442,
+     "risk": 138.0,
+     "half": 0,
+     "per_month": 1198,
+     "p10": 7.3,
+     "f10": 0.0,
+     "p15": 13.6,
+     "f15": 0.0,
+     "p20": 18.9,
+     "f20": 0.0,
+     "dec10": 7.3,
+     "slow_pass": 76.1,
+     "pass_med": 27.0,
+     "b2b": "3/0"
+    },
+    "2021-25": {
+     "n": 627,
+     "tpw": 2.91,
+     "wk2": 69,
+     "win": 36.8,
+     "pf": 0.93,
+     "net": -3349,
+     "dd": -7413,
+     "avg_r": 0.003,
+     "stop": 21.5,
+     "worst_day": -579,
+     "risk": 100.0,
+     "half": 0,
+     "per_month": -65,
+     "p10": 1.7,
+     "f10": 0.0,
+     "p15": 2.1,
+     "f15": 0.1,
+     "p20": 3.1,
+     "f20": 1.9,
+     "dec10": 1.7,
+     "slow_pass": 75.5,
+     "pass_med": 30.0,
+     "b2b": "2/8"
+    },
+    "all": {
+     "n": 709,
+     "tpw": 2.76,
+     "wk2": 66,
+     "win": 38.4,
+     "pf": 1.14,
+     "net": 8405,
+     "dd": -8174,
+     "avg_r": 0.112,
+     "stop": 22.2,
+     "worst_day": -579,
+     "risk": 104.0,
+     "half": 0,
+     "per_month": 138,
+     "p10": 2.6,
+     "f10": 0.0,
+     "p15": 4.0,
+     "f15": 0.1,
+     "p20": 5.6,
+     "f20": 1.6,
+     "dec10": 2.6,
+     "slow_pass": 75.8,
+     "pass_med": 28.0,
+     "b2b": "5/8"
+    }
+   }
+  },
+  {
+   "id": "dsx_atlas_ridge_skip",
+   "title": "ATLAS discretion score (ridge, skip) - rejected (at chance)",
+   "family": "risk",
+   "question": "Owner 2026-10-30: give ATLAS good discretion - judge each trade from what is known at entry, size the good ones up and the bad ones down?",
+   "status": "rejected",
+   "verdict": "ATLAS discretion score, ridge score (6 facts, strong shrinkage), fit on 2026 H1 only, bottom third skipped: H1 2-week pass/dead 55.5/0.0 (today 65.5/0.8), eval paths $9,834 (today $8,504, shuffled p 0.1), R/risk +1.131 (today +0.884); H2 2-week pass/dead 27.5/0.0 (today 43.5/0.0), eval paths $483 (today $2,029, shuffled p 0.875), R/risk +0.450 (today +0.620); 2025 2-week pass/dead 20.5/9.2 (today 30.1/23.3), eval paths $-266 (today $-1,816, shuffled p 0.325), R/risk +0.132 (today +0.084); 2021-24 2-week pass/dead 15.7/8.9 (today 22.9/27.1), eval paths $-4,138 (today $-1,388, shuffled p 0.9), R/risk +0.052 (today +0.045). v2 test: fails. At chance, rejected.",
+   "writeup": "discretion-score-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "sizing",
+    "discretion"
+   ],
+   "params": {
+    "features": [
+     "stop_atr",
+     "vix",
+     "atrp",
+     "liq_room",
+     "st15_with",
+     "day_prev"
+    ],
+    "fit": {
+     "model": "ridge",
+     "alpha_per_trade": 1.0,
+     "clip": [
+      -1.5,
+      3.0
+     ],
+     "weights_per_sd": {
+      "stop_atr": -0.1138,
+      "vix": -0.0036,
+      "atrp": 0.0751,
+      "liq_room": 0.0485,
+      "st15_with": -0.0669,
+      "day_prev": -0.0772
+     },
+     "h1_mean": {
+      "stop_atr": 2.0118,
+      "vix": 18.8862,
+      "atrp": 70.3338,
+      "liq_room": 4.2987,
+      "st15_with": -0.4464,
+      "day_prev": -0.1071
+     },
+     "h1_sd": {
+      "stop_atr": 0.8639,
+      "vix": 3.0897,
+      "atrp": 21.0753,
+      "liq_room": 1.8062,
+      "st15_with": 0.8948,
+      "day_prev": 0.4503
+     }
+    },
+    "cuts": [
+     -0.07739111943085594,
+     0.09900855641451013
+    ],
+    "rule": [
+     0.0,
+     1.0,
+     1.0
+    ]
+   },
+   "sizing": {
+    "account_b": "need size (engine/account_b.qty) x score tercile mult"
+   },
+   "built": "2026-10-30 16:52",
+   "spans": {
+    "2026": {
+     "n": 91,
+     "tpw": 2.21,
+     "wk2": 67,
+     "win": 54.9,
+     "pf": 3.12,
+     "net": 15888,
+     "dd": -1000,
+     "avg_r": 1.042,
+     "stop": 37.0,
+     "worst_day": -429,
+     "risk": 162.0,
+     "half": 0,
+     "per_month": 1620,
+     "p10": 9.7,
+     "f10": 0.0,
+     "p15": 19.4,
+     "f15": 0.0,
+     "p20": 28.6,
+     "f20": 0.0,
+     "dec10": 9.7,
+     "slow_pass": 66.4,
+     "pass_med": 21.0,
+     "b2b": "4/0"
+    },
+    "2021-25": {
+     "n": 339,
+     "tpw": 1.57,
+     "wk2": 44,
+     "win": 37.2,
+     "pf": 0.95,
+     "net": -1607,
+     "dd": -9780,
+     "avg_r": -0.004,
+     "stop": 19.5,
+     "worst_day": -561,
+     "risk": 105.0,
+     "half": 0,
+     "per_month": -31,
+     "p10": 1.0,
+     "f10": 0.0,
+     "p15": 1.5,
+     "f15": 0.0,
+     "p20": 1.9,
+     "f20": 0.0,
+     "dec10": 1.0,
+     "slow_pass": 74.6,
+     "pass_med": 30.0,
+     "b2b": "2/6"
+    },
+    "all": {
+     "n": 430,
+     "tpw": 1.68,
+     "wk2": 48,
+     "win": 40.9,
+     "pf": 1.38,
+     "net": 14282,
+     "dd": -9780,
+     "avg_r": 0.217,
+     "stop": 22.2,
+     "worst_day": -561,
+     "risk": 120.0,
+     "half": 0,
+     "per_month": 234,
+     "p10": 2.4,
+     "f10": 0.0,
+     "p15": 4.4,
+     "f15": 0.0,
+     "p20": 6.2,
+     "f20": 0.0,
+     "dec10": 2.4,
+     "slow_pass": 72.9,
+     "pass_med": 25.0,
+     "b2b": "6/7"
+    }
+   }
+  },
+  {
+   "id": "dsx_atlas_ridge_t3",
+   "title": "ATLAS discretion score (ridge, t3) - rejected (at chance)",
+   "family": "risk",
+   "question": "Owner 2026-10-30: give ATLAS good discretion - judge each trade from what is known at entry, size the good ones up and the bad ones down?",
+   "status": "rejected",
+   "verdict": "ATLAS discretion score, ridge score (6 facts, strong shrinkage), fit on 2026 H1 only, bottom third x0.5 / middle x1 / top third x1.5: H1 2-week pass/dead 62.2/0.0 (today 65.5/0.8), eval paths $10,659 (today $8,504, shuffled p 0.15), R/risk +1.089 (today +0.884); H2 2-week pass/dead 39.1/0.0 (today 43.5/0.0), eval paths $1,688 (today $2,029, shuffled p 0.7), R/risk +0.603 (today +0.620); 2025 2-week pass/dead 19.3/24.5 (today 30.1/23.3), eval paths $468 (today $-1,816, shuffled p 0.05), R/risk +0.127 (today +0.084); 2021-24 2-week pass/dead 13.8/21.5 (today 22.9/27.1), eval paths $-2,085 (today $-1,388, shuffled p 0.65), R/risk +0.028 (today +0.045). v2 test: fails. At chance, rejected.",
+   "writeup": "discretion-score-2026-10-30",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "sizing",
+    "discretion"
+   ],
+   "params": {
+    "features": [
+     "stop_atr",
+     "vix",
+     "atrp",
+     "liq_room",
+     "st15_with",
+     "day_prev"
+    ],
+    "fit": {
+     "model": "ridge",
+     "alpha_per_trade": 1.0,
+     "clip": [
+      -1.5,
+      3.0
+     ],
+     "weights_per_sd": {
+      "stop_atr": -0.1138,
+      "vix": -0.0036,
+      "atrp": 0.0751,
+      "liq_room": 0.0485,
+      "st15_with": -0.0669,
+      "day_prev": -0.0772
+     },
+     "h1_mean": {
+      "stop_atr": 2.0118,
+      "vix": 18.8862,
+      "atrp": 70.3338,
+      "liq_room": 4.2987,
+      "st15_with": -0.4464,
+      "day_prev": -0.1071
+     },
+     "h1_sd": {
+      "stop_atr": 0.8639,
+      "vix": 3.0897,
+      "atrp": 21.0753,
+      "liq_room": 1.8062,
+      "st15_with": 0.8948,
+      "day_prev": 0.4503
+     }
+    },
+    "cuts": [
+     -0.07739111943085594,
+     0.09900855641451013
+    ],
+    "rule": [
+     0.5,
+     1.0,
+     1.5
+    ]
+   },
+   "sizing": {
+    "account_b": "need size (engine/account_b.qty) x score tercile mult"
+   },
+   "built": "2026-10-30 16:51",
+   "spans": {
+    "2026": {
+     "n": 79,
+     "tpw": 1.92,
+     "wk2": 48,
+     "win": 48.1,
+     "pf": 1.99,
+     "net": 6270,
+     "dd": -1227,
+     "avg_r": 0.831,
+     "stop": 36.0,
+     "worst_day": -582,
+     "risk": 110.0,
+     "half": 0,
+     "per_month": 639,
+     "p10": 4.9,
+     "f10": 0.0,
+     "p15": 7.3,
+     "f15": 0.0,
+     "p20": 9.7,
+     "f20": 0.0,
+     "dec10": 4.9,
+     "slow_pass": 76.2,
+     "pass_med": 32.0,
+     "b2b": "2/0"
+    },
+    "2021-25": {
+     "n": 712,
+     "tpw": 3.31,
+     "wk2": 78,
+     "win": 36.9,
+     "pf": 1.02,
+     "net": 1238,
+     "dd": -9481,
+     "avg_r": 0.027,
+     "stop": 22.8,
+     "worst_day": -597,
+     "risk": 97.0,
+     "half": 0,
+     "per_month": 24,
+     "p10": 3.1,
+     "f10": 0.2,
+     "p15": 4.2,
+     "f15": 1.7,
+     "p20": 5.8,
+     "f20": 5.1,
+     "dec10": 3.3,
+     "slow_pass": 74.6,
+     "pass_med": 29.0,
+     "b2b": "2/7"
+    },
+    "all": {
+     "n": 791,
+     "tpw": 3.08,
+     "wk2": 73,
+     "win": 38.1,
+     "pf": 1.11,
+     "net": 7508,
+     "dd": -9481,
+     "avg_r": 0.108,
+     "stop": 23.5,
+     "worst_day": -597,
+     "risk": 98.0,
+     "half": 0,
+     "per_month": 123,
+     "p10": 3.4,
+     "f10": 0.2,
+     "p15": 4.7,
+     "f15": 1.4,
+     "p20": 6.4,
+     "f20": 4.3,
+     "dec10": 3.6,
+     "slow_pass": 75.0,
+     "pass_med": 30.0,
+     "b2b": "4/8"
+    }
+   }
+  },
+  {
+   "id": "dsx_blitz_check_skip",
+   "title": "BLITZ discretion score (check, skip) - rejected (at chance)",
+   "family": "risk",
+   "question": "Owner 2026-10-30: give BLITZ good discretion - judge each trade from what is known at entry, size the good ones up and the bad ones down?",
+   "status": "rejected",
+   "verdict": "BLITZ discretion score, points checklist (6 facts, H1 medians), fit on 2026 H1 only, bottom third skipped: H1 R/risk +0.180 (today +0.165, shuffled p 0.4), 25K 2-week pass/fail 33.6/27.7 (today 36.1/37.8), slot $317/mo (today $277); H2 R/risk +0.245 (today +0.200, shuffled p 0.2), 25K 2-week pass/fail 40.6/21.7 (today 36.2/34.8), slot $76/mo (today $30); 2021-25 R/risk +0.006 (today +0.013, shuffled p 0.84), 25K 2-week pass/fail 20.3/46.5 (today 20.4/50.2), slot $-46/mo (today $-41). Not better in all three spans and inside its shuffled-label controls: at chance, rejected.",
+   "writeup": "discretion-score-2026-10-30",
+   "tags": [
+    "blitz",
+    "scalp",
+    "sizing",
+    "discretion"
+   ],
+   "params": {
+    "features": [
+     "exc",
+     "rng_sofar",
+     "vix",
+     "nth",
+     "liq_room",
+     "st15_with"
+    ],
+    "fit": {
+     "model": "check",
+     "h1_median": {
+      "exc": 1.4949,
+      "rng_sofar": 0.9742,
+      "vix": 18.41,
+      "nth": 3.0,
+      "liq_room": 1.2987,
+      "st15_with": 1.0
+     },
+     "point_side": {
+      "exc": "high",
+      "rng_sofar": "low",
+      "vix": "low",
+      "nth": "high",
+      "liq_room": "low",
+      "st15_with": "low"
+     }
+    },
+    "cuts": [
+     2.0,
+     3.0
+    ],
+    "rule": [
+     0.0,
+     1.0,
+     1.0
+    ]
+   },
+   "sizing": {
+    "usd_per_trade": 500.0,
+    "x": "score tercile mult",
+    "eval_25k": {
+     "mode": "frac",
+     "f": 0.4,
+     "cap": 600.0,
+     "push": [
+      5,
+      1.0
+     ]
+    }
+   },
+   "built": "2026-10-30 16:51",
+   "spans": {
+    "2026": {
+     "n": 323,
+     "tpw": 7.84,
+     "wk2": 86,
+     "win": 56.7,
+     "pf": 1.76,
+     "net": 24828,
+     "dd": -2060,
+     "avg_r": 0.176,
+     "stop": 61.1,
+     "worst_day": -1102,
+     "risk": 438.0,
+     "half": 0,
+     "per_month": 2531,
+     "p10": 20.4,
+     "f10": 0.5,
+     "p15": 36.9,
+     "f15": 3.4,
+     "p20": 49.5,
+     "f20": 8.7,
+     "dec10": 20.9,
+     "slow_pass": 53.7,
+     "pass_med": 16.0,
+     "b2b": "7/2"
+    },
+    "2021-25": {
+     "n": 1841,
+     "tpw": 8.55,
+     "wk2": 80,
+     "win": 50.1,
+     "pf": 1.02,
+     "net": 4529,
+     "dd": -20448,
+     "avg_r": 0.013,
+     "stop": 38.9,
+     "worst_day": -1552,
+     "risk": 456.0,
+     "half": 0,
+     "per_month": 88,
+     "p10": 4.9,
+     "f10": 14.8,
+     "p15": 8.4,
+     "f15": 26.1,
+     "p20": 11.0,
+     "f20": 35.3,
+     "dec10": 19.7,
+     "slow_pass": 67.4,
+     "pass_med": 24.0,
+     "b2b": "12/36"
+    },
+    "all": {
+     "n": 2164,
+     "tpw": 8.43,
+     "wk2": 81,
+     "win": 51.1,
+     "pf": 1.1,
+     "net": 29357,
+     "dd": -20448,
+     "avg_r": 0.037,
+     "stop": 41.2,
+     "worst_day": -1552,
+     "risk": 454.0,
+     "half": 0,
+     "per_month": 481,
+     "p10": 7.4,
+     "f10": 12.5,
+     "p15": 12.9,
+     "f15": 22.4,
+     "p20": 17.2,
+     "f20": 31.0,
+     "dec10": 19.9,
+     "slow_pass": 64.8,
+     "pass_med": 22.0,
+     "b2b": "20/38"
+    }
+   }
+  },
+  {
+   "id": "dsx_blitz_check_t3",
+   "title": "BLITZ discretion score (check, t3) - rejected (at chance)",
+   "family": "risk",
+   "question": "Owner 2026-10-30: give BLITZ good discretion - judge each trade from what is known at entry, size the good ones up and the bad ones down?",
+   "status": "rejected",
+   "verdict": "BLITZ discretion score, points checklist (6 facts, H1 medians), fit on 2026 H1 only, bottom third x0.5 / middle x1 / top third x1.5: H1 R/risk +0.178 (today +0.165, shuffled p 0.395), 25K 2-week pass/fail 32.8/36.1 (today 36.1/37.8), slot $261/mo (today $277); H2 R/risk +0.234 (today +0.200, shuffled p 0.2), 25K 2-week pass/fail 33.3/29.0 (today 36.2/34.8), slot $73/mo (today $30); 2021-25 R/risk +0.004 (today +0.013, shuffled p 1.0), 25K 2-week pass/fail 23.8/52.6 (today 20.4/50.2), slot $-40/mo (today $-41). Not better in all three spans and inside its shuffled-label controls: at chance, rejected.",
+   "writeup": "discretion-score-2026-10-30",
+   "tags": [
+    "blitz",
+    "scalp",
+    "sizing",
+    "discretion"
+   ],
+   "params": {
+    "features": [
+     "exc",
+     "rng_sofar",
+     "vix",
+     "nth",
+     "liq_room",
+     "st15_with"
+    ],
+    "fit": {
+     "model": "check",
+     "h1_median": {
+      "exc": 1.4949,
+      "rng_sofar": 0.9742,
+      "vix": 18.41,
+      "nth": 3.0,
+      "liq_room": 1.2987,
+      "st15_with": 1.0
+     },
+     "point_side": {
+      "exc": "high",
+      "rng_sofar": "low",
+      "vix": "low",
+      "nth": "high",
+      "liq_room": "low",
+      "st15_with": "low"
+     }
+    },
+    "cuts": [
+     2.0,
+     3.0
+    ],
+    "rule": [
+     0.5,
+     1.0,
+     1.5
+    ]
+   },
+   "sizing": {
+    "usd_per_trade": 500.0,
+    "x": "score tercile mult",
+    "eval_25k": {
+     "mode": "frac",
+     "f": 0.4,
+     "cap": 600.0,
+     "push": [
+      5,
+      1.0
+     ]
+    }
+   },
+   "built": "2026-10-30 16:51",
+   "spans": {
+    "2026": {
+     "n": 323,
+     "tpw": 7.84,
+     "wk2": 86,
+     "win": 56.7,
+     "pf": 1.8,
+     "net": 34887,
+     "dd": -3021,
+     "avg_r": 0.176,
+     "stop": 61.1,
+     "worst_day": -1395,
+     "risk": 627.0,
+     "half": 0,
+     "per_month": 3556,
+     "p10": 25.2,
+     "f10": 14.6,
+     "p15": 37.9,
+     "f15": 25.2,
+     "p20": 45.6,
+     "f20": 35.4,
+     "dec10": 39.8,
+     "slow_pass": 27.1,
+     "pass_med": 11.0,
+     "b2b": "9/5"
+    },
+    "2021-25": {
+     "n": 1841,
+     "tpw": 8.55,
+     "wk2": 80,
+     "win": 50.1,
+     "pf": 1.0,
+     "net": 1346,
+     "dd": -29150,
+     "avg_r": 0.013,
+     "stop": 38.9,
+     "worst_day": -2355,
+     "risk": 674.0,
+     "half": 0,
+     "per_month": 26,
+     "p10": 8.6,
+     "f10": 31.6,
+     "p15": 12.0,
+     "f15": 47.7,
+     "p20": 14.6,
+     "f20": 59.8,
+     "dec10": 40.2,
+     "slow_pass": 36.8,
+     "pass_med": 12.0,
+     "b2b": "16/59"
+    },
+    "all": {
+     "n": 2164,
+     "tpw": 8.43,
+     "wk2": 81,
+     "win": 51.1,
+     "pf": 1.09,
+     "net": 36233,
+     "dd": -29150,
+     "avg_r": 0.037,
+     "stop": 41.2,
+     "worst_day": -2355,
+     "risk": 667.0,
+     "half": 0,
+     "per_month": 593,
+     "p10": 11.3,
+     "f10": 28.8,
+     "p15": 16.1,
+     "f15": 44.1,
+     "p20": 19.6,
+     "f20": 55.9,
+     "dec10": 40.1,
+     "slow_pass": 36.5,
+     "pass_med": 12.0,
+     "b2b": "25/64"
+    }
+   }
+  },
+  {
+   "id": "dsx_blitz_ridge_skip",
+   "title": "BLITZ discretion score (ridge, skip) - rejected (at chance)",
+   "family": "risk",
+   "question": "Owner 2026-10-30: give BLITZ good discretion - judge each trade from what is known at entry, size the good ones up and the bad ones down?",
+   "status": "rejected",
+   "verdict": "BLITZ discretion score, ridge score (6 facts, strong shrinkage), fit on 2026 H1 only, bottom third skipped: H1 R/risk +0.201 (today +0.165, shuffled p 0.16), 25K 2-week pass/fail 31.9/23.5 (today 36.1/37.8), slot $241/mo (today $277); H2 R/risk +0.224 (today +0.200, shuffled p 0.41), 25K 2-week pass/fail 24.6/21.7 (today 36.2/34.8), slot $7/mo (today $30); 2021-25 R/risk +0.002 (today +0.013, shuffled p 0.87), 25K 2-week pass/fail 18.2/39.4 (today 20.4/50.2), slot $-46/mo (today $-41). Not better in all three spans and inside its shuffled-label controls: at chance, rejected.",
+   "writeup": "discretion-score-2026-10-30",
+   "tags": [
+    "blitz",
+    "scalp",
+    "sizing",
+    "discretion"
+   ],
+   "params": {
+    "features": [
+     "exc",
+     "rng_sofar",
+     "vix",
+     "nth",
+     "liq_room",
+     "st15_with"
+    ],
+    "fit": {
+     "model": "ridge",
+     "alpha_per_trade": 1.0,
+     "clip": [
+      -1.5,
+      3.0
+     ],
+     "weights_per_sd": {
+      "exc": 0.0305,
+      "rng_sofar": -0.0122,
+      "vix": -0.0021,
+      "nth": 0.0123,
+      "liq_room": -0.0181,
+      "st15_with": -0.0053
+     },
+     "h1_mean": {
+      "exc": 1.8489,
+      "rng_sofar": 1.1381,
+      "vix": 19.9723,
+      "nth": 2.8848,
+      "liq_room": 1.7698,
+      "st15_with": 0.9078
+     },
+     "h1_sd": {
+      "exc": 1.0176,
+      "rng_sofar": 0.5895,
+      "vix": 4.0038,
+      "nth": 1.2846,
+      "liq_room": 1.5877,
+      "st15_with": 0.4193
+     }
+    },
+    "cuts": [
+     -0.01425263575106127,
+     0.012839975314680278
+    ],
+    "rule": [
+     0.0,
+     1.0,
+     1.0
+    ]
+   },
+   "sizing": {
+    "usd_per_trade": 500.0,
+    "x": "score tercile mult",
+    "eval_25k": {
+     "mode": "frac",
+     "f": 0.4,
+     "cap": 600.0,
+     "push": [
+      5,
+      1.0
+     ]
+    }
+   },
+   "built": "2026-10-30 16:51",
+   "spans": {
+    "2026": {
+     "n": 323,
+     "tpw": 7.84,
+     "wk2": 86,
+     "win": 56.7,
+     "pf": 1.78,
+     "net": 21143,
+     "dd": -2056,
+     "avg_r": 0.176,
+     "stop": 61.1,
+     "worst_day": -791,
+     "risk": 411.0,
+     "half": 0,
+     "per_month": 2155,
+     "p10": 17.0,
+     "f10": 2.9,
+     "p15": 26.7,
+     "f15": 5.3,
+     "p20": 38.8,
+     "f20": 7.3,
+     "dec10": 19.9,
+     "slow_pass": 65.0,
+     "pass_med": 20.0,
+     "b2b": "5/2"
+    },
+    "2021-25": {
+     "n": 1841,
+     "tpw": 8.55,
+     "wk2": 80,
+     "win": 50.1,
+     "pf": 1.01,
+     "net": 1581,
+     "dd": -21250,
+     "avg_r": 0.013,
+     "stop": 38.9,
+     "worst_day": -1453,
+     "risk": 448.0,
+     "half": 0,
+     "per_month": 31,
+     "p10": 4.8,
+     "f10": 10.5,
+     "p15": 7.1,
+     "f15": 23.6,
+     "p20": 9.7,
+     "f20": 34.4,
+     "dec10": 15.3,
+     "slow_pass": 68.0,
+     "pass_med": 24.0,
+     "b2b": "9/31"
+    },
+    "all": {
+     "n": 2164,
+     "tpw": 8.43,
+     "wk2": 81,
+     "win": 51.1,
+     "pf": 1.09,
+     "net": 22725,
+     "dd": -21250,
+     "avg_r": 0.037,
+     "stop": 41.2,
+     "worst_day": -1453,
+     "risk": 444.0,
+     "half": 0,
+     "per_month": 372,
+     "p10": 6.8,
+     "f10": 9.3,
+     "p15": 10.3,
+     "f15": 20.7,
+     "p20": 14.4,
+     "f20": 30.1,
+     "dec10": 16.1,
+     "slow_pass": 68.2,
+     "pass_med": 23.0,
+     "b2b": "14/32"
+    }
+   }
+  },
+  {
+   "id": "dsx_blitz_ridge_t3",
+   "title": "BLITZ discretion score (ridge, t3) - rejected (at chance)",
+   "family": "risk",
+   "question": "Owner 2026-10-30: give BLITZ good discretion - judge each trade from what is known at entry, size the good ones up and the bad ones down?",
+   "status": "rejected",
+   "verdict": "BLITZ discretion score, ridge score (6 facts, strong shrinkage), fit on 2026 H1 only, bottom third x0.5 / middle x1 / top third x1.5: H1 R/risk +0.180 (today +0.165, shuffled p 0.205), 25K 2-week pass/fail 37.0/26.1 (today 36.1/37.8), slot $273/mo (today $277); H2 R/risk +0.246 (today +0.200, shuffled p 0.14), 25K 2-week pass/fail 30.4/27.5 (today 36.2/34.8), slot $52/mo (today $30); 2021-25 R/risk +0.009 (today +0.013, shuffled p 0.785), 25K 2-week pass/fail 23.8/47.4 (today 20.4/50.2), slot $-37/mo (today $-41). Not better in all three spans and inside its shuffled-label controls: at chance, rejected.",
+   "writeup": "discretion-score-2026-10-30",
+   "tags": [
+    "blitz",
+    "scalp",
+    "sizing",
+    "discretion"
+   ],
+   "params": {
+    "features": [
+     "exc",
+     "rng_sofar",
+     "vix",
+     "nth",
+     "liq_room",
+     "st15_with"
+    ],
+    "fit": {
+     "model": "ridge",
+     "alpha_per_trade": 1.0,
+     "clip": [
+      -1.5,
+      3.0
+     ],
+     "weights_per_sd": {
+      "exc": 0.0305,
+      "rng_sofar": -0.0122,
+      "vix": -0.0021,
+      "nth": 0.0123,
+      "liq_room": -0.0181,
+      "st15_with": -0.0053
+     },
+     "h1_mean": {
+      "exc": 1.8489,
+      "rng_sofar": 1.1381,
+      "vix": 19.9723,
+      "nth": 2.8848,
+      "liq_room": 1.7698,
+      "st15_with": 0.9078
+     },
+     "h1_sd": {
+      "exc": 1.0176,
+      "rng_sofar": 0.5895,
+      "vix": 4.0038,
+      "nth": 1.2846,
+      "liq_room": 1.5877,
+      "st15_with": 0.4193
+     }
+    },
+    "cuts": [
+     -0.01425263575106127,
+     0.012839975314680278
+    ],
+    "rule": [
+     0.5,
+     1.0,
+     1.5
+    ]
+   },
+   "sizing": {
+    "usd_per_trade": 500.0,
+    "x": "score tercile mult",
+    "eval_25k": {
+     "mode": "frac",
+     "f": 0.4,
+     "cap": 600.0,
+     "push": [
+      5,
+      1.0
+     ]
+    }
+   },
+   "built": "2026-10-30 16:51",
+   "spans": {
+    "2026": {
+     "n": 323,
+     "tpw": 7.84,
+     "wk2": 86,
+     "win": 56.7,
+     "pf": 1.86,
+     "net": 29623,
+     "dd": -2422,
+     "avg_r": 0.176,
+     "stop": 61.1,
+     "worst_day": -828,
+     "risk": 443.0,
+     "half": 0,
+     "per_month": 3020,
+     "p10": 18.9,
+     "f10": 2.9,
+     "p15": 34.0,
+     "f15": 6.3,
+     "p20": 50.0,
+     "f20": 11.7,
+     "dec10": 21.8,
+     "slow_pass": 55.1,
+     "pass_med": 17.0,
+     "b2b": "8/2"
+    },
+    "2021-25": {
+     "n": 1841,
+     "tpw": 8.55,
+     "wk2": 80,
+     "win": 50.1,
+     "pf": 1.02,
+     "net": 6867,
+     "dd": -21980,
+     "avg_r": 0.013,
+     "stop": 38.9,
+     "worst_day": -1855,
+     "risk": 469.0,
+     "half": 0,
+     "per_month": 134,
+     "p10": 8.0,
+     "f10": 22.7,
+     "p15": 10.6,
+     "f15": 37.7,
+     "p20": 14.5,
+     "f20": 48.8,
+     "dec10": 30.7,
+     "slow_pass": 59.6,
+     "pass_med": 19.0,
+     "b2b": "15/46"
+    },
+    "all": {
+     "n": 2164,
+     "tpw": 8.43,
+     "wk2": 81,
+     "win": 51.1,
+     "pf": 1.11,
+     "net": 36490,
+     "dd": -21980,
+     "avg_r": 0.037,
+     "stop": 41.2,
+     "worst_day": -1855,
+     "risk": 466.0,
+     "half": 0,
+     "per_month": 597,
+     "p10": 9.7,
+     "f10": 19.6,
+     "p15": 14.3,
+     "f15": 32.7,
+     "p20": 20.2,
+     "f20": 42.9,
+     "dec10": 29.3,
+     "slow_pass": 59.1,
+     "pass_med": 18.0,
+     "b2b": "23/48"
+    }
+   }
+  },
+  {
    "id": "funded_path_atlas25_cons",
    "title": "ATLAS 25K: 25K rule + consistency-aware cap",
    "family": "risk",
@@ -303937,6 +305248,157 @@
      "slow_pass": 100.0,
      "pass_med": 41.0,
      "b2b": "6/6"
+    }
+   }
+  },
+  {
+   "id": "dsx_blitz_prior",
+   "title": "BLITZ trader's checklist size (no fit) - thin lead, not adopted",
+   "family": "risk",
+   "question": "Does a trader's written-down checklist (no fitting at all) size BLITZ better than a fitted score?",
+   "status": "info",
+   "verdict": "BLITZ trader's checklist (no fit: strong break, day already moving, not the first signal, room to the next pool, with the 15m structure; 0-1 boxes x0.5, 2-3 x1, 4-5 x1.5): H1 R/risk +0.195 (today +0.165, multiplier-shuffle p 0.033), 25K 2-week pass/fail 42.9/36.1 (today 36.1/37.8), slot $287/mo (today $270); H2 R/risk +0.222 (today +0.200, multiplier-shuffle p 0.097), 25K 2-week pass/fail 33.3/34.8 (today 36.2/34.8), slot $50/mo (today $37); 2021-25 R/risk +0.019 (today +0.013, multiplier-shuffle p 0.123), 25K 2-week pass/fail 23.6/48.3 (today 20.4/50.2), slot $-38/mo (today $-40). Better per unit of risk in every span and 6 of 7 years, but the out-of-sample shuffles reach it 10-12% of the time, the H2 2-week pass drops, and it was written after the fact table was seen (two boxes are the known later-break / trend-day facts). Thin lead, not adopted.",
+   "writeup": "discretion-score-2026-10-30",
+   "tags": [
+    "blitz",
+    "scalp",
+    "sizing",
+    "discretion"
+   ],
+   "params": {
+    "prior": [
+     [
+      "exc",
+      ">",
+      "med"
+     ],
+     [
+      "rng_sofar",
+      ">",
+      "med"
+     ],
+     [
+      "nth",
+      ">=",
+      2.0
+     ],
+     [
+      "liq_room",
+      ">",
+      "med"
+     ],
+     [
+      "st15_with",
+      ">=",
+      1.0
+     ]
+    ],
+    "bands": [
+     [
+      0,
+      1,
+      0.5
+     ],
+     [
+      2,
+      3,
+      1.0
+     ],
+     [
+      4,
+      5,
+      1.5
+     ]
+    ]
+   },
+   "sizing": {
+    "usd_per_trade": 500.0,
+    "eval_25k": {
+     "mode": "frac",
+     "f": 0.4,
+     "cap": 600.0,
+     "push": [
+      5,
+      1.0
+     ]
+    }
+   },
+   "built": "2026-10-30 16:52",
+   "spans": {
+    "2026": {
+     "n": 323,
+     "tpw": 7.84,
+     "wk2": 86,
+     "win": 56.7,
+     "pf": 1.83,
+     "net": 35683,
+     "dd": -2456,
+     "avg_r": 0.176,
+     "stop": 61.1,
+     "worst_day": -1546,
+     "risk": 486.0,
+     "half": 0,
+     "per_month": 3638,
+     "p10": 27.7,
+     "f10": 9.7,
+     "p15": 43.7,
+     "f15": 19.4,
+     "p20": 53.4,
+     "f20": 26.7,
+     "dec10": 37.4,
+     "slow_pass": 23.7,
+     "pass_med": 11.0,
+     "b2b": "10/4"
+    },
+    "2021-25": {
+     "n": 1841,
+     "tpw": 8.55,
+     "wk2": 80,
+     "win": 50.1,
+     "pf": 1.05,
+     "net": 19410,
+     "dd": -19649,
+     "avg_r": 0.013,
+     "stop": 38.9,
+     "worst_day": -2180,
+     "risk": 491.0,
+     "half": 0,
+     "per_month": 378,
+     "p10": 9.1,
+     "f10": 26.6,
+     "p15": 13.9,
+     "f15": 39.6,
+     "p20": 17.9,
+     "f20": 49.7,
+     "dec10": 35.7,
+     "slow_pass": 53.7,
+     "pass_med": 17.0,
+     "b2b": "14/43"
+    },
+    "all": {
+     "n": 2164,
+     "tpw": 8.43,
+     "wk2": 81,
+     "win": 51.1,
+     "pf": 1.14,
+     "net": 55094,
+     "dd": -19649,
+     "avg_r": 0.037,
+     "stop": 41.2,
+     "worst_day": -2180,
+     "risk": 491.0,
+     "half": 0,
+     "per_month": 902,
+     "p10": 12.1,
+     "f10": 23.9,
+     "p15": 18.7,
+     "f15": 36.4,
+     "p20": 23.6,
+     "f20": 46.0,
+     "dec10": 36.0,
+     "slow_pass": 47.4,
+     "pass_med": 15.0,
+     "b2b": "25/47"
     }
    }
   },
