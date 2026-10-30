@@ -674,8 +674,16 @@ class Follower:
             pm = float(c["pnl"]) / lq if lq else 0.0
             pnl = round(pm * int(p["qty"]), 2)
             if getattr(self.adapter, "name", None) == "paper" or getattr(self.adapter, "route_all_exits", False):
-                self.route({"sym": p["sym"], "side": "exit", "qty": p["qty"], "reason": c.get("reason") or "LEAD EXIT", "pnl": pnl,
-                            "entry_t": et_, "exit_t": c.get("exit_t") or now})
+                rr = self.route({"sym": p["sym"], "side": "exit", "qty": p["qty"], "reason": c.get("reason") or "LEAD EXIT", "pnl": pnl,
+                                 "entry_t": et_, "exit_t": c.get("exit_t") or now})
+                if not _ok(rr) and getattr(self.adapter, "name", None) != "paper":
+                    # the broker did not confirm the close: kept and managed, re-sent at the next poll (never booked flat on a guess)
+                    p["close_tries"] = int(p.get("close_tries") or 0) + 1
+                    self.log("risk", f"close after the lead's {c.get('reason')} NOT confirmed ({str(rr.get('error') or '')[:100]}): re-sent next poll")
+                    if p["close_tries"] == 3:
+                        self.fleet.notify(f"{self.name}: close NOT confirmed", f"the copy's close after the lead's {c.get('reason')} was not "
+                                          f"confirmed 3 times: check this account in NinjaTrader now.", f"fleet:{self.id}:closefail:{et_}")
+                    return
             self._book(et_, int(c.get("exit_t") or now), pnl, c.get("reason") or "LEAD EXIT", now)
             return
         op = (snap or {}).get("open")

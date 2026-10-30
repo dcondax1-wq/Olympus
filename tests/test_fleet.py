@@ -386,6 +386,27 @@ def refuse_checks(tmp):
     check("the refused follower books nothing at the lead's exit; the other books its share", not bad.closes and len(good.closes) == 1,
           (bad.closes, good.closes))
     check("no exit order is routed for the refused copy", not [a for a in ads["bad"].sent if a.get("side") == "exit"])
+    # the broker does not confirm the copy's close: kept and re-sent, booked only once a close is confirmed
+    class NoClose(Rec):
+        block_exit = True
+
+        def send(self, a):
+            if a.get("side") == "exit" and self.block_exit:
+                self.sent.append(dict(a))
+                return {"ok": False, "error": "close not confirmed"}
+            return super().send(a)
+    acc3 = [{"id": "nc", "lead": "zlarior", "plan": "mffu_builder_50k", "start": DAY, "adapter": "ninjatrader", "nt_account": "Sim116"}]
+    b, fl, ads, notes = make(os.path.join(tmp, "ref3"), acc3, now, factory=lambda f, c: NoClose(c, broker=True))
+    b.lit_enter(1, 20000.0, 19980.0, 20120.0)
+    fl.tick("NQ", now + 3)
+    b.t = now + 900
+    b.lit_exit(10 * 50.0, "TARGET")
+    fl.tick("NQ", b.t)
+    nc = fol(fl, "nc")
+    check("the copy's close not confirmed by the broker: kept open, nothing booked", nc.pos is not None and not nc.closes, (nc.pos, nc.closes))
+    ads["nc"].block_exit = False
+    fl.tick("NQ", b.t + 60)
+    check("... re-sent at the next poll and booked once confirmed", nc.pos is None and len(nc.closes) == 1, (nc.pos, nc.closes))
     # NOT OK but a leg still working ("fill not reported yet"): kept and managed (never dropped on a guess), then dropped
     # without booking once NinjaTrader retired it unfilled (engine/ninjatrader.entry_never_placed, as LIT / account B)
 
