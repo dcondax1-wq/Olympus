@@ -27,6 +27,7 @@ owner's typed I ACCEPT LIVE RISK, checked here and again by engine/go.step_arm a
   POST /api/next/start/blitz/arm         {"confirm": "I ACCEPT LIVE RISK"} arm BLITZ's 25K (only with the typed phrase)
   GET  /api/next/start/selftest          the last PC self-test (engine/pc_selftest.py) + whether one runs now
   POST /api/next/start/selftest          "Run self-test": the low-priority child (read-only; not an autopilot step)
+  GET  /api/next/start/blitz/preflight   BLITZ's go-live check, one green / red line each (engine/blitz_preflight.py)
 """
 from __future__ import annotations
 
@@ -322,6 +323,21 @@ async def r_remove(request: Request):
 async def r_anchor(request: Request):
     d = await _body(request)
     return _do(request, lambda: go.set_anchor(d.get("name"), d.get("balance"), d.get("floor"), d.get("as_of")))
+
+
+_CPF = {"t": 0.0, "v": None}
+
+
+@router.get("/api/next/start/blitz/preflight")
+def r_blitz_preflight(fresh: int = 0):
+    """BLITZ's go-live check (engine/blitz_preflight.py): every line green / red with its fix, from the running bot. Read-only
+    (the phone may read it); cached 10 s (the card polls)."""
+    if fresh or time.time() - _CPF["t"] > 10 or _CPF["v"] is None:
+        from . import blitz_preflight
+        b = _bot()
+        _CPF.update(t=time.time(), v=blitz_preflight.check(b if getattr(b, "running", False) else None, root=go._c_root(),
+                                                          connected=_connected, feed_problem=_feed))
+    return _J(_CPF["v"])
 
 
 @router.post("/api/next/start/blitz")

@@ -54,6 +54,7 @@ never touches LIT or ATLAS):
     python -X utf8 -m engine.account_c off
     python -X utf8 -m engine.account_c --status                # eval + scorecard from the state file
     python -X utf8 -m engine.account_c --resume                # after a scorecard pause (the owner's decision)
+    python -X utf8 -m engine.account_c --preflight             # the go-live check, line by line (engine/blitz_preflight.py)
     python -X utf8 -m engine.account_c --to-funded --account "<funded Name>" --start <day>
 """
 from __future__ import annotations
@@ -1214,6 +1215,8 @@ class AccountC:
             return
         ready = getattr(self.adapter, "has_open_bracket", None)
         if callable(ready) and not ready(et_):
+            self.note(("trail", et_), "warn", f"trail to {new:.2f} waits: NinjaTrader shows no protected bracket for the "
+                                              f"{_et(et_):%H:%M} ET trade yet (the stop at NinjaTrader stays {last:.2f})")
             return
         tries = sum(1 for r in self.ledger if r.get("entry_t") == et_ and r.get("side") == "modify" and r.get("stop") == new)
         if tries >= 3:
@@ -1456,6 +1459,13 @@ class AccountC:
                 return
             self.closes.append([trading_day(exit_t), int(exit_t), float(pnl), int(entry_t), None if r is None else float(r)])
             self.closes = self.closes[-1500:]
+        if self.kind() == "SIM" and self.real_bot():          # BLITZ's own Sim test (the go-live check, engine/blitz_preflight)
+            try:
+                from . import blitz_preflight
+                ok = (self.entry_result(entry_t) or {}).get("ok") is not False
+                blitz_preflight.record_sim(self.name, trading_day(exit_t), ok, 1, now=now)
+            except Exception:
+                pass
         self.check_lock(now)
         self._score_check(now)
         self.save()
@@ -1482,10 +1492,18 @@ class AccountC:
         except Exception:
             pass
 
+    # notices the owner must act on reach the phone as a push (kind "ops", as engine/ops_checks' eval passed / failed); the
+    # rest stay in the app's Activity feed (kind "risk": engine/push.pc_notify pushes those only with LE_PUSH_EXTRA=1). "order
+    # NOT placed" stays "risk": the narrator's "refused" line already pushes it (engine/alerts_plus). 2026-10-29: a real
+    # BLITZ day's CLOSE NOT CONFIRMED / EVAL PASSED / PAUSED would otherwise have reached no phone.
+    PUSH_NOW = ("acctc:closing:", "acctc:unconfirmed:", "acctc:trail:", "acctc:passed:", "acctc:failed:", "acctc:stuck:", "acctc:flost:",
+                "acctc:fstuck:", "acctc:pause:", "acctc:lock:")
+
     def _push_text(self, title, body, key):
         try:
             from . import push
-            self._send(push.text_payload("PC", "risk", title, body, key=key, t=int(self.clock()), url="#/second"))
+            kind = "ops" if str(key or "").startswith(self.PUSH_NOW) else "risk"
+            self._send(push.text_payload("PC", kind, title, body, key=key, t=int(self.clock()), url="#/second"))
         except Exception:
             pass
 
@@ -1497,7 +1515,7 @@ class AccountC:
             p = push.entry_payload(f"{self.label} ({self.real_word()})", "LONG" if act["side"] == "buy" else "SHORT", q, act["entry_t"], src="pc",
                                    entry=act.get("entry"), stop=act.get("stop"), target=act.get("target"), strategy="BLITZ")
             p["body"] = f"{p['body']} (BLITZ scalp)"
-            p["key"] = f"{p['key']}:acctc"
+            p["key"], p["tag"] = f"{p['key']}:acctc", f"{p.get('tag')}-acctc"
             self._send(p)
         except Exception:
             pass
@@ -1510,7 +1528,7 @@ class AccountC:
             p = push.outcome_payload(f"{self.label} ({self.real_word()})", _side(pv.get("dir")), reason, usd, int(et_), exit_t, src="pc",
                                      qty=q, strategy="BLITZ")
             p["body"] = f"{p['body']} (BLITZ scalp)"
-            p["key"] = f"{p['key']}:acctc"
+            p["key"], p["tag"] = f"{p['key']}:acctc", f"{p.get('tag')}-acctc"
             self._send(p)
         except Exception:
             pass
@@ -1551,8 +1569,8 @@ class AccountC:
         from . import account_b as AB
         now = int(now if now is not None else self.clock())
         today = trading_day(now)
-        rows = [{**{k: r.get(k) for k in ("t", "side", "qty", "reason", "pnl", "entry_t", "src", "strategy", "stop", "target")},
-                 **AB._answer(r)} for r in self.ledger if r.get("side") in ("buy", "sell", "exit", "modify")][-10:]
+        rows = [{**{k: r.get(k) for k in ("t", "side", "qty", "reason", "pnl", "entry_t", "src", "strategy", "stop", "target", "entry")},
+                 **AB._answer(r), **AB._fill_of(r)} for r in self.ledger if r.get("side") in ("buy", "sell", "exit", "modify")][-10:]
         tr = [{k: r.get(k) for k in ("id", "day", "entry_t", "dir", "side", "qty", "routed", "skip", "entry", "stop", "target", "exit_t",
                                       "exit", "exit_kind", "usd", "r", "not_placed", "closed_early")} for r in self.rows if r.get("day") == today][-8:]
         ev = self.eval_view(now)
@@ -1932,7 +1950,13 @@ def main(argv=None) -> int:
     ap.add_argument("--to-funded", action="store_true", help="after a pass: trade the NEW funded account (--account, --start), disarmed")
     ap.add_argument("--balance", type=float, default=None, help="--to-funded: its balance that day (default $25,000)")
     ap.add_argument("--payout", help="record one payout MFFU paid on the funded account: yyyy-mm-dd=$")
+    ap.add_argument("--preflight", action="store_true", help="BLITZ's go-live check: every line green / red with its fix "
+                                                              "(asks the running bot, else checks the files)")
+    ap.add_argument("--files", action="store_true", help="--preflight without asking the running bot")
     a = ap.parse_args(argv)
+    if a.preflight:
+        from . import blitz_preflight
+        return blitz_preflight.main(["--files"] if a.files else [])
     if a.off is not None and a.off.lower() != "off":
         print(f"unknown argument {a.off!r} (only 'off')")
         return 2

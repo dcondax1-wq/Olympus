@@ -142,11 +142,17 @@ day. **Resume is the owner's decision:** `python -X utf8 -m engine.account_c --r
 What to watch on the dashboards: the account card's scorecard (trades, win %, avg R, PF, $, losing days) next to the
 floor; BLITZ's paper shadow keeps running as the comparison.
 
+## Why BLITZ did not trade today
+
+The BLITZ card says why. On a filtered day it says, for example, *"BLITZ skipped today: yesterday's 09:30-16:00 range 239 pts < 0.8 x
+its 14-day mean 404 pts"*. That was 2026-10-29, and Oct 30 is skipped too (0.66 x). On other days no 1-minute close left the band
+at the 10 checks. On 2026-10-28 the nearest was the 11:00 close, 25 points inside the lower band. In 2026, 1 day in 3 was filtered,
+and BLITZ traded on 45% of days.
+
 ## Turn it on (owner, next week)
 
-1. Buy the MFFU Builder 25K for BLITZ (your price, $63 or $43 with a code) and connect it in NinjaTrader.
-2. Start page > **BLITZ · 25K**: type its Name exactly as NinjaTrader shows it, press **Set BLITZ's 25K**, then **Arm BLITZ**
-   (type I ACCEPT LIVE RISK). Try **Sim test** first if you want to watch it on Sim101 for a day.
-3. Press **Start trading**.
+The steps are in **`docs/BLITZ_GO_LIVE.md`**: 3 steps, then the go-live check
+(`python -X utf8 -m engine.account_c --preflight`, or the Start page card's Go-live check). That file also shows what the
+phone says on the first day.
 
-(Console instead of step 2: `python -X utf8 -m engine.account_c --account "<the 25K Name>" --plan builder25k --start 2026-11-02`.)
+(Console instead of the Start page: `python -X utf8 -m engine.account_c --account "<the 25K Name>" --plan builder25k --start 2026-11-02`.)

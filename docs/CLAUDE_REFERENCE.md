@@ -265,7 +265,60 @@ part yourself or fold it into a script.**
   - Needs a per-day break counter in `blitz.Engine` + `account_c.qty`; owner decides.
   **Owner's turn-on (next week):** 1. buy the Builder 25K for BLITZ and connect it in NinjaTrader; 2. Start page > BLITZ ·
   25K: its Name, Set BLITZ's 25K, Arm BLITZ (type I ACCEPT LIVE RISK); 3. Start trading. Console for step 2:
+  **Owner's turn-on (next week): `docs/BLITZ_GO_LIVE.md`** (3 steps: buy + log in the 25K in NinjaTrader; Start page > BLITZ
+  · 25K: its Name, Set BLITZ's 25K, Arm BLITZ with I ACCEPT LIVE RISK; the Go-live check all green, console `python -X utf8 -m
+  engine.account_c --preflight`; plus what the phone shows on day 1). Console for step 2:
   `python -X utf8 -m engine.account_c --account "<the 25K Name>" --plan builder25k --start 2026-11-02`.
+  **Go-live check (2026-10-29, `engine/blitz_preflight.py`, read-only):** `facts(bot | None)` + pure `lines(facts)` -> one item
+  each {key, label, state good|bad|wait|info, detail, fix}: config, own (not Zlarior's / ATLAS's Name), nt (connected), visible
+  (the Name in go.nt_names: accounts.csv + Position files; Sim always), allow (allowlist; Sim none), sim ("Order route tested
+  recently": the bot's Sim roundtrip <= 14 d, OR a BLITZ Sim session <= 14 d: `data/account_c_sim.json`, gitignored, written
+  by AccountC._close on a Sim account of the real bot, OR on the running bot an entry NinjaTrader took for Zlarior / ATLAS in
+  the last 7 d: the same ATI route, no need to stop the live bot for a roundtrip), armed (real: armed AND the bot running live = NINJATRADER_LIVE + the phrase; Sim: info), bot
+  (acct_c running, not disabled), eval (session via sizing.eval_session: 0 before the first day), size (AccountC.qty at today's
+  room, the stop = 1.5 x the engine's 5m ATR else 60 pts, + 40 / 90 / 150-pt rows; 20 micros = MFFU 25K 2 minis), hedge,
+  contract (bands loaded, the 20-trade floor -0.150 / 0.62, paused = red with --resume), calendar (cme_calendar: full closure /
+  early close flat -5 / entry -15; a DST change within 7 days named), feed (bot health, else go.feed_problem), day (the day
+  filter, info). CLI `--preflight` asks the running server first (GET `/api/next/start/blitz/preflight`, engine/start_api.py,
+  cached 10 s), `--files` = without it; exit 1 unless all green. Start page BLITZ card draws it (start.js `cpfBlock`, fetched
+  with the status when BLITZ is on). Launch checklist: line `blitz` "BLITZ (account C) ready" right after `b`, only when
+  data/account_c.json is set (`launch_check.blitz_fact` -> blitz_preflight.compact: green = all green, else the first red line
+  + its fix). Tests: test_account_c part 13, test_launch_checklist blitz_checks.
+  **First-real-day fixes (2026-10-29):** (1) phone: on NinjaTrader the adapter reports its own fills only for the bot's own
+  account (state_path == STATE_PATH) and AccountB / AccountC skip their own entry push (reports_fills), while their info()
+  rows dropped the legs -> no FILLED line, no entry notice for ATLAS / BLITZ on NinjaTrader, and BLITZ's exit notice read
+  LIT's label "MFFU 50K". Now `account_b._fill_of` adds "fill" to B / C rows (C also "entry"), narrator._route_rows uses it,
+  narrator.send_push labels strat scalp "BLITZ <Name> (REAL|SIM)" and `_scalp` suffixes key ":acctc" / tag "-acctc" (= C's own
+  HEDGE / TIME / kill notices: one notice per trade; ATLAS's feed notices get account B's own ":acctb" key the same way, the
+  tag unchanged), BLITZ wording (SCALP_EXIT_WORDS: 30-minute clock, not LIT's 15-minute
+  check; "stop trailed past the entry"). (2) AccountC._push_text: keys in PUSH_NOW (closing, unconfirmed, trail, passed,
+  failed, stuck, pause, lock) are kind "ops" (pushed like ops_checks' eval notices); "order NOT placed" stays "risk" (the
+  narrator's refused line pushes it). (3) Why no trade: `blitz.day_filter(E, date, now=)` = {ok, ratio, yday, mean, next};
+  state_text says "BLITZ skipped today: yesterday's 09:30-16:00 range X pts < 0.8 x its 14-day mean Y pts" also after the
+  last check (it used to say only "No more checks today"), + the next day's verdict once today's range is final; heartbeat
+  compact "day_filter". **Oct 28 / 29 0-trade verdict (PC pushed bars + 5m for Oct 19-26):** Oct 28 passed the day filter
+  (Oct 27 range 387.5 = 0.90 x 428.5) but had no close outside the band at any of the 10 checks (nearest: 11:00 close 29,804.5
+  vs lower band 29,779.65), and the shadow's first run was 16:06 ET that day; Oct 29 filtered (Oct 28 range 239.0 = 0.59 x
+  404.3; the PC's band 0.59 matched the rebuild to 0.1 pt); Oct 30 filtered too (0.66). Correct: no bug.
+  **BLITZ dress rehearsal (2026-10-29, `tests/test_rehearsal_blitz.py`, built on tests/test_rehearsal.py's sandbox / fake
+  NinjaTrader / virtual clock):** the real server.py with LIT on Sim101, ATLAS (data/account_b.json) on Sim102, BLITZ
+  (data/account_c.json) on Sim103; each day a fresh eval, the bot started late (10:15 / 10:50) so the live loop rebuilds the
+  morning. Expected = engine.blitz.execute on the 2026 1m bars minus the signals the live account masked (each mask must
+  name LIT / ATLAS), the eval's own stops (+$1,500 pass, -$600 lock) and the scenario's blocks; per trade: entry minute,
+  side, micros (`expected_qty`: account C's eval size written out), the MARKET fill, STOPMARKET + LIMIT OCO, the trail CHANGEs
+  (tighter only, the model's stops in order, the last = the model's last; an intermediate step can fold into the next
+  minute's), exit reason / minute, booked $ = micros x the backtest's $ a micro; the fake NinjaTrader records any fill that
+  opens a position while another account holds the other side (must be none). Days: 08-03 normal (6 trades, trail stop-out,
+  15:55 flat), 06-05 pass (3 wins = +$1,525, EVAL PASSED, no trade after), 08-06 ATLAS S/R short 11:15 into BLITZ's long
+  (HEDGE first), 05-14 ATLAS short at the same 11:00 close, 04-01 LIT short (masks), 10-15 / 06-09 injected CME early closes
+  13:00 / 13:15 (LE_RH_EARLY in the sandbox server; 2026's real half days had no BLITZ trade), 10-16 restart mid-trade,
+  08-28 NinjaTrader refuses the first entry, 05-18 owner pause + HOLD TO KILL. **Result 2026-10-29: 345/345 checks**, 27 routed
+  BLITZ trades (78 micros, 63 trail CHANGEs, exits 20 TIME / 3 STOP / 1 15:55 flat / 2 HEDGE / 1 KILL) = the backtest trade
+  for trade, booked +$4,175.13 vs the fake broker's fills +$4,151.80 (stop / market fills 1 tick against), 1 LIT mask, 1
+  eval-pass block, 2 early-close blocks, 1 refused, 1 paused, 0 opposite fills across the three accounts; the go-live
+  check over HTTP all green after a Sim trade. `--jobs=4` 1,220 s on a loaded 4-core box; a day re-run into a parts folder
+  + `--summary=<folder>` rebuilds research/scalp/blitz_rehearsal.json. The sandbox serve patches bg_worker.JOB_TIMEOUT_S
+  (its timer runs on the virtual clock) and turns off the dashboards' 5-year backtest jobs (dash_data.JOBS_MGR.submit).
 - Same code as the research: engine/second.py calls tools/second_ema.py / second_md.py / second_sr.py on LIT's live
   window (retail_standalone.load_frame live_cut, the simulators' live/OPEN mode). "With LIT" view = LIT first, no entry
   while LIT is in a trade, max 2 a day (MACD closed when LIT enters).
@@ -831,7 +884,16 @@ part yourself or fold it into a script.**
 - **DST / CME holidays / self-healing (2026-10-29, `docs/AUTOPILOT.md`):** US clocks go back Sun 2026-11-01; every live
   time decision is America/New_York wall clock (25 trading_day functions, market_open, entry / flat windows, auto-update,
   ops pushes, the cloud's UTC crons through its real bash guard, LIT replays over the 2025-11-02 / 2025-03-09 /
-  2026-03-08 weeks identical to the backtest: `tests/test_dst.py` 49, `--quick` 45). The JS fallback for browsers without
+  2026-03-08 weeks identical to the backtest: `tests/test_dst.py` 49, `--quick` 45). **Sunday 2026-11-01 run end to end**
+  (`tests/test_dst_sunday.py`, 29 checks, ~4 min, `--quick` 15): BLITZ on 2026 bars re-dated 3 weeks with their NY wall
+  times kept (Nov 2-6 EST = Oct 12-16 EDT trade for trade, live Engine = backtest across the switch, Monday's day filter =
+  Friday's range); the timers minute by minute Sat 17:00 -> Mon 16:30 (the 01:00 hour walked twice: trading day flips once
+  at Sun 18:00 EST, market opens once at 23:00 UTC, auto-update hourly once per ET hour and once in the doubled hour, ops /
+  live-learning weekly once, Monday's LIT 02:00 / ATLAS 03:00 / BLITZ 11:00 checks / 15:55 flat on the right UTC instants);
+  the real server.py on the virtual clock Sun 00:00 EDT -> 20:00 EST with LIT / ATLAS / BLITZ on Sim (polls every step
+  incl. 120 in the doubled hour, no "clock moved backwards", no order, heartbeat on the virtual clock, market open + fresh
+  bars after 18:00, saved day 2026-11-02, BLITZ eval session 1, the go-live check names Monday's normal session, the board
+  Monday's 02:00 window, no push / auto-update check twice in the doubled hour). The JS fallback for browsers without
   Intl time zones (`litkit.js`, `tradechart.js`, both copies) uses the US rule (`usEtOff`), not a fixed -4 h. Known
   fixed offsets left on purpose: the old engine's 4h buckets (`engine/data.resample`, `engine/mtf.build_4h`, shadow
   only, identical in the backtest). **One CME calendar** `engine/cme_calendar.py` (`early_close`, `full_closure`,

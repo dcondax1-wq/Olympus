@@ -589,6 +589,55 @@ def part_h():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+# ================================================================================================ j. why no trade today
+def part_j():
+    """The day filter in the state text with its numbers (2026-10-29: the PC shadow said only "No more checks today" on two
+    0-trade days; Oct 29 was filtered: Oct 28's range 239 pts = 0.59 x its 14-day mean 404). Real 2026 bars: Oct 14 is a
+    filtered day (Oct 13's range 0.77 x its mean), Oct 15 a trading day (1.89 x)."""
+    df, _ = data()
+    B = BZ.frame(df)
+    pr = BZ.prior_range(B)
+    dates = list(B["dates"])
+
+    def engine_at(now):
+        E = BZ.Engine(None, True)
+        t, o, h, l, c = BZ._bars_of(df, now - BZ.WARM_DAYS * 86400, now - 60)
+        for i in range(len(t)):
+            E.on_bar(int(t[i]), o[i], h[i], l[i], c[i])
+        return {"eng": E.s, "t": now, "ledger": [], "ledger50": []}
+    r14, r15 = float(pr[dates.index("2026-10-14")]), float(pr[dates.index("2026-10-15")])
+    for when, hh in (("during the checks", 12 * 60 + 10), ("after the last check", 15 * 60 + 40), ("in the evening", 20 * 60)):
+        now = BZ.at_et("2026-10-14", hh)
+        S = engine_at(now)
+        st = BZ.state_text(S, now)
+        f = BZ.day_filter(S["eng"], "2026-10-14", now=now)
+        want = f"{r14:.2f} x" in st["text"] and f"{f['yday']:,.0f} pts < 0.8 x its 14-day mean {f['mean']:,.0f} pts" in st["text"]
+        nx = ("The next trading day trades" in st["text"]) if hh >= 16 * 60 else True
+        check(f"j. 2026-10-14 {when}: stage {st['stage']}, \"{st['text'][:150]}...\"", st["stage"] == "filtered" and want and nx
+              and abs(f["ratio"] - r14) < 1e-3 and f["ok"] is False, st)
+    nxt = BZ.day_filter(engine_at(BZ.at_et("2026-10-14", 20 * 60))["eng"], "2026-10-14", now=BZ.at_et("2026-10-14", 20 * 60))["next"]
+    check(f"j. 2026-10-14 evening: the next day's ratio from today's final range = the research's ({nxt['ratio']} vs {r15:.3f})",
+          nxt["final"] and abs(nxt["ratio"] - r15) < 1e-3 and nxt["ok"], nxt)
+    now = BZ.at_et("2026-10-15", 12 * 60 + 10)
+    S = engine_at(now)
+    st = BZ.state_text(S, now)
+    f = BZ.day_filter(S["eng"], "2026-10-15", now=now)
+    check(f"j. 2026-10-15 (a trading day, {r15:.2f} x): not filtered, stage {st['stage']}; the day filter block says it trades",
+          st["stage"] not in ("filtered",) and f["ok"] and "BLITZ trades today" in f["text"], st)
+    now = BZ.at_et("2026-10-11", 20 * 60)                 # Sunday evening: the verdict is Monday's, never "skipped today"
+    S = engine_at(now)
+    st = BZ.state_text(S, now)
+    r12 = float(pr[dates.index("2026-10-12")])
+    check(f"j. Sunday 2026-10-11 evening: stage {st['stage']}, names the next session's verdict ({r12:.2f} x): \"{st['text'][:140]}\"",
+          st["stage"] == "closed" and "next session" in st["text"] and "skipped today" not in st["text"] and f"{r12:.2f} x" in st["text"], st)
+    S2 = BZ.step(None, df[df["time"] < BZ.at_et("2026-10-14", 20 * 60) - 60], BZ.at_et("2026-10-14", 20 * 60),
+                 res={"trades": [], "state": {}, "signals": []}, second={"strategies": {}})
+    cp = BZ.compact(S2)
+    check("j. heartbeat compact carries day_filter (ratio, yesterday's range, the mean) and the filtered state text",
+          (cp.get("day_filter") or {}).get("ok") is False and abs(cp["day_filter"]["ratio"] - r14) < 1e-3 and cp["state"]["stage"] == "filtered",
+          {k: cp.get(k) for k in ("day_filter", "state")})
+
+
 # ================================================================================================ i. wiring
 def part_i(cloud=False):
     gi = open(os.path.join(ROOT, ".gitignore"), encoding="utf-8").read()
@@ -656,6 +705,7 @@ def main():
     part_f()
     part_g()
     part_h()
+    part_j()
     part_i(cloud="--cloud" in sys.argv)
     numbers(D, S50)
     ok = all(RES)

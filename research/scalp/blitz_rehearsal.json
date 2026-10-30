@@ -1,0 +1,6217 @@
+{
+ "t": 1793318770,
+ "passed": 345,
+ "total": 345,
+ "checks": [
+  {
+   "name": "2026-04-01 preflight on Sim101 with BLITZ + ATLAS configured: every row green",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 START on Sim101 via Bot Control",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 account C's order files (tag acctc_) name only Sim103, and only they do (12 lines)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 BLITZ LONG candidate at the 14:00:00 close masked: no hedging: LIT is in a SHORT trade",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 at least one BLITZ candidate masked by LIT (1)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 routed BLITZ entries = the backtest's (3 expected, 0 blocked on purpose: -; 1 masked by no hedging)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 11:00:00 BUY 2 routed 2 s after the open = backtest entry (size 2: 40% of $1,000 room, risk 80.89 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 11:00:00 stop 24763.5 (1.5 x 5m ATR) / OCO target 26462.25 (20R) = backtest 24763.5 / 26462.25",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 11:00:00 NinjaTrader: one MARKET 2 on Sim103, filled 24844.5 = backtest fill 24844.5",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 11:00:00 bracket at NinjaTrader: STOPMARKET 24763.5 + LIMIT 26462.25, qty 2, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 11:00:00 trail: 0 stop CHANGEs at NinjaTrader (0 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (-)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 11:00:00 exit TIME at 11:31:00 = backtest time 11:31:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 11:00:00 booked $-101.8 = 2 x the backtest's $-50.90 a micro ($-101.8)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 11:00:00 30-bar time exit: CLOSEPOSITION 3.2959749698638916 s after the bar close",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 12:00:00 BUY 3 routed 3 s after the open = backtest entry (size 3: 40% of $898 room, risk 58.26 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 12:00:00 stop 24840.0 (1.5 x 5m ATR) / OCO target 26063.25 (20R) = backtest 24840.0 / 26063.25",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 12:00:00 NinjaTrader: one MARKET 3 on Sim103, filled 24898.25 = backtest fill 24898.25",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 12:00:00 bracket at NinjaTrader: STOPMARKET 24840.0 + LIMIT 26063.25, qty 3, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 12:00:00 trail: 0 stop CHANGEs at NinjaTrader (0 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (-)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 12:00:00 exit TIME at 12:31:00 = backtest time 12:31:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 12:00:00 booked $-56.7 = 3 x the backtest's $-18.90 a micro ($-56.7)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 12:00:00 30-bar time exit: CLOSEPOSITION 4.158296823501587 s after the bar close",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 13:00:00 BUY 4 routed 3 s after the open = backtest entry (size 4: 40% of $842 room, risk 40.60 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 13:00:00 stop 24863.5 (1.5 x 5m ATR) / OCO target 25716.0 (20R) = backtest 24863.5 / 25716.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 13:00:00 NinjaTrader: one MARKET 4 on Sim103, filled 24904.0 = backtest fill 24904.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 13:00:00 bracket at NinjaTrader: STOPMARKET 24863.5 + LIMIT 25716.0, qty 4, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 13:00:00 trail: 0 stop CHANGEs at NinjaTrader (0 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (-)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 13:00:00 exit TIME at 13:31:00 = backtest time 13:31:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 13:00:00 booked $84.4 = 4 x the backtest's $21.10 a micro ($84.4)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 13:00:00 30-bar time exit: CLOSEPOSITION 3.9412624835968018 s after the bar close",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 every routed BLITZ order accepted",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 fake NinjaTrader: every OIF line valid",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 never long + short across the accounts: no NinjaTrader fill opened a position while another account held the other side (0)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 heartbeat carries account C: BLITZ Sim103 SIM (SIM), eval session 1, 3 closed trades",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 GET /api/next/start/blitz/preflight on the running bot: 15 lines, all green (BLITZ is ready: every line is green.)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 STOP after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-04-01 every account flat at NinjaTrader after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "server logs: no traceback",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 preflight on Sim101 with BLITZ + ATLAS configured: every row green",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 START on Sim101 via Bot Control",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 account C's order files (tag acctc_) name only Sim103, and only they do (8 lines)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 routed BLITZ entries = the backtest's (2 expected, 0 blocked on purpose: -; 0 masked by no hedging)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 11:00:00 BUY 2 routed 6 s after the open = backtest entry (size 2: 40% of $1,000 room, risk 66.90 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 11:00:00 stop 30192.0 (1.5 x 5m ATR) / OCO target 31597.0 (20R) = backtest 30192.0 / 31597.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 11:00:00 NinjaTrader: one MARKET 2 on Sim103, filled 30259.0 = backtest fill 30259.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 11:00:00 bracket at NinjaTrader: STOPMARKET 30192.0 + LIMIT 31597.0, qty 2, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 11:00:00 trail: 0 stop CHANGEs at NinjaTrader (0 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (-)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 11:00:00 closed by HEDGE at 11:00:09 (market): booked $-6.8 = 2 x the market ($-5.8, within 1 tick a micro)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 12:00:00 BUY 3 routed 5 s after the open = backtest entry (size 3: 40% of $993 room, risk 51.22 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 12:00:00 stop 30289.0 (1.5 x 5m ATR) / OCO target 31364.5 (20R) = backtest 30289.0 / 31364.5",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 12:00:00 NinjaTrader: one MARKET 3 on Sim103, filled 30340.25 = backtest fill 30340.25",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 12:00:00 bracket at NinjaTrader: STOPMARKET 30289.0 + LIMIT 31364.5, qty 3, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 12:00:00 trail: 0 stop CHANGEs at NinjaTrader (0 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (-)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 12:00:00 exit TIME at 12:31:00 = backtest time 12:31:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 12:00:00 booked $-115.2 = 3 x the backtest's $-38.40 a micro ($-115.2)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 12:00:00 30-bar time exit: CLOSEPOSITION 4.377509117126465 s after the bar close",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 every routed BLITZ order accepted",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 fake NinjaTrader: every OIF line valid",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 ATLAS (account B) entered on Sim102 (1: [('11:00:00', 'sell')])",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 BLITZ closed by HEDGE before ATLAS's opposite entry (1)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 order at NinjaTrader: BLITZ's CLOSEPOSITION (11:00:09) before ATLAS's MARKET (11:00:09)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 never long + short across the accounts: no NinjaTrader fill opened a position while another account held the other side (0)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 heartbeat carries account C: BLITZ Sim103 SIM (SIM), eval session 1, 2 closed trades",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 GET /api/next/start/blitz/preflight on the running bot: 15 lines, all green (BLITZ is ready: every line is green.)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 STOP after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-14 every account flat at NinjaTrader after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "server logs: no traceback",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 preflight on Sim101 with BLITZ + ATLAS configured: every row green",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 START on Sim101 via Bot Control",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 owner PAUSE at 11:32:02 until 12:02 ET (POST /api/next/pause)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 KILL 13:05:02: the kill endpoint answered ok",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 KILL: FLATTENEVERYTHING reached NinjaTrader",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 KILL: every account flat (BLITZ's Sim103 too)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 KILL: bot stopped, kill flag on",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 account C's order files (tag acctc_) name only Sim103, and only they do (9 lines)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 routed BLITZ entries = the backtest's (2 expected, 1 blocked on purpose: ['paused']; 0 masked by no hedging)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 12:00:00 BLITZ entry not routed while the owner's pause runs (GUARD new entries paused by you until Mon 18 May 12:02 ET (resume_entries lifts )",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 11:00:00 SELL 1 routed 3 s after the open = backtest entry (size 1: 40% of $1,000 room, risk 122.20 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 11:00:00 stop 29788.25 (1.5 x 5m ATR) / OCO target 27222.0 (20R) = backtest 29788.25 / 27222.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 11:00:00 NinjaTrader: one MARKET 1 on Sim103, filled 29666.0 = backtest fill 29666.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 11:00:00 bracket at NinjaTrader: STOPMARKET 29788.25 + LIMIT 27222.0, qty 1, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 11:00:00 trail: 1 stop CHANGEs at NinjaTrader (1 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (29723.5)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 11:00:00 exit TIME at 11:31:00 = backtest time 11:31:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 11:00:00 booked $269.1 = 1 x the backtest's $269.10 a micro ($269.1)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 11:00:00 30-bar time exit: CLOSEPOSITION 3.1775453090667725 s after the bar close",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 13:00:00 SELL 2 routed 2 s after the open = backtest entry (size 2: 40% of $1,269 room, risk 103.33 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 13:00:00 stop 29691.75 (1.5 x 5m ATR) / OCO target 27522.0 (20R) = backtest 29691.75 / 27522.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 13:00:00 NinjaTrader: one MARKET 2 on Sim103, filled 29588.5 = backtest fill 29588.5",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 13:00:00 bracket at NinjaTrader: STOPMARKET 29691.75 + LIMIT 27522.0, qty 2, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 13:00:00 trail: 0 stop CHANGEs at NinjaTrader (0 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (-)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 13:00:00 closed by KILL SWITCH at 13:05:03 (market): booked $-17.8 = 2 x the market ($-17.8, within 1 tick a micro)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 every routed BLITZ order accepted",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 fake NinjaTrader: every OIF line valid",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 never long + short across the accounts: no NinjaTrader fill opened a position while another account held the other side (0)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 heartbeat carries account C: BLITZ Sim103 SIM (SIM), eval session 1, 2 closed trades",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-05-18 every account flat at NinjaTrader after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "server logs: no traceback",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 preflight on Sim101 with BLITZ + ATLAS configured: every row green",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 START on Sim101 via Bot Control",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 account C's order files (tag acctc_) name only Sim103, and only they do (33 lines)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 routed BLITZ entries = the backtest's (3 expected, 1 blocked on purpose: ['eval passed']; 0 masked by no hedging)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 14:00:00 BLITZ signal not routed: eval passed (eval passed (balance $26,525, room $2,525)); ['acctc:passed:2026-06-05:Sim103']",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 11:00:00 SELL 2 routed 3 s after the open = backtest entry (size 2: 40% of $1,000 room, risk 91.36 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 11:00:00 stop 30528.25 (1.5 x 5m ATR) / OCO target 28610.0 (20R) = backtest 30528.25 / 28610.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 11:00:00 NinjaTrader: one MARKET 2 on Sim103, filled 30437.0 = backtest fill 30437.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 11:00:00 bracket at NinjaTrader: STOPMARKET 30528.25 + LIMIT 28610.0, qty 2, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 11:00:00 trail: 9 stop CHANGEs at NinjaTrader (9 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (30416.5)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 11:00:00 exit TIME at 11:31:00 = backtest time 11:31:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 11:00:00 booked $458.2 = 2 x the backtest's $229.10 a micro ($458.2)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 11:00:00 30-bar time exit: CLOSEPOSITION 4.486361980438232 s after the bar close",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 12:00:00 SELL 3 routed 4 s after the open = backtest entry (size 3: 40% of $1,458 room, risk 82.55 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 12:00:00 stop 30325.0 (1.5 x 5m ATR) / OCO target 28591.75 (20R) = backtest 30325.0 / 28591.75",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 12:00:00 NinjaTrader: one MARKET 3 on Sim103, filled 30242.5 = backtest fill 30242.5",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 12:00:00 bracket at NinjaTrader: STOPMARKET 30325.0 + LIMIT 28591.75, qty 3, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 12:00:00 trail: 8 stop CHANGEs at NinjaTrader (8 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (30243.75)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 12:00:00 exit TIME at 12:31:00 = backtest time 12:31:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 12:00:00 booked $807.3 = 3 x the backtest's $269.10 a micro ($807.3)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 12:00:00 30-bar time exit: CLOSEPOSITION 4.9734790325164795 s after the bar close",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 13:00:00 SELL 3 routed 5 s after the open = backtest entry (size 3: 40% of $2,266 room, risk 88.08 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 13:00:00 stop 30162.25 (1.5 x 5m ATR) / OCO target 28312.75 (20R) = backtest 30162.25 / 28312.75",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 13:00:00 NinjaTrader: one MARKET 3 on Sim103, filled 30074.25 = backtest fill 30074.25",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 13:00:00 bracket at NinjaTrader: STOPMARKET 30162.25 + LIMIT 28312.75, qty 3, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 13:00:00 trail: 4 stop CHANGEs at NinjaTrader (4 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (30078.0)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 13:00:00 exit TIME at 13:31:00 = backtest time 13:31:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 13:00:00 booked $259.8 = 3 x the backtest's $86.60 a micro ($259.8)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 13:00:00 30-bar time exit: CLOSEPOSITION 4.5536298751831055 s after the bar close",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 every routed BLITZ order accepted",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 fake NinjaTrader: every OIF line valid",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 never long + short across the accounts: no NinjaTrader fill opened a position while another account held the other side (0)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 heartbeat carries account C: BLITZ Sim103 SIM (SIM), eval session 1, 3 closed trades",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 go-live check after the pass: the eval line is red (['eval=bad (this eval is passed (balance $26,525): no new BLITZ trade on it)'])",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 GET /api/next/start/blitz/preflight on the running bot: 15 lines, all green (1 red line: 25K eval clock: this eval is passed (balance $26,525): no new BLITZ trade on it)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 STOP after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-05 every account flat at NinjaTrader after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "server logs: no traceback",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 preflight on Sim101 with BLITZ + ATLAS configured: every row green",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 START on Sim101 via Bot Control",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 account C's order files (tag acctc_) name only Sim103, and only they do (20 lines)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 routed BLITZ entries = the backtest's (2 expected, 2 blocked on purpose: ['early close: last 15 min']; 0 masked by no hedging)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 13:00:00 BLITZ signal not entered: CME early close at 13:15 ET: no entry in the last 15 minutes",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 13:30:00 BLITZ signal not entered: None",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 11:00:00 SELL 1 routed 5 s after the open = backtest entry (size 1: 40% of $1,000 room, risk 145.65 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 11:00:00 stop 29971.5 (1.5 x 5m ATR) / OCO target 26913.0 (20R) = backtest 29971.5 / 26913.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 11:00:00 NinjaTrader: one MARKET 1 on Sim103, filled 29825.75 = backtest fill 29825.75",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 11:00:00 bracket at NinjaTrader: STOPMARKET 29971.5 + LIMIT 26913.0, qty 1, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 11:00:00 trail: 8 stop CHANGEs at NinjaTrader (8 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (29651.0)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 11:00:00 exit TIME at 11:31:00 = backtest time 11:31:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 11:00:00 booked $707.6 = 1 x the backtest's $707.60 a micro ($707.6)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 11:00:00 30-bar time exit: CLOSEPOSITION 3.597111463546753 s after the bar close",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 12:00:00 SELL 1 routed 3 s after the open = backtest entry (size 1: 40% of $1,708 room, risk 161.04 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 12:00:00 stop 29440.75 (1.5 x 5m ATR) / OCO target 26059.0 (20R) = backtest 29440.75 / 26059.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 12:00:00 NinjaTrader: one MARKET 1 on Sim103, filled 29279.75 = backtest fill 29279.75",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 12:00:00 bracket at NinjaTrader: STOPMARKET 29440.75 + LIMIT 26059.0, qty 1, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 12:00:00 trail: 4 stop CHANGEs at NinjaTrader (4 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (29229.75)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 12:00:00 exit TIME at 12:31:00 = backtest time 12:31:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 12:00:00 booked $464.6 = 1 x the backtest's $464.60 a micro ($464.6)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 12:00:00 30-bar time exit: CLOSEPOSITION 3.54276180267334 s after the bar close",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 every routed BLITZ order accepted",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 fake NinjaTrader: every OIF line valid",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 never long + short across the accounts: no NinjaTrader fill opened a position while another account held the other side (0)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 heartbeat carries account C: BLITZ Sim103 SIM (SIM), eval session 1, 2 closed trades",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 GET /api/next/start/blitz/preflight on the running bot: 15 lines, all green (1 red line: Live bars fresh: MNQ_5m.csv is stale: last bar Tue 13:10 ET, 20 min ago (NinjaTrader closed, disconnected, or the chart was removed?))",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 STOP after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-09 every account flat at NinjaTrader after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "server logs: no traceback",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 preflight on Sim101 with BLITZ + ATLAS configured: every row green",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 START on Sim101 via Bot Control",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 account C's order files (tag acctc_) name only Sim103, and only they do (34 lines)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 routed BLITZ entries = the backtest's (6 expected, 0 blocked on purpose: -; 0 masked by no hedging)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 11:00:00 BUY 2 routed 5 s after the open = backtest entry (size 2: 40% of $1,000 room, risk 82.09 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 11:00:00 stop 29014.0 (1.5 x 5m ATR) / OCO target 30737.75 (20R) = backtest 29014.0 / 30737.75",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 11:00:00 NinjaTrader: one MARKET 2 on Sim103, filled 29096.0 = backtest fill 29096.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 11:00:00 bracket at NinjaTrader: STOPMARKET 29014.0 + LIMIT 30737.75, qty 2, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 11:00:00 trail: 0 stop CHANGEs at NinjaTrader (0 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (-)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 11:00:00 exit TIME at 11:31:00 = backtest time 11:31:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 11:00:00 booked $-209.8 = 2 x the backtest's $-104.90 a micro ($-209.8)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 11:00:00 30-bar time exit: CLOSEPOSITION 4.33442759513855 s after the bar close",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 12:00:00 BUY 2 routed 3 s after the open = backtest entry (size 2: 40% of $790 room, risk 64.21 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 12:00:00 stop 29023.25 (1.5 x 5m ATR) / OCO target 30371.5 (20R) = backtest 29023.25 / 30371.5",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 12:00:00 NinjaTrader: one MARKET 2 on Sim103, filled 29087.5 = backtest fill 29087.5",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 12:00:00 bracket at NinjaTrader: STOPMARKET 29023.25 + LIMIT 30371.5, qty 2, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 12:00:00 trail: 0 stop CHANGEs at NinjaTrader (0 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (-)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 12:00:00 exit TIME at 12:31:00 = backtest time 12:31:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 12:00:00 booked $189.2 = 2 x the backtest's $94.60 a micro ($189.2)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 12:00:00 30-bar time exit: CLOSEPOSITION 2.989856243133545 s after the bar close",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 13:00:00 BUY 4 routed 4 s after the open = backtest entry (size 4: 40% of $979 room, risk 44.86 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 13:00:00 stop 29073.0 (1.5 x 5m ATR) / OCO target 30014.75 (20R) = backtest 29073.0 / 30014.75",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 13:00:00 NinjaTrader: one MARKET 4 on Sim103, filled 29117.75 = backtest fill 29117.75",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 13:00:00 bracket at NinjaTrader: STOPMARKET 29073.0 + LIMIT 30014.75, qty 4, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 13:00:00 trail: 7 stop CHANGEs at NinjaTrader (7 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (29118.0)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 13:00:00 exit TIME at 13:31:00 = backtest time 13:31:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 13:00:00 booked $500.4 = 4 x the backtest's $125.10 a micro ($500.4)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 13:00:00 30-bar time exit: CLOSEPOSITION 6.738263130187988 s after the bar close",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 14:00:00 BUY 8 routed 3 s after the open = backtest entry (size 8: 40% of $1,480 room, risk 33.77 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 14:00:00 stop 29178.75 (1.5 x 5m ATR) / OCO target 29887.75 (20R) = backtest 29178.75 / 29887.75",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 14:00:00 NinjaTrader: one MARKET 8 on Sim103, filled 29212.5 = backtest fill 29212.5",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 14:00:00 bracket at NinjaTrader: STOPMARKET 29178.75 + LIMIT 29887.75, qty 8, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 14:00:00 trail: 2 stop CHANGEs at NinjaTrader (2 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (29208.25)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 14:00:00 exit STOP at 14:27:00 = backtest stop 14:27:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 14:00:00 booked $-85.65 = 8 x the backtest's $-10.71 a micro ($-85.65)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 14:30:00 BUY 7 routed 4 s after the open = backtest entry (size 7: 40% of $1,394 room, risk 36.36 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 14:30:00 stop 29150.75 (1.5 x 5m ATR) / OCO target 29914.0 (20R) = backtest 29150.75 / 29914.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 14:30:00 NinjaTrader: one MARKET 7 on Sim103, filled 29187.0 = backtest fill 29187.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 14:30:00 bracket at NinjaTrader: STOPMARKET 29150.75 + LIMIT 29914.0, qty 7, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 14:30:00 trail: 0 stop CHANGEs at NinjaTrader (0 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (-)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 14:30:00 exit TIME at 15:01:00 = backtest time 15:01:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 14:30:00 booked $441.7 = 7 x the backtest's $63.10 a micro ($441.7)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 14:30:00 30-bar time exit: CLOSEPOSITION 3.4170825481414795 s after the bar close",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 15:30:00 BUY 8 routed 3 s after the open = backtest entry (size 8: 40% of $1,836 room, risk 35.82 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 15:30:00 stop 29172.0 (1.5 x 5m ATR) / OCO target 29924.0 (20R) = backtest 29172.0 / 29924.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 15:30:00 NinjaTrader: one MARKET 8 on Sim103, filled 29207.75 = backtest fill 29207.75",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 15:30:00 bracket at NinjaTrader: STOPMARKET 29172.0 + LIMIT 29924.0, qty 8, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 15:30:00 trail: 0 stop CHANGEs at NinjaTrader (0 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (-)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 15:30:00 exit TIME at 15:55:00 = backtest flat 15:55:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 15:30:00 booked $-235.2 = 8 x the backtest's $-29.40 a micro ($-235.2)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 15:30:00 15:55 flat: CLOSEPOSITION 2.0228309631347656 s after the bar close",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 every routed BLITZ order accepted",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 fake NinjaTrader: every OIF line valid",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 never long + short across the accounts: no NinjaTrader fill opened a position while another account held the other side (0)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 heartbeat carries account C: BLITZ Sim103 SIM (SIM), eval session 1, 6 closed trades",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 GET /api/next/start/blitz/preflight on the running bot: 15 lines, all green (BLITZ is ready: every line is green.)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 STOP after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-03 every account flat at NinjaTrader after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "server logs: no traceback",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 preflight on Sim101 with BLITZ + ATLAS configured: every row green",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 START on Sim101 via Bot Control",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 account C's order files (tag acctc_) name only Sim103, and only they do (8 lines)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 routed BLITZ entries = the backtest's (2 expected, 0 blocked on purpose: -; 0 masked by no hedging)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 11:00:00 BUY 2 routed 2 s after the open = backtest entry (size 2: 40% of $1,000 room, risk 89.22 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 11:00:00 stop 29862.25 (1.5 x 5m ATR) / OCO target 31735.75 (20R) = backtest 29862.25 / 31735.75",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 11:00:00 NinjaTrader: one MARKET 2 on Sim103, filled 29951.5 = backtest fill 29951.5",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 11:00:00 bracket at NinjaTrader: STOPMARKET 29862.25 + LIMIT 31735.75, qty 2, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 11:00:00 trail: 0 stop CHANGEs at NinjaTrader (0 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (-)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 11:00:00 closed by HEDGE at 11:15:02 (market): booked $-47.8 = 2 x the market ($-46.8, within 1 tick a micro)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 11:30:00 BUY 2 routed 2 s after the open = backtest entry (size 2: 40% of $952 room, risk 88.74 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 11:30:00 stop 29814.5 (1.5 x 5m ATR) / OCO target 31678.0 (20R) = backtest 29814.5 / 31678.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 11:30:00 NinjaTrader: one MARKET 2 on Sim103, filled 29903.25 = backtest fill 29903.25",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 11:30:00 bracket at NinjaTrader: STOPMARKET 29814.5 + LIMIT 31678.0, qty 2, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 11:30:00 trail: 0 stop CHANGEs at NinjaTrader (0 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (-)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 11:30:00 exit STOP at 11:56:00 = backtest stop 11:56:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 11:30:00 booked $-359.77 = 2 x the backtest's $-179.88 a micro ($-359.77)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 every routed BLITZ order accepted",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 fake NinjaTrader: every OIF line valid",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 ATLAS (account B) entered on Sim102 (1: [('11:15:00', 'sell')])",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 BLITZ closed by HEDGE before ATLAS's opposite entry (1)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 order at NinjaTrader: BLITZ's CLOSEPOSITION (11:15:02) before ATLAS's MARKET (11:15:02)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 never long + short across the accounts: no NinjaTrader fill opened a position while another account held the other side (0)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 heartbeat carries account C: BLITZ Sim103 SIM (SIM), eval session 1, 2 closed trades",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 GET /api/next/start/blitz/preflight on the running bot: 15 lines, all green (BLITZ is ready: every line is green.)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 STOP after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-06 every account flat at NinjaTrader after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "server logs: no traceback",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 preflight on Sim101 with BLITZ + ATLAS configured: every row green",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 START on Sim101 via Bot Control",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 account C's order files (tag acctc_) name only Sim103, and only they do (5 lines)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 routed BLITZ entries = the backtest's (1 expected, 1 blocked on purpose: ['refused']; 0 masked by no hedging)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 11:00:00 entry REFUSED by NinjaTrader: routed once, NOT booked, C flat; push 'order NOT placed'",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 refused entry: no stop / target left working at NinjaTrader for it (0 bracket lines, 0 working)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 12:30:00 SELL 2 routed 4 s after the open = backtest entry (size 2: 40% of $1,000 room, risk 74.86 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 12:30:00 stop 29857.75 (1.5 x 5m ATR) / OCO target 28286.0 (20R) = backtest 29857.75 / 28286.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 12:30:00 NinjaTrader: one MARKET 2 on Sim103, filled 29783.0 = backtest fill 29783.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 12:30:00 bracket at NinjaTrader: STOPMARKET 29857.75 + LIMIT 28286.0, qty 2, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 12:30:00 trail: 0 stop CHANGEs at NinjaTrader (0 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (-)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 12:30:00 exit TIME at 13:01:00 = backtest time 13:01:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 12:30:00 booked $121.2 = 2 x the backtest's $60.60 a micro ($121.2)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 12:30:00 30-bar time exit: CLOSEPOSITION 3.026777744293213 s after the bar close",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 every routed BLITZ order accepted",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 fake NinjaTrader: every OIF line valid",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 never long + short across the accounts: no NinjaTrader fill opened a position while another account held the other side (0)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 heartbeat carries account C: BLITZ Sim103 SIM (SIM), eval session 1, 1 closed trades",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 GET /api/next/start/blitz/preflight on the running bot: 15 lines, all green (BLITZ is ready: every line is green.)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 STOP after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 every account flat at NinjaTrader after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "server logs: no traceback",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 preflight on Sim101 with BLITZ + ATLAS configured: every row green",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 START on Sim101 via Bot Control",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 account C's order files (tag acctc_) name only Sim103, and only they do (13 lines)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 routed BLITZ entries = the backtest's (3 expected, 0 blocked on purpose: -; 0 masked by no hedging)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 11:00:00 BUY 2 routed 3 s after the open = backtest entry (size 2: 40% of $1,000 room, risk 98.54 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 11:00:00 stop 29872.75 (1.5 x 5m ATR) / OCO target 31942.0 (20R) = backtest 29872.75 / 31942.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 11:00:00 NinjaTrader: one MARKET 2 on Sim103, filled 29971.25 = backtest fill 29971.25",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 11:00:00 bracket at NinjaTrader: STOPMARKET 29872.75 + LIMIT 31942.0, qty 2, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 11:00:00 trail: 0 stop CHANGEs at NinjaTrader (0 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (-)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 11:00:00 exit TIME at 11:31:00 = backtest time 11:31:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 11:00:00 booked $-6.8 = 2 x the backtest's $-3.40 a micro ($-6.8)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 11:00:00 30-bar time exit: CLOSEPOSITION 6.51006007194519 s after the bar close",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 12:00:00 BUY 2 routed 3 s after the open = backtest entry (size 2: 40% of $993 room, risk 87.31 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 12:00:00 stop 29926.0 (1.5 x 5m ATR) / OCO target 31759.5 (20R) = backtest 29926.0 / 31759.5",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 12:00:00 NinjaTrader: one MARKET 2 on Sim103, filled 30013.25 = backtest fill 30013.25",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 12:00:00 bracket at NinjaTrader: STOPMARKET 29926.0 + LIMIT 31759.5, qty 2, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 12:00:00 trail: 0 stop CHANGEs at NinjaTrader (0 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (-)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 12:00:00 exit STOP at 12:26:00 = backtest stop 12:26:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 12:00:00 booked $-354.05 = 2 x the backtest's $-177.03 a micro ($-354.05)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 12:30:00 BUY 1 routed 4 s after the open = backtest entry (size 1: 40% of $639 room, risk 73.85 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 12:30:00 stop 29852.5 (1.5 x 5m ATR) / OCO target 31403.25 (20R) = backtest 29852.5 / 31403.25",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 12:30:00 NinjaTrader: one MARKET 1 on Sim103, filled 29926.25 = backtest fill 29926.25",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 12:30:00 bracket at NinjaTrader: STOPMARKET 29852.5 + LIMIT 31403.25, qty 1, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 12:30:00 trail: 0 stop CHANGEs at NinjaTrader (0 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (-)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 12:30:00 early close: flattened at 12:55:06 (CLOSEPOSITION 12:55:02), 5 minutes before the 13:00 halt",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 every routed BLITZ order accepted",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 fake NinjaTrader: every OIF line valid",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 never long + short across the accounts: no NinjaTrader fill opened a position while another account held the other side (0)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 heartbeat carries account C: BLITZ Sim103 SIM (SIM), eval session 1, 3 closed trades",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 GET /api/next/start/blitz/preflight on the running bot: 15 lines, all green (1 red line: Live bars fresh: MNQ_5m.csv is stale: last bar Thu 12:55 ET, 20 min ago (NinjaTrader closed, disconnected, or the chart was removed?))",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 STOP after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-15 every account flat at NinjaTrader after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "server logs: no traceback",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 preflight on Sim101 with BLITZ + ATLAS configured: every row green",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 START on Sim101 via Bot Control",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 RESTART 11:06:02: server back, the Sim bot auto-resumed",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 RESTART: account C restored its open BLITZ trade ([BLITZ Sim103] restored: open BLITZ SHORT 2 MNQ from 11:00 ET (managed to its exit))",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 account C's order files (tag acctc_) name only Sim103, and only they do (32 lines)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 routed BLITZ entries = the backtest's (3 expected, 0 blocked on purpose: -; 0 masked by no hedging)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 11:00:00 SELL 2 routed 3 s after the open = backtest entry (size 2: 40% of $1,000 room, risk 86.02 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 11:00:00 stop 29947.75 (1.5 x 5m ATR) / OCO target 28141.5 (20R) = backtest 29947.75 / 28141.5",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 11:00:00 NinjaTrader: one MARKET 2 on Sim103, filled 29861.75 = backtest fill 29861.75",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 11:00:00 bracket at NinjaTrader: STOPMARKET 29947.75 + LIMIT 28141.5, qty 2, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 11:00:00 trail: 8 stop CHANGEs at NinjaTrader (8 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (29774.0)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 11:00:00 exit TIME at 11:31:00 = backtest time 11:31:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 11:00:00 booked $542.2 = 2 x the backtest's $271.10 a micro ($542.2)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 11:00:00 30-bar time exit: CLOSEPOSITION 3.471473217010498 s after the bar close",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 12:00:00 SELL 3 routed 4 s after the open = backtest entry (size 3: 40% of $1,542 room, risk 78.84 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 12:00:00 stop 29737.25 (1.5 x 5m ATR) / OCO target 28081.75 (20R) = backtest 29737.25 / 28081.75",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 12:00:00 NinjaTrader: one MARKET 3 on Sim103, filled 29658.5 = backtest fill 29658.5",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 12:00:00 bracket at NinjaTrader: STOPMARKET 29737.25 + LIMIT 28081.75, qty 3, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 12:00:00 trail: 0 stop CHANGEs at NinjaTrader (0 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (-)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 12:00:00 exit TIME at 12:31:00 = backtest time 12:31:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 12:00:00 booked $15.3 = 3 x the backtest's $5.10 a micro ($15.3)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 12:00:00 30-bar time exit: CLOSEPOSITION 2.9331061840057373 s after the bar close",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 13:00:00 SELL 4 routed 3 s after the open = backtest entry (size 4: 40% of $1,558 room, risk 66.39 pts)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 13:00:00 stop 29680.75 (1.5 x 5m ATR) / OCO target 28286.5 (20R) = backtest 29680.75 / 28286.5",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 13:00:00 NinjaTrader: one MARKET 4 on Sim103, filled 29614.25 = backtest fill 29614.25",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 13:00:00 bracket at NinjaTrader: STOPMARKET 29680.75 + LIMIT 28286.5, qty 4, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 13:00:00 trail: 12 stop CHANGEs at NinjaTrader (12 lines), each tighter than the last, all the model's trailed stops, the last = the model's last (29525.5)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 13:00:00 exit TIME at 13:31:00 = backtest time 13:31:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 13:00:00 booked $876.4 = 4 x the backtest's $219.10 a micro ($876.4)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 13:00:00 30-bar time exit: CLOSEPOSITION 3.085934638977051 s after the bar close",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 every routed BLITZ order accepted",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 fake NinjaTrader: every OIF line valid",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 never long + short across the accounts: no NinjaTrader fill opened a position while another account held the other side (0)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 heartbeat carries account C: BLITZ Sim103 SIM (SIM), eval session 1, 3 closed trades",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 GET /api/next/start/blitz/preflight on the running bot: 15 lines, all green (BLITZ is ready: every line is green.)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 STOP after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-10-16 every account flat at NinjaTrader after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "server logs: no traceback",
+   "ok": true,
+   "detail": ""
+  }
+ ],
+ "days": [
+  {
+   "day": "2026-04-01",
+   "kind": "lit_mask",
+   "what": "LIT holds / arms SHORT in the afternoon: BLITZ's LONG candidates masked (no hedging)",
+   "bt": [
+    {
+     "sig_t": 1775055540,
+     "entry_t": 1775055600,
+     "exit_t": 1775057460,
+     "dir": 1,
+     "entry": 24844.5,
+     "stop": 24763.6063,
+     "exit": 24820.0,
+     "exit_kind": "time",
+     "risk_pts": 80.8937,
+     "r": -0.31,
+     "pnl_pm": -50.9
+    },
+    {
+     "sig_t": 1775059140,
+     "entry_t": 1775059200,
+     "exit_t": 1775061060,
+     "dir": 1,
+     "entry": 24898.25,
+     "stop": 24839.993,
+     "exit": 24889.75,
+     "exit_kind": "time",
+     "risk_pts": 58.257,
+     "r": -0.1589,
+     "pnl_pm": -18.9
+    },
+    {
+     "sig_t": 1775062740,
+     "entry_t": 1775062800,
+     "exit_t": 1775064660,
+     "dir": 1,
+     "entry": 24904.0,
+     "stop": 24863.3997,
+     "exit": 24915.5,
+     "exit_kind": "time",
+     "risk_pts": 40.6003,
+     "r": 0.2524,
+     "pnl_pm": 21.1
+    },
+    {
+     "sig_t": 1775066340,
+     "entry_t": 1775066400,
+     "exit_t": 1775066580,
+     "dir": 1,
+     "entry": 24851.0,
+     "stop": 24815.7393,
+     "exit": 24815.4893,
+     "exit_kind": "stop",
+     "risk_pts": 35.2607,
+     "r": -1.0,
+     "pnl_pm": -72.9213
+    }
+   ],
+   "masked": [
+    {
+     "sig_t": 1775066340,
+     "dir": 1,
+     "why": "no hedging: LIT is in a SHORT trade"
+    }
+   ],
+   "expected": [
+    {
+     "sig_t": 1775055540,
+     "entry_t": 1775055600,
+     "exit_t": 1775057460,
+     "dir": 1,
+     "entry": 24844.5,
+     "stop": 24763.6063,
+     "exit": 24820.0,
+     "exit_kind": "time",
+     "risk_pts": 80.8937,
+     "r": -0.31,
+     "pnl_pm": -50.9
+    },
+    {
+     "sig_t": 1775059140,
+     "entry_t": 1775059200,
+     "exit_t": 1775061060,
+     "dir": 1,
+     "entry": 24898.25,
+     "stop": 24839.993,
+     "exit": 24889.75,
+     "exit_kind": "time",
+     "risk_pts": 58.257,
+     "r": -0.1589,
+     "pnl_pm": -18.9
+    },
+    {
+     "sig_t": 1775062740,
+     "entry_t": 1775062800,
+     "exit_t": 1775064660,
+     "dir": 1,
+     "entry": 24904.0,
+     "stop": 24863.3997,
+     "exit": 24915.5,
+     "exit_kind": "time",
+     "risk_pts": 40.6003,
+     "r": 0.2524,
+     "pnl_pm": 21.1
+    }
+   ],
+   "routed": [
+    {
+     "t": 1775055602,
+     "side": "buy",
+     "qty": 2,
+     "stop": 24763.5,
+     "target": 26462.25,
+     "entry": 24844.5,
+     "entry_t": 1775055600,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1775057463,
+     "side": "exit",
+     "qty": 2,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1775055600,
+     "reason": "TIME",
+     "pnl": -101.8,
+     "exit_t": 1775057460
+    },
+    {
+     "t": 1775059203,
+     "side": "buy",
+     "qty": 3,
+     "stop": 24840.0,
+     "target": 26063.25,
+     "entry": 24898.25,
+     "entry_t": 1775059200,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1775061064,
+     "side": "exit",
+     "qty": 3,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1775059200,
+     "reason": "TIME",
+     "pnl": -56.7,
+     "exit_t": 1775061060
+    },
+    {
+     "t": 1775062803,
+     "side": "buy",
+     "qty": 4,
+     "stop": 24863.5,
+     "target": 25716.0,
+     "entry": 24904.0,
+     "entry_t": 1775062800,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1775064663,
+     "side": "exit",
+     "qty": 4,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1775062800,
+     "reason": "TIME",
+     "pnl": 84.4,
+     "exit_t": 1775064660
+    }
+   ],
+   "oif_c": [
+    "11:00:02 PLACE;Sim103;MNQ 06-26;BUY;2;MARKET;0;0;DAY;;LE1775055600PQ6DME;;",
+    "11:00:02 PLACE;Sim103;MNQ 06-26;SELL;2;STOPMARKET;0;24763.50;DAY;LE1775055600PQ6DMO;LE1775055600PQ6DMS;;",
+    "11:00:02 PLACE;Sim103;MNQ 06-26;SELL;2;LIMIT;26462.25;0;DAY;LE1775055600PQ6DMO;LE1775055600PQ6DMT;;",
+    "11:31:03 CLOSEPOSITION;Sim103;MNQ 06-26;;;;;;;;;;",
+    "12:00:02 PLACE;Sim103;MNQ 06-26;BUY;3;MARKET;0;0;DAY;;LE17750592002R7CME;;",
+    "12:00:03 PLACE;Sim103;MNQ 06-26;SELL;3;STOPMARKET;0;24840.00;DAY;LE17750592002R7CMO;LE17750592002R7CMS;;",
+    "12:00:03 PLACE;Sim103;MNQ 06-26;SELL;3;LIMIT;26063.25;0;DAY;LE17750592002R7CMO;LE17750592002R7CMT;;",
+    "12:31:04 CLOSEPOSITION;Sim103;MNQ 06-26;;;;;;;;;;",
+    "13:00:03 PLACE;Sim103;MNQ 06-26;BUY;4;MARKET;0;0;DAY;;LE17750628004SK8ME;;",
+    "13:00:03 PLACE;Sim103;MNQ 06-26;SELL;4;STOPMARKET;0;24863.50;DAY;LE17750628004SK8MO;LE17750628004SK8MS;;",
+    "13:00:03 PLACE;Sim103;MNQ 06-26;SELL;4;LIMIT;25716.00;0;DAY;LE17750628004SK8MO;LE17750628004SK8MT;;",
+    "13:31:03 CLOSEPOSITION;Sim103;MNQ 06-26;;;;;;;;;;"
+   ],
+   "trades": [
+    {
+     "entry_t": 1775055600,
+     "entry": "11:00:00",
+     "dir": 1,
+     "qty": 2,
+     "exit_kind": "time",
+     "booked": -101.8,
+     "broker": -104.8,
+     "bt_usd": -101.8,
+     "changes": 0
+    },
+    {
+     "entry_t": 1775059200,
+     "entry": "12:00:00",
+     "dir": 1,
+     "qty": 3,
+     "exit_kind": "time",
+     "booked": -56.7,
+     "broker": -55.2,
+     "bt_usd": -56.7,
+     "changes": 0
+    },
+    {
+     "entry_t": 1775062800,
+     "entry": "13:00:00",
+     "dir": 1,
+     "qty": 4,
+     "exit_kind": "time",
+     "booked": 84.4,
+     "broker": 84.4,
+     "bt_usd": 84.4,
+     "changes": 0
+    }
+   ],
+   "booked": -74.1,
+   "b_entries": [],
+   "c_state": {
+    "open_t": null,
+    "notified": []
+   },
+   "hedge_viol": [],
+   "heartbeat": {
+    "label": "BLITZ Sim103",
+    "real": "SIM",
+    "state": "No more checks today; the next at 11:00 ET on the next trading day. The next trading day trades: today's range 305 pts = 0.82 x the 14-day mean 373.",
+    "eval": {
+     "start_balance": 25000.0,
+     "balance": 24925.9,
+     "profit": -74.1,
+     "today": -74.1,
+     "floor": 24000.0,
+     "room": 925.9,
+     "target": 26500.0,
+     "to_target": 1574.1,
+     "session": 1,
+     "status": "open",
+     "start": "2026-04-01",
+     "days_traded": 0,
+     "dll": 600.0,
+     "max_micros": 20,
+     "plan": "MFFU Builder 25K",
+     "price": 63.0,
+     "min_room": 249.56
+    },
+    "scorecard": {
+     "n": 3,
+     "win_pct": 33.3,
+     "avg_r": -0.0722,
+     "usd": -74.1,
+     "status": "warming"
+    }
+   },
+   "preflight": [
+    [
+     "config",
+     "good",
+     "BLITZ \u2192 Sim test on Sim103 (MFFU Builder 25K)"
+    ],
+    [
+     "own",
+     "good",
+     "Sim103 is neither Zlarior's (Sim101) nor ATLAS's (Sim102)"
+    ],
+    [
+     "nt",
+     "good",
+     "a connection is CONNECTED"
+    ],
+    [
+     "visible",
+     "good",
+     "Sim103 is a NinjaTrader Sim account (always there)"
+    ],
+    [
+     "allow",
+     "good",
+     "a Sim account needs no allowlist"
+    ],
+    [
+     "sim",
+     "good",
+     "BLITZ traded 3 times on Sim103 on 2026-04-01, every order taken and closed at NinjaTrader; NinjaTrader took Zlarior's or"
+    ],
+    [
+     "armed",
+     "info",
+     "Sim103 is a Sim account: no real money, nothing to arm"
+    ],
+    [
+     "bot",
+     "good",
+     "SIM Sim103: No more checks today; the next at 11:00 ET on the next trading day. The next trading day trades: today's ran"
+    ],
+    [
+     "eval",
+     "good",
+     "session 1 of 10 (first session 2026-04-01): balance $24,925.90, room $925.90 to the floor, $1,574 to the pass"
+    ],
+    [
+     "size",
+     "good",
+     "3 micros at a 48-pt stop (today: 1.5 x the 5m ATR) on the $926 room (session 1); 4 at 40 pts, 3 at 60 pts, 2 at 90 pts, "
+    ],
+    [
+     "hedge",
+     "good",
+     "Zlarior first, then ATLAS, then BLITZ: no BLITZ entry while Sim101 or Sim102 holds / enters / has a setup armed the othe"
+    ],
+    [
+     "contract",
+     "good",
+     "loaded: BLITZ pauses itself after 20+ trades under avg R -0.150 / PF 0.62 (the 2026 floor) or 6 losing days in a row; no"
+    ],
+    [
+     "calendar",
+     "good",
+     "Wed Apr 01 (today): normal session, BLITZ checks 11:00-15:30 ET, flat by 15:55"
+    ],
+    [
+     "feed",
+     "good",
+     "LE_BarFeed's MNQ bars are fresh"
+    ],
+    [
+     "day",
+     "info",
+     "BLITZ trades today: yesterday's 09:30-16:00 range 599 pts = 1.61 x its 14-day mean 372 pts (needs >= 0.8)"
+    ]
+   ],
+   "c_log": [
+    "1775066465 None [BLITZ Sim103] BLITZ LONG at the 14:00 ET open skipped: no hedging: LIT is in a SHORT trade (no model trade: a later check may enter)",
+    "1775064663 None [BLITZ Sim103] EXIT 4 NQ -> True",
+    "1775062803 None [BLITZ Sim103] BUY 4 NQ -> True",
+    "1775062803 None [BLITZ Sim103] BLITZ LONG at the 13:00 ET open: ROUTED MARKET 4 MNQ on Sim103 (3 s after the open), stop 24,863.50 (1.5 x 5m ATR), OCO limit 25,716.00 (20R); size 40% of the $842 room, <= $600, <= 90% of the $442 daily loss left: $83.60 a micro at a 40.60-pt stop -> 4",
+    "1775061064 None [BLITZ Sim103] EXIT 3 NQ -> True",
+    "1775059203 None [BLITZ Sim103] BUY 3 NQ -> True",
+    "1775059202 None [BLITZ Sim103] BLITZ LONG at the 12:00 ET open: ROUTED MARKET 3 MNQ on Sim103 (2 s after the open), stop 24,840.00 (1.5 x 5m ATR), OCO limit 26,063.25 (20R); size 40% of the $898 room, <= $600, <= 90% of the $498 daily loss left: $118.91 a micro at a 58.26-pt stop -> 3",
+    "1775057463 None [BLITZ Sim103] EXIT 2 NQ -> True",
+    "1775055602 None [BLITZ Sim103] BUY 2 NQ -> True",
+    "1775055602 None [BLITZ Sim103] BLITZ LONG at the 11:00 ET open: ROUTED MARKET 2 MNQ on Sim103 (2 s after the open), stop 24,763.50 (1.5 x 5m ATR), OCO limit 26,462.25 (20R); size 40% of the $1,000 room, <= $600, <= 90% of the $600 daily loss left: $164.19 a micro at a 80.89-pt stop -> 2",
+    "1775055602 None [BLITZ Sim103] STARTUP RECONCILED on Sim103: NinjaTrader positions / orders and contract check out; entries allowed",
+    "1775055027 None [BLITZ Sim103] warmed on 34557 1m bars (14 sessions of the noise band)",
+    "1775055019 None [BLITZ Sim103] SIM Sim103 MFFU Builder 25K, BLITZ scalper, eval from 2026-04-01 (balance $25,000, room $1,000): ready"
+   ]
+  },
+  {
+   "day": "2026-05-14",
+   "kind": "atlas_same",
+   "what": "BLITZ LONG and ATLAS SHORT decided at the same 11:00 close: ATLAS first, BLITZ closed",
+   "bt": [
+    {
+     "sig_t": 1778770740,
+     "entry_t": 1778770800,
+     "exit_t": 1778772660,
+     "dir": 1,
+     "entry": 30259.0,
+     "stop": 30192.0977,
+     "exit": 30348.25,
+     "exit_kind": "time",
+     "risk_pts": 66.9023,
+     "r": 1.2966,
+     "pnl_pm": 176.6
+    },
+    {
+     "sig_t": 1778774340,
+     "entry_t": 1778774400,
+     "exit_t": 1778776260,
+     "dir": 1,
+     "entry": 30340.25,
+     "stop": 30289.0328,
+     "exit": 30322.0,
+     "exit_kind": "time",
+     "risk_pts": 51.2172,
+     "r": -0.3663,
+     "pnl_pm": -38.4
+    },
+    {
+     "sig_t": 1778777940,
+     "entry_t": 1778778000,
+     "exit_t": 1778778660,
+     "dir": 1,
+     "entry": 30312.5,
+     "stop": 30261.6837,
+     "exit": 30261.4337,
+     "exit_kind": "stop",
+     "risk_pts": 50.8163,
+     "r": -1.0,
+     "pnl_pm": -104.0326
+    },
+    {
+     "sig_t": 1778779740,
+     "entry_t": 1778779800,
+     "exit_t": 1778781660,
+     "dir": 1,
+     "entry": 30232.5,
+     "stop": 30172.9054,
+     "exit": 30281.0,
+     "exit_kind": "time",
+     "risk_pts": 59.5946,
+     "r": 0.7821,
+     "pnl_pm": 95.1
+    },
+    {
+     "sig_t": 1778783340,
+     "entry_t": 1778783400,
+     "exit_t": 1778785260,
+     "dir": 1,
+     "entry": 30258.0,
+     "stop": 30201.4258,
+     "exit": 30308.75,
+     "exit_kind": "time",
+     "risk_pts": 56.5742,
+     "r": 0.862,
+     "pnl_pm": 99.6
+    },
+    {
+     "sig_t": 1778786940,
+     "entry_t": 1778787000,
+     "exit_t": 1778788500,
+     "dir": 1,
+     "entry": 30283.75,
+     "stop": 30237.6295,
+     "exit": 30292.75,
+     "exit_kind": "flat",
+     "risk_pts": 46.1205,
+     "r": 0.1701,
+     "pnl_pm": 16.1
+    }
+   ],
+   "masked": [],
+   "expected": [
+    {
+     "sig_t": 1778770740,
+     "entry_t": 1778770800,
+     "exit_t": 1778772660,
+     "dir": 1,
+     "entry": 30259.0,
+     "stop": 30192.0977,
+     "exit": 30348.25,
+     "exit_kind": "time",
+     "risk_pts": 66.9023,
+     "r": 1.2966,
+     "pnl_pm": 176.6
+    },
+    {
+     "sig_t": 1778774340,
+     "entry_t": 1778774400,
+     "exit_t": 1778776260,
+     "dir": 1,
+     "entry": 30340.25,
+     "stop": 30289.0328,
+     "exit": 30322.0,
+     "exit_kind": "time",
+     "risk_pts": 51.2172,
+     "r": -0.3663,
+     "pnl_pm": -38.4
+    }
+   ],
+   "routed": [
+    {
+     "t": 1778770806,
+     "side": "buy",
+     "qty": 2,
+     "stop": 30192.0,
+     "target": 31597.0,
+     "entry": 30259.0,
+     "entry_t": 1778770800,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1778770809,
+     "side": "exit",
+     "qty": 2,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1778770800,
+     "reason": "HEDGE",
+     "pnl": -6.8,
+     "exit_t": 1778770802
+    },
+    {
+     "t": 1778774405,
+     "side": "buy",
+     "qty": 3,
+     "stop": 30289.0,
+     "target": 31364.5,
+     "entry": 30340.25,
+     "entry_t": 1778774400,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1778776264,
+     "side": "exit",
+     "qty": 3,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1778774400,
+     "reason": "TIME",
+     "pnl": -115.2,
+     "exit_t": 1778776260
+    }
+   ],
+   "oif_c": [
+    "11:00:06 PLACE;Sim103;MNQ 06-26;BUY;2;MARKET;0;0;DAY;;LE17787708006ZVJME;;",
+    "11:00:06 PLACE;Sim103;MNQ 06-26;SELL;2;STOPMARKET;0;30192.00;DAY;LE17787708006ZVJMO;LE17787708006ZVJMS;;",
+    "11:00:06 PLACE;Sim103;MNQ 06-26;SELL;2;LIMIT;31597.00;0;DAY;LE17787708006ZVJMO;LE17787708006ZVJMT;;",
+    "11:00:09 CLOSEPOSITION;Sim103;MNQ 06-26;;;;;;;;;;",
+    "12:00:05 PLACE;Sim103;MNQ 06-26;BUY;3;MARKET;0;0;DAY;;LE1778774400E3SYME;;",
+    "12:00:05 PLACE;Sim103;MNQ 06-26;SELL;3;STOPMARKET;0;30289.00;DAY;LE1778774400E3SYMO;LE1778774400E3SYMS;;",
+    "12:00:05 PLACE;Sim103;MNQ 06-26;SELL;3;LIMIT;31364.50;0;DAY;LE1778774400E3SYMO;LE1778774400E3SYMT;;",
+    "12:31:04 CLOSEPOSITION;Sim103;MNQ 06-26;;;;;;;;;;"
+   ],
+   "trades": [
+    {
+     "entry_t": 1778770800,
+     "entry": "11:00:00",
+     "dir": 1,
+     "qty": 2,
+     "exit_kind": "HEDGE",
+     "booked": -6.8,
+     "broker": -5.8,
+     "bt_usd": 353.2,
+     "changes": 0,
+     "bt_exit": "time"
+    },
+    {
+     "entry_t": 1778774400,
+     "entry": "12:00:00",
+     "dir": 1,
+     "qty": 3,
+     "exit_kind": "time",
+     "booked": -115.2,
+     "broker": -116.7,
+     "bt_usd": -115.2,
+     "changes": 0
+    }
+   ],
+   "booked": -122.0,
+   "b_entries": [
+    [
+     "11:00:00",
+     "sell",
+     4
+    ]
+   ],
+   "c_state": {
+    "open_t": null,
+    "notified": []
+   },
+   "hedge_viol": [],
+   "heartbeat": {
+    "label": "BLITZ Sim103",
+    "real": "SIM",
+    "state": "Next check 13:00 ET: a 1m close above 30,223.15 = PAPER LONG, below 29,897.35 = PAPER SHORT (09:30 open 30,060.25 +/- 162.9 pts).",
+    "eval": {
+     "start_balance": 25000.0,
+     "balance": 24878.0,
+     "profit": -122.0,
+     "today": -122.0,
+     "floor": 24000.0,
+     "room": 878.0,
+     "target": 26500.0,
+     "to_target": 1622.0,
+     "session": 1,
+     "status": "open",
+     "start": "2026-05-14",
+     "days_traded": 0,
+     "dll": 600.0,
+     "max_micros": 20,
+     "plan": "MFFU Builder 25K",
+     "price": 63.0,
+     "min_room": 249.56
+    },
+    "scorecard": {
+     "n": 2,
+     "win_pct": 0.0,
+     "avg_r": -0.1956,
+     "usd": -122.0,
+     "status": "warming"
+    }
+   },
+   "preflight": [
+    [
+     "config",
+     "good",
+     "BLITZ \u2192 Sim test on Sim103 (MFFU Builder 25K)"
+    ],
+    [
+     "own",
+     "good",
+     "Sim103 is neither Zlarior's (Sim101) nor ATLAS's (Sim102)"
+    ],
+    [
+     "nt",
+     "good",
+     "a connection is CONNECTED"
+    ],
+    [
+     "visible",
+     "good",
+     "Sim103 is a NinjaTrader Sim account (always there)"
+    ],
+    [
+     "allow",
+     "good",
+     "a Sim account needs no allowlist"
+    ],
+    [
+     "sim",
+     "good",
+     "BLITZ traded 2 times on Sim103 on 2026-05-14, every order taken and closed at NinjaTrader; NinjaTrader took ATLAS's orde"
+    ],
+    [
+     "armed",
+     "info",
+     "Sim103 is a Sim account: no real money, nothing to arm"
+    ],
+    [
+     "bot",
+     "good",
+     "SIM Sim103: Next check 13:00 ET: a 1m close above 30,223.15 = PAPER LONG, below 29,897.35 = PAPER SHORT (09:30 open 30,0"
+    ],
+    [
+     "eval",
+     "good",
+     "session 1 of 10 (first session 2026-05-14): balance $24,878.00, room $878.00 to the floor, $1,622 to the pass"
+    ],
+    [
+     "size",
+     "good",
+     "3 micros at a 49-pt stop (today: 1.5 x the 5m ATR) on the $878 room (session 1); 4 at 40 pts, 2 at 60 pts, 1 at 90 pts, "
+    ],
+    [
+     "hedge",
+     "good",
+     "Zlarior first, then ATLAS, then BLITZ: no BLITZ entry while Sim101 or Sim102 holds / enters / has a setup armed the othe"
+    ],
+    [
+     "contract",
+     "good",
+     "loaded: BLITZ pauses itself after 20+ trades under avg R -0.150 / PF 0.62 (the 2026 floor) or 6 losing days in a row; no"
+    ],
+    [
+     "calendar",
+     "good",
+     "Thu May 14 (today): normal session, BLITZ checks 11:00-15:30 ET, flat by 15:55"
+    ],
+    [
+     "feed",
+     "good",
+     "LE_BarFeed's MNQ bars are fresh"
+    ],
+    [
+     "day",
+     "info",
+     "BLITZ trades today: yesterday's 09:30-16:00 range 490 pts = 1.43 x its 14-day mean 342 pts (needs >= 0.8)"
+    ]
+   ],
+   "c_log": [
+    "1778776264 None [BLITZ Sim103] EXIT 3 NQ -> True",
+    "1778774405 None [BLITZ Sim103] BUY 3 NQ -> True",
+    "1778774405 None [BLITZ Sim103] BLITZ LONG at the 12:00 ET open: ROUTED MARKET 3 MNQ on Sim103 (5 s after the open), stop 30,289.00 (1.5 x 5m ATR), OCO limit 31,364.50 (20R); size 40% of the $993 room, <= $600, <= 90% of the $593 daily loss left: $104.83 a micro at a 51.22-pt stop -> 3",
+    "1778770809 None [BLITZ Sim103] EXIT 2 NQ -> True",
+    "1778770809 None [BLITZ Sim103] BLITZ 11:00 ET: HEDGE - flatten 2 MNQ at market (~30,258.50)",
+    "1778770809 None [BLITZ Sim103] no hedging: ATLAS enters SHORT at 11:00 ET while BLITZ holds LONG on Sim103: BLITZ is closed at market before ATLAS's order",
+    "1778770806 None [BLITZ Sim103] BUY 2 NQ -> True",
+    "1778770806 None [BLITZ Sim103] BLITZ LONG at the 11:00 ET open: ROUTED MARKET 2 MNQ on Sim103 (6 s after the open), stop 30,192.00 (1.5 x 5m ATR), OCO limit 31,597.00 (20R); size 40% of the $1,000 room, <= $600, <= 90% of the $600 daily loss left: $136.20 a micro at a 66.90-pt stop -> 2",
+    "1778770806 None [BLITZ Sim103] STARTUP RECONCILED on Sim103: NinjaTrader positions / orders and contract check out; entries allowed",
+    "1778768126 None [BLITZ Sim103] warmed on 34497 1m bars (14 sessions of the noise band)",
+    "1778768118 None [BLITZ Sim103] SIM Sim103 MFFU Builder 25K, BLITZ scalper, eval from 2026-05-14 (balance $25,000, room $1,000): ready"
+   ]
+  },
+  {
+   "day": "2026-05-18",
+   "kind": "pause_kill",
+   "what": "owner pause blocks one BLITZ entry, then HOLD TO KILL mid trade",
+   "bt": [
+    {
+     "sig_t": 1779116340,
+     "entry_t": 1779116400,
+     "exit_t": 1779118260,
+     "dir": -1,
+     "entry": 29666.0,
+     "stop": 29788.2036,
+     "exit": 29530.5,
+     "exit_kind": "time",
+     "risk_pts": 122.2036,
+     "r": 1.0903,
+     "pnl_pm": 269.1
+    },
+    {
+     "sig_t": 1779119940,
+     "entry_t": 1779120000,
+     "exit_t": 1779121860,
+     "dir": -1,
+     "entry": 29580.0,
+     "stop": 29689.5159,
+     "exit": 29433.5,
+     "exit_kind": "time",
+     "risk_pts": 109.5159,
+     "r": 1.3146,
+     "pnl_pm": 291.1
+    },
+    {
+     "sig_t": 1779123540,
+     "entry_t": 1779123600,
+     "exit_t": 1779125460,
+     "dir": -1,
+     "entry": 29588.5,
+     "stop": 29691.828,
+     "exit": 29588.5,
+     "exit_kind": "time",
+     "risk_pts": 103.328,
+     "r": -0.0091,
+     "pnl_pm": -1.9
+    },
+    {
+     "sig_t": 1779127140,
+     "entry_t": 1779127200,
+     "exit_t": 1779129060,
+     "dir": -1,
+     "entry": 29598.0,
+     "stop": 29677.1871,
+     "exit": 29480.75,
+     "exit_kind": "time",
+     "risk_pts": 79.1871,
+     "r": 1.4467,
+     "pnl_pm": 232.6
+    },
+    {
+     "sig_t": 1779130740,
+     "entry_t": 1779130800,
+     "exit_t": 1779130920,
+     "dir": -1,
+     "entry": 29426.0,
+     "stop": 29496.7076,
+     "exit": 29496.9576,
+     "exit_kind": "stop",
+     "risk_pts": 70.7076,
+     "r": -1.0,
+     "pnl_pm": -143.8153
+    },
+    {
+     "sig_t": 1779132540,
+     "entry_t": 1779132600,
+     "exit_t": 1779133200,
+     "dir": -1,
+     "entry": 29506.75,
+     "stop": 29597.0794,
+     "exit": 29597.3294,
+     "exit_kind": "stop",
+     "risk_pts": 90.3294,
+     "r": -1.0,
+     "pnl_pm": -183.0589
+    }
+   ],
+   "pause": {
+    "t": 1779118322,
+    "until": 1779120120,
+    "res": {
+     "ok": true,
+     "until": 1779120120,
+     "label": "Mon 18 May 12:02 ET",
+     "set_t": 1779118323,
+     "src": "pc",
+     "id": null
+    }
+   },
+   "kill": {
+    "t": 1779123902,
+    "lines": [
+     "FLATTENEVERYTHING;;;;;;;;;;;;",
+     "CLOSEPOSITION;Sim102;MNQ 06-26;;;;;;;;;;",
+     "CLOSEPOSITION;Sim103;MNQ 06-26;;;;;;;;;;"
+    ],
+    "pos": {
+     "Sim103": 0
+    }
+   },
+   "masked": [],
+   "expected": [
+    {
+     "sig_t": 1779116340,
+     "entry_t": 1779116400,
+     "exit_t": 1779118260,
+     "dir": -1,
+     "entry": 29666.0,
+     "stop": 29788.2036,
+     "exit": 29530.5,
+     "exit_kind": "time",
+     "risk_pts": 122.2036,
+     "r": 1.0903,
+     "pnl_pm": 269.1
+    },
+    {
+     "sig_t": 1779119940,
+     "entry_t": 1779120000,
+     "exit_t": 1779121860,
+     "dir": -1,
+     "entry": 29580.0,
+     "stop": 29689.5159,
+     "exit": 29433.5,
+     "exit_kind": "time",
+     "risk_pts": 109.5159,
+     "r": 1.3146,
+     "pnl_pm": 291.1
+    },
+    {
+     "sig_t": 1779123540,
+     "entry_t": 1779123600,
+     "exit_t": 1779125460,
+     "dir": -1,
+     "entry": 29588.5,
+     "stop": 29691.828,
+     "exit": 29588.5,
+     "exit_kind": "time",
+     "risk_pts": 103.328,
+     "r": -0.0091,
+     "pnl_pm": -1.9
+    }
+   ],
+   "routed": [
+    {
+     "t": 1779116403,
+     "side": "sell",
+     "qty": 1,
+     "stop": 29788.25,
+     "target": 27222.0,
+     "entry": 29666.0,
+     "entry_t": 1779116400,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1779118203,
+     "side": "modify",
+     "qty": 1,
+     "stop": 29723.5,
+     "target": null,
+     "entry": null,
+     "entry_t": 1779116400,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1779118263,
+     "side": "exit",
+     "qty": 1,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1779116400,
+     "reason": "TIME",
+     "pnl": 269.1,
+     "exit_t": 1779118260
+    },
+    {
+     "t": 1779123602,
+     "side": "sell",
+     "qty": 2,
+     "stop": 29691.75,
+     "target": 27522.0,
+     "entry": 29588.5,
+     "entry_t": 1779123600,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1779123903,
+     "side": "exit",
+     "qty": 2,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1779123600,
+     "reason": "KILL SWITCH",
+     "pnl": -17.8,
+     "exit_t": 1779123903
+    }
+   ],
+   "oif_c": [
+    "11:00:03 PLACE;Sim103;MNQ 06-26;SELL;1;MARKET;0;0;DAY;;LE1779116400WZMQME;;",
+    "11:00:03 PLACE;Sim103;MNQ 06-26;BUY;1;STOPMARKET;0;29788.25;DAY;LE1779116400WZMQMO;LE1779116400WZMQMS;;",
+    "11:00:03 PLACE;Sim103;MNQ 06-26;BUY;1;LIMIT;27222.00;0;DAY;LE1779116400WZMQMO;LE1779116400WZMQMT;;",
+    "11:30:03 CHANGE;;;;0;;0;29723.50;;;LE1779116400WZMQMS;;",
+    "11:31:03 CLOSEPOSITION;Sim103;MNQ 06-26;;;;;;;;;;",
+    "13:00:02 PLACE;Sim103;MNQ 06-26;SELL;2;MARKET;0;0;DAY;;LE1779123600WRVSME;;",
+    "13:00:02 PLACE;Sim103;MNQ 06-26;BUY;2;STOPMARKET;0;29691.75;DAY;LE1779123600WRVSMO;LE1779123600WRVSMS;;",
+    "13:00:02 PLACE;Sim103;MNQ 06-26;BUY;2;LIMIT;27522.00;0;DAY;LE1779123600WRVSMO;LE1779123600WRVSMT;;",
+    "13:05:03 CLOSEPOSITION;Sim103;MNQ 06-26;;;;;;;;;;"
+   ],
+   "trades": [
+    {
+     "entry_t": 1779116400,
+     "entry": "11:00:00",
+     "dir": -1,
+     "qty": 1,
+     "exit_kind": "time",
+     "booked": 269.1,
+     "broker": 269.6,
+     "bt_usd": 269.1,
+     "changes": 1
+    },
+    {
+     "entry_t": 1779123600,
+     "entry": "13:00:00",
+     "dir": -1,
+     "qty": 2,
+     "exit_kind": "KILL SWITCH",
+     "booked": -17.8,
+     "broker": -17.8,
+     "bt_usd": -3.8,
+     "changes": 0,
+     "bt_exit": "time"
+    }
+   ],
+   "booked": 251.3,
+   "b_entries": [],
+   "c_state": {
+    "open_t": null,
+    "notified": []
+   },
+   "hedge_viol": [],
+   "heartbeat": {
+    "label": "BLITZ Sim103",
+    "real": "SIM",
+    "state": "No new 1m bar since 13:05 ET: no paper entries until the bars are back.",
+    "eval": {
+     "start_balance": 25000.0,
+     "balance": 25251.3,
+     "profit": 251.3,
+     "today": 251.3,
+     "floor": 24000.0,
+     "room": 1251.3,
+     "target": 26500.0,
+     "to_target": 1248.7,
+     "session": 1,
+     "status": "open",
+     "start": "2026-05-18",
+     "days_traded": 0,
+     "dll": 600.0,
+     "max_micros": 20,
+     "plan": "MFFU Builder 25K",
+     "price": 63.0,
+     "min_room": 249.56
+    },
+    "scorecard": {
+     "n": 2,
+     "win_pct": 50.0,
+     "avg_r": 0.5239,
+     "usd": 251.3,
+     "status": "warming"
+    }
+   },
+   "c_log": [
+    "1779123903 None [BLITZ Sim103] EXIT 2 NQ -> True",
+    "1779123903 None [BLITZ Sim103] BLITZ 13:00 ET: KILL SWITCH - flatten 2 MNQ at market (~29,591.75)",
+    "1779123602 None [BLITZ Sim103] SELL 2 NQ -> True",
+    "1779123602 None [BLITZ Sim103] BLITZ SHORT at the 13:00 ET open: ROUTED MARKET 2 MNQ on Sim103 (2 s after the open), stop 29,691.75 (1.5 x 5m ATR), OCO limit 27,522.00 (20R); size 40% of the $1,269 room, <= $600, <= 90% of the $869 daily loss left: $209.06 a micro at a 103.33-pt stop -> 2",
+    "1779120003 None [BLITZ Sim103] BLITZ SHORT at the 12:00 ET open NOT routed on Sim103: GUARD new entries paused by you until Mon 18 May 12:02 ET (resume_entries lifts it) (the model trade runs on paper; BLITZ waits for it)",
+    "1779118263 None [BLITZ Sim103] EXIT 1 NQ -> True",
+    "1779118203 None [BLITZ Sim103] MODIFY 1 NQ -> True",
+    "1779116403 None [BLITZ Sim103] SELL 1 NQ -> True",
+    "1779116403 None [BLITZ Sim103] BLITZ SHORT at the 11:00 ET open: ROUTED MARKET 1 MNQ on Sim103 (3 s after the open), stop 29,788.25 (1.5 x 5m ATR), OCO limit 27,222.00 (20R); size 40% of the $1,000 room, <= $600, <= 90% of the $600 daily loss left: $246.81 a micro at a 122.20-pt stop -> 1",
+    "1779116403 None [BLITZ Sim103] STARTUP RECONCILED on Sim103: NinjaTrader positions / orders and contract check out; entries allowed",
+    "1779115816 None [BLITZ Sim103] warmed on 34497 1m bars (14 sessions of the noise band)",
+    "1779115811 None [BLITZ Sim103] SIM Sim103 MFFU Builder 25K, BLITZ scalper, eval from 2026-05-18 (balance $25,000, room $1,000): ready"
+   ]
+  },
+  {
+   "day": "2026-06-05",
+   "kind": "pass",
+   "what": "3 big BLITZ wins pass the 25K on day 1 (+$1,525): EVAL PASSED, no new trade after",
+   "bt": [
+    {
+     "sig_t": 1780671540,
+     "entry_t": 1780671600,
+     "exit_t": 1780673460,
+     "dir": -1,
+     "entry": 30437.0,
+     "stop": 30528.3595,
+     "exit": 30321.5,
+     "exit_kind": "time",
+     "risk_pts": 91.3595,
+     "r": 1.2376,
+     "pnl_pm": 229.1
+    },
+    {
+     "sig_t": 1780675140,
+     "entry_t": 1780675200,
+     "exit_t": 1780677060,
+     "dir": -1,
+     "entry": 30242.5,
+     "stop": 30325.0455,
+     "exit": 30107.0,
+     "exit_kind": "time",
+     "risk_pts": 82.5455,
+     "r": 1.6067,
+     "pnl_pm": 269.1
+    },
+    {
+     "sig_t": 1780678740,
+     "entry_t": 1780678800,
+     "exit_t": 1780680660,
+     "dir": -1,
+     "entry": 30074.25,
+     "stop": 30162.3336,
+     "exit": 30030.0,
+     "exit_kind": "time",
+     "risk_pts": 88.0836,
+     "r": 0.485,
+     "pnl_pm": 86.6
+    },
+    {
+     "sig_t": 1780682340,
+     "entry_t": 1780682400,
+     "exit_t": 1780684260,
+     "dir": -1,
+     "entry": 30055.25,
+     "stop": 30136.9791,
+     "exit": 29825.25,
+     "exit_kind": "time",
+     "risk_pts": 81.7291,
+     "r": 2.762,
+     "pnl_pm": 458.1
+    },
+    {
+     "sig_t": 1780685940,
+     "entry_t": 1780686000,
+     "exit_t": 1780687680,
+     "dir": -1,
+     "entry": 29775.5,
+     "stop": 29863.3365,
+     "exit": 29690.2547,
+     "exit_kind": "stop",
+     "risk_pts": 87.8365,
+     "r": 0.9468,
+     "pnl_pm": 168.5906
+    },
+    {
+     "sig_t": 1780687740,
+     "entry_t": 1780687800,
+     "exit_t": 1780689300,
+     "dir": -1,
+     "entry": 29738.75,
+     "stop": 29841.9117,
+     "exit": 29713.25,
+     "exit_kind": "flat",
+     "risk_pts": 103.1617,
+     "r": 0.2352,
+     "pnl_pm": 49.1
+    }
+   ],
+   "masked": [],
+   "expected": [
+    {
+     "sig_t": 1780671540,
+     "entry_t": 1780671600,
+     "exit_t": 1780673460,
+     "dir": -1,
+     "entry": 30437.0,
+     "stop": 30528.3595,
+     "exit": 30321.5,
+     "exit_kind": "time",
+     "risk_pts": 91.3595,
+     "r": 1.2376,
+     "pnl_pm": 229.1
+    },
+    {
+     "sig_t": 1780675140,
+     "entry_t": 1780675200,
+     "exit_t": 1780677060,
+     "dir": -1,
+     "entry": 30242.5,
+     "stop": 30325.0455,
+     "exit": 30107.0,
+     "exit_kind": "time",
+     "risk_pts": 82.5455,
+     "r": 1.6067,
+     "pnl_pm": 269.1
+    },
+    {
+     "sig_t": 1780678740,
+     "entry_t": 1780678800,
+     "exit_t": 1780680660,
+     "dir": -1,
+     "entry": 30074.25,
+     "stop": 30162.3336,
+     "exit": 30030.0,
+     "exit_kind": "time",
+     "risk_pts": 88.0836,
+     "r": 0.485,
+     "pnl_pm": 86.6
+    },
+    {
+     "sig_t": 1780682340,
+     "entry_t": 1780682400,
+     "exit_t": 1780684260,
+     "dir": -1,
+     "entry": 30055.25,
+     "stop": 30136.9791,
+     "exit": 29825.25,
+     "exit_kind": "time",
+     "risk_pts": 81.7291,
+     "r": 2.762,
+     "pnl_pm": 458.1
+    }
+   ],
+   "routed": [
+    {
+     "t": 1780671603,
+     "side": "sell",
+     "qty": 2,
+     "stop": 30528.25,
+     "target": 28610.0,
+     "entry": 30437.0,
+     "entry_t": 1780671600,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1780672324,
+     "side": "modify",
+     "qty": 2,
+     "stop": 30482.5,
+     "target": null,
+     "entry": null,
+     "entry_t": 1780671600,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1780672384,
+     "side": "modify",
+     "qty": 2,
+     "stop": 30473.0,
+     "target": null,
+     "entry": null,
+     "entry_t": 1780671600,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1780672446,
+     "side": "modify",
+     "qty": 2,
+     "stop": 30461.0,
+     "target": null,
+     "entry": null,
+     "entry_t": 1780671600,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1780672506,
+     "side": "modify",
+     "qty": 2,
+     "stop": 30447.5,
+     "target": null,
+     "entry": null,
+     "entry_t": 1780671600,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1780672565,
+     "side": "modify",
+     "qty": 2,
+     "stop": 30445.0,
+     "target": null,
+     "entry": null,
+     "entry_t": 1780671600,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1780672623,
+     "side": "modify",
+     "qty": 2,
+     "stop": 30444.25,
+     "target": null,
+     "entry": null,
+     "entry_t": 1780671600,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1780672924,
+     "side": "modify",
+     "qty": 2,
+     "stop": 30442.5,
+     "target": null,
+     "entry": null,
+     "entry_t": 1780671600,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1780672984,
+     "side": "modify",
+     "qty": 2,
+     "stop": 30423.5,
+     "target": null,
+     "entry": null,
+     "entry_t": 1780671600,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1780673044,
+     "side": "modify",
+     "qty": 2,
+     "stop": 30416.5,
+     "target": null,
+     "entry": null,
+     "entry_t": 1780671600,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1780673464,
+     "side": "exit",
+     "qty": 2,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1780671600,
+     "reason": "TIME",
+     "pnl": 458.2,
+     "exit_t": 1780673460
+    },
+    {
+     "t": 1780675204,
+     "side": "sell",
+     "qty": 3,
+     "stop": 30325.0,
+     "target": 28591.75,
+     "entry": 30242.5,
+     "entry_t": 1780675200,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1780675743,
+     "side": "modify",
+     "qty": 3,
+     "stop": 30280.75,
+     "target": null,
+     "entry": null,
+     "entry_t": 1780675200,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1780675805,
+     "side": "modify",
+     "qty": 3,
+     "stop": 30277.75,
+     "target": null,
+     "entry": null,
+     "entry_t": 1780675200,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1780675865,
+     "side": "modify",
+     "qty": 3,
+     "stop": 30272.0,
+     "target": null,
+     "entry": null,
+     "entry_t": 1780675200,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1780676225,
+     "side": "modify",
+     "qty": 3,
+     "stop": 30258.0,
+     "target": null,
+     "entry": null,
+     "entry_t": 1780675200,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1780676283,
+     "side": "modify",
+     "qty": 3,
+     "stop": 30250.25,
+     "target": null,
+     "entry": null,
+     "entry_t": 1780675200,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1780676405,
+     "side": "modify",
+     "qty": 3,
+     "stop": 30246.5,
+     "target": null,
+     "entry": null,
+     "entry_t": 1780675200,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1780676464,
+     "side": "modify",
+     "qty": 3,
+     "stop": 30244.25,
+     "target": null,
+     "entry": null,
+     "entry_t": 1780675200,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1780676523,
+     "side": "modify",
+     "qty": 3,
+     "stop": 30243.75,
+     "target": null,
+     "entry": null,
+     "entry_t": 1780675200,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1780677065,
+     "side": "exit",
+     "qty": 3,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1780675200,
+     "reason": "TIME",
+     "pnl": 807.3,
+     "exit_t": 1780677060
+    },
+    {
+     "t": 1780678805,
+     "side": "sell",
+     "qty": 3,
+     "stop": 30162.25,
+     "target": 28312.75,
+     "entry": 30074.25,
+     "entry_t": 1780678800,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1780679523,
+     "side": "modify",
+     "qty": 3,
+     "stop": 30105.75,
+     "target": null,
+     "entry": null,
+     "entry_t": 1780678800,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1780679583,
+     "side": "modify",
+     "qty": 3,
+     "stop": 30093.25,
+     "target": null,
+     "entry": null,
+     "entry_t": 1780678800,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1780679826,
+     "side": "modify",
+     "qty": 3,
+     "stop": 30082.75,
+     "target": null,
+     "entry": null,
+     "entry_t": 1780678800,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1780680063,
+     "side": "modify",
+     "qty": 3,
+     "stop": 30078.0,
+     "target": null,
+     "entry": null,
+     "entry_t": 1780678800,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1780680664,
+     "side": "exit",
+     "qty": 3,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1780678800,
+     "reason": "TIME",
+     "pnl": 259.8,
+     "exit_t": 1780680660
+    }
+   ],
+   "oif_c": [
+    "11:00:03 PLACE;Sim103;MNQ 06-26;SELL;2;MARKET;0;0;DAY;;LE1780671600DRVYME;;",
+    "11:00:03 PLACE;Sim103;MNQ 06-26;BUY;2;STOPMARKET;0;30528.25;DAY;LE1780671600DRVYMO;LE1780671600DRVYMS;;",
+    "11:00:03 PLACE;Sim103;MNQ 06-26;BUY;2;LIMIT;28610.00;0;DAY;LE1780671600DRVYMO;LE1780671600DRVYMT;;",
+    "11:12:03 CHANGE;;;;0;;0;30482.50;;;LE1780671600DRVYMS;;",
+    "11:13:03 CHANGE;;;;0;;0;30473.00;;;LE1780671600DRVYMS;;",
+    "11:14:05 CHANGE;;;;0;;0;30461.00;;;LE1780671600DRVYMS;;",
+    "11:15:06 CHANGE;;;;0;;0;30447.50;;;LE1780671600DRVYMS;;",
+    "11:16:04 CHANGE;;;;0;;0;30445.00;;;LE1780671600DRVYMS;;",
+    "11:17:03 CHANGE;;;;0;;0;30444.25;;;LE1780671600DRVYMS;;",
+    "11:22:03 CHANGE;;;;0;;0;30442.50;;;LE1780671600DRVYMS;;",
+    "11:23:03 CHANGE;;;;0;;0;30423.50;;;LE1780671600DRVYMS;;",
+    "11:24:03 CHANGE;;;;0;;0;30416.50;;;LE1780671600DRVYMS;;",
+    "11:31:04 CLOSEPOSITION;Sim103;MNQ 06-26;;;;;;;;;;",
+    "12:00:04 PLACE;Sim103;MNQ 06-26;SELL;3;MARKET;0;0;DAY;;LE17806752002CHBME;;",
+    "12:00:04 PLACE;Sim103;MNQ 06-26;BUY;3;STOPMARKET;0;30325.00;DAY;LE17806752002CHBMO;LE17806752002CHBMS;;",
+    "12:00:04 PLACE;Sim103;MNQ 06-26;BUY;3;LIMIT;28591.75;0;DAY;LE17806752002CHBMO;LE17806752002CHBMT;;",
+    "12:09:02 CHANGE;;;;0;;0;30280.75;;;LE17806752002CHBMS;;",
+    "12:10:04 CHANGE;;;;0;;0;30277.75;;;LE17806752002CHBMS;;",
+    "12:11:05 CHANGE;;;;0;;0;30272.00;;;LE17806752002CHBMS;;",
+    "12:17:04 CHANGE;;;;0;;0;30258.00;;;LE17806752002CHBMS;;",
+    "12:18:02 CHANGE;;;;0;;0;30250.25;;;LE17806752002CHBMS;;",
+    "12:20:04 CHANGE;;;;0;;0;30246.50;;;LE17806752002CHBMS;;",
+    "12:21:03 CHANGE;;;;0;;0;30244.25;;;LE17806752002CHBMS;;",
+    "12:22:02 CHANGE;;;;0;;0;30243.75;;;LE17806752002CHBMS;;",
+    "12:31:04 CLOSEPOSITION;Sim103;MNQ 06-26;;;;;;;;;;",
+    "13:00:05 PLACE;Sim103;MNQ 06-26;SELL;3;MARKET;0;0;DAY;;LE1780678800Y2XKME;;",
+    "13:00:05 PLACE;Sim103;MNQ 06-26;BUY;3;STOPMARKET;0;30162.25;DAY;LE1780678800Y2XKMO;LE1780678800Y2XKMS;;",
+    "13:00:05 PLACE;Sim103;MNQ 06-26;BUY;3;LIMIT;28312.75;0;DAY;LE1780678800Y2XKMO;LE1780678800Y2XKMT;;",
+    "13:12:03 CHANGE;;;;0;;0;30105.75;;;LE1780678800Y2XKMS;;",
+    "13:13:02 CHANGE;;;;0;;0;30093.25;;;LE1780678800Y2XKMS;;",
+    "13:17:06 CHANGE;;;;0;;0;30082.75;;;LE1780678800Y2XKMS;;",
+    "13:21:03 CHANGE;;;;0;;0;30078.00;;;LE1780678800Y2XKMS;;",
+    "13:31:04 CLOSEPOSITION;Sim103;MNQ 06-26;;;;;;;;;;"
+   ],
+   "trades": [
+    {
+     "entry_t": 1780671600,
+     "entry": "11:00:00",
+     "dir": -1,
+     "qty": 2,
+     "exit_kind": "time",
+     "booked": 458.2,
+     "broker": 454.2,
+     "bt_usd": 458.2,
+     "changes": 9
+    },
+    {
+     "entry_t": 1780675200,
+     "entry": "12:00:00",
+     "dir": -1,
+     "qty": 3,
+     "exit_kind": "time",
+     "booked": 807.3,
+     "broker": 805.8,
+     "bt_usd": 807.3,
+     "changes": 8
+    },
+    {
+     "entry_t": 1780678800,
+     "entry": "13:00:00",
+     "dir": -1,
+     "qty": 3,
+     "exit_kind": "time",
+     "booked": 259.8,
+     "broker": 258.3,
+     "bt_usd": 259.8,
+     "changes": 4
+    }
+   ],
+   "booked": 1525.3,
+   "b_entries": [],
+   "c_state": {
+    "open_t": null,
+    "notified": [
+     "acctc:passed:2026-06-05:Sim103"
+    ]
+   },
+   "hedge_viol": [],
+   "heartbeat": {
+    "label": "BLITZ Sim103",
+    "real": "SIM",
+    "state": "PAPER SHORT from 30,055.25 (no 25K eval size, 50K: not taken (LIT busy)), stop 30,089.34 (trailing 1.5R behind the best price); out by 14:31 ET at the latest.",
+    "eval": {
+     "start_balance": 25000.0,
+     "balance": 26525.3,
+     "profit": 1525.3,
+     "today": 1525.3,
+     "floor": 24000.0,
+     "room": 2525.3,
+     "target": 26500.0,
+     "to_target": 0.0,
+     "session": 1,
+     "status": "passed",
+     "start": "2026-06-05",
+     "days_traded": 0,
+     "dll": 600.0,
+     "max_micros": 20,
+     "plan": "MFFU Builder 25K",
+     "price": 63.0,
+     "min_room": 249.56
+    },
+    "scorecard": {
+     "n": 3,
+     "win_pct": 100.0,
+     "avg_r": 1.1097,
+     "usd": 1525.3,
+     "status": "warming"
+    }
+   },
+   "preflight": [
+    [
+     "config",
+     "good",
+     "BLITZ \u2192 Sim test on Sim103 (MFFU Builder 25K)"
+    ],
+    [
+     "own",
+     "good",
+     "Sim103 is neither Zlarior's (Sim101) nor ATLAS's (Sim102)"
+    ],
+    [
+     "nt",
+     "good",
+     "a connection is CONNECTED"
+    ],
+    [
+     "visible",
+     "good",
+     "Sim103 is a NinjaTrader Sim account (always there)"
+    ],
+    [
+     "allow",
+     "good",
+     "a Sim account needs no allowlist"
+    ],
+    [
+     "sim",
+     "good",
+     "BLITZ traded 3 times on Sim103 on 2026-06-05, every order taken and closed at NinjaTrader"
+    ],
+    [
+     "armed",
+     "info",
+     "Sim103 is a Sim account: no real money, nothing to arm"
+    ],
+    [
+     "bot",
+     "good",
+     "SIM Sim103: PAPER SHORT from 30,055.25 (no 25K eval size, 50K: not taken (LIT busy)), stop 30,086.84 (trailing 1.5R behi"
+    ],
+    [
+     "eval",
+     "bad",
+     "this eval is passed (balance $26,525): no new BLITZ trade on it"
+    ],
+    [
+     "size",
+     "good",
+     "3 micros at a 83-pt stop (today: 1.5 x the 5m ATR) on the $2,525 room (session 1); 7 at 40 pts, 4 at 60 pts, 3 at 90 pts"
+    ],
+    [
+     "hedge",
+     "good",
+     "Zlarior first, then ATLAS, then BLITZ: no BLITZ entry while Sim101 or Sim102 holds / enters / has a setup armed the othe"
+    ],
+    [
+     "contract",
+     "good",
+     "loaded: BLITZ pauses itself after 20+ trades under avg R -0.150 / PF 0.62 (the 2026 floor) or 6 losing days in a row; no"
+    ],
+    [
+     "calendar",
+     "good",
+     "Fri Jun 05 (today): normal session, BLITZ checks 11:00-15:30 ET, flat by 15:55"
+    ],
+    [
+     "feed",
+     "good",
+     "LE_BarFeed's MNQ bars are fresh"
+    ],
+    [
+     "day",
+     "info",
+     "BLITZ trades today: yesterday's 09:30-16:00 range 452 pts = 1.29 x its 14-day mean 352 pts (needs >= 0.8)"
+    ]
+   ],
+   "c_log": [
+    "1780682403 None [BLITZ Sim103] BLITZ SHORT at the 14:00 ET open NOT routed on Sim103: eval passed (balance $26,525, room $2,525) (the model trade runs on paper; BLITZ waits for it)",
+    "1780680664 None [BLITZ Sim103] BLITZ Sim103 EVAL PASSED \ud83c\udf89: balance $26,525 (target $26,500): no new trade on this eval; request the funded account in the MFFU dashboard, then run the funded switch with its new Name: Start page > BLITZ \u00b7 25K > Passed \u2192 funded, or python -X utf8 -m engine.account_c --",
+    "1780680664 None [BLITZ Sim103] EXIT 3 NQ -> True",
+    "1780680063 None [BLITZ Sim103] MODIFY 3 NQ -> True",
+    "1780679826 None [BLITZ Sim103] MODIFY 3 NQ -> True",
+    "1780679583 None [BLITZ Sim103] MODIFY 3 NQ -> True",
+    "1780679523 None [BLITZ Sim103] MODIFY 3 NQ -> True",
+    "1780678805 None [BLITZ Sim103] SELL 3 NQ -> True",
+    "1780678805 None [BLITZ Sim103] BLITZ SHORT at the 13:00 ET open: ROUTED MARKET 3 MNQ on Sim103 (5 s after the open), stop 30,162.25 (1.5 x 5m ATR), OCO limit 28,312.75 (20R); size 40% of the $2,266 room, <= $600, <= 90% of the $1,866 daily loss left: $178.57 a micro at a 88.08-pt stop -> 3",
+    "1780677065 None [BLITZ Sim103] EXIT 3 NQ -> True",
+    "1780676523 None [BLITZ Sim103] MODIFY 3 NQ -> True",
+    "1780676464 None [BLITZ Sim103] MODIFY 3 NQ -> True",
+    "1780676405 None [BLITZ Sim103] MODIFY 3 NQ -> True",
+    "1780676283 None [BLITZ Sim103] MODIFY 3 NQ -> True",
+    "1780676225 None [BLITZ Sim103] MODIFY 3 NQ -> True",
+    "1780675865 None [BLITZ Sim103] MODIFY 3 NQ -> True",
+    "1780675805 None [BLITZ Sim103] MODIFY 3 NQ -> True",
+    "1780675743 None [BLITZ Sim103] MODIFY 3 NQ -> True",
+    "1780675204 None [BLITZ Sim103] SELL 3 NQ -> True",
+    "1780675204 None [BLITZ Sim103] BLITZ SHORT at the 12:00 ET open: ROUTED MARKET 3 MNQ on Sim103 (4 s after the open), stop 30,325.00 (1.5 x 5m ATR), OCO limit 28,591.75 (20R); size 40% of the $1,458 room, <= $600, <= 90% of the $1,058 daily loss left: $167.49 a micro at a 82.55-pt stop -> 3",
+    "1780673464 None [BLITZ Sim103] EXIT 2 NQ -> True",
+    "1780673044 None [BLITZ Sim103] MODIFY 2 NQ -> True",
+    "1780672984 None [BLITZ Sim103] MODIFY 2 NQ -> True",
+    "1780672924 None [BLITZ Sim103] MODIFY 2 NQ -> True",
+    "1780672623 None [BLITZ Sim103] MODIFY 2 NQ -> True",
+    "1780672565 None [BLITZ Sim103] MODIFY 2 NQ -> True",
+    "1780672506 None [BLITZ Sim103] MODIFY 2 NQ -> True",
+    "1780672446 None [BLITZ Sim103] MODIFY 2 NQ -> True",
+    "1780672384 None [BLITZ Sim103] MODIFY 2 NQ -> True",
+    "1780672324 None [BLITZ Sim103] MODIFY 2 NQ -> True",
+    "1780671603 None [BLITZ Sim103] SELL 2 NQ -> True",
+    "1780671603 None [BLITZ Sim103] BLITZ SHORT at the 11:00 ET open: ROUTED MARKET 2 MNQ on Sim103 (3 s after the open), stop 30,528.25 (1.5 x 5m ATR), OCO limit 28,610.00 (20R); size 40% of the $1,000 room, <= $600, <= 90% of the $600 daily loss left: $185.12 a micro at a 91.36-pt stop -> 2",
+    "1780671603 None [BLITZ Sim103] STARTUP RECONCILED on Sim103: NinjaTrader positions / orders and contract check out; entries allowed",
+    "1780671027 None [BLITZ Sim103] warmed on 34258 1m bars (14 sessions of the noise band)",
+    "1780671019 None [BLITZ Sim103] SIM Sim103 MFFU Builder 25K, BLITZ scalper, eval from 2026-06-05 (balance $25,000, room $1,000): ready"
+   ]
+  },
+  {
+   "day": "2026-06-09",
+   "kind": "early_1315",
+   "what": "CME early close 13:15 (injected): the 13:00 signal is not entered (last 15 min)",
+   "bt": [
+    {
+     "sig_t": 1781017140,
+     "entry_t": 1781017200,
+     "exit_t": 1781019060,
+     "dir": -1,
+     "entry": 29825.75,
+     "stop": 29971.3988,
+     "exit": 29471.0,
+     "exit_kind": "time",
+     "risk_pts": 145.6488,
+     "r": 2.4093,
+     "pnl_pm": 707.6
+    },
+    {
+     "sig_t": 1781020740,
+     "entry_t": 1781020800,
+     "exit_t": 1781022660,
+     "dir": -1,
+     "entry": 29279.75,
+     "stop": 29440.788,
+     "exit": 29046.5,
+     "exit_kind": "time",
+     "risk_pts": 161.038,
+     "r": 1.4318,
+     "pnl_pm": 464.6
+    },
+    {
+     "sig_t": 1781024340,
+     "entry_t": 1781024400,
+     "exit_t": 1781025480,
+     "dir": -1,
+     "entry": 29064.0,
+     "stop": 29266.0807,
+     "exit": 29266.3307,
+     "exit_kind": "stop",
+     "risk_pts": 202.0807,
+     "r": -1.0,
+     "pnl_pm": -406.5615
+    },
+    {
+     "sig_t": 1781026140,
+     "entry_t": 1781026200,
+     "exit_t": 1781028060,
+     "dir": -1,
+     "entry": 29327.25,
+     "stop": 29519.9645,
+     "exit": 29436.25,
+     "exit_kind": "time",
+     "risk_pts": 192.7145,
+     "r": -0.567,
+     "pnl_pm": -219.9
+    },
+    {
+     "sig_t": 1781029740,
+     "entry_t": 1781029800,
+     "exit_t": 1781031660,
+     "dir": -1,
+     "entry": 29557.0,
+     "stop": 29719.0759,
+     "exit": 29626.75,
+     "exit_kind": "time",
+     "risk_pts": 162.0759,
+     "r": -0.433,
+     "pnl_pm": -141.4
+    },
+    {
+     "sig_t": 1781033340,
+     "entry_t": 1781033400,
+     "exit_t": 1781034900,
+     "dir": -1,
+     "entry": 29536.5,
+     "stop": 29687.3509,
+     "exit": 29617.0,
+     "exit_kind": "flat",
+     "risk_pts": 150.8509,
+     "r": -0.5357,
+     "pnl_pm": -162.9
+    }
+   ],
+   "masked": [],
+   "expected": [
+    {
+     "sig_t": 1781017140,
+     "entry_t": 1781017200,
+     "exit_t": 1781019060,
+     "dir": -1,
+     "entry": 29825.75,
+     "stop": 29971.3988,
+     "exit": 29471.0,
+     "exit_kind": "time",
+     "risk_pts": 145.6488,
+     "r": 2.4093,
+     "pnl_pm": 707.6
+    },
+    {
+     "sig_t": 1781020740,
+     "entry_t": 1781020800,
+     "exit_t": 1781022660,
+     "dir": -1,
+     "entry": 29279.75,
+     "stop": 29440.788,
+     "exit": 29046.5,
+     "exit_kind": "time",
+     "risk_pts": 161.038,
+     "r": 1.4318,
+     "pnl_pm": 464.6
+    },
+    {
+     "sig_t": 1781024340,
+     "entry_t": 1781024400,
+     "exit_t": 1781025480,
+     "dir": -1,
+     "entry": 29064.0,
+     "stop": 29266.0807,
+     "exit": 29266.3307,
+     "exit_kind": "stop",
+     "risk_pts": 202.0807,
+     "r": -1.0,
+     "pnl_pm": -406.5615
+    },
+    {
+     "sig_t": 1781026140,
+     "entry_t": 1781026200,
+     "exit_t": 1781028060,
+     "dir": -1,
+     "entry": 29327.25,
+     "stop": 29519.9645,
+     "exit": 29436.25,
+     "exit_kind": "time",
+     "risk_pts": 192.7145,
+     "r": -0.567,
+     "pnl_pm": -219.9
+    }
+   ],
+   "routed": [
+    {
+     "t": 1781017205,
+     "side": "sell",
+     "qty": 1,
+     "stop": 29971.5,
+     "target": 26913.0,
+     "entry": 29825.75,
+     "entry_t": 1781017200,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1781018585,
+     "side": "modify",
+     "qty": 1,
+     "stop": 29897.5,
+     "target": null,
+     "entry": null,
+     "entry_t": 1781017200,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1781018643,
+     "side": "modify",
+     "qty": 1,
+     "stop": 29854.0,
+     "target": null,
+     "entry": null,
+     "entry_t": 1781017200,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1781018704,
+     "side": "modify",
+     "qty": 1,
+     "stop": 29816.25,
+     "target": null,
+     "entry": null,
+     "entry_t": 1781017200,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1781018763,
+     "side": "modify",
+     "qty": 1,
+     "stop": 29803.5,
+     "target": null,
+     "entry": null,
+     "entry_t": 1781017200,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1781018823,
+     "side": "modify",
+     "qty": 1,
+     "stop": 29756.0,
+     "target": null,
+     "entry": null,
+     "entry_t": 1781017200,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1781018885,
+     "side": "modify",
+     "qty": 1,
+     "stop": 29734.75,
+     "target": null,
+     "entry": null,
+     "entry_t": 1781017200,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1781018944,
+     "side": "modify",
+     "qty": 1,
+     "stop": 29690.5,
+     "target": null,
+     "entry": null,
+     "entry_t": 1781017200,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1781019004,
+     "side": "modify",
+     "qty": 1,
+     "stop": 29651.0,
+     "target": null,
+     "entry": null,
+     "entry_t": 1781017200,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1781019063,
+     "side": "exit",
+     "qty": 1,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1781017200,
+     "reason": "TIME",
+     "pnl": 707.6,
+     "exit_t": 1781019060
+    },
+    {
+     "t": 1781020803,
+     "side": "sell",
+     "qty": 1,
+     "stop": 29440.75,
+     "target": 26059.0,
+     "entry": 29279.75,
+     "entry_t": 1781020800,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1781021824,
+     "side": "modify",
+     "qty": 1,
+     "stop": 29341.5,
+     "target": null,
+     "entry": null,
+     "entry_t": 1781020800,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1781021884,
+     "side": "modify",
+     "qty": 1,
+     "stop": 29315.75,
+     "target": null,
+     "entry": null,
+     "entry_t": 1781020800,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1781022005,
+     "side": "modify",
+     "qty": 1,
+     "stop": 29256.25,
+     "target": null,
+     "entry": null,
+     "entry_t": 1781020800,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1781022063,
+     "side": "modify",
+     "qty": 1,
+     "stop": 29229.75,
+     "target": null,
+     "entry": null,
+     "entry_t": 1781020800,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1781022663,
+     "side": "exit",
+     "qty": 1,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1781020800,
+     "reason": "TIME",
+     "pnl": 464.6,
+     "exit_t": 1781022660
+    }
+   ],
+   "oif_c": [
+    "11:00:05 PLACE;Sim103;MNQ 06-26;SELL;1;MARKET;0;0;DAY;;LE1781017200AGCNME;;",
+    "11:00:05 PLACE;Sim103;MNQ 06-26;BUY;1;STOPMARKET;0;29971.50;DAY;LE1781017200AGCNMO;LE1781017200AGCNMS;;",
+    "11:00:05 PLACE;Sim103;MNQ 06-26;BUY;1;LIMIT;26913.00;0;DAY;LE1781017200AGCNMO;LE1781017200AGCNMT;;",
+    "11:23:05 CHANGE;;;;0;;0;29897.50;;;LE1781017200AGCNMS;;",
+    "11:24:02 CHANGE;;;;0;;0;29854.00;;;LE1781017200AGCNMS;;",
+    "11:25:04 CHANGE;;;;0;;0;29816.25;;;LE1781017200AGCNMS;;",
+    "11:26:03 CHANGE;;;;0;;0;29803.50;;;LE1781017200AGCNMS;;",
+    "11:27:03 CHANGE;;;;0;;0;29756.00;;;LE1781017200AGCNMS;;",
+    "11:28:04 CHANGE;;;;0;;0;29734.75;;;LE1781017200AGCNMS;;",
+    "11:29:04 CHANGE;;;;0;;0;29690.50;;;LE1781017200AGCNMS;;",
+    "11:30:04 CHANGE;;;;0;;0;29651.00;;;LE1781017200AGCNMS;;",
+    "11:31:03 CLOSEPOSITION;Sim103;MNQ 06-26;;;;;;;;;;",
+    "12:00:03 PLACE;Sim103;MNQ 06-26;SELL;1;MARKET;0;0;DAY;;LE17810208006337ME;;",
+    "12:00:03 PLACE;Sim103;MNQ 06-26;BUY;1;STOPMARKET;0;29440.75;DAY;LE17810208006337MO;LE17810208006337MS;;",
+    "12:00:03 PLACE;Sim103;MNQ 06-26;BUY;1;LIMIT;26059.00;0;DAY;LE17810208006337MO;LE17810208006337MT;;",
+    "12:17:03 CHANGE;;;;0;;0;29341.50;;;LE17810208006337MS;;",
+    "12:18:04 CHANGE;;;;0;;0;29315.75;;;LE17810208006337MS;;",
+    "12:20:05 CHANGE;;;;0;;0;29256.25;;;LE17810208006337MS;;",
+    "12:21:03 CHANGE;;;;0;;0;29229.75;;;LE17810208006337MS;;",
+    "12:31:03 CLOSEPOSITION;Sim103;MNQ 06-26;;;;;;;;;;"
+   ],
+   "trades": [
+    {
+     "entry_t": 1781017200,
+     "entry": "11:00:00",
+     "dir": -1,
+     "qty": 1,
+     "exit_kind": "time",
+     "booked": 707.6,
+     "broker": 705.6,
+     "bt_usd": 707.6,
+     "changes": 8
+    },
+    {
+     "entry_t": 1781020800,
+     "entry": "12:00:00",
+     "dir": -1,
+     "qty": 1,
+     "exit_kind": "time",
+     "booked": 464.6,
+     "broker": 463.6,
+     "bt_usd": 464.6,
+     "changes": 4
+    }
+   ],
+   "booked": 1172.2,
+   "b_entries": [],
+   "c_state": {
+    "open_t": null,
+    "notified": []
+   },
+   "hedge_viol": [],
+   "heartbeat": {
+    "label": "BLITZ Sim103",
+    "real": "SIM",
+    "state": "No new 1m bar since 13:15 ET: no paper entries until the bars are back.",
+    "eval": {
+     "start_balance": 25000.0,
+     "balance": 26172.2,
+     "profit": 1172.2,
+     "today": 1172.2,
+     "floor": 24000.0,
+     "room": 2172.2,
+     "target": 26500.0,
+     "to_target": 327.8,
+     "session": 1,
+     "status": "open",
+     "start": "2026-06-09",
+     "days_traded": 0,
+     "dll": 600.0,
+     "max_micros": 20,
+     "plan": "MFFU Builder 25K",
+     "price": 63.0,
+     "min_room": 249.56
+    },
+    "scorecard": {
+     "n": 2,
+     "win_pct": 100.0,
+     "avg_r": 1.9206,
+     "usd": 1172.2,
+     "status": "warming"
+    }
+   },
+   "preflight": [
+    [
+     "config",
+     "good",
+     "BLITZ \u2192 Sim test on Sim103 (MFFU Builder 25K)"
+    ],
+    [
+     "own",
+     "good",
+     "Sim103 is neither Zlarior's (Sim101) nor ATLAS's (Sim102)"
+    ],
+    [
+     "nt",
+     "good",
+     "a connection is CONNECTED"
+    ],
+    [
+     "visible",
+     "good",
+     "Sim103 is a NinjaTrader Sim account (always there)"
+    ],
+    [
+     "allow",
+     "good",
+     "a Sim account needs no allowlist"
+    ],
+    [
+     "sim",
+     "good",
+     "BLITZ traded 2 times on Sim103 on 2026-06-09, every order taken and closed at NinjaTrader"
+    ],
+    [
+     "armed",
+     "info",
+     "Sim103 is a Sim account: no real money, nothing to arm"
+    ],
+    [
+     "bot",
+     "good",
+     "SIM Sim103: No new 1m bar since 13:15 ET: no paper entries until the bars are back."
+    ],
+    [
+     "eval",
+     "good",
+     "session 1 of 10 (first session 2026-06-09): balance $26,172.20, room $2,172.20 to the floor, $328 to the pass"
+    ],
+    [
+     "size",
+     "good",
+     "1 micro at a 200-pt stop (today: 1.5 x the 5m ATR) on the $2,172 room (session 1); 7 at 40 pts, 4 at 60 pts, 3 at 90 pts"
+    ],
+    [
+     "hedge",
+     "good",
+     "Zlarior first, then ATLAS, then BLITZ: no BLITZ entry while Sim101 or Sim102 holds / enters / has a setup armed the othe"
+    ],
+    [
+     "contract",
+     "good",
+     "loaded: BLITZ pauses itself after 20+ trades under avg R -0.150 / PF 0.62 (the 2026 floor) or 6 losing days in a row; no"
+    ],
+    [
+     "calendar",
+     "good",
+     "Tue Jun 09: early close 13:15 ET: BLITZ flat by 13:10, no entry after 13:00"
+    ],
+    [
+     "feed",
+     "bad",
+     "MNQ_5m.csv is stale: last bar Tue 13:10 ET, 20 min ago (NinjaTrader closed, disconnected, or the chart was removed?)"
+    ],
+    [
+     "day",
+     "info",
+     "BLITZ trades today: yesterday's 09:30-16:00 range 412 pts = 1.06 x its 14-day mean 390 pts (needs >= 0.8)"
+    ]
+   ],
+   "c_log": [
+    "1781024403 None [BLITZ Sim103] BLITZ SHORT at the 13:00 ET open NOT routed on Sim103: CME early close at 13:15 ET: no entry in the last 15 minutes (the model trade runs on paper; BLITZ waits for it)",
+    "1781022663 None [BLITZ Sim103] EXIT 1 NQ -> True",
+    "1781022063 None [BLITZ Sim103] MODIFY 1 NQ -> True",
+    "1781022005 None [BLITZ Sim103] MODIFY 1 NQ -> True",
+    "1781021884 None [BLITZ Sim103] MODIFY 1 NQ -> True",
+    "1781021824 None [BLITZ Sim103] MODIFY 1 NQ -> True",
+    "1781020803 None [BLITZ Sim103] SELL 1 NQ -> True",
+    "1781020803 None [BLITZ Sim103] BLITZ SHORT at the 12:00 ET open: ROUTED MARKET 1 MNQ on Sim103 (3 s after the open), stop 29,440.75 (1.5 x 5m ATR), OCO limit 26,059.00 (20R); size 40% of the $1,708 room, <= $600, <= 90% of the $1,308 daily loss left: $324.48 a micro at a 161.04-pt stop -> 1",
+    "1781019063 None [BLITZ Sim103] EXIT 1 NQ -> True",
+    "1781019004 None [BLITZ Sim103] MODIFY 1 NQ -> True",
+    "1781018944 None [BLITZ Sim103] MODIFY 1 NQ -> True",
+    "1781018885 None [BLITZ Sim103] MODIFY 1 NQ -> True",
+    "1781018823 None [BLITZ Sim103] MODIFY 1 NQ -> True",
+    "1781018763 None [BLITZ Sim103] MODIFY 1 NQ -> True",
+    "1781018704 None [BLITZ Sim103] MODIFY 1 NQ -> True",
+    "1781018643 None [BLITZ Sim103] MODIFY 1 NQ -> True",
+    "1781018585 None [BLITZ Sim103] MODIFY 1 NQ -> True",
+    "1781017205 None [BLITZ Sim103] SELL 1 NQ -> True",
+    "1781017205 None [BLITZ Sim103] BLITZ SHORT at the 11:00 ET open: ROUTED MARKET 1 MNQ on Sim103 (5 s after the open), stop 29,971.50 (1.5 x 5m ATR), OCO limit 26,913.00 (20R); size 40% of the $1,000 room, <= $600, <= 90% of the $600 daily loss left: $293.70 a micro at a 145.65-pt stop -> 1",
+    "1781017205 None [BLITZ Sim103] STARTUP RECONCILED on Sim103: NinjaTrader positions / orders and contract check out; entries allowed",
+    "1781016621 None [BLITZ Sim103] warmed on 34258 1m bars (14 sessions of the noise band)",
+    "1781016618 None [BLITZ Sim103] SIM Sim103 MFFU Builder 25K, BLITZ scalper, eval from 2026-06-09 (balance $25,000, room $1,000): ready"
+   ]
+  },
+  {
+   "day": "2026-08-03",
+   "kind": "normal",
+   "what": "6 BLITZ trades (2-8 micros): 30-bar time exits, trail CHANGEs, a trailed stop-out, the 15:55 flat",
+   "bt": [
+    {
+     "sig_t": 1785769140,
+     "entry_t": 1785769200,
+     "exit_t": 1785771060,
+     "dir": 1,
+     "entry": 29096.0,
+     "stop": 29013.9077,
+     "exit": 29044.5,
+     "exit_kind": "time",
+     "risk_pts": 82.0923,
+     "r": -0.6297,
+     "pnl_pm": -104.9
+    },
+    {
+     "sig_t": 1785772740,
+     "entry_t": 1785772800,
+     "exit_t": 1785774660,
+     "dir": 1,
+     "entry": 29087.5,
+     "stop": 29023.2929,
+     "exit": 29135.75,
+     "exit_kind": "time",
+     "risk_pts": 64.2071,
+     "r": 0.7232,
+     "pnl_pm": 94.6
+    },
+    {
+     "sig_t": 1785776340,
+     "entry_t": 1785776400,
+     "exit_t": 1785778260,
+     "dir": 1,
+     "entry": 29117.75,
+     "stop": 29072.8899,
+     "exit": 29181.25,
+     "exit_kind": "time",
+     "risk_pts": 44.8601,
+     "r": 1.358,
+     "pnl_pm": 125.1
+    },
+    {
+     "sig_t": 1785779940,
+     "entry_t": 1785780000,
+     "exit_t": 1785781620,
+     "dir": 1,
+     "entry": 29212.5,
+     "stop": 29178.7314,
+     "exit": 29208.0972,
+     "exit_kind": "stop",
+     "risk_pts": 33.7686,
+     "r": -0.1531,
+     "pnl_pm": -10.7057
+    },
+    {
+     "sig_t": 1785781740,
+     "entry_t": 1785781800,
+     "exit_t": 1785783660,
+     "dir": 1,
+     "entry": 29187.0,
+     "stop": 29150.6437,
+     "exit": 29219.5,
+     "exit_kind": "time",
+     "risk_pts": 36.3563,
+     "r": 0.8401,
+     "pnl_pm": 63.1
+    },
+    {
+     "sig_t": 1785785340,
+     "entry_t": 1785785400,
+     "exit_t": 1785786900,
+     "dir": 1,
+     "entry": 29207.75,
+     "stop": 29171.9337,
+     "exit": 29194.0,
+     "exit_kind": "flat",
+     "risk_pts": 35.8163,
+     "r": -0.3971,
+     "pnl_pm": -29.4
+    }
+   ],
+   "masked": [],
+   "expected": [
+    {
+     "sig_t": 1785769140,
+     "entry_t": 1785769200,
+     "exit_t": 1785771060,
+     "dir": 1,
+     "entry": 29096.0,
+     "stop": 29013.9077,
+     "exit": 29044.5,
+     "exit_kind": "time",
+     "risk_pts": 82.0923,
+     "r": -0.6297,
+     "pnl_pm": -104.9
+    },
+    {
+     "sig_t": 1785772740,
+     "entry_t": 1785772800,
+     "exit_t": 1785774660,
+     "dir": 1,
+     "entry": 29087.5,
+     "stop": 29023.2929,
+     "exit": 29135.75,
+     "exit_kind": "time",
+     "risk_pts": 64.2071,
+     "r": 0.7232,
+     "pnl_pm": 94.6
+    },
+    {
+     "sig_t": 1785776340,
+     "entry_t": 1785776400,
+     "exit_t": 1785778260,
+     "dir": 1,
+     "entry": 29117.75,
+     "stop": 29072.8899,
+     "exit": 29181.25,
+     "exit_kind": "time",
+     "risk_pts": 44.8601,
+     "r": 1.358,
+     "pnl_pm": 125.1
+    },
+    {
+     "sig_t": 1785779940,
+     "entry_t": 1785780000,
+     "exit_t": 1785781620,
+     "dir": 1,
+     "entry": 29212.5,
+     "stop": 29178.7314,
+     "exit": 29208.0972,
+     "exit_kind": "stop",
+     "risk_pts": 33.7686,
+     "r": -0.1531,
+     "pnl_pm": -10.7057
+    },
+    {
+     "sig_t": 1785781740,
+     "entry_t": 1785781800,
+     "exit_t": 1785783660,
+     "dir": 1,
+     "entry": 29187.0,
+     "stop": 29150.6437,
+     "exit": 29219.5,
+     "exit_kind": "time",
+     "risk_pts": 36.3563,
+     "r": 0.8401,
+     "pnl_pm": 63.1
+    },
+    {
+     "sig_t": 1785785340,
+     "entry_t": 1785785400,
+     "exit_t": 1785786900,
+     "dir": 1,
+     "entry": 29207.75,
+     "stop": 29171.9337,
+     "exit": 29194.0,
+     "exit_kind": "flat",
+     "risk_pts": 35.8163,
+     "r": -0.3971,
+     "pnl_pm": -29.4
+    }
+   ],
+   "routed": [
+    {
+     "t": 1785769205,
+     "side": "buy",
+     "qty": 2,
+     "stop": 29014.0,
+     "target": 30737.75,
+     "entry": 29096.0,
+     "entry_t": 1785769200,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1785771064,
+     "side": "exit",
+     "qty": 2,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1785769200,
+     "reason": "TIME",
+     "pnl": -209.8,
+     "exit_t": 1785771060
+    },
+    {
+     "t": 1785772803,
+     "side": "buy",
+     "qty": 2,
+     "stop": 29023.25,
+     "target": 30371.5,
+     "entry": 29087.5,
+     "entry_t": 1785772800,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1785774663,
+     "side": "exit",
+     "qty": 2,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1785772800,
+     "reason": "TIME",
+     "pnl": 189.2,
+     "exit_t": 1785774660
+    },
+    {
+     "t": 1785776404,
+     "side": "buy",
+     "qty": 4,
+     "stop": 29073.0,
+     "target": 30014.75,
+     "entry": 29117.75,
+     "entry_t": 1785776400,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1785777544,
+     "side": "modify",
+     "qty": 4,
+     "stop": 29098.0,
+     "target": null,
+     "entry": null,
+     "entry_t": 1785776400,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1785777606,
+     "side": "modify",
+     "qty": 4,
+     "stop": 29098.25,
+     "target": null,
+     "entry": null,
+     "entry_t": 1785776400,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1785777783,
+     "side": "modify",
+     "qty": 4,
+     "stop": 29103.25,
+     "target": null,
+     "entry": null,
+     "entry_t": 1785776400,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1785777844,
+     "side": "modify",
+     "qty": 4,
+     "stop": 29108.75,
+     "target": null,
+     "entry": null,
+     "entry_t": 1785776400,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1785777907,
+     "side": "modify",
+     "qty": 4,
+     "stop": 29109.25,
+     "target": null,
+     "entry": null,
+     "entry_t": 1785776400,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1785778023,
+     "side": "modify",
+     "qty": 4,
+     "stop": 29109.75,
+     "target": null,
+     "entry": null,
+     "entry_t": 1785776400,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1785778084,
+     "side": "modify",
+     "qty": 4,
+     "stop": 29118.0,
+     "target": null,
+     "entry": null,
+     "entry_t": 1785776400,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1785778266,
+     "side": "exit",
+     "qty": 4,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1785776400,
+     "reason": "TIME",
+     "pnl": 500.4,
+     "exit_t": 1785778260
+    },
+    {
+     "t": 1785780003,
+     "side": "buy",
+     "qty": 8,
+     "stop": 29178.75,
+     "target": 29887.75,
+     "entry": 29212.5,
+     "entry_t": 1785780000,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1785780363,
+     "side": "modify",
+     "qty": 8,
+     "stop": 29202.0,
+     "target": null,
+     "entry": null,
+     "entry_t": 1785780000,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1785780663,
+     "side": "modify",
+     "qty": 8,
+     "stop": 29208.25,
+     "target": null,
+     "entry": null,
+     "entry_t": 1785780000,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1785781624,
+     "side": "exit",
+     "qty": 8,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1785780000,
+     "reason": "STOP",
+     "pnl": -85.65,
+     "exit_t": 1785781620
+    },
+    {
+     "t": 1785781804,
+     "side": "buy",
+     "qty": 7,
+     "stop": 29150.75,
+     "target": 29914.0,
+     "entry": 29187.0,
+     "entry_t": 1785781800,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1785783663,
+     "side": "exit",
+     "qty": 7,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1785781800,
+     "reason": "TIME",
+     "pnl": 441.7,
+     "exit_t": 1785783660
+    },
+    {
+     "t": 1785785403,
+     "side": "buy",
+     "qty": 8,
+     "stop": 29172.0,
+     "target": 29924.0,
+     "entry": 29207.75,
+     "entry_t": 1785785400,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1785786902,
+     "side": "exit",
+     "qty": 8,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1785785400,
+     "reason": "TIME",
+     "pnl": -235.2,
+     "exit_t": 1785786900
+    }
+   ],
+   "oif_c": [
+    "11:00:05 PLACE;Sim103;MNQ 09-26;BUY;2;MARKET;0;0;DAY;;LE1785769200XUEUME;;",
+    "11:00:05 PLACE;Sim103;MNQ 09-26;SELL;2;STOPMARKET;0;29014.00;DAY;LE1785769200XUEUMO;LE1785769200XUEUMS;;",
+    "11:00:05 PLACE;Sim103;MNQ 09-26;SELL;2;LIMIT;30737.75;0;DAY;LE1785769200XUEUMO;LE1785769200XUEUMT;;",
+    "11:31:04 CLOSEPOSITION;Sim103;MNQ 09-26;;;;;;;;;;",
+    "12:00:03 PLACE;Sim103;MNQ 09-26;BUY;2;MARKET;0;0;DAY;;LE1785772800GGJHME;;",
+    "12:00:03 PLACE;Sim103;MNQ 09-26;SELL;2;STOPMARKET;0;29023.25;DAY;LE1785772800GGJHMO;LE1785772800GGJHMS;;",
+    "12:00:03 PLACE;Sim103;MNQ 09-26;SELL;2;LIMIT;30371.50;0;DAY;LE1785772800GGJHMO;LE1785772800GGJHMT;;",
+    "12:31:02 CLOSEPOSITION;Sim103;MNQ 09-26;;;;;;;;;;",
+    "13:00:04 PLACE;Sim103;MNQ 09-26;BUY;4;MARKET;0;0;DAY;;LE1785776400Z3NAME;;",
+    "13:00:04 PLACE;Sim103;MNQ 09-26;SELL;4;STOPMARKET;0;29073.00;DAY;LE1785776400Z3NAMO;LE1785776400Z3NAMS;;",
+    "13:00:04 PLACE;Sim103;MNQ 09-26;SELL;4;LIMIT;30014.75;0;DAY;LE1785776400Z3NAMO;LE1785776400Z3NAMT;;",
+    "13:19:03 CHANGE;;;;0;;0;29098.00;;;LE1785776400Z3NAMS;;",
+    "13:20:05 CHANGE;;;;0;;0;29098.25;;;LE1785776400Z3NAMS;;",
+    "13:23:03 CHANGE;;;;0;;0;29103.25;;;LE1785776400Z3NAMS;;",
+    "13:24:03 CHANGE;;;;0;;0;29108.75;;;LE1785776400Z3NAMS;;",
+    "13:25:07 CHANGE;;;;0;;0;29109.25;;;LE1785776400Z3NAMS;;",
+    "13:27:03 CHANGE;;;;0;;0;29109.75;;;LE1785776400Z3NAMS;;",
+    "13:28:03 CHANGE;;;;0;;0;29118.00;;;LE1785776400Z3NAMS;;",
+    "13:31:06 CLOSEPOSITION;Sim103;MNQ 09-26;;;;;;;;;;",
+    "14:00:03 PLACE;Sim103;MNQ 09-26;BUY;8;MARKET;0;0;DAY;;LE1785780000NCHRME;;",
+    "14:00:03 PLACE;Sim103;MNQ 09-26;SELL;8;STOPMARKET;0;29178.75;DAY;LE1785780000NCHRMO;LE1785780000NCHRMS;;",
+    "14:00:03 PLACE;Sim103;MNQ 09-26;SELL;8;LIMIT;29887.75;0;DAY;LE1785780000NCHRMO;LE1785780000NCHRMT;;",
+    "14:06:03 CHANGE;;;;0;;0;29202.00;;;LE1785780000NCHRMS;;",
+    "14:11:03 CHANGE;;;;0;;0;29208.25;;;LE1785780000NCHRMS;;",
+    "14:27:04 CLOSEPOSITION;Sim103;MNQ 09-26;;;;;;;;;;",
+    "14:30:04 PLACE;Sim103;MNQ 09-26;BUY;7;MARKET;0;0;DAY;;LE1785781800UYM2ME;;",
+    "14:30:04 PLACE;Sim103;MNQ 09-26;SELL;7;STOPMARKET;0;29150.75;DAY;LE1785781800UYM2MO;LE1785781800UYM2MS;;",
+    "14:30:04 PLACE;Sim103;MNQ 09-26;SELL;7;LIMIT;29914.00;0;DAY;LE1785781800UYM2MO;LE1785781800UYM2MT;;",
+    "15:01:03 CLOSEPOSITION;Sim103;MNQ 09-26;;;;;;;;;;",
+    "15:30:02 PLACE;Sim103;MNQ 09-26;BUY;8;MARKET;0;0;DAY;;LE1785785400BA75ME;;",
+    "15:30:03 PLACE;Sim103;MNQ 09-26;SELL;8;STOPMARKET;0;29172.00;DAY;LE1785785400BA75MO;LE1785785400BA75MS;;",
+    "15:30:03 PLACE;Sim103;MNQ 09-26;SELL;8;LIMIT;29924.00;0;DAY;LE1785785400BA75MO;LE1785785400BA75MT;;",
+    "15:55:02 CLOSEPOSITION;Sim103;MNQ 09-26;;;;;;;;;;",
+    "15:55:02 CLOSEPOSITION;Sim103;MNQ 09-26;;;;;;;;;;"
+   ],
+   "trades": [
+    {
+     "entry_t": 1785769200,
+     "entry": "11:00:00",
+     "dir": 1,
+     "qty": 2,
+     "exit_kind": "time",
+     "booked": -209.8,
+     "broker": -209.8,
+     "bt_usd": -209.8,
+     "changes": 0
+    },
+    {
+     "entry_t": 1785772800,
+     "entry": "12:00:00",
+     "dir": 1,
+     "qty": 2,
+     "exit_kind": "time",
+     "booked": 189.2,
+     "broker": 189.2,
+     "bt_usd": 189.2,
+     "changes": 0
+    },
+    {
+     "entry_t": 1785776400,
+     "entry": "13:00:00",
+     "dir": 1,
+     "qty": 4,
+     "exit_kind": "time",
+     "booked": 500.4,
+     "broker": 500.4,
+     "bt_usd": 500.4,
+     "changes": 7
+    },
+    {
+     "entry_t": 1785780000,
+     "entry": "14:00:00",
+     "dir": 1,
+     "qty": 8,
+     "exit_kind": "stop",
+     "booked": -85.65,
+     "broker": -87.2,
+     "bt_usd": -85.65,
+     "changes": 2
+    },
+    {
+     "entry_t": 1785781800,
+     "entry": "14:30:00",
+     "dir": 1,
+     "qty": 7,
+     "exit_kind": "time",
+     "booked": 441.7,
+     "broker": 434.7,
+     "bt_usd": 441.7,
+     "changes": 0
+    },
+    {
+     "entry_t": 1785785400,
+     "entry": "15:30:00",
+     "dir": 1,
+     "qty": 8,
+     "exit_kind": "flat",
+     "booked": -235.2,
+     "broker": -239.2,
+     "bt_usd": -235.2,
+     "changes": 0
+    }
+   ],
+   "booked": 600.65,
+   "b_entries": [],
+   "c_state": {
+    "open_t": null,
+    "notified": []
+   },
+   "hedge_viol": [],
+   "heartbeat": {
+    "label": "BLITZ Sim103",
+    "real": "SIM",
+    "state": "Done for today: 6 paper trades.",
+    "eval": {
+     "start_balance": 25000.0,
+     "balance": 25600.65,
+     "profit": 600.65,
+     "today": 600.65,
+     "floor": 24000.0,
+     "room": 1600.65,
+     "target": 26500.0,
+     "to_target": 899.35,
+     "session": 1,
+     "status": "open",
+     "start": "2026-08-03",
+     "days_traded": 0,
+     "dll": 600.0,
+     "max_micros": 20,
+     "plan": "MFFU Builder 25K",
+     "price": 63.0,
+     "min_room": 249.56
+    },
+    "scorecard": {
+     "n": 6,
+     "win_pct": 50.0,
+     "avg_r": 0.2902,
+     "usd": 600.65,
+     "status": "warming"
+    }
+   },
+   "preflight": [
+    [
+     "config",
+     "good",
+     "BLITZ \u2192 Sim test on Sim103 (MFFU Builder 25K)"
+    ],
+    [
+     "own",
+     "good",
+     "Sim103 is neither Zlarior's (Sim101) nor ATLAS's (Sim102)"
+    ],
+    [
+     "nt",
+     "good",
+     "a connection is CONNECTED"
+    ],
+    [
+     "visible",
+     "good",
+     "Sim103 is a NinjaTrader Sim account (always there)"
+    ],
+    [
+     "allow",
+     "good",
+     "a Sim account needs no allowlist"
+    ],
+    [
+     "sim",
+     "good",
+     "BLITZ traded 6 times on Sim103 on 2026-08-03, every order taken and closed at NinjaTrader"
+    ],
+    [
+     "armed",
+     "info",
+     "Sim103 is a Sim account: no real money, nothing to arm"
+    ],
+    [
+     "bot",
+     "good",
+     "SIM Sim103: Done for today: 6 paper trades."
+    ],
+    [
+     "eval",
+     "good",
+     "session 1 of 10 (first session 2026-08-03): balance $25,600.65, room $1,600.65 to the floor, $899 to the pass"
+    ],
+    [
+     "size",
+     "good",
+     "7 micros at a 38-pt stop (today: 1.5 x the 5m ATR) on the $1,601 room (session 1); 7 at 40 pts, 4 at 60 pts, 3 at 90 pts"
+    ],
+    [
+     "hedge",
+     "good",
+     "Zlarior first, then ATLAS, then BLITZ: no BLITZ entry while Sim101 or Sim102 holds / enters / has a setup armed the othe"
+    ],
+    [
+     "contract",
+     "good",
+     "loaded: BLITZ pauses itself after 20+ trades under avg R -0.150 / PF 0.62 (the 2026 floor) or 6 losing days in a row; no"
+    ],
+    [
+     "calendar",
+     "good",
+     "Mon Aug 03 (today): normal session, BLITZ checks 11:00-15:30 ET, flat by 15:55"
+    ],
+    [
+     "feed",
+     "good",
+     "LE_BarFeed's MNQ bars are fresh"
+    ],
+    [
+     "day",
+     "info",
+     "BLITZ trades today: yesterday's 09:30-16:00 range 646 pts = 1.31 x its 14-day mean 494 pts (needs >= 0.8)"
+    ]
+   ],
+   "c_log": [
+    "1785786902 None [BLITZ Sim103] EXIT 8 NQ -> True",
+    "1785785403 None [BLITZ Sim103] BUY 8 NQ -> True",
+    "1785785402 None [BLITZ Sim103] BLITZ LONG at the 15:30 ET open: ROUTED MARKET 8 MNQ on Sim103 (2 s after the open), stop 29,172.00 (1.5 x 5m ATR), OCO limit 29,924.00 (20R); size 40% of the $1,836 room, <= $600, <= 90% of the $1,436 daily loss left: $74.03 a micro at a 35.82-pt stop -> 8",
+    "1785783663 None [BLITZ Sim103] EXIT 7 NQ -> True",
+    "1785781804 None [BLITZ Sim103] BUY 7 NQ -> True",
+    "1785781804 None [BLITZ Sim103] BLITZ LONG at the 14:30 ET open: ROUTED MARKET 7 MNQ on Sim103 (4 s after the open), stop 29,150.75 (1.5 x 5m ATR), OCO limit 29,914.00 (20R); size 40% of the $1,394 room, <= $600, <= 90% of the $994 daily loss left: $75.11 a micro at a 36.36-pt stop -> 7",
+    "1785781624 None [BLITZ Sim103] EXIT 8 NQ -> True",
+    "1785780663 None [BLITZ Sim103] MODIFY 8 NQ -> True",
+    "1785780363 None [BLITZ Sim103] MODIFY 8 NQ -> True",
+    "1785780003 None [BLITZ Sim103] BUY 8 NQ -> True",
+    "1785780003 None [BLITZ Sim103] BLITZ LONG at the 14:00 ET open: ROUTED MARKET 8 MNQ on Sim103 (3 s after the open), stop 29,178.75 (1.5 x 5m ATR), OCO limit 29,887.75 (20R); size 40% of the $1,480 room, <= $600, <= 90% of the $1,080 daily loss left: $69.94 a micro at a 33.77-pt stop -> 8",
+    "1785778266 None [BLITZ Sim103] EXIT 4 NQ -> True",
+    "1785778084 None [BLITZ Sim103] MODIFY 4 NQ -> True",
+    "1785778023 None [BLITZ Sim103] MODIFY 4 NQ -> True",
+    "1785777907 None [BLITZ Sim103] MODIFY 4 NQ -> True",
+    "1785777844 None [BLITZ Sim103] MODIFY 4 NQ -> True",
+    "1785777783 None [BLITZ Sim103] MODIFY 4 NQ -> True",
+    "1785777606 None [BLITZ Sim103] MODIFY 4 NQ -> True",
+    "1785777544 None [BLITZ Sim103] MODIFY 4 NQ -> True",
+    "1785776404 None [BLITZ Sim103] BUY 4 NQ -> True",
+    "1785776404 None [BLITZ Sim103] BLITZ LONG at the 13:00 ET open: ROUTED MARKET 4 MNQ on Sim103 (4 s after the open), stop 29,073.00 (1.5 x 5m ATR), OCO limit 30,014.75 (20R); size 40% of the $979 room, <= $600, <= 90% of the $579 daily loss left: $92.12 a micro at a 44.86-pt stop -> 4",
+    "1785774663 None [BLITZ Sim103] EXIT 2 NQ -> True",
+    "1785772803 None [BLITZ Sim103] BUY 2 NQ -> True",
+    "1785772803 None [BLITZ Sim103] BLITZ LONG at the 12:00 ET open: ROUTED MARKET 2 MNQ on Sim103 (3 s after the open), stop 29,023.25 (1.5 x 5m ATR), OCO limit 30,371.50 (20R); size 40% of the $790 room, <= $600, <= 90% of the $390 daily loss left: $130.81 a micro at a 64.21-pt stop -> 2",
+    "1785771064 None [BLITZ Sim103] EXIT 2 NQ -> True",
+    "1785769205 None [BLITZ Sim103] BUY 2 NQ -> True",
+    "1785769205 None [BLITZ Sim103] BLITZ LONG at the 11:00 ET open: ROUTED MARKET 2 MNQ on Sim103 (5 s after the open), stop 29,014.00 (1.5 x 5m ATR), OCO limit 30,737.75 (20R); size 40% of the $1,000 room, <= $600, <= 90% of the $600 daily loss left: $166.58 a micro at a 82.09-pt stop -> 2",
+    "1785769205 None [BLITZ Sim103] STARTUP RECONCILED on Sim103: NinjaTrader positions / orders and contract check out; entries allowed"
+   ]
+  },
+  {
+   "day": "2026-08-06",
+   "kind": "atlas_opp",
+   "what": "ATLAS (S/R NY reclaim) enters SHORT 11:15 while BLITZ is LONG: BLITZ closed first",
+   "bt": [
+    {
+     "sig_t": 1786028340,
+     "entry_t": 1786028400,
+     "exit_t": 1786029840,
+     "dir": 1,
+     "entry": 29951.5,
+     "stop": 29862.2807,
+     "exit": 29862.0307,
+     "exit_kind": "stop",
+     "risk_pts": 89.2193,
+     "r": -1.0,
+     "pnl_pm": -180.8385
+    },
+    {
+     "sig_t": 1786030140,
+     "entry_t": 1786030200,
+     "exit_t": 1786031760,
+     "dir": 1,
+     "entry": 29903.25,
+     "stop": 29814.5081,
+     "exit": 29814.2581,
+     "exit_kind": "stop",
+     "risk_pts": 88.7419,
+     "r": -1.0,
+     "pnl_pm": -179.8838
+    }
+   ],
+   "masked": [],
+   "expected": [
+    {
+     "sig_t": 1786028340,
+     "entry_t": 1786028400,
+     "exit_t": 1786029840,
+     "dir": 1,
+     "entry": 29951.5,
+     "stop": 29862.2807,
+     "exit": 29862.0307,
+     "exit_kind": "stop",
+     "risk_pts": 89.2193,
+     "r": -1.0,
+     "pnl_pm": -180.8385
+    },
+    {
+     "sig_t": 1786030140,
+     "entry_t": 1786030200,
+     "exit_t": 1786031760,
+     "dir": 1,
+     "entry": 29903.25,
+     "stop": 29814.5081,
+     "exit": 29814.2581,
+     "exit_kind": "stop",
+     "risk_pts": 88.7419,
+     "r": -1.0,
+     "pnl_pm": -179.8838
+    }
+   ],
+   "routed": [
+    {
+     "t": 1786028402,
+     "side": "buy",
+     "qty": 2,
+     "stop": 29862.25,
+     "target": 31735.75,
+     "entry": 29951.5,
+     "entry_t": 1786028400,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1786029302,
+     "side": "exit",
+     "qty": 2,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1786028400,
+     "reason": "HEDGE",
+     "pnl": -47.8,
+     "exit_t": 1786029302
+    },
+    {
+     "t": 1786030202,
+     "side": "buy",
+     "qty": 2,
+     "stop": 29814.5,
+     "target": 31678.0,
+     "entry": 29903.25,
+     "entry_t": 1786030200,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1786031762,
+     "side": "exit",
+     "qty": 2,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1786030200,
+     "reason": "STOP",
+     "pnl": -359.77,
+     "exit_t": 1786031760
+    }
+   ],
+   "oif_c": [
+    "11:00:02 PLACE;Sim103;MNQ 09-26;BUY;2;MARKET;0;0;DAY;;LE1786028400TBBHME;;",
+    "11:00:02 PLACE;Sim103;MNQ 09-26;SELL;2;STOPMARKET;0;29862.25;DAY;LE1786028400TBBHMO;LE1786028400TBBHMS;;",
+    "11:00:02 PLACE;Sim103;MNQ 09-26;SELL;2;LIMIT;31735.75;0;DAY;LE1786028400TBBHMO;LE1786028400TBBHMT;;",
+    "11:15:02 CLOSEPOSITION;Sim103;MNQ 09-26;;;;;;;;;;",
+    "11:30:02 PLACE;Sim103;MNQ 09-26;BUY;2;MARKET;0;0;DAY;;LE17860302009C6FME;;",
+    "11:30:02 PLACE;Sim103;MNQ 09-26;SELL;2;STOPMARKET;0;29814.50;DAY;LE17860302009C6FMO;LE17860302009C6FMS;;",
+    "11:30:02 PLACE;Sim103;MNQ 09-26;SELL;2;LIMIT;31678.00;0;DAY;LE17860302009C6FMO;LE17860302009C6FMT;;",
+    "11:56:02 CLOSEPOSITION;Sim103;MNQ 09-26;;;;;;;;;;"
+   ],
+   "trades": [
+    {
+     "entry_t": 1786028400,
+     "entry": "11:00:00",
+     "dir": 1,
+     "qty": 2,
+     "exit_kind": "HEDGE",
+     "booked": -47.8,
+     "broker": -46.8,
+     "bt_usd": -361.68,
+     "changes": 0,
+     "bt_exit": "stop"
+    },
+    {
+     "entry_t": 1786030200,
+     "entry": "11:30:00",
+     "dir": 1,
+     "qty": 2,
+     "exit_kind": "stop",
+     "booked": -359.77,
+     "broker": -359.8,
+     "bt_usd": -359.77,
+     "changes": 0
+    }
+   ],
+   "booked": -407.57,
+   "b_entries": [
+    [
+     "11:15:00",
+     "sell",
+     5
+    ]
+   ],
+   "c_state": {
+    "open_t": null,
+    "notified": []
+   },
+   "hedge_viol": [],
+   "heartbeat": {
+    "label": "BLITZ Sim103",
+    "real": "SIM",
+    "state": "Next check 12:30 ET: a 1m close above 29,853.12 = PAPER LONG, below 29,406.38 = PAPER SHORT (09:30 open 29,629.75 +/- 223.4 pts).",
+    "eval": {
+     "start_balance": 25000.0,
+     "balance": 24592.43,
+     "profit": -407.57,
+     "today": -407.57,
+     "floor": 24000.0,
+     "room": 592.43,
+     "target": 26500.0,
+     "to_target": 1907.57,
+     "session": 1,
+     "status": "open",
+     "start": "2026-08-06",
+     "days_traded": 0,
+     "dll": 600.0,
+     "max_micros": 20,
+     "plan": "MFFU Builder 25K",
+     "price": 63.0,
+     "min_room": 249.56
+    },
+    "scorecard": {
+     "n": 2,
+     "win_pct": 0.0,
+     "avg_r": -0.5661,
+     "usd": -407.57,
+     "status": "warming"
+    }
+   },
+   "preflight": [
+    [
+     "config",
+     "good",
+     "BLITZ \u2192 Sim test on Sim103 (MFFU Builder 25K)"
+    ],
+    [
+     "own",
+     "good",
+     "Sim103 is neither Zlarior's (Sim101) nor ATLAS's (Sim102)"
+    ],
+    [
+     "nt",
+     "good",
+     "a connection is CONNECTED"
+    ],
+    [
+     "visible",
+     "good",
+     "Sim103 is a NinjaTrader Sim account (always there)"
+    ],
+    [
+     "allow",
+     "good",
+     "a Sim account needs no allowlist"
+    ],
+    [
+     "sim",
+     "good",
+     "BLITZ traded 2 times on Sim103 on 2026-08-06, every order taken and closed at NinjaTrader; NinjaTrader took ATLAS's orde"
+    ],
+    [
+     "armed",
+     "info",
+     "Sim103 is a Sim account: no real money, nothing to arm"
+    ],
+    [
+     "bot",
+     "good",
+     "SIM Sim103: Next check 12:30 ET: a 1m close above 29,853.12 = PAPER LONG, below 29,406.38 = PAPER SHORT (09:30 open 29,6"
+    ],
+    [
+     "eval",
+     "good",
+     "session 1 of 10 (first session 2026-08-06): balance $24,592.43, room $592.43 to the floor, $1,908 to the pass"
+    ],
+    [
+     "size",
+     "info",
+     "0 micros at a 90-pt stop (today: 1.5 x the 5m ATR) on the $592 room (session 1); 2 at 40 pts, 1 at 60 pts, 0 at 90 pts, "
+    ],
+    [
+     "hedge",
+     "good",
+     "Zlarior first, then ATLAS, then BLITZ: no BLITZ entry while Sim101 or Sim102 holds / enters / has a setup armed the othe"
+    ],
+    [
+     "contract",
+     "good",
+     "loaded: BLITZ pauses itself after 20+ trades under avg R -0.150 / PF 0.62 (the 2026 floor) or 6 losing days in a row; no"
+    ],
+    [
+     "calendar",
+     "good",
+     "Thu Aug 06 (today): normal session, BLITZ checks 11:00-15:30 ET, flat by 15:55"
+    ],
+    [
+     "feed",
+     "good",
+     "LE_BarFeed's MNQ bars are fresh"
+    ],
+    [
+     "day",
+     "info",
+     "BLITZ trades today: yesterday's 09:30-16:00 range 481 pts = 0.91 x its 14-day mean 531 pts (needs >= 0.8)"
+    ]
+   ],
+   "c_log": [
+    "1786031762 None [BLITZ Sim103] EXIT 2 NQ -> True",
+    "1786030202 None [BLITZ Sim103] BUY 2 NQ -> True",
+    "1786030202 None [BLITZ Sim103] BLITZ LONG at the 11:30 ET open: ROUTED MARKET 2 MNQ on Sim103 (2 s after the open), stop 29,814.50 (1.5 x 5m ATR), OCO limit 31,678.00 (20R); size 40% of the $952 room, <= $600, <= 90% of the $552 daily loss left: $179.88 a micro at a 88.74-pt stop -> 2",
+    "1786029302 None [BLITZ Sim103] EXIT 2 NQ -> True",
+    "1786029302 None [BLITZ Sim103] BLITZ 11:00 ET: HEDGE - flatten 2 MNQ at market (~29,940.75)",
+    "1786029302 None [BLITZ Sim103] no hedging: ATLAS enters SHORT at 11:15 ET while BLITZ holds LONG on Sim103: BLITZ is closed at market before ATLAS's order",
+    "1786028402 None [BLITZ Sim103] BUY 2 NQ -> True",
+    "1786028402 None [BLITZ Sim103] BLITZ LONG at the 11:00 ET open: ROUTED MARKET 2 MNQ on Sim103 (2 s after the open), stop 29,862.25 (1.5 x 5m ATR), OCO limit 31,735.75 (20R); size 40% of the $1,000 room, <= $600, <= 90% of the $600 daily loss left: $180.84 a micro at a 89.22-pt stop -> 2",
+    "1786028402 None [BLITZ Sim103] STARTUP RECONCILED on Sim103: NinjaTrader positions / orders and contract check out; entries allowed",
+    "1786025710 None [BLITZ Sim103] warmed on 34257 1m bars (14 sessions of the noise band)",
+    "1786025709 None [BLITZ Sim103] SIM Sim103 MFFU Builder 25K, BLITZ scalper, eval from 2026-08-06 (balance $25,000, room $1,000): ready"
+   ]
+  },
+  {
+   "day": "2026-08-28",
+   "kind": "refused",
+   "what": "NinjaTrader REFUSES BLITZ's first entry: never booked, nothing left working",
+   "bt": [
+    {
+     "sig_t": 1787929140,
+     "entry_t": 1787929200,
+     "exit_t": 1787931060,
+     "dir": 1,
+     "entry": 30091.5,
+     "stop": 30021.3515,
+     "exit": 30074.25,
+     "exit_kind": "time",
+     "risk_pts": 70.1485,
+     "r": -0.2551,
+     "pnl_pm": -36.4
+    },
+    {
+     "sig_t": 1787934540,
+     "entry_t": 1787934600,
+     "exit_t": 1787936460,
+     "dir": -1,
+     "entry": 29783.0,
+     "stop": 29857.8572,
+     "exit": 29751.75,
+     "exit_kind": "time",
+     "risk_pts": 74.8572,
+     "r": 0.3984,
+     "pnl_pm": 60.6
+    },
+    {
+     "sig_t": 1787938140,
+     "entry_t": 1787938200,
+     "exit_t": 1787940060,
+     "dir": -1,
+     "entry": 29764.5,
+     "stop": 29830.6266,
+     "exit": 29803.25,
+     "exit_kind": "time",
+     "risk_pts": 66.1266,
+     "r": -0.5897,
+     "pnl_pm": -79.4
+    },
+    {
+     "sig_t": 1787941740,
+     "entry_t": 1787941800,
+     "exit_t": 1787943660,
+     "dir": -1,
+     "entry": 29777.75,
+     "stop": 29831.4449,
+     "exit": 29739.75,
+     "exit_kind": "time",
+     "risk_pts": 53.6949,
+     "r": 0.6749,
+     "pnl_pm": 74.1
+    },
+    {
+     "sig_t": 1787945340,
+     "entry_t": 1787945400,
+     "exit_t": 1787946900,
+     "dir": -1,
+     "entry": 29793.0,
+     "stop": 29836.3496,
+     "exit": 29786.25,
+     "exit_kind": "flat",
+     "risk_pts": 43.3496,
+     "r": 0.1302,
+     "pnl_pm": 11.6
+    }
+   ],
+   "masked": [],
+   "expected": [
+    {
+     "sig_t": 1787929140,
+     "entry_t": 1787929200,
+     "exit_t": 1787931060,
+     "dir": 1,
+     "entry": 30091.5,
+     "stop": 30021.3515,
+     "exit": 30074.25,
+     "exit_kind": "time",
+     "risk_pts": 70.1485,
+     "r": -0.2551,
+     "pnl_pm": -36.4
+    },
+    {
+     "sig_t": 1787934540,
+     "entry_t": 1787934600,
+     "exit_t": 1787936460,
+     "dir": -1,
+     "entry": 29783.0,
+     "stop": 29857.8572,
+     "exit": 29751.75,
+     "exit_kind": "time",
+     "risk_pts": 74.8572,
+     "r": 0.3984,
+     "pnl_pm": 60.6
+    }
+   ],
+   "routed": [
+    {
+     "t": 1787929204,
+     "side": "buy",
+     "qty": 2,
+     "stop": 30021.25,
+     "target": 31494.25,
+     "entry": 30091.5,
+     "entry_t": 1787929200,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1787934604,
+     "side": "sell",
+     "qty": 2,
+     "stop": 29857.75,
+     "target": 28286.0,
+     "entry": 29783.0,
+     "entry_t": 1787934600,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1787936463,
+     "side": "exit",
+     "qty": 2,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1787934600,
+     "reason": "TIME",
+     "pnl": 121.2,
+     "exit_t": 1787936460
+    }
+   ],
+   "oif_c": [
+    "11:00:04 PLACE;Sim103;MNQ 09-26;BUY;2;MARKET;0;0;DAY;;LE1787929200PKE3ME;;",
+    "12:30:03 PLACE;Sim103;MNQ 09-26;SELL;2;MARKET;0;0;DAY;;LE17879346008453ME;;",
+    "12:30:03 PLACE;Sim103;MNQ 09-26;BUY;2;STOPMARKET;0;29857.75;DAY;LE17879346008453MO;LE17879346008453MS;;",
+    "12:30:03 PLACE;Sim103;MNQ 09-26;BUY;2;LIMIT;28286.00;0;DAY;LE17879346008453MO;LE17879346008453MT;;",
+    "13:01:03 CLOSEPOSITION;Sim103;MNQ 09-26;;;;;;;;;;"
+   ],
+   "trades": [
+    {
+     "entry_t": 1787934600,
+     "entry": "12:30:00",
+     "dir": -1,
+     "qty": 2,
+     "exit_kind": "time",
+     "booked": 121.2,
+     "broker": 116.2,
+     "bt_usd": 121.2,
+     "changes": 0
+    }
+   ],
+   "booked": 121.2,
+   "b_entries": [],
+   "c_state": {
+    "open_t": null,
+    "notified": [
+     "acctc:notplaced:1787929200"
+    ]
+   },
+   "hedge_viol": [],
+   "heartbeat": {
+    "label": "BLITZ Sim103",
+    "real": "SIM",
+    "state": "Next check 13:30 ET: a 1m close above 30,044.50 = PAPER LONG, below 29,802.00 = PAPER SHORT (09:30 open 29,923.25 +/- 121.3 pts).",
+    "eval": {
+     "start_balance": 25000.0,
+     "balance": 25121.2,
+     "profit": 121.2,
+     "today": 121.2,
+     "floor": 24000.0,
+     "room": 1121.2,
+     "target": 26500.0,
+     "to_target": 1378.8,
+     "session": 1,
+     "status": "open",
+     "start": "2026-08-28",
+     "days_traded": 0,
+     "dll": 600.0,
+     "max_micros": 20,
+     "plan": "MFFU Builder 25K",
+     "price": 63.0,
+     "min_room": 249.56
+    },
+    "scorecard": {
+     "n": 1,
+     "win_pct": 100.0,
+     "avg_r": 0.3984,
+     "usd": 121.2,
+     "status": "warming"
+    }
+   },
+   "preflight": [
+    [
+     "config",
+     "good",
+     "BLITZ \u2192 Sim test on Sim103 (MFFU Builder 25K)"
+    ],
+    [
+     "own",
+     "good",
+     "Sim103 is neither Zlarior's (Sim101) nor ATLAS's (Sim102)"
+    ],
+    [
+     "nt",
+     "good",
+     "a connection is CONNECTED"
+    ],
+    [
+     "visible",
+     "good",
+     "Sim103 is a NinjaTrader Sim account (always there)"
+    ],
+    [
+     "allow",
+     "good",
+     "a Sim account needs no allowlist"
+    ],
+    [
+     "sim",
+     "good",
+     "BLITZ traded 1 time on Sim103 on 2026-08-28, every order taken and closed at NinjaTrader"
+    ],
+    [
+     "armed",
+     "info",
+     "Sim103 is a Sim account: no real money, nothing to arm"
+    ],
+    [
+     "bot",
+     "good",
+     "SIM Sim103: Next check 13:30 ET: a 1m close above 30,044.50 = PAPER LONG, below 29,802.00 = PAPER SHORT (09:30 open 29,9"
+    ],
+    [
+     "eval",
+     "good",
+     "session 1 of 10 (first session 2026-08-28): balance $25,121.20, room $1,121.20 to the floor, $1,379 to the pass"
+    ],
+    [
+     "size",
+     "good",
+     "3 micros at a 71-pt stop (today: 1.5 x the 5m ATR) on the $1,121 room (session 1); 5 at 40 pts, 3 at 60 pts, 2 at 90 pts"
+    ],
+    [
+     "hedge",
+     "good",
+     "Zlarior first, then ATLAS, then BLITZ: no BLITZ entry while Sim101 or Sim102 holds / enters / has a setup armed the othe"
+    ],
+    [
+     "contract",
+     "good",
+     "loaded: BLITZ pauses itself after 20+ trades under avg R -0.150 / PF 0.62 (the 2026 floor) or 6 losing days in a row; no"
+    ],
+    [
+     "calendar",
+     "good",
+     "Fri Aug 28 (today): normal session, BLITZ checks 11:00-15:30 ET, flat by 15:55"
+    ],
+    [
+     "feed",
+     "good",
+     "LE_BarFeed's MNQ bars are fresh"
+    ],
+    [
+     "day",
+     "info",
+     "BLITZ trades today: yesterday's 09:30-16:00 range 281 pts = 1.04 x its 14-day mean 270 pts (needs >= 0.8)"
+    ]
+   ],
+   "c_log": [
+    "1787936463 None [BLITZ Sim103] EXIT 2 NQ -> True",
+    "1787934604 None [BLITZ Sim103] SELL 2 NQ -> True",
+    "1787934603 None [BLITZ Sim103] BLITZ SHORT at the 12:30 ET open: ROUTED MARKET 2 MNQ on Sim103 (3 s after the open), stop 29,857.75 (1.5 x 5m ATR), OCO limit 28,286.00 (20R); size 40% of the $1,000 room, <= $600, <= 90% of the $600 daily loss left: $152.11 a micro at a 74.86-pt stop -> 2",
+    "1787929204 None [BLITZ Sim103] BLITZ LONG 2 MNQ at 11:00 ET was NOT PLACED on Sim103: MNQ 09-26: entry REJECTED. Nothing is open on account C; BLITZ waits for its next signal.",
+    "1787929204 None [BLITZ Sim103] BUY 2 NQ -> False (MNQ 09-26: entry REJECTED)",
+    "1787929204 None [BLITZ Sim103] BLITZ LONG at the 11:00 ET open: ROUTED MARKET 2 MNQ on Sim103 (4 s after the open), stop 30,021.25 (1.5 x 5m ATR), OCO limit 31,494.25 (20R); size 40% of the $1,000 room, <= $600, <= 90% of the $600 daily loss left: $142.70 a micro at a 70.15-pt stop -> 2",
+    "1787929204 None [BLITZ Sim103] STARTUP RECONCILED on Sim103: NinjaTrader positions / orders and contract check out; entries allowed",
+    "1787928617 None [BLITZ Sim103] warmed on 34498 1m bars (14 sessions of the noise band)",
+    "1787928612 None [BLITZ Sim103] SIM Sim103 MFFU Builder 25K, BLITZ scalper, eval from 2026-08-28 (balance $25,000, room $1,000): ready"
+   ]
+  },
+  {
+   "day": "2026-10-15",
+   "kind": "early_1300",
+   "what": "CME early close 13:00 (injected): BLITZ's 12:30 trade flat at 12:55, no bars after",
+   "bt": [
+    {
+     "sig_t": 1792076340,
+     "entry_t": 1792076400,
+     "exit_t": 1792078260,
+     "dir": 1,
+     "entry": 29971.25,
+     "stop": 29872.7114,
+     "exit": 29970.5,
+     "exit_kind": "time",
+     "risk_pts": 98.5386,
+     "r": -0.017,
+     "pnl_pm": -3.4
+    },
+    {
+     "sig_t": 1792079940,
+     "entry_t": 1792080000,
+     "exit_t": 1792081560,
+     "dir": 1,
+     "entry": 30013.25,
+     "stop": 29925.9368,
+     "exit": 29925.6868,
+     "exit_kind": "stop",
+     "risk_pts": 87.3132,
+     "r": -1.0,
+     "pnl_pm": -177.0264
+    },
+    {
+     "sig_t": 1792081740,
+     "entry_t": 1792081800,
+     "exit_t": 1792083660,
+     "dir": 1,
+     "entry": 29926.25,
+     "stop": 29852.3964,
+     "exit": 29951.75,
+     "exit_kind": "time",
+     "risk_pts": 73.8536,
+     "r": 0.3271,
+     "pnl_pm": 49.1
+    },
+    {
+     "sig_t": 1792085340,
+     "entry_t": 1792085400,
+     "exit_t": 1792087260,
+     "dir": 1,
+     "entry": 30000.25,
+     "stop": 29941.9884,
+     "exit": 30046.0,
+     "exit_kind": "time",
+     "risk_pts": 58.2616,
+     "r": 0.7534,
+     "pnl_pm": 89.6
+    },
+    {
+     "sig_t": 1792088940,
+     "entry_t": 1792089000,
+     "exit_t": 1792090860,
+     "dir": 1,
+     "entry": 29968.75,
+     "stop": 29916.2907,
+     "exit": 30054.5,
+     "exit_kind": "time",
+     "risk_pts": 52.4593,
+     "r": 1.5803,
+     "pnl_pm": 169.6
+    },
+    {
+     "sig_t": 1792092540,
+     "entry_t": 1792092600,
+     "exit_t": 1792093920,
+     "dir": 1,
+     "entry": 30135.5,
+     "stop": 30085.2876,
+     "exit": 30121.1814,
+     "exit_kind": "stop",
+     "risk_pts": 50.2124,
+     "r": -0.297,
+     "pnl_pm": -30.5372
+    }
+   ],
+   "masked": [],
+   "expected": [
+    {
+     "sig_t": 1792076340,
+     "entry_t": 1792076400,
+     "exit_t": 1792078260,
+     "dir": 1,
+     "entry": 29971.25,
+     "stop": 29872.7114,
+     "exit": 29970.5,
+     "exit_kind": "time",
+     "risk_pts": 98.5386,
+     "r": -0.017,
+     "pnl_pm": -3.4
+    },
+    {
+     "sig_t": 1792079940,
+     "entry_t": 1792080000,
+     "exit_t": 1792081560,
+     "dir": 1,
+     "entry": 30013.25,
+     "stop": 29925.9368,
+     "exit": 29925.6868,
+     "exit_kind": "stop",
+     "risk_pts": 87.3132,
+     "r": -1.0,
+     "pnl_pm": -177.0264
+    },
+    {
+     "sig_t": 1792081740,
+     "entry_t": 1792081800,
+     "exit_t": 1792083660,
+     "dir": 1,
+     "entry": 29926.25,
+     "stop": 29852.3964,
+     "exit": 29951.75,
+     "exit_kind": "time",
+     "risk_pts": 73.8536,
+     "r": 0.3271,
+     "pnl_pm": 49.1
+    }
+   ],
+   "routed": [
+    {
+     "t": 1792076403,
+     "side": "buy",
+     "qty": 2,
+     "stop": 29872.75,
+     "target": 31942.0,
+     "entry": 29971.25,
+     "entry_t": 1792076400,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792078266,
+     "side": "exit",
+     "qty": 2,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792076400,
+     "reason": "TIME",
+     "pnl": -6.8,
+     "exit_t": 1792078260
+    },
+    {
+     "t": 1792080003,
+     "side": "buy",
+     "qty": 2,
+     "stop": 29926.0,
+     "target": 31759.5,
+     "entry": 30013.25,
+     "entry_t": 1792080000,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792081564,
+     "side": "exit",
+     "qty": 2,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792080000,
+     "reason": "STOP",
+     "pnl": -354.05,
+     "exit_t": 1792081560
+    },
+    {
+     "t": 1792081804,
+     "side": "buy",
+     "qty": 1,
+     "stop": 29852.5,
+     "target": 31403.25,
+     "entry": 29926.25,
+     "entry_t": 1792081800,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792083306,
+     "side": "exit",
+     "qty": 1,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792081800,
+     "reason": "TIME",
+     "pnl": 35.1,
+     "exit_t": 1792083302
+    }
+   ],
+   "oif_c": [
+    "11:00:03 PLACE;Sim103;MNQ 12-26;BUY;2;MARKET;0;0;DAY;;LE1792076400SXNEME;;",
+    "11:00:03 PLACE;Sim103;MNQ 12-26;SELL;2;STOPMARKET;0;29872.75;DAY;LE1792076400SXNEMO;LE1792076400SXNEMS;;",
+    "11:00:03 PLACE;Sim103;MNQ 12-26;SELL;2;LIMIT;31942.00;0;DAY;LE1792076400SXNEMO;LE1792076400SXNEMT;;",
+    "11:31:06 CLOSEPOSITION;Sim103;MNQ 12-26;;;;;;;;;;",
+    "12:00:03 PLACE;Sim103;MNQ 12-26;BUY;2;MARKET;0;0;DAY;;LE1792080000WVCJME;;",
+    "12:00:03 PLACE;Sim103;MNQ 12-26;SELL;2;STOPMARKET;0;29926.00;DAY;LE1792080000WVCJMO;LE1792080000WVCJMS;;",
+    "12:00:03 PLACE;Sim103;MNQ 12-26;SELL;2;LIMIT;31759.50;0;DAY;LE1792080000WVCJMO;LE1792080000WVCJMT;;",
+    "12:26:04 CLOSEPOSITION;Sim103;MNQ 12-26;;;;;;;;;;",
+    "12:30:04 PLACE;Sim103;MNQ 12-26;BUY;1;MARKET;0;0;DAY;;LE17920818007A79ME;;",
+    "12:30:04 PLACE;Sim103;MNQ 12-26;SELL;1;STOPMARKET;0;29852.50;DAY;LE17920818007A79MO;LE17920818007A79MS;;",
+    "12:30:04 PLACE;Sim103;MNQ 12-26;SELL;1;LIMIT;31403.25;0;DAY;LE17920818007A79MO;LE17920818007A79MT;;",
+    "12:55:02 CLOSEPOSITION;Sim103;MNQ 12-26;;;;;;;;;;",
+    "12:55:06 CLOSEPOSITION;Sim103;MNQ 12-26;;;;;;;;;;"
+   ],
+   "trades": [
+    {
+     "entry_t": 1792076400,
+     "entry": "11:00:00",
+     "dir": 1,
+     "qty": 2,
+     "exit_kind": "time",
+     "booked": -6.8,
+     "broker": -6.8,
+     "bt_usd": -6.8,
+     "changes": 0
+    },
+    {
+     "entry_t": 1792080000,
+     "entry": "12:00:00",
+     "dir": 1,
+     "qty": 2,
+     "exit_kind": "stop",
+     "booked": -354.05,
+     "broker": -353.8,
+     "bt_usd": -354.05,
+     "changes": 0
+    },
+    {
+     "entry_t": 1792081800,
+     "entry": "12:30:00",
+     "dir": 1,
+     "qty": 1,
+     "exit_kind": "time",
+     "booked": 35.1,
+     "broker": 35.1,
+     "bt_usd": 49.1,
+     "changes": 0
+    }
+   ],
+   "booked": -325.75,
+   "b_entries": [],
+   "c_state": {
+    "open_t": null,
+    "notified": []
+   },
+   "hedge_viol": [],
+   "heartbeat": {
+    "label": "BLITZ Sim103",
+    "real": "SIM",
+    "state": "No new 1m bar since 13:00 ET: no paper entries until the bars are back.",
+    "eval": {
+     "start_balance": 25000.0,
+     "balance": 24674.25,
+     "profit": -325.75,
+     "today": -325.75,
+     "floor": 24000.0,
+     "room": 674.25,
+     "target": 26500.0,
+     "to_target": 1825.75,
+     "session": 1,
+     "status": "open",
+     "start": "2026-10-15",
+     "days_traded": 0,
+     "dll": 600.0,
+     "max_micros": 20,
+     "plan": "MFFU Builder 25K",
+     "price": 63.0,
+     "min_room": 249.56
+    },
+    "scorecard": {
+     "n": 3,
+     "win_pct": 33.3,
+     "avg_r": -0.2611,
+     "usd": -325.75,
+     "status": "warming"
+    }
+   },
+   "preflight": [
+    [
+     "config",
+     "good",
+     "BLITZ \u2192 Sim test on Sim103 (MFFU Builder 25K)"
+    ],
+    [
+     "own",
+     "good",
+     "Sim103 is neither Zlarior's (Sim101) nor ATLAS's (Sim102)"
+    ],
+    [
+     "nt",
+     "good",
+     "a connection is CONNECTED"
+    ],
+    [
+     "visible",
+     "good",
+     "Sim103 is a NinjaTrader Sim account (always there)"
+    ],
+    [
+     "allow",
+     "good",
+     "a Sim account needs no allowlist"
+    ],
+    [
+     "sim",
+     "good",
+     "BLITZ traded 3 times on Sim103 on 2026-10-15, every order taken and closed at NinjaTrader"
+    ],
+    [
+     "armed",
+     "info",
+     "Sim103 is a Sim account: no real money, nothing to arm"
+    ],
+    [
+     "bot",
+     "good",
+     "SIM Sim103: No new 1m bar since 13:00 ET: no paper entries until the bars are back."
+    ],
+    [
+     "eval",
+     "good",
+     "session 1 of 10 (first session 2026-10-15): balance $24,674.25, room $674.25 to the floor, $1,826 to the pass"
+    ],
+    [
+     "size",
+     "good",
+     "1 micro at a 67-pt stop (today: 1.5 x the 5m ATR) on the $674 room (session 1); 2 at 40 pts, 2 at 60 pts, 1 at 90 pts, 0"
+    ],
+    [
+     "hedge",
+     "good",
+     "Zlarior first, then ATLAS, then BLITZ: no BLITZ entry while Sim101 or Sim102 holds / enters / has a setup armed the othe"
+    ],
+    [
+     "contract",
+     "good",
+     "loaded: BLITZ pauses itself after 20+ trades under avg R -0.150 / PF 0.62 (the 2026 floor) or 6 losing days in a row; no"
+    ],
+    [
+     "calendar",
+     "good",
+     "Thu Oct 15: early close 13:00 ET: BLITZ flat by 12:55, no entry after 12:45"
+    ],
+    [
+     "feed",
+     "bad",
+     "MNQ_5m.csv is stale: last bar Thu 12:55 ET, 20 min ago (NinjaTrader closed, disconnected, or the chart was removed?)"
+    ],
+    [
+     "day",
+     "info",
+     "BLITZ trades today: yesterday's 09:30-16:00 range 583 pts = 1.89 x its 14-day mean 308 pts (needs >= 0.8)"
+    ]
+   ],
+   "c_log": [
+    "1792083306 None [BLITZ Sim103] EXIT 1 NQ -> True",
+    "1792083306 None [BLITZ Sim103] BLITZ 12:30 ET: TIME - flatten 1 MNQ at market (~29,945.00)",
+    "1792081804 None [BLITZ Sim103] BUY 1 NQ -> True",
+    "1792081804 None [BLITZ Sim103] BLITZ LONG at the 12:30 ET open: ROUTED MARKET 1 MNQ on Sim103 (4 s after the open), stop 29,852.50 (1.5 x 5m ATR), OCO limit 31,403.25 (20R); size 40% of the $639 room, <= $600, <= 90% of the $239 daily loss left: $150.11 a micro at a 73.85-pt stop -> 1",
+    "1792081564 None [BLITZ Sim103] EXIT 2 NQ -> True",
+    "1792080003 None [BLITZ Sim103] BUY 2 NQ -> True",
+    "1792080003 None [BLITZ Sim103] BLITZ LONG at the 12:00 ET open: ROUTED MARKET 2 MNQ on Sim103 (3 s after the open), stop 29,926.00 (1.5 x 5m ATR), OCO limit 31,759.50 (20R); size 40% of the $993 room, <= $600, <= 90% of the $593 daily loss left: $177.03 a micro at a 87.31-pt stop -> 2",
+    "1792078266 None [BLITZ Sim103] EXIT 2 NQ -> True",
+    "1792076403 None [BLITZ Sim103] BUY 2 NQ -> True",
+    "1792076403 None [BLITZ Sim103] BLITZ LONG at the 11:00 ET open: ROUTED MARKET 2 MNQ on Sim103 (3 s after the open), stop 29,872.75 (1.5 x 5m ATR), OCO limit 31,942.00 (20R); size 40% of the $1,000 room, <= $600, <= 90% of the $600 daily loss left: $199.48 a micro at a 98.54-pt stop -> 2",
+    "1792076403 None [BLITZ Sim103] STARTUP RECONCILED on Sim103: NinjaTrader positions / orders and contract check out; entries allowed",
+    "1792075822 None [BLITZ Sim103] warmed on 34498 1m bars (14 sessions of the noise band)",
+    "1792075815 None [BLITZ Sim103] SIM Sim103 MFFU Builder 25K, BLITZ scalper, eval from 2026-10-15 (balance $25,000, room $1,000): ready"
+   ]
+  },
+  {
+   "day": "2026-10-16",
+   "kind": "restart",
+   "what": "server RESTART 6 min into BLITZ's 11:00 trade: no duplicate entry, managed after",
+   "bt": [
+    {
+     "sig_t": 1792162740,
+     "entry_t": 1792162800,
+     "exit_t": 1792164660,
+     "dir": -1,
+     "entry": 29861.75,
+     "stop": 29947.7674,
+     "exit": 29725.25,
+     "exit_kind": "time",
+     "risk_pts": 86.0174,
+     "r": 1.5542,
+     "pnl_pm": 271.1
+    },
+    {
+     "sig_t": 1792166340,
+     "entry_t": 1792166400,
+     "exit_t": 1792168260,
+     "dir": -1,
+     "entry": 29658.5,
+     "stop": 29737.3395,
+     "exit": 29655.0,
+     "exit_kind": "time",
+     "risk_pts": 78.8395,
+     "r": 0.0319,
+     "pnl_pm": 5.1
+    },
+    {
+     "sig_t": 1792169940,
+     "entry_t": 1792170000,
+     "exit_t": 1792171860,
+     "dir": -1,
+     "entry": 29614.25,
+     "stop": 29680.6404,
+     "exit": 29503.75,
+     "exit_kind": "time",
+     "risk_pts": 66.3904,
+     "r": 1.6208,
+     "pnl_pm": 219.1
+    },
+    {
+     "sig_t": 1792173540,
+     "entry_t": 1792173600,
+     "exit_t": 1792175460,
+     "dir": -1,
+     "entry": 29452.0,
+     "stop": 29528.6203,
+     "exit": 29389.75,
+     "exit_kind": "time",
+     "risk_pts": 76.6203,
+     "r": 0.7877,
+     "pnl_pm": 122.6
+    },
+    {
+     "sig_t": 1792177140,
+     "entry_t": 1792177200,
+     "exit_t": 1792178040,
+     "dir": -1,
+     "entry": 29358.75,
+     "stop": 29432.108,
+     "exit": 29379.037,
+     "exit_kind": "stop",
+     "risk_pts": 73.358,
+     "r": -0.2848,
+     "pnl_pm": -42.474
+    },
+    {
+     "sig_t": 1792178940,
+     "entry_t": 1792179000,
+     "exit_t": 1792180500,
+     "dir": -1,
+     "entry": 29412.75,
+     "stop": 29494.233,
+     "exit": 29364.5,
+     "exit_kind": "flat",
+     "risk_pts": 81.483,
+     "r": 0.5721,
+     "pnl_pm": 94.6
+    }
+   ],
+   "restart": {
+    "t": "11:06:02",
+    "open_t": 1792162800,
+    "restored": "[BLITZ Sim103] restored: open BLITZ SHORT 2 MNQ from 11:00 ET (managed to its exit)",
+    "market_orders_before": 1
+   },
+   "masked": [],
+   "expected": [
+    {
+     "sig_t": 1792162740,
+     "entry_t": 1792162800,
+     "exit_t": 1792164660,
+     "dir": -1,
+     "entry": 29861.75,
+     "stop": 29947.7674,
+     "exit": 29725.25,
+     "exit_kind": "time",
+     "risk_pts": 86.0174,
+     "r": 1.5542,
+     "pnl_pm": 271.1
+    },
+    {
+     "sig_t": 1792166340,
+     "entry_t": 1792166400,
+     "exit_t": 1792168260,
+     "dir": -1,
+     "entry": 29658.5,
+     "stop": 29737.3395,
+     "exit": 29655.0,
+     "exit_kind": "time",
+     "risk_pts": 78.8395,
+     "r": 0.0319,
+     "pnl_pm": 5.1
+    },
+    {
+     "sig_t": 1792169940,
+     "entry_t": 1792170000,
+     "exit_t": 1792171860,
+     "dir": -1,
+     "entry": 29614.25,
+     "stop": 29680.6404,
+     "exit": 29503.75,
+     "exit_kind": "time",
+     "risk_pts": 66.3904,
+     "r": 1.6208,
+     "pnl_pm": 219.1
+    }
+   ],
+   "routed": [
+    {
+     "t": 1792162803,
+     "side": "sell",
+     "qty": 2,
+     "stop": 29947.75,
+     "target": 28141.5,
+     "entry": 29861.75,
+     "entry_t": 1792162800,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792163164,
+     "side": "modify",
+     "qty": 2,
+     "stop": 29890.0,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792162800,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792163226,
+     "side": "modify",
+     "qty": 2,
+     "stop": 29860.0,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792162800,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792163284,
+     "side": "modify",
+     "qty": 2,
+     "stop": 29851.5,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792162800,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792163345,
+     "side": "modify",
+     "qty": 2,
+     "stop": 29843.5,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792162800,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792163404,
+     "side": "modify",
+     "qty": 2,
+     "stop": 29830.0,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792162800,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792163465,
+     "side": "modify",
+     "qty": 2,
+     "stop": 29810.0,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792162800,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792164124,
+     "side": "modify",
+     "qty": 2,
+     "stop": 29805.0,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792162800,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792164184,
+     "side": "modify",
+     "qty": 2,
+     "stop": 29774.0,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792162800,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792164663,
+     "side": "exit",
+     "qty": 2,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792162800,
+     "reason": "TIME",
+     "pnl": 542.2,
+     "exit_t": 1792164660
+    },
+    {
+     "t": 1792166404,
+     "side": "sell",
+     "qty": 3,
+     "stop": 29737.25,
+     "target": 28081.75,
+     "entry": 29658.5,
+     "entry_t": 1792166400,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792168262,
+     "side": "exit",
+     "qty": 3,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792166400,
+     "reason": "TIME",
+     "pnl": 15.3,
+     "exit_t": 1792168260
+    },
+    {
+     "t": 1792170003,
+     "side": "sell",
+     "qty": 4,
+     "stop": 29680.75,
+     "target": 28286.5,
+     "entry": 29614.25,
+     "entry_t": 1792170000,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792170304,
+     "side": "modify",
+     "qty": 4,
+     "stop": 29624.75,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792170000,
+     "reason": "STOP MOVE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792170363,
+     "side": "modify",
+     "qty": 4,
+     "stop": 29606.75,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792170000,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792170483,
+     "side": "modify",
+     "qty": 4,
+     "stop": 29605.75,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792170000,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792170543,
+     "side": "modify",
+     "qty": 4,
+     "stop": 29589.25,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792170000,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792170844,
+     "side": "modify",
+     "qty": 4,
+     "stop": 29587.25,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792170000,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792170964,
+     "side": "modify",
+     "qty": 4,
+     "stop": 29568.5,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792170000,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792171024,
+     "side": "modify",
+     "qty": 4,
+     "stop": 29549.75,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792170000,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792171144,
+     "side": "modify",
+     "qty": 4,
+     "stop": 29546.25,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792170000,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792171204,
+     "side": "modify",
+     "qty": 4,
+     "stop": 29538.5,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792170000,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792171263,
+     "side": "modify",
+     "qty": 4,
+     "stop": 29534.5,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792170000,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792171386,
+     "side": "modify",
+     "qty": 4,
+     "stop": 29526.25,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792170000,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792171444,
+     "side": "modify",
+     "qty": 4,
+     "stop": 29525.5,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792170000,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1792171863,
+     "side": "exit",
+     "qty": 4,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1792170000,
+     "reason": "TIME",
+     "pnl": 876.4,
+     "exit_t": 1792171860
+    }
+   ],
+   "oif_c": [
+    "11:00:03 PLACE;Sim103;MNQ 12-26;SELL;2;MARKET;0;0;DAY;;LE1792162800U6PZME;;",
+    "11:00:03 PLACE;Sim103;MNQ 12-26;BUY;2;STOPMARKET;0;29947.75;DAY;LE1792162800U6PZMO;LE1792162800U6PZMS;;",
+    "11:00:03 PLACE;Sim103;MNQ 12-26;BUY;2;LIMIT;28141.50;0;DAY;LE1792162800U6PZMO;LE1792162800U6PZMT;;",
+    "11:06:03 CHANGE;;;;0;;0;29890.00;;;LE1792162800U6PZMS;;",
+    "11:07:05 CHANGE;;;;0;;0;29860.00;;;LE1792162800U6PZMS;;",
+    "11:08:04 CHANGE;;;;0;;0;29851.50;;;LE1792162800U6PZMS;;",
+    "11:09:05 CHANGE;;;;0;;0;29843.50;;;LE1792162800U6PZMS;;",
+    "11:10:04 CHANGE;;;;0;;0;29830.00;;;LE1792162800U6PZMS;;",
+    "11:11:04 CHANGE;;;;0;;0;29810.00;;;LE1792162800U6PZMS;;",
+    "11:22:03 CHANGE;;;;0;;0;29805.00;;;LE1792162800U6PZMS;;",
+    "11:23:03 CHANGE;;;;0;;0;29774.00;;;LE1792162800U6PZMS;;",
+    "11:31:03 CLOSEPOSITION;Sim103;MNQ 12-26;;;;;;;;;;",
+    "12:00:03 PLACE;Sim103;MNQ 12-26;SELL;3;MARKET;0;0;DAY;;LE1792166400UZYBME;;",
+    "12:00:03 PLACE;Sim103;MNQ 12-26;BUY;3;STOPMARKET;0;29737.25;DAY;LE1792166400UZYBMO;LE1792166400UZYBMS;;",
+    "12:00:03 PLACE;Sim103;MNQ 12-26;BUY;3;LIMIT;28081.75;0;DAY;LE1792166400UZYBMO;LE1792166400UZYBMT;;",
+    "12:31:02 CLOSEPOSITION;Sim103;MNQ 12-26;;;;;;;;;;",
+    "13:00:03 PLACE;Sim103;MNQ 12-26;SELL;4;MARKET;0;0;DAY;;LE17921700008QM8ME;;",
+    "13:00:03 PLACE;Sim103;MNQ 12-26;BUY;4;STOPMARKET;0;29680.75;DAY;LE17921700008QM8MO;LE17921700008QM8MS;;",
+    "13:00:03 PLACE;Sim103;MNQ 12-26;BUY;4;LIMIT;28286.50;0;DAY;LE17921700008QM8MO;LE17921700008QM8MT;;",
+    "13:05:03 CHANGE;;;;0;;0;29624.75;;;LE17921700008QM8MS;;",
+    "13:06:02 CHANGE;;;;0;;0;29606.75;;;LE17921700008QM8MS;;",
+    "13:08:03 CHANGE;;;;0;;0;29605.75;;;LE17921700008QM8MS;;",
+    "13:09:02 CHANGE;;;;0;;0;29589.25;;;LE17921700008QM8MS;;",
+    "13:14:03 CHANGE;;;;0;;0;29587.25;;;LE17921700008QM8MS;;",
+    "13:16:03 CHANGE;;;;0;;0;29568.50;;;LE17921700008QM8MS;;",
+    "13:17:04 CHANGE;;;;0;;0;29549.75;;;LE17921700008QM8MS;;",
+    "13:19:03 CHANGE;;;;0;;0;29546.25;;;LE17921700008QM8MS;;",
+    "13:20:03 CHANGE;;;;0;;0;29538.50;;;LE17921700008QM8MS;;",
+    "13:21:03 CHANGE;;;;0;;0;29534.50;;;LE17921700008QM8MS;;",
+    "13:23:05 CHANGE;;;;0;;0;29526.25;;;LE17921700008QM8MS;;",
+    "13:24:03 CHANGE;;;;0;;0;29525.50;;;LE17921700008QM8MS;;",
+    "13:31:03 CLOSEPOSITION;Sim103;MNQ 12-26;;;;;;;;;;"
+   ],
+   "trades": [
+    {
+     "entry_t": 1792162800,
+     "entry": "11:00:00",
+     "dir": -1,
+     "qty": 2,
+     "exit_kind": "time",
+     "booked": 542.2,
+     "broker": 541.2,
+     "bt_usd": 542.2,
+     "changes": 8
+    },
+    {
+     "entry_t": 1792166400,
+     "entry": "12:00:00",
+     "dir": -1,
+     "qty": 3,
+     "exit_kind": "time",
+     "booked": 15.3,
+     "broker": 16.8,
+     "bt_usd": 15.3,
+     "changes": 0
+    },
+    {
+     "entry_t": 1792170000,
+     "entry": "13:00:00",
+     "dir": -1,
+     "qty": 4,
+     "exit_kind": "time",
+     "booked": 876.4,
+     "broker": 880.4,
+     "bt_usd": 876.4,
+     "changes": 12
+    }
+   ],
+   "booked": 1433.9,
+   "b_entries": [],
+   "c_state": {
+    "open_t": null,
+    "notified": []
+   },
+   "hedge_viol": [],
+   "heartbeat": {
+    "label": "BLITZ Sim103",
+    "real": "SIM",
+    "state": "Next check 14:00 ET: a 1m close above 30,184.62 = PAPER LONG, below 29,862.88 = PAPER SHORT (09:30 open 30,023.75 +/- 160.9 pts).",
+    "eval": {
+     "start_balance": 25000.0,
+     "balance": 26433.9,
+     "profit": 1433.9,
+     "today": 1433.9,
+     "floor": 24000.0,
+     "room": 2433.9,
+     "target": 26500.0,
+     "to_target": 66.1,
+     "session": 1,
+     "status": "open",
+     "start": "2026-10-16",
+     "days_traded": 0,
+     "dll": 600.0,
+     "max_micros": 20,
+     "plan": "MFFU Builder 25K",
+     "price": 63.0,
+     "min_room": 249.56
+    },
+    "scorecard": {
+     "n": 3,
+     "win_pct": 100.0,
+     "avg_r": 1.0689,
+     "usd": 1433.9,
+     "status": "warming"
+    }
+   },
+   "preflight": [
+    [
+     "config",
+     "good",
+     "BLITZ \u2192 Sim test on Sim103 (MFFU Builder 25K)"
+    ],
+    [
+     "own",
+     "good",
+     "Sim103 is neither Zlarior's (Sim101) nor ATLAS's (Sim102)"
+    ],
+    [
+     "nt",
+     "good",
+     "a connection is CONNECTED"
+    ],
+    [
+     "visible",
+     "good",
+     "Sim103 is a NinjaTrader Sim account (always there)"
+    ],
+    [
+     "allow",
+     "good",
+     "a Sim account needs no allowlist"
+    ],
+    [
+     "sim",
+     "good",
+     "BLITZ traded 3 times on Sim103 on 2026-10-16, every order taken and closed at NinjaTrader"
+    ],
+    [
+     "armed",
+     "info",
+     "Sim103 is a Sim account: no real money, nothing to arm"
+    ],
+    [
+     "bot",
+     "good",
+     "SIM Sim103: Next check 14:00 ET: a 1m close above 30,184.62 = PAPER LONG, below 29,862.88 = PAPER SHORT (09:30 open 30,0"
+    ],
+    [
+     "eval",
+     "good",
+     "session 1 of 10 (first session 2026-10-16): balance $26,433.90, room $2,433.90 to the floor, $66 to the pass"
+    ],
+    [
+     "size",
+     "good",
+     "3 micros at a 74-pt stop (today: 1.5 x the 5m ATR) on the $2,434 room (session 1); 7 at 40 pts, 4 at 60 pts, 3 at 90 pts"
+    ],
+    [
+     "hedge",
+     "good",
+     "Zlarior first, then ATLAS, then BLITZ: no BLITZ entry while Sim101 or Sim102 holds / enters / has a setup armed the othe"
+    ],
+    [
+     "contract",
+     "good",
+     "loaded: BLITZ pauses itself after 20+ trades under avg R -0.150 / PF 0.62 (the 2026 floor) or 6 losing days in a row; no"
+    ],
+    [
+     "calendar",
+     "good",
+     "Fri Oct 16 (today): normal session, BLITZ checks 11:00-15:30 ET, flat by 15:55"
+    ],
+    [
+     "feed",
+     "good",
+     "LE_BarFeed's MNQ bars are fresh"
+    ],
+    [
+     "day",
+     "info",
+     "BLITZ trades today: yesterday's 09:30-16:00 range 574 pts = 1.74 x its 14-day mean 330 pts (needs >= 0.8)"
+    ]
+   ],
+   "c_log": [
+    "1792171863 None [BLITZ Sim103] EXIT 4 NQ -> True",
+    "1792171444 None [BLITZ Sim103] MODIFY 4 NQ -> True",
+    "1792171386 None [BLITZ Sim103] MODIFY 4 NQ -> True",
+    "1792171263 None [BLITZ Sim103] MODIFY 4 NQ -> True",
+    "1792171204 None [BLITZ Sim103] MODIFY 4 NQ -> True",
+    "1792171144 None [BLITZ Sim103] MODIFY 4 NQ -> True",
+    "1792171024 None [BLITZ Sim103] MODIFY 4 NQ -> True",
+    "1792170964 None [BLITZ Sim103] MODIFY 4 NQ -> True",
+    "1792170844 None [BLITZ Sim103] MODIFY 4 NQ -> True",
+    "1792170543 None [BLITZ Sim103] MODIFY 4 NQ -> True",
+    "1792170483 None [BLITZ Sim103] MODIFY 4 NQ -> True",
+    "1792170363 None [BLITZ Sim103] MODIFY 4 NQ -> True",
+    "1792170304 None [BLITZ Sim103] MODIFY 4 NQ -> True",
+    "1792170003 None [BLITZ Sim103] SELL 4 NQ -> True",
+    "1792170002 None [BLITZ Sim103] BLITZ SHORT at the 13:00 ET open: ROUTED MARKET 4 MNQ on Sim103 (2 s after the open), stop 29,680.75 (1.5 x 5m ATR), OCO limit 28,286.50 (20R); size 40% of the $1,558 room, <= $600, <= 90% of the $1,158 daily loss left: $135.18 a micro at a 66.39-pt stop -> 4",
+    "1792168262 None [BLITZ Sim103] EXIT 3 NQ -> True",
+    "1792166404 None [BLITZ Sim103] SELL 3 NQ -> True",
+    "1792166403 None [BLITZ Sim103] BLITZ SHORT at the 12:00 ET open: ROUTED MARKET 3 MNQ on Sim103 (3 s after the open), stop 29,737.25 (1.5 x 5m ATR), OCO limit 28,081.75 (20R); size 40% of the $1,542 room, <= $600, <= 90% of the $1,142 daily loss left: $160.08 a micro at a 78.84-pt stop -> 3",
+    "1792166403 None [BLITZ Sim103] STARTUP RECONCILED on Sim103: NinjaTrader positions / orders and contract check out; entries allowed",
+    "1792164663 None [BLITZ Sim103] EXIT 2 NQ -> True",
+    "1792164184 None [BLITZ Sim103] MODIFY 2 NQ -> True",
+    "1792164124 None [BLITZ Sim103] MODIFY 2 NQ -> True",
+    "1792163465 None [BLITZ Sim103] MODIFY 2 NQ -> True",
+    "1792163404 None [BLITZ Sim103] MODIFY 2 NQ -> True",
+    "1792163345 None [BLITZ Sim103] MODIFY 2 NQ -> True",
+    "1792163284 None [BLITZ Sim103] MODIFY 2 NQ -> True",
+    "1792163226 None [BLITZ Sim103] MODIFY 2 NQ -> True",
+    "1792163167 None [BLITZ Sim103] SIM Sim103 MFFU Builder 25K, BLITZ scalper, eval from 2026-10-16 (balance $25,000, room $1,000): ready",
+    "1792163167 None [BLITZ Sim103] restored: open BLITZ SHORT 2 MNQ from 11:00 ET (managed to its exit)"
+   ]
+  }
+ ],
+ "bugs": []
+}
