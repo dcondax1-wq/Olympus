@@ -216,9 +216,17 @@ def _jd(o):
 
 
 def _jl_read(path, n: int | None = None) -> list:
+    """A JSON-lines journal's rows. A torn line (the PC killed / powered off mid-append) is skipped, never the whole file:
+    an unreadable reviews.jsonl made every restart review the last 2 days' trades again and add them to the memory again."""
+    rows = []
     try:
-        with open(path, encoding="utf-8") as fh:
-            rows = [json.loads(x) for x in fh if x.strip()]
+        with open(path, encoding="utf-8", errors="replace") as fh:
+            for x in fh:
+                if x.strip():
+                    try:
+                        rows.append(json.loads(x))
+                    except ValueError:
+                        continue
     except (OSError, ValueError):
         return []
     return rows[-n:] if n else rows
@@ -227,7 +235,16 @@ def _jl_read(path, n: int | None = None) -> list:
 def _jl_append(path, rows) -> bool:
     try:
         os.makedirs(os.path.dirname(path), exist_ok=True)
+        lead = ""
+        try:                                   # after a torn last line: start on a new line (the new row stays readable)
+            if os.path.getsize(path):
+                with open(path, "rb") as fb:
+                    fb.seek(-1, os.SEEK_END)
+                    lead = "" if fb.read(1) == b"\n" else "\n"
+        except OSError:
+            lead = ""
         with open(path, "a", encoding="utf-8") as fh:
+            fh.write(lead)
             for r in rows:
                 fh.write(json.dumps(r, separators=(",", ":"), default=_jd) + "\n")
         return True

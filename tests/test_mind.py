@@ -561,6 +561,26 @@ def t_compact_cap():
     check(f"compact: a huge block still fits under 12 KB ({sz} bytes) and keeps the contract", sz < 12_000 and not MD.contract_errors(c), MD.contract_errors(c))
 
 
+def t_torn_journal():
+    """The PC killed / powered off mid-append (a torn last line in logs/mind/reviews.jsonl): restarts (auto-updates) never
+    review the same trade again nor add it to the memory again; the next row starts on its own line."""
+    ld = tempfile.mkdtemp()
+    et, xt = 1791969840, 1791986280
+    now = T("2026-10-14", 16, 30)
+    bot = fake_bot(now, None, ledger=ledger_trade(et, xt))
+    MD.Mind(log_dir=ld).compute(bot, now)
+    rv = os.path.join(ld, "reviews.jsonl")
+    with open(rv, "a", encoding="utf-8") as fh:
+        fh.write('{"t": 1791990000, "bot": "atl')          # torn: no closing brace, no newline
+    for k in range(3):                                      # three restarts the same evening
+        MD.Mind(log_dir=ld).compute(bot, now + 600 * (k + 1))
+    MD._jl_append(rv, [{"t": 1, "key": "x"}])
+    rows = MD._jl_read(rv)
+    check("torn journal line: skipped, not the whole file; restarts never re-review the trade or add it to the memory twice; "
+          "the next row stays readable", len(rows) == 2 and rows[-1].get("key") == "x" and len(MD.live_rows("lit", ld)) == 1,
+          (len(rows), len(MD.live_rows("lit", ld))))
+
+
 def main():
     t_store_calibration()
     t_validation_machinery()
@@ -574,6 +594,7 @@ def main():
     t_never_raises()
     t_livebot()
     t_compact_cap()
+    t_torn_journal()
     n, ok = len(RES), sum(RES)
     print(f"\nmind: {ok}/{n} " + ("ALL PASS" if ok == n else "FAILED"))
     return 0 if ok == n else 1
