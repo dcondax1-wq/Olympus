@@ -719,7 +719,10 @@ part yourself or fold it into a script.**
   palette (`#plFind`, "/" / Ctrl+K, `le.pl.recent`), Money tab = `real` · `realtoday` (new page: RealUI.today + safety) ·
   `evaltl` (money / props / whatif / scale / accounts moved to More > Money planning), entrances / count-ups (first paint
   only; rings / sparklines draw in once via `.pl-first`), the sliding tab pill (`.pl-tabind`, the tab's colour), More's
-  "Recent" chips (`le.pl.visits`), the CSS sky's parallax + a vignette. Page animations have NO fill-mode on purpose: a
+  "Recent" chips (`le.pl.visits`), the CSS sky's parallax + a vignette. ONE page transition on the phone
+  (`#page.page` pl-page / pl-page-l / pl-page-r by `#page[data-dir]`, set in polish.js's render wrapper from the tab order)
+  wins over clean.js's cl-in, space.css's sp-warp (a full-page blur + transform held for 1 s by `.entering`: it cost
+  frames and mis-placed the Holodeck's fixed labels) and index.html's 3D card rise. Page animations have NO fill-mode on purpose: a
   finished transform animation that stays "in effect" makes `.page` the containing block of fixed full-screen views
   (it broke the Holodeck fill labels on the phone). A bot page that redraws itself later (BLITZ) gets its card back
   (MutationObserver on #page). `clean.js` (still ?v=3): Today · Brain ·
@@ -736,7 +739,7 @@ part yourself or fold it into a script.**
   first version broke its START button). Phone header: one status dot `#plStat` (the bar's verdict; a tap opens it on
   Home); the critical-alert banner (#apBan) counts for 3 min after a page redraw wipes it. PC Ctrl K: each bot's five
   sections + "Status: ..." (`addPaletteItems`). Known, not from this change: test_holo_ui's PC "fill label shows the exact
-  price" step fails in this container on the base commit too (timing of the camera focus).
+  price" step failed in this container on the base commit too; with the one page transition it passed 62/62 here.
 - **Start & Accounts page (2026-10-26, PC dashboard sidebar "Start", page `start`):** START BOT as one checklist, one button
   per red line: NinjaTrader connected · live bars from NinjaTrader (`go.feed_problem`, fix "right-click the MNQ 5-minute chart > Reload NinjaScript (or re-add LE_BarFeed)"; the Sim job is refused while stale) · accounts set (50K -> Zlarior, 25K -> ATLAS) · setup done · Sim tests passed · armed ·
   running and routes verified, plus the plain line `Zlarior -> 50K <name> · ATLAS -> 25K <name> · both armed · running`.
