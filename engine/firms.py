@@ -238,7 +238,8 @@ def book(start: float, closes, today: str, prior: float = 0.0, payouts: dict | N
             "week_pnl": week_pnl, "eod_high": round(eod_hi, 2), "intra_high": round(max(intra_hi, bal + max(0.0, open_pnl)), 2),
             "open_pnl": round(float(open_pnl or 0.0), 2), "open_micros": int(open_micros or 0),
             "days_traded": sum(1 for d, v in days.items() if abs(v) > 1e-9 and d < today) + (1 if abs(day_pnl) > 1e-9 else 0),
-            "best_day": round(max(won), 2) if won else 0.0, "days": days, "payouts": round(sum(pays.values()), 2), "today": today}
+            "best_day": round(max(won), 2) if won else 0.0, "days": days, "payouts": round(sum(pays.values()), 2), "today": today,
+            "last_payout": max(pays) if pays else None, "prior": round(float(prior or 0.0), 2)}
 
 
 def floor_room(P: dict, st: dict) -> dict:
@@ -471,9 +472,27 @@ def status(P: dict, st: dict) -> dict:
         buf = _num(po.get("buffer"))
         mn = _num(po.get("min"), 0.0) or 0.0
         above = prof - float(_num(st.get("payouts"), 0.0)) - (buf or 0.0) if buf is not None else None
+        # the payout cycle = the days after the last payout: the best day vs the cycle's profit (consistency, not a breach:
+        # you trade more days) and the traded days a cycle the firm asks for
+        lp = st.get("last_payout")
+        cyc = {d: v for d, v in (st.get("days") or {}).items() if not lp or d > lp}
+        c_prof = round(sum(cyc.values()) + (float(st.get("prior") or 0.0) if not lp else 0.0), 2)   # the P&L before the bot: this cycle
+        c_best = max([v for v in cyc.values() if v > 0], default=0.0)
+        cons = _num(po.get("consistency"))
+        cons_ok = None if po.get("consistency") is None else (True if not cons else (c_prof > 0 and c_best <= cons * c_prof + 1e-9))
+        need_d = _num(po.get("min_days"))
+        days_ok = None if po.get("min_days") is None else (True if not need_d else sum(1 for v in cyc.values() if abs(v) > 1e-9) >= need_d)
+        money_ok = bool(above is not None and above >= mn and mn >= 0 and buf is not None)
+        why = [] if money_ok else [f"${max(0.0, (mn or 0) - (above or 0)):,.0f} more above the buffer" if above is not None else "buffer unknown"]
+        if cons_ok is False:
+            why.append(f"best day ${c_best:,.0f} is {c_best / c_prof * 100 if c_prof > 0 else 100:.0f}% of the cycle's ${c_prof:,.0f} "
+                       f"(rule {cons * 100:.0f}%): trade more days")
+        if days_ok is False:
+            why.append(f"{int(need_d)} traded days a cycle needed")
         out["payout"] = {"above_buffer": round(above, 2) if above is not None else None, "buffer": buf, "min": mn,
-                         "max": _num(po.get("max")), "split": _num(po.get("split")),
-                         "ready": bool(above is not None and above >= mn and mn >= 0 and buf is not None),
+                         "max": _num(po.get("max")), "split": _num(po.get("split")), "cycle_profit": c_prof, "best_day": round(c_best, 2),
+                         "consistency_ok": cons_ok, "days_ok": days_ok,
+                         "ready": bool(money_ok and cons_ok is not False and days_ok is not False), "why": why,
                          "unknown": [k for k in ("buffer", "min", "max", "split", "consistency") if po.get(k) is None]}
     return out
 

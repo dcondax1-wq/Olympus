@@ -208,9 +208,15 @@ def status_checks():
     s = FM.status(P, FM.book(50000.0, [("2026-10-20", 1, -2000.0)], "2026-10-21"))
     check("eval failed at the floor", s["status"] == "failed", s)
     PF = FM.profile("mffu_builder_50k", "funded")
+    s = FM.status(PF, FM.book(50000.0, [("2026-10-16", 1, 1000.0), ("2026-10-19", 1, 900.0), ("2026-10-20", 1, 800.0)], "2026-10-21"))
+    check("funded: $2,700 over 3 days, $2,100 buffer -> $600 above, best day 37% <= 50%, payout ready ($500 minimum)",
+          s["payout"]["ready"] and s["payout"]["above_buffer"] == 600.0 and s["payout"]["consistency_ok"] and s["payout"]["days_ok"], s)
     s = FM.status(PF, FM.book(50000.0, [("2026-10-20", 1, 2700.0)], "2026-10-21"))
-    check("funded: $2,700 profit, $2,100 buffer -> $600 above, payout ready ($500 minimum)", s["payout"]["ready"] and s["payout"]["above_buffer"] == 600.0, s)
-    s = FM.status(PF, FM.book(50000.0, [("2026-10-20", 1, 2700.0)], "2026-10-21", payouts={"2026-10-20": 500.0}))
+    check("funded: the same $2,700 in ONE day -> not ready (best day 100% of the cycle > 50%; 2 traded days a cycle)",
+          not s["payout"]["ready"] and s["payout"]["consistency_ok"] is False and s["payout"]["days_ok"] is False
+          and any("trade more days" in w for w in s["payout"]["why"]), s["payout"])
+    s = FM.status(PF, FM.book(50000.0, [("2026-10-16", 1, 1000.0), ("2026-10-19", 1, 900.0), ("2026-10-20", 1, 800.0)], "2026-10-21",
+                              payouts={"2026-10-20": 500.0}))
     check("funded: after a $500 payout only $100 above the buffer -> not ready", not s["payout"]["ready"], s)
     P25 = FM.profile("mffu_builder_25k", "funded")
     st = FM.book(25000.0, [("2026-10-20", 1, 800.0)], "2026-10-21", payouts={"2026-10-20": 300.0})

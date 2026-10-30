@@ -547,7 +547,15 @@ def misc_checks(tmp):
     b.t = now + 1200
     b.lit_exit(10 * (60 * 2 - FM.COMM), "TARGET")
     fl.tick("NQ", b.t)
-    check("funded: above the $2,100 buffer + $500 -> push 'PAYOUT READY' (never requested by the bot)", any("PAYOUT READY" in n[0] for n in notes), notes)
+    check("funded: above the buffer after 1 traded day -> no payout push yet (MFFU: 2 traded days a cycle)", not any("PAYOUT READY" in n[0] for n in notes), notes)
+    b.t = now + 86400
+    b.lit_enter(1, 20000.0, 19980.0, 20120.0, t=b.t)
+    fl.tick("NQ", b.t + 3)
+    b.t += 1200
+    b.lit_exit(10 * (60 * 2 - FM.COMM), "TARGET")
+    fl.tick("NQ", b.t)
+    check("funded: above the $2,100 buffer + $500, 2 traded days, best day <= 50% -> push 'PAYOUT READY' (never requested by the bot)",
+          any("PAYOUT READY" in n[0] for n in notes), (notes, fl.api(b.t)["accounts"][0].get("payout")))
     acc4 = [{"id": "f1", "lead": "zlarior", "plan": "mffu_builder_50k", "stage": "funded", "funded_start": "2026-10-01"},
             {"id": "f2", "lead": "atlas", "plan": "mffu_builder_50k", "stage": "funded", "funded_start": "2026-10-01"}]
     b, fl, ads, notes = make(os.path.join(tmp, "life3"), acc4, now)
