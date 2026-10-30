@@ -108,7 +108,10 @@
     else if (hb < 15 * 60) out.push({ k: 'pc', label: 'PC bot', value: hb < 120 ? 'live' : dur(hb) + ' ago', lvl: 'good', detail: `Last check-in ${dur(hb)} ago.` });
     else {
       const need = (nx && nx.open) || (soon != null && soon < 1800);
-      out.push({ k: 'pc', label: 'PC bot', value: `quiet ${dur(hb)}`, lvl: need ? 'bad' : 'warn', detail: `No check-in for ${dur(hb)}.${!need && nx ? ` Fine until ${when(nx.t - 900, now)}.` : ''}`, fix: 'Check the Surface is on, awake and online, with the bot window open.' });
+      // the weekend (Fri 17:00 -> 2 h before the Sunday reopen): a PC that is off is fine, it only needs to be on by Sunday
+      const re = nextReopen(now), weekend = !open && re != null && re - now > 7200 && re - now < 3 * 86400;
+      if (weekend) out.push({ k: 'pc', label: 'PC bot', value: 'off for the weekend', lvl: 'idle', detail: `No check-in for ${dur(hb)}: fine while the market is closed. Turn the Surface on by ${when(re - 1800, now)}.` });
+      else out.push({ k: 'pc', label: 'PC bot', value: `quiet ${dur(hb)}`, lvl: need ? 'bad' : 'warn', detail: `No check-in for ${dur(hb)}.${!need && nx ? ` Fine until ${when(nx.t - 900, now)}.` : ''}`, fix: 'Check the Surface is on, awake and online, with the bot window open.' });
     }
     if (I.nt) out.push({ k: 'nt', label: 'NinjaTrader', value: I.nt.value || '—', lvl: lvH(I.nt), detail: I.nt.detail || '', fix: I.nt.fix || '' });
     const feed = I.age_1m_s || I.age_5m_s;
@@ -173,7 +176,7 @@
     let why = S.why;
     if (ack) {
       const other = S.items.find((x) => (x.lvl === 'bad' || x.lvl === 'warn') && x.k !== 'alerts');
-      why = other ? `${other.label}: ${other.value}` : S.next ? S.next.detail : 'Everything else is running.';
+      why = other ? `${other.label}: ${other.value}` : S.next ? S.next.detail : 'Everything else is fine.';
     }
     const chips = S.items.map((x) => `<span class="su-chip ${x.lvl}" title="${esc(x.detail || '')}">${dot(x.lvl, x.live)}<span>${esc(x.label)}</span><b>${x.k === 'next' && x.t ? (x.value.startsWith('closes') ? 'closes in ' : 'in ') + cd(x.t) : esc(x.value)}</b></span>`).join('');
     const rows = S.items.map((x) => `<li class="${x.lvl}">${dot(x.lvl, x.live)}<div><b>${esc(x.label)} · ${esc(x.value)}</b>${x.detail ? `<span>${esc(x.detail)}</span>` : ''}${x.fix && x.lvl !== 'good' ? `<em>Fix: ${esc(x.fix)}</em>` : ''}${x.list ? `<ul>${x.list.map((a) => `<li class="${esc(a.lvl)}">${esc(a.text)}</li>`).join('')}</ul>` : ''}</div>${x.bot ? `<a class="su-go" ${goA(o, PAGE[o.where === 'pc' ? 'pc' : 'phone'][x.bot])} aria-label="Open ${esc(x.label)}">›</a>` : ''}</li>`).join('');

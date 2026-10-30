@@ -116,7 +116,10 @@
     const M = model();
     const box = document.createElement('div'); box.className = 'pl-home';
     const more = `<a class="pl-btn" data-go="mission">Mission Control</a><a class="pl-btn" data-go="board">Live board</a><a class="pl-btn" data-go="launch">Launch checklist</a>`;
-    box.innerHTML = hello() + SU.bar(M, { open: SU.isOpen(), more, where: 'phone' }) + SU.accounts(M, { where: 'phone' }) + nowCard(M) + (SU.market ? SU.market(M) : '') + SU.week(M) + SU.sunday(M) + quick();
+    // the weekend (CME closed): the Sunday open card comes right under the status bar; on a trading day it sits lower
+    const sun = SU.sunday(M), closed = !SU.marketOpen(M.now);
+    box.innerHTML = hello() + SU.bar(M, { open: SU.isOpen(), more, where: 'phone' }) + (closed ? sun : '') + SU.accounts(M, { where: 'phone' }) + nowCard(M)
+      + (SU.market ? SU.market(M) : '') + SU.week(M) + (closed ? '' : sun) + quick();
     el.prepend(box);
     // no live board yet (the PC never reported, an older data.json): the account cards come from clean.js's hero cards
     // (eval tracker + goals + ATLAS card), placed where the board's cards would be; BLITZ keeps its paper card
