@@ -57,6 +57,11 @@ KINDS = {   # kind: (label for the app, what it covers, critical = repeats until
     "drift": ("Drift", "LIT / account B live results below the backtest's expected range, execution drift", False),
     "loss_cap": ("Both accounts loss", "LIT + account B together at the combined daily / weekly cap", False),
     "rules_change": ("Rules changed", "the trading rules the PC bot runs changed (who / when / why)", False),
+    # engine/pc_selftest.py, engine/pc_health.py, engine/readiness.py (2026-10-30; the PC's own pushes, read-only)
+    "selftest": ("PC self-test failed", "the Sunday 15:30 ET self-test (or the one after a restart) found a failing check", False),
+    "selftest_ok": ("PC self-test all green", "the short Sunday 15:30 ET 'all green' push", False),
+    "pc_health": ("PC health red", "CPU / RAM / disk / NinjaTrader / bot memory / OneDrive / clock / poll red (once a day)", False),
+    "readiness": ("Ready for Monday", "the Sunday 17:30 ET summary: version, self-test, both accounts, BLITZ, news, early closes", False),
 }
 LEVELS = ("on", "silent", "off")
 REPEAT_S = 10 * 60

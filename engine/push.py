@@ -39,6 +39,13 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONFIG_PATH = os.path.join(ROOT, "data", "push.json")            # PC manual override, gitignored
 SENT_PATH = os.path.join(ROOT, "data", "push_sent.json")         # PC de-dup keys, gitignored
 PC_KEY_PATH = os.path.join(ROOT, "data", "push_pc_key.json")     # the PC's own key (receives the VAPID key), gitignored
+# engine/pc_selftest runs the repo's suites ON the owner's PC in sealed child processes (LE_SELFTEST_CHILD=1): there no real
+# push goes out, the ntfy relay is never called, and the PC's own push files are never read or written (temp copies)
+SEALED = os.environ.get("LE_SELFTEST_CHILD") == "1"
+if SEALED:
+    import tempfile as _tempfile
+    CONFIG_PATH, SENT_PATH, PC_KEY_PATH = (os.path.join(_tempfile.gettempdir(), f"le_selftest_{os.path.basename(_p)}")
+                                           for _p in (CONFIG_PATH, SENT_PATH, PC_KEY_PATH))
 RELAY_PATH = os.path.join(ROOT, "tools", "web_public", "push_relay.json")
 APP_URL = "https://demetrades2000-coder.github.io/nq-dashboard/"
 SUBJECT = os.environ.get("LE_PUSH_SUBJECT") or "https://demetrades2000-coder.github.io"   # VAPID "sub" claim: a contact URL, host only
@@ -231,6 +238,8 @@ class Relay:
     def _req(self, method, url, body=None):
         if self.http is not None:
             return self.http(method, url, body)
+        if SEALED:
+            raise RuntimeError("PC self-test child: the relay is not called")
         req = urllib.request.Request(url, data=body, method=method, headers={"User-Agent": "LiquidityEngine/1.0"})
         with urllib.request.urlopen(req, timeout=self.timeout) as r:
             return r.read().decode("utf-8", "replace")
@@ -576,6 +585,8 @@ def send(payload: dict, cfg=None, sender=None) -> dict:
     c = cfg or config()
     if not enabled(c):
         return {"sent": 0, "devices": len(c["subs"]), "skipped": "not configured"}
+    if SEALED and sender is None:
+        return {"sent": 0, "devices": len(c["subs"]), "skipped": "PC self-test child: no real push"}
     send_one = sender or _sender()
     data = wire(payload)
     out = {"sent": 0, "devices": len(c["subs"]), "gone": [], "errors": []}
@@ -672,6 +683,8 @@ SYNC_EVERY_S = 20 * 60
 SYNC_RETRY_S = 120                     # after a failed fetch: try again in 2 min (was: 20 min with nothing)
 SYNC_CACHE_PATH = os.path.join(ROOT, "data", "push_pc_sync.json")   # the last good box + subs (gitignored; the box stays
                                                                      # sealed to the PC's own key, like on the branch)
+if SEALED:
+    SYNC_CACHE_PATH = os.path.join(_tempfile.gettempdir(), "le_selftest_push_pc_sync.json")
 
 
 def _sync_cache_save(path, box, subs):
@@ -705,6 +718,8 @@ def pc_sync(force: bool = False, fetch=None, key_path: str | None = None, cache_
     real fetch uses SYNC_CACHE_PATH; a test's fetch only when it passes one)."""
     if not force and fetch is None and _PC["sync"] is not None and time.time() - _PC["sync_t"] < SYNC_EVERY_S:
         return _PC["sync"]
+    if SEALED and fetch is None:                 # PC self-test child: no GitHub fetch, no key
+        return {"private": None, "subs": []}
     cpath = cache_path or (SYNC_CACHE_PATH if fetch is None else None)
     kp = key_path or PC_KEY_PATH
     out = {"private": None, "subs": []}
