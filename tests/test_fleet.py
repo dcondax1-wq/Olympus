@@ -469,6 +469,151 @@ def kill_checks(tmp):
     check("the bot's own kill switch flag flattens every follower", all(f.pos is None for f in fl3.followers))
 
 
+def review_checks(tmp):
+    """Reviewer 2026-10-30 (the night before the first fleet-capable weekend): the kill switch racing a copy, an open copy
+    whose Name changes, the restart window before the first _fleet_tick, case-blind account Names, LiveBot._route failing
+    closed on an unreadable fleet."""
+    import threading
+    import time as _time
+    now = ts(DAY, 9, 40)
+    # 1. the kill switch pressed while a follower waits its stagger: the copy is never sent
+    ref = {}
+
+    def kill_in_stagger(s):
+        ref["b"].kill = True                  # LiveBot.kill_switch: the flag first, then fleet.kill (the server's thread)
+        ref["out"] = ref["fl"].kill("NQ")
+    acc = [{"id": "st", "lead": "zlarior", "plan": "mffu_builder_50k", "start": DAY, "stagger_ms": 800}]
+    b, fl, ads, _ = make(os.path.join(tmp, "rv1"), acc, now, sleep=kill_in_stagger)
+    ref.update(b=b, fl=fl)
+    b.lit_enter(1, 20000.0, 19980.0, 20120.0)
+    fl.tick("NQ", now + 3)
+    check("kill switch during a follower's stagger: the copy is NOT sent, nothing left open",
+          not ents(ads["st"]) and fol(fl, "st").pos is None and "kill" in fol(fl, "st").skips[-1]["why"], (ents(ads["st"]), fol(fl, "st").pos))
+
+    # 2. the kill switch (another thread) while a copy's order is on its way: the kill waits for it and flattens it
+    inside, release = threading.Event(), threading.Event()
+
+    class Slow(Rec):
+        def send(self, a):
+            if a.get("side") in ("buy", "sell"):
+                inside.set()
+                release.wait(2.0)
+            return super().send(a)
+    acc = [{"id": "sl", "lead": "zlarior", "plan": "mffu_builder_50k", "start": DAY}]
+    b, fl, ads, _ = make(os.path.join(tmp, "rv2"), acc, now, factory=lambda f, c: Slow(c))
+    b.lit_enter(1, 20000.0, 19980.0, 20120.0)
+    th = threading.Thread(target=fl.tick, args=("NQ", now + 3), daemon=True)
+    th.start()
+    inside.wait(2.0)
+    kth = threading.Thread(target=lambda: (setattr(b, "kill", True), fl.kill("NQ")), daemon=True)
+    kth.start()
+    _time.sleep(0.2)
+    release.set()
+    th.join(5.0)
+    kth.join(5.0)
+    f = fol(fl, "sl")
+    check("kill switch while a copy's order is going out: the kill waits for it and flattens it (never left open)",
+          len(ents(ads["sl"])) == 1 and f.pos is None and any(a.get("side") == "exit" and a.get("reason") == "KILL SWITCH" for a in ads["sl"].sent),
+          (f.pos, ads["sl"].sent))
+
+    # 3. the Name of an OPEN copy changes (--to-funded --account / a hand edit): kept and managed until flat, then applied
+    acc = [{"id": "nm", "lead": "zlarior", "plan": "mffu_builder_50k", "start": DAY, "adapter": "ninjatrader", "nt_account": "Sim102"}]
+    b, fl, ads, _ = make(os.path.join(tmp, "rv3"), acc, now, factory=lambda f, c: Rec(c, broker=True))
+    b.lit_enter(1, 20000.0, 19980.0, 20120.0)
+    b.t = now + 3
+    fl.tick("NQ", b.t)
+    f0 = fol(fl, "nm")
+    acc2 = copy.deepcopy(acc)
+    acc2[0].update(stage="funded", funded_start=DAY, nt_account="Sim103")
+    fl.update_cfg({"accounts": acc2})
+    check("an open copy whose Name changed is kept (managed, still seen by the no-hedge checks)",
+          fol(fl, "nm") is f0 and f0.pos is not None and fl.opposite_open(-1) is not None, (fol(fl, "nm").pos, fl.opposite_open(-1)))
+    b.t += 600
+    b.lit_exit(10 * (20 * 2 - 1.9), "TARGET", t=b.t)
+    fl.tick("NQ", b.t)
+    closed = f0.pos is None and any(a.get("side") == "exit" for a in ads["nm"].sent)
+    b.t += 60
+    fl.tick("NQ", b.t)
+    f1 = fol(fl, "nm")
+    check("... closed with the lead on its old account, then the new entry applies (funded on Sim103)",
+          closed and f1.spec.get("nt_account") == "Sim103" and f1.stage == "funded", (closed, f1.spec.get("nt_account"), f1.stage))
+
+    # 4. case-blind Names: LIT's own account / a Name listed twice in another case is refused
+    acc = [{"id": "cb1", "lead": "atlas", "plan": "mffu_builder_25k", "start": DAY, "adapter": "ninjatrader", "nt_account": "SIM101"},
+           {"id": "cb2", "lead": "zlarior", "plan": "mffu_builder_25k", "start": DAY, "adapter": "ninjatrader", "nt_account": "Sim105"},
+           {"id": "cb3", "lead": "zlarior", "plan": "mffu_builder_25k", "start": DAY, "adapter": "ninjatrader", "nt_account": "sim105"}]
+    b, fl, ads, _ = make(os.path.join(tmp, "rv4"), acc, now, factory=lambda f, c: Rec(c, broker=True))
+    check("a follower on LIT's Name in another case (SIM101 vs Sim101) is refused; a Name twice in another case too",
+          "own account" in (fol(fl, "cb1").problem or "") and fol(fl, "cb2").problem is None and "twice" in (fol(fl, "cb3").problem or ""),
+          [fol(fl, i).problem for i in ("cb1", "cb2", "cb3")])
+
+    # 4b. LIT's close NinjaTrader has not confirmed (its leg "closing", the model already flat): no follower goes the other way
+    acc = [{"id": "lg", "lead": "atlas", "plan": "mffu_builder_25k", "start": DAY}]
+    b, fl, ads, _ = make(os.path.join(tmp, "rv4b"), acc, now)
+    b.adapter = type("NT", (), {"legs": [{"entry_t": now - 900, "dir": 1, "side": "BUY", "status": "closing"}]})()
+    b.acct_b = Lead("Sim201")
+    b.acct_b.enter(now, -1, 3, 20000.0, 20020.0, 19950.0)
+    fl.tick("NQ", now + 3)
+    check("LIT's close not confirmed at NinjaTrader (leg 'closing', model flat): an ATLAS follower's SHORT is not copied",
+          not ents(ads["lg"]) and "NinjaTrader" in (fol(fl, "lg").skips[-1]["why"] if fol(fl, "lg").skips else ""), fol(fl, "lg").skips[-1:])
+
+    # 4c. a hand edit with a wrong type (a list where a dict belongs): never raises; that entry never trades, an OPEN copy
+    # whose entry turned unreadable is still managed to its close, the other followers trade as before
+    acc = [{"id": "ok", "lead": "zlarior", "plan": "mffu_builder_50k", "start": DAY},
+           {"id": "jk", "lead": "zlarior", "plan": "mffu_builder_50k", "start": DAY, "payouts": [1, 2]}]
+    try:
+        b, fl, ads, _ = make(os.path.join(tmp, "rv4c"), acc, now)
+        built = True
+    except Exception as e:
+        built, fl = f"{e.__class__.__name__}: {e}", None
+    if fl is not None:
+        b.lit_enter(1, 20000.0, 19980.0, 20120.0)
+        b.t = now + 3
+        fl.tick("NQ", b.t)
+        bad_rule = copy.deepcopy(acc)
+        bad_rule[0]["rules"] = "x"                     # the OPEN follower's entry turns unreadable
+        fl.update_cfg({"accounts": bad_rule})
+        held = fol(fl, "ok").pos is not None and fl.opposite_open(-1) is not None
+        b.t += 600
+        b.lit_exit(100.0, "TARGET", t=b.t)
+        fl.tick("NQ", b.t)
+        b.t += 60
+        fl.tick("NQ", b.t)
+    check("a wrong-typed entry in data/fleet.json: no exception, it never trades; an open copy whose entry broke is managed to its close",
+          built is True and "unreadable" in (fol(fl, "jk").problem or "") and held and fol(fl, "ok").closes
+          and "unreadable" in (fol(fl, "ok").problem or ""), (built, fl and [(f.id, f.problem, f.pos) for f in fl.followers]))
+
+    # 5. LiveBot: built in start() (a copy open before the restart is seen by LIT's first-poll entry), _route fails closed
+    from engine.live import LiveBot
+    et0 = now - 600
+    d5 = os.path.join(tmp, "rv5")
+    os.makedirs(d5, exist_ok=True)
+    acc = [{"id": "rs", "lead": "blitz", "plan": "mffu_builder_50k", "start": DAY}]
+    json.dump({"v": 1, "followers": {"rs": {"id": "rs", "nt_account": "", "ledger": [{"t": et0, "sym": "NQ", "side": "sell", "qty": 3,
+               "entry": 20000.0, "stop": 20020.0, "target": 19950.0, "entry_t": et0, "result": {"ok": True}}], "closes": [],
+               "pos": {"entry_t": et0, "dir": -1, "qty": 3, "entry": 20000.0, "stop": 20020.0, "target": 19950.0, "t": et0, "sym": "NQ"},
+               "seen": [et0]}}}, open(os.path.join(d5, "live_state_fleet.json"), "w"))
+    lb = LiveBot()
+    lb.state_path = os.path.join(d5, "live_state.json")
+    lb.clock = lambda: now
+    lb.start({"adapter": "paper", "sym": "NQ", "tf": "5m", "fleet": {"accounts": acc}}, spawn=False)
+    try:
+        fl5 = lb.fleet
+        built = fl5 is not None and fl5.followers[0].pos is not None
+        ok = lb._hedge_clear({"entry_t": now - 20, "dir": 1, "entry": 20001.0, "stop": 19990.0, "target": 20100.0, "qty": 2}, "NQ", now)
+        f5 = fl5.followers[0] if fl5 is not None else None
+        check("LiveBot.start builds the fleet (a copy open before the restart is restored before the first poll's routing)",
+              built and ok and f5.pos is None and f5.closes and f5.closes[-1][4] == "HEDGE", (built, ok, getattr(f5, "pos", None)))
+        if f5 is not None:
+            f5.pos = {"entry_t": et0, "qty": 1, "sym": "NQ"}          # unreadable (no "dir"): never raises into the poll
+            r = lb._route({"sym": "NQ", "side": "buy", "qty": 1, "stop": 19990.0, "target": 20100.0, "entry": 20001.0, "entry_t": now})
+            check("LiveBot._route with unreadable fleet positions: refused (fails closed), no exception",
+                  r.get("ok") is False and "unreadable" in str(r.get("error")), r)
+            f5.pos = None
+    finally:
+        lb.stop()
+
+
 def gate_checks(tmp):
     now = ts(DAY, 9, 40)
     saved = os.environ.get(LIVE_ENV)
@@ -845,6 +990,7 @@ def main() -> int:
         hedge_checks(tmp)
         refuse_checks(tmp)
         kill_checks(tmp)
+        review_checks(tmp)
         gate_checks(tmp)
         misc_checks(tmp)
         cli_checks(tmp)

@@ -159,7 +159,19 @@ def profile_of(spec: dict) -> dict | None:
 
 
 def normalize(spec: dict, seen_ids=(), seen_names=(), reserved: dict | None = None) -> dict:
-    """One follower entry -> the spec with defaults + "problem" (why it cannot trade, None = it can). Never raises."""
+    """One follower entry -> the spec with defaults + "problem" (why it cannot trade, None = it can). Never raises: an entry
+    it cannot read (a hand edit with a wrong type: "payouts": [], "rules": "x", ...) is a follower that never trades."""
+    try:
+        return _normalize(spec, seen_ids, seen_names, reserved)
+    except Exception as e:
+        sid = str(spec.get("id") or "").strip()[:40] if isinstance(spec, dict) else ""
+        return {"id": sid, "name": sid or "follower", "lead": "zlarior", "plan": "", "stage": "eval", "adapter": "paper",
+                "nt_account": "", "enabled": False, "armed": False, "killed": False, "start": "", "funded_start": "", "balance": None,
+                "prior_pnl": 0.0, "stagger_ms": 0, "sizing": "plan", "risk_usd": None, "payouts": {}, "rules": {}, "live": {},
+                "label": "PAPER", "problem": f"entry unreadable ({e.__class__.__name__}): fix it in data/fleet.json"}
+
+
+def _normalize(spec: dict, seen_ids=(), seen_names=(), reserved: dict | None = None) -> dict:
     s = dict(spec or {})
     stage = str(s.get("stage") or ("live" if s.get("plan") == "live" else "eval"))
     out = {"id": str(s.get("id") or "").strip(), "name": str(s.get("name") or s.get("id") or "").strip()[:60],
@@ -208,10 +220,13 @@ def normalize(spec: dict, seen_ids=(), seen_names=(), reserved: dict | None = No
         nm = out["nt_account"]
         if not nm or any(c in nm for c in ";\r\n|"):
             out["problem"] = "nt_account missing or invalid"
-        elif nm in seen_names:
+        # matched case-blind, as engine/account_c.normalize: NinjaTrader's position files are read case-blind
+        # (engine/ninjatrader) and the account lock file is one file on Windows, so "mffu..." would trade LIT's "MFFU..."
+        elif nm.lower() in {str(x).strip().lower() for x in seen_names}:
             out["problem"] = f"NinjaTrader account {nm} listed twice"
-        elif reserved and nm in reserved:
-            out["problem"] = f"{nm} is {reserved[nm]}'s own account (a follower needs its own account)"
+        elif reserved and nm.lower() in {str(k).strip().lower() for k in reserved}:
+            who = next(v for k, v in reserved.items() if str(k).strip().lower() == nm.lower())
+            out["problem"] = f"{nm} is {who}'s own account (a follower needs its own account)"
         elif P is not None and P.get("kind") != "live" and (P.get("bots") in ("prohibited", "semi_only", "api_only")
                                                              or P.get("ninjatrader") is False):
             out["problem"] = f"{P['firm']} does not allow this bot on NinjaTrader ({P.get('bots')}): paper only"
@@ -354,6 +369,31 @@ def lead_positions(bot) -> list:
                     out.append({"account": nm.strip() + " (closing)", "sym": "NQ", "dir": int(pv["dir"]), "rank": rank})
         except Exception:
             out.append({"account": key, "sym": "NQ", "dir": 0, "rank": rank, "unreadable": True})
+    # NinjaTrader's own book of each lead account (as account C's gate, engine/account_c._leg_opposite): a leg still open /
+    # pending / closing there counts as that account's position, e.g. LIT's CLOSEPOSITION NinjaTrader has not confirmed
+    # while the model (and _open_routed) already show flat (reviewer 2026-10-30)
+    ads = [("Zlarior (LIT's account)", getattr(bot, "adapter", None), 0)]
+    for key, lab, rank in (("acct_b", "ATLAS", 1), ("acct_c", "BLITZ", 2)):
+        obj = getattr(bot, key, None)
+        if obj is not None:
+            ads.append((f"{lab} {getattr(obj, 'name', '') or ''}".strip(), getattr(obj, "adapter", None), rank))
+    for a in list(getattr(getattr(bot, "accts", None), "accounts", None) or []):
+        ads.append((str(getattr(a, "name", "") or "extra account"), getattr(a, "adapter", None), 0))
+    try:
+        from .ninjatrader import OPEN_STATUSES
+    except Exception:
+        OPEN_STATUSES = ("entry_sent", "pending", "cancel_pending", "protected", "unprotected", "closing")
+    for nm, ad, rank in ads:
+        try:
+            for lg in list(getattr(ad, "legs", None) or []) if ad is not None else []:
+                if not isinstance(lg, dict) or lg.get("status") not in OPEN_STATUSES:
+                    continue
+                side = str(lg.get("side") or "").upper()
+                d = int(lg.get("dir") or (1 if side == "BUY" else -1 if side == "SELL" else 0))
+                if d in (1, -1):
+                    out.append({"account": f"{nm} at NinjaTrader ({lg.get('status')})", "sym": "NQ", "dir": d, "rank": rank})
+        except Exception:
+            continue
     return out
 
 
@@ -366,7 +406,10 @@ class Follower:
         self.fleet = fleet
         self.id, self.name, self.lead = spec["id"], spec["name"], spec["lead"]
         self.rank = LEADS.get(self.lead, 9)
-        self.profile = profile_of(spec)
+        try:
+            self.profile = profile_of(spec)
+        except Exception:                 # normalize already named the problem ("rules invalid"): never trades
+            self.profile = None
         self.problem = spec.get("problem")
         self.adapter = None
         self.ledger: list = []
@@ -581,6 +624,11 @@ class Follower:
         # the lead may have closed or a hedge appeared while we waited: check again right before the order, under the
         # fleet's entry lock (two followers of different leads can never pass the no-hedge check at the same moment)
         with self.fleet.entry_mx:
+            # a kill (the bot's kill switch / the fleet kill / this account's) pressed while this copy waited its stagger or
+            # the entry lock: never sent (Fleet.kill takes this lock, so a copy already on its way is flattened by it)
+            if self.fleet.killed() or self.spec.get("killed"):
+                self.skip(et_, "kill switch pressed before the copy went out (not sent)", now)
+                return
             h = firms.hedge_conflict(order, self.fleet.positions(exclude=self))
             if h:
                 self.skip(et_, h, now)
@@ -828,7 +876,7 @@ class Fleet:
         self._notify_hook = notify
         self.notes: list = []
         self.mx = threading.RLock()
-        self.entry_mx = threading.Lock()          # the no-hedge check + the entry order, one follower at a time
+        self.entry_mx = threading.RLock()         # the no-hedge check + the entry order, one follower at a time (+ kill)
         self._kill = False
         reserved = self._reserved()
         ids, names, specs = set(), set(), []
@@ -879,7 +927,8 @@ class Fleet:
         out = {}
         b = self.bot
         try:
-            nm = (getattr(b, "cfg", None) or {}).get("nt_account")
+            # the start cfg's Name, else the account the bot's NinjaTrader adapter resolved (NINJATRADER_ACCOUNT)
+            nm = (getattr(b, "cfg", None) or {}).get("nt_account") or getattr(getattr(b, "adapter", None), "account", None)
             if nm:
                 out[str(nm)] = "Zlarior"
         except Exception:
@@ -989,6 +1038,7 @@ class Fleet:
         by_id = {r.get("id"): r for r in self.cfg.get("accounts") or [] if isinstance(r, dict)}
         reserved = self._reserved()
         keep = []
+        pend = set()                             # open followers whose new entry waits until they are flat (Fleet.tick)
         ids, names = set(), set()
         for f in self.followers:
             r = by_id.get(f.id)
@@ -996,6 +1046,7 @@ class Fleet:
                 if f.pos is not None:
                     keep.append(f)               # removed while open: managed until flat, no new entry
                     f.problem = "removed from the fleet (closing)"
+                    pend.add(f.id)
                 continue
             n = normalize(r, ids, names, reserved)
             ids.add(n["id"])
@@ -1005,12 +1056,16 @@ class Fleet:
                     json.dumps({k: v for k, v in f.spec.items() if k != "label"}, sort_keys=True, default=str):
                 keep.append(f)
                 continue
-            if f.pos is not None and n.get("nt_account") == f.spec.get("nt_account"):
+            if f.pos is not None:
+                # an open copy keeps its old settings (its own account / adapter) until it is flat, also when its NinjaTrader
+                # Name changed (--to-funded --account, a hand edit): rebuilt on the new Name it would be forgotten, unmanaged
+                # and invisible to every no-hedge check (reviewer 2026-10-30)
                 f.spec["killed"] = n["killed"]   # a kill / off reaches an open follower at once; the rest once it is flat
                 f.spec["enabled"] = n["enabled"]
                 if not n["enabled"]:
                     f.problem = "switched off (enabled false)"
                 keep.append(f)
+                pend.add(f.id)
                 continue
             nf = Follower(n, self)
             nf.restore(f.blob())
@@ -1025,6 +1080,7 @@ class Fleet:
                 keep.append(nf)
                 self._start_one(nf)
         self.followers = keep
+        self._pend = pend
         self.save()
 
     def _start_one(self, f):
@@ -1101,6 +1157,13 @@ class Fleet:
 
     def tick(self, sym="NQ", now=None):
         now = int(now or self.clock())
+        pend = getattr(self, "_pend", None)
+        if pend and any(f.pos is None for f in self.followers if f.id in pend):
+            try:
+                self.update_cfg(self.cfg)        # a change that waited for an open copy: applied now that it is flat
+            except Exception as e:
+                self._pend = set()
+                self.log("error", f"[fleet] a waiting change could not be applied: {e.__class__.__name__}: {e}")
         leads = {k: lead_snapshot(self.bot, k) for k in LEADS if any(f.lead == k for f in self.followers)}
         ctx = {"now": now, "sym": sym, "leads": leads, "price": self.price(), "started_at": int(getattr(self.bot, "started_at", 0) or 0)}
         live = [f for f in self.followers if f.adapter is not None or f.pos is not None]
@@ -1123,11 +1186,14 @@ class Fleet:
         """Fleet-wide kill: every follower flattened, no new entry (until the bot restarts with the kill flag off)."""
         self._kill = True
         out = []
-        for f in self.followers:
-            if f.pos is None:
-                continue
-            ok = f.flatten("KILL SWITCH", sym, int(self.clock()), {"price": self.price()})
-            out.append({"id": f.id, "ok": bool(ok)})
+        # the kill switch runs in the server's thread: a copy whose order is going out right now (a follower thread inside
+        # the entry lock) finishes first and is flattened here; one still waiting sees the kill flag and is never sent
+        with self.entry_mx:
+            for f in self.followers:
+                if f.pos is None:
+                    continue
+                ok = f.flatten("KILL SWITCH", sym, int(self.clock()), {"price": self.price()})
+                out.append({"id": f.id, "ok": bool(ok)})
         self.save()
         return out
 

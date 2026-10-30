@@ -621,7 +621,8 @@ class LiveBot:
         self._sync_account_b()
         self.acct_c, self._acct_c_sig = None, None
         self._sync_account_c()                          # account C (engine/account_c.py, OFF by default: data/account_c.json)
-        self.fleet, self._fleet_sig = None, None        # the fleet (engine/fleet.py, OFF by default): built at the first poll
+        self.fleet, self._fleet_sig = None, None        # the fleet (engine/fleet.py, OFF by default: no block = nothing)
+        self._fleet_build()                             # built here, not at the first poll: see _fleet_build
         self.running = True
         self.stop_flag.clear()
         if spawn:
@@ -789,7 +790,10 @@ class LiveBot:
         hedge = self.accts.opposite_open(1 if action.get("side") == "buy" else -1) \
             if self.accts is not None and action.get("side") in ("buy", "sell") else None
         if not hedge and getattr(self, "fleet", None) is not None and action.get("side") in ("buy", "sell"):
-            hedge = self.fleet.opposite_open(1 if action.get("side") == "buy" else -1)   # engine/fleet.py: no hedge vs a follower
+            try:                                          # engine/fleet.py: no hedge vs a follower (an error fails closed)
+                hedge = self.fleet.opposite_open(1 if action.get("side") == "buy" else -1)
+            except Exception as e:
+                hedge = f"hedging guard: the fleet's positions are unreadable ({e.__class__.__name__}): not routed"
         try:
             # extra accounts: never long on one account and short on another (engine/multi_account.opposite_open)
             res = {"ok": False, "error": "REFUSED: " + hedge} if hedge else self.adapter.send(action)
@@ -2470,6 +2474,22 @@ class LiveBot:
             blk = _fl.raw_cfg()
         return blk if isinstance(blk, dict) and blk.get("accounts") else None
 
+    def _fleet_build(self):
+        """start(): the fleet built at once (with the followers' open copies restored from its state file). poll_once routes
+        LIT, account C and account B BEFORE _fleet_tick: built only there, a copy still open after a restart was invisible to
+        their no-hedge checks for the whole first poll (an opposite entry could go out while it was open; reviewer
+        2026-10-30). Off (no block) = nothing; a failure leaves it to _fleet_tick at the first poll. Never raises."""
+        try:
+            blk = self._fleet_block()
+            if blk is None:
+                return
+            from . import fleet as _fl
+            self.fleet = _fl.build(self, blk)
+            self._fleet_sig = json.dumps(blk, sort_keys=True, default=str)
+        except Exception as e:
+            self.fleet, self._fleet_sig = None, None
+            self._note_error(f"fleet not started yet: {e.__class__.__name__}: {e}")
+
     def _fleet_tick(self, sym, now):
         """After LIT, account C and account B routed: every follower copies its lead. Never raises; off = returns at once."""
         try:
@@ -2485,12 +2505,15 @@ class LiveBot:
                         self.fleet = None
                         self._fleet_sig = None
                         return
-                else:
-                    if self.fleet is None:
-                        self.fleet = _fl.build(self, blk)
-                    else:
-                        self.fleet.update_cfg(blk)
+                elif self.fleet is None:
+                    self.fleet = _fl.build(self, blk)
                     self._fleet_sig = sig
+                else:
+                    try:
+                        self.fleet.update_cfg(blk)
+                        self._fleet_sig = sig
+                    except Exception as e:      # a broken data/fleet.json entry: the running fleet still manages its copies
+                        self._note_error(f"fleet change NOT applied: {e.__class__.__name__}: {e}")
             if self.fleet is not None:
                 self.fleet.tick(sym, now)
         except Exception as e:
