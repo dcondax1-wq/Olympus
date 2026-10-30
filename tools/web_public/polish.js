@@ -32,9 +32,12 @@
   function alerts() {
     const b = document.getElementById('apBan'), now = nowS();
     const t = b ? ((b.querySelector('.ap-ban b') || b.querySelector('b') || b).textContent || '').trim() : '';
-    if (t && b.querySelector('.ap-ban')) BAN = { lvl: 'bad', text: t.replace(/\s*·\s*tap Got it\s*$/i, ''), t: now };
+    if (t && b.querySelector('.ap-ban')) {
+      const m = String(b.querySelector('a.ap-ban')?.getAttribute('href') || '').match(/^#\/ack(?:\/(.+))?$/);
+      BAN = { lvl: 'bad', text: t.replace(/\s*·\s*tap Got it\s*$/i, ''), t: now, go: 'ack', arg: m && m[1] ? decodeURIComponent(m[1]) : '' };
+    }
     else if (b && !b.querySelector('.ap-ban')) BAN = null;          // the banner is there without a critical alert (a cloud-stale note)
-    return BAN && now - BAN.t < 180 ? [{ lvl: BAN.lvl, text: BAN.text }] : [];
+    return BAN && now - BAN.t < 180 ? [{ lvl: BAN.lvl, text: BAN.text, go: BAN.go, arg: BAN.arg }] : [];
   }
   function model() {
     const h = HD() || {};
@@ -222,6 +225,22 @@
     if (!a) { i.style.opacity = '0'; return; }
     i.dataset.t = a.dataset.t || '';
     i.style.width = a.offsetWidth + 'px'; i.style.transform = `translate3d(${a.offsetLeft}px,0,0)`; i.style.opacity = '1';
+    botDots(T);
+  }
+  // a small light on each bot's tab: green = in a trade (pulsing), amber = armed, red = blocked; nothing while it waits
+  function botDots(T) {
+    let As = [];
+    try { const M = model(); As = M.board && window.MissionUI ? window.MissionUI.accounts(M) : []; } catch (e) { As = []; }
+    for (const k of ['lit', 'atlas', 'blitz']) {
+      const a = T.querySelector(`a[data-t="${k}"]`); if (!a) continue;
+      const A = As.find((x) => x.key === k);
+      const st = !A || A.placeholder ? '' : A.pos ? 'trade' : A.blocks && A.blocks.length ? 'blocked' : A.armed ? 'armed' : '';
+      let d = a.querySelector(':scope > .pl-tdot');
+      if (!st) { if (d) d.remove(); continue; }
+      if (!d) { d = document.createElement('i'); d.className = 'pl-tdot'; d.setAttribute('aria-hidden', 'true'); a.appendChild(d); }
+      d.dataset.s = st;
+      a.setAttribute('aria-label', `${a.textContent.trim()}: ${st === 'trade' ? 'in a trade' : st}`);
+    }
   }
   addEventListener('resize', () => requestAnimationFrame(tabInd), { passive: true });
   (function watchTabs() {          // the bar is rebuilt by nav() (another module loading): put the pill back on the open tab

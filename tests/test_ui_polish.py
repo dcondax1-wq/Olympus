@@ -217,6 +217,8 @@ def part_c(F, tmp, shots):
         check("c. Zlarior, ATLAS and BLITZ: the same five sections in the same order", all(v == ["Today", "Brain", "Trades", "Results", "Rules"] for v in segs.values()), segs)
         ind = pg.evaluate("() => { const i = document.querySelector('#tabs > .pl-tabind'), a = document.querySelector('#tabs a.on'); return i && a ? { t: i.dataset.t, on: a.dataset.t, w: Math.round(parseFloat(i.style.width)), aw: a.offsetWidth } : null; }")
         check("c. the bottom bar: one pill slides to the open tab, in its colour (BLITZ)", ind and ind["t"] == "blitz" == ind["on"] and abs(ind["w"] - ind["aw"]) <= 1, ind)
+        td = pg.evaluate("() => [...document.querySelectorAll('#tabs a .pl-tdot')].map(d => d.parentNode.dataset.t + ':' + d.dataset.s)")
+        check("c. the bottom bar: a light on a bot's tab while it is in a trade (Zlarior)", "lit:trade" in td, td)
         col = pg.evaluate("() => getComputedStyle(document.documentElement).getPropertyValue('--bot').trim()")
         top = pg.query_selector("#page > .pl-bot .su-acct[data-bot='blitz']")
         check("c. a bot tab opens on its account card, in the bot's colour (BLITZ purple)", top is not None and col.lower() in ("#b388ff", "var(--bz)") , col)
@@ -263,11 +265,14 @@ def part_c(F, tmp, shots):
         # layout shift of a fresh open of Home (the first 4 s: home.json, data.json, live.json and the late cards landing);
         # the scroll above scrolls the page, which is no shift. The scrolled position is reset first.
         pg.evaluate("() => scrollTo(0, 0)")
-        pg.goto(base + "?fxoff#/today")
+        ctx.add_init_script("""window.__ls = []; try { new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput)
+          window.__ls.push([+e.value.toFixed(4), Math.round(e.startTime), (e.sources || []).map((x) => x.node ? (x.node.id || String(x.node.className || x.node.nodeName).split(' ')[0]) : '?').join(',')]); }).observe({ type: 'layout-shift', buffered: true }); } catch (e) {}""")
+        pg.reload()                          # a new document (a goto to the same URL + hash would stay in the page)
         pg.wait_for_selector(".pl-home .su-acct", timeout=30000)
         pg.wait_for_timeout(4000)
         cls_ = pg.evaluate("""() => new Promise((res) => { let s = 0; try { new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput) s += e.value; }).observe({ type: 'layout-shift', buffered: true }); } catch (e) {} setTimeout(() => res(s), 600); })""")
         PERF["phone_layout_shift"] = round(cls_, 4)
+        PERF["phone_layout_shift_top"] = sorted(pg.evaluate("() => window.__ls || []"), key=lambda x: -x[0])[:4]
         check("c. no layout shift to speak of on a fresh open of Home (CLS < 0.1)", cls_ < 0.1, cls_)
         check("c. phone: no page errors", not errs, errs[:4])
         ctx.close()
@@ -283,7 +288,7 @@ def part_c(F, tmp, shots):
         sh(pg, "polish_phone_intro.png")
         tk = time.time()
         fading = pg.evaluate("() => { const b = document.getElementById('spSkip'); if (b) b.click(); const s = document.getElementById('splash'); return !s || s.classList.contains('out'); }")      # a tap on Skip: it starts to fade in the same frame
-        pg.wait_for_function("() => !document.getElementById('splash')", timeout=3000)
+        pg.wait_for_function("() => !document.getElementById('splash')", timeout=10000)   # it fades at once; the removal timer can wait on a busy first load here
         gone_s = round(time.time() - tk, 2)
         PERF["intro_skip_s"] = gone_s
         pg.reload()
@@ -370,6 +375,8 @@ def part_d(F, shots):
         side = pg.eval_on_selector_all("#nav > a.nx-gl[data-g='Main']", "els => els.map(e => e.dataset.page)")
         check("d. PC sidebar: Bots · Live · Money · Insight headings, each page once, BLITZ right after ATLAS", subs == ["Bots", "Live", "Money", "Insight"] and len(side) == len(set(side))
               and side.index("blitz") == side.index("atlas") + 1, (subs, side))
+        nd = pg.evaluate("() => [...document.querySelectorAll('#nav a .nx-bdot')].map(d => d.parentNode.dataset.page + ':' + d.dataset.s)")
+        check("d. PC sidebar: a light next to a bot while it is in a trade (Zlarior)", "zlarior:trade" in nd, nd)
         if shots:
             pg.screenshot(path=os.path.join(shots, "polish_pc_home_1440.png"))
         seg = []

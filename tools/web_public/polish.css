@@ -46,7 +46,7 @@
 /* ---------- Home: status, accounts, what matters now, Sunday open, quick tiles; the rest folded ---------- */
 #page.pl-h { display: flex; flex-direction: column; }
 #page.pl-h > * { order: 30; }
-#page.pl-h > #moInst { order: -3; } #page.pl-h > #moStrip { order: -2; } #page.pl-h > #apBan { order: -1; }
+#page.pl-h > #moInst { order: -3; } #page.pl-h > #moStrip { order: -2; } #page.pl-h > #apBan { order: 1; }
 #page.pl-h > .pl-home { order: 0; } #page.pl-h > .pl-fold { order: 5; }
 #page.pl-h > .mc-strip { order: 10; } #page.pl-h > .rc-homebox { order: 11; } #page.pl-h > .rc-wrap { order: 12; } #page.pl-h > .bd-homecut { order: 13; }
 #page.pl-h > .cl-launch { order: 14; } #page.pl-h > .bz-home { order: 15; } #page.pl-h > .cl-plan { order: 16; } #page.pl-h > .lv-home { order: 17; }
@@ -72,8 +72,8 @@
 .pl-now-i.warn { --c: var(--warn); } .pl-now-i.new { --c: #8fa2ff; } .pl-now-i .ico { width: 18px; height: 18px; }
 .pl-now-r strong.pl-badge { min-width: 26px; height: 26px; padding: 0 8px; border-radius: 99px; display: inline-grid; place-items: center; font-size: 12.5px; color: #0b0f1e;
   background: linear-gradient(180deg, #b9c6ff, #8fa2ff); box-shadow: 0 0 14px rgba(143, 162, 255, .55); }
-.pl-now-i.live { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c) 50%, transparent); animation: pl-ring 2.4s var(--out) infinite; }
-@keyframes pl-ring { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c) 45%, transparent); } 100% { box-shadow: 0 0 0 12px transparent; } }
+.pl-now-i { position: relative; } .pl-now-i.live::after { content: ""; position: absolute; inset: -1px; border-radius: inherit; border: 1.5px solid var(--c); opacity: 0; pointer-events: none; animation: pl-ring 2.4s var(--out) infinite; will-change: transform, opacity; }
+@keyframes pl-ring { 0% { transform: scale(1); opacity: .7; } 100% { transform: scale(1.45); opacity: 0; } }
 .pl-quick { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s2); margin: 0 0 var(--s3); }
 .pl-quick a { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: var(--s3) 4px; border-radius: 18px; text-decoration: none; color: var(--ink); cursor: pointer;
   background: var(--glass); border: 1px solid var(--rim); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06); transition: transform .18s var(--spring), border-color .2s; min-width: 0; }
@@ -119,6 +119,13 @@
 .pl-tabind[data-t="lit"] { --ti: var(--zl); } .pl-tabind[data-t="atlas"] { --ti: var(--at); } .pl-tabind[data-t="blitz"] { --ti: var(--bz); }
 .tabs.pl-slide a { position: relative; z-index: 1; } .tabs.pl-slide a.on { background: none !important; box-shadow: none !important; }
 @media (prefers-reduced-motion: reduce) { .pl-tabind { transition: none; } }
+/* each bot's tab: a light when it is in a trade (green, pulsing), armed (amber) or blocked (red) */
+.tabs a { position: relative; }
+.pl-tdot { position: absolute; top: 9px; left: calc(50% + 8px); width: 8px; height: 8px; border-radius: 50%; border: 2px solid var(--surface, #10131a); pointer-events: none; box-sizing: content-box; }
+.pl-tdot[data-s="trade"] { background: var(--good); box-shadow: 0 0 8px var(--good); animation: pl-breathe 2s ease-in-out infinite; }
+.pl-tdot[data-s="armed"] { background: var(--warn); box-shadow: 0 0 8px var(--warn); }
+.pl-tdot[data-s="blocked"] { background: var(--bad); box-shadow: 0 0 8px var(--bad); }
+@media (prefers-reduced-motion: reduce) { .pl-tdot { animation: none !important; } }
 .tabs a[data-t="lit"].on { --accent: var(--zl); } .tabs a[data-t="atlas"].on { --accent: var(--at); } .tabs a[data-t="blitz"].on { --accent: var(--bz); }
 .tabs a.on .ico { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 70%, transparent)); }
 
@@ -194,7 +201,7 @@
 
 /* ---------- reduced motion: no animation at all ---------- */
 @media (prefers-reduced-motion: reduce) {
-  :root[data-polish="on"] .page, .pl-in, :root[data-polish="on"] .su-ring .v, :root[data-polish="on"] .su-spark .ln, .pl-now-i.live, :root[data-polish="on"] .live-chip .dot { animation: none !important; }
+  :root[data-polish="on"] .page, .pl-in, :root[data-polish="on"] .su-ring .v, :root[data-polish="on"] .su-spark .ln, .pl-now-i.live::after, :root[data-polish="on"] .live-chip .dot { animation: none !important; }
   .space-css > * { transform: none !important; }
   .pl-pal-in, .pl-pal-bg { transition: none; }
 }

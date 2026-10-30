@@ -18,6 +18,15 @@
 #nav > a.nx-gl[data-page="zlarior"] .nx-ni { color: var(--zl); } #nav > a.nx-gl[data-page="atlas"] .nx-ni { color: var(--at); } #nav > a.nx-gl[data-page="blitz"] .nx-ni { color: var(--bz); }
 #nav > a.nx-gl[data-page="zlarior"].active { box-shadow: inset 3px 0 0 var(--zl); } #nav > a.nx-gl[data-page="atlas"].active { box-shadow: inset 3px 0 0 var(--at); } #nav > a.nx-gl[data-page="blitz"].active { box-shadow: inset 3px 0 0 var(--bz); }
 
+#nav > a.nx-gl { position: relative; }
+.nx-bdot { all: unset; display: block; box-sizing: border-box; position: absolute; right: 14px; top: 50%; width: 8px !important; height: 8px !important; margin-top: -4px; border-radius: 50%; pointer-events: none; }
+.nx-bdot[data-s="trade"] { background: var(--good, #2ee59d); box-shadow: 0 0 10px var(--good, #2ee59d); animation: nxBreathe 2s ease-in-out infinite; }
+.nx-bdot[data-s="armed"] { background: var(--warn, #f7b955); box-shadow: 0 0 8px var(--warn, #f7b955); }
+.nx-bdot[data-s="blocked"] { background: var(--bad, #ff5a7a); box-shadow: 0 0 8px var(--bad, #ff5a7a); }
+@keyframes nxBreathe { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .55; transform: scale(.8); } }
+:root[data-side="mini"] .nx-bdot { right: 6px; top: 12px; margin-top: 0; }
+@media (prefers-reduced-motion: reduce) { .nx-bdot { animation: none !important; } }
+
 /* motion: the page rises in, then its first cards one after another */
 :root[data-polish="on"] .nx .page.active { animation: plPage .36s var(--pl-out); }   /* no fill-mode (see the phone polish.css) */
 @keyframes plPage { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: none; } }

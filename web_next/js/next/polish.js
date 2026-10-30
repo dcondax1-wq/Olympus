@@ -55,11 +55,26 @@ function place() {
   if (box.__h !== html) { box.innerHTML = html; box.__h = html; SU.tick(box); }
   SU.wire(box);
 }
+// the sidebar: a light next to each bot (green = in a trade, amber = armed, red = blocked; nothing while it waits)
+function navDots() {
+  let As = [];
+  try { As = LAST && LAST.board && window.MissionUI ? window.MissionUI.accounts(LAST) : []; } catch (e) { As = []; }
+  for (const [k, page] of [['lit', 'zlarior'], ['atlas', 'atlas'], ['blitz', 'blitz']]) {
+    const a = document.querySelector(`#nav > a.nx-gl[data-page="${page}"]`); if (!a) continue;
+    const A = As.find((x) => x.key === k);
+    const st = !A || A.placeholder ? '' : A.pos ? 'trade' : A.blocks && A.blocks.length ? 'blocked' : A.armed ? 'armed' : '';
+    let d = a.querySelector(':scope > .nx-bdot');
+    if (!st) { if (d) d.remove(); continue; }
+    if (!d) { d = document.createElement('i'); d.className = 'nx-bdot'; d.setAttribute('aria-hidden', 'true'); a.appendChild(d); }
+    d.dataset.s = st; d.title = st === 'trade' ? 'in a trade' : st;
+  }
+}
 async function refresh() {
   try { await Promise.all([loadStatusCore(), loadMissionCore()]); } catch (e) { return; }
   LAST = await model();
   window.StatusUI.css();
   if (active('cc')) place();
+  try { navDots(); } catch (e) { /* optional */ }
 }
 // Ctrl K: each bot's five sections and the status verdict, next to the pages the palette already lists
 function paletteItems() {

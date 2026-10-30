@@ -162,6 +162,10 @@
   const goA = (o, id, arg) => (o && typeof o.go === 'function' ? o.go(id, arg) : `data-go="${esc(id)}"${arg ? ` data-arg="${esc(arg)}"` : ''}`);
 
   // ------------------------------------------------------------------ the status bar
+  function ackRow(S, o) {
+    const A = S.items.find((x) => x.k === 'alerts'), a = A && A.list ? A.list.find((x) => x && x.go) : null;
+    return a ? `<a class="su-ack" ${goA(o, a.go, a.arg)}><i class="su-dot bad live"></i><span><b>${esc(a.text)}</b><em>Tap to see it and acknowledge (Got it)</em></span><span class="su-ack-go" aria-hidden="true">›</span></a>` : '';
+  }
   function bar(M, o) {
     o = o || {}; M = obj(M);
     const S = summary(M), open = !!o.open;
@@ -169,7 +173,7 @@
     const rows = S.items.map((x) => `<li class="${x.lvl}">${dot(x.lvl, x.live)}<div><b>${esc(x.label)} · ${esc(x.value)}</b>${x.detail ? `<span>${esc(x.detail)}</span>` : ''}${x.fix && x.lvl !== 'good' ? `<em>Fix: ${esc(x.fix)}</em>` : ''}${x.list ? `<ul>${x.list.map((a) => `<li class="${esc(a.lvl)}">${esc(a.text)}</li>`).join('')}</ul>` : ''}</div>${x.bot ? `<a class="su-go" ${goA(o, PAGE[o.where === 'pc' ? 'pc' : 'phone'][x.bot])} aria-label="Open ${esc(x.label)}">›</a>` : ''}</li>`).join('');
     return `<section class="su-bar ${S.lvl}${open ? ' open' : ''}" aria-label="Status: ${esc(S.title)}" data-su-bar>
       <button type="button" class="su-sum" aria-expanded="${open}" data-su-toggle>${dot(S.lvl, S.lvl === 'good')}<span class="su-t"><b>${esc(S.title)}</b><em>${esc(S.why)}</em></span><span class="su-chev" aria-hidden="true"></span></button>
-      <div class="su-chips">${chips}</div>
+      ${ackRow(S, o)}<div class="su-chips">${chips}</div>
       <div class="su-more"><div><ul class="su-list">${rows}</ul>${o.more ? `<div class="su-links">${o.more}</div>` : ''}</div></div></section>`;
   }
 
@@ -335,6 +339,9 @@
 .su-dot.live::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1.5px solid currentColor;color:inherit;border-color:inherit;background:none;opacity:0;animation:su-ping 2.4s cubic-bezier(.2,.8,.2,1) infinite}
 .su-dot.good.live::after{border-color:var(--good,#2ee59d)}
 @keyframes su-ping{0%{transform:scale(.6);opacity:.9}80%,100%{transform:scale(1.9);opacity:0}}
+.su-ack{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:10px;margin:0 16px 10px;padding:10px 12px;border-radius:14px;background:color-mix(in srgb,var(--bad,#ff5a7a) 12%,transparent);border:1px solid color-mix(in srgb,var(--bad,#ff5a7a) 40%,transparent)}
+.su-ack>span:not(.su-ack-go){flex:1;min-width:0;display:flex;flex-direction:column}.su-ack b{font-size:13.5px;color:var(--bad,#ff5a7a);font-weight:700}.su-ack em{font-style:normal;font-size:12px;color:var(--ink-2,#a9b1c3)}
+.su-ack-go{font-size:20px;color:var(--bad,#ff5a7a)}
 .su-chips{display:flex;gap:6px;overflow-x:auto;padding:2px 16px 14px;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
 .su-chips::-webkit-scrollbar{display:none}
 .su-chip{flex:none;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:99px;font-size:12px;color:var(--ink-2,#a9b1c3);background:rgba(255,255,255,.04);border:1px solid rgba(160,170,220,.12);white-space:nowrap}
@@ -355,10 +362,9 @@
   border:1px solid color-mix(in srgb,var(--c) 26%,rgba(160,170,220,.12));box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 18px 44px -28px color-mix(in srgb,var(--c) 60%,transparent);transition:transform .18s cubic-bezier(.2,.8,.2,1),border-color .2s}
 .su-acct::after{content:"";position:absolute;left:16px;right:16px;top:0;height:1px;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--c) 70%,#fff),transparent);opacity:.55}
 .su-acct:active{transform:scale(.985)}
-@property --su-a{syntax:"<angle>";inherits:false;initial-value:0deg}
-.su-acct.trading{border-color:transparent;background:radial-gradient(120% 140% at 0% 0%,color-mix(in srgb,var(--c) 18%,transparent),transparent 55%) padding-box,linear-gradient(180deg,rgba(22,26,38,.86),rgba(11,13,21,.82)) padding-box,conic-gradient(from var(--su-a),transparent 0 62%,color-mix(in srgb,var(--c) 90%,#fff) 78%,transparent 92%) border-box,linear-gradient(color-mix(in srgb,var(--c) 30%,transparent),color-mix(in srgb,var(--c) 30%,transparent)) border-box;
-  border:1.5px solid transparent;animation:su-orbit 4.5s linear infinite;box-shadow:0 0 0 1px color-mix(in srgb,var(--c) 18%,transparent),0 18px 50px -24px var(--c)}
-@keyframes su-orbit{to{--su-a:360deg}}
+.su-acct.trading{border-color:color-mix(in srgb,var(--c) 55%,transparent)}
+.su-acct.trading::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 0 1.5px var(--c),0 0 26px -6px var(--c);opacity:.25;animation:su-glow 2.6s ease-in-out infinite;will-change:opacity}
+@keyframes su-glow{50%{opacity:1}}
 @media (hover:hover){.su-acct:hover{border-color:color-mix(in srgb,var(--c) 50%,transparent)}}
 .su-acct.ph{opacity:.88}
 .su-a-h{grid-area:h;display:flex;align-items:center;gap:8px;min-width:0}.su-a-h b{font-size:15px;font-weight:750;color:var(--c);letter-spacing:.01em}
@@ -415,7 +421,7 @@
 :root[data-theme="light"] .su-acct{background:radial-gradient(120% 140% at 0% 0%,color-mix(in srgb,var(--c) 12%,transparent),transparent 55%),linear-gradient(180deg,#fff,#f6f8fc)}
 :root[data-theme="light"] .su-chip{background:rgba(20,30,60,.04);border-color:rgba(20,30,60,.1)}
 :root[data-theme="light"] .su-ring .bg{stroke:rgba(20,30,60,.08)}:root[data-theme="light"] .su-ring.down b{color:#c8264a}:root[data-theme="light"] .su-wd em{color:#5b6478}
-@media (prefers-reduced-motion:reduce){.su-acct.trading{animation:none}.su-dot.live::after{animation:none}.su-more,.su-acct,.su-chev{transition:none}}
+@media (prefers-reduced-motion:reduce){.su-acct.trading::before{animation:none;opacity:.7}.su-dot.live::after{animation:none}.su-more,.su-acct,.su-chev{transition:none}}
 `;
   function css() { if (typeof document === 'undefined' || document.getElementById('su-css')) return; const s = document.createElement('style'); s.id = 'su-css'; s.textContent = CSS; document.head.appendChild(s); }
 
