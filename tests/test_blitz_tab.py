@@ -130,11 +130,12 @@ def part_a():
     check("a. phone index loads blitzcore / mindcore / deckcore / blitz.js after holo.js, in that order", all(i > 0 for i in order) and order == sorted(order), order)
     check("a. caches: phone le-public-v45+, PC le-shell-next-v27+; clean.js?v=3 kept", int(re.search(r"le-public-v(\d+)", psw).group(1)) >= 45
           and int(re.search(r"le-shell-next-v(\d+)", sw).group(1)) >= 27 and 'clean.js?v=3"' in pidx)
-    check("a. clean.js: six tabs, BLITZ sections Today · Brain · Trades · Results · Rules · Go live", "['today', 'lit', 'atlas', 'blitz', 'money', 'system']" in cl
-          and "['Go live', ['blitz/golive'], []]" in cl and "blitz: ['BLITZ', 'blitz']" in cl)
+    # 2026-10-30 (night 3, layout deliberately changed): every bot tab is Today · Brain · Trades · Results · Rules; Go live is a chip under Rules
+    check("a. clean.js: six tabs, BLITZ sections Today · Brain · Trades · Results · Rules (+ the Go live chip)", "['today', 'lit', 'atlas', 'blitz', 'money', 'system']" in cl
+          and "['Rules', ['blitz/rules', 'blitz/golive'], []]" in cl and "blitz: ['BLITZ', 'blitz']" in cl)
     rt, app, srv = rd("web_next", "js", "next", "routes.js"), rd("web_next", "js", "app.js"), rd("server.py")
     check("a. PC: BLITZ after ATLAS in Main, its six sections, Mind + Trader's deck pages, app.js registers them", "g.ids.indexOf('atlas'); g.ids.splice(i >= 0 ? i + 1" in rt
-          and "['Go live', ['blitz:golive']]" in rt and "PAGES.blitz = blitzPage" in app and "PAGES.mind = mindPage" in app and "initBlitzSync()" in app
+          and "['Rules', ['blitz:rules', 'blitz:golive']]" in rt and "PAGES.blitz = blitzPage" in app and "PAGES.mind = mindPage" in app and "initBlitzSync()" in app
           and all(f'id="page-{p}"' in rd("web_next", "index.html") for p in ("blitz", "mind", "deck")))
     check("a. server.py: GET /api/next/blitz (blitz.card + account C's block, never 500)", '@app.get("/api/next/blitz")' in srv and "BZ.card(getattr(BOT, \"blitz\", None))" in srv)
     for n in ("blitzcore.js", "mindcore.js", "deckcore.js", "blitz.js"):
@@ -323,7 +324,7 @@ def part_c(F, tmp, shots):
         errs = []
         ctx, pg = phone_ctx(br, F, lvp, "off", errs, seen=F["T"] - 4 * 3600)
         pg.goto(base + "?fxoff#/today")
-        pg.wait_for_selector(".cl-hero", timeout=30000)
+        pg.wait_for_selector(".su-acct", timeout=30000)
         pg.wait_for_function("() => window.LIVE && window.LIVE.j", timeout=30000)
         pg.wait_for_timeout(1200)
         pg.evaluate("() => { if (typeof render === 'function') render(true); }")
@@ -334,11 +335,14 @@ def part_c(F, tmp, shots):
         tabs = pg.eval_on_selector_all("#tabs a", "els => els.map(e => { const r = e.getBoundingClientRect(), s = e.querySelector('span'); return [s.textContent.trim(), Math.round(r.width), Math.round(r.height), s.scrollWidth <= s.clientWidth + 1]; })")
         check("c. phone bottom bar = Home · Zlarior · ATLAS · BLITZ · Money · More", [t[0] for t in tabs] == ["Home", "Zlarior", "ATLAS", "BLITZ", "Money", "More"], tabs)
         check("c. six tabs fit 390 px: each >= 44 x 44 px, every label readable (not clipped)", all(t[1] >= 44 and t[2] >= 44 and t[3] for t in tabs), tabs)
-        check("c. Home: the hero cards stay first (Zlarior, ATLAS, then the plan line)", pg.evaluate(
-            "() => { const L = [...document.querySelector('#page').querySelectorAll('.card:not(#moInst):not(.cl-launch)')]; "
-            "return L.length > 3 && L[0].classList.contains('cl-hero') && L[1].classList.contains('cl-hero') && L[2].classList.contains('cl-plan'); }"))
+        # 2026-10-30 (night 3, layout deliberately changed): the status bar, then Zlarior · ATLAS · BLITZ account cards
+        check("c. Home: the status bar first, then the three account cards (Zlarior, ATLAS, BLITZ)", pg.evaluate(
+            "() => { const h = document.querySelector('#page > .pl-home'); if (!h) return false; const A = [...h.querySelectorAll('.su-acct')].map(e => e.dataset.bot); "
+            "return [...h.children].filter((c) => !c.classList.contains('pl-hi'))[0].classList.contains('su-bar') && A.join() === 'lit,atlas,blitz'; }"))
+        pg.click("#page > .pl-fold")            # the deck + Mind cards sit under "Everything else on Home" (one tap)
+        pg.wait_for_timeout(400)
         ht = pg.inner_text("#page")
-        check("c. Home: since you last looked (4 h ago), risk meter, next 24 h, the Mind card", "SINCE YOU LAST LOOKED" in ht.upper() and "RISK METER" in ht.upper()
+        check("c. Home > Everything else: since you last looked (4 h ago), risk meter, next 24 h, the Mind card", "SINCE YOU LAST LOOKED" in ht.upper() and "RISK METER" in ht.upper()
               and "NEXT 24 HOURS" in ht.upper() and "MIND · TODAY" in ht.upper(), ht[:400])
         check("c. Home: no sideways scroll", no_x(pg) <= 1, no_x(pg))
         if shots:
@@ -351,7 +355,7 @@ def part_c(F, tmp, shots):
         pg.wait_for_selector(".bl-wrap .bl-hero", timeout=10000)
         pg.wait_for_timeout(600)
         seg = pg.eval_on_selector_all("#sub .zl-seg button", "els => els.map(e => e.textContent.trim())")
-        check("c. BLITZ tab sections: Today · Brain · Trades · Results · Rules · Go live", seg == ["Today", "Brain", "Trades", "Results", "Rules", "Go live"], seg)
+        check("c. BLITZ tab sections: Today · Brain · Trades · Results · Rules (the same five on every bot tab)", seg == ["Today", "Brain", "Trades", "Results", "Rules"], seg)
         t = pg.inner_text("#page")
         tu = t.upper()          # innerText follows the CSS uppercase labels
         check("c. BLITZ > Today: next check, noise band, day filter verdict, signals, open PAPER position, account C OFF",
@@ -369,7 +373,7 @@ def part_c(F, tmp, shots):
             tt = pg.inner_text("#page")
             on = pg.eval_on_selector("#sub .zl-seg button.on", "e => e.textContent.trim()")
             check(f"c. #/blitz/{part}: {', '.join(want)}; its section is lit; BLITZ tab on; no sideways scroll",
-                  all(w in tt for w in want) and on == dict(BU_PARTS)[part] and pg.eval_on_selector("#tabs a.on", "e => e.dataset.t") == "blitz" and no_x(pg) <= 1,
+                  all(w in tt for w in want) and on == SEG_OF.get(part, dict(BU_PARTS)[part]) and pg.eval_on_selector("#tabs a.on", "e => e.dataset.t") == "blitz" and no_x(pg) <= 1,
                   (on, tt[:300], no_x(pg)))
             sh(pg, f"phone_blitz_{part}.png", part in ("results", "trades"))
         # the Mind on each bot
@@ -464,6 +468,7 @@ def part_c(F, tmp, shots):
 
 
 BU_PARTS = [("today", "Today"), ("brain", "Brain"), ("trades", "Trades"), ("results", "Results"), ("rules", "Rules"), ("golive", "Go live")]
+SEG_OF = {"golive": "Rules"}          # 2026-10-30: Go live is a chip under Rules (the five sections are the same on every bot tab)
 
 
 # ------------------------------------------------------------------------------------------------ d. PC (Playwright on server.py)
@@ -551,18 +556,21 @@ def part_d(F, shots):
         pg.wait_for_selector("#page-blitz .bl-hero", timeout=30000)
         pg.wait_for_timeout(1200)
         seg = pg.eval_on_selector_all("#nxSub .nx-botseg button", "els => els.map(e => e.textContent.trim())")
-        check("d. PC BLITZ: section bar Today · Brain · Trades · Results · Rules · Go live", seg == [x[1] for x in BU_PARTS], seg)
+        check("d. PC BLITZ: section bar Today · Brain · Trades · Results · Rules (Go live is a chip under Rules)", seg == [x[1] for x in BU_PARTS[:5]], seg)
         t = pg.inner_text("#page-blitz")
         check("d. PC BLITZ > Today: the band, the day filter, ARMED · REAL (account C from /api/next/blitz), the REAL position", "ARMED · REAL" in t.upper()
               and re.search(r"REAL (LONG|SHORT)", t) and pg.query_selector("#page-blitz .bl-band") is not None, t[:400])
         if shots:
             pg.screenshot(path=os.path.join(shots, "pc_blitz_today_1440.png"))
         for i, (part, label) in enumerate(BU_PARTS[1:], 1):
-            pg.click(f"#nxSub .nx-botseg button:nth-child({i + 1})")
+            if part in SEG_OF:
+                pg.click(f"#nxSub .nx-botchips button:has-text('{label}')")
+            else:
+                pg.click(f"#nxSub .nx-botseg button:nth-child({i + 1})")
             pg.wait_for_selector(f"#page-blitz .bl-wrap[data-bl-part='{part}']", timeout=15000)
             pg.wait_for_timeout(500)
             on = pg.eval_on_selector("#nxSub .nx-botseg button.on", "e => e.textContent.trim()")
-            check(f"d. PC BLITZ > {label}: drawn, its section lit", on == label, on)
+            check(f"d. PC BLITZ > {label}: drawn, its section lit", on == SEG_OF.get(part, label), on)
             if shots:
                 pg.screenshot(path=os.path.join(shots, f"pc_blitz_{part}_1440.png"), full_page=part in ("results",))
         pc_go(pg, "brain")

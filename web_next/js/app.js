@@ -68,6 +68,7 @@ import { mission as missionPage, initMissionSync } from './next/mission.js';   /
 import { holo as holoPage } from './next/holo.js';   // Holodeck: the day in 3D (holocore.js, fx.js holo.js; read-only, 2026-10-29)
 import { blitz as blitzPage, mind as mindPage, deck as deckPage, initBlitzSync } from './next/blitz.js';   // BLITZ, the Mind, Trader's deck (read-only, 2026-10-29)
 import { fleet as fleetPage } from './next/fleet.js';   // Fleet: copy trading to the follower accounts (engine/fleet_api.py, read-only, 2026-10-30)
+import { initPolish } from './next/polish.js';   // status bar + Sunday open on Home, sidebar sections, motion (statuscore.js, read-only, 2026-10-30)
 
 const TITLES_CLASSIC = { command: 'Command Center', briefing: 'Pre-market Briefing', chart: 'Chart', replay: 'Replay', backtest: 'Backtest Lab',
   prop: 'Prop Firms', robust: 'Robustness', conf: 'Confluence Lab', news: 'Markets & News', live: 'Live Bot', journal: 'Journal',
@@ -570,6 +571,7 @@ async function boot() {
   initFX();
   initMissionSync();                  // the deep-space satellites / shooting stars / aurora follow the bots (mission.js)
   initBlitzSync();                    // Home / Bot Brain / ATLAS > Brain / Mission Control cards: Trader's deck + the Mind (blitz.js)
+  initPolish();                       // Home's status bar + the Sunday open card, the motion layer (polish.js)
   applyAppearance();
   installSpotlight();
   startSoundWatch();

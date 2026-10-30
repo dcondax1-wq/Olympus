@@ -60,7 +60,11 @@
 // Home), Trader's deck (deckcore.js, #/deck: risk meter, next 24 h, eval odds from today's balance, real P&L calendar, trade journal,
 // notification center, since you last looked, Holodeck replays), holo.js (#/holo/<day> opens that day), clean.js (the sixth tab;
 // ?v=3 kept, the new cache name refreshes it). New cache name so every iPhone refreshes.
-const CACHE = 'le-public-v45';
+// v46 (2026-10-30 night 3, "organized, clean ... shock me"): statuscore.js + polish.js + polish.css (one status bar, the three
+// account cards with eval rings + sparklines, what matters now, the Sunday open card, quick tiles, everything else folded;
+// one section order on every bot tab: Today · Brain · Trades · Results · Rules; Money = real money only; the search palette;
+// the motion system and the once-a-day intro). New cache name so every iPhone refreshes (clean.js?v=3 kept).
+const CACHE = 'le-public-v46';
 const BADGE = 'le-badge', BADGE_URL = './__badge';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=k31025', './icons/apple-touch-icon.png?v=k31025', './icons/icon-512.png?v=k31025'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });

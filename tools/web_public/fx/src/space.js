@@ -290,7 +290,9 @@ export class Space extends View {
     const t0 = performance.now();
     const big = !Q.phone && !lite && !this.soft;
     const cap = +((location.search.match(/[?&]fxbake=(\d+)/) || [])[1] || 0);          // ?fxbake=1024: cap the bakes (screenshots in a slow software GPU)
-    const eW = Math.min(cap || 4096, this.soft ? 512 : big ? 2048 : 1024), sW = Math.min(cap || 4096, this.soft ? 512 : big ? 2048 : 1024);
+    // 2026-10-30: a sharper Earth on a Retina phone at Max (1536 wide, one bake at load); Lite / small screens stay at 1024
+    const sharp = Q.phone && !lite && !this.soft && (devicePixelRatio || 1) >= 2;
+    const eW = Math.min(cap || 4096, this.soft ? 512 : big ? 2048 : sharp ? 1536 : 1024), sW = Math.min(cap || 4096, this.soft ? 512 : big ? 2048 : 1024);
     this.tA = this.bake(0, eW, eW / 2, true); this.tC = this.bake(1, eW / 2, eW / 4, true);
     this.tS = this.bake(2, sW, sW / 2, true); this.tM = this.bake(3, 256, 128, true);
     this.stats.bakeMs = Math.round(performance.now() - t0);

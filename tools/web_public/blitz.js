@@ -48,6 +48,8 @@
     return BU.model({ now: Date.now() / 1000, where: 'phone', lv: LV(), card: h.blitz || null, ac: acctC(), board: B && B.blitz, preflight: h.blitz_preflight || null });
   };
   const dModel = () => ({ now: Date.now() / 1000, where: 'phone', board: board(), lv: LV(), mind: mind(), news: news(), cal: ((HD() || {}).goals || {}).calendar || null, acc: acctC() });
+  // polish.js (the status bar, the account cards, the palette) reads the same data the BLITZ tab reads
+  window.PhoneData = { board, mind, acctC, news, bModel, dModel };
   // Live View's loader fetches liveview.json (BLITZ's layer, the Mind, the feed) once when no page has loaded it yet
   function needLv(redraw) {
     const L = window.LVP;

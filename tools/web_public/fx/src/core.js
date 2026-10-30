@@ -84,8 +84,8 @@ export function rimMaterial(colorA, colorB, power = 3, k = 1.6) {
 // soft round point sprites with per-point colour / size / alpha (fragment part shared by the particle systems)
 export const POINT_FRAG = `varying vec3 vColor; varying float vAlpha;
 void main(){ vec2 q = gl_PointCoord - 0.5; float d = dot(q, q) * 4.0; if (d > 1.0) discard;
-  float a = (1.0 - d); a = a * a; float core = exp(-d * 18.0);
-  gl_FragColor = vec4(vColor * (a * 0.55 + core * 0.9) * vAlpha, 1.0); }`;
+  float a = (1.0 - d); a = a * a; float core = exp(-d * 18.0), pin = exp(-d * 70.0);   // 2026-10-30: a crisp pin-point centre, a softer halo
+  gl_FragColor = vec4(vColor * (a * 0.42 + core * 0.8 + pin * 0.55) * vAlpha, 1.0); }`;
 
 // tiny deterministic RNG so scenes look the same on every load
 export function rng(seed = 7) { let s = seed >>> 0 || 1; return () => (s = (s * 16807) % 2147483647) / 2147483647; }

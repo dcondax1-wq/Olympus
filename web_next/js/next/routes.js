@@ -129,35 +129,41 @@ export const NAV_NAMES = { cc: 'Home', start: 'Start', real: 'Real results', dat
 
 // The two bot pages (2026-10-25 PM): a segmented control on top picks the section; a section with several pages shows
 // them as chips. "atlas:brain" = the one ATLAS page showing one part (second.js atlasPart). Each page belongs to one bot.
+// 2026-10-30 (night 3, "organized, clean"): the three bots share ONE order and the same words as the phone:
+//   Today · Brain · Trades · Results · Rules  (Zlarior's Plan & levels pages are chips under Today, its Strategy is Rules;
+//   ATLAS's Setups is Rules; BLITZ's Go live is a chip under Rules). Every page keeps its id and link.
 export const BOTS = {
   zlarior: { name: 'Zlarior', sub: 'LIT method · 50K', segs: [
-    ['Today', ['botctl', 'accounts', 'evalhq', 'evaltl', 'litcockpit', 'command']],
+    ['Today', ['botctl', 'accounts', 'evalhq', 'evaltl', 'litcockpit', 'litday', 'litlevels', 'livechart', 'briefing', 'chart', 'command']],
     ['Brain', ['brain']],
     ['Trades', ['trades', 'tradelog', 'journal', 'review', 'memory']],
-    ['Plan & levels', ['litday', 'litlevels', 'livechart', 'chart', 'briefing']],
     ['Results', ['perf', 'pnlcal', 'edge', 'learnlit']],
-    ['Strategy', ['strategy', 'rules', 'risk', 'mffurules', 'livesettings']],
+    ['Rules', ['strategy', 'rules', 'risk', 'mffurules', 'livesettings']],
   ] },
   atlas: { name: 'ATLAS', sub: '25K', segs: [
     ['Today', ['atlas']], ['Brain', ['atlas:brain']], ['Trades', ['atlas:trades']],
-    ['Setups', ['atlas:setups', 'atlassetups']], ['Results', ['atlas:results', 'learnatlas']],
+    ['Results', ['atlas:results', 'atlassetups', 'learnatlas']], ['Rules', ['atlas:setups']],
   ] },
   // BLITZ (2026-10-29): the one BLITZ page in parts ("blitz:brain" = blitz.js part, store nx.bzPart), like ATLAS
   blitz: { name: 'BLITZ', sub: 'scalper · 25K', segs: [
     ['Today', ['blitz']], ['Brain', ['blitz:brain']], ['Trades', ['blitz:trades']], ['Results', ['blitz:results']],
-    ['Rules', ['blitz:rules']], ['Go live', ['blitz:golive']],
+    ['Rules', ['blitz:rules', 'blitz:golive']],
   ] },
 };
 export const BOT_CHIP = { botctl: 'Bot control', accounts: '50K account', evalhq: 'Eval HQ', evaltl: 'Eval timeline', litcockpit: 'Eval cockpit', command: 'Today (classic)',
   trades: 'Trades', tradelog: 'Trade log', journal: 'Journal', review: 'Weekly review', memory: 'Memory', litday: 'Day plan', litlevels: 'Levels', livechart: 'Live chart',
   chart: 'Chart', briefing: 'Briefing', perf: 'Performance', pnlcal: 'P&L calendar', edge: 'Edge', strategy: 'Strategy', rules: 'Rules (STRATEGY.md)', risk: 'Risk & sizing',
   mffurules: 'MFFU rules', livesettings: 'Live settings', 'atlas:setups': 'Rules & members', atlassetups: 'Per setup',
-  'atlas:results': 'Results', learnlit: 'Learning', learnatlas: 'Learning' };
+  'atlas:results': 'Results', learnlit: 'Learning', learnatlas: 'Learning', 'blitz:rules': 'Rules', 'blitz:golive': 'Go live' };
 export const botOf = (id) => Object.keys(BOTS).find((b) => BOTS[b].segs.some((s) => s[1].some((it) => it.split(':')[0] === id))) || null;
 export const groupIds = (g) => g.ids || (g.sections || []).flatMap((s) => s.ids);
 // phone tab bar (the PC sidebar shows the groups)
 // 2026-10-28: 'real' (Real results, js/next/real.js) in Main; the backtest 'data' page is named "Backtest & research"
 export const TABS = ['cc', 'zlarior', 'atlas', 'real', 'modules'];   // 2026-10-28: Real results replaces the backtest Results tab
+// 2026-10-30 (night 3, "organized, clean"): the Main items in plain sections, the same words as the phone. Each id once;
+// any Main id not listed here is drawn at the end (shell.js buildNav).
+export const MAIN_SECTIONS = [['', ['cc', 'start']], ['Bots', ['zlarior', 'atlas', 'blitz']], ['Live', ['mission', 'liveview', 'holo']],
+  ['Money', ['real']], ['Insight', ['mind', 'deck', 'insight']], ['', ['modules']]];
 
 export const TITLES = { cc: 'Home', zlarior: 'Zlarior', data: 'Backtest & research', command: 'Today', brain: 'Bot Brain', atlas: 'ATLAS · strategy 2 (25K)', botctl: 'Bot Control', accounts: 'Accounts', chart: 'Chart', trades: 'Trades', modules: 'All tools', settings: 'Settings' };
 for (const p of [...DATA, ...MODULES, ...CC]) TITLES[p.id] = p.label;
