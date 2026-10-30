@@ -507,6 +507,7 @@ class Runner:
             self.mode, self.since = mode, int(time.time())
 
         t_start = time.time()
+        prev = last(self.last_path)
 
         def work():
             try:
@@ -516,7 +517,7 @@ class Runner:
                 else:
                     r = run_child(argv, CHILD_TIMEOUT_S, self.cwd, self.python, env={**os.environ, "PYTHONIOENCODING": "utf-8"})
                 res = last(self.last_path)
-                if float(res.get("t") or 0) < t_start - 2:       # no new result: the child never got to save one
+                if not res or res == prev or float(res.get("t") or 0) < t_start - 5:   # no new result: the child never saved one
                     res = {"error": "the self-test stopped before its result: " + why_failed(r.get("out") or "", r.get("code"),
                                                                                         r.get("timed_out"), CHILD_TIMEOUT_S),
                            "mode": mode, "t": int(time.time())}

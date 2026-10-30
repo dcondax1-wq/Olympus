@@ -184,6 +184,7 @@ def r_status(request: Request, fresh: int = 0):
         st["clock"] = _clock(fresh=bool(fresh))
         st["poll"] = _poll()
         st["new_accounts"] = _new_accounts((st.get("accounts") or {}).get("rows"))
+        st["selftest"] = _selftest_brief()
         return _J(st)
     except Exception as e:
         return _J({"error": f"{e.__class__.__name__}: {e}"[:200]}, 500)
@@ -357,6 +358,14 @@ def _selftest_status() -> dict:
                 "say": pc_selftest.summary_line(r), "running": pc_selftest.RUNNER.status()}
     except Exception as e:
         return {"last": None, "say": f"unavailable ({e.__class__.__name__})", "running": {"running": False}}
+
+
+def _selftest_brief() -> dict:
+    """The Start page's one line (status): the last result's line + whether one runs now (no per-suite rows)."""
+    s = _selftest_status()
+    lr = s.get("last") or {}
+    return {"say": s.get("say"), "running": bool((s.get("running") or {}).get("running")), "ok": lr.get("ok"), "t": lr.get("t"),
+            "failed": lr.get("failed"), "mode": lr.get("mode"), "first": (lr.get("first") or [])[:3]}
 
 
 @router.get("/api/next/start/selftest")
