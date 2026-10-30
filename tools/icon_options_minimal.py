@@ -1,9 +1,9 @@
-"""Minimal Home Screen icon options p1..p6 (owner 2026-10-30: "we went overboard on the logo"; the reference is his Planner
+"""Minimal Home Screen icon options p1..p14 (owner 2026-10-30: "we went overboard on the logo"; the reference is his Planner
 app icon: a charcoal tile, one flat grey glyph, a single white highlight with a soft glow). Writes
-tools/web_public/icon_options/<p1..p6>/icon.svg; tools/icon_options_build.py p1 p2 ... renders the PNGs and
+tools/web_public/icon_options/<p1..p14>/icon.svg; tools/icon_options_build.py p1 p2 ... renders the PNGs and
 tools/icon_apply.py <key> switches the live icon.
 
-    python tools/icon_options_minimal.py      # write the six SVGs
+    python tools/icon_options_minimal.py      # write the SVGs
 """
 import os
 
@@ -17,6 +17,14 @@ OPTIONS = {
     "p4": ("One Candle", "A single bold grey candle outline centred on the tile, a glowing white core."),
     "p5": ("Pulse", "A thin grey line chart over a faint grid on a charcoal card, ending in one glowing white dot."),
     "p6": ("Level", "One grey horizontal level and a candle whose wick pierces it, the wick tip glowing white."),
+    "p7": ("Session", "The Planner's calendar card itself: two candle wicks as the binder rings, a grid of dots, today's session glowing white."),
+    "p8": ("Bars", "Three rounded grey bars stepping up on a charcoal card; the tallest one is white and glows."),
+    "p9": ("Z Mark", "A bold rounded Z for Zlarior in grey, its last stroke ending in a glowing white dot."),
+    "p10": ("Target", "Two thin grey rings around a glowing white centre: the day's target."),
+    "p11": ("Orbit Lite", "Today's orbit icon, stripped down: a grey candle, one thin grey ring, a single glowing white node on the ring."),
+    "p12": ("Gauge", "A grey half-circle dial with tick marks and a needle pointing up-right to a glowing white tip."),
+    "p13": ("Sweep", "A grey zigzag that dips under a dotted low and snaps back up, the snap-back point glowing white."),
+    "p14": ("Stack", "Three account cards stacked front to back, the front one with a small grey chart and a glowing white status dot."),
 }
 
 GREY, GREY_HI, DOT, WHITE = "#8b8c91", "#c4c5ca", "#6f7075", "#f6f6f8"
@@ -111,8 +119,77 @@ def p6():
     return head("p6", lev + c + tip, card=False)
 
 
+def p7():
+    rings = (f'<rect x="372" y="150" width="34" height="120" rx="17" fill="{GREY_HI}"/>'
+             f'<rect x="618" y="150" width="34" height="120" rx="17" fill="{GREY_HI}"/>')
+    band = '<rect x="176" y="196" width="672" height="120" rx="104" fill="#ffffff" fill-opacity="0.04"/>'
+    xs, ys = [292, 404, 516, 628, 740], [420, 520, 620, 720]
+    dots = "".join(f'<circle cx="{x}" cy="{y}" r="15" fill="{DOT}"/>' for y in ys for x in xs if (x, y) != (516, 620))
+    return head("p7", band + dots + glow_sq(516, 620, 30, 12) + rings)
+
+
+def p8():
+    bars = (f'<rect x="282" y="560" width="112" height="190" rx="28" fill="{DOT}"/>'
+            f'<rect x="456" y="440" width="112" height="310" rx="28" fill="{GREY}"/>')
+    hi = (f'<rect x="630" y="300" width="112" height="450" rx="28" fill="#ffffff" opacity="0.45" filter="url(#glow)"/>'
+          f'<rect x="630" y="300" width="112" height="450" rx="28" fill="{WHITE}"/>')
+    return head("p8", bars + hi)
+
+
+def p9():
+    z = "M330 330 L694 330 L330 694 L640 694"
+    return head("p9", f'<path d="{z}" fill="none" stroke="{GREY_HI}" stroke-width="64" stroke-linecap="round" stroke-linejoin="round"/>'
+                + glow_dot(694, 694, 40), card=False)
+
+
+def p10():
+    rings = (f'<circle cx="512" cy="512" r="300" fill="none" stroke="{GREY}" stroke-width="22"/>'
+             f'<circle cx="512" cy="512" r="186" fill="none" stroke="{GREY_HI}" stroke-width="22"/>')
+    return head("p10", rings + glow_dot(512, 512, 62), card=False)
+
+
+def p11():
+    ring_back = f'<path d="M222 560 A290 96 -18 0 1 790 400" fill="none" stroke="{DOT}" stroke-width="16" stroke-linecap="round"/>'
+    c = candle(512, 250, 360, 680, 790, 150, GREY_HI)
+    ring_front = f'<path d="M790 400 A290 96 -18 0 1 222 560" fill="none" stroke="{GREY}" stroke-width="16" stroke-linecap="round"/>'
+    return head("p11", ring_back + c + ring_front + glow_dot(760, 448, 30), card=False)
+
+
+def p12():
+    import math
+    ticks = ""
+    for i in range(9):
+        a = math.pi * (1 - i / 8)
+        x1, y1 = 512 + 300 * math.cos(a), 640 - 300 * math.sin(a)
+        x2, y2 = 512 + 250 * math.cos(a), 640 - 250 * math.sin(a)
+        ticks += f'<line x1="{x1:.0f}" y1="{y1:.0f}" x2="{x2:.0f}" y2="{y2:.0f}" stroke="{DOT}" stroke-width="16" stroke-linecap="round"/>'
+    arc = f'<path d="M172 640 A340 340 0 0 1 852 640" fill="none" stroke="{GREY}" stroke-width="20" stroke-linecap="round"/>'
+    a = math.pi * 0.28
+    tx, ty = 512 + 270 * math.cos(a), 640 - 270 * math.sin(a)
+    needle = f'<line x1="512" y1="640" x2="{tx:.0f}" y2="{ty:.0f}" stroke="{GREY_HI}" stroke-width="26" stroke-linecap="round"/><circle cx="512" cy="640" r="40" fill="{GREY_HI}"/>'
+    return head("p12", arc + ticks + needle + glow_dot(round(tx), round(ty), 30), card=False)
+
+
+def p13():
+    low = "".join(f'<circle cx="{x}" cy="620" r="12" fill="{DOT}"/>' for x in range(250, 800, 52))
+    zz = "M246 360 L360 560 L450 460 L560 700 L640 470 L770 330"
+    return head("p13", low + f'<path d="{zz}" fill="none" stroke="{GREY_HI}" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>'
+                + glow_dot(640, 470, 32))
+
+
+def p14():
+    cards = (f'<rect x="300" y="250" width="424" height="200" rx="48" fill="#2a2b2e" stroke="{DOT}" stroke-width="10"/>'
+             f'<rect x="256" y="310" width="512" height="230" rx="54" fill="#323336" stroke="{GREY}" stroke-width="10"/>'
+             f'<rect x="206" y="380" width="612" height="370" rx="64" fill="#3d3e42" stroke="{GREY_HI}" stroke-width="10"/>')
+    lines = (f'<rect x="276" y="470" width="240" height="28" rx="14" fill="{GREY}"/>'
+             f'<rect x="276" y="534" width="150" height="28" rx="14" fill="{DOT}"/>'
+             f'<path d="M276 690 L380 640 L460 664 L560 600 L660 620 L748 560" fill="none" stroke="{GREY}" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>')
+    return head("p14", cards + lines + glow_dot(748, 474, 30), card=False)
+
+
 def main():
-    for key, fn in (("p1", p1), ("p2", p2), ("p3", p3), ("p4", p4), ("p5", p5), ("p6", p6)):
+    for key, fn in (("p1", p1), ("p2", p2), ("p3", p3), ("p4", p4), ("p5", p5), ("p6", p6), ("p7", p7), ("p8", p8), ("p9", p9),
+                    ("p10", p10), ("p11", p11), ("p12", p12), ("p13", p13), ("p14", p14)):
         d = os.path.join(OPT, key)
         os.makedirs(d, exist_ok=True)
         with open(os.path.join(d, "icon.svg"), "w", encoding="utf-8") as fh:
