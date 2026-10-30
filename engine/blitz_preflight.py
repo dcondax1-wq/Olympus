@@ -417,11 +417,12 @@ def lines(f: dict) -> dict:
                            f"not computed ({sz.get('error') or 'no eval state'})", CMD))
     else:
         alt = ", ".join(f"{r['qty']} at {r['stop']:.0f} pts" for r in sz.get("rows") or [] if abs(r["stop"] - sz["stop"]) > 1e-9)
-        items.append(_item("size", "First trade's size", "good" if sz["qty"] >= 1 else "bad",
+        items.append(_item("size", "First trade's size", "good" if sz["qty"] >= 1 else "info",   # 0 = today's caps (the eval line says stuck / failed)
                            f"{sz['qty']} micro{'s' if sz['qty'] != 1 else ''} at a {sz['stop']:.0f}-pt stop "
                            f"({'today' if sz.get('atr') else '2026 typical'}: 1.5 x the 5m ATR) on the ${float(sz.get('room') or 0):,.0f} room"
-                           f" (session {sz.get('session')}); {alt}; never more than 20 (MFFU 25K: 2 minis)",
-                           "" if sz["qty"] >= 1 else "the room is too small for 1 micro: buy a new 25K"))
+                           f" (session {sz.get('session')}); {alt}; never more than 20 (MFFU 25K: 2 minis)"
+                           + ("" if sz["qty"] >= 1 else f" (today: {sz.get('why') or 'the caps'})"),
+                           ""))
     # no hedging
     items.append(_item("hedge", "Never against Zlarior / ATLAS", "good",
                        f"Zlarior first, then ATLAS, then BLITZ: no BLITZ entry while {f.get('lit') or 'the 50K'} or "

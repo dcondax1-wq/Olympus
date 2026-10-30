@@ -726,7 +726,7 @@ class Rehearsal:
                 qq = sum(y[4] for y in xs)
                 xp = sum(y[4] * y[5] for y in xs) / qq
                 bp = round(qq * ((xp - fp) * D * 2.0 - 1.90), 2)
-            trades.append({"entry_t": et_, "entry": hm(et_), "dir": D, "qty": q, "exit_kind": t["exit_kind"], "booked": pnl, "broker": bp,
+            trades.append({"entry_t": et_, "entry": hm(et_), "dir": D, "qty": q, "exit_kind": (hedge_x or {}).get("reason") or t["exit_kind"], "bt_exit": t["exit_kind"], "booked": pnl, "broker": bp,
                            "bt_usd": round(q * float(t["pnl_pm"]), 2), "changes": len(stops)})
             cum += pnl
             pnl_sum += pnl
@@ -823,6 +823,17 @@ def main(argv):
         return serve(*argv[1:4])
     days = DAYS
     jobs, part = 1, None
+    summ = next((a.split("=", 1)[1] for a in argv if a.startswith("--summary=")), None)
+    if summ:                                   # re-summarize a parts folder (a day re-run into it with --part=<folder>/<day>_<kind>.json)
+        RESULTS.clear()
+        rows, bugs = [], []
+        for f in sorted(os.listdir(summ)):
+            if f.endswith(".json"):
+                j = json.load(open(os.path.join(summ, f), encoding="utf-8"))
+                RESULTS.extend(j["checks"])
+                rows += j["days"]
+                bugs += j["bugs"]
+        return 0 if summary(sorted(rows, key=lambda r: r["day"]), bugs) else 1
     for a in argv:
         if a.startswith("--days="):
             want = a.split("=", 1)[1].split(",")
