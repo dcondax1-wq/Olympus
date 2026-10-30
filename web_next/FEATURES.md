@@ -155,7 +155,7 @@ absent). Read-only: no new control, only links. Tests: `python -X utf8 -m tests.
 | 99 | Ctrl K knows the bots | new | PC palette: each bot's five sections ("ATLAS · Rules", "BLITZ · Trades" ...) and "Status: <verdict>" (opens Home with the status bar open) next to every page |
 | 100 | Bot lights on the tabs and the sidebar | new | Phone bottom bar + PC sidebar: a small light on Zlarior / ATLAS / BLITZ while it is in a trade (green, breathing), armed (amber) or blocked (red); nothing while it waits |
 | 101 | Why no trade yet, under each bot | new | Phone bot tabs > Today: under the account card, the first three reasons from Mission Control (market closed, outside its hours, daily limit, blocks, setup stage), plain words |
-| 102 | Acknowledge from the status bar | new | Phone Home: the critical alert (eval near the floor, feed stale ...) is one red row in the status bar with one tap to Got it; the old banner moved under the quick tiles so it never pushes the first screen down |
+| 102 | Acknowledge from the status bar | new | Phone Home: the critical alert (eval near the floor, feed stale ...) is one red row in the status bar with one tap to Got it; the old banner hides on Home while the bar carries it (other pages keep the one-line banner) |
 | 103 | In-a-trade glow | new | An account card whose bot is in a trade glows softly in the bot's colour (an opacity layer, no repaint); reduced motion = a still glow |
 | 104 | NQ now, between its levels | new | `StatusUI.market` (phone Home, PC Home under the status bar): NQ's price and bar time, VIX / ATR, a ladder from the nearest untaken level below to the one above (labels, prices, points away) with Zlarior's VIX day band drawn on it (the board's `map`) |
 | 105 | Direction-aware tab transitions | new | Phone: a tab change slides the page in from the side of the new tab (Home → More = from the right), a section change rises in; reduced motion = none |
@@ -176,7 +176,9 @@ absent). Read-only: no new control, only links. Tests: `python -X utf8 -m tests.
   Control · Live View · Holodeck), **Money** (Real results), **Insight** (Mind · Trader's deck · AI Insights), All tools.
 - Duplicates out: one freshness pill in the phone header (the PC's live chip wins over the cloud one; offline / stale
   banners still show), the per-page refresh line folded into it, the Zlarior Today plan line (same as "Right now"), the
-  Safety card no longer piles up on every live redraw (real.js), the critical alert one line on every page but Home.
+  Safety card no longer piles up on every live redraw (real.js), the critical alert one line on every page but Home (on
+  Home it is a row in the status bar), three stacked page animations (clean.js fade, the space.css blur warp, the 3D card
+  rise) replaced by ONE transition, the BLITZ / ATLAS hero numbers the account card already shows.
 - Colour roles: Zlarior blue #4f9bff, ATLAS orange #ff9a3d, BLITZ purple #b388ff on the tab bar, section bar, cards and
   sidebar; good / warn / bad for state only. Nothing was deleted; every old link (#/plan, #/strategy, #/money, #/second ...)
   still opens its page.
