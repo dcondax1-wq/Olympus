@@ -28,7 +28,7 @@
 @media (prefers-reduced-motion: reduce) { .nx-bdot { animation: none !important; } }
 
 /* motion: the page rises in, then its first cards one after another */
-:root[data-polish="on"] .nx .page.active { animation: plPage .36s var(--pl-out); }   /* no fill-mode (see the phone polish.css) */
+:root[data-polish="on"] .nx .page.active[id], :root[data-polish="on"] .nx .page.active.sp-in[id] { animation: plPage .36s var(--pl-out); }   /* ONE page transition (wins over space.css sp-warp: a blur + transform held by fill-mode); no fill-mode */
 @keyframes plPage { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: none; } }
 @keyframes plRise { from { opacity: 0; transform: translate3d(0, 12px, 0); } to { opacity: 1; transform: none; } }
 :root[data-polish="on"] :is(.nx-tile, .nx-gl, .pl-btn, .su-acct, .su-sum):active { transform: scale(.98); }
