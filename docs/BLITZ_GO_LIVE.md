@@ -6,7 +6,8 @@ Do this on Sunday evening or on Monday before 11:00 ET (BLITZ's first check of t
 1. Buy the MFFU Builder 25K (your price, with your code) and log in to it in NinjaTrader. Its Name shows in the Accounts tab.
 2. On the PC, open the Start page (desktop icon **LE START**) and go to **BLITZ · 25K**. Type that Name, press **Set BLITZ's 25K**, type
    `I ACCEPT LIVE RISK` and press **Arm BLITZ**.
-3. Check that every line of the card's **Go-live check** is green. If one is red, do what its line says. You can run the same check in a console:
+3. Check that every line of the card's **Go-live check** is green. If one is red, do what its line says. The card runs this
+   check, which is the same as this console line:
 
        python -X utf8 -m engine.account_c --preflight
 
