@@ -575,6 +575,11 @@ def view(bot, tf: str = "1m", now: int | None = None, narr: N.Narrator | None = 
         _structure_notes(out, bot, now)
     except Exception:
         pass
+    try:                                                       # Mind (engine/mind.py): regime, plans, similar setups, reviews,
+        from . import mind as MI                               # ideas; the last cached block, never computed here
+        out["mind"] = MI.view_block(bot, now)
+    except Exception:
+        out["mind"] = None
     out["narrator"] = narr.feed(n_feed)
     out["push_kinds"] = {k: {"label": v[0], "on": on} for (k, v), on in zip(N.KINDS.items(), N.push_prefs().values())}
     return out
@@ -685,6 +690,11 @@ def phone_view(bot, now: int | None = None, narr: N.Narrator | None = None) -> d
         except Exception:
             v["bars5"] = []
         v["bars"] = (v.get("bars") or [])[-PHONE_N1:]
+        try:                                                   # Mind on the phone: the compact cut (< 12 KB)
+            from . import mind as MI
+            v["mind"] = MI.compact(v.get("mind"))
+        except Exception:
+            v["mind"] = None
         v.update(kind=PHONE_KIND, v=1)
 
         def size():

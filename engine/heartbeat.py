@@ -522,6 +522,16 @@ def _blitz(bot):
         return None
 
 
+def _mind(bot):
+    """The heartbeat's "mind" block: engine/mind.compact of Mind's last cached block (regime, plans, similar setups, reviews,
+    proposals; < 12 KB). None before Mind's first compute (the payload then stays as before). Never raises."""
+    try:
+        from engine import mind
+        return mind.compact(mind.MIND.cached(), max_bytes=12_000)
+    except Exception:
+        return None
+
+
 def _opt(key, val) -> dict:
     """{key: val} when val is not None, else {} (a block that is off adds no key: the payload stays byte for byte as before)."""
     return {key: val} if val is not None else {}
@@ -700,7 +710,8 @@ class Heartbeat:
                 "ai": _ai(self.bot),             # AI watch: anomalies, drift, loss caps, rule changes (engine/ai_watch.hb_block)
                 "nt_log": _nt_log(self.bot),     # NinjaTrader's Log-tab lines about our orders (engine/nt_log.py; <= ~10 KB)
                 **_alerts_plus(self.bot),       # "rules" (PC-vs-cloud fingerprint) + "crit" (critical conditions, engine/alerts_plus.py)
-                **_opt("account_c", _account_c(self.bot))}   # BLITZ's own account (engine/account_c.py): only when it is on
+                **_opt("account_c", _account_c(self.bot)),   # BLITZ's own account (engine/account_c.py): only when it is on
+                **_opt("mind", _mind(self.bot))}             # Mind (engine/mind.py, read-only): only once it has computed
 
     def beat(self) -> dict:
         """One heartbeat: bars + payload + push, the result kept in self.last / logs/heartbeat_last.json. One at a time (a

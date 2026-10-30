@@ -1361,6 +1361,11 @@ def _build(bot, day, now, lv) -> dict:
             out["now"] = _now_panels(bot, now, lv)
         except Exception as e:
             _err(errors, "now", e)
+        try:                                   # Mind (engine/mind.py): its last cached block, phone cut (no compute here)
+            from . import mind as MI
+            out["mind"] = MI.compact((lv or {}).get("mind") or MI.MIND.cached())
+        except Exception as e:
+            _err(errors, "mind", e)
     out["build_ms"] = int((time.perf_counter() - t_start) * 1000)
     return out
 

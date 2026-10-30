@@ -63,6 +63,8 @@ there, not here.
 - **Read-only add-ons:** Bot Brain, Trade pictures, AI watch, Performance page, Trade intel, Alerts plus, phone live feed,
   Live learning (`engine/live_learning.py`: real-fill costs, trade reviews vs the twin, Sunday weekly, suggestions;
   `lit_sizing.learn_costs` default false, on = caps priced at the learned slippage, only ever fewer micros).
+  Mind (`engine/mind.py`, 2026-10-29): similar-setup memory (context only: not predictive out of sample), regime +
+  trend-day odds, game plans 01:45 / 10:45 ET, trade reviews, nightly self-research proposals; never changes anything.
 
 ## Reference index (`docs/CLAUDE_REFERENCE.md`, read before working in that area)
 | Section | Read it when |

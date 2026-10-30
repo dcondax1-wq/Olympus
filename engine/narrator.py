@@ -73,6 +73,7 @@ KINDS = {
     "atlas": ("ATLAS paper", False),
     "blitz": ("BLITZ paper", False),
     "structure": ("Market structure (advice)", False),
+    "brain": ("Mind: game plans, trade reviews, ideas", False),
 }
 STRATS = {"lit": "Zlarior", "atlas": "ATLAS", "scalp": "BLITZ", "sys": "Bot"}
 EXIT_WORDS = {"TARGET": "hit the target", "STOP": "stopped out", "BE": "breakeven", "TIME": "closed at the 15-minute check",
@@ -537,6 +538,11 @@ def derive(bot, now=None, prev: dict | None = None) -> tuple[list, dict]:
         out += _structure_msgs(bot, now, day)
     except Exception:
         pass
+    # Mind (engine/mind.py, read-only): game plans, trade reviews, research proposals; kind "brain", no phone push by default
+    try:
+        out += _mind_msgs(day)
+    except Exception:
+        pass
     # daily summary: once, after the 15:55 flat (16:05-17:00 ET on a trading weekday)
     try:
         e = _et(now)
@@ -580,6 +586,15 @@ def _structure_msgs(bot, now: int, day: str) -> list:
                            f"{a['why']}. Advice only: the bot keeps its written rules (Z18); the advisor scores this note after the trade.",
                            "info"))
     return out
+
+
+def _mind_msgs(day: str) -> list:
+    """Kind "brain": Mind's game plan per bot (01:45 / 10:45 ET), its review of each closed trade, a new research candidate.
+    Read from Mind's cached events (computed in its own thread): no work on the poll."""
+    from . import mind
+    strat = {"lit": "lit", "atlas": "atlas", "blitz": "scalp"}
+    return [msg(e["key"], e["t"], strat.get(e.get("bot"), "sys"), "brain", e.get("title") or "Mind", e.get("text") or "",
+                e.get("level") or "info", push_key=e["key"]) for e in mind.narrator_msgs(day)]
 
 
 def summary(bot, day, today_rows, now) -> dict:
@@ -788,6 +803,11 @@ def tick(bot, now=None) -> list:
         try:                                   # the discretion advisor (engine/advisor.py): scores finished trades, read-only
             from . import advisor
             advisor.pc_tick(bot, now)
+        except Exception:
+            pass
+        try:                                   # Mind (engine/mind.py): once per 5m bar in its own thread; nightly research child
+            from . import mind
+            mind.pc_tick(bot, now)
         except Exception:
             pass
         return new

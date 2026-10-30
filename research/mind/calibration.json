@@ -1,0 +1,289 @@
+{
+ "v": 1,
+ "built": 1793316858,
+ "similar": {
+  "lit": {
+   "fit": "2026 H1",
+   "k": 15,
+   "n_fit": 80,
+   "n": 631,
+   "spans": {
+    "H2": {
+     "n": 40,
+     "spearman": 0.001,
+     "spread_r": -0.298,
+     "top_r": 0.663,
+     "bot_r": 0.961,
+     "p_perm": 0.619,
+     "auc_win": 0.481,
+     "brier": 0.2808,
+     "brier_base": 0.2577,
+     "win_real": 0.5,
+     "win_pred": 0.538,
+     "avg_r_real": 0.744
+    },
+    "2021-25": {
+     "n": 511,
+     "spearman": 0.029,
+     "spread_r": 0.249,
+     "top_r": 0.207,
+     "bot_r": -0.041,
+     "p_perm": 0.062,
+     "auc_win": 0.519,
+     "brier": 0.2622,
+     "brier_base": 0.251,
+     "win_real": 0.538,
+     "win_pred": 0.497,
+     "avg_r_real": 0.014
+    }
+   },
+   "valid": false,
+   "note": "does NOT predict out of sample on H2: shown as context only",
+   "reverse": {
+    "fit": "2021-25 (2025: fit 2021-24)",
+    "spans": {
+     "2026 H1": {
+      "n": 80,
+      "spearman": 0.12,
+      "spread_r": 1.02,
+      "top_r": 1.397,
+      "bot_r": 0.376,
+      "p_perm": 0.094,
+      "auc_win": 0.446,
+      "brier": 0.2772,
+      "brier_base": 0.2448,
+      "win_real": 0.588,
+      "win_pred": 0.56,
+      "avg_r_real": 0.846
+     },
+     "2026 H2": {
+      "n": 40,
+      "spearman": 0.148,
+      "spread_r": 1.1,
+      "top_r": 1.722,
+      "bot_r": 0.622,
+      "p_perm": 0.128,
+      "auc_win": 0.574,
+      "brier": 0.2504,
+      "brier_base": 0.2515,
+      "win_real": 0.5,
+      "win_pred": 0.553,
+      "avg_r_real": 0.744
+     },
+     "2025 (fit 2021-24)": {
+      "n": 114,
+      "spearman": 0.039,
+      "spread_r": 0.123,
+      "top_r": 0.121,
+      "bot_r": -0.002,
+      "p_perm": 0.337,
+      "auc_win": 0.563,
+      "brier": 0.2487,
+      "brier_base": 0.2464,
+      "win_real": 0.588,
+      "win_pred": 0.534,
+      "avg_r_real": 0.007
+     }
+    },
+    "passes": false,
+    "note": "does NOT predict out of sample on 2026 H2 and 2025 (fit 2021-24): shown as context only"
+   }
+  },
+  "atlas": {
+   "fit": "2026 H1",
+   "k": 20,
+   "n_fit": 101,
+   "n": 1129,
+   "spans": {
+    "H2": {
+     "n": 45,
+     "spearman": -0.248,
+     "spread_r": -0.301,
+     "top_r": 0.289,
+     "bot_r": 0.591,
+     "p_perm": 0.613,
+     "auc_win": 0.464,
+     "brier": 0.2556,
+     "brier_base": 0.2474,
+     "win_real": 0.556,
+     "win_pred": 0.507,
+     "avg_r_real": 0.631
+    },
+    "2021-25": {
+     "n": 983,
+     "spearman": -0.05,
+     "spread_r": 0.127,
+     "top_r": 0.086,
+     "bot_r": -0.041,
+     "p_perm": 0.244,
+     "auc_win": 0.523,
+     "brier": 0.2561,
+     "brier_base": 0.26,
+     "win_real": 0.373,
+     "win_pred": 0.51,
+     "avg_r_real": 0.057
+    }
+   },
+   "valid": false,
+   "note": "does NOT predict out of sample on H2 and 2021-25: shown as context only",
+   "reverse": {
+    "fit": "2021-25 (2025: fit 2021-24)",
+    "spans": {
+     "2026 H1": {
+      "n": 101,
+      "spearman": 0.245,
+      "spread_r": 1.168,
+      "top_r": 1.712,
+      "bot_r": 0.544,
+      "p_perm": 0.03,
+      "auc_win": 0.586,
+      "brier": 0.2743,
+      "brier_base": 0.2748,
+      "win_real": 0.535,
+      "win_pred": 0.381,
+      "avg_r_real": 0.884
+     },
+     "2026 H2": {
+      "n": 45,
+      "spearman": 0.136,
+      "spread_r": 1.56,
+      "top_r": 1.799,
+      "bot_r": 0.239,
+      "p_perm": 0.03,
+      "auc_win": 0.667,
+      "brier": 0.2634,
+      "brier_base": 0.2801,
+      "win_real": 0.556,
+      "win_pred": 0.353,
+      "avg_r_real": 0.631
+     },
+     "2025 (fit 2021-24)": {
+      "n": 220,
+      "spearman": -0.048,
+      "spread_r": -0.008,
+      "top_r": 0.233,
+      "bot_r": 0.241,
+      "p_perm": 0.499,
+      "auc_win": 0.588,
+      "brier": 0.2417,
+      "brier_base": 0.2374,
+      "win_real": 0.386,
+      "win_pred": 0.358,
+      "avg_r_real": 0.094
+     }
+    },
+    "passes": false,
+    "note": "does NOT predict out of sample on 2025 (fit 2021-24): shown as context only"
+   }
+  },
+  "blitz": {
+   "fit": "2026 H1",
+   "k": 20,
+   "n_fit": 221,
+   "n": 330,
+   "spans": {
+    "H2": {
+     "n": 109,
+     "spearman": -0.046,
+     "spread_r": -0.162,
+     "top_r": 0.105,
+     "bot_r": 0.267,
+     "p_perm": 0.786,
+     "auc_win": 0.543,
+     "brier": 0.2524,
+     "brier_base": 0.2475,
+     "win_real": 0.55,
+     "win_pred": 0.591,
+     "avg_r_real": 0.171
+    }
+   },
+   "valid": false,
+   "note": "does NOT predict out of sample on H2: shown as context only",
+   "reverse": {
+    "fit": "2021-25 (2025: fit 2021-24)",
+    "spans": {},
+    "passes": false,
+    "note": "no 5-year history"
+   }
+  }
+ },
+ "daytype": {
+  "feats": [
+   "fh_ratio",
+   "fh_eff",
+   "on_ext",
+   "gap",
+   "prev_rng",
+   "vix"
+  ],
+  "mu": [
+   1.0772626576860291,
+   0.47570548765254295,
+   0.9973911875078135,
+   0.48646899670749605,
+   1.052207264195443,
+   0.9659645669291339
+  ],
+  "sd": [
+   0.44188864104537084,
+   0.2729754568939165,
+   0.7431173222222254,
+   0.4380887352882985,
+   0.4325850945850548,
+   0.18187349784105
+  ],
+  "b0": -0.9788627841719969,
+  "w": [
+   -0.4192834078342833,
+   0.6715336861535047,
+   0.19790026995734675,
+   0.3644313612606311,
+   0.02353581221028969,
+   0.2099804871841687
+  ],
+  "fit": "2026 H1",
+  "label": "trend day = the 09:30-16:00 session opens in one quarter of its range and closes in the opposite quarter",
+  "n_fit": 127,
+  "report": {
+   "H1 (fit)": {
+    "n": 127,
+    "base_rate": 0.299,
+    "auc": 0.734,
+    "brier": 0.1788,
+    "brier_base": 0.2097,
+    "acc_05": 0.74,
+    "acc_always_no": 0.701,
+    "n_p60": 6,
+    "hit_p60": 0.833,
+    "lo_p20": 0.143,
+    "n_lo_p20": 42
+   },
+   "H2": {
+    "n": 78,
+    "base_rate": 0.256,
+    "auc": 0.655,
+    "brier": 0.1791,
+    "brier_base": 0.1925,
+    "acc_05": 0.769,
+    "acc_always_no": 0.744,
+    "n_p60": 0,
+    "hit_p60": null,
+    "lo_p20": 0.125,
+    "n_lo_p20": 24
+   },
+   "2021-25": {
+    "n": 1070,
+    "base_rate": 0.325,
+    "auc": 0.633,
+    "brier": 0.2166,
+    "brier_base": 0.2201,
+    "acc_05": 0.661,
+    "acc_always_no": 0.675,
+    "n_p60": 73,
+    "hit_p60": 0.507,
+    "lo_p20": 0.197,
+    "n_lo_p20": 366
+   }
+  }
+ }
+}
