@@ -239,7 +239,9 @@
       const card = h.closest('.card, section, [class*="-card"], [class*="card "]') || h.parentElement;
       if (!card || card.offsetParent === null || card.getBoundingClientRect().width < W * 0.6) continue;
       const first = card.querySelector('h3'); if (first !== h) continue;      // one chip per card: its first heading
-      const t = (h.firstChild && h.firstChild.nodeType === 3 ? h.firstChild.textContent : h.textContent).replace(/\s+/g, ' ').trim().replace(/[·:]\s*$/, '');
+      let t = (h.firstChild && h.firstChild.nodeType === 3 ? h.firstChild.textContent : h.textContent).replace(/\s+/g, ' ').trim().replace(/[·:]\s*$/, '');
+      t = t.replace(/^(Zlarior|ATLAS|BLITZ)\s*·\s*/i, '');       // on a bot's tab its name is already everywhere
+      t = t ? t.charAt(0).toUpperCase() + t.slice(1) : t;
       if (!t || t.length < 3 || seen.has(t)) continue;
       seen.add(t); H.push([t.length > 26 ? t.slice(0, 25) + '…' : t, h]);
     }
