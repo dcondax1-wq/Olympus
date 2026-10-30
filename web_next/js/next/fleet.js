@@ -51,6 +51,7 @@ function buttons(a) {
   return [a.status === 'off' ? b('on', 'Switch on') : b('off', 'Switch off'),
     a.status === 'killed' ? b('unkill', 'Un-kill') : b('kill', 'Kill (flatten now)'),
     a.stage === 'eval' ? b('to_funded', 'Passed → funded') : '', a.stage === 'funded' ? b('payout', 'Record a payout') : '',
+    a.label && a.label !== 'PAPER' && a.label !== 'LIVE PAPER' ? b('preflight', 'Check before arming') : '',
     b('remove', 'Remove')].join(' ');
 }
 
@@ -118,6 +119,14 @@ function wire(el) {
   if (fm) fm.addEventListener('toggle', () => { S.formOpen = fm.open; });
   el.querySelectorAll('[data-act]').forEach((b) => b.addEventListener('click', () => {
     const id = b.dataset.id, act = b.dataset.act;
+    if (act === 'preflight') {
+      fetch(`/api/next/fleet/preflight/${encodeURIComponent(id)}`).then((r) => r.json()).then((d) => {
+        const mark = { good: 'OK', bad: 'NO', wait: 'WAIT', info: 'info' };
+        S.msg = `${id}: ${d.ok ? 'ALL GREEN' : 'NOT READY'}\n` + (d.lines || []).map((x) => `${mark[x.state] || x.state} · ${x.label}: ${x.detail}${x.fix ? ' → ' + x.fix : ''}`).join('\n');
+        draw();
+      }).catch((e) => { S.msg = `check failed: ${e.message}`; draw(); });
+      return;
+    }
     if (act === 'to_funded') {
       const account = window.prompt('The FUNDED account\'s NinjaTrader Name (the firm gives a new one; empty = keep):', '') ?? null;
       if (account === null) return;

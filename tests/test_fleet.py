@@ -564,6 +564,22 @@ def cli_checks(tmp):
     run("--remove", "liv")
     check("CLI --remove", [x["id"] for x in FL.load_file(p)["accounts"]] == ["luc"])
     check("CLI --status runs", run("--status") == 0)
+    from engine import ninjatrader as NT
+    check("CLI --arm of a real Name puts it on the account allowlist (the owner's own command; a temp allowlist here)",
+          "MYLIVE-1" in NT.allowed_accounts() and NT.ALLOW_PATH.startswith(tmp))
+    run("--add", "--id", "rl", "--lead", "zlarior", "--plan", "lucid_pro_50k", "--account", "LUCID-9", "--start", "2026-11-02")
+    pf = FL.preflight("rl", p, nt_folder=os.path.join(tmp, "no_nt"), env={})
+    st = {x["key"]: x["state"] for x in pf["lines"]}
+    check("--preflight a real follower: not allowlisted / not armed / not live = NOT READY, read-only",
+          pf["ok"] is False and st.get("allow") == "bad" and st.get("armed") == "bad" and st.get("live") == "wait"
+          and st.get("firm_bot") == "good" and FL.load_file(p)["accounts"][-1]["armed"] is False, pf["lines"])
+    run("--add", "--id", "ax", "--lead", "zlarior", "--plan", "apex_eod_50k", "--start", "2026-11-02")
+    st2 = {x["key"]: x["state"] for x in FL.preflight("ax", p, env={})["lines"]}
+    check("--preflight: a firm that bans bots is red (Apex), a paper follower needs no NinjaTrader", st2.get("firm_bot") == "bad" and st2.get("route") == "info", st2)
+    run("--add", "--id", "sm", "--lead", "zlarior", "--plan", "mffu_builder_25k", "--account", "Sim115", "--start", "2026-11-02")
+    pf3 = FL.preflight("sm", p, env={})
+    check("--preflight a Sim follower: no arming lines; MFFU copy trading not confirmed = WAIT", not any(x["key"] in ("armed", "allow") for x in pf3["lines"])
+          and {x["key"]: x["state"] for x in pf3["lines"]}.get("copy") == "wait", pf3["lines"])
     trades = [{"entry_t": ts("2026-10-13", 9, 35), "exit_t": ts("2026-10-13", 10, 20), "dir": 1, "qty": 20, "entry": 25000.0, "stop": 24980.0,
                "target": 25100.0, "pnl": 20 * (100 * 2 - 1.9), "exit_reason": "TARGET"}]
     cfg = {"accounts": [{"id": "d1", "lead": "zlarior", "plan": "mffu_builder_50k", "start": "2026-10-13"}]}
@@ -617,6 +633,10 @@ def api_checks(tmp):
         d = FL.load_file()
         check("POST kill all / to_funded / payout work like the CLI", rk.json().get("ok") and rf.json().get("ok") and ry.json().get("ok")
               and d["kill"] is True and d["accounts"][0]["stage"] == "funded" and d["accounts"][0]["payouts"] == {"2026-12-01": 1000.0}, d)
+        pf = loc.get("/api/next/fleet/preflight/luc").json()
+        bad = loc.get("/api/next/fleet/preflight/..%2Fx")
+        check("GET /api/next/fleet/preflight/<id>: the read-only checks (a Sim follower), a bad id refused",
+              "lines" in pf and any(x["key"] == "sim" for x in pf["lines"]) and bad.status_code in (400, 404), (pf, bad.status_code))
         check("the POST route is cloud-blocked", "/api/next/fleet/set" in CG.CLOUD_BLOCKED and set(r.path for r in FA.router.routes
                                                                                                   if "POST" in getattr(r, "methods", set())) == set(CG.FLEET_WRITES))
     finally:
@@ -786,6 +806,9 @@ def main() -> int:
     os.environ["LE_LIT_LEARNING"] = os.path.join(tmp, "no_learning.json")
     keep_path = FL.FLEET_PATH
     FL.FLEET_PATH = os.path.join(tmp, "no_fleet", "fleet.json")      # never the real data/fleet.json
+    from engine import ninjatrader as NT
+    keep_allow = NT.ALLOW_PATH
+    NT.ALLOW_PATH = os.path.join(tmp, "nt_accounts_allow.json")      # never the real allowlist (--arm adds a real Name)
     try:
         off_checks(tmp)
         copy_checks(tmp)
@@ -803,6 +826,7 @@ def main() -> int:
             replay(tmp)
     finally:
         FL.FLEET_PATH = keep_path
+        NT.ALLOW_PATH = keep_allow
         for k, v in saved.items():
             if v is None:
                 os.environ.pop(k, None)

@@ -455,7 +455,11 @@ part yourself or fold it into a script.**
     `--to-funded`), FAILED, PAYOUT READY (never requested). CLI `python -X utf8 -m engine.fleet --status | --add --id --lead
     --plan --account --start [--balance --max-risk --daily-stop --weekly-stop --max-micros --risk-usd --stagger-ms] |
     --remove | --on | --off | --kill <id>|all | --unkill | --arm | --disarm | --to-funded <id> --account --start | --payout
-    <id> <day>=<$> | --dry-run <day>` (the day's LIT trades of research/lab/backtest_live.json on paper).
+    <id> <day>=<$> | --dry-run <day> | --preflight <id>` (dry run = the day's LIT trades of research/lab/backtest_live.json
+    on paper; `--arm` of a real Name also allowlists it, the owner's command only). `fleet.preflight` (read-only, as
+    blitz_preflight): settings, the firm allows the bot on NinjaTrader, copy trading confirmed, the plan's rules known /
+    verified, NinjaTrader shows the Name (go.nt_names), allowlist, armed, the bot live (NINJATRADER_LIVE), the lead running;
+    GET `/api/next/fleet/preflight/<id>`, PC card "Check before arming".
   - **Data / pages:** heartbeat `fleet` (`Fleet.hb_block`, < 6 KB, only when configured), live.json `pc.fleet` (dropped
     after `mind` when over 64 KB), GET `/api/next/fleet` (`engine/fleet_api.py`: rows + leads + totals + notices + the firm
     catalog; off = {on: false} + the catalog), POST `/api/next/fleet/set` (the PC page's buttons = `fleet.run`, the CLI

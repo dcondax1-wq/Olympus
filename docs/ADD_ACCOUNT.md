@@ -41,7 +41,8 @@ payout, Remove) and "Kill ALL followers" at the top. Arming is never a button: i
 | What | Line |
 |---|---|
 | See every account | `python -X utf8 -m engine.fleet --status` |
-| Arm a real account (you only) | `python -X utf8 -m engine.fleet --arm <id>`, then start the bot with the live phrase |
+| Check a real account first | `python -X utf8 -m engine.fleet --preflight <id>` (or "Check before arming" on its card) |
+| Arm a real account (you only) | `python -X utf8 -m engine.fleet --arm <id>` (also puts its Name on the allowlist), then start the bot with the live phrase |
 | Stop one account / all now | `python -X utf8 -m engine.fleet --kill <id>` / `--kill all` (`--unkill` to undo) |
 | Switch one off / on | `--off <id>` / `--on <id>` |
 | Passed: now funded | `--to-funded <id> --account "<funded Name>" --start <day>` |

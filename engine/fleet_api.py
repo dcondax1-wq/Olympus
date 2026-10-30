@@ -206,3 +206,15 @@ async def fleet_set(request: Request):
         return _J({"ok": False, "error": "bad request"}, 400)
     except Exception as e:
         return _J({"ok": False, "error": f"{e.__class__.__name__}: {e}"[:200]}, 500)
+
+
+@router.get("/api/next/fleet/preflight/{fid}")
+def fleet_preflight(fid: str):
+    """Read-only checks before the owner arms / trusts a follower (engine/fleet.preflight)."""
+    try:
+        from . import fleet as FL
+        if not _ID.match(fid or ""):
+            return _J({"ok": False, "error": "bad id"}, 400)
+        return _J(FL.preflight(fid, FL.FLEET_PATH, bot=_bot()))
+    except Exception as e:
+        return _J({"ok": False, "lines": [], "error": f"{e.__class__.__name__}: {e}"[:200]})

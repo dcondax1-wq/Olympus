@@ -1333,6 +1333,74 @@ def dry_run(day: str, cfg: dict, trades: list | None = None) -> dict:
 
 
 # ---------------------------------------------------------------------------------------------------------------- CLI
+# ---------------------------------------------------------------------------------------------------------------- preflight
+def preflight(fid: str, path: str | None = None, nt_folder: str | None = None, allow_path: str | None = None,
+              bot=None, env=None) -> dict:
+    """Before the owner arms / trusts a follower: one line each {key, label, state good | bad | wait | info, detail, fix}
+    (as engine/blitz_preflight). Read-only: it never arms, allowlists or writes. {"ok": all good / info, "lines": [...]}."""
+    env = os.environ if env is None else env
+    d = load_file(path)
+    raw = next((r for r in d.get("accounts") or [] if r.get("id") == fid), None)
+    L = []
+
+    def line(key, label, state, detail="", fix=""):
+        L.append({"key": key, "label": label, "state": state, "detail": str(detail)[:200], "fix": str(fix)[:200]})
+    if raw is None:
+        line("config", "In the fleet", "bad", f"no follower {fid}", "python -X utf8 -m engine.fleet --add ...")
+        return {"ok": False, "id": fid, "lines": L}
+    n = normalize(raw)
+    P = profile_of(n) or {}
+    probs = n["problem"]
+    line("config", "Settings complete", "bad" if probs else "good", probs or f"{P.get('label')} {n['stage']} from {n['start'] or n['funded_start']}",
+         "fix the entry (python -X utf8 -m engine.fleet --status)" if probs else "")
+    nt = n["adapter"] == "ninjatrader"
+    real = nt and not is_sim(n["nt_account"])
+    if P.get("kind") != "live":
+        bad_bot = P.get("bots") in ("prohibited", "semi_only", "api_only") or P.get("ninjatrader") is False
+        line("firm_bot", "The firm allows this bot on NinjaTrader", "bad" if bad_bot else ("good" if P.get("verified", {}).get("bots") else "wait"),
+             f"{P.get('firm')}: bots {P.get('bots') or 'unknown'}", "paper only at this firm" if bad_bot else
+             ("" if P.get("verified", {}).get("bots") else "ask the firm in writing before a real account"))
+        line("copy", "Copying between your own accounts allowed", "good" if P.get("copy_trading") in ("allowed", "own_accounts") and
+             P.get("verified", {}).get("copy_trading") else "wait", f"{P.get('firm')}: {P.get('copy_trading') or 'not confirmed'}",
+             "" if P.get("copy_trading") in ("allowed", "own_accounts") and P.get("verified", {}).get("copy_trading") else
+             "ask the firm's support in writing first")
+        crit = [k for k in ("dd_amount", "dd_type", "max_micros", "dll", "lock", "target") if P.get(k) is None]
+        unver = [k for k in ("dd_amount", "dd_type", "dll", "max_micros") if P.get(k) is not None and not P.get("verified", {}).get(k)]
+        line("rules", "The plan's rules are known", "bad" if "dd_amount" in crit else ("wait" if crit or unver else "good"),
+             ("unknown: " + ", ".join(crit) if crit else "") + (("; not verified: " + ", ".join(unver)) if unver else "") or "verified",
+             "check them on the firm's page (python -X utf8 -m engine.firms --show " + n["plan"] + ")" if crit or unver else "")
+    if not nt:
+        line("route", "Where it trades", "info", "paper: nothing is sent to a broker")
+    else:
+        try:
+            from .go import nt_names
+            names = [r["name"] for r in nt_names(nt_folder)]
+        except Exception:
+            names = []
+        seen = is_sim(n["nt_account"]) or n["nt_account"] in names
+        line("visible", "NinjaTrader shows the account", "good" if seen else "wait",
+             n["nt_account"] if seen else f"{n['nt_account']} not in NinjaTrader's accounts / positions yet",
+             "" if seen else "log the account in NinjaTrader 8 (Accounts tab), then check again")
+        if real:
+            from .ninjatrader import allowed_accounts, LIVE_ENV
+            allow = n["nt_account"] in allowed_accounts(allow_path)
+            line("allow", "On the bot's account allowlist", "good" if allow else "bad", n["nt_account"],
+                 "" if allow else "python -X utf8 -m engine.fleet --arm " + fid + " (adds it; you only)")
+            line("armed", "Armed by you", "good" if n["armed"] else "bad", "armed" if n["armed"] else "not armed",
+                 "" if n["armed"] else "python -X utf8 -m engine.fleet --arm " + fid)
+            live = str(env.get(LIVE_ENV, "")) == "1"
+            line("live", "The bot runs live (phrase typed at its start)", "good" if live else "wait",
+                 "NINJATRADER_LIVE=1" if live else "the bot is not running live", "" if live else "start the bot with I ACCEPT LIVE RISK")
+        else:
+            line("sim", "Sim account (no arming needed)", "info", n["nt_account"])
+    if bot is not None:
+        lead_on = n["lead"] == "zlarior" or getattr(bot, "acct_b" if n["lead"] == "atlas" else "acct_c", None) is not None
+        line("lead", f"{LEAD_NAMES.get(n['lead'])} is running", "good" if lead_on else "wait", "" if lead_on else "nothing to copy yet",
+             "" if lead_on else "switch the lead bot on (Start page)")
+    ok = all(x["state"] in ("good", "info") for x in L)
+    return {"ok": ok, "id": fid, "label": n["label"], "lines": L}
+
+
 def _status_lines(path) -> list:
     d = load_file(path)
     rows = d.get("accounts") or []
@@ -1375,6 +1443,7 @@ def _parser():
     ap.add_argument("--to-funded")
     ap.add_argument("--payout", nargs=2, metavar=("ID", "DAY=USD"))
     ap.add_argument("--dry-run", metavar="DAY")
+    ap.add_argument("--preflight", metavar="ID", help="read-only checks before you arm / trust a follower")
     ap.add_argument("--id")
     ap.add_argument("--name")
     ap.add_argument("--lead", choices=list(LEADS))
@@ -1409,6 +1478,13 @@ def run(argv=None) -> tuple:
     def fail(msg):
         say(msg)
         return 1, lines
+    if a.preflight:
+        pf = preflight(a.preflight, a.file)
+        mark = {"good": "OK  ", "bad": "NO  ", "wait": "WAIT", "info": "info"}
+        for x in pf["lines"]:
+            say(f"  {mark.get(x['state'], x['state'])} {x['label']}: {x['detail']}" + (f"  -> {x['fix']}" if x["fix"] else ""))
+        say("ALL GREEN" if pf["ok"] else "NOT READY")
+        return (0 if pf["ok"] else 1), lines
     if a.dry_run:
         out = dry_run(a.dry_run, d)
         say(f"Dry run {out['day']}: {out['lead_trades']} lead trade(s) replayed on paper (nothing routed, no bot file written)")
@@ -1467,6 +1543,13 @@ def run(argv=None) -> tuple:
         if r is None:
             return fail(f"no follower {i}")
         r["armed"] = bool(a.arm)
+        if a.arm and r.get("adapter") == "ninjatrader" and r.get("nt_account") and not is_sim(r.get("nt_account")):
+            try:                                   # the owner's own command: the Name joins the account allowlist (as account B / C)
+                from .ninjatrader import allow_account
+                allow_account(r["nt_account"])
+                say(f"{r['nt_account']} is on the account allowlist.")
+            except Exception as e:
+                say(f"allowlist NOT updated ({e}): python -m engine.ninjatrader --allow \"{r['nt_account']}\"")
         if a.arm:
             say("Armed in the file only. It trades real money only when the bot is started with the typed phrase "
                 "(I ACCEPT LIVE RISK) AND NINJATRADER_LIVE=1, and its Name is on NinjaTrader's allowlist.")
