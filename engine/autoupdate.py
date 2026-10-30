@@ -30,7 +30,7 @@ Rules (never broken):
     (engine.ninjatrader --selftest, engine.sizing, tests.test_no_yahoo). Any failure rolls back with
     `git reset --keep <old sha>` (the tree was clean, so nothing local can be lost; --keep refuses otherwise), remembers
     the bad sha (not retried until main moves again) and alerts the phone. Then the PC self-test (engine/pc_selftest.py,
-    2026-10-30: ~15 curated suites + checks in sealed temp folders): a regression (a check that passed on this PC before)
+    2026-10-30: 24 curated suites + 2 checks in sealed temp folders): a regression (a check that passed on this PC before)
     rolls back the same way and pushes "Update held back: <first failing check>".
   * success: the server restarts (exit code RESTART_CODE; run_bot.ps1 starts it again at once). Paper / Sim bots resume
     by themselves; a real-account bot only with the owner's auto-resume opt-in (engine/autoresume.py), otherwise the

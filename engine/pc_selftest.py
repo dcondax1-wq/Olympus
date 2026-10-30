@@ -23,11 +23,12 @@ When it runs (read-only / advisory everywhere, except that it can hold an update
 Each suite runs as its own child process at below-normal priority (Windows: BELOW_NORMAL + no console window; else nice
 10), output to temp files (no pipe to hang on), the whole process tree killed on its timeout, with a sealed environment:
 TMP / TEMP / TMPDIR = a fresh temp folder (deleted after), NINJATRADER_FOLDER = a temp folder (the real NinjaTrader
-folder is never touched), no NINJATRADER_LIVE / account / allowlist, LE_SELFTEST_CHILD=1 (engine/push sends nothing real
-and never calls the ntfy relay), LE_HEARTBEAT=0, LE_NO_AUTOSTART=1, LE_OPS_PUSH=0, LE_NARRATOR_PUSH=0, LE_AUTOUPDATE=0,
-LE_PREWARM=0. Every suite here was measured in the sandbox for writes outside its temp dirs (none into data/, the
-NinjaTrader folder, .env.local.ps1, second_model.json or live_model*.json) and for time (MEASURED_S); suites that replay
-the live loop (minutes) or need a browser are left out. Nothing here arms, routes, starts or stops the bot.
+folder is never touched), no NINJATRADER_LIVE / account / allowlist / push keys / live phrase, LE_SELFTEST_CHILD=1
+(engine/push sends nothing real, never calls the ntfy relay or GitHub, keeps its key / sent files in the temp folder),
+LE_HEARTBEAT=0, LE_NO_AUTOSTART=1, LE_PREWARM=0. Every suite here was measured in the sandbox for writes outside its temp
+dirs (none into data/, logs/, the NinjaTrader folder, .env.local.ps1, second_model.json or live_model*.json; checked with
+the network blocked) and for time (MEASURED_S); suites that replay the live loop (minutes), write a real log / generated
+file, or need PowerShell / a browser are left out (list below SUITES). Nothing here arms, routes, starts or stops the bot.
 
 Result: logs/selftest.json (the last run) + logs/selftest_history.jsonl (the last 60), both gitignored; the heartbeat
 carries hb_block() ("selftest": t, version, mode, passed / failed counts, the first failures, duration, running).

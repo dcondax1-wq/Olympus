@@ -963,6 +963,31 @@ part yourself or fold it into a script.**
   edit still blocks. A server older than the checkout (`go.server_stale`, `/api/next/start/boot`) is restarted before the
   bot starts. Tests `tests.test_account_b_local` (migration + same ATLAS / LIT routes), `tests.test_autorun` (the Surface case
   on real temp repos).
+- **PC self-test, PC health, readiness (2026-10-30, read-only; only the update hold-back acts):** `engine/pc_selftest.py`
+  runs 27 of the repo's suites + 3 checks (timezone/tzdata, config, no blocking local edit) ON the PC: each suite a
+  sealed child (BELOW_NORMAL, no window, temp TMP + `NINJATRADER_FOLDER`, no live env / push keys, `LE_SELFTEST_CHILD=1`
+  = `engine/push` sends nothing real, no relay / GitHub, temp key files), 2 at a time, 240 s budget; ~45 s here (sum 87 s,
+  `MEASURED_S`). Left out (measured): test_dst, test_acctb_not_placed, test_lit_oif, test_win_scripts, test_accounts,
+  test_alerts_plus, test_eval_anchor, test_poll_speed, test_lit_live, browser tests. When: (a) after every auto-update
+  (`autoupdate.selftest_step` after the 3 old tests, mode update, `--base <old sha>`): exit 1 only on a REGRESSION (a check
+  that passed in the old version's last result, or has none) -> the existing rollback + `bad_sha` + push "Update held back:
+  <check>"; a check that failed before too is "known" (never holds: a Windows-only failure must not block every update);
+  skipped when the checkout has no pc_selftest.py. (b) Sunday 15:30 ET, (c) Start page "Run self-test" (`GET/POST
+  /api/next/start/selftest`, POST local only, not an autopilot step; `start.js` selftestLine / wireSelftest) or `python
+  -X utf8 -m engine.pc_selftest [--list|--status|--only k]`, (d) a baseline once per version after a server start (outside
+  01:50-16:00 ET weekdays). Result `logs/selftest.json` + `selftest_history.jsonl` (60); heartbeat "selftest". Pushes kind
+  `selftest` (fail / could not run) and `selftest_ok` (Sunday all green), via `alerts_plus.pc_send` (app levels).
+  `engine/pc_health.py`: lines cpu (median of 5) / ram / disk / nt (NinjaTrader.exe + MB, Windows; red when closed in the
+  session while the bot routes) / bot_mem (growth after a 10-min warm-up, MB an hour) / onedrive (" (1)." and
+  "-<COMPUTER>." copies, red in data/) / clock (`guards._CLOCK`, never probed here) / poll (15-min median vs the hour
+  before); psutil missing or Windows-only -> the line is skipped. Red twice in a row -> push kind `pc_health` once per
+  issue per ET day. `Watcher` thread (server.py `PCWATCH`, every 60 s, `LE_PC_WATCH=0` off, never with LE_NO_AUTOSTART /
+  in a self-test child) writes `logs/pc_health.json` (heartbeat "pc_health") and runs the schedules (ET wall clock).
+  `engine/readiness.py`: Sunday 17:30 ET push kind `readiness` (version + self-test, Run switch, both accounts' room + eval
+  day N of 10 from `board_api.board_view`, BLITZ from `go.blitz_status`, high-impact USD news Mon-Fri, early closes /
+  closed days, the DST line); `python -X utf8 -m engine.pc_health --readiness [--send]`. Kinds are in
+  `alerts_plus.KINDS`; the phone's Alert levels list (`tools/web_public/alerts.js` KINDS) does not show them yet.
+  Tests `tests.test_pc_selftest` (64), `tests.test_pc_health` (76).
 - **Alerts plus (2026-10-21, `engine/alerts_plus.py`, `tests/test_alerts_plus.py`, `docs/NOTIFICATIONS.md`):** "LIT setup armed"
   / "Setup expired" pushes (PC `LiveBot._alerts_tick` after routing + cloud, same keys, relay de-dup); critical alerts repeat
   every 10 min (max 6) until "Got it" (phone `tools/web_public/alerts.js` #/ack posts `{"le":"ack"}` to the ntfy relay) or
