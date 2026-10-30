@@ -3,8 +3,11 @@ a virtual clock, next to LIT (Zlarior, Sim101) and ATLAS (account B, Sim102). BL
 rehearsal's machinery (tests/test_rehearsal.py: sandbox copy of the repo, LE_BarFeed files fed bar by bar from
 data/NQ_1m.csv + data/NQ_5m.csv, a responder thread playing NinjaTrader's ATI, the owner's clicks over HTTP).
 
-    python -X utf8 -m tests.test_rehearsal_blitz --jobs=4          # every day below, ~15-20 min on 4 cores
-    python -X utf8 -m tests.test_rehearsal_blitz --days=2026-06-05 [--keep]
+    python -X utf8 -m tests.test_rehearsal_blitz --jobs=4          # every day below, ~20 min on 4 busy cores
+    python -X utf8 -m tests.test_rehearsal_blitz --days=2026-06-05 [--keep]      # one day (a date or a kind: --days=restart)
+    python -X utf8 -m tests.test_rehearsal_blitz --summary=<parts folder>         # rebuild the result file from the day parts
+
+2026-10-29: 345/345 checks on the 10 days; 27 routed BLITZ trades = the backtest, 0 opposite fills (blitz_rehearsal.json).
 
 Sim / paper only: no real account is armed, the live phrase is never written, NINJATRADER_LIVE is never set.
 

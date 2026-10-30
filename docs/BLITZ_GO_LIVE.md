@@ -39,9 +39,10 @@ The clocks go back on Sunday Nov 1. You do not need to do anything: BLITZ's time
 ## What was proved before this (2026-10-29)
 
 `python -X utf8 -m tests.test_rehearsal_blitz --jobs=4` runs the real bot server with a fake NinjaTrader on a virtual clock. LIT
-was on Sim101, ATLAS on Sim102 and BLITZ on Sim103. Every routed BLITZ trade matched the BLITZ backtest: entry minute, side,
-micros, fill, stop and 20R target, every trail move (each one tighter), exit and $. The only differences were the ones the
-no-hedging rule causes. The rehearsal covered these days:
+was on Sim101, ATLAS on Sim102 and BLITZ on Sim103. All 345 checks passed. All 27 routed BLITZ trades (78 micros, 63 trail moves)
+matched the BLITZ backtest: entry minute, side, micros, fill, stop and 20R target, every trail move (each one tighter), exit
+and $. The only differences were the ones the no-hedging rule causes. No account ever held long while another held short.
+The rehearsal covered these days:
 
 - a normal 6-trade day;
 - the eval passed on day 1 (no trade after it);

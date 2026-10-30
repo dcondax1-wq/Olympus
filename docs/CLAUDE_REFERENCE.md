@@ -298,9 +298,13 @@ part yourself or fold it into a script.**
   15:55 flat), 06-05 pass (3 wins = +$1,525, EVAL PASSED, no trade after), 08-06 ATLAS S/R short 11:15 into BLITZ's long
   (HEDGE first), 05-14 ATLAS short at the same 11:00 close, 04-01 LIT short (masks), 10-15 / 06-09 injected CME early closes
   13:00 / 13:15 (LE_RH_EARLY in the sandbox server; 2026's real half days had no BLITZ trade), 10-16 restart mid-trade,
-  08-28 NinjaTrader refuses the first entry, 05-18 owner pause + HOLD TO KILL. `--jobs=4` ~20-25 min; results
-  research/scalp/blitz_rehearsal.json. The sandbox serve patches bg_worker.JOB_TIMEOUT_S (its timer runs on the virtual
-  clock).
+  08-28 NinjaTrader refuses the first entry, 05-18 owner pause + HOLD TO KILL. **Result 2026-10-29: 345/345 checks**, 27 routed
+  BLITZ trades (78 micros, 63 trail CHANGEs, exits 20 TIME / 3 STOP / 1 15:55 flat / 2 HEDGE / 1 KILL) = the backtest trade
+  for trade, booked +$4,175.13 vs the fake broker's fills +$4,151.80 (stop / market fills 1 tick against), 1 LIT mask, 1
+  eval-pass block, 2 early-close blocks, 1 refused, 1 paused, 0 opposite fills across the three accounts; the go-live
+  check over HTTP all green after a Sim trade. `--jobs=4` 1,220 s on a loaded 4-core box; a day re-run into a parts folder
+  + `--summary=<folder>` rebuilds research/scalp/blitz_rehearsal.json. The sandbox serve patches bg_worker.JOB_TIMEOUT_S
+  (its timer runs on the virtual clock) and turns off the dashboards' 5-year backtest jobs (dash_data.JOBS_MGR.submit).
 - Same code as the research: engine/second.py calls tools/second_ema.py / second_md.py / second_sr.py on LIT's live
   window (retail_standalone.load_frame live_cut, the simulators' live/OPEN mode). "With LIT" view = LIT first, no entry
   while LIT is in a trade, max 2 a day (MACD closed when LIT enters).
