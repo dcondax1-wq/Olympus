@@ -183,6 +183,9 @@ absent). Read-only: no new control, only links. Tests: `python -X utf8 -m tests.
 - Colour roles: Zlarior blue #4f9bff, ATLAS orange #ff9a3d, BLITZ purple #b388ff on the tab bar, section bar, cards and
   sidebar; good / warn / bad for state only. Nothing was deleted; every old link (#/plan, #/strategy, #/money, #/second ...)
   still opens its page.
+- Small clean-ups: the browser-only "Add to Home Screen" guide sits under what matters now (it no longer pushes the status
+  bar down on a first visit), More's sticky search has no flat dark band over the sky, the Holodeck has its own icon in More
+  (3D layers, no longer Live View's chart), Full overview the archive icon.
 
 ## Organization (2026-10-28)
 - PC sidebar Main (6 items): Home · Start · Zlarior · ATLAS · **Real results** · All tools; the backtest page is renamed

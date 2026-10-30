@@ -552,6 +552,8 @@
   function install() {
     try { whatsNew(); } catch (e) { /* the list is optional */ }
     try { moneyTab(); } catch (e) { console.warn('polish money', e); }
+    // one icon per page in More: the Holodeck (3D layers) no longer shares Live View's chart icon, Full overview gets the archive
+    try { if (PAGES.holo) PAGES.holo.icon = 'layers'; if (PAGES.homefull) PAGES.homefull.icon = 'archive'; } catch (e) { /* icons only */ }
     keepBotTop();
     if (typeof nav === 'function') nav();
     headerButton();
