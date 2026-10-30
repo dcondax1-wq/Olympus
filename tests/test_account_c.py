@@ -24,6 +24,10 @@
   9. LiveBot (engine/live.py) on 2026-10-13..15 with account C on (paper): LIT's routes identical to the backtest (and to the
      run without C); C routes BLITZ's model trades on its own ledger.
  10. switches: CLI / set_account_c / arm (only after the phrase) / resume / off; the Start page API (engine/go.py) slot.
+ 13. the first real day (2026-10-29): phone notices name BLITZ's own 25K (REAL) with NinjaTrader's fill, one per trade
+     (keys :acctc; ATLAS's :acctb), BLITZ wording, the notices the owner must act on pushed; the go-live check
+     (engine/blitz_preflight.py, CLI + GET route) line by line; 20 micros = MFFU 25K; the $600 lock; the floor lock at
+     $25,100; the Nov 1 DST change and the session count.
  12. review 2026-10-29: no BLITZ entry against LIT's / ATLAS's bracket NinjaTrader has not confirmed flat; a model STOP exit's
      unconfirmed close keeps C "closing" (LIT waits); HEDGE BLOCKED names BLITZ's account; a LIT-account second strategy
      yields to C; LIT's / ATLAS's Name in another case refused; no switch off / to another Name while C holds a trade.
@@ -180,10 +184,12 @@ def part1():
         shutil.rmtree(tmp, ignore_errors=True)
     from engine import live
     b = live.LiveBot()
-    b.state_path = os.path.join(tempfile.mkdtemp(prefix="acctc_lb_"), "live_state.json")
+    lb_tmp = tempfile.mkdtemp(prefix="acctc_lb_")
+    b.state_path = os.path.join(lb_tmp, "live_state.json")
     b.cfg = {"adapter": "paper", "sym": "NQ"}
     b._sync_account_c()
     check("1. LiveBot without an account_c block (test harness / no file) -> acct_c None", b.acct_c is None)
+    shutil.rmtree(lb_tmp, ignore_errors=True)               # (it used to stay in the temp folder)
     ent = {"entry_t": 1792000000, "dir": 1, "entry": 25000.0}
     check("1. LiveBot._hedge_clear with B and C off -> True at once (LIT never held back)", b._hedge_clear(ent, "NQ", 1792000003) is True
           and not b._hedge_wait)
