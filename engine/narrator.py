@@ -760,12 +760,15 @@ def payload_for(m: dict, account: str = "") -> tuple[dict | None, str]:
                                stop=m.get("stop"), target=m.get("target"))
         if m.get("strat") == "atlas":
             p["body"] += " (ATLAS)"
+            p["key"] = f"{p['key']}:acctb"      # = account B's own notices (engine/account_b): one per trade, never LIT's key
         if m.get("strat") == "scalp":
             _scalp(p)
         return p, "notify"
     if k == "exit" and m.get("entry_t"):
         p = push.outcome_payload(account, side_word(m.get("dir")) if m.get("dir") else "", m.get("reason"), m.get("usd") or 0, m["entry_t"], m.get("t"),
                                  src="pc", qty=m.get("qty"))
+        if m.get("strat") == "atlas":
+            p["key"] = f"{p['key']}:acctb"
         if m.get("strat") == "scalp":
             _scalp(p)
         return p, "notify"

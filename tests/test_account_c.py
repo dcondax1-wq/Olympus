@@ -1045,6 +1045,12 @@ def part13():
     kinds = [p.get("kind") for p in own]
     check(f"13. CLOSE NOT CONFIRMED / EVAL PASSED / PAUSED / locked out / not confirmed reach the phone (kind ops); not placed via the "
           f"narrator ({kinds})", kinds == ["ops", "ops", "ops", "ops", "ops", "risk"], kinds)
+    # ATLAS (account B) notices from the feed use account B's own keys (one notice per trade, never LIT's key)
+    pa, _ = NR.payload_for({"kind": "entry", "entry_t": 555, "dir": -1, "qty": 5, "fill": 1.0, "strat": "atlas", "t": 556}, "Account B X")
+    pb, _ = NR.payload_for({"kind": "exit", "entry_t": 555, "dir": -1, "usd": 10.0, "reason": "TIME", "t": 900, "strat": "atlas"}, "Account B X")
+    pl, _ = NR.payload_for({"kind": "entry", "entry_t": 555, "dir": -1, "qty": 5, "fill": 1.0, "strat": "lit", "t": 556}, "MFFU 50K")
+    check("13. ATLAS feed notices: keys fill:<t>:acctb / out:<t>:acctb (= account B's own), LIT's stay fill:<t>",
+          pa["key"] == "fill:555:acctb" and pb["key"] == "out:555:acctb" and pl["key"] == "fill:555", (pa["key"], pb["key"], pl["key"]))
     # account B rows get the fill too (its NinjaTrader entries had no FILLED line / phone notice either)
     check("13. account B's routed rows: the same fill helper", AB._fill_of({"side": "sell", "result": {"ok": True, "legs": [{"fill_px": 1.5, "filled": 1}]}})
           == {"fill": 1.5} and AB._fill_of({"side": "sell", "result": {"ok": False, "legs": [{"fill_px": 1.5, "filled": 1}]}}) == {})
