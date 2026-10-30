@@ -1,0 +1,387 @@
+"""Night 3 (2026-10-30, owner: "more very useful features ... clean it up, organized ... the UI, quality, the effects ...
+I wanna be shocked"): the status bar, the three account cards, what matters now, the Sunday open card, the search palette,
+the one section order on every bot tab, Money = real money only, the motion system and the once-a-day intro, on both
+dashboards (read-only UI).
+
+  a. static   statuscore.js byte-identical on both apps, the phone loads statuscore.js + polish.js after blitz.js and
+              polish.css in the head, caches bumped (phone le-public-v46+, PC le-shell-next-v28+), clean.js?v=3 kept,
+              read-only (no fetch / POST in the renderers), FEATURES.md lists the features, the PC sidebar sections
+  b. node     StatusUI from the live-board fixture (2 and 3 accounts): the status items, the account cards (ring, REAL /
+              SIM tag, the day in one line), the Sunday open card on the clock-change weekend (and not on a Tuesday),
+              smart empty states; garbage in = no exception
+  c. phone    Playwright 390x844 on a copy of tools/web_public: every tab and every bot section renders with no page error
+              and no sideways scroll; the status bar folds open; "Everything else on Home" keeps every older card; the
+              palette finds a page and opens it; Money opens Real results; the intro shows once a day and is skippable;
+              reduced motion = no intro and no animation; frame time while scrolling Home; the light theme
+  d. PC       Playwright 1440x900 on server.py: the status bar on Home, the sidebar sections, five sections on BLITZ
+
+  python -X utf8 -m tests.test_ui_polish [--shots <dir>]
+"""
+from __future__ import annotations
+
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
+RES = []
+PERF = {}
+
+
+def check(name, cond, info=""):
+    RES.append(bool(cond))
+    print(("[PASS] " if cond else "[FAIL] ") + name + ("" if cond else f"  -> {str(info)[:500]}"), flush=True)
+
+
+def rd(*p):
+    with open(os.path.join(ROOT, *p), encoding="utf-8") as f:
+        return f.read()
+
+
+# ------------------------------------------------------------------------------------------------ a. static
+def part_a():
+    check("a. statuscore.js byte-identical on both apps", rd("tools", "web_public", "statuscore.js") == rd("web_next", "js", "next", "statuscore.js"))
+    idx, psw, sw = rd("tools", "web_public", "index.html"), rd("tools", "web_public", "sw.js"), rd("web_next", "sw.js")
+    order = [idx.find(f'src="{n}?v=') for n in ("blitz.js", "statuscore.js", "polish.js")]
+    check("a. phone index: statuscore.js then polish.js after blitz.js (last), polish.css in the head", all(i > 0 for i in order) and order == sorted(order)
+          and idx.find('polish.css?v=') < idx.find('</head>') and idx.find('polish.css?v=') > 0, order)
+    check("a. caches: phone le-public-v46+, PC le-shell-next-v28+; clean.js?v=3 kept", int(re.search(r"le-public-v(\d+)", psw).group(1)) >= 46
+          and int(re.search(r"le-shell-next-v(\d+)", sw).group(1)) >= 28 and 'clean.js?v=3"' in idx and "/css/polish.css" in sw)
+    for n in ("statuscore.js", "polish.js"):
+        src = rd("tools", "web_public", n)
+        check(f"a. {n} is read-only (no fetch, no POST, no arm / route / order call)", "fetch(" not in src and "POST" not in src and "/api/" not in src and "arm_c" not in src)
+    pj = rd("web_next", "js", "next", "polish.js")
+    check("a. PC polish.js only GETs (board, news)", "POST" not in pj and "method:" not in pj)
+    cl, rt = rd("tools", "web_public", "clean.js"), rd("web_next", "js", "next", "routes.js")
+    check("a. one section order on every bot tab (phone): Today · Brain · Trades · Results · Rules", all(
+        re.findall(r"\['(Today|Brain|Trades|Results|Rules|Plan|Strategy|Setups|Go live)', \[", cl[cl.index(f"const {k} = ["):cl.index("];", cl.index(f"const {k} = ["))])
+        == ["Today", "Brain", "Trades", "Results", "Rules"] for k in ("ZL_SEGS", "AT_SEGS", "BZ_SEGS")))
+    bots = rt[rt.index("export const BOTS"):rt.index("export const BOT_CHIP")]
+    check("a. one section order on every bot page (PC)", [re.findall(r"\['(\w[\w &]*)', \[", b) for b in re.split(r"\n  \w+: \{", bots)[1:]] == [["Today", "Brain", "Trades", "Results", "Rules"]] * 3,
+          [re.findall(r"\['(\w[\w &]*)', \[", b) for b in re.split(r"\n  \w+: \{", bots)[1:]])
+    check("a. PC sidebar: Main in plain sections (Bots · Live · Money · Insight)", "export const MAIN_SECTIONS" in rt and "['Bots', ['zlarior', 'atlas', 'blitz']]" in rt
+          and "MAIN_SECTIONS" in rd("web_next", "js", "next", "shell.js"))
+    check("a. Money tab = real money only (Real results, Accounts today, Eval timeline)", "const TAB_MAIN = { money: ['real', 'realtoday', 'evaltl'] }" in cl)
+    fm = rd("web_next", "FEATURES.md")
+    check("a. FEATURES.md lists the night-3 features (82+)", "| 82 |" in fm and "Status bar" in fm and "Sunday open" in fm and "palette" in fm.lower())
+
+
+# ------------------------------------------------------------------------------------------------ b. node
+NODE_JS = r"""
+global.window = {}; global.document = undefined;
+const dir = process.argv[2], fs = require('fs');
+for (const n of ['missioncore.js', 'deckcore.js', 'statuscore.js']) require(dir + '/' + n);
+const F = JSON.parse(fs.readFileSync(process.argv[3], 'utf8')), S = window.StatusUI, out = { bad: 0 };
+const thu = Date.parse('2026-10-30T01:15:00Z') / 1000, tue = Date.parse('2026-10-27T15:00:00Z') / 1000;
+const M2 = { now: F.now, where: 'phone', board: F.b2 }, M3 = { now: F.now, where: 'phone', board: F.b3 };
+out.items2 = S.items(M2).map((x) => [x.k, x.lvl, x.value]); out.sum2 = S.summary(M2);
+out.acc2 = S.accounts(M2, { where: 'phone' }); out.acc3 = S.accounts(M3, { where: 'phone' }); out.bar = S.bar(M3, { open: true, more: '<a>x</a>' });
+out.one = ['lit', 'atlas', 'blitz'].map((k) => { const A = window.MissionUI.accounts(M3).find((a) => a.key === k); return A ? S.oneLine(A, M3).text : null; });
+out.sunThu = S.sunday({ now: thu, board: F.b2 }); out.sunTue = S.sunday({ now: tue, board: F.b2 }); out.dst = S.dstNext(thu);
+out.empty = ['trades', 'real', 'blitz', 'mind', 'feed', 'x'].map((k) => S.empty(k, M2));
+for (const g of [null, {}, { board: 5 }, { board: { lit: 'x', health: { items: 3 } } }, { board: { lit: { position: 5, window: 'y', days: 7 } }, news: 'n' }]) {
+  try { S.items(g); S.bar(g); S.accounts(g); S.sunday(g || {}); S.empty('trades', g); } catch (e) { out.bad++; out.err = String(e.stack).slice(0, 300); }
+}
+process.stdout.write(JSON.stringify(out) + '\n');
+"""
+
+
+def part_b(tmp):
+    node = shutil.which("node")
+    if not node:
+        print("[SKIP] b. node render: node not installed")
+        return
+    from tests import test_space_ui as SU
+    now = int(time.time())
+    b2, b3 = SU.boards(now)
+    b2["lit"]["badge"], b2["atlas"]["badge"] = "LIVE", "SIM"
+    b3["lit"]["badge"], b3["atlas"]["badge"] = "LIVE", "SIM"
+    fp = os.path.join(tmp, "f.json")
+    json.dump({"now": now, "b2": b2, "b3": b3}, open(fp, "w"), default=str)
+    jp = os.path.join(tmp, "r.js")
+    open(jp, "w").write(NODE_JS)
+    r = subprocess.run([node, jp, os.path.join(ROOT, "tools", "web_public"), fp], capture_output=True, text=True, timeout=60)
+    try:
+        o = json.loads(r.stdout.strip().splitlines()[-1])
+    except Exception:
+        check("b. node render ran", False, (r.stdout or "")[-300:] + (r.stderr or "")[-600:])
+        return
+    keys = [x[0] for x in o["items2"]]
+    check("b. status items: PC bot, NinjaTrader, feed, Zlarior, ATLAS, BLITZ, alerts (+ the next window when there is one)",
+          keys[:1] == ["pc"] and "nt" in keys and "feed" in keys and keys.index("lit") < keys.index("atlas") < keys.index("blitz") and keys[-1] == "alerts", o["items2"])
+    check("b. one summary: a level and one sentence", o["sum2"]["lvl"] in ("good", "warn", "bad") and o["sum2"]["title"], o["sum2"])
+    a2, a3 = o["acc2"], o["acc3"]
+    check("b. account cards: Zlarior · ATLAS · BLITZ (a paper placeholder until its 25K), the eval ring, $ to the target, the REAL / SIM tag",
+          a2.count('<a class="st-acct') == 3 and 'st-acct ph' in a2 and a2.count("st-ring") >= 3 and "to the target" in a2 and ">REAL<" in a2 and ">SIM<" in a2, a2[:400])
+    check("b. three real accounts: BLITZ gets its own card with numbers (no placeholder)", a3.count('<a class="st-acct') == 3 and 'st-acct ph' not in a3)
+    check("b. the day in one line per bot (Zlarior in a trade)", o["one"][0] and o["one"][0].startswith("In a LONG") and all(o["one"]), o["one"])
+    check("b. the status bar: a fold with every line and its fix, the extra links", 'data-st-toggle' in o["bar"] and 'st-list' in o["bar"] and '<a>x</a>' in o["bar"])
+    st = re.sub(r"<[^>]+>", " ", o["sunThu"])
+    check("b. Sunday open (Thu 21:15 ET before the clock change): clocks back 1 hour on Sun Nov 1, CME reopens Sun 18:00 ET, each bot's first step, BLITZ off",
+          "Clocks go back 1 hour" in st and "Sun Nov 1" in st and "Sun 18:00 ET" in st and "Mon 02:00 ET" in st and "Off until its own 25K" in st and "Set time automatically" in st, st[:500])
+    check("b. Sunday open: not on a Tuesday; the next clock change is 2026-11-01 06:00 UTC (back)", o["sunTue"] == "" and o["dst"]["t"] == 1793512800 and o["dst"]["way"] == "back", (o["sunTue"][:80], o["dst"]))
+    check("b. smart empty states say what will appear and when", all("st-empty" in e for e in o["empty"]) and "within a minute" in o["empty"][0] and "never routed" in o["empty"][2])
+    check("b. garbage in: no exception", o["bad"] == 0, o.get("err"))
+
+
+# ------------------------------------------------------------------------------------------------ c. phone
+ROUTES = [("Home", "#/today"), ("Zlarior", "#/lit"), ("Zlarior Brain", "#/brain"), ("Zlarior Trades", "#/trades"), ("Zlarior Results", "#/perf"), ("Zlarior Rules", "#/strategy"),
+          ("ATLAS", "#/atlas"), ("ATLAS Brain", "#/atlas/brain"), ("ATLAS Trades", "#/atlas/trades"), ("ATLAS Results", "#/atlas/results"), ("ATLAS Rules", "#/atlas/setups"),
+          ("BLITZ", "#/blitz"), ("BLITZ Brain", "#/blitz/brain"), ("BLITZ Trades", "#/blitz/trades"), ("BLITZ Results", "#/blitz/results"), ("BLITZ Rules", "#/blitz/rules"),
+          ("BLITZ Go live", "#/blitz/golive"), ("Money", "#/real"), ("Accounts today", "#/realtoday"), ("More", "#/system"), ("Money plan (More)", "#/money"),
+          ("Mission Control", "#/mission"), ("Settings", "#/settings")]
+
+
+def part_c(F, tmp, shots):
+    try:
+        from playwright.sync_api import sync_playwright
+    except Exception:
+        print("[SKIP] c. phone Playwright: playwright not installed")
+        return
+    from tests import test_blitz_tab as TB
+    s = TB.site(tmp, F)
+    lvp = os.path.join(tmp, "liveview.json")
+    json.dump(F["lv"], open(lvp, "w"), default=str)
+    srv = TB.serve(s)
+    base = f"http://127.0.0.1:{srv.server_address[1]}/"
+    lj = json.dumps(TB.live_json(F, "off"), default=str)
+    sh = (lambda pg, n: pg.screenshot(path=os.path.join(shots, n))) if shots else (lambda *a: None)
+
+    def page(br, errs, w=390, h=844, motion="no-preference", init=""):
+        ctx = br.new_context(viewport={"width": w, "height": h}, device_scale_factor=2, is_mobile=True, has_touch=True, reduced_motion=motion, timezone_id="America/New_York")
+        ctx.clock.install(time=F["T"])
+        if init:
+            ctx.add_init_script(init)
+        pg = ctx.new_page()
+        pg.on("pageerror", lambda e: errs.append(f"pageerror: {str(e)[:240]}"))
+        for host in ("**/api.github.com/**", "**/raw.githubusercontent.com/**"):
+            pg.route(host, lambda r: r.fulfill(path=lvp, content_type="application/json") if "liveview.json" in r.request.url
+                     else r.fulfill(status=200, body=lj, content_type="application/json") if "/live.json" in r.request.url else r.fulfill(status=404, body="{}"))
+        return ctx, pg
+
+    no_x = lambda pg: pg.evaluate("() => document.documentElement.scrollWidth - innerWidth")
+    with sync_playwright() as p:
+        br = TB.launch(p)
+        errs = []
+        ctx, pg = page(br, errs)
+        pg.goto(base + "?fxoff#/today")
+        pg.wait_for_selector(".pl-home .st-bar", timeout=30000)
+        pg.wait_for_function("() => window.LIVE && window.LIVE.j", timeout=30000)
+        pg.wait_for_timeout(1200)
+        if pg.query_selector("#moInstX"):
+            pg.click("#moInstX")
+            pg.wait_for_timeout(300)
+        H = pg.evaluate("() => { const h = document.querySelector('#page > .pl-home'); return { kids: [...h.children].map(c => c.className.split(' ')[0]), accts: [...h.querySelectorAll('.st-acct')].map(a => a.dataset.bot), height: document.documentElement.scrollHeight }; }")
+        check("c. Home: status bar, the three account cards (Zlarior · ATLAS · BLITZ), what matters now, quick tiles", H["kids"][:3] == ["st-bar", "st-accts", "pl-now"] and "pl-quick" in H["kids"]
+              and H["accts"] == ["lit", "atlas", "blitz"], H)
+        PERF["home_height_px"] = H["height"]
+        check("c. Home is short and calm (under 2,600 px at 390 wide with everything else folded)", H["height"] < 2600, H["height"])
+        hid = pg.evaluate("() => [...document.querySelectorAll('#page > .mc-strip, #page > .rc-homebox, #page > .bz-home, #page > .cl-list')].map(e => [e.className.split(' ')[0], e.offsetParent === null])")
+        check("c. Home: every older card is still there, folded (Mission strip, real accounts, deck + Mind, one tap away)", len(hid) >= 3 and all(x[1] for x in hid), hid)
+        pg.click("[data-st-toggle]")
+        pg.wait_for_timeout(450)
+        op = pg.evaluate("() => { const b = document.querySelector('.st-bar'); return { open: b.classList.contains('open'), h: b.querySelector('.st-list').getBoundingClientRect().height, rows: b.querySelectorAll('.st-list > li').length }; }")
+        check("c. the status bar opens every line (PC bot, NinjaTrader, feed, each bot, alerts)", op["open"] and op["h"] > 100 and op["rows"] >= 6, op)
+        sh(pg, "polish_phone_status_open.png")
+        pg.click("[data-st-toggle]")
+        pg.click("#page > .pl-fold")
+        pg.wait_for_timeout(400)
+        shown = pg.evaluate("() => [...document.querySelectorAll('#page > .mc-strip, #page > .bz-home')].every(e => e.offsetParent !== null)")
+        check("c. 'Everything else on Home' shows the older cards in one tap (remembered)", shown and pg.evaluate("() => localStorage.getItem('le.pl.homeAll')") == "true")
+        pg.click("#page > .pl-fold")
+        pg.wait_for_timeout(300)
+        sh(pg, "polish_phone_home.png")
+        # every tab and section
+        bad = []
+        for name, h in ROUTES:
+            pg.evaluate(f"() => {{ location.hash = '{h}'; }}")
+            pg.wait_for_timeout(900)
+            st = pg.evaluate("() => ({ x: document.documentElement.scrollWidth - innerWidth, n: document.querySelector('#page').children.length, t: (document.querySelector('#page').innerText || '').length, err: /Could not draw this page/.test(document.querySelector('#page').innerText) })")
+            if st["x"] > 1 or st["n"] < 1 or st["t"] < 40 or st["err"]:
+                bad.append((name, st))
+        check(f"c. all {len(ROUTES)} tab / section pages render, no 'could not draw', no sideways scroll at 390 px", not bad, bad)
+        segs = {}
+        for k, h in (("lit", "#/lit"), ("atlas", "#/atlas"), ("blitz", "#/blitz")):
+            pg.evaluate(f"() => {{ location.hash = '{h}'; }}")
+            pg.wait_for_timeout(700)
+            segs[k] = pg.eval_on_selector_all("#sub .zl-seg button", "els => els.map(e => e.textContent.trim())")
+        check("c. Zlarior, ATLAS and BLITZ: the same five sections in the same order", all(v == ["Today", "Brain", "Trades", "Results", "Rules"] for v in segs.values()), segs)
+        col = pg.evaluate("() => getComputedStyle(document.documentElement).getPropertyValue('--bot').trim()")
+        top = pg.query_selector("#page > .pl-bot .st-acct[data-bot='blitz']")
+        check("c. a bot tab opens on its account card, in the bot's colour (BLITZ purple)", top is not None and col.lower() in ("#b388ff", "var(--bz)") , col)
+        pg.click("#tabs a[data-t='money']")
+        pg.wait_for_timeout(900)
+        mo = pg.evaluate("() => ({ hash: location.hash, chips: [...document.querySelectorAll('#sub .strip button')].map(b => b.dataset.go) })")
+        check("c. Money tab opens Real results; its pages are real money only (Real results · Accounts today · Eval timeline)", mo["hash"] == "#/real" and mo["chips"][:2] == ["real", "realtoday"]
+              and not any(c in mo["chips"] for c in ("money", "props", "whatif", "scale")), mo)
+        pg.evaluate("() => { location.hash = '#/system'; }")
+        pg.wait_for_timeout(700)
+        sec = pg.eval_on_selector_all(".cl-sec h4", "els => els.filter(e => e.offsetParent !== null).map(e => e.firstChild.textContent.trim())")
+        check("c. More: grouped (Today · Insight · Bot and health · Trades · Money planning · This app · Advanced)", sec[:6] == ["Today", "Insight", "Bot and health", "Trades", "Money planning", "This app"] and "Advanced" in sec, sec)
+        # the palette
+        pg.click("#plFind")
+        pg.wait_for_selector("#plPal.on #plQ", timeout=5000)
+        pg.fill("#plQ", "atlas trades")
+        pg.wait_for_timeout(250)
+        first = pg.eval_on_selector("#plL li.on b", "e => e.textContent")
+        sh(pg, "polish_phone_palette.png")
+        pg.keyboard.press("Enter")
+        pg.wait_for_timeout(700)
+        check("c. the search palette: 'atlas trades' -> ATLAS · Trades, Enter opens it", "ATLAS" in first and "Trades" in first and pg.evaluate("() => location.hash") == "#/atlas/trades"
+              and not pg.query_selector("#plPal.on"), (first, pg.evaluate("() => location.hash")))
+        pg.keyboard.press("/")
+        pg.wait_for_selector("#plPal.on", timeout=3000)
+        pg.keyboard.press("Escape")
+        pg.wait_for_timeout(300)
+        check("c. the palette: '/' opens it, Escape closes it", not pg.query_selector("#plPal.on"))
+        # frame time while scrolling Home (the UI itself; the 3D scene is measured by tests.test_space_ui)
+        pg.evaluate("() => { location.hash = '#/today'; }")
+        pg.wait_for_timeout(1200)
+        fr = pg.evaluate("""() => new Promise((res) => { const d = []; let last = performance.now(), n = 0; const H = document.documentElement.scrollHeight - innerHeight;
+          function f(t) { d.push(t - last); last = t; n++; scrollTo(0, (Math.sin(n / 18) * 0.5 + 0.5) * H); if (n < 150) requestAnimationFrame(f); else { d.shift(); d.sort((a, b) => a - b); res({ n: d.length, p50: d[d.length >> 1], p95: d[Math.floor(d.length * 0.95)] }); } }
+          requestAnimationFrame(f); })""")
+        PERF["phone_scroll_frame_ms"] = fr
+        check("c. frame time while scrolling Home: median <= 20 ms, p95 <= 50 ms (headless, software GPU)", fr["p50"] <= 20 and fr["p95"] <= 50, fr)
+        cls_ = pg.evaluate("""() => new Promise((res) => { let s = 0; try { new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput) s += e.value; }).observe({ type: 'layout-shift', buffered: true }); } catch (e) {} setTimeout(() => res(s), 600); })""")
+        PERF["phone_layout_shift"] = round(cls_, 4)
+        check("c. no layout shift to speak of on Home (CLS < 0.1)", cls_ < 0.1, cls_)
+        check("c. phone: no page errors", not errs, errs[:4])
+        ctx.close()
+        # the intro: once a day, skippable (a real phone, not an automated browser)
+        e2 = []
+        real = "Object.defineProperty(Navigator.prototype, 'webdriver', { get: () => false });"
+        ctx, pg = page(br, e2, init=real)
+        t0 = time.time()
+        pg.goto(base + "#/today")
+        pg.wait_for_selector("#splash #spSkip", timeout=10000)
+        vis = pg.is_visible("#splash")
+        sh(pg, "polish_phone_intro.png")
+        tk = time.time()
+        pg.evaluate("() => { const b = document.getElementById('spSkip'); if (b) b.click(); }")      # a tap on Skip
+        pg.wait_for_function("() => !document.getElementById('splash')", timeout=3000)
+        gone_s = round(time.time() - tk, 2)
+        PERF["intro_skip_s"] = gone_s
+        pg.reload()
+        pg.wait_for_selector(".pl-home", timeout=30000)
+        again = pg.query_selector("#splash") is not None
+        check("c. the intro: shows on the first open of the day, Skip removes it at once, not again the same day", vis and not again and not e2, (vis, again, gone_s, e2[:2]))
+        ctx.close()
+        # reduced motion: no intro, no animation on the new parts
+        e3 = []
+        ctx, pg = page(br, e3, motion="reduce", init=real)
+        pg.goto(base + "#/today")
+        pg.wait_for_selector(".pl-home .st-acct", timeout=30000)
+        pg.wait_for_timeout(800)
+        rm = pg.evaluate("() => ({ intro: !!document.getElementById('splash'), anims: [...document.querySelectorAll('#page, #page .pl-home, #page .pl-home *')].reduce((n, e) => n + e.getAnimations().length, 0) })")
+        check("c. reduced motion: no intro, no animation on the page or its new cards", not rm["intro"] and rm["anims"] == 0 and not e3, (rm, e3[:2]))
+        ctx.close()
+        # the light theme, sideways
+        e4 = []
+        ctx, pg = page(br, e4, 844, 390, init="try { localStorage.setItem('le.theme', JSON.stringify('light')); } catch (e) {}")
+        pg.goto(base + "?fxoff#/today")
+        pg.wait_for_selector(".pl-home .st-acct", timeout=30000)
+        pg.wait_for_timeout(600)
+        ink = pg.evaluate("() => getComputedStyle(document.querySelector('.st-sum b')).color")
+        check("c. light theme, sideways 844x390: dark ink on light glass, no sideways scroll, no errors", sum(int(x) for x in re.findall(r"\d+", ink)[:3]) < 300 and no_x(pg) <= 1 and not e4, (ink, no_x(pg), e4[:2]))
+        sh(pg, "polish_phone_light_landscape.png")
+        ctx.close()
+        br.close()
+    srv.shutdown()
+
+
+# ------------------------------------------------------------------------------------------------ d. PC
+def part_d(F, shots):
+    try:
+        from playwright.sync_api import sync_playwright
+        import uvicorn  # noqa: F401
+    except Exception:
+        print("[SKIP] d. PC Playwright: playwright / uvicorn not installed")
+        return
+    import copy
+    import socket
+    import threading
+    from tests.shots_board import free_port, snapshot_files, restore_files
+    from tests import test_blitz_tab as TB
+    import atexit
+    snap = snapshot_files()
+    atexit.register(restore_files, snap)
+    for k, v in (("LE_NO_AUTOSTART", "1"), ("LE_HEARTBEAT", "0"), ("LE_LIVE_PUBLISH", "0"), ("LE_EXEC_AUDIT", "0")):
+        os.environ[k] = v
+    import uvicorn
+    import server
+    from engine import board_api
+    board_api.board_view = lambda bot, now=None: copy.deepcopy(F["board"])
+    port = free_port()
+    srv = uvicorn.Server(uvicorn.Config(server.app, host="127.0.0.1", port=port, log_level="warning"))
+    threading.Thread(target=srv.run, daemon=True).start()
+    for _ in range(300):
+        try:
+            socket.create_connection(("127.0.0.1", port), timeout=0.2).close()
+            break
+        except OSError:
+            time.sleep(0.1)
+    base = f"http://127.0.0.1:{port}"
+    with sync_playwright() as p:
+        br = TB.launch(p)
+        ctx = br.new_context(viewport={"width": 1440, "height": 900}, device_scale_factor=1)
+        ctx.clock.install(time=F["T"])
+        pg = ctx.new_page()
+        errs = []
+        pg.on("pageerror", lambda e: errs.append(f"pc pageerror: {str(e)[:240]}"))
+        pg.add_init_script("localStorage.setItem('page', 'cc');")
+        pg.goto(base + "/?fxoff", wait_until="domcontentloaded")
+        pg.wait_for_function("() => window.LE && window.LE.go", timeout=60000)
+        ok = False
+        for _ in range(3):
+            TB.pc_go(pg, "cc")
+            try:
+                pg.wait_for_selector("#page-cc.active > #nxStatusHome .st-bar", timeout=30000)
+                ok = True
+                break
+            except Exception:
+                pass
+        check("d. PC Home: the status bar on top", ok and pg.evaluate("() => document.querySelector('#page-cc').firstElementChild.id") == "nxStatusHome")
+        subs = pg.eval_on_selector_all("#nav .nx-main-sub", "els => els.map(e => e.textContent.trim())")
+        side = pg.eval_on_selector_all("#nav > a.nx-gl[data-g='Main']", "els => els.map(e => e.dataset.page)")
+        check("d. PC sidebar: Bots · Live · Money · Insight headings, each page once, BLITZ right after ATLAS", subs == ["Bots", "Live", "Money", "Insight"] and len(side) == len(set(side))
+              and side.index("blitz") == side.index("atlas") + 1, (subs, side))
+        if shots:
+            pg.screenshot(path=os.path.join(shots, "polish_pc_home_1440.png"))
+        TB.pc_go(pg, "blitz")
+        pg.wait_for_timeout(1500)
+        seg = pg.eval_on_selector_all("#nxSub .nx-botseg button", "els => els.map(e => e.textContent.trim())")
+        check("d. PC BLITZ: Today · Brain · Trades · Results · Rules", seg == ["Today", "Brain", "Trades", "Results", "Rules"], seg)
+        check("d. PC: no page errors", not errs, errs[:4])
+        br.close()
+    srv.should_exit = True
+
+
+def main():
+    shots = ""
+    if "--shots" in sys.argv:
+        shots = sys.argv[sys.argv.index("--shots") + 1]
+        os.makedirs(shots, exist_ok=True)
+    part_a()
+    tmp = tempfile.mkdtemp(prefix="le_ui_polish_")
+    try:
+        part_b(tmp)
+        from tests import test_blitz_tab as TB
+        F = TB.build()
+        part_c(F, tmp, shots)
+        part_d(F, shots)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    if PERF:
+        print("perf:", json.dumps(PERF))
+    print(f"\nUI polish: {sum(RES)}/{len(RES)} " + ("ALL PASS" if all(RES) else "FAILED"))
+    return 0 if all(RES) else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

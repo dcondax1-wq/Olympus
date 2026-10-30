@@ -153,12 +153,13 @@ async function frames(p, tag) {
       const p = await ctx.newPage(); p.on('pageerror', (e) => errors.push('phone: ' + e.message.slice(0, 200)));
       const hits = []; await ghRoutes(p, hits);
       await p.goto(`${PH}/?fxfixed#/today`);
-      await p.waitForSelector('.hd-home', { timeout: 20000 }).then(() => step('phone: Home has the Holodeck button (next to Live View)', true), () => step('phone: Home has the Holodeck button (next to Live View)', false));
-      const next = await p.evaluate(() => { const a = document.querySelector('.lv-home'), b = document.querySelector('.hd-home'); return !!a && a.nextElementSibling === b; });
-      step('phone: the Holodeck button sits right under Live View', next);
-      await p.evaluate(() => document.querySelector('.hd-home').scrollIntoView({ block: 'center' }));
+      const HT = '.pl-quick a[data-go="holo"]';
+      await p.waitForSelector(HT, { timeout: 20000 }).then(() => step('phone: Home has the Holodeck tile (next to Live View)', true), () => step('phone: Home has the Holodeck tile (next to Live View)', false));
+      const next = await p.evaluate(() => { const a = document.querySelector('.pl-quick a[data-go="liveview"]'), b = document.querySelector('.pl-quick a[data-go="holo"]'); return !!a && a.nextElementSibling === b && !!document.querySelector('.hd-home'); });
+      step('phone: the Holodeck tile sits right after Live View (the old button is under Everything else)', next);
+      await p.evaluate((s) => document.querySelector(s).scrollIntoView({ block: 'center' }), HT);
       await shot(p, 'phone_home.png');
-      await p.click('.hd-home');
+      await p.click(HT);
       await waitHolo(p).then(() => step('phone: #/holo opens, holo.json from the GitHub API', true), async () => step('phone: #/holo opens, holo.json from the GitHub API', false, await p.evaluate(() => location.hash + ' ' + (document.querySelector('#hdNote')?.textContent || ''))));
       step('phone: reads holo.json + holo_hist.json from the live branch (API)', hits.some((h) => h === 'holo.json') && hits.some((h) => h === 'holo_hist.json'), hits.join(','));
       await p.waitForTimeout(1500);

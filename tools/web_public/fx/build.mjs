@@ -27,6 +27,8 @@ copyFileSync(path.join(here, '..', 'missioncore.js'), path.join(root, 'web_next'
 // Holodeck (2026-10-29): the page UI and its styles, one source each (the 3D scene itself is in this bundle: src/holo.js)
 copyFileSync(path.join(here, '..', 'holocore.js'), path.join(root, 'web_next', 'js', 'next', 'holocore.js'));
 copyFileSync(path.join(here, '..', 'holo.css'), path.join(root, 'web_next', 'css', 'holo.css'));
+// night 3 (2026-10-30): the status bar / Sunday open / account cards renderer, one source for both dashboards
+copyFileSync(path.join(here, '..', 'statuscore.js'), path.join(root, 'web_next', 'js', 'next', 'statuscore.js'));
 const v = createHash('sha1').update(readFileSync(out)).digest('hex').slice(0, 8);
 const stamp = (file, re, rep, soft = false) => {
   const p = path.join(root, file), s = readFileSync(p, 'utf8'), t = s.replace(re, rep);

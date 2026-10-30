@@ -357,10 +357,15 @@ def part_c(b2, b3, lvd, now, shots, perf):
                 fs = frame_stats(pg, 6000)
                 perf["phone_390_in_app"] = fs
                 check("c. phone in the app: the scene's loop keeps running (software GPU) at DPR <= 1.5", fs["ticks"] >= 1 and fs["dpr"] <= 1.5, fs)
-            pg.wait_for_selector(".mc-strip", timeout=20000)
-            check("c. phone Home: Mission Control strip on top with 3 orbit chips and today's mission",
+            # 2026-10-30 (night 3, layout deliberately changed): Home opens on the status bar + the three account cards; the
+            # Mission Control strip is the first card under "Everything else on Home" (one tap, remembered)
+            pg.wait_for_selector(".mc-strip", state="attached", timeout=20000)
+            if not pg.is_visible(".mc-strip"):
+                pg.click("#page > .pl-fold")
+                pg.wait_for_timeout(400)
+            check("c. phone Home > Everything else: the Mission Control strip first, with 3 orbit chips and today's mission",
                   pg.eval_on_selector_all(".mc-strip .mc-chip", "e => e.length") == 3 and pg.is_visible(".mc-mission")
-                  and pg.evaluate("() => { const s = document.querySelector('.mc-strip').getBoundingClientRect(), c = [...document.querySelectorAll('#page .card')].filter((x) => !x.closest('.mc-strip'))[0]; return !c || s.top <= c.getBoundingClientRect().top; }"))
+                  and pg.evaluate("() => { const s = document.querySelector('.mc-strip').getBoundingClientRect(), f = document.querySelector('#page > .pl-fold').getBoundingClientRect(), c = [...document.querySelectorAll('#page > .card')].filter((x) => x.offsetParent && x.getBoundingClientRect().top > f.top)[0]; return s.top > f.top && (!c || s.top <= c.getBoundingClientRect().top); }"))
             st = pg.evaluate("() => { const s = window.__LEFX && window.__LEFX.space; return s ? s.sats.map((x) => [x.key, x.state]) : null; }")
             check("c. phone: the satellites follow the bots (Zlarior in a trade)", st and dict(st).get("lit") == "trade", st)
             pg.evaluate("() => FX.shoot('win')")
@@ -456,7 +461,7 @@ def part_c(b2, b3, lvd, now, shots, perf):
             br = launch(p, ["--disable-webgl", "--disable-3d-apis", "--disable-gpu"])
             errs2 = []
             ctx, pg = phone_page(br, base, lvp, 390, 844, "/index.html?fx=max#/today", errs2)
-            pg.wait_for_selector(".mc-strip", timeout=20000)
+            pg.wait_for_selector(".mc-strip", state="attached", timeout=20000)
             pg.wait_for_timeout(2500)
             nw = pg.evaluate("() => ({ fx: document.documentElement.dataset.fx, canvas: !!document.querySelector('.fx-space'), sky: getComputedStyle(document.querySelector('.space-css')).visibility })")
             check("c. no WebGL: fallback to the CSS sky (data-fx off, no canvas), no page errors", nw["fx"] == "off" and not nw["canvas"] and nw["sky"] == "visible" and not errs2, (nw, errs2[:3]))

@@ -38,10 +38,11 @@ const srv = http.createServer((q, s) => {
     });
     await p.route('https://raw.githubusercontent.com/**', (r) => r.fulfill({ status: 500, body: 'raw should not be needed' }));
     await p.goto(`http://127.0.0.1:${port}/#/today`);
-    await p.waitForSelector('.lv-home', { timeout: 20000 }).then(() => step('Home: the Live View button (under the account cards)', true), () => step('Home: the Live View button (under the account cards)', false));
-    await p.evaluate(() => document.querySelector('.lv-home').scrollIntoView({ block: 'center' }));
+    const LT = '.pl-quick a[data-go="liveview"]';      // 2026-10-30: Home's quick tiles (the old button is under Everything else)
+    await p.waitForSelector(LT, { timeout: 20000 }).then(() => step('Home: the Live View tile (under the account cards)', true), () => step('Home: the Live View tile (under the account cards)', false));
+    await p.evaluate((s) => document.querySelector(s).scrollIntoView({ block: 'center' }), LT);
     await shot(p, 'phone_home.png');
-    await p.click('.lv-home');
+    await p.click(LT);
     await p.waitForFunction(() => location.hash === '#/liveview' && document.querySelector('#lvRoot'), null, { timeout: 10000 })
       .then(() => step('the button opens #/liveview', true), () => step('the button opens #/liveview', false, location.hash));
     await p.waitForFunction(() => /NQ\s[\d,]/.test(document.querySelector('#lvPx')?.textContent || '') && window.LVP && window.LVP.geo, null, { timeout: 20000 })

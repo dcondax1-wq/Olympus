@@ -10,7 +10,7 @@
 //   accounts(M, o) the three account cards: eval progress ring, $ to the target, room, today's real $, a sparkline
 //   empty(kind, M) smart empty states: what will show here, and when
 //   wire(root)  taps (the status bar folds) and the countdowns
-// Paper only: it never arms, routes or changes the bot. No fetch, no POST.
+// Paper only: it never arms, routes or changes the bot, and never calls the network (the pages pass the data in).
 (function () {
   'use strict';
   const V = 1, ET = 'America/New_York';
@@ -234,7 +234,9 @@
     const passed = okN(A.toTarget) && A.toTarget <= 0;
     const down = okN(A.profit) && A.profit < 0;
     const frac = down ? (okN(A.mll) && A.mll > 0 ? -A.profit / A.mll : 0) : tgt && okN(A.profit) ? A.profit / tgt : 0;
-    const head = (plan) => `<span class="st-a-h"><b>${NAME[k]}</b><em>${esc(plan)}</em>${stateChip(A, L)}</span>`;
+    // REAL / SIM / PAPER: which money this card is (the board's badge: LIVE = a real MFFU account, SIM = NinjaTrader Sim)
+    const bd = String(obj(obj(M.board)[k]).badge || '').toUpperCase(), tag = A.placeholder || A.paper ? 'PAPER' : /LIVE|REAL/.test(bd) ? 'REAL' : /SIM/.test(bd) ? 'SIM' : bd ? bd.slice(0, 8) : '';
+    const head = (plan) => `<span class="st-a-h"><b>${NAME[k]}</b>${tag ? `<i class="st-tag ${tag === 'REAL' ? 'real' : ''}">${esc(tag)}</i>` : ''}<em>${esc(plan)}</em>${stateChip(A, L)}</span>`;
     if (A.placeholder) {
       return `<a class="st-acct ph" data-bot="${k}" style="--c:${c}" ${goA(o, page)} aria-label="${NAME[k]}: paper only">${head('25K · paper shadow')}
         ${ring(0, c, '<i>off</i>')}<span class="st-a-m"><span class="st-big"><b>Paper</b><em>until its own 25K</em></span><span class="st-sub">never routed · watches the 09:30 noise band</span></span>
@@ -331,6 +333,8 @@
 @media (hover:hover){.st-acct:hover{border-color:color-mix(in srgb,var(--c) 50%,transparent)}}
 .st-acct.ph{opacity:.88}
 .st-a-h{grid-area:h;display:flex;align-items:center;gap:8px;min-width:0}.st-a-h b{font-size:15px;font-weight:750;color:var(--c);letter-spacing:.01em}
+.st-tag{flex:none;font:700 9.5px/1 var(--sans,system-ui);letter-spacing:.1em;padding:4px 6px;border-radius:6px;color:var(--ink-2,#a9b1c3);background:rgba(255,255,255,.06);border:1px solid rgba(160,170,220,.14)}
+.st-tag.real{color:#06140d;background:var(--good,#2ee59d);border-color:transparent;box-shadow:0 0 12px color-mix(in srgb,var(--good,#2ee59d) 45%,transparent)}
 .st-a-h em{font-style:normal;font-size:12px;color:var(--muted,#6f788b);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
 .st-state{flex:none;display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border-radius:99px;font-size:11.5px;font-weight:650;color:var(--ink-2,#a9b1c3);background:rgba(255,255,255,.05);border:1px solid rgba(160,170,220,.12)}
 .st-state.good{color:var(--good-ink,#4ff0ae);border-color:color-mix(in srgb,var(--good,#2ee59d) 35%,transparent)}.st-state.bad{color:var(--bad,#ff5a7a);border-color:color-mix(in srgb,var(--bad,#ff5a7a) 40%,transparent)}
