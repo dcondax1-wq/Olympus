@@ -409,7 +409,7 @@
 :root[data-theme="light"] .su-bar,:root[data-theme="light"] .su-acct,:root[data-theme="light"] .su-sun{background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(246,248,252,.88));border-color:rgba(20,30,60,.1);box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 14px 34px -24px rgba(20,30,60,.35)}
 :root[data-theme="light"] .su-acct{background:radial-gradient(120% 140% at 0% 0%,color-mix(in srgb,var(--c) 12%,transparent),transparent 55%),linear-gradient(180deg,#fff,#f6f8fc)}
 :root[data-theme="light"] .su-chip{background:rgba(20,30,60,.04);border-color:rgba(20,30,60,.1)}
-:root[data-theme="light"] .su-ring .bg{stroke:rgba(20,30,60,.08)}
+:root[data-theme="light"] .su-ring .bg{stroke:rgba(20,30,60,.08)}:root[data-theme="light"] .su-ring.down b{color:#c8264a}:root[data-theme="light"] .su-wd em{color:#5b6478}
 @media (prefers-reduced-motion:reduce){.su-dot.live::after{animation:none}.su-more,.su-acct,.su-chev{transition:none}}
 `;
   function css() { if (typeof document === 'undefined' || document.getElementById('su-css')) return; const s = document.createElement('style'); s.id = 'su-css'; s.textContent = CSS; document.head.appendChild(s); }

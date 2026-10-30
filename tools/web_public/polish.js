@@ -26,10 +26,15 @@
     if (PD.board) { try { return PD.board(); } catch (e) { /* fall through */ } }
     const h = HD() || {}; return h.board && !h.board.error ? h.board : null;
   }
+  // the critical alert to acknowledge (alerts.js draws it as #apBan on top of each page; a page that redraws itself can
+  // wipe it for a moment, so the last one seen counts for 3 more minutes)
+  let BAN = null;
   function alerts() {
-    const b = document.getElementById('apBan'), out = [];
-    if (b && b.offsetParent !== null) { const t = (b.querySelector('b') || b).textContent.trim(); if (t) out.push({ lvl: 'bad', text: t.replace(/\s*·\s*tap Got it\s*$/i, '') }); }
-    return out;
+    const b = document.getElementById('apBan'), now = nowS();
+    const t = b ? ((b.querySelector('.ap-ban b') || b.querySelector('b') || b).textContent || '').trim() : '';
+    if (t && b.querySelector('.ap-ban')) BAN = { lvl: 'bad', text: t.replace(/\s*·\s*tap Got it\s*$/i, ''), t: now };
+    else if (b && !b.querySelector('.ap-ban')) BAN = null;          // the banner is there without a critical alert (a cloud-stale note)
+    return BAN && now - BAN.t < 180 ? [{ lvl: BAN.lvl, text: BAN.text }] : [];
   }
   function model() {
     const h = HD() || {};
