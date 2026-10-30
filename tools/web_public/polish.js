@@ -219,6 +219,7 @@
       if (el && PAGE !== 'today') el.classList.remove('pl-h', 'pl-all');
       const out = r0.apply(this, arguments);
       try { if (el) { botTop(el, soft); if (!soft && PAGE !== 'today') enter(el, ':scope > *'); eyebrow(el, g); tabStops(el); } tabInd(); refreshBar(); headerDot(); } catch (e) { console.warn('polish render', e); }
+      try { const t = document.getElementById('title'); if (t) t.classList.toggle('pl-long', (t.textContent || '').trim().length > 11); } catch (e) { /* header only */ }
       return out;
     };
     render.__pl = true;
