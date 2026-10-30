@@ -217,7 +217,7 @@ def fit(p: dict, max_bytes: int = MAX_BYTES) -> dict:
     if bd and size() > max_bytes and len(bd.get("trades") or []) > 4:     # the live board: its trade list first
         bd["trades"] = bd["trades"][:4]
         p["trimmed"] = True
-    for k in ("mind", "ai", "second", "ops", "remote", "brain"):     # mind first: liveview.json carries it too
+    for k in ("mind", "fleet", "ai", "second", "ops", "remote", "brain"):     # mind first: liveview.json carries it too; fleet: the PC page has it
         if size() > max_bytes and isinstance(p.get("pc"), dict):
             p["pc"].pop(k, None)
             p["trimmed"] = True

@@ -574,26 +574,39 @@ class Follower:
         ms = int(self.spec.get("stagger_ms") or 0)
         if ms:
             self.fleet.sleep(ms / 1000.0)
-        # the lead may have closed or a hedge appeared while we waited: check again right before the order
-        h = firms.hedge_conflict(order, self.fleet.positions(exclude=self))
-        if h:
-            self.skip(et_, h, now)
-            return
-        t0 = time.perf_counter()
-        act = {"sym": order["sym"], "side": order["side"], "qty": q, "stop": order["stop"], "target": order["target"],
-               "entry": order["entry"], "entry_t": et_}
-        rr = self.route(act)
-        if not _ok(rr):
+        # the lead may have closed or a hedge appeared while we waited: check again right before the order, under the
+        # fleet's entry lock (two followers of different leads can never pass the no-hedge check at the same moment)
+        with self.fleet.entry_mx:
+            h = firms.hedge_conflict(order, self.fleet.positions(exclude=self))
+            if h:
+                self.skip(et_, h, now)
+                return
+            t0 = time.perf_counter()
+            act = {"sym": order["sym"], "side": order["side"], "qty": q, "stop": order["stop"], "target": order["target"],
+                   "entry": order["entry"], "entry_t": et_}
+            rr = self.route(act)
+            unconf = not _ok(rr) and not self.never_placed(et_, rr, now)
+            if _ok(rr) or unconf:
+                self.pos = {"entry_t": et_, "dir": int(op["dir"]), "qty": q, "entry": order["entry"], "stop": order["stop"],
+                            "target": order["target"], "t": now, "sym": order["sym"], "lead_fill": op.get("fill"), "fill": None,
+                            "lead_qty": int(op.get("qty") or 0), "lead_t": int(op.get("t") or now),
+                            "route_ms": int((time.perf_counter() - t0) * 1000) + ms}
+                if unconf:
+                    self.pos["unconfirmed"] = True
+        if unconf:
+            # NOT OK, but the broker may still hold it (a leg still working, "fill not reported yet"): kept and managed as
+            # account B does; dropped without booking once it is provably never placed (checked every poll)
+            self.log("risk", f"copy NOT confirmed ({str(rr.get('error') or '')[:120]}): kept and managed until NinjaTrader shows it either way")
+            self.fleet.notify(f"{self.name}: copy NOT confirmed", f"the {LEAD_NAMES.get(self.lead)} {_side(op['dir'])} copy ({q} micros) "
+                              f"got no clear answer: {str(rr.get('error') or '')[:120]}. Check this account in NinjaTrader.",
+                              f"fleet:{self.id}:unconfirmed:{et_}")
+        elif not _ok(rr):
             # refused / never placed by this account's broker: nothing booked here, the other followers are not affected
             self.skip(et_, f"REFUSED by the broker: {str(rr.get('error') or 'no reason given')[:120]} (nothing booked)", now)
             self.fleet.notify(f"{self.name}: copy NOT placed", f"the {LEAD_NAMES.get(self.lead)} {_side(op['dir'])} copy ({q} micros) "
                               f"was refused: {str(rr.get('error') or '')[:120]}. Nothing booked on this account.",
                               f"fleet:{self.id}:refused:{et_}")
             return
-        self.pos = {"entry_t": et_, "dir": int(op["dir"]), "qty": q, "entry": order["entry"], "stop": order["stop"],
-                    "target": order["target"], "t": now, "sym": order["sym"], "lead_fill": op.get("fill"), "fill": None,
-                    "lead_qty": int(op.get("qty") or 0), "lead_t": int(op.get("t") or now),
-                    "route_ms": int((time.perf_counter() - t0) * 1000) + ms}
         self._slip()
         self.log("system", f"copied {LEAD_NAMES.get(self.lead)} {_side(op['dir'])} {q} micros (lead {op.get('qty')}), stop "
                            f"{order['stop']}, target {order['target']}")
@@ -616,9 +629,33 @@ class Follower:
                                    + int(p.get("route_ms") or 0)})
                 self.slips = self.slips[-60:]
 
+    def never_placed(self, et_, res, now) -> bool:
+        """This follower's entry et_ provably never became a position (engine/ninjatrader.entry_never_placed, the rule LIT
+        and account B use; paper: the answer was NOT OK). Anything unclear = False."""
+        if getattr(self.adapter, "name", None) == "paper":
+            return not _ok(res)
+        try:
+            from .ninjatrader import entry_never_placed
+            return bool(entry_never_placed(self.adapter, et_, res, now=now))
+        except Exception:
+            return False
+
     def _manage(self, snap, sym, now, ctx):
         p = self.pos
         et_ = p["entry_t"]
+        if p.get("unconfirmed"):
+            if _fill_px(self.adapter, et_) is not None:
+                p.pop("unconfirmed", None)
+            else:
+                e = _entry_row(self.ledger, et_)
+                if self.never_placed(et_, (e or {}).get("result"), now):
+                    with self.mx:
+                        self.pos = None
+                    self.skip(et_, "never placed by the broker (nothing booked)", now)
+                    self.fleet.notify(f"{self.name}: copy NOT placed", "NinjaTrader never took the copy: nothing booked on this account.",
+                                      f"fleet:{self.id}:refused:{et_}")
+                    self.fleet.save()
+                    return
         if p.get("lead_fill") is None and snap and (snap.get("open") or {}).get("entry_t") == et_:
             p["lead_fill"] = snap["open"].get("fill")
         self._slip()
@@ -776,6 +813,7 @@ class Fleet:
         self._notify_hook = notify
         self.notes: list = []
         self.mx = threading.RLock()
+        self.entry_mx = threading.Lock()          # the no-hedge check + the entry order, one follower at a time
         self._kill = False
         reserved = self._reserved()
         ids, names, specs = set(), set(), []
@@ -1126,13 +1164,28 @@ class Fleet:
         now = int(now or self.clock())
         rows = self.rows(now)
         return {"v": VERSION, "t": now, "on": True, "kill": self.killed(), "accounts": rows, "leads": self.lead_rows(now),
-                "totals": _totals(rows), "notes": self.notes[-20:]}
+                "totals": _totals(rows), "notes": self.notes[-20:], "warnings": self.warnings()}
+
+    def warnings(self) -> list:
+        """Fleet-level rule warnings: more funded followers of one plan than the firm allows a person (MFFU: 1 Builder 50K,
+        2 Builder 25K, verified), and the owner's own leads on the same plan are not counted here (the Start page has them)."""
+        out, n = [], {}
+        for f in self.followers:
+            if f.stage == "funded" and f.problem is None:
+                n[f.spec.get("plan")] = n.get(f.spec.get("plan"), 0) + 1
+        for plan, k in sorted(n.items()):
+            P = firms.profile(plan, "funded") or {}
+            mx = _num(P.get("max_active"))
+            if mx is not None and k > mx:
+                out.append(f"{P.get('label')}: {k} funded followers, the firm allows {int(mx)} per person")
+        return out
 
     def hb_block(self, now=None) -> dict:
         """The heartbeat's compact "fleet" block (< 6 KB)."""
         now = int(now or self.clock())
         acc = []
-        for r in self.rows(now)[:12]:
+        rows = self.rows(now)
+        for r in rows[:12]:
             if r.get("error"):
                 acc.append({"id": r["id"], "error": r["error"][:80]})
                 continue
@@ -1145,7 +1198,7 @@ class Fleet:
                 "pos": (f"{o['side'][0]}{o['qty']}" if o else None), "slip": r.get("slip_ticks"),
                 "skip": (str((r.get("last_skip") or {}).get("why") or "")[:90] or None),
                 "warn": [str(w)[:90] for w in (r.get("warn") or [])[:2]] or None}.items() if v is not None})
-        blk = {"v": VERSION, "t": now, "kill": self.killed(), "n": len(self.followers), "acc": acc, "tot": _totals(self.rows(now))}
+        blk = {"v": VERSION, "t": now, "kill": self.killed(), "n": len(self.followers), "acc": acc, "tot": _totals(rows)}
         s = json.dumps(blk, separators=(",", ":"), default=str)
         while len(s) > 6000 and blk["acc"]:
             blk["acc"] = blk["acc"][:-1]

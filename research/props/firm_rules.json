@@ -122,7 +122,8 @@
     "dll_type": {"v": "soft", "verified": true, "date": "2026-10-26", "src": ["https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look", "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts", "owner's MFFU dashboard screenshots 2026-10-26 (Builder 25K bought for ATLAS, $43)"]},
     "max_micros": {"v": 20, "verified": true, "date": "2026-10-26", "src": ["https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look", "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts", "owner's MFFU dashboard screenshots 2026-10-26 (Builder 25K bought for ATLAS, $43)"]},
     "max_minis": {"v": 2, "verified": true, "date": "2026-10-26", "src": ["https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look", "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts", "owner's MFFU dashboard screenshots 2026-10-26 (Builder 25K bought for ATLAS, $43)"]},
-    "news": {"v": "none", "verified": true, "date": "2026-10-18", "src": ["mffu_rules.json builder_50k.sim_funded.news"], "n": "unrestricted"}
+    "news": {"v": "none", "verified": true, "date": "2026-10-18", "src": ["mffu_rules.json builder_50k.sim_funded.news"], "n": "unrestricted"},
+    "max_active": {"v": 2, "verified": true, "date": "2026-10-26", "src": ["https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look", "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts", "owner's MFFU dashboard screenshots 2026-10-26 (Builder 25K bought for ATLAS, $43)"], "n": "up to 2 active sim-funded Builder 25K accounts per person"}
    },
    "payout": {
     "buffer": {"v": 1100.0, "verified": true, "date": "2026-10-26", "src": ["https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look", "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts", "owner's MFFU dashboard screenshots 2026-10-26 (Builder 25K bought for ATLAS, $43)"]},
@@ -171,7 +172,8 @@
     "dll_type": {"v": "soft", "verified": true, "date": "2026-10-18", "src": ["https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"]},
     "max_micros": {"v": 40, "verified": true, "date": "2026-10-18", "src": ["https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"]},
     "max_minis": {"v": 4, "verified": true, "date": "2026-10-18", "src": ["https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"]},
-    "news": {"v": "none", "verified": true, "date": "2026-10-18", "src": ["https://help.myfundedfutures.com/en/articles/8230009-news-trading-policy", "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"], "n": "unrestricted"}
+    "news": {"v": "none", "verified": true, "date": "2026-10-18", "src": ["https://help.myfundedfutures.com/en/articles/8230009-news-trading-policy", "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"], "n": "unrestricted"},
+    "max_active": {"v": 1, "verified": true, "date": "2026-10-18", "src": ["https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide", "https://help.myfundedfutures.com/en/articles/17005296-builder-plan-100k-comprehensive-guide", "https://help.myfundedfutures.com/en/articles/11802636-traders-evaluation-simplified"], "n": "1 active sim-funded Builder 50K per person"}
    },
    "payout": {
     "buffer": {"v": 2100.0, "verified": true, "date": "2026-10-18", "src": ["https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide", "https://myfundedfutures.com/plans/builder"], "n": "$1,600 with the $1,500-MLL add-on; must be cleared before a request"},
@@ -220,7 +222,8 @@
     "dll_type": {"v": "soft", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 60, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 6, "verified": false, "date": "2026-10-18"},
-    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"}
+    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 3100, "verified": false, "date": "2026-10-18"},
@@ -266,7 +269,8 @@
     "dll_type": {"v": "soft", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
     "max_minis": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
-    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"}
+    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 4600, "verified": false, "date": "2026-10-18"},
@@ -312,7 +316,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 30, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 3, "verified": false, "date": "2026-10-18"},
-    "news": {"v": {"flat_min_before": 2, "flat_min_after": 2, "events": "tier1"}, "verified": false, "date": "2026-10-18", "n": "allowed in the eval (Tier-1 news rules once funded: check)"}
+    "news": {"v": {"flat_min_before": 2, "flat_min_after": 2, "events": "tier1"}, "verified": false, "date": "2026-10-18", "n": "allowed in the eval (Tier-1 news rules once funded: check)"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 1100, "verified": false, "date": "2026-10-18"},
@@ -358,7 +363,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 50, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 5, "verified": false, "date": "2026-10-18"},
-    "news": {"v": {"flat_min_before": 2, "flat_min_after": 2, "events": "tier1"}, "verified": false, "date": "2026-10-18", "n": "allowed in the eval (Tier-1 news rules once funded: check)"}
+    "news": {"v": {"flat_min_before": 2, "flat_min_after": 2, "events": "tier1"}, "verified": false, "date": "2026-10-18", "n": "allowed in the eval (Tier-1 news rules once funded: check)"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 2100, "verified": true, "date": "2026-10-20", "src": ["mffu_rapid_pay"]},
@@ -404,7 +410,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 80, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 8, "verified": false, "date": "2026-10-18"},
-    "news": {"v": {"flat_min_before": 2, "flat_min_after": 2, "events": "tier1"}, "verified": false, "date": "2026-10-18", "n": "allowed in the eval (Tier-1 news rules once funded: check)"}
+    "news": {"v": {"flat_min_before": 2, "flat_min_after": 2, "events": "tier1"}, "verified": false, "date": "2026-10-18", "n": "allowed in the eval (Tier-1 news rules once funded: check)"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 3100, "verified": false, "date": "2026-10-18"},
@@ -450,7 +457,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 100, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 10, "verified": false, "date": "2026-10-18"},
-    "news": {"v": {"flat_min_before": 2, "flat_min_after": 2, "events": "tier1"}, "verified": false, "date": "2026-10-18", "n": "allowed in the eval (Tier-1 news rules once funded: check)"}
+    "news": {"v": {"flat_min_before": 2, "flat_min_after": 2, "events": "tier1"}, "verified": false, "date": "2026-10-18", "n": "allowed in the eval (Tier-1 news rules once funded: check)"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 4600, "verified": false, "date": "2026-10-18"},
@@ -496,7 +504,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 20, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 2, "verified": false, "date": "2026-10-18"},
-    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "allowed (check)"}
+    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "allowed (check)"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 1100, "verified": false, "date": "2026-10-18"},
@@ -542,7 +551,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 30, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 3, "verified": false, "date": "2026-10-18"},
-    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "allowed (check)"}
+    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "allowed (check)"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 2100, "verified": true, "date": "2026-10-20", "src": ["mffu_rapid_eod"]},
@@ -588,7 +598,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
     "max_minis": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
-    "news": {"v": {"flat_min_before": 2, "flat_min_after": 2, "events": "tier1"}, "verified": false, "date": "2026-10-18", "n": "allowed in the eval, Tier-1 not allowed funded (sources conflict)"}
+    "news": {"v": {"flat_min_before": 2, "flat_min_after": 2, "events": "tier1"}, "verified": false, "date": "2026-10-18", "n": "allowed in the eval, Tier-1 not allowed funded (sources conflict)"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 2100, "verified": false, "date": "2026-10-18"},
@@ -634,7 +645,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
     "max_minis": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
-    "news": {"v": {"flat_min_before": 2, "flat_min_after": 2, "events": "tier1"}, "verified": false, "date": "2026-10-18", "n": "allowed in the eval, Tier-1 not allowed funded (sources conflict)"}
+    "news": {"v": {"flat_min_before": 2, "flat_min_after": 2, "events": "tier1"}, "verified": false, "date": "2026-10-18", "n": "allowed in the eval, Tier-1 not allowed funded (sources conflict)"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 3100, "verified": false, "date": "2026-10-18"},
@@ -680,7 +692,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
     "max_minis": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
-    "news": {"v": {"flat_min_before": 2, "flat_min_after": 2, "events": "tier1"}, "verified": false, "date": "2026-10-18", "n": "allowed in the eval, Tier-1 not allowed funded (sources conflict)"}
+    "news": {"v": {"flat_min_before": 2, "flat_min_after": 2, "events": "tier1"}, "verified": false, "date": "2026-10-18", "n": "allowed in the eval, Tier-1 not allowed funded (sources conflict)"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 4600, "verified": false, "date": "2026-10-18"},
@@ -726,7 +739,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 50, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 5, "verified": false, "date": "2026-10-18"},
-    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"}
+    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 0.0, "verified": false, "date": "2026-10-18"},
@@ -772,7 +786,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 100, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 10, "verified": false, "date": "2026-10-18"},
-    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"}
+    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 0.0, "verified": false, "date": "2026-10-18"},
@@ -818,7 +833,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 150, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 15, "verified": false, "date": "2026-10-18"},
-    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"}
+    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 0.0, "verified": false, "date": "2026-10-18"},
@@ -864,7 +880,8 @@
     "dll_type": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
     "max_micros": {"v": 40, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 4, "verified": false, "date": "2026-10-18"},
-    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"}
+    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 1100, "verified": false, "date": "2026-10-18"},
@@ -910,7 +927,8 @@
     "dll_type": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
     "max_micros": {"v": 60, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 6, "verified": false, "date": "2026-10-18"},
-    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"}
+    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 2100, "verified": false, "date": "2026-10-18"},
@@ -956,7 +974,8 @@
     "dll_type": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
     "max_micros": {"v": 80, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 8, "verified": false, "date": "2026-10-18"},
-    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"}
+    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 3100, "verified": false, "date": "2026-10-18"},
@@ -1002,7 +1021,8 @@
     "dll_type": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
     "max_micros": {"v": 120, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 12, "verified": false, "date": "2026-10-18"},
-    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"}
+    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 4100, "verified": false, "date": "2026-10-18"},
@@ -1048,7 +1068,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 20, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 2, "verified": false, "date": "2026-10-18"},
-    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"}
+    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
@@ -1094,7 +1115,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 40, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 4, "verified": false, "date": "2026-10-18"},
-    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"}
+    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 2100.0, "verified": true, "date": "2026-10-20", "src": ["ptv_lucid_pro", "qv_lucid_pay"], "n": "balance $52,100 and >= $500 profit in the cycle"},
@@ -1140,7 +1162,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 60, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 6, "verified": false, "date": "2026-10-18"},
-    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"}
+    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
@@ -1186,7 +1209,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 100, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 10, "verified": false, "date": "2026-10-18"},
-    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"}
+    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
@@ -1232,7 +1256,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 20, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 2, "verified": false, "date": "2026-10-18"},
-    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"}
+    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 0.0, "verified": false, "date": "2026-10-18"},
@@ -1278,7 +1303,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 40, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 4, "verified": false, "date": "2026-10-18"},
-    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"}
+    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 0.0, "verified": false, "date": "2026-10-18"},
@@ -1324,7 +1350,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 60, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 6, "verified": false, "date": "2026-10-18"},
-    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"}
+    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 0.0, "verified": false, "date": "2026-10-18"},
@@ -1370,7 +1397,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 100, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 10, "verified": false, "date": "2026-10-18"},
-    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"}
+    "news": {"v": "none", "verified": false, "date": "2026-10-18", "n": "allowed"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 0.0, "verified": false, "date": "2026-10-18"},
@@ -1416,7 +1444,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 30, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 3, "verified": false, "date": "2026-10-18"},
-    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check (not confirmed)"}
+    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check (not confirmed)"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 1500, "verified": false, "date": "2026-10-18"},
@@ -1462,7 +1491,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 60, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 6, "verified": false, "date": "2026-10-18"},
-    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check (not confirmed)"}
+    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check (not confirmed)"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 2000, "verified": false, "date": "2026-10-18"},
@@ -1508,7 +1538,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 90, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 9, "verified": false, "date": "2026-10-18"},
-    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check (not confirmed)"}
+    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check (not confirmed)"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 2500, "verified": false, "date": "2026-10-18"},
@@ -1554,7 +1585,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 120, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 12, "verified": false, "date": "2026-10-18"},
-    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check (not confirmed)"}
+    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check (not confirmed)"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 3000, "verified": false, "date": "2026-10-18"},
@@ -1600,7 +1632,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 150, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 15, "verified": false, "date": "2026-10-18"},
-    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check (not confirmed)"}
+    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check (not confirmed)"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 4500, "verified": false, "date": "2026-10-18"},
@@ -1646,7 +1679,8 @@
     "dll_type": {"v": null, "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
     "max_minis": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
-    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"}
+    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 0.0, "verified": false, "date": "2026-10-18"},
@@ -1692,7 +1726,8 @@
     "dll_type": {"v": null, "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
     "max_minis": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
-    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"}
+    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 0.0, "verified": false, "date": "2026-10-18"},
@@ -1738,7 +1773,8 @@
     "dll_type": {"v": null, "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
     "max_minis": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
-    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"}
+    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 0.0, "verified": false, "date": "2026-10-18"},
@@ -1784,7 +1820,8 @@
     "dll_type": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
     "max_micros": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
     "max_minis": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
-    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"}
+    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 0.0, "verified": false, "date": "2026-10-18"},
@@ -1830,7 +1867,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
     "max_minis": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
-    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"}
+    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 0.0, "verified": false, "date": "2026-10-18"},
@@ -1876,7 +1914,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 20, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 2, "verified": false, "date": "2026-10-18"},
-    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"}
+    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 1100, "verified": false, "date": "2026-10-18"},
@@ -1922,7 +1961,8 @@
     "dll_type": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
     "max_micros": {"v": 20, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 2, "verified": false, "date": "2026-10-18"},
-    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"}
+    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 1100, "verified": false, "date": "2026-10-18"},
@@ -1968,7 +2008,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 40, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 4, "verified": false, "date": "2026-10-18"},
-    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"}
+    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 2100, "verified": false, "date": "2026-10-18"},
@@ -2014,7 +2055,8 @@
     "dll_type": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
     "max_micros": {"v": 40, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 4, "verified": false, "date": "2026-10-18"},
-    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"}
+    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 2100, "verified": true, "date": "2026-10-20", "src": ["fn_rd_funded"]},
@@ -2060,7 +2102,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": 60, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 6, "verified": false, "date": "2026-10-18"},
-    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"}
+    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 2600, "verified": false, "date": "2026-10-18"},
@@ -2106,7 +2149,8 @@
     "dll_type": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
     "max_micros": {"v": 60, "verified": false, "date": "2026-10-18"},
     "max_minis": {"v": 6, "verified": false, "date": "2026-10-18"},
-    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"}
+    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 2600, "verified": false, "date": "2026-10-18"},
@@ -2152,7 +2196,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
     "max_minis": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
-    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"}
+    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 1100, "verified": false, "date": "2026-10-18"},
@@ -2198,7 +2243,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
     "max_minis": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
-    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"}
+    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 2100, "verified": false, "date": "2026-10-18"},
@@ -2244,7 +2290,8 @@
     "dll_type": {"v": "none", "verified": false, "date": "2026-10-18"},
     "max_micros": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
     "max_minis": {"v": null, "verified": false, "date": "2026-10-18", "n": "assumed in the research, not found: unknown"},
-    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"}
+    "news": {"v": null, "verified": false, "date": "2026-10-18", "n": "check"},
+    "max_active": {"v": null, "verified": false, "date": "2026-10-18", "n": "how many funded accounts of this plan one person may hold: not found"}
    },
    "payout": {
     "buffer": {"v": 3100, "verified": false, "date": "2026-10-18"},

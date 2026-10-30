@@ -19,6 +19,7 @@ import copy
 import datetime as dt
 import json
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -382,6 +383,27 @@ def refuse_checks(tmp):
     check("the refused follower books nothing at the lead's exit; the other books its share", not bad.closes and len(good.closes) == 1,
           (bad.closes, good.closes))
     check("no exit order is routed for the refused copy", not [a for a in ads["bad"].sent if a.get("side") == "exit"])
+    # NOT OK but a leg still working ("fill not reported yet"): kept and managed (never dropped on a guess), then dropped
+    # without booking once NinjaTrader retired it unfilled (engine/ninjatrader.entry_never_placed, as LIT / account B)
+
+    class Unclear(Rec):
+        def send(self, a):
+            self.sent.append(dict(a))
+            if a.get("side") in ("buy", "sell"):
+                self.legs.append({"entry_t": a["entry_t"], "status": "pending", "filled": 0})
+                return {"ok": False, "error": "fill not reported yet", "legs": [{"state": "WORKING", "filled": 0}]}
+            return {"ok": True}
+    acc2 = [{"id": "unc", "lead": "zlarior", "plan": "mffu_builder_50k", "start": DAY, "adapter": "ninjatrader", "nt_account": "Sim109"}]
+    b, fl, ads, notes = make(os.path.join(tmp, "ref2"), acc2, now, factory=lambda f, c: Unclear(c, broker=True))
+    b.lit_enter(1, 20000.0, 19980.0, 20120.0)
+    fl.tick("NQ", now + 3)
+    u = fol(fl, "unc")
+    check("NOT OK with a leg still working: the copy is KEPT (unconfirmed) and a push says 'NOT confirmed'",
+          u.pos is not None and u.pos.get("unconfirmed") and any("NOT confirmed" in n[0] for n in notes), (u.pos, notes))
+    ads["unc"].legs[-1]["status"] = "cancelled"
+    fl.tick("NQ", now + 120)
+    check("... NinjaTrader retired it unfilled: dropped, nothing booked, push 'NOT placed'",
+          u.pos is None and not u.closes and "never placed" in u.skips[-1]["why"] and any("NOT placed" in n[0] for n in notes), (u.pos, u.skips))
 
 
 def kill_checks(tmp):
@@ -502,6 +524,13 @@ def misc_checks(tmp):
     b.lit_exit(10 * (60 * 2 - FM.COMM), "TARGET")
     fl.tick("NQ", b.t)
     check("funded: above the $2,100 buffer + $500 -> push 'PAYOUT READY' (never requested by the bot)", any("PAYOUT READY" in n[0] for n in notes), notes)
+    acc4 = [{"id": "f1", "lead": "zlarior", "plan": "mffu_builder_50k", "stage": "funded", "funded_start": "2026-10-01"},
+            {"id": "f2", "lead": "atlas", "plan": "mffu_builder_50k", "stage": "funded", "funded_start": "2026-10-01"}]
+    b, fl, ads, notes = make(os.path.join(tmp, "life3"), acc4, now)
+    w = fl.api(now)["warnings"]
+    check("fleet warning: 2 funded MFFU Builder 50K followers, MFFU allows 1 per person (verified)", w and "allows 1" in w[0], w)
+    check("MFFU profile warns that copying between your own accounts is not confirmed (ask support)",
+          any("copying between your own accounts" in x for x in FM.profile("mffu_builder_50k")["warn"]))
 
 
 def cli_checks(tmp):
@@ -556,6 +585,51 @@ def api_checks(tmp):
     check("GET /api/next/fleet: every account with firm / plan / stage / balance / room / today / open / slippage / warnings",
           r.get("on") is True and r["accounts"][0]["firm"].startswith("MyFundedFutures") and "room" in r["accounts"][0], r)
     check("GET /api/next/fleet: the firm catalog for the add guide", r.get("firms") and any(x["id"] == "lucid" for x in r["firms"]), list(r))
+
+
+def ui_checks(tmp):
+    """The phone and PC pages rendered in node (tests/fleet_render.js) on a real heartbeat block / API answer; static checks:
+    read-only (no POST, no arming), registered with one line each, nothing changed in clean.js / the layout lists."""
+    import subprocess
+    now = ts(DAY, 9, 40)
+    acc = [{"id": "luc", "name": "Lucid 50K", "lead": "zlarior", "plan": "lucid_pro_50k", "start": DAY},
+           {"id": "liv", "name": "My live", "lead": "zlarior", "plan": "live", "start": DAY, "live": {"start": 10000}}]
+    b, fl, ads, _ = make(os.path.join(tmp, "ui"), acc, now)
+    b.lit_enter(1, 20000.0, 19980.0, 20120.0)
+    fl.tick("NQ", now + 3)
+    from engine import fleet_api as FA
+    keep = FA._bot
+    FA._bot = lambda: b
+    try:
+        api = json.loads(FA.fleet_get().body)
+    finally:
+        FA._bot = keep
+    p = os.path.join(tmp, "ui", "render.json")
+    json.dump({"hb": fl.hb_block(now + 3), "api": api}, open(p, "w"))
+    try:
+        r = subprocess.run(["node", os.path.join(ROOT, "tests", "fleet_render.js"), p], capture_output=True, text=True, timeout=60)
+        out = json.loads(r.stdout or "{}")
+    except Exception as e:
+        out = {"error": f"node not available: {e}"}
+    ph = (out.get("phone") or {}).get("html") or ""
+    check("phone page: registered (#/fleet, System group) and renders a card per follower with LIVE / PAPER, room, today",
+          (out.get("phone") or {}).get("registered") and (out.get("phone") or {}).get("grouped") and "Lucid 50K" in ph and "My live" in ph
+          and "Room to floor" in ph and "LONG" in ph, out.get("error") or ph[:300])
+    check("phone page off: the 3 steps, no card", "Add an account" in (out.get("phone_off") or "") and "Room to floor" not in (out.get("phone_off") or ""))
+    pc = out.get("pc") or ""
+    check("PC page renders the accounts, the firm rules table (owner's price only) and the add steps",
+          "Lucid 50K" in pc and "Firm rules" in pc and "Add an account" in pc and "nx-glass" in pc, out.get("error") or pc[:300])
+    js_p = open(os.path.join(ROOT, "tools", "web_public", "fleet.js"), encoding="utf-8").read()
+    js_c = open(os.path.join(ROOT, "web_next", "js", "next", "fleet.js"), encoding="utf-8").read()
+    check("both pages are read-only (no POST / arm / kill call)", all("method: 'POST'" not in s and "/arm" not in s and "fetch('/api/next/fleet/" not in s
+                                                                       for s in (js_p, js_c)))
+    idx = open(os.path.join(ROOT, "tools", "web_public", "index.html"), encoding="utf-8").read()
+    scripts = re.findall(r'<script src="([^"]+)" defer></script>', idx)
+    check("phone index.html: fleet.js is one <script defer> line after the last script", scripts and scripts[-1].startswith("fleet.js"), scripts[-3:])
+    app = open(os.path.join(ROOT, "web_next", "js", "app.js"), encoding="utf-8").read()
+    rts = open(os.path.join(ROOT, "web_next", "js", "next", "routes.js"), encoding="utf-8").read()
+    check("PC: PAGES.fleet in app.js + the route entry (CC / TITLES) in routes.js, no layout list changed",
+          "PAGES.fleet = fleetPage;" in app and "CC.push(FLEET); TITLES.fleet = FLEET.label;" in rts and "'fleet'" not in rts.split("export const GROUPS")[1].split("];")[0])
 
 
 # ------------------------------------------------------------------------------------------------------------- replay
@@ -630,6 +704,7 @@ def main() -> int:
         misc_checks(tmp)
         cli_checks(tmp)
         api_checks(tmp)
+        ui_checks(tmp)
         if "--quick" not in sys.argv:
             replay(tmp)
     finally:

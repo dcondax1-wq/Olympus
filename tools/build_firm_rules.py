@@ -196,7 +196,8 @@ def plan_from_table(p: dict) -> dict:
           "lock": F(f.get("lock"), src=srcs), "dll": F(f.get("dll") if f.get("dll") is not None else "none", src=srcs),
           "dll_type": F(_dll_type(p.get("dll_type")) if f.get("dll") is not None else "none", src=srcs),
           "max_micros": F(p.get("max_micros"), src=srcs), "max_minis": F(p.get("max_minis"), src=srcs),
-          "news": F(_news(p, "funded"), src=srcs, n=str(p.get("news") or "")[:120] or None)}
+          "news": F(_news(p, "funded"), src=srcs, n=str(p.get("news") or "")[:120] or None),
+          "max_active": F(None, n="how many funded accounts of this plan one person may hold: not found")}
     PO = {"buffer": F(f.get("buffer"), src=srcs), "min": F(f.get("pay_min"), src=srcs), "max": F(f.get("pay_max") if f.get("pay_max") is not None else None, src=srcs),
           "share": F(f.get("pay_pct"), src=srcs, n="a request <= this share of the profit / balance above the buffer"),
           "split": F(f.get("split"), src=srcs), "consistency": F(f.get("cons") if f.get("cons") is not None else "none", src=srcs),
@@ -266,6 +267,8 @@ def mffu_overlay(prof: dict, M: dict, plan: str):
         FU["max_micros"] = F(int(v["micros"]), ok, s, d)
         v, ok, s, d, n = _m(sf, "news")
         FU["news"] = F("none", ok, s, d, "unrestricted")
+        v, ok, s, d, n = _m(ev, "accounts")
+        FU["max_active"] = F(int(v["sim_funded_active"]), ok, s, d, "1 active sim-funded Builder 50K per person")
         for k, mk, cast in (("buffer", "buffer", float), ("min", "payout_min", float), ("max", "payout_max", float),
                             ("split", "split", float), ("consistency", "consistency", float), ("min_days", "payout_days_per_cycle", int),
                             ("max_payouts", "max_sim_payouts", int)):
@@ -309,6 +312,7 @@ def mffu_overlay(prof: dict, M: dict, plan: str):
         FU["max_minis"] = F(2, ok, s, d)
         FU["max_micros"] = F(20, ok, s, d)
         FU["news"] = F("none", True, ["mffu_rules.json builder_50k.sim_funded.news"], "2026-10-18", "unrestricted")
+        FU["max_active"] = F(int(v["sim_funded_active"]), ok, s, d, "up to 2 active sim-funded Builder 25K accounts per person")
         PO["buffer"] = F(float(v["buffer"]), ok, s, d)
         PO["min"] = F(float(v["payout_min"]), ok, s, d)
         PO["max"] = F(float(v["payout_max"]), ok, s, d)

@@ -2412,8 +2412,8 @@ class LiveBot:
         """Account C (BLITZ, engine/account_c.py) holds the direction opposite to this LIT entry: closed at market first; LIT
         routes only once that close is CONFIRMED flat. C off / flat / same side: True at once (LIT never held back)."""
         ac = getattr(self, "acct_c", None)
-        if ac is None:
-            return self._hedge_clear_fleet(ent, sym, now)   # the fleet's followers: off = True at once
+        if ac is None:                                  # then the fleet's followers (engine/fleet.py): off = True at once
+            return True if getattr(self, "fleet", None) is None else self._hedge_clear_fleet(ent, sym, now)
         et_ = int(ent["entry_t"])
         try:
             ok = ac.yield_to(1 if int(ent.get("dir") or 1) == 1 else -1, "LIT", sym, now, px=ent.get("entry"), entry_t=et_) is not False
@@ -2423,7 +2423,8 @@ class LiveBot:
         if ok:
             if self._hedge_who.get(et_) == "BLITZ":
                 self._log("risk", f"Account C's (BLITZ) close confirmed: LIT's entry at {_et(et_):%H:%M} ET is routed")
-            return self._hedge_clear_fleet(ent, sym, now)   # then the fleet's followers: off = True at once
+            # then the fleet's followers (engine/fleet.py): off = True at once
+            return True if getattr(self, "fleet", None) is None else self._hedge_clear_fleet(ent, sym, now)
         first = et_ not in self._hedge_wait
         self._hedge_wait.setdefault(et_, int(now))
         self._hedge_who[et_] = "BLITZ"

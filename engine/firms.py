@@ -146,6 +146,8 @@ def _profile_warn(P: dict) -> list:
         w.append(f"{P['firm']}: NinjaTrader is not offered for this account: this bot cannot route there")
     if P.get("bots") is None:
         w.append(f"{P['firm']}: bot rule unknown: ask the firm before automating")
+    if P.get("copy_trading") is None:
+        w.append(f"{P['firm']}: copying between your own accounts is not confirmed: ask support in writing first")
     for k, txt in (("dd_amount", "max loss amount"), ("dd_type", "drawdown type"), ("target", "profit target"),
                    ("max_micros", "max contracts"), ("dll", "daily loss"), ("lock", "where the trailing floor locks"),
                    ("news", "news rule"), ("consistency", "best-day rule")):

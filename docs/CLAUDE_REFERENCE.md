@@ -408,6 +408,60 @@ part yourself or fold it into a script.**
   `test_run_switch`). The bot server runs hidden. After a reboot `autoresume.resume_live(still_on=, open_nt=)` opens
   NinjaTrader and waits for it with no time limit while the switch is on Run (autostart record present).
   `engine/fsutil.replace` retries state-file replaces on Windows file locks.
+- **Fleet = in-house copy trading (2026-10-30, owner "copy trading, prop firms, live accounts"), built, OFF** (no
+  `data/fleet.json`, gitignored = `LiveBot.fleet` None, no heartbeat / live.json key; `tests.test_lit_live` identical).
+  Owner guide `docs/ADD_ACCOUNT.md` (3 steps + each firm's rules in plain words).
+  - **Firm rules as data:** `research/props/firm_rules.json` (rebuild / check: `python tools/build_firm_rules.py [--check]`,
+    from `research/lit/mffu_rules.json` + `research/lit/prop_firms.json` + `research/props/firms.json`; nothing fetched):
+    7 firms (MFFU Builder 25K-150K / Rapid / Rapid EOD / Pro, Lucid Pro / Flex, FundedNext Rapid Daily / Pro / Legacy, Apex
+    4.0 EOD, Topstep Combine, Take Profit Trader Test, Alpha Futures), 47 plans; per value `{v, verified, date, src?, n?}`:
+    verified = the repo's research marks it confirmed (firm page via search, or the owner's MFFU screenshots), v null =
+    unknown (assumed in research = never guessed here), "none" = no such rule. 159 verified / 331 unknown of 1,410. MFFU
+    Builder 25K / 50K verified from mffu_rules.json (min days = conflict, unverified). Prices: only the owner's ($91.80 /
+    $63); every other price null. Firm rules: bots (Apex prohibited, Alpha semi-only, Topstep no NinjaTrader), hedging
+    (MFFU banned across all accounts, verified), flat_by (MFFU 16:10).
+  - **Rule engine `engine/firms.py`:** `profile(plan, stage)` (flat values + verified / unknown / warn), `live_profile(cfg)`
+    (the owner's personal LIVE account: max $ a trade, daily / weekly stop, max micros; defaults 150 / 300 / 600 / 5),
+    `book(start, closes, today, prior, payouts)` -> balance / eod_high / intra_high / day / week / best day,
+    `floor_room` (EOD trailing = best closing balance - max loss, open losses count; intraday = best equity incl. open
+    profit; static; trailing stops at start + lock; unknown type = intraday, unknown lock = never locks, unknown amount =
+    no room), `check(profile, state, order, positions, now)` -> {ok, block, warn, max_qty, room, floor, day_left}: contracts
+    (micros, minis x 10), the floor at the stop (+2 ticks, $1.90), daily loss (hard / soft named), weekly stop / max risk
+    (live), best day (eval: a winner <= share x target x 0.95), Tier-1 news window (stage rule), the firm's flat time - 5
+    min, hedging vs ANY other account on the same underlying (MNQ = NQ); `status` (passed needs min days + consistency;
+    failed at the floor; funded payout readiness); `describe` (plain words). CLI `python -X utf8 -m engine.firms --list |
+    --show <plan> [--stage funded]`.
+  - **Copy layer `engine/fleet.py`** (`LiveBot._fleet_tick` after account B in the poll; `_fleet_block` = start cfg
+    "fleet" in test harnesses, else data/fleet.json for the real bot, cached by mtime): each follower copies its LEAD
+    account's routed rows (zlarior = LIT's ledger / `_open_routed`, atlas = `acct_b`, blitz = `acct_c`: entry only once
+    the lead's answer is OK, never > 90 s late; stop moves as modify on broker adapters; the lead's exit -> exit + the lead's
+    $ a micro x own micros; lead trade gone without a close -> flat after 120 s "LEAD GONE"; 15:58 TIME SAFETY). Size =
+    the lead bot's own sizer on the follower's plan (zlarior: `sizing.lit_qty` via multi_account two_week / funded on the
+    plan's sizing preset 25K / 50K; atlas: `account_b.qty` / funded; blitz: `account_c.qty`), or `"sizing": "fixed"` +
+    `risk_usd`; LIVE = fixed risk only; then `firms.check` caps it. The lead's day limit (LIT 1, ATLAS 2, BLITZ 6). No
+    hedge fleet-wide: a follower never opposite any account (LIT / extra accounts / B / C incl. closing / other followers,
+    under one entry lock); hooks (all `getattr(..., "fleet", None)`, off = identical): `LiveBot._route` refuses a lead
+    entry opposite a follower, `_hedge_clear_c` -> `_hedge_clear_fleet` (LIT entering closes opposite followers first, HEDGE
+    WAIT / "HEDGE BLOCKED: fleet follower close not confirmed"), `AccountB.lit_opposite` (Zlarior followers hold ATLAS back)
+    + `_c_yield` -> `_fleet_yield` (ATLAS / BLITZ followers closed first), `AccountC.opposite` (any follower masks BLITZ),
+    `multi_account.Account._process` (extra accounts never opposite a follower). Refused copy (NOT OK + provably never
+    placed, `ninjatrader.entry_never_placed`) = nothing booked, push "copy NOT placed", the others trade; NOT OK but unclear
+    = kept "unconfirmed" + push, dropped unbooked once never placed. Kill: per account `"killed"`, fleet `"kill": true`, the
+    bot's kill switch / remote flatten. Live gate (`fleet.live_gate`): a non-Sim NinjaTrader follower needs `"armed": true`
+    + the phrase at the bot's start + NINJATRADER_LIVE=1 (else no adapter), then the adapter's own gate + allowlist; firms
+    that ban the bot (Apex, Alpha, Topstep / no NinjaTrader) = paper only; a lead's own Name refused. Own adapter per
+    follower (OIF tag `fl<id>_`, `ninjatrader_state_fleet_<id>.json`), state `live_state_fleet.json` (restart safe).
+    `stagger_ms` (<= 5 s, before the entry), slippage ticks vs the lead's fill. Lifecycle pushes once: EVAL PASSED (then
+    `--to-funded`), FAILED, PAYOUT READY (never requested). CLI `python -X utf8 -m engine.fleet --status | --add --id --lead
+    --plan --account --start [--balance --max-risk --daily-stop --weekly-stop --max-micros --risk-usd --stagger-ms] |
+    --remove | --on | --off | --kill <id>|all | --unkill | --arm | --disarm | --to-funded <id> --account --start | --payout
+    <id> <day>=<$> | --dry-run <day>` (the day's LIT trades of research/lab/backtest_live.json on paper).
+  - **Data / pages:** heartbeat `fleet` (`Fleet.hb_block`, < 6 KB, only when configured), live.json `pc.fleet` (dropped
+    after `mind` when over 64 KB), GET `/api/next/fleet` (`engine/fleet_api.py`: rows + leads + totals + notices + the firm
+    catalog; off = {on: false} + the catalog). Phone `tools/web_public/fleet.js` (#/fleet, System group), PC
+    `web_next/js/next/fleet.js` (#fleet, CC entry in routes.js, PAGES.fleet in app.js). Tests `python -X utf8 -m
+    tests.test_firms` (58) and `tests.test_fleet [--quick]` (unit 81 + the LiveBot replay: the primary's ledger identical
+    with 3 followers, each copies every trade once).
 
 ## Trade pictures (2026-10-23, `engine/trade_chart.py`, read-only)
 - One renderer for every strategy's trades (LIT, LIT+Asia, ema / macd / sr, sh_asia / sh_trend): 1600x900 dark PNG (~90 KB),
