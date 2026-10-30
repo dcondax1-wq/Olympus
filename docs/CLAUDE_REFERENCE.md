@@ -416,7 +416,8 @@ part yourself or fold it into a script.**
     7 firms (MFFU Builder 25K-150K / Rapid / Rapid EOD / Pro, Lucid Pro / Flex, FundedNext Rapid Daily / Pro / Legacy, Apex
     4.0 EOD, Topstep Combine, Take Profit Trader Test, Alpha Futures), 47 plans; per value `{v, verified, date, src?, n?}`:
     verified = the repo's research marks it confirmed (firm page via search, or the owner's MFFU screenshots), v null =
-    unknown (assumed in research = never guessed here), "none" = no such rule. 159 verified / 331 unknown of 1,410. MFFU
+    unknown (assumed in research = never guessed here), "none" = no such rule. 161 verified / 376 unknown of 1,457 (outside MFFU only Lucid Pro 50K, FundedNext
+    Rapid Daily 50K and Topstep's payout figures are verified; funded `max_active` per person: MFFU 50K 1, 25K 2). MFFU
     Builder 25K / 50K verified from mffu_rules.json (min days = conflict, unverified). Prices: only the owner's ($91.80 /
     $63); every other price null. Firm rules: bots (Apex prohibited, Alpha semi-only, Topstep no NinjaTrader), hedging
     (MFFU banned across all accounts, verified), flat_by (MFFU 16:10).
