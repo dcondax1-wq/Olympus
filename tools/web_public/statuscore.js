@@ -254,7 +254,7 @@
     const head = (plan) => `<span class="su-a-h"><b>${NAME[k]}</b>${tag ? `<i class="su-tag ${tag === 'REAL' ? 'real' : ''}">${esc(tag)}</i>` : ''}<em>${esc(plan)}</em>${stateChip(A, L)}</span>`;
     if (A.placeholder) {
       return `<a class="su-acct ph" data-bot="${k}" style="--c:${c}" ${goA(o, page)} aria-label="${NAME[k]}: paper only">${head('25K · paper shadow')}
-        ${ring(0, c, '<i>off</i>')}<span class="su-a-m"><span class="su-big"><b>Paper</b><em>until its own 25K</em></span><span class="su-sub">never routed · 09:30 noise band</span></span>
+        ${ring(0, c, '<i>off</i>')}<span class="su-a-m"><span class="su-big"><b>Paper</b><em>until its own 25K</em></span><span class="su-sub"><span class="su-tx">never routed · 09:30 noise band</span></span></span>
         <span class="su-line">${dot('idle')}${esc(L.text)}</span></a>`;
     }
     // the sparkline: the account's real P&L per day, or this week's days (Mon -> today) while it has fewer than 3
@@ -268,7 +268,7 @@
       ${head(`${A.size || ''} · ${String(A.plan || '').replace(/\s*\d+K$/i, '')}`)}
       ${ring(frac, down ? 'var(--bad,#ff5a7a)' : c, kmoney(A.profit), down)}
       <span class="su-a-m"><span class="su-big"><b data-su-count="${okN(A.toTarget) && !passed ? Math.round(A.toTarget) : ''}">${esc(big)}</b><em>${passed ? 'target reached' : 'to the target'}</em></span>
-        <span class="su-sub"><i class="su-room ${roomLvl}"></i>${esc(sub)}</span></span>
+        <span class="su-sub"><i class="su-room ${roomLvl}"></i><span class="su-tx">${esc(sub)}</span></span></span>
       <span class="su-a-r"><span class="su-today ${tc}"><em>today</em><b>${okN(A.today) ? smoney(A.today) : '—'}</b></span>${spark(days, c)}</span>
       <span class="su-line">${dot(L.lvl, L.live)}${esc(L.text)}${L.t ? ` · in ${cd(L.t)}` : ''}</span></a>`;
   }
@@ -418,6 +418,8 @@
 .su-a-m{grid-area:m;display:flex;flex-direction:column;gap:4px;min-width:0}
 .su-big{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;row-gap:0}.su-big b{font:760 28px/1.05 var(--sans,system-ui);letter-spacing:-.03em;color:var(--ink,#eef1f8);font-variant-numeric:tabular-nums}.su-big em{font-style:normal;font-size:12px;color:var(--ink-2,#a9b1c3)}
 .su-sub{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-2,#a9b1c3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.su-tx{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:374px){.su-sub{font-size:11.5px;gap:5px}}
 .su-room{flex:none;width:6px;height:6px;border-radius:2px;background:var(--muted,#6f788b)}.su-room.good{background:var(--good,#2ee59d)}.su-room.warn{background:var(--warn,#f7b955)}.su-room.bad{background:var(--bad,#ff5a7a);box-shadow:0 0 6px var(--bad,#ff5a7a)}
 .su-line{grid-area:l;font-size:12.5px;color:var(--ink,#eef1f8);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;padding-top:10px;border-top:1px solid rgba(160,170,220,.08)}.su-line .su-dot{margin-right:8px;vertical-align:1px}
 .su-line .su-cd{font-variant-numeric:tabular-nums;color:var(--ink-2,#a9b1c3)}
