@@ -47,7 +47,7 @@
     const F = block();
     const steps = '<ol class="card-d"><li>Buy the account (the owner\'s own price and code; see docs/ADD_ACCOUNT.md).</li>'
       + '<li>Log it in NinjaTrader 8 (Accounts tab shows its Name; test on Sim first).</li>'
-      + '<li>On the PC: <code>python -X utf8 -m engine.fleet --add --id &lt;id&gt; --lead zlarior --plan &lt;plan&gt; --account "&lt;Name&gt;" --start &lt;day&gt;</code></li></ol>';
+      + '<li>On the PC dashboard: All tools &gt; More &gt; Fleet &gt; Add an account (or the console line <code>python -X utf8 -m engine.fleet --add --id &lt;id&gt; --lead zlarior --plan &lt;plan&gt; --account "&lt;Name&gt;" --start &lt;day&gt;</code>).</li></ol>';
     if (!F || !(F.acc || []).length) {
       el.innerHTML = head('Accounts · fleet', 'Fleet', 'Copy trading to your other accounts (prop firms, Sim, your own LIVE account). Off: no follower accounts yet.')
         + `<div class="card"><div class="card-h"><h3>Add an account</h3></div>${steps}<div class="card-d">Nothing is ever armed for you: a real account trades only after you arm it and type the live phrase at the bot's start.</div></div>`;
