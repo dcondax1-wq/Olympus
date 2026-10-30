@@ -62,6 +62,14 @@ def part_a():
               f"in reader {name in src or stem in src}, exists {os.path.exists(os.path.join(ROOT, f))}, covered {covered(f, pats)}")
 
 
+    # every repo script a cloud step runs must be in the sparse checkout (2026-10-30: scripts/add_planner.sh was called but not
+    # checked out, so every phone-site publish failed with "No such file or directory" from 12:39 ET on)
+    wf = open(os.path.join(ROOT, ".github", "workflows", "cloud-monitor.yml"), encoding="utf-8").read()
+    for f in sorted(set(re.findall(r"(?:bash|sh|python[\d.]*)\s+((?:scripts|tools)/[\w./-]+\.(?:sh|py))", wf))):
+        check(f"a. {f}: run by a cloud step, present in the repo, in the cloud sparse checkout",
+              os.path.exists(os.path.join(ROOT, f)) and covered(f, pats), f"exists {os.path.exists(os.path.join(ROOT, f))}, covered {covered(f, pats)}")
+
+
 def part_b():
     js = open(os.path.join(ROOT, "web", "js", "dash", "ops.js"), encoding="utf-8").read()
     m = re.search(r"newsApi\.events\.map\(e => \(\{[^)]*\}\)\)", js)
