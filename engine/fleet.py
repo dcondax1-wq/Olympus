@@ -220,9 +220,10 @@ def normalize(spec: dict, seen_ids=(), seen_names=(), reserved: dict | None = No
         out["problem"] = "switched off (enabled false)"
     if not out["name"]:
         out["name"] = out["id"] or "follower"
-    out["label"] = ("LIVE" if out["stage"] == "live" and out["adapter"] == "ninjatrader" and not is_sim(out["nt_account"])
-                    else ("REAL" if out["adapter"] == "ninjatrader" and not is_sim(out["nt_account"])
-                          else ("SIM" if out["adapter"] == "ninjatrader" else "PAPER")))
+    real = out["adapter"] == "ninjatrader" and not is_sim(out["nt_account"])
+    base = "REAL" if real else ("SIM" if out["adapter"] == "ninjatrader" else "PAPER")
+    # the personal live account is labelled LIVE everywhere (LIVE = real money; LIVE SIM / LIVE PAPER while it is tested)
+    out["label"] = ("LIVE" if real else f"LIVE {base}") if out["stage"] == "live" else base
     return out
 
 

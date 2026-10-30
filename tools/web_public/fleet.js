@@ -38,7 +38,7 @@
     const slip = a.slip !== undefined && a.slip !== null ? `<span class="chip">slippage vs lead ${a.slip > 0 ? '+' : ''}${E(a.slip)} ticks</span>` : '';
     const warn = (a.warn || []).map((w) => `<div class="card-d">⚠ ${E(w)}</div>`).join('');
     const skip = a.skip ? `<div class="card-d">Last copy skipped: ${E(a.skip)}</div>` : '';
-    return `<div class="card fx-card"><div class="card-h"><h3>${E(a.n || a.id)} ${live ? '<span class="chip">LIVE</span>' : `<span class="chip">${E(a.lab || 'PAPER')}</span>`}</h3>`
+    return `<div class="card fx-card"><div class="card-h"><h3>${E(a.n || a.id)} <span class="chip">${live ? '● ' : ''}${E(a.lab || 'PAPER')}</span></h3>`
       + `<div><span class="meta ${st[1]}">${E(st[0])}</span></div></div>`
       + `<div class="card-d">${E(a.firm || '')} ${E(a.plan || '')} · ${E(stage)} · copies ${E(LEAD[a.lead] || a.lead)} · ${E(a.n_tr || 0)} copies booked</div>`
       + `<div class="stats">${tiles}</div><div class="chips">${pos}${slip}</div>${skip}${warn}</div>`;

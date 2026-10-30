@@ -621,6 +621,7 @@ class LiveBot:
         self._sync_account_b()
         self.acct_c, self._acct_c_sig = None, None
         self._sync_account_c()                          # account C (engine/account_c.py, OFF by default: data/account_c.json)
+        self.fleet, self._fleet_sig = None, None        # the fleet (engine/fleet.py, OFF by default): built at the first poll
         self.running = True
         self.stop_flag.clear()
         if spawn:

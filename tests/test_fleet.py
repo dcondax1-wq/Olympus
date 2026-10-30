@@ -226,7 +226,10 @@ def copy_checks(tmp):
     r = fl.api(b.t)
     check("API rows: firm, plan, stage, balance, room, today's P&L, slippage, warnings per account",
           all(set(("firm", "plan", "stage", "balance", "room", "today", "slip_ticks", "warn")) <= set(x) for x in r["accounts"]), r["accounts"][0])
-    check("API: the LIVE row is labelled LIVE / PAPER per its adapter, its stage 'live'", fol(fl, "liv").stage == "live")
+    real_live = FL.normalize({"id": "x", "plan": "live", "start": DAY, "adapter": "ninjatrader", "nt_account": "MYBROKER-1", "live": {"start": 5000}})
+    check("the personal live account is labelled LIVE everywhere (LIVE PAPER on paper, LIVE on a real account; a prop account REAL)",
+          fol(fl, "liv").stage == "live" and fol(fl, "liv").spec["label"] == "LIVE PAPER" and real_live["label"] == "LIVE"
+          and FL.normalize({"id": "y", "plan": "mffu_builder_50k", "start": DAY, "adapter": "ninjatrader", "nt_account": "MFFU-1"})["label"] == "REAL")
     hb = fl.hb_block(b.t)
     check("heartbeat block is compact (< 6 KB) and lists every account", len(json.dumps(hb, separators=(",", ":"))) < 6000 and len(hb["acc"]) == 5,
           len(json.dumps(hb)))
