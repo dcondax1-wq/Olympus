@@ -1,7 +1,7 @@
 {
- "built": "2026-10-30 17:15",
+ "built": "2026-10-30 17:45",
  "baseline": "baseline",
- "count": 2212,
+ "count": 2224,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -114,6 +114,121 @@
      "slow_pass": 75.9,
      "pass_med": 31.0,
      "b2b": "12/11"
+    }
+   }
+  },
+  {
+   "id": "atx_today",
+   "title": "ATLAS today (baseline for the slot)",
+   "family": "risk",
+   "question": "ATLAS 2026-10-30 b: can a stage-aware member set (extra members by eval session / room / funded stage) keep the hunts' and the NA lead's money without breaking the 25K eval?",
+   "status": "baseline",
+   "verdict": "Today's ATLAS on the whole-slot simulator (eval -> funded -> MFFU payouts -> new $63 evals). H1: 2-week pass/dead 65.5/0.8, eval-path $1,394/mo less fees, slot $568/mo to the owner net of evals, 4.38 trades/wk; H2: 2-week pass/dead 43.5/0.0, eval-path $547/mo less fees, slot $382/mo to the owner net of evals, 3.27 trades/wk; 2021-25: 2-week pass/dead 24.6/26.2, eval-path $-63/mo less fees, slot $-2/mo to the owner net of evals, 5.2 trades/wk. Real-session slot (one path from each span's first session): H1 $596/mo (5 payouts, 3 evals); H2 $414/mo (2 payouts, 1 evals); 2025 $-36/mo (0 payouts, 7 evals); 2021-24 $23/mo (3 payouts, 24 evals)",
+   "writeup": "atlas-edge-2026-10-30b",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "stop_hunt",
+    "funded",
+    "slot"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "eval": "engine/account_b.qty need (tools/atlas.q_variant) x the member weight / schedule",
+    "funded": "engine/sizing.funded_qty on the 25K preset (60% room, $50-$750, ref 20, winner <= $1,000) x the member weight (<= 1)"
+   },
+   "built": "2026-10-30 17:14",
+   "spans": {
+    "2026": {
+     "n": 142,
+     "tpw": 3.45,
+     "wk2": 88,
+     "win": 53.5,
+     "pf": 2.99,
+     "net": 19607,
+     "dd": -1047,
+     "avg_r": 0.807,
+     "stop": 43.9,
+     "worst_day": -586,
+     "risk": 128.0,
+     "half": 0,
+     "per_month": 1999,
+     "p10": 4.9,
+     "f10": 0.0,
+     "p15": 11.2,
+     "f15": 0.0,
+     "p20": 20.4,
+     "f20": 0.0,
+     "dec10": 4.9,
+     "slow_pass": 85.2,
+     "pass_med": 26.0,
+     "b2b": "6/0"
+    },
+    "2021-25": {
+     "n": 804,
+     "tpw": 3.75,
+     "wk2": 86,
+     "win": 38.1,
+     "pf": 1.09,
+     "net": 6748,
+     "dd": -9173,
+     "avg_r": 0.075,
+     "stop": 25.2,
+     "worst_day": -593,
+     "risk": 116.0,
+     "half": 0,
+     "per_month": 132,
+     "p10": 1.2,
+     "f10": 1.3,
+     "p15": 2.8,
+     "f15": 2.9,
+     "p20": 3.9,
+     "f20": 4.9,
+     "dec10": 2.5,
+     "slow_pass": 88.4,
+     "pass_med": 40.0,
+     "b2b": "7/12"
+    },
+    "all": {
+     "n": 946,
+     "tpw": 3.7,
+     "wk2": 86,
+     "win": 40.4,
+     "pf": 1.32,
+     "net": 26354,
+     "dd": -9173,
+     "avg_r": 0.185,
+     "stop": 27.6,
+     "worst_day": -593,
+     "risk": 119.0,
+     "half": 0,
+     "per_month": 433,
+     "p10": 1.8,
+     "f10": 1.1,
+     "p15": 4.1,
+     "f15": 2.4,
+     "p20": 6.6,
+     "f20": 4.1,
+     "dec10": 2.9,
+     "slow_pass": 87.8,
+     "pass_med": 34.0,
+     "b2b": "12/12"
     }
    }
   },
@@ -35977,6 +36092,799 @@
      "slow_pass": 89.2,
      "pass_med": 30.0,
      "b2b": "12/21"
+    }
+   }
+  },
+  {
+   "id": "atx2_funded_asia_w05",
+   "title": "Eval = today; once funded + sh_asia x0.5 (round 2, config A clean)",
+   "family": "risk",
+   "question": "ATLAS 2026-10-30 b round 2: which members should trade ATLAS's FUNDED 25K (eval unchanged)?",
+   "status": "promising",
+   "verdict": "Eval = today's ATLAS; once funded + sh_asia x0.5 (market entry). Slot $/mo (20 seeds x 200 paths): H1 $697 vs $574 (+124, 100% of seeds up); H2 $399 vs $374 (+26, 100% of seeds up); 2021-25 $4 vs $-7 (+11, 100% of seeds up); 2022 $-6 vs $-25 (+20, 100% of seeds up); 2023 $1 vs $2 (-1, 30% of seeds up); 2024 $-4 vs $-13 (+9, 90% of seeds up); 2025 $20 vs $10 (+10, 95% of seeds up). Random-time sh_asia x0.5 (12 copies): H1 $532, H2 $306. Passes the slot gate; the clean H2 gain is small and the real calendar path is flat in H2. Real-session slot: H1 $625/mo (5 payouts); H2 $414/mo (2 payouts); 2025 $-31/mo (0 payouts); 2021-24 $-1/mo (2 payouts)",
+   "writeup": "atlas-edge-2026-10-30b",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "funded",
+    "slot",
+    "round2"
+   ],
+   "params": {
+    "eval": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "funded": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "SHA"
+     ],
+     "w": {
+      "SHA": 0.5
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "fz": {}
+   },
+   "sizing": {
+    "eval": "engine/account_b.qty need",
+    "funded": "funded preset x weight; BLITZ: its own 10% / $150"
+   },
+   "built": "2026-10-30 17:44",
+   "spans": {
+    "2026": {
+     "n": 181,
+     "tpw": 4.39,
+     "wk2": 88,
+     "win": 59.1,
+     "pf": 2.78,
+     "net": 19965,
+     "dd": -1377,
+     "avg_r": 0.663,
+     "stop": 46.5,
+     "worst_day": -586,
+     "risk": 134.0,
+     "half": 0,
+     "per_month": 2035,
+     "p10": 3.9,
+     "f10": 0.0,
+     "p15": 9.2,
+     "f15": 0.0,
+     "p20": 24.8,
+     "f20": 0.0,
+     "dec10": 3.9,
+     "slow_pass": 90.0,
+     "pass_med": 25.0,
+     "b2b": "6/0"
+    },
+    "2021-25": {
+     "n": 847,
+     "tpw": 3.95,
+     "wk2": 80,
+     "win": 40.7,
+     "pf": 1.08,
+     "net": 5083,
+     "dd": -6309,
+     "avg_r": 0.036,
+     "stop": 24.8,
+     "worst_day": -575,
+     "risk": 110.0,
+     "half": 0,
+     "per_month": 100,
+     "p10": 1.0,
+     "f10": 0.1,
+     "p15": 2.2,
+     "f15": 1.3,
+     "p20": 2.7,
+     "f20": 3.5,
+     "dec10": 1.1,
+     "slow_pass": 82.9,
+     "pass_med": 38.0,
+     "b2b": "4/8"
+    },
+    "all": {
+     "n": 1028,
+     "tpw": 4.02,
+     "wk2": 81,
+     "win": 44.0,
+     "pf": 1.32,
+     "net": 25049,
+     "dd": -6309,
+     "avg_r": 0.146,
+     "stop": 27.8,
+     "worst_day": -586,
+     "risk": 114.0,
+     "half": 0,
+     "per_month": 412,
+     "p10": 1.5,
+     "f10": 0.1,
+     "p15": 3.4,
+     "f15": 1.1,
+     "p20": 6.3,
+     "f20": 2.9,
+     "dec10": 1.6,
+     "slow_pass": 87.9,
+     "pass_med": 30.0,
+     "b2b": "10/8"
+    }
+   }
+  },
+  {
+   "id": "atx2_funded_asia_w075",
+   "title": "Eval = today; once funded + sh_asia x0.75 (round 2, config A clean)",
+   "family": "risk",
+   "question": "ATLAS 2026-10-30 b round 2: which members should trade ATLAS's FUNDED 25K (eval unchanged)?",
+   "status": "promising",
+   "verdict": "Eval = today's ATLAS; once funded + sh_asia x0.75 (market entry). Slot $/mo (20 seeds x 200 paths): H1 $745 vs $574 (+172, 100% of seeds up); H2 $403 vs $374 (+29, 100% of seeds up); 2021-25 $10 vs $-7 (+17, 100% of seeds up); 2022 $0 vs $-25 (+26, 100% of seeds up); 2023 $6 vs $2 (+4, 60% of seeds up); 2024 $5 vs $-13 (+18, 95% of seeds up); 2025 $31 vs $10 (+21, 100% of seeds up). Random-time sh_asia x0.5 (12 copies): H1 $532, H2 $306. Passes the slot gate; the clean H2 gain is small and the real calendar path is flat in H2. Real-session slot: H1 $881/mo (7 payouts); H2 $160/mo (1 payouts); 2025 $22/mo (1 payouts); 2021-24 $10/mo (3 payouts)",
+   "writeup": "atlas-edge-2026-10-30b",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "funded",
+    "slot",
+    "round2"
+   ],
+   "params": {
+    "eval": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "funded": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "SHA"
+     ],
+     "w": {
+      "SHA": 0.75
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "fz": {}
+   },
+   "sizing": {
+    "eval": "engine/account_b.qty need",
+    "funded": "funded preset x weight; BLITZ: its own 10% / $150"
+   },
+   "built": "2026-10-30 17:44",
+   "spans": {
+    "2026": {
+     "n": 162,
+     "tpw": 3.93,
+     "wk2": 86,
+     "win": 56.8,
+     "pf": 2.85,
+     "net": 18544,
+     "dd": -1678,
+     "avg_r": 0.651,
+     "stop": 45.5,
+     "worst_day": -586,
+     "risk": 130.0,
+     "half": 0,
+     "per_month": 1890,
+     "p10": 3.9,
+     "f10": 0.0,
+     "p15": 13.6,
+     "f15": 0.0,
+     "p20": 30.6,
+     "f20": 0.0,
+     "dec10": 3.9,
+     "slow_pass": 80.8,
+     "pass_med": 21.5,
+     "b2b": "6/0"
+    },
+    "2021-25": {
+     "n": 934,
+     "tpw": 4.36,
+     "wk2": 84,
+     "win": 40.7,
+     "pf": 1.09,
+     "net": 7788,
+     "dd": -8923,
+     "avg_r": 0.056,
+     "stop": 26.8,
+     "worst_day": -598,
+     "risk": 119.0,
+     "half": 0,
+     "per_month": 153,
+     "p10": 1.0,
+     "f10": 1.0,
+     "p15": 2.5,
+     "f15": 3.8,
+     "p20": 3.5,
+     "f20": 6.3,
+     "dec10": 2.0,
+     "slow_pass": 87.9,
+     "pass_med": 39.0,
+     "b2b": "6/11"
+    },
+    "all": {
+     "n": 1096,
+     "tpw": 4.29,
+     "wk2": 84,
+     "win": 43.1,
+     "pf": 1.28,
+     "net": 26332,
+     "dd": -8923,
+     "avg_r": 0.144,
+     "stop": 29.2,
+     "worst_day": -598,
+     "risk": 121.0,
+     "half": 0,
+     "per_month": 433,
+     "p10": 1.5,
+     "f10": 0.9,
+     "p15": 4.3,
+     "f15": 3.2,
+     "p20": 7.9,
+     "f20": 5.3,
+     "dec10": 2.4,
+     "slow_pass": 86.1,
+     "pass_med": 31.0,
+     "b2b": "11/11"
+    }
+   }
+  },
+  {
+   "id": "atx_funded_hunts_w05",
+   "title": "Eval = today's ATLAS; once funded, + the two stop hunts x0.5",
+   "family": "risk",
+   "question": "ATLAS 2026-10-30 b: can a stage-aware member set (extra members by eval session / room / funded stage) keep the hunts' and the NA lead's money without breaking the 25K eval?",
+   "status": "promising",
+   "verdict": "Passes every numeric gate with the eval unchanged (funded-only); weights 0.4-1.0 all pass; 12 random-time hunt twins pass 0 times. Not an adopt-candidate: the hunts were picked on H1 + 2025 + 2021-24 (only H2 is clean) and most of the H2 gain is sh_trend (audit: not real; needs a limit entry account B cannot place). Paper first. H1: 2-week pass/dead 65.5/0.8, eval-path $1,394/mo less fees, slot $661/mo to the owner net of evals, 4.38 trades/wk; H2: 2-week pass/dead 43.5/0.0, eval-path $547/mo less fees, slot $510/mo to the owner net of evals, 3.27 trades/wk; 2021-25: 2-week pass/dead 24.6/26.2, eval-path $-63/mo less fees, slot $23/mo to the owner net of evals, 5.2 trades/wk. Real-session slot (one path from each span's first session): H1 $866/mo (7 payouts, 3 evals); H2 $1,044/mo (5 payouts, 2 evals); 2025 $70/mo (2 payouts, 6 evals); 2021-24 $33/mo (4 payouts, 27 evals)",
+   "writeup": "atlas-edge-2026-10-30b",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "stop_hunt",
+    "funded",
+    "slot"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "Vf": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "SHA",
+      "SHT"
+     ],
+     "w": {
+      "SHA": 0.5,
+      "SHT": 0.5
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "eval": "engine/account_b.qty need (tools/atlas.q_variant) x the member weight / schedule",
+    "funded": "engine/sizing.funded_qty on the 25K preset (60% room, $50-$750, ref 20, winner <= $1,000) x the member weight (<= 1)"
+   },
+   "built": "2026-10-30 17:14",
+   "spans": {
+    "2026": {
+     "n": 212,
+     "tpw": 5.15,
+     "wk2": 95,
+     "win": 60.8,
+     "pf": 3.15,
+     "net": 25598,
+     "dd": -926,
+     "avg_r": 0.644,
+     "stop": 46.5,
+     "worst_day": -586,
+     "risk": 134.0,
+     "half": 0,
+     "per_month": 2609,
+     "p10": 6.8,
+     "f10": 0.0,
+     "p15": 17.0,
+     "f15": 0.0,
+     "p20": 35.0,
+     "f20": 0.0,
+     "dec10": 6.8,
+     "slow_pass": 81.6,
+     "pass_med": 24.0,
+     "b2b": "7/0"
+    },
+    "2021-25": {
+     "n": 1018,
+     "tpw": 4.75,
+     "wk2": 85,
+     "win": 42.7,
+     "pf": 1.04,
+     "net": 3468,
+     "dd": -8235,
+     "avg_r": 0.066,
+     "stop": 27.0,
+     "worst_day": -593,
+     "risk": 121.0,
+     "half": 0,
+     "per_month": 68,
+     "p10": 2.0,
+     "f10": 0.5,
+     "p15": 2.4,
+     "f15": 3.2,
+     "p20": 3.9,
+     "f20": 6.4,
+     "dec10": 2.5,
+     "slow_pass": 87.9,
+     "pass_med": 35.5,
+     "b2b": "6/12"
+    },
+    "all": {
+     "n": 1230,
+     "tpw": 4.81,
+     "wk2": 87,
+     "win": 45.9,
+     "pf": 1.29,
+     "net": 29065,
+     "dd": -8235,
+     "avg_r": 0.165,
+     "stop": 30.8,
+     "worst_day": -593,
+     "risk": 124.0,
+     "half": 0,
+     "per_month": 478,
+     "p10": 2.7,
+     "f10": 0.4,
+     "p15": 4.8,
+     "f15": 2.7,
+     "p20": 8.9,
+     "f20": 5.4,
+     "dec10": 3.1,
+     "slow_pass": 85.7,
+     "pass_med": 29.0,
+     "b2b": "13/12"
+    }
+   }
+  },
+  {
+   "id": "atx_funded_hunts_w075",
+   "title": "Eval = today's ATLAS; once funded, + the two stop hunts x0.75",
+   "family": "risk",
+   "question": "ATLAS 2026-10-30 b: can a stage-aware member set (extra members by eval session / room / funded stage) keep the hunts' and the NA lead's money without breaking the 25K eval?",
+   "status": "promising",
+   "verdict": "Neighbour of atx_funded_hunts_w05 (funded hunts x0.75): passes; same caveats. H1: 2-week pass/dead 65.5/0.8, eval-path $1,394/mo less fees, slot $715/mo to the owner net of evals, 4.38 trades/wk; H2: 2-week pass/dead 43.5/0.0, eval-path $547/mo less fees, slot $528/mo to the owner net of evals, 3.27 trades/wk; 2021-25: 2-week pass/dead 24.6/26.2, eval-path $-63/mo less fees, slot $30/mo to the owner net of evals, 5.2 trades/wk. Real-session slot (one path from each span's first session): H1 $756/mo (6 payouts, 3 evals); H2 $628/mo (3 payouts, 1 evals); 2025 $105/mo (2 payouts, 5 evals); 2021-24 $21/mo (3 payouts, 25 evals)",
+   "writeup": "atlas-edge-2026-10-30b",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "stop_hunt",
+    "funded",
+    "slot"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "Vf": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "SHA",
+      "SHT"
+     ],
+     "w": {
+      "SHA": 0.75,
+      "SHT": 0.75
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "eval": "engine/account_b.qty need (tools/atlas.q_variant) x the member weight / schedule",
+    "funded": "engine/sizing.funded_qty on the 25K preset (60% room, $50-$750, ref 20, winner <= $1,000) x the member weight (<= 1)"
+   },
+   "built": "2026-10-30 17:14",
+   "spans": {
+    "2026": {
+     "n": 212,
+     "tpw": 5.15,
+     "wk2": 95,
+     "win": 60.4,
+     "pf": 3.2,
+     "net": 26124,
+     "dd": -926,
+     "avg_r": 0.603,
+     "stop": 46.5,
+     "worst_day": -586,
+     "risk": 135.0,
+     "half": 0,
+     "per_month": 2663,
+     "p10": 7.3,
+     "f10": 0.0,
+     "p15": 25.7,
+     "f15": 0.0,
+     "p20": 43.7,
+     "f20": 0.0,
+     "dec10": 7.3,
+     "slow_pass": 72.5,
+     "pass_med": 21.0,
+     "b2b": "8/0"
+    },
+    "2021-25": {
+     "n": 994,
+     "tpw": 4.64,
+     "wk2": 85,
+     "win": 42.9,
+     "pf": 1.04,
+     "net": 3645,
+     "dd": -11814,
+     "avg_r": 0.086,
+     "stop": 27.8,
+     "worst_day": -598,
+     "risk": 124.0,
+     "half": 0,
+     "per_month": 71,
+     "p10": 1.7,
+     "f10": 1.2,
+     "p15": 3.2,
+     "f15": 4.5,
+     "p20": 4.4,
+     "f20": 7.4,
+     "dec10": 2.9,
+     "slow_pass": 88.0,
+     "pass_med": 37.0,
+     "b2b": "6/12"
+    },
+    "all": {
+     "n": 1206,
+     "tpw": 4.72,
+     "wk2": 87,
+     "win": 45.9,
+     "pf": 1.3,
+     "net": 29770,
+     "dd": -11814,
+     "avg_r": 0.177,
+     "stop": 31.0,
+     "worst_day": -598,
+     "risk": 126.0,
+     "half": 0,
+     "per_month": 489,
+     "p10": 2.6,
+     "f10": 1.0,
+     "p15": 6.8,
+     "f15": 3.8,
+     "p20": 10.7,
+     "f20": 6.2,
+     "dec10": 3.6,
+     "slow_pass": 82.6,
+     "pass_med": 31.0,
+     "b2b": "14/12"
+    }
+   }
+  },
+  {
+   "id": "atx_hunts_w05_funded_w1",
+   "title": "Hunts x0.5 in the eval, x1.0 once funded",
+   "family": "risk",
+   "question": "ATLAS 2026-10-30 b: can a stage-aware member set (extra members by eval session / room / funded stage) keep the hunts' and the NA lead's money without breaking the 25K eval?",
+   "status": "promising",
+   "verdict": "Hunts x0.5 in the eval (atlas-v2 lead) + x1.0 once funded: passes; 6 of 8 neighbours (x0.6 in the eval fails H2 by 1 stuck eval); the real H2 path never passes its Jul-1 eval. Same hunt caveats. H1: 2-week pass/dead 67.2/0.0, eval-path $1,655/mo less fees, slot $758/mo to the owner net of evals, 7.19 trades/wk; H2: 2-week pass/dead 55.1/0.0, eval-path $665/mo less fees, slot $595/mo to the owner net of evals, 7.31 trades/wk; 2021-25: 2-week pass/dead 25.0/23.9, eval-path $-4/mo less fees, slot $30/mo to the owner net of evals, 9.3 trades/wk. Real-session slot (one path from each span's first session): H1 $766/mo (6 payouts, 2 evals); H2 $-34/mo (0 payouts, 2 evals); 2025 $66/mo (2 payouts, 10 evals); 2021-24 $-7/mo (2 payouts, 29 evals)",
+   "writeup": "atlas-edge-2026-10-30b",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "stop_hunt",
+    "funded",
+    "slot"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "SHA",
+      "SHT"
+     ],
+     "w": {
+      "SHA": 0.5,
+      "SHT": 0.5
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "Vf": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "SHA",
+      "SHT"
+     ],
+     "w": {
+      "SHA": 1.0,
+      "SHT": 1.0
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "eval": "engine/account_b.qty need (tools/atlas.q_variant) x the member weight / schedule",
+    "funded": "engine/sizing.funded_qty on the 25K preset (60% room, $50-$750, ref 20, winner <= $1,000) x the member weight (<= 1)"
+   },
+   "built": "2026-10-30 17:14",
+   "spans": {
+    "2026": {
+     "n": 197,
+     "tpw": 4.78,
+     "wk2": 93,
+     "win": 58.4,
+     "pf": 2.62,
+     "net": 18768,
+     "dd": -1276,
+     "avg_r": 0.502,
+     "stop": 45.5,
+     "worst_day": -513,
+     "risk": 132.0,
+     "half": 0,
+     "per_month": 1913,
+     "p10": 8.7,
+     "f10": 0.0,
+     "p15": 18.9,
+     "f15": 0.0,
+     "p20": 31.6,
+     "f20": 0.0,
+     "dec10": 8.7,
+     "slow_pass": 65.2,
+     "pass_med": 18.5,
+     "b2b": "5/0"
+    },
+    "2021-25": {
+     "n": 1268,
+     "tpw": 5.91,
+     "wk2": 95,
+     "win": 47.2,
+     "pf": 1.2,
+     "net": 21148,
+     "dd": -6996,
+     "avg_r": 0.128,
+     "stop": 26.2,
+     "worst_day": -598,
+     "risk": 120.0,
+     "half": 0,
+     "per_month": 414,
+     "p10": 1.4,
+     "f10": 1.1,
+     "p15": 3.7,
+     "f15": 3.6,
+     "p20": 7.3,
+     "f20": 6.4,
+     "dec10": 2.5,
+     "slow_pass": 90.3,
+     "pass_med": 34.0,
+     "b2b": "9/10"
+    },
+    "all": {
+     "n": 1465,
+     "tpw": 5.73,
+     "wk2": 95,
+     "win": 48.7,
+     "pf": 1.34,
+     "net": 39916,
+     "dd": -6996,
+     "avg_r": 0.178,
+     "stop": 28.2,
+     "worst_day": -598,
+     "risk": 122.0,
+     "half": 0,
+     "per_month": 656,
+     "p10": 2.6,
+     "f10": 0.9,
+     "p15": 6.2,
+     "f15": 3.1,
+     "p20": 11.2,
+     "f20": 5.4,
+     "dec10": 3.5,
+     "slow_pass": 85.9,
+     "pass_med": 31.0,
+     "b2b": "15/10"
+    }
+   }
+  },
+  {
+   "id": "atx_hunts_w075",
+   "title": "Hunts x0.75 in the eval and once funded",
+   "family": "risk",
+   "question": "ATLAS 2026-10-30 b: can a stage-aware member set (extra members by eval session / room / funded stage) keep the hunts' and the NA lead's money without breaking the 25K eval?",
+   "status": "promising",
+   "verdict": "Hunts x0.75 in the eval and once funded: passes; its x0.6 neighbour fails H2; same hunt caveats. H1: 2-week pass/dead 68.1/0.0, eval-path $1,922/mo less fees, slot $750/mo to the owner net of evals, 7.19 trades/wk; H2: 2-week pass/dead 59.4/0.0, eval-path $942/mo less fees, slot $650/mo to the owner net of evals, 7.31 trades/wk; 2021-25: 2-week pass/dead 28.2/24.2, eval-path $80/mo less fees, slot $36/mo to the owner net of evals, 9.3 trades/wk. Real-session slot (one path from each span's first session): H1 $766/mo (6 payouts, 2 evals); H2 $-17/mo (0 payouts, 1 evals); 2025 $89/mo (2 payouts, 8 evals); 2021-24 $97/mo (7 payouts, 25 evals)",
+   "writeup": "atlas-edge-2026-10-30b",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "stop_hunt",
+    "funded",
+    "slot"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "SHA",
+      "SHT"
+     ],
+     "w": {
+      "SHA": 0.75,
+      "SHT": 0.75
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "eval": "engine/account_b.qty need (tools/atlas.q_variant) x the member weight / schedule",
+    "funded": "engine/sizing.funded_qty on the 25K preset (60% room, $50-$750, ref 20, winner <= $1,000) x the member weight (<= 1)"
+   },
+   "built": "2026-10-30 17:14",
+   "spans": {
+    "2026": {
+     "n": 207,
+     "tpw": 5.02,
+     "wk2": 98,
+     "win": 60.4,
+     "pf": 2.71,
+     "net": 19698,
+     "dd": -1290,
+     "avg_r": 0.594,
+     "stop": 45.8,
+     "worst_day": -345,
+     "risk": 132.0,
+     "half": 0,
+     "per_month": 2008,
+     "p10": 4.4,
+     "f10": 0.0,
+     "p15": 12.6,
+     "f15": 0.0,
+     "p20": 27.7,
+     "f20": 0.0,
+     "dec10": 4.4,
+     "slow_pass": 81.9,
+     "pass_med": 23.0,
+     "b2b": "6/0"
+    },
+    "2021-25": {
+     "n": 1264,
+     "tpw": 5.9,
+     "wk2": 94,
+     "win": 46.5,
+     "pf": 1.2,
+     "net": 21371,
+     "dd": -5422,
+     "avg_r": 0.111,
+     "stop": 26.4,
+     "worst_day": -594,
+     "risk": 124.0,
+     "half": 0,
+     "per_month": 419,
+     "p10": 1.2,
+     "f10": 1.1,
+     "p15": 3.1,
+     "f15": 3.3,
+     "p20": 5.9,
+     "f20": 5.6,
+     "dec10": 2.3,
+     "slow_pass": 90.8,
+     "pass_med": 33.0,
+     "b2b": "10/11"
+    },
+    "all": {
+     "n": 1471,
+     "tpw": 5.76,
+     "wk2": 95,
+     "win": 48.5,
+     "pf": 1.35,
+     "net": 41069,
+     "dd": -5422,
+     "avg_r": 0.179,
+     "stop": 28.8,
+     "worst_day": -594,
+     "risk": 126.0,
+     "half": 0,
+     "per_month": 675,
+     "p10": 1.7,
+     "f10": 0.9,
+     "p15": 4.6,
+     "f15": 2.7,
+     "p20": 9.4,
+     "f20": 4.8,
+     "dec10": 2.6,
+     "slow_pass": 88.7,
+     "pass_med": 30.0,
+     "b2b": "15/11"
     }
    }
   },
@@ -220916,6 +221824,678 @@
      "slow_pass": 53.6,
      "pass_med": 17.0,
      "b2b": "24/46"
+    }
+   }
+  },
+  {
+   "id": "atx2_funded_asia_w10",
+   "title": "Eval = today; once funded + sh_asia x1 (round 2, config A clean)",
+   "family": "risk",
+   "question": "ATLAS 2026-10-30 b round 2: which members should trade ATLAS's FUNDED 25K (eval unchanged)?",
+   "status": "rejected",
+   "verdict": "Eval = today's ATLAS; once funded + sh_asia x1 (market entry). Slot $/mo (20 seeds x 200 paths): H1 $772 vs $574 (+198, 100% of seeds up); H2 $364 vs $374 (-10, 10% of seeds up); 2021-25 $14 vs $-7 (+21, 100% of seeds up); 2022 $9 vs $-25 (+34, 100% of seeds up); 2023 $4 vs $2 (+2, 60% of seeds up); 2024 $7 vs $-13 (+20, 95% of seeds up); 2025 $38 vs $10 (+28, 100% of seeds up). Random-time sh_asia x0.5 (12 copies): H1 $532, H2 $306. H2 below today: rejected. Real-session slot: H1 $887/mo (7 payouts); H2 $182/mo (1 payouts); 2025 $-36/mo (0 payouts); 2021-24 $-52/mo (0 payouts)",
+   "writeup": "atlas-edge-2026-10-30b",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "funded",
+    "slot",
+    "round2"
+   ],
+   "params": {
+    "eval": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "funded": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "SHA"
+     ],
+     "w": {
+      "SHA": 1.0
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "fz": {}
+   },
+   "sizing": {
+    "eval": "engine/account_b.qty need",
+    "funded": "funded preset x weight; BLITZ: its own 10% / $150"
+   },
+   "built": "2026-10-30 17:44",
+   "spans": {
+    "2026": {
+     "n": 148,
+     "tpw": 3.59,
+     "wk2": 79,
+     "win": 56.1,
+     "pf": 2.94,
+     "net": 20444,
+     "dd": -1435,
+     "avg_r": 0.716,
+     "stop": 45.5,
+     "worst_day": -586,
+     "risk": 141.0,
+     "half": 0,
+     "per_month": 2084,
+     "p10": 6.3,
+     "f10": 0.0,
+     "p15": 18.4,
+     "f15": 0.0,
+     "p20": 37.4,
+     "f20": 0.0,
+     "dec10": 6.3,
+     "slow_pass": 74.0,
+     "pass_med": 20.0,
+     "b2b": "6/0"
+    },
+    "2021-25": {
+     "n": 718,
+     "tpw": 3.35,
+     "wk2": 76,
+     "win": 38.3,
+     "pf": 0.88,
+     "net": -8145,
+     "dd": -10990,
+     "avg_r": 0.003,
+     "stop": 22.4,
+     "worst_day": -594,
+     "risk": 112.0,
+     "half": 0,
+     "per_month": -160,
+     "p10": 0.9,
+     "f10": 0.0,
+     "p15": 1.6,
+     "f15": 2.1,
+     "p20": 2.6,
+     "f20": 5.2,
+     "dec10": 0.9,
+     "slow_pass": 86.7,
+     "pass_med": 32.0,
+     "b2b": "3/12"
+    },
+    "all": {
+     "n": 866,
+     "tpw": 3.39,
+     "wk2": 76,
+     "win": 41.3,
+     "pf": 1.16,
+     "net": 12299,
+     "dd": -10990,
+     "avg_r": 0.125,
+     "stop": 25.1,
+     "worst_day": -594,
+     "risk": 120.0,
+     "half": 0,
+     "per_month": 202,
+     "p10": 1.8,
+     "f10": 0.0,
+     "p15": 4.3,
+     "f15": 1.7,
+     "p20": 8.2,
+     "f20": 4.4,
+     "dec10": 1.8,
+     "slow_pass": 81.8,
+     "pass_med": 25.0,
+     "b2b": "9/13"
+    }
+   }
+  },
+  {
+   "id": "atx2_funded_blitz_1micro",
+   "title": "Eval = today; once funded + BLITZ 1 micro (round 2)",
+   "family": "risk",
+   "question": "ATLAS 2026-10-30 b round 2: which members should trade ATLAS's FUNDED 25K (eval unchanged)?",
+   "status": "rejected",
+   "verdict": "Eval = today's ATLAS; once funded + BLITZ (BLITZ 1 micro). Slot $/mo (10 seeds x 200 paths): H1 $755 vs $569 (+186); H2 $395 vs $375 (+19); 2021-25 $-7 vs $-9 (+2). Passes the slot gate. Rejected: its random-direction twins reach its H2 slot in 2 of 6 draws, 2021-25 is +$2-3 (70% of seeds), 2024 is below today on every seed, and the real H2 calendar path pays $182 vs $414 a month. Real-session slot: H1 $1,017/mo (8 payouts); H2 $182/mo (1 payouts); 2025 $-31/mo (0 payouts); 2021-24 $28/mo (4 payouts)",
+   "writeup": "atlas-edge-2026-10-30b",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "funded",
+    "slot",
+    "round2"
+   ],
+   "params": {
+    "eval": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "funded": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "BLZ"
+     ],
+     "w": {
+      "BLZ": 1.0
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "fz": {
+     "blz_1micro": true
+    }
+   },
+   "sizing": {
+    "eval": "engine/account_b.qty need",
+    "funded": "funded preset x weight; BLITZ: its own 10% / $150"
+   },
+   "built": "2026-10-30 17:44",
+   "spans": {
+    "2026": {
+     "n": 331,
+     "tpw": 8.03,
+     "wk2": 98,
+     "win": 55.6,
+     "pf": 2.59,
+     "net": 24844,
+     "dd": -1393,
+     "avg_r": 0.455,
+     "stop": 51.2,
+     "worst_day": -586,
+     "risk": 123.0,
+     "half": 0,
+     "per_month": 2533,
+     "p10": 8.7,
+     "f10": 0.0,
+     "p15": 22.3,
+     "f15": 0.0,
+     "p20": 36.9,
+     "f20": 0.0,
+     "dec10": 8.7,
+     "slow_pass": 69.9,
+     "pass_med": 21.0,
+     "b2b": "7/0"
+    },
+    "2021-25": {
+     "n": 1221,
+     "tpw": 5.69,
+     "wk2": 82,
+     "win": 43.3,
+     "pf": 1.03,
+     "net": 2532,
+     "dd": -7493,
+     "avg_r": 0.039,
+     "stop": 31.8,
+     "worst_day": -593,
+     "risk": 102.0,
+     "half": 0,
+     "per_month": 50,
+     "p10": 1.0,
+     "f10": 0.4,
+     "p15": 2.2,
+     "f15": 2.7,
+     "p20": 3.1,
+     "f20": 5.1,
+     "dec10": 1.4,
+     "slow_pass": 86.9,
+     "pass_med": 42.0,
+     "b2b": "5/10"
+    },
+    "all": {
+     "n": 1552,
+     "tpw": 6.07,
+     "wk2": 85,
+     "win": 45.9,
+     "pf": 1.28,
+     "net": 27375,
+     "dd": -7493,
+     "avg_r": 0.127,
+     "stop": 35.3,
+     "worst_day": -593,
+     "risk": 105.0,
+     "half": 0,
+     "per_month": 450,
+     "p10": 2.3,
+     "f10": 0.3,
+     "p15": 5.5,
+     "f15": 2.3,
+     "p20": 8.5,
+     "f20": 4.3,
+     "dec10": 2.6,
+     "slow_pass": 80.9,
+     "pass_med": 30.0,
+     "b2b": "12/11"
+    }
+   }
+  },
+  {
+   "id": "atx2_funded_blitz_w05",
+   "title": "Eval = today; once funded + BLITZ x0.5 (round 2)",
+   "family": "risk",
+   "question": "ATLAS 2026-10-30 b round 2: which members should trade ATLAS's FUNDED 25K (eval unchanged)?",
+   "status": "rejected",
+   "verdict": "Eval = today's ATLAS; once funded + BLITZ (BLITZ x0.5). Slot $/mo (10 seeds x 200 paths): H1 $756 vs $569 (+186); H2 $395 vs $375 (+19); 2021-25 $-7 vs $-9 (+2). Passes the slot gate. Rejected: its random-direction twins reach its H2 slot in 2 of 6 draws, 2021-25 is +$2-3 (70% of seeds), 2024 is below today on every seed, and the real H2 calendar path pays $182 vs $414 a month. Real-session slot: H1 $1,017/mo (8 payouts); H2 $182/mo (1 payouts); 2025 $-31/mo (0 payouts); 2021-24 $28/mo (4 payouts)",
+   "writeup": "atlas-edge-2026-10-30b",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "funded",
+    "slot",
+    "round2"
+   ],
+   "params": {
+    "eval": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "funded": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "BLZ"
+     ],
+     "w": {
+      "BLZ": 0.5
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    },
+    "fz": {}
+   },
+   "sizing": {
+    "eval": "engine/account_b.qty need",
+    "funded": "funded preset x weight; BLITZ: its own 10% / $150"
+   },
+   "built": "2026-10-30 17:44",
+   "spans": {
+    "2026": {
+     "n": 331,
+     "tpw": 8.03,
+     "wk2": 98,
+     "win": 55.6,
+     "pf": 2.59,
+     "net": 24881,
+     "dd": -1393,
+     "avg_r": 0.455,
+     "stop": 51.2,
+     "worst_day": -586,
+     "risk": 123.0,
+     "half": 0,
+     "per_month": 2536,
+     "p10": 8.7,
+     "f10": 0.0,
+     "p15": 22.3,
+     "f15": 0.0,
+     "p20": 36.9,
+     "f20": 0.0,
+     "dec10": 8.7,
+     "slow_pass": 69.9,
+     "pass_med": 21.0,
+     "b2b": "7/0"
+    },
+    "2021-25": {
+     "n": 1221,
+     "tpw": 5.69,
+     "wk2": 82,
+     "win": 43.3,
+     "pf": 1.03,
+     "net": 2532,
+     "dd": -7493,
+     "avg_r": 0.039,
+     "stop": 31.8,
+     "worst_day": -593,
+     "risk": 102.0,
+     "half": 0,
+     "per_month": 50,
+     "p10": 1.0,
+     "f10": 0.4,
+     "p15": 2.2,
+     "f15": 2.7,
+     "p20": 3.1,
+     "f20": 5.1,
+     "dec10": 1.4,
+     "slow_pass": 86.9,
+     "pass_med": 42.0,
+     "b2b": "5/10"
+    },
+    "all": {
+     "n": 1552,
+     "tpw": 6.07,
+     "wk2": 85,
+     "win": 45.9,
+     "pf": 1.28,
+     "net": 27413,
+     "dd": -7493,
+     "avg_r": 0.127,
+     "stop": 35.3,
+     "worst_day": -593,
+     "risk": 105.0,
+     "half": 0,
+     "per_month": 450,
+     "p10": 2.3,
+     "f10": 0.3,
+     "p15": 5.5,
+     "f15": 2.3,
+     "p20": 8.5,
+     "f20": 4.3,
+     "dec10": 2.6,
+     "slow_pass": 80.9,
+     "pass_med": 30.0,
+     "b2b": "12/11"
+    }
+   }
+  },
+  {
+   "id": "atx_lead_as_is",
+   "title": "The NA + hunts lead as is (ab_atlas_na_hunts_lead) on the slot",
+   "family": "risk",
+   "question": "ATLAS 2026-10-30 b: can a stage-aware member set (extra members by eval session / room / funded stage) keep the hunts' and the NA lead's money without breaking the 25K eval?",
+   "status": "rejected",
+   "verdict": "Last night's lead on the slot: H1 pays the owner less than today ($532 vs $568 a month); NA gets 28-32% of funded accounts stuck in 6 months. Rejected. H1: 2-week pass/dead 62.2/5.9, eval-path $2,046/mo less fees, slot $532/mo to the owner net of evals, 11.02 trades/wk; H2: 2-week pass/dead 55.1/0.0, eval-path $1,584/mo less fees, slot $488/mo to the owner net of evals, 10.51 trades/wk; 2021-25: 2-week pass/dead 31.1/29.0, eval-path $159/mo less fees, slot $30/mo to the owner net of evals, 13.0 trades/wk. Real-session slot (one path from each span's first session): H1 $383/mo (3 payouts, 1 evals); H2 $-34/mo (0 payouts, 2 evals); 2025 $-56/mo (0 payouts, 11 evals); 2021-24 $114/mo (6 payouts, 6 evals)",
+   "writeup": "atlas-edge-2026-10-30b",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "stop_hunt",
+    "funded",
+    "slot"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "NAD",
+      "SHA",
+      "SHT"
+     ],
+     "w": {
+      "NAD": 0.5,
+      "SHA": 0.5,
+      "SHT": 0.5
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "eval": "engine/account_b.qty need (tools/atlas.q_variant) x the member weight / schedule",
+    "funded": "engine/sizing.funded_qty on the 25K preset (60% room, $50-$750, ref 20, winner <= $1,000) x the member weight (<= 1)"
+   },
+   "built": "2026-10-30 17:14",
+   "spans": {
+    "2026": {
+     "n": 186,
+     "tpw": 4.51,
+     "wk2": 71,
+     "win": 48.4,
+     "pf": 1.95,
+     "net": 12562,
+     "dd": -1738,
+     "avg_r": 0.48,
+     "stop": 43.8,
+     "worst_day": -467,
+     "risk": 131.0,
+     "half": 0,
+     "per_month": 1281,
+     "p10": 6.8,
+     "f10": 0.0,
+     "p15": 11.2,
+     "f15": 0.0,
+     "p20": 18.4,
+     "f20": 0.0,
+     "dec10": 6.8,
+     "slow_pass": 77.2,
+     "pass_med": 26.0,
+     "b2b": "3/0"
+    },
+    "2021-25": {
+     "n": 1657,
+     "tpw": 7.73,
+     "wk2": 97,
+     "win": 42.8,
+     "pf": 1.2,
+     "net": 33231,
+     "dd": -9006,
+     "avg_r": 0.141,
+     "stop": 26.8,
+     "worst_day": -593,
+     "risk": 148.0,
+     "half": 0,
+     "per_month": 651,
+     "p10": 5.6,
+     "f10": 5.2,
+     "p15": 10.4,
+     "f15": 12.5,
+     "p20": 14.7,
+     "f20": 20.7,
+     "dec10": 10.8,
+     "slow_pass": 65.4,
+     "pass_med": 21.0,
+     "b2b": "13/19"
+    },
+    "all": {
+     "n": 1843,
+     "tpw": 7.21,
+     "wk2": 93,
+     "win": 43.4,
+     "pf": 1.26,
+     "net": 45793,
+     "dd": -9006,
+     "avg_r": 0.175,
+     "stop": 28.2,
+     "worst_day": -593,
+     "risk": 144.0,
+     "half": 0,
+     "per_month": 752,
+     "p10": 5.8,
+     "f10": 4.4,
+     "p15": 10.6,
+     "f15": 10.5,
+     "p20": 15.3,
+     "f20": 17.6,
+     "dec10": 10.2,
+     "slow_pass": 68.2,
+     "pass_med": 22.0,
+     "b2b": "16/19"
+    }
+   }
+  },
+  {
+   "id": "atx_lead_na_s11_funded_hunts",
+   "title": "The NA + hunts lead fixed: NA only from eval session 11, no NA once funded",
+   "family": "risk",
+   "question": "ATLAS 2026-10-30 b: can a stage-aware member set (extra members by eval session / room / funded stage) keep the hunts' and the NA lead's money without breaking the 25K eval?",
+   "status": "rejected",
+   "verdict": "The NA + hunts lead fixed (NA only from eval session 11, no NA once funded): passes vs today (20 of 33 neighbours) but 0 of 33 beat the hunts alone on the slot: NA adds only eval-path $ (never paid). Rejected: drop NA. H1: 2-week pass/dead 67.2/0.0, eval-path $1,923/mo less fees, slot $671/mo to the owner net of evals, 11.02 trades/wk; H2: 2-week pass/dead 55.1/0.0, eval-path $861/mo less fees, slot $610/mo to the owner net of evals, 10.51 trades/wk; 2021-25: 2-week pass/dead 25.0/23.9, eval-path $45/mo less fees, slot $30/mo to the owner net of evals, 13.0 trades/wk. Real-session slot (one path from each span's first session): H1 $897/mo (7 payouts, 2 evals); H2 $-34/mo (0 payouts, 2 evals); 2025 $55/mo (2 payouts, 9 evals); 2021-24 $88/mo (6 payouts, 21 evals)",
+   "writeup": "atlas-edge-2026-10-30b",
+   "tags": [
+    "atlas",
+    "account_b",
+    "25k",
+    "stop_hunt",
+    "funded",
+    "slot"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "NAD",
+      "SHA",
+      "SHT"
+     ],
+     "w": {
+      "NAD": 0.5,
+      "SHA": 0.5,
+      "SHT": 0.5
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {},
+     "sched": {
+      "members": [
+       "NAD"
+      ],
+      "from": 11,
+      "early": 0.0,
+      "late": 0.5
+     }
+    },
+    "Vf": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "SHA",
+      "SHT"
+     ],
+     "w": {
+      "SHA": 0.5,
+      "SHT": 0.5
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "eval": "engine/account_b.qty need (tools/atlas.q_variant) x the member weight / schedule",
+    "funded": "engine/sizing.funded_qty on the 25K preset (60% room, $50-$750, ref 20, winner <= $1,000) x the member weight (<= 1)"
+   },
+   "built": "2026-10-30 17:14",
+   "spans": {
+    "2026": {
+     "n": 160,
+     "tpw": 3.88,
+     "wk2": 76,
+     "win": 57.5,
+     "pf": 2.9,
+     "net": 17020,
+     "dd": -1581,
+     "avg_r": 0.618,
+     "stop": 45.5,
+     "worst_day": -326,
+     "risk": 132.0,
+     "half": 0,
+     "per_month": 1735,
+     "p10": 5.8,
+     "f10": 0.0,
+     "p15": 10.7,
+     "f15": 0.0,
+     "p20": 22.8,
+     "f20": 0.0,
+     "dec10": 5.8,
+     "slow_pass": 80.4,
+     "pass_med": 22.0,
+     "b2b": "5/0"
+    },
+    "2021-25": {
+     "n": 1421,
+     "tpw": 6.63,
+     "wk2": 99,
+     "win": 44.9,
+     "pf": 1.09,
+     "net": 10274,
+     "dd": -6984,
+     "avg_r": 0.113,
+     "stop": 27.0,
+     "worst_day": -593,
+     "risk": 117.0,
+     "half": 0,
+     "per_month": 201,
+     "p10": 0.2,
+     "f10": 0.7,
+     "p15": 1.6,
+     "f15": 3.5,
+     "p20": 3.3,
+     "f20": 7.7,
+     "dec10": 0.9,
+     "slow_pass": 92.9,
+     "pass_med": 38.0,
+     "b2b": "9/13"
+    },
+    "all": {
+     "n": 1581,
+     "tpw": 6.19,
+     "wk2": 95,
+     "win": 46.2,
+     "pf": 1.23,
+     "net": 27295,
+     "dd": -6984,
+     "avg_r": 0.164,
+     "stop": 28.5,
+     "worst_day": -593,
+     "risk": 118.0,
+     "half": 0,
+     "per_month": 449,
+     "p10": 1.1,
+     "f10": 0.6,
+     "p15": 3.1,
+     "f15": 2.9,
+     "p20": 6.4,
+     "f20": 6.5,
+     "dec10": 1.7,
+     "slow_pass": 89.6,
+     "pass_med": 32.0,
+     "b2b": "14/13"
     }
    }
   },

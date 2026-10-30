@@ -1,0 +1,23 @@
+{
+ "built": "2026-10-30 17:25:04",
+ "rule": "highest 2026 H1 slot $ a month (mean of 10 seeds x 200 paths), eval unchanged",
+ "h1": {
+  "EMA+MD+SR+SHA": 696.2,
+  "EMA+SR+SHA": 646.8,
+  "EMA+MD+SR": 569.4,
+  "MD+SR+SHA": 549.2,
+  "EMA+SR": 504.3,
+  "MD+SR": 483.4,
+  "EMA+MD+SHA": 472.9,
+  "SR+SHA": 465.1,
+  "EMA+MD": 349.5,
+  "EMA+SHA": 336.8,
+  "MD+SHA": 308.2,
+  "SR": 302.1,
+  "EMA": 191.0,
+  "MD": 155.2,
+  "SHA": 72.0
+ },
+ "pick": "EMA+MD+SR+SHA",
+ "today": 569.4
+}
