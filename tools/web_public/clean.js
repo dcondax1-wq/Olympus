@@ -171,25 +171,28 @@
   // ------------------------------------------------------------------ the bot tabs: sections (segmented control) and their pages
   // [section, its pages (chips, the first opens on a tap of the section), pages that belong here but have no chip]
   // An item "atlas/brain" is the ATLAS page showing one part (#/atlas/brain).
+  // 2026-10-30 (night 3, "organized, clean"): the three bots share ONE order and the same words:
+  //   Today · Brain · Trades · Results · Rules   (Zlarior's Plan pages are chips under Today, its Strategy is Rules;
+  //   ATLAS's Setups is Rules; BLITZ's Go live is a chip under Rules). Every page keeps its id and link.
   const ZL_SEGS = [
-    ['Today', ['lit', 'eval', 'evalhq', 'cockpit', 'curve'], ['live', 'engine']],
+    ['Today', ['lit', 'eval', 'evalhq', 'plan', 'levels'], ['live', 'engine', 'cockpit', 'curve', 'day', 'radar', 'brief']],
     ['Brain', ['brain'], []],
     ['Trades', ['trades', 'last10', 'recaps', 'intel', 'journal', 'stats', 'weekly'], ['tplay', 'weekcal', 'activity', 'replays']],
-    ['Plan', ['plan', 'day', 'levels', 'radar', 'brief'], []],
     ['Results', ['perf', 'results', 'pnlcal', 'edge', 'execq', 'learning'], ['stops', 'evals']],
-    ['Strategy', ['strategy', 'risk', 'mffurules'], []],
+    ['Rules', ['strategy', 'risk', 'mffurules'], []],
   ];
   const AT_SEGS = [
     ['Today', ['atlas'], []], ['Brain', ['atlas/brain'], []], ['Trades', ['atlas/trades'], []],
-    ['Setups', ['atlas/setups', 'atstats'], []], ['Results', ['atlas/results', 'atlearn'], []],
+    ['Results', ['atlas/results', 'atstats', 'atlearn'], []], ['Rules', ['atlas/setups'], []],
   ];
   // BLITZ (2026-10-29): the one BLITZ page (blitz.js + blitzcore.js) in parts, #/blitz/<part>
   const BZ_SEGS = [['Today', ['blitz'], []], ['Brain', ['blitz/brain'], []], ['Trades', ['blitz/trades'], []], ['Results', ['blitz/results'], []],
-    ['Rules', ['blitz/rules'], []], ['Go live', ['blitz/golive'], []]];
+    ['Rules', ['blitz/rules', 'blitz/golive'], []]];
   const BOTS = { lit: { name: 'Zlarior', segs: ZL_SEGS }, atlas: { name: 'ATLAS', segs: AT_SEGS }, blitz: { name: 'BLITZ', segs: BZ_SEGS } };
   const CHIP = { lit: 'Today', eval: '50K eval', evalhq: 'Eval HQ', cockpit: 'Eval cockpit', curve: 'Eval curve', trades: 'All trades', intel: 'Trade intel',
     plan: 'Plan', day: 'Day plan', levels: 'Levels', radar: 'Radar', brief: 'Briefing', perf: 'Performance', results: 'Replay', pnlcal: 'Calendar',
-    execq: 'Execution', risk: 'Risk & sizing', mffurules: 'MFFU rules', 'atlas/setups': 'Rules & members', atstats: 'Setup stats',
+    execq: 'Execution', risk: 'Risk & sizing', mffurules: 'MFFU rules', 'atlas/setups': 'Rules & members', atstats: 'Setup stats', strategy: 'Strategy',
+    'blitz/rules': 'Rules', 'blitz/golive': 'Go live', levels: 'Levels',
     'atlas/results': 'Results', learning: 'Learning', atlearn: 'Learning' };
   const chipLabel = (it) => CHIP[it] || (PAGES[it] && PAGES[it].label) || it;
   const goAttr = (it) => { const [id, arg] = it.split('/'); return `data-go="${esc(id)}"${arg ? ` data-arg="${esc(arg)}"` : ''}`; };
@@ -249,15 +252,20 @@
   }
 
   // ------------------------------------------------------------------ More: one grouped list, Advanced collapsed
+  // 2026-10-30: "Today" = the live views, "Insight" = what the bots think and what is coming, "Money planning" = every
+  // research / backtest $ page (the Money tab is real money only now)
   const SECTIONS = [
-    ['Today', ['liveview', 'holo', 'mission', 'mind', 'deck', 'goals', 'market', 'news', 'live', 'homefull']],   // liveview: Live View (liveview.js) 2026-10-28; mission: Mission Control (mission.js) 2026-10-29; holo: Holodeck (holo.js) 2026-10-29; mind / deck: Mind + Trader's deck (blitz.js) 2026-10-29
+    ['Today', ['liveview', 'holo', 'mission', 'board', 'live', 'homefull']],   // liveview: Live View (liveview.js) 2026-10-28; mission: Mission Control (mission.js) 2026-10-29; holo: Holodeck (holo.js) 2026-10-29
+    ['Insight', ['mind', 'deck', 'goals', 'news', 'market']],                  // mind / deck: Mind + Trader's deck (blitz.js) 2026-10-29
     ['Bot and health', ['launch', 'lights', 'ops', 'engine', 'alerts', 'activity', 'remote', 'aiwatch']],
     ['Trades', ['tplay', 'weekcal', 'replays', 'accounts']],
-    ['Money', ['share', 'evals', 'stops']],
+    ['Money planning', ['money', 'props', 'whatif', 'scale', 'share', 'evals', 'stops']],
     ['This app', ['settings', 'features']],
   ];
   const ADV = ['lab', 'experiments', 'writeups', 'losses', 'intraday', 'setups', 'learned', 'chart', 'sources', 'parts', 'archive'];
-  const TAB_MAIN = { money: ['money', 'real', 'evaltl', 'props', 'whatif', 'scale'] };   // 'real' (Real results, real.js) 2026-10-28
+  // the Money tab = real money only (2026-10-30): Real results first, the real accounts today, the eval timeline; the
+  // research $ pages (Money plan, prop firms, what-if, scale) are under More > Money planning and keep their links
+  const TAB_MAIN = { money: ['real', 'realtoday', 'evaltl'] };   // 'real' (Real results, real.js) 2026-10-28
   const ON_TABS = () => [...new Set(ZL_SEGS.flatMap((s) => s[1]).concat(['atlas', 'atstats', 'blitz'], TAB_MAIN.money))];
   function moreView(el) {
     const used = new Set(['today', 'system']);
@@ -367,6 +375,7 @@
       GROUPS.forEach((g) => { if (LBL[g.id]) { g.label = LBL[g.id][0]; g.icon = LBL[g.id][1]; } });
       // the tab opens its main page first
       GROUPS.forEach((g) => { const main = { today: 'today', lit: 'lit', atlas: 'atlas', blitz: 'blitz', money: 'money', system: 'system' }[g.id]; const k = g.pages.findIndex((p) => p[0] === main); if (k > 0) g.pages.unshift(g.pages.splice(k, 1)[0]); });
+      // the Money tab opens Real results (real.js adds it right after this file; polish.js puts it first once it is there)
       VIEWS.lit = litView;
       if (typeof SCENE !== 'undefined') SCENE.lit = 'today';
       if (typeof ALIAS !== 'undefined') Object.assign(ALIAS, { zlarior: 'lit', zl: 'lit', bot1: 'lit', lit50k: 'lit' });
