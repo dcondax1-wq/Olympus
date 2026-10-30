@@ -185,7 +185,8 @@
     return `<svg class="mc-ring" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15.5" class="mc-ring-bg"/><circle cx="18" cy="18" r="15.5" class="mc-ring-v" style="stroke:${color};stroke-dasharray:${(f * C).toFixed(1)} ${C.toFixed(1)}"/><text x="18" y="20.5">${esc(label)}</text></svg>`;
   };
   const LBL = { trade: 'IN TRADE', armed: 'ARMED', idle: 'WATCHING', off: 'OFF' };
-  function orbitCard(A, M, big) {
+  const BOT_PAGE = { lit: 'zlarior', atlas: 'atlas', blitz: 'blitz' };     // each bot's own tab / page (the phone aliases zlarior -> lit)
+  function orbitCard(A, M, big, opts) {
     const lt = light(A, M), prog = okN(A.profit) && okN(A.toTarget) && A.profit + A.toTarget > 0 ? Math.max(0, Math.min(1, A.profit / (A.profit + A.toTarget))) : null;
     const nextT = A.win && okN(+A.win.open_t) && !A.win.open ? +A.win.open_t : A.win && A.win.open && okN(+A.win.close_t) ? +A.win.close_t : null;
     const pos = A.pos ? `<div class="mc-pos ${A.pos.dir === 1 ? 'up' : 'dn'}"><b>${esc(A.pos.side)} ${A.pos.qty || ''} MNQ @ ${px(A.pos.entry)}</b>
@@ -204,6 +205,7 @@
       ${pos}
       <p class="mc-think"><i></i>${esc(A.think || missionLine(A, M))}</p>
       ${nextT ? `<p class="mc-next">${A.win && A.win.open ? 'window closes in' : 'next window in'} ${cd(nextT)}</p>` : ''}
+      ${opts && opts.go && BOT_PAGE[A.key] ? `<button type="button" class="mc-open mc-bot" ${opts.go(BOT_PAGE[A.key])}>Open ${esc(A.name)} ›</button>` : ''}
     </article>`;
   }
   function missionList(M, As) {
@@ -392,7 +394,7 @@
     return `<div class="mc-page">
       <header class="mc-hero"><div><span class="mc-eye">Mission Control · read-only</span><h2>Three bots in orbit</h2>${sessionCountdown(M)}${telemetry(M)}
         <p class="mc-skykey">In the sky behind: each bot is a satellite around the Earth (<span class="mc-lg" style="--c:#4f9bff"></span>Zlarior <span class="mc-lg" style="--c:#ff9a3d"></span>ATLAS <span class="mc-lg" style="--c:#b388ff"></span>BLITZ). It glows when armed, pulses with a beam to the ground while in a trade; a shooting star is a closed trade (green win, red loss); the aurora turns green or red with today's P&amp;L.</p></div></header>
-      <div class="mc-orbits">${As.map((A) => orbitCard(A, M, true)).join('')}</div>
+      <div class="mc-orbits">${As.map((A) => orbitCard(A, M, true, opts)).join('')}</div>
       <section class="card mc-card" data-mc-f="today"><header><h3>Today's mission</h3><p>What each bot is waiting for, right now</p></header>${missionList(M, As)}</section>
       <div class="mc-grid">${fStop(M, As)}${fWhy(M, As)}${fTimeline(M, As)}${fAlerts(M, As)}${fHealth(M)}${fRunway(M, As)}${fStreak(M, As)}${fLimits(M, As)}${fNews(M)}</div>
       <p class="mc-foot">Read-only · ${M.board && okN(+M.board.t) ? `board ${dur((M.now || nowS()) - M.board.t)} old` : 'no board yet'}${M.board && M.board.where ? ' · from ' + esc(M.board.where) : ''}</p></div>`;
