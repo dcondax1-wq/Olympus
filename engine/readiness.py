@@ -48,7 +48,7 @@ def dst_note(now) -> str | None:
             back = t.utcoffset() < off0
             when = "this morning" if t.date() == e.date() and t <= e else f"on {WD[t.weekday()]} {t:%b %d}"
             verb = ("went back" if t <= e else "go back") if back else ("went forward" if t <= e else "go forward")
-            return (f"Clocks {verb} one hour {when} ({'EST, UTC-5' if back else 'EDT, UTC-4'}): every bot time is New York "
+            return (f"Clocks {verb} one hour {when} ({'to EST' if back else 'to EDT'}): every bot time is New York "
                     "time, nothing to do; check the PC clock shows the new time.")
     return None
 

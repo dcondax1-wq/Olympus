@@ -434,15 +434,15 @@ def t_readiness():
     check("news: high-impact USD events Mon-Fri only, time-ordered (medium / EUR / Saturday left out)",
           L[5] == "News: Wed 14:00 FOMC Statement; Fri 08:30 Non-Farm Employment Change", L[5])
     check("early closes: normal hours this week", L[6] == "This week: normal hours (no early close)", L[6])
-    check("DST Sunday 2026-11-01: 'Clocks went back one hour this morning (EST, UTC-5)'",
-          L[7].startswith("Clocks went back one hour this morning (EST, UTC-5)") and "New York time" in L[7], L[7:])
+    check("DST Sunday 2026-11-01: 'Clocks went back one hour this morning (to EST)'",
+          L[7].startswith("Clocks went back one hour this morning (to EST)") and "New York time" in L[7], L[7:])
     p = R.notice(None, now, facts=GOOD)
     check("push: kind readiness, key per Sunday, body under 600 chars", p["kind"] == "readiness" and p["key"] == "readiness:2026-11-01"
           and len(p["body"]) <= 600 and p["body"].startswith("Version abc1234"), p)
     check("DST a week ahead (Sun 2026-10-25): 'go back one hour on Sun Nov 01'", "go back one hour on Sun Nov 01" in (R.dst_note(ts(2026, 10, 25, 17, 30)) or ""),
           R.dst_note(ts(2026, 10, 25, 17, 30)))
-    check("DST Sunday 2027-03-14: 'went forward one hour this morning (EDT, UTC-4)'",
-          (R.dst_note(ts(2027, 3, 14, 17, 30)) or "").startswith("Clocks went forward one hour this morning (EDT, UTC-4)"))
+    check("DST Sunday 2027-03-14: 'went forward one hour this morning (to EDT)'",
+          (R.dst_note(ts(2027, 3, 14, 17, 30)) or "").startswith("Clocks went forward one hour this morning (to EDT)"))
     check("no clock change on Sun 2026-11-08: no DST line", R.dst_note(ts(2026, 11, 8, 17, 30)) is None)
     th = R.build({**GOOD, "events": []}, ts(2026, 11, 22, 17, 30))["lines"]
     check("Thanksgiving week: Thu 13:00 and Fri 13:15 early closes with the last entry time; no high-impact news",
