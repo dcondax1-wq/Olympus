@@ -466,6 +466,40 @@ def main():
         check(f"real data: the LIT backtest of 2026-10-13 (SHORT 06:03, TARGET; {mt:.0f} ms, cached {mt2:.0f} ms)",
               m and len(m["trades"]) == 1 and m["trades"][0]["exit_reason"] == "TARGET" and m["trades"][0]["dir"] == -1
               and any(s.get("detail") and s["detail"].get("t_idm") for s in m["setups"]) and mt2 < 1200, m and m["trades"])
+        # the PC appends a NinjaTrader bar to data/nt_bars every minute (engine/live.py _archive_add), which invalidates
+        # engine/fill_audit.load_bars: a FINISHED day (holo_hist on the publisher thread every 10 min / after each trade, a
+        # past day's page) must not re-read the ~30 MB of CSV for it; today's replay still gets the fresh bars
+        from engine import fill_audit as FA, pcbars
+        arc0, bars0, ar0, reads = pcbars.ARCHIVE_DIR, dict(FA._BARS), pcbars.archive_read, []
+        try:
+            pcbars.ARCHIVE_DIR = os.path.join(TMP, "nt_bars")
+            os.makedirs(pcbars.ARCHIVE_DIR, exist_ok=True)
+            a1 = pcbars.archive_path("NQ", "1m")
+            with open(a1, "w", encoding="utf-8") as fh:
+                fh.write("time,open,high,low,close,volume\n1792400000,25000,25001,24999,25000.5,1\n")
+
+            def bump(j):                                   # the poll's archive append (a new mtime)
+                with open(a1, "a", encoding="utf-8") as fh:
+                    fh.write(f"{1792400000 + 60 * j},25000,25001,24999,25000.5,1\n")
+                os.utime(a1, (time.time() + 5 * j, time.time() + 5 * j))
+            pcbars.archive_read = lambda *a, **k: (reads.append(a), ar0(*a, **k))[1]
+            FA._BARS.update(key=None, d5=None, d1=None)
+            Hr._frames(past=True)
+            n0 = len(reads)
+            bump(1)
+            m3 = Hr.model_day("2026-10-13")
+            Hr._frames(past=True)
+            Hr.day_bars(SimpleNamespace(bars_tail=[], _lit_1m_store=None), "2026-10-13", False)
+            n1 = len(reads)
+            bump(2)
+            d5n, d1n = Hr._frames()
+            n2 = len(reads)
+        finally:
+            pcbars.archive_read, pcbars.ARCHIVE_DIR = ar0, arc0
+            FA._BARS.update(bars0)
+        check("finished days: a new NinjaTrader archive bar (every minute on the PC) re-reads no CSV for them (holo_hist / a "
+              "past day), the same model; today's frames are re-read and carry the new bar",
+              n0 == 2 and n1 == n0 and m3 == m and n2 == n0 + 2 and int(d1n["time"].max()) == 1792400000 + 120, (n0, n1, n2, m3 == m))
         Hr.CSV_FALLBACK = False
     shutil.rmtree(TMP, ignore_errors=True)
     n, k = len(RES), sum(RES)

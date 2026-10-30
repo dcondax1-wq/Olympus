@@ -220,13 +220,42 @@ def _rows(df) -> list:
             for t, o, h, l, c, x in zip(df["time"], df["open"], df["high"], df["low"], df["close"], v)]
 
 
-def _frames():
+_PAST: dict = {"key": None}     # (trading day, TradingView export mtimes) of holo's last engine/fill_audit.load_bars
+
+
+def _tv_mtimes(FA) -> tuple:
+    """The TradingView exports' mtimes exactly as engine/fill_audit.load_bars keys them (its key[:2])."""
+    return tuple(os.path.getmtime(p) if os.path.exists(p) else 0
+                 for p in (os.path.join(FA.DATA, "NQ_5m.csv"), os.path.join(FA.DATA, "NQ_1m.csv")))
+
+
+def _frames(past: bool = False):
+    """(d5, d1). past=True (a FINISHED trading day: holo_hist's days, a past day's page): the frames already loaded during
+    this trading day. engine/fill_audit.load_bars re-reads every file once data/nt_bars changes, and on the PC the bot
+    appends a NinjaTrader bar there every minute, so every holo_hist rebuild (every 10 min and after each trade / order)
+    re-read ~30 MB of CSV on the publisher thread (0.6 s here, seconds on the Surface) next to the LIT poll. A finished
+    day's bars are all in any load made since today's trading day began (its session had ended): re-read only on a new
+    trading day or a new TradingView export. Today (past=False) always gets fresh bars."""
     if FRAMES is not None:
         return FRAMES()
     if not CSV_FALLBACK:
         return None, None
     from . import fill_audit as FA
-    return FA.load_bars()
+    try:
+        key = (N.trading_day(int(time.time())), _tv_mtimes(FA))
+    except Exception:
+        key = None
+    if past and key is not None:
+        with _MX:
+            same = _PAST.get("key") == key
+        B = FA._BARS
+        d5, d1, bk = B.get("d5"), B.get("d1"), B.get("key")
+        if same and d5 is not None and tuple((bk or ())[:2]) == key[1]:
+            return d5, d1
+    v = FA.load_bars()
+    with _MX:
+        _PAST["key"] = key
+    return v
 
 
 def _bot_rows(bot, t0, t1):
@@ -261,7 +290,7 @@ def day_bars(bot, day: str, live: bool) -> dict:
     covers = bool(b1) and (live or b1[0][0] <= t0 + 3 * 3600)
     if covers:
         return {"1m": b1, "5m": b5 or _agg5(b1), "source": "bot"}
-    d5, d1 = _frames()
+    d5, d1 = _frames(past=not live)
     r1 = _rows(d1[(d1["time"] >= t0) & (d1["time"] < t1)]) if d1 is not None and len(d1) else []
     r5 = _rows(d5[(d5["time"] >= t0) & (d5["time"] < t1)]) if d5 is not None and len(d5) else []
     if not r1 and b1:
@@ -295,7 +324,7 @@ def model_day(day: str, errors: list | None = None, now: int | None = None) -> d
     "log"}, cached by the bars it saw. None without bars."""
     errors = errors if errors is not None else []
     try:
-        d5, d1 = _frames()
+        d5, d1 = _frames(past=now is None)            # a finished day (no now): no re-read for the minute's archive bar
         if d5 is None or not len(d5):
             return None
         from . import fill_audit as FA
@@ -1083,7 +1112,7 @@ def _structure(bot, day, live, now, bars, lv, errors):
             if hit and hit[0] == (len(b1), t_end):
                 return hit[1]
         from . import structure as ST
-        d5, d1 = _frames()
+        d5, d1 = _frames(past=True)
         r1 = _rows(d1[(d1["time"] >= t_end - 12 * 86400) & (d1["time"] < t_end)])[-6000:] if d1 is not None and len(d1) else b1
         r5 = _rows(d5[(d5["time"] >= t_end - 15 * 86400) & (d5["time"] < t_end)]) if d5 is not None and len(d5) else bars.get("5m") or []
         A = ST.analyze([r[:5] for r in r1], [r[:5] for r in r5], t_end, None)
