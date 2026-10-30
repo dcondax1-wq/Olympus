@@ -905,7 +905,10 @@ def ui_checks(tmp):
           "window.confirm(confirmText)" in js_c and "It is NOT armed" in js_c and "Kill EVERY follower?" in js_c)
     idx = open(os.path.join(ROOT, "tools", "web_public", "index.html"), encoding="utf-8").read()
     scripts = re.findall(r'<script src="([^"]+)" defer></script>', idx)
-    check("phone index.html: fleet.js is one <script defer> line after the last script", scripts and scripts[-1].startswith("fleet.js"), scripts[-3:])
+    fl = [i for i, s in enumerate(scripts) if s.startswith("fleet.js")]
+    late = [i for i, s in enumerate(scripts) if s.startswith(("real.js", "liveview.js", "blitz.js"))]
+    check("phone index.html: fleet.js is one <script defer> line, after the bot pages (statuscore / polish may follow: they group the pages)",
+          len(fl) == 1 and (not late or fl[0] > max(late)), scripts[-4:])
     app = open(os.path.join(ROOT, "web_next", "js", "app.js"), encoding="utf-8").read()
     rts = open(os.path.join(ROOT, "web_next", "js", "next", "routes.js"), encoding="utf-8").read()
     check("PC: PAGES.fleet in app.js + the route entry (All tools tile / TITLES) in routes.js, no layout list changed",
