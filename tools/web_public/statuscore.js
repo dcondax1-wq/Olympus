@@ -264,7 +264,7 @@
     const sub = [okN(A.room) ? `Room ${money(A.room)}` : '', okN(A.session) && okN(A.sessions) ? `day ${A.session} of ${A.sessions}` : ''].filter(Boolean).join(' · ');
     const roomLvl = okN(A.roomFrac) ? (A.roomFrac < 0.25 ? 'bad' : A.roomFrac < 0.5 ? 'warn' : 'good') : 'idle';
     const tc = okN(A.today) && A.today > 0 ? 'up' : okN(A.today) && A.today < 0 ? 'dn' : '';
-    return `<a class="su-acct${A.pos ? ' trading' : ''}" data-bot="${k}" style="--c:${c}" ${goA(o, page)} aria-label="${NAME[k]} ${esc(A.size || '')}: ${esc(big)} to the target">
+    return `<a class="su-acct${A.pos ? ' trading' : ''}" data-bot="${k}" style="--c:${c}" ${goA(o, page)} aria-label="${NAME[k]} ${esc(A.size || '')}: ${esc(big)} to the target"><i class="su-sheen" aria-hidden="true"></i>
       ${head(`${A.size || ''} · ${String(A.plan || '').replace(/\s*\d+K$/i, '')}`)}
       ${ring(frac, down ? 'var(--bad,#ff5a7a)' : c, kmoney(A.profit), down)}
       <span class="su-a-m"><span class="su-big"><b data-su-count="${okN(A.toTarget) && !passed ? Math.round(A.toTarget) : ''}">${esc(big)}</b><em>${passed ? 'target reached' : 'to the target'}</em></span>
@@ -400,6 +400,9 @@
 @keyframes su-glow{50%{opacity:1}}
 @media (hover:hover){.su-acct:hover{border-color:color-mix(in srgb,var(--c) 50%,transparent)}}
 .su-acct.ph{opacity:.88}
+.su-sheen{position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.09) 48%,rgba(255,255,255,.02) 56%,transparent 70%);transform:translate3d(-120%,0,0);opacity:0}
+.pl-first .su-sheen{animation:su-sheen 1.5s .4s cubic-bezier(.16,1,.3,1) both}
+@keyframes su-sheen{0%{transform:translate3d(-120%,0,0);opacity:1}100%{transform:translate3d(120%,0,0);opacity:0}}
 .su-a-h{grid-area:h;display:flex;align-items:center;gap:8px;min-width:0}.su-a-h b{font-size:15px;font-weight:750;color:var(--c);letter-spacing:.01em}
 .su-tag{flex:none;font:700 9.5px/1 var(--sans,system-ui);letter-spacing:.1em;padding:4px 6px;border-radius:6px;color:var(--ink-2,#a9b1c3);background:rgba(255,255,255,.06);border:1px solid rgba(160,170,220,.14)}
 .su-tag.real{color:#06140d;background:var(--good,#2ee59d);border-color:transparent;box-shadow:0 0 12px color-mix(in srgb,var(--good,#2ee59d) 45%,transparent)}
@@ -464,7 +467,7 @@
 :root[data-theme="light"] .su-acct{background:radial-gradient(120% 140% at 0% 0%,color-mix(in srgb,var(--c) 12%,transparent),transparent 55%),linear-gradient(180deg,#fff,#f6f8fc)}
 :root[data-theme="light"] .su-chip{background:rgba(20,30,60,.04);border-color:rgba(20,30,60,.1)}
 :root[data-theme="light"] .su-ring .bg{stroke:rgba(20,30,60,.08)}:root[data-theme="light"] .su-ring.down b{color:#c8264a}:root[data-theme="light"] .su-wd em{color:#5b6478}
-@media (prefers-reduced-motion:reduce){.su-acct.trading::before{animation:none;opacity:.7}.su-dot.live::after{animation:none}.su-more,.su-acct,.su-chev{transition:none}}
+@media (prefers-reduced-motion:reduce){.pl-first .su-sheen{animation:none}.su-acct.trading::before{animation:none;opacity:.7}.su-dot.live::after{animation:none}.su-more,.su-acct,.su-chev{transition:none}}
 `;
   function css() { if (typeof document === 'undefined' || document.getElementById('su-css')) return; const s = document.createElement('style'); s.id = 'su-css'; s.textContent = CSS; document.head.appendChild(s); }
 

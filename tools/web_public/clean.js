@@ -189,7 +189,7 @@
   const BZ_SEGS = [['Today', ['blitz'], []], ['Brain', ['blitz/brain'], []], ['Trades', ['blitz/trades'], []], ['Results', ['blitz/results'], []],
     ['Rules', ['blitz/rules', 'blitz/golive'], []]];
   const BOTS = { lit: { name: 'Zlarior', segs: ZL_SEGS }, atlas: { name: 'ATLAS', segs: AT_SEGS }, blitz: { name: 'BLITZ', segs: BZ_SEGS } };
-  const CHIP = { lit: 'Today', eval: '50K eval', evalhq: 'Eval HQ', cockpit: 'Eval cockpit', curve: 'Eval curve', trades: 'All trades', intel: 'Trade intel',
+  const CHIP = { lit: 'Overview', eval: '50K eval', evalhq: 'Eval HQ', cockpit: 'Eval cockpit', curve: 'Eval curve', trades: 'All trades', intel: 'Trade intel',
     plan: 'Plan', day: 'Day plan', levels: 'Levels', radar: 'Radar', brief: 'Briefing', perf: 'Performance', results: 'Replay', pnlcal: 'Calendar',
     execq: 'Execution', risk: 'Risk & sizing', mffurules: 'MFFU rules', 'atlas/setups': 'Rules & members', atstats: 'Setup stats', strategy: 'Strategy',
     'blitz/rules': 'Rules', 'blitz/golive': 'Go live', levels: 'Levels',
