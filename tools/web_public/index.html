@@ -4482,7 +4482,8 @@ function splashDone(now) {
   splashGone = true;
   const wait = now === true ? 0 : Math.max(0, 2300 - (performance.now() - SPLASH_T0));
   clearTimeout(splashT);
-  splashT = setTimeout(() => { el.classList.add('out'); FX?.warp(); setTimeout(() => el.remove(), 650); }, wait);
+  const fade = () => { el.classList.add('out'); FX?.warp(); setTimeout(() => el.remove(), 650); };
+  if (now === true) fade(); else splashT = setTimeout(fade, wait);      // Skip: at once, even on a busy first load
 }
 setTimeout(splashDone, 4200);   // never stay on the intro, even offline
 document.addEventListener('pointermove', (e) => {

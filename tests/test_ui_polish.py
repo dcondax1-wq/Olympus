@@ -276,14 +276,14 @@ def part_c(F, tmp, shots):
         vis = pg.is_visible("#splash")
         sh(pg, "polish_phone_intro.png")
         tk = time.time()
-        pg.evaluate("() => { const b = document.getElementById('spSkip'); if (b) b.click(); }")      # a tap on Skip
+        fading = pg.evaluate("() => { const b = document.getElementById('spSkip'); if (b) b.click(); const s = document.getElementById('splash'); return !s || s.classList.contains('out'); }")      # a tap on Skip: it starts to fade in the same frame
         pg.wait_for_function("() => !document.getElementById('splash')", timeout=3000)
         gone_s = round(time.time() - tk, 2)
         PERF["intro_skip_s"] = gone_s
         pg.reload()
         pg.wait_for_selector(".pl-home", timeout=30000)
         again = pg.query_selector("#splash") is not None
-        check("c. the intro: shows on the first open of the day, Skip removes it at once, not again the same day", vis and not again and not e2, (vis, again, gone_s, e2[:2]))
+        check("c. the intro: shows on the first open of the day, Skip removes it at once, not again the same day", vis and fading and not again and not e2, (vis, fading, again, gone_s, e2[:2]))
         ctx.close()
         # reduced motion: no intro, no animation on the new parts
         e3 = []
