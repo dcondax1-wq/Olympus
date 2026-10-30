@@ -2,9 +2,9 @@
 title: ATLAS edge, day session (2026-10-30 b) - the stop hunts pay most on the FUNDED 25K; the NA day-hold member's extra money was eval-path money, not owner money; funded size rules are noise
 family: risk
 date: 2026-10-30
-status: promising - nothing passes cleanly. One structure passes every numeric gate (the two stop hunts at x0.5 added on ATLAS's FUNDED 25K only, eval untouched), but the hunts' own rules were picked on H1 + 2025 + 2021-24, so only 2026 H2 is a clean check, and most of the H2 gain comes from sh_trend (audit - not real; needs a limit entry account B cannot place). Paper first. Rejected - the NA day-hold member in any schedule (it adds no owner money over the hunts alone and gets 28-32% of funded accounts stuck), buffer-first funded size, payout ask lines, winner caps, the 50% best-day size cap, giving up a funded account sooner, a funded day take-profit or day stop, member day limits
-summary: Owner 2026-10-30 - "make ATLAS way better". Two directions (the coordinator moved windows and entry execution to another agent at 13:00) - (1) make last night's paper lead (the stop hunts x0.5 + the NA day-hold member x0.5, run ab_atlas_na_hunts_lead) pass every gate, (2) funded-stage money. New tool - a whole-account SLOT simulator (eval -> funded -> MFFU payouts -> a new $63 eval; 300 block-bootstrap paths x 6 months per span) that measures $ to the owner a month net of every eval bought, next to the eval-path $ and the 25K 2-week pass / dead. Main finding - the lead's extra money was profit INSIDE evals, which is never paid; on the funded account the NA member gets 28-32% of accounts stuck in 6 months (hunts alone 3-9%), so the lead pays the owner LESS than today in H1 ($532 vs $568 a month). It can be made to pass every gate (NA only from eval session 11 / only while the room is >= $1,500, never once funded - 20 of 33 neighbours pass), but then it pays the same as the hunts alone (0 of 33 beat them). The money is in the hunts, and most of it on the funded account - eval = today's ATLAS exactly, once funded + sh_asia + sh_trend at x0.5 - slot $661 / $510 / $23 a month (H1 / H2 / 2021-25) vs today $568 / $382 / -$2; every funded weight 0.4-1.0 passes; 12 random-time twins of the hunts pass 0 times (their H2 slot averages $246); a second path set and every year 2022-25 agree. Hunts x0.5 in the eval as well + x1.0 once funded - $758 / $595 / $30 (6 of 8 neighbours). Funded rules (buffer-first, a $1,000 cap after the lock, ask lines $250-$1,500, winner caps, the 50% best-day size cap, giving up sooner, a day take-profit or day stop) move the slot by noise (+-$30) - MFFU's payout rules bind, not the size. Paper research only.
-runs: atx_today, atx_funded_hunts_w05, atx_funded_hunts_w075, atx_hunts_w05_funded_w1, atx_hunts_w075, atx_lead_na_s11_funded_hunts, atx_lead_as_is
+status: promising - nothing passes cleanly. Round 2 - the clean version (eval unchanged, the funded 25K adds sh_asia only, market entry) passes the slot gate on 20 of 20 seeds (H1 $697 / H2 $399 / 2021-25 $4 a month vs $574 / $374 / -$7) and is the H1-only pick of the 15 funded member sets, but its clean H2 gain is +$26 a month and $0 on the real calendar path, and account B cannot route 18:00-02:00 entries yet; BLITZ as a funded member rejected (H2 matched by its random-direction twins). One structure passes every numeric gate (the two stop hunts at x0.5 added on ATLAS's FUNDED 25K only, eval untouched), but the hunts' own rules were picked on H1 + 2025 + 2021-24, so only 2026 H2 is a clean check, and most of the H2 gain comes from sh_trend (audit - not real; needs a limit entry account B cannot place). Paper first. Rejected - the NA day-hold member in any schedule (it adds no owner money over the hunts alone and gets 28-32% of funded accounts stuck), buffer-first funded size, payout ask lines, winner caps, the 50% best-day size cap, giving up a funded account sooner, a funded day take-profit or day stop, member day limits
+summary: Owner 2026-10-30 - "make ATLAS way better". Two directions (the coordinator moved windows and entry execution to another agent at 13:00) - (1) make last night's paper lead (the stop hunts x0.5 + the NA day-hold member x0.5, run ab_atlas_na_hunts_lead) pass every gate, (2) funded-stage money. New tool - a whole-account SLOT simulator (eval -> funded -> MFFU payouts -> a new $63 eval; 300 block-bootstrap paths x 6 months per span) that measures $ to the owner a month net of every eval bought, next to the eval-path $ and the 25K 2-week pass / dead. Main finding - the lead's extra money was profit INSIDE evals, which is never paid; on the funded account the NA member gets 28-32% of accounts stuck in 6 months (hunts alone 3-9%), so the lead pays the owner LESS than today in H1 ($532 vs $568 a month). It can be made to pass every gate (NA only from eval session 11 / only while the room is >= $1,500, never once funded - 20 of 33 neighbours pass), but then it pays the same as the hunts alone (0 of 33 beat them). The money is in the hunts, and most of it on the funded account - eval = today's ATLAS exactly, once funded + sh_asia + sh_trend at x0.5 - slot $661 / $510 / $23 a month (H1 / H2 / 2021-25) vs today $568 / $382 / -$2; every funded weight 0.4-1.0 passes; 12 random-time twins of the hunts pass 0 times (their H2 slot averages $246); a second path set and every year 2022-25 agree. Hunts x0.5 in the eval as well + x1.0 once funded - $758 / $595 / $30 (6 of 8 neighbours). Funded rules (buffer-first, a $1,000 cap after the lock, ask lines $250-$1,500, winner caps, the 50% best-day size cap, giving up sooner, a day take-profit or day stop) move the slot by noise (+-$30) - MFFU's payout rules bind, not the size. Round 2 (coordinator) - eval = today, once funded + sh_asia only (no sh_trend) - x0.4 / 0.5 / 0.75 pass on 20 of 20 seeds (x0.5 H1 +$124, H2 +$26, 2021-25 +$11 a month; x1.0 fails H2); 12 random-time copies average H2 $306 (1 of 12 reach it); the real calendar path is flat in H2. The H1-only pick among 15 funded member subsets (frozen before any H2 number) is EMA + MACD + S/R + sh_asia - H2 rank 1 of 15, 2021-25 rank 5; dropping EMA or S/R once funded costs H2 $33-353 a month. BLITZ as a funded member (1 micro / its own size) - H1 +$186 but H2 +$19-35 is matched by random-direction BLITZ in 2 of 6 draws, 2024 worse on every seed: rejected. Paper research only.
+runs: atx_today, atx_funded_hunts_w05, atx_funded_hunts_w075, atx_hunts_w05_funded_w1, atx_hunts_w075, atx_lead_na_s11_funded_hunts, atx_lead_as_is, atx2_funded_asia_w05, atx2_funded_asia_w075, atx2_funded_asia_w10, atx2_funded_blitz_w05, atx2_funded_blitz_1micro
 ---
 
 ## Money first
@@ -198,6 +198,138 @@ run; they are recorded, not pursued.
 - **Day limits for the extras** (never after a losing trade today, only as the day's first trade; for the extras or for
   NA): 0 of 4 pass. H2 dead evals go up to 7-9%, or H1 passes go down.
 
+## Round 2 (13:20-15:05 ET): config A without sh_trend, funded member subsets, BLITZ on the funded 25K
+
+The coordinator asked for three things:
+1. Config A without the trend hunt (the audit calls it not real): the eval stays today's, the funded stage adds sh_asia only.
+2. Which ATLAS members should trade the funded stage, picked on H1 only.
+3. BLITZ as a funded-only member.
+
+Every number here is the mean of 20 seeds x 200 slot paths (items 2 and 3: 10 seeds), paired on the same paths. Runs are
+`atx2_*`.
+
+**Verdict, round 2:**
+- The clean config A passes the slot gate in H1, H2 and 2021-25 on 20 of 20 seeds at x0.4 / 0.5 / 0.75.
+- The H1-only member pick lands on exactly this member set.
+- But the clean span's gain is small: **H2 +$26 a month** at x0.5 on the slot paths, and **$0 on the real 2026 calendar
+  path**.
+- It is the lowest-risk change in this study (the eval does not move) and pays little. **Promising, not adopt.** The owner
+  decides.
+
+### Item 1: eval = today; once funded + sh_asia only
+
+| Funded 25K adds | H1 slot $/mo | **H2** | 2021-25 | 2022 | 2023 | 2024 | 2025 | Gate |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| nothing (today) | $574 | **$374** | -$7 | -$25 | $2 | -$13 | $10 | |
+| sh_asia x0.4 | $681 (+107) | $392 (+19) | $0 (+6) | -$9 (+16) | -$2 (-4) | -$10 (+3) | $16 (+6) | passes |
+| **sh_asia x0.5** | **$697 (+124)** | **$399 (+26)** | **$4 (+11)** | -$6 (+20) | $1 (-1) | -$4 (+9) | $20 (+10) | **passes** |
+| sh_asia x0.75 | $745 (+172) | $403 (+29) | $10 (+17) | $0 (+26) | $6 (+4) | $5 (+18) | $31 (+21) | passes |
+| sh_asia x1.0 | $772 (+198) | $364 (-10) | $14 (+21) | $9 (+34) | $4 (+2) | $7 (+20) | $38 (+28) | fails H2 |
+
+- **x0.5, share of the 20 seeds above today:** H1 100%, H2 100%, 2021-25 100%; 2022 100%, 2023 30%, 2024 90%, 2025 95%.
+- **Random-time control** (12 random-time copies of sh_asia at x0.5, 4 seeds each; flipped twin):
+
+  | | sh_asia x0.5 | random-time copies (mean) | copies >= sh_asia | flipped twin |
+  |---|---:|---:|---:|---:|
+  | H1 | $704 | $532 | 0 of 12 | $531 |
+  | H2 | $404 | $306 | 1 of 12 | $296 |
+  | 2021-25 | -$1 | -$14 | 0 of 12 | -$33 |
+
+  Random extra trades make the funded account worse than today. sh_asia's own trades are what help.
+- **The real 2026 calendar path** (one slot from each span's first session), $ a month:
+
+  | | today | x0.5 | x0.75 |
+  |---|---:|---:|---:|
+  | H1 | $596 | $625 | $881 |
+  | H2 | $414 | $414 | $160 |
+  | 2025 | -$36 | -$31 | +$22 |
+  | 2021-24 | +$23 | -$1 | +$10 |
+
+  - On the one real path, H2 is unchanged at x0.5 (the same 2 payouts) and worse at x0.75.
+  - Single paths are noisy; the paired 20-seed numbers above decide the gate, but the clean H2 gain is small.
+- **Trades a week on the slot** (real path, eval + funded): H1 3.79 -> 4.18, H2 2.88 -> 4.74.
+
+**Can account B route sh_asia? Not today.**
+
+- **The entry is fine:** a market order at the next 5m open + 1 tick (`second_model.json` sh_asia `"entry": "mkt"`). No
+  limit is needed, unlike sh_trend.
+- **The hours block it:**
+  - account B's guard calls `guards.calendar(entry_t, now, session_from=120, flat_mod=955)` without `all_hours`, so every
+    entry before 02:00 ET is refused, and sh_asia enters 18:00-02:00;
+  - it needs the all-hours calendar LIT's Asia slot uses (`all_hours=True`, `session_from=1080`) for this member;
+  - the CME trading-day count must stay as it is: an 18:00-24:00 entry belongs to the next date's session, B's day label is
+    already ET + 6 h, and max 2 a day counts on that day;
+  - the 15:55 flat stays: an sh_asia trade can be held overnight to 2R, the stop, BE or 15:55.
+- **The candidate flag blocks it:** sh_asia is `"candidate": true`, and `engine/second.load_cfg` forces it to paper. Account B
+  also has one `strategies` list for both stages.
+- **Anti-hedge against LIT:**
+  - LIT's entries and armed setups run 02:00-15:30 (LIT `all_hours` is off), so nothing of LIT's is armed when sh_asia
+    enters;
+  - an sh_asia trade still open after 02:00 is handled by today's rules: `AccountB.lit_opposite` blocks new B entries only,
+    and LIT entering the other way closes B first (HEDGE), which the research models;
+  - if LIT's Asia slot is ever turned on, its evening setups need the same armed-window block (the research's armed windows
+    cover 02:00-15:30 only).
+- **The PC bot must route it:** the cloud monitor has no evening runs. The PC bot already computes the hunts every bar 24/5.
+- **Config shape (new keys, not built):** `"account_b": {..., "strategies": ["ema_lon_vix", "macd_sweep", "sr_nyreclaim"],
+  "funded_members": {"sh_asia": 0.5}}`. The member trades only in `"stage": "funded"`, at 0.5 x the funded size (never more).
+  engine/account_b would need a per-member calendar (all hours for sh_asia) and would have to allow a candidate member in
+  the funded stage only.
+
+### Item 2: which members trade the funded stage (picked on H1 only)
+
+The rule was fixed first: the subset of EMA / MACD / S/R / sh_asia x0.5 with the highest 2026 H1 slot $, eval unchanged,
+10 seeds x 200 paths. The pick was frozen in `research/second/atx2_subset_pick.json` at 13:25 ET, before any H2 or 2021-25
+number of the 15 subsets was computed.
+
+One caveat for strictness: this pick's own H2 slot had already been seen in round 1 (E2, $398). The rule itself (the
+highest H1) was mechanical.
+
+| Funded members (eval = today) | H1 (pick) | H2 | 2021-25 | 2022 | 2023 | 2024 | 2025 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| **EMA + MACD + S/R + sh_asia (the H1 pick)** | **$696** | **$400** | **$0** | -$6 | $2 | -$4 | $21 |
+| EMA + S/R + sh_asia | $647 | $386 | -$3 | -$25 | $47 | -$14 | $11 |
+| EMA + MACD + S/R (today) | $569 | $375 | -$9 | -$25 | $6 | -$13 | $12 |
+| MACD + S/R + sh_asia | $549 | $210 | $8 | $11 | -$22 | $32 | $32 |
+| EMA + S/R | $504 | $323 | -$8 | -$31 | $36 | -$16 | $5 |
+| the other 10 subsets | $72-483 | $22-342 | -$24 to +$11 | | | | |
+
+- **The pick ranks 1st of 15 in H2 and 5th of 15 in 2021-25.** It passes the gate. Of its neighbours only "EMA + S/R +
+  sh_asia" (no MACD once funded) also passes, and it pays less.
+- **Dropping EMA or S/R from the funded account costs H2 $33-353 a month.** Keep all three members once funded; sh_asia is
+  the only addition that helps.
+- The pick is the same account as item 1 at x0.5 (run `atx2_funded_asia_w05`).
+
+### Item 3: BLITZ as a funded-only member
+
+How it was simulated:
+- **BLITZ's trades:** `tools/blitz25k_lib.trades({}, "lit+atlas")`, 1m in 2026 and 5m in 2021-25; 2,164 trades, 323 in 2026.
+- **Size:** BLITZ's own funded size (min($150, 10% of the room) x the weight, <= 0.9 x the soft daily loss left, 1 micro
+  while a stop-out fits half the room), or always 1 micro.
+- **Day rules:** its own 6 a day and the +$400 day take-profit. ATLAS's members keep their max 2 a day.
+- **One position:** BLITZ trades only while no other ATLAS trade is open.
+- **The eval is unchanged.**
+
+| Funded 25K adds | H1 slot $/mo | H2 | 2021-25 | 2022 | 2023 | 2024 | 2025 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| nothing (today) | $569 | $375 | -$9 | -$25 | $6 | -$13 | $12 |
+| BLITZ x0.5 (= 1 micro almost always) | $756 (+186) | $395 (+19, 90% of seeds) | -$7 (+2, 70%) | -$12 (+12) | $3 (-2) | -$18 (-5, 0% of seeds) | $14 (+2) |
+| BLITZ x1.0 | $753 (+183) | $410 (+35, 100%) | -$6 (+3, 70%) | -$12 (+12) | $6 (+0) | -$20 (-7, 0%) | $15 (+4) |
+| BLITZ 1 micro | $755 (+186) | $395 (+19) | -$7 (+2) | -$13 (+12) | $3 (-3) | -$18 (-5) | $14 (+2) |
+
+- **Random-direction control** (BLITZ's own placebo: the same signal bars with a coin-flip side, 6 draws x 4 seeds, x0.5).
+  Random-time copies would need a re-simulation that blitz25k_lib does not offer.
+  - H1: $762 real vs $530 random, 0 of 6 reach it.
+  - H2: $401 real vs $325 random, **2 of 6 reach it**.
+  - 2021-25: -$9 real vs -$16 random, 0 of 6 reach it.
+- **The real calendar path:** H1 $1,017 vs $596 a month, **H2 $182 vs $414**, 2025 -$31 vs -$36, 2021-24 $28 vs $23.
+- **Verdict: rejected.**
+  - It passes the paired mean gate, but only by noise outside H1: 2021-25 +$2-3 on 70% of seeds, and 2024 is below today on
+    every seed.
+  - Its H2 gain is matched by random-direction BLITZ in 2 of 6 draws.
+  - The one real H2 path pays less.
+  - BLITZ belongs on its own 25K (account C) or as LIT's funded add-on, not on ATLAS's funded account.
+- Runs `atx2_funded_blitz_w05`, `atx2_funded_blitz_1micro`.
+
 ## Honesty checks
 
 - **The baselines reproduce:** today's ATLAS 65.5 / 0.8, $8,504 eval path (H1), 43.5 / 0.0, $2,029 (H2) = atlas-v2.md;
@@ -231,16 +363,26 @@ run; they are recorded, not pursued.
   - account B needs stage-specific members (`funded_members`) and the stop-hunt plugin routed on account B;
   - the trend hunt needs a limit-entry route;
   - then a Sim week.
+- **The routable version (round 2):** only sh_asia once funded (`"funded_members": {"sh_asia": 0.5}`). It needs:
+  - an all-hours calendar for that member on account B (entries 18:00-02:00, `session_from` 1080);
+  - a candidate member allowed in the funded stage only;
+  - routing from the PC bot.
+
+  It is worth about +$26 a month on the clean H2 check. Build it only if ATLAS's funded 25K actually exists.
 
 ## Files
 
 - **Code:** `tools/atx_edge.py`. Commands:
   - `base`, `sched`, `stage`, `round4`, `e4grid`, `funded`, `fmin`, `placebo`, `why`, `final`, `checks`, `save`;
-  - `win` and `maxd` (directions 3 and 4, before the scope change).
-- **Results (`research/second/`):** `atx_base.json`, `atx_sched.json`, `atx_stage.json`, `atx_round4.json`,
-  `atx_e4grid.json`, `atx_funded.json`, `atx_fmin.json`, `atx_placebo.json`, `atx_why.json`, `atx_final.json`, `atx_checks.json`,
-  `atx_win.json`, `atx_maxd.json`.
-- **Runs:** `research/runs/atx_*.json`. Trades = the slot on each span's real sessions (eval + funded trades, tagged
+  - `win` and `maxd` (directions 3 and 4, before the scope change);
+  - round 2: `r2a` (sh_asia once funded), `r2b_pick` then `r2b_check` (funded member subsets, the pick frozen first), `r2c`
+    (BLITZ), `save2`.
+- **Results (`research/second/`):**
+  - `atx_base.json`, `atx_sched.json`, `atx_stage.json`, `atx_round4.json`, `atx_e4grid.json`, `atx_funded.json`,
+    `atx_fmin.json`, `atx_placebo.json`, `atx_why.json`, `atx_final.json`, `atx_checks.json`, `atx_win.json`,
+    `atx_maxd.json`;
+  - round 2: `atx2_asia.json`, `atx2_subset_pick.json`, `atx2_subset_check.json`, `atx2_blitz.json`.
+- **Runs:** `research/runs/atx_*.json` and `atx2_*.json`. Trades = the slot on each span's real sessions (eval + funded trades, tagged
   `atlas-eval:<member>` / `atlas-funded:<member>`). The slot-path numbers are in each run's verdict.
 
 Paper research only. Nothing in `engine/`, `second_model.json`, `live_model*.json` or `data/` was changed.

@@ -51,6 +51,7 @@ OUT = os.path.join(ROOT, "research", "second")
 MEM = ["EMA", "MD", "SR"]
 XTRA = ["NAD", "SHA", "SHT"]
 MONTHS = {"H1": 6.1, "H2": 3.71, "2025": 12.29, "2021-24": 38.76}        # sessions / 21 of each ATLAS span (ab_edge.MONTHS_A)
+SPANS4 = ("H1", "H2", "2025", "2021-24")
 PRICE = 63.0
 _L = {}
 
@@ -185,9 +186,10 @@ class Funded:
         self.k += 1
         from engine import sizing as SZ
         cyc = SZ.funded_cycle(self.days, 0.0, self.pays, plan=P)    # engine/multi_account.sizing_state's cycle facts (cons_aware)
-        cum, recs, failed = M.play_day(L, day, self.bal, self.floor, 99, "funded", False, 2, None, dll=float(P["dll"]), reserve=False,
-                                       extra={"locked": self.floor >= self.lock - 1e-9, "payouts_n": len(self.pays),
-                                              "cycle_target": cyc["cycle_target"], "cycle_prev": cyc["cycle_prev"]})
+        play = PLAY_FUNDED[0] or M.play_day
+        cum, recs, failed = play(L, day, self.bal, self.floor, 99, "funded", False, 2, None, dll=float(P["dll"]), reserve=False,
+                                 extra={"locked": self.floor >= self.lock - 1e-9, "payouts_n": len(self.pays),
+                                        "cycle_target": cyc["cycle_target"], "cycle_prev": cyc["cycle_prev"]})
         if failed:
             self.done, self.why = True, "lost"
             return 0.0, recs
@@ -239,6 +241,8 @@ def funded_q(fz, Vf):
         cum = float(st.get("cum", 0.0))
         if (day_tp is not None and cum >= float(day_tp)) or (day_sl is not None and cum <= -float(day_sl)):
             return 0                                     # funded day take-profit / day stop: no new entry today
+        if t["src"] == "BLZ":
+            return blz_q(t, st, float(W.get("BLZ", 1.0)), fz)
         c = post if st.get("locked") else pre
         n = SZ.funded_qty({"risk_pts": r, "tgt_pts": float(t["tgt"]), "size_mult": 1.0}, dict(st), c, acct=AF.ACCT)
         n = min(int(AF.ACCT["max_micros"]), int(n))
@@ -256,7 +260,7 @@ def funded_q(fz, Vf):
     return q
 
 
-def slot(Ve, Vf=None, fz=None, ask=None, spans=tuple(MONTHS), n=300, length=126, gap=2):
+def slot(Ve, Vf=None, fz=None, ask=None, spans=SPANS4, n=300, length=126, gap=2, seed=23):
     """The whole 25K slot over 6 months: eval (variant Ve's members + need size) -> funded (variant Vf's members, funded size
     fz) -> MFFU payouts (80% to the owner; ask line `ask` above the $1,100 buffer, live $750) -> a new $63 eval after a
     fail / stuck / a funded account lost, stuck or graduated (5 payouts). -> per span {pm: owner $ a month net of evals,
@@ -280,7 +284,7 @@ def slot(Ve, Vf=None, fz=None, ask=None, spans=tuple(MONTHS), n=300, length=126,
             for s in spans:
                 S = AF.span_sessions(s)
                 nets, nf, ne, npay, first, made_e, made_f = [], [], [], [], [], [], []
-                for seq in mc_paths(S, n, length):
+                for seq in mc_paths(S, n, length, seed=seed):
                     cash, f_n, e_n, p_n, wait, acc, fp, me, mf = -PRICE, 0, 1, 0, 0, Eval(M), None, 0.0, 0.0
                     for k, d in enumerate(seq):
                         if wait:
@@ -322,7 +326,7 @@ def slot(Ve, Vf=None, fz=None, ask=None, spans=tuple(MONTHS), n=300, length=126,
     return out
 
 
-def real_slot(Ve, Vf=None, fz=None, ask=None, spans=tuple(MONTHS), gap=2):
+def real_slot(Ve, Vf=None, fz=None, ask=None, spans=SPANS4, gap=2):
     """The slot on each span's REAL sessions from its first session (one path, no resampling): eval -> funded -> ... ->
     the sized trades of every stage (stage tag) + the owner's payouts less the evals bought. For the run library."""
     V2, A, M, EAB = libs()
@@ -468,9 +472,27 @@ def _job(args):
     libs()
     if kind == "full":
         o = full(**kw)
+    elif kind == "slot":                                   # round 2: one seed of the slot simulator on the given spans
+        add_years()
+        if kw.pop("placebo", False):
+            V2, A, M, EAB = libs()
+            M.units().update(V2.placebo_members(n=12))
+        o = slot(**kw)
     else:
         o = ev(kw["V"])
     return name, o
+
+
+YEARS2 = {"2022": ("2022-01-01", "2022-12-31"), "2023": ("2023-01-01", "2023-12-31"), "2024": ("2024-01-01", "2024-12-31")}
+
+
+def add_years():
+    """2022 / 2023 / 2024 as extra spans of the slot simulator (2025 is already one)."""
+    V2, A, M, EAB = libs()
+    for k, v in YEARS2.items():
+        if k not in M.SPANS:
+            M.SPANS[k] = v
+            MONTHS[k] = len([d for d in M.units()["sessions"] if v[0] <= d <= v[1]]) / 21.0
 
 
 def pool_map(jobs, procs=2):
@@ -1025,7 +1047,362 @@ def path_stats(T, s):
             "n_funded": sum(1 for t in X if t.get("stage") == "funded")}
 
 
+# ================================================================================================ round 2 (coordinator, 13:20)
+R2_SPANS = ("H1", "H2", "2025", "2021-24", "2022", "2023", "2024")
+R2_SEEDS = tuple(range(101, 121))                      # 20 seeds of the slot simulator (200 paths each)
+
+
+def A1f(w, sub=None):
+    """Config A, clean: the funded account trades ATLAS's members + sh_asia (market entry at the next 5m open) at weight w."""
+    return V_(members=MEM + ["SHA"], w={"SHA": w}, **({"sub": {"SHA": sub}} if sub else {}))
+
+
+def seeds_table(res, names, spans, seeds):
+    """{name: {span: {"mean", "sd", "seeds": [...]}}} from pool results keyed f"{name}|{seed}"."""
+    out = {}
+    for nm in names:
+        out[nm] = {}
+        for s in spans:
+            x = [res[f"{nm}|{sd}"][s]["pm"] for sd in seeds if f"{nm}|{sd}" in res]
+            out[nm][s] = {"mean": round(float(np.mean(x)), 1), "sd": round(float(np.std(x)), 1), "seeds": x}
+        a, b = out[nm]["2025"], out[nm]["2021-24"]
+        wa, wb = MONTHS["2025"], MONTHS["2021-24"]
+        ref = [(x * wa + y * wb) / (wa + wb) for x, y in zip(a["seeds"], b["seeds"])]
+        out[nm]["2021-25"] = {"mean": round(float(np.mean(ref)), 1), "sd": round(float(np.std(ref)), 1), "seeds": [round(v, 1) for v in ref]}
+    return out
+
+
+def paired(T, nm, base="today", spans=("H1", "H2", "2021-25", "2022", "2023", "2024", "2025")):
+    """mean difference vs base and the share of seeds where nm beats base (the same paths)."""
+    o = {}
+    for s in spans:
+        d = [x - y for x, y in zip(T[nm][s]["seeds"], T[base][s]["seeds"])]
+        o[s] = {"diff": round(float(np.mean(d)), 1), "win_share": round(float(np.mean([v > 0 for v in d])), 2)}
+    return o
+
+
+def cmd_r2a(n=200, procs=2, k_ctl=12, ctl_seeds=4):
+    """Round 2 item 1: eval unchanged, the funded stage + sh_asia ONLY (weights 0.4 / 0.5 / 0.75 / 1.0): 20 seeds x 200 slot
+    paths per span (H1 / H2 / 2025 / 2021-24 + each year 2022-24), the random-time control (12 copies of sh_asia + the flipped
+    twin, at x0.5, on the first 4 seeds) and the real 2026 calendar path."""
+    t0 = time.time()
+    V2, A, M, EAB = libs()
+    add_years()
+    M.units().update(V2.placebo_members(n=k_ctl))
+    var = {"today": (today(), None)}
+    for w in (0.4, 0.5, 0.75, 1.0):
+        var[f"funded + sh_asia x{w:g}"] = (today(), A1f(w))
+    jobs = [(f"{nm}|{sd}", "slot", {"Ve": Ve, "Vf": Vf, "spans": R2_SPANS, "n": n, "seed": sd}) for nm, (Ve, Vf) in var.items() for sd in R2_SEEDS]
+    ctl = {f"rtime{i}": A1f(0.5, f"PSHA_r{i}") for i in range(k_ctl)}
+    ctl["flip"] = A1f(0.5, "PSHA_f")
+    jobs += [(f"{nm}|{sd}", "slot", {"Ve": today(), "Vf": Vf, "spans": SPANS4, "n": n, "seed": sd, "placebo": True})
+             for nm, Vf in ctl.items() for sd in R2_SEEDS[:ctl_seeds]]
+    res = dict(pool_map(jobs, procs))
+    T = seeds_table(res, list(var), R2_SPANS, R2_SEEDS)
+    out = {"built": time.strftime("%Y-%m-%d %H:%M"), "n_paths": n, "seeds": list(R2_SEEDS), "table": T, "paired": {}, "gate": {}, "real": {}}
+    for nm in var:
+        if nm == "today":
+            continue
+        pr = paired(T, nm)
+        out["paired"][nm] = pr
+        out["gate"][nm] = all(pr[s]["diff"] > 0 for s in ("H1", "H2", "2021-25"))
+        print(f"{nm:24s} " + " | ".join(f"{s} ${T[nm][s]['mean']:,.0f} ({pr[s]['diff']:+.0f}, {int(100 * pr[s]['win_share'])}% seeds)"
+                                         for s in ("H1", "H2", "2021-25", "2022", "2023", "2024", "2025")), "PASS" if out["gate"][nm] else "", flush=True)
+    print("today                    " + " | ".join(f"{s} ${T['today'][s]['mean']:,.0f} (sd {T['today'][s]['sd']:.0f})" for s in ("H1", "H2", "2021-25", "2022", "2023", "2024", "2025")), flush=True)
+    # control: same 4 seeds
+    C = seeds_table(res, list(ctl) + ["funded + sh_asia x0.5", "today"], SPANS4, R2_SEEDS[:ctl_seeds])
+    rt = [f"rtime{i}" for i in range(k_ctl)]
+    out["control"] = {s: {"real": C["funded + sh_asia x0.5"][s]["mean"], "today": C["today"][s]["mean"],
+                          "rand_mean": round(float(np.mean([C[r][s]["mean"] for r in rt])), 1),
+                          "rand_ge_real": round(float(np.mean([C[r][s]["mean"] >= C["funded + sh_asia x0.5"][s]["mean"] for r in rt])), 2),
+                          "rand_gt_today": round(float(np.mean([C[r][s]["mean"] > C["today"][s]["mean"] for r in rt])), 2),
+                          "flip": C["flip"][s]["mean"]} for s in ("H1", "H2", "2021-25")}
+    out["control"]["n"] = k_ctl
+    print("random-time sh_asia control (x0.5, 4 seeds):", out["control"], flush=True)
+    for nm, (Ve, Vf) in var.items():
+        rs, Tr = real_slot(Ve, Vf)
+        out["real"][nm] = {s: {**rs[s], **path_stats(Tr, s)} for s in rs}
+        print("   real 2026 calendar path", nm, {s: (out["real"][nm][s]["per_month"], out["real"][nm][s]["payouts"], out["real"][nm][s]["tpw"]) for s in rs}, flush=True)
+    dump(out, "atx2_asia.json")
+    print(f"done ({time.time() - t0:.0f}s)", flush=True)
+    return out
+
+
+SUB_POOL = ("EMA", "MD", "SR", "SHA")
+
+
+def subsets():
+    out = []
+    for r in range(1, 5):
+        for c in itertools.combinations(SUB_POOL, r):
+            out.append(list(c))
+    return out
+
+
+def sub_V(c):
+    return V_(members=list(c), w={"SHA": 0.5} if "SHA" in c else {})
+
+
+def sub_name(c):
+    return "+".join(c)
+
+
+def cmd_r2b_pick(n=200, procs=2, seeds=R2_SEEDS[:10]):
+    """Round 2 item 2, step 1 (H1 ONLY): which of EMA / MACD / S/R (and sh_asia x0.5) trade the FUNDED stage, eval unchanged.
+    Every subset scored on 2026 H1 only (10 seeds x 200 slot paths); the best H1 mean is frozen in atx2_subset_pick.json
+    BEFORE any H2 / 2021-25 number of a subset is computed (step 2 = cmd_r2b_check)."""
+    t0 = time.time()
+    libs()
+    S = subsets()
+    jobs = [(f"{sub_name(c)}|{sd}", "slot", {"Ve": today(), "Vf": sub_V(c), "spans": ("H1",), "n": n, "seed": sd}) for c in S for sd in seeds]
+    res = dict(pool_map(jobs, procs))
+    h1 = {sub_name(c): round(float(np.mean([res[f"{sub_name(c)}|{sd}"]["H1"]["pm"] for sd in seeds])), 1) for c in S}
+    pick = max(h1, key=h1.get)
+    out = {"built": time.strftime("%Y-%m-%d %H:%M:%S"), "rule": "highest 2026 H1 slot $ a month (mean of 10 seeds x 200 paths), eval unchanged",
+           "h1": dict(sorted(h1.items(), key=lambda kv: -kv[1])), "pick": pick, "today": h1["EMA+MD+SR"]}
+    dump(out, "atx2_subset_pick.json")
+    for k, v in out["h1"].items():
+        print(f"   {k:16s} H1 ${v:,.0f}", flush=True)
+    print(f"FROZEN pick (H1 only): {pick} ${h1[pick]:,.0f} vs today ${h1['EMA+MD+SR']:,.0f} ({time.time() - t0:.0f}s)", flush=True)
+    return out
+
+
+def cmd_r2b_check(n=200, procs=2, seeds=R2_SEEDS[:10]):
+    """Round 2 item 2, step 2: the frozen pick and every other subset (its neighbours) on H2 / 2025 / 2021-24 / each year, the
+    pick's rank among the 15 subsets, and the real 2026 calendar path."""
+    t0 = time.time()
+    V2, A, M, EAB = libs()
+    add_years()
+    P = json.load(open(os.path.join(OUT, "atx2_subset_pick.json"), encoding="utf-8"))
+    pick = P["pick"]
+    S = subsets()
+    sp = ("H2", "2025", "2021-24", "2022", "2023", "2024")
+    jobs = [(f"{sub_name(c)}|{sd}", "slot", {"Ve": today(), "Vf": sub_V(c), "spans": sp, "n": n, "seed": sd}) for c in S for sd in seeds]
+    res = dict(pool_map(jobs, procs))
+    out = {"built": time.strftime("%Y-%m-%d %H:%M"), "pick": pick, "h1": P["h1"], "rows": {}}
+    for c in S:
+        nm = sub_name(c)
+        r = {s: round(float(np.mean([res[f"{nm}|{sd}"][s]["pm"] for sd in seeds])), 1) for s in sp}
+        wa, wb = MONTHS["2025"], MONTHS["2021-24"]
+        r["2021-25"] = round((r["2025"] * wa + r["2021-24"] * wb) / (wa + wb), 1)
+        r["H1"] = P["h1"][nm]
+        out["rows"][nm] = r
+    b = out["rows"]["EMA+MD+SR"]
+    for nm, r in sorted(out["rows"].items(), key=lambda kv: -kv[1]["H1"]):
+        g = all(r[s] > b[s] for s in ("H1", "H2", "2021-25"))
+        r["gate"] = bool(g) if nm != "EMA+MD+SR" else None
+        print(f"{'PICK ' if nm == pick else '     '}{nm:16s} " + " | ".join(f"{s} ${r[s]:,.0f}" for s in ("H1", "H2", "2021-25", "2022", "2023", "2024", "2025")),
+              ("PASS" if g else "") if nm != "EMA+MD+SR" else "(today)", flush=True)
+    for s in ("H2", "2021-25"):
+        order = sorted(out["rows"], key=lambda k: -out["rows"][k][s])
+        out[f"pick_rank_{s}"] = order.index(pick) + 1
+    out["pick_gate"] = out["rows"][pick]["gate"]
+    out["n_subsets_pass"] = sum(1 for r in out["rows"].values() if r.get("gate"))
+    rs, Tr = real_slot(today(), sub_V(pick.split("+")))
+    out["real_pick"] = {s: {**rs[s], **path_stats(Tr, s)} for s in rs}
+    print("pick rank among 15 subsets: H2", out["pick_rank_H2"], "2021-25", out["pick_rank_2021-25"], "| real path",
+          {s: out["real_pick"][s]["per_month"] for s in rs}, f"({time.time() - t0:.0f}s)", flush=True)
+    dump(out, "atx2_subset_check.json")
+    return out
+
+
+# ================================================================================================ round 2 item 3: BLITZ as a funded-only member
+PLAY_FUNDED = [None]
+BLZ_CACHE = os.path.join(ROOT, "research", "runs", "_cache", "atx2_blitz_units.pkl")
+
+
+def blz_q(t, st, w, fz):
+    """BLITZ's own funded size (blitz-25k.md funded pick, scalp_na_lib.qty frac): min($150, 10% of the room) x w, <= 0.9 x the
+    soft daily loss left, 1 micro while a stop-out fits half the room; fz "blz_1micro" = always 1 micro."""
+    from tools import atlas_funded as AF
+    V2, A, M, EAB = libs()
+    room = float(st["room"])
+    dll_left = 600.0 + float(st.get("cum", 0.0))
+    rpm = (float(t["risk"]) + 0.25) * 2.0 + 1.90
+    if fz.get("blz_1micro"):
+        q = 1 if rpm <= min(0.5 * room, 0.9 * dll_left) else 0
+    else:
+        b = min(min(150.0, 0.10 * room) * w, 0.9 * dll_left)
+        if b <= 0:
+            return 0
+        q = int(min(20, b // rpm))
+        if q == 0 and rpm <= min(0.5 * room, 0.9 * dll_left):
+            q = 1
+    if q <= 0:
+        return 0
+    return int(EAB.dll_guard({"qty": q, "reasons": []}, float(t["risk"]), AF.SPEC["rules"], st)["qty"])
+
+
+def play_day_blz(L, day, bal, floor, session, rule, pre=False, max_day=2, lost=None, litcfg=None, dll=600.0, reserve=False, extra=None):
+    """tools/second_mix.play_day (one position, the soft daily loss, the floor at each trade's worst point) with BLITZ ("BLZ")
+    counted on its own: ATLAS's members keep max 2 a day, BLITZ max 6 a day and no new BLITZ entry once the day is +$400 (its
+    funded day take-profit); BLITZ only while no other ATLAS trade is open (one position)."""
+    V2, A, M, EAB = libs()
+    cum, busy, n, nb, recs = 0.0, 0, 0, 0, []
+    for t in L:
+        if cum <= -dll:
+            break
+        isb = t["src"] == "BLZ"
+        if t["entry_t"] < busy:
+            continue
+        if isb and (nb >= 6 or cum >= 400.0):
+            continue
+        if not isb and n >= max_day:
+            continue
+        st = {"profit": bal, "cum": cum, "room": bal + cum - floor, "session": session, "n_today": 0, **(extra or {})}
+        q = M.second_q(t, st, rule)
+        if q <= 0:
+            continue
+        pts, w1, ex, xt = t["pts"], t["w1"], t["exit"], t["exit_t"]
+        pnl = pts * M.PV * q - M.ECOMM * q
+        low = min(0.0, w1 * M.PV * q - M.ECOMM * q, pnl)
+        if cum + low <= -dll:
+            pnl = -dll - cum - M.SLIP * M.PV * q
+            low = pnl
+        recs.append({"day": day, "entry_t": t["entry_t"], "exit_t": xt, "dir": t["dir"], "exit": ex, "risk": t["risk"], "tgt": t["tgt"],
+                     "src": t["src"], "qty": q, "pnl": round(pnl, 2), "low": round(low, 2), "risk_usd": round(t["risk"] * M.PV * q, 2)})
+        busy = xt
+        if isb:
+            nb += 1
+        else:
+            n += 1
+        if bal + cum + low <= floor:
+            return cum, recs, True
+        cum += pnl
+    return cum, recs, False
+
+
+def blz_units(placebo=None):
+    """BLITZ's research trades (tools/blitz25k_lib.trades({}, "lit+atlas"): 1m in 2026, 5m in 2021-25) -> account-B units "BLZ"
+    (no bar path: an opposite LIT entry during a BLITZ trade drops it, conservative, as the NA member)."""
+    import pickle
+    key = f"p{placebo}" if placebo is not None else "real"
+    C = pickle.load(open(BLZ_CACHE, "rb")) if os.path.exists(BLZ_CACHE) else {}
+    if key not in C:
+        sys.path.insert(0, os.path.join(ROOT, "tools"))
+        from tools import blitz25k_grid as G
+        from tools import blitz25k_lib as K
+        G.prep()
+        TT = K.trades({}, "lit+atlas", placebo)
+        out = []
+        for tf, cut in ((1, lambda d: d >= "2026-01-01"), (5, lambda d: d < "2026-01-01")):
+            for t in TT[tf]:
+                if not cut(t["day"]):
+                    continue
+                r = float(t["risk_pts"])
+                if r <= 0:
+                    continue
+                out.append({"day": t["day"], "entry_t": int(t["entry_t"]), "exit_t": int(t["exit_t"]), "dir": int(t["dir"]), "exit": str(t["exit_kind"]),
+                            "risk": r, "tgt": 2.0 * r, "pts": float(t["pts"]), "w1": float(max(-(r + 0.25), min(0.0, -float(t["mae_pts"]), float(t["pts"])))),
+                            "src": "BLZ", "pt": np.zeros(0, np.int64), "po": np.zeros(0), "pw": np.zeros(0)})
+        C[key] = out
+        pickle.dump(C, open(BLZ_CACHE, "wb"))
+    return C[key]
+
+
+def blz_install(placebos=()):
+    V2, A, M, EAB = libs()
+    U = M.units()
+    if "BLZ" not in U:
+        U["BLZ"] = blz_units()
+    for sd in placebos:
+        if f"BLZ_p{sd}" not in U:
+            U[f"BLZ_p{sd}"] = [{**u, "src": "BLZ"} for u in blz_units(sd)]
+    return U
+
+
+def cmd_r2c(n=200, procs=2, seeds=R2_SEEDS[:10], ctl=(1, 2, 3, 4, 5, 6), ctl_seeds=4):
+    """Round 2 item 3: BLITZ as a FUNDED-ONLY member of ATLAS's 25K (eval unchanged): its own funded size x0.5 / x1.0 or 1 micro,
+    one ATLAS position at a time, its own 6 a day and +$400 day take-profit; control = BLITZ's random-direction twins
+    (tools/blitz25k_lib placebo: the same signal bars, a coin-flip side; random-time copies need a re-simulation)."""
+    t0 = time.time()
+    V2, A, M, EAB = libs()
+    add_years()
+    U = blz_install(ctl)
+    print("BLITZ units", len(U["BLZ"]), "2026", sum(1 for u in U["BLZ"] if u["day"] >= "2026-01-01"), flush=True)
+    PLAY_FUNDED[0] = play_day_blz
+    B = lambda w, sub=None: V_(members=MEM + ["BLZ"], w={"BLZ": w}, **({"sub": {"BLZ": sub}} if sub else {}))
+    var = {"today": (today(), None, None), "funded + BLITZ x0.5": (today(), B(0.5), None), "funded + BLITZ x1.0": (today(), B(1.0), None),
+           "funded + BLITZ 1 micro": (today(), B(1.0), {"blz_1micro": True})}
+    jobs = [(f"{nm}|{sd}", "slot", {"Ve": Ve, "Vf": Vf, "fz": fz, "spans": R2_SPANS, "n": n, "seed": sd}) for nm, (Ve, Vf, fz) in var.items() for sd in seeds]
+    C_ = {f"dir{c}": B(0.5, f"BLZ_p{c}") for c in ctl}
+    jobs += [(f"{nm}|{sd}", "slot", {"Ve": today(), "Vf": Vf, "spans": SPANS4, "n": n, "seed": sd}) for nm, Vf in C_.items() for sd in seeds[:ctl_seeds]]
+    res = dict(pool_map(jobs, procs))
+    T = seeds_table(res, list(var), R2_SPANS, seeds)
+    out = {"built": time.strftime("%Y-%m-%d %H:%M"), "table": T, "paired": {}, "gate": {}, "real": {}}
+    for nm in var:
+        if nm == "today":
+            continue
+        pr = paired(T, nm)
+        out["paired"][nm] = pr
+        out["gate"][nm] = all(pr[s]["diff"] > 0 for s in ("H1", "H2", "2021-25"))
+        print(f"{nm:24s} " + " | ".join(f"{s} ${T[nm][s]['mean']:,.0f} ({pr[s]['diff']:+.0f}, {int(100 * pr[s]['win_share'])}%)"
+                                         for s in ("H1", "H2", "2021-25", "2022", "2023", "2024", "2025")), "PASS" if out["gate"][nm] else "", flush=True)
+    print("today                    " + " | ".join(f"{s} ${T['today'][s]['mean']:,.0f}" for s in ("H1", "H2", "2021-25", "2022", "2023", "2024", "2025")), flush=True)
+    CT = seeds_table(res, list(C_) + ["funded + BLITZ x0.5", "today"], SPANS4, seeds[:ctl_seeds])
+    out["control"] = {s: {"real": CT["funded + BLITZ x0.5"][s]["mean"], "today": CT["today"][s]["mean"],
+                          "rand_dir_mean": round(float(np.mean([CT[c][s]["mean"] for c in C_])), 1),
+                          "rand_ge_real": round(float(np.mean([CT[c][s]["mean"] >= CT["funded + BLITZ x0.5"][s]["mean"] for c in C_])), 2)}
+                      for s in ("H1", "H2", "2021-25")}
+    print("random-direction BLITZ control (x0.5, 4 seeds):", out["control"], flush=True)
+    for nm, (Ve, Vf, fz) in var.items():
+        rs, Tr = real_slot(Ve, Vf, fz)
+        out["real"][nm] = {s: {**rs[s], **path_stats(Tr, s)} for s in rs}
+        print("   real calendar path", nm, {s: (out["real"][nm][s]["per_month"], out["real"][nm][s]["payouts"]) for s in rs}, flush=True)
+    PLAY_FUNDED[0] = None
+    dump(out, "atx2_blitz.json")
+    print(f"done ({time.time() - t0:.0f}s)", flush=True)
+    return out
+
+
+def cmd_save2():
+    """runs atx2_* (round 2): trades = the slot on each span's real sessions (eval + funded trades); the 20-seed slot numbers
+    and the controls are in the verdict (from atx2_asia.json / atx2_subset_check.json / atx2_blitz.json)."""
+    from tools import runlib as rl
+    V2, A, M, EAB = libs()
+    sess = sorted(set(M.units()["sessions"]))
+    J = lambda f: json.load(open(os.path.join(OUT, f), encoding="utf-8")) if os.path.exists(os.path.join(OUT, f)) else None
+    a, sb, bz = J("atx2_asia.json"), J("atx2_subset_check.json"), J("atx2_blitz.json")
+    rows = []
+    if a:
+        T = a["table"]
+        for w, st in ((0.5, "promising"), (0.75, "promising"), (1.0, "rejected")):
+            nm = f"funded + sh_asia x{w:g}"
+            pr = a["paired"][nm]
+            vt = (f"Eval = today's ATLAS; once funded + sh_asia x{w:g} (market entry). Slot $/mo (20 seeds x 200 paths): "
+                  + "; ".join(f"{s} ${T[nm][s]['mean']:,.0f} vs ${T['today'][s]['mean']:,.0f} ({pr[s]['diff']:+.0f}, {int(100 * pr[s]['win_share'])}% of seeds up)"
+                              for s in ("H1", "H2", "2021-25", "2022", "2023", "2024", "2025"))
+                  + f". Random-time sh_asia x0.5 (12 copies): H1 ${a['control']['H1']['rand_mean']:,.0f}, H2 ${a['control']['H2']['rand_mean']:,.0f}. "
+                  + ("Passes the slot gate; the clean H2 gain is small and the real calendar path is flat in H2." if w < 1 else "H2 below today: rejected."))
+            rows.append((f"atx2_funded_asia_w{str(w).replace('.', '')}", f"Eval = today; once funded + sh_asia x{w:g} (round 2, config A clean)",
+                         today(), A1f(w), None, st, vt, False))
+    if bz:
+        T = bz["table"]
+        for nm, rid, Vf, fz in (("funded + BLITZ x0.5", "atx2_funded_blitz_w05", V_(members=MEM + ["BLZ"], w={"BLZ": 0.5}), None),
+                                ("funded + BLITZ 1 micro", "atx2_funded_blitz_1micro", V_(members=MEM + ["BLZ"], w={"BLZ": 1.0}), {"blz_1micro": True})):
+            pr = bz["paired"][nm]
+            ok = bz["gate"][nm]
+            vt = (f"Eval = today's ATLAS; once funded + BLITZ ({nm[9:]}). Slot $/mo (10 seeds x 200 paths): "
+                  + "; ".join(f"{s} ${T[nm][s]['mean']:,.0f} vs ${T['today'][s]['mean']:,.0f} ({pr[s]['diff']:+.0f})" for s in ("H1", "H2", "2021-25"))
+                  + (". Passes the slot gate." if ok else ". Fails the slot gate."))
+            rows.append((rid, f"Eval = today; once funded + BLITZ {nm[15:]} (round 2)", today(), Vf, fz, "rejected", vt + " Rejected: its random-direction twins reach its H2 slot in 2 of 6 draws, 2021-25 is +$2-3 (70% of seeds), 2024 is below today on every seed, and the real H2 calendar path pays $182 vs $414 a month.", True))
+    for rid, title, Ve, Vf, fz, st, vt, isb in rows:
+        if isb:
+            blz_install()
+            PLAY_FUNDED[0] = play_day_blz
+        rs, Tt = real_slot(Ve, Vf, fz)
+        PLAY_FUNDED[0] = None
+        vt2 = vt + " Real-session slot: " + "; ".join(f"{s} ${rs[s]['per_month']:,}/mo ({rs[s]['payouts']} payouts)" for s in rs)
+        TR = _runlib_trades(Tt)
+        rl.save(rid, title, "risk", "ATLAS 2026-10-30 b round 2: which members should trade ATLAS's FUNDED 25K (eval unchanged)?",
+                params={"eval": Ve, "funded": Vf, "fz": fz or {}}, sizing={"eval": "engine/account_b.qty need", "funded": "funded preset x weight; BLITZ: its own 10% / $150"},
+                trades=TR, scored=rl.score(TR, sess), status=st, verdict=vt2, notes="tools/atx_edge.py r2a / r2b_* / r2c",
+                writeup="atlas-edge-2026-10-30b", tags=["atlas", "account_b", "25k", "funded", "slot", "round2"])
+        print("saved", rid, flush=True)
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "base"
     {"base": cmd_base, "sched": cmd_sched, "funded": cmd_funded, "win": cmd_win, "maxd": lambda: cmd_family("maxd"),
-     "stage": lambda: cmd_family("stage"), "placebo": cmd_placebo, "final": cmd_final, "checks": cmd_checks, "save": cmd_save, "round4": cmd_round4, "why": cmd_why, "e4grid": cmd_e4grid, "fmin": cmd_fmin}[cmd]()
+     "stage": lambda: cmd_family("stage"), "placebo": cmd_placebo, "final": cmd_final, "checks": cmd_checks, "save": cmd_save, "round4": cmd_round4, "why": cmd_why, "e4grid": cmd_e4grid, "fmin": cmd_fmin,
+     "r2a": cmd_r2a, "r2b_pick": cmd_r2b_pick, "r2b_check": cmd_r2b_check, "r2c": cmd_r2c, "save2": cmd_save2}[cmd]()
