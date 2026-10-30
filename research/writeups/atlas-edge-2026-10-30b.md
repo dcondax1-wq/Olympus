@@ -204,6 +204,7 @@ run; they are recorded, not pursued.
   last night's lead 62.2 / 5.9, $12,482 = run ab_atlas_na_hunts_lead.
   - The funded simulator is tools/atlas_funded.account stepped day by day: today's funded H1 $593 / H2 $520 on 300 paths
     vs $582 / $517 on its 1,000 in atlas-funded.md.
+  - Stepped vs the original on the same 120 funded paths (H1 / H2 / 2025): 0 differ in $ paid.
 - **Same paths for every variant** (common random numbers): the slot differences are paired, not two independent draws. A
   second path set moves the slot by $10-25.
 - **No look-ahead:** the schedule uses the eval tracker's own numbers at the entry (session number, room with the day's
