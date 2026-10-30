@@ -87,6 +87,12 @@ SIZE_EVAL = {"f": 0.4, "cap": 600.0, "dll_frac": 0.9, "day_tp": None, "push_from
 SIZE_PAPER = {"f": 0.4, "cap": 600.0, "dll_frac": 0.9, "day_tp": None, "push_from": None, "push_f": None}
 SIZE_FUNDED = {"f": 0.1, "cap": 150.0, "dll_frac": 0.9, "day_tp": 400.0, "push_from": None, "push_f": None}
 SIZINGS = ("speed", "paper")
+# OWNER SWITCH, OFF (research/writeups/atlas-blitz-edge-2026-10-30.md, research/scalp/blitz_25k_pick_v2.json): "later_break": true
+# in data/account_c.json = on the 25K EVAL the day's first band break on a side trades x0.5, a later same-side break (the day's
+# count of check closes beyond the band on that side >= 2, engine/blitz "brk_n") x1.75: f and the $ cap scale, f <= 1.0 (never
+# more than the room). Funded and "paper" sizing unchanged. 2-week pass / fail H1 47.9 / 23.5 (36.1 / 37.8), H2 36.2 / 21.7
+# (36.2 / 34.8), 2021-25 24.7 / 48.4 (20.4 / 50.2); a later break can risk up to $1,050.
+LATER_BREAK = {"first_x": 0.5, "later_x": 1.75, "f_max": 1.0}
 # the performance contract (BLITZ_STRATEGY.md): bands = bootstrap of the 330 research trades of 2026 (na_best_trades.json)
 SCORE_MIN_TRADES = 20
 SCORE_LOSE_DAYS = 6             # losing days in a row (2026 worst 3; p95 of a 40-traded-day stretch 6)
@@ -192,7 +198,8 @@ def normalize(blk: dict | None, lit_account: str | None = None, b_account: str |
     out = {"account": str(blk.get("account") or "").strip(), "plan": plan, "eval_start": str(blk.get("eval_start") or ""),
            "armed": blk.get("armed") is True, "prior_pnl": float(_num(blk.get("prior_pnl"), 0.0)), "eval_anchor": blk.get("eval_anchor"),
            "filtered": blk.get("unfiltered") is not True, "params": None, "problem": None,
-           "resume_after": _num(blk.get("resume_after")), "sizing": str(blk.get("sizing") or "speed")}
+           "resume_after": _num(blk.get("resume_after")), "sizing": str(blk.get("sizing") or "speed"),
+           "later_break": blk.get("later_break") is True}
     out["preset"] = (P or PLANS["builder25k"])["preset"]
     out["plan_label"] = (P or {}).get("label") or plan
     out["rules"] = MA.rules_of({"preset": out["preset"]})
@@ -259,8 +266,10 @@ def frac_qty(risk_pm: float, room: float, cum: float, f: float, cap: float, dll:
     return q
 
 
-def qty(spec: dict, risk_pts: float, state: dict | None) -> dict:
-    """Micros for one BLITZ entry on account C: {"qty", "reasons"}. risk_pts = the estimated fill to the stop. Fails closed."""
+def qty(spec: dict, risk_pts: float, state: dict | None, brk_n: int | None = None) -> dict:
+    """Micros for one BLITZ entry on account C: {"qty", "reasons"}. risk_pts = the estimated fill to the stop. brk_n = the
+    day's count of check closes beyond the band on the signal's side (engine/blitz signal "brk_n"; only read with the owner's
+    "later_break" switch on an eval). Fails closed."""
     R = spec["rules"]
     S = size_rule(spec)
     if state is None:
@@ -279,10 +288,16 @@ def qty(spec: dict, risk_pts: float, state: dict | None) -> dict:
     sess = _num(state.get("session"))
     if S.get("push_from") and sess is not None and sess >= int(S["push_from"]):
         f = float(S["push_f"])                           # the speed pick: the full room from session 5
-    q = frac_qty(risk_pm, room, cum, f, S["cap"], float(R["dll"]), int(R["max_micros"]), S["dll_frac"])
-    why = [f"{f:.0%} of the ${room:,.0f} room" + (f" (session {int(sess)}: from session {int(S['push_from'])} the full room)"
+    cap = float(S["cap"])
+    lb = None
+    if spec.get("later_break") and not is_funded(spec) and spec.get("sizing", "speed") == "speed" and brk_n is not None:
+        m = LATER_BREAK["later_x"] if int(brk_n) >= 2 else LATER_BREAK["first_x"]
+        f, cap = min(f * m, LATER_BREAK["f_max"]), cap * m
+        lb = f"later-break size x{m:g} (break {int(brk_n)} on this side today)"
+    q = frac_qty(risk_pm, room, cum, f, cap, float(R["dll"]), int(R["max_micros"]), S["dll_frac"])
+    why = ([lb] if lb else []) + [f"{f:.0%} of the ${room:,.0f} room" + (f" (session {int(sess)}: from session {int(S['push_from'])} the full room)"
                                                   if S.get("push_from") and sess is not None and sess >= int(S["push_from"]) else "")
-           + f", <= ${S['cap']:,.0f}, <= {S['dll_frac']:.0%} of the ${float(R['dll']) + cum:,.0f} daily loss left: ${risk_pm:,.2f} a micro "
+           + f", <= ${cap:,.0f}, <= {S['dll_frac']:.0%} of the ${float(R['dll']) + cum:,.0f} daily loss left: ${risk_pm:,.2f} a micro "
            f"at a {float(risk):.2f}-pt stop -> {q}"]
     return {"qty": int(q), "reasons": why}
 
@@ -1074,7 +1089,7 @@ class AccountC:
         sz = {"qty": 0, "reasons": []}
         if not why:
             try:
-                sz = qty(self.spec, risk, self.eval_state(now))
+                sz = qty(self.spec, risk, self.eval_state(now), brk_n=x.get("brk_n"))
             except Exception as e:
                 sz = {"qty": 0, "reasons": [f"sizing failed ({e.__class__.__name__}: {e}): not traded"]}
             self.last_size = {"qty": sz["qty"], "reasons": [str(r)[:160] for r in sz["reasons"]][-4:], "t": int(now)}

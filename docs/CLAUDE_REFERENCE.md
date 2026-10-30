@@ -223,7 +223,9 @@ part yourself or fold it into a script.**
   [--cloud]` (~65 s).
 - **Account C = BLITZ routed to its OWN MFFU Builder 25K (2026-10-29, owner "the scalping on a 25"), built, OFF:**
   `engine/account_c.py` (LiveBot.acct_c, `_account_c_tick` right after LIT's routing, before account B and the read-only work: the entry latency matters), plain-language rules + bands + kill switch in
-  `BLITZ_STRATEGY.md`. Switch = local `data/account_c.json` (gitignored; absent / null = the bot is exactly as before: no
+  `BLITZ_STRATEGY.md`. Owner switch OFF (2026-10-30): `"later_break": true` = eval size x0.5 on the day's first band break of a
+  side, x1.75 on a later one (`engine/blitz` signal `brk_n`, `account_c.qty`, `tests.test_blitz_later_break`, pick v2).
+  Switch = local `data/account_c.json` (gitignored; absent / null = the bot is exactly as before: no
   adapter, no heartbeat key) `{"account", "plan": "builder25k", "eval_start", "armed": false}`; CLI `python -X utf8 -m
   engine.account_c --account "<Name>" --plan builder25k --start <day>` | `off` | `--status` | `--resume` | `--to-funded`
   (refused when the NinjaTrader self-test fails; a real Name is allowlisted, never armed). Own adapter (OIF tag `acctc_`,

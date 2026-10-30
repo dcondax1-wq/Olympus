@@ -469,7 +469,8 @@ def backtest(df, filtered: bool = True, params: dict | None = None) -> list:
 # ================================================================================================ the live state machine
 def _empty_day(n: int = len(CHECKS)) -> dict:
     return {"date": None, "closed": False, "session": False, "rth": False, "o0": None, "mv": [None] * n,
-            "last_in": None, "sig": None, "dn": 0, "dR": 0.0, "rhi": None, "rlo": None, "rn": 0, "prng": None}
+            "last_in": None, "sig": None, "dn": 0, "dR": 0.0, "rhi": None, "rlo": None, "rn": 0, "prng": None,
+            "brk": {"1": 0, "-1": 0}}           # check closes beyond the band per side today (account C's later-break size)
 
 
 def new_engine(filtered: bool = True) -> dict:
@@ -640,7 +641,8 @@ class Engine:
                 S["pos"] = {"dir": D, "fill": fill, "stp": st, "stop0": st, "tg": fill + D * self.tgr * risk, "risk": risk, "ext": fill,
                             "mae": 0.0, "nb": 0, "entry_t": t, "sig_t": pd_["t"]}
                 ev.append({"ev": "entry", "entry_t": t, "sig_t": pd_["t"], "dir": D, "entry": fill, "stop": st, "risk": risk,
-                           "date": date, "band": pd_.get("band"), "close": pd_.get("close"), "atr5": pd_.get("atr5")})
+                           "date": date, "band": pd_.get("band"), "close": pd_.get("close"), "atr5": pd_.get("atr5"),
+                           "brk_n": pd_.get("brk_n")})
         # the open trade on this bar
         if S["pos"]:
             p = S["pos"]
@@ -656,17 +658,20 @@ class Engine:
             up, lo = S["o0"] * (1 + self.vm * sg), S["o0"] * (1 - self.vm * sg)
             D = 1 if c > up else -1 if c < lo else 0
             if D:
+                bk = S.setdefault("brk", {"1": 0, "-1": 0})
+                bk[str(D)] = int(bk.get(str(D)) or 0) + 1   # every check close beyond the band counts, traded or not
                 a5 = S["atr"]["a"]
                 masked = gate(t + 60, D) if gate is not None else None
                 why = masked or ("in a trade" if S["pos"] else f"{self.maxday} trades today already" if S["dn"] >= self.maxday
                                  else f"day stop: {S['dR']:+.2f}R today" if S["dR"] <= -self.dstop else None)
                 band = up if D > 0 else lo
                 sgl = {"ev": "signal", "t": t, "close_t": t + 60, "dir": D, "close": c, "band": band, "up": up, "lo": lo,
-                       "sigma": sg, "o0": S["o0"], "atr5": a5, "taken": why is None, "why": why, "masked": bool(masked), "date": date}
+                       "sigma": sg, "o0": S["o0"], "atr5": a5, "taken": why is None, "why": why, "masked": bool(masked), "date": date,
+                       "brk_n": int(bk[str(D)])}
                 if why is None:
                     st = c - D * self.sa * a5
                     sgl["stop"] = st
-                    S["pend"] = {"t": t, "dir": D, "stop": st, "band": band, "close": c, "atr5": a5}
+                    S["pend"] = {"t": t, "dir": D, "stop": st, "band": band, "close": c, "atr5": a5, "brk_n": int(bk[str(D)])}
                 ev.append(sgl)
         if mod == LAST_IN:
             ev += self._close_day("15:54 bar closed")
