@@ -168,12 +168,18 @@
   }
   function bar(M, o) {
     o = o || {}; M = obj(M);
-    const S = summary(M), open = !!o.open;
+    const S = summary(M), open = !!o.open, ack = ackRow(S, o);
+    // the alert to acknowledge has its own row: the headline's second line says the next thing instead of repeating it
+    let why = S.why;
+    if (ack) {
+      const other = S.items.find((x) => (x.lvl === 'bad' || x.lvl === 'warn') && x.k !== 'alerts');
+      why = other ? `${other.label}: ${other.value}` : S.next ? S.next.detail : 'Everything else is running.';
+    }
     const chips = S.items.map((x) => `<span class="su-chip ${x.lvl}" title="${esc(x.detail || '')}">${dot(x.lvl, x.live)}<span>${esc(x.label)}</span><b>${x.k === 'next' && x.t ? (x.value.startsWith('closes') ? 'closes in ' : 'in ') + cd(x.t) : esc(x.value)}</b></span>`).join('');
     const rows = S.items.map((x) => `<li class="${x.lvl}">${dot(x.lvl, x.live)}<div><b>${esc(x.label)} · ${esc(x.value)}</b>${x.detail ? `<span>${esc(x.detail)}</span>` : ''}${x.fix && x.lvl !== 'good' ? `<em>Fix: ${esc(x.fix)}</em>` : ''}${x.list ? `<ul>${x.list.map((a) => `<li class="${esc(a.lvl)}">${esc(a.text)}</li>`).join('')}</ul>` : ''}</div>${x.bot ? `<a class="su-go" ${goA(o, PAGE[o.where === 'pc' ? 'pc' : 'phone'][x.bot])} aria-label="Open ${esc(x.label)}">›</a>` : ''}</li>`).join('');
     return `<section class="su-bar ${S.lvl}${open ? ' open' : ''}" aria-label="Status: ${esc(S.title)}" data-su-bar>
-      <button type="button" class="su-sum" aria-expanded="${open}" data-su-toggle>${dot(S.lvl, S.lvl === 'good')}<span class="su-t"><b>${esc(S.title)}</b><em>${esc(S.why)}</em></span><span class="su-chev" aria-hidden="true"></span></button>
-      ${ackRow(S, o)}<div class="su-chips">${chips}</div>
+      <button type="button" class="su-sum" aria-expanded="${open}" data-su-toggle>${dot(S.lvl, S.lvl === 'good')}<span class="su-t"><b>${esc(S.title)}</b><em>${esc(why)}</em></span><span class="su-chev" aria-hidden="true"></span></button>
+      ${ack}<div class="su-chips">${chips}</div>
       <div class="su-more"><div><ul class="su-list">${rows}</ul>${o.more ? `<div class="su-links">${o.more}</div>` : ''}</div></div></section>`;
   }
 
@@ -290,6 +296,29 @@
     return `<section class="su-week" aria-label="This week"><div class="su-week-h"><span class="su-eye2">This week · real trades</span><em>vs each bot's goal</em></div><ul>${rows.join('')}</ul></section>`;
   }
 
+  // ------------------------------------------------------------------ the market: NQ between its nearest levels
+  // the board's map: price, the bar's time, the nearest untaken level above / below (label, price, points away), the VIX
+  // day band (18:00 open +/- one VIX day move: Zlarior's target band). A ladder: below level -> price -> above level.
+  function market(M) {
+    M = obj(M);
+    const m = obj(obj(M.board).map), px0 = num(m.price);
+    if (px0 == null) return '';
+    const a = obj(m.nearest_above), b = obj(m.nearest_below), v = obj(m.vix);
+    const hi = num(a.price), lo = num(b.price), up = num(v.up), dn = num(v.dn);
+    const f2 = (x) => (x == null ? '—' : x.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    const pts = (x) => (x == null ? '' : (x > 0 ? '+' : x < 0 ? '−' : '') + Math.abs(x).toLocaleString('en-US', { maximumFractionDigits: 1 }) + ' pts');
+    let lad = '';
+    if (hi != null && lo != null && hi > lo) {
+      const span = hi - lo, at = (x) => Math.max(0, Math.min(100, ((x - lo) / span) * 100)).toFixed(1);
+      const band = up != null && dn != null && up > lo && dn < hi ? `<i class="su-lad-band" style="left:${at(Math.max(lo, dn))}%;right:${(100 - at(Math.min(hi, up))).toFixed(1)}%"></i>` : '';
+      lad = `<div class="su-lad" aria-hidden="true"><i class="su-lad-rail"></i>${band}<i class="su-lad-px" style="left:${at(px0)}%"></i></div>
+        <div class="su-lad-l"><span><b>${esc(b.label || 'below')}</b><em>${f2(lo)} · ${pts(lo - px0)}</em></span><span><b>${esc(a.label || 'above')}</b><em>${f2(hi)} · ${pts(hi - px0)}</em></span></div>`;
+    }
+    const vix = num(v.vix), atr = num(m.atr);
+    const meta = [vix != null ? `VIX ${vix.toFixed(1)}` : '', atr != null ? `ATR ${atr.toFixed(1)}` : '', up != null && dn != null ? `band ${f2(dn)}–${f2(up)}` : ''].filter(Boolean).join(' · ');
+    return `<section class="su-mkt" aria-label="NQ now"><div class="su-mkt-h"><span class="su-eye2">NQ${m.bar_hm ? ` · ${esc(m.bar_hm)} ET bar` : ''}</span><b>${f2(px0)}</b><em>${esc(meta)}</em></div>${lad}</section>`;
+  }
+
   // ------------------------------------------------------------------ smart empty states
   function empty(kind, M) {
     M = obj(M);
@@ -362,6 +391,7 @@
   border:1px solid color-mix(in srgb,var(--c) 26%,rgba(160,170,220,.12));box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 18px 44px -28px color-mix(in srgb,var(--c) 60%,transparent);transition:transform .18s cubic-bezier(.2,.8,.2,1),border-color .2s}
 .su-acct::after{content:"";position:absolute;left:16px;right:16px;top:0;height:1px;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--c) 70%,#fff),transparent);opacity:.55}
 .su-acct:active{transform:scale(.985)}
+:is(.su-acct,.su-sum,.su-ack,.su-go):focus-visible{outline:2px solid color-mix(in srgb,var(--accent,#6d7cff) 85%,transparent);outline-offset:2px}
 .su-acct.trading{border-color:color-mix(in srgb,var(--c) 55%,transparent)}
 .su-acct.trading::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 0 1.5px var(--c),0 0 26px -6px var(--c);opacity:.25;animation:su-glow 2.6s ease-in-out infinite;will-change:opacity}
 @keyframes su-glow{50%{opacity:1}}
@@ -415,6 +445,16 @@
 .su-wd.today{outline:1.5px solid var(--c);outline-offset:2px}
 .su-wn{font:700 14px var(--sans,system-ui);font-variant-numeric:tabular-nums;color:var(--ink,#eef1f8)}.su-wn small{font-size:11px;font-weight:600;color:var(--muted,#6f788b)}.su-wn.warn{color:var(--warn,#f7b955)}
 :root[data-theme="light"] .su-week{background:linear-gradient(180deg,#fff,#f6f8fc);border-color:rgba(20,30,60,.1)}
+.su-mkt{border-radius:20px;padding:14px 16px;margin:0 0 12px;background:linear-gradient(180deg,rgba(22,26,38,.82),rgba(11,13,21,.78));border:1px solid rgba(160,170,220,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+.su-mkt-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.su-mkt-h b{font:750 22px/1.1 var(--sans,system-ui);letter-spacing:-.02em;color:var(--ink,#eef1f8);font-variant-numeric:tabular-nums}
+.su-mkt-h em{font-style:normal;font-size:12px;color:var(--ink-2,#a9b1c3);margin-left:auto;text-align:right}
+.su-lad{position:relative;height:18px;margin:12px 2px 6px}.su-lad-rail{position:absolute;left:0;right:0;top:8px;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--good,#2ee59d),rgba(160,170,220,.25) 50%,var(--bad,#ff5a7a))}
+.su-lad::before,.su-lad::after{content:"";position:absolute;top:3px;width:2px;height:12px;border-radius:2px;background:rgba(238,241,248,.5)}.su-lad::before{left:0}.su-lad::after{right:0}
+.su-lad-band{position:absolute;top:4px;height:10px;border-radius:5px;background:rgba(79,155,255,.18);border:1px solid rgba(79,155,255,.45)}
+.su-lad-px{position:absolute;top:1px;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#b9c6ff 45%,#6d7cff);box-shadow:0 0 12px rgba(143,162,255,.85)}
+.su-lad-l{display:flex;justify-content:space-between;gap:12px}.su-lad-l span{display:flex;flex-direction:column;min-width:0}.su-lad-l span:last-child{text-align:right}
+.su-lad-l b{font-size:12.5px;font-weight:650;color:var(--ink,#eef1f8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.su-lad-l em{font-style:normal;font-size:11.5px;color:var(--muted,#6f788b);font-variant-numeric:tabular-nums}
+:root[data-theme="light"] .su-mkt{background:linear-gradient(180deg,#fff,#f6f8fc);border-color:rgba(20,30,60,.1)}
 .su-empty{display:flex;flex-direction:column;gap:4px;padding:18px 16px;border-radius:16px;border:1px dashed rgba(160,170,220,.18);background:rgba(255,255,255,.02)}
 .su-empty b{font-size:14px;color:var(--ink,#eef1f8)}.su-empty span{font-size:13px;line-height:1.5;color:var(--ink-2,#a9b1c3)}
 :root[data-theme="light"] .su-bar,:root[data-theme="light"] .su-acct,:root[data-theme="light"] .su-sun{background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(246,248,252,.88));border-color:rgba(20,30,60,.1);box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 14px 34px -24px rgba(20,30,60,.35)}
@@ -425,5 +465,5 @@
 `;
   function css() { if (typeof document === 'undefined' || document.getElementById('su-css')) return; const s = document.createElement('style'); s.id = 'su-css'; s.textContent = CSS; document.head.appendChild(s); }
 
-  window.StatusUI = { version: V, items, summary, bar, sunday, sundayWindow, oneLine, accounts, acctCard, ring, spark, week, empty, wire, tick, isOpen, css, dstNext, marketOpen, nextReopen, COLOR, NAME };
+  window.StatusUI = { version: V, items, summary, bar, sunday, sundayWindow, oneLine, accounts, acctCard, ring, spark, week, market, empty, wire, tick, isOpen, css, dstNext, marketOpen, nextReopen, COLOR, NAME };
 })();

@@ -157,6 +157,9 @@ absent). Read-only: no new control, only links. Tests: `python -X utf8 -m tests.
 | 101 | Why no trade yet, under each bot | new | Phone bot tabs > Today: under the account card, the first three reasons from Mission Control (market closed, outside its hours, daily limit, blocks, setup stage), plain words |
 | 102 | Acknowledge from the status bar | new | Phone Home: the critical alert (eval near the floor, feed stale ...) is one red row in the status bar with one tap to Got it; the old banner moved under the quick tiles so it never pushes the first screen down |
 | 103 | In-a-trade glow | new | An account card whose bot is in a trade glows softly in the bot's colour (an opacity layer, no repaint); reduced motion = a still glow |
+| 104 | NQ now, between its levels | new | `StatusUI.market` (phone Home, PC Home under the status bar): NQ's price and bar time, VIX / ATR, a ladder from the nearest untaken level below to the one above (labels, prices, points away) with Zlarior's VIX day band drawn on it (the board's `map`) |
+| 105 | Direction-aware tab transitions | new | Phone: a tab change slides the page in from the side of the new tab (Home → More = from the right), a section change rises in; reduced motion = none |
+| 106 | Keyboard and focus | new | Both apps: every new card and row is a tab stop with a visible focus ring; Enter / Space opens it; the phone palette matches every word ("atlas trades") |
 
 ## Organization (2026-10-30, night 3: "organized, clean")
 - One information architecture on both apps. **Home** = the status bar, the three accounts, what matters now (+ the Sunday

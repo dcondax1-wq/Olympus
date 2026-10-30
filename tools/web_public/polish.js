@@ -116,7 +116,7 @@
     const M = model();
     const box = document.createElement('div'); box.className = 'pl-home';
     const more = `<a class="pl-btn" data-go="mission">Mission Control</a><a class="pl-btn" data-go="board">Live board</a><a class="pl-btn" data-go="launch">Launch checklist</a>`;
-    box.innerHTML = hello() + SU.bar(M, { open: SU.isOpen(), more, where: 'phone' }) + SU.accounts(M, { where: 'phone' }) + nowCard(M) + SU.week(M) + SU.sunday(M) + quick();
+    box.innerHTML = hello() + SU.bar(M, { open: SU.isOpen(), more, where: 'phone' }) + SU.accounts(M, { where: 'phone' }) + nowCard(M) + (SU.market ? SU.market(M) : '') + SU.week(M) + SU.sunday(M) + quick();
     el.prepend(box);
     // no live board yet (the PC never reported, an older data.json): the account cards come from clean.js's hero cards
     // (eval tracker + goals + ATLAS card), placed where the board's cards would be; BLITZ keeps its paper card
@@ -207,13 +207,25 @@
       const root = document.documentElement, g = typeof groupOf === 'function' ? groupOf(PAGE) : '';
       root.dataset.page = PAGE || ''; root.dataset.bot = BOTG[g] || '';
       const el = document.getElementById('page');
+      if (el && !soft) {
+        const ORD = ['today', 'lit', 'atlas', 'blitz', 'money', 'system'], a = ORD.indexOf(render.__g), b = ORD.indexOf(g);
+        el.dataset.dir = a >= 0 && b >= 0 && a !== b ? (b > a ? 'r' : 'l') : 'u';
+        render.__g = g;
+      }
       if (el && PAGE !== 'today') el.classList.remove('pl-h', 'pl-all');
       const out = r0.apply(this, arguments);
-      try { if (el) { botTop(el, soft); if (!soft && PAGE !== 'today') enter(el, ':scope > *'); eyebrow(el, g); } tabInd(); refreshBar(); headerDot(); } catch (e) { console.warn('polish render', e); }
+      try { if (el) { botTop(el, soft); if (!soft && PAGE !== 'today') enter(el, ':scope > *'); eyebrow(el, g); tabStops(el); } tabInd(); refreshBar(); headerDot(); } catch (e) { console.warn('polish render', e); }
       return out;
     };
     render.__pl = true;
   }
+  // keyboard: an <a data-go> without href is no tab stop by itself; give it one, Enter / Space opens it (read-only links)
+  function tabStops(root) { root.querySelectorAll('a[data-go]:not([href]):not([tabindex])').forEach((a) => { a.tabIndex = 0; if (!a.getAttribute('role')) a.setAttribute('role', 'link'); }); }
+  addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const a = e.target && e.target.closest && e.target.closest('a[data-go]:not([href])');
+    if (a) { e.preventDefault(); a.click(); }
+  });
   // the bottom bar: one glass pill slides to the open tab, in that tab's colour (Zlarior blue, ATLAS orange, BLITZ purple)
   function tabInd() {
     const T = document.getElementById('tabs'); if (!T || getComputedStyle(T).display === 'none') return;     // (a fixed bar has no offsetParent)
@@ -225,7 +237,10 @@
     T.classList.toggle('pl-slide', !!a);
     if (!a) { i.style.opacity = '0'; return; }
     i.dataset.t = a.dataset.t || '';
-    i.style.width = a.offsetWidth + 'px'; i.style.transform = `translate3d(${a.offsetLeft}px,0,0)`; i.style.opacity = '1';
+    const put = () => { const b = T.querySelector('a.on') || a; i.style.width = b.offsetWidth + 'px'; i.style.transform = `translate3d(${b.offsetLeft}px,0,0)`; i.style.opacity = '1'; };
+    put();
+    clearTimeout(tabInd.__t); tabInd.__t = setTimeout(put, 380);       // once more after the page settles (fonts, a late redraw of the bar)
+    if (!tabInd.__ro && typeof ResizeObserver !== 'undefined') { tabInd.__ro = new ResizeObserver(() => requestAnimationFrame(put)); tabInd.__ro.observe(T); }
     botDots(T);
   }
   // a small light on each bot's tab: green = in a trade (pulsing), amber = armed, red = blocked; nothing while it waits
@@ -304,7 +319,10 @@
   function score(it, q) {
     if (!q) return 1;
     const t = norm(it.t), d = norm(it.d + ' ' + (it.g || '') + ' ' + it.id);
-    if (t.startsWith(q)) return 100; if (t.includes(q)) return 60; if (d.includes(q)) return 30;
+    if (t.startsWith(q)) return 100; if (t.includes(q)) return 60;
+    const W = q.split(/\s+/).filter(Boolean);                          // every word somewhere ("atlas trades", "eval timeline")
+    if (W.length > 1 && W.every((w) => t.includes(w))) return 80; if (W.length > 1 && W.every((w) => (t + ' ' + d).includes(w))) return 40;
+    if (d.includes(q)) return 30;
     let i = 0; for (const ch of t) if (ch === q[i]) i++; return i === q.length ? 10 : 0;   // the letters in order
   }
   function palette(open) {

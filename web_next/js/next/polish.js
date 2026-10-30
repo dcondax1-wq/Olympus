@@ -50,9 +50,9 @@ function place() {
   if (!box) { box = document.createElement('div'); box.id = 'nxStatusHome'; box.className = 'nx-st-home'; el.prepend(box); }
   else if (el.firstElementChild !== box) el.prepend(box);
   const more = `<a class="pl-btn" ${go('mission')}>Mission Control</a><a class="pl-btn" ${go('board')}>Live board</a><a class="pl-btn" ${go('start')}>Start page</a>`;
-  const row = (SU.week ? SU.week(LAST) : '') + SU.sunday(LAST, { where: 'pc' });
+  const row = (SU.market ? SU.market(LAST) : '') + (SU.week ? SU.week(LAST) : '') + SU.sunday(LAST, { where: 'pc' });
   const html = SU.bar(LAST, { open: SU.isOpen(), more, where: 'pc', go }) + (row ? `<div class="nx-st-row">${row}</div>` : '');
-  if (box.__h !== html) { box.innerHTML = html; box.__h = html; SU.tick(box); }
+  if (box.__h !== html) { box.innerHTML = html; box.__h = html; SU.tick(box); box.querySelectorAll('a[data-goto]:not([href])').forEach((a) => { a.tabIndex = 0; a.setAttribute('role', 'link'); }); }
   SU.wire(box);
 }
 // the sidebar: a light next to each bot (green = in a trade, amber = armed, red = blocked; nothing while it waits)
@@ -96,6 +96,11 @@ function paletteItems() {
 }
 export function initPolish() {
   try { addPaletteItems(paletteItems); } catch (e) { /* the palette keeps its own list */ }
+  addEventListener('keydown', (e) => {          // Enter / Space on a status-bar link (an <a data-goto> without href)
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const a = e.target && e.target.closest && e.target.closest('#nxStatusHome a[data-goto]:not([href])');
+    if (a) { e.preventDefault(); a.click(); }
+  });
   const el = document.getElementById('page-cc');
   if (el && !el.__stObs) {
     el.__stObs = new MutationObserver(() => { if (LAST && active('cc') && el.firstElementChild?.id !== 'nxStatusHome') place(); });

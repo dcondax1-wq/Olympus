@@ -85,8 +85,9 @@ out.acc2 = S.accounts(M2, { where: 'phone' }); out.acc3 = S.accounts(M3, { where
 out.one = ['lit', 'atlas', 'blitz'].map((k) => { const A = window.MissionUI.accounts(M3).find((a) => a.key === k); return A ? S.oneLine(A, M3).text : null; });
 out.sunThu = S.sunday({ now: thu, board: F.b2 }); out.sunTue = S.sunday({ now: tue, board: F.b2 }); out.dst = S.dstNext(thu);
 out.empty = ['trades', 'real', 'blitz', 'mind', 'feed', 'x'].map((k) => S.empty(k, M2));
-for (const g of [null, {}, { board: 5 }, { board: { lit: 'x', health: { items: 3 } } }, { board: { lit: { position: 5, window: 'y', days: 7 } }, news: 'n' }]) {
-  try { S.items(g); S.bar(g); S.accounts(g); S.sunday(g || {}); S.empty('trades', g); } catch (e) { out.bad++; out.err = String(e.stack).slice(0, 300); }
+out.mkt = S.market(M2); out.mktNone = S.market({ board: {} }); out.hasMap = !!(F.b2.map && F.b2.map.price != null);
+for (const g of [null, {}, { board: 5 }, { board: { lit: 'x', health: { items: 3 } } }, { board: { lit: { position: 5, window: 'y', days: 7 } }, news: 'n' }, { board: { map: { price: 'x', nearest_above: 3 } } }, { board: { map: { price: 5, nearest_above: { price: 1 }, nearest_below: { price: 9 } } } }]) {
+  try { S.items(g); S.bar(g); S.accounts(g); S.sunday(g || {}); S.empty('trades', g); S.market(g); S.week(g); } catch (e) { out.bad++; out.err = String(e.stack).slice(0, 300); }
 }
 process.stdout.write(JSON.stringify(out) + '\n');
 """
@@ -127,6 +128,8 @@ def part_b(tmp):
           "Clocks go back 1 hour" in st and "Sun Nov 1" in st and "Sun 18:00 ET" in st and "Mon 02:00 ET" in st and "Off until its own 25K" in st and "Set time automatically" in st, st[:500])
     check("b. Sunday open: not on a Tuesday; the next clock change is 2026-11-01 06:00 UTC (back)", o["sunTue"] == "" and o["dst"]["t"] == 1793512800 and o["dst"]["way"] == "back", (o["sunTue"][:80], o["dst"]))
     check("b. smart empty states say what will appear and when", all("su-empty" in e for e in o["empty"]) and "within a minute" in o["empty"][0] and "never routed" in o["empty"][2])
+    check("b. NQ now: the price between the nearest levels above / below (a ladder), nothing without a price", o["mktNone"] == ""
+          and (not o["hasMap"] or ("su-mkt" in o["mkt"] and "NQ" in o["mkt"])), o["mkt"][:300])
     check("b. garbage in: no exception", o["bad"] == 0, o.get("err"))
 
 
@@ -200,6 +203,15 @@ def part_c(F, tmp, shots):
         pg.click("#page > .pl-fold")
         pg.wait_for_timeout(300)
         sh(pg, "polish_phone_home.png")
+        mk = pg.evaluate("() => { const m = document.querySelector('.pl-home .su-mkt'); return m ? m.innerText.replace(/\\s+/g, ' ').slice(0, 120) : null; }")
+        check("c. Home: NQ now with the nearest levels (when the board has a price)", mk is None or "NQ" in mk, mk)
+        # keyboard: an account card is a tab stop and Enter opens its bot
+        pg.focus(".pl-home .su-acct[data-bot='atlas']")
+        pg.keyboard.press("Enter")
+        pg.wait_for_timeout(600)
+        check("c. keyboard: the account cards are tab stops, Enter opens the bot (ATLAS)", pg.evaluate("() => location.hash") == "#/atlas", pg.evaluate("() => location.hash"))
+        pg.evaluate("() => { location.hash = '#/today'; }")
+        pg.wait_for_timeout(600)
         # every tab and section
         bad = []
         for name, h in ROUTES:

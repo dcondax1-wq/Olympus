@@ -110,6 +110,7 @@
 /* ATLAS Today: the account card above already says today's $ and the plan; its hero keeps the mode and the LIT rule */
 :root[data-page="atlas"] #page:has(> .pl-bot) .at-hero .at-day, :root[data-page="atlas"] #page:has(> .pl-bot) .at-hero .at-top .sc-note { display: none; }
 :root[data-page="atlas"] #page:has(> .pl-bot) .at-hero .at-h { font-size: 17px; margin: 6px 0 0; }
+:root[data-page="atlas"] #page:has(> .pl-bot) #atRoot > [data-at~="today"]:not(.at-hero) .sc-stats { display: none; }
 :root[data-bot] .zl-seg button.on { color: var(--ink); background: linear-gradient(180deg, color-mix(in srgb, var(--bot) 30%, transparent), color-mix(in srgb, var(--bot) 12%, transparent));
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bot) 45%, transparent), 0 6px 18px -10px var(--bot); }
 :root[data-bot] .zl-chips button.on { border-color: color-mix(in srgb, var(--bot) 55%, transparent); color: var(--ink); background: color-mix(in srgb, var(--bot) 16%, transparent); }
@@ -150,6 +151,9 @@
 /* ---------- motion: page transition, card entrances, press states ---------- */
 :root[data-polish="on"] .page { animation: pl-page .34s var(--out); }   /* no fill: a finished transform animation must not stay "in effect" (it would be the containing block of fixed full-screen views) */
 @keyframes pl-page { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: none; } }
+:root[data-polish="on"] #page[data-dir="r"] { animation-name: pl-page-r; } :root[data-polish="on"] #page[data-dir="l"] { animation-name: pl-page-l; }
+@keyframes pl-page-r { from { opacity: 0; transform: translate3d(28px, 0, 0); } to { opacity: 1; transform: none; } }
+@keyframes pl-page-l { from { opacity: 0; transform: translate3d(-28px, 0, 0); } to { opacity: 1; transform: none; } }
 .pl-in { animation: pl-rise .52s var(--out) both; animation-delay: var(--d, 0ms); }
 @keyframes pl-rise { from { opacity: 0; transform: translate3d(0, 14px, 0) scale(.985); } to { opacity: 1; transform: none; } }
 :root[data-polish="on"] :is(button.card, a.card, .cl-row, .pl-now-r, .pl-quick a, .tabs a, .zl-seg button, .strip button, .pl-fold, .su-sum, .iconbtn):active { transform: scale(.975); transition: transform .08s; }
@@ -159,6 +163,9 @@
 @keyframes pl-ringin { from { stroke-dasharray: 0 var(--C); } }
 .pl-first .su-spark .ln { stroke-dasharray: 240; animation: pl-draw 1.2s .15s var(--out) both; }
 @keyframes pl-draw { from { stroke-dashoffset: 240; } to { stroke-dashoffset: 0; } }
+
+/* ---------- keyboard: a visible focus ring on every new control (they reset their outline) ---------- */
+:is(.pl-fold, .pl-now-r, .pl-quick a, .pl-btn, .pl-chips a, .pl-why-go):focus-visible { outline: 2px solid color-mix(in srgb, var(--accent) 85%, transparent); outline-offset: 2px; border-radius: 14px; }
 
 /* ---------- the palette ---------- */
 .pl-pal { position: fixed; inset: 0; z-index: 3000; display: flex; justify-content: center; align-items: flex-start; padding: calc(14px + env(safe-area-inset-top)) 12px 12px; pointer-events: none; }
