@@ -2,7 +2,8 @@
 
 The fleet copies what one of your bots does (Zlarior, ATLAS or BLITZ) to more accounts: another prop-firm eval, a funded
 account, a Sim account, or your own live account. Each account gets its own size from its own room and its firm's rules.
-It is **off** until you add an account, and it never arms anything for you.
+It is **off** until you add an account, and it never arms anything for you. (The Start page still sets each bot's OWN
+account: Zlarior's 50K, ATLAS's 25K, BLITZ's 25K. The fleet adds more accounts that copy one of them.)
 
 ## 3 steps
 
