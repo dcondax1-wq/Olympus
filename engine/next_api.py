@@ -542,3 +542,11 @@ try:
     router.include_router(_board_router)
 except Exception as _board_err:                   # never stops the server or the bot
     print(f"[board] /api/next/board disabled: {_board_err.__class__.__name__}: {_board_err}", flush=True)
+
+# The fleet (engine/fleet.py: copy trading to the follower accounts; firm rule profiles engine/firms.py): one read-only GET
+# /api/next/fleet (engine/fleet_api.py)
+try:
+    from .fleet_api import router as _fleet_router  # noqa: E402
+    router.include_router(_fleet_router)
+except Exception as _fleet_err:                   # never stops the server or the bot
+    print(f"[fleet] /api/next/fleet disabled: {_fleet_err.__class__.__name__}: {_fleet_err}", flush=True)

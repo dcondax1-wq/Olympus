@@ -869,6 +869,14 @@ class AccountB:
                     return h
             except Exception:
                 pass
+        fl = getattr(b, "fleet", None)                 # engine/fleet.py (off = None): a Zlarior follower holds the other side
+        if fl is not None:
+            try:
+                h = fl.opposite_open(d, max_rank=0)
+                if h:
+                    return h
+            except Exception:
+                return "fleet state unreadable (fails closed)"
         return None
 
     def lit_entering(self, ent: dict, sym: str, now: int) -> bool:
@@ -1059,15 +1067,28 @@ class AccountB:
         FIRST; B's entry goes out only once that close is CONFIRMED flat. None = route (C off / flat / same side)."""
         ac = getattr(self.bot, "acct_c", None)
         if ac is None:
-            return None
+            return self._fleet_yield(d, sym, now)
         try:
             if ac.yield_to(d, "ATLAS", sym, now, px=px, entry_t=tb) is not False:
-                return None
+                return self._fleet_yield(d, sym, now)
         except Exception as e:
             self.log("error", f"account C hedge close failed: {e.__class__.__name__}: {e}")
             if getattr(ac, "open_t", None) is None:
-                return None
+                return self._fleet_yield(d, sym, now)
         return "no hedging: BLITZ's (account C) opposite close is not confirmed yet"
+
+    def _fleet_yield(self, d, sym, now):
+        """The fleet (engine/fleet.py, off = None): ATLAS's / BLITZ's followers holding the other side are closed at market
+        first. None = route."""
+        fl = getattr(self.bot, "fleet", None)
+        if fl is None:
+            return None
+        try:
+            if fl.yield_to(d, 1, sym, now, who="ATLAS") is not False:
+                return None
+        except Exception as e:
+            self.log("error", f"fleet hedge close failed: {e.__class__.__name__}: {e}")
+        return "no hedging: a fleet follower's opposite close is not confirmed yet"
 
     # ---- an entry the broker never took (2026-10-27: the 03:30 MACD LONG 3 on the 25K was refused, yet B kept it "open"
     # to its exit: B's other entries blocked all day, its paper P&L booked on B's eval, the phone showed a trade that

@@ -573,6 +573,19 @@ def _account_c(bot):
         return {"error": f"{e.__class__.__name__}: {e}"[:200]}
 
 
+def _fleet(bot):
+    """The heartbeat's "fleet" block: the follower accounts (engine/fleet.Fleet.hb_block, < 6 KB: firm, plan, stage, balance,
+    room, today, open, slippage, warnings). None when the fleet is off (no data/fleet.json): the key is then left out (the
+    payload is exactly as before). Never raises."""
+    try:
+        fl = getattr(bot, "fleet", None)
+        if fl is None:
+            return None
+        return fl.hb_block()
+    except Exception as e:
+        return {"error": f"{e.__class__.__name__}: {e}"[:200]}
+
+
 def _exec():
     """The "exec" block (engine/fill_audit.heartbeat_block: slippage / missed / extra $ against the backtest). Never raises."""
     try:
@@ -734,6 +747,7 @@ class Heartbeat:
                 "nt_log": _nt_log(self.bot),     # NinjaTrader's Log-tab lines about our orders (engine/nt_log.py; <= ~10 KB)
                 **_alerts_plus(self.bot),       # "rules" (PC-vs-cloud fingerprint) + "crit" (critical conditions, engine/alerts_plus.py)
                 **_opt("account_c", _account_c(self.bot)),   # BLITZ's own account (engine/account_c.py): only when it is on
+                **_opt("fleet", _fleet(self.bot)),           # the follower accounts (engine/fleet.py): only when configured
                 **_opt("mind", _mind(self.bot)),             # Mind (engine/mind.py, read-only): only once it has computed
                 **_opt("selftest", _selftest()),             # PC self-test (engine/pc_selftest.py): only after its first run
                 **_opt("pc_health", _pc_health())}           # PC health watchdog (engine/pc_health.py): once it has sampled

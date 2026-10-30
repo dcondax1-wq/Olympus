@@ -142,3 +142,8 @@ data/new_accounts.json
 data/autopilot.jsonl
 data/push_pc_sync.json
 research/lit/edge_grid*.json
+# the fleet (engine/fleet.py): the owner's follower accounts (local switch, OFF = no file) + their state
+data/fleet.json
+data/fleet.json.tmp
+data/live_state_fleet*.json
+data/live_state_fleet*.json.tmp
