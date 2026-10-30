@@ -22,7 +22,10 @@ heartbeat.json: {"t": unix seconds, "running": bot running, "adapter": paper|nin
                  "blitz": the BLITZ scalper PAPER shadow (engine/blitz.compact: state text, today's paper trades, the simulated
                           25K eval, today's band; never routed; ~3 KB),
                  "account_c": BLITZ routed to its OWN account (engine/account_c.AccountC.hb_block: REAL / SIM / PAPER, eval,
-                              performance scorecard, open trade, today's rows, P&L per day; ~4 KB; key absent when off)}
+                              performance scorecard, open trade, today's rows, P&L per day; ~4 KB; key absent when off),
+                 "selftest": the PC self-test's last result (engine/pc_selftest.hb_block; key absent before the first run),
+                 "pc_health": CPU / RAM / disk / NinjaTrader / bot memory / OneDrive / clock / poll lines, green / amber / red
+                              (engine/pc_health.hb_block; key absent before the first sample)}
 Every beat also writes the payload to logs/heartbeat_last.json (local, gitignored) for HEALTH_CHECK and the ops task.
 
 No Yahoo (engine/pcbars.py, owner 2026-10-19): next to heartbeat.json the commit carries the PC's NinjaTrader bars,
@@ -532,6 +535,26 @@ def _mind(bot):
         return None
 
 
+def _selftest():
+    """The PC self-test's last result (engine/pc_selftest.hb_block: t, version, mode, passed / failed, the first failures,
+    duration, running; ~600 bytes). None before the first run (the key is then left out). Never raises."""
+    try:
+        from . import pc_selftest
+        return pc_selftest.hb_block()
+    except Exception:
+        return None
+
+
+def _pc_health():
+    """The PC health watchdog (engine/pc_health.hb_block: CPU / RAM / disk / NinjaTrader / bot memory / OneDrive / clock /
+    poll, each green / amber / red; ~1.5 KB). None before its first sample. Never raises."""
+    try:
+        from . import pc_health
+        return pc_health.hb_block()
+    except Exception:
+        return None
+
+
 def _opt(key, val) -> dict:
     """{key: val} when val is not None, else {} (a block that is off adds no key: the payload stays byte for byte as before)."""
     return {key: val} if val is not None else {}
@@ -711,7 +734,9 @@ class Heartbeat:
                 "nt_log": _nt_log(self.bot),     # NinjaTrader's Log-tab lines about our orders (engine/nt_log.py; <= ~10 KB)
                 **_alerts_plus(self.bot),       # "rules" (PC-vs-cloud fingerprint) + "crit" (critical conditions, engine/alerts_plus.py)
                 **_opt("account_c", _account_c(self.bot)),   # BLITZ's own account (engine/account_c.py): only when it is on
-                **_opt("mind", _mind(self.bot))}             # Mind (engine/mind.py, read-only): only once it has computed
+                **_opt("mind", _mind(self.bot)),             # Mind (engine/mind.py, read-only): only once it has computed
+                **_opt("selftest", _selftest()),             # PC self-test (engine/pc_selftest.py): only after its first run
+                **_opt("pc_health", _pc_health())}           # PC health watchdog (engine/pc_health.py): once it has sampled
 
     def beat(self) -> dict:
         """One heartbeat: bars + payload + push, the result kept in self.last / logs/heartbeat_last.json. One at a time (a

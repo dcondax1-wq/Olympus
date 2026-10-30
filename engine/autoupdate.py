@@ -29,7 +29,10 @@ Rules (never broken):
   * after the fast-forward: pip install -r requirements.txt when it changed, then the quick self-tests
     (engine.ninjatrader --selftest, engine.sizing, tests.test_no_yahoo). Any failure rolls back with
     `git reset --keep <old sha>` (the tree was clean, so nothing local can be lost; --keep refuses otherwise), remembers
-    the bad sha (not retried until main moves again) and alerts the phone.
+    the bad sha (not retried until main moves again) and alerts the phone. Then, only with "selftest_hold": true in
+    data/autoupdate.json (OFF by default until the PC has a green self-test baseline), the PC self-test
+    (engine/pc_selftest.py, 2026-10-30: 24 curated suites + 2 checks in sealed temp folders): a regression (a check that
+    passed on this PC before) rolls back the same way and pushes "Update held back: <first failing check>".
   * success: the server restarts (exit code RESTART_CODE; run_bot.ps1 starts it again at once). Paper / Sim bots resume
     by themselves; a real-account bot only with the owner's auto-resume opt-in (engine/autoresume.py), otherwise the
     phone gets "Updated to <sha>: bot is stopped on your eval, type the start command to resume".
@@ -62,6 +65,13 @@ PENDING_STAGES = ("limit", "cisd1m", "trade")                        # engine/ac
 OPEN_LEG = ("entry_sent", "pending", "cancel_pending", "protected", "unprotected", "closing")   # ninjatrader.OPEN_STATUSES
 TESTS = (["-m", "engine.ninjatrader", "--selftest", "--quiet"], ["-X", "utf8", "-m", "engine.sizing"],
          ["-X", "utf8", "-m", "tests.test_no_yahoo"])
+# 2026-10-30: then the PC self-test (engine/pc_selftest.py, mode update: the curated suites + checks, below-normal priority,
+# sealed temp folders). It exits 1 only on a REGRESSION (a check that passed on this PC before the update, or has no earlier
+# result): the update is held back like a failed test (rollback + bad_sha) and the push says "Update held back: <check>".
+# "{old}" = the commit before the update (its result is the baseline). Skipped when the new checkout has no pc_selftest.
+SELFTEST = ["-X", "utf8", "-m", "engine.pc_selftest", "--mode", "update", "--base", "{old}", "--quiet"]
+SELFTEST_TIMEOUT_S = 600
+HOLD_MARK = "SELFTEST-HOLD:"
 
 
 # ---------------------------------------------------------------------- state file
@@ -384,10 +394,30 @@ def put_back(sh, restore: dict):
 
 
 # ---------------------------------------------------------------------- the update itself
+def selftest_step(sh, old: str | None, args=None, timeout: float = SELFTEST_TIMEOUT_S) -> dict | None:
+    """The PC self-test on the new checkout (engine/pc_selftest.py, mode update). None when the checkout has no
+    engine/pc_selftest.py (an older main: nothing to run). {"code", "held": the first failing check's label or None,
+    "out"}; code != 0 = hold the update back."""
+    if not os.path.exists(os.path.join(sh.cwd, "engine", "pc_selftest.py")):
+        return None
+    argv = [str(a).replace("{old}", old or "") for a in (args or SELFTEST)]
+    c, out = sh.py(argv, timeout=timeout)
+    held = None
+    for ln in (out or "").splitlines():
+        if ln.startswith(HOLD_MARK):
+            held = ln[len(HOLD_MARK):].strip().split(":", 1)[0].strip() or None
+    if c != 0 and not held:
+        held = "the PC self-test" + (" (timed out)" if c == 124 else "")
+    return {"code": c, "held": held if c != 0 else None, "out": out}
+
+
 def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = None, state: dict | None = None,
-               tests=TESTS, branch: str = BRANCH, env=None, all_hours: bool = False) -> dict:
+               tests=TESTS, branch: str = BRANCH, env=None, all_hours: bool = False, selftest: bool | None = None) -> dict:
     """One check. Returns {"status", "reason", "old", "new", "restart", "alert"}; status: off | skipped | up_to_date |
-    updated | rolled_back | failed. `flat` = flat_reason (None = flat). Pure apart from `sh`."""
+    updated | rolled_back | failed. `flat` = flat_reason (None = flat). Pure apart from `sh`. selftest: run the PC
+    self-test after `tests` (selftest_step; a regression holds the update back: rolled back, "held" = the check).
+    None (default) = only when data/autoupdate.json has "selftest_hold": true (2026-10-30: OFF until the PC has a green
+    baseline from the Sunday / on-demand self-test; until then the self-test only reports, it never holds an update)."""
     now = time.time() if now is None else now
     state = load_state() if state is None else state
     res = {"t": int(now), "mode": mode, "status": "skipped", "reason": "", "old": None, "new": None, "restart": False, "alert": False}
@@ -411,7 +441,7 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
     if ff["status"] != "updated":
         return done(ff["status"], ff["reason"], alert=ff.get("alert", False))
 
-    def rollback(why):
+    def rollback(why, held=None):
         # the self-tests may rewrite bot-made files; --keep refuses on a locally changed file the ff changed
         c2, st2 = sh.git("status", "--porcelain", "--untracked-files=no")
         if c2 == 0:
@@ -424,7 +454,7 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
             sh.py(["-m", "pip", "install", "-q", "-r", "requirements.txt"], timeout=900)
         return done("rolled_back" if back else "failed",
                     f"{why}; " + (f"rolled back to {old[:7]}" if back else f"ROLLBACK FAILED ({rout.strip()[-120:]}): fix by hand"),
-                    alert=True, bad_sha=new)
+                    alert=True, bad_sha=new, **({"held": held} if held else {}))
 
     if "requirements.txt" in changed:
         c, out = sh.py(["-m", "pip", "install", "-q", "-r", "requirements.txt"], timeout=900)
@@ -436,6 +466,15 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
         sh.log(f"test {' '.join(t)} -> {c}")
         if c != 0:
             return rollback(f"self-test {' '.join(t[-2:])} failed: {out.strip()[-160:]}")
+    if selftest is None:
+        selftest = bool((state or {}).get("selftest_hold") is True)
+    st = selftest_step(sh, old) if selftest else None
+    if st is not None:
+        sh.log(f"PC self-test -> {st['code']}" + (f" (held back: {st['held']})" if st.get("held") else ""))
+        if st["code"] != 0:
+            hold_line = next((ln for ln in (st.get("out") or "").splitlines() if ln.startswith(HOLD_MARK)), "")
+            return rollback(f"PC self-test failed: {(hold_line[len(HOLD_MARK):].strip() or (st.get('out') or '').strip())[-200:]}",
+                            held=st["held"])
     return done("updated", f"{old[:7]} -> {new[:7]}, self-tests passed", restart=True)
 
 
@@ -458,6 +497,8 @@ def record(res: dict, state: dict | None = None, path: str = STATE_PATH) -> dict
     """Store the result in data/autoupdate.json (last result, history, bad sha, restart marker)."""
     s = load_state(path) if state is None else state
     s["last"] = {k: res.get(k) for k in ("t", "mode", "status", "reason", "old", "new")}
+    if res.get("held"):
+        s["last"]["held"] = res["held"]
     if res.get("mode") == "daily" and res.get("checked"):
         s["last_check_day"] = _et(res["t"]).date().isoformat()
     if res.get("mode") == "hourly" and res.get("checked"):
@@ -523,7 +564,12 @@ def alert_for(res: dict, sync=False):
         return
     st = res.get("status")
     title = {"rolled_back": "Bot update failed, rolled back", "failed": "Bot update FAILED"}.get(st, "Bot update skipped")
-    notify(title, str(res.get("reason") or "")[:300], key=f"auto:update:{st}:{res['t']}", sync=sync)
+    body = str(res.get("reason") or "")[:300]
+    if res.get("held") and st == "rolled_back":      # the PC self-test found a regression (engine/pc_selftest.py)
+        title = f"Update held back: {res['held']}"[:120]
+        body = (f"Still on {str(res.get('old') or '')[:7]}; {str(res.get('new') or '')[:7]} is not used until a newer main "
+                f"comes. {body}")[:300]
+    notify(title, body, key=f"auto:update:{st}:{res['t']}", sync=sync)
 
 
 _VER = {"t": 0, "sha": None, "branch": None}
@@ -548,7 +594,8 @@ def status(path: str = STATE_PATH) -> dict:
     last = s.get("last") or {}
     return {"on": is_enabled(s), **version(), "updated_at": s.get("updated_at"),
             "last_check_t": last.get("t"), "result": last.get("status"), "reason": str(last.get("reason") or "")[:160],
-            "bad_sha": (s.get("bad_sha") or "")[:7] or None, "last_hourly": s.get("last_hourly")}
+            "bad_sha": (s.get("bad_sha") or "")[:7] or None, "last_hourly": s.get("last_hourly"),
+            **({"held": str(last["held"])[:80]} if last.get("held") else {})}
 
 
 # ---------------------------------------------------------------------- in-server daily check

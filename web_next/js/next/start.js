@@ -235,6 +235,27 @@ function wireNewAcct(el) {
   });
 }
 
+// ------------------------------------------------------------------ PC self-test (engine/pc_selftest.py, 2026-10-30)
+// One line: the last result (Sunday 15:30 ET, after each update, or this button) + "Run self-test" (PC only, 1-3 min at
+// low priority; read-only: it never arms, routes or stops anything). Kept in these two functions.
+function selftestLine(d) {
+  const t = d.selftest;
+  if (!t) return '';
+  const bad = t.failed > 0;
+  const when = t.t ? new Date(t.t * 1000).toLocaleString('en-US', { weekday: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+  const why = bad && t.first?.length ? ` · ${t.first.map((x) => `${x.label}: ${x.why || 'failed'}`).join(' · ')}` : '';
+  return `<div class="st-ro ${bad ? 'warn' : ''} st-selftest" style="flex-wrap:wrap">${icon(bad ? 'info' : 'check')}<span style="flex:1 1 220px;min-width:0">PC self-test: ${esc(t.running ? 'running now (1-3 min)…' : t.say || 'not run yet')}${when && !t.running ? ` (${esc(when)})` : ''}${esc(why)}</span>${d.local ? `<span class="st-acts"><button type="button" class="btn ghost sm" data-st-selftest ${t.running ? 'disabled' : ''}>Run self-test</button></span>` : ''}</div>`;
+}
+
+function wireSelftest(el) {
+  el.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-st-selftest]');
+    if (!b || b.disabled) return;
+    b.disabled = true;
+    post('selftest').then(() => { toast('Self-test started (1-3 min, low priority)'); load(); }, (err) => { toast(err.message); b.disabled = false; });
+  });
+}
+
 // ------------------------------------------------------------------ draw
 function draw() {
   const el = $('#page-start');
@@ -251,6 +272,7 @@ function draw() {
       ${P.offline ? `<div class="st-ro warn">${icon('refresh')}<span>Reconnecting to the bot server…</span></div>` : ''}</div></div>
     ${goCard(d)}
     ${newAcctLine(d)}
+    ${selftestLine(d)}
     ${picks(d)}
     <div class="st-cols"><div class="card nx-glass cc-card st-list"><div class="card-h"><h3>Checklist</h3><div class="card-tools">${chip(`${n}/${d.steps.length}`, d.all_green ? 'good' : '')}</div></div>
       ${d.steps.map((s, i) => stepRow(s, d, i === d.steps.findIndex((x) => x.action === P.open && !x.done))).join('')}
@@ -373,7 +395,7 @@ function wire(el) {
 export const start = {
   show() {
     const el = $('#page-start');
-    if (el && !el.dataset.wired) { el.dataset.wired = '1'; wire(el); wireNewAcct(el); }
+    if (el && !el.dataset.wired) { el.dataset.wired = '1'; wire(el); wireNewAcct(el); wireSelftest(el); }
     if (!P.d && el) el.innerHTML = '<div class="empty">Loading the start list…</div>';
     load();
   },

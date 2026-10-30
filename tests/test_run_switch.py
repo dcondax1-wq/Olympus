@@ -18,6 +18,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
@@ -31,7 +32,8 @@ from engine import cloud_guard as CG, go as G, start_api as S  # noqa: E402
 RES = []
 PHRASE = "I ACCEPT LIVE RISK"
 REAL = [os.path.join(ROOT, p) for p in (".env.local.ps1", "second_model.json", "data/start_bot.json", "data/accounts.json",
-                                         "data/autostart.json", "data/auto_resume.json", "logs/start_job.json")]
+                                         "data/autostart.json", "data/auto_resume.json", "logs/start_job.json",
+                                         "data/autopilot.jsonl")]
 JS = os.path.join(ROOT, "web_next", "js", "next", "runswitch.js")
 
 
@@ -176,10 +178,12 @@ def state_checks():
 
 def endpoint_checks():
     calls = []
-    saved = {k: getattr(G, k) for k in ("job_start", "status", "accounts")}
+    saved = {k: getattr(G, k) for k in ("job_start", "status", "accounts", "CFG")}
     saved_s = {k: getattr(S, k) for k in ("_connected", "_feed", "_clock", "_poll", "_cards", "_bot")}
     env0 = os.environ.get("LE_CLOUD")
+    tmp = tempfile.mkdtemp(prefix="le_runswitch_")
     try:
+        G.CFG = os.path.join(tmp, "start_bot.json")     # the autopilot tap of a Start-page write lands next to it, not in data/
         G.job_start = lambda step, phrase=None: (calls.append((step, phrase)), {"ok": True, "say": "started"})[1]
         G.status = lambda state=None, connected=None, feed=None: {"steps": [], "running": False, "need_phrase": True,
                                                                   "job": {"step": None, "running": False}}
@@ -228,6 +232,7 @@ def endpoint_checks():
             setattr(G, k, v)
         for k, v in saved_s.items():
             setattr(S, k, v)
+        shutil.rmtree(tmp, ignore_errors=True)
         if env0 is None:
             os.environ.pop("LE_CLOUD", None)
         else:

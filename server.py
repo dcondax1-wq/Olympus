@@ -760,6 +760,12 @@ from engine import fill_audit as _fa
 # execution quality (engine/fill_audit.py): copies the ledger / NinjaTrader fills each minute, compares them with the LIT backtest
 # on the same bars after each exit and each session, pushes slipped fills / missed trades; read-only (LE_EXEC_AUDIT=0 = off)
 EXEC_AUDIT = _fa.Watcher(BOT, log=lambda t: print(t, flush=True))
+from engine import pc_health as _pch
+# PC health watchdog + weekly schedules (engine/pc_health.py, read-only, its own thread, never in the poll): CPU / RAM / disk /
+# NinjaTrader / bot memory / OneDrive / clock / poll lines in the heartbeat ("pc_health"), the Sunday 15:30 ET PC self-test
+# and the 17:30 ET readiness push (engine/pc_selftest.py, engine/readiness.py); LE_PC_WATCH=0 = off
+PCWATCH = _pch.Watcher(BOT)
+_pch.WATCHER = PCWATCH
 
 
 def _open_nt():
@@ -886,6 +892,7 @@ def _autostart_startup():
     LIVEPUB.start()                      # phone live.json every minute (engine/live_publish.py)
     EXEC_AUDIT.start()
     AUTOUPDATE.start()                   # daily check in the CME halt + hourly outside trading time; nothing until --enable
+    PCWATCH.start()                      # PC health + Sunday self-test / readiness (engine/pc_health.py; off in a dev / test server)
 
 
 app.router.add_event_handler("startup", _autostart_startup)

@@ -25,6 +25,8 @@ owner's typed I ACCEPT LIVE RISK, checked here and again by engine/go.step_arm a
   POST /api/next/start/blitz             {"name": a Sim account (the Sim test) | the MFFU 25K | "off", "start"} BLITZ's own
                                          account (engine/account_c.py, OFF by default; never armed here)
   POST /api/next/start/blitz/arm         {"confirm": "I ACCEPT LIVE RISK"} arm BLITZ's 25K (only with the typed phrase)
+  GET  /api/next/start/selftest          the last PC self-test (engine/pc_selftest.py) + whether one runs now
+  POST /api/next/start/selftest          "Run self-test": the low-priority child (read-only; not an autopilot step)
 """
 from __future__ import annotations
 
@@ -182,6 +184,7 @@ def r_status(request: Request, fresh: int = 0):
         st["clock"] = _clock(fresh=bool(fresh))
         st["poll"] = _poll()
         st["new_accounts"] = _new_accounts((st.get("accounts") or {}).get("rows"))
+        st["selftest"] = _selftest_brief()
         return _J(st)
     except Exception as e:
         return _J({"error": f"{e.__class__.__name__}: {e}"[:200]}, 500)
@@ -343,3 +346,44 @@ async def r_blitz_arm(request: Request):
 async def r_funded(request: Request):
     d = await _body(request)
     return _do(request, lambda: go.to_funded(d.get("name"), d.get("funded_name"), d.get("start"), d.get("plan"), d.get("balance")))
+
+
+# ---- PC self-test (engine/pc_selftest.py, 2026-10-30): read-only; "Run" starts the low-priority child, never arms / routes
+def _selftest_status() -> dict:
+    try:
+        from . import pc_selftest
+        r = pc_selftest.last()
+        return {"last": {k: r.get(k) for k in ("t", "mode", "version", "ok", "hold", "passed", "failed", "skipped", "total", "dur_s",
+                                                 "first", "known", "rows")} if r else None,
+                "say": pc_selftest.summary_line(r), "running": pc_selftest.RUNNER.status()}
+    except Exception as e:
+        return {"last": None, "say": f"unavailable ({e.__class__.__name__})", "running": {"running": False}}
+
+
+def _selftest_brief() -> dict:
+    """The Start page's one line (status): the last result's line + whether one runs now (no per-suite rows)."""
+    s = _selftest_status()
+    lr = s.get("last") or {}
+    return {"say": s.get("say"), "running": bool((s.get("running") or {}).get("running")), "ok": lr.get("ok"), "t": lr.get("t"),
+            "failed": lr.get("failed"), "mode": lr.get("mode"), "first": (lr.get("first") or [])[:3]}
+
+
+@router.get("/api/next/start/selftest")
+def r_selftest_get():
+    """The last PC self-test (every suite / check with its time and why it failed) + whether one runs now."""
+    return _J(_selftest_status())
+
+
+@router.post("/api/next/start/selftest")
+def r_selftest_run(request: Request):
+    """"Run self-test" on the Start page (this PC only): starts `python -m engine.pc_selftest --mode manual` at below-normal
+    priority (1-3 min); the page polls GET for the result. Not an owner step for the autopilot score (it changes nothing)."""
+    bad = _local(request)
+    if bad is not None:
+        return bad
+    try:
+        from . import pc_selftest
+        r = pc_selftest.RUNNER.start("manual")
+    except Exception as e:
+        r = {"ok": False, "error": f"{e.__class__.__name__}: {e}"[:200]}
+    return _J({**r, **_selftest_status()}, 200 if r.get("ok") or r.get("running") else 400)
