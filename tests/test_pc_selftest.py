@@ -257,7 +257,7 @@ def t_autoupdate():
     import datetime as dt
     from zoneinfo import ZoneInfo
     evening = dt.datetime(2026, 10, 20, 20, 0, tzinfo=ZoneInfo("America/New_York")).timestamp()
-    ON = {"enabled": True}
+    ON = {"enabled": True, "selftest_hold": True}
     tmp = tempfile.mkdtemp(prefix="le_t_au_")
     try:
         with_st = os.path.join(tmp, "with")
@@ -301,6 +301,10 @@ def t_autoupdate():
         sh = FakeShell(with_st, selftest=(1, "SELFTEST-HOLD: X: y\n"))
         r = au.run_update(sh, "start", evening, None, state=ON, env={}, selftest=False)
         check("run_update(selftest=False) skips it", r["status"] == "updated")
+        sh = FakeShell(with_st, selftest=(1, "SELFTEST-HOLD: X: y\n"))
+        r = au.run_update(sh, "start", evening, None, state={"enabled": True}, env={})
+        check("default (no selftest_hold in the state): the self-test never holds an update (it only reports until a baseline)",
+              r["status"] == "updated" and not any("engine.pc_selftest" in c for c in sh.calls if c[0] == "py"), (r, sh.calls))
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 

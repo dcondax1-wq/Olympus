@@ -29,9 +29,10 @@ Rules (never broken):
   * after the fast-forward: pip install -r requirements.txt when it changed, then the quick self-tests
     (engine.ninjatrader --selftest, engine.sizing, tests.test_no_yahoo). Any failure rolls back with
     `git reset --keep <old sha>` (the tree was clean, so nothing local can be lost; --keep refuses otherwise), remembers
-    the bad sha (not retried until main moves again) and alerts the phone. Then the PC self-test (engine/pc_selftest.py,
-    2026-10-30: 24 curated suites + 2 checks in sealed temp folders): a regression (a check that passed on this PC before)
-    rolls back the same way and pushes "Update held back: <first failing check>".
+    the bad sha (not retried until main moves again) and alerts the phone. Then, only with "selftest_hold": true in
+    data/autoupdate.json (OFF by default until the PC has a green self-test baseline), the PC self-test
+    (engine/pc_selftest.py, 2026-10-30: 24 curated suites + 2 checks in sealed temp folders): a regression (a check that
+    passed on this PC before) rolls back the same way and pushes "Update held back: <first failing check>".
   * success: the server restarts (exit code RESTART_CODE; run_bot.ps1 starts it again at once). Paper / Sim bots resume
     by themselves; a real-account bot only with the owner's auto-resume opt-in (engine/autoresume.py), otherwise the
     phone gets "Updated to <sha>: bot is stopped on your eval, type the start command to resume".
@@ -411,10 +412,12 @@ def selftest_step(sh, old: str | None, args=None, timeout: float = SELFTEST_TIME
 
 
 def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = None, state: dict | None = None,
-               tests=TESTS, branch: str = BRANCH, env=None, all_hours: bool = False, selftest: bool = True) -> dict:
+               tests=TESTS, branch: str = BRANCH, env=None, all_hours: bool = False, selftest: bool | None = None) -> dict:
     """One check. Returns {"status", "reason", "old", "new", "restart", "alert"}; status: off | skipped | up_to_date |
     updated | rolled_back | failed. `flat` = flat_reason (None = flat). Pure apart from `sh`. selftest: run the PC
-    self-test after `tests` (selftest_step; a regression holds the update back: rolled back, "held" = the check)."""
+    self-test after `tests` (selftest_step; a regression holds the update back: rolled back, "held" = the check).
+    None (default) = only when data/autoupdate.json has "selftest_hold": true (2026-10-30: OFF until the PC has a green
+    baseline from the Sunday / on-demand self-test; until then the self-test only reports, it never holds an update)."""
     now = time.time() if now is None else now
     state = load_state() if state is None else state
     res = {"t": int(now), "mode": mode, "status": "skipped", "reason": "", "old": None, "new": None, "restart": False, "alert": False}
@@ -463,6 +466,8 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
         sh.log(f"test {' '.join(t)} -> {c}")
         if c != 0:
             return rollback(f"self-test {' '.join(t[-2:])} failed: {out.strip()[-160:]}")
+    if selftest is None:
+        selftest = bool((state or {}).get("selftest_hold") is True)
     st = selftest_step(sh, old) if selftest else None
     if st is not None:
         sh.log(f"PC self-test -> {st['code']}" + (f" (held back: {st['held']})" if st.get("held") else ""))
