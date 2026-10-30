@@ -1124,6 +1124,10 @@ def part13():
         check("13. ... Name not in NinjaTrader / not allowlisted / no Sim test = three red lines, each with its fix",
               st["visible"]["state"] == "bad" and st["allow"]["state"] == "bad" and "--allow-account" in st["allow"]["fix"]
               and st["sim"]["state"] == "bad" and st["sim"]["fix"], {k: st[k]["state"] for k in ("visible", "allow", "sim")})
+        r = PF.check(None, root=tmp, now=now, allowed={"MFFUEVBLDR777"}, folder=tmp, sim_rt={}, **kw)
+        st = {i["key"]: i for i in r["items"]}
+        check("13. ... NinjaTrader's account list not exported (no accounts.csv, as on the PC today): the Name line is information "
+              "(check it by hand), not a red line", st["visible"]["state"] == "info" and "Accounts tab" in st["visible"]["detail"], st["visible"])
         AC.write_local({"account": "MFFUEVBLDR602936017", "plan": "builder25k", "eval_start": "2026-11-02"}, tmp)
         r = PF.check(None, root=tmp, now=now, allowed=set(), nt_names=[], sim_rt={}, **kw)
         st = {i["key"]: i for i in r["items"]}

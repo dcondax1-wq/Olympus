@@ -163,8 +163,16 @@ def facts(bot=None, root: str | None = None, now=None, folder: str | None = None
             seen = {r["name"] for r in go.nt_names(folder)}
         f["visible"] = True if f["sim"] else (name in seen if name else None)
         f["seen"] = sorted(seen)[:8]
+        # NinjaTrader's account list = LE_BarFeed's accounts.csv (its account export) + position files (only after a trade):
+        # without the export a brand-new 25K cannot be seen yet, which is no fault of the account (2026-10-29: the PC's
+        # heartbeat shows no accounts.csv)
+        if nt_names is not None:
+            f["list_ok"] = True
+        else:
+            from . import broker_balance
+            f["list_ok"] = bool(broker_balance.read(folder=folder).get("ok"))
     except Exception:
-        f["visible"], f["seen"] = None, []
+        f["visible"], f["seen"], f["list_ok"] = None, [], False
     try:
         if allowed is None:
             from .ninjatrader import allowed_accounts
@@ -335,6 +343,11 @@ def lines(f: dict) -> dict:
         items.append(_item("visible", "BLITZ's account in NinjaTrader", "good", f"{name} is a NinjaTrader Sim account (always there)"))
     elif vis:
         items.append(_item("visible", "BLITZ's account in NinjaTrader", "good", f"NinjaTrader shows {name}"))
+    elif not f.get("list_ok"):
+        items.append(_item("visible", "BLITZ's account in NinjaTrader", "info",
+                           f"not checked: NinjaTrader's account list is not exported (LE_BarFeed's account export is off), so check {name} "
+                           "letter by letter against NinjaTrader's Accounts tab (with a wrong Name NinjaTrader takes no BLITZ order: "
+                           "'order NOT placed', nothing booked)"))
     else:
         seen = ", ".join(f.get("seen") or []) or "none yet"
         items.append(_item("visible", "BLITZ's account in NinjaTrader", "bad" if nt else "wait",
