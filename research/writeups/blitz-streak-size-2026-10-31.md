@@ -4,7 +4,7 @@ family: risk
 date: 2026-10-31
 status: rejected (no change, no switch) - the H1 pick, half size on the trade after a same-day BLITZ loss, adds $0 / +$1 / -$1 a month to the slot (H1 / H2 / 2021-25) and loses to shuffled outcomes in 2021-25
 summary: Eval size of the day's next BLITZ trade by the previous one's result (x m_loss after a same-day loss, x m_win after a win, on top of the later-break size; 7 cells, pick on 2026 H1, 1,000 Monte Carlo paths, 10 shuffled-outcome controls). H1 pick x0.5 after a loss: slot $286 / $53 / -$40 a month (today $286 / $52 / -$39), 2-week pass/fail 50.4/21.8 vs 47.9/23.5 (H1), 40.6/17.4 vs 36.2/21.7 (H2), 23.1/47.7 vs 24.7/48.4 (2021-25); $150 view $1,179 / $1,170 / $20 a month vs $1,413 / $1,228 / $124, PF 1.78 / 2.08 / 1.01 vs 1.74 / 1.88 / 1.05. Trades after a loss average +0.14R / +0.08R / +0.07R (H1 / H2 / 2021-25), after a win +0.22R / +0.31R / -0.02R: the sign flips in 2021-25. Rejected.
-runs: bzx_streak
+runs: bzx_streak, bzx_cold
 ---
 
 ## Money first
@@ -90,3 +90,30 @@ and in 2026 it adds nothing to the money ($0 / +$1 a month). Do not retry in-day
 fact that separates good from bad trades after a loss. The same-day sequence by itself is noise across the 5 years.
 
 Nothing is adopted. BLITZ's trades and account C's size stay exactly as they are; no switch was added.
+
+## Follow-up (19:40): cold-streak size on BLITZ's own last trades - rejected
+
+**Money first.** This also changes nothing. The H1 pick (half size while BLITZ's last 5 trades sum below 0R) gives a slot
+of **$288 / $52 / -$40 a month** (H1 / H2 / 2021-25), against **$286 / $52 / -$39** today. Shuffled cold / warm flags
+give $279 / $48 / **-$37**, so in 2021-25 the rule does worse than chance.
+
+- **The rule:** the eval size goes x m_cold when the sum of R of BLITZ's previous K trades is below 0, else x m_warm. It
+  runs on top of the later-break size; the funded size is unchanged. Those K trades closed before the entry, so nothing
+  looks ahead.
+- **Grid:** K = 5 / 10 / 20; (m_cold, m_warm) = (0.5, 1), (1.5, 1), (1, 1.5). Same gate and harness as above (1,000 paths,
+  10 shuffled controls). Tool: `tools/bzx_cold.py`, run `bzx_cold`, data `research/scalp/bzx_cold.json`.
+- **This is new:** the cross-day version of the streak idea. It is not LIT's cold-streak filter, and not ATLAS's member
+  weights.
+
+| | Slot $ a month H1 / H2 / 2021-25 | 2-week pass / fail H1 · H2 · 2021-25 | $150 a trade: $ a month, PF, max DD | Trades a week |
+|---|---|---|---|---|
+| Today | $286 / $52 / -$39 | 47.9/23.5 · 36.2/21.7 · 24.7/48.4 | $1,413 / $1,228 / $124 · PF 1.74 / 1.88 / 1.05 · DD -$1,184 / -$1,253 / -$8,926 | 8.5 / 6.8 / 8.6 |
+| **H1 pick: K 5, x0.5 when cold** | **$288 / $52 / -$40** | 47.1/23.5 · 40.6/17.4 · 23.3/44.3 | $1,182 / $1,112 / $8 · PF 1.76 / 1.99 / 1.00 · DD -$803 / -$1,022 / -$10,185 | 8.5 / 6.8 / 8.6 |
+| Shuffled flags (10 seeds) | $279 / $48 / -$37 | 44.5/26.1 · 36.8/20.4 · 21.9/41.9 | $1,154 / $1,025 / $113 a month | same |
+
+- **Why it fails:** the same flip as the in-day streak. After 5 losing-sum trades, the next trade averages +0.12R / +0.06R
+  in 2026 H1 / H2 but **+0.06R** in 2021-25, where the "warm" trades average -0.03R. Over five years a cold BLITZ is
+  followed by better trades, not worse ones.
+- **The other cells:** none passes H2 and 2021-25 together. x1.5 when cold raises the 2-week fail rate in every span
+  (H1 33.6-41.2% vs 23.5%).
+- **Verdict:** rejected. Do not retry BLITZ equity-curve / streak sizing without a new fact.

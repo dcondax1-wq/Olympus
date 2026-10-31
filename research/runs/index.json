@@ -1,7 +1,7 @@
 {
- "built": "2026-10-31 23:31",
+ "built": "2026-10-31 23:40",
  "baseline": "baseline",
- "count": 2225,
+ "count": 2226,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -222496,6 +222496,421 @@
      "slow_pass": 89.6,
      "pass_med": 32.0,
      "b2b": "14/13"
+    }
+   }
+  },
+  {
+   "id": "bzx_cold",
+   "title": "BLITZ cold-streak size (x0.5 when its last 5 trades sum below 0R, x1.0 else) - rejected",
+   "family": "risk",
+   "question": "Does BLITZ's own recent run of trades tell how big the next one should be (eval 25K)?",
+   "status": "rejected",
+   "verdict": "rejected",
+   "writeup": "blitz-streak-size-2026-10-31.md",
+   "tags": [
+    "blitz",
+    "account_c",
+    "sizing",
+    "eval"
+   ],
+   "params": {
+    "stop": "atr",
+    "k": 1.5,
+    "tgt": null,
+    "part": null,
+    "hold": 30,
+    "trail": 1.5,
+    "tstart": 1.0,
+    "be": null,
+    "be_off": 0.25,
+    "sw_trail": 0,
+    "sw_start": 1.0,
+    "choch": 0,
+    "maxday": 6,
+    "day_stop": 3.0,
+    "dmin": 0.0,
+    "dmax": 99.0,
+    "r_min": 1.0,
+    "r_max": 99.0,
+    "p_min": 0.5,
+    "part_f": 0.5,
+    "part_be": false,
+    "liq": "all",
+    "filter": "prng>=0.8",
+    "late": 0,
+    "wins": [
+     "rth"
+    ],
+    "last_mod": 930,
+    "lim": null,
+    "lim_w": 10,
+    "cold": {
+     "k": 5,
+     "m_cold": 0.5,
+     "m_warm": 1.0
+    },
+    "grid": [
+     [
+      5,
+      0.5,
+      1.0
+     ],
+     [
+      5,
+      1.5,
+      1.0
+     ],
+     [
+      5,
+      1.0,
+      1.5
+     ],
+     [
+      10,
+      0.5,
+      1.0
+     ],
+     [
+      10,
+      1.5,
+      1.0
+     ],
+     [
+      10,
+      1.0,
+      1.5
+     ],
+     [
+      20,
+      0.5,
+      1.0
+     ],
+     [
+      20,
+      1.5,
+      1.0
+     ],
+     [
+      20,
+      1.0,
+      1.5
+     ]
+    ],
+    "n_mc": 1000,
+    "summary": {
+     "H1": {
+      "today": {
+       "slot_pm": 286,
+       "p10": 47.9,
+       "f10": 23.5,
+       "dec10": 71.4,
+       "p15": 63.2,
+       "f15": 24.6,
+       "pass_med": 7.0,
+       "slow_pass": 12.0,
+       "net": 8614,
+       "per_month": 1413,
+       "pf": 1.74,
+       "dd": -1184,
+       "tpw": 8.48,
+       "avg_r": 0.165
+      },
+      "pick": {
+       "slot_pm": 288,
+       "p10": 47.1,
+       "f10": 23.5,
+       "dec10": 70.6,
+       "p15": 63.2,
+       "f15": 24.6,
+       "pass_med": 7.0,
+       "slow_pass": 11.1,
+       "net": 7202,
+       "per_month": 1182,
+       "pf": 1.76,
+       "dd": -803,
+       "tpw": 8.48,
+       "avg_r": 0.165
+      },
+      "control": {
+       "slot_pm_mean": 279,
+       "slot_pm_seeds": [
+        286,
+        276,
+        287,
+        277,
+        278,
+        276,
+        279,
+        279,
+        272,
+        282
+       ],
+       "p10_mean": 44.5,
+       "f10_mean": 26.1,
+       "pm150_mean": 1154
+      }
+     },
+     "H2": {
+      "today": {
+       "slot_pm": 52,
+       "p10": 36.2,
+       "f10": 21.7,
+       "dec10": 57.9,
+       "p15": 35.9,
+       "f15": 39.1,
+       "pass_med": 5.0,
+       "slow_pass": 0.0,
+       "net": 4560,
+       "per_month": 1228,
+       "pf": 1.88,
+       "dd": -1253,
+       "tpw": 6.79,
+       "avg_r": 0.2
+      },
+      "pick": {
+       "slot_pm": 52,
+       "p10": 40.6,
+       "f10": 17.4,
+       "dec10": 58.0,
+       "p15": 40.6,
+       "f15": 34.4,
+       "pass_med": 5.0,
+       "slow_pass": 0.0,
+       "net": 4129,
+       "per_month": 1112,
+       "pf": 1.99,
+       "dd": -1022,
+       "tpw": 6.79,
+       "avg_r": 0.2
+      },
+      "control": {
+       "slot_pm_mean": 48,
+       "slot_pm_seeds": [
+        50,
+        47,
+        55,
+        43,
+        48,
+        49,
+        50,
+        52,
+        51,
+        40
+       ],
+       "p10_mean": 36.8,
+       "f10_mean": 20.4,
+       "pm150_mean": 1025
+      }
+     },
+     "R": {
+      "today": {
+       "slot_pm": -39,
+       "p10": 24.7,
+       "f10": 48.4,
+       "dec10": 73.1,
+       "p15": 29.0,
+       "f15": 60.9,
+       "pass_med": 5.0,
+       "slow_pass": 2.8,
+       "net": 6363,
+       "per_month": 124,
+       "pf": 1.05,
+       "dd": -8926,
+       "tpw": 8.55,
+       "avg_r": 0.013
+      },
+      "pick": {
+       "slot_pm": -40,
+       "p10": 23.3,
+       "f10": 44.3,
+       "dec10": 67.6,
+       "p15": 28.3,
+       "f15": 59.1,
+       "pass_med": 6.0,
+       "slow_pass": 5.9,
+       "net": 416,
+       "per_month": 8,
+       "pf": 1.0,
+       "dd": -10185,
+       "tpw": 8.55,
+       "avg_r": 0.013
+      },
+      "control": {
+       "slot_pm_mean": -37,
+       "slot_pm_seeds": [
+        -42,
+        -35,
+        -39,
+        -37,
+        -35,
+        -36,
+        -37,
+        -36,
+        -38,
+        -39
+       ],
+       "p10_mean": 21.9,
+       "f10_mean": 41.9,
+       "pm150_mean": 113
+      }
+     }
+    },
+    "facts": {
+     "H1_k5": {
+      "cold": 79,
+      "warm": 138,
+      "R_cold": 0.115,
+      "R_warm": 0.193
+     },
+     "H2_k5": {
+      "cold": 38,
+      "warm": 68,
+      "R_cold": 0.06,
+      "R_warm": 0.278
+     },
+     "R_k5": {
+      "cold": 920,
+      "warm": 921,
+      "R_cold": 0.055,
+      "R_warm": -0.029
+     },
+     "H1_k10": {
+      "cold": 68,
+      "warm": 149,
+      "R_cold": 0.029,
+      "R_warm": 0.227
+     },
+     "H2_k10": {
+      "cold": 31,
+      "warm": 75,
+      "R_cold": -0.041,
+      "R_warm": 0.299
+     },
+     "R_k10": {
+      "cold": 910,
+      "warm": 931,
+      "R_cold": 0.074,
+      "R_warm": -0.046
+     },
+     "H1_k20": {
+      "cold": 52,
+      "warm": 165,
+      "R_cold": 0.155,
+      "R_warm": 0.167
+     },
+     "H2_k20": {
+      "cold": 18,
+      "warm": 88,
+      "R_cold": 0.517,
+      "R_warm": 0.135
+     },
+     "R_k20": {
+      "cold": 888,
+      "warm": 953,
+      "R_cold": 0.035,
+      "R_warm": -0.008
+     }
+    }
+   },
+   "sizing": {
+    "usd_per_trade": 150.0,
+    "eval_25k": {
+     "mode": "frac",
+     "f": 0.4,
+     "cap": 600.0,
+     "push": [
+      5,
+      1.0
+     ],
+     "fmax": 1.0
+    },
+    "funded_25k": {
+     "mode": "frac",
+     "f": 0.1,
+     "cap": 150.0,
+     "day_tp": 400.0
+    },
+    "later_break": [
+     1.75,
+     0.5
+    ]
+   },
+   "built": "2026-10-31 23:39",
+   "spans": {
+    "2026": {
+     "n": 323,
+     "tpw": 7.84,
+     "wk2": 86,
+     "win": 56.7,
+     "pf": 1.77,
+     "net": 10732,
+     "dd": -945,
+     "avg_r": 0.176,
+     "stop": 61.1,
+     "worst_day": -392,
+     "risk": 165.0,
+     "half": 0,
+     "per_month": 1094,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.5,
+     "f15": 0.0,
+     "p20": 5.3,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": 99.0,
+     "pass_med": 41.0,
+     "b2b": "3/0"
+    },
+    "2021-25": {
+     "n": 1841,
+     "tpw": 8.55,
+     "wk2": 80,
+     "win": 50.1,
+     "pf": 1.0,
+     "net": 220,
+     "dd": -9379,
+     "avg_r": 0.013,
+     "stop": 38.9,
+     "worst_day": -551,
+     "risk": 127.0,
+     "half": 0,
+     "per_month": 4,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.0,
+     "f15": 0.0,
+     "p20": 0.0,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": 100.0,
+     "pass_med": 58.5,
+     "b2b": "3/6"
+    },
+    "all": {
+     "n": 2164,
+     "tpw": 8.43,
+     "wk2": 81,
+     "win": 51.1,
+     "pf": 1.1,
+     "net": 10952,
+     "dd": -9379,
+     "avg_r": 0.037,
+     "stop": 41.2,
+     "worst_day": -551,
+     "risk": 135.0,
+     "half": 0,
+     "per_month": 179,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.1,
+     "f15": 0.0,
+     "p20": 0.9,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": 99.1,
+     "pass_med": 41.0,
+     "b2b": "5/6"
     }
    }
   },
