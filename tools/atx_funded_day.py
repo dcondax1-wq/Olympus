@@ -10,6 +10,9 @@ signal of the day instead of the first (4 seeds), so "1 a day" has to beat "any 
 
     python -X utf8 tools/atx_funded_day.py run [n]     # slot $ for every variant -> research/second/atx_funded_day.json
     python -X utf8 tools/atx_funded_day.py save        # runs atxd_* in the run library (real-session slot trades)
+    python -X utf8 tools/atx_funded_day.py vix         # idea 2: funded-only VIX band per member
+    python -X utf8 tools/atx_funded_day.py partial     # idea 3: funded half off at 0.75 / 1 / 1.5R + BE runner (+ control)
+    python -X utf8 tools/atx_funded_day.py save_partial  # runs atxd_partial_*
 Paper research only: nothing in engine/, second_model.json or live_model*.json is touched.
 """
 from __future__ import annotations
@@ -198,11 +201,117 @@ def cmd_vix(n=300, k_ctl=8):
     return res
 
 
+# ============================================================ idea 3: funded partial at xR + runner (stop to BE), eval unchanged
+_PART = {}
+
+
+def partial_map(lvl):
+    """{(src, entry_t): new pts per micro} for half off at lvl x R and the stop to breakeven on the rest (bars from the
+    member's own bar set, highs and lows in trade direction; a bar that touches both the stop and lvl R = stop first;
+    a bar after the partial that touches entry = runner out at BE less 1 tick; else the runner keeps the trade's exit)."""
+    import numpy as np
+    if lvl in _PART:
+        return _PART[lvl]
+    from tools import lit_final as F
+    V2, A, M, EAB = X.libs()
+    if "B" not in _PART:
+        Mk, _ = F.market("cisd", [])
+        _PART["B"] = (F.bars(Mk, "5m"), F.bars(Mk, "1m"))
+    B5, B1 = _PART["B"]
+    out = {}
+    for nm in X.MEM:
+        for u in M.units()[nm]:
+            B = B1 if int(u["entry_t"]) >= int(B1.t[0]) + 86400 else B5
+            k0 = int(np.searchsorted(B.t, int(u["entry_t"]), side="right"))
+            kx = int(np.searchsorted(B.t, int(u["exit_t"]) - B.secs))
+            dr, r = int(u["dir"]), float(u["risk"])
+            e = float(u["pts"])
+            # entry price is not in the unit: rebuild it from the first bar's open and po[0]
+            if not len(u["po"]) or kx < k0:
+                continue
+            ent = float(B.o[k0]) - float(u["po"][0]) * dr
+            hi = (B.h[k0:kx + 1] - ent) * dr if dr == 1 else (ent - B.l[k0:kx + 1])
+            lo = (B.l[k0:kx + 1] - ent) * dr if dr == 1 else (ent - B.h[k0:kx + 1])
+            hit = np.where(hi >= lvl * r)[0]
+            if not len(hit):
+                continue
+            j = int(hit[0])
+            if (lo[:j + 1] <= -r).any() or j == len(hi) - 1 and e < lvl * r:
+                continue                                  # stop first (or the exit bar itself without the level): unchanged
+            run = e
+            if (lo[j + 1:len(lo) - 1] <= 0).any():
+                run = -M.SLIP                             # runner stopped at breakeven before the trade's own exit
+            out[(nm, int(u["entry_t"]))] = 0.5 * lvl * r + 0.5 * run
+    _PART[lvl] = out
+    return out
+
+
+def funded_partial(lvl, frac=1.0, seed=None):
+    """A funded play_day with the partial applied (to a seeded random share `frac` of the eligible trades = the control)."""
+    V2, A, M, EAB = X.libs()
+    mp = partial_map(lvl)
+
+    def play(L, day, bal, floor, session, rule, pre=False, _md=2, lost=None, litcfg=None, dll=None, reserve=False, extra=None):
+        L2 = []
+        for t in L:
+            k = (t["src"], int(t["entry_t"]))
+            if k in mp and (frac >= 1.0 or random.Random(f"{seed}:{k}").random() < frac):
+                t = {**t, "pts": round(mp[k], 4)}
+            L2.append(t)
+        return M.play_day(L2, day, bal, floor, session, rule, pre, 2, lost, litcfg, dll=dll, reserve=reserve, extra=extra)
+    return play
+
+
+def cmd_partial(n=300):
+    res = {}
+    rows = [("today", None), ("p0.75", (0.75,)), ("p1", (1.0,)), ("p1.5", (1.5,))] + \
+           [(f"ctl_p1_half_s{s}", (1.0, 0.5, s)) for s in (1, 2, 3, 4)]
+    for name, a in rows:
+        X.PLAY_FUNDED[0] = funded_partial(*a) if a else None
+        try:
+            o = {}
+            for sd in (SEEDS if not name.startswith("ctl") else (23,)):
+                sl = X.slot(X.today(), n=n, seed=sd)
+                sl["2021-25"] = X.slot_ref(sl)
+                o[sd] = {s: sl[s]["pm"] for s in ("H1", "H2", "2021-25")}
+            rs, T = X.real_slot(X.today())
+        finally:
+            X.PLAY_FUNDED[0] = None
+        o["funded_trades"] = stats([t for t in T if t["stage"] == "funded"])
+        o["n_changed"] = len(partial_map(a[0])) if a else 0
+        res[name] = o
+        print(f"{name:16s} {o[23]}  " + " ".join(f"s{sd} {o[sd]}" for sd in SEEDS[1:] if sd in o), flush=True)
+        json.dump(res, open(os.path.join(X.OUT, "atx_funded_partial.json"), "w", encoding="utf-8"), indent=1, default=str)
+    return res
+
+
+def cmd_save_partial():
+    from tools import runlib as rl
+    V2, A, M, EAB = X.libs()
+    sess = sorted(set(M.units()["sessions"]))
+    R = json.load(open(os.path.join(X.OUT, "atx_funded_partial.json"), encoding="utf-8"))
+    for name, lvl, title in (("p1", 1.0, "ATLAS funded 25K: half off at 1R, stop to BE, runner to today's target (eval unchanged)"),
+                             ("p1.5", 1.5, "ATLAS funded 25K: half off at 1.5R, stop to BE (neighbour; eval unchanged)")):
+        X.PLAY_FUNDED[0] = funded_partial(lvl)
+        try:
+            rs, T = X.real_slot(X.today())
+        finally:
+            X.PLAY_FUNDED[0] = None
+        T = X._runlib_trades(T)
+        r, b = R[name], R["today"]
+        vt = "; ".join(f"{s}: slot ${r['23'][s]:,}/mo (today ${b['23'][s]:,}), funded PF {r['funded_trades'][s]['pf']}, "
+                       f"R/$ {r['funded_trades'][s]['r_per_risk']}" for s in ("H1", "H2", "2021-25"))
+        rl.save("atxd_partial_" + name.replace(".", "p"), title, "management", "ATLAS 2026-10-31: does a partial + breakeven runner "
+                "on the FUNDED 25K pay the owner more?", params={"funded_partial_R": lvl, "eval": "today",
+                                                                 "runner": "stop to breakeven, else the trade's own exit"},
+                sizing={"eval": "engine/account_b.qty need", "funded": "engine/sizing.funded_qty 25K preset (atx_edge.funded_q)"},
+                trades=T, scored=rl.score(T, sess), status="rejected", verdict=vt,
+                notes="tools/atx_funded_day.py partial (bar highs / lows from the members' own bar set; a bar touching both = stop first)",
+                writeup="atlas-funded-one-a-day-2026-10-31", tags=["atlas", "account_b", "25k", "funded", "slot", "partial"])
+        print("saved", name, flush=True)
+
+
 if __name__ == "__main__":
     c = sys.argv[1] if len(sys.argv) > 1 else "run"
-    if c == "run":
-        cmd_run(int(sys.argv[2]) if len(sys.argv) > 2 else 300)
-    elif c == "save":
-        cmd_save()
-    elif c == "vix":
-        cmd_vix()
+    {"run": lambda: cmd_run(int(sys.argv[2]) if len(sys.argv) > 2 else 300), "save": cmd_save, "vix": cmd_vix,
+     "partial": cmd_partial, "save_partial": cmd_save_partial}[c]()

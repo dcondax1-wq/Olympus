@@ -2,9 +2,9 @@
 title: ATLAS funded 25K - one trade a day (2026-10-31) - fewer trades on the funded account pays the owner LESS; the second trade of the day is part of the money
 family: risk
 date: 2026-10-31
-status: rejected (no change) - funded max 1 a day loses slot $ in every span (H1 $454 vs $568, H2 $275 vs $382, 2021-25 -$3 vs -$2 a month) and loses even to a random 1-a-day control; the H1 pick (up to 3 a day) adds +$44 in H1 but exactly $0 in H2 on all 4 path seeds; idea 2 (skip each member's worst VIX band on the funded account) picks nothing - no member lost in any H1 VIX tercile
+status: rejected (no change) - funded max 1 a day loses slot $ in every span (H1 $454 vs $568, H2 $275 vs $382, 2021-25 -$3 vs -$2 a month) and loses even to a random 1-a-day control; the H1 pick (up to 3 a day) adds +$44 in H1 but exactly $0 in H2 on all 4 path seeds; idea 2 (skip each member's worst VIX band on the funded account) picks nothing - no member lost in any H1 VIX tercile; idea 3 (funded half off at 1R + BE runner) H1 $366 vs $568, H2 $341 vs $382 - rejected, neighbours 0.75R / 1.5R also lose H1
 summary: Owner 2026-10-31 "keep building those strategies" - does the FUNDED ATLAS 25K pay the owner more with a day limit of one trade (the day's first ATLAS signal) instead of two? Eval unchanged (today's ATLAS), so only the whole-slot money can move (tools/atx_edge.slot - eval -> funded -> MFFU payouts -> a new $63 eval, 300 paths x 126 sessions). Trade-count rules were tested on the eval path before (atlas-confluences.md), never on the funded account's payouts. Picked on 2026 H1, checked on H2 and 2021-25, random 1-a-day control (4 seeds), neighbours max 3 / max 4, 4 path seeds.
-runs: atxd_max1, atxd_max3, atxd_today
+runs: atxd_max1, atxd_max3, atxd_today, atxd_partial_p1, atxd_partial_p1p5
 ---
 
 ## Money first
@@ -42,6 +42,27 @@ nothing and the funded slot stays today's ($568 / $382 / -$2). Dropping a winnin
 construction. VIX per member was already rejected on the eval (atlas.md); this closes it for the funded account too.
 Numbers: `research/second/atx_funded_vix.json` (no run stored: identical to `atxd_today`).
 
+**Idea 3, same session: a partial on the funded account (half off at 1R, the stop to breakeven, the rest on today's
+exit; eval unchanged). Rejected: it costs the owner about $200 a month in H1.**
+
+| Funded 25K exit | H1 slot $/mo | H2 slot $/mo | 2021-25 slot $/mo | Funded trades (real path) H1 / H2: PF, R per $ risked |
+|---|---:|---:|---:|---|
+| **Today (no partial)** | **$568** | **$382** | -$2 | 2.94, +0.867 / 2.96, +0.657 |
+| Half off at 0.75R + BE (neighbour) | $336 | $203 | -$21 | |
+| **Half off at 1R + BE** | $366 | $341 | -$14 | 1.94, +0.404 / 3.27, +0.558 |
+| Half off at 1.5R + BE (neighbour, best of the three in H1) | $414 | $388 | -$6 | 2.07, +0.471 / 4.06, +0.739 |
+| Control: the 1R partial on a random half of the trades (4 seeds) | $389-448 | $273-327 | -$15 to +$3 | |
+
+- Every partial loses H1 money, and more partials = less money (0.75R worst, the random half in between). The
+  partial cuts ATLAS's big winners: at 1R, 684 of 1,395 member trades change, -0.23R each on average (H1: 72 trades, -62R).
+- The H1 pick among partials (1.5R) is still $154 a month below today in H1. In H2 it is +$6 (+$25-33 on the other
+  seeds) with a smaller funded drawdown (-$386 vs -$1,175), but it is worse in 2021-25 on every seed (-$6 to -$20 vs
+  -$2 to -$11). It fails the gate; at most a note that a 1.5R partial smooths the H2 funded path.
+- Path: the members' own bars (1m in 2026, 5m before), highs and lows after the entry bar; a bar touching both the stop
+  and the partial level counts as the stop first; a bar after the partial touching the entry = the runner out at
+  breakeven less 1 tick. With 1 micro the split is a blend (half the points), as the simulator sizes in whole micros.
+- Runs `atxd_partial_p1`, `atxd_partial_p1p5`; numbers `research/second/atx_funded_partial.json`.
+
 **Eval (unchanged in every row, today's ATLAS on the Builder 25K):** 2-week pass / dead H1 65.5 / 0.8, H2 43.5 / 0.0,
 2021-25 24.6 / 26.2; eval-path $1,394 / $547 / -$63 a month less fees; 4.4 / 3.3 / 5.2 candidate trades a week
 (2.1 / 1.6 / 2.9 taken).
@@ -71,7 +92,8 @@ the same (-$3 vs -$2 a month): the account almost never gets funded long enough 
 ## Files
 
 - Code: `tools/atx_funded_day.py` (`run` = every variant + seeds -> `research/second/atx_funded_day.json`; `save` = runs;
-  `vix` = idea 2 -> `research/second/atx_funded_vix.json`).
+  `vix` = idea 2 -> `research/second/atx_funded_vix.json`; `partial` = idea 3 -> `research/second/atx_funded_partial.json`,
+  runs via `cmd_save_partial()`).
 - Runs: `research/runs/atxd_today.json`, `atxd_max1.json`, `atxd_max3.json` (trades = the slot on the real sessions,
   eval + funded, tagged `atlas-eval:<member>` / `atlas-funded:<member>`).
 
