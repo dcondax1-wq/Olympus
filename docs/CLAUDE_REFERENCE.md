@@ -709,7 +709,9 @@ part yourself or fold it into a script.**
   its own kept-alive iframe (Zenith `../`, Planner `../planner/`, Kalshi = `KALSHI_URL` in index.html or a link pasted on
   the phone, extra dashboards via +), rule-based answers (status / room / target / P&L / today / market / "open X"),
   voice when the phone has speech recognition. Read-only. On iPhone each Home Screen app has its own storage: the Planner
-  inside Jarvis needs its sync connected once. Test `python -X utf8 -m tests.test_jarvis_hub` (36).
+  inside Jarvis needs its sync connected once. BLITZ (2026-10-31): the Zenith card and the answers carry BLITZ from
+  live.json's top-level `blitz` (`engine/live_publish.blitz_block`: board card keys, an "off" card while account C is off,
+  None on failure; `board.blitz` stays present only while account C is on); "how's blitz" answers instead of opening Zenith. Test `python -X utf8 -m tests.test_jarvis_hub` (41).
   **Service workers share one origin (fix 2026-10-31, "Jarvis won't load"):** Zenith's `tools/web_public/sw.js` (scope =
   the whole site) used to delete every other cache on activate and handle `jarvis/` + `planner/` pages, so once Zenith was
   opened inside Jarvis a dropped connection or a site 404 left Jarvis with nothing to open (reproduced over local https).
