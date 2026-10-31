@@ -121,9 +121,88 @@ def cmd_save():
         print("saved", name, flush=True)
 
 
+# ============================================================ idea 2: funded-only VIX band per member (eval unchanged)
+def vix_prev(day, _c={}):
+    """The prior session's CBOE VIX close (known before the open)."""
+    import bisect
+    if "k" not in _c:
+        from tools import scalp_na_lib as N
+        N.prev_close("VIX", "2021-01-04")
+        _c["k"], _c["v"] = N._M["VIX"]
+    k = bisect.bisect_left(_c["k"], day) - 1
+    v = float(_c["v"][k]) if k >= 0 else float("nan")
+    return v if v == v and v > 0 else None
+
+
+def vix_cuts():
+    """Tercile cut points of the VIX over 2026 H1 sessions (frozen)."""
+    import numpy as np
+    V2, A, M, EAB = X.libs()
+    v = [vix_prev(d) for d in sorted(set(M.units()["sessions"])) if X.H1[0] <= d <= X.H1[1]]
+    v = [x for x in v if x]
+    return [float(np.percentile(v, 33.33)), float(np.percentile(v, 66.67))]
+
+
+def band(day, cuts):
+    v = vix_prev(day)
+    return None if v is None else (0 if v < cuts[0] else 1 if v < cuts[1] else 2)
+
+
+def vix_buckets(cuts, min_n=5):
+    """H1 R per VIX band of each member's ACCOUNT units (today's no-hedge rules): {member: {band: (mean R, n, sum R)}}."""
+    import collections
+    import numpy as np
+    from tools import ab_edge as E
+    V2, A, M, EAB = X.libs()
+    B = collections.defaultdict(lambda: collections.defaultdict(list))
+    for u in A.account_units(X.today()):
+        if u["src"] in X.MEM and X.H1[0] <= u["day"] <= X.H1[1]:
+            B[u["src"]][band(u["day"], cuts)].append(E._R(u))
+    return {m: {b: (float(np.mean(x)), len(x), float(np.sum(x))) for b, x in d.items() if len(x) >= min_n and b is not None} for m, d in B.items()}
+
+
+def vf_drop(picks, cuts):
+    """Funded variant: today's members, each member skips its picked VIX band (picks = {member: band})."""
+    import copy
+    V2, A, M, EAB = X.libs()
+    V = copy.deepcopy(X.today())
+    V["drop"] = {m: sorted(int(u["entry_t"]) for u in M.units()[m] if band(u["day"], cuts) == b) for m, b in picks.items()}
+    return V
+
+
+def cmd_vix(n=300, k_ctl=8):
+    import numpy as np
+    cuts = vix_cuts()
+    st = vix_buckets(cuts)
+    pick = {m: min((v[2], b) for b, v in d.items() if v[0] < 0)[1] for m, d in st.items() if any(v[0] < 0 for v in d.values())}
+    print("cuts", [round(c, 2) for c in cuts], "H1 buckets", {m: {b: (round(v[0], 2), v[1]) for b, v in d.items()} for m, d in st.items()}, "pick", pick, flush=True)
+    res = {"cuts": cuts, "buckets": {m: {str(b): v for b, v in d.items()} for m, d in st.items()}, "pick": pick, "rows": {}}
+
+    def run(name, picks, seeds=(23,)):
+        o = {}
+        for sd in seeds:
+            sl = X.slot(X.today(), vf_drop(picks, cuts), n=n, seed=sd)
+            sl["2021-25"] = X.slot_ref(sl)
+            o[sd] = {s: sl[s]["pm"] for s in ("H1", "H2", "2021-25")}
+            o[f"lose_{sd}"] = {s: sl[s]["lose"] for s in ("H1", "H2", "2021-25")}
+        res["rows"][name] = o
+        print(f"{name:28s} {o[23]}  " + " ".join(f"s{sd} {o[sd]}" for sd in seeds[1:]), flush=True)
+        json.dump(res, open(os.path.join(X.OUT, "atx_funded_vix.json"), "w", encoding="utf-8"), indent=1)
+        return o
+
+    run("today", {}, SEEDS)
+    run("pick: worst H1 VIX band", pick, SEEDS)
+    rng = np.random.default_rng(7)
+    for i in range(k_ctl):                               # control: a random band of each picked member
+        run(f"control {i}", {m: int(rng.integers(0, 3)) for m in pick})
+    return res
+
+
 if __name__ == "__main__":
     c = sys.argv[1] if len(sys.argv) > 1 else "run"
     if c == "run":
         cmd_run(int(sys.argv[2]) if len(sys.argv) > 2 else 300)
     elif c == "save":
         cmd_save()
+    elif c == "vix":
+        cmd_vix()

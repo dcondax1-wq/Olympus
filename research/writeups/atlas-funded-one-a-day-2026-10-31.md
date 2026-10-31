@@ -2,7 +2,7 @@
 title: ATLAS funded 25K - one trade a day (2026-10-31) - fewer trades on the funded account pays the owner LESS; the second trade of the day is part of the money
 family: risk
 date: 2026-10-31
-status: rejected (no change) - funded max 1 a day loses slot $ in every span (H1 $454 vs $568, H2 $275 vs $382, 2021-25 -$3 vs -$2 a month) and loses even to a random 1-a-day control; the H1 pick (up to 3 a day) adds +$44 in H1 but exactly $0 in H2 on all 4 path seeds
+status: rejected (no change) - funded max 1 a day loses slot $ in every span (H1 $454 vs $568, H2 $275 vs $382, 2021-25 -$3 vs -$2 a month) and loses even to a random 1-a-day control; the H1 pick (up to 3 a day) adds +$44 in H1 but exactly $0 in H2 on all 4 path seeds; idea 2 (skip each member's worst VIX band on the funded account) picks nothing - no member lost in any H1 VIX tercile
 summary: Owner 2026-10-31 "keep building those strategies" - does the FUNDED ATLAS 25K pay the owner more with a day limit of one trade (the day's first ATLAS signal) instead of two? Eval unchanged (today's ATLAS), so only the whole-slot money can move (tools/atx_edge.slot - eval -> funded -> MFFU payouts -> a new $63 eval, 300 paths x 126 sessions). Trade-count rules were tested on the eval path before (atlas-confluences.md), never on the funded account's payouts. Picked on 2026 H1, checked on H2 and 2021-25, random 1-a-day control (4 seeds), neighbours max 3 / max 4, 4 path seeds.
 runs: atxd_max1, atxd_max3, atxd_today
 ---
@@ -34,6 +34,14 @@ The eval does not change in any row (same trades, same 2-week pass / dead), so s
   trailing floor), so fewer, cleaner trades could have paid more. They don't: on the real 2026 path the funded trades of
   "max 1" have a similar PF in H1 (3.17 vs 2.94) but a lower one in H2 (2.45 vs 2.96), and fewer payouts.
 
+**Idea 2, same session: skip each member's worst VIX band on the funded account only (eval unchanged).** Nothing to
+skip. VIX bands = terciles of the prior day's CBOE VIX close over 2026 H1 sessions (under 17.37 / 17.37-19.50 / over
+19.50, frozen). In H1 every member made money in every band (R per trade: EMA +0.55 / +0.83 / +0.75, MACD +1.10 / +1.95
+/ +1.09, S/R +0.91 / +0.80 / +1.14; 7-22 trades each), so the pre-declared rule (drop a band only if it lost in H1) picks
+nothing and the funded slot stays today's ($568 / $382 / -$2). Dropping a winning band would cost money in H1 by
+construction. VIX per member was already rejected on the eval (atlas.md); this closes it for the funded account too.
+Numbers: `research/second/atx_funded_vix.json` (no run stored: identical to `atxd_today`).
+
 **Eval (unchanged in every row, today's ATLAS on the Builder 25K):** 2-week pass / dead H1 65.5 / 0.8, H2 43.5 / 0.0,
 2021-25 24.6 / 26.2; eval-path $1,394 / $547 / -$63 a month less fees; 4.4 / 3.3 / 5.2 candidate trades a week
 (2.1 / 1.6 / 2.9 taken).
@@ -62,7 +70,8 @@ the same (-$3 vs -$2 a month): the account almost never gets funded long enough 
 
 ## Files
 
-- Code: `tools/atx_funded_day.py` (`run` = every variant + seeds -> `research/second/atx_funded_day.json`; `save` = runs).
+- Code: `tools/atx_funded_day.py` (`run` = every variant + seeds -> `research/second/atx_funded_day.json`; `save` = runs;
+  `vix` = idea 2 -> `research/second/atx_funded_vix.json`).
 - Runs: `research/runs/atxd_today.json`, `atxd_max1.json`, `atxd_max3.json` (trades = the slot on the real sessions,
   eval + funded, tagged `atlas-eval:<member>` / `atlas-funded:<member>`).
 
