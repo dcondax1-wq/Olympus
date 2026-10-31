@@ -87,8 +87,8 @@ SIZE_EVAL = {"f": 0.4, "cap": 600.0, "dll_frac": 0.9, "day_tp": None, "push_from
 SIZE_PAPER = {"f": 0.4, "cap": 600.0, "dll_frac": 0.9, "day_tp": None, "push_from": None, "push_f": None}
 SIZE_FUNDED = {"f": 0.1, "cap": 150.0, "dll_frac": 0.9, "day_tp": 400.0, "push_from": None, "push_f": None}
 SIZINGS = ("speed", "paper")
-# OWNER SWITCH, OFF (research/writeups/atlas-blitz-edge-2026-10-30.md, research/scalp/blitz_25k_pick_v2.json): "later_break": true
-# in data/account_c.json = on the 25K EVAL the day's first band break on a side trades x0.5, a later same-side break (the day's
+# ON BY DEFAULT since the owner approved it on 2026-10-31 (research/writeups/atlas-blitz-edge-2026-10-30.md,
+# research/scalp/blitz_25k_pick_v2.json); "later_break": false in data/account_c.json turns it off. On the 25K EVAL the day's first band break on a side trades x0.5, a later same-side break (the day's
 # count of check closes beyond the band on that side >= 2, engine/blitz "brk_n") x1.75: f and the $ cap scale, f <= 1.0 (never
 # more than the room). Funded and "paper" sizing unchanged. 2-week pass / fail H1 47.9 / 23.5 (36.1 / 37.8), H2 36.2 / 21.7
 # (36.2 / 34.8), 2021-25 24.7 / 48.4 (20.4 / 50.2); a later break can risk up to $1,050.
@@ -199,7 +199,7 @@ def normalize(blk: dict | None, lit_account: str | None = None, b_account: str |
            "armed": blk.get("armed") is True, "prior_pnl": float(_num(blk.get("prior_pnl"), 0.0)), "eval_anchor": blk.get("eval_anchor"),
            "filtered": blk.get("unfiltered") is not True, "params": None, "problem": None,
            "resume_after": _num(blk.get("resume_after")), "sizing": str(blk.get("sizing") or "speed"),
-           "later_break": blk.get("later_break") is True}
+           "later_break": blk.get("later_break") is not False}
     out["preset"] = (P or PLANS["builder25k"])["preset"]
     out["plan_label"] = (P or {}).get("label") or plan
     out["rules"] = MA.rules_of({"preset": out["preset"]})
@@ -345,16 +345,22 @@ def band_at(n: int, B: dict | None = None) -> dict | None:
     return {k: round(B[lo][k] + w * (B[hi][k] - B[lo][k]), 4) for k in B[lo]}
 
 
-def score(trades: list, B: dict | None = None, day_r: dict | None = None) -> dict:
+def score(trades: list, B: dict | None = None, day_r: dict | None = None, model: list | None = None) -> dict:
     """The live scorecard of account C's finished trades [{"day", "r", "usd"}] (routed, booked, not voided): count, win %,
     avg R, PF (R and $), net $, losing days in a row now, the floor and the verdict ("warming" under 20 trades, "ok",
     "below": average R or PF(R) under the floor, or SCORE_LOSE_DAYS losing days in a row). A losing day = the R sum of ALL of
     BLITZ's model trades that day (day_r: routed or not, as the research counts days; the routed ones alone are a biased
-    sample once the eval or the daily loss stops a day early); without day_r the routed trades' R per day."""
+    sample once the eval or the daily loss stops a day early); without day_r the routed trades' R per day.
+    model = BLITZ's finished model trades [{"day", "r"}] (routed or not): when given, the R statistics judged against the floor
+    (count, win %, average R, PF(R)) come from them, the population the floor was bootstrapped from (2026-10-31: on routed
+    trades alone the eval's own stops, e.g. the rest of a day after a pass, biased the sample and paused BLITZ in May of its
+    research year with the later-break size); the $ figures stay the routed trades'."""
     rows = [t for t in trades or [] if isinstance(t, dict) and t.get("r") is not None]
+    us = [float(t.get("usd") or 0.0) for t in rows]
+    if model is not None:
+        rows = [t for t in model if isinstance(t, dict) and t.get("r") is not None]
     n = len(rows)
     rs = [float(t["r"]) for t in rows]
-    us = [float(t.get("usd") or 0.0) for t in rows]
     gw, gl = sum(x for x in rs if x > 0), -sum(x for x in rs if x < 0)
     gwu, glu = sum(x for x in us if x > 0), -sum(x for x in us if x < 0)
     days = {}
@@ -765,9 +771,17 @@ class AccountC:
             out[str(r["day"])] = out.get(str(r["day"]), 0.0) + float(r["r"])
         return out
 
+    def model_trades(self) -> list:
+        """BLITZ's finished model trades kept on account C (routed or not; the no-hedging masks are no trades): the sample of
+        the performance contract's R statistics (score(model=))."""
+        return [{"day": str(r.get("day")), "r": float(r["r"])} for r in self.rows
+                if r.get("model_entry_t") is not None and r.get("r") is not None and not r.get("masked")]
+
     def scorecard(self) -> dict:
         try:
-            s = score(self.finished(), day_r=self.model_day_r())
+            fin, mod = self.finished(), self.model_trades()
+            # every routed trade is a model trade: fewer model rows than routed trades = an older state without them
+            s = score(fin, day_r=self.model_day_r(), model=mod if len(mod) >= len(fin) else None)
         except Exception as e:
             s = {"status": "error", "why": [f"{e.__class__.__name__}: {e}"], "n": len(self.closes)}
         s["paused"] = self.paused

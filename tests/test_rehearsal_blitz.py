@@ -341,7 +341,10 @@ class Rehearsal:
             except OSError:
                 pass
         self.write_json(self.data("account_b.json"), {"account_b": {"account": B_ACCT, "plan": "builder25k", "eval_start": day, "armed": False}})
-        self.write_json(self.data("account_c.json"), {"account_c": {"account": C_ACCT, "plan": "builder25k", "eval_start": day, "armed": False}})
+        # the rehearsal checks routing / fills / brackets / bookings at the research's base size: the later-break size (on by
+        # default since 2026-10-31) is pinned off here and checked in tests.test_blitz_later_break and the test_account_c replay
+        self.write_json(self.data("account_c.json"), {"account_c": {"account": C_ACCT, "plan": "builder25k", "eval_start": day, "armed": False,
+                                                                     "later_break": False}})
 
     def wait_idle(self, timeout=120):
         t_end = _real_time() + timeout

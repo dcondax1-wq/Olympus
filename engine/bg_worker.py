@@ -509,4 +509,7 @@ def shared(log=None) -> Worker:
 
 
 if __name__ == "__main__":
-    sys.exit(child_main())
+    try:
+        sys.exit(child_main())
+    except BrokenPipeError:      # the PC bot went away mid answer (server stop / restart): nothing is left to answer, exit quietly
+        os._exit(0)              # (no finalizers: flushing the dead pipe again would print the same error)
