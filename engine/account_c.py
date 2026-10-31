@@ -345,16 +345,22 @@ def band_at(n: int, B: dict | None = None) -> dict | None:
     return {k: round(B[lo][k] + w * (B[hi][k] - B[lo][k]), 4) for k in B[lo]}
 
 
-def score(trades: list, B: dict | None = None, day_r: dict | None = None) -> dict:
+def score(trades: list, B: dict | None = None, day_r: dict | None = None, model: list | None = None) -> dict:
     """The live scorecard of account C's finished trades [{"day", "r", "usd"}] (routed, booked, not voided): count, win %,
     avg R, PF (R and $), net $, losing days in a row now, the floor and the verdict ("warming" under 20 trades, "ok",
     "below": average R or PF(R) under the floor, or SCORE_LOSE_DAYS losing days in a row). A losing day = the R sum of ALL of
     BLITZ's model trades that day (day_r: routed or not, as the research counts days; the routed ones alone are a biased
-    sample once the eval or the daily loss stops a day early); without day_r the routed trades' R per day."""
+    sample once the eval or the daily loss stops a day early); without day_r the routed trades' R per day.
+    model = BLITZ's finished model trades [{"day", "r"}] (routed or not): when given, the R statistics judged against the floor
+    (count, win %, average R, PF(R)) come from them, the population the floor was bootstrapped from (2026-10-31: on routed
+    trades alone the eval's own stops, e.g. the rest of a day after a pass, biased the sample and paused BLITZ in May of its
+    research year with the later-break size); the $ figures stay the routed trades'."""
     rows = [t for t in trades or [] if isinstance(t, dict) and t.get("r") is not None]
+    us = [float(t.get("usd") or 0.0) for t in rows]
+    if model is not None:
+        rows = [t for t in model if isinstance(t, dict) and t.get("r") is not None]
     n = len(rows)
     rs = [float(t["r"]) for t in rows]
-    us = [float(t.get("usd") or 0.0) for t in rows]
     gw, gl = sum(x for x in rs if x > 0), -sum(x for x in rs if x < 0)
     gwu, glu = sum(x for x in us if x > 0), -sum(x for x in us if x < 0)
     days = {}
@@ -765,9 +771,17 @@ class AccountC:
             out[str(r["day"])] = out.get(str(r["day"]), 0.0) + float(r["r"])
         return out
 
+    def model_trades(self) -> list:
+        """BLITZ's finished model trades kept on account C (routed or not; the no-hedging masks are no trades): the sample of
+        the performance contract's R statistics (score(model=))."""
+        return [{"day": str(r.get("day")), "r": float(r["r"])} for r in self.rows
+                if r.get("model_entry_t") is not None and r.get("r") is not None and not r.get("masked")]
+
     def scorecard(self) -> dict:
         try:
-            s = score(self.finished(), day_r=self.model_day_r())
+            fin, mod = self.finished(), self.model_trades()
+            # every routed trade is a model trade: fewer model rows than routed trades = an older state without them
+            s = score(fin, day_r=self.model_day_r(), model=mod if len(mod) >= len(fin) else None)
         except Exception as e:
             s = {"status": "error", "why": [f"{e.__class__.__name__}: {e}"], "n": len(self.closes)}
         s["paused"] = self.paused

@@ -577,6 +577,11 @@ def part6():
     bad = [{"day": f"2026-11-{3 + i // 5:02d}", "r": (0.3 if i % 3 == 0 else -0.6), "usd": (30 if i % 3 == 0 else -60)} for i in range(21)]
     s2 = AC.score(bad)
     check("6. 21 trades at -0.30R avg: under the floor -> below", s2["status"] == "below" and s2["why"], s2)
+    s3 = AC.score(bad, model=good)
+    check("6. the R floor is judged on BLITZ's model trades when given (the floor's own population); $ stay the routed trades'",
+          s3["status"] == "ok" and s3["n"] == 24 and s3["avg_r"] == 0.15 and s3["usd"] == sum(t["usd"] for t in bad), s3)
+    check("6. ... and a weak model sample still pauses even if the routed trades look fine",
+          AC.score(good, model=bad)["status"] == "below")
     streak = [{"day": f"2026-11-{3 + i:02d}", "r": -0.5, "usd": -50} for i in range(6)]
     check("6. 6 losing days in a row -> below (even under 20 trades)", AC.score(streak)["status"] == "below")
     bot, C = make("2026-11-02")

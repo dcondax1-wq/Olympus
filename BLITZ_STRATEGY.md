@@ -132,7 +132,9 @@ this rule until a research pick passes both 2026 halves and 2021-25 and the owne
 ## Kill switch (the performance contract, in the code: `engine/account_c.score`)
 
 The bot pauses BLITZ on its account by itself (no new entry on account C, one push "BLITZ PAUSED"; Zlarior and ATLAS keep
-trading) when, after its own finished trades:
+trading) when, after BLITZ's own finished trades (all of its signals on the account, routed or not, as the research counts
+them: since 2026-10-31, because the routed ones alone leave out e.g. the rest of a day after a pass and paused BLITZ in May
+of its research year once the later-break size was on; the $ figures stay the routed trades'):
 1. **20 or more trades** and the **average R** or the **PF (in R)** is under the 5th percentile of what 2026's 330 research
    trades give for that many trades (bootstrap). The floors:
 
