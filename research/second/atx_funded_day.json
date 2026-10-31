@@ -1,0 +1,1017 @@
+{
+ "n": 300,
+ "res": {
+  "today": {
+   "slot": {
+    "H1": {
+     "pm": 568,
+     "p10": 195,
+     "lose": 6.7,
+     "funded_6m": 1.45,
+     "evals_6m": 1.82,
+     "payouts_6m": 4.45,
+     "first_pay_med": 31.0,
+     "eval_trading_pm": 432,
+     "funded_trading_pm": 1641
+    },
+    "H2": {
+     "pm": 382,
+     "p10": -10,
+     "lose": 18.0,
+     "funded_6m": 1.09,
+     "evals_6m": 1.44,
+     "payouts_6m": 3.01,
+     "first_pay_med": 45.0,
+     "eval_trading_pm": 300,
+     "funded_trading_pm": 1120
+    },
+    "2025": {
+     "pm": 15,
+     "p10": -74,
+     "lose": 69.3,
+     "funded_6m": 1.35,
+     "evals_6m": 4.44,
+     "payouts_6m": 0.48,
+     "first_pay_med": 57.5,
+     "eval_trading_pm": 59,
+     "funded_trading_pm": 95
+    },
+    "2021-24": {
+     "pm": -7,
+     "p10": -84,
+     "lose": 73.7,
+     "funded_6m": 1.52,
+     "evals_6m": 5.23,
+     "payouts_6m": 0.37,
+     "first_pay_med": 57.0,
+     "eval_trading_pm": 33,
+     "funded_trading_pm": 35
+    },
+    "2021-25": {
+     "pm": -2,
+     "lose": 72.6,
+     "funded_6m": 1.48,
+     "evals_6m": 5.04,
+     "payouts_6m": 0.4,
+     "p10": null,
+     "first_pay_med": null,
+     "eval_trading_pm": 39,
+     "funded_trading_pm": 49
+    }
+   },
+   "real": {
+    "H1": {
+     "owner_net": 3639,
+     "per_month": 596,
+     "evals": 3,
+     "funded": 2,
+     "payouts": 5
+    },
+    "H2": {
+     "owner_net": 1537,
+     "per_month": 414,
+     "evals": 1,
+     "funded": 1,
+     "payouts": 2
+    },
+    "2025": {
+     "owner_net": -441,
+     "per_month": -36,
+     "evals": 7,
+     "funded": 3,
+     "payouts": 0
+    },
+    "2021-24": {
+     "owner_net": 888,
+     "per_month": 23,
+     "evals": 24,
+     "funded": 9,
+     "payouts": 3
+    }
+   },
+   "funded_trades": {
+    "H1": {
+     "n": 86,
+     "net": 10947,
+     "pf": 2.94,
+     "r_per_risk": 0.867,
+     "dd": -1032,
+     "days": 70,
+     "two_trade_days": 16
+    },
+    "H2": {
+     "n": 38,
+     "net": 4113,
+     "pf": 2.96,
+     "r_per_risk": 0.657,
+     "dd": -1175,
+     "days": 32,
+     "two_trade_days": 6
+    },
+    "2021-25": {
+     "n": 382,
+     "net": -2405,
+     "pf": 0.94,
+     "r_per_risk": -0.04,
+     "dd": -10305,
+     "days": 298,
+     "two_trade_days": 84
+    }
+   },
+   "seeds": {
+    "5": {
+     "H1": 584,
+     "H2": 367,
+     "2021-25": 2
+    },
+    "11": {
+     "H1": 573,
+     "H2": 347,
+     "2021-25": -9
+    },
+    "41": {
+     "H1": 595,
+     "H2": 374,
+     "2021-25": -11
+    }
+   }
+  },
+  "max1": {
+   "slot": {
+    "H1": {
+     "pm": 454,
+     "p10": 112,
+     "lose": 8.3,
+     "funded_6m": 1.27,
+     "evals_6m": 1.56,
+     "payouts_6m": 3.57,
+     "first_pay_med": 37.0,
+     "eval_trading_pm": 385,
+     "funded_trading_pm": 1347
+    },
+    "H2": {
+     "pm": 275,
+     "p10": -10,
+     "lose": 21.0,
+     "funded_6m": 1.01,
+     "evals_6m": 1.25,
+     "payouts_6m": 2.19,
+     "first_pay_med": 53.0,
+     "eval_trading_pm": 278,
+     "funded_trading_pm": 853
+    },
+    "2025": {
+     "pm": -1,
+     "p10": -63,
+     "lose": 76.7,
+     "funded_6m": 1.35,
+     "evals_6m": 4.32,
+     "payouts_6m": 0.35,
+     "first_pay_med": 64.5,
+     "eval_trading_pm": 73,
+     "funded_trading_pm": 45
+    },
+    "2021-24": {
+     "pm": -4,
+     "p10": -74,
+     "lose": 73.0,
+     "funded_6m": 1.45,
+     "evals_6m": 4.81,
+     "payouts_6m": 0.36,
+     "first_pay_med": 71.0,
+     "eval_trading_pm": 50,
+     "funded_trading_pm": 40
+    },
+    "2021-25": {
+     "pm": -3,
+     "lose": 73.9,
+     "funded_6m": 1.43,
+     "evals_6m": 4.69,
+     "payouts_6m": 0.36,
+     "p10": null,
+     "first_pay_med": null,
+     "eval_trading_pm": 56,
+     "funded_trading_pm": 41
+    }
+   },
+   "real": {
+    "H1": {
+     "owner_net": 2904,
+     "per_month": 476,
+     "evals": 2,
+     "funded": 1,
+     "payouts": 4
+    },
+    "H2": {
+     "owner_net": 658,
+     "per_month": 177,
+     "evals": 1,
+     "funded": 1,
+     "payouts": 1
+    },
+    "2025": {
+     "owner_net": -378,
+     "per_month": -31,
+     "evals": 6,
+     "funded": 2,
+     "payouts": 0
+    },
+    "2021-24": {
+     "owner_net": 3217,
+     "per_month": 83,
+     "evals": 20,
+     "funded": 7,
+     "payouts": 6
+    }
+   },
+   "funded_trades": {
+    "H1": {
+     "n": 72,
+     "net": 9823,
+     "pf": 3.17,
+     "r_per_risk": 0.941,
+     "dd": -978,
+     "days": 72,
+     "two_trade_days": 0
+    },
+    "H2": {
+     "n": 32,
+     "net": 2489,
+     "pf": 2.45,
+     "r_per_risk": 0.491,
+     "dd": -724,
+     "days": 32,
+     "two_trade_days": 0
+    },
+    "2021-25": {
+     "n": 443,
+     "net": 3763,
+     "pf": 1.1,
+     "r_per_risk": 0.059,
+     "dd": -5069,
+     "days": 443,
+     "two_trade_days": 0
+    }
+   },
+   "seeds": {
+    "5": {
+     "H1": 473,
+     "H2": 272,
+     "2021-25": -3
+    },
+    "11": {
+     "H1": 470,
+     "H2": 252,
+     "2021-25": -7
+    },
+    "41": {
+     "H1": 477,
+     "H2": 272,
+     "2021-25": -16
+    }
+   }
+  },
+  "max3": {
+   "slot": {
+    "H1": {
+     "pm": 612,
+     "p10": 238,
+     "lose": 5.3,
+     "funded_6m": 1.54,
+     "evals_6m": 1.93,
+     "payouts_6m": 4.8,
+     "first_pay_med": 30.0,
+     "eval_trading_pm": 456,
+     "funded_trading_pm": 1756
+    },
+    "H2": {
+     "pm": 382,
+     "p10": -10,
+     "lose": 18.0,
+     "funded_6m": 1.09,
+     "evals_6m": 1.44,
+     "payouts_6m": 3.01,
+     "first_pay_med": 45.0,
+     "eval_trading_pm": 300,
+     "funded_trading_pm": 1120
+    },
+    "2025": {
+     "pm": 34,
+     "p10": -74,
+     "lose": 64.3,
+     "funded_6m": 1.33,
+     "evals_6m": 4.31,
+     "payouts_6m": 0.61,
+     "first_pay_med": 64.0,
+     "eval_trading_pm": 63,
+     "funded_trading_pm": 147
+    },
+    "2021-24": {
+     "pm": -5,
+     "p10": -84,
+     "lose": 73.3,
+     "funded_6m": 1.53,
+     "evals_6m": 5.25,
+     "payouts_6m": 0.39,
+     "first_pay_med": 59.5,
+     "eval_trading_pm": 39,
+     "funded_trading_pm": 36
+    },
+    "2021-25": {
+     "pm": 4,
+     "lose": 71.1,
+     "funded_6m": 1.48,
+     "evals_6m": 5.02,
+     "payouts_6m": 0.44,
+     "p10": null,
+     "first_pay_med": null,
+     "eval_trading_pm": 45,
+     "funded_trading_pm": 63
+    }
+   },
+   "real": {
+    "H1": {
+     "owner_net": 3639,
+     "per_month": 596,
+     "evals": 3,
+     "funded": 2,
+     "payouts": 5
+    },
+    "H2": {
+     "owner_net": 1537,
+     "per_month": 414,
+     "evals": 1,
+     "funded": 1,
+     "payouts": 2
+    },
+    "2025": {
+     "owner_net": 485,
+     "per_month": 39,
+     "evals": 5,
+     "funded": 3,
+     "payouts": 1
+    },
+    "2021-24": {
+     "owner_net": 1499,
+     "per_month": 39,
+     "evals": 27,
+     "funded": 12,
+     "payouts": 4
+    }
+   },
+   "funded_trades": {
+    "H1": {
+     "n": 73,
+     "net": 10559,
+     "pf": 3.43,
+     "r_per_risk": 0.97,
+     "dd": -1032,
+     "days": 59,
+     "two_trade_days": 12
+    },
+    "H2": {
+     "n": 38,
+     "net": 4113,
+     "pf": 2.96,
+     "r_per_risk": 0.657,
+     "dd": -1175,
+     "days": 32,
+     "two_trade_days": 6
+    },
+    "2021-25": {
+     "n": 484,
+     "net": -1173,
+     "pf": 0.98,
+     "r_per_risk": -0.016,
+     "dd": -9596,
+     "days": 371,
+     "two_trade_days": 103
+    }
+   },
+   "seeds": {
+    "5": {
+     "H1": 622,
+     "H2": 367,
+     "2021-25": 6
+    },
+    "11": {
+     "H1": 630,
+     "H2": 347,
+     "2021-25": -4
+    },
+    "41": {
+     "H1": 637,
+     "H2": 374,
+     "2021-25": -5
+    }
+   }
+  },
+  "max4": {
+   "slot": {
+    "H1": {
+     "pm": 612,
+     "p10": 238,
+     "lose": 5.3,
+     "funded_6m": 1.54,
+     "evals_6m": 1.93,
+     "payouts_6m": 4.8,
+     "first_pay_med": 30.0,
+     "eval_trading_pm": 456,
+     "funded_trading_pm": 1756
+    },
+    "H2": {
+     "pm": 382,
+     "p10": -10,
+     "lose": 18.0,
+     "funded_6m": 1.09,
+     "evals_6m": 1.44,
+     "payouts_6m": 3.01,
+     "first_pay_med": 45.0,
+     "eval_trading_pm": 300,
+     "funded_trading_pm": 1120
+    },
+    "2025": {
+     "pm": 34,
+     "p10": -74,
+     "lose": 64.3,
+     "funded_6m": 1.33,
+     "evals_6m": 4.31,
+     "payouts_6m": 0.61,
+     "first_pay_med": 64.0,
+     "eval_trading_pm": 63,
+     "funded_trading_pm": 147
+    },
+    "2021-24": {
+     "pm": -5,
+     "p10": -84,
+     "lose": 73.3,
+     "funded_6m": 1.53,
+     "evals_6m": 5.25,
+     "payouts_6m": 0.39,
+     "first_pay_med": 59.5,
+     "eval_trading_pm": 39,
+     "funded_trading_pm": 36
+    },
+    "2021-25": {
+     "pm": 4,
+     "lose": 71.1,
+     "funded_6m": 1.48,
+     "evals_6m": 5.02,
+     "payouts_6m": 0.44,
+     "p10": null,
+     "first_pay_med": null,
+     "eval_trading_pm": 45,
+     "funded_trading_pm": 63
+    }
+   },
+   "real": {
+    "H1": {
+     "owner_net": 3639,
+     "per_month": 596,
+     "evals": 3,
+     "funded": 2,
+     "payouts": 5
+    },
+    "H2": {
+     "owner_net": 1537,
+     "per_month": 414,
+     "evals": 1,
+     "funded": 1,
+     "payouts": 2
+    },
+    "2025": {
+     "owner_net": 485,
+     "per_month": 39,
+     "evals": 5,
+     "funded": 3,
+     "payouts": 1
+    },
+    "2021-24": {
+     "owner_net": 1499,
+     "per_month": 39,
+     "evals": 27,
+     "funded": 12,
+     "payouts": 4
+    }
+   },
+   "funded_trades": {
+    "H1": {
+     "n": 73,
+     "net": 10559,
+     "pf": 3.43,
+     "r_per_risk": 0.97,
+     "dd": -1032,
+     "days": 59,
+     "two_trade_days": 12
+    },
+    "H2": {
+     "n": 38,
+     "net": 4113,
+     "pf": 2.96,
+     "r_per_risk": 0.657,
+     "dd": -1175,
+     "days": 32,
+     "two_trade_days": 6
+    },
+    "2021-25": {
+     "n": 484,
+     "net": -1173,
+     "pf": 0.98,
+     "r_per_risk": -0.016,
+     "dd": -9596,
+     "days": 371,
+     "two_trade_days": 103
+    }
+   },
+   "seeds": {
+    "5": {
+     "H1": 622,
+     "H2": 367,
+     "2021-25": 6
+    },
+    "11": {
+     "H1": 630,
+     "H2": 347,
+     "2021-25": -4
+    },
+    "41": {
+     "H1": 637,
+     "H2": 374,
+     "2021-25": -5
+    }
+   }
+  },
+  "rand1_s1": {
+   "slot": {
+    "H1": {
+     "pm": 546,
+     "p10": 123,
+     "lose": 6.7,
+     "funded_6m": 1.42,
+     "evals_6m": 1.7,
+     "payouts_6m": 4.28,
+     "first_pay_med": 31.0,
+     "eval_trading_pm": 429,
+     "funded_trading_pm": 1603
+    },
+    "H2": {
+     "pm": 380,
+     "p10": -10,
+     "lose": 16.0,
+     "funded_6m": 0.99,
+     "evals_6m": 1.3,
+     "payouts_6m": 2.98,
+     "first_pay_med": 45.0,
+     "eval_trading_pm": 274,
+     "funded_trading_pm": 1159
+    },
+    "2025": {
+     "pm": 32,
+     "p10": -63,
+     "lose": 65.0,
+     "funded_6m": 1.3,
+     "evals_6m": 4.15,
+     "payouts_6m": 0.58,
+     "first_pay_med": 64.0,
+     "eval_trading_pm": 63,
+     "funded_trading_pm": 153
+    },
+    "2021-24": {
+     "pm": -9,
+     "p10": -75,
+     "lose": 75.0,
+     "funded_6m": 1.48,
+     "evals_6m": 5.04,
+     "payouts_6m": 0.34,
+     "first_pay_med": 74.0,
+     "eval_trading_pm": 44,
+     "funded_trading_pm": 27
+    },
+    "2021-25": {
+     "pm": 1,
+     "lose": 72.6,
+     "funded_6m": 1.44,
+     "evals_6m": 4.83,
+     "payouts_6m": 0.4,
+     "p10": null,
+     "first_pay_med": null,
+     "eval_trading_pm": 49,
+     "funded_trading_pm": 57
+    }
+   },
+   "real": {
+    "H1": {
+     "owner_net": 3641,
+     "per_month": 597,
+     "evals": 3,
+     "funded": 1,
+     "payouts": 5
+    },
+    "H2": {
+     "owner_net": 1537,
+     "per_month": 414,
+     "evals": 1,
+     "funded": 1,
+     "payouts": 2
+    },
+    "2025": {
+     "owner_net": 1348,
+     "per_month": 110,
+     "evals": 4,
+     "funded": 3,
+     "payouts": 2
+    },
+    "2021-24": {
+     "owner_net": 1814,
+     "per_month": 47,
+     "evals": 22,
+     "funded": 11,
+     "payouts": 4
+    }
+   },
+   "funded_trades": {
+    "H1": {
+     "n": 67,
+     "net": 11606,
+     "pf": 4.18,
+     "r_per_risk": 1.183,
+     "dd": -779,
+     "days": 67,
+     "two_trade_days": 0
+    },
+    "H2": {
+     "n": 32,
+     "net": 4390,
+     "pf": 4.04,
+     "r_per_risk": 0.826,
+     "dd": -365,
+     "days": 32,
+     "two_trade_days": 0
+    },
+    "2021-25": {
+     "n": 509,
+     "net": 1050,
+     "pf": 1.02,
+     "r_per_risk": 0.013,
+     "dd": -7689,
+     "days": 509,
+     "two_trade_days": 0
+    }
+   }
+  },
+  "rand1_s2": {
+   "slot": {
+    "H1": {
+     "pm": 458,
+     "p10": 98,
+     "lose": 9.0,
+     "funded_6m": 1.22,
+     "evals_6m": 1.48,
+     "payouts_6m": 3.61,
+     "first_pay_med": 38.0,
+     "eval_trading_pm": 369,
+     "funded_trading_pm": 1342
+    },
+    "H2": {
+     "pm": 309,
+     "p10": -10,
+     "lose": 18.7,
+     "funded_6m": 1.01,
+     "evals_6m": 1.26,
+     "payouts_6m": 2.44,
+     "first_pay_med": 49.0,
+     "eval_trading_pm": 280,
+     "funded_trading_pm": 960
+    },
+    "2025": {
+     "pm": 6,
+     "p10": -63,
+     "lose": 72.7,
+     "funded_6m": 1.33,
+     "evals_6m": 4.24,
+     "payouts_6m": 0.4,
+     "first_pay_med": 63.0,
+     "eval_trading_pm": 68,
+     "funded_trading_pm": 64
+    },
+    "2021-24": {
+     "pm": 2,
+     "p10": -84,
+     "lose": 70.3,
+     "funded_6m": 1.41,
+     "evals_6m": 4.88,
+     "payouts_6m": 0.41,
+     "first_pay_med": 68.0,
+     "eval_trading_pm": 22,
+     "funded_trading_pm": 62
+    },
+    "2021-25": {
+     "pm": 3,
+     "lose": 70.9,
+     "funded_6m": 1.39,
+     "evals_6m": 4.73,
+     "payouts_6m": 0.41,
+     "p10": null,
+     "first_pay_med": null,
+     "eval_trading_pm": 33,
+     "funded_trading_pm": 62
+    }
+   },
+   "real": {
+    "H1": {
+     "owner_net": 3074,
+     "per_month": 504,
+     "evals": 2,
+     "funded": 1,
+     "payouts": 4
+    },
+    "H2": {
+     "owner_net": 1537,
+     "per_month": 414,
+     "evals": 1,
+     "funded": 1,
+     "payouts": 2
+    },
+    "2025": {
+     "owner_net": -378,
+     "per_month": -31,
+     "evals": 6,
+     "funded": 3,
+     "payouts": 0
+    },
+    "2021-24": {
+     "owner_net": 2073,
+     "per_month": 53,
+     "evals": 17,
+     "funded": 6,
+     "payouts": 4
+    }
+   },
+   "funded_trades": {
+    "H1": {
+     "n": 72,
+     "net": 9833,
+     "pf": 3.29,
+     "r_per_risk": 0.938,
+     "dd": -991,
+     "days": 72,
+     "two_trade_days": 0
+    },
+    "H2": {
+     "n": 32,
+     "net": 3812,
+     "pf": 3.43,
+     "r_per_risk": 0.718,
+     "dd": -676,
+     "days": 32,
+     "two_trade_days": 0
+    },
+    "2021-25": {
+     "n": 465,
+     "net": 2747,
+     "pf": 1.06,
+     "r_per_risk": 0.037,
+     "dd": -5060,
+     "days": 465,
+     "two_trade_days": 0
+    }
+   }
+  },
+  "rand1_s3": {
+   "slot": {
+    "H1": {
+     "pm": 586,
+     "p10": 235,
+     "lose": 5.7,
+     "funded_6m": 1.44,
+     "evals_6m": 1.8,
+     "payouts_6m": 4.6,
+     "first_pay_med": 31.0,
+     "eval_trading_pm": 430,
+     "funded_trading_pm": 1632
+    },
+    "H2": {
+     "pm": 404,
+     "p10": -10,
+     "lose": 16.7,
+     "funded_6m": 1.07,
+     "evals_6m": 1.4,
+     "payouts_6m": 3.18,
+     "first_pay_med": 45.0,
+     "eval_trading_pm": 295,
+     "funded_trading_pm": 1164
+    },
+    "2025": {
+     "pm": 21,
+     "p10": -63,
+     "lose": 67.3,
+     "funded_6m": 1.3,
+     "evals_6m": 4.15,
+     "payouts_6m": 0.5,
+     "first_pay_med": 64.0,
+     "eval_trading_pm": 69,
+     "funded_trading_pm": 123
+    },
+    "2021-24": {
+     "pm": 23,
+     "p10": -74,
+     "lose": 64.7,
+     "funded_6m": 1.35,
+     "evals_6m": 4.64,
+     "payouts_6m": 0.56,
+     "first_pay_med": 66.0,
+     "eval_trading_pm": 30,
+     "funded_trading_pm": 128
+    },
+    "2021-25": {
+     "pm": 23,
+     "lose": 65.3,
+     "funded_6m": 1.34,
+     "evals_6m": 4.52,
+     "payouts_6m": 0.55,
+     "p10": null,
+     "first_pay_med": null,
+     "eval_trading_pm": 39,
+     "funded_trading_pm": 127
+    }
+   },
+   "real": {
+    "H1": {
+     "owner_net": 3641,
+     "per_month": 597,
+     "evals": 3,
+     "funded": 2,
+     "payouts": 5
+    },
+    "H2": {
+     "owner_net": 1537,
+     "per_month": 414,
+     "evals": 1,
+     "funded": 1,
+     "payouts": 2
+    },
+    "2025": {
+     "owner_net": 611,
+     "per_month": 50,
+     "evals": 3,
+     "funded": 2,
+     "payouts": 1
+    },
+    "2021-24": {
+     "owner_net": 5096,
+     "per_month": 131,
+     "evals": 8,
+     "funded": 3,
+     "payouts": 7
+    }
+   },
+   "funded_trades": {
+    "H1": {
+     "n": 68,
+     "net": 10462,
+     "pf": 3.66,
+     "r_per_risk": 0.996,
+     "dd": -871,
+     "days": 68,
+     "two_trade_days": 0
+    },
+    "H2": {
+     "n": 32,
+     "net": 5045,
+     "pf": 4.84,
+     "r_per_risk": 0.92,
+     "dd": -365,
+     "days": 32,
+     "two_trade_days": 0
+    },
+    "2021-25": {
+     "n": 677,
+     "net": 13822,
+     "pf": 1.2,
+     "r_per_risk": 0.115,
+     "dd": -4266,
+     "days": 677,
+     "two_trade_days": 0
+    }
+   }
+  },
+  "rand1_s4": {
+   "slot": {
+    "H1": {
+     "pm": 573,
+     "p10": 123,
+     "lose": 6.3,
+     "funded_6m": 1.44,
+     "evals_6m": 1.74,
+     "payouts_6m": 4.5,
+     "first_pay_med": 33.0,
+     "eval_trading_pm": 432,
+     "funded_trading_pm": 1661
+    },
+    "H2": {
+     "pm": 350,
+     "p10": -10,
+     "lose": 18.0,
+     "funded_6m": 0.99,
+     "evals_6m": 1.28,
+     "payouts_6m": 2.77,
+     "first_pay_med": 47.0,
+     "eval_trading_pm": 274,
+     "funded_trading_pm": 1057
+    },
+    "2025": {
+     "pm": 19,
+     "p10": -63,
+     "lose": 67.0,
+     "funded_6m": 1.33,
+     "evals_6m": 4.39,
+     "payouts_6m": 0.5,
+     "first_pay_med": 71.0,
+     "eval_trading_pm": 55,
+     "funded_trading_pm": 100
+    },
+    "2021-24": {
+     "pm": -4,
+     "p10": -75,
+     "lose": 74.3,
+     "funded_6m": 1.4,
+     "evals_6m": 4.93,
+     "payouts_6m": 0.37,
+     "first_pay_med": 67.0,
+     "eval_trading_pm": 19,
+     "funded_trading_pm": 38
+    },
+    "2021-25": {
+     "pm": 2,
+     "lose": 72.5,
+     "funded_6m": 1.38,
+     "evals_6m": 4.8,
+     "payouts_6m": 0.4,
+     "p10": null,
+     "first_pay_med": null,
+     "eval_trading_pm": 28,
+     "funded_trading_pm": 53
+    }
+   },
+   "real": {
+    "H1": {
+     "owner_net": 3811,
+     "per_month": 625,
+     "evals": 3,
+     "funded": 2,
+     "payouts": 5
+    },
+    "H2": {
+     "owner_net": 1537,
+     "per_month": 414,
+     "evals": 1,
+     "funded": 1,
+     "payouts": 2
+    },
+    "2025": {
+     "owner_net": -378,
+     "per_month": -31,
+     "evals": 6,
+     "funded": 2,
+     "payouts": 0
+    },
+    "2021-24": {
+     "owner_net": 636,
+     "per_month": 16,
+     "evals": 25,
+     "funded": 8,
+     "payouts": 3
+    }
+   },
+   "funded_trades": {
+    "H1": {
+     "n": 69,
+     "net": 10622,
+     "pf": 3.66,
+     "r_per_risk": 1.022,
+     "dd": -871,
+     "days": 69,
+     "two_trade_days": 0
+    },
+    "H2": {
+     "n": 31,
+     "net": 5030,
+     "pf": 4.57,
+     "r_per_risk": 0.896,
+     "dd": -365,
+     "days": 31,
+     "two_trade_days": 0
+    },
+    "2021-25": {
+     "n": 328,
+     "net": 3869,
+     "pf": 1.13,
+     "r_per_risk": 0.08,
+     "dd": -2402,
+     "days": 328,
+     "two_trade_days": 0
+    }
+   }
+  }
+ }
+}
