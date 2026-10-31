@@ -293,7 +293,9 @@ button { cursor: pointer; }
   }
   function slim(j) {               // what the home card needs, kept for an offline start
     const b = j && j.board || {};
-    return { lit: b.lit || null, atlas: b.atlas || null, verdict: j && j.pc_verdict || null, running: b.running, t: j && j.t };
+    // BLITZ: the board's card while account C is on, else live.json's own "blitz" (an "off" card while account C is off)
+    const bz = b.blitz && !b.blitz.error ? b.blitz : j && j.blitz && !j.blitz.error ? j.blitz : null;
+    return { lit: b.lit || null, atlas: b.atlas || null, blitz: bz, verdict: j && j.pc_verdict || null, running: b.running, t: j && j.t };
   }
   function liveView() {
     if (L.j) return slim(L.j);
@@ -369,9 +371,9 @@ button { cursor: pointer; }
     const acct = (x, label) => {
       if (!x) return '';
       const set = x.room != null;
-      return `<div class="acct"><i>${esc(label)} · ${esc(x.plan || '')}${x.badge ? ' · ' + esc(x.badge) : ''}</i>${set ? `<div class="kv"><div><span>Today</span><strong>${usd(x.today_pnl, true)}</strong></div><div><span>Room</span><strong>${usd(x.room)}</strong></div><div><span>To target</span><strong>${usd(x.to_target)}</strong></div></div>` : `<p class="muted">${esc(x.status || 'not set up')}</p>`}</div>`;
+      return `<div class="acct"><i>${esc(label)} · ${esc(x.plan || '')}${x.badge ? ' · ' + esc(x.badge) : ''}</i>${set ? `<div class="kv"><div><span>Today</span><strong>${usd(x.today_pnl, true)}</strong></div><div><span>Room</span><strong>${usd(x.room)}</strong></div><div><span>To target</span><strong>${usd(x.to_target)}</strong></div></div>` : `<p class="muted">${esc(x.off ? 'Account C off · paper only until its own 25K' : x.status || 'not set up')}</p>`}</div>`;
     };
-    return `<button class="card" type="button" data-app="zenith">${head}<span class="pill ${lvl}">${esc(vd.label || 'Bot status')}${v.t ? ' · ' + esc(ago(v.t)) : ''}</span>${acct(v.lit, 'Zlarior')}${acct(v.atlas, 'ATLAS')}</button>`;
+    return `<button class="card" type="button" data-app="zenith">${head}<span class="pill ${lvl}">${esc(vd.label || 'Bot status')}${v.t ? ' · ' + esc(ago(v.t)) : ''}</span>${acct(v.lit, 'Zlarior')}${acct(v.atlas, 'ATLAS')}${acct(v.blitz, 'BLITZ')}</button>`;
   }
   function plannerCard() {
     const a = byId('planner'), p = plannerDay();
@@ -410,12 +412,13 @@ button { cursor: pointer; }
     return text;
   };
   const OPEN_WORDS = /\b(open|go to|goto|show|switch to|take me to|launch|pull up)\b/;
+  const ASK_WORDS = /\b(how|how's|hows|status|room|floor|target|pnl|p&l|profit|doing)\b/;
   const APP_WORDS = [[/\b(zenith|nq|trading|zlarior|atlas|blitz|the bots?)\b/, 'zenith'], [/\b(planner|calendar|plan)\b/, 'planner'], [/\bkalshi\b/, 'kalshi'], [/\b(jarvis|home)\b/, 'home']];
   function brain(raw) {
     const q = String(raw || '').toLowerCase().replace(/[’']/g, "'").trim();
     if (!q) return { text: 'Ask me how the bots are doing, what is on today, or say "open planner".' };
     for (const x of apps()) if (x.extra && q.includes(x.name.toLowerCase()) && (OPEN_WORDS.test(q) || q.split(' ').length <= 2)) return { text: `Opening ${x.name}.`, open: x.id };
-    if (OPEN_WORDS.test(q) || q.split(' ').length <= 2) {
+    if (OPEN_WORDS.test(q) || (q.split(' ').length <= 2 && !ASK_WORDS.test(q))) {   // "how's blitz" is a question, not "open"
       for (const [re, id] of APP_WORDS) if (re.test(q)) {
         const a = byId(id);
         if (id !== 'home' && !a.url) return { text: `${a.name} is not linked yet. Paste its dashboard link on the ${a.name} card and I will open it here.` };
@@ -423,30 +426,39 @@ button { cursor: pointer; }
       }
     }
     if (/\b(help|what can you|commands?)\b/.test(q)) return { text: 'I can switch dashboards ("open planner", "open Zenith", "Kalshi"), tell you how the bots are doing ("status", "room", "today\'s P&L", "how far to target"), what is on your plan today, and whether the market is open.' };
-    if (/\b(market|open|closed?|session|trading hours)\b/.test(q) && !/\b(bot|bots|zlarior|atlas)\b/.test(q)) return { text: market().text + '.' };
+    if (/\b(market|open|closed?|session|trading hours)\b/.test(q) && !/\b(bot|bots|zlarior|atlas|blitz)\b/.test(q)) return { text: market().text + '.' };
     const v = liveView();
     const need = () => (v ? null : { text: L.err ? 'I cannot reach the bots\' live feed right now. Open Zenith for everything.' : 'Still loading the bots. Ask me again in a second.' });
+    // "how's blitz", "blitz room" ...: BLITZ alone; otherwise every account
+    const onlyBz = /\bblitz\b/.test(q) && !/\b(zlarior|atlas|bots|all)\b/.test(q);
+    const bz = v && v.blitz, bzOff = bz && (bz.off || bz.room == null);
+    const bzWhy = () => (bz ? `BLITZ: ${bz.off ? 'account C is off on the PC (paper only until its own 25K is set up)' : 'its eval is ' + (bz.status || 'not reporting')}.` : 'BLITZ: no account C card in the live feed yet.');
+    const pick = (lit, atl, blz) => (onlyBz ? [blz || bzWhy()] : [lit, atl, blz]).filter(Boolean).join('\n');
     if (/\b(room|floor|drawdown|max loss)\b/.test(q)) {
       if (!v) return need();
-      return { text: [v.lit && v.lit.room != null ? `Zlarior 50K: ${usd(v.lit.room)} of room above the floor (${usd(v.lit.floor)}).` : '', v.atlas && v.atlas.room != null ? `ATLAS 25K: ${usd(v.atlas.room)} of room.` : ''].filter(Boolean).join('\n') || 'No account room to show right now: the bot is not running. Zenith has the details.' };
+      return { text: pick(v.lit && v.lit.room != null ? `Zlarior 50K: ${usd(v.lit.room)} of room above the floor (${usd(v.lit.floor)}).` : '', v.atlas && v.atlas.room != null ? `ATLAS 25K: ${usd(v.atlas.room)} of room.` : '',
+        bz && !bzOff ? `BLITZ 25K: ${usd(bz.room)} of room above the floor (${usd(bz.floor)}).` : '') || 'No account room to show right now: the bot is not running. Zenith has the details.' };
     }
     if (/\b(target|to go|pass|passing)\b/.test(q)) {
       if (!v) return need();
-      return { text: [v.lit && v.lit.to_target != null ? `Zlarior: ${usd(v.lit.to_target)} to the target.` : '', v.atlas && v.atlas.to_target != null ? `ATLAS: ${usd(v.atlas.to_target)} to the target.` : ''].filter(Boolean).join('\n') || 'No eval target to show right now. Zenith has the details.' };
+      return { text: pick(v.lit && v.lit.to_target != null ? `Zlarior: ${usd(v.lit.to_target)} to the target.` : '', v.atlas && v.atlas.to_target != null ? `ATLAS: ${usd(v.atlas.to_target)} to the target.` : '',
+        bz && !bzOff && bz.to_target != null ? `BLITZ: ${usd(bz.to_target)} to the target.` : '') || 'No eval target to show right now. Zenith has the details.' };
     }
     if (/\b(p&l|pnl|p and l|profit|made|lost|money|today's)\b/.test(q) && !/\b(plan|schedule|calendar|task)\b/.test(q)) {
       if (!v) return need();
-      const lines = [];
-      if (v.lit && v.lit.today_pnl != null) lines.push(`Zlarior today ${usd(v.lit.today_pnl, true)}${v.lit.week_pnl != null ? `, this week ${usd(v.lit.week_pnl, true)}` : ''}.`);
-      if (v.atlas && v.atlas.today_pnl != null) lines.push(`ATLAS today ${usd(v.atlas.today_pnl, true)}.`);
-      return { text: lines.join('\n') || 'No P&L to show right now. Zenith has the details.' };
+      return { text: pick(v.lit && v.lit.today_pnl != null ? `Zlarior today ${usd(v.lit.today_pnl, true)}${v.lit.week_pnl != null ? `, this week ${usd(v.lit.week_pnl, true)}` : ''}.` : '',
+        v.atlas && v.atlas.today_pnl != null ? `ATLAS today ${usd(v.atlas.today_pnl, true)}.` : '',
+        bz && !bzOff && bz.today_pnl != null ? `BLITZ today ${usd(bz.today_pnl, true)}${bz.week_pnl != null ? `, this week ${usd(bz.week_pnl, true)}` : ''}.` : '') || 'No P&L to show right now. Zenith has the details.' };
     }
     if (/\b(bot|bots|status|how are|how's|hows|doing|running|armed|zlarior|atlas|blitz|nq)\b/.test(q) && !/\b(today|schedule|plan|task|event)\b/.test(q)) {
       if (!v) return need();
+      const bzLine = bz && !bzOff ? `BLITZ 25K: today ${usd(bz.today_pnl, true)}, room ${usd(bz.room)}, ${usd(bz.to_target)} to target${bz.trades_today ? `, ${bz.trades_today} ${bz.trades_today === 1 ? 'trade' : 'trades'} today` : ''}.` : bzWhy();
+      if (onlyBz) return { text: [bzLine, bz && bz.waiting && !bzOff ? bz.waiting : '', market().text + '.'].filter(Boolean).join('\n') };
       const vd = v.verdict || {}, lines = [`${vd.label || 'Bot status unknown'}${v.t ? ' (' + ago(v.t) + ')' : ''}.`];
       if (vd.reason && !String(vd.label || '').toLowerCase().includes(String(vd.reason).toLowerCase())) lines.push(vd.reason[0].toUpperCase() + vd.reason.slice(1) + '.');
       if (v.lit && v.lit.room != null) lines.push(`Zlarior 50K: today ${usd(v.lit.today_pnl, true)}, room ${usd(v.lit.room)}, ${usd(v.lit.to_target)} to target.`);
       if (v.atlas && v.atlas.room != null) lines.push(`ATLAS 25K: today ${usd(v.atlas.today_pnl, true)}, room ${usd(v.atlas.room)}, ${usd(v.atlas.to_target)} to target.`);
+      if (bz) lines.push(bzLine);
       lines.push(market().text + '.');
       return { text: lines.join('\n') };
     }
@@ -475,7 +487,7 @@ button { cursor: pointer; }
       if (voice && 'speechSynthesis' in window) { try { const u = new SpeechSynthesisUtterance(r.text.replace(/\n/g, '. ')); u.rate = 1.03; speechSynthesis.cancel(); speechSynthesis.speak(u); spoke = true; } catch (_) { /* no voice */ } }
       if (r.open) setTimeout(() => show(r.open), 450);
     };
-    if (/\b(bot|bots|room|target|p&l|pnl|profit|status|zlarior|atlas)\b/i.test(t) && !L.j && !L.busy) fetchLive().then(run); else setTimeout(run, 220);
+    if (/\b(bot|bots|room|target|p&l|pnl|profit|status|zlarior|atlas|blitz)\b/i.test(t) && !L.j && !L.busy) fetchLive().then(run); else setTimeout(run, 220);
   }
   $('#ask').addEventListener('submit', (e) => { e.preventDefault(); const q = $('#q'); ask(q.value); q.value = ''; });
 

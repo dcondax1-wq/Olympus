@@ -41,7 +41,11 @@ LIVE = {"v": 1, "kind": "le-live", "t": 0,
                   "lit": {"id": "lit", "name": "Zlarior", "plan": "MFFU Builder 50K", "badge": "LIVE", "balance": 49273.8, "floor": 48168.2,
                           "room": 1105.6, "to_target": 3726.2, "today_pnl": 212.5, "week_pnl": -224.5, "status": "open"},
                   "atlas": {"id": "atlas", "name": "ATLAS", "plan": "MFFU Builder 25K", "badge": "LIVE", "balance": 24750.4, "floor": 24000.0,
-                            "room": 750.4, "to_target": 1749.6, "today_pnl": 0.0, "status": "open"}}}
+                            "room": 750.4, "to_target": 1749.6, "today_pnl": 0.0, "status": "open"},
+                  # BLITZ on account C (engine/live_publish.blitz_block / live_board.blitz_now card)
+                  "blitz": {"id": "blitz", "name": "BLITZ", "plan": "MFFU Builder 25K", "badge": "SIM", "balance": 25112.3, "floor": 24500.0,
+                            "room": 612.3, "to_target": 1387.7, "today_pnl": 95.25, "week_pnl": 140.0, "status": "open", "off": False,
+                            "trades_today": 2, "waiting": "Waiting for the 14:30 check."}}}
 
 
 def site(tmp):
@@ -110,6 +114,8 @@ def run_browser(url):
         cards = p.inner_text("#cards")
         check("b. Zenith card: the bots' status and numbers from the live feed",
               "RUNNING: bot trading" in cards and "$1,106" in cards and "+$213" in cards and "$750" in cards, cards[:400])
+        check("b. Zenith card: BLITZ next to Zlarior and ATLAS (plan, badge, today, room, to target)",
+              "BLITZ · MFFU Builder 25K · SIM" in cards and "$612" in cards and "+$95" in cards and "$1,388" in cards, cards[:600])
         check("b. Planner card: today's events and open tasks from its saved data",
               "Gym" in cards and "7:30 AM" in cards and "Review fills" in cards and "1" in cards and "Buy BLITZ 25K" in cards, cards[:400])
         check("b. Kalshi card asks for its link", p.locator("#link-kalshi").count() == 1)
@@ -148,6 +154,17 @@ def run_browser(url):
         check("d. today's plan from the Planner", "Gym" in a4 and "Buy BLITZ 25K" in a4 and "Old" not in a4, a4)
         a5 = ask("is the market open")
         check("d. the market", "NQ market" in a5, a5)
+        check("d. status / room / target carry BLITZ next to Zlarior and ATLAS",
+              "BLITZ 25K" in a1 and "$612" in a1 and "BLITZ 25K: $612 of room above the floor ($24,500)" in a2 and "BLITZ: $1,388 to the target" in a3,
+              (a1, a2, a3))
+        a8 = ask("today's p&l")
+        check("d. P&L: Zlarior, ATLAS and BLITZ (today and this week)", "Zlarior today +$213" in a8 and "ATLAS today" in a8
+              and "BLITZ today +$95, this week +$140" in a8, a8)
+        a9 = ask("how's blitz")
+        check("d. 'how's blitz' answers BLITZ alone (not 'Opening Zenith')", "BLITZ 25K: today +$95, room $612, $1,388 to target, 2 trades today" in a9
+              and "Zlarior" not in a9 and "Opening" not in a9 and p.locator("#home").is_visible(), a9)
+        a10 = ask("blitz room")
+        check("d. 'blitz room' answers BLITZ's room alone", "BLITZ 25K: $612" in a10 and "Zlarior" not in a10, a10)
         a6 = ask("open planner")
         p.wait_for_timeout(800)
         check("d. 'open planner' switches to the Planner", "Opening Planner" in a6 and p.locator("#v-planner").is_visible(), a6)
