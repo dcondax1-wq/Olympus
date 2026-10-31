@@ -2,9 +2,9 @@
 title: ATLAS funded 25K - one trade a day (2026-10-31) - fewer trades on the funded account pays the owner LESS; the second trade of the day is part of the money
 family: risk
 date: 2026-10-31
-status: rejected (no change) - funded max 1 a day loses slot $ in every span (H1 $454 vs $568, H2 $275 vs $382, 2021-25 -$3 vs -$2 a month) and loses even to a random 1-a-day control; the H1 pick (up to 3 a day) adds +$44 in H1 but exactly $0 in H2 on all 4 path seeds; idea 2 (skip each member's worst VIX band on the funded account) picks nothing - no member lost in any H1 VIX tercile; idea 3 (funded half off at 1R + BE runner) H1 $366 vs $568, H2 $341 vs $382 - rejected, neighbours 0.75R / 1.5R also lose H1
+status: rejected (no change) - funded max 1 a day loses slot $ in every span (H1 $454 vs $568, H2 $275 vs $382, 2021-25 -$3 vs -$2 a month) and loses even to a random 1-a-day control; the H1 pick (up to 3 a day) adds +$44 in H1 but exactly $0 in H2 on all 4 path seeds; idea 2 (skip each member's worst VIX band on the funded account) picks nothing - no member lost in any H1 VIX tercile; idea 3 (funded half off at 1R + BE runner) H1 $366 vs $568, H2 $341 vs $382 - rejected, neighbours 0.75R / 1.5R also lose H1; idea 4 (funded re-entry after a stop-out) H1 $404 / H2 $257 vs $568 / $382 - rejected, inside a coin-flip-direction control
 summary: Owner 2026-10-31 "keep building those strategies" - does the FUNDED ATLAS 25K pay the owner more with a day limit of one trade (the day's first ATLAS signal) instead of two? Eval unchanged (today's ATLAS), so only the whole-slot money can move (tools/atx_edge.slot - eval -> funded -> MFFU payouts -> a new $63 eval, 300 paths x 126 sessions). Trade-count rules were tested on the eval path before (atlas-confluences.md), never on the funded account's payouts. Picked on 2026 H1, checked on H2 and 2021-25, random 1-a-day control (4 seeds), neighbours max 3 / max 4, 4 path seeds.
-runs: atxd_max1, atxd_max3, atxd_today, atxd_partial_p1, atxd_partial_p1p5
+runs: atxd_max1, atxd_max3, atxd_today, atxd_partial_p1, atxd_partial_p1p5, atxd_reentry_1r
 ---
 
 ## Money first
@@ -62,6 +62,23 @@ exit; eval unchanged). Rejected: it costs the owner about $200 a month in H1.**
   and the partial level counts as the stop first; a bar after the partial touching the entry = the runner out at
   breakeven less 1 tick. With 1 micro the split is a blend (half the points), as the simulator sizes in whole micros.
 - Runs `atxd_partial_p1`, `atxd_partial_p1p5`; numbers `research/second/atx_funded_partial.json`.
+
+**Idea 4, same session: a re-entry after a stop-out on the funded account (eval unchanged). Rejected: about -$160 a
+month in H1 and -$125 in H2.** The member records hold one trade per member per day, so there is no "next signal" of
+the same member; the test re-takes the same setup once: after a stop before 15:00 ET, enter at the next bar's open in the
+same direction, the same risk, the first trade's target price, flat 15:55 (a bar touching both = stop first; 1 tick
+slippage on the entry and on a stop). The re-entry counts toward the 2 a day.
+
+| Funded 25K | H1 slot $/mo | H2 slot $/mo | 2021-25 slot $/mo | Re-entries (all candidates) H1 / H2 / 2021-25: n, sum R |
+|---|---:|---:|---:|---|
+| **Today (no re-entry)** | **$568** | **$382** | -$2 | |
+| **Re-entry, same risk** | $404 | $257 | -$15 | 49, -11.8R / 19, -5.0R / 601, -16.2R |
+| Re-entry, 1.5x the risk (neighbour, fewer micros) | $492 | $213 | -$2 | 49, -3.8R / 19, -7.1R / 600, -8.3R |
+| Control: the re-entry in a coin-flip direction (4 seeds) | $401-590 | $154-259 | -$10 to -$9 | |
+
+- Lower on every path seed (H1 $404-439 vs $568-595, H2 $254-270 vs $347-382). The re-entries lose R in every span, and
+  the same-direction rule sits inside the coin-flip control's range: after an ATLAS stop there is no edge in going again.
+- Run `atxd_reentry_1r`; numbers `research/second/atx_funded_reentry.json`.
 
 **Eval (unchanged in every row, today's ATLAS on the Builder 25K):** 2-week pass / dead H1 65.5 / 0.8, H2 43.5 / 0.0,
 2021-25 24.6 / 26.2; eval-path $1,394 / $547 / -$63 a month less fees; 4.4 / 3.3 / 5.2 candidate trades a week
