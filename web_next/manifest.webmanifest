@@ -1,6 +1,6 @@
 {
-  "name": "Liquidity Engine",
-  "short_name": "Liquidity",
+  "name": "Zenith",
+  "short_name": "Zenith",
   "description": "NQ futures paper bot on the LIT strategy: command center, live bot, backtests and briefings. The previous strategy is in the Archive.",
   "start_url": "/?source=pwa",
   "scope": "/",

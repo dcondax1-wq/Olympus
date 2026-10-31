@@ -191,7 +191,7 @@ export function onPage(page) {
   $('#nxCrumb').textContent = BOTS[g] && page !== 'atlas' && page !== 'blitz' ? BOTS[g].name : g === 'data' ? 'Results' : g === 'modules' && page !== 'modules' ? 'Modules' : g === 'archive' ? 'Archive · previous strategy' : '';
   buildSub(page);
   requestAnimationFrame(() => { $('#page-' + page)?.scrollTo?.(0, 0); });
-  document.title = `${TITLES[page] || 'Liquidity Engine'} · Liquidity Engine`;   // the app's name; the strategy is LIT
+  document.title = `${TITLES[page] || 'Zenith'} · Zenith`;   // the app's name (Zenith, owner 2026-10-31); the strategy is LIT
 }
 
 function interfaceCard() {
