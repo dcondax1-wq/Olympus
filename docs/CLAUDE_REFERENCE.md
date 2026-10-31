@@ -699,6 +699,14 @@ part yourself or fold it into a script.**
   raising stub), FEED STALE blocks entries, PC bars push/read roundtrip, roll back-adjustment, CBOE VIX (23 checks, ~10 s).
 
 ## Infrastructure
+- **Jarvis hub (2026-10-31, owner: "Jarvis is the brain, switch right to the other dashboards"):** `tools/web_public/jarvis/`
+  (index.html, manifest, sw.js, icons; published at `<site>/jarvis/` by `tools/build_web_dashboard.py` with every build).
+  Its own Home Screen app: the Jarvis screen first (greeting, NQ market line, Zenith card from live.json `board` /
+  `pc_verdict`, Planner card from the Planner's saved `planner.v1`, Kalshi card), a top bar that opens each dashboard in
+  its own kept-alive iframe (Zenith `../`, Planner `../planner/`, Kalshi = `KALSHI_URL` in index.html or a link pasted on
+  the phone, extra dashboards via +), rule-based answers (status / room / target / P&L / today / market / "open X"),
+  voice when the phone has speech recognition. Read-only. On iPhone each Home Screen app has its own storage: the Planner
+  inside Jarvis needs its sync connected once. Test `python -X utf8 -m tests.test_jarvis_hub` (34).
 - **Market structure, playbook, discretion advisor (2026-10-29, read-only, never an order):** `engine/structure.py`
   (Tracker per timeframe on closed bars: fractal k=2 swings, HH/HL/LH/LL, BOS / CHoCH on a close, protected swing = origin
   of the breaking leg, pools = today's Asia / London / NY-open boxes + prior day + equal highs / lows (`lit.buildups`) +

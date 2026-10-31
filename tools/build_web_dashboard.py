@@ -1204,6 +1204,14 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
         src = os.path.join(WEB, name)
         if os.path.isfile(src):
             shutil.copy(src, os.path.join(out, name))
+    # the Jarvis hub (tools/web_public/jarvis/, owner 2026-10-31): its own Home Screen app at <site>/jarvis/ that switches
+    # between this dashboard, the Planner and the other projects; published with every build so a publish never drops it
+    jv = os.path.join(WEB, "jarvis")
+    if os.path.isdir(jv):
+        os.makedirs(os.path.join(out, "jarvis"), exist_ok=True)
+        for name in os.listdir(jv):
+            if os.path.isfile(os.path.join(jv, name)):
+                shutil.copy(os.path.join(jv, name), os.path.join(out, "jarvis", name))
     os.makedirs(os.path.join(out, "icons"), exist_ok=True)
     for name in ("icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png", "icon.svg"):
         if os.path.exists(os.path.join(ICONS, name)):
