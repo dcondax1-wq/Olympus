@@ -84,6 +84,15 @@ def part_a():
     check("a. the site build publishes jarvis/ with every build", 'os.path.join(WEB, "jarvis")' in b and 'os.path.join(out, "jarvis", name)' in b)
     sw = open(os.path.join(JV, "sw.js"), encoding="utf-8").read()
     check("a. the hub's service worker only handles its own folder", "u.pathname.startsWith(scope.pathname)" in sw)
+    # 2026-10-31 (Jarvis would not open on the owner's iPhone): Zenith's worker covers the whole site; it used to delete
+    # every other cache (Jarvis's and the Planner's saved copies) and handle their pages, so a dropped connection left Jarvis
+    # with nothing to open. Each worker now keeps to its own folder and its own caches, and Jarvis's saved copy answers errors.
+    check("a. Jarvis's worker deletes only its own old caches and answers a 404 / no connection from its saved copy",
+          "k.startsWith('jarvis-')" in sw and "(await saved(e.request)) || r" in sw and "Response.error()" in sw)
+    zsw = open(os.path.join(ROOT, "tools", "web_public", "sw.js"), encoding="utf-8").read()
+    check("a. Zenith's worker stays out of jarvis/ and planner/ and deletes only its own caches (le-public-*)",
+          "const OTHER_APPS = ['jarvis/', 'planner/'];" in zsw and "if (OTHER_APPS.some(" in zsw
+          and "ks.filter((k) => k.startsWith('le-public-') && k !== CACHE)" in zsw and "k !== CACHE && k !== BADGE" not in zsw)
 
 
 def run_browser(url):

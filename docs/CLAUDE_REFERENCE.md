@@ -706,7 +706,13 @@ part yourself or fold it into a script.**
   its own kept-alive iframe (Zenith `../`, Planner `../planner/`, Kalshi = `KALSHI_URL` in index.html or a link pasted on
   the phone, extra dashboards via +), rule-based answers (status / room / target / P&L / today / market / "open X"),
   voice when the phone has speech recognition. Read-only. On iPhone each Home Screen app has its own storage: the Planner
-  inside Jarvis needs its sync connected once. Test `python -X utf8 -m tests.test_jarvis_hub` (34).
+  inside Jarvis needs its sync connected once. Test `python -X utf8 -m tests.test_jarvis_hub` (36).
+  **Service workers share one origin (fix 2026-10-31, "Jarvis won't load"):** Zenith's `tools/web_public/sw.js` (scope =
+  the whole site) used to delete every other cache on activate and handle `jarvis/` + `planner/` pages, so once Zenith was
+  opened inside Jarvis a dropped connection or a site 404 left Jarvis with nothing to open (reproduced over local https).
+  Now Zenith's worker skips `OTHER_APPS` (jarvis/, planner/) and deletes only `le-public-*`; Jarvis's worker (jarvis-v2)
+  saves each file on its own and answers offline / 404 / 5xx from its saved copy. A new app folder on the site goes into
+  `OTHER_APPS` and keeps its cache names to its own prefix.
 - **Market structure, playbook, discretion advisor (2026-10-29, read-only, never an order):** `engine/structure.py`
   (Tracker per timeframe on closed bars: fractal k=2 swings, HH/HL/LH/LL, BOS / CHoCH on a close, protected swing = origin
   of the breaking leg, pools = today's Asia / London / NY-open boxes + prior day + equal highs / lows (`lit.buildups`) +
