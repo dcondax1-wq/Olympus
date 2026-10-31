@@ -106,12 +106,13 @@ this rule until a research pick passes both 2026 halves and 2021-25 and the owne
   paper, so BLITZ waits for it and never chases a later price.
 - Order checks: at most 20 micros, a stop over 250 points is refused (BLITZ's stop is 1.5 x the 5m ATR: 37 of 2026's 330
   stops were wider than Zlarior's 100-point cap, the widest 202).
-- **Owner switch, OFF: the later-break size** (research/writeups/atlas-blitz-edge-2026-10-30.md, 2026-10-30). With
-  `"later_break": true` in data/account_c.json, on the eval the day's FIRST band break on a side trades at half size and a
+- **The later-break size, ON** (approved by the owner 2026-10-31; research/writeups/atlas-blitz-edge-2026-10-30.md).
+  `"later_break": false` in data/account_c.json turns it off. On the eval the day's FIRST band break on a side trades at half size and a
   LATER same-side break (2nd, 3rd ... check close beyond the band that day) at 1.75 x (never more than the room; the $600 cap
   scales to $1,050). Same trades, different sizes: 25K 2-week pass / fail H1 47.9 / 23.5 (today 36.1 / 37.8), H2 36.2 / 21.7
   (36.2 / 34.8), 2021-25 24.7 / 48.4 (20.4 / 50.2); account slot +$286 / +$52 / -$39 a month (+$270 / +$37 / -$40). Per
-  trade the gain is within chance; a later break can lose up to ~$1,050. You decide; the bot never turns it on.
+  trade the gain is within chance; a later break risks more (the $ cap scales to $1,050, still inside the room and 90% of
+  the $600 soft daily loss left). Funded and paper sizing are unchanged.
 
 ## How it should perform (the bands to judge it by)
 

@@ -87,8 +87,8 @@ SIZE_EVAL = {"f": 0.4, "cap": 600.0, "dll_frac": 0.9, "day_tp": None, "push_from
 SIZE_PAPER = {"f": 0.4, "cap": 600.0, "dll_frac": 0.9, "day_tp": None, "push_from": None, "push_f": None}
 SIZE_FUNDED = {"f": 0.1, "cap": 150.0, "dll_frac": 0.9, "day_tp": 400.0, "push_from": None, "push_f": None}
 SIZINGS = ("speed", "paper")
-# OWNER SWITCH, OFF (research/writeups/atlas-blitz-edge-2026-10-30.md, research/scalp/blitz_25k_pick_v2.json): "later_break": true
-# in data/account_c.json = on the 25K EVAL the day's first band break on a side trades x0.5, a later same-side break (the day's
+# ON BY DEFAULT since the owner approved it on 2026-10-31 (research/writeups/atlas-blitz-edge-2026-10-30.md,
+# research/scalp/blitz_25k_pick_v2.json); "later_break": false in data/account_c.json turns it off. On the 25K EVAL the day's first band break on a side trades x0.5, a later same-side break (the day's
 # count of check closes beyond the band on that side >= 2, engine/blitz "brk_n") x1.75: f and the $ cap scale, f <= 1.0 (never
 # more than the room). Funded and "paper" sizing unchanged. 2-week pass / fail H1 47.9 / 23.5 (36.1 / 37.8), H2 36.2 / 21.7
 # (36.2 / 34.8), 2021-25 24.7 / 48.4 (20.4 / 50.2); a later break can risk up to $1,050.
@@ -199,7 +199,7 @@ def normalize(blk: dict | None, lit_account: str | None = None, b_account: str |
            "armed": blk.get("armed") is True, "prior_pnl": float(_num(blk.get("prior_pnl"), 0.0)), "eval_anchor": blk.get("eval_anchor"),
            "filtered": blk.get("unfiltered") is not True, "params": None, "problem": None,
            "resume_after": _num(blk.get("resume_after")), "sizing": str(blk.get("sizing") or "speed"),
-           "later_break": blk.get("later_break") is True}
+           "later_break": blk.get("later_break") is not False}
     out["preset"] = (P or PLANS["builder25k"])["preset"]
     out["plan_label"] = (P or {}).get("label") or plan
     out["rules"] = MA.rules_of({"preset": out["preset"]})

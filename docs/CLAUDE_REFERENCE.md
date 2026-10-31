@@ -223,7 +223,7 @@ part yourself or fold it into a script.**
   [--cloud]` (~65 s).
 - **Account C = BLITZ routed to its OWN MFFU Builder 25K (2026-10-29, owner "the scalping on a 25"), built, OFF:**
   `engine/account_c.py` (LiveBot.acct_c, `_account_c_tick` right after LIT's routing, before account B and the read-only work: the entry latency matters), plain-language rules + bands + kill switch in
-  `BLITZ_STRATEGY.md`. Owner switch OFF (2026-10-30): `"later_break": true` = eval size x0.5 on the day's first band break of a
+  `BLITZ_STRATEGY.md`. Later-break size ON by default (owner approved 2026-10-31; `"later_break": false` turns it off) = eval size x0.5 on the day's first band break of a
   side, x1.75 on a later one (`engine/blitz` signal `brk_n`, `account_c.qty`, `tests.test_blitz_later_break`, pick v2).
   Switch = local `data/account_c.json` (gitignored; absent / null = the bot is exactly as before: no
   adapter, no heartbeat key) `{"account", "plan": "builder25k", "eval_start", "armed": false}`; CLI `python -X utf8 -m
@@ -614,7 +614,7 @@ part yourself or fold it into a script.**
     and the two accounts become one LIT bet); the NA day-hold as a 4th member (dead evals up); S/R level count / EMA sweep
     depth / EMA distance as size; London-clock windows in the DST gap weeks (the volume surge does move to 04:00 ET, but
     EMA / MACD lose there).
-  - The one adopt-candidate is BLITZ's 25K later-break eval size (`research/scalp/blitz_25k_pick_v2.json`, owner decides).
+  - The one adopt-candidate is BLITZ's 25K later-break eval size (`research/scalp/blitz_25k_pick_v2.json`): adopted, owner 2026-10-31.
   - ATLAS paper lead (run `ab_atlas_na_hunts_lead`): the hunts x0.5 + the NA day-hold member x0.5.
     - More passes a month and more eval-path $ in all four spans: $2,046 / $1,584 / +$47 / +$194 a month vs $1,394 /
       $547 / -$148 / -$36; 13 of 15 neighbours do the same.

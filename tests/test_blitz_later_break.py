@@ -1,5 +1,5 @@
-"""BLITZ later-break size (research/writeups/atlas-blitz-edge-2026-10-30.md, research/scalp/blitz_25k_pick_v2.json): OFF until the
-owner sets "later_break": true in data/account_c.json. engine/blitz counts the day's check closes beyond the band per side
+"""BLITZ later-break size (research/writeups/atlas-blitz-edge-2026-10-30.md, research/scalp/blitz_25k_pick_v2.json): ON by default
+since the owner approved it (2026-10-31); "later_break": false in data/account_c.json turns it off. engine/blitz counts the day's check closes beyond the band per side
 ("brk_n" on every signal and entry, traded or not); engine/account_c.qty sizes the eval x0.5 on the day's first break of a side
 and x1.75 on a later one (f <= 1.0, the $ cap scales). Funded / paper sizing and the switch off = today's size.
 
@@ -30,8 +30,8 @@ def spec(**kw):
 
 def main():
     st = {"room": 1000.0, "cum": 0.0, "session": 2}
-    base = AC.qty(spec(), 20.0, st)
-    off2 = AC.qty(spec(), 20.0, st, brk_n=2)
+    base = AC.qty(spec(later_break=False), 20.0, st)
+    off2 = AC.qty(spec(later_break=False), 20.0, st, brk_n=2)
     check("switch off: brk_n changes nothing", base["qty"] == off2["qty"] > 0, (base, off2))
     on1 = AC.qty(spec(later_break=True), 20.0, st, brk_n=1)
     on2 = AC.qty(spec(later_break=True), 20.0, st, brk_n=2)
@@ -44,7 +44,9 @@ def main():
     pap = AC.qty(spec(later_break=True, sizing="paper"), 20.0, st, brk_n=2)
     check("paper sizing ignores it", pap["qty"] == AC.qty(spec(sizing="paper"), 20.0, st)["qty"], pap)
     check("a missing brk_n (older engine state) = today's size", AC.qty(spec(later_break=True), 20.0, st)["qty"] == base["qty"])
-    check("the switch is off by default", spec()["later_break"] is False and spec(later_break="yes")["later_break"] is False)
+    check("the switch is on by default (owner 2026-10-31); false turns it off",
+          spec()["later_break"] is True and spec(later_break=False)["later_break"] is False
+          and AC.qty(spec(), 20.0, st, brk_n=2)["qty"] == on2["qty"])
     # the engine's per-side count on real 2026 bars: every signal carries brk_n = 1, 2, ... per side and day
     import pandas as pd
     df = pd.read_csv(os.path.join(ROOT, "data", "NQ_1m.csv"))
