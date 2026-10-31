@@ -151,7 +151,7 @@ function banners(d) {
 
 function statusText(d) {
   const L = d.lit || {}, A = d.atlas || {};
-  const lines = [`Liquidity Engine status ${d.et}`, `Verdict: ${d.verdict?.label || '?'} (${d.verdict?.reason || ''})`,
+  const lines = [`Zenith status ${d.et}`, `Verdict: ${d.verdict?.label || '?'} (${d.verdict?.reason || ''})`,
     `Zlarior 50K: balance ${usd(L.balance, 2)}, ${usd(L.to_target)} to target, room ${usd(L.room)}, today ${susd(L.today_pnl)}${L.position ? `, IN TRADE ${L.position.side} ${L.position.qty}` : ', flat'}`,
     `ATLAS 25K: ${A.configured === false ? 'not set up' : `balance ${usd(A.balance, 2)}, ${usd(A.to_target)} to target, room ${usd(A.room)}, today ${susd(A.today_pnl)}`}`,
     `Waiting for: ${d.waiting?.say || ''}`,

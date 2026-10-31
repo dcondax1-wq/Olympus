@@ -1,6 +1,6 @@
 {
-  "name": "Liquidity Engine",
-  "short_name": "Liquidity",
+  "name": "Zenith",
+  "short_name": "Zenith",
   "description": "NQ futures paper bot on the LIT strategy: cloud paper bot, MFFU eval tracker, USD news and blackouts, trades, replays, backtest results and the research lab (the previous strategy in the Archive). Works with the PC off.",
   "id": "./",
   "start_url": "./#/today",

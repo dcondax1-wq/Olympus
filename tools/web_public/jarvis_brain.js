@@ -422,7 +422,7 @@ export function createBrain({ facts, nav, now } = {}) {
     smalltalk(f, q) {
       const c = f.clock || {}, h = c.et ? parseInt(c.et.slice(0, 2), 10) : NaN;
       let t;
-      if (/\b(who are you|what are you|your name)\b/.test(q)) t = 'I am Jarvis, the voice of your Liquidity Engine bot: NQ futures, paper only, MFFU Builder 50K eval. I answer from the bot\'s own data and never place real orders.';
+      if (/\b(who are you|what are you|your name)\b/.test(q)) t = 'I am Jarvis, the voice of Zenith, your NQ futures bot app: paper only, MFFU Builder 50K eval. I answer from the bot\'s own data and never place real orders.';
       else if (/\b(thanks|thank you|thx|ty|cheers|good job|well done|nice work|good bot|good boy|love it)\b/.test(q)) t = 'Any time. Ask me what I am doing or what size we are at.';
       else if (/\b(how are you|you good|how are you doing)\b/.test(q)) t = `Running fine. ${strip(sessionWords(c)).split('.')[0]}. Ask me what I am doing.`;
       else if (/\b(bye|goodbye|see you|later|good night|gn)\b/.test(q)) t = 'Talk soon. I keep watching the killzones.';

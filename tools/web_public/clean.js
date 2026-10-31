@@ -302,7 +302,7 @@
     };
     inp.oninput = filt;
     filt();
-    const tt = document.getElementById('title'); if (tt) tt.textContent = 'More'; document.title = 'More · Liquidity Engine';
+    const tt = document.getElementById('title'); if (tt) tt.textContent = 'More'; document.title = 'More · Zenith';
   }
 
   // ------------------------------------------------------------------ the sub-bar under the header

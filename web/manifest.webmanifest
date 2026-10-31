@@ -1,6 +1,6 @@
 {
-  "name": "Liquidity Engine",
-  "short_name": "Liquidity",
+  "name": "Zenith",
+  "short_name": "Zenith",
   "description": "NQ futures liquidity bot: command center, live bot, backtests and briefings.",
   "start_url": "/?source=pwa",
   "scope": "/",
