@@ -64,12 +64,16 @@
 // account cards with eval rings + sparklines, what matters now, the Sunday open card, quick tiles, everything else folded;
 // one section order on every bot tab: Today · Brain · Trades · Results · Rules; Money = real money only; the search palette;
 // the motion system and the once-a-day intro). New cache name so every iPhone refreshes (clean.js?v=3 kept).
-const CACHE = 'le-public-v48';
+// v49 (2026-10-31, Jarvis would not open): this worker covers the whole site, so it stays out of the other apps' folders
+// (jarvis/, planner/: each has its own worker and saved copy) and only ever deletes its own old caches (le-public-*);
+// before, it erased Jarvis's and the Planner's saved copies and stored their pages as Zenith's.
+const CACHE = 'le-public-v49';
 const BADGE = 'le-badge', BADGE_URL = './__badge';
+const OTHER_APPS = ['jarvis/', 'planner/'];           // own folders, own workers: never handled or cached here
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=p111030', './icons/apple-touch-icon.png?v=p111030', './icons/icon-512.png?v=p111030'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });
 self.addEventListener('activate', (e) => {
-  e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE && k !== BADGE).map((k) => caches.delete(k)))));
+  e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k.startsWith('le-public-') && k !== CACHE).map((k) => caches.delete(k)))));
   self.clients.claim();
 });
 const prune = (u) => caches.open(CACHE).then((c) => c.keys().then((ks) => ks.forEach((k) => {
@@ -80,6 +84,8 @@ self.addEventListener('fetch', (e) => {
   // live.json (live.js: the PC's minute-by-minute file on api.github.com / raw.githubusercontent.com) is network-only:
   // never cached, never answered from a cache (an old copy would look live). Cross-origin requests are not touched anyway.
   if (req.method !== 'GET' || url.origin !== location.origin || url.pathname.endsWith('live.json')) return;
+  const rel = url.pathname.slice(new URL(self.registration.scope).pathname.length);
+  if (OTHER_APPS.some((d) => rel === d.slice(0, -1) || rel.startsWith(d))) return;
   const put = (key, res) => { if (res && res.ok) { const c = res.clone(); caches.open(CACHE).then((x) => x.put(key, c)); } return res; };
   const isData = url.pathname.endsWith('data.json') || url.pathname.endsWith('home.json'), isPage = req.mode === 'navigate' || url.pathname.endsWith('/') || url.pathname.endsWith('index.html');
   if (isData || isPage) {
