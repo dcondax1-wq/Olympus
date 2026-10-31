@@ -67,6 +67,61 @@ def hb_payload(now, n_trades=3, position=True):
             "exec": {"n": 1}}
 
 
+def account_c_block(now):
+    """An engine/account_c.AccountC.hb_block-shaped block: BLITZ on its own 25K eval (SIM), two booked days this week."""
+    import datetime as _dt
+    from engine import live_board
+    d0 = _dt.date.fromisoformat(live_board.trading_day(now))
+    mon = d0 - _dt.timedelta(days=d0.weekday())
+    return {"account": "FAKEEVALC", "kind": "SIM", "real": False, "plan_label": "MFFU Builder 25K", "stage": "eval",
+            "eval": {"start": "2026-11-02", "balance": 25310.0, "floor": 24310.0, "room": 1000.0, "to_target": 1190.0, "target": 26500.0,
+                     "profit": 310.0, "today": 0.0, "status": "open", "session": 2, "dll": 600.0, "max_micros": 20},
+            "rules": {"start": 25000.0, "target": 1500.0, "mll": 1000.0, "lock": 25100.0, "dll": 600.0, "max_micros": 20},
+            "day_pnl": 125.5, "entries_today": 1, "state": {"text": "waiting for the 11:30 check"},
+            "days": {str(mon - _dt.timedelta(days=3)): 999.0, str(mon): 184.5, str(d0): 125.5}, "closed": [], "routed": [], "t": int(now)}
+
+
+def blitz_checks(now, lm, p_off):
+    """BLITZ (account C) on the phone feed: an "off" card while account C is off, the board's card shape while on,
+    read-only, None (never an exception) when it cannot be built."""
+    import copy
+    from engine import live_board
+    bz = p_off.get("blitz") or {}
+    check("blitz: account C off -> an 'off' card in live.json, board.blitz left out (its 'absent = off' contract)",
+          bz.get("off") is True and bz.get("status") == "off" and bz.get("plan") == "MFFU Builder 25K" and bz.get("room") is None
+          and "blitz" not in (p_off.get("board") or {}) and "lit" in p_off["board"] and "atlas" in p_off["board"], bz)
+    hb = hb_payload(now)
+    hb["account_c"] = account_c_block(now)
+    before = copy.deepcopy(hb)
+    p = lp.build(hb, now, lm=lm, hb_last={"at": int(now) - 30, "ok": True}, every_s=60)
+    bz, card, lit = p.get("blitz") or {}, (p.get("board") or {}).get("blitz") or {}, (p.get("board") or {}).get("lit") or {}
+    core = ("id", "name", "plan", "badge", "status", "today_pnl", "week_pnl", "room", "to_target", "floor", "balance", "mll", "session")
+    check("blitz: account C on -> the card from its heartbeat block (plan, badge, status, today, room, to target, floor)",
+          bz.get("off") is False and bz["plan"] == "MFFU Builder 25K" and bz["badge"] == "SIM" and bz["status"] == "open"
+          and bz["today_pnl"] == 125.5 and bz["room"] == 1000.0 and bz["to_target"] == 1190.0 and bz["floor"] == 24310.0, bz)
+    wk_want = round(sum(v for d, v in hb["account_c"]["days"].items() if v != 999.0), 2)    # a Monday run: one day (dict key clash)
+    check("blitz: this week's P&L from account C's booked days (last week's day left out)", bz.get("week_pnl") == wk_want, bz.get("week_pnl"))
+    check("blitz: same keys as the board's lit card", all(k in bz for k in core) and all(k in lit for k in core if k != "badge"),
+          [k for k in core if k not in bz])
+    check("blitz: board.blitz is there while account C is on and agrees", card.get("room") == 1000.0 and card.get("id") == "blitz", card)
+    check("blitz: read-only (the heartbeat payload is not changed)", hb == before)
+    check("blitz: blitz_block never raises on junk (None or an off card)",
+          all((lambda r: r is None or isinstance(r, dict))(lp.blitz_block(x, now)) for x in (None, {}, {"account_c": "x"}, {"account_c": {"days": 5}}, "junk", 7)))
+    check("blitz: account C reporting an error -> an off card that says so",
+          (lp.blitz_block({"account_c": {"error": "KeyError: x"}}, now) or {}).get("status") == "error")
+    real = live_board.blitz_now
+    try:
+        live_board.blitz_now = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("boom"))
+        r = lp.blitz_block(hb, now)
+        p2 = lp.build(hb, now, lm=lm)
+        check("blitz: a failure gives None, never an exception, and live.json still builds",
+              r is None and p2.get("blitz") is None and isinstance(p2.get("board"), dict) and "lit" in p2["board"], (r, p2.get("blitz")))
+    except Exception as e:
+        check("blitz: a failure gives None, never an exception, and live.json still builds", False, e)
+    finally:
+        live_board.blitz_now = real
+
+
 def main(argv=None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     tmp = tempfile.mkdtemp(prefix="le_livepub_")
@@ -97,6 +152,7 @@ def main(argv=None) -> int:
         check("secrets: scrub() drops credential keys at any depth and keeps eval words like 'passed'",
               lp.scrub({"a": {"password": 1, "api_key": 2, "passed": 3, "list": [{"webhook": "u", "ok": 1}]}})
               == {"a": {"passed": 3, "list": [{"ok": 1}]}})
+        blitz_checks(now, lm, p)
         big = lp.build(hb_payload(now, n_trades=60), now, lm=lm)
         sz = len(json.dumps(big, separators=(",", ":")))
         check("size: under 64 KB with 60 trades of long notes (trimmed to the last 25)", sz < lp.MAX_BYTES and len(big["accounts"][0]["trades"]) <= 25, sz)

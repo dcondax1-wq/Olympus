@@ -25,7 +25,9 @@ lays it over data.json):
    "accounts": the PC accounts as engine/accounts.build_accounts makes them (eval $ to go / room / session, today's P&L,
                the open position with its stop / target, today's orders, the last trades),
    "price", "day_pnl", "last_signal", "model_state", "heartbeat": {"t", "ok"} (the last heartbeat push),
-   "money": the Goals card's Road to $10K / Stingray 3LT (engine/money_goal.from_heartbeat, ~7 KB; dropped first if too big)}
+   "money": the Goals card's Road to $10K / Stingray 3LT (engine/money_goal.from_heartbeat, ~7 KB; dropped first if too big),
+   "blitz": BLITZ on account C in the board's lit / atlas card shape (blitz_block; an "off" card while account C is off,
+            null when it cannot be built; board.blitz itself stays present only while account C is on)}
 Next to it in the same commit: liveview.json (< 240 KB), the phone's Live View (engine/liveview_api.phone_view: the
 chart's 1m / 5m bars, the Zlarior / ATLAS / BLITZ layers, what each bot is thinking, the feed; tools/web_public/liveview.js),
 holo.json (< 300 KB, the Holodeck's today: exact fills, trades, orders, thoughts; engine/holo_api.phone) and holo_hist.json
@@ -188,6 +190,11 @@ def build(hb_payload: dict, now=None, lm: dict | None = None, hb_last: dict | No
         out["board"] = bd
     except Exception as e:
         out["board"] = {"error": f"{e.__class__.__name__}: {str(e)[:120]}"}
+    bz = blitz_block(hb, now, out.get("board"))       # BLITZ on account C, same keys as board.lit / board.atlas (None on failure)
+    if bz is not None and not bz.get("off") and isinstance(out.get("board"), dict) and "error" not in out["board"] \
+            and not isinstance(out["board"].get("blitz"), dict):
+        out["board"]["blitz"] = bz                        # board.blitz keeps its contract: present only while account C is on
+    out["blitz"] = bz                                     # live.json "blitz": always there (an "off" card while account C is off)
     try:                                # Road to $10K / Stingray 3LT (engine/money_goal.py): the Goals card, fresher than data.json
         from . import money_goal
         out["money"] = money_goal.from_heartbeat(hb, now=now, accounts=out.get("accounts"))
@@ -195,6 +202,53 @@ def build(hb_payload: dict, now=None, lm: dict | None = None, hb_last: dict | No
         out["money"] = {"error": f"{e.__class__.__name__}: {str(e)[:120]}"}
     out = scrub(out, _phrases())
     return fit(out)
+
+
+BLITZ_KEYS = ("id", "name", "plan", "method", "broker", "badge", "source", "configured", "stage", "status", "balance", "floor", "room",
+              "room_frac", "mll", "to_target", "target_balance", "profit", "today_pnl", "week_pnl", "dll", "session", "sessions",
+              "trades_today", "max_day", "max_micros", "waiting", "window", "micros", "position", "blocks", "paused")
+
+
+def blitz_block(hb_payload: dict | None, now=None, board: dict | None = None) -> dict | None:
+    """BLITZ on its own account (account C) for the phone: the keys the board's lit / atlas cards carry (plan, badge,
+    status, today_pnl, week_pnl, room, to_target, floor, ...). Read-only, built only from what the PC bot already put in
+    its heartbeat payload (the "account_c" block, engine/account_c.AccountC.hb_block, or the board's own BLITZ card when
+    it has one): no file, no network, nothing on the trading path (the publisher's own thread). Account C off (no
+    "account_c") -> an "off" card (off=True, status "off"). Any failure -> None, never an exception."""
+    try:
+        import datetime as _dt
+        now = int(now or time.time())
+        bd = board if isinstance(board, dict) else {}
+        card = bd.get("blitz") if isinstance(bd.get("blitz"), dict) and not bd["blitz"].get("error") else None
+        c = (hb_payload or {}).get("account_c")
+        if card is None and isinstance(c, dict) and c and not c.get("error"):
+            from . import live_board
+            card = live_board.blitz_now({"account_c": c}, now)
+        if card is not None:
+            out = {k: card.get(k) for k in BLITZ_KEYS}
+            days = c.get("days") if isinstance(c, dict) else None           # account C's {day: closed $} (AccountC.days)
+            if isinstance(days, list):
+                days = {str(d[0]): d[1] for d in days if isinstance(d, (list, tuple)) and len(d) >= 2}
+            if out.get("week_pnl") is None and isinstance(days, dict):       # this week's booked days (Mon .. today, ET)
+                from . import live_board
+                d0 = _dt.date.fromisoformat(live_board.trading_day(now))
+                mon = (d0 - _dt.timedelta(days=d0.weekday())).isoformat()
+                wk = [float(v) for d, v in days.items() if str(d) >= mon and v is not None]
+                out["week_pnl"] = round(sum(wk), 2) if wk else None
+            out["off"] = False
+            return out
+        err = c.get("error") if isinstance(c, dict) else None
+        return {"id": "blitz", "name": "BLITZ", "plan": "MFFU Builder 25K", "method": "noise-area 1m scalp", "badge": "OFF",
+                "source": "none", "configured": False, "off": True, "stage": "eval", "status": "error" if err else "off",
+                "balance": None, "floor": None, "room": None, "room_frac": None, "mll": 1000.0, "to_target": None,
+                "target_balance": 26500.0, "profit": None, "today_pnl": None, "week_pnl": None, "dll": 600.0, "session": None,
+                "sessions": None, "trades_today": 0, "max_day": 6, "max_micros": 20, "micros": None, "position": None, "blocks": [],
+                "paused": None,
+                "waiting": (f"Account C could not report: {str(err)[:120]}" if err else
+                            "Account C is off on the PC: BLITZ trades paper only until its own 25K is set up "
+                            "(python -X utf8 -m engine.account_c, or the Start page).")}
+    except Exception:
+        return None
 
 
 def fit(p: dict, max_bytes: int = MAX_BYTES) -> dict:
