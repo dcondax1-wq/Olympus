@@ -1526,7 +1526,12 @@ export function createBrain(opts) {
       if (named) S.keys[S.provider] = '';
       else for (const p of Object.keys(PROVIDERS)) S.keys[p] = '';
     }
-    if (typeof v.model === 'string') { if (v.model.trim()) S.models[S.provider] = v.model.trim().slice(0, 80); else delete S.models[S.provider]; }
+    if (typeof v.model === 'string') {               // a model of another provider (the shell pre-fills the field) is not kept
+      const m = v.model.trim().slice(0, 80), lm = m.toLowerCase();
+      const fam = /^claude-/.test(lm) ? 'anthropic' : /^gemini-/.test(lm) ? 'gemini' : /^(openai\/|llama|meta-llama\/|qwen\/|moonshotai\/|deepseek|gemma|mixtral)/.test(lm) ? 'groq' : '';
+      if (!m) delete S.models[S.provider];
+      else if (!fam || fam === S.provider) S.models[S.provider] = m;
+    }
     if (typeof v.depth === 'string') { const d = v.depth.toLowerCase() === 'expert' ? 'deep' : v.depth.toLowerCase(); if (DEPTHS.includes(d)) S.depth = d; }
     if (typeof v.on === 'boolean') S.on = v.on;
     saveSmart();

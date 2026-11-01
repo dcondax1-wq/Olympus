@@ -250,7 +250,7 @@ def scenarios():
         S("smart_gem", [{"setSmart": {"provider": "gemini", "key": "AIza-FAKE-TEST", "on": True}}] + ask(Q), fetch=gem_ok),
         S("smart_speech", [{"setSmart": {"key": "gsk_FAKE", "on": True}}] + ask(Q),
           fetch={"json": {"choices": [{"message": {"content": "Zlarior is +$213 today, room $1,106, and Kalshi made $18.50."}, "finish_reason": "stop"}]}}),
-        S("smart_detect", [{"setSmart": {"key": "sk-ant-FAKE-AUTO", "on": True}}] + ask(Q) + [{"setSmart": {"key": "AIza-FAKE-AUTO"}},
+        S("smart_detect", [{"setSmart": {"key": "sk-ant-FAKE-AUTO", "model": "openai/gpt-oss-120b", "on": True}}] + ask(Q) + [{"setSmart": {"key": "AIza-FAKE-AUTO"}},
                            {"setSmart": {"model": "openai/gpt-oss-20b"}}, {"setSmart": {"key": "", "on": False}}], fetch=anth_ok),
         S("smart_500", [{"setSmart": {"key": "gsk_FAKE", "on": True}}] + ask(Q), fetch={"status": 500, "json": {"error": {"message": "overloaded"}}}),
         S("smart_throw", [{"setSmart": {"key": "gsk_FAKE", "on": True}}] + ask(Q), fetch={"throw": True}),
@@ -553,8 +553,9 @@ def part_node(O):
     check("h. a decision question goes deep: high reasoning and the expert persona", k0.get("body", {}).get("reasoning_effort") == "high"
           and "Expert mode" in k0["body"]["messages"][0]["content"] and "never promise returns" in k0["body"]["messages"][0]["content"], k0.get("body", {}).get("reasoning_effort"))
     sd = O["smart_detect"]
-    check("h. the key says which provider it is (sk-ant- Anthropic, AIza Gemini), the model too (openai/... Groq); 'forget' clears every key",
-          sd["res"][0]["smart"]["provider"] == "anthropic" and sd["calls"][0]["url"] == "https://api.anthropic.com/v1/messages"
+    check("h. the key says which provider it is (sk-ant- Anthropic, AIza Gemini; another provider's pre-filled model is not kept), the model too (openai/... Groq); 'forget' clears every key",
+          sd["res"][0]["smart"]["provider"] == "anthropic" and sd["res"][0]["smart"]["model"] == "claude-sonnet-5-5"
+          and sd["calls"][0]["url"] == "https://api.anthropic.com/v1/messages" and sd["calls"][0]["body"]["model"] == "claude-sonnet-5-5"
           and sd["res"][2]["smart"]["provider"] == "gemini" and sd["res"][3]["smart"]["provider"] == "groq" and sd["res"][3]["smart"]["model"] == "openai/gpt-oss-20b"
           and sd["res"][4]["smart"]["keys"] == {"groq": False, "gemini": False, "anthropic": False} and sd["res"][4]["smart"]["on"] is False
           and "FAKE" not in sd["storage"].get("jarvis.smart", ""), [r.get("smart") for r in sd["res"]])
