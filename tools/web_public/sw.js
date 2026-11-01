@@ -69,7 +69,7 @@
 // before, it erased Jarvis's and the Planner's saved copies and stored their pages as Zenith's.
 const CACHE = 'le-public-v49';
 const BADGE = 'le-badge', BADGE_URL = './__badge';
-const OTHER_APPS = ['jarvis/', 'planner/'];           // own folders, own workers: never handled or cached here
+const OTHER_APPS = ['jarvis/', 'planner/', 'kalshi/']; // own folders (own workers or none): never handled or cached here
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=p111030', './icons/apple-touch-icon.png?v=p111030', './icons/icon-512.png?v=p111030'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });
 self.addEventListener('activate', (e) => {

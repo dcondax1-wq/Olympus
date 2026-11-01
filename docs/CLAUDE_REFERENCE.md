@@ -720,7 +720,7 @@ part yourself or fold it into a script.**
   voice when the phone has speech recognition. Read-only. On iPhone each Home Screen app has its own storage: the Planner
   inside Jarvis needs its sync connected once. BLITZ (2026-10-31): the Zenith card and the answers carry BLITZ from
   live.json's top-level `blitz` (`engine/live_publish.blitz_block`: board card keys, an "off" card while account C is off,
-  None on failure; `board.blitz` stays present only while account C is on); "how's blitz" answers instead of opening Zenith. Test `python -X utf8 -m tests.test_jarvis_hub` (46).
+  None on failure; `board.blitz` stays present only while account C is on); "how's blitz" answers instead of opening Zenith. Test `python -X utf8 -m tests.test_jarvis_hub` (50).
   **Service workers share one origin (fix 2026-10-31, "Jarvis won't load"):** Zenith's `tools/web_public/sw.js` (scope =
   the whole site) used to delete every other cache on activate and handle `jarvis/` + `planner/` pages, so once Zenith was
   opened inside Jarvis a dropped connection or a site 404 left Jarvis with nothing to open (reproduced over local https).
@@ -733,6 +733,14 @@ part yourself or fold it into a script.**
   (20 s in the test). Jarvis always starts on its own screen (the address never keeps #zenith; an old #hash is cleaned at
   start), keeps one dashboard loaded at a time (one iPhone web process), shows a Reload note if its script has not started in
   8 s, and the manifest has no #shortcuts. Recovery on the phone: delete the Home Screen icon, re-add from Safari.
+- **Kalshi in Jarvis (2026-11-01, owner: "where is kalshi ... figure out a way to have it there"):** the Kalshi bot runs only
+  on the PC (not on GitHub). The PC publishes its status file as `kalshi.json` on the branch `kalshi` of the public Pages repo
+  (`engine/kalshi_publish.py`: contract keys only, secrets dropped, paths redacted, capped, < 200 KB; orphan commit via
+  `live_publish.push(file=...)`, scratch `data/kalshi_pub.git`; `--loop` pushes on change, else every 10 min; runs on its own,
+  never inside the NQ server). The phone: `tools/web_public/kalshi/` (published at `<site>/kalshi/`, in Zenith's `OTHER_APPS`)
+  and the Jarvis Kalshi card + "how's kalshi" read raw.githubusercontent (API fallback); 404 = "Waiting for your PC" with the
+  one PC step. PC setup for Claude on the PC: `docs/KALSHI_PUBLISH.md`. Tests `tests.test_kalshi_publish` (20),
+  `tests.test_jarvis_hub` (50).
 - **Market structure, playbook, discretion advisor (2026-10-29, read-only, never an order):** `engine/structure.py`
   (Tracker per timeframe on closed bars: fractal k=2 swings, HH/HL/LH/LL, BOS / CHoCH on a close, protected swing = origin
   of the breaking leg, pools = today's Asia / London / NY-open boxes + prior day + equal highs / lows (`lit.buildups`) +

@@ -4,11 +4,12 @@ Runs the real hub page in Chromium on a local copy of the site layout (<site>/ja
 pages), with the live feed served from a stub, and checks:
   a. the files and the build step that publishes jarvis/ with every site build
   b. the Jarvis screen: greeting, the market line, a card per project (Zenith with the bots' numbers from the live feed,
-     the Planner with today's plan read from its own saved data, Kalshi asking for its link)
+     the Planner with today's plan read from its own saved data, Kalshi waiting for the PC until kalshi.json is published)
   c. switching: the bar opens each dashboard in its own frame, a dashboard is never reloaded by switching away and back,
      #planner opens the Planner directly
   d. Jarvis answers: the bots' status / room / target from the live feed, today's plan, the market, and "open planner"
-  e. a pasted Kalshi link is kept and opens inside the hub; an added dashboard shows in the bar
+  e. Kalshi: the page and the one PC step while kalshi.json is not published; once published, the card, the answers and the
+     Kalshi page (tools/web_public/kalshi/) show the PC's numbers; an added dashboard shows in the bar
   f. phone width: no sideways scroll, no page errors
     python -X utf8 -m tests.test_jarvis_hub      (temp folder + a local server; nothing else touched)
 """
@@ -27,6 +28,7 @@ from zoneinfo import ZoneInfo
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JV = os.path.join(ROOT, "tools", "web_public", "jarvis")
+KS = os.path.join(ROOT, "tools", "web_public", "kalshi")
 RES = []
 
 
@@ -51,6 +53,7 @@ LIVE = {"v": 1, "kind": "le-live", "t": 0,
 def site(tmp):
     base = os.path.join(tmp, "nq-dashboard")
     shutil.copytree(JV, os.path.join(base, "jarvis"))
+    shutil.copytree(KS, os.path.join(base, "kalshi"))
     os.makedirs(os.path.join(base, "icons"))
     shutil.copy(os.path.join(JV, "icon-192.png"), os.path.join(base, "icons", "icon-192.png"))
     with open(os.path.join(base, "index.html"), "w") as f:
@@ -85,7 +88,8 @@ def part_a():
     m = json.load(open(os.path.join(JV, "manifest.webmanifest")))
     check("a. manifest: Jarvis, standalone, own scope", m["name"] == "Jarvis" and m["short_name"] == "Jarvis" and m["display"] == "standalone" and m["scope"] == "./", m)
     b = open(os.path.join(ROOT, "tools", "build_web_dashboard.py"), encoding="utf-8").read()
-    check("a. the site build publishes jarvis/ with every build", 'os.path.join(WEB, "jarvis")' in b and 'os.path.join(out, "jarvis", name)' in b)
+    check("a. the site build publishes jarvis/ and kalshi/ with every build", 'for app in ("jarvis", "kalshi"):' in b and 'os.path.join(out, app, name)' in b)
+    check("a. kalshi/index.html exists", os.path.exists(os.path.join(KS, "index.html")))
     sw = open(os.path.join(JV, "sw.js"), encoding="utf-8").read()
     check("a. the hub's service worker only handles its own folder", "u.pathname.startsWith(scope.pathname)" in sw)
     # 2026-10-31 (Jarvis would not open on the owner's iPhone): Zenith's worker covers the whole site; it used to delete
@@ -101,7 +105,7 @@ def part_a():
     check("a. no #dashboard shortcuts in the manifest (Jarvis always opens on its own screen)", "shortcuts" not in m2, m2.get("shortcuts"))
     zsw = open(os.path.join(ROOT, "tools", "web_public", "sw.js"), encoding="utf-8").read()
     check("a. Zenith's worker stays out of jarvis/ and planner/ and deletes only its own caches (le-public-*)",
-          "const OTHER_APPS = ['jarvis/', 'planner/'];" in zsw and "if (OTHER_APPS.some(" in zsw
+          "const OTHER_APPS = ['jarvis/', 'planner/', 'kalshi/'];" in zsw and "if (OTHER_APPS.some(" in zsw
           and "ks.filter((k) => k.startsWith('le-public-') && k !== CACHE)" in zsw and "k !== CACHE && k !== BADGE" not in zsw)
 
 
@@ -114,8 +118,17 @@ def run_browser(url):
         exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)   # as tools/icon_options_build
         br = pw.chromium.launch(**({"executable_path": exe} if exe else {}))
         ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2)
-        ctx.route("https://api.github.com/**", lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(live)))
-        ctx.route("https://raw.githubusercontent.com/**", lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(live)))
+        # kalshi.json (engine/kalshi_publish): not published at first (404), then the PC's status file through the real clean()
+        from engine import kalshi_publish as kp
+        kal = {"on": False, "j": kp.clean({**kp.SAMPLE, "t": int(time.time()) - 60})}
+
+        def feed(r):
+            if "kalshi.json" in r.request.url:
+                return (r.fulfill(status=200, content_type="application/json", body=json.dumps(kal["j"])) if kal["on"]
+                        else r.fulfill(status=404, content_type="text/plain", body="404: Not Found"))
+            return r.fulfill(status=200, content_type="application/json", body=json.dumps(live))
+        ctx.route("https://api.github.com/**", feed)
+        ctx.route("https://raw.githubusercontent.com/**", feed)
         p = ctx.new_page()
         errs = []
         p.on("pageerror", lambda e: errs.append(str(e)))
@@ -133,7 +146,7 @@ def run_browser(url):
               "BLITZ · MFFU Builder 25K · SIM" in cards and "$612" in cards and "+$95" in cards and "$1,388" in cards, cards[:600])
         check("b. Planner card: today's events and open tasks from its saved data",
               "Gym" in cards and "7:30 AM" in cards and "Review fills" in cards and "1" in cards and "Buy BLITZ 25K" in cards, cards[:400])
-        check("b. Kalshi card asks for its link", p.locator("#link-kalshi").count() == 1)
+        check("b. Kalshi card: waiting for the PC while kalshi.json is not published", "Waiting for your PC" in cards and p.locator("#link-kalshi").count() == 0, cards[-300:])
         chips = p.inner_text("#apps")
         check("c. the bar lists Jarvis, Zenith, Planner, Kalshi", all(x in chips for x in ("Jarvis", "Zenith", "Planner", "Kalshi")), chips)
         p.click('[data-app="zenith"] >> nth=0')
@@ -190,16 +203,35 @@ def run_browser(url):
         p.wait_for_timeout(800)
         check("d. 'open planner' switches to the Planner", "Opening Planner" in a6 and p.locator("#v-planner").is_visible(), a6)
         p.click('.chip[data-app="home"]')
-        a7 = ask("open kalshi")
-        check("d. Kalshi without a link: says how to link it", "not linked yet" in a7, a7)
-        # e. paste the Kalshi link
-        p.fill("#link-kalshi", url + "kalshi-stub/")
-        p.press("#link-kalshi", "Enter")
-        p.wait_for_timeout(700)
-        check("e. a pasted Kalshi link opens inside Jarvis", p.frame_locator("#v-kalshi iframe").locator("h1").inner_text() == "Kalshi stub")
+        a7 = ask("how's kalshi")
+        check("d. Kalshi not published yet: says it is not connected (the bot runs only on the PC)", "not connected yet" in a7 and "PC" in a7, a7)
+        a7b = ask("open kalshi")
+        p.wait_for_timeout(900)
+        kf = p.frame_locator("#v-kalshi iframe")
+        check("e. 'open kalshi' opens the Kalshi page; not published yet: it shows the one step for the PC",
+              "Opening Kalshi" in a7b and "Connect your Kalshi bot" in kf.locator("#body").text_content()
+              and "docs/KALSHI_PUBLISH.md" in kf.locator("#step").inner_text(), a7b)
+        # e. the PC publishes kalshi.json
+        kal["on"] = True
         p.reload()
-        p.wait_for_timeout(700)
-        check("e. the Kalshi link is kept", p.locator("#link-kalshi").count() == 0 and "Open Kalshi inside Jarvis" in p.inner_text("#cards"))
+        p.wait_for_timeout(900)
+        cards2 = p.inner_text("#cards")
+        check("e. Kalshi published: the card shows running, the mode, balance, today and open positions",
+              "Running · PAPER" in cards2 and "$512.34" in cards2 and "+$18.50" in cards2, cards2[-320:])
+        a11 = ask("how's kalshi")
+        check("e. 'how's kalshi' answers from the PC's numbers (balance, today, week, positions)",
+              "Kalshi (PAPER): running, balance $512.34, today +$18.50, this week +$42.10, 1 open position" in a11
+              and "NYC high 58-59°F on Nov 2: YES x10, P&L +$1.30" in a11 and p.locator("#home").is_visible(), a11)
+        a12 = ask("kalshi balance")
+        check("e. 'kalshi balance' answers instead of switching", "balance $512.34" in a12 and p.locator("#home").is_visible(), a12)
+        p.click('.card[data-app="kalshi"]')
+        p.wait_for_timeout(900)
+        kb = p.frame_locator("#v-kalshi iframe").locator("body").text_content()     # text_content: headings are upper-cased by CSS
+        check("e. the Kalshi page inside Jarvis: balance, P&L, the open position, the trade and the daily bars",
+              "$512.34" in kb and "+$18.50" in kb and "+$112.34" in kb and "NYC high 58-59°F on Nov 2" in kb and "10 × 42¢ → 55¢" in kb
+              and "Recent trades" in kb and p.frame_locator("#v-kalshi iframe").locator("svg.bars rect").count() == 3, kb[:500])
+        p.click('.chip[data-app="home"]')
+        p.wait_for_timeout(300)
         p.click("#addB")
         p.fill("#addName", "Clipper")
         p.fill("#addUrl", url + "kalshi-stub/")
