@@ -375,7 +375,8 @@ export function getFacts() {               // each part on its own: one broken s
 export function refresh({ maxAge = 50e3 } = {}) {
   const jobs = [];
   if (Date.now() - L.at > maxAge) jobs.push(refreshLive());
-  if (Date.now() - K.at > maxAge) jobs.push(refreshKalshi());
+  // while kalshi.json is not published (404), every 5 minutes is enough (less noise on the phone and in the console)
+  if (Date.now() - K.at > (K.state === 'waiting' ? Math.max(maxAge, 5 * 60e3) : maxAge)) jobs.push(refreshKalshi());
   return Promise.all(jobs).then(() => getFacts());
 }
 // the Planner saves in another frame of this site: its writes reach Jarvis as storage events

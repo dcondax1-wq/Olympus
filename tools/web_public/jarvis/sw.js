@@ -43,10 +43,13 @@ self.addEventListener('activate', (e) => {
     await self.clients.claim();
   })());
 });
+// only Jarvis's own cache: any page of this origin can write CacheStorage, so an origin-wide lookup could be fed another
+// page's copy (security review 2026-11-01)
 async function saved(req) {
-  const hit = await caches.match(req, { ignoreSearch: true });
+  const c = await caches.open(CACHE);
+  const hit = await c.match(req, { ignoreSearch: true });
   if (hit || req.mode !== 'navigate') return hit;
-  return (await caches.match('./index.html')) || (await caches.match('./'));    // './' is this folder: only Jarvis's own page
+  return (await c.match('./index.html')) || (await c.match('./'));    // './' is this folder: only Jarvis's own page
 }
 const OFFLINE = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
   + '<meta name="theme-color" content="#000000"><title>Jarvis</title><style>html,body{height:100%;margin:0;background:#000;color:#ece9f2;'
