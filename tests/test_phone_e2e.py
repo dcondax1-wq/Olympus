@@ -811,7 +811,7 @@ def tap(p, app):
         if app == "home":
             return
     loc = p.locator(f'header [data-app="{app}"]')
-    real_tap(p, (loc if loc.count() else p.locator(f'[data-app="{app}"]')).first, f"the {app} button in the bar")
+    real_tap(p, (loc if loc.count() else p.locator(f'[data-app="{app}"]')).first, f"the {app} button in the bar", done=opened(app))
 
 
 TIMES = []        # (part, seconds)
@@ -822,13 +822,26 @@ COVER = """(el) => { const r = el.getBoundingClientRect(); const x = r.left + r.
   return { at: [Math.round(x), Math.round(y)], top: el.contains(t) ? 'the button itself' : d(t), mode: document.documentElement.dataset.mode || null }; }"""
 
 
-def real_tap(p, loc, what, timeout=5000):
+def opened(app):
+    """JS: the app is on screen (the tap that opened it worked)."""
+    if app == "zenith":
+        return "() => document.documentElement.dataset.mode === 'zenith' || (" + ZEN_MODULE + ")()"
+    if app == "home":
+        return JARVIS_HOME
+    return f"() => {{ const v = document.getElementById('v-{app}'); return !!v && !v.hidden; }}"
+
+
+def real_tap(p, loc, what, timeout=5000, done=None):
     """A real tap (Playwright waits until nothing covers the element and it holds still). When it cannot land, the
-    reason is kept (STOLEN, reported at the end) and the click is sent to the element directly, so the run goes on."""
+    reason is kept (STOLEN, reported at the end) and the click is sent to the element directly, so the run goes on.
+    done (JS): the tap's effect; when it shows, the tap worked even if Playwright could not confirm it (the button was
+    redrawn by the very tap)."""
     try:
         loc.click(timeout=timeout)
         return True
     except Exception as e:
+        if done and _ev(p, done):
+            return True
         why = str(e).splitlines()[0][:120]
         try:
             info = loc.evaluate(COVER)
@@ -913,12 +926,12 @@ def go_home(p):
     if _ev(p, ZEN_MODULE):                       # Zenith mode: its floating "Back to Jarvis" control
         back = p.locator('.zm-back, [aria-label="Back to Jarvis"]')
         if back.count():
-            real_tap(p, back.first, "Zenith mode's Back to Jarvis control")
+            real_tap(p, back.first, "Zenith mode's Back to Jarvis control", done=JARVIS_HOME)
             p.wait_for_function(JARVIS_HOME, timeout=5000)
             p.wait_for_timeout(250)
             return
     loc = p.locator('header [data-app="home"]')
-    real_tap(p, (loc if loc.count() else p.locator('[data-app="home"]')).first, "the Jarvis button in the bar")
+    real_tap(p, (loc if loc.count() else p.locator('[data-app="home"]')).first, "the Jarvis button in the bar", done=JARVIS_HOME)
     p.wait_for_function(JARVIS_HOME, timeout=5000)
 
 
@@ -1157,7 +1170,7 @@ def part_c(br, S, base, ph):
             check("c. holding Zenith mode's control shows the apps (Jarvis, Planner, Kalshi)",
                   all(a in chips for a in ("planner", "kalshi")) and any(a in chips for a in ("home", "jarvis")), chips)
             if "planner" in chips:
-                real_tap(p, p.locator('.zm-chip[data-app="planner"]').first, "the Planner in Zenith mode's switcher")
+                real_tap(p, p.locator('.zm-chip[data-app="planner"]').first, "the Planner in Zenith mode's switcher", done=opened("planner"))
                 ok = False
                 for _ in range(40):
                     if mode_of(p) == "app" and p.query_selector("#v-planner iframe") and not _ev(p, ZEN_MODULE):
@@ -1459,7 +1472,7 @@ def part_i(br, S, base):
         ids = [t[2] for t in targets]
         for sel, nth, app, label in targets:
             try:
-                landed = real_tap(p, p.locator(sel).nth(max(0, nth)), f"{label} (opens {app})", timeout=8000)
+                landed = real_tap(p, p.locator(sel).nth(max(0, nth)), f"{label} (opens {app})", timeout=8000, done=opened(app))
                 if not landed:
                     raise RuntimeError(STOLEN[-1][1])
                 if app == "zenith":
