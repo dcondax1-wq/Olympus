@@ -570,7 +570,7 @@ def chrome_exe():
 class Phone:
     """One Home Screen app's storage (a browser context) with every error it shows."""
     def __init__(self, br, dev="iPhone 13", **kw):
-        opts = dict(PHONES[dev], is_mobile=True, has_touch=True, user_agent=UA, color_scheme="dark", locale="en-US",
+        opts = dict(PHONES[dev], is_mobile=True, has_touch=True, user_agent=UA, color_scheme=ARGS.scheme, locale="en-US",
                     timezone_id="America/New_York", service_workers="allow", ignore_https_errors=True)
         opts.update(kw)
         self.dev = dev
@@ -1700,7 +1700,7 @@ def run_local(S):
         br = pw.chromium.launch(executable_path=chrome_exe(), args=["--ignore-certificate-errors", "--no-proxy-server",
                                                                     f"--host-resolver-rules={rules}"])
         try:
-            part_a(S)                                    # always: it also lists the missing Jarvis modules
+            guard("a", part_a, S)                        # always: it also lists the missing Jarvis modules
             MISSING[:] = S.get("jarvis_missing") or []
             if "b" in only:
                 guard("b", part_b, br, S, base)
@@ -1796,6 +1796,7 @@ def main(argv=None):
     ap.add_argument("--cache", default=os.path.join(tempfile.gettempdir(), "le_phone_e2e_cache"), help="where the clone is kept")
     ap.add_argument("--no-refresh", dest="refresh", action="store_false", help="reuse the cached clone without fetching")
     ap.add_argument("--strict", action="store_true", help="known open bugs count as failures")
+    ap.add_argument("--scheme", default="dark", choices=("dark", "light"), help="the phone's appearance (default dark)")
     ARGS = ap.parse_args(argv)
     ARGS.src = os.path.abspath(ARGS.src)
     t0 = time.time()
