@@ -14,7 +14,8 @@
 //     opts.onState(s)  optional: s = { route, title, badge, active } whenever Zenith reports a change.
 //     opts.onWantShow(route)  optional: a Zenith notification was tapped while Jarvis runs (sw.js v50); the hub should
 //                      switch to Zenith mode and call show(route). Without it the route is only kept for the next show().
-//     opts.apps()      optional: the hub's apps [{ id, name, icon? }] for the switcher (Zenith itself is left out).
+//     opts.apps()      optional: the hub's apps [{ id, name, icon?, glyph? }] for the switcher (Zenith itself is left out);
+//                      icon = a picture link (shown in the app's chip), glyph = a letter when there is no picture.
 //     opts.onSwitch(id) optional: with apps, the control is a tiny switcher: tap = back to Jarvis as before; hold it
 //                      (0.45 s, or an arrow key) and the other apps show as chips next to it; a chip calls onSwitch(id)
 //                      (the "Jarvis" chip calls onExit). Without onSwitch the control only goes back to Jarvis.
@@ -33,7 +34,9 @@
 //   zenithRouteFor(text) maps spoken words to a Zenith route for Jarvis's brain: "open BLITZ" -> '#/blitz',
 //   "atlas trades" -> '#/atlas/trades', "holodeck" -> '#/holo', null when nothing matches.
 //   CSS hooks on the Jarvis page: --zm-z (the layer's z-index, default 2147483000) and --zm-safe-top / -right / -bottom /
-//   -left (override the screen's safe areas, e.g. in a test; default env(safe-area-inset-*)).
+//   -left (override the screen's safe areas, e.g. in a test; default env(safe-area-inset-*)). The look follows the page's
+//   theme: --c (border, glow), --c2, --c3 (highlights), --pr (glass), --txt, --fh (Orbitron labels); without them the
+//   Jarvis violet: #a855f7 / #c084fc on rgba(12,10,20,.85).
 //   Zenith's side: index.html's head (inside-Jarvis detection, the safe areas) and embed.js (the protocol, the settings
 //   code "bring my Zenith settings": which keys move and which never do is listed at the top of embed.js).
 //   Tested by tests/test_zenith_mode.py.
@@ -106,45 +109,55 @@ export function zenithRouteFor(text) {
 
 const CSS = `
 .zm-root{position:fixed;inset:0;z-index:var(--zm-z,2147483000);background:#07080c;opacity:0;visibility:hidden;pointer-events:none;
-  transition:opacity .2s ease,visibility 0s linear .2s}
+  transition:opacity .2s ease,visibility 0s linear .2s;
+  --zm-cr:168,85,247;--zm-c2r:192,132,252;--zm-c3r:192,132,252;--zm-pr:12,10,20;--zm-txt:var(--txt,#ece9f2);
+  --zm-fh:var(--fh,"Orbitron","Bahnschrift","Segoe UI",system-ui,-apple-system,sans-serif)}
 .zm-root.on{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .2s ease}
 .zm-frame{position:absolute;inset:0;width:100%;height:100%;border:0;margin:0;padding:0;display:block;background:#07080c;color-scheme:dark}
-.zm-back{position:absolute;z-index:5;top:0;right:var(--zm-sr,0px);width:44px;height:${CH}px;margin:0;padding:0;border:0;background:none;color:#fff;
+.zm-back{position:absolute;z-index:5;top:0;right:var(--zm-sr,0px);width:44px;height:${CH}px;margin:0;padding:0;border:0;background:none;color:var(--zm-txt);
   cursor:pointer;touch-action:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
-  transform:translate3d(0,var(--zm-y,50vh),0);transition:transform .32s cubic-bezier(.2,.8,.2,1),opacity .3s ease,visibility 0s;opacity:.94}
+  transform:translate3d(0,var(--zm-y,50vh),0);transition:transform .32s cubic-bezier(.2,.8,.2,1),opacity .3s ease,visibility 0s;opacity:.95}
 .zm-back.left{right:auto;left:var(--zm-sl,0px)}
 .zm-pill{position:absolute;top:2px;bottom:2px;right:0;width:34px;display:grid;place-items:center;border-radius:22px 0 0 22px;
-  background:rgba(16,16,20,.78);-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);
-  border:1px solid rgba(255,255,255,.16);border-right:0;box-shadow:0 8px 24px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08)}
-.zm-back.left .zm-pill{right:auto;left:0;border-radius:0 22px 22px 0;border-right:1px solid rgba(255,255,255,.16);border-left:0}
+  background:rgba(var(--zm-pr),.85);-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4);
+  border:1px solid rgba(var(--zm-cr),.62);border-right:0;
+  box-shadow:0 0 16px rgba(var(--zm-cr),.38),0 8px 24px rgba(0,0,0,.55),inset 0 0 10px rgba(var(--zm-cr),.18)}
+.zm-back.left .zm-pill{right:auto;left:0;border-radius:0 22px 22px 0;border-right:1px solid rgba(var(--zm-cr),.62);border-left:0}
 .zm-orb{position:relative;width:18px;height:18px;border-radius:50%;
-  background:radial-gradient(circle,#fff 0 17%,rgba(255,255,255,.62) 30%,rgba(255,255,255,.1) 60%,rgba(255,255,255,0) 72%);box-shadow:0 0 12px rgba(255,255,255,.32)}
-.zm-orb::after{content:"";position:absolute;inset:1px;border-radius:50%;border:1.5px solid rgba(255,255,255,.4)}
-.zm-back.idle{opacity:.58}
+  background:radial-gradient(circle,#fff 0 16%,rgba(var(--zm-c3r),.85) 30%,rgba(var(--zm-cr),.28) 58%,rgba(var(--zm-cr),0) 72%);
+  box-shadow:0 0 12px rgba(var(--zm-cr),.65)}
+.zm-orb::after{content:"";position:absolute;inset:1px;border-radius:50%;border:1.5px solid rgba(var(--zm-c3r),.6)}
+.zm-back.idle{opacity:.6}
 .zm-back.drag{transition:none;opacity:1}
-.zm-back.drag .zm-pill{border-radius:22px;border:1px solid rgba(255,255,255,.3);background:rgba(28,28,34,.9)}
+.zm-back.drag .zm-pill{border-radius:22px;border:1px solid rgba(var(--zm-cr),.9);background:rgba(var(--zm-pr),.95);box-shadow:0 0 22px rgba(var(--zm-cr),.55),0 8px 24px rgba(0,0,0,.55)}
 .zm-back.cov{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s ease,visibility 0s linear .2s}
-.zm-back:focus{outline:none}.zm-back:focus-visible .zm-pill{outline:2px solid rgba(255,255,255,.75);outline-offset:2px}
+.zm-back:focus{outline:none}.zm-back:focus-visible .zm-pill{outline:2px solid rgba(var(--zm-cr),.9);outline-offset:2px}
 .zm-back:active .zm-orb{transform:scale(.9)}
-.zm-tip{position:absolute;top:50%;right:42px;transform:translate(6px,-50%);padding:7px 11px;border-radius:11px;background:rgba(16,16,20,.92);
-  border:1px solid rgba(255,255,255,.16);color:#f4f4f6;font:600 13px/1.2 -apple-system,system-ui,sans-serif;white-space:nowrap;pointer-events:none;
-  opacity:0;transition:opacity .25s ease,transform .25s ease;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.zm-tip{position:absolute;top:50%;right:42px;transform:translate(6px,-50%);padding:8px 12px;border-radius:10px;background:rgba(var(--zm-pr),.92);
+  border:1px solid rgba(var(--zm-cr),.5);color:var(--zm-txt);font:600 10.5px/1.2 var(--zm-fh);letter-spacing:.14em;text-transform:uppercase;
+  white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .25s ease,transform .25s ease;
+  box-shadow:0 0 14px rgba(var(--zm-cr),.3),0 8px 24px rgba(0,0,0,.5)}
 .zm-back.left .zm-tip{right:auto;left:42px;transform:translate(-6px,-50%)}
 .zm-back.tip .zm-tip{opacity:1;transform:translate(0,-50%)}
-.zm-back.sw .zm-pill::after{content:"";position:absolute;bottom:6px;left:50%;width:10px;height:2px;margin-left:-5px;border-radius:2px;background:rgba(255,255,255,.34)}
-.zm-scrim{position:absolute;inset:0;z-index:3;background:rgba(0,0,0,.3);opacity:0;transition:opacity .16s ease}
-.zm-apps{position:absolute;z-index:4;top:0;display:flex;flex-direction:column;gap:6px;padding:8px;border-radius:18px;box-sizing:border-box;min-width:150px;
-  background:rgba(16,16,20,.9);-webkit-backdrop-filter:blur(18px) saturate(1.3);backdrop-filter:blur(18px) saturate(1.3);
-  border:1px solid rgba(255,255,255,.14);box-shadow:0 14px 40px rgba(0,0,0,.55);opacity:0;transform:scale(.96);transition:opacity .16s ease,transform .16s ease}
+.zm-back.sw .zm-pill::after{content:"";position:absolute;bottom:6px;left:50%;width:10px;height:2px;margin-left:-5px;border-radius:2px;
+  background:rgba(var(--zm-c3r),.6);box-shadow:0 0 6px rgba(var(--zm-cr),.6)}
+.zm-scrim{position:absolute;inset:0;z-index:3;background:rgba(0,0,0,.38);opacity:0;transition:opacity .16s ease}
+.zm-apps{position:absolute;z-index:4;top:0;display:flex;flex-direction:column;gap:6px;padding:8px;border-radius:16px;box-sizing:border-box;min-width:156px;
+  background:rgba(var(--zm-pr),.85);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);
+  border:1px solid rgba(var(--zm-cr),.55);box-shadow:0 0 22px rgba(var(--zm-cr),.3),0 14px 40px rgba(0,0,0,.6),inset 0 0 18px rgba(var(--zm-cr),.1);
+  opacity:0;transform:scale(.96);transition:opacity .16s ease,transform .16s ease}
 .zm-root.apps .zm-apps,.zm-root.apps .zm-scrim{opacity:1;transform:none}
 .zm-apps[hidden],.zm-scrim[hidden]{display:none}
-.zm-chip{display:flex;align-items:center;gap:10px;min-height:44px;margin:0;padding:0 16px 0 9px;text-align:left;border-radius:13px;border:1px solid rgba(255,255,255,.12);
-  background:rgba(255,255,255,.06);color:#f4f4f6;font:600 15px/1 -apple-system,system-ui,sans-serif;white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.zm-chip:active{background:rgba(255,255,255,.14)}.zm-chip:focus{outline:none}.zm-chip:focus-visible{outline:2px solid rgba(255,255,255,.75);outline-offset:2px}
-.zm-ci{width:26px;height:26px;border-radius:7px;flex:none;display:grid;place-items:center;object-fit:cover}
-.zm-chip .zm-orb{width:18px;height:18px;margin:4px}
-.zm-gl{background:#1d1d21;color:#c4c5ca;font:700 14px/1 -apple-system,system-ui,sans-serif}
-@media (prefers-reduced-motion:reduce){.zm-root,.zm-back{transition:none!important}}
+.zm-chip{display:flex;align-items:center;gap:10px;min-height:44px;min-width:44px;margin:0;padding:0 16px 0 8px;text-align:left;border-radius:11px;
+  border:1px solid rgba(var(--zm-cr),.32);background:rgba(var(--zm-cr),.07);color:var(--zm-txt);font:600 11.5px/1 var(--zm-fh);letter-spacing:.14em;
+  text-transform:uppercase;white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .12s ease,border-color .12s ease}
+.zm-chip:active{background:rgba(var(--zm-cr),.2);border-color:rgba(var(--zm-cr),.75)}
+.zm-chip:focus{outline:none}.zm-chip:focus-visible{outline:2px solid rgba(var(--zm-cr),.9);outline-offset:2px}
+.zm-ci{width:28px;height:28px;border-radius:8px;flex:none;display:grid;place-items:center;object-fit:cover;box-sizing:border-box;overflow:hidden;
+  border:1px solid rgba(var(--zm-cr),.35);background:rgba(var(--zm-pr),.9)}
+.zm-chip .zm-orb{width:18px;height:18px}
+.zm-gl{color:rgb(var(--zm-c3r));font:700 13px/1 var(--zm-fh);letter-spacing:0;text-shadow:0 0 8px rgba(var(--zm-cr),.6)}
+@media (prefers-reduced-motion:reduce){.zm-root,.zm-back,.zm-apps,.zm-scrim,.zm-chip{transition:none!important}}
 html.zm-on,html.zm-on body{overscroll-behavior:none}
 `;
 
@@ -180,6 +193,34 @@ export function mountZenithMode(opts = {}) {
   panel.setAttribute('role', 'group'); panel.setAttribute('aria-label', 'Switch app');
   root.appendChild(scrim); root.appendChild(btn); root.appendChild(panel);
   host.appendChild(root);
+
+  // the hub's theme (Jarvis: --c / --c2 / --c3 / --pr on <html data-theme>, any CSS colour or an "r,g,b" token) carries over
+  // to the control and its chips; violet (#a855f7 / #c084fc on rgba(12,10,20,.85)) when the page has none
+  const cprobe = doc.createElement('i');
+  cprobe.setAttribute('aria-hidden', 'true');
+  cprobe.style.cssText = 'position:absolute;width:0;height:0;visibility:hidden;pointer-events:none';
+  root.appendChild(cprobe);
+  function rgbOf(v) {
+    const t = String(v || '').trim();
+    if (!t) return null;
+    if (/^\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}$/.test(t)) return t.split(',').map((x) => Math.min(255, +x.trim()));
+    cprobe.style.color = '';
+    cprobe.style.color = t;
+    if (!cprobe.style.color) return null;                              // not a colour
+    const m = win.getComputedStyle(cprobe).color.match(/(\d+(?:\.\d+)?)[ ,]+(\d+(?:\.\d+)?)[ ,]+(\d+(?:\.\d+)?)/);
+    return m ? [m[1], m[2], m[3]].map((x) => Math.round(+x)) : null;
+  }
+  function theme() {
+    const cs = win.getComputedStyle(doc.documentElement), g = (k) => rgbOf(cs.getPropertyValue(k));
+    const put = (k, v) => root.style.setProperty(k, v.join(','));
+    put('--zm-cr', g('--c') || [168, 85, 247]);
+    put('--zm-c2r', g('--c2') || [192, 132, 252]);
+    put('--zm-c3r', g('--c3') || g('--c2') || [192, 132, 252]);
+    put('--zm-pr', g('--pr') || [12, 10, 20]);
+  }
+  theme();
+  const themeObs = new win.MutationObserver(theme);
+  themeObs.observe(doc.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class', 'style'] });
 
   const st = {
     active: false, ready: false, legacy: false, frame: null, route: (SS && store.get(SS, KEY_ROUTE, null)) || null, title: '', badge: 0,
@@ -273,8 +314,8 @@ export function mountZenithMode(opts = {}) {
     const f = doc.createElement('iframe');
     f.className = 'zm-frame';
     f.title = 'Zenith';
-    f.setAttribute('allow', 'clipboard-read; clipboard-write; web-share; fullscreen; autoplay; screen-wake-lock; accelerometer; gyroscope; magnetometer');
-    f.setAttribute('allowfullscreen', '');
+    // same-site frame: Web Share is allowed by default; 'fullscreen' here, so no allowfullscreen (the browser warns on both)
+    f.setAttribute('allow', 'clipboard-read; clipboard-write; fullscreen; autoplay; screen-wake-lock; accelerometer; gyroscope; magnetometer');
     const u = new URL(base.href);
     const r = normRoute(route) || st.route;
     if (r) u.hash = r;
@@ -385,8 +426,9 @@ export function mountZenithMode(opts = {}) {
   const switcher = () => typeof opts.onSwitch === 'function' && typeof opts.apps === 'function';
   btn.classList.toggle('sw', switcher());
   if (switcher()) btn.setAttribute('aria-haspopup', 'true');
-  function iconUrl(u) {
+  function iconUrl(u) {                                                 // a picture link: http(s), relative, or a data:image
     if (typeof u !== 'string' || !u) return null;
+    if (/^data:image\/(png|jpe?g|gif|webp|svg\+xml)[;,]/i.test(u) && u.length < 200000) return u;
     try { const x = new URL(u, win.location.href); return /^https?:$/.test(x.protocol) ? x.href : null; } catch (e) { return null; }
   }
   function appList() {
@@ -398,7 +440,8 @@ export function mountZenithMode(opts = {}) {
       const id = String(a.id).slice(0, 40), home = id === 'home' || id === 'jarvis';
       if (id === 'zenith' || seen.has(id)) continue;
       seen.add(id);
-      out.push({ id, home, name: String(a.name || (home ? 'Jarvis' : id)).slice(0, 24), icon: home ? null : iconUrl(a.icon) });
+      out.push({ id, home, name: String(a.name || (home ? 'Jarvis' : id)).slice(0, 24), icon: home ? null : iconUrl(a.icon),
+        glyph: typeof a.glyph === 'string' && a.glyph.trim() && a.glyph !== 'orb' ? a.glyph.trim().slice(0, 2) : null });
     }
     if (!out.some((a) => a.home)) out.unshift({ id: 'home', home: true, name: 'Jarvis', icon: null });
     return out.slice(0, 9);
@@ -408,8 +451,11 @@ export function mountZenithMode(opts = {}) {
     b.type = 'button'; b.className = 'zm-chip'; b.dataset.app = a.id;
     let ic;
     if (a.home) { ic = doc.createElement('span'); ic.className = 'zm-ci'; ic.innerHTML = '<span class="zm-orb"></span>'; }
-    else if (a.icon) { ic = doc.createElement('img'); ic.className = 'zm-ci'; ic.alt = ''; ic.src = a.icon; }
-    else { ic = doc.createElement('span'); ic.className = 'zm-ci zm-gl'; ic.textContent = (a.name[0] || '?').toUpperCase(); }
+    else if (a.icon) {
+      ic = doc.createElement('img'); ic.className = 'zm-ci'; ic.alt = ''; ic.decoding = 'async'; ic.src = a.icon;
+      ic.addEventListener('error', () => { const g = doc.createElement('span'); g.className = 'zm-ci zm-gl'; g.setAttribute('aria-hidden', 'true'); g.textContent = (a.glyph || a.name[0] || '?').toUpperCase(); ic.replaceWith(g); }, { once: true });
+    }
+    else { ic = doc.createElement('span'); ic.className = 'zm-ci zm-gl'; ic.textContent = (a.glyph || a.name[0] || '?').toUpperCase(); }
     ic.setAttribute('aria-hidden', 'true');
     const t = doc.createElement('span'); t.textContent = a.name;
     b.appendChild(ic); b.appendChild(t);
@@ -571,6 +617,7 @@ export function mountZenithMode(opts = {}) {
     },
     destroy() {
       hide();
+      themeObs.disconnect();
       win.removeEventListener('message', onMessage);
       win.removeEventListener('resize', onResize);
       win.removeEventListener('orientationchange', onResize);
