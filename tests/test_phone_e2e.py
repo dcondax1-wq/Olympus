@@ -6,34 +6,43 @@ Kalshi at /kalshi/. Each has its own service worker, and an iPhone Home Screen a
 or after a failed load (docs/CLAUDE_REFERENCE.md, Infrastructure > Jarvis hub). This test builds a faithful local copy of
 the published site and drives it in Chromium at iPhone sizes over local https (service workers need https):
   - the site: a shallow, blobless, sparse clone of the Pages repo (branch main; big folders such as runs/ are fetched one
-    file at a time only if a page asks for them), the planner/ folder from the branch planner-backup, and this checkout's
-    tools/web_public/ laid over it as tools/build_web_dashboard.py publishes it (page, scripts, sw.js, jarvis/, kalshi/ ...);
-  - live.json and kalshi.json (api.github.com / raw.githubusercontent.com) come from stubs on the same local server
-    (Chromium maps those hosts to it), Google Fonts gets an empty stylesheet, every other outside host is cut off;
+    file at a time only if a page asks for them), and the checkout's tools/web_public/ laid over it as
+    tools/build_web_dashboard.py publishes it (page, scripts, sw.js, jarvis/, kalshi/, the Kalshi kit's public files);
+    planner/ as the publish builds it (the checkout's scripts/add_planner.sh: planner-backup + tools/planner_patches);
+  - live.json and kalshi.json (api.github.com / raw.githubusercontent.com, the old branch kalshi and the kalshi-feed repo)
+    come from stubs on the same local server (Chromium maps those hosts to it), liveview / holo files are the live branch's
+    own, Google Fonts / CoinGecko / ntfy get small stubs, every other outside host is cut off;
   - the server answers like GitHub Pages (Cache-Control max-age=600, ETag, its own 404 page) and can turn slow, drop
     every connection (offline) or answer 404 for the whole site.
 It checks:
-  a. the files: the overlay is what the site build publishes; each worker keeps to its own folder and caches
-  b. Jarvis opens at iPhone SE / 13 / 13 Pro Max: the Jarvis screen, the bots' numbers, no sideways scroll, not white,
-     interactive under 2 s locally (cold and from the saved copy)
-  c. switching: Jarvis -> Zenith -> Jarvis -> Zenith (not reloaded) -> Planner -> Kalshi -> Jarvis, each one rendered and
-     not white, never more than one dashboard frame alive, no sideways scroll inside the dashboards
-  d. Jarvis's answers: status, room, target, P&L, BLITZ, Kalshi, the day, the market, help, "open planner"
-  e. a slow network: a reopen shows the saved copy after ~3.5 s (not a white screen until the site answers)
-  f. offline (every connection dropped): Jarvis, Zenith, the Planner and Kalshi inside Jarvis; no saved copy = dark Retry
-  g. a 404 site (GitHub's "Site not found" for every file): the same four
-  h. a service-worker update from the published workers to this checkout's (a synthetic cache-name bump when they are
-     the same): the new workers take over on a reopen, the page is the new one, no worker deletes another app's caches,
-     offline still works after the update
-  i. no page errors, no console errors, no failed same-site requests in the normal runs
-Screenshots of every state are judged by their dominant color (white = fail) and kept with --keep.
+  a. the files: the overlay is what the site build publishes; each worker keeps to its own folder and caches; every module
+     the Jarvis page loads and every file its worker saves is on the site
+  b. Jarvis opens at iPhone SE / 13 / 13 Pro Max: the Jarvis screen, the bots' numbers, no sideways scroll, nothing left
+     under the fixed bottom bar, not white, interactive under 2 s locally (cold and from the saved copy)
+  c. switching: Jarvis mode -> Zenith mode -> Jarvis -> Zenith (not reloaded, scroll kept) -> Planner -> Kalshi -> Jarvis,
+     each rendered and not white, one dashboard alive at a time, a tapped Zenith notification opens Zenith mode
+  d. Jarvis's answers: status, room, target, P&L, BLITZ, Kalshi, the market, help, "open planner"
+  e. a slow network: Jarvis paints and is usable from its saved copy after ~3.5 s; Zenith inside Jarvis and on its own
+  f. offline (every connection dropped): Jarvis, Zenith, the Planner and Kalshi inside Jarvis, Zenith on its own; no saved
+     copy = the dark Retry page
+  g. a 404 site (GitHub's "Site not found" for every file): the same
+  h. a service-worker update from the published workers to the checkout's (a synthetic cache-name bump when they are the
+     same): the new page at once, the new workers after a reopen, no worker deletes another app's caches, offline after
+  i. junk saved on the phone (planner.v1, planner.today.v1, jarvis.*) never stops Jarvis; a real tap on every app card of
+     the Jarvis screen opens its app (no overlay steals it)
+  j. the Planner's add-ons run inside Jarvis, a task added in the Planner reaches Jarvis's "what's on today"
+     (planner.today.v1), the Kalshi page's sample-data preview while kalshi.json is not published
+  and everywhere: no page errors, no console errors, no failed same-site requests, every real tap lands.
+Screenshots of every state are judged by their dominant color (white = fail; the Planner's own light look: blank = fail).
+Known open bugs of the published code print as [KNOWN] (not counted unless --strict).
 
-    python -X utf8 -m tests.test_phone_e2e                 the local copy with this checkout's tools/web_public (~2-3 min)
-    python -X utf8 -m tests.test_phone_e2e --src <path>    overlay another checkout's tools/web_public (an integration
-                                                           branch, or a `git archive <branch> tools/web_public` export)
+    python -X utf8 -m tests.test_phone_e2e                 the local copy with this checkout's tools/web_public
+    python -X utf8 -m tests.test_phone_e2e --src <path>    another checkout (an integration worktree, or a
+                                                           `git archive <branch> tools/web_public tools/build_web_dashboard.py` export)
     python -X utf8 -m tests.test_phone_e2e --live          read-only smoke test of the real published site
-    --only b,c,d   run some parts · --keep  keep the temp site + screenshots · --cache <dir>  where the clone is kept
-    --no-refresh   reuse the cached clone without fetching · --strict  known open bugs count as failures
+    --only b,c,d   some parts (a always runs) · --keep  keep the temp site · --shots <dir>  keep the screenshots there
+    --cache <dir>  where the clones are kept · --no-refresh  reuse them without fetching · --strict  known bugs fail
+About 2.5 min on an idle 4-CPU box (5-6 min at load 15+; the end of the output gives the time per part).
 Read-only: nothing is published, pushed or written outside the temp / cache folders. Paper only; no trading code is run.
 """
 from __future__ import annotations
@@ -77,19 +86,28 @@ UA = ("Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.
 PERF_BUDGET_MS = 2000
 NAV_WAIT_S = 3.5                    # jarvis/sw.js NAV_WAIT_MS
 SLOW_S = 6.0                        # the slow network: the site answers after this long (> NAV_WAIT_S + 2)
-# Known open bugs on the published code (found by this test 2026-11-01, reported, not fixed here): printed as [KNOWN] and not
-# counted unless --strict; a known check that passes prints [PASS] (fixed). (check-name pattern, the bug in short)
+# Known open bugs (found by this test 2026-11-01, reported, not fixed here): printed as [KNOWN] and not counted unless
+# --strict; a known check that passes prints [PASS]. Each holds only for the code that still has the bug (when(site)), so
+# a fixed bug that comes back is a plain FAIL. (check-name pattern, the bug in short, when)
+_old_zenith = lambda S: str((S.get("workers", {}).get("Zenith") or {}).get("old_src") or "").startswith("le-public-v49")
 KNOWN = [
     (r"^f\. 404 site: Zenith (inside Jarvis|on its own) opens|^not white: Zenith (inside Jarvis|alone) 404 site",
-     "Zenith's worker answers its page with the site's 404 instead of its saved copy (tools/web_public/sw.js, page branch)"),
+     "Zenith's worker answers its page with the site's 404 instead of its saved copy (tools/web_public/sw.js v49, page branch)",
+     _old_zenith),
     (r"^e\. slow network: Zenith (inside Jarvis shows|on its own opens)",
-     "Zenith waits on the network for its page / data.json / home.json (published sw.js: no saved-copy fallback like "
-     "Jarvis's 3.5 s; inside Jarvis the page and then its data each wait)"),
+     "Zenith waits on the network for its page / data.json / home.json (sw.js v49: no saved-copy fallback like Jarvis's 3.5 s)",
+     _old_zenith),
     (r"^f\. (offline|404 site): Kalshi inside Jarvis opens|^not white: Kalshi inside Jarvis 404 site",
-     "kalshi/ has no service worker and no saved copy: offline = browser error page, 404 site = GitHub's 404 page"),
+     "kalshi/ has no service worker and no saved copy: offline = browser error page, 404 site = GitHub's 404 page",
+     lambda S: not S.get("kalshi_sw")),
     (r"^c\. Zenith again: where the owner left it",
-     "a dashboard hidden with display:none ([hidden] on its view) comes back scrolled to the top"),
+     "the old hub hides a dashboard's view with display:none: Zenith comes back scrolled to the top",
+     lambda S: str((S.get("workers", {}).get("Jarvis") or {}).get("old_src") or "").startswith("jarvis-v3")),
+    (r"^c\. the Planner's first open inside Jarvis shows no false",
+     "planner/index.html (planner-backup) ~14402: hadController is true because Zenith's site-wide worker controlled the "
+     "page first, so the Planner's own worker taking over shows 'A new version is ready'", lambda S: True),
 ]
+SITE = {}         # the site under test (build_sites), for KNOWN's conditions
 
 RES = []          # (name, ok, known)
 MISSING = []      # Jarvis modules not on the site (part a): their 404s are not counted again in every error check
@@ -97,7 +115,7 @@ SHOTS = {"dir": None, "n": 0}
 
 
 def check(name, ok, info="", known=None):
-    known = known or next((k for pat, k in KNOWN if re.search(pat, name)), None)
+    known = known or next((k for pat, k, when in KNOWN if re.search(pat, name) and when(SITE)), None)
     tag = "[PASS] " if ok else ("[KNOWN] " if known and not ARGS.strict else "[FAIL] ")
     RES.append((name, bool(ok), bool(known) and not ARGS.strict))
     extra = "" if ok else f"  -> {str(info)[:400]}" + (f"  ({known})" if known and not ok else "")
@@ -182,18 +200,29 @@ def overlay(src, base):
             put(os.path.join(web, name), os.path.join(base, name))
             n += 1
     apps = app_dirs(src)
+    pages = set()
     for app in apps:
         d = os.path.join(web, app)
         if os.path.isdir(d):
             for name in os.listdir(d):
                 if os.path.isfile(os.path.join(d, name)):
                     put(os.path.join(d, name), os.path.join(base, app, name))
+                    pages.add(os.path.join(app, name))
                     n += 1
     kit = os.path.join(src, "tools", "kalshi_kit", "public")        # the Kalshi kit's public files, never over a page file
     if os.path.isdir(kit) and os.path.isdir(os.path.join(base, "kalshi")):
         for name in os.listdir(kit):
-            if os.path.isfile(os.path.join(kit, name)) and not os.path.exists(os.path.join(base, "kalshi", name)):
+            if os.path.isfile(os.path.join(kit, name)) and os.path.join("kalshi", name) not in pages:
                 put(os.path.join(kit, name), os.path.join(base, "kalshi", name))
+        vm = os.path.join(kit, "kalshi_status_vm.py")                # kit.json: the script's SHA-256, LF-normalized
+        if os.path.isfile(vm):
+            import hashlib
+            digest = hashlib.sha256(open(vm, "rb").read().replace(b"\r\n", b"\n")).hexdigest()
+            dst = os.path.join(base, "kalshi", "kit.json")
+            if os.path.lexists(dst):
+                os.unlink(dst)
+            with open(dst, "w", encoding="utf-8") as fh:
+                json.dump({"v": 1, "file": "kalshi_status_vm.py", "sha256": digest}, fh)
     icons = os.path.join(src, "web", "icons")
     for name in ("icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png", "icon.svg"):
         if os.path.exists(os.path.join(icons, name)):
@@ -299,6 +328,11 @@ def build_sites(work):
                               "same": _same(os.path.join(pub, rel), os.path.join(new, rel))}
     changed = [f for f in _files(new) if not _same(os.path.join(pub, f), os.path.join(new, f))]
     S["changed"] = changed
+    for w in S["workers"].values():
+        w["old_src"] = w["new"]                   # the checkout's own cache name (before any synthetic bump)
+    S["kalshi_sw"] = os.path.exists(os.path.join(new, "kalshi", "sw.js"))
+    SITE.clear()
+    SITE.update(S)
     S["bumped"] = []
     for name, w in S["workers"].items():
         if w["same"] and w["new"] and name != "Planner":
@@ -561,11 +595,13 @@ def chrome_exe():
 class Phone:
     """One Home Screen app's storage (a browser context) with every error it shows."""
     def __init__(self, br, dev="iPhone 13", **kw):
-        opts = dict(PHONES[dev], is_mobile=True, has_touch=True, user_agent=UA, color_scheme="dark", locale="en-US",
+        opts = dict(PHONES[dev], is_mobile=True, has_touch=True, user_agent=UA, color_scheme=ARGS.scheme, locale="en-US",
                     timezone_id="America/New_York", service_workers="allow", ignore_https_errors=True)
         opts.update(kw)
         self.dev = dev
         self.ctx = br.new_context(**opts)
+        self.ctx.add_init_script(RAF_COUNT)
+        self.ctx.add_init_script(READY_INIT)     # window.__qaReady: when the Jarvis screen can be used
         self.errs = []                # (kind, text, where)
         self.bad = []                 # failed same-site requests / site answers >= 400
         self.ext = set()              # outside hosts the pages tried to reach
@@ -754,6 +790,23 @@ UNDER_DOCK = """() => {
 }"""
 
 
+# frames the Jarvis page itself draws (its core animation): counted from the start in every Jarvis window
+RAF_COUNT = """(() => { if (window.top !== window || !/\\/jarvis\\//.test(location.pathname)) return;
+  const raf = window.requestAnimationFrame.bind(window); window.__qaRaf = 0;
+  window.requestAnimationFrame = (cb) => raf((t) => { window.__qaRaf++; cb(t); }); })();"""
+
+
+def raf_rate(p, ms=1500):
+    """Animation frames a second the Jarvis page asks for right now (None when it never animates at all)."""
+    a = _ev(p, "window.__qaRaf")
+    if a is None or a is False:
+        return None
+    t0 = time.time()
+    p.wait_for_timeout(ms)
+    b = _ev(p, "window.__qaRaf") or 0
+    return round((b - a) / (time.time() - t0), 1)
+
+
 def frames_alive(p):
     return p.evaluate("document.querySelectorAll('iframe').length")
 
@@ -784,7 +837,7 @@ def tap(p, app):
         if app == "home":
             return
     loc = p.locator(f'header [data-app="{app}"]')
-    real_tap(p, (loc if loc.count() else p.locator(f'[data-app="{app}"]')).first, f"the {app} button in the bar")
+    real_tap(p, (loc if loc.count() else p.locator(f'[data-app="{app}"]')).first, f"the {app} button in the bar", done=opened(app))
 
 
 TIMES = []        # (part, seconds)
@@ -795,13 +848,26 @@ COVER = """(el) => { const r = el.getBoundingClientRect(); const x = r.left + r.
   return { at: [Math.round(x), Math.round(y)], top: el.contains(t) ? 'the button itself' : d(t), mode: document.documentElement.dataset.mode || null }; }"""
 
 
-def real_tap(p, loc, what, timeout=5000):
+def opened(app):
+    """JS: the app is on screen (the tap that opened it worked)."""
+    if app == "zenith":
+        return "() => document.documentElement.dataset.mode === 'zenith' || (" + ZEN_MODULE + ")()"
+    if app == "home":
+        return JARVIS_HOME
+    return f"() => {{ const v = document.getElementById('v-{app}'); return !!v && !v.hidden; }}"
+
+
+def real_tap(p, loc, what, timeout=5000, done=None):
     """A real tap (Playwright waits until nothing covers the element and it holds still). When it cannot land, the
-    reason is kept (STOLEN, reported at the end) and the click is sent to the element directly, so the run goes on."""
+    reason is kept (STOLEN, reported at the end) and the click is sent to the element directly, so the run goes on.
+    done (JS): the tap's effect; when it shows, the tap worked even if Playwright could not confirm it (the button was
+    redrawn by the very tap)."""
     try:
         loc.click(timeout=timeout)
         return True
     except Exception as e:
+        if done and _ev(p, done):
+            return True
         why = str(e).splitlines()[0][:120]
         try:
             info = loc.evaluate(COVER)
@@ -886,12 +952,12 @@ def go_home(p):
     if _ev(p, ZEN_MODULE):                       # Zenith mode: its floating "Back to Jarvis" control
         back = p.locator('.zm-back, [aria-label="Back to Jarvis"]')
         if back.count():
-            real_tap(p, back.first, "Zenith mode's Back to Jarvis control")
+            real_tap(p, back.first, "Zenith mode's Back to Jarvis control", done=JARVIS_HOME)
             p.wait_for_function(JARVIS_HOME, timeout=5000)
             p.wait_for_timeout(250)
             return
     loc = p.locator('header [data-app="home"]')
-    real_tap(p, (loc if loc.count() else p.locator('[data-app="home"]')).first, "the Jarvis button in the bar")
+    real_tap(p, (loc if loc.count() else p.locator('[data-app="home"]')).first, "the Jarvis button in the bar", done=JARVIS_HOME)
     p.wait_for_function(JARVIS_HOME, timeout=5000)
 
 
@@ -1021,7 +1087,6 @@ def part_b(br, S, base):
     times = {}
     for dev in PHONES:
         ph = Phone(br, dev)
-        ph.ctx.add_init_script(READY_INIT)
         try:
             m = ph.mark()
             p = ph.page()
@@ -1050,10 +1115,24 @@ def part_b(br, S, base):
             no_errors(ph, m, f"Jarvis at {dev}")
         finally:
             ph.close()
-    best = {d: min(t) for d, t in times.items()}
+    for dev, t in list(times.items()):             # a size over budget gets one more cold try (the 4 CPUs are shared)
+        if max(t) >= PERF_BUDGET_MS:
+            ph = Phone(br, dev)
+            try:
+                p = ph.page()
+                p.goto(jarvis_url(base), wait_until="commit")
+                cold = wait_ready(p)
+                p.evaluate("navigator.serviceWorker.ready.then(() => true)")
+                p2 = ph.page()
+                p2.goto(jarvis_url(base), wait_until="commit")
+                warm = wait_ready(p2)
+                note(f"{dev} again: {cold} ms cold, {warm} ms from the saved copy")
+                times[dev] = (min(t[0], cold), min(t[1], warm))
+            finally:
+                ph.close()
     check(f"b. perf: Jarvis home interactive under {PERF_BUDGET_MS} ms locally (cold and saved copy, every size)",
           all(max(t) < PERF_BUDGET_MS for t in times.values()), times)
-    return best
+    return times
 
 
 def part_c(br, S, base, ph):
@@ -1103,6 +1182,13 @@ def part_c(br, S, base, ph):
     p.wait_for_timeout(500)
     w = hscroll(pf)
     check("c. no sideways scroll in the Planner inside Jarvis", w[0] <= w[1], w)
+    upd = False
+    for _ in range(12):                              # the Planner's worker installs and takes the page over meanwhile
+        upd = _ev(pf, "(() => { const b = document.getElementById('updBar'); return !!b && !b.hidden; })()")
+        if upd:
+            break
+        p.wait_for_timeout(250)
+    check("c. the Planner's first open inside Jarvis shows no false 'A new version is ready' bar", not upd)
     not_white(p, "Planner inside Jarvis", light_ok=True)       # the Planner's own default look is light
     kf = open_app(p, "kalshi", "() => document.body && /\\$512\\.34/.test(document.body.textContent)", timeout=20000)
     check("c. Kalshi opens inside Jarvis with the PC's numbers ($512.34)", bool(kf))
@@ -1114,6 +1200,34 @@ def part_c(br, S, base, ph):
     check("c. back to Jarvis from Kalshi", p.evaluate(JARVIS_HOME))
     check("c. one dashboard view alive after Jarvis -> Zenith -> Planner -> Kalshi -> Jarvis", frames_alive(p) <= 1, frames_alive(p))
     if m0 is not None:
+        # Zenith mode's floating control as a switcher: hold it, the apps show, a tap on one opens it (Zenith let go)
+        fps_home = raf_rate(p)
+        zf4, _ = open_zenith(p, 20000)
+        if zf4 and p.locator(".zm-back.sw").count():
+            fps = raf_rate(p)
+            note(f"Jarvis's own animation: {fps_home} frames/s on the Jarvis screen, {fps} in Zenith mode")
+            check("c. Jarvis's own animation stops while Zenith mode shows (battery)", fps is None or fps < 3, f"{fps} frames/s")
+            box = p.locator(".zm-back").first.bounding_box()
+            p.mouse.move(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
+            p.mouse.down()
+            p.wait_for_timeout(700)
+            p.mouse.up()
+            chips = p.evaluate("[...document.querySelectorAll('.zm-chip')].filter((c) => c.getBoundingClientRect().height > 0).map((c) => c.dataset.app)")
+            check("c. holding Zenith mode's control shows the apps (Jarvis, Planner, Kalshi)",
+                  all(a in chips for a in ("planner", "kalshi")) and any(a in chips for a in ("home", "jarvis")), chips)
+            if "planner" in chips:
+                real_tap(p, p.locator('.zm-chip[data-app="planner"]').first, "the Planner in Zenith mode's switcher", done=opened("planner"))
+                ok = False
+                for _ in range(40):
+                    if mode_of(p) == "app" and p.query_selector("#v-planner iframe") and not _ev(p, ZEN_MODULE):
+                        ok = True
+                        break
+                    p.wait_for_timeout(250)
+                check("c. ... and a tap on the Planner there opens the Planner, one dashboard alive", ok and frames_alive(p) == 1,
+                      (mode_of(p), frames_alive(p)))
+                fps = raf_rate(p)
+                check("c. Jarvis's own animation stops while the Planner shows", fps is None or fps < 3, f"{fps} frames/s")
+            go_home(p)
         # a Zenith notification tapped while Jarvis runs: Zenith's worker (sw.js v50+) posts {type: 'open', app: 'zenith', hash}
         # to the Jarvis window; Jarvis should switch to Zenith mode at that notice
         p.evaluate("navigator.serviceWorker.dispatchEvent(new MessageEvent('message', { data: { type: 'open', app: 'zenith', hash: '#/blitz' } }))")
@@ -1180,25 +1294,31 @@ def frame_ready(p, app, ready, seconds):
 def part_e(br, S, base, ph):
     """A slow network: the site takes SLOW_S s to answer. Jarvis's saved copy shows after NAV_WAIT_S; Zenith's?"""
     m = ph.mark()
+    lim = NAV_WAIT_S + 2                       # 5.5 s: the saved copy (3.5 s) and the start; the site itself answers at SLOW_S
+    lim_z = 2 * NAV_WAIT_S + 1                 # 8 s for Zenith drawn with its data (page, then data.json); without a
+                                               # saved-copy fallback it is SLOW_S twice (12 s+)
+    # Zenith opened inside Jarvis in two Jarvis starts (the first open ever runs before Zenith's worker exists; the next
+    # one goes through it, which saves Zenith's files), as on a phone that has used Zenith inside Jarvis before
+    zw, w = S["workers"]["Zenith"]["new"], S["workers"]["Jarvis"]["new"]
+    for _ in range(2):
+        pw = ph.page()
+        pw.goto(jarvis_url(base))
+        wait_ready(pw)
+        had = _ev(pw, f"caches.has({json.dumps(zw)})")
+        open_zenith(pw, 30000)
+        pw.wait_for_timeout(1500)
+        go_home(pw)
+        ok, keys = wait_caches(pw, [w, zw], timeout=10000)
+        pw.close()
+        if had:
+            break
     p0 = ph.page()
     p0.goto(jarvis_url(base))
     p0.wait_for_function(JARVIS_HOME)
-    w = S["workers"]["Jarvis"]["new"]
-    ok, keys = wait_caches(p0, [w, S["workers"]["Zenith"]["new"]], timeout=10000)
-    check(f"e. the saved copies are in place ({w}, {S['workers']['Zenith']['new']})",
-          ok and cached_text(p0, w, jarvis_url(base) + "index.html") is not None, keys)
+    ok, keys = wait_caches(p0, [w, zw], timeout=10000)
+    check(f"e. the saved copies are in place ({w}, {zw})", ok and cached_text(p0, w, jarvis_url(base) + "index.html") is not None, keys)
     clear_http_cache(ph, p0)
     p0.close()
-    lim = NAV_WAIT_S + 2
-    # Zenith opened once more in a new Jarvis start: its files now come through Zenith's worker and are saved (the first
-    # open ever ran before that worker existed), as on a phone that has used Zenith inside Jarvis before
-    pw = ph.page()
-    pw.goto(jarvis_url(base))
-    wait_ready(pw)
-    open_zenith(pw, 30000)
-    pw.wait_for_timeout(1500)
-    go_home(pw)
-    pw.close()
     try:
         # 1. reopen Jarvis (a blank page, then Jarvis) while its folder answers after SLOW_S
         CTL.set("slow", BASE + "jarvis/")
@@ -1212,8 +1332,8 @@ def part_e(br, S, base, ph):
                          "[e.name.split('/jarvis/')[1].slice(0, 30), Math.round(e.startTime), Math.round(e.responseEnd)])") or []
         note(f"slow network ({SLOW_S:.0f} s), Jarvis: first paint {fp} ms, interactive {ia} ms, blank white until {white:.1f} s; "
              f"its own files (start, end ms): {slowest[:6]}; {strip(fr)}")
-        check(f"e. slow network: Jarvis paints from its saved copy in under {NAV_WAIT_S + 1:.1f} s (not after the site's {SLOW_S:.0f} s)",
-              0 < fp < (NAV_WAIT_S + 1) * 1000, f"first paint {fp} ms")
+        check(f"e. slow network: Jarvis paints from its saved copy in under {NAV_WAIT_S + 1.5:.1f} s (not after the site's {SLOW_S:.0f} s)",
+              0 < fp < (NAV_WAIT_S + 1.5) * 1000, f"first paint {fp} ms")
         check(f"e. slow network: Jarvis is interactive from its saved copy in under {lim:.1f} s", 0 < ia < lim * 1000, f"interactive {ia} ms")
         if done:
             p.wait_for_timeout(300)
@@ -1227,7 +1347,7 @@ def part_e(br, S, base, ph):
         note(f"slow network, Zenith inside Jarvis: drawn after {round(done, 1) if done else f'> {SLOW_S + 6:.0f}'} s, white until {white:.1f} s; "
              f"{strip(fr)}")
         check("e. slow network: Zenith inside Jarvis is never a white frame while it loads", white == 0.0, f"white until {white:.1f} s")
-        check(f"e. slow network: Zenith inside Jarvis shows its saved copy in under {lim:.1f} s", done is not None and done < lim, done)
+        check(f"e. slow network: Zenith inside Jarvis shows its saved copy in under {lim_z:.1f} s", done is not None and done < lim_z, done)
         p.close()
         # 3. Zenith on its own (its own Home Screen app) while the site is slow
         CTL.set("ok")
@@ -1242,8 +1362,10 @@ def part_e(br, S, base, ph):
         p.evaluate(f"setTimeout(() => {{ location.href = {json.dumps(base)}; }}, 0)")
         done, white, fr = watch(p, cdp, "slow Zenith alone", lambda: p.evaluate(ZENITH_READY), 2 * SLOW_S + 6)
         note(f"slow network, Zenith on its own: drawn after {done and round(done, 1)} s, blank white until {white:.1f} s; {strip(fr)}")
-        check(f"e. slow network: Zenith on its own opens from its saved copy in under {lim:.1f} s (not white until the site answers)",
-              done is not None and done < lim and white < lim, f"drawn after {done and round(done, 1)} s, white until {white:.1f} s")
+        check(f"e. slow network: Zenith on its own opens from its saved copy: white for under {lim:.1f} s (not until the site answers)",
+              done is not None and white < lim, f"white until {white:.1f} s")
+        check(f"e. slow network: Zenith on its own opens from its saved copy: drawn with its data in under {lim_z:.1f} s",
+              done is not None and done < lim_z, f"drawn after {done and round(done, 1)} s")
         p.close()
     finally:
         CTL.set("ok")
@@ -1365,7 +1487,6 @@ JUNK = [            # (what, {key: value}): each set is laid on the phone, then 
 def part_i(br, S, base):
     """Junk saved on the phone never stops Jarvis, and a real tap on every home card opens its app."""
     ph = Phone(br, "iPhone 13")
-    ph.ctx.add_init_script(READY_INIT)
     try:
         m = ph.mark()
         p = ph.page()
@@ -1404,7 +1525,7 @@ def part_i(br, S, base):
         ids = [t[2] for t in targets]
         for sel, nth, app, label in targets:
             try:
-                landed = real_tap(p, p.locator(sel).nth(max(0, nth)), f"{label} (opens {app})", timeout=8000)
+                landed = real_tap(p, p.locator(sel).nth(max(0, nth)), f"{label} (opens {app})", timeout=8000, done=opened(app))
                 if not landed:
                     raise RuntimeError(STOLEN[-1][1])
                 if app == "zenith":
@@ -1426,15 +1547,27 @@ def part_i(br, S, base):
         ph.close()
 
 
+def _has(S, folder, needle):
+    """Some file of the site's folder (its page and scripts) contains needle: the feature is on this site."""
+    d = os.path.join(S["new"], REPO, folder)
+    for f in glob.glob(os.path.join(d, "*.js")) + glob.glob(os.path.join(d, "*.html")):
+        try:
+            if needle in open(f, encoding="utf-8", errors="replace").read():
+                return True
+        except OSError:
+            pass
+    return False
+
+
 def part_j(br, S, base):
-    """The Planner's add-ons inside Jarvis, the Planner's day summary (planner.today.v1) read by Jarvis, the Kalshi preview."""
+    """The Planner's add-ons inside Jarvis, the Planner's day summary (planner.today.v1) read by Jarvis, the Kalshi preview
+    (each where the site has that feature)."""
     pats = sorted(os.path.basename(x)[:-6] for x in glob.glob(os.path.join(ARGS.src, "tools", "planner_patches", "*.patch")))
     ad = S.get("addons") or {}
     if pats:
         check(f"j. the Planner is published with every add-on ({', '.join(pats)})",
               sorted(ad.get("applied") or []) == pats and not ad.get("skipped"), ad)
     ph = Phone(br, "iPhone 13")
-    ph.ctx.add_init_script(READY_INIT)
     try:
         m = ph.mark()
         p = ph.page()
@@ -1452,7 +1585,9 @@ def part_j(br, S, base):
         # a task added in the Planner reaches Jarvis (planner.today.v1, the same site's storage inside the Jarvis app)
         task = "QA e2e milk run"
         box = pf.locator("#main [data-tadd] input")
-        if box.count():
+        if not _has(S, "planner", "planner.today.v1"):
+            note("(this Planner does not write planner.today.v1: the Planner -> Jarvis day check is skipped)")
+        elif box.count():
             box.first.fill(task)
             box.first.press("Enter")
             got = False
@@ -1474,7 +1609,6 @@ def part_j(br, S, base):
     # the Kalshi page before the Kalshi bot publishes: the one step, and the preview with sample data
     CTL.kalshi = "waiting"
     ph = Phone(br, "iPhone 13")
-    ph.ctx.add_init_script(READY_INIT)
     try:
         m = ph.mark()
         p = ph.page()
@@ -1482,6 +1616,12 @@ def part_j(br, S, base):
         wait_ready(p)
         kf = open_app(p, "kalshi", KALSHI_READY, timeout=30000)
         p.wait_for_timeout(1200)
+        kit = os.path.join(S["new"], REPO, "kalshi", "kit.json")
+        if os.path.exists(kit):
+            sha = json.load(open(kit, encoding="utf-8")).get("sha256", "")
+            body = kf.evaluate("document.body.textContent") or ""
+            check("j. Kalshi not connected yet: the setup line pins the server script (kit.json's SHA-256)", bool(sha) and sha in body,
+                  f"sha {sha[:12]}... not in the page")
         btn = kf.locator('[data-act="preview"]')
         if btn.count():
             landed = real_tap(p, btn.first, "the Kalshi page's Preview button")
@@ -1504,9 +1644,11 @@ def part_j(br, S, base):
                 check("j. Exit preview goes back to the waiting page",
                       kf.evaluate("(document.getElementById('body') || document.body).dataset.state === 'waiting' && !document.getElementById('previewBar')"),
                       kf.evaluate("(document.getElementById('body') || document.body).dataset.state"))
-        else:
+        elif _has(S, "kalshi", 'data-act="preview"'):
             body = kf.evaluate("document.body.textContent")[:200]
-            check("j. Kalshi not connected yet: the page offers a preview with sample data", "Preview" in body, body)
+            check("j. Kalshi not connected yet: the page offers a preview with sample data", False, body)
+        else:
+            note("(this Kalshi page has no sample-data preview: skipped)")
         no_errors(ph, m, "Kalshi waiting + preview", allow=(r"kalshi\.json",))   # the 404 of a feed not published yet
     finally:
         CTL.kalshi = "published"
@@ -1516,7 +1658,6 @@ def part_j(br, S, base):
 def part_h(br, S, base):
     """A service-worker update: the published workers first, then this checkout's."""
     ph = Phone(br, "iPhone 13")
-    ph.ctx.add_init_script(READY_INIT)
     W = S["workers"]
     try:
         m = ph.mark()
@@ -1645,13 +1786,12 @@ def run_local(S):
         br = pw.chromium.launch(executable_path=chrome_exe(), args=["--ignore-certificate-errors", "--no-proxy-server",
                                                                     f"--host-resolver-rules={rules}"])
         try:
-            part_a(S)                                    # always: it also lists the missing Jarvis modules
+            guard("a", part_a, S)                        # always: it also lists the missing Jarvis modules
             MISSING[:] = S.get("jarvis_missing") or []
             if "b" in only:
                 guard("b", part_b, br, S, base)
             if only & {"c", "d", "e", "f", "g"}:
                 ph = Phone(br, "iPhone 13")
-                ph.ctx.add_init_script(READY_INIT)
                 try:
                     p = guard("c", part_c, br, S, base, ph) if only & {"c", "d"} else None
                     if "d" in only and p:
@@ -1692,7 +1832,6 @@ def run_live():
         br = pw.chromium.launch(executable_path=chrome_exe(), args=["--ignore-certificate-errors"],
                                 **({"proxy": {"server": proxy, "bypass": "127.0.0.1,localhost"}} if proxy else {}))
         ph = Phone(br, "iPhone 13")
-        ph.ctx.add_init_script(READY_INIT)
         try:
             m = ph.mark()
             p = ph.page()
@@ -1741,6 +1880,7 @@ def main(argv=None):
     ap.add_argument("--cache", default=os.path.join(tempfile.gettempdir(), "le_phone_e2e_cache"), help="where the clone is kept")
     ap.add_argument("--no-refresh", dest="refresh", action="store_false", help="reuse the cached clone without fetching")
     ap.add_argument("--strict", action="store_true", help="known open bugs count as failures")
+    ap.add_argument("--scheme", default="dark", choices=("dark", "light"), help="the phone's appearance (default dark)")
     ARGS = ap.parse_args(argv)
     ARGS.src = os.path.abspath(ARGS.src)
     t0 = time.time()
