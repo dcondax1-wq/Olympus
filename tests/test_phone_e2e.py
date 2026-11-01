@@ -773,11 +773,12 @@ def hscroll(target):
 
 
 # The Jarvis screen scrolled to its end: the last things on it must sit above whatever is fixed at the bottom (the ask bar,
-# floating chips), or the owner can never see or tap them.
+# floating chips), or the owner can never see or tap them. A see-through fade that takes no taps (pointer-events: none) is
+# not counted.
 UNDER_DOCK = """() => {
   const H = innerHeight, home = document.getElementById('home');
   const fixed = [...document.querySelectorAll('body *')].filter((el) => { const cs = getComputedStyle(el), r = el.getBoundingClientRect();
-    return cs.position === 'fixed' && cs.visibility !== 'hidden' && cs.display !== 'none' && r.height > 0 && r.width > 0
+    return cs.position === 'fixed' && cs.visibility !== 'hidden' && cs.display !== 'none' && cs.pointerEvents !== 'none' && r.height > 0 && r.width > 0
       && r.top > H * 0.55 && r.bottom > H - 140 && !(home && home.contains(el) && false) && !el.closest('#frames, .zm-root, .sheet, [hidden]'); });
   const scrollers = [document.scrollingElement, home, ...(home ? home.querySelectorAll('*') : [])].filter((el) => el
     && el.scrollHeight > el.clientHeight + 4 && (el === document.scrollingElement || /auto|scroll/.test(getComputedStyle(el).overflowY)));
