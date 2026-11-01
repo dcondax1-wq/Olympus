@@ -23,15 +23,21 @@ How it runs:
   --cron    for a crontab line every minute: push only when the numbers changed, and at least every 3 min
   --loop    keep it fresh by itself: every 60 s (API: 300 s), push when it changed (else every 3 min)
 
-Where it goes: kalshi.json, one orphan commit force-pushed to the branch `kalshi` of the PUBLIC repo
-demetrades2000-coder/nq-dashboard, from a private scratch git dir (no history piles up): with --deploy-key (the VM) over
-SSH as git@github.com:demetrades2000-coder/nq-dashboard.git, else over https with the machine's own git login. The
-phone's Kalshi page and the Jarvis card read https://raw.githubusercontent.com/demetrades2000-coder/nq-dashboard/kalshi/kalshi.json
+Where it goes: kalshi.json, one orphan commit force-pushed to the branch `main` of its OWN public repo
+demetrades2000-coder/kalshi-feed (never the phone app's site repo: a key that can write there could rewrite the site),
+from a private scratch git dir (no history piles up): with --deploy-key (the VM; a key added to kalshi-feed only) over SSH
+as git@github.com:demetrades2000-coder/kalshi-feed.git, else over https with the machine's own git login. The first push
+into the new, empty repo creates `main`. The phone's Kalshi page and the Jarvis card read
+https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json (fallback: the GitHub contents API).
 
 Safety (enforced in code, tested in tests/test_kalshi_publish.py):
   * Never trades and never changes the bot: the bot's files are only read (SQLite in read-only mode).
-  * Only the contract's keys are published: credential-looking keys are dropped, local paths redacted, lists capped,
-    and the file stays under MAX_BYTES.
+  * Pinned: the owner's paste line carries this file's SHA-256 (tools/kalshi_kit/print_sha.py); SETUP.md checks it
+    before the first run and on every update. Cron runs the local copy, which never updates itself.
+  * The feed's deploy key writes kalshi-feed only, never the phone app's site (nq-dashboard).
+  * Only the contract's keys are published: credential-looking keys are dropped, every free-text string is redacted
+    (links, IP addresses, e-mail addresses, local paths, keys, ids and token-like strings), tickers and times must look
+    like tickers and times, lists are capped, and the file stays under MAX_BYTES.
   * --from-api is GET only: anything that is not a GET to an allow-listed read-only path is refused before a request is
     built (ReadOnlyError); the base URL must be Kalshi's trade API (or a loopback test server); redirects are refused;
     a 429 ends the round at once. The key id, the key file's path and the PEM text are never printed, logged or
@@ -69,9 +75,11 @@ import urllib.request
 import zlib
 
 KIT_VERSION = "2026-11-01"
-REPO_URL = "https://github.com/demetrades2000-coder/nq-dashboard.git"
-REPO_SSH = "git@github.com:demetrades2000-coder/nq-dashboard.git"      # with --deploy-key
-BRANCH = "kalshi"
+FEED_OWNER = "demetrades2000-coder"
+FEED_REPO = "kalshi-feed"       # its own public repo: a write key there can never touch the phone app's site (nq-dashboard)
+REPO_URL = f"https://github.com/{FEED_OWNER}/{FEED_REPO}.git"
+REPO_SSH = f"git@github.com:{FEED_OWNER}/{FEED_REPO}.git"            # with --deploy-key
+BRANCH = "main"
 FILE = "kalshi.json"
 MAX_BYTES = 200 * 1024
 EVERY_S = 60
@@ -147,7 +155,43 @@ def _num(v):
 
 
 def _txt(v, n=160):
-    return None if v is None else str(v)[:n]
+    return None if v is None else public_text(v, n)
+
+
+_URL = re.compile(r"(?i)\b(?:https?|wss?|ftp|ssh)://\S+")
+_EMAIL = re.compile(r"\b[\w.+-]+@[\w-]+(?:\.[\w-]+)+\b")
+_UUID = re.compile(r"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b")
+_TOKENISH = re.compile(r"\b(?=[A-Za-z0-9_]*\d)(?=[A-Za-z0-9_]*[A-Za-z])[A-Za-z0-9_]{32,}\b")
+_HEX = re.compile(r"\b[0-9A-Fa-f]{32,}\b")
+_ASSIGN = re.compile(r"(?i)\b([\w-]*(?:token|secret|password|passwd|pwd|api[_-]?key|key[_-]?id|auth|signature|cookie)[\w-]*)"
+                     r"(\s*[=:]\s*)(?!<)(?!(?:bearer|basic)\b)[^\s,;'\"]+")   # NAME=value / name: value -> NAME=<redacted>
+_BEARER = re.compile(r"(?i)\b((?:bearer|basic)\s+)(?!<)[^\s,;'\"]+")
+_TICKER = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}")
+_TIME = re.compile(r"\d{4}-\d{2}-\d{2}(?:[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?)?")
+
+
+def public_text(v, n=160):
+    """Free text as it may be published: no links (a tunnel link carries its token), IP or e-mail addresses, local
+    paths, PEM keys, ids or token-like strings. Idempotent."""
+    s = _URL.sub("<link>", str(v))
+    s = _EMAIL.sub("<email>", s)
+    s = _UUID.sub("<redacted>", s)
+    s = redact(s)
+    s = _BEARER.sub(lambda m: m.group(1) + "<redacted>", s)
+    s = _ASSIGN.sub(lambda m: m.group(1) + m.group(2) + "<redacted>", s)
+    s = _HEX.sub("<redacted>", s)
+    return _TOKENISH.sub("<redacted>", s)[:n]
+
+
+def _field(k, v, n):
+    """A row's text field: tickers and times must look like tickers and times; everything else is public_text."""
+    if k == "ticker":
+        t = str(v)
+        return t if _TICKER.fullmatch(t) else public_text(t, 60)
+    if k == "closes":
+        t = str(v)
+        return t[:40] if _TIME.fullmatch(t) else None
+    return public_text(v, n)
 
 
 def _row(r, keys, n=160):
@@ -166,7 +210,9 @@ def _row(r, keys, n=160):
         elif k in ROW_NUM:
             out[k] = _num(v)
         else:
-            out[k] = _txt(v, n)
+            f = _field(k, v, n)
+            if f is not None:
+                out[k] = f
     return out or None
 
 
@@ -994,7 +1040,7 @@ def read_bot(bot_dir, now=None, units=UNITS, week="monday"):
     if paused:
         status = "Paused" + (f" until {et_text(until)}" if until > now else "")
     elif st.get("blocked") or st.get("problem"):
-        status = str(st.get("problem") or st.get("blocked"))
+        status = ("Problem: " if st.get("problem") else "Blocked: ") + public_text(st.get("problem") or st.get("blocked"), 100)
     elif db_err:
         status = db_err
     elif alive is False:
@@ -1245,7 +1291,8 @@ def push(payload, url=REPO_URL, branch=BRANCH, git_dir=None, file=FILE, prune=Fa
             return {"ok": False, "error": "commit-tree failed"}
         r = _run(["git", "--git-dir", git_dir, "push", "-q", "--force", url, f"{commit}:refs/heads/{branch}"], env=env, timeout=90)
         if r.returncode:
-            return {"ok": False, "error": redact((r.stderr or b"").decode(errors="replace").strip()[-200:]) or "push failed"}
+            err = redact((r.stderr or b"").decode(errors="replace").strip()[-200:]) or "push failed"
+            return {"ok": False, "error": err + _push_hint(err)}
         if prune:
             _run(["git", "--git-dir", git_dir, "update-ref", "refs/heads/last", commit], timeout=20)
             _run(["git", "--git-dir", git_dir, "prune", "--expire=now"], timeout=120)
@@ -1255,8 +1302,22 @@ def push(payload, url=REPO_URL, branch=BRANCH, git_dir=None, file=FILE, prune=Fa
 
 
 def phone_url(url=REPO_URL):
-    m = re.search(r"github\.com[:/]([^/]+)/", url or "")
-    return f"https://raw.githubusercontent.com/{m.group(1) if m else 'demetrades2000-coder'}/nq-dashboard/{BRANCH}/{FILE}"
+    """Where the phone reads the feed: raw.githubusercontent.com/<owner>/<repo>/main/kalshi.json."""
+    m = re.search(r"github\.com[:/]([^/]+)/([^/]+?)(?:\.git)?/?$", url or "")
+    owner, repo = (m.group(1), m.group(2)) if m else (FEED_OWNER, FEED_REPO)
+    return f"https://raw.githubusercontent.com/{owner}/{repo}/{BRANCH}/{FILE}"
+
+
+def _push_hint(err):
+    """A plain next step for the usual first-push errors (the feed repo missing, the key not added / read-only)."""
+    e = err.lower()
+    if "not found" in e or "does not appear to be a git repository" in e or "does not exist" in e:
+        return (f" -> create the PUBLIC repo {FEED_OWNER}/{FEED_REPO} on GitHub first (empty: no README, no license)")
+    if "read only" in e or "read-only" in e or "write access" in e:
+        return f" -> the deploy key is read-only: on {FEED_REPO} > Settings > Deploy keys, add it again with Allow write access"
+    if "permission denied" in e or "publickey" in e or "authentication failed" in e or "could not read username" in e:
+        return f" -> GitHub refused the login: add the deploy key to {FEED_REPO} (Settings > Deploy keys, Allow write access)"
+    return ""
 
 
 def _sig(p):
@@ -1338,7 +1399,7 @@ def parser(prog=None):
     ap.add_argument("--env-file", default=None, help="a .env file to read the key settings from (--from-api only)")
     ap.add_argument("--bot-dir", default=None, help="the folder of the bot's .env (--from-api only)")
     ap.add_argument("--demo", action="store_true", help="Kalshi's demo API (--from-api)")
-    ap.add_argument("--deploy-key", default=None, help="SSH key allowed to push to nq-dashboard (e.g. on the VM; then --repo git@github.com:...)")
+    ap.add_argument("--deploy-key", default=None, help="SSH deploy key with write access to kalshi-feed only (the VM); pushes over SSH")
     ap.add_argument("--week", choices=("monday", "rolling7"), default="monday", help="week start for week_pnl (default Monday 00:00 ET)")
     ap.add_argument("--every", type=float, default=None, help="seconds between reads in --loop (default 60; --from-api 300)")
     ap.add_argument("--vm-helper", default=None, help="the PC's srv.py (default: found under %%APPDATA%%\\Claude\\scratch-workspaces)")
