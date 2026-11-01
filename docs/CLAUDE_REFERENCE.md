@@ -812,7 +812,9 @@ part yourself or fold it into a script.**
     - Inside Jarvis its links switch apps through `parent.__jarvis.show()`; framed with no saved theme it uses the dark
       theme for the session; the Today line stays one folded line (todayorg passes with live data).
   - **20-power:** Now and next, Catch up (spreads overdue tasks, with Undo), smarter quick add, the weekly review reminder.
-    Everything goes through the Planner's own `commit()`, via the `window.PlannerAPI` hook. Bot colors are hex-validated.
+    Everything goes through the Planner's own `commit()`, via the `window.PlannerAPI` hook. Bot colors are hex-validated;
+    synced/stored ids and colors are cleaned at every entry point (safe ids, stable replacement ids); only the Planner's
+    own worker counts for the 'new version' bar.
   - **Test:** test_planner_addons (section f checks the real patches against the live branch).
   - **When the Planner session deploys again:** rebase or refresh the patches if test_planner_addons f reports a skip.
 - **Market structure, playbook, discretion advisor (2026-10-29, read-only, never an order):** `engine/structure.py`
