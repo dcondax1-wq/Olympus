@@ -92,7 +92,13 @@ def part_a():
     # every other cache (Jarvis's and the Planner's saved copies) and handle their pages, so a dropped connection left Jarvis
     # with nothing to open. Each worker now keeps to its own folder and its own caches, and Jarvis's saved copy answers errors.
     check("a. Jarvis's worker deletes only its own old caches and answers a 404 / no connection from its saved copy",
-          "k.startsWith('jarvis-')" in sw and "(await saved(e.request)) || r" in sw and "Response.error()" in sw)
+          "k.startsWith('jarvis-')" in sw and "(await saved(req)) || r" in sw and "Response.error()" in sw)
+    # 2026-11-01 ("Jarvis is just a white screen"): an iPhone Home Screen app is white while its page loads or after a failed load
+    check("a. opening Jarvis waits on the network at most NAV_WAIT_MS when a saved copy exists; no network + no copy = a dark Retry page",
+          "const NAV_WAIT_MS = 3500;" in sw and "Promise.race([net, slow])" in sw and "return copy || offlinePage();" in sw
+          and "background:#0b0b0d" in sw and "location.reload()" in sw)
+    m2 = json.load(open(os.path.join(JV, "manifest.webmanifest"), encoding="utf-8"))
+    check("a. no #dashboard shortcuts in the manifest (Jarvis always opens on its own screen)", "shortcuts" not in m2, m2.get("shortcuts"))
     zsw = open(os.path.join(ROOT, "tools", "web_public", "sw.js"), encoding="utf-8").read()
     check("a. Zenith's worker stays out of jarvis/ and planner/ and deletes only its own caches (le-public-*)",
           "const OTHER_APPS = ['jarvis/', 'planner/'];" in zsw and "if (OTHER_APPS.some(" in zsw
@@ -135,14 +141,20 @@ def run_browser(url):
         zf = p.frame_locator("#v-zenith iframe")
         check("c. Zenith opens in its own frame, the Jarvis screen hides",
               zf.locator("#z").inner_text() == "Zenith stub" and p.locator("#home").is_hidden(), p.locator("#home").is_hidden())
-        p.click('.chip[data-app="planner"]')
-        p.wait_for_timeout(500)
-        check("c. Planner opens in its own frame", p.frame_locator("#v-planner iframe").locator("h1").inner_text() == "Planner stub")
+        check("c. the address stays the Jarvis screen (no #zenith: a reopen never starts inside a dashboard)", "#" not in p.url, p.url)
+        p.click('.chip[data-app="home"]')
+        p.wait_for_timeout(300)
         p.click('.chip[data-app="zenith"]')
         p.wait_for_timeout(300)
         loads = p.evaluate("document.querySelector('#v-zenith iframe').contentWindow.loads")
-        check("c. switching back does not reload Zenith (loaded once)", loads == 1 and p.locator("#v-planner").is_hidden(), loads)
+        check("c. Jarvis screen and back does not reload Zenith (loaded once)", loads == 1, loads)
         check("c. the open-on-its-own button shows for a dashboard", p.locator("#out").is_visible())
+        p.click('.chip[data-app="planner"]')
+        p.wait_for_timeout(500)
+        check("c. Planner opens in its own frame", p.frame_locator("#v-planner iframe").locator("h1").inner_text() == "Planner stub")
+        check("c. one dashboard loaded at a time: opening the Planner lets Zenith go (iPhone memory)",
+              p.locator("#v-zenith").count() == 0 and p.locator("iframe").count() == 1, p.locator("iframe").count())
+        check("c. the start note is gone once Jarvis runs", p.locator("#boot").count() == 0)
         p.click('.chip[data-app="home"]')
         p.wait_for_timeout(300)
         check("c. back to Jarvis", p.locator("#home").is_visible() and not p.locator("#out").is_visible())
@@ -195,8 +207,10 @@ def run_browser(url):
         p.wait_for_timeout(500)
         check("e. an added dashboard shows in the bar and opens", "Clipper" in p.inner_text("#apps") and p.locator("#v-x-clipper").is_visible())
         p.goto(url + "jarvis/#planner")
+        p.reload()                                     # a fresh open at that address (as the iPhone reopening Jarvis)
         p.wait_for_timeout(700)
-        check("c. #planner opens the Planner directly", p.locator("#v-planner").is_visible() and p.locator("#home").is_hidden())
+        check("c. opened at #planner (an old saved address): starts on the Jarvis screen, the address is cleaned",
+              p.locator("#home").is_visible() and p.locator("iframe").count() == 0 and "#" not in p.url, p.url)
         p.goto(url + "jarvis/")
         p.wait_for_timeout(500)
         w = p.evaluate("[document.documentElement.scrollWidth, document.documentElement.clientWidth]")

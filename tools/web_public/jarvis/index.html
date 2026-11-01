@@ -124,6 +124,10 @@ button { cursor: pointer; }
 .mine div span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink2); }
 .mine div button { background: none; border: 0; color: var(--bad); font-size: 13px; }
 .err { color: var(--bad); font-size: 13px; margin: 0; min-height: 1em; }
+.boot { position: fixed; left: 16px; right: 16px; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 50; padding: 12px 14px; border-radius: 14px;
+  background: var(--panel); border: 1px solid var(--line); color: var(--ink2); font-size: 14px; display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+.boot[hidden] { display: none; }
+.boot button { height: 36px; padding: 0 14px; border-radius: 11px; border: 0; background: var(--ink); color: var(--bg); font-weight: 650; }
 </style>
 </head>
 <body>
@@ -183,6 +187,8 @@ button { cursor: pointer; }
   </form>
 </div>
 
+<div class="boot" id="boot" hidden>Jarvis is taking a while to start.<button type="button" onclick="location.reload()">Reload</button></div>
+<script>window.__jarvisBoot = setTimeout(function () { var b = document.getElementById('boot'); if (b) b.hidden = false; }, 8000);</script>
 <script>
 (() => {
   'use strict';
@@ -235,6 +241,9 @@ button { cursor: pointer; }
     $('#home').hidden = a.id !== 'home';
     for (const k of Object.keys(frames)) frames[k].hidden = k !== a.id;
     if (a.id !== 'home') {
+      // One dashboard kept loaded at a time (2026-11-01, white screen on the iPhone): every page inside Jarvis shares one
+      // iPhone web process, so the one shown before is let go; going back to the Jarvis screen keeps it for a quick return.
+      for (const k of Object.keys(frames)) if (k !== a.id) { frames[k].remove(); delete frames[k]; }
       let v = frames[a.id];
       if (!v || v.dataset.url !== a.url) {
         if (v) v.remove();
@@ -260,7 +269,8 @@ button { cursor: pointer; }
       refreshHome();
     }
     renderBar();
-    if (push && location.hash !== '#' + a.id) history.replaceState(null, '', a.id === 'home' ? location.pathname : '#' + a.id);
+    // The address stays the Jarvis screen (no #zenith): a reopen, or the iPhone reloading Jarvis in the background, always
+    // starts on the light Jarvis screen, never straight inside a dashboard.
   }
   function openOut(a) { if (a && a.url) window.open(new URL(a.url, location.href).href, '_blank', 'noopener'); }
   document.addEventListener('click', (e) => {
@@ -271,7 +281,11 @@ button { cursor: pointer; }
     const s = e.target.closest('[data-say]');
     if (s) { ask(s.dataset.say); return; }
   });
-  window.addEventListener('hashchange', () => show((location.hash || '#home').slice(1), false));
+  window.addEventListener('hashchange', () => {          // a #name link while Jarvis runs opens that app; the address stays clean
+    const id = location.hash.slice(1);
+    history.replaceState(null, '', location.pathname + location.search);
+    show(id || 'home', false);
+  });
 
   // ------------------------------------------------------------------ live data: the NQ bots (the PC's live.json, as Zenith reads it)
   const OWNER = 'demetrades2000-coder', REPO = 'nq-dashboard';
@@ -547,7 +561,9 @@ button { cursor: pointer; }
   renderBar();
   renderCards();
   fetchLive();
-  show((location.hash || '#home').slice(1), false);
+  if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+  show('home', false);
+  clearTimeout(window.__jarvisBoot); const bootNote = document.getElementById('boot'); if (bootNote) bootNote.remove();
   setInterval(() => { if (document.visibilityState === 'visible' && active === 'home') { greet(); if (Date.now() - L.at > 60e3) fetchLive(); } }, 30e3);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && active === 'home') refreshHome(); });
   window.addEventListener('storage', (e) => { if (/^planner\./.test(e.key || '') && active === 'home') renderCards(); });
