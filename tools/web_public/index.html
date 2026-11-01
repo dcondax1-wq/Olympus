@@ -995,6 +995,61 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
 }
 </style>
 <link rel="stylesheet" href="space.css?v=1"><link rel="stylesheet" href="mission.css?v=1"><link rel="stylesheet" href="polish.css?v=1">
+<script>
+/* Inside Jarvis (2026-11-01, owner: "on Jarvis I can switch between that mode [Jarvis], zenith mode with all of the
+   features"): Zenith in a same-site frame of the Jarvis hub (jarvis/zenith-mode.js) knows it before the first paint:
+   <html data-jarvis="on">, window.LE_JARVIS, and every env(safe-area-inset-*) of this page's CSS (this head, the sheets
+   the scripts add later) reads --jz-sa-<side> instead: the part of the screen's safe area that this frame covers (Jarvis
+   sends it; until then it is measured from the frame's box), so the header and the tab bar never pad twice. embed.js does
+   the rest. Outside Jarvis (no frame, or another site's frame) none of this runs. */
+(function () {
+  var fe = null;
+  try { if (window.top === window) return; fe = window.frameElement; } catch (e) { return; }
+  if (!fe) return;
+  var R = document.documentElement, SIDES = ['top', 'right', 'bottom', 'left'];
+  var RX = /env\(\s*safe-area-inset-(top|right|bottom|left)\s*(,[^)]*)?\)/g, TO = 'var(--jz-sa-$1, 0px)';
+  R.setAttribute('data-jarvis', 'on'); window.LE_JARVIS = true;
+  function set(v) { for (var i = 0; i < 4; i++) R.style.setProperty('--jz-sa-' + SIDES[i], Math.max(0, Math.min(200, Math.round(+v[i] || 0))) + 'px'); }
+  function measure() {
+    try {
+      var pd = fe.ownerDocument, pw = pd.defaultView, p = pd.createElement('div');
+      p.style.cssText = 'position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:var(--zm-safe-top,env(safe-area-inset-top,0px)) '
+        + 'var(--zm-safe-right,env(safe-area-inset-right,0px)) var(--zm-safe-bottom,env(safe-area-inset-bottom,0px)) var(--zm-safe-left,env(safe-area-inset-left,0px))';
+      (pd.body || pd.documentElement).appendChild(p);
+      var c = pw.getComputedStyle(p), s = [c.paddingTop, c.paddingRight, c.paddingBottom, c.paddingLeft].map(parseFloat), r = fe.getBoundingClientRect();
+      p.parentNode.removeChild(p);
+      return [s[0] - r.top, s[1] - (pw.innerWidth - r.right), s[2] - (pw.innerHeight - r.bottom), s[3] - r.left];
+    } catch (e) { return [0, 0, 0, 0]; }
+  }
+  var told = false;
+  window.LEJ = { set: function (v) { told = true; set(v); }, measure: measure };
+  set(measure());
+  addEventListener('resize', function () { if (!told) set(measure()); });
+  function fixText(el) { var t = el.textContent; if (t.indexOf('safe-area-inset') >= 0) el.textContent = t.replace(RX, TO); }
+  function fixRules(g) {
+    var rs; try { rs = g.cssRules; } catch (e) { return; }
+    for (var i = 0; rs && i < rs.length; i++) {
+      var r = rs[i], t = r.cssText || '';
+      if (!r.style && r.cssRules) { fixRules(r); continue; }
+      if (!r.style || t.indexOf('safe-area-inset') < 0) continue;
+      try { g.deleteRule(i); g.insertRule(t.replace(RX, TO), i); } catch (e) { try { g.insertRule(t, i); } catch (e2) { /* kept as it was */ } }
+    }
+  }
+  function fixLink(l) { var ok = false; try { ok = !!(l.sheet && l.sheet.cssRules); } catch (e) { return; } if (ok) fixRules(l.sheet); else l.addEventListener('load', function () { fixRules(l.sheet); }); }
+  function fixNode(n) { if (n.nodeName === 'STYLE') fixText(n); else if (n.nodeName === 'LINK' && /stylesheet/i.test(n.rel)) fixLink(n); }
+  var all = document.querySelectorAll('style, link[rel~="stylesheet"]');
+  for (var i = 0; i < all.length; i++) fixNode(all[i]);
+  function watch(m) {
+    for (var k = 0; k < m.length; k++) {
+      var t = m[k].target;
+      if (t.nodeName === 'STYLE') fixText(t); else if (t.parentNode && t.parentNode.nodeName === 'STYLE') fixText(t.parentNode);
+      for (var j = 0; j < m[k].addedNodes.length; j++) fixNode(m[k].addedNodes[j]);
+    }
+  }
+  new MutationObserver(watch).observe(document.head, { childList: true, subtree: true, characterData: true });
+  document.addEventListener('DOMContentLoaded', function () { new MutationObserver(watch).observe(document.body, { childList: true }); });
+})();
+</script>
 </head>
 <body>
 <!-- deep space (2026-10-29): the static CSS sky paints at once; the WebGL scene (fx.js, space.js) fades in over it -->
@@ -4190,7 +4245,10 @@ async function pushEnsure_(tap) {
     let sub = await reg.pushManager.getSubscription();
     if (sub && !sameKey(sub, key)) { try { await sub.unsubscribe(); } catch { } sub = null; }
     let fresh = false;
+    if (tap && window.LE_JARVIS) store.set('push.jv', true);
     if (!sub) {
+      // inside Jarvis a subscription is made only from a tap here (the Zenith app has its own: two would ring twice)
+      if (!tap && window.LE_JARVIS && !store.get('push.jv', false)) return (PUSH.last = { state: 'off' });
       fresh = true;
       try { sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uBytes(key) }); }
       catch (e) { PUSH.needTap = true; if (tap) throw e; return (PUSH.last = { state: 'tap' }); }
@@ -4209,6 +4267,7 @@ async function pushEnsure_(tap) {
 }
 async function pushOff() {
   store.set('push.off', true);
+  if (window.LE_JARVIS) store.set('push.jv', false);
   const s = await pushSub(); if (!s) return;
   const id = await devId(s.endpoint);
   await s.unsubscribe();
@@ -4446,7 +4505,7 @@ let splashGone = false;
   const force = /[?&]intro=1\b/.test(location.search), day = et(Date.now() / 1000).date;
   let seen = false; try { seen = localStorage.getItem('le.intro.day') === JSON.stringify(day); } catch { }
   const calm = matchMedia('(prefers-reduced-motion: reduce)').matches || store.get('motion', true) === false;
-  if (!force && (seen || calm || navigator.webdriver || store.get('intro', true) === false)) { el.remove(); splashGone = true; return; }   // Settings > Intro
+  if (!force && (seen || calm || navigator.webdriver || store.get('intro', true) === false || window.LE_JARVIS)) { el.remove(); splashGone = true; return; }   // Settings > Intro; inside Jarvis (Jarvis is the launch) never
   store.set('intro.day', day);
   el.removeAttribute('aria-hidden'); el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Intro');
   const skip = () => splashDone(true);
@@ -4579,5 +4638,6 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.se
 <script src="fleet.js?v=1" defer></script>
 <script src="statuscore.js?v=1" defer></script>
 <script src="polish.js?v=1" defer></script>
+<script src="embed.js?v=1" defer></script>
 </body>
 </html>
