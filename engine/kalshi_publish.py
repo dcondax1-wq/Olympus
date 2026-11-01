@@ -1,23 +1,34 @@
 """Kalshi in Jarvis (owner 2026-11-01: "where is kalshi ... figure out a way to have it there").
 
-The Kalshi bot runs only on the owner's PC. It writes a small status file (the contract: docs/KALSHI_PUBLISH.md, or
-`python -m engine.kalshi_publish --sample`); this pushes that file as kalshi.json, one orphan commit force-pushed to the
-branch `kalshi` of the public Pages repo nq-dashboard: the same route, push function and PC git login as the NQ bot's
-live.json (engine/live_publish.push), in its own scratch git dir (data/kalshi_pub.git, gitignored). The phone's Kalshi page
-(tools/web_public/kalshi/, <site>/kalshi/) and the Jarvis Kalshi card read it from raw.githubusercontent.com.
+The owner's Kalshi bot ("Kalshi Edge v2") runs 24/7 on an Oracle Cloud VM (/home/ubuntu/kalshi), with real money. Its
+numbers reach the phone as kalshi.json: one orphan commit force-pushed to the branch `kalshi` of the public Pages repo
+nq-dashboard. The phone's Kalshi page (tools/web_public/kalshi/, <site>/kalshi/) and the Jarvis Kalshi card read it from
+raw.githubusercontent.com. docs/KALSHI_PUBLISH.md has the whole picture.
 
-Read-only and separate from the NQ bot: it never talks to Kalshi, never places anything, and never runs inside the NQ
-bot's server. Only the contract's keys leave the PC; credential-looking keys are dropped and local paths redacted
-(live_publish.scrub), lists are capped, and the file must stay under MAX_BYTES.
+THE way: the VM publishes by itself (cron every minute, its own deploy key), set up by the bot's own Claude chat
+("kalshi-server") from tools/kalshi_kit/public/SETUP.md. This module is the PC side, same contract:
+  --ssh        (= --from-vm) the FALLBACK: runs the read-only builder on the VM through the PC's own srv.py helper (the
+               VM's address stays in srv.py, read by it at run time; nothing is installed on the VM), then pushes from
+               the PC with the same route, push function and git login as the NQ bot's live.json (engine/live_publish),
+               from its own scratch git dir (data/kalshi_pub.git, gitignored).
+  --src FILE   a status file (v1 keys, plus the optional v2 `strategies` and `equity`).
+  --from-bot DIR / --from-api   also accepted (--from-api is NOT recommended: the account already meets Kalshi's limits).
+The contract, the readers, the API client and the money math live in ONE file: tools/kalshi_kit/public/kalshi_status_vm.py
+(stdlib only; public copy <site>/kalshi/kalshi_status_vm.py). This module loads that file, so both give the same
+kalshi.json for the same input; only the push differs.
 
-    python -m engine.kalshi_publish --sample                   a sample status file (the contract)
-    python -m engine.kalshi_publish --src <file> --once        check the file and push it once (prints the result)
-    python -m engine.kalshi_publish --src <file> --loop        every 60 s: push when the file changed (else every 10 min)
-LE_KALSHI_SRC sets the default --src; LE_LIVE_REPO overrides the target repo (as for live.json).
+Read-only and separate from the NQ bot: it never places anything and never runs inside the NQ bot's server.
+
+    python -m engine.kalshi_publish --sample                       a sample status file (the contract, v2)
+    python -m engine.kalshi_publish --ssh --check                  what the VM's files would publish (no push)
+    python -m engine.kalshi_publish --ssh --once | --loop          push once / every 60 s when it changed (else 10 min)
+    python -m engine.kalshi_publish --src <file> --check|--once|--loop   the same from a status file
+--vm-helper <srv.py> when it isn't found under %APPDATA%\\Claude\\scratch-workspaces; LE_KALSHI_SRC sets the default
+--src; LE_LIVE_REPO overrides the target repo.
 """
 from __future__ import annotations
 
-import argparse
+import importlib.util
 import json
 import os
 import sys
@@ -26,102 +37,46 @@ import time
 from . import live_publish as lp
 
 ROOT = lp.ROOT
-BRANCH = "kalshi"
-FILE = "kalshi.json"
+KIT_PATH = os.path.join(ROOT, "tools", "kalshi_kit", "public", "kalshi_status_vm.py")
+
+
+def _load_kit():
+    name = "kalshi_to_jarvis_kit"
+    if name in sys.modules:
+        return sys.modules[name]
+    spec = importlib.util.spec_from_file_location(name, KIT_PATH)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[name] = mod
+    old, sys.dont_write_bytecode = sys.dont_write_bytecode, True     # no __pycache__ in the public kit folder
+    try:
+        spec.loader.exec_module(mod)
+    finally:
+        sys.dont_write_bytecode = old
+    return mod
+
+
+kit = _load_kit()
+
+BRANCH = kit.BRANCH
+FILE = kit.FILE
 SCRATCH = os.path.join(ROOT, "data", "kalshi_pub.git")      # gitignored scratch git dir (objects pruned)
-MAX_BYTES = 200 * 1024
-EVERY_S = 60
-KEEPALIVE_S = 600
-
-TOP = ("name", "mode", "status", "running", "t", "balance", "today_pnl", "week_pnl", "total_pnl", "note")
-NUM = ("balance", "today_pnl", "week_pnl", "total_pnl")
-POS = ("ticker", "title", "side", "contracts", "avg_price", "price", "value", "pnl", "closes")
-TRADE = ("t", "ticker", "title", "side", "action", "contracts", "price", "pnl")
-CAPS = {"positions": 60, "trades": 40, "days": 120}
+MAX_BYTES = kit.MAX_BYTES
+EVERY_S = kit.EVERY_S
+KEEPALIVE_S = kit.KEEPALIVE_S
+TOP, NUM, POS, TRADE, STRAT, CAPS = kit.TOP, kit.NUM, kit.POS, kit.TRADE, kit.STRAT, kit.CAPS
+SAMPLE, SAMPLE_V2 = kit.SAMPLE, kit.SAMPLE_V2
+ReadOnlyError, ApiError = kit.ReadOnlyError, kit.ApiError
 
 
-def _num(v):
-    try:
-        f = float(v)
-        return round(f, 4) if f == f and abs(f) != float("inf") else None
-    except (TypeError, ValueError):
-        return None
-
-
-def _txt(v, n=160):
-    return None if v is None else str(v)[:n]
-
-
-def _row(r, keys):
-    if not isinstance(r, dict):
-        return None
-    out = {}
-    for k in keys:
-        v = r.get(k)
-        if v is None:
-            continue
-        out[k] = _num(v) if k in ("contracts", "avg_price", "price", "value", "pnl", "t") else _txt(v)
-    return out or None
-
-
-def clean(raw: dict, now: float | None = None) -> dict:
-    """The status file -> kalshi.json: only the contract's keys, numbers as numbers, lists capped, secrets dropped, paths
-    redacted. Never raises on junk (returns a card with an error note instead)."""
-    now = float(now or time.time())
-    try:
-        src = lp.scrub(raw if isinstance(raw, dict) else {})
-        out = {"v": 1, "kind": "kalshi"}
-        for k in TOP:
-            v = src.get(k)
-            if k == "running":
-                out[k] = None if v is None else bool(v)
-            elif k == "t":
-                out[k] = int(_num(v) or now)
-            elif k in NUM:
-                out[k] = _num(v)
-            else:
-                out[k] = _txt(v)
-        out["positions"] = [x for x in (_row(r, POS) for r in (src.get("positions") or [])[:CAPS["positions"]]) if x]
-        out["trades"] = [x for x in (_row(r, TRADE) for r in (src.get("trades") or [])[:CAPS["trades"]]) if x]
-        days = []
-        for d in (src.get("days") or [])[-CAPS["days"]:]:
-            if isinstance(d, (list, tuple)) and len(d) >= 2 and _num(d[1]) is not None:
-                days.append([_txt(d[0], 10), _num(d[1])])
-            elif isinstance(d, dict) and _num(d.get("pnl")) is not None:
-                days.append([_txt(d.get("day") or d.get("date"), 10), _num(d.get("pnl"))])
-        out["days"] = days
-        out["pub_t"] = int(now)
-        return out
-    except Exception as e:
-        return {"v": 1, "kind": "kalshi", "t": int(now), "pub_t": int(now), "running": None,
-                "note": f"status file could not be read: {e.__class__.__name__}", "positions": [], "trades": [], "days": []}
+def clean(raw: dict, now: float | None = None, phrases=()) -> dict:
+    """The status -> kalshi.json: only the contract's keys (v1, plus v2 `strategies` / `equity` when given), numbers as
+    numbers, lists capped, secrets dropped, paths redacted. Never raises on junk."""
+    return kit.clean(raw, now, phrases)
 
 
 def read(src: str, now: float | None = None) -> tuple[dict | None, str | None]:
     """(kalshi.json payload, error). The status file's own "t" is when the Kalshi bot wrote it (else the file's time)."""
-    try:
-        with open(src, encoding="utf-8") as fh:
-            raw = json.load(fh)
-    except FileNotFoundError:
-        return None, "status file not found"
-    except Exception as e:
-        return None, f"status file is not JSON: {e.__class__.__name__}"
-    if not isinstance(raw, dict):
-        return None, "status file is not a JSON object"
-    if raw.get("t") is None:
-        try:
-            raw = {**raw, "t": int(os.path.getmtime(src))}
-        except OSError:
-            pass
-    p = clean(raw, now)
-    size = len(json.dumps(p, separators=(",", ":"), default=str).encode("utf-8"))
-    while size > MAX_BYTES and (p["trades"] or p["days"] or p["positions"]):
-        for k in ("trades", "days", "positions"):
-            if p[k]:
-                p[k] = p[k][: len(p[k]) // 2]
-                break
-        size = len(json.dumps(p, separators=(",", ":"), default=str).encode("utf-8"))
-    return p, None
+    return kit.read(src, now, max_bytes=MAX_BYTES)
 
 
 def push_once(src: str, url: str | None = None, git_dir: str = SCRATCH, push_fn=None, now: float | None = None) -> dict:
@@ -155,45 +110,28 @@ def loop(src: str, every: float = EVERY_S, keepalive: float = KEEPALIVE_S, log=p
         sleep(every)
 
 
-SAMPLE = {
-    "name": "Kalshi bot", "mode": "paper", "running": True, "status": "Watching 12 markets", "t": 1793548800,
-    "balance": 512.34, "today_pnl": 18.5, "week_pnl": 42.1, "total_pnl": 112.34,
-    "positions": [{"ticker": "KXHIGHNY-26NOV02-B58.5", "title": "NYC high 58-59°F on Nov 2", "side": "yes", "contracts": 10,
-                   "avg_price": 0.42, "price": 0.55, "value": 5.5, "pnl": 1.3, "closes": "2026-11-02T23:59:00Z"}],
-    "trades": [{"t": 1793545200, "ticker": "KXHIGHNY-26NOV02-B58.5", "title": "NYC high 58-59°F on Nov 2", "side": "yes",
-                "action": "buy", "contracts": 10, "price": 0.42, "pnl": None}],
-    "days": [["2026-10-30", 12.4], ["2026-10-31", -3.1], ["2026-11-01", 18.5]],
-}
+# ---------------------------------------------------------------------------------------------------- the Kalshi account
+def api_payload(client, now: float | None = None, cache: dict | None = None, name: str = "Kalshi bot") -> dict:
+    """The account, read-only (GET balance / positions / fills / settlements / markets) -> the kalshi.json payload."""
+    return kit.api_payload(client, now=now, cache=cache, name=name, max_bytes=MAX_BYTES)
+
+
+def push_payload(p: dict, url: str | None = None, git_dir: str = SCRATCH, prune: bool = True, push_fn=None) -> dict:
+    url = url or lp.target_url()
+    return (push_fn or lp.push)(p, url, branch=BRANCH, git_dir=git_dir, prune=prune, file=FILE)
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description="Publish the Kalshi bot's status file to the phone (Jarvis).")
-    ap.add_argument("--src", default=os.environ.get("LE_KALSHI_SRC"), help="the Kalshi bot's status JSON file")
-    g = ap.add_mutually_exclusive_group()
-    g.add_argument("--once", action="store_true")
-    g.add_argument("--loop", action="store_true")
-    g.add_argument("--sample", action="store_true")
-    g.add_argument("--check", action="store_true", help="show what would be published (no push)")
-    a = ap.parse_args(argv)
-    if a.sample:
-        print(json.dumps(SAMPLE, indent=2, ensure_ascii=False))
-        return 0
-    if not a.src:
-        print("give --src <the Kalshi bot's status file> (or set LE_KALSHI_SRC)")
-        return 2
-    if a.check:
-        p, err = read(a.src)
-        print(err or json.dumps(p, indent=2, ensure_ascii=False))
-        return 1 if err else 0
-    if a.loop:
-        loop(a.src)
-        return 0
-    r = push_once(a.src)
-    print(json.dumps(r))
-    if r.get("ok"):
-        print("phone reads it at:", f"https://raw.githubusercontent.com/{lp.owner_of(lp.target_url()) or 'demetrades2000-coder'}"
-              f"/{lp.PAGES_REPO}/{BRANCH}/{FILE}")
-    return 0 if r.get("ok") else 1
+    """The kit's command line (same flags), pushing with engine/live_publish.push from data/kalshi_pub.git."""
+    a, _ = kit.parser(prog="python -m engine.kalshi_publish").parse_known_args(argv)
+    url = a.repo or lp.target_url()
+    git_dir = a.git_dir or SCRATCH
+
+    def push_fn(p, prune=False):
+        return push_payload(p, url, git_dir=git_dir, prune=prune)
+
+    return kit.main(argv, push_fn=push_fn, prog="python -m engine.kalshi_publish",
+                    defaults={"src": os.environ.get("LE_KALSHI_SRC"), "git_dir": git_dir, "repo": url})
 
 
 if __name__ == "__main__":
