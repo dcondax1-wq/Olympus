@@ -1,9 +1,9 @@
 diff --git a/planner/docs/features-power.md b/planner/docs/features-power.md
 new file mode 100644
-index 0000000..6bd347c
+index 0000000..e599802
 --- /dev/null
 +++ b/planner/docs/features-power.md
-@@ -0,0 +1,36 @@
+@@ -0,0 +1,37 @@
 +# Power features: Now and next, Catch up, smarter quick add, weekly review reminder
 +
 +Plain text for the Help sheet and README (merge by hand).
@@ -35,6 +35,7 @@ index 0000000..6bd347c
 +
 +## Notes for the lead (not for the Help sheet)
 +- Code: `planner/ext-power.js`, loaded by one `<script src="ext-power.js">` in `<head>`. It waits for the `planner:ready` event fired by the **EXT API** block in `index.html` (`window.PlannerAPI`: the app's own helpers, read-only access to `S` through a getter). Nothing else in `index.html` changed.
++- Security: colors are written into `style=""`, so only a plain hex color (`/^#[0-9a-f]{3,8}$/i`) is ever used. A bot file's event color is checked where bot files are read (`buildBotEvents` in `index.html`; anything else becomes '' and the event takes its type's color), and the strip checks every color again (a bad one falls back to the type's color, then grey). A script-carrying or numeric color can no longer inject markup or crash a view (tested in `power.test.js`).
 +- Data: no new synced collection and no new field in `planner.v1`. Changes to tasks, events and bills go through `commit()` after `snapshot()`, exactly like the app's own sheets (sync stamps, tombstones and Undo all work). The only new key is the device-only `planner.power.skip` ({ task id: hidden until ms }).
 +- Today cards `pwnow` (tier Today, above Schedule), `pwreview` (tier Today, Friday 3pm to Monday only) and `pwcatch` (tier Needs you now, soft label "Overdue", so the "N things need you" count is unchanged) are added to `TO_CARDS`, so Customize Today can hide and move them. Tiles `pwnow` and `pwcatch` (group Calendar) in `HB_TOOLS`, commands `px-now` and `px-catch` in `PK_CMDS`.
 +- Pure helpers on `window.__pw`: `review(today)` ({ ws, done, streak }), `parse(text, today)` (null = left to the app's `qcParse` / `addTask`), `label`, `spread(tasks, days, perDay)`, `pick(tasks, { today, minutes, skip, now })`, `day(key, nowMin)`, `caps(today, n)`, `rangeOf(text)`.
