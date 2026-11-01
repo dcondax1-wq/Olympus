@@ -145,7 +145,7 @@
       sort: SORTS.some((r) => r[0] === u.sort) ? u.sort : 'closes',
       side: SIDES.indexOf(u.side) >= 0 ? u.side : 'all',
     },
-    q: '', trShown: TR_PAGE, cal: '', calSel: '', calGr: '', open: new Set(), scrub: false, pend: false, chart: null, series: null, v: null, pos: [],
+    preview: false, q: '', trShown: TR_PAGE, cal: '', calSel: '', calGr: '', open: new Set(), scrub: false, pend: false, chart: null, series: null, v: null, pos: [],
   };
   const saveUi = () => LS.set('kalshi.ui', S.ui);
   const cached = LS.get('kalshi.last', null);
@@ -173,6 +173,7 @@
     S.at = Date.now();
     busyUi();                                                // the spinner stops even when the drawing waits (render below)
     if (st === 'ok') {
+      if (S.preview) { S.preview = false; S.raw = ''; }       // real data: the sample preview is over for good
       const raw = JSON.stringify(j), same = raw === S.raw && S.state === 'ok';
       S.k = j; S.raw = raw; S.state = 'ok';
       LS.set('kalshi.last', j);
@@ -219,6 +220,7 @@
 
   // ------------------------------------------------------------------ sections
   function subHtml() {
+    if (previewing()) return '<span class="pill warn" id="pill">Preview</span><span class="ago">sample data, not your account</span>';
     if (S.state === 'waiting') return 'Not connected yet';
     const k = S.k;
     if (!k) return S.state === 'error' ? 'Could not reach the Kalshi feed' : 'Loading…';
@@ -580,15 +582,63 @@
     return `<section class="card" id="sec-tr"><div class="card-h"><h2>Recent trades</h2><span class="r muted">${shown} of ${n}</span></div><ul class="rows" id="trList">${out.join('')}</ul>${more}</section>`;
   }
 
+  // ---- preview while not connected (owner can't see his dashboard until the bot's chat finishes the setup): a built-in sample
+  // in the real bot's shape. Built on every draw, never kept: not in S.k / S.raw, not the offline copy, not in any cache; real
+  // data (or a real copy on this phone) ends it and hides the button.
+  const previewing = () => S.preview && !S.k && S.state !== 'ok';
+  function sample() {
+    const now = Math.floor(Date.now() / 1000), today = dayKey(now) || '2026-11-01', p = pd(today);
+    let seed = 20261101;
+    const rnd = () => { seed = (seed * 48271) % 2147483647; return seed / 2147483647; };
+    const r2 = (x) => Math.round(x * 100) / 100;
+    const trades = [];
+    let t = now - 240;
+    for (let i = 0; i < 16; i++) {
+      const close = Math.ceil((t + 60) / 900) * 900, c = i % 7 === 3 ? 'BTCD' : i % 11 === 6 ? 'GOLD' : ['ETH', 'BTC', 'HYPE'][i % 3];
+      const n = 10 + Math.floor(rnd() * 10), price = r2(95.5 + rnd() * 2) / 100, win = rnd() < 0.9;
+      const title = c === 'BTCD' ? `Bitcoin above $80,500 at ${ff(F.time, Math.ceil(close / 3600) * 3600)} ET ${ff(F.md, close)}` : c === 'GOLD' ? 'Gold 5 PM close'
+        : `${c} up or down · 15 min to ${ff(F.time, close)} ET ${ff(F.md, close)}`;
+      trades.push({ t, ticker: `KX${c}${c === 'BTCD' || c === 'GOLD' ? '' : '15M'}-SAMPLE-${i + 1}`, title, side: c === 'BTCD' || c === 'GOLD' ? (rnd() < 0.7 ? 'yes' : 'no') : rnd() < 0.6 ? 'UP' : 'DOWN',
+        action: 'buy', contracts: n, price, pnl: i === 0 ? null : r2(win ? n * (1 - price) - 0.02 * n : -n * price - 0.02 * n) });
+      t -= 1500 + Math.floor(rnd() * 1800);
+    }
+    const todayPnl = r2(sum(trades.filter((x) => x.pnl != null && dayKey(x.t) === today).map((x) => x.pnl)));
+    const days = [];
+    for (let i = 29; i >= 1; i--) days.push([new Date(Date.UTC(p.y, p.m - 1, p.d - i)).toISOString().slice(0, 10), r2(-6 + rnd() * 9.5)]);
+    days.push([today, todayPnl]);
+    const equity = [];
+    let bal = 67.1;
+    for (let i = 96; i >= 1; i--) { bal = r2(Math.max(64, bal + (rnd() - 0.47) * 0.5)); equity.push([now - i * 900, bal]); }
+    equity.push([now, 68.12]);
+    const first = trades[0];
+    return {
+      v: 1, kind: 'kalshi', name: 'Sample bot', mode: 'live', running: true, t: now - 30, pub_t: now - 20, balance: 68.12,
+      status: 'Sample · 3 live strategies · 1 open bet', note: 'Sample data, not your account',
+      today_pnl: todayPnl, week_pnl: -6.4, total_pnl: -14.45,
+      positions: [{ ticker: first.ticker, title: first.title, side: first.side, contracts: first.contracts, avg_price: first.price,
+        value: r2(first.contracts * first.price), closes: new Date((Math.ceil((now + 60) / 900) * 900) * 1000).toISOString() }],
+      trades, days, equity,
+      strategies: [
+        { name: '15-min favourites', mode: 'live', running: true, today_pnl: r2(todayPnl - 0.41), total_pnl: -21.37, trades: 612, wins: 571, losses: 41 },
+        { name: 'Late favourite (BTC hourly)', mode: 'live', running: true, today_pnl: 0.41, total_pnl: 5.12, trades: 48, wins: 45, losses: 3 },
+        { name: 'Gold 5 PM', mode: 'live', running: true, today_pnl: 0, total_pnl: 1.8, trades: 9, wins: 8, losses: 1 },
+      ],
+    };
+  }
+  const previewBar = () => '<div class="note sample" id="previewBar" role="status"><p><b>Sample data, not your account</b>'
+    + '<span>How this page looks once your bot is connected.</span></p><button type="button" class="btn ghost" data-act="exit-preview">Exit preview</button></div>';
+
   // ---- waiting / error / loading
   const waitHtml = () => '<section class="card wait"><h2>Connect your Kalshi bot</h2><p>Your Kalshi bot runs on its own server. One paste in its own chat connects it to Jarvis:</p>'
     + `<code id="step">${esc(STEP)}</code><div class="wait-a"><button type="button" class="btn" data-act="copy">Copy the message</button><span class="muted" id="copied" role="status"></span></div>`
-    + '<p class="muted">After that it sends its numbers here every minute, by itself.</p></section>';
+    + '<p class="muted">After that it sends its numbers here every minute, by itself.</p>'
+    + (S.k ? '' : '<button type="button" class="quiet" data-act="preview">Preview with sample data</button>') + '</section>';
   const errHtml = () => `<section class="card err"><p class="muted">No connection to the Kalshi feed right now${navigator.onLine === false ? ' (this phone is offline)' : ''}. Tap Refresh to try again.</p>`
     + '<div><button type="button" class="btn ghost" data-act="retry">Try again</button></div></section>';
   const skelHtml = () => '<div class="sk sk1" aria-hidden="true"></div><div class="sk sk2" aria-hidden="true"></div><div class="sk sk3" aria-hidden="true"></div>';
 
   function footHtml() {
+    if (previewing()) return 'Sample data for the preview, not your account: none of these numbers are real.';
     const k = S.k;
     if (!k || S.state === 'waiting') return 'Read-only. The Kalshi bot runs on its own server.';
     const pt = parseT(k.pub_t);
@@ -615,12 +665,13 @@
     try { sel = fid && typeof ae.selectionStart === 'number' ? [ae.selectionStart, ae.selectionEnd] : null; } catch (_) { sel = null; }
     $('#sub').innerHTML = subHtml();
     let html;
-    if (S.state === 'waiting') html = waitHtml();
-    else if (!S.k) html = S.state === 'error' ? errHtml() : skelHtml();
+    const pv = previewing();
+    if (S.state === 'waiting' && !pv) html = waitHtml();
+    else if (!S.k && !pv) html = S.state === 'error' ? errHtml() : skelHtml();
     else {
-      const k = S.k, v = norm(k);
+      const k = pv ? sample() : S.k, v = norm(k);
       S.v = v;
-      html = [notesHtml(k), safe('balance', () => heroHtml(k, v)), safe('equity', () => eqHtml(v)), safe('open bets', () => posHtml(v)),
+      html = [pv ? previewBar() : notesHtml(k), safe('balance', () => heroHtml(k, v)), safe('equity', () => eqHtml(v)), safe('open bets', () => posHtml(v)),
         safe('strategies', () => stratHtml(v)), safe('daily P&L', () => barsHtml(v)), safe('calendar', () => calHtml(v)),
         safe('stats', () => statsHtml(v)), safe('trades', () => tradesHtml(v))].join('');
     }
@@ -630,7 +681,7 @@
     if (data) S.intro = false;
     body.innerHTML = html;
     body.setAttribute('aria-busy', !S.k && S.state === 'loading' ? 'true' : 'false');
-    body.setAttribute('data-state', S.state === 'waiting' ? 'waiting' : !S.k ? S.state : S.state === 'error' ? 'offline' : S.label === 'Not updating' && S.state === 'ok' ? 'stale' : S.state === 'loading' ? 'loading' : 'ok');
+    body.setAttribute('data-state', pv ? 'preview' : S.state === 'waiting' ? 'waiting' : !S.k ? S.state : S.state === 'error' ? 'offline' : S.label === 'Not updating' && S.state === 'ok' ? 'stale' : S.state === 'loading' ? 'loading' : 'ok');
     const foot = $('#foot');
     if (foot) foot.innerHTML = footHtml();
     bindChart();
@@ -697,6 +748,14 @@
       if (r && S.v) r.innerHTML = calRead(new Map(S.v.days));
     } else if (a === 'retry') load();
     else if (a === 'copy') copyStep();
+    else if (a === 'preview' || a === 'exit-preview') {
+      S.preview = a === 'preview' && !S.k;
+      S.cal = ''; S.calSel = ''; S.trShown = TR_PAGE; S.q = '';
+      render();
+      try { window.scrollTo(0, 0); } catch (_) { /* old browser */ }
+      const f = $(S.preview ? '#previewBar button' : '[data-act="preview"]');
+      if (f) f.focus({ preventScroll: true });
+    }
   });
   document.addEventListener('change', (e) => {
     if (e.target && e.target.id === 'posSort') { S.ui.sort = SORTS.some((s) => s[0] === e.target.value) ? e.target.value : 'closes'; saveUi(); const l = $('#posList'); if (l) l.innerHTML = posRows(); }

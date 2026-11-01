@@ -6,7 +6,8 @@ connection / later, and checks:
   a. the files and the static rules (no CDN, fonts only self-hosted, Safari-16-safe script, inputs >= 16px, reduced motion,
      safe areas, the old Jarvis look and its eclipse / reactor themes)
   b. waiting (404 from the feed's own repo, demetrades2000-coder/kalshi-feed): the "Connect your Kalshi bot" card with the
-     one step for the bot's own chat (#step inside #body), Copy; raw first, then the GitHub API, no other address
+     one step for the bot's own chat (#step inside #body), Copy; raw first, then the GitHub API, no other address; the
+     preview with sample data (every section, the SAMPLE banner, Exit preview, never kept, gone once real data exists)
   c. the publisher's own sample through clean(): KPI header, curve from the days, daily bars (one per day), calendar, stats,
      the open position (side tag, "10 × 42¢ → 55¢", countdown), the trade
   d. the real bot (spec kalshi_bot.md section 7 mapping): LIVE · real money, cents everywhere, 0 open bets, trades grouped by
@@ -401,6 +402,55 @@ def run_browser(url, tmp):
         check("b. Copy puts just the message to paste on the clipboard", p.inner_text("#copied") == "Copied" and clip == PASTE, (p.inner_text("#copied"), clip))
         shot(p, "1_waiting")
 
+        # ---- b. the preview while not connected: the whole dashboard from a built-in sample, clearly marked, never kept
+        check("b. a quiet 'Preview with sample data' under the step", p.locator("#body .wait [data-act=preview]").inner_text() == "Preview with sample data"
+              and p.evaluate("(() => { const s = document.getElementById('step'), b = document.querySelector('[data-act=preview]'); "
+                             "return !!(s.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING); })()"))
+        p.click("[data-act=preview]")
+        bt = p.locator("#body").text_content()
+        secs = {s_: p.locator(s_).count() for s_ in ("#sec-kpi", "#sec-eq", "#sec-pos", "#sec-strat", "#sec-days", "#sec-cal", "#sec-stats", "#sec-tr")}
+        check("b. preview: every section from the sample, marked SAMPLE DATA, not your account, with Exit preview",
+              p.get_attribute("#body", "data-state") == "preview" and all(v_ == 1 for v_ in secs.values()) and "Sample data, not your account" in p.locator("#previewBar").text_content()
+              and p.locator("#previewBar [data-act=exit-preview]").inner_text().upper() == "EXIT PREVIEW" and "could not be shown" not in bt, (secs, bt[:200]))
+        kpi = p.locator("#sec-kpi").text_content()
+        bal = re.search(r"\$(\d+\.\d\d)", kpi)
+        tags = {t_.inner_text() for t_ in p.locator("#trList .tag").all()}
+        check("b. preview in the real bot's shape: balance about $68, 3 strategies, 24 h of equity, UP / DOWN trades, 0-1 open bets",
+              bal and 60 <= float(bal.group(1)) <= 75 and p.locator("#sec-strat tbody tr").count() == 3 and "last 24 h" in p.inner_text("#eqRead")
+              and {"UP", "DOWN"} <= tags and p.locator("#posList > li.pos").count() <= 1, (kpi[:120], tags))
+        check("b. preview: never the LIVE · real money badge; the header says Preview", p.locator("#mode").count() == 0 and "PREVIEW" in p.inner_text("#sub").upper()
+              and "not your account" in p.inner_text("#foot"))
+        p.evaluate("window.scrollTo(0, document.documentElement.scrollHeight)")
+        p.wait_for_timeout(150)
+        bb = p.locator("#previewBar").bounding_box()
+        check("b. the SAMPLE banner stays on screen while scrolling", bb and 0 <= bb["y"] <= 60, bb)
+        shot(p, "1b_preview")
+        check("b. the preview is never kept: no saved copy on the phone", p.evaluate("localStorage.getItem('kalshi.last')") is None)
+        p.click("#previewBar [data-act=exit-preview]")
+        check("b. Exit preview: back to the Connect card, step unchanged", p.get_attribute("#body", "data-state") == "waiting"
+              and "Connect your Kalshi bot" in p.locator("#body").text_content() and p.locator("#body #step").inner_text() == STEP and p.locator("#previewBar").count() == 0)
+        p.click("[data-act=preview]")
+        FEED["mode"] = "abort"                                  # no connection while previewing: still not kept as an offline copy
+        p.reload()
+        ready(p)
+        check("b. the preview is not the offline copy: no connection after a preview = 'No connection', not the sample",
+              p.get_attribute("#body", "data-state") == "error" and "No connection" in text(p) and p.evaluate("localStorage.getItem('kalshi.last')") is None)
+        FEED["mode"] = "404"
+        p.reload()
+        ready(p)
+        p.click("[data-act=preview]")
+        FEED["mode"], FEED["j"] = "ok", sample(time.time())
+        p.click("#refresh")
+        ready(p)
+        check("b. real data arrives during a preview: the real numbers, the banner gone for good",
+              p.get_attribute("#body", "data-state") == "ok" and p.locator("#previewBar").count() == 0 and "$512.34" in text(p)
+              and json.loads(p.evaluate("localStorage.getItem('kalshi.last')"))["balance"] == 512.34)
+        FEED["mode"] = "404"
+        p.reload()
+        ready(p)
+        check("b. once real data has existed on this phone: the waiting card has no preview button", p.get_attribute("#body", "data-state") == "waiting"
+              and p.locator("[data-act=preview]").count() == 0)
+
         # ---- c. the publisher's sample (contract v1, through the real clean())
         open_("ok", sample(time.time()))
         body = p.locator("#body").text_content()
@@ -752,7 +802,12 @@ def run_browser(url, tmp):
         p.wait_for_function("document.documentElement.getAttribute('data-theme') === 'eclipse'", timeout=3000)
         check("h. Jarvis switching its theme switches this page live", p.get_attribute("html", "data-theme") == "eclipse")
 
-        # ---- i. phone widths
+        # ---- i. phone widths (the preview too)
+        p.set_viewport_size({"width": 375, "height": 844})
+        open_("404")
+        p.click("[data-act=preview]")
+        m = p.evaluate("[document.documentElement.scrollWidth, document.documentElement.clientWidth, document.getElementById('previewBar').getBoundingClientRect().right, window.innerWidth]")
+        check("i. 375px preview: no sideways scroll, the banner inside the gutters", m[0] <= m[1] and m[2] <= m[3] - 15.5, m)
         for wdt in (375, 390, 430):
             p.set_viewport_size({"width": wdt, "height": 844})
             for name, payload in (("wide", wide(time.time(), long_text=True)), ("real bot", realbot(time.time())[0])):
