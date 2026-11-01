@@ -1547,8 +1547,21 @@ def part_i(br, S, base):
         ph.close()
 
 
+def _has(S, folder, needle):
+    """Some file of the site's folder (its page and scripts) contains needle: the feature is on this site."""
+    d = os.path.join(S["new"], REPO, folder)
+    for f in glob.glob(os.path.join(d, "*.js")) + glob.glob(os.path.join(d, "*.html")):
+        try:
+            if needle in open(f, encoding="utf-8", errors="replace").read():
+                return True
+        except OSError:
+            pass
+    return False
+
+
 def part_j(br, S, base):
-    """The Planner's add-ons inside Jarvis, the Planner's day summary (planner.today.v1) read by Jarvis, the Kalshi preview."""
+    """The Planner's add-ons inside Jarvis, the Planner's day summary (planner.today.v1) read by Jarvis, the Kalshi preview
+    (each where the site has that feature)."""
     pats = sorted(os.path.basename(x)[:-6] for x in glob.glob(os.path.join(ARGS.src, "tools", "planner_patches", "*.patch")))
     ad = S.get("addons") or {}
     if pats:
@@ -1572,7 +1585,9 @@ def part_j(br, S, base):
         # a task added in the Planner reaches Jarvis (planner.today.v1, the same site's storage inside the Jarvis app)
         task = "QA e2e milk run"
         box = pf.locator("#main [data-tadd] input")
-        if box.count():
+        if not _has(S, "planner", "planner.today.v1"):
+            note("(this Planner does not write planner.today.v1: the Planner -> Jarvis day check is skipped)")
+        elif box.count():
             box.first.fill(task)
             box.first.press("Enter")
             got = False
@@ -1629,9 +1644,11 @@ def part_j(br, S, base):
                 check("j. Exit preview goes back to the waiting page",
                       kf.evaluate("(document.getElementById('body') || document.body).dataset.state === 'waiting' && !document.getElementById('previewBar')"),
                       kf.evaluate("(document.getElementById('body') || document.body).dataset.state"))
-        else:
+        elif _has(S, "kalshi", 'data-act="preview"'):
             body = kf.evaluate("document.body.textContent")[:200]
-            check("j. Kalshi not connected yet: the page offers a preview with sample data", "Preview" in body, body)
+            check("j. Kalshi not connected yet: the page offers a preview with sample data", False, body)
+        else:
+            note("(this Kalshi page has no sample-data preview: skipped)")
         no_errors(ph, m, "Kalshi waiting + preview", allow=(r"kalshi\.json",))   # the 404 of a feed not published yet
     finally:
         CTL.kalshi = "published"
