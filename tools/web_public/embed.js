@@ -286,7 +286,7 @@ html[data-jarvis="on"] #moInst,html[data-jarvis="on"] #pushPrompt{display:none!i
   const layoutSoon = () => { clearTimeout(lT); lT = setTimeout(() => layout(false), 140); };
   addEventListener('resize', layoutSoon);
   let SHOWN = true;
-  setInterval(() => { if (SHOWN) layout(false); }, 700);
+  setInterval(() => { if (!document.hidden) layout(false); }, 700);     // a layer opening or closing (hidden: nothing to do)
 
   // ---- hidden while Jarvis mode shows: a backgrounded app (the 3D scene, the polling and the timers that check
   // document.hidden stop; shown again = visibilitychange, so the data refreshes like an app brought back)

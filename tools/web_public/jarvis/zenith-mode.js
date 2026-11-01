@@ -5,7 +5,7 @@
 // and route are kept.
 //
 //   import { mountZenithMode } from './zenith-mode.js';
-//   const zm = mountZenithMode({ host, onExit });      // host: an element of the Jarvis page (keep it in the layout)
+//   const zm = mountZenithMode({ host, onExit });      // host: the Jarvis page's element for Zenith mode (e.g. #zen)
 //   zm.show('#/blitz');  zm.show();  zm.hide();  zm.isActive();
 //
 //   mountZenithMode(opts) -> { show(route?), hide(), isActive(), open(route), state(), unload(), destroy(), frame }
@@ -22,8 +22,9 @@
 //   open(route) moves Zenith without showing it; unload() lets the frame go (iPhone memory: one dashboard at a time) and
 //   the next show() loads it again at the route it had; destroy() removes everything (listeners included).
 //   For the hub: call show() for the Zenith chip / card / brain, hide() whenever another view takes the screen (onExit
-//   is the owner leaving by himself), and keep host in the page while Zenith is loaded (display:none on it would
-//   squash the frame to 0 x 0: Zenith would redraw and lose its scroll). Hidden, Zenith is paused but alive.
+//   is the owner leaving by himself). host may be hidden between shows (hidden / display:none): the layer is
+//   position:fixed, lifted above the hub's own stacking while it shows, and Zenith gets its scroll back. Hidden, Zenith
+//   is paused like a backgrounded app but stays loaded; unload() (or destroy()) is how the hub frees it.
 //   zenithRouteFor(text) maps spoken words to a Zenith route for Jarvis's brain: "open BLITZ" -> '#/blitz',
 //   "atlas trades" -> '#/atlas/trades', "holodeck" -> '#/holo', null when nothing matches.
 //   CSS hooks on the Jarvis page: --zm-z (the layer's z-index, default 2147483000) and --zm-safe-top / -right / -bottom /
@@ -57,7 +58,7 @@
 
 const NS_J = 'le-jarvis', NS_Z = 'le-zenith', V = 1;
 const ROUTE_RX = /^#\/[\w\-/:.%,]*$/;
-const KEY_ROUTE = 'jarvis.zenith.route', KEY_DOCK = 'jarvis.zenith.dock';
+const KEY_ROUTE = 'jarvis.zenith.route', KEY_DOCK = 'jarvis.zenith.dock', KEY_TIP = 'jarvis.zenith.tips';
 const CH = 48;                         // the control's height (hit area 44 x 48)
 const IDLE_MS = 2600;
 
@@ -120,6 +121,11 @@ const CSS = `
 .zm-back.cov{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s ease,visibility 0s linear .2s}
 .zm-back:focus{outline:none}.zm-back:focus-visible .zm-pill{outline:2px solid rgba(255,255,255,.75);outline-offset:2px}
 .zm-back:active .zm-orb{transform:scale(.9)}
+.zm-tip{position:absolute;top:50%;right:42px;transform:translate(6px,-50%);padding:7px 11px;border-radius:11px;background:rgba(16,16,20,.92);
+  border:1px solid rgba(255,255,255,.16);color:#f4f4f6;font:600 13px/1.2 -apple-system,system-ui,sans-serif;white-space:nowrap;pointer-events:none;
+  opacity:0;transition:opacity .25s ease,transform .25s ease;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.zm-back.left .zm-tip{right:auto;left:42px;transform:translate(-6px,-50%)}
+.zm-back.tip .zm-tip{opacity:1;transform:translate(0,-50%)}
 @media (prefers-reduced-motion:reduce){.zm-root,.zm-back{transition:none!important}}
 html.zm-on,html.zm-on body{overscroll-behavior:none}
 `;
@@ -150,13 +156,13 @@ export function mountZenithMode(opts = {}) {
   const btn = doc.createElement('button');
   btn.type = 'button'; btn.className = 'zm-back';
   btn.setAttribute('aria-label', 'Back to Jarvis'); btn.title = 'Back to Jarvis';
-  btn.innerHTML = '<span class="zm-pill"><span class="zm-orb"></span></span>';
+  btn.innerHTML = '<span class="zm-pill"><span class="zm-orb"></span></span><span class="zm-tip" aria-hidden="true">Back to Jarvis</span>';
   root.appendChild(btn);
   host.appendChild(root);
 
   const st = {
     active: false, ready: false, legacy: false, frame: null, route: (SS && store.get(SS, KEY_ROUTE, null)) || null, title: '', badge: 0,
-    pending: null, layout: null, cover: false, lifted: null, portal: false, dock: { side: 'right', f: 0.6, ...((LS && store.get(LS, KEY_DOCK, null)) || {}) }, theme: null, idleT: 0, loadT: 0,
+    pending: null, layout: null, cover: false, lifted: null, portal: false, tipT: 0, dock: { side: 'right', f: 0.6, ...((LS && store.get(LS, KEY_DOCK, null)) || {}) }, theme: null, idleT: 0, loadT: 0,
   };
   if (st.route && !normRoute(st.route)) st.route = null;
   if (st.dock.side !== 'left') st.dock.side = 'right';
@@ -303,6 +309,7 @@ export function mountZenithMode(opts = {}) {
   btn.addEventListener('pointerdown', (e) => {
     if (e.button > 0) return;
     wake();
+    btn.classList.remove('tip');
     const r = btn.getBoundingClientRect();
     drag = { id: e.pointerId, x0: e.clientX, y0: e.clientY, top: r.top, moved: false };
     dragged = false;
@@ -386,8 +393,17 @@ export function mountZenithMode(opts = {}) {
     sendInsets();
     place();
     wake();
+    tip();
     try { st.frame.focus({ preventScroll: true }); } catch (e) { /* fine */ }
     return api;
+  }
+  // the first three times Zenith mode opens on this phone, the control says what it does
+  function tip() {
+    const n = (LS && store.get(LS, KEY_TIP, 0)) || 0;
+    if (n >= 3 || st.tipT) return;
+    if (LS) store.set(LS, KEY_TIP, n + 1);
+    btn.classList.add('tip');
+    st.tipT = win.setTimeout(() => { btn.classList.remove('tip'); st.tipT = 0; }, 3200);
   }
   function hide() {
     if (!st.active) return api;
@@ -399,7 +415,7 @@ export function mountZenithMode(opts = {}) {
     lift(false);
     doc.documentElement.classList.remove('zm-on');
     const m = meta();
-    if (m && st.theme != null) m.setAttribute('content', st.theme);
+    if (m && st.theme != null && m.getAttribute('content') === '#07080c') m.setAttribute('content', st.theme);   // unless the hub changed it since
     st.theme = null;
     send('visible', { visible: false });
     emit();
@@ -435,7 +451,7 @@ export function mountZenithMode(opts = {}) {
       win.removeEventListener('resize', onResize);
       win.removeEventListener('orientationchange', onResize);
       if (swc) swc.removeEventListener('message', onSw);
-      win.clearTimeout(st.idleT); win.clearTimeout(st.loadT);
+      win.clearTimeout(st.idleT); win.clearTimeout(st.loadT); win.clearTimeout(st.tipT);
       root.remove();
       st.frame = null;
     },

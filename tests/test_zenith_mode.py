@@ -244,6 +244,8 @@ def run_browser(base, other_base):
         check("b. show(): Zenith full screen over the Jarvis bar (the hub's view lifted above it, one layer, aria-modal), the status bar tint follows Zenith",
               cov["active"] and cov["layer"] == "visible" and cov["top"] == "zm-frame" and cov["mid"] == "zm-frame" and cov["theme"] == "#07080c" and cov["modal"] == "true"
               and "2147483000" in cov["lift"] and pg.evaluate("() => !!document.querySelector('#zhost .zm-root iframe.zm-frame')"), cov)
+        tip = pg.evaluate("() => ({ n: localStorage.getItem('jarvis.zenith.tips'), t: document.querySelector('.zm-back .zm-tip').textContent, a: document.querySelector('.zm-back').getAttribute('aria-label') })")
+        check("c. the control says what it does: 'Back to Jarvis' (its label, and a hint the first three times)", tip == {"n": "1", "t": "Back to Jarvis", "a": "Back to Jarvis"}, tip)
         inside = z.evaluate("() => ({ dj: document.documentElement.dataset.jarvis, lej: window.LE_JARVIS, splash: !!document.getElementById('splash'), inst: !!document.querySelector('#moInst') && document.querySelector('#moInst').offsetParent !== null, prompt: !!document.querySelector('#pushPrompt') && document.querySelector('#pushPrompt').offsetParent !== null })")
         check("e. inside Jarvis Zenith knows it (data-jarvis, LE_JARVIS): no intro, no Add to Home Screen card, no notification prompt",
               inside["dj"] == "on" and inside["lej"] is True and not inside["splash"] and not inside["inst"] and not inside["prompt"], inside)
