@@ -946,6 +946,24 @@ def part_c(br, S, base, ph):
     go_home(p)
     check("c. back to Jarvis from Kalshi", p.evaluate(JARVIS_HOME))
     check("c. one dashboard view alive after Jarvis -> Zenith -> Planner -> Kalshi -> Jarvis", frames_alive(p) <= 1, frames_alive(p))
+    if m0 is not None:
+        # a Zenith notification tapped while Jarvis runs: Zenith's worker (sw.js v50+) posts {type: 'open', app: 'zenith', hash}
+        # to the Jarvis window; Jarvis should switch to Zenith mode at that notice
+        p.evaluate("navigator.serviceWorker.dispatchEvent(new MessageEvent('message', { data: { type: 'open', app: 'zenith', hash: '#/blitz' } }))")
+        ok = False
+        for _ in range(30):
+            if mode_of(p) == "zenith":
+                zfn, _k = zenith_view(p, 3000, ready=False)
+                if zfn and "#/blitz" in (_ev(zfn, "location.hash") or ""):
+                    ok = True
+                    break
+            p.wait_for_timeout(200)
+        check("c. a Zenith notification tapped while Jarvis is open: Zenith mode at that notice (#/blitz)", ok,
+              f"mode {mode_of(p)!r}")
+        try:
+            go_home(p)
+        except Exception:
+            pass
     no_errors(ph, m, "switching Jarvis / Zenith / Planner / Kalshi")
     return p
 
@@ -1011,10 +1029,16 @@ def part_e(br, S, base, ph):
         p = ph.page()
         cdp = ph.ctx.new_cdp_session(p)
         p.evaluate(f"setTimeout(() => {{ location.href = {json.dumps(jarvis_url(base))}; }}, 0)")
-        done, white, fr = watch(p, cdp, "slow Jarvis", lambda: p.evaluate(JARVIS_HOME), SLOW_S + 6)
-        note(f"slow network ({SLOW_S:.0f} s), Jarvis: on screen after {done and round(done, 1)} s, blank white until {white:.1f} s; {strip(fr)}")
-        check(f"e. slow network: Jarvis opens from its saved copy in under {lim:.1f} s (not after the site's {SLOW_S:.0f} s)",
-              done is not None and done < lim, done)
+        done, white, fr = watch(p, cdp, "slow Jarvis", lambda: p.evaluate("window.__qaReady !== undefined"), 2 * SLOW_S + 8)
+        fp = _ev(p, "Math.round((performance.getEntriesByName('first-contentful-paint')[0] || {}).startTime || 0)") or 0
+        ia = _ev(p, "Math.round(window.__qaReady || 0)") or 0
+        slowest = _ev(p, "performance.getEntriesByType('resource').filter((e) => e.name.includes('/jarvis/')).map((e) => "
+                         "[e.name.split('/jarvis/')[1].slice(0, 30), Math.round(e.startTime), Math.round(e.responseEnd)])") or []
+        note(f"slow network ({SLOW_S:.0f} s), Jarvis: first paint {fp} ms, interactive {ia} ms, blank white until {white:.1f} s; "
+             f"its own files (start, end ms): {slowest[:6]}; {strip(fr)}")
+        check(f"e. slow network: Jarvis paints from its saved copy in under {NAV_WAIT_S + 1:.1f} s (not after the site's {SLOW_S:.0f} s)",
+              0 < fp < (NAV_WAIT_S + 1) * 1000, f"first paint {fp} ms")
+        check(f"e. slow network: Jarvis is interactive from its saved copy in under {lim:.1f} s", 0 < ia < lim * 1000, f"interactive {ia} ms")
         if done:
             p.wait_for_timeout(300)
             not_white(p, "Jarvis on a slow network")
