@@ -1706,7 +1706,8 @@ def part_h(br, S, base):
         newtxt = open(os.path.join(S["new"], REPO, "jarvis", "index.html"), encoding="utf-8").read()
         ids_new = set(re.findall(r'\bid="([\w-]+)"', newtxt))
         ids_old = set(re.findall(r'\bid="([\w-]+)"', open(os.path.join(S["pub"], REPO, "jarvis", "index.html"), encoding="utf-8").read()))
-        only_new = sorted(ids_new - ids_old)
+        # ids only in the new page; the start note's (#boot*) go once Jarvis is up, so they cannot tell which page is shown
+        only_new = [i for i in sorted(ids_new - ids_old) if not i.startswith("boot")]
         if only_new:                                   # the old worker answers the page from the network: the new page at once
             check(f"h. the first reopen already shows the new Jarvis (#{only_new[0]})",
                   p.evaluate(f"!!document.getElementById({json.dumps(only_new[0])})"))
@@ -1759,7 +1760,9 @@ def part_h(br, S, base):
               scopes == sorted(["/", "jarvis/", "planner/"]) and not any(r["waiting"] or r["installing"] for r in after["regs"]),
               after["regs"])
         note("after the update: caches " + ", ".join(after["caches"]))
-        no_errors(ph, m, "the update")
+        # the fallback above opens manifest.webmanifest in a tab, and a tab showing a JSON file asks for /favicon.ico (a test
+        # artifact: every app page links its own icon)
+        no_errors(ph, m, "the update", allow=(r"/favicon\.ico$",))
         p.close()
         # offline after the update: the new copies answer
         CTL.set("down", BASE)

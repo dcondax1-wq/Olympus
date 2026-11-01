@@ -13,7 +13,12 @@
 // copy at once (stale-while-revalidate: the network refreshes them for next time), so a slow network never stacks one wait per
 // file (QA 2026-11-01: first paint 7 s instead of 3.6 s). A page fresh from the network gets fresh files (the same version),
 // falling back to the saved copy after NAV_WAIT_MS. Fonts and images always come from the saved copy first.
-const CACHE = 'jarvis-v4';
+// v5 (2026-11-01, "Jarvis isn't opening" on the iPhone): WebKit stops the old worker's downloads the moment a new worker takes
+// over, so a worker swap in the middle of a start cut off Jarvis's files (tested in WebKit: "Service Worker context closed").
+// A new worker now waits until Jarvis asks it to take over, which the page does only while it is out of sight
+// ('jarvis:activate'), or until Jarvis is closed. Its saved copy is fetched past the browser's HTTP cache (cache: 'reload'),
+// so it can never save the previous version's files.
+const CACHE = 'jarvis-v5';
 const NAV_WAIT_MS = 3500;
 const SHELL = ['./', './index.html', './manifest.webmanifest?v=j2', './apple-touch-icon.png?v=j2', './icon-192.png?v=j2', './icon-512.png?v=j2',
   './jarvis.css?v=j4', './data.js', './brain.js', './core-visual.js', './apps.js', './zenith-mode.js',
@@ -31,9 +36,10 @@ function pageFromCopy(e) {
   return f ? f === 'cache' : lastNav.from === 'cache' && Date.now() - lastNav.at < 30000;
 }
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => Promise.all(SHELL.map((u) => c.add(u).catch(() => null)))));
-  self.skipWaiting();
+  e.waitUntil(caches.open(CACHE).then((c) => Promise.all(SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null)))));
 });
+// the page asks while it is out of sight (or Jarvis is closed and the browser swaps it in by itself): never during a start
+self.addEventListener('message', (e) => { if (e.data === 'jarvis:activate') self.skipWaiting(); });
 self.addEventListener('activate', (e) => {
   e.waitUntil((async () => {
     // Old copies go only once the new one holds the page.
