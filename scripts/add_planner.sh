@@ -11,11 +11,13 @@
 # clone so one failure never undoes another). A patch that no longer applies (planner-backup moved on and a 3-way merge
 # fails) is skipped and logged: the Planner then publishes without that add-on, never half-patched.
 # planner/addons.json lists what was applied and skipped. PLANNER_REPO / PLANNER_PATCHES override the source (tests).
+# Confinement (security review 2026-11-01): a patch is applied only if every path it touches is under planner/ and it adds
+# no symlink or submodule; links in the copied folder are deleted (a link could point anywhere on the publish runner).
 site="${1:-site}"
 root="$(cd "$(dirname "$0")/.." && pwd)"
 repo="${PLANNER_REPO:-https://github.com/demetrades2000-coder/nq-dashboard.git}"
 patches="${PLANNER_PATCHES:-$root/tools/planner_patches}"
-tmp="$(mktemp -d 2>/dev/null || echo /tmp/planner_src)"
+tmp="$(mktemp -d 2>/dev/null)" || { echo "planner: no temp folder, publishing without it"; exit 0; }
 if git clone -q --depth 40 -b planner-backup "$repo" "$tmp/src" 2>/dev/null \
    && [ -f "$tmp/src/planner/index.html" ] && [ -f "$tmp/src/planner/sw.js" ]; then
   applied=""; skipped=""
@@ -23,6 +25,13 @@ if git clone -q --depth 40 -b planner-backup "$repo" "$tmp/src" 2>/dev/null \
   for p in "$patches"/*.patch; do
     [ -f "$p" ] || continue
     n="$(basename "$p" .patch)"
+    outside="$(g apply --numstat "$p" 2>/dev/null | cut -f3- | grep -v '^planner/' || true)"
+    links="$(g apply --summary "$p" 2>/dev/null | grep -E 'mode (120000|160000)' || true)"
+    if [ -n "$outside" ] || [ -n "$links" ] || ! g apply --numstat "$p" >/dev/null 2>&1; then
+      skipped="$skipped \"$n\","
+      echo "planner: add-on $n touches files outside planner/, adds a link or can't be read: skipped"
+      continue
+    fi
     if g apply --check "$p" 2>/dev/null && g apply "$p" 2>/dev/null; then
       g add -A && g commit -q -m "add-on $n" && applied="$applied \"$n\","
     elif g apply --3way "$p" >/dev/null 2>&1 && [ -z "$(g diff --name-only --diff-filter=U)" ]; then
@@ -37,6 +46,7 @@ if git clone -q --depth 40 -b planner-backup "$repo" "$tmp/src" 2>/dev/null \
   rm -rf "$site/planner"
   cp -r "$tmp/src/planner" "$site/planner"
   rm -rf "$site/planner/.git"
+  find "$site/planner" -type l -delete 2>/dev/null
   echo "planner: added to $site ($(du -sk "$site/planner" | cut -f1) KB; add-ons:${applied%,}${skipped:+; skipped:${skipped%,}})"
 else
   echo "planner: could not fetch planner-backup, publishing without it"

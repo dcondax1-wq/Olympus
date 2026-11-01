@@ -6,6 +6,7 @@ Runs the real script against a local stand-in repo (PLANNER_REPO / PLANNER_PATCH
   c. a patch that conflicts with a newer planner-backup is skipped, the earlier add-on stays, nothing half-patched
   d. a patch made on an older base still applies by a 3-way merge when the newer base changed other lines
   e. the script never fails the caller (unreachable repo -> exit 0, no planner)
+  g. confinement: a patch touching anything outside planner/ or adding a symlink is skipped; links are deleted
   f. every real patch in tools/planner_patches/ applies to the live planner-backup (network; skipped offline)
     python -X utf8 -m tests.test_planner_addons      (temp folders only)
 """
@@ -120,6 +121,28 @@ def main():
         a = json.load(open(os.path.join(site, "planner", "addons.json")))
         check("d. an add-on made on an older base applies by 3-way merge next to upstream's newer edit",
               a["applied"] == ["10-one", "30-three"] and "three + add-on" in idx and "two, edited upstream" in idx and "<<<<<<<" not in idx, (r.stdout, a))
+        # g. confinement (security review): outside planner/, a symlink, an upstream link
+        os.remove(os.path.join(pdir, "30-three.patch"))
+        p4 = patch_from(work, lambda w: write(os.path.join(w, "evil.txt"), "outside\n"))
+        write(os.path.join(pdir, "40-outside.patch"), p4)
+        def add_link(w):
+            os.symlink("/etc/passwd", os.path.join(w, "planner", "link.txt"))
+        p5 = patch_from(work, add_link)
+        write(os.path.join(pdir, "50-link.patch"), p5)
+        os.symlink("/etc/hostname", os.path.join(work, "planner", "upstream-link"))
+        git("add", "-A", cwd=work)
+        git("commit", "-q", "-m", "upstream adds a link", cwd=work)
+        site = os.path.join(tmp, "site_g")
+        os.makedirs(site)
+        r = run(site, work, pdir)
+        a = json.load(open(os.path.join(site, "planner", "addons.json")))
+        check("g. a patch touching a file outside planner/ is skipped, nothing written outside",
+              "40-outside" in a["skipped"] and not os.path.exists(os.path.join(site, "evil.txt")) and "outside planner/" in r.stdout, (r.stdout, a))
+        check("g. a patch adding a symlink is skipped", "50-link" in a["skipped"] and not os.path.lexists(os.path.join(site, "planner", "link.txt")), a)
+        check("g. links in planner-backup itself are deleted from the published copy; the good add-on still applies",
+              not os.path.lexists(os.path.join(site, "planner", "upstream-link")) and a["applied"] == ["10-one"], (a, os.listdir(os.path.join(site, "planner"))))
+        for f in ("40-outside.patch", "50-link.patch"):
+            os.remove(os.path.join(pdir, f))
         # e. never fails the caller
         site = os.path.join(tmp, "site_e")
         os.makedirs(site)
