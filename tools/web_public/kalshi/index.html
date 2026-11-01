@@ -10,7 +10,7 @@
 <link rel="icon" href="../jarvis/icon-192.png?v=j1">
 <!-- Kalshi page (owner 2026-11-01): the Kalshi bot runs on its own server; its numbers arrive as kalshi.json
      (engine/kalshi_publish.py, docs/KALSHI_PUBLISH.md) and this page shows them, inside Jarvis or on its own. Read-only.
-     Look: kalshi.css (the old Jarvis HUD); logic: kalshi.js; offline: sw.js. Bump ?v= on both (and in sw.js SHELL) when either changes. -->
+     Look: kalshi.css (the old Jarvis HUD); logic: kalshi.js; offline: sw.js. Bump ?v= on both when either changes, and in sw.js its SHELL and CACHE ('kalshi-' + the version). -->
 <script>(function () { var t = 'eclipse'; try { t = String(localStorage.getItem('jtheme') || 'eclipse').replace(/"/g, ''); } catch (e) { t = 'eclipse'; }
   document.documentElement.setAttribute('data-theme', t.indexOf('reactor') === 0 ? 'reactor' : 'eclipse'); })();</script>
 <link rel="stylesheet" href="kalshi.css?v=k7">

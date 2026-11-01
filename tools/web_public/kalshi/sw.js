@@ -8,7 +8,7 @@
 //   (raw.githubusercontent.com / api.github.com) is never touched or cached;
 // - Jarvis's fonts (../jarvis/*.woff2) are fetched here, quietly, and kept in the cache; the page builds its fonts from those
 //   saved bytes only, so a font that is not on the site yet never makes the page ask for it (no 404 in the page).
-const CACHE = 'kalshi-v1';
+const CACHE = 'kalshi-k7';                      // = 'kalshi-' + the ?v= of kalshi.css / kalshi.js (index.html, SHELL): a new version, a new cache
 const NAV_WAIT_MS = 3500;
 const SHELL = ['./', './index.html', './kalshi.css?v=k7', './kalshi.js?v=k7'];
 const FONTS = ['../jarvis/orbitron.woff2', '../jarvis/rajdhani-500.woff2', '../jarvis/rajdhani-600.woff2'];

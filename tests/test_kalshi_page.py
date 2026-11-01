@@ -330,7 +330,7 @@ def part_a():
     sw = open(os.path.join(KS, "sw.js"), encoding="utf-8").read()
     ver = re.search(r"kalshi\.js\?v=(\w+)", html).group(1)
     check("a. kalshi/sw.js: its own 'kalshi-*' cache and only those deleted, its own folder only, the 3.5 s rule, the page's versions",
-          re.search(r"const CACHE = 'kalshi-v\d+';", sw) and "k.startsWith('kalshi-') && k !== CACHE" in sw and "u.pathname.startsWith(scope.pathname)" in sw
+          f"const CACHE = 'kalshi-{ver}';" in sw and "k.startsWith('kalshi-') && k !== CACHE" in sw and "u.pathname.startsWith(scope.pathname)" in sw
           and "const NAV_WAIT_MS = 3500;" in sw and f"'./kalshi.css?v={ver}'" in sw and f"'./kalshi.js?v={ver}'" in sw and f"kalshi.css?v={ver}" in html)
     check("a. the page registers sw.js for its folder; fonts only from the worker's saved bytes (no @font-face, no font fetch)",
           "navigator.serviceWorker.register('sw.js', { scope: './' })" in js and "@font-face" not in css and "caches.match(new URL(path, location.href).href)" in js
@@ -789,17 +789,18 @@ def part_k(br, url, tmp):
         except Exception:
             return False
     allc = "(async () => { const o = {}; for (const k of await caches.keys()) o[k] = (await (await caches.open(k)).keys()).map((r) => r.url); return o; })()"
+    cn = f"kalshi-{ver}"
     FEED["mode"], FEED["j"] = "ok", realbot(time.time())[0]
     SITE.update(mode="ok", slow=0.0)
     q.goto(page_url)
     ready(q)
     reg = q.evaluate("navigator.serviceWorker.ready.then((r) => [r.scope, r.active ? r.active.state : ''])")
     check("k. the page registers kalshi/sw.js for its own folder", reg[0].endswith("/nq-dashboard/kalshi/") and reg[1] in ("activating", "activated"), reg)
-    until("caches.open('kalshi-v1').then((c) => c.keys()).then((k) => k.length >= 4)")
+    until(f"caches.open('{cn}').then((c) => c.keys()).then((k) => k.length >= 4)")
     c = q.evaluate(allc)
-    urls = c.get("kalshi-v1", [])
+    urls = c.get(cn, [])
     shell = all(any(u.endswith(x) for u in urls) for x in ("/kalshi/", "/kalshi/index.html", f"/kalshi/kalshi.css?v={ver}", f"/kalshi/kalshi.js?v={ver}"))
-    check("k. its own cache 'kalshi-v1' holds the page, its style and its script", list(c) == ["kalshi-v1"] and shell, c)
+    check(f"k. its own cache '{cn}' holds the page, its style and its script", list(c) == [cn] and shell, c)
     fonts = sorted(u.rsplit("/", 1)[1] for u in urls if u.endswith(".woff2"))
     if FONTS:
         check("k. Jarvis's fonts on the site: the worker saves the three it needs", fonts == ["orbitron.woff2", "rajdhani-500.woff2", "rajdhani-600.woff2"], fonts)
@@ -835,12 +836,12 @@ def part_k(br, url, tmp):
     took = time.time() - t0
     check(f"k. a slow site (6 s): the saved copy is drawn in under 5 s ({took:.1f} s), style and script from their copies", drawn and took < 5.0, took)
     check("k. the late answer still refreshes the saved copy",
-          until("caches.open('kalshi-v1').then((c) => c.match(location.href)).then((r) => r ? r.text() : '').then((t) => t.indexOf('k-late') >= 0)", 12000))
+          until(f"caches.open('{cn}').then((c) => c.match(location.href)).then((r) => r ? r.text() : '').then((t) => t.indexOf('k-late') >= 0)", 12000))
     open(idx, "w", encoding="utf-8").write(orig)
     SITE["slow"] = 0.0
     q.wait_for_timeout(300)
     # no saved copy and offline: a small dark page with Retry
-    q.evaluate("caches.delete('kalshi-v1')")
+    q.evaluate(f"caches.delete('{cn}')")
     SITE["mode"] = "down"
     q.reload(wait_until="commit")
     retry = until("!!document.querySelector('button') && /Retry/.test(document.body.innerText)", 10000)
@@ -853,16 +854,16 @@ def part_k(br, url, tmp):
     back = until("document.title === 'Kalshi' && !!document.getElementById('body') && document.getElementById('body').getAttribute('data-state') === 'ok'", 10000)
     check("k. Retry once back online: the page again", back)
     # an update (a new cache name): only the old 'kalshi-*' copy goes, never another app's cache
-    until("caches.open('kalshi-v1').then((c) => c.keys()).then((k) => k.length >= 3)")
+    until(f"caches.open('{cn}').then((c) => c.keys()).then((k) => k.length >= 3)")
     q.evaluate("Promise.all([caches.open('jarvis-v3').then((c) => c.put('/x-jarvis', new Response('j'))),"
                " caches.open('le-public-x').then((c) => c.put('/x-zenith', new Response('z')))]).then(() => true)")
     swp = os.path.join(kdir, "sw.js")
     sw0 = open(swp, encoding="utf-8").read()
-    open(swp, "w", encoding="utf-8").write(sw0.replace("const CACHE = 'kalshi-v1';", "const CACHE = 'kalshi-v2';"))
+    open(swp, "w", encoding="utf-8").write(sw0.replace(f"const CACHE = '{cn}';", f"const CACHE = '{cn}u';"))
     q.evaluate("navigator.serviceWorker.getRegistration().then((r) => r.update()).then(() => true)")
-    upd = until("caches.keys().then((k) => k.indexOf('kalshi-v2') >= 0 && k.indexOf('kalshi-v1') < 0)", 15000)
+    upd = until(f"caches.keys().then((k) => k.indexOf('{cn}u') >= 0 && k.indexOf('{cn}') < 0)", 15000)
     keys = q.evaluate("caches.keys()")
-    check("k. an update: the old 'kalshi-v1' goes, Jarvis's and Zenith's caches stay", upd and "jarvis-v3" in keys and "le-public-x" in keys, keys)
+    check(f"k. an update: the old '{cn}' goes, Jarvis's and Zenith's caches stay", upd and "jarvis-v3" in keys and "le-public-x" in keys, keys)
     open(swp, "w", encoding="utf-8").write(sw0)
     c = q.evaluate(allc)
     check("k. kalshi.json never cached (the feed is cross-origin and left alone)", not any("kalshi.json" in u for v in c.values() for u in v), c)
