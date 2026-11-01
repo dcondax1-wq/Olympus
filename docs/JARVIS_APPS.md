@@ -70,15 +70,15 @@ Rules (Jarvis drops a card that breaks one, and keeps showing the last good one)
 - **8 KB at most. Plain text only:** no HTML tags, no `&amp;`-style entities, no line breaks inside a text.
 - **Format values yourself** (`"$1,250"`, `"82%"`, `"+3.2%"`); a number is shown as it is. A delta that starts with `+` shows
   green, one that starts with `-` shows red.
-- **Keep `t` fresh.** 30 minutes after `t` the card turns grey ("not updated for ..."). Rewrite the file at least every 15
-  minutes while the numbers change; a free GitHub Action on a schedule can do it.
+- **Keep `t` fresh.** 30 minutes after `t` the card turns grey ("not updated for ..."), so rewrite the file with a new `t`
+  at least every 15 minutes, even when nothing changed; a free GitHub Action on a schedule can do it.
 - Jarvis waits at most 5 seconds for the file.
 
 **No server?** While Ascend is open inside Jarvis, it can post the same object to Jarvis on load and whenever its numbers
-change; Jarvis keeps the last one for the card:
+change; Jarvis keeps the last one for the card (`status` is the jarvis.json object):
 
 ```js
-if (window.parent !== window) window.parent.postMessage({ jarvis: 1, card: status }, '*');   // status = the jarvis.json object
+if (window.parent !== window) window.parent.postMessage({ jarvis: 1, href: location.href, card: status }, 'https://demetrades2000-coder.github.io');
 ```
 
 ## 3. CORS
@@ -96,7 +96,10 @@ if (window.parent !== window) window.parent.postMessage({ jarvis: 1, card: statu
   `removeApp`), the cards (`appStatus`, `cachedStatus`, `renderCard`, posted cards through `listen(window, onCard)`) and
   the Ascend slot (`ascendSlot`, `enableAscend`, `findAscend`). The API notes are at the top of the file.
 - Storage on the phone: `jarvis.apps` is the registry, `jarvis.cards` the last good card per app. The older keys
-  `jarvis.extra` and `jarvis.links` are read and kept in step, never deleted.
+  `jarvis.extra` and `jarvis.links` are read and kept in step, never deleted. Remove apps only with `removeApp(id)`:
+  editing the older keys does not remove anything (the registry keeps what it imported).
+- The Jarvis page: cards for apps that are not built in come from `cachedStatus(app)` (first paint), then
+  `appStatus(app)` and `renderCard(card, document)`; `listen(window, ...)` refreshes them when an open app posts a card.
 - A new app folder on the dashboard site (for example `nq-dashboard/ascend/`) goes into Zenith's `OTHER_APPS` in
   `tools/web_public/sw.js`, and needs a publish step like `scripts/add_planner.sh`, because each publish rebuilds the site.
 - Test: `python -X utf8 -m tests.test_jarvis_apps`.

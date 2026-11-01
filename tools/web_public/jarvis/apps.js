@@ -29,6 +29,13 @@
 // removals are mirrored into `jarvis.extra` so an older copy of Jarvis shows the same list. `jarvis.cards` keeps each
 // app's last good card. Ids are stable (kept from the old keys, else "x-<name>" made unique); names are capped at 24.
 // Plain ES2020 for iPhone Safari 16, no imports, no DOM use outside renderCard. Test: python -X utf8 -m tests.test_jarvis_apps
+//
+// In the Jarvis page: const A = await import('./apps.js');
+//   bar and cards from A.listApps() (the page adds its own Jarvis entry); for an app that is not built in:
+//   A.cachedStatus(app) for the first paint, then A.appStatus(app).then((c) => c && box.replaceChildren(A.renderCard(c, document)));
+//   A.listen(window, () => refresh the cards); the + sheet: A.addApp({name, url}) -> r.ok ? open r.app.id : show r.error,
+//   "Add Ascend" (while !A.ascendSlot().enabled): A.findAscend() -> r.ok ? open 'ascend' : name "Ascend" + ask for the link;
+//   removing: always A.removeApp(id), never by editing jarvis.extra / jarvis.links (the registry keeps what it imported).
 
 export const KEY = 'jarvis.apps';
 export const CARDS_KEY = 'jarvis.cards';
@@ -205,7 +212,7 @@ function importLegacy(st) {
       const url = cleanUrl(e.url), name = cleanName(e.name);
       if (!url || !name) continue;
       const lid = typeof e.id === 'string' ? e.id : '';
-      take(JSON.stringify(['e', lid, url]), name, url, lid, lid === ASCEND_ID || /^x-ascend(-\d+)?$/.test(lid) || name.toLowerCase() === 'ascend');
+      take(JSON.stringify(['e', lid, url]), name, url, lid, lid === ASCEND_ID || name.toLowerCase() === ASCEND_NAME.toLowerCase());
     }
   }
   if (isObj(ln)) {
@@ -564,9 +571,10 @@ function remember(a, url, card) {
   const m = cards();
   const old = own(m, a.id) && isObj(m[a.id]) && m[a.id].url === url && isObj(m[a.id].card) ? m[a.id].card : null;
   if (old && Number(old.t) > card.t) return false;
+  if (old && JSON.stringify(old) === JSON.stringify(card)) return true;      // the same card again (an app posting often)
+  const ids = new Set(listApps().map((x) => x.id));
+  if (!ids.has(a.id)) return true;                    // not (or no longer) in the list, e.g. removed while it was fetched
   m[a.id] = { url, at: Date.now(), card };
-  const ids = new Set(listApps({ hidden: true }).map((x) => x.id));
-  ids.add(a.id);
   for (const k of Object.keys(m)) if (!ids.has(k)) delete m[k];
   write(CARDS_KEY, m);
   return true;
@@ -619,8 +627,9 @@ export function appStatus(app, opts) {
 }
 
 // ------------------------------------------------------------------ cards an app posts while it is open inside Jarvis
-// For an app without a server: window.parent.postMessage({jarvis: 1, card: {...the contract...}}, '*'). The sender is
-// matched to an added app by its address (same site) or its site (another site); the card is checked like jarvis.json.
+// For an app without a server: window.parent.postMessage({jarvis: 1, href: location.href, card: {...the contract...}},
+// '<Jarvis's site>'). The sender is matched to an added app by its address (read from the frame on the same site, else
+// the href it sends, which must be on the site that sent it); the card is checked like jarvis.json.
 /** Take one message event. -> the card (kept as the app's last good card) or null. */
 export function acceptMessage(e) {
   const data = e && e.data;

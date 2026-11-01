@@ -134,6 +134,12 @@ def part_a():
             check("a. apps.js parses as an ES module (node --check)", r.returncode == 0, r.stderr)
         finally:
             shutil.rmtree(d, ignore_errors=True)
+        acorn = next(iter(sorted(glob.glob("/opt/node-tools/node_modules/acorn/dist/acorn.js"))), None)
+        if acorn:                      # a real parser held to ES2020 (Safari 14+), where this machine has one
+            js = (f"require({json.dumps(acorn)}).parse(require('fs').readFileSync({json.dumps(APPS)}, 'utf8'), "
+                  "{ecmaVersion: 2020, sourceType: 'module'})")
+            r = subprocess.run([node, "-e", js], capture_output=True, text=True)
+            check("a. apps.js parses as ES2020 (acorn): nothing newer than iPhone Safari 16 can parse", r.returncode == 0, r.stderr)
     else:
         print("[SKIP] a. node not installed: the browser import below still checks the syntax")
     code = re.sub(r"/\*.*?\*/", "", re.sub(r"(?m)^\s*//.*$", "", src), flags=re.S)
@@ -262,6 +268,9 @@ def part_c(p, harness, oa):
     check("c. an older Jarvis adding it again brings it back", p.evaluate("() => A.listApps().some((a) => a.url === 'https://clip.example/' && a.id === 'x-clipper')"))
     asc = p.evaluate("() => [A.removeApp('ascend'), A.ascendSlot().enabled, JSON.parse(localStorage.getItem('jarvis.extra')).some((e) => e.url === 'https://asc.example/'), A.listApps().length]")
     check("c. removing Ascend hides it again (its old entry goes too)", asc[:3] == [True, False, False] and asc[3] == len(apps), asc)
+    fresh(p, harness, extra=[{"id": "x-ascend-2", "name": "Ascend 2", "url": "https://asc2.example/"}, {"id": "x-ascend", "name": "ASCEND", "url": "https://asc3.example/"}])
+    a2 = p.evaluate("() => [A.ascendSlot().url, A.listApps().filter((a) => a.name === 'Ascend 2').map((a) => a.id)]")
+    check("c. only an entry named Ascend fills the slot ('Ascend 2' stays its own app)", a2 == ["https://asc3.example/", ["x-ascend-2"]], a2)
 
 
 # ---------------------------------------------------------------------------------------------------- d. the contract
@@ -424,6 +433,10 @@ def part_f(p, harness, oa, ob, tmp):
     check("f. read from the app's folder, with a minute cache buster (GitHub Pages' CDN)", len(hits) == 1 and "?jt=" in hits[0], LOG)
     kept = p.evaluate("() => JSON.parse(localStorage.getItem('jarvis.cards'))")
     check("f. the last good card is kept on the phone (jarvis.cards)", kept and kept["x-clip"]["card"]["name"] == "Clip" and kept["x-clip"]["url"] == oa + "/clip/jarvis.json", kept)
+    p.reload()
+    p.wait_for_function("window.ready === true")
+    rc = p.evaluate("() => A.cachedStatus('x-clip')")
+    check("f. after a reload it is there at once, before any fetch (cachedStatus)", rc and rc["cached"] is True and rc["name"] == "Clip" and rc["stale"] is False, rc)
     put(f"{tmp}/cors/app/jarvis.json", card("Other", t=now - 30))
     put(f"{tmp}/nocors/app/jarvis.json", card("NoCors", t=now - 30))
     oc = p.evaluate("([u, s]) => A.appStatus(A.addApp({name: 'Other', url: u, statusUrl: s}).app)", [ob + "/other/", ob + "/cors/app/jarvis.json"])
@@ -459,6 +472,11 @@ def part_f(p, harness, oa, ob, tmp):
     dt = time.time() - t0
     SLOW["s"] = 0
     check("f. the default wait is 5 s", r[1] == 5000 and 4.5 <= dt < 6.8 and r[0] and r[0]["cached"] is True, (round(dt, 2), r))
+    SLOW["s"] = 1.0
+    gone = p.evaluate("""async (a) => { const pr = A.appStatus(a); await new Promise((r) => setTimeout(r, 250)); A.removeApp(a.id); const c = await pr;
+        return [c && c.name, Object.keys(JSON.parse(localStorage.getItem('jarvis.cards') || '{}')).includes(a.id)]; }""", sl)
+    SLOW["s"] = 0
+    check("f. an app removed while its card loads: the card is shown to the caller but not kept", gone == ["Slow", False], gone)
 
     put(f"{tmp}/old/jarvis.json", card("Old", t=now - 31 * 60))
     old = p.evaluate("(u) => A.addApp({name: 'Old', url: u}).app", oa + "/old/")
@@ -500,6 +518,13 @@ def part_f(p, harness, oa, ob, tmp):
           got[0] == ["x-push:Pushed", "x-pushx:PushedX"] and got[1] and got[1]["name"] == "Pushed" and got[1]["cached"] is True and got[2] and got[2]["name"] == "PushedX", got)
     check("f. posted cards: another site cannot speak for an app on this site; a bad card is refused with its reason",
           got[3] == "Clip" and "HTML" in got[4], got[3:])
+    same = p.evaluate("""async ([u, c]) => {
+        const before = JSON.parse(localStorage.getItem('jarvis.cards'))['x-push'].at;
+        await new Promise((r) => setTimeout(r, 30));
+        const got = A.acceptMessage({data: {jarvis: 1, href: u, card: c}, origin: new URL(u).origin, source: null});
+        return [got && got.name, JSON.parse(localStorage.getItem('jarvis.cards'))['x-push'].at === before];
+    }""", [oa + "/pushapp/", card("Pushed", t=now - 5)])
+    check("f. the same card posted again is not written again (an app that posts often)", same == ["Pushed", True], same)
 
 
 # ---------------------------------------------------------------------------------------------------- g. Ascend
