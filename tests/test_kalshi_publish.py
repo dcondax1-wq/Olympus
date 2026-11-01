@@ -1,5 +1,5 @@
 """Kalshi in Jarvis (engine/kalshi_publish.py + tools/kalshi_kit/public/kalshi_status_vm.py, owner 2026-11-01): the Kalshi
-bot's numbers -> kalshi.json on the branch `kalshi` of the Pages repo, which the Kalshi page (tools/web_public/kalshi/) and
+bot's numbers -> kalshi.json on `main` of its own public repo kalshi-feed, which the Kalshi page (tools/web_public/kalshi/) and
 the Jarvis card read. No real keys and no network beyond 127.0.0.1. Checks:
   a. clean(): only the contract's keys leave, secrets dropped, local paths redacted, numbers as numbers, lists capped,
      junk never raises
@@ -19,6 +19,10 @@ the Jarvis card read. No real keys and no network beyond 127.0.0.1. Checks:
   l. --ssh through a stand-in srv.py (same code shape as the PC's) = reading the files directly
   m. pushes to a local bare repo: the kit's own, --cron (only on a change), the module's; deploy-key SSH settings
   n. the public kit holds no VM address, tunnel URL, private key or private folder ids
+  o. (security review) the feed's own repo kalshi-feed / main; the first push into an empty repo; push hints; SETUP.md
+  p. (security review) the pinned script: print_sha.py, CRLF-proof hash, sha256sum -c passes / fails, SETUP.md wording
+  q. (security review) every published text field redacted (links, IPs, e-mails, tokens, paths, ids, PEM); tickers kept
+  r. (security review) the PC task gets srv.py's absolute path, resolved once at install time
     python -X utf8 -m tests.test_kalshi_publish      (temp folders only; nothing else touched)
 """
 from __future__ import annotations
@@ -102,16 +106,16 @@ def part_c(tmp):
     json.dump(kp.SAMPLE, open(f, "w"))
     scratch = os.path.join(tmp, "scratch.git")
     r = kp.push_once(f, url=remote, git_dir=scratch)
-    show = git("--git-dir", remote, "ls-tree", "--name-only", "kalshi")
-    body = git("--git-dir", remote, "show", "kalshi:kalshi.json").stdout
-    check("c. one push: the branch `kalshi` holds exactly kalshi.json", r.get("ok") and show.stdout.split() == ["kalshi.json"], (r, show.stdout, show.stderr))
+    show = git("--git-dir", remote, "ls-tree", "--name-only", kp.BRANCH)
+    body = git("--git-dir", remote, "show", kp.BRANCH + ":kalshi.json").stdout
+    check("c. one push: the feed branch (kalshi-feed main) holds exactly kalshi.json", r.get("ok") and show.stdout.split() == ["kalshi.json"], (r, show.stdout, show.stderr))
     check("c. its content is the cleaned status (balance, positions)", json.loads(body or "{}").get("balance") == 512.34
           and len(json.loads(body or "{}").get("positions", [])) == 1, body[:200])
     json.dump({**kp.SAMPLE, "balance": 600}, open(f, "w"))
     r2 = kp.push_once(f, url=remote, git_dir=scratch)
-    n = git("--git-dir", remote, "rev-list", "--count", "kalshi").stdout.strip()
+    n = git("--git-dir", remote, "rev-list", "--count", kp.BRANCH).stdout.strip()
     check("c. the next push replaces it (orphan commit, no history)", r2.get("ok") and n == "1"
-          and json.loads(git("--git-dir", remote, "show", "kalshi:kalshi.json").stdout)["balance"] == 600, (r2, n))
+          and json.loads(git("--git-dir", remote, "show", kp.BRANCH + ":kalshi.json").stdout)["balance"] == 600, (r2, n))
     r3 = kp.push_once(os.path.join(tmp, "nope.json"), url=remote, git_dir=scratch)
     check("c. a missing status file pushes nothing", not r3["ok"] and "not found" in r3["error"], r3)
     r4 = lp.push({"t": 1}, remote, branch="live", git_dir=os.path.join(tmp, "live.git"))
@@ -138,8 +142,8 @@ def part_d(tmp):
     kp.loop(f, every=60, keepalive=600, log=logs.append, clock=lambda: t[0], sleep=sleep, push_fn=fake_push, url="x",
             git_dir=os.path.join(tmp, "s.git"), max_rounds=16)
     check("d. waits while the status file is missing", logs[:2] == ["kalshi publish: waiting for the status file"] * 2, logs[:3])
-    check("d. pushes on the file's first appearance and on a change, to branch kalshi as kalshi.json",
-          calls[:2] == [(512.34, "kalshi", "kalshi.json"), (700.0, "kalshi", "kalshi.json")], calls)
+    check("d. pushes on the file's first appearance and on a change, to the feed's main as kalshi.json",
+          calls[:2] == [(512.34, "main", "kalshi.json"), (700.0, "main", "kalshi.json")], calls)
     check("d. no push while unchanged, then a keep-alive push after 10 min", len(calls) == 3, calls)
 
 
@@ -162,7 +166,7 @@ def part_e():
     check("e. v2 input -> v 2 with strategies and equity", v2["v"] == 2 and len(v2["strategies"]) == 2 and len(v2["equity"]) == 4
           and v2["strategies"][0] == {"name": "Weather", "mode": "live", "running": True, "today_pnl": 12.1, "total_pnl": 80.4,
                                       "trades": 41, "wins": 27, "losses": 14}, v2.get("strategies"))
-    raw = {"strategies": [{"name": "S" * 99, "mode": "live", "running": 1, "trades": "7", "wins": 5.0, "losses": "2",
+    raw = {"strategies": [{"name": "Strategy name " * 8, "mode": "live", "running": 1, "trades": "7", "wins": 5.0, "losses": "2",
                            "today_pnl": "1.5", "total_pnl": None, "api_key": "zzz", "secret_sauce": "x"}] * 25 + [{"mode": "x"}, "junk"],
            "equity": [[1793500000 + i * 60, 50 + i * 0.01] for i in range(2000)] + [["bad", 1], {"t": 1793400000, "balance": "49"}]}
     c = kp.clean(raw, now=NOW)
@@ -306,7 +310,7 @@ def part_g(tmp):
     ps = KIT.bot_payload(bot, now=NOW, units=())
     check("g. paused.txt: 'Paused until <ET time>' / 'Paused' (0), a run-out pause ignored; blocked text; a silent trader",
           pp["running"] is False and pp["status"] == "Paused until Nov 1, 2:00 PM ET" and ps["running"] is False
-          and ps["status"] == "15-min book off (MAIN_BOOK 0)" and quiet["running"] is False
+          and ps["status"] == "Blocked: 15-min book off (MAIN_BOOK 0)" and quiet["running"] is False
           and quiet["status"] == "No word from the trader for 25 min" and p0["status"] == "Paused" and p0["running"] is False
           and pold["running"] is True and pold["status"].startswith("Trading"), (pp["status"], ps["status"], quiet["status"],
                                                                                 p0["status"], pold["status"]))
@@ -689,31 +693,31 @@ def part_m(tmp):
     git("init", "-q", "--bare", remote)
     p = kp.clean(kp.SAMPLE_V2, now=NOW)
     r = KIT.push(p, remote, git_dir=os.path.join(tmp, "kit_scratch.git"))
-    body = git("--git-dir", remote, "show", "kalshi:kalshi.json").stdout
+    body = git("--git-dir", remote, "show", kp.BRANCH + ":kalshi.json").stdout
     check("m. the kit's own push: one orphan commit on `kalshi` holding exactly kalshi.json",
-          r.get("ok") and git("--git-dir", remote, "ls-tree", "--name-only", "kalshi").stdout.split() == ["kalshi.json"]
+          r.get("ok") and git("--git-dir", remote, "ls-tree", "--name-only", kp.BRANCH).stdout.split() == ["kalshi.json"]
           and json.loads(body or "{}") == p, r)
     statf = os.path.join(tmp, "cron_status.json")
     json.dump(kp.SAMPLE_V2, open(statf, "w"))
     home = {"KALSHI_JARVIS_HOME": os.path.join(tmp, "home_m")}
     args = ["-I", KIT_FILE, "--src", statf, "--cron", "--repo", remote, "--git-dir", os.path.join(tmp, "cron.git")]
     c1 = run(args, env=home)
-    h1 = git("--git-dir", remote, "rev-parse", "kalshi").stdout.strip()
+    h1 = git("--git-dir", remote, "rev-parse", kp.BRANCH).stdout.strip()
     c2 = run(args, env=home)
-    h2 = git("--git-dir", remote, "rev-parse", "kalshi").stdout.strip()
+    h2 = git("--git-dir", remote, "rev-parse", kp.BRANCH).stdout.strip()
     json.dump({**kp.SAMPLE_V2, "balance": 70.12}, open(statf, "w"))
     c3 = run(args, env=home)
-    h3 = git("--git-dir", remote, "rev-parse", "kalshi").stdout.strip()
+    h3 = git("--git-dir", remote, "rev-parse", kp.BRANCH).stdout.strip()
     check("m. --cron: pushes, stays quiet while nothing changed, pushes again on a change",
           (c1.returncode, c2.returncode, c3.returncode) == (0, 0, 0) and bool(h1) and h1 == h2 and h2 != h3 and c2.stdout == ""
-          and json.loads(git("--git-dir", remote, "show", "kalshi:kalshi.json").stdout)["balance"] == 70.12,
+          and json.loads(git("--git-dir", remote, "show", kp.BRANCH + ":kalshi.json").stdout)["balance"] == 70.12,
           (c1.stdout + c1.stderr, c2.stdout, h1, h2, h3))
     r = run(["-m", "engine.kalshi_publish", "--from-bot", make_bot(os.path.join(tmp, "bot_m")), "--units", "none", "--once",
              "--repo", remote, "--git-dir", os.path.join(tmp, "mod.git"), "--now", str(NOW)], cwd=ROOT, env=home)
-    got = json.loads(git("--git-dir", remote, "show", "kalshi:kalshi.json").stdout or "{}")
+    got = json.loads(git("--git-dir", remote, "show", kp.BRANCH + ":kalshi.json").stdout or "{}")
     check("m. the module's push (data/kalshi_pub.git route, the repo's git login) sends the same payload",
           r.returncode == 0 and got.get("name") == "Kalshi Edge v2" and got.get("today_pnl") == 2.46
-          and git("--git-dir", remote, "rev-list", "--count", "kalshi").stdout.strip() == "1", (r.stdout + r.stderr)[-300:])
+          and git("--git-dir", remote, "rev-list", "--count", kp.BRANCH).stdout.strip() == "1", (r.stdout + r.stderr)[-300:])
     import time as _time
     bot2 = make_bot(os.path.join(tmp, "bot_m2"))
     json.dump({"ts": _time.time(), "mode": "live"}, open(os.path.join(bot2, "autotrader_status.json"), "w"))
@@ -721,9 +725,9 @@ def part_m(tmp):
     git("init", "-q", "--bare", remote2)
     argsb = ["-I", KIT_FILE, "--from-bot", bot2, "--units", "none", "--cron", "--repo", remote2, "--git-dir", gd]
     b1 = run(argsb, env=home)
-    r1 = git("--git-dir", remote2, "rev-parse", "kalshi").stdout.strip()
+    r1 = git("--git-dir", remote2, "rev-parse", kp.BRANCH).stdout.strip()
     b2 = run(argsb, env=home)
-    r2 = git("--git-dir", remote2, "rev-parse", "kalshi").stdout.strip()
+    r2 = git("--git-dir", remote2, "rev-parse", kp.BRANCH).stdout.strip()
     check("m. --cron on the live clock: the second minute is quiet (clocks and the equity point's time don't count as a change)",
           b1.returncode == 0 and b2.returncode == 0 and r1 and r1 == r2 and b2.stdout == "", (b1.stdout + b1.stderr, b2.stdout))
 
@@ -742,11 +746,11 @@ def part_m(tmp):
     n_now = json.load(open(gd + ".last.json")).get("n")
     check("m. --cron counts its pushes across runs and prunes the scratch repo every 30th (no pile-up on the server)",
           st.get("n") == 1 and n_now == 30 and b3.returncode == 0 and after < before
-          and json.loads(git("--git-dir", remote2, "show", "kalshi:kalshi.json").stdout)["balance"] == 70.3, (st, n_now, before, after))
+          and json.loads(git("--git-dir", remote2, "show", kp.BRANCH + ":kalshi.json").stdout)["balance"] == 70.3, (st, n_now, before, after))
     env = KIT.push_env("/home/ubuntu/kalshi_jarvis/deploy_key")
     check("m. --deploy-key: git pushes over SSH with only that key (and the SSH repo URL)",
           "-i /home/ubuntu/kalshi_jarvis/deploy_key" in env.get("GIT_SSH_COMMAND", "") and "IdentitiesOnly=yes" in env["GIT_SSH_COMMAND"]
-          and KIT.phone_url(KIT.REPO_SSH) == "https://raw.githubusercontent.com/demetrades2000-coder/nq-dashboard/kalshi/kalshi.json")
+          and KIT.phone_url(KIT.REPO_SSH) == "https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json")
 
 
 def part_n():
@@ -773,6 +777,138 @@ def part_n():
 
 
 
+# ================================================================================================ security review fixes
+SETUP_MD = os.path.join(os.path.dirname(KIT_FILE), "SETUP.md")
+
+
+def part_o(tmp):
+    """Fix 1: the feed lives in its own public repo (kalshi-feed, main): a key there can never rewrite the Pages site."""
+    check("o. the feed's own repo: kalshi-feed, branch main, kalshi.json (never the Pages repo nq-dashboard)",
+          KIT.REPO_URL == "https://github.com/demetrades2000-coder/kalshi-feed.git"
+          and KIT.REPO_SSH == "git@github.com:demetrades2000-coder/kalshi-feed.git" and KIT.BRANCH == kp.BRANCH == "main"
+          and KIT.FILE == "kalshi.json" and "nq-dashboard" not in KIT.REPO_URL + KIT.REPO_SSH
+          and KIT.phone_url() == "https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json")
+    repo = os.path.join(tmp, "origin_o")
+    git("init", "-q", repo)
+    got = {}
+    for origin in ("https://github.com/demetrades2000-coder/nq-liquidity-engine",
+                   "git@github.com:demetrades2000-coder/nq-liquidity-engine.git", "https://gitlab.com/x/y.git"):
+        git("-C", repo, "remote", "remove", "origin")
+        git("-C", repo, "remote", "add", "origin", origin)
+        got[origin] = kp.feed_url(cwd=repo, env={})
+    check("o. the PC pushes to kalshi-feed with this repo's owner and protocol; LE_KALSHI_REPO overrides; no GitHub -> the kit's",
+          list(got.values()) == ["https://github.com/demetrades2000-coder/kalshi-feed.git",
+                                 "git@github.com:demetrades2000-coder/kalshi-feed.git", KIT.REPO_URL]
+          and kp.feed_url(cwd=repo, env={"LE_KALSHI_REPO": "/elsewhere.git"}) == "/elsewhere.git", got)
+    empty = os.path.join(tmp, "feed_empty.git")
+    git("init", "-q", "--bare", empty)
+    r = KIT.push(kp.clean(kp.SAMPLE_V2, now=NOW), empty, git_dir=os.path.join(tmp, "feed_scratch.git"))
+    refs = git("--git-dir", empty, "for-each-ref", "--format=%(refname)").stdout.split()
+    check("o. the first push into the new, empty repo creates main holding only kalshi.json",
+          r.get("ok") and refs == ["refs/heads/main"] and git("--git-dir", empty, "ls-tree", "--name-only", "main").stdout.split() == ["kalshi.json"],
+          (r, refs))
+    r = KIT.push(kp.clean(kp.SAMPLE, now=NOW), os.path.join(tmp, "no-such-repo.git"), git_dir=os.path.join(tmp, "feed_scratch.git"))
+    check("o. a push before the repo exists says to create the public kalshi-feed repo",
+          not r.get("ok") and "create the PUBLIC repo demetrades2000-coder/kalshi-feed" in r.get("error", ""), r)
+    check("o. key problems name the fix (read-only key, key not added)",
+          "Allow write access" in KIT._push_hint("ERROR: The key you are authenticating with has been marked as read only.")
+          and "add the deploy key to kalshi-feed" in KIT._push_hint("git@github.com: Permission denied (publickey)."))
+    setup = " ".join(open(SETUP_MD, encoding="utf-8").read().split())
+    check("o. SETUP.md: the owner makes the empty public kalshi-feed repo, the key goes on it only, the check reads kalshi-feed",
+          "name **`kalshi-feed`**, **Public**, and leave it empty" in setup and "In **kalshi-feed** → **Settings** → **Deploy keys**" in setup
+          and "Never add it to `nq-dashboard`" in setup and "raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json" in setup
+          and "nq-dashboard → Settings" not in setup and "nq-dashboard/kalshi/kalshi.json" not in setup)
+
+
+def part_p(tmp):
+    """Fix 2: the script is pinned: print_sha.py gives the hash for the owner's paste line, SETUP.md checks it."""
+    import hashlib
+    import importlib.util
+    ps = os.path.join(ROOT, "tools", "kalshi_kit", "print_sha.py")
+    want = hashlib.sha256(open(KIT_FILE, "rb").read().replace(b"\r\n", b"\n")).hexdigest()
+    r = run([ps])
+    lines = r.stdout.splitlines()
+    check("p. print_sha.py prints the script's SHA-256 (as the site serves it) and the owner's paste line with it",
+          r.returncode == 0 and len(lines) >= 2 and lines[0] == want and lines[1].endswith(f"kalshi/SETUP.md (sha256 {want})"), r.stdout[-300:])
+    spec = importlib.util.spec_from_file_location("print_sha_t", ps)
+    m = importlib.util.module_from_spec(spec)
+    old, sys.dont_write_bytecode = sys.dont_write_bytecode, True        # no __pycache__ in the kit's folders
+    try:
+        spec.loader.exec_module(m)
+    finally:
+        sys.dont_write_bytecode = old
+    crlf = os.path.join(tmp, "crlf_copy.py")
+    open(crlf, "wb").write(open(KIT_FILE, "rb").read().replace(b"\n", b"\r\n"))
+    check("p. a Windows (CRLF) checkout gives the same hash", m.file_sha(crlf) == want)
+    d = os.path.join(tmp, "vm_copy")
+    os.makedirs(d)
+    shutil.copy(KIT_FILE, os.path.join(d, "kalshi_status_vm.py"))
+    cmd = ["bash", "-c", f'echo "{want}  kalshi_status_vm.py" | sha256sum -c']
+    ok = subprocess.run(cmd, cwd=d, capture_output=True, text=True)
+    open(os.path.join(d, "kalshi_status_vm.py"), "a").write("\n# changed\n")
+    bad = subprocess.run(cmd, cwd=d, capture_output=True, text=True)
+    check("p. SETUP.md's check passes on the published file and fails on a changed one",
+          ok.returncode == 0 and "kalshi_status_vm.py: OK" in ok.stdout and bad.returncode != 0 and "FAILED" in bad.stdout + bad.stderr,
+          (ok.stdout, bad.stdout))
+    setup = " ".join(open(SETUP_MD, encoding="utf-8").read().split())
+    check("p. SETUP.md checks the owner's sha256 before running the script and again on every update; cron never self-updates",
+          "If the owner's message includes `sha256 <hex>`, check it and stop on a mismatch." in setup
+          and 'echo "<hex> kalshi_status_vm.py" | sha256sum -c' in setup and "Run step 1 again, including the hash check" in setup
+          and "it never updates itself" in setup)
+
+
+def part_q(tmp):
+    """Fix 3: every published free-text string is redacted (the bot's own problem / blocked text included)."""
+    nasty = ("see https://abc-def.trycloudflare.com/9f8e7d6c5b4a39281706f5e4d3c2b1a0/ from 10.1.2.3 by me@example.com key "
+             "0123456789abcdef0123456789abcdef01 at /home/ubuntu/kalshi/.env id a952bcbe-ec3b-4b5b-b8f9-11dae589608c "
+             "-----BEGIN RSA PRIVATE KEY-----\nPEMBODYSECRET\n-----END RSA PRIVATE KEY-----")
+    leaks = ("trycloudflare", "9f8e7d6c5b4a", "10.1.2.3", "example.com", "0123456789abcdef", "/home/ubuntu", "a952bcbe",
+             "BEGIN RSA", "PEMBODYSECRET")
+    raw = {**kp.SAMPLE_V2, "status": nasty, "note": nasty, "name": nasty, "mode": nasty,
+           "positions": [{**kp.SAMPLE["positions"][0], "title": nasty, "asset": nasty, "strategy": nasty, "closes": "soon " + nasty}],
+           "trades": [{**kp.SAMPLE["trades"][0], "title": nasty, "side": nasty, "action": nasty, "ticker": "BAD TICKER " + nasty}],
+           "strategies": [{"name": nasty, "mode": nasty, "trades": 1}], "days": [[nasty, 1.0]]}
+    c = kp.clean(raw, now=NOW)
+    s = json.dumps(c)
+    check("q. every published text field is redacted: links (tunnel tokens), IPs, e-mails, tokens, paths, ids, PEM keys",
+          not [x for x in leaks if x in s] and c["status"].startswith("see <link> from <ip> by <email> key <redacted> at <path>"),
+          ([x for x in leaks if x in s], c["status"][:120]))
+    check("q. tickers that look like tickers stay, others are redacted; a 'closes' that isn't a time is dropped",
+          c["positions"][0]["ticker"] == "KXHIGHNY-26NOV02-B58.5" and "closes" not in c["positions"][0]
+          and c["trades"][0]["ticker"].startswith("BAD TICKER see <link>"), (c["positions"][0], c["trades"][0]["ticker"]))
+    long_t = "KXMVENFLMULTIGAMEEXTENDED-S2025F6B0A3E7F4F-E5F2C1F8D2A"
+    c2 = kp.clean({"trades": [{"ticker": long_t, "title": "Will A win? · " + long_t, "t": NOW}]}, now=NOW)
+    check("q. long real tickers survive (as the ticker and inside a title)",
+          c2["trades"][0]["ticker"] == long_t and c2["trades"][0]["title"] == "Will A win? · " + long_t, c2["trades"])
+    check("q. clean() stays idempotent with the redaction", {**kp.clean(c, now=NOW + 1), "pub_t": 0} == {**c, "pub_t": 0})
+    plain = {x: KIT.public_text(x) for x in ("Kalshi auth error 401", "Signature mismatch", "15-min book off (MAIN_BOOK 0)",
+                                            "Paused until Nov 1, 2:00 PM ET", "Gold above $4,000 at 5 PM ET Oct 31")}
+    secret = [KIT.public_text(x) for x in ("KALSHI_API_KEY_ID=abc123", "Authorization: Bearer abc.def", "password: hunter2")]
+    check("q. plain sentences pass untouched; NAME=value / Bearer secrets don't",
+          all(k == v for k, v in plain.items()) and secret == ["KALSHI_API_KEY_ID=<redacted>", "Authorization: Bearer <redacted>",
+                                                               "password: <redacted>"], (plain, secret))
+    bot = make_bot(os.path.join(tmp, "bot_q"))
+    json.dump({"ts": NOW - 4, "mode": "live", "blocked": "guard: " + nasty}, open(os.path.join(bot, "autotrader_status.json"), "w"))
+    p = KIT.bot_payload(bot, now=NOW, units=())
+    json.dump({"ts": NOW - 4, "mode": "live", "problem": "token=" + "f" * 40}, open(os.path.join(bot, "autotrader_status.json"), "w"))
+    p2 = KIT.bot_payload(bot, now=NOW, units=())
+    check("q. the bot's own blocked / problem text goes out labelled, short and redacted",
+          p["status"].startswith("Blocked: guard: see <link> from <ip>") and len(p["status"]) <= 110
+          and not [x for x in leaks if x in json.dumps(p)] and p2["status"] == "Problem: token=<redacted>", (p["status"], p2["status"]))
+
+
+def part_r():
+    """Fix 4: the PC task gets srv.py's absolute path, picked once at install time."""
+    ps1 = open(os.path.join(ROOT, "tools", "kalshi_kit", "install_windows.ps1"), encoding="utf-8").read()
+    extra = next((ln for ln in ps1.splitlines() if ln.startswith("$extra = @(")), "")
+    once = next((ln for ln in ps1.splitlines() if "$once = @(" in ln), "")
+    check("r. install_windows.ps1 resolves srv.py once (absolute) and always passes --vm-helper to the push and the task",
+          "'--vm-helper'" in extra and "$VmHelper" in extra and "'--vm-helper', $VmHelper" in once
+          and "(Resolve-Path -LiteralPath $VmHelper).Path" in ps1 and "if ($VmHelper) { $extra" not in ps1
+          and "kalshi-feed/main/kalshi.json" in ps1, (extra, once))
+
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix="le_kalshi_")
     try:
@@ -791,6 +927,10 @@ def main():
         part_l(tmp)
         part_m(tmp)
         part_n()
+        part_o(tmp)
+        part_p(tmp)
+        part_q(tmp)
+        part_r()
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     n = sum(RES)

@@ -5,8 +5,11 @@ Kalshi numbers on the phone from this PC while the PC is on.
 
 What it does, in order:
   1. finds Python (the NQ bot's) and checks that it can run the PC's srv.py helper (paramiko);
-  2. reads the bot's numbers once over SSH (python -m engine.kalshi_publish --ssh --once) and pushes them, read-only;
-  3. creates the Task Scheduler task "Kalshi to Jarvis": at logon, no window (pythonw), restarts every minute on failure,
+  2. picks srv.py ONCE, now (-VmHelper, else the newest srv.py under %APPDATA%\Claude\scratch-workspaces that has
+     cloud_linux\deploy_to_oracle.py beside it), and passes that absolute path every time (the task never searches);
+  3. reads the bot's numbers once over SSH (python -m engine.kalshi_publish --ssh --once) and pushes them to the
+     kalshi-feed repo, read-only;
+  4. creates the Task Scheduler task "Kalshi to Jarvis": at logon, no window (pythonw), restarts every minute on failure,
      no time limit, one copy: pythonw -X utf8 -m engine.kalshi_publish --ssh --loop (every 60 s, a push only on a change
      or every 3 min), and starts it.
 It never touches trading, the Kalshi bot, its server's files, or the NQ bot's tasks. The server's address stays in
@@ -16,7 +19,7 @@ srv.py. Log: %LOCALAPPDATA%\KalshiToJarvis\kalshi_to_jarvis.log
   powershell -ExecutionPolicy Bypass -File .\tools\kalshi_kit\install_windows.ps1 -DryRun
   powershell -ExecutionPolicy Bypass -File .\tools\kalshi_kit\install_windows.ps1 -Remove     (once the server pushes)
 Options: -Python <python.exe> (default: LE_PYTHON, else python on PATH), -VmPython <python.exe with paramiko> (default:
-the same), -VmHelper <path to srv.py> (default: found under %APPDATA%\Claude\scratch-workspaces).
+the same), -VmHelper <path to srv.py> (default: found once, now, under %APPDATA%\Claude\scratch-workspaces).
 #>
 param(
     [string]$Python = "",
@@ -66,8 +69,23 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-$extra = @('--vm-python', "`"$VmPython`"")
-if ($VmHelper) { $extra += @('--vm-helper', "`"$VmHelper`"") }
+# srv.py: resolved ONCE here and always passed as an absolute path (the task never picks a different one later)
+if (-not $VmHelper) {
+    $base = Join-Path $env:APPDATA 'Claude\scratch-workspaces'
+    $cands = @(Get-ChildItem -LiteralPath $base -Filter 'srv.py' -File -Recurse -Depth 4 -ErrorAction SilentlyContinue)
+    $pick = $cands | Sort-Object -Descending -Property `
+        @{ Expression = { Test-Path -LiteralPath (Join-Path $_.DirectoryName 'cloud_linux\deploy_to_oracle.py') } },
+        @{ Expression = { $_.LastWriteTime } } | Select-Object -First 1
+    if ($pick) { $VmHelper = $pick.FullName }
+}
+if (-not $VmHelper -or -not (Test-Path -LiteralPath $VmHelper -PathType Leaf)) {
+    Write-Host "[FIX] srv.py (the PC's helper that runs commands on the bot's server) was not found: pass -VmHelper C:\path\to\srv.py"
+    exit 1
+}
+$VmHelper = (Resolve-Path -LiteralPath $VmHelper).Path
+Write-Host "srv.py: $VmHelper"
+
+$extra = @('--vm-python', "`"$VmPython`"", '--vm-helper', "`"$VmHelper`"")
 $argLine = "-X utf8 -m engine.kalshi_publish --ssh --loop " + ($extra -join ' ')
 
 if ($DryRun) {
@@ -82,8 +100,7 @@ if ($DryRun) {
 Write-Host "Reading the Kalshi bot's numbers on its server (read-only) and pushing them once ..."
 Push-Location $Root
 try {
-    $once = @('-X', 'utf8', '-m', 'engine.kalshi_publish', '--ssh', '--once', '--vm-python', $VmPython)
-    if ($VmHelper) { $once += @('--vm-helper', $VmHelper) }
+    $once = @('-X', 'utf8', '-m', 'engine.kalshi_publish', '--ssh', '--once', '--vm-python', $VmPython, '--vm-helper', $VmHelper)
     & $Python @once
     $ok = ($LASTEXITCODE -eq 0)
 } finally {
@@ -113,6 +130,6 @@ try {
     exit 1
 }
 Write-Host "[OK]  '$TaskName' runs now and at every logon (every 60 s; a push only when the numbers change, else every 3 min)"
-Write-Host "      phone reads: https://raw.githubusercontent.com/demetrades2000-coder/nq-dashboard/kalshi/kalshi.json"
+Write-Host "      phone reads: https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json"
 Write-Host "      log: $env:LOCALAPPDATA\KalshiToJarvis\kalshi_to_jarvis.log"
 Write-Host "      once the bot's server publishes by itself: run this again with -Remove"
