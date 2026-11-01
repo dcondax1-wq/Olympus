@@ -19,6 +19,8 @@
 //                          'quick' | 'think' | 'deep'. brain.forgetKey(provider?) drops one.
 //   brain.hidden (the "hide my balance" switch) · brain.idle() (the old greeting line) · outcomeAlerts(prev, cur) (exported:
 //   Kalshi outcomes in the owner's "🌌 +$1.26" style, only trades settled since prev)
+// Zenith pages: "open BLITZ", "atlas trades", "holodeck" -> { open: 'zenith', route: '#/atlas/trades' } from zenith-mode.js's
+// zenithRouteFor (imported on demand from this folder), else a local map of the same pages.
 // Optional extras: createBrain({ ..., autoOpen: false }) leaves the switching to the shell. Otherwise a reply with `open`
 // also calls open(app, route) itself, right after the reply is handed back (openDelay ms, default 0: the shell's open()
 // waits 450 ms so the answer shows first, and a shell that switches on reply.open alone is overtaken by this call, which
@@ -1429,8 +1431,9 @@ export function createBrain(opts) {
     if (hide && r.control !== 'show_balance') {
       r.text = String(r.text).replace(MASK_RX, '$•••');
       r.speak = maskSpeech(r.speak);
-      if (Array.isArray(r.cards)) r.cards = r.cards.map((c) => (isObj(c) ? { ...c, kv: arr(c.kv).map((x) => [x[0], String(x[1]).replace(MASK_RX, '$•••')]), lines: c.lines ? arr(c.lines).map((x) => String(x).replace(MASK_RX, '$•••')) : undefined } : c));
-      if (Array.isArray(r.cards)) for (const c of r.cards) if (isObj(c) && c.lines === undefined) delete c.lines;
+      const m = (x) => String(x).replace(MASK_RX, '$•••');
+      if (Array.isArray(r.cards)) r.cards = r.cards.map((c) => (isObj(c) ? { ...c, kv: arr(c.kv).map((x) => [x[0], m(x[1])]), lines: c.lines ? arr(c.lines).map(m) : undefined, text: c.text != null ? m(c.text) : undefined } : c));
+      if (Array.isArray(r.cards)) for (const c of r.cards) if (isObj(c)) { if (c.lines === undefined) delete c.lines; if (c.text === undefined) delete c.text; }
     }
     if (r.open && autoOpen && openFn) {
       const app = r.open, rt = r.route;
@@ -1471,6 +1474,7 @@ export function createBrain(opts) {
   }
   function suggestions() {
     try {
+      try { const f = getFacts(); if (isObj(f) && typeof f.then !== 'function') lastFacts = f; } catch (_) { /* the last facts seen */ }
       const V = view(lastFacts);
       const out = [];
       const bad = V.nq && (V.nq.lines.some((x) => x.level === 'bad') || (V.nq.verdict && str(V.nq.verdict.level, 10) === 'bad'));

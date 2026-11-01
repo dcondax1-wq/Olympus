@@ -9,7 +9,9 @@ a mocked fetch and a recorded open()) and once in Chromium (a real page), and ch
      missing data (said to be missing, no invented number)
   d. the market clock: CME NQ Sun 18:00 - Fri 17:00 ET, the daily 17:00-18:00 halt, Thanksgiving / Christmas
   e. follow-ups ("and atlas?", "what about kalshi", "and the target?"), eval progress, "what should I do now", positions,
-     waiting, the money goal, Kalshi strategies (best / worst today), Kalshi outcomes in the owner's alert style
+     waiting, the money goal, Kalshi strategies (best / worst today), Kalshi outcomes in the owner's alert style, the
+     shell's own facts (data.js: a slim live view + .raw, liveError, extras), Zenith pages from zenith-mode.js's
+     zenithRouteFor (and the local map without it)
   f. speech: short, natural ("up 213 dollars", "6 PM Eastern"), no symbols
   g. the old Jarvis's commands (specs: good morning, mission control, hide my balance, stop, verse / quote of the day ...)
   h. smart mode: off by default; on with a mocked fetch for Groq, Gemini and Anthropic (address, headers, body), the
@@ -195,6 +197,7 @@ def scenarios():
         S("today_kalshi", ask("how's kalshi", "kalshi balance", "kalshi positions"), f=facts(T_SUN13, kalshi=K13, kalshiState="ok")),
         S("brief_full", [{"briefing": True}, {"suggestions": True}], now=T_SUN1930,
           f=facts(T_SUN1930, kalshi=kalshi(T_SUN1930, strategies=STRATS), kalshiState="ok", planner={**PLANNER})),
+        S("sugg_first", [{"suggestions": True}], f=facts(T_SUN13, kalshi=kalshi(T_SUN13), kalshiState="ok")),
         S("brief_missing", [{"briefing": True}], now=T_SUN1930, f={"now": T_SUN1930, "live": None, "kalshi": None, "kalshiState": "waiting", "planner": None, "apps": []}),
         S("brief_error", [{"briefing": True}], now=T_SUN13, f={"live": None, "liveState": "error", "kalshi": None, "kalshiState": "error", "planner": None}),
         S("brief_closed", [{"briefing": True}]),
@@ -360,6 +363,9 @@ def part_node(O):
     check("c. briefing while closed names the next session", "Market: NQ market closed · opens today 6:00 PM ET (in 5 h)." in bc, bc)
     sg = g("brief_full")[1].get("list")
     check("c. suggestions: 4-6 short phrases", isinstance(sg, list) and 4 <= len(sg) <= 6 and all(isinstance(x, str) and x for x in sg) and "How are the bots?" in sg, sg)
+    sf = g("sugg_first")[0].get("list")
+    check("c. suggestions before any question already follow the facts (the plan, Kalshi, the next open)",
+          isinstance(sf, list) and "What's on today?" in sf and "How's Kalshi?" in sf and "When does the market open?" in sf, sf)
     # d. the market clock
     m1, m2 = t("mkt_sun13", 0), t("mkt_sun13", 1)
     check("d. Sunday 13:00: closed for the weekend, opens today 6:00 PM ET in 5 h", "NQ market closed · opens today 6:00 PM ET (in 5 h)" in m1
