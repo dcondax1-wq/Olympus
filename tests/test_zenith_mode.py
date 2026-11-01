@@ -96,7 +96,7 @@ window.EXITS = 0; window.STATES = []; window.EVENTS = [];
 const host = document.getElementById('zhost');
 host.addEventListener('zenith:state', (e) => window.EVENTS.push(e.detail));
 window.SWITCHED = [];
-const APPS = [{ id: 'home', name: 'Jarvis' }, { id: 'zenith', name: 'Zenith' }, { id: 'planner', name: 'Planner', icon: '../icons/icon-192.png' }, { id: 'kalshi', name: 'Kalshi' }];
+const APPS = [{ id: 'home', name: 'Jarvis', glyph: 'orb' }, { id: 'zenith', name: 'Zenith' }, { id: 'planner', name: 'Planner', icon: '../icons/icon-192.png' }, { id: 'kalshi', name: 'Kalshi', glyph: 'K' }];
 const sw = /nosw/.test(location.search) ? {} : { apps: () => APPS, onSwitch: (id) => { window.SWITCHED.push(id); window.closeZ(); } };
 window.ZM = mountZenithMode({ host, onExit: () => { window.EXITS++; window.closeZ(); }, onState: (s) => window.STATES.push(s), ...sw });
 window.openZ = (r) => { host.hidden = false; return window.ZM.show(r); };
@@ -274,7 +274,12 @@ def new_page(br, w, h, errs, tag, origin=None):
     pg.on("pageerror", lambda e: errs.append(f"{tag} pageerror: {str(e)[:240]}"))
     pg.on("console", lambda m: errs.append(f"{tag} console.error: {m.text[:200]}")
           if m.type == "error" and "Failed to load resource" not in m.text and "net::ERR" not in m.text else None)
+    pg.on("console", lambda m: WARNS.append(f"{tag}: {m.text[:200]}")
+          if m.type == "warning" and re.search(r"Unrecognized feature|allowfullscreen|[Aa]llow attribute", m.text) else None)
     return ctx, pg
+
+
+WARNS = []          # the frame's allow list: Chromium warns on a feature it does not know and on allow + allowfullscreen
 
 
 def zframe(pg, base):
@@ -612,6 +617,21 @@ def run_browser(base, other_base):
         check("c. switcher: holding the control shows the other apps as chips (Jarvis, Planner, Kalshi; not Zenith), 44 px tall, still in Zenith mode",
               A and A["names"] == ["Jarvis", "Planner", "Kalshi"] and A["h"] >= 43.5 and A["exp"] == "true"
               and pg.evaluate("() => ZM.isActive() && window.EXITS") == e0, A)
+        look = pg.evaluate("""() => { const cs = (s) => getComputedStyle(document.querySelector(s)); const p = cs('.zm-back .zm-pill'), a = cs('.zm-apps'), c = cs('.zm-apps .zm-chip');
+          const img = document.querySelector(".zm-apps .zm-chip[data-app='planner'] img.zm-ci"), gl = document.querySelector(".zm-apps .zm-chip[data-app='kalshi'] .zm-gl");
+          return { pill: [p.borderTopColor, p.backgroundColor, p.boxShadow.includes('168, 85, 247')], apps: [a.borderTopColor, a.backgroundColor], font: c.fontFamily, upper: c.textTransform,
+                   chipH: Math.min(...[...document.querySelectorAll('.zm-apps .zm-chip')].map((x) => x.getBoundingClientRect().height)),
+                   img: !!img && img.complete && img.naturalWidth > 0, gl: gl && gl.textContent, ctl: [document.querySelector('.zm-back').offsetWidth, document.querySelector('.zm-back').offsetHeight] }; }""")
+        check("c. Jarvis look: dark glass rgba(12,10,20,.85) with the violet #a855f7 border and glow, Orbitron labels, 44 px targets, the app's icon in its chip",
+              look["pill"][:2] == ["rgba(168, 85, 247, 0.62)", "rgba(12, 10, 20, 0.85)"] and look["pill"][2] and look["apps"] == ["rgba(168, 85, 247, 0.55)", "rgba(12, 10, 20, 0.85)"]
+              and "Orbitron" in look["font"] and look["upper"] == "uppercase" and look["chipH"] >= 44 and look["ctl"][0] >= 44 and look["ctl"][1] >= 44
+              and look["img"] and look["gl"] == "K", look)
+        pg.evaluate("() => { document.documentElement.style.setProperty('--c', '#ff2bd6'); document.documentElement.style.setProperty('--pr', '18,10,61'); }")
+        pg.wait_for_timeout(400)                               # the chips' colour transition
+        th = pg.evaluate("() => { const p = getComputedStyle(document.querySelector('.zm-back .zm-pill')), c = getComputedStyle(document.querySelector('.zm-apps .zm-chip')); return [p.borderTopColor, p.backgroundColor, c.borderTopColor]; }")
+        pg.evaluate("() => { document.documentElement.style.removeProperty('--c'); document.documentElement.style.removeProperty('--pr'); }")
+        check("c. the page's theme carries over (--c / --pr on Jarvis's <html>): a pink theme gives pink borders on its own glass",
+              th == ["rgba(255, 43, 214, 0.62)", "rgba(18, 10, 61, 0.85)", "rgba(255, 43, 214, 0.32)"], th)
         check("c. switcher: the chips sit next to the control, inside the screen, between Zenith's header and its tab bar",
               A and A["r"][2] <= A["ctrl"][0] + 0.5 and A["r"][0] >= 0 and A["r"][1] >= hdr and A["r"][3] <= tabs_top and not overlaps(A["r"], Rz["tabs"]), (A, hdr, tabs_top))
         pg.keyboard.press("Escape")
@@ -690,6 +710,7 @@ def run_browser(base, other_base):
         part_sw(br, base, errs)
         br.close()
     check("g. no page errors (Jarvis page, Zenith frames, the Zenith app)", not errs, errs[:6])
+    check("g. no warnings about the frame's allow list (no 'web-share', no allowfullscreen next to allow)", not WARNS, WARNS[:4])
 
 
 def main():
