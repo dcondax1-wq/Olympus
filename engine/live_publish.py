@@ -310,7 +310,7 @@ def push(payload: dict, url: str, branch: str = BRANCH, git_dir: str = SCRATCH, 
          extra: dict | None = None, file: str = FILE) -> dict:
     """Write payload as live.json (or `file`; plus extra = {"name.json": payload}, e.g. liveview.json) in one orphan commit
     and force-push it to url/branch (replaces the branch: no history). Returns {"ok", "error"|"commit", "bytes",
-    "extra_bytes"}. Never raises. engine/kalshi_publish.py pushes kalshi.json to the branch `kalshi` with it."""
+    "extra_bytes"}. Never raises."""
     try:
         if not url:
             return {"ok": False, "error": "no target repo (origin is not on GitHub; set LE_LIVE_REPO)"}

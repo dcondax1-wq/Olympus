@@ -106,6 +106,7 @@ def _lit_name(bot, health) -> str | None:
     if cfg.get("nt_account"):
         return str(cfg["nt_account"])
     a = _read_json(AUTOSTART) or {}
+    a = a.get("cfg") if isinstance(a.get("cfg"), dict) else a     # engine/watchdog.save: {"cfg": <start body>, "saved_at", "mode"}
     return (str(a.get("nt_account") or "").strip() or None)
 
 

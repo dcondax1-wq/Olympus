@@ -1222,6 +1222,15 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
             src, dst = os.path.join(kit, name), os.path.join(out, "kalshi", name)
             if os.path.isfile(src) and not os.path.exists(dst):
                 shutil.copy(src, dst)
+        # kit.json: the script's SHA-256 (LF-normalized, = tools/kalshi_kit/print_sha.py) so the Kalshi page's paste line
+        # pins the script the server runs (security review 2026-11-01)
+        vm = os.path.join(kit, "kalshi_status_vm.py")
+        if os.path.isfile(vm):
+            import hashlib
+            with open(vm, "rb") as fh:
+                digest = hashlib.sha256(fh.read().replace(b"\r\n", b"\n")).hexdigest()
+            with open(os.path.join(out, "kalshi", "kit.json"), "w", encoding="utf-8") as fh:
+                json.dump({"v": 1, "file": "kalshi_status_vm.py", "sha256": digest}, fh)
     os.makedirs(os.path.join(out, "icons"), exist_ok=True)
     for name in ("icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png", "icon.svg"):
         if os.path.exists(os.path.join(ICONS, name)):

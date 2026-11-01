@@ -179,9 +179,11 @@ def main() -> int:
         check(f"run_cmd returns at its timeout ({new_s:.1f} s), timed_out, the error says so",
               new_s < 4.0 and rr.timed_out and rr.returncode != 0 and "timed out after 1 s" in rr.err, (new_s, rr.err))
         def running(pid: int) -> bool:
+            if os.name == "nt":                   # os.kill(pid, 0) = CTRL_C_EVENT on Windows ([WinError 87] on the PC's
+                return False                      # self-test); $$ and /proc are POSIX: this check is Linux-only
             try:
                 os.kill(pid, 0)
-            except (ProcessLookupError, PermissionError):
+            except OSError:                       # ProcessLookupError / PermissionError and any other "no such process"
                 return False
             try:                                  # killed but not reaped yet (a zombie) counts as gone
                 return open(f"/proc/{pid}/stat").read().rsplit(")", 1)[1].split()[0] != "Z"

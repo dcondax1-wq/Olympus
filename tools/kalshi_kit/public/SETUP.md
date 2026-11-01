@@ -1,13 +1,13 @@
 # Jarvis for the Kalshi bot: setup
 
 **For the bot's own Claude chat ("kalshi-server", on the bot's server).** The owner pasted: "Set up Jarvis for my Kalshi
-bot by following this page". Do the steps below in order. Each step is a few shell commands. Show the owner the short
-results. Step 3 needs one click from him on GitHub.
+bot by following this page", maybe with `(sha256 <hex>)` at the end. Do the steps below in order. Each step is a few
+shell commands. Show the owner the short results. Step 3 needs two clicks from him on GitHub.
 
 **What it does:** a small script reads the bot's own files every minute and publishes the numbers to his phone app
 (Jarvis): the balance, P&L for today, this week and all time, open bets, the last trades, the three strategies and the
-24 h equity curve. It pushes one small JSON file to the branch `kalshi` of the public repo
-`demetrades2000-coder/nq-dashboard`.
+24 h equity curve. It pushes one small JSON file to its own public repo, `demetrades2000-coder/kalshi-feed`. Nothing
+else is written anywhere.
 
 ## Rules: read these first
 - **Never touch trading.** Don't edit, restart, stop or reconfigure any `kalshi-*` service, cron job, settings file
@@ -16,22 +16,32 @@ results. Step 3 needs one click from him on GitHub.
 - **Never print secrets.** That means `.env`, `.env2`, `keys/`, the Discord token, the dashboard token or URL, and the
   server's IP address. The only thing you show the owner from step 3 is the deploy key's PUBLIC line (it starts with
   `ssh-ed25519`).
+- **The deploy key goes on `kalshi-feed` only.** Never add it to `nq-dashboard` (his phone app) or any other repo.
 - **No Kalshi API calls.** The script only reads files: `trades.db` (opened read-only), `account_truth.json`,
   `autotrader_status.json`, `autotune_state.json`, the three settings files and `paused.txt`.
   It never opens `.env`, `keys/` or `sniper.db`.
 - **Everything new goes in `~/kalshi_jarvis`.** Nothing in `/home/ubuntu/kalshi` changes. The script runs once a
-  minute at low priority (`nice`/`ionice`), and a run takes well under a second.
-- **Stop and ask the owner on anything unexpected:** a missing file, an error you don't understand, or a step that would
-  need `sudo` or a change to the bot.
+  minute at low priority (`nice`/`ionice`), and a run takes well under a second. Cron always runs the copy you fetch
+  here; it never updates itself.
+- **Stop and ask the owner on anything unexpected:** a missing file, an error you don't understand, a hash that doesn't
+  match, or a step that would need `sudo` or a change to the bot.
 
-## 1. Get the script
+## 1. Get the script and check it
 ```
 mkdir -p ~/kalshi_jarvis && cd ~/kalshi_jarvis
 curl -fsSL https://demetrades2000-coder.github.io/nq-dashboard/kalshi/kalshi_status_vm.py -o ~/kalshi_jarvis/kalshi_status_vm.py
-python3 --version && git --version && head -5 kalshi_status_vm.py
+python3 --version && git --version && sha256sum kalshi_status_vm.py
 ```
-It's one file of Python 3.9+, standard library only, and you may read it all. If `git` is missing, stop and ask the owner;
-installing it needs `sudo apt-get install -y git`.
+**If the owner's message includes `sha256 <hex>`, check it and stop on a mismatch.** Put his hex in place of `<hex>`
+(two spaces before the file name):
+```
+cd ~/kalshi_jarvis && echo "<hex>  kalshi_status_vm.py" | sha256sum -c
+```
+It must print `kalshi_status_vm.py: OK`. If it prints `FAILED`, delete the file (`rm ~/kalshi_jarvis/kalshi_status_vm.py`),
+don't run it, and tell the owner the hash didn't match.
+
+The script is one file of Python 3.9+, standard library only, and you may read it all. If `git` is missing, stop and ask
+the owner; installing it needs `sudo apt-get install -y git`.
 
 ## 2. Run it once and show the JSON
 ```
@@ -45,16 +55,23 @@ This prints exactly what will be public. Show the owner the top part: `status`, 
 
 If the output says `trades.db could not be read`, or anything looks wrong, stop and tell the owner.
 
-## 3. A deploy key: write access to nq-dashboard only
+## 3. The feed repo and its deploy key (the owner: two things on GitHub)
+Make the key:
 ```
 ssh-keygen -t ed25519 -N "" -C "kalshi-jarvis server" -f ~/kalshi_jarvis/deploy_key
 cat ~/kalshi_jarvis/deploy_key.pub
 ```
 Show the owner **only** the `.pub` line, and tell him:
 
-> On GitHub, open **demetrades2000-coder/nq-dashboard** → **Settings** → **Deploy keys** → **Add deploy key**.
-> Title: `kalshi-jarvis server`. Key: paste this line. Tick **Allow write access**, then **Add key**. Tell me "OK" when
-> it's done.
+> 1. On GitHub, make a new repository: name **`kalshi-feed`**, **Public**, and leave it empty (no README, no
+>    .gitignore, no license). Click **Create repository**.
+> 2. In **kalshi-feed** → **Settings** → **Deploy keys** → **Add deploy key**. Title: `kalshi-jarvis server`. Key: paste
+>    this line. Tick **Allow write access**, then **Add key**.
+>
+> Tell me "OK" when both are done. This key can only write to kalshi-feed, never to your Jarvis app.
+>
+> Never turn on **GitHub Pages** for kalshi-feed (Settings → Pages stays off): a Pages site there would be served from the
+> same address as your Jarvis app, and this server could then publish pages that read Jarvis's saved keys.
 
 Never show `deploy_key`, the private half.
 
@@ -62,8 +79,15 @@ Never show `deploy_key`, the private half.
 ```
 cd ~/kalshi_jarvis && python3 -I kalshi_status_vm.py --from-bot /home/ubuntu/kalshi --once --git-dir ~/kalshi_jarvis/pub.git --deploy-key ~/kalshi_jarvis/deploy_key
 ```
-Expect `"ok": true` and the address the phone reads. If you get `Permission denied (publickey)`, the key isn't added or
-**Allow write access** isn't ticked: ask the owner to check. The first push adds github.com to `~/.ssh/known_hosts`.
+Expect `"ok": true` and the address the phone reads. The first push into the empty repo creates its `main` branch, and
+it adds github.com to `~/.ssh/known_hosts`.
+
+If it fails, the error ends with what to fix:
+- the repo doesn't exist yet;
+- the key isn't added;
+- the key is read-only (**Allow write access** isn't ticked).
+
+Ask the owner to fix that, then run the line again.
 
 ## 5. Every minute: one cron line
 ```
@@ -76,14 +100,15 @@ changed, plus once every 3 minutes so the phone knows it's alive. `cron.log` get
 ## 6. Check it
 ```
 sleep 75; tail -3 ~/kalshi_jarvis/cron.log
-curl -fsSL "https://raw.githubusercontent.com/demetrades2000-coder/nq-dashboard/kalshi/kalshi.json" | head -c 300; echo
+curl -fsSL "https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json" | head -c 300; echo
 ```
 The address can lag a few minutes behind the push. When it shows the bot's numbers, tell the owner in one line:
 "Done: Jarvis shows your Kalshi bot now, updated every minute."
 
 ## Later
-- **Update the script:** run step 1's `curl` line again. Cron uses the new file from the next minute.
+- **Update the script:** only when the owner asks, with a new `sha256` in his message. Run step 1 again, including the
+  hash check. Cron uses the new file from the next minute.
 - **Pause publishing:** `crontab -l | grep -v kalshi_status_vm.py | crontab -`. Turn it back on with step 5.
 - **The log:** `tail ~/kalshi_jarvis/cron.log`. Clear it any time with `: > ~/kalshi_jarvis/cron.log`.
 - **Remove it:** run the pause line, then `rm -rf ~/kalshi_jarvis`. Ask the owner to delete the deploy key on GitHub
-  (nq-dashboard → Settings → Deploy keys).
+  (kalshi-feed → Settings → Deploy keys) or the whole kalshi-feed repo.

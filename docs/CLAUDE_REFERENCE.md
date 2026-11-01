@@ -720,7 +720,7 @@ part yourself or fold it into a script.**
   voice when the phone has speech recognition. Read-only. On iPhone each Home Screen app has its own storage: the Planner
   inside Jarvis needs its sync connected once. BLITZ (2026-10-31): the Zenith card and the answers carry BLITZ from
   live.json's top-level `blitz` (`engine/live_publish.blitz_block`: board card keys, an "off" card while account C is off,
-  None on failure; `board.blitz` stays present only while account C is on); "how's blitz" answers instead of opening Zenith. Test `python -X utf8 -m tests.test_jarvis_hub` (50).
+  None on failure; `board.blitz` stays present only while account C is on); "how's blitz" answers instead of opening Zenith. Test `python -X utf8 -m tests.test_jarvis_hub` (166).
   **Service workers share one origin (fix 2026-10-31, "Jarvis won't load"):** Zenith's `tools/web_public/sw.js` (scope =
   the whole site) used to delete every other cache on activate and handle `jarvis/` + `planner/` pages, so once Zenith was
   opened inside Jarvis a dropped connection or a site 404 left Jarvis with nothing to open (reproduced over local https).
@@ -733,14 +733,90 @@ part yourself or fold it into a script.**
   (20 s in the test). Jarvis always starts on its own screen (the address never keeps #zenith; an old #hash is cleaned at
   start), keeps one dashboard loaded at a time (one iPhone web process), shows a Reload note if its script has not started in
   8 s, and the manifest has no #shortcuts. Recovery on the phone: delete the Home Screen icon, re-add from Safari.
-- **Kalshi in Jarvis (2026-11-01, owner: "where is kalshi ... figure out a way to have it there"):** the Kalshi bot runs only
-  on the PC (not on GitHub). The PC publishes its status file as `kalshi.json` on the branch `kalshi` of the public Pages repo
-  (`engine/kalshi_publish.py`: contract keys only, secrets dropped, paths redacted, capped, < 200 KB; orphan commit via
-  `live_publish.push(file=...)`, scratch `data/kalshi_pub.git`; `--loop` pushes on change, else every 10 min; runs on its own,
-  never inside the NQ server). The phone: `tools/web_public/kalshi/` (published at `<site>/kalshi/`, in Zenith's `OTHER_APPS`)
-  and the Jarvis Kalshi card + "how's kalshi" read raw.githubusercontent (API fallback); 404 = "Waiting for your PC" with the
-  one PC step. PC setup for Claude on the PC: `docs/KALSHI_PUBLISH.md`. Tests `tests.test_kalshi_publish` (20),
-  `tests.test_jarvis_hub` (50).
+- **Jarvis v2 (2026-11-01 sprint, owner: "the same sick looking Jarvis with all the features it had before ... switch
+  between that mode, zenith mode"):** it rebuilds the owner's old PC voice assistant on the phone (spec, look and features:
+  `docs/JARVIS_OLD_LOOK.md`). Modules in `tools/web_public/jarvis/`:
+  - **Shell:** `index.html` + `jarvis.css`.
+    - Look: the violet HUD, with Reactor as the default theme (matches the icon). The 24-theme family lives in
+      localStorage `jtheme`. Orbitron and Rajdhani are self-hosted woff2 (OFL).
+    - Screen: the boot log; the mode chips JARVIS · ZENITH · PLANNER · KALSHI · +; the KALSHI TODAY and NQ BOTS TODAY
+      boxes; the HUD panels; the glass command bar with mic/send and the ⋯ menu (core, full screen, look/theme, AI key,
+      hold-to-talk, 3D, tilt, alerts, calm motion).
+    - Unchanged rules: one dashboard frame at a time (Zenith is unloaded when another opens; kept while Jarvis shows),
+      always start on Jarvis, no #hash, the 8 s boot note.
+    - Cross-site frames get a sandbox and no allow=.
+  - **`data.js`:** the one facts facade: live.json, kalshi.json from the kalshi-feed repo, the Planner day including
+    `planner.today.v1`, the market clock. Every reader is total, so junk storage never stops boot.
+  - **`brain.js`:**
+    - Rule answers: a briefing, follow-ups, the old Jarvis commands, Zenith routes via `zenithRouteFor`, `control`
+      replies (stop / mute / hide balance) and Kalshi outcome alerts.
+    - Smart mode with the owner's own Groq / Gemini / Anthropic key, stored only in localStorage `jarvis.smart` and sent only
+      to that provider. CORS is verified for all three.
+  - **`core-visual.js` + `three.module.min.js`:** the old violet Gimbal Reactor, three@0.160.0 loaded on demand.
+    - The reactor and singularity designs, 5 states, effects ultra / high / low / off.
+    - A 2D fallback, plus recovery after WebGL context loss.
+    - motion:'always' by default (the old app ignored the OS setting); "Calm motion" follows the iPhone.
+  - **`apps.js`:** the registry and the `jarvis.json` live-card contract (`docs/JARVIS_APPS.md`), plus the Ascend slot.
+    - No same-origin guessing.
+    - Same-site apps get a warning, because every page on demetrades2000-coder.github.io can read Jarvis's and the
+      Planner's saved keys.
+    - Ascend must be hosted on another origin.
+  - **`zenith-mode.js` + Zenith's `embed.js`:**
+    - Zenith full screen, with an edge orb (tap = Jarvis, hold = app chips), the route and scroll kept.
+    - An origin-checked postMessage protocol, documented at the top of zenith-mode.js.
+    - A non-secret settings transfer code.
+    - Zenith detects it's inside Jarvis: no nags, push only on a tap, safe areas once.
+  - **Icons:** the re-rendered old reactor icon (`?v=j2`).
+  - **Workers:**
+    - jarvis-v4: a 3.5 s navigation race; shell files stale-while-revalidate once a page came from the copy.
+    - Zenith le-public-v50: the saved copy on 404 / slow / offline; data from the copy for 30 s after a cached page.
+    - kalshi-k9.
+  - **Tests:** test_jarvis_hub (166), test_jarvis_brain (130), test_jarvis_core (58), test_jarvis_apps (84),
+    test_zenith_mode (70), test_kalshi_page (185), test_phone_e2e (local https end to end: modes, slow / offline / 404, worker
+    updates, one frame, real taps, nothing white).
+- **Kalshi in Jarvis (2026-11-01):** the Kalshi bot runs 24/7 on its own Oracle Cloud server with real money, not on the PC.
+  Its own Claude chat is "kalshi-server". The phone reads `kalshi.json` from its OWN public repo,
+  `demetrades2000-coder/kalshi-feed` (main): raw first, then the API.
+  - **Why its own repo:** a deploy key on nq-dashboard could rewrite the whole Pages site, so the key only gets write access
+    to kalshi-feed.
+  - **The server builds it:** `tools/kalshi_kit/public/kalshi_status_vm.py` (stdlib).
+    - It reads only the bot's own files, read-only: trades.db `mode=ro`, account_truth, autotrader_status, autotune_state.
+    - No Kalshi API calls (the bot already hits rate limits). Never `.env` or `keys/`, never the bot's modules.
+    - Every published string is redacted.
+    - It pushes every minute from cron (on change, plus every 3 min).
+  - **Setup:** `<site>/kalshi/SETUP.md`. The site build copies `tools/kalshi_kit/public/` next to the page.
+    - The script's SHA-256 is checked against the owner's paste line (`python tools/kalshi_kit/print_sha.py --live`).
+    - The owner: one paste in the kalshi-server chat, create the empty public repo kalshi-feed, add the deploy key there.
+    - This session's tools can't message that chat ("code from external"), so the owner pastes.
+  - **Other routes:**
+    - PC fallback: `python -m engine.kalshi_publish --ssh`, through the PC's own srv.py, resolved once by
+      `install_windows.ps1`.
+    - API mode: off by default.
+  - **Contract v2:** adds `strategies` and `equity`.
+  - **Phone page:** `tools/web_public/kalshi/` with its own `sw.js`.
+    - Sections: equity, a P&L calendar, stats, strategies, open bets (UP/DOWN), trades.
+    - The waiting card shows the one step and a SAMPLE preview that is never saved.
+  - **Tests:** test_kalshi_publish (98), test_kalshi_page (185). The build writes `<site>/kalshi/kit.json` (the script's
+    SHA-256), which the page's paste line carries. Never turn on GitHub Pages for kalshi-feed.
+- **Planner add-ons (2026-11-01):** the Planner lives on nq-dashboard `planner-backup`, built by its own session, and this repo
+  can't push there.
+  - **How they ship:** features are patches in `tools/planner_patches/`, applied by `scripts/add_planner.sh` at every publish.
+    - In name order, 3-way when the base moved, each committed on its own.
+    - A patch that no longer applies is skipped and logged.
+    - Confined to `planner/` and no links; links in the copy are deleted.
+    - `planner/addons.json` lists what was applied and skipped.
+  - **10-projects:**
+    - The bots, Kalshi and projects, live in the Planner.
+    - Market hours, with optional bands.
+    - `planner.today.v1` written for Jarvis.
+    - Inside Jarvis its links switch apps through `parent.__jarvis.show()`; framed with no saved theme it uses the dark
+      theme for the session; the Today line stays one folded line (todayorg passes with live data).
+  - **20-power:** Now and next, Catch up (spreads overdue tasks, with Undo), smarter quick add, the weekly review reminder.
+    Everything goes through the Planner's own `commit()`, via the `window.PlannerAPI` hook. Bot colors are hex-validated;
+    synced/stored ids and colors are cleaned at every entry point (safe ids, stable replacement ids); only the Planner's
+    own worker counts for the 'new version' bar.
+  - **Test:** test_planner_addons (section f checks the real patches against the live branch).
+  - **When the Planner session deploys again:** rebase or refresh the patches if test_planner_addons f reports a skip.
 - **Market structure, playbook, discretion advisor (2026-10-29, read-only, never an order):** `engine/structure.py`
   (Tracker per timeframe on closed bars: fractal k=2 swings, HH/HL/LH/LL, BOS / CHoCH on a close, protected swing = origin
   of the breaking leg, pools = today's Asia / London / NY-open boxes + prior day + equal highs / lows (`lit.buildups`) +
