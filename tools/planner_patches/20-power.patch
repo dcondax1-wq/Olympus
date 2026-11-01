@@ -42,10 +42,10 @@ index 0000000..6bd347c
 +- Tests: `planner/tests/power.test.js` (PORT env, default 8790).
 diff --git a/planner/ext-power.js b/planner/ext-power.js
 new file mode 100644
-index 0000000..f3791c0
+index 0000000..2e75c25
 --- /dev/null
 +++ b/planner/ext-power.js
-@@ -0,0 +1,667 @@
+@@ -0,0 +1,670 @@
 +// ===== POWER: Now and next, Catch up, smarter quick add (ext-power.js; docs/features-power.md; tests/power.test.js) =====
 +// Loaded in <head>, before the app. It waits for the app's 'planner:ready' event (window.PlannerAPI, see EXT API in index.html), then adds:
 +//  - Now and next (Today card, #now-next): today as one strip (events, shifts, travel, free time, a "now" line) and the 3 tasks that
@@ -91,6 +91,8 @@ index 0000000..f3791c0
 +  const ord = (n) => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th');
 +  const dateTxt = (k) => { const d = dOf(k); return `${WDN[d.getDay()]}, ${MON3[d.getMonth()]} ${d.getDate()}`; };
 +  const relDay = (k, t) => (k === t ? 'today' : k === plus(t, 1) ? 'tomorrow' : dateTxt(k));
++  // Colors end up inside style="": only a plain hex color is ever used (synced or bot data could hold anything, even a number).
++  const hexOk = (c) => (/^#[0-9a-f]{3,8}$/i.test(c || '') ? c : '');
 +  const andList = (a) => (a.length <= 1 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]);
 +  const ICON_CLOCK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg>';
 +  const skipGet = () => { try { const v = JSON.parse(localStorage.getItem(SKIP_KEY)); return v && typeof v === 'object' ? v : {}; } catch (e) { return {}; } };
@@ -452,7 +454,8 @@ index 0000000..f3791c0
 +    const free = d.gaps.filter(([s, e]) => e - Math.max(s, nm == null ? s : nm) >= 30).map(([s, e]) => { const a = nm == null ? s : Math.max(s, nm); return `<i class="px-free" style="left:${pc(a).toFixed(2)}%;width:${w(a, e)}%"></i>`; }).join('');
 +    const trv = d.trv.map((x) => `<i class="px-trv" style="left:${pc(x.s).toFixed(2)}%;width:${w(x.s, x.e)}%" title="${esc(x.label)}"></i>`).join('');
 +    const lanes = d.blocks.some((b) => b.lane);
-+    const blk = d.blocks.map((b) => `<button type="button" class="px-blk${lanes ? ' l' + b.lane : ''}${nm != null && b.e <= nm ? ' past' : ''}${pc(b.e) - pc(b.s) < 11 ? ' nt' : ''}" data-ev="${esc(b.ev.id)}" data-occ="${esc(b.occ)}" style="${A.cvars(A.colorOf(b.ev))};left:${pc(b.s).toFixed(2)}%;width:${w(b.s, b.e)}%" title="${esc(b.ev.title)}, ${t12(b.s)}-${t12(b.e)}" aria-label="${esc(b.ev.title)}, ${t12(b.s)} to ${t12(b.e)}"><span>${esc(b.ev.title)}</span></button>`).join('');
++    const color = (ev) => { let c = hexOk(ev.color); if (!c) { try { c = hexOk((A.cat(ev.cat) || {}).color); } catch (e) { c = ''; } } return c || '#64748b'; };
++    const blk = d.blocks.map((b) => `<button type="button" class="px-blk${lanes ? ' l' + b.lane : ''}${nm != null && b.e <= nm ? ' past' : ''}${pc(b.e) - pc(b.s) < 11 ? ' nt' : ''}" data-ev="${esc(b.ev.id)}" data-occ="${esc(b.occ)}" style="${A.cvars(color(b.ev))};left:${pc(b.s).toFixed(2)}%;width:${w(b.s, b.e)}%" title="${esc(b.ev.title)}, ${t12(b.s)}-${t12(b.e)}" aria-label="${esc(b.ev.title)}, ${t12(b.s)} to ${t12(b.e)}"><span>${esc(b.ev.title)}</span></button>`).join('');
 +    const now = nm != null && nm >= d.from && nm <= d.to ? `<i class="px-now" style="left:${pc(nm).toFixed(2)}%" title="Now"></i>` : '';
 +    const ticks = []; for (let m = Math.ceil(d.from / 180) * 180; m <= d.to; m += 180) ticks.push(m);
 +    const lab = (m) => (m >= 1440 ? '12a' : t12(m).replace(/m$/, ''));
@@ -711,10 +714,10 @@ index 0000000..f3791c0
 +  addEventListener('planner:ready', (e) => ready(e.detail));
 +  if (window.PlannerAPI) ready(window.PlannerAPI);
 +  // Pure helpers for the tests and the console (same pattern as window.__qc).
-+  window.__pw = { review: (t) => { const ws = wrTarget(t || today()); return { ws, done: wrDone(ws), streak: wrStreak(ws) }; }, parse: pwParse, label: pwLabel, spread: pwSpread, pick: pwPick, day: (k, nm) => nnDay(k, nm), caps: (t, n) => cuCaps(t || today(), n || CU_DAYS), commit: pwCommit, rangeOf: (s) => { const m = (' ' + s + ' ').match(RANGE_RE); return m ? rangeOf(m) : null; } };
++  window.__pw = { strip: (d, nm) => nnStrip(d, nm), hexOk, review: (t) => { const ws = wrTarget(t || today()); return { ws, done: wrDone(ws), streak: wrStreak(ws) }; }, parse: pwParse, label: pwLabel, spread: pwSpread, pick: pwPick, day: (k, nm) => nnDay(k, nm), caps: (t, n) => cuCaps(t || today(), n || CU_DAYS), commit: pwCommit, rangeOf: (s) => { const m = (' ' + s + ' ').match(RANGE_RE); return m ? rangeOf(m) : null; } };
 +})();
 diff --git a/planner/index.html b/planner/index.html
-index e73bf75..27f6f73 100644
+index e73bf75..ff96533 100644
 --- a/planner/index.html
 +++ b/planner/index.html
 @@ -9,6 +9,7 @@
@@ -725,6 +728,15 @@ index e73bf75..27f6f73 100644
  <meta name="apple-mobile-web-app-capable" content="yes">
  <meta name="apple-mobile-web-app-status-bar-style" content="default">
  <meta name="apple-mobile-web-app-title" content="Planner">
+@@ -1727,7 +1728,7 @@ function buildBotEvents() {
+         repeat: REPEATS.includes(e.repeat) ? e.repeat : 'none', until: YMD.test(e.until || '') ? e.until : '',
+         ex: Array.isArray(e.skip) ? e.skip.filter((x) => YMD.test(x)) : [], notes: String(e.notes || '').slice(0, 2000),
+         proj: findProj(e.project),
+-        layer: e.layer || '', color: e.color || '',
++        layer: e.layer || '', color: /^#[0-9a-f]{3,8}$/i.test(e.color || '') ? e.color : '', // a bot's color goes into style="": hex only
+       });
+       if (d.tz === 'ET' && timed && !localIsET) {
+         const ev = out[out.length - 1], a = etToLocal(ev.date, ev.start), b = etToLocal(ev.date, ev.end);
 @@ -13953,6 +13954,16 @@ function alertsHtml() {
  }
  // ===== ALERTS END =====
@@ -744,10 +756,10 @@ index e73bf75..27f6f73 100644
  const ACCT_NAME = { lit: 'Zlarior', atlas: 'ATLAS' };
 diff --git a/planner/tests/power.test.js b/planner/tests/power.test.js
 new file mode 100644
-index 0000000..118a3b8
+index 0000000..6d41988
 --- /dev/null
 +++ b/planner/tests/power.test.js
-@@ -0,0 +1,304 @@
+@@ -0,0 +1,342 @@
 +// Power features (ext-power.js): Now and next, Catch up, smarter quick add. node planner/tests/power.test.js
 +// Serve the site first (see shifts.test.js); PORT env, default 8790. Fixed clock: Tuesday 2026-11-03, 10:00 in New York.
 +const { chromium } = require('playwright');
@@ -1047,6 +1059,44 @@ index 0000000..118a3b8
 +    await p7.evaluate(() => document.querySelector('#views [data-v=today]').click()); await wait(300);
 +    ok(await p7.locator('#pwReview').count() === 0, 'reminder gone once written');
 +    errs.push(...pe7.map((x) => 'pageerror ' + x)); await ctx7.close();
++  }
++  // ---------- 8. hostile colors: a bot file with a script-carrying or a numeric color (and the strip given the same) ----------
++  {
++    const EVIL = '"><img src=x onerror="window.__pwned=1">';
++    const st8 = seed(); st8.categories.push({ id: 'bots', name: 'Bot ops', color: '#7c3aed' });
++    const bots = { 'evil.json': { sha: 'x', data: { bot: 'Evil', events: [
++      { id: 'b1', title: 'Evil block', date: T, start: '11:00', end: '12:00', color: EVIL },
++      { id: 'b2', title: 'Number color', date: T, start: '12:00', end: '12:30', color: 123456 },
++      { id: 'b3', title: 'Evil all day', date: T, color: EVIL + ';background:red' },
++      { id: 'b4', title: 'Good color', date: T, start: '08:00', end: '08:30', color: '#16a34a' },
++    ] } } };
++    const ctx8 = await b.newContext({ viewport: { width: 390, height: 844 }, timezoneId: 'America/New_York' }); const p8 = await ctx8.newPage(); const pe8 = [];
++    p8.on('pageerror', (e) => pe8.push(e.message)); await p8.route('**/data.json*', (r) => r.abort());
++    await p8.clock.install({ time: NOW });
++    await p8.addInitScript(([s, bots]) => { if (!localStorage.getItem('pw.seeded')) { localStorage.setItem('pw.seeded', '1'); localStorage.setItem('planner.v1', JSON.stringify(s)); localStorage.setItem('planner.bots', JSON.stringify(bots)); } }, [st8, bots]);
++    await p8.goto(URL + '#today'); await wait(900);
++    for (const v of ['agenda', 'month', 'week', 'day', 'today']) {
++      await p8.evaluate((v) => { const x = document.querySelector(`#views [data-v="${v}"]`) || document.querySelector(`#moreMenu [data-v="${v}"]`); if (x) x.click(); }, v); await wait(250);
++      if (v === 'agenda') ok(/Evil block/.test(await p8.textContent('#main')) && /Number color/.test(await p8.textContent('#main')), 'bot events with bad colors still show');
++    }
++    await p8.goto(URL + '#now-next'); await wait(700);
++    ok(await p8.evaluate(() => !window.__pwned && !document.querySelector('img[src="x"]')), 'no script or element from a bot color');
++    ok(await p8.evaluate(() => [...document.querySelectorAll('[data-ev^="bot:evil:"]')].every((x) => !/onerror|<|background:red/i.test(x.getAttribute('style') || ''))), 'bad bot colors never reach style=""');
++    ok(await p8.evaluate(() => [...document.querySelectorAll('[data-ev="bot:evil:b4"]')].length === 0 || [...document.querySelectorAll('[data-ev="bot:evil:b4"]')].some((x) => /#16a34a/i.test(x.getAttribute('style') || ''))), 'a plain hex bot color is kept');
++    ok(pe8.length === 0, 'a numeric bot color does not crash any view: ' + pe8.join(' | '));
++    const hx = await p8.evaluate((EVIL) => [window.__pw.hexOk('#abc'), window.__pw.hexOk('#16A34A'), window.__pw.hexOk('#16a34a80'), window.__pw.hexOk(EVIL), window.__pw.hexOk(123456), window.__pw.hexOk('red'), window.__pw.hexOk(null), window.__pw.hexOk('#16a34a;x:y')], EVIL);
++    ok(JSON.stringify(hx) === JSON.stringify(['#abc', '#16A34A', '#16a34a80', '', '', '', '', '']), 'hex check: ' + JSON.stringify(hx));
++    const html = await p8.evaluate(({ EVIL, T }) => window.__pw.strip({ k: T, from: 420, to: 1380, trv: [], gaps: [], blocks: [
++      { s: 600, e: 660, ev: { id: 'z1', title: '<img src=x onerror="window.__pwned=2">', cat: 'personal', color: EVIL }, occ: T, lane: 0 },
++      { s: 700, e: 760, ev: { id: 'z2', title: 'Number', cat: 'personal', color: 123456 }, occ: T, lane: 0 },
++      { s: 800, e: 860, ev: { id: 'z3', title: 'Good', cat: 'nope', color: '#16a34a' }, occ: T, lane: 0 },
++      { s: 900, e: 960, ev: { id: 'z4', title: 'Bad type', cat: 'nope', color: '' }, occ: T, lane: 0 },
++    ] }, 600), { EVIL, T });
++    const parsed = await p8.evaluate((h) => { const t = document.createElement('template'); t.innerHTML = h; const c = t.content; return { img: c.querySelectorAll('img,[onerror]').length, blocks: c.querySelectorAll('.px-blk').length, styles: [...c.querySelectorAll('[style]')].map((x) => x.getAttribute('style')), text: [...c.querySelectorAll('.px-blk')].map((x) => x.textContent) }; }, html);
++    ok(parsed.img === 0 && parsed.blocks === 4 && parsed.styles.every((x) => !/onerror|<|>|"/.test(x)), 'the strip never writes a hostile color or title into the page: ' + JSON.stringify(parsed.styles.slice(0, 2)));
++    ok(parsed.text[0] === '<img src=x onerror="window.__pwned=2">', 'a hostile title shows as plain text');
++    ok((html.match(/--c:#64748b/g) || []).length === 3 && /--c:#16a34a/.test(html), 'bad colors fall back to the type color or grey, a good one is kept');
++    errs.push(...pe8.map((x) => 'pageerror ' + x)); await ctx8.close();
 +  }
 +  await b.close();
 +  if (errs.length) { console.log('FAIL\n' + errs.join('\n')); process.exit(1); }

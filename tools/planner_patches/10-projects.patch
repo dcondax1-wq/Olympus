@@ -1,0 +1,1034 @@
+diff --git a/planner/docs/features-projects.md b/planner/docs/features-projects.md
+new file mode 100644
+index 0000000..d91f9a4
+--- /dev/null
++++ b/planner/docs/features-projects.md
+@@ -0,0 +1,34 @@
++# Bots, projects and Jarvis: text for the Help sheet and README (merge by hand)
++
++Deep links: `#projects-live`, `#market-hours`. Code: `planner/ext-projects.js` (an add-on file, loaded by one `<script defer>` tag). Tests: `planner/tests/projects.test.js`. No new synced collection: everything new is kept on this device under its own keys, and your planner data is only read.
++
++## Help sheet bullets (one line each, same style as the others)
++- **Bots and projects** (a line on Today, `#projects-live`, All tools, or "bots and projects" in Find): the live status of your NQ bots (Zlarior on the MFFU 50K, ATLAS and BLITZ on their 25Ks: today's P&L, room above the floor, what is left to the target, the session) and of the Kalshi bot (balance, today, open positions), read from what your PC publishes. It also shows the NQ market clock, which projects are late or blocked, and one-tap links to **Zenith**, **Kalshi** and **Jarvis**. The line moves up to **Needs you now** only when a bot is stopped or has gone quiet during its own trading hours (2am to 3:30pm New York time on weekdays); you can switch that off.
++- **Market hours** (`#market-hours`, All tools): when NQ trades (Sunday 6pm to Friday 5pm New York time, with a 5-6pm break on weekdays) and when the bots can enter, with the time left until the next change, in New York time and in your phone's time. Switch on **Show NQ hours on the Day and Week views** to see the bots' window as a thin purple line and the closed hours as light stripes behind your events. It is off until you turn it on.
++- **Projects** now starts with **At a glance**: one chip per project, green, amber or red, saying why ("blocked", "milestone 2 days late", "2 overdue", "stopped"). Tap a chip to jump to the project. Projects with a dashboard (NQ bot, Kalshi, Jarvis) get a live line and a link.
++- **Jarvis** (in the More menu on a phone, and on the Bots and projects card): opens your hub. Jarvis reads today's events and tasks from this phone, so its Planner card stays right even when the Planner changes how it stores things.
++
++## README additions
++### Bots and projects (`#projects-live`)
++- Sources, both optional and both read-only: the NQ bots' `live.json` (branch `live` of nq-dashboard: `board.lit`, `board.atlas`, `board.blitz` or the top-level `blitz`, and `pc_verdict`) and the Kalshi bot's `kalshi.json` (its own repo, `demetrades2000-coder/kalshi-feed`, branch `main`: `balance`, `today_pnl`, `positions`, `running`, `mode`, `t`). Each is read from raw.githubusercontent.com first and the GitHub API second; a 404 means "not connected yet".
++- It checks when the app opens or comes back to the screen, then every 3 minutes while Today, Projects or the sheet is showing (every 12 minutes otherwise). Refresh checks now. Requests time out after 8 seconds and never show an error on their own: offline, the card shows the last good copy and says "Offline: showing the last copies".
++- States: a bot's line is green when the PC says it is running, red when it is stopped, amber when it needs a look, and "not updating" when the PC has not published for 20 minutes (grey outside the bots' hours). Kalshi is "running" when its file is under 15 minutes old.
++- Needs you now: only inside the bots' window on a weekday, only right after a successful read, and only if "Put a stopped or silent bot under Needs you now" is on (it is by default). An old copy read while offline never raises it.
++- Project health: blocked or a milestone past due is red; overdue tasks, a milestone due within 3 days, a stopped or silent bot, or Kalshi not updating are amber or red; paused is grey. Projects are matched to their dashboards by name (NQ, Zlarior, ATLAS, BLITZ and Zenith go to Zenith; Kalshi; Jarvis).
++- **Not in your Planner yet**: the sheet offers Zenith and Ascend (coming soon) when no project matches them. The button opens the Planner's own project sheet filled in; nothing is saved until you press Save.
++- Links are `../` (Zenith), `../kalshi/` and `../jarvis/` on the dashboard site (the public site addresses anywhere else) and open in the same tab. Inside Jarvis (the Planner in a Jarvis frame on the same site, with `window.__jarvis`), Zenith, Kalshi and **Back to Jarvis** call `__jarvis.show('zenith' | 'kalshi' | 'home')`, so Jarvis switches apps itself and is never replaced.
++
++### Market hours (`#market-hours`)
++- Worked out in New York time with the planner's own ET converter, so daylight-saving changes and a phone in another time zone are handled. CME holidays are not checked here; early closes from the dashboard data already show on the calendar.
++- The Day and Week bands are drawn when the view is drawn and never stored. They sit behind your events, so nothing moves or gets covered.
++
++### Jarvis summary (`localStorage['planner.today.v1']`)
++- `{ v: 1, day: 'YYYY-MM-DD', events: [{ title, start: 'HH:MM' or '', end: 'HH:MM' or '', allDay }], tasks: [{ title, due: 'YYYY-MM-DD', done }], updated: ms }`.
++- Events are what the calendar shows on that day (repeats included; hidden event types and market layers left out; bot and market feed items skipped), all-day first, up to 40. Tasks are the ones due that day (done or not) and the open overdue ones, open first, up to 60. Times are the phone's local wall-clock times, like the rest of the planner.
++- Rewritten whenever the planner saves or draws and the day's list changed, at midnight, and when the app is shown, hidden or closed. Jarvis on the same site reads it (its `storage` listener already reacts to `planner.*` keys).
++
++## For developers
++- Add-on hook (the EXT block in `index.html`): an add-on file queues `(window.PLANNER_EXT = window.PLANNER_EXT || []).push((api) => { ... })`. `api` reads the planner (`state()`, `eventsOn()`, date and ET helpers), adds a Today card (`card(def, beforeId)`, same shape as `TO_CARDS`), an All tools tile (`tool`), a palette command (`cmd`), and listens to `on('save' | 'render' | 'route', fn)`: `save()` emits save, `afterMain()` emits render, `route()` offers each deep link first (a handler returns true when the link is its own). Add-ons never write planner data themselves.
++- Device-only keys: `planner.ext.projects` (settings: `nq`, `kalshi`, `flag`, `bands`), `planner.ext.live` and `planner.ext.kalshi` (last good copies, slimmed), `planner.today.v1` (the Jarvis summary). Not synced, not in Back up.
++- Test hook: with `window.PLANNER_TEST`, `window.__xp` exposes `market`, `marketLine`, `slim`, `kslim`, `health`, `todaySummary`, `botAlert`, `bandsFor` and the feed state.
++- `projects.test.js` (PORT default 8792) mocks both feeds and covers: escalation inside and outside the bots' hours, the flag switch, offline copies, the market clock (Saturday, Sunday evening, Monday 1am, the Tuesday break, Friday 5pm, a Los Angeles phone), the bands, the Jarvis summary (shape, repeats, hidden types, a task added in the app, the midnight rollover), deep links, Find, All tools, Customize Today, adding Zenith through the Planner's own sheet, dark mode, and that the add-on only adds its own keys and leaves `planner.v1` exactly as it is.
+diff --git a/planner/ext-projects.js b/planner/ext-projects.js
+new file mode 100644
+index 0000000..ad314c4
+--- /dev/null
++++ b/planner/ext-projects.js
+@@ -0,0 +1,548 @@
++// Planner add-on: your projects, live (planner/ext-projects.js). Loaded by one <script defer> tag in index.html and talks to the
++// app only through window.PLANNER_EXT (the EXT block in index.html). Docs: docs/features-projects.md. Tests: tests/projects.test.js.
++// - "Bots and projects" on Today: the NQ bots (Zlarior, ATLAS, BLITZ) from the PC's live.json, the Kalshi bot from kalshi.json,
++//   the NQ market clock, project health, and one-tap links to Zenith, Kalshi and Jarvis. It only jumps to "Needs you now" when a
++//   bot is stopped or silent inside its own trading window (02:00-15:30 ET on weekdays), and that can be switched off.
++// - Projects view: health at a glance for every project, and a live line on each project that has a dashboard.
++// - Market hours: CME NQ (Sun 6pm to Fri 5pm ET, daily break 5-6pm) and the bots' window, optional bands on the Day and Week
++//   views (off until switched on). Nothing is ever added to the calendar data.
++// - Jarvis: localStorage 'planner.today.v1' = { v: 1, day, events: [{ title, start, end, allDay }], tasks: [{ title, due, done }],
++//   updated } is rewritten whenever the day's events or tasks change, so Jarvis can read the day whatever the planner's own format.
++// Storage, this device only (never synced or backed up): planner.ext.projects (settings), planner.ext.live and planner.ext.kalshi
++// (the last good copies, for offline), planner.today.v1. The planner's own data (planner.v1 and the rest) is only ever read.
++(() => {
++  'use strict';
++  const OWNER = 'demetrades2000-coder', REPO = 'nq-dashboard';
++  const FEEDS = {
++    nq: { raw: `https://raw.githubusercontent.com/${OWNER}/${REPO}/live/live.json`, api: `https://api.github.com/repos/${OWNER}/${REPO}/contents/live.json?ref=live` },
++    kalshi: { raw: `https://raw.githubusercontent.com/${OWNER}/kalshi-feed/main/kalshi.json`, api: `https://api.github.com/repos/${OWNER}/kalshi-feed/contents/kalshi.json?ref=main` }, // its own repo
++  };
++  const SITE = `https://${OWNER}.github.io/${REPO}/`;
++  const CFG_KEY = 'planner.ext.projects', TODAY_KEY = 'planner.today.v1', CACHE = { nq: 'planner.ext.live', kalshi: 'planner.ext.kalshi' };
++  const DEF = { nq: true, kalshi: true, flag: true, bands: false };
++  const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
++  const BOT_ON = 120, BOT_OFF = 930, CME_CLOSE = 1020, CME_OPEN = 1080; // ET minutes: 02:00, 15:30, 17:00, 18:00
++  const STALE_S = 20 * 60; // the PC publishes every 5 minutes; 20 minutes without a new copy = not updating
++
++  function start(api) {
++    if (window.__xpStarted) return; window.__xpStarted = true;
++    const esc = (s) => api.esc(s);
++    const rd = (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } };
++    const wr = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } };
++    const cfg = () => { const c = rd(CFG_KEY); return { ...DEF, ...(c && typeof c === 'object' ? c : {}) }; };
++    const setCfg = (patch) => { wr(CFG_KEY, { ...cfg(), ...patch }); };
++    const num = (v) => (v == null || v === '' || !Number.isFinite(+v) ? null : +v);
++    const str = (v, n) => (v == null ? '' : String(v).replace(/\s+/g, ' ').trim().slice(0, n));
++    const squash = (v) => String(v || '').toLowerCase().replace(/[^a-z0-9]/g, '');
++    const nowS = () => Date.now() / 1000;
++    const onSite = /^https?:$/.test(location.protocol) && /\/planner\/(index\.html)?$/.test(location.pathname);
++    // The other dashboards live next to the planner on the same site (relative links); anywhere else, on the public site.
++    const LINKS = onSite ? { zenith: '../', kalshi: '../kalshi/', jarvis: '../jarvis/' } : { zenith: SITE, kalshi: SITE + 'kalshi/', jarvis: SITE + 'jarvis/' };
++    // Opened inside Jarvis (a frame on the same site whose page has window.__jarvis): Jarvis switches to the other app itself, so
++    // nothing reloads and Jarvis stays around it. Anywhere else the link opens normally, in this tab.
++    const APP = { zenith: 'zenith', kalshi: 'kalshi', jarvis: 'home' };
++    function jarvisHost() {
++      try {
++        if (window.top === window.self || !window.parent || window.parent === window || window.parent.location.origin !== location.origin) return null;
++        const j = window.parent.__jarvis;
++        return j && typeof j.show === 'function' ? j : null;
++      } catch (e) { return null; } // a frame from another site: not Jarvis
++    }
++    const NAMES = { zenith: 'Zenith', kalshi: 'Kalshi', jarvis: 'Jarvis' };
++    const label = (k) => (k === 'jarvis' && jarvisHost() ? 'Back to Jarvis' : NAMES[k]);
++    const linkBtn = (k, cls = 'btn sm') => `<a class="${cls}" href="${esc(LINKS[k])}" data-xpgo="${k}">${esc(label(k))} <span aria-hidden="true">↗</span></a>`;
++    function go(k) {
++      const j = jarvisHost();
++      if (j) { try { j.show(APP[k]); return; } catch (e) { /* Jarvis could not switch: open the page instead */ } }
++      try { location.href = new URL(LINKS[k], location.href).href; } catch (e) { /* nothing to open */ }
++    }
++
++    // ---------- money and time words ----------
++    function money(v, sign, whole) {
++      const x = num(v); if (x == null) return '—';
++      const a = whole ? Math.round(Math.abs(x)) : Math.abs(x), cents = !whole && a > 0 && a < 1000 && Math.round(a) !== a;
++      return (x < 0 ? '-' : sign && x > 0 ? '+' : '') + '$' + a.toLocaleString('en-US', { minimumFractionDigits: cents ? 2 : 0, maximumFractionDigits: cents ? 2 : 0 });
++    }
++    const pnlCls = (v) => (num(v) > 0 ? 'pos' : num(v) < 0 ? 'neg' : '');
++    const ago = (t) => { if (!t) return ''; const s = Math.max(0, nowS() - t); return s < 90 ? 'just now' : s < 3600 ? Math.round(s / 60) + ' min ago' : s < 86400 ? Math.round(s / 3600) + ' h ago' : Math.round(s / 86400) + (s < 172800 ? ' day ago' : ' days ago'); };
++    function inTxt(ms, from) {
++      const m = Math.max(1, Math.round((ms - (from == null ? Date.now() : from)) / 60000));
++      if (m < 60) return `in ${m} min`;
++      const h = Math.floor(m / 60), r = m % 60;
++      if (h < 24) return `in ${h} h${r ? ' ' + r + ' min' : ''}`;
++      const d = Math.floor(h / 24), hh = h % 24; return `in ${d} day${d === 1 ? '' : 's'}${hh ? ' ' + hh + ' h' : ''}`;
++    }
++
++    // ---------- market hours (CME NQ and the bots' window), worked out in New York time ----------
++    const etDow = (day) => { const [y, m, d] = day.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d)).getUTCDay(); };
++    // ET wall time (day, minutes) -> ms, through the planner's own ET converter (daylight saving included)
++    function etMs(day, min) {
++      const r = api.etToLocal(day, api.fromMin(min)), [h, mi] = r.hm.split(':').map(Number), d = api.parse(r.date);
++      d.setHours(h, mi, 0, 0); return d.getTime();
++    }
++    // open: CME NQ trades now; halt: the 5-6pm ET daily break (Mon-Thu); bots: inside the bots' entry window. Next changes with times.
++    function market(ms) {
++      const at = ms == null ? Date.now() : ms, et = api.mnEt(at), wd = et.wd, m = et.min;
++      const open = wd === 6 ? false : wd === 0 ? m >= CME_OPEN : wd === 5 ? m < CME_CLOSE : !(m >= CME_CLOSE && m < CME_OPEN);
++      const halt = wd >= 1 && wd <= 4 && m >= CME_CLOSE && m < CME_OPEN;
++      const bots = wd >= 1 && wd <= 5 && m >= BOT_ON && m < BOT_OFF;
++      const ev = [];
++      for (let i = 0; i < 9; i++) {
++        const day = i ? api.addDays(et.day, i) : et.day, w = etDow(day);
++        const add = (min, kind) => { if (i > 0 || min > m) ev.push({ day, min, kind, w }); };
++        if (w === 0) add(CME_OPEN, 'open');
++        if (w >= 1 && w <= 4) { add(CME_CLOSE, 'close'); add(CME_OPEN, 'open'); }
++        if (w === 5) add(CME_CLOSE, 'close');
++        if (w >= 1 && w <= 5) { add(BOT_ON, 'on'); add(BOT_OFF, 'off'); }
++      }
++      ev.sort((a, b) => a.day.localeCompare(b.day) || a.min - b.min);
++      const next = (k) => { const e = ev.find((x) => x.kind === k); return e ? { ...e, ms: etMs(e.day, e.min) } : null; };
++      return { at, et, open, halt, weekend: !open && !halt, bots, nextOpen: next('open'), nextClose: next('close'), botsOn: next('on'), botsOff: next('off') };
++    }
++    // "6pm ET", "Mon 2am ET", "tomorrow 2am ET" (+ the phone's own time when it is not on New York time)
++    function whenTxt(x, et) {
++      const pre = x.day === et.day ? '' : x.day === api.addDays(et.day, 1) ? 'tomorrow ' : WD[x.w] + ' ';
++      const d = new Date(x.ms), loc = api.localIsET() ? '' : `, ${api.fmtTime(`${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`)} your time`;
++      return `${pre}${api.fmtTime(api.fromMin(x.min))} ET${loc}`;
++    }
++    function marketLine(mk) {
++      const et = mk.et, w = (x) => `${whenTxt(x, et)} (${inTxt(x.ms, mk.at)})`;
++      if (mk.halt) return { lvl: 'warn', text: `CME daily break. NQ reopens ${w(mk.nextOpen)}` };
++      if (!mk.open) return { lvl: 'idle', text: `NQ closed for the weekend. Opens ${w(mk.nextOpen)}` };
++      if (mk.bots) return { lvl: 'ok', text: `NQ open. Bots' window open until ${w(mk.botsOff)}` };
++      return { lvl: 'ok', text: `NQ open. Bots' window opens ${w(mk.botsOn)}` };
++    }
++    const marketShort = (mk) => (mk.halt ? 'CME break' : !mk.open ? 'NQ closed' : mk.bots ? "NQ open, bots' window open" : 'NQ open');
++
++    // ---------- the live feeds ----------
++    // What the cards need from live.json, mirroring Zenith and Jarvis (board.lit / board.atlas / board.blitz, pc_verdict).
++    function slim(j) {
++      if (!j || typeof j !== 'object' || !j.board || typeof j.board !== 'object') return null;
++      const b = j.board;
++      const bz = b.blitz && !b.blitz.error ? b.blitz : j.blitz && typeof j.blitz === 'object' && !j.blitz.error ? j.blitz : null;
++      const acct = (x) => (x && typeof x === 'object' ? {
++        name: str(x.name, 40), plan: str(x.plan, 60), badge: str(x.badge, 16), status: str(x.status, 40), off: !!x.off,
++        today: num(x.today_pnl), week: num(x.week_pnl), room: num(x.room), roomFrac: num(x.room_frac), toTarget: num(x.to_target),
++        balance: num(x.balance), session: num(x.session), sessions: num(x.sessions), trades: num(x.trades_today),
++        pos: x.position && typeof x.position === 'object' ? { side: str(x.position.side, 8), qty: num(x.position.qty) } : null,
++        win: x.window && typeof x.window === 'object' ? { open: !!x.window.open, text: str(x.window.text, 80) } : null,
++      } : null);
++      const vd = j.pc_verdict && typeof j.pc_verdict === 'object' ? j.pc_verdict : null;
++      return {
++        t: num(j.t) || num(b.t) || 0, running: b.running === true,
++        verdict: vd ? { label: str(vd.label, 80), level: str(vd.level, 10), reason: str(vd.reason, 160) } : null,
++        lit: acct(b.lit), atlas: acct(b.atlas), blitz: acct(bz),
++        lines: (Array.isArray(b.lines) ? b.lines : []).slice(0, 4).map((l) => ({ level: str(l && l.level, 10), text: str(l && l.text, 240) })).filter((l) => l.text),
++        windows: (b.lit && Array.isArray(b.lit.windows) ? b.lit.windows : []).slice(0, 3).map((w) => ({ label: str(w && w.label, 40) })).filter((w) => w.label),
++      };
++    }
++    // What the cards need from kalshi.json (balance, today_pnl, positions ...)
++    function kslim(j) {
++      if (!j || typeof j !== 'object' || Array.isArray(j)) return null;
++      return { t: num(j.t) || 0, running: j.running === false ? false : j.running === true ? true : null, mode: str(j.mode, 12),
++        balance: num(j.balance), today: num(j.today_pnl), open: Array.isArray(j.positions) ? j.positions.length : num(j.open_positions) };
++    }
++    // F[src] = { c: last good copy { at, v } (also in localStorage), at: last try, ok: last try worked, okAt, state, busy }
++    const F = {};
++    for (const k of ['nq', 'kalshi']) { const c = rd(CACHE[k]); F[k] = { c: c && c.v && typeof c.v === 'object' ? c : null, at: 0, ok: null, okAt: 0, state: '', busy: false, apiUntil: 0 }; }
++    async function timed(url, opts, ms = 8000) {
++      const ac = typeof AbortController === 'function' ? new AbortController() : null, t = setTimeout(() => ac && ac.abort(), ms);
++      try { return await fetch(url, { ...opts, cache: 'no-cache', signal: ac ? ac.signal : undefined }); } finally { clearTimeout(t); }
++    }
++    // Raw file first (no rate limit), the GitHub API as a fallback. 404 = not published yet. Never throws, never toasts.
++    async function pull(k) {
++      const f = F[k], feed = FEEDS[k];
++      if (f.busy) return false;
++      f.busy = true; f.at = Date.now();
++      let j = null, st = -1;
++      try { const r = await timed(feed.raw + '?t=' + Math.floor(Date.now() / 60000)); st = r.status; if (r.ok) j = await r.json(); } catch (e) { j = null; }
++      if (!j && st !== 404 && Date.now() > f.apiUntil) {
++        try {
++          const r = await timed(feed.api, { headers: { Accept: 'application/vnd.github.raw+json' } });
++          if (r.ok) j = await r.json();
++          else if (r.status === 404) st = 404;
++          else if (r.status === 403 || r.status === 429) f.apiUntil = Date.now() + 15 * 60e3; // rate limited: raw only for a while
++        } catch (e) { /* offline: keep the last copy */ }
++      }
++      f.busy = false;
++      const v = j ? (k === 'nq' ? slim(j) : kslim(j)) : null;
++      const before = JSON.stringify(f.c && f.c.v), was = f.state;
++      if (v) {
++        f.ok = true; f.okAt = Date.now(); f.state = 'ok';
++        if (!f.c || (v.t || 0) >= (f.c.v.t || 0)) { f.c = { at: Date.now(), v }; wr(CACHE[k], f.c); }
++      } else { f.ok = false; f.state = st === 404 ? 'waiting' : 'error'; if (st === 404) f.okAt = Date.now(); }
++      return JSON.stringify(f.c && f.c.v) !== before || f.state !== was;
++    }
++    async function refresh(force) {
++      const c = cfg(), jobs = [];
++      for (const k of ['nq', 'kalshi']) if (c[k] && (force || Date.now() - F[k].at > 60e3)) jobs.push(pull(k));
++      if (!jobs.length) return null;
++      const changed = (await Promise.all(jobs)).some(Boolean);
++      if (changed) { if (api.view() === 'today' || api.view() === 'projects') api.render(); paintSheet(); } // other screens pick it up on their next draw
++      return changed;
++    }
++    const live = () => (cfg().nq && F.nq.c ? F.nq.c.v : null);
++    const kal = () => (cfg().kalshi && F.kalshi.state !== 'waiting' && F.kalshi.c ? F.kalshi.c.v : null);
++
++    // ---------- states ----------
++    // The NQ bots as one state: ok / warn / bad / idle, a short word for the summary line and whether the feed went quiet.
++    function nqState(v, mk) {
++      if (!v) return { lvl: 'idle', word: F.nq.state === 'error' ? 'feed not reached' : 'no data yet' };
++      const stale = nowS() - (v.t || 0) > STALE_S, vl = v.verdict ? v.verdict.level : '';
++      if (stale) return { lvl: mk.bots ? 'warn' : 'idle', word: 'not updating', stale: true };
++      const lvl = vl === 'good' || vl === 'ok' ? 'ok' : vl === 'bad' ? 'bad' : vl ? 'warn' : v.running ? 'ok' : 'warn';
++      return { lvl, word: lvl === 'ok' ? 'running' : !v.running ? 'stopped' : lvl === 'bad' ? 'needs you' : 'check it' };
++    }
++    function kState(k) {
++      if (!cfg().kalshi) return { lvl: 'idle', word: 'off' };
++      if (F.kalshi.state === 'waiting') return { lvl: 'idle', word: 'not connected yet' };
++      if (!k) return { lvl: 'idle', word: F.kalshi.state === 'error' ? 'feed not reached' : 'no data yet' };
++      if (k.running === false) return { lvl: 'bad', word: 'stopped' };
++      return k.t && nowS() - k.t < 15 * 60 ? { lvl: 'ok', word: 'running' } : { lvl: 'warn', word: 'not updating' };
++    }
++    // Needs you now: only inside the bots' window on a weekday, only on a fresh successful read, and only when switched on.
++    function botAlert(ms) {
++      const c = cfg(); if (!c.nq || !c.flag) return null;
++      const mk = market(ms); if (!mk.bots) return null;
++      const f = F.nq; if (!f.c || !f.ok || Date.now() - f.okAt > 15 * 60e3) return null;
++      const s = nqState(f.c.v, mk);
++      if (s.stale) return { label: 'Bot not updating', cls: 'amber', soft: true };
++      if (s.lvl === 'bad') return { label: f.c.v.running ? 'Bot needs you' : 'Bot stopped', cls: 'red', soft: false };
++      return null;
++    }
++
++    // ---------- projects: which of yours is which, and how each one is doing ----------
++    const CAT = [
++      { k: 'zenith', name: 'Zenith', re: /zenith/, src: 'nq', go: 'zenith', add: { status: 'live', link: SITE, notes: 'Phone dashboard for the NQ bots: Zlarior, ATLAS and BLITZ.' } },
++      { k: 'nq', name: 'NQ bots', re: /^(nq|zlarior|atlas|blitz|liquidity)/, src: 'nq', go: 'zenith' },
++      { k: 'kalshi', name: 'Kalshi bot', re: /kalshi/, src: 'kalshi', go: 'kalshi' },
++      { k: 'jarvis', name: 'Jarvis', re: /jarvis/, go: 'jarvis' },
++      { k: 'clipper', name: 'Clipper', re: /clip/ },
++      { k: 'portfolio', name: 'Portfolio', re: /portfolio|website/ },
++      { k: 'ascend', name: 'Ascend', re: /ascend/, add: { status: 'paused', link: '', notes: 'Coming soon.' } },
++    ];
++    const catOf = (p) => { const a = squash(p.id), b = squash(p.name); return CAT.find((c) => c.re.test(a) || c.re.test(b)) || null; };
++    const RANK = { bad: 3, warn: 2, ok: 1, idle: 0 };
++    function health(p, mk) {
++      const S = api.state(), t = api.todayKey(), c = catOf(p);
++      const tasks = S.tasks.filter((x) => x.proj === p.id), open = tasks.filter((x) => !x.done), late = open.filter((x) => x.date && x.date < t);
++      const days = p.milestone && /^\d{4}-\d{2}-\d{2}$/.test(p.due || '') ? api.diffDays(t, p.due) : null;
++      const out = [];
++      const add = (lvl, text) => out.push({ lvl, text });
++      if (p.status === 'blocked') add('bad', 'blocked');
++      if (days != null && days < 0) add('bad', `milestone ${-days} day${days === -1 ? '' : 's'} late`);
++      if (c && c.src === 'nq' && cfg().nq) { const v = live(), s = nqState(v, mk); add(s.lvl, v ? (/bot/i.test(p.name) ? '' : 'bot ') + s.word : s.word === 'no data yet' ? 'no live data yet' : 'live feed not reached'); }
++      if (c && c.src === 'kalshi' && cfg().kalshi) { const s = kState(kal()); add(s.lvl, s.word); }
++      if (late.length) add('warn', `${late.length} overdue`);
++      if (days != null && days >= 0 && days <= 3) add('warn', `due ${days === 0 ? 'today' : days === 1 ? 'tomorrow' : 'in ' + days + ' days'}`);
++      if (p.status === 'paused') add('idle', 'paused');
++      out.sort((a, b) => RANK[b.lvl] - RANK[a.lvl]);
++      const top = out[0];
++      if (top && top.lvl !== 'ok') return { lvl: top.lvl, text: top.text, open: open.length };
++      return { lvl: 'ok', text: top ? top.text : open.length ? `${open.length} open` : 'on track', open: open.length };
++    }
++
++    // ---------- pieces of the card and the sheet ----------
++    const dot = (lvl) => `<span class="xp-dot ${lvl}" aria-hidden="true"></span>`;
++    function clockHtml(mk) { const l = marketLine(mk); return `<div class="xp-mkt" data-xpclock>${dot(l.lvl)}<span>${esc(l.text)}</span></div>`; }
++    function botRow(who, x) {
++      if (!x) return '';
++      const sub = [x.plan, x.badge].filter(Boolean).join(' · ');
++      const head = `<div class="xp-bh"><b>${esc(who)}</b><span>${esc(sub)}</span></div>`;
++      if (x.room == null) return `<div class="xp-bot">${head}<div class="xp-note">${esc(x.off ? 'Off for now: it trades paper only until its own 25K is set up.' : x.status === 'not set up' ? 'Not set up on the PC yet.' : x.status || 'No numbers yet.')}</div></div>`;
++      const rf = Math.max(0, Math.min(1, x.roomFrac == null ? 1 : x.roomFrac));
++      const extra = [x.session != null && x.sessions ? `Session ${x.session} of ${x.sessions}` : '', x.pos ? `In a ${x.pos.side.toLowerCase()} trade${x.pos.qty ? `, ${x.pos.qty} micros` : ''}` : '', x.trades ? `${x.trades} trade${x.trades === 1 ? '' : 's'} today` : ''].filter(Boolean).join(' · ');
++      return `<div class="xp-bot">${head}<div class="xp-kv"><div><span>Today</span><b class="${pnlCls(x.today)}">${money(x.today, true)}</b></div><div><span>Room</span><b>${money(x.room)}</b></div><div><span>To target</span><b>${money(x.toTarget)}</b></div></div>
++        <div class="bar2 room ${rf < 0.2 ? 'low' : rf < 0.45 ? 'mid' : ''}" title="Room above the loss floor"><i style="width:${Math.round(rf * 100)}%"></i></div>${extra ? `<div class="xp-note">${esc(extra)}</div>` : ''}</div>`;
++    }
++    function nqHtml(mk, full) {
++      if (!cfg().nq) return '<div class="xp-note">Live bot status is off. Turn it on in Bots and projects.</div>';
++      const v = live(), s = nqState(v, mk);
++      if (!v) return `<div class="xp-note">${F.nq.state === 'error' ? 'Could not reach the bots\' live feed. It loads when you are online.' : 'Waiting for the bots\' live feed…'}</div>`;
++      const vd = v.verdict, pill = s.stale ? `Not updating · last copy ${ago(v.t)}` : `${vd && vd.label ? vd.label : v.running ? 'Bot running' : 'Bot stopped'} · ${ago(v.t)}`;
++      const lines = full ? v.lines.map((l) => `<li class="${l.level === 'bad' ? 'bad' : l.level === 'warn' ? 'warn' : ''}">${esc(l.text)}</li>`).join('') : '';
++      return `<span class="xp-pill ${s.lvl}">${dot(s.lvl)}${esc(pill)}</span>${full && vd && vd.reason && !s.stale ? `<div class="xp-note">${esc(vd.reason.charAt(0).toUpperCase() + vd.reason.slice(1))}.</div>` : ''}${lines ? `<ul class="xp-lines">${lines}</ul>` : ''}
++        ${botRow('Zlarior', v.lit)}${botRow('ATLAS', v.atlas)}${botRow('BLITZ', v.blitz)}`;
++    }
++    function kHtml() {
++      if (!cfg().kalshi) return '';
++      const k = kal(), s = kState(k);
++      const head = `<div class="xp-bh"><b>Kalshi</b><span class="xp-st">${dot(s.lvl)}<span>${esc(s.word)}${k && k.mode ? ' · ' + esc(k.mode.toUpperCase()) : ''}${k && k.t ? ' · ' + esc(ago(k.t)) : ''}</span></span></div>`;
++      if (F.kalshi.state === 'waiting') return `<div class="xp-bot">${head}<div class="xp-note">Your PC is not publishing the Kalshi bot yet. Open Kalshi for the one step that connects it.</div></div>`;
++      if (!k) return `<div class="xp-bot">${head}<div class="xp-note">${F.kalshi.state === 'error' ? 'Could not reach the Kalshi feed. It loads when you are online.' : 'Waiting for the Kalshi feed…'}</div></div>`;
++      return `<div class="xp-bot">${head}<div class="xp-kv"><div><span>Balance</span><b>${money(k.balance)}</b></div><div><span>Today</span><b class="${pnlCls(k.today)}">${money(k.today, true)}</b></div><div><span>Open</span><b>${k.open == null ? '—' : k.open}</b></div></div></div>`;
++    }
++    function projLine(mk) {
++      const S = api.state(); if (!S.projects.length) return '';
++      const hs = S.projects.map((p) => ({ p, h: health(p, mk) })).filter((x) => x.h.lvl === 'bad' || x.h.lvl === 'warn').sort((a, b) => RANK[b.h.lvl] - RANK[a.h.lvl]);
++      const txt = hs.length ? hs.slice(0, 3).map((x) => `${x.p.name} ${x.h.text}`).join(' · ') : `${S.projects.length} project${S.projects.length === 1 ? '' : 's'}, nothing late`;
++      return `<div class="xp-projl">${dot(hs.length ? hs[0].h.lvl : 'ok')}<span>${esc(txt)}</span><button type="button" class="link" data-tgo="projects">Projects</button></div>`;
++    }
++    const updatedTxt = () => {
++      const f = F.nq, k = F.kalshi;
++      if (!cfg().nq && !cfg().kalshi) return '';
++      const off = (f.ok === false && f.c) || (k.ok === false && k.state === 'error' && k.c);
++      return off ? 'Offline: showing the last copies' : f.okAt || k.okAt ? `Checked ${ago(Math.max(f.okAt, k.okAt) / 1000)}` : 'Checking…';
++    };
++    // The folded line on Today
++    function sumLine() {
++      const mk = market(), c = cfg(), parts = [], v = c.nq ? live() : null;
++      if (v) { const s = nqState(v, mk), d = v.lit && !s.stale ? v.lit.today : null; parts.push(`Bot ${s.word}${d ? ', ' + money(d, true, true) : ''}`); }
++      else parts.push(marketShort(mk));
++      if (c.kalshi) { const k = kal(), s = kState(k); if (k) parts.push(s.lvl === 'bad' ? 'Kalshi stopped' : `Kalshi ${money(k.balance, false, true)}`); else if (F.kalshi.state === 'waiting') parts.push('Kalshi not connected'); }
++      return parts.join(' · ');
++    }
++    function cardHtml() {
++      const mk = market();
++      return `<section class="td-card xp" id="xpCard"><h3>Bots and projects<span class="xp-h"><span class="sub">${esc(updatedTxt())}</span><button type="button" data-xp="refresh">Refresh</button></span></h3>
++        ${clockHtml(mk)}${nqHtml(mk, false)}${kHtml()}${projLine(mk)}
++        <div class="xp-links">${linkBtn('zenith')}${cfg().kalshi ? linkBtn('kalshi') : ''}${linkBtn('jarvis')}<button type="button" class="btn sm" data-xp="open">Details</button></div></section>`;
++    }
++
++    // ---------- the sheet (#projects-live, #market-hours) ----------
++    document.body.insertAdjacentHTML('beforeend', `<dialog id="xpDlg" aria-labelledby="xpTitle"><div class="dlg">
++      <div class="dlg-h"><h3 id="xpTitle">Bots and projects</h3><button type="button" class="ib" data-close aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
++      <div id="xpBody" class="xp-body"></div>
++      <div class="dlg-f"><div><button type="button" class="btn" data-xp="refresh">Refresh</button></div><div><button type="button" class="btn primary" data-close>Done</button></div></div>
++    </div></dialog>`);
++    const dlg = document.getElementById('xpDlg');
++    dlg.addEventListener('click', (e) => { if (e.target === dlg || e.target.closest('[data-close]')) dlg.close(); });
++    const sw = (k, on, label) => `<div class="xp-row"><span>${label}</span><label class="to-sw"><input type="checkbox" role="switch" data-xpset="${k}" ${on ? 'checked' : ''} aria-label="${esc(label.replace(/<[^>]+>/g, ''))}"><i></i></label></div>`;
++    function sheetHtml() {
++      const mk = market(), c = cfg(), S = api.state(), v = live();
++      const wins = v && v.windows.length && !nqState(v, mk).stale ? `<div class="xp-note">Next entry windows from the bot: ${esc(v.windows.map((w) => w.label).join(', '))}.</div>` : '';
++      const projs = S.projects.map((p) => {
++        const h = health(p, mk), ct = catOf(p);
++        return `<div class="xp-prow"><button type="button" class="xp-pbtn" data-xp="proj" data-pid="${esc(p.id)}">${dot(h.lvl)}<b>${esc(p.name)}</b><span>${esc(h.text)}</span></button>${ct && ct.go ? linkBtn(ct.go, 'xp-go') : /^https?:\/\//i.test(p.link || '') ? `<a class="xp-go" href="${esc(p.link)}" target="_blank" rel="noopener">Open <span aria-hidden="true">↗</span></a>` : ''}</div>`;
++      }).join('');
++      const missing = CAT.filter((x) => x.add && !S.projects.some((p) => catOf(p) === x));
++      const sum = rd(TODAY_KEY);
++      const jv = sum && sum.updated && Array.isArray(sum.events) && Array.isArray(sum.tasks) ? `Jarvis reads today's ${sum.events.length} event${sum.events.length === 1 ? '' : 's'} and ${sum.tasks.length} task${sum.tasks.length === 1 ? '' : 's'} from this phone (updated ${ago(sum.updated / 1000)}).` : 'Jarvis reads your day from this phone once the Planner has saved it here.';
++      return `<section class="xp-sec" id="xpMarket"><h4>Market hours</h4>${clockHtml(mk)}
++          <div class="xp-note">NQ trades Sunday 6pm to Friday 5pm New York time, with a break from 5pm to 6pm on weekdays. The bots enter trades from 2am to 3:30pm on weekdays and are flat by 3:55pm. These are the usual hours: holidays are not checked here, and early closes from the dashboard show on your calendar.</div>${wins}
++          ${sw('bands', c.bands, 'Show NQ hours on the Day and Week views')}
++        </section>
++        <section class="xp-sec"><h4>NQ bots</h4>${nqHtml(mk, true)}<div class="xp-links">${linkBtn('zenith')}</div></section>
++        <section class="xp-sec"><h4>Kalshi</h4>${c.kalshi ? kHtml() : '<div class="xp-note">Kalshi is off on this phone.</div>'}<div class="xp-links">${linkBtn('kalshi')}</div></section>
++        <section class="xp-sec"><h4>Projects</h4>${projs || '<div class="xp-note">No projects yet.</div>'}
++          ${missing.length ? `<div class="xp-note">Not in your Planner yet:</div><div class="xp-links">${missing.map((x) => `<button type="button" class="btn sm" data-xp="add" data-k="${x.k}">+ ${esc(x.name)}${x.k === 'ascend' ? ' (coming soon)' : ''}</button>`).join('')}</div>` : ''}
++        </section>
++        <section class="xp-sec"><h4>Jarvis</h4><div class="xp-note">${esc(jv)}</div><div class="xp-links">${linkBtn('jarvis')}</div></section>
++        <section class="xp-sec"><h4>On this phone</h4>
++          ${sw('nq', c.nq, 'Live status of the NQ bots')}${sw('kalshi', c.kalshi, 'Live status of the Kalshi bot')}
++          ${sw('flag', c.flag, 'Put a stopped or silent bot under <b>Needs you now</b> (only in the bots\' hours)')}
++          <div class="xp-note">${esc(updatedTxt())}. The feeds are read-only copies your PC publishes; nothing here can start, stop or trade a bot.</div>
++        </section>`;
++    }
++    function paintSheet() { if (dlg.open) document.getElementById('xpBody').innerHTML = sheetHtml(); }
++    function openSheet(part) {
++      document.querySelectorAll('dialog[open]').forEach((d) => { if (d !== dlg) d.close(); });
++      document.getElementById('xpBody').innerHTML = sheetHtml();
++      if (!dlg.open) dlg.showModal();
++      if (part === 'market') setTimeout(() => { const m = document.getElementById('xpMarket'); if (m) m.scrollIntoView({ block: 'start' }); }, 30);
++      refresh(false);
++    }
++
++    // ---------- clicks and switches ----------
++    document.addEventListener('click', async (e) => {
++      const b = e.target.closest('[data-xp]'); if (!b) return;
++      const a = b.dataset.xp;
++      if (a === 'refresh') {
++        b.disabled = true; const t = b.textContent; b.textContent = 'Checking';
++        const was = [F.nq.okAt, F.kalshi.okAt], changed = await refresh(true);
++        b.disabled = false; b.textContent = t;
++        const reached = (!cfg().nq || F.nq.okAt > was[0]) && (!cfg().kalshi || F.kalshi.okAt > was[1]);
++        api.toast(changed ? 'Bots and projects updated' : reached ? 'Already the newest copies' : 'Could not reach the live feeds. Showing the last copies.');
++        paintSheet(); api.render();
++      } else if (a === 'open') openSheet();
++      else if (a === 'proj') {
++        dlg.close(); api.setView('projects');
++        setTimeout(() => { const el = document.querySelector(`#main .pc[data-pid="${CSS.escape(b.dataset.pid)}"]`); if (el) { el.scrollIntoView({ block: 'start', behavior: 'smooth' }); el.classList.add('xp-hl'); setTimeout(() => el.classList.remove('xp-hl'), 1600); } }, 80);
++      } else if (a === 'add') {
++        const x = CAT.find((c) => c.k === b.dataset.k); if (!x) return;
++        dlg.close(); api.openProject(null); // the Planner's own project sheet, filled in; nothing is saved until you press Save
++        const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
++        set('pName', x.name); set('pStatus', x.add.status); set('pLink', x.add.link); set('pNotes', x.add.notes);
++      }
++    });
++    document.addEventListener('change', (e) => {
++      const s = e.target.closest('[data-xpset]'); if (!s) return;
++      setCfg({ [s.dataset.xpset]: s.checked });
++      if (s.checked && (s.dataset.xpset === 'nq' || s.dataset.xpset === 'kalshi')) refresh(true);
++      paintSheet(); api.render();
++    });
++
++    // ---------- Projects view: health at a glance, and a live line on each project with a dashboard ----------
++    function liveLine(p, mk) {
++      const c = catOf(p); if (!c || !c.go) return '';
++      let lvl = 'idle', txt = '';
++      if (c.src === 'nq') {
++        if (!cfg().nq) txt = 'Live status off';
++        else { const v = live(), s = nqState(v, mk); lvl = s.lvl; txt = v ? [`Bot ${s.word}`, v.lit && v.lit.today != null && !s.stale ? `Zlarior ${money(v.lit.today, true)} today` : '', v.lit && v.lit.room != null ? `room ${money(v.lit.room)}` : '', v.t ? ago(v.t) : ''].filter(Boolean).join(' · ') : s.word.charAt(0).toUpperCase() + s.word.slice(1); }
++      } else if (c.src === 'kalshi') {
++        const k = kal(), s = kState(k); lvl = s.lvl;
++        txt = k ? [`Kalshi ${s.word}`, `balance ${money(k.balance)}`, k.today != null ? `${money(k.today, true)} today` : ''].filter(Boolean).join(' · ') : 'Kalshi ' + s.word;
++      } else if (c.k === 'jarvis') { lvl = 'ok'; txt = jarvisHost() ? 'You are inside Jarvis' : 'Your hub for every dashboard'; }
++      return `<div class="xp-live">${dot(lvl)}<span>${esc(txt)}</span>${linkBtn(c.go, 'xp-go')}</div>`;
++    }
++    function decorateProjects() {
++      const main = document.getElementById('main'), wrap = main && main.querySelector('.projects');
++      if (!wrap || wrap.querySelector('.xp-glance')) return;
++      const anchor = [...wrap.children].find((el) => el.getBoundingClientRect().bottom > main.getBoundingClientRect().top + 1), y0 = anchor ? anchor.getBoundingClientRect().top : 0;
++      const mk = market(), S = api.state();
++      const chips = S.projects.map((p) => { const h = health(p, mk); return `<button type="button" class="xp-chip ${h.lvl}" data-xp="proj" data-pid="${esc(p.id)}">${dot(h.lvl)}<b>${esc(p.name)}</b><span>${esc(h.text)}</span></button>`; }).join('');
++      if (chips) wrap.insertAdjacentHTML('afterbegin', `<section class="xp-glance"><div class="xp-gh"><b>At a glance</b><button type="button" class="link" data-xp="open">Bots and projects</button></div>${clockHtml(mk)}<div class="xp-chips">${chips}</div></section>`);
++      wrap.querySelectorAll('.pc[data-pid]').forEach((el) => { const p = api.projOf(el.dataset.pid), h = el.querySelector('.pc-h'); const l = p && h ? liveLine(p, mk) : ''; if (l) h.insertAdjacentHTML('afterend', l); });
++      if (anchor && main.scrollTop > 0) main.scrollTop += anchor.getBoundingClientRect().top - y0; // keep what you were looking at in place
++    }
++
++    // ---------- Day and Week views: optional NQ hours bands (drawn, never stored) ----------
++    function bandsFor(k) {
++      const H = api.hour(), segs = [];
++      const seg = (d, a, b, cls) => {
++        const A = api.etToLocal(d, api.fromMin(a)), B = b >= 1440 ? api.etToLocal(api.addDays(d, 1), '00:00') : api.etToLocal(d, api.fromMin(b));
++        const s = A.date < k ? 0 : A.date > k ? null : api.toMin(A.hm), e = B.date < k ? null : B.date > k ? 1440 : api.toMin(B.hm);
++        if (s != null && e != null && e > s) segs.push({ s, e, cls });
++      };
++      for (const off of [-1, 0, 1]) {
++        const d = api.addDays(k, off), w = etDow(d);
++        if (w >= 1 && w <= 5) seg(d, BOT_ON, BOT_OFF, 'bots');
++        if (w >= 1 && w <= 4) seg(d, CME_CLOSE, CME_OPEN, 'shut');
++        if (w === 5) seg(d, CME_CLOSE, 1440, 'shut');
++        if (w === 6) seg(d, 0, 1440, 'shut');
++        if (w === 0) seg(d, 0, CME_OPEN, 'shut');
++      }
++      const merged = [];
++      segs.sort((a, b) => a.cls.localeCompare(b.cls) || a.s - b.s).forEach((x) => { const l = merged[merged.length - 1]; if (l && l.cls === x.cls && x.s <= l.e) l.e = Math.max(l.e, x.e); else merged.push({ ...x }); });
++      return merged.map((x) => `<div class="xp-band ${x.cls}" style="top:${x.s / 60 * H}px;height:${(x.e - x.s) / 60 * H}px">${x.cls === 'shut' && x.e - x.s >= 45 ? `<span>${x.e - x.s <= 60 ? 'CME break' : 'NQ closed'}</span>` : x.cls === 'bots' ? '<span>Bots</span>' : ''}</div>`).join('');
++    }
++    function decorateGrid() {
++      document.querySelectorAll('#main .tg-col[data-date]').forEach((col) => { if (!col.querySelector('.xp-band')) col.insertAdjacentHTML('afterbegin', bandsFor(col.dataset.date)); });
++    }
++
++    // ---------- Jarvis: today's events and tasks in a fixed, simple shape ----------
++    // Events: what the calendar shows today (hidden types and market layers left out, bot and market feed items skipped).
++    // Tasks: due today (done or not) and open ones that are overdue.
++    function todaySummary() {
++      const S = api.state(), day = api.todayKey();
++      const events = api.eventsOn(day).filter((o) => !/^bot:/.test(String(o.ev.id || '')) && o.ev.title).slice(0, 40)
++        .map((o) => ({ title: str(o.ev.title, 120), start: o.ev.allDay ? '' : o.ev.start || '', end: o.ev.allDay ? '' : o.ev.end || '', allDay: !!o.ev.allDay }));
++      const tasks = S.tasks.filter((t) => t && t.title && (t.date === day || (!t.done && t.date && t.date < day)))
++        .sort((a, b) => (a.done - b.done) || String(a.date).localeCompare(String(b.date)) || ((b.p || 0) - (a.p || 0)))
++        .slice(0, 60).map((t) => ({ title: str(t.title, 120), due: t.date, done: !!t.done }));
++      return { v: 1, day, events, tasks };
++    }
++    let lastSum = '', sumT = null;
++    function writeToday() {
++      if (api.hosted) return;
++      let body; try { body = todaySummary(); } catch (e) { return; }
++      const sig = JSON.stringify(body); if (sig === lastSum) return;
++      if (wr(TODAY_KEY, { ...body, updated: Date.now() })) lastSum = sig;
++    }
++    const soonToday = () => { clearTimeout(sumT); sumT = setTimeout(writeToday, 250); };
++
++    // ---------- hooks into the app ----------
++    api.card({ id: 'xprojects', n: 'Bots and projects', home: 'today', fold: true, fn: () => cardHtml(),
++      tier: () => { const a = botAlert(); return a ? { tier: 'now', label: a.label, cls: a.cls, soft: a.soft, fold: false } : { tier: 'today', fold: true }; },
++      sum: () => sumLine() }, 'trading');
++    api.tool({ id: 'xprojects', g: 'Work', n: 'Bots and projects', d: 'Your bots, Kalshi, Jarvis and every project at a glance', k: 'zlarior atlas blitz zenith kalshi jarvis live status health dashboards', open: () => openSheet(), st: () => sumLine() });
++    api.tool({ id: 'xmarket', g: 'Trading', n: 'Market hours', d: 'When NQ trades and when the bots can enter', k: 'cme globex nq open close weekend halt break bots window', open: () => openSheet('market'), st: () => marketShort(market()) });
++    api.cmd({ id: 'x-projects', l: 'Bots and projects', k: 'bots status zlarior atlas blitz zenith kalshi jarvis health live', run: () => openSheet() });
++    api.cmd({ id: 'x-market', l: 'Market hours (NQ)', k: 'cme globex nq open close weekend halt break bots window', run: () => openSheet('market') });
++    api.cmd({ id: 'x-jarvis', get l() { return jarvisHost() ? 'Back to Jarvis' : 'Open Jarvis'; }, k: 'jarvis hub home dashboards switch', run: () => go('jarvis') });
++    api.cmd({ id: 'x-zenith', l: 'Open Zenith', k: 'zenith nq bots dashboard', run: () => go('zenith') });
++    api.cmd({ id: 'x-kalshi', l: 'Open Kalshi', k: 'kalshi bot dashboard prediction markets', run: () => go('kalshi') });
++    api.on('route', (h) => { if (h === 'projects-live') { api.goToday(); openSheet(); return true; } if (h === 'market-hours') { api.goToday(); openSheet('market'); return true; } return false; });
++    api.on('save', soonToday);
++    api.on('render', () => {
++      const v = api.view();
++      if (v === 'projects') decorateProjects();
++      else if ((v === 'week' || v === 'day') && cfg().bands) decorateGrid();
++      soonToday();
++    });
++    // Jarvis in the phone's More menu, and a few lines in Help
++    const menu = document.getElementById('moreMenu');
++    if (menu && !menu.querySelector('[data-xpgo]')) menu.insertAdjacentHTML('beforeend', `<button type="button" data-xpgo="jarvis">${esc(label('jarvis'))} <span aria-hidden="true">↗</span></button>`);
++    // Buttons always go through go(); a real link opens by itself unless Jarvis is around it, then Jarvis switches instead.
++    document.addEventListener('click', (e) => {
++      const el = e.target.closest('[data-xpgo]'); if (!el || !APP[el.dataset.xpgo]) return;
++      if (el.tagName === 'A' && !jarvisHost()) return;
++      e.preventDefault(); go(el.dataset.xpgo);
++    });
++    const help = document.querySelector('#helpDlg .dlg');
++    if (help && !help.querySelector('[data-xphelp]')) help.insertAdjacentHTML('beforeend', `<h4 data-xphelp>Bots, projects and Jarvis</h4><ul><li><b>Bots and projects</b> (a line on Today, <code>#projects-live</code>): the live status of Zlarior, ATLAS and BLITZ and of the Kalshi bot, read from what your PC publishes, plus links to Zenith, Kalshi and Jarvis. It moves up to Needs you now only when a bot is stopped or silent during its trading hours.</li><li><b>Market hours</b> (<code>#market-hours</code>): when NQ trades and when the bots can enter. Switch on the bands to see them on the Day and Week views.</li><li><b>Projects</b> shows each project's health at a glance. Jarvis reads today's events and tasks from this phone.</li></ul>`);
++
++    // ---------- keep it current ----------
++    let lastDay = api.todayKey();
++    setInterval(() => {
++      if (api.todayKey() !== lastDay) { lastDay = api.todayKey(); writeToday(); }
++      document.querySelectorAll('[data-xpclock] span:last-child').forEach((el) => { el.textContent = marketLine(market()).text; });
++      if (document.visibilityState !== 'visible') return;
++      const v = api.view(), busy = v === 'today' || v === 'projects' || dlg.open, age = Date.now() - Math.max(F.nq.at, F.kalshi.at);
++      if (age > (busy ? 3 : 12) * 60e3) refresh(true);
++    }, 60e3);
++    document.addEventListener('visibilitychange', () => { writeToday(); if (document.visibilityState === 'visible') refresh(false); });
++    addEventListener('pagehide', writeToday); // a change made just before the app is closed still reaches Jarvis
++    addEventListener('online', () => refresh(true));
++    addEventListener('storage', (e) => { if (e.key === CFG_KEY) { api.render(); paintSheet(); } });
++
++    if (window.PLANNER_TEST) window.__xp = { market, marketLine, slim, kslim, health, todaySummary, writeToday, botAlert, sumLine, bandsFor, catOf, cfg, refresh, F };
++    writeToday();
++    api.render();
++    refresh(false);
++  }
++
++  // ---------- styles (theme tokens only, so Light, Dark and Match my phone all work) ----------
++  document.head.insertAdjacentHTML('beforeend', `<style>
++.xp h3 .xp-h{display:flex;gap:10px;align-items:baseline;min-width:0}.xp h3 .xp-h .sub{font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
++.xp-mkt{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink2);background:var(--soft);border-radius:9px;padding:7px 10px;line-height:1.35;min-width:0}
++.xp-mkt span:last-child{min-width:0;overflow-wrap:anywhere}
++.xp-dot{width:8px;height:8px;border-radius:50%;flex:none;display:inline-block;background:var(--kl-c9cdd4)}
++.xp-dot.ok{background:var(--ok)}.xp-dot.warn{background:#f59e0b}.xp-dot.bad{background:#dc2626}
++.xp-pill{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;border-radius:999px;padding:3px 10px;border:1px solid var(--line);color:var(--ink2);background:var(--soft);max-width:100%;overflow-wrap:anywhere}
++.xp-pill.ok{color:var(--kf-047857);background:var(--kb-ecfdf5);border-color:var(--kl-a7f3d0)}
++.xp-pill.warn{color:var(--kf-92400e);background:var(--kb-fffaf0);border-color:var(--kl-f3d9a4)}
++.xp-pill.bad{color:var(--kf-991b1b);background:var(--kb-fef2f2);border-color:var(--kl-fecaca)}
++.xp-bot{display:flex;flex-direction:column;gap:6px;padding-top:8px;border-top:1px solid var(--line2);min-width:0}
++.xp-bh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px;min-width:0}
++.xp-bh b{font-weight:600;flex:none}.xp-bh>span{font-size:12px;color:var(--mute);text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
++.xp-bh>.xp-st{display:inline-flex;align-items:center;gap:5px}.xp-st>span{min-width:0;overflow:hidden;text-overflow:ellipsis}
++.xp-kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
++.xp-kv div{background:var(--soft);border-radius:8px;padding:6px 8px;min-width:0}
++.xp-kv span{display:block;font-size:11px;color:var(--mute)}
++.xp-kv b{display:block;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
++.xp-note{font-size:12px;color:var(--mute);line-height:1.4;overflow-wrap:anywhere}
++.xp-lines{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--ink2)}.xp-lines li.bad{color:var(--kf-991b1b)}.xp-lines li.warn{color:var(--kf-92400e)}
++.xp-projl{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink2);padding-top:8px;border-top:1px solid var(--line2)}.xp-projl span:nth-child(2){flex:1;min-width:0;overflow-wrap:anywhere}.xp-projl .link{flex:none}
++.xp-links{display:flex;flex-wrap:wrap;gap:6px}
++.xp-links a.btn{text-decoration:none;color:var(--ink)}
++.xp-go{font-size:12.5px;font-weight:600;color:var(--ink);text-decoration:none;white-space:nowrap;flex:none;display:inline-flex;align-items:center;gap:3px;min-height:36px;padding:0 2px}
++.xp-go:hover{text-decoration:underline}
++.xp-glance{display:flex;flex-direction:column;gap:8px}
++.xp-gh{display:flex;align-items:baseline;justify-content:space-between;gap:10px}.xp-gh>b{font-size:13px;font-weight:600}.xp-gh .link{min-height:32px}
++.xp-chips{display:flex;flex-wrap:wrap;gap:6px}
++.xp-chip{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:4px 11px;border:1px solid var(--line);border-radius:999px;background:var(--card);font-size:12.5px;max-width:100%;text-align:left}
++.xp-chip b{font-weight:600;flex:none}.xp-chip span:last-child{color:var(--mute);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
++.xp-chip.bad{border-color:var(--kl-fecaca);background:var(--kb-fef2f2)}.xp-chip.bad span:last-child{color:var(--kf-991b1b)}
++.xp-chip.warn{border-color:var(--kl-f3d9a4);background:var(--kb-fffaf0)}.xp-chip.warn span:last-child{color:var(--kf-92400e)}
++.xp-live{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink2);background:var(--soft);border-radius:9px;padding:4px 10px;min-height:38px}
++.xp-live>span:nth-child(2){flex:1;min-width:0;overflow-wrap:anywhere}
++.pc.xp-hl{box-shadow:0 0 0 2px var(--c,var(--ink));transition:box-shadow .3s}
++.xp-band{position:absolute;pointer-events:none;z-index:0}
++.xp-band.bots{left:0;width:4px;background:rgba(124,58,237,.5);border-radius:0 3px 3px 0}
++.xp-band.shut{left:0;right:0;background:repeating-linear-gradient(135deg,rgba(100,116,139,.1) 0 5px,transparent 5px 11px)}
++.xp-band span{position:absolute;left:7px;top:2px;font-size:9.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:rgba(71,85,105,.7);white-space:nowrap}
++.xp-band.bots span{color:rgba(109,40,217,.75)}
++html[data-theme="dark"] .xp-band.bots{background:rgba(167,139,250,.6)}html[data-theme="dark"] .xp-band.bots span{color:rgba(196,181,253,.85)}
++html[data-theme="dark"] .xp-band.shut{background:repeating-linear-gradient(135deg,rgba(154,161,173,.13) 0 5px,transparent 5px 11px)}html[data-theme="dark"] .xp-band span{color:rgba(154,161,173,.8)}
++@media (max-width:640px){.tg[style*="--n:7"] .xp-band span{display:none}}
++#xpDlg .dlg{max-height:calc(100dvh - 24px);overflow:auto}
++.xp-body{display:flex;flex-direction:column;gap:18px;min-width:0}
++.xp-sec{display:flex;flex-direction:column;gap:8px;min-width:0}.xp-sec>h4{font-size:13px;font-weight:600}
++.xp-row{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:44px;border-top:1px solid var(--line2);font-size:13px}.xp-row>span{min-width:0}
++.xp-prow{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line2);min-height:44px}
++.xp-pbtn{flex:1;min-width:0;display:flex;align-items:center;gap:8px;font-size:13px;text-align:left;padding:6px 0}.xp-pbtn b{font-weight:600;flex:none}.xp-pbtn span:last-child{color:var(--mute);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
++</style>`);
++
++  (window.PLANNER_EXT = window.PLANNER_EXT || []).push(start);
++})();
+diff --git a/planner/index.html b/planner/index.html
+index e73bf75..e6ec406 100644
+--- a/planner/index.html
++++ b/planner/index.html
+@@ -18,6 +18,7 @@
+ <link rel="preconnect" href="https://fonts.googleapis.com">
+ <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+ <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
++<script src="ext-projects.js" defer></script>
+ <style>
+ :root{
+   --bg:#ffffff; --card:#ffffff; --soft:#f7f8fa; --soft2:#f1f3f6; --line:#e6e8ec; --line2:#f0f1f4;
+@@ -1295,6 +1296,7 @@ function save() {
+   dvRev = (dvRev | 0) + 1; // the Dashboard view's memo key
+   try { localStorage.setItem(KEY, JSON.stringify(S)); }
+   catch (e) { toast('Could not save on this device (storage blocked or full). Use Back up.'); }
++  extEmit('save'); // EXT block: add-ons hear about every save
+ }
+ function snapshot() { undoSnap = JSON.stringify(S); }
+ function undo() {
+@@ -2850,6 +2852,7 @@ function route() {
+   const h = decodeURIComponent(location.hash.replace(/^#\/?/, '')).trim();
+   if (!h || h.startsWith('connect=')) return;
+   history.replaceState(null, '', location.pathname + location.search);
++  if (extEmit('route', h)) return; // EXT block: a deep link an add-on owns
+   const views = ['month', 'week', 'day', 'agenda', 'projects'];
+   if (h === 'today') goToday();
+   else if (h === 'help') { goToday(); $('#helpDlg').showModal(); }
+@@ -12171,6 +12174,44 @@ document.addEventListener('keydown', (e) => {
+ })();
+ // ===== PALETTE END =====
+ 
++// ===== EXT BEGIN: add-on files (planner/ext-*.js, each loaded by one <script defer> tag in <head>) =====
++// An add-on queues a start function, (window.PLANNER_EXT = window.PLANNER_EXT || []).push((api) => { ... }), and it is called with
++// EXT_API once the app has started, whichever of the two loads first. Add-ons keep their own data under their own localStorage keys,
++// read the planner through api.state() and never write it themselves: changes go through the app's own sheets and functions.
++// Hooks: save() emits 'save', afterMain() emits 'render', route() emits 'route' (a handler returns true when the link is its own).
++var EXT_HOOKS = { save: [], render: [], route: [] }, extLate = null; // var: save() can run before this line has
++function extEmit(k, a) {
++  const list = EXT_HOOKS && EXT_HOOKS[k]; if (!list) return false;
++  for (const f of list) { try { if (f(a) === true && k === 'route') return true; } catch (e) { console.error('Planner add-on:', e); } }
++  if (k === 'route') extLate = { h: a, t: Date.now() }; // an add-on that starts a moment later can still take this link
++  return false;
++}
++const EXT_API = Object.freeze({
++  v: 1, hosted: HOSTED,
++  state: () => S, // read only
++  eventsOn: (k, hidden) => eventsOn(k, hidden), // what the calendar shows on a day (hidden types and layers left out)
++  todayKey: () => todayKey(), addDays: (k, n) => addDays(k, n), diffDays: (a, b) => diffDays(a, b), parse: (k) => parse(k), key: (d) => key(d), longDate: (k) => longDate(k),
++  fmtTime: (hm) => fmtTime(hm), toMin: (hm) => toMin(hm), fromMin: (n) => fromMin(n), etToLocal: (d, hm) => etToLocal(d, hm), mnEt: (ms) => mnEt(ms), localIsET: () => localIsET,
++  esc: (s) => esc(s), cvars: (hex) => cvars(hex), usd: (n) => usd(n), hour: () => HOUR, view: () => (query ? 'search' : S.view), projOf: (id) => projOf(id),
++  render: () => safeRender(), toast: (m) => toast(m), setView: (v) => setView(v), goToday: () => goToday(), openProject: (id) => openProject(id),
++  // A Today card, exactly like a TO_CARDS entry ({ id, n, home, fn, tier, sum, fold }); before = the id of the card it goes in front of.
++  card: (c, before) => { if (!c || !c.id || TO_BY[c.id]) return; const i = TO_CARDS.findIndex((x) => x.id === before); TO_CARDS.splice(i < 0 ? TO_CARDS.length : i, 0, c); TO_BY[c.id] = c; safeRender(); },
++  tool: (t) => { if (t && t.id && !hbTool(t.id)) HB_TOOLS.push(t); }, // an All tools tile, like HB_TOOLS
++  cmd: (c) => { if (c && c.id && !PK_CMDS.some((x) => x.id === c.id)) PK_CMDS.push(c); }, // a palette command, like PK_CMDS
++  on: (k, f) => {
++    if (!EXT_HOOKS[k] || typeof f !== 'function') return;
++    EXT_HOOKS[k].push(f);
++    if (k === 'route' && extLate && Date.now() - extLate.t < 10e3) { try { if (f(extLate.h) === true) extLate = null; } catch (e) { console.error('Planner add-on:', e); } }
++  },
++});
++{
++  const start = (f) => { try { if (typeof f === 'function') f(EXT_API); } catch (e) { console.error('Planner add-on failed to start:', e); } };
++  const queued = Array.isArray(window.PLANNER_EXT) ? window.PLANNER_EXT : [];
++  window.PLANNER_EXT = { push: start };
++  if (queued.length) setTimeout(() => queued.forEach(start), 0);
++}
++// ===== EXT END =====
++
+ // ===== TIMELOG BEGIN: time log (what you actually did) and the weekly Time Audit (planned vs actual) =====
+ // Entries live in the synced collection `timelog`: { id, title, cat (event type id or ''), proj (project id or ''), start (ms), end (ms, 0 while the timer runs) }.
+ // The running timer is just the entry with end 0, so it survives a reload (its start time is saved) and shows on your other devices.
+@@ -13226,6 +13267,7 @@ function afterMain() {
+     renderJournals();
+   }
+   if (S.view === 'projects' && !query) paintSmartLists();
++  extEmit('render'); // EXT block: add-ons decorate the screen just drawn
+ }
+ function renderExtras() {
+   renderJournals(); renderTplRow(); focusPaint();
+diff --git a/planner/tests/projects.test.js b/planner/tests/projects.test.js
+new file mode 100644
+index 0000000..3c07d73
+--- /dev/null
++++ b/planner/tests/projects.test.js
+@@ -0,0 +1,353 @@
++// Bots and projects add-on (planner/ext-projects.js): node planner/tests/projects.test.js  (serve the site first, see shifts.test.js; PORT=... overrides, default 8792)
++// Live NQ bots and Kalshi on Today and on Projects (feeds mocked), the escalation rule, offline copies, market hours, the optional
++// Day/Week bands, the Jarvis summary (localStorage planner.today.v1), deep links, palette, All tools, Customize Today, and data safety:
++// the add-on never writes planner.v1 itself and only adds its own keys. Screenshots go to SHOTS (default ./shots).
++const { chromium } = require('playwright');
++const expand = require('./lib-expand');
++const PORT = process.env.PORT || 8792;
++const URL = `http://127.0.0.1:${PORT}/nq-dashboard/planner/index.html`;
++const SHOTS = process.env.SHOTS || 'shots';
++const wait = (ms) => new Promise((r) => setTimeout(r, ms));
++const MON = new Date('2026-11-02T10:00:00-05:00').getTime(); // Monday 10:00 ET: inside the bots' window (02:00-15:30 ET)
++const SAT = new Date('2026-11-07T12:00:00-05:00').getTime(); // Saturday noon ET: NQ closed for the weekend
++const OWN_KEYS = ['planner.ext.projects', 'planner.ext.live', 'planner.ext.kalshi', 'planner.today.v1'];
++
++// live.json as the PC publishes it (only the parts the add-on reads, same shape)
++function liveDoc(nowMs, o = {}) {
++  const t = Math.round(nowMs / 1000) - (o.age || 120);
++  return {
++    v: 1, kind: 'le-live', t, every_s: 300,
++    pc_verdict: o.ok ? { code: 'OK', label: 'OK: bot running', level: 'good', reason: 'heartbeat fresh and the bot is running', in_session: true }
++      : { code: 'DISABLED', label: 'DISABLED: bot stopped', level: 'bad', reason: 'the PC server is up but the bot is stopped', in_session: true },
++    board: {
++      t, running: !!o.ok, level: o.ok ? 'good' : 'bad',
++      lit: { id: 'lit', name: 'Zlarior', plan: 'MFFU Builder 50K', badge: 'PAPER', balance: 49463, floor: 48000, room: 1463, room_frac: 0.7315, to_target: 3537, profit: -537, today_pnl: o.today == null ? 0 : o.today, week_pnl: -437, status: 'open', session: 10, sessions: 10, trades_today: o.today ? 1 : 0, position: null,
++        window: { open: true, text: 'entry window open' }, windows: [{ label: 'Mon 02:00-15:30 ET' }, { label: 'Tue 02:00-15:30 ET' }, { label: 'Wed 02:00-15:30 ET' }] },
++      atlas: { id: 'atlas', name: 'ATLAS', plan: 'MFFU Builder 25K', configured: false, status: 'not set up', room: null, today_pnl: null },
++      lines: o.ok ? [] : [{ level: 'bad', text: 'The bot is stopped: no new entries. Fix: On the Surface: Bot Control > Start (or START_BOT.bat)' }],
++    },
++    blitz: { id: 'blitz', name: 'BLITZ', plan: 'MFFU Builder 25K', badge: 'OFF', off: true, status: 'off', room: null, today_pnl: null },
++  };
++}
++const kalshiDoc = (nowMs) => ({ t: Math.round(nowMs / 1000) - 60, running: true, mode: 'paper', balance: 512.34, today_pnl: 12.5, positions: [{ ticker: 'A' }, { ticker: 'B' }] });
++
++const ev = (id, title, date, start, end, x = {}) => ({ id, title, cat: 'personal', date, allDay: !start, start: start || '', end: end || '', endDate: '', repeat: 'none', until: '', notes: '', proj: '', ex: [], ...x });
++function seed() {
++  return {
++    v: 1, view: 'today', weekStart: 0, hidden: ['hide'],
++    categories: [{ id: 'personal', name: 'Personal', color: '#64748b' }, { id: 'trading', name: 'Trading', color: '#2563eb' }, { id: 'hide', name: 'Hidden', color: '#111827' }],
++    events: [
++      ev('e1', 'Dentist', '2026-11-02', '14:00', '15:00'),
++      ev('e2', 'Gym', '2026-10-26', '18:00', '19:00', { repeat: 'weekly' }),
++      ev('e3', 'Mom birthday', '2026-11-02'),
++      ev('e4', 'Secret', '2026-11-02', '09:00', '09:30', { cat: 'hide' }),
++      ev('e5', 'Tomorrow thing', '2026-11-03', '10:00', '11:00'),
++    ],
++    tasks: [
++      { id: 't1', title: 'Call broker', date: '2026-11-02', done: false, p: 2, created: 1 },
++      { id: 't2', title: 'Old thing', date: '2026-10-30', done: false, created: 2 },
++      { id: 't3', title: 'Done today', date: '2026-11-02', done: true, created: 3 },
++      { id: 't4', title: 'Future', date: '2026-11-09', done: false, created: 4 },
++      { id: 't5', title: 'Old done', date: '2026-10-29', done: true, created: 5 },
++      { id: 't6', title: 'Fix clip export', date: '2026-10-28', done: false, proj: 'clipper', created: 6 },
++    ],
++    projects: [
++      { id: 'kalshi', name: 'Kalshi bot', color: '#0d9488', status: 'active', milestone: '', due: '', link: '', notes: '' },
++      { id: 'nq', name: 'NQ bot', color: '#4f46e5', status: 'active', milestone: '', due: '', link: '', notes: '' },
++      { id: 'jarvis', name: 'Jarvis', color: '#9333ea', status: 'active', milestone: '', due: '', link: '', notes: '' },
++      { id: 'clipper', name: 'Clipper', color: '#ea580c', status: 'blocked', milestone: '', due: '', link: '', notes: '' },
++      { id: 'portfolio', name: 'Portfolio', color: '#b08d3e', status: 'active', milestone: 'Launch v2', due: '2026-11-03', link: '', notes: '' },
++    ],
++    planned: '', lastBackup: MON,
++  };
++}
++// Opens the planner on a fixed New York clock. feeds: { live, kalshi } (null = 404) or 'off' (network down). local: extra localStorage.
++async function open(b, { now = MON, feeds = {}, state = seed(), hash = '', width = 390, local = {}, noExt = false, slowExt = 0, theme, tz = 'America/New_York' } = {}) {
++  const ctx = await b.newContext({ viewport: { width, height: 844 }, timezoneId: tz, deviceScaleFactor: 2 });
++  const p = await ctx.newPage(); const errs = [];
++  p.on('pageerror', (e) => errs.push('pageerror ' + e.message));
++  p.on('console', (m) => { if (m.type() === 'error' && !/fonts\.g|net::ERR|Failed to load resource/.test(m.text())) errs.push('console ' + m.text()); });
++  await p.route('**/data.json*', (r) => r.abort());
++  if (noExt) await p.route('**/ext-projects.js*', (r) => r.abort());
++  if (slowExt) await p.route('**/ext-projects.js*', (r) => setTimeout(() => r.continue(), slowExt)); // the add-on arrives after the app has started
++  const asked = [];
++  await ctx.route(/raw\.githubusercontent\.com|api\.github\.com/, (r) => {
++    const u = r.request().url(); asked.push(u);
++    if (feeds === 'off') return r.abort('internetdisconnected');
++    const body = /kalshi/.test(u) ? feeds.kalshi : feeds.live;
++    const headers = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*' };
++    if (!body) return r.fulfill({ status: 404, body: '404: Not Found', headers });
++    return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body), headers });
++  });
++  await p.clock.install({ time: now });
++  await p.addInitScript(([state, local, theme]) => {
++    window.PLANNER_TEST = true;
++    try {
++      if (localStorage.getItem('planner.seeded')) return;
++      localStorage.setItem('planner.seeded', '1');
++      localStorage.setItem('planner.v1', JSON.stringify(state));
++      if (theme) localStorage.setItem('planner.theme', theme);
++      Object.entries(local).forEach(([k, v]) => localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v)));
++    } catch (e) { /* none */ }
++  }, [state, local, theme || '']);
++  await p.goto(URL + hash); await p.waitForSelector('.tdy');
++  if (!noExt) await ready(p); else await wait(1200);
++  return { ctx, p, errs, asked };
++}
++// The add-on has started, both feeds were tried and the screen was drawn again.
++async function ready(p) {
++  await p.waitForFunction(() => { const x = window.__xp; return x && x.F.nq.at > 0 && x.F.kalshi.at > 0 && !x.F.nq.busy && !x.F.kalshi.busy; }, null, { timeout: 15000 });
++  await wait(400);
++}
++const ls = (p, k) => p.evaluate((k) => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }, k);
++const tiers = (p) => p.evaluate(() => {
++  const r = { now: [], today: [], dash: [] }; let cur = 'today';
++  document.querySelectorAll('.tdy > *').forEach((el) => {
++    if (el.classList.contains('to-h')) cur = /Needs/.test(el.textContent) ? 'now' : /Dashboards/.test(el.textContent) ? 'dash' : 'today';
++    el.querySelectorAll('[data-toid]').forEach((x) => { if (!r[cur].includes(x.dataset.toid)) r[cur].push(x.dataset.toid); });
++    if (el.dataset && el.dataset.toid && !r[cur].includes(el.dataset.toid)) r[cur].push(el.dataset.toid);
++  });
++  return r;
++});
++const shot = (p, name, full) => p.screenshot({ path: `${SHOTS}/${name}.png`, fullPage: !!full }).catch(() => null);
++
++(async () => {
++  const errs = [], ok = (c, m) => { if (!c) errs.push(m); else console.log('  ok   ' + m); };
++  const b = await chromium.launch();
++  let o;
++
++  // ---------- 1. Monday 10:00 ET, bot stopped inside its window, Kalshi not published yet ----------
++  o = await open(b, { feeds: { live: liveDoc(MON), kalshi: null } });
++  let { p } = o;
++  let t = await tiers(p);
++  ok(t.now.includes('xprojects'), 'a stopped bot inside its hours is under Needs you now: ' + JSON.stringify(t.now));
++  ok(/Bot stopped/.test(await p.textContent('.to-w[data-toid=xprojects] .to-lbl.red')), 'red "Bot stopped" label');
++  const card = await p.textContent('#xpCard');
++  ok(/Zlarior/.test(card) && /\$1,463/.test(card) && /\$3,537/.test(card) && /Session 10 of 10/.test(card), 'Zlarior today, room, to target and session');
++  ok(/ATLAS/.test(card) && /Not set up on the PC yet/.test(card) && /BLITZ/.test(card) && /Off for now/.test(card), 'ATLAS not set up and BLITZ off, in plain words');
++  ok(/DISABLED: bot stopped/.test(card), 'the PC verdict is shown');
++  ok(/Bots' window open until 3:30pm ET/.test(card), 'market clock: bots window open until 3:30pm ET: ' + (await p.textContent('#xpCard [data-xpclock]')));
++  ok(/not publishing the Kalshi bot yet/.test(card), 'Kalshi 404 reads as not connected yet');
++  const hrefs = await p.$$eval('#xpCard a[data-xpgo]', (a) => Object.fromEntries(a.map((x) => [x.dataset.xpgo, x.getAttribute('href')])));
++  ok(hrefs.zenith === '../' && hrefs.kalshi === '../kalshi/' && hrefs.jarvis === '../jarvis/', 'links to Zenith, Kalshi and Jarvis: ' + JSON.stringify(hrefs));
++  ok(await p.evaluate(() => [...document.querySelectorAll('#xpCard a[data-xpgo]')].every((a) => !a.hasAttribute('target'))) && /^Jarvis/.test(await p.textContent('#xpCard a[data-xpgo=jarvis]')), 'on its own: plain links in this tab, no target');
++  ok(/Clipper blocked/.test(card) && /Portfolio due tomorrow/.test(card), 'project health line on the card');
++  ok(await p.evaluate(() => document.documentElement.scrollWidth) <= 390, 'no sideways scroll at 390');
++  await shot(p, 'p1-today-needs-you');
++  // the Jarvis summary
++  let sum = await ls(p, 'planner.today.v1');
++  ok(sum && sum.v === 1 && sum.day === '2026-11-02' && typeof sum.updated === 'number', 'planner.today.v1 written: v 1, day, updated');
++  ok(JSON.stringify(sum.events) === JSON.stringify([
++    { title: 'Mom birthday', start: '', end: '', allDay: true }, { title: 'Dentist', start: '14:00', end: '15:00', allDay: false }, { title: 'Gym', start: '18:00', end: '19:00', allDay: false }]),
++  'summary events: all-day first, repeats included, hidden types left out: ' + JSON.stringify(sum.events));
++  ok(JSON.stringify(sum.tasks) === JSON.stringify([
++    { title: 'Fix clip export', due: '2026-10-28', done: false }, { title: 'Old thing', due: '2026-10-30', done: false }, { title: 'Call broker', due: '2026-11-02', done: false }, { title: 'Done today', due: '2026-11-02', done: true }]),
++  'summary tasks: overdue and due today, open first: ' + JSON.stringify(sum.tasks));
++  await p.fill('#main [data-tadd] input', 'Buy milk'); await p.press('#main [data-tadd] input', 'Enter');
++  await p.waitForFunction(() => /Buy milk/.test(localStorage.getItem('planner.today.v1') || ''), null, { timeout: 5000 }).catch(() => null);
++  sum = await ls(p, 'planner.today.v1');
++  ok(sum.tasks.some((x) => x.title === 'Buy milk' && x.due === '2026-11-02' && !x.done), 'a task added in the Planner reaches the summary');
++  // switching the flag off sends the card back to its quiet line
++  await p.evaluate(() => localStorage.setItem('planner.ext.projects', JSON.stringify({ flag: false })));
++  await p.reload(); await p.waitForSelector('.tdy'); await ready(p);
++  t = await tiers(p);
++  ok(!t.now.includes('xprojects') && t.today.includes('xprojects'), 'flag off: back to a folded line on Today: ' + JSON.stringify(t));
++  ok(/Bot stopped · Kalshi not connected/.test(await p.textContent('.to-acc[data-toid=xprojects] summary')), 'folded line says what matters: ' + await p.textContent('.to-acc[data-toid=xprojects] summary'));
++  // the day turns over at midnight: the summary follows
++  await p.clock.fastForward(14 * 3600e3 + 120e3);
++  await p.waitForFunction(() => /"day":"2026-11-03"/.test(localStorage.getItem('planner.today.v1') || ''), null, { timeout: 8000 }).catch(() => null);
++  sum = await ls(p, 'planner.today.v1');
++  ok(sum.day === '2026-11-03' && sum.events.some((x) => x.title === 'Tomorrow thing') && sum.events.some((x) => /Portfolio: Launch v2/.test(x.title)), 'after midnight the summary is the new day: ' + JSON.stringify(sum.events.map((x) => x.title)));
++  o.errs.forEach((e) => errs.push('[monday] ' + e)); await o.ctx.close();
++
++  // ---------- 2. Saturday: NQ closed, Kalshi publishing; the card stays a quiet line ----------
++  o = await open(b, { now: SAT, feeds: { live: liveDoc(SAT), kalshi: kalshiDoc(SAT) } });
++  p = o.p;
++  t = await tiers(p);
++  ok(!t.now.includes('xprojects') && t.today.includes('xprojects'), 'outside the bots hours a stopped bot is not urgent');
++  const line = await p.textContent('.to-acc[data-toid=xprojects] summary');
++  ok(/Bot stopped · Kalshi \$512$/.test(line), 'folded line: ' + line);
++  await expand(p, 'xprojects');
++  const c2 = await p.textContent('#xpCard');
++  ok(/NQ closed for the weekend\. Opens tomorrow 6pm ET \(in 1 day 6 h\)/.test(c2), 'market clock on Saturday: ' + await p.textContent('#xpCard [data-xpclock]'));
++  ok(/Balance/.test(c2) && /\$512\.34/.test(c2) && /\+\$12\.50/.test(c2) && /PAPER/.test(c2), 'Kalshi balance, today and mode');
++  ok(await p.evaluate(() => document.querySelectorAll('#xpCard .xp-kv').length) === 2, 'two number rows: Zlarior and Kalshi');
++  ok(o.asked.some((u) => u.startsWith('https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json')) && !o.asked.some((u) => /nq-dashboard\/kalshi\//.test(u)), 'Kalshi is read from the kalshi-feed repo');
++  await shot(p, 'p1-today-card');
++  await p.evaluate(() => document.querySelector('#xpCard .xp-links').scrollIntoView({ block: 'end' })); await wait(150);
++  await shot(p, 'p1-today-card-links');
++  // market hours, worked out in New York time
++  const lines = await p.evaluate(() => {
++    const x = window.__xp, at = (iso) => x.marketLine(x.market(new Date(iso).getTime())).text;
++    return { sun: at('2026-11-08T19:00:00-05:00'), mon: at('2026-11-09T01:00:00-05:00'), tue: at('2026-11-10T17:30:00-05:00'), fri: at('2026-11-13T16:59:00-05:00'), fri2: at('2026-11-13T17:00:00-05:00'), wed: at('2026-11-11T15:30:00-05:00') };
++  });
++  ok(/^NQ open\. Bots' window opens tomorrow 2am ET \(in 7 h\)$/.test(lines.sun), 'Sunday 7pm: ' + lines.sun);
++  ok(/^NQ open\. Bots' window opens 2am ET \(in 1 h\)$/.test(lines.mon), 'Monday 1am: ' + lines.mon);
++  ok(/^CME daily break\. NQ reopens 6pm ET \(in 30 min\)$/.test(lines.tue), 'Tuesday 5:30pm: ' + lines.tue);
++  ok(/^NQ open\./.test(lines.fri) && /^NQ closed for the weekend\. Opens Sun 6pm ET/.test(lines.fri2), 'Friday 4:59pm open, 5pm closed: ' + lines.fri + ' / ' + lines.fri2);
++  ok(/opens tomorrow 2am ET/.test(lines.wed), 'Wednesday 3:30pm: window closed, opens tomorrow: ' + lines.wed);
++  // Projects view: health at a glance, live lines and dashboard links
++  await p.click('#moreBtn'); await wait(150);
++  ok(await p.isVisible('#moreMenu [data-xpgo=jarvis]') && /Jarvis/.test(await p.textContent('#moreMenu [data-xpgo=jarvis]')), 'Jarvis in the More menu');
++  await p.click('#moreMenu [data-v=projects]'); await wait(500);
++  const chips = await p.$$eval('.xp-chip', (n) => Object.fromEntries(n.map((x) => [x.dataset.pid, x.className.replace('xp-chip ', '') + ':' + x.textContent.trim()])));
++  ok(/^bad:.*blocked/.test(chips.clipper) && /^bad:.*milestone 4 days late/.test(chips.portfolio) && /^ok:.*running/.test(chips.kalshi) && /^bad:NQ botstopped$/.test(chips.nq) && /^ok:/.test(chips.jarvis), 'at a glance: ' + JSON.stringify(chips));
++  ok(/Zlarior \$0 today/.test(await p.textContent('.pc[data-pid=nq] .xp-live')) && await p.getAttribute('.pc[data-pid=nq] .xp-live a', 'href') === '../', 'NQ project: live line and Zenith link');
++  ok(/balance \$512\.34/.test(await p.textContent('.pc[data-pid=kalshi] .xp-live')) && await p.getAttribute('.pc[data-pid=kalshi] .xp-live a', 'href') === '../kalshi/', 'Kalshi project: live line and link');
++  ok(await p.getAttribute('.pc[data-pid=jarvis] .xp-live a', 'href') === '../jarvis/', 'Jarvis project: link');
++  ok(await p.evaluate(() => document.documentElement.scrollWidth) <= 390, 'Projects: no sideways scroll');
++  await shot(p, 'p1-projects');
++  await p.click('.xp-chip[data-pid=portfolio]'); await wait(600);
++  ok(await p.evaluate(() => { const r = document.querySelector('.pc[data-pid=portfolio]').getBoundingClientRect(); return r.top >= -5 && r.top < 844; }), 'tapping a chip brings its project into view');
++  await p.click('.pc[data-pid=nq] .xp-live a[data-xpgo=zenith]'); await p.waitForURL(/\/nq-dashboard\/$/, { timeout: 10000 }).catch(() => null);
++  ok(/\/nq-dashboard\/$/.test(p.url()) && o.ctx.pages().length === 1, 'on its own, Zenith opens in the same tab: ' + p.url());
++  o.errs.forEach((e) => errs.push('[saturday] ' + e)); await o.ctx.close();
++
++  // ---------- 3. the sheet, deep links, palette, All tools, bands, adding a project through the Planner's own sheet ----------
++  o = await open(b, { now: SAT, feeds: { live: liveDoc(SAT), kalshi: kalshiDoc(SAT) }, hash: '#projects-live' });
++  p = o.p;
++  ok(await p.isVisible('#xpDlg'), '#projects-live opens the sheet');
++  const sh = await p.textContent('#xpDlg');
++  ok(/Market hours/.test(sh) && /Next entry windows from the bot: Mon 02:00-15:30 ET/.test(sh) && /The bot is stopped: no new entries/.test(sh), 'sheet: market hours, bot windows and the bot issue');
++  ok(/Not in your Planner yet/.test(sh) && await p.isVisible('#xpDlg [data-xp=add][data-k=zenith]') && await p.isVisible('#xpDlg [data-xp=add][data-k=ascend]'), 'sheet offers Zenith and Ascend');
++  ok(await p.evaluate(() => { const d = document.querySelector('#xpDlg .dlg'); return d.scrollWidth <= d.clientWidth + 1; }), 'sheet: no sideways scroll');
++  await shot(p, 'p1-sheet');
++  const v1 = await p.evaluate(() => localStorage.getItem('planner.v1'));
++  await p.click('#xpDlg [data-xpset=bands]'); await wait(150);
++  await p.click('#xpDlg [data-xpset=flag]'); await wait(150);
++  await p.click('#xpDlg .dlg-f [data-xp=refresh]'); await p.waitForFunction(() => /updated|newest|reach/.test(document.querySelector('#toastMsg').textContent), null, { timeout: 10000 }).catch(() => null);
++  ok(/updated|newest/.test(await p.textContent('#toastMsg')), 'Refresh answers: ' + await p.textContent('#toastMsg'));
++  ok((await ls(p, 'planner.ext.projects')).bands === true && (await ls(p, 'planner.ext.projects')).flag === false, 'settings kept on this device');
++  await p.click('#xpDlg .dlg-f [data-close]'); await wait(150);
++  ok(await p.evaluate(() => localStorage.getItem('planner.v1')) === v1, 'sheet, switches and refresh never touch planner.v1');
++  await p.keyboard.press('w'); await wait(400);
++  const bands = await p.evaluate(() => ({ bots: document.querySelectorAll('.tg-col .xp-band.bots').length, shut: document.querySelectorAll('.tg-col .xp-band.shut').length, sat: document.querySelectorAll('.tg-col[data-date="2026-11-07"] .xp-band.bots').length }));
++  ok(bands.bots === 5 && bands.shut >= 6 && bands.sat === 0, 'week view: 5 bot windows, closed hours shaded, none on Saturday: ' + JSON.stringify(bands));
++  await p.evaluate(() => { document.querySelector('#main').scrollTop = 1 * 48; });
++  await shot(p, 'p1-week-bands');
++  await p.keyboard.press('d'); await wait(300);
++  ok(await p.evaluate(() => document.querySelectorAll('.tg-col .xp-band').length) >= 1, 'day view has the bands too');
++  await p.evaluate(() => localStorage.setItem('planner.ext.projects', JSON.stringify({ bands: false }))); await p.keyboard.press('w'); await wait(300);
++  ok(await p.evaluate(() => document.querySelectorAll('.xp-band').length) === 0, 'bands off: nothing drawn');
++  // palette and All tools
++  await p.keyboard.press('t'); await wait(200);
++  await p.keyboard.press('Control+k'); await wait(200); await p.fill('#pkIn', 'bots and projects'); await wait(150); await p.keyboard.press('Enter'); await wait(300);
++  ok(await p.isVisible('#xpDlg'), 'palette "bots and projects" opens the sheet');
++  await p.evaluate(() => document.querySelectorAll('dialog[open]').forEach((d) => d.close())); await wait(100);
++  await p.keyboard.press('Control+k'); await wait(200); await p.fill('#pkIn', 'market hours'); await wait(150);
++  ok(/Market hours \(NQ\)/.test(await p.textContent('#pkList')), 'palette finds Market hours');
++  await p.keyboard.press('Escape'); await wait(100);
++  await p.click('#hbBtn'); await wait(150);
++  ok(await p.isVisible('#hbDlg [data-hbtool=xprojects]') && await p.isVisible('#hbDlg [data-hbtool=xmarket]'), 'All tools has Bots and projects and Market hours');
++  await p.click('#hbDlg [data-hbtool=xmarket]'); await wait(300);
++  ok(await p.isVisible('#xpDlg') && /Market hours/.test(await p.textContent('#xpDlg')), 'Market hours tile opens the sheet');
++  // + Zenith opens the Planner's own project sheet, filled in; nothing is saved until Save
++  const projBefore = (await ls(p, 'planner.v1')).projects.length;
++  await p.click('#xpDlg [data-xp=add][data-k=zenith]'); await wait(250);
++  ok(await p.isVisible('#projDlg') && await p.inputValue('#pName') === 'Zenith' && /github\.io\/nq-dashboard/.test(await p.inputValue('#pLink')), 'Zenith opens the project sheet filled in');
++  ok((await ls(p, 'planner.v1')).projects.length === projBefore, 'nothing saved before Save');
++  await p.click('#projForm button[type=submit]'); await wait(300);
++  const projs = (await ls(p, 'planner.v1')).projects;
++  ok(projs.length === projBefore + 1 && projs.some((x) => x.name === 'Zenith' && x.status === 'live'), 'Save adds Zenith through the Planner');
++  ok(await p.isVisible('#helpDlg [data-xphelp]') === false && await p.locator('#helpDlg [data-xphelp]').count() === 1, 'Help has a Bots, projects and Jarvis section');
++  await p.evaluate(() => { location.hash = '#market-hours'; }); await wait(400);
++  ok(await p.isVisible('#xpDlg'), '#market-hours opens the sheet');
++  o.errs.forEach((e) => errs.push('[sheet] ' + e)); await o.ctx.close();
++
++  // ---------- 4. offline: the last good copy, no errors, never urgent on an old copy ----------
++  const cache = { at: MON - 3600e3, v: { t: Math.round(MON / 1000) - 3600, running: false, verdict: { label: 'DISABLED: bot stopped', level: 'bad', reason: '' }, lit: { name: 'Zlarior', plan: 'MFFU Builder 50K', badge: 'PAPER', today: 150, room: 1600, roomFrac: 0.8, toTarget: 3400, session: 9, sessions: 10 }, atlas: null, blitz: null, lines: [], windows: [] } };
++  o = await open(b, { feeds: 'off', local: { 'planner.ext.live': cache } });
++  p = o.p;
++  t = await tiers(p);
++  ok(!t.now.includes('xprojects'), 'offline: an old copy never puts the bot under Needs you now');
++  await expand(p, 'xprojects');
++  const c4 = await p.textContent('#xpCard');
++  ok(/\+\$150/.test(c4) && /\$1,600/.test(c4) && /Offline: showing the last copies/.test(c4) && /Not updating · last copy 1 h ago/.test(c4), 'offline card shows the last copy and says so');
++  await p.click('#xpCard [data-xp=refresh]'); await p.waitForFunction(() => /reach/.test(document.querySelector('#toastMsg').textContent), null, { timeout: 10000 }).catch(() => null);
++  ok(/Could not reach the live feeds/.test(await p.textContent('#toastMsg')), 'offline refresh message: ' + await p.textContent('#toastMsg'));
++  o.errs.forEach((e) => errs.push('[offline] ' + e)); await o.ctx.close();
++
++  // ---------- 5. data safety: only the add-on's own keys are added; Customize Today can hide it ----------
++  const keysOf = async (opts) => { const x = await open(b, opts); const k = await x.p.evaluate(() => Object.keys(localStorage).sort()); const v = await x.p.evaluate(() => JSON.stringify(JSON.parse(localStorage.getItem('planner.v1')), (key, val) => (key === 'u' ? undefined : val))); x.errs.forEach((e) => errs.push('[keys] ' + e)); await x.ctx.close(); return { k, v }; };
++  const without = await keysOf({ now: SAT, feeds: { live: liveDoc(SAT), kalshi: kalshiDoc(SAT) }, noExt: true });
++  const withExt = await keysOf({ now: SAT, feeds: { live: liveDoc(SAT), kalshi: kalshiDoc(SAT) } });
++  const extra = withExt.k.filter((k) => !without.k.includes(k));
++  ok(extra.every((k) => OWN_KEYS.includes(k)) && without.k.every((k) => withExt.k.includes(k)), 'the add-on only adds its own keys: ' + extra.join(', '));
++  ok(withExt.v === without.v, 'planner.v1 holds exactly the same data with and without the add-on (save times aside)');
++  o = await open(b, { now: SAT, feeds: { live: liveDoc(SAT), kalshi: null } });
++  p = o.p;
++  await p.click('#toCustBtn'); await wait(200);
++  ok(await p.locator('#toDlg [data-toshow=xprojects]').count() === 1, 'Customize Today lists Bots and projects');
++  await p.click('#toDlg [data-toshow=xprojects]'); await wait(250); await p.click('#toDlg .dlg-f [data-close]'); await wait(200);
++  ok(await p.locator('.tdy [data-toid=xprojects]').count() === 0, 'and can hide it');
++  o.errs.forEach((e) => errs.push('[customize] ' + e)); await o.ctx.close();
++
++  // ---------- 6. dark mode: readable, no white boxes ----------
++  o = await open(b, { now: MON, feeds: { live: liveDoc(MON, { ok: true, today: 240 }), kalshi: kalshiDoc(MON) }, theme: 'dark' });
++  p = o.p;
++  t = await tiers(p);
++  ok(!t.now.includes('xprojects'), 'a running bot is never urgent');
++  await expand(p, 'xprojects');
++  ok(/Bot running, \+\$240 · Kalshi \$512/.test(await p.textContent('.to-acc[data-toid=xprojects] summary')), 'running line: ' + await p.textContent('.to-acc[data-toid=xprojects] summary'));
++  const audit = (root) => p.evaluate((root) => {
++    const parse = (c) => { const m = c.match(/rgba?\(([^)]+)\)/); if (!m) return null; const v = m[1].split(/[ ,/]+/).filter(Boolean).map(Number); return { r: v[0], g: v[1], b: v[2], a: v[3] == null ? 1 : v[3] }; };
++    const lum = (c) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b); };
++    const bgOf = (el) => { for (let e = el; e; e = e.parentElement) { const c = parse(getComputedStyle(e).backgroundColor); if (c && c.a >= 0.5) return c; } return parse(getComputedStyle(document.body).backgroundColor); };
++    const bad = [], whites = [];
++    document.querySelectorAll(root + ' *').forEach((el) => {
++      const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.nodeValue.trim());
++      if (own) { const fg = parse(getComputedStyle(el).color), bg = bgOf(el), x = lum(fg), y = lum(bg), cr = (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); if (cr < 3) bad.push(el.className + ' ' + cr.toFixed(2)); }
++      const r = el.getBoundingClientRect(); if (r.width > 40 && r.height > 40 && getComputedStyle(el).backgroundColor === 'rgb(255, 255, 255)') whites.push(el.className);
++    });
++    return { bad, whites };
++  }, root);
++  const dark = await audit('#xpCard');
++  ok(!dark.bad.length && !dark.whites.length, 'dark: readable and no white boxes ' + JSON.stringify(dark));
++  await shot(p, 'p1-dark');
++  await p.click('#xpCard [data-xp=open]'); await wait(300);
++  const darkSheet = await audit('#xpDlg');
++  ok(await p.isVisible('#xpDlg') && !darkSheet.bad.length && !darkSheet.whites.length, 'dark sheet: readable and no white boxes ' + JSON.stringify(darkSheet));
++  o.errs.forEach((e) => errs.push('[dark] ' + e)); await o.ctx.close();
++
++  // ---------- 6b. a deep link that arrives before the add-on has loaded is still honoured ----------
++  o = await open(b, { now: SAT, feeds: { live: liveDoc(SAT), kalshi: null }, hash: '#market-hours', slowExt: 900 });
++  p = o.p;
++  ok(await p.isVisible('#xpDlg') && /Market hours/.test(await p.textContent('#xpDlg')), 'late add-on: #market-hours still opens the sheet');
++  o.errs.forEach((e) => errs.push('[late] ' + e)); await o.ctx.close();
++
++  // ---------- 6c. inside Jarvis: the links ask Jarvis to switch apps, so Jarvis is never replaced ----------
++  {
++    const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, timezoneId: 'America/New_York' });
++    const pg = await ctx.newPage(); const fe = [];
++    pg.on('pageerror', (e) => fe.push('pageerror ' + e.message));
++    await ctx.route('**/data.json*', (r) => r.abort());
++    await ctx.route(/raw\.githubusercontent\.com|api\.github\.com/, (r) => { const k = /kalshi/.test(r.request().url()); return r.fulfill({ status: k ? 404 : 200, body: k ? '404: Not Found' : JSON.stringify(liveDoc(SAT)), headers: { 'access-control-allow-origin': '*' } }); });
++    await ctx.route('**/nq-dashboard/jarvis-host.html', (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><meta charset="utf-8"><body style="margin:0"><script>window.__shown = []; window.__jarvis = { show: (id) => window.__shown.push(id) };</script><iframe id="app" src="planner/index.html" style="width:390px;height:844px;border:0"></iframe></body>' }));
++    await ctx.addInitScript(([state]) => { window.PLANNER_TEST = true; try { if (localStorage.getItem('planner.seeded')) return; localStorage.setItem('planner.seeded', '1'); localStorage.setItem('planner.v1', JSON.stringify(state)); } catch (e) { /* none */ } }, [seed()]);
++    await pg.goto(URL.replace('planner/index.html', 'jarvis-host.html'));
++    await pg.waitForFunction(() => { const f = document.getElementById('app'); try { const x = f && f.contentWindow && f.contentWindow.__xp; return x && x.F.nq.at > 0 && !x.F.nq.busy && !x.F.kalshi.busy; } catch (e) { return false; } }, null, { timeout: 15000 });
++    const fr = pg.frames().find((x) => /planner\/index\.html/.test(x.url()));
++    await wait(400); await expand(fr, 'xprojects');
++    ok(/Back to Jarvis/.test(await fr.textContent('#xpCard a[data-xpgo=jarvis]')) && await fr.getAttribute('#xpCard a[data-xpgo=zenith]', 'target') === null, 'inside Jarvis: "Back to Jarvis", no target on the links');
++    await fr.click('#xpCard a[data-xpgo=zenith]'); await wait(200);
++    await fr.click('#xpCard a[data-xpgo=kalshi]'); await wait(200);
++    await fr.click('#xpCard a[data-xpgo=jarvis]'); await wait(200);
++    await fr.click('#moreBtn'); await wait(150);
++    await fr.click('#moreMenu [data-xpgo=jarvis]'); await wait(200);
++    const shown = await pg.evaluate(() => window.__shown);
++    ok(JSON.stringify(shown) === JSON.stringify(['zenith', 'kalshi', 'home', 'home']), 'inside Jarvis the links call __jarvis.show(zenith, kalshi, home): ' + JSON.stringify(shown));
++    ok(/jarvis-host\.html$/.test(pg.url()) && /planner\/index\.html/.test(fr.url()), 'Jarvis and the Planner frame stay where they were');
++    fe.forEach((e) => errs.push('[jarvis] ' + e)); await ctx.close();
++  }
++
++  // ---------- 7. a phone on Los Angeles time: market times stay in ET and add the phone's own time ----------
++  o = await open(b, { now: MON, feeds: { live: liveDoc(MON, { ok: true }), kalshi: null }, tz: 'America/Los_Angeles' });
++  p = o.p;
++  await expand(p, 'xprojects');
++  ok(/until 3:30pm ET, 12:30pm your time/.test(await p.textContent('#xpCard [data-xpclock]')), 'LA phone: ' + await p.textContent('#xpCard [data-xpclock]'));
++  o.errs.forEach((e) => errs.push('[la] ' + e)); await o.ctx.close();
++
++  await b.close();
++  if (errs.length) { console.log('FAIL\n' + errs.join('\n')); process.exit(1); }
++  console.log('PROJECTS OK');
++})().catch((e) => { console.error(e.message.split('\n').slice(0, 6).join('\n')); process.exit(1); });
