@@ -7,8 +7,10 @@ canvas core when WebGL is missing. Runs the real module in Chromium (WebGL throu
   c. every state renders and looks different (alert red / amber, listening turns the core red); setLevel drives the voice
      pulse; setTheme recolours; setDesign('singularity') swaps the scene; bad input is ignored
   d. destroy(): no frame after it, every listener (its own and three's) and observer removed, the element emptied
-  e. it pauses while the page is hidden and while the core is off-screen, and resumes
-  f. prefers-reduced-motion and effects 'off': static frames only (no loop), one new frame per state change
+  e. it pauses while the page is hidden and while the core is off-screen, and resumes; a lost WebGL context falls back to
+     the 2D core and the reactor comes back
+  f. prefers-reduced-motion and effects 'off': static frames only (no loop), one new frame per state change; motion: 'always'
+     opts out (the old Jarvis ignored the OS switch)
   g. slow frames step the effects down to 'low'; fast frames keep 'high'
   h. no WebGL: the 2D core draws every state, three is never fetched, no errors
   i. the demo page works at 390 px; no console errors anywhere
@@ -270,6 +272,14 @@ def run_browser(url, shots):
         a = counts(p)
         frames_pass(2)
         check("e. core back on screen: frames resume", counts(p)[1] - a[1] >= 2)
+        # iOS drops WebGL contexts in the background: the 2D core takes over at once and the reactor comes back
+        p.evaluate("document.querySelector('#el .jcore canvas').getContext('webgl2').getExtension('WEBGL_lose_context').loseContext()")
+        p.wait_for_function("core.stats().three !== 'on'", timeout=10000, polling=50)
+        lost = p.evaluate("[core.stats().three, document.querySelectorAll('#el .jcore canvas').length]")
+        p.wait_for_function("core.stats().three === 'on'", timeout=30000, polling=100)
+        frames_pass(3)
+        check("e. a lost WebGL context: the 2D core takes over, then the reactor comes back and runs",
+              lost[1] == 1 and p.evaluate("document.querySelectorAll('#el .jcore canvas').length") == 2, lost)
 
         # ---------------------------------------------------------- d: destroy (with the reactor up)
         p.goto(url + "__harness.html")
@@ -351,12 +361,19 @@ def run_browser(url, shots):
         ice = shot_sig(p)
         check("c. setTheme recolours the reactor (Reactor Ice: blue over red)", ice["b"] > ice["r"] * 1.1 and ice["g"] > idl["g"],
               {k: round(ice[k]) for k in "rgb"})
-        p.evaluate("core.setTheme({c: '#a855f7', c2: '#7c3aed', c3: '#c084fc', tint: '#e9ddff'}); core.setDesign('singularity')")
+        p.evaluate("core.setTheme({c: '#a855f7', c2: '#7c3aed', c3: '#c084fc', tint: '#e9ddff'}); core.setDesign('singularity')")  # noqa
         p.wait_for_timeout(600)
         sing = shot_sig(p)
         check("c. setDesign('singularity'): the black hole (a dark centre ringed by light)",
               p.evaluate("core.stats().design") == "singularity" and sing["band"][0] < idl["band"][0] * 0.6 and max(sing["band"][1:3]) > sing["band"][0] * 1.3,
               ([round(x) for x in sing["band"]], [round(x) for x in idl["band"]]))
+        p.evaluate("core.destroy()")
+        mount(p, url, "{size: 160, motion: 'always'}")
+        ready3d(p)
+        a = counts(p)
+        frames_pass(3)
+        check("f. motion: 'always' (the old Jarvis ignored the OS switch) animates even under reduced motion",
+              counts(p)[1] - a[1] >= 3 and p.evaluate("core.stats().running"))
         p.evaluate("core.destroy()")
         ctx.close()
         ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2)

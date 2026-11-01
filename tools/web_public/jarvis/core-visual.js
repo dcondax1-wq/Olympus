@@ -4,7 +4,8 @@
 // hex shell, a hologram globe and a projector dial on a grid floor. "singularity": a black hole with a white-violet accretion
 // ring. Real 3D with Three.js (./three.module.min.js, r160, loaded on demand). A 2D canvas draws the ticked HUD ring on top
 // (clock, state, level gauge) at once, and is the whole core (a flat arc-reactor) when WebGL or three is missing.
-//   mountCore(el, {size, design: 'reactor'|'singularity', theme: {c, c2, c3, tint}, effects: 'ultra'|'high'|'low'|'off'})
+//   mountCore(el, {size, design: 'reactor'|'singularity', theme: {c, c2, c3, tint}, effects: 'ultra'|'high'|'low'|'off',
+//                  adapt: true (step effects down on slow frames), motion: 'always' (ignore the OS reduce-motion switch), webgl: true})
 //     -> {setState(s), setLevel(v), setTheme(theme), setDesign(name), destroy(), stats()}
 //   idle: calm breathing · listening: faster, the core turns red, rings flare with the level · thinking: fast orbit, lightning
 //   speaking: pulses with setLevel, shock rings · alert: red / amber flare
@@ -63,7 +64,8 @@ export function mountCore(el, opts) {
   box.appendChild(cv); el.appendChild(box);
   const g = cv.getContext('2d'), lab = document.createElement('canvas'), lg = lab.getContext('2d');
   const mq = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
-  let reduced = !!(mq && mq.matches), dead = false, raf = 0, last = 0, t = 0, onScreen = true, still = reduced || eff === 0;
+  const always = opts.motion === 'always';                 // the old Jarvis ignored the OS reduce-motion switch; opt-in here
+  let reduced = !!(mq && mq.matches) && !always, dead = false, raf = 0, last = 0, t = 0, onScreen = true, still = reduced || eff === 0;
   let S = 0, dpr = 1, tier = cap, st = 0, lvIn = 0, lvAt = -1e9, L = 0, flareAt = -9, frames = 0, frames3 = 0, pph = 0, pulse = 0;
   let acc = 0, nAcc = 0, good = 0, drops = 0, warm = 0, fps = 0, rAcc = 0, ms0 = 0, labKey = '', gaps = [];
   let r3 = null, cv3 = null, three = 'loading';
@@ -94,7 +96,7 @@ export function mountCore(el, opts) {
     L = STATIC_L[st]; t = 1.9; pulse = 0.6; flareAt = -9; rip.length = 0; blend(); fit(); render();
   }
   const onVis = () => kick();
-  const onMq = () => { reduced = !!mq.matches; still = reduced || eff === 0; if (still) { kick(); snap(); } else kick(); };
+  const onMq = () => { reduced = !!mq.matches && !always; still = reduced || eff === 0; if (still) { kick(); snap(); } else kick(); };
   document.addEventListener('visibilitychange', onVis);
   if (mq) { if (mq.addEventListener) mq.addEventListener('change', onMq); else if (mq.addListener) mq.addListener(onMq); }
   const io = typeof IntersectionObserver === 'function' ? new IntersectionObserver((es) => { onScreen = es[es.length - 1].isIntersecting; kick(); }) : null;
@@ -104,32 +106,37 @@ export function mountCore(el, opts) {
   if (ro) ro.observe(box);
 
   // ---------------------------------------------------------------- the 3D reactor (three loads on demand; WebGL missing -> 2D)
-  const onLost = (e) => { e.preventDefault(); drop3D(); };
+  // WebGL2 is probed first (no context: the 2D core stays, three is never fetched); three then renders into that context.
+  // A lost context (iOS drops them in the background) falls back to the 2D core and tries the reactor again, 3 times at most.
+  let tries = 0, retry = 0;
+  const onLost = (e) => { e.preventDefault(); drop3D(); if (!dead && tries < 3) retry = setTimeout(start3D, 1500); };
   function drop3D() {
     const r = r3, c = cv3;
     r3 = cv3 = null; three = 'off'; labKey = '';
     if (c) { c.removeEventListener('webglcontextlost', onLost); c.remove(); }
     if (r) { try { r.dispose(); } catch (e) { /* the context is already gone */ } }
+    else if (c && c.gl) { const x = c.gl.getExtension('WEBGL_lose_context'); if (x) x.loseContext(); }   // destroyed while three loaded
     if (still && !dead) snap();
   }
-  // WebGL2 is probed first (no context: the 2D core stays, three is never fetched); three then renders into that context
-  const GLA = { alpha: true, antialias: tier > 1, premultipliedAlpha: true, depth: true, stencil: false, powerPreference: 'high-performance' };
-  let gl = null;
-  if (opts.webgl !== false) {
-    cv3 = document.createElement('canvas');
-    try { gl = cv3.getContext('webgl2', GLA); } catch (e) { gl = null; }
-  }
-  if (gl) {
+  function start3D() {
+    retry = 0;
+    if (dead || opts.webgl === false) return;
+    tries++;
+    const c = document.createElement('canvas'), A = { alpha: true, antialias: tier > 1, premultipliedAlpha: true, depth: true, stencil: false, powerPreference: 'high-performance' };
+    try { c.gl = c.getContext('webgl2', A); } catch (e) { c.gl = null; }
+    if (!c.gl) { three = 'off'; return; }
+    three = 'loading'; cv3 = c;
     import('./three.module.min.js').then((T) => {
-      if (dead) return;
-      cv3.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;opacity:0' + (still ? '' : ';transition:opacity .8s ease');
-      try { r3 = makeReactor(T, cv3, gl, GLA, design, tier, theme); } catch (e) { r3 = null; cv3 = null; three = 'off'; return; }
-      cv3.addEventListener('webglcontextlost', onLost);
-      box.insertBefore(cv3, cv); three = 'on'; labKey = ''; fit(); rewarm();
+      if (dead || cv3 !== c) return;
+      c.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;opacity:0' + (still ? '' : ';transition:opacity .8s ease');
+      try { r3 = makeReactor(T, c, c.gl, A, design, tier, theme); } catch (e) { r3 = null; drop3D(); return; }
+      c.addEventListener('webglcontextlost', onLost);
+      box.insertBefore(c, cv); three = 'on'; labKey = ''; fit(); rewarm();
       if (still) snap(); else kick();
-      void cv3.offsetWidth; cv3.style.opacity = '1';
-    }, () => { three = 'off'; cv3 = null; });
-  } else { three = 'off'; cv3 = null; }
+      void c.offsetWidth; c.style.opacity = '1';
+    }, () => { if (cv3 === c) drop3D(); });
+  }
+  start3D();
 
   // ---------------------------------------------------------------- per frame
   function frame(now) {
@@ -449,6 +456,7 @@ export function mountCore(el, opts) {
       if (mq) { if (mq.removeEventListener) mq.removeEventListener('change', onMq); else if (mq.removeListener) mq.removeListener(onMq); }
       if (io) io.disconnect();
       if (ro) ro.disconnect();
+      clearTimeout(retry);
       drop3D();
       box.remove();
     },
@@ -795,7 +803,7 @@ function makeReactor(T, canvas, context, attrs, design0, tier0, theme0) {
     design(name) { build(name); },
     dispose() {
       free(); texs.forEach((x) => x.dispose()); if (env) env.dispose();
-      ren.dispose(); ren.forceContextLoss();
+      ren.dispose(); if (!context.isContextLost()) ren.forceContextLoss();
     },
   };
 }
