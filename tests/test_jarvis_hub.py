@@ -212,18 +212,30 @@ def part_a():
     # every other cache (Jarvis's and the Planner's saved copies) and handle their pages, so a dropped connection left Jarvis
     # with nothing to open. Each worker now keeps to its own folder and its own caches, and Jarvis's saved copy answers errors.
     check("a. Jarvis's worker deletes only its own old caches and answers a 404 / no connection from its saved copy",
-          "k.startsWith('jarvis-')" in sw and "(await saved(req)) || r" in sw and "Response.error()" in sw)
-    check("a. the saved copy comes only from Jarvis's own cache (never an origin-wide lookup: another page could write it)",
-          "const c = await caches.open(CACHE);" in sw and "caches.match(" not in sw)
+          "k.startsWith('jarvis-')" in sw and "return copy || r || Response.error();" in sw and "Response.error()" in sw)
+    check("a. the saved copy comes only from Jarvis's own caches, by name (never an origin-wide lookup: another page could write it)",
+          "const c = await caches.open(CACHE);" in sw
+          and all("cacheName: name" in ln for ln in sw.splitlines() if "caches.match(" in ln))
     # 2026-11-01 ("Jarvis is just a white screen"): an iPhone Home Screen app is white while its page loads or after a failed load
     check("a. opening Jarvis waits on the network at most NAV_WAIT_MS when a saved copy exists; no network + no copy = a dark Retry page",
           "const NAV_WAIT_MS = 3500;" in sw and "Promise.race([net, slow])" in sw and "return copy || offlinePage();" in sw
           and "background:#000" in sw and "location.reload()" in sw)
-    check("a. worker v5: data.js, jarvis.css, the fonts and every separate part in SHELL, each saved on its own (a missing part is skipped)",
-          "const CACHE = 'jarvis-v5';" in sw and all(f"'./{f}'" in sw for f in ("data.js",) + PARTS + FONTS) and "'./jarvis.css?v=j4'" in sw
+    check("a. worker v6: data.js, jarvis.css, the fonts and every separate part in SHELL, each saved on its own (a missing part is skipped)",
+          "const CACHE = 'jarvis-v6';" in sw and all(f"'./{f}'" in sw for f in ("data.js",) + PARTS + FONTS) and "'./jarvis.css?v=j4'" in sw
           and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
+    # 2026-11-01 ("Just a black screen" on the iPhone): no endless network wait, the previous copy as a fallback, old copies kept
+    # until the new one holds every core file, and the page draws even when its stylesheet never arrives
+    check("a. worker v6: never an endless network wait (NET_MAX_MS for a page or file with no copy; then the dark page / a failed file)",
+          "const NET_MAX_MS = 9000;" in sw and "copy ? NAV_WAIT_MS : NET_MAX_MS" in sw and "return offlinePage();" in sw
+          and "await net" not in sw.replace("await Promise.race([net", ""))
+    check("a. worker v6: a file this copy lacks comes from the previous Jarvis copy; old copies go only when every CORE file is saved",
+          "const OLD = ['jarvis-v5', 'jarvis-v4'];" in sw and "for (const name of [CACHE, ...OLD])" in sw
+          and "CORE.map((u) => c.match(u, { ignoreSearch: true }))" in sw)
+    jhtml = open(os.path.join(JV, "index.html"), encoding="utf-8").read()
+    check("a. the page draws without its stylesheet after 5 s (a stylesheet still on the way keeps an iPhone screen black)",
+          'id="jcss"' in jhtml and "n.media = 'print'" in jhtml and "}, 5000);" in jhtml)
     # 2026-11-01 ("Jarvis isn't opening" on the iPhone): WebKit stops the old worker's downloads when a new one takes over
-    check("a. worker v5 takes over only when the page asks ('jarvis:activate', sent while Jarvis is out of sight), never mid-start",
+    check("a. worker v5+ takes over only when the page asks ('jarvis:activate', sent while Jarvis is out of sight), never mid-start",
           "self.skipWaiting();" not in sw.split("addEventListener('message'")[0] and "if (e.data === 'jarvis:activate') self.skipWaiting();" in sw)
     check("a. no #dashboard shortcuts in the manifest (Jarvis always opens on its own screen)", "shortcuts" not in m, m.get("shortcuts"))
     zsw = open(os.path.join(ROOT, "tools", "web_public", "sw.js"), encoding="utf-8").read()
@@ -729,7 +741,7 @@ def run_c(br, url):
         const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
-          const c = await caches.open('jarvis-v5');
+          const c = await caches.open('jarvis-v6');
           const got = await Promise.all(['./index.html', './data.js', './jarvis.css?v=j4', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));

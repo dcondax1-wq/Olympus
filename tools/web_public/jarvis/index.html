@@ -35,6 +35,20 @@
   s('jarvis.core3d', null);
   s('jarvis.unfinished', String(n + 1));
 })();
+// Black-screen guard (2026-11-01, "Just a black screen" on the iPhone): the browser draws nothing at all while the stylesheet below
+// is still on the way, so a weak signal kept the whole screen black. After 5 s Jarvis stops waiting for it: it draws with the dark
+// styles built into this page and its start note, and the stylesheet keeps loading without holding the screen (media=print until
+// it arrives, then all).
+setTimeout(function () {
+  var l = document.getElementById('jcss');
+  if (!l || l.sheet) return;
+  try {
+    var n = document.createElement('link'); n.rel = 'stylesheet'; n.href = l.getAttribute('href'); n.media = 'print';
+    n.onload = function () { n.media = 'all'; document.documentElement.removeAttribute('data-nocss'); };
+    l.parentNode.replaceChild(n, l);
+    document.documentElement.setAttribute('data-nocss', '1');
+  } catch (e) { /* keep waiting */ }
+}, 5000);
 // the first start errors (a script error first, else a file that did not arrive), shown on the start note when Jarvis cannot start
 window.__jarvisErr = ''; window.__jarvisRes = '';
 window.addEventListener('error', function (e) {
@@ -44,7 +58,7 @@ window.addEventListener('error', function (e) {
   if (!window.__jarvisErr) window.__jarvisErr = String(e.message || 'Script error') + (e.filename ? ' (' + String(e.filename).split('/').pop() + ':' + e.lineno + ')' : '');
 }, true);
 </script>
-<link rel="stylesheet" href="jarvis.css?v=j4">
+<link rel="stylesheet" id="jcss" href="jarvis.css?v=j4">
 <style>.booted #bootfx{display:none}
 /* the start note works without jarvis.css (the stylesheet may be what did not arrive) */
 [hidden]{display:none!important}
