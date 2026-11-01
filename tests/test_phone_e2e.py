@@ -64,7 +64,7 @@ BASE = f"/{REPO}/"
 STUB_HOSTS = ("api.github.com", "raw.githubusercontent.com", "fonts.googleapis.com", "fonts.gstatic.com", "ntfy.sh",
               "api.coingecko.com")
 # the published site: every top-level file, the app folders and the pictures; runs/, writeups/, replays/ ... on demand
-NQD_SPARSE = ["/*", "!/*/", "/icons/", "/jarvis/", "/kalshi/", "/charts/", "/recaps/"]
+NQD_SPARSE = ["/*", "!/*/", "/icons/", "/jarvis/", "/kalshi/", "/charts/", "/recaps/", "/planner/*", "!/planner/*/"]
 PLANNER_SPARSE = ["/planner/*", "!/planner/*/"]
 # standalone Home Screen apps: the page gets the whole screen
 PHONES = {
@@ -201,6 +201,28 @@ def overlay(src, base):
     return n, apps
 
 
+def _sparse(repo, patterns):
+    """Widen an older cached clone's sparse checkout when this test asks for more files."""
+    cur = git("-C", repo, "sparse-checkout", "list").splitlines()
+    if cur != patterns:
+        git("-C", repo, "sparse-checkout", "set", "--no-cone", *patterns)
+
+
+def add_planner(src, base):
+    """planner/ the way the publish builds it: the checkout's scripts/add_planner.sh (planner-backup + its add-on patches,
+    planner/addons.json); without that script, planner-backup with tools/planner_patches applied here."""
+    script = os.path.join(src, "scripts", "add_planner.sh")
+    if os.path.exists(script):
+        r = subprocess.run(["bash", script, base], capture_output=True, text=True, timeout=300, cwd=src)
+        out = (r.stdout + r.stderr).strip()
+        note("scripts/add_planner.sh: " + (out.splitlines()[-1][:200] if out else f"exit {r.returncode}"))
+        try:
+            return json.load(open(os.path.join(base, "planner", "addons.json")))
+        except Exception:
+            return None
+    return planner_addons(src, base)
+
+
 def planner_addons(src, base):
     """tools/planner_patches/*.patch on top of planner-backup, as scripts/add_planner.sh does at every publish (name order,
     each on its own; one that does not apply is skipped)."""
@@ -259,14 +281,15 @@ def build_sites(work):
         note(f"(the live branch's files are not available: {e})")
     S = {"pub": os.path.join(work, "pub"), "new": os.path.join(work, "new"), "sha": sha, "what": what, "psha": psha,
          "tree": tree, "nqd": nqd}
+    _sparse(nqd, NQD_SPARSE)
     for k in ("pub", "new"):
         b = os.path.join(S[k], REPO)
-        link_tree(nqd, b)
-        if os.path.isdir(os.path.join(pl, "planner")):
+        link_tree(nqd, b)                 # pub: the published planner/ as it is on the site
+        if k == "new" and os.path.isdir(os.path.join(pl, "planner")):
             shutil.rmtree(os.path.join(b, "planner"), ignore_errors=True)
             link_tree(os.path.join(pl, "planner"), os.path.join(b, "planner"))
     n, apps = overlay(ARGS.src, os.path.join(S["new"], REPO))
-    S["addons"] = planner_addons(ARGS.src, os.path.join(S["new"], REPO))
+    S["addons"] = add_planner(ARGS.src, os.path.join(S["new"], REPO))
     S["apps"] = apps
     pub, new = os.path.join(S["pub"], REPO), os.path.join(S["new"], REPO)
     # the workers: (name, folder, published cache name, new cache name)
@@ -1403,6 +1426,93 @@ def part_i(br, S, base):
         ph.close()
 
 
+def part_j(br, S, base):
+    """The Planner's add-ons inside Jarvis, the Planner's day summary (planner.today.v1) read by Jarvis, the Kalshi preview."""
+    pats = sorted(os.path.basename(x)[:-6] for x in glob.glob(os.path.join(ARGS.src, "tools", "planner_patches", "*.patch")))
+    ad = S.get("addons") or {}
+    if pats:
+        check(f"j. the Planner is published with every add-on ({', '.join(pats)})",
+              sorted(ad.get("applied") or []) == pats and not ad.get("skipped"), ad)
+    ph = Phone(br, "iPhone 13")
+    ph.ctx.add_init_script(READY_INIT)
+    try:
+        m = ph.mark()
+        p = ph.page()
+        p.goto(jarvis_url(base), wait_until="commit")
+        wait_ready(p)
+        pf = open_app(p, "planner", PLANNER_READY, timeout=30000)
+        p.wait_for_timeout(1500)
+        exts = sorted(set(re.findall(r"ext-[\w-]+\.js", open(os.path.join(S["new"], REPO, "planner", "index.html"), encoding="utf-8").read())))
+        if exts:
+            loaded = pf.evaluate("(names) => names.filter((n) => performance.getEntriesByType('resource').some((e) => e.name.includes('/planner/' + n) && e.responseEnd > 0))", exts)
+            check(f"j. the Planner inside Jarvis runs its add-ons ({', '.join(exts)})", sorted(loaded) == exts, loaded)
+        not_white(p, "Planner with add-ons inside Jarvis", light_ok=True)
+        w = hscroll(pf)
+        check("j. no sideways scroll in the Planner with its add-ons", w[0] <= w[1], w)
+        # a task added in the Planner reaches Jarvis (planner.today.v1, the same site's storage inside the Jarvis app)
+        task = "QA e2e milk run"
+        box = pf.locator("#main [data-tadd] input")
+        if box.count():
+            box.first.fill(task)
+            box.first.press("Enter")
+            got = False
+            for _ in range(40):
+                if task in (p.evaluate("localStorage.getItem('planner.today.v1') || ''") or ""):
+                    got = True
+                    break
+                p.wait_for_timeout(250)
+            check("j. a task added in the Planner is in planner.today.v1", got,
+                  (p.evaluate("localStorage.getItem('planner.today.v1')") or "")[:200])
+            go_home(p)
+            a = ask(p, "what's on today")
+            check("j. Jarvis's 'what's on today' reads the Planner's day (the new task)", task in a, a[:300])
+        elif "today.v1" in json.dumps(ad):
+            check("j. the Planner's task box is there (#main [data-tadd] input)", False)
+        no_errors(ph, m, "the Planner's add-ons inside Jarvis")
+    finally:
+        ph.close()
+    # the Kalshi page before the Kalshi bot publishes: the one step, and the preview with sample data
+    CTL.kalshi = "waiting"
+    ph = Phone(br, "iPhone 13")
+    ph.ctx.add_init_script(READY_INIT)
+    try:
+        m = ph.mark()
+        p = ph.page()
+        p.goto(jarvis_url(base), wait_until="commit")
+        wait_ready(p)
+        kf = open_app(p, "kalshi", KALSHI_READY, timeout=30000)
+        p.wait_for_timeout(1200)
+        btn = kf.locator('[data-act="preview"]')
+        if btn.count():
+            landed = real_tap(p, btn.first, "the Kalshi page's Preview button")
+            ok = False
+            for _ in range(20):
+                if kf.evaluate("(document.getElementById('body') || document.body).dataset.state === 'preview' && !!document.getElementById('previewBar')"):
+                    ok = True
+                    break
+                p.wait_for_timeout(250)
+            txt = kf.evaluate("document.body.textContent")
+            check("j. Kalshi not connected yet: the Preview button shows the page with sample data, marked as not your account",
+                  landed and ok and "Sample data, not your account" in txt, txt[:200])
+            not_white(p, "Kalshi preview inside Jarvis")
+            w = hscroll(kf)
+            check("j. no sideways scroll in the Kalshi preview", w[0] <= w[1], w)
+            ex = kf.locator('[data-act="exit-preview"]')
+            if ex.count():
+                real_tap(p, ex.first, "the Kalshi page's Exit preview button")
+                p.wait_for_timeout(500)
+                check("j. Exit preview goes back to the waiting page",
+                      kf.evaluate("(document.getElementById('body') || document.body).dataset.state === 'waiting' && !document.getElementById('previewBar')"),
+                      kf.evaluate("(document.getElementById('body') || document.body).dataset.state"))
+        else:
+            body = kf.evaluate("document.body.textContent")[:200]
+            check("j. Kalshi not connected yet: the page offers a preview with sample data", "Preview" in body, body)
+        no_errors(ph, m, "Kalshi waiting + preview", allow=(r"kalshi\.json",))   # the 404 of a feed not published yet
+    finally:
+        CTL.kalshi = "published"
+        ph.close()
+
+
 def part_h(br, S, base):
     """A service-worker update: the published workers first, then this checkout's."""
     ph = Phone(br, "iPhone 13")
@@ -1529,7 +1639,7 @@ def run_local(S):
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     base = f"https://127.0.0.1:{port}{BASE}"
     rules = ", ".join([f"MAP {h} 127.0.0.1:{port}" for h in STUB_HOSTS] + ["MAP * ~NOTFOUND", "EXCLUDE 127.0.0.1"])
-    only = set((ARGS.only or "a,b,c,d,e,f,g,h,i").split(","))
+    only = set((ARGS.only or "a,b,c,d,e,f,g,h,i,j").split(","))
     t0 = time.time()
     with sync_playwright() as pw:
         br = pw.chromium.launch(executable_path=chrome_exe(), args=["--ignore-certificate-errors", "--no-proxy-server",
@@ -1560,6 +1670,8 @@ def run_local(S):
                 guard("h", part_h, br, S, base)
             if "i" in only:
                 guard("i", part_i, br, S, base)
+            if "j" in only:
+                guard("j", part_j, br, S, base)
         finally:
             br.close()
             srv.shutdown()
@@ -1623,7 +1735,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--src", default=ROOT, help="the checkout whose tools/web_public is laid over the published site")
     ap.add_argument("--live", action="store_true", help="read-only smoke test of the real published site")
-    ap.add_argument("--only", default="", help="parts to run, e.g. b,c,d (a-i)")
+    ap.add_argument("--only", default="", help="parts to run, e.g. b,c,d (a-j)")
     ap.add_argument("--keep", action="store_true", help="keep the temp site and the screenshots")
     ap.add_argument("--shots", default="", help="folder for the screenshots (default: a temp folder, kept with --keep)")
     ap.add_argument("--cache", default=os.path.join(tempfile.gettempdir(), "le_phone_e2e_cache"), help="where the clone is kept")
