@@ -18,7 +18,7 @@
   const PASTE = STEP.slice(STEP.indexOf('paste: ') + 7);           // what goes into the bot's chat
   const TZ = 'America/New_York', STALE_S = 15 * 60, POLL_MS = 60e3, TICK_MS = 30e3, TIMEOUT_MS = 12e3, TR_PAGE = 10, TR_CAP = 40;
   const RANGES = [['1W', 7, 'past week'], ['1M', 30, 'past month'], ['3M', 90, 'past 3 months'], ['All', 0, '']];
-  const SORTS = [['closes', 'Closing soon'], ['pnl', 'Best P&L'], ['pnl-asc', 'Worst P&L'], ['value', 'Biggest'], ['name', 'A–Z']];
+  const SORTS = [['closes', 'Soonest'], ['pnl', 'Best'], ['pnl-asc', 'Worst'], ['value', 'Biggest'], ['name', 'A–Z']];
   const SIDES = ['all', 'yes', 'no'];
   const ASSETS = ['BTC', 'ETH', 'SOL', 'XRP', 'DOGE', 'HYPE', 'BNB', 'GOLD', 'SILVER'];
 
@@ -144,7 +144,7 @@
       sort: SORTS.some((r) => r[0] === u.sort) ? u.sort : 'closes',
       side: SIDES.indexOf(u.side) >= 0 ? u.side : 'all',
     },
-    q: '', trShown: TR_PAGE, cal: '', calSel: '', open: new Set(), scrub: false, pend: false, chart: null, series: null, v: null, pos: [],
+    q: '', trShown: TR_PAGE, cal: '', calSel: '', calGr: '', open: new Set(), scrub: false, pend: false, chart: null, series: null, v: null, pos: [],
   };
   const saveUi = () => LS.set('kalshi.ui', S.ui);
   const cached = LS.get('kalshi.last', null);
@@ -412,16 +412,16 @@
       cells.push(`<span class="cw ${wn ? cls(wt) : ''}">${wn ? esc(cmp(wt, true)) : ''}</span>`);
     }
     const prev = ymAdd(S.cal, -1), next = ymAdd(S.cal, 1), mon = ff(F.mon, Date.UTC(y, m - 1, 15) / 1000);
+    S.calGr = n ? `${g} green · ${r} red ${n === 1 ? 'day' : 'days'} this month` : 'No P&amp;L this month';
     return `<section class="card" id="sec-cal"><div class="card-h"><h2>P&amp;L calendar</h2><span class="r ${cls(tot)}">${n ? esc(usd(tot, true)) : ''}</span></div>`
       + `<div class="cal-h"><button type="button" class="nav" data-act="month" data-v="${prev}" aria-label="Previous month"${prev < firstM ? ' disabled' : ''}>‹</button>`
-      + `<b id="calMonth">${esc(mon)}</b><button type="button" class="nav" data-act="month" data-v="${next}" aria-label="Next month"${next > maxM ? ' disabled' : ''}>›</button>`
-      + `<span class="muted">${n ? `${g} green · ${r} red` : 'no P&amp;L this month'}</span></div>`
+      + `<b id="calMonth">${esc(mon)}</b><button type="button" class="nav" data-act="month" data-v="${next}" aria-label="Next month"${next > maxM ? ' disabled' : ''}>›</button></div>`
       + `<div class="cal" role="group" aria-label="${esc('Daily P&L, ' + mon)}">${cells.join('')}</div>`
       + `<p class="muted cal-read" id="calRead" aria-live="polite">${calRead(map)}</p></section>`;
   }
   function calRead(map) {
     const k = S.calSel;
-    if (!k) return 'Tap a day for its P&amp;L.';
+    if (!k) return `${S.calGr}. Tap a day for its P&amp;L.`;
     const x = map.get(k), tr = S.v ? S.v.tr.filter((t) => { const tt = parseT(t.t); return tt && dayKey(tt) === k; }) : [];
     return `<b>${esc(dayLabel(k))}</b> · ${x == null ? 'no P&amp;L' : `<span class="${cls(x)}">${esc(usd(x, true))}</span>`}${tr.length ? ` · ${tr.length} ${tr.length === 1 ? 'trade' : 'trades'} in the recent list` : ''}`;
   }
@@ -545,8 +545,8 @@
     const price = num(p.price) != null ? ' → ' + esc(cents(p.price)) : '';
     return `<li class="pos" data-side="${esc(m.sk)}"><details data-k="${esc(m.key)}"${S.open.has(m.key) ? ' open' : ''}><summary>`
       + `<b class="t">${sideTag(m.side)}${m.asset ? `<span class="asset">${esc(m.asset)}</span>` : ''}${esc(m.title)}</b><span class="v ${cls(m.pnl)}">${m.pnl == null ? '<span class="open">OPEN</span>' : esc(usd(m.pnl, true))}</span>`
-      + `<small>${esc(m.n == null ? '?' : fmtN(m.n))} × ${esc(cents(p.avg_price))}${price}${cdn ? ' · ' + cdn : ''}</small>`
-      + `<span class="v2">${m.value == null ? '' : esc(usd(m.value))}${ret ? ' · ' + esc(ret) : ''}</span></summary><dl class="dl">${det}</dl></details></li>`;
+      + `<small>${esc(m.n == null ? '?' : fmtN(m.n))} × ${esc(cents(p.avg_price))}${price}</small>`
+      + `<span class="v2">${m.value == null ? '' : esc(usd(m.value))}${ret ? ' · ' + esc(ret) : ''}</span>${cdn ? `<small class="cdl">${cdn}</small>` : ''}</summary><dl class="dl">${det}</dl></details></li>`;
   }
 
   // ---- recent trades, grouped by day, with show more
@@ -704,7 +704,7 @@
   }, true);
 
   function copyStep() {
-    const done = (ok) => { const n = $('#copied'); if (n) n.textContent = ok ? 'Copied. Paste it in the kalshi-server chat.' : 'Selected: copy it from the menu'; };
+    const done = (ok) => { const n = $('#copied'); if (n) n.textContent = ok ? 'Copied' : 'Selected: copy it from the menu'; };
     const pick = () => {
       try { const r = document.createRange(); r.selectNodeContents($('#step')); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); } catch (_) { /* nothing to select */ }
       done(false);

@@ -18,7 +18,8 @@ connection / later, and checks:
   i. 375 / 390 / 430 px: no sideways scroll, nothing past the 16 px gutter, numbers not cut off
   j. no page errors (uncaught exceptions or a section that failed)
     python -X utf8 -m tests.test_kalshi_page          (temp folder + a local server; nothing else touched)
-KALSHI_SHOTS=<dir> also saves screenshots of each state there.
+KALSHI_SHOTS=<dir> also saves screenshots of each state there; KALSHI_FONTS_DIR=<dir> takes the .woff2 fonts from there
+(default: tools/web_public/jarvis/, where Jarvis keeps Orbitron and Rajdhani).
 """
 from __future__ import annotations
 
@@ -49,6 +50,7 @@ STEP = ("Open your kalshi-server chat in the Claude app and paste: Set up Jarvis
 PASTE = STEP.split("paste: ", 1)[1]
 NY = ZoneInfo("America/New_York")
 SHOTS = os.environ.get("KALSHI_SHOTS")
+FONTS = []
 RES = []
 
 
@@ -199,6 +201,9 @@ def site(tmp):
     os.makedirs(os.path.join(base, "jarvis"))
     if os.path.exists(JV_ICON):
         shutil.copy(JV_ICON, os.path.join(base, "jarvis", "icon-192.png"))
+    for f in glob.glob(os.path.join(os.environ.get("KALSHI_FONTS_DIR") or os.path.dirname(JV_ICON), "*.woff2")):
+        shutil.copy(f, os.path.join(base, "jarvis", os.path.basename(f)))      # Jarvis's fonts: the widths are tested with them
+        FONTS.append(os.path.basename(f))
     return tmp
 
 
@@ -342,7 +347,7 @@ def run_browser(url):
         p.click("[data-act=copy]")
         p.wait_for_function("document.getElementById('copied').textContent.length > 0", timeout=3000)
         clip = p.evaluate("navigator.clipboard.readText().catch(() => '')")
-        check("b. Copy puts just the message to paste on the clipboard", "Copied" in p.inner_text("#copied") and clip == PASTE, (p.inner_text("#copied"), clip))
+        check("b. Copy puts just the message to paste on the clipboard", p.inner_text("#copied") == "Copied" and clip == PASTE, (p.inner_text("#copied"), clip))
         shot(p, "1_waiting")
 
         # ---- c. the publisher's sample (contract v1, through the real clean())
@@ -355,7 +360,7 @@ def run_browser(url):
         check("c. the bot's name and status line", "Kalshi bot" in body and "Watching 12 markets" in body)
         check("c. the open bet: YES tag, title, 10 × 42¢ → 55¢, a countdown, value and return",
               p.locator("#posList .tag.yes").count() == 1 and "NYC high 58-59°F on Nov 2" in body
-              and re.search(r"10 × 42¢ → 55¢ · (closes in \d+[dhm]|closed · settling)", body) and "$5.50 · +31%" in body, body[:600])
+              and "10 × 42¢ → 55¢" in body and re.search(r"closes in \d+[dhm]|closed · settling", p.inner_text("#posList .cdl")) and "$5.50 · +31%" in body, body[:600])
         check("c. one bet: no sort / filter controls", p.locator("#posSort").count() == 0 and p.locator("#posQ").count() == 0)
         check("c. the trade: Buy 10 @ 42¢ with its time, OPEN while unsettled, no show-more",
               "Buy 10 @ 42¢ · " in body and p.locator("#trList .open").count() == 1 and p.locator("#sec-tr .more").count() == 0)
@@ -667,6 +672,10 @@ def run_browser(url):
             p.set_viewport_size({"width": wdt, "height": 844})
             for name, payload in (("wide", wide(time.time(), long_text=True)), ("real bot", realbot(time.time())[0])):
                 open_("ok", payload)
+                p.evaluate("document.fonts.ready.then(() => true)")              # measured with the final fonts (the page re-fits then)
+                if FONTS and wdt == 375 and name == "wide":
+                    check("i. Jarvis's fonts in use: Orbitron for numbers, Rajdhani for text",
+                          p.evaluate("document.fonts.check('700 15px Orbitron') && document.fonts.check('500 16px Rajdhani')"))
                 if p.locator("#posList > li.pos").count():
                     p.click("#posList > li >> nth=0 >> summary")
                 m = p.evaluate("""() => {
