@@ -28,11 +28,11 @@ const BAD = [255, 77, 109], WARN = [251, 191, 36], WHITE = [255, 255, 255];
 const TAU = Math.PI * 2;
 // per state: spin, scan rev/s, breath, wave gain, particle speed, brightness, pulse Hz (old core: 3 s / .8 s / 1 s / .5 s), bolts/s
 const PRM = [
-  [1, 0.09, 1, 0.1, 1, 0.9, 1 / 3, 0.7],
-  [2, 0.2, 0.3, 0.45, 1.6, 1, 1.25, 1.6],
-  [8, 1.4, 0.15, 0.08, 7, 1, 1, 7],
-  [1.8, 0.3, 0.2, 1, 2, 1.1, 2, 2.5],
-  [3, 0.7, 0, 0.3, 3.5, 1.15, 1.25, 5],
+  [1, 0.09, 1, 0.1, 1, 0.9, 1 / 3, 1.1],
+  [2, 0.2, 0.3, 0.45, 1.6, 1, 1.25, 2.2],
+  [8, 1.4, 0.15, 0.08, 7, 1, 1, 9],
+  [1.8, 0.3, 0.2, 1, 2, 1.1, 2, 3],
+  [3, 0.7, 0, 0.3, 3.5, 1.15, 1.25, 6],
 ];
 const SEG = [0, 0.19, 0.23, 0.07, 0.34, 0.15, 0.53, 0.04, 0.61, 0.2, 0.85, 0.1];   // segmented ring: start, length (turns)
 const NP = [24, 50, 90, 150], NB = [36, 48, 72, 96], NT = [60, 72, 120, 120];     // 2D detail per tier
@@ -573,7 +573,7 @@ function makeReactor(T, canvas, context, attrs, design0, tier0, theme0) {
     const cu = new T.CatmullRomCurve3(pts);
     b.children[0].geometry.dispose(); b.children[0].geometry = new T.TubeGeometry(cu, 28, 0.014, 4);
     b.children[1].geometry.dispose(); b.children[1].geometry = new T.TubeGeometry(cu, 28, 0.065, 5);
-    b.life = R(0.08, 0.24);
+    b.life = R(0.12, 0.34);
   }
   function techRing(R0, tube, tilt, ns, gb) {     // chrome torus, energy strips, machined blocks and bolt heads (instanced)
     const piv = new T.Group(), tg = new T.Group(), sp = new T.Group();
@@ -729,10 +729,10 @@ function makeReactor(T, canvas, context, attrs, design0, tier0, theme0) {
   function build(name) {
     free();
     glows = []; parts = []; rings = []; bolts = []; shocks = []; sats = []; spin = 0;
-    X = { chrome: new T.MeshStandardMaterial({ metalness: 1, roughness: 0.08 }), chrome2: new T.MeshStandardMaterial({ metalness: 1, roughness: 0.15 }),
+    X = { chrome: new T.MeshStandardMaterial({ metalness: 1, roughness: 0.08, envMapIntensity: 1.25 }), chrome2: new T.MeshStandardMaterial({ metalness: 1, roughness: 0.15, envMapIntensity: 1.25 }),
       gun: new T.MeshStandardMaterial({ color: 0x1c1a23, metalness: 0.9, roughness: 0.34, envMapIntensity: 0.55 }) };
     X.strip = gm('acc', 1.7, 1); X.boltH = gm('hot', 2.5, 1); X.boltM = gm('main', 0.85, 1); X.node = gm('hot', 3, 1);
-    X.hotLine = gm('hot', 2.1, 2); X.trail = gm('acc', 1.4, 0, { opacity: 0.8 }); X.ringGlow = halo('acc', 0.22, 1, 2.5);
+    X.hotLine = gm('hot', 2.1, 2); X.trail = gm('acc', 1.4, 0, { opacity: 0.8 }); X.ringGlow = halo('acc', 0.14, 1, 2.5);
     X.boltHot = gm('hot', 3.8, 3); X.boltGlow = gm('main', 0.6, 3, { opacity: 1 });
     root = new T.Group(); scene.add(root);
     seed = 11; BUILD[name](root);
