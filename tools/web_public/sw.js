@@ -75,10 +75,12 @@
 // answers 404 / 5xx (GitHub's "Site not found") gets the saved copy too (data flagged x-le-cache like offline), a versioned
 // file the site does not give falls back to the version saved before, and with no copy and no site the page is a small
 // dark Retry page, never white. Only the app's own page is a "page": a picture or a write-up opened in a tab is cached
-// under its own address (it used to be saved as index.html).
+// under its own address (it used to be saved as index.html). A page answered from the saved copy gets its data.json /
+// home.json from the copy at once too (for 30 s, per page: its client id), refreshed in the background.
 const CACHE = 'le-public-v50';
 const NAV_WAIT_MS = 3500;
 let SLOW_UNTIL = 0;       // the site was just slow (the page waited NAV_WAIT_MS): data.json / home.json then wait 0.4 s, not 3.5 s
+const COPY_CLIENTS = new Map();   // a page (client id) answered from the saved copy -> until when its data.json / home.json are too
 const BADGE = 'le-badge', BADGE_URL = './__badge';
 const OTHER_APPS = ['jarvis/', 'planner/', 'kalshi/']; // own folders (own workers or none): never handled or cached here
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=p111030', './icons/apple-touch-icon.png?v=p111030', './icons/icon-512.png?v=p111030'];
@@ -114,7 +116,15 @@ self.addEventListener('fetch', (e) => {
       const net = fetch(req).then((r) => put(key, r));
       e.waitUntil(net.then(() => null, () => null));                // a late answer still refreshes the saved copy
       const copy = (await caches.match(key)) || (isPage ? await caches.match('./') : undefined);
-      const saved = () => (isData ? flagged(copy) : copy);
+      const saved = () => {
+        if (isPage && e.resultingClientId) {                          // that page's data then comes from the copy at once
+          const now = Date.now();
+          for (const [k, t] of COPY_CLIENTS) if (t < now) COPY_CLIENTS.delete(k);
+          COPY_CLIENTS.set(e.resultingClientId, now + 30e3);
+        }
+        return isData ? flagged(copy) : copy;
+      };
+      if (isData && copy && e.clientId && (COPY_CLIENTS.get(e.clientId) || 0) > Date.now()) return saved();   // the late answer refreshes it
       try {
         // network first; with a saved copy it gets NAV_WAIT_MS to answer (an iPhone app is white while it waits)
         const wait = isData && Date.now() < SLOW_UNTIL ? 400 : NAV_WAIT_MS;
