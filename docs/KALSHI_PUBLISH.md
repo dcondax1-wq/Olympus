@@ -1,85 +1,115 @@
-# Kalshi in Jarvis: what the PC does (for Claude on the owner's PC)
+# Kalshi in Jarvis: how the Kalshi numbers reach the phone
 
-The owner wants his Kalshi bot inside Jarvis, his iPhone hub (`https://demetrades2000-coder.github.io/nq-dashboard/jarvis/`).
-The Kalshi bot runs only on this PC, so the phone can't reach it. The phone side is already built and live:
-- the Kalshi page `<site>/kalshi/`;
+The owner's Kalshi bot ("Kalshi Edge v2") trades **real money** 24/7 on an **Oracle Cloud VM** (Ubuntu,
+`/home/ubuntu/kalshi`). It does not run on the Windows PC. Its own Claude chat, **"kalshi-server"**, also runs on that VM.
+The phone side is built and live:
 - the Jarvis Kalshi card;
+- the Kalshi page `https://demetrades2000-coder.github.io/nq-dashboard/kalshi/`;
 - answers to "how's kalshi".
 
-They all read one file, `kalshi.json`, from the branch `kalshi` of the public repo `demetrades2000-coder/nq-dashboard`.
-Until that file exists they show "Waiting for your PC". Your job is to get the file there and keep it fresh. That's all.
+All of them read one file: `kalshi.json` on the branch `kalshi` of the **public** repo `demetrades2000-coder/nq-dashboard`
+(`https://raw.githubusercontent.com/demetrades2000-coder/nq-dashboard/kalshi/kalshi.json`). Until that file exists, the
+page shows the owner's one connect step.
+
+Everything below is one file of Python, `tools/kalshi_kit/public/kalshi_status_vm.py`: stdlib only, read-only, imports
+nothing from this repo or the bot. The site build copies `tools/kalshi_kit/public/` to `<site>/kalshi/`.
+`engine/kalshi_publish.py` loads that same file, so the VM and the PC give the same JSON for the same input.
+
+## 1. The way: the VM publishes by itself
+**The owner's one step** (shown on the Kalshi page): open the kalshi-server chat in the Claude app and paste
+"Set up Jarvis for my Kalshi bot by following https://demetrades2000-coder.github.io/nq-dashboard/kalshi/SETUP.md".
+
+The chat then follows `tools/kalshi_kit/public/SETUP.md`:
+1. Fetch the script to `~/kalshi_jarvis/`.
+2. Run it once (`--from-bot /home/ubuntu/kalshi --check`) and show the JSON.
+3. Make a deploy key and show the owner only its public line; he adds it to nq-dashboard with write access.
+4. Push once.
+5. Add one cron line: every minute, `flock`ed and nice'd, `--cron`. It pushes only when the numbers changed, plus once
+   every 3 minutes so the phone knows it's alive.
+6. Check the raw URL.
+
+It works with the PC off. Nothing in `/home/ubuntu/kalshi` changes.
+
+**What it reads** (all read-only; never `.env`, `.env2`, `keys/`, `sniper.db` or the bot's modules; no Kalshi API call):
+
+| kalshi.json | from |
+|---|---|
+| `name` | "Kalshi Edge v2" |
+| `mode` | `autotrader_status.json` `mode` (`live`) |
+| `running` | the trader's status is under 180 s old, there's no `paused.txt`, and `systemctl is-active kalshi-bot kalshi-trader kalshi-combo` are all active |
+| `status` | in order: "Paused (until …)" (`paused.txt`); the `problem` / `blocked` text; a service down; "No word from the trader for N min"; else "Trading · 3 live strategies · N open bets" |
+| `balance` | `account_truth.json` `total` (cash + positions); else `cash`; else the trader's `balance` (cash only) |
+| `today_pnl` / `week_pnl` / `total_pnl` | `SUM(orders.pnl)` over live filled graded rows of `trades.db`: since 00:00 ET, since Monday 00:00 ET (`--week rolling7` for 7 days), all time. That's the same basis as Discord `/money`. ET days come from a built-in DST rule, never "-5 hours" |
+| `days` | the same sum per ET date of the order's `ts`, the last 120 days |
+| `positions` | open bets: live, filled, `result IS NULL`, book not `exit`; `UP`/`DOWN` → `yes`/`no`, contracts, `avg_price`, value at cost, `closes` (no live price in the bot's files), `asset`, `strategy` (the book's name) |
+| `trades` | the last 40 live filled orders, newest first; `exit`/`partial` → `sell`; `pnl` stays null while open; `asset`, `strategy` |
+| `strategies` | one row per `book`: 15-min favourites, Late favourite (BTC hourly), Gold 5 PM first, then the rest; mode from `bot_settings.json` / `combo_settings.json` / `sniper_settings.json`; wins `pnl > 0.005`, losses `pnl < -0.005` |
+| `equity` | `autotune_state.json` `eq_main` (24 h at 15-min steps, cash + open cost), then the balance now |
+| titles | from the ticker, offline, e.g. "ETH up or down · 15 min to 12:15 PM ET Nov 1", "Bitcoin above $80,500 at 1 PM ET Oct 27" |
+
+## 2. Fallback: the PC pulls over SSH
+Use this until the VM pushes, or if the owner never adds the deploy key. Run it from this repo's folder on the PC:
+```
+python -m engine.kalshi_publish --ssh --check
+python -m engine.kalshi_publish --ssh --once
+```
+- `--ssh` runs the same reader on the VM through the PC's own helper `srv.py`. The helper is found under
+  `%APPDATA%\Claude\scratch-workspaces\…\srv.py`, next to `cloud_linux\deploy_to_oracle.py`; `--vm-helper <path>`
+  overrides it.
+- The script travels inside one shell line (zlib + base64). Nothing is installed on the VM. It runs nice'd at most once a
+  minute and prints its JSON between markers.
+- The VM's address stays in `srv.py`, which reads it at run time. It's never copied, printed or logged; errors are
+  IP-redacted.
+- If `paramiko` lives in another Python, add `--vm-python <that python.exe>`.
+- The PC pushes with the NQ bot's own route and git login (`engine/live_publish.push`, scratch dir
+  `data/kalshi_pub.git`).
+- To keep it running, run `powershell -ExecutionPolicy Bypass -File tools\kalshi_kit\install_windows.ps1`. It makes the
+  Windows task "Kalshi to Jarvis": at logon, no window, restart on failure, `--ssh --loop`.
+- It updates only while the PC is on. Remove the task once the VM pushes by itself:
+  `schtasks /Delete /TN "Kalshi to Jarvis" /F`.
+
+## 3. Other sources (same contract)
+- `--src <file>`: a status file in the contract below, e.g. from another bot. `python -m engine.kalshi_publish --sample`
+  prints an example.
+- `--from-api`: **not recommended, off unless asked.** It reads the account with Kalshi's read-only endpoints (GET balance,
+  positions, fills, settlements, `markets/{ticker}`), signed RSA-PSS or Ed25519.
+  - Why not: the account already gets HTTP 429 on `/portfolio/balance` about 100 times a day from the bot's own
+    pollers; the only key is the bot's trading key, which lives on the VM; and the API knows nothing of the bot's
+    strategies.
+  - Safety in code: GET only; allow-listed paths; Kalshi hosts only; no redirects; one round every 5 min; a 429 stops
+    the round at once; the key id, key path and PEM are redacted everywhere.
+  - Keys: `--key-id` / `--key-file`, or `KALSHI_API_KEY_ID` / `KALSHI_PRIVATE_KEY_PATH` (the bot's own names).
+
+## The contract: kalshi.json
+Every key is optional except `t`. `clean()` keeps only these keys and caps the lists. It drops credential-looking keys,
+redacts local paths, and keeps the file under 200 KB. It writes `"v": 1`, or `"v": 2` when `strategies` or `equity` is
+present.
+
+| top level | meaning |
+|---|---|
+| `t` | unix seconds when the numbers were read (the phone shows "updated N min ago") |
+| `running` | true / false / null |
+| `mode` | `"live"`, `"paper"` or `"demo"` |
+| `name`, `status`, `note` | short plain text |
+| `balance` | account value in dollars |
+| `today_pnl`, `week_pnl`, `total_pnl` | dollars; today = since 00:00 ET |
+
+| list (cap) | row keys |
+|---|---|
+| `positions` (60) | `ticker`, `title`, `side` (`yes`/`no`), `contracts`, `avg_price`, `price` (0-1 $/contract), `value`, `pnl`, `closes` (ISO), and optionally `asset` (BTC, ETH, GOLD …) and `strategy` |
+| `trades` (40, newest first) | `t`, `ticker`, `title`, `side`, `action` (`buy`/`sell`/`settled`), `contracts`, `price`, `pnl`, and optionally `asset` and `strategy` |
+| `days` (120) | `["YYYY-MM-DD", dollars]` |
+| `strategies` (10, v2) | `name`, `mode` (`live`/`paper`/`off`), `running`, `today_pnl`, `total_pnl`, `trades`, `wins`, `losses` |
+| `equity` (500, v2) | `[unix, dollars]`, oldest first; longer lists are evenly downsampled, first and last kept |
 
 ## Rules
-- **Read-only.** Don't change how the Kalshi bot trades, its settings or its keys. Never put Kalshi API keys, key file
-  paths, the account id, email or anything secret in the status file. The `nq-dashboard` repo is **public**, so only the
-  numbers below go there.
-- Don't touch the NQ bot: it runs from this folder (`server.py`, `engine/live.py`, `live_model*.json`, `data/`). Leave its
-  processes, its settings and its scheduled tasks alone.
-- The publisher is `engine/kalshi_publish.py`, in this repo. It:
-  - drops credential-looking keys and redacts local paths;
-  - keeps only the keys listed below;
-  - pushes with this PC's own git login, the same one the NQ bot uses for `live.json`.
+- **Read-only.** Never touch trading: no change to the bot, its settings, its services, cron jobs or keys. Paper or real
+  money doesn't matter here: this only reads.
+- **No secrets anywhere.** `nq-dashboard` is public: only the numbers above go there. No VM address, tunnel URL, token or
+  key in this repo, the public kit or any output.
+- Don't touch the NQ bot: its processes, settings and scheduled tasks stay as they are.
 
-## 1. Make the Kalshi bot write a status file
-Make the Kalshi bot write one JSON file at a fixed path. Write it whenever something changes, or at least once a minute
-while it runs; for example `<the Kalshi bot's folder>\kalshi_status.json`. The bot can be in any language; only the file
-matters. If the bot already has a local dashboard or API with these numbers, a small script that reads it and writes the
-file is fine too.
-
-To see a full example, run `python -m engine.kalshi_publish --sample`. The keys (every one is optional except `t`):
-
-**Top level**
-
-| key | meaning |
-|---|---|
-| `t` | unix seconds when the file was written (the phone shows "updated N min ago" from it) |
-| `running` | true or false: is the bot running |
-| `mode` | `"paper"`, `"demo"` or `"live"` |
-| `status` | one short plain sentence, e.g. "Watching 12 markets" |
-| `name` | the bot's name |
-| `balance` | account balance in dollars |
-| `today_pnl`, `week_pnl`, `total_pnl` | realized + open P&L in dollars (today = since midnight ET) |
-| `note` | an optional short line |
-
-**`positions`**: a list of the open positions.
-
-| key | meaning |
-|---|---|
-| `ticker`, `title` | the market's ticker and its plain-language title |
-| `side` | `"yes"` or `"no"` |
-| `contracts` | number of contracts |
-| `avg_price`, `price` | entry and current price in dollars per contract (0-1) |
-| `value`, `pnl` | position value and P&L in dollars |
-| `closes` | ISO time the market closes |
-
-**`trades`**: the last trades, newest first, with keys `t`, `ticker`, `title`, `side`, `action` (`"buy"` or `"sell"`),
-`contracts`, `price` and `pnl`.
-
-**`days`**: daily P&L as a list of `["YYYY-MM-DD", dollars]`, for up to the last 120 days.
-
-## 2. Check it, then push once
-Run these in this repo's folder, the NQ bot's folder:
-
-```
-python -m engine.kalshi_publish --src "<path to kalshi_status.json>" --check
-python -m engine.kalshi_publish --src "<path to kalshi_status.json>" --once
-```
-
-`--check` shows exactly what would go public. `--once` pushes it and prints `"ok": true` and the address the phone reads
-(`https://raw.githubusercontent.com/demetrades2000-coder/nq-dashboard/kalshi/kalshi.json`). Open that address to confirm
-the numbers. If the push is refused, the NQ bot's own push of `live.json` uses the same login: see
-`python -m engine.live_publish --status`.
-
-## 3. Keep it running by itself
-Create a Windows Task Scheduler task named "Kalshi to Jarvis":
-- **Trigger:** at logon.
-- **Action:** `pythonw.exe -m engine.kalshi_publish --src "<path>" --loop`, with *Start in* set to this repo's folder.
-- **Settings:** restart every 1 minute on failure; no time limit.
-
-The loop checks every 60 s. It pushes when the file changed, and otherwise once every 10 minutes. It never talks to Kalshi
-and places nothing.
-
-## Done when
-- Jarvis's Kalshi card on the phone shows the balance and today's P&L.
-- The Kalshi page shows the positions.
-- Tell the owner in one or two plain sentences.
+## Checks
+- `python -X utf8 -m tests.test_kalshi_publish` runs 81 checks with temp folders and a mock Kalshi API on 127.0.0.1.
+- Live: open the raw URL above. The Jarvis Kalshi card shows the balance and today's P&L; the Kalshi page shows the
+  strategies, open bets and last trades.
