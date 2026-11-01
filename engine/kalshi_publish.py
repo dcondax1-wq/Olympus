@@ -9,8 +9,8 @@ THE way: the VM publishes by itself (cron every minute, its own deploy key), set
 ("kalshi-server") from tools/kalshi_kit/public/SETUP.md. This module is the PC side, same contract:
   --ssh        (= --from-vm) the FALLBACK: runs the read-only builder on the VM through the PC's own srv.py helper (the
                VM's address stays in srv.py, read by it at run time; nothing is installed on the VM), then pushes from
-               the PC with the same route, push function and git login as the NQ bot's live.json (engine/live_publish),
-               from its own scratch git dir (data/kalshi_pub.git, gitignored).
+               the PC by the same route and git login as the NQ bot's live.json (engine/live_publish: target repo, orphan
+               commit, the repo's credential settings), from its own scratch git dir (data/kalshi_pub.git, gitignored).
   --src FILE   a status file (v1 keys, plus the optional v2 `strategies` and `equity`).
   --from-bot DIR / --from-api   also accepted (--from-api is NOT recommended: the account already meets Kalshi's limits).
 The contract, the readers, the API client and the money math live in ONE file: tools/kalshi_kit/public/kalshi_status_vm.py
@@ -68,6 +68,13 @@ SAMPLE, SAMPLE_V2 = kit.SAMPLE, kit.SAMPLE_V2
 ReadOnlyError, ApiError = kit.ReadOnlyError, kit.ApiError
 
 
+def _push(p: dict, url: str | None, **kw) -> dict:
+    """The kit's push: one orphan commit force-pushed like engine/live_publish.push, with the repo's own git login (its
+    local credential settings are copied into the scratch dir, as live_publish does) and no console window under pythonw
+    (the Task Scheduler fallback)."""
+    return kit.push(p, url, copy_config_from=ROOT, **kw)
+
+
 def clean(raw: dict, now: float | None = None, phrases=()) -> dict:
     """The status -> kalshi.json: only the contract's keys (v1, plus v2 `strategies` / `equity` when given), numbers as
     numbers, lists capped, secrets dropped, paths redacted. Never raises on junk."""
@@ -85,7 +92,7 @@ def push_once(src: str, url: str | None = None, git_dir: str = SCRATCH, push_fn=
     if err:
         return {"ok": False, "error": err}
     url = url or lp.target_url()
-    return (push_fn or lp.push)(p, url, branch=BRANCH, git_dir=git_dir, prune=True, file=FILE)
+    return (push_fn or _push)(p, url, branch=BRANCH, git_dir=git_dir, prune=True, file=FILE)
 
 
 def loop(src: str, every: float = EVERY_S, keepalive: float = KEEPALIVE_S, log=print, clock=time.time, sleep=time.sleep,
@@ -118,11 +125,11 @@ def api_payload(client, now: float | None = None, cache: dict | None = None, nam
 
 def push_payload(p: dict, url: str | None = None, git_dir: str = SCRATCH, prune: bool = True, push_fn=None) -> dict:
     url = url or lp.target_url()
-    return (push_fn or lp.push)(p, url, branch=BRANCH, git_dir=git_dir, prune=prune, file=FILE)
+    return (push_fn or _push)(p, url, branch=BRANCH, git_dir=git_dir, prune=prune, file=FILE)
 
 
 def main(argv=None) -> int:
-    """The kit's command line (same flags), pushing with engine/live_publish.push from data/kalshi_pub.git."""
+    """The kit's command line (same flags), pushing to the target of live.json (lp.target_url) from data/kalshi_pub.git."""
     a, _ = kit.parser(prog="python -m engine.kalshi_publish").parse_known_args(argv)
     url = a.repo or lp.target_url()
     git_dir = a.git_dir or SCRATCH

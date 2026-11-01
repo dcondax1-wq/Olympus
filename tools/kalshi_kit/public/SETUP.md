@@ -17,7 +17,7 @@ results. Step 3 needs one click from him on GitHub.
   server's IP address. The only thing you show the owner from step 3 is the deploy key's PUBLIC line (it starts with
   `ssh-ed25519`).
 - **No Kalshi API calls.** The script only reads files: `trades.db` (opened read-only), `account_truth.json`,
-  `autotrader_status.json`, `autotune_state.json`, `balance_history.json`, the three settings files and `paused.txt`.
+  `autotrader_status.json`, `autotune_state.json`, the three settings files and `paused.txt`.
   It never opens `.env`, `keys/` or `sniper.db`.
 - **Everything new goes in `~/kalshi_jarvis`.** Nothing in `/home/ubuntu/kalshi` changes. The script runs once a
   minute at low priority (`nice`/`ionice`), and a run takes well under a second.

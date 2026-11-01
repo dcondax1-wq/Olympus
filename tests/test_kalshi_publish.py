@@ -291,11 +291,14 @@ def part_g(tmp):
     open(os.path.join(bot, "paused.txt"), "w").write(str(int(NOW + 3600)))
     pp = KIT.bot_payload(bot, now=NOW, units=())
     os.remove(os.path.join(bot, "paused.txt"))
+    json.dump({"ts": NOW - 1500, "mode": "live"}, open(os.path.join(bot, "autotrader_status.json"), "w"))
+    quiet = KIT.bot_payload(bot, now=NOW, units=())
     json.dump({"ts": NOW - 600, "mode": "live", "blocked": "15-min book off (MAIN_BOOK 0)"}, open(os.path.join(bot, "autotrader_status.json"), "w"))
     ps = KIT.bot_payload(bot, now=NOW, units=())
-    check("g. paused.txt -> Paused until <ET time>, not running; a stale trader -> not running, its blocked text shown",
+    check("g. paused.txt -> Paused until <ET time>; blocked text shown; a silent trader -> 'No word ...'; never 'running'",
           pp["running"] is False and pp["status"] == "Paused until Nov 1, 2:00 PM ET" and ps["running"] is False
-          and ps["status"] == "15-min book off (MAIN_BOOK 0)", (pp["status"], ps["status"]))
+          and ps["status"] == "15-min book off (MAIN_BOOK 0)" and quiet["running"] is False
+          and quiet["status"] == "No word from the trader for 25 min", (pp["status"], ps["status"], quiet["status"]))
     empty = KIT.bot_payload(os.path.join(tmp, "nothing-here"), now=NOW, units=())
     check("g. a missing bot folder gives a calm card, not a crash", empty["kind"] == "kalshi" and empty["running"] is False
           and "trades.db could not be read" in empty["status"] and empty["positions"] == [], empty["status"])
@@ -696,7 +699,7 @@ def part_m(tmp):
     r = run(["-m", "engine.kalshi_publish", "--from-bot", make_bot(os.path.join(tmp, "bot_m")), "--units", "none", "--once",
              "--repo", remote, "--git-dir", os.path.join(tmp, "mod.git"), "--now", str(NOW)], cwd=ROOT, env=home)
     got = json.loads(git("--git-dir", remote, "show", "kalshi:kalshi.json").stdout or "{}")
-    check("m. the module's push (engine/live_publish.push) sends the same payload",
+    check("m. the module's push (data/kalshi_pub.git route, the repo's git login) sends the same payload",
           r.returncode == 0 and got.get("name") == "Kalshi Edge v2" and got.get("today_pnl") == 2.46
           and git("--git-dir", remote, "rev-list", "--count", "kalshi").stdout.strip() == "1", (r.stdout + r.stderr)[-300:])
     env = KIT.push_env("/home/ubuntu/kalshi_jarvis/deploy_key")

@@ -9,7 +9,8 @@ this same file, so both give the same kalshi.json for the same input.
 
 Where the numbers come from:
   --from-bot DIR  the Kalshi bot's own files in DIR (on its VM: /home/ubuntu/kalshi): trades.db (opened read-only),
-                  account_truth.json, autotrader_status.json, autotune_state.json, the settings files, paused.txt.
+                  account_truth.json, autotrader_status.json, autotune_state.json (eq_main), the settings files,
+                  paused.txt.
                   Never .env or keys/, never the bot's modules, no Kalshi API call. THE way (runs on the VM).
   --from-vm       (alias --ssh) from the PC: runs --from-bot on the VM through the PC's own srv.py helper (the VM's
                   address stays in srv.py), then pushes from the PC. The fallback while the VM can't push.
@@ -24,15 +25,17 @@ How it runs:
 
 Where it goes: kalshi.json, one orphan commit force-pushed to the branch `kalshi` of the PUBLIC repo
 demetrades2000-coder/nq-dashboard, from a private scratch git dir (no history piles up): with --deploy-key (the VM) over
-SSH as git@github.com:demetrades2000-coder/nq-dashboard.git, else over https with the machine's own git login. The phone's Kalshi page and the Jarvis card read it from
-https://raw.githubusercontent.com/demetrades2000-coder/nq-dashboard/kalshi/kalshi.json
+SSH as git@github.com:demetrades2000-coder/nq-dashboard.git, else over https with the machine's own git login. The
+phone's Kalshi page and the Jarvis card read https://raw.githubusercontent.com/demetrades2000-coder/nq-dashboard/kalshi/kalshi.json
 
 Safety (enforced in code, tested in tests/test_kalshi_publish.py):
-  * GET only: anything that is not a GET to an allow-listed read-only path is refused before a request is built
-    (ReadOnlyError); the base URL must be Kalshi's trade API (or a loopback test server); redirects are refused.
-  * The key never leaves the PC: the key id, the key file's path and the PEM text are never printed, logged or
-    published; errors are redacted; only the contract's keys are published; credential-looking keys are dropped and
-    local paths redacted; lists are capped and the file stays under MAX_BYTES.
+  * Never trades and never changes the bot: the bot's files are only read (SQLite in read-only mode).
+  * Only the contract's keys are published: credential-looking keys are dropped, local paths redacted, lists capped,
+    and the file stays under MAX_BYTES.
+  * --from-api is GET only: anything that is not a GET to an allow-listed read-only path is refused before a request is
+    built (ReadOnlyError); the base URL must be Kalshi's trade API (or a loopback test server); redirects are refused;
+    a 429 ends the round at once. The key id, the key file's path and the PEM text are never printed, logged or
+    published; errors are redacted.
 
 Keys (--from-api), first found wins: --key-id / --key-file, then the environment (KEY_ID_ENV / KEY_FILE_ENV names),
 then an env file (--env-file, e.g. the Kalshi bot's own .env), then config.json in the state folder. A key "file"
@@ -329,6 +332,10 @@ class ApiError(Exception):
     pass
 
 
+class RateLimited(ApiError):
+    """HTTP 429: the round stops at once (the bot shares the account's limits)."""
+
+
 def guard(method, path):
     """Refuse anything that is not a GET to an allow-listed read-only path (raises ReadOnlyError)."""
     if method != "GET":
@@ -456,7 +463,7 @@ class Client:
                     self.sleep(1.0)
                     continue
                 if e.code == 429:                       # never hammer: stop this round, the loop backs off
-                    err = f"Kalshi says too many requests (HTTP 429) on GET {path}: backing off"
+                    raise RateLimited(f"Kalshi says too many requests (HTTP 429) on GET {path}: backing off") from None
                 raise ApiError(redact(err, self.secrets)) from None
             except ReadOnlyError:
                 raise
@@ -520,6 +527,8 @@ def fetch(client, cache=None, max_pages=MAX_PAGES):
         try:
             m = client.get("/markets/" + tk)
             markets[tk] = m.get("market") if isinstance(m, dict) and isinstance(m.get("market"), dict) else {}
+        except RateLimited:
+            raise
         except ApiError:
             markets.setdefault(tk, {})
     raw["markets"] = {tk: markets.get(tk) or {} for tk in want if tk in markets}
@@ -974,10 +983,7 @@ def read_bot(bot_dir, now=None, units=UNITS, week="monday"):
                        "action": "sell" if (book or "main") in ("exit", "partial") else "buy", "contracts": filled,
                        "price": avg, "pnl": None if pnl is None else round(float(pnl), 2)})
     balance = next((v for v in (_f(truth.get("total")), _f(truth.get("cash")), _f(st.get("balance"))) if v is not None), None)
-    equity = _equity_points(J("balance_history.json"))
-    recent = _equity_points(tune.get("eq_main"))
-    if recent:
-        equity = [p for p in equity if p[0] < recent[0][0]] + recent
+    equity = _equity_points(tune.get("eq_main"))              # the tuner's 24 h [unix, equity] curve
     if balance is not None:
         equity = [p for p in equity if p[0] < now] + [[int(now), round(balance, 2)]]
     live_n = sum(1 for b in REAL_BOOKS if modes.get(b) == "live")
@@ -987,6 +993,11 @@ def read_bot(bot_dir, now=None, units=UNITS, week="monday"):
         status = str(st.get("problem") or st.get("blocked"))
     elif db_err:
         status = db_err
+    elif alive is False:
+        status = "A bot service is not running (kalshi-bot / kalshi-trader / kalshi-combo)"
+    elif not fresh:
+        age = now - (_f(st.get("ts")) or 0)
+        status = "No word from the trader for " + ("over an hour" if age > 3600 else f"{max(3, int(age // 60))} min")
     else:
         status = f"Trading · {live_n} live strateg{'y' if live_n == 1 else 'ies'} · {len(positions)} open bet{'' if len(positions) == 1 else 's'}"
     return {"name": BOT_NAME, "mode": mode, "running": running, "status": status, "t": int(now), "balance": balance,
