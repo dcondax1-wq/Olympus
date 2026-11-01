@@ -78,6 +78,7 @@
   /** { ok, at, s: {key: value}, n, groups: {look: n, ...}, skipped, err } from pasted text (whitespace and line breaks are fine). */
   function parseCode(text) {
     const t = String(text || '').replace(/\s+/g, '');
+    if (t.length > 300000) return { ok: false, err: 'That code is too big to be a Zenith settings code.' };   // shared storage stays safe
     const m = t.match(/ZEN1\.([A-Za-z0-9_-]+)\.([0-9a-f]{8})/);
     if (!m) return { ok: false, err: t.indexOf('ZEN1.') >= 0 ? 'The code is cut short or changed. Copy it again in full.' : 'That is not a Zenith settings code (it starts with ZEN1.).' };
     if (fnv(m[1]) !== m[2]) return { ok: false, err: 'The code is cut short or changed. Copy it again in full.' };
@@ -85,10 +86,10 @@
     try { o = JSON.parse(unb64u(m[1])); } catch (e) { return { ok: false, err: 'The code cannot be read. Copy it again in full.' }; }
     if (!o || o.v !== 1 || !o.s || typeof o.s !== 'object') return { ok: false, err: 'This code is from another version of Zenith.' };
     const s = {}, groups = {};
-    let skipped = 0;
+    let skipped = 0, total = 0;
     for (const [k, v] of Object.entries(o.s).slice(0, 300)) {
-      if (!carries(k) || !okValue(k, v)) { skipped++; continue; }
-      s[k] = v; const g = groupOf(k); groups[g] = (groups[g] || 0) + 1;
+      if (!carries(k) || !okValue(k, v) || total + k.length + v.length > 200000) { skipped++; continue; }   // at most ~200 KB in all
+      s[k] = v; total += k.length + v.length; const g = groupOf(k); groups[g] = (groups[g] || 0) + 1;
     }
     const n = Object.keys(s).length;
     if (!n) return { ok: false, err: 'The code holds no settings this app can use.' };
