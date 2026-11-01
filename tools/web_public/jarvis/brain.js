@@ -1,24 +1,31 @@
 // Jarvis brain v2 (owner 2026-11-01): the voice of the Jarvis hub (tools/web_public/jarvis/index.html).
 // It answers from the hub's own facts (the NQ bots' live.json, the Kalshi bot's kalshi.json, the Planner's day and the CME
-// clock), switches dashboards, briefs, follows up ("and atlas?") and names the next step. One ES module: no imports, no DOM,
-// no network, except the optional smart mode (the owner's own Anthropic key, kept only in this phone's localStorage).
+// clock), switches dashboards, briefs, follows up ("and atlas?") and names the next step, in the old Jarvis's voice (formal,
+// calm, a little witty, an occasional "sir"). One ES module: no imports, no DOM, no network, except the optional smart mode
+// (the owner's own Groq / Gemini / Anthropic key, kept only in this phone's localStorage).
 //
 //   import { createBrain } from './brain.js';
 //   const brain = createBrain({ getFacts, open, now });
 //     getFacts() -> { now, market: {open, text}, live: live.json, kalshi: kalshi.json | null, kalshiState: 'ok' | 'waiting' |
-//                     'error' | '', planner: {day, ev, tasks, projects} | null, apps: [{id, name, url}] }
+//                     'error' | '', planner: {day, ev, tasks, projects} | null, apps: [{id, name, url}] }   (a Promise is fine too)
 //     open(appId, route?)  switches the app: 'home', 'zenith', 'planner', 'kalshi' or an added id; open('zenith', '#/blitz')
 //     now() -> Date or ms (else facts.now, else the phone's clock)
-//   brain.ask(text)      -> Promise<{ text, speak, open?, route?, cards?, intent }>
+//   brain.ask(text, {voice}?) -> Promise<{ text, speak, open?, route?, cards?, control?, intent, smart?, smartError? }>
+//                          control: 'stop' | 'mute' | 'unmute' | 'hide_balance' | 'show_balance' (the shell may act on it)
 //   brain.briefing()     -> Promise<{ text, speak, cards, intent }>
-//   brain.suggestions()  -> string[]
-//   brain.setSmart({ key, model, on }) -> brain.smart = { on, model, hasKey, active }
+//   brain.suggestions()  -> string[]  (4-6 chips for right now)
+//   brain.setSmart({ provider, key, model, depth, on }) -> brain.smart = { on, provider, model, depth, hasKey, active, keys }
+//                          provider 'groq' (default) | 'gemini' | 'anthropic'; a key is kept per provider; depth 'auto' |
+//                          'quick' | 'think' | 'deep'. brain.forgetKey(provider?) drops one.
+//   brain.hidden (the "hide my balance" switch) · brain.idle() (the old greeting line) · outcomeAlerts(prev, cur) (exported:
+//   Kalshi outcomes in the owner's "🌌 +$1.26" style, only trades settled since prev)
 // Optional extras: createBrain({ ..., autoOpen: false }) leaves the switching to the shell (a reply with `open` otherwise
 // also calls open(app, route) itself, openDelay ms = 450 later, so the answer shows first; switching twice to the same app
 // is harmless). fetch / storage can be passed in (tests).
 //
 // Rules: every number comes from the facts; a missing field is said to be missing, never guessed. Read-only: it never arms,
-// routes, sizes or places anything (paper only). iPhone Safari 16: plain ES2020, no regex lookbehind.
+// routes, sizes or places anything (paper only), and it never takes an outward action itself. iPhone Safari 16: plain
+// ES2020, no regex lookbehind. tests/test_jarvis_brain.py drives it in node and in Chromium.
 
 // Smart mode: the owner's own key for one of three providers, kept only in this phone's localStorage ("jarvis.smart"),
 // sent only to that provider's API. All three answer a browser's CORS preflight (checked 2026-11-01). Groq is the default:
@@ -321,7 +328,7 @@ function appList(apps) {
 }
 
 // ------------------------------------------------------------------------------------------------ questions
-const OPEN_RX = /\b(open|go to|goto|show|switch to|take me to|launch|pull up|bring up|navigate to|jump to)\b/;
+const OPEN_RX = /^(open|go to|goto|show|switch to|take me to|launch|pull up|bring up|navigate to|jump to)\b/;      // a command leads: "is nq open" is a question
 const ASK_RX = /\b(how|how's|hows|status|room|floor|target|p&l|profit|doing|balance|positions?|money|made|strateg\w*|trades?|today|week|yesterday|best|worst|total|eval)\b/;
 const DATA_RX = /\b(room|floor|target|p&l|profit|balance|positions?|status|how much|how many|how far|made|lost)\b/;
 const HELP_RX = /^(help|help me|what can you do|what can i ask|what can i ask you|what do you do|commands|menu|options|what can you tell me)$|\b(what can you do|what can i (ask|say))\b/;
@@ -369,8 +376,8 @@ function topicIn(q) {
 // A text answer -> a short spoken line: money and times said naturally, no symbols.
 function toSpeech(text, maxLen) {
   let s = String(text || '').replace(/\n+/g, '. ').replace(/\s*·\s*/g, ', ');
-  s = s.replace(/([+−-])\$(\d[\d,]*)(\.(\d\d))?/g, (m0, sg, w, c0, c) => `${sg === '+' ? 'up' : 'down'} ${w} dollar${w === '1' ? '' : 's'}${c && c !== '00' ? ' ' + String(+c) : ''}`);
-  s = s.replace(/\$(\d[\d,]*)(\.(\d\d))?/g, (m0, w, c0, c) => `${w} dollar${w === '1' ? '' : 's'}${c && c !== '00' ? ' ' + String(+c) : ''}`);
+  s = s.replace(/([+−-])\$(\d+(?:,\d{3})*)(\.(\d\d))?/g, (m0, sg, w, c0, c) => `${sg === '+' ? 'up' : 'down'} ${w} dollar${w === '1' ? '' : 's'}${c && c !== '00' ? ' ' + String(+c) : ''}`);
+  s = s.replace(/\$(\d+(?:,\d{3})*)(\.(\d\d))?/g, (m0, w, c0, c) => `${w} dollar${w === '1' ? '' : 's'}${c && c !== '00' ? ' ' + String(+c) : ''}`);
   s = s.replace(/\b(\d{1,2}):00 (AM|PM)\b/g, '$1 $2').replace(/\bET\b/g, 'Eastern').replace(/\bP&L\b/gi, 'P and L').replace(/&/g, ' and ');
   s = s.replace(/\bx(\d+)\b/g, '$1 contracts').replace(/(\d+)-(\d+)°F/g, '$1 to $2 degrees').replace(/°F/g, ' degrees');
   s = s.replace(/\b(\d+) h (\d+) min\b/g, (m0, h, m) => `${plural(+h, 'hour')} ${plural(+m, 'minute')}`).replace(/\b(\d+) h\b/g, (m0, h) => plural(+h, 'hour')).replace(/\b(\d+) min\b/g, (m0, m) => plural(+m, 'minute'));
@@ -477,6 +484,26 @@ export function createBrain(opts) {
     const t = saySigned(c.today_pnl), r = sayAmt(c.room), tt = sayAmt(c.to_target);
     return `${bot.name} is ${t ? (t === 'flat' ? 'flat' : t) + ' today' : 'missing today\'s P and L'}, with ${r ? r + ' of room' : 'room missing'}${withTarget ? (tt ? ` and ${tt} to the target` : ', target distance missing') : ''}.`;
   }
+  // "Zlarior is up 213 dollars today, ATLAS is flat, and BLITZ is up 95 dollars."
+  function botsSay(V) {
+    const bits = [];
+    for (const key of ALL) {
+      const bot = BOT[key], c = card(V, key);
+      if (!c) continue;
+      if (isOff(c, bot)) { if (key === 'blitz' && c.off) bits.push('BLITZ is off'); else bits.push(`${bot.name} has no numbers`); continue; }
+      const t = saySigned(c.today_pnl);
+      bits.push(`${bot.name} is ${t ? (t === 'flat' ? 'flat' : t) : 'missing its P and L'}`);
+    }
+    if (!bits.length) return 'No bot numbers in the feed.';
+    const last = bits.pop();
+    return (bits.length ? bits.join(', ') + ', and ' + last : last) + ' today.';
+  }
+  function marketSay(V) {
+    const M = V.M;
+    if (!M) return toSpeech(V.mtext) + '.';
+    if (M.open) return `The market is open, ${M.rth ? 'regular session' : 'overnight session'}.`;
+    return `The market opens ${M.next ? whenText(M.next, V.now, true) : 'at the next session'}.`;
+  }
   function verdictLines(V) {
     const vd = V.nq.verdict || {}, out = [`${str(vd.label, 80) || 'Bot status unknown'}${V.nq.t ? ' (' + ago(V.nq.t, V.now) + ')' : ''}.`];
     const reason = str(vd.reason, 160);
@@ -493,7 +520,7 @@ export function createBrain(opts) {
       const bot = BOT[key], c = card(V, key);
       if (!c && key === 'blitz' && !only) continue;                     // no BLITZ card at all: the hub never showed one
       out.push(botStatusLine(V, key));
-      say.push(botSpeech(V, key, true));
+      say.push(botSpeech(V, key, one));
       if (only && c && !isOff(c, bot)) {
         const w = str(c.waiting, 240);
         if (w) out.push(w);
@@ -506,7 +533,7 @@ export function createBrain(opts) {
       if (bad) { out.push('Needs you: ' + str(bad.text, 240)); say.push('One thing needs you: ' + str(bad.text, 160)); }
     }
     out.push(V.mtext + '.');
-    say.push(toSpeech(V.mtext) + '.');
+    say.push(marketSay(V));
     const fn = freshNote(V);
     if (fn) { out.push(fn); say.push(fn); }
     setCtx('status', sel, only, false, V);
@@ -668,6 +695,48 @@ export function createBrain(opts) {
     setCtx('week', sel, only, false, V);
     if (!out.length) return { text: 'No week numbers in the live feed right now. ' + BOT_FIX, intent: 'week' };
     return { text: lines(...out), speak: say.join(' '), intent: 'week' };
+  }
+  function tradesTodayAnswer(V, sel, only) {
+    if (!V.nq) return needLive(V);
+    const out = [], say = [];
+    for (const key of sel) {
+      const bot = BOT[key], c = card(V, key);
+      if (!c || (key === 'blitz' && c.off)) { if (only) out.push(offWhy(c, bot)); continue; }
+      const n = num(c.trades_today), mx = num(c.max_day), pos = isObj(c.position);
+      out.push(`${bot.name}: ${n != null ? plural(n, 'trade') + ' today' : 'trade count missing'}${mx ? ` (max ${mx} a day)` : ''}${pos ? ', one open now' : ''}${c.done_today ? ', done for today' : ''}.`);
+      say.push(`${bot.name}: ${n != null ? plural(n, 'trade') : 'no count'}.`);
+    }
+    setCtx('status', sel, only, false, V);
+    if (!out.length) return { text: 'No trade counts in the live feed right now. ' + BOT_FIX, intent: 'trades' };
+    return { text: lines(...out), speak: say.join(' '), intent: 'trades' };
+  }
+  // the daily loss limit (dll) per account and what is used of it
+  function dllAnswer(V, sel, only) {
+    if (!V.nq) return needLive(V);
+    const out = [], say = [];
+    for (const key of sel) {
+      const bot = BOT[key], c = card(V, key);
+      if (!c || (key === 'blitz' && c.off)) { if (only) out.push(offWhy(c, bot)); continue; }
+      const d = usd(c.dll), u = usd(c.dll_used);
+      out.push(`${bot.name}: daily loss limit ${d || 'missing'}${u ? `, used ${u}` : ''}${num(c.room) != null ? `; ${usd(c.room)} of room to the floor` : ''}.`);
+      say.push(`${bot.name}: ${d ? sayAmt(c.dll) + ' a day' : 'limit missing'}${u ? `, ${sayAmt(c.dll_used)} used` : ''}.`);
+    }
+    setCtx('room', sel, only, false, V);
+    if (!out.length) return { text: 'No daily loss limits in the live feed right now. ' + BOT_FIX, intent: 'dll' };
+    return { text: lines(...out), speak: 'Daily loss limits. ' + say.join(' '), intent: 'dll' };
+  }
+  function priceAnswer(V) {
+    if (!V.nq) return needLive(V);
+    const p = V.nq.price;
+    if (p == null) return { text: 'No NQ price in the live feed right now. Zenith\'s Live View has the chart: say "open live view".', speak: 'No NQ price in the live feed right now.', intent: 'price' };
+    const px = p.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return { text: `NQ ${px} (the bot's last price, ${V.nq.t ? ago(V.nq.t, V.now) : 'time unknown'}). ${V.mtext}.`, speak: `N Q at ${px}.`, intent: 'price' };
+  }
+  function pcAnswer(V) {
+    if (!V.nq) return needLive(V);
+    const vd = V.nq.verdict || {}, reason = str(vd.reason, 160);
+    const text = lines(`The PC last checked in ${V.nq.t ? ago(V.nq.t, V.now) : 'at an unknown time'}: ${str(vd.label, 80) || 'status unknown'}.`, reason ? cap(reason) + '.' : '', freshNote(V));
+    return { text, speak: `The PC checked in ${V.nq.t ? ago(V.nq.t, V.now) : 'at an unknown time'}. ${cap(speakLabel(vd.label)) || 'Status unknown'}.`, intent: 'pc' };
   }
   const TOPIC_FN = { status: statusAnswer, room: roomAnswer, target: targetAnswer, pnl: pnlAnswer, balance: balanceAnswer, eval: evalAnswer, positions: positionsAnswer, waiting: waitingAnswer, week: weekAnswer };
 
@@ -886,8 +955,8 @@ export function createBrain(opts) {
         const c = card(V, key);
         if (!c && key === 'blitz') continue;
         out.push('• ' + botStatusLine(V, key));
-        say.push(botSpeech(V, key, false));
       }
+      say.push(botsSay(V));
       const fn = freshNote(V);
       if (fn) { out.push(fn); say.push(fn); }
     }
@@ -1124,10 +1193,13 @@ export function createBrain(opts) {
     const nav = navigate(q, V);
     if (nav) return nav;
     if (KALSHI_RX.test(q)) return kalshiAnswer(q, V);
-    if (GOAL_RX.test(q) && !PLAN_WORDS_RX.test(q)) return goalAnswer(V);
+    if (GOAL_RX.test(q) && !PLAN_WORDS_RX.test(q) && !botsIn(q).length) return goalAnswer(V);
     const bots = botsIn(q), all = allIn(q), only = bots.length > 0 && !all, sel = only ? bots : ALL;
     const planQ = PLAN_WORDS_RX.test(q);
     if (MARKET_RX.test(q) && !bots.length && !NOT_MARKET_RX.test(q) && !/\b(bots?|room|target|p&l|balance)\b/.test(q)) return marketAnswer(q, V);
+    if (/\b(daily loss|dll|loss limit|lose today|can i lose)\b/.test(q)) return dllAnswer(V, sel, only);
+    if (/\b(price|quote|where is nq|where's nq|nq at|nq now)\b/.test(q)) return priceAnswer(V);
+    if (/\b(pc|computer|surface|heartbeat|ninja ?trader|ninja)\b/.test(q) && !bots.length) return pcAnswer(V);
     if (!planQ || bots.length) {
       if (/\b(room|floor|drawdown|max loss|cushion|buffer)\b/.test(q)) return roomAnswer(V, sel, only);
       if (/\b(eval|evals|evaluation|progress|sessions?|funded)\b/.test(q)) return evalAnswer(V, sel, only);
@@ -1136,6 +1208,7 @@ export function createBrain(opts) {
       if (/\b(balances?|account value|equity)\b/.test(q)) return balanceAnswer(V, sel, only, !only);
       if (/\b(positions?|in a trade|in trade|open trades?|holding|exposure|are we long|are we short|long or short)\b/.test(q)) return positionsAnswer(V, sel, only, !only);
       if (/\b(waiting|wait for|looking for|watching|next entry|entry window|window|setup|stage)\b|\bwhen (will|does|do) .*\btrade\b|\btrade next\b/.test(q)) return waitingAnswer(V, sel, only);
+      if (/\btoday\b/.test(q) && /\b(trades?|traded|trade)\b/.test(q)) return tradesTodayAnswer(V, sel, only);
       if (/\b(this week|weekly|week so far|trades this week|how many trades)\b/.test(q)) return weekAnswer(V, sel, only);
       if (/\b(bot|bots|status|how are|how's|hows|how is|doing|running|armed|zlarior|atlas|blitz|nq|trading)\b/.test(q) && !/\b(today|schedule|plan|task|event)\b/.test(q)) return statusAnswer(V, sel, only);
     }

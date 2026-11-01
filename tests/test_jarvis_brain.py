@@ -198,6 +198,9 @@ def scenarios():
         S("bare_atlas", ask("atlas")),
         S("eval_pos", ask("how's the eval", "are we in a trade", "what is zlarior waiting for", "how's my money goal", "what should I do now"),
           f=facts(T_SUN13, live={**live(T_SUN13, lit=lit2), "money": money})),
+        S("more_intents", ask("where is nq", "how much can I lose today", "is the pc on", "is nq open", "how many trades today", "what's my balance"),
+          now=T_MON10, f=facts(T_MON10, live={**live(T_MON10, lit={**live(T_MON10)["board"]["lit"], "dll": 1000.0, "dll_used": 212.0, "trades_today": 1, "max_day": 1}),
+                                                 "price": 25123.5}, kalshi=kalshi(T_MON10), kalshiState="ok")),
         S("missing_fields", ask("how are the bots", "how far is zlarior from the target"), f=facts(T_SUN13, live=live(T_SUN13, lit=lit_missing))),
         S("blitz_off", ask("how are the bots", "how's blitz"), f=facts(T_SUN13, live=off_live)),
         S("now_plain", ask("what should I do now")),
@@ -216,6 +219,8 @@ def scenarios():
         S("smart_groq", [{"setSmart": {"key": "gsk_FAKE_TEST_KEY", "on": True}}] + ask(Q, "How are the bots?") + [{"smart": True}], fetch=groq_ok),
         S("smart_anth", [{"setSmart": {"provider": "anthropic", "key": "sk-ant-FAKE-TEST", "on": True}}] + ask("tell me something interesting"), fetch=anth_ok),
         S("smart_gem", [{"setSmart": {"provider": "gemini", "key": "AIza-FAKE-TEST", "on": True}}] + ask(Q), fetch=gem_ok),
+        S("smart_speech", [{"setSmart": {"key": "gsk_FAKE", "on": True}}] + ask(Q),
+          fetch={"json": {"choices": [{"message": {"content": "Zlarior is +$213 today, room $1,106, and Kalshi made $18.50."}, "finish_reason": "stop"}]}}),
         S("smart_500", [{"setSmart": {"key": "gsk_FAKE", "on": True}}] + ask(Q), fetch={"status": 500, "json": {"error": {"message": "overloaded"}}}),
         S("smart_throw", [{"setSmart": {"key": "gsk_FAKE", "on": True}}] + ask(Q), fetch={"throw": True}),
         S("smart_401", [{"setSmart": {"provider": "anthropic", "key": "sk-ant-BAD", "on": True}}] + ask(Q),
@@ -382,6 +387,16 @@ def part_node(O):
     check("e. Kalshi outcomes in the owner's alert style ('🌌 +$1.26' with the day's total), new settlements only",
           oc[0]["list"] == [{"title": "🌌 +$1.26", "body": "Bitcoin above $80,500 at 1 PM ET Nov 1 · today +$19.76", "pnl": 1.26, "t": T_SUN13 // 1000 - 30}]
           and oc[1]["list"] == [] and oc[2]["list"] == [], oc)
+    mi = [t("more_intents", i) for i in range(6)]
+    check("e. the NQ price from the bot's feed, with its age", mi[0].startswith("NQ 25,123.50 (the bot's last price, 2 min ago)"), mi[0])
+    check("e. the daily loss limit and what is used of it", "Zlarior: daily loss limit $1,000, used $212; $1,106 of room to the floor" in mi[1], mi[1])
+    check("e. 'is the pc on': its last check-in and the verdict", mi[2].startswith("The PC last checked in 2 min ago: RUNNING: bot trading"), mi[2])
+    check("e. 'is nq open' is a market question, not 'open Zenith'", mi[3].startswith("NQ market open · regular session") and not g("more_intents")[3].get("open"), mi[3])
+    check("e. trades today per bot (with the daily maximum)", "Zlarior: 1 trade today (max 1 a day)" in mi[4] and "BLITZ: 2 trades today" in mi[4], mi[4])
+    check("e. balances: each account and Kalshi", "Zlarior 50K balance $49,274" in mi[5] and "Kalshi balance $512.34" in mi[5], mi[5])
+    sps = O["smart_speech"]["res"][1].get("speak", "")
+    check("f. a text with $ amounts said naturally: no stray commas, cents, no symbols",
+          sps == "Zlarior is up 213 dollars today, room 1,106 dollars, and Kalshi made 18 dollars 50." and "1,000 dollars a day" in sp("more_intents", 1), sps)
     mf1, mf2 = t("missing_fields", 0), t("missing_fields", 1)
     check("e. a missing field is said to be missing (never '—' or a guess)", "Zlarior 50K: today missing, room $1,106, to target missing" in mf1 and clean(mf1), mf1)
     check("e. a missing target asked for one bot", "Zlarior: the distance to the target is missing from the feed" in mf2, mf2)
