@@ -200,18 +200,29 @@ def overlay(src, base):
             put(os.path.join(web, name), os.path.join(base, name))
             n += 1
     apps = app_dirs(src)
+    pages = set()
     for app in apps:
         d = os.path.join(web, app)
         if os.path.isdir(d):
             for name in os.listdir(d):
                 if os.path.isfile(os.path.join(d, name)):
                     put(os.path.join(d, name), os.path.join(base, app, name))
+                    pages.add(os.path.join(app, name))
                     n += 1
     kit = os.path.join(src, "tools", "kalshi_kit", "public")        # the Kalshi kit's public files, never over a page file
     if os.path.isdir(kit) and os.path.isdir(os.path.join(base, "kalshi")):
         for name in os.listdir(kit):
-            if os.path.isfile(os.path.join(kit, name)) and not os.path.exists(os.path.join(base, "kalshi", name)):
+            if os.path.isfile(os.path.join(kit, name)) and os.path.join("kalshi", name) not in pages:
                 put(os.path.join(kit, name), os.path.join(base, "kalshi", name))
+        vm = os.path.join(kit, "kalshi_status_vm.py")                # kit.json: the script's SHA-256, LF-normalized
+        if os.path.isfile(vm):
+            import hashlib
+            digest = hashlib.sha256(open(vm, "rb").read().replace(b"\r\n", b"\n")).hexdigest()
+            dst = os.path.join(base, "kalshi", "kit.json")
+            if os.path.lexists(dst):
+                os.unlink(dst)
+            with open(dst, "w", encoding="utf-8") as fh:
+                json.dump({"v": 1, "file": "kalshi_status_vm.py", "sha256": digest}, fh)
     icons = os.path.join(src, "web", "icons")
     for name in ("icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png", "icon.svg"):
         if os.path.exists(os.path.join(icons, name)):
@@ -1590,6 +1601,12 @@ def part_j(br, S, base):
         wait_ready(p)
         kf = open_app(p, "kalshi", KALSHI_READY, timeout=30000)
         p.wait_for_timeout(1200)
+        kit = os.path.join(S["new"], REPO, "kalshi", "kit.json")
+        if os.path.exists(kit):
+            sha = json.load(open(kit, encoding="utf-8")).get("sha256", "")
+            body = kf.evaluate("document.body.textContent") or ""
+            check("j. Kalshi not connected yet: the setup line pins the server script (kit.json's SHA-256)", bool(sha) and sha in body,
+                  f"sha {sha[:12]}... not in the page")
         btn = kf.locator('[data-act="preview"]')
         if btn.count():
             landed = real_tap(p, btn.first, "the Kalshi page's Preview button")
