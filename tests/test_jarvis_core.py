@@ -407,6 +407,15 @@ def run_browser(url, shots):
               [(a, b, round(x, 3)) for a, b, x in pairs])
         p.evaluate("core.destroy()")
         ctx.close()
+        ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=1)
+        p = harness(ctx)
+        mount(p, url, "{size: 300, webgl: false}")
+        p.wait_for_timeout(300)
+        g = p.evaluate("[core.stats().three, [...document.querySelectorAll('.jcore canvas')].map((c) => [c.width, c.height])]")
+        check("h. webgl: false keeps the 2D core (three 'off'); its canvas is square at any size (300 px at 1x: 300 x 300)",
+              g == ["off", [[300, 300]]], g)
+        p.evaluate("core.destroy()")
+        ctx.close()
 
         # ---------------------------------------------------------- i: the demo page (+ the screenshots)
         ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2)

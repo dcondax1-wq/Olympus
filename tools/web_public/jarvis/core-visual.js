@@ -82,7 +82,7 @@ export function mountCore(el, opts) {
   function fit() {
     const w = box.clientWidth || size || 300, d = Math.min(2, window.devicePixelRatio || 1);
     const px = Math.max(1, Math.round(w * d * (tier ? 1 : 0.75)));
-    if (cv.width !== px) { cv.width = cv.height = lab.width = lab.height = px; labKey = ''; }
+    if (cv.width !== px || cv.height !== px) { cv.width = cv.height = lab.width = lab.height = px; labKey = ''; }
     S = w; dpr = px / w;
     if (r3) r3.size(w, Math.min(d, tier > 1 ? 2 : tier ? 1.5 : 1));
   }
@@ -120,7 +120,7 @@ export function mountCore(el, opts) {
   }
   function start3D() {
     retry = 0;
-    if (dead || opts.webgl === false) return;
+    if (dead || opts.webgl === false) { three = 'off'; return; }
     tries++;
     const c = document.createElement('canvas'), A = { alpha: true, antialias: tier > 1, premultipliedAlpha: true, depth: true, stencil: false, powerPreference: 'high-performance' };
     try { c.gl = c.getContext('webgl2', A); } catch (e) { c.gl = null; }
