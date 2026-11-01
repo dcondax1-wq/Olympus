@@ -4,13 +4,14 @@
 // - a navigation waits on the network at most NAV_WAIT_MS when a saved copy exists; a late answer still refreshes the copy;
 // - a non-OK or failed answer is replaced by the saved copy; with no copy, a small dark page with a Retry button;
 // - the page's own versioned files (kalshi.css / kalshi.js ?v=) answer from their exact saved copy at once, refreshed behind;
+//   kit.json (the pin of the server script, written by the site build) is network first like the page;
 // - only its own 'kalshi-*' caches are ever deleted; only same-origin files inside this folder are handled, so kalshi.json
 //   (raw.githubusercontent.com / api.github.com) is never touched or cached;
 // - Jarvis's fonts (../jarvis/*.woff2, the page's @font-face) are saved here too and answered from the copy first, so the page
 //   keeps its Orbitron / Rajdhani look offline.
-const CACHE = 'kalshi-k10';                      // = 'kalshi-' + the ?v= of kalshi.css / kalshi.js (index.html, SHELL): a new version, a new cache
+const CACHE = 'kalshi-k11';                      // = 'kalshi-' + the ?v= of kalshi.css / kalshi.js (index.html, SHELL): a new version, a new cache
 const NAV_WAIT_MS = 3500;
-const SHELL = ['./', './index.html', './kalshi.css?v=k10', './kalshi.js?v=k10'];
+const SHELL = ['./', './index.html', './kalshi.css?v=k11', './kalshi.js?v=k11', './kit.json'];
 const FONTS = ['../jarvis/orbitron.woff2', '../jarvis/rajdhani-400.woff2', '../jarvis/rajdhani-500.woff2', '../jarvis/rajdhani-600.woff2',
   '../jarvis/rajdhani-700.woff2'];
 const FONT_URLS = FONTS.map((f) => new URL(f, self.registration.scope).href);
@@ -83,9 +84,12 @@ self.addEventListener('fetch', (e) => {
   }
   e.respondWith((async () => {
     // kalshi.css / kalshi.js are versioned (?v=): the exact saved copy answers at once and is refreshed behind it, so a page
-    // drawn from its saved copy after NAV_WAIT_MS never waits again on a slow site for its own style and script
-    const hit = await caches.match(req);
-    if (hit) { e.waitUntil(fetch(req).then((r) => store(req, r)).catch(() => null)); return hit; }
+    // drawn from its saved copy after NAV_WAIT_MS never waits again on a slow site for its own style and script.
+    // Everything else here (kit.json: the server script's pin) is network first, the saved copy only when the site fails.
+    if (u.searchParams.has('v')) {
+      const hit = await caches.match(req);
+      if (hit) { e.waitUntil(fetch(req).then((r) => store(req, r)).catch(() => null)); return hit; }
+    }
     try {
       const r = await fetch(req);
       if (r && r.ok) return store(req, r);

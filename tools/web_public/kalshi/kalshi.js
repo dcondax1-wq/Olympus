@@ -15,8 +15,12 @@
   // the Pages site. Raw first, the GitHub API second; a 404 = not connected yet.
   const RAW = 'https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json';
   const API = 'https://api.github.com/repos/demetrades2000-coder/kalshi-feed/contents/kalshi.json?ref=main';
-  const STEP = 'Open your kalshi-server chat in the Claude app and paste: Set up Jarvis for my Kalshi bot by following https://demetrades2000-coder.github.io/nq-dashboard/kalshi/SETUP.md';
-  const PASTE = STEP.slice(STEP.indexOf('paste: ') + 7);           // what goes into the bot's chat
+  const STEP0 = 'Open your kalshi-server chat in the Claude app and paste: Set up Jarvis for my Kalshi bot by following https://demetrades2000-coder.github.io/nq-dashboard/kalshi/SETUP.md';
+  // the server script is pinned: the site build writes kit.json next to this page ({"v":1, "file":"kalshi_status_vm.py",
+  // "sha256":"<64 hex>"}); with a valid hash the step carries it, else the step stays exactly STEP0
+  let STEP = STEP0;
+  const pinned = (h) => `${STEP0} (only run kalshi_status_vm.py if its sha256 is ${h})`;
+  const paste = () => STEP.slice(STEP.indexOf('paste: ') + 7);     // what goes into the bot's chat (the hash included)
   const TZ = 'America/New_York', STALE_S = 15 * 60, POLL_MS = 60e3, TICK_MS = 30e3, TIMEOUT_MS = 12e3, TR_PAGE = 10, TR_CAP = 40;
   const RANGES = [['1W', 7, 'past week'], ['1M', 30, 'past month'], ['3M', 90, 'past 3 months'], ['All', 0, '']];
   const SORTS = [['closes', 'Soonest'], ['pnl', 'Best'], ['pnl-asc', 'Worst'], ['value', 'Biggest'], ['name', 'A–Z']];
@@ -152,9 +156,9 @@
   if (isObj(cached)) { S.k = cached; S.raw = JSON.stringify(cached); }
 
   // ------------------------------------------------------------------ the feed
-  async function get(url, headers) {
+  async function get(url, headers, ms) {
     let ac = null, tm = 0;
-    try { ac = new AbortController(); tm = setTimeout(() => ac.abort(), TIMEOUT_MS); } catch (_) { ac = null; }
+    try { ac = new AbortController(); tm = setTimeout(() => ac.abort(), ms || TIMEOUT_MS); } catch (_) { ac = null; }
     try { return await fetch(url, { cache: 'no-cache', headers: headers || {}, signal: ac ? ac.signal : undefined }); } catch (_) { return null; } finally { clearTimeout(tm); }
   }
 
@@ -782,7 +786,20 @@
       try { const r = document.createRange(); r.selectNodeContents($('#step')); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); } catch (_) { /* nothing to select */ }
       done(false);
     };
-    try { navigator.clipboard.writeText(PASTE).then(() => done(true), pick); } catch (_) { pick(); }
+    try { navigator.clipboard.writeText(paste()).then(() => done(true), pick); } catch (_) { pick(); }
+  }
+
+  // ------------------------------------------------------------------ the kit's pin (kit.json, same origin, 3 s at most)
+  async function kit() {
+    const r = await get('kit.json', {}, 3000);
+    if (!r || !r.ok) return;
+    let j = null;
+    try { j = await r.json(); } catch (_) { return; }
+    const h = j && typeof j === 'object' && typeof j.sha256 === 'string' ? j.sha256 : '';
+    if (!/^[0-9a-f]{64}$/.test(h)) return;
+    STEP = pinned(h);
+    const el = $('#step');
+    if (el) el.textContent = STEP;
   }
 
   // ------------------------------------------------------------------ offline
@@ -810,5 +827,6 @@
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fit());
     if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => fit());
   } catch (_) { /* no font loading API */ }
+  kit();
   offline();
 })();
