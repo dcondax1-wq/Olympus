@@ -321,6 +321,18 @@ html[data-jarvis="on"] #moInst,html[data-jarvis="on"] #pushPrompt{display:none!i
     }
   }
 
+  // a hub that hides this frame's view with display:none (also the older Jarvis page, without the 'visible' message): the
+  // frame has no box then; noticed within 0.15 s, Zenith pauses the same way and comes back where the owner was
+  let PARENT_SHOWN = true, RENDERED = true;
+  const FE = window.frameElement;
+  if (FE) setInterval(() => {
+    let r = true;
+    try { r = FE.getClientRects().length > 0; } catch (e) { r = true; }
+    if (r === RENDERED) return;
+    RENDERED = r;
+    setShown(PARENT_SHOWN && RENDERED);
+  }, 150);
+
   // ---- links that would take this frame off Zenith open on their own (another site refuses to be framed, or would
   // replace Jarvis itself with _top / _parent)
   document.addEventListener('click', (e) => {
@@ -351,7 +363,8 @@ html[data-jarvis="on"] #moInst,html[data-jarvis="on"] #pushPrompt{display:none!i
       if (window.LEJ && typeof window.LEJ.set === 'function') window.LEJ.set([m.top, m.right, m.bottom, m.left]);
       layoutSoon();
     } else if (m.type === 'visible') {
-      setShown(m.visible !== false);
+      PARENT_SHOWN = m.visible !== false;
+      setShown(PARENT_SHOWN && RENDERED);
     } else if (m.type === 'ping') {
       state(true); layout(true);
     }

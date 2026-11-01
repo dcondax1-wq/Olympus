@@ -95,7 +95,10 @@ import { mountZenithMode, zenithRouteFor } from './zenith-mode.js';
 window.EXITS = 0; window.STATES = []; window.EVENTS = [];
 const host = document.getElementById('zhost');
 host.addEventListener('zenith:state', (e) => window.EVENTS.push(e.detail));
-window.ZM = mountZenithMode({ host, onExit: () => { window.EXITS++; window.closeZ(); }, onState: (s) => window.STATES.push(s) });
+window.SWITCHED = [];
+const APPS = [{ id: 'home', name: 'Jarvis' }, { id: 'zenith', name: 'Zenith' }, { id: 'planner', name: 'Planner', icon: '../icons/icon-192.png' }, { id: 'kalshi', name: 'Kalshi' }];
+const sw = /nosw/.test(location.search) ? {} : { apps: () => APPS, onSwitch: (id) => { window.SWITCHED.push(id); window.closeZ(); } };
+window.ZM = mountZenithMode({ host, onExit: () => { window.EXITS++; window.closeZ(); }, onState: (s) => window.STATES.push(s), ...sw });
 window.openZ = (r) => { host.hidden = false; return window.ZM.show(r); };
 window.closeZ = () => { window.ZM.hide(); host.hidden = true; };
 window.zenithRouteFor = zenithRouteFor;
@@ -350,7 +353,8 @@ def run_browser(base, other_base):
               cov["active"] and cov["layer"] == "visible" and cov["top"] == "zm-frame" and cov["mid"] == "zm-frame" and cov["theme"] == "#07080c" and cov["modal"] == "true"
               and "2147483000" in cov["lift"] and pg.evaluate("() => !!document.querySelector('#zhost .zm-root iframe.zm-frame')"), cov)
         tip = pg.evaluate("() => ({ n: localStorage.getItem('jarvis.zenith.tips'), t: document.querySelector('.zm-back .zm-tip').textContent, a: document.querySelector('.zm-back').getAttribute('aria-label') })")
-        check("c. the control says what it does: 'Back to Jarvis' (its label, and a hint the first three times)", tip == {"n": "1", "t": "Back to Jarvis", "a": "Back to Jarvis"}, tip)
+        check("c. the control says what it does: 'Back to Jarvis' (its label, and a hint the first three times: 'hold for apps')",
+              tip == {"n": "1", "t": "Back to Jarvis · hold for apps", "a": "Back to Jarvis"}, tip)
         inside = z.evaluate("() => ({ dj: document.documentElement.dataset.jarvis, lej: window.LE_JARVIS, splash: !!document.getElementById('splash'), inst: !!document.querySelector('#moInst') && document.querySelector('#moInst').offsetParent !== null, prompt: !!document.querySelector('#pushPrompt') && document.querySelector('#pushPrompt').offsetParent !== null })")
         check("e. inside Jarvis Zenith knows it (data-jarvis, LE_JARVIS): no intro, no Add to Home Screen card, no notification prompt",
               inside["dj"] == "on" and inside["lej"] is True and not inside["splash"] and not inside["inst"] and not inside["prompt"], inside)
@@ -585,6 +589,73 @@ def run_browser(base, other_base):
         pg.wait_for_function("() => !document.querySelector('.zm-back').classList.contains('cov')", timeout=4000)
         check("c. the Holodeck full screen: the control steps aside while it covers the screen, then comes back", True)
         z.evaluate("() => { location.hash = '#/alerts'; }")
+        # ---- the switcher: hold the control = the other apps as chips; a chip = onSwitch(id); tap = back to Jarvis as before
+        APPS_JS = """() => { const p = document.querySelector('.zm-apps'), b = document.querySelector('.zm-back').getBoundingClientRect();
+          if (!p || p.hidden) return null; const r = p.getBoundingClientRect();
+          return { names: [...p.querySelectorAll('.zm-chip')].map((c) => c.lastElementChild.textContent.trim()), h: Math.min(...[...p.querySelectorAll('.zm-chip')].map((c) => c.getBoundingClientRect().height)),
+                   r: [r.left, r.top, r.right, r.bottom], ctrl: [b.left, b.top, b.right, b.bottom], W: innerWidth, H: innerHeight, exp: document.querySelector('.zm-back').getAttribute('aria-expanded') }; }"""
+        def hold(ms=650, release_at=None):
+            r = pg.evaluate(CTRL)["r"]
+            pg.mouse.move((r[0] + r[2]) / 2, (r[1] + r[3]) / 2)
+            pg.mouse.down()
+            pg.wait_for_timeout(ms)
+            if release_at:
+                pg.mouse.move(*release_at, steps=4)
+            pg.mouse.up()
+            pg.wait_for_timeout(250)
+        e0 = pg.evaluate("() => window.EXITS")
+        hold()
+        A = pg.evaluate(APPS_JS)
+        Rz = z.evaluate(RECTS)
+        tabs_top = Rz["tabs"][1] if Rz["tabs"] else A["H"]
+        hdr = max([x[3] for x in (Rz["top"], Rz["sub"]) if x] or [0])
+        check("c. switcher: holding the control shows the other apps as chips (Jarvis, Planner, Kalshi; not Zenith), 44 px tall, still in Zenith mode",
+              A and A["names"] == ["Jarvis", "Planner", "Kalshi"] and A["h"] >= 43.5 and A["exp"] == "true"
+              and pg.evaluate("() => ZM.isActive() && window.EXITS") == e0, A)
+        check("c. switcher: the chips sit next to the control, inside the screen, between Zenith's header and its tab bar",
+              A and A["r"][2] <= A["ctrl"][0] + 0.5 and A["r"][0] >= 0 and A["r"][1] >= hdr and A["r"][3] <= tabs_top and not overlaps(A["r"], Rz["tabs"]), (A, hdr, tabs_top))
+        pg.keyboard.press("Escape")
+        pg.wait_for_timeout(200)
+        esc_closed = pg.evaluate(APPS_JS) is None
+        hold()
+        pg.mouse.click(60, 400)                               # outside the chips: they close, Zenith stays
+        pg.wait_for_timeout(250)
+        out_closed = pg.evaluate(APPS_JS) is None and pg.evaluate("() => ZM.isActive()")
+        check("c. switcher: Escape or a tap outside closes the chips, Zenith mode stays", esc_closed and out_closed, (esc_closed, out_closed))
+        hold()
+        pg.click(".zm-apps .zm-chip[data-app='planner']")
+        pg.wait_for_timeout(300)
+        s1 = pg.evaluate("() => ({ sw: window.SWITCHED.slice(), active: ZM.isActive(), exits: window.EXITS })")
+        check("c. switcher: the Planner chip calls onSwitch('planner') (the hub shows it), not onExit", s1 == {"sw": ["planner"], "active": False, "exits": e0}, s1)
+        pg.evaluate("() => openZ()")
+        pg.wait_for_timeout(400)
+        pg.focus(".zm-back")
+        pg.keyboard.press("ArrowLeft")
+        pg.wait_for_timeout(150)
+        k1 = pg.evaluate("() => document.activeElement && document.activeElement.dataset.app")
+        pg.keyboard.press("ArrowRight")
+        k2 = pg.evaluate("() => document.activeElement && document.activeElement.dataset.app")
+        pg.keyboard.press("ArrowLeft")
+        pg.keyboard.press("Enter")
+        pg.wait_for_timeout(300)
+        k3 = pg.evaluate("() => ({ active: ZM.isActive(), exits: window.EXITS })")
+        check("c. switcher by keyboard: an arrow key opens the chips, arrows move, Enter on Jarvis goes back to Jarvis (onExit)",
+              k1 == "home" and k2 == "planner" and k3 == {"active": False, "exits": e0 + 1}, (k1, k2, k3))
+        pg.evaluate("() => openZ()")
+        pg.wait_for_timeout(400)
+        r = pg.evaluate(CTRL)["r"]
+        pg.mouse.move((r[0] + r[2]) / 2, (r[1] + r[3]) / 2)
+        pg.mouse.down()
+        pg.wait_for_timeout(650)                             # the chips open while the finger is still down
+        kr = pg.evaluate("() => { const c = document.querySelector(\".zm-apps .zm-chip[data-app='kalshi']\"); if (!c) return null; const r = c.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }")
+        if kr:
+            pg.mouse.move(kr[0], kr[1], steps=5)
+        pg.mouse.up()
+        pg.wait_for_timeout(300)
+        s2 = pg.evaluate("() => ({ sw: window.SWITCHED.slice(), active: ZM.isActive() })")
+        check("c. switcher: hold, slide onto Kalshi, let go = onSwitch('kalshi')", kr and s2 == {"sw": ["planner", "kalshi"], "active": False}, (s2, kr))
+        pg.evaluate("() => openZ()")
+        pg.wait_for_timeout(400)
         # the hub lets the frame go (iPhone memory) and opens Zenith again later: a fresh Zenith at the route it had
         pg.wait_for_function("() => ZM.state().route === '#/alerts'", timeout=8000)
         pg.evaluate("() => ZM.unload()")
@@ -595,6 +666,16 @@ def run_browser(base, other_base):
         u2 = z.evaluate("() => ({ hash: location.hash, alive: window.__alive || null })")
         check("b. unload() lets the frame go; the next show() loads Zenith again at the route it had", u1 == {"frames": 0, "active": False}
               and u2 == {"hash": "#/alerts", "alive": None}, (u1, u2))
+        # without onSwitch the control only goes back to Jarvis (a hold does nothing else)
+        pg.goto(base + "jarvis/zm-test.html?nosw")
+        pg.wait_for_function("() => window.MOUNTED === true", timeout=15000)
+        pg.evaluate("() => openZ('#/today')")
+        pg.wait_for_function("() => ZM.state().ready", timeout=30000)
+        ns = pg.evaluate("() => ({ sw: document.querySelector('.zm-back').classList.contains('sw'), popup: document.querySelector('.zm-back').getAttribute('aria-haspopup') })")
+        hold()
+        ns.update(pg.evaluate("() => ({ apps: !!document.querySelector('.zm-apps:not([hidden])'), active: ZM.isActive(), exits: window.EXITS })"))
+        check("c. without onSwitch: no switcher; a hold is just a tap: back to Jarvis as before",
+              ns == {"sw": False, "popup": None, "apps": False, "active": False, "exits": 1}, ns)
         ctx.close()
 
         # ---- e. the old way (a frame below a bar): no safe area doubled either
