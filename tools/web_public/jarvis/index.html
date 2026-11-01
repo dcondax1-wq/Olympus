@@ -193,12 +193,12 @@ button { cursor: pointer; }
 (() => {
   'use strict';
   // ------------------------------------------------------------------ the apps (same site: they open inside Jarvis as they are)
-  const KALSHI_URL = '';                       // the Kalshi dashboard's link (owner: send it and it is built in; until then: paste it on the Kalshi card)
+  const KALSHI_URL = '../kalshi/';             // the Kalshi page (tools/web_public/kalshi/): the PC's kalshi.json (engine/kalshi_publish.py)
   const BUILT_IN = [
     { id: 'home', name: 'Jarvis', glyph: 'orb' },
     { id: 'zenith', name: 'Zenith', sub: 'NQ bots · Zlarior · ATLAS · BLITZ', url: '../', icon: '../icons/icon-192.png?v=p111030' },
     { id: 'planner', name: 'Planner', sub: 'Calendar, tasks and projects', url: '../planner/', icon: '../planner/icon-192.png' },
-    { id: 'kalshi', name: 'Kalshi', sub: 'Kalshi bot', url: KALSHI_URL, glyph: 'K' },
+    { id: 'kalshi', name: 'Kalshi', sub: 'Kalshi bot · from your PC', url: KALSHI_URL, glyph: 'K' },
   ];
   const LS = {
     get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (_) { return d; } },
@@ -316,6 +316,26 @@ button { cursor: pointer; }
     const c = LS.get('jarvis.lastLive', null);
     return c && c.board ? { ...c.board, cached: true } : null;
   }
+  // ------------------------------------------------------------------ Kalshi: the PC's kalshi.json (branch `kalshi`, docs/KALSHI_PUBLISH.md)
+  const K_RAW = `https://raw.githubusercontent.com/${OWNER}/${REPO}/kalshi/kalshi.json`;
+  const K_API = `https://api.github.com/repos/${OWNER}/${REPO}/contents/kalshi.json?ref=kalshi`;
+  const K = { j: null, at: 0, state: '', busy: false };    // state: '' not asked yet | ok | waiting (not published yet) | error
+  async function fetchKalshi() {
+    if (K.busy) return; K.busy = true;
+    try {
+      let r = null;
+      try { r = await fetch(K_RAW + '?t=' + Math.floor(Date.now() / 60000), { cache: 'no-cache' }); } catch (_) { r = null; }
+      if (!r || (!r.ok && r.status !== 404)) { try { r = await fetch(K_API, { cache: 'no-cache', headers: { Accept: 'application/vnd.github.raw+json' } }); } catch (_) { r = null; } }
+      if (r && r.ok) { const j = await r.json(); if (j && typeof j === 'object') { K.j = j; K.state = 'ok'; LS.set('jarvis.lastKalshi', j); } }
+      else K.state = r && r.status === 404 ? 'waiting' : 'error';
+    } catch (_) { K.state = 'error'; }
+    K.at = Date.now(); K.busy = false;
+    if (active === 'home') renderCards();
+  }
+  const kalshiView = () => K.j || (K.state === 'waiting' ? null : LS.get('jarvis.lastKalshi', null));
+  const usd2 = (v, sign) => { if (v == null || !Number.isFinite(+v)) return '—'; const x = +v, a = Math.abs(x); return (sign && x > 0 ? '+' : x < 0 ? '−' : '') + '$' + a.toLocaleString('en-US', { minimumFractionDigits: a < 1000 ? 2 : 0, maximumFractionDigits: a < 1000 ? 2 : 0 }); };
+  const kalshiState = (k) => (k.running === false ? ['bad', 'Stopped'] : k.t && Date.now() / 1000 - k.t < 15 * 60 ? ['ok', 'Running'] : ['warn', 'Not updating']);
+
   const usd = (v, sign) => (v == null || !Number.isFinite(+v)) ? '—' : (sign && +v > 0 ? '+' : (+v < 0 ? '−' : '')) + '$' + Math.abs(Math.round(+v)).toLocaleString('en-US');
   const ago = (t) => { if (!t) return ''; const s = Math.max(0, Date.now() / 1000 - +t); return s < 90 ? 'just now' : s < 3600 ? Math.round(s / 60) + ' min ago' : s < 86400 ? Math.round(s / 3600) + ' h ago' : Math.round(s / 86400) + ' d ago'; };
 
@@ -398,6 +418,13 @@ button { cursor: pointer; }
     const body = evs || tk ? `<ul class="list">${evs}${tk}</ul>` : '<p class="muted">Nothing planned today.</p>';
     return `<button class="card" type="button" data-app="planner">${head}${body}</button>`;
   }
+  function kalshiCard() {
+    const a = byId('kalshi'), k = kalshiView();
+    const head = `<div class="card-h">${iconOf(a, 40)}<div><b>Kalshi</b><small>${esc(a.sub)}</small></div><span class="go" aria-hidden="true">›</span></div>`;
+    if (!k) return `<button class="card" type="button" data-app="kalshi">${head}<p class="muted">${K.state === 'waiting' ? 'Waiting for your PC: the Kalshi bot is not publishing yet. Open Kalshi for the one step that connects it.' : K.state === 'error' ? 'Could not reach the Kalshi feed. Open Kalshi to try again.' : 'Loading Kalshi…'}</p></button>`;
+    const [lvl, label] = kalshiState(k), n = Array.isArray(k.positions) ? k.positions.length : null;
+    return `<button class="card" type="button" data-app="kalshi">${head}<span class="pill ${lvl}">${esc(label)}${k.mode ? ' · ' + esc(String(k.mode).toUpperCase()) : ''}${k.t ? ' · ' + esc(ago(k.t)) : ''}</span><div class="kv"><div><span>Balance</span><strong>${usd2(k.balance)}</strong></div><div><span>Today</span><strong>${usd2(k.today_pnl, true)}</strong></div><div><span>Open</span><strong>${n == null ? '—' : n}</strong></div></div></button>`;
+  }
   function linkCard(a) {
     const head = (go) => `<div class="card-h">${iconOf(a, 40)}<div><b>${esc(a.name)}</b><small>${esc(a.sub || (a.url ? new URL(a.url, location.href).host : ''))}</small></div>${go ? '<span class="go" aria-hidden="true">›</span>' : ''}</div>`;
     if (a.url) return `<button class="card" type="button" data-app="${esc(a.id)}">${head(true)}<p class="muted">Open ${esc(a.name)} inside Jarvis.</p></button>`;
@@ -405,7 +432,7 @@ button { cursor: pointer; }
   }
   function renderCards() {
     const list = apps().filter((a) => a.id !== 'home');
-    $('#cards').innerHTML = list.map((a) => a.id === 'zenith' ? zenithCard() : a.id === 'planner' ? plannerCard() : linkCard(a)).join('');
+    $('#cards').innerHTML = list.map((a) => a.id === 'zenith' ? zenithCard() : a.id === 'planner' ? plannerCard() : a.id === 'kalshi' ? kalshiCard() : linkCard(a)).join('');
   }
   document.addEventListener('submit', (e) => {
     const f = e.target.closest('[data-link]');
@@ -416,7 +443,7 @@ button { cursor: pointer; }
     const links = LS.get('jarvis.links', {}); links[f.dataset.link] = u; LS.set('jarvis.links', links);
     renderBar(); renderCards(); show(f.dataset.link);
   });
-  function refreshHome() { greet(); renderCards(); if (Date.now() - L.at > 50e3) fetchLive(); }
+  function refreshHome() { greet(); renderCards(); if (Date.now() - L.at > 50e3) fetchLive(); if (Date.now() - K.at > 50e3) fetchKalshi(); }
 
   // ------------------------------------------------------------------ Jarvis: answers from the live data, and switches apps
   const say = (who, text) => {
@@ -426,7 +453,7 @@ button { cursor: pointer; }
     return text;
   };
   const OPEN_WORDS = /\b(open|go to|goto|show|switch to|take me to|launch|pull up)\b/;
-  const ASK_WORDS = /\b(how|how's|hows|status|room|floor|target|pnl|p&l|profit|doing)\b/;
+  const ASK_WORDS = /\b(how|how's|hows|status|room|floor|target|pnl|p&l|profit|doing|balance|positions?|money|made)\b/;
   const APP_WORDS = [[/\b(zenith|nq|trading|zlarior|atlas|blitz|the bots?)\b/, 'zenith'], [/\b(planner|calendar|plan)\b/, 'planner'], [/\bkalshi\b/, 'kalshi'], [/\b(jarvis|home)\b/, 'home']];
   function brain(raw) {
     const q = String(raw || '').toLowerCase().replace(/[’']/g, "'").trim();
@@ -438,6 +465,14 @@ button { cursor: pointer; }
         if (id !== 'home' && !a.url) return { text: `${a.name} is not linked yet. Paste its dashboard link on the ${a.name} card and I will open it here.` };
         return { text: id === 'home' ? 'Here.' : `Opening ${a.name}.`, open: id };
       }
+    }
+    if (/\bkalshi\b/.test(q)) {
+      const k = kalshiView();
+      if (!k) return { text: K.state === 'error' ? 'I cannot reach the Kalshi feed right now. Try again in a minute.' : 'Kalshi is not connected yet: the Kalshi bot runs only on your PC. Open the Kalshi page for the one step that connects it.' };
+      const pos = Array.isArray(k.positions) ? k.positions : [];
+      const lines = [`Kalshi${k.mode ? ' (' + String(k.mode).toUpperCase() + ')' : ''}: ${kalshiState(k)[1].toLowerCase()}, balance ${usd2(k.balance)}, today ${usd2(k.today_pnl, true)}${k.week_pnl != null ? `, this week ${usd2(k.week_pnl, true)}` : ''}, ${pos.length} open ${pos.length === 1 ? 'position' : 'positions'}${k.t ? ' (' + ago(k.t) + ')' : ''}.`];
+      for (const p of pos.slice(0, 3)) lines.push(`${p.title || p.ticker}: ${String(p.side || '').toUpperCase()} x${p.contracts != null ? p.contracts : '?'}, P&L ${usd2(p.pnl, true)}.`);
+      return { text: lines.join('\n') };
     }
     if (/\b(help|what can you|commands?)\b/.test(q)) return { text: 'I can switch dashboards ("open planner", "open Zenith", "Kalshi"), tell you how the bots are doing ("status", "room", "today\'s P&L", "how far to target"), what is on your plan today, and whether the market is open.' };
     if (/\b(market|open|closed?|session|trading hours)\b/.test(q) && !/\b(bot|bots|zlarior|atlas|blitz)\b/.test(q)) return { text: market().text + '.' };
@@ -501,7 +536,8 @@ button { cursor: pointer; }
       if (voice && 'speechSynthesis' in window) { try { const u = new SpeechSynthesisUtterance(r.text.replace(/\n/g, '. ')); u.rate = 1.03; speechSynthesis.cancel(); speechSynthesis.speak(u); spoke = true; } catch (_) { /* no voice */ } }
       if (r.open) setTimeout(() => show(r.open), 450);
     };
-    if (/\b(bot|bots|room|target|p&l|pnl|profit|status|zlarior|atlas|blitz)\b/i.test(t) && !L.j && !L.busy) fetchLive().then(run); else setTimeout(run, 220);
+    if (/\bkalshi\b/i.test(t) && !K.j && !K.busy) fetchKalshi().then(run);
+    else if (/\b(bot|bots|room|target|p&l|pnl|profit|status|zlarior|atlas|blitz)\b/i.test(t) && !L.j && !L.busy) fetchLive().then(run); else setTimeout(run, 220);
   }
   $('#ask').addEventListener('submit', (e) => { e.preventDefault(); const q = $('#q'); ask(q.value); q.value = ''; });
 
@@ -561,10 +597,11 @@ button { cursor: pointer; }
   renderBar();
   renderCards();
   fetchLive();
+  fetchKalshi();
   if (location.hash) history.replaceState(null, '', location.pathname + location.search);
   show('home', false);
   clearTimeout(window.__jarvisBoot); const bootNote = document.getElementById('boot'); if (bootNote) bootNote.remove();
-  setInterval(() => { if (document.visibilityState === 'visible' && active === 'home') { greet(); if (Date.now() - L.at > 60e3) fetchLive(); } }, 30e3);
+  setInterval(() => { if (document.visibilityState === 'visible' && active === 'home') { greet(); if (Date.now() - L.at > 60e3) fetchLive(); if (Date.now() - K.at > 60e3) fetchKalshi(); } }, 30e3);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && active === 'home') refreshHome(); });
   window.addEventListener('storage', (e) => { if (/^planner\./.test(e.key || '') && active === 'home') renderCards(); });
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js', { scope: './' }).catch(() => { /* works without it */ });

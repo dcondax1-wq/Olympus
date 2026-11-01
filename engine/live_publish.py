@@ -307,19 +307,19 @@ _EXTRA_NAME = re.compile(r"^[a-z0-9_-]+\.json$")
 
 
 def push(payload: dict, url: str, branch: str = BRANCH, git_dir: str = SCRATCH, cwd: str = ROOT, prune: bool = False,
-         extra: dict | None = None) -> dict:
-    """Write payload as live.json (plus extra = {"name.json": payload}, e.g. liveview.json) in one orphan commit and
-    force-push it to url/branch (replaces the branch: no history). Returns {"ok", "error"|"commit", "bytes", "extra_bytes"}.
-    Never raises."""
+         extra: dict | None = None, file: str = FILE) -> dict:
+    """Write payload as live.json (or `file`; plus extra = {"name.json": payload}, e.g. liveview.json) in one orphan commit
+    and force-push it to url/branch (replaces the branch: no history). Returns {"ok", "error"|"commit", "bytes",
+    "extra_bytes"}. Never raises. engine/kalshi_publish.py pushes kalshi.json to the branch `kalshi` with it."""
     try:
         if not url:
             return {"ok": False, "error": "no target repo (origin is not on GitHub; set LE_LIVE_REPO)"}
         err = _scratch(git_dir, cwd)
         if err:
             return {"ok": False, "error": err}
-        files = {FILE: payload}
+        files = {file: payload}
         for name, pl in (extra or {}).items():
-            if name != FILE and pl is not None and _EXTRA_NAME.match(str(name)):
+            if name != file and pl is not None and _EXTRA_NAME.match(str(name)):
                 files[name] = pl
         entries, sizes = [], {}
         for name in sorted(files):
@@ -327,7 +327,7 @@ def push(payload: dict, url: str, branch: str = BRANCH, git_dir: str = SCRATCH, 
             r = _git(["hash-object", "-w", "--stdin"], git_dir=git_dir, inp=body)
             blob = _out(r)
             if r.returncode or len(blob) < 40:
-                return {"ok": False, "error": "hash-object failed" + ("" if name == FILE else f" ({name})")}
+                return {"ok": False, "error": "hash-object failed" + ("" if name == file else f" ({name})")}
             entries.append(f"100644 blob {blob}\t{name}\n")
             sizes[name] = len(body)
         r = _git(["mktree"], git_dir=git_dir, inp="".join(entries).encode())
@@ -349,8 +349,8 @@ def push(payload: dict, url: str, branch: str = BRANCH, git_dir: str = SCRATCH, 
         if prune:                                    # the old live commits are unreachable: drop them (only this scratch dir)
             _git(["update-ref", "refs/heads/last", commit], git_dir=git_dir, timeout=20)
             _git(["prune", "--expire=now"], git_dir=git_dir, timeout=120)
-        return {"ok": True, "commit": commit[:10], "bytes": sizes[FILE],
-                "extra_bytes": {k: v for k, v in sizes.items() if k != FILE}}
+        return {"ok": True, "commit": commit[:10], "bytes": sizes[file],
+                "extra_bytes": {k: v for k, v in sizes.items() if k != file}}
     except Exception as e:
         return {"ok": False, "error": f"{e.__class__.__name__}: {e}"}
 
