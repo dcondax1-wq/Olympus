@@ -42,9 +42,9 @@
 //     state   { route, title, badge }   on every change: route '#/blitz/brain' (/^#\/[\w\-/:.%,]*$/, <= 200 chars),
 //                                        title 'BLITZ' (the page title, <= 80 chars), badge = unseen activity (0..9999)
 //     layout  { top, bottom, cover }    the floating control's room: top = the header's bottom edge (px from the top),
-//                                        bottom = the tab bar + scroll-to-top slot (px from the bottom); cover = a full-screen
-//                                        layer is open (Holodeck / Live View full screen, the search palette, the intro,
-//                                        a trade picture): the control steps aside until it closes
+//                                        bottom = the tab bar + scroll-to-top slot (px from the bottom); cover = a layer is
+//                                        open over the page (Holodeck / Live View full screen, the search palette, a sheet,
+//                                        a trade picture, the intro): the control steps aside until it closes
 //     exit    {}                        Zenith's own "Back to Jarvis" (Settings > Inside Jarvis)
 //   Jarvis -> Zenith   (ns 'le-jarvis'; sent by this module)
 //     open    { route }                 go to that Zenith page ("open BLITZ" -> '#/blitz'); Zenith checks the route again
@@ -156,7 +156,7 @@ export function mountZenithMode(opts = {}) {
 
   const st = {
     active: false, ready: false, legacy: false, frame: null, route: (SS && store.get(SS, KEY_ROUTE, null)) || null, title: '', badge: 0,
-    pending: null, layout: null, cover: false, dock: { side: 'right', f: 0.6, ...((LS && store.get(LS, KEY_DOCK, null)) || {}) }, theme: null, idleT: 0, loadT: 0,
+    pending: null, layout: null, cover: false, lifted: null, portal: false, dock: { side: 'right', f: 0.6, ...((LS && store.get(LS, KEY_DOCK, null)) || {}) }, theme: null, idleT: 0, loadT: 0,
   };
   if (st.route && !normRoute(st.route)) st.route = null;
   if (st.dock.side !== 'left') st.dock.side = 'right';
@@ -239,7 +239,7 @@ export function mountZenithMode(opts = {}) {
 
   // ------------------------------------------------------------------ the Zenith frame (one, kept alive while Jarvis mode shows)
   function ensureFrame(route) {
-    if (!root.isConnected) host.appendChild(root);                     // the hub put host back after taking it out
+    if (!root.isConnected) (st.portal ? doc.body : host).appendChild(root);    // the hub put host back after taking it out
     if (st.frame && st.frame.isConnected) return st.frame;
     st.frame = null; st.ready = false; st.legacy = false;
     const f = doc.createElement('iframe');
@@ -339,9 +339,33 @@ export function mountZenithMode(opts = {}) {
 
   // ------------------------------------------------------------------ show / hide
   const meta = () => doc.querySelector('meta[name="theme-color"]');
+  // The hub's view for Zenith may be its own stacking context under the Jarvis bar (e.g. a fixed view with z-index 1):
+  // while Zenith mode shows, host and every ancestor that is a stacking context get the layer's z-index (put back on hide).
+  function lift(on) {
+    if (on) {
+      if (st.lifted) return;
+      st.lifted = [];
+      for (let el = host; el && el !== doc.body && el !== doc.documentElement; el = el.parentElement) {
+        const cs = win.getComputedStyle(el);
+        if (el !== host && (cs.position === 'static' || cs.zIndex === 'auto')) continue;
+        st.lifted.push([el, el.style.getPropertyValue('z-index'), el.style.getPropertyPriority('z-index')]);
+        el.style.setProperty('z-index', 'var(--zm-z, 2147483000)', 'important');
+      }
+    } else if (st.lifted) {
+      for (const [el, v, pr] of st.lifted) { if (v) el.style.setProperty('z-index', v, pr); else el.style.removeProperty('z-index'); }
+      st.lifted = null;
+    }
+  }
+  // ... and a transform / filter / contain on an ancestor would shrink the full-screen layer to that box: then the layer
+  // moves to <body> once, before Zenith's frame exists (moving a frame reloads it)
+  function trapped() {
+    const r = root.getBoundingClientRect();
+    return r.width > 0 && (r.top > 0.5 || r.left > 0.5 || r.width < win.innerWidth - 1 || r.height < win.innerHeight - 1);
+  }
   function show(route) {
     const r = normRoute(route);
-    const fresh = !st.frame;
+    const fresh = !st.frame || !st.frame.isConnected;
+    if (fresh && root.parentNode !== doc.body && trapped()) { doc.body.appendChild(root); st.portal = true; }
     ensureFrame(r);
     if (r && !fresh) open(r);
     if (!st.active) {
@@ -352,6 +376,7 @@ export function mountZenithMode(opts = {}) {
       root.setAttribute('role', 'dialog');
       root.setAttribute('aria-modal', 'true');
       root.setAttribute('aria-label', 'Zenith');
+      lift(true);
       doc.documentElement.classList.add('zm-on');                      // no rubber band of the Jarvis page behind Zenith
       const m = meta();
       if (m) { st.theme = m.getAttribute('content'); m.setAttribute('content', '#07080c'); }
@@ -371,6 +396,7 @@ export function mountZenithMode(opts = {}) {
     root.setAttribute('aria-hidden', 'true');
     root.removeAttribute('role'); root.removeAttribute('aria-modal');
     root.inert = true;
+    lift(false);
     doc.documentElement.classList.remove('zm-on');
     const m = meta();
     if (m && st.theme != null) m.setAttribute('content', st.theme);

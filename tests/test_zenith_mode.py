@@ -78,19 +78,25 @@ HARNESS = """<!doctype html><html lang="en"><head><meta charset="utf-8">
 <title>Jarvis</title><style>
 :root { --zm-safe-top: 47px; --zm-safe-bottom: 34px; }
 html, body { margin: 0; height: 100%; background: #0b0b0d; color: #f4f4f6; font: 15px system-ui; }
-.bar { position: fixed; inset: 0 0 auto; z-index: 20; height: 52px; padding-top: var(--zm-safe-top); background: #151518; display: flex; gap: 8px; align-items: center; }
+/* as the hub does it (tools/web_public/jarvis/, 2026-11-01): the bar on top (z-index 30), each view a fixed box under it
+   with its own z-index (a stacking context below the bar), the Zenith view hidden until Zenith mode */
+.bar { position: fixed; inset: 0 0 auto; z-index: 30; height: 52px; padding-top: var(--zm-safe-top); background: #151518; display: flex; gap: 8px; align-items: center; }
+.view { position: fixed; left: 0; right: 0; top: calc(52px + var(--zm-safe-top)); bottom: 0; z-index: 1; }
+.view[hidden] { display: none; }
 #home { padding: 120px 16px; }
 </style></head><body>
 <header class="bar" id="bar"><button id="goJ" type="button">Jarvis</button><button id="goZ" type="button">Zenith</button></header>
-<main id="home"><h1>Jarvis home</h1></main><div id="zhost"></div>
+<main><section class="view" id="home"><h1>Jarvis home</h1></section><section class="view" id="zhost" aria-label="Zenith" hidden></section></main>
 <script type="module">
 import { mountZenithMode, zenithRouteFor } from './zenith-mode.js';
 window.EXITS = 0; window.STATES = []; window.EVENTS = [];
 const host = document.getElementById('zhost');
 host.addEventListener('zenith:state', (e) => window.EVENTS.push(e.detail));
-window.ZM = mountZenithMode({ host, onExit: () => { window.EXITS++; }, onState: (s) => window.STATES.push(s) });
+window.ZM = mountZenithMode({ host, onExit: () => { window.EXITS++; window.closeZ(); }, onState: (s) => window.STATES.push(s) });
+window.openZ = (r) => { host.hidden = false; return window.ZM.show(r); };
+window.closeZ = () => { window.ZM.hide(); host.hidden = true; };
 window.zenithRouteFor = zenithRouteFor;
-document.getElementById('goZ').onclick = () => window.ZM.show();
+document.getElementById('goZ').onclick = () => window.openZ();
 window.MOUNTED = true;
 </script></body></html>"""
 # the old way: Zenith in a frame below a bar (the frame is not on the screen's edges: no safe area of its own)
@@ -234,8 +240,10 @@ def run_browser(base, other_base):
         cov = pg.evaluate("""() => { const at = (x, y) => document.elementFromPoint(x, y); const b = document.getElementById('bar').getBoundingClientRect();
           return { active: ZM.isActive(), layer: getComputedStyle(document.querySelector('.zm-root')).visibility, top: at(200, b.top + 60).className, mid: at(200, 400).className,
                    theme: document.querySelector('meta[name=theme-color]').content, modal: document.querySelector('.zm-root').getAttribute('aria-modal') }; }""")
-        check("b. show(): Zenith full screen over the Jarvis bar (one layer, aria-modal), the status bar tint follows Zenith",
-              cov["active"] and cov["layer"] == "visible" and cov["top"] == "zm-frame" and cov["mid"] == "zm-frame" and cov["theme"] == "#07080c" and cov["modal"] == "true", cov)
+        cov["lift"] = pg.evaluate("() => document.getElementById('zhost').style.getPropertyValue('z-index')")
+        check("b. show(): Zenith full screen over the Jarvis bar (the hub's view lifted above it, one layer, aria-modal), the status bar tint follows Zenith",
+              cov["active"] and cov["layer"] == "visible" and cov["top"] == "zm-frame" and cov["mid"] == "zm-frame" and cov["theme"] == "#07080c" and cov["modal"] == "true"
+              and "2147483000" in cov["lift"] and pg.evaluate("() => !!document.querySelector('#zhost .zm-root iframe.zm-frame')"), cov)
         inside = z.evaluate("() => ({ dj: document.documentElement.dataset.jarvis, lej: window.LE_JARVIS, splash: !!document.getElementById('splash'), inst: !!document.querySelector('#moInst') && document.querySelector('#moInst').offsetParent !== null, prompt: !!document.querySelector('#pushPrompt') && document.querySelector('#pushPrompt').offsetParent !== null })")
         check("e. inside Jarvis Zenith knows it (data-jarvis, LE_JARVIS): no intro, no Add to Home Screen card, no notification prompt",
               inside["dj"] == "on" and inside["lej"] is True and not inside["splash"] and not inside["inst"] and not inside["prompt"], inside)
@@ -328,25 +336,26 @@ def run_browser(base, other_base):
         pg.wait_for_timeout(450)
         b1 = pg.evaluate("() => ({ active: ZM.isActive(), exits: window.EXITS, layer: getComputedStyle(document.querySelector('.zm-root')).visibility, frames: document.querySelectorAll('.zm-frame').length, theme: document.querySelector('meta[name=theme-color]').content, bar: document.elementFromPoint(200, 70).closest('#bar') !== null })")
         zb = z.evaluate("() => ({ hidden: document.hidden, vs: document.visibilityState, hash: location.hash, alive: window.__alive })")
-        check("b. the control goes back to Jarvis: onExit once, the layer hidden, the Jarvis bar usable, the status bar tint back",
-              not b1["active"] and b1["exits"] == 1 and b1["layer"] == "hidden" and b1["theme"] == "#0b0b0d" and b1["bar"], b1)
+        b1["lift"] = pg.evaluate("() => document.getElementById('zhost').style.getPropertyValue('z-index')")
+        check("b. the control goes back to Jarvis: onExit once, the layer hidden, the Jarvis bar usable, the status bar tint and the view's z-index back",
+              not b1["active"] and b1["exits"] == 1 and b1["layer"] == "hidden" and b1["theme"] == "#0b0b0d" and b1["bar"] and b1["lift"] == "", b1)
         check("b. while Jarvis mode shows Zenith is paused like a backgrounded app (document.hidden) but alive: same document, same route",
               zb["hidden"] is True and zb["vs"] == "hidden" and zb["hash"] == "#/blitz" and zb["alive"] == "same document" and b1["frames"] == 1, zb)
         pg.click("#goZ")
         pg.wait_for_timeout(500)
         za = z.evaluate("() => ({ hidden: document.hidden, hash: location.hash, alive: window.__alive, y: scrollY })")
-        check("b. Zenith mode again: no reload, the same page and scroll (Zenith resumes)",
+        check("b. Zenith mode again (the hub had hidden its view: display:none): no reload, the same page and scroll (Zenith resumes)",
               za["hidden"] is False and za["hash"] == "#/blitz" and za["alive"] == "same document" and abs(za["y"] - y_before) < 3 and pg.evaluate("() => ZM.isActive()"), za)
 
         # ---- d. Jarvis -> Zenith: open a route
-        pg.evaluate("() => ZM.show('#/atlas/trades')")
+        pg.evaluate("() => openZ('#/atlas/trades')")
         z.wait_for_function("() => location.hash === '#/atlas/trades'", timeout=8000)
         pg.wait_for_function("() => ZM.state().route === '#/atlas/trades'", timeout=8000)
         check("d. Jarvis -> Zenith: show('#/atlas/trades') opens that page, Zenith reports it back", True)
         rt = pg.evaluate("() => [zenithRouteFor('open BLITZ'), zenithRouteFor('blitz brain'), zenithRouteFor('show me the holodeck'), zenithRouteFor('zlarior results'), zenithRouteFor('open planner')]")
         check("d. zenithRouteFor: 'open BLITZ' -> #/blitz, 'blitz brain' -> #/blitz/brain, holodeck -> #/holo, Zlarior results -> #/perf, planner -> none",
               rt == ["#/blitz", "#/blitz/brain", "#/holo", "#/perf", None], rt)
-        pg.evaluate("() => { ZM.hide(); ZM.show(zenithRouteFor('open BLITZ')); }")
+        pg.evaluate("() => { closeZ(); openZ(zenithRouteFor('open BLITZ')); }")
         z.wait_for_function("() => location.hash === '#/blitz'", timeout=8000)
         check("d. Jarvis's brain hears 'open BLITZ': Zenith mode at #/blitz", pg.evaluate("() => ZM.isActive() && ZM.state().route") == "#/blitz")
 
@@ -473,7 +482,7 @@ def run_browser(base, other_base):
         pg.wait_for_function("() => ZM.state().route === '#/alerts'", timeout=8000)
         pg.evaluate("() => ZM.unload()")
         u1 = pg.evaluate("() => ({ frames: document.querySelectorAll('.zm-frame').length, active: ZM.isActive() })")
-        pg.evaluate("() => ZM.show()")
+        pg.evaluate("() => openZ()")
         pg.wait_for_function("() => ZM.state().ready && document.querySelectorAll('.zm-frame').length === 1", timeout=30000)
         z = zframe(pg, base)
         u2 = z.evaluate("() => ({ hash: location.hash, alive: window.__alive || null })")

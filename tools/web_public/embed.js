@@ -266,7 +266,7 @@ html[data-jarvis="on"] #moInst,html[data-jarvis="on"] #pushPrompt{display:none!i
   }
 
   // ---- the floating control's room (header, tab bar + the scroll-to-top slot) and full-screen layers it must not cover
-  const COVER = '#splash, #plPal.on, .hd-root.hd-max, .lv-phone.lv-max, .lv-root.lv-max, .tp-lb.on';
+  const COVER = '#splash, #plPal.on, .sheet-wrap.on, .hd-root.hd-max, .lv-phone.lv-max, .lv-root.lv-max, .tp-lb.on';
   const cover = () => !!(document.fullscreenElement || document.webkitFullscreenElement || document.querySelector(COVER));
   function box(sel) {
     const e = document.querySelector(sel); if (!e) return null;
@@ -290,7 +290,15 @@ html[data-jarvis="on"] #moInst,html[data-jarvis="on"] #pushPrompt{display:none!i
 
   // ---- hidden while Jarvis mode shows: a backgrounded app (the 3D scene, the polling and the timers that check
   // document.hidden stop; shown again = visibilitychange, so the data refreshes like an app brought back)
-  let JHIDE = false, keepY = 0;
+  let JHIDE = false, keepY = 0, lastY = scrollY;
+  // where the owner is on the page, recorded while the frame is on screen (a hub that hides its view with display:none
+  // drops this frame's scroll to 0 before Jarvis's 'visible' message arrives)
+  addEventListener('scroll', () => {
+    if (!SHOWN) return;
+    const fe = window.frameElement;
+    if (fe && !fe.getClientRects().length) return;
+    lastY = scrollY;
+  }, { passive: true });
   try {
     const dh = Object.getOwnPropertyDescriptor(Document.prototype, 'hidden'), dv = Object.getOwnPropertyDescriptor(Document.prototype, 'visibilityState');
     if (dh && dh.get && dv && dv.get) {
@@ -301,11 +309,14 @@ html[data-jarvis="on"] #moInst,html[data-jarvis="on"] #pushPrompt{display:none!i
   function setShown(on) {
     if (on === SHOWN) return;
     const was = document.hidden;
-    if (!on) keepY = scrollY;
+    if (!on) keepY = lastY;
     SHOWN = on; JHIDE = !on;
     if (document.hidden !== was) document.dispatchEvent(new Event('visibilitychange'));
     if (on) {
-      if (Math.abs(scrollY - keepY) > 2) scrollTo(0, keepY);
+      // the hub may have hidden its view (display:none drops this frame's scroll): back to where the owner was, once the
+      // frame has its size again, unless the owner already scrolls
+      const back = () => { if (keepY > 2 && scrollY < 2) scrollTo(0, keepY); };
+      back(); requestAnimationFrame(back); setTimeout(back, 120); setTimeout(back, 450);
       state(true); layout(true);
     }
   }

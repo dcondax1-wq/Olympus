@@ -4279,7 +4279,8 @@ const pushShell = () => `<div class="card-h"><h3>Phone notifications</h3><span c
 async function pushFill(cardId) {
   const box = () => $('#' + cardId + ' #pushBox'), draw = still((h, c) => { const b = box(); if (b) b.innerHTML = h; const ch = $('#' + cardId + ' #pushChip'); if (ch && c != null) ch.innerHTML = c; });
   if (!pushSupport()) {
-    draw(isIOS() && !isStandalone()
+    draw(window.LE_JARVIS ? emptyBox('Notifications come to the Zenith app on this phone.', ' Inside Jarvis the Activity list shows every notice.')
+      : isIOS() && !isStandalone()
       ? `<ol class="list"><li>On iPhone, notifications work in the <b>Home Screen app</b> (iOS 16.4 or later), not in a Safari tab.</li><li>In Safari tap <b>Share</b> ${icon('share')} → <b>Add to Home Screen</b>.</li><li>Open <b>Liquidity</b> from the Home Screen and tap <b>Turn on notifications</b>.</li></ol>`
       : emptyBox('This browser cannot receive notifications.', ' Use the Home Screen app on your iPhone. The Activity list works everywhere.'), chip('not available'));
     return;
