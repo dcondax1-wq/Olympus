@@ -1,9 +1,9 @@
 diff --git a/planner/docs/features-power.md b/planner/docs/features-power.md
 new file mode 100644
-index 0000000..e599802
+index 0000000..0dbde7e
 --- /dev/null
 +++ b/planner/docs/features-power.md
-@@ -0,0 +1,37 @@
+@@ -0,0 +1,39 @@
 +# Power features: Now and next, Catch up, smarter quick add, weekly review reminder
 +
 +Plain text for the Help sheet and README (merge by hand).
@@ -36,6 +36,8 @@ index 0000000..e599802
 +## Notes for the lead (not for the Help sheet)
 +- Code: `planner/ext-power.js`, loaded by one `<script src="ext-power.js">` in `<head>`. It waits for the `planner:ready` event fired by the **EXT API** block in `index.html` (`window.PlannerAPI`: the app's own helpers, read-only access to `S` through a getter). Nothing else in `index.html` changed.
 +- Security: colors are written into `style=""`, so only a plain hex color (`/^#[0-9a-f]{3,8}$/i`) is ever used. A bot file's event color is checked where bot files are read (`buildBotEvents` in `index.html`; anything else becomes '' and the event takes its type's color), and the strip checks every color again (a bad one falls back to the type's color, then grey). A script-carrying or numeric color can no longer inject markup or crash a view (tested in `power.test.js`).
++- Safe ids (base code, `SAFE IDS` block in `index.html`): data from the device copy, a backup, the planner-data sync doc and the hosted database is untrusted, and its ids and colors are written into HTML attributes (`data-ev="${e.id}"`, `cvars(colorOf(e))`). `normalize()`, `applyDoc()` and `dbApply()` now pass every collection through `cleanItems()`: ids and id references (events `cat`/`proj`/`taskId`, tasks/money `proj`, time log `cat`/`proj`, routines `cat`) must match `/^[\w:.-]{1,120}$/` (or be a number), colors `/^#[0-9a-f]{3,8}$/i`. A bad id gets a stable `x` + hash replacement (the same bad value always maps to the same id, so links between items still match); a bad color becomes ''. Valid items come back as the very same objects, so real data stays byte-identical and is not rewritten; labels that are not ids (a Miles `cat` like "Vehicle and fuel") are left alone. Test: `planner/tests/safeids.test.js` (device copy, mocked GitHub sync doc, the cleaner itself).
++- Update bar fix (base code, `index.html` service-worker block): inside Jarvis the dashboard's site-wide worker (scope `/nq-dashboard/`) controls the Planner's first open, and its handover to `planner/sw.js` fired `controllerchange`, which showed a false "A new version is ready". Now only the Planner's own worker counts, before and after the change (`/\/planner\/sw\.js(\?|$)/` on `scriptURL`). Test: `planner/tests/swhandover.test.js` (its own server, a root-scope worker first, then a real sw.js update still shows the bar).
 +- Data: no new synced collection and no new field in `planner.v1`. Changes to tasks, events and bills go through `commit()` after `snapshot()`, exactly like the app's own sheets (sync stamps, tombstones and Undo all work). The only new key is the device-only `planner.power.skip` ({ task id: hidden until ms }).
 +- Today cards `pwnow` (tier Today, above Schedule), `pwreview` (tier Today, Friday 3pm to Monday only) and `pwcatch` (tier Needs you now, soft label "Overdue", so the "N things need you" count is unchanged) are added to `TO_CARDS`, so Customize Today can hide and move them. Tiles `pwnow` and `pwcatch` (group Calendar) in `HB_TOOLS`, commands `px-now` and `px-catch` in `PK_CMDS`.
 +- Pure helpers on `window.__pw`: `review(today)` ({ ws, done, streak }), `parse(text, today)` (null = left to the app's `qcParse` / `addTask`), `label`, `spread(tasks, days, perDay)`, `pick(tasks, { today, minutes, skip, now })`, `day(key, nowMin)`, `caps(today, n)`, `rangeOf(text)`.
@@ -718,7 +720,7 @@ index 0000000..2e75c25
 +  window.__pw = { strip: (d, nm) => nnStrip(d, nm), hexOk, review: (t) => { const ws = wrTarget(t || today()); return { ws, done: wrDone(ws), streak: wrStreak(ws) }; }, parse: pwParse, label: pwLabel, spread: pwSpread, pick: pwPick, day: (k, nm) => nnDay(k, nm), caps: (t, n) => cuCaps(t || today(), n || CU_DAYS), commit: pwCommit, rangeOf: (s) => { const m = (' ' + s + ' ').match(RANGE_RE); return m ? rangeOf(m) : null; } };
 +})();
 diff --git a/planner/index.html b/planner/index.html
-index e73bf75..ff96533 100644
+index e73bf75..aadb4c8 100644
 --- a/planner/index.html
 +++ b/planner/index.html
 @@ -9,6 +9,7 @@
@@ -729,7 +731,51 @@ index e73bf75..ff96533 100644
  <meta name="apple-mobile-web-app-capable" content="yes">
  <meta name="apple-mobile-web-app-status-bar-style" content="default">
  <meta name="apple-mobile-web-app-title" content="Planner">
-@@ -1727,7 +1728,7 @@ function buildBotEvents() {
+@@ -1257,7 +1258,7 @@ let query = '', agendaDays = 30, undoSnap = null, editing = null, lastScrollView
+ function normalize(s) {
+   s = s && typeof s === 'object' ? s : {};
+   const cats = Array.isArray(s.categories) && s.categories.length ? s.categories : DEFAULT_CATS.map((c) => ({ ...c }));
+-  return {
++  return cleanAll({ // ids and colors end up in HTML attributes: see cleanAll (SAFE IDS)
+     v: 1,
+     categories: cats,
+     events: Array.isArray(s.events) ? s.events.filter((e) => e && e.id && e.date) : [],
+@@ -1285,7 +1286,7 @@ function normalize(s) {
+     ...Object.fromEntries(XSYNC.map((k) => [k, Array.isArray(s[k]) ? s[k].filter((x) => x && x.id) : k === 'jobs' ? defaultJobs() : []])),
+     focus: s.focus && s.focus.tid && s.focus.start ? s.focus : null,
+     focusLen: [15, 25, 45, 60].includes(s.focusLen) ? s.focusLen : 25,
+-  };
++  });
+ }
+ function load() {
+   try { const raw = localStorage.getItem(KEY); if (raw) return normalize(JSON.parse(raw)); } catch (e) { /* fall through */ }
+@@ -1400,7 +1401,7 @@ function dbPush(changed, removed, settings) {
+ function dbApply(k, snap) {
+   const rows = snap.docs.map((d) => { const b = { ...d.data() }, ord = typeof b.ord === 'number' ? b.ord : 0, id = b.key || d.id; delete b.key; delete b.ord; return { ord, item: { ...b, id } }; });
+   if (ORDERED.includes(k)) rows.sort((a, b) => a.ord - b.ord);
+-  const list = rows.map((r) => r.item);
++  const list = cleanItems(rows.map((r) => r.item), k); // SAFE IDS
+   dbHas[k] = list.length > 0;
+   // Empty on the server: keep the built-in event types (always) and projects (until the first save).
+   if (!list.length && (k === 'categories' || ((k === 'projects' || k === 'templates') && !dbSeeded)) && !pendCount()) return;
+@@ -1459,6 +1460,7 @@ function mergeDocs(a, b) {
+   return { v: 2, categories: cats.length ? cats : (b.categories || []), events: ml(a.events, b.events), tasks: ml(a.tasks, b.tasks), projects: ml(a.projects, b.projects), goals: ml(a.goals, b.goals), money: ml(a.money, b.money), dismissed: ml(a.dismissed, b.dismissed), habits: ml(a.habits, b.habits), journal: ml(a.journal, b.journal), reviews: ml(a.reviews, b.reviews), templates: ml(a.templates, b.templates), health: ml(a.health, b.health), workouts: ml(a.workouts, b.workouts), wtemplates: ml(a.wtemplates, b.wtemplates), ...Object.fromEntries(XSYNC.map((k) => [k, ml(a[k], b[k])])), deleted, settings: (sb.u || 0) > (sa.u || 0) ? sb : sa };
+ }
+ function applyDoc(d) {
++  d = cleanAll({ ...d }); // SAFE IDS: the synced doc is untrusted input
+   if (Array.isArray(d.categories) && d.categories.length) S.categories = d.categories;
+   S.events = d.events || []; S.tasks = d.tasks || []; S.dismissed = d.dismissed || []; S.deleted = d.deleted || {};
+   if (Array.isArray(d.projects)) S.projects = d.projects;
+@@ -1512,7 +1514,7 @@ async function syncNow() {
+     for (let attempt = 0; ; attempt++) {
+       const r = await gh(`/repos/${sync.repo}/contents/planner.json`);
+       let remote = null, sha = null;
+-      if (r.ok) { const j = await r.json(); sha = j.sha; remote = JSON.parse(b64d(j.content)); }
++      if (r.ok) { const j = await r.json(); sha = j.sha; remote = cleanAll(JSON.parse(b64d(j.content))); } // SAFE IDS: merge on clean ids
+       else if (r.status !== 404) throw ghError(r);
+       const local = userDoc(), merged = remote ? mergeDocs(remote, local) : local;
+       if (canon(merged) !== canon(local)) { applyDoc(merged); changed = true; }
+@@ -1727,7 +1729,7 @@ function buildBotEvents() {
          repeat: REPEATS.includes(e.repeat) ? e.repeat : 'none', until: YMD.test(e.until || '') ? e.until : '',
          ex: Array.isArray(e.skip) ? e.skip.filter((x) => YMD.test(x)) : [], notes: String(e.notes || '').slice(0, 2000),
          proj: findProj(e.project),
@@ -738,16 +784,50 @@ index e73bf75..ff96533 100644
        });
        if (d.tz === 'ET' && timed && !localIsET) {
          const ev = out[out.length - 1], a = etToLocal(ev.date, ev.start), b = etToLocal(ev.date, ev.end);
-@@ -13953,6 +13954,16 @@ function alertsHtml() {
+@@ -13953,6 +13955,50 @@ function alertsHtml() {
  }
  // ===== ALERTS END =====
  
++// ===== SAFE IDS BEGIN: data from storage, a backup, the planner-data repo or the hosted database is untrusted. Ids, the id
++// references below and colors are written into HTML attributes, so only safe values get in: an id or reference matching
++// /^[\w:.-]{1,120}$/ (or a number) and a color matching /^#[0-9a-f]{3,8}$/i. Anything else gets a stable replacement id (the same
++// bad value always maps to the same 'x' + hash, so references between items still match) or an empty color. Only fields that
++// hold ids are checked (a Miles entry's cat is a label like "Vehicle and fuel" and stays as it is). Valid items are returned
++// untouched (same objects), so the owner's real data stays byte-identical and is not rewritten.
++function safeRef(v) {
++  if (v === '' || v == null || (typeof v === 'number' && isFinite(v))) return v;
++  const str = String(v);
++  if (typeof v === 'string' && /^[\w:.-]{1,120}$/.test(str)) return v;
++  let h = 5381; for (let i = 0; i < str.length; i++) h = ((h * 33) ^ str.charCodeAt(i)) >>> 0;
++  return 'x' + h.toString(36);
++}
++function cleanItems(list, k) {
++  if (!Array.isArray(list)) return list;
++  const refs = ['id', ...({ events: ['cat', 'proj', 'taskId'], tasks: ['proj'], money: ['proj'], timelog: ['cat', 'proj'], routines: ['cat'] }[k] || [])];
++  let changed = false;
++  const out = list.map((x) => {
++    if (!x || typeof x !== 'object') return x;
++    let y = x;
++    const fix = (k, v) => { if (y === x) y = { ...x }; y[k] = v; changed = true; };
++    refs.forEach((f) => { if (f in x) { const v = safeRef(x[f]); if (v !== x[f]) fix(f, v); } });
++    if ('color' in x && x.color !== '' && x.color != null && !(typeof x.color === 'string' && /^#[0-9a-f]{3,8}$/i.test(x.color))) fix('color', '');
++    return y;
++  });
++  return changed ? out : list;
++}
++function cleanAll(o) {
++  if (!o || typeof o !== 'object') return o;
++  ['categories', 'events', 'tasks', 'dismissed', 'projects', 'goals', 'money', 'habits', 'journal', 'reviews', 'templates', 'health', 'workouts', 'wtemplates', ...XSYNC].forEach((k) => { if (Array.isArray(o[k])) o[k] = cleanItems(o[k], k); });
++  return o;
++}
++// ===== SAFE IDS END =====
++
 +// ===== EXT API BEGIN: add-on files (ext-*.js, loaded in <head>) get the app's own helpers here. They keep their own data under new
 +// planner.<name>.* keys and change existing items only through commit(), with snapshot() first so the toast offers Undo. =====
 +window.PlannerAPI = Object.freeze({
 +  get S() { return S; }, KEY, commit, snapshot, save, toast, render, renderMain, refreshTasks, ask, esc, uid, pad, key, parse, todayKey, addDays, diffDays, dow,
 +  toMin, fromMin, fmtTime, fmtDur, longDate, startOfWeek, cvars, colorOf, cat, projOf, taskLi, eventsOn, busyOn, freeGaps, bfSpans, parseTag, parseWhen,
-+  openTask, openFocus, openEvent, nextRep, setView, goToday, makeDlg: qcMakeDlg, upsert, toNowTier, TO_CARDS, TO_BY, HB_TOOLS, PK_CMDS, BN_COLOR,
++  openTask, openFocus, openEvent, nextRep, setView, goToday, makeDlg: qcMakeDlg, upsert, toNowTier, TO_CARDS, TO_BY, HB_TOOLS, PK_CMDS, BN_COLOR, cleanItems,
 +});
 +try { dispatchEvent(new CustomEvent('planner:ready', { detail: window.PlannerAPI })); } catch (e) { console.error('Planner add-ons:', e); }
 +// ===== EXT API END =====
@@ -755,6 +835,19 @@ index e73bf75..ff96533 100644
  // ===== TRADES BEGIN: closed live/paper trades, notes (synced `tradenotes`), payout planner =====
  const TR_TAGS = ['Followed plan', 'Hesitated', 'FOMO', 'Moved stop', 'Took profit early', 'Overtraded', 'Good patience'];
  const ACCT_NAME = { lit: 'Zlarior', atlas: 'ATLAS' };
+@@ -14401,8 +14447,11 @@ if ($('#verNote')) $('#verNote').textContent = 'Planner ' + APP_VERSION;
+ if (!HOSTED && 'serviceWorker' in navigator && window.isSecureContext && location.protocol.startsWith('http')) {
+   const hadController = !!navigator.serviceWorker.controller;
+   navigator.serviceWorker.register('sw.js').catch(() => null);
++  // Only the Planner's own worker counts: the dashboard's site-wide worker (scope /nq-dashboard/) controls the first open inside
++  // Jarvis, and the handover from it to sw.js is not an update. The worker that takes over must be the Planner's too.
++  const ownSw = (w) => !!(w && /\/planner\/sw\.js(\?|$)/.test(w.scriptURL || '')), hadOwn = hadController && ownSw(navigator.serviceWorker.controller);
+   // A new service worker took over: offer a reload (never reload on its own, a half-typed task would be lost).
+-  navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadController) $('#updBar').hidden = false; });
++  navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadOwn && ownSw(navigator.serviceWorker.controller)) $('#updBar').hidden = false; });
+   // The site answered with an error (for example its copy of the app was removed): the saved copy on this phone is running.
+   navigator.serviceWorker.addEventListener('message', (e) => { if (e.data && e.data.planner === 'saved-copy') { try { if (sessionStorage.getItem('planner.savedNote')) return; sessionStorage.setItem('planner.savedNote', '1'); } catch (err) { /* show anyway */ } toast('The online copy of the app is unavailable, so your saved copy is running. Your data is safe on this phone.'); } });
+   $('#updGo').onclick = () => location.reload();
 diff --git a/planner/tests/power.test.js b/planner/tests/power.test.js
 new file mode 100644
 index 0000000..6d41988
@@ -1102,4 +1195,175 @@ index 0000000..6d41988
 +  await b.close();
 +  if (errs.length) { console.log('FAIL\n' + errs.join('\n')); process.exit(1); }
 +  console.log(`POWER OK (${checks} checks)`);
++})();
+diff --git a/planner/tests/safeids.test.js b/planner/tests/safeids.test.js
+new file mode 100644
+index 0000000..fd9e867
+--- /dev/null
++++ b/planner/tests/safeids.test.js
+@@ -0,0 +1,98 @@
++// Hostile synced data: ids and colors that would break out of HTML attributes. node planner/tests/safeids.test.js
++// Serve the site first (see shifts.test.js); PORT env, default 8790. Covers the saved copy on the device (load), the planner-data
++// sync doc (GitHub API mocked) and the cleaner itself; valid data must come through byte-identical.
++const { chromium } = require('playwright');
++const URL = 'http://127.0.0.1:' + (process.env.PORT || 8790) + '/nq-dashboard/planner/index.html';
++const NOW = new Date('2026-11-03T15:00:00Z').getTime(); // Tuesday 10:00 am New York
++const T = '2026-11-03';
++const BAD = (n) => `"><img src=x onerror="window.__pwned=${n}">`;
++const ev = (id, title, cat, x = {}) => ({ id, title, cat, date: T, allDay: false, start: '12:00', end: '13:00', endDate: '', repeat: 'none', until: '', notes: '', proj: '', ex: [], u: 1, ...x });
++const okEv = ev('ok1', 'Valid event', 'personal', { color: '#16a34a' });
++const okTask = { id: 'okt', title: 'Valid task', date: T, done: false, p: 2, proj: 'nq', rep: '', created: 1, u: 1 };
++const okMile = { id: 'mi1', kind: 'exp', date: T, amt: 40, cat: 'Vehicle and fuel', note: 'Gas', u: 1 };
++function state() {
++  return {
++    v: 1, view: 'today', weekStart: 0,
++    categories: [{ id: 'personal', name: 'Personal', color: '#64748b' }, { id: BAD(1), name: 'Evil type', color: BAD(2) }, { id: 'num', name: 'Number type', color: 123456 }],
++    events: [okEv, ev(BAD(3), 'Hostile id', BAD(1), { start: '10:30', end: '11:00', color: 'red;background:url(x)' }), ev(4242, 'Number id', 'num', { start: '14:00', end: '15:00' })],
++    tasks: [okTask, { id: BAD(4), title: 'Hostile task', date: T, done: false, p: 3, proj: BAD(5), rep: '', created: 2, u: 1 }],
++    projects: [{ id: 'nq', name: 'NQ bot', color: '#4f46e5', status: 'active' }, { id: BAD(5), name: 'Evil project', color: BAD(6), status: 'active' }],
++    miles: [okMile],
++  };
++}
++(async () => {
++  let checks = 0;
++  const errs = [], ok = (c, m) => { checks++; if (!c) errs.push(m); }, wait = (ms) => new Promise((r) => setTimeout(r, ms));
++  const b = await chromium.launch();
++  const views = async (p) => {
++    for (const v of ['agenda', 'month', 'week', 'day', 'projects', 'today']) {
++      await p.evaluate((v) => { const x = document.querySelector(`#views [data-v="${v}"]`) || document.querySelector(`#moreMenu [data-v="${v}"]`); if (x) x.click(); }, v); await wait(250);
++    }
++  };
++  const clean = (p) => p.evaluate(() => !window.__pwned && !document.querySelector('img[src="x"]') && ![...document.querySelectorAll('[style]')].some((e) => /onerror|url\(x\)/.test(e.getAttribute('style'))));
++  // ---------- 1. a hostile copy saved on the device ----------
++  {
++    const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, timezoneId: 'America/New_York' }); const p = await ctx.newPage(); const pe = [];
++    p.on('pageerror', (e) => pe.push(e.message)); await p.route('**/data.json*', (r) => r.abort());
++    await p.clock.install({ time: NOW });
++    await p.addInitScript((s) => { if (!localStorage.getItem('si.seeded')) { localStorage.setItem('si.seeded', '1'); localStorage.setItem('planner.v1', JSON.stringify(s)); } }, state());
++    await p.goto(URL + '#today'); await wait(900);
++    await views(p);
++    ok(await clean(p), 'no injected element or style from hostile ids and colors (device copy)');
++    ok(pe.length === 0, 'no page errors (a numeric color or id does not crash): ' + pe.join(' | '));
++    const S = await p.evaluate(() => JSON.parse(JSON.stringify(window.PlannerAPI.S)));
++    const evil = S.categories.find((c) => c.name === 'Evil type'), hev = S.events.find((e) => e.title === 'Hostile id');
++    ok(/^x[0-9a-z]+$/.test(evil.id) && evil.color === '', 'hostile type id replaced, color emptied: ' + JSON.stringify(evil));
++    ok(hev.id !== BAD(3) && /^x[0-9a-z]+$/.test(hev.id) && hev.cat === evil.id && hev.color === '', 'hostile event: safe id, still points at its type, color emptied');
++    ok(S.categories.find((c) => c.name === 'Number type').color === '' && S.events.find((e) => e.title === 'Number id').id === 4242, 'numeric color emptied, numeric id kept');
++    const ht = S.tasks.find((t) => t.title === 'Hostile task'), hp = S.projects.find((x) => x.name === 'Evil project');
++    ok(/^x[0-9a-z]+$/.test(ht.id) && ht.proj === hp.id && /^x[0-9a-z]+$/.test(hp.id) && hp.color === '', 'hostile task and project: safe ids, link kept');
++    ok(JSON.stringify(S.events.find((e) => e.id === 'ok1')) === JSON.stringify(okEv) && JSON.stringify(S.tasks.find((t) => t.id === 'okt')) === JSON.stringify(okTask), 'valid event and task byte-identical');
++    ok(JSON.stringify(S.miles[0]) === JSON.stringify(okMile), 'a Miles label like "Vehicle and fuel" is not an id and stays as it is');
++    ok(JSON.stringify(S.categories[0]) === JSON.stringify(state().categories[0]) && JSON.stringify(S.projects[0]) === JSON.stringify(state().projects[0]), 'valid type and project byte-identical');
++    ok(/Hostile id/.test(await p.evaluate(() => { document.querySelector('#views [data-v="agenda"]') && document.querySelector('#views [data-v="agenda"]').click(); return document.querySelector('#main').textContent; })), 'the cleaned event still shows');
++    errs.push(...pe.map((x) => 'pageerror ' + x)); await ctx.close();
++  }
++  // ---------- 2. a hostile planner.json from the planner-data repo (GitHub sync, mocked) ----------
++  {
++    const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, timezoneId: 'America/New_York' }); const p = await ctx.newPage(); const pe = [];
++    p.on('pageerror', (e) => pe.push(e.message)); await p.route('**/data.json*', (r) => r.abort());
++    const remote = { ...state(), events: [okEv, ev(BAD(7), 'Remote hostile', BAD(1), { start: '16:00', end: '17:00', color: BAD(8), u: NOW })], deleted: {}, settings: { weekStart: 0, u: 0 } };
++    let puts = 0;
++    await p.route('https://api.github.com/**', (r) => {
++      const u = r.request().url(), m = r.request().method();
++      if (/contents\/planner\.json/.test(u) && m === 'GET') return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ sha: 'abc', content: Buffer.from(JSON.stringify(remote)).toString('base64') }) });
++      if (/contents\/planner\.json/.test(u) && m === 'PUT') { puts++; return r.fulfill({ status: 200, contentType: 'application/json', body: '{}' }); }
++      return r.fulfill({ status: 404, body: '{}' });
++    });
++    await p.clock.install({ time: NOW });
++    await p.addInitScript(() => { if (!localStorage.getItem('si.seeded')) { localStorage.setItem('si.seeded', '1'); localStorage.setItem('planner.sync', JSON.stringify({ token: 'test-token', repo: 'me/planner-data' })); localStorage.setItem('planner.v1', JSON.stringify({ v: 1, view: 'today', categories: [{ id: 'personal', name: 'Personal', color: '#64748b' }], events: [], tasks: [] })); } });
++    await p.goto(URL + '#today'); await wait(1500);
++    const got = await p.evaluate(() => window.PlannerAPI.S.events.map((e) => ({ id: e.id, title: e.title, cat: e.cat, color: e.color })));
++    const rh = got.find((e) => e.title === 'Remote hostile');
++    ok(!!rh && /^x[0-9a-z]+$/.test(rh.id) && /^x[0-9a-z]+$/.test(rh.cat) && rh.color === '', 'the synced doc is cleaned when it is applied: ' + JSON.stringify(rh));
++    ok(got.some((e) => e.id === 'ok1'), 'valid synced event kept');
++    ok(new Set(got.map((e) => e.id)).size === got.length, 'no duplicate ids after the merge');
++    await views(p);
++    ok(await clean(p), 'no injected element or style from the synced doc');
++    ok(pe.length === 0, 'page errors: ' + pe.join(' | '));
++    errs.push(...pe.map((x) => 'pageerror ' + x)); await ctx.close();
++  }
++  // ---------- 3. the cleaner itself (also used for the hosted database) ----------
++  {
++    const ctx = await b.newContext(); const p = await ctx.newPage();
++    await p.goto(URL); await wait(700);
++    const r = await p.evaluate(({ okEv, okMile }) => {
++      const C = window.PlannerAPI.cleanItems, a = [okEv, { ...okEv, id: 'ok2' }], m = [okMile];
++      const bad = C([{ id: 'a b', color: '#fff' }, { id: 'a b', color: 'x' }, { id: { x: 1 } }, { id: 'ok', color: 7 }, null], 'events');
++      return { same: C(a, 'events') === a && C(m, 'miles') === m, bad, long: C([{ id: 'y'.repeat(121) }], 'tasks')[0].id };
++    }, { okEv, okMile });
++    ok(r.same, 'valid lists come back as the very same arrays (nothing rewritten)');
++    ok(r.bad[0].id === r.bad[1].id && /^x[0-9a-z]+$/.test(r.bad[0].id) && r.bad[0].color === '#fff' && r.bad[1].color === '' && /^x/.test(r.bad[2].id) && r.bad[3].id === 'ok' && r.bad[3].color === '' && r.bad[4] === null, 'same bad id -> same safe id; bad colors emptied; never throws: ' + JSON.stringify(r.bad));
++    ok(/^x[0-9a-z]+$/.test(r.long), 'over-long id replaced');
++    await ctx.close();
++  }
++  await b.close();
++  if (errs.length) { console.log('FAIL\n' + errs.join('\n')); process.exit(1); }
++  console.log(`SAFEIDS OK (${checks} checks)`);
++})();
+diff --git a/planner/tests/swhandover.test.js b/planner/tests/swhandover.test.js
+new file mode 100644
+index 0000000..396cfea
+--- /dev/null
++++ b/planner/tests/swhandover.test.js
+@@ -0,0 +1,61 @@
++// Service worker handover: node planner/tests/swhandover.test.js (serves the repo itself on a random local port; nothing else needed).
++// Inside Jarvis the dashboard's site-wide worker (scope /nq-dashboard/) controls the Planner's first open; when the Planner's own
++// sw.js takes over, that must not show "A new version is ready". A real update of sw.js must still show it.
++const http = require('http'), fs = require('fs'), path = require('path');
++const { chromium } = require('playwright');
++const ROOT = path.resolve(__dirname, '..', '..');
++const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml', '.webmanifest': 'application/manifest+json' };
++// a pass-through worker for the whole site, like the dashboard's
++const SITE_SW = "self.addEventListener('install', () => self.skipWaiting()); self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim())); self.addEventListener('fetch', () => {});";
++let swVersion = 1;
++const server = http.createServer((req, res) => {
++  const u = decodeURIComponent(req.url.split('?')[0]);
++  if (u === '/nq-dashboard/site.html') { res.writeHead(200, { 'Content-Type': 'text/html' }); res.end('<!doctype html><title>Site</title><p>Dashboard'); return; }
++  if (u === '/nq-dashboard/site-sw.js') { res.writeHead(200, { 'Content-Type': 'text/javascript', 'Cache-Control': 'no-store' }); res.end(SITE_SW); return; }
++  if (!u.startsWith('/nq-dashboard/')) { res.writeHead(404); res.end(); return; }
++  let p = path.join(ROOT, u.slice('/nq-dashboard/'.length));
++  if (!p.startsWith(ROOT)) { res.writeHead(404); res.end(); return; }
++  try { if (fs.statSync(p).isDirectory()) p = path.join(p, 'index.html'); } catch (e) { res.writeHead(404); res.end(); return; }
++  if (!fs.existsSync(p)) { res.writeHead(404); res.end(); return; }
++  let body = fs.readFileSync(p);
++  if (u === '/nq-dashboard/planner/sw.js') body = Buffer.concat([body, Buffer.from('\n// test build ' + swVersion + '\n')]);
++  res.writeHead(200, { 'Content-Type': TYPES[path.extname(p)] || 'application/octet-stream', 'Cache-Control': 'no-store' });
++  res.end(body);
++});
++(async () => {
++  let checks = 0;
++  const errs = [], ok = (c, m) => { checks++; if (!c) errs.push(m); };
++  await new Promise((r) => server.listen(0, '127.0.0.1', r));
++  const base = `http://127.0.0.1:${server.address().port}/nq-dashboard`;
++  const b = await chromium.launch();
++  const ctx = await b.newContext({ viewport: { width: 390, height: 844 } });
++  const ctl = (pg) => pg.evaluate(() => (navigator.serviceWorker.controller ? navigator.serviceWorker.controller.scriptURL : ''));
++  const own = (pg) => pg.waitForFunction(() => !!navigator.serviceWorker.controller && /\/planner\/sw\.js/.test(navigator.serviceWorker.controller.scriptURL), null, { timeout: 30000 });
++  try {
++    // 1. the site-wide worker is installed first (as on the dashboard site Jarvis runs on)
++    const site = await ctx.newPage();
++    await site.goto(base + '/site.html');
++    await site.evaluate(async () => { await navigator.serviceWorker.register('/nq-dashboard/site-sw.js', { scope: '/nq-dashboard/' }); await navigator.serviceWorker.ready; });
++    // 2. first open of the Planner: controlled by the site-wide worker, then its own sw.js takes over
++    const p = await ctx.newPage(); const pe = [];
++    p.on('pageerror', (e) => pe.push(e.message));
++    await p.addInitScript(() => { window.__firstCtl = navigator.serviceWorker.controller ? navigator.serviceWorker.controller.scriptURL : ''; });
++    await p.goto(base + '/planner/index.html#today'); await p.waitForSelector('#main');
++    const first = await p.evaluate(() => window.__firstCtl);
++    ok(/\/site-sw\.js/.test(first), 'the site-wide worker controls the first open: ' + first);
++    await own(p); await p.waitForTimeout(600);
++    ok(await p.isHidden('#updBar'), 'no "new version" bar when the Planner\'s own worker takes over from the site-wide one');
++    // 3. a plain reload: already the Planner's worker, still no bar
++    await p.reload(); await p.waitForSelector('#main'); await own(p); await p.waitForTimeout(400);
++    ok(/\/planner\/sw\.js/.test(await ctl(p)) && await p.isHidden('#updBar'), 'reload under its own worker: no bar');
++    // 4. a real update of sw.js still offers Reload
++    swVersion = 2;
++    await p.evaluate(() => navigator.serviceWorker.getRegistration().then((r) => r && r.update()));
++    await p.waitForFunction(() => !document.querySelector('#updBar').hidden, null, { timeout: 30000 }).catch(() => null);
++    ok(await p.isVisible('#updBar'), 'a real update of the Planner\'s worker still shows "A new version is ready"');
++    ok(pe.length === 0, 'page errors: ' + pe.join(' | '));
++  } catch (e) { errs.push('threw: ' + (e && e.message)); }
++  await b.close(); server.close();
++  if (errs.length) { console.log('FAIL\n' + errs.join('\n')); process.exit(1); }
++  console.log(`SWHANDOVER OK (${checks} checks)`);
 +})();

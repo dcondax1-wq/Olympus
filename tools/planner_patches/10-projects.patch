@@ -1,17 +1,18 @@
 diff --git a/planner/docs/features-projects.md b/planner/docs/features-projects.md
 new file mode 100644
-index 0000000..d91f9a4
+index 0000000..059aaf6
 --- /dev/null
 +++ b/planner/docs/features-projects.md
-@@ -0,0 +1,34 @@
+@@ -0,0 +1,40 @@
 +# Bots, projects and Jarvis: text for the Help sheet and README (merge by hand)
 +
 +Deep links: `#projects-live`, `#market-hours`. Code: `planner/ext-projects.js` (an add-on file, loaded by one `<script defer>` tag). Tests: `planner/tests/projects.test.js`. No new synced collection: everything new is kept on this device under its own keys, and your planner data is only read.
 +
 +## Help sheet bullets (one line each, same style as the others)
-+- **Bots and projects** (a line on Today, `#projects-live`, All tools, or "bots and projects" in Find): the live status of your NQ bots (Zlarior on the MFFU 50K, ATLAS and BLITZ on their 25Ks: today's P&L, room above the floor, what is left to the target, the session) and of the Kalshi bot (balance, today, open positions), read from what your PC publishes. It also shows the NQ market clock, which projects are late or blocked, and one-tap links to **Zenith**, **Kalshi** and **Jarvis**. The line moves up to **Needs you now** only when a bot is stopped or has gone quiet during its own trading hours (2am to 3:30pm New York time on weekdays); you can switch that off.
++- **Bots and projects** (a line on Today, `#projects-live`, All tools, or "bots and projects" in Find): the live status of your NQ bots (Zlarior on the MFFU 50K, ATLAS and BLITZ on their 25Ks: today's P&L, room above the floor, what is left to the target, the session) and of the Kalshi bot (balance, today, open positions), read from what your PC publishes. It also shows the NQ market clock, which projects are late or blocked, and one-tap links to **Zenith**, **Kalshi** and **Jarvis**. On Today it is one line, for example "Bot stopped · Kalshi $512 · 2 projects flagged"; tap it for the card. The line moves up to **Needs you now** (still one line) only when a bot is stopped or has gone quiet during its own trading hours (2am to 3:30pm New York time on weekdays); you can switch that off.
 +- **Market hours** (`#market-hours`, All tools): when NQ trades (Sunday 6pm to Friday 5pm New York time, with a 5-6pm break on weekdays) and when the bots can enter, with the time left until the next change, in New York time and in your phone's time. Switch on **Show NQ hours on the Day and Week views** to see the bots' window as a thin purple line and the closed hours as light stripes behind your events. It is off until you turn it on.
 +- **Projects** now starts with **At a glance**: one chip per project, green, amber or red, saying why ("blocked", "milestone 2 days late", "2 overdue", "stopped"). Tap a chip to jump to the project. Projects with a dashboard (NQ bot, Kalshi, Jarvis) get a live line and a link.
++- **Inside Jarvis** the Planner starts dark, to match Jarvis, until you choose an appearance yourself (Settings, or the sun and moon button). Your own choice always wins, and nothing is saved by this.
 +- **Jarvis** (in the More menu on a phone, and on the Bots and projects card): opens your hub. Jarvis reads today's events and tasks from this phone, so its Planner card stays right even when the Planner changes how it stores things.
 +
 +## README additions
@@ -19,7 +20,7 @@ index 0000000..d91f9a4
 +- Sources, both optional and both read-only: the NQ bots' `live.json` (branch `live` of nq-dashboard: `board.lit`, `board.atlas`, `board.blitz` or the top-level `blitz`, and `pc_verdict`) and the Kalshi bot's `kalshi.json` (its own repo, `demetrades2000-coder/kalshi-feed`, branch `main`: `balance`, `today_pnl`, `positions`, `running`, `mode`, `t`). Each is read from raw.githubusercontent.com first and the GitHub API second; a 404 means "not connected yet".
 +- It checks when the app opens or comes back to the screen, then every 3 minutes while Today, Projects or the sheet is showing (every 12 minutes otherwise). Refresh checks now. Requests time out after 8 seconds and never show an error on their own: offline, the card shows the last good copy and says "Offline: showing the last copies".
 +- States: a bot's line is green when the PC says it is running, red when it is stopped, amber when it needs a look, and "not updating" when the PC has not published for 20 minutes (grey outside the bots' hours). Kalshi is "running" when its file is under 15 minutes old.
-+- Needs you now: only inside the bots' window on a weekday, only right after a successful read, and only if "Put a stopped or silent bot under Needs you now" is on (it is by default). An old copy read while offline never raises it.
++- Needs you now: only inside the bots' window on a weekday, only right after a successful read, and only if "Put a stopped or silent bot under Needs you now" is on (it is by default). An old copy read while offline never raises it. It stays one folded line there too (the busy day of `todayorg.test.js` with live data present grows by about 45 px, not by the whole card).
 +- Project health: blocked or a milestone past due is red; overdue tasks, a milestone due within 3 days, a stopped or silent bot, or Kalshi not updating are amber or red; paused is grey. Projects are matched to their dashboards by name (NQ, Zlarior, ATLAS, BLITZ and Zenith go to Zenith; Kalshi; Jarvis).
 +- **Not in your Planner yet**: the sheet offers Zenith and Ascend (coming soon) when no project matches them. The button opens the Planner's own project sheet filled in; nothing is saved until you press Save.
 +- Links are `../` (Zenith), `../kalshi/` and `../jarvis/` on the dashboard site (the public site addresses anywhere else) and open in the same tab. Inside Jarvis (the Planner in a Jarvis frame on the same site, with `window.__jarvis`), Zenith, Kalshi and **Back to Jarvis** call `__jarvis.show('zenith' | 'kalshi' | 'home')`, so Jarvis switches apps itself and is never replaced.
@@ -33,17 +34,22 @@ index 0000000..d91f9a4
 +- Events are what the calendar shows on that day (repeats included; hidden event types and market layers left out; bot and market feed items skipped), all-day first, up to 40. Tasks are the ones due that day (done or not) and the open overdue ones, open first, up to 60. Times are the phone's local wall-clock times, like the rest of the planner.
 +- Rewritten whenever the planner saves or draws and the day's list changed, at midnight, and when the app is shown, hidden or closed. Jarvis on the same site reads it (its `storage` listener already reacts to `planner.*` keys).
 +
++### Phone header and Jarvis
++- At 640 px and narrower, the header icons share one row and never cover the logo (they shrink from 36 px to about 30 px when space is tight); offline, the Offline pill takes the logo's place. CSS only, in the small `<style>` next to the add-on's script tag.
++- Inside Jarvis (a same-site frame whose page has `window.__jarvis`) with no appearance chosen (`planner.theme` unset), a small script in `<head>` marks `<html data-jarvis>` and applies the dark theme before the first paint, and `thPref()` treats unset + `data-jarvis` as dark for that session. `planner.theme` is never written, so Settings or the sun and moon button still decide.
++
 +## For developers
-+- Add-on hook (the EXT block in `index.html`): an add-on file queues `(window.PLANNER_EXT = window.PLANNER_EXT || []).push((api) => { ... })`. `api` reads the planner (`state()`, `eventsOn()`, date and ET helpers), adds a Today card (`card(def, beforeId)`, same shape as `TO_CARDS`), an All tools tile (`tool`), a palette command (`cmd`), and listens to `on('save' | 'render' | 'route', fn)`: `save()` emits save, `afterMain()` emits render, `route()` offers each deep link first (a handler returns true when the link is its own). Add-ons never write planner data themselves.
++- `index.html` changes: the add-on's `<script defer>` tag, the Jarvis dark script and the phone header `<style>` in `<head>`, one line in `thPref()`, and the hooks below.
++- Add-on hook (the EXT block in `index.html`): an add-on file queues `(window.PLANNER_EXT = window.PLANNER_EXT || []).push((api) => { ... })`. `api` reads the planner (`state()`, `eventsOn()`, date and ET helpers), adds a Today card (`card(def, beforeId)`, same shape as `TO_CARDS`), an All tools tile (`tool`), a palette command (`cmd`), re-applies the theme (`theme()`), and listens to `on('save' | 'render' | 'route', fn)`: `save()` emits save, `afterMain()` emits render, `route()` offers each deep link first (a handler returns true when the link is its own). Add-ons never write planner data themselves.
 +- Device-only keys: `planner.ext.projects` (settings: `nq`, `kalshi`, `flag`, `bands`), `planner.ext.live` and `planner.ext.kalshi` (last good copies, slimmed), `planner.today.v1` (the Jarvis summary). Not synced, not in Back up.
 +- Test hook: with `window.PLANNER_TEST`, `window.__xp` exposes `market`, `marketLine`, `slim`, `kslim`, `health`, `todaySummary`, `botAlert`, `bandsFor` and the feed state.
 +- `projects.test.js` (PORT default 8792) mocks both feeds and covers: escalation inside and outside the bots' hours, the flag switch, offline copies, the market clock (Saturday, Sunday evening, Monday 1am, the Tuesday break, Friday 5pm, a Los Angeles phone), the bands, the Jarvis summary (shape, repeats, hidden types, a task added in the app, the midnight rollover), deep links, Find, All tools, Customize Today, adding Zenith through the Planner's own sheet, dark mode, and that the add-on only adds its own keys and leaves `planner.v1` exactly as it is.
 diff --git a/planner/ext-projects.js b/planner/ext-projects.js
 new file mode 100644
-index 0000000..ad314c4
+index 0000000..16dfba5
 --- /dev/null
 +++ b/planner/ext-projects.js
-@@ -0,0 +1,548 @@
+@@ -0,0 +1,555 @@
 +// Planner add-on: your projects, live (planner/ext-projects.js). Loaded by one <script defer> tag in index.html and talks to the
 +// app only through window.PLANNER_EXT (the EXT block in index.html). Docs: docs/features-projects.md. Tests: tests/projects.test.js.
 +// - "Bots and projects" on Today: the NQ bots (Zlarior, ATLAS, BLITZ) from the PC's live.json, the Kalshi bot from kalshi.json,
@@ -269,8 +275,8 @@ index 0000000..ad314c4
 +    ];
 +    const catOf = (p) => { const a = squash(p.id), b = squash(p.name); return CAT.find((c) => c.re.test(a) || c.re.test(b)) || null; };
 +    const RANK = { bad: 3, warn: 2, ok: 1, idle: 0 };
-+    function health(p, mk) {
-+      const S = api.state(), t = api.todayKey(), c = catOf(p);
++    function health(p, mk, noLive) {
++      const S = api.state(), t = api.todayKey(), c = noLive ? null : catOf(p);
 +      const tasks = S.tasks.filter((x) => x.proj === p.id), open = tasks.filter((x) => !x.done), late = open.filter((x) => x.date && x.date < t);
 +      const days = p.milestone && /^\d{4}-\d{2}-\d{2}$/.test(p.due || '') ? api.diffDays(t, p.due) : null;
 +      const out = [];
@@ -336,6 +342,8 @@ index 0000000..ad314c4
 +      if (v) { const s = nqState(v, mk), d = v.lit && !s.stale ? v.lit.today : null; parts.push(`Bot ${s.word}${d ? ', ' + money(d, true, true) : ''}`); }
 +      else parts.push(marketShort(mk));
 +      if (c.kalshi) { const k = kal(), s = kState(k); if (k) parts.push(s.lvl === 'bad' ? 'Kalshi stopped' : `Kalshi ${money(k.balance, false, true)}`); else if (F.kalshi.state === 'waiting') parts.push('Kalshi not connected'); }
++      const n = api.state().projects.filter((p) => { const h = health(p, mk, true); return h.lvl === 'bad' || h.lvl === 'warn'; }).length;
++      if (n) parts.push(`${n} project${n === 1 ? '' : 's'} flagged`);
 +      return parts.join(' · ');
 +    }
 +    function cardHtml() {
@@ -489,7 +497,7 @@ index 0000000..ad314c4
 +
 +    // ---------- hooks into the app ----------
 +    api.card({ id: 'xprojects', n: 'Bots and projects', home: 'today', fold: true, fn: () => cardHtml(),
-+      tier: () => { const a = botAlert(); return a ? { tier: 'now', label: a.label, cls: a.cls, soft: a.soft, fold: false } : { tier: 'today', fold: true }; },
++      tier: () => { const a = botAlert(); return a ? { tier: 'now', label: a.label, cls: a.cls, soft: a.soft, fold: true } : { tier: 'today', fold: true }; }, // always one line; tap for the card
 +      sum: () => sumLine() }, 'trading');
 +    api.tool({ id: 'xprojects', g: 'Work', n: 'Bots and projects', d: 'Your bots, Kalshi, Jarvis and every project at a glance', k: 'zlarior atlas blitz zenith kalshi jarvis live status health dashboards', open: () => openSheet(), st: () => sumLine() });
 +    api.tool({ id: 'xmarket', g: 'Trading', n: 'Market hours', d: 'When NQ trades and when the bots can enter', k: 'cme globex nq open close weekend halt break bots window', open: () => openSheet('market'), st: () => marketShort(market()) });
@@ -513,6 +521,7 @@ index 0000000..ad314c4
 +    document.addEventListener('click', (e) => {
 +      const el = e.target.closest('[data-xpgo]'); if (!el || !APP[el.dataset.xpgo]) return;
 +      if (el.tagName === 'A' && !jarvisHost()) return;
++      const mm = el.closest('#moreMenu'); if (mm) { mm.hidden = true; const mb = document.getElementById('moreBtn'); if (mb) mb.setAttribute('aria-expanded', 'false'); } // like the menu's own items
 +      e.preventDefault(); go(el.dataset.xpgo);
 +    });
 +    const help = document.querySelector('#helpDlg .dlg');
@@ -531,6 +540,10 @@ index 0000000..ad314c4
 +    addEventListener('pagehide', writeToday); // a change made just before the app is closed still reaches Jarvis
 +    addEventListener('online', () => refresh(true));
 +    addEventListener('storage', (e) => { if (e.key === CFG_KEY) { api.render(); paintSheet(); } });
++
++    // Inside Jarvis the Planner is dark until the owner picks a theme (the script in <head> does it before the first paint; this
++    // catches a Jarvis that set itself up a moment later). Nothing is saved, so his own choice always wins.
++    try { if (jarvisHost() && !localStorage.getItem('planner.theme') && !document.documentElement.hasAttribute('data-jarvis')) { document.documentElement.setAttribute('data-jarvis', '1'); if (api.theme) api.theme(); } } catch (e) { /* stays as it is */ }
 +
 +    if (window.PLANNER_TEST) window.__xp = { market, marketLine, slim, kslim, health, todaySummary, writeToday, botAlert, sumLine, bandsFor, catOf, cfg, refresh, F };
 +    writeToday();
@@ -593,18 +606,20 @@ index 0000000..ad314c4
 +  (window.PLANNER_EXT = window.PLANNER_EXT || []).push(start);
 +})();
 diff --git a/planner/index.html b/planner/index.html
-index e73bf75..e6ec406 100644
+index e73bf75..ed0391f 100644
 --- a/planner/index.html
 +++ b/planner/index.html
-@@ -18,6 +18,7 @@
+@@ -18,6 +18,9 @@
  <link rel="preconnect" href="https://fonts.googleapis.com">
  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 +<script src="ext-projects.js" defer></script>
++<script>/* EXT: inside Jarvis (same site, parent.__jarvis) the Planner starts dark until the owner picks a theme; nothing is saved */(function(){try{var p=window.parent;if(window.top===window.self||!p||p.location.origin!==location.origin||!p.__jarvis||localStorage.getItem('planner.theme'))return;var h=document.documentElement;h.setAttribute('data-jarvis','1');h.setAttribute('data-theme','dark');h.setAttribute('data-pref','dark');var m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content','#0f1115');var c=document.querySelector('meta[name=color-scheme]');if(c)c.setAttribute('content','dark');}catch(e){}})();</script>
++<style>/* EXT: phone header, one row of icons that never covers the logo (Offline replaces the logo there) */@media (max-width:640px){html .top{column-gap:6px}.top .brand{flex:1 0 auto}.top>.right>.btn{flex:1 1 28px;max-width:36px;min-width:0;padding:0;justify-content:center}body.offline .brand .logo{display:none}html body.offline .brand::after{margin-left:0;padding:2px 6px;font-size:10.5px}}</style>
  <style>
  :root{
    --bg:#ffffff; --card:#ffffff; --soft:#f7f8fa; --soft2:#f1f3f6; --line:#e6e8ec; --line2:#f0f1f4;
-@@ -1295,6 +1296,7 @@ function save() {
+@@ -1295,6 +1298,7 @@ function save() {
    dvRev = (dvRev | 0) + 1; // the Dashboard view's memo key
    try { localStorage.setItem(KEY, JSON.stringify(S)); }
    catch (e) { toast('Could not save on this device (storage blocked or full). Use Back up.'); }
@@ -612,7 +627,7 @@ index e73bf75..e6ec406 100644
  }
  function snapshot() { undoSnap = JSON.stringify(S); }
  function undo() {
-@@ -2850,6 +2852,7 @@ function route() {
+@@ -2850,6 +2854,7 @@ function route() {
    const h = decodeURIComponent(location.hash.replace(/^#\/?/, '')).trim();
    if (!h || h.startsWith('connect=')) return;
    history.replaceState(null, '', location.pathname + location.search);
@@ -620,7 +635,16 @@ index e73bf75..e6ec406 100644
    const views = ['month', 'week', 'day', 'agenda', 'projects'];
    if (h === 'today') goToday();
    else if (h === 'help') { goToday(); $('#helpDlg').showModal(); }
-@@ -12171,6 +12174,44 @@ document.addEventListener('keydown', (e) => {
+@@ -5130,7 +5135,7 @@ const TH_KEY = 'planner.theme';
+ const TH_SUN = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+ const TH_MOON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>';
+ const thMQ = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+-function thPref() { try { const t = localStorage.getItem(TH_KEY); return t === 'dark' || t === 'system' ? t : 'light'; } catch (e) { return 'light'; } }
++function thPref() { try { const t = localStorage.getItem(TH_KEY); return t === 'dark' || t === 'system' ? t : !t && document.documentElement.hasAttribute('data-jarvis') ? 'dark' : 'light'; } catch (e) { return 'light'; } } // data-jarvis: see the EXT script in <head>
+ const thResolve = (p) => (p === 'dark' || (p === 'system' && thMQ && thMQ.matches) ? 'dark' : 'light');
+ function thApply() {
+   const pref = thPref(), mode = thResolve(pref), root = document.documentElement, was = root.getAttribute('data-theme');
+@@ -12171,6 +12176,44 @@ document.addEventListener('keydown', (e) => {
  })();
  // ===== PALETTE END =====
  
@@ -643,7 +667,7 @@ index e73bf75..e6ec406 100644
 +  todayKey: () => todayKey(), addDays: (k, n) => addDays(k, n), diffDays: (a, b) => diffDays(a, b), parse: (k) => parse(k), key: (d) => key(d), longDate: (k) => longDate(k),
 +  fmtTime: (hm) => fmtTime(hm), toMin: (hm) => toMin(hm), fromMin: (n) => fromMin(n), etToLocal: (d, hm) => etToLocal(d, hm), mnEt: (ms) => mnEt(ms), localIsET: () => localIsET,
 +  esc: (s) => esc(s), cvars: (hex) => cvars(hex), usd: (n) => usd(n), hour: () => HOUR, view: () => (query ? 'search' : S.view), projOf: (id) => projOf(id),
-+  render: () => safeRender(), toast: (m) => toast(m), setView: (v) => setView(v), goToday: () => goToday(), openProject: (id) => openProject(id),
++  render: () => safeRender(), toast: (m) => toast(m), setView: (v) => setView(v), goToday: () => goToday(), openProject: (id) => openProject(id), theme: () => thApply(),
 +  // A Today card, exactly like a TO_CARDS entry ({ id, n, home, fn, tier, sum, fold }); before = the id of the card it goes in front of.
 +  card: (c, before) => { if (!c || !c.id || TO_BY[c.id]) return; const i = TO_CARDS.findIndex((x) => x.id === before); TO_CARDS.splice(i < 0 ? TO_CARDS.length : i, 0, c); TO_BY[c.id] = c; safeRender(); },
 +  tool: (t) => { if (t && t.id && !hbTool(t.id)) HB_TOOLS.push(t); }, // an All tools tile, like HB_TOOLS
@@ -665,7 +689,7 @@ index e73bf75..e6ec406 100644
  // ===== TIMELOG BEGIN: time log (what you actually did) and the weekly Time Audit (planned vs actual) =====
  // Entries live in the synced collection `timelog`: { id, title, cat (event type id or ''), proj (project id or ''), start (ms), end (ms, 0 while the timer runs) }.
  // The running timer is just the entry with end 0, so it survives a reload (its start time is saved) and shows on your other devices.
-@@ -13226,6 +13267,7 @@ function afterMain() {
+@@ -13226,6 +13269,7 @@ function afterMain() {
      renderJournals();
    }
    if (S.view === 'projects' && !query) paintSmartLists();
@@ -675,10 +699,10 @@ index e73bf75..e6ec406 100644
    renderJournals(); renderTplRow(); focusPaint();
 diff --git a/planner/tests/projects.test.js b/planner/tests/projects.test.js
 new file mode 100644
-index 0000000..3c07d73
+index 0000000..1e8aee6
 --- /dev/null
 +++ b/planner/tests/projects.test.js
-@@ -0,0 +1,353 @@
+@@ -0,0 +1,387 @@
 +// Bots and projects add-on (planner/ext-projects.js): node planner/tests/projects.test.js  (serve the site first, see shifts.test.js; PORT=... overrides, default 8792)
 +// Live NQ bots and Kalshi on Today and on Projects (feeds mocked), the escalation rule, offline copies, market hours, the optional
 +// Day/Week bands, the Jarvis summary (localStorage planner.today.v1), deep links, palette, All tools, Customize Today, and data safety:
@@ -790,6 +814,12 @@ index 0000000..3c07d73
 +  });
 +  return r;
 +});
++// The phone header: the logo (or the Offline pill) and the icon buttons share one row without covering each other.
++const header = (p) => p.evaluate(() => {
++  const r = (el) => el.getBoundingClientRect(), brand = r(document.querySelector('.brand'));
++  const btns = [...document.querySelectorAll('.top > .right > .btn')].filter((b) => b.offsetWidth).map(r);
++  return { oneRow: btns.every((x) => x.top < 64 && x.right <= innerWidth + 0.5), clear: btns.every((x) => x.right <= brand.left + 0.5 || x.left >= brand.right - 0.5), brandW: Math.round(brand.width), n: btns.length };
++});
 +const shot = (p, name, full) => p.screenshot({ path: `${SHOTS}/${name}.png`, fullPage: !!full }).catch(() => null);
 +
 +(async () => {
@@ -802,7 +832,8 @@ index 0000000..3c07d73
 +  let { p } = o;
 +  let t = await tiers(p);
 +  ok(t.now.includes('xprojects'), 'a stopped bot inside its hours is under Needs you now: ' + JSON.stringify(t.now));
-+  ok(/Bot stopped/.test(await p.textContent('.to-w[data-toid=xprojects] .to-lbl.red')), 'red "Bot stopped" label');
++  ok(/Bot stopped/.test(await p.textContent('.to-acc[data-toid=xprojects] .to-lbl.red')) && await p.locator('.to-w[data-toid=xprojects]').count() === 0, 'red "Bot stopped" label, and the card stays one line (tap for details)');
++  ok(/^Bots and projectsBot stopped · Kalshi not connected · 2 projects flagged$/.test((await p.textContent('.to-acc[data-toid=xprojects] summary')).trim()), 'one line: bots · Kalshi · health: ' + await p.textContent('.to-acc[data-toid=xprojects] summary'));
 +  const card = await p.textContent('#xpCard');
 +  ok(/Zlarior/.test(card) && /\$1,463/.test(card) && /\$3,537/.test(card) && /Session 10 of 10/.test(card), 'Zlarior today, room, to target and session');
 +  ok(/ATLAS/.test(card) && /Not set up on the PC yet/.test(card) && /BLITZ/.test(card) && /Off for now/.test(card), 'ATLAS not set up and BLITZ off, in plain words');
@@ -814,6 +845,12 @@ index 0000000..3c07d73
 +  ok(await p.evaluate(() => [...document.querySelectorAll('#xpCard a[data-xpgo]')].every((a) => !a.hasAttribute('target'))) && /^Jarvis/.test(await p.textContent('#xpCard a[data-xpgo=jarvis]')), 'on its own: plain links in this tab, no target');
 +  ok(/Clipper blocked/.test(card) && /Portfolio due tomorrow/.test(card), 'project health line on the card');
 +  ok(await p.evaluate(() => document.documentElement.scrollWidth) <= 390, 'no sideways scroll at 390');
++  await p.evaluate(() => document.body.classList.remove('offline')); await wait(50); // online look: the logo tile
++  let hd = await header(p);
++  ok(hd.oneRow && hd.clear && hd.brandW >= 28 && hd.n >= 8 && await p.isVisible('.top .logo'), 'header at 390 px: every icon on the first row and none covers the logo: ' + JSON.stringify(hd));
++  await p.screenshot({ path: `${SHOTS}/p1-header-390.png`, clip: { x: 0, y: 0, width: 390, height: 110 } }).catch(() => null);
++  ok(await p.evaluate(() => document.documentElement.getAttribute('data-theme') === 'light' && !document.documentElement.hasAttribute('data-jarvis')), 'on its own the Planner keeps its normal (light) theme');
++  await p.evaluate(() => document.querySelector('.to-acc[data-toid=xprojects]').scrollIntoView({ block: 'center' }));
 +  await shot(p, 'p1-today-needs-you');
 +  // the Jarvis summary
 +  let sum = await ls(p, 'planner.today.v1');
@@ -847,7 +884,7 @@ index 0000000..3c07d73
 +  t = await tiers(p);
 +  ok(!t.now.includes('xprojects') && t.today.includes('xprojects'), 'outside the bots hours a stopped bot is not urgent');
 +  const line = await p.textContent('.to-acc[data-toid=xprojects] summary');
-+  ok(/Bot stopped · Kalshi \$512$/.test(line), 'folded line: ' + line);
++  ok(/Bot stopped · Kalshi \$512 · 2 projects flagged$/.test(line), 'folded line: ' + line);
 +  await expand(p, 'xprojects');
 +  const c2 = await p.textContent('#xpCard');
 +  ok(/NQ closed for the weekend\. Opens tomorrow 6pm ET \(in 1 day 6 h\)/.test(c2), 'market clock on Saturday: ' + await p.textContent('#xpCard [data-xpclock]'));
@@ -946,6 +983,9 @@ index 0000000..3c07d73
 +  ok(/\+\$150/.test(c4) && /\$1,600/.test(c4) && /Offline: showing the last copies/.test(c4) && /Not updating · last copy 1 h ago/.test(c4), 'offline card shows the last copy and says so');
 +  await p.click('#xpCard [data-xp=refresh]'); await p.waitForFunction(() => /reach/.test(document.querySelector('#toastMsg').textContent), null, { timeout: 10000 }).catch(() => null);
 +  ok(/Could not reach the live feeds/.test(await p.textContent('#toastMsg')), 'offline refresh message: ' + await p.textContent('#toastMsg'));
++  await o.ctx.setOffline(true); await p.evaluate(() => window.dispatchEvent(new Event('offline'))); await wait(200);
++  hd = await header(p);
++  ok(await p.evaluate(() => document.body.classList.contains('offline')) && hd.oneRow && hd.clear, 'offline header at 390 px: the Offline pill fits without overlap: ' + JSON.stringify(hd));
 +  o.errs.forEach((e) => errs.push('[offline] ' + e)); await o.ctx.close();
 +
 +  // ---------- 5. data safety: only the add-on's own keys are added; Customize Today can hide it ----------
@@ -1015,10 +1055,28 @@ index 0000000..3c07d73
 +    await fr.click('#xpCard a[data-xpgo=jarvis]'); await wait(200);
 +    await fr.click('#moreBtn'); await wait(150);
 +    await fr.click('#moreMenu [data-xpgo=jarvis]'); await wait(200);
++    ok(await fr.evaluate(() => document.getElementById('moreMenu').hidden), 'the More menu closes after Back to Jarvis');
 +    const shown = await pg.evaluate(() => window.__shown);
 +    ok(JSON.stringify(shown) === JSON.stringify(['zenith', 'kalshi', 'home', 'home']), 'inside Jarvis the links call __jarvis.show(zenith, kalshi, home): ' + JSON.stringify(shown));
 +    ok(/jarvis-host\.html$/.test(pg.url()) && /planner\/index\.html/.test(fr.url()), 'Jarvis and the Planner frame stay where they were');
++    const thm = () => fr.evaluate(() => [document.documentElement.getAttribute('data-theme'), localStorage.getItem('planner.theme'), document.querySelector('meta[name=theme-color]').content, getComputedStyle(document.body).backgroundColor]);
++    let tm = await thm();
++    await pg.screenshot({ path: `${SHOTS}/p1-jarvis-dark.png` }).catch(() => null);
++    ok(tm[0] === 'dark' && tm[1] === null && tm[2] === '#0f1115' && tm[3] === 'rgb(15, 17, 21)', 'inside Jarvis with no theme chosen: dark page, theme-color dark, nothing saved: ' + JSON.stringify(tm));
++    await fr.evaluate(() => localStorage.setItem('planner.theme', 'light')); await pg.reload(); await wait(300);
++    const fr2 = pg.frames().find((x) => /planner\/index\.html/.test(x.url())); await fr2.waitForSelector('.tdy');
++    tm = await fr2.evaluate(() => [document.documentElement.getAttribute('data-theme'), localStorage.getItem('planner.theme')]);
++    ok(tm[0] === 'light' && tm[1] === 'light', 'his own choice (light) wins inside Jarvis: ' + JSON.stringify(tm));
 +    fe.forEach((e) => errs.push('[jarvis] ' + e)); await ctx.close();
++  }
++
++  // ---------- 6d. the busy day of todayorg.test.js, with live data present (bot stopped inside its hours): one line, height in budget ----------
++  {
++    const T = require('./lib-todayorg');
++    const busy = async (noExt) => { const x = await open(b, { now: T.NOW, state: T.fullState(), local: { 'planner.nq': T.seedNq() }, feeds: { live: liveDoc(T.NOW), kalshi: kalshiDoc(T.NOW) }, noExt }); const r = { h: await T.todayHeight(x.p), t: await tiers(x.p), open: await x.p.locator('.to-acc[data-toid=xprojects][open]').count() }; x.errs.forEach((e) => errs.push('[busy] ' + e)); await x.ctx.close(); return r; };
++    const withExt = await busy(false), without = await busy(true);
++    ok(withExt.t.now.includes('xprojects') && withExt.open === 0, 'busy day, bot stopped in its hours: one folded line under Needs you now');
++    ok(withExt.h < 6530 * 0.7 && withExt.h - without.h < 80, `busy Today height with live data ${withExt.h}px (limit ${Math.round(6530 * 0.7)}), ${withExt.h - without.h}px more than without the add-on`);
 +  }
 +
 +  // ---------- 7. a phone on Los Angeles time: market times stay in ET and add the phone's own time ----------
