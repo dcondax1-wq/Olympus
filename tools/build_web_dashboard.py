@@ -1214,6 +1214,14 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
             for name in os.listdir(src_dir):
                 if os.path.isfile(os.path.join(src_dir, name)):
                     shutil.copy(os.path.join(src_dir, name), os.path.join(out, app, name))
+    # the Kalshi kit's public files (tools/kalshi_kit/public/: the read-only status builder + SETUP.md the Kalshi bot's own
+    # server session follows, 2026-11-01) next to the Kalshi page; never over a page file of the same name
+    kit = os.path.join(ROOT, "tools", "kalshi_kit", "public")
+    if os.path.isdir(kit) and os.path.isdir(os.path.join(out, "kalshi")):
+        for name in os.listdir(kit):
+            src, dst = os.path.join(kit, name), os.path.join(out, "kalshi", name)
+            if os.path.isfile(src) and not os.path.exists(dst):
+                shutil.copy(src, dst)
     os.makedirs(os.path.join(out, "icons"), exist_ok=True)
     for name in ("icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png", "icon.svg"):
         if os.path.exists(os.path.join(ICONS, name)):
