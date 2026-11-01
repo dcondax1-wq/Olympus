@@ -16,6 +16,9 @@ mounts the module the way the hub does, with iPhone safe areas simulated (--zm-s
                Screen card, no notification prompt, the Settings "Inside Jarvis" card, links to other sites open on their own
   f. settings  the code round trip from a separate Zenith app (its own storage, like the iPhone): only the listed keys move,
                never a key, a push state or what was seen; Apply reloads with them, Undo goes back
+  h. worker    Zenith's service worker (sw.js v50) when the site answers 404 for everything (GitHub's "Site not found"), drops
+               every connection or answers after 7 s: the saved copy (in under 5.5 s when slow), data flagged as the last
+               copy, an older saved version of a file; no copy and no site = a dark Retry page
   g.           no page errors anywhere
     python -X utf8 -m tests.test_zenith_mode        (temp folder + a local server; nothing else touched)
 """
@@ -137,16 +140,118 @@ def site(tmp, now):
     return base, other
 
 
+# the site can turn bad like GitHub Pages does: slow, every connection dropped, or "Site not found" for every file
+SITE = {"mode": "ok", "delay": 7.0}
+GH404_SITE = (b'<!DOCTYPE html><html><head><meta http-equiv="Content-type" content="text/html; charset=utf-8"><title>Site not found'
+              b' &middot; GitHub Pages</title><style>body { background-color: #f1f1f1; }</style></head><body><h1>404</h1>'
+              b"<p><strong>There isn't a GitHub Pages site here.</strong></p></body></html>")
+
+
 def serve(d):
     class Q(http.server.SimpleHTTPRequestHandler):
         def __init__(self, *a, **k):
             super().__init__(*a, directory=d, **k)
+
+        def do_GET(self):
+            m = SITE["mode"]
+            if m == "down":
+                self.close_connection = True
+                return
+            if m == "404":
+                self.send_response(404)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Length", str(len(GH404_SITE)))
+                self.end_headers()
+                self.wfile.write(GH404_SITE)
+                return
+            if m == "slow":
+                time.sleep(SITE["delay"])
+            return super().do_GET()
 
         def log_message(self, *a):
             pass
     srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Q)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     return srv
+
+
+ZENITH_READY = "() => { const p = document.querySelector('#page'); return !!p && !p.querySelector(':scope > .skel') && p.textContent.trim().length > 40; }"
+SAVED = """async () => { const c = await caches.open('le-public-v50'); const g = async (u) => { const r = await c.match(u); return r ? (await r.text()).slice(0, 60) : null; };
+  return { page: await g('./index.html'), data: await g('./data.json'), home: await g('./home.json') }; }"""
+
+
+def part_sw(br, base, errs):
+    """Zenith's service worker (sw.js v50) when the site is slow, answers 404 for everything, or is gone."""
+    ctx, pg = new_page(br, 390, 844, errs, "zenith-sw")
+    try:
+        SITE["mode"] = "ok"
+        pg.goto(base + "#/today")
+        pg.wait_for_function(ZENITH_READY, timeout=30000)
+        pg.evaluate("() => navigator.serviceWorker.register('sw.js').then(() => navigator.serviceWorker.ready).then(() => true)")
+        pg.reload()                                            # now the worker answers every request and keeps the copies
+        pg.wait_for_function(ZENITH_READY, timeout=30000)
+        pg.wait_for_function("() => !!navigator.serviceWorker.controller", timeout=10000)
+        t0 = time.time()
+        sv = pg.evaluate(SAVED)
+        while time.time() - t0 < 10 and not all(sv.values()):
+            pg.wait_for_timeout(300)
+            sv = pg.evaluate(SAVED)
+        check("h. the worker keeps Zenith's page, data.json and home.json (le-public-v50)", all(sv.values()) and sv["page"].lower().startswith("<!doctype html"), sv)
+        # a picture / a file opened in a tab is no longer saved as the app's page
+        p2 = ctx.new_page()
+        p2.goto(base + "manifest.webmanifest")
+        p2.wait_for_timeout(400)
+        p2.close()
+        check("h. a file opened in a tab is cached under its own address, never as the app's page", pg.evaluate(SAVED)["page"].lower().startswith("<!doctype html"))
+        # 404 for every file (GitHub's "Site not found"): the saved copy, the data flagged as the last copy
+        SITE["mode"] = "404"
+        pg.reload()
+        ok = True
+        try:
+            pg.wait_for_function(ZENITH_READY, timeout=12000)
+        except Exception:
+            ok = False
+        t = pg.evaluate("() => ({ title: document.title, gh: /Site not found|GitHub Pages site/.test(document.body.innerText), bg: getComputedStyle(document.body).backgroundColor })")
+        flag = pg.evaluate("() => fetch('data.json?t=' + Date.now(), { cache: 'no-store' }).then((r) => [r.status, r.headers.get('x-le-cache')])")
+        ver = pg.evaluate("() => fetch('extras.js?v=999').then(async (r) => [r.status, (await r.text()).length > 1000])")
+        check("h. a 404 site: Zenith opens from its saved copy, not GitHub's 'Site not found'; data.json is the last copy, flagged",
+              ok and "Zenith" in t["title"] and not t["gh"] and flag == [200, "1"], (ok, t, flag))
+        check("h. a 404 site: a new version of a file the site does not give falls back to the version saved before", ver == [200, True], ver)
+        # gone (every connection dropped): the saved copy
+        SITE["mode"] = "down"
+        pg.reload()
+        ok = True
+        try:
+            pg.wait_for_function(ZENITH_READY, timeout=12000)
+        except Exception:
+            ok = False
+        check("h. offline: Zenith opens from its saved copy", ok and "Zenith" in pg.title(), pg.title())
+        # slow (every answer after 7 s): the saved page after 3.5 s, the data right after it (the site was just slow)
+        SITE["mode"] = "slow"
+        t0 = time.time()
+        pg.reload(wait_until="commit", timeout=20000)
+        drawn = None
+        while time.time() - t0 < 14:
+            try:
+                if pg.evaluate(ZENITH_READY):
+                    drawn = round(time.time() - t0, 1)
+                    break
+            except Exception:
+                pass
+            pg.wait_for_timeout(200)
+        check("h. a slow site (7 s): Zenith opens from its saved copy in under 5.5 s, not white until the site answers", drawn is not None and drawn < 5.5, drawn)
+        SITE["mode"] = "ok"
+        pg.wait_for_timeout(500)
+        # no saved copy and no site: a small dark page with Retry, never white
+        pg.evaluate("() => caches.open('le-public-v50').then((c) => Promise.all([c.delete('./index.html'), c.delete('./')]))")
+        SITE["mode"] = "down"
+        pg.reload()
+        pg.wait_for_timeout(600)
+        nc = pg.evaluate("() => ({ text: document.body.innerText, bg: getComputedStyle(document.body).backgroundColor })")
+        check("h. no saved copy and no site: the dark Retry page", "Retry" in nc["text"] and nc["bg"] == "rgb(7, 8, 12)", nc)
+    finally:
+        SITE["mode"] = "ok"
+        ctx.close()
 
 
 def launch(p):
@@ -501,6 +606,7 @@ def run_browser(base, other_base):
         check("e. Zenith in a frame below a bar (the bar already pads the top, the frame stops above the home bar): no extra padding",
               R["sa"] == ["0px", "0px", "0px", "0px"] and abs(R["padTop"] - 10) < 0.6 and abs(R["tabsBottom"] - 10) < 0.6, R)
         ctx.close()
+        part_sw(br, base, errs)
         br.close()
     check("g. no page errors (Jarvis page, Zenith frames, the Zenith app)", not errs, errs[:6])
 

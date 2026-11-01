@@ -70,7 +70,15 @@
 // v50 (2026-11-01, Zenith mode in Jarvis): embed.js (the settings code, Zenith inside Jarvis: jarvis/zenith-mode.js) and
 // index.html's head (inside a Jarvis frame: the safe areas Jarvis gives, no intro). A notification tapped while Jarvis runs
 // (Zenith shown in its frame) moves that frame to the notice and asks Jarvis for Zenith mode; Zenith's own window as before.
+// v50 (2026-11-01, the white-screen class, found by the QA phone test): the page, data.json and home.json never wait on a
+// slow site for more than NAV_WAIT_MS when a saved copy exists (the late answer still refreshes the copy), a site that
+// answers 404 / 5xx (GitHub's "Site not found") gets the saved copy too (data flagged x-le-cache like offline), a versioned
+// file the site does not give falls back to the version saved before, and with no copy and no site the page is a small
+// dark Retry page, never white. Only the app's own page is a "page": a picture or a write-up opened in a tab is cached
+// under its own address (it used to be saved as index.html).
 const CACHE = 'le-public-v50';
+const NAV_WAIT_MS = 3500;
+let SLOW_UNTIL = 0;       // the site was just slow (the page waited NAV_WAIT_MS): data.json / home.json then wait 0.4 s, not 3.5 s
 const BADGE = 'le-badge', BADGE_URL = './__badge';
 const OTHER_APPS = ['jarvis/', 'planner/', 'kalshi/']; // own folders (own workers or none): never handled or cached here
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=p111030', './icons/apple-touch-icon.png?v=p111030', './icons/icon-512.png?v=p111030'];
@@ -82,26 +90,56 @@ self.addEventListener('activate', (e) => {
 const prune = (u) => caches.open(CACHE).then((c) => c.keys().then((ks) => ks.forEach((k) => {
   const ku = new URL(k.url); if (ku.pathname === u.pathname && ku.search !== u.search) c.delete(k);
 }))).catch(() => null);
+const OFFLINE = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
+  + '<meta name="theme-color" content="#07080c"><meta name="color-scheme" content="dark"><title>Zenith</title><style>html,body{height:100%;margin:0;background:#07080c;'
+  + 'color:#eef1f8;font:16px/1.45 -apple-system,system-ui,sans-serif}main{min-height:100%;display:grid;place-items:center;text-align:center;padding:24px}'
+  + 'p{color:#a9b1c3;margin:8px 0 18px}button{height:44px;padding:0 22px;border-radius:13px;border:0;background:#6d7cff;color:#fff;font:inherit;font-weight:650}'
+  + '</style></head><body><main><div><b>Zenith can’t load right now</b><p>The site is not answering. Check your connection, then try again.</p>'
+  + '<button onclick="location.reload()">Retry</button></div></main></body></html>';
+const offlinePage = () => new Response(OFFLINE, { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } });
+const flagged = (hit) => hit.blob().then((b) => { const h = new Headers(hit.headers); h.set('x-le-cache', '1'); return new Response(b, { status: 200, headers: h }); });
+const older = (req) => caches.open(CACHE).then((c) => c.match(req, { ignoreSearch: true })).catch(() => undefined);
 self.addEventListener('fetch', (e) => {
   const req = e.request, url = new URL(req.url);
   // live.json (live.js: the PC's minute-by-minute file on api.github.com / raw.githubusercontent.com) is network-only:
   // never cached, never answered from a cache (an old copy would look live). Cross-origin requests are not touched anyway.
   if (req.method !== 'GET' || url.origin !== location.origin || url.pathname.endsWith('live.json')) return;
-  const rel = url.pathname.slice(new URL(self.registration.scope).pathname.length);
+  const home = new URL(self.registration.scope).pathname, rel = url.pathname.slice(home.length);
   if (OTHER_APPS.some((d) => rel === d.slice(0, -1) || rel.startsWith(d))) return;
-  const put = (key, res) => { if (res && res.ok) { const c = res.clone(); caches.open(CACHE).then((x) => x.put(key, c)); } return res; };
-  const isData = url.pathname.endsWith('data.json') || url.pathname.endsWith('home.json'), isPage = req.mode === 'navigate' || url.pathname.endsWith('/') || url.pathname.endsWith('index.html');
+  const put = (key, res) => { if (res && res.ok) { const c = res.clone(); caches.open(CACHE).then((x) => x.put(key, c)).catch(() => null); } return res; };
+  const isData = url.pathname.endsWith('data.json') || url.pathname.endsWith('home.json'), isPage = rel === '' || rel === 'index.html';
   if (isData || isPage) {
     const key = isData ? (url.pathname.endsWith('home.json') ? './home.json' : './data.json') : './index.html';
-    e.respondWith(fetch(req).then((r) => put(key, r)).catch(() => caches.match(key).then((hit) => {
-      if (!hit || !isData) return hit;
-      const h = new Headers(hit.headers); h.set('x-le-cache', '1');
-      return hit.blob().then((b) => new Response(b, { status: 200, headers: h }));
-    })));
+    e.respondWith((async () => {
+      const net = fetch(req).then((r) => put(key, r));
+      e.waitUntil(net.then(() => null, () => null));                // a late answer still refreshes the saved copy
+      const copy = (await caches.match(key)) || (isPage ? await caches.match('./') : undefined);
+      const saved = () => (isData ? flagged(copy) : copy);
+      try {
+        // network first; with a saved copy it gets NAV_WAIT_MS to answer (an iPhone app is white while it waits)
+        const wait = isData && Date.now() < SLOW_UNTIL ? 400 : NAV_WAIT_MS;
+        const r = await (copy ? Promise.race([net, new Promise((ok) => setTimeout(() => ok('slow'), wait))]) : net);
+        if (r === 'slow') SLOW_UNTIL = Date.now() + 60e3;
+        if (r !== 'slow' && r && r.ok) { SLOW_UNTIL = 0; return r; }
+        if (copy) return saved();                                    // slow, or the site answers 404 / 5xx
+        return isPage ? offlinePage() : r;                           // no copy yet and no proper answer
+      } catch (_) {
+        return copy ? saved() : isPage ? offlinePage() : Response.error();
+      }
+    })().catch(() => (isPage ? offlinePage() : Response.error())));
     return;
   }
-  if (url.search.includes('v=')) { e.respondWith(caches.match(req).then((hit) => hit || fetch(req).then((r) => { prune(url); return put(req, r); }))); return; }
-  e.respondWith(caches.match(req).then((hit) => { const net = fetch(req).then((r) => put(req, r)).catch(() => hit); return hit || net; }));
+  if (url.search.includes('v=')) {
+    e.respondWith(caches.match(req).then((hit) => hit || fetch(req).then((r) => {
+      if (r.ok) { prune(url); return put(req, r); }
+      return older(req).then((o) => o || r);                         // the site does not give it: the version saved before
+    }, () => older(req).then((o) => o || Response.error()))));
+    return;
+  }
+  e.respondWith(caches.match(req).then((hit) => {
+    const net = fetch(req).then((r) => (r.ok || !hit ? put(req, r) : hit), () => hit || Response.error());
+    return hit || net;
+  }));
 });
 
 // ---- notifications
