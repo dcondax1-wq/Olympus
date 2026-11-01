@@ -1,32 +1,43 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="eclipse" data-fx="high" data-mode="jarvis" data-state="idle">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Jarvis</title>
-<meta name="description" content="Jarvis: the home screen for all your projects. Switch between Jarvis and Zenith in one tap, plus the Planner, Kalshi and the rest.">
-<meta name="theme-color" content="#0b0b0d">
+<meta name="description" content="J.A.R.V.I.S.: your assistant and the home screen for all your projects. Switch between Jarvis and Zenith in one tap, plus the Planner, Kalshi and the rest.">
+<meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Jarvis">
-<link rel="manifest" href="manifest.webmanifest?v=j1">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=j1">
-<link rel="icon" href="icon-192.png?v=j1">
+<link rel="manifest" href="manifest.webmanifest?v=j2">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=j2">
+<link rel="icon" href="icon-192.png?v=j2">
 <!-- dark from the first paint, even before (or without) the stylesheet: never a white screen -->
-<style>html,body{background:#0b0b0d;color:#f4f4f6;margin:0}</style>
+<style>html,body{background:#000;color:#ece9f2;margin:0}</style>
+<script>
+// before the first paint: the saved theme (localStorage 'jtheme', as the old Jarvis kept it), the effects level and the boot screen
+(function () {
+  var d = document.documentElement, g = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  d.setAttribute('data-theme', g('jtheme') || 'eclipse');
+  var fx = g('jfx');
+  if (fx === 'ultra' || fx === 'high' || fx === 'low' || fx === 'off') { d.setAttribute('data-fx', fx); d.setAttribute('data-fx-set', '1'); }
+  else d.setAttribute('data-fx', window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches ? 'low' : 'high');
+  try { if (sessionStorage.getItem('jarvis.booted')) d.className += ' booted'; } catch (e) { /* private mode */ }
+})();
+</script>
 <link rel="stylesheet" href="jarvis.css?v=j4">
+<style>.booted #bootfx{display:none}</style>
 </head>
 <body>
+<div class="bgfx" aria-hidden="true"><canvas id="stars"></canvas></div>
+<div class="scan" aria-hidden="true"></div>
+
 <header class="bar">
   <div class="bar-in">
-    <div class="modes" id="modes" role="group" aria-label="Mode"></div>
-    <nav class="apps" id="apps" aria-label="Your dashboards"></nav>
-    <button class="icon-b" id="out" type="button" title="Open this dashboard on its own" aria-label="Open this dashboard on its own" hidden>
+    <nav class="modes" id="modes" aria-label="Modes: Jarvis, Zenith and your other apps"></nav>
+    <button class="hb" id="out" type="button" title="Open this dashboard on its own" aria-label="Open this dashboard on its own" hidden>
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3H3.5A.5.5 0 0 0 3 3.5v9a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V10M9 3h4v4M13 3 7.5 8.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-    <button class="icon-b" id="gear" type="button" title="Settings" aria-label="Settings">
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="9" cy="9" r="2.6" stroke="currentColor" stroke-width="1.6"/><path d="M9 1.8v2.1M9 14.1v2.1M1.8 9h2.1M14.1 9h2.1M3.9 3.9l1.5 1.5M12.6 12.6l1.5 1.5M3.9 14.1l1.5-1.5M12.6 5.4l1.5-1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
     </button>
   </div>
 </header>
@@ -34,84 +45,205 @@
 <main>
   <section class="view" id="home" aria-label="Jarvis">
     <div class="home-in">
-      <div class="hero">
-        <div class="core" id="core" aria-hidden="true"><div class="orb" id="orb"></div><div class="core-slot" id="coreSlot"></div></div>
-        <div>
-          <h1 class="hello" id="hello">Hello</h1>
-          <p class="sub" id="when">&nbsp;</p>
+      <div class="hpanel">
+        <div class="htop"><span class="sdot" id="dot" title="System online"></span><h1 class="title">J.A.R.V.I.S.</h1><span class="clock" id="clock">--:--:--</span></div>
+        <p class="hsub"><b id="hello">Hello</b> · <span id="when">&nbsp;</span></p>
+        <div class="boxes">
+          <button class="kbox" type="button" data-app="kalshi" id="kbox" title="Kalshi account today"><small>KALSHI TODAY</small><span id="kpct" class="m">--</span><em id="kusd" class="m">&nbsp;</em></button>
+          <button class="kbox" type="button" data-app="zenith" id="nbox" title="The NQ bots today"><small>NQ BOTS TODAY</small><span id="npnl" class="m">--</span><em id="nsub">&nbsp;</em></button>
         </div>
       </div>
 
-      <form class="ask" id="ask" autocomplete="off">
-        <input id="q" type="text" enterkeyhint="send" placeholder="Ask Jarvis, or say “open planner”" aria-label="Ask Jarvis">
-        <button type="button" id="mic" aria-label="Talk to Jarvis" title="Talk to Jarvis" hidden>
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><rect x="6.2" y="2" width="5.6" height="9" rx="2.8" stroke="currentColor" stroke-width="1.7"/><path d="M3.8 8.6a5.2 5.2 0 0 0 10.4 0M9 13.8V16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      <div class="stagebox">
+      <div class="stage" id="stage" role="button" tabindex="0" aria-label="Talk to Jarvis">
+        <canvas class="globe" id="globe" aria-hidden="true"></canvas>
+        <div class="pad" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        <div class="core" id="core" aria-hidden="true">
+          <div class="orb" id="orb">
+            <svg viewBox="0 0 400 400" aria-hidden="true">
+              <circle cx="200" cy="200" r="190" stroke-opacity=".25"/>
+              <g class="r1"><circle cx="200" cy="200" r="178" stroke-width="3" stroke-dasharray="60 24 8 24"/></g>
+              <g class="r2"><circle cx="200" cy="200" r="154" stroke-width="2" stroke-dasharray="2 10"/><circle cx="200" cy="200" r="140" stroke-width="5" stroke-dasharray="90 70" stroke-opacity=".7"/></g>
+              <g class="r3"><circle cx="200" cy="200" r="118" stroke-width="1.5" stroke-dasharray="14 8"/></g>
+            </svg>
+            <div class="ocore"></div>
+          </div>
+          <div class="core-slot" id="coreSlot"></div>
+        </div>
+        <svg class="hudring" id="hud" viewBox="0 0 400 400" aria-hidden="true">
+          <defs>
+            <path id="arcTop" d="M 16 200 A 184 184 0 0 1 384 200"/>
+            <path id="arcBot" d="M 6 200 A 194 194 0 0 0 394 200"/>
+          </defs>
+          <circle class="dots" cx="200" cy="200" r="198"/>
+          <circle class="thin" cx="200" cy="200" r="170"/>
+          <g id="ticks"></g>
+          <text><textPath href="#arcTop" xlink:href="#arcTop" startOffset="50%" text-anchor="middle" id="hudTop">JARVIS · CORE ONLINE</textPath></text>
+          <text><textPath href="#arcBot" xlink:href="#arcBot" startOffset="50%" text-anchor="middle" id="hudBot">--:--:-- · STANDBY</textPath></text>
+          <text class="vt" transform="translate(12 200) rotate(-90)" text-anchor="middle">JARVIS // CORE</text>
+        </svg>
+      </div>
+      </div>
+      <div class="vbars" id="vbars" aria-hidden="true"></div>
+      <p class="state" id="state">STANDBY</p>
+      <p class="says" id="says">Good day. Tap the core or type below to speak with me.</p>
+      <p class="hint" id="hint">Tap the big mic once, then just talk. Hold it for push-to-talk.</p>
+      <div class="vrow">
+        <button class="pillb" id="hf" type="button" aria-pressed="false" title="Keep listening while Jarvis is open"><i class="ld"></i>HANDS-FREE</button>
+        <button class="bigmic" id="bigmic" type="button" aria-label="Talk to Jarvis" title="Tap to talk · hold for push-to-talk">
+          <svg width="26" height="26" viewBox="0 0 18 18" fill="none" aria-hidden="true"><rect x="6.2" y="2" width="5.6" height="9" rx="2.8" stroke="currentColor" stroke-width="1.5"/><path d="M3.8 8.6a5.2 5.2 0 0 0 10.4 0M9 13.8V16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         </button>
-        <button type="submit" aria-label="Send" title="Send">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M3 9h11M9.5 4.5 14 9l-4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-      </form>
+        <button class="pillb" id="vset" type="button" title="Voice settings">VOICE ⚙</button>
+      </div>
+      <p class="hint2">TAP · HANDS-FREE · HOLD · PUSH-TO-TALK</p>
+      <div class="sugs" id="sugs"></div>
       <div class="talk" id="talk" aria-live="polite"></div>
-      <div class="chips2" id="sugs"></div>
+      <div id="brainp"></div>
 
       <p class="sec-t">Your projects</p>
       <div class="cards" id="cards"></div>
-      <p class="foot">Every project keeps running on its own. Jarvis only switches what you see.</p>
+      <p class="sec-t">Systems</p>
+      <div class="panels" id="panels"></div>
+      <p class="foot">Read-only: Jarvis never places a trade. Every project keeps running on its own; Jarvis only switches what you see.</p>
     </div>
   </section>
-  <section class="view" id="zen" aria-label="Zenith" hidden></section>
+  <section class="view zoff" id="zen" aria-label="Zenith" aria-hidden="true"></section>
   <div id="frames"></div>
 </main>
+
+<div class="dock" id="dock">
+  <i class="edge" aria-hidden="true"></i>
+  <div class="more" id="more" hidden></div>
+  <form class="ask" id="ask" autocomplete="off">
+    <input id="q" type="text" enterkeyhint="send" placeholder="Ask Jarvis anything…" aria-label="Ask Jarvis">
+    <button class="key ic" type="button" id="mic" aria-label="Talk to Jarvis" title="Talk to Jarvis">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><rect x="6.2" y="2" width="5.6" height="9" rx="2.8" stroke="currentColor" stroke-width="1.7"/><path d="M3.8 8.6a5.2 5.2 0 0 0 10.4 0M9 13.8V16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+    </button>
+    <button class="key" type="submit">SEND</button>
+    <button class="key ic" type="button" id="moreB" aria-label="More" aria-expanded="false" title="More">⋯</button>
+  </form>
+</div>
+<button class="fab" id="fab" type="button" aria-label="Search and commands" title="Search and commands">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="2"/><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+</button>
+<button class="nextchip" id="next" type="button" data-app="planner">Nothing scheduled today</button>
 
 <div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetT">
   <form class="sheet-in" id="addF" autocomplete="off">
     <h2 id="sheetT">Add a dashboard</h2>
+    <div class="sheet-row" id="ascRow" hidden><button class="btn solid" type="button" id="addAscend">Add Ascend</button></div>
     <label>Name<input id="addName" type="text" maxlength="24" placeholder="Clipper"></label>
-    <label>Link<input id="addUrl" type="url" inputmode="url" placeholder="https://…"></label>
+    <label>Link<input id="addUrl" type="url" inputmode="url" autocapitalize="off" spellcheck="false" placeholder="https://…"></label>
     <p class="err" id="addErr"></p>
     <div class="mine" id="mine"></div>
-    <div class="sheet-row"><button class="btn ghost" type="button" id="addX">Close</button><button class="btn" type="submit">Add</button></div>
+    <div class="sheet-row"><button class="btn ghost" type="button" id="addX">Close</button><button class="btn solid" type="submit">Add</button></div>
   </form>
 </div>
 
 <div class="sheet" id="settings" hidden role="dialog" aria-modal="true" aria-labelledby="setT">
   <form class="sheet-in" id="setF" autocomplete="off">
-    <h2 id="setT">Settings</h2>
-    <h3>Voice</h3>
-    <label class="row-t"><span>Talk to Jarvis<small>The mic button, and answers read out loud when you talk</small></span><input type="checkbox" id="setVoice"></label>
+    <h2 id="setT">AI key · settings</h2>
     <h3>Smart mode</h3>
-    <label class="row-t"><span>Smart answers<small id="smartNote">Your own API key, kept only on this phone</small></span><input type="checkbox" id="setSmart"></label>
+    <label class="row-t"><span>Smart answers<small id="smartNote">Your own AI key, kept only on this phone</small></span><input type="checkbox" id="setSmart"></label>
+    <label>Provider<select id="setProv"><option value="groq">Groq (free key, the old Jarvis)</option><option value="gemini">Gemini</option><option value="anthropic">Anthropic</option></select></label>
     <label>API key<input id="setKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste your key (kept on this phone only)"></label>
+    <div class="fld"><span>Depth</span><div class="seg3" id="setDepth"><button type="button" data-depth="auto">Auto</button><button type="button" data-depth="quick">Quick</button><button type="button" data-depth="think">Think</button><button type="button" data-depth="deep">Deep</button></div></div>
     <label>Model<input id="setModel" type="text" autocapitalize="off" spellcheck="false" placeholder="Leave empty for the default"></label>
     <p class="note" id="smartState"></p>
+    <h3>Voice</h3>
+    <label class="row-t"><span>Talk to Jarvis<small>The mic, and answers read out loud when you talk</small></span><input type="checkbox" id="setVoice"></label>
     <h3>Apps</h3>
     <div class="mine" id="setApps"></div>
     <div class="sheet-row"><button class="btn ghost" type="button" id="setAdd">Add a dashboard</button></div>
     <p class="note" id="modNote"></p>
-    <div class="sheet-row"><button class="btn ghost" type="button" id="setForget">Forget key</button><button class="btn ghost" type="button" id="setX">Close</button><button class="btn" type="submit">Save</button></div>
+    <div class="sheet-row"><button class="btn ghost" type="button" id="setForget">Clear keys</button><button class="btn ghost" type="button" id="setX">Close</button><button class="btn solid" type="submit">Save</button></div>
   </form>
 </div>
 
+<div class="sheet" id="look" hidden role="dialog" aria-modal="true" aria-labelledby="lookT">
+  <div class="sheet-in">
+    <h2 id="lookT">Look</h2>
+    <h3>Theme</h3>
+    <div class="themes" id="themes"></div>
+    <label>Custom hue<input id="hue" type="range" min="0" max="359" step="1" value="275"></label>
+    <h3>3D effects</h3>
+    <div class="seg3" id="fxSeg"><button type="button" data-fx="ultra">Ultra</button><button type="button" data-fx="high">High</button><button type="button" data-fx="low">Low</button><button type="button" data-fx="off">Off</button></div>
+    <p class="note" id="fxNote">High is the phone default. Low keeps the glass and stops the motion; Off is fully static.</p>
+    <h3>Core</h3>
+    <div class="seg3" id="coreSeg"></div>
+    <h3>Extras</h3>
+    <label class="row-t"><span>Sounds<small>Soft clicks and chimes</small></span><input type="checkbox" id="setSound"></label>
+    <label class="row-t"><span>Tilt<small>The core leans with the phone (asks for motion access)</small></span><input type="checkbox" id="setTilt"></label>
+    <div class="sheet-row"><button class="btn solid" type="button" id="lookX">Done</button></div>
+  </div>
+</div>
+
+<div class="sheet" id="voice" hidden role="dialog" aria-modal="true" aria-labelledby="voiceT">
+  <div class="sheet-in">
+    <h2 id="voiceT">Voice</h2>
+    <label>Voice<select id="vVoice"></select></label>
+    <label>Speed <span id="vRateV"></span><input id="vRate" type="range" min="0.8" max="1.4" step="0.02"></label>
+    <label>Pitch <span id="vPitchV"></span><input id="vPitch" type="range" min="0.7" max="1.5" step="0.05"></label>
+    <label class="row-t"><span>Read every answer<small>Off: Jarvis speaks only when you talk to it</small></span><input type="checkbox" id="vAll"></label>
+    <label class="row-t"><span>Hold to talk<small>Hold the mic to talk, let go to send</small></span><input type="checkbox" id="vHold"></label>
+    <p class="note" id="vNote"></p>
+    <div class="sheet-row"><button class="btn ghost" type="button" id="vTest">Test voice</button><button class="btn solid" type="button" id="vX">Done</button></div>
+  </div>
+</div>
+
+<div class="sheet" id="palette" hidden role="dialog" aria-modal="true" aria-labelledby="palT">
+  <form class="sheet-in" id="palF" autocomplete="off">
+    <h2 id="palT">Command</h2>
+    <input id="palQ" type="search" enterkeyhint="go" placeholder="Search, open, or ask Jarvis…" aria-label="Search commands">
+    <div class="pal-list" id="palList"></div>
+  </form>
+</div>
+
+<div class="bootfx" id="bootfx" aria-hidden="true"><b>J.A.R.V.I.S.</b><div class="log" id="bootlog"></div><small>TAP TO SKIP</small></div>
 <div class="boot" id="boot" hidden>Jarvis is taking a while to start.<button type="button" onclick="location.reload()">Reload</button></div>
-<script>window.__jarvisBoot = setTimeout(function () { var b = document.getElementById('boot'); if (b) b.hidden = false; }, 8000);</script>
+<script>window.__jarvisBoot = setTimeout(function () { var b = document.getElementById('boot'); if (b) b.hidden = false; var f = document.getElementById('bootfx'); if (f) f.remove(); }, 8000);</script>
 <script type="module">
-// Jarvis shell (2026-11-01): modes (Jarvis / Zenith) + the other apps, on one data facade (data.js). The other parts are
-// separate modules loaded on their own; a missing or broken one falls back to the built-in version here:
+// Jarvis shell (2026-11-01): the owner's old Jarvis look and features on the phone hub, with modes (JARVIS · ZENITH · PLANNER ·
+// KALSHI · +) on one data facade (data.js). The other parts are separate modules loaded on their own; a missing or broken one
+// falls back to the built-in version here:
 //   brain.js        createBrain({getFacts, open, now})      fallback: fallbackBrain() (rule-based answers)
-//   core-visual.js  mountCore(el, {size})                   fallback: the CSS orb
-//   apps.js         listApps / addApp / removeApp / appStatus   fallback: data.js fallbackApps
+//   core-visual.js  mountCore(el, {size, design})           fallback: the 2D reactor (SVG rings + glowing core)
+//   apps.js         listApps / addApp / removeApp / appStatus / cachedStatus / renderCard / listen / ascendSlot / findAscend
+//                                                           fallback: data.js fallbackApps
 //   zenith-mode.js  mountZenithMode({host, onExit})         fallback: Zenith in a frame
+// Old Jarvis features left out on purpose (PC only): the wake word, the double clap, "look at my screen", the CPU / RAM
+// gauges (the System core panel shows the bots' health instead) and the Kill switch.
 import * as D from './data.js';
 
 const $ = (s) => document.querySelector(s);
 const esc = D.esc;
 const root = document.documentElement;
 const HOME = { id: 'home', name: 'Jarvis', glyph: 'orb' };
+const BUILTIN_IDS = ['zenith', 'planner', 'kalshi'];
+const raw = (k) => { try { return localStorage.getItem(k); } catch (_) { return null; } };
+const rawSet = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (_) { /* private mode */ } };
+const visible = () => document.visibilityState === 'visible';
+const safe = (f, d = null) => { try { return f(); } catch (_) { return d; } };
 
 // ------------------------------------------------------------------ settings kept on this phone
 const S = {
   voice: () => D.LS.get('jarvis.voice', true) !== false,
+  speakAll: () => D.LS.get('jarvis.speakAll', false) === true,
+  hold: () => D.LS.get('jarvis.hold', true) !== false,
+  sound: () => D.LS.get('jarvis.sound', false) === true,
+  hideMoney: () => raw('jarvis.hide') === '1',              // the brain's own "hide my balance" switch (brain.js HIDE_KEY)
+  muted: () => D.LS.get('jarvis.mute', false) === true,
+  tilt: () => raw('jp3dtilt') === '1',
+  vcfg: () => Object.assign({ rate: 1.06, pitch: 1.1, voice: '' }, D.LS.get('jarvis.voiceCfg', {}) || {}),
 };
+const THEMES = [
+  ['eclipse', 'Eclipse', 'Violet · default', '#a855f7', '#7c3aed'], ['reactor', 'Reactor', 'Violet core, cyan', '#a95cff', '#22d3ee'],
+  ['reactor-stark', 'Reactor Stark', 'Gold rings, arc-blue', '#ffbe3d', '#d6281f'], ['reactor-ice', 'Reactor Ice', 'Ice blue, silver', '#4fe3ff', '#0284c7'],
+  ['reactor-emerald', 'Reactor Emerald', 'Emerald plasma', '#1ff5a4', '#059669'], ['obsidian', 'Obsidian', 'Monochrome silver', '#e5e7eb', '#9ca3af'],
+  ['aurora', 'Aurora', 'Mint and violet', '#34f5b0', '#a78bfa'], ['tokyo', 'Tokyo', 'Neon pink', '#ff2bd6', '#22e5ff'], ['ocean', 'Ocean', 'Teal and sky', '#2ef2d0', '#38bdf8'],
+  ['forge', 'Forge', 'Molten orange', '#ff7a1a', '#c2410c'], ['void', 'Void', 'Black and white', '#f2f2f2', '#9a9a9a'], ['custom', 'Custom', 'Your hue', '', ''],
+];
+const CORE_DESIGNS = [['reactor', 'Reactor'], ['singularity', 'Singularity']];
 
 // ------------------------------------------------------------------ the optional modules (each on its own; absent = fallback)
 const mods = {};
@@ -128,51 +260,112 @@ const ready = {
 };
 const within = (p, ms) => Promise.race([p, new Promise((ok) => setTimeout(() => ok(null), ms))]);
 
-// ------------------------------------------------------------------ apps
+// ------------------------------------------------------------------ theme, effects level, sounds
+function hsl2rgb(h, s, l) {
+  s /= 100; l /= 100;
+  const k = (n) => (n + h / 30) % 12, a = s * Math.min(l, 1 - l), f = (n) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  return [f(0), f(8), f(4)].map((x) => Math.round(x * 255));
+}
+function applyCustom() {
+  const st = root.style, props = ['--c', '--c2', '--c3', '--cr', '--cr2', '--cr3', '--tint', '--neb1', '--neb2', '--neb3', '--dim2', '--dim3'];
+  if (root.dataset.theme !== 'custom') { for (const p of props) st.removeProperty(p); return; }
+  const h = +(D.LS.get('jcustom', { h: 275 }) || {}).h || 275, c = hsl2rgb(h, 85, 62), c2 = hsl2rgb(h, 70, 46), c3 = hsl2rgb((h + 25) % 360, 90, 78);
+  const rgb = (x) => x.join(','), hex = (x) => '#' + x.map((v) => v.toString(16).padStart(2, '0')).join('');
+  st.setProperty('--c', hex(c)); st.setProperty('--c2', hex(c2)); st.setProperty('--c3', hex(c3)); st.setProperty('--cr', rgb(c)); st.setProperty('--cr2', rgb(c2));
+  st.setProperty('--cr3', rgb(hsl2rgb(h, 90, 88))); st.setProperty('--tint', hex(hsl2rgb(h, 90, 92))); st.setProperty('--neb1', rgb(c2)); st.setProperty('--neb2', rgb(hsl2rgb((h + 40) % 360, 70, 50)));
+  st.setProperty('--neb3', rgb(c3)); st.setProperty('--dim2', hex(hsl2rgb(h, 35, 25))); st.setProperty('--dim3', hex(hsl2rgb(h, 45, 36)));
+}
+function setTheme(k) {
+  if (!THEMES.find((t) => t[0] === k)) k = 'eclipse';
+  root.dataset.theme = k; rawSet('jtheme', k); applyCustom();
+  readColors();
+  if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(themeColors()));
+  window.dispatchEvent(new Event('jtheme'));                 // the old event: a 3D core can follow the theme
+  renderLook();
+}
+function setFx(level, byOwner = true) {
+  if (!['ultra', 'high', 'low', 'off'].includes(level)) level = 'high';
+  root.dataset.fx = level;
+  if (byOwner) { rawSet('jfx', level); root.dataset.fxSet = '1'; delete root.dataset.fxAuto; }
+  if (core && mods.core && byOwner) mountCore3d();          // the 3D core takes the new level (off = its flat 2D core)
+  fx.restart();
+  renderLook(); renderMore();
+}
+let actx = null;
+function sfx(kind) {                                          // tiny synthesized cues; off unless the owner turns sounds on
+  if (!S.sound()) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const t = actx.currentTime, o = actx.createOscillator(), g = actx.createGain();
+    const f = { tap: [880, 1320, .05], listen: [520, 980, .16], answer: [660, 990, .12], open: [440, 880, .14], err: [300, 180, .18] }[kind] || [600, 900, .08];
+    o.type = 'sine'; o.frequency.setValueAtTime(f[0], t); o.frequency.exponentialRampToValueAtTime(f[1], t + f[2]);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.06, t + .015); g.gain.exponentialRampToValueAtTime(.0001, t + f[2] + .05);
+    o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t + f[2] + .07);
+  } catch (_) { /* no audio here */ }
+}
+
+// ------------------------------------------------------------------ the activity log (Jarvis's own events, kept on this phone)
+const acts = (D.LS.get('jarvis.feed', []) || []).filter((x) => x && x.t && x.text).slice(0, 20);
+function logAct(text) {
+  acts.unshift({ t: Math.floor(Date.now() / 1000), text: String(text).slice(0, 140) });
+  acts.length = Math.min(acts.length, 20);
+  D.LS.set('jarvis.feed', acts);
+  if (active === 'home') renderPanels();
+}
+
+// ------------------------------------------------------------------ apps and the mode bar
 const apps = () => [HOME, ...D.listApps()];
 const byId = (id) => { const all = apps(); return all.find((a) => a.id === id) || all.find((a) => String(a.id).toLowerCase() === String(id || '').toLowerCase()); };
-function glyphSvg(kind, size) {
-  if (kind === 'orb') return `<svg class="glyph" viewBox="0 0 40 40" width="${size}" height="${size}" aria-hidden="true"><defs><radialGradient id="g${size}" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#fff"/><stop offset=".28" stop-color="#fff" stop-opacity=".7"/><stop offset=".62" stop-color="#fff" stop-opacity=".08"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs><rect width="40" height="40" rx="10" fill="#1d1d21"/><circle cx="20" cy="20" r="13" fill="url(#g${size})"/><circle cx="20" cy="20" r="11" fill="none" stroke="#9a9ba1" stroke-width="1.6"/><circle cx="20" cy="20" r="3.6" fill="#fff"/></svg>`;
-  const ch = esc(String(kind || '?').slice(0, 1).toUpperCase());
-  return `<svg class="glyph" viewBox="0 0 40 40" width="${size}" height="${size}" aria-hidden="true"><rect width="40" height="40" rx="10" fill="#1d1d21"/><text x="20" y="26.5" text-anchor="middle" font-family="-apple-system, system-ui, sans-serif" font-size="18" font-weight="700" fill="#c4c5ca">${ch}</text><circle cx="30.5" cy="10" r="2.6" fill="#fff"/></svg>`;
+function levels() {
+  const v = D.liveView(), vd = (v && v.verdict) || {}, k = D.kalshiView();
+  return { zenith: !v ? '' : vd.level === 'good' || vd.level === 'ok' ? 'ok' : vd.level === 'bad' ? 'bad' : vd.level ? 'warn' : '', kalshi: k ? D.kalshiRun(k)[0] : '' };
 }
-const iconOf = (a, size) => a.icon ? `<img src="${esc(a.icon)}" alt="" width="${size}" height="${size}">` : glyphSvg(a.glyph || a.name, size);
-
-// ------------------------------------------------------------------ switching: Jarvis mode, Zenith mode, one other app at a time
 let active = 'home';
 const frames = {};
-let zen = null, zenMounted = false;                // the Zenith mode module, once mounted
+let zen = null, zenMounted = false, zenState = { badge: 0 };
 function renderBar() {
-  const z = byId('zenith') || { id: 'zenith', name: 'Zenith', icon: '../icons/icon-192.png?v=p111030' };
-  $('#modes').innerHTML = [HOME, z].map((a) => `<button class="mode" type="button" data-app="${esc(a.id)}"${a.id === active ? ' aria-current="page"' : ''}>${iconOf(a, 26)}<span>${esc(a.name)}</span></button>`).join('');
-  $('#apps').innerHTML = D.listApps().filter((a) => a.id !== 'zenith').map((a) => `<button class="chip" type="button" data-app="${esc(a.id)}"${a.id === active ? ' aria-current="page"' : ''}>${iconOf(a, 26)}<span>${esc(a.name)}</span></button>`).join('')
-    + '<button class="chip add" type="button" id="addB" aria-label="Add a dashboard" title="Add a dashboard"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>';
+  const all = D.listApps(), lv = levels();
+  const z = all.find((a) => a.id === 'zenith') || { id: 'zenith', name: 'Zenith' };
+  const badge = (id) => (id === 'zenith' && zenState.badge > 0 ? `<span class="bdg" aria-label="${zenState.badge} new">${zenState.badge > 99 ? '99+' : zenState.badge}</span>` : '');
+  const pill = (a, main) => `<button class="pm${main ? ' main' : ''}" type="button" data-app="${esc(a.id)}"${a.id === active ? ' aria-current="page"' : ''}>${a.id in lv ? `<span class="ld ${lv[a.id]}"></span>` : ''}${esc(a.name)}${badge(a.id)}</button>`;
+  $('#modes').innerHTML = pill(HOME, true) + pill(z, true) + '<span class="apps-in" id="apps">'
+    + all.filter((a) => a.id !== 'zenith').map((a) => pill(a, false)).join('')
+    + '<button class="pm add" type="button" id="addB" aria-label="Add a dashboard" title="Add a dashboard">+</button></span>';
   const a = byId(active);
   $('#out').hidden = !(a && a.url && active !== 'home');
-  $('#gear').hidden = active !== 'home';
   root.dataset.mode = active === 'home' ? 'jarvis' : active === 'zenith' ? 'zenith' : 'app';
+  const cur = $('#modes [aria-current="page"]'), bar = $('#modes');
+  if (cur) { const l = cur.offsetLeft, r = l + cur.offsetWidth; if (l < bar.scrollLeft) bar.scrollLeft = l - 8; else if (r > bar.scrollLeft + bar.clientWidth) bar.scrollLeft = r - bar.clientWidth + 18; }
 }
+
+// ------------------------------------------------------------------ switching: Jarvis mode, Zenith mode, one other app at a time
 function parseOpen(x) {                               // 'zenith', 'zenith:board', 'zenith/board' or {id, route}
   if (!x) return null;
   if (typeof x === 'object') return x.id ? { id: String(x.id), route: x.route } : null;
   const m = /^([^:/]+)[:/]?(.*)$/.exec(String(x).trim());
   return m ? { id: m[1].toLowerCase() === 'jarvis' ? 'home' : m[1], route: m[2] || undefined } : null;
 }
-function hideZen() { if (zen && zenMounted) { try { zen.hide(); } catch (_) { /* its own problem */ } } $('#zen').hidden = true; }
-function frameView(a) {
+function hideZen(unload) {                            // back to Jarvis: Zenith stays loaded (quick return); another dashboard: it lets go
+  if (zen && zenMounted) { safe(() => zen.hide()); if (unload && typeof zen.unload === 'function') safe(() => zen.unload()); }
+  zenView(false);
+}
+// Zenith's view is never display:none (that would squash its frame to 0 x 0 and lose its scroll): hidden = invisible, no taps
+function zenView(on) { const z = $('#zen'); z.classList.toggle('zoff', !on); z.setAttribute('aria-hidden', String(!on)); }
+function frameView(a, url) {
   // One dashboard kept loaded at a time (2026-11-01, white screen on the iPhone): every page inside Jarvis shares one
   // iPhone web process, so the one shown before is let go; going back to the Jarvis screen keeps it for a quick return.
+  const src = url || a.url;
   for (const k of Object.keys(frames)) if (k !== a.id) { frames[k].remove(); delete frames[k]; }
   let v = frames[a.id];
-  if (!v || v.dataset.url !== a.url) {
+  if (!v || (v.dataset.url !== src && (url || v.dataset.url.split('#')[0] !== a.url))) {
     if (v) v.remove();
     v = document.createElement('section');
-    v.className = 'view'; v.id = 'v-' + a.id; v.dataset.url = a.url; v.setAttribute('aria-label', a.name);
+    v.className = 'view'; v.id = 'v-' + a.id; v.dataset.url = src; v.setAttribute('aria-label', a.name);
     const f = document.createElement('iframe');
-    f.className = 'frame'; f.src = a.url; f.title = a.name;
+    f.className = 'frame'; f.src = src; f.title = a.name;
     f.setAttribute('allow', 'clipboard-read; clipboard-write; microphone; autoplay; fullscreen; screen-wake-lock');
     v.appendChild(f);
-    if (!D.sameSite(a.url)) {                      // another site may refuse to be shown inside another app
+    if (!D.sameSite(src)) {                        // another site may refuse to be shown inside another app
       const n = document.createElement('div');
       n.className = 'frame-note';
       n.innerHTML = 'If this stays blank, the site does not allow being shown inside Jarvis.<button type="button">Open it on its own</button>';
@@ -193,15 +386,16 @@ function show(id, opts = {}) {
     setTimeout(() => { const f = document.getElementById('link-' + a.id); if (f) { f.scrollIntoView({ block: 'center' }); f.focus(); } }, 50);
     return;
   }
-  const seq = ++showSeq;
+  const seq = ++showSeq, was = active;
   active = a.id;
   $('#home').hidden = a.id !== 'home';
   for (const k of Object.keys(frames)) frames[k].hidden = k !== a.id;
-  if (a.id !== 'zenith') hideZen();
-  if (a.id === 'home') { refreshHome(); setCore('idle'); }
-  else if (a.id === 'zenith') showZenith(a, opts.route, seq);
-  else frameView(a);
+  if (a.id !== 'zenith') hideZen(a.id !== 'home');
+  if (a.id === 'home') { refreshHome(); if (!listening && !speaking) setState('idle'); }
+  else { stopListening(); closeMore(); if (a.id === 'zenith') showZenith(a, opts.route, seq); else frameView(a, opts.url); }
   renderBar();
+  fx.restart();
+  if (was !== a.id) { sfx('open'); if (a.id !== 'home') logAct(`Opened ${a.name}`); }
   // The address stays the Jarvis screen (no #zenith): a reopen, or the iPhone reloading Jarvis in the background, always
   // starts on the Jarvis screen, never straight inside a dashboard.
 }
@@ -210,14 +404,21 @@ async function showZenith(a, route, seq) {
   const m = mods.zenith || await within(ready.zenith, 2500);
   if (seq !== showSeq) return;                       // the owner moved on while it loaded
   if (m && !zenMounted) {
-    try { zen = m.mountZenithMode({ host: $('#zen'), onExit: () => show('home') }); zenMounted = !!(zen && typeof zen.show === 'function'); }
+    try {
+      zen = m.mountZenithMode({ host: $('#zen'), onExit: () => show('home'),
+        onState: (s) => { if (s && typeof s === 'object') { zenState = s; renderBar(); } },
+        onWantShow: (r) => show('zenith', { route: r }),
+        // Zenith mode's own control can jump to another app: the shell switches (and lets Zenith's frame go)
+        apps: () => apps().filter((x) => x.id !== 'zenith').map((x) => ({ id: x.id, name: x.name })), onSwitch: (id) => show(id) });
+      zenMounted = !!(zen && typeof zen.show === 'function');
+    }
     catch (_) { zen = null; zenMounted = false; }
     if (!zenMounted) root.dataset.zenith = 'fallback';
   }
   if (zenMounted) {
     for (const k of Object.keys(frames)) { frames[k].remove(); delete frames[k]; }   // one heavy view at a time
-    $('#zen').hidden = false;
-    try { zen.show(route); root.dataset.zenith = 'module'; return; } catch (_) { $('#zen').hidden = true; root.dataset.zenith = 'fallback'; }
+    zenView(true);
+    try { zen.show(route); root.dataset.zenith = 'module'; return; } catch (_) { zenView(false); root.dataset.zenith = 'fallback'; }
   }
   frameView(a);
 }
@@ -227,12 +428,13 @@ function openSoon(x) { const o = parseOpen(x); if (!o) return; clearTimeout(open
 
 document.addEventListener('click', (e) => {
   const c = e.target.closest('[data-app]');
-  if (c) { show(c.dataset.app); return; }
+  if (c && !e.target.closest('.sheet')) { show(c.dataset.app, c.dataset.open ? { url: c.dataset.open } : {}); return; }
   if (e.target.closest('#addB')) { openSheet(); return; }
   if (e.target.closest('#out')) { openOut(byId(active)); return; }
-  if (e.target.closest('#gear')) { openSettings(); return; }
   const s = e.target.closest('[data-say]');
-  if (s) { ask(s.dataset.say); return; }
+  if (s) { closeSheets(); ask(s.dataset.say); return; }
+  const k = e.target.closest('[data-key]');
+  if (k) { moreKey(k.dataset.key); return; }
 });
 window.addEventListener('hashchange', () => {          // a #name link while Jarvis runs opens that app; the address stays clean
   const id = location.hash.slice(1);
@@ -240,89 +442,168 @@ window.addEventListener('hashchange', () => {          // a #name link while Jar
   show(id || 'home');
 });
 
-// ------------------------------------------------------------------ the centerpiece (core-visual.js, else the CSS orb)
-let core = null, coreState = 'idle';
-const orbCore = {
-  setState(s) { const o = $('#orb'); if (!o) return; o.classList.toggle('think', s === 'thinking'); o.classList.toggle('listen', s === 'listening'); o.classList.toggle('speak', s === 'speaking'); },
-  setLevel() { /* the CSS orb has no level */ },
-  destroy() { /* nothing to free */ },
-};
-function setCore(state, level) {
-  coreState = state;
-  for (const c of core ? [core] : [orbCore]) { try { c.setState(state); if (level != null) c.setLevel(level); } catch (_) { /* a broken visual never stops Jarvis */ } }
+// ------------------------------------------------------------------ the core (core-visual.js, else the 2D reactor) and its state
+let core = null, state = 'idle', listening = false, speaking = false;
+const STATE_WORD = { idle: 'STANDBY', listening: 'LISTENING', thinking: 'THINKING', speaking: 'SPEAKING', alert: 'ALERT' };
+function setState(s) {
+  state = STATE_WORD[s] ? s : 'idle';
+  root.dataset.state = state;                           // the 2D reactor follows html[data-state] in the CSS
+  $('#state').textContent = STATE_WORD[state];
+  if (core) safe(() => core.setState(state));           // a broken visual never stops Jarvis
+  $('#vbars').classList.toggle('live', state === 'listening' || state === 'speaking');
+  hudTick();
+  fx.restart();
 }
-ready.core.then((m) => {
+function setLevel(v) { if (core) safe(() => core.setLevel(v)); }
+function coreDesign() { const d = raw('jcorestyle'); return CORE_DESIGNS.find((x) => x[0] === d) ? d : 'reactor'; }
+function setCoreDesign(d) {
+  rawSet('jcorestyle', d); $('#orb').dataset.design = d;
+  safe(() => { if (core && typeof core.setDesign === 'function') core.setDesign(d); });
+  renderLook();
+}
+// the 3D core (core-visual.js): the theme's colours, the core design, the effects level ('off' = its flat 2D core); mounted
+// again when the effects level or the stage size changes. It draws its own HUD ring, globe and dial: the 2D ones step aside.
+function themeColors() { const cs = getComputedStyle(root), g = (k) => cs.getPropertyValue(k).trim(); return { c: g('--c'), c2: g('--c2'), c3: g('--c3'), tint: g('--tint') }; }
+let coreSize = 0;
+function mountCore3d() {
+  const m = mods.core;
   if (!m) return;
   const slot = $('#coreSlot');
+  if (core) safe(() => core.destroy());
+  core = null; slot.innerHTML = '';
+  coreSize = Math.round($('#stage').getBoundingClientRect().width) || 300;
   try {
-    const c = m.mountCore(slot, { size: Math.round($('#core').getBoundingClientRect().width) || 64 });
+    const c = m.mountCore(slot, { size: coreSize, design: coreDesign(), theme: themeColors(), effects: root.dataset.fx, adapt: !root.dataset.fxSet });
     if (!c || typeof c.setState !== 'function') throw new Error('no core');
-    core = c; $('#orb').hidden = true; root.dataset.core = 'module';
+    core = c; root.dataset.core = 'module';
+    safe(() => c.setState(state));
   } catch (_) { slot.innerHTML = ''; core = null; root.dataset.core = 'fallback'; }
-});
+}
+// the 3D core loads once the boot screen is gone (its first frames would hold up the boot log)
+let bootEnd = null;
+const bootDone = new Promise((ok) => { bootEnd = ok; });
+ready.core.then((m) => { if (m) bootDone.then(mountCore3d); });
+let coreRT = 0;
+window.addEventListener('resize', () => { clearTimeout(coreRT); coreRT = setTimeout(() => { const w = Math.round($('#stage').getBoundingClientRect().width); if (core && w && Math.abs(w - coreSize) > 8) mountCore3d(); }, 300); }, { passive: true });
+// the HUD ring: the clock and the state along the bottom, the market and the bots along the top, a tick gauge of Zlarior's room
+(function buildTicks() {
+  let h = '';
+  for (let i = 0; i < 36; i++) {
+    const a = (-38 + i * (76 / 35)) * Math.PI / 180, r1 = 174, r2 = i % 5 === 0 ? 186 : 181;
+    h += `<line class="tk" data-i="${i}" x1="${(200 + r1 * Math.cos(a)).toFixed(1)}" y1="${(200 + r1 * Math.sin(a)).toFixed(1)}" x2="${(200 + r2 * Math.cos(a)).toFixed(1)}" y2="${(200 + r2 * Math.sin(a)).toFixed(1)}"/>`;
+  }
+  $('#ticks').innerHTML = h;
+})();
+const hms = new Intl.DateTimeFormat('en-GB', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+function hudTick() {
+  const tm = hms.format(new Date());
+  $('#clock').textContent = tm;
+  $('#hudBot').textContent = `${tm} · ${STATE_WORD[state]}`;
+}
+function hudData() {
+  const m = D.market(), v = D.liveView(), k = D.kalshiView();
+  const bots = v && v.verdict ? String(v.verdict.code || v.verdict.label || '').split(':')[0].toUpperCase().slice(0, 14) : 'BOTS —';
+  $('#hudTop').textContent = `NQ ${m.open ? (m.rth ? 'OPEN' : 'OVERNIGHT') : 'CLOSED'} · ${bots} · KALSHI ${k ? D.kalshiRun(k)[1].toUpperCase() : D.kalshiState() === 'waiting' ? 'WAITING' : '—'}`;
+  const rf = v && v.lit && Number.isFinite(+v.lit.room_frac) ? Math.max(0, Math.min(1, +v.lit.room_frac)) : null;
+  const on = rf == null ? 0 : Math.round(rf * 36);
+  for (const t of document.querySelectorAll('#ticks .tk')) t.classList.toggle('on', +t.dataset.i < on);
+}
 
-// ------------------------------------------------------------------ the project cards
-function zenithCard(a) {
+// ------------------------------------------------------------------ the header panel: greeting, clock, KALSHI TODAY, NQ BOTS TODAY
+function renderHead() {
+  $('#hello').textContent = D.greeting();
+  $('#when').textContent = D.whenLine();
+  const k = D.kalshiView(), st = D.kalshiState(), kp = $('#kpct'), ku = $('#kusd');
+  if (!k) {
+    kp.className = 'nc'; kp.textContent = st === 'error' ? 'NO SIGNAL' : st === 'waiting' ? 'NOT CONNECTED' : 'LINKING…';
+    ku.className = ''; ku.textContent = st === 'waiting' ? 'the bot is not publishing yet' : st === 'error' ? 'feed unreachable' : ' ';
+  } else {
+    const pnl = Number.isFinite(+k.today_pnl) ? +k.today_pnl : null, bal = Number.isFinite(+k.balance) ? +k.balance : null;
+    const base = pnl != null && bal != null ? bal - pnl : null, pct = pnl != null && base > 0 ? (pnl / base) * 100 : null;
+    kp.className = 'm' + (pnl > 0 ? ' up' : pnl < 0 ? ' dn' : '');
+    kp.textContent = pct != null ? (pct > 0 ? '+' : pct < 0 ? '−' : '') + Math.abs(pct).toFixed(1) + '%' : D.usd2(pnl, true);
+    ku.className = 'm'; ku.textContent = `${D.usd2(pnl, true)} · bal ${D.usd2(bal)}`;
+  }
+  const v = D.liveView(), np = $('#npnl'), ns = $('#nsub');
+  if (!v) { np.className = 'nc'; np.textContent = D.liveError() ? 'NO SIGNAL' : 'LINKING…'; ns.textContent = ' '; }
+  else {
+    const accts = [v.lit, v.atlas, v.blitz].filter((x) => x && x.room != null && Number.isFinite(+x.today_pnl));
+    const sum = accts.reduce((s, x) => s + +x.today_pnl, 0);
+    np.className = 'm' + (sum > 0 ? ' up' : sum < 0 ? ' dn' : '');
+    np.textContent = accts.length ? D.usd(sum, true) : '—';
+    const vd = v.verdict || {};
+    ns.textContent = `${accts.length} ${accts.length === 1 ? 'account' : 'accounts'} · ${String(vd.code || vd.label || 'status ?').split(':')[0].toLowerCase()}`;
+  }
+  const lv = levels();
+  $('#dot').className = 'sdot' + (lv.zenith === 'bad' ? ' bad' : lv.zenith === 'warn' ? ' warn' : !navigator.onLine ? ' off' : '');
+  hudData();
+}
+
+// ------------------------------------------------------------------ the project panels (NQ bots, Kalshi, Today, added apps)
+const segBar = (frac, lvl = '') => { const n = frac == null ? 0 : Math.round(Math.max(0, Math.min(1, frac)) * 24); return `<div class="seg ${lvl}">${Array.from({ length: 24 }, (_, i) => `<i${i < n ? ' class="on"' : ''}></i>`).join('')}</div>`; };
+const sgn = (v) => (v > 0 ? 'up' : v < 0 ? 'dn' : '');
+function zenithCard() {
   const v = D.liveView();
-  const head = `<div class="card-h">${iconOf(a, 40)}<div><b>Zenith</b><small>${esc(a.sub || '')}</small></div><span class="go" aria-hidden="true">›</span></div>`;
-  if (!v) return `<button class="card" type="button" data-app="zenith">${head}<p class="muted">${D.liveError() ? 'Could not reach the live feed. Open Zenith for everything.' : 'Loading the bots…'}</p></button>`;
+  const head = (lvl) => `<p class="ph"><span class="t">NQ bots · Zenith</span><i class="sdot ${lvl || 'off'}"></i><span class="go">OPEN ›</span></p>`;
+  if (!v) return `<button class="panel card" type="button" data-app="zenith">${head('')}<p class="muted">${D.liveError() ? 'Could not reach the live feed. Open Zenith for everything.' : 'Loading the bots…'}</p></button>`;
   const vd = v.verdict || {}, lvl = vd.level === 'good' || vd.level === 'ok' ? 'ok' : vd.level === 'bad' ? 'bad' : vd.level ? 'warn' : '';
   const acct = (x, label) => {
     if (!x) return '';
     const set = x.room != null;
-    return `<div class="acct"><i>${esc(label)} · ${esc(x.plan || '')}${x.badge ? ' · ' + esc(x.badge) : ''}</i>${set ? `<div class="kv"><div><span>Today</span><strong>${D.usd(x.today_pnl, true)}</strong></div><div><span>Room</span><strong>${D.usd(x.room)}</strong></div><div><span>To target</span><strong>${D.usd(x.to_target)}</strong></div></div>` : `<p class="muted">${esc(x.off ? 'Account C off · paper only until its own 25K' : x.status || 'not set up')}</p>`}</div>`;
+    const rf = Number.isFinite(+x.room_frac) ? +x.room_frac : null;
+    return `<div class="acct"><i>${esc(label)} · ${esc(x.plan || '')}${x.badge ? ' · ' + esc(x.badge) : ''}</i>${set ? `<div class="kv"><div><span>Today</span><strong class="m ${sgn(+x.today_pnl)}">${D.usd(x.today_pnl, true)}</strong></div><div><span>Room</span><strong class="m">${D.usd(x.room)}</strong></div><div><span>To target</span><strong class="m">${D.usd(x.to_target)}</strong></div></div>${rf != null ? segBar(rf, rf < .25 ? 'bad' : rf < .5 ? 'warn' : 'ok') : ''}` : `<p class="muted">${esc(x.off ? 'Account C off · paper only until its own 25K' : x.status || 'not set up')}</p>`}</div>`;
   };
-  return `<button class="card" type="button" data-app="zenith">${head}<span class="pill ${lvl}">${esc(vd.label || 'Bot status')}${v.t ? ' · ' + esc(D.ago(v.t)) : ''}</span>${acct(v.lit, 'Zlarior')}${acct(v.atlas, 'ATLAS')}${acct(v.blitz, 'BLITZ')}</button>`;
+  const line = (v.lines || []).find((x) => x.level === 'bad' || x.level === 'warn');
+  return `<button class="panel card" type="button" data-app="zenith">${head(lvl)}<span class="pill ${lvl}">${esc(vd.label || 'Bot status')}${v.t ? ' · ' + esc(D.ago(v.t)) : ''}${v.cached ? ' · saved' : ''}</span>`
+    + `${line ? `<p class="pline ${line.level === 'bad' ? 'bad' : 'warn'}">${esc(line.text)}</p>` : ''}${acct(v.lit, 'Zlarior')}${acct(v.atlas, 'ATLAS')}${acct(v.blitz, 'BLITZ')}</button>`;
 }
-function plannerCard(a) {
+function plannerCard() {
   const p = D.plannerDay();
-  const head = `<div class="card-h">${iconOf(a, 40)}<div><b>Planner</b><small>${esc(a.sub || '')}</small></div><span class="go" aria-hidden="true">›</span></div>`;
-  if (!p) return `<button class="card" type="button" data-app="planner">${head}<p class="muted">Open the Planner to see your day here.</p></button>`;
-  const evs = p.ev.slice(0, 4).map((e) => `<li><b>${e.allDay ? 'All day' : esc(D.hm(e.start))}</b><span>${esc(e.title)}</span></li>`).join('');
+  const head = `<p class="ph"><span class="t">Today · Planner</span><i class="sdot ${p ? 'ok' : 'off'}"></i><span class="go">OPEN ›</span></p>`;
+  if (!p) return `<button class="panel card" type="button" data-app="planner">${head}<p class="muted">Open the Planner to see your day here.</p></button>`;
+  const evs = p.ev.slice(0, 5).map((e) => `<li><b>${e.allDay ? 'All day' : esc(D.hm(e.start))}</b><span>${esc(e.title)}</span></li>`).join('');
   const tk = p.tasks.length ? `<li><b>${p.tasks.length}</b><span>${p.tasks.length === 1 ? 'task' : 'tasks'} open: ${esc(p.tasks.slice(0, 2).map((t) => t.title).join(', '))}${p.tasks.length > 2 ? '…' : ''}</span></li>` : '';
   const body = evs || tk ? `<ul class="list">${evs}${tk}</ul>` : '<p class="muted">Nothing planned today.</p>';
-  return `<button class="card" type="button" data-app="planner">${head}${body}</button>`;
+  return `<button class="panel card" type="button" data-app="planner">${head}${body}</button>`;
 }
-function kalshiCard(a) {
+function kalshiCard() {
   const k = D.kalshiView(), st = D.kalshiState();
-  const head = `<div class="card-h">${iconOf(a, 40)}<div><b>Kalshi</b><small>${esc(a.sub || '')}</small></div><span class="go" aria-hidden="true">›</span></div>`;
-  if (!k) return `<button class="card" type="button" data-app="kalshi">${head}<p class="muted">${st === 'waiting' ? 'Waiting for your PC: the Kalshi bot is not publishing yet. Open Kalshi for the one step that connects it.' : st === 'error' ? 'Could not reach the Kalshi feed. Open Kalshi to try again.' : 'Loading Kalshi…'}</p></button>`;
-  const [lvl, label] = D.kalshiRun(k), n = Array.isArray(k.positions) ? k.positions.length : null;
-  return `<button class="card" type="button" data-app="kalshi">${head}<span class="pill ${lvl}">${esc(label)}${k.mode ? ' · ' + esc(String(k.mode).toUpperCase()) : ''}${k.t ? ' · ' + esc(D.ago(k.t)) : ''}</span><div class="kv"><div><span>Balance</span><strong>${D.usd2(k.balance)}</strong></div><div><span>Today</span><strong>${D.usd2(k.today_pnl, true)}</strong></div><div><span>Open</span><strong>${n == null ? '—' : n}</strong></div></div></button>`;
-}
-const statusCards = {};                               // apps.js appStatus(app) answers, by app id
-function genericCard(card) {
-  if (!card || typeof card !== 'object') return '';
-  const lvl = ['ok', 'warn', 'bad'].includes(card.level) ? card.level : '';
-  const rows = Array.isArray(card.kv) ? card.kv : Array.isArray(card.rows) ? card.rows : [];
-  return `${card.status || card.label ? `<span class="pill ${lvl}">${esc(card.status || card.label)}</span>` : ''}`
-    + (rows.length ? `<div class="kv">${rows.slice(0, 3).map((r) => `<div><span>${esc(Array.isArray(r) ? r[0] : r.label)}</span><strong>${esc(Array.isArray(r) ? r[1] : r.value)}</strong></div>`).join('')}</div>` : '')
-    + (card.text ? `<p class="muted">${esc(card.text)}</p>` : '');
+  const head = (lvl) => `<p class="ph"><span class="t">Kalshi</span><i class="sdot ${lvl || 'off'}"></i><span class="go">OPEN ›</span></p>`;
+  if (!k) return `<button class="panel card" type="button" data-app="kalshi">${head('')}<p class="muted">${st === 'waiting' ? 'Waiting for the Kalshi bot: it is not publishing yet. It runs on its own server; open Kalshi for the one step that connects it from its own chat.' : st === 'error' ? 'Could not reach the Kalshi feed. Open Kalshi to try again.' : 'Loading Kalshi…'}</p></button>`;
+  const [lvl, label] = D.kalshiRun(k), pos = Array.isArray(k.positions) ? k.positions : null;
+  const rows = (pos || []).slice(0, 2).map((p) => `<li class="${sgn(+p.pnl)}"><b>${esc(String(p.side || '').toUpperCase())}</b><span>${esc(p.title || p.ticker || '')}</span><span class="r m">${D.usd2(p.pnl, true)}</span></li>`).join('');
+  return `<button class="panel card" type="button" data-app="kalshi">${head(lvl)}<span class="pill ${lvl}">${esc(label)}${k.mode ? ' · ' + esc(String(k.mode).toUpperCase()) : ''}${k.t ? ' · ' + esc(D.ago(k.t)) : ''}</span>`
+    + `<div class="kv"><div><span>Balance</span><strong class="m">${D.usd2(k.balance)}</strong></div><div><span>Today</span><strong class="m ${sgn(+k.today_pnl)}">${D.usd2(k.today_pnl, true)}</strong></div><div><span>Open</span><strong>${pos == null ? '—' : pos.length}</strong></div></div>`
+    + `${rows ? `<ul class="list">${rows}</ul>` : ''}</button>`;
 }
 function linkCard(a) {
-  const head = (go) => `<div class="card-h">${iconOf(a, 40)}<div><b>${esc(a.name)}</b><small>${esc(a.sub || (a.url ? new URL(a.url, location.href).host : ''))}</small></div>${go ? '<span class="go" aria-hidden="true">›</span>' : ''}</div>`;
-  if (a.url) {
-    const sc = statusCards[a.id];
-    let body = '';
-    if (sc && mods.apps && typeof mods.apps.renderCard === 'function') { try { const h = mods.apps.renderCard(sc); body = typeof h === 'string' ? h : ''; } catch (_) { body = ''; } }
-    if (!body && sc) body = genericCard(sc);
-    return `<button class="card" type="button" data-app="${esc(a.id)}">${head(true)}${body || `<p class="muted">Open ${esc(a.name)} inside Jarvis.</p>`}</button>`;
-  }
-  return `<div class="card">${head(false)}<p class="muted">Paste your ${esc(a.name)} dashboard link once and it opens right here.</p><form class="link-f" data-link="${esc(a.id)}"><input id="link-${esc(a.id)}" type="url" inputmode="url" placeholder="https://…" aria-label="${esc(a.name)} dashboard link"><button type="submit">Save</button></form></div>`;
+  const head = (go) => `<p class="ph"><span class="t">${esc(a.name)}</span><i class="sdot ${a.url ? 'ok' : 'off'}"></i>${go ? '<span class="go">OPEN ›</span>' : ''}</p>`;
+  const sc = statusCards[a.id] && !(mods.apps && typeof mods.apps.renderCard === 'function') ? genericCard(statusCards[a.id]) : '';
+  if (a.url) return `<button class="panel card" type="button" data-app="${esc(a.id)}" data-slot="${esc(a.id)}">${head(true)}${sc || `<p class="muted">${esc(a.sub || safe(() => new URL(a.url, location.href).host, ''))} · opens inside Jarvis.</p>`}</button>`;
+  return `<div class="panel card" data-slot="${esc(a.id)}">${head(false)}<p class="muted">Paste your ${esc(a.name)} dashboard link once and it opens right here.</p><form class="link-f" data-link="${esc(a.id)}"><input id="link-${esc(a.id)}" type="url" inputmode="url" placeholder="https://…" aria-label="${esc(a.name)} dashboard link"><button type="submit">Save</button></form></div>`;
 }
+// added apps' live cards (apps.js): the last good card first, then the app's jarvis.json, or a card the open app posted
+const statusCards = {};
 function renderCards() {
-  const list = D.listApps();
-  $('#cards').innerHTML = list.map((a) => a.id === 'zenith' ? zenithCard(a) : a.id === 'planner' ? plannerCard(a) : a.id === 'kalshi' ? kalshiCard(a) : linkCard(a)).join('');
+  const list = D.listApps(), A = mods.apps;
+  $('#cards').innerHTML = list.map((a) => a.id === 'zenith' ? zenithCard() : a.id === 'planner' ? plannerCard() : a.id === 'kalshi' ? kalshiCard() : linkCard(a)).join('');
+  if (A && typeof A.renderCard === 'function') {
+    for (const slot of $('#cards').querySelectorAll('[data-slot]')) {
+      const a = list.find((x) => x.id === slot.dataset.slot);
+      const card = a && (statusCards[a.id] || (typeof A.cachedStatus === 'function' ? safe(() => A.cachedStatus(a)) : null));
+      if (card) { const n = safe(() => A.renderCard(card, document)); if (n) slot.replaceWith(n); }
+    }
+  }
+  fx.adopt();
 }
 let statusAt = 0;
-function refreshStatusCards() {                       // added apps with a status feed (apps.js appStatus)
-  const m = mods.apps;
-  if (!m || typeof m.appStatus !== 'function' || Date.now() - statusAt < 60e3) return;
+function refreshStatusCards() {
+  const A = mods.apps;
+  if (!A || typeof A.appStatus !== 'function' || Date.now() - statusAt < 60e3) return;
   statusAt = Date.now();
   for (const a of D.listApps()) {
-    if (['zenith', 'planner', 'kalshi'].includes(a.id)) continue;
-    let p = null;
-    try { p = m.appStatus(a); } catch (_) { p = null; }
+    if (BUILTIN_IDS.includes(a.id) || !a.url) continue;
+    const p = safe(() => A.appStatus(a));
     if (p && typeof p.then === 'function') p.then((card) => { if (card) { statusCards[a.id] = card; if (active === 'home') renderCards(); } }).catch(() => null);
   }
 }
@@ -335,11 +616,91 @@ document.addEventListener('submit', (e) => {
   D.fallbackApps.setLink(f.dataset.link, u);
   renderBar(); renderCards(); show(f.dataset.link);
 });
-function greet() { $('#hello').textContent = D.greeting(); $('#when').textContent = D.whenLine(); }
-function refreshHome() { greet(); renderCards(); D.refresh({ maxAge: 50e3 }); refreshStatusCards(); }
+
+// ------------------------------------------------------------------ the systems panels: market, activity, add-ons, system core
+function marketPanel() {
+  const m = D.market(), nx = D.marketNext(), v = D.liveView(), clock = D.clock();
+  const px = v && v.price != null ? v.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—';
+  return `<section class="panel" id="p-market"><p class="ph"><span class="t">Market · NQ futures</span><i class="sdot ${m.open ? 'ok' : 'off'}"></i><span class="go">ET</span></p>`
+    + `<div class="mrow"><span class="big ${m.open ? 'ok' : 'bad'}">${m.open ? 'OPEN' : 'CLOSED'}</span><span class="pline">${m.open ? (m.rth ? 'Regular session' : 'Overnight session') : 'Between sessions'}</span></div>`
+    + `<p class="pline">${nx ? esc(nx.text) + (nx.open ? ' · ' + esc(m.text.split('opens ')[1] || '') : ' · daily halt 5:00 PM ET') : esc(m.text)}</p>`
+    + `<div class="kv"><div><span>NQ last</span><strong>${px}</strong></div><div><span>ET time</span><strong>${esc(clock)}</strong></div><div><span>Session</span><strong>${m.open ? (m.rth ? 'RTH' : 'ETH') : 'Closed'}</strong></div></div></section>`;
+}
+function feedRows() {
+  const v = D.liveView(), rows = [];
+  for (const t of (v && v.trades) || []) {
+    const when = t.exit_t || t.entry_t, who = { lit: 'Zlarior', atlas: 'ATLAS', blitz: 'BLITZ' }[t.acct] || String(t.acct || 'Bot');
+    rows.push({ t: when, cls: t.open ? '' : sgn(t.usd), text: `${who} · ${t.side || ''} ${t.qty || ''} · ${t.open ? 'open' : (t.exit || 'closed').toLowerCase()}`, r: t.open ? 'OPEN' : D.usd(t.usd, true) });
+  }
+  if (v && v.t) for (const l of (v.lines || []).slice(0, 2)) rows.push({ t: v.t, cls: l.level === 'bad' ? 'dn' : '', text: l.text, r: '' });
+  for (const x of acts.slice(0, 8)) rows.push({ t: x.t, cls: '', text: x.text, r: 'JARVIS' });
+  return rows.filter((r) => r.t).sort((a, b) => b.t - a.t).slice(0, 8);
+}
+function stamp(t) {
+  const d = new Date(t * 1000), today = D.ymd(new Date()) === D.ymd(d);
+  return today ? D.clock(d) : new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric' }).format(d);
+}
+function feedPanel() {
+  const rows = feedRows();
+  return `<section class="panel" id="p-feed"><p class="ph"><span class="t">Activity feed</span><i class="sdot ${rows.length ? 'ok' : 'off'}"></i></p>`
+    + (rows.length ? `<ul class="list">${rows.map((r) => `<li class="${r.cls}"><b>${esc(stamp(r.t))}</b><span>${esc(r.text)}</span>${r.r ? `<span class="r m">${esc(r.r)}</span>` : ''}</li>`).join('')}</ul>`
+      : '<p class="muted">Nothing yet. The bots\' trades and what you do here show up as they happen.</p>') + '</section>';
+}
+function addonsPanel() {
+  const F = D.getFacts().extras, c = F.crypto, err = D.cryptoError();
+  const coin = (k) => { const x = c && c[k]; return `<div><b>${k}</b><span>${x ? '$' + x.usd.toLocaleString('en-US', { minimumFractionDigits: x.usd < 1000 ? 2 : 0, maximumFractionDigits: x.usd < 1000 ? 2 : 0 }) : '—'}</span><em class="${x && x.chg != null ? sgn(x.chg) : ''}">${x && x.chg != null ? (x.chg > 0 ? '+' : x.chg < 0 ? '−' : '') + Math.abs(x.chg).toFixed(1) + '%' : '—'}</em></div>`; };
+  return `<section class="panel" id="p-addons"><p class="ph"><span class="t">Add-ons</span><i class="sdot ok"></i></p>`
+    + `<p class="sub-t">Verse of the day</p><p class="qt">${esc(F.verse[0])}</p><p class="qby">${esc(F.verse[1])} · KJV</p>`
+    + `<p class="sub-t">Quote of the day</p><p class="qt">${esc(F.quote[0])}</p><p class="qby">— ${esc(F.quote[1])}</p>`
+    + `<p class="sub-t">Crypto · 24 h</p><div class="crypto">${coin('BTC')}${coin('ETH')}${coin('SOL')}</div>`
+    + `<p class="qby">${c ? 'CoinGecko · ' + esc(D.ago(c.t)) : err ? 'Prices unavailable right now' : 'Loading prices…'}</p>`
+    + '<p class="muted">More slots open. Ask Jarvis about the bots, your day, Kalshi or the market.</p></section>';
+}
+function corePanel() {
+  const v = D.liveView(), k = D.kalshiView(), now = Date.now() / 1000;
+  const ageRow = (label, t, okS, warnS) => {
+    if (!t) return `<div class="hrow"><span>${esc(label)}</span>${segBar(0)}<span>—</span></div>`;
+    const age = Math.max(0, now - t), lvl = age < okS ? 'ok' : age < warnS ? 'warn' : 'bad';
+    return `<div class="hrow"><span>${esc(label)}</span>${segBar(Math.max(.08, 1 - age / (warnS * 2)), lvl)}<span>${esc(D.ago(t))}</span></div>`;
+  };
+  const items = ((v && v.health) || []).slice(0, 5).map((x) => {
+    const lvl = x.ok === true ? 'ok' : x.ok === false ? 'bad' : x.warn ? 'warn' : '';
+    return `<div class="hrow"><span title="${esc(x.detail || '')}">${esc(x.label || x.key || '')}</span>${segBar(lvl === 'ok' ? 1 : lvl === 'warn' ? .55 : lvl === 'bad' ? .2 : 0, lvl)}<span>${esc(x.value == null ? '—' : x.value)}</span></div>`;
+  }).join('');
+  const lv = levels().zenith, live = v && !v.cached && v.t && now - v.t < 600;
+  return `<section class="panel" id="p-core"><p class="ph"><span class="t">System core · bots</span><span class="badge ${live ? (lv === 'bad' ? 'bad' : 'ok') : ''}">${live ? 'PC LIVE' : v ? 'PC QUIET' : 'NO FEED'}</span></p>`
+    + ageRow('PC check-in', v && v.t, 180, 900) + ageRow('Kalshi bot', k && k.t, 900, 3600) + items
+    + '<p class="cnote">The old CPU / RAM gauges were the PC\'s; on the phone this panel shows the bots\' health.</p></section>';
+}
+function renderPanels() { $('#panels').innerHTML = marketPanel() + feedPanel() + addonsPanel() + corePanel(); fx.adopt(); }
+function renderNext() {
+  const p = D.plannerDay(), el = $('#next');
+  if (!p) { el.textContent = 'Nothing scheduled today'; return; }
+  const nowHM = new Intl.DateTimeFormat('en-GB', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
+  const nx = p.ev.find((e) => !e.allDay && String(e.start || '') >= nowHM) || p.ev.find((e) => e.allDay);
+  el.innerHTML = nx ? `<b>NEXT</b>${esc(nx.allDay ? 'All day' : D.hm(nx.start))} · ${esc(nx.title)}` : p.tasks.length ? `<b>TO-DO</b>${p.tasks.length} open · ${esc(p.tasks[0].title)}` : 'Nothing scheduled today';
+}
+function greet() { renderHead(); hudTick(); }
+function refreshHome() {
+  greet(); renderCards(); renderPanels(); renderNext(); renderBrainPanel();
+  D.refresh({ maxAge: 50e3 }); D.refreshCrypto(); refreshStatusCards();
+}
+let prevKalshi = D.kalshiView();
+function kalshiAlerts() {                              // the owner's "🌌 +$1.26" outcomes, in the app only (no push)
+  const cur = D.kalshiView(), f = mods.brain && mods.brain.outcomeAlerts;
+  if (prevKalshi && cur && cur !== prevKalshi && typeof f === 'function') {
+    const al = safe(() => f(prevKalshi, cur), []) || [];
+    if (al.length) { toast(al.map((x) => `${x.title} · ${x.body}`).join('   '), 'KALSHI'); for (const x of al) logAct(`Kalshi ${x.title} · ${x.body}`); }
+  }
+  if (cur) prevKalshi = cur;
+}
 D.onChange(({ source }) => {
+  if (source === 'kalshi') kalshiAlerts();
   if (source === 'apps') { renderBar(); renderSettingsApps(); }
-  if (active === 'home') renderCards();
+  if (source === 'live' || source === 'kalshi') renderBar();
+  if (active !== 'home') return;
+  if (source === 'crypto') { renderPanels(); return; }
+  renderHead(); renderCards(); renderPanels(); renderNext();
 });
 
 // ------------------------------------------------------------------ the brain (brain.js, else the built-in rule-based one)
@@ -348,10 +709,10 @@ function fallbackBrain({ getFacts }) {
   const ASK_WORDS = /\b(how|how's|hows|status|room|floor|target|pnl|p&l|profit|doing|balance|positions?|money|made)\b/;
   const APP_WORDS = [[/\b(zenith|nq|trading|zlarior|atlas|blitz|the bots?)\b/, 'zenith'], [/\b(planner|calendar|plan)\b/, 'planner'], [/\bkalshi\b/, 'kalshi'], [/\b(jarvis|home)\b/, 'home']];
   const usd = D.usd, usd2 = D.usd2, ago = D.ago;
-  function answer(raw) {
+  function answer(raw0) {
     const F = getFacts();
     const all = [HOME, ...(F.apps || [])], find = (id) => all.find((a) => a.id === id);
-    const q = String(raw || '').toLowerCase().replace(/[’']/g, "'").trim();
+    const q = String(raw0 || '').toLowerCase().replace(/[’']/g, "'").trim();
     if (!q) return { text: 'Ask me how the bots are doing, what is on today, or say "open planner".' };
     for (const x of all) if (x.extra && q.includes(x.name.toLowerCase()) && (OPEN_WORDS.test(q) || q.split(' ').length <= 2)) return { text: `Opening ${x.name}.`, open: x.id };
     if (OPEN_WORDS.test(q) || (q.split(' ').length <= 2 && !ASK_WORDS.test(q))) {   // "how's blitz" is a question, not "open"
@@ -359,19 +720,27 @@ function fallbackBrain({ getFacts }) {
         const a = find(id);
         if (!a) continue;
         if (id !== 'home' && !a.url) return { text: `${a.name} is not linked yet. Paste its dashboard link on the ${a.name} card and I will open it here.` };
-        return { text: id === 'home' ? 'Here.' : `Opening ${a.name}.`, open: id };
+        const route = id === 'zenith' && mods.zenith && typeof mods.zenith.zenithRouteFor === 'function' ? safe(() => mods.zenith.zenithRouteFor(q)) : null;
+        return route ? { text: `Opening ${a.name}.`, open: id, route } : { text: id === 'home' ? 'Here.' : `Opening ${a.name}.`, open: id };
       }
     }
     if (/\bkalshi\b/.test(q)) {
       const k = F.kalshi;
-      if (!k) return { text: F.kalshiState === 'error' ? 'I cannot reach the Kalshi feed right now. Try again in a minute.' : 'Kalshi is not connected yet: the Kalshi bot runs only on your PC. Open the Kalshi page for the one step that connects it.' };
+      if (!k) return { text: F.kalshiState === 'error' ? 'I cannot reach the Kalshi feed right now. Try again in a minute.' : 'Kalshi is not connected yet: the Kalshi bot runs on its own server and connects from its own chat. Open the Kalshi page for the one step.' };
       const pos = Array.isArray(k.positions) ? k.positions : [];
       const lines = [`Kalshi${k.mode ? ' (' + String(k.mode).toUpperCase() + ')' : ''}: ${D.kalshiRun(k)[1].toLowerCase()}, balance ${usd2(k.balance)}, today ${usd2(k.today_pnl, true)}${k.week_pnl != null ? `, this week ${usd2(k.week_pnl, true)}` : ''}, ${pos.length} open ${pos.length === 1 ? 'position' : 'positions'}${k.t ? ' (' + ago(k.t) + ')' : ''}.`];
       for (const p of pos.slice(0, 3)) lines.push(`${p.title || p.ticker}: ${String(p.side || '').toUpperCase()} x${p.contracts != null ? p.contracts : '?'}, P&L ${usd2(p.pnl, true)}.`);
       return { text: lines.join('\n') };
     }
-    if (/\b(help|what can you|commands?)\b/.test(q)) return { text: 'I can switch dashboards ("open planner", "open Zenith", "Kalshi"), tell you how the bots are doing ("status", "room", "today\'s P&L", "how far to target"), what is on your plan today, and whether the market is open.' };
-    if (/\b(market|open|closed?|session|trading hours)\b/.test(q) && !/\b(bot|bots|zlarior|atlas|blitz)\b/.test(q)) return { text: F.market.text + '.' };
+    if (/\b(help|what can you|commands?)\b/.test(q)) return { text: 'I can switch modes ("open Zenith", "open planner", "Kalshi"), tell you how the bots are doing ("status", "room", "today\'s P&L", "how far to target"), what is on your plan today, whether the market is open, the crypto prices, and the verse or quote of the day.' };
+    if (/\b(verse|bible|scripture)\b/.test(q)) return { text: `${F.extras.verse[0]} (${F.extras.verse[1]}, KJV)` };
+    if (/\b(quote|motivat|inspire)\w*/.test(q)) return { text: `"${F.extras.quote[0]}" (${F.extras.quote[1]})` };
+    if (/\b(bitcoin|btc|ethereum|eth|solana|sol|crypto)\b/.test(q)) {
+      const c = F.extras.crypto;
+      if (!c) return { text: 'The crypto prices are still loading. Ask again in a moment.' };
+      return { text: ['BTC', 'ETH', 'SOL'].filter((x) => c[x]).map((x) => `${x} $${c[x].usd.toLocaleString('en-US', { maximumFractionDigits: c[x].usd < 1000 ? 2 : 0 })}${c[x].chg != null ? ` (${c[x].chg > 0 ? '+' : ''}${c[x].chg.toFixed(1)}% in 24 h)` : ''}`).join(', ') + '.' };
+    }
+    if (/\b(market|open|closed?|session|trading hours)\b/.test(q) && !/\b(bot|bots|zlarior|atlas|blitz)\b/.test(q)) return { text: F.market.text + '.' + (F.market.next ? ' ' + F.market.next.text + '.' : '') };
     const v = F.live;
     const need = () => (v ? null : { text: F.liveError ? 'I cannot reach the bots\' live feed right now. Open Zenith for everything.' : 'Still loading the bots. Ask me again in a second.' });
     // "how's blitz", "blitz room" ...: BLITZ alone; otherwise every account
@@ -415,46 +784,88 @@ function fallbackBrain({ getFacts }) {
       if (p.tasks.length) lines.push(`${p.tasks.length} open ${p.tasks.length === 1 ? 'task' : 'tasks'}: ${p.tasks.slice(0, 4).map((t) => t.title).join(', ')}${p.tasks.length > 4 ? '…' : ''}`);
       return { text: lines.join('\n') };
     }
+    if (/\b(good morning|briefing|brief me)\b/.test(q)) return { text: '__briefing__' };
     if (/\b(hi|hello|hey|yo|sup)\b/.test(q)) return { text: `${D.greeting(F.now)}. ${F.market.text}. Ask me about the bots or your day.` };
     if (/\b(time|date|day is it)\b/.test(q)) return { text: D.whenLine(F.now).split(' · ').slice(0, 2).join(', ') + '.' };
-    return { text: 'I can switch dashboards and tell you how the bots and your day look. Try "how are the bots", "what\'s on today" or "open planner".' };
+    return { text: 'I can switch modes and tell you how the bots and your day look. Try "how are the bots", "what\'s on today" or "open planner".' };
+  }
+  async function briefing() {
+    const F = getFacts(), v = F.live, k = F.kalshi, p = F.planner, lines = [`${D.greeting(F.now)}. ${F.market.text}${F.market.next ? ' (' + F.market.next.text.toLowerCase() + ')' : ''}.`];
+    if (v && v.verdict && v.verdict.label) lines.push(`Bots: ${v.verdict.label}.`);
+    const accts = v ? [['Zlarior', v.lit], ['ATLAS', v.atlas], ['BLITZ', v.blitz]].filter((x) => x[1] && x[1].room != null) : [];
+    if (accts.length) lines.push(accts.map(([n, x]) => `${n} today ${usd(x.today_pnl, true)}, room ${usd(x.room)}`).join('; ') + '.');
+    if (k) lines.push(`Kalshi: today ${usd2(k.today_pnl, true)}, balance ${usd2(k.balance)}.`);
+    if (p) lines.push(p.ev.length || p.tasks.length ? `Today: ${p.ev.length} ${p.ev.length === 1 ? 'event' : 'events'}${p.ev[0] ? ' starting with ' + p.ev[0].title : ''}, ${p.tasks.length} open ${p.tasks.length === 1 ? 'task' : 'tasks'}.` : 'Nothing on your plan today.');
+    lines.push(`Verse of the day: ${F.extras.verse[0]} (${F.extras.verse[1]})`);
+    return { text: lines.join('\n') };
   }
   return {
     fallback: true,
     smart: null,
-    async ask(text) { return answer(text); },
-    async briefing() {
-      const F = getFacts(), v = F.live, lines = [`${D.greeting(F.now)}. ${F.market.text}.`];
-      if (v && v.verdict && v.verdict.label) lines.push(`Bots: ${v.verdict.label}.`);
-      const p = F.planner;
-      if (p) lines.push(p.ev.length || p.tasks.length ? `Today: ${p.ev.length} ${p.ev.length === 1 ? 'event' : 'events'}, ${p.tasks.length} open ${p.tasks.length === 1 ? 'task' : 'tasks'}.` : 'Nothing on your plan today.');
-      return { text: lines.join('\n') };
-    },
+    async ask(text) { const r = answer(text); return r.text === '__briefing__' ? briefing() : r; },
+    briefing,
     suggestions() { return ['How are the bots?', "What's on today?", 'Is the market open?', 'Open Zenith']; },
     setSmart() { return false; },
   };
 }
-const brainDeps = { getFacts: D.getFacts, open: (id, route) => openSoon(route ? { id, route } : id), now: () => new Date() };
+// autoOpen false: the shell switches on reply.open / reply.route itself (one path for both brains, after the answer shows)
+const brainDeps = { getFacts: D.getFacts, open: (id, route) => openSoon(route ? { id, route } : id), now: () => new Date(), autoOpen: false };
 const builtinBrain = fallbackBrain(brainDeps);
 let brain = builtinBrain;
 ready.brain.then((m) => {
   if (!m) return;
   try { const b = m.createBrain(brainDeps); if (!b || typeof b.ask !== 'function') throw new Error('no ask'); brain = b; root.dataset.brain = 'module'; }
   catch (_) { brain = builtinBrain; root.dataset.brain = 'fallback'; }
-  renderSugs();
+  const idle = safe(() => (typeof brain.idle === 'function' ? brain.idle() : ''), '');
+  if (idle && !$('#talk').children.length) $('#says').textContent = idle;        // the old Jarvis's line until the first question
+  if (typeof brain.hidden === 'boolean' && brain.hidden !== S.hideMoney()) setHide(brain.hidden, false);
+  renderSugs(); renderBrainPanel(); renderMore();
 });
 function renderSugs() {
-  let s = null;
-  try { s = brain.suggestions(); } catch (_) { s = null; }
+  let s = safe(() => brain.suggestions());
   if (!Array.isArray(s) || !s.length) s = builtinBrain.suggestions();
   $('#sugs').innerHTML = s.slice(0, 5).map((x) => `<button class="sug" type="button" data-say="${esc(x)}">${esc(x)}</button>`).join('');
 }
-async function think(text) {                           // the brain's answer; any error or a 25 s silence = the built-in answer
+async function think(text, voice) {                    // the brain's answer; any error or a 25 s silence = the built-in answer
   try {
-    const r = await within(Promise.resolve().then(() => brain.ask(text)), 25e3);
+    const r = await within(Promise.resolve().then(() => brain.ask(text, { voice: !!voice })), 25e3);
     if (r && typeof r.text === 'string' && r.text) return r;
   } catch (_) { /* fall through */ }
   return builtinBrain.ask(text);
+}
+const smartInfo = () => safe(() => brain.smart || null);
+const smartCapable = () => !brain.fallback && typeof brain.setSmart === 'function';
+function renderBrainPanel() {                          // CONNECT MY BRAIN: only when the brain can use a key and none is saved
+  const sm = smartInfo(), box = $('#brainp');
+  if (!smartCapable() || (sm && (sm.hasKey || sm.key)) || D.LS.get('jarvis.brainPanelOff', false)) { box.innerHTML = ''; return; }
+  box.innerHTML = '<section class="panel"><p class="ph"><span class="t">Connect my brain</span><i class="sdot warn"></i></p>'
+    + '<p class="muted">Smart answers use your own AI key. Paste it once; it stays only on this phone.</p>'
+    + '<form class="link-f" id="brainF" autocomplete="off"><input id="brainKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste key" aria-label="AI key"><button type="submit">Save</button></form>'
+    + '<div class="sheet-row"><button class="btn ghost" type="button" id="brainNo">Not now</button></div></section>';
+  $('#brainF').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const key = $('#brainKey').value.trim(); if (!key) return;
+    safe(() => brain.setSmart({ key, on: true }));
+    $('#brainKey').value = ''; renderBrainPanel(); renderMore(); toast('Smart mode is on. The key stays on this phone.', 'AI KEY');
+  });
+  $('#brainNo').addEventListener('click', () => { D.LS.set('jarvis.brainPanelOff', true); renderBrainPanel(); });
+}
+
+// ------------------------------------------------------------------ the brain's control replies: stop, mute / unmute, hide / show balances
+function setHide(on, tellBrain = true) {
+  rawSet('jarvis.hide', on ? '1' : '0');
+  root.classList.toggle('money-hidden', !!on);
+  // the brain keeps its own switch (it masks numbers in its answers): tell it when the change did not come from it
+  if (tellBrain && !brain.fallback && typeof brain.hidden === 'boolean' && brain.hidden !== !!on) safe(() => brain.ask(on ? 'hide my balance' : 'show my balance'));
+  renderMore();
+}
+function control(c) {                                  // -> true when the reply must not be read out loud
+  if (c === 'stop') { hush(); stopListening(); if (handsFree) setHandsFree(false); setState('idle'); return true; }
+  if (c === 'mute') { D.LS.set('jarvis.mute', true); hush(); setState('idle'); return true; }
+  if (c === 'unmute') { D.LS.set('jarvis.mute', false); return false; }
+  if (c === 'hide_balance') { setHide(true, false); return false; }
+  if (c === 'show_balance') { setHide(false, false); return false; }
+  return false;
 }
 
 // ------------------------------------------------------------------ the conversation
@@ -464,155 +875,550 @@ const say = (who, text) => {
   while (t.children.length > 8) t.removeChild(t.firstChild);
   return m;
 };
+function genericCard(card) {                          // a card as text: the jarvis.json shape ({status: {level, label}, kpis, lines}) or {level, status, kv, text}
+  if (!card || typeof card !== 'object') return '';
+  const so = card.status && typeof card.status === 'object' ? card.status : null;
+  const lv = so ? so.level : card.level, lvl = ['ok', 'warn', 'bad'].includes(lv) ? lv : '';
+  const label = so ? so.label : card.status || card.label;
+  const rows = Array.isArray(card.kpis) ? card.kpis : Array.isArray(card.kv) ? card.kv : Array.isArray(card.rows) ? card.rows : [];
+  const lines = Array.isArray(card.lines) ? card.lines : card.text ? [card.text] : [];
+  return `${label ? `<span class="pill ${lvl}">${esc(label)}</span>` : ''}`
+    + (rows.length ? `<div class="kv">${rows.slice(0, 3).map((r) => `<div><span>${esc(Array.isArray(r) ? r[0] : r.label)}</span><strong>${esc(Array.isArray(r) ? r[1] : r.value)}</strong></div>`).join('')}</div>` : '')
+    + lines.slice(0, 3).map((l) => `<p class="muted">${esc(l)}</p>`).join('');
+}
 function sayCards(cards) {
   if (!Array.isArray(cards) || !cards.length) return;
   const box = document.createElement('div'); box.className = 'msg-cards';
-  box.innerHTML = cards.slice(0, 4).map((c) => typeof c === 'string' ? `<div class="card"><p class="muted">${esc(c)}</p></div>`
-    : `<div class="card">${c.title ? `<div class="card-h"><div><b>${esc(c.title)}</b>${c.sub ? `<small>${esc(c.sub)}</small>` : ''}</div></div>` : ''}${genericCard(c)}</div>`).join('');
+  box.innerHTML = cards.slice(0, 4).map((c) => typeof c === 'string' ? `<div class="panel"><p class="muted">${esc(c)}</p></div>`
+    : `<div class="panel">${c.title ? `<p class="ph"><span class="t">${esc(c.title)}</span></p>${c.sub ? `<p class="muted">${esc(c.sub)}</p>` : ''}` : ''}${genericCard(c)}</div>`).join('');
   $('#talk').appendChild(box);
   while ($('#talk').children.length > 8) $('#talk').removeChild($('#talk').firstChild);
 }
-function speak(text) {
-  if (!S.voice() || !('speechSynthesis' in window)) return;
-  try {
-    const u = new SpeechSynthesisUtterance(String(text).replace(/\n/g, '. ')); u.rate = 1.03;
-    u.onend = u.onerror = () => setCore('idle');
-    speechSynthesis.cancel(); setCore('speaking'); speechSynthesis.speak(u);
-  } catch (_) { setCore('idle'); }
-}
+function headline(text) { const t = String(text || '').split('\n')[0]; return t.length > 160 ? t.slice(0, 157) + '…' : t; }
 async function ask(text, voice = false) {
   const t = String(text || '').trim();
   if (!t) return;
   say('me', t);
-  setCore('thinking');
+  setState('thinking'); sfx('tap');
   // nothing loaded yet for what is asked: fetch it first (an answer from data that is still loading would be wrong)
   const F = D.getFacts();
   if (/\bkalshi\b/i.test(t) && !F.kalshi) await D.refreshKalshi();
   else if (/\b(bot|bots|room|target|p&l|pnl|profit|status|zlarior|atlas|blitz)\b/i.test(t) && !(F.live && !F.live.cached)) await within(D.refreshLive(), 9000);
+  else if (/\b(bitcoin|btc|ethereum|eth|solana|crypto)\b/i.test(t) && !F.extras.crypto) await within(D.refreshCrypto(), 6000);
   else await new Promise((ok) => setTimeout(ok, 220));
-  const r = await think(t);
+  const r = await think(t, voice);
   say('j', r.text);
+  $('#says').textContent = headline(r.text);
   sayCards(r.cards);
-  if (voice) speak(r.speak || r.text); else setCore('idle');
-  if (r.open) openSoon(r.open);
+  sfx('answer');
+  logAct(`Asked: ${t}`);
+  const quiet = r.control ? control(r.control) : false;
+  if (!quiet && (voice || S.speakAll())) speak(r.speak || r.text, voice); else setState('idle');
+  if (r.open) openSoon(r.route && typeof r.open === 'string' ? { id: r.open, route: r.route } : r.open);
+}
+async function briefing() {
+  setState('thinking');
+  let r = null;
+  try { r = await within(Promise.resolve().then(() => brain.briefing()), 20e3); } catch (_) { r = null; }
+  if (!r || !r.text) r = await builtinBrain.briefing();
+  say('j', r.text); $('#says').textContent = headline(r.text);
+  D.LS.set('jarvis.briefDay', D.ymd(new Date()));
+  logAct('Briefing');
+  if (S.voice()) speak(r.speak || r.text, true); else setState('idle');
 }
 $('#ask').addEventListener('submit', (e) => { e.preventDefault(); const q = $('#q'); ask(q.value); q.value = ''; });
 
-// voice: the phone's own speech recognition when it has one
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-let rec = null;
-function setupMic() { $('#mic').hidden = !(SR && S.voice()); }
-$('#mic').addEventListener('click', () => {
-  if (!SR) return;
-  const mic = $('#mic');
-  if (rec) { try { rec.stop(); } catch (_) { /* already stopped */ } return; }
+// ------------------------------------------------------------------ voice out: the phone's own voice (Ava, then Samantha), rate 1.06, pitch 1.1
+let voices = [];
+function loadVoices() { voices = safe(() => speechSynthesis.getVoices() || [], []); }
+function pickVoice() {
+  const want = S.vcfg().voice, en = voices.filter((v) => /^en(-|_|$)/i.test(v.lang || ''));
+  return (want && voices.find((v) => v.name === want)) || en.find((v) => /ava/i.test(v.name) && /en.?US/i.test(v.lang)) || en.find((v) => /ava/i.test(v.name))
+    || en.find((v) => /samantha/i.test(v.name)) || en.find((v) => /en.?US/i.test(v.lang)) || en[0] || null;
+}
+if ('speechSynthesis' in window) { loadVoices(); try { speechSynthesis.addEventListener('voiceschanged', loadVoices); } catch (_) { speechSynthesis.onvoiceschanged = loadVoices; } }
+let lvlT = 0;
+function levelPulse(on) {                               // the voice bars and the core's level while Jarvis listens or speaks
+  clearInterval(lvlT);
+  const bars = $('#vbars').children;
+  if (!on) { for (const b of bars) b.style.height = '4px'; setLevel(0); return; }
+  lvlT = setInterval(() => {
+    if (!visible()) return;
+    let sum = 0;
+    for (let i = 0; i < bars.length; i++) { const h = 4 + Math.round(Math.random() * Math.random() * 26 * (1 - Math.abs(i - bars.length / 2) / (bars.length / 1.6))); bars[i].style.height = h + 'px'; sum += h; }
+    setLevel(Math.min(1, sum / bars.length / 16));
+  }, 90);
+}
+function speak(text, fromVoice) {
+  if (!S.voice() || S.muted() || !('speechSynthesis' in window)) { setState('idle'); return; }
   try {
-    rec = new SR(); rec.lang = 'en-US'; rec.interimResults = false; rec.maxAlternatives = 1;
-    rec.onresult = (e) => { const t = e.results && e.results[0] && e.results[0][0] ? e.results[0][0].transcript : ''; if (t) ask(t, true); };
-    rec.onend = () => { rec = null; mic.classList.remove('on'); if (coreState === 'listening') setCore('idle'); };
-    rec.onerror = () => { rec = null; mic.classList.remove('on'); setCore('idle'); };
-    mic.classList.add('on'); setCore('listening'); rec.start();
-  } catch (_) { rec = null; mic.classList.remove('on'); setCore('idle'); say('j', 'Voice is not available here. Type instead.'); }
-});
+    const cfg = S.vcfg(), u = new SpeechSynthesisUtterance(String(text).replace(/\n/g, '. '));
+    const v = pickVoice(); if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-US';
+    u.rate = +cfg.rate || 1.06; u.pitch = +cfg.pitch || 1.1;
+    u.onend = u.onerror = () => { speaking = false; levelPulse(false); setState('idle'); if (handsFree && fromVoice) setTimeout(() => listen('hf'), 350); };
+    speechSynthesis.cancel(); speaking = true; setState('speaking'); levelPulse(true); speechSynthesis.speak(u);
+  } catch (_) { speaking = false; setState('idle'); }
+}
+function hush() { safe(() => speechSynthesis.cancel()); speaking = false; levelPulse(false); }
 
-// ------------------------------------------------------------------ add / remove dashboards (apps.js, else kept on this phone)
+// ------------------------------------------------------------------ voice in: tap, hands-free (while Jarvis is open) and hold-to-talk
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, handsFree = false, heard = '';
+function micUI(on) { for (const id of ['#mic', '#bigmic']) $(id).classList.toggle('on', on); }
+function setupMic() {
+  const on = !!(SR && S.voice());
+  $('#mic').hidden = !S.voice(); $('#bigmic').disabled = !S.voice(); $('#hf').disabled = !on;
+  $('#hint').textContent = !S.voice() ? 'Voice is off. Turn it on under ⋯ → AI key.' : SR ? 'Tap the big mic once, then just talk. Hold it for push-to-talk.' : 'Voice input is not available in this browser: type below. Answers can still be read out loud.';
+}
+function stopListening() { if (rec) safe(() => rec.abort()); rec = null; listening = false; micUI(false); levelPulse(false); if (state === 'listening') setState('idle'); }
+function listen(mode) {                                 // mode: tap | hold | hf
+  if (!SR) { say('j', 'Voice input is not available here. Type instead; I can still read answers out loud.'); return; }
+  if (!S.voice() || active !== 'home' || !visible()) return;
+  if (rec) return;
+  hush();
+  heard = '';
+  try {
+    rec = new SR(); rec.lang = 'en-US'; rec.maxAlternatives = 1; rec.continuous = mode === 'hold'; rec.interimResults = mode === 'hold';
+    rec.onresult = (e) => {
+      let fin = '';
+      for (let i = 0; i < e.results.length; i++) if (e.results[i].isFinal && e.results[i][0]) fin += e.results[i][0].transcript + ' ';
+      heard = fin.trim() || heard;
+      if (mode !== 'hold' && heard) { const t = heard; heard = ''; safe(() => rec.stop()); ask(t, true); }
+    };
+    rec.onend = () => {
+      rec = null; listening = false; micUI(false); levelPulse(false);
+      if (mode === 'hold' && heard) { const t = heard; heard = ''; ask(t, true); return; }
+      if (state === 'listening') setState('idle');
+      if (mode === 'hf' && handsFree && !speaking && state === 'idle') setTimeout(() => listen('hf'), 600);
+    };
+    rec.onerror = (ev) => { if (ev && (ev.error === 'not-allowed' || ev.error === 'service-not-allowed')) { setHandsFree(false); say('j', 'The microphone is blocked. Allow it for this site in Settings, then try again.'); } };
+    rec.start(); listening = true; micUI(true); setState('listening'); levelPulse(true); sfx('listen');
+  } catch (_) { rec = null; listening = false; micUI(false); setState('idle'); }
+}
+function setHandsFree(on) {
+  handsFree = !!on && !!SR;
+  $('#hf').classList.toggle('on', handsFree); $('#hf').setAttribute('aria-pressed', String(handsFree));
+  if (handsFree) { logAct('Hands-free on'); listen('hf'); } else stopListening();
+}
+$('#hf').addEventListener('click', () => setHandsFree(!handsFree));
+$('#vset').addEventListener('click', () => openVoice());
+for (const id of ['#bigmic', '#mic']) {                  // tap = one question; hold (0.35 s) = push-to-talk until let go
+  const b = $(id);
+  let holdT = 0, held = false;
+  b.addEventListener('pointerdown', (e) => {
+    if (e.button > 0) return;
+    held = false;
+    if (!S.hold() || !SR) return;
+    holdT = setTimeout(() => { held = true; stopListening(); listen('hold'); }, 350);
+  });
+  const up = () => { clearTimeout(holdT); if (held && rec) safe(() => rec.stop()); };
+  b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up); b.addEventListener('pointerleave', up);
+  b.addEventListener('click', (e) => { e.preventDefault(); if (held) { held = false; return; } if (rec) { stopListening(); return; } if (speaking) { hush(); setState('idle'); return; } listen('tap'); });
+  b.addEventListener('contextmenu', (e) => e.preventDefault());
+}
+$('#stage').addEventListener('click', () => { if (speaking) { hush(); setState('idle'); return; } if (rec) { stopListening(); return; } listen('tap'); });
+$('#stage').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#stage').click(); } });
+
+// ------------------------------------------------------------------ the ⋯ menu (pill keys), the command palette, toasts
+function moreKeys() {
+  const fxl = root.dataset.fx, sm = smartInfo();
+  return [
+    ['core', 'Core'], ['full', 'Full screen'], ['theme', 'Theme'],
+    ['aikey', `AI key${sm && sm.on ? ': on' : ''}`, sm && sm.on], ['hold', 'Hold-to-talk', S.hold()], ['fx', `3D: ${fxl}`, fxl !== 'off'],
+    ['tilt', `Tilt ${S.tilt() ? 'on' : 'off'}`, S.tilt()], ['alerts', 'Alerts'], ['sound', `Sound ${S.sound() ? 'on' : 'off'}`, S.sound()],
+    ['hide', S.hideMoney() ? 'Show $' : 'Hide $', S.hideMoney()], ['brief', 'Briefing'], ['apps', 'Apps'],
+  ];
+}
+function renderMore() { $('#more').innerHTML = moreKeys().map(([k, label, on]) => `<button class="key${on ? ' on' : ''}" type="button" data-key="${k}">${esc(label)}</button>`).join(''); }
+function closeMore() { $('#more').hidden = true; $('#dock').classList.remove('open'); $('#moreB').setAttribute('aria-expanded', 'false'); }
+$('#moreB').addEventListener('click', () => {
+  const open = $('#more').hidden;
+  if (open) renderMore();
+  $('#more').hidden = !open; $('#dock').classList.toggle('open', open); $('#moreB').setAttribute('aria-expanded', String(open));
+});
+async function moreKey(k) {
+  if (k === 'core') { const i = CORE_DESIGNS.findIndex((x) => x[0] === coreDesign()), n = CORE_DESIGNS[(i + 1) % CORE_DESIGNS.length]; setCoreDesign(n[0]); toast(`Core: ${n[1]}`, 'CORE'); }
+  else if (k === 'full') {
+    const standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone;
+    if (standalone) toast('Jarvis is already full screen as a Home Screen app.', 'FULL SCREEN');
+    else if (document.documentElement.requestFullscreen) { try { await document.documentElement.requestFullscreen(); } catch (_) { toast('Full screen is not allowed here.', 'FULL SCREEN'); } }
+    else toast('On iPhone: Share, then Add to Home Screen, for full screen Jarvis.', 'FULL SCREEN');
+  }
+  else if (k === 'theme') openLook();
+  else if (k === 'aikey' || k === 'apps') openSettings(k === 'apps');
+  else if (k === 'hold') { D.LS.set('jarvis.hold', !S.hold()); renderMore(); }
+  else if (k === 'fx') { const order = ['ultra', 'high', 'low', 'off'], i = order.indexOf(root.dataset.fx); setFx(order[(i + 1) % order.length]); }
+  else if (k === 'tilt') await setTilt(!S.tilt());
+  else if (k === 'alerts') { closeMore(); show('zenith', { route: 'alerts' }); }
+  else if (k === 'sound') { D.LS.set('jarvis.sound', !S.sound()); renderMore(); sfx('tap'); }
+  else if (k === 'hide') setHide(!S.hideMoney());
+  else if (k === 'brief') { closeMore(); briefing(); }
+  if (['theme', 'aikey', 'apps', 'alerts', 'brief'].includes(k)) closeMore();
+}
+let toastT = 0;
+function toast(text, label = 'INFO', action) {
+  let el = $('#toast');
+  if (!el) { el = document.createElement('div'); el.id = 'toast'; el.className = 'toast'; el.setAttribute('role', 'status'); document.body.appendChild(el); }
+  el.innerHTML = `<span class="ti">i</span><div class="tm"><small>${esc(label)} · ${esc(D.clock())}</small>${esc(text)}</div>${action ? `<button class="btn" type="button" id="toastA">${esc(action[0])}</button>` : ''}`;
+  el.hidden = false;
+  if (action) $('#toastA').onclick = () => { el.hidden = true; action[1](); };
+  el.onclick = (e) => { if (!e.target.closest('#toastA')) el.hidden = true; };
+  clearTimeout(toastT); toastT = setTimeout(() => { el.hidden = true; }, action ? 12000 : 5000);
+}
+function paletteItems() {
+  const items = apps().map((a) => ({ label: `Open ${a.name}`, tag: 'mode', run: () => show(a.id) }));
+  items.push({ label: 'Briefing', tag: 'jarvis', run: () => briefing() });
+  for (const t of THEMES) items.push({ label: `Theme: ${t[1]}`, tag: 'look', run: () => setTheme(t[0]) });
+  for (const c of CORE_DESIGNS) items.push({ label: `Core: ${c[1]}`, tag: 'look', run: () => setCoreDesign(c[0]) });
+  for (const l of ['ultra', 'high', 'low', 'off']) items.push({ label: `3D effects: ${l}`, tag: 'look', run: () => setFx(l) });
+  items.push({ label: 'Voice settings', tag: 'voice', run: () => openVoice() }, { label: 'AI key · smart mode', tag: 'brain', run: () => openSettings() },
+    { label: 'Add a dashboard', tag: 'apps', run: () => openSheet() }, { label: S.hideMoney() ? 'Show balances' : 'Hide balances', tag: 'privacy', run: () => moreKey('hide') },
+    { label: 'Hands-free on / off', tag: 'voice', run: () => setHandsFree(!handsFree) });
+  const sug = safe(() => brain.suggestions(), []);
+  for (const s of (Array.isArray(sug) ? sug : []).concat(builtinBrain.suggestions())) items.push({ label: `Ask: ${s}`, tag: 'ask', run: () => ask(s) });
+  return items;
+}
+let palItems = [];
+function renderPalette() {
+  const q = $('#palQ').value.trim().toLowerCase(), all = paletteItems();
+  palItems = (q ? all.filter((x) => x.label.toLowerCase().includes(q)) : all).slice(0, 40);
+  if (q) palItems.push({ label: `Ask Jarvis: “${$('#palQ').value.trim()}”`, tag: 'ask', run: () => ask($('#palQ').value.trim()) });
+  $('#palList').innerHTML = palItems.map((x, i) => `<button type="button" data-pal="${i}"${i === 0 ? ' class="hl"' : ''}>${esc(x.label)}<small>${esc(x.tag)}</small></button>`).join('');
+}
+function openPalette() { closeSheets(); closeMore(); $('#palQ').value = ''; renderPalette(); $('#palette').hidden = false; setTimeout(() => $('#palQ').focus(), 40); }
+$('#fab').addEventListener('click', openPalette);
+$('#palQ').addEventListener('input', renderPalette);
+$('#palF').addEventListener('submit', (e) => { e.preventDefault(); const x = palItems[0]; $('#palette').hidden = true; if (x) x.run(); });
+$('#palList').addEventListener('click', (e) => { const b = e.target.closest('[data-pal]'); if (!b) return; const x = palItems[+b.dataset.pal]; $('#palette').hidden = true; if (x) x.run(); });
+
+// ------------------------------------------------------------------ sheets: add / remove dashboards, settings (AI key), look, voice
 const appsApi = () => mods.apps || D.fallbackApps;
+function closeSheets() { for (const id of ['#sheet', '#settings', '#look', '#voice', '#palette']) $(id).hidden = true; }
+const removable = (a) => a.removable === true || (a.removable === undefined && a.extra === true);
 function renderMine(el) {
-  const rows = D.listApps().filter((a) => !a.builtIn && (a.extra || a.removable || !['zenith', 'planner', 'kalshi'].includes(a.id)));
+  const rows = D.listApps().filter(removable);
   const links = D.LS.get('jarvis.links', {}) || {};
-  const linked = Object.keys(links).filter((id) => links[id] && ['zenith', 'planner', 'kalshi'].includes(id) && !rows.find((r) => r.id === id)).map((id) => ({ id, name: (byId(id) || { name: id }).name, url: links[id] }));
+  const linked = mods.apps ? [] : Object.keys(links).filter((id) => links[id] && BUILTIN_IDS.includes(id) && !rows.find((r) => r.id === id)).map((id) => ({ id, name: (byId(id) || { name: id }).name, url: links[id] }));
   el.innerHTML = [...linked, ...rows].map((r) => `<div><b>${esc(r.name)}</b><span>${esc(r.url || '')}</span><button type="button" data-rm="${esc(r.id)}">Remove</button></div>`).join('')
     || '<p class="note">Zenith, Planner and Kalshi are built in. Add any other dashboard with its link.</p>';
 }
 function renderSettingsApps() { if (!$('#settings').hidden) renderMine($('#setApps')); if (!$('#sheet').hidden) renderMine($('#mine')); }
-function openSheet() { $('#settings').hidden = true; $('#addErr').textContent = ''; renderMine($('#mine')); $('#sheet').hidden = false; setTimeout(() => $('#addName').focus(), 30); }
+function openSheet() {
+  closeSheets(); closeMore();
+  $('#addErr').textContent = ''; renderMine($('#mine'));
+  const A = mods.apps;
+  $('#ascRow').hidden = !(A && typeof A.ascendSlot === 'function' && !safe(() => A.ascendSlot().enabled, true));
+  $('#addName').placeholder = A ? 'Name (optional)' : 'Clipper';
+  $('#sheet').hidden = false; setTimeout(() => $('#addName').focus(), 30);
+}
 async function removeApp(id) {
+  // only through the apps module when it is here (apps.js keeps its own registry in step with the older keys)
   try { await appsApi().removeApp(id); } catch (_) { /* nothing to remove */ }
-  if (appsApi() !== D.fallbackApps) D.fallbackApps.removeApp(id);   // a link pasted before apps.js existed
+  delete statusCards[id];
   if (frames[id]) { frames[id].remove(); delete frames[id]; }
   if (active === id) show('home');
   renderSettingsApps(); renderBar(); renderCards();
 }
+function added(app, label) {
+  $('#addName').value = ''; $('#addUrl').value = ''; $('#sheet').hidden = true;
+  statusAt = 0; renderBar(); renderCards(); refreshStatusCards();
+  logAct(`Added ${label || (app && app.name) || 'a dashboard'}`);
+  if (app && app.id) show(app.id);
+}
 $('#addX').addEventListener('click', () => { $('#sheet').hidden = true; });
-for (const sh of ['#sheet', '#settings']) $(sh).addEventListener('click', (e) => {
+for (const sh of ['#sheet', '#settings', '#look', '#voice', '#palette']) $(sh).addEventListener('click', (e) => {
   if (e.target === $(sh)) $(sh).hidden = true;
   const rm = e.target.closest('[data-rm]');
   if (rm) removeApp(rm.dataset.rm);
 });
 $('#addF').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const name = $('#addName').value.trim().slice(0, 24), url = D.okUrl($('#addUrl').value.trim());
-  if (!name) { $('#addErr').textContent = 'Give it a name.'; return; }
-  if (!url) { $('#addErr').textContent = 'Paste a full link that starts with https://'; return; }
-  let added = null;
-  try { added = await appsApi().addApp({ name, url }); } catch (err) { $('#addErr').textContent = String((err && err.message) || 'Could not add it.'); return; }
-  const id = (added && added.id) || (D.listApps().find((a) => a.name === name) || {}).id;
-  $('#addName').value = ''; $('#addUrl').value = '';
-  $('#sheet').hidden = true; renderBar(); renderCards();
-  if (id) show(id);
+  const A = mods.apps, name = $('#addName').value.trim().slice(0, 24), link = $('#addUrl').value.trim();
+  let r = null;
+  if (A) r = safe(() => A.addApp({ name, url: link }), { ok: false, error: 'Could not add it.' });   // apps.js checks the link itself
+  else {
+    if (!name) { $('#addErr').textContent = 'Give it a name.'; return; }
+    const url = D.okUrl(link);
+    if (!url) { $('#addErr').textContent = 'Paste a full link that starts with https://'; return; }
+    try { r = { ok: true, app: D.fallbackApps.addApp({ name, url }) }; } catch (err) { r = { ok: false, error: String((err && err.message) || 'Could not add it.') }; }
+  }
+  if (!r || r.ok === false) { $('#addErr').textContent = (r && r.error) || 'Could not add it.'; return; }
+  added(r.app, name);
 });
-
-// ------------------------------------------------------------------ settings: voice, smart mode (own key, this phone only), apps
-function smartInfo() { try { return brain.smart || null; } catch (_) { return null; } }
-function openSettings() {
-  $('#sheet').hidden = true;
+$('#addAscend').addEventListener('click', async () => {
+  const A = mods.apps, b = $('#addAscend');
+  if (!A || typeof A.findAscend !== 'function') return;
+  b.disabled = true; b.textContent = 'Looking for Ascend…';
+  let r = null;
+  try { r = await A.findAscend(); } catch (_) { r = null; }
+  b.disabled = false; b.textContent = 'Add Ascend';
+  if (r && r.ok && r.app) { added(r.app, 'Ascend'); return; }
+  $('#addName').value = 'Ascend'; $('#addErr').textContent = (r && r.error) || 'Ascend is not on this site yet. Paste its link instead.';
+  $('#addUrl').focus();
+});
+const PROV_NAME = { groq: 'Groq', gemini: 'Gemini', anthropic: 'Anthropic' };
+let depthSel = 'auto';
+function markDepth() { for (const b of $('#setDepth').children) b.setAttribute('aria-pressed', String(b.dataset.depth === depthSel)); }
+function smartLine(sm) {                               // brain.smart, as words: "Groq · openai/gpt-oss-120b · depth think · on"
+  if (!sm || !sm.provider) return '';
+  const keys = sm.keys ? Object.keys(sm.keys).filter((k) => sm.keys[k]).map((k) => PROV_NAME[k] || k) : [];
+  return `${PROV_NAME[sm.provider] || sm.provider}${sm.model ? ' · ' + sm.model : ''}${sm.depth ? ' · depth ' + sm.depth : ''} · ${sm.active ? 'on' : sm.on ? 'on, needs a key' : 'off'}${keys.length ? ' · keys saved: ' + keys.join(', ') : ''}`;
+}
+function openSettings(appsFirst) {
+  closeSheets(); closeMore();
   $('#setVoice').checked = S.voice();
-  const sm = smartInfo(), can = !brain.fallback && typeof brain.setSmart === 'function';
+  const sm = smartInfo(), can = smartCapable();
+  for (const id of ['#setSmart', '#setKey', '#setModel', '#setForget', '#setProv']) $(id).disabled = !can;
+  for (const b of $('#setDepth').children) b.disabled = !can;
   $('#setSmart').checked = !!(sm && sm.on);
-  $('#setSmart').disabled = !can; $('#setKey').disabled = !can; $('#setModel').disabled = !can; $('#setForget').disabled = !can;
+  $('#setProv').value = (sm && PROV_NAME[sm.provider] && sm.provider) || 'groq';
+  depthSel = (sm && sm.depth) || 'auto'; markDepth();
   $('#setKey').value = ''; $('#setModel').value = (sm && sm.model) || '';
   $('#smartState').textContent = !can ? 'Smart mode comes with the new Jarvis brain; this copy answers with its built-in rules.'
-    : sm && (sm.hasKey || sm.key) ? 'A key is saved on this phone. Paste a new one to replace it.' : 'No key saved yet.';
-  const st = (n) => root.dataset[n] === 'module' || mods[n] ? 'on' : 'built-in fallback';
-  $('#modNote').textContent = `Parts: brain ${st('brain')} · centerpiece ${st('core')} · apps ${st('apps')} · Zenith mode ${st('zenith')}`;
+    : (sm && (sm.hasKey || sm.key) ? 'A key is saved on this phone. Paste a new one to replace it.' : 'No key saved yet.') + (smartLine(sm) ? ' ' + smartLine(sm) + '.' : '');
+  const st = (n) => (root.dataset[n] === 'module' ? 'on' : 'built-in fallback');
+  $('#modNote').textContent = `Parts: brain ${st('brain')} · core ${st('core')} · apps ${st('apps')} · Zenith mode ${st('zenith')}`;
   renderMine($('#setApps'));
   $('#settings').hidden = false;
+  if (appsFirst) setTimeout(() => $('#setApps').scrollIntoView({ block: 'center' }), 40);
 }
 $('#setX').addEventListener('click', () => { $('#settings').hidden = true; });
 $('#setAdd').addEventListener('click', () => openSheet());
 $('#setForget').addEventListener('click', () => {
-  try { brain.setSmart({ key: '', on: false }); } catch (_) { /* nothing saved */ }
-  $('#setSmart').checked = false; $('#smartState').textContent = 'Key removed from this phone.';
+  safe(() => (typeof brain.forgetKey === 'function' ? brain.forgetKey() : brain.setSmart({ key: '', on: false })));
+  $('#setSmart').checked = false; $('#smartState').textContent = 'Keys removed from this phone.'; renderBrainPanel(); renderMore();
+});
+$('#setDepth').addEventListener('click', (e) => { const b = e.target.closest('[data-depth]'); if (b && !b.disabled) { depthSel = b.dataset.depth; markDepth(); } });
+$('#setProv').addEventListener('change', () => { $('#setModel').value = ''; });
+$('#setKey').addEventListener('input', () => {        // the provider follows the key: gsk_ Groq, AIza Gemini, sk-ant- Anthropic
+  const k = $('#setKey').value.trim(), g = /^gsk_/.test(k) ? 'groq' : /^AIza/.test(k) ? 'gemini' : /^sk-ant-/.test(k) ? 'anthropic' : '';
+  if (g && $('#setProv').value !== g) { $('#setProv').value = g; $('#setModel').value = ''; }
 });
 $('#setF').addEventListener('submit', (e) => {
   e.preventDefault();
   D.LS.set('jarvis.voice', $('#setVoice').checked);
   setupMic();
-  if (!brain.fallback && typeof brain.setSmart === 'function') {
-    const opt = { on: $('#setSmart').checked };
+  if (smartCapable()) {
     const key = $('#setKey').value.trim(), model = $('#setModel').value.trim();
+    const opt = { on: $('#setSmart').checked || !!key, provider: $('#setProv').value, depth: depthSel, model };
     if (key) opt.key = key;
-    if (model) opt.model = model;
-    try { brain.setSmart(opt); } catch (_) { /* the brain keeps its old setting */ }
+    safe(() => brain.setSmart(opt));                  // the key goes to the brain only; the shell keeps no copy
   }
   $('#setKey').value = '';
   $('#settings').hidden = true;
+  renderBrainPanel(); renderMore();
 });
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { $('#sheet').hidden = true; $('#settings').hidden = true; } });
+function renderLook() {
+  if ($('#look').hidden) return;
+  $('#themes').innerHTML = THEMES.map(([k, n, tag, a, b]) => `<button class="th" type="button" data-theme-k="${k}" aria-pressed="${root.dataset.theme === k}"><i style="background:${k === 'custom' ? 'conic-gradient(#f43f5e,#f59e0b,#22c55e,#06b6d4,#6366f1,#d946ef,#f43f5e)' : `radial-gradient(circle at 40% 38%, #fff 0 8%, ${a} 26%, ${b} 62%, #000 100%)`}"></i>${esc(n)}<small>${esc(tag)}</small></button>`).join('');
+  for (const b of $('#fxSeg').children) b.setAttribute('aria-pressed', String(b.dataset.fx === root.dataset.fx));
+  $('#coreSeg').innerHTML = CORE_DESIGNS.map(([k, n]) => `<button type="button" data-core-k="${k}" aria-pressed="${coreDesign() === k}">${esc(n)}</button>`).join('');
+  $('#hue').value = String(+(D.LS.get('jcustom', { h: 275 }) || {}).h || 275);
+  $('#setSound').checked = S.sound(); $('#setTilt').checked = S.tilt();
+  $('#fxNote').textContent = root.dataset.fxAuto ? 'Jarvis lowered the effects to keep this phone smooth. Pick a level to override.' : 'High is the phone default. Low keeps the glass and stops the motion; Off is fully static.';
+}
+function openLook() { closeSheets(); closeMore(); $('#look').hidden = false; renderLook(); }
+$('#lookX').addEventListener('click', () => { $('#look').hidden = true; });
+$('#themes').addEventListener('click', (e) => { const b = e.target.closest('[data-theme-k]'); if (b) setTheme(b.dataset.themeK); });
+$('#fxSeg').addEventListener('click', (e) => { const b = e.target.closest('[data-fx]'); if (b) setFx(b.dataset.fx); });
+$('#coreSeg').addEventListener('click', (e) => { const b = e.target.closest('[data-core-k]'); if (b) setCoreDesign(b.dataset.coreK); });
+$('#hue').addEventListener('input', () => { D.LS.set('jcustom', { h: +$('#hue').value }); if (root.dataset.theme !== 'custom') setTheme('custom'); else { applyCustom(); readColors(); if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(themeColors())); } });
+$('#setSound').addEventListener('change', () => { D.LS.set('jarvis.sound', $('#setSound').checked); sfx('tap'); renderMore(); });
+$('#setTilt').addEventListener('change', async () => { await setTilt($('#setTilt').checked); renderLook(); });
+function openVoice() {
+  closeSheets(); closeMore(); loadVoices();
+  const cfg = S.vcfg(), en = voices.filter((v) => /^en/i.test(v.lang || '')), cur = pickVoice();
+  $('#vVoice').innerHTML = `<option value="">Automatic${cur ? ' (' + esc(cur.name) + ')' : ''}</option>` + en.map((v) => `<option value="${esc(v.name)}"${cfg.voice === v.name ? ' selected' : ''}>${esc(v.name)} · ${esc(v.lang)}</option>`).join('');
+  $('#vRate').value = String(cfg.rate); $('#vPitch').value = String(cfg.pitch);
+  $('#vRateV').textContent = (+cfg.rate).toFixed(2); $('#vPitchV').textContent = (+cfg.pitch).toFixed(2);
+  $('#vAll').checked = S.speakAll(); $('#vHold').checked = S.hold();
+  $('#vNote').textContent = !('speechSynthesis' in window) ? 'This browser cannot speak.' : en.length ? 'The original voice (Ava) is used when the phone has it, then Samantha.' : 'No English voices loaded yet; they appear after the first answer.';
+  $('#voice').hidden = false;
+}
+function saveVoice() {
+  D.LS.set('jarvis.voiceCfg', { voice: $('#vVoice').value, rate: +$('#vRate').value, pitch: +$('#vPitch').value });
+  D.LS.set('jarvis.speakAll', $('#vAll').checked); D.LS.set('jarvis.hold', $('#vHold').checked);
+  $('#vRateV').textContent = (+$('#vRate').value).toFixed(2); $('#vPitchV').textContent = (+$('#vPitch').value).toFixed(2);
+  renderMore();
+}
+for (const id of ['#vVoice', '#vRate', '#vPitch', '#vAll', '#vHold']) $(id).addEventListener('input', saveVoice);
+$('#vTest').addEventListener('click', () => speak(`${D.greeting()}. All systems are online.`, false));
+$('#vX').addEventListener('click', () => { $('#voice').hidden = true; });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeSheets(); closeMore(); } });
 
-// ------------------------------------------------------------------ apps.js, when it is here
+// ------------------------------------------------------------------ tilt (off by default: nothing moves with the phone unless the owner turns it on)
+let tiltOn = false, tiltRaf = 0, tgx = 0, tgy = 0, cgx = 0, cgy = 0;
+function onOrient(e) { if (!tiltOn || e.gamma == null) return; tgx = Math.max(-1, Math.min(1, e.gamma / 30)); tgy = Math.max(-1, Math.min(1, ((e.beta || 45) - 45) / 30)); if (!tiltRaf) tiltRaf = requestAnimationFrame(tiltStep); }
+function tiltStep() {
+  tiltRaf = 0; cgx += (tgx - cgx) * .15; cgy += (tgy - cgy) * .15;
+  $('#stage').style.transform = tiltOn ? `perspective(800px) rotateY(${(cgx * 8).toFixed(2)}deg) rotateX(${(-cgy * 6).toFixed(2)}deg)` : '';
+  if (tiltOn && (Math.abs(tgx - cgx) > .002 || Math.abs(tgy - cgy) > .002)) tiltRaf = requestAnimationFrame(tiltStep);
+}
+async function setTilt(on) {
+  if (on) {
+    try { const DOE = window.DeviceOrientationEvent; if (DOE && typeof DOE.requestPermission === 'function' && (await DOE.requestPermission()) !== 'granted') { toast('Motion access was not allowed. iPhone: Settings, Safari, Motion & Orientation Access.', 'TILT'); on = false; } } catch (_) { on = false; }
+  }
+  rawSet('jp3dtilt', on ? '1' : '0'); tiltOn = on;
+  if (on) window.addEventListener('deviceorientation', onOrient, { passive: true }); else { window.removeEventListener('deviceorientation', onOrient); $('#stage').style.transform = ''; }
+  renderMore();
+}
+
+// ------------------------------------------------------------------ effects: stars, the hologram globe, tap ripples, scan sweeps, press glare, auto-low
+let COL = { cr: '168,85,247', cr3: '222,190,255' };
+const fx = (() => {
+  const starC = $('#stars'), globeC = $('#globe');
+  let raf = 0, last = 0, stars = [], frames = 0, t0 = 0, probe = true, dprS = 1;
+  const level = () => root.dataset.fx;
+  const fps = () => (level() === 'ultra' ? 30 : 24);
+  const nStars = () => (level() === 'ultra' ? 240 : level() === 'high' ? 150 : 110);
+  function sizeCanvas(c) { const r = c.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1); const w = Math.max(1, Math.round(r.width * d)), h = Math.max(1, Math.round(r.height * d)); if (c.width !== w || c.height !== h) { c.width = w; c.height = h; } return d; }
+  function makeStars() { stars = Array.from({ length: nStars() }, () => ({ x: Math.random(), y: Math.random(), r: Math.random() * 1.2 + .25, p: Math.random() * 6.28, s: .6 + Math.random() * 1.6, c: Math.random() < .3 })); }
+  function drawStars(t) {
+    const g = starC.getContext('2d'); if (!g) return;
+    const w = starC.width, h = starC.height, tw = level() === 'high' || level() === 'ultra';
+    g.clearRect(0, 0, w, h);
+    for (const s of stars) {
+      const a = tw ? .25 + .55 * (.5 + .5 * Math.sin(t * .001 * s.s + s.p)) : .45;
+      g.fillStyle = s.c ? `rgba(${COL.cr},${a})` : `rgba(255,255,255,${a * .8})`;
+      g.fillRect(s.x * w, s.y * h, s.r * dprS, s.r * dprS);
+    }
+  }
+  function drawGlobe(t) {
+    const g = globeC.getContext('2d'); if (!g) return;
+    const w = globeC.width, h = globeC.height, R = Math.min(w, h) * .4, cx = w / 2, cy = h / 2;
+    g.clearRect(0, 0, w, h);
+    const rot = (t * .00012) % (Math.PI * 2), tilt = .38, ct = Math.cos(tilt), st = Math.sin(tilt);
+    const proj = (lat, lon) => { const x = Math.cos(lat) * Math.sin(lon + rot), y = Math.sin(lat), z = Math.cos(lat) * Math.cos(lon + rot); return [cx + R * x, cy - R * (y * ct - z * st), y * st + z * ct]; };
+    g.lineWidth = Math.max(1, w / 520);
+    const line = (pts) => { for (let i = 1; i < pts.length; i++) { const a = pts[i - 1], b = pts[i]; g.strokeStyle = `rgba(${COL.cr},${(a[2] + b[2]) / 2 > 0 ? .34 : .08})`; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); } };
+    for (let m = 0; m < 10; m++) { const lon = m * Math.PI / 10, pts = []; for (let i = 0; i <= 32; i++) pts.push(proj(-Math.PI / 2 + i * Math.PI / 32, lon)); line(pts); }
+    for (let p = 1; p < 8; p++) { const lat = -Math.PI / 2 + p * Math.PI / 8, pts = []; for (let i = 0; i <= 40; i++) pts.push(proj(lat, i * Math.PI * 2 / 40)); line(pts); }
+    g.fillStyle = `rgba(${COL.cr3},.85)`;
+    for (let i = 0; i < 9; i++) { const q = proj(Math.sin(i * 1.7) * 1.1, i * .7); if (q[2] > 0) { g.beginPath(); g.arc(q[0], q[1], 1.6 * (w / 400), 0, 6.283); g.fill(); } }
+    g.strokeStyle = `rgba(${COL.cr},.28)`; g.beginPath(); g.ellipse(cx, cy, R * 1.18, R * .32, -.32, 0, Math.PI * 2); g.stroke();
+  }
+  function frame(t) {
+    raf = 0;
+    if (active !== 'home' || !visible() || level() === 'off') return;
+    // 3 s after the start, 2.5 s of frames: a phone that cannot keep up gets the static look (not while the 3D core runs:
+    // it steps itself down, and loading it would read as a slow phone)
+    if (probe && !core && performance.now() > 3000) {
+      if (!t0) t0 = t;
+      frames++;
+      if (t - t0 > 2500) {
+        probe = false;
+        if (frames / ((t - t0) / 1000) < 18 && (level() === 'high' || level() === 'ultra') && !root.dataset.fxSet) {
+          root.dataset.fxAuto = '1'; setFx('low', false); toast('Effects lowered to keep Jarvis smooth on this phone. Change it under ⋯ → 3D.', '3D'); return;
+        }
+      }
+    }
+    if (t - last >= 1000 / fps()) { last = t; drawStars(t); if (!core) drawGlobe(t); }
+    if (level() === 'high' || level() === 'ultra') raf = requestAnimationFrame(frame);
+  }
+  function restart() {
+    cancelAnimationFrame(raf); raf = 0;
+    if (level() === 'off') { for (const c of [starC, globeC]) { const g = c.getContext('2d'); if (g) g.clearRect(0, 0, c.width, c.height); } return; }
+    if (active !== 'home' || !visible()) return;
+    dprS = sizeCanvas(starC); sizeCanvas(globeC);
+    if (stars.length !== nStars()) makeStars();
+    if (level() === 'low') { drawStars(0); if (!core) drawGlobe(0); return; }          // static glass: one still frame
+    raf = requestAnimationFrame(frame);
+  }
+  // a scan sweep the first time a panel comes into view; a glare under the finger while a panel is pressed
+  const seen = new WeakSet();
+  const io = 'IntersectionObserver' in window ? new IntersectionObserver((es) => {
+    for (const e of es) if (e.isIntersecting && !seen.has(e.target)) {
+      seen.add(e.target);
+      if (level() === 'high' || level() === 'ultra') { const s = document.createElement('i'); s.className = 'sweep'; e.target.appendChild(s); setTimeout(() => s.remove(), 1000); }
+    }
+  }, { threshold: .3 }) : null;
+  function adopt() {
+    for (const p of document.querySelectorAll('#home .panel, #home .jx-card')) {
+      if (p.dataset.fxa) continue; p.dataset.fxa = '1';
+      if (io) io.observe(p);
+      const gl = document.createElement('i'); gl.className = 'glare'; p.appendChild(gl);
+    }
+  }
+  document.addEventListener('pointerdown', (e) => {
+    const p = e.target.closest && e.target.closest('#home .panel, #home .jx-card');
+    if (p && level() !== 'off') { const r = p.getBoundingClientRect(); p.style.setProperty('--gx', ((e.clientX - r.left) / r.width * 100).toFixed(1) + '%'); p.style.setProperty('--gy', ((e.clientY - r.top) / r.height * 100).toFixed(1) + '%'); p.classList.add('pressed'); }
+    if (level() !== 'high' && level() !== 'ultra') return;
+    const b = e.target.closest && e.target.closest('button,.kbox,[role=button]');
+    if (!b) return;
+    for (const c of ['', ' b']) { const w = document.createElement('i'); w.className = 'tapr' + c; w.style.left = e.clientX + 'px'; w.style.top = e.clientY + 'px'; document.body.appendChild(w); setTimeout(() => w.remove(), 950); }
+  }, { passive: true, capture: true });
+  const unpress = () => { for (const p of document.querySelectorAll('.pressed')) p.classList.remove('pressed'); };
+  document.addEventListener('pointerup', unpress, { passive: true }); document.addEventListener('pointercancel', unpress, { passive: true });
+  window.addEventListener('resize', () => restart(), { passive: true });
+  return { restart, adopt };
+})();
+function readColors() { const cs = getComputedStyle(root); COL = { cr: cs.getPropertyValue('--cr').trim() || '168,85,247', cr3: cs.getPropertyValue('--cr3').trim() || '222,190,255' }; fx.restart(); }
+
+// ------------------------------------------------------------------ the boot screen (once per launch, at most 1.2 s, tap to skip)
+function boot() {
+  const el = $('#bootfx');
+  if (!el) { bootEnd(); return; }
+  const quick = root.classList.contains('booted') || root.dataset.fx === 'off' || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches && !root.dataset.fxSet);
+  try { sessionStorage.setItem('jarvis.booted', '1'); } catch (_) { /* private mode */ }
+  if (quick) { el.remove(); bootEnd(); return; }
+  const lines = ['> CORE ............ ONLINE', '> ZENITH · NQ BOTS  LINKED', '> KALSHI FEED ..... STANDBY', '> PLANNER ......... SYNCED', '> VOICE ........... READY', 'ALL SYSTEMS NOMINAL'];
+  const log = $('#bootlog');
+  let i = 0, done = false;
+  const end = () => { if (done) return; done = true; el.classList.add('out'); setTimeout(() => { el.remove(); bootEnd(); }, 360); };
+  const step = () => { if (done) return; if (i < lines.length) { log.textContent += (i ? '\n' : '') + lines[i++]; setTimeout(step, 125); } else setTimeout(end, 60); };
+  el.addEventListener('click', end); sfx('open');
+  step();
+  setTimeout(end, 1200 - 360);                          // never longer than 1.2 s with the fade
+}
+
+// ------------------------------------------------------------------ apps.js, when it is here: its list, its cards, cards posted by open apps
 ready.apps.then((m) => {
   if (!m) return;
   D.setAppsSource(m); root.dataset.apps = 'module';
+  if (typeof m.listen === 'function') safe(() => m.listen(window, (card) => { if (card && card.app) { statusCards[card.app] = card; if (active === 'home') renderCards(); } }));
   renderBar(); if (active === 'home') { renderCards(); refreshStatusCards(); }
 });
 
 // ------------------------------------------------------------------ start
+$('#vbars').innerHTML = '<i></i>'.repeat(32);
+$('#orb').dataset.design = coreDesign();
+applyCustom(); readColors();
+root.classList.toggle('money-hidden', S.hideMoney());
+$('#says').textContent = `${D.greeting()}. Tap the core or type below to speak with me.`;
 greet();
 renderBar();
 renderSugs();
+renderMore();
 setupMic();
+if (S.tilt()) setTilt(true);
 if (location.hash) history.replaceState(null, '', location.pathname + location.search);
 show('home');
+boot();
 clearTimeout(window.__jarvisBoot); const bootNote = document.getElementById('boot'); if (bootNote) bootNote.remove();
 root.dataset.ready = '1';
-setInterval(() => { if (document.visibilityState === 'visible' && active === 'home') { greet(); D.refresh({ maxAge: 60e3 }); } }, 30e3);
+// the morning briefing card (5:00 to 11:59 ET, once a day), as the old Jarvis showed it
+(() => { const h = D.etParts().h; if (h >= 5 && h < 12 && D.LS.get('jarvis.briefDay', '') !== D.ymd(new Date())) setTimeout(() => toast('Your morning briefing is ready.', 'INFO', ['Open it', briefing]), 1600); })();
+setInterval(() => { if (visible() && active === 'home') hudTick(); }, 1000);
+setInterval(() => { if (visible() && active === 'home') { greet(); renderNext(); D.refresh({ maxAge: 60e3 }); } }, 30e3);
 document.addEventListener('visibilitychange', () => {
-  root.classList.toggle('paused', document.visibilityState !== 'visible');
-  if (document.visibilityState === 'visible' && active === 'home') refreshHome();
+  root.classList.toggle('paused', !visible());
+  if (!visible()) { stopListening(); if (handsFree) setHandsFree(false); }
+  else if (active === 'home') refreshHome();
+  fx.restart();
 });
-window.__jarvis = { show, ask, facts: D.getFacts, active: () => active };   // for tests and the console; read-only
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js', { scope: './' }).catch(() => { /* works without it */ });
+window.addEventListener('online', () => renderHead()); window.addEventListener('offline', () => renderHead());
+window.__jarvis = { show, ask, facts: D.getFacts, active: () => active, setTheme, setFx, state: () => state, core: () => (core && typeof core.stats === 'function' ? safe(() => core.stats()) : null) };   // for tests and the console; read-only
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js', { scope: './' }).catch(() => { /* works without it */ });
+  // a tapped Zenith notification while Jarvis runs (Zenith's sw.js v50: {type: 'open', app: 'zenith', hash}): Zenith mode at
+  // that page, from the start (once Zenith mode is mounted it hears the message itself and calls onWantShow)
+  navigator.serviceWorker.addEventListener('message', (e) => {
+    const d = e && e.data;
+    if (!d || d.type !== 'open' || d.app !== 'zenith' || (e.origin && e.origin !== location.origin) || zenMounted) return;
+    show('zenith', { route: typeof d.hash === 'string' ? d.hash : d.route });
+  });
+  safe(() => navigator.serviceWorker.startMessages());
+}
 </script>
 </body>
 </html>
