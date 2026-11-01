@@ -170,6 +170,7 @@
     } else if (r && r.status === 404) st = 'waiting';
     S.busy = false;
     S.at = Date.now();
+    busyUi();                                                // the spinner stops even when the drawing waits (render below)
     if (st === 'ok') {
       const raw = JSON.stringify(j), same = raw === S.raw && S.state === 'ok';
       S.k = j; S.raw = raw; S.state = 'ok';
@@ -604,7 +605,8 @@
   }
 
   function render() {
-    if (S.scrub) { S.pend = true; return; }
+    // not while a finger reads the chart or the iPhone's sort picker is open (a new body would close it): right after
+    if (S.scrub || (document.activeElement && document.activeElement.id === 'posSort')) { S.pend = true; return; }
     const body = $('#body');
     if (!body) return;
     const ae = document.activeElement, fid = ae && ae.id && body.contains(ae) ? ae.id : '';
@@ -700,6 +702,9 @@
   });
   document.addEventListener('input', (e) => {
     if (e.target && e.target.id === 'posQ') { S.q = String(e.target.value || '').slice(0, 80); const l = $('#posList'); if (l) l.innerHTML = posRows(); }
+  });
+  document.addEventListener('focusout', (e) => {
+    if (e.target && e.target.id === 'posSort' && S.pend && !S.scrub) setTimeout(() => { if (S.pend && document.activeElement !== e.target) { S.pend = false; render(); } }, 0);
   });
   document.addEventListener('toggle', (e) => {
     const d = e.target;

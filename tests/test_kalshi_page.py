@@ -612,6 +612,19 @@ def run_browser(url, tmp):
               and p.inner_text("#calMonth").upper() == dt.date.fromisoformat(j["days"][0][0]).strftime("%B %Y").upper())
         check("e. daily bars: the last 30 days", p.locator("svg.bars rect").count() == 30)
         shot(p, "4_wide")
+        # new data while the sort picker is open: the page waits for it to close, then shows the new numbers
+        p.focus("#posSort")
+        FEED["j"] = {**j, "balance": 401.5, "t": int(time.time()) - 30}
+        h1 = FEED["hits"]
+        p.evaluate("window.dispatchEvent(new Event('online'))")                 # a timed refresh: the focus stays on the picker
+        p.wait_for_function("document.querySelector('#refresh').getAttribute('aria-busy') === 'false'")
+        p.wait_for_timeout(150)
+        held = "$401.50" not in p.locator("#sec-kpi").text_content() and p.evaluate("document.activeElement.id") == "posSort"
+        p.evaluate("document.activeElement.blur()")
+        p.wait_for_timeout(100)
+        check("e. new data while the sort picker is open: drawn once it closes (never closes it under the finger)",
+              FEED["hits"] > h1 and held and "$401.50" in p.locator("#sec-kpi").text_content(), (FEED["hits"] - h1, held))
+        FEED["j"] = j
         # refresh keeps the UI (sort) when nothing changed
         p.select_option("#posSort", "pnl")
         h0 = FEED["hits"]
@@ -837,10 +850,8 @@ def part_k(br, url, tmp):
     shot(q, "k2_retry")
     SITE["mode"] = "ok"
     q.click("text=Retry")
-    back = until("document.title === 'Kalshi' && !!document.getElementById('body') && !!document.getElementById('refresh')", 10000)
-    if back:
-        ready(q)
-    check("k. Retry once back online: the page again", back and q.get_attribute("#body", "data-state") == "ok")
+    back = until("document.title === 'Kalshi' && !!document.getElementById('body') && document.getElementById('body').getAttribute('data-state') === 'ok'", 10000)
+    check("k. Retry once back online: the page again", back)
     # an update (a new cache name): only the old 'kalshi-*' copy goes, never another app's cache
     until("caches.open('kalshi-v1').then((c) => c.keys()).then((k) => k.length >= 3)")
     q.evaluate("Promise.all([caches.open('jarvis-v3').then((c) => c.put('/x-jarvis', new Response('j'))),"
