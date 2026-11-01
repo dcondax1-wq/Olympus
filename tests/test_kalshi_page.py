@@ -19,6 +19,8 @@ connection / later, and checks:
   h. Jarvis's theme (localStorage 'jtheme'): eclipse by default, the reactor family, a live switch
   i. 375 / 390 / 430 px: no sideways scroll, nothing past the 16 px gutter, numbers not cut off
   j. no page errors (uncaught exceptions or a section that failed), no failed same-site request, no font asked by the page
+  kit. the server script's pin (kit.json from the site build): a valid sha256 = the pinned step and Copy, anything else
+     (invalid, missing, slower than 3 s) = today's text exactly
   k. the service worker (kalshi/sw.js, scope ./): its own 'kalshi-*' cache with each shell file, never kalshi.json; offline
      and a 404 site open the saved copy; a slow site shows the copy within 3.5 s and the late answer refreshes it; no copy +
      offline = a small dark Retry page; an update deletes only 'kalshi-*' caches; Jarvis's fonts saved by the worker only
@@ -31,6 +33,7 @@ from __future__ import annotations
 import datetime as dt
 import functools
 import glob
+import hashlib
 import http.server
 import json
 import math
@@ -53,6 +56,11 @@ JV_ICON = os.path.join(ROOT, "tools", "web_public", "jarvis", "icon-192.png")
 STEP = ("Open your kalshi-server chat in the Claude app and paste: Set up Jarvis for my Kalshi bot by following "
         "https://demetrades2000-coder.github.io/nq-dashboard/kalshi/SETUP.md")
 PASTE = STEP.split("paste: ", 1)[1]
+# the server script's pin: the site build writes kalshi/kit.json ({"v":1, "file":"kalshi_status_vm.py", "sha256":"<64 hex>"})
+KIT_SHA = hashlib.sha256(b"kalshi_status_vm.py (test stand-in)").hexdigest()
+STEP_PINNED = STEP + f" (only run kalshi_status_vm.py if its sha256 is {KIT_SHA})"
+PASTE_PINNED = STEP_PINNED.split("paste: ", 1)[1]
+KIT_JSON = json.dumps({"v": 1, "file": "kalshi_status_vm.py", "sha256": KIT_SHA})
 NY = ZoneInfo("America/New_York")
 SHOTS = os.environ.get("KALSHI_SHOTS")
 FONTS = []
@@ -209,10 +217,17 @@ def site(tmp):
     for f in glob.glob(os.path.join(os.environ.get("KALSHI_FONTS_DIR") or os.path.dirname(JV_ICON), "*.woff2")):
         shutil.copy(f, os.path.join(base, "jarvis", os.path.basename(f)))      # Jarvis's fonts: the widths are tested with them
         FONTS.append(os.path.basename(f))
+    with open(os.path.join(base, "kalshi", "kit.json"), "w", encoding="utf-8") as f:     # written by the site build
+        f.write(KIT_JSON)
+    with open(os.path.join(base, "host.html"), "w", encoding="utf-8") as f:             # Jarvis-like: a bar below the notch, the page framed
+        f.write('<!doctype html><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
+                '<style>html,body{margin:0;height:100%;background:#000}.bar{height:calc(52px + env(safe-area-inset-top,0px))}'
+                'iframe{display:block;width:100%;height:calc(100% - 52px - env(safe-area-inset-top,0px));border:0}</style>'
+                '<div class="bar"></div><iframe id="f" src="kalshi/"></iframe>')
     return tmp
 
 
-SITE = {"mode": "ok", "slow": 0.0}          # the site's kalshi/ folder: ok | down (every connection dropped) | 404 (GitHub's 404)
+SITE = {"mode": "ok", "slow": 0.0, "kit_slow": 0.0}          # the site's kalshi/ folder: ok | down (every connection dropped) | 404 (GitHub's 404)
 
 
 class Quiet(http.server.SimpleHTTPRequestHandler):
@@ -244,6 +259,8 @@ class Quiet(http.server.SimpleHTTPRequestHandler):
                 return
             if SITE["slow"]:
                 time.sleep(SITE["slow"])
+            if SITE["kit_slow"] and self.path.split("?")[0].endswith("/kit.json"):
+                time.sleep(SITE["kit_slow"])
         return super().do_GET()
 
 
@@ -326,15 +343,19 @@ TARGETS = """() => {
 def part_a():
     for f in ("index.html", "kalshi.js", "kalshi.css", "sw.js"):
         check(f"a. kalshi/{f} exists", os.path.exists(os.path.join(KS, f)))
-    check("a. no file named like the kit's (the site build copies kalshi_status_vm.py and SETUP.md into kalshi/)",
-          not any(os.path.exists(os.path.join(KS, f)) for f in ("SETUP.md", "kalshi_status_vm.py")))
+    check("a. no file named like the kit's (the site build writes kalshi_status_vm.py, SETUP.md and kit.json into kalshi/)",
+          not any(os.path.exists(os.path.join(KS, f)) for f in ("SETUP.md", "kalshi_status_vm.py", "kit.json")))
     html = open(os.path.join(KS, "index.html"), encoding="utf-8").read()
     js = open(os.path.join(KS, "kalshi.js"), encoding="utf-8").read()
     css = open(os.path.join(KS, "kalshi.css"), encoding="utf-8").read()
+    sw = open(os.path.join(KS, "sw.js"), encoding="utf-8").read()
     code = re.sub(r"/\*.*?\*/", "", js, flags=re.S)
     check("a. the page keeps #body and #sub, loads kalshi.css + kalshi.js (versioned)",
           'id="body"' in html and 'id="sub"' in html and 'href="kalshi.css?v=' in html and 'src="kalshi.js?v=' in html)
-    check("a. the one step is the exact text (tests/test_jarvis_hub reads it from #step)", f"const STEP = '{STEP}';" in js)
+    check("a. the one step is the exact text (tests/test_jarvis_hub reads it from #step)", f"const STEP0 = '{STEP}';" in js)
+    check("a. the pin: kit.json (same origin, 3 s at most), a lowercase 64-hex sha256 only, the exact pinned wording, Copy takes it",
+          "get('kit.json', {}, 3000)" in js and "/^[0-9a-f]{64}$/.test(h)" in js and "(only run kalshi_status_vm.py if its sha256 is ${h})" in js
+          and "writeText(paste())" in js and "'./kit.json'" in sw and "u.searchParams.has('v')" in sw)
     check("a. the feed is read from its own repo kalshi-feed (raw first, then the API), never from the Pages repo",
           f"const RAW = '{FEED_RAW}';" in js and f"const API = '{FEED_API}';" in js and "ref=kalshi" not in js and "nq-dashboard/kalshi/kalshi.json" not in js
           and code.index("get(RAW") < code.index("get(API"))
@@ -362,7 +383,9 @@ def part_a():
           and ':root[data-theme="reactor"]' in css and "--c: #a95cff;" in css and "clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px" in css
           and ".card::before" in css and "width: 36px; height: 2px" in css)
     check("a. the theme is set before paint from Jarvis's 'jtheme'", "localStorage.getItem('jtheme')" in html and html.index("jtheme") < html.index('href="kalshi.css'))
-    sw = open(os.path.join(KS, "sw.js"), encoding="utf-8").read()
+    check("a. framed (inside Jarvis): a 'framed' class before paint drops the second notch inset; on its own the inset stays",
+          "if (window.top !== window) d.classList.add('framed')" in html and html.index("framed") < html.index('href="kalshi.css')
+          and "html.framed main { padding-top: 16px; }" in css and "padding: calc(16px + env(safe-area-inset-top, 0px))" in css)
     ver = re.search(r"kalshi\.js\?v=(\w+)", html).group(1)
     check("a. kalshi/sw.js: its own 'kalshi-*' cache and only those deleted, its own folder only, the 3.5 s rule, the page's versions",
           f"const CACHE = 'kalshi-{ver}';" in sw and "k.startsWith('kalshi-') && k !== CACHE" in sw and "u.pathname.startsWith(scope.pathname)" in sw
@@ -415,9 +438,13 @@ def run_browser(url, tmp):
 
         # ---- b. waiting
         open_("404")
+        try:
+            p.wait_for_function("(document.getElementById('step') || {}).textContent.indexOf('sha256') > 0", timeout=4000)
+        except Exception:
+            pass
         body = p.locator("#body").text_content()
-        check("b. not published (404): the Connect card with the one step for the bot's own chat",
-              "Connect your Kalshi bot" in body and p.locator("#body #step").inner_text() == STEP
+        check("b. not published (404): the Connect card with the one step for the bot's own chat, pinned to the kit's sha256",
+              "Connect your Kalshi bot" in body and p.locator("#body #step").inner_text() == STEP_PINNED
               and p.locator("#sub").inner_text() == "Not connected yet" and p.get_attribute("#body", "data-state") == "waiting", body[:300])
         check("b. the card says the bot runs on its own server, one paste connects it, every minute after; never 'PC'",
               "runs on its own server" in body and "One paste in its own chat" in body and "every minute" in body
@@ -427,7 +454,8 @@ def run_browser(url, tmp):
         p.click("[data-act=copy]")
         p.wait_for_function("document.getElementById('copied').textContent.length > 0", timeout=3000)
         clip = p.evaluate("navigator.clipboard.readText().catch(() => '')")
-        check("b. Copy puts just the message to paste on the clipboard", p.inner_text("#copied") == "Copied" and clip == PASTE, (p.inner_text("#copied"), clip))
+        check("b. Copy puts the whole message to paste on the clipboard, the hash included", p.inner_text("#copied") == "Copied" and clip == PASTE_PINNED,
+              (p.inner_text("#copied"), clip))
         shot(p, "1_waiting")
 
         # ---- b. the preview while not connected: the whole dashboard from a built-in sample, clearly marked, never kept
@@ -456,7 +484,7 @@ def run_browser(url, tmp):
         check("b. the preview is never kept: no saved copy on the phone", p.evaluate("localStorage.getItem('kalshi.last')") is None)
         p.click("#previewBar [data-act=exit-preview]")
         check("b. Exit preview: back to the Connect card, step unchanged", p.get_attribute("#body", "data-state") == "waiting"
-              and "Connect your Kalshi bot" in p.locator("#body").text_content() and p.locator("#body #step").inner_text() == STEP and p.locator("#previewBar").count() == 0)
+              and "Connect your Kalshi bot" in p.locator("#body").text_content() and p.locator("#body #step").inner_text() == STEP_PINNED and p.locator("#previewBar").count() == 0)
         p.click("[data-act=preview]")
         FEED["mode"] = "abort"                                  # no connection while previewing: still not kept as an offline copy
         p.reload()
@@ -833,6 +861,25 @@ def run_browser(url, tmp):
         p.wait_for_function("document.documentElement.getAttribute('data-theme') === 'eclipse'", timeout=3000)
         check("h. Jarvis switching its theme switches this page live", p.get_attribute("html", "data-theme") == "eclipse")
 
+        # ---- i. notch insets (iPhone, emulated 47 px top / 34 px bottom): on its own the page clears the notch; inside Jarvis
+        # (framed under its bar) it must not add the notch a second time
+        cdp = ctx.new_cdp_session(p)
+        cdp.send("Emulation.setSafeAreaInsetsOverride", {"insets": {"top": 47, "bottom": 34, "left": 0, "right": 0}})
+        open_("ok", realbot(time.time())[0])
+        own = p.evaluate("[document.documentElement.classList.contains('framed'), getComputedStyle(document.querySelector('main')).paddingTop, "
+                         "Math.round(document.querySelector('h1').getBoundingClientRect().top)]")
+        check("i. on its own with a 47 px notch: the page clears it (63 px top padding), not framed", own[0] is False and own[1] == "63px" and own[2] >= 63, own)
+        p.goto(url + "host.html")
+        fr = p.frame_locator("#f")
+        fr.locator("#sec-kpi").wait_for(timeout=8000)
+        inner = fr.locator("html").evaluate("(d) => [d.classList.contains('framed'), getComputedStyle(d.querySelector('main')).paddingTop, "
+                                            "Math.round(d.querySelector('h1').getBoundingClientRect().top)]")
+        check("i. inside Jarvis with a 47 px notch: no second inset (16 px under the bar, no empty band)",
+              inner[0] is True and inner[1] == "16px" and inner[2] <= 20, inner)
+        shot(p, "8a_framed_notch")
+        cdp.send("Emulation.setSafeAreaInsetsOverride", {"insets": {"top": 0, "bottom": 0, "left": 0, "right": 0}})
+        cdp.detach()
+
         # ---- i. phone widths (the preview too)
         p.set_viewport_size({"width": 375, "height": 844})
         open_("404")
@@ -887,6 +934,7 @@ def run_browser(url, tmp):
             print("       (this checkout has no tools/web_public/jarvis/*.woff2: the font requests 404 here; strict once the fonts are in)")
         check("j. kalshi.json only ever asked from kalshi-feed (raw, then the API)", not FEED["wrong"], FEED["wrong"][:3])
         part_k(br, url, tmp)
+        part_kit(br, url, tmp)
         br.close()
 
 
@@ -902,8 +950,8 @@ def part_k(br, url, tmp):
     errs, bad = [], []
     q.on("pageerror", lambda e: errs.append(str(e)))
     nofont = lambda u: FONTS or ".woff2" not in u                    # noqa: E731  (a checkout without Jarvis's fonts: their 404s only)
-    q.on("console", lambda m: errs.append(m.text) if m.type == "error" and SITE["mode"] == "ok" and not SITE["slow"]
-         and nofont((m.location or {}).get("url", "")) else None)
+    q.on("console", lambda m: errs.append((m.text, (m.location or {}).get("url", ""))) if m.type == "error" and SITE["mode"] == "ok" and not SITE["slow"]
+         and nofont((m.location or {}).get("url", "")) and "kalshi.json" not in (m.location or {}).get("url", "") else None)   # the feed's 404 = waiting
     q.on("response", lambda r: bad.append((r.status, r.url)) if r.status >= 400 and "127.0.0.1" in r.url and SITE["mode"] == "ok" and nofont(r.url) else None)
     pg = lambda: q.evaluate("document.title === 'Kalshi' && !!document.getElementById('body')")  # noqa: E731
 
@@ -996,7 +1044,72 @@ def part_k(br, url, tmp):
     open(swp, "w", encoding="utf-8").write(sw0)
     c = q.evaluate(allc)
     check("k. kalshi.json never cached (the feed is cross-origin and left alone)", not any("kalshi.json" in u for v in c.values() for u in v), c)
+    # kit.json is network first: a new pin on the site shows on the next open; offline, the saved pin stays
+    kj = os.path.join(kdir, "kit.json")
+    new = hashlib.sha256(b"a newer kalshi_status_vm.py").hexdigest()
+    with open(kj, "w", encoding="utf-8") as f:
+        f.write(json.dumps({"v": 1, "file": "kalshi_status_vm.py", "sha256": new}))
+    FEED["mode"] = "404"
+    q.reload()
+    ready(q)
+    check("k. kit.json network first: a new sha256 on the site is the step's on the next open",
+          until(f"(document.getElementById('step') || {{}}).textContent.indexOf('{new}') > 0", 5000))
+    SITE["mode"] = "down"
+    q.reload()
+    check("k. offline: the Connect card keeps the last pin (the worker's saved kit.json)",
+          until(f"(document.getElementById('step') || {{}}).textContent.indexOf('{new}') > 0", 8000))
+    SITE["mode"] = "ok"
+    with open(kj, "w", encoding="utf-8") as f:
+        f.write(KIT_JSON)
     check("k. no page or console errors, no failed same-site requests in the normal runs", not errs and not bad, (errs[:3], bad[:3]))
+    ctx.close()
+
+
+def part_kit(br, url, tmp):
+    """The pin on its own (no service worker): kit.json valid, invalid, missing or slow."""
+    page_url = url + "kalshi/"
+    kj = os.path.join(tmp, "nq-dashboard", "kalshi", "kit.json")
+    ctx = br.new_context(viewport={"width": 390, "height": 844}, service_workers="block")
+    ctx.grant_permissions(["clipboard-read", "clipboard-write"], origin=url.rstrip("/").rsplit("/", 1)[0])
+    ctx.route("https://raw.githubusercontent.com/**", feed)
+    ctx.route("https://api.github.com/**", feed)
+    q = ctx.new_page()
+    errs = []
+    q.on("pageerror", lambda e: errs.append(str(e)))
+    FEED.update(mode="404", raw=None, api=None)
+
+    def step(content, slow=0.0):
+        if content is None:
+            if os.path.exists(kj):
+                os.remove(kj)
+        else:
+            with open(kj, "w", encoding="utf-8") as f:
+                f.write(content)
+        SITE["kit_slow"] = slow
+        q.goto(page_url)
+        ready(q)
+        q.wait_for_timeout(int(slow * 1000) + 700 if slow else 500)      # the pin settles (or is given up at 3 s)
+        SITE["kit_slow"] = 0.0
+        return q.locator("#step").inner_text()
+
+    def copied():
+        q.click("[data-act=copy]")
+        q.wait_for_function("document.getElementById('copied').textContent.length > 0", timeout=3000)
+        return q.evaluate("navigator.clipboard.readText().catch(() => '')")
+    got = step(KIT_JSON)
+    check("kit. a valid kit.json: the step is exactly the pinned line", got == STEP_PINNED, got)
+    check("kit. Copy copies the whole line to paste, the hash included", copied() == PASTE_PINNED)
+    for label, content in (("an uppercase hash", json.dumps({"v": 1, "sha256": KIT_SHA.upper()})), ("a 63-character hash", json.dumps({"v": 1, "sha256": KIT_SHA[:63]})),
+                           ("a hash with a space", json.dumps({"v": 1, "sha256": KIT_SHA[:63] + " "})), ("no sha256", json.dumps({"v": 1, "file": "kalshi_status_vm.py"})),
+                           ("a number", json.dumps({"v": 1, "sha256": 5})), ("a list", json.dumps([KIT_SHA])), ("bad JSON", "{not json"), ("no kit.json (404)", None)):
+        got = step(content)
+        check(f"kit. {label}: the step stays exactly today's text", got == STEP, got)
+    check("kit. unpinned, Copy copies today's message", copied() == PASTE)
+    got = step(KIT_JSON, slow=4.0)
+    check("kit. kit.json slower than 3 s: today's text, nothing waits on it", got == STEP and q.get_attribute("#body", "data-state") == "waiting", got)
+    with open(kj, "w", encoding="utf-8") as f:
+        f.write(KIT_JSON)
+    check("kit. no page errors", not errs, errs[:3])
     ctx.close()
 
 
