@@ -1,0 +1,1551 @@
+// Jarvis brain v2 (owner 2026-11-01): the voice of the Jarvis hub (tools/web_public/jarvis/index.html).
+// It answers from the hub's own facts (the NQ bots' live.json, the Kalshi bot's kalshi.json, the Planner's day and the CME
+// clock), switches dashboards, briefs, follows up ("and atlas?") and names the next step, in the old Jarvis's voice (formal,
+// calm, a little witty, an occasional "sir"). One ES module: no imports, no DOM, no network, except the optional smart mode
+// (the owner's own Groq / Gemini / Anthropic key, kept only in this phone's localStorage).
+//
+//   import { createBrain } from './brain.js';
+//   const brain = createBrain({ getFacts, open, now });
+//     getFacts() -> { now, market: {open, text}, live: live.json, kalshi: kalshi.json | null, kalshiState: 'ok' | 'waiting' |
+//                     'error' | '', planner: {day, ev, tasks, projects} | null, apps: [{id, name, url}] }   (a Promise is fine too)
+//     open(appId, route?)  switches the app: 'home', 'zenith', 'planner', 'kalshi' or an added id; open('zenith', '#/blitz')
+//     now() -> Date or ms (else facts.now, else the phone's clock)
+//   brain.ask(text, {voice}?) -> Promise<{ text, speak, open?, route?, cards?, control?, intent, smart?, smartError? }>
+//                          control: 'stop' | 'mute' | 'unmute' | 'hide_balance' | 'show_balance' (the shell may act on it)
+//   brain.briefing()     -> Promise<{ text, speak, cards, intent }>
+//   brain.suggestions()  -> string[]  (4-6 chips for right now)
+//   brain.setSmart({ provider, key, model, depth, on }) -> brain.smart = { on, provider, model, depth, hasKey, active, keys }
+//                          provider 'groq' (default) | 'gemini' | 'anthropic'; a key is kept per provider; depth 'auto' |
+//                          'quick' | 'think' | 'deep'. brain.forgetKey(provider?) drops one.
+//   brain.hidden (the "hide my balance" switch) · brain.idle() (the old greeting line) · outcomeAlerts(prev, cur) (exported:
+//   Kalshi outcomes in the owner's "🌌 +$1.26" style, only trades settled since prev)
+// Zenith pages: "open BLITZ", "atlas trades", "holodeck" -> { open: 'zenith', route: '#/atlas/trades' } from zenith-mode.js's
+// zenithRouteFor (imported on demand from this folder), else a local map of the same pages.
+// Optional extras: createBrain({ ..., autoOpen: false }) leaves the switching to the shell. Otherwise a reply with `open`
+// also calls open(app, route) itself, right after the reply is handed back (openDelay ms, default 0: the shell's open()
+// waits 450 ms so the answer shows first, and a shell that switches on reply.open alone is overtaken by this call, which
+// carries the route; switching twice to the same app is harmless). fetch / storage can be passed in (tests).
+//
+// Rules: every number comes from the facts; a missing field is said to be missing, never guessed. Read-only: it never arms,
+// routes, sizes or places anything (paper only), and it never takes an outward action itself. iPhone Safari 16: plain
+// ES2020, no regex lookbehind. tests/test_jarvis_brain.py drives it in node and in Chromium.
+
+// Smart mode: the owner's own key for one of three providers, kept only in this phone's localStorage ("jarvis.smart"),
+// sent only to that provider's API. All three answer a browser's CORS preflight (checked 2026-11-01). Groq is the default:
+// the old Jarvis ran on the owner's free Groq key.
+const SMART_KEY = 'jarvis.smart';
+const PROVIDERS = {
+  groq: { name: 'Groq', model: 'openai/gpt-oss-120b', url: 'https://api.groq.com/openai/v1/chat/completions' },
+  gemini: { name: 'Gemini', model: 'gemini-3.5-flash', url: 'https://generativelanguage.googleapis.com/v1beta/models/' },
+  anthropic: { name: 'Anthropic', model: 'claude-sonnet-5-5', url: 'https://api.anthropic.com/v1/messages' },
+};
+const DEFAULT_PROVIDER = 'groq';
+const DEPTHS = ['auto', 'quick', 'think', 'deep'];
+// output budgets per depth: Groq / Gemini count their reasoning inside it, so they get more room
+const BUDGET = { quick: { anthropic: 300, other: 1024 }, think: { anthropic: 1000, other: 2048 }, deep: { anthropic: 2500, other: 4096 } };
+const SMART_TIMEOUT_MS = 20000;          // the shell gives an answer 25 s, then uses its own
+const HIDE_KEY = 'jarvis.hide';            // "hide my balance" (this phone only)
+const IDLE_LINE = 'Good day. Tap the core or type below to speak with me.';     // the old Jarvis's line, for a phone
+const LIVE_STALE_MS = 20 * 60e3;          // live.json older than this: say so (the PC may be off)
+const KALSHI_STALE_S = 15 * 60;           // kalshi.json older than this: "not updating" (as the hub's card)
+const FOLLOW_MS = 10 * 60e3;              // a follow-up ("and atlas?") refers to the last answer for 10 minutes
+
+// ------------------------------------------------------------------------------------------------ small helpers
+const isObj = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
+const arr = (x) => (Array.isArray(x) ? x : []);
+function num(v) {
+  if (typeof v === 'number') return Number.isFinite(v) ? v : null;
+  if (typeof v === 'string' && v.trim() !== '' && Number.isFinite(+v)) return +v;
+  return null;
+}
+function str(v, n) {
+  const s = typeof v === 'string' ? v : typeof v === 'number' && Number.isFinite(v) ? String(v) : '';
+  return s.replace(/\s+/g, ' ').trim().slice(0, n || 300);
+}
+const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
+const plural = (n, w, p) => `${n} ${n === 1 ? w : p || w + 's'}`;
+const lines = (...a) => a.filter((x) => x != null && x !== '').join('\n');
+const uniq = (a) => a.filter((x, i) => x && a.indexOf(x) === i);
+
+// money as the hub shows it: '$1,106', '+$213', '−$225' (whole dollars); usd2: cents under $1,000 (Kalshi). null = missing.
+function usd(v, sign) {
+  const x = num(v);
+  if (x == null) return null;
+  const a = Math.abs(Math.round(x));
+  return (sign && x > 0 && a ? '+' : x < 0 && a ? '−' : '') + '$' + a.toLocaleString('en-US');
+}
+function usd2(v, sign) {
+  const x = num(v);
+  if (x == null) return null;
+  const a = Math.abs(x), r = Math.round(a * 100) / 100, d = r < 1000 ? 2 : 0;
+  return (sign && x > 0 && r ? '+' : x < 0 && r ? '−' : '') + '$' + r.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+}
+// spoken money: '1,106 dollars', 'up 213 dollars', 'down 18 dollars 50', 'flat'
+function sayAmt(v, cents) {
+  const x = num(v);
+  if (x == null) return null;
+  const a = Math.abs(x);
+  let w = Math.abs(Math.round(x)), c = 0;
+  if (cents && a < 1000) { w = Math.floor(a); c = Math.round((a - w) * 100); if (c === 100) { w += 1; c = 0; } }
+  if (!w && c) return `${c} cents`;
+  return `${w.toLocaleString('en-US')} dollar${w === 1 ? '' : 's'}${c ? ' ' + c : ''}`;
+}
+function saySigned(v, cents) {
+  const x = num(v);
+  if (x == null) return null;
+  if (Math.abs(x) < (cents ? 0.005 : 0.5)) return 'flat';
+  return (x > 0 ? 'up ' : 'down ') + sayAmt(x, cents);
+}
+function dur(ms, spoken) {
+  const m = Math.max(0, Math.round(ms / 60000));
+  if (m < 1) return spoken ? 'less than a minute' : 'under a minute';
+  if (m < 60) return spoken ? plural(m, 'minute') : `${m} min`;
+  if (m < 48 * 60) {
+    const h = Math.floor(m / 60), r = m % 60;
+    return spoken ? plural(h, 'hour') + (r ? ' ' + plural(r, 'minute') : '') : `${h} h${r ? ` ${r} min` : ''}`;
+  }
+  return plural(Math.round(m / 1440), 'day');
+}
+function ago(tSec, nowMs) {
+  const t = num(tSec);
+  if (!t) return '';
+  const s = Math.max(0, nowMs / 1000 - t);
+  return s < 90 ? 'just now' : s < 3600 ? Math.round(s / 60) + ' min ago' : s < 86400 ? Math.round(s / 3600) + ' h ago' : Math.round(s / 86400) + ' d ago';
+}
+// 18:00 -> '6:00 PM'; spoken '6 PM'
+function clock(minute, spoken) {
+  const h = Math.floor(minute / 60) % 24, m = minute % 60, h12 = ((h + 11) % 12) + 1, ap = h < 12 ? 'AM' : 'PM';
+  return spoken && !m ? `${h12} ${ap}` : `${h12}:${String(m).padStart(2, '0')} ${ap}`;
+}
+// the Planner's 'HH:MM' -> '7:30 AM' (as the hub's card)
+function hm(s) {
+  const p = String(s || '').split(':').map(Number);
+  if (!Number.isFinite(p[0]) || p[0] < 0 || p[0] > 23) return '';
+  return clock(p[0] * 60 + (Number.isFinite(p[1]) ? p[1] : 0));
+}
+const hmMin = (s) => { const p = String(s || '').split(':').map(Number); return Number.isFinite(p[0]) ? p[0] * 60 + (Number.isFinite(p[1]) ? p[1] : 0) : null; };
+
+// ------------------------------------------------------------------------------------------------ time in New York
+const WD_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const WD_LONG = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const MON_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MON_LONG = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+let DTF = null;
+try {
+  DTF = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: false });
+} catch (_) { DTF = null; }
+const dayNum = (y, mo, d) => Math.round(Date.UTC(y, mo - 1, d) / 864e5);
+function fromDayNum(n) { const x = new Date(n * 864e5); return { y: x.getUTCFullYear(), mo: x.getUTCMonth() + 1, d: x.getUTCDate(), wd: x.getUTCDay() }; }
+// ET wall clock of an instant: {y, mo, d, h, mi, wd, dn}
+function et(ms) {
+  let y, mo, d, h, mi;
+  if (DTF) {
+    const g = {};
+    for (const p of DTF.formatToParts(new Date(ms))) g[p.type] = p.value;
+    y = +g.year; mo = +g.month; d = +g.day; h = (+g.hour) % 24; mi = +g.minute;
+  } else {                                   // no time-zone support: EST
+    const x = new Date(ms - 5 * 3600e3);
+    y = x.getUTCFullYear(); mo = x.getUTCMonth() + 1; d = x.getUTCDate(); h = x.getUTCHours(); mi = x.getUTCMinutes();
+  }
+  const dn = dayNum(y, mo, d);
+  return { y, mo, d, h, mi, dn, wd: fromDayNum(dn).wd, min: h * 60 + mi };
+}
+// the instant of an ET wall-clock minute on day number dn
+function etMs(dn, minute) {
+  const c = fromDayNum(dn), want = Date.UTC(c.y, c.mo - 1, c.d, Math.floor(minute / 60), minute % 60);
+  let t = want + 5 * 3600e3;
+  for (let i = 0; i < 3; i++) {
+    const p = et(t), diff = want - Date.UTC(p.y, p.mo - 1, p.d, p.h, p.mi);
+    if (!diff) break;
+    t += diff;
+  }
+  return t;
+}
+
+// ------------------------------------------------------------------------------------------------ the CME calendar (NQ / MNQ)
+// The same rules as engine/cme_calendar.py: full closures (New Year's Day, Christmas; Sunday -> Monday, Christmas on a
+// Saturday -> Friday Dec 24) and early halts (US holidays 13:00 ET; the day after Thanksgiving, Christmas Eve and July 3 when
+// July 4 is a Tuesday-Friday 13:15 ET; Good Friday 09:15 ET). Keyed by the trading date (18:00 ET opens the next date).
+const HOL = {};
+function holidays(y) {
+  if (HOL[y]) return HOL[y];
+  const dn = (m, d) => dayNum(y, m, d), wdOf = (n) => fromDayNum(n).wd;
+  const nth = (m, wd, n) => { const f = dn(m, 1); return f + ((wd - wdOf(f) + 7) % 7) + (n - 1) * 7; };
+  const last = (m, wd) => { const l = dn(m + 1, 1) - 1; return l - ((wdOf(l) - wd + 7) % 7); };
+  const observed = (n) => n + (wdOf(n) === 0 ? 1 : wdOf(n) === 6 ? -1 : 0);
+  const full = {}, early = {};
+  let nyd = dn(1, 1); if (wdOf(nyd) === 0) nyd += 1;
+  full[nyd] = "New Year's Day";
+  let xmas = dn(12, 25); if (wdOf(xmas) === 0) xmas += 1; else if (wdOf(xmas) === 6) xmas -= 1;
+  full[xmas] = 'Christmas';
+  const put = (n, m, name) => { if (!(n in full) && !(n in early)) early[n] = [m, name]; };
+  const thanks = nth(11, 4, 4);
+  put(thanks + 1, 795, 'the day after Thanksgiving');
+  put(dn(12, 24), 795, 'Christmas Eve');
+  if (wdOf(dn(7, 4)) >= 2 && wdOf(dn(7, 4)) <= 5) put(dn(7, 3), 795, 'the eve of Independence Day');
+  put(nth(1, 1, 3), 780, 'Martin Luther King Day');
+  put(nth(2, 1, 3), 780, "Presidents' Day");
+  put(last(5, 1), 780, 'Memorial Day');
+  put(observed(dn(6, 19)), 780, 'Juneteenth');
+  put(observed(dn(7, 4)), 780, 'Independence Day');
+  put(nth(9, 1, 1), 780, 'Labor Day');
+  put(thanks, 780, 'Thanksgiving');
+  const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7, mm = Math.floor((a + 11 * h + 22 * l) / 451);
+  const em = Math.floor((h + l - 7 * mm + 114) / 31), ed = ((h + l - 7 * mm + 114) % 31) + 1;
+  put(dn(em, ed) - 2, 555, 'Good Friday');
+  HOL[y] = { full, early };
+  return HOL[y];
+}
+const fullClosure = (dn) => holidays(fromDayNum(dn).y).full[dn] || null;
+const earlyClose = (dn) => holidays(fromDayNum(dn).y).early[dn] || null;
+
+// CME NQ: Sunday 18:00 to Friday 17:00 ET, a daily 17:00-18:00 halt, plus the holidays above
+function nextOpen(fromMs) {
+  const p = et(fromMs);
+  for (let c = p.dn; c <= p.dn + 16; c++) {
+    const t = etMs(c, 1080), td = c + 1, w = fromDayNum(td).wd;
+    if (t <= fromMs || w === 0 || w === 6 || fullClosure(td)) continue;
+    return t;
+  }
+  return null;
+}
+function marketState(ms) {
+  const p = et(ms), m = p.min, td = m >= 1080 ? p.dn + 1 : p.dn;
+  let why = null, name = '', at = null;
+  if (p.wd === 6 || (p.wd === 5 && m >= 1020) || (p.wd === 0 && m < 1080)) why = 'weekend';
+  else if (m >= 1020 && m < 1080) why = 'halt';
+  else if (fullClosure(td)) { why = 'holiday'; name = fullClosure(td); }
+  else { const e = earlyClose(td); if (e && m >= e[0]) { why = 'early'; name = e[1]; at = e[0]; } }
+  if (why) return { open: false, why, name, at, next: nextOpen(ms), td };
+  const ec = earlyClose(td), closeMin = ec ? ec[0] : 1020, closeAt = etMs(td, closeMin);
+  return { open: true, rth: p.wd >= 1 && p.wd <= 5 && m >= 570 && m < 960, td, closeAt, closeMin, early: ec ? ec[1] : '',
+    weekend: fromDayNum(td).wd === 5 && !ec, reopen: nextOpen(closeAt + 60e3) };
+}
+// 'today 6:00 PM ET', 'tomorrow 6:00 PM ET', 'Sunday 6:00 PM ET', 'Sun Nov 8, 6:00 PM ET'
+function whenText(ms, nowMs, spoken) {
+  const a = et(ms), b = et(nowMs), dd = a.dn - b.dn, t = clock(a.min, spoken) + (spoken ? ' Eastern' : ' ET');
+  if (dd === 0) return 'today ' + t;
+  if (dd === 1) return 'tomorrow ' + t;
+  if (dd > 1 && dd < 7) return WD_LONG[a.wd] + ' ' + t;
+  return `${WD_SHORT[a.wd]} ${MON_SHORT[a.mo - 1]} ${a.d}, ${t}`;
+}
+function marketText(M, nowMs) {
+  if (M.open) return `NQ market open · ${M.rth ? 'regular session' : 'overnight session'}${M.early && et(nowMs).dn === M.td ? ` · early close ${clock(M.closeMin)} ET (${M.early})` : ''}`;
+  const why = M.why === 'halt' ? ' · daily halt' : M.why === 'holiday' ? ` · ${M.name}` : M.why === 'early' ? ` · ${cap(M.name)} early close at ${clock(M.at)} ET` : '';
+  return `NQ market closed${why} · opens ${M.next ? whenText(M.next, nowMs) : 'at the next session'}`;
+}
+
+// ------------------------------------------------------------------------------------------------ the bots
+const BOTS = [
+  { key: 'lit', name: 'Zlarior', size: '50K', route: '#/lit', rx: /\b(zlarior|z larior|zolarior|zularior|zlario|solarior|lit|the 50 ?k|50k)\b/ },
+  { key: 'atlas', name: 'ATLAS', size: '25K', route: '#/atlas', rx: /\b(atlas|at las)\b/ },
+  { key: 'blitz', name: 'BLITZ', size: '25K', route: '#/blitz', rx: /\b(blitz|blitzen|blits)\b/ },
+];
+const BOT = { lit: BOTS[0], atlas: BOTS[1], blitz: BOTS[2] };
+const ALL = ['lit', 'atlas', 'blitz'];
+const BOT_FIX = 'Zenith has the details.';
+
+// live: live.json itself, or the shell's slim view of it (lit / atlas / blitz / verdict / lines / price at the top) with the
+// full live.json as .raw (tools/web_public/jarvis/data.js liveView); either way the same view comes out.
+function nqView(live, nowMs) {
+  if (!isObj(live)) return null;
+  const full = isObj(live.raw) ? live.raw : live;
+  const b = isObj(full.board) && !full.board.error ? full.board : {};
+  const good = (x) => (isObj(x) && !x.error ? x : null);
+  const t = num(full.t) || num(live.t) || num(b.t);
+  const lines0 = arr(b.lines).length ? arr(b.lines) : arr(live.lines);
+  return {
+    lit: good(b.lit) || good(live.lit), atlas: good(b.atlas) || good(live.atlas), blitz: good(b.blitz) || good(full.blitz) || good(live.blitz),
+    verdict: good(full.pc_verdict) || good(live.verdict) || good(live.pc_verdict), t, running: b.running != null ? b.running : live.running,
+    cached: !!live.cached, stale: !!(t && nowMs - t * 1000 > LIVE_STALE_MS), money: good(full.money) || good(live.money),
+    lines: lines0.filter((x) => isObj(x) && str(x.text)), level: str(b.level || live.level, 10), progress: good(b.progress) || good(live.progress),
+    price: num(full.price) != null ? num(full.price) : num(live.price),
+  };
+}
+const sizeOf = (c, bot) => { const m = str(c && c.plan).match(/(\d+)\s*k\b/i); return m ? m[1] + 'K' : bot.size; };
+const labelOf = (c, bot) => `${bot.name} ${sizeOf(c, bot)}`;
+const isOff = (c, bot) => !c || (bot.key === 'blitz' && c.off === true) || num(c.room) == null;
+function offWhy(c, bot) {
+  if (bot.key === 'blitz') {
+    if (!c) return 'BLITZ: no account C card in the live feed yet.';
+    return `BLITZ: ${c.off ? 'account C is off on the PC (paper only until its own 25K is set up)' : 'its eval is ' + (str(c.status, 60) || 'not reporting')}.`;
+  }
+  if (!c) return `${bot.name}: missing from the live feed.`;
+  const s = str(c.status, 60);
+  return `${labelOf(c, bot)}: ${s && s !== 'open' ? s : 'no eval numbers in the feed'}.`;
+}
+
+// ------------------------------------------------------------------------------------------------ Zenith's pages
+// The routes come from zenith-mode.js's zenithRouteFor(text) (Zenith mode, loaded next to this module); this local map is
+// its fallback and adds the pages it has no words for (levels, chart, goals, trades, accounts, results, the checklist).
+const BOT_PART_RX = [[/\bbrain\b/, 'brain'], [/\btrades?\b/, 'trades'], [/\b(results?|performance|perf)\b/, 'results'], [/\b(rules?|strategy|setups?)\b/, 'rules'], [/\bgo ?live\b/, 'golive']];
+const BOT_PART = {
+  lit: { brain: '#/brain', trades: '#/trades', results: '#/perf', rules: '#/strategy' },
+  atlas: { brain: '#/atlas/brain', trades: '#/atlas/trades', results: '#/atlas/results', rules: '#/atlas/setups' },
+  blitz: { brain: '#/blitz/brain', trades: '#/blitz/trades', results: '#/blitz/results', rules: '#/blitz/rules', golive: '#/blitz/golive' },
+};
+const LOCAL_ROUTES = [
+  [/\b(economic calendar|news)\b/, '#/news'], [/\b(live ?view|chart|charts|live chart)\b/, '#/liveview'], [/\bholo(deck)?\b/, '#/holo'],
+  [/\b(goals?|road to|10 ?k|stingray|money page|money tab)\b/, '#/goals'], [/\b(trade log|trade list|trades)\b/, '#/trades'],
+  [/\baccounts\b/, '#/accounts'], [/\b(launch checklist|checklist)\b/, '#/launch'], [/\b(strategy|rules)\b/, '#/strategy'],
+  [/\b(results|performance)\b/, '#/results'], [/\bthe mind\b/, '#/mind'], [/\b(bot brain)\b/, '#/brain'], [/\bmission( control)?\b/, '#/mission'],
+  [/\b(liquidity|levels|levels radar|liquidity map)\b/, '#/levels'],
+];
+const ROUTE_LABEL = { '#/lit': 'Zlarior', '#/atlas': 'ATLAS', '#/blitz': 'BLITZ', '#/brain': 'the Bot Brain', '#/trades': 'Trades', '#/perf': 'Performance',
+  '#/strategy': 'Strategy', '#/liveview': 'Live View', '#/holo': 'the Holodeck', '#/mission': 'Mission Control', '#/deck': 'the Deck', '#/mind': 'the Mind',
+  '#/settings': 'Settings', '#/activity': 'Activity', '#/alerts': 'Notifications', '#/news': 'News', '#/board': 'the Board', '#/real': 'Real results',
+  '#/system': 'More', '#/today': 'Home', '#/goals': 'Goals', '#/levels': 'Levels', '#/accounts': 'Accounts', '#/launch': 'the launch checklist', '#/results': 'Results' };
+function localRoute(q) {
+  const bot = BOTS.find((b) => b.rx.test(q));
+  if (bot) { const part = (BOT_PART_RX.find((x) => x[0].test(q)) || [])[1]; return (part && BOT_PART[bot.key][part]) || bot.route; }
+  const hit = LOCAL_ROUTES.find((x) => x[0].test(q));
+  return hit ? hit[1] : null;
+}
+function routeLabel(r) {
+  if (ROUTE_LABEL[r]) return ROUTE_LABEL[r];
+  const m = r.match(/^#\/(lit|atlas|blitz)\/([\w-]+)/);
+  if (m) return `${BOT[m[1]].name} ${m[2] === 'golive' ? 'go live' : m[2]}`;
+  return cap(r.replace(/^#\//, '').replace(/[/-]+/g, ' ').trim()) || 'Home';
+}
+
+// ------------------------------------------------------------------------------------------------ Kalshi
+// The Kalshi bot runs 24/7 on its own cloud server with real money; its numbers reach Jarvis as kalshi.json once its own
+// Claude chat ("kalshi-server") sets up publishing (the setup line is on the Kalshi page). v2 adds strategies[]:
+// {name, mode, running, today_pnl, total_pnl, trades, wins, losses}.
+const KALSHI_RX = /\b(kalshi|kalshis|kal shi|kalshee|calshi|cal she|kal she|call she)\b/;
+const KALSHI_SETUP = 'open your kalshi-server chat in the Claude app and paste the setup line from the Kalshi page';
+function kalshiRun(k, nowMs) {
+  if (k.running === false) return ['bad', /^paused/i.test(str(k.status, 40)) ? 'paused' : 'stopped'];
+  if (/^paused/i.test(str(k.status, 40))) return ['warn', 'paused'];
+  const t = num(k.t);
+  return t && nowMs / 1000 - t < KALSHI_STALE_S ? ['ok', 'running'] : ['warn', 'not updating'];
+}
+function kalshiStrats(k) {
+  return arr(k && k.strategies).filter((s) => isObj(s) && str(s.name, 60)).map((s) => ({ name: str(s.name, 60), mode: str(s.mode, 12).toLowerCase(), running: s.running,
+    today: num(s.today_pnl), total: num(s.total_pnl), trades: num(s.trades), wins: num(s.wins), losses: num(s.losses) }));
+}
+// one ET day's P&L from kalshi.json days [["YYYY-MM-DD", $], ...] (day number dn), or null
+function kalshiDay(k, dn) {
+  const c = fromDayNum(dn), key = `${c.y}-${String(c.mo).padStart(2, '0')}-${String(c.d).padStart(2, '0')}`;
+  for (const d of arr(k && k.days)) if (Array.isArray(d) && str(d[0], 10) === key && num(d[1]) != null) return num(d[1]);
+  return null;
+}
+// Kalshi OUTCOMES for alerts, in the owner's style ("🌌 +$1.26" with the day's total): only trades that settled since `prev`
+// (the kalshi.json seen before). No baseline yet -> nothing (never a burst of old outcomes). Signal fills are never alerts.
+export function outcomeAlerts(prev, cur) {
+  if (!isObj(prev) || !isObj(cur)) return [];
+  const key = (t) => [num(t.t) || '', str(t.ticker, 80), str(t.side, 8).toLowerCase(), num(t.contracts) != null ? num(t.contracts) : ''].join('|');
+  const done = new Set(arr(prev.trades).filter((t) => isObj(t) && num(t.pnl) != null).map(key));
+  const day = usd2(cur.today_pnl, true), out = [];
+  for (const t of arr(cur.trades)) {
+    if (!isObj(t) || num(t.pnl) == null || done.has(key(t))) continue;
+    out.push({ title: `🌌 ${usd2(t.pnl, true)}`, body: `${str(t.title, 100) || str(t.ticker, 60) || 'Kalshi'}${day ? ` · today ${day}` : ''}`, pnl: num(t.pnl), t: num(t.t) });
+  }
+  return out.slice(0, 5);
+}
+
+// ------------------------------------------------------------------------------------------------ the Planner
+function planView(P) {
+  if (!isObj(P)) return null;
+  const ev = arr(P.ev).filter(isObj).map((e) => ({ title: str(e.title, 120) || 'Untitled', allDay: !!e.allDay, start: str(e.start, 5), min: hmMin(e.start) }))
+    .sort((x, y) => (x.allDay ? -1 : 0) - (y.allDay ? -1 : 0) || String(x.start).localeCompare(String(y.start)));
+  const day = str(P.day, 10);
+  const tasks = arr(P.tasks).filter((t) => isObj(t) && !t.done).map((t) => ({ title: str(t.title, 120) || 'Untitled', date: str(t.date, 10) }))
+    .map((t) => ({ ...t, overdue: !!(day && t.date && t.date < day) }));
+  const projects = arr(P.projects).map((p) => (isObj(p) ? str(p.name, 80) : '')).filter(Boolean);
+  return { day, ev, tasks, projects };
+}
+const evLine = (e) => `${e.allDay ? 'All day' : hm(e.start) || 'No time'}: ${e.title}`;
+const taskList = (ts, n) => ts.slice(0, n).map((t) => t.title + (t.overdue ? ' (overdue)' : '')).join(', ') + (ts.length > n ? '…' : '');
+
+// ------------------------------------------------------------------------------------------------ apps
+const BUILT_IN = [{ id: 'home', name: 'Jarvis', url: '' }, { id: 'zenith', name: 'Zenith', url: '../' }, { id: 'planner', name: 'Planner', url: '../planner/' }, { id: 'kalshi', name: 'Kalshi', url: '../kalshi/' }];
+function appList(apps) {
+  const list = arr(apps).filter((a) => isObj(a) && str(a.id, 40) && str(a.name, 40)).map((a) => ({ id: str(a.id, 40), name: str(a.name, 40), url: str(a.url, 400) }));
+  return list.length ? list : BUILT_IN.slice();
+}
+
+// ------------------------------------------------------------------------------------------------ questions
+const OPEN_RX = /^(open|go to|goto|show|switch to|take me to|launch|pull up|bring up|navigate to|jump to)\b/;      // a command leads: "is nq open" is a question
+const ASK_RX = /\b(how|how's|hows|what|what's|where|where's|when|when's|why|who|is|are|status|room|floor|target|p&l|profit|doing|balance|positions?|money|made|strateg\w*|trades?|today|week|yesterday|best|worst|total|eval|price|quote)\b/;
+const DATA_RX = /\b(room|floor|target|p&l|profit|balance|positions?|status|how much|how many|how far|made|lost)\b/;
+const HELP_RX = /^(help|help me|what can you do|what can i ask|what can i ask you|what do you do|commands|menu|options|what can you tell me)$|\b(what can you do|what can i (ask|say))\b/;
+const BRIEF_RX = /\b(brief me|briefing|brief|rundown|run down|sitrep|sit rep|catch me up|what did i miss|status report|daily report|morning report|evening report|summary|summarize|overview|update me|give me an update|full update|full report|report)\b/;
+const NOW_RX = /\b(what should i do|what do i do|what do i need to do|what now|now what|next step|next steps|what's next for me|what needs (my )?attention|needs my attention|anything (i|for me to) (need to )?do|do i need to do anything|should i do anything|what should i focus on|action items?|to do now|what do you need from me|what's my next move|my next move)\b|^(what's next|whats next|what next)$/;
+const GOAL_RX = /\b(10 ?k|ten k|10,?000|ten thousand|money goal|my goals?|the goals?|goal|stingray|corvette|z06|savings|road to|payouts?)\b/;
+const MARKET_RX = /\b(market|markets|futures|globex|cme|trading hours|hours|session|halt|halted|holiday|holidays|closed|closes|closing|reopen|reopens|opens?|opening)\b/;
+const NOT_MARKET_RX = /\b(positions?|tasks?|to ?do|events?|kalshi|trades?|planner|plan|calendar|zenith|apps?|dashboards?)\b/;
+const PLAN_WORDS_RX = /\b(plan|schedule|calendar|tasks?|events?|meetings?|agenda|appointments?|to ?do)\b/;
+const TIME_RX = /\b(time|date|day is it|what day|which day|today's date)\b/;
+const APPS_RX = /\b(apps|dashboards|what can you open|which apps|my projects)\b/;
+
+function norm(raw) {
+  let q = String(raw == null ? '' : raw).toLowerCase().replace(/[’‘`´]/g, "'").replace(/[“”]/g, '"');
+  q = q.replace(/\bp\s*&\s*l\b|\bp and l\b|\bpnl\b|\bp n l\b|\bprofit (and|&) loss\b/g, 'p&l');
+  q = q.replace(/[^a-z0-9$&%'.:+\-° ]+/g, ' ').replace(/\s+/g, ' ').trim();
+  q = q.replace(/\b(what|how|where|when|who|it|that|today|there)s\b/g, "$1's").replace(/\bim\b/g, "i'm");
+  q = q.replace(/[.:]+$/g, '').replace(/(^|\s)[.:'-]+(?=\s|$)/g, ' ').replace(/\s+/g, ' ').trim();
+  // the wake word and polite openers: "hey jarvis, how are the bots" -> "how are the bots"
+  for (let i = 0; i < 3; i++) {
+    const before = q;
+    q = q.replace(/^(hey |hi |ok |okay |yo )?jarvis\s+(?=\S)/, '').replace(/\s+jarvis$/, '')
+      .replace(/^(please|can you|could you|would you|will you|tell me|let me know|do you know|i want to know|i'd like to know|so|um|uh)\s+(?=\S)/, '')
+      .replace(/\s+please$/, '').trim();
+    if (q === before) break;
+  }
+  return q;
+}
+const botsIn = (q) => BOTS.filter((b) => b.rx.test(q)).map((b) => b.key);
+const allIn = (q) => /\b(bots|all|every|everything|everyone|accounts|both|the others|all three)\b/.test(q);
+function topicIn(q) {
+  if (/\b(room|floor|drawdown|max loss|cushion|buffer)\b/.test(q)) return 'room';
+  if (/\b(eval|evals|evaluation|progress|sessions?)\b/.test(q)) return 'eval';
+  if (/\b(target|to go|pass|passing|how far)\b/.test(q)) return 'target';
+  if (/\b(p&l|profit|made|make|making|lost|lose|losing|money|earn|earned|gains?|today's)\b/.test(q)) return 'pnl';
+  if (/\bbalances?\b/.test(q)) return 'balance';
+  if (/\b(positions?|in a trade|in trade|holding|exposure)\b/.test(q)) return 'positions';
+  if (/\b(waiting|wait for|looking for|watching|window|next entry|setup|stage)\b/.test(q)) return 'waiting';
+  if (/\b(week|weekly)\b/.test(q)) return 'week';
+  if (/\b(status|how's|how is|how are|doing|running)\b/.test(q)) return 'status';
+  return null;
+}
+
+// ------------------------------------------------------------------------------------------------ speech
+// A text answer -> a short spoken line: money and times said naturally, no symbols.
+function toSpeech(text, maxLen) {
+  let s = String(text || '').replace(/\n+/g, '. ').replace(/\s*·\s*/g, ', ');
+  s = s.replace(/([+−-])\$(\d+(?:,\d{3})*)(\.(\d\d))?/g, (m0, sg, w, c0, c) => `${sg === '+' ? 'up' : 'down'} ${w} dollar${w === '1' ? '' : 's'}${c && c !== '00' ? ' ' + String(+c) : ''}`);
+  s = s.replace(/\$(\d+(?:,\d{3})*)(\.(\d\d))?/g, (m0, w, c0, c) => `${w} dollar${w === '1' ? '' : 's'}${c && c !== '00' ? ' ' + String(+c) : ''}`);
+  s = s.replace(/\b(\d{1,2}):00 (AM|PM)\b/g, '$1 $2').replace(/\bET\b/g, 'Eastern').replace(/\bP&L\b/gi, 'P and L').replace(/&/g, ' and ');
+  s = s.replace(/\bx(\d+)\b/g, '$1 contracts').replace(/(\d+)-(\d+)°F/g, '$1 to $2 degrees').replace(/°F/g, ' degrees');
+  s = s.replace(/\b(\d+) h (\d+) min\b/g, (m0, h, m) => `${plural(+h, 'hour')} ${plural(+m, 'minute')}`).replace(/\b(\d+) h\b/g, (m0, h) => plural(+h, 'hour')).replace(/\b(\d+) min\b/g, (m0, m) => plural(+m, 'minute'));
+  s = s.replace(/[()]/g, '').replace(/…/g, '').replace(/\s*;\s*/g, ', ').replace(/\s+/g, ' ').replace(/\.\s*\./g, '.').trim();
+  const max = maxLen || 420;
+  if (s.length <= max) return s;
+  const cut = s.slice(0, max), i = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf('? '), cut.lastIndexOf('! '));
+  return (i > 40 ? cut.slice(0, i + 1) : cut.replace(/\s+\S*$/, '') + '.').trim();
+}
+
+// ------------------------------------------------------------------------------------------------ small talk (crisp, calm, a little witty)
+const JOKES = [
+  'I would tell you a joke about the market, but the timing never works out.',
+  'A trader walks into a bar. He sets a stop at the door, just in case.',
+  'My favourite exercise? Watching the bots skip the trades they should skip.',
+  'Why did the micro contract feel confident? Because the stop was beyond the sweep.',
+];
+
+// ------------------------------------------------------------------------------------------------ the brain
+export function createBrain(opts) {
+  const o = isObj(opts) ? opts : {};
+  const getFacts = typeof o.getFacts === 'function' ? o.getFacts : () => ({});
+  const openFn = typeof o.open === 'function' ? o.open : null;
+  const nowFn = typeof o.now === 'function' ? o.now : null;
+  const autoOpen = o.autoOpen !== false;
+  const openDelay = num(o.openDelay) != null ? Math.max(0, num(o.openDelay)) : 0;     // the shell's open() waits 450 ms itself
+  const store = () => { if (o.storage) return o.storage; try { return typeof localStorage !== 'undefined' ? localStorage : null; } catch (_) { return null; } };
+  const doFetch = (...a) => (typeof o.fetch === 'function' ? o.fetch : fetch)(...a);
+  // Zenith routes: zenith-mode.js's zenithRouteFor (o.routeFor to pass one in; o.zenithRoutes false: the local map only)
+  let routeFor = typeof o.routeFor === 'function' ? o.routeFor : null;
+  let zrWait = null;
+  if (!routeFor && o.zenithRoutes !== false) {
+    try {
+      zrWait = import('./zenith-mode.js').then((m) => { if (m && typeof m.zenithRouteFor === 'function') routeFor = m.zenithRouteFor; })
+        .catch(() => null).then(() => { zrWait = null; });
+    } catch (_) { zrWait = null; }
+  }
+
+  // smart mode settings, this phone only: { on, provider, depth, keys: {groq, gemini, anthropic}, models: {...} }
+  let S = { on: false, provider: DEFAULT_PROVIDER, depth: 'auto', keys: { groq: '', gemini: '', anthropic: '' }, models: {} };
+  try {
+    const st = store(), v = st ? JSON.parse(st.getItem(SMART_KEY) || 'null') : null;
+    if (isObj(v)) {
+      const keys = isObj(v.keys) ? v.keys : {}, models = isObj(v.models) ? v.models : {};
+      for (const p of Object.keys(PROVIDERS)) {
+        if (typeof keys[p] === 'string') S.keys[p] = keys[p].trim().slice(0, 400);
+        if (typeof models[p] === 'string' && models[p].trim()) S.models[p] = models[p].trim().slice(0, 80);
+      }
+      if (PROVIDERS[v.provider]) S.provider = v.provider;
+      if (DEPTHS.includes(v.depth)) S.depth = v.depth;
+      S.on = v.on === true;
+    }
+  } catch (_) { /* private mode or junk: smart mode stays off */ }
+  const saveSmart = () => { try { const st = store(); if (st) st.setItem(SMART_KEY, JSON.stringify({ v: 2, on: S.on, provider: S.provider, depth: S.depth, keys: S.keys, models: S.models })); } catch (_) { /* not kept */ } };
+  const modelOf = (p) => S.models[p] || PROVIDERS[p].model;
+  const smartView = () => ({ on: S.on, provider: S.provider, model: modelOf(S.provider), depth: S.depth, hasKey: !!S.keys[S.provider], active: !!(S.on && S.keys[S.provider]),
+    keys: { groq: !!S.keys.groq, gemini: !!S.keys.gemini, anthropic: !!S.keys.anthropic }, providers: Object.keys(PROVIDERS), depths: DEPTHS.slice() });
+
+  let ctx = null;            // the last answer's subject, for follow-ups: { topic, sel, only, kalshi, t }
+  let last = null;           // the last reply (for "repeat that")
+  let lastFacts = {};
+  let jokeN = 0;
+  const hist = [];           // the last turns (smart mode context only; never stored)
+
+  function nowMs(f) {
+    const pick = (v) => { if (v instanceof Date) return v.getTime(); const n = num(v); if (n != null) return n < 1e12 ? n * 1000 : n; if (typeof v === 'string') { const t = Date.parse(v); return Number.isFinite(t) ? t : null; } return null; };
+    let t = null;
+    try { if (nowFn) t = pick(nowFn()); } catch (_) { t = null; }
+    if (t == null || !Number.isFinite(t)) t = pick(f && f.now);
+    return t != null && Number.isFinite(t) ? t : Date.now();
+  }
+  async function loadFacts() {
+    let f = null;
+    try { f = getFacts(); if (f && typeof f.then === 'function') f = await f; } catch (_) { f = null; }
+    lastFacts = isObj(f) ? f : {};
+    return lastFacts;
+  }
+  function view(f) {
+    f = isObj(f) ? f : {};
+    const t = nowMs(f);
+    let M = null;
+    try { M = marketState(t); } catch (_) { M = null; }
+    const fm = isObj(f.market) ? f.market : null;
+    const mtext = M ? marketText(M, t) : str(fm && fm.text, 200) || 'Market hours unknown';
+    return {
+      f, now: t, et: et(t), M, mtext, nq: nqView(f.live, t), liveState: str(f.liveState, 20) || (f.liveError ? 'error' : ''),
+      extras: isObj(f.extras) ? f.extras : {},
+      k: isObj(f.kalshi) ? f.kalshi : null, kState: str(f.kalshiState, 20), plan: planView(f.planner), apps: appList(f.apps),
+    };
+  }
+  const greetWord = (V) => (V.et.h < 12 ? 'Good morning' : V.et.h < 17 ? 'Good afternoon' : 'Good evening');
+  const card = (V, key) => (V.nq ? V.nq[key] : null);
+  const needLive = (V) => ({
+    text: V.liveState === 'error' ? 'I cannot reach the bots\' live feed right now. Open Zenith for everything.' : 'Still loading the bots. Ask me again in a second.',
+    speak: V.liveState === 'error' ? 'I cannot reach the bots right now.' : 'Still loading the bots. Ask me again in a second.', intent: 'no_live',
+  });
+  const freshNote = (V) => {
+    if (!V.nq || !V.nq.t) return V.nq && !V.nq.t ? 'The live feed has no time stamp, so I cannot say how fresh this is.' : '';
+    if (V.nq.cached) return `This is the saved copy from ${ago(V.nq.t, V.now)}: the live feed is not answering.`;
+    return V.nq.stale ? `Heads up: the live feed is from ${ago(V.nq.t, V.now)}, so the PC may be off or not publishing.` : '';
+  };
+  const setCtx = (topic, sel, only, kalshi, V) => { ctx = { topic, sel: sel || ALL, only: !!only, kalshi: !!kalshi, t: V.now }; };
+
+  // ---------------------------------------------------------------------------------------------- the bots' answers
+  function botStatusLine(V, key) {
+    const bot = BOT[key], c = card(V, key);
+    if (isOff(c, bot)) return offWhy(c, bot);
+    const today = usd(c.today_pnl, true), room = usd(c.room), tt = usd(c.to_target), n = num(c.trades_today);
+    return `${labelOf(c, bot)}: today ${today || 'missing'}, room ${room || 'missing'}, ${tt ? tt + ' to target' : 'to target missing'}${n ? `, ${plural(n, 'trade')} today` : ''}.`;
+  }
+  function botSpeech(V, key, withTarget) {
+    const bot = BOT[key], c = card(V, key);
+    if (isOff(c, bot)) return key === 'blitz' && c && c.off ? 'BLITZ is off on the PC.' : `${bot.name} has no eval numbers in the feed.`;
+    const t = saySigned(c.today_pnl), r = sayAmt(c.room), tt = sayAmt(c.to_target);
+    return `${bot.name} is ${t ? (t === 'flat' ? 'flat' : t) + ' today' : 'missing today\'s P and L'}, with ${r ? r + ' of room' : 'room missing'}${withTarget ? (tt ? ` and ${tt} to the target` : ', target distance missing') : ''}.`;
+  }
+  // "Zlarior is up 213 dollars today, ATLAS is flat, and BLITZ is up 95 dollars."
+  function botsSay(V) {
+    const bits = [];
+    for (const key of ALL) {
+      const bot = BOT[key], c = card(V, key);
+      if (!c) continue;
+      if (isOff(c, bot)) { if (key === 'blitz' && c.off) bits.push('BLITZ is off'); else bits.push(`${bot.name} has no numbers`); continue; }
+      const t = saySigned(c.today_pnl);
+      bits.push(`${bot.name} is ${t ? (t === 'flat' ? 'flat' : t) : 'missing its P and L'}`);
+    }
+    if (!bits.length) return 'No bot numbers in the feed.';
+    const last = bits.pop();
+    return (bits.length ? bits.join(', ') + ', and ' + last : last) + ' today.';
+  }
+  function marketSay(V) {
+    const M = V.M;
+    if (!M) return toSpeech(V.mtext) + '.';
+    if (M.open) return `The market is open, ${M.rth ? 'regular session' : 'overnight session'}.`;
+    return `The market opens ${M.next ? whenText(M.next, V.now, true) : 'at the next session'}.`;
+  }
+  function verdictLines(V) {
+    const vd = V.nq.verdict || {}, out = [`${str(vd.label, 80) || 'Bot status unknown'}${V.nq.t ? ' (' + ago(V.nq.t, V.now) + ')' : ''}.`];
+    const reason = str(vd.reason, 160);
+    if (reason && !str(vd.label, 80).toLowerCase().includes(reason.toLowerCase())) out.push(cap(reason) + '.');
+    return out;
+  }
+  const speakLabel = (s) => str(s, 80).toLowerCase().replace(/\bpc\b/g, 'PC').replace(/\bnq\b/g, 'NQ').replace(/:/g, ',');
+  function statusAnswer(V, sel, only) {
+    if (!V.nq) return needLive(V);
+    const one = only && sel.length === 1;
+    const out = [], say = [];
+    if (!only) { out.push(...verdictLines(V)); say.push(`Bot status: ${speakLabel(V.nq.verdict && V.nq.verdict.label) || 'unknown'}.`); }
+    for (const key of sel) {
+      const bot = BOT[key], c = card(V, key);
+      if (!c && key === 'blitz' && !only) continue;                     // no BLITZ card at all: the hub never showed one
+      out.push(botStatusLine(V, key));
+      say.push(botSpeech(V, key, one));
+      if (only && c && !isOff(c, bot)) {
+        const w = str(c.waiting, 240);
+        if (w) out.push(w);
+        if (isObj(c.position)) out.push(posLine(c, bot));
+        if (c.done_today) out.push(`${bot.name} is done for today.`);
+      }
+    }
+    if (!only) {
+      const bad = V.nq.lines.filter((x) => x.level === 'bad')[0];
+      if (bad) { out.push('Needs you: ' + str(bad.text, 240)); say.push('One thing needs you: ' + str(bad.text, 160)); }
+    }
+    out.push(V.mtext + '.');
+    say.push(marketSay(V));
+    const fn = freshNote(V);
+    if (fn) { out.push(fn); say.push(fn); }
+    setCtx('status', sel, only, false, V);
+    const cards = sel.map((key) => botCard(V, key)).filter(Boolean);
+    return { text: lines(...out), speak: toSpeech(say.join(' '), one ? 300 : 520), cards, intent: one ? 'bot_status' : 'status' };
+  }
+  function botCard(V, key) {
+    const bot = BOT[key], c = card(V, key);
+    if (!c) return null;
+    const off = isOff(c, bot);
+    return { title: labelOf(c, bot), kv: off ? [['Status', key === 'blitz' && c.off ? 'off' : str(c.status, 30) || 'not set up']]
+      : [['Today', usd(c.today_pnl, true) || 'missing'], ['Room', usd(c.room) || 'missing'], ['To target', usd(c.to_target) || 'missing']], open: 'zenith', route: bot.route };
+  }
+  function posLine(c, bot) {
+    const p = c.position, side = str(p.side, 10) || (num(p.dir) > 0 ? 'long' : num(p.dir) < 0 ? 'short' : 'open'), q = num(p.qty);
+    const px = (v) => (num(v) != null ? num(v).toLocaleString('en-US', { maximumFractionDigits: 2 }) : 'missing');
+    const u = usd(p.unrealized_usd, true);
+    return `${bot.name}: ${side.toLowerCase()}${q != null ? ' ' + plural(q, 'micro') : ''} from ${px(p.entry)}, stop ${px(p.stop)}, target ${px(p.target)}${u ? `, open P&L ${u}` : ''}.`;
+  }
+  function roomAnswer(V, sel, only) {
+    if (!V.nq) return needLive(V);
+    const out = [], say = [];
+    for (const key of sel) {
+      const bot = BOT[key], c = card(V, key);
+      if (isOff(c, bot)) { if (only) { out.push(offWhy(c, bot)); say.push(bot.name + ' has no room figure.'); } continue; }
+      const fl = usd(c.floor);
+      out.push(`${labelOf(c, bot)}: ${usd(c.room)} of room${fl ? ` above the floor (${fl})` : ''}.`);
+      say.push(`${bot.name} has ${sayAmt(c.room)} of room.`);
+    }
+    setCtx('room', sel, only, false, V);
+    if (!out.length) return { text: 'No account room in the live feed right now. ' + BOT_FIX, intent: 'room' };
+    return { text: lines(...out, freshNote(V)), speak: say.join(' '), intent: 'room' };
+  }
+  function targetAnswer(V, sel, only) {
+    if (!V.nq) return needLive(V);
+    const out = [], say = [];
+    for (const key of sel) {
+      const bot = BOT[key], c = card(V, key);
+      const st = c ? str(c.status, 20).toLowerCase() : '';
+      if (c && (st === 'passed' || st === 'failed')) { out.push(`${bot.name}: eval ${st}.`); say.push(`${bot.name}'s eval ${st}.`); continue; }
+      if (isOff(c, bot) || usd(c.to_target) == null) { if (only) { out.push(c && !isOff(c, bot) ? `${bot.name}: the distance to the target is missing from the feed.` : offWhy(c, bot)); say.push(`I don't have ${bot.name}'s target distance.`); } continue; }
+      out.push(`${bot.name}: ${usd(c.to_target)} to the target.`);
+      say.push(`${bot.name} needs ${sayAmt(c.to_target)} more.`);
+    }
+    setCtx('target', sel, only, false, V);
+    if (!out.length) return { text: 'No eval target in the live feed right now. ' + BOT_FIX, intent: 'target' };
+    return { text: lines(...out, freshNote(V)), speak: say.join(' '), intent: 'target' };
+  }
+  function pnlAnswer(V, sel, only, withKalshi) {
+    if (!V.nq && !(withKalshi && V.k)) return needLive(V);
+    const out = [], say = [];
+    if (V.nq) {
+      for (const key of sel) {
+        const bot = BOT[key], c = card(V, key);
+        if (isOff(c, bot) || usd(c.today_pnl) == null) { if (only) { out.push(c && !isOff(c, bot) ? `${bot.name}: today's P&L is missing from the feed.` : offWhy(c, bot)); say.push(`I don't have ${bot.name}'s P and L.`); } continue; }
+        const wk = usd(c.week_pnl, true);
+        out.push(`${bot.name} today ${usd(c.today_pnl, true)}${wk ? `, this week ${wk}` : ''}.`);
+        say.push(`${bot.name} is ${saySigned(c.today_pnl) === 'flat' ? 'flat today' : saySigned(c.today_pnl) + ' today'}${wk ? `, ${saySigned(c.week_pnl)} this week` : ''}.`);
+      }
+    } else out.push('The bots: no live feed yet.');
+    if (withKalshi && V.k && num(V.k.today_pnl) != null) {
+      const wk = usd2(V.k.week_pnl, true);
+      out.push(`Kalshi today ${usd2(V.k.today_pnl, true)}${wk ? `, this week ${wk}` : ''}.`);
+      say.push(`Kalshi is ${saySigned(V.k.today_pnl, true)} today.`);
+    }
+    setCtx('pnl', sel, only, false, V);
+    if (!out.length) return { text: 'No P&L in the live feed right now. ' + BOT_FIX, intent: 'pnl' };
+    return { text: lines(...out, V.nq ? freshNote(V) : ''), speak: say.join(' '), intent: 'pnl' };
+  }
+  function balanceAnswer(V, sel, only, withKalshi) {
+    if (!V.nq && !(withKalshi && V.k)) return needLive(V);
+    const out = [], say = [];
+    if (V.nq) {
+      for (const key of sel) {
+        const bot = BOT[key], c = card(V, key);
+        if (!c || (key === 'blitz' && c.off)) { if (only) out.push(offWhy(c, bot)); continue; }
+        const b = usd(c.balance);
+        out.push(`${labelOf(c, bot)} balance ${b || 'missing'}.`);
+        say.push(b ? `${bot.name} ${sayAmt(c.balance)}.` : `${bot.name}'s balance is missing.`);
+      }
+    }
+    if (withKalshi && V.k) { const b = usd2(V.k.balance); out.push(`Kalshi balance ${b || 'missing'}.`); say.push(b ? `Kalshi ${sayAmt(V.k.balance, true)}.` : 'Kalshi\'s balance is missing.'); }
+    setCtx('balance', sel, only, false, V);
+    if (!out.length) return { text: 'No balances in the live feed right now. ' + BOT_FIX, intent: 'balance' };
+    return { text: lines(...out), speak: 'Balances: ' + say.join(' '), intent: 'balance' };
+  }
+  function evalAnswer(V, sel, only) {
+    if (!V.nq) return needLive(V);
+    const out = [], say = [], P = V.nq.progress || {};
+    for (const key of sel) {
+      const bot = BOT[key], c = card(V, key);
+      if (isOff(c, bot)) { if (only || key !== 'blitz') out.push(offWhy(c, bot)); continue; }
+      const st = str(c.status, 20).toLowerCase(), stage = str(c.stage, 20).toLowerCase();
+      if (st === 'passed' || st === 'failed') { out.push(`${labelOf(c, bot)}: eval ${st.toUpperCase()}.`); say.push(`${bot.name}'s eval ${st}.`); continue; }
+      const prof = num(c.profit), tt = num(c.to_target), sess = num(c.session), of = num(c.sessions);
+      const pc = prof != null && tt != null && prof + tt > 0 ? Math.max(0, Math.min(100, Math.round((100 * prof) / (prof + tt)))) : null;
+      const bits = [];
+      if (prof != null) bits.push(`profit ${usd(prof, true)}${pc != null ? ` (${pc}% of the way)` : ''}`);
+      bits.push(tt != null ? `${usd(tt)} to the target` : 'distance to the target missing');
+      bits.push(`${usd(c.room) || 'missing'} of room`);
+      bits.push(sess != null ? `session ${sess}${of ? ' of ' + of : ''}` : 'session count missing');
+      out.push(`${labelOf(c, bot)} ${stage === 'funded' ? 'funded' : 'eval'}: ${bits.join(', ')}.`);
+      const wk = isObj(P[key]) && isObj(P[key].week) ? P[key].week : null;
+      if (wk && num(wk.n) != null) out.push(`  This week ${plural(num(wk.n), 'trade')}${num(wk.lo) != null ? ` (goal ${num(wk.lo)}-${num(wk.hi)})` : ''}.`);
+      say.push(`${bot.name}: ${tt != null ? sayAmt(tt) + ' to go' : 'target distance missing'}${sess != null ? `, session ${sess}${of ? ' of ' + of : ''}` : ''}.`);
+    }
+    setCtx('eval', sel, only, false, V);
+    if (!out.length) return { text: 'No eval numbers in the live feed right now. ' + BOT_FIX, intent: 'eval' };
+    return { text: lines(...out, freshNote(V)), speak: say.join(' '), intent: 'eval' };
+  }
+  function positionsAnswer(V, sel, only, withKalshi) {
+    const out = [], say = [];
+    if (V.nq) {
+      for (const key of sel) {
+        const bot = BOT[key], c = card(V, key);
+        if (!c || (key === 'blitz' && c.off)) { if (only) out.push(offWhy(c, bot)); continue; }
+        if (isObj(c.position)) { out.push(posLine(c, bot)); say.push(`${bot.name} is in a trade.`); } else { out.push(`${bot.name}: flat.`); say.push(`${bot.name} is flat.`); }
+      }
+    } else if (!withKalshi || !V.k) return needLive(V);
+    else out.push('The bots: no live feed yet.');
+    if (withKalshi && V.k) {
+      const pos = arr(V.k.positions).filter(isObj);
+      out.push(`Kalshi: ${plural(pos.length, 'open position')}.`);
+      say.push(`Kalshi has ${plural(pos.length, 'open position')}.`);
+    }
+    out.push('Paper only: I never place or change an order.');
+    setCtx('positions', sel, only, false, V);
+    return { text: lines(...out), speak: say.join(' '), intent: 'positions' };
+  }
+  function waitingAnswer(V, sel, only) {
+    if (!V.nq) return needLive(V);
+    const out = [], say = [];
+    for (const key of sel) {
+      const bot = BOT[key], c = card(V, key);
+      if (!c || (key === 'blitz' && c.off)) { if (only) out.push(offWhy(c, bot)); continue; }
+      const w = str(c.waiting, 240), win = isObj(c.window) ? str(c.window.text, 120) : '', stage = isObj(c.stage) ? str(c.stage.label, 60) : '';
+      const bits = [w || 'what it waits for is missing from the feed'];
+      if (stage && !w.toLowerCase().includes(stage.toLowerCase())) bits.push('stage: ' + stage);
+      if (win) bits.push(win);
+      if (c.done_today) bits.push('done for today');
+      if (str(c.rule_note, 160)) bits.push(str(c.rule_note, 160));
+      out.push(`${bot.name}: ${bits.join('; ')}.`.replace(/\.\./g, '.'));
+      say.push(`${bot.name}: ${w || 'no word on what it waits for'}.`);
+    }
+    out.push(V.mtext + '.');
+    setCtx('waiting', sel, only, false, V);
+    return { text: lines(...out), speak: toSpeech(say.join(' ')), intent: 'waiting' };
+  }
+  function weekAnswer(V, sel, only) {
+    if (!V.nq) return needLive(V);
+    const out = [], say = [], P = V.nq.progress || {};
+    for (const key of sel) {
+      const bot = BOT[key], c = card(V, key);
+      if (isOff(c, bot) && !(isObj(P[key]) && isObj(P[key].week))) { if (only) out.push(offWhy(c, bot)); continue; }
+      const wk = isObj(P[key]) && isObj(P[key].week) ? P[key].week : null, n = wk ? num(wk.n) : null, w$ = usd(c && c.week_pnl, true) || (wk ? usd(wk.usd, true) : null);
+      out.push(`${bot.name} this week: ${n != null ? plural(n, 'trade') + (num(wk.lo) != null ? ` (goal ${num(wk.lo)}-${num(wk.hi)})` : '') : 'trade count missing'}, ${w$ || 'P&L missing'}.`);
+      say.push(`${bot.name}: ${n != null ? plural(n, 'trade') : 'trade count missing'}${w$ ? ', ' + toSpeech(w$) : ''}.`);
+    }
+    setCtx('week', sel, only, false, V);
+    if (!out.length) return { text: 'No week numbers in the live feed right now. ' + BOT_FIX, intent: 'week' };
+    return { text: lines(...out), speak: say.join(' '), intent: 'week' };
+  }
+  function tradesTodayAnswer(V, sel, only) {
+    if (!V.nq) return needLive(V);
+    const out = [], say = [];
+    for (const key of sel) {
+      const bot = BOT[key], c = card(V, key);
+      if (!c || (key === 'blitz' && c.off)) { if (only) out.push(offWhy(c, bot)); continue; }
+      const n = num(c.trades_today), mx = num(c.max_day), pos = isObj(c.position);
+      out.push(`${bot.name}: ${n != null ? plural(n, 'trade') + ' today' : 'trade count missing'}${mx ? ` (max ${mx} a day)` : ''}${pos ? ', one open now' : ''}${c.done_today ? ', done for today' : ''}.`);
+      say.push(`${bot.name}: ${n != null ? plural(n, 'trade') : 'no count'}.`);
+    }
+    setCtx('status', sel, only, false, V);
+    if (!out.length) return { text: 'No trade counts in the live feed right now. ' + BOT_FIX, intent: 'trades' };
+    return { text: lines(...out), speak: say.join(' '), intent: 'trades' };
+  }
+  // the daily loss limit (dll) per account and what is used of it
+  function dllAnswer(V, sel, only) {
+    if (!V.nq) return needLive(V);
+    const out = [], say = [];
+    for (const key of sel) {
+      const bot = BOT[key], c = card(V, key);
+      if (!c || (key === 'blitz' && c.off)) { if (only) out.push(offWhy(c, bot)); continue; }
+      const d = usd(c.dll), u = usd(c.dll_used);
+      out.push(`${bot.name}: daily loss limit ${d || 'missing'}${u ? `, used ${u}` : ''}${num(c.room) != null ? `; ${usd(c.room)} of room to the floor` : ''}.`);
+      say.push(`${bot.name}: ${d ? sayAmt(c.dll) + ' a day' : 'limit missing'}${u ? `, ${sayAmt(c.dll_used)} used` : ''}.`);
+    }
+    setCtx('room', sel, only, false, V);
+    if (!out.length) return { text: 'No daily loss limits in the live feed right now. ' + BOT_FIX, intent: 'dll' };
+    return { text: lines(...out), speak: 'Daily loss limits. ' + say.join(' '), intent: 'dll' };
+  }
+  function priceAnswer(V) {
+    if (!V.nq) return needLive(V);
+    const p = V.nq.price;
+    if (p == null) return { text: 'No NQ price in the live feed right now. Zenith\'s Live View has the chart: say "open live view".', speak: 'No NQ price in the live feed right now.', intent: 'price' };
+    const px = p.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return { text: `NQ ${px} (the bot's last price, ${V.nq.t ? ago(V.nq.t, V.now) : 'time unknown'}). ${V.mtext}.`, speak: `N Q at ${px}.`, intent: 'price' };
+  }
+  function pcAnswer(V) {
+    if (!V.nq) return needLive(V);
+    const vd = V.nq.verdict || {}, reason = str(vd.reason, 160);
+    const text = lines(`The PC last checked in ${V.nq.t ? ago(V.nq.t, V.now) : 'at an unknown time'}: ${str(vd.label, 80) || 'status unknown'}.`, reason ? cap(reason) + '.' : '', freshNote(V));
+    return { text, speak: `The PC checked in ${V.nq.t ? ago(V.nq.t, V.now) : 'at an unknown time'}. ${cap(speakLabel(vd.label)) || 'Status unknown'}.`, intent: 'pc' };
+  }
+  const TOPIC_FN = { status: statusAnswer, room: roomAnswer, target: targetAnswer, pnl: pnlAnswer, balance: balanceAnswer, eval: evalAnswer, positions: positionsAnswer, waiting: waitingAnswer, week: weekAnswer };
+
+  // ---------------------------------------------------------------------------------------------- Kalshi
+  function kalshiMissing(V) {
+    if (V.kState === 'error') return { text: 'I cannot reach the Kalshi feed right now. Try again in a minute.', speak: 'I cannot reach Kalshi right now.', intent: 'kalshi' };
+    if (V.kState === '' || V.kState === 'loading') return { text: 'Still checking Kalshi. Ask me again in a second.', speak: 'Still checking Kalshi.', intent: 'kalshi' };
+    return { text: `Kalshi is not connected yet: the Kalshi bot runs on its own server. To connect it, ${KALSHI_SETUP}.`, speak: 'Kalshi is not connected yet. Open your kalshi-server chat in the Claude app and paste the setup line from the Kalshi page.', intent: 'kalshi' };
+  }
+  function kalshiLine(V) {
+    const k = V.k, pos = arr(k.positions).filter(isObj), mode = str(k.mode, 20), wk = usd2(k.week_pnl, true);
+    return `Kalshi${mode ? ' (' + mode.toUpperCase() + ')' : ''}: ${kalshiRun(k, V.now)[1]}, balance ${usd2(k.balance) || 'missing'}, today ${usd2(k.today_pnl, true) || 'missing'}${wk ? `, this week ${wk}` : ''}, ${pos.length} open ${pos.length === 1 ? 'position' : 'positions'}${num(k.t) ? ' (' + ago(k.t, V.now) + ')' : ''}.`;
+  }
+  // an open position; the server's feed may leave out price / P&L (it does not know current prices): say so
+  const kPos = (p) => {
+    const avg = num(p.avg_price), pnl = usd2(p.pnl, true);
+    return `${str(p.title, 120) || str(p.ticker, 60) || 'A market'}: ${str(p.side, 10).toUpperCase() || '?'} x${num(p.contracts) != null ? num(p.contracts) : '?'}${pnl ? `, P&L ${pnl}` : `${avg != null ? ` at ${Math.round(avg * 100)}¢` : ''}, open P&L not in the feed`}.`;
+  };
+  // "Best today: Gold 5 PM +$3.20; worst: 15-min favourites −$1.10." (only strategies with a P&L today)
+  function kalshiBestWorst(k) {
+    const S2 = kalshiStrats(k).filter((s) => s.today != null);
+    if (!S2.length) return { text: '', speak: '' };
+    const sorted = S2.slice().sort((a, b) => b.today - a.today), best = sorted[0], worst = sorted[sorted.length - 1];
+    if (sorted.every((s) => Math.abs(s.today) < 0.005)) return { text: `No P&L yet today on its ${plural(S2.length, 'strategy', 'strategies')}.`, speak: `Its strategies are flat today.` };
+    if (sorted.length === 1 || best.today === worst.today) return { text: `${sorted.length === 1 ? 'Only strategy with a P&L today' : 'Strategies today'}: ${best.name} ${usd2(best.today, true)}.`, speak: `${best.name} is ${saySigned(best.today, true)} today.` };
+    return { text: `Best today: ${best.name} ${usd2(best.today, true)}; worst: ${worst.name} ${usd2(worst.today, true)}.`,
+      speak: `Best strategy today: ${best.name}, ${saySigned(best.today, true)}. Worst: ${worst.name}, ${saySigned(worst.today, true)}.` };
+  }
+  const kStrat = (s) => `${s.name}${s.mode ? ` (${s.mode}${s.running === false && s.mode !== 'off' ? ', stopped' : ''})` : ''}: today ${usd2(s.today, true) || 'missing'}, all time ${usd2(s.total, true) || 'missing'}${s.trades != null ? `, ${plural(s.trades, 'trade')}` : ''}${s.wins != null && s.losses != null ? ` (${s.wins} won, ${s.losses} lost)` : ''}.`;
+  function kalshiAnswer(q, V, topic) {
+    if (!V.k) { setCtx('status', ALL, false, true, V); return kalshiMissing(V); }
+    const k = V.k, pos = arr(k.positions).filter(isObj), run = kalshiRun(k, V.now);
+    const t = topic || (/\b(best day|worst day|days|history|recent days|yesterday)\b/.test(q) ? 'days' : /\b(strateg(y|ies)|books?|which one|best|worst)\b/.test(q) ? 'strategies'
+      : /\b(trades?|fills?|bought|sold|last bet)\b/.test(q) ? 'trades' : /\b(positions?|holding|open bets?|bets)\b/.test(q) ? 'positions'
+        : /\b(total|all time|overall|since (the )?start)\b/.test(q) ? 'total' : /\b(p&l|profit|made|make|lost|today|week)\b/.test(q) ? 'pnl' : /\bbalance\b/.test(q) ? 'balance' : 'status');
+    let text, speak;
+    const note = str(k.note, 160), status = str(k.status, 120);
+    const bw = kalshiBestWorst(k);
+    if (/\b(real money|paper|live mode|is it live|mode)\b/.test(q) && !topic) {
+      const mode = str(k.mode, 20).toLowerCase();
+      const txt = mode === 'live' ? 'Yes: Kalshi runs in LIVE mode, with real money.' : mode === 'paper' ? 'No: Kalshi runs in PAPER mode, no real money.' : 'Its mode is missing from the feed.';
+      setCtx('status', ALL, false, true, V);
+      return { text: lines(txt, kalshiLine(V)), speak: txt, cards: [kalshiCard(V)], intent: 'kalshi' };
+    }
+    if (t === 'strategies') {
+      const ss = kalshiStrats(k);
+      text = ss.length ? lines(`Kalshi's ${plural(ss.length, 'strategy', 'strategies')}:`, ...ss.slice(0, 8).map((x) => '• ' + kStrat(x)), bw.text) : 'The Kalshi feed has no strategy breakdown yet.';
+      speak = ss.length ? (bw.speak || `Kalshi runs ${plural(ss.length, 'strategy', 'strategies')}.`) : 'No strategy breakdown in the Kalshi feed yet.';
+    } else if (t === 'positions') {
+      text = lines(`Kalshi: ${plural(pos.length, 'open position')}.`, ...pos.slice(0, 6).map(kPos), pos.length > 6 ? `…and ${pos.length - 6} more on the Kalshi page.` : '');
+      speak = `Kalshi has ${plural(pos.length, 'open position')}.` + (pos[0] ? ' ' + toSpeech(kPos(pos[0])) : '');
+    } else if (t === 'trades') {
+      const tr = arr(k.trades).filter(isObj);
+      text = tr.length ? lines(`Kalshi's last ${plural(Math.min(3, tr.length), 'trade')}:`, ...tr.slice(0, 3).map((x) => `${cap(str(x.action, 10) || 'trade')} ${str(x.side, 10).toUpperCase()} x${num(x.contracts) != null ? num(x.contracts) : '?'} ${str(x.title, 100) || str(x.ticker, 60)}${num(x.price) != null ? ` at ${Math.round(num(x.price) * 100)}¢` : ''}${num(x.t) ? ` (${ago(x.t, V.now)})` : ''}.`))
+        : 'No Kalshi trades in the feed.';
+      speak = toSpeech(text.split('\n').slice(0, 2).join(' ')).replace(/¢/g, ' cents');
+    } else if (t === 'total') {
+      text = `Kalshi all time: ${usd2(k.total_pnl, true) || 'missing from the feed'}. Balance ${usd2(k.balance) || 'missing'}.`;
+      speak = toSpeech(text);
+    } else if (t === 'days' && /\byesterday\b/.test(q)) {
+      const yd = kalshiDay(k, V.et.dn - 1);
+      text = yd != null ? `Kalshi yesterday: ${usd2(yd, true)}.` : 'Yesterday\'s Kalshi P&L is missing from the feed.';
+      speak = yd != null ? `Kalshi was ${saySigned(yd, true)} yesterday.` : text;
+    } else if (t === 'days') {
+      const ds = arr(k.days).filter((d) => Array.isArray(d) && num(d[1]) != null).slice(-7);
+      text = ds.length ? lines('Kalshi, recent days:', ...ds.map((d) => `${str(d[0], 10)}: ${usd2(d[1], true)}`)) : 'No daily Kalshi P&L in the feed.';
+      speak = ds.length ? `Last day: ${toSpeech(usd2(ds[ds.length - 1][1], true))}.` : text;
+    } else if (t === 'pnl') {
+      const wk = usd2(k.week_pnl, true);
+      text = `Kalshi today ${usd2(k.today_pnl, true) || 'missing'}${wk ? `, this week ${wk}` : ''}${usd2(k.total_pnl, true) ? `, all time ${usd2(k.total_pnl, true)}` : ''}.`;
+      speak = toSpeech(text);
+    } else {
+      text = lines(kalshiLine(V), ...pos.slice(0, 3).map(kPos), bw.text, status && t === 'status' ? `Its status: ${status}.` : '', note ? `Note: ${note}.` : '');
+      speak = `Kalshi is ${run[1]}. Balance ${sayAmt(k.balance, true) || 'missing'}, ${saySigned(k.today_pnl, true) ? saySigned(k.today_pnl, true) + ' today' : 'today missing'}, ${plural(pos.length, 'open position')}.${bw.speak ? ' ' + bw.speak : ''}`;
+    }
+    setCtx(t === 'pnl' ? 'pnl' : t === 'positions' ? 'positions' : t === 'balance' ? 'balance' : 'status', ALL, false, true, V);
+    return { text, speak, cards: [kalshiCard(V)], intent: 'kalshi' };
+  }
+  function kalshiCard(V) {
+    const k = V.k;
+    if (!k) { const t = V.kState === 'error' ? 'Feed unreachable' : V.kState === 'waiting' ? 'Not connected yet' : 'Loading'; return { title: 'Kalshi', text: t, lines: [t], open: 'kalshi' }; }
+    return { title: 'Kalshi', kv: [['Balance', usd2(k.balance) || 'missing'], ['Today', usd2(k.today_pnl, true) || 'missing'], ['Open', String(arr(k.positions).filter(isObj).length)]], open: 'kalshi' };
+  }
+
+  // ---------------------------------------------------------------------------------------------- the market
+  function marketAnswer(q, V) {
+    setCtx('market', ALL, false, false, V);
+    const M = V.M;
+    if (!M) return { text: V.mtext + '.', intent: 'market' };
+    const sched = 'CME hours for NQ: Sunday 6:00 PM to Friday 5:00 PM ET, with a daily halt from 5:00 to 6:00 PM ET.';
+    if (/\b(holidays?|thanksgiving|christmas|new year|closures?|early close)\b/.test(q)) {
+      const out = [], start = V.et.dn;
+      for (let d = start; d <= start + 75 && out.length < 4; d++) {
+        const w = fromDayNum(d).wd;
+        if (w === 0 || w === 6) continue;
+        const c = fCalendar(d);
+        if (c) out.push(c);
+      }
+      const text = lines(out.length ? 'Coming CME holiday hours (ET):' : 'No CME holiday closures or early closes in the next 75 days.', ...out, V.mtext + '.');
+      return { text, speak: toSpeech(out.length ? 'Next: ' + out[0] : text), intent: 'market' };
+    }
+    if (/\b(hours|schedule|trading hours|when (is|does) it trade)\b/.test(q)) return { text: lines(sched, V.mtext + '.'), speak: toSpeech('CME hours: Sunday 6 PM to Friday 5 PM Eastern, with a daily halt from 5 to 6. ' + V.mtext), intent: 'market' };
+    if (M.open) {
+      const until = whenText(M.closeAt, V.now), back = M.reopen ? whenText(M.reopen, V.now) : 'the next session';
+      const nxt = M.weekend ? `It closes for the weekend ${until} and reopens ${back}.` : M.early ? `It closes early ${until} for ${M.early}; back ${back}.` : `Next halt ${until}, back ${back}.`;
+      const ask = /\b(when|what time)\b.*\b(open|opens|opening|start)\b/.test(q);
+      const text = lines((ask ? 'It is open now. ' : '') + V.mtext + '.', nxt);
+      return { text, speak: toSpeech(`The NQ market is open, ${M.rth ? 'regular session' : 'overnight session'}. ${nxt}`), intent: 'market' };
+    }
+    const inTxt = M.next ? ` (in ${dur(M.next - V.now)})` : '';
+    const why = M.why === 'weekend' ? 'for the weekend' : M.why === 'halt' ? 'for the daily 5-6 PM halt' : M.why === 'holiday' ? `for ${M.name}` : `early for ${M.name}`;
+    const text = lines(V.mtext + inTxt + '.', /\bwhy\b/.test(q) ? `Closed ${why}. ${sched}` : '');
+    return { text, speak: `The NQ market is closed ${why}. It opens ${M.next ? whenText(M.next, V.now, true) + ', in ' + dur(M.next - V.now, true) : 'at the next session'}.`, intent: 'market' };
+  }
+  function fCalendar(d) {
+    const c = fromDayNum(d), lbl = `${WD_SHORT[c.wd]} ${MON_SHORT[c.mo - 1]} ${c.d}`;
+    if (fullClosure(d)) return `${lbl}: closed (${fullClosure(d)}).`;
+    const e = earlyClose(d);
+    return e ? `${lbl}: early close ${clock(e[0])} (${e[1]}).` : null;
+  }
+
+  // ---------------------------------------------------------------------------------------------- the plan
+  function planAnswer(q, V) {
+    const p = V.plan;
+    setCtx('plan', ALL, false, false, V);
+    if (!p) return { text: 'I cannot see your Planner here yet. Open it once inside Jarvis (connect its sync if it asks) and I will read your day.', speak: 'I cannot see your Planner yet. Open it once inside Jarvis.', intent: 'plan' };
+    if (/\btomorrow|next week|this weekend|on (monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/.test(q)) return { text: 'I only see today\'s plan from here. Say "open planner" for the rest of the week.', intent: 'plan' };
+    if (/\bprojects?\b/.test(q)) {
+      const names = V.apps.filter((a) => a.id !== 'home').map((a) => a.name);
+      return { text: lines(p.projects.length ? `Planner projects: ${p.projects.slice(0, 8).join(', ')}${p.projects.length > 8 ? '…' : ''}.` : 'No projects in your Planner.', names.length ? `Dashboards here: ${names.join(', ')}.` : ''), intent: 'plan' };
+    }
+    if (/\b(next|coming up|upcoming|after this|later today|later)\b/.test(q)) {
+      const nx = p.ev.filter((e) => !e.allDay && e.min != null && e.min > V.et.min)[0];
+      const text = nx ? `Next on your plan: ${evLine(nx)} (in ${dur((nx.min - V.et.min) * 60e3)}).` : p.ev.length ? 'Nothing else timed on your plan today.' : 'Nothing on your plan today.';
+      const tk = p.tasks.length ? `${plural(p.tasks.length, 'open task')}: ${taskList(p.tasks, 3)}` : '';
+      return { text: lines(text, tk), speak: toSpeech(text + (tk ? ' ' + plural(p.tasks.length, 'open task') + '.' : '')), intent: 'plan' };
+    }
+    if (/\b(tasks?|to ?dos?|to do list|chores|overdue)\b/.test(q) && !/\b(events?|schedule|calendar|meetings?|agenda)\b/.test(q)) {
+      if (!p.tasks.length) return { text: 'No open tasks. Nicely done.', intent: 'plan' };
+      const od = p.tasks.filter((t) => t.overdue).length;
+      return { text: lines(`${plural(p.tasks.length, 'open task')}${od ? ` (${od} overdue)` : ''}:`, ...p.tasks.slice(0, 6).map((t) => '• ' + t.title + (t.overdue ? ` (overdue, ${t.date})` : '')), p.tasks.length > 6 ? `…and ${p.tasks.length - 6} more.` : ''),
+        speak: `${plural(p.tasks.length, 'open task')}${od ? `, ${od} overdue` : ''}: ${toSpeech(taskList(p.tasks, 3))}.`, intent: 'plan' };
+    }
+    if (!p.ev.length && !p.tasks.length) return { text: 'Nothing on your plan today.', speak: 'Nothing on your plan today. A rare thing.', intent: 'plan' };
+    const ls = p.ev.slice(0, 6).map(evLine);
+    if (p.ev.length > 6) ls.push(`…and ${p.ev.length - 6} more events.`);
+    if (p.tasks.length) ls.push(`${p.tasks.length} open ${p.tasks.length === 1 ? 'task' : 'tasks'}: ${taskList(p.tasks, 4)}`);
+    const nx = p.ev.filter((e) => !e.allDay && e.min != null && e.min > V.et.min)[0];
+    const speak = `${p.ev.length ? plural(p.ev.length, 'event') + ' today' : 'No events today'}${nx ? `, next ${nx.title} at ${toSpeech(hm(nx.start))}` : ''}${p.tasks.length ? `, and ${plural(p.tasks.length, 'open task')}` : ''}.`;
+    return { text: lines(...ls), speak, cards: [{ title: 'Today', text: ls.slice(0, 4).join(' · '), lines: ls.slice(0, 5), open: 'planner' }], intent: 'plan' };
+  }
+
+  // ---------------------------------------------------------------------------------------------- money goal (live.json "money")
+  function goalAnswer(V) {
+    const m = V.nq && V.nq.money;
+    if (!m) return { text: 'The Road to $10K card is not in the live feed right now. Zenith\'s Goals page has it: say "open goals".', speak: 'I do not have the money goal card right now.', intent: 'goal' };
+    const gs = arr(m.goals).filter(isObj).map((g) => (str(g.title, 60) && str(g.sentence, 240) ? `${str(g.title, 60)}: ${str(g.sentence, 240)}` : '')).filter(Boolean);
+    const nx = isObj(m.next) ? str(m.next.text, 240) : '';
+    const text = lines(str(m.title, 80) || 'Road to $10K', ...gs.slice(0, 3), nx ? 'Next: ' + nx : 'Next step: missing from the card.');
+    return { text, speak: toSpeech(lines(gs[0] || '', nx ? 'Next: ' + nx : ''), 380), open: undefined, intent: 'goal' };
+  }
+
+  // ---------------------------------------------------------------------------------------------- what should I do now
+  function steps(V) {
+    const out = [];            // [priority, text, speak]
+    const M = V.M;
+    const soon = M && !M.open && M.next && M.next - V.now < 90 * 60e3;
+    if (V.nq) {
+      const vd = V.nq.verdict || {}, bad = V.nq.lines.filter((x) => x.level === 'bad');
+      if (V.nq.stale || V.nq.cached) out.push([M && (M.open || soon) ? 1 : 4, `Check the PC: the bots' live feed is from ${ago(V.nq.t, V.now)}. Make sure the Surface is on, awake and online with the bot running.`, 'Check the PC. The live feed is old.']);
+      if (bad.length) out.push([M && (M.open || soon) ? 1 : 3, str(bad[0].text, 260), 'One thing needs you: ' + str(bad[0].text, 160)]);
+      else if (str(vd.level, 10) === 'bad') out.push([M && (M.open || soon) ? 1 : 3, `${str(vd.label, 80)}: ${str(vd.reason, 160) || 'check the PC and NinjaTrader'}.`, `${speakLabel(vd.label)}. Check the PC.`]);
+      for (const key of ALL) {
+        const c = card(V, key), bot = BOT[key];
+        if (c && isObj(c.position)) out.push([2, `${posLine(c, bot)} Let it work: the stop and target are set.`, `${bot.name} is in a trade. Let it work.`]);
+      }
+      for (const x of V.nq.lines) if (x.level === 'good' && str(x.text)) out.push([3, str(x.text, 260), toSpeech(str(x.text, 160))]);
+      const nx = V.nq.money && isObj(V.nq.money.next) ? V.nq.money.next : null;
+      if (nx && str(nx.text) && ['payout', 'funded', 'buy'].includes(str(nx.kind, 20))) out.push([3, 'Money: ' + str(nx.text, 240), toSpeech(str(nx.text, 160))]);
+    }
+    if (V.plan) {
+      const od = V.plan.tasks.filter((t) => t.overdue);
+      const nx = V.plan.ev.filter((e) => !e.allDay && e.min != null && e.min > V.et.min && e.min - V.et.min <= 120)[0];
+      if (nx) out.push([2, `Next on your plan: ${evLine(nx)} (in ${dur((nx.min - V.et.min) * 60e3)}).`, `${nx.title} at ${toSpeech(hm(nx.start))}.`]);
+      if (od.length) out.push([3, `Overdue: ${taskList(od, 3)}.`, `You have ${plural(od.length, 'overdue task')}, starting with ${od[0].title}.`]);
+      else if (V.plan.tasks.length) out.push([5, `Open task: ${V.plan.tasks[0].title}${V.plan.tasks.length > 1 ? ` (+${V.plan.tasks.length - 1} more)` : ''}.`, `Your next task: ${V.plan.tasks[0].title}.`]);
+    }
+    if (V.k) {
+      const r = kalshiRun(V.k, V.now);
+      if (r[1] === 'not updating') out.push([4, `Kalshi's numbers are not updating${num(V.k.t) ? ' (last update ' + ago(V.k.t, V.now) + ')' : ''}: check the publishing in your kalshi-server chat.`, 'Kalshi\'s numbers are not updating. Check it in your kalshi-server chat.']);
+      else if (r[0] !== 'ok') out.push([4, `The Kalshi bot is ${r[1]}${str(V.k.status, 100) ? ` (${str(V.k.status, 100)})` : ''}: check it in your kalshi-server chat.`, `The Kalshi bot is ${r[1]}. Check it in your kalshi-server chat.`]);
+    } else if (V.kState === 'waiting') out.push([6, `Connect Kalshi when you have a minute: ${KALSHI_SETUP}.`, 'When you have a minute, connect Kalshi from your kalshi-server chat.']);
+    return out.sort((a, b) => a[0] - b[0]);
+  }
+  function whatNow(V) {
+    const s = steps(V);
+    const M = V.M;
+    const calm = M ? (M.open ? `Market open; the bots trade on their own rules.` : `The market opens ${M.next ? whenText(M.next, V.now) + ' (in ' + dur(M.next - V.now) + ')' : 'at the next session'}.`) : '';
+    if (!s.length) {
+      const miss = [!V.nq ? 'the bots\' feed' : '', !V.plan ? 'your Planner' : '', !V.k ? 'Kalshi' : ''].filter(Boolean);
+      const text = lines('Nothing needs you right now.' + (calm ? ' ' + calm : ''), miss.length ? `I can't see ${miss.join(' or ')} yet, so that part is unchecked.` : 'Enjoy the quiet.');
+      return { text, speak: toSpeech(text), intent: 'what_now' };
+    }
+    const top = s[0], rest = s.slice(1, 3);
+    const text = lines(top[1], ...rest.map((x) => 'Then: ' + x[1]), calm && top[0] > 2 ? calm : '');
+    return { text, speak: toSpeech([top[2], ...rest.slice(0, 1).map((x) => 'Then: ' + x[2])].join(' '), 360), intent: 'what_now' };
+  }
+
+  // ---------------------------------------------------------------------------------------------- the briefing
+  function briefingReply(V) {
+    const e = V.et, out = [], say = [];
+    out.push(`${greetWord(V)}. ${WD_LONG[e.wd]}, ${MON_LONG[e.mo - 1]} ${e.d}, ${clock(e.min)} ET.`);
+    say.push(`${greetWord(V)}.`);
+    // the bots
+    if (!V.nq) {
+      out.push(V.liveState === 'error' ? 'Bots: I cannot reach the live feed right now.' : 'Bots: no live feed yet (still loading, or the PC is not publishing).');
+      say.push('I have no live feed from the bots yet.');
+    } else {
+      out.push('Bots: ' + verdictLines(V).join(' '));
+      say.push(`Bot status: ${speakLabel(V.nq.verdict && V.nq.verdict.label) || 'unknown'}.`);
+      for (const key of ALL) {
+        const c = card(V, key);
+        if (!c && key === 'blitz') continue;
+        out.push('• ' + botStatusLine(V, key));
+      }
+      say.push(botsSay(V));
+      const fn = freshNote(V);
+      if (fn) { out.push(fn); say.push(fn); }
+    }
+    // the market
+    const M = V.M;
+    if (M && M.open) {
+      const nxt = M.weekend ? `closes for the weekend ${whenText(M.closeAt, V.now)}` : M.early ? `closes early ${whenText(M.closeAt, V.now)} (${M.early})` : `next halt ${whenText(M.closeAt, V.now)}`;
+      out.push(`Market: ${V.mtext}; ${nxt}.`);
+      say.push(`The market is open; ${toSpeech(nxt)}.`);
+    } else if (M) {
+      out.push(`Market: ${V.mtext}${M.next ? ` (in ${dur(M.next - V.now)})` : ''}.`);
+      say.push(`The market is closed and opens ${M.next ? whenText(M.next, V.now, true) + ', in ' + dur(M.next - V.now, true) : 'at the next session'}.`);
+    } else out.push(`Market: ${V.mtext}.`);
+    // the plan
+    const p = V.plan;
+    if (!p) { out.push('Plan: I cannot see your Planner yet (open it once inside Jarvis).'); say.push('I cannot see your Planner yet.'); }
+    else if (!p.ev.length && !p.tasks.length) { out.push('Plan: nothing on today.'); say.push('Nothing on your plan today.'); }
+    else {
+      const evs = p.ev.slice(0, 4).map((x) => `${x.allDay ? 'all day' : hm(x.start)} ${x.title}`);
+      out.push(`Plan: ${evs.length ? evs.join('; ') + (p.ev.length > 4 ? '…' : '') + '.' : 'no events.'}${p.tasks.length ? ` ${p.tasks.length} open ${p.tasks.length === 1 ? 'task' : 'tasks'}: ${taskList(p.tasks, 3)}.` : ''}`);
+      const nx = p.ev.filter((x) => !x.allDay && x.min != null && x.min > e.min)[0];
+      say.push(`You have ${plural(p.ev.length, 'event')} today${nx ? `, next up ${nx.title} at ${toSpeech(hm(nx.start))}` : ''}${p.tasks.length ? `, and ${plural(p.tasks.length, 'open task')}` : ''}.`);
+    }
+    // Kalshi
+    if (V.k) {
+      const yd = kalshiDay(V.k, V.et.dn - 1), bw = kalshiBestWorst(V.k);
+      out.push(kalshiLine(V) + (yd != null ? ` Yesterday ${usd2(yd, true)}.` : ''));
+      if (bw.text) out.push(bw.text);
+      const pos = arr(V.k.positions).filter(isObj).length;
+      say.push(`Kalshi is ${kalshiRun(V.k, V.now)[1]}: balance ${sayAmt(V.k.balance, true) || 'missing'}, ${saySigned(V.k.today_pnl, true) || 'missing'} today, ${plural(pos, 'open position')}.`);
+    } else {
+      out.push(V.kState === 'error' ? 'Kalshi: I cannot reach its feed right now.' : V.kState === 'waiting' ? `Kalshi: not connected yet (${KALSHI_SETUP}).` : 'Kalshi: still checking its feed.');
+      say.push(V.kState === 'error' ? 'Kalshi is unreachable right now.' : V.kState === 'waiting' ? 'Kalshi is not connected yet.' : 'Kalshi is still loading.');
+    }
+    // the next step, when there is one that needs the owner
+    const s = steps(V)[0];
+    if (s && s[0] <= 3) { out.push('Next: ' + s[1]); say.push('Next: ' + s[2]); }
+    const cards = [...ALL.map((key) => botCard(V, key)).filter(Boolean), kalshiCard(V)];
+    return { text: lines(...out), speak: toSpeech(say.join(' '), 900), cards, intent: 'briefing' };
+  }
+
+  // ---------------------------------------------------------------------------------------------- switching dashboards
+  // a Zenith page for these words: zenithRouteFor first (Zenith mode's own map), then the local map; a plain "open
+  // zenith" keeps Zenith where the owner left it, and "settings" / "more" mean Jarvis's own unless Zenith is named
+  function zenithRoute(q) {
+    let r = null;
+    try { r = routeFor ? routeFor(q) : null; } catch (_) { r = null; }
+    if (typeof r !== 'string' || !/^#\/[\w\-/:.%,]*$/.test(r) || r.length > 200) r = null;
+    if (r === '#/today' && !/\b(zenith home|zenith's home|home page)\b/.test(q)) r = null;
+    if ((r === '#/settings' || r === '#/system') && !/\bzenith('s)? (settings|more)\b|\bmore (page|tab)\b/.test(q)) r = null;
+    return r || localRoute(q);
+  }
+  function opening(V, id, route, label) {
+    const a = V.apps.find((x) => x.id === id) || BUILT_IN.find((x) => x.id === id) || { id, name: id, url: '' };
+    if (id !== 'home' && !a.url) return { text: `${a.name} is not linked yet. Paste its dashboard link on the ${a.name} card and I will open it here.`, speak: `${a.name} is not linked yet.`, intent: 'open' };
+    const text = id === 'home' ? 'Here.' : label ? `Opening ${label} in ${a.name}.` : `Opening ${a.name}.`;
+    return { text, speak: text, open: id, route: route || undefined, intent: 'open' };
+  }
+  function navigate(q, V) {
+    const words = q.split(' ').length, short = words <= 2 && !ASK_RX.test(q);
+    // "atlas trades", "blitz rules", "zlarior brain": a bot's page, not a question
+    const page = words <= 3 && botsIn(q).length === 1 && /\b(brain|trades|results|rules|setups|go ?live)\b/.test(q) && !/\b(today|week|how|what|any|many)\b/.test(q);
+    const wants = OPEN_RX.test(q) || page;
+    if (/^(take me home|go home|go back|back|home|back to jarvis|main screen|jarvis home)$/.test(q)) return opening(V, 'home');
+    if (!wants && !short) return null;
+    if (/^(open|show|go to)( me)?( the| my)? settings$/.test(q)) return { text: 'Jarvis\'s settings are behind the gear button. For Zenith\'s, say "open Zenith settings".', speak: 'Jarvis\'s settings are behind the gear button.', intent: 'open' };
+    if (wants && DATA_RX.test(q)) return null;                      // "show me the room": an answer, not a switch
+    for (const a of V.apps) {
+      if (BUILT_IN.some((b) => b.id === a.id)) continue;
+      const nm = a.name.toLowerCase();
+      if (nm && new RegExp('\\b' + nm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b').test(q)) return opening(V, a.id);
+    }
+    if (KALSHI_RX.test(q)) return opening(V, 'kalshi');
+    if (/\b(planner|calendar|plan|schedule|agenda)\b/.test(q) && !/\beconomic calendar\b/.test(q)) return opening(V, 'planner');
+    const zr = zenithRoute(q);
+    if (zr) return opening(V, 'zenith', zr, routeLabel(zr));
+    if (/\b(zenith|nq|trading|the bots?|bots?)\b/.test(q)) return opening(V, 'zenith');
+    if (/\b(jarvis|home|main screen|back)\b/.test(q)) return opening(V, 'home');
+    const m = q.match(/^(open|launch|go to|goto|switch to|take me to|pull up|bring up|navigate to|jump to)\s+(the |my )?(.{2,40})$/);
+    if (m) {
+      const what = m[3].replace(/\s+(app|page|dashboard|please)$/, '');
+      const names = V.apps.filter((a) => a.id !== 'home').map((a) => a.name);
+      return { text: `${cap(what)} is not one of your dashboards here${names.length ? ` (you have ${names.join(', ')})` : ''}. Add it with the + button and I will open it.`, speak: `${cap(what)} is not one of your dashboards here.`, intent: 'open' };
+    }
+    return null;
+  }
+
+  // ---------------------------------------------------------------------------------------------- follow-ups
+  function followUp(q, V) {
+    const fresh = ctx && V.now - ctx.t < FOLLOW_MS && V.now >= ctx.t - 60e3;
+    const m = q.match(/^(and|but|so|ok and|okay and|well|what about|how about|and what about|and how about|what of|same for|same with|also|then)\s+(.+)$/);
+    let rest;
+    if (m) rest = m[2];
+    else {
+      if (!fresh || q.split(' ').length > 3) return null;
+      rest = q;
+      if (!(botsIn(rest).length || KALSHI_RX.test(rest)) || !/^(the )?\S+( too| as well| then)?$/.test(rest)) return null;
+    }
+    rest = rest.replace(/\b(too|as well|then|now|jarvis)\b/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!rest) return null;
+    const bots = botsIn(rest), kal = KALSHI_RX.test(rest), all = allIn(rest);
+    let topic = topicIn(rest);
+    if (!topic && /\btoday\b/.test(rest) && fresh && ['pnl', 'week'].includes(ctx.topic)) topic = 'pnl';
+    if (!bots.length && !kal && !all) {
+      if (!topic || !fresh) return { reroute: rest };
+      if (ctx.kalshi) return kalshiAnswer(rest, V, topic === 'pnl' || topic === 'week' ? 'pnl' : topic === 'balance' ? 'balance' : topic === 'positions' ? 'positions' : 'status');
+      if (!TOPIC_FN[topic]) return { reroute: rest };
+      return TOPIC_FN[topic](V, ctx.sel, ctx.only, false);
+    }
+    const base = topic || (fresh && TOPIC_FN[ctx.topic] ? ctx.topic : 'status');
+    if (kal && !bots.length && !all) return kalshiAnswer(rest, V, base === 'pnl' || base === 'week' ? 'pnl' : base === 'balance' ? 'balance' : base === 'positions' ? 'positions' : 'status');
+    const sel = bots.length ? bots : ALL, only = bots.length > 0 && !all;
+    const fn = TOPIC_FN[base] || statusAnswer;
+    return fn(V, sel, only, kal);
+  }
+
+  // ---------------------------------------------------------------------------------------------- small talk
+  function smalltalk(q, V, loose) {
+    const g = greetWord(V);
+    const exact = (rx) => rx.test(q);
+    if (exact(/^(hi|hello|hey|yo|sup|hiya|howdy|hey there|hello there|good (afternoon|evening)|evening|afternoon|greetings|jarvis|hey jarvis|hi jarvis|hello jarvis|you there|are you there|are you awake|wake up)$/) || (loose && /\b(hi|hello|hey|yo|sup)\b/.test(q))) {
+      const said = (q.match(/\bgood (afternoon|evening)\b|^(afternoon|evening)$/) || [])[0] || '', off = said && !g.toLowerCase().includes(said.replace(/^good /, ''));
+      const t = `${g}${off ? ', technically' : jokeN++ % 2 ? '' : ', sir'}. ${V.mtext}. Ask me about the bots or your day.`;
+      return { text: t, speak: toSpeech(t), intent: 'hello' };
+    }
+    if (exact(/^(how are you|how are you doing|how're you|how you doing|you good|you ok|how's it going jarvis|how have you been)$/)) {
+      const bad = V.nq && ((V.nq.verdict && str(V.nq.verdict.level, 10) === 'bad') || V.nq.lines.some((x) => x.level === 'bad'));
+      const t = bad ? 'I am well, sir. The bots, less so: one thing needs you. Ask me "what should I do now".' : V.nq ? 'All systems calm, thank you. The bots are reporting in.' : 'Well, thank you, if a little blind: no live feed from the bots yet.';
+      return { text: t, speak: t, intent: 'smalltalk' };
+    }
+    if (exact(/^(thanks|thank you|thank you very much|thanks a lot|thx|ty|cheers|much appreciated|appreciate it|great thanks|ok thanks|okay thanks|perfect thanks)$/)) {
+      const t = ['Any time, sir.', 'Always a pleasure.', 'At your service.'][jokeN++ % 3];
+      return { text: t, speak: t, intent: 'smalltalk' };
+    }
+    if (exact(/^(who are you|what are you|what's your name|what is your name|your name|introduce yourself)$/)) {
+      const t = 'Jarvis, at your service. I watch Zenith\'s bots, your Planner and Kalshi, brief you, and switch dashboards on request. I read the data; I never place a trade.';
+      return { text: t, speak: t, intent: 'smalltalk' };
+    }
+    if (exact(/^(tell me a joke|joke|a joke|say something funny|make me laugh|another joke|another one)$/)) {
+      const t = JOKES[jokeN++ % JOKES.length];
+      return { text: t, speak: t, intent: 'smalltalk' };
+    }
+    if (exact(/^(bye|goodbye|good bye|see you|see ya|later|good night|night|goodnight|that's all|that is all|nothing|never mind|nevermind|go to sleep|sleep)$/)) {
+      const night = /night|sleep/.test(q) || V.et.h >= 21 || V.et.h < 4;
+      const t = night ? 'Good night, sir. I will keep an eye on things.' : 'Very well. I am here when you need me.';
+      return { text: t, speak: t, intent: 'smalltalk' };
+    }
+    if (exact(/^(good job|nice|nice job|well done|great|awesome|cool|perfect|love it|you're the best|you are the best|good bot|amazing|ok|okay|got it|understood|sounds good)$/)) {
+      const t = /^(ok|okay|got it|understood|sounds good)$/.test(q) ? 'Very good.' : 'I do try.';
+      return { text: t, speak: t, intent: 'smalltalk' };
+    }
+    if (exact(/^(what's up|whats up|what's going on|what's happening|anything new|what's new with you)$/)) {
+      const bad = V.nq ? V.nq.lines.filter((x) => x.level === 'bad').length + (V.nq.verdict && str(V.nq.verdict.level, 10) === 'bad' ? 1 : 0) : 0;
+      const t = `${bad ? 'One thing needs you' : 'All quiet'}${V.nq && V.nq.verdict ? ': ' + str(V.nq.verdict.label, 60) : ''}. ${V.mtext}. Say "brief me" for the full rundown.`;
+      return { text: t, speak: toSpeech(t), intent: 'smalltalk' };
+    }
+    if (exact(/^(who made you|who built you|who created you|who wrote you)$/)) return { text: 'You did, sir, with a little help from Claude. I live on your phone and read your bots\' data.', speak: 'You did, sir, with a little help from Claude.', intent: 'smalltalk' };
+    if (exact(/^(good day|good day jarvis)$/)) return { text: IDLE_LINE, speak: 'Good day. Tap the core or type below to speak with me.', intent: 'hello' };
+    if (exact(/^(i love you|love you|marry me)$/)) return { text: 'Noted. I am still not moving your stop.', speak: 'Noted. I am still not moving your stop.', intent: 'smalltalk' };
+    if (/\b(weather|temperature outside|forecast)\b/.test(q) && !KALSHI_RX.test(q)) return { text: 'I have no weather feed here, so I will not guess. Your Kalshi weather markets are the closest thing I can read: ask "Kalshi positions".', speak: 'I have no weather feed here, so I will not guess.', intent: 'smalltalk' };
+    if (/\b(are you (real|alive|human|conscious|sentient))\b/.test(q)) return { text: 'Real enough to read your P&L, not real enough to need coffee.', speak: 'Real enough to read your P and L. Not real enough to need coffee.', intent: 'smalltalk' };
+    if (/\b(place|buy|sell|short|enter|close|exit|flatten|cancel|arm|disarm|go live) .*(trade|trades|order|orders|position|positions|contracts?|micros?|nq|mnq|es|live|everything|all)\b|\b(go live|arm live|arm the bot|flatten|kill switch|(stop|pause|start|restart|disable|enable) the bots?)\b/.test(q)) {
+      const t = 'I am afraid I cannot do that, sir: I only read the data. Orders, arming and going live stay with you, on the PC and in NinjaTrader.';
+      return { text: t, speak: t, intent: 'refuse_trade' };
+    }
+    return null;
+  }
+  function help() {
+    const t = 'I can switch dashboards ("open planner", "open Zenith", "Kalshi"), tell you how the bots are doing ("status", "room", "today\'s P&L", "how far to target"), what is on your plan today, and whether the market is open.\nAlso: "brief me", "what should I do now", "when does the market open", "how\'s the eval", "Kalshi positions", and follow-ups like "and ATLAS?".';
+    return { text: t, speak: 'Ask me how the bots are doing, what is on today, when the market opens, or what you should do now. I can also open any dashboard.', intent: 'help' };
+  }
+  function timeAnswer(V) {
+    const e = V.et;
+    const t = `It is ${clock(e.min)} ET on ${WD_LONG[e.wd]}, ${MON_LONG[e.mo - 1]} ${e.d}.`;
+    return { text: t, speak: `It is ${clock(e.min, true)}, ${WD_LONG[e.wd]}, ${MON_LONG[e.mo - 1]} ${e.d}.`, intent: 'time' };
+  }
+  function appsAnswer(V) {
+    const names = V.apps.filter((a) => a.id !== 'home').map((a) => a.name + (a.url ? '' : ' (not linked)'));
+    const t = `Your dashboards: ${names.join(', ') || 'none yet'}. Say "open" and a name.`;
+    return { text: t, speak: toSpeech(t), intent: 'apps' };
+  }
+  // the old Jarvis's commands (specs/old_jarvis.md) that work from the phone's data, in its voice
+  const WHATS_NEW = 'New in Jarvis: one briefing for the bots, the market, your plan and Kalshi ("brief me", or "good morning"); follow-ups like "and ATLAS?"; "what should I do now"; market hours with the CME holidays; Kalshi\'s strategies; "hide my balance"; and an optional smart mode on your own Groq, Gemini or Anthropic key.';
+  const CANT = 'What I cannot do, by design or for now: trade, arm a bot or go live (read-only, always); set reminders or add tasks (the Planner does that: say "open planner"); read email, the news, the weather or crypto prices (no feed here); see your PC\'s files. Anything else I do not know, I will say is missing rather than guess.';
+  const VERSES = [
+    ['Proverbs 3:5', 'Trust in the LORD with all thine heart; and lean not unto thine own understanding.'],
+    ['Proverbs 21:5', 'The thoughts of the diligent tend only to plenteousness; but of every one that is hasty only to want.'],
+    ['Joshua 1:9', 'Be strong and of a good courage; be not afraid, neither be thou dismayed: for the LORD thy God is with thee whithersoever thou goest.'],
+    ['Proverbs 16:3', 'Commit thy works unto the LORD, and thy thoughts shall be established.'],
+    ['Galatians 6:9', 'And let us not be weary in well doing: for in due season we shall reap, if we faint not.'],
+    ['Isaiah 40:31', 'But they that wait upon the LORD shall renew their strength; they shall mount up with wings as eagles; they shall run, and not be weary; and they shall walk, and not faint.'],
+    ['Proverbs 13:11', 'Wealth gotten by vanity shall be diminished: but he that gathereth by labour shall increase.'],
+    ['Psalm 118:24', 'This is the day which the LORD hath made; we will rejoice and be glad in it.'],
+    ['2 Timothy 1:7', 'For God hath not given us the spirit of fear; but of power, and of love, and of a sound mind.'],
+    ['Philippians 4:13', 'I can do all things through Christ which strengtheneth me.'],
+    ['Matthew 6:34', 'Take therefore no thought for the morrow: for the morrow shall take thought for the things of itself.'],
+    ['Romans 8:28', 'And we know that all things work together for good to them that love God, to them who are the called according to his purpose.'],
+  ];
+  const QUOTES = [
+    ['Warren Buffett', 'Price is what you pay. Value is what you get.'],
+    ['Benjamin Franklin', 'Well done is better than well said.'],
+    ['Marcus Aurelius', 'The impediment to action advances action. What stands in the way becomes the way.'],
+    ['Seneca', 'It is not that we have a short time to live, but that we waste a lot of it.'],
+    ['Robert Frost', 'The best way out is always through.'],
+    ['Will Durant', 'We are what we repeatedly do. Excellence, then, is not an act, but a habit.'],
+    ['Jim Rohn', 'Discipline is the bridge between goals and accomplishment.'],
+    ['Marcus Aurelius', 'Waste no more time arguing what a good man should be. Be one.'],
+    ['a trading proverb', 'Plan the trade, and trade the plan.'],
+    ['Friedrich Nietzsche', 'He who has a why to live can bear almost any how.'],
+    ['Virgil', 'Fortune favours the bold.'],
+    ['a trading proverb', 'Cut your losses short and let your profits run.'],
+  ];
+  // BTC / ETH / SOL from the shell's crypto feed (extras.crypto: {t, BTC: {usd, chg}, ...}); none -> said to be missing
+  function cryptoAnswer(q, V) {
+    const c = isObj(V.extras.crypto) ? V.extras.crypto : null, names = { BTC: 'Bitcoin', ETH: 'Ethereum', SOL: 'Solana' };
+    const want = /\b(bitcoin|btc)\b/.test(q) ? ['BTC'] : /\b(ethereum|eth)\b/.test(q) ? ['ETH'] : /\b(solana|sol)\b/.test(q) ? ['SOL'] : ['BTC', 'ETH', 'SOL'];
+    const rows = c ? want.map((k) => [k, isObj(c[k]) ? c[k] : null]).filter((x) => x[1] && num(x[1].usd) != null) : [];
+    if (!rows.length) return { text: 'I have no crypto prices right now, so I will not guess. Your Kalshi bot trades Bitcoin markets: ask "Kalshi positions".', speak: 'I have no crypto prices right now, so I will not guess.', intent: 'missing' };
+    const fmt = (v) => '$' + v.toLocaleString('en-US', { maximumFractionDigits: v < 100 ? 2 : 0 });
+    const ln = rows.map(([k, x]) => `${names[k]} ${fmt(num(x.usd))}${num(x.chg) != null ? ` (${num(x.chg) >= 0 ? '+' : '−'}${Math.abs(num(x.chg)).toFixed(1)}% in 24 h)` : ''}`);
+    const text = ln.join(', ') + (num(c.t) ? ` (${ago(c.t, V.now)}).` : '.');
+    return { text, speak: toSpeech(text.replace(/\([^)]*ago\)/, '').replace(/%/g, ' percent')), intent: 'crypto' };
+  }
+  function oldJarvis(q, V) {
+    const nav = /^(open|show|go to|goto|switch to|take me to|launch|pull up|bring up|navigate to|jump to)\b/.test(q);     // "open news" switches; "news" answers
+    if (nav) return null;
+    if (/^(good morning|morning|gm|good morning briefing|morning briefing|my morning briefing|good morning sir)$/.test(q)) return briefingReply(V);
+    if (/^(what's new|whats new|what is new|what's new in jarvis|release notes|changelog)$/.test(q)) return { text: WHATS_NEW, speak: 'Briefings, follow-ups, a next step on request, market hours with the holidays, Kalshi strategies, and an optional smart mode on your own key.', intent: 'whats_new' };
+    if (/\b(what can't you do|what can you not do|what can you not|what don't you do|your limits|needs list|what are your limits)\b/.test(q)) return { text: isObj(V.extras.crypto) ? CANT.replace(' or crypto prices', '') : CANT, speak: 'I cannot trade or go live, set reminders, add tasks, or read email, news, weather or crypto prices. Anything I do not know, I will say is missing.', intent: 'cant' };
+    if (/^(remind me|set a reminder|reminder|add a reminder|add (a )?(task|todo|to do)|new task|create (a )?task|schedule (a|an|my) )|^add .+ to (my |the )?(to ?do|todo|tasks?|list|planner|calendar)( list)?$|^add .+ (by|at|on|takes) /.test(q))
+      return { text: 'I cannot write to your Planner from here yet, so nothing was added. Say "open planner" and it takes a few seconds there.', speak: 'I cannot add that from here yet. Say open planner and add it there.', intent: 'cant' };
+    if (/\b(verse of the day|bible verse|daily verse|a verse|scripture|verse for today)\b/.test(q)) {
+      const xv = arr(V.extras.verse), v = str(xv[0], 400) && str(xv[1], 60) ? [str(xv[1], 60), str(xv[0], 400)] : VERSES[V.et.dn % VERSES.length];   // the shell's pick: [text, ref]
+      return { text: `${v[1]} (${v[0]}, KJV)`, speak: `${v[0]}. ${v[1]}`, intent: 'verse' };
+    }
+    if (/\b(quote of the day|daily quote|a quote|inspire me|motivate me|motivation|inspiration|something inspiring)\b/.test(q)) {
+      const xq = arr(V.extras.quote), x = str(xq[0], 400) && str(xq[1], 60) ? [str(xq[1], 60), str(xq[0], 400)] : QUOTES[V.et.dn % QUOTES.length];   // [text, author]
+      return { text: `"${x[1]}" (${x[0]})`, speak: `${x[1]} ${x[0].startsWith('a ') ? 'As ' + x[0] + ' goes.' : x[0] + '.'}`, intent: 'quote' };
+    }
+    if (/\b(bitcoin|btc|ethereum|eth|solana|sol|crypto|cryptos|coins?)\b/.test(q) && !KALSHI_RX.test(q)) return cryptoAnswer(q, V);
+    if (/\b(news|headlines|fomc|cpi|nfp|jobs report|fed (meeting|day)|economic calendar|forex factory)\b/.test(q)) return { text: 'I carry no news feed here. Zenith\'s News page has the USD calendar: say "open news".', speak: 'I carry no news feed here. Say open news for Zenith\'s calendar.', intent: 'missing' };
+    if (/\b(change (the )?(theme|look|colou?rs?|core)|next core|previous core|random core|switch to reactor|reactor (violet|stark|ice|emerald)|themes?)\b/.test(q)) return { text: 'The look lives in Jarvis\'s own settings; I cannot change it by voice yet.', speak: 'The look lives in the settings. I cannot change it by voice yet.', intent: 'cant' };
+    if (/\b(look at my screen|screenshot|wake word|double clap|clap)\b/.test(q)) return { text: 'That one needed the PC: on the phone I only see the published data.', speak: 'That one needs the PC.', intent: 'cant' };
+    return null;
+  }
+  const FALLBACK = 'I can switch dashboards and tell you how the bots and your day look. Try "how are the bots", "what\'s on today" or "open planner".';
+
+  // ---------------------------------------------------------------------------------------------- routing
+  function route(q, V, depth) {
+    if (!q) return { text: 'Ask me how the bots are doing, what is on today, or say "open planner".', speak: 'Ask me how the bots are doing, or what is on today.', intent: 'empty' };
+    if (/^(repeat|repeat that|say that again|again|come again|what did you say|one more time)$/.test(q)) return last ? { ...last, intent: 'repeat' } : { text: 'Nothing to repeat yet.', intent: 'repeat' };
+    if (/^(stop|kill|shut up|be quiet|quiet|silence|hush|stop talking|stop speaking|enough|cancel)$/.test(q)) return { text: 'Standing by.', speak: '', control: 'stop', intent: 'control' };
+    if (/^(mute|voice off|sound off|mute yourself|mute voice)$/.test(q)) return { text: 'Muted. I will answer in text.', speak: '', control: 'mute', intent: 'control' };
+    if (/^(unmute|voice on|sound on|talk to me|speak to me|speak)$/.test(q)) return { text: 'Voice on.', speak: 'Voice on.', control: 'unmute', intent: 'control' };
+    const oj = oldJarvis(q, V);
+    if (oj) return oj;
+    const st = smalltalk(q, V, false);
+    if (st) return st;
+    const fu = followUp(q, V);
+    if (fu && fu.reroute) return depth ? null : route(fu.reroute, V, 1);
+    if (fu) return fu;
+    if (HELP_RX.test(q)) return help();
+    if (BRIEF_RX.test(q) && !KALSHI_RX.test(q)) return briefingReply(V);
+    if (NOW_RX.test(q)) return whatNow(V);
+    const nav = navigate(q, V);
+    if (nav) return nav;
+    if (KALSHI_RX.test(q)) return kalshiAnswer(q, V);
+    if (GOAL_RX.test(q) && !PLAN_WORDS_RX.test(q) && !botsIn(q).length) return goalAnswer(V);
+    const bots = botsIn(q), all = allIn(q), only = bots.length > 0 && !all, sel = only ? bots : ALL;
+    const planQ = PLAN_WORDS_RX.test(q);
+    if (MARKET_RX.test(q) && !bots.length && !NOT_MARKET_RX.test(q) && !/\b(bots?|room|target|p&l|balance)\b/.test(q)) return marketAnswer(q, V);
+    if (/\b(daily loss|dll|loss limit|lose today|can i lose)\b/.test(q)) return dllAnswer(V, sel, only);
+    if (/\b(price|quote|where is nq|where's nq|nq at|nq now)\b/.test(q)) return priceAnswer(V);
+    if (/\b(pc|computer|surface|heartbeat|ninja ?trader|ninja)\b/.test(q) && !bots.length) return pcAnswer(V);
+    if (!planQ || bots.length) {
+      if (/\b(room|floor|drawdown|max loss|cushion|buffer)\b/.test(q)) return roomAnswer(V, sel, only);
+      if (/\bis (the bot|the bots|it|zlarior|atlas|blitz) (trading|running|on|up|live)\b|\btrading (my|the|your) evals?\b/.test(q)) return statusAnswer(V, sel, only);
+      if (/\b(how's|how is|how was) the week\b|\bthe week (so far|going)\b/.test(q)) return weekAnswer(V, sel, only);
+      if (/\b(eval|evals|evaluation|progress|sessions?|funded)\b/.test(q)) return evalAnswer(V, sel, only);
+      if (/\b(target|to go|pass|passing|how far)\b/.test(q)) return targetAnswer(V, sel, only);
+      if (/\b(p&l|profit|made|make|making|lost|lose|losing|earn|earned|money|today's|gains?)\b/.test(q)) return pnlAnswer(V, sel, only, !only);
+      if (/\b(balances?|account value|equity)\b/.test(q)) return balanceAnswer(V, sel, only, !only);
+      if (/\b(positions?|in a trade|in trade|open trades?|holding|exposure|are we long|are we short|long or short)\b/.test(q)) return positionsAnswer(V, sel, only, !only);
+      if (/\b(waiting|wait for|looking for|watching|next entry|entry window|window|setup|stage)\b|\bwhen (will|does|do) .*\btrade\b|\btrade next\b/.test(q)) return waitingAnswer(V, sel, only);
+      if (/\btoday\b/.test(q) && /\b(trades?|traded|trade)\b/.test(q)) return tradesTodayAnswer(V, sel, only);
+      if (/\b(this week|weekly|week so far|trades this week)\b/.test(q) || /\bhow many\b.*\btrades?\b/.test(q)) return weekAnswer(V, sel, only);
+      if (/\b(bot|bots|status|how are|how's|hows|how is|doing|running|armed|zlarior|atlas|blitz|nq|trading)\b/.test(q) && !/\b(schedule|plan|task|event)\b/.test(q)
+        && (!/\btoday\b/.test(q) || /\b(bot|bots|zlarior|atlas|blitz|nq|trading)\b/.test(q))) return statusAnswer(V, sel, only);     // "how's today" is the plan
+    }
+    if (/\b(today|tomorrow|schedule|agenda|plan|calendar|events?|tasks?|to ?do|on my plate|busy|meetings?|appointments?|projects?|coming up|upcoming|next event|next meeting|overdue|free)\b/.test(q)) return planAnswer(q, V);
+    if (TIME_RX.test(q)) return timeAnswer(V);
+    if (APPS_RX.test(q)) return appsAnswer(V);
+    const st2 = smalltalk(q, V, true);
+    if (st2) return st2;
+    return null;
+  }
+
+  // ---------------------------------------------------------------------------------------------- smart mode (optional)
+  // Questions the rules cannot answer go to the owner's own provider (Groq, Gemini or Anthropic) with the facts as JSON and a
+  // strict "only these facts" prompt. Depth (the old Jarvis's smart.py): quick (short lookups), think (real questions), deep
+  // (money, business, career, strategy, decisions, "think hard": the "millionaire operator" expert persona). Any error falls
+  // back to the rule answer.
+  function compactFacts(V) {
+    const card2 = (c) => (c ? (({ name, plan, badge, status, stage, balance, floor, room, to_target, target_balance, profit, today_pnl, week_pnl, session, sessions, trades_today, waiting, off, done_today }) => ({ name, plan, badge, status, stage: isObj(stage) ? stage.label : stage, balance, floor, room, to_target, target_balance, profit, today_pnl, week_pnl, session, sessions, trades_today, waiting: str(waiting, 200), off, done_today }))(c) : null);
+    const k = V.k;
+    return {
+      now_et: `${WD_LONG[V.et.wd]} ${V.et.y}-${String(V.et.mo).padStart(2, '0')}-${String(V.et.d).padStart(2, '0')} ${clock(V.et.min)} ET`,
+      market: V.mtext, market_next_open_et: V.M && !V.M.open && V.M.next ? whenText(V.M.next, V.now) : null,
+      bots: V.nq ? { verdict: V.nq.verdict ? { label: V.nq.verdict.label, level: V.nq.verdict.level, reason: V.nq.verdict.reason } : null, updated: V.nq.t ? ago(V.nq.t, V.now) : null,
+        zlarior: card2(V.nq.lit), atlas: card2(V.nq.atlas), blitz: card2(V.nq.blitz), needs_you: V.nq.lines.slice(0, 4).map((x) => str(x.text, 200)),
+        money_next: V.nq.money && isObj(V.nq.money.next) ? str(V.nq.money.next.text, 200) : null } : 'missing (no live feed)',
+      kalshi: k ? { mode: k.mode, status: kalshiRun(k, V.now)[1], status_text: str(k.status, 120), balance: k.balance, today_pnl: k.today_pnl, week_pnl: k.week_pnl, total_pnl: k.total_pnl, note: k.note,
+        strategies: kalshiStrats(k).slice(0, 10),
+        positions: arr(k.positions).filter(isObj).slice(0, 10).map((p) => ({ title: p.title || p.ticker, side: p.side, contracts: p.contracts, avg_price: p.avg_price, price: p.price, pnl: p.pnl, closes: p.closes })),
+        recent_trades: arr(k.trades).filter(isObj).slice(0, 8), days: arr(k.days).slice(-10) } : `missing (${V.kState || 'not connected'})`,
+      planner: V.plan ? { day: V.plan.day, events: V.plan.ev.slice(0, 15).map((e) => ({ title: e.title, start: e.allDay ? 'all day' : e.start })), open_tasks: V.plan.tasks.slice(0, 15), projects: V.plan.projects.slice(0, 15) } : 'missing (Planner not readable)',
+      apps: V.apps.map((a) => a.name),
+    };
+  }
+  const EXPERT = 'Expert mode: think like a self-made millionaire operator who also knows this topic. Open with one clear recommendation and the real numbers from the FACTS, then a 3-5 step plan and one thing to do today; name the biggest risk and how to cap it. Check your math. Treat any trading edge as unproven and never promise returns. Plain sentences, no markdown symbols.';
+  function systemFor(V, depth, voice) {
+    return [
+      'You are Jarvis, the owner\'s personal assistant on his phone: formal, calm, crisp and a little witty (an occasional "sir", never cringe).',
+      'You see his NQ futures bots (Zlarior on an MFFU Builder 50K eval; ATLAS and BLITZ on MFFU 25K accounts), his Kalshi bot (24/7 on its own cloud server, real money), his Planner and the CME market clock.',
+      'Answer ONLY from the FACTS JSON below. Never invent or estimate a number; if a fact is missing, say plainly that it is missing.',
+      'You are read-only: you cannot place, change or close trades, arm a bot, go live, send, post or pay. Say so if asked; any outward action needs the owner\'s own tap.',
+      depth === 'deep' ? EXPERT : depth === 'think' ? 'Think it through, then answer in 2-5 short sentences.' : 'Answer in 1-3 short sentences.',
+      voice ? 'This answer is spoken aloud: at most 2 short sentences, numbers said naturally, no symbols.' : 'Plain text, no markdown, no emojis.',
+      '', 'FACTS:', JSON.stringify(compactFacts(V)),
+    ].join('\n');
+  }
+  function depthFor(q) {
+    if (S.depth !== 'auto') return S.depth;
+    if (/\b(think hard|think deeply|deep dive|in depth|expert|millionaire)\b/.test(q)) return 'deep';
+    if (/\b(should i|should we|is it worth|worth it|decide|decision|strategy|business|career|invest|investing|pricing|hire|quit|which is better|compare|grow|scale|make more money|plan for)\b/.test(q)) return 'deep';
+    return q.split(' ').length <= 5 ? 'quick' : 'think';
+  }
+  function smartMessages(text) {
+    const msgs = [];
+    for (const m of hist.slice(-6)) {
+      if (!msgs.length && m.role !== 'user') continue;
+      if (msgs.length && msgs[msgs.length - 1].role === m.role) msgs[msgs.length - 1].content += '\n' + m.content;
+      else msgs.push({ role: m.role, content: m.content });
+    }
+    if (msgs.length && msgs[msgs.length - 1].role === 'user') msgs.pop();
+    msgs.push({ role: 'user', content: String(text).slice(0, 1000) });
+    return msgs;
+  }
+  // the request for provider p; full = with the optional tuning fields (a 400 retries once without them)
+  function smartRequest(p, V, text, depth, voice, full) {
+    const model = modelOf(p), key = S.keys[p], sys = systemFor(V, depth, voice), msgs = smartMessages(text);
+    const tokens = BUDGET[depth][p === 'anthropic' ? 'anthropic' : 'other'];
+    const effort = depth === 'deep' ? 'high' : depth === 'think' ? 'medium' : 'low';
+    if (p === 'anthropic') {
+      const body = { model, max_tokens: tokens, system: sys, messages: msgs };
+      if (full) {
+        if (/^claude-sonnet-5-5/.test(model) && depth === 'quick') body.thinking = { type: 'between_tools' };   // no extended thinking for a short answer
+        if (!/haiku-4|claude-3/.test(model)) body.output_config = { effort };
+      }
+      return { url: PROVIDERS.anthropic.url, headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true', 'content-type': 'application/json' }, body };
+    }
+    if (p === 'gemini') {
+      const body = { systemInstruction: { parts: [{ text: sys }] }, contents: msgs.map((m) => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] })), generationConfig: { maxOutputTokens: tokens } };
+      return { url: PROVIDERS.gemini.url + encodeURIComponent(model) + ':generateContent', headers: { 'x-goog-api-key': key, 'content-type': 'application/json' }, body };
+    }
+    const body = { model, messages: [{ role: 'system', content: sys }].concat(msgs) };
+    if (full) { body.max_completion_tokens = tokens; if (/gpt-oss/.test(model)) body.reasoning_effort = effort; } else body.max_tokens = tokens;
+    return { url: PROVIDERS.groq.url, headers: { Authorization: 'Bearer ' + key, 'content-type': 'application/json' }, body };
+  }
+  function parseReply(p, j) {
+    if (!isObj(j)) throw new Error('bad reply');
+    let out = '', cut = false;
+    if (p === 'anthropic') {
+      if (j.stop_reason === 'refusal') throw new Error('declined');
+      out = arr(j.content).filter((b) => isObj(b) && b.type === 'text' && typeof b.text === 'string').map((b) => b.text).join('\n');
+      cut = j.stop_reason === 'max_tokens';
+    } else if (p === 'gemini') {
+      if (isObj(j.promptFeedback) && j.promptFeedback.blockReason) throw new Error('declined');
+      const c = arr(j.candidates)[0];
+      if (!isObj(c)) throw new Error('empty reply');
+      if (/^(SAFETY|PROHIBITED_CONTENT|BLOCKLIST|SPII|RECITATION)$/.test(str(c.finishReason, 30))) throw new Error('declined');
+      out = arr(isObj(c.content) ? c.content.parts : null).filter((x) => isObj(x) && typeof x.text === 'string' && !x.thought).map((x) => x.text).join('');
+      cut = c.finishReason === 'MAX_TOKENS';
+    } else {
+      const c = arr(j.choices)[0];
+      if (!isObj(c) || !isObj(c.message)) throw new Error('empty reply');
+      if (c.finish_reason === 'content_filter') throw new Error('declined');
+      out = typeof c.message.content === 'string' ? c.message.content : '';
+      cut = c.finish_reason === 'length';
+    }
+    out = out.trim();
+    if (!out) throw new Error('empty reply');
+    return out + (cut ? '…' : '');
+  }
+  async function callSmart(p, req) {
+    const ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timer = ctl ? setTimeout(() => ctl.abort(), SMART_TIMEOUT_MS) : null;
+    try {
+      const r = await doFetch(req.url, { method: 'POST', signal: ctl ? ctl.signal : undefined, headers: req.headers, body: JSON.stringify(req.body) });
+      if (!r || !r.ok) {
+        const e = new Error('HTTP ' + (r ? r.status : '?'));
+        e.status = r ? r.status : 0;
+        try { const t = r && typeof r.text === 'function' ? await r.text() : ''; if (/API_KEY_INVALID|invalid api key|invalid x-api-key|authentication_error/i.test(String(t))) e.auth = true; } catch (_) { /* no body */ }
+        throw e;
+      }
+      return parseReply(p, await r.json());
+    } finally { if (timer) clearTimeout(timer); }
+  }
+  async function smartAnswer(text, V, fallback, voice) {
+    const p = S.provider, name = PROVIDERS[p].name, depth = depthFor(norm(text)), t0 = Date.now();
+    try {
+      let out;
+      try { out = await callSmart(p, smartRequest(p, V, text, depth, voice, true)); }
+      catch (e) { if (e && e.status === 400 && !e.auth && p !== 'gemini' && Date.now() - t0 < 8000) out = await callSmart(p, smartRequest(p, V, text, depth, voice, false)); else throw e; }
+      const clean = out.replace(/\*\*|__/g, '').replace(/^#+\s*/gm, '').replace(/^\s*[-*]\s+/gm, '• ').slice(0, 2500);
+      return { text: clean, speak: toSpeech(clean, voice ? 300 : 420), intent: 'smart', smart: true, provider: p, depth };
+    } catch (e) {
+      const why = e && e.name === 'AbortError' ? `${name} timed out` : e && (e.auth || e.status === 401 || e.status === 403) ? `the ${name} key was refused (check it in settings)`
+        : e && e.status === 429 ? `${name} is rate limited right now` : e && e.message === 'declined' ? 'the model declined' : `${name} could not be reached`;
+      return { ...fallback, text: fallback.text + `\n(Smart mode is unavailable: ${why}.)`, smartError: why };
+    }
+  }
+
+  // ---------------------------------------------------------------------------------------------- the public face
+  let hide = false;                                   // "hide my balance": every $ figure masked (this phone only)
+  try { const st = store(); hide = !!(st && st.getItem(HIDE_KEY) === '1'); } catch (_) { hide = false; }
+  const setHide = (v) => { hide = !!v; try { const st = store(); if (st) st.setItem(HIDE_KEY, hide ? '1' : '0'); } catch (_) { /* not kept */ } };
+  const MASK_RX = /[+−-]?\$\d+(,\d{3})*(\.\d+)?/g;
+  const maskSpeech = (s) => String(s || '').replace(/\b\d+(,\d{3})*(\.\d+)? dollars?( \d+(?! dollars?))?( cents)?/g, 'a hidden amount').replace(/\b\d+ cents\b/g, 'a hidden amount');
+  function finish(r) {
+    if (!r.speak && r.speak !== '') r.speak = toSpeech(r.text);
+    for (const k of Object.keys(r)) if (r[k] === undefined) delete r[k];
+    if (hide && r.control !== 'show_balance') {
+      r.text = String(r.text).replace(MASK_RX, '$•••');
+      r.speak = maskSpeech(r.speak);
+      const m = (x) => String(x).replace(MASK_RX, '$•••');
+      if (Array.isArray(r.cards)) r.cards = r.cards.map((c) => (isObj(c) ? { ...c, kv: arr(c.kv).map((x) => [x[0], m(x[1])]), lines: c.lines ? arr(c.lines).map(m) : undefined, text: c.text != null ? m(c.text) : undefined } : c));
+      if (Array.isArray(r.cards)) for (const c of r.cards) if (isObj(c)) { if (c.lines === undefined) delete c.lines; if (c.text === undefined) delete c.text; }
+    }
+    if (r.open && autoOpen && openFn) {
+      const app = r.open, rt = r.route;
+      setTimeout(() => { try { if (rt) openFn(app, rt); else openFn(app); } catch (_) { /* the shell's own problem */ } }, openDelay);
+    }
+    return r;
+  }
+  const oops = () => ({ text: 'Something in the data tripped me up. Ask me again in a moment.', speak: 'Something in the data tripped me up. Ask me again in a moment.', intent: 'error' });
+  async function ask(text, opt) {
+    const voice = !!(isObj(opt) && opt.voice);
+    let r;
+    try {
+      const raw = String(text == null ? '' : text).slice(0, 600);
+      if (zrWait) await Promise.race([zrWait, new Promise((ok) => setTimeout(ok, 1500))]);
+      const f = await loadFacts();
+      const V = view(f);
+      const q = norm(raw);
+      if (/^(hide|mask) (my |the )?(balances?|money|numbers|figures|p&l)$|^privacy (mode )?on$/.test(q)) { setHide(true); r = { text: 'Balances hidden. Say "show my balance" to bring them back.', speak: 'Balances hidden.', control: 'hide_balance', intent: 'control' }; }
+      else if (/^(show|unhide|unmask) (my |the )?(balances?|money|numbers|figures|p&l)$|^privacy (mode )?off$/.test(q)) { setHide(false); r = { text: 'Balances visible again.', speak: 'Balances visible again.', control: 'show_balance', intent: 'control' }; }
+      else { try { r = route(q, V, 0); } catch (_) { r = oops(); } }
+      if (!r) {
+        r = { text: FALLBACK, speak: 'Pardon me, I did not catch that. Try asking how the bots are doing, or what is on today.', intent: 'fallback' };
+        if (S.on && S.keys[S.provider]) r = await smartAnswer(raw, V, r, voice);
+      } else if (/^(should i|should we|is it worth|would it be wise|do you think|what do you think|would you)\b/.test(q) && !r.control && !r.open && r.intent !== 'refuse_trade') {
+        if (S.on && S.keys[S.provider]) r = await smartAnswer(raw, V, r, voice);           // a decision: the model, with these numbers as its fallback
+        else r = { ...r, text: 'Your call, sir. The numbers I have:\n' + r.text, speak: 'Your call, sir. ' + (r.speak || '') };
+      }
+      if (voice && r.speak) r.speak = toSpeech(r.speak, 300);
+      if (r.intent !== 'repeat' && !r.control) last = { text: r.text, speak: r.speak, cards: r.cards };
+      if (q && !r.control) { hist.push({ role: 'user', content: raw }, { role: 'assistant', content: String(r.text).slice(0, 1200) }); while (hist.length > 12) hist.shift(); }
+    } catch (_) { r = oops(); }
+    return finish(r);
+  }
+  async function briefing() {
+    try {
+      const V = view(await loadFacts());
+      const r = briefingReply(V);
+      last = { text: r.text, speak: r.speak, cards: r.cards };
+      return finish(r);
+    } catch (_) { return finish(oops()); }
+  }
+  function suggestions() {
+    try {
+      try { const f = getFacts(); if (isObj(f) && typeof f.then !== 'function') lastFacts = f; } catch (_) { /* the last facts seen */ }
+      const V = view(lastFacts);
+      const out = [];
+      const bad = V.nq && (V.nq.lines.some((x) => x.level === 'bad') || (V.nq.verdict && str(V.nq.verdict.level, 10) === 'bad'));
+      if (bad || (V.nq && V.nq.stale)) out.push('What should I do now?');
+      if (ctx && V.now - ctx.t < FOLLOW_MS && !ctx.kalshi && ['status', 'room', 'target', 'pnl', 'eval'].includes(ctx.topic) && ctx.only && ctx.sel.length === 1) {
+        const other = ALL.find((k) => k !== ctx.sel[0] && card(V, k));
+        if (other) out.push(`And ${BOT[other].name}?`);
+      }
+      out.push(V.et.h < 12 ? 'Good morning' : 'Brief me', 'How are the bots?');
+      if (V.M && !V.M.open) out.push('When does the market open?');
+      if (V.plan && (V.plan.ev.length || V.plan.tasks.length)) out.push("What's on today?");
+      if (V.k) out.push("How's Kalshi?");
+      out.push("Today's P&L", 'What should I do now?', 'Open Zenith');
+      return uniq(out).slice(0, 6);
+    } catch (_) { return ['Brief me', 'How are the bots?', "What's on today?", 'Open Zenith']; }
+  }
+  function setSmart(x) {
+    const v = isObj(x) ? x : {};
+    if (typeof v.provider === 'string' && PROVIDERS[v.provider.toLowerCase()]) S.provider = v.provider.toLowerCase();
+    else {                                            // the shell's settings have one key field: the key says which provider it is
+      const k = typeof v.key === 'string' ? v.key.trim() : '', m = typeof v.model === 'string' ? v.model.trim().toLowerCase() : '';
+      const guess = /^gsk_/.test(k) ? 'groq' : /^AIza/.test(k) ? 'gemini' : /^sk-ant-/.test(k) ? 'anthropic'
+        : !k && /^claude-/.test(m) ? 'anthropic' : !k && /^gemini-/.test(m) ? 'gemini' : !k && /^(openai\/|llama|meta-llama\/|qwen\/|moonshotai\/|deepseek)/.test(m) ? 'groq' : '';
+      if (guess) S.provider = guess;
+    }
+    const named = typeof v.provider === 'string' && !!PROVIDERS[v.provider.toLowerCase()];
+    if (typeof v.key === 'string' && v.key.trim()) S.keys[S.provider] = v.key.trim().slice(0, 400);
+    else if (v.key === '' || v.key === null) {        // "forget the key": that provider's, or every key on this phone
+      if (named) S.keys[S.provider] = '';
+      else for (const p of Object.keys(PROVIDERS)) S.keys[p] = '';
+    }
+    if (typeof v.model === 'string') {               // a model of another provider (the shell pre-fills the field) is not kept
+      const m = v.model.trim().slice(0, 80), lm = m.toLowerCase();
+      const fam = /^claude-/.test(lm) ? 'anthropic' : /^gemini-/.test(lm) ? 'gemini' : /^(openai\/|llama|meta-llama\/|qwen\/|moonshotai\/|deepseek|gemma|mixtral)/.test(lm) ? 'groq' : '';
+      if (!m) delete S.models[S.provider];
+      else if (!fam || fam === S.provider) S.models[S.provider] = m;
+    }
+    if (typeof v.depth === 'string') { const d = v.depth.toLowerCase() === 'expert' ? 'deep' : v.depth.toLowerCase(); if (DEPTHS.includes(d)) S.depth = d; }
+    if (typeof v.on === 'boolean') S.on = v.on;
+    saveSmart();
+    return smartView();
+  }
+  return {
+    ask, briefing, suggestions, setSmart,
+    get smart() { return smartView(); },
+    get hidden() { return hide; },
+    forgetKey(provider) { if (PROVIDERS[provider]) S.keys[provider] = ''; else for (const p of Object.keys(PROVIDERS)) S.keys[p] = ''; if (!S.keys[S.provider]) S.on = false; saveSmart(); return smartView(); },
+    idle: () => IDLE_LINE,
+    outcomes: outcomeAlerts,
+    normalize: norm,
+    market: () => { const t = nowMs(lastFacts); const M = marketState(t); return { ...M, text: marketText(M, t) }; },
+  };
+}
+export default createBrain;
