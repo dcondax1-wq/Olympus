@@ -1,0 +1,127 @@
+/* Jarvis hub (owner 2026-10-31): one Home Screen app, the Jarvis screen first, a mode switch (Jarvis / Zenith) and the
+   other dashboards on top. One dark look. Safari 16 safe: no CSS nesting, no @property, prefixed backdrop-filter. */
+:root {
+  --bg: #0b0b0d; --bg2: #151518; --panel: #1b1b1f; --panel2: #232328; --line: rgba(255,255,255,.09);
+  --ink: #f4f4f6; --ink2: #b3b4ba; --mut: #7d7e85; --glow: #ffffff;
+  --ok: #46d79a; --warn: #f5b84a; --bad: #ff6b7f;
+  --f: -apple-system, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+  --f-num: -apple-system, "SF Pro Display", "Helvetica Neue", system-ui, sans-serif;
+  --bar-h: 56px;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 var(--f); }
+body { overflow: hidden; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid rgba(255,255,255,.55); outline-offset: 2px; }
+[hidden] { display: none !important; }
+
+/* ---- the top bar: the mode switch, then the other apps */
+.bar { position: fixed; inset: 0 0 auto; z-index: 20; padding-top: env(safe-area-inset-top, 0px);
+  padding-left: max(10px, env(safe-area-inset-left, 0px)); padding-right: max(10px, env(safe-area-inset-right, 0px));
+  background: rgba(11,11,13,.92); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); border-bottom: 1px solid var(--line); }
+.bar-in { height: var(--bar-h); display: flex; align-items: center; gap: 8px; }
+.modes { flex: none; display: flex; padding: 3px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); }
+.mode { display: flex; align-items: center; gap: 6px; height: 38px; padding: 0 11px 0 5px; border: 0; border-radius: 11px; background: transparent;
+  color: var(--ink2); font-size: 14px; font-weight: 650; white-space: nowrap; }
+.mode img, .mode .glyph { width: 26px; height: 26px; border-radius: 7px; display: block; flex: none; }
+.mode[aria-current="page"] { background: var(--panel2); color: var(--ink); box-shadow: 0 0 0 1px var(--line) inset; }
+.apps { flex: 1; min-width: 0; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.apps::-webkit-scrollbar { display: none; }
+.chip { flex: none; display: flex; align-items: center; gap: 7px; height: 38px; padding: 0 10px 0 5px; border-radius: 12px;
+  border: 1px solid transparent; background: transparent; color: var(--ink2); font-size: 13.5px; font-weight: 600; white-space: nowrap; }
+.chip img, .chip .glyph { width: 26px; height: 26px; border-radius: 7px; display: block; flex: none; }
+.chip[aria-current="page"] { background: var(--panel2); border-color: var(--line); color: var(--ink); }
+.chip.add { padding: 0 10px; color: var(--mut); }
+.icon-b { flex: none; width: 38px; height: 38px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--ink2);
+  display: grid; place-items: center; padding: 0; }
+
+/* ---- views */
+.view { position: fixed; left: 0; right: 0; top: calc(var(--bar-h) + env(safe-area-inset-top, 0px)); bottom: 0; }
+.frame { position: absolute; inset: 0 0 env(safe-area-inset-bottom, 0px) 0; width: 100%; height: calc(100% - env(safe-area-inset-bottom, 0px)); border: 0; background: var(--bg); }
+.frame-note { position: absolute; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 2; max-width: min(92vw, 420px);
+  padding: 10px 14px; border-radius: 14px; background: rgba(27,27,31,.96); border: 1px solid var(--line); color: var(--ink2); font-size: 13px; text-align: center; }
+.frame-note button { margin-left: 6px; background: none; border: 0; color: var(--ink); font-weight: 650; text-decoration: underline; padding: 0; }
+#zen { background: var(--bg); overflow: hidden; }
+
+/* ---- Jarvis mode */
+#home { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+.home-in { max-width: 720px; margin: 0 auto; padding-block: 22px calc(40px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
+.hero { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px; align-items: center; }
+.core { position: relative; width: 64px; height: 64px; flex: none; }
+.core-slot { position: absolute; inset: 0; }
+.core-slot:empty { display: none; }
+.orb { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 50% 50%, #ffffff 0 13%, rgba(255,255,255,.55) 20%, rgba(255,255,255,.08) 46%, transparent 62%);
+  box-shadow: 0 0 0 2px rgba(255,255,255,.12) inset; }
+.orb::after { content: ""; position: absolute; inset: 7px; border-radius: 50%; border: 2px solid rgba(255,255,255,.22); }
+@media (prefers-reduced-motion: no-preference) { .orb { animation: breathe 4.5s ease-in-out infinite; } .orb.think, .orb.listen, .orb.speak { animation-duration: .9s; } }
+@keyframes breathe { 0%, 100% { filter: brightness(.92); transform: scale(1); } 50% { filter: brightness(1.15); transform: scale(1.04); } }
+.paused *, .paused *::before, .paused *::after { animation-play-state: paused !important; }
+.hello { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -.01em; line-height: 1.15; }
+.sub { margin: 4px 0 0; color: var(--ink2); font-size: 14px; }
+.ask { display: flex; gap: 8px; align-items: center; padding: 6px; border-radius: 18px; background: var(--panel); border: 1px solid var(--line); }
+.ask input { flex: 1; min-width: 0; height: 42px; padding: 0 10px; border: 0; background: transparent; outline: none; font-size: 16px; }
+.ask input::placeholder { color: var(--mut); }
+.ask button { width: 42px; height: 42px; border-radius: 13px; border: 0; background: var(--panel2); display: grid; place-items: center; color: var(--ink); flex: none; padding: 0; }
+.ask button.on { background: var(--ink); color: var(--bg); }
+.talk { display: grid; gap: 8px; }
+.talk:empty { display: none; }
+.msg { max-width: 92%; padding: 10px 13px; border-radius: 16px; font-size: 14.5px; white-space: pre-line; overflow-wrap: anywhere; }
+.msg.me { justify-self: end; background: var(--panel2); color: var(--ink); border-bottom-right-radius: 6px; }
+.msg.j { justify-self: start; background: var(--panel); border: 1px solid var(--line); color: var(--ink); border-bottom-left-radius: 6px; }
+.msg-cards { justify-self: stretch; display: grid; gap: 8px; }
+.chips2 { display: flex; flex-wrap: wrap; gap: 8px; }
+.sug { height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg2); color: var(--ink2); font-size: 13px; }
+.sec-t { margin: 6px 0 -6px; color: var(--mut); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 12px; }
+.card { text-align: left; display: grid; gap: 10px; padding: 14px; border-radius: 20px; background: var(--panel); border: 1px solid var(--line); min-width: 0; width: 100%; }
+.card-h { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.card-h img, .card-h .glyph { width: 40px; height: 40px; border-radius: 10px; flex: none; display: block; }
+.card-h > div { min-width: 0; }
+.card-h b { display: block; font-size: 16px; }
+.card-h small { display: block; color: var(--mut); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card-h .go { margin-left: auto; color: var(--mut); flex: none; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink2); }
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--mut); flex: none; }
+.pill.ok::before { background: var(--ok); box-shadow: 0 0 8px var(--ok); } .pill.warn::before { background: var(--warn); } .pill.bad::before { background: var(--bad); }
+.kv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.kv div { padding: 8px 10px; border-radius: 12px; background: var(--bg2); min-width: 0; }
+.kv span { display: block; color: var(--mut); font-size: 11.5px; }
+.kv strong { display: block; font: 650 15px/1.25 var(--f-num); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.acct { display: grid; gap: 6px; }
+.acct > i { font-style: normal; color: var(--ink2); font-size: 12.5px; }
+.list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.list li { display: flex; gap: 8px; align-items: baseline; font-size: 13.5px; color: var(--ink2); min-width: 0; }
+.list li b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; flex: none; }
+.list li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.muted { color: var(--mut); font-size: 13px; margin: 0; }
+.link-f { display: flex; gap: 8px; }
+.link-f input { flex: 1; min-width: 0; height: 40px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg2); outline: none; font-size: 16px; }
+.link-f button, .btn { height: 40px; padding: 0 14px; border-radius: 12px; border: 0; background: var(--ink); color: var(--bg); font-weight: 650; flex: none; }
+.btn.ghost { background: var(--panel2); color: var(--ink); border: 1px solid var(--line); }
+.foot { color: var(--mut); font-size: 12.5px; text-align: center; margin: 4px 0 0; }
+
+/* ---- sheets: add a dashboard, settings */
+.sheet { position: fixed; inset: 0; z-index: 40; display: grid; align-items: end; background: rgba(0,0,0,.5); }
+.sheet-in { background: var(--bg2); border-top: 1px solid var(--line); border-radius: 22px 22px 0 0; padding: 18px max(16px, env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  display: grid; gap: 12px; max-width: 720px; width: 100%; margin: 0 auto; max-height: calc(100% - 40px - env(safe-area-inset-top, 0px)); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.sheet-in h2 { margin: 0; font-size: 18px; }
+.sheet-in h3 { margin: 6px 0 0; font-size: 13px; color: var(--mut); font-weight: 650; letter-spacing: .06em; text-transform: uppercase; }
+.sheet-in label { display: grid; gap: 6px; color: var(--ink2); font-size: 13px; }
+.sheet-in input[type="text"], .sheet-in input[type="url"], .sheet-in input[type="password"] { height: 42px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); outline: none; font-size: 16px; min-width: 0; width: 100%; }
+.sheet-row { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.sheet-in .row-t { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border-radius: 12px; background: var(--panel); color: var(--ink); font-size: 15px; }
+.row-t small { display: block; color: var(--mut); font-size: 12.5px; }
+.row-t input[type="checkbox"] { width: 22px; height: 22px; flex: none; accent-color: var(--ink); }
+.mine { display: grid; gap: 6px; }
+.mine div { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 12px; background: var(--panel); font-size: 14px; min-width: 0; }
+.mine div span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink2); }
+.mine div button { background: none; border: 0; color: var(--bad); font-size: 13px; }
+.note { color: var(--mut); font-size: 12.5px; margin: 0; }
+.err { color: var(--bad); font-size: 13px; margin: 0; min-height: 1em; }
+.boot { position: fixed; left: 16px; right: 16px; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 50; padding: 12px 14px; border-radius: 14px;
+  background: var(--panel); border: 1px solid var(--line); color: var(--ink2); font-size: 14px; display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+.boot button { height: 36px; padding: 0 14px; border-radius: 11px; border: 0; background: var(--ink); color: var(--bg); font-weight: 650; }
+@media (max-width: 380px) { .mode { padding: 0 9px 0 4px; font-size: 13.5px; } .mode .glyph, .mode img { width: 24px; height: 24px; } }

@@ -6,9 +6,13 @@
 // or when the load fails. So opening Jarvis never waits on a slow network for more than NAV_WAIT_MS when a saved copy exists
 // (the network answer still refreshes the copy for next time), and with no network and no copy it gets a small dark page
 // with a Retry button instead of an error.
-const CACHE = 'jarvis-v3';
+// v4 (2026-11-01, Jarvis + Zenith modes): the app is split into modules (data.js, jarvis.css and the parts built on their own:
+// brain.js, core-visual.js, apps.js, zenith-mode.js). Each is saved on its own, so a part that is not on the site yet is
+// skipped, and the page's own files get the same NAV_WAIT_MS rule (a slow network never holds the start).
+const CACHE = 'jarvis-v4';
 const NAV_WAIT_MS = 3500;
-const SHELL = ['./', './index.html', './manifest.webmanifest?v=j1', './apple-touch-icon.png?v=j1', './icon-192.png?v=j1', './icon-512.png?v=j1'];
+const SHELL = ['./', './index.html', './manifest.webmanifest?v=j1', './apple-touch-icon.png?v=j1', './icon-192.png?v=j1', './icon-512.png?v=j1',
+  './jarvis.css?v=j4', './data.js', './brain.js', './core-visual.js', './apps.js', './zenith-mode.js'];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => Promise.all(SHELL.map((u) => c.add(u).catch(() => null)))));
   self.skipWaiting();
@@ -59,10 +63,15 @@ self.addEventListener('fetch', (e) => {
     return;
   }
   e.respondWith((async () => {
+    const net = fetch(req);
+    net.then((r) => store(req, r)).catch(() => null);
+    e.waitUntil(net.catch(() => null));
+    const copy = await saved(req);
     try {
-      const r = await fetch(req);
-      if (r && r.ok) return store(req, r);
-      return (await saved(req)) || r;
+      // the page's own files: the saved copy when the network is slower than NAV_WAIT_MS (the late answer refreshes it)
+      const r = copy ? await Promise.race([net, new Promise((ok) => setTimeout(() => ok(null), NAV_WAIT_MS))]) : await net;
+      if (r && r.ok) return r;
+      return copy || (await saved(req)) || r || Response.error();
     } catch (_) {
       return (await saved(req)) || Response.error();
     }
