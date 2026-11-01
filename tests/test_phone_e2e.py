@@ -641,11 +641,15 @@ class Phone:
             pass
 
 
+# window.__qaReady: the Jarvis screen is built (its script ran); window.__qaUsable: and nothing covers it any more (the
+# launch screen #bootfx of 2026-11-01, at most 1.2 s, tap to skip, is gone)
 READY_INIT = """(() => {
   if (window.top !== window || !/\\/jarvis\\/(index\\.html)?$/.test(location.pathname)) return;
   const ok = () => document.readyState !== 'loading' && !document.getElementById('boot')
     && document.querySelectorAll('[data-app]').length >= 3 && !!document.querySelector('input, textarea');
-  const t = () => { if (ok()) { window.__qaReady = performance.now(); return; } requestAnimationFrame(t); };
+  const t = () => { if (window.__qaReady === undefined && ok()) window.__qaReady = performance.now();
+    if (window.__qaReady !== undefined && !document.getElementById('bootfx')) { window.__qaUsable = performance.now(); return; }
+    requestAnimationFrame(t); };
   requestAnimationFrame(t);
 })();"""
 JARVIS_HOME = ("() => { const h = document.getElementById('home'); if (!h || h.hidden || !(h.getBoundingClientRect().height > 0)) return false; "
@@ -662,8 +666,9 @@ def jarvis_url(base):
 
 
 def wait_ready(p, timeout=15000):
-    p.wait_for_function("() => window.__qaReady !== undefined", timeout=timeout)
-    return p.evaluate("Math.round(window.__qaReady)")
+    """Until the Jarvis screen can be used (built, and no launch screen over it) -> ms from the start of the page."""
+    p.wait_for_function("() => window.__qaUsable !== undefined", timeout=timeout)
+    return p.evaluate("Math.round(window.__qaUsable)")
 
 
 def judge(png, label):
@@ -768,11 +773,12 @@ def hscroll(target):
 
 
 # The Jarvis screen scrolled to its end: the last things on it must sit above whatever is fixed at the bottom (the ask bar,
-# floating chips), or the owner can never see or tap them.
+# floating chips), or the owner can never see or tap them. A see-through fade that takes no taps (pointer-events: none) is
+# not counted.
 UNDER_DOCK = """() => {
   const H = innerHeight, home = document.getElementById('home');
   const fixed = [...document.querySelectorAll('body *')].filter((el) => { const cs = getComputedStyle(el), r = el.getBoundingClientRect();
-    return cs.position === 'fixed' && cs.visibility !== 'hidden' && cs.display !== 'none' && r.height > 0 && r.width > 0
+    return cs.position === 'fixed' && cs.visibility !== 'hidden' && cs.display !== 'none' && cs.pointerEvents !== 'none' && r.height > 0 && r.width > 0
       && r.top > H * 0.55 && r.bottom > H - 140 && !(home && home.contains(el) && false) && !el.closest('#frames, .zm-root, .sheet, [hidden]'); });
   const scrollers = [document.scrollingElement, home, ...(home ? home.querySelectorAll('*') : [])].filter((el) => el
     && el.scrollHeight > el.clientHeight + 4 && (el === document.scrollingElement || /auto|scroll/.test(getComputedStyle(el).overflowY)));
@@ -878,7 +884,7 @@ def real_tap(p, loc, what, timeout=5000, done=None):
         else:                                            # on top but never held still (an animation): a finger still hits it
             note(f"(tap on {what}: it never held still for Playwright; it is on top, clicked directly)")
         try:
-            shot(p, f"tap stolen {what}")
+            shot(p, f"tap not confirmed {what}")
         except Exception:
             pass
         try:
@@ -1084,14 +1090,15 @@ def part_a(S):
 
 def part_b(br, S, base):
     """Jarvis opens at the three iPhone sizes: cold (first open) and from its saved copy."""
-    times = {}
+    times, launch = {}, {}
     for dev in PHONES:
         ph = Phone(br, dev)
         try:
             m = ph.mark()
             p = ph.page()
             p.goto(jarvis_url(base), wait_until="commit")
-            cold = wait_ready(p)
+            cold_use = wait_ready(p)
+            cold = p.evaluate("Math.round(window.__qaReady)")
             p.wait_for_timeout(700)          # the live feed and Kalshi answer
             txt = p.inner_text("body")
             check(f"b. {dev}: the Jarvis screen with the bots' numbers ($1,106 room) and Kalshi ($512.34)",
@@ -1107,10 +1114,13 @@ def part_b(br, S, base):
             wait_caches(p, [S["workers"]["Jarvis"]["new"]], timeout=10000)
             p2 = ph.page()
             p2.goto(jarvis_url(base), wait_until="commit")
-            warm = wait_ready(p2)
+            warm_use = wait_ready(p2)
+            warm = p2.evaluate("Math.round(window.__qaReady)")
+            launch[dev] = max(cold_use - cold, warm_use - warm)
             ctl = p2.evaluate("navigator.serviceWorker.controller ? navigator.serviceWorker.controller.scriptURL : null")
             times[dev] = (cold, warm)
-            note(f"{dev}: interactive {cold} ms cold, {warm} ms from the saved copy (worker: {ctl and ctl.split(BASE)[-1]})")
+            note(f"{dev}: Jarvis built in {cold} ms cold, {warm} ms from the saved copy; usable (after its launch screen) at "
+                 f"{cold_use} / {warm_use} ms (worker: {ctl and ctl.split(BASE)[-1]})")
             check(f"b. {dev}: the second open is served by Jarvis's own worker", bool(ctl) and ctl.endswith("/jarvis/sw.js"), ctl)
             no_errors(ph, m, f"Jarvis at {dev}")
         finally:
@@ -1121,17 +1131,24 @@ def part_b(br, S, base):
             try:
                 p = ph.page()
                 p.goto(jarvis_url(base), wait_until="commit")
-                cold = wait_ready(p)
+                wait_ready(p)
+                cold = p.evaluate("Math.round(window.__qaReady)")
                 p.evaluate("navigator.serviceWorker.ready.then(() => true)")
                 p2 = ph.page()
                 p2.goto(jarvis_url(base), wait_until="commit")
-                warm = wait_ready(p2)
+                wait_ready(p2)
+                warm = p2.evaluate("Math.round(window.__qaReady)")
                 note(f"{dev} again: {cold} ms cold, {warm} ms from the saved copy")
                 times[dev] = (min(t[0], cold), min(t[1], warm))
             finally:
                 ph.close()
     check(f"b. perf: Jarvis home interactive under {PERF_BUDGET_MS} ms locally (cold and saved copy, every size)",
           all(max(t) < PERF_BUDGET_MS for t in times.values()), times)
+    if any(v > 50 for v in launch.values()):         # a launch screen over the built Jarvis screen (by design <= 1.2 s)
+        # nominal 1.2 s; here its timers run late on a busy CPU with software WebGL: 3 s still catches one that hangs
+        check("b. the launch screen over Jarvis goes away by itself (under 3 s here; 1.2 s by design, tap to skip)",
+              all(v < 3000 for v in launch.values()), launch)
+        note(f"launch screen over the built Jarvis screen: {launch} ms")
     return times
 
 
@@ -1334,6 +1351,12 @@ def part_e(br, S, base, ph):
              f"its own files (start, end ms): {slowest[:6]}; {strip(fr)}")
         check(f"e. slow network: Jarvis paints from its saved copy in under {NAV_WAIT_S + 1.5:.1f} s (not after the site's {SLOW_S:.0f} s)",
               0 < fp < (NAV_WAIT_S + 1.5) * 1000, f"first paint {fp} ms")
+        try:
+            p.wait_for_function("() => window.__qaUsable !== undefined", timeout=4000)
+        except Exception:
+            pass
+        us = _ev(p, "Math.round(window.__qaUsable || 0)") or 0
+        note(f"slow network: Jarvis usable at {us} ms (after its launch screen)")
         check(f"e. slow network: Jarvis is interactive from its saved copy in under {lim:.1f} s", 0 < ia < lim * 1000, f"interactive {ia} ms")
         if done:
             p.wait_for_timeout(300)
