@@ -21,7 +21,7 @@ Read-only and separate from the NQ bot: it never places anything and never runs 
 
     python -m engine.kalshi_publish --sample                       a sample status file (the contract, v2)
     python -m engine.kalshi_publish --ssh --check                  what the VM's files would publish (no push)
-    python -m engine.kalshi_publish --ssh --once | --loop          push once / every 60 s when it changed (else 10 min)
+    python -m engine.kalshi_publish --ssh --once | --loop          push once / every 60 s when it changed (else 3 min)
     python -m engine.kalshi_publish --src <file> --check|--once|--loop   the same from a status file
 --vm-helper <srv.py> when it isn't found under %APPDATA%\\Claude\\scratch-workspaces; LE_KALSHI_SRC sets the default
 --src; LE_LIVE_REPO overrides the target repo.

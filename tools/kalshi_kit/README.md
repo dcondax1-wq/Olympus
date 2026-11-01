@@ -30,6 +30,6 @@ money on its own cloud server, and its Claude chat "kalshi-server" runs there to
   bot's trading key. It is GET-only and allow-listed in code.
 
 ## Checks
-`python -X utf8 -m tests.test_kalshi_publish` runs 79 checks. They use a mock Kalshi API that verifies RSA-PSS and
+`python -X utf8 -m tests.test_kalshi_publish` runs 81 checks. They use a mock Kalshi API that verifies RSA-PSS and
 Ed25519 signatures, a fake bot folder built from the real schema, a stand-in `srv.py` and local bare git repos. They
 make no network calls and use no real keys.

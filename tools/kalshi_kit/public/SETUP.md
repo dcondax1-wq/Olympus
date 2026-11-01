@@ -35,7 +35,7 @@ installing it needs `sudo apt-get install -y git`.
 
 ## 2. Run it once and show the JSON
 ```
-cd ~/kalshi_jarvis && nice -n 15 python3 kalshi_status_vm.py --from-bot /home/ubuntu/kalshi --check
+cd ~/kalshi_jarvis && nice -n 15 python3 -I kalshi_status_vm.py --from-bot /home/ubuntu/kalshi --check
 ```
 This prints exactly what will be public. Show the owner the top part: `status`, `balance`, `today_pnl`, `week_pnl`,
 `total_pnl` and the `strategies`. Then check the numbers:
@@ -60,18 +60,18 @@ Never show `deploy_key`, the private half.
 
 ## 4. Wait for his OK, then push once
 ```
-cd ~/kalshi_jarvis && python3 kalshi_status_vm.py --from-bot /home/ubuntu/kalshi --once --git-dir ~/kalshi_jarvis/pub.git --deploy-key ~/kalshi_jarvis/deploy_key
+cd ~/kalshi_jarvis && python3 -I kalshi_status_vm.py --from-bot /home/ubuntu/kalshi --once --git-dir ~/kalshi_jarvis/pub.git --deploy-key ~/kalshi_jarvis/deploy_key
 ```
 Expect `"ok": true` and the address the phone reads. If you get `Permission denied (publickey)`, the key isn't added or
 **Allow write access** isn't ticked: ask the owner to check. The first push adds github.com to `~/.ssh/known_hosts`.
 
 ## 5. Every minute: one cron line
 ```
-crontab -l 2>/dev/null | grep -q kalshi_status_vm.py || ( crontab -l 2>/dev/null; echo '* * * * * cd $HOME/kalshi_jarvis && flock -n .lock nice -n 15 ionice -c3 python3 kalshi_status_vm.py --from-bot /home/ubuntu/kalshi --cron --git-dir pub.git --deploy-key deploy_key >> cron.log 2>&1' ) | crontab -
+crontab -l 2>/dev/null | grep -q kalshi_status_vm.py || ( crontab -l 2>/dev/null; echo '* * * * * cd $HOME/kalshi_jarvis && flock -n .lock nice -n 15 ionice -c3 python3 -I kalshi_status_vm.py --from-bot /home/ubuntu/kalshi --cron --git-dir pub.git --deploy-key deploy_key >> cron.log 2>&1' ) | crontab -
 crontab -l | grep kalshi_status_vm.py
 ```
 This keeps every existing cron line and adds one. Each minute it reads the files and pushes only when the numbers
-changed, plus once every 10 minutes so the phone knows it's alive. `cron.log` gets one line per push and any errors.
+changed, plus once every 3 minutes so the phone knows it's alive. `cron.log` gets one line per change and any errors.
 
 ## 6. Check it
 ```
@@ -84,5 +84,6 @@ The address can lag a few minutes behind the push. When it shows the bot's numbe
 ## Later
 - **Update the script:** run step 1's `curl` line again. Cron uses the new file from the next minute.
 - **Pause publishing:** `crontab -l | grep -v kalshi_status_vm.py | crontab -`. Turn it back on with step 5.
+- **The log:** `tail ~/kalshi_jarvis/cron.log`. Clear it any time with `: > ~/kalshi_jarvis/cron.log`.
 - **Remove it:** run the pause line, then `rm -rf ~/kalshi_jarvis`. Ask the owner to delete the deploy key on GitHub
   (nq-dashboard → Settings → Deploy keys).

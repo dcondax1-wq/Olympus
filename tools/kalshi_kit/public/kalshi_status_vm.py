@@ -20,8 +20,8 @@ Where the numbers come from:
 How it runs:
   --check   print exactly what would go public (no push)
   --once    push once (prints the result and the address the phone reads)
-  --cron    for a crontab line every minute: push only when the numbers changed, and at least every 10 min
-  --loop    keep it fresh by itself: every 60 s (API: 300 s), push when it changed (else every 10 min)
+  --cron    for a crontab line every minute: push only when the numbers changed, and at least every 3 min
+  --loop    keep it fresh by itself: every 60 s (API: 300 s), push when it changed (else every 3 min)
 
 Where it goes: kalshi.json, one orphan commit force-pushed to the branch `kalshi` of the PUBLIC repo
 demetrades2000-coder/nq-dashboard, from a private scratch git dir (no history piles up): with --deploy-key (the VM) over
@@ -75,7 +75,7 @@ BRANCH = "kalshi"
 FILE = "kalshi.json"
 MAX_BYTES = 200 * 1024
 EVERY_S = 60
-KEEPALIVE_S = 600
+KEEPALIVE_S = 180               # a push at least this often even when nothing changed ("updated N min ago" stays small)
 PRUNE_EVERY = 30
 
 PROD_BASE = "https://external-api.kalshi.com/trade-api/v2"          # the bot's own (api.elections.kalshi.com works too)
@@ -947,12 +947,14 @@ def read_bot(bot_dir, now=None, units=UNITS, week="monday"):
         b["l"] += 1 if pnl < -0.005 else 0
         if ts >= t_today:
             b["today"] += float(pnl)
-    paused_file = os.path.join(bot_dir, "paused.txt")
+    paused_file = os.path.join(bot_dir, "paused.txt")      # holds "paused until <unix>"; "0" = until /start
     paused = os.path.exists(paused_file)
     try:
         until = float(open(paused_file).read().strip() or 0) if paused else 0.0
     except (OSError, ValueError):
-        until = 0.0
+        until = 0.0                                          # unreadable: still paused (the cautious reading)
+    if paused and 0 < until <= now:
+        paused = False                                       # a pause that already ran out
     fresh = (_f(st.get("ts")) or 0) > now - 180
     alive = _units_active(units)
     running = bool(fresh and not paused and alive is not False)
@@ -1032,14 +1034,15 @@ def find_vm_helper(appdata=None):
 
 def vm_command(source, vm_dir=VM_DIR, week="monday", now=None, units=None):
     """One shell line for the VM: cd to the bot, then run THIS file (sent inside the command, zlib + base64: no file is
-    written on the VM) with --from-bot . --emit, nice'd. It prints the payload between MARK_A and MARK_B."""
+    written on the VM) with --from-bot . --emit, nice'd, in isolated mode (-I: the bot's folder is never on sys.path, so
+    none of its modules can load). It prints the payload between MARK_A and MARK_B."""
     blob = base64.b64encode(zlib.compress(source.encode("utf-8"), 9)).decode("ascii")
     py = ("import base64,zlib,sys;sys.argv=['kalshi_to_jarvis']+sys.argv[1:];"
           f"exec(compile(zlib.decompress(base64.b64decode('{blob}')),'kalshi_to_jarvis','exec'))")
     extra = (["--now", repr(float(now))] if now else []) + (["--units", units] if units is not None else [])
     args = " ".join(shlex.quote(x) for x in ["--from-bot", ".", "--emit", "--week", week] + extra)
     return (f"cd {shlex.quote(vm_dir)} && PY=venv/bin/python && {{ [ -x \"$PY\" ] || PY=python3; }} && "
-            f"nice -n 15 ionice -c3 \"$PY\" -c \"{py}\" {args}\n")
+            f"nice -n 15 ionice -c3 \"$PY\" -I -c \"{py}\" {args}\n")
 
 
 def parse_emit(text):
@@ -1255,8 +1258,11 @@ def phone_url(url=REPO_URL):
 
 
 def _sig(p):
-    return hashlib.sha256(json.dumps({k: v for k, v in p.items() if k not in ("t", "pub_t")}, sort_keys=True,
-                                     default=str).encode()).hexdigest()
+    """What counts as a change: everything but the clocks (t, pub_t, the time of the last equity point)."""
+    q = {k: v for k, v in p.items() if k not in ("t", "pub_t")}
+    if q.get("equity"):
+        q["equity"] = list(q["equity"][:-1]) + [[None, q["equity"][-1][1] if len(q["equity"][-1]) > 1 else None]]
+    return hashlib.sha256(json.dumps(q, sort_keys=True, default=str).encode()).hexdigest()
 
 
 def run_loop(make, push_fn, every=EVERY_S, keepalive=KEEPALIVE_S, log=print, clock=time.time, sleep=time.sleep,
@@ -1348,7 +1354,7 @@ def parser(prog=None):
     g = ap.add_mutually_exclusive_group()
     g.add_argument("--once", action="store_true", help="push once now")
     g.add_argument("--loop", action="store_true", help="keep it fresh")
-    g.add_argument("--cron", action="store_true", help="for cron every minute: push only when changed (and every 10 min)")
+    g.add_argument("--cron", action="store_true", help="for cron every minute: push only when changed (and every 3 min)")
     g.add_argument("--check", action="store_true", help="print what would be published (no push)")
     g.add_argument("--sample", action="store_true", help="print a sample status file (the contract)")
     g.add_argument("--emit", action="store_true", help=argparse.SUPPRESS)              # the VM side of --from-vm
@@ -1457,20 +1463,22 @@ def main(argv=None, push_fn=None, prog=None, defaults=None):
         print(json.dumps(p, indent=2, ensure_ascii=False))
         return 0
     last_file = os.path.abspath(st["git_dir"]).rstrip("/\\") + ".last.json"
+    last = (_jload(last_file) or {}) if a.cron else {}
     if a.cron:                     # quiet while nothing changed: a push only on a change, or every KEEPALIVE_S
-        last = _jload(last_file) or {}
-        if last.get("sig") == _sig(p) and time.time() - float(last.get("t") or 0) < KEEPALIVE_S:
+        if last.get("sig") == _sig(p) and time.time() - float(last.get("t") or 0) < KEEPALIVE_S - 5:
             return 0
-    r = push_fn(p)
+    n = int(last.get("n") or 0) + 1
+    r = push_fn(p, prune=bool(a.cron and n % PRUNE_EVERY == 0))      # cron: drop the old commits every 30 pushes
     if a.cron:
         if r.get("ok"):
             try:
                 os.makedirs(os.path.dirname(last_file), exist_ok=True)
                 with open(last_file, "w", encoding="utf-8") as fh:
-                    json.dump({"sig": _sig(p), "t": time.time(), "commit": r.get("commit")}, fh)
+                    json.dump({"sig": _sig(p), "t": time.time(), "n": n, "commit": r.get("commit")}, fh)
             except OSError:
                 pass
-        log(f"kalshi to jarvis: {'pushed ' + str(r.get('commit')) if r.get('ok') else 'push FAILED: ' + redact(str(r.get('error')))}")
+        if not r.get("ok") or last.get("sig") != _sig(p):      # keep-alive pushes stay out of the log
+            log(f"kalshi to jarvis: {'pushed ' + str(r.get('commit')) if r.get('ok') else 'push FAILED: ' + redact(str(r.get('error')))}")
         return 0 if r.get("ok") else 1
     print(json.dumps(r))
     if r.get("ok"):

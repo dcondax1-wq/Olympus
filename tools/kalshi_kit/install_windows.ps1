@@ -8,7 +8,7 @@ What it does, in order:
   2. reads the bot's numbers once over SSH (python -m engine.kalshi_publish --ssh --once) and pushes them, read-only;
   3. creates the Task Scheduler task "Kalshi to Jarvis": at logon, no window (pythonw), restarts every minute on failure,
      no time limit, one copy: pythonw -X utf8 -m engine.kalshi_publish --ssh --loop (every 60 s, a push only on a change
-     or every 10 min), and starts it.
+     or every 3 min), and starts it.
 It never touches trading, the Kalshi bot, its server's files, or the NQ bot's tasks. The server's address stays in
 srv.py. Log: %LOCALAPPDATA%\KalshiToJarvis\kalshi_to_jarvis.log
 
@@ -112,7 +112,7 @@ try {
     Write-Host "[FIX] could not create the task: $($_.Exception.Message)"
     exit 1
 }
-Write-Host "[OK]  '$TaskName' runs now and at every logon (every 60 s; a push only when the numbers change, else every 10 min)"
+Write-Host "[OK]  '$TaskName' runs now and at every logon (every 60 s; a push only when the numbers change, else every 3 min)"
 Write-Host "      phone reads: https://raw.githubusercontent.com/demetrades2000-coder/nq-dashboard/kalshi/kalshi.json"
 Write-Host "      log: $env:LOCALAPPDATA\KalshiToJarvis\kalshi_to_jarvis.log"
 Write-Host "      once the bot's server publishes by itself: run this again with -Remove"

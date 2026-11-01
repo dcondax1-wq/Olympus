@@ -290,15 +290,21 @@ def part_g(tmp):
     check("g. trades.db untouched (opened read-only)", (os.path.getmtime(db), open(db, "rb").read()) == before)
     open(os.path.join(bot, "paused.txt"), "w").write(str(int(NOW + 3600)))
     pp = KIT.bot_payload(bot, now=NOW, units=())
+    open(os.path.join(bot, "paused.txt"), "w").write("0")
+    p0 = KIT.bot_payload(bot, now=NOW, units=())
+    open(os.path.join(bot, "paused.txt"), "w").write(str(int(NOW - 60)))
+    pold = KIT.bot_payload(bot, now=NOW, units=())
     os.remove(os.path.join(bot, "paused.txt"))
     json.dump({"ts": NOW - 1500, "mode": "live"}, open(os.path.join(bot, "autotrader_status.json"), "w"))
     quiet = KIT.bot_payload(bot, now=NOW, units=())
     json.dump({"ts": NOW - 600, "mode": "live", "blocked": "15-min book off (MAIN_BOOK 0)"}, open(os.path.join(bot, "autotrader_status.json"), "w"))
     ps = KIT.bot_payload(bot, now=NOW, units=())
-    check("g. paused.txt -> Paused until <ET time>; blocked text shown; a silent trader -> 'No word ...'; never 'running'",
+    check("g. paused.txt: 'Paused until <ET time>' / 'Paused' (0), a run-out pause ignored; blocked text; a silent trader",
           pp["running"] is False and pp["status"] == "Paused until Nov 1, 2:00 PM ET" and ps["running"] is False
           and ps["status"] == "15-min book off (MAIN_BOOK 0)" and quiet["running"] is False
-          and quiet["status"] == "No word from the trader for 25 min", (pp["status"], ps["status"], quiet["status"]))
+          and quiet["status"] == "No word from the trader for 25 min" and p0["status"] == "Paused" and p0["running"] is False
+          and pold["running"] is True and pold["status"].startswith("Trading"), (pp["status"], ps["status"], quiet["status"],
+                                                                                p0["status"], pold["status"]))
     empty = KIT.bot_payload(os.path.join(tmp, "nothing-here"), now=NOW, units=())
     check("g. a missing bot folder gives a calm card, not a crash", empty["kind"] == "kalshi" and empty["running"] is False
           and "trades.db could not be read" in empty["status"] and empty["positions"] == [], empty["status"])
@@ -658,8 +664,9 @@ def part_l(tmp):
     check("l. --ssh through srv.py gives the same payload as reading the files directly", ja == jb and ja.get("today_pnl") == 2.46,
           ja.get("err") or (ja, jb))
     sh = open(os.path.join(tmp, "home_l", "vm_read.sh"), "rb").read()
-    check("l. the VM command is one ASCII shell line: cd, nice'd python, the file inside (nothing installed on the VM)",
-          sh.count(b"\n") == 1 and b"nice -n 15 ionice -c3" in sh and b"--from-bot . --emit" in sh and sh.isascii(), sh[:120])
+    check("l. the VM command is one ASCII shell line: cd, nice'd isolated python (-I), the file inside, under 100 KB",
+          sh.count(b"\n") == 1 and b"nice -n 15 ionice -c3" in sh and b'"$PY" -I -c' in sh and b"--from-bot . --emit" in sh
+          and sh.isascii() and len(sh) < 100_000, sh[:120])
     check("l. markers survive the \\r\\r\\n line ends", KIT.parse_emit("x\r\r\n" + KIT.MARK_A + '{"a":\r\r\n1}' + KIT.MARK_B) == {"a": 1})
     r = run(["-m", "engine.kalshi_publish", "--ssh", "--vm-helper", os.path.join(tmp, "nope", "srv.py"), "--check"], cwd=ROOT, env=home)
     check("l. no srv.py -> a plain error (exit 1)", r.returncode == 1 and "srv.py" in r.stdout, r.stdout[-200:])
@@ -702,6 +709,35 @@ def part_m(tmp):
     check("m. the module's push (data/kalshi_pub.git route, the repo's git login) sends the same payload",
           r.returncode == 0 and got.get("name") == "Kalshi Edge v2" and got.get("today_pnl") == 2.46
           and git("--git-dir", remote, "rev-list", "--count", "kalshi").stdout.strip() == "1", (r.stdout + r.stderr)[-300:])
+    import time as _time
+    bot2 = make_bot(os.path.join(tmp, "bot_m2"))
+    json.dump({"ts": _time.time(), "mode": "live"}, open(os.path.join(bot2, "autotrader_status.json"), "w"))
+    remote2, gd = os.path.join(tmp, "remote_m2.git"), os.path.join(tmp, "cron2.git")
+    git("init", "-q", "--bare", remote2)
+    argsb = ["-I", KIT_FILE, "--from-bot", bot2, "--units", "none", "--cron", "--repo", remote2, "--git-dir", gd]
+    b1 = run(argsb, env=home)
+    r1 = git("--git-dir", remote2, "rev-parse", "kalshi").stdout.strip()
+    b2 = run(argsb, env=home)
+    r2 = git("--git-dir", remote2, "rev-parse", "kalshi").stdout.strip()
+    check("m. --cron on the live clock: the second minute is quiet (clocks and the equity point's time don't count as a change)",
+          b1.returncode == 0 and b2.returncode == 0 and r1 and r1 == r2 and b2.stdout == "", (b1.stdout + b1.stderr, b2.stdout))
+
+    def loose():
+        out = git("--git-dir", gd, "count-objects", "-v").stdout
+        return int(next((ln.split()[1] for ln in out.splitlines() if ln.startswith("count:")), "0"))
+    st = json.load(open(gd + ".last.json"))
+    for bal in (70.1, 70.2):                                   # two more changed pushes: old commits pile up as loose objects
+        json.dump({"total": bal}, open(os.path.join(bot2, "account_truth.json"), "w"))
+        run(argsb, env=home)
+    before = loose()
+    json.dump({**json.load(open(gd + ".last.json")), "n": 29}, open(gd + ".last.json", "w"))
+    json.dump({"total": 70.3}, open(os.path.join(bot2, "account_truth.json"), "w"))
+    b3 = run(argsb, env=home)
+    after = loose()
+    n_now = json.load(open(gd + ".last.json")).get("n")
+    check("m. --cron counts its pushes across runs and prunes the scratch repo every 30th (no pile-up on the server)",
+          st.get("n") == 1 and n_now == 30 and b3.returncode == 0 and after < before
+          and json.loads(git("--git-dir", remote2, "show", "kalshi:kalshi.json").stdout)["balance"] == 70.3, (st, n_now, before, after))
     env = KIT.push_env("/home/ubuntu/kalshi_jarvis/deploy_key")
     check("m. --deploy-key: git pushes over SSH with only that key (and the SSH repo URL)",
           "-i /home/ubuntu/kalshi_jarvis/deploy_key" in env.get("GIT_SSH_COMMAND", "") and "IdentitiesOnly=yes" in env["GIT_SSH_COMMAND"]

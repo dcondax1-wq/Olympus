@@ -25,7 +25,7 @@ The chat then follows `tools/kalshi_kit/public/SETUP.md`:
 3. Make a deploy key and show the owner only its public line; he adds it to nq-dashboard with write access.
 4. Push once.
 5. Add one cron line: every minute, `flock`ed and nice'd, `--cron`. It pushes only when the numbers changed, plus once
-   every 10 minutes so the phone knows it's alive.
+   every 3 minutes so the phone knows it's alive.
 6. Check the raw URL.
 
 It works with the PC off. Nothing in `/home/ubuntu/kalshi` changes.
@@ -110,6 +110,6 @@ present.
 - Don't touch the NQ bot: its processes, settings and scheduled tasks stay as they are.
 
 ## Checks
-- `python -X utf8 -m tests.test_kalshi_publish` runs 79 checks with temp folders and a mock Kalshi API on 127.0.0.1.
+- `python -X utf8 -m tests.test_kalshi_publish` runs 81 checks with temp folders and a mock Kalshi API on 127.0.0.1.
 - Live: open the raw URL above. The Jarvis Kalshi card shows the balance and today's P&L; the Kalshi page shows the
   strategies, open bets and last trades.
