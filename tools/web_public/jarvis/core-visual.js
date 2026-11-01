@@ -4,7 +4,8 @@
 // hex shell, a hologram globe and a projector dial on a grid floor. "singularity": a black hole with a white-violet accretion
 // ring. Real 3D with Three.js (./three.module.min.js, r160, loaded on demand). A 2D canvas draws the ticked HUD ring on top
 // (clock, state, level gauge) at once, and is the whole core (a flat arc-reactor) when WebGL or three is missing.
-//   mountCore(el, {size, design: 'reactor'|'singularity', theme: {c, c2, c3, tint}, effects: 'ultra'|'high'|'low'|'off',
+//   mountCore(el, {size, design: 'reactor'|'singularity', theme: {c, c2, c3, tint} or an old key ('eclipse', 'reactor',
+//                  'reactor-stark', 'reactor-ice', 'reactor-emerald'), effects: 'ultra'|'high'|'low'|'off',
 //                  adapt: true (step effects down on slow frames), motion: 'always' (ignore the OS reduce-motion switch), webgl: true})
 //     -> {setState(s), setLevel(v), setTheme(theme), setDesign(name), destroy(), stats()}
 //   idle: calm breathing · listening: faster, the core turns red, rings flare with the level · thinking: fast orbit, lightning
@@ -19,6 +20,10 @@ const SUB = ['CORE ONLINE', 'VOICE IN', 'PROCESSING', 'VOICE OUT', 'ATTENTION'];
 const EFFECTS = ['off', 'low', 'high', 'ultra'];
 const DESIGNS = ['reactor', 'singularity'];
 const VIOLET = { c: '#a855f7', c2: '#7c3aed', c3: '#c084fc', tint: '#e9ddff' };      // Eclipse, the owner's violet
+const NAMED = { eclipse: VIOLET, reactor: { c: '#a95cff', c2: '#6d28d9', c3: '#22d3ee', tint: '#f5d0fe' },   // the old theme keys
+  'reactor-stark': { c: '#ffbe3d', c2: '#d6281f', c3: '#6fd8ff', tint: '#fff1d0' }, 'reactor-ice': { c: '#4fe3ff', c2: '#0284c7', c3: '#9d8cff', tint: '#e6fbff' },
+  'reactor-emerald': { c: '#1ff5a4', c2: '#059669', c3: '#b4ff3c', tint: '#dcfff0' } };
+const themeOf = (th) => Object.assign({}, VIOLET, typeof th === 'string' ? NAMED[th] : th);
 const BAD = [255, 77, 109], WARN = [251, 191, 36], WHITE = [255, 255, 255];
 const TAU = Math.PI * 2;
 // per state: spin, scan rev/s, breath, wave gain, particle speed, brightness, pulse Hz (old core: 3 s / .8 s / 1 s / .5 s), bolts/s
@@ -51,7 +56,7 @@ export function mountCore(el, opts) {
   if (!el || !el.appendChild) throw new TypeError('mountCore(el): an element is required');
   opts = opts || {};
   const size = +opts.size > 0 ? +opts.size : 0;
-  let theme = Object.assign({}, VIOLET, opts.theme || {}), PAL = palette(theme);
+  let theme = themeOf(opts.theme), PAL = palette(theme);
   let design = DESIGNS.indexOf(opts.design) > 0 ? opts.design : 'reactor';
   const eff = EFFECTS.indexOf(opts.effects) >= 0 ? EFFECTS.indexOf(opts.effects) : 2;
   const cap = eff || 2, auto = opts.adapt !== false;
@@ -436,8 +441,8 @@ export function mountCore(el, opts) {
       v = +v; lvIn = v > 0 ? (v > 1 ? 1 : v) : 0; lvAt = performance.now();
     },
     setTheme(th) {
-      if (dead || !th) return;
-      theme = Object.assign({}, VIOLET, th); PAL = palette(theme); blend(); labKey = '';
+      if (dead || !th || (typeof th === 'string' && !NAMED[th])) return;
+      theme = themeOf(th); PAL = palette(theme); blend(); labKey = '';
       if (r3) { r3.theme(theme); rewarm(); }
       if (still) snap();
     },
@@ -590,12 +595,12 @@ function makeReactor(T, canvas, context, attrs, design0, tier0, theme0) {
     return { piv, tg, sp, tilt };
   }
   function floor(r, y, dialR) {           // grid floor, holographic projector dial, light pool and beam
-    if (tier > 1) {
+    {
       const gu = { c: { value: new T.Color() } }; glows.push([gu.c, 'main', 0.2, 0, 1]);
       const grid = new T.Mesh(new T.PlaneGeometry(40, 40), new T.ShaderMaterial(Object.assign({}, ADD, { uniforms: gu, vertexShader: VUV, extensions: { derivatives: true },
         fragmentShader: `uniform vec3 c; varying vec2 vUv; void main(){ vec2 p = vUv * 40.; vec2 g = abs(fract(p - .5) - .5) / fwidth(p); float l = 1. - min(min(g.x, g.y), 1.);
           float d = length(vUv - .5) * 40.; gl_FragColor = vec4(c * l * smoothstep(10., 2.5, d), 1.);` + TAIL })));
-      grid.rotation.x = -Math.PI / 2; grid.position.y = y + 0.01; r.add(grid);
+      grid.rotation.x = -Math.PI / 2; grid.position.y = y + 0.01; r.add(grid); X.grid = grid;
     }
     const dt = tex(512, (g) => {
       const C = 256; g.strokeStyle = g.fillStyle = '#fff';
@@ -737,10 +742,12 @@ function makeReactor(T, canvas, context, attrs, design0, tier0, theme0) {
     tier = q;
     parts.forEach(([g, n]) => g.setDrawRange(0, q > 1 ? n : Math.ceil(n * 0.45)));
     if (X.globe) X.globe.visible = q > 0;
+    if (X.grid) X.grid.visible = q > 1;               // the grid floor is a full-width layer: 'high' and up
   }
   colours(theme0); envMap(); build(design0);
 
   const tc = new T.Color(), tv = new T.Vector2(), PREC = [0.05, -0.04, 0.03], SPD = [0.26, -0.39, 0.157];
+  let sz = [0, 0];
   return {
     render(F) {
       const W = F.W, L = F.L, dt = F.dt, t = F.t, wL = W[1], wT = W[2], wS = W[3], wA = W[4], C = F.C;
@@ -796,7 +803,7 @@ function makeReactor(T, canvas, context, attrs, design0, tier0, theme0) {
       });
       ren.render(scene, cam);
     },
-    size(w, d) { ren.setPixelRatio(d); ren.setSize(w, w, false); },
+    size(w, d) { if (w === sz[0] && d === sz[1]) return; sz = [w, d]; ren.setPixelRatio(d); ren.setSize(w, w, false); },
     quality,
     burst(i) { if (i === 4) bAcc = 3; },
     theme(th) { colours(th); envMap(); },

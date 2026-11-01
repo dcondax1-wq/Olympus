@@ -361,7 +361,12 @@ def run_browser(url, shots):
         ice = shot_sig(p)
         check("c. setTheme recolours the reactor (Reactor Ice: blue over red)", ice["b"] > ice["r"] * 1.1 and ice["g"] > idl["g"],
               {k: round(ice[k]) for k in "rgb"})
-        p.evaluate("core.setTheme({c: '#a855f7', c2: '#7c3aed', c3: '#c084fc', tint: '#e9ddff'}); core.setDesign('singularity')")  # noqa
+        p.evaluate("core.setTheme('reactor-stark')")
+        p.wait_for_timeout(400)
+        stark = shot_sig(p)
+        check("c. setTheme also takes the old theme keys ('reactor-stark': gold over blue)", stark["r"] > stark["b"] * 1.2 and stark["g"] > idl["g"],
+              {k: round(stark[k]) for k in "rgb"})
+        p.evaluate("core.setTheme('eclipse'); core.setDesign('singularity')")
         p.wait_for_timeout(600)
         sing = shot_sig(p)
         check("c. setDesign('singularity'): the black hole (a dark centre ringed by light)",
