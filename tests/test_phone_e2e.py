@@ -98,6 +98,9 @@ KNOWN = [
      "kalshi/ has no service worker and no saved copy: offline = browser error page, 404 site = GitHub's 404 page"),
     (r"^c\. Zenith again: where the owner left it",
      "a dashboard hidden with display:none ([hidden] on its view) comes back scrolled to the top"),
+    (r"^c\. the Planner's first open inside Jarvis shows no false",
+     "planner/index.html (planner-backup) ~14402: hadController is true because Zenith's site-wide worker controlled the "
+     "page first, so the Planner's own worker taking over shows 'A new version is ready'"),
 ]
 
 RES = []          # (name, ok, known)
@@ -1143,6 +1146,13 @@ def part_c(br, S, base, ph):
     p.wait_for_timeout(500)
     w = hscroll(pf)
     check("c. no sideways scroll in the Planner inside Jarvis", w[0] <= w[1], w)
+    upd = False
+    for _ in range(12):                              # the Planner's worker installs and takes the page over meanwhile
+        upd = _ev(pf, "(() => { const b = document.getElementById('updBar'); return !!b && !b.hidden; })()")
+        if upd:
+            break
+        p.wait_for_timeout(250)
+    check("c. the Planner's first open inside Jarvis shows no false 'A new version is ready' bar", not upd)
     not_white(p, "Planner inside Jarvis", light_ok=True)       # the Planner's own default look is light
     kf = open_app(p, "kalshi", "() => document.body && /\\$512\\.34/.test(document.body.textContent)", timeout=20000)
     check("c. Kalshi opens inside Jarvis with the PC's numbers ($512.34)", bool(kf))
