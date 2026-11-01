@@ -3,7 +3,7 @@ that opens on the Jarvis screen (the owner's old violet HUD: J.A.R.V.I.S., the c
 row, HUD panels, the glass command dock), switches Jarvis <-> Zenith in one tap, and opens the Planner, Kalshi and added
 dashboards. Runs the real hub page in Chromium on local copies of the site layout (<site>/jarvis/ next to stand-in Zenith /
 Planner pages), with the live feed, kalshi.json and the crypto prices served from stubs (nothing leaves the machine), and checks:
-  a. the files (fonts + OFL.txt, icons), the service worker (jarvis-v4: every part and font saved on its own, the 3.5 s rule,
+  a. the files (fonts + OFL.txt, icons), the service worker (jarvis-v5: every part and font saved on its own, the 3.5 s rule,
      the dark offline page), the build step that publishes jarvis/, Safari 16 / offline safety, the old look's tokens
   b. the Jarvis screen: greeting, the market line, a card per project (Zenith with the bots' numbers from the live feed,
      the Planner with today's plan read from its own saved data, Kalshi waiting for the bot until kalshi.json is published)
@@ -219,9 +219,12 @@ def part_a():
     check("a. opening Jarvis waits on the network at most NAV_WAIT_MS when a saved copy exists; no network + no copy = a dark Retry page",
           "const NAV_WAIT_MS = 3500;" in sw and "Promise.race([net, slow])" in sw and "return copy || offlinePage();" in sw
           and "background:#000" in sw and "location.reload()" in sw)
-    check("a. worker v4: data.js, jarvis.css, the fonts and every separate part in SHELL, each saved on its own (a missing part is skipped)",
-          "const CACHE = 'jarvis-v4';" in sw and all(f"'./{f}'" in sw for f in ("data.js",) + PARTS + FONTS) and "'./jarvis.css?v=j4'" in sw
-          and "SHELL.map((u) => c.add(u).catch(() => null))" in sw)
+    check("a. worker v5: data.js, jarvis.css, the fonts and every separate part in SHELL, each saved on its own (a missing part is skipped)",
+          "const CACHE = 'jarvis-v5';" in sw and all(f"'./{f}'" in sw for f in ("data.js",) + PARTS + FONTS) and "'./jarvis.css?v=j4'" in sw
+          and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
+    # 2026-11-01 ("Jarvis isn't opening" on the iPhone): WebKit stops the old worker's downloads when a new one takes over
+    check("a. worker v5 takes over only when the page asks ('jarvis:activate', sent while Jarvis is out of sight), never mid-start",
+          "self.skipWaiting();" not in sw.split("addEventListener('message'")[0] and "if (e.data === 'jarvis:activate') self.skipWaiting();" in sw)
     check("a. no #dashboard shortcuts in the manifest (Jarvis always opens on its own screen)", "shortcuts" not in m, m.get("shortcuts"))
     zsw = open(os.path.join(ROOT, "tools", "web_public", "sw.js"), encoding="utf-8").read()
     check("a. Zenith's worker stays out of jarvis/ and planner/ and deletes only its own caches (le-public-*)",
@@ -666,6 +669,10 @@ def run_missing(br, url, part):
     ready(p)
     p.wait_for_timeout(600)
     k = {"brain.js": "brain", "core-visual.js": "core", "apps.js": "apps", "zenith-mode.js": "zenith"}[part]
+    try:                                            # a failed part is tried once more (~0.7 s later) before its fallback takes over
+        p.wait_for_function(f"document.documentElement.dataset.{k} !== 'loading'", timeout=6000)
+    except Exception:
+        pass
     ds = p.evaluate("JSON.stringify(document.documentElement.dataset)")
     ok = json.loads(ds).get(k) == "fallback"
     if part == "brain.js":
@@ -722,7 +729,7 @@ def run_c(br, url):
         const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
-          const c = await caches.open('jarvis-v4');
+          const c = await caches.open('jarvis-v5');
           const got = await Promise.all(['./index.html', './data.js', './jarvis.css?v=j4', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));

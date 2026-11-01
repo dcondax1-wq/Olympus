@@ -769,6 +769,17 @@ part yourself or fold it into a script.**
   - **Icons:** the re-rendered old reactor icon (`?v=j2`).
   - **Workers:**
     - jarvis-v4: a 3.5 s navigation race; shell files stale-while-revalidate once a page came from the copy.
+    - jarvis-v5 (2026-11-01, "Jarvis isn't opening" on the iPhone): WebKit stops the old worker's downloads the moment a new
+      worker takes over (reproduced in Playwright WebKit: "Service Worker context closed" on module imports mid-start). A new
+      worker now waits; the page posts `jarvis:activate` only while it is hidden (or the browser swaps it in once Jarvis is
+      closed). Install fetches with `cache: 'reload'` (v4 could save the previous version's files from the HTTP cache).
+  - **Start guard + watchdog (index.html, 2026-11-01):** `jarvis.unfinished` counts a start until Jarvis has run 4 s or the
+    owner leaves it. The start after an unfinished one has no 3D core; if the unfinished one had the 3D core mounted
+    (`jarvis.core3d`), `jarvis.no3d` keeps 3D off until the owner picks a level under ⋯ → 3D. A classic-script watchdog sees
+    a main module that never ran (`window.__jarvisRun`): reload, then drop `jarvis-*` caches and reload, then a note with the
+    reason (`data.js: HTTP …`, the first error) and Reload / Repair. Optional modules retry once (`?retry=1`).
+    WebKit check: Playwright WebKit (`PLAYWRIGHT_BROWSERS_PATH=<dir> python -m playwright install webkit` + `install-deps
+    webkit`), iPhone 13 profile, persistent profile for worker updates.
     - Zenith le-public-v50: the saved copy on 404 / slow / offline; data from the copy for 30 s after a cached page.
     - kalshi-k9.
   - **Tests:** test_jarvis_hub (166), test_jarvis_brain (130), test_jarvis_core (58), test_jarvis_apps (84),

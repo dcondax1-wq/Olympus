@@ -20,15 +20,39 @@
 // the app icon), the effects level and the boot screen
 (function () {
   var d = document.documentElement, g = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  var s = function (k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* private mode */ } };
   d.setAttribute('data-theme', g('jtheme') || 'reactor');
   var fx = g('jfx');
   if (fx === 'ultra' || fx === 'high' || fx === 'low' || fx === 'off') { d.setAttribute('data-fx', fx); d.setAttribute('data-fx-set', '1'); }
   else d.setAttribute('data-fx', window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches ? 'low' : 'high');
   try { if (sessionStorage.getItem('jarvis.booted')) d.className += ' booted'; } catch (e) { /* private mode */ }
+  // Start guard (2026-11-01, "Jarvis isn't opening" on the iPhone): a start counts as unfinished until Jarvis has run for 4 s or
+  // the owner leaves it (the module then clears 'jarvis.unfinished'). The start after an unfinished one comes up without the 3D
+  // core; when the unfinished one had the 3D core running (the phone closed Jarvis under it), the 3D core stays off
+  // ('jarvis.no3d') until the owner picks a 3D level again under ⋯ → 3D. So a crash can never keep Jarvis shut.
+  var n = parseInt(g('jarvis.unfinished') || '0', 10) || 0;
+  if (n > 0) { d.setAttribute('data-safe', '1'); if (g('jarvis.core3d') === '1') s('jarvis.no3d', '1'); }
+  s('jarvis.core3d', null);
+  s('jarvis.unfinished', String(n + 1));
 })();
+// the first start errors (a script error first, else a file that did not arrive), shown on the start note when Jarvis cannot start
+window.__jarvisErr = ''; window.__jarvisRes = '';
+window.addEventListener('error', function (e) {
+  if (!e) return;
+  var t = e.target, src = t && t !== window && (t.src || t.href);
+  if (src) { if (!window.__jarvisRes) window.__jarvisRes = 'Could not load ' + String(src).split('/').pop().split('?')[0]; return; }
+  if (!window.__jarvisErr) window.__jarvisErr = String(e.message || 'Script error') + (e.filename ? ' (' + String(e.filename).split('/').pop() + ':' + e.lineno + ')' : '');
+}, true);
 </script>
 <link rel="stylesheet" href="jarvis.css?v=j4">
-<style>.booted #bootfx{display:none}</style>
+<style>.booted #bootfx{display:none}
+/* the start note works without jarvis.css (the stylesheet may be what did not arrive) */
+[hidden]{display:none!important}
+.boot{position:fixed;left:16px;right:16px;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:95;padding:12px 14px;border-radius:14px;background:rgba(20,14,32,.96);border:1px solid rgba(168,85,247,.5);color:#ece9f2;font:15px/1.35 -apple-system,system-ui,sans-serif;display:flex;gap:10px;align-items:center;justify-content:space-between}
+.boot small{display:block;margin-top:4px;color:#8a8499;font-size:12px;word-break:break-word}
+.boot .boot-b{display:flex;gap:8px;flex:none}
+.boot button{height:44px;padding:0 14px;border-radius:11px;border:0;background:#a855f7;color:#fff;font:700 15px -apple-system,system-ui,sans-serif}
+.boot button.alt{background:transparent;border:1px solid #a855f7}</style>
 </head>
 <body>
 <div class="bgfx" aria-hidden="true"><canvas id="stars"></canvas><svg class="bgglobe" id="bgglobe" viewBox="-130 -130 260 260"></svg><div class="floor"></div></div>
@@ -202,8 +226,54 @@
 </div>
 
 <div class="bootfx" id="bootfx" aria-hidden="true"><b>J.A.R.V.I.S.</b><div class="log" id="bootlog"></div><small>TAP TO SKIP</small></div>
-<div class="boot" id="boot" hidden>Jarvis is taking a while to start.<button type="button" onclick="location.reload()">Reload</button></div>
-<script>window.__jarvisBoot = setTimeout(function () { var b = document.getElementById('boot'); if (b) b.hidden = false; var f = document.getElementById('bootfx'); if (f) f.remove(); }, 8000);</script>
+<div class="boot" id="boot" hidden><span><span id="bootMsg">Jarvis is taking a while to start.</span><small id="bootErr"></small></span><span class="boot-b"><button type="button" onclick="location.reload()">Reload</button><button type="button" class="alt" id="bootFix" onclick="window.__jarvisRepair && window.__jarvisRepair()">Repair</button></span></div>
+<script>
+// Start watchdog (2026-11-01; a classic script, so it runs even when the module below cannot). The module sets __jarvisRun as its
+// first step and removes the note once Jarvis is up. When the module could not run at all (a file it needs did not arrive, e.g.
+// the iPhone cut a download off while Jarvis's worker updated), Jarvis reloads by itself, then once more without its saved copy,
+// and only then shows the note with the reason. Repair drops Jarvis's own saved copy (jarvis-*, never another app's) and reloads.
+(function () {
+  var KEY = 'jarvis.autofix';
+  var setU = function () { try { localStorage.setItem('jarvis.unfinished', '0'); } catch (e) { /* private mode */ } };
+  function note(failed) {
+    var b = document.getElementById('boot'); if (!b) return;
+    if (failed) document.getElementById('bootMsg').textContent = 'Jarvis could not start.';
+    var m = document.getElementById('bootErr'), why = window.__jarvisErr || window.__jarvisRes;
+    if (m && why) m.textContent = why;
+    b.hidden = false;
+    var f = document.getElementById('bootfx'); if (f && f.parentNode) f.parentNode.removeChild(f);
+  }
+  window.__jarvisRepair = function () {
+    setU();
+    var go = function () { location.reload(); };
+    try {
+      if (!window.caches) return go();
+      caches.keys().then(function (ks) {
+        return Promise.all(ks.filter(function (k) { return k.indexOf('jarvis-') === 0; }).map(function (k) { return caches.delete(k); }));
+      }).then(go, go);
+    } catch (e) { go(); }
+  };
+  // 8 s: still loading = "taking a while"; the module ran but never got to the end of its start = it stopped on an error
+  window.__jarvisBoot = setTimeout(function () { note(!!window.__jarvisRun); }, 8000);
+  window.addEventListener('load', function () {
+    if (window.__jarvisRun) return;
+    var n = 9;
+    try { n = parseInt(sessionStorage.getItem(KEY) || '0', 10) || 0; sessionStorage.setItem(KEY, String(n + 1)); } catch (e) { /* private mode */ }
+    if (n === 0) { setU(); location.reload(); return; }
+    if (n === 1) { window.__jarvisRepair(); return; }
+    clearTimeout(window.__jarvisBoot);
+    // the reason, for a screenshot: can the site's data.js be reached at all?
+    var done = false, say = function (why) {
+      if (done) return; done = true;
+      var was = window.__jarvisErr || window.__jarvisRes;
+      if (why) window.__jarvisErr = why + (was ? ' · ' + was : '');
+      note(true);
+    };
+    setTimeout(function () { say(''); }, 4000);
+    try { fetch('data.js', { cache: 'no-store' }).then(function (r) { say(r.ok ? '' : 'data.js: HTTP ' + r.status); }, function () { say('data.js: no connection'); }); } catch (e) { say(''); }
+  });
+})();
+</script>
 <script type="module">
 // Jarvis shell (2026-11-01): the owner's old Jarvis look and features on the phone hub, with modes (JARVIS · ZENITH · PLANNER ·
 // KALSHI · +) on one data facade (data.js). The other parts are separate modules loaded on their own; a missing or broken one
@@ -216,6 +286,8 @@
 // Old Jarvis features left out on purpose (PC only): the wake word, the double clap, "look at my screen", the CPU / RAM
 // gauges (the System core panel shows the bots' health instead) and the Kill switch.
 import * as D from './data.js';
+window.__jarvisRun = 1;                                      // the start watchdog above: the module runs
+try { sessionStorage.removeItem('jarvis.autofix'); } catch (_) { /* private mode */ }
 
 const $ = (s) => document.querySelector(s);
 const esc = D.esc;
@@ -250,15 +322,24 @@ const CORE_DESIGNS = [['reactor', 'Reactor'], ['singularity', 'Singularity']];
 
 // ------------------------------------------------------------------ the optional modules (each on its own; absent = fallback)
 const mods = {};
+// a module whose download failed is tried once more after a moment (the iPhone cuts downloads off while a new worker takes over),
+// under a new address: a browser keeps a failed module import for the old one
 function load(name, path, ok) {
   root.dataset[name] = 'loading';
-  return import(path).then((m) => { if (!ok(m)) throw new Error(name + ': not the expected module'); mods[name] = m; root.dataset[name] = 'module'; return m; })
+  const take = (m) => { if (!ok(m)) throw new Error(name + ': not the expected module'); mods[name] = m; root.dataset[name] = 'module'; return m; };
+  return import(path).then(take)
+    .catch(() => new Promise((r) => setTimeout(r, 700)).then(() => import(path + '?retry=1')).then(take))
     .catch(() => { root.dataset[name] = 'fallback'; return null; });
 }
+// safe start (the start guard in <head>): no 3D core after a start that did not finish, or after the phone closed Jarvis under it
+const NO3D = root.dataset.safe === '1' || raw('jarvis.no3d') === '1';
+let started = false;                                         // this start finished (the start guard; set at the end of the module)
+let swReg = null;                                            // Jarvis's worker registration (register() below), for swTakeOver
+const loadCore = () => load('core', './core-visual.js', (m) => typeof m.mountCore === 'function');
 const ready = {
   apps: load('apps', './apps.js', (m) => typeof m.listApps === 'function'),
   brain: load('brain', './brain.js', (m) => typeof m.createBrain === 'function'),
-  core: load('core', './core-visual.js', (m) => typeof m.mountCore === 'function'),
+  core: NO3D ? Promise.resolve(null).then(() => { root.dataset.core = 'fallback'; return null; }) : loadCore(),
   zenith: load('zenith', './zenith-mode.js', (m) => typeof m.mountZenithMode === 'function'),
 };
 const within = (p, ms) => Promise.race([p, new Promise((ok) => setTimeout(() => ok(null), ms))]);
@@ -291,6 +372,11 @@ function setFx(level, byOwner = true) {
   root.dataset.fx = level;
   if (byOwner) { rawSet('jfx', level); root.dataset.fxSet = '1'; delete root.dataset.fxAuto; }
   if (core && mods.core && byOwner) mountCore3d();          // the 3D core takes the new level (off = its flat 2D core)
+  if (byOwner && NO3D) rawSet('jarvis.no3d', null);       // the owner picked a 3D level after a safe start: 3D is back
+  if (byOwner && NO3D && !mods.core && level !== 'off' && !root.dataset.coreBack) {
+    root.dataset.coreBack = '1';
+    loadCore().then((m) => { if (m) mountCore3d(); });
+  }
   fx.restart();
   renderLook(); renderMore();
 }
@@ -487,6 +573,7 @@ function mountCore3d() {
     const c = m.mountCore(slot, opt);
     if (!c || typeof c.setState !== 'function') throw new Error('no core');
     core = c; root.dataset.core = 'module';
+    if (!started) rawSet('jarvis.core3d', '1');          // the start guard: the 3D core ran in a start that has not finished yet
     safe(() => c.setState(state));
   } catch (_) { slot.innerHTML = ''; core = null; root.dataset.core = 'fallback'; }
 }
@@ -1424,7 +1511,7 @@ ready.apps.then((m) => {
 });
 
 // ------------------------------------------------------------------ start (each step on its own: a broken one never stops the rest)
-if ('serviceWorker' in navigator) safe(() => navigator.serviceWorker.register('sw.js', { scope: './' }).catch(() => { /* works without it */ }));
+if ('serviceWorker' in navigator) safe(() => navigator.serviceWorker.register('sw.js', { scope: './' }).then((r) => { swReg = r || null; }).catch(() => { /* works without it */ }));
 $('#vbars').innerHTML = '<i></i>'.repeat(32);
 $('#orb').dataset.design = coreDesign();
 safe(applyCustom); safe(readColors);
@@ -1441,6 +1528,17 @@ try { show('home'); } catch (_) { /* the screen still shows; the next refresh dr
 safe(boot);
 clearTimeout(window.__jarvisBoot); const bootNote = document.getElementById('boot'); if (bootNote) bootNote.remove();
 root.dataset.ready = '1';
+// the start guard (<head>): this start finished once Jarvis has run for 4 s or the owner leaves it normally
+const finishStart = () => { if (started) return; started = true; rawSet('jarvis.unfinished', '0'); rawSet('jarvis.core3d', null); };
+setTimeout(finishStart, 4000);
+window.addEventListener('pagehide', finishStart);
+if (raw('jarvis.no3d') === '1') setTimeout(() => toast('Jarvis closed while its 3D core was starting, so it opens without 3D for now. Turn 3D back on under ⋯ → 3D.', 'SAFE START'), 2600);
+// a new Jarvis worker takes over only while Jarvis is out of sight or closing (sw.js v5): on the iPhone a worker swap cuts off the
+// files that are still loading, which could leave Jarvis stuck on its start screen. The registration is kept from register()
+// (swReg), so the message goes out at once (synchronously) even from a page that is closing.
+const swTakeOver = () => safe(() => { if (swReg && swReg.waiting) swReg.waiting.postMessage('jarvis:activate'); });
+document.addEventListener('visibilitychange', () => { if (!visible()) { finishStart(); swTakeOver(); } });
+window.addEventListener('pagehide', swTakeOver);
 // once per release the What's new card, else the morning briefing card (5:00 to 11:59 ET, once a day), as the old Jarvis showed them
 (() => {
   if (D.LS.get('jarvis.seen', '') !== WN_VER) { setTimeout(() => { D.LS.set('jarvis.seen', WN_VER); toast('Jarvis has its old look back, and Zenith mode in one tap.', "WHAT'S NEW", ['Show me', whatsNew]); }, 2200); return; }
