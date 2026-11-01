@@ -708,6 +708,29 @@ def hscroll(target):
     }""")
 
 
+# The Jarvis screen scrolled to its end: the last things on it must sit above whatever is fixed at the bottom (the ask bar,
+# floating chips), or the owner can never see or tap them.
+UNDER_DOCK = """() => {
+  const H = innerHeight, home = document.getElementById('home');
+  const fixed = [...document.querySelectorAll('body *')].filter((el) => { const cs = getComputedStyle(el), r = el.getBoundingClientRect();
+    return cs.position === 'fixed' && cs.visibility !== 'hidden' && cs.display !== 'none' && r.height > 0 && r.width > 0
+      && r.top > H * 0.55 && r.bottom > H - 140 && !(home && home.contains(el) && false) && !el.closest('#frames, .zm-root, .sheet, [hidden]'); });
+  const scrollers = [document.scrollingElement, home, ...(home ? home.querySelectorAll('*') : [])].filter((el) => el
+    && el.scrollHeight > el.clientHeight + 4 && (el === document.scrollingElement || /auto|scroll/.test(getComputedStyle(el).overflowY)));
+  for (const sc of scrollers) sc.scrollTop = sc.scrollHeight;
+  const top = Math.min(H, ...fixed.map((el) => el.getBoundingClientRect().top));
+  const leaves = home ? [...home.querySelectorAll('button, a, input, p, li, h1, h2, h3, span, small, strong, b')].filter((el) => {
+    const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
+    return r.height > 0 && r.width > 0 && cs.visibility !== 'hidden' && cs.position !== 'fixed' && !el.closest('[hidden]')
+      && (el.textContent.trim() || /BUTTON|INPUT|A/.test(el.tagName)) && !fixed.some((f) => f.contains(el)); }) : [];
+  const low = leaves.map((el) => [el.getBoundingClientRect().bottom, el]).sort((a, b) => b[0] - a[0]);
+  const hidden = low.filter(([b, el]) => b > top + 2 && el.getBoundingClientRect().top < H).slice(0, 3)
+    .map(([b, el]) => (el.id ? '#' + el.id : el.tagName.toLowerCase()) + ' "' + el.textContent.trim().slice(0, 30) + '" bottom ' + Math.round(b));
+  for (const sc of scrollers) sc.scrollTop = 0;
+  return { fixed_top: Math.round(top), fixed: fixed.slice(0, 4).map((el) => el.id ? '#' + el.id : '.' + String(el.className).split(' ')[0]), hidden };
+}"""
+
+
 def frames_alive(p):
     return p.evaluate("document.querySelectorAll('iframe').length")
 
@@ -987,6 +1010,10 @@ def part_b(br, S, base):
                   p.evaluate(JARVIS_HOME) and "$1,106" in txt and "$512.34" in txt, txt[:300])
             w = hscroll(p)
             check(f"b. {dev}: no sideways scroll on the Jarvis screen", w[0] <= w[1] and not w[2], w)
+            hid = p.evaluate(UNDER_DOCK)
+            note(f"{dev}: fixed at the bottom from y={hid['fixed_top']}: {', '.join(hid['fixed']) or 'nothing'}")
+            check(f"b. {dev}: scrolled to the end, nothing on the Jarvis screen stays hidden under the fixed bottom bar",
+                  not hid["hidden"], hid)
             not_white(p, f"Jarvis home {dev}")
             p.evaluate("navigator.serviceWorker.ready.then(() => true)")
             wait_caches(p, [S["workers"]["Jarvis"]["new"]], timeout=10000)
