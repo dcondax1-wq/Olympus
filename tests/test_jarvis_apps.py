@@ -5,7 +5,7 @@ with two local servers (two sites, for CORS), and checks:
   a. files: the module parses as an ES module, nothing newer than iPhone Safari 16, standalone; the brief has the 5-line
      box, frames / viewport / safe areas / dark theme / CORS / the one-paste add, and a full jarvis.json example
   b. registry: the built-ins, add / remove, ids unique and stable (collisions), names capped, bad links refused,
-     the same link twice, a name made from the link, adds mirrored for an older Jarvis
+     the same link twice, a name made from the link, adds mirrored for an older Jarvis, the same-site warning
   c. migration from the old keys (jarvis.extra, jarvis.links): nothing lost, old keys untouched, nothing imported twice,
      later additions picked up, removals stick
   d. the contract: the brief's example, missing fields, wrong types, over 8 KB, HTML, control characters, open off-site
@@ -13,7 +13,8 @@ with two local servers (two sites, for CORS), and checks:
      real Jarvis page: fits the phone, the Jarvis look, a tap opens the app (an app added here shows in today's Jarvis)
   f. fetching: <app>jarvis.json or a statusUrl, another site with / without CORS, the 5 s timeout, failures keep the last
      good card, stale after 30 min, built-ins never fetched, one request at a time, cards posted by an open app
-  g. Ascend: hidden until enabled, the one-tap find on this site, one pasted link, a new link replaces the old
+  g. Ascend: hidden until enabled, one tap only from its known link (nothing guessed, never a same-site link), one pasted
+     link (a same-site one with the warning), a new link replaces the old, CORS needed on another site
   h. the phone refusing to save: the session keeps working; no page errors
     python -X utf8 -m tests.test_jarvis_apps      (temp folder + two local servers; nothing else touched, ~20 s)
 Screenshots of the cards inside Jarvis: set JARVIS_APPS_SHOTS=<folder>.
@@ -155,13 +156,18 @@ def part_a():
     doc = open(DOC, encoding="utf-8").read()
     blocks = re.findall(r"```(\w*)\n(.*?)```", doc, re.S)
     box = [ln for ln in (blocks[0][1] if blocks else "").splitlines() if ln.strip()]
-    check("a. the brief opens with a 5-line 'send this to ChatGPT' box", "Send this to ChatGPT" in doc[:200] and len(box) == 5 and doc.index("```") < 300
-          and "ascend" in box[1] and "jarvis.json" in box[3], box)
-    check("a. the brief: let it be framed, phone viewport, safe areas, the dark theme, storage keys, Home Screen manifest",
-          all(k in doc for k in ("X-Frame-Options", "frame-ancestors", "viewport-fit=cover", "safe-area-inset", "#0b0b0d", "`ascend.`", "manifest.webmanifest", "localStorage.clear()")),
-          [k for k in ("X-Frame-Options", "frame-ancestors", "viewport-fit=cover", "safe-area-inset", "#0b0b0d", "`ascend.`", "manifest.webmanifest") if k not in doc])
-    check("a. the brief: CORS (same site, or Access-Control-Allow-Origin: *), 8 KB, plain text, the 30-minute grey, the one-paste add",
-          all(k in doc for k in ("Access-Control-Allow-Origin: *", "8 KB", "Plain text only", "30 minutes", "Add Ascend", "postMessage")))
+    check("a. the brief opens with a 5-line 'send this to ChatGPT' box: its own site (never under the owner's github.io), jarvis.json with CORS",
+          "Send this to ChatGPT" in doc[:200] and len(box) == 5 and doc.index("```") < 300 and "never under demetrades2000-coder.github.io" in box[1]
+          and "jarvis.json" in box[3] and "Access-Control-Allow-Origin: *" in box[3], box)
+    keys = ("X-Frame-Options", "frame-ancestors", "viewport-fit=cover", "safe-area-inset", "#0b0b0d", "manifest.webmanifest")
+    check("a. the brief: let it be framed, phone viewport, safe areas, the dark theme, Home Screen manifest", all(k in doc for k in keys), [k for k in keys if k not in doc])
+    keys = ("Netlify", "Vercel", "Cloudflare Pages", "another account", "shares one origin with Jarvis", "could read the keys")
+    check("a. the brief: Ascend on its own site (Netlify, Vercel, Cloudflare Pages, another account's Pages), the one-line why; "
+          "no same-site address suggested, no storage key names", all(k in doc for k in keys) and "github.io/ascend" not in doc
+          and "jarvis.smart" not in doc and "planner.sync" not in doc, [k for k in keys if k not in doc])
+    keys = ("Access-Control-Allow-Origin: *", "_headers", "vercel.json", "8 KB", "Plain text only", "30 minutes", "Add Ascend", "postMessage")
+    check("a. the brief: CORS is needed (and how: _headers, vercel.json), 8 KB, plain text, the 30-minute grey, the one-paste add",
+          all(k in doc for k in keys), [k for k in keys if k not in doc])
     ex = next((b for lang, b in blocks if lang == "json"), "{}")
     example = json.loads(ex)
     check("a. the brief's jarvis.json example has every field of the contract", all(k in example for k in ("v", "name", "status", "kpis", "lines", "t", "open")), example)
@@ -169,7 +175,10 @@ def part_a():
 
 
 # ---------------------------------------------------------------------------------------------------- b. registry
-def part_b(p, harness, oa):
+WARN = "same-site apps can read Jarvis's saved keys"
+
+
+def part_b(p, harness, oa, ob):
     fresh(p, harness)
     ids = p.evaluate("() => A.listApps().map((a) => [a.id, a.url, a.builtin, a.removable].join('|'))")
     check("b. built in: Zenith ../, Planner ../planner/, Kalshi ../kalshi/ (as the Jarvis page has them), not removable",
@@ -194,6 +203,8 @@ def part_b(p, harness, oa):
     same = p.evaluate("(u) => [A.addApp({name: 'Clip again', url: u}), A.listApps().length]", clip)
     check("b. the same link twice: the app already there (existed), no second entry",
           same[0]["ok"] and same[0]["existed"] and same[0]["app"]["id"] == "x-clipper" and same[1] == len(all_ids) + 1, same)
+    check("b. a link on Jarvis's own origin outside our pages is added, with the warning in the result and on the app (even when it existed)",
+          p.evaluate("() => A.SAME_SITE_WARN") == WARN and r1.get("warn") == WARN and r1["app"].get("warn") == WARN and same[0].get("warn") == WARN, (r1, same[0]))
     bads = p.evaluate("""() => [A.addApp({name: 'x', url: 'javascript:alert(1)'}), A.addApp({name: 'x', url: 'ftp://files.example/'}),
         A.addApp({name: 'x', url: 'data:text/html,<b>hi</b>'}), A.addApp({name: 'x', url: 'https://user:pw@secret.example/'}),
         A.addApp({name: 'x', url: ''}), A.addApp({name: 'x'}), A.addApp(null),
@@ -216,6 +227,14 @@ def part_b(p, harness, oa):
     check("b. adds and removals are mirrored into jarvis.extra as an older Jarvis writes it ({id, name, url})",
           {"id": "x-clipper", "name": "Clipper", "url": clip} in ex and not any(e["id"] == "x-clipper-2" for e in ex) and all(set(e) == {"id", "name", "url"} for e in ex)
           and len(ex) == len(after) - 3 - 1, ex)
+    ws = p.evaluate("""([oa, ob]) => [oa + '/nq-dashboard/ascend/', oa + '/ascend/', oa + '/nq-dashboard/next/', oa + '/nq-dashboard/planner/week/',
+        oa + '/nq-dashboard/planner', oa + '/nq-dashboard/kalshi/history.html', oa + '/nq-dashboard/jarvis/other.html', oa + '/nq-dashboard/index.html',
+        ob + '/x/', 'https://ascend.example/'].map((u) => { const r = A.addApp({name: 'W', url: u}); return [r.ok, r.warn === A.SAME_SITE_WARN, A.sameSiteRisk(u)]; })""", [oa, ob])
+    check("b. the warning only on Jarvis's origin outside Zenith's page, planner/, kalshi/ and jarvis/ (never another site); all are added",
+          [w[1] for w in ws] == [True] * 3 + [False] * 7 and [w[2] for w in ws] == [w[1] for w in ws] and all(w[0] for w in ws), ws)
+    flagged = p.evaluate("() => A.listApps().filter((a) => a.warn).map((a) => a.id)")
+    check("b. listApps marks those apps (warn) so the page can show it; built-ins never", "x-clipper" in flagged and len(flagged) == 4
+          and not any(i in flagged for i in ("zenith", "planner", "kalshi")), flagged)
 
 
 # ---------------------------------------------------------------------------------------------------- c. migration
@@ -528,39 +547,44 @@ def part_f(p, harness, oa, ob, tmp):
 
 
 # ---------------------------------------------------------------------------------------------------- g. Ascend
-def part_g(p, harness, oa, tmp):
+def part_g(p, harness, oa, ob, tmp):
     fresh(p, harness)
-    shutil.rmtree(f"{tmp}/ascend", ignore_errors=True)
-    shutil.rmtree(f"{tmp}/nq-dashboard/ascend", ignore_errors=True)
     s0 = p.evaluate("() => A.ascendSlot()")
-    check("g. Ascend: pre-registered, hidden until enabled; the one tap looks at /ascend/ (its own repo) then ../ascend/ on this site",
-          s0["enabled"] is False and s0["guesses"] == [oa + "/ascend/", oa + "/nq-dashboard/ascend/"] and not p.evaluate("() => A.listApps().some((a) => a.id === 'ascend')"), s0)
+    LOG.clear()
     nf = p.evaluate("() => A.findAscend()")
-    check("g. one tap with Ascend not on the site yet: not found (Jarvis asks for the link), still hidden",
-          nf["ok"] is False and nf["field"] == "url" and nf["error"] and not p.evaluate("() => A.ascendSlot().enabled"), nf)
-    put(f"{tmp}/ascend/index.html", "<!doctype html><title>Ascend</title><h1>Ascend</h1>")
-    put(f"{tmp}/ascend/jarvis.json", card("Ascend", t=int(time.time()) - 30))
+    check("g. Ascend: pre-registered and hidden; with no known link the one tap asks for the link at once (nothing guessed or fetched)",
+          s0["enabled"] is False and s0["known"] == "" and "guesses" not in s0 and nf["ok"] is False and nf["field"] == "url" and "Paste" in nf["error"]
+          and not LOG and not p.evaluate("() => A.ascendSlot().enabled || A.listApps().some((a) => a.id === 'ascend')"), (s0, nf, LOG))
+    asc = ob + "/cors/ascend/"
+    put(f"{tmp}/cors/ascend/index.html", "<!doctype html><title>Ascend</title><h1>Ascend</h1>")
+    put(f"{tmp}/cors/ascend/jarvis.json", card("Ascend", t=int(time.time()) - 30))
     p.evaluate("() => A.addApp({name: 'Clipper', url: 'https://clip.example/'})")
-    f1 = p.evaluate("() => A.findAscend()")
+    f1 = p.evaluate("(u) => A.findAscend({url: u})", asc)
     order = p.evaluate("() => A.listApps().map((a) => a.id)")
-    check("g. one tap 'Add Ascend' finds it at /ascend/ and shows it right after the built-ins",
-          f1["ok"] and f1["app"]["id"] == "ascend" and f1["app"]["url"] == oa + "/ascend/" and f1["app"]["removable"] and order == ["zenith", "planner", "kalshi", "ascend", "x-clipper"], (f1, order))
+    check("g. with its known link (ASCEND_URL, on its own site) the one tap adds it right after the built-ins, no warning",
+          f1["ok"] and f1["app"]["id"] == "ascend" and f1["app"]["url"] == asc and "warn" not in f1 and order == ["zenith", "planner", "kalshi", "ascend", "x-clipper"], (f1, order))
     ac = p.evaluate("() => A.appStatus('ascend')")
-    check("g. Ascend's live card from its jarvis.json", ac and ac["name"] == "Ascend" and ac["app"] == "ascend" and ac["stale"] is False, ac)
+    check("g. Ascend's live card from jarvis.json on its own site (sent with Access-Control-Allow-Origin: *)",
+          ac and ac["name"] == "Ascend" and ac["app"] == "ascend" and ac["stale"] is False, ac)
+    ss = p.evaluate("async (u) => [await A.findAscend({url: u}), A.ascendSlot().url]", oa + "/ascend/")
+    check("g. a known link on Jarvis's own site is refused by the one tap (it could read Jarvis's keys); Ascend keeps its link",
+          ss[0]["ok"] is False and ss[0]["field"] == "url" and ss[0]["warn"] == WARN and ss[1] == asc, ss)
     p.evaluate("() => A.removeApp('ascend')")
-    pa = p.evaluate("(u) => A.addApp({name: 'ascend', url: u}).app.id", oa + "/ascend/")
+    pa = p.evaluate("(u) => A.addApp({name: 'ascend', url: u})", asc)
     p.evaluate("() => A.removeApp('ascend')")
-    pb = p.evaluate("(u) => A.addApp({url: u}).app.id", oa + "/ascend/")
+    pb = p.evaluate("(u) => A.addApp({url: u}).app.id", asc)
     n_asc = p.evaluate("() => A.listApps().filter((a) => /ascend/i.test(a.name)).length")
-    check("g. or one pasted link: named 'ascend', or the bare link (.../ascend/), fills the Ascend slot (never a second Ascend)", pa == "ascend" and pb == "ascend" and n_asc == 1, (pa, pb, n_asc))
-    other = oa + "/nq-dashboard/ascend/"
-    r = p.evaluate("(u) => { const r = A.enableAscend(u); return [r.ok, A.ascendSlot().url, A.cachedStatus('ascend'), JSON.parse(localStorage.getItem('jarvis.extra')).filter((e) => e.name === 'Ascend').length]; }", other)
-    check("g. a new Ascend link replaces the old one (one entry; the old link's card is not shown for the new one)", r[0] and r[1] == other and r[2] is None and r[3] == 1, r)
-    p.evaluate("() => A.removeApp('ascend')")
-    shutil.rmtree(f"{tmp}/ascend")
-    put(f"{tmp}/nq-dashboard/ascend/index.html", "<!doctype html><title>Ascend</title>")
-    f2 = p.evaluate("() => A.findAscend()")
-    check("g. one tap also finds a page with no jarvis.json yet, at ../ascend/ next to Jarvis", f2["ok"] and f2["app"]["url"] == other, f2)
+    check("g. or one pasted link: named 'ascend', or the bare link (.../ascend/), fills the Ascend slot (never a second Ascend)",
+          pa["ok"] and pa["app"]["id"] == "ascend" and "warn" not in pa and pb == "ascend" and n_asc == 1, (pa, pb, n_asc))
+    sp = p.evaluate("(u) => { const r = A.addApp({name: 'Ascend', url: u}); return [r, A.ascendSlot().url, A.getApp('ascend').warn]; }", oa + "/ascend/")
+    check("g. a pasted same-site Ascend link is still taken, with the warning (in the result and on the app)",
+          sp[0]["ok"] and sp[0]["app"]["id"] == "ascend" and sp[0]["warn"] == WARN and sp[1] == oa + "/ascend/" and sp[2] == WARN, sp)
+    plain = ob + "/plain/ascend/"
+    put(f"{tmp}/plain/ascend/jarvis.json", card("Ascend", t=int(time.time())))
+    r = p.evaluate("""async (u) => { const r = A.enableAscend(u); const c = await A.appStatus('ascend');
+        return [r.ok, A.ascendSlot().url, c, A.statusError('ascend'), JSON.parse(localStorage.getItem('jarvis.extra')).filter((e) => e.name === 'Ascend').length]; }""", plain)
+    check("g. a new Ascend link replaces the old (one entry); on another site without CORS its card cannot be read (null, the reason kept)",
+          r[0] and r[1] == plain and r[2] is None and r[3] and r[4] == 1, r)
 
 
 # ---------------------------------------------------------------------------------------------------- h. storage refused
@@ -582,12 +606,12 @@ def run_browser(oa, ob, tmp, example):
         ctx.route(re.compile(r"^https?://(?!127\.0\.0\.1[:/])"), lambda r: r.abort())      # nothing leaves this machine
         p = ctx.new_page()
         p.on("pageerror", lambda e: ERRS.append(str(e)))
-        part_b(p, harness, oa)
+        part_b(p, harness, oa, ob)
         part_c(p, harness, oa)
         part_d(p, harness, oa, example)
         part_e(p, harness)
         part_f(p, harness, oa, ob, tmp)
-        part_g(p, harness, oa, tmp)
+        part_g(p, harness, oa, ob, tmp)
         part_h(p, harness)
         ctx.close()
         part_e_shell(br, oa + "/nq-dashboard/jarvis/", oa, os.environ.get("JARVIS_APPS_SHOTS"))
