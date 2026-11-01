@@ -85,9 +85,12 @@ KNOWN = [
      "Zenith's worker waits on the network for its page / data.json / home.json: no saved-copy fallback like Jarvis's 3.5 s"),
     (r"^f\. (offline|404 site): Kalshi inside Jarvis opens|^not white: Kalshi inside Jarvis 404 site",
      "kalshi/ has no service worker and no saved copy: offline = browser error page, 404 site = GitHub's 404 page"),
+    (r"^c\. Zenith again: where the owner left it",
+     "a dashboard hidden with display:none ([hidden] on its view) comes back scrolled to the top"),
 ]
 
 RES = []          # (name, ok, known)
+MISSING = []      # Jarvis modules not on the site (part a): their 404s are not counted again in every error check
 SHOTS = {"dir": None, "n": 0}
 
 
@@ -529,6 +532,8 @@ READY_INIT = """(() => {
 JARVIS_HOME = "() => { const h = document.getElementById('home'); return !!h && !h.hidden && h.getBoundingClientRect().height > 0; }"
 ZENITH_READY = ("() => { const p = document.querySelector('#page'); return !!p && !p.querySelector(':scope > .skel') "
                 "&& p.textContent.trim().length > 40; }")
+PLANNER_READY = "() => /Planner/i.test(document.title) && document.body && document.body.innerText.trim().length > 40"
+KALSHI_READY = "() => /Kalshi/i.test(document.title) && !!document.getElementById('body')"
 
 
 def jarvis_url(base):
@@ -651,8 +656,64 @@ def dash_frame(p, app):
     return el.content_frame() if el else None
 
 
+# Zenith's scroller: the document, or its first scrolling box
+SCROLL_FIND = """(() => { const cand = [document.scrollingElement, ...document.querySelectorAll('.main, #page, main, .page')];
+  for (const el of cand) { if (!el) continue; const cs = el === document.scrollingElement ? null : getComputedStyle(el);
+    if (el.scrollHeight > el.clientHeight + 80 && (!cs || /auto|scroll/.test(cs.overflowY))) return el; } return null; })()"""
+SCROLL_SET = ("() => { const el = " + SCROLL_FIND + "; if (!el) return null; el.scrollTop = 400; "
+              "return [el === document.scrollingElement ? 'the page' : (el.id ? '#' + el.id : '.' + el.className.split(' ')[0]), Math.round(el.scrollTop)]; }")
+SCROLL_GET = ("() => { const el = " + SCROLL_FIND + "; if (!el) return null; "
+              "return [el === document.scrollingElement ? 'the page' : (el.id ? '#' + el.id : '.' + el.className.split(' ')[0]), Math.round(el.scrollTop)]; }")
+
+
+def tap(p, app):
+    """Tap an app in Jarvis's top bar (a mode button or an app chip)."""
+    loc = p.locator(f'header [data-app="{app}"]')
+    (loc if loc.count() else p.locator(f'[data-app="{app}"]')).first.click()
+
+
+ZEN_MODULE = ("() => { const z = document.getElementById('zen'); return !!z && !z.hidden && z.getBoundingClientRect().height > 0 "
+              "&& (z.querySelector('iframe') ? true : z.textContent.trim().length > 40); }")
+
+
+def zenith_view(p, timeout=30000, ready=True):
+    """Zenith inside Jarvis: Zenith mode (zenith-mode.js mounted in #zen) or Zenith in a frame (#v-zenith iframe).
+    -> (target to evaluate in, kind 'frame' | 'module')."""
+    t0 = time.time()
+    while time.time() - t0 < timeout / 1000:
+        try:
+            if p.evaluate(ZEN_MODULE):
+                el = p.query_selector("#zen iframe")
+                f = el.content_frame() if el else None
+                if f and (not ready or _ev(f, ZENITH_READY)):
+                    return f, "module-frame"
+                if not el and (not ready or p.evaluate(ZEN_MODULE)):
+                    return p, "module"
+        except Exception:
+            pass
+        f = dash_frame(p, "zenith")
+        if f and f.url and f.url != "about:blank" and (not ready or _ev(f, ZENITH_READY)):
+            return f, "frame"
+        p.wait_for_timeout(150)
+    return None, None
+
+
+def _ev(target, js):
+    try:
+        return target.evaluate(js)
+    except Exception:
+        return False
+
+
+def open_zenith(p, timeout=30000, ready=True):
+    tap(p, "zenith")
+    return zenith_view(p, timeout, ready)
+
+
 def open_app(p, app, ready_js=None, timeout=20000):
-    p.click(f'.chip[data-app="{app}"]')
+    if app == "zenith":
+        return open_zenith(p, timeout, bool(ready_js))[0]
+    tap(p, app)
     p.wait_for_selector(f"#v-{app} iframe", state="attached", timeout=timeout)
     f = None
     t0 = time.time()
@@ -667,8 +728,13 @@ def open_app(p, app, ready_js=None, timeout=20000):
 
 
 def go_home(p):
-    p.click('.chip[data-app="home"]')
+    tap(p, "home")
     p.wait_for_function(JARVIS_HOME, timeout=5000)
+
+
+def mode_of(p):
+    """Jarvis mode / Zenith mode (data-mode on <html>, the shell of 2026-11-01), None on the older hub."""
+    return p.evaluate("document.documentElement.dataset.mode || null")
 
 
 def ask(p, q):
@@ -725,6 +791,7 @@ def clear_http_cache(phone, p):
 
 
 def no_errors(phone, m, label, allow=()):
+    allow = tuple(allow) + tuple(r"/jarvis/" + re.escape(x) for x in MISSING)       # reported once by part a
     errs, bad = phone.since(m, allow)
     check(f"no page or console errors: {label}", not errs, errs[:4])
     check(f"no failed or missing same-site requests: {label}", not bad, bad[:4])
@@ -758,6 +825,21 @@ def part_a(S):
     jsw = open(os.path.join(new, "jarvis", "sw.js"), encoding="utf-8").read()
     check("a. Jarvis's worker deletes only its own caches and keeps to its folder",
           "startsWith('jarvis-')" in jsw and "startsWith(scope.pathname)" in jsw)
+    # the Jarvis shell's own modules (import ... from './x.js', load('name', './x.js', ...)): each must be on the site, or every
+    # open asks for a missing file (a 404 and a fallback)
+    jh = open(os.path.join(new, "jarvis", "index.html"), encoding="utf-8").read()
+    mods = sorted(set(re.findall(r"""(?:from|import\(|load\('\w+',)\s*['"]\./([\w.-]+\.m?js)['"]""", jh)))
+    missing = [x for x in mods if not os.path.exists(os.path.join(new, "jarvis", x))]
+    S["jarvis_missing"] = missing
+    if mods:
+        note("Jarvis modules: " + ", ".join(mods))
+        check("a. every module the Jarvis page loads is on the site", not missing, f"missing: {', '.join(missing)}")
+    jsw2 = open(os.path.join(new, "jarvis", "sw.js"), encoding="utf-8").read()
+    shell = re.search(r"const SHELL = \[([^\]]*)\]", jsw2)
+    pre = re.findall(r"'\./([^'?]+)", shell.group(1)) if shell else []
+    gone = [x for x in pre if x and not os.path.exists(os.path.join(new, "jarvis", x))]
+    if pre:
+        check("a. every file Jarvis's worker saves at install is on the site", not gone, f"missing: {', '.join(gone)}")
     names = [w["new"] for w in S["workers"].values()]
     check("a. every worker has its own cache name", len(set(names)) == len(names) and all(names), names)
     for name, w in S["workers"].items():
@@ -814,45 +896,63 @@ def part_c(br, S, base, ph):
     p.goto(jarvis_url(base), wait_until="commit")
     wait_ready(p)
     p.wait_for_timeout(600)
-    zf = open_app(p, "zenith", ZENITH_READY, timeout=30000)
-    check("c. Zenith opens inside Jarvis and draws its Home", bool(zf) and zf.evaluate(ZENITH_READY))
+    m0 = mode_of(p)
+    zf, kind = open_zenith(p, 30000)
+    note(f"Zenith inside Jarvis: {kind} (Jarvis mode attribute: {m0!r} -> {mode_of(p)!r})")
+    check("c. Zenith opens inside Jarvis and draws its Home", bool(zf), kind)
+    if m0 is not None:
+        check("c. Jarvis mode -> Zenith mode (data-mode jarvis -> zenith)", m0 == "jarvis" and mode_of(p) == "zenith", (m0, mode_of(p)))
     check("c. the address stays the Jarvis screen (no #zenith)", "#" not in p.url, p.url)
-    check("c. one dashboard frame alive (Zenith)", frames_alive(p) == 1, frames_alive(p))
+    check("c. one dashboard view alive (Zenith)", frames_alive(p) <= 1 and (kind != "module" or frames_alive(p) == 0), frames_alive(p))
+    if zf is None:
+        raise RuntimeError("Zenith did not open inside Jarvis")
     w = hscroll(zf)
     check("c. no sideways scroll in Zenith inside Jarvis", w[0] <= w[1], w)
     not_white(p, "Zenith inside Jarvis")
-    zf.evaluate("window.__qaMark = 1")
+    MARK = "(() => { window.__qaMark = 1; const z = document.querySelector('#zen > *'); if (z) z.dataset.qaMark = '1'; })()"
+    MARKED = "(() => window.__qaMark === 1 && (!document.querySelector('#zen > *') || document.querySelector('#zen > *').dataset.qaMark === '1'))()"
+    zf.evaluate(MARK)
+    sc0 = zf.evaluate(SCROLL_SET)
     go_home(p)
     check("c. back to the Jarvis screen", p.evaluate(JARVIS_HOME))
+    if m0 is not None:
+        check("c. Zenith mode -> Jarvis mode (data-mode zenith -> jarvis)", mode_of(p) == "jarvis", mode_of(p))
     not_white(p, "Jarvis home after Zenith")
-    check("c. one dashboard frame alive (Zenith kept for a quick return)", frames_alive(p) <= 1, frames_alive(p))
-    zf2 = open_app(p, "zenith", ZENITH_READY)
-    check("c. Zenith again: not reloaded (same page kept)", zf2.evaluate("window.__qaMark === 1"))
+    check("c. one dashboard view alive (Zenith kept for a quick return)", frames_alive(p) <= 1, frames_alive(p))
+    zf2, _ = open_zenith(p, 20000)
+    check("c. Zenith again: not reloaded (same page kept)", bool(zf2) and _ev(zf2, MARKED))
+    if sc0 and sc0[1] > 0:
+        p.wait_for_timeout(300)
+        sc1 = _ev(zf2, SCROLL_GET) if zf2 else None
+        check(f"c. Zenith again: where the owner left it (scrolled {sc0[1]} px in {sc0[0]})", bool(sc1) and abs(sc1[1] - sc0[1]) < 5,
+              f"scroll now {sc1}")
     go_home(p)
-    zf3 = open_app(p, "zenith", ZENITH_READY)
-    check("c. Jarvis -> Zenith -> Jarvis -> Zenith: still the same Zenith page", zf3.evaluate("window.__qaMark === 1"))
-    pf = open_app(p, "planner", "() => document.body && document.body.innerText.trim().length > 40", timeout=30000)
+    zf3, _ = open_zenith(p, 20000)
+    check("c. Jarvis -> Zenith -> Jarvis -> Zenith: still the same Zenith page", bool(zf3) and _ev(zf3, MARKED))
+    pf = open_app(p, "planner", PLANNER_READY, timeout=30000)
     check("c. the Planner opens inside Jarvis", bool(pf))
-    check("c. one dashboard frame alive (Planner; Zenith let go)", frames_alive(p) == 1 and not p.query_selector("#v-zenith"),
-          frames_alive(p))
+    check("c. one dashboard view alive (Planner; Zenith let go)", frames_alive(p) == 1 and not p.query_selector("#v-zenith")
+          and not p.evaluate(ZEN_MODULE), frames_alive(p))
     p.wait_for_timeout(500)
     w = hscroll(pf)
     check("c. no sideways scroll in the Planner inside Jarvis", w[0] <= w[1], w)
     not_white(p, "Planner inside Jarvis", light_ok=True)       # the Planner's own default look is light
     kf = open_app(p, "kalshi", "() => document.body && /\\$512\\.34/.test(document.body.textContent)", timeout=20000)
     check("c. Kalshi opens inside Jarvis with the PC's numbers ($512.34)", bool(kf))
-    check("c. one dashboard frame alive (Kalshi)", frames_alive(p) == 1, frames_alive(p))
+    check("c. one dashboard view alive (Kalshi)", frames_alive(p) == 1, frames_alive(p))
     w = hscroll(kf)
     check("c. no sideways scroll in Kalshi inside Jarvis", w[0] <= w[1], w)
     not_white(p, "Kalshi inside Jarvis")
     go_home(p)
-    check("c. back to Jarvis from Kalshi", p.evaluate(JARVIS_HOME) and frames_alive(p) <= 1)
+    check("c. back to Jarvis from Kalshi", p.evaluate(JARVIS_HOME))
+    check("c. one dashboard view alive after Jarvis -> Zenith -> Planner -> Kalshi -> Jarvis", frames_alive(p) <= 1, frames_alive(p))
     no_errors(ph, m, "switching Jarvis / Zenith / Planner / Kalshi")
     return p
 
 
 def part_d(p, ph):
     m = ph.mark()
+    n0 = frames_alive(p)
     qa = [("How are the bots?", ["RUNNING", "$1,106", "ATLAS", "BLITZ"], []),
           ("how much room do I have", ["$1,106", "$750", "$612"], []),
           ("how far to target", ["$3,726", "$1,750", "$1,388"], []),
@@ -864,7 +964,8 @@ def part_d(p, ph):
     for q, want, never in qa:
         a = ask(p, q)
         check(f"d. '{q}' -> {', '.join(want)}", all(w in a for w in want) and not any(n in a for n in never), a[:300])
-    check("d. answers keep the Jarvis screen (no dashboard opened)", p.evaluate(JARVIS_HOME) and frames_alive(p) <= 1)
+    check("d. answers keep the Jarvis screen (no dashboard opened)", p.evaluate(JARVIS_HOME) and frames_alive(p) <= n0,
+          (frames_alive(p), n0))
     a = ask(p, "open planner")
     p.wait_for_selector("#v-planner iframe", timeout=8000)
     p.wait_for_timeout(500)
@@ -873,8 +974,6 @@ def part_d(p, ph):
     no_errors(ph, m, "Jarvis's answers")
 
 
-PLANNER_READY = "() => /Planner/i.test(document.title) && document.body && document.body.innerText.trim().length > 40"
-KALSHI_READY = "() => /Kalshi/i.test(document.title) && !!document.getElementById('body')"
 APPS_IN_JARVIS = (("zenith", ZENITH_READY, "Zenith", False), ("planner", PLANNER_READY, "the Planner", True),
                   ("kalshi", KALSHI_READY, "Kalshi", False))
 
@@ -923,8 +1022,8 @@ def part_e(br, S, base, ph):
         # connections a host, where GitHub Pages' HTTP/2 would not queue Zenith behind Jarvis's own slow requests)
         CTL.set("slow", BASE, exclude=(BASE + "jarvis/",))
         clear_http_cache(ph, p)
-        p.click('.chip[data-app="zenith"]')
-        done, white, fr = watch(p, cdp, "slow Zenith in Jarvis", lambda: frame_ready(p, "zenith", ZENITH_READY, 0)[1], SLOW_S + 6)
+        tap(p, "zenith")
+        done, white, fr = watch(p, cdp, "slow Zenith in Jarvis", lambda: zenith_view(p, 0)[0] is not None, SLOW_S + 6)
         note(f"slow network, Zenith inside Jarvis: drawn after {round(done, 1) if done else f'> {SLOW_S + 6:.0f}'} s, white until {white:.1f} s; "
              f"{strip(fr)}")
         check("e. slow network: Zenith inside Jarvis is never a white frame while it loads", white == 0.0, f"white until {white:.1f} s")
@@ -976,17 +1075,23 @@ def part_f(br, S, base, ph, mode):
             not_white(p, f"Jarvis {tag}")
             for app, ready, label, light in APPS_IN_JARVIS:
                 try:
-                    open_app(p, app, None, timeout=15000)
-                    f, good = frame_ready(p, app, ready, 8)
+                    if app == "zenith":
+                        tap(p, "zenith")
+                        f, _k = zenith_view(p, 8000)
+                        good = f is not None
+                        f = f or dash_frame(p, "zenith")
+                    else:
+                        open_app(p, app, None, timeout=15000)
+                        f, good = frame_ready(p, app, ready, 8)
                     p.wait_for_timeout(300)
-                    furl = f.url if f else ""
+                    furl = getattr(f, "url", "") if f else ""
                     title = ""
                     try:
-                        title = f.title() if f else ""
+                        title = f.title() if f else ""     # a Frame or the page
                     except Exception:
                         pass
                     check(f"f. {tag}: {label} inside Jarvis opens from its saved copy", good, f"{furl} '{title}'")
-                    check(f"f. {tag}: one dashboard frame alive ({label})", frames_alive(p) == 1, frames_alive(p))
+                    check(f"f. {tag}: one dashboard view alive ({label})", frames_alive(p) <= 1, frames_alive(p))
                     not_white(p, f"{label} inside Jarvis {tag}", light_ok=light)
                 except Exception as e:
                     check(f"f. {tag}: {label} inside Jarvis opens from its saved copy", False, str(e)[:200])
@@ -1057,8 +1162,8 @@ def part_h(br, S, base):
         p = ph.page()
         p.goto(jarvis_url(base), wait_until="commit")
         wait_ready(p)
-        open_app(p, "zenith", ZENITH_READY, timeout=30000)
-        open_app(p, "planner", "() => document.body && document.body.innerText.trim().length > 40", timeout=30000)
+        open_zenith(p, 30000)
+        open_app(p, "planner", PLANNER_READY, timeout=30000)
         go_home(p)
         ok, keys = wait_caches(p, [W["Jarvis"]["old"], W["Zenith"]["old"], W["Planner"]["old"]], timeout=20000)
         check("h. the published workers are installed (Jarvis, Zenith, Planner caches)", ok, keys)
@@ -1096,7 +1201,7 @@ def part_h(br, S, base):
         not_white(p, "Jarvis after the update")
         # Zenith inside Jarvis: its worker updates too, and never deletes Jarvis's or the Planner's caches
         clear_http_cache(ph, p)
-        zf = open_app(p, "zenith", ZENITH_READY, timeout=30000)
+        zf, _ = open_zenith(p, 30000)
         zw = W["Zenith"]
         ok, keys = wait_caches(p, [zw["new"]], [zw["old"]] if zw["old"] != zw["new"] else [], timeout=20000)
         check(f"h. Zenith inside Jarvis installs its new worker ({zw['old']} -> {zw['new']})", ok, keys)
@@ -1117,17 +1222,8 @@ def part_h(br, S, base):
         try:
             p = reopen(ph, jarvis_url(base), timeout=12000)
             check("h. offline after the update: Jarvis opens", p.evaluate(JARVIS_HOME))
-            f = open_app(p, "zenith", None, timeout=15000)
-            good = False
-            for _ in range(25):
-                try:
-                    if f.evaluate(ZENITH_READY):
-                        good = True
-                        break
-                except Exception:
-                    pass
-                p.wait_for_timeout(300)
-            check("h. offline after the update: Zenith inside Jarvis opens", good, f.url)
+            f, _ = open_zenith(p, 8000)
+            check("h. offline after the update: Zenith inside Jarvis opens", f is not None)
             not_white(p, "Zenith offline after the update")
             p.close()
         except Exception as e:
@@ -1137,6 +1233,16 @@ def part_h(br, S, base):
     finally:
         CTL.set("ok", root=S["new"])
         ph.close()
+
+
+def guard(part, fn, *a):
+    """A part that breaks (a selector gone, a page that never loads) is one FAIL, and the next part still runs."""
+    try:
+        return fn(*a)
+    except Exception as e:
+        CTL.set("ok", root=CTL.root)
+        check(f"{part}. part {part} ran to the end", False, f"{e.__class__.__name__}: {str(e).splitlines()[0][:300]}")
+        return None
 
 
 def run_local(S):
@@ -1156,29 +1262,29 @@ def run_local(S):
         br = pw.chromium.launch(executable_path=chrome_exe(), args=["--ignore-certificate-errors", "--no-proxy-server",
                                                                     f"--host-resolver-rules={rules}"])
         try:
-            if "a" in only:
-                part_a(S)
+            part_a(S)                                    # always: it also lists the missing Jarvis modules
+            MISSING[:] = S.get("jarvis_missing") or []
             if "b" in only:
-                part_b(br, S, base)
+                guard("b", part_b, br, S, base)
             if only & {"c", "d", "e", "f", "g"}:
                 ph = Phone(br, "iPhone 13")
                 ph.ctx.add_init_script(READY_INIT)
                 try:
-                    p = part_c(br, S, base, ph) if only & {"c", "d"} else None
+                    p = guard("c", part_c, br, S, base, ph) if only & {"c", "d"} else None
                     if "d" in only and p:
-                        part_d(p, ph)
+                        guard("d", part_d, p, ph)
                     if "e" in only:
-                        part_e(br, S, base, ph)
+                        guard("e", part_e, br, S, base, ph)
                     if "f" in only:
-                        part_f(br, S, base, ph, "down")
+                        guard("f", part_f, br, S, base, ph, "down")
                     if "g" in only:
-                        part_f(br, S, base, ph, "404")
+                        guard("g", part_f, br, S, base, ph, "404")
                     if ph.ext:
                         note("outside hosts the pages tried (cut off): " + ", ".join(sorted(ph.ext)))
                 finally:
                     ph.close()
             if "h" in only:
-                part_h(br, S, base)
+                guard("h", part_h, br, S, base)
         finally:
             br.close()
             srv.shutdown()
@@ -1210,13 +1316,13 @@ def run_live():
             not_white(p, "live Jarvis home")
             w = hscroll(p)
             check("live. no sideways scroll", w[0] <= w[1], w)
-            zf = open_app(p, "zenith", ZENITH_READY, timeout=60000)
-            check("live. Zenith opens inside Jarvis", bool(zf))
+            zf, kind = open_zenith(p, 60000)
+            check("live. Zenith opens inside Jarvis", bool(zf), kind)
             not_white(p, "live Zenith inside Jarvis")
-            pf = open_app(p, "planner", "() => document.body && document.body.innerText.trim().length > 40", timeout=60000)
+            pf = open_app(p, "planner", PLANNER_READY, timeout=60000)
             check("live. the Planner opens inside Jarvis", bool(pf) and frames_alive(p) == 1)
             not_white(p, "live Planner inside Jarvis", light_ok=True)
-            kf = open_app(p, "kalshi", "() => document.body && document.body.innerText.trim().length > 20", timeout=60000)
+            kf = open_app(p, "kalshi", KALSHI_READY, timeout=60000)
             check("live. Kalshi opens inside Jarvis", bool(kf) and frames_alive(p) == 1)
             not_white(p, "live Kalshi inside Jarvis")
             go_home(p)
