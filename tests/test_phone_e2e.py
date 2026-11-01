@@ -82,7 +82,8 @@ KNOWN = [
     (r"^f\. 404 site: Zenith (inside Jarvis|on its own) opens|^not white: Zenith (inside Jarvis|alone) 404 site",
      "Zenith's worker answers its page with the site's 404 instead of its saved copy (tools/web_public/sw.js, page branch)"),
     (r"^e\. slow network: Zenith (inside Jarvis shows|on its own opens)",
-     "Zenith's worker waits on the network for its page / data.json / home.json: no saved-copy fallback like Jarvis's 3.5 s"),
+     "Zenith waits on the network for its page / data.json / home.json (published sw.js: no saved-copy fallback like "
+     "Jarvis's 3.5 s; inside Jarvis the page and then its data each wait)"),
     (r"^f\. (offline|404 site): Kalshi inside Jarvis opens|^not white: Kalshi inside Jarvis 404 site",
      "kalshi/ has no service worker and no saved copy: offline = browser error page, 404 site = GitHub's 404 page"),
     (r"^c\. Zenith again: where the owner left it",
@@ -129,6 +130,10 @@ def ensure_clone(dst, branch, patterns, refresh):
         except Exception as e:                                    # offline: the cached copy is still a faithful copy
             note(f"could not refresh {branch} ({e}); using the cached copy")
     return git("-C", dst, "rev-parse", "HEAD"), git("-C", dst, "log", "-1", "--format=%ci %s")
+
+
+def _has_ref(repo, ref):
+    return subprocess.run(["git", "-C", repo, "rev-parse", "-q", "--verify", ref], capture_output=True).returncode == 0
 
 
 def link_tree(src, dst):
@@ -237,6 +242,16 @@ def build_sites(work):
     sha, what = ensure_clone(nqd, "main", NQD_SPARSE, ARGS.refresh)
     psha, _ = ensure_clone(pl, "planner-backup", PLANNER_SPARSE, ARGS.refresh)
     tree = set(git("-C", nqd, "ls-tree", "-r", "--name-only", "HEAD").splitlines())
+    LIVE_FILES.clear()
+    try:                                  # the PC's other live files (Live View, Holodeck), as published on the branch live
+        if ARGS.refresh or not _has_ref(nqd, "refs/remotes/origin/live"):
+            git("-C", nqd, "fetch", "-q", "--depth", "1", "--filter=blob:none", "origin", "live:refs/remotes/origin/live", timeout=120)
+        for name in ("liveview.json", "holo.json", "holo_hist.json"):
+            r = subprocess.run(["git", "-C", nqd, "show", f"refs/remotes/origin/live:{name}"], capture_output=True, timeout=120)
+            if r.returncode == 0:
+                LIVE_FILES[name] = r.stdout
+    except Exception as e:
+        note(f"(the live branch's files are not available: {e})")
     S = {"pub": os.path.join(work, "pub"), "new": os.path.join(work, "new"), "sha": sha, "what": what, "psha": psha,
          "tree": tree, "nqd": nqd}
     for k in ("pub", "new"):
@@ -349,6 +364,7 @@ class Ctl:
 
 
 CTL = Ctl()
+LIVE_FILES = {}       # liveview.json, holo.json, holo_hist.json from the branch live (the real published files)
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
@@ -406,6 +422,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 if CTL.kalshi != "published":
                     return self.send_bytes(404, b"404: Not Found", "text/plain; charset=utf-8", cors)
                 return self.send_bytes(200, json.dumps(kalshi_json()).encode(), "application/json", cors)
+            name = path.rsplit("/", 1)[-1]
+            if name in LIVE_FILES:
+                return self.send_bytes(200, LIVE_FILES[name], "application/json", cors)
             if path.endswith("/live.json"):
                 body = json.dumps(dict(LIVE, t=int(time.time()) - 120)).encode()
                 return self.send_bytes(200, body, "application/json", {**cors, "x-ratelimit-remaining": "55",
@@ -721,7 +740,7 @@ def zenith_view(p, timeout=30000, ready=True):
     """Zenith inside Jarvis: Zenith mode (zenith-mode.js mounted in #zen) or Zenith in a frame (#v-zenith iframe).
     -> (target to evaluate in, kind 'frame' | 'module')."""
     t0 = time.time()
-    while time.time() - t0 < timeout / 1000:
+    while True:                                   # at least one look, even with timeout=0
         try:
             if p.evaluate(ZEN_MODULE):
                 el = p.query_selector(ZEN_FRAME_SEL)
@@ -735,8 +754,9 @@ def zenith_view(p, timeout=30000, ready=True):
         f = dash_frame(p, "zenith")
         if f and f.url and f.url != "about:blank" and (not ready or _ev(f, ZENITH_READY)):
             return f, "frame"
+        if time.time() - t0 >= timeout / 1000:
+            return None, None
         p.wait_for_timeout(150)
-    return None, None
 
 
 def _ev(target, js):
@@ -1072,6 +1092,15 @@ def part_e(br, S, base, ph):
     clear_http_cache(ph, p0)
     p0.close()
     lim = NAV_WAIT_S + 2
+    # Zenith opened once more in a new Jarvis start: its files now come through Zenith's worker and are saved (the first
+    # open ever ran before that worker existed), as on a phone that has used Zenith inside Jarvis before
+    pw = ph.page()
+    pw.goto(jarvis_url(base))
+    wait_ready(pw)
+    open_zenith(pw, 30000)
+    pw.wait_for_timeout(1500)
+    go_home(pw)
+    pw.close()
     try:
         # 1. reopen Jarvis (a blank page, then Jarvis) while its folder answers after SLOW_S
         CTL.set("slow", BASE + "jarvis/")
