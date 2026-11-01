@@ -6,10 +6,11 @@
 //   getApp(id)               one of them (the hidden Ascend slot too), or null
 //   addApp({name, url, statusUrl?, icon?})  -> {ok: true, app, existed?} | {ok: false, field, error (plain words)}
 //                            no name: one is made from the link (and replaced by the name in its jarvis.json);
-//                            the name "Ascend" (or a link ending in /ascend/) fills the Ascend slot
+//                            the name "Ascend" (or a link ending in /ascend/) fills the Ascend slot; a link on Jarvis's
+//                            own origin outside our pages is added with warn: SAME_SITE_WARN (it could read Jarvis's keys)
 //   removeApp(id) -> bool    an added app or Ascend; the built-ins stay
 //   ascendSlot() / enableAscend(url) / findAscend()   the pre-registered, hidden Ascend entry: findAscend() is the
-//                            one-tap "Add Ascend" (looks for it on this site, at /ascend/ then ../ascend/)
+//                            one-tap "Add Ascend" from its known link (ASCEND_URL); nothing is guessed
 //   appStatus(app) -> Promise<card|null>   the app's live card from its jarvis.json (the Jarvis status contract, 5 s
 //                            timeout); a failure returns the last good card (cached: true) or null, never throws
 //   cachedStatus(app)        the last good card at once (for the first paint), or null
@@ -49,9 +50,14 @@ export const LEVELS = Object.freeze(['ok', 'warn', 'bad', 'off']);
 export const LIMITS = Object.freeze({ bytes: 8192, name: 40, label: 48, kpis: 3, kpiLabel: 20, kpiValue: 24, kpiDelta: 16, lines: 3, line: 120, open: 300, futureS: 600 });
 export const ASCEND_ID = 'ascend';
 export const ASCEND_NAME = 'Ascend';
-// Where the one-tap "Add Ascend" looks: its own GitHub Pages repo "ascend" on the owner's account (the same site as Jarvis,
-// https://demetrades2000-coder.github.io/ascend/), then an ascend/ folder next to jarvis/ on the dashboard site.
-export const ASCEND_GUESSES = Object.freeze(['/ascend/', '../ascend/']);
+// Ascend's link once the owner sends it (owner: "send it and it is built in"): then "Add Ascend" adds it with one tap.
+// Always another site, never under demetrades2000-coder.github.io (see SAME_SITE_WARN). Empty: "Add Ascend" asks for the link.
+export const ASCEND_URL = '';
+// Every page on Jarvis's origin (demetrades2000-coder.github.io) can read what Jarvis and the Planner keep in localStorage
+// (AI keys, the Planner's sync token). Ours there: the dashboard site's root page (Zenith) and its planner/, kalshi/ and
+// jarvis/ folders; a link anywhere else on that origin is still added, with this warning in the result and on the app.
+export const SAME_SITE_WARN = "same-site apps can read Jarvis's saved keys";
+const OWN_FOLDERS = ['planner/', 'kalshi/', 'jarvis/'];
 
 export const BUILT_INS = Object.freeze([
   Object.freeze({ id: 'zenith', name: 'Zenith', sub: 'NQ bots \u00b7 Zlarior \u00b7 ATLAS \u00b7 BLITZ', url: '../', icon: '../icons/icon-192.png?v=p111030' }),
@@ -151,6 +157,17 @@ function takenIds(st, withLegacy) {
 }
 const hostOf = (u) => { try { return new URL(u).host; } catch (_) { return ''; } };
 const originOf = (u) => { try { return new URL(u).origin; } catch (_) { return ''; } };
+/** True for a link on Jarvis's own origin outside our own pages (Zenith's root page, planner/, kalshi/, jarvis/): such a
+ *  page shares Jarvis's localStorage and could read its saved keys. */
+export function sameSiteRisk(u) {
+  const me = here();
+  let x, root;
+  try { x = new URL(String(u || ''), me); root = new URL('../', me); } catch (_) { return false; }
+  if (x.origin !== root.origin) return false;
+  const p = x.pathname, r = root.pathname;
+  if (p === r || p === r + 'index.html') return false;
+  return !OWN_FOLDERS.some((f) => p === r + f.slice(0, -1) || p.indexOf(r + f) === 0);
+}
 const firstChar = (s) => (Array.from(String(s || '').trim())[0] || '?').toUpperCase();
 
 // ------------------------------------------------------------------ the registry
@@ -260,16 +277,19 @@ function mirrorRemove(fp) {
 }
 
 function builtinView(b) { return Object.assign({}, b, { statusUrl: b.statusUrl || '', builtin: true, extra: false, removable: false }); }
+const warned = (v) => { if (sameSiteRisk(v.url)) v.warn = SAME_SITE_WARN; return v; };
 function slotView(s) {
-  return { id: ASCEND_ID, name: ASCEND_NAME, sub: hostOf(s.url), url: s.url, icon: s.icon || '', glyph: 'A', statusUrl: s.statusUrl || defaultStatusUrl(s.url),
-    builtin: false, extra: true, removable: true, slot: true, enabled: true };
+  return warned({ id: ASCEND_ID, name: ASCEND_NAME, sub: hostOf(s.url), url: s.url, icon: s.icon || '', glyph: 'A', statusUrl: s.statusUrl || defaultStatusUrl(s.url),
+    builtin: false, extra: true, removable: true, slot: true, enabled: true });
 }
 function addedView(a) {
   const v = { id: a.id, name: a.name, sub: hostOf(a.url), url: a.url, icon: a.icon || '', glyph: firstChar(a.name), statusUrl: a.statusUrl || defaultStatusUrl(a.url),
     builtin: false, extra: true, removable: true };
   if (a.autoName) v.autoName = true;
-  return v;
+  return warned(v);
 }
+// an add's result carries the app's warning (a link on Jarvis's own site outside our pages)
+const added = (app, existed) => { const r = { ok: true, app }; if (existed) r.existed = true; if (app.warn) r.warn = app.warn; return r; };
 /** The dashboards, in bar order. {hidden: true} also lists the Ascend slot while it is not enabled (enabled: false). */
 export function listApps(opts) {
   const st = load();
@@ -302,10 +322,10 @@ export function addApp(input) {
   if (name.toLowerCase() === ASCEND_NAME.toLowerCase()) return enableAscend(url, more);
   const st = load();
   const b = BUILT_INS.find((x) => cleanUrl(x.url) === url);
-  if (b) return { ok: true, app: builtinView(b), existed: true };
-  if (st.ascend && st.ascend.url === url) return { ok: true, app: slotView(st.ascend), existed: true };
+  if (b) return added(builtinView(b), true);
+  if (st.ascend && st.ascend.url === url) return added(slotView(st.ascend), true);
   const dup = st.apps.find((a) => a.url === url);
-  if (dup) return { ok: true, app: addedView(dup), existed: true };
+  if (dup) return added(addedView(dup), true);
   const id = uniqueId('x-' + slug(name), takenIds(st, true));
   const app = { id, name, url, at: Date.now() };
   if (more.statusUrl) app.statusUrl = more.statusUrl;
@@ -314,7 +334,7 @@ export function addApp(input) {
   app.legacy = mirrorAdd(st, id, name, url);
   st.apps.push(app);
   save(st);
-  return { ok: true, app: addedView(app) };
+  return added(addedView(app));
 }
 /** Remove an added dashboard or hide Ascend again (its card goes too). The built-ins cannot be removed: false. */
 export function removeApp(id) {
@@ -340,7 +360,7 @@ export function removeApp(id) {
 // ------------------------------------------------------------------ the Ascend slot
 export function ascendSlot() {
   const st = load();
-  return { id: ASCEND_ID, name: ASCEND_NAME, enabled: !!st.ascend, url: st.ascend ? st.ascend.url : '', guesses: ASCEND_GUESSES.map((g) => cleanUrl(g)).filter(Boolean) };
+  return { id: ASCEND_ID, name: ASCEND_NAME, enabled: !!st.ascend, url: st.ascend ? st.ascend.url : '', known: userUrl(ASCEND_URL) };
 }
 /** Show Ascend in Jarvis with this link (a new link replaces the old one). */
 export function enableAscend(url, more) {
@@ -350,7 +370,7 @@ export function enableAscend(url, more) {
   if (!ex.ok) return ex;
   const st = load();
   const prev = st.ascend;
-  if (prev && prev.url === u && !ex.statusUrl && !ex.icon) return { ok: true, app: slotView(prev), existed: true };
+  if (prev && prev.url === u && !ex.statusUrl && !ex.icon) return added(slotView(prev), true);
   const s = { url: u, at: Date.now() };
   if (ex.statusUrl) s.statusUrl = ex.statusUrl;
   if (ex.icon) s.icon = ex.icon;
@@ -359,30 +379,16 @@ export function enableAscend(url, more) {
   st.ascend = s;
   save(st);
   if (prev) dropCard(ASCEND_ID);
-  return { ok: true, app: slotView(s) };
+  return added(slotView(s));
 }
-/** The one-tap "Add Ascend": looks for Ascend on this site (its jarvis.json, else its page) and adds the first found.
- *  Not found: {ok: false, error, tried} and the shell asks for the link instead. */
+/** The one-tap "Add Ascend": adds Ascend from its known link (ASCEND_URL; opts.url in tests). Nothing is guessed: with no
+ *  known link, or one on Jarvis's own site, it returns {ok: false, field: 'url', error} and the shell asks for the link. */
 export async function findAscend(opts) {
   const o = opts || {};
-  const cands = (Array.isArray(o.urls) ? o.urls : ASCEND_GUESSES).map((g) => cleanUrl(String(g))).filter(Boolean);
-  const hits = await Promise.all(cands.map((u) => probe(u, o)));
-  const i = hits.indexOf(true);
-  if (i < 0) return { ok: false, field: 'url', error: 'Ascend is not on this site yet. Paste its link instead.', tried: cands };
-  return enableAscend(cands[i]);
-}
-async function probe(u, o) {
-  try {
-    const text = await getText(bust(defaultStatusUrl(u)), o);
-    if (validateStatus(text, { base: u }).ok) return true;
-  } catch (_) { /* no status file: try the page */ }
-  if (originOf(u) !== originOf(here() || '')) return false;     // another site's page cannot be checked from here
-  try {
-    const r = await getResponse(u, o);
-    const ok = !!r && r.ok && /text\/html/i.test((r.headers && r.headers.get && r.headers.get('content-type')) || '');
-    try { if (r && r.body && r.body.cancel) r.body.cancel().catch(() => null); } catch (_) { /* nothing to stop */ }
-    return ok;
-  } catch (_) { return false; }
+  const u = userUrl(typeof o.url === 'string' ? o.url : ASCEND_URL);
+  if (!u) return fail('url', 'Paste your Ascend link.');
+  if (sameSiteRisk(u)) return Object.assign(fail('url', 'Ascend has to be on its own site. Paste its link.'), { warn: SAME_SITE_WARN });
+  return enableAscend(u);
 }
 
 // ------------------------------------------------------------------ the status contract
@@ -520,11 +526,6 @@ function timed(run, o) {
     timer = setTimeout(() => { if (ctl) { try { ctl.abort(); } catch (_) { /* gone */ } } no(new Error('timeout')); }, waitMs(o));
   });
   return Promise.race([run(ctl ? ctl.signal : undefined), limit]).finally(() => clearTimeout(timer));
-}
-function getResponse(url, o) {
-  const f = fetchFn(o);
-  if (!f) return Promise.reject(new Error('no fetch'));
-  return timed((signal) => f(url, { cache: 'no-store', credentials: 'same-origin', signal }), o);
 }
 function getText(url, o) {
   const f = fetchFn(o);
