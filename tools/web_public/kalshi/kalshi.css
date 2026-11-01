@@ -133,9 +133,8 @@ main { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; display
 .eq-read .when { color: var(--mut); }
 .chart { position: relative; height: 172px; margin: 0 2px; touch-action: pan-y; cursor: crosshair; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; color: var(--c);
   background-image: linear-gradient(rgba(var(--cr), .06) 1px, transparent 1px); background-size: 100% 25%; }
-.chart svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; overflow: visible; }
-.chart .ln { fill: none; stroke: var(--c3); stroke-width: 2.25; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke;
-  filter: drop-shadow(0 0 5px rgba(var(--cr), .9)); }
+.chart svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: block; overflow: visible; filter: drop-shadow(0 0 4px rgba(var(--cr), .55)); }
+.chart .ln { fill: none; stroke: var(--c3); stroke-width: 2.25; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
 .chart .grid { stroke: rgba(var(--cr), .16); stroke-width: 1; vector-effect: non-scaling-stroke; }
 .chart .base { stroke: rgba(255,255,255,.28); stroke-width: 1; stroke-dasharray: 3 4; vector-effect: non-scaling-stroke; }
 .ax { position: absolute; right: 0; transform: translateY(-50%); font: 600 10px/1.4 var(--fh); letter-spacing: .03em; color: var(--txt); font-variant-numeric: tabular-nums;
@@ -212,13 +211,13 @@ main { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; display
 .rows { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; min-width: 0; }
 .rows > li { min-width: 0; border-bottom: 1px dashed rgba(var(--cr), .16); }
 .rows > li:last-child { border-bottom: 0; }
-.rows > li.row, .pos summary { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 10px 2px; align-items: start; }
+.rows > li.row, .pos .pr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 10px 2px; align-items: start; }
 .rows > li.none { padding: 6px 2px; border: 0; }
 .rows > li.day { display: flex; align-items: center; gap: 8px; padding: 12px 2px 4px; border-bottom: 0; font: 600 9.5px/1.3 var(--fh); letter-spacing: .18em; text-transform: uppercase; color: var(--c3); }
 .rows > li.day:first-child { padding-top: 0; }
 .rows > li.day::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(var(--cr), .45), transparent); }
 .rows > li.day span { order: 2; font: 700 11px/1.3 var(--fh); letter-spacing: .02em; }
-.pos summary { list-style: none; cursor: pointer; }
+.pos summary { display: block; list-style: none; cursor: pointer; }     /* the grid sits on .pr inside: Safari 16 cannot lay out a <summary> as a grid */
 .pos summary::-webkit-details-marker { display: none; }
 .pos[open], .pos details[open] { background: rgba(var(--cr), .05); }
 .t { font-weight: 600; font-size: 16px; min-width: 0; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow-wrap: anywhere; word-break: break-word; }

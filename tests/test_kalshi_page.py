@@ -288,6 +288,8 @@ def part_a():
     check("a. Safari 16 safe script (no lookbehind, Array copy methods, findLast, groupBy, AbortSignal.timeout ...)", not risky, risky)
     check("a. Safari 16 safe styles (no nesting, container queries, color-mix); clip-path also -webkit-",
           "@container" not in css and "color-mix(" not in css and not re.search(r"\{[^{}]*&[^{}]*\{", css) and "-webkit-clip-path" in css)
+    check("a. Safari 16 layout: no grid / flex on <summary> (WebKit cannot), no CSS filter on SVG shapes (only on the <svg>)",
+          not re.search(r"summary[^{},]*\{[^}]*display:\s*(grid|flex)", css) and not re.search(r"\.chart \.(ln|area|grid|base) \{[^}]*filter:", css))
     pre = css.split("@media (prefers-reduced-motion: no-preference)")[0]
     check("a. inputs and selects at 16px (no iPhone zoom); safe areas; every animation behind prefers-reduced-motion",
           re.search(r"\.q \{[^}]*font: 500 16px", css) and re.search(r"\.sel \{[^}]*font: 500 16px", css)
@@ -660,6 +662,8 @@ def run_browser(url):
             p.reload()
             ready(p)
             check(f"h. jtheme {val} -> {want}", p.get_attribute("html", "data-theme") == want and acc() == c, (p.get_attribute("html", "data-theme"), acc()))
+            if val == "reactor":
+                shot(p, "9_reactor")
         p2 = ctx.new_page()
         p2.goto(page_url)
         p2.evaluate("localStorage.setItem('jtheme', 'eclipse')")
