@@ -16,7 +16,10 @@ connection / later, and checks:
   g. escaping (<script> and <img onerror> in every text), empty lists, junk values
   h. Jarvis's theme (localStorage 'jtheme'): eclipse by default, the reactor family, a live switch
   i. 375 / 390 / 430 px: no sideways scroll, nothing past the 16 px gutter, numbers not cut off
-  j. no page errors (uncaught exceptions or a section that failed)
+  j. no page errors (uncaught exceptions or a section that failed), no failed same-site request, no font asked by the page
+  k. the service worker (kalshi/sw.js, scope ./): its own 'kalshi-*' cache with each shell file, never kalshi.json; offline
+     and a 404 site open the saved copy; a slow site shows the copy within 3.5 s and the late answer refreshes it; no copy +
+     offline = a small dark Retry page; an update deletes only 'kalshi-*' caches; Jarvis's fonts saved by the worker only
     python -X utf8 -m tests.test_kalshi_page          (temp folder + a local server; nothing else touched)
 KALSHI_SHOTS=<dir> also saves screenshots of each state there; KALSHI_FONTS_DIR=<dir> takes the .woff2 fonts from there
 (default: tools/web_public/jarvis/, where Jarvis keeps Orbitron and Rajdhani).
@@ -207,9 +210,33 @@ def site(tmp):
     return tmp
 
 
+SITE = {"mode": "ok", "slow": 0.0}          # the site's kalshi/ folder: ok | down (every connection dropped) | 404 (GitHub's 404)
+
+
 class Quiet(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a, **k):
         pass
+
+    def end_headers(self):
+        self.send_header("Cache-Control", "no-cache")      # always asked again (the worker, not the HTTP cache, keeps copies)
+        super().end_headers()
+
+    def do_GET(self):
+        if "/kalshi/" in self.path:
+            if SITE["mode"] == "down":
+                self.close_connection = True
+                return
+            if SITE["mode"] == "404":
+                body = b"<!doctype html><title>Site not found \xc2\xb7 GitHub Pages</title><h1>404</h1><p>File not found</p>"
+                self.send_response(404)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                return
+            if SITE["slow"]:
+                time.sleep(SITE["slow"])
+        return super().do_GET()
 
 
 def serve(root):
@@ -265,7 +292,7 @@ def shot(p, name):
 
 # ------------------------------------------------------------------ a. files + static rules
 def part_a():
-    for f in ("index.html", "kalshi.js", "kalshi.css"):
+    for f in ("index.html", "kalshi.js", "kalshi.css", "sw.js"):
         check(f"a. kalshi/{f} exists", os.path.exists(os.path.join(KS, f)))
     check("a. no file named like the kit's (the site build copies kalshi_status_vm.py and SETUP.md into kalshi/)",
           not any(os.path.exists(os.path.join(KS, f)) for f in ("SETUP.md", "kalshi_status_vm.py")))
@@ -300,13 +327,21 @@ def part_a():
           and ':root[data-theme="reactor"]' in css and "--c: #a95cff;" in css and "clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px" in css
           and ".card::before" in css and "width: 36px; height: 2px" in css)
     check("a. the theme is set before paint from Jarvis's 'jtheme'", "localStorage.getItem('jtheme')" in html and html.index("jtheme") < html.index('href="kalshi.css'))
+    sw = open(os.path.join(KS, "sw.js"), encoding="utf-8").read()
+    ver = re.search(r"kalshi\.js\?v=(\w+)", html).group(1)
+    check("a. kalshi/sw.js: its own 'kalshi-*' cache and only those deleted, its own folder only, the 3.5 s rule, the page's versions",
+          re.search(r"const CACHE = 'kalshi-v\d+';", sw) and "k.startsWith('kalshi-') && k !== CACHE" in sw and "u.pathname.startsWith(scope.pathname)" in sw
+          and "const NAV_WAIT_MS = 3500;" in sw and f"'./kalshi.css?v={ver}'" in sw and f"'./kalshi.js?v={ver}'" in sw and f"kalshi.css?v={ver}" in html)
+    check("a. the page registers sw.js for its folder; fonts only from the worker's saved bytes (no @font-face, no font fetch)",
+          "navigator.serviceWorker.register('sw.js', { scope: './' })" in js and "@font-face" not in css and "caches.match(new URL(path, location.href).href)" in js
+          and all(f in js and f in sw for f in ("../jarvis/orbitron.woff2", "../jarvis/rajdhani-500.woff2", "../jarvis/rajdhani-600.woff2")))
     b = open(os.path.join(ROOT, "tools", "build_web_dashboard.py"), encoding="utf-8").read()
-    check("a. the site build publishes every file of kalshi/ (index.html, kalshi.js, kalshi.css)",
+    check("a. the site build publishes every file of kalshi/ (index.html, kalshi.js, kalshi.css, sw.js)",
           'for app in ("jarvis", "kalshi"):' in b and "for name in os.listdir(src_dir):" in b)
 
 
 # ------------------------------------------------------------------ the browser parts
-def run_browser(url):
+def run_browser(url, tmp):
     from playwright.sync_api import sync_playwright
     page_url = url + "kalshi/"
     with sync_playwright() as pw:
@@ -316,7 +351,9 @@ def run_browser(url):
         ctx.route("https://raw.githubusercontent.com/**", feed)
         ctx.route("https://api.github.com/**", feed)
         p = ctx.new_page()
-        errs, cons, dialogs = [], [], []
+        errs, cons, dialogs, bad, fontreq = [], [], [], [], []
+        p.on("response", lambda r: bad.append((r.status, r.url)) if r.status >= 400 and r.url.startswith(url.split("/nq-dashboard/")[0]) else None)
+        p.on("request", lambda r: fontreq.append(r.url) if ".woff" in r.url else None)
         p.on("pageerror", lambda e: errs.append(str(e)))
         p.on("console", lambda m: cons.append(m.text) if m.type == "error" and not re.search(r"Failed to load resource|net::ERR", m.text) else None)
         p.on("dialog", lambda d: (dialogs.append(d.message), d.dismiss()))
@@ -356,8 +393,8 @@ def run_browser(url):
         open_("ok", sample(time.time()))
         body = p.locator("#body").text_content()
         sub = p.inner_text("#sub")
-        check("c. KPI header: balance, today, week, all time (with % of the start), mode, running, updated",
-              "$512.34" in body and "+$18.50" in body and "+$42.10" in body and "+$112.34" in body and "+28%" in body
+        check("c. KPI header: balance, today and week (with % of the start), all time, mode, running, updated",
+              "$512.34" in body and "+$18.50" in body and "+3.7%" in body and "+$42.10" in body and "+9.0%" in body and "+$112.34" in body and "+28%" not in body
               and "Running" in sub.title() and "PAPER" in sub and "updated just now" in sub and p.get_attribute("#body", "data-state") == "ok", (sub, body[:300]))
         check("c. the bot's name and status line", "Kalshi bot" in body and "Watching 12 markets" in body)
         check("c. the open bet: YES tag, title, 10 × 42¢ → 55¢, a countdown, value and return",
@@ -390,6 +427,7 @@ def run_browser(url):
         kpi = p.locator("#sec-kpi").text_content()
         check("d. KPIs to the cent: $67.98, today, week −$36.48, all time −$14.45; today's W / L as in the bot's money text",
               "$67.98" in kpi and usd(rb["today_pnl"], True) in kpi and "−$36.48" in kpi and "−$14.45" in kpi and (f"{tw}W {tl}L" in kpi if tw + tl else True)
+              and "624W 45L" in kpi
               and "Kalshi Edge v2" in kpi and "Trading · 3 live strategies · 0 open bets" in kpi and "Real money · main account" in kpi, kpi)
         check("d. 0 open bets: says so, quietly", "No open bets right now." in p.inner_text("#sec-pos") and p.locator("#sec-pos .rows").count() == 0)
         check("d. 24 h of equity: the Equity curve, no range chips, 'last 24 h', the balance now",
@@ -549,6 +587,12 @@ def run_browser(url):
         dmap = dict((d, x) for d, x in j["days"])
         check("e. calendar opens on the latest month, today ringed", p.inner_text("#calMonth").upper() == tday.strftime("%B %Y").upper()
               and p.locator("#sec-cal .cd.today").count() == 1, p.inner_text("#calMonth"))
+        wds = [x.inner_text() for x in p.locator("#sec-cal .wd").all()]
+        mon0 = tday - dt.timedelta(days=tday.weekday())
+        wk = sum(x for d, x in dmap.items() if mon0.isoformat() <= d <= tday.isoformat() and d[:7] == tday.isoformat()[:7])
+        row = p.evaluate("""(k) => { const c = document.querySelector(`#sec-cal .cd[data-v='${k}']`); let n = c; while (n && !n.classList.contains('cw')) n = n.nextElementSibling; return n ? n.textContent : null; }""", tday.isoformat())
+        check("e. calendar weeks start on Monday (the bot's week): this row's total is this week's days in the month",
+              wds[:7] == ["M", "T", "W", "T", "F", "S", "S"] and row is not None and abs(money("$" + row.replace("+", "").replace("k", "")) - abs(wk)) < 0.06 * max(1, abs(wk)) if abs(wk) < 1000 else True, (wds, row, wk))
         p.click("#sec-cal [aria-label='Previous month']")
         pm = tday.replace(day=1) - dt.timedelta(days=1)
         in_pm = {d: x for d, x in dmap.items() if d.startswith(pm.strftime("%Y-%m"))}
@@ -676,10 +720,15 @@ def run_browser(url):
             p.set_viewport_size({"width": wdt, "height": 844})
             for name, payload in (("wide", wide(time.time(), long_text=True)), ("real bot", realbot(time.time())[0])):
                 open_("ok", payload)
-                p.evaluate("document.fonts.ready.then(() => true)")              # measured with the final fonts (the page re-fits then)
-                if FONTS and wdt == 375 and name == "wide":
-                    check("i. Jarvis's fonts in use: Orbitron for numbers, Rajdhani for text",
-                          p.evaluate("document.fonts.check('700 15px Orbitron') && document.fonts.check('500 16px Rajdhani')"))
+                if FONTS:                                                       # measured with the final fonts (the page re-fits then)
+                    try:
+                        p.wait_for_function("document.fonts.check('700 15px Orbitron') && document.fonts.check('500 16px Rajdhani')", timeout=6000)
+                        fin = True
+                    except Exception:
+                        fin = False
+                    if wdt == 375 and name == "wide":
+                        check("i. Jarvis's fonts in use (from the worker's saved bytes): Orbitron for numbers, Rajdhani for text", fin)
+                p.evaluate("document.fonts.ready.then(() => true)")
                 if p.locator("#posList > li.pos").count():
                     p.click("#posList > li >> nth=0 >> summary")
                 m = p.evaluate("""() => {
@@ -698,7 +747,116 @@ def run_browser(url):
                 shot(p, f"8_{name.replace(' ', '')}_{wdt}")
         check("j. no page errors", not errs, errs)
         check("j. no section failed and no script error in the console", not cons, cons[:5])
+        check("j. no failed same-site request (nothing missing on the site)", not bad, bad[:5])
+        check("j. the page never asks for a font file itself (no 404 while Jarvis's fonts are not on the site)", not fontreq, fontreq[:5])
+        part_k(br, url, tmp)
         br.close()
+
+
+def part_k(br, url, tmp):
+    """The service worker: offline, a 404 site, a slow site, no saved copy, an update, Jarvis's fonts."""
+    page_url = url + "kalshi/"
+    kdir = os.path.join(tmp, "nq-dashboard", "kalshi")
+    ver = re.search(r"kalshi\.js\?v=(\w+)", open(os.path.join(KS, "index.html"), encoding="utf-8").read()).group(1)
+    ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2)
+    ctx.route("https://raw.githubusercontent.com/**", feed)
+    ctx.route("https://api.github.com/**", feed)
+    q = ctx.new_page()
+    errs, bad, fontreq = [], [], []
+    q.on("pageerror", lambda e: errs.append(str(e)))
+    q.on("console", lambda m: errs.append(m.text) if m.type == "error" and SITE["mode"] == "ok" and not SITE["slow"] else None)
+    q.on("response", lambda r: bad.append((r.status, r.url)) if r.status >= 400 and "127.0.0.1" in r.url and SITE["mode"] == "ok" else None)
+    q.on("request", lambda r: fontreq.append(r.url) if ".woff" in r.url else None)
+    pg = lambda: q.evaluate("document.title === 'Kalshi' && !!document.getElementById('body')")  # noqa: E731
+
+    def until(js, timeout=10000):
+        try:
+            q.wait_for_function(js, timeout=timeout)
+            return True
+        except Exception:
+            return False
+    allc = "(async () => { const o = {}; for (const k of await caches.keys()) o[k] = (await (await caches.open(k)).keys()).map((r) => r.url); return o; })()"
+    FEED["mode"], FEED["j"] = "ok", realbot(time.time())[0]
+    SITE.update(mode="ok", slow=0.0)
+    q.goto(page_url)
+    ready(q)
+    reg = q.evaluate("navigator.serviceWorker.ready.then((r) => [r.scope, r.active ? r.active.state : ''])")
+    check("k. the page registers kalshi/sw.js for its own folder", reg[0].endswith("/nq-dashboard/kalshi/") and reg[1] in ("activating", "activated"), reg)
+    until("caches.open('kalshi-v1').then((c) => c.keys()).then((k) => k.length >= 4)")
+    c = q.evaluate(allc)
+    urls = c.get("kalshi-v1", [])
+    shell = all(any(u.endswith(x) for u in urls) for x in ("/kalshi/", "/kalshi/index.html", f"/kalshi/kalshi.css?v={ver}", f"/kalshi/kalshi.js?v={ver}"))
+    check("k. its own cache 'kalshi-v1' holds the page, its style and its script", list(c) == ["kalshi-v1"] and shell, c)
+    fonts = sorted(u.rsplit("/", 1)[1] for u in urls if u.endswith(".woff2"))
+    if FONTS:
+        check("k. Jarvis's fonts on the site: the worker saves the three it needs", fonts == ["orbitron.woff2", "rajdhani-500.woff2", "rajdhani-600.woff2"], fonts)
+    else:
+        check("k. Jarvis's fonts not on the site yet: nothing saved, nothing asked by the page, no error", fonts == [] and not fontreq and not errs, (fonts, fontreq, errs))
+    q.reload()
+    ready(q)
+    check("k. the next open is run by the worker", q.evaluate("!!navigator.serviceWorker.controller"))
+    if FONTS:
+        check("k. the fonts come from the saved bytes: Orbitron and Rajdhani in use",
+              until("document.fonts.check('700 15px Orbitron') && document.fonts.check('500 16px Rajdhani')", 6000))
+    # offline: every connection to the site dropped, and the feed too
+    SITE["mode"], FEED["mode"] = "down", "abort"
+    q.reload()
+    ready(q)
+    check("k. offline: the page opens from its saved copy, with the numbers saved on this phone",
+          pg() and q.get_attribute("#body", "data-state") == "offline" and "$67.98" in text(q) and q.locator("#sec-kpi").count() == 1)
+    shot(q, "k1_offline")
+    # a 404 site
+    SITE["mode"], FEED["mode"] = "404", "ok"
+    q.reload()
+    ready(q)
+    check("k. a 404 site (GitHub's 'Site not found'): the saved copy, never GitHub's page",
+          pg() and q.get_attribute("#body", "data-state") == "ok" and "$67.98" in text(q) and "Site not found" not in q.content())
+    # a slow site: the saved copy within NAV_WAIT_MS (its style and script from their copies), the late answer refreshes it
+    SITE.update(mode="ok", slow=6.0)
+    idx = os.path.join(kdir, "index.html")
+    orig = open(idx, encoding="utf-8").read()
+    open(idx, "w", encoding="utf-8").write(orig.replace("</body>", "<!-- k-late -->\n</body>"))
+    t0 = time.time()
+    q.reload(wait_until="commit")
+    drawn = until("document.title === 'Kalshi' && !!document.getElementById('body') && document.getElementById('body').getAttribute('data-state') === 'ok'", 15000)
+    took = time.time() - t0
+    check(f"k. a slow site (6 s): the saved copy is drawn in under 5 s ({took:.1f} s), style and script from their copies", drawn and took < 5.0, took)
+    check("k. the late answer still refreshes the saved copy",
+          until("caches.open('kalshi-v1').then((c) => c.match(location.href)).then((r) => r ? r.text() : '').then((t) => t.indexOf('k-late') >= 0)", 12000))
+    open(idx, "w", encoding="utf-8").write(orig)
+    SITE["slow"] = 0.0
+    q.wait_for_timeout(300)
+    # no saved copy and offline: a small dark page with Retry
+    q.evaluate("caches.delete('kalshi-v1')")
+    SITE["mode"] = "down"
+    q.reload(wait_until="commit")
+    retry = until("!!document.querySelector('button') && /Retry/.test(document.body.innerText)", 10000)
+    bg = q.evaluate("getComputedStyle(document.body).backgroundColor") if retry else ""
+    check("k. offline with no saved copy: a small dark page with Retry, never a browser error or a white screen",
+          retry and "can’t reach the internet" in q.inner_text("body") and bg == "rgb(0, 0, 0)", (retry, bg))
+    shot(q, "k2_retry")
+    SITE["mode"] = "ok"
+    q.click("text=Retry")
+    back = until("document.title === 'Kalshi' && !!document.getElementById('body') && !!document.getElementById('refresh')", 10000)
+    if back:
+        ready(q)
+    check("k. Retry once back online: the page again", back and q.get_attribute("#body", "data-state") == "ok")
+    # an update (a new cache name): only the old 'kalshi-*' copy goes, never another app's cache
+    until("caches.open('kalshi-v1').then((c) => c.keys()).then((k) => k.length >= 3)")
+    q.evaluate("Promise.all([caches.open('jarvis-v3').then((c) => c.put('/x-jarvis', new Response('j'))),"
+               " caches.open('le-public-x').then((c) => c.put('/x-zenith', new Response('z')))]).then(() => true)")
+    swp = os.path.join(kdir, "sw.js")
+    sw0 = open(swp, encoding="utf-8").read()
+    open(swp, "w", encoding="utf-8").write(sw0.replace("const CACHE = 'kalshi-v1';", "const CACHE = 'kalshi-v2';"))
+    q.evaluate("navigator.serviceWorker.getRegistration().then((r) => r.update()).then(() => true)")
+    upd = until("caches.keys().then((k) => k.indexOf('kalshi-v2') >= 0 && k.indexOf('kalshi-v1') < 0)", 15000)
+    keys = q.evaluate("caches.keys()")
+    check("k. an update: the old 'kalshi-v1' goes, Jarvis's and Zenith's caches stay", upd and "jarvis-v3" in keys and "le-public-x" in keys, keys)
+    open(swp, "w", encoding="utf-8").write(sw0)
+    c = q.evaluate(allc)
+    check("k. kalshi.json never cached (the feed is cross-origin and left alone)", not any("kalshi.json" in u for v in c.values() for u in v), c)
+    check("k. no page or console errors, no failed same-site requests in the normal runs", not errs and not bad, (errs[:3], bad[:3]))
+    ctx.close()
 
 
 def main():
@@ -706,7 +864,7 @@ def main():
     tmp = site(tempfile.mkdtemp(prefix="le_kalshi_page_"))
     srv = serve(tmp)
     try:
-        run_browser(f"http://127.0.0.1:{srv.server_address[1]}/nq-dashboard/")
+        run_browser(f"http://127.0.0.1:{srv.server_address[1]}/nq-dashboard/", tmp)
     finally:
         srv.shutdown()
         shutil.rmtree(tmp, ignore_errors=True)

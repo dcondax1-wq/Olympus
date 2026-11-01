@@ -3,13 +3,9 @@
    tick, Orbitron for labels and numbers, Rajdhani for text. Theme from Jarvis's localStorage 'jtheme' (eclipse default,
    the reactor family -> reactor), set on <html data-theme> before paint. Green / red only for money.
    Safari 16 safe: no CSS nesting, no container queries, no color-mix; every animation sits behind prefers-reduced-motion. */
-/* the fonts Jarvis self-hosts (tools/web_public/jarvis/: orbitron.woff2 variable 500-800, rajdhani-400..700.woff2); system fallbacks */
-@font-face { font-family: "Orbitron"; src: url("../jarvis/orbitron.woff2") format("woff2"); font-weight: 500 800; font-style: normal; font-display: swap; }
-@font-face { font-family: "Rajdhani"; src: url("../jarvis/rajdhani-400.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
-@font-face { font-family: "Rajdhani"; src: url("../jarvis/rajdhani-500.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
-@font-face { font-family: "Rajdhani"; src: url("../jarvis/rajdhani-600.woff2") format("woff2"); font-weight: 600; font-style: normal; font-display: swap; }
-@font-face { font-family: "Rajdhani"; src: url("../jarvis/rajdhani-700.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
-
+/* Fonts: Orbitron and Rajdhani are Jarvis's own files (../jarvis/orbitron.woff2, rajdhani-500.woff2, rajdhani-600.woff2). They are
+   not declared here: kalshi.js builds them from the bytes the service worker saved (sw.js), so this page never asks for a font
+   that is not on the site yet (no 404, no console error); until then the system fallbacks below are used. */
 :root, :root[data-theme="eclipse"] {
   --bg: #000; --bg2: #0b0a10; --pr: 12,10,20; --txt: #ece9f2; --mut: #8a8499; --dim: #221b2e; --dim2: #3b2a5c; --dim3: #4c2f86;
   --c: #a855f7; --c2: #7c3aed; --c3: #c084fc; --cr: 168,85,247; --cr2: 124,58,237; --tint: #e9ddff;

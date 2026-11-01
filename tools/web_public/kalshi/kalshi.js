@@ -243,12 +243,15 @@
     const tt = v.tr.filter((t) => { const x = parseT(t.t); return x && dayKey(x) === today; });
     const whole = v.tr.length < TR_CAP || v.tr.some((t) => { const x = parseT(t.t); return x && dayKey(x) < today; });
     const tw = tt.filter((t) => num(t.pnl) > 0.005).length, tl = tt.filter((t) => num(t.pnl) < -0.005).length;
-    const kp = (lab, val, extra) => {
-      const x = num(val), base = bal != null && x != null ? bal - x : null, p = base && base > 0 ? pct(x / base, true) : '';
+    // all time: the strategies' own W / L totals; no % there (deposits and withdrawals make the start unknown)
+    let aw = 0, al = 0, ok = false;
+    v.strat.forEach((s) => { const w = num(s.wins), l = num(s.losses); if (w != null && l != null) { aw += w; al += l; ok = true; } });
+    const kp = (lab, val, extra, withPct) => {
+      const x = num(val), base = bal != null && x != null ? bal - x : null, p = withPct && base && base > 0 ? pct(x / base, true) : '';
       return `<div><span class="lab">${lab}</span><strong class="fit ${cls(x)}">${esc(usd(x, true))}</strong>${[extra, p].filter(Boolean).map((t) => `<em>${esc(t)}</em>`).join('')}</div>`;
     };
     return `<section class="card hero" id="sec-kpi"><div class="bal"><div><span class="lab">${esc(k.name ? String(k.name).slice(0, 40) : 'Balance')}${k.name ? ' · balance' : ''}</span><strong class="fit">${esc(usd(bal))}</strong></div></div>`
-      + `<div class="kpis">${kp('Today', k.today_pnl, whole && tw + tl ? `${tw}W ${tl}L` : '')}${kp('This week', k.week_pnl)}${kp('All time', k.total_pnl)}</div>`
+      + `<div class="kpis">${kp('Today', k.today_pnl, whole && tw + tl ? `${tw}W ${tl}L` : '', true)}${kp('This week', k.week_pnl, '', true)}${kp('All time', k.total_pnl, ok && aw + al ? `${fmtN(aw)}W ${fmtN(al)}L` : '', false)}</div>`
       + (k.status ? `<p class="status">${esc(k.status)}</p>` : '') + (k.note ? `<p class="muted">${esc(k.note)}</p>` : '') + '</section>';
   }
 
@@ -390,14 +393,14 @@
     const firstM = v.days[0][0].slice(0, 7), lastM = v.days[v.days.length - 1][0].slice(0, 7), maxM = today.slice(0, 7) > lastM ? today.slice(0, 7) : lastM;
     if (!S.cal || S.cal < firstM || S.cal > maxM) S.cal = lastM;
     const y = +S.cal.slice(0, 4), m = +S.cal.slice(5, 7);
-    const dow = new Date(Date.UTC(y, m - 1, 1)).getUTCDay(), nd = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    const dow = (new Date(Date.UTC(y, m - 1, 1)).getUTCDay() + 6) % 7, nd = new Date(Date.UTC(y, m, 0)).getUTCDate();   // Monday first, as the bot's weeks
     const key = (d) => `${S.cal}-${String(d).padStart(2, '0')}`;
     let mx = 0, tot = 0, g = 0, r = 0, n = 0;
     for (let d = 1; d <= nd; d++) {
       const x = map.get(key(d));
       if (x != null) { mx = Math.max(mx, Math.abs(x)); tot += x; n++; if (x > 0.005) g++; else if (x < -0.005) r++; }
     }
-    const cells = ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((c) => `<span class="wd" aria-hidden="true">${c}</span>`);
+    const cells = ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((c) => `<span class="wd" aria-hidden="true">${c}</span>`);
     cells.push('<span class="wd" title="Week total">WK</span>');
     for (let w = 0; w < Math.ceil((dow + nd) / 7); w++) {
       let wt = 0, wn = 0;
@@ -712,6 +715,37 @@
     try { navigator.clipboard.writeText(PASTE).then(() => done(true), pick); } catch (_) { pick(); }
   }
 
+  // ------------------------------------------------------------------ fonts + offline
+  // Jarvis's fonts, built from the bytes our service worker saved (sw.js fetches them quietly): this page never requests a font,
+  // so one not on the site yet cannot make a 404 here. System fonts until they are saved.
+  const FONT_FILES = [['Orbitron', '../jarvis/orbitron.woff2', '500 800'], ['Rajdhani', '../jarvis/rajdhani-500.woff2', '500'],
+    ['Rajdhani', '../jarvis/rajdhani-600.woff2', '600 700']];
+  const fontsIn = new Set();
+  async function fonts() {
+    if (!window.caches || typeof FontFace !== 'function' || !document.fonts || fontsIn.size === FONT_FILES.length) return;
+    let added = 0;
+    for (const [fam, path, w] of FONT_FILES) {
+      if (fontsIn.has(path)) continue;
+      try {
+        const hit = await caches.match(new URL(path, location.href).href);
+        if (!hit) continue;
+        const f = new FontFace(fam, await hit.arrayBuffer(), { weight: w, style: 'normal' });
+        await f.load();
+        document.fonts.add(f);
+        fontsIn.add(path);
+        added += 1;
+      } catch (_) { /* a damaged file: keep the system font */ }
+    }
+    if (added) fit();
+  }
+  function offline() {                // sw.js: the page opens without a connection, never on a browser error page
+    try {
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.register('sw.js', { scope: './' }).catch(() => null);
+      navigator.serviceWorker.ready.then(() => setTimeout(fonts, 400)).catch(() => null);
+    } catch (_) { /* no service worker here */ }
+  }
+
   // ------------------------------------------------------------------ start
   theme();
   window.addEventListener('storage', (e) => { if (!e || e.key === 'jtheme' || e.key == null) theme(); });     // Jarvis changed its theme
@@ -726,4 +760,7 @@
   let rz = 0;
   window.addEventListener('resize', () => { cancelAnimationFrame(rz); rz = requestAnimationFrame(() => fit()); });
   try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fit()); } catch (_) { /* no font loading API */ }
+  fonts();
+  offline();
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') fonts(); });
 })();
