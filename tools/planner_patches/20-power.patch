@@ -1,0 +1,1054 @@
+diff --git a/planner/docs/features-power.md b/planner/docs/features-power.md
+new file mode 100644
+index 0000000..6bd347c
+--- /dev/null
++++ b/planner/docs/features-power.md
+@@ -0,0 +1,36 @@
++# Power features: Now and next, Catch up, smarter quick add, weekly review reminder
++
++Plain text for the Help sheet and README (merge by hand).
++
++## Now and next (`#now-next`)
++- **Now and next** (card on Today, tile in All tools, palette "Now and next" or "what should I do now", or the link `#now-next`): your day as one strip from 7am to 11pm (wider when you have earlier or later plans). Events and shifts in their own colors, grey stripes for travel to and from work, green for free time and a red line for now. Tap a block to open it.
++- One line says where you are: "Free now until 1pm · 3h, then Dentist at 1pm", or "Now: Outback until 10pm · next free 10:20pm".
++- **Do next** shows the 2 tasks that best fit the free time you have (**More** opens the full sheet with 5): high priority, overdue and due today first, and tasks that fit the gap before ones that do not (a task with no time estimate counts as 30 minutes). Each says why ("high priority · 2 days late · 45m · Kalshi bot"). Ideas and tasks dated later are left out.
++- On each task: the box marks it done (a repeating task puts its next one on the calendar, Undo is offered), the title opens the task, the clock starts the focus timer, and the cross hides it for 3 hours ("Not now", kept on this phone only).
++- Late in the evening the card shows tomorrow instead: "Day is done. Tomorrow starts with Electric at 7am."
++
++## Catch up (`#catch-up`)
++- When 2 or more tasks are overdue, a one-line **Catch up** card sits in Needs you now ("4 overdue tasks, the oldest 6 days late", button **Spread them**). It is also in All tools, the palette ("catch up") and the link `#catch-up`.
++- **Spread smart** places them highest priority and oldest first, each on the first of the next 7 days with room. Room is 60% of that day's free time between 7am and 10pm after shifts, events and travel, minus the tasks already planned that day, and at most 3 catch-up tasks a day. A task that does not fit anywhere is left as it is.
++- Or move them all to today, all to tomorrow, or take the date off (No date). Every task has its own picker: any of the next 7 days, No date, Mark done (not offered for repeating tasks) or Leave as is.
++- Nothing changes until **Apply**. The toast says what happened ("Caught up: 3 moved, 1 done") and **Undo** puts every task back.
++
++## Smarter quick add (Quick capture and the Today quick add box)
++- Several days at once: "gym tue thu 7am" adds a weekly event on Tuesday and Thursday. "every other tue 3pm", "yoga tuesdays 6pm" and "gym weekends 9am" work too. Without a time ("water plants mon thu") you get weekly tasks.
++- A time range or a length: "Outback fri 4-10pm", "electric 7-3:30", "standup 9:30-10 tomorrow", "study for 90 min thu 6pm", "deep work 2h tomorrow" (a task with a 2 h estimate). "noon" works as a time.
++- A title that names one of your jobs makes it that job's shift: "Outback fri 4-10pm" adds an Outback Steakhouse shift (so Hours, Earnings, Payday and travel count it). Every other event gets your last used type, but never a job's type, so a gym block can never count as work (the same rule as Find a time).
++- More dates: "nov 15", "5th of december", "on the 5th", "next week" (Monday), "this weekend", "end of month", "end of week", "in 2 weeks", "in a month", plus "monthly", "every other week" and "yearly" repeats.
++- Money due: "pay MFFU 91.80 on the 5th" becomes the task "Pay MFFU $91.80" on the 5th, with a one-tap **Monthly bill on the 5th** instead. "car insurance 180 due the 20th" works the same way. With a repeat it becomes a bill straight away: "netflix 15.49 monthly on the 12th", "rent 1200 on the 1st every month", "pay gym 30 every week fri". Bills go into Bills and the calendar like the ones you add there.
++- The preview always says what will be added before you press Add. Everything the app already understood is unchanged: "call Sam fri 3pm #nq", "gym tomorrow 7am", "paid $40 gas", "got 85 tips", "water 24", "ate 2 eggs", "note: ...", "idea: ..." go to the same place as before. "pay $40 gas" is still money spent today. If the guess is wrong, **Change** hands the sentence back to the normal reader.
++
++## Weekly review reminder
++- From Friday 3pm to Monday night a one-line **Weekly review** card sits on Today until that week's review is written ("Nov 1 to 7 · 2 weeks in a row. Wins, fixes and next week's top 3, in 3 minutes"). **Start** opens the Review page on the right week (the one holding the most recent Friday). Writing anything in it (a win, a fix, a priority, or creating the priority tasks) counts as done, and the card goes away.
++- The run of weeks in a row counts back from that week (or from the week before, while this one is still open), so the streak is never lost before Monday is over.
++
++## Notes for the lead (not for the Help sheet)
++- Code: `planner/ext-power.js`, loaded by one `<script src="ext-power.js">` in `<head>`. It waits for the `planner:ready` event fired by the **EXT API** block in `index.html` (`window.PlannerAPI`: the app's own helpers, read-only access to `S` through a getter). Nothing else in `index.html` changed.
++- Data: no new synced collection and no new field in `planner.v1`. Changes to tasks, events and bills go through `commit()` after `snapshot()`, exactly like the app's own sheets (sync stamps, tombstones and Undo all work). The only new key is the device-only `planner.power.skip` ({ task id: hidden until ms }).
++- Today cards `pwnow` (tier Today, above Schedule), `pwreview` (tier Today, Friday 3pm to Monday only) and `pwcatch` (tier Needs you now, soft label "Overdue", so the "N things need you" count is unchanged) are added to `TO_CARDS`, so Customize Today can hide and move them. Tiles `pwnow` and `pwcatch` (group Calendar) in `HB_TOOLS`, commands `px-now` and `px-catch` in `PK_CMDS`.
++- Pure helpers on `window.__pw`: `review(today)` ({ ws, done, streak }), `parse(text, today)` (null = left to the app's `qcParse` / `addTask`), `label`, `spread(tasks, days, perDay)`, `pick(tasks, { today, minutes, skip, now })`, `day(key, nowMin)`, `caps(today, n)`, `rangeOf(text)`.
++- The claude.ai copy built by `build_hosted.py` does not load the file unless `ext-power.js` is published next to the page; without it the app runs exactly as before.
++- Tests: `planner/tests/power.test.js` (PORT env, default 8790).
+diff --git a/planner/ext-power.js b/planner/ext-power.js
+new file mode 100644
+index 0000000..f3791c0
+--- /dev/null
++++ b/planner/ext-power.js
+@@ -0,0 +1,667 @@
++// ===== POWER: Now and next, Catch up, smarter quick add (ext-power.js; docs/features-power.md; tests/power.test.js) =====
++// Loaded in <head>, before the app. It waits for the app's 'planner:ready' event (window.PlannerAPI, see EXT API in index.html), then adds:
++//  - Now and next (Today card, #now-next): today as one strip (events, shifts, travel, free time, a "now" line) and the 3 tasks that
++//    best fit the free time you have right now. It only reads; the task rows use the app's own done / details / focus actions.
++//  - Catch up (Today card when 2+ tasks are overdue, #catch-up): spreads overdue tasks over the free time of the next 7 days. You see
++//    the plan first and can change any task; Apply saves through commit() after snapshot(), so the toast offers Undo.
++//  - Smarter quick add (Quick capture and the Today quick add): "gym tue thu 7am", "Outback fri 4-10pm", "deep work 2h tomorrow",
++//    "renew passport nov 15", "pay MFFU 91.80 on the 5th", "netflix 15.49 monthly on the 12th". Phrases the app already reads are left to it.
++// Own data: only the device key planner.power.skip ("Not now" on a suggestion, kept 3 hours). Nothing existing is renamed, migrated or removed.
++(function () {
++  'use strict';
++  const SKIP_KEY = 'planner.power.skip', SKIP_MS = 3 * 3600e3;
++  const DAY_FROM = 7 * 60, DAY_TO = 23 * 60;
++  const CU_DAYS = 7, CU_SHARE = 0.6, CU_PER_DAY = 3, CU_MIN = 2;
++  const HASHES = { 'now-next': () => nnOpen(), 'catch-up': () => cuOpen() };
++  let A = null, wanted = '';
++
++  // ---------- deep links: read before the app's router clears the address ----------
++  const readHash = () => { try { const h = decodeURIComponent(location.hash.replace(/^#\/?/, '')).trim(); return Object.prototype.hasOwnProperty.call(HASHES, h) ? h : ''; } catch (e) { return ''; } };
++  wanted = readHash();
++  addEventListener('hashchange', () => { const h = readHash(); if (!h) return; if (A) setTimeout(() => runHash(h), 0); else wanted = h; });
++  function runHash(h) { try { A.goToday(); HASHES[h](); } catch (e) { console.error('Planner power link:', e); } }
++
++  // ---------- small date and text helpers (local time, keys YYYY-MM-DD, minutes since midnight) ----------
++  const p2 = (n) => String(n).padStart(2, '0');
++  const kOf = (d) => `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
++  const dOf = (k) => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); };
++  const plus = (k, n) => { const d = dOf(k); d.setDate(d.getDate() + n); return kOf(d); };
++  const between = (a, b) => Math.round((dOf(b) - dOf(a)) / 864e5);
++  const wdOf = (k) => dOf(k).getDay();
++  const dim = (y, m0) => new Date(y, m0 + 1, 0).getDate();
++  const toHM = (m) => `${p2(Math.floor(m / 60) % 24)}:${p2(m % 60)}`;
++  const toM = (s) => { const [h, m] = String(s).split(':').map(Number); return h * 60 + (m || 0); };
++  const nowMin = () => { const n = new Date(); return n.getHours() * 60 + n.getMinutes(); };
++  const today = () => kOf(new Date());
++  const WDN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
++  const MON3 = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
++  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
++  const cap1 = (s) => { s = String(s || '').trim(); return s ? s[0].toUpperCase() + s.slice(1) : s; };
++  const usd = (n) => '$' + (Math.round(n * 100) / 100).toLocaleString('en-US', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 });
++  const dur = (m) => (m >= 60 ? `${Math.floor(m / 60)}h${m % 60 ? ' ' + (m % 60) + 'm' : ''}` : `${m}m`);
++  const t12 = (m) => { m = Math.min(m, 1439); let h = Math.floor(m / 60); const mm = m % 60, ap = h < 12 ? 'am' : 'pm'; h = h % 12 || 12; return (mm ? `${h}:${p2(mm)}` : `${h}`) + ap; };
++  const ord = (n) => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th');
++  const dateTxt = (k) => { const d = dOf(k); return `${WDN[d.getDay()]}, ${MON3[d.getMonth()]} ${d.getDate()}`; };
++  const relDay = (k, t) => (k === t ? 'today' : k === plus(t, 1) ? 'tomorrow' : dateTxt(k));
++  const andList = (a) => (a.length <= 1 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]);
++  const ICON_CLOCK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg>';
++  const skipGet = () => { try { const v = JSON.parse(localStorage.getItem(SKIP_KEY)); return v && typeof v === 'object' ? v : {}; } catch (e) { return {}; } };
++  function skipSet(id) {
++    const now = Date.now(), v = skipGet(), out = {};
++    Object.keys(v).forEach((k) => { if (+v[k] > now) out[k] = v[k]; });
++    out[id] = now + SKIP_MS;
++    try { localStorage.setItem(SKIP_KEY, JSON.stringify(out)); } catch (e) { /* convenience only */ }
++  }
++
++  // =====================================================================================================================
++  // Smarter quick add. pwParse(text, today) returns null when the app's own reader should handle the sentence, otherwise a plan:
++  //  { kind: 'event' | 'events' | 'task' | 'tasks' | 'allday' | 'pay' | 'bill', ... }. Pure apart from the app's parseWhen / parseTag.
++  // =====================================================================================================================
++  const W = '(?:sun(?:days?|s)?|mon(?:days?|s)?|tue(?:s|sdays?)?|wed(?:s|nesdays?)?|thu(?:rs?|rsdays?)?|fri(?:days?|s)?|sat(?:urdays?|s)?)';
++  const END = '(?=\\s|$|[,.;!?])';
++  const LIST_RE = new RegExp(`(^|\\s)((?:every|each|on)\\s+)?(?:(other)\\s+)?(${W}(?:\\s*(?:,|&|/|\\+|\\band\\b|\\s)\\s*${W})+)${END}`, 'i');
++  const EVERY_RE = new RegExp(`(^|\\s)(?:every|each)\\s+(?:(other)\\s+)?(${W})${END}`, 'i');
++  const PLURAL_RE = new RegExp(`(^|\\s)(?:on\\s+)?(sundays|mondays|tuesdays|wednesdays|thursdays|fridays|saturdays)${END}`, 'i');
++  const WEEKENDS_RE = new RegExp(`(^|\\s)(?:(?:every|each|on)\\s+weekends?|weekends)${END}`, 'i');
++  const RANGE_RE = new RegExp(`(^|\\s)(?:(from)\\s+)?(\\d{1,2})(?::([0-5]\\d))?\\s*(am|pm)?\\s*(?:-|–|—|\\bto\\b|\\buntil\\b|\\btill\\b|\\btil\\b)\\s*(\\d{1,2})(?::([0-5]\\d))?\\s*(am|pm)?${END}`, 'i');
++  const DUR_FOR = new RegExp(`(^|\\s)for\\s+(?:(an?|one)\\s+hour|(half)\\s+an?\\s+hour|(\\d+(?:\\.\\d+)?)\\s*(?:hours?|hrs?|h)(?:\\s*(\\d{1,2})\\s*(?:m|mins?|minutes?)?)?|(\\d{1,3})\\s*(?:m|mins?|minutes?))${END}`, 'i');
++  const DUR_BARE = new RegExp(`(^|\\s)(?:(\\d+(?:\\.\\d+)?)\\s*(?:hours?|hrs?|h)(?:\\s*(\\d{1,2})\\s*(?:m|mins?|minutes?)?)?|(\\d{1,3})\\s*(?:mins?|minutes?))${END}`, 'i');
++  const NOON_RE = new RegExp(`(^|\\s)(?:at\\s+)?noon${END}`, 'i');
++  const MONTH = '(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sept?(?:ember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)';
++  const MD_RE = new RegExp(`(^|\\s)(?:on\\s+|by\\s+)?${MONTH}\\.?\\s+(\\d{1,2})(?:st|nd|rd|th)?(?:,?\\s+(20\\d\\d))?${END}`, 'i');
++  const DM_RE = new RegExp(`(^|\\s)(?:on\\s+|by\\s+)?(?:the\\s+)?(\\d{1,2})(?:st|nd|rd|th)?\\s+(?:of\\s+)?${MONTH}(?:,?\\s+(20\\d\\d))?${END}`, 'i');
++  const ORD_RE = new RegExp(`(^|\\s)(?:(?:on|by)\\s+(?:the\\s+)?|the\\s+)(\\d{1,2})(st|nd|rd|th)(?:\\s+of\\s+(?:the|this|every|each)\\s+month)?${END}`, 'i');
++  const ORD_END_RE = /(^|\s)(\d{1,2})(st|nd|rd|th)\s*$/i;
++  const NEXTWK_RE = new RegExp(`(^|\\s)next\\s+week${END}`, 'i');
++  const WKEND_RE = new RegExp(`(^|\\s)(this|next|on\\s+the|at\\s+the|over\\s+the)\\s+weekend${END}`, 'i');
++  const EOM_RE = new RegExp(`(^|\\s)(?:by\\s+)?(?:the\\s+)?(?:end\\s+of\\s+(?:the\\s+|this\\s+)?month|eom)${END}`, 'i');
++  const EOW_RE = new RegExp(`(^|\\s)(?:by\\s+)?(?:the\\s+)?(?:end\\s+of\\s+(?:the\\s+|this\\s+)?week|eow)${END}`, 'i');
++  const INWK_RE = new RegExp(`(^|\\s)in\\s+(a|one|two|three|four|\\d{1,2})\\s+weeks?${END}`, 'i');
++  const INMO_RE = new RegExp(`(^|\\s)in\\s+(a|one|two|three|\\d{1,2})\\s+months?${END}`, 'i');
++  const REP_RE = [
++    [new RegExp(`(^|\\s)(?:every\\s+other\\s+week|every\\s+(?:2|two)\\s+weeks|biweekly|fortnightly)${END}`, 'i'), 'biweekly'],
++    [new RegExp(`(^|\\s)(?:every\\s+month|each\\s+month|monthly)${END}`, 'i'), 'monthly'],
++    [new RegExp(`(^|\\s)(?:every\\s+year|each\\s+year|yearly|annually)${END}`, 'i'), 'yearly'],
++  ];
++  const BILL_REP = [
++    [/(^|\s)(?:every\s+other\s+week|every\s+(?:2|two)\s+weeks|biweekly|fortnightly)(?=\s|$|[,.;])/i, 'biweekly'],
++    [/(^|\s)(?:every\s+(?:3|three)\s+months|quarterly)(?=\s|$|[,.;])/i, 'quarterly'],
++    [/(^|\s)(?:every\s+month|each\s+month|monthly|a\s+month|per\s+month)(?=\s|$|[,.;])|\/\s*mo(?:nth)?\b/i, 'monthly'],
++    [/(^|\s)(?:every\s+week|each\s+week|weekly|a\s+week|per\s+week)(?=\s|$|[,.;])|\/\s*wk\b/i, 'weekly'],
++    [/(^|\s)(?:every\s+year|each\s+year|yearly|annually|a\s+year|per\s+year)(?=\s|$|[,.;])|\/\s*yr\b/i, 'yearly'],
++  ];
++  const AMT = '\\$?(\\d{1,3}(?:,\\d{3})+(?:\\.\\d{1,2})?|\\d+(?:\\.\\d{1,2})?)';
++  const PAY_NAME_FIRST = new RegExp(`^(?:pay|paying)\\s+(?![$\\d])(.+?)\\s+${AMT}(?=\\s|$)(.*)$`, 'i');
++  const PAY_AMT_FIRST = new RegExp(`^(?:pay|paying)\\s+${AMT}\\s+(?:to\\s+|for\\s+)?(.+)$`, 'i');
++  const DUE_RE = new RegExp(`^(.+?)\\s+${AMT}\\s+(?:is\\s+)?due\\b(.*)$`, 'i');
++  const GEN_RE = new RegExp(`^(.+?)\\s+${AMT}\\s+(.+)$`, 'i');
++  const MONEY_WORD = /\b(bill|bills|subscription|sub|membership|rent|insurance|payment|fee|fees|loan|premium|plan)\b/i;
++  // The app's own capture reader owns these (same tests as its qcParse): spending, money in, water, meals, notes and ideas.
++  const NOT_MINE = [/^(?:spent|spend|paid|bought)\s+\$?\d/i, /^\$\d/, /^(?:got|get|received|made|earned|earn|collected)\s+(?:paid\s+)?\$?\d/i, /^(?:drank|drink)\b/i, /^water\s+\d/i,
++    /^had\s+(?:an?\s+|\d+(?:\.\d+)?\s*)?(?:oz|ounces?|cups?|glass(?:es)?|bottles?)\b/i, /^\d+(?:\.\d+)?\s*(?:oz|ounces?)\s+(?:of\s+)?water$/i, /^(?:ate|eat)\b/i,
++    /^(?:log|logged)\s+(?:an?\s+)?(?:meal|breakfast|lunch|dinner|snack)\b/i, /^(?:note|idea)\s*[:\-]/i];
++  const WD_IDX = { sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6 };
++  const NUMW = { a: 1, one: 1, two: 2, three: 3, four: 4 };
++
++  const wdList = (txt) => [...new Set((String(txt).match(new RegExp(W, 'gi')) || []).map((w) => WD_IDX[w.slice(0, 3).toLowerCase()]).filter((x) => x != null))];
++  const monthIdx = (m) => MON3.findIndex((x) => x.toLowerCase() === m.slice(0, 3).toLowerCase());
++  // next date with day-of-month n, from t (this month if still ahead, else next month; a day past a short month's end falls on its last day)
++  function nextDom(t, n) {
++    const d = dOf(t);
++    for (let i = 0; i < 2; i++) {
++      const y = d.getFullYear(), m = d.getMonth() + i, yy = y + Math.floor(m / 12), mm = m % 12, k = `${yy}-${p2(mm + 1)}-${p2(Math.min(n, dim(yy, mm)))}`;
++      if (k >= t) return k;
++    }
++    return t;
++  }
++  function mdDate(t, m0, day, year) {
++    if (m0 < 0 || day < 1) return '';
++    let y = year ? +year : +t.slice(0, 4);
++    if (day > dim(y, m0)) return '';
++    let k = `${y}-${p2(m0 + 1)}-${p2(day)}`;
++    if (!year && k < t) { y += 1; if (day > dim(y, m0)) return ''; k = `${y}-${p2(m0 + 1)}-${p2(day)}`; }
++    return k;
++  }
++  // next date with weekday w; today counts when the time (if any) is still ahead
++  function nextWd(t, w, start, nm) {
++    if (wdOf(t) === w && (!start || toM(start) > (nm == null ? nowMin() : nm))) return t;
++    return plus(t, ((w - wdOf(t) + 7) % 7) || 7);
++  }
++  function rangeOf(m) {
++    const h1 = +m[3], mi1 = +(m[4] || 0), h2 = +m[6], mi2 = +(m[7] || 0), ap1 = (m[5] || '').toLowerCase(), ap2 = (m[8] || '').toLowerCase();
++    if (!ap1 && !ap2 && m[4] == null && m[7] == null && !m[2]) return null; // "4-10" alone could be anything
++    if (h1 > 23 || h2 > 24 || (ap1 && h1 > 12) || (ap2 && h2 > 12)) return null;
++    const h24 = (h, ap) => (ap === 'pm' ? (h % 12) + 12 : ap === 'am' ? h % 12 : h), flip = (ap) => (ap === 'pm' ? 'am' : 'pm');
++    let s, e;
++    if (h1 > 12 || h2 > 12 || h1 === 0) { s = h1 * 60 + mi1; e = h2 * 60 + mi2; }
++    else if (ap1 && ap2) { s = h24(h1, ap1) * 60 + mi1; e = h24(h2, ap2) * 60 + mi2; }
++    else if (ap2) { e = h24(h2, ap2) * 60 + mi2; s = h24(h1, ap2) * 60 + mi1; if (s >= e) s = h24(h1, flip(ap2)) * 60 + mi1; }
++    else if (ap1) { s = h24(h1, ap1) * 60 + mi1; e = h24(h2, ap1) * 60 + mi2; if (e <= s) e = h24(h2, flip(ap1)) * 60 + mi2; }
++    else { const g = (h) => (h >= 1 && h <= 6 ? h + 12 : h); s = g(h1) * 60 + mi1; e = g(h2) * 60 + mi2; if (e <= s && e + 720 <= 1440) e += 720; }
++    if (e <= s) e = 1440; // runs past midnight: shown until the end of the day
++    if (s < 0 || s >= 1440) return null;
++    return { s, e: Math.min(e, 1439) };
++  }
++  function durOf(m, bare) {
++    let n;
++    if (!bare) n = m[2] ? 60 : m[3] ? 30 : m[4] ? Math.round(+m[4] * 60) + +(m[5] || 0) : +m[6];
++    else n = m[2] ? Math.round(+m[2] * 60) + +(m[3] || 0) : +m[4];
++    return n >= 5 && n <= 600 ? n : 0;
++  }
++  // Date words the app's reader does not know. Returns { date, day, text } (day = a day of the month from "the 5th").
++  function datesIn(s, t) {
++    let m, date = '', day = 0;
++    const cut = (x) => { s = s.slice(0, x.index) + ' ' + s.slice(x.index + x[0].length); };
++    if ((m = s.match(MD_RE)) && (date = mdDate(t, monthIdx(m[2]), +m[3], m[4]))) { day = +m[3]; cut(m); }
++    else if ((m = s.match(DM_RE)) && (date = mdDate(t, monthIdx(m[3]), +m[2], m[4]))) { day = +m[2]; cut(m); }
++    else if (((m = s.match(ORD_RE)) || (m = s.match(ORD_END_RE))) && +m[2] >= 1 && +m[2] <= 31) { day = +m[2]; date = nextDom(t, day); cut(m); }
++    else if ((m = s.match(NEXTWK_RE))) { date = plus(t, ((1 - wdOf(t) + 7) % 7) || 7); cut(m); }
++    else if ((m = s.match(EOM_RE))) { const d = dOf(t); date = `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(dim(d.getFullYear(), d.getMonth()))}`; cut(m); }
++    else if ((m = s.match(EOW_RE))) { const w = wdOf(t); date = plus(t, w === 6 ? 6 : w === 0 ? 5 : 5 - w); cut(m); }
++    else if ((m = s.match(WKEND_RE))) { const w = wdOf(t); date = w === 0 ? t : plus(t, 6 - w); if (/^next$/i.test(m[2])) date = plus(date, 7); cut(m); }
++    else if ((m = s.match(INWK_RE))) { date = plus(t, 7 * (NUMW[m[2].toLowerCase()] || +m[2])); cut(m); }
++    else if ((m = s.match(INMO_RE))) { const n = NUMW[m[2].toLowerCase()] || +m[2], d = dOf(t), y = d.getFullYear(), mo = d.getMonth() + n, yy = y + Math.floor(mo / 12), mm = mo % 12; date = `${yy}-${p2(mm + 1)}-${p2(Math.min(d.getDate(), dim(yy, mm)))}`; cut(m); }
++    return { date, day, text: s };
++  }
++  const tidy = (s) => { let x = String(s).replace(/\s+/g, ' ').trim(), prev; do { prev = x; x = x.replace(/^(?:on|at|from|by|for|every|each|the|and|to)\s+/i, '').replace(/\s+(?:on|at|from|by|for|every|each|the|and|to|due)$/i, '').replace(/[,;:-]+$/, '').trim(); } while (x !== prev); return x; };
++  const appWhen = (s, t) => (A ? A.parseWhen(s, t) : { title: s.replace(/\s+/g, ' ').trim(), date: '', start: '', rep: '' });
++  const roundEst = (n) => (n ? [15, 30, 45, 60, 90, 120, 180].reduce((b, x) => (Math.abs(x - n) < Math.abs(b - n) ? x : b), 15) : 0);
++
++  function billRep(s) { for (const [re, f] of BILL_REP) { const m = s.match(re); if (m) return { freq: f, text: s.slice(0, m.index) + ' ' + s.slice(m.index + m[0].length) }; } return { freq: '', text: s }; }
++  const num = (v) => +String(v).replace(/,/g, '');
++  // Money phrases. undefined = not a money phrase; null = a money phrase the app's reader keeps (e.g. "pay $40 gas" is spending today).
++  function pwMoney(raw, t, proj) {
++    let m, name = '', amt = 0, rest = '', how = '';
++    if ((m = raw.match(PAY_NAME_FIRST))) { name = m[1]; amt = num(m[2]); rest = m[3]; how = 'pay'; }
++    else if ((m = raw.match(PAY_AMT_FIRST))) { amt = num(m[1]); rest = m[2]; how = 'payamt'; }
++    else if ((m = raw.match(DUE_RE)) && (/\$|\.\d/.test(raw) || MONEY_WORD.test(m[1]))) { name = m[1]; amt = num(m[2]); rest = m[3]; how = 'due'; }
++    else if ((m = raw.match(GEN_RE)) && billRep(m[3]).freq && !/\d\s*(am|pm)\b|\d:\d\d/i.test(m[3]) && (/\$|\.\d/.test(m[2] + raw) || MONEY_WORD.test(m[1] + ' ' + m[3]))) { name = m[1]; amt = num(m[2]); rest = m[3]; how = 'gen'; }
++    else return /^pay(ing)?\b/i.test(raw) ? null : undefined;
++    if (!(amt > 0) || amt > 1e6) return how === 'gen' ? undefined : null;
++    const r = billRep(' ' + rest + ' '), d = datesIn(r.text, t);
++    let left = d.text, wd = -1, date = d.date;
++    const wm = left.match(new RegExp(`(^|\\s)(?:on\\s+|every\\s+|each\\s+)?(${W})${END}`, 'i'));
++    if (wm) { wd = wdList(wm[2])[0]; left = left.slice(0, wm.index) + ' ' + left.slice(wm.index + wm[0].length); }
++    if (!date && !r.freq) { const w = appWhen(left, t); if (w.date) { date = w.date; left = w.title; } else if (wd >= 0) { date = nextWd(t, wd); } }
++    left = tidy(left);
++    if (how === 'payamt') { name = left; left = ''; }
++    name = tidy(String(name).replace(/^(?:the|my|a|an)\s+/i, '').replace(/\s+(?:on|due|by)$/i, ''));
++    if (!/[a-z]/i.test(name)) return null;
++    const extra = left && /[a-z]/i.test(left) ? ' ' + left : '';
++    if (r.freq) {
++      const b = { kind: 'bill', name: cap1(name), amt, freq: r.freq, day: 1, dow: 0, ymd: t, proj };
++      if (r.freq === 'monthly') b.day = d.day || (date ? dOf(date).getDate() : dOf(t).getDate());
++      else if (r.freq === 'weekly') b.dow = wd >= 0 ? wd : date ? wdOf(date) : wdOf(t);
++      else b.ymd = date || (wd >= 0 ? nextWd(t, wd) : t);
++      const first = r.freq === 'monthly' ? nextDom(t, b.day) : r.freq === 'weekly' ? nextWd(t, b.dow) : b.ymd;
++      b.alt = { kind: 'pay', title: `Pay ${name} ${usd(amt)}${extra}`, date: first, amt, proj };
++      b.altLabel = 'Just once (a task)';
++      return b;
++    }
++    if (!date) return null; // "pay MFFU 91.80" with no day: the app's reader makes the same task
++    const p = { kind: 'pay', title: `Pay ${name} ${usd(amt)}${extra}`, date, amt, proj };
++    p.alt = { kind: 'bill', name: cap1(name), amt, freq: 'monthly', day: dOf(date).getDate(), dow: 0, ymd: date, proj };
++    p.altLabel = `Monthly bill on the ${ord(dOf(date).getDate())}`;
++    return p;
++  }
++
++  // Event type for a new event. A title that names one of your jobs makes it that job's shift ("Outback fri 4-10pm" = an Outback
++  // Steakhouse shift, so hours, pay and travel count it). Anything else gets your last used type but never a job, the same rule as
++  // the app's Find a time, so a gym block can never count as work.
++  function catFor(title, allDay) {
++    const S = A.S, jobs = S.jobs || [], low = String(title || '').toLowerCase().trim();
++    const job = allDay ? null : jobs.find((j) => {
++      const n = String(j.name || '').toLowerCase().trim(), first = n.split(/\s+/)[0] || '';
++      return n && S.categories.some((c) => c.id === j.id) && (low === n || low === first || low.startsWith(n + ' ') || (first.length >= 4 && low.startsWith(first + ' ')));
++    });
++    if (job) { const n = String(job.name).toLowerCase().trim(); return { cat: job.id, job, name: low === n || low === n.split(/\s+/)[0] ? job.name : '' }; }
++    const nj = S.categories.filter((c) => !jobs.some((j) => j.id === c.id));
++    return { cat: (S.categories.some((c) => c.id === S.lastCat) && !jobs.some((j) => j.id === S.lastCat) ? S.lastCat : (nj[0] || S.categories[0] || {}).id) || S.lastCat || '', job: null, name: '' };
++  }
++  function pwParse(text, t, opts) {
++    t = t || today();
++    const nm = opts && opts.nowMin != null ? opts.nowMin : nowMin();
++    let raw = String(text || '').replace(/\s+/g, ' ').trim();
++    if (!raw || raw.length > 200 || NOT_MINE.some((re) => re.test(raw))) return null;
++    let proj = '';
++    if (A && /(^|\s)#[\w-]+/.test(raw)) { const tg = A.parseTag(raw); if (tg.proj) { proj = tg.proj; raw = tg.title; } }
++    const money = pwMoney(raw, t, proj);
++    if (money !== undefined) return money;
++    let s = ' ' + raw + ' ', m, days = null, rep = '', start = '', end = '', mins = 0, date = '';
++    const claimed = [], cut = (x) => { s = s.slice(0, x.index) + ' ' + s.slice(x.index + x[0].length); };
++    if ((m = s.match(LIST_RE))) { days = wdList(m[4]); rep = m[3] ? 'biweekly' : 'weekly'; cut(m); claimed.push('days'); }
++    else if ((m = s.match(EVERY_RE))) { days = wdList(m[3]); rep = m[2] ? 'biweekly' : 'weekly'; cut(m); claimed.push('every'); }
++    else if ((m = s.match(PLURAL_RE))) { days = wdList(m[2]); rep = 'weekly'; cut(m); claimed.push('every'); }
++    else if ((m = s.match(WEEKENDS_RE))) { days = [6, 0]; rep = 'weekly'; cut(m); claimed.push('weekends'); }
++    let r;
++    if ((m = s.match(RANGE_RE)) && (r = rangeOf(m))) { start = toHM(r.s); end = toHM(r.e); cut(m); claimed.push('range'); }
++    if ((m = s.match(DUR_FOR)) && (r = durOf(m, false))) { mins = r; cut(m); claimed.push('dur'); }
++    else if ((m = s.match(DUR_BARE)) && (r = durOf(m, true))) { mins = r; cut(m); claimed.push('dur'); }
++    if (!start && (m = s.match(NOON_RE))) { start = '12:00'; cut(m); claimed.push('noon'); }
++    for (const [re, f] of REP_RE) if (!rep && (m = s.match(re))) { rep = f; cut(m); claimed.push('rep'); }
++    if (!days) { const d = datesIn(s, t); if (d.date) { date = d.date; s = d.text; claimed.push('date'); } }
++    if (!claimed.length) return null;
++    const w = appWhen(s, t);
++    const title = cap1(tidy(w.title));
++    if (!/[a-z0-9]/i.test(title)) return null;
++    if (!start && w.start) start = w.start;
++    if (!rep && w.rep) rep = w.rep;
++    if (!date && w.date && !days) date = w.date;
++    if (start && !end) end = toHM(Math.min(toM(start) + (mins || 60), 1439));
++    if (start && toM(end) <= toM(start)) end = toHM(Math.min(toM(start) + 60, 1439));
++    const base = { title, proj, start, end, rep };
++    const timed = () => { if (!A) return base; const c = catFor(title, false); return { ...base, title: c.name || title, cat: c.cat, shift: !!c.job }; };
++    const allday = () => (A ? { ...base, cat: catFor(title, true).cat } : base);
++    if (days && days.length) {
++      const items = days.map((d) => ({ date: nextWd(t, d, start, nm), wd: d })).sort((a, b) => a.date.localeCompare(b.date));
++      if (start) return { kind: 'events', ...timed(), items };
++      if (rep === 'weekly') return { kind: 'tasks', ...base, items, est: roundEst(mins) };
++      return { kind: 'allday', ...allday(), items }; // every other Tuesday without a time: a repeating all-day item
++    }
++    if (start) return { kind: 'event', ...timed(), date: date || t, rep: rep || 'none' };
++    if (rep === 'biweekly' || rep === 'monthly' || rep === 'yearly') return { kind: 'allday', ...allday(), items: [{ date: date || t }] };
++    return { kind: 'task', ...base, date, est: roundEst(mins) };
++  }
++  const repTxt = (rep, wds) => ({ daily: 'every day', weekdays: 'every weekday', weekly: wds ? 'every ' + wds : 'every week', biweekly: wds ? 'every other ' + wds : 'every 2 weeks', monthly: 'every month', yearly: 'every year' }[rep] || '');
++  function pwLabel(p, t) {
++    t = t || today();
++    const pj = p.proj && A && A.projOf(p.proj) ? ' on ' + A.projOf(p.proj).name : '';
++    const when = (x) => (x.date ? relDay(x.date, t) : 'with no date');
++    const span = p.start ? `${t12(toM(p.start))}-${t12(toM(p.end))}` : '';
++    const wds = p.items ? andList(p.items.slice().sort((a, b) => ((a.wd + 6) % 7) - ((b.wd + 6) % 7)).map((x) => WDN[x.wd != null ? x.wd : wdOf(x.date)])) : '';
++    switch (p.kind) {
++      case 'events': return `${p.items.length} repeating ${p.shift ? 'shifts' : 'events'} "${p.title}" ${repTxt(p.rep, wds)}, ${span}, starting ${relDay(p.items[0].date, t)}${pj}`.replace(/^1 repeating (shift|event)s/, 'A repeating $1');
++      case 'event': return `${p.shift ? 'Shift' : 'Event'} "${p.title}" ${when(p)}, ${span}${p.rep && p.rep !== 'none' ? ', ' + repTxt(p.rep) : ''}${pj}`;
++      case 'tasks': return `${p.items.length === 1 ? 'A repeating task' : p.items.length + ' repeating tasks'} "${p.title}" ${repTxt('weekly', wds)}${p.est ? ', ' + dur(p.est) : ''}${pj}`;
++      case 'allday': return `All-day "${p.title}" ${relDay(p.items[0].date, t)}, ${repTxt(p.rep, p.rep === 'biweekly' ? wds : '')}${pj}`;
++      case 'task': return `Task "${p.title}" ${when(p)}${p.est ? ', ' + dur(p.est) : ''}${p.rep ? ', ' + repTxt(p.rep) : ''}${pj}`;
++      case 'pay': return `Task "${p.title}" ${relDay(p.date, t)}${pj}`;
++      case 'bill': {
++        const due = p.freq === 'monthly' ? `due on the ${ord(p.day)} of each month` : p.freq === 'weekly' ? `due every ${WDN[p.dow]}` : p.freq === 'biweekly' ? `due every 2 weeks from ${relDay(p.ymd, t)}` : p.freq === 'quarterly' ? `due every 3 months from ${relDay(p.ymd, t)}` : `due every year on ${dateTxt(p.ymd).slice(5)}`;
++        return `${{ monthly: 'Monthly', weekly: 'Weekly', biweekly: 'Every-2-weeks', quarterly: 'Quarterly', yearly: 'Yearly' }[p.freq]} bill "${p.name}" ${usd(p.amt)}, ${due} (goes into Bills and the calendar)`;
++      }
++      default: return '';
++    }
++  }
++  // Saves a plan through the app (snapshot first, so the toast's Undo restores everything). ctx 'today' dates a plain task today.
++  function pwCommit(p, ctx) {
++    if (!A || !p) return false;
++    const S = A.S, now = Date.now(), t = today();
++    const ev = (date, allDay) => ({ id: A.uid(), title: p.title, cat: p.cat || catFor(p.title, allDay).cat, date, allDay: !!allDay, start: allDay ? '' : p.start, end: allDay ? '' : p.end, endDate: '', repeat: allDay ? (p.rep || 'none') : (p.rep && p.rep !== 'none' ? p.rep : 'none'), until: '', notes: '', ex: [], proj: p.proj || '', created: now });
++    let msg = '';
++    A.snapshot();
++    A.commit(() => {
++      if (p.kind === 'events') { p.items.forEach((x) => S.events.push(ev(x.date, false))); msg = `${p.items.length} repeating event${p.items.length === 1 ? '' : 's'} added`; }
++      else if (p.kind === 'event') { S.events.push(ev(p.date, false)); msg = `${p.shift ? 'Shift' : 'Event'} added: ${dateTxt(p.date)}, ${t12(toM(p.start))}`; }
++      else if (p.kind === 'allday') { p.items.forEach((x) => S.events.push(ev(x.date, true))); msg = `Added "${p.title}", ${repTxt(p.rep) || 'all day'}`; }
++      else if (p.kind === 'tasks') { p.items.forEach((x) => S.tasks.push({ id: A.uid(), title: p.title, date: x.date, done: false, p: 0, proj: p.proj || '', rep: 'weekly', created: now, ...(p.est ? { est: p.est } : {}) })); msg = `${p.items.length} weekly task${p.items.length === 1 ? '' : 's'} added`; }
++      else if (p.kind === 'task' || p.kind === 'pay') {
++        const date = p.date || (ctx === 'today' ? t : '');
++        S.tasks.push({ id: A.uid(), title: p.title, date, done: false, p: 0, proj: p.proj || '', rep: p.rep && ['daily', 'weekdays', 'weekly'].includes(p.rep) ? p.rep : '', created: now, ...(p.est ? { est: p.est } : {}) });
++        msg = date ? `Task set for ${dateTxt(date)}` : 'Task added';
++      } else if (p.kind === 'bill') {
++        if (!S.categories.some((c) => c.id === 'bills')) S.categories.push({ id: 'bills', name: 'Bills', color: A.BN_COLOR });
++        S.bills.push({ id: 'bill-' + A.uid(), created: now, name: p.name, amt: Math.round(p.amt * 100) / 100, freq: p.freq, day: p.day || 1, dow: p.dow || 0, ymd: p.ymd || t, end: '' });
++        msg = `Bill added: ${p.name} ${usd(p.amt)}`;
++      }
++    });
++    A.render(); A.toast(msg || 'Added', true);
++    return true;
++  }
++
++  // ---------- hooks into the app's Quick capture sheet and the Today quick add ----------
++  function qcClaim() {
++    const d = document.getElementById('qcDlg'), i = document.getElementById('qcIn');
++    if (!d || !d.open || !i || d.querySelector('.qc-kinds')) return null; // "Change" open: the person picks the kind by hand
++    return pwParse(i.value, today());
++  }
++  function qcMine() {
++    const el = document.getElementById('qcPrev'); if (!el || el.querySelector('.px-qc')) return;
++    const p = qcClaim(); if (!p) return;
++    el.innerHTML = `<div class="qc-chip px-qc">I will add: <b>${esc(pwLabel(p))}</b></div>
++      <div class="qc-act"><button type="button" class="btn primary" id="pwAdd">Add</button>${p.alt ? `<button type="button" class="btn" id="pwAlt">${esc(p.altLabel)}</button>` : ''}<button type="button" class="btn" id="qcChange" aria-expanded="false">Change</button></div>`;
++  }
++  function qcDo(p) { if (pwCommit(p, 'capture')) { const d = document.getElementById('qcDlg'); if (d && d.open) d.close(); } }
++  function hookCapture() {
++    const prev = document.getElementById('qcPrev');
++    if (prev) new MutationObserver(() => qcMine()).observe(prev, { childList: true });
++    document.addEventListener('keydown', (e) => {
++      if (e.key !== 'Enter' || !e.target || e.target.id !== 'qcIn' || e.isComposing) return;
++      const p = qcClaim(); if (!p) return;
++      e.preventDefault(); e.stopPropagation(); qcDo(p);
++    }, true);
++    document.addEventListener('click', (e) => {
++      const b = e.target.closest && e.target.closest('#pwAdd, #pwAlt'); if (!b) return;
++      const p = qcClaim(); if (!p) return;
++      qcDo(b.id === 'pwAlt' && p.alt ? p.alt : p);
++    });
++    document.addEventListener('submit', (e) => {
++      const f = e.target && e.target.closest && e.target.closest('#main [data-tadd]'); if (!f) return;
++      const i = f.querySelector('input'), v = i ? i.value.trim() : ''; if (!v) return;
++      const p = pwParse(v, today()); if (!p) return;
++      e.preventDefault(); e.stopPropagation();
++      if (pwCommit(p, 'today')) { const again = document.querySelector('#main [data-tadd] input'); if (again) { again.value = ''; again.focus(); } }
++    }, true);
++    const eg = document.querySelector('#qcDlg .qc-eg');
++    if (eg && !eg.querySelector('.px-eg')) eg.insertAdjacentHTML('beforeend', '<span class="px-eg"> · <i>gym tue thu 7am</i> · <i>Outback fri 4-10pm</i> · <i>deep work 2h tomorrow</i> · <i>pay MFFU 91.80 on the 5th</i></span>');
++  }
++
++  // =====================================================================================================================
++  // Now and next: the day as one strip, and what to do in the free time you have.
++  // =====================================================================================================================
++  // The day's timed events (not bot items), travel and free gaps. Pure apart from the app's eventsOn / bfSpans.
++  function nnDay(k, nm) {
++    const blocks = A.eventsOn(k).filter((o) => !o.ev.bot && !o.ev.allDay && o.ev.start && !o.cont).map((o) => {
++      const s = toM(o.ev.start); let e = o.ev.end ? toM(o.ev.end) : Math.min(s + 60, 1439); if (e <= s) e = 1440;
++      return { s, e, ev: o.ev, occ: o.occ };
++    }).sort((a, b) => a.s - b.s || b.e - a.e);
++    let trv = []; try { trv = (A.bfSpans(k) || []).map((x) => ({ s: x.s, e: x.e, label: x.label })); } catch (e) { trv = []; }
++    const all = blocks.concat(trv), from = Math.min(DAY_FROM, ...all.map((b) => Math.floor(b.s / 60) * 60)), to = Math.max(DAY_TO, ...all.map((b) => Math.min(1440, Math.ceil(b.e / 60) * 60)));
++    const busy = [];
++    blocks.map((b) => [b.s, b.e]).concat(trv.map((x) => [x.s, x.e])).sort((a, b) => a[0] - b[0]).forEach(([s, e]) => { const l = busy[busy.length - 1]; if (l && s <= l[1]) l[1] = Math.max(l[1], e); else busy.push([s, e]); });
++    const gaps = []; let cur = from;
++    busy.forEach(([s, e]) => { if (Math.min(s, to) - cur >= 15) gaps.push([cur, Math.min(s, to)]); cur = Math.max(cur, e); });
++    if (to - cur >= 15) gaps.push([cur, to]);
++    // lanes: an event that overlaps the one before goes on the lower half
++    let lastEnd = -1; blocks.forEach((b) => { b.lane = b.s < lastEnd ? 1 : 0; if (!b.lane) lastEnd = b.e; });
++    const out = { k, from, to, blocks, trv, gaps, busy, nm };
++    if (nm != null) {
++      out.cur = blocks.filter((b) => b.s <= nm && nm < b.e).sort((a, b) => b.e - a.e)[0] || null;
++      out.next = blocks.find((b) => b.s > nm) || null;
++      const inBusy = busy.find(([s, e]) => s <= nm && nm < e);
++      const g = inBusy ? gaps.find(([s, e]) => s >= inBusy[1] && e - s >= 15) : gaps.find(([s, e]) => e - Math.max(s, nm) >= 10 && e > nm);
++      out.win = g ? { from: Math.max(g[0], nm), to: g[1], now: !inBusy && g[0] <= nm } : null;
++    }
++    return out;
++  }
++  // The best tasks for a free window. Pure: tasks, { today, minutes, skip, now, n }. Higher priority, overdue and due today come first;
++  // tasks that fit the window win over ones that do not. Ideas and future-dated tasks are left out.
++  function pwPick(tasks, o) {
++    const t = o.today, out = [];
++    (tasks || []).forEach((x) => {
++      if (!x || x.done || x.tag === 'idea' || /^Idea:/.test(x.title || '')) return;
++      if (x.date && x.date > t) return;
++      if (o.skip && +o.skip[x.id] > (o.now || 0)) return;
++      const need = +x.est || 30, late = x.date && x.date < t ? between(x.date, t) : 0, fits = !(o.minutes > 0) || need <= o.minutes;
++      let sc = (x.p || 0) * 30; const why = [];
++      if (x.p === 3) why.push('high priority');
++      if (late) { sc += 25 + Math.min(late, 14) * 2; why.push(`${late} day${late === 1 ? '' : 's'} late`); }
++      else if (x.date === t) { sc += 20; why.push('due today'); }
++      if (o.minutes > 0) sc += fits ? 15 + (need <= 20 ? 3 : 0) : -80;
++      if (!x.date) sc -= 8;
++      why.push(x.est ? (fits ? dur(need) : `${dur(need)}, longer than the gap`) : 'about 30m');
++      out.push({ t: x, sc, why, need, fits });
++    });
++    return out.sort((a, b) => b.sc - a.sc || (a.t.created || 0) - (b.t.created || 0)).slice(0, o.n || 3);
++  }
++  function nnState() {
++    const t = today(), nm = nowMin(), d = nnDay(t, nm);
++    if (nm >= d.to || (!d.win && !d.cur && !d.next)) return { t, nm, d, tomorrow: nnDay(plus(t, 1), null) };
++    return { t, nm, d };
++  }
++  function nnStrip(d, nm) {
++    const span = Math.max(60, d.to - d.from), pc = (m) => (Math.max(0, Math.min(span, m - d.from)) / span) * 100, w = (a, b) => Math.max(0.6, pc(b) - pc(a)).toFixed(2);
++    const free = d.gaps.filter(([s, e]) => e - Math.max(s, nm == null ? s : nm) >= 30).map(([s, e]) => { const a = nm == null ? s : Math.max(s, nm); return `<i class="px-free" style="left:${pc(a).toFixed(2)}%;width:${w(a, e)}%"></i>`; }).join('');
++    const trv = d.trv.map((x) => `<i class="px-trv" style="left:${pc(x.s).toFixed(2)}%;width:${w(x.s, x.e)}%" title="${esc(x.label)}"></i>`).join('');
++    const lanes = d.blocks.some((b) => b.lane);
++    const blk = d.blocks.map((b) => `<button type="button" class="px-blk${lanes ? ' l' + b.lane : ''}${nm != null && b.e <= nm ? ' past' : ''}${pc(b.e) - pc(b.s) < 11 ? ' nt' : ''}" data-ev="${esc(b.ev.id)}" data-occ="${esc(b.occ)}" style="${A.cvars(A.colorOf(b.ev))};left:${pc(b.s).toFixed(2)}%;width:${w(b.s, b.e)}%" title="${esc(b.ev.title)}, ${t12(b.s)}-${t12(b.e)}" aria-label="${esc(b.ev.title)}, ${t12(b.s)} to ${t12(b.e)}"><span>${esc(b.ev.title)}</span></button>`).join('');
++    const now = nm != null && nm >= d.from && nm <= d.to ? `<i class="px-now" style="left:${pc(nm).toFixed(2)}%" title="Now"></i>` : '';
++    const ticks = []; for (let m = Math.ceil(d.from / 180) * 180; m <= d.to; m += 180) ticks.push(m);
++    const lab = (m) => (m >= 1440 ? '12a' : t12(m).replace(/m$/, ''));
++    const tk = ticks.map((m) => { const x = pc(m); return `<span style="left:${x.toFixed(2)}%;transform:translateX(${x < 4 ? 0 : x > 96 ? -100 : -50}%)">${lab(m)}</span>`; }).join('');
++    const sum = d.blocks.length ? d.blocks.map((b) => `${b.ev.title} ${t12(b.s)} to ${t12(b.e)}`).join('; ') : 'nothing timed';
++    return `<div class="px-strip" role="group" aria-label="${esc(`${dateTxt(d.k)} from ${t12(d.from)} to ${t12(d.to)}: ${sum}`)}">${free}${trv}${blk}${now}</div><div class="px-ticks" aria-hidden="true">${tk}</div>`;
++  }
++  function nnStatus(st) {
++    const { d, nm } = st;
++    if (st.tomorrow) {
++      const f = st.tomorrow.blocks[0];
++      return `<b>Day is done.</b> ${f ? `Tomorrow starts with ${esc(f.ev.title)} at ${t12(f.s)}.` : 'Nothing timed tomorrow yet.'}`;
++    }
++    const nx = d.next ? `, then ${esc(d.next.ev.title)} at ${t12(d.next.s)}` : '';
++    if (d.cur) return `<b>Now:</b> ${esc(d.cur.ev.title)} until ${t12(d.cur.e)}${d.win ? ` · next free ${t12(d.win.from)} to ${t12(d.win.to)} (${dur(d.win.to - d.win.from)})` : ''}`;
++    if (d.win && d.win.now) return `<b>Free now</b> until ${t12(d.win.to)} · ${dur(d.win.to - nm)}${nx}`;
++    if (d.win) return `<b>Next free time</b> ${t12(d.win.from)} to ${t12(d.win.to)} (${dur(d.win.to - d.win.from)})`;
++    return 'No free time left today.';
++  }
++  function nnRows(st, n) {
++    if (st.tomorrow) return '';
++    const mins = st.d.win ? st.d.win.to - st.d.win.from : 0;
++    const picks = pwPick(A.S.tasks, { today: st.t, minutes: mins, skip: skipGet(), now: Date.now(), n });
++    const head = `<div class="px-dn"><span>Do next</span><span>${mins ? (st.d.win.now ? '' : 'at ' + t12(st.d.win.from) + ' · ') + 'fits ' + dur(mins) : ''}</span></div>`;
++    if (!picks.length) return head + '<div class="empty-s">Nothing waiting. Add a task, or enjoy the free time.</div>';
++    return head + `<ul class="px-list">${picks.map((x) => {
++      const pj = A.projOf(x.t.proj);
++      return `<li data-t="${esc(x.t.id)}" class="px-li${x.fits ? '' : ' nofit'}"><input type="checkbox" data-pwdone aria-label="Done: ${esc(x.t.title)}"><button type="button" class="px-tt" data-pwdetail><b>${esc(x.t.title)}</b><small>${esc([...x.why, pj ? pj.name : ''].filter(Boolean).join(' · '))}</small></button><button type="button" class="fbtn" data-focus title="Start a focus timer" aria-label="Start a focus timer on ${esc(x.t.title)}">${ICON_CLOCK}</button><button type="button" class="px-x" data-pwskip title="Not now (hidden for 3 hours)" aria-label="Not now: ${esc(x.t.title)}">&times;</button></li>`;
++    }).join('')}</ul>`;
++  }
++  function nnHtml(inSheet) {
++    const st = nnState(), d = st.tomorrow || st.d;
++    return `${inSheet ? '' : '<h3>Now and next<button type="button" data-pwopen="now-next">More</button></h3>'}
++      ${st.tomorrow ? '<div class="px-dn"><span>Tomorrow</span></div>' : ''}${nnStrip(d, st.tomorrow ? null : st.nm)}
++      <div class="px-stat" role="status">${nnStatus(st)}</div>${nnRows(st, inSheet ? 5 : 2)}`;
++  }
++  const nnCard = () => `<section class="td-card px-card" id="pwNow">${nnHtml(false)}</section>`;
++  function nnSum() {
++    const st = nnState(), d = st.d;
++    if (st.tomorrow) return 'day is done';
++    if (d.cur) return `${d.cur.ev.title} until ${t12(d.cur.e)}`;
++    if (d.win && d.win.now) return `free until ${t12(d.win.to)}`;
++    return d.win ? `free at ${t12(d.win.from)}` : 'no free time left';
++  }
++  function doneTask(id) {
++    const S = A.S, x = S.tasks.find((y) => y.id === id); if (!x || x.done) return;
++    A.snapshot();
++    A.commit(() => {
++      x.done = true;
++      if (x.rep && typeof A.nextRep === 'function') S.tasks.push({ id: A.uid(), title: x.title, date: A.nextRep(x), done: false, p: x.p || 0, proj: x.proj || '', rep: x.rep, created: Date.now() });
++    });
++    A.refreshTasks(); if (A.S.view === 'today') A.renderMain(); nnPaint();
++    A.toast('Done: ' + x.title, true);
++  }
++  let nnDlg = null;
++  function nnPaint() { if (nnDlg && nnDlg.open) nnDlg.querySelector('#pwNnDlgB').innerHTML = `<div class="px-card px-sheet">${nnHtml(true)}</div>`; }
++  function nnOpen() { nnPaint0(); if (!nnDlg.open) nnDlg.showModal(); nnPaint(); }
++  function nnPaint0() { if (!nnDlg) nnDlg = A.makeDlg('pwNnDlg', 'Now and next'); }
++
++  // =====================================================================================================================
++  // Catch up: overdue tasks spread over the free time of the next days.
++  // =====================================================================================================================
++  const cuOverdue = () => { if (!A) return []; const t = today(); return A.S.tasks.filter((x) => x && !x.done && x.date && x.date < t); };
++  // Capacity of each of the next n days: 60% of the free time between 7am and 10pm (shifts, events and travel taken out),
++  // minus what open tasks already dated that day need. Today starts from now.
++  function cuCaps(t, n) {
++    const out = [];
++    for (let i = 0; i < n; i++) {
++      const k = plus(t, i); let free = 0;
++      try { const trv = (A.bfSpans(k) || []).map((x) => [x.s, x.e]); free = A.freeGaps(k, 7 * 60, 22 * 60, 15, trv).reduce((a, [s, e]) => a + (e - s), 0); } catch (e) { free = 0; }
++      const used = A.S.tasks.filter((x) => x && !x.done && x.date === k).reduce((a, x) => a + (+x.est || 30), 0);
++      out.push({ k, free, used, cap: Math.max(0, Math.round(free * CU_SHARE) - used) });
++    }
++    return out;
++  }
++  // Pure: tasks [{ id, p, date, est, created }], days [{ k, cap }] -> { plan: { id: day }, unplaced: [id] }.
++  // Highest priority and oldest first, each to the earliest day with room (at most perDay of them a day).
++  function pwSpread(tasks, days, perDay) {
++    const order = tasks.slice().sort((a, b) => ((b.p || 0) - (a.p || 0)) || String(a.date || '').localeCompare(String(b.date || '')) || ((a.created || 0) - (b.created || 0)));
++    const st = days.map((d) => ({ k: d.k, left: d.cap, n: 0 })), plan = {}, unplaced = [];
++    order.forEach((x) => {
++      const need = +x.est || 30, d = st.find((y) => y.left >= need && y.n < (perDay || CU_PER_DAY));
++      if (d) { plan[x.id] = d.k; d.left -= need; d.n++; } else unplaced.push(x.id);
++    });
++    return { plan, unplaced };
++  }
++  let cuDlg = null, cu = null;
++  function cuBuild(mode) {
++    const t = today(), list = cuOverdue(), caps = cuCaps(t, CU_DAYS), choice = {};
++    if (mode === 'smart') { const r = pwSpread(list, caps, CU_PER_DAY); list.forEach((x) => { choice[x.id] = r.plan[x.id] || 'keep'; }); }
++    else list.forEach((x) => { choice[x.id] = mode === 'today' ? t : mode === 'tomorrow' ? plus(t, 1) : 'none'; });
++    cu = { t, mode, ids: list.map((x) => x.id), caps, choice };
++  }
++  function cuLabel(v, t) { return v === 'keep' ? 'Leave as is' : v === 'none' ? 'No date' : v === 'done' ? 'Mark done' : v === t ? 'Today' : v === plus(t, 1) ? 'Tomorrow' : dateTxt(v); }
++  function cuPaint() {
++    if (!cuDlg || !cu) return;
++    const S = A.S, t = cu.t, tasks = cu.ids.map((id) => S.tasks.find((x) => x.id === id)).filter(Boolean);
++    const body = cuDlg.querySelector('#pwCuDlgB');
++    if (!tasks.length) { body.innerHTML = '<div class="empty-s">Nothing is overdue. Nice.</div><div class="dlg-f"><div></div><div><button type="button" class="btn primary" data-close>Done</button></div></div>'; return; }
++    const keys = [...cu.caps.map((c) => c.k), 'none', 'done', 'keep'];
++    const opts = (x) => keys.filter((k) => !(k === 'done' && x.rep)).map((k) => `<option value="${k}"${cu.choice[x.id] === k ? ' selected' : ''}>${esc(cuLabel(k, t))}</option>`).join('');
++    const groups = keys.map((k) => {
++      const rows = tasks.filter((x) => cu.choice[x.id] === k); if (!rows.length) return '';
++      const c = cu.caps.find((y) => y.k === k), need = rows.reduce((a, x) => a + (+x.est || 30), 0);
++      const info = c ? `${dur(c.free)} free${c.used ? `, ${dur(c.used)} already planned` : ''}, these need ${dur(need)}` : k === 'keep' ? (cu.mode === 'smart' ? 'no room in the next 7 days' : '') : '';
++      return `<div class="px-cu-g"><div class="px-cu-h"><b>${esc(cuLabel(k, t))}</b><span>${esc(info)}</span></div>${rows.map((x) => {
++        const late = between(x.date, t), pj = A.projOf(x.proj);
++        return `<div class="px-cu-r"><div class="px-cu-t"><b>${esc(x.title)}</b><small>${esc([`${late} day${late === 1 ? '' : 's'} late`, x.est ? dur(x.est) : '', x.p === 3 ? 'high priority' : x.p === 2 ? 'medium' : '', pj ? pj.name : '', x.rep ? 'repeats' : ''].filter(Boolean).join(' · '))}</small></div><select data-cutask="${esc(x.id)}" aria-label="When: ${esc(x.title)}">${opts(x)}</select></div>`;
++      }).join('')}</div>`;
++    }).join('');
++    const n = (v) => tasks.filter((x) => (v === 'move' ? !['none', 'done', 'keep'].includes(cu.choice[x.id]) : cu.choice[x.id] === v)).length;
++    const parts = [n('move') && `${n('move')} moved`, n('done') && `${n('done')} done`, n('none') && `${n('none')} without a date`, n('keep') && `${n('keep')} left as is`].filter(Boolean);
++    const seg = [['smart', 'Spread smart'], ['today', 'All today'], ['tomorrow', 'All tomorrow'], ['none', 'No date']].map(([m, l]) => `<button type="button" data-cumode="${m}" aria-pressed="${cu.mode === m}">${l}</button>`).join('');
++    body.innerHTML = `<div class="seg px-seg" role="group" aria-label="How to catch up">${seg}</div>
++      <div class="hint">${cu.mode === 'smart' ? `Highest priority and oldest first, each on the first day with room (60% of your free time from 7am to 10pm after shifts and travel, at most ${CU_PER_DAY} a day).` : 'Change any task below.'} Nothing is saved until Apply.</div>
++      ${groups}
++      <div class="dlg-f"><div class="sub" id="pwCuSum">${esc(parts.join(', '))}</div><div style="display:flex;gap:8px"><button type="button" class="btn" data-close>Cancel</button><button type="button" class="btn primary" id="pwCuApply"${n('keep') === tasks.length ? ' disabled' : ''}>Apply</button></div></div>`;
++  }
++  function cuOpen() {
++    if (!cuDlg) {
++      cuDlg = A.makeDlg('pwCuDlg', 'Catch up');
++      cuDlg.addEventListener('change', (e) => { const s = e.target.closest('[data-cutask]'); if (s && cu) { cu.choice[s.dataset.cutask] = s.value; cuPaint(); } });
++      cuDlg.addEventListener('click', (e) => {
++        const m = e.target.closest('[data-cumode]'); if (m) { cuBuild(m.dataset.cumode); cuPaint(); return; }
++        if (e.target.closest('#pwCuApply')) cuApply();
++      });
++    }
++    cuBuild('smart'); cuPaint(); if (!cuDlg.open) cuDlg.showModal();
++  }
++  function cuApply() {
++    if (!cu) return;
++    const S = A.S, ch = cu.ids.map((id) => ({ id, to: cu.choice[id] })).filter((x) => x.to && x.to !== 'keep');
++    if (!ch.length) { A.toast('Nothing to change'); return; }
++    let moved = 0, done = 0, undated = 0;
++    A.snapshot();
++    A.commit(() => {
++      ch.forEach(({ id, to }) => {
++        const x = S.tasks.find((y) => y.id === id); if (!x || x.done) return;
++        if (to === 'done') { if (!x.rep) { x.done = true; done++; } }
++        else if (to === 'none') { x.date = ''; undated++; }
++        else if (/^\d{4}-\d{2}-\d{2}$/.test(to)) { x.date = to; moved++; }
++      });
++    });
++    cuDlg.close(); cu = null; A.render();
++    A.toast('Caught up: ' + [moved && `${moved} moved`, done && `${done} done`, undated && `${undated} without a date`].filter(Boolean).join(', '), true);
++  }
++  function cuCard() {
++    const od = cuOverdue(); if (od.length < CU_MIN) return '';
++    const t = today(), oldest = od.reduce((a, x) => (x.date < a ? x.date : a), t), late = between(oldest, t);
++    return `<section class="td-card px-card" id="pwCatch"><div class="px-cu-line"><div><b>Catch up</b><div class="sub">${od.length} overdue tasks, the oldest ${late} day${late === 1 ? '' : 's'} late</div></div><button type="button" class="btn sm primary" data-pwopen="catch-up">Spread them</button></div></section>`;
++  }
++  const cuSum = () => { const n = cuOverdue().length; return n ? `${n} overdue` : 'nothing overdue'; };
++
++  // =====================================================================================================================
++  // Weekly review nudge: from Friday 3pm to Monday night a Today card asks for the week's review (the app's own Review page)
++  // until it is written, with the run of weeks in a row. Reads only.
++  // =====================================================================================================================
++  const wrTarget = (t) => A.startOfWeek(plus(t, -((wdOf(t) - 5 + 7) % 7))); // the week holding the most recent Friday
++  const wrDone = (ws) => { const r = (A.S.reviews || []).find((x) => x && x.id === 'r:' + ws); return !!(r && (String(r.well || '').trim() || String(r.fix || '').trim() || (r.prios || []).some((x) => String(x || '').trim()) || r.madeAt)); };
++  function wrStreak(ws) { let n = 0, k = wrDone(ws) ? ws : plus(ws, -7); for (let i = 0; i < 260 && wrDone(k); i++) { n++; k = plus(k, -7); } return n; }
++  const wrWhen = (t, nm) => { const w = wdOf(t); return (w === 5 && nm >= 15 * 60) || w === 6 || w === 0 || w === 1; };
++  function wrCard() {
++    const t = today(); if (!wrWhen(t, nowMin())) return '';
++    const ws = wrTarget(t); if (wrDone(ws)) return '';
++    const n = wrStreak(ws), a = dOf(ws), z = dOf(plus(ws, 6));
++    return `<section class="td-card px-card" id="pwReview"><div class="px-cu-line"><div><b>Weekly review</b> <span class="px-wk">${MON3[a.getMonth()]} ${a.getDate()} to ${a.getMonth() === z.getMonth() ? '' : MON3[z.getMonth()] + ' '}${z.getDate()}</span>
++      <div class="sub">${n ? `${n} week${n === 1 ? '' : 's'} in a row. ` : ''}Wins, fixes and next week's top 3, in 3 minutes.</div></div><button type="button" class="btn sm primary" data-pwreview>Start</button></div></section>`;
++  }
++  function wrOpen() {
++    const t = today(), ws = wrTarget(t), cur = A.startOfWeek(t);
++    A.goToday(); A.setView('review');
++    const b = document.querySelector(ws === cur ? '#main [data-rvnav="cur"]' : '#main [data-rvnav="last"]');
++    if (b && b.getAttribute('aria-pressed') !== 'true') b.click();
++  }
++
++  // =====================================================================================================================
++  // Wiring: Today cards, All tools tiles, palette commands, styles.
++  // =====================================================================================================================
++  function register() {
++    const at = (id) => { const i = A.TO_CARDS.findIndex((c) => c.id === id); return i < 0 ? A.TO_CARDS.length : i; };
++    const card = (def, before) => { if (A.TO_BY[def.id]) return; A.TO_CARDS.splice(at(before), 0, def); A.TO_BY[def.id] = def; };
++    card({ id: 'pwnow', n: 'Now and next', home: 'today', fn: () => nnCard(), sum: () => nnSum() }, 'sched');
++    card({ id: 'pwcatch', n: 'Catch up (overdue tasks)', home: 'now', fn: () => cuCard(), tier: () => A.toNowTier('Overdue', 'amber', true), sum: () => cuSum() }, 'pwnow');
++    card({ id: 'pwreview', n: 'Weekly review reminder', home: 'today', fn: () => wrCard() }, 'sched');
++    const tool = (def) => { if (!A.HB_TOOLS.some((x) => x.id === def.id)) A.HB_TOOLS.push(def); };
++    tool({ id: 'pwnow', g: 'Calendar', n: 'Now and next', d: 'Your day as one strip and what to do in the free time', k: 'do next what should i do now free time suggest focus timeline glance strip', open: () => nnOpen(), st: () => nnSum() });
++    tool({ id: 'pwcatch', g: 'Calendar', n: 'Catch up', d: 'Spread overdue tasks over your free days, with Undo', k: 'overdue late reschedule backlog spread move tasks catch up behind', open: () => cuOpen(), st: () => cuSum() });
++    const cmd = (def) => { if (!A.PK_CMDS.some((x) => x.id === def.id)) A.PK_CMDS.push(def); };
++    cmd({ id: 'px-now', l: 'Now and next', k: 'what should i do now do next free time suggest glance strip', run: () => nnOpen() });
++    cmd({ id: 'px-catch', l: 'Catch up overdue tasks', k: 'overdue late reschedule backlog spread catch up behind', run: () => cuOpen() });
++  }
++  function wire() {
++    document.addEventListener('click', (e) => {
++      const t = e.target;
++      const o = t.closest && t.closest('[data-pwopen]');
++      if (o) { const h = o.dataset.pwopen; if (h === 'catch-up') cuOpen(); else if (h === 'now-next') nnOpen(); return; }
++      if (t.closest && t.closest('[data-pwreview]')) { wrOpen(); return; }
++      const sk = t.closest && t.closest('[data-pwskip]');
++      if (sk) { const li = sk.closest('[data-t]'); if (li) { skipSet(li.dataset.t); A.toast('Hidden for 3 hours'); if (A.S.view === 'today') A.renderMain(); nnPaint(); } return; }
++      const dt = t.closest && t.closest('[data-pwdetail]');
++      if (dt) { const li = dt.closest('[data-t]'); if (li) A.openTask(li.dataset.t); return; }
++      const ev = t.closest && t.closest('#pwNnDlg [data-ev]');
++      if (ev) A.openEvent(ev.dataset.ev, ev.dataset.occ);
++    });
++    document.addEventListener('change', (e) => { const c = e.target.closest && e.target.closest('[data-pwdone]'); if (c && c.checked) { const li = c.closest('[data-t]'); if (li) doneTask(li.dataset.t); } });
++    // the strip's now line moves every minute (the app re-renders Today on its own schedule)
++    setInterval(() => { const n = document.querySelector('#pwNow .px-now'); if (n && !document.hidden && A.S.view === 'today') { const c = document.getElementById('pwNow'); if (c && !c.contains(document.activeElement)) c.innerHTML = nnHtml(false); } nnPaint(); }, 60000);
++  }
++  const CSS = `
++.px-card{gap:8px}.px-sheet{display:flex;flex-direction:column;gap:8px}
++.px-strip{position:relative;height:34px;border-radius:9px;background:var(--soft2);overflow:hidden}
++.px-free{position:absolute;top:0;bottom:0;background:var(--kb-dcfce7);opacity:.85}
++.px-trv{position:absolute;top:6px;bottom:6px;background:repeating-linear-gradient(135deg,var(--line) 0 3px,transparent 3px 6px);border-radius:3px}
++.px-blk{position:absolute;top:4px;bottom:4px;border-radius:6px;background:var(--bg-c);border:1px solid var(--c);color:var(--fg);font-size:10.5px;font-weight:600;line-height:1;padding:0 4px;overflow:hidden;text-align:left;min-width:4px;display:flex;align-items:center}
++.px-blk span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0}
++.px-blk.l0{bottom:18px}.px-blk.l1{top:18px}.px-blk.past{opacity:.55}.px-blk.nt span{display:none}
++.px-now{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--now);border-radius:1px;box-shadow:0 0 0 1px var(--card)}
++.px-ticks{position:relative;height:13px;font-size:10px;color:var(--faint);margin-top:-4px;font-variant-numeric:tabular-nums}
++.px-ticks span{position:absolute;top:0;white-space:nowrap}
++.px-stat{font-size:13px;color:var(--ink2);line-height:1.4;overflow-wrap:anywhere}.px-stat b{color:var(--ink);font-weight:600}
++.px-dn{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;font-weight:600;color:var(--mute);letter-spacing:.02em;text-transform:uppercase;margin-top:2px}
++.px-dn span+span{text-transform:none;font-weight:500;letter-spacing:0}
++.px-list{list-style:none;display:flex;flex-direction:column;gap:1px;margin:0;padding:0}
++.px-list li{display:flex;align-items:center;gap:6px;padding:2px;border-radius:7px}
++.px-list input[type=checkbox]{appearance:none;-webkit-appearance:none;margin:0;width:20px;height:20px;border:1.5px solid var(--kl-c9cdd4);border-radius:6px;flex:none;cursor:pointer;display:grid;place-items:center;background:var(--card)}
++.px-list input[type=checkbox]:checked{background:var(--ok);border-color:var(--ok)}
++.px-list input[type=checkbox]:checked::after{content:"";width:5px;height:10px;border:solid var(--on-ok);border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
++.px-tt{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;padding:2px 0;color:var(--ink)}
++.px-tt b,.px-tt small{display:block;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.px-tt b{font-weight:500;font-size:14px}.px-tt small{font-size:11.5px;color:var(--mute)}
++.px-sheet .px-tt b,.px-sheet .px-tt small{white-space:normal;overflow-wrap:anywhere}
++.px-li.nofit .px-tt b{color:var(--ink2)}
++.px-x{width:30px;height:30px;display:grid;place-items:center;border-radius:6px;color:var(--faint);font-size:18px;line-height:1;flex:none}
++@media (max-width:960px){.px-x{width:36px;height:36px}}
++#pwCuDlg .dlg,#pwNnDlg .dlg{max-height:calc(100dvh - 24px);overflow:auto}
++.px-seg{flex-wrap:wrap;gap:2px}.px-seg button{flex:1 1 auto;min-height:34px}
++.px-cu-g{border:1px solid var(--line);border-radius:12px;padding:8px 10px 2px}
++.px-cu-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13.5px;padding-bottom:6px}.px-cu-h span{color:var(--mute);font-size:12px;text-align:right}
++.px-cu-r{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 0;border-top:1px solid var(--line2)}
++.px-cu-t{display:flex;flex-direction:column;gap:1px;min-width:0}.px-cu-t b{font-weight:500;font-size:14px;overflow-wrap:anywhere}.px-cu-t small{font-size:11.5px;color:var(--mute)}
++.px-cu-r select{height:38px;max-width:150px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);padding:0 6px;font-size:16px}
++#pwCuDlg .dlg-f{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
++.px-eg i{font-style:italic}
++.px-wk{font-size:12px;font-weight:500;color:var(--mute)}
++.px-cu-line{display:flex;align-items:center;justify-content:space-between;gap:10px}.px-cu-line b{font-size:13.5px;font-weight:600}.px-cu-line .btn{flex:none}
++`;
++  function init(api) {
++    A = api;
++    try { document.head.insertAdjacentHTML('beforeend', `<style id="pwStyle">${CSS}</style>`); } catch (e) { /* unstyled is still usable */ }
++    register(); wire(); hookCapture();
++    if (wanted) { const h = wanted; wanted = ''; setTimeout(() => runHash(h), 0); }
++  }
++  function ready(api) {
++    if (A || !api || !Array.isArray(api.TO_CARDS) || !api.TO_BY || !Array.isArray(api.HB_TOOLS) || !Array.isArray(api.PK_CMDS) || typeof api.commit !== 'function' || typeof api.taskLi !== 'function') return;
++    try { init(api); } catch (e) { console.error('Planner power features failed to start:', e); }
++  }
++  addEventListener('planner:ready', (e) => ready(e.detail));
++  if (window.PlannerAPI) ready(window.PlannerAPI);
++  // Pure helpers for the tests and the console (same pattern as window.__qc).
++  window.__pw = { review: (t) => { const ws = wrTarget(t || today()); return { ws, done: wrDone(ws), streak: wrStreak(ws) }; }, parse: pwParse, label: pwLabel, spread: pwSpread, pick: pwPick, day: (k, nm) => nnDay(k, nm), caps: (t, n) => cuCaps(t || today(), n || CU_DAYS), commit: pwCommit, rangeOf: (s) => { const m = (' ' + s + ' ').match(RANGE_RE); return m ? rangeOf(m) : null; } };
++})();
+diff --git a/planner/index.html b/planner/index.html
+index e73bf75..27f6f73 100644
+--- a/planner/index.html
++++ b/planner/index.html
+@@ -9,6 +9,7 @@
+ <meta name="theme-color" content="#ffffff">
+ <meta name="color-scheme" content="light">
+ <script>(function(){try{var t=localStorage.getItem('planner.theme');if(t!=='dark'&&t!=='system')t='light';var d=t==='dark'||(t==='system'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);var h=document.documentElement;h.setAttribute('data-theme',d?'dark':'light');h.setAttribute('data-pref',t);var m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',d?'#0f1115':'#ffffff');var c=document.querySelector('meta[name=color-scheme]');if(c)c.setAttribute('content',d?'dark':'light');}catch(e){}})();</script>
++<script src="ext-power.js"></script>
+ <meta name="apple-mobile-web-app-capable" content="yes">
+ <meta name="apple-mobile-web-app-status-bar-style" content="default">
+ <meta name="apple-mobile-web-app-title" content="Planner">
+@@ -13953,6 +13954,16 @@ function alertsHtml() {
+ }
+ // ===== ALERTS END =====
+ 
++// ===== EXT API BEGIN: add-on files (ext-*.js, loaded in <head>) get the app's own helpers here. They keep their own data under new
++// planner.<name>.* keys and change existing items only through commit(), with snapshot() first so the toast offers Undo. =====
++window.PlannerAPI = Object.freeze({
++  get S() { return S; }, KEY, commit, snapshot, save, toast, render, renderMain, refreshTasks, ask, esc, uid, pad, key, parse, todayKey, addDays, diffDays, dow,
++  toMin, fromMin, fmtTime, fmtDur, longDate, startOfWeek, cvars, colorOf, cat, projOf, taskLi, eventsOn, busyOn, freeGaps, bfSpans, parseTag, parseWhen,
++  openTask, openFocus, openEvent, nextRep, setView, goToday, makeDlg: qcMakeDlg, upsert, toNowTier, TO_CARDS, TO_BY, HB_TOOLS, PK_CMDS, BN_COLOR,
++});
++try { dispatchEvent(new CustomEvent('planner:ready', { detail: window.PlannerAPI })); } catch (e) { console.error('Planner add-ons:', e); }
++// ===== EXT API END =====
++
+ // ===== TRADES BEGIN: closed live/paper trades, notes (synced `tradenotes`), payout planner =====
+ const TR_TAGS = ['Followed plan', 'Hesitated', 'FOMO', 'Moved stop', 'Took profit early', 'Overtraded', 'Good patience'];
+ const ACCT_NAME = { lit: 'Zlarior', atlas: 'ATLAS' };
+diff --git a/planner/tests/power.test.js b/planner/tests/power.test.js
+new file mode 100644
+index 0000000..118a3b8
+--- /dev/null
++++ b/planner/tests/power.test.js
+@@ -0,0 +1,304 @@
++// Power features (ext-power.js): Now and next, Catch up, smarter quick add. node planner/tests/power.test.js
++// Serve the site first (see shifts.test.js); PORT env, default 8790. Fixed clock: Tuesday 2026-11-03, 10:00 in New York.
++const { chromium } = require('playwright');
++const URL = 'http://127.0.0.1:' + (process.env.PORT || 8790) + '/nq-dashboard/planner/index.html';
++const NOW = new Date('2026-11-03T15:00:00Z').getTime(); // 10:00 am New York
++const T = '2026-11-03';
++const ev = (id, title, cat, date, start, end, x = {}) => ({ id, title, cat, date, allDay: false, start, end, endDate: '', repeat: 'none', until: '', notes: '', proj: '', ex: [], ...x });
++const tk = (id, title, x = {}) => ({ id, title, date: '', done: false, p: 0, proj: '', rep: '', created: 1, ...x });
++function seed() {
++  return {
++    v: 1, view: 'today', weekStart: 0,
++    jobs: [{ id: 'job-outback', name: 'Outback Steakhouse', color: '#b91c1c', start: '16:00', end: '22:00', rate: 12, days: [] }, { id: 'job-electric', name: 'Electric', color: '#ca8a04', start: '07:00', end: '15:30', rate: 25, days: [] }],
++    categories: [{ id: 'job-outback', name: 'Outback Steakhouse', color: '#b91c1c' }, { id: 'job-electric', name: 'Electric', color: '#ca8a04' }, { id: 'personal', name: 'Personal', color: '#64748b' }, { id: 'trading', name: 'Trading', color: '#2563eb' }],
++    events: [
++      ev('e1', 'Standup', 'trading', T, '09:00', '09:30'),
++      ev('e2', 'Dentist', 'personal', T, '13:00', '14:00'),
++      ev('e3', 'Outback Steakhouse', 'job-outback', T, '16:00', '22:00'),
++      ev('e4', 'Electric', 'job-electric', '2026-11-04', '07:00', '15:30'),
++    ],
++    tasks: [
++      tk('a', 'Fix order sizing', { p: 3, date: '2026-11-01', est: 45, proj: 'kalshi', created: 1 }),
++      tk('b', 'Call Sam', { date: T, est: 15, created: 2 }),
++      tk('c', 'Review fills', { p: 2, est: 60, created: 3 }),
++      tk('d', 'Big refactor', { p: 2, date: '2026-10-30', est: 240, created: 4 }),
++      tk('e', 'Old errand', { date: '2026-10-28', est: 30, created: 5 }),
++      tk('f', 'Future thing', { p: 3, date: '2026-11-10', created: 6 }),
++      tk('g', 'Done thing', { done: true, date: '2026-11-01', created: 7 }),
++      tk('h', 'Idea: sell kits', { tag: 'idea', created: 8 }),
++      tk('r', 'Weekly report', { date: '2026-11-02', rep: 'weekly', created: 9 }),
++    ],
++  };
++}
++(async () => {
++  let checks = 0;
++  const errs = [], ok = (c, m) => { checks++; if (!c) errs.push(m); }, wait = (ms) => new Promise((r) => setTimeout(r, ms));
++  const b = await chromium.launch();
++  async function open(hash = '', width = 390, state = seed()) {
++    const ctx = await b.newContext({ viewport: { width, height: 844 }, timezoneId: 'America/New_York' });
++    const p = await ctx.newPage(); const pe = [];
++    p.on('pageerror', (e) => pe.push(e.message));
++    await p.route('**/data.json*', (r) => r.abort());
++    await p.clock.install({ time: NOW });
++    await p.addInitScript((s) => { try { if (localStorage.getItem('pw.seeded')) return; localStorage.setItem('pw.seeded', '1'); localStorage.setItem('planner.v1', JSON.stringify(s)); } catch (e) { /* none */ } }, state);
++    await p.goto(URL + hash); await wait(900);
++    return { ctx, p, pe };
++  }
++  const st = (p) => p.evaluate(() => JSON.parse(localStorage.getItem('planner.v1')));
++  const strip = (o) => { const x = { ...o }; delete x.u; return JSON.stringify(x); };
++
++  // ---------- 1. the quick add reader (pure) ----------
++  let { ctx, p, pe } = await open('#today');
++  const P = [
++    ['gym tue thu 7am', { kind: 'events', title: 'Gym', cat: 'personal', shift: false, start: '07:00', end: '08:00', rep: 'weekly', dates: ['2026-11-05', '2026-11-10'] }],
++    ['Outback fri 4-10pm', { kind: 'event', title: 'Outback Steakhouse', cat: 'job-outback', shift: true, date: '2026-11-06', start: '16:00', end: '22:00' }],
++    ['electric 7-3:30', { kind: 'event', title: 'Electric', cat: 'job-electric', start: '07:00', end: '15:30', date: T }],
++    ['outback training sat 2-4pm', { kind: 'event', title: 'Outback training', cat: 'job-outback' }],
++    ['standup 9:30-10 tomorrow', { kind: 'event', date: '2026-11-04', start: '09:30', end: '10:00' }],
++    ['deep work 2h tomorrow', { kind: 'task', title: 'Deep work', date: '2026-11-04', est: 120 }],
++    ['study for 90 min thu 6pm', { kind: 'event', date: '2026-11-05', start: '18:00', end: '19:30' }],
++    ['renew passport nov 15', { kind: 'task', title: 'Renew passport', date: '2026-11-15' }],
++    ['dentist checkup 5th of december', { kind: 'task', date: '2026-12-05' }],
++    ['submit taxes end of month', { kind: 'task', date: '2026-11-30' }],
++    ['call bank next week', { kind: 'task', title: 'Call bank', date: '2026-11-09' }],
++    ['lunch with dad noon fri', { kind: 'event', date: '2026-11-06', start: '12:00', end: '13:00' }],
++    ['team call every other tue 3pm', { kind: 'events', rep: 'biweekly', dates: [T] }],
++    ['yoga tuesdays 6pm', { kind: 'events', rep: 'weekly', dates: [T] }],
++    ['gym weekends 9am', { kind: 'events', dates: ['2026-11-07', '2026-11-08'] }],
++    ['water plants mon thu', { kind: 'tasks', rep: 'weekly', dates: ['2026-11-05', '2026-11-09'] }],
++    ['pay MFFU 91.80 on the 5th', { kind: 'pay', title: 'Pay MFFU $91.80', date: '2026-11-05' }],
++    ['pay 91.80 to MFFU on the 5th', { kind: 'pay', title: 'Pay MFFU $91.80', date: '2026-11-05' }],
++    ['pay rent 1200 tomorrow', { kind: 'pay', title: 'Pay rent $1,200', date: '2026-11-04' }],
++    ['car insurance 180 due the 20th', { kind: 'pay', title: 'Pay car insurance $180', date: '2026-11-20' }],
++    ['netflix 15.49 monthly on the 12th', { kind: 'bill', name: 'Netflix', amt: 15.49, freq: 'monthly', day: 12 }],
++    ['rent 1200 on the 1st every month', { kind: 'bill', name: 'Rent', amt: 1200, freq: 'monthly', day: 1 }],
++    ['pay gym 30 every week fri', { kind: 'bill', name: 'Gym', freq: 'weekly', dow: 5 }],
++    ['fix fills fri 2-4pm #nq', { kind: 'event', proj: 'nq', start: '14:00', end: '16:00' }],
++    ['clean garage this weekend', { kind: 'task', title: 'Clean garage', date: '2026-11-07' }],
++    ['call mom next weekend', { kind: 'task', date: '2026-11-14' }],
++    ['dentist 20th', { kind: 'task', title: 'Dentist', date: '2026-11-20' }],
++    // the app's own reader keeps these (null = not taken over)
++    ['call Sam fri 3pm #nq', null], ['gym tomorrow 7am', null], ['call Sam fri', null], ['buy wire nuts', null], ['dentist 11/20 9:30am', null],
++    ['pay rent in 3 days', null], ['pay $40 gas', null], ['pay MFFU 91.80', null], ['paid $40 gas', null], ['spent 12 on lunch', null], ['got 85 tips', null],
++    ['$15 parking', null], ['water 24', null], ['drank 16 oz', null], ['had a bottle', null], ['ate 2 eggs', null], ['log lunch chicken bowl 650', null],
++    ['note: slow night', null], ['idea: sell wire kits', null], ['call mom every week', null], ['standup weekdays 9am', null], ['log workout', null],
++    ['assignment 2 due fri', null], ['run 5 miles every week', null], ['shift 4-10', null], ['write 1st draft fri', null], ['book weekend trip', null], ['meet 2-3 people', null], ['', null],
++  ];
++  const got = await p.evaluate(({ P, T }) => P.map(([t]) => window.__pw.parse(t, T, { nowMin: 600 })), { P, T });
++  P.forEach(([t, want], i) => {
++    const r = got[i];
++    if (want === null) { ok(r === null, `"${t}" is left to the app's reader, got ${JSON.stringify(r)}`); return; }
++    ok(!!r, 'reads ' + t); if (!r) return;
++    for (const k of Object.keys(want)) {
++      const v = k === 'dates' ? (r.items || []).map((x) => x.date).sort() : r[k];
++      ok(JSON.stringify(v) === JSON.stringify(want[k]), `"${t}" ${k}: got ${JSON.stringify(v)} want ${JSON.stringify(want[k])}`);
++    }
++  });
++  ok(P.length >= 45, 'enough phrases');
++  // the app's own capture reader is unchanged
++  const qc = await p.evaluate(() => [window.__qc.parse('pay rent in 3 days', '2026-11-04').date, window.__qc.parse('paid $40 gas', '2026-11-04').kind]);
++  ok(qc[0] === '2026-11-07' && qc[1] === 'out', 'app reader unchanged: ' + qc);
++  // time ranges
++  const R = [['4-10pm', [960, 1320]], ['11-2pm', [660, 840]], ['9am-5', [540, 1020]], ['10pm-2am', [1320, 1439]], ['16:00-22:00', [960, 1320]], ['from 2 to 4', [840, 960]], ['9-5', null]];
++  const rr = await p.evaluate((R) => R.map(([s]) => window.__pw.rangeOf(s)), R);
++  R.forEach(([s, want], i) => ok(JSON.stringify(rr[i] ? [rr[i].s, rr[i].e] : null) === JSON.stringify(want), `range ${s}: ${JSON.stringify(rr[i])}`));
++  // labels
++  const lab = await p.evaluate((T) => ['gym tue thu 7am', 'pay MFFU 91.80 on the 5th', 'netflix 15.49 monthly on the 12th', 'Outback fri 4-10pm'].map((s) => window.__pw.label(window.__pw.parse(s, T, { nowMin: 600 }), T)), T);
++  ok(/^Shift "Outback Steakhouse" Fri, Nov 6, 4pm-10pm$/.test(lab[3]), 'label: ' + lab[3]);
++  ok(/^2 repeating events "Gym" every Tue and Thu, 7am-8am, starting Thu, Nov 5$/.test(lab[0]), 'label: ' + lab[0]);
++  ok(/^Task "Pay MFFU \$91\.80" Thu, Nov 5$/.test(lab[1]), 'label: ' + lab[1]);
++  ok(/^Monthly bill "Netflix" \$15\.49, due on the 12th of each month/.test(lab[2]), 'label: ' + lab[2]);
++
++  // ---------- 2. pure helpers: pick and spread ----------
++  const pick = await p.evaluate((T) => window.__pw.pick(JSON.parse(localStorage.getItem('planner.v1')).tasks, { today: T, minutes: 180, skip: {}, now: 0 }).map((x) => x.t.id), T);
++  ok(JSON.stringify(pick) === JSON.stringify(['a', 'c', 'e']), 'do next order (high + late + fits first, ideas/future/done out): ' + pick);
++  const pick2 = await p.evaluate((T) => window.__pw.pick(JSON.parse(localStorage.getItem('planner.v1')).tasks, { today: T, minutes: 20, skip: { a: Date.now() + 1e6 }, now: Date.now() }).map((x) => x.t.id), T);
++  ok(pick2[0] === 'b' && !pick2.includes('a'), 'a 20 min gap favors the 15 min task; skipped task is out: ' + pick2);
++  const sp = await p.evaluate(() => window.__pw.spread([{ id: 'x', p: 0, date: '2026-10-01', est: 30 }, { id: 'y', p: 3, date: '2026-10-20', est: 120 }, { id: 'z', p: 1, date: '2026-10-02', est: 60 }, { id: 'w', p: 0, date: '2026-10-03', est: 500 }], [{ k: 'd1', cap: 150 }, { k: 'd2', cap: 60 }], 3));
++  ok(JSON.stringify(sp.plan) === JSON.stringify({ y: 'd1', z: 'd2', x: 'd1' }) && JSON.stringify(sp.unplaced) === JSON.stringify(['w']), 'spread: ' + JSON.stringify(sp));
++  const caps = await p.evaluate(() => window.__pw.caps('2026-11-03', 2));
++  ok(caps[0].free === 280 && caps[0].used === 15 && caps[0].cap === 153, 'today: free 10am-1pm + 2pm-3:40pm (travel), Call Sam planned: ' + JSON.stringify(caps[0]));
++  ok(caps[1].free === 370 && caps[1].cap === 222, 'tomorrow: 7am-10pm minus the Electric shift and its travel: ' + JSON.stringify(caps[1]));
++
++  // ---------- 3. Now and next card ----------
++  ok(await p.isVisible('#pwNow'), 'Now and next card on Today');
++  await p.click('#pwNow [data-pwopen="now-next"]'); await wait(250);
++  ok(await p.isVisible('#pwNnDlg'), 'More opens the sheet');
++  await p.evaluate(() => document.querySelectorAll('dialog[open]').forEach((d) => d.close())); await wait(100);
++  ok(await p.locator('#pwReview').count() === 0, 'no review reminder on a Tuesday');
++  const order = await p.evaluate(() => [...document.querySelectorAll('.tdy [data-toid]')].map((x) => x.dataset.toid));
++  ok(order.indexOf('pwnow') >= 0 && order.indexOf('pwnow') < order.indexOf('tasks'), 'card sits above Tasks: ' + order.join(','));
++  ok(await p.locator('#pwNow .px-blk').count() === 3, 'strip shows the 3 timed events of today');
++  ok(await p.locator('#pwNow .px-trv').count() === 2, 'travel before and after the shift');
++  ok(await p.locator('#pwNow .px-now').count() === 1, 'now line');
++  ok(await p.locator('#pwNow .px-blk.past').count() === 1, 'standup is past');
++  const stat = (await p.textContent('#pwNow .px-stat')).replace(/\s+/g, ' ').trim();
++  ok(/^Free now until 1pm · 3h, then Dentist at 1pm$/.test(stat), 'status: ' + stat);
++  const rows = await p.$$eval('#pwNow .px-list [data-t]', (n) => n.map((x) => x.dataset.t));
++  ok(JSON.stringify(rows) === JSON.stringify(['a', 'c']), 'do next rows (2 on the card): ' + rows);
++  ok(/2 days late/.test(await p.textContent('#pwNow [data-t="a"]')) && /Kalshi/.test(await p.textContent('#pwNow [data-t="a"]')), 'reasons shown');
++  const before = await st(p);
++  await p.click('#pwNow [data-t="a"] [data-pwskip]'); await wait(250);
++  ok(!(await p.$$eval('#pwNow .px-list [data-t]', (n) => n.map((x) => x.dataset.t))).includes('a'), 'Not now hides it');
++  const skip = await p.evaluate(() => JSON.parse(localStorage.getItem('planner.power.skip')));
++  ok(skip && skip.a > Date.now(), 'kept on this device only: ' + JSON.stringify(skip));
++  ok(JSON.stringify((await st(p)).tasks) === JSON.stringify(before.tasks), 'Not now does not touch your tasks');
++  // the app's own actions work on the rows
++  await p.click('#pwNow [data-t="c"] [data-pwdetail]'); await wait(250);
++  ok(await p.isVisible('#taskDlg') && (await p.inputValue('#tTitle')) === 'Review fills', 'tap opens the app\'s task details');
++  await p.evaluate(() => document.querySelectorAll('dialog[open]').forEach((d) => d.close())); await wait(100);
++  await p.click('#pwNow [data-t="c"] [data-focus]'); await wait(250);
++  ok(await p.isVisible('#focDlg'), 'clock opens the app\'s focus timer');
++  await p.evaluate(() => document.querySelectorAll('dialog[open]').forEach((d) => d.close())); await wait(100);
++  await p.click('#pwNow [data-t="e"] input[type=checkbox]'); await wait(300);
++  let s = await st(p);
++  ok(s.tasks.find((x) => x.id === 'e').done === true && s.tasks.find((x) => x.id === 'e').doneAt > 0 && s.tasks.find((x) => x.id === 'e').u > 0, 'checkbox marks it done (stamped by the app)');
++  ok(!(await p.$$eval('#pwNow .px-list [data-t]', (n) => n.map((x) => x.dataset.t))).includes('e'), 'done task leaves the list');
++  await p.click('#toastBtn'); await wait(250);
++  ok((await st(p)).tasks.find((x) => x.id === 'e').done === false, 'Undo brings it back');
++  await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('planner.v1')); s.tasks.find((x) => x.id === 'r').date = '2026-11-03'; localStorage.setItem('planner.v1', JSON.stringify(s)); });
++  await p.reload(); await wait(900);
++  await p.evaluate(() => { localStorage.setItem('planner.power.skip', JSON.stringify({ a: Date.now() + 1e7, c: Date.now() + 1e7, e: Date.now() + 1e7 })); }); await p.click('#views [data-v=today]'); await wait(250);
++  if (await p.locator('#pwNow [data-t="r"] input[type=checkbox]').count()) {
++    await p.click('#pwNow [data-t="r"] input[type=checkbox]'); await wait(300);
++    const reps = (await st(p)).tasks.filter((x) => x.title === 'Weekly report');
++    ok(reps.length === 2 && reps.some((x) => x.done) && reps.some((x) => !x.done && x.date === '2026-11-10' && x.rep === 'weekly'), 'a repeating task puts its next one on the calendar: ' + JSON.stringify(reps.map((x) => [x.date, x.done])));
++  } else ok(false, 'weekly report row shown');
++  ok(await p.locator('.tdy .tasks li').count() === await p.locator('.tdy [data-toid="tasks"] .tasks li').count(), 'Do next rows are not counted as task-list rows');
++  await p.click('#pwNow [data-ev="e2"]'); await wait(250);
++  ok(await p.isVisible('#evDlg') || await p.evaluate(() => !!document.querySelector('dialog[open]')), 'tapping a block opens the event');
++  await p.evaluate(() => document.querySelectorAll('dialog[open]').forEach((d) => d.close())); await wait(100);
++  ok(await p.evaluate(() => document.documentElement.scrollWidth) <= 390, 'no sideways scroll at 390');
++  ok(!Object.keys(s).some((k) => /^pw|power/i.test(k)), 'nothing new inside planner.v1: ' + Object.keys(s).filter((k) => /pw|power/i.test(k)));
++  pe.length && errs.push(...pe.map((x) => 'pageerror ' + x)); await ctx.close();
++
++  // ---------- 4. Catch up ----------
++  ({ ctx, p, pe } = await open('#today'));
++  ok(await p.isVisible('#pwCatch'), 'Catch up card when 2+ tasks are overdue');
++  const tiers = await p.evaluate(() => { let cur = ''; const out = {}; [...document.querySelector('.tdy').children].forEach((c) => { if (c.classList.contains('to-h')) cur = c.textContent; else if (c.dataset && c.dataset.toid) (out[cur] = out[cur] || []).push(c.dataset.toid); }); return out; });
++  ok((tiers['Needs you now'] || []).includes('pwcatch'), 'in Needs you now: ' + JSON.stringify(tiers));
++  ok(/4 overdue tasks/.test(await p.textContent('#pwCatch')) && /6 days late/.test(await p.textContent('#pwCatch')), 'card text: ' + (await p.textContent('#pwCatch')).replace(/\s+/g, ' '));
++  ok(/^\d+ things? needs? you|^Nothing urgent/.test(await p.textContent('#toStrip')), 'strip intact');
++  const s0 = await st(p);
++  await p.click('#pwCatch [data-pwopen="catch-up"]'); await wait(300);
++  ok(await p.isVisible('#pwCuDlg'), 'sheet opens');
++  const plan = await p.$$eval('#pwCuDlg [data-cutask]', (n) => Object.fromEntries(n.map((x) => [x.dataset.cutask, x.value])));
++  ok(plan.a === T && plan.e === T && plan.r === T && plan.d === '2026-11-05', 'smart plan (high first; the 4 h task goes to the first day with room): ' + JSON.stringify(plan));
++  ok(/Today/.test(await p.textContent('#pwCuDlg .px-cu-g')), 'grouped by day');
++  ok(!(await p.$$eval('#pwCuDlg [data-cutask="r"] option', (n) => n.map((x) => x.value))).includes('done'), 'no Mark done on a repeating task');
++  await p.selectOption('#pwCuDlg [data-cutask="d"]', 'none'); await wait(100);
++  await p.selectOption('#pwCuDlg [data-cutask="e"]', 'done'); await wait(100);
++  await p.selectOption('#pwCuDlg [data-cutask="r"]', 'keep'); await wait(100);
++  ok(/2 moved|1 moved/.test(await p.textContent('#pwCuSum')), 'summary: ' + await p.textContent('#pwCuSum'));
++  ok(JSON.stringify(await st(p)) === JSON.stringify(s0), 'nothing saved before Apply');
++  await p.click('#pwCuApply'); await wait(300);
++  s = await st(p);
++  const tA = s.tasks.find((x) => x.id === 'a'), tD = s.tasks.find((x) => x.id === 'd'), tE = s.tasks.find((x) => x.id === 'e'), tR = s.tasks.find((x) => x.id === 'r');
++  ok(tA.date === T && tD.date === '' && tE.done === true && tR.date === '2026-11-02', 'applied: ' + JSON.stringify([tA.date, tD.date, tE.done, tR.date]));
++  ok(tA.u > 0 && tD.u > 0, 'changes carry the app\'s sync stamp');
++  const same = s0.tasks.filter((x) => !['a', 'd', 'e'].includes(x.id)).every((x) => strip(x) === strip(s.tasks.find((y) => y.id === x.id)));
++  ok(same && JSON.stringify(s.events) === JSON.stringify(s0.events), 'every other task and event untouched');
++  ok(/Caught up: 1 moved, 1 done, 1 without a date/.test(await p.textContent('#toast')), 'toast: ' + await p.textContent('#toast'));
++  await p.click('#toastBtn'); await wait(300);
++  s = await st(p);
++  ok(s.tasks.find((x) => x.id === 'a').date === '2026-11-01' && s.tasks.find((x) => x.id === 'd').date === '2026-10-30' && !s.tasks.find((x) => x.id === 'e').done, 'Undo puts everything back');
++  await p.goto(URL + '#catch-up'); await wait(900);
++  ok(await p.isVisible('#pwCuDlg'), '#catch-up deep link');
++  await p.click('#pwCuDlg [data-cumode="tomorrow"]'); await wait(100);
++  ok((await p.$$eval('#pwCuDlg [data-cutask]', (n) => n.map((x) => x.value))).every((v) => v === '2026-11-04'), 'All tomorrow');
++  ok(await p.evaluate(() => { const d = document.querySelector('#pwCuDlg .dlg'); return d.scrollWidth - d.clientWidth <= 1; }), 'sheet fits 390');
++  pe.length && errs.push(...pe.map((x) => 'pageerror ' + x)); await ctx.close();
++
++  // ---------- 5. Quick capture and the Today quick add ----------
++  ({ ctx, p, pe } = await open('#capture'));
++  ok(await p.isVisible('#qcDlg'), 'capture opens');
++  ok(/gym tue thu 7am/.test(await p.textContent('#qcDlg .qc-eg')), 'new examples listed');
++  await p.fill('#qcIn', 'gym tue thu 7am'); await wait(150);
++  ok(/I will add: 2 repeating events "Gym" every Tue and Thu, 7am-8am/.test((await p.textContent('#qcPrev')).replace(/\s+/g, ' ')), 'preview: ' + (await p.textContent('#qcPrev')).replace(/\s+/g, ' '));
++  let n0 = (await st(p)).events.length;
++  await p.click('#pwAdd'); await wait(300);
++  s = await st(p);
++  const gyms = s.events.filter((x) => x.title === 'Gym');
++  ok(gyms.length === 2 && gyms.every((x) => x.repeat === 'weekly' && x.start === '07:00' && x.end === '08:00' && x.cat === 'personal') && gyms.map((x) => x.date).sort().join() === '2026-11-05,2026-11-10', 'two weekly events, never a job type: ' + JSON.stringify(gyms.map((x) => [x.date, x.repeat, x.cat])));
++  ok(!(await p.isVisible('#qcDlg')), 'sheet closes');
++  await p.click('#toastBtn'); await wait(250);
++  ok((await st(p)).events.length === n0, 'Undo removes both');
++  await p.keyboard.press('c'); await wait(250);
++  await p.fill('#qcIn', 'pay MFFU 91.80 on the 5th'); await wait(150);
++  ok(/Task "Pay MFFU \$91\.80" Thu, Nov 5/.test(await p.textContent('#qcPrev')) && await p.isVisible('#pwAlt'), 'pay preview with the bill option');
++  await p.click('#pwAlt'); await wait(300);
++  s = await st(p);
++  const bill = s.bills.find((x) => x.name === 'MFFU');
++  ok(bill && bill.amt === 91.8 && bill.freq === 'monthly' && bill.day === 5 && /^bill-/.test(bill.id) && s.categories.some((c) => c.id === 'bills'), 'monthly bill saved: ' + JSON.stringify(bill));
++  await p.keyboard.press('c'); await wait(250);
++  await p.fill('#qcIn', 'renew passport nov 15'); await p.press('#qcIn', 'Enter'); await wait(300);
++  ok((await st(p)).tasks.some((x) => x.title === 'Renew passport' && x.date === '2026-11-15'), 'Enter adds with the new reader');
++  await p.keyboard.press('c'); await wait(250);
++  await p.fill('#qcIn', 'call Sam fri 3pm #nq'); await wait(150);
++  ok(!(await p.$('#qcPrev .px-qc')) && /Event "Call Sam"/.test(await p.textContent('#qcPrev')), 'phrases the app reads keep its preview');
++  await p.fill('#qcIn', 'spent 12 on lunch'); await wait(150);
++  ok(/Money out \$12/.test(await p.textContent('#qcPrev')), 'money stays money');
++  await p.fill('#qcIn', 'Outback fri 4-10pm'); await wait(150);
++  await p.click('#qcChange'); await wait(150);
++  ok(await p.isVisible('#qcDlg .qc-kinds') && !(await p.$('#qcPrev .px-qc')), 'Change hands the sentence back to the app');
++  await p.evaluate(() => document.querySelectorAll('dialog[open]').forEach((d) => d.close())); await wait(100);
++  await p.goto(URL + '#today'); await wait(800);
++  await p.fill('#main [data-tadd] input', 'Outback fri 4-10pm'); await p.press('#main [data-tadd] input', 'Enter'); await wait(300);
++  s = await st(p);
++  ok(s.events.some((x) => x.title === 'Outback Steakhouse' && x.cat === 'job-outback' && x.date === '2026-11-06' && x.start === '16:00' && x.end === '22:00'), 'Today quick add reads ranges and makes it an Outback shift');
++  await p.fill('#main [data-tadd] input', 'call Sam fri'); await p.press('#main [data-tadd] input', 'Enter'); await wait(300);
++  ok((await st(p)).tasks.some((x) => x.title === 'call Sam' && x.date === '2026-11-06'), 'plain phrases still go to the app');
++  pe.length && errs.push(...pe.map((x) => 'pageerror ' + x)); await ctx.close();
++
++  // ---------- 6. tools, palette, deep links, desktop, late evening ----------
++  ({ ctx, p, pe } = await open('#tools'));
++  ok(await p.locator('#hbBody [data-hbtool="pwnow"]').count() === 1 && await p.locator('#hbBody [data-hbtool="pwcatch"]').count() === 1, 'two tiles in All tools');
++  await p.click('#hbBody [data-hbtool="pwnow"]'); await wait(300);
++  ok(await p.isVisible('#pwNnDlg') && await p.locator('#pwNnDlg .px-blk').count() === 3, 'tile opens Now and next');
++  ok(JSON.stringify(await p.$$eval('#pwNnDlg .px-list [data-t]', (n) => n.map((x) => x.dataset.t))) === JSON.stringify(['a', 'c', 'e', 'r', 'b']), 'the sheet lists 5 suggestions');
++  await p.evaluate(() => document.querySelectorAll('dialog[open]').forEach((d) => d.close())); await wait(100);
++  await p.goto(URL + '#search'); await wait(800);
++  await p.keyboard.type('catch up'); await wait(250);
++  ok(/Catch up overdue tasks/.test(await p.textContent('#pkDlg')), 'palette finds Catch up');
++  await p.goto(URL + '#now-next'); await wait(900);
++  ok(await p.isVisible('#pwNnDlg'), '#now-next deep link');
++  pe.length && errs.push(...pe.map((x) => 'pageerror ' + x)); await ctx.close();
++  ({ ctx, p, pe } = await open('#today', 1440));
++  ok(await p.isVisible('#pwNow') && await p.locator('#pwNow .px-blk').count() === 3, 'desktop card');
++  pe.length && errs.push(...pe.map((x) => 'pageerror ' + x)); await ctx.close();
++  {
++    const ctx2 = await b.newContext({ viewport: { width: 390, height: 844 }, timezoneId: 'America/New_York' }); const p2 = await ctx2.newPage(); const pe2 = [];
++    p2.on('pageerror', (e) => pe2.push(e.message)); await p2.route('**/data.json*', (r) => r.abort());
++    await p2.clock.install({ time: new Date('2026-11-04T04:30:00Z').getTime() }); // 11:30 pm Tuesday
++    await p2.addInitScript((s) => { if (!localStorage.getItem('pw.seeded')) { localStorage.setItem('pw.seeded', '1'); localStorage.setItem('planner.v1', JSON.stringify(s)); } }, seed());
++    await p2.goto(URL + '#today'); await wait(900);
++    const t2 = (await p2.textContent('#pwNow')).replace(/\s+/g, ' ');
++    ok(/Day is done\. Tomorrow starts with Electric at 7am/.test(t2) && await p2.locator('#pwNow .px-list').count() === 0, 'late evening shows tomorrow: ' + t2.slice(0, 120));
++    errs.push(...pe2.map((x) => 'pageerror ' + x)); await ctx2.close();
++  }
++  // ---------- 7. weekly review reminder (Sunday evening) ----------
++  {
++    const st7 = seed(); st7.reviews = [{ id: 'r:2026-10-25', wk: '2026-10-25', well: 'Followed the plan', fix: '', prios: ['', '', ''] }, { id: 'r:2026-10-18', wk: '2026-10-18', well: '', fix: 'Too many trades', prios: ['', '', ''] }];
++    const ctx7 = await b.newContext({ viewport: { width: 390, height: 844 }, timezoneId: 'America/New_York' }); const p7 = await ctx7.newPage(); const pe7 = [];
++    p7.on('pageerror', (e) => pe7.push(e.message)); await p7.route('**/data.json*', (r) => r.abort());
++    await p7.clock.install({ time: new Date('2026-11-08T23:00:00Z').getTime() }); // Sunday 6 pm
++    await p7.addInitScript((s) => { if (!localStorage.getItem('pw.seeded')) { localStorage.setItem('pw.seeded', '1'); localStorage.setItem('planner.v1', JSON.stringify(s)); } }, st7);
++    await p7.goto(URL + '#today'); await wait(900);
++    const r7 = await p7.evaluate(() => window.__pw.review('2026-11-08'));
++    ok(r7.ws === '2026-11-01' && !r7.done && r7.streak === 2, 'the week that just ended, 2 weeks in a row: ' + JSON.stringify(r7));
++    const c7 = (await p7.textContent('#pwReview')).replace(/\s+/g, ' ');
++    ok(/2 weeks in a row/.test(c7) && /Nov 1 to 7/.test(c7), 'review reminder: ' + c7);
++    const before7 = await p7.evaluate(() => localStorage.getItem('planner.v1'));
++    await p7.click('#pwReview [data-pwreview]'); await wait(300);
++    ok((await p7.evaluate(() => JSON.parse(localStorage.getItem('planner.v1')).view)) === 'review' && /Nov 1 - 7/.test(await p7.textContent('#main')), 'opens the Review page on that week');
++    ok(JSON.stringify(JSON.parse(await p7.evaluate(() => localStorage.getItem('planner.v1'))).reviews) === JSON.stringify(JSON.parse(before7).reviews), 'opening it changes nothing');
++    await p7.fill('#main [data-rf="well"]', 'Passed the eval week'); await wait(1500);
++    ok((await p7.evaluate(() => window.__pw.review('2026-11-08'))).streak === 3, 'written: 3 in a row');
++    await p7.evaluate(() => document.querySelector('#views [data-v=today]').click()); await wait(300);
++    ok(await p7.locator('#pwReview').count() === 0, 'reminder gone once written');
++    errs.push(...pe7.map((x) => 'pageerror ' + x)); await ctx7.close();
++  }
++  await b.close();
++  if (errs.length) { console.log('FAIL\n' + errs.join('\n')); process.exit(1); }
++  console.log(`POWER OK (${checks} checks)`);
++})();
