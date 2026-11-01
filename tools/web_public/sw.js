@@ -67,7 +67,10 @@
 // v49 (2026-10-31, Jarvis would not open): this worker covers the whole site, so it stays out of the other apps' folders
 // (jarvis/, planner/: each has its own worker and saved copy) and only ever deletes its own old caches (le-public-*);
 // before, it erased Jarvis's and the Planner's saved copies and stored their pages as Zenith's.
-const CACHE = 'le-public-v49';
+// v50 (2026-11-01, Zenith mode in Jarvis): embed.js (the settings code, Zenith inside Jarvis: jarvis/zenith-mode.js) and
+// index.html's head (inside a Jarvis frame: the safe areas Jarvis gives, no intro). A notification tapped while Jarvis runs
+// (Zenith shown in its frame) moves that frame to the notice and asks Jarvis for Zenith mode; Zenith's own window as before.
+const CACHE = 'le-public-v50';
 const BADGE = 'le-badge', BADGE_URL = './__badge';
 const OTHER_APPS = ['jarvis/', 'planner/', 'kalshi/']; // own folders (own workers or none): never handled or cached here
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=p111030', './icons/apple-touch-icon.png?v=p111030', './icons/icon-512.png?v=p111030'];
@@ -139,7 +142,16 @@ self.addEventListener('notificationclick', (e) => {
   const hash = safeHash(e.notification.data && e.notification.data.url);
   const url = new URL('./' + hash, self.registration.scope).href;
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((cs) => {
-    const c = cs.find((x) => x.url.startsWith(self.registration.scope));
+    const sc = self.registration.scope, rel = (x) => (x.url.startsWith(sc) ? x.url.slice(sc.length) : null);
+    const mine = (x) => { const r = rel(x); return r != null && !OTHER_APPS.some((d) => r === d.slice(0, -1) || r.startsWith(d)); };
+    const own = cs.find((x) => mine(x) && x.frameType === 'top-level'), hub = cs.find((x) => /^jarvis(\/|$|\?|#)/.test(rel(x) || ''));
+    if (own) { own.postMessage({ type: 'open', hash }); return own.focus ? own.focus() : null; }
+    if (hub) {                                       // Zenith inside Jarvis (jarvis/zenith-mode.js): its frame + Zenith mode
+      cs.filter(mine).forEach((x) => x.postMessage({ type: 'open', hash }));
+      hub.postMessage({ type: 'open', app: 'zenith', hash });
+      return hub.focus ? hub.focus() : null;
+    }
+    const c = cs.find(mine);
     if (c) { c.postMessage({ type: 'open', hash }); return c.focus ? c.focus() : null; }
     return self.clients.openWindow(url);
   }));
