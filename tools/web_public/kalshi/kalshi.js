@@ -405,7 +405,7 @@
       if (x != null) { mx = Math.max(mx, Math.abs(x)); tot += x; n++; if (x > 0.005) g++; else if (x < -0.005) r++; }
     }
     const cells = ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((c) => `<span class="wd" aria-hidden="true">${c}</span>`);
-    cells.push('<span class="wd" title="Week total">WK</span>');
+    cells.push('<span class="wd wk" title="Week total">WK</span>');
     for (let w = 0; w < Math.ceil((dow + nd) / 7); w++) {
       let wt = 0, wn = 0;
       for (let c = 0; c < 7; c++) {
@@ -419,7 +419,7 @@
       cells.push(`<span class="cw ${wn ? cls(wt) : ''}">${wn ? esc(cmp(wt, true)) : ''}</span>`);
     }
     const prev = ymAdd(S.cal, -1), next = ymAdd(S.cal, 1), mon = ff(F.mon, Date.UTC(y, m - 1, 15) / 1000);
-    S.calGr = n ? `${g} green · ${r} red ${n === 1 ? 'day' : 'days'} this month` : 'No P&amp;L this month';
+    S.calGr = n ? `${n} ${n === 1 ? 'day' : 'days'} this month: ${g} green, ${r} red` : 'No P&amp;L this month';
     return `<section class="card" id="sec-cal"><div class="card-h"><h2>P&amp;L calendar</h2><span class="r ${cls(tot)}">${n ? esc(usd(tot, true)) : ''}</span></div>`
       + `<div class="cal-h"><button type="button" class="nav" data-act="month" data-v="${prev}" aria-label="Previous month"${prev < firstM ? ' disabled' : ''}>‹</button>`
       + `<b id="calMonth">${esc(mon)}</b><button type="button" class="nav" data-act="month" data-v="${next}" aria-label="Next month"${next > maxM ? ' disabled' : ''}>›</button></div>`
@@ -430,7 +430,12 @@
     const k = S.calSel;
     if (!k) return `${S.calGr}. Tap a day for its P&amp;L.`;
     const x = map.get(k), tr = S.v ? S.v.tr.filter((t) => { const tt = parseT(t.t); return tt && dayKey(tt) === k; }) : [];
-    return `<b>${esc(dayLabel(k))}</b> · ${x == null ? 'no P&amp;L' : `<span class="${cls(x)}">${esc(usd(x, true))}</span>`}${tr.length ? ` · ${tr.length} ${tr.length === 1 ? 'trade' : 'trades'} in the recent list` : ''}`;
+    // its week (Monday to Sunday, as the bot's): on a phone the calendar has no week column, so the total is here
+    const p = pd(k), dw = (new Date(Date.UTC(p.y, p.m - 1, p.d)).getUTCDay() + 6) % 7;
+    let wk = 0, wn = 0;
+    for (let i = 0; i < 7; i++) { const x2 = map.get(new Date(Date.UTC(p.y, p.m - 1, p.d - dw + i)).toISOString().slice(0, 10)); if (x2 != null) { wk += x2; wn++; } }
+    return `<b>${esc(dayLabel(k))}</b> · ${x == null ? 'no P&amp;L' : `<span class="${cls(x)}">${esc(usd(x, true))}</span>`}`
+      + (wn ? ` · its week <span class="${cls(wk)}">${esc(usd(wk, true))}</span>` : '') + (tr.length ? ` · ${tr.length} ${tr.length === 1 ? 'trade' : 'trades'} in the recent list` : '');
   }
 
   // ---- stats
@@ -472,7 +477,7 @@
       let peak = -Infinity, dd = 0, at = 0;
       s.pts.forEach((p) => { if (p[1] > peak) peak = p[1]; if (p[1] - peak < dd) { dd = p[1] - peak; at = peak; } });
       tiles.push(tile(s.kind === 'eq' ? 'Max drawdown' : 'Max drawdown', one(dd < -0.005 ? `<span class="down">${esc(usd(dd, true))}</span>` : esc(usd(0))),
-        dd < -0.005 ? (s.kind === 'eq' && at > 0 ? esc(pct(dd / at, true)) + ' from the peak' : 'from the daily P&amp;L') : 'none so far'));
+        dd < -0.005 ? (s.kind === 'eq' && at > 0 ? esc(pct(dd / at, true)) + ' from peak' : 'from daily P&amp;L') : 'none so far'));
     }
     const head = `<div class="card-h"><h2>Stats</h2>${pn.length ? `<span class="r muted">last ${pn.length} closed ${pn.length === 1 ? 'trade' : 'trades'}</span>` : ''}</div>`;
     if (!tiles.length) return `<section class="card" id="sec-stats">${head}<p class="empty">No stats yet: they show once trades settle.</p></section>`;
@@ -780,34 +785,11 @@
     try { navigator.clipboard.writeText(PASTE).then(() => done(true), pick); } catch (_) { pick(); }
   }
 
-  // ------------------------------------------------------------------ fonts + offline
-  // Jarvis's fonts, built from the bytes our service worker saved (sw.js fetches them quietly): this page never requests a font,
-  // so one not on the site yet cannot make a 404 here. System fonts until they are saved.
-  const FONT_FILES = [['Orbitron', '../jarvis/orbitron.woff2', '500 800'], ['Rajdhani', '../jarvis/rajdhani-500.woff2', '500'],
-    ['Rajdhani', '../jarvis/rajdhani-600.woff2', '600 700']];
-  const fontsIn = new Set();
-  async function fonts() {
-    if (!window.caches || typeof FontFace !== 'function' || !document.fonts || fontsIn.size === FONT_FILES.length) return;
-    let added = 0;
-    for (const [fam, path, w] of FONT_FILES) {
-      if (fontsIn.has(path)) continue;
-      try {
-        const hit = await caches.match(new URL(path, location.href).href);
-        if (!hit) continue;
-        const f = new FontFace(fam, await hit.arrayBuffer(), { weight: w, style: 'normal' });
-        await f.load();
-        document.fonts.add(f);
-        fontsIn.add(path);
-        added += 1;
-      } catch (_) { /* a damaged file: keep the system font */ }
-    }
-    if (added) fit();
-  }
+  // ------------------------------------------------------------------ offline
   function offline() {                // sw.js: the page opens without a connection, never on a browser error page
     try {
       if (!('serviceWorker' in navigator)) return;
       navigator.serviceWorker.register('sw.js', { scope: './' }).catch(() => null);
-      navigator.serviceWorker.ready.then(() => setTimeout(fonts, 400)).catch(() => null);
     } catch (_) { /* no service worker here */ }
   }
 
@@ -824,8 +806,9 @@
   window.addEventListener('online', () => load());
   let rz = 0;
   window.addEventListener('resize', () => { cancelAnimationFrame(rz); rz = requestAnimationFrame(() => fit()); });
-  try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fit()); } catch (_) { /* no font loading API */ }
-  fonts();
+  try {                             // Jarvis's fonts swap in after the first paint: numbers are fitted again then
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fit());
+    if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => fit());
+  } catch (_) { /* no font loading API */ }
   offline();
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') fonts(); });
 })();
