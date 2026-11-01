@@ -16,6 +16,9 @@ mounts the module the way the hub does, with iPhone safe areas simulated (--zm-s
                Screen card, no notification prompt, the Settings "Inside Jarvis" card, links to other sites open on their own
   f. settings  the code round trip from a separate Zenith app (its own storage, like the iPhone): only the listed keys move,
                never a key, a push state or what was seen; Apply reloads with them, Undo goes back
+  h. worker    Zenith's service worker (sw.js v50) when the site answers 404 for everything (GitHub's "Site not found"), drops
+               every connection or answers after 7 s: the saved copy (in under 5.5 s when slow), data flagged as the last
+               copy, an older saved version of a file; no copy and no site = a dark Retry page
   g.           no page errors anywhere
     python -X utf8 -m tests.test_zenith_mode        (temp folder + a local server; nothing else touched)
 """
@@ -92,7 +95,10 @@ import { mountZenithMode, zenithRouteFor } from './zenith-mode.js';
 window.EXITS = 0; window.STATES = []; window.EVENTS = [];
 const host = document.getElementById('zhost');
 host.addEventListener('zenith:state', (e) => window.EVENTS.push(e.detail));
-window.ZM = mountZenithMode({ host, onExit: () => { window.EXITS++; window.closeZ(); }, onState: (s) => window.STATES.push(s) });
+window.SWITCHED = [];
+const APPS = [{ id: 'home', name: 'Jarvis' }, { id: 'zenith', name: 'Zenith' }, { id: 'planner', name: 'Planner', icon: '../icons/icon-192.png' }, { id: 'kalshi', name: 'Kalshi' }];
+const sw = /nosw/.test(location.search) ? {} : { apps: () => APPS, onSwitch: (id) => { window.SWITCHED.push(id); window.closeZ(); } };
+window.ZM = mountZenithMode({ host, onExit: () => { window.EXITS++; window.closeZ(); }, onState: (s) => window.STATES.push(s), ...sw });
 window.openZ = (r) => { host.hidden = false; return window.ZM.show(r); };
 window.closeZ = () => { window.ZM.hide(); host.hidden = true; };
 window.zenithRouteFor = zenithRouteFor;
@@ -137,16 +143,118 @@ def site(tmp, now):
     return base, other
 
 
+# the site can turn bad like GitHub Pages does: slow, every connection dropped, or "Site not found" for every file
+SITE = {"mode": "ok", "delay": 7.0}
+GH404_SITE = (b'<!DOCTYPE html><html><head><meta http-equiv="Content-type" content="text/html; charset=utf-8"><title>Site not found'
+              b' &middot; GitHub Pages</title><style>body { background-color: #f1f1f1; }</style></head><body><h1>404</h1>'
+              b"<p><strong>There isn't a GitHub Pages site here.</strong></p></body></html>")
+
+
 def serve(d):
     class Q(http.server.SimpleHTTPRequestHandler):
         def __init__(self, *a, **k):
             super().__init__(*a, directory=d, **k)
+
+        def do_GET(self):
+            m = SITE["mode"]
+            if m == "down":
+                self.close_connection = True
+                return
+            if m == "404":
+                self.send_response(404)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Length", str(len(GH404_SITE)))
+                self.end_headers()
+                self.wfile.write(GH404_SITE)
+                return
+            if m == "slow":
+                time.sleep(SITE["delay"])
+            return super().do_GET()
 
         def log_message(self, *a):
             pass
     srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Q)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     return srv
+
+
+ZENITH_READY = "() => { const p = document.querySelector('#page'); return !!p && !p.querySelector(':scope > .skel') && p.textContent.trim().length > 40; }"
+SAVED = """async () => { const c = await caches.open('le-public-v50'); const g = async (u) => { const r = await c.match(u); return r ? (await r.text()).slice(0, 60) : null; };
+  return { page: await g('./index.html'), data: await g('./data.json'), home: await g('./home.json') }; }"""
+
+
+def part_sw(br, base, errs):
+    """Zenith's service worker (sw.js v50) when the site is slow, answers 404 for everything, or is gone."""
+    ctx, pg = new_page(br, 390, 844, errs, "zenith-sw")
+    try:
+        SITE["mode"] = "ok"
+        pg.goto(base + "#/today")
+        pg.wait_for_function(ZENITH_READY, timeout=30000)
+        pg.evaluate("() => navigator.serviceWorker.register('sw.js').then(() => navigator.serviceWorker.ready).then(() => true)")
+        pg.reload()                                            # now the worker answers every request and keeps the copies
+        pg.wait_for_function(ZENITH_READY, timeout=30000)
+        pg.wait_for_function("() => !!navigator.serviceWorker.controller", timeout=10000)
+        t0 = time.time()
+        sv = pg.evaluate(SAVED)
+        while time.time() - t0 < 10 and not all(sv.values()):
+            pg.wait_for_timeout(300)
+            sv = pg.evaluate(SAVED)
+        check("h. the worker keeps Zenith's page, data.json and home.json (le-public-v50)", all(sv.values()) and sv["page"].lower().startswith("<!doctype html"), sv)
+        # a picture / a file opened in a tab is no longer saved as the app's page
+        p2 = ctx.new_page()
+        p2.goto(base + "manifest.webmanifest")
+        p2.wait_for_timeout(400)
+        p2.close()
+        check("h. a file opened in a tab is cached under its own address, never as the app's page", pg.evaluate(SAVED)["page"].lower().startswith("<!doctype html"))
+        # 404 for every file (GitHub's "Site not found"): the saved copy, the data flagged as the last copy
+        SITE["mode"] = "404"
+        pg.reload()
+        ok = True
+        try:
+            pg.wait_for_function(ZENITH_READY, timeout=12000)
+        except Exception:
+            ok = False
+        t = pg.evaluate("() => ({ title: document.title, gh: /Site not found|GitHub Pages site/.test(document.body.innerText), bg: getComputedStyle(document.body).backgroundColor })")
+        flag = pg.evaluate("() => fetch('data.json?t=' + Date.now(), { cache: 'no-store' }).then((r) => [r.status, r.headers.get('x-le-cache')])")
+        ver = pg.evaluate("() => fetch('extras.js?v=999').then(async (r) => [r.status, (await r.text()).length > 1000])")
+        check("h. a 404 site: Zenith opens from its saved copy, not GitHub's 'Site not found'; data.json is the last copy, flagged",
+              ok and "Zenith" in t["title"] and not t["gh"] and flag == [200, "1"], (ok, t, flag))
+        check("h. a 404 site: a new version of a file the site does not give falls back to the version saved before", ver == [200, True], ver)
+        # gone (every connection dropped): the saved copy
+        SITE["mode"] = "down"
+        pg.reload()
+        ok = True
+        try:
+            pg.wait_for_function(ZENITH_READY, timeout=12000)
+        except Exception:
+            ok = False
+        check("h. offline: Zenith opens from its saved copy", ok and "Zenith" in pg.title(), pg.title())
+        # slow (every answer after 7 s): the saved page after 3.5 s, the data right after it (the site was just slow)
+        SITE["mode"] = "slow"
+        t0 = time.time()
+        pg.reload(wait_until="commit", timeout=20000)
+        drawn = None
+        while time.time() - t0 < 14:
+            try:
+                if pg.evaluate(ZENITH_READY):
+                    drawn = round(time.time() - t0, 1)
+                    break
+            except Exception:
+                pass
+            pg.wait_for_timeout(200)
+        check("h. a slow site (7 s): Zenith opens from its saved copy in under 5.5 s, not white until the site answers", drawn is not None and drawn < 5.5, drawn)
+        SITE["mode"] = "ok"
+        pg.wait_for_timeout(500)
+        # no saved copy and no site: a small dark page with Retry, never white
+        pg.evaluate("() => caches.open('le-public-v50').then((c) => Promise.all([c.delete('./index.html'), c.delete('./')]))")
+        SITE["mode"] = "down"
+        pg.reload()
+        pg.wait_for_timeout(600)
+        nc = pg.evaluate("() => ({ text: document.body.innerText, bg: getComputedStyle(document.body).backgroundColor })")
+        check("h. no saved copy and no site: the dark Retry page", "Retry" in nc["text"] and nc["bg"] == "rgb(7, 8, 12)", nc)
+    finally:
+        SITE["mode"] = "ok"
+        ctx.close()
 
 
 def launch(p):
@@ -244,6 +352,9 @@ def run_browser(base, other_base):
         check("b. show(): Zenith full screen over the Jarvis bar (the hub's view lifted above it, one layer, aria-modal), the status bar tint follows Zenith",
               cov["active"] and cov["layer"] == "visible" and cov["top"] == "zm-frame" and cov["mid"] == "zm-frame" and cov["theme"] == "#07080c" and cov["modal"] == "true"
               and "2147483000" in cov["lift"] and pg.evaluate("() => !!document.querySelector('#zhost .zm-root iframe.zm-frame')"), cov)
+        tip = pg.evaluate("() => ({ n: localStorage.getItem('jarvis.zenith.tips'), t: document.querySelector('.zm-back .zm-tip').textContent, a: document.querySelector('.zm-back').getAttribute('aria-label') })")
+        check("c. the control says what it does: 'Back to Jarvis' (its label, and a hint the first three times: 'hold for apps')",
+              tip == {"n": "1", "t": "Back to Jarvis · hold for apps", "a": "Back to Jarvis"}, tip)
         inside = z.evaluate("() => ({ dj: document.documentElement.dataset.jarvis, lej: window.LE_JARVIS, splash: !!document.getElementById('splash'), inst: !!document.querySelector('#moInst') && document.querySelector('#moInst').offsetParent !== null, prompt: !!document.querySelector('#pushPrompt') && document.querySelector('#pushPrompt').offsetParent !== null })")
         check("e. inside Jarvis Zenith knows it (data-jarvis, LE_JARVIS): no intro, no Add to Home Screen card, no notification prompt",
               inside["dj"] == "on" and inside["lej"] is True and not inside["splash"] and not inside["inst"] and not inside["prompt"], inside)
@@ -478,6 +589,73 @@ def run_browser(base, other_base):
         pg.wait_for_function("() => !document.querySelector('.zm-back').classList.contains('cov')", timeout=4000)
         check("c. the Holodeck full screen: the control steps aside while it covers the screen, then comes back", True)
         z.evaluate("() => { location.hash = '#/alerts'; }")
+        # ---- the switcher: hold the control = the other apps as chips; a chip = onSwitch(id); tap = back to Jarvis as before
+        APPS_JS = """() => { const p = document.querySelector('.zm-apps'), b = document.querySelector('.zm-back').getBoundingClientRect();
+          if (!p || p.hidden) return null; const r = p.getBoundingClientRect();
+          return { names: [...p.querySelectorAll('.zm-chip')].map((c) => c.lastElementChild.textContent.trim()), h: Math.min(...[...p.querySelectorAll('.zm-chip')].map((c) => c.getBoundingClientRect().height)),
+                   r: [r.left, r.top, r.right, r.bottom], ctrl: [b.left, b.top, b.right, b.bottom], W: innerWidth, H: innerHeight, exp: document.querySelector('.zm-back').getAttribute('aria-expanded') }; }"""
+        def hold(ms=650, release_at=None):
+            r = pg.evaluate(CTRL)["r"]
+            pg.mouse.move((r[0] + r[2]) / 2, (r[1] + r[3]) / 2)
+            pg.mouse.down()
+            pg.wait_for_timeout(ms)
+            if release_at:
+                pg.mouse.move(*release_at, steps=4)
+            pg.mouse.up()
+            pg.wait_for_timeout(250)
+        e0 = pg.evaluate("() => window.EXITS")
+        hold()
+        A = pg.evaluate(APPS_JS)
+        Rz = z.evaluate(RECTS)
+        tabs_top = Rz["tabs"][1] if Rz["tabs"] else A["H"]
+        hdr = max([x[3] for x in (Rz["top"], Rz["sub"]) if x] or [0])
+        check("c. switcher: holding the control shows the other apps as chips (Jarvis, Planner, Kalshi; not Zenith), 44 px tall, still in Zenith mode",
+              A and A["names"] == ["Jarvis", "Planner", "Kalshi"] and A["h"] >= 43.5 and A["exp"] == "true"
+              and pg.evaluate("() => ZM.isActive() && window.EXITS") == e0, A)
+        check("c. switcher: the chips sit next to the control, inside the screen, between Zenith's header and its tab bar",
+              A and A["r"][2] <= A["ctrl"][0] + 0.5 and A["r"][0] >= 0 and A["r"][1] >= hdr and A["r"][3] <= tabs_top and not overlaps(A["r"], Rz["tabs"]), (A, hdr, tabs_top))
+        pg.keyboard.press("Escape")
+        pg.wait_for_timeout(200)
+        esc_closed = pg.evaluate(APPS_JS) is None
+        hold()
+        pg.mouse.click(60, 400)                               # outside the chips: they close, Zenith stays
+        pg.wait_for_timeout(250)
+        out_closed = pg.evaluate(APPS_JS) is None and pg.evaluate("() => ZM.isActive()")
+        check("c. switcher: Escape or a tap outside closes the chips, Zenith mode stays", esc_closed and out_closed, (esc_closed, out_closed))
+        hold()
+        pg.click(".zm-apps .zm-chip[data-app='planner']")
+        pg.wait_for_timeout(300)
+        s1 = pg.evaluate("() => ({ sw: window.SWITCHED.slice(), active: ZM.isActive(), exits: window.EXITS })")
+        check("c. switcher: the Planner chip calls onSwitch('planner') (the hub shows it), not onExit", s1 == {"sw": ["planner"], "active": False, "exits": e0}, s1)
+        pg.evaluate("() => openZ()")
+        pg.wait_for_timeout(400)
+        pg.focus(".zm-back")
+        pg.keyboard.press("ArrowLeft")
+        pg.wait_for_timeout(150)
+        k1 = pg.evaluate("() => document.activeElement && document.activeElement.dataset.app")
+        pg.keyboard.press("ArrowRight")
+        k2 = pg.evaluate("() => document.activeElement && document.activeElement.dataset.app")
+        pg.keyboard.press("ArrowLeft")
+        pg.keyboard.press("Enter")
+        pg.wait_for_timeout(300)
+        k3 = pg.evaluate("() => ({ active: ZM.isActive(), exits: window.EXITS })")
+        check("c. switcher by keyboard: an arrow key opens the chips, arrows move, Enter on Jarvis goes back to Jarvis (onExit)",
+              k1 == "home" and k2 == "planner" and k3 == {"active": False, "exits": e0 + 1}, (k1, k2, k3))
+        pg.evaluate("() => openZ()")
+        pg.wait_for_timeout(400)
+        r = pg.evaluate(CTRL)["r"]
+        pg.mouse.move((r[0] + r[2]) / 2, (r[1] + r[3]) / 2)
+        pg.mouse.down()
+        pg.wait_for_timeout(650)                             # the chips open while the finger is still down
+        kr = pg.evaluate("() => { const c = document.querySelector(\".zm-apps .zm-chip[data-app='kalshi']\"); if (!c) return null; const r = c.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }")
+        if kr:
+            pg.mouse.move(kr[0], kr[1], steps=5)
+        pg.mouse.up()
+        pg.wait_for_timeout(300)
+        s2 = pg.evaluate("() => ({ sw: window.SWITCHED.slice(), active: ZM.isActive() })")
+        check("c. switcher: hold, slide onto Kalshi, let go = onSwitch('kalshi')", kr and s2 == {"sw": ["planner", "kalshi"], "active": False}, (s2, kr))
+        pg.evaluate("() => openZ()")
+        pg.wait_for_timeout(400)
         # the hub lets the frame go (iPhone memory) and opens Zenith again later: a fresh Zenith at the route it had
         pg.wait_for_function("() => ZM.state().route === '#/alerts'", timeout=8000)
         pg.evaluate("() => ZM.unload()")
@@ -488,6 +666,16 @@ def run_browser(base, other_base):
         u2 = z.evaluate("() => ({ hash: location.hash, alive: window.__alive || null })")
         check("b. unload() lets the frame go; the next show() loads Zenith again at the route it had", u1 == {"frames": 0, "active": False}
               and u2 == {"hash": "#/alerts", "alive": None}, (u1, u2))
+        # without onSwitch the control only goes back to Jarvis (a hold does nothing else)
+        pg.goto(base + "jarvis/zm-test.html?nosw")
+        pg.wait_for_function("() => window.MOUNTED === true", timeout=15000)
+        pg.evaluate("() => openZ('#/today')")
+        pg.wait_for_function("() => ZM.state().ready", timeout=30000)
+        ns = pg.evaluate("() => ({ sw: document.querySelector('.zm-back').classList.contains('sw'), popup: document.querySelector('.zm-back').getAttribute('aria-haspopup') })")
+        hold()
+        ns.update(pg.evaluate("() => ({ apps: !!document.querySelector('.zm-apps:not([hidden])'), active: ZM.isActive(), exits: window.EXITS })"))
+        check("c. without onSwitch: no switcher; a hold is just a tap: back to Jarvis as before",
+              ns == {"sw": False, "popup": None, "apps": False, "active": False, "exits": 1}, ns)
         ctx.close()
 
         # ---- e. the old way (a frame below a bar): no safe area doubled either
@@ -499,6 +687,7 @@ def run_browser(base, other_base):
         check("e. Zenith in a frame below a bar (the bar already pads the top, the frame stops above the home bar): no extra padding",
               R["sa"] == ["0px", "0px", "0px", "0px"] and abs(R["padTop"] - 10) < 0.6 and abs(R["tabsBottom"] - 10) < 0.6, R)
         ctx.close()
+        part_sw(br, base, errs)
         br.close()
     check("g. no page errors (Jarvis page, Zenith frames, the Zenith app)", not errs, errs[:6])
 

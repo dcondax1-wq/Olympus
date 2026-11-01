@@ -5,7 +5,7 @@
 // and route are kept.
 //
 //   import { mountZenithMode } from './zenith-mode.js';
-//   const zm = mountZenithMode({ host, onExit });      // host: an element of the Jarvis page (keep it in the layout)
+//   const zm = mountZenithMode({ host, onExit });      // host: the Jarvis page's element for Zenith mode (e.g. #zen)
 //   zm.show('#/blitz');  zm.show();  zm.hide();  zm.isActive();
 //
 //   mountZenithMode(opts) -> { show(route?), hide(), isActive(), open(route), state(), unload(), destroy(), frame }
@@ -14,16 +14,22 @@
 //     opts.onState(s)  optional: s = { route, title, badge, active } whenever Zenith reports a change.
 //     opts.onWantShow(route)  optional: a Zenith notification was tapped while Jarvis runs (sw.js v50); the hub should
 //                      switch to Zenith mode and call show(route). Without it the route is only kept for the next show().
+//     opts.apps()      optional: the hub's apps [{ id, name, icon? }] for the switcher (Zenith itself is left out).
+//     opts.onSwitch(id) optional: with apps, the control is a tiny switcher: tap = back to Jarvis as before; hold it
+//                      (0.45 s, or an arrow key) and the other apps show as chips next to it; a chip calls onSwitch(id)
+//                      (the "Jarvis" chip calls onExit). Without onSwitch the control only goes back to Jarvis.
 //     opts.src         optional: Zenith's address (default: the site root next to jarvis/, i.e. '../').
 //     opts.preload     optional: load Zenith right away, hidden (default: on the first show(), iPhone memory).
-//   The host also gets DOM events: 'zenith:state' (detail = state), 'zenith:exit', 'zenith:wantshow' (detail.route).
+//   The host also gets DOM events: 'zenith:state' (detail = state), 'zenith:exit', 'zenith:wantshow' (detail.route),
+//   'zenith:switch' (detail.app).
 //   show(route) opens Zenith mode; route is a Zenith address such as '#/blitz' (also 'blitz' or '/blitz'); without it
 //   Zenith stays where the owner left it (first open: the route saved this session, else Zenith's Home).
 //   open(route) moves Zenith without showing it; unload() lets the frame go (iPhone memory: one dashboard at a time) and
 //   the next show() loads it again at the route it had; destroy() removes everything (listeners included).
 //   For the hub: call show() for the Zenith chip / card / brain, hide() whenever another view takes the screen (onExit
-//   is the owner leaving by himself), and keep host in the page while Zenith is loaded (display:none on it would
-//   squash the frame to 0 x 0: Zenith would redraw and lose its scroll). Hidden, Zenith is paused but alive.
+//   is the owner leaving by himself). host may be hidden between shows (hidden / display:none): the layer is
+//   position:fixed, lifted above the hub's own stacking while it shows, and Zenith gets its scroll back. Hidden, Zenith
+//   is paused like a backgrounded app but stays loaded; unload() (or destroy()) is how the hub frees it.
 //   zenithRouteFor(text) maps spoken words to a Zenith route for Jarvis's brain: "open BLITZ" -> '#/blitz',
 //   "atlas trades" -> '#/atlas/trades', "holodeck" -> '#/holo', null when nothing matches.
 //   CSS hooks on the Jarvis page: --zm-z (the layer's z-index, default 2147483000) and --zm-safe-top / -right / -bottom /
@@ -57,7 +63,7 @@
 
 const NS_J = 'le-jarvis', NS_Z = 'le-zenith', V = 1;
 const ROUTE_RX = /^#\/[\w\-/:.%,]*$/;
-const KEY_ROUTE = 'jarvis.zenith.route', KEY_DOCK = 'jarvis.zenith.dock';
+const KEY_ROUTE = 'jarvis.zenith.route', KEY_DOCK = 'jarvis.zenith.dock', KEY_TIP = 'jarvis.zenith.tips';
 const CH = 48;                         // the control's height (hit area 44 x 48)
 const IDLE_MS = 2600;
 
@@ -103,7 +109,7 @@ const CSS = `
   transition:opacity .2s ease,visibility 0s linear .2s}
 .zm-root.on{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .2s ease}
 .zm-frame{position:absolute;inset:0;width:100%;height:100%;border:0;margin:0;padding:0;display:block;background:#07080c;color-scheme:dark}
-.zm-back{position:absolute;z-index:2;top:0;right:var(--zm-sr,0px);width:44px;height:${CH}px;margin:0;padding:0;border:0;background:none;color:#fff;
+.zm-back{position:absolute;z-index:5;top:0;right:var(--zm-sr,0px);width:44px;height:${CH}px;margin:0;padding:0;border:0;background:none;color:#fff;
   cursor:pointer;touch-action:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
   transform:translate3d(0,var(--zm-y,50vh),0);transition:transform .32s cubic-bezier(.2,.8,.2,1),opacity .3s ease,visibility 0s;opacity:.94}
 .zm-back.left{right:auto;left:var(--zm-sl,0px)}
@@ -120,6 +126,24 @@ const CSS = `
 .zm-back.cov{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s ease,visibility 0s linear .2s}
 .zm-back:focus{outline:none}.zm-back:focus-visible .zm-pill{outline:2px solid rgba(255,255,255,.75);outline-offset:2px}
 .zm-back:active .zm-orb{transform:scale(.9)}
+.zm-tip{position:absolute;top:50%;right:42px;transform:translate(6px,-50%);padding:7px 11px;border-radius:11px;background:rgba(16,16,20,.92);
+  border:1px solid rgba(255,255,255,.16);color:#f4f4f6;font:600 13px/1.2 -apple-system,system-ui,sans-serif;white-space:nowrap;pointer-events:none;
+  opacity:0;transition:opacity .25s ease,transform .25s ease;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+.zm-back.left .zm-tip{right:auto;left:42px;transform:translate(-6px,-50%)}
+.zm-back.tip .zm-tip{opacity:1;transform:translate(0,-50%)}
+.zm-back.sw .zm-pill::after{content:"";position:absolute;bottom:6px;left:50%;width:10px;height:2px;margin-left:-5px;border-radius:2px;background:rgba(255,255,255,.34)}
+.zm-scrim{position:absolute;inset:0;z-index:3;background:rgba(0,0,0,.3);opacity:0;transition:opacity .16s ease}
+.zm-apps{position:absolute;z-index:4;top:0;display:flex;flex-direction:column;gap:6px;padding:8px;border-radius:18px;box-sizing:border-box;min-width:150px;
+  background:rgba(16,16,20,.9);-webkit-backdrop-filter:blur(18px) saturate(1.3);backdrop-filter:blur(18px) saturate(1.3);
+  border:1px solid rgba(255,255,255,.14);box-shadow:0 14px 40px rgba(0,0,0,.55);opacity:0;transform:scale(.96);transition:opacity .16s ease,transform .16s ease}
+.zm-root.apps .zm-apps,.zm-root.apps .zm-scrim{opacity:1;transform:none}
+.zm-apps[hidden],.zm-scrim[hidden]{display:none}
+.zm-chip{display:flex;align-items:center;gap:10px;min-height:44px;margin:0;padding:0 16px 0 9px;text-align:left;border-radius:13px;border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);color:#f4f4f6;font:600 15px/1 -apple-system,system-ui,sans-serif;white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.zm-chip:active{background:rgba(255,255,255,.14)}.zm-chip:focus{outline:none}.zm-chip:focus-visible{outline:2px solid rgba(255,255,255,.75);outline-offset:2px}
+.zm-ci{width:26px;height:26px;border-radius:7px;flex:none;display:grid;place-items:center;object-fit:cover}
+.zm-chip .zm-orb{width:18px;height:18px;margin:4px}
+.zm-gl{background:#1d1d21;color:#c4c5ca;font:700 14px/1 -apple-system,system-ui,sans-serif}
 @media (prefers-reduced-motion:reduce){.zm-root,.zm-back{transition:none!important}}
 html.zm-on,html.zm-on body{overscroll-behavior:none}
 `;
@@ -150,13 +174,16 @@ export function mountZenithMode(opts = {}) {
   const btn = doc.createElement('button');
   btn.type = 'button'; btn.className = 'zm-back';
   btn.setAttribute('aria-label', 'Back to Jarvis'); btn.title = 'Back to Jarvis';
-  btn.innerHTML = '<span class="zm-pill"><span class="zm-orb"></span></span>';
-  root.appendChild(btn);
+  btn.innerHTML = '<span class="zm-pill"><span class="zm-orb"></span></span><span class="zm-tip" aria-hidden="true">Back to Jarvis</span>';
+  const scrim = doc.createElement('div'); scrim.className = 'zm-scrim'; scrim.hidden = true;
+  const panel = doc.createElement('div'); panel.className = 'zm-apps'; panel.hidden = true;
+  panel.setAttribute('role', 'group'); panel.setAttribute('aria-label', 'Switch app');
+  root.appendChild(scrim); root.appendChild(btn); root.appendChild(panel);
   host.appendChild(root);
 
   const st = {
     active: false, ready: false, legacy: false, frame: null, route: (SS && store.get(SS, KEY_ROUTE, null)) || null, title: '', badge: 0,
-    pending: null, layout: null, cover: false, lifted: null, portal: false, dock: { side: 'right', f: 0.6, ...((LS && store.get(LS, KEY_DOCK, null)) || {}) }, theme: null, idleT: 0, loadT: 0,
+    pending: null, layout: null, cover: false, lifted: null, portal: false, tipT: 0, holdT: 0, dock: { side: 'right', f: 0.6, ...((LS && store.get(LS, KEY_DOCK, null)) || {}) }, theme: null, idleT: 0, loadT: 0,
   };
   if (st.route && !normRoute(st.route)) st.route = null;
   if (st.dock.side !== 'left') st.dock.side = 'right';
@@ -216,6 +243,7 @@ export function mountZenithMode(opts = {}) {
       const H = win.innerHeight;
       st.layout = { top: num(m.top, H), bottom: num(m.bottom, H) };
       st.cover = m.cover === true;
+      if (st.cover) closeApps(false);
       place();
     } else if (m.type === 'exit') {
       exit();
@@ -303,15 +331,19 @@ export function mountZenithMode(opts = {}) {
   btn.addEventListener('pointerdown', (e) => {
     if (e.button > 0) return;
     wake();
+    btn.classList.remove('tip');
     const r = btn.getBoundingClientRect();
-    drag = { id: e.pointerId, x0: e.clientX, y0: e.clientY, top: r.top, moved: false };
+    drag = { id: e.pointerId, x0: e.clientX, y0: e.clientY, top: r.top, moved: false, held: false };
     dragged = false;
     try { btn.setPointerCapture(e.pointerId); } catch (er) { /* fine */ }
+    win.clearTimeout(st.holdT);
+    if (switcher()) st.holdT = win.setTimeout(() => { if (drag && !drag.moved) { drag.held = true; openApps(false); } }, 450);
   });
   btn.addEventListener('pointermove', (e) => {
     if (!drag || e.pointerId !== drag.id) return;
     const dx = e.clientX - drag.x0, dy = e.clientY - drag.y0;
-    if (!drag.moved && Math.hypot(dx, dy) < 7) return;
+    if (drag.held || (!drag.moved && Math.hypot(dx, dy) < 7)) return;
+    win.clearTimeout(st.holdT);
     drag.moved = true;
     btn.classList.add('drag');
     st.dock.side = e.clientX < win.innerWidth / 2 ? 'left' : 'right';
@@ -321,7 +353,14 @@ export function mountZenithMode(opts = {}) {
   const endDrag = (e) => {
     if (!drag || (e && e.pointerId !== drag.id)) return;
     const d = drag; drag = null;
+    win.clearTimeout(st.holdT);
     btn.classList.remove('drag');
+    if (d.held) {                                                      // a hold opened the apps: not a tap
+      dragged = true;
+      const el = e && e.type === 'pointerup' ? doc.elementFromPoint(e.clientX, e.clientY) : null, c = el && el.closest ? el.closest('.zm-chip') : null;
+      if (c && panel.contains(c)) c.click();                           // hold, slide onto an app, let go
+      return;
+    }
     if (!d.moved) return;
     dragged = true;
     const b = band(), y = parseFloat(btn.style.getPropertyValue('--zm-y')) || b.min;
@@ -334,7 +373,97 @@ export function mountZenithMode(opts = {}) {
   btn.addEventListener('pointercancel', endDrag);
   btn.addEventListener('click', (e) => {
     if (dragged) { dragged = false; e.preventDefault(); return; }
+    if (!panel.hidden) { closeApps(true); return; }
     exit();
+  });
+  btn.addEventListener('contextmenu', (e) => e.preventDefault());       // a long press is the switcher, not a menu
+  btn.addEventListener('keydown', (e) => {
+    if (switcher() && /^(Arrow(Left|Right|Up|Down)|ContextMenu)$/.test(e.key)) { e.preventDefault(); e.stopPropagation(); openApps(true); }
+  });
+
+  // ------------------------------------------------------------------ the switcher (opts.apps + opts.onSwitch)
+  const switcher = () => typeof opts.onSwitch === 'function' && typeof opts.apps === 'function';
+  btn.classList.toggle('sw', switcher());
+  if (switcher()) btn.setAttribute('aria-haspopup', 'true');
+  function iconUrl(u) {
+    if (typeof u !== 'string' || !u) return null;
+    try { const x = new URL(u, win.location.href); return /^https?:$/.test(x.protocol) ? x.href : null; } catch (e) { return null; }
+  }
+  function appList() {
+    let list = [];
+    try { list = opts.apps() || []; } catch (e) { list = []; }
+    const out = [], seen = new Set();
+    for (const a of Array.isArray(list) ? list : []) {
+      if (!a || a.id == null) continue;
+      const id = String(a.id).slice(0, 40), home = id === 'home' || id === 'jarvis';
+      if (id === 'zenith' || seen.has(id)) continue;
+      seen.add(id);
+      out.push({ id, home, name: String(a.name || (home ? 'Jarvis' : id)).slice(0, 24), icon: home ? null : iconUrl(a.icon) });
+    }
+    if (!out.some((a) => a.home)) out.unshift({ id: 'home', home: true, name: 'Jarvis', icon: null });
+    return out.slice(0, 9);
+  }
+  function chip(a) {
+    const b = doc.createElement('button');
+    b.type = 'button'; b.className = 'zm-chip'; b.dataset.app = a.id;
+    let ic;
+    if (a.home) { ic = doc.createElement('span'); ic.className = 'zm-ci'; ic.innerHTML = '<span class="zm-orb"></span>'; }
+    else if (a.icon) { ic = doc.createElement('img'); ic.className = 'zm-ci'; ic.alt = ''; ic.src = a.icon; }
+    else { ic = doc.createElement('span'); ic.className = 'zm-ci zm-gl'; ic.textContent = (a.name[0] || '?').toUpperCase(); }
+    ic.setAttribute('aria-hidden', 'true');
+    const t = doc.createElement('span'); t.textContent = a.name;
+    b.appendChild(ic); b.appendChild(t);
+    return b;
+  }
+  function placeApps() {
+    const r = btn.getBoundingClientRect(), b = band(), W = win.innerWidth, gap = 6;
+    const right = st.dock.side !== 'left';
+    panel.style.left = right ? 'auto' : Math.round(r.right + gap) + 'px';
+    panel.style.right = right ? Math.round(W - r.left + gap) + 'px' : 'auto';
+    panel.style.maxWidth = Math.max(160, Math.round((right ? r.left : W - r.right) - gap - Math.max(8, right ? b.s.left : b.s.right))) + 'px';
+    const h = panel.offsetHeight, lo = b.min, hi = b.max + CH - h;          // inside the control's band: never over the tab bar
+    const y = Math.max(lo, Math.min(hi, r.top + r.height / 2 - h / 2));
+    panel.style.top = Math.round(hi < lo ? lo : y) + 'px';
+  }
+  function openApps(focus) {
+    if (!switcher() || !st.active || st.cover) return;
+    win.clearTimeout(st.tipT); st.tipT = 0; btn.classList.remove('tip');
+    panel.textContent = '';
+    for (const a of appList()) panel.appendChild(chip(a));
+    panel.hidden = false; scrim.hidden = false;
+    btn.setAttribute('aria-expanded', 'true');
+    placeApps();
+    win.requestAnimationFrame(() => root.classList.add('apps'));
+    if (focus) { const c = panel.querySelector('.zm-chip'); if (c) c.focus(); }
+  }
+  function closeApps(focusBack) {
+    if (panel.hidden) return;
+    root.classList.remove('apps');
+    panel.hidden = true; scrim.hidden = true; panel.textContent = '';
+    btn.setAttribute('aria-expanded', 'false');
+    if (focusBack) { try { btn.focus({ preventScroll: true }); } catch (e) { /* fine */ } }
+    wake();
+  }
+  scrim.addEventListener('pointerdown', (e) => { e.preventDefault(); closeApps(false); });
+  root.addEventListener('keydown', (e) => {
+    if (panel.hidden) return;
+    if (e.key === 'Escape') { e.preventDefault(); closeApps(true); return; }
+    if (!panel.contains(doc.activeElement)) return;
+    if (/^Arrow/.test(e.key)) {                                        // arrows move between the chips
+      const cs = [...panel.querySelectorAll('.zm-chip')], i = cs.indexOf(doc.activeElement);
+      const n = cs[(i + (/Right|Down/.test(e.key) ? 1 : -1) + cs.length) % cs.length];
+      if (n) { e.preventDefault(); n.focus(); }
+    }
+  });
+  panel.addEventListener('click', (e) => {
+    const c = e.target.closest('.zm-chip');
+    if (!c) return;
+    const id = c.dataset.app;
+    closeApps(false);
+    if (id === 'home' || id === 'jarvis') { exit(); return; }
+    host.dispatchEvent(new win.CustomEvent('zenith:switch', { detail: { app: id }, bubbles: true }));
+    try { opts.onSwitch(id); } catch (er) { console.error(er); }
+    if (st.active) hide();                                             // the hub shows the other app (it hides Zenith itself too)
   });
 
   // ------------------------------------------------------------------ show / hide
@@ -386,11 +515,22 @@ export function mountZenithMode(opts = {}) {
     sendInsets();
     place();
     wake();
+    tip();
     try { st.frame.focus({ preventScroll: true }); } catch (e) { /* fine */ }
     return api;
   }
+  // the first three times Zenith mode opens on this phone, the control says what it does
+  function tip() {
+    const n = (LS && store.get(LS, KEY_TIP, 0)) || 0;
+    if (n >= 3 || st.tipT) return;
+    if (LS) store.set(LS, KEY_TIP, n + 1);
+    btn.querySelector('.zm-tip').textContent = switcher() ? 'Back to Jarvis · hold for apps' : 'Back to Jarvis';
+    btn.classList.add('tip');
+    st.tipT = win.setTimeout(() => { btn.classList.remove('tip'); st.tipT = 0; }, 3200);
+  }
   function hide() {
     if (!st.active) return api;
+    closeApps(false);
     st.active = false;
     root.classList.remove('on');
     root.setAttribute('aria-hidden', 'true');
@@ -399,7 +539,7 @@ export function mountZenithMode(opts = {}) {
     lift(false);
     doc.documentElement.classList.remove('zm-on');
     const m = meta();
-    if (m && st.theme != null) m.setAttribute('content', st.theme);
+    if (m && st.theme != null && m.getAttribute('content') === '#07080c') m.setAttribute('content', st.theme);   // unless the hub changed it since
     st.theme = null;
     send('visible', { visible: false });
     emit();
@@ -412,7 +552,7 @@ export function mountZenithMode(opts = {}) {
     try { if (typeof opts.onExit === 'function') opts.onExit(); } catch (e) { console.error(e); }
     host.dispatchEvent(new win.CustomEvent('zenith:exit', { bubbles: true }));
   }
-  const onResize = () => { if (st.frame) sendInsets(); place(); };
+  const onResize = () => { closeApps(false); if (st.frame) sendInsets(); place(); };
   win.addEventListener('resize', onResize);
   win.addEventListener('orientationchange', onResize);
 
@@ -435,7 +575,7 @@ export function mountZenithMode(opts = {}) {
       win.removeEventListener('resize', onResize);
       win.removeEventListener('orientationchange', onResize);
       if (swc) swc.removeEventListener('message', onSw);
-      win.clearTimeout(st.idleT); win.clearTimeout(st.loadT);
+      win.clearTimeout(st.idleT); win.clearTimeout(st.loadT); win.clearTimeout(st.tipT); win.clearTimeout(st.holdT);
       root.remove();
       st.frame = null;
     },
