@@ -69,6 +69,9 @@ Show the owner **only** the `.pub` line, and tell him:
 >    this line. Tick **Allow write access**, then **Add key**.
 >
 > Tell me "OK" when both are done. This key can only write to kalshi-feed, never to your Jarvis app.
+>
+> Never turn on **GitHub Pages** for kalshi-feed (Settings → Pages stays off): a Pages site there would be served from the
+> same address as your Jarvis app, and this server could then publish pages that read Jarvis's saved keys.
 
 Never show `deploy_key`, the private half.
 

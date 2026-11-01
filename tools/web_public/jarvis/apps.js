@@ -655,7 +655,11 @@ export function acceptMessage(e) {
 export function listen(target, onCard) {
   const t = target || (typeof window !== 'undefined' ? window : null);
   if (!t || typeof t.addEventListener !== 'function') return () => {};
-  const h = (e) => { const c = acceptMessage(e); if (c && typeof onCard === 'function') { try { onCard(c); } catch (_) { /* the shell's problem */ } } };
+  const fromFrame = (src) => {                   // only a page in one of Jarvis's own frames may post a card (security review)
+    try { const fs = (t.document || document).querySelectorAll('iframe'); for (let i = 0; i < fs.length; i++) if (fs[i].contentWindow === src) return true; } catch (_) { /* no DOM */ }
+    return false;
+  };
+  const h = (e) => { if (!e || !fromFrame(e.source)) return; const c = acceptMessage(e); if (c && typeof onCard === 'function') { try { onCard(c); } catch (_) { /* the shell's problem */ } } };
   t.addEventListener('message', h);
   return () => t.removeEventListener('message', h);
 }

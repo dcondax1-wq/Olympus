@@ -28,7 +28,9 @@ The full picture is in `docs/KALSHI_PUBLISH.md`.
 - It never trades and never changes the bot. It only reads the bot's files: never `.env`, `keys/` or `sniper.db`, and it
   makes no Kalshi API call. It runs nice'd, at most once a minute.
 - **Its own repo.** The deploy key can write only `kalshi-feed`, never the phone app's site (`nq-dashboard`). A
-  compromised server could change the numbers, not the app.
+  compromised server could change the numbers, not the app. **Never turn on GitHub Pages for `kalshi-feed`:** every Pages
+  site of the account is served from demetrades2000-coder.github.io, the same origin as Jarvis, so the key could then
+  publish pages that read Jarvis's saved keys.
 - **A pinned script.** The owner's paste line carries the script's SHA-256, and SETUP.md stops on a mismatch. Cron runs
   the local copy, which never updates itself.
 - The public file carries only the contract's numbers and names. Every text string is redacted: links, IP and e-mail
