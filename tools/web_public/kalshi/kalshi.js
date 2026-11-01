@@ -1,6 +1,6 @@
 /* Kalshi page (tools/web_public/kalshi/, owner 2026-11-01). The Kalshi bot runs 24/7 on its own server with real money; its
-   numbers reach the phone as kalshi.json on the branch `kalshi` of the Pages repo (contract: engine/kalshi_publish.py,
-   docs/KALSHI_PUBLISH.md), sent every minute. This page shows that file, inside Jarvis or on its own: raw.githubusercontent
+   numbers reach the phone as kalshi.json on the branch `main` of its own repo, demetrades2000-coder/kalshi-feed (contract:
+   engine/kalshi_publish.py, docs/KALSHI_PUBLISH.md), sent every minute. This page shows that file, inside Jarvis or on its own: raw.githubusercontent
    first, the GitHub API second, 404 = not connected yet. Read-only: it never talks to Kalshi and places nothing.
    Contract v2 adds two optional lists, `strategies` [{name, mode, running, today_pnl, total_pnl, trades, wins, losses}] and
    `equity` [[unix, balance]] (the bot keeps 24 h of it); without `equity` the curve is the running sum of `days`.
@@ -11,9 +11,10 @@
    Safari 16 safe: no regex lookbehind, no Array copy methods, no Object.groupBy, no AbortSignal.timeout. */
 (() => {
   'use strict';
-  const OWNER = 'demetrades2000-coder', REPO = 'nq-dashboard';
-  const RAW = `https://raw.githubusercontent.com/${OWNER}/${REPO}/kalshi/kalshi.json`;
-  const API = `https://api.github.com/repos/${OWNER}/${REPO}/contents/kalshi.json?ref=kalshi`;
+  // the feed has its own repo (security review 2026-11-01): the Kalshi server's deploy key can write kalshi-feed only, never
+  // the Pages site. Raw first, the GitHub API second; a 404 = not connected yet.
+  const RAW = 'https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json';
+  const API = 'https://api.github.com/repos/demetrades2000-coder/kalshi-feed/contents/kalshi.json?ref=main';
   const STEP = 'Open your kalshi-server chat in the Claude app and paste: Set up Jarvis for my Kalshi bot by following https://demetrades2000-coder.github.io/nq-dashboard/kalshi/SETUP.md';
   const PASTE = STEP.slice(STEP.indexOf('paste: ') + 7);           // what goes into the bot's chat
   const TZ = 'America/New_York', STALE_S = 15 * 60, POLL_MS = 60e3, TICK_MS = 30e3, TIMEOUT_MS = 12e3, TR_PAGE = 10, TR_CAP = 40;

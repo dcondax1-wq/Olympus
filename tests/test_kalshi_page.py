@@ -5,7 +5,8 @@ of the site layout (<site>/kalshi/), kalshi.json served from a stub that can ans
 connection / later, and checks:
   a. the files and the static rules (no CDN, fonts only self-hosted, Safari-16-safe script, inputs >= 16px, reduced motion,
      safe areas, the old Jarvis look and its eclipse / reactor themes)
-  b. waiting (404): the "Connect your Kalshi bot" card with the one step for the bot's own chat (#step inside #body), Copy
+  b. waiting (404 from the feed's own repo, demetrades2000-coder/kalshi-feed): the "Connect your Kalshi bot" card with the
+     one step for the bot's own chat (#step inside #body), Copy; raw first, then the GitHub API, no other address
   c. the publisher's own sample through clean(): KPI header, curve from the days, daily bars (one per day), calendar, stats,
      the open position (side tag, "10 × 42¢ → 55¢", countdown), the trade
   d. the real bot (spec kalshi_bot.md section 7 mapping): LIVE · real money, cents everywhere, 0 open bets, trades grouped by
@@ -245,14 +246,22 @@ def serve(root):
     return srv
 
 
-FEED = {"mode": "404", "j": None, "held": [], "hits": 0}
+# the feed's own repo (security review 2026-11-01): raw first (with a ?t= cache-buster), then the GitHub API; nothing else answers
+FEED_RAW = "https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json"
+FEED_API = "https://api.github.com/repos/demetrades2000-coder/kalshi-feed/contents/kalshi.json?ref=main"
+FEED = {"mode": "404", "j": None, "held": [], "hits": 0, "raw": None, "api": None, "n": {"raw": 0, "api": 0}, "wrong": []}
 
 
 def feed(route):
-    if "kalshi.json" not in route.request.url:
-        return route.fulfill(status=404, body="")
+    u = route.request.url
+    src = "raw" if u.split("?")[0] == FEED_RAW else "api" if u == FEED_API else None
+    if src is None:                                  # any other address (e.g. the old Pages-repo branch) never answers
+        if "kalshi" in u:
+            FEED["wrong"].append(u)
+        return route.abort()
     FEED["hits"] += 1
-    m = FEED["mode"]
+    FEED["n"][src] += 1
+    m = FEED[src] or FEED["mode"]                    # a per-source mode, else the shared one
     if m == "ok":
         return route.fulfill(status=200, content_type="application/json", body=json.dumps(FEED["j"]))
     if m == "404":
@@ -303,6 +312,9 @@ def part_a():
     check("a. the page keeps #body and #sub, loads kalshi.css + kalshi.js (versioned)",
           'id="body"' in html and 'id="sub"' in html and 'href="kalshi.css?v=' in html and 'src="kalshi.js?v=' in html)
     check("a. the one step is the exact text (tests/test_jarvis_hub reads it from #step)", f"const STEP = '{STEP}';" in js)
+    check("a. the feed is read from its own repo kalshi-feed (raw first, then the API), never from the Pages repo",
+          f"const RAW = '{FEED_RAW}';" in js and f"const API = '{FEED_API}';" in js and "ref=kalshi" not in js and "nq-dashboard/kalshi/kalshi.json" not in js
+          and code.index("get(RAW") < code.index("get(API"))
     urls = set(re.findall(r"https?://[^\s'\"`)<>]+", html + js + css))
     allowed = ("https://raw.githubusercontent.com/", "https://api.github.com/", "http://www.w3.org/2000/svg",
                "https://demetrades2000-coder.github.io/nq-dashboard/kalshi/SETUP.md")
@@ -632,6 +644,18 @@ def run_browser(url, tmp):
         ready(p)
         check("e. Refresh asks the feed again and keeps the sort", FEED["hits"] > h0 and p.input_value("#posSort") == "pnl")
 
+        # ---- the feed's two addresses
+        n0 = dict(FEED["n"])
+        FEED["raw"], FEED["api"] = "500", None
+        open_("ok", sample(time.time()))
+        check("f. raw.githubusercontent down: the GitHub API of kalshi-feed answers, the numbers show",
+              p.get_attribute("#body", "data-state") == "ok" and "$512.34" in text(p) and FEED["n"]["api"] > n0["api"], FEED["n"])
+        n1 = dict(FEED["n"])
+        FEED["raw"], FEED["api"] = None, None
+        open_("404", clear=True)
+        check("f. a 404 from kalshi-feed = not connected yet (waiting), without asking the API",
+              p.get_attribute("#body", "data-state") == "waiting" and FEED["n"]["api"] == n1["api"] and FEED["n"]["raw"] > n1["raw"], FEED["n"])
+
         # ---- f. stale, stopped, error, offline copy, loading
         open_("ok", {**sample(time.time()), "t": int(time.time()) - 3600})
         check("f. stale (an hour old): amber pill, the note says the bot stopped sending, numbers still shown",
@@ -762,6 +786,7 @@ def run_browser(url, tmp):
         check("j. no section failed and no script error in the console", not cons, cons[:5])
         check("j. no failed same-site request (nothing missing on the site)", not bad, bad[:5])
         check("j. the page never asks for a font file itself (no 404 while Jarvis's fonts are not on the site)", not fontreq, fontreq[:5])
+        check("j. kalshi.json only ever asked from kalshi-feed (raw, then the API)", not FEED["wrong"], FEED["wrong"][:3])
         part_k(br, url, tmp)
         br.close()
 
