@@ -41,8 +41,8 @@ It works with the PC off. Nothing in `/home/ubuntu/kalshi` changes.
 | `balance` | `account_truth.json` `total` (cash + positions); else `cash`; else the trader's `balance` (cash only) |
 | `today_pnl` / `week_pnl` / `total_pnl` | `SUM(orders.pnl)` over live filled graded rows of `trades.db`: since 00:00 ET, since Monday 00:00 ET (`--week rolling7` for 7 days), all time. That's the same basis as Discord `/money`. ET days come from a built-in DST rule, never "-5 hours" |
 | `days` | the same sum per ET date of the order's `ts`, the last 120 days |
-| `positions` | open bets: live, filled, `result IS NULL`, book not `exit`; `UP`/`DOWN` → `yes`/`no`, contracts, `avg_price`, value at cost, `closes` (no live price in the bot's files) |
-| `trades` | the last 40 live filled orders, newest first; `exit`/`partial` → `sell`; `pnl` stays null while open |
+| `positions` | open bets: live, filled, `result IS NULL`, book not `exit`; `UP`/`DOWN` → `yes`/`no`, contracts, `avg_price`, value at cost, `closes` (no live price in the bot's files), `asset`, `strategy` (the book's name) |
+| `trades` | the last 40 live filled orders, newest first; `exit`/`partial` → `sell`; `pnl` stays null while open; `asset`, `strategy` |
 | `strategies` | one row per `book`: 15-min favourites, Late favourite (BTC hourly), Gold 5 PM first, then the rest; mode from `bot_settings.json` / `combo_settings.json` / `sniper_settings.json`; wins `pnl > 0.005`, losses `pnl < -0.005` |
 | `equity` | `autotune_state.json` `eq_main` (24 h at 15-min steps, cash + open cost), then the balance now |
 | titles | from the ticker, offline, e.g. "ETH up or down · 15 min to 12:15 PM ET Nov 1", "Bitcoin above $80,500 at 1 PM ET Oct 27" |
@@ -96,8 +96,8 @@ present.
 
 | list (cap) | row keys |
 |---|---|
-| `positions` (60) | `ticker`, `title`, `side` (`yes`/`no`), `contracts`, `avg_price`, `price` (0-1 $/contract), `value`, `pnl`, `closes` (ISO) |
-| `trades` (40, newest first) | `t`, `ticker`, `title`, `side`, `action` (`buy`/`sell`/`settled`), `contracts`, `price`, `pnl` |
+| `positions` (60) | `ticker`, `title`, `side` (`yes`/`no`), `contracts`, `avg_price`, `price` (0-1 $/contract), `value`, `pnl`, `closes` (ISO), and optionally `asset` (BTC, ETH, GOLD …) and `strategy` |
+| `trades` (40, newest first) | `t`, `ticker`, `title`, `side`, `action` (`buy`/`sell`/`settled`), `contracts`, `price`, `pnl`, and optionally `asset` and `strategy` |
 | `days` (120) | `["YYYY-MM-DD", dollars]` |
 | `strategies` (10, v2) | `name`, `mode` (`live`/`paper`/`off`), `running`, `today_pnl`, `total_pnl`, `trades`, `wins`, `losses` |
 | `equity` (500, v2) | `[unix, dollars]`, oldest first; longer lists are evenly downsampled, first and last kept |

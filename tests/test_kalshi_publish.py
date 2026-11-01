@@ -238,9 +238,11 @@ def make_bot(root, extra_rows=()):
         (NOW - 400, "live", "KXETH15M-26NOV011300-00", "UP", 0, None, None, None, "main"),               # missed: filled 0
     ] + list(extra_rows)
     for i, (ts, mode, tk, side, filled, avg, result, pnl, book) in enumerate(rows):
-        con.execute("INSERT INTO orders (ts, mode, signal_id, ticker, side, count, filled, avg_price, result, pnl, book, close_ts,"
-                    " status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", (ts, mode, i + 1, tk, side, filled, filled, avg, result, pnl,
-                                                                   book, ts + 900, "filled" if filled else "missed"))
+        asset = tk[2:].split("15M")[0].split("D-")[0].split("-")[0] if tk.startswith("KX") else None
+        con.execute("INSERT INTO orders (ts, mode, signal_id, ticker, asset, side, count, filled, avg_price, result, pnl, book,"
+                    " close_ts, status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (ts, mode, i + 1, tk, asset, side, filled, filled, avg,
+                                                                              result, pnl, book, ts + 900,
+                                                                              "filled" if filled else "missed"))
     con.commit()
     con.close()
     json.dump({"ts": NOW - 4, "account": "main", "mode": "live", "problem": None, "value_mode": "off", "blocked": None,
@@ -270,14 +272,17 @@ def part_g(tmp):
           p["balance"] == 67.98 and p["mode"] == "live" and p["running"] is True and p["name"] == "Kalshi Edge v2"
           and p["status"] == "Trading · 3 live strategies · 1 open bet" and p["note"] == "Real money · main account", p)
     pos = p["positions"]
-    check("g. open bets: live, filled, result NULL, not exit; DOWN -> no; cost as value; closes in ISO",
+    check("g. open bets: live, filled, result NULL, not exit; DOWN -> no; cost as value; closes in ISO; asset and strategy",
           len(pos) == 1 and pos[0]["side"] == "no" and pos[0]["contracts"] == 7 and pos[0]["avg_price"] == 0.97
+          and pos[0]["asset"] == "ETH" and pos[0]["strategy"] == "15-min favourites"
           and pos[0]["value"] == 6.79 and pos[0]["closes"] == iso(NOW + 300) and "pnl" not in pos[0]
           and pos[0]["title"] == "ETH up or down · 15 min to 1:00 PM ET Nov 1", pos)
     tr = p["trades"]
     check("g. trades newest first, UP/DOWN/up/YES/NO -> yes/no, exit -> sell, pnl null while open",
           [x["side"] for x in tr] == ["no", "no", "yes", "no", "yes", "no", "yes", "yes"]
-          and tr[0].get("pnl") is None and [x["action"] for x in tr].count("sell") == 1 and tr[-1]["pnl"] == 0.36, tr)
+          and tr[0].get("pnl") is None and [x["action"] for x in tr].count("sell") == 1 and tr[-1]["pnl"] == 0.36
+          and [x["strategy"] for x in tr][:4] == ["15-min favourites", "Gold 5 PM", "15-min favourites", "15-min favourites"]
+          and tr[1]["asset"] == "GOLD" and tr[2]["asset"] == "BTC", tr)
     st = {x["name"]: x for x in p["strategies"]}
     check("g. strategies per book (the three real-money ones first), wins / losses, modes from the settings files",
           [x["name"] for x in p["strategies"]][:3] == ["15-min favourites", "Late favourite (BTC hourly)", "Gold 5 PM"]
@@ -671,7 +676,7 @@ def part_l(tmp):
     r = run(["-m", "engine.kalshi_publish", "--ssh", "--vm-helper", os.path.join(tmp, "nope", "srv.py"), "--check"], cwd=ROOT, env=home)
     check("l. no srv.py -> a plain error (exit 1)", r.returncode == 1 and "srv.py" in r.stdout, r.stdout[-200:])
     found = KIT.find_vm_helper(appdata=os.path.join(tmp, "appdata"))
-    deep = os.path.join(tmp, "appdata", "Claude", "scratch-workspaces", "g1", "g2", "scratch-2026-09-23-165039")
+    deep = os.path.join(tmp, "appdata", "Claude", "scratch-workspaces", "g1", "g2", "scratch-2026-01-01-000000")
     os.makedirs(os.path.join(deep, "cloud_linux"))
     shutil.copy(srv_py, deep)
     open(os.path.join(deep, "cloud_linux", "deploy_to_oracle.py"), "w").write("#\n")
@@ -753,11 +758,15 @@ def part_n():
     texts = {n: open(os.path.join(pub, n), encoding="utf-8").read() for n in names}
     leaks = []
     for n, t in texts.items():
-        for pat in (r"\b158\.101\.", r"trycloudflare\.com/[A-Za-z0-9]", r"-----BEGIN [A-Z ]*PRIVATE KEY-----\s*\n[A-Za-z0-9+/]{20,}",
+        for pat in (r"trycloudflare\.com/[A-Za-z0-9]", r"-----BEGIN [A-Z ]*PRIVATE KEY-----\s*\n[A-Za-z0-9+/]{20,}",
                     r"Demetri", r"scratch-workspaces\\[0-9a-f]{8}-"):
             if _re.search(pat, t):
                 leaks.append((n, pat))
-    check("n. public kit files: no VM address, tunnel URL, private key, owner name or private folder ids", not leaks, leaks)
+        ips = set(_re.findall(r"(?<![\d.])(?:\d{1,3}\.){3}\d{1,3}(?![\d.])", t)) - {"127.0.0.1", "0.0.0.0"}
+        if ips:
+            leaks.append((n, sorted(ips)))
+    check("n. public kit files: no IP address but loopback, no tunnel URL, private key, owner name or private folder ids",
+          not leaks, leaks)
     bad = [os.path.join(d, f) for d, _, fs in os.walk(kit_dir) for f in fs if f.endswith((".pem", ".key")) or f.startswith(".env")]
     check("n. no key files in the kit", not bad, bad)
     check("n. public/ holds the VM entry and its SETUP.md", {"kalshi_status_vm.py", "SETUP.md"} <= set(names), names)

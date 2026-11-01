@@ -109,8 +109,8 @@ BASE_ENV = ("KALSHI_API_BASE", "KALSHI_BASE_URL")
 # ------------------------------------------------------------------------------------------------- the contract
 TOP = ("name", "mode", "status", "running", "t", "balance", "today_pnl", "week_pnl", "total_pnl", "note")
 NUM = ("balance", "today_pnl", "week_pnl", "total_pnl")
-POS = ("ticker", "title", "side", "contracts", "avg_price", "price", "value", "pnl", "closes")
-TRADE = ("t", "ticker", "title", "side", "action", "contracts", "price", "pnl")
+POS = ("ticker", "title", "side", "contracts", "avg_price", "price", "value", "pnl", "closes", "asset", "strategy")
+TRADE = ("t", "ticker", "title", "side", "action", "contracts", "price", "pnl", "asset", "strategy")
 STRAT = ("name", "mode", "running", "today_pnl", "total_pnl", "trades", "wins", "losses")
 ROW_NUM = ("contracts", "avg_price", "price", "value", "pnl", "t", "today_pnl", "total_pnl", "trades", "wins", "losses")
 CAPS = {"positions": 60, "trades": 40, "days": 120, "strategies": 10, "equity": 500}
@@ -926,7 +926,7 @@ def read_bot(bot_dir, now=None, units=UNITS, week="monday"):
         con = sqlite3.connect("file:" + urllib.request.pathname2url(os.path.abspath(db)) + "?mode=ro", uri=True, timeout=5)
         try:
             con.execute("PRAGMA query_only=1")
-            rows = con.execute("SELECT ts, ticker, side, COALESCE(book,'main'), filled, avg_price, pnl, result, close_ts "
+            rows = con.execute("SELECT ts, ticker, side, COALESCE(book,'main'), filled, avg_price, pnl, result, close_ts, asset "
                                "FROM orders WHERE mode='live' AND filled>0 ORDER BY ts, rowid").fetchall()
         finally:
             con.close()
@@ -938,7 +938,7 @@ def read_bot(bot_dir, now=None, units=UNITS, week="monday"):
     t_week = now - 7 * 86400 if week == "rolling7" else et_midnight((d0 - _dt.timedelta(days=d0.weekday())).isoformat())
     graded = [r for r in rows if r[6] is not None and _f(r[0]) is not None]
     per_day, books = {}, {}
-    for ts, tk, side, book, filled, avg, pnl, result, close_ts in graded:
+    for ts, tk, side, book, filled, avg, pnl, result, close_ts, asset in graded:
         per_day[et_day(ts)] = per_day.get(et_day(ts), 0.0) + float(pnl)
         b = books.setdefault(book or "main", {"today": 0.0, "total": 0.0, "n": 0, "w": 0, "l": 0})
         b["total"] += float(pnl)
@@ -974,14 +974,16 @@ def read_bot(bot_dir, now=None, units=UNITS, week="monday"):
                            "wins": v["w"], "losses": v["l"]})
     opened = [r for r in rows if r[7] is None and (r[3] or "main") != "exit"]
     positions = []
-    for ts, tk, side, book, filled, avg, pnl, result, close_ts in sorted(opened, key=lambda r: (r[8] or 0, r[0])):
+    for ts, tk, side, book, filled, avg, pnl, result, close_ts, asset in sorted(opened, key=lambda r: (r[8] or 0, r[0])):
         positions.append({"ticker": tk, "title": ticker_title(tk), "side": _side(side), "contracts": filled,
+                          "asset": asset or None, "strategy": BOOKS.get(book or "main", book),
                           "avg_price": avg, "value": None if avg is None else round(float(filled) * float(avg), 2),
                           "closes": None if not _f(close_ts) else _dt.datetime.fromtimestamp(float(close_ts), _dt.timezone.utc)
                           .strftime("%Y-%m-%dT%H:%M:%SZ")})
     trades = []
-    for ts, tk, side, book, filled, avg, pnl, result, close_ts in reversed(rows[-CAPS["trades"]:]):
+    for ts, tk, side, book, filled, avg, pnl, result, close_ts, asset in reversed(rows[-CAPS["trades"]:]):
         trades.append({"t": int(ts), "ticker": tk, "title": ticker_title(tk), "side": _side(side),
+                       "asset": asset or None, "strategy": BOOKS.get(book or "main", book),
                        "action": "sell" if (book or "main") in ("exit", "partial") else "buy", "contracts": filled,
                        "price": avg, "pnl": None if pnl is None else round(float(pnl), 2)})
     balance = next((v for v in (_f(truth.get("total")), _f(truth.get("cash")), _f(st.get("balance"))) if v is not None), None)
