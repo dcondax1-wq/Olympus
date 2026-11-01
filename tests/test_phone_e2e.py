@@ -61,7 +61,8 @@ OWNER, REPO = "demetrades2000-coder", "nq-dashboard"
 PAGES_GIT = f"https://github.com/{OWNER}/{REPO}.git"
 LIVE_SITE = f"https://{OWNER}.github.io/{REPO}/"
 BASE = f"/{REPO}/"
-STUB_HOSTS = ("api.github.com", "raw.githubusercontent.com", "fonts.googleapis.com", "fonts.gstatic.com", "ntfy.sh")
+STUB_HOSTS = ("api.github.com", "raw.githubusercontent.com", "fonts.googleapis.com", "fonts.gstatic.com", "ntfy.sh",
+              "api.coingecko.com")
 # the published site: every top-level file, the app folders and the pictures; runs/, writeups/, replays/ ... on demand
 NQD_SPARSE = ["/*", "!/*/", "/icons/", "/jarvis/", "/kalshi/", "/charts/", "/recaps/"]
 PLANNER_SPARSE = ["/planner/*", "!/planner/*/"]
@@ -75,7 +76,7 @@ UA = ("Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.
       "Version/18.6 Mobile/15E148 Safari/604.1")
 PERF_BUDGET_MS = 2000
 NAV_WAIT_S = 3.5                    # jarvis/sw.js NAV_WAIT_MS
-SLOW_S = 7.0                        # the slow network: the site answers after this long
+SLOW_S = 6.0                        # the slow network: the site answers after this long (> NAV_WAIT_S + 2)
 # Known open bugs on the published code (found by this test 2026-11-01, reported, not fixed here): printed as [KNOWN] and not
 # counted unless --strict; a known check that passes prints [PASS] (fixed). (check-name pattern, the bug in short)
 KNOWN = [
@@ -245,7 +246,11 @@ def build_sites(work):
     LIVE_FILES.clear()
     try:                                  # the PC's other live files (Live View, Holodeck), as published on the branch live
         if ARGS.refresh or not _has_ref(nqd, "refs/remotes/origin/live"):
-            git("-C", nqd, "fetch", "-q", "--depth", "1", "--filter=blob:none", "origin", "live:refs/remotes/origin/live", timeout=120)
+            try:
+                git("-C", nqd, "fetch", "-q", "--depth", "1", "--filter=blob:none", "origin", "+live:refs/remotes/origin/live",
+                    timeout=120)
+            except Exception as e:
+                note(f"(could not refresh the live branch: {e}; the cached copy is used)")
         for name in ("liveview.json", "holo.json", "holo_hist.json"):
             r = subprocess.run(["git", "-C", nqd, "show", f"refs/remotes/origin/live:{name}"], capture_output=True, timeout=120)
             if r.returncode == 0:
@@ -418,7 +423,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if host in ("api.github.com", "raw.githubusercontent.com"):
             if CTL.mode == "down":                        # offline: the feeds are gone too
                 return self.drop()
-            if path.endswith("/kalshi.json"):
+            if path.endswith("/kalshi.json"):     # nq-dashboard/kalshi/ (branch kalshi) and the kalshi-feed repo (main)
                 if CTL.kalshi != "published":
                     return self.send_bytes(404, b"404: Not Found", "text/plain; charset=utf-8", cors)
                 return self.send_bytes(200, json.dumps(kalshi_json()).encode(), "application/json", cors)
@@ -432,6 +437,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return self.send_bytes(404, b'{"message":"Not Found"}', "application/json", cors)
         if host == "fonts.googleapis.com":
             return self.send_bytes(200, b"/* fonts: not loaded in the test */", "text/css", cors)
+        if host == "api.coingecko.com":                    # Jarvis's crypto line (jarvis/data.js)
+            body = {"bitcoin": {"usd": 69420.5, "usd_24h_change": 1.23}, "ethereum": {"usd": 2450.1, "usd_24h_change": -0.52},
+                    "solana": {"usd": 165.2, "usd_24h_change": 2.1}} if path.endswith("/simple/price") else {}
+            return self.send_bytes(200, json.dumps(body).encode(), "application/json", cors)
         if host == "ntfy.sh":                              # the push relay's poll (alerts): no new messages
             return self.send_bytes(200, b"", "application/x-ndjson", cors)
         return self.send_bytes(404, b"", "text/plain", cors)
@@ -580,7 +589,9 @@ READY_INIT = """(() => {
   const t = () => { if (ok()) { window.__qaReady = performance.now(); return; } requestAnimationFrame(t); };
   requestAnimationFrame(t);
 })();"""
-JARVIS_HOME = "() => { const h = document.getElementById('home'); return !!h && !h.hidden && h.getBoundingClientRect().height > 0; }"
+JARVIS_HOME = ("() => { const h = document.getElementById('home'); if (!h || h.hidden || !(h.getBoundingClientRect().height > 0)) return false; "
+               "const m = document.documentElement.dataset.mode; if (m && m !== 'jarvis') return false; "
+               "const z = document.querySelector('.zm-root'); return !z || getComputedStyle(z).visibility !== 'visible'; }")
 ZENITH_READY = ("() => { const p = document.querySelector('#page'); return !!p && !p.querySelector(':scope > .skel') "
                 "&& p.textContent.trim().length > 40; }")
 PLANNER_READY = "() => /Planner/i.test(document.title) && document.body && document.body.innerText.trim().length > 40"
@@ -720,12 +731,49 @@ SCROLL_GET = ("() => { const el = " + SCROLL_FIND + "; if (!el) return null; "
 def tap(p, app):
     """Tap an app in Jarvis's top bar (a mode button or an app chip). Zenith mode is full screen over the bar: the owner
     goes back to Jarvis first (its floating control), then taps the app."""
-    if app != "zenith" and _ev(p, ZEN_MODULE):
+    if _ev(p, ZEN_MODULE):
+        if app == "zenith":                       # already in Zenith mode
+            return
         go_home(p)
         if app == "home":
             return
     loc = p.locator(f'header [data-app="{app}"]')
-    (loc if loc.count() else p.locator(f'[data-app="{app}"]')).first.click(timeout=8000)
+    real_tap(p, (loc if loc.count() else p.locator(f'[data-app="{app}"]')).first, f"the {app} button in the bar")
+
+
+TIMES = []        # (part, seconds)
+STOLEN = []       # real taps that did not land (something covered the button, or it never held still): (what, why)
+COVER = """(el) => { const r = el.getBoundingClientRect(); const x = r.left + r.width / 2, y = r.top + r.height / 2;
+  const t = document.elementFromPoint(x, y); const d = (e) => e ? e.tagName.toLowerCase() + (e.id ? '#' + e.id : '')
+    + (typeof e.className === 'string' && e.className ? '.' + e.className.trim().split(/\\s+/).join('.') : '') : 'nothing';
+  return { at: [Math.round(x), Math.round(y)], top: el.contains(t) ? 'the button itself' : d(t), mode: document.documentElement.dataset.mode || null }; }"""
+
+
+def real_tap(p, loc, what, timeout=5000):
+    """A real tap (Playwright waits until nothing covers the element and it holds still). When it cannot land, the
+    reason is kept (STOLEN, reported at the end) and the click is sent to the element directly, so the run goes on."""
+    try:
+        loc.click(timeout=timeout)
+        return True
+    except Exception as e:
+        why = str(e).splitlines()[0][:120]
+        try:
+            info = loc.evaluate(COVER)
+        except Exception:
+            info = {}
+        if info.get("top") != "the button itself":       # covered: a real tap would not reach it
+            STOLEN.append((what, f"{why}; at {info.get('at')} the top element is {info.get('top')} (mode {info.get('mode')})"))
+        else:                                            # on top but never held still (an animation): a finger still hits it
+            note(f"(tap on {what}: it never held still for Playwright; it is on top, clicked directly)")
+        try:
+            shot(p, f"tap stolen {what}")
+        except Exception:
+            pass
+        try:
+            loc.dispatch_event("click", timeout=5000)
+        except Exception:
+            pass
+        return False
 
 
 # Zenith mode (jarvis/zenith-mode.js): its full-screen layer .zm-root (may sit on <body>), or the hub's #zen view
@@ -792,12 +840,12 @@ def go_home(p):
     if _ev(p, ZEN_MODULE):                       # Zenith mode: its floating "Back to Jarvis" control
         back = p.locator('.zm-back, [aria-label="Back to Jarvis"]')
         if back.count():
-            back.first.click(timeout=8000)
+            real_tap(p, back.first, "Zenith mode's Back to Jarvis control")
             p.wait_for_function(JARVIS_HOME, timeout=5000)
             p.wait_for_timeout(250)
             return
     loc = p.locator('header [data-app="home"]')
-    (loc if loc.count() else p.locator('[data-app="home"]')).first.click(timeout=8000)
+    real_tap(p, (loc if loc.count() else p.locator('[data-app="home"]')).first, "the Jarvis button in the bar")
     p.wait_for_function(JARVIS_HOME, timeout=5000)
 
 
@@ -1253,6 +1301,81 @@ def part_f(br, S, base, ph, mode):
     check(f"f. {tag}: no page errors (uncaught)", not pe, pe[:4])
 
 
+JUNK = [            # (what, {key: value}): each set is laid on the phone, then Jarvis opens
+    ("planner.v1 events: 'x'", {"planner.v1": '{"events":"x","tasks":5,"projects":"y"}'}),
+    ("planner.v1 broken rows", {"planner.v1": '{"events":[null,5,"x",{"date":7,"start":{}},{"title":"t","date":"2026-11-01",'
+                                               '"repeat":"weekly","ex":"x"}],"tasks":[null,{"done":"no","date":3}]}'}),
+    ("planner.v1 / planner.today.v1 not JSON", {"planner.v1": "not json {", "planner.today.v1": "[1,2,"}),
+    ("planner.today.v1 events: 'x' + Jarvis's own keys", {"planner.today.v1": '{"events":"x","tasks":{"a":1}}', "jarvis.extra": '{"x":1}',
+                                                         "jarvis.links": '"x"', "jarvis.lastLive": '{"board":"x","t":"y"}',
+                                                         "jarvis.lastKalshi": '{"positions":"x","balance":"y"}'}),
+]
+
+
+def part_i(br, S, base):
+    """Junk saved on the phone never stops Jarvis, and a real tap on every home card opens its app."""
+    ph = Phone(br, "iPhone 13")
+    ph.ctx.add_init_script(READY_INIT)
+    try:
+        m = ph.mark()
+        p = ph.page()
+        p.goto(base + "jarvis/manifest.webmanifest?v=j1")          # the site's origin, before Jarvis ever ran
+        for what, kv in JUNK:
+            p.evaluate("(kv) => { for (const [k, v] of Object.entries(kv)) localStorage.setItem(k, v); }", kv)
+            p.goto(jarvis_url(base), wait_until="commit")
+            ok = True
+            try:
+                wait_ready(p, 10000)
+                p.wait_for_timeout(300)
+                ok = p.evaluate(JARVIS_HOME) and p.locator("#cards [data-app]").count() >= 3
+            except Exception:
+                ok = False
+            check(f"i. junk on the phone ({what}) does not stop Jarvis", ok)
+            if ok and "planner" in what:
+                a = ask(p, "what's on today")
+                check(f"i. ... and 'what's on today' still answers ({what})", len(a.strip()) > 0, a[:120])
+            p.evaluate("(kv) => { for (const k of Object.keys(kv)) localStorage.removeItem(k); }", kv)
+        no_errors(ph, m, "junk on the phone", allow=(r"/favicon\.ico",))   # the manifest opened as a page asks for one
+        # a real tap (Playwright checks that nothing covers the card) on every card of the Jarvis screen
+        p.goto(jarvis_url(base), wait_until="commit")
+        wait_ready(p)
+        p.wait_for_timeout(800)
+        # every tappable app card on the Jarvis screen (the project cards, and any other card / chip that opens an app),
+        # not the bar: each is tagged so the same element is tapped after a return to the Jarvis screen
+        # (a selector that survives a redraw of the cards: the id, else its place among the same app's cards)
+        targets = p.evaluate("""() => { const vis = (el) => !el.closest('header, .bar') && el.getBoundingClientRect().height > 0
+              && getComputedStyle(el).visibility !== 'hidden' && el.dataset.app !== 'home';
+            return [...document.querySelectorAll('[data-app]')].filter(vis).map((el) => {
+              const app = el.dataset.app, inCards = !!el.closest('#cards');
+              const sel = el.id ? '#' + el.id : (inCards ? '#cards ' : '') + '[data-app="' + app + '"]';
+              const same = [...document.querySelectorAll(sel)].filter((x) => !x.closest('header, .bar'));
+              return [sel, same.indexOf(el), app, el.id ? '#' + el.id : inCards ? 'the ' + app + ' card' : (el.className || el.tagName).toString().split(' ')[0]];
+            }); }""")
+        ids = [t[2] for t in targets]
+        for sel, nth, app, label in targets:
+            try:
+                landed = real_tap(p, p.locator(sel).nth(max(0, nth)), f"{label} (opens {app})", timeout=8000)
+                if not landed:
+                    raise RuntimeError(STOLEN[-1][1])
+                if app == "zenith":
+                    f, _k = zenith_view(p, 15000, ready=False)
+                    ok = f is not None and mode_of(p) in (None, "zenith")
+                else:
+                    p.wait_for_selector(f"#v-{app} iframe", state="attached", timeout=8000)
+                    ok = p.locator(f"#v-{app}").is_visible()
+                check(f"i. a real tap on {label} opens {app}", ok)
+            except Exception as e:
+                check(f"i. a real tap on {label} opens {app}", False, str(e).splitlines()[0][:200])
+            try:
+                go_home(p)
+            except Exception:
+                p.goto(jarvis_url(base), wait_until="commit")
+                wait_ready(p)
+        check("i. the Jarvis screen has the Zenith, Planner and Kalshi cards", all(a in ids for a in ("zenith", "planner", "kalshi")), ids)
+    finally:
+        ph.close()
+
+
 def part_h(br, S, base):
     """A service-worker update: the published workers first, then this checkout's."""
     ph = Phone(br, "iPhone 13")
@@ -1279,14 +1402,27 @@ def part_h(br, S, base):
         clear_http_cache(ph, p)
         p.goto(jarvis_url(base), wait_until="commit")
         p.wait_for_function(JARVIS_HOME, timeout=15000)
+        newtxt = open(os.path.join(S["new"], REPO, "jarvis", "index.html"), encoding="utf-8").read()
+        ids_new = set(re.findall(r'\bid="([\w-]+)"', newtxt))
+        ids_old = set(re.findall(r'\bid="([\w-]+)"', open(os.path.join(S["pub"], REPO, "jarvis", "index.html"), encoding="utf-8").read()))
+        only_new = sorted(ids_new - ids_old)
+        if only_new:                                   # the old worker answers the page from the network: the new page at once
+            check(f"h. the first reopen already shows the new Jarvis (#{only_new[0]})",
+                  p.evaluate(f"!!document.getElementById({json.dumps(only_new[0])})"))
+        not_white(p, "Jarvis first reopen after the publish")
         jw = W["Jarvis"]
         want = [jw["new"]]
         gone = [jw["old"]] if jw["old"] != jw["new"] else []
-        ok, keys = wait_caches(p, want, gone, timeout=20000)
-        check(f"h. a reopen of Jarvis installs its new worker ({jw['old']} -> {jw['new']}) and drops only its old cache", ok, keys)
+        ok, keys = wait_caches(p, want, gone, timeout=6000)
+        if not ok:                                     # Chromium checks the worker when its page goes away: the owner leaves
+            pk = ph.page()                             # (another page keeps the browser context alive meanwhile)
+            p.close()
+            pk.goto(base + "jarvis/manifest.webmanifest?v=j1")
+            ok, keys = wait_caches(pk, want, gone, timeout=20000)
+            p = pk
+        check(f"h. Jarvis's new worker is installed after a reopen ({jw['old']} -> {jw['new']}) and drops only its old cache", ok, keys)
         check("h. Jarvis's update leaves Zenith's and the Planner's saved copies alone (le-public-*, planner-*)",
               has_copy(p, "le-public-", "index.html") and has_copy(p, "planner-", "planner/index.html"), keys)
-        newtxt = open(os.path.join(S["new"], REPO, "jarvis", "index.html"), encoding="utf-8").read()
         saved = cached_text(p, jw["new"], jarvis_url(base) + "index.html")
         check("h. Jarvis's new saved copy is the new page", saved == newtxt, (saved or "")[:80])
         p.close()
@@ -1295,9 +1431,6 @@ def part_h(br, S, base):
         wait_ready(p)
         ctl = p.evaluate("navigator.serviceWorker.controller && navigator.serviceWorker.controller.scriptURL")
         check("h. the next open runs under Jarvis's new worker", bool(ctl) and ctl.endswith("/jarvis/sw.js"), ctl)
-        ids_new = set(re.findall(r'\bid="([\w-]+)"', newtxt))
-        ids_old = set(re.findall(r'\bid="([\w-]+)"', open(os.path.join(S["pub"], REPO, "jarvis", "index.html"), encoding="utf-8").read()))
-        only_new = sorted(ids_new - ids_old)
         if only_new:
             check(f"h. the page shown is the new Jarvis (#{only_new[0]})", p.evaluate(f"!!document.getElementById({json.dumps(only_new[0])})"))
         not_white(p, "Jarvis after the update")
@@ -1305,7 +1438,15 @@ def part_h(br, S, base):
         clear_http_cache(ph, p)
         zf, _ = open_zenith(p, 30000)
         zw = W["Zenith"]
-        ok, keys = wait_caches(p, [zw["new"]], [zw["old"]] if zw["old"] != zw["new"] else [], timeout=20000)
+        ok, keys = wait_caches(p, [zw["new"]], [zw["old"]] if zw["old"] != zw["new"] else [], timeout=8000)
+        if not ok:                                     # as for Jarvis: back to Jarvis, close, reopen, Zenith again
+            pk = ph.page()
+            p.close()
+            pk.goto(jarvis_url(base), wait_until="commit")
+            wait_ready(pk)
+            p = pk
+            zf, _ = open_zenith(p, 30000)
+            ok, keys = wait_caches(p, [zw["new"]], [zw["old"]] if zw["old"] != zw["new"] else [], timeout=20000)
         check(f"h. Zenith inside Jarvis installs its new worker ({zw['old']} -> {zw['new']})", ok, keys)
         check("h. Zenith's update leaves Jarvis's and the Planner's saved copies alone (jarvis-*, planner-*)",
               has_copy(p, "jarvis-", "jarvis/index.html") and has_copy(p, "planner-", "planner/index.html"), keys)
@@ -1339,12 +1480,15 @@ def part_h(br, S, base):
 
 def guard(part, fn, *a):
     """A part that breaks (a selector gone, a page that never loads) is one FAIL, and the next part still runs."""
+    t0 = time.time()
     try:
         return fn(*a)
     except Exception as e:
         CTL.set("ok", root=CTL.root)
         check(f"{part}. part {part} ran to the end", False, f"{e.__class__.__name__}: {str(e).splitlines()[0][:300]}")
         return None
+    finally:
+        TIMES.append((part, round(time.time() - t0)))
 
 
 def run_local(S):
@@ -1358,7 +1502,7 @@ def run_local(S):
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     base = f"https://127.0.0.1:{port}{BASE}"
     rules = ", ".join([f"MAP {h} 127.0.0.1:{port}" for h in STUB_HOSTS] + ["MAP * ~NOTFOUND", "EXCLUDE 127.0.0.1"])
-    only = set((ARGS.only or "a,b,c,d,e,f,g,h").split(","))
+    only = set((ARGS.only or "a,b,c,d,e,f,g,h,i").split(","))
     t0 = time.time()
     with sync_playwright() as pw:
         br = pw.chromium.launch(executable_path=chrome_exe(), args=["--ignore-certificate-errors", "--no-proxy-server",
@@ -1387,9 +1531,14 @@ def run_local(S):
                     ph.close()
             if "h" in only:
                 guard("h", part_h, br, S, base)
+            if "i" in only:
+                guard("i", part_i, br, S, base)
         finally:
             br.close()
             srv.shutdown()
+    note("time per part: " + ", ".join(f"{p_} {t}s" for p_, t in TIMES) + f" (load {os.getloadavg()[0]:.0f} on {os.cpu_count()} CPUs)")
+    check("every real tap landed (nothing covered the button)", not STOLEN,
+          "; ".join(f"{w}: {why}" for w, why in STOLEN[:4]))
     if S.get("lazy"):
         note(f"fetched on demand: {', '.join(S['lazy'][:8])}")
     note(f"browser part: {time.time() - t0:.0f} s")
@@ -1447,7 +1596,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--src", default=ROOT, help="the checkout whose tools/web_public is laid over the published site")
     ap.add_argument("--live", action="store_true", help="read-only smoke test of the real published site")
-    ap.add_argument("--only", default="", help="parts to run, e.g. b,c,d (a-h)")
+    ap.add_argument("--only", default="", help="parts to run, e.g. b,c,d (a-i)")
     ap.add_argument("--keep", action="store_true", help="keep the temp site and the screenshots")
     ap.add_argument("--shots", default="", help="folder for the screenshots (default: a temp folder, kept with --keep)")
     ap.add_argument("--cache", default=os.path.join(tempfile.gettempdir(), "le_phone_e2e_cache"), help="where the clone is kept")
