@@ -6,12 +6,14 @@
 // - the page's own versioned files (kalshi.css / kalshi.js ?v=) answer from their exact saved copy at once, refreshed behind;
 // - only its own 'kalshi-*' caches are ever deleted; only same-origin files inside this folder are handled, so kalshi.json
 //   (raw.githubusercontent.com / api.github.com) is never touched or cached;
-// - Jarvis's fonts (../jarvis/*.woff2) are fetched here, quietly, and kept in the cache; the page builds its fonts from those
-//   saved bytes only, so a font that is not on the site yet never makes the page ask for it (no 404 in the page).
-const CACHE = 'kalshi-k9';                      // = 'kalshi-' + the ?v= of kalshi.css / kalshi.js (index.html, SHELL): a new version, a new cache
+// - Jarvis's fonts (../jarvis/*.woff2, the page's @font-face) are saved here too and answered from the copy first, so the page
+//   keeps its Orbitron / Rajdhani look offline.
+const CACHE = 'kalshi-k10';                      // = 'kalshi-' + the ?v= of kalshi.css / kalshi.js (index.html, SHELL): a new version, a new cache
 const NAV_WAIT_MS = 3500;
-const SHELL = ['./', './index.html', './kalshi.css?v=k9', './kalshi.js?v=k9'];
-const FONTS = ['../jarvis/orbitron.woff2', '../jarvis/rajdhani-500.woff2', '../jarvis/rajdhani-600.woff2'];
+const SHELL = ['./', './index.html', './kalshi.css?v=k10', './kalshi.js?v=k10'];
+const FONTS = ['../jarvis/orbitron.woff2', '../jarvis/rajdhani-400.woff2', '../jarvis/rajdhani-500.woff2', '../jarvis/rajdhani-600.woff2',
+  '../jarvis/rajdhani-700.woff2'];
+const FONT_URLS = FONTS.map((f) => new URL(f, self.registration.scope).href);
 let probed = 0;
 
 async function fonts(force) {                       // fetch the fonts the cache does not hold yet (at most every 10 min)
@@ -55,6 +57,10 @@ const store = (req, r) => { if (r && r.ok) { const c = r.clone(); caches.open(CA
 self.addEventListener('fetch', (e) => {
   const req = e.request, u = new URL(req.url);
   const scope = new URL(self.registration.scope);
+  if (req.method === 'GET' && FONT_URLS.indexOf(u.origin + u.pathname) >= 0) {    // Jarvis's fonts: the saved copy first (offline too)
+    e.respondWith(caches.match(u.origin + u.pathname).then((hit) => hit || fetch(req).then((r) => store(new Request(u.origin + u.pathname), r))));
+    return;
+  }
   if (req.method !== 'GET' || u.origin !== scope.origin || !u.pathname.startsWith(scope.pathname)) return;
   if (req.mode === 'navigate') {
     e.respondWith((async () => {

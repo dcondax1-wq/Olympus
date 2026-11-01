@@ -219,12 +219,18 @@ class Quiet(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a, **k):
         pass
 
+    def handle(self):
+        try:
+            super().handle()
+        except (BrokenPipeError, ConnectionResetError):         # the browser gave up on a dropped ("down") answer
+            pass
+
     def end_headers(self):
         self.send_header("Cache-Control", "no-cache")      # always asked again (the worker, not the HTTP cache, keeps copies)
         super().end_headers()
 
     def do_GET(self):
-        if "/kalshi/" in self.path:
+        if "/kalshi/" in self.path or (SITE["mode"] != "ok" and ".woff2" in self.path):   # the page's folder (and Jarvis's fonts)
             if SITE["mode"] == "down":
                 self.close_connection = True
                 return
@@ -300,6 +306,22 @@ def shot(p, name):
         p.screenshot(path=os.path.join(SHOTS, name + ".png"), full_page=True)
 
 
+# every visible control's hit area, probed where a finger lands: 22 px left / right / up / down of its center must still hit it
+TARGETS = """() => {
+  const out = [];
+  for (const e of document.querySelectorAll('.top button, #body button, #body select, #body input, #body summary')) {
+    if (!e.getClientRects().length || getComputedStyle(e).visibility === 'hidden') continue;
+    e.scrollIntoView({ block: 'center', inline: 'nearest' });
+    const r = e.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    const pts = [[cx - 21.5, cy], [cx + 21.5, cy], [cx, cy - 21.5], [cx, cy + 21.5]];
+    const miss = pts.filter(([x, y]) => { const h = document.elementFromPoint(x, y); return !h || (h !== e && !e.contains(h)); });
+    if (miss.length) out.push((e.getAttribute('data-act') || e.id || e.className || e.tagName) + ' ' + Math.round(r.width) + 'x' + Math.round(r.height));
+  }
+  window.scrollTo(0, 0);
+  return out;
+}"""
+
+
 # ------------------------------------------------------------------ a. files + static rules
 def part_a():
     for f in ("index.html", "kalshi.js", "kalshi.css", "sw.js"):
@@ -345,9 +367,15 @@ def part_a():
     check("a. kalshi/sw.js: its own 'kalshi-*' cache and only those deleted, its own folder only, the 3.5 s rule, the page's versions",
           f"const CACHE = 'kalshi-{ver}';" in sw and "k.startsWith('kalshi-') && k !== CACHE" in sw and "u.pathname.startsWith(scope.pathname)" in sw
           and "const NAV_WAIT_MS = 3500;" in sw and f"'./kalshi.css?v={ver}'" in sw and f"'./kalshi.js?v={ver}'" in sw and f"kalshi.css?v={ver}" in html)
-    check("a. the page registers sw.js for its folder; fonts only from the worker's saved bytes (no @font-face, no font fetch)",
-          "navigator.serviceWorker.register('sw.js', { scope: './' })" in js and "@font-face" not in css and "caches.match(new URL(path, location.href).href)" in js
-          and all(f in js and f in sw for f in ("../jarvis/orbitron.woff2", "../jarvis/rajdhani-500.woff2", "../jarvis/rajdhani-600.woff2")))
+    ff = re.findall(r'@font-face \{ font-family: "(\w+)"; src: url\("\.\./jarvis/([\w-]+\.woff2)"\) format\("woff2"\);[^}]*font-display: swap; \}', css)
+    check("a. Jarvis's fonts by plain @font-face (../jarvis/ orbitron + rajdhani-400/500/600/700, font-display: swap), kept by the worker for offline",
+          sorted(f for _, f in ff) == ["orbitron.woff2", "rajdhani-400.woff2", "rajdhani-500.woff2", "rajdhani-600.woff2", "rajdhani-700.woff2"]
+          and "navigator.serviceWorker.register('sw.js', { scope: './' })" in js and all(f"'../jarvis/{f}'" in sw for _, f in ff) and "FONT_URLS.indexOf" in sw, ff)
+    check("a. every control at least 44 px (Refresh, buttons, sort, search, months, calendar days; hit pads for the compact ones)",
+          all(re.search(pat, css) for pat in (r"\.refresh \{[^}]*height: 44px", r"\.btn \{[^}]*height: 44px", r"\.sel \{[^}]*height: 44px", r"\.q \{[^}]*height: 44px",
+                                              r"\.nav \{[^}]*width: 44px; height: 44px", r"\.cd \{[^}]*height: 44px", r"\.more \{[^}]*height: 44px",
+                                              r"::after \{[^}]*width: max\(100%, 44px\); height: max\(100%, 44px\)")))
+    check("a. text wraps instead of being cut (no ellipsis, no line clamp)", "text-overflow: ellipsis" not in css and "line-clamp" not in css)
     b = open(os.path.join(ROOT, "tools", "build_web_dashboard.py"), encoding="utf-8").read()
     check("a. the site build publishes every file of kalshi/ (index.html, kalshi.js, kalshi.css, sw.js)",
           'for app in ("jarvis", "kalshi"):' in b and "for name in os.listdir(src_dir):" in b)
@@ -364,9 +392,9 @@ def run_browser(url, tmp):
         ctx.route("https://raw.githubusercontent.com/**", feed)
         ctx.route("https://api.github.com/**", feed)
         p = ctx.new_page()
-        errs, cons, dialogs, bad, fontreq = [], [], [], [], []
+        errs, cons, dialogs, bad, fontres = [], [], [], [], []
         p.on("response", lambda r: bad.append((r.status, r.url)) if r.status >= 400 and r.url.startswith(url.split("/nq-dashboard/")[0]) else None)
-        p.on("request", lambda r: fontreq.append(r.url) if ".woff" in r.url else None)
+        p.on("response", lambda r: fontres.append((r.status, r.url.rsplit("/", 1)[1])) if ".woff2" in r.url else None)
         p.on("pageerror", lambda e: errs.append(str(e)))
         p.on("console", lambda m: cons.append(m.text) if m.type == "error" and not re.search(r"Failed to load resource|net::ERR", m.text) else None)
         p.on("dialog", lambda d: (dialogs.append(d.message), d.dismiss()))
@@ -632,7 +660,7 @@ def run_browser(url, tmp):
               f"{cur} {('win' if cur == 1 else 'wins') if s0 > 0 else ('loss' if cur == 1 else 'losses')}" in streak and f"best run {best} wins" in streak, (streak, cur, best))
         check("e. stats: profit factor, green days, best / worst day, max drawdown",
               f"{sum(w) / -sum(lo):.2f}" in tiles.get("PROFIT FACTOR", "") and "GREEN DAYS" in tiles and "BEST / WORST DAY" in tiles
-              and "from the peak" in tiles.get("MAX DRAWDOWN", ""), tiles)
+              and "from peak" in tiles.get("MAX DRAWDOWN", ""), tiles)
         check("e. stats name their sample (last N closed trades)", f"last {len(pn)} closed trades" in p.inner_text("#sec-stats"))
         # trades: show more
         n_tr = len(j["trades"])
@@ -665,7 +693,10 @@ def run_browser(url, tmp):
         dk, dx = sorted(in_pm.items())[3]
         p.click(f"#sec-cal .cd[data-v='{dk}']")
         cr = p.inner_text("#calRead")
-        check("e. tapping a day reads its P&L", usd(dx, True) in cr and p.get_attribute(f"#sec-cal .cd[data-v='{dk}']", "aria-pressed") == "true", (cr, dk, dx))
+        d0 = dt.date.fromisoformat(dk) - dt.timedelta(days=dt.date.fromisoformat(dk).weekday())
+        wsum = sum(dmap.get((d0 + dt.timedelta(days=i)).isoformat(), 0) for i in range(7))
+        check("e. tapping a day reads its P&L and its week's (Monday-Sunday)", usd(dx, True) in cr and f"its week {usd(wsum, True)}" in cr
+              and p.get_attribute(f"#sec-cal .cd[data-v='{dk}']", "aria-pressed") == "true", (cr, dk, dx, usd(wsum, True)))
         for _ in range(4):
             if p.locator("#sec-cal [aria-label='Previous month']").is_enabled():
                 p.click("#sec-cal [aria-label='Previous month']")
@@ -808,6 +839,8 @@ def run_browser(url, tmp):
         p.click("[data-act=preview]")
         m = p.evaluate("[document.documentElement.scrollWidth, document.documentElement.clientWidth, document.getElementById('previewBar').getBoundingClientRect().right, window.innerWidth]")
         check("i. 375px preview: no sideways scroll, the banner inside the gutters", m[0] <= m[1] and m[2] <= m[3] - 15.5, m)
+        small = p.evaluate(TARGETS)
+        check("i. 375px preview: every control's hit area at least 44 x 44 (calendar days, Refresh, ranges, Exit preview ...)", not small, small[:6])
         for wdt in (375, 390, 430):
             p.set_viewport_size({"width": wdt, "height": 844})
             for name, payload in (("wide", wide(time.time(), long_text=True)), ("real bot", realbot(time.time())[0])):
@@ -819,7 +852,7 @@ def run_browser(url, tmp):
                     except Exception:
                         fin = False
                     if wdt == 375 and name == "wide":
-                        check("i. Jarvis's fonts in use (from the worker's saved bytes): Orbitron for numbers, Rajdhani for text", fin)
+                        check("i. Jarvis's fonts in use (plain @font-face): Orbitron for numbers, Rajdhani for text", fin)
                 p.evaluate("document.fonts.ready.then(() => true)")
                 if p.locator("#posList > li.pos").count():
                     p.click("#posList > li >> nth=0 >> summary")
@@ -836,11 +869,22 @@ def run_browser(url, tmp):
                 check(f"i. {wdt}px {name}: no sideways scroll, every card and row inside the 16 px gutters", m[0] <= m[1] and not m[2], m[:3])
                 check(f"i. {wdt}px {name}: no number cut off (KPIs, stats, calendar, table, rows, header)", not m[3], m[3])
                 check(f"i. {wdt}px {name}: search and sort at 16px (no zoom on focus)", m[4] == "16px" and m[5] == "16px", m[4:])
+                cut = p.evaluate("""() => [...document.querySelectorAll('#body *, .top *')].filter((e) => { const c = getComputedStyle(e);
+                    return (c.textOverflow === 'ellipsis' || c.overflowX === 'hidden') && e.getClientRects().length && e.scrollWidth > e.clientWidth + 1; })
+                    .map((e) => (e.className || e.tagName) + ': ' + e.textContent.slice(0, 40))""")
+                check(f"i. {wdt}px {name}: no text cut off anywhere (strategy lines, stats, rows wrap)", not cut, cut[:5])
+                if wdt == 375:
+                    small = p.evaluate(TARGETS)
+                    check(f"i. 375px {name}: every control's hit area at least 44 x 44", not small, small[:6])
                 shot(p, f"8_{name.replace(' ', '')}_{wdt}")
         check("j. no page errors", not errs, errs)
         check("j. no section failed and no script error in the console", not cons, cons[:5])
-        check("j. no failed same-site request (nothing missing on the site)", not bad, bad[:5])
-        check("j. the page never asks for a font file itself (no 404 while Jarvis's fonts are not on the site)", not fontreq, fontreq[:5])
+        miss = [b_ for b_ in bad if not (not FONTS and ".woff2" in b_[1])]     # a checkout without Jarvis's fonts: only those may be missing
+        check("j. no failed same-site request (nothing missing on the site)", not miss, miss[:5])
+        if FONTS:
+            check("j. Jarvis's fonts load from ../jarvis/ (all 200)", fontres and all(st_ == 200 for st_, _ in fontres), fontres[:6])
+        else:
+            print("       (this checkout has no tools/web_public/jarvis/*.woff2: the font requests 404 here; strict once the fonts are in)")
         check("j. kalshi.json only ever asked from kalshi-feed (raw, then the API)", not FEED["wrong"], FEED["wrong"][:3])
         part_k(br, url, tmp)
         br.close()
@@ -855,11 +899,12 @@ def part_k(br, url, tmp):
     ctx.route("https://raw.githubusercontent.com/**", feed)
     ctx.route("https://api.github.com/**", feed)
     q = ctx.new_page()
-    errs, bad, fontreq = [], [], []
+    errs, bad = [], []
     q.on("pageerror", lambda e: errs.append(str(e)))
-    q.on("console", lambda m: errs.append(m.text) if m.type == "error" and SITE["mode"] == "ok" and not SITE["slow"] else None)
-    q.on("response", lambda r: bad.append((r.status, r.url)) if r.status >= 400 and "127.0.0.1" in r.url and SITE["mode"] == "ok" else None)
-    q.on("request", lambda r: fontreq.append(r.url) if ".woff" in r.url else None)
+    nofont = lambda u: FONTS or ".woff2" not in u                    # noqa: E731  (a checkout without Jarvis's fonts: their 404s only)
+    q.on("console", lambda m: errs.append(m.text) if m.type == "error" and SITE["mode"] == "ok" and not SITE["slow"]
+         and nofont((m.location or {}).get("url", "")) else None)
+    q.on("response", lambda r: bad.append((r.status, r.url)) if r.status >= 400 and "127.0.0.1" in r.url and SITE["mode"] == "ok" and nofont(r.url) else None)
     pg = lambda: q.evaluate("document.title === 'Kalshi' && !!document.getElementById('body')")  # noqa: E731
 
     def until(js, timeout=10000):
@@ -883,14 +928,15 @@ def part_k(br, url, tmp):
     check(f"k. its own cache '{cn}' holds the page, its style and its script", list(c) == [cn] and shell, c)
     fonts = sorted(u.rsplit("/", 1)[1] for u in urls if u.endswith(".woff2"))
     if FONTS:
-        check("k. Jarvis's fonts on the site: the worker saves the three it needs", fonts == ["orbitron.woff2", "rajdhani-500.woff2", "rajdhani-600.woff2"], fonts)
+        check("k. Jarvis's fonts on the site: the worker keeps all five for offline",
+              fonts == ["orbitron.woff2", "rajdhani-400.woff2", "rajdhani-500.woff2", "rajdhani-600.woff2", "rajdhani-700.woff2"], fonts)
     else:
-        check("k. Jarvis's fonts not on the site yet: nothing saved, nothing asked by the page, no error", fonts == [] and not fontreq and not errs, (fonts, fontreq, errs))
+        check("k. Jarvis's fonts not in this checkout: the worker keeps nothing for them", fonts == [], fonts)
     q.reload()
     ready(q)
     check("k. the next open is run by the worker", q.evaluate("!!navigator.serviceWorker.controller"))
     if FONTS:
-        check("k. the fonts come from the saved bytes: Orbitron and Rajdhani in use",
+        check("k. Orbitron and Rajdhani in use (plain @font-face)",
               until("document.fonts.check('700 15px Orbitron') && document.fonts.check('500 16px Rajdhani')", 6000))
     # offline: every connection to the site dropped, and the feed too
     SITE["mode"], FEED["mode"] = "down", "abort"
@@ -898,6 +944,9 @@ def part_k(br, url, tmp):
     ready(q)
     check("k. offline: the page opens from its saved copy, with the numbers saved on this phone",
           pg() and q.get_attribute("#body", "data-state") == "offline" and "$67.98" in text(q) and q.locator("#sec-kpi").count() == 1)
+    if FONTS:
+        check("k. offline: still Orbitron and Rajdhani (the worker answers the fonts from its copy)",
+              until("document.fonts.check('700 15px Orbitron') && document.fonts.check('500 16px Rajdhani')", 6000))
     shot(q, "k1_offline")
     # a 404 site
     SITE["mode"], FEED["mode"] = "404", "ok"
