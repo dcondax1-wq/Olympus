@@ -86,22 +86,28 @@ UA = ("Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.
 PERF_BUDGET_MS = 2000
 NAV_WAIT_S = 3.5                    # jarvis/sw.js NAV_WAIT_MS
 SLOW_S = 6.0                        # the slow network: the site answers after this long (> NAV_WAIT_S + 2)
-# Known open bugs on the published code (found by this test 2026-11-01, reported, not fixed here): printed as [KNOWN] and not
-# counted unless --strict; a known check that passes prints [PASS] (fixed). (check-name pattern, the bug in short)
+# Known open bugs (found by this test 2026-11-01, reported, not fixed here): printed as [KNOWN] and not counted unless
+# --strict; a known check that passes prints [PASS]. Each holds only for the code that still has the bug (when(site)), so
+# a fixed bug that comes back is a plain FAIL. (check-name pattern, the bug in short, when)
+_old_zenith = lambda S: str((S.get("workers", {}).get("Zenith") or {}).get("old_src") or "").startswith("le-public-v49")
 KNOWN = [
     (r"^f\. 404 site: Zenith (inside Jarvis|on its own) opens|^not white: Zenith (inside Jarvis|alone) 404 site",
-     "Zenith's worker answers its page with the site's 404 instead of its saved copy (tools/web_public/sw.js, page branch)"),
+     "Zenith's worker answers its page with the site's 404 instead of its saved copy (tools/web_public/sw.js v49, page branch)",
+     _old_zenith),
     (r"^e\. slow network: Zenith (inside Jarvis shows|on its own opens)",
-     "Zenith waits on the network for its page / data.json / home.json (published sw.js: no saved-copy fallback like "
-     "Jarvis's 3.5 s; inside Jarvis the page and then its data each wait)"),
+     "Zenith waits on the network for its page / data.json / home.json (sw.js v49: no saved-copy fallback like Jarvis's 3.5 s)",
+     _old_zenith),
     (r"^f\. (offline|404 site): Kalshi inside Jarvis opens|^not white: Kalshi inside Jarvis 404 site",
-     "kalshi/ has no service worker and no saved copy: offline = browser error page, 404 site = GitHub's 404 page"),
+     "kalshi/ has no service worker and no saved copy: offline = browser error page, 404 site = GitHub's 404 page",
+     lambda S: not S.get("kalshi_sw")),
     (r"^c\. Zenith again: where the owner left it",
-     "a dashboard hidden with display:none ([hidden] on its view) comes back scrolled to the top"),
+     "the old hub hides a dashboard's view with display:none: Zenith comes back scrolled to the top",
+     lambda S: str((S.get("workers", {}).get("Jarvis") or {}).get("old_src") or "").startswith("jarvis-v3")),
     (r"^c\. the Planner's first open inside Jarvis shows no false",
      "planner/index.html (planner-backup) ~14402: hadController is true because Zenith's site-wide worker controlled the "
-     "page first, so the Planner's own worker taking over shows 'A new version is ready'"),
+     "page first, so the Planner's own worker taking over shows 'A new version is ready'", lambda S: True),
 ]
+SITE = {}         # the site under test (build_sites), for KNOWN's conditions
 
 RES = []          # (name, ok, known)
 MISSING = []      # Jarvis modules not on the site (part a): their 404s are not counted again in every error check
@@ -109,7 +115,7 @@ SHOTS = {"dir": None, "n": 0}
 
 
 def check(name, ok, info="", known=None):
-    known = known or next((k for pat, k in KNOWN if re.search(pat, name)), None)
+    known = known or next((k for pat, k, when in KNOWN if re.search(pat, name) and when(SITE)), None)
     tag = "[PASS] " if ok else ("[KNOWN] " if known and not ARGS.strict else "[FAIL] ")
     RES.append((name, bool(ok), bool(known) and not ARGS.strict))
     extra = "" if ok else f"  -> {str(info)[:400]}" + (f"  ({known})" if known and not ok else "")
@@ -311,6 +317,11 @@ def build_sites(work):
                               "same": _same(os.path.join(pub, rel), os.path.join(new, rel))}
     changed = [f for f in _files(new) if not _same(os.path.join(pub, f), os.path.join(new, f))]
     S["changed"] = changed
+    for w in S["workers"].values():
+        w["old_src"] = w["new"]                   # the checkout's own cache name (before any synthetic bump)
+    S["kalshi_sw"] = os.path.exists(os.path.join(new, "kalshi", "sw.js"))
+    SITE.clear()
+    SITE.update(S)
     S["bumped"] = []
     for name, w in S["workers"].items():
         if w["same"] and w["new"] and name != "Planner":
