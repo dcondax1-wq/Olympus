@@ -6,34 +6,43 @@ Kalshi at /kalshi/. Each has its own service worker, and an iPhone Home Screen a
 or after a failed load (docs/CLAUDE_REFERENCE.md, Infrastructure > Jarvis hub). This test builds a faithful local copy of
 the published site and drives it in Chromium at iPhone sizes over local https (service workers need https):
   - the site: a shallow, blobless, sparse clone of the Pages repo (branch main; big folders such as runs/ are fetched one
-    file at a time only if a page asks for them), the planner/ folder from the branch planner-backup, and this checkout's
-    tools/web_public/ laid over it as tools/build_web_dashboard.py publishes it (page, scripts, sw.js, jarvis/, kalshi/ ...);
-  - live.json and kalshi.json (api.github.com / raw.githubusercontent.com) come from stubs on the same local server
-    (Chromium maps those hosts to it), Google Fonts gets an empty stylesheet, every other outside host is cut off;
+    file at a time only if a page asks for them), and the checkout's tools/web_public/ laid over it as
+    tools/build_web_dashboard.py publishes it (page, scripts, sw.js, jarvis/, kalshi/, the Kalshi kit's public files);
+    planner/ as the publish builds it (the checkout's scripts/add_planner.sh: planner-backup + tools/planner_patches);
+  - live.json and kalshi.json (api.github.com / raw.githubusercontent.com, the old branch kalshi and the kalshi-feed repo)
+    come from stubs on the same local server (Chromium maps those hosts to it), liveview / holo files are the live branch's
+    own, Google Fonts / CoinGecko / ntfy get small stubs, every other outside host is cut off;
   - the server answers like GitHub Pages (Cache-Control max-age=600, ETag, its own 404 page) and can turn slow, drop
     every connection (offline) or answer 404 for the whole site.
 It checks:
-  a. the files: the overlay is what the site build publishes; each worker keeps to its own folder and caches
-  b. Jarvis opens at iPhone SE / 13 / 13 Pro Max: the Jarvis screen, the bots' numbers, no sideways scroll, not white,
-     interactive under 2 s locally (cold and from the saved copy)
-  c. switching: Jarvis -> Zenith -> Jarvis -> Zenith (not reloaded) -> Planner -> Kalshi -> Jarvis, each one rendered and
-     not white, never more than one dashboard frame alive, no sideways scroll inside the dashboards
-  d. Jarvis's answers: status, room, target, P&L, BLITZ, Kalshi, the day, the market, help, "open planner"
-  e. a slow network: a reopen shows the saved copy after ~3.5 s (not a white screen until the site answers)
-  f. offline (every connection dropped): Jarvis, Zenith, the Planner and Kalshi inside Jarvis; no saved copy = dark Retry
-  g. a 404 site (GitHub's "Site not found" for every file): the same four
-  h. a service-worker update from the published workers to this checkout's (a synthetic cache-name bump when they are
-     the same): the new workers take over on a reopen, the page is the new one, no worker deletes another app's caches,
-     offline still works after the update
-  i. no page errors, no console errors, no failed same-site requests in the normal runs
-Screenshots of every state are judged by their dominant color (white = fail) and kept with --keep.
+  a. the files: the overlay is what the site build publishes; each worker keeps to its own folder and caches; every module
+     the Jarvis page loads and every file its worker saves is on the site
+  b. Jarvis opens at iPhone SE / 13 / 13 Pro Max: the Jarvis screen, the bots' numbers, no sideways scroll, nothing left
+     under the fixed bottom bar, not white, interactive under 2 s locally (cold and from the saved copy)
+  c. switching: Jarvis mode -> Zenith mode -> Jarvis -> Zenith (not reloaded, scroll kept) -> Planner -> Kalshi -> Jarvis,
+     each rendered and not white, one dashboard alive at a time, a tapped Zenith notification opens Zenith mode
+  d. Jarvis's answers: status, room, target, P&L, BLITZ, Kalshi, the market, help, "open planner"
+  e. a slow network: Jarvis paints and is usable from its saved copy after ~3.5 s; Zenith inside Jarvis and on its own
+  f. offline (every connection dropped): Jarvis, Zenith, the Planner and Kalshi inside Jarvis, Zenith on its own; no saved
+     copy = the dark Retry page
+  g. a 404 site (GitHub's "Site not found" for every file): the same
+  h. a service-worker update from the published workers to the checkout's (a synthetic cache-name bump when they are the
+     same): the new page at once, the new workers after a reopen, no worker deletes another app's caches, offline after
+  i. junk saved on the phone (planner.v1, planner.today.v1, jarvis.*) never stops Jarvis; a real tap on every app card of
+     the Jarvis screen opens its app (no overlay steals it)
+  j. the Planner's add-ons run inside Jarvis, a task added in the Planner reaches Jarvis's "what's on today"
+     (planner.today.v1), the Kalshi page's sample-data preview while kalshi.json is not published
+  and everywhere: no page errors, no console errors, no failed same-site requests, every real tap lands.
+Screenshots of every state are judged by their dominant color (white = fail; the Planner's own light look: blank = fail).
+Known open bugs of the published code print as [KNOWN] (not counted unless --strict).
 
-    python -X utf8 -m tests.test_phone_e2e                 the local copy with this checkout's tools/web_public (~2-3 min)
-    python -X utf8 -m tests.test_phone_e2e --src <path>    overlay another checkout's tools/web_public (an integration
-                                                           branch, or a `git archive <branch> tools/web_public` export)
+    python -X utf8 -m tests.test_phone_e2e                 the local copy with this checkout's tools/web_public
+    python -X utf8 -m tests.test_phone_e2e --src <path>    another checkout (an integration worktree, or a
+                                                           `git archive <branch> tools/web_public tools/build_web_dashboard.py` export)
     python -X utf8 -m tests.test_phone_e2e --live          read-only smoke test of the real published site
-    --only b,c,d   run some parts · --keep  keep the temp site + screenshots · --cache <dir>  where the clone is kept
-    --no-refresh   reuse the cached clone without fetching · --strict  known open bugs count as failures
+    --only b,c,d   some parts (a always runs) · --keep  keep the temp site · --shots <dir>  keep the screenshots there
+    --cache <dir>  where the clones are kept · --no-refresh  reuse them without fetching · --strict  known bugs fail
+About 2.5 min on an idle 4-CPU box (5-6 min at load 15+; the end of the output gives the time per part).
 Read-only: nothing is published, pushed or written outside the temp / cache folders. Paper only; no trading code is run.
 """
 from __future__ import annotations
