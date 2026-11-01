@@ -40,7 +40,7 @@ const DEFAULT_PROVIDER = 'groq';
 const DEPTHS = ['auto', 'quick', 'think', 'deep'];
 // output budgets per depth: Groq / Gemini count their reasoning inside it, so they get more room
 const BUDGET = { quick: { anthropic: 300, other: 1024 }, think: { anthropic: 1000, other: 2048 }, deep: { anthropic: 2500, other: 4096 } };
-const SMART_TIMEOUT_MS = 25000;
+const SMART_TIMEOUT_MS = 20000;          // the shell gives an answer 25 s, then uses its own
 const HIDE_KEY = 'jarvis.hide';            // "hide my balance" (this phone only)
 const IDLE_LINE = 'Good day. Tap the core or type below to speak with me.';     // the old Jarvis's line, for a phone
 const LIVE_STALE_MS = 20 * 60e3;          // live.json older than this: say so (the PC may be off)
@@ -244,17 +244,21 @@ const BOT = { lit: BOTS[0], atlas: BOTS[1], blitz: BOTS[2] };
 const ALL = ['lit', 'atlas', 'blitz'];
 const BOT_FIX = 'Zenith has the details.';
 
+// live: live.json itself, or the shell's slim view of it (lit / atlas / blitz / verdict / lines / price at the top) with the
+// full live.json as .raw (tools/web_public/jarvis/data.js liveView); either way the same view comes out.
 function nqView(live, nowMs) {
   if (!isObj(live)) return null;
-  const b = isObj(live.board) && !live.board.error ? live.board : {};
+  const full = isObj(live.raw) ? live.raw : live;
+  const b = isObj(full.board) && !full.board.error ? full.board : {};
   const good = (x) => (isObj(x) && !x.error ? x : null);
-  const t = num(live.t) || num(b.t);
+  const t = num(full.t) || num(live.t) || num(b.t);
+  const lines0 = arr(b.lines).length ? arr(b.lines) : arr(live.lines);
   return {
-    lit: good(b.lit) || good(live.lit), atlas: good(b.atlas) || good(live.atlas), blitz: good(b.blitz) || good(live.blitz),
-    verdict: good(live.pc_verdict) || good(live.verdict), t, running: b.running != null ? b.running : live.running,
-    cached: !!live.cached, stale: !!(t && nowMs - t * 1000 > LIVE_STALE_MS), money: good(live.money),
-    lines: arr(b.lines).filter((x) => isObj(x) && str(x.text)), level: str(b.level, 10), progress: good(b.progress),
-    price: num(live.price),
+    lit: good(b.lit) || good(live.lit), atlas: good(b.atlas) || good(live.atlas), blitz: good(b.blitz) || good(full.blitz) || good(live.blitz),
+    verdict: good(full.pc_verdict) || good(live.verdict) || good(live.pc_verdict), t, running: b.running != null ? b.running : live.running,
+    cached: !!live.cached, stale: !!(t && nowMs - t * 1000 > LIVE_STALE_MS), money: good(full.money) || good(live.money),
+    lines: lines0.filter((x) => isObj(x) && str(x.text)), level: str(b.level || live.level, 10), progress: good(b.progress) || good(live.progress),
+    price: num(full.price) != null ? num(full.price) : num(live.price),
   };
 }
 const sizeOf = (c, bot) => { const m = str(c && c.plan).match(/(\d+)\s*k\b/i); return m ? m[1] + 'K' : bot.size; };
@@ -454,7 +458,8 @@ export function createBrain(opts) {
     const fm = isObj(f.market) ? f.market : null;
     const mtext = M ? marketText(M, t) : str(fm && fm.text, 200) || 'Market hours unknown';
     return {
-      f, now: t, et: et(t), M, mtext, nq: nqView(f.live, t), liveState: str(f.liveState, 20),
+      f, now: t, et: et(t), M, mtext, nq: nqView(f.live, t), liveState: str(f.liveState, 20) || (f.liveError ? 'error' : ''),
+      extras: isObj(f.extras) ? f.extras : {},
       k: isObj(f.kalshi) ? f.kalshi : null, kState: str(f.kalshiState, 20), plan: planView(f.planner), apps: appList(f.apps),
     };
   }
@@ -811,7 +816,7 @@ export function createBrain(opts) {
   }
   function kalshiCard(V) {
     const k = V.k;
-    if (!k) return { title: 'Kalshi', lines: [V.kState === 'error' ? 'Feed unreachable' : 'Not connected yet'], open: 'kalshi' };
+    if (!k) { const t = V.kState === 'error' ? 'Feed unreachable' : V.kState === 'waiting' ? 'Not connected yet' : 'Loading'; return { title: 'Kalshi', text: t, lines: [t], open: 'kalshi' }; }
     return { title: 'Kalshi', kv: [['Balance', usd2(k.balance) || 'missing'], ['Today', usd2(k.today_pnl, true) || 'missing'], ['Open', String(arr(k.positions).filter(isObj).length)]], open: 'kalshi' };
   }
 
@@ -880,7 +885,7 @@ export function createBrain(opts) {
     if (p.tasks.length) ls.push(`${p.tasks.length} open ${p.tasks.length === 1 ? 'task' : 'tasks'}: ${taskList(p.tasks, 4)}`);
     const nx = p.ev.filter((e) => !e.allDay && e.min != null && e.min > V.et.min)[0];
     const speak = `${p.ev.length ? plural(p.ev.length, 'event') + ' today' : 'No events today'}${nx ? `, next ${nx.title} at ${toSpeech(hm(nx.start))}` : ''}${p.tasks.length ? `, and ${plural(p.tasks.length, 'open task')}` : ''}.`;
-    return { text: lines(...ls), speak, cards: [{ title: 'Today', lines: ls.slice(0, 5), open: 'planner' }], intent: 'plan' };
+    return { text: lines(...ls), speak, cards: [{ title: 'Today', text: ls.slice(0, 4).join(' · '), lines: ls.slice(0, 5), open: 'planner' }], intent: 'plan' };
   }
 
   // ---------------------------------------------------------------------------------------------- money goal (live.json "money")
@@ -1155,17 +1160,34 @@ export function createBrain(opts) {
     ['Virgil', 'Fortune favours the bold.'],
     ['a trading proverb', 'Cut your losses short and let your profits run.'],
   ];
+  // BTC / ETH / SOL from the shell's crypto feed (extras.crypto: {t, BTC: {usd, chg}, ...}); none -> said to be missing
+  function cryptoAnswer(q, V) {
+    const c = isObj(V.extras.crypto) ? V.extras.crypto : null, names = { BTC: 'Bitcoin', ETH: 'Ethereum', SOL: 'Solana' };
+    const want = /\b(bitcoin|btc)\b/.test(q) ? ['BTC'] : /\b(ethereum|eth)\b/.test(q) ? ['ETH'] : /\b(solana|sol)\b/.test(q) ? ['SOL'] : ['BTC', 'ETH', 'SOL'];
+    const rows = c ? want.map((k) => [k, isObj(c[k]) ? c[k] : null]).filter((x) => x[1] && num(x[1].usd) != null) : [];
+    if (!rows.length) return { text: 'I have no crypto prices right now, so I will not guess. Your Kalshi bot trades Bitcoin markets: ask "Kalshi positions".', speak: 'I have no crypto prices right now, so I will not guess.', intent: 'missing' };
+    const fmt = (v) => '$' + v.toLocaleString('en-US', { maximumFractionDigits: v < 100 ? 2 : 0 });
+    const ln = rows.map(([k, x]) => `${names[k]} ${fmt(num(x.usd))}${num(x.chg) != null ? ` (${num(x.chg) >= 0 ? '+' : '−'}${Math.abs(num(x.chg)).toFixed(1)}% in 24 h)` : ''}`);
+    const text = ln.join(', ') + (num(c.t) ? ` (${ago(c.t, V.now)}).` : '.');
+    return { text, speak: toSpeech(text.replace(/\([^)]*ago\)/, '').replace(/%/g, ' percent')), intent: 'crypto' };
+  }
   function oldJarvis(q, V) {
     const nav = /^(open|show|go to|goto|switch to|take me to|launch|pull up|bring up|navigate to|jump to)\b/.test(q);     // "open news" switches; "news" answers
     if (nav) return null;
     if (/^(good morning|morning|gm|good morning briefing|morning briefing|my morning briefing|good morning sir)$/.test(q)) return briefingReply(V);
     if (/^(what's new|whats new|what is new|what's new in jarvis|release notes|changelog)$/.test(q)) return { text: WHATS_NEW, speak: 'Briefings, follow-ups, a next step on request, market hours with the holidays, Kalshi strategies, and an optional smart mode on your own key.', intent: 'whats_new' };
-    if (/\b(what can't you do|what can you not do|what can you not|what don't you do|your limits|needs list|what are your limits)\b/.test(q)) return { text: CANT, speak: 'I cannot trade or go live, set reminders, add tasks, or read email, news, weather or crypto prices. Anything I do not know, I will say is missing.', intent: 'cant' };
+    if (/\b(what can't you do|what can you not do|what can you not|what don't you do|your limits|needs list|what are your limits)\b/.test(q)) return { text: isObj(V.extras.crypto) ? CANT.replace(' or crypto prices', '') : CANT, speak: 'I cannot trade or go live, set reminders, add tasks, or read email, news, weather or crypto prices. Anything I do not know, I will say is missing.', intent: 'cant' };
     if (/^(remind me|set a reminder|reminder|add a reminder|add (a )?(task|todo|to do)|new task|create (a )?task|schedule (a|an|my) )|^add .+ to (my |the )?(to ?do|todo|tasks?|list|planner|calendar)( list)?$|^add .+ (by|at|on|takes) /.test(q))
       return { text: 'I cannot write to your Planner from here yet, so nothing was added. Say "open planner" and it takes a few seconds there.', speak: 'I cannot add that from here yet. Say open planner and add it there.', intent: 'cant' };
-    if (/\b(verse of the day|bible verse|daily verse|a verse|scripture|verse for today)\b/.test(q)) { const v = VERSES[V.et.dn % VERSES.length]; return { text: `${v[1]} (${v[0]}, KJV)`, speak: `${v[0]}. ${v[1]}`, intent: 'verse' }; }
-    if (/\b(quote of the day|daily quote|a quote|inspire me|motivate me|motivation|inspiration|something inspiring)\b/.test(q)) { const x = QUOTES[V.et.dn % QUOTES.length]; return { text: `"${x[1]}" (${x[0]})`, speak: `${x[1]} ${x[0].startsWith('a ') ? 'As ' + x[0] + ' goes.' : x[0] + '.'}`, intent: 'quote' }; }
-    if (/\b(bitcoin|btc|ethereum|eth|solana|sol|crypto|cryptos|dogecoin)\b/.test(q) && !KALSHI_RX.test(q)) return { text: 'I have no live crypto prices in my feeds, so I will not guess. Your Kalshi bot trades Bitcoin markets: ask "Kalshi positions".', speak: 'I have no live crypto prices here, so I will not guess.', intent: 'missing' };
+    if (/\b(verse of the day|bible verse|daily verse|a verse|scripture|verse for today)\b/.test(q)) {
+      const xv = arr(V.extras.verse), v = str(xv[0], 400) && str(xv[1], 60) ? [str(xv[1], 60), str(xv[0], 400)] : VERSES[V.et.dn % VERSES.length];   // the shell's pick: [text, ref]
+      return { text: `${v[1]} (${v[0]}, KJV)`, speak: `${v[0]}. ${v[1]}`, intent: 'verse' };
+    }
+    if (/\b(quote of the day|daily quote|a quote|inspire me|motivate me|motivation|inspiration|something inspiring)\b/.test(q)) {
+      const xq = arr(V.extras.quote), x = str(xq[0], 400) && str(xq[1], 60) ? [str(xq[1], 60), str(xq[0], 400)] : QUOTES[V.et.dn % QUOTES.length];   // [text, author]
+      return { text: `"${x[1]}" (${x[0]})`, speak: `${x[1]} ${x[0].startsWith('a ') ? 'As ' + x[0] + ' goes.' : x[0] + '.'}`, intent: 'quote' };
+    }
+    if (/\b(bitcoin|btc|ethereum|eth|solana|sol|crypto|cryptos|coins?)\b/.test(q) && !KALSHI_RX.test(q)) return cryptoAnswer(q, V);
     if (/\b(news|headlines|fomc|cpi|nfp|jobs report|fed (meeting|day)|economic calendar|forex factory)\b/.test(q)) return { text: 'I carry no news feed here. Zenith\'s News page has the USD calendar: say "open news".', speak: 'I carry no news feed here. Say open news for Zenith\'s calendar.', intent: 'missing' };
     if (/\b(change (the )?(theme|look|colou?rs?|core)|next core|previous core|random core|switch to reactor|reactor (violet|stark|ice|emerald)|themes?)\b/.test(q)) return { text: 'The look lives in Jarvis\'s own settings; I cannot change it by voice yet.', speak: 'The look lives in the settings. I cannot change it by voice yet.', intent: 'cant' };
     if (/\b(look at my screen|screenshot|wake word|double clap|clap)\b/.test(q)) return { text: 'That one needed the PC: on the phone I only see the published data.', speak: 'That one needs the PC.', intent: 'cant' };
@@ -1332,11 +1354,11 @@ export function createBrain(opts) {
     } finally { if (timer) clearTimeout(timer); }
   }
   async function smartAnswer(text, V, fallback, voice) {
-    const p = S.provider, name = PROVIDERS[p].name, depth = depthFor(norm(text));
+    const p = S.provider, name = PROVIDERS[p].name, depth = depthFor(norm(text)), t0 = Date.now();
     try {
       let out;
       try { out = await callSmart(p, smartRequest(p, V, text, depth, voice, true)); }
-      catch (e) { if (e && e.status === 400 && !e.auth && p !== 'gemini') out = await callSmart(p, smartRequest(p, V, text, depth, voice, false)); else throw e; }
+      catch (e) { if (e && e.status === 400 && !e.auth && p !== 'gemini' && Date.now() - t0 < 8000) out = await callSmart(p, smartRequest(p, V, text, depth, voice, false)); else throw e; }
       const clean = out.replace(/\*\*|__/g, '').replace(/^#+\s*/gm, '').replace(/^\s*[-*]\s+/gm, '• ').slice(0, 2500);
       return { text: clean, speak: toSpeech(clean, voice ? 300 : 420), intent: 'smart', smart: true, provider: p, depth };
     } catch (e) {
@@ -1418,8 +1440,18 @@ export function createBrain(opts) {
   function setSmart(x) {
     const v = isObj(x) ? x : {};
     if (typeof v.provider === 'string' && PROVIDERS[v.provider.toLowerCase()]) S.provider = v.provider.toLowerCase();
-    if (typeof v.key === 'string') S.keys[S.provider] = v.key.trim().slice(0, 400);
-    if (v.key === null) S.keys[S.provider] = '';
+    else {                                            // the shell's settings have one key field: the key says which provider it is
+      const k = typeof v.key === 'string' ? v.key.trim() : '', m = typeof v.model === 'string' ? v.model.trim().toLowerCase() : '';
+      const guess = /^gsk_/.test(k) ? 'groq' : /^AIza/.test(k) ? 'gemini' : /^sk-ant-/.test(k) ? 'anthropic'
+        : !k && /^claude-/.test(m) ? 'anthropic' : !k && /^gemini-/.test(m) ? 'gemini' : !k && /^(openai\/|llama|meta-llama\/|qwen\/|moonshotai\/|deepseek)/.test(m) ? 'groq' : '';
+      if (guess) S.provider = guess;
+    }
+    const named = typeof v.provider === 'string' && !!PROVIDERS[v.provider.toLowerCase()];
+    if (typeof v.key === 'string' && v.key.trim()) S.keys[S.provider] = v.key.trim().slice(0, 400);
+    else if (v.key === '' || v.key === null) {        // "forget the key": that provider's, or every key on this phone
+      if (named) S.keys[S.provider] = '';
+      else for (const p of Object.keys(PROVIDERS)) S.keys[p] = '';
+    }
     if (typeof v.model === 'string') { if (v.model.trim()) S.models[S.provider] = v.model.trim().slice(0, 80); else delete S.models[S.provider]; }
     if (typeof v.depth === 'string') { const d = v.depth.toLowerCase() === 'expert' ? 'deep' : v.depth.toLowerCase(); if (DEPTHS.includes(d)) S.depth = d; }
     if (typeof v.on === 'boolean') S.on = v.on;
@@ -1430,7 +1462,7 @@ export function createBrain(opts) {
     ask, briefing, suggestions, setSmart,
     get smart() { return smartView(); },
     get hidden() { return hide; },
-    forgetKey(provider) { const p = PROVIDERS[provider] ? provider : S.provider; S.keys[p] = ''; if (p === S.provider) S.on = false; saveSmart(); return smartView(); },
+    forgetKey(provider) { if (PROVIDERS[provider]) S.keys[provider] = ''; else for (const p of Object.keys(PROVIDERS)) S.keys[p] = ''; if (!S.keys[S.provider]) S.on = false; saveSmart(); return smartView(); },
     idle: () => IDLE_LINE,
     outcomes: outcomeAlerts,
     normalize: norm,

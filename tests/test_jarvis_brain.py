@@ -95,6 +95,17 @@ APPS = [{"id": "home", "name": "Jarvis", "url": ""}, {"id": "zenith", "name": "Z
         {"id": "planner", "name": "Planner", "url": "../planner/"}, {"id": "kalshi", "name": "Kalshi", "url": "../kalshi/"}]
 
 
+def shell_live(j, cached=False):
+    """The shell's view of live.json (tools/web_public/jarvis/data.js liveView / slim): the cards at the top, the full
+    live.json as .raw; the copy saved on the phone has no .raw and cached: true."""
+    b = j.get("board") or {}
+    bz = b.get("blitz") if isinstance(b.get("blitz"), dict) else j.get("blitz") if isinstance(j.get("blitz"), dict) else None
+    v = {"lit": b.get("lit"), "atlas": b.get("atlas"), "blitz": bz, "verdict": j.get("pc_verdict"), "running": b.get("running"), "t": j.get("t"),
+         "trades": [], "health": [], "lines": [{"level": x.get("level"), "text": x.get("text")} for x in (b.get("lines") or [])[:4] if x.get("text")],
+         "level": b.get("level"), "price": j.get("price"), "last_signal": None}
+    return {**v, "cached": True, "raw": None, "err": "Failed to fetch"} if cached else {**v, "raw": j, "err": None}
+
+
 def facts(now_ms, **over):
     f = {"now": now_ms, "market": {"open": False, "text": "NQ market closed · opens Sunday 6:00 PM ET"}, "live": live(now_ms),
          "kalshi": None, "kalshiState": "waiting", "planner": PLANNER, "apps": APPS}
@@ -201,6 +212,14 @@ def scenarios():
         S("more_intents", ask("where is nq", "how much can I lose today", "is the pc on", "is nq open", "how many trades today", "what's my balance"),
           now=T_MON10, f=facts(T_MON10, live={**live(T_MON10, lit={**live(T_MON10)["board"]["lit"], "dll": 1000.0, "dll_used": 212.0, "trades_today": 1, "max_day": 1}),
                                                  "price": 25123.5}, kalshi=kalshi(T_MON10), kalshiState="ok")),
+        S("shell_facts", ask("how are the bots", "what should I do now", "how's my money goal", "where is nq", "verse of the day", "quote of the day",
+                             "bitcoin price", "crypto", "what can't you do"), now=T_MON10,
+          f=facts(T_MON10, live=shell_live({**live(T_MON10, lines=[bad_line], level="bad"), "money": money, "price": 25123.5}), liveError=None,
+                  extras={"verse": ["The hand of the diligent shall bear rule: but the slothful shall be under tribute.", "Proverbs 12:24"],
+                          "quote": ["Risk comes from not knowing what you're doing.", "Warren Buffett"],
+                          "crypto": {"t": T_MON10 // 1000 - 300, "BTC": {"usd": 81234.5, "chg": 1.234}, "ETH": {"usd": 2650.25, "chg": -0.5}, "SOL": None}})),
+        S("shell_cached", ask("how are the bots", "bitcoin price"), now=T_MON10, f=facts(T_MON10, live=shell_live(live(T_MON10, age_s=3 * 3600), cached=True), liveError="Failed to fetch")),
+        S("shell_error", ask("how are the bots") + [{"briefing": True}], f=facts(T_SUN13, live=None, liveError="HTTP 500")),
         S("missing_fields", ask("how are the bots", "how far is zlarior from the target"), f=facts(T_SUN13, live=live(T_SUN13, lit=lit_missing))),
         S("blitz_off", ask("how are the bots", "how's blitz"), f=facts(T_SUN13, live=off_live)),
         S("now_plain", ask("what should I do now")),
@@ -221,6 +240,8 @@ def scenarios():
         S("smart_gem", [{"setSmart": {"provider": "gemini", "key": "AIza-FAKE-TEST", "on": True}}] + ask(Q), fetch=gem_ok),
         S("smart_speech", [{"setSmart": {"key": "gsk_FAKE", "on": True}}] + ask(Q),
           fetch={"json": {"choices": [{"message": {"content": "Zlarior is +$213 today, room $1,106, and Kalshi made $18.50."}, "finish_reason": "stop"}]}}),
+        S("smart_detect", [{"setSmart": {"key": "sk-ant-FAKE-AUTO", "on": True}}] + ask(Q) + [{"setSmart": {"key": "AIza-FAKE-AUTO"}},
+                           {"setSmart": {"model": "openai/gpt-oss-20b"}}, {"setSmart": {"key": "", "on": False}}], fetch=anth_ok),
         S("smart_500", [{"setSmart": {"key": "gsk_FAKE", "on": True}}] + ask(Q), fetch={"status": 500, "json": {"error": {"message": "overloaded"}}}),
         S("smart_throw", [{"setSmart": {"key": "gsk_FAKE", "on": True}}] + ask(Q), fetch={"throw": True}),
         S("smart_401", [{"setSmart": {"provider": "anthropic", "key": "sk-ant-BAD", "on": True}}] + ask(Q),
@@ -397,6 +418,19 @@ def part_node(O):
     sps = O["smart_speech"]["res"][1].get("speak", "")
     check("f. a text with $ amounts said naturally: no stray commas, cents, no symbols",
           sps == "Zlarior is up 213 dollars today, room 1,106 dollars, and Kalshi made 18 dollars 50." and "1,000 dollars a day" in sp("more_intents", 1), sps)
+    sh = [t("shell_facts", i) for i in range(9)]
+    check("e. the shell's facts (slim view + .raw): the bots, the 'needs you' line, the money card, the price",
+          "Zlarior 50K: today +$213, room $1,106, $3,726 to target" in sh[0] and "Needs you: FEED STALE" in sh[0] and sh[1].startswith("FEED STALE")
+          and "Next: Buy 2 MFFU Builder 25K" in sh[2] and sh[3].startswith("NQ 25,123.50"), sh[:4])
+    check("e. the shell's verse and quote of the day (the same as its card)", sh[4] == "The hand of the diligent shall bear rule: but the slothful shall be under tribute. (Proverbs 12:24, KJV)"
+          and sh[5] == '"Risk comes from not knowing what you\'re doing." (Warren Buffett)', sh[4:6])
+    check("e. crypto prices from the shell's feed (no guess when one is missing)", sh[6] == "Bitcoin $81,235 (+1.2% in 24 h) (5 min ago)."
+          and "Ethereum $2,650 (−0.5% in 24 h)" in sh[7] and "Solana" not in sh[7] and "crypto prices" not in sh[8], sh[6:9])
+    sc1, sc2 = t("shell_cached", 0), t("shell_cached", 1)
+    check("e. the copy saved on the phone is said to be a saved copy, with its age", "This is the saved copy from 3 h ago" in sc1
+          and "I have no crypto prices right now" in sc2, (sc1, sc2))
+    se1, se2 = t("shell_error", 0), O["shell_error"]["res"][1].get("text", "")
+    check("e. the shell's liveError: the live feed cannot be reached", "cannot reach the bots' live feed" in se1 and "Bots: I cannot reach the live feed" in se2, (se1, se2[:160]))
     mf1, mf2 = t("missing_fields", 0), t("missing_fields", 1)
     check("e. a missing field is said to be missing (never '—' or a guess)", "Zlarior 50K: today missing, room $1,106, to target missing" in mf1 and clean(mf1), mf1)
     check("e. a missing target asked for one bot", "Zlarior: the distance to the target is missing from the feed" in mf2, mf2)
@@ -475,6 +509,12 @@ def part_node(O):
     k0 = kk["calls"][0] if kk["calls"] else {}
     check("h. a decision question goes deep: high reasoning and the expert persona", k0.get("body", {}).get("reasoning_effort") == "high"
           and "Expert mode" in k0["body"]["messages"][0]["content"] and "never promise returns" in k0["body"]["messages"][0]["content"], k0.get("body", {}).get("reasoning_effort"))
+    sd = O["smart_detect"]
+    check("h. the key says which provider it is (sk-ant- Anthropic, AIza Gemini), the model too (openai/... Groq); 'forget' clears every key",
+          sd["res"][0]["smart"]["provider"] == "anthropic" and sd["calls"][0]["url"] == "https://api.anthropic.com/v1/messages"
+          and sd["res"][2]["smart"]["provider"] == "gemini" and sd["res"][3]["smart"]["provider"] == "groq" and sd["res"][3]["smart"]["model"] == "openai/gpt-oss-20b"
+          and sd["res"][4]["smart"]["keys"] == {"groq": False, "gemini": False, "anthropic": False} and sd["res"][4]["smart"]["on"] is False
+          and "FAKE" not in sd["storage"].get("jarvis.smart", ""), [r.get("smart") for r in sd["res"]])
     ss = O["smart_stored"]
     check("h. settings saved on the phone are read back (provider, depth, key)", ss["res"][0]["smart"]["active"] is True and ss["res"][0]["smart"]["depth"] == "quick"
           and ss["calls"] and ss["calls"][0]["headers"]["Authorization"] == "Bearer gsk_STORED_FAKE" and ss["calls"][0]["body"]["reasoning_effort"] == "low", ss["res"][0])
