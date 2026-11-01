@@ -29,7 +29,6 @@ Read-only and separate from the NQ bot: it never places anything and never runs 
 from __future__ import annotations
 
 import importlib.util
-import json
 import os
 import sys
 import time
