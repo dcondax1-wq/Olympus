@@ -1,139 +1,35 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="eclipse">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Kalshi</title>
-<meta name="description" content="The Kalshi bot: balance, P&L, open positions and recent trades, from the status the PC publishes.">
-<meta name="theme-color" content="#0b0b0d">
+<meta name="description" content="The Kalshi bot: balance, P&L, equity, open bets, strategies and recent trades, from the numbers its server sends.">
+<meta name="theme-color" content="#000000">
+<meta name="color-scheme" content="dark">
 <link rel="icon" href="../jarvis/icon-192.png?v=j1">
-<style>
-/* Kalshi page (owner 2026-11-01): the Kalshi bot runs only on the PC; the PC publishes its status file as kalshi.json
-   (engine/kalshi_publish.py, docs/KALSHI_PUBLISH.md) and this page shows it, inside Jarvis or on its own. Read-only. */
-:root {
-  --bg: #0b0b0d; --bg2: #151518; --panel: #1b1b1f; --panel2: #232328; --line: rgba(255,255,255,.09);
-  --ink: #f4f4f6; --ink2: #b3b4ba; --mut: #7d7e85;
-  --ok: #46d79a; --warn: #f5b84a; --bad: #ff6b7f;
-  --f: -apple-system, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
-  color-scheme: dark;
-}
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 var(--f); }
-button { font: inherit; color: inherit; cursor: pointer; }
-main { max-width: 720px; margin: 0 auto; padding: 18px max(16px, env(safe-area-inset-right, 0px)) calc(40px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
-  display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
-.top { display: flex; align-items: center; gap: 12px; }
-.top h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -.01em; }
-.top .sub { color: var(--ink2); font-size: 13.5px; margin: 2px 0 0; }
-.top button { margin-left: auto; height: 36px; padding: 0 12px; border-radius: 11px; border: 1px solid var(--line); background: var(--panel); color: var(--ink2); font-size: 13px; flex: none; }
-.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink2); }
-.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--mut); }
-.pill.ok::before { background: var(--ok); box-shadow: 0 0 8px var(--ok); } .pill.warn::before { background: var(--warn); } .pill.bad::before { background: var(--bad); }
-.card { padding: 14px; border-radius: 20px; background: var(--panel); border: 1px solid var(--line); display: grid; gap: 10px; min-width: 0; }
-.card h2 { margin: 0; font-size: 13px; color: var(--mut); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
-.kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.kpis div { padding: 10px 12px; border-radius: 14px; background: var(--bg2); min-width: 0; }
-.kpis span { display: block; color: var(--mut); font-size: 12px; }
-.kpis strong { display: block; font-size: 20px; font-weight: 680; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.up { color: var(--ok); } .down { color: var(--bad); }
-.rows { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.rows li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; padding: 10px 12px; border-radius: 14px; background: var(--bg2); }
-.rows b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rows small { color: var(--mut); font-size: 12.5px; grid-column: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rows .v { grid-row: 1 / span 2; grid-column: 2; align-self: center; text-align: right; font-variant-numeric: tabular-nums; font-weight: 650; }
-.tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 6px; margin-right: 6px; vertical-align: 1px; }
-.tag.yes { background: rgba(70,215,154,.15); color: var(--ok); } .tag.no { background: rgba(255,107,127,.15); color: var(--bad); }
-.muted { color: var(--mut); font-size: 13.5px; margin: 0; }
-.bars { display: block; width: 100%; height: 70px; }
-.wait { text-align: left; }
-.wait p { margin: 0; color: var(--ink2); }
-.wait code { display: block; margin-top: 8px; padding: 10px 12px; border-radius: 12px; background: var(--bg2); color: var(--ink); font: 13px/1.4 ui-monospace, Menlo, monospace; white-space: pre-wrap; word-break: break-word; }
-</style>
+<!-- Kalshi page (owner 2026-11-01): the Kalshi bot runs on its own server; its numbers arrive as kalshi.json
+     (engine/kalshi_publish.py, docs/KALSHI_PUBLISH.md) and this page shows them, inside Jarvis or on its own. Read-only.
+     Look: kalshi.css (the old Jarvis HUD); logic: kalshi.js; offline: sw.js. Bump ?v= on both when either changes, and in sw.js its SHELL and CACHE ('kalshi-' + the version). -->
+<script>(function () { var t = 'eclipse'; try { t = String(localStorage.getItem('jtheme') || 'eclipse').replace(/"/g, ''); } catch (e) { t = 'eclipse'; }
+  document.documentElement.setAttribute('data-theme', t.indexOf('reactor') === 0 ? 'reactor' : 'eclipse'); })();</script>
+<link rel="stylesheet" href="kalshi.css?v=k7">
 </head>
 <body>
 <main>
-  <div class="top">
-    <div>
+  <header class="top">
+    <div class="top-t">
       <h1>Kalshi</h1>
-      <p class="sub" id="sub">Loading…</p>
+      <p class="sub" id="sub" aria-live="polite">Loading…</p>
     </div>
-    <button type="button" id="refresh">Refresh</button>
-  </div>
-  <div id="body"></div>
+    <button type="button" class="refresh" id="refresh" aria-busy="false" title="Refresh">
+      <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 8A5.5 5.5 0 1 1 11.9 4.1M13.5 2.5v3h-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Refresh</span>
+    </button>
+  </header>
+  <div id="body" aria-busy="true" data-state="loading"><div class="sk sk1" aria-hidden="true"></div><div class="sk sk2" aria-hidden="true"></div><div class="sk sk3" aria-hidden="true"></div></div>
+  <p class="foot" id="foot"></p>
 </main>
-<script>
-(() => {
-  'use strict';
-  const OWNER = 'demetrades2000-coder', REPO = 'nq-dashboard';
-  const RAW = `https://raw.githubusercontent.com/${OWNER}/${REPO}/kalshi/kalshi.json`;
-  const API = `https://api.github.com/repos/${OWNER}/${REPO}/contents/kalshi.json?ref=kalshi`;
-  const STEP = 'In my nq-liquidity-engine folder run git pull, then follow docs/KALSHI_PUBLISH.md for my Kalshi bot.';
-  const $ = (s) => document.querySelector(s);
-  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const num = (v) => (v == null || v === '' || !Number.isFinite(+v)) ? null : +v;
-  const usd = (v, sign) => { const x = num(v); if (x == null) return '—'; const a = Math.abs(x); return (sign && x > 0 ? '+' : x < 0 ? '−' : '') + '$' + a.toLocaleString('en-US', { minimumFractionDigits: a < 1000 ? 2 : 0, maximumFractionDigits: a < 1000 ? 2 : 0 }); };
-  const cls = (v) => { const x = num(v); return x == null || x === 0 ? '' : x > 0 ? 'up' : 'down'; };
-  const cents = (v) => { const x = num(v); if (x == null) return '—'; return x <= 1 ? Math.round(x * 100) + '¢' : Math.round(x) + '¢'; };
-  const ago = (t) => { if (!t) return ''; const s = Math.max(0, Date.now() / 1000 - +t); return s < 90 ? 'just now' : s < 3600 ? Math.round(s / 60) + ' min ago' : s < 86400 ? Math.round(s / 3600) + ' h ago' : Math.round(s / 86400) + ' d ago'; };
-  const when = (t) => { if (!t) return ''; try { return new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(+t * 1000)); } catch (_) { return ''; } };
-  let last = null;
-  try { last = JSON.parse(localStorage.getItem('kalshi.last') || 'null'); } catch (_) { last = null; }
-
-  async function load() {
-    let r = null;
-    try { r = await fetch(RAW + '?t=' + Math.floor(Date.now() / 60000), { cache: 'no-cache' }); } catch (_) { r = null; }
-    if (!r || (!r.ok && r.status !== 404)) { try { r = await fetch(API, { cache: 'no-cache', headers: { Accept: 'application/vnd.github.raw+json' } }); } catch (_) { r = null; } }
-    if (r && r.ok) {
-      try { const j = await r.json(); if (j && typeof j === 'object') { last = j; try { localStorage.setItem('kalshi.last', JSON.stringify(j)); } catch (_) { /* private mode */ } return render(j, ''); } } catch (_) { /* bad JSON */ }
-      return render(last, 'error');
-    }
-    return render(last, r && r.status === 404 ? 'waiting' : 'error');
-  }
-
-  function bars(days) {
-    const d = (days || []).filter((x) => Array.isArray(x) && num(x[1]) != null).slice(-30);
-    if (d.length < 2) return '';
-    const m = Math.max(...d.map((x) => Math.abs(+x[1]))) || 1, w = 300, h = 70, bw = w / d.length;
-    const mid = h / 2;
-    const rects = d.map((x, i) => { const v = +x[1], bh = Math.max(1, Math.abs(v) / m * (mid - 3)); return `<rect x="${(i * bw + 1).toFixed(1)}" y="${(v >= 0 ? mid - bh : mid).toFixed(1)}" width="${Math.max(1, bw - 2).toFixed(1)}" height="${bh.toFixed(1)}" rx="1.5" fill="${v >= 0 ? 'var(--ok)' : 'var(--bad)'}"><title>${esc(x[0])}: ${esc(usd(v, true))}</title></rect>`; }).join('');
-    const tot = d.reduce((a, x) => a + (+x[1]), 0);
-    return `<div class="card"><h2>Last ${d.length} days · <span class="${cls(tot)}">${esc(usd(tot, true))}</span></h2><svg class="bars" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="Daily P&L, last ${d.length} days"><line x1="0" x2="${w}" y1="${mid}" y2="${mid}" stroke="rgba(255,255,255,.12)"/>${rects}</svg></div>`;
-  }
-
-  function render(k, state) {
-    if (!k) {
-      $('#sub').textContent = state === 'waiting' ? 'Not connected yet' : 'Could not reach the Kalshi feed';
-      $('#body').innerHTML = state === 'waiting'
-        ? `<div class="card wait"><h2>Connect your Kalshi bot</h2><p>The Kalshi bot runs only on your PC, so its numbers show here once the PC publishes them. Paste this into Claude on your PC:</p><code id="step">${esc(STEP)}</code><p class="muted">After that it updates by itself every minute.</p></div>`
-        : `<div class="card"><p class="muted">No connection to the Kalshi feed right now. Tap Refresh to try again.</p></div>`;
-      return;
-    }
-    const fresh = k.t && Date.now() / 1000 - k.t < 15 * 60;
-    const lvl = k.running === false ? 'bad' : fresh ? 'ok' : 'warn';
-    const label = k.running === false ? 'Stopped' : fresh ? 'Running' : 'Not updating';
-    $('#sub').innerHTML = `<span class="pill ${lvl}">${esc(label)}${k.mode ? ' · ' + esc(String(k.mode).toUpperCase()) : ''}${k.t ? ' · updated ' + esc(ago(k.t)) : ''}</span>${state === 'error' ? ' · offline copy' : ''}`;
-    const pos = Array.isArray(k.positions) ? k.positions : [], tr = Array.isArray(k.trades) ? k.trades : [];
-    const kpi = (lab, v, sign) => `<div><span>${lab}</span><strong class="${sign ? cls(v) : ''}">${esc(usd(v, sign))}</strong></div>`;
-    const posRows = pos.map((p) => {
-      const side = String(p.side || '').toLowerCase();
-      return `<li><b><span class="tag ${side === 'no' ? 'no' : 'yes'}">${esc(side ? side.toUpperCase() : '—')}</span>${esc(p.title || p.ticker || '')}</b><small>${esc(num(p.contracts) == null ? '?' : num(p.contracts))} × ${esc(cents(p.avg_price))} → ${esc(cents(p.price))}${p.closes ? ' · closes ' + esc(String(p.closes).slice(0, 10)) : ''}</small><span class="v ${cls(p.pnl)}">${esc(usd(p.pnl, true))}</span></li>`;
-    }).join('');
-    const trRows = tr.slice(0, 15).map((t) => {
-      const side = String(t.side || '').toLowerCase();
-      return `<li><b><span class="tag ${side === 'no' ? 'no' : 'yes'}">${esc(side ? side.toUpperCase() : '—')}</span>${esc(t.title || t.ticker || '')}</b><small>${esc(t.action || '')} ${esc(num(t.contracts) == null ? '' : num(t.contracts))} @ ${esc(cents(t.price))}${t.t ? ' · ' + esc(when(t.t)) : ''}</small><span class="v ${cls(t.pnl)}">${t.pnl == null ? '' : esc(usd(t.pnl, true))}</span></li>`;
-    }).join('');
-    $('#body').innerHTML = `<div class="card"><div class="kpis">${kpi('Balance', k.balance)}${kpi('Today', k.today_pnl, true)}${kpi('This week', k.week_pnl, true)}${kpi('All time', k.total_pnl, true)}</div>${k.status ? `<p class="muted">${esc(k.status)}</p>` : ''}${k.note ? `<p class="muted">${esc(k.note)}</p>` : ''}</div>`
-      + bars(k.days)
-      + `<div class="card"><h2>Open positions · ${pos.length}</h2>${pos.length ? `<ul class="rows">${posRows}</ul>` : '<p class="muted">No open positions.</p>'}</div>`
-      + `<div class="card"><h2>Recent trades</h2>${tr.length ? `<ul class="rows">${trRows}</ul>` : '<p class="muted">No trades yet.</p>'}</div>`;
-  }
-
-  $('#refresh').addEventListener('click', load);
-  if (last) render(last, 'loading');
-  load();
-  setInterval(() => { if (document.visibilityState === 'visible') load(); }, 60e3);
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') load(); });
-})();
-</script>
+<script src="kalshi.js?v=k7"></script>
 </body>
 </html>
