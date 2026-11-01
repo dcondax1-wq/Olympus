@@ -4,7 +4,9 @@
 // hex shell, a hologram globe and a projector dial on a grid floor. "singularity": a black hole with a white-violet accretion
 // ring. Real 3D with Three.js (./three.module.min.js, r160, loaded on demand). A 2D canvas draws the ticked HUD ring on top
 // (clock, state, level gauge) at once, and is the whole core (a flat arc-reactor) when WebGL or three is missing.
-//   mountCore(el, {size, design: 'reactor'|'singularity', theme: {c, c2, c3, tint}, effects: 'ultra'|'high'|'low'|'off'})
+//   mountCore(el, {size, design: 'reactor'|'singularity', theme: {c, c2, c3, tint} or an old key ('eclipse', 'reactor',
+//                  'reactor-stark', 'reactor-ice', 'reactor-emerald'), effects: 'ultra'|'high'|'low'|'off',
+//                  adapt: true (step effects down on slow frames), motion: 'always' (ignore the OS reduce-motion switch), webgl: true})
 //     -> {setState(s), setLevel(v), setTheme(theme), setDesign(name), destroy(), stats()}
 //   idle: calm breathing · listening: faster, the core turns red, rings flare with the level · thinking: fast orbit, lightning
 //   speaking: pulses with setLevel, shock rings · alert: red / amber flare
@@ -18,15 +20,19 @@ const SUB = ['CORE ONLINE', 'VOICE IN', 'PROCESSING', 'VOICE OUT', 'ATTENTION'];
 const EFFECTS = ['off', 'low', 'high', 'ultra'];
 const DESIGNS = ['reactor', 'singularity'];
 const VIOLET = { c: '#a855f7', c2: '#7c3aed', c3: '#c084fc', tint: '#e9ddff' };      // Eclipse, the owner's violet
+const NAMED = { eclipse: VIOLET, reactor: { c: '#a95cff', c2: '#6d28d9', c3: '#22d3ee', tint: '#f5d0fe' },   // the old theme keys
+  'reactor-stark': { c: '#ffbe3d', c2: '#d6281f', c3: '#6fd8ff', tint: '#fff1d0' }, 'reactor-ice': { c: '#4fe3ff', c2: '#0284c7', c3: '#9d8cff', tint: '#e6fbff' },
+  'reactor-emerald': { c: '#1ff5a4', c2: '#059669', c3: '#b4ff3c', tint: '#dcfff0' } };
+const themeOf = (th) => Object.assign({}, VIOLET, typeof th === 'string' ? NAMED[th] : th);
 const BAD = [255, 77, 109], WARN = [251, 191, 36], WHITE = [255, 255, 255];
 const TAU = Math.PI * 2;
 // per state: spin, scan rev/s, breath, wave gain, particle speed, brightness, pulse Hz (old core: 3 s / .8 s / 1 s / .5 s), bolts/s
 const PRM = [
-  [1, 0.09, 1, 0.1, 1, 0.9, 1 / 3, 0.7],
-  [2, 0.2, 0.3, 0.45, 1.6, 1, 1.25, 1.6],
-  [8, 1.4, 0.15, 0.08, 7, 1, 1, 7],
-  [1.8, 0.3, 0.2, 1, 2, 1.1, 2, 2.5],
-  [3, 0.7, 0, 0.3, 3.5, 1.15, 1.25, 5],
+  [1, 0.09, 1, 0.1, 1, 0.9, 1 / 3, 1.1],
+  [2, 0.2, 0.3, 0.45, 1.6, 1, 1.25, 2.2],
+  [8, 1.4, 0.15, 0.08, 7, 1, 1, 9],
+  [1.8, 0.3, 0.2, 1, 2, 1.1, 2, 3],
+  [3, 0.7, 0, 0.3, 3.5, 1.15, 1.25, 6],
 ];
 const SEG = [0, 0.19, 0.23, 0.07, 0.34, 0.15, 0.53, 0.04, 0.61, 0.2, 0.85, 0.1];   // segmented ring: start, length (turns)
 const NP = [24, 50, 90, 150], NB = [36, 48, 72, 96], NT = [60, 72, 120, 120];     // 2D detail per tier
@@ -50,7 +56,7 @@ export function mountCore(el, opts) {
   if (!el || !el.appendChild) throw new TypeError('mountCore(el): an element is required');
   opts = opts || {};
   const size = +opts.size > 0 ? +opts.size : 0;
-  let theme = Object.assign({}, VIOLET, opts.theme || {}), PAL = palette(theme);
+  let theme = themeOf(opts.theme), PAL = palette(theme);
   let design = DESIGNS.indexOf(opts.design) > 0 ? opts.design : 'reactor';
   const eff = EFFECTS.indexOf(opts.effects) >= 0 ? EFFECTS.indexOf(opts.effects) : 2;
   const cap = eff || 2, auto = opts.adapt !== false;
@@ -63,7 +69,8 @@ export function mountCore(el, opts) {
   box.appendChild(cv); el.appendChild(box);
   const g = cv.getContext('2d'), lab = document.createElement('canvas'), lg = lab.getContext('2d');
   const mq = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
-  let reduced = !!(mq && mq.matches), dead = false, raf = 0, last = 0, t = 0, onScreen = true, still = reduced || eff === 0;
+  const always = opts.motion === 'always';                 // the old Jarvis ignored the OS reduce-motion switch; opt-in here
+  let reduced = !!(mq && mq.matches) && !always, dead = false, raf = 0, last = 0, t = 0, onScreen = true, still = reduced || eff === 0;
   let S = 0, dpr = 1, tier = cap, st = 0, lvIn = 0, lvAt = -1e9, L = 0, flareAt = -9, frames = 0, frames3 = 0, pph = 0, pulse = 0;
   let acc = 0, nAcc = 0, good = 0, drops = 0, warm = 0, fps = 0, rAcc = 0, ms0 = 0, labKey = '', gaps = [];
   let r3 = null, cv3 = null, three = 'loading';
@@ -80,7 +87,7 @@ export function mountCore(el, opts) {
   function fit() {
     const w = box.clientWidth || size || 300, d = Math.min(2, window.devicePixelRatio || 1);
     const px = Math.max(1, Math.round(w * d * (tier ? 1 : 0.75)));
-    if (cv.width !== px) { cv.width = cv.height = lab.width = lab.height = px; labKey = ''; }
+    if (cv.width !== px || cv.height !== px) { cv.width = cv.height = lab.width = lab.height = px; labKey = ''; }
     S = w; dpr = px / w;
     if (r3) r3.size(w, Math.min(d, tier > 1 ? 2 : tier ? 1.5 : 1));
   }
@@ -94,7 +101,7 @@ export function mountCore(el, opts) {
     L = STATIC_L[st]; t = 1.9; pulse = 0.6; flareAt = -9; rip.length = 0; blend(); fit(); render();
   }
   const onVis = () => kick();
-  const onMq = () => { reduced = !!mq.matches; still = reduced || eff === 0; if (still) { kick(); snap(); } else kick(); };
+  const onMq = () => { reduced = !!mq.matches && !always; still = reduced || eff === 0; if (still) { kick(); snap(); } else kick(); };
   document.addEventListener('visibilitychange', onVis);
   if (mq) { if (mq.addEventListener) mq.addEventListener('change', onMq); else if (mq.addListener) mq.addListener(onMq); }
   const io = typeof IntersectionObserver === 'function' ? new IntersectionObserver((es) => { onScreen = es[es.length - 1].isIntersecting; kick(); }) : null;
@@ -104,32 +111,37 @@ export function mountCore(el, opts) {
   if (ro) ro.observe(box);
 
   // ---------------------------------------------------------------- the 3D reactor (three loads on demand; WebGL missing -> 2D)
-  const onLost = (e) => { e.preventDefault(); drop3D(); };
+  // WebGL2 is probed first (no context: the 2D core stays, three is never fetched); three then renders into that context.
+  // A lost context (iOS drops them in the background) falls back to the 2D core and tries the reactor again, 3 times at most.
+  let tries = 0, retry = 0;
+  const onLost = (e) => { e.preventDefault(); drop3D(); if (!dead && tries < 3) retry = setTimeout(start3D, 1500); };
   function drop3D() {
     const r = r3, c = cv3;
     r3 = cv3 = null; three = 'off'; labKey = '';
     if (c) { c.removeEventListener('webglcontextlost', onLost); c.remove(); }
     if (r) { try { r.dispose(); } catch (e) { /* the context is already gone */ } }
+    else if (c && c.gl) { const x = c.gl.getExtension('WEBGL_lose_context'); if (x) x.loseContext(); }   // destroyed while three loaded
     if (still && !dead) snap();
   }
-  // WebGL2 is probed first (no context: the 2D core stays, three is never fetched); three then renders into that context
-  const GLA = { alpha: true, antialias: tier > 1, premultipliedAlpha: true, depth: true, stencil: false, powerPreference: 'high-performance' };
-  let gl = null;
-  if (opts.webgl !== false) {
-    cv3 = document.createElement('canvas');
-    try { gl = cv3.getContext('webgl2', GLA); } catch (e) { gl = null; }
-  }
-  if (gl) {
+  function start3D() {
+    retry = 0;
+    if (dead || opts.webgl === false) { three = 'off'; return; }
+    tries++;
+    const c = document.createElement('canvas'), A = { alpha: true, antialias: tier > 1, premultipliedAlpha: true, depth: true, stencil: false, powerPreference: 'high-performance' };
+    try { c.gl = c.getContext('webgl2', A); } catch (e) { c.gl = null; }
+    if (!c.gl) { three = 'off'; return; }
+    three = 'loading'; cv3 = c;
     import('./three.module.min.js').then((T) => {
-      if (dead) return;
-      cv3.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;opacity:0' + (still ? '' : ';transition:opacity .8s ease');
-      try { r3 = makeReactor(T, cv3, gl, GLA, design, tier, theme); } catch (e) { r3 = null; cv3 = null; three = 'off'; return; }
-      cv3.addEventListener('webglcontextlost', onLost);
-      box.insertBefore(cv3, cv); three = 'on'; labKey = ''; fit(); rewarm();
+      if (dead || cv3 !== c) return;
+      c.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;opacity:0' + (still ? '' : ';transition:opacity .8s ease');
+      try { r3 = makeReactor(T, c, c.gl, A, design, tier, theme); } catch (e) { r3 = null; drop3D(); return; }
+      c.addEventListener('webglcontextlost', onLost);
+      box.insertBefore(c, cv); three = 'on'; labKey = ''; fit(); rewarm();
       if (still) snap(); else kick();
-      void cv3.offsetWidth; cv3.style.opacity = '1';
-    }, () => { three = 'off'; cv3 = null; });
-  } else { three = 'off'; cv3 = null; }
+      void c.offsetWidth; c.style.opacity = '1';
+    }, () => { if (cv3 === c) drop3D(); });
+  }
+  start3D();
 
   // ---------------------------------------------------------------- per frame
   function frame(now) {
@@ -429,8 +441,8 @@ export function mountCore(el, opts) {
       v = +v; lvIn = v > 0 ? (v > 1 ? 1 : v) : 0; lvAt = performance.now();
     },
     setTheme(th) {
-      if (dead || !th) return;
-      theme = Object.assign({}, VIOLET, th); PAL = palette(theme); blend(); labKey = '';
+      if (dead || !th || (typeof th === 'string' && !NAMED[th])) return;
+      theme = themeOf(th); PAL = palette(theme); blend(); labKey = '';
       if (r3) { r3.theme(theme); rewarm(); }
       if (still) snap();
     },
@@ -449,6 +461,7 @@ export function mountCore(el, opts) {
       if (mq) { if (mq.removeEventListener) mq.removeEventListener('change', onMq); else if (mq.removeListener) mq.removeListener(onMq); }
       if (io) io.disconnect();
       if (ro) ro.disconnect();
+      clearTimeout(retry);
       drop3D();
       box.remove();
     },
@@ -560,7 +573,7 @@ function makeReactor(T, canvas, context, attrs, design0, tier0, theme0) {
     const cu = new T.CatmullRomCurve3(pts);
     b.children[0].geometry.dispose(); b.children[0].geometry = new T.TubeGeometry(cu, 28, 0.014, 4);
     b.children[1].geometry.dispose(); b.children[1].geometry = new T.TubeGeometry(cu, 28, 0.065, 5);
-    b.life = R(0.08, 0.24);
+    b.life = R(0.12, 0.34);
   }
   function techRing(R0, tube, tilt, ns, gb) {     // chrome torus, energy strips, machined blocks and bolt heads (instanced)
     const piv = new T.Group(), tg = new T.Group(), sp = new T.Group();
@@ -582,12 +595,12 @@ function makeReactor(T, canvas, context, attrs, design0, tier0, theme0) {
     return { piv, tg, sp, tilt };
   }
   function floor(r, y, dialR) {           // grid floor, holographic projector dial, light pool and beam
-    if (tier > 1) {
+    {
       const gu = { c: { value: new T.Color() } }; glows.push([gu.c, 'main', 0.2, 0, 1]);
       const grid = new T.Mesh(new T.PlaneGeometry(40, 40), new T.ShaderMaterial(Object.assign({}, ADD, { uniforms: gu, vertexShader: VUV, extensions: { derivatives: true },
         fragmentShader: `uniform vec3 c; varying vec2 vUv; void main(){ vec2 p = vUv * 40.; vec2 g = abs(fract(p - .5) - .5) / fwidth(p); float l = 1. - min(min(g.x, g.y), 1.);
           float d = length(vUv - .5) * 40.; gl_FragColor = vec4(c * l * smoothstep(10., 2.5, d), 1.);` + TAIL })));
-      grid.rotation.x = -Math.PI / 2; grid.position.y = y + 0.01; r.add(grid);
+      grid.rotation.x = -Math.PI / 2; grid.position.y = y + 0.01; r.add(grid); X.grid = grid;
     }
     const dt = tex(512, (g) => {
       const C = 256; g.strokeStyle = g.fillStyle = '#fff';
@@ -716,10 +729,10 @@ function makeReactor(T, canvas, context, attrs, design0, tier0, theme0) {
   function build(name) {
     free();
     glows = []; parts = []; rings = []; bolts = []; shocks = []; sats = []; spin = 0;
-    X = { chrome: new T.MeshStandardMaterial({ metalness: 1, roughness: 0.08 }), chrome2: new T.MeshStandardMaterial({ metalness: 1, roughness: 0.15 }),
+    X = { chrome: new T.MeshStandardMaterial({ metalness: 1, roughness: 0.08, envMapIntensity: 1.25 }), chrome2: new T.MeshStandardMaterial({ metalness: 1, roughness: 0.15, envMapIntensity: 1.25 }),
       gun: new T.MeshStandardMaterial({ color: 0x1c1a23, metalness: 0.9, roughness: 0.34, envMapIntensity: 0.55 }) };
     X.strip = gm('acc', 1.7, 1); X.boltH = gm('hot', 2.5, 1); X.boltM = gm('main', 0.85, 1); X.node = gm('hot', 3, 1);
-    X.hotLine = gm('hot', 2.1, 2); X.trail = gm('acc', 1.4, 0, { opacity: 0.8 }); X.ringGlow = halo('acc', 0.22, 1, 2.5);
+    X.hotLine = gm('hot', 2.1, 2); X.trail = gm('acc', 1.4, 0, { opacity: 0.8 }); X.ringGlow = halo('acc', 0.14, 1, 2.5);
     X.boltHot = gm('hot', 3.8, 3); X.boltGlow = gm('main', 0.6, 3, { opacity: 1 });
     root = new T.Group(); scene.add(root);
     seed = 11; BUILD[name](root);
@@ -729,10 +742,12 @@ function makeReactor(T, canvas, context, attrs, design0, tier0, theme0) {
     tier = q;
     parts.forEach(([g, n]) => g.setDrawRange(0, q > 1 ? n : Math.ceil(n * 0.45)));
     if (X.globe) X.globe.visible = q > 0;
+    if (X.grid) X.grid.visible = q > 1;               // the grid floor is a full-width layer: 'high' and up
   }
   colours(theme0); envMap(); build(design0);
 
   const tc = new T.Color(), tv = new T.Vector2(), PREC = [0.05, -0.04, 0.03], SPD = [0.26, -0.39, 0.157];
+  let sz = [0, 0];
   return {
     render(F) {
       const W = F.W, L = F.L, dt = F.dt, t = F.t, wL = W[1], wT = W[2], wS = W[3], wA = W[4], C = F.C;
@@ -788,14 +803,14 @@ function makeReactor(T, canvas, context, attrs, design0, tier0, theme0) {
       });
       ren.render(scene, cam);
     },
-    size(w, d) { ren.setPixelRatio(d); ren.setSize(w, w, false); },
+    size(w, d) { if (w === sz[0] && d === sz[1]) return; sz = [w, d]; ren.setPixelRatio(d); ren.setSize(w, w, false); },
     quality,
     burst(i) { if (i === 4) bAcc = 3; },
     theme(th) { colours(th); envMap(); },
     design(name) { build(name); },
     dispose() {
       free(); texs.forEach((x) => x.dispose()); if (env) env.dispose();
-      ren.dispose(); ren.forceContextLoss();
+      ren.dispose(); if (!context.isContextLost()) ren.forceContextLoss();
     },
   };
 }
