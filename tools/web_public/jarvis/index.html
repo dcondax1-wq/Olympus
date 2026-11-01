@@ -602,14 +602,19 @@ function renderCards() {
     try { return a.id === 'zenith' ? zenithCard() : a.id === 'planner' ? plannerCard() : a.id === 'kalshi' ? kalshiCard() : linkCard(a); }
     catch (_) { return `<button class="panel card" type="button" data-app="${esc(a.id)}"><p class="ph"><span class="t">${esc(a.name)}</span></p><p class="muted">This card could not be drawn. Open ${esc(a.name)} for everything.</p></button>`; }
   };
-  $('#cards').innerHTML = list.map(one).join('');
+  // only the cards drawn here are replaced (data-own): anything else placed in #cards stays where it is
+  const box = $('#cards'), tpl = document.createElement('template');
+  tpl.innerHTML = list.map(one).join('');
+  for (const n of tpl.content.children) n.dataset.own = '1';
   if (A && typeof A.renderCard === 'function') {
-    for (const slot of $('#cards').querySelectorAll('[data-slot]')) {
+    for (const slot of tpl.content.querySelectorAll('[data-slot]')) {
       const a = list.find((x) => x.id === slot.dataset.slot);
       const card = a && (statusCards[a.id] || (typeof A.cachedStatus === 'function' ? safe(() => A.cachedStatus(a)) : null));
-      if (card) { const n = safe(() => A.renderCard(card, document)); if (n) slot.replaceWith(n); }
+      if (card) { const n = safe(() => A.renderCard(card, document)); if (n) { n.dataset.own = '1'; slot.replaceWith(n); } }
     }
   }
+  for (const n of [...box.children]) if (n.dataset.own) n.remove();
+  box.appendChild(tpl.content);
   fx.adopt();
 }
 let statusAt = 0;
@@ -1115,7 +1120,8 @@ function renderMine(el) {
   const rows = D.listApps().filter(removable);
   const links = D.LS.get('jarvis.links', {}) || {};
   const linked = mods.apps ? [] : Object.keys(links).filter((id) => links[id] && BUILTIN_IDS.includes(id) && !rows.find((r) => r.id === id)).map((id) => ({ id, name: (byId(id) || { name: id }).name, url: links[id] }));
-  el.innerHTML = [...linked, ...rows].map((r) => `<div><b>${esc(r.name)}</b><span>${esc(r.url || '')}</span><button type="button" data-rm="${esc(r.id)}">Remove</button></div>`).join('')
+  el.innerHTML = [...linked, ...rows].map((r) => `<div><b>${esc(r.name)}</b><span>${esc(r.url || '')}</span><button type="button" data-rm="${esc(r.id)}">Remove</button></div>`
+    + (r.warn ? `<p class="note warnnote">⚠ ${esc(r.warn)}</p>` : '')).join('')
     || '<p class="note">Zenith, Planner and Kalshi are built in. Add any other dashboard with its link.</p>';
 }
 function renderSettingsApps() { if (!$('#settings').hidden) renderMine($('#setApps')); if (!$('#sheet').hidden) renderMine($('#mine')); }
@@ -1160,6 +1166,7 @@ $('#addF').addEventListener('submit', async (e) => {
   }
   if (!r || r.ok === false) { $('#addErr').textContent = (r && r.error) || 'Could not add it.'; return; }
   added(r.app, name);
+  if (r.warn) toast(r.warn, 'APPS');                  // apps.js: a link on Jarvis's own site outside its pages could read Jarvis's keys
 });
 $('#addAscend').addEventListener('click', async () => {
   const A = mods.apps, b = $('#addAscend');
@@ -1168,7 +1175,7 @@ $('#addAscend').addEventListener('click', async () => {
   let r = null;
   try { r = await A.findAscend(); } catch (_) { r = null; }
   b.disabled = false; b.textContent = 'Add Ascend';
-  if (r && r.ok && r.app) { added(r.app, 'Ascend'); return; }
+  if (r && r.ok && r.app) { added(r.app, 'Ascend'); if (r.warn) toast(r.warn, 'APPS'); return; }
   $('#addName').value = 'Ascend'; $('#addErr').textContent = (r && r.error) || 'Ascend is not on this site yet. Paste its link instead.';
   $('#addUrl').focus();
 });

@@ -174,9 +174,17 @@ def site(tmp, name, parts):
     return f"{name}/nq-dashboard/"
 
 
+SLOW = {"s": 0.0}                                    # a slow network: every answer of the local site waits this long
+
+
 class Quiet(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a, **k):
         pass
+
+    def do_GET(self):
+        if SLOW["s"]:
+            time.sleep(SLOW["s"])
+        return super().do_GET()
 
 
 def serve(root):
@@ -696,6 +704,19 @@ def run_c(br, url):
     check("j. the worker installs and saves the page, data.js, jarvis.css and the fonts (a part not on the site is skipped)", has == "ok", has)
     p.reload()
     ready(p)
+    p.wait_for_timeout(300)
+    # QA 2026-11-01: on a slow network only the page waits (3.5 s), then its files come from the saved copy at once; it used to
+    # wait 3.5 s more for each file (css, data.js ...): usable after ~10 s instead of ~3.6 s
+    SLOW["s"] = 6.0
+    t0 = time.time()
+    p.reload(wait_until="commit")
+    try:
+        p.wait_for_function("document.documentElement.dataset.ready === '1'", timeout=15000)
+        took = time.time() - t0
+    except Exception:                                   # noqa: BLE001 - reported below
+        took = 99.0
+    SLOW["s"] = 0.0
+    check("j. slow network (every answer 6 s): the saved copy is up and usable in ~3.5 s (the page's own files never wait again)", took < 5.5, round(took, 2))
     p.wait_for_timeout(300)
     ctx.set_offline(True)
     p.reload()

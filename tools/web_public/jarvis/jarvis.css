@@ -336,6 +336,7 @@ html:not([data-mode="jarvis"]) .dockfade { display: none; }
 .mine div span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--mut); }
 .mine div button { background: none; border: 0; color: var(--bad); font: 600 9.5px var(--fh); letter-spacing: .14em; padding: 8px 4px; }
 .note { margin: 0; color: var(--mut); font: 500 13px/1.45 var(--fb); }
+.note.warnnote { margin: -2px 0 2px; padding: 0 4px; color: var(--warn); }
 .err { margin: 0; min-height: 1em; color: var(--bad); font-size: 14px; }
 .seg3 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .seg3 button { height: 40px; border: 1px solid rgba(var(--cr), .35); background: rgba(var(--pr), .6); color: var(--mut); font: 600 9.5px var(--fh); letter-spacing: .14em; border-radius: 10px; }
