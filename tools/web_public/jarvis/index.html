@@ -123,6 +123,7 @@
     <button class="key ic" type="button" id="moreB" aria-label="More" aria-expanded="false" title="More">⋯</button>
   </form>
 </div>
+<div class="dockfade" aria-hidden="true"></div>
 <button class="fab" id="fab" type="button" aria-label="Search and commands" title="Search and commands">
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="2"/><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
 </button>
@@ -362,8 +363,11 @@ function frameView(a, url) {
     v = document.createElement('section');
     v.className = 'view'; v.id = 'v-' + a.id; v.dataset.url = src; v.setAttribute('aria-label', a.name);
     const f = document.createElement('iframe');
-    f.className = 'frame'; f.src = src; f.title = a.name;
-    f.setAttribute('allow', 'clipboard-read; clipboard-write; microphone; autoplay; fullscreen; screen-wake-lock');
+    f.className = 'frame'; f.title = a.name;
+    // this site's own apps get the phone's features; another site's page runs sandboxed (it can never move Jarvis itself)
+    if (D.sameSite(src)) f.setAttribute('allow', 'clipboard-read; clipboard-write; microphone; autoplay; fullscreen; screen-wake-lock');
+    else f.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads');
+    f.src = src;
     v.appendChild(f);
     if (!D.sameSite(src)) {                        // another site may refuse to be shown inside another app
       const n = document.createElement('div');
@@ -586,7 +590,11 @@ function linkCard(a) {
 const statusCards = {};
 function renderCards() {
   const list = D.listApps(), A = mods.apps;
-  $('#cards').innerHTML = list.map((a) => a.id === 'zenith' ? zenithCard() : a.id === 'planner' ? plannerCard() : a.id === 'kalshi' ? kalshiCard() : linkCard(a)).join('');
+  const one = (a) => {
+    try { return a.id === 'zenith' ? zenithCard() : a.id === 'planner' ? plannerCard() : a.id === 'kalshi' ? kalshiCard() : linkCard(a); }
+    catch (_) { return `<button class="panel card" type="button" data-app="${esc(a.id)}"><p class="ph"><span class="t">${esc(a.name)}</span></p><p class="muted">This card could not be drawn. Open ${esc(a.name)} for everything.</p></button>`; }
+  };
+  $('#cards').innerHTML = list.map(one).join('');
   if (A && typeof A.renderCard === 'function') {
     for (const slot of $('#cards').querySelectorAll('[data-slot]')) {
       const a = list.find((x) => x.id === slot.dataset.slot);
@@ -672,7 +680,7 @@ function corePanel() {
     + ageRow('PC check-in', v && v.t, 180, 900) + ageRow('Kalshi bot', k && k.t, 900, 3600) + items
     + '<p class="cnote">The old CPU / RAM gauges were the PC\'s; on the phone this panel shows the bots\' health.</p></section>';
 }
-function renderPanels() { $('#panels').innerHTML = marketPanel() + feedPanel() + addonsPanel() + corePanel(); fx.adopt(); }
+function renderPanels() { $('#panels').innerHTML = [marketPanel, feedPanel, addonsPanel, corePanel].map((f) => safe(f, '')).join(''); fx.adopt(); }
 function renderNext() {
   const p = D.plannerDay(), el = $('#next');
   if (!p) { el.textContent = 'Nothing scheduled today'; return; }
@@ -680,9 +688,9 @@ function renderNext() {
   const nx = p.ev.find((e) => !e.allDay && String(e.start || '') >= nowHM) || p.ev.find((e) => e.allDay);
   el.innerHTML = nx ? `<b>NEXT</b>${esc(nx.allDay ? 'All day' : D.hm(nx.start))} · ${esc(nx.title)}` : p.tasks.length ? `<b>TO-DO</b>${p.tasks.length} open · ${esc(p.tasks[0].title)}` : 'Nothing scheduled today';
 }
-function greet() { renderHead(); hudTick(); }
+function greet() { safe(renderHead); safe(hudTick); }
 function refreshHome() {
-  greet(); renderCards(); renderPanels(); renderNext(); renderBrainPanel();
+  greet(); safe(renderCards); safe(renderPanels); safe(renderNext); safe(renderBrainPanel);
   D.refresh({ maxAge: 50e3 }); D.refreshCrypto(); refreshStatusCards();
 }
 let prevKalshi = D.kalshiView();
@@ -700,7 +708,7 @@ D.onChange(({ source }) => {
   if (source === 'live' || source === 'kalshi') renderBar();
   if (active !== 'home') return;
   if (source === 'crypto') { renderPanels(); return; }
-  renderHead(); renderCards(); renderPanels(); renderNext();
+  greet(); safe(renderCards); safe(renderPanels); safe(renderNext);
 });
 
 // ------------------------------------------------------------------ the brain (brain.js, else the built-in rule-based one)
@@ -901,10 +909,10 @@ async function ask(text, voice = false) {
   say('me', t);
   setState('thinking'); sfx('tap');
   // nothing loaded yet for what is asked: fetch it first (an answer from data that is still loading would be wrong)
-  const F = D.getFacts();
+  const F = safe(() => D.getFacts(), {}) || {};
   if (/\bkalshi\b/i.test(t) && !F.kalshi) await D.refreshKalshi();
   else if (/\b(bot|bots|room|target|p&l|pnl|profit|status|zlarior|atlas|blitz)\b/i.test(t) && !(F.live && !F.live.cached)) await within(D.refreshLive(), 9000);
-  else if (/\b(bitcoin|btc|ethereum|eth|solana|crypto)\b/i.test(t) && !F.extras.crypto) await within(D.refreshCrypto(), 6000);
+  else if (/\b(bitcoin|btc|ethereum|eth|solana|crypto)\b/i.test(t) && !(F.extras && F.extras.crypto)) await within(D.refreshCrypto(), 6000);
   else await new Promise((ok) => setTimeout(ok, 220));
   const r = await think(t, voice);
   say('j', r.text);
@@ -1379,21 +1387,22 @@ ready.apps.then((m) => {
   renderBar(); if (active === 'home') { renderCards(); refreshStatusCards(); }
 });
 
-// ------------------------------------------------------------------ start
+// ------------------------------------------------------------------ start (each step on its own: a broken one never stops the rest)
+if ('serviceWorker' in navigator) safe(() => navigator.serviceWorker.register('sw.js', { scope: './' }).catch(() => { /* works without it */ }));
 $('#vbars').innerHTML = '<i></i>'.repeat(32);
 $('#orb').dataset.design = coreDesign();
-applyCustom(); readColors();
+safe(applyCustom); safe(readColors);
 root.classList.toggle('money-hidden', S.hideMoney());
 $('#says').textContent = `${D.greeting()}. Tap the core or type below to speak with me.`;
 greet();
-renderBar();
-renderSugs();
-renderMore();
-setupMic();
-if (S.tilt()) setTilt(true);
+safe(renderBar);
+safe(renderSugs);
+safe(renderMore);
+safe(setupMic);
+if (S.tilt()) safe(() => setTilt(true));
 if (location.hash) history.replaceState(null, '', location.pathname + location.search);
-show('home');
-boot();
+try { show('home'); } catch (_) { /* the screen still shows; the next refresh draws what is missing */ }
+safe(boot);
 clearTimeout(window.__jarvisBoot); const bootNote = document.getElementById('boot'); if (bootNote) bootNote.remove();
 root.dataset.ready = '1';
 // the morning briefing card (5:00 to 11:59 ET, once a day), as the old Jarvis showed it
@@ -1409,7 +1418,6 @@ document.addEventListener('visibilitychange', () => {
 window.addEventListener('online', () => renderHead()); window.addEventListener('offline', () => renderHead());
 window.__jarvis = { show, ask, facts: D.getFacts, active: () => active, setTheme, setFx, state: () => state, core: () => (core && typeof core.stats === 'function' ? safe(() => core.stats()) : null) };   // for tests and the console; read-only
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js', { scope: './' }).catch(() => { /* works without it */ });
   // a tapped Zenith notification while Jarvis runs (Zenith's sw.js v50: {type: 'open', app: 'zenith', hash}): Zenith mode at
   // that page, from the start (once Zenith mode is mounted it hears the message itself and calls onWantShow)
   navigator.serviceWorker.addEventListener('message', (e) => {

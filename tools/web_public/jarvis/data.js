@@ -6,7 +6,8 @@
 // Sources (read-only; nothing here ever writes to a bot):
 //   live.json   the NQ bots (the PC's heartbeat publish, branch `live` of nq-dashboard): the GitHub API first (fresh), then
 //               raw.githubusercontent (GitHub's CDN keeps it ~5 min); after a 403 / 429 the API rests 15 min.
-//   kalshi.json the Kalshi bot's status (it runs on its own server; branch `kalshi`): raw first, then the API; 404 = 'waiting'.
+//   kalshi.json the Kalshi bot's status (it runs on its own server and publishes to its own repo, kalshi-feed): raw first,
+//               then the API; 404 = 'waiting'.
 //   Planner     localStorage 'planner.today.v1' {day, events, tasks} when it is today's, else today computed from what the
 //               Planner saved on this phone ('planner.v1' / 'planner.hosted.v1').
 //   the market  CME NQ: Sunday 18:00 to Friday 17:00 ET, daily halt 17:00-18:00 (exchange holidays are not known here).
@@ -18,8 +19,9 @@ export const REPO = 'nq-dashboard';
 export const URLS = {
   liveApi: `https://api.github.com/repos/${OWNER}/${REPO}/contents/live.json?ref=live`,
   liveRaw: `https://raw.githubusercontent.com/${OWNER}/${REPO}/live/live.json`,
-  kalshiRaw: `https://raw.githubusercontent.com/${OWNER}/${REPO}/kalshi/kalshi.json`,
-  kalshiApi: `https://api.github.com/repos/${OWNER}/${REPO}/contents/kalshi.json?ref=kalshi`,
+  // the Kalshi bot's own feed repo (security review 2026-11-01: not the dashboard's repo)
+  kalshiRaw: `https://raw.githubusercontent.com/${OWNER}/kalshi-feed/main/kalshi.json`,
+  kalshiApi: `https://api.github.com/repos/${OWNER}/kalshi-feed/contents/kalshi.json?ref=main`,
 };
 const FETCH_MS = 9000;
 
@@ -180,21 +182,27 @@ export function occursOn(e, day) {
 }
 const hhmm = (s) => { const m = /(\d{1,2}):(\d{2})/.exec(String(s || '')); return m ? `${m[1].padStart(2, '0')}:${m[2]}` : ''; };
 const byStart = (x, y) => (x.allDay ? -1 : 0) - (y.allDay ? -1 : 0) || String(x.start || '').localeCompare(String(y.start || ''));
-export function plannerDay(d = new Date()) {
+// total: whatever the Planner's keys hold (junk, another shape), the answer is a day or null, never an error
+export function plannerDay(d = new Date()) { try { return plannerDayOf(d); } catch (_) { return null; } }
+const list = (x) => (Array.isArray(x) ? x : []);
+const isObj = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
+const txt = (x) => (typeof x === 'string' ? x : typeof x === 'number' ? String(x) : '');
+function plannerDayOf(d) {
   const day = ymd(d);
   // 1. the Planner's own summary of today (written by the Planner on this phone), when it is today's
   const t = LS.get('planner.today.v1', null);
-  if (t && t.day === day && (Array.isArray(t.events) || Array.isArray(t.tasks))) {
-    const ev = (t.events || []).filter((e) => e && (e.title || e.name)).map((e) => ({ ...e, title: e.title || e.name, start: hhmm(e.start || e.time), allDay: !!e.allDay || !(e.start || e.time) })).sort(byStart);
-    const tasks = (t.tasks || []).filter((x) => x && !x.done && (x.title || x.name)).map((x) => ({ ...x, title: x.title || x.name }));
-    return { day, ev, tasks, projects: Array.isArray(t.projects) ? t.projects.filter((p) => p && p.name) : [], source: 'planner.today.v1' };
+  if (isObj(t) && t.day === day && (Array.isArray(t.events) || Array.isArray(t.tasks))) {
+    const ev = list(t.events).filter((e) => isObj(e) && txt(e.title || e.name))
+      .map((e) => ({ ...e, title: txt(e.title || e.name), start: hhmm(txt(e.start || e.time)), allDay: !!e.allDay || !txt(e.start || e.time) })).sort(byStart);
+    const tasks = list(t.tasks).filter((x) => isObj(x) && !x.done && txt(x.title || x.name)).map((x) => ({ ...x, title: txt(x.title || x.name) }));
+    return { day, ev, tasks, projects: list(t.projects).filter((p) => isObj(p) && txt(p.name)), source: 'planner.today.v1' };
   }
   // 2. computed from what the Planner saved here
   const S = plannerState();
-  if (!S) return null;
-  const ev = (S.events || []).filter((e) => occursOn(e, day)).sort(byStart);
-  const tasks = (S.tasks || []).filter((x) => x && !x.done && x.date && x.date <= day);
-  const projects = (S.projects || []).filter((p) => p && p.name);
+  if (!isObj(S)) return null;
+  const ev = list(S.events).filter((e) => isObj(e) && typeof e.date === 'string' && occursOn(e, day)).map((e) => ({ ...e, title: txt(e.title), start: txt(e.start) })).sort(byStart);
+  const tasks = list(S.tasks).filter((x) => isObj(x) && !x.done && typeof x.date === 'string' && x.date <= day).map((x) => ({ ...x, title: txt(x.title) }));
+  const projects = list(S.projects).filter((p) => isObj(p) && txt(p.name));
   return { day, ev, tasks, projects, source: 'planner' };
 }
 
@@ -348,19 +356,20 @@ export function dayPick(list, d = new Date()) {     // the same pick all day (ET
 }
 
 // ------------------------------------------------------------------------------------------------ the facts
-export function getFacts() {
-  const now = new Date(), k = kalshiView();
+const tryf = (f, d) => { try { const v = f(); return v === undefined ? d : v; } catch (_) { return d; } };
+export function getFacts() {               // each part on its own: one broken source never takes the others down
+  const now = new Date(), k = tryf(kalshiView, null);
   return {
     now,
-    market: { ...market(now), next: marketNext(now) },
-    live: liveView(),
+    market: tryf(() => ({ ...market(now), next: marketNext(now) }), { open: false, text: 'NQ market: unknown', next: null }),
+    live: tryf(liveView, null),
     liveError: L.err,
     kalshi: k,
     kalshiState: K.state,
-    kalshiRun: kalshiRun(k),
+    kalshiRun: tryf(() => kalshiRun(k), null),
     planner: plannerDay(now),
-    apps: listApps(),
-    extras: { crypto: C.j, verse: dayPick(VERSES, now), quote: dayPick(QUOTES, now) },
+    apps: tryf(listApps, []),
+    extras: { crypto: C.j, verse: tryf(() => dayPick(VERSES, now), VERSES[0]), quote: tryf(() => dayPick(QUOTES, now), QUOTES[0]) },
   };
 }
 export function refresh({ maxAge = 50e3 } = {}) {

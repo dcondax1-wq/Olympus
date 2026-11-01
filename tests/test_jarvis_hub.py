@@ -18,7 +18,8 @@ Planner pages), with the live feed, kalshi.json and the crypto prices served fro
      cards (renderCard, cachedStatus, posted cards)
   i. each part missing on its own: the built-in fallback takes over, no page errors
   j. the folder as it is (whatever parts are merged), with its service worker: starts, answers, both modes, opens offline
-  k. phone widths 375 / 390 / 430: no sideways scroll, the mode switch on screen, never a white screen (the main colour)
+  k. phone sizes 375 x 667, 375 / 390 x 844, 430 x 932: no sideways scroll, the mode switch on screen, never a white screen (the
+     main colour), the fixed dock / chip / search button never over the hint or the mic row, real taps land on every card
   l. the look and its features: fonts, the Eclipse theme, KALSHI TODAY / NQ BOTS TODAY, the HUD ring and state word, the
      panels (market, activity, add-ons, system core), the dock and its ⋯ keys, themes kept, effects levels, reduced motion,
      the boot screen (once, <= 1.2 s), the command palette, voice (tap, hands-free; the phone's voice at 1.06 / 1.1)
@@ -221,6 +222,9 @@ def part_a():
     check("a. each separate part is loaded on its own with import() and has a fallback in the page",
           all(f"'./{f}', (m) => typeof m." in page for f in PARTS) and "return import(path).then(" in page and "function fallbackBrain(" in page
           and 'id="orb"' in page and "html[data-state=" in css and "D.fallbackApps" in page and "frameView(a)" in page, [f for f in PARTS if f"'./{f}', (m)" not in page])
+    check("a. kalshi.json from the Kalshi bot's own repo (kalshi-feed, main): raw first, then the API (security review 2026-11-01)",
+          "raw.githubusercontent.com/${OWNER}/kalshi-feed/main/kalshi.json" in data and "api.github.com/repos/${OWNER}/kalshi-feed/contents/kalshi.json?ref=main" in data
+          and "ref=kalshi" not in data and data.index("URLS.kalshiRaw") < data.index("URLS.kalshiApi, {"))
     check("a. data.js exports getFacts, the refreshes, the change event, the add-ons", all(x in data for x in (
         "export function getFacts()", "export function refreshLive()", "export function refreshKalshi()", "export function onChange(",
         "'planner.today.v1'", "export const fallbackApps", "export function refreshCrypto(", "export const VERSES", "export const QUOTES")))
@@ -292,8 +296,8 @@ document.addEventListener('DOMContentLoaded', () => { window.__states = [];
 """
 
 
-def new_page(br, width=390, sw=False, boot=False, voice=False, **kw):
-    ctx = br.new_context(viewport={"width": width, "height": 844}, device_scale_factor=2, service_workers="allow" if sw else "block", **kw)
+def new_page(br, width=390, sw=False, boot=False, voice=False, height=844, **kw):
+    ctx = br.new_context(viewport={"width": width, "height": height}, device_scale_factor=2, service_workers="allow" if sw else "block", **kw)
     kal = kalshi_feed()
     feeds(ctx, kal)
     if not boot:                                   # the boot screen plays once per launch: skipped where it is not the subject
@@ -446,6 +450,22 @@ def run_a(br, url):
     p.click('#addF button[type="submit"]')
     p.wait_for_timeout(500)
     check("e. an added dashboard shows in the bar and opens", "Clipper" in p.inner_text("#apps") and p.locator("#v-x-clipper").is_visible())
+    fr = p.evaluate("(() => { const f = document.querySelector('#v-x-clipper iframe'); return [f.getAttribute('allow') || '', f.getAttribute('sandbox')]; })()")
+    p.click('.bar [data-app="home"]')
+    p.click("#addB")
+    p.fill("#addName", "Other")
+    p.fill("#addUrl", url.replace("127.0.0.1", "localhost") + "kalshi-stub/")      # another origin: another site
+    p.click('#addF button[type="submit"]')
+    p.wait_for_timeout(500)
+    fo = p.evaluate("(() => { const f = document.querySelector('#v-x-other iframe'); return f ? [f.getAttribute('allow'), f.getAttribute('sandbox') || ''] : null; })()")
+    check("e. frames: this site's apps get the phone's features (allow, no sandbox); another site's page is sandboxed, never allowed to move Jarvis",
+          "microphone" in fr[0] and fr[1] is None and fo and fo[0] is None and "allow-scripts" in fo[1] and "allow-same-origin" in fo[1]
+          and "allow-top-navigation" not in fo[1], (fr, fo))
+    p.click('.bar [data-app="home"]')
+    more(p, "apps")
+    p.wait_for_timeout(200)
+    p.click('#setApps [data-rm="x-other"]')
+    p.click("#setX")
     p.click('.bar [data-app="home"]')
     more(p, "aikey")
     p.wait_for_timeout(200)
@@ -475,6 +495,24 @@ def run_a(br, url):
     a14 = ask("what's on today")
     check("g. a stale 'planner.today.v1' (another day) is ignored", "Stale" not in a14 and "Gym" in a14, a14)
 
+    # junk in the Planner's keys (another app, an old format) never stops Jarvis: it starts, draws every card and answers
+    today2 = dt.datetime.now(ZoneInfo("America/New_York")).strftime("%Y-%m-%d")
+    p.evaluate("(d) => { localStorage.setItem('planner.v1', JSON.stringify({ events: 'junk', tasks: 5, projects: { a: 1 } }));"
+               " localStorage.setItem('planner.today.v1', JSON.stringify({ day: d, events: { x: 1 }, tasks: 'x' })); }", today2)
+    p.reload()
+    ready(p)
+    p.wait_for_timeout(300)
+    j1 = [p.locator("#cards .card").count(), p.text_content("#cards"), asker(p)("what's on today")]
+    p.evaluate("(d) => { localStorage.setItem('planner.v1', JSON.stringify({ events: [null, 5, 'x', { title: { a: 1 }, date: d, start: 7 }, { date: 9 }], tasks: [null, { title: ['t'], date: d }] }));"
+               " localStorage.removeItem('planner.today.v1'); }", today2)
+    p.reload()
+    ready(p)
+    p.wait_for_timeout(300)
+    j2 = [p.locator("#cards .card").count(), asker(p)("what's on today")]
+    check("g. junk in planner.v1 / planner.today.v1: Jarvis still starts, draws every card and answers (security review)",
+          j1[0] >= 3 and "Today" in j1[1] and len(j1[2]) > 3 and j2[0] >= 3 and len(j2[1]) > 3 and not errs, (j1[0], j1[2], j2, errs))
+    p.evaluate("localStorage.removeItem('planner.v1')")
+    p.goto(url + "planner/")
     p.goto(url + "jarvis/#planner")
     p.reload()                                     # a fresh open at that address (as the iPhone reopening Jarvis)
     ready(p)
@@ -673,9 +711,9 @@ def run_c(br, url):
     ctx.set_offline(False)
     check("j. no page errors as is", not errs, errs)
     ctx.close()
-    # k. phone widths
-    for wdt in (375, 390, 430):
-        ctx, p, errs, _ = new_page(br, width=wdt)
+    # k. phone sizes: 375 x 667 (iPhone SE), 375 / 390 x 844, 430 x 932
+    for wdt, hgt in ((375, 667), (375, 844), (390, 844), (430, 932)):
+        ctx, p, errs, _ = new_page(br, width=wdt, height=hgt)
         p.goto(url + "planner/")
         p.goto(url + "jarvis/")
         ready(p)
@@ -689,14 +727,43 @@ def run_c(br, url):
             return { sw: de.scrollWidth, cw: de.clientWidth, bar: bar.right, z: [z.left, z.right], j: [j.left, j.right], dock: [dock.left, dock.right, dock.bottom], over };
         })()""")
         lum, white = dominant(p.screenshot())
-        check(f"k. {wdt} px: no sideways scroll, nothing past the right edge, JARVIS and ZENITH fully on screen, the dock inside",
+        sz = f"{wdt} x {hgt}"
+        check(f"k. {sz}: no sideways scroll, nothing past the right edge, JARVIS and ZENITH fully on screen, the dock inside",
               w["sw"] <= w["cw"] and not w["over"] and w["j"][0] >= 0 and w["z"][1] <= wdt and w["bar"] <= wdt + 0.5
-              and w["dock"][0] >= 0 and w["dock"][1] <= wdt and w["dock"][2] <= 844, w)
-        check(f"k. {wdt} px: never a white screen (main colour dark, {white:.1%} near-white)", lum < 70 and white < 0.06, (lum, white))
+              and w["dock"][0] >= 0 and w["dock"][1] <= wdt and w["dock"][2] <= hgt, w)
+        check(f"k. {sz}: never a white screen (main colour dark, {white:.1%} near-white)", lum < 70 and white < 0.06, (lum, white))
         if os.environ.get("JARVIS_SHOTS"):
             os.makedirs(os.environ["JARVIS_SHOTS"], exist_ok=True)
-            p.screenshot(path=os.path.join(os.environ["JARVIS_SHOTS"], f"jarvis_{wdt}.png"))
-        check(f"k. {wdt} px: no page errors", not errs, errs)
+            p.screenshot(path=os.path.join(os.environ["JARVIS_SHOTS"], f"jarvis_{wdt}x{hgt}.png"))
+        # the fixed stack (the dock, the next chip, the search button) never covers the Jarvis screen: the screen scrolls above
+        # it, and the hint and the HANDS-FREE · mic · VOICE row scrolled into view sit clear of all three
+        ov = p.evaluate("""(() => {
+            const R = (q) => { const r = document.querySelector(q).getBoundingClientRect(); return [r.left, r.top, r.right, r.bottom]; };
+            const hit = (a, b) => a[0] < b[2] - 0.5 && b[0] < a[2] - 0.5 && a[1] < b[3] - 0.5 && b[1] < a[3] - 0.5;
+            const stack = { dock: R('#dock'), chip: R('#next'), fab: R('#fab') }, home = R('#home'), out = [];
+            for (const [a, b] of [['dock', 'chip'], ['dock', 'fab'], ['chip', 'fab']]) if (hit(stack[a], stack[b])) out.push(a + '/' + b);
+            if (home[3] > Math.min(stack.dock[1], stack.chip[1], stack.fab[1]) + 0.5) out.push('home under the stack');
+            for (const q of ['.vrow', '#hint']) {
+              document.querySelector(q).scrollIntoView({ block: 'end' });
+              const r = R(q);
+              if (r[1] < home[1] - 0.5 || r[3] > home[3] + 0.5) out.push(q + ' not reachable');
+              for (const k of Object.keys(stack)) if (hit(r, stack[k])) out.push(q + ' under ' + k);
+            }
+            document.getElementById('home').scrollTop = 0;
+            return out;
+        })()""")
+        check(f"k. {sz}: the dock, the next chip and the search button never cover the hint or the mic row (both reachable, nothing over them)", not ov, ov)
+        if (wdt, hgt) == (390, 844):
+            # real taps: the centre of every card hits the card itself (no decorative layer over it), and a real tap opens it
+            hits = p.evaluate("""[...document.querySelectorAll('#cards [data-app]')].map((c) => { c.scrollIntoView({ block: 'center' });
+                const r = c.getBoundingClientRect(), e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+                return [c.dataset.app, !!e && c.contains(e)]; })""")
+            p.evaluate("document.getElementById('home').scrollTop = 0")
+            p.locator('#cards [data-app="kalshi"]').click()
+            p.wait_for_timeout(600)
+            check("k. 390 x 844: every card takes a real tap at its centre, and a real tap on the Kalshi card opens Kalshi",
+                  hits and all(h[1] for h in hits) and p.locator("#v-kalshi").is_visible(), hits)
+        check(f"k. {sz}: no page errors", not errs, errs)
         ctx.close()
 
 

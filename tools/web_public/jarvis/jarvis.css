@@ -42,7 +42,9 @@
   --fb: "Rajdhani", "Segoe UI", system-ui, -apple-system, sans-serif;
   --fm: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --bar-h: 54px;
-  --dock-h: 66px;
+  --dock-h: 64px;
+  /* the fixed stack at the bottom of Jarvis mode: the command dock, and above it the next-event chip and the search button */
+  --stack: calc(var(--dock-h) + 66px + max(8px, env(safe-area-inset-bottom, 0px)));
   color-scheme: dark;
 }
 
@@ -100,9 +102,10 @@ html:not([data-mode="jarvis"]) .scan, html[data-fx="off"] .scan { display: none;
 #zen.zoff { visibility: hidden; pointer-events: none; }    /* never display:none: Zenith's frame keeps its size and scroll */
 
 /* ---------------------------------------------------------------- Jarvis mode */
-#home { overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+/* the Jarvis screen scrolls above the fixed stack: the dock, the chip and the search button never cover what it shows */
+#home { overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; bottom: var(--stack); }
 .home-in { position: relative; max-width: 720px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px;
-  padding-top: 12px; padding-bottom: calc(var(--dock-h) + 96px + env(safe-area-inset-bottom, 0px));
+  padding-top: 12px; padding-bottom: 30px;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 
 /* header panel: status dot, the J.A.R.V.I.S. title, the clock, the greeting line and the TODAY boxes */
@@ -133,10 +136,10 @@ html:not([data-mode="jarvis"]) .scan, html[data-fx="off"] .scan { display: none;
 .stagebox { position: relative; overflow: hidden; margin: -6px 0 -4px; padding: 30px 0 50px; display: grid; justify-items: center; }
 .stage { position: relative; width: min(74vw, 320px); aspect-ratio: 1 / 1; cursor: pointer; }
 .globe { position: absolute; left: -12%; top: -12%; width: 124%; height: 124%; pointer-events: none; opacity: .85; }
-.core { position: absolute; inset: 0; }
-.core-slot { position: absolute; inset: 0; z-index: 2; }
+.core { position: absolute; inset: 0; pointer-events: none; }        /* decorations never take a tap: the stage is the button */
+.core-slot { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
 .core-slot:empty { display: none; }
-.orb { position: absolute; inset: 9%; z-index: 1; }
+.orb { position: absolute; inset: 9%; z-index: 1; pointer-events: none; }
 .orb svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; stroke: var(--c); filter: drop-shadow(0 0 6px rgba(var(--cr), .55)); }
 .orb .r1, .orb .r2, .orb .r3 { transform-origin: 200px 200px; transform-box: view-box; }
 .ocore { position: absolute; inset: 34%; border-radius: 50%; background: radial-gradient(circle, var(--tint) 0%, var(--c) 35%, rgba(var(--cr2), .2) 70%, transparent 72%);
@@ -163,7 +166,7 @@ html[data-core="module"] .orb, html[data-core="module"] .globe, html[data-core="
 html[data-core="module"] .stagebox { padding: 6px 0 10px; }
 
 /* state word, the line, the voice row */
-.vbars { display: flex; align-items: center; justify-content: center; gap: 3px; height: 30px; width: min(320px, 82%); margin: 2px auto -6px; }
+.vbars { pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 3px; height: 30px; width: min(320px, 82%); margin: 2px auto -6px; }
 .vbars i { display: block; width: 4px; height: 4px; border-radius: 2px; background: var(--c); opacity: .35; box-shadow: 0 0 6px var(--c); transition: height .08s linear, opacity .1s; }
 .vbars.live i { opacity: 1; }
 .state { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 0; font: 600 12px var(--fh); letter-spacing: .5em; padding-left: .5em; color: var(--c3);
@@ -298,14 +301,16 @@ html:not([data-mode="jarvis"]) .dock, html:not([data-mode="jarvis"]) .fab, html:
 .more { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 2px 0 10px; }
 .more .key { width: 100%; padding: 0 6px; font-size: 9.5px; letter-spacing: .12em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .more .key.on { color: var(--ok); border-color: var(--ok); }
-.fab { position: fixed; z-index: 25; right: max(14px, env(safe-area-inset-right, 0px)); bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + var(--dock-h) + 14px);
-  width: 54px; height: 54px; border-radius: 50%; border: 1.5px solid var(--c); background: rgba(var(--pr), .85); color: var(--c3); display: grid; place-items: center; padding: 0;
+.fab { position: fixed; z-index: 25; right: max(14px, env(safe-area-inset-right, 0px)); bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + var(--dock-h) + 9px);
+  width: 48px; height: 48px; border-radius: 50%; border: 1.5px solid var(--c); background: rgba(var(--pr), .85); color: var(--c3); display: grid; place-items: center; padding: 0;
   box-shadow: 0 0 18px rgba(var(--cr), .45), 0 8px 18px rgba(0,0,0,.5); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
-.nextchip { position: fixed; z-index: 25; left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + var(--dock-h) + 24px);
-  max-width: calc(100% - 100px); padding: 7px 14px; border-radius: 999px; border: 1px solid rgba(var(--cr), .35); background: rgba(0,0,0,.72); color: var(--txt);
+.nextchip { position: fixed; z-index: 25; left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + var(--dock-h) + 15px);
+  max-width: calc(100% - 92px); height: 36px; padding: 7px 14px; border-radius: 999px; border: 1px solid rgba(var(--cr), .35); background: rgba(0,0,0,.72); color: var(--txt);
   font: 500 14px/1.2 var(--fb); letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
 .nextchip b { font: 600 9px var(--fh); letter-spacing: .2em; color: var(--c3); margin-right: 6px; }
 .dock.open ~ .fab, .dock.open ~ .nextchip { visibility: hidden; }
+.dockfade { position: fixed; left: 0; right: 0; bottom: var(--stack); height: 22px; z-index: 2; pointer-events: none; background: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,.6)); }
+html:not([data-mode="jarvis"]) .dockfade { display: none; }
 
 /* ---------------------------------------------------------------- sheets (add a dashboard, settings, look, voice, command palette) */
 .sheet { position: fixed; inset: 0; z-index: 70; display: grid; align-items: end; background: rgba(0,0,0,.62); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
