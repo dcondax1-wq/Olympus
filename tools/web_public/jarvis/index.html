@@ -1432,6 +1432,11 @@ document.addEventListener('visibilitychange', () => {
   fx.restart();
 });
 window.addEventListener('online', () => renderHead()); window.addEventListener('offline', () => renderHead());
+// the command dock stays above the iPhone keyboard while you type (as the old Jarvis's mobile.js did)
+if (window.visualViewport) {
+  const fitDock = () => { const kb = Math.max(0, innerHeight - visualViewport.height - visualViewport.offsetTop); $('#dock').style.transform = kb > 60 ? `translateY(${-Math.round(kb)}px)` : ''; };
+  visualViewport.addEventListener('resize', fitDock); visualViewport.addEventListener('scroll', fitDock);
+}
 window.__jarvis = { show, ask, facts: D.getFacts, active: () => active, setTheme, setFx, state: () => state, core: () => (core && typeof core.stats === 'function' ? safe(() => core.stats()) : null) };   // for tests and the console; read-only
 if ('serviceWorker' in navigator) {
   // a tapped Zenith notification while Jarvis runs (Zenith's sw.js v50: {type: 'open', app: 'zenith', hash}): Zenith mode at

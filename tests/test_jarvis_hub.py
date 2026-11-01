@@ -24,7 +24,8 @@ Planner pages), with the live feed, kalshi.json and the crypto prices served fro
      panels (market, activity, add-ons, system core), the dock and its ⋯ keys, themes kept, effects levels, reduced motion,
      the boot screen (once, <= 1.2 s), the command palette, voice (tap, hands-free; the phone's voice at 1.06 / 1.1)
 Runs A (fallbacks), B (stand-ins), C (the folder as is) and the missing-part runs each get their own copy of the site.
-    python -X utf8 -m tests.test_jarvis_hub      (temp folder + a local server; nothing else touched; ~1 min)
+    python -X utf8 -m tests.test_jarvis_hub      (temp folder + a local server; nothing else touched; ~4 min)
+Screenshots of the phone sizes: set JARVIS_SHOTS=<folder>.
 """
 from __future__ import annotations
 
