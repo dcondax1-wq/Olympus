@@ -183,11 +183,42 @@ def overlay(src, base):
                 if os.path.isfile(os.path.join(d, name)):
                     put(os.path.join(d, name), os.path.join(base, app, name))
                     n += 1
+    kit = os.path.join(src, "tools", "kalshi_kit", "public")        # the Kalshi kit's public files, never over a page file
+    if os.path.isdir(kit) and os.path.isdir(os.path.join(base, "kalshi")):
+        for name in os.listdir(kit):
+            if os.path.isfile(os.path.join(kit, name)) and not os.path.exists(os.path.join(base, "kalshi", name)):
+                put(os.path.join(kit, name), os.path.join(base, "kalshi", name))
     icons = os.path.join(src, "web", "icons")
     for name in ("icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png", "icon.svg"):
         if os.path.exists(os.path.join(icons, name)):
             put(os.path.join(icons, name), os.path.join(base, "icons", name))
     return n, apps
+
+
+def planner_addons(src, base):
+    """tools/planner_patches/*.patch on top of planner-backup, as scripts/add_planner.sh does at every publish (name order,
+    each on its own; one that does not apply is skipped)."""
+    pdir = os.path.join(src, "tools", "planner_patches")
+    patches = sorted(glob.glob(os.path.join(pdir, "*.patch")))
+    if not patches:
+        return None
+    pl = os.path.join(base, "planner")
+    for d, _dirs, files in os.walk(pl):                         # own copies: never patch the cached clone through a link
+        for f in files:
+            fp = os.path.join(d, f)
+            data = open(fp, "rb").read()
+            os.unlink(fp)
+            open(fp, "wb").write(data)
+    out = {"applied": [], "skipped": []}
+    for pt in patches:
+        name = os.path.basename(pt)[:-6]
+        ok = subprocess.run(["git", "apply", "--check", pt], cwd=base, capture_output=True).returncode == 0 and \
+            subprocess.run(["git", "apply", pt], cwd=base, capture_output=True).returncode == 0
+        out["applied" if ok else "skipped"].append(name)
+    with open(os.path.join(pl, "addons.json"), "w") as f:
+        json.dump({"v": 1, **out}, f)
+    note(f"planner add-ons: applied {out['applied']}, skipped {out['skipped']}")
+    return out
 
 
 def sw_cache(path):
@@ -215,6 +246,7 @@ def build_sites(work):
             shutil.rmtree(os.path.join(b, "planner"), ignore_errors=True)
             link_tree(os.path.join(pl, "planner"), os.path.join(b, "planner"))
     n, apps = overlay(ARGS.src, os.path.join(S["new"], REPO))
+    S["addons"] = planner_addons(ARGS.src, os.path.join(S["new"], REPO))
     S["apps"] = apps
     pub, new = os.path.join(S["pub"], REPO), os.path.join(S["new"], REPO)
     # the workers: (name, folder, published cache name, new cache name)
@@ -667,13 +699,22 @@ SCROLL_GET = ("() => { const el = " + SCROLL_FIND + "; if (!el) return null; "
 
 
 def tap(p, app):
-    """Tap an app in Jarvis's top bar (a mode button or an app chip)."""
+    """Tap an app in Jarvis's top bar (a mode button or an app chip). Zenith mode is full screen over the bar: the owner
+    goes back to Jarvis first (its floating control), then taps the app."""
+    if app != "zenith" and _ev(p, ZEN_MODULE):
+        go_home(p)
+        if app == "home":
+            return
     loc = p.locator(f'header [data-app="{app}"]')
-    (loc if loc.count() else p.locator(f'[data-app="{app}"]')).first.click()
+    (loc if loc.count() else p.locator(f'[data-app="{app}"]')).first.click(timeout=8000)
 
 
-ZEN_MODULE = ("() => { const z = document.getElementById('zen'); return !!z && !z.hidden && z.getBoundingClientRect().height > 0 "
+# Zenith mode (jarvis/zenith-mode.js): its full-screen layer .zm-root (may sit on <body>), or the hub's #zen view
+ZEN_MODULE = ("() => { const r = document.querySelector('.zm-root'); if (r) { const cs = getComputedStyle(r); "
+              "return cs.visibility === 'visible' && +cs.opacity > 0.5 && r.getBoundingClientRect().height > 0; } "
+              "const z = document.getElementById('zen'); return !!z && !z.hidden && z.getBoundingClientRect().height > 0 "
               "&& (z.querySelector('iframe') ? true : z.textContent.trim().length > 40); }")
+ZEN_FRAME_SEL = ".zm-root iframe, #zen iframe"
 
 
 def zenith_view(p, timeout=30000, ready=True):
@@ -683,7 +724,7 @@ def zenith_view(p, timeout=30000, ready=True):
     while time.time() - t0 < timeout / 1000:
         try:
             if p.evaluate(ZEN_MODULE):
-                el = p.query_selector("#zen iframe")
+                el = p.query_selector(ZEN_FRAME_SEL)
                 f = el.content_frame() if el else None
                 if f and (not ready or _ev(f, ZENITH_READY)):
                     return f, "module-frame"
@@ -728,7 +769,15 @@ def open_app(p, app, ready_js=None, timeout=20000):
 
 
 def go_home(p):
-    tap(p, "home")
+    if _ev(p, ZEN_MODULE):                       # Zenith mode: its floating "Back to Jarvis" control
+        back = p.locator('.zm-back, [aria-label="Back to Jarvis"]')
+        if back.count():
+            back.first.click(timeout=8000)
+            p.wait_for_function(JARVIS_HOME, timeout=5000)
+            p.wait_for_timeout(250)
+            return
+    loc = p.locator('header [data-app="home"]')
+    (loc if loc.count() else p.locator('[data-app="home"]')).first.click(timeout=8000)
     p.wait_for_function(JARVIS_HOME, timeout=5000)
 
 
