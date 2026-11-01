@@ -369,13 +369,13 @@ function appList(apps) {
 
 // ------------------------------------------------------------------------------------------------ questions
 const OPEN_RX = /^(open|go to|goto|show|switch to|take me to|launch|pull up|bring up|navigate to|jump to)\b/;      // a command leads: "is nq open" is a question
-const ASK_RX = /\b(how|how's|hows|status|room|floor|target|p&l|profit|doing|balance|positions?|money|made|strateg\w*|trades?|today|week|yesterday|best|worst|total|eval)\b/;
+const ASK_RX = /\b(how|how's|hows|what|what's|where|where's|when|when's|why|who|is|are|status|room|floor|target|p&l|profit|doing|balance|positions?|money|made|strateg\w*|trades?|today|week|yesterday|best|worst|total|eval|price|quote)\b/;
 const DATA_RX = /\b(room|floor|target|p&l|profit|balance|positions?|status|how much|how many|how far|made|lost)\b/;
 const HELP_RX = /^(help|help me|what can you do|what can i ask|what can i ask you|what do you do|commands|menu|options|what can you tell me)$|\b(what can you do|what can i (ask|say))\b/;
 const BRIEF_RX = /\b(brief me|briefing|brief|rundown|run down|sitrep|sit rep|catch me up|what did i miss|status report|daily report|morning report|evening report|summary|summarize|overview|update me|give me an update|full update|full report|report)\b/;
 const NOW_RX = /\b(what should i do|what do i do|what do i need to do|what now|now what|next step|next steps|what's next for me|what needs (my )?attention|needs my attention|anything (i|for me to) (need to )?do|do i need to do anything|should i do anything|what should i focus on|action items?|to do now|what do you need from me|what's my next move|my next move)\b|^(what's next|whats next|what next)$/;
 const GOAL_RX = /\b(10 ?k|ten k|10,?000|ten thousand|money goal|my goals?|the goals?|goal|stingray|corvette|z06|savings|road to|payouts?)\b/;
-const MARKET_RX = /\b(market|markets|futures|globex|cme|trading hours|hours|session|halt|halted|holiday|holidays|closed?|closes|closing|reopen|reopens|opens?|opening)\b/;
+const MARKET_RX = /\b(market|markets|futures|globex|cme|trading hours|hours|session|halt|halted|holiday|holidays|closed|closes|closing|reopen|reopens|opens?|opening)\b/;
 const NOT_MARKET_RX = /\b(positions?|tasks?|to ?do|events?|kalshi|trades?|planner|plan|calendar|zenith|apps?|dashboards?)\b/;
 const PLAN_WORDS_RX = /\b(plan|schedule|calendar|tasks?|events?|meetings?|agenda|appointments?|to ?do)\b/;
 const TIME_RX = /\b(time|date|day is it|what day|which day|today's date)\b/;
@@ -825,6 +825,12 @@ export function createBrain(opts) {
     let text, speak;
     const note = str(k.note, 160), status = str(k.status, 120);
     const bw = kalshiBestWorst(k);
+    if (/\b(real money|paper|live mode|is it live|mode)\b/.test(q) && !topic) {
+      const mode = str(k.mode, 20).toLowerCase();
+      const txt = mode === 'live' ? 'Yes: Kalshi runs in LIVE mode, with real money.' : mode === 'paper' ? 'No: Kalshi runs in PAPER mode, no real money.' : 'Its mode is missing from the feed.';
+      setCtx('status', ALL, false, true, V);
+      return { text: lines(txt, kalshiLine(V)), speak: txt, cards: [kalshiCard(V)], intent: 'kalshi' };
+    }
     if (t === 'strategies') {
       const ss = kalshiStrats(k);
       text = ss.length ? lines(`Kalshi's ${plural(ss.length, 'strategy', 'strategies')}:`, ...ss.slice(0, 8).map((x) => '• ' + kStrat(x)), bw.text) : 'The Kalshi feed has no strategy breakdown yet.';
@@ -918,7 +924,7 @@ export function createBrain(opts) {
       const tk = p.tasks.length ? `${plural(p.tasks.length, 'open task')}: ${taskList(p.tasks, 3)}` : '';
       return { text: lines(text, tk), speak: toSpeech(text + (tk ? ' ' + plural(p.tasks.length, 'open task') + '.' : '')), intent: 'plan' };
     }
-    if (/\b(tasks?|to ?dos?|to do list|chores)\b/.test(q) && !/\b(events?|schedule|calendar|meetings?|agenda)\b/.test(q)) {
+    if (/\b(tasks?|to ?dos?|to do list|chores|overdue)\b/.test(q) && !/\b(events?|schedule|calendar|meetings?|agenda)\b/.test(q)) {
       if (!p.tasks.length) return { text: 'No open tasks. Nicely done.', intent: 'plan' };
       const od = p.tasks.filter((t) => t.overdue).length;
       return { text: lines(`${plural(p.tasks.length, 'open task')}${od ? ` (${od} overdue)` : ''}:`, ...p.tasks.slice(0, 6).map((t) => '• ' + t.title + (t.overdue ? ` (overdue, ${t.date})` : '')), p.tasks.length > 6 ? `…and ${p.tasks.length - 6} more.` : ''),
@@ -1070,6 +1076,7 @@ export function createBrain(opts) {
     // "atlas trades", "blitz rules", "zlarior brain": a bot's page, not a question
     const page = words <= 3 && botsIn(q).length === 1 && /\b(brain|trades|results|rules|setups|go ?live)\b/.test(q) && !/\b(today|week|how|what|any|many)\b/.test(q);
     const wants = OPEN_RX.test(q) || page;
+    if (/^(take me home|go home|go back|back|home|back to jarvis|main screen|jarvis home)$/.test(q)) return opening(V, 'home');
     if (!wants && !short) return null;
     if (/^(open|show|go to)( me)?( the| my)? settings$/.test(q)) return { text: 'Jarvis\'s settings are behind the gear button. For Zenith\'s, say "open Zenith settings".', speak: 'Jarvis\'s settings are behind the gear button.', intent: 'open' };
     if (wants && DATA_RX.test(q)) return null;                      // "show me the room": an answer, not a switch
@@ -1127,7 +1134,8 @@ export function createBrain(opts) {
     const g = greetWord(V);
     const exact = (rx) => rx.test(q);
     if (exact(/^(hi|hello|hey|yo|sup|hiya|howdy|hey there|hello there|good (afternoon|evening)|evening|afternoon|greetings|jarvis|hey jarvis|hi jarvis|hello jarvis|you there|are you there|are you awake|wake up)$/) || (loose && /\b(hi|hello|hey|yo|sup)\b/.test(q))) {
-      const t = `${g}${jokeN++ % 2 ? '' : ', sir'}. ${V.mtext}. Ask me about the bots or your day.`;
+      const said = (q.match(/\bgood (afternoon|evening)\b|^(afternoon|evening)$/) || [])[0] || '', off = said && !g.toLowerCase().includes(said.replace(/^good /, ''));
+      const t = `${g}${off ? ', technically' : jokeN++ % 2 ? '' : ', sir'}. ${V.mtext}. Ask me about the bots or your day.`;
       return { text: t, speak: toSpeech(t), intent: 'hello' };
     }
     if (exact(/^(how are you|how are you doing|how're you|how you doing|you good|you ok|how's it going jarvis|how have you been)$/)) {
@@ -1156,11 +1164,17 @@ export function createBrain(opts) {
       const t = /^(ok|okay|got it|understood|sounds good)$/.test(q) ? 'Very good.' : 'I do try.';
       return { text: t, speak: t, intent: 'smalltalk' };
     }
+    if (exact(/^(what's up|whats up|what's going on|what's happening|anything new|what's new with you)$/)) {
+      const bad = V.nq ? V.nq.lines.filter((x) => x.level === 'bad').length + (V.nq.verdict && str(V.nq.verdict.level, 10) === 'bad' ? 1 : 0) : 0;
+      const t = `${bad ? 'One thing needs you' : 'All quiet'}${V.nq && V.nq.verdict ? ': ' + str(V.nq.verdict.label, 60) : ''}. ${V.mtext}. Say "brief me" for the full rundown.`;
+      return { text: t, speak: toSpeech(t), intent: 'smalltalk' };
+    }
+    if (exact(/^(who made you|who built you|who created you|who wrote you)$/)) return { text: 'You did, sir, with a little help from Claude. I live on your phone and read your bots\' data.', speak: 'You did, sir, with a little help from Claude.', intent: 'smalltalk' };
     if (exact(/^(good day|good day jarvis)$/)) return { text: IDLE_LINE, speak: 'Good day. Tap the core or type below to speak with me.', intent: 'hello' };
     if (exact(/^(i love you|love you|marry me)$/)) return { text: 'Noted. I am still not moving your stop.', speak: 'Noted. I am still not moving your stop.', intent: 'smalltalk' };
     if (/\b(weather|temperature outside|forecast)\b/.test(q) && !KALSHI_RX.test(q)) return { text: 'I have no weather feed here, so I will not guess. Your Kalshi weather markets are the closest thing I can read: ask "Kalshi positions".', speak: 'I have no weather feed here, so I will not guess.', intent: 'smalltalk' };
     if (/\b(are you (real|alive|human|conscious|sentient))\b/.test(q)) return { text: 'Real enough to read your P&L, not real enough to need coffee.', speak: 'Real enough to read your P and L. Not real enough to need coffee.', intent: 'smalltalk' };
-    if (/\b(place|buy|sell|enter|close|flatten|arm|go live) .*(trade|order|position|contracts?|micros?|nq|mnq|live)\b|\b(go live|arm live|arm the bot)\b/.test(q)) {
+    if (/\b(place|buy|sell|short|enter|close|exit|flatten|cancel|arm|disarm|go live) .*(trade|trades|order|orders|position|positions|contracts?|micros?|nq|mnq|es|live|everything|all)\b|\b(go live|arm live|arm the bot|flatten|kill switch|(stop|pause|start|restart|disable|enable) the bots?)\b/.test(q)) {
       const t = 'I am afraid I cannot do that, sir: I only read the data. Orders, arming and going live stay with you, on the PC and in NinjaTrader.';
       return { text: t, speak: t, intent: 'refuse_trade' };
     }
@@ -1275,6 +1289,8 @@ export function createBrain(opts) {
     if (/\b(pc|computer|surface|heartbeat|ninja ?trader|ninja)\b/.test(q) && !bots.length) return pcAnswer(V);
     if (!planQ || bots.length) {
       if (/\b(room|floor|drawdown|max loss|cushion|buffer)\b/.test(q)) return roomAnswer(V, sel, only);
+      if (/\bis (the bot|the bots|it|zlarior|atlas|blitz) (trading|running|on|up|live)\b|\btrading (my|the|your) evals?\b/.test(q)) return statusAnswer(V, sel, only);
+      if (/\b(how's|how is|how was) the week\b|\bthe week (so far|going)\b/.test(q)) return weekAnswer(V, sel, only);
       if (/\b(eval|evals|evaluation|progress|sessions?|funded)\b/.test(q)) return evalAnswer(V, sel, only);
       if (/\b(target|to go|pass|passing|how far)\b/.test(q)) return targetAnswer(V, sel, only);
       if (/\b(p&l|profit|made|make|making|lost|lose|losing|earn|earned|money|today's|gains?)\b/.test(q)) return pnlAnswer(V, sel, only, !only);
@@ -1283,9 +1299,10 @@ export function createBrain(opts) {
       if (/\b(waiting|wait for|looking for|watching|next entry|entry window|window|setup|stage)\b|\bwhen (will|does|do) .*\btrade\b|\btrade next\b/.test(q)) return waitingAnswer(V, sel, only);
       if (/\btoday\b/.test(q) && /\b(trades?|traded|trade)\b/.test(q)) return tradesTodayAnswer(V, sel, only);
       if (/\b(this week|weekly|week so far|trades this week)\b/.test(q) || /\bhow many\b.*\btrades?\b/.test(q)) return weekAnswer(V, sel, only);
-      if (/\b(bot|bots|status|how are|how's|hows|how is|doing|running|armed|zlarior|atlas|blitz|nq|trading)\b/.test(q) && !/\b(today|schedule|plan|task|event)\b/.test(q)) return statusAnswer(V, sel, only);
+      if (/\b(bot|bots|status|how are|how's|hows|how is|doing|running|armed|zlarior|atlas|blitz|nq|trading)\b/.test(q) && !/\b(schedule|plan|task|event)\b/.test(q)
+        && (!/\btoday\b/.test(q) || /\b(bot|bots|zlarior|atlas|blitz|nq|trading)\b/.test(q))) return statusAnswer(V, sel, only);     // "how's today" is the plan
     }
-    if (/\b(today|schedule|agenda|plan|calendar|events?|tasks?|to ?do|on my plate|busy|meetings?|appointments?|projects?|coming up|upcoming|next event|next meeting)\b/.test(q)) return planAnswer(q, V);
+    if (/\b(today|tomorrow|schedule|agenda|plan|calendar|events?|tasks?|to ?do|on my plate|busy|meetings?|appointments?|projects?|coming up|upcoming|next event|next meeting|overdue|free)\b/.test(q)) return planAnswer(q, V);
     if (TIME_RX.test(q)) return timeAnswer(V);
     if (APPS_RX.test(q)) return appsAnswer(V);
     const st2 = smalltalk(q, V, true);
@@ -1457,6 +1474,9 @@ export function createBrain(opts) {
       if (!r) {
         r = { text: FALLBACK, speak: 'Pardon me, I did not catch that. Try asking how the bots are doing, or what is on today.', intent: 'fallback' };
         if (S.on && S.keys[S.provider]) r = await smartAnswer(raw, V, r, voice);
+      } else if (/^(should i|should we|is it worth|would it be wise|do you think|what do you think|would you)\b/.test(q) && !r.control && !r.open && r.intent !== 'refuse_trade') {
+        if (S.on && S.keys[S.provider]) r = await smartAnswer(raw, V, r, voice);           // a decision: the model, with these numbers as its fallback
+        else r = { ...r, text: 'Your call, sir. The numbers I have:\n' + r.text, speak: 'Your call, sir. ' + (r.speak || '') };
       }
       if (voice && r.speak) r.speak = toSpeech(r.speak, 300);
       if (r.intent !== 'repeat' && !r.control) last = { text: r.text, speak: r.speak, cards: r.cards };

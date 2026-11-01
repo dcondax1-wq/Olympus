@@ -210,7 +210,7 @@ def scenarios():
         S("mkt_fri", ask("is the market open"), now=T_FRI1730, f=facts(T_FRI1730)),
         S("follow", ask("how's blitz", "and atlas?", "blitz room", "and atlas", "today's p&l", "what about kalshi",
                         "how much room on zlarior", "and the target?"), f=facts(T_SUN13, kalshi=K13, kalshiState="ok")),
-        S("bare_atlas", ask("atlas")),
+        S("bare_atlas", ask("atlas", "how are the bots doing today", "how's today looking")),
         S("eval_pos", ask("how's the eval", "are we in a trade", "what is zlarior waiting for", "how's my money goal", "what should I do now"),
           f=facts(T_SUN13, live={**live(T_SUN13, lit=lit2), "money": money})),
         S("more_intents", ask("where is nq", "how much can I lose today", "is the pc on", "is nq open", "how many trades today", "what's my balance"),
@@ -238,6 +238,9 @@ def scenarios():
                             "remind me in 20 minutes to call mom", "add buy milk to my todo", "verse of the day", "quote of the day", "what's new",
                             "what's the weather tomorrow", "open tradingview", "place a trade on nq", "who are you", "what can't you do",
                             "open blitz", "news", "good day") + [{"idle": True}], now=T_MON8, f=facts(T_MON8, kalshi=kalshi(T_MON8), kalshiState="ok")),
+        S("phrasings", ask("how close are we to passing", "where's nq", "is the bot trading my eval", "who made you", "flatten everything", "stop the bot",
+                           "take me home", "anything overdue", "what's up", "should i buy another eval", "good evening"), now=T_MON8, f=facts(T_MON8)),
+        S("smart_decision", [{"setSmart": {"key": "gsk_FAKE", "on": True}}] + ask("should i buy another eval"), fetch=groq_ok),
         S("zroutes", ask("atlas trades", "holodeck", "open zenith", "open settings", "blitz rules", "open the deck", "how many atlas trades")),
         S("zroutes_local", ask("atlas trades", "holodeck", "open blitz", "open the deck", "zlarior brain"), opts={"zenithRoutes": False}),
         S("zroutes_junk", ask("open blitz", "open the chart"), routeJunk=True),
@@ -390,6 +393,8 @@ def part_node(O):
     ba = g("bare_atlas")[0]
     check("e. a bare 'atlas' with nothing to follow opens Zenith on ATLAS", ba.get("open") == "zenith" and ba.get("route") == "#/atlas"
           and ["zenith", "#/atlas"] in O["bare_atlas"]["opened"], ba)
+    check("e. 'how are the bots doing today' is the status; 'how's today looking' is the plan", "Zlarior 50K: today +$213" in t("bare_atlas", 1)
+          and "Gym" in t("bare_atlas", 2), (t("bare_atlas", 1)[:80], t("bare_atlas", 2)[:80]))
     e1, e2, e3, e4, e5 = (t("eval_pos", i) for i in range(5))
     check("e. eval progress: profit, % of the way, to target, room, session X of 10", "Zlarior 50K eval: profit −$726" in e1 and "$3,726 to the target" in e1
           and "session 3 of 10" in e1, e1)
@@ -441,6 +446,19 @@ def part_node(O):
           and "I have no crypto prices right now" in sc2, (sc1, sc2))
     se1, se2 = t("shell_error", 0), O["shell_error"]["res"][1].get("text", "")
     check("e. the shell's liveError: the live feed cannot be reached", "cannot reach the bots' live feed" in se1 and "Bots: I cannot reach the live feed" in se2, (se1, se2[:160]))
+    ph = [t("phrasings", i) for i in range(11)]
+    check("e. phrasings: 'how close to passing' is the target, 'where's nq' the price (missing: said so), 'is the bot trading my eval' the status",
+          ph[0].startswith("Zlarior: $3,726 to the target") and ph[1].startswith("No NQ price in the live feed right now") and ph[2].startswith("RUNNING"),
+          ph[:3])
+    check("e. 'who made you', trading actions refused ('flatten everything', 'stop the bot'), 'take me home'",
+          "You did, sir" in ph[3] and g("phrasings")[4].get("intent") == "refuse_trade" and g("phrasings")[5].get("intent") == "refuse_trade"
+          and g("phrasings")[6].get("open") == "home", ph[3:7])
+    check("e. 'anything overdue' lists the overdue tasks; 'what's up' is a short status", "open task" in ph[7] and ph[8].startswith("All quiet: RUNNING: bot trading"), ph[7:9])
+    check("e. 'should I ...' without smart mode: the numbers, the call left to the owner", ph[9].startswith("Your call, sir. The numbers I have:") and "Zlarior 50K eval" in ph[9], ph[9])
+    check("e. a greeting at the wrong hour gets a polite 'technically'", ph[10].startswith("Good morning, technically."), ph[10])
+    sdec = O["smart_decision"]
+    check("h. 'should I ...' with smart mode on goes to the model, deep (the expert persona)", len(sdec["calls"]) == 1
+          and sdec["calls"][0]["body"].get("reasoning_effort") == "high" and sdec["res"][1].get("smart") is True, sdec["res"][1])
     zr = g("zroutes")
     check("e. Zenith routes from zenith-mode.js's zenithRouteFor: 'atlas trades', 'holodeck', 'blitz rules', 'the deck'",
           (zr[0].get("open"), zr[0].get("route"), zr[0].get("text")) == ("zenith", "#/atlas/trades", "Opening ATLAS trades in Zenith.")
