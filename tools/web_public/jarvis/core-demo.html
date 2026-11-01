@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jarvis Core</title>
+<meta name="description" content="Demo of the animated Jarvis core: switch its states and drive the voice level.">
+<meta name="theme-color" content="#04070c">
+<link rel="icon" href="icon-192.png">
+<style>
+:root { --bg: #04070c; --ink: #e8f6ff; --ink2: #8fb3c8; --line: rgba(120,210,255,.18); --chip: rgba(18,34,48,.72); --on: #4cc8ff;
+  --f: -apple-system, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif; color-scheme: dark; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--ink); font: 15px/1.4 var(--f); }
+body { background: radial-gradient(120% 70% at 50% 34%, #0b1a26 0%, #04070c 62%) fixed, var(--bg); }
+main { max-width: 520px; margin: 0 auto; padding: max(18px, env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom)); display: grid; gap: 16px; }
+h1 { margin: 0; font-size: 13px; font-weight: 700; letter-spacing: .24em; text-transform: uppercase; color: var(--ink2); text-align: center; }
+#core { width: 100%; max-width: 420px; margin: 0 auto; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+button { font: inherit; font-size: 13.5px; font-weight: 600; color: var(--ink); background: var(--chip); border: 1px solid var(--line); border-radius: 12px; padding: 9px 13px; cursor: pointer; }
+button[aria-pressed="true"] { border-color: var(--on); color: #fff; box-shadow: 0 0 0 1px var(--on) inset, 0 0 18px rgba(76,200,255,.25); }
+button[data-s="alert"][aria-pressed="true"] { border-color: #ff5a4a; box-shadow: 0 0 0 1px #ff5a4a inset, 0 0 18px rgba(255,80,60,.3); }
+label { display: flex; align-items: center; gap: 10px; color: var(--ink2); font-size: 13px; justify-content: center; }
+input[type="range"] { width: min(260px, 60vw); accent-color: var(--on); }
+.stat { text-align: center; color: var(--ink2); font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; min-height: 1.4em; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Jarvis core</h1>
+  <div id="core"></div>
+  <div class="row" id="states" role="group" aria-label="State">
+    <button type="button" data-s="idle" aria-pressed="true">Idle</button>
+    <button type="button" data-s="listening" aria-pressed="false">Listening</button>
+    <button type="button" data-s="thinking" aria-pressed="false">Thinking</button>
+    <button type="button" data-s="speaking" aria-pressed="false">Speaking</button>
+    <button type="button" data-s="alert" aria-pressed="false">Alert</button>
+  </div>
+  <label>Level <input id="lv" type="range" min="0" max="100" value="0" aria-label="Voice level"></label>
+  <div class="row">
+    <button type="button" id="auto" aria-pressed="true">Built-in voice</button>
+    <button type="button" id="mic" aria-pressed="false">Use the mic</button>
+  </div>
+  <div class="stat" id="stat" aria-live="off"></div>
+</main>
+<script type="module">
+import { mountCore } from './core-visual.js';
+const q = new URLSearchParams(location.search);
+const o = {};
+if (q.get('size')) o.size = +q.get('size');
+if (q.get('detail')) o.detail = +q.get('detail');           // pin the detail tier (0-3); otherwise it adapts to the frame rate
+const core = mountCore(document.getElementById('core'), o);
+window.core = core;                         // for the tests and the console
+const btns = [...document.querySelectorAll('#states button')];
+function pick(s) { core.setState(s); btns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.s === s))); }
+btns.forEach((b) => b.addEventListener('click', () => pick(b.dataset.s)));
+if (q.get('state')) pick(q.get('state'));
+// level: the slider holds a level (fed every frame), "Built-in voice" lets the core's own envelope run, the mic feeds RMS
+const lv = document.getElementById('lv'), auto = document.getElementById('auto'), micB = document.getElementById('mic');
+let mode = 'auto', an = null, buf = null, stream = null;
+let feeding = 0;
+function setMode(m) {
+  mode = m; auto.setAttribute('aria-pressed', String(m === 'auto')); micB.setAttribute('aria-pressed', String(m === 'mic'));
+  if (m !== 'auto' && !feeding) feeding = requestAnimationFrame(feed);
+}
+lv.addEventListener('input', () => setMode('slider'));
+auto.addEventListener('click', () => setMode('auto'));
+micB.addEventListener('click', async () => {
+  if (mode === 'mic') { setMode('auto'); return; }
+  try {
+    stream = stream || await navigator.mediaDevices.getUserMedia({ audio: true });
+    if (!an) { const ac = new (window.AudioContext || window.webkitAudioContext)(); an = ac.createAnalyser(); an.fftSize = 512; buf = new Float32Array(an.fftSize); ac.createMediaStreamSource(stream).connect(an); }
+    setMode('mic');
+  } catch (e) { micB.textContent = 'No mic'; }
+});
+function feed() {
+  if (mode === 'slider') core.setLevel(lv.value / 100);
+  else if (mode === 'mic' && an) { an.getFloatTimeDomainData(buf); let s = 0; for (const v of buf) s += v * v; core.setLevel(Math.min(1, Math.sqrt(s / buf.length) * 6)); }
+  feeding = mode === 'auto' ? 0 : requestAnimationFrame(feed);
+}
+const stat = document.getElementById('stat');
+setInterval(() => { const s = core.stats(); stat.textContent = `${s.state} · level ${s.level.toFixed(2)} · ${s.fps || '--'} fps · detail ${s.tier}/3 · ${s.reduced ? 'reduced motion' : s.running ? 'running' : 'paused'}`; }, 500);
+</script>
+</body>
+</html>
