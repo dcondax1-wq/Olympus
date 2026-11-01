@@ -18,11 +18,19 @@
 // A new worker now waits until Jarvis asks it to take over, which the page does only while it is out of sight
 // ('jarvis:activate'), or until Jarvis is closed. Its saved copy is fetched past the browser's HTTP cache (cache: 'reload'),
 // so it can never save the previous version's files.
-const CACHE = 'jarvis-v5';
+// v6 (2026-11-01, "Just a black screen" on the iPhone): an iPhone Home Screen app is black while its page or its stylesheet is
+// still on the way, and v5 still waited on the network without limit for a file it had no copy of (a weak signal = black for
+// good). Now nothing waits longer than NET_MAX_MS: a page with no copy gets the dark "can't reach the internet" page with Retry,
+// a file with no copy fails (the page shows without it and its start note says so). A file missing from this copy is taken from
+// the previous Jarvis copy (OLD) while it is still here, and the previous copies go only once this one holds every CORE file.
+const CACHE = 'jarvis-v6';
+const OLD = ['jarvis-v5', 'jarvis-v4'];
 const NAV_WAIT_MS = 3500;
+const NET_MAX_MS = 9000;
 const SHELL = ['./', './index.html', './manifest.webmanifest?v=j2', './apple-touch-icon.png?v=j2', './icon-192.png?v=j2', './icon-512.png?v=j2',
   './jarvis.css?v=j4', './data.js', './brain.js', './core-visual.js', './apps.js', './zenith-mode.js',
   './three.module.min.js', './orbitron.woff2', './rajdhani-400.woff2', './rajdhani-500.woff2', './rajdhani-600.woff2', './rajdhani-700.woff2'];
+const CORE = ['./index.html', './jarvis.css?v=j4', './data.js'];
 const STATIC_RX = /\.(woff2|png|svg|jpg|webp|webmanifest)$/i;
 // how each page was answered ('cache' | 'net'), by its client id; lastNav when the browser gives no client ids
 const navFrom = new Map();
@@ -40,22 +48,31 @@ self.addEventListener('install', (e) => {
 });
 // the page asks while it is out of sight (or Jarvis is closed and the browser swaps it in by itself): never during a start
 self.addEventListener('message', (e) => { if (e.data === 'jarvis:activate') self.skipWaiting(); });
+// Old copies go only once the new one holds the page, its stylesheet and data.js. Run at activation and again after each
+// page load: the previous worker can still save a late download into its own copy after this one took over.
+async function tidy() {
+  const c = await caches.open(CACHE);
+  if (!(await Promise.all(CORE.map((u) => c.match(u, { ignoreSearch: true })))).every(Boolean)) return;
+  for (const k of await caches.keys()) if (k.startsWith('jarvis-') && k !== CACHE) await caches.delete(k);
+}
 self.addEventListener('activate', (e) => {
   e.waitUntil((async () => {
-    // Old copies go only once the new one holds the page.
-    if (await (await caches.open(CACHE)).match('./index.html')) {
-      for (const k of await caches.keys()) if (k.startsWith('jarvis-') && k !== CACHE) await caches.delete(k);
-    }
+    try { await tidy(); } catch (_) { /* next page load */ }
     await self.clients.claim();
   })());
 });
 // only Jarvis's own cache: any page of this origin can write CacheStorage, so an origin-wide lookup could be fed another
 // page's copy (security review 2026-11-01)
+async function savedIn(name, req) {                                    // by cache name: never origin-wide, never creates one
+  const hit = await caches.match(req, { ignoreSearch: true, cacheName: name });
+  if (hit || req.mode !== 'navigate') return hit || null;
+  return (await caches.match('./index.html', { cacheName: name })) || (await caches.match('./', { cacheName: name })) || null;
+}
 async function saved(req) {
-  const c = await caches.open(CACHE);
-  const hit = await c.match(req, { ignoreSearch: true });
-  if (hit || req.mode !== 'navigate') return hit;
-  return (await c.match('./index.html')) || (await c.match('./'));    // './' is this folder: only Jarvis's own page
+  for (const name of [CACHE, ...OLD]) {
+    try { const hit = await savedIn(name, req); if (hit) return hit; } catch (_) { /* the next copy */ }
+  }
+  return null;
 }
 const OFFLINE = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
   + '<meta name="theme-color" content="#000000"><title>Jarvis</title><style>html,body{height:100%;margin:0;background:#000;color:#ece9f2;'
@@ -63,7 +80,7 @@ const OFFLINE = '<!doctype html><html lang="en"><head><meta charset="utf-8"><met
   + 'background:radial-gradient(ellipse at 50% 40%,#140a24,#000 65%)}b{letter-spacing:.3em;color:#e9ddff;text-shadow:0 0 14px #a855f7}'
   + 'p{color:#8a8499;margin:10px 0 18px}button{height:44px;padding:0 22px;border-radius:14px;border:1px solid #a855f7;background:rgba(168,85,247,.25);color:#fff;'
   + 'font:inherit;font-weight:650;box-shadow:0 0 16px rgba(168,85,247,.45)}'
-  + '</style></head><body><main><div><b>J.A.R.V.I.S.</b><p>Jarvis can’t reach the internet. Check your connection, then try again.</p>'
+  + '</style></head><body><main><div><b>J.A.R.V.I.S.</b><p>Jarvis can’t load right now: no internet, or it is very slow. Check your connection, then try again.</p>'
   + '<button onclick="location.reload()">Retry</button></div></main></body></html>';
 const offlinePage = () => new Response(OFFLINE, { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } });
 const store = (req, r) => { if (r && r.ok) { const c = r.clone(); caches.open(CACHE).then((x) => x.put(req, c)).catch(() => null); } return r; };
@@ -76,14 +93,15 @@ self.addEventListener('fetch', (e) => {
       const net = fetch(req).then((r) => store(req, r));
       net.catch(() => null);
       e.waitUntil(net.catch(() => null));                         // a late answer still refreshes the saved copy
+      e.waitUntil(net.then(() => tidy(), () => null).catch(() => null));
       const copy = await saved(req);
-      const slow = new Promise((ok) => setTimeout(() => ok('slow'), copy ? NAV_WAIT_MS : 25000));
+      const slow = new Promise((ok) => setTimeout(() => ok('slow'), copy ? NAV_WAIT_MS : NET_MAX_MS));
       try {
         const r = await Promise.race([net, slow]);
         if (r !== 'slow' && r && r.ok) { markNav(e, 'net'); return r; }
         if (copy) { markNav(e, 'cache'); return copy; }
         if (r !== 'slow' && r) return r;                           // no copy yet: the site's own answer
-        return await net;
+        return offlinePage();                                       // no copy, no answer in NET_MAX_MS: never a black screen
       } catch (_) {
         markNav(e, 'cache');
         return copy || offlinePage();
@@ -100,11 +118,12 @@ self.addEventListener('fetch', (e) => {
     if (copy && (STATIC_RX.test(u.pathname) || pageFromCopy(e))) return copy;
     try {
       // a page fresh from the network: its files fresh too, the saved copy only if the network stalls
-      const r = copy ? await Promise.race([net, new Promise((ok) => setTimeout(() => ok(null), NAV_WAIT_MS))]) : await net;
+      // never an endless wait: with no copy, NET_MAX_MS at most (a stylesheet still on the way keeps the whole screen black)
+      const r = await Promise.race([net, new Promise((ok) => setTimeout(() => ok(null), copy ? NAV_WAIT_MS : NET_MAX_MS))]);
       if (r && r.ok) return r;
-      return copy || (await saved(req)) || r || Response.error();
+      return copy || r || Response.error();
     } catch (_) {
-      return (await saved(req)) || Response.error();
+      return copy || Response.error();
     }
   })());
 });

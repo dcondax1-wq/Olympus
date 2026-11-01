@@ -1716,6 +1716,17 @@ def part_h(br, S, base):
         want = [jw["new"]]
         gone = [jw["old"]] if jw["old"] != jw["new"] else []
         ok, keys = wait_caches(p, want, gone, timeout=6000)
+        if not ok:
+            # Jarvis's worker v5+ takes over only while Jarvis is out of sight (WebKit cuts off the old worker's downloads
+            # mid-start): once the new worker waits, the owner leaves the app (the page turns hidden and asks it to take over)
+            try:
+                p.wait_for_function("navigator.serviceWorker.getRegistration().then((r) => !!(r && r.waiting))", timeout=25000)
+                p.evaluate("""() => { Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+                                      Object.defineProperty(document, 'hidden', { value: true, configurable: true });
+                                      document.dispatchEvent(new Event('visibilitychange')); }""")
+                ok, keys = wait_caches(p, want, gone, timeout=10000)
+            except Exception as e:
+                note("update: no waiting Jarvis worker to hand over to (" + str(e).splitlines()[0][:120] + ")")
         if not ok:                                     # Chromium checks the worker when its page goes away: the owner leaves
             pk = ph.page()                             # (another page keeps the browser context alive meanwhile)
             p.close()

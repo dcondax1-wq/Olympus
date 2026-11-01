@@ -773,6 +773,12 @@ part yourself or fold it into a script.**
       worker takes over (reproduced in Playwright WebKit: "Service Worker context closed" on module imports mid-start). A new
       worker now waits; the page posts `jarvis:activate` only while it is hidden (or the browser swaps it in once Jarvis is
       closed). Install fetches with `cache: 'reload'` (v4 could save the previous version's files from the HTTP cache).
+    - jarvis-v6 (2026-11-01, "Just a black screen"): an iPhone Home Screen app is black while its page or its render-blocking
+      stylesheet is on the way, and v3-v5 waited on the network without limit for a file with no saved copy (reproduced in
+      WebKit: no copy + a stalled download = nothing drawn). Now `NET_MAX_MS` (9 s) bounds every wait: a page with no copy
+      gets the dark "can't load right now" page with Retry, a file with no copy fails. A file the copy lacks comes from the
+      previous Jarvis copy (`OLD`), and old copies go only once the new one holds every `CORE` file (index.html, jarvis.css,
+      data.js). The page swaps a stylesheet still pending after 5 s for a `media=print` one (`#jcss`), so it always draws.
   - **Start guard + watchdog (index.html, 2026-11-01):** `jarvis.unfinished` counts a start until Jarvis has run 4 s or the
     owner leaves it. The start after an unfinished one has no 3D core; if the unfinished one had the 3D core mounted
     (`jarvis.core3d`), `jarvis.no3d` keeps 3D off until the owner picks a level under ⋯ → 3D. A classic-script watchdog sees
