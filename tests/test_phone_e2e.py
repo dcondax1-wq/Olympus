@@ -575,6 +575,7 @@ class Phone:
         opts.update(kw)
         self.dev = dev
         self.ctx = br.new_context(**opts)
+        self.ctx.add_init_script(RAF_COUNT)
         self.errs = []                # (kind, text, where)
         self.bad = []                 # failed same-site requests / site answers >= 400
         self.ext = set()              # outside hosts the pages tried to reach
@@ -761,6 +762,23 @@ UNDER_DOCK = """() => {
   for (const sc of scrollers) sc.scrollTop = 0;
   return { fixed_top: Math.round(top), fixed: fixed.slice(0, 4).map((el) => el.id ? '#' + el.id : '.' + String(el.className).split(' ')[0]), hidden };
 }"""
+
+
+# frames the Jarvis page itself draws (its core animation): counted from the start in every Jarvis window
+RAF_COUNT = """(() => { if (window.top !== window || !/\\/jarvis\\//.test(location.pathname)) return;
+  const raf = window.requestAnimationFrame.bind(window); window.__qaRaf = 0;
+  window.requestAnimationFrame = (cb) => raf((t) => { window.__qaRaf++; cb(t); }); })();"""
+
+
+def raf_rate(p, ms=1500):
+    """Animation frames a second the Jarvis page asks for right now (None when it never animates at all)."""
+    a = _ev(p, "window.__qaRaf")
+    if a is None or a is False:
+        return None
+    t0 = time.time()
+    p.wait_for_timeout(ms)
+    b = _ev(p, "window.__qaRaf") or 0
+    return round((b - a) / (time.time() - t0), 1)
 
 
 def frames_alive(p):
@@ -1123,6 +1141,34 @@ def part_c(br, S, base, ph):
     check("c. back to Jarvis from Kalshi", p.evaluate(JARVIS_HOME))
     check("c. one dashboard view alive after Jarvis -> Zenith -> Planner -> Kalshi -> Jarvis", frames_alive(p) <= 1, frames_alive(p))
     if m0 is not None:
+        # Zenith mode's floating control as a switcher: hold it, the apps show, a tap on one opens it (Zenith let go)
+        fps_home = raf_rate(p)
+        zf4, _ = open_zenith(p, 20000)
+        if zf4 and p.locator(".zm-back.sw").count():
+            fps = raf_rate(p)
+            note(f"Jarvis's own animation: {fps_home} frames/s on the Jarvis screen, {fps} in Zenith mode")
+            check("c. Jarvis's own animation stops while Zenith mode shows (battery)", fps is None or fps < 3, f"{fps} frames/s")
+            box = p.locator(".zm-back").first.bounding_box()
+            p.mouse.move(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
+            p.mouse.down()
+            p.wait_for_timeout(700)
+            p.mouse.up()
+            chips = p.evaluate("[...document.querySelectorAll('.zm-chip')].filter((c) => c.getBoundingClientRect().height > 0).map((c) => c.dataset.app)")
+            check("c. holding Zenith mode's control shows the apps (Jarvis, Planner, Kalshi)",
+                  all(a in chips for a in ("planner", "kalshi")) and any(a in chips for a in ("home", "jarvis")), chips)
+            if "planner" in chips:
+                real_tap(p, p.locator('.zm-chip[data-app="planner"]').first, "the Planner in Zenith mode's switcher")
+                ok = False
+                for _ in range(40):
+                    if mode_of(p) == "app" and p.query_selector("#v-planner iframe") and not _ev(p, ZEN_MODULE):
+                        ok = True
+                        break
+                    p.wait_for_timeout(250)
+                check("c. ... and a tap on the Planner there opens the Planner, one dashboard alive", ok and frames_alive(p) == 1,
+                      (mode_of(p), frames_alive(p)))
+                fps = raf_rate(p)
+                check("c. Jarvis's own animation stops while the Planner shows", fps is None or fps < 3, f"{fps} frames/s")
+            go_home(p)
         # a Zenith notification tapped while Jarvis runs: Zenith's worker (sw.js v50+) posts {type: 'open', app: 'zenith', hash}
         # to the Jarvis window; Jarvis should switch to Zenith mode at that notice
         p.evaluate("navigator.serviceWorker.dispatchEvent(new MessageEvent('message', { data: { type: 'open', app: 'zenith', hash: '#/blitz' } }))")
