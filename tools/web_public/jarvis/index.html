@@ -31,7 +31,7 @@
 <style>.booted #bootfx{display:none}</style>
 </head>
 <body>
-<div class="bgfx" aria-hidden="true"><canvas id="stars"></canvas></div>
+<div class="bgfx" aria-hidden="true"><canvas id="stars"></canvas><svg class="bgglobe" id="bgglobe" viewBox="-130 -130 260 260"></svg><div class="floor"></div></div>
 <div class="scan" aria-hidden="true"></div>
 
 <header class="bar">
@@ -57,7 +57,6 @@
 
       <div class="stagebox">
       <div class="stage" id="stage" role="button" tabindex="0" aria-label="Talk to Jarvis">
-        <canvas class="globe" id="globe" aria-hidden="true"></canvas>
         <div class="pad" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
         <div class="core" id="core" aria-hidden="true">
           <div class="orb" id="orb">
@@ -88,7 +87,7 @@
       <div class="vbars" id="vbars" aria-hidden="true"></div>
       <p class="state" id="state">STANDBY</p>
       <p class="says" id="says">Good day. Tap the core or type below to speak with me.</p>
-      <p class="hint" id="hint">Tap the big mic once, then just talk. Hold it for push-to-talk.</p>
+      <p class="hint" id="hint" hidden></p>
       <div class="vrow">
         <button class="pillb" id="hf" type="button" aria-pressed="false" title="Keep listening while Jarvis is open"><i class="ld"></i>HANDS-FREE</button>
         <button class="bigmic" id="bigmic" type="button" aria-label="Talk to Jarvis" title="Tap to talk · hold for push-to-talk">
@@ -116,7 +115,7 @@
   <i class="edge" aria-hidden="true"></i>
   <div class="more" id="more" hidden></div>
   <form class="ask" id="ask" autocomplete="off">
-    <input id="q" type="text" enterkeyhint="send" placeholder="Ask Jarvis anything…" aria-label="Ask Jarvis">
+    <input id="q" type="text" enterkeyhint="send" placeholder="Ask Jarvis…" aria-label="Ask Jarvis anything">
     <button class="key ic" type="button" id="mic" aria-label="Talk to Jarvis" title="Talk to Jarvis">
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><rect x="6.2" y="2" width="5.6" height="9" rx="2.8" stroke="currentColor" stroke-width="1.7"/><path d="M3.8 8.6a5.2 5.2 0 0 0 10.4 0M9 13.8V16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
     </button>
@@ -131,11 +130,11 @@
 <button class="nextchip" id="next" type="button" data-app="planner">Nothing scheduled today</button>
 
 <div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetT">
-  <form class="sheet-in" id="addF" autocomplete="off">
+  <form class="sheet-in" id="addF" autocomplete="off" novalidate>
     <h2 id="sheetT">Add a dashboard</h2>
     <div class="sheet-row" id="ascRow" hidden><button class="btn solid" type="button" id="addAscend">Add Ascend</button></div>
     <label>Name<input id="addName" type="text" maxlength="24" placeholder="Clipper"></label>
-    <label>Link<input id="addUrl" type="url" inputmode="url" autocapitalize="off" spellcheck="false" placeholder="https://…"></label>
+    <label>Link<input id="addUrl" type="text" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="https://… or name.github.io/app/"></label>
     <p class="err" id="addErr"></p>
     <div class="mine" id="mine"></div>
     <div class="sheet-row"><button class="btn ghost" type="button" id="addX">Close</button><button class="btn solid" type="submit">Add</button></div>
@@ -416,7 +415,7 @@ async function showZenith(a, route, seq) {
         onState: (s) => { if (s && typeof s === 'object') { zenState = s; renderBar(); } },
         onWantShow: (r) => show('zenith', { route: r }),
         // Zenith mode's own control can jump to another app: the shell switches (and lets Zenith's frame go)
-        apps: () => apps().filter((x) => x.id !== 'zenith').map((x) => ({ id: x.id, name: x.name })), onSwitch: (id) => show(id) });
+        apps: () => apps().filter((x) => x.id !== 'zenith').map((x) => (x.icon ? { id: x.id, name: x.name, icon: x.icon } : { id: x.id, name: x.name })), onSwitch: (id) => show(id) });
       zenMounted = !!(zen && typeof zen.show === 'function');
     }
     catch (_) { zen = null; zenMounted = false; }
@@ -497,6 +496,15 @@ const bootDone = new Promise((ok) => { bootEnd = ok; });
 ready.core.then((m) => { if (m) bootDone.then(mountCore3d); });
 let coreRT = 0;
 window.addEventListener('resize', () => { clearTimeout(coreRT); coreRT = setTimeout(() => { const w = Math.round($('#stage').getBoundingClientRect().width); if (core && w && Math.abs(w - coreSize) > 8) mountCore3d(); }, 300); }, { passive: true });
+// the backdrop's wireframe globe (as the old Jarvis's scene behind everything): meridians, parallels and a tilted orbit, drawn
+// once; CSS turns it slowly at high / ultra (composited, no per-frame drawing)
+(function buildGlobe() {
+  const R = 96, mer = [], par = [];
+  for (let i = 0; i < 9; i++) { const a = (i * 20) * Math.PI / 180; mer.push(`<ellipse rx="${(R * Math.abs(Math.cos(a))).toFixed(1)}" ry="${R}"/>`); }
+  for (const lat of [-60, -40, -20, 0, 20, 40, 60]) { const t = lat * Math.PI / 180; par.push(`<ellipse cy="${(-R * Math.sin(t)).toFixed(1)}" rx="${(R * Math.cos(t)).toFixed(1)}" ry="${(R * Math.cos(t) * .2).toFixed(1)}"/>`); }
+  $('#bgglobe').innerHTML = `<g transform="rotate(-16)"><g class="spin"><circle class="gl" r="${R}"/><g class="mer">${mer.join('')}</g><g class="par">${par.join('')}</g></g>`
+    + '<g class="ospin"><ellipse class="orbit" rx="122" ry="30"/></g></g>';
+})();
 // the HUD ring: the clock and the state along the bottom, the market and the bots along the top, a tick gauge of Zlarior's room
 (function buildTicks() {
   let h = '';
@@ -527,8 +535,8 @@ function renderHead() {
   $('#when').textContent = D.whenLine();
   const k = D.kalshiView(), st = D.kalshiState(), kp = $('#kpct'), ku = $('#kusd');
   if (!k) {
-    kp.className = 'nc'; kp.textContent = st === 'error' ? 'NO SIGNAL' : st === 'waiting' ? 'NOT CONNECTED' : 'LINKING…';
-    ku.className = ''; ku.textContent = st === 'waiting' ? 'the bot is not publishing yet' : st === 'error' ? 'feed unreachable' : ' ';
+    kp.className = 'nc'; kp.textContent = st === 'error' ? 'NO SIGNAL' : st === 'waiting' ? 'OFFLINE' : 'LINKING…';
+    ku.className = ''; ku.textContent = st === 'waiting' ? 'not connected yet' : st === 'error' ? 'feed unreachable' : ' ';
   } else {
     const pnl = Number.isFinite(+k.today_pnl) ? +k.today_pnl : null, bal = Number.isFinite(+k.balance) ? +k.balance : null;
     const base = pnl != null && bal != null ? bal - pnl : null, pct = pnl != null && base > 0 ? (pnl / base) * 100 : null;
@@ -592,7 +600,7 @@ function linkCard(a) {
   const head = (go) => `<p class="ph"><span class="t">${esc(a.name)}</span><i class="sdot ${a.url ? 'ok' : 'off'}"></i>${go ? '<span class="go">OPEN ›</span>' : ''}</p>`;
   const sc = statusCards[a.id] && !(mods.apps && typeof mods.apps.renderCard === 'function') ? genericCard(statusCards[a.id]) : '';
   if (a.url) return `<button class="panel card" type="button" data-app="${esc(a.id)}" data-slot="${esc(a.id)}">${head(true)}${sc || `<p class="muted">${esc(a.sub || safe(() => new URL(a.url, location.href).host, ''))} · opens inside Jarvis.</p>`}</button>`;
-  return `<div class="panel card" data-slot="${esc(a.id)}">${head(false)}<p class="muted">Paste your ${esc(a.name)} dashboard link once and it opens right here.</p><form class="link-f" data-link="${esc(a.id)}"><input id="link-${esc(a.id)}" type="url" inputmode="url" placeholder="https://…" aria-label="${esc(a.name)} dashboard link"><button type="submit">Save</button></form></div>`;
+  return `<div class="panel card" data-slot="${esc(a.id)}">${head(false)}<p class="muted">Paste your ${esc(a.name)} dashboard link once and it opens right here.</p><form class="link-f" data-link="${esc(a.id)}" novalidate><input id="link-${esc(a.id)}" type="text" inputmode="url" autocapitalize="off" spellcheck="false" placeholder="https://…" aria-label="${esc(a.name)} dashboard link"><button type="submit">Save</button></form></div>`;
 }
 // added apps' live cards (apps.js): the last good card first, then the app's jarvis.json, or a card the open app posted
 const statusCards = {};
@@ -632,8 +640,8 @@ document.addEventListener('submit', (e) => {
   const f = e.target.closest('[data-link]');
   if (!f) return;
   e.preventDefault();
-  const inp = f.querySelector('input'), u = D.okUrl(inp.value.trim());
-  if (!u) { inp.setCustomValidity('Paste a full link that starts with https://'); inp.reportValidity(); return; }
+  const inp = f.querySelector('input'), u = linkOf(inp.value);
+  if (!u) { inp.value = ''; inp.placeholder = 'Paste a full link (https://…)'; inp.focus(); return; }
   D.fallbackApps.setLink(f.dataset.link, u);
   renderBar(); renderCards(); show(f.dataset.link);
 });
@@ -890,10 +898,13 @@ function control(c) {                                  // -> true when the reply
 }
 
 // ------------------------------------------------------------------ the conversation
+const calmScroll = () => root.dataset.fx === 'off' || root.dataset.fx === 'low' || (S.calm() && window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
 const say = (who, text) => {
   const t = $('#talk');
   const m = document.createElement('div'); m.className = 'msg ' + who; m.textContent = text; t.appendChild(m);
   while (t.children.length > 8) t.removeChild(t.firstChild);
+  // Jarvis's answer comes into view (it sits below the core and the mic row)
+  if (who === 'j' && active === 'home') requestAnimationFrame(() => safe(() => m.scrollIntoView({ block: 'start', behavior: calmScroll() ? 'auto' : 'smooth' })));
   return m;
 };
 function genericCard(card) {                          // a card as text: the jarvis.json shape ({status: {level, label}, kpis, lines}) or {level, status, kv, text}
@@ -919,6 +930,7 @@ function headline(text) { const t = String(text || '').split('\n')[0]; return t.
 async function ask(text, voice = false) {
   const t = String(text || '').trim();
   if (!t) return;
+  if (/^(what'?s|whats) new\??$/i.test(t)) { say('me', t); whatsNew(); return; }
   say('me', t);
   setState('thinking'); sfx('tap');
   // nothing loaded yet for what is asked: fetch it first (an answer from data that is still loading would be wrong)
@@ -936,6 +948,18 @@ async function ask(text, voice = false) {
   const quiet = r.control ? control(r.control) : false;
   if (!quiet && (voice || S.speakAll())) speak(r.speak || r.text, voice); else setState('idle');
   if (r.open) openSoon(r.route && typeof r.open === 'string' ? { id: r.open, route: r.route } : r.open);
+}
+const WN_VER = 'j4', WHATSNEW = [
+  'The old Jarvis is back: the violet reactor, the HUD panels and the command bar.',
+  'Zenith mode in one tap (the ZENITH pill). In Zenith, tap the floating control to come back, hold it for your other apps.',
+  'Voice: tap the mic, hands-free, or hold to talk. Answers in the phone\'s own voice.',
+  'Smart answers with your own AI key (Groq, Gemini or Anthropic), kept only on this phone: ⋯ → AI key.',
+  'Themes, 3D effects and the core design: ⋯ → Theme. Search anything with the round button.',
+];
+function whatsNew() {
+  say('j', "What's new in Jarvis:\n" + WHATSNEW.map((x) => '· ' + x).join('\n'));
+  $('#says').textContent = "What's new in Jarvis";
+  D.LS.set('jarvis.seen', WN_VER);
 }
 async function briefing() {
   setState('thinking');
@@ -989,7 +1013,8 @@ function micUI(on) { for (const id of ['#mic', '#bigmic']) $(id).classList.toggl
 function setupMic() {
   const on = !!(SR && S.voice());
   $('#mic').hidden = !S.voice(); $('#bigmic').disabled = !S.voice(); $('#hf').disabled = !on;
-  $('#hint').textContent = !S.voice() ? 'Voice is off. Turn it on under ⋯ → AI key.' : SR ? 'Tap the big mic once, then just talk. Hold it for push-to-talk.' : 'Voice input is not available in this browser: type below. Answers can still be read out loud.';
+  $('#hint').textContent = !S.voice() ? 'Voice is off. Turn it on under ⋯ → AI key.' : SR ? '' : 'Voice input is not available in this browser: type below. Answers can still be read out loud.';
+  $('#hint').hidden = !$('#hint').textContent;
 }
 function stopListening() { if (rec) safe(() => rec.abort()); rec = null; listening = false; micUI(false); levelPulse(false); if (state === 'listening') setState('idle'); }
 function listen(mode) {                                 // mode: tap | hold | hf
@@ -1045,8 +1070,8 @@ function moreKeys() {
   const fxl = root.dataset.fx, sm = smartInfo();
   return [
     ['core', 'Core'], ['full', 'Full screen'], ['theme', 'Theme'],
-    ['aikey', `AI key${sm && sm.on ? ': on' : ''}`, sm && sm.on], ['hold', 'Hold-to-talk', S.hold()], ['fx', `3D: ${fxl}`, fxl !== 'off'],
-    ['tilt', `Tilt ${S.tilt() ? 'on' : 'off'}`, S.tilt()], ['alerts', 'Alerts'], ['sound', `Sound ${S.sound() ? 'on' : 'off'}`, S.sound()],
+    ['aikey', `AI key${sm && sm.on ? ': on' : ''}`, sm && sm.on], ['hold', `Hold-talk: ${S.hold() ? 'on' : 'off'}`, S.hold()], ['fx', `3D: ${fxl}`, fxl !== 'off'],
+    ['tilt', `Tilt: ${S.tilt() ? 'on' : 'off'}`, S.tilt()], ['alerts', 'Alerts'], ['sound', `Sound: ${S.sound() ? 'on' : 'off'}`, S.sound()],
     ['hide', S.hideMoney() ? 'Show $' : 'Hide $', S.hideMoney()], ['brief', 'Briefing'], ['apps', 'Apps'],
   ];
 }
@@ -1088,7 +1113,7 @@ function toast(text, label = 'INFO', action) {
 }
 function paletteItems() {
   const items = apps().map((a) => ({ label: `Open ${a.name}`, tag: 'mode', run: () => show(a.id) }));
-  items.push({ label: 'Briefing', tag: 'jarvis', run: () => briefing() });
+  items.push({ label: 'Briefing', tag: 'jarvis', run: () => briefing() }, { label: "What's new", tag: 'jarvis', run: () => whatsNew() });
   for (const t of THEMES) items.push({ label: `Theme: ${t[1]}`, tag: 'look', run: () => setTheme(t[0]) });
   for (const c of CORE_DESIGNS) items.push({ label: `Core: ${c[1]}`, tag: 'look', run: () => setCoreDesign(c[0]) });
   for (const l of ['ultra', 'high', 'low', 'off']) items.push({ label: `3D effects: ${l}`, tag: 'look', run: () => setFx(l) });
@@ -1114,6 +1139,13 @@ $('#palList').addEventListener('click', (e) => { const b = e.target.closest('[da
 
 // ------------------------------------------------------------------ sheets: add / remove dashboards, settings (AI key), look, voice
 const appsApi = () => mods.apps || D.fallbackApps;
+// a pasted link: "https://…", or bare "name.github.io/app/" (https:// is added); anything else is not a link
+function linkOf(raw0) {
+  const t = String(raw0 || '').trim();
+  if (!t || /\s/.test(t)) return null;
+  const u = /^[a-z][a-z0-9+.-]*:/i.test(t) ? t : /^[\w-]+(\.[\w-]+)+(:\d+)?(\/|$)/.test(t) || /^localhost(:\d+)?(\/|$)/i.test(t) ? 'https://' + t : null;
+  return u ? D.okUrl(u) : null;
+}
 function closeSheets() { for (const id of ['#sheet', '#settings', '#look', '#voice', '#palette']) $(id).hidden = true; }
 const removable = (a) => a.removable === true || (a.removable === undefined && a.extra === true);
 function renderMine(el) {
@@ -1160,7 +1192,7 @@ $('#addF').addEventListener('submit', async (e) => {
   if (A) r = safe(() => A.addApp({ name, url: link }), { ok: false, error: 'Could not add it.' });   // apps.js checks the link itself
   else {
     if (!name) { $('#addErr').textContent = 'Give it a name.'; return; }
-    const url = D.okUrl(link);
+    const url = linkOf(link);
     if (!url) { $('#addErr').textContent = 'Paste a full link that starts with https://'; return; }
     try { r = { ok: true, app: D.fallbackApps.addApp({ name, url }) }; } catch (err) { r = { ok: false, error: String((err && err.message) || 'Could not add it.') }; }
   }
@@ -1290,7 +1322,7 @@ async function setTilt(on) {
 // ------------------------------------------------------------------ effects: stars, the hologram globe, tap ripples, scan sweeps, press glare, auto-low
 let COL = { cr: '168,85,247', cr3: '222,190,255' };
 const fx = (() => {
-  const starC = $('#stars'), globeC = $('#globe');
+  const starC = $('#stars');
   let raf = 0, last = 0, stars = [], frames = 0, t0 = 0, probe = true, dprS = 1;
   const level = () => root.dataset.fx;
   const fps = () => (level() === 'ultra' ? 30 : 24);
@@ -1307,20 +1339,6 @@ const fx = (() => {
       g.fillRect(s.x * w, s.y * h, s.r * dprS, s.r * dprS);
     }
   }
-  function drawGlobe(t) {
-    const g = globeC.getContext('2d'); if (!g) return;
-    const w = globeC.width, h = globeC.height, R = Math.min(w, h) * .4, cx = w / 2, cy = h / 2;
-    g.clearRect(0, 0, w, h);
-    const rot = (t * .00012) % (Math.PI * 2), tilt = .38, ct = Math.cos(tilt), st = Math.sin(tilt);
-    const proj = (lat, lon) => { const x = Math.cos(lat) * Math.sin(lon + rot), y = Math.sin(lat), z = Math.cos(lat) * Math.cos(lon + rot); return [cx + R * x, cy - R * (y * ct - z * st), y * st + z * ct]; };
-    g.lineWidth = Math.max(1, w / 520);
-    const line = (pts) => { for (let i = 1; i < pts.length; i++) { const a = pts[i - 1], b = pts[i]; g.strokeStyle = `rgba(${COL.cr},${(a[2] + b[2]) / 2 > 0 ? .34 : .08})`; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); } };
-    for (let m = 0; m < 10; m++) { const lon = m * Math.PI / 10, pts = []; for (let i = 0; i <= 32; i++) pts.push(proj(-Math.PI / 2 + i * Math.PI / 32, lon)); line(pts); }
-    for (let p = 1; p < 8; p++) { const lat = -Math.PI / 2 + p * Math.PI / 8, pts = []; for (let i = 0; i <= 40; i++) pts.push(proj(lat, i * Math.PI * 2 / 40)); line(pts); }
-    g.fillStyle = `rgba(${COL.cr3},.85)`;
-    for (let i = 0; i < 9; i++) { const q = proj(Math.sin(i * 1.7) * 1.1, i * .7); if (q[2] > 0) { g.beginPath(); g.arc(q[0], q[1], 1.6 * (w / 400), 0, 6.283); g.fill(); } }
-    g.strokeStyle = `rgba(${COL.cr},.28)`; g.beginPath(); g.ellipse(cx, cy, R * 1.18, R * .32, -.32, 0, Math.PI * 2); g.stroke();
-  }
   function frame(t) {
     raf = 0;
     if (active !== 'home' || !visible() || level() === 'off') return;
@@ -1336,16 +1354,16 @@ const fx = (() => {
         }
       }
     }
-    if (t - last >= 1000 / fps()) { last = t; drawStars(t); if (!core) drawGlobe(t); }
+    if (t - last >= 1000 / fps()) { last = t; drawStars(t); }
     if (level() === 'high' || level() === 'ultra') raf = requestAnimationFrame(frame);
   }
   function restart() {
     cancelAnimationFrame(raf); raf = 0;
-    if (level() === 'off') { for (const c of [starC, globeC]) { const g = c.getContext('2d'); if (g) g.clearRect(0, 0, c.width, c.height); } return; }
+    if (level() === 'off') { const g = starC.getContext('2d'); if (g) g.clearRect(0, 0, starC.width, starC.height); return; }
     if (active !== 'home' || !visible()) return;
-    dprS = sizeCanvas(starC); sizeCanvas(globeC);
+    dprS = sizeCanvas(starC);
     if (stars.length !== nStars()) makeStars();
-    if (level() === 'low') { drawStars(0); if (!core) drawGlobe(0); return; }          // static glass: one still frame
+    if (level() === 'low') { drawStars(0); return; }          // static glass: one still frame
     raf = requestAnimationFrame(frame);
   }
   // a scan sweep the first time a panel comes into view; a glare under the finger while a panel is pressed
@@ -1385,7 +1403,9 @@ function boot() {
   const quick = root.classList.contains('booted') || root.dataset.fx === 'off' || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches && !root.dataset.fxSet);
   try { sessionStorage.setItem('jarvis.booted', '1'); } catch (_) { /* private mode */ }
   if (quick) { el.remove(); bootEnd(); return; }
-  const lines = ['> CORE ............ ONLINE', '> ZENITH · NQ BOTS  LINKED', '> KALSHI FEED ..... STANDBY', '> PLANNER ......... SYNCED', '> VOICE ........... READY', 'ALL SYSTEMS NOMINAL'];
+  const v = safe(() => D.liveView()), k = safe(() => D.kalshiView()), pl = safe(() => D.plannerDay());
+  const lines = ['> CORE ............ ONLINE', `> ZENITH · NQ BOTS  ${v ? (v.cached ? 'CACHED' : 'LINKED') : 'CONNECTING'}`, `> KALSHI FEED ..... ${k ? 'READY' : 'CONNECTING'}`,
+    `> PLANNER ......... ${pl ? 'READY' : 'NOT LINKED'}`, `> VOICE ........... ${SR && S.voice() ? 'READY' : 'TEXT ONLY'}`, 'JARVIS ONLINE'];
   const log = $('#bootlog');
   let i = 0, done = false;
   const end = () => { if (done) return; done = true; el.classList.add('out'); setTimeout(() => { el.remove(); bootEnd(); }, 360); };
@@ -1421,8 +1441,12 @@ try { show('home'); } catch (_) { /* the screen still shows; the next refresh dr
 safe(boot);
 clearTimeout(window.__jarvisBoot); const bootNote = document.getElementById('boot'); if (bootNote) bootNote.remove();
 root.dataset.ready = '1';
-// the morning briefing card (5:00 to 11:59 ET, once a day), as the old Jarvis showed it
-(() => { const h = D.etParts().h; if (h >= 5 && h < 12 && D.LS.get('jarvis.briefDay', '') !== D.ymd(new Date())) setTimeout(() => toast('Your morning briefing is ready.', 'INFO', ['Open it', briefing]), 1600); })();
+// once per release the What's new card, else the morning briefing card (5:00 to 11:59 ET, once a day), as the old Jarvis showed them
+(() => {
+  if (D.LS.get('jarvis.seen', '') !== WN_VER) { setTimeout(() => { D.LS.set('jarvis.seen', WN_VER); toast('Jarvis has its old look back, and Zenith mode in one tap.', "WHAT'S NEW", ['Show me', whatsNew]); }, 2200); return; }
+  const h = D.etParts().h;
+  if (h >= 5 && h < 12 && D.LS.get('jarvis.briefDay', '') !== D.ymd(new Date())) setTimeout(() => toast('Your morning briefing is ready.', 'INFO', ['Open it', briefing]), 1600);
+})();
 setInterval(() => { if (visible() && active === 'home') hudTick(); }, 1000);
 setInterval(() => { if (visible() && active === 'home') { greet(); renderNext(); D.refresh({ maxAge: 60e3 }); } }, 30e3);
 document.addEventListener('visibilitychange', () => {
@@ -1431,7 +1455,8 @@ document.addEventListener('visibilitychange', () => {
   else if (active === 'home') refreshHome();
   fx.restart();
 });
-window.addEventListener('online', () => renderHead()); window.addEventListener('offline', () => renderHead());
+window.addEventListener('online', () => { renderHead(); D.refresh({ maxAge: 0 }); });
+window.addEventListener('offline', () => { renderHead(); toast('No connection. Showing the last saved numbers until it is back.', 'OFFLINE'); });
 // the command dock stays above the iPhone keyboard while you type (as the old Jarvis's mobile.js did)
 if (window.visualViewport) {
   const fitDock = () => { const kb = Math.max(0, innerHeight - visualViewport.height - visualViewport.offsetTop); $('#dock').style.transform = kb > 60 ? `translateY(${-Math.round(kb)}px)` : ''; };

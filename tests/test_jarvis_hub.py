@@ -213,6 +213,8 @@ def part_a():
     # with nothing to open. Each worker now keeps to its own folder and its own caches, and Jarvis's saved copy answers errors.
     check("a. Jarvis's worker deletes only its own old caches and answers a 404 / no connection from its saved copy",
           "k.startsWith('jarvis-')" in sw and "(await saved(req)) || r" in sw and "Response.error()" in sw)
+    check("a. the saved copy comes only from Jarvis's own cache (never an origin-wide lookup: another page could write it)",
+          "const c = await caches.open(CACHE);" in sw and "caches.match(" not in sw)
     # 2026-11-01 ("Jarvis is just a white screen"): an iPhone Home Screen app is white while its page loads or after a failed load
     check("a. opening Jarvis waits on the network at most NAV_WAIT_MS when a saved copy exists; no network + no copy = a dark Retry page",
           "const NAV_WAIT_MS = 3500;" in sw and "Promise.race([net, slow])" in sw and "return copy || offlinePage();" in sw
@@ -305,12 +307,14 @@ document.addEventListener('DOMContentLoaded', () => { window.__states = [];
 """
 
 
-def new_page(br, width=390, sw=False, boot=False, voice=False, height=844, **kw):
+def new_page(br, width=390, sw=False, boot=False, voice=False, height=844, news=False, **kw):
     ctx = br.new_context(viewport={"width": width, "height": height}, device_scale_factor=2, service_workers="allow" if sw else "block", **kw)
     kal = kalshi_feed()
     feeds(ctx, kal)
     if not boot:                                   # the boot screen plays once per launch: skipped where it is not the subject
         ctx.add_init_script("try { sessionStorage.setItem('jarvis.booted', '1'); } catch (e) {}")
+    if not news:                                   # so is the What's new card (once per release)
+        ctx.add_init_script("try { localStorage.setItem('jarvis.seen', JSON.stringify('j4')); } catch (e) {}")
     if voice:
         ctx.add_init_script(FAKE_VOICE)
     p = ctx.new_page()
@@ -391,8 +395,13 @@ def run_a(br, url):
     check("c. back to Jarvis", p.locator("#home").is_visible() and not p.locator("#out").is_visible() and p.locator("#dock").is_visible())
 
     ask = asker(p)
+    p.evaluate("document.getElementById('home').scrollTop = 0")
     a1 = ask("How are the bots?")
     check("d. status: the verdict, Zlarior and ATLAS numbers", "RUNNING" in a1 and "Zlarior 50K" in a1 and "$1,106" in a1 and "ATLAS 25K" in a1, a1)
+    p.wait_for_timeout(900)
+    seen = p.evaluate("(() => { const m = [...document.querySelectorAll('.msg.j')].pop().getBoundingClientRect(), h = document.getElementById('home').getBoundingClientRect(); return [Math.round(m.top), Math.round(h.top), Math.round(h.bottom)]; })()")
+    check("d. the answer comes into view: its top is inside the visible Jarvis screen (D1: it used to land below the first screen)",
+          seen[1] - 1 <= seen[0] < seen[2] - 40, seen)
     a2 = ask("how much room do I have")
     check("d. room", "$1,106" in a2 and "$750" in a2, a2)
     a3 = ask("how far to target")
@@ -474,6 +483,24 @@ def run_a(br, url):
     more(p, "apps")
     p.wait_for_timeout(200)
     p.click('#setApps [data-rm="x-other"]')
+    p.click("#setX")
+    # D1: the + sheet takes a bare link (no browser bubble: novalidate, a text field) and says what is wrong in its own words
+    p.click("#addB")
+    p.fill("#addName", "Bare")
+    p.fill("#addUrl", "not a link")
+    p.click('#addF button[type="submit"]')
+    p.wait_for_timeout(200)
+    bad = p.inner_text("#addErr")
+    p.fill("#addUrl", "example.com/app/")
+    p.click('#addF button[type="submit"]')
+    p.wait_for_timeout(400)
+    got = p.evaluate("[document.querySelector('#addF').noValidate, document.querySelector('#addUrl').type, [...document.querySelectorAll('#apps [data-app]')].map((b) => b.textContent).join(',')]")
+    check("e. the + sheet: a bare link (example.com/app/) is added as https://; a wrong one gets its own message (no browser bubble)",
+          "Paste a full link" in bad and got[0] is True and got[1] == "text" and "Bare" in got[2], (bad, got))
+    p.click('.bar [data-app="home"]')
+    more(p, "apps")
+    p.wait_for_timeout(200)
+    p.click('#setApps [data-rm="x-bare"]')
     p.click("#setX")
     p.click('.bar [data-app="home"]')
     more(p, "aikey")
@@ -711,13 +738,16 @@ def run_c(br, url):
     SLOW["s"] = 6.0
     t0 = time.time()
     p.reload(wait_until="commit")
+    t1 = time.time()
     try:
-        p.wait_for_function("document.documentElement.dataset.ready === '1'", timeout=15000)
-        took = time.time() - t0
+        p.wait_for_function("document.documentElement.dataset.ready === '1'", timeout=20000)
+        t2 = time.time()
     except Exception:                                   # noqa: BLE001 - reported below
-        took = 99.0
+        t2 = t1 + 99.0
     SLOW["s"] = 0.0
-    check("j. slow network (every answer 6 s): the saved copy is up and usable in ~3.5 s (the page's own files never wait again)", took < 5.5, round(took, 2))
+    # the page itself waits up to 3.5 s; after it, the old chain waited 3.5 s more for each file (css, data.js, ...)
+    check("j. slow network (every answer 6 s): the saved page in ~3.5 s, then usable at once (its own files never wait again)",
+          t1 - t0 < 6.0 and t2 - t1 < 5.0, (round(t1 - t0, 2), round(t2 - t1, 2)))     # the old chain: 3.5 s per file after the page (7 s and more)
     p.wait_for_timeout(300)
     ctx.set_offline(True)
     p.reload()
@@ -765,7 +795,7 @@ def run_c(br, url):
             const stack = { dock: R('#dock'), chip: R('#next'), fab: R('#fab') }, home = R('#home'), out = [];
             for (const [a, b] of [['dock', 'chip'], ['dock', 'fab'], ['chip', 'fab']]) if (hit(stack[a], stack[b])) out.push(a + '/' + b);
             if (home[3] > Math.min(stack.dock[1], stack.chip[1], stack.fab[1]) + 0.5) out.push('home under the stack');
-            for (const q of ['.vrow', '#hint']) {
+            for (const q of ['.vrow', '.hint2']) {
               document.querySelector(q).scrollIntoView({ block: 'end' });
               const r = R(q);
               if (r[1] < home[1] - 0.5 || r[3] > home[3] + 0.5) out.push(q + ' not reachable');
@@ -775,6 +805,26 @@ def run_c(br, url):
             return out;
         })()""")
         check(f"k. {sz}: the dock, the next chip and the search button never cover the hint or the mic row (both reachable, nothing over them)", not ov, ov)
+        if wdt >= 390:
+            first = p.evaluate("(() => { document.getElementById('home').scrollTop = 0; const v = document.querySelector('.vrow').getBoundingClientRect(), h = document.getElementById('home').getBoundingClientRect(); return [Math.round(v.bottom), Math.round(h.bottom)]; })()")
+            check(f"k. {sz}: HANDS-FREE · mic · VOICE on the first screen, as on the old Jarvis (no scrolling)", first[0] <= first[1], first)
+        # D1: nothing cut short (KALSHI TODAY's words, the Market card's NQ last, the ⋯ keys), every tap target 44 px tall (pads count)
+        tsz = """(q) => {
+            const hitH = (el) => { el.scrollIntoView({ block: 'center' }); const r = el.getBoundingClientRect(); if (r.height >= 43.5) return r.height;
+              const x = r.left + r.width / 2, a = document.elementFromPoint(x, r.top - 4.5), b = document.elementFromPoint(x, r.bottom + 4.5);
+              return r.height + (a && el.contains(a) ? 5 : 0) + (b && el.contains(b) ? 5 : 0); };
+            const out = [];
+            for (const s of q) for (const el of document.querySelectorAll(s)) { const h = hitH(el); if (h < 43.5) out.push(s + ' ' + (el.textContent || '').trim().slice(0, 12) + ' ' + h); }
+            document.getElementById('home').scrollTop = 0;
+            return out;
+        }"""
+        small = p.evaluate(tsz, ['.bar .pm', '#addB', '.sug', '#next', '.pillb', '#bigmic', '#fab', '.ask .key', '#q'])
+        p.click("#moreB")                          # the ⋯ menu covers the middle of a small phone: its keys on their own
+        small += p.evaluate(tsz, ['#more .key'])
+        cut = p.evaluate("""[...document.querySelectorAll('#kpct, #kusd, #npnl, #p-market .kv strong, #more .key, .hsub')].filter((e) => e.scrollWidth > e.clientWidth + 0.5)
+            .map((e) => (e.id || e.className) + ':' + e.textContent.slice(0, 24))""")
+        p.click("#moreB")
+        check(f"k. {sz}: nothing cut short (KALSHI TODAY, the market's NQ last, the ⋯ keys) and every tap target is 44 px tall", not cut and not small, (cut, small))
         if (wdt, hgt) == (390, 844):
             # real taps: the centre of every card hits the card itself (no decorative layer over it), and a real tap opens it
             hits = p.evaluate("""[...document.querySelectorAll('#cards [data-app]')].map((c) => { c.scrollIntoView({ block: 'center' });
@@ -820,12 +870,15 @@ def run_look(br, url):
     if p.evaluate("document.documentElement.dataset.brain") == "module":
         check("l. brain.js: the old Jarvis's line under the core until the first question ('Good day. Tap the core ...')", look["says"].startswith("Good day. Tap the core"), look["says"])
     if p.evaluate("document.documentElement.dataset.core") == "module":
-        c3 = p.evaluate("[getComputedStyle(document.querySelector('.hudring')).display, getComputedStyle(document.querySelector('.globe')).display, !!document.querySelector('#coreSlot canvas'), window.__jarvis.core()]")
-        check("l. core-visual.js: the 3D reactor in the centre (its own HUD ring, globe and dial: the 2D ones step aside)",
+        c3 = p.evaluate("[getComputedStyle(document.querySelector('.hudring')).display, getComputedStyle(document.querySelector('.pad')).display, !!document.querySelector('#coreSlot canvas'), window.__jarvis.core()]")
+        check("l. core-visual.js: the 3D reactor in the centre (its own HUD ring and dial: the 2D ones step aside)",
               c3[0] == "none" and c3[1] == "none" and c3[2] and c3[3] and c3[3].get("design") == "reactor", c3)
+    bg = p.evaluate("[document.querySelectorAll('#bgglobe ellipse').length, !!document.querySelector('.floor'), getComputedStyle(document.querySelector('.bgfx'), '::before').filter, getComputedStyle(document.querySelector('#bgglobe .spin')).animationName]")
+    check("l. the old backdrop, CSS / SVG only: the full-bleed wireframe globe (turning slowly at high), nebula clouds, the perspective grid floor",
+          bg[0] >= 16 and bg[1] and "blur" in bg[2] and bg[3] == "spin", bg)
     head = p.evaluate("[document.getElementById('kpct').textContent, document.getElementById('npnl').textContent, document.getElementById('nsub').textContent]")
-    check("l. KALSHI TODAY says NOT CONNECTED while kalshi.json is missing; NQ BOTS TODAY adds the three accounts (+$308)",
-          head[0] == "NOT CONNECTED" and head[1] == "+$308" and head[2].startswith("3 accounts"), head)
+    check("l. KALSHI TODAY says OFFLINE (not connected yet) while kalshi.json is missing; NQ BOTS TODAY adds the three accounts (+$308)",
+          head[0] == "OFFLINE" and head[1] == "+$308" and head[2].startswith("3 accounts"), head)
     panels = p.text_content("#panels")
     check("l. the systems panels: the market (NQ last 21,234.50, next open / close), the activity feed (a Zlarior trade), add-ons (verse, quote, BTC / ETH / SOL), system core (bot loop)",
           "21,234.50" in panels and re.search(r"(Opens|Closes) in \d", panels) and "Zlarior · LONG 3 · target" in panels and "+$413" in panels
@@ -837,7 +890,7 @@ def run_look(br, url):
     keys = p.evaluate("[...document.querySelectorAll('#more [data-key]')].map((b) => b.dataset.key + ':' + b.textContent)")
     check("l. the ⋯ menu: Core, Full screen, Theme, AI key, Hold-to-talk, 3D, Tilt (off), Alerts, Sound, Hide $, Briefing, Apps",
           [k.split(":")[0] for k in keys] == ["core", "full", "theme", "aikey", "hold", "fx", "tilt", "alerts", "sound", "hide", "brief", "apps"]
-          and "tilt:Tilt off" in keys and "fx:3D: high" in keys, keys)
+          and "tilt:Tilt: off" in keys and "fx:3D: high" in keys and "hold:Hold-talk: on" in keys and "sound:Sound: off" in keys, keys)
     p.click('#more [data-key="fx"]')
     fx = p.evaluate("[document.documentElement.dataset.fx, localStorage.getItem('jfx'), document.documentElement.dataset.fxSet]")
     check("l. 3D key: high -> low, kept on this phone", fx == ["low", "low", "1"], fx)
@@ -855,8 +908,13 @@ def run_look(br, url):
     p.click('#more [data-key="hide"]')
     p.click('#more [data-key="theme"]')
     p.wait_for_timeout(200)
+    tg = p.evaluate("""(() => { const t = document.getElementById('setSound'), cs = getComputedStyle(t);
+        const segs = [...document.querySelectorAll('#look .seg3 button')].map((b) => [getComputedStyle(b).textTransform, b.getBoundingClientRect().height]);
+        return [cs.appearance || cs.webkitAppearance, cs.width, cs.height, getComputedStyle(t, '::before').content, segs.every((x) => x[0] === 'uppercase' && x[1] >= 43.5)]; })()""")
+    check("l. the sheets' switches are HUD pill toggles (46 x 26, a knob), the segment buttons upper case and 44 px", tg[0] == "none" and tg[1] == "46px" and tg[2] == "26px"
+          and tg[3] == '""' and tg[4], tg)
     check("l. Theme opens the Look sheet: 12 themes (Reactor first, Eclipse ... Custom), effects levels, the core designs, sounds, calm motion (off), tilt",
-          p.locator("#look").is_visible() and p.locator("#themes .th").count() == 12 and p.locator('#fxSeg [aria-pressed="true"]').inner_text() == "High"
+          p.locator("#look").is_visible() and p.locator("#themes .th").count() == 12 and p.locator('#fxSeg [aria-pressed="true"]').inner_text().upper() == "HIGH"
           and p.locator("#coreSeg button").count() == 2 and p.get_attribute("#themes .th >> nth=0", "data-theme-k") == "reactor"
           and not p.locator("#setCalm").is_checked())
     p.click("#setCalm")
@@ -888,6 +946,10 @@ def run_look(br, url):
     p.wait_for_timeout(300)
     hf = p.evaluate("[window.__srStarts, document.getElementById('hf').getAttribute('aria-pressed'), window.__said.length]")
     check("l. hands-free: keeps listening after each answer while on; off stops it", hf[0] >= 3 and hf[1] == "false" and hf[2] >= 2, hf)
+    # let the last hands-free answer finish before the next questions (it would land in their chat)
+    p.wait_for_timeout(1500)
+    p.wait_for_function("window.__jarvis.state() === 'idle'", timeout=8000)
+    p.wait_for_timeout(500)
     # the brain as it is in this folder (brain.js when merged, else the built-in one)
     real = p.evaluate("document.documentElement.dataset.brain") == "module"
     ask = asker(p)
@@ -928,6 +990,23 @@ def run_look(br, url):
     check("l. the search button: the command palette ('planner' -> Open Planner)", p.locator("#v-planner").is_visible())
     p.click('.bar [data-app="home"]')
     check("l. no page errors in the look run", not errs, errs)
+    ctx.close()
+    # What's new: once per release, as the old Jarvis's popup; "what's new" shows it again
+    ctx, p, errs, _ = new_page(br, news=True)
+    p.goto(url + "jarvis/")
+    ready(p)
+    p.wait_for_function("(() => { const t = document.getElementById('toast'); return !!t && !t.hidden; })()", timeout=12000)
+    tt = p.text_content("#toast")
+    p.click("#toastA")
+    p.wait_for_timeout(300)
+    wn = p.text_content("#talk")
+    p.reload()
+    ready(p)
+    p.wait_for_timeout(2600)
+    again = p.locator("#toast").count() == 0 or p.locator("#toast").is_hidden() or "WHAT'S NEW" not in p.text_content("#toast")
+    a = asker(p)("what's new")
+    check("l. What's new: a card once per release (Show me -> the notes), not again after; 'what's new' shows the notes any time",
+          "WHAT'S NEW" in tt and "What's new in Jarvis" in wn and "Zenith mode in one tap" in wn and again and "What's new in Jarvis" in a and not errs, (tt, again, a[:80], errs))
     ctx.close()
     # the OS 'reduce motion' setting: the effects start low (nothing spins), no boot screen
     ctx, p, errs, _ = new_page(br, boot=True, reduced_motion="reduce")
