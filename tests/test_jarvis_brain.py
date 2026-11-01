@@ -135,7 +135,8 @@ for (const sc of scen) {
   };
   const getFacts = sc.factsMode === 'throw' ? () => { throw new Error('boom'); } : sc.factsMode === 'null' ? () => null
     : sc.factsMode === 'promise' ? () => Promise.resolve(cur) : () => cur;
-  const brain = mod.createBrain({ getFacts, open: (a, r) => opened.push([a, r === undefined ? null : r]), now: sc.now ? () => sc.now : undefined, storage, fetch: fetchMock, openDelay: 0 });
+  const brain = mod.createBrain({ getFacts, open: (a, r) => opened.push([a, r === undefined ? null : r]), now: sc.now ? () => sc.now : undefined, storage, fetch: fetchMock, openDelay: 0,
+    ...(sc.opts || {}), ...(sc.routeJunk ? { routeFor: () => 'javascript:alert(1)' } : {}) });
   const res = [];
   for (const st of sc.steps) {
     try {
@@ -234,6 +235,9 @@ def scenarios():
                             "remind me in 20 minutes to call mom", "add buy milk to my todo", "verse of the day", "quote of the day", "what's new",
                             "what's the weather tomorrow", "open tradingview", "place a trade on nq", "who are you", "what can't you do",
                             "open blitz", "news", "good day") + [{"idle": True}], now=T_MON8, f=facts(T_MON8, kalshi=kalshi(T_MON8), kalshiState="ok")),
+        S("zroutes", ask("atlas trades", "holodeck", "open zenith", "open settings", "blitz rules", "open the deck", "how many atlas trades")),
+        S("zroutes_local", ask("atlas trades", "holodeck", "open blitz", "open the deck", "zlarior brain"), opts={"zenithRoutes": False}),
+        S("zroutes_junk", ask("open blitz", "open the chart"), routeJunk=True),
         S("smart_off", ask(Q) + [{"smart": True}]),
         S("smart_groq", [{"setSmart": {"key": "gsk_FAKE_TEST_KEY", "on": True}}] + ask(Q, "How are the bots?") + [{"smart": True}], fetch=groq_ok),
         S("smart_anth", [{"setSmart": {"provider": "anthropic", "key": "sk-ant-FAKE-TEST", "on": True}}] + ask("tell me something interesting"), fetch=anth_ok),
@@ -319,8 +323,8 @@ def part_node(O):
     r6 = g("today_waiting")[8]
     check("b. 'open planner' switches to the Planner (reply.open and the shell's open())", "Opening Planner" in a6 and r6.get("open") == "planner"
           and ["planner", None] in O["today_waiting"]["opened"], (a6, O["today_waiting"]["opened"]))
-    check("b. Kalshi not published ('waiting'): not connected yet, the kalshi-server setup line, never 'PC'",
-          "not connected yet" in a7 and "kalshi-server" in a7 and "setup line" in a7 and "PC" not in a7, a7)
+    check("b. Kalshi not published ('waiting'): not connected yet, its own server, the kalshi-server setup line, never 'PC'",
+          "not connected yet" in a7 and "own server" in a7 and "kalshi-server" in a7 and "setup line" in a7 and "PC" not in a7, a7)
     check("b. 'open kalshi' opens the Kalshi page", "Opening Kalshi" in a7b and g("today_waiting")[10].get("open") == "kalshi", a7b)
     check("b. help names the commands", 'open planner' in hp and "brief me" in hp, hp)
     check("b. hello: a greeting and the market line", re.match(r"^Good (morning|afternoon|evening)", hi) and "NQ market" in hi, hi)
@@ -431,6 +435,21 @@ def part_node(O):
           and "I have no crypto prices right now" in sc2, (sc1, sc2))
     se1, se2 = t("shell_error", 0), O["shell_error"]["res"][1].get("text", "")
     check("e. the shell's liveError: the live feed cannot be reached", "cannot reach the bots' live feed" in se1 and "Bots: I cannot reach the live feed" in se2, (se1, se2[:160]))
+    zr = g("zroutes")
+    check("e. Zenith routes from zenith-mode.js's zenithRouteFor: 'atlas trades', 'holodeck', 'blitz rules', 'the deck'",
+          (zr[0].get("open"), zr[0].get("route"), zr[0].get("text")) == ("zenith", "#/atlas/trades", "Opening ATLAS trades in Zenith.")
+          and zr[1].get("route") == "#/holo" and zr[4].get("route") == "#/blitz/rules" and zr[5].get("route") == "#/deck"
+          and ["zenith", "#/atlas/trades"] in O["zroutes"]["opened"], [(r.get("open"), r.get("route")) for r in zr])
+    check("e. a plain 'open zenith' keeps Zenith where it was; 'open settings' points to Jarvis's gear", zr[2].get("open") == "zenith" and "route" not in zr[2]
+          and not zr[3].get("open") and "gear" in zr[3].get("text", ""), (zr[2], zr[3]))
+    check("e. 'how many atlas trades' is a question (the week's count), not a page", not zr[6].get("open") and "ATLAS this week" in zr[6].get("text", ""), zr[6])
+    zl = g("zroutes_local")
+    check("e. without zenith-mode.js: the local map gives the same bot pages (and no page it does not know)",
+          [r.get("route") for r in zl] == ["#/atlas/trades", "#/holo", "#/blitz", None, "#/brain"] and "not one of your dashboards" in zl[3].get("text", ""),
+          [(r.get("route"), r.get("text")) for r in zl])
+    zj = g("zroutes_junk")
+    check("e. a route that is not a Zenith address is never passed on (the local map answers)", zj[0].get("route") == "#/blitz" and zj[1].get("route") == "#/liveview",
+          [r.get("route") for r in zj])
     mf1, mf2 = t("missing_fields", 0), t("missing_fields", 1)
     check("e. a missing field is said to be missing (never '—' or a guess)", "Zlarior 50K: today missing, room $1,106, to target missing" in mf1 and clean(mf1), mf1)
     check("e. a missing target asked for one bot", "Zlarior: the distance to the target is missing from the feed" in mf2, mf2)

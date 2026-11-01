@@ -19,9 +19,10 @@
 //                          'quick' | 'think' | 'deep'. brain.forgetKey(provider?) drops one.
 //   brain.hidden (the "hide my balance" switch) · brain.idle() (the old greeting line) · outcomeAlerts(prev, cur) (exported:
 //   Kalshi outcomes in the owner's "🌌 +$1.26" style, only trades settled since prev)
-// Optional extras: createBrain({ ..., autoOpen: false }) leaves the switching to the shell (a reply with `open` otherwise
-// also calls open(app, route) itself, openDelay ms = 450 later, so the answer shows first; switching twice to the same app
-// is harmless). fetch / storage can be passed in (tests).
+// Optional extras: createBrain({ ..., autoOpen: false }) leaves the switching to the shell. Otherwise a reply with `open`
+// also calls open(app, route) itself, right after the reply is handed back (openDelay ms, default 0: the shell's open()
+// waits 450 ms so the answer shows first, and a shell that switches on reply.open alone is overtaken by this call, which
+// carries the route; switching twice to the same app is harmless). fetch / storage can be passed in (tests).
 //
 // Rules: every number comes from the facts; a missing field is said to be missing, never guessed. Read-only: it never arms,
 // routes, sizes or places anything (paper only), and it never takes an outward action itself. iPhone Safari 16: plain
@@ -274,6 +275,39 @@ function offWhy(c, bot) {
   return `${labelOf(c, bot)}: ${s && s !== 'open' ? s : 'no eval numbers in the feed'}.`;
 }
 
+// ------------------------------------------------------------------------------------------------ Zenith's pages
+// The routes come from zenith-mode.js's zenithRouteFor(text) (Zenith mode, loaded next to this module); this local map is
+// its fallback and adds the pages it has no words for (levels, chart, goals, trades, accounts, results, the checklist).
+const BOT_PART_RX = [[/\bbrain\b/, 'brain'], [/\btrades?\b/, 'trades'], [/\b(results?|performance|perf)\b/, 'results'], [/\b(rules?|strategy|setups?)\b/, 'rules'], [/\bgo ?live\b/, 'golive']];
+const BOT_PART = {
+  lit: { brain: '#/brain', trades: '#/trades', results: '#/perf', rules: '#/strategy' },
+  atlas: { brain: '#/atlas/brain', trades: '#/atlas/trades', results: '#/atlas/results', rules: '#/atlas/setups' },
+  blitz: { brain: '#/blitz/brain', trades: '#/blitz/trades', results: '#/blitz/results', rules: '#/blitz/rules', golive: '#/blitz/golive' },
+};
+const LOCAL_ROUTES = [
+  [/\b(economic calendar|news)\b/, '#/news'], [/\b(live ?view|chart|charts|live chart)\b/, '#/liveview'], [/\bholo(deck)?\b/, '#/holo'],
+  [/\b(goals?|road to|10 ?k|stingray|money page|money tab)\b/, '#/goals'], [/\b(trade log|trade list|trades)\b/, '#/trades'],
+  [/\baccounts\b/, '#/accounts'], [/\b(launch checklist|checklist)\b/, '#/launch'], [/\b(strategy|rules)\b/, '#/strategy'],
+  [/\b(results|performance)\b/, '#/results'], [/\bthe mind\b/, '#/mind'], [/\b(bot brain)\b/, '#/brain'], [/\bmission( control)?\b/, '#/mission'],
+  [/\b(liquidity|levels|levels radar|liquidity map)\b/, '#/levels'],
+];
+const ROUTE_LABEL = { '#/lit': 'Zlarior', '#/atlas': 'ATLAS', '#/blitz': 'BLITZ', '#/brain': 'the Bot Brain', '#/trades': 'Trades', '#/perf': 'Performance',
+  '#/strategy': 'Strategy', '#/liveview': 'Live View', '#/holo': 'the Holodeck', '#/mission': 'Mission Control', '#/deck': 'the Deck', '#/mind': 'the Mind',
+  '#/settings': 'Settings', '#/activity': 'Activity', '#/alerts': 'Notifications', '#/news': 'News', '#/board': 'the Board', '#/real': 'Real results',
+  '#/system': 'More', '#/today': 'Home', '#/goals': 'Goals', '#/levels': 'Levels', '#/accounts': 'Accounts', '#/launch': 'the launch checklist', '#/results': 'Results' };
+function localRoute(q) {
+  const bot = BOTS.find((b) => b.rx.test(q));
+  if (bot) { const part = (BOT_PART_RX.find((x) => x[0].test(q)) || [])[1]; return (part && BOT_PART[bot.key][part]) || bot.route; }
+  const hit = LOCAL_ROUTES.find((x) => x[0].test(q));
+  return hit ? hit[1] : null;
+}
+function routeLabel(r) {
+  if (ROUTE_LABEL[r]) return ROUTE_LABEL[r];
+  const m = r.match(/^#\/(lit|atlas|blitz)\/([\w-]+)/);
+  if (m) return `${BOT[m[1]].name} ${m[2] === 'golive' ? 'go live' : m[2]}`;
+  return cap(r.replace(/^#\//, '').replace(/[/-]+/g, ' ').trim()) || 'Home';
+}
+
 // ------------------------------------------------------------------------------------------------ Kalshi
 // The Kalshi bot runs 24/7 on its own cloud server with real money; its numbers reach Jarvis as kalshi.json once its own
 // Claude chat ("kalshi-server") sets up publishing (the setup line is on the Kalshi page). v2 adds strategies[]:
@@ -407,9 +441,18 @@ export function createBrain(opts) {
   const openFn = typeof o.open === 'function' ? o.open : null;
   const nowFn = typeof o.now === 'function' ? o.now : null;
   const autoOpen = o.autoOpen !== false;
-  const openDelay = num(o.openDelay) != null ? Math.max(0, num(o.openDelay)) : 450;
+  const openDelay = num(o.openDelay) != null ? Math.max(0, num(o.openDelay)) : 0;     // the shell's open() waits 450 ms itself
   const store = () => { if (o.storage) return o.storage; try { return typeof localStorage !== 'undefined' ? localStorage : null; } catch (_) { return null; } };
   const doFetch = (...a) => (typeof o.fetch === 'function' ? o.fetch : fetch)(...a);
+  // Zenith routes: zenith-mode.js's zenithRouteFor (o.routeFor to pass one in; o.zenithRoutes false: the local map only)
+  let routeFor = typeof o.routeFor === 'function' ? o.routeFor : null;
+  let zrWait = null;
+  if (!routeFor && o.zenithRoutes !== false) {
+    try {
+      zrWait = import('./zenith-mode.js').then((m) => { if (m && typeof m.zenithRouteFor === 'function') routeFor = m.zenithRouteFor; })
+        .catch(() => null).then(() => { zrWait = null; });
+    } catch (_) { zrWait = null; }
+  }
 
   // smart mode settings, this phone only: { on, provider, depth, keys: {groq, gemini, anthropic}, models: {...} }
   let S = { on: false, provider: DEFAULT_PROVIDER, depth: 'auto', keys: { groq: '', gemini: '', anthropic: '' }, models: {} };
@@ -749,7 +792,7 @@ export function createBrain(opts) {
   function kalshiMissing(V) {
     if (V.kState === 'error') return { text: 'I cannot reach the Kalshi feed right now. Try again in a minute.', speak: 'I cannot reach Kalshi right now.', intent: 'kalshi' };
     if (V.kState === '' || V.kState === 'loading') return { text: 'Still checking Kalshi. Ask me again in a second.', speak: 'Still checking Kalshi.', intent: 'kalshi' };
-    return { text: `Kalshi is not connected yet: ${KALSHI_SETUP}.`, speak: 'Kalshi is not connected yet. Open your kalshi-server chat in the Claude app and paste the setup line from the Kalshi page.', intent: 'kalshi' };
+    return { text: `Kalshi is not connected yet: the Kalshi bot runs on its own server. To connect it, ${KALSHI_SETUP}.`, speak: 'Kalshi is not connected yet. Open your kalshi-server chat in the Claude app and paste the setup line from the Kalshi page.', intent: 'kalshi' };
   }
   function kalshiLine(V) {
     const k = V.k, pos = arr(k.positions).filter(isObj), mode = str(k.mode, 20), wk = usd2(k.week_pnl, true);
@@ -1004,14 +1047,16 @@ export function createBrain(opts) {
   }
 
   // ---------------------------------------------------------------------------------------------- switching dashboards
-  const ZROUTES = [
-    [/\b(economic calendar|news)\b/, '#/news', 'News'], [/\b(live ?view|chart|charts)\b/, '#/liveview', 'Live View'],
-    [/\b(goals?|road to|10 ?k|stingray|money page|money tab)\b/, '#/goals', 'Goals'], [/\b(trade log|trade list|trades)\b/, '#/trades', 'Trades'],
-    [/\baccounts\b/, '#/accounts', 'Accounts'], [/\b(launch checklist|checklist)\b/, '#/launch', 'the launch checklist'],
-    [/\b(strategy|rules)\b/, '#/strategy', 'Strategy'], [/\b(results|performance)\b/, '#/results', 'Results'], [/\bthe mind\b/, '#/mind', 'the Mind'],
-    [/\b(bot brain)\b/, '#/brain', 'the Bot Brain'], [/\bmission( control)?\b/, '#/mission', 'Mission Control'],
-    [/\b(liquidity|levels|levels radar|liquidity map)\b/, '#/levels', 'Levels'],
-  ];
+  // a Zenith page for these words: zenithRouteFor first (Zenith mode's own map), then the local map; a plain "open
+  // zenith" keeps Zenith where the owner left it, and "settings" / "more" mean Jarvis's own unless Zenith is named
+  function zenithRoute(q) {
+    let r = null;
+    try { r = routeFor ? routeFor(q) : null; } catch (_) { r = null; }
+    if (typeof r !== 'string' || !/^#\/[\w\-/:.%,]*$/.test(r) || r.length > 200) r = null;
+    if (r === '#/today' && !/\b(zenith home|zenith's home|home page)\b/.test(q)) r = null;
+    if ((r === '#/settings' || r === '#/system') && !/\bzenith('s)? (settings|more)\b|\bmore (page|tab)\b/.test(q)) r = null;
+    return r || localRoute(q);
+  }
   function opening(V, id, route, label) {
     const a = V.apps.find((x) => x.id === id) || BUILT_IN.find((x) => x.id === id) || { id, name: id, url: '' };
     if (id !== 'home' && !a.url) return { text: `${a.name} is not linked yet. Paste its dashboard link on the ${a.name} card and I will open it here.`, speak: `${a.name} is not linked yet.`, intent: 'open' };
@@ -1019,8 +1064,12 @@ export function createBrain(opts) {
     return { text, speak: text, open: id, route: route || undefined, intent: 'open' };
   }
   function navigate(q, V) {
-    const words = q.split(' ').length, wants = OPEN_RX.test(q), short = words <= 2 && !ASK_RX.test(q);
+    const words = q.split(' ').length, short = words <= 2 && !ASK_RX.test(q);
+    // "atlas trades", "blitz rules", "zlarior brain": a bot's page, not a question
+    const page = words <= 3 && botsIn(q).length === 1 && /\b(brain|trades|results|rules|setups|go ?live)\b/.test(q) && !/\b(today|week|how|what|any|many)\b/.test(q);
+    const wants = OPEN_RX.test(q) || page;
     if (!wants && !short) return null;
+    if (/^(open|show|go to)( me)?( the| my)? settings$/.test(q)) return { text: 'Jarvis\'s settings are behind the gear button. For Zenith\'s, say "open Zenith settings".', speak: 'Jarvis\'s settings are behind the gear button.', intent: 'open' };
     if (wants && DATA_RX.test(q)) return null;                      // "show me the room": an answer, not a switch
     for (const a of V.apps) {
       if (BUILT_IN.some((b) => b.id === a.id)) continue;
@@ -1029,8 +1078,8 @@ export function createBrain(opts) {
     }
     if (KALSHI_RX.test(q)) return opening(V, 'kalshi');
     if (/\b(planner|calendar|plan|schedule|agenda)\b/.test(q) && !/\beconomic calendar\b/.test(q)) return opening(V, 'planner');
-    for (const b of BOTS) if (b.rx.test(q)) return opening(V, 'zenith', b.route, b.name);
-    for (const [rx, route, label] of ZROUTES) if (rx.test(q)) return opening(V, 'zenith', route, label);
+    const zr = zenithRoute(q);
+    if (zr) return opening(V, 'zenith', zr, routeLabel(zr));
     if (/\b(zenith|nq|trading|the bots?|bots?)\b/.test(q)) return opening(V, 'zenith');
     if (/\b(jarvis|home|main screen|back)\b/.test(q)) return opening(V, 'home');
     const m = q.match(/^(open|launch|go to|goto|switch to|take me to|pull up|bring up|navigate to|jump to)\s+(the |my )?(.{2,40})$/);
@@ -1231,7 +1280,7 @@ export function createBrain(opts) {
       if (/\b(positions?|in a trade|in trade|open trades?|holding|exposure|are we long|are we short|long or short)\b/.test(q)) return positionsAnswer(V, sel, only, !only);
       if (/\b(waiting|wait for|looking for|watching|next entry|entry window|window|setup|stage)\b|\bwhen (will|does|do) .*\btrade\b|\btrade next\b/.test(q)) return waitingAnswer(V, sel, only);
       if (/\btoday\b/.test(q) && /\b(trades?|traded|trade)\b/.test(q)) return tradesTodayAnswer(V, sel, only);
-      if (/\b(this week|weekly|week so far|trades this week|how many trades)\b/.test(q)) return weekAnswer(V, sel, only);
+      if (/\b(this week|weekly|week so far|trades this week)\b/.test(q) || /\bhow many\b.*\btrades?\b/.test(q)) return weekAnswer(V, sel, only);
       if (/\b(bot|bots|status|how are|how's|hows|how is|doing|running|armed|zlarior|atlas|blitz|nq|trading)\b/.test(q) && !/\b(today|schedule|plan|task|event)\b/.test(q)) return statusAnswer(V, sel, only);
     }
     if (/\b(today|schedule|agenda|plan|calendar|events?|tasks?|to ?do|on my plate|busy|meetings?|appointments?|projects?|coming up|upcoming|next event|next meeting)\b/.test(q)) return planAnswer(q, V);
@@ -1395,6 +1444,7 @@ export function createBrain(opts) {
     let r;
     try {
       const raw = String(text == null ? '' : text).slice(0, 600);
+      if (zrWait) await Promise.race([zrWait, new Promise((ok) => setTimeout(ok, 1500))]);
       const f = await loadFacts();
       const V = view(f);
       const q = norm(raw);
