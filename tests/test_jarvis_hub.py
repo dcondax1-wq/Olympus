@@ -910,7 +910,8 @@ def run_look(br, url):
     p.wait_for_timeout(200)
     tg = p.evaluate("""(() => { const t = document.getElementById('setSound'), cs = getComputedStyle(t);
         const segs = [...document.querySelectorAll('#look .seg3 button')].map((b) => [getComputedStyle(b).textTransform, b.getBoundingClientRect().height]);
-        return [cs.appearance || cs.webkitAppearance, cs.width, cs.height, getComputedStyle(t, '::before').content, segs.every((x) => x[0] === 'uppercase' && x[1] >= 43.5)]; })()""")
+        const over = [...document.querySelectorAll('#look .seg3 button, #look .th, #look h2, #look h3')].some((b) => b.scrollWidth > b.clientWidth + 0.5);
+        return [cs.appearance || cs.webkitAppearance, cs.width, cs.height, getComputedStyle(t, '::before').content, segs.every((x) => x[0] === 'uppercase' && x[1] >= 43.5) && !over]; })()""")
     check("l. the sheets' switches are HUD pill toggles (46 x 26, a knob), the segment buttons upper case and 44 px", tg[0] == "none" and tg[1] == "46px" and tg[2] == "26px"
           and tg[3] == '""' and tg[4], tg)
     check("l. Theme opens the Look sheet: 12 themes (Reactor first, Eclipse ... Custom), effects levels, the core designs, sounds, calm motion (off), tilt",
