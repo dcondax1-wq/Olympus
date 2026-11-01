@@ -16,10 +16,11 @@
 <!-- dark from the first paint, even before (or without) the stylesheet: never a white screen -->
 <style>html,body{background:#000;color:#ece9f2;margin:0}</style>
 <script>
-// before the first paint: the saved theme (localStorage 'jtheme', as the old Jarvis kept it), the effects level and the boot screen
+// before the first paint: the saved theme (localStorage 'jtheme', as the old Jarvis kept it; default Reactor, the violet reactor of
+// the app icon), the effects level and the boot screen
 (function () {
   var d = document.documentElement, g = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
-  d.setAttribute('data-theme', g('jtheme') || 'eclipse');
+  d.setAttribute('data-theme', g('jtheme') || 'reactor');
   var fx = g('jfx');
   if (fx === 'ultra' || fx === 'high' || fx === 'low' || fx === 'off') { d.setAttribute('data-fx', fx); d.setAttribute('data-fx-set', '1'); }
   else d.setAttribute('data-fx', window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches ? 'low' : 'high');
@@ -174,6 +175,7 @@
     <div class="seg3" id="coreSeg"></div>
     <h3>Extras</h3>
     <label class="row-t"><span>Sounds<small>Soft clicks and chimes</small></span><input type="checkbox" id="setSound"></label>
+    <label class="row-t"><span>Calm motion<small>Follow the iPhone's reduce-motion setting (off: the core always moves)</small></span><input type="checkbox" id="setCalm"></label>
     <label class="row-t"><span>Tilt<small>The core leans with the phone (asks for motion access)</small></span><input type="checkbox" id="setTilt"></label>
     <div class="sheet-row"><button class="btn solid" type="button" id="lookX">Done</button></div>
   </div>
@@ -235,10 +237,11 @@ const S = {
   hideMoney: () => raw('jarvis.hide') === '1',              // the brain's own "hide my balance" switch (brain.js HIDE_KEY)
   muted: () => D.LS.get('jarvis.mute', false) === true,
   tilt: () => raw('jp3dtilt') === '1',
+  calm: () => D.LS.get('jarvis.calm', false) === true,     // the 3D core follows the iPhone's reduce-motion switch (off: it always moves)
   vcfg: () => Object.assign({ rate: 1.06, pitch: 1.1, voice: '' }, D.LS.get('jarvis.voiceCfg', {}) || {}),
 };
 const THEMES = [
-  ['eclipse', 'Eclipse', 'Violet · default', '#a855f7', '#7c3aed'], ['reactor', 'Reactor', 'Violet core, cyan', '#a95cff', '#22d3ee'],
+  ['reactor', 'Reactor', 'Violet + cyan · default', '#a95cff', '#22d3ee'], ['eclipse', 'Eclipse', 'Violet', '#a855f7', '#7c3aed'],
   ['reactor-stark', 'Reactor Stark', 'Gold rings, arc-blue', '#ffbe3d', '#d6281f'], ['reactor-ice', 'Reactor Ice', 'Ice blue, silver', '#4fe3ff', '#0284c7'],
   ['reactor-emerald', 'Reactor Emerald', 'Emerald plasma', '#1ff5a4', '#059669'], ['obsidian', 'Obsidian', 'Monochrome silver', '#e5e7eb', '#9ca3af'],
   ['aurora', 'Aurora', 'Mint and violet', '#34f5b0', '#a78bfa'], ['tokyo', 'Tokyo', 'Neon pink', '#ff2bd6', '#22e5ff'], ['ocean', 'Ocean', 'Teal and sky', '#2ef2d0', '#38bdf8'],
@@ -277,10 +280,10 @@ function applyCustom() {
   st.setProperty('--neb3', rgb(c3)); st.setProperty('--dim2', hex(hsl2rgb(h, 35, 25))); st.setProperty('--dim3', hex(hsl2rgb(h, 45, 36)));
 }
 function setTheme(k) {
-  if (!THEMES.find((t) => t[0] === k)) k = 'eclipse';
+  if (!THEMES.find((t) => t[0] === k)) k = 'reactor';
   root.dataset.theme = k; rawSet('jtheme', k); applyCustom();
   readColors();
-  if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(themeColors()));
+  if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme()));
   window.dispatchEvent(new Event('jtheme'));                 // the old event: a 3D core can follow the theme
   renderLook();
 }
@@ -468,6 +471,9 @@ function setCoreDesign(d) {
 // the 3D core (core-visual.js): the theme's colours, the core design, the effects level ('off' = its flat 2D core); mounted
 // again when the effects level or the stage size changes. It draws its own HUD ring, globe and dial: the 2D ones step aside.
 function themeColors() { const cs = getComputedStyle(root), g = (k) => cs.getPropertyValue(k).trim(); return { c: g('--c'), c2: g('--c2'), c3: g('--c3'), tint: g('--tint') }; }
+// the core knows the old theme keys (eclipse, reactor, reactor-stark / -ice / -emerald); any other theme passes its colours
+const CORE_KEYS = ['eclipse', 'reactor', 'reactor-stark', 'reactor-ice', 'reactor-emerald'];
+const coreTheme = () => (CORE_KEYS.includes(root.dataset.theme) ? root.dataset.theme : themeColors());
 let coreSize = 0;
 function mountCore3d() {
   const m = mods.core;
@@ -477,7 +483,9 @@ function mountCore3d() {
   core = null; slot.innerHTML = '';
   coreSize = Math.round($('#stage').getBoundingClientRect().width) || 300;
   try {
-    const c = m.mountCore(slot, { size: coreSize, design: coreDesign(), theme: themeColors(), effects: root.dataset.fx, adapt: !root.dataset.fxSet });
+    const opt = { size: coreSize, design: coreDesign(), theme: coreTheme(), effects: root.dataset.fx, adapt: !root.dataset.fxSet };
+    if (!S.calm()) opt.motion = 'always';             // the old Jarvis ignored reduce-motion: a still core would look broken
+    const c = m.mountCore(slot, opt);
     if (!c || typeof c.setState !== 'function') throw new Error('no core');
     core = c; root.dataset.core = 'module';
     safe(() => c.setState(state));
@@ -1222,7 +1230,7 @@ function renderLook() {
   for (const b of $('#fxSeg').children) b.setAttribute('aria-pressed', String(b.dataset.fx === root.dataset.fx));
   $('#coreSeg').innerHTML = CORE_DESIGNS.map(([k, n]) => `<button type="button" data-core-k="${k}" aria-pressed="${coreDesign() === k}">${esc(n)}</button>`).join('');
   $('#hue').value = String(+(D.LS.get('jcustom', { h: 275 }) || {}).h || 275);
-  $('#setSound').checked = S.sound(); $('#setTilt').checked = S.tilt();
+  $('#setSound').checked = S.sound(); $('#setTilt').checked = S.tilt(); $('#setCalm').checked = S.calm();
   $('#fxNote').textContent = root.dataset.fxAuto ? 'Jarvis lowered the effects to keep this phone smooth. Pick a level to override.' : 'High is the phone default. Low keeps the glass and stops the motion; Off is fully static.';
 }
 function openLook() { closeSheets(); closeMore(); $('#look').hidden = false; renderLook(); }
@@ -1230,9 +1238,10 @@ $('#lookX').addEventListener('click', () => { $('#look').hidden = true; });
 $('#themes').addEventListener('click', (e) => { const b = e.target.closest('[data-theme-k]'); if (b) setTheme(b.dataset.themeK); });
 $('#fxSeg').addEventListener('click', (e) => { const b = e.target.closest('[data-fx]'); if (b) setFx(b.dataset.fx); });
 $('#coreSeg').addEventListener('click', (e) => { const b = e.target.closest('[data-core-k]'); if (b) setCoreDesign(b.dataset.coreK); });
-$('#hue').addEventListener('input', () => { D.LS.set('jcustom', { h: +$('#hue').value }); if (root.dataset.theme !== 'custom') setTheme('custom'); else { applyCustom(); readColors(); if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(themeColors())); } });
+$('#hue').addEventListener('input', () => { D.LS.set('jcustom', { h: +$('#hue').value }); if (root.dataset.theme !== 'custom') setTheme('custom'); else { applyCustom(); readColors(); if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme())); } });
 $('#setSound').addEventListener('change', () => { D.LS.set('jarvis.sound', $('#setSound').checked); sfx('tap'); renderMore(); });
 $('#setTilt').addEventListener('change', async () => { await setTilt($('#setTilt').checked); renderLook(); });
+$('#setCalm').addEventListener('change', () => { D.LS.set('jarvis.calm', $('#setCalm').checked); if (core && mods.core) mountCore3d(); });
 function openVoice() {
   closeSheets(); closeMore(); loadVoices();
   const cfg = S.vcfg(), en = voices.filter((v) => /^en/i.test(v.lang || '')), cur = pickVoice();

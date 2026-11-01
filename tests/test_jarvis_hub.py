@@ -237,8 +237,8 @@ def part_a():
           and css_nc.count("-webkit-backdrop-filter") >= css_nc.count(" backdrop-filter") - css_nc.count("-webkit-backdrop-filter"), "")
     check("a. reduced motion respected, animations pause while hidden, dark before the stylesheet loads",
           "prefers-reduced-motion" in css and ".paused" in css and "visibilitychange" in page and "html,body{background:#000" in page.replace(" ", ""))
-    check("a. the old Jarvis look: Eclipse tokens (#000, #a855f7 / #7c3aed / #c084fc, #ece9f2 / #8a8499), the Reactor family and more themes in 'jtheme'",
-          all(x in css for x in ("--bg: #000", "--c: #a855f7", "--c2: #7c3aed", "--c3: #c084fc", "--txt: #ece9f2", "--mut: #8a8499",
+    check("a. the old Jarvis look: Reactor by default (a saved 'jtheme' wins), the Eclipse tokens (#000, #a855f7 / #7c3aed / #c084fc, #ece9f2 / #8a8499), the Reactor family and more",
+          "g('jtheme') || 'reactor'" in page and all(x in css for x in ("--bg: #000", "--c: #a855f7", "--c2: #7c3aed", "--c3: #c084fc", "--txt: #ece9f2", "--mut: #8a8499", "--c3: #22d3ee",
                                  'data-theme="reactor"', 'data-theme="reactor-stark"', 'data-theme="reactor-ice"', 'data-theme="reactor-emerald"',
                                  'data-theme="obsidian"', 'data-theme="tokyo"')) and "g('jtheme')" in page and "rawSet('jtheme', k)" in page)
     check("a. Orbitron and Rajdhani self-hosted (woff2, font-display: swap, OFL.txt), scanlines, the 48px grid, clipped-corner panels with the tick",
@@ -789,8 +789,8 @@ def run_look(br, url):
                  says: document.getElementById('says').textContent, ticks: document.querySelectorAll('#ticks .tk.on').length,
                  bars: document.querySelectorAll('#vbars i').length, fx: document.documentElement.dataset.fx };
     })()""")
-    check("l. Eclipse by default: black, violet #a855f7; Orbitron and Rajdhani loaded (self-hosted); the J.A.R.V.I.S. title in Orbitron",
-          look["c"] == "#a855f7" and look["theme"] == "eclipse" and look["orb"] and look["raj"] and look["tfont"].startswith('"Orbitron"') or look["tfont"].startswith("Orbitron")
+    check("l. Reactor by default (the violet reactor of the app icon: violet #a95cff, cyan #22d3ee); Orbitron and Rajdhani loaded (self-hosted); the title in Orbitron",
+          look["c"] == "#a95cff" and look["theme"] == "reactor" and look["orb"] and look["raj"] and look["tfont"].lstrip('"').startswith("Orbitron")
           and look["title"] == "J.A.R.V.I.S.", look)
     check("l. the core's HUD ring: the clock and STANDBY along the bottom, the market / bots / Kalshi along the top, Zlarior's room as ticks; 32 voice bars",
           re.match(r"\d\d:\d\d:\d\d · STANDBY$", look["hudBot"]) and "NQ" in look["hudTop"] and "KALSHI" in look["hudTop"] and look["ticks"] == 20
@@ -833,9 +833,15 @@ def run_look(br, url):
     p.click('#more [data-key="hide"]')
     p.click('#more [data-key="theme"]')
     p.wait_for_timeout(200)
-    check("l. Theme opens the Look sheet: 12 themes (Eclipse, the Reactor family ... Custom), effects levels, the core designs, sounds, tilt",
+    check("l. Theme opens the Look sheet: 12 themes (Reactor first, Eclipse ... Custom), effects levels, the core designs, sounds, calm motion (off), tilt",
           p.locator("#look").is_visible() and p.locator("#themes .th").count() == 12 and p.locator('#fxSeg [aria-pressed="true"]').inner_text() == "High"
-          and p.locator("#coreSeg button").count() == 2)
+          and p.locator("#coreSeg button").count() == 2 and p.get_attribute("#themes .th >> nth=0", "data-theme-k") == "reactor"
+          and not p.locator("#setCalm").is_checked())
+    p.click("#setCalm")
+    calm = p.evaluate("localStorage.getItem('jarvis.calm')")
+    p.click("#setCalm")
+    check("l. Calm motion: kept on this phone (the 3D core then follows the iPhone's reduce-motion switch)", calm == "true"
+          and p.evaluate("localStorage.getItem('jarvis.calm')") == "false", calm)
     p.click('#themes [data-theme-k="reactor-stark"]')
     st = p.evaluate("[getComputedStyle(document.documentElement).getPropertyValue('--c').trim(), localStorage.getItem('jtheme')]")
     check("l. Reactor Stark: gold accents, saved as 'jtheme'", st == ["#ffbe3d", "reactor-stark"], st)
@@ -844,7 +850,7 @@ def run_look(br, url):
     ready(p)
     th = p.evaluate("[document.documentElement.dataset.theme, getComputedStyle(document.documentElement).getPropertyValue('--c').trim(), !!document.getElementById('bootfx')]")
     check("l. reopened: the theme is there from the first paint; no boot screen again in the same launch", th == ["reactor-stark", "#ffbe3d", False], th)
-    p.evaluate("window.__jarvis.setTheme('eclipse')")
+    p.evaluate("window.__jarvis.setTheme('reactor')")
     # voice: tap the big mic, Jarvis hears, answers out loud in the phone's voice (1.06 / 1.1), the state word follows
     p.evaluate("window.__utter = 'is the market open'; window.__states = []; window.__said = []")
     p.click("#bigmic")
