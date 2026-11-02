@@ -28,6 +28,9 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
 
 - **Phone changes:** check in WebKit (the iPhone's engine) before shipping: `PLAYWRIGHT_BROWSERS_PATH=<dir> python -m playwright
   install webkit` + `install-deps webkit`, iPhone 13 / SE profiles (see the Jarvis worker notes under Infrastructure).
+- **Moving the bot to another PC:** `MOVE_BOT.bat` / `scripts/move_bot.ps1` (`docs/MOVE_TO_MAIN_PC.md`): 1 = pack + retire the
+  old PC (stop, auto-resume off, logon tasks removed, untracked `data/` + `.env.local.ps1` zipped to OneDrive\BOT_MOVE),
+  2 = set up the new PC (winget Git/Python, clone, restore, ONE_TIME_SETUP). Never two PCs on the same accounts.
 - **Merges:** each merge restarts the PC's bot server once (when flat) and runs ~5 min of self-tests on a 3.6 GB PC: batch
   changes into one merge when possible.
 - **Verify live** after a publish: the file on `https://demetrades2000-coder.github.io/nq-dashboard/...` (e.g. the worker's
