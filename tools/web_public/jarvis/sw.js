@@ -25,14 +25,15 @@
 // the previous Jarvis copy (OLD) while it is still here, and the previous copies go only once this one holds every CORE file.
 // v7 (2026-11-01, the orb): switcher.js joins the saved parts.
 // v8 (2026-11-02, the System view): jarvis.css?v=j5 (the System strip and panel), a fresh copy of data.js / brain.js / switcher.js.
-const CACHE = 'jarvis-v8';
-const OLD = ['jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];
+// v9 (2026-11-02, every dashboard its own): jarvis.css?v=j6 (Jarvis's bar on the Jarvis screen only), a fresh index.html.
+const CACHE = 'jarvis-v9';
+const OLD = ['jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];
 const NAV_WAIT_MS = 3500;
 const NET_MAX_MS = 9000;
 const SHELL = ['./', './index.html', './manifest.webmanifest?v=j2', './apple-touch-icon.png?v=j2', './icon-192.png?v=j2', './icon-512.png?v=j2',
-  './jarvis.css?v=j5', './data.js', './brain.js', './core-visual.js', './apps.js', './zenith-mode.js', './switcher.js',
+  './jarvis.css?v=j6', './data.js', './brain.js', './core-visual.js', './apps.js', './zenith-mode.js', './switcher.js',
   './three.module.min.js', './orbitron.woff2', './rajdhani-400.woff2', './rajdhani-500.woff2', './rajdhani-600.woff2', './rajdhani-700.woff2'];
-const CORE = ['./index.html', './jarvis.css?v=j5', './data.js'];
+const CORE = ['./index.html', './jarvis.css?v=j6', './data.js'];
 const STATIC_RX = /\.(woff2|png|svg|jpg|webp|webmanifest)$/i;
 // how each page was answered ('cache' | 'net'), by its client id; lastNav when the browser gives no client ids
 const navFrom = new Map();

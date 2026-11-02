@@ -830,6 +830,13 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
       system); "how's the pc" adds CPU / RAM and any amber / red line; "how are the bots" is unchanged.
     - Tests: `tests.test_jarvis_system` (24: publish -> data.js end to end, every verdict, junk), test_jarvis_hub run S,
       test_jarvis_brain part k, test_live_publish pc_health checks. Worker jarvis-v8, jarvis.css?v=j5.
+  - **Every dashboard its own (2026-11-02, owner: "when I go into planner I see another theme at the top. I want everything
+    its own dashboard"):** while the orb is mounted (`data-switcher="module"`), any mode but Jarvis hides Jarvis's bar,
+    `.bgfx` and toasts, and the dashboard frame starts at the safe-area top; the status-bar strip and `theme-color` take the
+    app's own colour (its theme-color, else its body background; `appTint` / `setTint` in index.html; black on the Jarvis
+    screen). Switching inside a dashboard = the orb. No orb (switcher.js missing) -> the bar stays (the way back never goes).
+    The open-on-its-own button lives in the bar, so it shows only on that fallback. Worker jarvis-v9, jarvis.css?v=j6,
+    What's new j5. Tests: test_jarvis_hub c (`go()` helper = bar or orb), test_phone_e2e `tap()` goes home via the orb first.
   - **Icons:** the re-rendered old reactor icon (`?v=j2`).
   - **Workers:**
     - jarvis-v4: a 3.5 s navigation race; shell files stale-while-revalidate once a page came from the copy.

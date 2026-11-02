@@ -835,7 +835,12 @@ SCROLL_GET = ("() => { const el = " + SCROLL_FIND + "; if (!el) return null; "
 
 def tap(p, app):
     """Tap an app in Jarvis's top bar (a mode button or an app chip). Zenith mode is full screen over the bar: the owner
-    goes back to Jarvis first (its floating control), then taps the app."""
+    goes back to Jarvis first (its floating control), then taps the app. Since 2026-11-02 every dashboard is its own screen
+    (no Jarvis bar on it while the orb is there): the same way back first."""
+    if not _ev(p, ZEN_MODULE) and not p.locator("header.bar").first.is_visible():
+        go_home(p)
+        if app == "home":
+            return
     if _ev(p, ZEN_MODULE):
         if app == "zenith":                       # already in Zenith mode
             return
