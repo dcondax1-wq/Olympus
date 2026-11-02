@@ -115,6 +115,15 @@ html:not([data-mode="jarvis"]) #addB { display: none; }            /* in a dashb
 .frame-note { position: absolute; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 2; max-width: min(92vw, 420px);
   padding: 10px 14px; border-radius: 14px; background: rgba(var(--pr), .96); border: 1px solid rgba(var(--cr), .35); color: var(--txt); font-size: 14px; text-align: center; }
 .frame-note button { margin-left: 6px; background: none; border: 0; color: var(--c3); font-weight: 700; text-decoration: underline; padding: 0; }
+/* every dashboard is its own (owner 2026-11-02: "when I go into planner I see another theme at the top. I want everything
+   its own dashboard"): with the orb on screen, a dashboard fills the screen with its own look and its own colour behind the
+   iPhone's status bar; Jarvis's bar shows on the Jarvis screen only. No orb (switcher.js missing): the bar stays, so the
+   way back never disappears. */
+html[data-switcher="module"]:not([data-mode="jarvis"]) .bar { display: none; }
+html[data-switcher="module"]:not([data-mode="jarvis"]) .view:not(#home) { top: env(safe-area-inset-top, 0px); }
+html[data-switcher="module"]:not([data-mode="jarvis"]) body { background: var(--app-bg, #000); }
+html[data-switcher="module"]:not([data-mode="jarvis"]) .bgfx { display: none; }
+html[data-switcher="module"]:not([data-mode="jarvis"]) .toast { display: none; }   /* Jarvis's notes wait for the Jarvis screen */
 #zen { background: var(--bg); overflow: hidden; }
 #zen.zoff { visibility: hidden; pointer-events: none; }    /* never display:none: Zenith's frame keeps its size and scroll */
 

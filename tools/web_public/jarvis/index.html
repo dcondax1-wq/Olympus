@@ -58,7 +58,7 @@ window.addEventListener('error', function (e) {
   if (!window.__jarvisErr) window.__jarvisErr = String(e.message || 'Script error') + (e.filename ? ' (' + String(e.filename).split('/').pop() + ':' + e.lineno + ')' : '');
 }, true);
 </script>
-<link rel="stylesheet" id="jcss" href="jarvis.css?v=j5">
+<link rel="stylesheet" id="jcss" href="jarvis.css?v=j6">
 <style>.booted #bootfx{display:none}
 /* the start note works without jarvis.css (the stylesheet may be what did not arrive) */
 [hidden]{display:none!important}
@@ -475,6 +475,7 @@ function frameView(a, url) {
     // this site's own apps get the phone's features; another site's page runs sandboxed (it can never move Jarvis itself)
     if (D.sameSite(src)) f.setAttribute('allow', 'clipboard-read; clipboard-write; microphone; autoplay; fullscreen; screen-wake-lock');
     else f.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads');
+    f.addEventListener('load', () => appTint(a.id, f));
     f.src = src;
     v.appendChild(f);
     if (!D.sameSite(src)) {                        // another site may refuse to be shown inside another app
@@ -490,6 +491,27 @@ function frameView(a, url) {
   }
   v.hidden = false;
 }
+// Each dashboard keeps its own colour behind the iPhone's status bar (its theme-color, else its page background); Jarvis's
+// own black comes back on the Jarvis screen. Read from our own pages only; another site's page stays black.
+const tints = {};
+function setTint(c) {
+  root.style.setProperty('--app-bg', c || '#000');
+  const m = document.querySelector('meta[name="theme-color"]');
+  if (m) m.setAttribute('content', c || '#000000');
+}
+function appTint(id, f) {
+  const c = safe(() => {
+    const d = f.contentDocument;
+    if (!d) return '';
+    const m = d.querySelector('meta[name="theme-color"]');
+    const t = m && (m.getAttribute('content') || '').trim();
+    if (t) return t;
+    const b = d.body && getComputedStyle(d.body).backgroundColor;
+    return b && !/^(transparent|rgba\(0, 0, 0, 0\))$/.test(b) ? b : '';
+  }, '');
+  if (c) tints[id] = c;
+  if (active === id) setTint(tints[id]);
+}
 let showSeq = 0;
 function show(id, opts = {}) {
   const a = byId(id) || HOME;
@@ -503,6 +525,7 @@ function show(id, opts = {}) {
   $('#home').hidden = a.id !== 'home';
   for (const k of Object.keys(frames)) frames[k].hidden = k !== a.id;
   if (a.id !== 'zenith') hideZen(a.id !== 'home');
+  if (a.id === 'home') setTint('#000000'); else if (a.id !== 'zenith') setTint(tints[a.id]);
   if (a.id === 'home') { refreshHome(); if (!listening && !speaking) setState('idle'); }
   else { stopListening(); closeMore(); if (a.id === 'zenith') showZenith(a, opts.route, seq); else frameView(a, opts.url); }
   renderBar();
@@ -1166,9 +1189,10 @@ async function ask(text, voice = false) {
   if (!quiet && (voice || S.speakAll())) speak(r.speak || r.text, voice); else setState('idle');
   if (r.open) openSoon(r.route && typeof r.open === 'string' ? { id: r.open, route: r.route } : r.open);
 }
-const WN_VER = 'j4', WHATSNEW = [
-  'The old Jarvis is back: the violet reactor, the HUD panels and the command bar.',
-  'Zenith mode in one tap (the ZENITH pill). In Zenith, tap the floating control to come back, hold it for your other apps.',
+const WN_VER = 'j5', WHATSNEW = [
+  'Every app is its own dashboard now: the Planner, Kalshi and the NQ bot open full screen in their own look, no Jarvis bar on top.',
+  'The orb switches apps: tap it for all apps, swipe it for the next one, hold it for the ring.',
+  'The old Jarvis look: the violet reactor, the HUD panels and the command bar.',
   'Voice: tap the mic, hands-free, or hold to talk. Answers in the phone\'s own voice.',
   'Smart answers with your own AI key (Groq, Gemini or Anthropic), kept only on this phone: ⋯ → AI key.',
   'Themes, 3D effects and the core design: ⋯ → Theme. Search anything with the round button.',
@@ -1671,7 +1695,7 @@ document.addEventListener('visibilitychange', () => { if (!visible()) { finishSt
 window.addEventListener('pagehide', swTakeOver);
 // once per release the What's new card, else the morning briefing card (5:00 to 11:59 ET, once a day), as the old Jarvis showed them
 (() => {
-  if (D.LS.get('jarvis.seen', '') !== WN_VER) { setTimeout(() => { D.LS.set('jarvis.seen', WN_VER); toast('Jarvis has its old look back, and Zenith mode in one tap.', "WHAT'S NEW", ['Show me', whatsNew]); }, 2200); return; }
+  if (D.LS.get('jarvis.seen', '') !== WN_VER) { setTimeout(() => { D.LS.set('jarvis.seen', WN_VER); toast('Every app is its own dashboard now. Tap the orb to switch.', "WHAT'S NEW", ['Show me', whatsNew]); }, 2200); return; }
   const h = D.etParts().h;
   if (h >= 5 && h < 12 && D.LS.get('jarvis.briefDay', '') !== D.ymd(new Date())) setTimeout(() => toast('Your morning briefing is ready.', 'INFO', ['Open it', briefing]), 1600);
 })();

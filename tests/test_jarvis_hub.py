@@ -229,7 +229,7 @@ def part_a():
           "const NAV_WAIT_MS = 3500;" in sw and "Promise.race([net, slow])" in sw and "return copy || offlinePage();" in sw
           and "background:#000" in sw and "location.reload()" in sw)
     check("a. worker v7: data.js, jarvis.css, the fonts, every separate part and switcher.js in SHELL, each saved on its own (a missing part is skipped)",
-          "const CACHE = 'jarvis-v8';" in sw and "'./switcher.js'" in sw and all(f"'./{f}'" in sw for f in ("data.js",) + PARTS + FONTS) and "'./jarvis.css?v=j5'" in sw
+          "const CACHE = 'jarvis-v9';" in sw and "'./switcher.js'" in sw and all(f"'./{f}'" in sw for f in ("data.js",) + PARTS + FONTS) and "'./jarvis.css?v=j6'" in sw
           and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
     # 2026-11-01 ("Just a black screen" on the iPhone): no endless network wait, the previous copy as a fallback, old copies kept
     # until the new one holds every core file, and the page draws even when its stylesheet never arrives
@@ -237,7 +237,7 @@ def part_a():
           "const NET_MAX_MS = 9000;" in sw and "copy ? NAV_WAIT_MS : NET_MAX_MS" in sw and "return offlinePage();" in sw
           and "await net" not in sw.replace("await Promise.race([net", ""))
     check("a. worker v6: a file this copy lacks comes from the previous Jarvis copy; old copies go only when every CORE file is saved",
-          "const OLD = ['jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];" in sw and "for (const name of [CACHE, ...OLD])" in sw
+          "const OLD = ['jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];" in sw and "for (const name of [CACHE, ...OLD])" in sw
           and "CORE.map((u) => c.match(u, { ignoreSearch: true }))" in sw)
     jhtml = open(os.path.join(JV, "index.html"), encoding="utf-8").read()
     check("a. the page draws without its stylesheet after 5 s (a stylesheet still on the way keeps an iPhone screen black)",
@@ -338,7 +338,7 @@ def new_page(br, width=390, sw=False, boot=False, voice=False, height=844, news=
     if not boot:                                   # the boot screen plays once per launch: skipped where it is not the subject
         ctx.add_init_script("try { sessionStorage.setItem('jarvis.booted', '1'); } catch (e) {}")
     if not news:                                   # so is the What's new card (once per release)
-        ctx.add_init_script("try { localStorage.setItem('jarvis.seen', JSON.stringify('j4')); } catch (e) {}")
+        ctx.add_init_script("try { localStorage.setItem('jarvis.seen', JSON.stringify('j5')); } catch (e) {}")
     if voice:
         ctx.add_init_script(FAKE_VOICE)
     p = ctx.new_page()
@@ -349,6 +349,18 @@ def new_page(br, width=390, sw=False, boot=False, voice=False, height=844, news=
 
 def ready(p):
     p.wait_for_function("document.documentElement.dataset.ready === '1'", timeout=10000)
+
+
+def go(p, app):
+    """Switch app like the owner: Jarvis's bar on the Jarvis screen; inside a dashboard (its own screen, no Jarvis bar since
+    2026-11-02) the orb, then the app in its quick row."""
+    if p.locator(".bar").is_visible():
+        p.click(f'.bar [data-app="{app}"]')
+        return
+    p.click("#nxOrb")
+    p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=3000)
+    p.wait_for_timeout(450)
+    p.click(f'.nx-qb[data-nx="{app}"]')
 
 
 def asker(p):
@@ -401,20 +413,25 @@ def run_a(br, url):
           p.locator("#home").is_hidden())
     check("c. the address stays the Jarvis screen (no #zenith: a reopen never starts inside a dashboard)", "#" not in p.url, p.url)
     check("c. the command dock and the search button are Jarvis mode only", p.locator("#dock").is_hidden() and p.locator("#fab").is_hidden())
-    p.click('.bar [data-app="home"]')
+    go(p, "home")
     p.wait_for_timeout(300)
-    p.click('.bar [data-app="zenith"]')
+    go(p, "zenith")
     p.wait_for_timeout(300)
     loads = p.evaluate("document.querySelector('#v-zenith iframe').contentWindow.loads")
     check("c. Jarvis screen and back does not reload Zenith (loaded once)", loads == 1, loads)
-    check("c. the open-on-its-own button shows for a dashboard", p.locator("#out").is_visible())
-    p.click('.bar [data-app="planner"]')
+    tint = p.evaluate("[getComputedStyle(document.querySelector('.bar')).display, document.documentElement.dataset.switcher, getComputedStyle(document.querySelector('#v-zenith')).top]")
+    check("c. a dashboard is its own screen (owner 2026-11-02): no Jarvis bar on it while the orb is there, the dashboard starts at the top",
+          (tint[1] == "module" and tint[0] == "none" and tint[2] == "0px") or (tint[1] != "module" and p.locator("#out").is_visible()), tint)
+    go(p, "planner")
     p.wait_for_timeout(500)
     check("c. Planner opens in its own frame", p.frame_locator("#v-planner iframe").locator("h1").inner_text() == "Planner stub")
+    pt = p.evaluate("[getComputedStyle(document.body).backgroundColor, document.querySelector('meta[name=theme-color]').content, getComputedStyle(document.querySelector('.bar')).display]")
+    check("c. the Planner shows with its own colour at the top (its theme-color behind the status bar), not Jarvis's bar",
+          pt[2] == "none" and pt[1] != "#000000" and pt[0] not in ("rgba(0, 0, 0, 0)",), pt)
     check("c. one dashboard loaded at a time: opening the Planner lets Zenith go (iPhone memory)",
           p.locator("#v-zenith").count() == 0 and p.locator("iframe").count() == 1, p.locator("iframe").count())
     check("c. the start note is gone once Jarvis runs", p.locator("#boot").count() == 0)
-    p.click('.bar [data-app="home"]')
+    go(p, "home")
     p.wait_for_timeout(300)
     check("c. back to Jarvis", p.locator("#home").is_visible() and not p.locator("#out").is_visible() and p.locator("#dock").is_visible())
 
@@ -452,7 +469,7 @@ def run_a(br, url):
     a6 = ask("open planner")
     p.wait_for_timeout(800)
     check("d. 'open planner' switches to the Planner", "Opening Planner" in a6 and p.locator("#v-planner").is_visible(), a6)
-    p.click('.bar [data-app="home"]')
+    go(p, "home")
     a7 = ask("how's kalshi")
     check("d. Kalshi not published yet: says it is not connected (the bot runs on its own server)", "not connected yet" in a7 and "own server" in a7 and "PC" not in a7, a7)
     a7b = ask("open kalshi")
@@ -484,7 +501,7 @@ def run_a(br, url):
     check("e. the Kalshi page inside Jarvis: balance, P&L, the open position, the trade and the daily bars",
           "$512.34" in kb and "+$18.50" in kb and "+$112.34" in kb and "NYC high 58-59°F on Nov 2" in kb and "10 × 42¢ → 55¢" in kb
           and "Recent trades" in kb and p.frame_locator("#v-kalshi iframe").locator("svg.bars rect").count() == 3, kb[:500])
-    p.click('.bar [data-app="home"]')
+    go(p, "home")
     p.wait_for_timeout(300)
     p.click("#addB")
     p.fill("#addName", "Clipper")
@@ -493,7 +510,7 @@ def run_a(br, url):
     p.wait_for_timeout(500)
     check("e. an added dashboard shows in the bar and opens", "Clipper" in p.inner_text("#apps") and p.locator("#v-x-clipper").is_visible())
     fr = p.evaluate("(() => { const f = document.querySelector('#v-x-clipper iframe'); return [f.getAttribute('allow') || '', f.getAttribute('sandbox')]; })()")
-    p.click('.bar [data-app="home"]')
+    go(p, "home")
     p.click("#addB")
     p.fill("#addName", "Other")
     p.fill("#addUrl", url.replace("127.0.0.1", "localhost") + "kalshi-stub/")      # another origin: another site
@@ -503,7 +520,7 @@ def run_a(br, url):
     check("e. frames: this site's apps get the phone's features (allow, no sandbox); another site's page is sandboxed, never allowed to move Jarvis",
           "microphone" in fr[0] and fr[1] is None and fo and fo[0] is None and "allow-scripts" in fo[1] and "allow-same-origin" in fo[1]
           and "allow-top-navigation" not in fo[1], (fr, fo))
-    p.click('.bar [data-app="home"]')
+    go(p, "home")
     more(p, "apps")
     p.wait_for_timeout(200)
     p.click('#setApps [data-rm="x-other"]')
@@ -521,12 +538,12 @@ def run_a(br, url):
     got = p.evaluate("[document.querySelector('#addF').noValidate, document.querySelector('#addUrl').type, [...document.querySelectorAll('#apps [data-app]')].map((b) => b.textContent).join(',')]")
     check("e. the + sheet: a bare link (example.com/app/) is added as https://; a wrong one gets its own message (no browser bubble)",
           "Paste a full link" in bad and got[0] is True and got[1] == "text" and "Bare" in got[2], (bad, got))
-    p.click('.bar [data-app="home"]')
+    go(p, "home")
     more(p, "apps")
     p.wait_for_timeout(200)
     p.click('#setApps [data-rm="x-bare"]')
     p.click("#setX")
-    p.click('.bar [data-app="home"]')
+    go(p, "home")
     more(p, "aikey")
     p.wait_for_timeout(200)
     check("e. settings (⋯ → AI key): voice on/off, smart mode (off without the new brain: says so) and the added dashboard to remove",
@@ -620,16 +637,16 @@ def run_b(br, url):
     a2 = ask("open planner")
     p.wait_for_timeout(800)
     check("h. the brain's open: 'planner' switches to the Planner", a2 == "STUB opening the planner" and p.locator("#v-planner").is_visible(), a2)
-    p.click('.bar [data-app="zenith"]')
+    go(p, "zenith")
     p.wait_for_timeout(500)
     z = p.evaluate("window.__zen")
     check("h. Zenith mode: zenith-mode.js mounted in its own view, shown, the Planner frame let go",
           z and z["mounts"] == 1 and z["shows"] == [""] and p.locator("#zen").is_visible() and p.locator("#zenStub").is_visible()
           and p.locator("iframe").count() == 0 and p.evaluate("document.documentElement.dataset.zenith") == "module", z)
     check("h. Zenith mode's badge (onState) shows on the ZENITH pill", p.text_content('.bar [data-app="zenith"] .bdg') == "3")
-    p.click('.bar [data-app="home"]')
+    go(p, "home")
     p.wait_for_timeout(300)
-    p.click('.bar [data-app="zenith"]')
+    go(p, "zenith")
     p.wait_for_timeout(300)
     z = p.evaluate("window.__zen")
     check("h. one tap Jarvis <-> Zenith: hidden on Jarvis (kept loaded), shown again, mounted only once",
@@ -642,11 +659,11 @@ def run_b(br, url):
     p.wait_for_timeout(800)
     z = p.evaluate("window.__zen")
     check("h. the brain can open Zenith at a route (open('zenith', 'perf'))", z["shows"][-1] == "perf" and p.locator("#zen").is_visible(), z)
-    p.click('.bar [data-app="kalshi"]')
+    go(p, "kalshi")
     p.wait_for_timeout(400)
     z = p.evaluate("window.__zen")
     check("h. another dashboard lets Zenith go (unload: one dashboard at a time)", z["unloads"] == 1 and p.locator("#v-kalshi").is_visible(), z)
-    p.click('.bar [data-app="home"]')
+    go(p, "home")
     ask("open blitz")
     p.wait_for_timeout(800)
     z = p.evaluate("window.__zen")
@@ -704,7 +721,7 @@ def run_missing(br, url, part):
     elif part == "apps.js":
         ok = ok and all(x in p.text_content(".bar") for x in ("Planner", "Kalshi")) and "StubApp" not in p.text_content(".bar")
     else:
-        p.click('.bar [data-app="zenith"]')
+        go(p, "zenith")
         p.wait_for_timeout(700)
         ok = ok and p.frame_locator("#v-zenith iframe").locator("#z").inner_text() == "Zenith stub" and p.locator("#zen").is_hidden()
     check(f"i. {part} missing: the built-in fallback takes over, the rest still runs, no page errors", ok and not errs, (ds, errs))
@@ -737,7 +754,7 @@ def run_c(br, url):
           and p.locator('#modes [data-app="zenith"]').is_visible(), ds)
     a = asker(p)("is the market open")
     check("j. as is: Jarvis answers", len(a.strip()) > 3, a)
-    p.click('.bar [data-app="zenith"]')
+    go(p, "zenith")
     p.wait_for_timeout(1200)
     zen_ok = p.locator("#zen").is_visible() or p.locator("#v-zenith").is_visible()
     if p.locator("#nxOrb").count() and p.locator("#nxOrb").is_visible():
@@ -748,15 +765,15 @@ def run_c(br, url):
     elif p.locator(".zm-back").count() and p.locator(".zm-back").is_visible():
         p.click(".zm-back")                         # Zenith mode covers the bar: its own control goes back
     else:
-        p.click('.bar [data-app="home"]')
+        go(p, "home")
     p.wait_for_timeout(500)
     check("j. as is: one tap to Zenith mode and back", zen_ok and p.locator("#home").is_visible() and p.evaluate("document.documentElement.dataset.mode") == "jarvis", ds)
     has = p.evaluate("""async () => {
         const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
-          const c = await caches.open('jarvis-v8');
-          const got = await Promise.all(['./index.html', './data.js', './jarvis.css?v=j5', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
+          const c = await caches.open('jarvis-v9');
+          const got = await Promise.all(['./index.html', './data.js', './jarvis.css?v=j6', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));
         }
@@ -1022,7 +1039,7 @@ def run_look(br, url):
     p.press("#palQ", "Enter")
     p.wait_for_timeout(600)
     check("l. the search button: the command palette ('planner' -> Open Planner)", p.locator("#v-planner").is_visible())
-    p.click('.bar [data-app="home"]')
+    go(p, "home")
     check("l. no page errors in the look run", not errs, errs)
     ctx.close()
     # What's new: once per release, as the old Jarvis's popup; "what's new" shows it again
@@ -1040,7 +1057,7 @@ def run_look(br, url):
     again = p.locator("#toast").count() == 0 or p.locator("#toast").is_hidden() or "WHAT'S NEW" not in p.text_content("#toast")
     a = asker(p)("what's new")
     check("l. What's new: a card once per release (Show me -> the notes), not again after; 'what's new' shows the notes any time",
-          "WHAT'S NEW" in tt and "What's new in Jarvis" in wn and "Zenith mode in one tap" in wn and again and "What's new in Jarvis" in a and not errs, (tt, again, a[:80], errs))
+          "WHAT'S NEW" in tt and "What's new in Jarvis" in wn and "Every app is its own dashboard" in wn and again and "What's new in Jarvis" in a and not errs, (tt, again, a[:80], errs))
     ctx.close()
     # the OS 'reduce motion' setting: the effects start low (nothing spins), no boot screen
     ctx, p, errs, _ = new_page(br, boot=True, reduced_motion="reduce")
@@ -1086,7 +1103,7 @@ def run_system(br, url):
     p.wait_for_timeout(500)
     cur = p.evaluate("(document.querySelector('#modes [aria-current=\"page\"]') || {dataset: {}}).dataset.app")
     check("s. a tap on a line opens that system (Kalshi)", cur == "kalshi", cur)
-    p.click('.bar [data-app="home"]')
+    go(p, "home")
     p.wait_for_timeout(300)
     ask = asker(p)
     a1 = ask("status")
@@ -1224,7 +1241,7 @@ def run_switcher(br, url):
     mk2 = p.evaluate("getComputedStyle(document.getElementById('nxOrb')).visibility")
     check("n. the orb steps aside while typing and while the ⋯ keys are open, then comes back", (kb, kb2, mk, mk2) == ("hidden", "visible", "hidden", "visible"), (kb, kb2, mk, mk2))
     # Zenith mode: the orb stays on top, Zenith mode's own control is hidden; tap -> the switcher over Zenith
-    p.click('.bar [data-app="zenith"]'); p.wait_for_timeout(1200)
+    go(p, "zenith"); p.wait_for_timeout(1200)
     z = p.evaluate("""() => { const o = document.getElementById('nxOrb').getBoundingClientRect(), x = o.left + o.width / 2, y = o.top + o.height / 2, h = document.elementFromPoint(x, y);
       const b = document.querySelector('.zm-back'); return { mode: document.documentElement.dataset.mode, top: !!h && !!h.closest('#nxOrb'), zm: b ? getComputedStyle(b).display : 'none', x, y }; }""")
     p.mouse.click(z["x"], z["y"]); p.wait_for_timeout(500)
