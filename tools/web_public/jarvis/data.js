@@ -1,5 +1,7 @@
 // Jarvis data facade (ES module, no imports, no DOM): the one place that reads everything Jarvis shows or answers from.
-//   getFacts() -> { now, market: {open, text, rth, session, next}, live, kalshi, kalshiState, kalshiRun, planner, apps, extras }
+//   getFacts() -> { now, market: {open, text, rth, session, next}, live, kalshi, kalshiState, kalshiRun, planner, apps, extras, system }
+//   systemStatus(facts) / systemView()  the System view: one line per system (PC, Zlarior, ATLAS, BLITZ, Kalshi, Planner) and
+//                           one verdict (ALL GOOD / HEADS UP / NEEDS YOU + the one thing to do)
 //   refreshLive(), refreshKalshi() -> Promise (an in-flight call is shared) · refresh({ maxAge }) refreshes what is older
 //   onChange(fn) -> off()   fn({ source: 'live' | 'kalshi' | 'planner' | 'apps' }) · the same 'change' event on `events`
 //   setAppsSource(mod)      the apps list getFacts() reports (apps.js when it loaded, else fallbackApps below)
@@ -106,8 +108,12 @@ function slim(j) {                          // what Jarvis needs, also kept for 
     entry_t: x.entry_t, exit_t: x.exit_t, open: !!x.open, day: x.day })).filter(Boolean);
   const health = (b.health && Array.isArray(b.health.items) ? b.health.items : []).slice(0, 8).map((x) => x && ({ key: x.key, label: x.label, value: x.value, ok: x.ok, warn: !!x.warn, detail: x.detail })).filter(Boolean);
   const lines = (Array.isArray(b.lines) ? b.lines : []).slice(0, 4).map((x) => x && ({ level: x.level, text: x.text })).filter((x) => x && x.text);
+  // the PC's own health (live.json "pc_health", engine/live_publish.pc_health_summary): CPU / RAM / disk / NinjaTrader lines
+  const ph0 = j && j.pc_health && typeof j.pc_health === 'object' && Array.isArray(j.pc_health.lines) ? j.pc_health : null;
+  const pc_health = ph0 ? { t: num(ph0.t), level: ph0.level, cpu: num(ph0.cpu), ram: num(ph0.ram),
+    lines: ph0.lines.slice(0, 8).map((x) => x && ({ key: x.key, label: x.label, level: x.level, text: x.text })).filter((x) => x && x.key) } : null;
   return { lit: b.lit || null, atlas: b.atlas || null, blitz: bz, verdict: (j && j.pc_verdict) || null, running: b.running, t: j && j.t,
-    trades, health, lines, level: b.level || null, price: num(j && j.price), last_signal: (j && j.last_signal) || null };
+    trades, health, lines, level: b.level || null, price: num(j && j.price), last_signal: (j && j.last_signal) || null, pc_health };
 }
 export function refreshLive() {
   if (L.busy) return L.busy;
@@ -355,11 +361,128 @@ export function dayPick(list, d = new Date()) {     // the same pick all day (ET
   return list[((n % list.length) + list.length) % list.length];
 }
 
+// ------------------------------------------------------------------------------------------------ the System view
+// The owner (2026-11-02): "everything combined and simple". One line per system and one verdict for all of them:
+//   systemStatus(facts) -> { verdict: 'ALL GOOD' | 'HEADS UP' | 'NEEDS YOU' | 'CHECKING', level: 'ok' | 'warn' | 'bad' | '',
+//                            todo: the one thing to do ('' when none), short: the same in a few words (the header strip), todoApp,
+//                            rows: [{ id, name, sub, app, level, value, tone?, text, todo, short? }] }
+//   rows: pc (the PC: checking in? bot running? NinjaTrader feed fresh? CPU / RAM), lit (Zlarior, 50K), atlas (ATLAS, 25K),
+//   blitz (BLITZ; off = grey), kalshi (the Kalshi bot), planner (the day). level '' = off / unknown: never counted against
+//   the verdict. A red line wins over an amber one; the first red line in that order is the one thing to do.
+// Pure: facts in (getFacts() without .system, or any part of it), the answer out; junk in, a 'CHECKING' answer out.
+export const PC_SILENT_S = 20 * 60;          // the PC publishes live.json every 1-5 min: 20 min quiet = it is off or stuck
+const SYS_LV = (x) => (x === 'good' || x === 'ok' || x === 'green' ? 'ok' : x === 'bad' || x === 'red' ? 'bad' : x === 'warn' || x === 'amber' ? 'warn' : '');
+const agoS = (s) => (s < 90 ? 'just now' : s < 3600 ? Math.round(s / 60) + ' min ago' : s < 86400 ? Math.round(s / 3600) + ' h ago' : Math.round(s / 86400) + ' d ago');
+export function systemStatus(f) {
+  try { return systemOf(isObj(f) ? f : {}); } catch (_) { return { verdict: 'CHECKING', level: '', todo: '', todoApp: '', rows: [] }; }
+}
+function systemOf(f) {
+  const nowMs = f.now instanceof Date ? f.now.getTime() : Number.isFinite(+f.now) && +f.now > 0 ? +f.now : Date.now(), now = nowMs / 1000;
+  const v = isObj(f.live) ? f.live : null, m = isObj(f.market) ? f.market : {};
+  const nextMin = isObj(m.next) && Number.isFinite(+m.next.mins) ? +m.next.mins : null;
+  const soon = !!m.open || (nextMin != null && nextMin <= 120);       // the market is open or opens within 2 h: the PC should be on
+  const rows = [];
+  // the PC
+  const pc = { id: 'pc', name: 'PC', sub: 'bot server · NinjaTrader', app: 'zenith', level: '', value: '—', text: '', todo: '' };
+  if (!v) {
+    pc.value = f.liveError ? 'NO SIGNAL' : 'LINKING…';
+    pc.text = f.liveError ? 'Cannot reach the PC\'s live feed from this phone' : 'Loading the PC\'s live feed';
+    if (f.liveError) { pc.level = 'warn'; pc.short = 'No signal from the PC'; pc.todo = 'Check this phone has signal; if it does, check the PC is on'; }
+  } else {
+    const t = Number.isFinite(+v.t) && +v.t > 0 ? +v.t : null, age = t ? Math.max(0, now - t) : null;
+    const ph = isObj(v.pc_health) ? v.pc_health : null, items = list(v.health).filter(isObj);
+    const item = (k) => items.find((x) => x.key === k) || null;
+    const feed = item('age_1m_s'), nt = item('nt');
+    const bits = [];
+    if (ph && (ph.cpu != null || ph.ram != null)) pc.value = [ph.cpu != null ? `CPU ${Math.round(ph.cpu)}%` : '', ph.ram != null ? `RAM ${Math.round(ph.ram)}%` : ''].filter(Boolean).join(' · ');
+    else pc.value = 'ONLINE';
+    bits.push(age == null ? 'check-in time unknown' : `checked in ${agoS(age)}`);
+    if (feed && feed.value != null && feed.value !== '—') bits.push(`feed ${feed.value}`);
+    const phBad = ph ? list(ph.lines).filter((x) => isObj(x) && SYS_LV(x.level) === 'bad') : [];
+    const phWarn = ph ? list(ph.lines).filter((x) => isObj(x) && SYS_LV(x.level) === 'warn') : [];
+    if (age != null && age > PC_SILENT_S) {
+      pc.value = 'SILENT';
+      pc.level = soon ? 'bad' : '';
+      pc.todo = soon ? `Turn the PC on and start the bot: it last checked in ${agoS(age)}` : '';
+      bits.splice(0, bits.length, `last checked in ${agoS(age)}${soon ? '' : ' (market closed: fine if it is off)'}`);
+    } else if (v.running === false) {
+      pc.level = 'bad'; pc.todo = 'Start the bot on the PC: it is stopped'; bits.unshift('bot stopped');
+    } else if (feed && feed.ok === false) {
+      pc.level = 'bad'; pc.todo = 'Check NinjaTrader on the PC: the bar feed is stale (no new entries until it is fresh)'; bits.unshift('feed stale');
+    } else if (nt && nt.ok === false) {
+      pc.level = 'bad'; pc.todo = 'Reconnect NinjaTrader on the PC'; bits.unshift('NinjaTrader not connected');
+    } else if (phBad.length) {
+      pc.level = 'bad'; pc.todo = `PC: ${txt(phBad[0].text) || txt(phBad[0].label)}`; bits.unshift(txt(phBad[0].label) + ' red');
+    } else if (phWarn.length) {
+      pc.level = 'warn'; pc.todo = `PC: ${txt(phWarn[0].text) || txt(phWarn[0].label)}`; bits.unshift(txt(phWarn[0].label) + ' to watch');
+    } else pc.level = 'ok';
+    if (v.cached) bits.push('saved copy');
+    pc.text = bits.join(' · ');
+    if (pc.level === 'bad' || pc.level === 'warn') pc.short = pc.value === 'SILENT' ? 'PC silent' : 'PC: ' + bits[0];
+  }
+  rows.push(pc);
+  // the NQ bots: Zlarior trades the 50K (the PC's verdict is about it), ATLAS the 25K, BLITZ is off until account C is set up
+  const vd = v && isObj(v.verdict) ? v.verdict : null;
+  const bot = (id, name, sub, c, useVerdict) => {
+    const r = { id, name, sub, app: 'zenith', level: '', value: '—', text: '', todo: '' };
+    if (!v) { r.text = 'waiting for the PC\'s feed'; return r; }
+    if (!isObj(c)) { r.text = 'no card in the live feed'; return r; }
+    if (c.off || c.room == null || !Number.isFinite(+c.room)) { r.value = 'OFF'; r.text = c.off ? 'paper only until its own account is set up' : txt(c.status) || 'not set up'; return r; }
+    const pnl = Number.isFinite(+c.today_pnl) ? +c.today_pnl : null;
+    r.value = usd(pnl, true); r.tone = pnl > 0 ? 'up' : pnl < 0 ? 'dn' : '';
+    const rf = Number.isFinite(+c.room_frac) ? +c.room_frac : null;
+    r.text = [useVerdict && vd ? txt(vd.label) : txt(c.status), `room ${usd(c.room)}`].filter(Boolean).join(' · ');
+    r.level = 'ok';
+    if (useVerdict && vd && SYS_LV(vd.level) && SYS_LV(vd.level) !== 'ok') {
+      r.level = SYS_LV(vd.level);
+      r.todo = `${name}: ${txt(vd.label)}${txt(vd.reason) ? ' (' + txt(vd.reason) + ')' : ''}`;
+      r.short = `${name}: ${txt(vd.label).split(':')[0]}`;
+    }
+    if (rf != null && rf < 0.25 && r.level === 'ok') { r.level = 'warn'; r.short = `${name}: near its floor`; r.todo = `${name} is close to its floor: ${usd(c.room)} of room left`; }
+    if (pc.value === 'SILENT') { r.level = ''; r.todo = ''; r.short = ''; r.text = 'last known · ' + r.text; }    // the PC's fault, said once on its own line
+    return r;
+  };
+  rows.push(bot('lit', 'Zlarior', '50K eval', v && v.lit, true));
+  rows.push(bot('atlas', 'ATLAS', '25K', v && v.atlas, false));
+  rows.push(bot('blitz', 'BLITZ', '25K', v && v.blitz, false));
+  // the Kalshi bot (its own server)
+  const k = isObj(f.kalshi) ? f.kalshi : null, ks = txt(f.kalshiState);
+  const kr = { id: 'kalshi', name: 'Kalshi', sub: 'its own server', app: 'kalshi', level: '', value: '—', text: '', todo: '' };
+  if (!k) { kr.value = ks === 'waiting' ? 'OFFLINE' : ks === 'error' ? 'NO SIGNAL' : 'LINKING…'; kr.text = ks === 'waiting' ? 'not connected yet' : ks === 'error' ? 'feed unreachable' : 'loading'; }
+  else {
+    const run = kalshiRun(k) || ['', ''];
+    const pnl = Number.isFinite(+k.today_pnl) ? +k.today_pnl : null;
+    kr.value = usd2(pnl, true); kr.tone = pnl > 0 ? 'up' : pnl < 0 ? 'dn' : '';
+    kr.level = run[0]; kr.text = `${run[1]} · balance ${usd2(k.balance)}`;
+    if (run[0] === 'bad' || run[0] === 'warn') kr.short = run[0] === 'bad' ? 'Kalshi bot stopped' : 'Kalshi not updating';
+    if (run[0] === 'bad') kr.todo = 'Kalshi bot stopped: check it in your kalshi-server chat';
+    else if (run[0] === 'warn') kr.todo = `Kalshi bot not updating${Number.isFinite(+k.t) ? ' since ' + agoS(Math.max(0, now - +k.t)) : ''}: check it in your kalshi-server chat`;
+  }
+  rows.push(kr);
+  // the Planner's day
+  const p = isObj(f.planner) ? f.planner : null;
+  const pr = { id: 'planner', name: 'Planner', sub: 'your day', app: 'planner', level: '', value: '—', text: 'open the Planner once to see your day here', todo: '' };
+  if (p) {
+    const nowHM = new Intl.DateTimeFormat('en-GB', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(nowMs));
+    const ev = list(p.ev).filter(isObj), tasks = list(p.tasks).filter(isObj);
+    const nx = ev.find((e) => !e.allDay && String(e.start || '') >= nowHM) || ev.find((e) => e.allDay);
+    pr.level = 'ok';
+    pr.value = nx ? (nx.allDay ? 'ALL DAY' : hm(nx.start)) : 'FREE';
+    pr.text = [nx ? txt(nx.title) : 'nothing else on today', tasks.length ? `${tasks.length} ${tasks.length === 1 ? 'task' : 'tasks'} open` : ''].filter(Boolean).join(' · ');
+  }
+  rows.push(pr);
+  const bad = rows.filter((r) => r.level === 'bad'), warn = rows.filter((r) => r.level === 'warn');
+  const first = bad[0] || warn[0] || null;
+  const known = rows.some((r) => r.level);
+  return { verdict: bad.length ? 'NEEDS YOU' : warn.length ? 'HEADS UP' : known ? 'ALL GOOD' : 'CHECKING', level: bad.length ? 'bad' : warn.length ? 'warn' : known ? 'ok' : '',
+    todo: first ? first.todo : '', short: first ? first.short || first.name : '', todoApp: first ? first.app : '', rows, t:v && Number.isFinite(+v.t) ? +v.t : null };
+}
+
 // ------------------------------------------------------------------------------------------------ the facts
-const tryf = (f, d) => { try { const v = f(); return v === undefined ? d : v; } catch (_) { return d; } };
+const tryf =(f, d) => { try { const v = f(); return v === undefined ? d : v; } catch (_) { return d; } };
 export function getFacts() {               // each part on its own: one broken source never takes the others down
   const now = new Date(), k = tryf(kalshiView, null);
-  return {
+  const f = {
     now,
     market: tryf(() => ({ ...market(now), next: marketNext(now) }), { open: false, text: 'NQ market: unknown', next: null }),
     live: tryf(liveView, null),
@@ -371,7 +494,10 @@ export function getFacts() {               // each part on its own: one broken s
     apps: tryf(listApps, []),
     extras: { crypto: C.j, verse: tryf(() => dayPick(VERSES, now), VERSES[0]), quote: tryf(() => dayPick(QUOTES, now), QUOTES[0]) },
   };
+  f.system = systemStatus(f);             // the System view: one line per system, one verdict (never throws)
+  return f;
 }
+export const systemView = () => getFacts().system;
 export function refresh({ maxAge = 50e3 } = {}) {
   const jobs = [];
   if (Date.now() - L.at > maxAge) jobs.push(refreshLive());

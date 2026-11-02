@@ -262,6 +262,7 @@ function nqView(live, nowMs) {
     cached: !!live.cached, stale: !!(t && nowMs - t * 1000 > LIVE_STALE_MS), money: good(full.money) || good(live.money),
     lines: lines0.filter((x) => isObj(x) && str(x.text)), level: str(b.level || live.level, 10), progress: good(b.progress) || good(live.progress),
     price: num(full.price) != null ? num(full.price) : num(live.price),
+    pcHealth: good(full.pc_health) || good(live.pc_health),       // the PC's CPU / RAM / disk / NinjaTrader lines (live.json pc_health)
   };
 }
 const sizeOf = (c, bot) => { const m = str(c && c.plan).match(/(\d+)\s*k\b/i); return m ? m[1] + 'K' : bot.size; };
@@ -379,7 +380,9 @@ const MARKET_RX = /\b(market|markets|futures|globex|cme|trading hours|hours|sess
 const NOT_MARKET_RX = /\b(positions?|tasks?|to ?do|events?|kalshi|trades?|planner|plan|calendar|zenith|apps?|dashboards?)\b/;
 const PLAN_WORDS_RX = /\b(plan|schedule|calendar|tasks?|events?|meetings?|agenda|appointments?|to ?do)\b/;
 const TIME_RX = /\b(time|date|day is it|what day|which day|today's date)\b/;
-const APPS_RX = /\b(apps|dashboards|what can you open|which apps|my projects)\b/;
+// the System view: "status", "is everything ok", "all good?", "system check" (the bots alone: "how are the bots")
+const SYS_RX = /^(status|system|systems|system status|systems status|status check|system check|systems check|health check|all systems|all systems go|everything|how are things|how's everything|how is everything|how's it all|everything (good|ok|okay|fine|alright|all right|running)|is everything (good|ok|okay|fine|alright|all right|running|working|on)|are we (good|ok|okay|all good)|all good|is all good|anything wrong|is anything wrong|is something wrong|what's wrong|what's broken|anything broken|any problems|any issues|does anything need me|is anything down)$/;
+const APPS_RX =/\b(apps|dashboards|what can you open|which apps|my projects)\b/;
 
 function norm(raw) {
   let q = String(raw == null ? '' : raw).toLowerCase().replace(/[’‘`´]/g, "'").replace(/[“”]/g, '"');
@@ -506,6 +509,7 @@ export function createBrain(opts) {
       f, now: t, et: et(t), M, mtext, nq: nqView(f.live, t), liveState: str(f.liveState, 20) || (f.liveError ? 'error' : ''),
       extras: isObj(f.extras) ? f.extras : {},
       k: isObj(f.kalshi) ? f.kalshi : null, kState: str(f.kalshiState, 20), plan: planView(f.planner), apps: appList(f.apps),
+      sys: isObj(f.system) && str(f.system.verdict, 20) ? f.system : null,     // the shell's System view (data.js systemStatus)
     };
   }
   const greetWord = (V) => (V.et.h < 12 ? 'Good morning' : V.et.h < 17 ? 'Good afternoon' : 'Good evening');
@@ -785,8 +789,33 @@ export function createBrain(opts) {
   function pcAnswer(V) {
     if (!V.nq) return needLive(V);
     const vd = V.nq.verdict || {}, reason = str(vd.reason, 160);
-    const text = lines(`The PC last checked in ${V.nq.t ? ago(V.nq.t, V.now) : 'at an unknown time'}: ${str(vd.label, 80) || 'status unknown'}.`, reason ? cap(reason) + '.' : '', freshNote(V));
-    return { text, speak: `The PC checked in ${V.nq.t ? ago(V.nq.t, V.now) : 'at an unknown time'}. ${cap(speakLabel(vd.label)) || 'Status unknown'}.`, intent: 'pc' };
+    // the PC itself (live.json pc_health): CPU / RAM, and any amber / red line (disk, NinjaTrader, bot memory, clock ...)
+    const ph = V.nq.pcHealth, cpu = ph ? num(ph.cpu) : null, ram = ph ? num(ph.ram) : null;
+    const hl = ph ? arr(ph.lines).filter((x) => isObj(x) && (x.level === 'bad' || x.level === 'warn')) : [];
+    const pcRow = V.sys ? arr(V.sys.rows).find((r) => isObj(r) && r.id === 'pc') : null;
+    const load = cpu != null || ram != null ? `CPU ${cpu != null ? Math.round(cpu) + '%' : 'missing'}, RAM ${ram != null ? Math.round(ram) + '%' : 'missing'}` : '';
+    const text = lines(`The PC last checked in ${V.nq.t ? ago(V.nq.t, V.now) : 'at an unknown time'}: ${str(vd.label, 80) || 'status unknown'}.`, reason ? cap(reason) + '.' : '',
+      load ? `${load}${hl.length ? '' : ', every health line green'}.` : 'No CPU or RAM reading in the feed yet (the PC sends it once its health watcher has run).',
+      ...hl.slice(0, 3).map((x) => `${str(x.label, 30) || str(x.key, 20)}: ${str(x.text, 140)}.`),
+      pcRow && str(pcRow.todo, 200) && !hl.some((x) => str(pcRow.todo, 200).includes(str(x.text, 140))) ? `To do: ${str(pcRow.todo, 200)}.` : '', freshNote(V));
+    const say = `The PC checked in ${V.nq.t ? ago(V.nq.t, V.now) : 'at an unknown time'}. ${cap(speakLabel(vd.label)) || 'Status unknown'}.`
+      + (load ? ` CPU ${cpu != null ? Math.round(cpu) + ' percent' : 'missing'}, memory ${ram != null ? Math.round(ram) + ' percent' : 'missing'}.` : '')
+      + (hl.length ? ` ${plural(hl.length, 'health line')} to look at.` : '');
+    return { text, speak: toSpeech(say, 320), intent: 'pc' };
+  }
+  // the System view (owner 2026-11-02: "everything combined and simple"): every system in one answer, one verdict, the one thing to do
+  function systemAnswer(V) {
+    if (!V.sys) return statusAnswer(V, ALL, false);          // an older shell without the System view: the bots' status as before
+    const S = V.sys, rows = arr(S.rows).filter((r) => isObj(r) && str(r.name, 30));
+    const verdict = str(S.verdict, 20) || 'CHECKING', todo = str(S.todo, 200);
+    const out = [`${verdict}${todo ? ': ' + todo : verdict === 'ALL GOOD' ? ': nothing needs you.' : '.'}`.replace(/([^.!?])$/, '$1.')];
+    for (const r of rows) out.push(`${str(r.name, 30)}${str(r.sub, 30) ? ' (' + str(r.sub, 30) + ')' : ''}: ${[str(r.value, 40), str(r.text, 160)].filter((x) => x && x !== '—').join(' · ') || 'no data'}.`);
+    const lead = verdict === 'ALL GOOD' ? 'All good, sir. Nothing needs you.' : verdict === 'NEEDS YOU' ? `One thing needs you: ${todo || 'see the System panel'}.`
+      : verdict === 'HEADS UP' ? `All running, one thing to watch: ${todo || 'see the System panel'}.` : 'Still checking the systems.';
+    const pc = rows.find((r) => r.id === 'pc');
+    setCtx('status', ALL, false, false, V);
+    const pcSay = pc && str(pc.text, 100) ? ` The PC: ${str(pc.text, 100).replace(/ · /g, ', ').replace(/\b(\d+) s\b/g, '$1 seconds')}.` : '';
+    return { text: lines(...out), speak: toSpeech(lead + pcSay, 420), intent: 'system' };
   }
   const TOPIC_FN = { status: statusAnswer, room: roomAnswer, target: targetAnswer, pnl: pnlAnswer, balance: balanceAnswer, eval: evalAnswer, positions: positionsAnswer, waiting: waitingAnswer, week: weekAnswer };
 
@@ -1181,7 +1210,7 @@ export function createBrain(opts) {
     return null;
   }
   function help() {
-    const t = 'I can switch dashboards ("open planner", "open Zenith", "Kalshi"), tell you how the bots are doing ("status", "room", "today\'s P&L", "how far to target"), what is on your plan today, and whether the market is open.\nAlso: "brief me", "what should I do now", "when does the market open", "how\'s the eval", "Kalshi positions", and follow-ups like "and ATLAS?".';
+    const t = 'I can switch dashboards ("open planner", "open Zenith", "Kalshi"), check every system at once ("status", "is everything ok", "how\'s the PC"), tell you how the bots are doing ("how are the bots", "room", "today\'s P&L", "how far to target"), what is on your plan today, and whether the market is open.\nAlso: "brief me", "what should I do now", "when does the market open", "how\'s the eval", "Kalshi positions", and follow-ups like "and ATLAS?".';
     return { text: t, speak: 'Ask me how the bots are doing, what is on today, when the market opens, or what you should do now. I can also open any dashboard.', intent: 'help' };
   }
   function timeAnswer(V) {
@@ -1271,6 +1300,7 @@ export function createBrain(opts) {
     if (oj) return oj;
     const st = smalltalk(q, V, false);
     if (st) return st;
+    if (SYS_RX.test(q)) return systemAnswer(V);
     const fu = followUp(q, V);
     if (fu && fu.reroute) return depth ? null : route(fu.reroute, V, 1);
     if (fu) return fu;
@@ -1499,6 +1529,7 @@ export function createBrain(opts) {
       const V = view(lastFacts);
       const out = [];
       const bad = V.nq && (V.nq.lines.some((x) => x.level === 'bad') || (V.nq.verdict && str(V.nq.verdict.level, 10) === 'bad'));
+      if (V.sys && (V.sys.level === 'bad' || V.sys.level === 'warn')) out.push('Is everything OK?');     // the System view has something
       if (bad || (V.nq && V.nq.stale)) out.push('What should I do now?');
       if (ctx && V.now - ctx.t < FOLLOW_MS && !ctx.kalshi && ['status', 'room', 'target', 'pnl', 'eval'].includes(ctx.topic) && ctx.only && ctx.sel.length === 1) {
         const other = ALL.find((k) => k !== ctx.sel[0] && card(V, k));

@@ -18,12 +18,13 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
 |---|---|---|---|
 | NQ bots (Zlarior/LIT, ATLAS, BLITZ) | `engine/`, `live_model*.json`, `second_model.json`, `tools/` | main -> the PC auto-updates when the bot is FLAT (`engine/autoupdate.py`: self-tests, rollback on failure) | `tests.test_lit_live` + the area's own test |
 | Zenith (phone dashboard) | `tools/web_public/` (index.html, sw.js, …) | main -> run `cloud-monitor.yml` (ref main) -> nq-dashboard Pages, live ~2 min after the run | `tests.test_phone_e2e` (+ the page's own test) |
-| Jarvis (home app, the orb) | `tools/web_public/jarvis/` | same as Zenith | `tests.test_jarvis_hub`, `tests.test_phone_e2e`, the module's test |
+| Jarvis (home app, the orb) | `tools/web_public/jarvis/` | same as Zenith | `tests.test_jarvis_hub`, `tests.test_phone_e2e`, the module's test (System view: `tests.test_jarvis_system`) |
 | Kalshi page in Jarvis | `tools/web_public/kalshi/`, `tools/kalshi_kit/`, `engine/kalshi_publish.py` | same as Zenith | `tests.test_kalshi_page`, `tests.test_kalshi_publish` |
 | Planner (Calendar) | its code: nq-dashboard `planner-backup` (read-only here); ours: `tools/planner_patches/*.patch` | applied at every publish by `scripts/add_planner.sh`, confined to planner/ | `tests.test_planner_addons` |
 | Kalshi bot itself | the Oracle VM, `/home/ubuntu/kalshi` (real money) | not reachable from this cloud chat: its own server chat, or Remote Control on the VM (`claude remote-control` there) | — |
 | Ascend | its own host (made with ChatGPT) | added in Jarvis with + (`docs/JARVIS_APPS.md`) | — |
 | The PC (Windows) | NinjaTrader, the bot server | git auto-update; NinjaTrader login and live arming are the owner's | — |
+| PC speed (Surface + main PC) | `CLEAN_PC.bat`, `scripts/clean_pc.ps1`, `docs/PC_PERFORMANCE.md` | main -> the PC's auto-update; the main PC gets the `PC_KIT` copy (OneDrive or Desktop) | `tests.test_clean_pc` |
 
 - **Phone changes:** check in WebKit (the iPhone's engine) before shipping: `PLAYWRIGHT_BROWSERS_PATH=<dir> python -m playwright
   install webkit` + `install-deps webkit`, iPhone 13 / SE profiles (see the Jarvis worker notes under Infrastructure).
@@ -733,6 +734,14 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   raising stub), FEED STALE blocks entries, PC bars push/read roundtrip, roll back-adjustment, CBOE VIX (23 checks, ~10 s).
 
 ## Infrastructure
+- **CLEAN_PC + PC kit (2026-11-02, `docs/PC_PERFORMANCE.md`):** `scripts/clean_pc.ps1` auto-detects the bot folder
+  (server.py + engine/ninjatrader.py); without it (main PC) it runs STANDALONE: closes nothing (lists only), keeps Xbox /
+  gaming apps, deep part any time unless NinjaTrader is open. Every run: a read-only NinjaTrader check (OneDrive, ATI,
+  workspaces: days loaded / Tick Replay / indicators read from `<DaysBack>` / `<IsTickReplay>` / indicator type names; the
+  LE_BarFeed chart stays at 30 days; tick db size; workspace backup to `logs\nt_workspaces-DATE`) and `PC_REPORT-<pc>.txt`
+  (gitignored). `-Report` = report + NinjaTrader check only. The bot-PC run copies the kit to `OneDrive\PC_KIT` (else the
+  Desktop). Test `python -X utf8 -m tests.test_clean_pc` (pwsh: 5.1 lint, AST-loaded rules, sandbox dry runs with
+  `tests/win_harness/clean_pc_stubs.ps1`, and again under StrictMode 2).
 - **Jarvis hub (2026-10-31, owner: "Jarvis is the brain, switch right to the other dashboards"):** `tools/web_public/jarvis/`
   (index.html, manifest, sw.js, icons; published at `<site>/jarvis/` by `tools/build_web_dashboard.py` with every build).
   Its own Home Screen app: the Jarvis screen first (greeting, NQ market line, Zenith card from live.json `board` /
@@ -801,6 +810,23 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
     - Absent or broken: the bar's chips and Zenith mode's own control work as before. Saved offline from worker v7.
     - Tests: test_jarvis_hub run N (14 checks, incl. touch and reduced motion); test_phone_e2e goes back and switches
       through the orb. WebKit: tap, quick row, swipe, hold-and-slide.
+  - **The System view (2026-11-02, owner: "everything combined and simple"):** every system at a glance, one verdict.
+    - `data.js systemStatus(facts)` (also `getFacts().system`): one line each for the PC (checking in? bot running? the
+      NinjaTrader feed fresh? CPU / RAM), Zlarior (50K; the PC's verdict), ATLAS (25K), BLITZ (off = grey), the Kalshi bot
+      and the Planner day, and a verdict ALL GOOD / HEADS UP / NEEDS YOU with the one thing to do (`todo`, short `short`).
+      A PC silent > 20 min is NEEDS YOU only while the market is open or opens within 2 h (grey on a quiet weekend), and the
+      bots' lines then read "last known". Kalshi not connected / BLITZ off are grey, never counted.
+    - The PC's CPU / RAM: live.json `pc_health` (`engine/live_publish.pc_health_summary`: the heartbeat's own
+      `pc_health` block cut to t / level ok|warn|bad / cpu / ram / up to 8 {key, label, level, text <= 140}; scrubbed,
+      absent before the first sample, dropped by `fit()` before the money card).
+    - Screen: the strip in the header (verdict, the short to-do, a dot per system: PC Z A B K P; tap = the System panel),
+      the System panel above "Your projects" (the one thing to do + a line per system; tap a line = that app). The orb:
+      a red / amber dot while something needs the owner, and the same strip at the top of the switcher (tap = the panel).
+      The core is 60vw (was 66vw) so HANDS-FREE · mic · VOICE stays on the first 390 x 844 screen. No blur, no animation.
+    - Brain: "status", "is everything ok", "all good", "system check" = the System answer (verdict first, a line per
+      system); "how's the pc" adds CPU / RAM and any amber / red line; "how are the bots" is unchanged.
+    - Tests: `tests.test_jarvis_system` (24: publish -> data.js end to end, every verdict, junk), test_jarvis_hub run S,
+      test_jarvis_brain part k, test_live_publish pc_health checks. Worker jarvis-v8, jarvis.css?v=j5.
   - **Icons:** the re-rendered old reactor icon (`?v=j2`).
   - **Workers:**
     - jarvis-v4: a 3.5 s navigation race; shell files stale-while-revalidate once a page came from the copy.
@@ -824,7 +850,7 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
     webkit`), iPhone 13 profile, persistent profile for worker updates.
     - Zenith le-public-v50: the saved copy on 404 / slow / offline; data from the copy for 30 s after a cached page.
     - kalshi-k9.
-  - **Tests:** test_jarvis_hub (166), test_jarvis_brain (130), test_jarvis_core (58), test_jarvis_apps (84),
+  - **Tests:** test_jarvis_hub (198), test_jarvis_brain (139), test_jarvis_system (24), test_jarvis_core (58), test_jarvis_apps (84),
     test_zenith_mode (70), test_kalshi_page (185), test_phone_e2e (local https end to end: modes, slow / offline / 404, worker
     updates, one frame, real taps, nothing white).
 - **Kalshi in Jarvis (2026-11-01):** the Kalshi bot runs 24/7 on its own Oracle Cloud server with real money, not on the PC.

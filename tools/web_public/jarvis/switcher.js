@@ -15,6 +15,10 @@
 //   opts.status(id)    { value?, tone? ('up'|'dn'), lines?: [string, string?], level? ('ok'|'warn'|'bad'|'') }: the card's live text
 //   opts.onSwitch(id)  go to that app (the shell does it)
 //   opts.onAdd()       optional: "add a dashboard"
+//   opts.system()      optional (2026-11-02, the System view): { verdict, level ('ok'|'warn'|'bad'|''), todo, rows: [{ id, name, level }] }:
+//                      a strip at the top of the switcher (one dot per system + the one thing to do) and a dot on the orb when
+//                      something needs the owner (amber / red)
+//   opts.onSystem()    optional: the strip was tapped (the shell shows its System panel)
 //   opts.doc           optional: the document (tests)
 const VERSION = 1;
 const POS_KEY = 'jarvis.orb';
@@ -123,6 +127,18 @@ const CSS = `
 .nx-qb img{width:26px;height:26px;border-radius:7px;object-fit:cover}
 .nx-qb.now{border-color:#c084fc;box-shadow:0 0 12px rgba(192,132,252,.7)}
 .nx-qb .nx-mini{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 50% 45%,#fff 0,#e9d5ff 18%,#a855f7 46%,#3b0d6e 100%)}
+.nx-sys{position:relative;display:flex;align-items:center;gap:10px;margin:8px 16px 0;padding:8px 12px;min-height:46px;box-sizing:border-box;border-radius:14px;
+  border:1px solid rgba(168,85,247,.4);background:rgba(20,12,36,.92);color:#ece9f2;text-align:left;font:600 14px/1.3 "Rajdhani",-apple-system,system-ui,sans-serif;width:calc(100% - 32px)}
+.nx-sys[hidden]{display:none}
+.nx-sys.ok{border-color:rgba(74,222,128,.5)}.nx-sys.warn{border-color:rgba(251,191,36,.6)}.nx-sys.bad{border-color:rgba(255,77,109,.8);background:rgba(60,8,20,.95)}
+.nx-sys b{flex:none;font:700 11px "Orbitron",-apple-system,system-ui,sans-serif;letter-spacing:.16em;color:#e9ddff}
+.nx-sys.ok b{color:#4ade80}.nx-sys.warn b{color:#fbbf24}.nx-sys.bad b{color:#ff6b86}
+.nx-sys .nx-st{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#cfc8e3}
+.nx-sys .nx-sd{flex:none;display:flex;gap:3px}
+.nx-sys .nx-sd i{width:8px;height:8px;border-radius:50%;background:#3a3542}
+.nx-sys .nx-sd i.ok{background:#4ade80}.nx-sys .nx-sd i.warn{background:#fbbf24}.nx-sys .nx-sd i.bad{background:#ff4d6d}
+.nx-orb .nx-alert{position:absolute;top:2px;right:2px;width:13px;height:13px;border-radius:50%;border:2px solid #05030b;display:none;box-sizing:border-box}
+.nx-orb.lv-warn .nx-alert{display:block;background:#fbbf24}.nx-orb.lv-bad .nx-alert{display:block;background:#ff4d6d}
 .nx-hint{text-align:center;color:#8a8499;font:600 11px "Orbitron",-apple-system,system-ui,sans-serif;letter-spacing:.14em;padding:10px 16px 0}
 @media (prefers-reduced-motion:reduce){.nx-root,.nx-root.on,.nx-fb,.nx-orb,.nx-tip,.nx-fan .nx-fs{transition:none!important}.nx-card{will-change:auto}}
 html[data-nexus] .zm-back{display:none!important}
@@ -147,7 +163,7 @@ export function mountSwitcher(opts = {}) {
   const orb = doc.createElement('button');
   orb.type = 'button'; orb.className = 'nx-orb'; orb.id = 'nxOrb';
   orb.setAttribute('aria-label', 'Switch apps: tap for all apps, swipe for the next one, hold for the quick ring');
-  orb.innerHTML = '<span class="nx-core"></span>';      // its two turning rings are ::before / ::after (inside the screen edge)
+  orb.innerHTML = '<span class="nx-core"></span><span class="nx-alert"></span>';      // its two turning rings are ::before / ::after (inside the screen edge)
   const tip = doc.createElement('div'); tip.className = 'nx-tip'; tip.setAttribute('aria-hidden', 'true');
   const fan = doc.createElement('div'); fan.className = 'nx-fan'; fan.innerHTML = '<div class="nx-fs"></div>';
   const rootEl = doc.createElement('div');
@@ -155,9 +171,10 @@ export function mountSwitcher(opts = {}) {
   rootEl.setAttribute('aria-label', 'Switch apps'); rootEl.setAttribute('aria-hidden', 'true');
   rootEl.innerHTML = '<div class="nx-head"><div><h2>SWITCH</h2><small>SWIPE OR HOLD THE ORB</small></div>'
     + '<button class="nx-x" type="button" aria-label="Close">×</button></div>'
+    + '<button class="nx-sys" type="button" id="nxSys" hidden></button>'
     + '<div class="nx-stage"><div class="nx-track" id="nxTrack"></div></div><div class="nx-row" id="nxRow"></div>';
   doc.body.appendChild(fan); doc.body.appendChild(rootEl); doc.body.appendChild(orb); doc.body.appendChild(tip);
-  const track = rootEl.querySelector('.nx-track'), row = rootEl.querySelector('.nx-row');
+  const track = rootEl.querySelector('.nx-track'), row = rootEl.querySelector('.nx-row'), sysEl = rootEl.querySelector('.nx-sys');
 
   // position: a side ('r' | 'l') and a height (fraction of the screen), kept on this phone
   let pos = lsGet(POS_KEY, null);
@@ -175,6 +192,7 @@ export function mountSwitcher(opts = {}) {
     orb.style.left = Math.round(left) + 'px'; orb.style.top = Math.round(top) + 'px';
   }
   place();
+  renderSys();
   win.addEventListener('resize', () => place(), { passive: true });
   let idleT = 0;
   const wake = () => { orb.classList.remove('idle'); clearTimeout(idleT); idleT = setTimeout(() => orb.classList.add('idle'), 4000); };
@@ -214,7 +232,22 @@ export function mountSwitcher(opts = {}) {
       + lines.map((l, i) => `<p class="nx-ln${i ? ' m' : ''}">${escH(l)}</p>`).join('')
       + `<div class="nx-ft"><span><i class="nx-dot ${lvl}"></i>${now ? 'ON SCREEN' : 'OPEN'}</span><span>›</span></div></button>`;
   }
+  // the System strip and the orb's alert dot (opts.system): one verdict for every system, the one thing to do
+  function renderSys() {
+    const LV = ['ok', 'warn', 'bad'];
+    const s = typeof opts.system === 'function' ? call(opts.system) : null;
+    const lvl = s && LV.includes(s.level) ? s.level : '';
+    orb.classList.toggle('lv-warn', lvl === 'warn'); orb.classList.toggle('lv-bad', lvl === 'bad');
+    if (!s || !s.verdict) { sysEl.hidden = true; return; }
+    const rows = (Array.isArray(s.rows) ? s.rows : []).filter((r) => r && r.id).slice(0, 8);
+    sysEl.hidden = false;
+    sysEl.className = 'nx-sys' + (lvl ? ' ' + lvl : '');
+    sysEl.setAttribute('aria-label', `System: ${s.verdict}${s.todo ? '. ' + s.todo : ''}`);
+    sysEl.innerHTML = `<b>${escH(String(s.verdict).toUpperCase())}</b><span class="nx-st">${escH(s.short || s.todo || (lvl === 'ok' ? 'Every system fine' : 'Every system at a glance'))}</span>`
+      + `<span class="nx-sd" aria-hidden="true">${rows.map((r) => `<i class="${LV.includes(r.level) ? r.level : ''}" title="${escH(r.name || r.id)}"></i>`).join('')}</span>`;
+  }
   function render() {
+    renderSys();
     const all = list(), cur = activeId();
     track.innerHTML = all.map((a) => card(a, a.id === cur)).join('')
       + (typeof opts.onAdd === 'function' ? '<button class="nx-card add" type="button" data-nx-add="1" aria-label="Add a dashboard">'
@@ -270,6 +303,7 @@ export function mountSwitcher(opts = {}) {
   }
   rootEl.addEventListener('click', (e) => {
     if (Date.now() - openedAt < 350) return;              // the tap that opened it, landing again (never a switch by itself)
+    if (e.target.closest('.nx-sys')) { close(); call(opts.onSystem); return; }
     const t = e.target.closest('[data-nx], [data-nx-add], .nx-x');
     if (!t) { if (!e.target.closest('.nx-card, .nx-qb')) close(); return; }
     if (t.classList.contains('nx-x')) { close(); return; }
@@ -387,7 +421,7 @@ export function mountSwitcher(opts = {}) {
     orb.classList.toggle('hide', hidden || openNow);
     if (hidden) { hideFan(); tip.classList.remove('on'); }
   }
-  function update() { if (openNow) { render(); tilt(); } }
+  function update() { if (openNow) { render(); tilt(); } else renderSys(); }
   function destroy() {
     for (const el of [orb, tip, fan, rootEl]) el.remove();
     doc.documentElement.removeAttribute('data-nexus');
