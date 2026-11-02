@@ -355,6 +355,7 @@ const ready = {
   brain: load('brain', './brain.js', (m) => typeof m.createBrain === 'function'),
   core: NO3D ? Promise.resolve(null).then(() => { root.dataset.core = 'fallback'; return null; }) : loadCore(),
   zenith: load('zenith', './zenith-mode.js', (m) => typeof m.mountZenithMode === 'function'),
+  switcher: load('switcher', './switcher.js', (m) => typeof m.mountSwitcher === 'function'),
 };
 const within = (p, ms) => Promise.race([p, new Promise((ok) => setTimeout(() => ok(null), ms))]);
 
@@ -424,6 +425,7 @@ function levels() {
   return { zenith: !v ? '' : vd.level === 'good' || vd.level === 'ok' ? 'ok' : vd.level === 'bad' ? 'bad' : vd.level ? 'warn' : '', kalshi: k ? D.kalshiRun(k)[0] : '' };
 }
 let active = 'home';
+let nx = null;                                               // the orb (switcher.js), once it is mounted
 const frames = {};
 let zen = null, zenMounted = false, zenState = { badge: 0 };
 function renderBar() {
@@ -439,6 +441,7 @@ function renderBar() {
   root.dataset.mode = active === 'home' ? 'jarvis' : active === 'zenith' ? 'zenith' : 'app';
   const cur = $('#modes [aria-current="page"]'), bar = $('#modes');
   if (cur) { const l = cur.offsetLeft, r = l + cur.offsetWidth; if (l < bar.scrollLeft) bar.scrollLeft = l - 8; else if (r > bar.scrollLeft + bar.clientWidth) bar.scrollLeft = r - bar.clientWidth + 18; }
+  if (nx) safe(() => nx.update());                          // the switcher's live cards, when it is open
 }
 
 // ------------------------------------------------------------------ switching: Jarvis mode, Zenith mode, one other app at a time
@@ -824,6 +827,70 @@ function kalshiAlerts() {                              // the owner's "🌌 +$1.
   }
   if (cur) prevKalshi = cur;
 }
+// ------------------------------------------------------------------ the orb (switcher.js): every app a tap, a swipe or a hold away
+// The owner (2026-11-01): "a way to access each thing, so calendar, kalshi, Jarvis, and my nq bot and eventually other stuff, make
+// a really cool way to change between stuff". One orb over every mode: tap = a live card per app, swipe = the next app, hold = the
+// ring. Without it (absent or broken) the bar's chips and Zenith mode's own control switch as before.
+const NX_NAMES = { home: ['JARVIS', 'Your assistant'], zenith: ['NQ BOT', 'Zenith · Zlarior · ATLAS · BLITZ'],
+  planner: ['CALENDAR', 'Planner · your day'], kalshi: ['KALSHI', 'Kalshi bot · its own server'] };
+const nxApps = () => apps().map((a) => { const n = NX_NAMES[a.id]; return { id: a.id, name: a.name, label: n ? n[0] : a.name, sub: n ? n[1] : (a.sub || ''), icon: a.icon || '', glyph: a.glyph || '' }; });
+function nxStatus(id) {
+  if (id === 'home') {
+    const m = D.market();
+    return { value: D.clock(), lines: [`${D.greeting()} · NQ ${m.open ? (m.rth ? 'open' : 'overnight') : 'closed'}`, 'Talk to Jarvis, or ask anything'], level: 'ok' };
+  }
+  if (id === 'zenith') {
+    const v = D.liveView();
+    if (!v) return { value: D.liveError() ? 'NO SIGNAL' : 'LINKING…', lines: ['Open it for everything'], level: '' };
+    const accts = [v.lit, v.atlas, v.blitz].filter((x) => x && x.room != null && Number.isFinite(+x.today_pnl));
+    const sum = accts.reduce((t, x) => t + +x.today_pnl, 0), vd = v.verdict || {};
+    const line = (v.lines || []).find((x) => x && (x.level === 'bad' || x.level === 'warn'));
+    return { value: accts.length ? D.usd(sum, true) : '—', tone: sum > 0 ? 'up' : sum < 0 ? 'dn' : '',
+      lines: [`${accts.length} ${accts.length === 1 ? 'account' : 'accounts'} · ${String(vd.label || vd.code || 'status').split(':')[0]}`, line ? line.text : `Today · ${D.ago(v.t)}`],
+      level: levels().zenith };
+  }
+  if (id === 'planner') {
+    const p = D.plannerDay();
+    if (!p) return { value: 'TODAY', lines: ['Open the Calendar to see your day here'], level: '' };
+    const nowHM = new Intl.DateTimeFormat('en-GB', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
+    const nx1 = p.ev.find((e) => !e.allDay && String(e.start || '') >= nowHM) || p.ev.find((e) => e.allDay);
+    const tasks = p.tasks.length ? `${p.tasks.length} ${p.tasks.length === 1 ? 'task' : 'tasks'} open` : 'No tasks open';
+    return nx1 ? { value: nx1.allDay ? 'ALL DAY' : D.hm(nx1.start), lines: [nx1.title, tasks], level: 'ok' }
+      : { value: 'FREE', lines: ['Nothing else on today', tasks], level: 'ok' };
+  }
+  if (id === 'kalshi') {
+    const k = D.kalshiView(), st = D.kalshiState();
+    if (!k) return { value: st === 'waiting' ? 'OFFLINE' : st === 'error' ? 'NO SIGNAL' : 'LINKING…', lines: [st === 'waiting' ? 'Not connected yet: open it for the one step' : 'Open it to try again'], level: '' };
+    const [lvl, label] = D.kalshiRun(k), pnl = +k.today_pnl;
+    return { value: D.usd2(k.today_pnl, true), tone: pnl > 0 ? 'up' : pnl < 0 ? 'dn' : '', lines: [`Balance ${D.usd2(k.balance)}`, label], level: lvl };
+  }
+  const c = statusCards[id], a = byId(id) || {};
+  if (!c) return { value: 'OPEN', lines: [a.sub || (a.url ? safe(() => new URL(a.url, location.href).host, '') : 'Add its link')], level: '' };
+  const st = c.status || {}, k1 = (Array.isArray(c.kpis) ? c.kpis : [])[0];
+  return { value: k1 ? String(k1.value || '') : String(st.label || 'OPEN'), lines: [k1 ? `${k1.label || ''} · ${st.label || ''}` : (c.sub || ''), (Array.isArray(c.lines) ? c.lines : [])[0] || ''],
+    level: ['ok', 'warn', 'bad'].includes(st.level) ? st.level : '' };
+}
+// the orb steps aside while a sheet or the ⋯ keys are open, and while the keyboard is up
+const NX_COVER = ['#sheet', '#settings', '#look', '#voice', '#palette', '#more'];
+function nxCover() {
+  if (!nx) return;
+  const ae = document.activeElement, typing = !!ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName);
+  safe(() => nx.setHidden(typing || NX_COVER.some((sel) => { const e = $(sel); return e && !e.hidden; })));
+}
+function mountNexus(m) {
+  try {
+    nx = m.mountSwitcher({ apps: nxApps, active: () => active, status: (id) => safe(() => nxStatus(id), {}) || {},
+      onSwitch: (id) => show(id), onAdd: () => openSheet() });
+    if (!nx || typeof nx.open !== 'function') throw new Error('no switcher');
+    root.dataset.switcher = 'module';
+    new MutationObserver(nxCover).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['hidden'] });
+    document.addEventListener('focusin', nxCover);
+    document.addEventListener('focusout', () => setTimeout(nxCover, 60));
+    nxCover();
+  } catch (_) { nx = null; root.dataset.switcher = 'fallback'; }
+}
+ready.switcher.then((m) => { if (m) bootDone.then(() => mountNexus(m)); });
+
 D.onChange(({ source }) => {
   if (source === 'kalshi') kalshiAlerts();
   if (source === 'apps') { renderBar(); renderSettingsApps(); }

@@ -954,7 +954,22 @@ def open_app(p, app, ready_js=None, timeout=20000):
     return f
 
 
+NX_ON = "!!document.getElementById('nxRoot') && document.getElementById('nxRoot').classList.contains('on')"
+
+
+def orb_visible(p):
+    return bool(p.evaluate("(() => { const o = document.getElementById('nxOrb'); return !!o && getComputedStyle(o).visibility === 'visible'; })()"))
+
+
 def go_home(p):
+    if orb_visible(p):                           # the orb (switcher.js, 2026-11-01): tap it, then Jarvis in its quick row
+        real_tap(p, p.locator("#nxOrb").first, "the orb", done=NX_ON)
+        p.wait_for_function(NX_ON, timeout=5000)
+        p.wait_for_timeout(450)                  # the switcher opens out of the orb
+        real_tap(p, p.locator('.nx-qb[data-nx="home"]').first, "Jarvis in the switcher", done=JARVIS_HOME)
+        p.wait_for_function(JARVIS_HOME, timeout=5000)
+        p.wait_for_timeout(250)
+        return
     if _ev(p, ZEN_MODULE):                       # Zenith mode: its floating "Back to Jarvis" control
         back = p.locator('.zm-back, [aria-label="Back to Jarvis"]')
         if back.count():
@@ -1220,7 +1235,34 @@ def part_c(br, S, base, ph):
         # Zenith mode's floating control as a switcher: hold it, the apps show, a tap on one opens it (Zenith let go)
         fps_home = raf_rate(p)
         zf4, _ = open_zenith(p, 20000)
-        if zf4 and p.locator(".zm-back.sw").count():
+        if zf4 and orb_visible(p):
+            # the orb over Zenith mode (switcher.js): hold it, the ring of apps fans out, a tap on one opens it (Zenith let go)
+            fps = raf_rate(p)
+            note(f"Jarvis's own animation: {fps_home} frames/s on the Jarvis screen, {fps} in Zenith mode")
+            check("c. Jarvis's own animation stops while Zenith mode shows (battery)", fps is None or fps < 3, f"{fps} frames/s")
+            box = p.locator("#nxOrb").first.bounding_box()
+            p.mouse.move(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
+            p.mouse.down()
+            p.wait_for_timeout(700)
+            p.mouse.up()
+            p.wait_for_timeout(300)
+            ring = p.evaluate("[...document.querySelectorAll('.nx-fan.on .nx-fb')].map((b) => b.dataset.nx)")
+            check("c. holding the orb over Zenith mode fans out the other apps (Jarvis, Planner, Kalshi)",
+                  all(a in ring for a in ("home", "planner", "kalshi")), ring)
+            if "planner" in ring:
+                real_tap(p, p.locator('.nx-fb[data-nx="planner"]').first, "the Planner in the orb's ring", done=opened("planner"))
+                ok = False
+                for _ in range(40):
+                    if mode_of(p) == "app" and p.query_selector("#v-planner iframe") and not _ev(p, ZEN_MODULE):
+                        ok = True
+                        break
+                    p.wait_for_timeout(250)
+                check("c. ... and a tap on the Planner there opens the Planner, one dashboard alive", ok and frames_alive(p) == 1,
+                      (mode_of(p), frames_alive(p)))
+                fps = raf_rate(p)
+                check("c. Jarvis's own animation stops while the Planner shows", fps is None or fps < 3, f"{fps} frames/s")
+            go_home(p)
+        elif zf4 and p.locator(".zm-back.sw").count():
             fps = raf_rate(p)
             note(f"Jarvis's own animation: {fps_home} frames/s on the Jarvis screen, {fps} in Zenith mode")
             check("c. Jarvis's own animation stops while Zenith mode shows (battery)", fps is None or fps < 3, f"{fps} frames/s")

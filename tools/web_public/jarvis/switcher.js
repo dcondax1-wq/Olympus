@@ -1,0 +1,396 @@
+// Jarvis switcher, "the orb" (2026-11-01). The owner: "there needs to be a way to access each thing, so calendar, kalshi, Jarvis,
+// and my nq bot and eventually other stuff, make a really cool way to change between stuff".
+//
+// One glowing reactor orb floats over every mode (Jarvis, Zenith mode, the Calendar, Kalshi, every added app):
+//   tap        the switcher opens out of the orb: one live card per app (Jarvis, NQ bot, Calendar, Kalshi, each added app, + Add)
+//   swipe ← →  the next / previous app at once (like the iPhone's home bar)
+//   hold       the apps fan out around the orb: slide onto one and let go (or tap one)
+//   drag       move it up or down or to the other edge (kept on this phone, 'jarvis.orb')
+// Light on purpose (the iPhone draws Jarvis black when a page asks too much of it): no backdrop blur, only transform / opacity
+// animations, and none with reduced motion.
+//
+// mountSwitcher(opts) -> { update(), open(), close(), isOpen(), flick(dir), setHidden(on), destroy(), el }
+//   opts.apps()        [{ id, name, label?, sub?, icon?, glyph? }] in switch order; 'home' is Jarvis itself
+//   opts.active()      the id on screen now
+//   opts.status(id)    { value?, tone? ('up'|'dn'), lines?: [string, string?], level? ('ok'|'warn'|'bad'|'') }: the card's live text
+//   opts.onSwitch(id)  go to that app (the shell does it)
+//   opts.onAdd()       optional: "add a dashboard"
+//   opts.doc           optional: the document (tests)
+const VERSION = 1;
+const POS_KEY = 'jarvis.orb';
+const TIP_KEY = 'jarvis.orb.tips';
+const HOLD_MS = 380;
+
+const CSS = `
+.nx-orb{position:fixed;z-index:2147483100;width:56px;height:56px;margin:0;padding:0;border:0;background:none;border-radius:50%;
+  touch-action:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;cursor:pointer;
+  transition:opacity .25s ease,transform .18s ease;color:#fff}
+.nx-orb .nx-core{position:absolute;inset:7px;border-radius:50%;
+  background:radial-gradient(circle at 50% 45%,#fff 0,#f1e6ff 14%,#c084fc 34%,#7c3aed 62%,#2a0f52 100%);
+  box-shadow:0 0 18px rgba(168,85,247,.85),0 0 42px rgba(124,58,237,.45),inset 0 0 10px rgba(255,255,255,.35)}
+.nx-orb::after{content:"";position:absolute;inset:1px;border-radius:50%;border:1.5px solid rgba(192,132,252,.55);border-top-color:#22d3ee;
+  border-bottom-color:rgba(34,211,238,.35)}
+.nx-orb::before{content:"";position:absolute;inset:-3px;border-radius:50%;border:1px solid rgba(168,85,247,.28);border-left-color:rgba(192,132,252,.8)}
+.nx-orb.idle{opacity:.72}
+.nx-orb:active,.nx-orb.press{transform:scale(.92)}
+.nx-orb.hide{opacity:0;visibility:hidden;pointer-events:none}
+.nx-orb:focus{outline:none}.nx-orb:focus-visible{outline:2px solid #c084fc;outline-offset:3px}
+.nx-orb.pulse .nx-core{animation:nx-pulse .6s ease}
+@keyframes nx-pulse{50%{box-shadow:0 0 30px #c084fc,0 0 70px rgba(124,58,237,.7),inset 0 0 12px #fff}}
+@keyframes nx-spin{to{transform:rotate(360deg)}}
+@keyframes nx-spin-r{to{transform:rotate(-360deg)}}
+@media (prefers-reduced-motion:no-preference){.nx-orb::after{animation:nx-spin 7s linear infinite}.nx-orb::before{animation:nx-spin-r 11s linear infinite}}
+.nx-tip{position:fixed;z-index:2147483101;padding:7px 11px;border-radius:10px;background:rgba(14,10,26,.96);border:1px solid rgba(168,85,247,.55);
+  color:#ece9f2;font:600 13px/1.3 "Rajdhani",-apple-system,system-ui,sans-serif;letter-spacing:.04em;white-space:nowrap;pointer-events:none;
+  opacity:0;transform:translateY(4px);transition:opacity .18s ease,transform .18s ease;box-shadow:0 6px 24px rgba(0,0,0,.5)}
+.nx-tip.on{opacity:1;transform:none}
+.nx-tip b{font:700 12px "Orbitron",-apple-system,system-ui,sans-serif;letter-spacing:.14em;color:#e9ddff}
+.nx-fan{position:fixed;inset:0;z-index:2147483099;pointer-events:none}
+.nx-fan.on{pointer-events:auto}
+.nx-fan .nx-fs{position:absolute;inset:0;background:rgba(3,2,8,.55);opacity:0;transition:opacity .16s ease}
+.nx-fan.on .nx-fs{opacity:1}
+.nx-fb{position:absolute;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;border:1px solid rgba(168,85,247,.6);
+  background:radial-gradient(circle at 50% 40%,rgba(60,30,110,.98),rgba(16,10,30,.98));color:#ece9f2;display:grid;place-items:center;padding:0;
+  box-shadow:0 0 14px rgba(168,85,247,.35);opacity:0;transform:translate(var(--fx0),var(--fy0)) scale(.4);
+  transition:opacity .16s ease,transform .2s cubic-bezier(.2,.9,.25,1.2);font:700 15px "Orbitron",-apple-system,system-ui,sans-serif}
+.nx-fan.on .nx-fb{opacity:1;transform:translate(0,0) scale(1)}
+.nx-fb.hot{border-color:#22d3ee;box-shadow:0 0 22px rgba(34,211,238,.7),0 0 6px #fff;transform:scale(1.14)!important}
+.nx-fb.now{border-color:#c084fc;box-shadow:0 0 18px rgba(192,132,252,.8)}
+.nx-fb img{width:30px;height:30px;border-radius:8px;object-fit:cover}
+.nx-fb .nx-fl{position:absolute;top:50%;right:66px;transform:translateY(-50%);padding:4px 8px;border-radius:8px;background:rgba(10,6,20,.92);
+  border:1px solid rgba(168,85,247,.35);font:700 10px "Orbitron",-apple-system,system-ui,sans-serif;letter-spacing:.14em;white-space:nowrap;color:#e9ddff}
+.nx-fan.l .nx-fb .nx-fl{right:auto;left:66px}
+.nx-root{position:fixed;inset:0;z-index:2147483200;display:flex;flex-direction:column;color:#ece9f2;
+  background:radial-gradient(120% 70% at 50% 0%,rgba(76,29,149,.55),transparent 60%),radial-gradient(90% 60% at 50% 100%,rgba(8,47,73,.45),transparent 70%),#05030b;
+  padding:calc(env(safe-area-inset-top,0px) + 10px) 0 calc(env(safe-area-inset-bottom,0px) + 14px);box-sizing:border-box;
+  opacity:0;visibility:hidden;pointer-events:none;-webkit-clip-path:circle(0 at var(--ox,90%) var(--oy,70%));clip-path:circle(0 at var(--ox,90%) var(--oy,70%));
+  transition:clip-path .42s cubic-bezier(.3,.8,.25,1),-webkit-clip-path .42s cubic-bezier(.3,.8,.25,1),opacity .2s ease,visibility 0s linear .42s;
+  font:500 16px/1.4 "Rajdhani",-apple-system,system-ui,sans-serif}
+.nx-root.on{opacity:1;visibility:visible;pointer-events:auto;-webkit-clip-path:circle(150% at var(--ox,90%) var(--oy,70%));
+  clip-path:circle(150% at var(--ox,90%) var(--oy,70%));transition:clip-path .42s cubic-bezier(.3,.8,.25,1),-webkit-clip-path .42s cubic-bezier(.3,.8,.25,1),opacity .12s ease}
+.nx-root::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;
+  background:linear-gradient(rgba(168,85,247,.07) 1px,transparent 1px) 0 0/100% 34px,linear-gradient(90deg,rgba(168,85,247,.06) 1px,transparent 1px) 0 0/34px 100%}
+.nx-head{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 16px 4px}
+.nx-head>div{min-width:0}
+.nx-head h2{margin:0;font:700 15px "Orbitron",-apple-system,system-ui,sans-serif;letter-spacing:.42em;color:#e9ddff;text-shadow:0 0 14px rgba(168,85,247,.8)}
+.nx-head small{display:block;margin-top:3px;font:600 11px "Orbitron",-apple-system,system-ui,sans-serif;letter-spacing:.18em;color:#8a8499}
+.nx-x{flex:none;width:44px;height:44px;border-radius:50%;border:1px solid rgba(168,85,247,.5);background:rgba(20,12,36,.9);color:#ece9f2;font:400 22px/1 -apple-system,system-ui,sans-serif;padding:0}
+.nx-stage{position:relative;flex:1;min-height:0;display:flex;align-items:center}
+.nx-track{position:relative;display:flex;gap:14px;width:100%;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
+  padding:12px calc(50% - min(39vw,160px));box-sizing:border-box;scrollbar-width:none;perspective:900px}
+.nx-track::-webkit-scrollbar{display:none}
+.nx-card{position:relative;flex:0 0 min(78vw,320px);height:min(56vh,430px);scroll-snap-align:center;border-radius:22px;padding:18px 18px 16px;box-sizing:border-box;
+  border:1px solid rgba(168,85,247,.45);background:linear-gradient(165deg,rgba(38,20,72,.97),rgba(12,8,24,.98) 60%);color:inherit;text-align:left;
+  display:flex;flex-direction:column;gap:10px;overflow:hidden;font:inherit;box-shadow:0 18px 50px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.06);
+  transform-origin:50% 60%;will-change:transform}
+.nx-card::after{content:"";position:absolute;inset:auto -30% -45% -30%;height:70%;background:radial-gradient(closest-side,rgba(168,85,247,.32),transparent);pointer-events:none}
+.nx-card.now{border-color:#c084fc;box-shadow:0 0 0 1px rgba(192,132,252,.5),0 0 34px rgba(168,85,247,.45),0 18px 50px rgba(0,0,0,.55)}
+.nx-card .nx-top{display:flex;align-items:center;gap:12px}
+.nx-mini{display:block;border-radius:50%;background:radial-gradient(circle at 50% 45%,#fff 0,#e9d5ff 18%,#a855f7 46%,#3b0d6e 100%)}
+.nx-emb{flex:1 1 0;min-height:56px;display:flex;align-items:center;justify-content:center}
+.nx-emb .e{position:relative;height:min(140px,100%);aspect-ratio:1/1;max-width:100%;border-radius:50%;display:grid;place-items:center}
+.nx-emb .e::before{content:"";position:absolute;inset:0;border-radius:50%;border:1.5px dashed rgba(192,132,252,.42)}
+.nx-emb .e::after{content:"";position:absolute;inset:11px;border-radius:50%;border:2px solid rgba(34,211,238,.18);border-top-color:#22d3ee;border-right-color:rgba(192,132,252,.7)}
+@media (prefers-reduced-motion:no-preference){.nx-root.on .nx-emb .e::after{animation:nx-spin 6s linear infinite}.nx-root.on .nx-emb .e::before{animation:nx-spin-r 18s linear infinite}}
+.nx-emb .i{width:56%;height:56%;border-radius:24px;overflow:hidden;display:grid;place-items:center;font:700 40px "Orbitron",-apple-system,system-ui,sans-serif;color:#fff;
+  background:radial-gradient(circle at 50% 40%,rgba(124,58,237,.95),rgba(30,14,60,.98));box-shadow:0 0 34px rgba(168,85,247,.55),inset 0 0 0 1px rgba(192,132,252,.5)}
+.nx-emb .i img{width:100%;height:100%;object-fit:cover}
+.nx-emb .i .nx-mini{width:62%;height:62%;box-shadow:0 0 28px #a855f7,0 0 60px rgba(124,58,237,.6)}
+.nx-ic{flex:none;width:52px;height:52px;border-radius:16px;display:grid;place-items:center;overflow:hidden;
+  background:radial-gradient(circle at 50% 40%,rgba(124,58,237,.9),rgba(30,14,60,.95));border:1px solid rgba(192,132,252,.5);font:700 22px "Orbitron",-apple-system,system-ui,sans-serif}
+.nx-ic img{width:100%;height:100%;object-fit:cover}
+.nx-ic .nx-mini{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 50% 45%,#fff 0,#e9d5ff 18%,#a855f7 46%,#3b0d6e 100%);
+  box-shadow:0 0 14px #a855f7}
+.nx-nm{min-width:0}
+.nx-nm b{display:block;font:700 19px "Orbitron",-apple-system,system-ui,sans-serif;letter-spacing:.12em;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nx-nm span{display:block;color:#a99fc4;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nx-now{position:absolute;top:14px;right:14px;padding:3px 8px;border-radius:999px;font:700 10px "Orbitron",-apple-system,system-ui,sans-serif;letter-spacing:.16em;
+  color:#05030b;background:#c084fc;box-shadow:0 0 12px rgba(192,132,252,.8)}
+.nx-val{font:700 clamp(28px,9vw,38px)/1.05 "Orbitron",-apple-system,system-ui,sans-serif;letter-spacing:.02em;color:#e9ddff;text-shadow:0 0 18px rgba(168,85,247,.55);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nx-val.up{color:#4ade80;text-shadow:0 0 16px rgba(74,222,128,.45)}.nx-val.dn{color:#ff6b86;text-shadow:0 0 16px rgba(255,77,109,.45)}
+.nx-ln{margin:0;color:#cfc8e3;font-size:16px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.nx-ln.m{color:#8a8499;font-size:15px}
+.nx-ft{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid rgba(168,85,247,.22);
+  font:700 11px "Orbitron",-apple-system,system-ui,sans-serif;letter-spacing:.2em;color:#c084fc}
+.nx-dot{width:9px;height:9px;border-radius:50%;background:#5b5470;display:inline-block;margin-right:8px;vertical-align:1px}
+.nx-dot.ok{background:#4ade80;box-shadow:0 0 8px #4ade80}.nx-dot.warn{background:#fbbf24;box-shadow:0 0 8px #fbbf24}.nx-dot.bad{background:#ff4d6d;box-shadow:0 0 8px #ff4d6d}
+.nx-card.add{align-items:center;justify-content:center;text-align:center;border-style:dashed;background:rgba(14,10,26,.85)}
+.nx-card.add .nx-ic{width:64px;height:64px;font-size:30px}
+.nx-row{display:flex;justify-content:center;gap:10px;padding:6px 16px 0;flex-wrap:wrap}
+.nx-qb{width:46px;height:46px;border-radius:50%;padding:0;border:1px solid rgba(168,85,247,.45);background:rgba(20,12,36,.92);color:#ece9f2;
+  display:grid;place-items:center;font:700 14px "Orbitron",-apple-system,system-ui,sans-serif;overflow:hidden}
+.nx-qb img{width:26px;height:26px;border-radius:7px;object-fit:cover}
+.nx-qb.now{border-color:#c084fc;box-shadow:0 0 12px rgba(192,132,252,.7)}
+.nx-qb .nx-mini{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 50% 45%,#fff 0,#e9d5ff 18%,#a855f7 46%,#3b0d6e 100%)}
+.nx-hint{text-align:center;color:#8a8499;font:600 11px "Orbitron",-apple-system,system-ui,sans-serif;letter-spacing:.14em;padding:10px 16px 0}
+@media (prefers-reduced-motion:reduce){.nx-root,.nx-root.on,.nx-fb,.nx-orb,.nx-tip,.nx-fan .nx-fs{transition:none!important}.nx-card{will-change:auto}}
+html[data-nexus] .zm-back{display:none!important}
+`;
+
+const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (_) { return d; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) { /* private mode */ } };
+const escH = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const safeUrl = (u) => (typeof u === 'string' && /^(https:\/\/|\.\.?\/|\/(?!\/))/i.test(u) ? u : '');
+
+export function mountSwitcher(opts = {}) {
+  const doc = opts.doc || document, win = doc.defaultView || window;
+  const reduce = () => !!(win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const call = (f, ...a) => { try { return typeof f === 'function' ? f(...a) : undefined; } catch (e) { console.error(e); return undefined; } };
+  const list = () => { const l = call(opts.apps); return Array.isArray(l) ? l.filter((a) => a && a.id) : []; };
+  const activeId = () => call(opts.active) || 'home';
+
+  if (!doc.getElementById('nx-css')) { const st = doc.createElement('style'); st.id = 'nx-css'; st.textContent = CSS; doc.head.appendChild(st); }
+  doc.documentElement.setAttribute('data-nexus', String(VERSION));
+
+  // ---------------------------------------------------------------- the orb
+  const orb = doc.createElement('button');
+  orb.type = 'button'; orb.className = 'nx-orb'; orb.id = 'nxOrb';
+  orb.setAttribute('aria-label', 'Switch apps: tap for all apps, swipe for the next one, hold for the quick ring');
+  orb.innerHTML = '<span class="nx-core"></span>';      // its two turning rings are ::before / ::after (inside the screen edge)
+  const tip = doc.createElement('div'); tip.className = 'nx-tip'; tip.setAttribute('aria-hidden', 'true');
+  const fan = doc.createElement('div'); fan.className = 'nx-fan'; fan.innerHTML = '<div class="nx-fs"></div>';
+  const rootEl = doc.createElement('div');
+  rootEl.className = 'nx-root'; rootEl.id = 'nxRoot'; rootEl.setAttribute('role', 'dialog'); rootEl.setAttribute('aria-modal', 'true');
+  rootEl.setAttribute('aria-label', 'Switch apps'); rootEl.setAttribute('aria-hidden', 'true');
+  rootEl.innerHTML = '<div class="nx-head"><div><h2>SWITCH</h2><small>SWIPE OR HOLD THE ORB</small></div>'
+    + '<button class="nx-x" type="button" aria-label="Close">×</button></div>'
+    + '<div class="nx-stage"><div class="nx-track" id="nxTrack"></div></div><div class="nx-row" id="nxRow"></div>';
+  doc.body.appendChild(fan); doc.body.appendChild(rootEl); doc.body.appendChild(orb); doc.body.appendChild(tip);
+  const track = rootEl.querySelector('.nx-track'), row = rootEl.querySelector('.nx-row');
+
+  // position: a side ('r' | 'l') and a height (fraction of the screen), kept on this phone
+  let pos = lsGet(POS_KEY, null);
+  if (!pos || (pos.side !== 'l' && pos.side !== 'r') || !(pos.y >= 0 && pos.y <= 1)) pos = { side: 'r', y: 0.66 };
+  const geom = () => {
+    const W = win.innerWidth, H = win.innerHeight, cs = win.getComputedStyle(doc.documentElement);
+    const sb = parseFloat(cs.getPropertyValue('--sab')) || 0;
+    return { W, H, top: 70, bottom: H - 56 - 96 - sb };
+  };
+  function place(x, y) {
+    const g = geom();
+    let left, top;
+    if (x == null) { left = pos.side === 'l' ? 8 : g.W - 56 - 8; top = g.top + pos.y * Math.max(0, g.bottom - g.top); }
+    else { left = Math.max(4, Math.min(g.W - 60, x - 28)); top = Math.max(g.top, Math.min(g.bottom, y - 28)); }
+    orb.style.left = Math.round(left) + 'px'; orb.style.top = Math.round(top) + 'px';
+  }
+  place();
+  win.addEventListener('resize', () => place(), { passive: true });
+  let idleT = 0;
+  const wake = () => { orb.classList.remove('idle'); clearTimeout(idleT); idleT = setTimeout(() => orb.classList.add('idle'), 4000); };
+  wake();
+
+  function showTip(html, ms = 1100) {
+    tip.innerHTML = html;
+    const r = orb.getBoundingClientRect(), W = win.innerWidth;
+    tip.style.top = Math.round(r.top + 16) + 'px';
+    tip.classList.add('on');
+    const w = tip.offsetWidth;
+    tip.style.left = Math.round(pos.side === 'l' ? Math.min(W - w - 6, r.right + 8) : Math.max(6, r.left - w - 8)) + 'px';
+    clearTimeout(showTip.t); showTip.t = setTimeout(() => tip.classList.remove('on'), ms);
+  }
+  // first uses: say what the orb does (three times at most)
+  const tips = +lsGet(TIP_KEY, 0) || 0;
+  if (tips < 3) setTimeout(() => { if (!hidden && !isOpen()) { lsSet(TIP_KEY, tips + 1); showTip('<b>APPS</b> · tap · swipe ← → · hold', 3200); } }, 1800);
+
+  // ---------------------------------------------------------------- icons, names, live text
+  const label = (a) => String(a.label || a.name || a.id).toUpperCase();
+  function inner(a) {                                   // the app's mark: Jarvis's reactor, its icon, else its first letter
+    if (a.id === 'home') return '<span class="nx-mini"></span>';
+    const src = safeUrl(a.icon);
+    if (src) return `<img src="${escH(src)}" alt="" loading="lazy" decoding="async">`;
+    return escH(String(a.glyph || a.name || '?').charAt(0).toUpperCase());
+  }
+  const icon = (a, cls) => `<span class="${cls}">${inner(a)}</span>`;
+  function card(a, now) {
+    const s = call(opts.status, a.id) || {};
+    const lines = (Array.isArray(s.lines) ? s.lines : []).filter(Boolean).slice(0, 2);
+    const lvl = ['ok', 'warn', 'bad'].includes(s.level) ? s.level : '';
+    return `<button class="nx-card${now ? ' now' : ''}" type="button" data-nx="${escH(a.id)}" aria-label="${escH(label(a))}${now ? ' (on screen now)' : ''}">`
+      + `<div class="nx-top"><div class="nx-nm"><b>${escH(label(a))}</b><span>${escH(a.sub || '')}</span></div></div>`
+      + (now ? '<span class="nx-now">NOW</span>' : '')
+      + `<div class="nx-emb" aria-hidden="true"><span class="e"><span class="i">${inner(a)}</span></span></div>`
+      + `<div class="nx-val${s.tone === 'up' ? ' up' : s.tone === 'dn' ? ' dn' : ''}">${escH(s.value || '—')}</div>`
+      + lines.map((l, i) => `<p class="nx-ln${i ? ' m' : ''}">${escH(l)}</p>`).join('')
+      + `<div class="nx-ft"><span><i class="nx-dot ${lvl}"></i>${now ? 'ON SCREEN' : 'OPEN'}</span><span>›</span></div></button>`;
+  }
+  function render() {
+    const all = list(), cur = activeId();
+    track.innerHTML = all.map((a) => card(a, a.id === cur)).join('')
+      + (typeof opts.onAdd === 'function' ? '<button class="nx-card add" type="button" data-nx-add="1" aria-label="Add a dashboard">'
+        + '<span class="nx-ic">+</span><div class="nx-nm"><b>ADD</b><span>Any dashboard with a link (Ascend too)</span></div></button>' : '');
+    row.innerHTML = all.map((a) => `<button class="nx-qb${a.id === cur ? ' now' : ''}" type="button" data-nx="${escH(a.id)}" aria-label="${escH(label(a))}">${inner(a)}</button>`).join('');
+  }
+  // the 3D carousel: cards turn away from the middle as they scroll (one transform per card, on the next frame)
+  let raf = 0;
+  function tilt() {
+    raf = 0;
+    if (reduce()) return;
+    const mid = track.scrollLeft + track.clientWidth / 2;
+    for (const c of track.children) {
+      const d = (c.offsetLeft + c.offsetWidth / 2 - mid) / (c.offsetWidth || 1);
+      const k = Math.max(-1.6, Math.min(1.6, d));
+      c.style.transform = `rotateY(${(-k * 16).toFixed(2)}deg) scale(${(1 - Math.min(1, Math.abs(k)) * 0.1).toFixed(3)})`;
+      c.style.opacity = String(1 - Math.min(1, Math.abs(k)) * 0.35);
+    }
+  }
+  track.addEventListener('scroll', () => { if (!raf) raf = win.requestAnimationFrame(tilt); }, { passive: true });
+
+  // ---------------------------------------------------------------- open / close
+  let openNow = false, hidden = false, openedAt = 0;
+  function isOpen() { return openNow; }
+  function open() {
+    if (openNow) return;
+    hideFan();
+    render();
+    const r = orb.getBoundingClientRect();
+    rootEl.style.setProperty('--ox', Math.round(r.left + r.width / 2) + 'px');
+    rootEl.style.setProperty('--oy', Math.round(r.top + r.height / 2) + 'px');
+    openNow = true; openedAt = Date.now();
+    rootEl.classList.add('on'); rootEl.setAttribute('aria-hidden', 'false');
+    orb.classList.add('hide'); tip.classList.remove('on');
+    // the current app's card in the middle
+    const all = list(), i = Math.max(0, all.findIndex((a) => a.id === activeId()));
+    const c = track.children[i];
+    if (c) track.scrollLeft = c.offsetLeft - (track.clientWidth - c.offsetWidth) / 2;
+    tilt();
+    setTimeout(() => { const f = track.children[i] || rootEl.querySelector('.nx-x'); if (f) { try { f.focus({ preventScroll: true }); } catch (_) { f.focus(); } } }, 60);
+  }
+  function close() {
+    if (!openNow) return;
+    openNow = false;
+    rootEl.classList.remove('on'); rootEl.setAttribute('aria-hidden', 'true');
+    if (!hidden) orb.classList.remove('hide');
+    wake();
+  }
+  function go(id) {
+    close(); hideFan();
+    if (id && id !== activeId()) call(opts.onSwitch, id);
+    orb.classList.remove('pulse'); void orb.offsetWidth; orb.classList.add('pulse');
+  }
+  rootEl.addEventListener('click', (e) => {
+    if (Date.now() - openedAt < 350) return;              // the tap that opened it, landing again (never a switch by itself)
+    const t = e.target.closest('[data-nx], [data-nx-add], .nx-x');
+    if (!t) { if (!e.target.closest('.nx-card, .nx-qb')) close(); return; }
+    if (t.classList.contains('nx-x')) { close(); return; }
+    if (t.dataset.nxAdd) { close(); call(opts.onAdd); return; }
+    go(t.dataset.nx);
+  });
+  doc.addEventListener('keydown', (e) => { if (e.key === 'Escape') { if (openNow) close(); else hideFan(); } });
+
+  // ---------------------------------------------------------------- swipe: the next / previous app
+  function flick(dir) {
+    const all = list();
+    if (all.length < 2) return null;
+    const i = all.findIndex((a) => a.id === activeId());
+    const n = all[((i < 0 ? 0 : i) + (dir > 0 ? 1 : -1) + all.length) % all.length];
+    showTip(`${dir > 0 ? '→' : '←'} <b>${escH(label(n))}</b>`, 900);
+    go(n.id);
+    return n.id;
+  }
+
+  // ---------------------------------------------------------------- hold: the ring of apps around the orb
+  let fanOn = false, hot = null;
+  function showFan() {
+    const all = list().filter((a) => a.id !== activeId());
+    if (!all.length) return;
+    fanOn = true;
+    const r = orb.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, W = win.innerWidth, H = win.innerHeight;
+    // an arc that opens toward the middle of the screen, wide enough for every app
+    const toward = Math.atan2(H / 2 - cy, W / 2 - cx), n = all.length;
+    const spread = Math.min(Math.PI * 1.25, 0.78 * Math.max(1, n - 1) + 0.0001), R = n > 5 ? 150 : n > 3 ? 132 : 118;
+    fan.classList.toggle('l', cx < W / 2);                // the orb on the left: the names go to the right of their buttons
+    fan.querySelectorAll('.nx-fb').forEach((b) => b.remove());
+    all.forEach((a, k) => {
+      const ang = toward + (n === 1 ? 0 : -spread / 2 + (spread * k) / (n - 1));
+      let x = cx + R * Math.cos(ang), y = cy + R * Math.sin(ang);
+      x = Math.max(34, Math.min(W - 34, x)); y = Math.max(40, Math.min(H - 60, y));
+      const b = doc.createElement('button');
+      b.type = 'button'; b.className = 'nx-fb'; b.dataset.nx = a.id; b.setAttribute('aria-label', label(a));
+      b.style.left = Math.round(x) + 'px'; b.style.top = Math.round(y) + 'px';
+      b.style.setProperty('--fx0', Math.round(cx - x) + 'px'); b.style.setProperty('--fy0', Math.round(cy - y) + 'px');
+      b.innerHTML = inner(a) + `<span class="nx-fl">${escH(label(a))}</span>`;
+      fan.appendChild(b);
+    });
+    // a frame later, so the buttons grow out of the orb
+    win.requestAnimationFrame(() => fan.classList.add('on'));
+    orb.classList.add('press');
+    try { if (win.navigator.vibrate) win.navigator.vibrate(8); } catch (_) { /* no vibration on the iPhone */ }
+  }
+  function hideFan() {
+    if (!fanOn) return;
+    fanOn = false; hot = null;
+    fan.classList.remove('on'); orb.classList.remove('press');
+    setTimeout(() => { if (!fanOn) fan.querySelectorAll('.nx-fb').forEach((b) => b.remove()); }, 220);
+  }
+  function hitFan(x, y) {
+    let best = null, bd = 44 * 44;
+    for (const b of fan.querySelectorAll('.nx-fb')) {
+      const r = b.getBoundingClientRect(), dx = x - (r.left + r.width / 2), dy = y - (r.top + r.height / 2), d = dx * dx + dy * dy;
+      if (d < bd) { bd = d; best = b; }
+    }
+    if (best !== hot) { if (hot) hot.classList.remove('hot'); hot = best; if (hot) hot.classList.add('hot'); }
+    return hot;
+  }
+  fan.addEventListener('click', (e) => {
+    const b = e.target.closest('.nx-fb');
+    if (b) go(b.dataset.nx); else hideFan();
+  });
+
+  // ---------------------------------------------------------------- the orb's gestures (one pointer)
+  let g = null;
+  orb.addEventListener('pointerdown', (e) => {
+    if (e.button > 0) return;
+    wake();
+    g = { id: e.pointerId, x: e.clientX, y: e.clientY, t: Date.now(), moved: false, drag: false, held: false };
+    try { orb.setPointerCapture(e.pointerId); } catch (_) { /* fine */ }
+    g.timer = setTimeout(() => { if (g && !g.moved) { g.held = true; showFan(); } }, HOLD_MS);
+  });
+  orb.addEventListener('pointermove', (e) => {
+    if (!g || e.pointerId !== g.id) return;
+    const dx = e.clientX - g.x, dy = e.clientY - g.y;
+    if (g.held) { hitFan(e.clientX, e.clientY); return; }
+    if (!g.moved && dx * dx + dy * dy > 64) { g.moved = true; clearTimeout(g.timer); }
+    // a slow or mostly up / down move carries the orb; a quick sideways flick switches on release
+    if (g.moved && (Math.abs(dy) > Math.abs(dx) * 0.8 || Date.now() - g.t > 320)) { g.drag = true; place(e.clientX, e.clientY); }
+  });
+  function end(e, cancel) {
+    if (!g || (e && e.pointerId !== g.id)) return;
+    const s = g; g = null;
+    clearTimeout(s.timer);
+    const dx = e ? e.clientX - s.x : 0, dy = e ? e.clientY - s.y : 0, dt = Date.now() - s.t;
+    if (cancel) { if (s.held) hideFan(); if (s.drag) snap(); return; }
+    if (s.held) { const b = hitFan(e.clientX, e.clientY); if (b) go(b.dataset.nx); return; }   // let go on an app; else the ring stays to tap
+    if (s.drag) { snap(); return; }
+    if (s.moved) {
+      if (Math.abs(dx) > 34 && Math.abs(dx) > Math.abs(dy) * 1.3 && dt < 600) flick(dx < 0 ? 1 : -1);
+      return;
+    }
+    open();
+  }
+  function snap() {
+    const r = orb.getBoundingClientRect(), gm = geom();
+    pos = { side: r.left + r.width / 2 < gm.W / 2 ? 'l' : 'r', y: Math.max(0, Math.min(1, (r.top - gm.top) / Math.max(1, gm.bottom - gm.top))) };
+    lsSet(POS_KEY, pos);
+    place();
+  }
+  orb.addEventListener('pointerup', (e) => end(e, false));
+  orb.addEventListener('pointercancel', (e) => end(e, true));
+  orb.addEventListener('click', (e) => { if (e.detail === 0) open(); });          // the keyboard (Enter / Space): open the switcher
+  orb.addEventListener('contextmenu', (e) => e.preventDefault());
+  // the orb's touches are all handled above: no copy click afterwards on whatever opened under the finger (iPhone)
+  orb.addEventListener('touchend', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+
+  // ---------------------------------------------------------------- the shell's hooks
+  function setHidden(on) {
+    hidden = !!on;
+    orb.classList.toggle('hide', hidden || openNow);
+    if (hidden) { hideFan(); tip.classList.remove('on'); }
+  }
+  function update() { if (openNow) { render(); tilt(); } }
+  function destroy() {
+    for (const el of [orb, tip, fan, rootEl]) el.remove();
+    doc.documentElement.removeAttribute('data-nexus');
+  }
+  return { update, open, close, isOpen, flick, setHidden, destroy, el: orb, version: VERSION };
+}

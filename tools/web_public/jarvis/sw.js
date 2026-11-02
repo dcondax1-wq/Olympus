@@ -23,12 +23,13 @@
 // good). Now nothing waits longer than NET_MAX_MS: a page with no copy gets the dark "can't reach the internet" page with Retry,
 // a file with no copy fails (the page shows without it and its start note says so). A file missing from this copy is taken from
 // the previous Jarvis copy (OLD) while it is still here, and the previous copies go only once this one holds every CORE file.
-const CACHE = 'jarvis-v6';
-const OLD = ['jarvis-v5', 'jarvis-v4'];
+// v7 (2026-11-01, the orb): switcher.js joins the saved parts.
+const CACHE = 'jarvis-v7';
+const OLD = ['jarvis-v6', 'jarvis-v5', 'jarvis-v4'];
 const NAV_WAIT_MS = 3500;
 const NET_MAX_MS = 9000;
 const SHELL = ['./', './index.html', './manifest.webmanifest?v=j2', './apple-touch-icon.png?v=j2', './icon-192.png?v=j2', './icon-512.png?v=j2',
-  './jarvis.css?v=j4', './data.js', './brain.js', './core-visual.js', './apps.js', './zenith-mode.js',
+  './jarvis.css?v=j4', './data.js', './brain.js', './core-visual.js', './apps.js', './zenith-mode.js', './switcher.js',
   './three.module.min.js', './orbitron.woff2', './rajdhani-400.woff2', './rajdhani-500.woff2', './rajdhani-600.woff2', './rajdhani-700.woff2'];
 const CORE = ['./index.html', './jarvis.css?v=j4', './data.js'];
 const STATIC_RX = /\.(woff2|png|svg|jpg|webp|webmanifest)$/i;
