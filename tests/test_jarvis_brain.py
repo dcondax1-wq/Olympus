@@ -271,7 +271,30 @@ def scenarios():
                             "what should I do now", "how's the eval", "and blitz?", "open zenith", "when does the market open", 12345, None)
           + [{"briefing": True}, {"suggestions": True}], now=None, f=junk_f),
         S("junk_promise", ask("How are the bots?"), factsMode="promise"),
+        # the System view (2026-11-02): data.js systemStatus hands the brain one verdict and one line per system
+        S("system", ask("status", "is everything ok?", "how's the pc", "all good", "how are the bots") + [{"suggestions": True}],
+          f=facts(T_SUN13, live={**live(T_SUN13), "pc_health": PC_HEALTH}, system=SYSTEM_WARN, kalshi=K13, kalshiState="ok")),
+        S("system_good", ask("status", "is everything running"), f=facts(T_SUN13, system=SYSTEM_GOOD)),
+        S("system_none", ask("status", "how's the pc")),
+        S("system_junk", ask("status", "is everything ok", "how's the pc"),
+          f=facts(T_SUN13, live={**live(T_SUN13), "pc_health": {"cpu": "x", "lines": [None, 5, {"level": "bad"}]}}, system={"verdict": "NEEDS YOU", "rows": [None, 3, {"name": 7}, {"id": "pc"}]})),
     ]
+
+
+PC_HEALTH = {"t": 0, "level": "warn", "cpu": 23, "ram": 89, "lines": [
+    {"key": "cpu", "label": "CPU", "level": "ok", "text": "CPU 23%"},
+    {"key": "ram", "label": "Memory (RAM)", "level": "warn", "text": "RAM 89% in use (3.2 of 3.6 GB): close other apps (browser tabs)"},
+    {"key": "nt", "label": "NinjaTrader", "level": "ok", "text": "NinjaTrader running, 900 MB"}]}
+SYSTEM_WARN = {"verdict": "HEADS UP", "level": "warn", "todo": "PC: RAM 89% in use (3.2 of 3.6 GB): close other apps (browser tabs)", "todoApp": "zenith", "rows": [
+    {"id": "pc", "name": "PC", "sub": "bot server · NinjaTrader", "app": "zenith", "level": "warn", "value": "CPU 23% · RAM 89%",
+     "text": "Memory (RAM) to watch · checked in 2 min ago · feed 12 s", "todo": "PC: RAM 89% in use (3.2 of 3.6 GB): close other apps (browser tabs)"},
+    {"id": "lit", "name": "Zlarior", "sub": "50K eval", "app": "zenith", "level": "ok", "value": "+$213", "text": "RUNNING: bot trading · room $1,106", "todo": ""},
+    {"id": "atlas", "name": "ATLAS", "sub": "25K", "app": "zenith", "level": "ok", "value": "$0", "text": "open · room $750", "todo": ""},
+    {"id": "blitz", "name": "BLITZ", "sub": "25K", "app": "zenith", "level": "", "value": "OFF", "text": "paper only until its own account is set up", "todo": ""},
+    {"id": "kalshi", "name": "Kalshi", "sub": "its own server", "app": "kalshi", "level": "ok", "value": "+$18.50", "text": "Running · balance $512.34", "todo": ""},
+    {"id": "planner", "name": "Planner", "sub": "your day", "app": "planner", "level": "ok", "value": "4:15 PM", "text": "Review fills · 1 task open", "todo": ""}]}
+SYSTEM_GOOD = {**SYSTEM_WARN, "verdict": "ALL GOOD", "level": "ok", "todo": "", "todoApp": "",
+               "rows": [{**SYSTEM_WARN["rows"][0], "level": "ok", "text": "checked in 2 min ago · feed 12 s", "todo": ""}] + SYSTEM_WARN["rows"][1:]}
 
 
 def run_node(tmp):
@@ -630,6 +653,37 @@ def part_browser():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def part_system(O):
+    """k. the System view (2026-11-02): "status", "is everything ok", "how's the pc" answer every system at once."""
+    t = lambda n, i: (O[n]["res"][i] or {}).get("text") or ""        # noqa: E731
+    sp = lambda n, i: (O[n]["res"][i] or {}).get("speak") or ""      # noqa: E731
+    it = lambda n, i: (O[n]["res"][i] or {}).get("intent")           # noqa: E731
+    s1, s2, pc, s4, bots = (t("system", i) for i in range(5))
+    check("k. 'status': the verdict and the one thing to do first, then one line per system (PC, Zlarior, ATLAS, BLITZ, Kalshi, Planner)",
+          s1.startswith("HEADS UP: PC: RAM 89%") and all(x in s1 for x in ("PC (bot server", "CPU 23% · RAM 89%", "Zlarior (50K eval): +$213",
+                                                                          "ATLAS (25K)", "BLITZ (25K): OFF", "Kalshi (its own server): +$18.50", "Planner (your day): 4:15 PM"))
+          and it("system", 0) == "system", s1)
+    check("k. 'is everything ok?' and 'all good' give the same System answer", s2 == s1 and s4 == s1 and it("system", 1) == "system", (s2[:80], s4[:80]))
+    check("k. the System answer speaks short and plain (the one thing to watch, the PC's check-in; no symbols)",
+          sp("system", 0).startswith("All running, one thing to watch:") and "checked in 2 minutes ago, feed 12 seconds" in sp("system", 0) and "·" not in sp("system", 0)
+          and "$" not in sp("system", 0), sp("system", 0))
+    check("k. 'how's the pc': its check-in and verdict, CPU and RAM, the amber line (not repeated as a to-do)",
+          "The PC last checked in" in pc and "RUNNING" in pc and "CPU 23%, RAM 89%." in pc and "Memory (RAM): RAM 89% in use" in pc and "To do" not in pc
+          and it("system", 2) == "pc" and "CPU 23 percent, memory 89 percent" in sp("system", 2), (pc, sp("system", 2)))
+    check("k. 'how are the bots' stays the bots' status (unchanged)", "RUNNING" in bots and "Zlarior 50K" in bots and "PC (bot server" not in bots, bots)
+    sg = (O["system"]["res"][5] or {}).get("list") or []
+    check("k. suggestions: 'Is everything OK?' first while the System view has something", sg[:1] == ["Is everything OK?"] and 4 <= len(sg) <= 6, sg)
+    g1, g2 = t("system_good", 0), t("system_good", 1)
+    check("k. all good: 'ALL GOOD: nothing needs you.' and 'All good, sir.'",
+          g1.startswith("ALL GOOD: nothing needs you.") and g2 == g1 and sp("system_good", 0).startswith("All good, sir. Nothing needs you."), (g1[:80], sp("system_good", 0)))
+    n1, n2 = t("system_none", 0), t("system_none", 1)
+    check("k. a shell without the System view: 'status' is the bots' status as before; 'how's the pc' says the CPU / RAM reading is missing",
+          "RUNNING" in n1 and "Zlarior 50K" in n1 and "The PC last checked in" in n2 and "No CPU or RAM reading" in n2, (n1[:120], n2))
+    j = [t("system_junk", i) for i in range(3)]
+    check("k. junk System facts never raise and never print undefined / NaN / [object",
+          all(x and not re.search(r"undefined|NaN|\[object", x) for x in j) and not any("exception" in (r or {}) for r in O["system_junk"]["res"]), j)
+
+
 def main():
     part_a()
     tmp = tempfile.mkdtemp(prefix="le_jbrain_")
@@ -638,6 +692,7 @@ def main():
         check("node: every scenario ran", O is not None, err)
         if O:
             part_node(O)
+            part_system(O)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     if "--no-browser" not in sys.argv:

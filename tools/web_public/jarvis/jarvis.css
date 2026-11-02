@@ -151,7 +151,7 @@ html:not([data-mode="jarvis"]) #addB { display: none; }            /* in a dashb
 /* the core: the 3D core (core-visual.js) or the 2D reactor, the HUD ring, the projector pad, the hologram globe */
 /* the core's box clips its decorations (the globe, the projector pad, a 3D canvas): they never widen the page */
 .stagebox { position: relative; overflow: hidden; margin: -4px 0 -6px; padding: 8px 0 16px; display: grid; justify-items: center; }
-.stage { position: relative; width: min(66vw, 300px); aspect-ratio: 1 / 1; cursor: pointer; }
+.stage { position: relative; width: min(60vw, 300px); aspect-ratio: 1 / 1; cursor: pointer; }
 .globe { position: absolute; left: -12%; top: -12%; width: 124%; height: 124%; pointer-events: none; opacity: .85; }
 .core { position: absolute; inset: 0; pointer-events: none; }        /* decorations never take a tap: the stage is the button */
 .core-slot { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
@@ -287,6 +287,37 @@ button.panel:active { transform: translateY(1px) scale(.995); }
 .badge { margin-left: auto; padding: 3px 8px; border: 1px solid rgba(var(--cr), .5); font: 600 10px var(--fh); letter-spacing: .2em; color: var(--c3); display: inline-flex; align-items: center; gap: 6px; }
 .badge::after { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--warn); }
 .badge.ok::after { background: var(--ok); box-shadow: 0 0 6px var(--ok); } .badge.bad::after { background: var(--bad); }
+/* the System view (2026-11-02): the verdict strip in the header and the System panel, one line per system. Light on purpose:
+   plain boxes, no blur, no animation of their own (the iPhone drew Jarvis black when a page asked too much of it) */
+.sysbar { display: flex; align-items: center; gap: 9px; width: 100%; min-width: 0; min-height: 36px; margin: 0; padding: 4px 10px; text-align: left; cursor: pointer;
+  border: 1px solid rgba(var(--cr), .32); background: rgba(0,0,0,.34); color: var(--txt); font: 500 14px/1.25 var(--fb); border-radius: 0; }
+.sysbar.ok { border-color: rgba(74,222,128,.4); } .sysbar.warn { border-color: rgba(251,191,36,.55); } .sysbar.bad { border-color: rgba(255,77,109,.7); background: rgba(70,8,22,.45); }
+.sysbar b { flex: none; font: 700 11px var(--fh); letter-spacing: .18em; color: var(--c3); }
+.sysbar.ok b { color: var(--ok); } .sysbar.warn b { color: var(--warn); } .sysbar.bad b { color: var(--bad); }
+.sysbar #syst { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--txt); }
+.sysdots { flex: none; display: flex; gap: 3px; }
+.sysdots i { width: 17px; height: 17px; display: grid; place-items: center; font: 700 8px var(--fh); font-style: normal; color: #0b0812; background: var(--mut); border-radius: 50%; }
+.sysdots i.ok { background: var(--ok); } .sysdots i.warn { background: var(--warn); } .sysdots i.bad { background: var(--bad); color: #fff; } .sysdots i.off { background: #3a3542; color: var(--mut); }
+.panel.sys.bad { border-color: rgba(255,77,109,.6); }
+.panel.sys .badge { flex: none; white-space: nowrap; }
+.stodo { display: grid; gap: 3px; width: 100%; margin: 0; padding: 9px 12px; text-align: left; cursor: pointer; font: 600 15px/1.35 var(--fb); color: var(--txt);
+  border: 1px solid rgba(var(--cr), .4); background: rgba(0,0,0,.35); border-radius: 0; }
+.stodo small { font: 700 9.5px var(--fh); letter-spacing: .24em; color: var(--c3); }
+.stodo.warn { border-color: rgba(251,191,36,.6); color: #ffe6a8; } .stodo.warn small { color: var(--warn); }
+.stodo.bad { border-color: rgba(255,77,109,.75); color: #ffc2cd; background: rgba(70,8,22,.45); } .stodo.bad small { color: var(--bad); }
+.srows { display: grid; gap: 6px; }
+.srow { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; grid-template-areas: "d n v" ". t t"; gap: 2px 9px; align-items: center; width: 100%; min-width: 0; min-height: 46px;
+  margin: 0; padding: 6px 10px; text-align: left; cursor: pointer; border: 1px solid rgba(var(--cr), .14); background: rgba(0,0,0,.3); color: var(--txt); font: inherit; border-radius: 0; }
+.srow:active { transform: translateY(1px); }
+.srow.bad { border-color: rgba(255,77,109,.55); } .srow.warn { border-color: rgba(251,191,36,.45); }
+.srow .sdot { grid-area: d; width: 9px; height: 9px; }
+.srow .sn { grid-area: n; min-width: 0; display: flex; align-items: baseline; gap: 8px; }
+.srow .st { grid-area: t; } .srow .sv { grid-area: v; }
+.srow .sn b { font: 700 11px var(--fh); letter-spacing: .14em; color: var(--c3); text-transform: uppercase; white-space: nowrap; }
+.srow .sn small { font: 500 11px var(--fm); color: var(--mut); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.srow .st { min-width: 0; font: 500 13.5px/1.3 var(--fb); color: var(--mut); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.srow .sv { font: 600 13px var(--fh); letter-spacing: .02em; color: var(--txt); white-space: nowrap; font-variant-numeric: tabular-nums; text-align: right; }
+.srow .sv.up { color: var(--ok); } .srow .sv.dn { color: var(--bad); }
 .link-f { display: flex; gap: 8px; }
 .link-f input { flex: 1; min-width: 0; height: 44px; padding: 0 12px; border: 1px solid rgba(var(--cr), .3); background: rgba(0,0,0,.4); outline: none; font-size: 16px; color: var(--txt); border-radius: 10px; }
 .key, .link-f button, .btn { height: 44px; padding: 0 16px; border-radius: 14px; border: 1px solid rgba(var(--cr), .6); background: rgba(var(--pr), .7); color: var(--c3);

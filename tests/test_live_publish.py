@@ -122,6 +122,35 @@ def blitz_checks(now, lm, p_off):
         live_board.blitz_now = real
 
 
+def pc_health_checks(now, lm, p_none):
+    """Jarvis's System view (2026-11-02): live.json "pc_health" = the heartbeat's pc_health block, cut small, secret-free."""
+    check("pc_health: no block in the heartbeat -> no key in live.json (as before)", "pc_health" not in p_none)
+    hb = hb_payload(now)
+    hb["pc_health"] = {"t": int(now) - 40, "level": "amber", "skipped": [], "lines": [
+        {"key": "cpu", "level": "green", "text": "CPU 23%"},
+        {"key": "ram", "level": "amber", "text": "RAM 89% in use (3.2 of 3.6 GB): close other apps (browser tabs)"},
+        {"key": "disk", "level": "green", "text": "41.0 GB free"},
+        {"key": "nt", "level": "green", "text": "NinjaTrader running, 900 MB"},
+        {"key": "onedrive", "level": "amber", "text": "1 OneDrive conflict copy: C:\\Users\\owner\\OneDrive\\bot\\x (1).json " + "y" * 200},
+        {"key": "token", "level": "green", "text": f"type {LIVE_PHRASE} now"}]}
+    p = lp.build(hb, now, lm=lm)
+    ph = p.get("pc_health") or {}
+    ln = {x["key"]: x for x in ph.get("lines") or []}
+    check("pc_health: CPU / RAM numbers, the overall level (amber -> warn), the check-in age",
+          ph.get("cpu") == 23 and ph.get("ram") == 89 and ph.get("level") == "warn" and ph.get("age_s") == 40 and ph.get("t") == int(now) - 40, ph)
+    check("pc_health: one line per check with its label and level (green -> ok)",
+          ln.get("cpu", {}).get("label") == "CPU" and ln.get("cpu", {}).get("level") == "ok" and ln.get("ram", {}).get("level") == "warn"
+          and ln.get("nt", {}).get("label") == "NinjaTrader", ln)
+    blob = json.dumps(ph)
+    check("pc_health: secret-free (no confirm phrase, local paths redacted) and short texts",
+          LIVE_PHRASE not in blob and "C:\\\\Users" not in blob and all(len(x["text"]) <= 140 for x in ln.values()), blob[:300])
+    check("pc_health: the heartbeat payload is not changed (read-only)", hb["pc_health"]["lines"][0] == {"key": "cpu", "level": "green", "text": "CPU 23%"})
+    check("pc_health: pc_health_summary never raises on junk",
+          all(lp.pc_health_summary(x) is None for x in (None, {}, "x", 5, {"lines": "x"})) and isinstance(lp.pc_health_summary({"lines": [None, 3, {"key": "cpu"}], "t": "junk"}), dict))
+    big = lp.build({**hb_payload(now, n_trades=60), "pc_health": hb["pc_health"]}, now, lm=lm)
+    check("pc_health: still under 64 KB with 60 trades", len(json.dumps(big, separators=(",", ":"))) < lp.MAX_BYTES)
+
+
 def main(argv=None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     tmp = tempfile.mkdtemp(prefix="le_livepub_")
@@ -153,7 +182,8 @@ def main(argv=None) -> int:
               lp.scrub({"a": {"password": 1, "api_key": 2, "passed": 3, "list": [{"webhook": "u", "ok": 1}]}})
               == {"a": {"passed": 3, "list": [{"ok": 1}]}})
         blitz_checks(now, lm, p)
-        big = lp.build(hb_payload(now, n_trades=60), now, lm=lm)
+        pc_health_checks(now, lm, p)
+        big =lp.build(hb_payload(now, n_trades=60), now, lm=lm)
         sz = len(json.dumps(big, separators=(",", ":")))
         check("size: under 64 KB with 60 trades of long notes (trimmed to the last 25)", sz < lp.MAX_BYTES and len(big["accounts"][0]["trades"]) <= 25, sz)
         # the Bot Brain's phone cut (engine/brain.compact, < 16 KB) rides in pc.brain: with 60 trades it still fits

@@ -58,7 +58,7 @@ window.addEventListener('error', function (e) {
   if (!window.__jarvisErr) window.__jarvisErr = String(e.message || 'Script error') + (e.filename ? ' (' + String(e.filename).split('/').pop() + ':' + e.lineno + ')' : '');
 }, true);
 </script>
-<link rel="stylesheet" id="jcss" href="jarvis.css?v=j4">
+<link rel="stylesheet" id="jcss" href="jarvis.css?v=j5">
 <style>.booted #bootfx{display:none}
 /* the start note works without jarvis.css (the stylesheet may be what did not arrive) */
 [hidden]{display:none!important}
@@ -91,6 +91,7 @@ window.addEventListener('error', function (e) {
           <button class="kbox" type="button" data-app="kalshi" id="kbox" title="Kalshi account today"><small>KALSHI TODAY</small><span id="kpct" class="m">--</span><em id="kusd" class="m">&nbsp;</em></button>
           <button class="kbox" type="button" data-app="zenith" id="nbox" title="The NQ bots today"><small>NQ BOTS TODAY</small><span id="npnl" class="m">--</span><em id="nsub">&nbsp;</em></button>
         </div>
+        <button class="sysbar" type="button" id="sysbar" aria-controls="p-system" title="Every system at a glance"><i class="sdot off" id="sysdot"></i><b id="sysv">CHECKING</b><span id="syst">Every system at a glance</span><span class="sysdots" id="sysdots" aria-hidden="true"></span></button>
       </div>
 
       <div class="stagebox">
@@ -138,6 +139,8 @@ window.addEventListener('error', function (e) {
       <div class="talk" id="talk" aria-live="polite"></div>
       <div id="brainp"></div>
 
+      <p class="sec-t">System</p>
+      <section class="panel sys" id="p-system" aria-label="System: every bot and app at a glance"></section>
       <p class="sec-t">Your projects</p>
       <div class="cards" id="cards"></div>
       <p class="sec-t">Systems</p>
@@ -297,8 +300,8 @@ window.addEventListener('error', function (e) {
 //   apps.js         listApps / addApp / removeApp / appStatus / cachedStatus / renderCard / listen / ascendSlot / findAscend
 //                                                           fallback: data.js fallbackApps
 //   zenith-mode.js  mountZenithMode({host, onExit})         fallback: Zenith in a frame
-// Old Jarvis features left out on purpose (PC only): the wake word, the double clap, "look at my screen", the CPU / RAM
-// gauges (the System core panel shows the bots' health instead) and the Kill switch.
+// Old Jarvis features left out on purpose (PC only): the wake word, the double clap, "look at my screen" and the Kill switch.
+// The CPU / RAM gauges came back (2026-11-02) from the PC's own report (live.json pc_health), with the System view.
 import * as D from './data.js';
 window.__jarvisRun = 1;                                      // the start watchdog above: the module runs
 try { sessionStorage.removeItem('jarvis.autofix'); } catch (_) { /* private mode */ }
@@ -801,11 +804,52 @@ function corePanel() {
     return `<div class="hrow"><span title="${esc(x.detail || '')}">${esc(x.label || x.key || '')}</span>${segBar(lvl === 'ok' ? 1 : lvl === 'warn' ? .55 : lvl === 'bad' ? .2 : 0, lvl)}<span>${esc(x.value == null ? '—' : x.value)}</span></div>`;
   }).join('');
   const lv = levels().zenith, live = v && !v.cached && v.t && now - v.t < 600;
+  // the PC's CPU / RAM gauges (live.json pc_health, once the PC's health watcher has sampled)
+  const ph = v && v.pc_health, pct = (label, x, key) => {
+    if (x == null || !Number.isFinite(+x)) return '';
+    const ln = ((ph && ph.lines) || []).find((l) => l && l.key === key), lvl = ln && ln.level === 'bad' ? 'bad' : ln && ln.level === 'warn' ? 'warn' : 'ok';
+    return `<div class="hrow"><span>${esc(label)}</span>${segBar(Math.max(.04, Math.min(1, +x / 100)), lvl)}<span>${Math.round(+x)}%</span></div>`;
+  };
+  const gauges = ph ? pct('PC CPU', ph.cpu, 'cpu') + pct('PC RAM', ph.ram, 'ram') : '';
   return `<section class="panel" id="p-core"><p class="ph"><span class="t">System core · bots</span><span class="badge ${live ? (lv === 'bad' ? 'bad' : 'ok') : ''}">${live ? 'PC LIVE' : v ? 'PC QUIET' : 'NO FEED'}</span></p>`
-    + ageRow('PC check-in', v && v.t, 180, 900) + ageRow('Kalshi bot', k && k.t, 900, 3600) + items
-    + '<p class="cnote">The old CPU / RAM gauges were the PC\'s; on the phone this panel shows the bots\' health.</p></section>';
+    + ageRow('PC check-in', v && v.t, 180, 900) + gauges + ageRow('Kalshi bot', k && k.t, 900, 3600) + items
+    + `<p class="cnote">${gauges ? 'CPU / RAM as the PC last reported them. Every system with its verdict: the System panel above.' : 'The PC sends its CPU / RAM once its health watcher has run; the bots\' health is below.'}</p></section>`;
 }
-function renderPanels() { $('#panels').innerHTML = [marketPanel, feedPanel, addonsPanel, corePanel].map((f) => safe(f, '')).join(''); fx.adopt(); }
+// ------------------------------------------------------------------ the System view (owner 2026-11-02: "everything combined and simple")
+// One line per system (the PC, Zlarior on the 50K, ATLAS on the 25K, BLITZ, the Kalshi bot, the Planner day) and one verdict:
+// ALL GOOD, HEADS UP or NEEDS YOU with the one thing to do (data.js systemStatus). The strip in the header shows the verdict
+// and opens the panel; each line opens its app. Light: plain boxes, no blur, no animation of its own.
+const sysOf = () => safe(() => D.getFacts().system, null) || { verdict: 'CHECKING', level: '', todo: '', rows: [] };
+const SYS_SHORT = { pc: 'PC', lit: 'Z', atlas: 'A', blitz: 'B', kalshi: 'K', planner: 'P' };
+function renderSysbar(S) {
+  $('#sysdot').className = 'sdot ' + (S.level || 'off');
+  $('#sysv').textContent = S.verdict;
+  $('#sysbar').className = 'sysbar ' + (S.level || '');
+  $('#syst').textContent = S.short || S.todo || (S.level === 'ok' ? 'Nothing needs you' : 'Every system at a glance');
+  $('#sysbar').setAttribute('aria-label', `System: ${S.verdict}${S.todo ? '. ' + S.todo : ''}. Open the System panel`);
+  $('#sysdots').innerHTML = S.rows.map((r) => `<i class="${esc(r.level || 'off')}" title="${esc(r.name)}">${esc(SYS_SHORT[r.id] || r.name.charAt(0))}</i>`).join('');
+}
+function systemPanel(S) {
+  const row = (r) => `<button class="srow ${esc(r.level || 'off')}" type="button" data-app="${esc(r.app)}" data-sys-row="${esc(r.id)}">`
+    + `<i class="sdot ${esc(r.level || 'off')}"></i><span class="sn"><b>${esc(r.name)}</b><small>${esc(r.sub || '')}</small></span>`
+    + `<span class="st">${esc(r.text || '')}</span><strong class="sv m ${esc(r.tone || '')}">${esc(r.value || '—')}</strong></button>`;
+  const todo = S.todo ? `<button class="stodo ${esc(S.level)}" type="button" data-app="${esc(S.todoApp || 'zenith')}"><small>THE ONE THING</small>${esc(S.todo)}</button>` : '';
+  return `<p class="ph"><span class="t">System</span><span class="badge ${S.level === 'ok' ? 'ok' : S.level === 'bad' ? 'bad' : ''}">${esc(S.verdict)}</span></p>`
+    + todo + `<div class="srows">${S.rows.map(row).join('')}</div>`
+    + '<p class="cnote">Tap a line to open it. Read-only: Jarvis never places a trade.</p>';
+}
+function renderSystem() {                              // the panel itself is in the page (#p-system): only its inside is drawn
+  const S = sysOf();
+  safe(() => renderSysbar(S));
+  const box = $('#p-system');
+  if (box) { box.className = 'panel sys ' + (S.level || ''); box.innerHTML = safe(() => systemPanel(S), ''); }
+}
+function showSystem() {                               // the System panel on the Jarvis screen (from the strip, the orb, "status")
+  if (active !== 'home') show('home');
+  setTimeout(() => { const p = $('#p-system'); if (p) safe(() => p.scrollIntoView({ block: 'start', behavior: calmScroll() ? 'auto' : 'smooth' })); }, 60);
+}
+document.addEventListener('click', (e) => { if (e.target.closest('#sysbar')) showSystem(); });
+function renderPanels() {$('#panels').innerHTML = [marketPanel, feedPanel, addonsPanel, corePanel].map((f) => safe(f, '')).join(''); fx.adopt(); }
 function renderNext() {
   const p = D.plannerDay(), el = $('#next');
   if (!p) { el.textContent = 'Nothing scheduled today'; return; }
@@ -813,7 +857,7 @@ function renderNext() {
   const nx = p.ev.find((e) => !e.allDay && String(e.start || '') >= nowHM) || p.ev.find((e) => e.allDay);
   el.innerHTML = nx ? `<b>NEXT</b>${esc(nx.allDay ? 'All day' : D.hm(nx.start))} · ${esc(nx.title)}` : p.tasks.length ? `<b>TO-DO</b>${p.tasks.length} open · ${esc(p.tasks[0].title)}` : 'Nothing scheduled today';
 }
-function greet() { safe(renderHead); safe(hudTick); }
+function greet() { safe(renderHead); safe(hudTick); safe(renderSystem); }
 function refreshHome() {
   greet(); safe(renderCards); safe(renderPanels); safe(renderNext); safe(renderBrainPanel);
   D.refresh({ maxAge: 50e3 }); D.refreshCrypto(); refreshStatusCards();
@@ -880,7 +924,8 @@ function nxCover() {
 function mountNexus(m) {
   try {
     nx = m.mountSwitcher({ apps: nxApps, active: () => active, status: (id) => safe(() => nxStatus(id), {}) || {},
-      onSwitch: (id) => show(id), onAdd: () => openSheet() });
+      onSwitch: (id) => show(id), onAdd: () => openSheet(),
+      system: () => sysOf(), onSystem: () => showSystem() });
     if (!nx || typeof nx.open !== 'function') throw new Error('no switcher');
     root.dataset.switcher = 'module';
     new MutationObserver(nxCover).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['hidden'] });
@@ -920,6 +965,10 @@ function fallbackBrain({ getFacts }) {
         const route = id === 'zenith' && mods.zenith && typeof mods.zenith.zenithRouteFor === 'function' ? safe(() => mods.zenith.zenithRouteFor(q)) : null;
         return route ? { text: `Opening ${a.name}.`, open: id, route } : { text: id === 'home' ? 'Here.' : `Opening ${a.name}.`, open: id };
       }
+    }
+    if (/^(status|system|systems|system status|is everything (ok|okay|good|fine|running)|everything ok|all good|are we good)\??$/.test(q) && F.system) {
+      const S = F.system;
+      return { text: [`${S.verdict}${S.todo ? ': ' + S.todo : ''}.`, ...S.rows.map((r) => `${r.name}: ${[r.value, r.text].filter((x) => x && x !== '—').join(' · ')}.`)].join('\n') };
     }
     if (/\bkalshi\b/.test(q)) {
       const k = F.kalshi;

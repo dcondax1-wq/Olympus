@@ -23,6 +23,9 @@ Planner pages), with the live feed, kalshi.json and the crypto prices served fro
   l. the look and its features: fonts, the Eclipse theme, KALSHI TODAY / NQ BOTS TODAY, the HUD ring and state word, the
      panels (market, activity, add-ons, system core), the dock and its ⋯ keys, themes kept, effects levels, reduced motion,
      the boot screen (once, <= 1.2 s), the command palette, voice (tap, hands-free; the phone's voice at 1.06 / 1.1)
+  s. the System view (2026-11-02): the header strip (one verdict, one dot per system), the System panel (the PC with CPU /
+     RAM, Zlarior, ATLAS, BLITZ, Kalshi, the Planner; the one thing to do), the orb's strip and alert dot, "status" /
+     "how's the pc"; light (no blur)
 Runs A (fallbacks), B (stand-ins), C (the folder as is) and the missing-part runs each get their own copy of the site.
     python -X utf8 -m tests.test_jarvis_hub      (temp folder + a local server; nothing else touched; ~4 min)
 Screenshots of the phone sizes: set JARVIS_SHOTS=<folder>.
@@ -70,7 +73,12 @@ LIVE = {"v": 1, "kind": "le-live", "t": 0, "price": 21234.5,
                             "trades_today": 2, "waiting": "Waiting for the 14:30 check."},
                   "trades": [{"acct": "lit", "side": "LONG", "qty": 3, "exit": "TARGET", "usd": 412.5, "r": 2.1, "entry_t": 0, "exit_t": 0, "open": False}],
                   "health": {"items": [{"key": "loop", "label": "Bot loop", "value": "running", "ok": True, "warn": False, "detail": "the bot runs"}]},
-                  "lines": [], "level": "ok"}}
+                  "lines": [], "level": "ok"},
+        # the PC's health lines (engine/live_publish.pc_health_summary), for the System view
+        "pc_health": {"t": 0, "level": "ok", "cpu": 23, "ram": 61, "lines": [
+            {"key": "cpu", "label": "CPU", "level": "ok", "text": "CPU 23%"},
+            {"key": "ram", "label": "Memory (RAM)", "level": "ok", "text": "RAM 61% in use (2.2 of 3.6 GB)"},
+            {"key": "nt", "label": "NinjaTrader", "level": "ok", "text": "NinjaTrader running, 900 MB"}]}}
 CRYPTO = {"bitcoin": {"usd": 77000, "usd_24h_change": 1.5}, "ethereum": {"usd": 2250.4, "usd_24h_change": -0.4}, "solana": {"usd": 94.52, "usd_24h_change": -1.55}}
 
 # stand-ins for the parts built on their own (the contracts in index.html's header), to check the shell uses them right
@@ -221,7 +229,7 @@ def part_a():
           "const NAV_WAIT_MS = 3500;" in sw and "Promise.race([net, slow])" in sw and "return copy || offlinePage();" in sw
           and "background:#000" in sw and "location.reload()" in sw)
     check("a. worker v7: data.js, jarvis.css, the fonts, every separate part and switcher.js in SHELL, each saved on its own (a missing part is skipped)",
-          "const CACHE = 'jarvis-v7';" in sw and "'./switcher.js'" in sw and all(f"'./{f}'" in sw for f in ("data.js",) + PARTS + FONTS) and "'./jarvis.css?v=j4'" in sw
+          "const CACHE = 'jarvis-v8';" in sw and "'./switcher.js'" in sw and all(f"'./{f}'" in sw for f in ("data.js",) + PARTS + FONTS) and "'./jarvis.css?v=j5'" in sw
           and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
     # 2026-11-01 ("Just a black screen" on the iPhone): no endless network wait, the previous copy as a fallback, old copies kept
     # until the new one holds every core file, and the page draws even when its stylesheet never arrives
@@ -229,7 +237,7 @@ def part_a():
           "const NET_MAX_MS = 9000;" in sw and "copy ? NAV_WAIT_MS : NET_MAX_MS" in sw and "return offlinePage();" in sw
           and "await net" not in sw.replace("await Promise.race([net", ""))
     check("a. worker v6: a file this copy lacks comes from the previous Jarvis copy; old copies go only when every CORE file is saved",
-          "const OLD = ['jarvis-v6', 'jarvis-v5', 'jarvis-v4'];" in sw and "for (const name of [CACHE, ...OLD])" in sw
+          "const OLD = ['jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];" in sw and "for (const name of [CACHE, ...OLD])" in sw
           and "CORE.map((u) => c.match(u, { ignoreSearch: true }))" in sw)
     jhtml = open(os.path.join(JV, "index.html"), encoding="utf-8").read()
     check("a. the page draws without its stylesheet after 5 s (a stylesheet still on the way keeps an iPhone screen black)",
@@ -285,6 +293,7 @@ def feeds(ctx, kal):
     now = int(time.time())
     live = json.loads(json.dumps(LIVE))
     live["t"] = now - 120
+    live["pc_health"]["t"] = now - 150
     live["board"]["trades"][0].update(entry_t=now - 7200, exit_t=now - 5400)
 
     def feed(r):
@@ -746,8 +755,8 @@ def run_c(br, url):
         const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
-          const c = await caches.open('jarvis-v7');
-          const got = await Promise.all(['./index.html', './data.js', './jarvis.css?v=j4', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
+          const c = await caches.open('jarvis-v8');
+          const got = await Promise.all(['./index.html', './data.js', './jarvis.css?v=j5', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));
         }
@@ -1043,6 +1052,94 @@ def run_look(br, url):
     ctx.close()
 
 
+def run_system(br, url):
+    """Run S (2026-11-02, the System view): "everything combined and simple". One line per system (the PC, Zlarior, ATLAS,
+    BLITZ, Kalshi, the Planner), one verdict (ALL GOOD / HEADS UP / NEEDS YOU + the one thing to do): the strip in the header,
+    the System panel, the orb's strip and alert dot, and the brain's "status" / "how's the pc"."""
+    css = open(os.path.join(JV, "jarvis.css"), encoding="utf-8").read()
+    sw_src = open(os.path.join(JV, "switcher.js"), encoding="utf-8").read()
+    new_rules = [ln for ln in css.splitlines() if re.match(r"^\.(sysbar|sysdots|srow|srows|stodo|panel\.sys)\b", ln)]
+    nx_rules = [ln for ln in sw_src.splitlines() if ".nx-sys" in ln or ".nx-alert" in ln]
+    check("s. light: the System strip, panel and orb strip use no backdrop blur and no animation of their own",
+          new_rules and nx_rules and not any("backdrop" in ln or "animation" in ln for ln in new_rules + nx_rules), len(new_rules))
+    ctx, p, errs, kal = new_page(br)
+    p.goto(url + "jarvis/")
+    ready(p)
+    p.wait_for_function("document.getElementById('sysv').textContent !== 'CHECKING' && document.querySelectorAll('#p-system .srow').length === 6", timeout=8000)
+    s = p.evaluate("""() => ({ v: document.getElementById('sysv').textContent, t: document.getElementById('syst').textContent,
+      dots: [...document.querySelectorAll('#sysdots i')].map((i) => i.textContent + ':' + i.className),
+      rows: [...document.querySelectorAll('#p-system .srow')].map((r) => ({ id: r.dataset.sysRow, app: r.dataset.app, lvl: r.className.replace('srow ', ''),
+        v: r.querySelector('.sv').textContent, t: r.querySelector('.st').textContent })),
+      todo: !!document.querySelector('#p-system .stodo'), bar: document.getElementById('sysbar').getBoundingClientRect().height })""")
+    rows = {r["id"]: r for r in s["rows"]}
+    check("s. the header strip: ALL GOOD, 'Nothing needs you', one dot per system (PC Z A B K P)",
+          s["v"] == "ALL GOOD" and s["t"] == "Nothing needs you" and [d.split(":")[0] for d in s["dots"]] == ["PC", "Z", "A", "B", "K", "P"] and s["bar"] >= 34, s)
+    check("s. the System panel: PC (CPU / RAM from live.json pc_health, checked in), Zlarior +$213, ATLAS, BLITZ, Kalshi (not connected), Planner",
+          list(rows) == ["pc", "lit", "atlas", "blitz", "kalshi", "planner"] and rows["pc"]["v"] == "CPU 23% · RAM 61%" and "checked in 2 min ago" in rows["pc"]["t"]
+          and rows["pc"]["lvl"] == "ok" and rows["lit"]["v"] == "+$213" and "RUNNING" in rows["lit"]["t"] and rows["kalshi"]["v"] == "OFFLINE"
+          and rows["kalshi"]["app"] == "kalshi" and rows["planner"]["app"] == "planner" and not s["todo"], s["rows"])
+    p.click("#sysbar")
+    p.wait_for_timeout(900)
+    top = p.evaluate("(() => { const a = document.getElementById('p-system').getBoundingClientRect(), h = document.getElementById('home').getBoundingClientRect(); return [Math.round(a.top), Math.round(h.top), Math.round(h.bottom)]; })()")
+    check("s. a tap on the strip brings the System panel into view", top[1] - 2 <= top[0] < top[2] - 100, top)
+    p.click('#p-system .srow[data-sys-row="kalshi"]')
+    p.wait_for_timeout(500)
+    cur = p.evaluate("(document.querySelector('#modes [aria-current=\"page\"]') || {dataset: {}}).dataset.app")
+    check("s. a tap on a line opens that system (Kalshi)", cur == "kalshi", cur)
+    p.click('.bar [data-app="home"]')
+    p.wait_for_timeout(300)
+    ask = asker(p)
+    a1 = ask("status")
+    check("s. 'status': the verdict first, then one line per system", a1.startswith("ALL GOOD: nothing needs you.") and "PC (bot server" in a1
+          and "Zlarior (50K eval): +$213" in a1 and "Kalshi (its own server): OFFLINE" in a1, a1)
+    a2 = ask("how's the pc")
+    check("s. 'how's the pc': its check-in, CPU and RAM", "The PC last checked in" in a2 and "CPU 23%, RAM 61%, every health line green." in a2, a2)
+    a3 = ask("is everything ok")
+    check("s. 'is everything ok' is the System answer too", a3 == a1, a3[:100])
+    check("s. no page errors (all good)", not errs, errs)
+    ctx.close()
+    # a red health line on the PC: NEEDS YOU + the one thing to do, everywhere (strip, panel, orb, switcher)
+    ctx, p, errs, kal = new_page(br)
+    now = int(time.time())
+    bad = json.loads(json.dumps(LIVE))
+    bad["t"] = now - 60
+    bad["pc_health"] = {"t": now - 60, "level": "bad", "cpu": 31, "ram": 96, "lines": [
+        {"key": "cpu", "label": "CPU", "level": "ok", "text": "CPU 31%"},
+        {"key": "ram", "label": "Memory (RAM)", "level": "bad", "text": "RAM 96% in use (3.5 of 3.6 GB): close other apps (browser tabs)"}]}
+    ctx.route(re.compile(r"^https://(api\.github\.com|raw\.githubusercontent\.com)/.*live"),
+              lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(bad)))
+    p.goto(url + "jarvis/")
+    ready(p)
+    p.wait_for_function("document.getElementById('sysv').textContent === 'NEEDS YOU'", timeout=8000)
+    p.wait_for_function("document.documentElement.dataset.switcher === 'module' && !!document.getElementById('nxOrb')", timeout=8000)
+    r = p.evaluate("""() => ({ t: document.getElementById('syst').textContent, bar: document.getElementById('sysbar').className,
+      todo: (document.querySelector('#p-system .stodo') || {}).textContent || '', todoApp: (document.querySelector('#p-system .stodo') || {dataset: {}}).dataset.app,
+      pc: document.querySelector('#p-system .srow[data-sys-row="pc"]').className, orb: document.getElementById('nxOrb').className,
+      alert: getComputedStyle(document.querySelector('#nxOrb .nx-alert')).display })""")
+    check("s. a red PC line: NEEDS YOU, the strip names it, the panel's one thing to do is the line's own fix, the PC line red",
+          "bad" in r["bar"] and r["t"] == "PC: Memory (RAM) red" and "THE ONE THING" in r["todo"] and "RAM 96% in use" in r["todo"] and "close other apps" in r["todo"]
+          and r["todoApp"] == "zenith" and "bad" in r["pc"], r)
+    check("s. the orb carries a red dot while something needs the owner", "lv-bad" in r["orb"] and r["alert"] == "block", r)
+    o = p.evaluate("(() => { const b = document.getElementById('nxOrb').getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2]; })()")
+    p.mouse.click(o[0], o[1])
+    p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=3000)
+    p.wait_for_timeout(450)
+    st = p.evaluate("""() => { const s = document.getElementById('nxSys'), b = s.getBoundingClientRect();
+      return { hidden: s.hidden, text: s.textContent, cls: s.className, dots: s.querySelectorAll('.nx-sd i').length, h: b.height, w: b.right <= innerWidth,
+               cards: [...document.querySelectorAll('#nxTrack .nx-card')].map((c) => (c.querySelector('.nx-nm b') || {}).textContent) }; }""")
+    check("s. the switcher: the System strip on top (NEEDS YOU, what, 6 dots, 44 px+), the app cards unchanged",
+          not st["hidden"] and st["text"].startswith("NEEDS YOU") and "PC: Memory (RAM) red" in st["text"] and "bad" in st["cls"] and st["dots"] == 6
+          and st["h"] >= 44 and st["w"] and st["cards"][:4] == ["JARVIS", "NQ BOT", "CALENDAR", "KALSHI"], st)
+    p.click("#nxSys")
+    p.wait_for_timeout(900)
+    after = p.evaluate("""(() => { const a = document.getElementById('p-system').getBoundingClientRect(), h = document.getElementById('home').getBoundingClientRect();
+      return { open: document.getElementById('nxRoot').classList.contains('on'), home: !document.getElementById('home').hidden, top: [Math.round(a.top), Math.round(h.top), Math.round(h.bottom)] }; })()""")
+    check("s. a tap on the switcher's strip closes it and shows the System panel on the Jarvis screen",
+          not after["open"] and after["home"] and after["top"][1] - 2 <= after["top"][0] < after["top"][2] - 100, after)
+    check("s. no page errors (needs you)", not errs, errs)
+    ctx.close()
+
+
 def run_switcher(br, url):
     """Run N (2026-11-01, the orb, switcher.js): "a way to access each thing, so calendar, kalshi, Jarvis, and my nq bot and
     eventually other stuff, make a really cool way to change between stuff". One orb over every mode: tap = a live card per app,
@@ -1182,6 +1279,7 @@ def main():
             run_c(br, host + variants["C"])
             run_look(br, host + variants["C"])
             run_switcher(br, host + variants["C"])
+            run_system(br, host + variants["C"])
             br.close()
     finally:
         srv.shutdown()

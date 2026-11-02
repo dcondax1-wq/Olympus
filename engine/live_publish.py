@@ -26,6 +26,8 @@ lays it over data.json):
                the open position with its stop / target, today's orders, the last trades),
    "price", "day_pnl", "last_signal", "model_state", "heartbeat": {"t", "ok"} (the last heartbeat push),
    "money": the Goals card's Road to $10K / Stingray 3LT (engine/money_goal.from_heartbeat, ~7 KB; dropped first if too big),
+   "pc_health": the PC's CPU / RAM / disk / NinjaTrader lines for Jarvis's System view (pc_health_summary; absent before
+                the PC's first health sample),
    "blitz": BLITZ on account C in the board's lit / atlas card shape (blitz_block; an "off" card while account C is off,
             null when it cannot be built; board.blitz itself stays present only while account C is on)}
 Next to it in the same commit: liveview.json (< 240 KB), the phone's Live View (engine/liveview_api.phone_view: the
@@ -200,8 +202,47 @@ def build(hb_payload: dict, now=None, lm: dict | None = None, hb_last: dict | No
         out["money"] = money_goal.from_heartbeat(hb, now=now, accounts=out.get("accounts"))
     except Exception as e:
         out["money"] = {"error": f"{e.__class__.__name__}: {str(e)[:120]}"}
+    ph = pc_health_summary(hb.get("pc_health"), now)     # CPU / RAM / disk / NinjaTrader lines for Jarvis's System view
+    if ph is not None:
+        out["pc_health"] = ph
     out = scrub(out, _phrases())
     return fit(out)
+
+
+PC_HEALTH_LEVEL = {"green": "ok", "amber": "warn", "red": "bad"}
+PC_HEALTH_LABELS = {"cpu": "CPU", "ram": "Memory (RAM)", "disk": "Disk space", "nt": "NinjaTrader", "bot_mem": "Bot memory",
+                    "onedrive": "OneDrive sync", "clock": "PC clock", "poll": "Bot poll time"}
+
+
+def pc_health_summary(block, now=None) -> dict | None:
+    """Jarvis's System view of the PC (owner 2026-11-02: "everything combined and simple"): the heartbeat's "pc_health" block
+    (engine/pc_health.hb_block: CPU / RAM / disk / NinjaTrader / bot memory / OneDrive / clock / poll, green / amber / red)
+    cut to what the phone shows: {"t", "age_s", "level" ok|warn|bad, "cpu", "ram" (percent or None), "lines": [{"key",
+    "label", "level", "text"}] (at most 8, text <= 140 chars)}. Only what the heartbeat already carries (no new sampling;
+    scrub() runs over it too). None when there is no block (the key is then left out). Never raises."""
+    try:
+        if not isinstance(block, dict) or not isinstance(block.get("lines"), list):
+            return None
+        now = int(now or time.time())
+        lines, nums = [], {}
+        for ln in block["lines"][:8]:
+            if not isinstance(ln, dict) or not ln.get("key"):
+                continue
+            key, txt = str(ln["key"])[:20], str(ln.get("text") or "")[:140]
+            lines.append({"key": key, "label": PC_HEALTH_LABELS.get(key, key), "level": PC_HEALTH_LEVEL.get(ln.get("level"), "off"),
+                          "text": txt})
+            m = re.search(r"(\d+(?:\.\d+)?)\s*%", txt) if key in ("cpu", "ram") else None
+            if m:
+                nums[key] = round(float(m.group(1)))
+        try:
+            t = int(float(block.get("t")))
+        except (TypeError, ValueError):
+            t = None
+        lv = "bad" if any(x["level"] == "bad" for x in lines) else "warn" if any(x["level"] == "warn" for x in lines) else "ok"
+        return {"t": t, "age_s": max(0, now - t) if t else None, "level": lv, "cpu": nums.get("cpu"), "ram": nums.get("ram"),
+                "lines": lines}
+    except Exception:
+        return None
 
 
 BLITZ_KEYS = ("id", "name", "plan", "method", "broker", "badge", "source", "configured", "stage", "status", "balance", "floor", "room",
@@ -275,7 +316,10 @@ def fit(p: dict, max_bytes: int = MAX_BYTES) -> dict:
         if size() > max_bytes and isinstance(p.get("pc"), dict):
             p["pc"].pop(k, None)
             p["trimmed"] = True
-    if "money" in p and size() > max_bytes:                                 # the Goals money card (data.json keeps one)
+    if "pc_health" in p and size() > max_bytes:                             # Jarvis's PC lines (~1 KB)
+        p.pop("pc_health", None)
+        p["trimmed"] = True
+    if "money" in p and size() > max_bytes:                               # the Goals money card (data.json keeps one)
         p.pop("money", None)
         p["trimmed"] = True
     if bd and size() > max_bytes:                                           # last resort: no board (data.json keeps one)
