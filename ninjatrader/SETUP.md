@@ -14,7 +14,8 @@ Data Server" problem). After this, your routine is only: turn the PC on.
 Check: `python -m engine.ninjatrader --status` says `Bar source : bars from LE_Feed (no chart), 0 re-subscribes`.
 Its log is `Documents\NinjaTrader 8\le_feed\le_feed_log.txt`. The bot tells it which contract to write
 (`le_feed\feed_instruments.txt`), so the December roll needs no click either. Not yet compiled on a real NinjaTrader:
-if F5 shows an error, send a photo; the chart (step 4 below) keeps working meanwhile.
+if F5 shows an error, send a photo, delete `LE_Feed.cs` from the AddOns folder and press F5 again: the chart (step 4 below)
+keeps working meanwhile.
 
 **What it does.** The PC bot runs the same strategy and settings as always (today: LIT, `live_model.json`). Instead of paper fills, it writes small
 "order instruction files" into a folder that NinjaTrader 8 watches. NinjaTrader places the orders on the account you
