@@ -508,7 +508,9 @@ def run_a(br, url):
     p.fill("#addUrl", url + "kalshi-stub/")
     p.click('#addF button[type="submit"]')
     p.wait_for_timeout(500)
-    check("e. an added dashboard shows in the bar and opens", "Clipper" in p.inner_text("#apps") and p.locator("#v-x-clipper").is_visible())
+    p.wait_for_function("!!document.getElementById('v-x-clipper') || !!document.getElementById('addErr').textContent", timeout=5000)
+    check("e. an added dashboard shows in the bar and opens", "Clipper" in p.text_content("#apps") and p.locator("#v-x-clipper").is_visible(),
+          p.evaluate("[document.documentElement.dataset.mode, document.getElementById('addErr').textContent, document.getElementById('sheet').hidden, String(document.getElementById('apps') && document.getElementById('apps').textContent)]"))
     fr = p.evaluate("(() => { const f = document.querySelector('#v-x-clipper iframe'); return [f.getAttribute('allow') || '', f.getAttribute('sandbox')]; })()")
     go(p, "home")
     p.click("#addB")
