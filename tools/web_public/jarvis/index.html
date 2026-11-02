@@ -494,6 +494,8 @@ function frameView(a, url) {
 // Each dashboard keeps its own colour behind the iPhone's status bar (its theme-color, else its page background); Jarvis's
 // own black comes back on the Jarvis screen. Read from our own pages only; another site's page stays black.
 const tints = {};
+// another site's page (Ascend) cannot be read: its jarvis.json may name its colour (theme: "#rrggbb")
+const tintOf = (id) => tints[id] || safe(() => (statusCards[id] && statusCards[id].theme) || (mods.apps && byId(id) && (mods.apps.cachedStatus(byId(id)) || {}).theme), '') || '';
 function setTint(c) {
   root.style.setProperty('--app-bg', c || '#000');
   const m = document.querySelector('meta[name="theme-color"]');
@@ -510,7 +512,7 @@ function appTint(id, f) {
     return b && !/^(transparent|rgba\(0, 0, 0, 0\))$/.test(b) ? b : '';
   }, '');
   if (c) tints[id] = c;
-  if (active === id) setTint(tints[id]);
+  if (active === id) setTint(tintOf(id));
 }
 let showSeq = 0;
 function show(id, opts = {}) {
@@ -525,7 +527,7 @@ function show(id, opts = {}) {
   $('#home').hidden = a.id !== 'home';
   for (const k of Object.keys(frames)) frames[k].hidden = k !== a.id;
   if (a.id !== 'zenith') hideZen(a.id !== 'home');
-  if (a.id === 'home') setTint('#000000'); else if (a.id !== 'zenith') setTint(tints[a.id]);
+  if (a.id === 'home') setTint('#000000'); else if (a.id !== 'zenith') setTint(tintOf(a.id));
   if (a.id === 'home') { refreshHome(); if (!listening && !speaking) setState('idle'); }
   else { stopListening(); closeMore(); if (a.id === 'zenith') showZenith(a, opts.route, seq); else frameView(a, opts.url); }
   renderBar();

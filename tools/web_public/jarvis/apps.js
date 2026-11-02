@@ -21,7 +21,7 @@
 //
 // The status contract (docs/JARVIS_APPS.md): <app url>jarvis.json, or the app's statusUrl, at most 8 KB, plain text only:
 //   {v: 1, name, status: {level: 'ok'|'warn'|'bad'|'off', label}, kpis: [{label, value, delta?}] (<= 3),
-//    lines: [text] (<= 3), t: unix seconds, open?: a route inside the app}
+//    lines: [text] (<= 3), t: unix seconds, open?: a route inside the app, theme?: "#rrggbb" (its top colour)}
 // A card is stale (shown grey, "not updated for ...") once t is more than 30 minutes old.
 //
 // Storage (this phone only). `jarvis.apps` {v: 1, apps, ascend, seen} is the registry. The older keys are never deleted and
@@ -476,6 +476,12 @@ export function validateStatus(input, opts) {
     }
   }
   const card = { v: 1, name: name.value, status: { level: j.status.level, label: label.value }, kpis, lines, t: j.t };
+  // theme (optional, 2026-11-02): the app's own colour, "#rrggbb", shown behind the iPhone's status bar while it is open
+  // (Jarvis cannot read another site's page, so the app says it here)
+  if (!absent(j.theme) && j.theme !== '') {
+    if (typeof j.theme !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(j.theme.trim())) return bad('theme must be a colour like "#0b0b0d"');
+    card.theme = j.theme.trim().toLowerCase();
+  }
   if (!absent(j.open) && j.open !== '') {
     if (typeof j.open !== 'string' || !j.open.trim() || j.open.length > LIMITS.open || CTRL_RE.test(j.open)) return bad('open must be a short route inside the app, like "#today"');
     const route = j.open.trim();
