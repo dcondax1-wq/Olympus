@@ -10,6 +10,28 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
 **Steps for the owner (2026-10-20): at most 3 numbered steps, one copy-paste line, no options or side notes; do every other
 part yourself or fold it into a script.**
 
+## One chat: where each thing lives and how it ships (owner 2026-11-01)
+The owner: "I want this chat to be the one I make all changes to, for anything. It's gonna save me time and usage." Every
+project is changed from this repo; this map saves the search. Ship = PR on the session branch, squash-merge to main.
+
+| Thing | Where it lives | How a change ships | Tests to run (only these) |
+|---|---|---|---|
+| NQ bots (Zlarior/LIT, ATLAS, BLITZ) | `engine/`, `live_model*.json`, `second_model.json`, `tools/` | main -> the PC auto-updates when the bot is FLAT (`engine/autoupdate.py`: self-tests, rollback on failure) | `tests.test_lit_live` + the area's own test |
+| Zenith (phone dashboard) | `tools/web_public/` (index.html, sw.js, …) | main -> run `cloud-monitor.yml` (ref main) -> nq-dashboard Pages, live ~2 min after the run | `tests.test_phone_e2e` (+ the page's own test) |
+| Jarvis (home app, the orb) | `tools/web_public/jarvis/` | same as Zenith | `tests.test_jarvis_hub`, `tests.test_phone_e2e`, the module's test |
+| Kalshi page in Jarvis | `tools/web_public/kalshi/`, `tools/kalshi_kit/`, `engine/kalshi_publish.py` | same as Zenith | `tests.test_kalshi_page`, `tests.test_kalshi_publish` |
+| Planner (Calendar) | its code: nq-dashboard `planner-backup` (read-only here); ours: `tools/planner_patches/*.patch` | applied at every publish by `scripts/add_planner.sh`, confined to planner/ | `tests.test_planner_addons` |
+| Kalshi bot itself | the Oracle VM, `/home/ubuntu/kalshi` (real money) | not reachable from this cloud chat: its own server chat, or Remote Control on the VM (`claude remote-control` there) | — |
+| Ascend | its own host (made with ChatGPT) | added in Jarvis with + (`docs/JARVIS_APPS.md`) | — |
+| The PC (Windows) | NinjaTrader, the bot server | git auto-update; NinjaTrader login and live arming are the owner's | — |
+
+- **Phone changes:** check in WebKit (the iPhone's engine) before shipping: `PLAYWRIGHT_BROWSERS_PATH=<dir> python -m playwright
+  install webkit` + `install-deps webkit`, iPhone 13 / SE profiles (see the Jarvis worker notes under Infrastructure).
+- **Merges:** each merge restarts the PC's bot server once (when flat) and runs ~5 min of self-tests on a 3.6 GB PC: batch
+  changes into one merge when possible.
+- **Verify live** after a publish: the file on `https://demetrades2000-coder.github.io/nq-dashboard/...` (e.g. the worker's
+  `CACHE` name), then one WebKit open of the live page.
+
 ## Hard rules (never break)
 - **Futures data only:** TradingView CME `NQ1!` / `ES1!` exports in `data/` (5m 2021-11 → 2026-10-16; 1m for 2026). Never CFD,
   never Yahoo for testing. **No Yahoo live either (owner 2026-10-19, `live_model.json` `"no_yahoo": true`, `engine/pcbars.py`):**

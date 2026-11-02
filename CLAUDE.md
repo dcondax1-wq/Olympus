@@ -6,6 +6,9 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
 **Steps for the owner (2026-10-20): at most 3 numbered steps, one copy-paste line, no options or side notes; do every other
 part yourself or fold it into a script.**
 
+**One chat (owner 2026-11-01):** he makes every change, for every project, from his one Claude Code chat on this repo, to
+save time and usage. Start from the map (CLAUDE_REFERENCE "One chat"), run only the tests for the area touched, no agent
+swarms unless he asks.
 **This file is the short brief, loaded into every message: keep it short.** The full detail (every switch, run, result,
 command and file) is in `docs/CLAUDE_REFERENCE.md`; read the section you need before touching that area, and put new detail
 there, not here.
@@ -77,6 +80,7 @@ there, not here.
 | Key commands | Backtests, run library, tests, dry runs |
 | Infrastructure | PC bot, cloud monitor, NinjaTrader, phone feed, TradingView, PC-off options |
 | Open work | Dashboard, Pine port, the Dec 2026 roll |
+| One chat | **Any change**: where each project lives, how it ships, its tests (start here) |
 
 ## Most-used commands (run from the repo root)
 - `python -X utf8 -m tests.test_lit_live`: replays every 2026 session through the live loop (must stay identical).
