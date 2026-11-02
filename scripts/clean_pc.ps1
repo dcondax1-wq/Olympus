@@ -22,19 +22,38 @@ each heavy step checks the clock again and stops before 01:15 ET so it never run
  10. Windows' component store clean-up (DISM /StartComponentCleanup: old update files; this one takes a while)
  11. a Microsoft Defender quick scan
   after: memory again and what changed. Log: logs\clean_pc-YYYYMMDD-HHMM.txt
+ALSO (read-only, every run):
+  NinjaTrader check: reads (never changes) NinjaTrader's folder: OneDrive sync, workspaces and charts (days loaded, Tick
+     Replay, indicators), ATI, the size of its historical data; prints what to change by hand. Copies the workspaces to
+     logs\nt_workspaces-YYYYMMDD (a backup before you change anything). NinjaTrader is never closed or modified.
+  PC report: CPU, cores, memory (total, speed, slots), disks (SSD/HDD, free), graphics, Windows build, power plan,
+     start-up programs -> PC_REPORT-<computer>.txt next to CLEAN_PC.bat.
+
+MAIN PC (no bot folder): copy the PC_KIT folder (CLEAN_PC.bat + scripts\clean_pc.ps1; the Surface run puts it in
+  OneDrive\PC_KIT, or on the Desktop) and double-click CLEAN_PC.bat there. It sees there is no bot (no server.py) and
+  runs STANDALONE: it closes nothing that is running (it only lists it), keeps the Xbox / gaming apps, and the deep part
+  runs any time unless NinjaTrader is open (then the same 01:15-16:05 ET weekday wait). -Standalone forces this mode.
 
   powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\clean_pc.ps1            (CLEAN_PC.bat runs this)
   powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\clean_pc.ps1 -DryRun    (shows the plan, changes nothing)
+  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\clean_pc.ps1 -Report    (only the PC report + NinjaTrader check)
 #>
 param(
     [switch]$DryRun,
     [switch]$LightOnly,
+    [switch]$Standalone,    # main PC: no bot folder (auto when server.py / engine\ninjatrader.py are missing)
+    [switch]$Report,        # only the PC report and the NinjaTrader check; changes nothing
     [switch]$AdminPart,     # internal: the elevated deep part, started by this script with a UAC prompt
     [string]$Log = ""       # internal: the same log file for both parts
 )
 
 $ErrorActionPreference = 'Continue'
 $Root = Split-Path -Parent $PSScriptRoot
+function Test-BotFolder([string]$Dir) {
+    if (-not $Dir) { return $false }
+    return ((Test-Path -LiteralPath (Join-Path $Dir 'server.py')) -and (Test-Path -LiteralPath (Join-Path (Join-Path $Dir 'engine') 'ninjatrader.py')))
+}
+if (-not (Test-BotFolder $Root)) { $Standalone = $true }
 $LogDir = Join-Path $Root 'logs'
 if (-not (Test-Path -LiteralPath $LogDir)) { New-Item -ItemType Directory -Path $LogDir -Force | Out-Null }
 if (-not $Log) { $Log = Join-Path $LogDir ("clean_pc-" + (Get-Date -Format 'yyyyMMdd-HHmm') + ".txt") }
@@ -71,14 +90,22 @@ function Is-StartupJunk([string]$Name, [string]$Command) {
     foreach ($p in $StartupOff) { if ($t.Contains($p)) { return $true } }
     return $false
 }
-# ET clock: the deep part never runs while the bot can trade (weekdays 01:15-16:05 ET)
-function Get-ET { try { return [System.TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTime]::UtcNow, 'Eastern Standard Time') } catch { return [System.TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTime]::UtcNow, 'America/New_York') } }
+# ET clock: the deep part never runs while the bot can trade (weekdays 01:15-16:05 ET). LE_T_ET: test clock only.
+function Get-ET {
+    if ($env:LE_T_ET) { return [DateTime]::Parse($env:LE_T_ET, [Globalization.CultureInfo]::InvariantCulture) }
+    try { return [System.TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTime]::UtcNow, 'Eastern Standard Time') } catch { return [System.TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTime]::UtcNow, 'America/New_York') } }
 function Is-TradingWindow([DateTime]$Et) {
     if ($Et.DayOfWeek -eq 'Saturday' -or $Et.DayOfWeek -eq 'Sunday') { return $false }
     $m = $Et.Hour * 60 + $Et.Minute
     return ($m -ge 75 -and $m -lt 965)          # 01:15 - 16:05 ET
 }
-function Deep-Allowed { return -not (Is-TradingWindow (Get-ET)) }
+function Nt-Running { return (@(Get-Process -Name 'NinjaTrader' -ErrorAction SilentlyContinue).Count -gt 0) }
+# the main PC (standalone) without NinjaTrader open has no trading hours to protect
+function Test-DeepAllowed([DateTime]$Et, [bool]$IsStandalone, [bool]$NtOpen) {
+    if ($IsStandalone -and -not $NtOpen) { return $true }
+    return -not (Is-TradingWindow $Et)
+}
+function Deep-Allowed { return (Test-DeepAllowed (Get-ET) ([bool]$Standalone) (Nt-Running)) }
 
 function Mem-Line {
     try {
@@ -120,6 +147,210 @@ function Remove-Old([string]$Dir, [int]$Days, [string]$Filter = '*') {
 }
 function MB($b) { return [math]::Round($b / 1MB) }
 
+# ================================================================== NinjaTrader check (read-only: never closes or changes NinjaTrader)
+function Get-NtFolders {
+    $out = @()
+    $cands = @($env:NINJATRADER_FOLDER)
+    foreach ($docs in @([Environment]::GetFolderPath('MyDocuments'), $(if ($env:OneDrive) { Join-Path $env:OneDrive 'Documents' }))) {
+        if ($docs) { $cands += (Join-Path $docs 'NinjaTrader 8') }
+    }
+    foreach ($nt in $cands) { if ($nt -and (Test-Path -LiteralPath $nt) -and ($out -notcontains $nt)) { $out += $nt } }
+    return ,$out
+}
+# read a file NinjaTrader may have open, without locking it (FileShare ReadWrite + Delete)
+function Read-Shared([string]$Path) {
+    try {
+        $fs = [System.IO.File]::Open($Path, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, ([System.IO.FileShare]::ReadWrite -bor [System.IO.FileShare]::Delete))
+        try { $sr = New-Object System.IO.StreamReader($fs); return $sr.ReadToEnd() } finally { $fs.Dispose() }
+    } catch { return '' }
+}
+function Test-InOneDrive([string]$Path) {
+    if (-not $Path) { return $false }
+    $p = $Path.ToLowerInvariant()
+    if ($env:OneDrive -and $p.StartsWith($env:OneDrive.ToLowerInvariant())) { return $true }
+    return ($p.Contains('\onedrive') -or $p.Contains('/onedrive'))
+}
+# what one NinjaTrader 8 workspace file holds: charts (data series), days loaded, Tick Replay, indicators, the bot's LE_BarFeed
+function Get-WorkspaceStats([string]$Xml) {
+    $days = @(); foreach ($m in [regex]::Matches($Xml, '<DaysBack>\s*(\d+)\s*</DaysBack>')) { $days += [int]$m.Groups[1].Value }
+    $tick = [regex]::Matches($Xml, '(?i)<IsTickReplay>\s*true\s*</IsTickReplay>').Count
+    $ind = @(); foreach ($m in [regex]::Matches($Xml, 'NinjaTrader\.NinjaScript\.Indicators\.([A-Za-z_][\w\.]*)')) { $ind += $m.Groups[1].Value }
+    $maxDays = 0; foreach ($d in $days) { if ($d -gt $maxDays) { $maxDays = $d } }
+    return [pscustomobject]@{
+        Series = $days.Count; Days = $days; MaxDays = $maxDays; TickReplay = $tick
+        Indicators = @($ind | Select-Object -Unique); IndicatorCount = $ind.Count
+        HasBarFeed = ($Xml -match 'LE_BarFeed')
+    }
+}
+# plain-language advice for one workspace (the bot chart keeps 30 days: GO_LIVE_TONIGHT "Keep the NinjaTrader chart at 30 days loaded")
+function Get-WorkspaceAdvice([string]$Name, $St) {
+    $a = @()
+    if ($St.TickReplay -gt 0) { $a += "$Name : Tick Replay is ON in $($St.TickReplay) data series (heavy on memory and CPU): chart > Data Series (Ctrl+F) > Tick Replay off" }
+    if ($St.HasBarFeed) {
+        if ($St.MaxDays -gt 0 -and $St.MaxDays -lt 30) { $a += "$Name : the bot chart (LE_BarFeed) loads $($St.MaxDays) days: keep it at 30 (Data Series > Days to load 30)" }
+        $big = @($St.Days | Where-Object { $_ -gt 30 })
+        if ($big.Count) { $a += "$Name : $($big.Count) chart(s) load more than 30 days (most $($St.MaxDays)): the bot chart needs 30, charts you only look at 3-5 days (Data Series > Days to load)" }
+        if ($St.Series -gt 2) { $a += "$Name : the bot's workspace has $($St.Series) data series: keep only the MNQ chart with LE_BarFeed in it, move other charts to a second workspace you close while the bot trades" }
+    } else {
+        if ($St.MaxDays -gt 10) { $a += "$Name : a chart loads $($St.MaxDays) days: 3-5 days is plenty for looking (Data Series > Days to load)" }
+    }
+    if ($St.IndicatorCount -gt 8) { $a += "$Name : $($St.IndicatorCount) indicators ($((@($St.Indicators) | Select-Object -First 8) -join ', ')...): remove the ones you do not look at (chart > Indicators)" }
+    return ,$a
+}
+function Dir-Bytes([string]$Dir) {
+    if (-not (Test-Path -LiteralPath $Dir)) { return 0 }
+    $fs = @(Get-ChildItem -LiteralPath $Dir -Recurse -File -Force -ErrorAction SilentlyContinue)
+    if ($fs.Count -eq 0) { return 0 }
+    return [double](($fs | Measure-Object -Property Length -Sum).Sum)
+}
+function Get-AtiState([string]$Nt) {
+    $cfg = Read-Shared (Join-Path $Nt 'config.xml')
+    $m = [regex]::Match($cfg, '(?i)<(?:IsAtiEnabled|AtiEnabled|IsAutomatedTradingInterfaceEnabled)>\s*(true|false)\s*<')
+    if ($m.Success) { return $m.Groups[1].Value.ToLowerInvariant() }
+    if ((Test-Path -LiteralPath (Join-Path $Nt 'incoming')) -and (Test-Path -LiteralPath (Join-Path $Nt 'outgoing'))) { return 'looks on' }
+    return 'unknown'
+}
+function NinjaTrader-Check([bool]$Backup) {
+    Head 'NinjaTrader check (read-only: NinjaTrader is never closed or changed)'
+    $nt = @(Get-Process -Name 'NinjaTrader' -ErrorAction SilentlyContinue)
+    if ($nt.Count) {
+        $mb = [math]::Round((($nt | Measure-Object WorkingSet64 -Sum).Sum) / 1MB)
+        Say '..' "NinjaTrader is running and uses $mb MB of memory (under ~1,500 MB is healthy with one or two charts)"
+    } else { Say '..' 'NinjaTrader is not running' }
+    $dirs = Get-NtFolders
+    if ($dirs.Count -eq 0) { Say 'OK' 'No NinjaTrader 8 folder on this PC'; return }
+    foreach ($d in $dirs) {
+        Say '..' "Folder: $d"
+        if (Test-InOneDrive $d) { Say 'SKIP' 'It is inside OneDrive: OneDrive can lock the bar and order files while it uploads them. OneDrive tray icon > Pause syncing while trading (NinjaTrader advises not to sync its folder).' }
+        else { Say 'OK' 'Not synced by OneDrive' }
+        $ati = Get-AtiState $d
+        if ($ati -eq 'false') { Say 'FIX' 'ATI is OFF: Tools > Options > Automated trading interface > AT Interface (the bot needs it)' }
+        elseif ($ati -eq 'unknown') { Say '..' 'ATI: not readable here; check Tools > Options > Automated trading interface > AT Interface is ticked' }
+        else { Say 'OK' "ATI (automated trading interface): $ati" }
+        $ws = Join-Path $d 'workspaces'
+        $files = @(Get-ChildItem -LiteralPath $ws -Filter '*.xml' -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -notlike '_*' })
+        $advice = @()
+        foreach ($f in $files) {
+            $st = Get-WorkspaceStats (Read-Shared $f.FullName)
+            Say '..' ("Workspace '{0}': {1} data series, most days loaded {2}, Tick Replay {3}, {4} indicators{5}" -f $f.BaseName, $st.Series, $st.MaxDays, $(if ($st.TickReplay) { 'ON' } else { 'off' }), $st.IndicatorCount, $(if ($st.HasBarFeed) { ', has the bot chart (LE_BarFeed)' } else { '' }))
+            $advice += Get-WorkspaceAdvice $f.BaseName $st
+        }
+        if ($files.Count -gt 2) { $advice += "$($files.Count) workspaces saved: keep the bot's open, close the rest while the bot trades (File > Workspaces > Close)" }
+        foreach ($a in $advice) { Say 'SKIP' $a }
+        if ($files.Count -and -not $advice.Count) { Say 'OK' 'Workspaces look light' }
+        $tickGB = [math]::Round((Dir-Bytes (Join-Path (Join-Path $d 'db') 'tick')) / 1GB, 1)
+        $minGB = [math]::Round((Dir-Bytes (Join-Path (Join-Path $d 'db') 'minute')) / 1GB, 1)
+        Say '..' "Historical data: tick $tickGB GB, minute $minGB GB"
+        if ($tickGB -ge 2) { Say 'SKIP' 'Old tick data is big: Tools > Historical Data > Tick > delete months you do not need (the bot uses minute bars)' }
+        if ($Backup -and $files.Count -and -not $DryRun) {
+            try {
+                $bk = Join-Path $LogDir ('nt_workspaces-' + (Get-Date -Format 'yyyyMMdd'))
+                if (-not (Test-Path -LiteralPath $bk)) { New-Item -ItemType Directory -Path $bk -Force | Out-Null }
+                foreach ($f in $files) { [System.IO.File]::WriteAllText((Join-Path $bk $f.Name), (Read-Shared $f.FullName)) }
+                Say 'OK' "Workspaces backed up to $bk (copy one back into $ws with NinjaTrader closed to undo a change)"
+            } catch { Say 'SKIP' "Workspace backup: $($_.Exception.Message)" }
+        }
+    }
+    Say '..' 'By hand, with NinjaTrader open (all undo-able): 1) only the windows you use: File > Workspaces, close the others;'
+    Say '..' '   2) charts you only look at: Data Series > Days to load 3-5 (the bot''s MNQ chart with LE_BarFeed stays at 30);'
+    Say '..' '   3) Tick Replay off, unused indicators removed, fewer Market Analyzer rows and DOMs open.'
+}
+
+# ================================================================== PC report (read-only)
+function Get-Verdict([double]$RamGB, [bool]$Ssd, [int]$Cores) {
+    $v = @()
+    if ($RamGB -ge 15) { $v += 'memory plenty for NinjaTrader + the bot' } elseif ($RamGB -ge 7.5) { $v += 'memory OK for NinjaTrader + the bot with few charts' } else { $v += 'memory TOO SMALL for NinjaTrader + the bot (8 GB minimum, 16 GB good)' }
+    if ($Ssd) { $v += 'SSD' } else { $v += 'no SSD found (a hard disk makes everything slow)' }
+    if ($Cores -ge 4) { $v += "$Cores cores OK" } elseif ($Cores -gt 0) { $v += "only $Cores cores (4+ recommended)" }
+    $good = ($RamGB -ge 7.5) -and $Ssd -and ($Cores -ge 4)
+    $head = 'WEAK bot computer: '; if ($good) { $head = 'GOOD bot computer: ' }
+    return ($head + ($v -join ', '))
+}
+function Get-PowerModeName([string]$Guid) {
+    if ($Guid -match 'ded574b5-45a0-4f42-8737-46345c09c238') { return 'Best performance' }
+    if ($Guid -match '961cc777-2547-4f9d-8174-7d86181b8a7a') { return 'Best power efficiency' }
+    if ($Guid -match '^0{8}-') { return 'Balanced (recommended)' }
+    return 'unknown'
+}
+function Get-PcReport {
+    $L = @()
+    $mode = 'bot PC'; if ($Standalone) { $mode = 'standalone (no bot folder)' }
+    $L += "PC REPORT $(Get-Date -Format 'yyyy-MM-dd HH:mm')  ($env:COMPUTERNAME)  mode: $mode"
+    $ram = 0.0; $ssd = $false; $cores = 0
+    try { $cs = Get-CimInstance Win32_ComputerSystem -ErrorAction Stop; $L += "Computer : $($cs.Manufacturer) $($cs.Model)" } catch { $L += 'Computer : not readable' }
+    try {
+        $cpu = @(Get-CimInstance Win32_Processor -ErrorAction Stop)
+        $cores = [int](($cpu | Measure-Object NumberOfCores -Sum).Sum)
+        $thr = ($cpu | Measure-Object NumberOfLogicalProcessors -Sum).Sum
+        $L += "CPU      : $("$($cpu[0].Name)".Trim()), $cores cores / $thr threads, max $($cpu[0].MaxClockSpeed) MHz, load now $($cpu[0].LoadPercentage)%"
+    } catch { $L += 'CPU      : not readable' }
+    try {
+        $mods = @(Get-CimInstance Win32_PhysicalMemory -ErrorAction Stop)
+        $ram = [math]::Round((($mods | Measure-Object Capacity -Sum).Sum) / 1GB, 1)
+        $slots = 0; try { $slots = [int]((@(Get-CimInstance Win32_PhysicalMemoryArray -ErrorAction Stop) | Measure-Object MemoryDevices -Sum).Sum) } catch { }
+        $speed = ($mods | ForEach-Object { if ($_.ConfiguredClockSpeed) { $_.ConfiguredClockSpeed } else { $_.Speed } } | Select-Object -First 1)
+        $sizes = ($mods | ForEach-Object { "$([math]::Round($_.Capacity / 1GB))GB" }) -join ' + '
+        $free = ''; if ($slots -gt $mods.Count) { $free = ' (a free slot: more memory can be added)' }
+        $L += "Memory   : $ram GB ($sizes) at $speed MT/s, $($mods.Count) of $slots slots used$free"
+    } catch { $L += 'Memory   : not readable' }
+    try {
+        foreach ($d in @(Get-PhysicalDisk -ErrorAction Stop)) {
+            if ("$($d.MediaType)" -eq 'SSD' -or "$($d.BusType)" -eq 'NVMe') { $ssd = $true }
+            $L += "Disk     : $($d.FriendlyName), $($d.MediaType) $($d.BusType), $([math]::Round($d.Size / 1GB)) GB"
+        }
+    } catch { $L += 'Disk     : type not readable' }
+    try {
+        foreach ($v in @(Get-CimInstance Win32_LogicalDisk -Filter 'DriveType=3' -ErrorAction Stop)) {
+            $L += "Drive    : $($v.DeviceID) $([math]::Round($v.FreeSpace / 1GB)) GB free of $([math]::Round($v.Size / 1GB)) GB"
+        }
+    } catch { }
+    try {
+        foreach ($g in @(Get-CimInstance Win32_VideoController -ErrorAction Stop)) {
+            $L += "Graphics : $($g.Name), driver $($g.DriverVersion), $($g.CurrentHorizontalResolution)x$($g.CurrentVerticalResolution) $($g.CurrentRefreshRate) Hz"
+        }
+    } catch { $L += 'Graphics : not readable' }
+    try {
+        $os = Get-CimInstance Win32_OperatingSystem -ErrorAction Stop
+        $dv = ''; try { $dv = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -ErrorAction Stop).DisplayVersion } catch { }
+        $up = ''; try { $up = ", on for $([math]::Round(((Get-Date) - $os.LastBootUpTime).TotalHours)) h" } catch { }
+        $L += "Windows  : $($os.Caption) $dv (build $($os.BuildNumber))$up"
+    } catch { $L += 'Windows  : not readable' }
+    try {
+        $plan = (& powercfg /getactivescheme 2>$null | Out-String).Trim()
+        $pm = 'unknown'; try { $pm = Get-PowerModeName ((Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\Power\User\PowerSchemes' -ErrorAction Stop).ActiveOverlayAcPowerScheme) } catch { }
+        $L += "Power    : $plan; plugged-in power mode: $pm"
+    } catch { $L += 'Power    : not readable' }
+    try { $b = @(Get-CimInstance Win32_Battery -ErrorAction Stop); if ($b.Count) { $L += "Battery  : $($b[0].EstimatedChargeRemaining)%" } } catch { }
+    $m = Mem-Line; $L += "Now      : $($m.Text)"
+    $L += 'Memory hogs: ' + ((Top-Programs 10 | ForEach-Object { "$($_.Name) $($_.MB) MB" }) -join ', ')
+    try {
+        $st = @(Get-CimInstance Win32_StartupCommand -ErrorAction Stop | Select-Object -First 15)
+        $L += "Start at sign-in ($($st.Count)): " + (($st | ForEach-Object { $_.Name }) -join ', ')
+    } catch { $L += 'Start at sign-in: not readable' }
+    $L += 'Verdict  : ' + (Get-Verdict $ram $ssd $cores)
+    return ,$L
+}
+function Write-PcReport {
+    Head 'PC report'
+    $lines = Get-PcReport
+    foreach ($l in $lines) { Say '..' $l }
+    $name = $env:COMPUTERNAME; if (-not $name) { $name = 'this-pc' }
+    $file = Join-Path $Root ("PC_REPORT-$name.txt")
+    try { Set-Content -LiteralPath $file -Value $lines -Encoding UTF8; Say 'OK' "PC report saved: $file (send it, or a photo of it, to Claude)" } catch { Say 'SKIP' "PC report not saved: $($_.Exception.Message)" }
+}
+# the cleaner for the main PC: a PC_KIT folder in OneDrive (it syncs) or on the Desktop (copy it to a USB stick)
+function Copy-PcKit {
+    if ($Standalone -or $DryRun) { return }
+    try {
+        $base = $env:OneDrive; if (-not $base -or -not (Test-Path -LiteralPath $base)) { $base = [Environment]::GetFolderPath('Desktop') }
+        $kit = Join-Path $base 'PC_KIT'; $ks = Join-Path $kit 'scripts'
+        if (-not (Test-Path -LiteralPath $ks)) { New-Item -ItemType Directory -Path $ks -Force | Out-Null }
+        Copy-Item -LiteralPath (Join-Path $Root 'CLEAN_PC.bat') -Destination $kit -Force
+        Copy-Item -LiteralPath $PSCommandPath -Destination $ks -Force
+        Say 'OK' "Cleaner for your main PC: $kit (on the main PC double-click CLEAN_PC.bat in it)"
+    } catch { Say 'SKIP' "PC_KIT not copied: $($_.Exception.Message)" }
+}
+
 # ================================================================== the deep part (elevated)
 if ($AdminPart) {
     Head "DEEP PART (Administrator)$(if ($DryRun) { ' - dry run, nothing changed' })"
@@ -151,23 +382,33 @@ if ($AdminPart) {
     exit 0
 }
 
+# ================================================================== report only (changes nothing)
+if ($Report) {
+    Head "PC REPORT + NINJATRADER CHECK: $(Get-Date -Format 'ddd yyyy-MM-dd HH:mm') (changes nothing)"
+    Write-PcReport
+    NinjaTrader-Check $false
+    Say '..' "Full log: $Log"
+    exit 0
+}
+
 # ================================================================== the light part (the signed-in user)
-Head "CLEAN PC: $(Get-Date -Format 'ddd yyyy-MM-dd HH:mm')$(if ($DryRun) { ' - DRY RUN: shows the plan, changes nothing' })"
+Head "CLEAN PC: $(Get-Date -Format 'ddd yyyy-MM-dd HH:mm')$(if ($DryRun) { ' - DRY RUN: shows the plan, changes nothing' })$(if ($Standalone) { ' - STANDALONE (no bot folder here: main PC mode)' })"
 $before = Mem-Line
 Say '..' "Before: $($before.Text)"
 Say '..' ('Using the most memory: ' + ((Top-Programs 12 | ForEach-Object { "$($_.Name) $($_.MB) MB" }) -join ', '))
 
-# 2. close what trading does not need
-Head 'Programs closed now (not needed for trading)'
+# 2. close what trading does not need (bot PC); the main PC (standalone) only lists them: they may be in use
+if ($Standalone) { Head 'Programs that slow a trading PC (standalone: left running, only listed)' } else { Head 'Programs closed now (not needed for trading)' }
 $closed = @()
 foreach ($name in $CloseProcs) {
     $ps = @(Get-Process -Name $name -ErrorAction SilentlyContinue)
     if ($ps.Count -eq 0) { continue }
     $mb = [math]::Round((($ps | Measure-Object WorkingSet64 -Sum).Sum) / 1MB)
-    if (-not $DryRun) { $ps | Stop-Process -Force -ErrorAction SilentlyContinue }
+    if (-not $DryRun -and -not $Standalone) { $ps | Stop-Process -Force -ErrorAction SilentlyContinue }
     $closed += "$name ($mb MB)"
 }
-if ($closed.Count) { Say 'OK' ('Closed: ' + ($closed -join ', ')) } else { Say 'OK' 'Nothing to close' }
+if ($closed.Count -and $Standalone) { Say '..' ('Running now (close them yourself while trading): ' + ($closed -join ', ')) }
+elseif ($closed.Count) { Say 'OK' ('Closed: ' + ($closed -join ', ')) } else { Say 'OK' 'Nothing to close' }
 
 # 3. keep them from starting at sign-in (Task Manager's own switch)
 Head 'Start at sign-in'
@@ -219,17 +460,23 @@ $ntN = 0; $ntB = 0
 foreach ($nt in $ntDirs) { foreach ($sub in @('log', 'trace')) { $x = Remove-Old (Join-Path $nt $sub) 14 '*.txt'; $ntN += $x[0]; $ntB += $x[1] } }
 Say 'OK' "NinjaTrader's old log and trace files (14+ days): $ntN files, $(MB $ntB) MB (today's are kept)"
 
+# NinjaTrader: read-only check + workspace backup
+NinjaTrader-Check $true
+
 # the deep part: elevated, outside trading hours
 if (-not $LightOnly) {
     Head 'Deep clean (needs Administrator)'
     if (-not (Deep-Allowed)) {
-        Say 'SKIP' 'Trading hours (weekdays 01:15-16:05 ET): the deep part waits so it never slows the bot. Double-click CLEAN_PC.bat again after 4:05 PM ET.'
+        if ($Standalone) { Say 'SKIP' 'NinjaTrader is open in trading hours (weekdays 01:15-16:05 ET): the deep part waits. Run it again after 4:05 PM ET or with NinjaTrader closed.' }
+        else { Say 'SKIP' 'Trading hours (weekdays 01:15-16:05 ET): the deep part waits so it never slows the bot. Double-click CLEAN_PC.bat again after 4:05 PM ET.' }
     } elseif ($DryRun) {
         Say '..' 'Would ask Windows for Administrator and run steps 6-11 (search indexing off, background Store apps off, Windows junk, unused preinstalled apps, component store, Defender quick scan).'
     } else {
         # 9. preinstalled apps: removed for this user (here, not elevated: the apps belong to the signed-in user)
         $gone = @()
-        foreach ($a in $BloatApps) {
+        $apps = $BloatApps
+        if ($Standalone) { $apps = @($BloatApps | Where-Object { $_ -notmatch 'Xbox|Gaming' }) }      # the main PC keeps its gaming apps
+        foreach ($a in $apps) {
             $pk = @(Get-AppxPackage -Name $a -ErrorAction SilentlyContinue)
             foreach ($p in $pk) { try { Remove-AppxPackage -Package $p.PackageFullName -ErrorAction Stop; $gone += $a.Split('.')[-1] } catch { } }
         }
@@ -237,6 +484,7 @@ if (-not $LightOnly) {
         Say '..' 'Windows asks "Do you want to allow this app to make changes?": click Yes. The deep part runs in a second window; this one waits for it.'
         try {
             $argList = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$PSCommandPath`"", '-AdminPart', '-Log', "`"$Log`"")
+            if ($Standalone) { $argList += '-Standalone' }
             $p = Start-Process -FilePath 'powershell.exe' -ArgumentList $argList -Verb RunAs -PassThru -Wait
             if ($p.ExitCode -eq 0) { Say 'OK' 'Deep part done (its lines are in the log)' } else { Say 'SKIP' "Deep part ended with code $($p.ExitCode)" }
         } catch { Say 'SKIP' 'Deep part not run (Administrator was declined). Double-click CLEAN_PC.bat again and click Yes.' }
@@ -249,6 +497,9 @@ $after = Mem-Line
 Head 'Result'
 Say 'OK' "After: $($after.Text)"
 if ($before.FreeGB -ne $null -and $after.FreeGB -ne $null) { Say 'OK' ("Memory freed: about " + [math]::Round(($after.FreeGB - $before.FreeGB) * 1024) + " MB") }
+Write-PcReport
+Copy-PcKit
 Say '..' "Full log: $Log"
-Say '..' 'NinjaTrader and the bot were not touched. A restart finishes the Windows changes: do it after 4 PM ET (the bot comes back by itself; open the MNQ chart with LE_BarFeed again if it does not reopen).'
+if ($Standalone) { Say '..' 'NinjaTrader was not touched. A restart finishes the Windows changes.' }
+else { Say '..' 'NinjaTrader and the bot were not touched. A restart finishes the Windows changes: do it after 4 PM ET (the bot comes back by itself; open the MNQ chart with LE_BarFeed again if it does not reopen).' }
 exit 0

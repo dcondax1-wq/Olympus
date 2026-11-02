@@ -24,6 +24,7 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
 | Kalshi bot itself | the Oracle VM, `/home/ubuntu/kalshi` (real money) | not reachable from this cloud chat: its own server chat, or Remote Control on the VM (`claude remote-control` there) | — |
 | Ascend | its own host (made with ChatGPT) | added in Jarvis with + (`docs/JARVIS_APPS.md`) | — |
 | The PC (Windows) | NinjaTrader, the bot server | git auto-update; NinjaTrader login and live arming are the owner's | — |
+| PC speed (Surface + main PC) | `CLEAN_PC.bat`, `scripts/clean_pc.ps1`, `docs/PC_PERFORMANCE.md` | main -> the PC's auto-update; the main PC gets the `PC_KIT` copy (OneDrive or Desktop) | `tests.test_clean_pc` |
 
 - **Phone changes:** check in WebKit (the iPhone's engine) before shipping: `PLAYWRIGHT_BROWSERS_PATH=<dir> python -m playwright
   install webkit` + `install-deps webkit`, iPhone 13 / SE profiles (see the Jarvis worker notes under Infrastructure).
@@ -733,6 +734,14 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   raising stub), FEED STALE blocks entries, PC bars push/read roundtrip, roll back-adjustment, CBOE VIX (23 checks, ~10 s).
 
 ## Infrastructure
+- **CLEAN_PC + PC kit (2026-11-02, `docs/PC_PERFORMANCE.md`):** `scripts/clean_pc.ps1` auto-detects the bot folder
+  (server.py + engine/ninjatrader.py); without it (main PC) it runs STANDALONE: closes nothing (lists only), keeps Xbox /
+  gaming apps, deep part any time unless NinjaTrader is open. Every run: a read-only NinjaTrader check (OneDrive, ATI,
+  workspaces: days loaded / Tick Replay / indicators read from `<DaysBack>` / `<IsTickReplay>` / indicator type names; the
+  LE_BarFeed chart stays at 30 days; tick db size; workspace backup to `logs\nt_workspaces-DATE`) and `PC_REPORT-<pc>.txt`
+  (gitignored). `-Report` = report + NinjaTrader check only. The bot-PC run copies the kit to `OneDrive\PC_KIT` (else the
+  Desktop). Test `python -X utf8 -m tests.test_clean_pc` (pwsh: 5.1 lint, AST-loaded rules, sandbox dry runs with
+  `tests/win_harness/clean_pc_stubs.ps1`, and again under StrictMode 2).
 - **Jarvis hub (2026-10-31, owner: "Jarvis is the brain, switch right to the other dashboards"):** `tools/web_public/jarvis/`
   (index.html, manifest, sw.js, icons; published at `<site>/jarvis/` by `tools/build_web_dashboard.py` with every build).
   Its own Home Screen app: the Jarvis screen first (greeting, NQ market line, Zenith card from live.json `board` /
