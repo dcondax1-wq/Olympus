@@ -3,16 +3,18 @@
 **Send this to ChatGPT, together with this whole page:**
 
 ```text
-Build "Ascend" as a phone-first web dashboard that also runs inside my hub app, Jarvis (Jarvis shows each dashboard in a frame).
+Build "Ascend" as a phone-first web dashboard that also runs inside my hub app, Jarvis (Jarvis shows it full screen, its own look and header, no Jarvis bar).
 Host it free on its own site, never under demetrades2000-coder.github.io: Netlify, Vercel, Cloudflare Pages, or GitHub Pages of a separate account.
-Follow the rules on this page: nothing that blocks frames, a mobile viewport with safe areas, the dark theme.
-Publish a status file jarvis.json next to its index.html in the format on this page, sent with Access-Control-Allow-Origin: *.
+Follow the rules on this page: nothing that blocks frames, a mobile viewport with safe areas, and the bottom-right corner (80 x 160 px) kept free for Jarvis's orb.
+Publish a status file jarvis.json next to its index.html in the format on this page, sent with Access-Control-Allow-Origin: *, with "theme" = its top colour.
 When it is live, send me the link. I add it to Jarvis once (+, Add Ascend, paste the link).
 ```
 
 Any dashboard plugs into Jarvis the same way: one link, plus an optional `jarvis.json` that shows a live card on the
 Jarvis screen. Jarvis is the owner's iPhone Home Screen app (`https://demetrades2000-coder.github.io/nq-dashboard/jarvis/`).
-It opens each dashboard full screen in a frame under its top bar.
+It opens each dashboard as its own screen (since 2026-11-02): full screen, its own look and header, no Jarvis bar; the
+owner switches apps with Jarvis's floating orb (bottom right). The strip behind the iPhone's status bar takes the app's
+colour: `theme` in its jarvis.json (another site's page cannot be read), else black.
 
 ## 1. Look and work right inside Jarvis
 - **Its own site, never under `demetrades2000-coder.github.io`.** Why: every page there shares one origin with Jarvis and
@@ -26,7 +28,7 @@ It opens each dashboard full screen in a frame under its top bar.
   scroll at 390 px wide, 16 px side margins, tap targets at least 44 px, inputs at 16 px font (so the iPhone does not zoom).
 - **Safe areas:** pad the page with `env(safe-area-inset-top)`, `-right`, `-bottom` and `-left`, so it also fits on its own
   from the Home Screen (the notch and the home bar).
-- **Dark theme, the Jarvis look:** background `#0b0b0d`, panels `#1b1b1f`, lines `rgba(255,255,255,.09)`, text `#f4f4f6`,
+- **Its own look** (any theme; the dark Jarvis look as a default): background `#0b0b0d`, panels `#1b1b1f`, lines `rgba(255,255,255,.09)`, text `#f4f4f6`,
   second text `#b3b4ba`, green `#46d79a`, amber `#f5b84a`, red `#ff6b7f`; font `-apple-system, system-ui, sans-serif`;
   `color-scheme: dark` and `<meta name="theme-color" content="#0b0b0d">`.
 - **Links that leave the app** open a new tab: `target="_blank" rel="noopener"`.
@@ -48,6 +50,7 @@ Put it next to the app's `index.html`, for example `https://ascend-dash.netlify.
 | `lines` | list, up to 3 | text lines, each up to 120 characters |
 | `t` | number | unix **seconds** when the file was written |
 | `open` | text, optional | a route inside the app that the card opens, e.g. `#today` |
+| `theme` | text, optional | the app's top colour, `#rrggbb` (e.g. `#0b0b0d`): shown behind the iPhone's status bar while it is open in Jarvis |
 
 `kpis` and `lines` can be empty or left out. Full example:
 
@@ -63,7 +66,8 @@ Put it next to the app's `index.html`, for example `https://ascend-dash.netlify.
   ],
   "lines": ["Next: review at 6:30 PM", "2 tasks due today"],
   "t": 1793548800,
-  "open": "#today"
+  "open": "#today",
+  "theme": "#0b0b0d"
 }
 ```
 

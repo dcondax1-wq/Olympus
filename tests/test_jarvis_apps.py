@@ -305,7 +305,9 @@ def part_d(p, harness, oa, example):
     k = r.get("card", {}).get("kpis", [{}, {}, {}])
     check("d. the brief's example passes: values as text (82 -> '82', -3 -> '-3' down, '+1' up), open inside the app",
           r["ok"] and k[2]["value"] == "82" and k[2]["delta"] == "-3" and k[2]["trend"] == "down" and k[0]["trend"] == "up" and "delta" not in k[1]
-          and r["card"]["openUrl"] == base + "#today" and set(r["card"]) == {"v", "name", "status", "kpis", "lines", "t", "open", "openUrl"}, r)
+          and r["card"]["openUrl"] == base + "#today" and set(r["card"]) == {"v", "name", "status", "kpis", "lines", "t", "open", "openUrl", "theme"} and r["card"]["theme"] == "#0b0b0d", r)
+    bt = p.evaluate("([j, b]) => [A.validateStatus(Object.assign({}, j, {theme: 'red'}), {base: b}).ok, A.validateStatus(Object.assign({}, j, {theme: '#0B0B0D '}), {base: b}).card.theme]", [good, base])
+    check("d. theme (2026-11-02): only a #rrggbb colour (its top colour inside Jarvis), kept lower-case", bt == [False, "#0b0b0d"], bt)
     check("d. the same as text, as it is fetched", p.evaluate("([j, b]) => A.validateStatus(JSON.stringify(j), {base: b}).ok", [good, base]) is True)
 
     def m(path, value):

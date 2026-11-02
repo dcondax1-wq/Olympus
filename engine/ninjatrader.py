@@ -572,6 +572,109 @@ def contract_problem(chart, insts) -> str | None:
     return None
 
 
+# ---------------------------------------------------------------------- no-chart mode: the LE_Feed add-on (2026-11-02)
+# ninjatrader/LE_Feed.cs (a NinjaScript AddOn, Custom\AddOns) writes the same le_feed files as the LE_BarFeed chart with
+# no chart open, re-requests a stale series by itself, and reads which contracts to write from le_feed\feed_instruments.txt
+# (the bot writes it: sync_feed_instruments). It reports once a minute in le_feed\le_feed_status.txt:
+#     <unix time>,source=addon,instruments=MNQ 12-26;NQ 12-26,last_1m=<unix open of the last closed 1m bar>,resubs=N,connected=1
+# Read-only on both sides: nothing here changes a trading decision (the bars are read exactly as before).
+FEED_INSTRUMENTS = "feed_instruments.txt"
+FEED_STATUS = "le_feed_status.txt"
+ADDON_FRESH_S = 300                     # the add-on rewrites its status every minute: older than 5 min = NinjaTrader closed
+
+
+def feed_instruments(cfg: dict | None = None, today: dt.date | None = None) -> list:
+    """The contracts the LE_Feed add-on should write bars for: the micro the bot orders (the roll's current contract, or the
+    nt_instrument pinned in the config), plus the NQ contract when signal_root is "NQ" (the bot then decides on NQ bars)."""
+    cfg = cfg or {}
+    today = today or dt.datetime.now(ET).date()
+    sym = cfg.get("sym", "NQ")
+    out = [str(cfg.get("nt_instrument") or nt_instrument(MICRO.get(sym, "MNQ"), today)).strip()]
+    if signal_root(cfg) == "NQ":
+        nq = nt_instrument("NQ", today)
+        if nq not in out:
+            out.append(nq)
+    return out
+
+
+def sync_feed_instruments(folder: str | None = None, cfg: dict | None = None, today: dt.date | None = None) -> bool:
+    """Write le_feed\\feed_instruments.txt (one contract per line) when its content changes; True = written. Only into an
+    existing NinjaTrader folder (never creates Documents\\NinjaTrader 8 on a machine without NinjaTrader)."""
+    folder = folder or default_folder()
+    if not os.path.isdir(folder):
+        return False
+    text = "".join(f"{n}\n" for n in feed_instruments(cfg, today))
+    d = os.path.join(folder, FEED_DIR)
+    p = os.path.join(d, FEED_INSTRUMENTS)
+    if _read_text(p) == text:
+        return False
+    os.makedirs(d, exist_ok=True)
+    tmp = p + ".tmp"
+    with open(tmp, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(text)
+    from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+    _fs_replace(tmp, p)
+    return True
+
+
+def parse_feed_status(line: str) -> dict | None:
+    """One le_feed_status.txt line -> {"time", "source", "instruments": [...], "last_1m", "resubs", "connected"}; None when
+    it is not a status line."""
+    parts = [x.strip() for x in str(line or "").strip().split(",")]
+    if not parts or not parts[0]:
+        return None
+    try:
+        t = int(float(parts[0]))
+    except ValueError:
+        return None
+    kv = {}
+    for x in parts[1:]:
+        k, sep, v = x.partition("=")
+        if sep:
+            kv[k.strip()] = v.strip()
+    if "source" not in kv:
+        return None
+
+    def _int(v):
+        try:
+            return int(float(v))
+        except (TypeError, ValueError):
+            return None
+    return {"time": t, "source": kv["source"], "instruments": [s for s in kv.get("instruments", "").split(";") if s.strip()],
+            "last_1m": _int(kv.get("last_1m")), "resubs": _int(kv.get("resubs")) or 0,
+            "connected": None if kv.get("connected") in (None, "") else kv.get("connected") == "1"}
+
+
+def read_feed_status(folder: str | None = None, now=None) -> dict | None:
+    """The LE_Feed add-on's status (parse_feed_status + "age_s", "fresh"), None when the file is missing (chart mode)."""
+    txt = _read_text(os.path.join(folder or default_folder(), FEED_DIR, FEED_STATUS))
+    if not txt or not txt.strip():
+        return None
+    st = parse_feed_status(txt.strip().splitlines()[-1])
+    if st is None:
+        return None
+    now = int(time.time() if now is None else now)
+    st["age_s"] = max(0, now - st["time"])
+    st["fresh"] = st["age_s"] <= ADDON_FRESH_S
+    return st
+
+
+def feed_status_text(st: dict | None) -> str | None:
+    """One line for the health block / --status: "bars from LE_Feed (no chart), 2 re-subscribes", None in chart mode."""
+    if not st:
+        return None
+    n = st.get("resubs") or 0
+    out = f"bars from LE_Feed (no chart), {n} re-subscribe{'' if n == 1 else 's'}"
+    if st.get("instruments"):
+        out += f" ({', '.join(st['instruments'])})"
+    if not st.get("fresh"):
+        age = int(st.get("age_s") or 0)
+        out += f"; status {age // 60} min old (NinjaTrader closed?)" if age < 7200 else f"; status {age // 3600} h old (NinjaTrader closed?)"
+    elif st.get("connected") is False:
+        out += "; no price connection"
+    return out
+
+
 def default_folder() -> str:
     """Documents\\NinjaTrader 8 (NINJATRADER_FOLDER overrides). Follows OneDrive-redirected Documents on Windows."""
     env = os.environ.get("NINJATRADER_FOLDER")
@@ -2454,6 +2557,10 @@ def _cli_status(cfg):
     bad = contract_problem(feed.chart_instrument("NQ"), st["instruments"])
     print(f"Signals from       : {root + ' chart' if root else 'no LE_BarFeed chart'} ({feed.chart_instrument('NQ') or 'contract unknown'}; "
           f"signal_root {signal_root(cfg)}) -> orders {', '.join(st['instruments'])}" + (f"  ** {bad}" if bad else ""))
+    fst = read_feed_status(cfg.get("nt_folder"))
+    last1 = f", last 1m bar {_et(fst['last_1m']):%a %H:%M} ET" if fst and fst.get("last_1m") else ""
+    print(f"Bar source         : {(feed_status_text(fst) + last1) if fst else 'the LE_BarFeed chart (no LE_Feed add-on status file)'}")
+    print(f"Feed instruments   : {', '.join(feed_instruments(cfg))}  (le_feed\\{FEED_INSTRUMENTS}: what the LE_Feed add-on writes)")
     for interval in ("5m", "1m", "1h"):
         df, why, full = feed.recent_bars("NQ", interval, "5d")
         if df is None:
@@ -3215,6 +3322,51 @@ def selftest(verbose=True) -> bool:
             fh.write(shifted)
         sh_df, sh_why, _ = NinjaTraderBars(folder, roots={"NQ": ["MNQ"]}).recent_bars("NQ", "1m", "2d", now=fnow + 3600)
         check("feed: bar times shifted by an hour (bars at 17:xx ET) are detected and refused", sh_df is None and "shifted" in sh_why, sh_why)
+
+        # ---- 13b. no-chart mode: the LE_Feed add-on's instrument list and status file (ninjatrader/LE_Feed.cs)
+        d_oct, d_roll = dt.date(2026, 11, 2), dt.date(2026, 12, 10)
+        check("LE_Feed: feed_instruments = the MNQ contract the bot orders (follows the 8-day roll), + NQ with signal_root NQ, "
+              "a pinned nt_instrument wins",
+              feed_instruments({"signal_root": "MNQ"}, d_oct) == ["MNQ 12-26"]
+              and feed_instruments({"signal_root": "MNQ"}, d_roll) == ["MNQ 03-27"]
+              and feed_instruments({"signal_root": "NQ"}, d_oct) == ["MNQ 12-26", "NQ 12-26"]
+              and feed_instruments({"signal_root": "MNQ", "nt_instrument": "MNQ 03-27"}, d_oct) == ["MNQ 03-27"],
+              str([feed_instruments({"signal_root": "MNQ"}, d_oct), feed_instruments({"signal_root": "NQ"}, d_oct)]))
+        afold = os.path.join(tmp, "NT addon")
+        os.makedirs(afold)
+        ip = os.path.join(afold, FEED_DIR, FEED_INSTRUMENTS)
+        w1 = sync_feed_instruments(afold, {"signal_root": "MNQ"}, d_oct)
+        w2 = sync_feed_instruments(afold, {"signal_root": "MNQ"}, d_oct)
+        txt1 = _read_text(ip)
+        w3 = sync_feed_instruments(afold, {"signal_root": "MNQ"}, d_roll)
+        txt3 = _read_text(ip)
+        nofold = os.path.join(tmp, "no NinjaTrader here")
+        w4 = sync_feed_instruments(nofold, {"signal_root": "MNQ"}, d_oct)
+        check("LE_Feed: feed_instruments.txt is written once, rewritten only when the contract changes (the roll), never "
+              "into a folder without NinjaTrader",
+              w1 and not w2 and txt1 == "MNQ 12-26\n" and w3 and txt3 == "MNQ 03-27\n" and not w4 and not os.path.exists(nofold),
+              str([w1, w2, txt1, w3, txt3, w4]))
+        ok_line = "1793458800,source=addon,instruments=MNQ 12-26;NQ 12-26,last_1m=1793458680,resubs=3,connected=1"
+        pst = parse_feed_status(ok_line)
+        check("LE_Feed: a status line parses (time, source, instruments, last 1m bar, re-subscribes, connected); junk -> None",
+              pst == {"time": 1793458800, "source": "addon", "instruments": ["MNQ 12-26", "NQ 12-26"], "last_1m": 1793458680,
+                      "resubs": 3, "connected": True}
+              and parse_feed_status("") is None and parse_feed_status("hello,world") is None
+              and parse_feed_status("1793458800,instruments=x") is None
+              and parse_feed_status("1793458800,source=addon,last_1m=,resubs=")["last_1m"] is None, str(pst))
+        no_st = read_feed_status(afold, now=1793458800)
+        with open(os.path.join(afold, FEED_DIR, FEED_STATUS), "w", encoding="utf-8", newline="\r\n") as fh:
+            fh.write(ok_line + "\n")
+        fresh = read_feed_status(afold, now=1793458800 + 70)
+        old = read_feed_status(afold, now=1793458800 + 1800)
+        t_fresh, t_old = feed_status_text(fresh), feed_status_text(old)
+        check("LE_Feed: status file -> 'bars from LE_Feed (no chart), 3 re-subscribes'; 30 min old -> 'NinjaTrader closed?'; "
+              "no file -> None (chart mode)",
+              no_st is None and feed_status_text(None) is None and fresh and fresh["fresh"] and fresh["age_s"] == 70
+              and t_fresh.startswith("bars from LE_Feed (no chart), 3 re-subscribes") and "old" not in t_fresh
+              and old and not old["fresh"] and "30 min old (NinjaTrader closed?)" in t_old
+              and feed_status_text({"resubs": 1, "fresh": True}) == "bars from LE_Feed (no chart), 1 re-subscribe",
+              str([t_fresh, t_old]))
 
         # ---- 14. LiveBot wiring (no Engine run: routing is driven with a hand-made model state)
         from . import live

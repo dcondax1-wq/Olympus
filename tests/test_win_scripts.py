@@ -30,7 +30,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HARN = os.path.join(ROOT, "tests", "win_harness")
 RES = []
 
-BATS = ["ONE_TIME_SETUP.bat", "UPDATE.bat", "HEALTH_CHECK.bat", "START_DASHBOARD.bat", "STOP_BOT.bat", "SETUP_SHORTCUTS.bat"]
+BATS = ["ONE_TIME_SETUP.bat", "UPDATE.bat", "HEALTH_CHECK.bat", "START_DASHBOARD.bat", "STOP_BOT.bat", "SETUP_SHORTCUTS.bat", "NO_CHART_MODE.bat"]
 PS1 = ["one_time_setup.ps1", "run_bot.ps1", "stop_bot.ps1", "make_shortcuts.ps1", "install_ops_task.ps1",
        "install_autostart.ps1", "setup_dedicated_pc.ps1", "uninstall_autostart.ps1", "status.ps1", "schedule_pc.ps1",
        "schedule_pc_run.ps1"]

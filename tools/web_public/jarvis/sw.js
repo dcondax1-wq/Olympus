@@ -26,8 +26,9 @@
 // v7 (2026-11-01, the orb): switcher.js joins the saved parts.
 // v8 (2026-11-02, the System view): jarvis.css?v=j5 (the System strip and panel), a fresh copy of data.js / brain.js / switcher.js.
 // v9 (2026-11-02, every dashboard its own): jarvis.css?v=j6 (Jarvis's bar on the Jarvis screen only), a fresh index.html.
-const CACHE = 'jarvis-v9';
-const OLD = ['jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];
+// v10 (2026-11-02, MFFU 7-day count): a fresh data.js (the System view warns from day 5 without a trade), apps.js (theme).
+const CACHE = 'jarvis-v10';
+const OLD = ['jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];
 const NAV_WAIT_MS = 3500;
 const NET_MAX_MS = 9000;
 const SHELL = ['./', './index.html', './manifest.webmanifest?v=j2', './apple-touch-icon.png?v=j2', './icon-192.png?v=j2', './icon-512.png?v=j2',

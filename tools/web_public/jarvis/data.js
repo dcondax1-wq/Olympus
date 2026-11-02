@@ -440,6 +440,18 @@ function systemOf(f) {
     }
     if (rf != null && rf < 0.25 && r.level === 'ok') { r.level = 'warn'; r.short = `${name}: near its floor`; r.todo = `${name} is close to its floor: ${usd(c.room)} of room left`; }
     if (pc.value === 'SILENT') { r.level = ''; r.todo = ''; r.short = ''; r.text = 'last known · ' + r.text; }    // the PC's fault, said once on its own line
+    // MFFU's inactivity rule (owner 2026-11-02): 7 calendar days with no trade can close the eval. Day 5 amber, day 6+ red,
+    // even while the PC is off (a silent PC does not stop the count)
+    const q = c.quiet_days != null && Number.isFinite(+c.quiet_days) ? Math.max(0, Math.round(+c.quiet_days)) : null;
+    if (q != null && q >= 5) {
+      const left = Math.max(0, 7 - q);
+      r.text += ` · ${q} days no trade`;
+      if (r.level !== 'bad') {
+        r.level = q >= 6 ? 'bad' : 'warn';
+        r.short = `${name}: ${q} days no trade`;
+        r.todo = `${name}: place 1 MNQ by hand ${q >= 6 ? 'today' : 'by tomorrow'}: no trade for ${q} days, MFFU can close the account at 7 (${left} left)`;
+      }
+    }
     return r;
   };
   rows.push(bot('lit', 'Zlarior', '50K eval', v && v.lit, true));
