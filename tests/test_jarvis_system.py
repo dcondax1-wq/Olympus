@@ -109,6 +109,10 @@ def cases(now_s):
         "ph_warn": c(live=live(pc_health=ph_warn)),
         "on_sim": c(live=live(verdict={"level": "warn", "label": "ON SIM", "reason": "orders go to Sim101, not your eval"})),
         "near_floor": c(live=live(lit=card(room=300.0, room_frac=0.15))),
+        "quiet5": c(live=live(lit=card(quiet_days=5))),
+        "quiet6_atlas": c(live=live(atlas=card(room=750.4, room_frac=0.75, today_pnl=0.0, quiet_days=6))),
+        "quiet_pc_off": c(live=live(age=3600, lit=card(quiet_days=6))),
+        "quiet3": c(live=live(lit=card(quiet_days=3), atlas=card(room=750.4, room_frac=0.75, today_pnl=0.0, quiet_days=None))),
         "kalshi_stopped": c(kalshi={**kal, "running": False}),
         "kalshi_stale": c(kalshi={**kal, "t": now_s - 3600}),
         "kalshi_waiting": c(kalshi=None, kalshiState="waiting"),
@@ -168,11 +172,18 @@ def main() -> int:
                                            ("ph_warn", "HEADS UP", "RAM 90% in use", "PC: Memory (RAM) to watch"),
                                            ("on_sim", "HEADS UP", "Zlarior: ON SIM (orders go to Sim101", "Zlarior: ON SIM"),
                                            ("near_floor", "HEADS UP", "Zlarior is close to its floor: $300", "Zlarior: near its floor"),
+                                           ("quiet5", "HEADS UP", "Zlarior: place 1 MNQ by hand by tomorrow: no trade for 5 days, MFFU can close the account at 7 (2 left)", "Zlarior: 5 days no trade"),
+                                           ("quiet6_atlas", "NEEDS YOU", "ATLAS: place 1 MNQ by hand today: no trade for 6 days", "ATLAS: 6 days no trade"),
                                            ("kalshi_stopped", "NEEDS YOU", "Kalshi bot stopped", "Kalshi bot stopped"),
                                            ("kalshi_stale", "HEADS UP", "Kalshi bot not updating since 1 h ago", "Kalshi not updating")):
         x = v(name)
         check(f"b. {name}: {verdict}, the one thing to do names it, the strip says '{short}'",
               x.get("verdict") == verdict and todo_has in (x.get("todo") or "") and x.get("short") == short, {k: x.get(k) for k in ("verdict", "todo", "short")})
+    check("b. MFFU inactivity: under 5 days (or unknown) stays green; a silent PC does not hide day 6 (NEEDS YOU, place 1 MNQ)",
+          v("quiet3")["verdict"] == "ALL GOOD" and lv("quiet_pc_off", "lit") == "bad" and "place 1 MNQ by hand today" in v("quiet_pc_off")["todo"] + " ".join(x.get("todo") or "" for x in v("quiet_pc_off")["rows"]),
+          (v("quiet3")["verdict"], v("quiet_pc_off").get("todo")))
+    pl = (published.get("board") or {}).get("lit") or {}
+    check("a. the published Zlarior card carries quiet_days (MFFU inactivity, calendar days since its last trade)", "quiet_days" in pl, list(pl)[:40])
     check("b. Kalshi not connected yet: grey, not counted (ALL GOOD)", v("kalshi_waiting")["verdict"] == "ALL GOOD" and lv("kalshi_waiting", "kalshi") == "", v("kalshi_waiting"))
     so, ss, sw = v("silent_open"), v("silent_soon"), v("silent_weekend")
     check("c. the PC silent with the market open: NEEDS YOU, turn the PC on, the bots' lines 'last known' and not counted",

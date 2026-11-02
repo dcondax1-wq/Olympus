@@ -111,6 +111,26 @@ def _et(t) -> dt.datetime:
     return dt.datetime.fromtimestamp(int(t), ET)
 
 
+def quiet_days(trade_ts, start, now) -> int | None:
+    """MFFU's inactivity rule (7 calendar days with no trade can close an eval): calendar days (ET) from the last trade
+    (unix seconds, or 'YYYY-MM-DD' days), or from the eval's start when it has none, to now. None when neither is known."""
+    try:
+        days = []
+        for x in trade_ts or []:
+            if isinstance(x, str) and len(x) >= 10:
+                days.append(dt.date.fromisoformat(x[:10]))
+            elif isinstance(x, (int, float)) and x > 0:
+                days.append(_et(x).date())
+        if start:
+            s0 = dt.date.fromisoformat(str(start)[:10])
+            days = [d for d in days if d >= s0] or [s0]
+        if not days:
+            return None
+        return max(0, (_et(now).date() - max(days)).days)
+    except Exception:
+        return None
+
+
 def trading_day(t) -> str:
     """CME trading day: 18:00 ET starts the next day's session (engine/accounts.trading_day)."""
     return (_et(t) + dt.timedelta(hours=6)).date().isoformat()
@@ -293,6 +313,9 @@ def lit_now(pc: dict, accounts, now: int, brain: dict | None = None) -> dict:
                     "dir": st.get("dir")}
     out["stages"] = [[s[0], s[1]] for s in _l(br.get("stages")) if isinstance(s, (list, tuple)) and len(s) >= 2]
     out["waiting"] = _waiting_lit(br, pc)
+    pa = _d(pc.get("acct"))                  # the PC's own ledger of the 50K: its trades (day) and the eval's start
+    out["quiet_days"] = quiet_days([t.get("day") for t in _l(pa.get("trades")) if isinstance(t, dict)],
+                                   _d(pa.get("eval")).get("start"), now) if pa else None
     rules = _d(br.get("rules"))
     if rules.get("monday_today"):
         out["rule_note"] = {"high": "Monday rule: Friday's high was taken, so shorts only today.",
@@ -512,7 +535,9 @@ def atlas_now(pc: dict, now: int, second: dict | None = None) -> dict:
            "status": ev.get("status") or ("not set up" if not ab else "open"), "session": _i(ev.get("session")), "sessions": SESSIONS_GOAL,
            "dll": _f(ev.get("dll"), P["dll"]), "max_day": P["max_day"], "trades_today": _i(ab.get("entries_today"), 0),
            "max_micros": _i(ev.get("max_micros"), P["max_micros"]), "members": members,
-           "eval_start": ev.get("start"), "orders": _orders(ab.get("routed"))}
+           "eval_start": ev.get("start"), "orders": _orders(ab.get("routed")),
+           "quiet_days": quiet_days([r.get("entry_t") for r in _l(ab.get("routed")) if isinstance(r, dict) and r.get("side") != "exit"
+                                     and r.get("ok") is not False], ev.get("start"), now) if ab else None}
     out["room_frac"] = None if room is None else round(max(0.0, min(1.0, room / P["mll"])), 4)
     live_m = [m for m in members if m["stage"] not in (None, "off")]
     nxt = sorted([(m["window"].get("open_t") or 0, m) for m in members if m["window"].get("open_t")], key=lambda x: x[0])
