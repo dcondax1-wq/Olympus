@@ -35,6 +35,12 @@
 // account.Get(AccountItem.CashValue / RealizedProfitLoss / UnrealizedProfitLoss / NetLiquidation, Currency.UsDollar).
 // The Python bot (engine/broker_balance.py) takes its eval balance from it. Read-only: it never places or changes an order.
 // Every account call sits in its own try/catch: if any of it fails the bar export above works exactly as before.
+//
+// NO-CHART MODE (2026-11-02): the LE_Feed add-on (ninjatrader/LE_Feed.cs, Custom\AddOns) writes the same files with no
+// chart. While it runs and covers this chart's root (LE_FeedHub, found by reflection, so this file compiles and works
+// exactly as before without LE_Feed.cs), this indicator writes NOTHING for that root (bars, 1m open, instrument file) and
+// no accounts.csv: never two writers on one file. If the add-on stops covering the root while the chart runs, the chart
+// rewrites its files from its own bars and carries on as before.
 
 #region Using declarations
 using System;
@@ -98,6 +104,14 @@ namespace NinjaTrader.NinjaScript.Indicators
         private readonly HashSet<Account> acctSubscribed = new HashSet<Account>();
         private int acctProblems;
 
+        // no-chart mode: the LE_Feed add-on's hub (NinjaTrader.NinjaScript.AddOns.LE_FeedHub), looked up once by reflection
+        private static readonly object HubLock = new object();
+        private static bool hubLooked;
+        private static System.Reflection.MethodInfo hubCovers;
+        private static System.Reflection.MethodInfo hubAccounts;
+        private string root;                  // the chart's instrument root ("MNQ"): the file names
+        private bool muted;                   // the add-on wrote this root's files while this chart skipped them
+
         protected override void OnStateChange()
         {
             if (State == State.SetDefaults)
@@ -133,7 +147,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                     return;
                 }
                 string folder = Path.Combine(NinjaTrader.Core.Globals.UserDataDir, "le_feed");
-                string root = Instrument.MasterInstrument.Name;
+                root = Instrument.MasterInstrument.Name;
                 feeds = new Feed[addOneMinute ? 2 : 1];
                 feeds[0] = new Feed { Minutes = BarsPeriod.Value, MaxBars = BarsPeriod.Value == 1 ? Math.Max(MaxBars, MaxBars1m) : MaxBars };
                 feeds[0].FilePath = Path.Combine(folder, root + "_" + feeds[0].Minutes.ToString(CultureInfo.InvariantCulture) + "m.csv");
@@ -156,7 +170,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                 }
                 // <ROOT>_instrument.txt: the chart's contract ("MNQ 12-26"). The bot refuses an entry when its order contract
                 // differs (the chart left on the old contract after the roll: December prices on a March order)
-                if (active)
+                if (active && !Headless())
                 {
                     try
                     {
@@ -285,8 +299,8 @@ namespace NinjaTrader.NinjaScript.Indicators
                 return;                              // a write is already running (timer + update at once)
             try
             {
-                if (accountsPath == null || !WriteAccounts)
-                    return;
+                if (accountsPath == null || !WriteAccounts || HubWritesAccounts())
+                    return;                          // (no-chart mode: the LE_Feed add-on writes accounts.csv)
                 HashSet<string> only = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 if (!string.IsNullOrEmpty(AccountNames))
                     foreach (string n in AccountNames.Split(','))
@@ -411,6 +425,18 @@ namespace NinjaTrader.NinjaScript.Indicators
                     f.History.Dequeue();
                 return;
             }
+            if (Headless())                         // no-chart mode: the LE_Feed add-on writes this file
+            {
+                muted = true;
+                return;
+            }
+            if (muted)                              // the add-on stopped covering this root: take the files back
+            {
+                muted = false;
+                for (int k = 0; k < feeds.Length; k++)
+                    RewriteFromSeries(feeds[k], k);
+                return;                             // this bar is in the rewrite (series s is processed up to it)
+            }
             lock (FileLock)
             {
                 try
@@ -434,6 +460,8 @@ namespace NinjaTrader.NinjaScript.Indicators
         protected override void OnMarketData(MarketDataEventArgs marketDataUpdate)
         {
             if (!active || !realtime || openPath == null || BarsInProgress != 0 || marketDataUpdate.MarketDataType != MarketDataType.Last)
+                return;
+            if (Headless())
                 return;
             long minute;
             try
@@ -496,6 +524,14 @@ namespace NinjaTrader.NinjaScript.Indicators
 
         private void WriteHistory(Feed f)
         {
+            if (Headless())
+            {
+                f.History.Clear();
+                f.History = null;
+                muted = true;
+                Print("LE_BarFeed: the LE_Feed add-on writes the " + root + " files (no-chart mode): this chart writes nothing");
+                return;
+            }
             StringBuilder sb = new StringBuilder(f.History.Count * 48 + 64);
             sb.Append(Header).Append('\n');
             foreach (string l in f.History)
@@ -510,6 +546,93 @@ namespace NinjaTrader.NinjaScript.Indicators
             {
                 f.LinesInFile = n;
                 Print("LE_BarFeed: " + n + " bars written to " + f.FilePath + "; appending each new bar");
+            }
+        }
+
+        // ---- no-chart mode (LE_Feed add-on): skip every write of a root the add-on covers. No add-on = always false.
+        private bool Headless()
+        {
+            return HubCall(true, root);
+        }
+
+        private static bool HubWritesAccounts()
+        {
+            return HubCall(false, null);
+        }
+
+        private static bool HubCall(bool covers, string forRoot)
+        {
+            try
+            {
+                lock (HubLock)
+                {
+                    if (!hubLooked)
+                    {
+                        hubLooked = true;
+                        Type t = typeof(LE_BarFeed).Assembly.GetType("NinjaTrader.NinjaScript.AddOns.LE_FeedHub", false);
+                        if (t != null)
+                        {
+                            hubCovers = t.GetMethod("Covers", new Type[] { typeof(string) });
+                            hubAccounts = t.GetMethod("WritesAccounts", Type.EmptyTypes);
+                        }
+                    }
+                }
+                System.Reflection.MethodInfo m = covers ? hubCovers : hubAccounts;
+                if (m == null || (covers && string.IsNullOrEmpty(forRoot)))
+                    return false;
+                object r = m.Invoke(null, covers ? new object[] { forRoot } : new object[0]);
+                return r is bool && (bool)r;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        // The add-on stopped covering this root while the chart runs: rewrite the file from the chart's own series (the bars
+        // up to the one just closed), then append as before.
+        private void RewriteFromSeries(Feed f, int s)
+        {
+            try
+            {
+                if (f == null || s >= BarsArray.Length || CurrentBars[s] < 0)
+                    return;
+                Bars b = BarsArray[s];
+                int last = Math.Min(CurrentBars[s], b.Count - 1);
+                int first = Math.Max(0, last - f.MaxBars + 1);
+                CultureInfo c = CultureInfo.InvariantCulture;
+                StringBuilder sb = new StringBuilder((last - first + 1) * 48 + 64);
+                sb.Append(Header).Append('\n');
+                long prev = long.MinValue;
+                int n = 0;
+                for (int i = first; i <= last; i++)
+                {
+                    DateTime closeLocal = DateTime.SpecifyKind(b.GetTime(i), DateTimeKind.Unspecified);
+                    DateTime closeUtc = TimeZoneInfo.ConvertTimeToUtc(closeLocal, NinjaTrader.Core.Globals.GeneralOptions.TimeZoneInfo);
+                    long open = (closeUtc.Ticks - EpochTicks) / TimeSpan.TicksPerSecond - 60L * f.Minutes;
+                    if (open <= prev)
+                        continue;
+                    prev = open;
+                    sb.Append(open.ToString(c)).Append(',').Append(b.GetOpen(i).ToString("0.########", c)).Append(',')
+                      .Append(b.GetHigh(i).ToString("0.########", c)).Append(',').Append(b.GetLow(i).ToString("0.########", c)).Append(',')
+                      .Append(b.GetClose(i).ToString("0.########", c)).Append(',').Append(((double)b.GetVolume(i)).ToString("0.########", c))
+                      .Append('\n');
+                    n++;
+                }
+                bool ok;
+                lock (FileLock)
+                    ok = Swap(f, sb.ToString());
+                if (ok)
+                {
+                    f.LinesInFile = n;
+                    if (prev > f.LastOpen)
+                        f.LastOpen = prev;
+                    Print("LE_BarFeed: the LE_Feed add-on stopped; this chart writes " + f.FilePath + " again (" + n + " bars)");
+                }
+            }
+            catch (Exception e)
+            {
+                Report(f, "rewrite after the add-on stopped failed: " + e.Message);
             }
         }
 
