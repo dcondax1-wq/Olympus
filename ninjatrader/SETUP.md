@@ -1,5 +1,21 @@
 # NinjaTrader 8 route: the PC bot places orders through NinjaTrader
 
+## No-chart mode (easiest)
+
+The `LE_Feed` add-on feeds the bot with **no chart and no workspace**: it starts with NinjaTrader, writes the same bar
+files as the chart, and re-subscribes by itself when the bars go stale (the overnight "Connection lost to the Historical
+Data Server" problem). After this, your routine is only: turn the PC on.
+
+1. Copy `ninjatrader\LE_Feed.cs` into `Documents\NinjaTrader 8\bin\Custom\AddOns\`, then Control Center > New >
+   NinjaScript Editor > press **F5** (the bottom must say it compiled).
+2. Control Center > Connections > Configure > your MFFU connection > tick **Connect on startup** > OK.
+3. Close the MNQ chart (or keep it: it then writes nothing, so there are never two writers).
+
+Check: `python -m engine.ninjatrader --status` says `Bar source : bars from LE_Feed (no chart), 0 re-subscribes`.
+Its log is `Documents\NinjaTrader 8\le_feed\le_feed_log.txt`. The bot tells it which contract to write
+(`le_feed\feed_instruments.txt`), so the December roll needs no click either. Not yet compiled on a real NinjaTrader:
+if F5 shows an error, send a photo; the chart (step 4 below) keeps working meanwhile.
+
 **What it does.** The PC bot runs the same strategy and settings as always (today: LIT, `live_model.json`). Instead of paper fills, it writes small
 "order instruction files" into a folder that NinjaTrader 8 watches. NinjaTrader places the orders on the account you
 name, for example `Sim101` for testing or the MFFU account through its Tradovate connection. NinjaTrader writes back

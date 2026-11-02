@@ -1172,6 +1172,20 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   `python -m engine.ninjatrader --selftest` (55 checks, incl. cancel-pending entries, partial exit fills and the CME early-close flat (5 min before the halt; entries stop 15 min before) added 2026-10-18; `LE_BarFeed.cs` also writes `le_feed\MNQ_1m.csv` for LIT, not yet compiled on a real install). Setup for a non-coder: `ninjatrader/SETUP.md`. Known gap: the
   Tradovate adapter never received breakeven moves or non-TIME exits (the NinjaTrader flags `route_all_exits`,
   `route_stop_moves` fix it; apply the same to Tradovate before ever using it).
+- **No-chart mode: the LE_Feed add-on (2026-11-02, `ninjatrader/LE_Feed.cs`, NOT yet compiled on a real install):** a
+  NinjaScript AddOn (`Custom\AddOns`) that writes LE_BarFeed's exact files with no chart (BarsRequest 5m 30 days + 1m 21
+  days on "CME US Index Futures ETH", closed bars only, same trim / temp-swap; MarketData for `<ROOT>_1m_open.csv`;
+  `<ROOT>_instrument.txt`; `accounts.csv`). Self-heal: price connection up + CME open + no new closed 1m bar for 3 min ->
+  dispose and re-request (max once / 2 min / instrument); a ConnectionStatusUpdate back to Connected re-requests all.
+  Logs `le_feed\le_feed_log.txt`, status `le_feed\le_feed_status.txt` once a minute
+  (`time,source=addon,instruments=A;B,last_1m=..,resubs=N,connected=1`). Instruments from `le_feed\feed_instruments.txt`,
+  written by the bot (`ninjatrader.sync_feed_instruments` from `LiveBot._feed_addon_tick`, real bot only, once a minute,
+  only on change: the micro it orders via `nt_instrument()` roll / pinned `nt_instrument`, + NQ with signal_root NQ).
+  No double writer: `LE_FeedHub` (static, in LE_Feed.cs) names the covered roots; LE_BarFeed finds it by reflection
+  (compiles and behaves as before without LE_Feed.cs) and writes nothing for a covered root, nor accounts.csv. Health
+  `feed_addon` / `--status` "Bar source": "bars from LE_Feed (no chart), N re-subscribes". Selftest checks 13b (74 total).
+  Checked here only by compiling both .cs files with mono `mcs -langversion:5` against stub NT8 types. Unverified NT8
+  API points are listed at the top of LE_Feed.cs. Owner steps: SETUP.md "No-chart mode".
 - **MNQ feed vs NQ backtest + the NQ signal chart (2026-10-26, `research/writeups/mnq-vs-nq-feed.md`, OFF by default):**
   the PC's MNQ bars, collected from the heartbeat branch's history (`tools/hb_bars.py`: the branch is one force-pushed
   commit, older ones fetched by SHA from GitHub's activity API -> `research/feed/nt_mnq_{5m,1m}.csv.gz`; 5m from 09-17,

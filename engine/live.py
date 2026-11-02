@@ -496,6 +496,29 @@ class LiveBot:
             self._nt_notes[key] = (text, now)
             self._log(kind, text)
 
+    def _feed_addon_tick(self, _nt):
+        """No-chart mode (ninjatrader/LE_Feed.cs, 2026-11-02), the real bot only, at most once a minute: tell the add-on which
+        contracts to write (le_feed\\feed_instruments.txt, rewritten only when it changes: the roll needs no click) and put its
+        status in the health block ("bars from LE_Feed (no chart), N re-subscribes"; None = the chart writes the bars).
+        Read-only for trading: the bars are read exactly as before."""
+        t = time.time()
+        if t - getattr(self, "_feed_addon_t", 0.0) < 60:
+            return
+        self._feed_addon_t = t
+        folder = self.cfg.get("nt_folder")
+        try:
+            if _nt.sync_feed_instruments(folder, self.cfg):
+                self._log("system", "le_feed\\feed_instruments.txt -> " + ", ".join(_nt.feed_instruments(self.cfg))
+                          + " (the contracts the LE_Feed add-on writes bars for)")
+        except Exception as e:
+            self._note_error(f"feed_instruments.txt not written: {e.__class__.__name__}: {e}")
+        try:
+            st = _nt.read_feed_status(folder)
+            self.health["feed_addon"] = _nt.feed_status_text(st)
+            self.health["feed_addon_resubs"] = st.get("resubs") if st else None
+        except Exception:
+            self.health["feed_addon"] = None
+
     def _ninjatrader_recent(self, sym, interval, period):
         """Real CME bars NinjaTrader writes (ninjatrader/LE_BarFeed.cs -> Documents\\NinjaTrader 8\\le_feed). None = use
         Yahoo for this fetch (logged; health.fallback for the bot's own symbol). When the feed holds fewer days than the
@@ -506,6 +529,8 @@ class LiveBot:
             if self._nt_feed is None:
                 self._nt_feed = _nt.NinjaTraderBars(folder=self.cfg.get("nt_folder"), roots=self.cfg.get("nt_feed_roots"))
             df, why, full = self._nt_feed.recent_bars(sym, interval, period, now=int(self.clock()))
+            if primary and self.state_path == STATE_PATH:
+                self._feed_addon_tick(_nt)
             if interval == "1m" and df is not None and callable(getattr(self._nt_feed, "forming_open", None)):
                 self._nt_forming[(sym, 60)] = self._nt_feed.forming_open(sym, now=int(self.clock()))
                 if primary:

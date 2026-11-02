@@ -105,6 +105,7 @@ Write-Host " 1. Automatic sign-in after a restart: download Microsoft's free Aut
 Write-Host "    run it once, enter your Windows password, Enable. (It stores the password encrypted; this PC is for the bot only.)"
 Write-Host " 2. NinjaTrader: Connections > Configure: tick 'Connect on startup' for the MFFU (Tradovate) connection; Tools > Options >"
 Write-Host "    Automated Trading Interface: tick 'AT Interface'. Save the workspace with ONE MNQ 5-minute chart that has LE_BarFeed on it (ninjatrader\SETUP.md)."
+Write-Host "    Easier, no chart at all: the LE_Feed add-on (ninjatrader\SETUP.md 'No-chart mode', 3 steps)."
 Write-Host " 3. Start the bot once with: python -m engine.ninjatrader --start  (Sim101: it then resumes by itself after a restart;"
 Write-Host "    a real account only after your one-time --enable-auto-resume, see docs\GO_LIVE_TONIGHT.md 'Make it run on its own')"
 Write-Host " 4. Lock the screen (Win+L) and leave it plugged in. Your phone app gets a 'PC bot silent' notification from the cloud monitor if this PC goes quiet in a session."
