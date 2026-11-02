@@ -27,4 +27,5 @@ foreach ($c in $copies) {
 Write-Host ""
 Write-Host " Now in NinjaTrader: Control Center > New > NinjaScript Editor > press F5 (the bottom says it compiled)."
 Write-Host " Then Connections > Configure > your MFFU connection > tick 'Connect on startup' > OK. You can close the MNQ chart."
-Write-Host " If F5 shows red errors: send Claude a photo. Your old copies were kept as .bak, so nothing is lost."
+Write-Host " If F5 shows red errors: send Claude a photo, then delete LE_Feed.cs from the AddOns folder above and press F5"
+Write-Host " again: your chart and LE_BarFeed keep working exactly as before. Old copies were kept as .bak."
