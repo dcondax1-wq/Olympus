@@ -220,8 +220,8 @@ def part_a():
     check("a. opening Jarvis waits on the network at most NAV_WAIT_MS when a saved copy exists; no network + no copy = a dark Retry page",
           "const NAV_WAIT_MS = 3500;" in sw and "Promise.race([net, slow])" in sw and "return copy || offlinePage();" in sw
           and "background:#000" in sw and "location.reload()" in sw)
-    check("a. worker v6: data.js, jarvis.css, the fonts and every separate part in SHELL, each saved on its own (a missing part is skipped)",
-          "const CACHE = 'jarvis-v6';" in sw and all(f"'./{f}'" in sw for f in ("data.js",) + PARTS + FONTS) and "'./jarvis.css?v=j4'" in sw
+    check("a. worker v7: data.js, jarvis.css, the fonts, every separate part and switcher.js in SHELL, each saved on its own (a missing part is skipped)",
+          "const CACHE = 'jarvis-v7';" in sw and "'./switcher.js'" in sw and all(f"'./{f}'" in sw for f in ("data.js",) + PARTS + FONTS) and "'./jarvis.css?v=j4'" in sw
           and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
     # 2026-11-01 ("Just a black screen" on the iPhone): no endless network wait, the previous copy as a fallback, old copies kept
     # until the new one holds every core file, and the page draws even when its stylesheet never arrives
@@ -229,7 +229,7 @@ def part_a():
           "const NET_MAX_MS = 9000;" in sw and "copy ? NAV_WAIT_MS : NET_MAX_MS" in sw and "return offlinePage();" in sw
           and "await net" not in sw.replace("await Promise.race([net", ""))
     check("a. worker v6: a file this copy lacks comes from the previous Jarvis copy; old copies go only when every CORE file is saved",
-          "const OLD = ['jarvis-v5', 'jarvis-v4'];" in sw and "for (const name of [CACHE, ...OLD])" in sw
+          "const OLD = ['jarvis-v6', 'jarvis-v5', 'jarvis-v4'];" in sw and "for (const name of [CACHE, ...OLD])" in sw
           and "CORE.map((u) => c.match(u, { ignoreSearch: true }))" in sw)
     jhtml = open(os.path.join(JV, "index.html"), encoding="utf-8").read()
     check("a. the page draws without its stylesheet after 5 s (a stylesheet still on the way keeps an iPhone screen black)",
@@ -731,7 +731,12 @@ def run_c(br, url):
     p.click('.bar [data-app="zenith"]')
     p.wait_for_timeout(1200)
     zen_ok = p.locator("#zen").is_visible() or p.locator("#v-zenith").is_visible()
-    if p.locator(".zm-back").count() and p.locator(".zm-back").is_visible():
+    if p.locator("#nxOrb").count() and p.locator("#nxOrb").is_visible():
+        p.click("#nxOrb")                           # Zenith mode covers the bar: the orb (switcher.js), then Jarvis in its quick row
+        p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=3000)
+        p.wait_for_timeout(450)
+        p.click('.nx-qb[data-nx="home"]')
+    elif p.locator(".zm-back").count() and p.locator(".zm-back").is_visible():
         p.click(".zm-back")                         # Zenith mode covers the bar: its own control goes back
     else:
         p.click('.bar [data-app="home"]')
@@ -741,7 +746,7 @@ def run_c(br, url):
         const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
-          const c = await caches.open('jarvis-v6');
+          const c = await caches.open('jarvis-v7');
           const got = await Promise.all(['./index.html', './data.js', './jarvis.css?v=j4', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));
@@ -1038,6 +1043,126 @@ def run_look(br, url):
     ctx.close()
 
 
+def run_switcher(br, url):
+    """Run N (2026-11-01, the orb, switcher.js): "a way to access each thing, so calendar, kalshi, Jarvis, and my nq bot and
+    eventually other stuff, make a really cool way to change between stuff". One orb over every mode: tap = a live card per app,
+    swipe = the next app, hold = the ring, drag = move it; it steps aside for the keyboard and the sheets."""
+    ctx, p, errs, kal = new_page(br)
+    p.goto(url + "jarvis/")
+    ready(p)
+    p.wait_for_function("document.documentElement.dataset.switcher === 'module' && !!document.getElementById('nxOrb')", timeout=8000)
+    o = p.evaluate("""() => { const b = document.getElementById('nxOrb').getBoundingClientRect(), cs = getComputedStyle(document.getElementById('nxOrb'));
+      return { r: [b.left, b.top, b.right, b.bottom], W: innerWidth, H: innerHeight, vis: cs.visibility, op: +cs.opacity, z: +cs.zIndex,
+               bar: document.querySelector('.dock, #dock') ? document.querySelector('.dock, #dock').getBoundingClientRect().top : innerHeight,
+               nexus: document.documentElement.getAttribute('data-nexus') }; }""")
+    r = o["r"]
+    check("n. the orb: on screen at the right edge, a 56 px target, above the command bar, over everything (z), Zenith mode's own control hidden",
+          r[2] <= o["W"] and r[2] > o["W"] - 20 and r[3] - r[1] >= 44 and r[0] >= 0 and r[1] >= 60 and r[3] <= o["bar"] and o["vis"] == "visible"
+          and o["z"] >= 2147483100 and o["nexus"] == "1", o)
+    cx, cy = (r[0] + r[2]) / 2, (r[1] + r[3]) / 2
+    # tap: the switcher, one live card per app, Jarvis's marked NOW
+    p.mouse.click(cx, cy)
+    p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=3000)
+    p.wait_for_timeout(450)
+    cards = p.evaluate("""() => [...document.querySelectorAll('#nxTrack .nx-card')].map((c) => ({ id: c.dataset.nx || (c.dataset.nxAdd ? 'add' : ''),
+      name: (c.querySelector('.nx-nm b') || {}).textContent, val: (c.querySelector('.nx-val') || {}).textContent || '', now: c.classList.contains('now'),
+      lines: [...c.querySelectorAll('.nx-ln')].map((l) => l.textContent) }))""")
+    names = [c["name"] for c in cards]
+    check("n. tap: the switcher opens with JARVIS, NQ BOT, CALENDAR, KALSHI and + ADD, Jarvis's card marked NOW",
+          names[:4] == ["JARVIS", "NQ BOT", "CALENDAR", "KALSHI"] and names[-1] == "ADD" and cards[0]["now"] and not any(c["now"] for c in cards[1:]), cards)
+    nq = next((c for c in cards if c["id"] == "zenith"), {})
+    cal = next((c for c in cards if c["id"] == "planner"), {})
+    check("n. the cards are live: NQ BOT shows today's $ across the accounts (+$308) and their status; CALENDAR the next thing or FREE",
+          nq.get("val", "").startswith("+$3") and "account" in " ".join(nq.get("lines", [])) and cal.get("val") and cal.get("lines"), (nq, cal))
+    geo = p.evaluate("""() => ({ sw: document.documentElement.scrollWidth, W: innerWidth, x: document.querySelector('.nx-x').getBoundingClientRect().width,
+      c: [...document.querySelectorAll('#nxTrack .nx-card')].map((c) => c.getBoundingClientRect().height), q: [...document.querySelectorAll('.nx-qb')].map((b) => b.getBoundingClientRect().width) })""")
+    check("n. the switcher fits the phone: no sideways scroll, 44 px close and quick buttons, tall cards",
+          geo["sw"] <= geo["W"] and geo["x"] >= 44 and min(geo["q"]) >= 44 and min(geo["c"]) >= 260, geo)
+    p.click('#nxTrack .nx-card[data-nx="planner"]')
+    p.wait_for_timeout(500)
+    st = p.evaluate("""() => ({ open: document.getElementById('nxRoot').classList.contains('on'), mode: document.documentElement.dataset.mode,
+      cur: (document.querySelector('#modes [aria-current="page"]') || {}).dataset ? document.querySelector('#modes [aria-current="page"]').dataset.app : null,
+      orb: getComputedStyle(document.getElementById('nxOrb')).visibility })""")
+    check("n. a card opens its app (CALENDAR -> the Planner) and the switcher closes; the orb is back", not st["open"] and st["cur"] == "planner" and st["orb"] == "visible", st)
+    # swipe: the next app (Planner -> Kalshi), then back the other way
+    def swipe(dx):
+        p.mouse.move(cx, cy); p.mouse.down()
+        for k in range(1, 6):
+            p.mouse.move(cx + dx * k / 5, cy + 2)
+            p.wait_for_timeout(18)
+        p.mouse.up()
+        p.wait_for_timeout(450)
+        return p.evaluate("(document.querySelector('#modes [aria-current=\"page\"]') || {dataset: {}}).dataset.app")
+    a1 = swipe(-80)
+    a2 = swipe(80)
+    check("n. swipe the orb left: the next app (Kalshi); right: back (the Planner)", a1 == "kalshi" and a2 == "planner", (a1, a2))
+    # hold: the ring; slide onto Jarvis and let go
+    p.mouse.move(cx, cy); p.mouse.down(); p.wait_for_timeout(520)
+    ring = p.evaluate("""() => [...document.querySelectorAll('.nx-fan.on .nx-fb')].map((b) => { const r = b.getBoundingClientRect(); return { id: b.dataset.nx, x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width }; })""")
+    home = next((b for b in ring if b["id"] == "home"), None)
+    if home:
+        p.mouse.move((cx + home["x"]) / 2, (cy + home["y"]) / 2); p.mouse.move(home["x"], home["y"])
+    p.mouse.up(); p.wait_for_timeout(450)
+    cur = p.evaluate("(document.querySelector('#modes [aria-current=\"page\"]') || {dataset: {}}).dataset.app")
+    check("n. hold: the ring fans out with every other app (44 px+ each, on screen); slide onto Jarvis and let go: Jarvis",
+          len(ring) == 3 and all(b["w"] >= 44 and 0 <= b["x"] <= 390 and 0 <= b["y"] <= 844 for b in ring) and cur == "home"
+          and p.evaluate("!document.querySelector('.nx-fan.on')"), (ring, cur))
+    # drag: move it (kept on this phone)
+    p.mouse.move(cx, cy); p.mouse.down()
+    for k in range(1, 9):
+        p.mouse.move(cx - 4, cy - 18 * k); p.wait_for_timeout(60)
+    p.mouse.up(); p.wait_for_timeout(300)
+    moved = p.evaluate("""() => ({ pos: JSON.parse(localStorage.getItem('jarvis.orb') || 'null'), top: document.getElementById('nxOrb').getBoundingClientRect().top,
+      cur: (document.querySelector('#modes [aria-current="page"]') || {dataset: {}}).dataset.app, open: document.getElementById('nxRoot').classList.contains('on') })""")
+    check("n. drag: the orb moves up and stays there (kept on this phone); no app switch, no switcher",
+          moved["pos"] and moved["pos"]["side"] == "r" and moved["top"] < r[1] - 80 and moved["cur"] == "home" and not moved["open"], moved)
+    # it steps aside for the keyboard and the ⋯ keys
+    p.focus("#q"); p.wait_for_timeout(150)
+    kb = p.evaluate("getComputedStyle(document.getElementById('nxOrb')).visibility")
+    p.evaluate("document.activeElement.blur()"); p.wait_for_timeout(200)
+    kb2 = p.evaluate("getComputedStyle(document.getElementById('nxOrb')).visibility")
+    p.click("#moreB"); p.wait_for_timeout(200)
+    mk = p.evaluate("getComputedStyle(document.getElementById('nxOrb')).visibility")
+    p.click("#moreB"); p.wait_for_timeout(200)
+    mk2 = p.evaluate("getComputedStyle(document.getElementById('nxOrb')).visibility")
+    check("n. the orb steps aside while typing and while the ⋯ keys are open, then comes back", (kb, kb2, mk, mk2) == ("hidden", "visible", "hidden", "visible"), (kb, kb2, mk, mk2))
+    # Zenith mode: the orb stays on top, Zenith mode's own control is hidden; tap -> the switcher over Zenith
+    p.click('.bar [data-app="zenith"]'); p.wait_for_timeout(1200)
+    z = p.evaluate("""() => { const o = document.getElementById('nxOrb').getBoundingClientRect(), x = o.left + o.width / 2, y = o.top + o.height / 2, h = document.elementFromPoint(x, y);
+      const b = document.querySelector('.zm-back'); return { mode: document.documentElement.dataset.mode, top: !!h && !!h.closest('#nxOrb'), zm: b ? getComputedStyle(b).display : 'none', x, y }; }""")
+    p.mouse.click(z["x"], z["y"]); p.wait_for_timeout(500)
+    zo = p.evaluate("document.getElementById('nxRoot').classList.contains('on') && !!document.querySelector('#nxTrack .nx-card.now[data-nx=\"zenith\"]')")
+    p.keyboard.press("Escape"); p.wait_for_timeout(500)
+    zc = p.evaluate("!document.getElementById('nxRoot').classList.contains('on')")
+    check("n. Zenith mode: the orb stays on top (Zenith mode's own control hidden); tap = the switcher with NQ BOT marked NOW; Escape closes",
+          z["mode"] == "zenith" and z["top"] and z["zm"] == "none" and zo and zc, (z, zo, zc))
+    p.click('.bar [data-app="home"]', force=True) if p.locator('.bar [data-app="home"]').is_visible() else None
+    check("n. no page errors with the orb", not errs, errs)
+    ctx.close()
+    # a phone's touch: a tap opens the switcher and never lands on the card under the finger (the iPhone's copy click)
+    ctx, p, errs, kal = new_page(br, is_mobile=True, has_touch=True)
+    p.goto(url + "jarvis/")
+    ready(p)
+    p.wait_for_function("!!document.getElementById('nxOrb')", timeout=8000)
+    b = p.evaluate("(() => { const r = document.getElementById('nxOrb').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; })()")
+    p.touchscreen.tap(b[0], b[1]); p.wait_for_timeout(700)
+    t = p.evaluate("""() => ({ open: document.getElementById('nxRoot').classList.contains('on'), mode: document.documentElement.dataset.mode })""")
+    check("n. touch: a tap on the orb opens the switcher and stays on Jarvis (no copy click on a card)", t["open"] and t["mode"] == "jarvis", t)
+    check("n. no page errors with the orb (touch)", not errs, errs)
+    ctx.close()
+    # reduced motion: no transitions; 375 px wide: no sideways scroll with the switcher open
+    ctx, p, errs, kal = new_page(br, width=375, height=667, reduced_motion="reduce")
+    p.goto(url + "jarvis/")
+    ready(p)
+    p.wait_for_function("!!document.getElementById('nxOrb')", timeout=8000)
+    p.evaluate("document.getElementById('nxOrb').click()"); p.wait_for_timeout(300)
+    rm = p.evaluate("""() => ({ t: getComputedStyle(document.getElementById('nxRoot')).transitionDuration, sw: document.documentElement.scrollWidth, W: innerWidth,
+      open: document.getElementById('nxRoot').classList.contains('on'), tf: [...document.querySelectorAll('#nxTrack .nx-card')].map((c) => c.style.transform).filter(Boolean).length })""")
+    check("n. reduced motion: no transitions and no card tilt; 375 x 667: no sideways scroll with the switcher open (Enter/Space opens it too)",
+          rm["open"] and all(float(x.rstrip("s") or 0) == 0 for x in rm["t"].split(",")) and rm["tf"] == 0 and rm["sw"] <= rm["W"], rm)
+    ctx.close()
+
+
 def main():
     part_a()
     tmp = tempfile.mkdtemp(prefix="le_jarvis_")
@@ -1056,6 +1181,7 @@ def main():
                 run_missing(br, host + variants["D" + f], f)
             run_c(br, host + variants["C"])
             run_look(br, host + variants["C"])
+            run_switcher(br, host + variants["C"])
             br.close()
     finally:
         srv.shutdown()

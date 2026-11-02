@@ -766,6 +766,19 @@ part yourself or fold it into a script.**
     - An origin-checked postMessage protocol, documented at the top of zenith-mode.js.
     - A non-secret settings transfer code.
     - Zenith detects it's inside Jarvis: no nags, push only on a tap, safe areas once.
+  - **The orb, `switcher.js` (2026-11-01, owner: "a way to access each thing, so calendar, kalshi, Jarvis, and my nq bot and
+    eventually other stuff, make a really cool way to change between stuff"):** one glowing orb over every mode, above Zenith
+    mode (z 2147483100; `html[data-nexus] .zm-back` hides Zenith mode's own control).
+    - Tap: the switcher opens out of the orb (clip-path circle), one live card per app in a 3D carousel: JARVIS (time,
+      market), NQ BOT (today's $ across the accounts, status), CALENDAR (next event, tasks), KALSHI (today, balance),
+      each added app (its jarvis.json card), + ADD. A quick row of 46 px buttons below.
+    - Swipe the orb left / right: the next / previous app. Hold (380 ms): the ring fans out; slide onto an app and let go,
+      or tap one. Drag: move it (`jarvis.orb`, side + height). First uses: a tip (`jarvis.orb.tips`, 3 times).
+    - It steps aside while typing and while a sheet or the ⋯ keys are open (`nxCover`). The iPhone's copy click after a tap
+      is stopped (touchend preventDefault + a 350 ms guard). Light on purpose: no backdrop blur, transforms only.
+    - Absent or broken: the bar's chips and Zenith mode's own control work as before. Saved offline from worker v7.
+    - Tests: test_jarvis_hub run N (14 checks, incl. touch and reduced motion); test_phone_e2e goes back and switches
+      through the orb. WebKit: tap, quick row, swipe, hold-and-slide.
   - **Icons:** the re-rendered old reactor icon (`?v=j2`).
   - **Workers:**
     - jarvis-v4: a 3.5 s navigation race; shell files stale-while-revalidate once a page came from the copy.
@@ -773,6 +786,7 @@ part yourself or fold it into a script.**
       worker takes over (reproduced in Playwright WebKit: "Service Worker context closed" on module imports mid-start). A new
       worker now waits; the page posts `jarvis:activate` only while it is hidden (or the browser swaps it in once Jarvis is
       closed). Install fetches with `cache: 'reload'` (v4 could save the previous version's files from the HTTP cache).
+    - jarvis-v7 (2026-11-01): switcher.js joins SHELL.
     - jarvis-v6 (2026-11-01, "Just a black screen"): an iPhone Home Screen app is black while its page or its render-blocking
       stylesheet is on the way, and v3-v5 waited on the network without limit for a file with no saved copy (reproduced in
       WebKit: no copy + a stalled download = nothing drawn). Now `NET_MAX_MS` (9 s) bounds every wait: a page with no copy
