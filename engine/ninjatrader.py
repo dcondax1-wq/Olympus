@@ -40,8 +40,8 @@ Safety gates (non-negotiable, same spirit as engine/tradovate.py):
     late; a rejected stop or target flattens the position at once; tick() flattens anything still open at flat time.
   * every OIF line is logged (bot log + logs/ninjatrader_oif.log). OIF needs no credentials and none are written.
 
-Bar feed: NinjaTraderBars reads the CSVs that ninjatrader/LE_BarFeed.cs writes (Documents\\NinjaTrader 8\\le_feed\\
-MNQ_5m.csv ...) and returns the same frame as live._yahoo_recent (time = bar OPEN, unix seconds). engine/live.py uses
+Bar feed: NinjaTraderBars reads the CSVs that ninjatrader/LE_Feed.cs (no chart) or LE_BarFeed.cs (a chart) writes
+(Documents\\NinjaTrader 8\\le_feed\\MNQ_5m.csv ...) and returns the same frame as live._yahoo_recent (time = bar OPEN, unix seconds). engine/live.py uses
 it for data_source "ninjatrader". When the file is missing or stale the bot blocks NEW entries (FEED STALE; no Yahoo,
 owner 2026-10-19, engine/pcbars.py); only with "no_yahoo": false does it fall back to Yahoo, with a logged warning.
 
