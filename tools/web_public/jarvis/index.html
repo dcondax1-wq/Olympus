@@ -58,7 +58,7 @@ window.addEventListener('error', function (e) {
   if (!window.__jarvisErr) window.__jarvisErr = String(e.message || 'Script error') + (e.filename ? ' (' + String(e.filename).split('/').pop() + ':' + e.lineno + ')' : '');
 }, true);
 </script>
-<link rel="stylesheet" id="jcss" href="jarvis.css?v=j6">
+<link rel="stylesheet" id="jcss" href="jarvis.css?v=j7">
 <style>.booted #bootfx{display:none}
 /* the start note works without jarvis.css (the stylesheet may be what did not arrive) */
 [hidden]{display:none!important}
@@ -139,7 +139,7 @@ window.addEventListener('error', function (e) {
       <div class="talk" id="talk" aria-live="polite"></div>
       <div id="brainp"></div>
 
-      <p class="sec-t">System</p>
+      <p class="sec-t">Olympus · System</p>
       <section class="panel sys" id="p-system" aria-label="System: every bot and app at a glance"></section>
       <p class="sec-t">Your projects</p>
       <div class="cards" id="cards"></div>
@@ -1191,7 +1191,8 @@ async function ask(text, voice = false) {
   if (!quiet && (voice || S.speakAll())) speak(r.speak || r.text, voice); else setState('idle');
   if (r.open) openSoon(r.route && typeof r.open === 'string' ? { id: r.open, route: r.route } : r.open);
 }
-const WN_VER = 'j5', WHATSNEW = [
+const WN_VER = 'j6', WHATSNEW = [
+  'The whole system has a name: OLYMPUS. Jarvis, Zenith, the Planner, Kalshi and Ascend all live there.',
   'Every app is its own dashboard now: the Planner, Kalshi and the NQ bot open full screen in their own look, no Jarvis bar on top.',
   'The orb switches apps: tap it for all apps, swipe it for the next one, hold it for the ring.',
   'The old Jarvis look: the violet reactor, the HUD panels and the command bar.',
@@ -1697,7 +1698,7 @@ document.addEventListener('visibilitychange', () => { if (!visible()) { finishSt
 window.addEventListener('pagehide', swTakeOver);
 // once per release the What's new card, else the morning briefing card (5:00 to 11:59 ET, once a day), as the old Jarvis showed them
 (() => {
-  if (D.LS.get('jarvis.seen', '') !== WN_VER) { setTimeout(() => { D.LS.set('jarvis.seen', WN_VER); toast('Every app is its own dashboard now. Tap the orb to switch.', "WHAT'S NEW", ['Show me', whatsNew]); }, 2200); return; }
+  if (D.LS.get('jarvis.seen', '') !== WN_VER) { setTimeout(() => { D.LS.set('jarvis.seen', WN_VER); toast('Welcome to OLYMPUS. Every app is its own dashboard: tap the orb to switch.', "WHAT'S NEW", ['Show me', whatsNew]); }, 2200); return; }
   const h = D.etParts().h;
   if (h >= 5 && h < 12 && D.LS.get('jarvis.briefDay', '') !== D.ymd(new Date())) setTimeout(() => toast('Your morning briefing is ready.', 'INFO', ['Open it', briefing]), 1600);
 })();

@@ -169,7 +169,7 @@ export function mountSwitcher(opts = {}) {
   const rootEl = doc.createElement('div');
   rootEl.className = 'nx-root'; rootEl.id = 'nxRoot'; rootEl.setAttribute('role', 'dialog'); rootEl.setAttribute('aria-modal', 'true');
   rootEl.setAttribute('aria-label', 'Switch apps'); rootEl.setAttribute('aria-hidden', 'true');
-  rootEl.innerHTML = '<div class="nx-head"><div><h2>SWITCH</h2><small>SWIPE OR HOLD THE ORB</small></div>'
+  rootEl.innerHTML = '<div class="nx-head"><div><h2>OLYMPUS</h2><small>SWITCH \u00b7 SWIPE OR HOLD THE ORB</small></div>'
     + '<button class="nx-x" type="button" aria-label="Close">×</button></div>'
     + '<button class="nx-sys" type="button" id="nxSys" hidden></button>'
     + '<div class="nx-stage"><div class="nx-track" id="nxTrack"></div></div><div class="nx-row" id="nxRow"></div>';
