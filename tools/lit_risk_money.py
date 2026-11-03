@@ -75,9 +75,17 @@ def _feat(T, U):
     return U
 
 
+def _cache_path():
+    """The units cache keyed by the NQ data (2026-11-03: a rehearsal sandbox, which symlinks research/ and runs on a cut
+    NQ_5m.csv, wrote its 31-trade units into the shared un-keyed file and test_eval_lifecycle then found no payout)."""
+    from tools import runlib as rl
+    return CACHE.replace(".pkl", f"_{rl._data_key().replace(':', '_')}.pkl")
+
+
 def load(fresh=False):
-    if not fresh and os.path.exists(CACHE):
-        return pickle.load(open(CACHE, "rb"))
+    cache = _cache_path()
+    if not fresh and os.path.exists(cache):
+        return pickle.load(open(cache, "rb"))
     out = {}
     for nm, x in VARS.items():
         T = F.run({**AC.LIVE, **x})
@@ -89,8 +97,8 @@ def load(fresh=False):
             assert u["entry_t"] == int(t["entry_t"])
             u["wk_m"] = 0.5 if t.get("half") else 1.0          # the weekly stop (funded mode keeps it)
         out[nm] = {"T": T, "U": _feat(T, U)}
-    os.makedirs(os.path.dirname(CACHE), exist_ok=True)
-    pickle.dump(out, open(CACHE, "wb"))
+    os.makedirs(os.path.dirname(cache), exist_ok=True)
+    pickle.dump(out, open(cache, "wb"))
     return out
 
 
