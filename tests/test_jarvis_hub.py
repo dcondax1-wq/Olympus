@@ -212,7 +212,7 @@ def part_a():
           and m["theme_color"] == "#000000" and all(i["src"].endswith("?v=j2") for i in m["icons"]), m)
     b = open(os.path.join(ROOT, "tools", "build_web_dashboard.py"), encoding="utf-8").read()
     check("a. the site build publishes jarvis/ and kalshi/ with every build (every top-level file: fonts and parts too)",
-          'for app in ("jarvis", "kalshi"):' in b and 'os.path.join(out, app, name)' in b)
+          'for app in ("jarvis", "kalshi", "prometheus"):' in b and 'os.path.join(out, app, name)' in b)
     check("a. kalshi/index.html exists", os.path.exists(os.path.join(KS, "index.html")))
     sw = open(os.path.join(JV, "sw.js"), encoding="utf-8").read()
     check("a. the hub's service worker only handles its own folder", "u.pathname.startsWith(scope.pathname)" in sw)
