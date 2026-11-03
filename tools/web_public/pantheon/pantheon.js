@@ -235,7 +235,7 @@ class Hall {
     // the sky: a moon and two nebulae (sprites, no fog) fill the space above the summit
     const sky = [[-8, -1.5, -30, 4.4, 0xf2ecd8, 0.95], [-8, -1.5, -30, 15, 0x8f87d8, 0.28], [13, -3, -34, 24, 0x7a3fb0, 0.24], [2, 2, -42, 36, 0x2f5f9e, 0.2]];
     this.skyG = new THREE.Group(); S.add(this.skyG);        // turned with the camera in place(): always behind the hall
-    this.sky = sky.map(([x, y, z, s, c, o]) => {
+    this.sky = (this.lite ? sky.slice(0, 2) : sky).map(([x, y, z, s, c, o]) => {      // LITE: the moon only (less overdraw)
       const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.tex.glow, color: c, transparent: true, depthWrite: false, fog: false, opacity: o, blending: THREE.AdditiveBlending }));
       m.position.set(x, y, z); m.scale.set(s, s, 1); this.skyG.add(m); return m;
     });

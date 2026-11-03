@@ -115,7 +115,7 @@ def test_static():
     build = read(os.path.join(ROOT, "tools", "build_web_dashboard.py"))
     sw = read(os.path.join(WEB, "sw.js"))
     check("a. the site build publishes olympus/ and the root worker leaves it alone",
-          '"tyche", "olympus"):' in build and "'tyche/', 'olympus/'];" in sw)
+          '"tyche", "pantheon", "olympus"):' in build and "'tyche/', 'pantheon/', 'olympus/'];" in sw)
 
 
 # ------------------------------------------------------------------ the server: the real site layout, nothing else

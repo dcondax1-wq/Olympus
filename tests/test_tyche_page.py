@@ -341,7 +341,7 @@ def static_checks():
           and isinstance(j.get("t"), int) and j.get("theme") == THEME and re.fullmatch(r"#[0-9a-f]{6}", j["theme"])
           and len(jj.encode()) <= 8192 and not any(re.search(r"<[a-z/]|&[a-z]+;|\n", x) for x in texts), j)
     b = read(os.path.join(ROOT, "tools", "build_web_dashboard.py"))
-    check("a. the site build publishes tyche/", 'for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "olympus"):' in b)
+    check("a. the site build publishes tyche/", 'for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "pantheon", "olympus"):' in b)
     sw = read(os.path.join(WEB, "sw.js"))
     m = re.search(r"const OTHER_APPS = \[([^\]]*)\]", sw)
     check("a. the root worker leaves tyche/ alone (OTHER_APPS)", bool(m) and "'tyche/'" in m.group(1), m and m.group(1))
