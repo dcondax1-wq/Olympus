@@ -792,6 +792,10 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     <label class="row-t"><span>Read every answer<small>Off: Jarvis speaks only when you talk to it</small></span><input type="checkbox" id="vAll"></label>
     <label class="row-t"><span>Hold to talk<small>Hold the mic to talk, let go to send</small></span><input type="checkbox" id="vHold"></label>
     <p class="note" id="vNote"></p>
+    <!-- assistant (2026-11-03): her talk style, the optional free cloud voice, the one-time Ava tip (tts.js, assistant.js) -->
+    <label>Talk style<select id="vStyle"><option value="short">Short: straight to the point</option><option value="chatty">Chatty: like a friend</option></select></label>
+    <label class="row-t"><span>Natural cloud voice<small id="vCloudNote">Groq's free voice on your own Groq key (⋯ → AI key); the phone's voice when it can't</small></span><input type="checkbox" id="vCloud"></label>
+    <div class="note" id="vTip" hidden><b>Free upgrade: the iPhone's most natural voice.</b> Settings → Accessibility → Spoken Content → Voices → English → Ava → <b>Ava (Premium)</b> → download (about 400 MB, free). Then pick Ava here. <button class="btn ghost" type="button" id="vTipX">Got it</button></div>
     <div class="sheet-row"><button class="btn ghost" type="button" id="vTest">Test voice</button><button class="btn solid" type="button" id="vX">Done</button></div>
   </div>
 </div>
@@ -891,7 +895,7 @@ const S = {
   muted: () => D.LS.get('jarvis.mute', false) === true,
   tilt: () => raw('jp3dtilt') === '1',
   calm: () => D.LS.get('jarvis.calm', false) === true,     // the 3D core follows the iPhone's reduce-motion switch (off: it always moves)
-  vcfg: () => Object.assign({ rate: 1.06, pitch: 1.1, voice: '' }, D.LS.get('jarvis.voiceCfg', {}) || {}),
+  vcfg: () => Object.assign({ rate: 1.0, pitch: 1.0, voice: '' }, D.LS.get('jarvis.voiceCfg', {}) || {}),
 };
 const THEMES = [
   ['reactor', 'Reactor', 'Violet + cyan · default', '#a95cff', '#22d3ee'], ['eclipse', 'Eclipse', 'Violet', '#a855f7', '#7c3aed'],
@@ -931,6 +935,15 @@ let vault = null, assist = null, obsUI = null, proUI = null;
 ready.vault = Promise.all([load('obsidian', './obsidian.js', (m) => typeof m.createVault === 'function'), load('memory', './memory.js', (m) => typeof m.createMemory === 'function')])
   .then(([ob, me]) => { if (ob && me) { vault = ob.createVault(); brainDeps.memory = me.createMemory({ vault }); } return vault; }).catch(() => null);
 ready.assist = load('assist', './assist-ui.js', (m) => typeof m.mountObsidianSheet === 'function').then((m) => { assist = m; return m; });
+// the voice (tts.js) and the personal assistant (assistant.js), 2026-11-03: each optional (absent = the old voice, the brain alone)
+let tts = null, speaker = null, assistant = null;
+ready.tts = load('tts', './tts.js', (m) => typeof m.createSpeaker === 'function').then((m) => { tts = m; return m; });
+ready.assistant = load('assistant', './assistant.js', (m) => typeof m.createAssistant === 'function')
+  .then((m) => { if (m) { assistant = safe(() => m.createAssistant(), null); if (assistant) brainDeps.assistant = assistant; } return assistant; });
+const cloudVoice = () => {                              // Groq's free voice: on, and a Groq key from the AI key settings
+  const c = D.LS.get('jarvis.tts', {}) || {}, sm = D.LS.get('jarvis.smart', {}) || {}, k = sm && sm.keys && typeof sm.keys.groq === 'string' ? sm.keys.groq : '';
+  return c.cloud && k ? { key: k, voice: c.voice || 'hannah' } : null;
+};
 // voice mode (voice-mode.js, 2026-11-03): the full-screen conversation. Loaded after the start (never part of it), or at first use.
 let vmP = null, vm = null;
 const voiceMod = () => vmP || (vmP = load('voice', './voice-mode.js', (m) => typeof m.createVoiceMode === 'function'));
@@ -1681,7 +1694,7 @@ function fallbackBrain({ getFacts }) {
 const brainDeps = { getFacts: D.getFacts, open: (id, route) => openSoon(route ? { id, route } : id), now: () => new Date(), autoOpen: false };
 const builtinBrain = fallbackBrain(brainDeps);
 let brain = builtinBrain;
-Promise.all([ready.brain, within(ready.vault, 4000)]).then(([m]) => {      // the brain gets the memory when it loaded in time
+Promise.all([ready.brain, within(ready.vault, 4000), within(ready.assistant, 4000)]).then(([m]) => {      // the brain gets the memory when it loaded in time
   if (!m) return;
   try { const b = m.createBrain(brainDeps); if (!b || typeof b.ask !== 'function') throw new Error('no ask'); brain = b; root.dataset.brain = 'module'; }
   catch (_) { brain = builtinBrain; root.dataset.brain = 'fallback'; }
@@ -1788,6 +1801,7 @@ async function answer(t, voice) {
   $('#says').textContent = headline(r.text);
   sayCards(r.cards);
   sfx('answer');
+  if (r.intent === 'assistant_reminder') offerAlerts();
   logAct(`Asked: ${t}`);
   return { r, quiet: r.control ? control(r.control) : false };
 }
@@ -1834,6 +1848,7 @@ $('#ask').addEventListener('submit', (e) => { e.preventDefault(); const q = $('#
 let voices = [];
 function loadVoices() { voices = safe(() => speechSynthesis.getVoices() || [], []); }
 function pickVoice() {
+  if (tts) return tts.bestVoice(voices, S.vcfg().voice || tts.savedVoiceName());
   const want = S.vcfg().voice, en = voices.filter((v) => /^en(-|_|$)/i.test(v.lang || ''));
   return (want && voices.find((v) => v.name === want)) || en.find((v) => /ava/i.test(v.name) && /en.?US/i.test(v.lang)) || en.find((v) => /ava/i.test(v.name))
     || en.find((v) => /samantha/i.test(v.name)) || en.find((v) => /en.?US/i.test(v.lang)) || en[0] || null;
@@ -1853,6 +1868,11 @@ function levelPulse(on) {                               // the voice bars and th
 }
 function speak(text, fromVoice) {
   if (!S.voice() || S.muted() || !('speechSynthesis' in window)) { setState('idle'); return; }
+  if (tts && !speaker) speaker = safe(() => tts.createSpeaker({ voices: () => voices, cfg: S.vcfg, cloud: cloudVoice }), null);
+  if (speaker) {
+    const done = () => { speaking = false; levelPulse(false); setState('idle'); if (handsFree && fromVoice) setTimeout(() => listen('hf'), 350); };
+    try { hush(); speaking = true; setState('speaking'); levelPulse(true); speaker.speak(String(text), { onend: done }); return; } catch (_) { speaker = null; }
+  }
   try {
     const cfg = S.vcfg(), u = new SpeechSynthesisUtterance(String(text).replace(/\n/g, '. '));
     const v = pickVoice(); if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-US';
@@ -1861,7 +1881,7 @@ function speak(text, fromVoice) {
     speechSynthesis.cancel(); speaking = true; setState('speaking'); levelPulse(true); speechSynthesis.speak(u);
   } catch (_) { speaking = false; setState('idle'); }
 }
-function hush() { safe(() => speechSynthesis.cancel()); speaking = false; levelPulse(false); }
+function hush() { if (speaker) safe(() => speaker.cancel()); safe(() => speechSynthesis.cancel()); speaking = false; levelPulse(false); }
 
 // ------------------------------------------------------------------ voice in: tap, hands-free (while Jarvis is open) and hold-to-talk
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1950,7 +1970,7 @@ function vmDeps() {
       return m.mountCore(el, opt);
     },
     verdict: vmVerdict, greeting: () => D.greeting(), fx: () => root.dataset.fx, reduced: reducedMotion,
-    voiceCfg: () => D.LS.get('jarvis.voiceCfg', null), muted: S.muted,
+    voiceCfg: () => D.LS.get('jarvis.voiceCfg', null), muted: S.muted, cloudVoice,
     onOpen: () => {                                     // one core at a time on the phone: the Jarvis screen's waits behind
       stopListening(); if (handsFree) setHandsFree(false); hush(); setState('idle');
       vmHadCore = !!core;
@@ -2003,6 +2023,21 @@ async function moreKey(k) {
   if (['theme', 'aikey', 'apps', 'alerts', 'brief'].includes(k)) closeMore();
 }
 let toastT = 0;
+function checkReminders() {
+  if (!assistant || !visible()) return;
+  const due = safe(() => assistant.due(), []) || [];
+  for (const r of due) {
+    const line = `Reminder: ${r.text}${r.late ? ` (it was due ${new Date(r.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })})` : ''}.`;
+    say('j', '⏰ ' + line); toast(line, 'REMINDER'); sfx('listen');
+    if (S.voice() && !S.muted() && !(vm && vm.isOpen())) speak(line, false);
+    safe(() => { if ('Notification' in window && Notification.permission === 'granted' && swReg && swReg.showNotification) swReg.showNotification('Jarvis', { body: line, tag: 'jarvis-' + r.id }); });
+  }
+}
+function offerAlerts() {                              // the first reminder: a tap to allow the phone's alerts (iPhone: Home Screen app only)
+  safe(() => { if ('Notification' in window && Notification.permission === 'default' && !raw('jarvis.alertsAsked')) { rawSet('jarvis.alertsAsked', '1'); toast('Want a phone alert when a reminder is due? On iPhone it works from the Home Screen app.', 'REMINDER', ['Allow', () => safe(() => Notification.requestPermission())]); } });
+}
+ready.assistant.then((a) => { if (!a) return; bootDone.then(() => setTimeout(checkReminders, 2500)); setInterval(checkReminders, 15000); });
+document.addEventListener('visibilitychange', () => { if (visible()) setTimeout(checkReminders, 800); });
 function toast(text, label = 'INFO', action) {
   let el = $('#toast');
   if (!el) { el = document.createElement('div'); el.id = 'toast'; el.className = 'toast'; el.setAttribute('role', 'status'); document.body.appendChild(el); }
@@ -2187,12 +2222,16 @@ $('#setTilt').addEventListener('change', async () => { await setTilt($('#setTilt
 $('#setCalm').addEventListener('change', () => { D.LS.set('jarvis.calm', $('#setCalm').checked); if (core && mods.core) mountCore3d(); });
 function openVoice() {
   closeSheets(); closeMore(); loadVoices();
-  const cfg = S.vcfg(), en = voices.filter((v) => /^en/i.test(v.lang || '')), cur = pickVoice();
-  $('#vVoice').innerHTML = `<option value="">Automatic${cur ? ' (' + esc(cur.name) + ')' : ''}</option>` + en.map((v) => `<option value="${esc(v.name)}"${cfg.voice === v.name ? ' selected' : ''}>${esc(v.name)} · ${esc(v.lang)}</option>`).join('');
+  const cfg = S.vcfg(), en = tts ? tts.voiceChoices(voices) : voices.filter((v) => /^en/i.test(v.lang || '')), cur = pickVoice();
+  const lab = (v) => (tts ? tts.voiceLabel(v) : `${v.name} · ${v.lang}`);
+  $('#vVoice').innerHTML = `<option value="">Automatic${cur ? ' (' + esc(lab(cur)) + ')' : ''}</option>` + en.map((v) => `<option value="${esc(v.name)}"${cfg.voice === v.name ? ' selected' : ''}>${esc(lab(v))}</option>`).join('');
+  $('#vStyle').value = assistant ? assistant.settings().style : 'short';
+  $('#vCloud').checked = !!(D.LS.get('jarvis.tts', {}) || {}).cloud;
+  $('#vTip').hidden = !!raw('jarvis.tip.ava') || (!!cur && /premium/i.test(cur.name + ' ' + (cur.voiceURI || '')));
   $('#vRate').value = String(cfg.rate); $('#vPitch').value = String(cfg.pitch);
   $('#vRateV').textContent = (+cfg.rate).toFixed(2); $('#vPitchV').textContent = (+cfg.pitch).toFixed(2);
   $('#vAll').checked = S.speakAll(); $('#vHold').checked = S.hold();
-  $('#vNote').textContent = !('speechSynthesis' in window) ? 'This browser cannot speak.' : en.length ? 'The original voice (Ava) is used when the phone has it, then Samantha.' : 'No English voices loaded yet; they appear after the first answer.';
+  $('#vNote').textContent = !('speechSynthesis' in window) ? 'This browser cannot speak.' : en.length ? 'Automatic picks her most natural voice: Ava or Zoe (Premium) first, then Allison, Samantha.' : 'No English voices loaded yet; they appear after the first answer.';
   $('#voice').hidden = false;
 }
 function saveVoice() {
@@ -2202,7 +2241,14 @@ function saveVoice() {
   renderMore();
 }
 for (const id of ['#vVoice', '#vRate', '#vPitch', '#vAll', '#vHold']) $(id).addEventListener('input', saveVoice);
-$('#vTest').addEventListener('click', () => speak(`${D.greeting()}. All systems are online.`, false));
+$('#vStyle').addEventListener('change', () => { if (assistant) assistant.setSettings({ style: $('#vStyle').value }); });
+$('#vCloud').addEventListener('change', () => {
+  const on = $('#vCloud').checked, c = D.LS.get('jarvis.tts', {}) || {};
+  D.LS.set('jarvis.tts', Object.assign({}, c, { cloud: on }));
+  if (on && !cloudVoice()) toast('The cloud voice needs your free Groq key: ⋯ → AI key. Until then she uses the phone\'s voice.', 'VOICE');
+});
+$('#vTipX').addEventListener('click', () => { rawSet('jarvis.tip.ava', '1'); $('#vTip').hidden = true; });
+$('#vTest').addEventListener('click', () => speak(`${D.greeting()}. I'm right here, and everything is online. What do you need?`, false));
 $('#vX').addEventListener('click', () => { $('#voice').hidden = true; });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeSheets(); closeMore(); } });
 

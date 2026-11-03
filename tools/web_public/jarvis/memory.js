@@ -8,6 +8,9 @@
 //       reply: { text, speak, intent, smart? (a summary the model may write, with this text as the fallback), control? }
 //   memory.context(question) -> Promise<{ notes: [{ title, snippet }], me }>   smart mode's grounding (top snippets + Me.md)
 //   memory.pending                                         the write waiting for "yes" (null when none)
+//   memory.offer(kind, text) -> { text, speak }            the same confirmed write, offered after the assistant (assistant.js)
+//                                                          kept something on the phone: "Save it to ... too? Say yes."
+//   memory.connected                                       true while the Obsidian vault is connected
 //
 // Writes are append-only and always confirmed: "note: ..." / "remember ..." / "add task ..." / a stated preference / "write
 // the OLYMPUS log" -> "Save ...? Say yes." -> "yes" -> vault.write(). Not connected: kept on this phone and sent on connect.
@@ -217,7 +220,14 @@ export function createMemory(opts) {
       return { notes: arr(notes).map((n) => ({ title: n.title, snippet: n.snippet })), me: String(me || '').slice(0, 3000) };
     } catch (_) { return null; }
   }
-  return { handle, context, get pending() { return pending ? { kind: pending.kind, text: pending.text } : null; } };
+  // assistant.js kept a fact / to-do / note on the phone: the vault copy is offered, then written on "yes" (as every write)
+  function offer(kind, text) {
+    const k = ['note', 'task', 'remember', 'me'].includes(kind) ? kind : 'remember', t = str(text, 600);
+    if (!t) return null;
+    pending = { kind: k, text: t, t: nowMs() };
+    return { text: `Save it to ${where(k)} too? Say yes.`, speak: 'Save it to Obsidian too? Say yes.' };
+  }
+  return { handle, context, offer, get connected() { return !!status().connected; }, get pending() { return pending ? { kind: pending.kind, text: pending.text } : null; } };
 }
 function ymd(ms) {
   try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(ms)); }

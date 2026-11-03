@@ -879,13 +879,46 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
       captions of both sides lit word by word, a HUD arc with the bots' verdict, and holographic cards of the numbers cited
       (`fragmentsOf`: the reply's card rows and "Name: $x" lines, copied as written) that float out as the name is spoken.
     - Turns: listen -> the shell's `answer(t, true)` (the same path as the Jarvis screen: brain, chat log, controls) ->
-      speak `r.speak` -> listen; 3 silent turns = waits for a tap; tap = barge-in / pause. The voice: best English voice,
-      British first (Daniel premium / enhanced), novelty voices never; VOICE button steps through them (`jarvis.vmVoice`).
+      speak `r.speak` -> listen; 3 silent turns = waits for a tap; tap = barge-in / pause. The voice (since 2026-11-03: tts.js,
+      the same as the Jarvis screen): a natural female voice first (Ava / Zoe premium), novelty voices never; VOICE button
+      steps through them (`jarvis.vmVoice` + `jarvis.voiceCfg.voice`).
     - No recognition (Home Screen app) or the recognizer refusing the mic: a type-to-talk field, said once per launch.
       Reduce motion (unless a 3D level was picked) / 3D Off: no loop, no analyser, all shown at once. The mic is released
       on every exit (tracks stopped, AudioContext closed). Loaded 1.5 s after the start, never part of it.
     - Worker jarvis-v14, jarvis.css?v=j10, What's new j9. Test `python -X utf8 -m tests.test_jarvis_voice` (fake mic flags,
       mocked recognition / voice; screenshots in `research/handoff/2026-11-03/voice/`).
+  - **The personal assistant + her voice (2026-11-03, owner: "my own personal assistant that I can tell anything. ANYTHING.
+    And it responds with a voice that doesn't sound like a bot. Should be a female voice."):** two new optional modules.
+    - `assistant.js` `createAssistant()` (no imports, no network; localStorage `jarvis.assistant.v1`, persona `jarvis.persona`
+      {name 'Jarvis', style short | chatty}). The brain asks it after a pending "yes"/"no" (memory.js) and before the vault:
+      facts ("my mom's birthday is March 3", "I'm allergic to …", "I love …", "remember …", "call me D"; same subject =
+      replaced; "forget …"; passwords / keys / card numbers refused, never kept), recall ("when is my mom's birthday", "what
+      did I tell you about Sam", "what do you know about me"; a weak "what's my X" only on a match, so "what's my balance"
+      stays the brain's), reminders ("remind me at 5 / in 20 minutes / tomorrow at 9am / on friday / tonight to …"; no time
+      = the to-do list; `due()` fires each once, a missed one marked late), to-dos (Jarvis's own list: the Planner's data is
+      only changed by the Planner, so nothing is written into it), notes, maths and money (a safe parser, no eval), talk style
+      and her name ("your name is Nova").
+    - With the vault connected, what she kept is offered to Obsidian through `memory.offer(kind, text)` (the same confirmed,
+      append-only write: "Save it to … too? Say yes."). `memory.connected` says whether it is.
+    - Open conversation: `assistant.isChat()` (life, school, gym, money, girls, plans, venting, long messages; never a
+      system word) after the rule answers (greetings, thanks, help stay). Smart mode on: `smartAnswer(…, chat)` with
+      `assistant.persona()` as the system prompt's head (a warm, sharp, loyal young woman; money first; his trading rules;
+      the talk style; what he told her; 988 if he talks about hurting himself) + the FACTS JSON for every number of his;
+      the model's `[remember: …]` line is learned (`assistant.learn`), never shown or said. No key: her short line + the
+      3-step key hint (`assistant.offline`). "should I …" chat is never "Your call, sir".
+    - `tts.js` (the shared voice, also voice mode's): `voiceScore` female natural first (Ava > Zoe > Allison > Samantha;
+      premium +50, enhanced +30, compact −10; male −40; Zarvox / Bubbles / Bad News / Fred … = never), `cleanSpeech` (no
+      markdown, emojis, links, symbols; $ / k / % / per month in words), `speechChunks` (sentences ≤ 180 chars, commas for a
+      breath), `createSpeaker` (one utterance per chunk, 140 ms between sentences; rate / pitch 1.0 by default). The
+      optional cloud voice: Groq Orpheus (`canopylabs/orpheus-v1-english`, voice hannah) on his own Groq key, only with the
+      Voice sheet's switch on; any error = the phone's voice, a 429 parks it for the day. Groq lists Orpheus on its free
+      tier (no card) with small daily limits (unverified from the cloud session: console.groq.com was not reachable).
+    - Shell (`index.html`): loads both after the start (`ready.tts`, `ready.assistant`, the brain waits 4 s for the
+      assistant); `speak()` uses the speaker; reminders checked every 15 s and on open (chat line, toast, voice, a
+      Notification when allowed: the first reminder offers "Allow"; iPhone only from the Home Screen app); the Voice sheet:
+      voices best first with labels, talk style, the cloud switch, a one-time Ava (Premium) tip (`jarvis.tip.ava`).
+    - Tests: `tests.test_jarvis_assistant` (node on a mocked ET clock + mocked Groq, then Chromium); test_jarvis_voice
+      now expects Ava (Premium). New files for the worker's SHELL: `assistant.js`, `tts.js`.
   - **Icons:** the re-rendered old reactor icon (`?v=j2`).
   - **Workers:**
     - jarvis-v4: a 3.5 s navigation race; shell files stale-while-revalidate once a page came from the copy.
