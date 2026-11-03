@@ -51,6 +51,10 @@ TASKS: tuple = (
     Task("odeon", "odeon", "nightly", "cronos", 5 * 60, NIGHTLY_MAX_H,
          files=("trades.json", "jarvis.json"), est_min=0.5,
          what="ODEON: the replay reels, re-exported when the PC pushed new NinjaTrader bars (heartbeat branch)"),
+    Task("pantheon", "pantheon", "nightly", "cronos", 8 * 60, NIGHTLY_MAX_H,
+         files=("pantheon.json", "states.json", "jarvis.json"), est_min=1.0,
+         what="PANTHEON: the eight free data gods (FRED, CBOE, CFTC, SqueezeMetrics, Treasury, calendar) re-read, "
+              "the council verdict and the states.json Data City reads"),
     Task("hermes", "hermes", "publish", "build", 60, NIGHTLY_MAX_H, est_min=0.0,
          what="HERMES: OLYMPUS Wrapped, rebuilt from data.json inside every site build"),
     Task("tree", "tree", "weekly", "cronos", 30 * 60, WEEKLY_MAX_H,

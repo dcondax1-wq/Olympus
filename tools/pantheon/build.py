@@ -127,7 +127,7 @@ def build(store: SRC.Store, now: dt.datetime | None = None, nq_path: str = S.NQ_
             "hit rate if votes were unrelated to NQ.",
             "A god is a 'weak signal' only if corr >= 0.05 and the hit rate beats chance by 2+ points in BOTH 2021-25 and 2026.",
         ],
-        "sources": [dict(v, name=SRC.BY_ID[k].name) for k, v in store.log.items()],
+        "sources": [dict(store.log[s.id]) for s in SRC.SOURCES if s.id in store.log],
         "skipped": list(SRC.SKIPPED),
     }
     states = {
@@ -217,6 +217,7 @@ def run(offline: bool = False, fixtures: str | None = None, out: str | None = No
         web: str | None = WEB, now=None, fixture_json: bool = False, echo=print) -> dict:
     t0 = time.time()
     store = SRC.Store(offline=offline, fixtures=fixtures)
+    store.prefetch()
     doc, states = build(store, now=now)
     sizes = write(doc, states, research, web, out)
     if fixture_json and web:

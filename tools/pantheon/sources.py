@@ -277,6 +277,12 @@ class Store:
         self._memo[sid] = data
         return data
 
+    def prefetch(self, ids=None, workers: int = 6) -> None:
+        """Fetch many sources at once (network latency, not CPU, is the cost); results land in the memo."""
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=workers) as ex:
+            list(ex.map(self.get, ids or list(BY_ID)))
+
     def _fetch(self, src: Source):
         raw = self.opener(self._url(src))
         text = raw.decode("utf-8", "replace")

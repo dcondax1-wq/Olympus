@@ -1,14 +1,15 @@
 # CRONOS: the nightly / weekly refresh that keeps the OLYMPUS research apps alive (tools/cronos, docs/CRONOS.md).
 # Research and paper only: it never touches live_model*.json, trading code or an order.
-#   nightly  Mon-Fri nights after the CME close (after datacity.yml): FATES (1,000 futures from the latest live.json state)
-#            and ODEON (the reels, only when the PC pushed new NinjaTrader bars to the heartbeat branch)
+#   nightly  Mon-Fri nights after the CME close (after datacity.yml): FATES (1,000 futures from the latest live.json state),
+#            ODEON (the reels, only when the PC pushed new NinjaTrader bars to the heartbeat branch) and PANTHEON (the free
+#            data gods: FRED, CBOE, CFTC, SqueezeMetrics, US Treasury, the calendar; key-less public files)
 #   weekly   Sunday afternoon, before the Sunday 17:47 ET monitor publish: DAPHNE (strategy tree) and PROMETHEUS (forge),
 #            each rerun only when its data or code changed
 # Outputs: ONE force-pushed commit on the `cronos` branch (small JSON laid out like the site + cronos/status.json); main
 # never gets bot commits. The site build (tools/build_web_dashboard.py -> tools/cronos/site.py) pulls them at the next
 # cloud-monitor publish and stamps each app's Jarvis card fresh, or amber "not updated since ..." when a job failed or the
 # data is older than 36 weekday hours (a week for the weekly ones).
-# Free: ~6 billed minutes a night + ~2 a Sunday when nothing changed (~22 when it did): ~150-220 of the 2,000 monthly
+# Free: ~7 billed minutes a night + ~2 a Sunday when nothing changed (~22 when it did): ~150-220 of the 2,000 monthly
 # minutes (docs/CRONOS.md). In Actions saver mode (budget.json on the dashboard branch) the heavy tasks are skipped.
 # No secrets: GITHUB_TOKEN with contents: write, like datacity.yml.
 name: cronos
@@ -25,7 +26,7 @@ on:
         options: [nightly, weekly, all]
         default: nightly
       task:
-        description: "Only these tasks (comma separated: fates, odeon, tree, prometheus); empty = the group"
+        description: "Only these tasks (comma separated: fates, odeon, pantheon, tree, prometheus); empty = the group"
         type: string
         default: ""
       force:
