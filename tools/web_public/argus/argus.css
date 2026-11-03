@@ -1,0 +1,73 @@
+/* ARGUS: the watchtower. Deep navy, electric cyan; the type is the OLYMPUS kit's (Orbitron / Rajdhani, self-hosted in ../jarvis/). */
+:root {
+  --bg: #050912; --bg2: #02040a; --panel: rgba(9, 16, 30, .9); --line: rgba(110, 190, 255, .2);
+  --text: #eef4ff; --dim: #aab6cc; --accent: #3ad7ff; --ok: #46d79a; --warn: #f5b84a; --bad: #ff4d5e; --idle: #7a859c;
+  --st: env(safe-area-inset-top, 0px); --sr: env(safe-area-inset-right, 0px); --sb: env(safe-area-inset-bottom, 0px); --sl: env(safe-area-inset-left, 0px);
+  --dock-h: 150px; --hud-h: 62px; --sheet-top: clamp(290px, 41vh, 380px);
+  color-scheme: dark;
+}
+html.framed { --st: 0px; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg2); color: var(--text);
+  font: 500 15px/1.35 var(--oly-ui, 'Rajdhani', -apple-system, system-ui, sans-serif); -webkit-text-size-adjust: 100%; }
+body { background: radial-gradient(120% 60% at 50% 22%, #0f2142 0%, #08122a 46%, var(--bg2) 100%); }
+#eyes { position: fixed; left: 0; right: 0; top: calc(var(--hud-h) + var(--st)); height: calc(var(--sheet-top) - var(--hud-h) - var(--st)); width: 100%; display: block; touch-action: none; outline: none; }
+.nogl { position: fixed; top: 80px; left: 16px; right: 16px; color: var(--dim); font-size: 13px; }
+
+.hud { position: fixed; top: 0; left: 0; right: 0; height: calc(var(--hud-h) + var(--st)); padding: calc(10px + var(--st)) calc(16px + var(--sr)) 0 calc(16px + var(--sl)); pointer-events: none;
+  background: linear-gradient(180deg, rgba(2, 4, 10, .92) 0%, rgba(2, 4, 10, .5) 75%, rgba(2, 4, 10, 0) 100%); }
+.title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+h1 { margin: 0; font: 800 22px/1.1 var(--oly-display, 'Orbitron', sans-serif); letter-spacing: .26em; color: #7fe3ff;
+  text-shadow: 0 0 12px rgba(58, 215, 255, .6), 0 0 30px rgba(58, 215, 255, .28); }
+.sub { margin: 3px 0 0; color: var(--dim); font-size: 13px; }
+.tag { font: 700 10.5px var(--oly-display, 'Orbitron', sans-serif); letter-spacing: .1em; padding: 2px 7px; border-radius: 6px; color: #04101a; background: var(--warn); }
+.pick { position: fixed; left: calc(16px + var(--sl)); right: 96px; top: calc(var(--sheet-top) - 30px); margin: 0; font: 700 13px var(--oly-ui, 'Rajdhani', sans-serif); color: var(--text);
+  text-shadow: 0 1px 8px #000; pointer-events: none; }
+.pick b { color: var(--accent); }
+
+/* the sheet: between the 3D sphere and the dock; the bottom-right 80 x 160 px stays free for Jarvis's orb */
+.sheet { position: fixed; left: calc(10px + var(--sl)); right: calc(10px + var(--sr)); top: var(--sheet-top); bottom: calc(166px + var(--sb));
+  overflow-y: auto; overscroll-behavior: contain; padding: 10px 12px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.pane[hidden] { display: none; }
+button { font: 700 14px var(--oly-ui, 'Rajdhani', sans-serif); color: var(--text); background: rgba(16, 28, 52, .85); border: 1px solid var(--line);
+  border-radius: 12px; min-height: 44px; min-width: 44px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button[aria-pressed="true"] { background: rgba(58, 215, 255, .2); border-color: var(--accent); color: #fff; }
+
+.fixrow, .lrow { display: flex; gap: 10px; align-items: flex-start; width: 100%; text-align: left; margin: 0 0 6px; padding: 8px 10px; border-radius: 12px;
+  background: rgba(255, 255, 255, .04); border: 1px solid transparent; border-left: 3px solid var(--idle); font-size: 14px; min-height: 48px; }
+.fixrow.bad, .lrow.bad { border-left-color: var(--bad); background: rgba(255, 77, 94, .09); }
+.fixrow.warn, .lrow.warn { border-left-color: var(--warn); background: rgba(245, 184, 74, .08); }
+.lrow.ok { border-left-color: var(--ok); }
+.fixrow.sel, .lrow.sel { border-color: var(--accent); }
+.num { flex: 0 0 auto; font: 800 14px/1.2 var(--oly-display, 'Orbitron', sans-serif); width: 22px; color: var(--dim); }
+.fixrow .t, .lrow .t { flex: 1 1 auto; min-width: 0; }
+.fixrow b, .lrow b { display: block; font-weight: 700; }
+.fixrow .w { display: block; color: var(--text); font-weight: 600; }
+.fixrow .d, .lrow .d { display: block; color: var(--dim); font-size: 12.5px; font-weight: 500; }
+.lrow .v { flex: 0 0 auto; font-weight: 700; font-size: 13px; text-align: right; max-width: 45%; }
+.lrow.ok .v { color: var(--ok); } .lrow.warn .v { color: var(--warn); } .lrow.bad .v { color: var(--bad); } .lrow.idle .v { color: var(--idle); }
+.lrow .dot { flex: 0 0 auto; width: 10px; height: 10px; margin-top: 6px; border-radius: 50%; background: var(--idle); }
+.lrow.ok .dot { background: var(--ok); box-shadow: 0 0 8px var(--ok); } .lrow.warn .dot { background: var(--warn); box-shadow: 0 0 8px var(--warn); }
+.lrow.bad .dot { background: var(--bad); box-shadow: 0 0 8px var(--bad); }
+.lrow .more { display: none; color: var(--dim); font-size: 12.5px; font-weight: 500; margin-top: 3px; }
+.lrow.open .more { display: block; }
+.grp { margin: 10px 0 6px; font: 700 11px var(--oly-display, 'Orbitron', sans-serif); letter-spacing: .14em; color: var(--accent); }
+.empty { margin: 4px 0; font-size: 15px; color: var(--ok); font-weight: 700; }
+
+/* the dock: verdict + tabs (the right 88 px belong to Jarvis's orb) */
+.dock { position: fixed; left: 0; right: 0; bottom: 0; height: calc(var(--dock-h) + var(--sb)); padding: 8px calc(88px + var(--sr)) calc(8px + var(--sb)) calc(10px + var(--sl));
+  background: linear-gradient(0deg, rgba(2, 4, 10, .97) 0%, rgba(2, 4, 10, .85) 80%, rgba(2, 4, 10, 0) 100%); display: flex; flex-direction: column; justify-content: flex-end; gap: 4px; }
+.verdict { display: flex; align-items: center; gap: 10px; width: 100%; padding: 4px 12px; min-height: 48px; border: 2px solid var(--idle); border-radius: 12px; background: rgba(16, 28, 52, .85); }
+.vk { font: 800 19px/1 var(--oly-display, 'Orbitron', sans-serif); letter-spacing: .08em; }
+.vs { font: 700 14px var(--oly-ui, 'Rajdhani', sans-serif); margin-left: auto; text-align: right; font-variant-numeric: tabular-nums; }
+.verdict[data-level="ok"] { border-color: var(--ok); box-shadow: 0 0 18px rgba(70, 215, 154, .35); } .verdict[data-level="ok"] .vk { color: var(--ok); }
+.verdict[data-level="warn"] { border-color: var(--warn); box-shadow: 0 0 18px rgba(245, 184, 74, .28); } .verdict[data-level="warn"] .vk { color: var(--warn); }
+.verdict[data-level="bad"] { border-color: var(--bad); box-shadow: 0 0 18px rgba(255, 77, 94, .4); } .verdict[data-level="bad"] .vk { color: var(--bad); }
+.vline { margin: 0; font-size: 12.5px; color: var(--dim); line-height: 1.25; max-height: 2.6em; overflow: hidden; }
+.tabs { display: flex; gap: 4px; }
+.tabs button { flex: 1 1 0; padding: 0 2px; font-size: 13px; min-width: 0; }
+.tabs b { color: var(--bad); font-weight: 700; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
