@@ -2,7 +2,7 @@
 Drives the real module in node (it needs no DOM: one process runs every scenario, with a fixed clock, a fake localStorage,
 a mocked fetch and a recorded open()) and once in Chromium (a real page), and checks:
   a. the module: one ES module, no imports, Safari 16 syntax (no regex lookbehind), the only network addresses are the
-     three smart-mode APIs
+     four smart-mode APIs
   b. today's answers keep their key phrases (tests/test_jarvis_hub.py d and e): status, room, target, P&L, how's blitz,
      blitz room, today's plan, the market, open planner / kalshi, Kalshi not connected / published, kalshi balance
   c. the combined briefing ("Good evening. ..."): the bots, the market and the next session, the plan, Kalshi; and with
@@ -381,9 +381,9 @@ def part_a():
     check("a. no imports, no lookbehind regex (Safari 16), no class static blocks", not re.search(r"^\s*import\s", src, re.M) and "(?<=" not in src
           and "(?<!" not in src and "static {" not in src)
     urls = set(re.findall(r"https?://[^\s'\"`]+", src))
-    check("a. the only network addresses are the three smart-mode APIs",
+    check("a. the only network addresses are the four smart-mode APIs (Groq, Gemini, OpenRouter, Anthropic)",
           urls <= {"https://api.groq.com/openai/v1/chat/completions", "https://generativelanguage.googleapis.com/v1beta/models/",
-                   "https://api.anthropic.com/v1/messages"}, urls)
+                   "https://openrouter.ai/api/v1/chat/completions", "https://api.anthropic.com/v1/messages"}, urls)
     check("a. no control characters in the source", not any(ord(c) < 32 and c not in "\n\t" for c in src))
 
 
@@ -628,7 +628,7 @@ def part_node(O):
     sm = kk["res"][-1]["smart"]
     check("h. keys kept per provider, only in localStorage 'jarvis.smart'; brain.smart never shows a key",
           st.get("keys", {}).get("groq") == "gsk_FAKE_ONE" and st.get("keys", {}).get("gemini") == "AIza-FAKE-TWO" and list(kk["storage"]) == ["jarvis.smart"]
-          and sm["keys"] == {"groq": True, "gemini": True, "anthropic": False} and sm["provider"] == "groq" and "FAKE" not in json.dumps(sm), (st, sm))
+          and sm["keys"] == {"groq": True, "gemini": True, "openrouter": False, "anthropic": False} and sm["provider"] == "groq" and "FAKE" not in json.dumps(sm), (st, sm))
     k0 = kk["calls"][0] if kk["calls"] else {}
     check("h. a decision question goes deep: high reasoning and the expert persona", k0.get("body", {}).get("reasoning_effort") == "high"
           and "Expert mode" in k0["body"]["messages"][0]["content"] and "never promise returns" in k0["body"]["messages"][0]["content"], k0.get("body", {}).get("reasoning_effort"))
@@ -637,7 +637,7 @@ def part_node(O):
           sd["res"][0]["smart"]["provider"] == "anthropic" and sd["res"][0]["smart"]["model"] == "claude-sonnet-5-5"
           and sd["calls"][0]["url"] == "https://api.anthropic.com/v1/messages" and sd["calls"][0]["body"]["model"] == "claude-sonnet-5-5"
           and sd["res"][2]["smart"]["provider"] == "gemini" and sd["res"][3]["smart"]["provider"] == "groq" and sd["res"][3]["smart"]["model"] == "openai/gpt-oss-20b"
-          and sd["res"][4]["smart"]["keys"] == {"groq": False, "gemini": False, "anthropic": False} and sd["res"][4]["smart"]["on"] is False
+          and sd["res"][4]["smart"]["keys"] == {"groq": False, "gemini": False, "openrouter": False, "anthropic": False} and sd["res"][4]["smart"]["on"] is False
           and "FAKE" not in sd["storage"].get("jarvis.smart", ""), [r.get("smart") for r in sd["res"]])
     ss = O["smart_stored"]
     check("h. settings saved on the phone are read back (provider, depth, key)", ss["res"][0]["smart"]["active"] is True and ss["res"][0]["smart"]["depth"] == "quick"

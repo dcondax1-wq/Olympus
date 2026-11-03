@@ -149,6 +149,43 @@ export function parseReminder(raw, nowMs) {
   return { text, at: cands.length ? Math.min(...cands) : at0(h % 12) + 864e5 };
 }
 
+// ------------------------------------------------------------------------------------------------ natural notes
+// "write down X", "note that X", "jot down X", "note: X"                          -> { kind: 'note', text }     (the inbox)
+// "make a note called Gym plan: X", "new note Gym plan: X", "create a note called X"  -> { kind: 'create', title, text }
+// "add to my gym note: X", "add X to my gym note", "put X in my note called Ideas"  -> { kind: 'append', title, text }
+// "log today: X", "daily log: X", "add to my daily note: X", "today's log: X"      -> { kind: 'daily', text }
+const NOTE_TITLE = "([a-z0-9][a-z0-9 &'+_-]{0,60}?)";
+const NOTE_RX = [
+  ['create', new RegExp(`^(?:make|create|start|new)(?: me)?(?: a)?(?: new)? note (?:called|named|titled) ${NOTE_TITLE}()$`, 'i')],
+  ['create', new RegExp(`^(?:make|create|start|new|write)(?: me)?(?: a)?(?: new)? note (?:called|named|titled) ${NOTE_TITLE}\\s*(?:[:,-]|\\bsaying\\b|\\bthat says\\b|\\bwith\\b)\\s*(.{2,4000})$`, 'i')],
+  ['create', new RegExp(`^(?:make|create|start|new)(?: a)?(?: new)? note ${NOTE_TITLE}\\s*:\\s*(.{2,4000})$`, 'i')],
+  ['daily', /^(?:log today|today'?s log|daily log|log for today|log|add to (?:my |today'?s )?daily(?: note)?|daily note|journal|add to my journal)\s*[:,-]\s*(.{2,4000})$/i],
+  ['daily', /^(?:log|journal) (?:that )?(.{2,4000}?) (?:in|to) (?:my |today'?s )?(?:daily(?: note)?|journal)$/i],
+  ['append', new RegExp(`^(?:add|append|put|write)(?: this)? (?:to|in|into|on) (?:my |the )?(?:note (?:called |named )?${NOTE_TITLE}|${NOTE_TITLE} note)\\s*[:,-]\\s*(.{2,4000})$`, 'i')],
+  ['append', new RegExp(`^(?:add|append|put|write) (.{2,4000}?) (?:to|in|into|on) (?:my |the )?(?:note (?:called |named )?${NOTE_TITLE}|${NOTE_TITLE} note)$`, 'i')],
+  ['note', /^(?:note|jot(?: down)?|write down|write this down|save (?:a )?note|take (?:a )?note|make a note|note down|put down)(?: that)?\s*[:,-]?\s+(.{2,4000})$/i],
+  ['note', /^(?:note to self|make a note that|take note that|note that)\s*[:,-]?\s+(.{2,4000})$/i],
+];
+const NOT_TITLE = /^(my|the|a|daily|to ?-?do|todo|task|tasks|list|shopping list|reminder|reminders)$/i;
+export function parseNote(raw) {
+  const t = String(raw || '').replace(/[’‘]/g, "'").replace(/^(?:(?:hey |ok |okay )?jarvis,?\s*)?(?:please\s+|can you\s+|could you\s+)?/i, '').trim().replace(/[.!]+$/, '');
+  for (const [kind, rx] of NOTE_RX) {
+    const m = rx.exec(t);
+    if (!m) continue;
+    if (kind === 'create') return { kind, title: noteTitle(m[1]), text: str(m[2], 4000) };
+    if (kind === 'daily') return { kind, text: str(m[1], 4000) };
+    if (kind === 'append') {
+      const pre = /^(?:add|append|put|write)(?: this)? (?:to|in|into|on) /i.test(t);
+      const title = noteTitle(pre ? m[1] || m[2] : m[2] || m[3]), text = str(pre ? m[3] : m[1], 4000);
+      if (!title || NOT_TITLE.test(title) || /^daily$/i.test(title)) { if (/^daily$/i.test(title)) return { kind: 'daily', text }; continue; }
+      return { kind, title, text };
+    }
+    return { kind: 'note', text: str(m[1], 4000) };
+  }
+  return null;
+}
+const noteTitle = (s) => str(s, 60).replace(/[\\/:*?"<>|#^[\]]/g, ' ').replace(/\s+/g, ' ').trim().replace(/^[a-z]/, (c) => c.toUpperCase());
+
 // ------------------------------------------------------------------------------------------------ maths and money
 // a small safe parser (no eval): + - * / ^ ( ), "x" / "times" / "divided by" / "plus" / "minus", N% of M, "split $X N ways"
 const WORDN = { zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, twenty: 20, hundred: 100 };
@@ -386,16 +423,22 @@ export function createAssistant(opts) {
     }
     return null;
   }
+  function keepNote(n) {
+    D.notes.push({ id: uid(), t: nowMs(), text: cap(str(n.text, 600)), title: n.title || undefined, kind: n.kind === 'note' ? undefined : n.kind }); save();
+  }
   function note(raw, t) {
-    const m = /^(?:note|jot(?: down)?|write down|save (?:a )?note|take (?:a )?note|make a note)\s*[:,-]?\s+(.{2,600})$/i.exec(clean(raw));
-    if (m) {
-      if (hasSecret(m[1])) return keep({ text: m[1] });
-      D.notes.push({ id: uid(), t: nowMs(), text: cap(m[1]) }); save();
-      return { text: `Noted: ${cap(m[1])}.`, speak: 'Noted.', intent: 'assistant_note', vault: { kind: 'note', text: m[1] } };
+    const n = parseNote(raw);
+    if (n) {
+      if (hasSecret(n.text) || hasSecret(n.title)) return keep({ text: n.text });
+      if (!n.text) return { text: `What goes in your ${n.title} note? Say "make a note called ${n.title}: …".`, speak: `What goes in your ${n.title} note?`, intent: 'assistant_note' };
+      keepNote(n);
+      const said = n.kind === 'create' ? `New note "${n.title}": ${cap(n.text)}` : n.kind === 'append' ? `Added to your ${n.title} note: ${cap(n.text)}` : n.kind === 'daily' ? `Logged for today: ${cap(n.text)}` : `Noted: ${cap(n.text)}`;
+      return { text: said.replace(/[.!]*$/, '.'), speak: n.kind === 'create' ? `New note, ${n.title}.` : n.kind === 'append' ? `Added to your ${n.title} note.` : n.kind === 'daily' ? 'Logged for today.' : 'Noted.',
+        intent: 'assistant_note', vault: { kind: n.kind, text: n.text, title: n.title } };
     }
     if (/^(?:show |read |list |read me )?(?:my )?(?:jarvis )?notes$|^what are my notes$/.test(t) && D.notes.length) {
-      const n = D.notes.slice(-6).reverse();
-      return { text: lines(`Your notes (${plural(D.notes.length, 'note')}, newest first):`, ...n.map((x) => `• ${dayOf(x.t)}: ${x.text}`)), speak: `${plural(D.notes.length, 'note')}. Latest: ${n[0].text}.`, intent: 'assistant_notes' };
+      const ns = D.notes.slice(-6).reverse();
+      return { text: lines(`Your notes (${plural(D.notes.length, 'note')}, newest first):`, ...ns.map((x) => `• ${dayOf(x.t)}${x.title ? ' · ' + x.title : ''}: ${x.text}`)), speak: `${plural(D.notes.length, 'note')}. Latest: ${ns[0].text}.`, intent: 'assistant_notes' };
     }
     return null;
   }
@@ -431,7 +474,7 @@ export function createAssistant(opts) {
   function offline(raw, q) {
     const t = String(q || raw || '').toLowerCase(), line = offlineLine(t);
     if (line && /988/.test(line)) return { text: line, speak: line, intent: 'assistant_care' };
-    const can = 'Offline I can still remember things, set reminders, keep your to-dos and notes, do the maths and check your bots.';
+    const can = 'Without it I still do the weather, time zones, units, definitions and Wikipedia, your notes, reminders, to-dos and maths, and your bots.';
     return { text: lines(line, `${KEY_HINT} ${line ? '' : can}`.trim()), speak: line || 'Open chat needs the free smart key. Tap the three dots, then AI key.', intent: line ? 'assistant_feel' : 'assistant_offline' };
   }
   function learn(text) {
@@ -463,8 +506,46 @@ export function createAssistant(opts) {
     ].filter(Boolean).join('\n');
     return { prompt, style: st.style, name: st.name, maxSpeech: st.style === 'chatty' ? 600 : 320 };
   }
+  // ---------------------------------------------------------------------------------------------- for the tools (tools.js)
+  // the model's tool calls land here: the same lists and parsers as his own words
+  function addTodo(text) {
+    const x = str(text, 200);
+    if (!x) return { text: 'Nothing to add.', intent: 'assistant_todo' };
+    if (hasSecret(x)) return keep({ text: x });
+    D.todos.push({ id: uid(), t: nowMs(), text: cap(x), done: false }); save();
+    return { text: `Added to your to-do list: ${cap(x)}.`, intent: 'assistant_todo' };
+  }
+  function addReminder(text, whenText) {
+    const x = str(text, 200).replace(/^to /i, ''), w = str(whenText, 60);
+    return remind(`remind me ${w} to ${x}`) || { text: 'I could not set that reminder.', intent: 'assistant_reminder' };
+  }
+  function addNote(text, title) {
+    const x = str(text, 4000);
+    if (!x || hasSecret(x)) return { text: 'Not kept.', intent: 'assistant_note' };
+    keepNote({ kind: title ? 'append' : 'note', text: x, title: str(title, 60) || undefined });
+    return { text: `Kept in your Jarvis notes${title ? ` (${str(title, 60)})` : ''} on this phone.`, intent: 'assistant_note' };
+  }
+  function recallText(topic) {
+    const hits = search(topic, 3);
+    return hits.length ? hits.map((h) => toYou(h.f.text)) : [];
+  }
+  // his city, from what he told her ("I live in Boston", "my city is Miami"): the default for the weather
+  function home() {
+    for (const f of D.facts.slice().reverse()) {
+      const m = /\b(?:i live in|i'm from|i am from|my (?:city|town|hometown) is|i'm in|i am in) ([A-Za-z][A-Za-z .'-]{1,40})/i.exec(f.text);
+      if (m) return m[1].replace(/\b(now|right now|currently)\b/gi, '').trim();
+    }
+    return '';
+  }
+  function math(expr) { const m = parseMath(expr); return m && m.value != null ? { text: m.text, value: m.value } : null; }
+  function readNote(title) {
+    const w = tokens(title), hit = D.notes.slice().reverse().find((n) => n.title && tokens(n.title).some((x) => w.includes(x)));
+    return hit ? D.notes.filter((n) => n.title === hit.title).map((n) => n.text) : null;
+  }
+
   return {
-    handle, isChat, offline, persona, learn, due, settings, setSettings,
+    handle, isChat, offline, persona, learn, due, settings, setSettings, addTodo, addReminder, addNote, recallText, home, math, readNote,
+    notes: () => D.notes.map((n) => ({ id: n.id, text: n.text, title: n.title || '', t: n.t })),
     upcoming: () => D.reminders.filter((r) => !r.fired).sort((a, b) => a.at - b.at).map((r) => ({ id: r.id, text: r.text, at: r.at })),
     todos: () => D.todos.filter((x) => !x.done).map((x) => ({ id: x.id, text: x.text })),
     facts: () => D.facts.map((f) => ({ id: f.id, text: f.text, t: f.t })),

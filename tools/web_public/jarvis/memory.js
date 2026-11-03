@@ -11,6 +11,11 @@
 //   memory.offer(kind, text) -> { text, speak }            the same confirmed write, offered after the assistant (assistant.js)
 //                                                          kept something on the phone: "Save it to ... too? Say yes."
 //   memory.connected                                       true while the Obsidian vault is connected
+//   memory.confirmWrite({ kind, title, text }) -> Promise<{ text, speak }>   a write the model asked for (tools.js): the
+//                                                          target path is named ("Save this to OLYMPUS/Notes/Gym plan.md?
+//                                                          Say yes or no.") and nothing is written before "yes"
+//   memory.queue(kind, text, title)                        not connected: a note he dictated waits in the vault's outbox
+//   memory.vault                                           the vault (tools.js searches and reads through it)
 //
 // Writes are append-only and always confirmed: "note: ..." / "remember ..." / "add task ..." / a stated preference / "write
 // the OLYMPUS log" -> "Save ...? Say yes." -> "yes" -> vault.write(). Not connected: kept on this phone and sent on connect.
@@ -22,6 +27,9 @@ const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 const plural = (n, w) => `${n} ${n === 1 ? w : w + 's'}`;
 const lines = (...a) => a.filter((x) => x != null && x !== '').join('\n');
 const PENDING_MS = 3 * 60e3;              // a confirmation waits 3 minutes, then it is dropped
+const BLOCKY = (k) => k === 'append' || k === 'create';      // a note body may be several lines (Markdown)
+// "OLYMPUS/Notes/Gym plan.md" said aloud: "Gym plan"
+const spoken = (path) => String(path || '').split('/').pop().replace(/\.md$/i, '');
 
 // ------------------------------------------------------------------------------------------------ what the owner says
 // each matcher: (raw text, normalized q) -> a parsed request or null. Raw keeps the owner's own words for the note.
@@ -32,6 +40,7 @@ const WRITE_RX = [
   ['remember', /^(?:hey jarvis,?\s*)?(?:remember|don'?t forget)(?: that)?\s*[:,-]?\s+(.+)$/i],
   ['note', /^(?:hey jarvis,?\s*)?(?:note|jot(?: down)?|write down|save (?:a )?note|take (?:a )?note)\s*[:,-]?\s+(.+)$/i],
 ];
+const WRITE_KINDS = ['note', 'task', 'remember', 'me', 'daily', 'append', 'create'];
 export function parseWrite(raw) {
   const t = str(raw, 1200);
   for (const [kind, rx] of WRITE_RX) { const m = rx.exec(t); if (m && str(m[1]).length >= 2) return { kind, text: str(m[1], 600).replace(/^["“']|["”']$/g, '') }; }
@@ -65,9 +74,16 @@ const READ_RX = [
   ['goals', /\b(my goals|what are my goals|goals note|my vault goals)\b/, 0],
   ['me', /\b(what do you (remember|know) about me|what have you learned about me|my preferences|my profile|how do i think|do you know me)\b/, 0],
   ['recall', /\b(what did i ask you to remember|what should you remember|your memory|what do you remember)\b/, 0],
+  ['read', /^(?:read|open|show|pull up)(?: me)? (?:my |the )?(?:note (?:called |named |titled )?(.{2,60})|(.{2,40}?) note)$/, 1],
 ];
 export function parseRead(q) {
-  for (const [name, rx, g] of READ_RX) { const m = rx.exec(q); if (m) return { name, topic: g ? str(m[g], 80).replace(/[?.!]+$/, '') : '' }; }
+  for (const [name, rx, g] of READ_RX) {
+    const m = rx.exec(q);
+    if (!m) continue;
+    const topic = g ? str(m[g] || m[g + 1], 80).replace(/[?.!]+$/, '') : '';
+    if (name === 'read' && /^(daily|today'?s|today'?s daily|yesterday'?s|jarvis)$/.test(topic)) continue;
+    return { name, topic };
+  }
   return null;
 }
 
@@ -81,11 +97,16 @@ export function createMemory(opts) {
   const nowMs = () => { try { const t = o.now ? o.now() : Date.now(); return t instanceof Date ? t.getTime() : +t || Date.now(); } catch (_) { return Date.now(); } };
   let pending = null;
   const status = () => { try { return vault ? vault.status() : { connected: false, notes: 0, local: 0 }; } catch (_) { return { connected: false, notes: 0, local: 0 }; } };
-  const where = (kind) => {
+  const where = (kind, path) => {
     const st = status(), day = ymd(nowMs());
-    const file = kind === 'me' ? 'OLYMPUS/Jarvis/Me.md' : kind === 'log' ? `OLYMPUS/Logs/${day}.md` : `OLYMPUS/Inbox/${day}.md`;
+    const file = path || (kind === 'me' ? 'OLYMPUS/Jarvis/Me.md' : kind === 'log' ? `OLYMPUS/Logs/${day}.md` : `OLYMPUS/Inbox/${day}.md`);
     return st.connected ? `${file}${kind === 'remember' ? ' and your Jarvis memory' : ''}` : 'this phone (sent to Obsidian once it is connected)';
   };
+  // the file a named / daily / new note goes to (the vault knows the owner's own notes)
+  async function pathFor(kind, title) {
+    if (!vault || typeof vault.resolve !== 'function' || !['append', 'create', 'daily'].includes(kind)) return '';
+    try { const r = await vault.resolve(kind, title); return r && r.path ? r.path : ''; } catch (_) { return ''; }
+  }
 
   function confirm(req) {
     pending = { ...req, t: nowMs() };
@@ -97,7 +118,7 @@ export function createMemory(opts) {
   async function commit() {
     const req = pending; pending = null;
     if (!vault) return { text: 'I have nowhere to save it on this phone. Nothing was written.', intent: 'memory_save' };
-    const r = await vault.write(req.kind, req.text);
+    const r = await vault.write(req.kind, req.text, undefined, req.title ? { title: req.title } : undefined);
     if (!r || !r.ok) return { text: `Not saved: ${str(r && r.error, 200) || 'the vault did not answer'}. Nothing was changed.`, speak: 'Not saved.', intent: 'memory_save' };
     if (r.local) return { text: 'Saved on this phone. It goes to your Obsidian vault once you connect it (⋯ → Connect Obsidian).', speak: 'Saved on this phone.', intent: 'memory_save' };
     const paths = arr(r.paths);
@@ -181,6 +202,11 @@ export function createMemory(opts) {
     if (req.name === 'links') return links(req.topic);
     if (req.name === 'goals') return goals();
     if (req.name === 'me') return me();
+    if (req.name === 'read') {
+      const n = typeof vault.read === 'function' ? await vault.read(req.topic) : null;
+      if (!n) return { text: `No note called “${req.topic}” in your vault.`, intent: 'memory_read' };
+      return { text: lines(`${n.title} (${n.path}):`, str(n.text, 900) || '(empty)'), speak: `${n.title}. ${str(n.text, 260)}`, intent: 'memory_read', smart: true };
+    }
     if (req.name === 'recall') { const r = await vault.search('remember', 5); return r.length ? { text: lines('What you asked me to remember:', ...r.slice(0, 5).map((h) => '• ' + str(h.snippet, 200))), intent: 'memory_recall' } : { text: 'Nothing saved to remember yet. Say "remember ..." and I will.', intent: 'memory_recall' }; }
     return null;
   }
@@ -221,13 +247,31 @@ export function createMemory(opts) {
     } catch (_) { return null; }
   }
   // assistant.js kept a fact / to-do / note on the phone: the vault copy is offered, then written on "yes" (as every write)
-  function offer(kind, text) {
-    const k = ['note', 'task', 'remember', 'me'].includes(kind) ? kind : 'remember', t = str(text, 600);
-    if (!t) return null;
-    pending = { kind: k, text: t, t: nowMs() };
-    return { text: `Save it to ${where(k)} too? Say yes.`, speak: 'Save it to Obsidian too? Say yes.' };
+  async function offer(kind, text, title) {
+    const k = WRITE_KINDS.includes(kind) ? kind : 'remember', t = BLOCKY(k) ? String(text == null ? '' : text).slice(0, 8000).trim() : str(text, 600), ti = str(title, 80);
+    if (!t || ((k === 'append' || k === 'create') && !ti)) return null;
+    const path = await pathFor(k, ti);
+    pending = { kind: k, text: t, title: ti || undefined, t: nowMs() };
+    return { text: `Save it to ${where(k, path)} too? Say yes.`, speak: 'Save it to Obsidian too? Say yes.' };
   }
-  return { handle, context, offer, get connected() { return !!status().connected; }, get pending() { return pending ? { kind: pending.kind, text: pending.text } : null; } };
+  // the model asked to write (tools.js): one clear question naming the file; "yes" writes it (append-only / new file only)
+  async function confirmWrite(req) {
+    const r = isObj(req) ? req : {}, k = ['note', 'daily', 'append', 'create'].includes(r.kind) ? r.kind : 'note';
+    const t = String(r.text == null ? '' : r.text).slice(0, 8000).trim(), ti = str(r.title, 80);
+    if (!t) return null;
+    const path = await pathFor(k, ti);
+    pending = { kind: k, text: t, title: ti || undefined, t: nowMs() };
+    const file = status().connected ? path || where(k) : null;
+    const preview = str(t, 140) + (t.length > 140 ? '…' : '');
+    return { text: file ? `Save this to ${file}? Say yes or no.\n“${preview}”` : `Save this note${ti ? ` “${ti}”` : ''} on this phone (it goes to Obsidian once you connect it)? Say yes or no.\n“${preview}”`,
+      speak: file ? `Save this to ${spoken(file)}? Yes or no.` : 'Save this note on the phone? Yes or no.', intent: 'memory_confirm', pending: true };
+  }
+  // not connected: a note he dictated waits in the vault's outbox and goes once he connects (he said "write down", so no question)
+  async function queue(kind, text, title) {
+    if (!vault || status().connected || !WRITE_KINDS.includes(kind)) return null;
+    try { const r = await vault.write(kind, text, undefined, title ? { title } : undefined); return r && r.ok ? { local: true } : null; } catch (_) { return null; }
+  }
+  return { handle, context, offer, confirmWrite, queue, get vault() { return vault; }, get connected() { return !!status().connected; }, get pending() { return pending ? { kind: pending.kind, text: pending.text, title: pending.title } : null; } };
 }
 function ymd(ms) {
   try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(ms)); }

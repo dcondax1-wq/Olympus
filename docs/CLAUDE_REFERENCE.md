@@ -920,6 +920,39 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
       voices best first with labels, talk style, the cloud switch, a one-time Ava (Premium) tip (`jarvis.tip.ava`).
     - Tests: `tests.test_jarvis_assistant` (node on a mocked ET clock + mocked Groq, then Chromium); test_jarvis_voice
       now expects Ava (Premium). New files for the worker's SHELL: `assistant.js`, `tts.js`.
+  - **Tools: "an answer to everything" (2026-11-03, owner: "it needs to be smart ... add to the Obsidian, write notes down, do
+    a ton of stuff"):** new `tools.js` (no imports; passed as `createBrain({ tools })`, the shell loads it as `ready.tools`).
+    - 18 tools in one schema (`DEFS`, `toolSchema('openai' | 'gemini' | 'anthropic')`): obsidian_append_note (inbox / daily /
+      a named note), obsidian_create_note (`OLYMPUS/Notes/<title>.md`), obsidian_search, obsidian_read, add_task,
+      list_tasks, set_reminder, remember_fact, recall, get_bots_status, get_money, open_app, get_weather (open-meteo),
+      wiki_summary (Wikipedia REST + search), web_search (DuckDuckGo instant answers + Wikipedia search: there is no free
+      key-less full web search a browser can call, and Jarvis says so), calc (units + the assistant's maths), define
+      (dictionaryapi.dev), time_in (a zone table, else open-meteo geocoding). Network only to those free CORS hosts
+      (`HOSTS`, checked 2026-11-03), no credentials ever.
+    - Smart mode with tools: brain.js `wire()` builds every provider's request (Groq / OpenRouter OpenAI-style `tools` +
+      `tool_choice auto`, Gemini `functionDeclarations` with upper-case types, Anthropic `input_schema`); `parseReply` ->
+      `{ text, calls, turn }`; up to 3 tool rounds in 18 s, results sent back in the provider's own format (Gemini's
+      thought signatures kept). A write tool never writes: `memory.confirmWrite()` names the file ("Save this to
+      OLYMPUS/Notes/Leg day.md? Say yes or no.") and only "yes" writes (append-only / new file only). A 400 retries once
+      without tools. Requests to make / write / explain something ("make me a leg day plan and save it") go to the model
+      before the rules (`WANTS_MODEL_RX`, never with a bots / money word).
+    - Providers: + OpenRouter (`sk-or-` keys, default `meta-llama/llama-3.3-70b-instruct:free`, `X-Title: Jarvis`).
+      `brain.testKey({ provider, key })`: one tiny request, `{ ok, ms, error }`. The setup screen: assist-ui.js
+      `mountKeySetup()` (Groq / Gemini / OpenRouter tabs, 3 steps each, the key page button, Test, Save only once it
+      answered); opened from ⋯ → AI key → "Free key setup", the "Connect my brain" panel, the palette, or by saying "set up
+      smart mode" (`control: 'ai_setup'`).
+    - No key: `tools.local()` answers the weather (city, last city, his "I live in ..." fact, else the phone's location),
+      "and tomorrow?" / "no, I meant Miami", time zones, units, definitions, "look up ..."; after the rules, "who / what is
+      ..." from Wikipedia. One time only (`jarvis.keyOffer`), after a useful answer: the free smart mode offer.
+    - Natural notes (assistant.js `parseNote`): "write down / note that / jot down …" (inbox), "make a note called X: …"
+      (new note), "add … to my gym note" / "add to my gym note: …" (his own note with that title, else a new one), "log
+      today: …" (today's daily note, else the inbox). Connected: offered to the vault (yes / no). Not connected: kept on the
+      phone and queued in the vault's outbox (`memory.queue`), sent on connect. obsidian.js: `write(kind, text, ymd,
+      { title })` with kinds daily / append / create, `resolve()`, `read()`, `safePath()` (never a hidden folder or `..`).
+    - Every reply carries `say` (plain words for the voice: no markdown, links, emojis or symbols). The model sees the last
+      10 turns (`HIST_MAX` 20 messages).
+    - Tests: `tests.test_jarvis_tools` (25 checks, one mocked fetch for every host). New file for the worker's SHELL:
+      `tools.js` (sw.js not bumped by this change).
   - **Icons:** the re-rendered old reactor icon (`?v=j2`).
   - **Workers:**
     - jarvis-v4: a 3.5 s navigation race; shell files stale-while-revalidate once a page came from the copy.

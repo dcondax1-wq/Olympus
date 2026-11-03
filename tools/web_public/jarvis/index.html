@@ -757,7 +757,8 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     <h2 id="setT">AI key · settings</h2>
     <h3>Smart mode</h3>
     <label class="row-t"><span>Smart answers<small id="smartNote">Your own AI key, kept only on this phone</small></span><input type="checkbox" id="setSmart"></label>
-    <label>Provider<select id="setProv"><option value="groq">Groq (free key, the old Jarvis)</option><option value="gemini">Gemini</option><option value="anthropic">Anthropic</option></select></label>
+    <label>Provider<select id="setProv"><option value="groq">Groq (free key, the old Jarvis)</option><option value="gemini">Gemini (free key)</option><option value="openrouter">OpenRouter (free models)</option><option value="anthropic">Anthropic</option></select></label>
+    <div class="sheet-row"><button class="btn ghost" type="button" id="setGuide">Free key setup · Test (1 min)</button></div>
     <label>API key<input id="setKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste your key (kept on this phone only)"></label>
     <div class="fld"><span>Depth</span><div class="seg3" id="setDepth"><button type="button" data-depth="auto">Auto</button><button type="button" data-depth="quick">Quick</button><button type="button" data-depth="think">Think</button><button type="button" data-depth="deep">Deep</button></div></div>
     <label>Model<input id="setModel" type="text" autocapitalize="off" spellcheck="false" placeholder="Leave empty for the default"></label>
@@ -954,6 +955,20 @@ let tts = null, speaker = null, assistant = null;
 ready.tts = load('tts', './tts.js', (m) => typeof m.createSpeaker === 'function').then((m) => { tts = m; return m; });
 ready.assistant = load('assistant', './assistant.js', (m) => typeof m.createAssistant === 'function')
   .then((m) => { if (m) { assistant = safe(() => m.createAssistant(), null); if (assistant) brainDeps.assistant = assistant; } return assistant; });
+// the tools (tools.js, 2026-11-03): smart mode's function calls, and the no-key weather / Wikipedia / units / time zones. The
+// phone's location is asked for only when he wants the weather without naming a city (and only once he allows it).
+const geoHere = () => new Promise((ok, no) => {
+  if (!navigator.geolocation) { no(new Error('no geolocation')); return; }
+  navigator.geolocation.getCurrentPosition((p) => ok({ lat: p.coords.latitude, lon: p.coords.longitude }), no, { timeout: 8000, maximumAge: 30 * 60e3 });
+});
+ready.tools = load('tools', './tools.js', (m) => typeof m.createTools === 'function')
+  .then((m) => { const t = m ? safe(() => m.createTools({ geo: geoHere }), null) : null; if (t) brainDeps.tools = t; return t; });
+let keyUI = null;
+function openKeySetup(provider) {
+  closeSheets(); closeMore();
+  if (!keyUI && assist && typeof assist.mountKeySetup === 'function') keyUI = safe(() => assist.mountKeySetup({ brain: () => brain, toast, onSaved: () => { renderBrainPanel(); renderMore(); } }), null);
+  if (keyUI) keyUI.open(provider); else openSettings();
+}
 const cloudVoice = () => {                              // Groq's free voice: on, and a Groq key from the AI key settings
   const c = D.LS.get('jarvis.tts', {}) || {}, sm = D.LS.get('jarvis.smart', {}) || {}, k = sm && sm.keys && typeof sm.keys.groq === 'string' ? sm.keys.groq : '';
   return c.cloud && k ? { key: k, voice: c.voice || 'hannah' } : null;
@@ -1740,7 +1755,7 @@ function fallbackBrain({ getFacts }) {
 const brainDeps = { getFacts: D.getFacts, open: (id, route) => openSoon(route ? { id, route } : id), now: () => new Date(), autoOpen: false };
 const builtinBrain = fallbackBrain(brainDeps);
 let brain = builtinBrain;
-Promise.all([ready.brain, within(ready.vault, 4000), within(ready.assistant, 4000)]).then(([m]) => {      // the brain gets the memory when it loaded in time
+Promise.all([ready.brain, within(ready.vault, 4000), within(ready.assistant, 4000), within(ready.tools, 4000)]).then(([m]) => {      // the brain gets the memory when it loaded in time
   if (!m) return;
   try { const b = m.createBrain(brainDeps); if (!b || typeof b.ask !== 'function') throw new Error('no ask'); brain = b; root.dataset.brain = 'module'; }
   catch (_) { brain = builtinBrain; root.dataset.brain = 'fallback'; }
@@ -1771,7 +1786,7 @@ function renderBrainPanel() {                          // CONNECT MY BRAIN: only
   box.innerHTML = '<section class="panel"><p class="ph"><span class="t">Connect my brain</span><i class="sdot warn"></i></p>'
     + '<p class="muted">Smart answers use your own AI key. Paste it once; it stays only on this phone.</p>'
     + '<form class="link-f" id="brainF" autocomplete="off"><input id="brainKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste key" aria-label="AI key"><button type="submit">Save</button></form>'
-    + '<div class="sheet-row"><button class="btn ghost" type="button" id="brainNo">Not now</button></div></section>';
+    + '<div class="sheet-row"><button class="btn ghost" type="button" id="brainNo">Not now</button><button class="btn solid" type="button" data-guide="1">Free setup · 1 min</button></div></section>';
   $('#brainF').addEventListener('submit', (e) => {
     e.preventDefault();
     const key = $('#brainKey').value.trim(); if (!key) return;
@@ -1779,6 +1794,7 @@ function renderBrainPanel() {                          // CONNECT MY BRAIN: only
     $('#brainKey').value = ''; renderBrainPanel(); renderMore(); toast('Smart mode is on. The key stays on this phone.', 'AI KEY');
   });
   $('#brainNo').addEventListener('click', () => { D.LS.set('jarvis.brainPanelOff', true); renderBrainPanel(); });
+  document.querySelector("#brainp [data-guide]").addEventListener('click', () => openKeySetup());
 }
 
 // ------------------------------------------------------------------ the brain's control replies: stop, mute / unmute, hide / show balances
@@ -1792,6 +1808,7 @@ function setHide(on, tellBrain = true) {
 function control(c) {                                  // -> true when the reply must not be read out loud
   if (c === 'stop') { hush(); stopListening(); if (handsFree) setHandsFree(false); setState('idle'); return true; }
   if (c === 'obsidian') { setTimeout(openObsidian, 600); return false; }
+  if (c === 'ai_setup') { setTimeout(() => openKeySetup(), 600); return false; }
   if (c === 'voice_mode') { if (!(vm && vm.isOpen())) setTimeout(() => voiceMode(false), 0); return true; }
   if (c === 'voice_mode_off') return true;              // voice mode closes itself on it (voice-mode.js)
   if (c === 'mute') { D.LS.set('jarvis.mute', true); hush(); setState('idle'); return true; }
@@ -1870,7 +1887,7 @@ const WN_VER = 'j9', WHATSNEW = [
   'The orb switches apps: tap it for all apps, swipe it for the next one, hold it for the ring.',
   'The old Jarvis look: the violet reactor, the HUD panels and the command bar.',
   'Voice: tap the mic or hands-free; hold the dock\'s mic to talk. Answers in the phone\'s own voice.',
-  'Smart answers with your own AI key (Groq, Gemini or Anthropic), kept only on this phone: ⋯ → AI key.',
+  'Smart answers with your own AI key (free Groq, Gemini or OpenRouter, or Anthropic), kept only on this phone: ⋯ → AI key.',
   'Themes, 3D effects and the core design: ⋯ → Theme. Search anything with the round button.',
 ];
 function whatsNew() {
@@ -2101,7 +2118,7 @@ function paletteItems() {
   if (TH()) for (const t of TH().list()) items.push({ label: `OLYMPUS theme: ${t.name}`, tag: 'look', run: () => setOlyTheme(t.id) });
   for (const c of CORE_DESIGNS) items.push({ label: `Core: ${c[1]}`, tag: 'look', run: () => setCoreDesign(c[0]) });
   for (const l of ['ultra', 'high', 'low', 'off']) items.push({ label: `3D effects: ${l}`, tag: 'look', run: () => setFx(l) });
-  items.push({ label: 'Voice mode · talk full screen', tag: 'voice', run: () => voiceMode(true) }, { label: 'Voice settings', tag: 'voice', run: () => openVoice() }, { label: 'AI key · smart mode', tag: 'brain', run: () => openSettings() },
+  items.push({ label: 'Voice mode · talk full screen', tag: 'voice', run: () => voiceMode(true) }, { label: 'Voice settings', tag: 'voice', run: () => openVoice() }, { label: 'AI key · smart mode', tag: 'brain', run: () => openSettings() }, { label: 'Free AI setup · test a key', tag: 'brain', run: () => openKeySetup() },
     { label: 'Add a dashboard', tag: 'apps', run: () => openSheet() }, { label: S.hideMoney() ? 'Show balances' : 'Hide balances', tag: 'privacy', run: () => moreKey('hide') },
     { label: 'Hands-free on / off', tag: 'voice', run: () => setHandsFree(!handsFree) }, { label: 'Connect Obsidian · notes', tag: 'notes', run: () => openObsidian() });
   const sug = safe(() => brain.suggestions(), []);
@@ -2130,7 +2147,7 @@ function linkOf(raw0) {
   const u = /^[a-z][a-z0-9+.-]*:/i.test(t) ? t : /^[\w-]+(\.[\w-]+)+(:\d+)?(\/|$)/.test(t) || /^localhost(:\d+)?(\/|$)/i.test(t) ? 'https://' + t : null;
   return u ? D.okUrl(u) : null;
 }
-function closeSheets() { for (const id of ['#sheet', '#settings', '#look', '#voice', '#palette']) $(id).hidden = true; if ($('#obsSheet')) $('#obsSheet').hidden = true; }
+function closeSheets() { for (const id of ['#sheet', '#settings', '#look', '#voice', '#palette']) $(id).hidden = true; if ($('#obsSheet')) $('#obsSheet').hidden = true; if ($('#keySheet')) $('#keySheet').hidden = true; }
 const removable = (a) => a.removable === true || (a.removable === undefined && a.extra === true);
 function renderMine(el) {
   const rows = D.listApps().filter(removable);
@@ -2195,7 +2212,7 @@ $('#addAscend').addEventListener('click', async () => {
   $('#addName').value = 'Ascend'; $('#addErr').textContent = (r && r.error) || 'Ascend is not on this site yet. Paste its link instead.';
   $('#addUrl').focus();
 });
-const PROV_NAME = { groq: 'Groq', gemini: 'Gemini', anthropic: 'Anthropic' };
+const PROV_NAME = { groq: 'Groq', gemini: 'Gemini', openrouter: 'OpenRouter', anthropic: 'Anthropic' };
 let depthSel = 'auto';
 function markDepth() { for (const b of $('#setDepth').children) b.setAttribute('aria-pressed', String(b.dataset.depth === depthSel)); }
 function smartLine(sm) {                               // brain.smart, as words: "Groq · openai/gpt-oss-120b · depth think · on"
@@ -2208,7 +2225,7 @@ function openSettings(appsFirst) {
   $('#setVoice').checked = S.voice();
   if (assist) safe(() => assist.mountKeySteps($('#setF')));          // the free key steps (Groq, then Gemini), once
   const sm = smartInfo(), can = smartCapable();
-  for (const id of ['#setSmart', '#setKey', '#setModel', '#setForget', '#setProv']) $(id).disabled = !can;
+  for (const id of ['#setSmart', '#setKey', '#setModel', '#setForget', '#setProv', '#setGuide']) $(id).disabled = !can;
   for (const b of $('#setDepth').children) b.disabled = !can;
   $('#setSmart').checked = !!(sm && sm.on);
   $('#setProv').value = (sm && PROV_NAME[sm.provider] && sm.provider) || 'groq';
@@ -2223,6 +2240,7 @@ function openSettings(appsFirst) {
   if (appsFirst) setTimeout(() => $('#setApps').scrollIntoView({ block: 'center' }), 40);
 }
 $('#setX').addEventListener('click', () => { $('#settings').hidden = true; });
+$('#setGuide').addEventListener('click', () => openKeySetup($('#setProv').value));
 $('#setAdd').addEventListener('click', () => openSheet());
 $('#setForget').addEventListener('click', () => {
   safe(() => (typeof brain.forgetKey === 'function' ? brain.forgetKey() : brain.setSmart({ key: '', on: false })));
@@ -2231,7 +2249,7 @@ $('#setForget').addEventListener('click', () => {
 $('#setDepth').addEventListener('click', (e) => { const b = e.target.closest('[data-depth]'); if (b && !b.disabled) { depthSel = b.dataset.depth; markDepth(); } });
 $('#setProv').addEventListener('change', () => { $('#setModel').value = ''; });
 $('#setKey').addEventListener('input', () => {        // the provider follows the key: gsk_ Groq, AIza Gemini, sk-ant- Anthropic
-  const k = $('#setKey').value.trim(), g = /^gsk_/.test(k) ? 'groq' : /^AIza/.test(k) ? 'gemini' : /^sk-ant-/.test(k) ? 'anthropic' : '';
+  const k = $('#setKey').value.trim(), g = /^gsk_/.test(k) ? 'groq' : /^AIza/.test(k) ? 'gemini' : /^sk-or-/.test(k) ? 'openrouter' : /^sk-ant-/.test(k) ? 'anthropic' : '';
   if (g && $('#setProv').value !== g) { $('#setProv').value = g; $('#setModel').value = ''; }
 });
 $('#setF').addEventListener('submit', (e) => {

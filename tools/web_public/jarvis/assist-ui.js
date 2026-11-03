@@ -2,10 +2,11 @@
 // the logic lives in obsidian.js (the vault), memory.js (what the owner says) and brain.js (the answers). index.html mounts
 // each one with a few lines; each part works on its own and never throws into the shell.
 //
-//   import { mountObsidianSheet, mountProactive, mountKeySteps } from './assist-ui.js';
+//   import { mountObsidianSheet, mountProactive, mountKeySteps, mountKeySetup } from './assist-ui.js';
 //   const obs = mountObsidianSheet({ vault, toast });     obs.open() · obs.close()
 //   const pro = mountProactive({ brain, anchor, onAsk });  pro.render() (on open and on every data change)
 //   mountKeySteps(settingsForm)                            the free-key steps above the AI key field
+//   const ks = mountKeySetup({ brain, toast, onSaved });  ks.open(provider?): the one-screen free key setup with a Test button
 
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const safe = (f, d) => { try { return f(); } catch (_) { return d; } };
@@ -129,8 +130,87 @@ export function mountKeySteps(form) {
     <li>Open <code>console.groq.com/keys</code> in Safari and sign in with Google.</li>
     <li>Tap <b>Create API Key</b>, name it Jarvis, then <b>Copy</b>.</li>
     <li>Paste it in <b>API key</b> below and tap <b>Save</b>. Jarvis switches to Groq by itself.</li>
-  </ol><small>Or Google's free Gemini key: <code>aistudio.google.com/apikey</code> → Create API key (starts with AIza). The key stays on this phone; only your bots' numbers and the question are sent, never other keys.</small>`;
+  </ol><small>Or Google's free Gemini key: <code>aistudio.google.com/apikey</code> → Create API key (starts with AIza), or OpenRouter's free models: <code>openrouter.ai/keys</code> (starts with sk-or-). The key stays on this phone; only your bots' numbers and the question are sent, never other keys.</small>`;
   const anchor = form.querySelector('#setProv') ? form.querySelector('#setProv').closest('label') : null;
   if (anchor) form.insertBefore(box, anchor); else form.appendChild(box);
   return box;
+}
+
+// ------------------------------------------------------------------------------------------------ the free key setup (2026-11-03)
+// One screen, three steps, a Test button: Groq first (free, fastest), Gemini second, OpenRouter's free models third. The key
+// goes to brain.testKey() (one tiny request to that provider only), then brain.setSmart() keeps it on this phone.
+//   const ks = mountKeySetup({ brain: () => brain, toast, onSaved });   ks.open(provider?) · ks.close()
+const KEY_STEPS = {
+  groq: { name: 'Groq', tag: 'free, fastest', rx: /^gsk_/, hint: 'gsk_…', url: 'https://console.groq.com/keys',
+    steps: ['Open <b>console.groq.com/keys</b> (button below) and sign in with Google.', 'Tap <b>Create API Key</b>, name it Jarvis, then <b>Copy</b>.', 'Paste it here, tap <b>Test</b>, then <b>Save</b>.'] },
+  gemini: { name: 'Gemini', tag: 'free, Google', rx: /^AIza/, hint: 'AIza…', url: 'https://aistudio.google.com/apikey',
+    steps: ['Open <b>aistudio.google.com/apikey</b> (button below) and sign in with Google.', 'Tap <b>Create API key</b>, then copy it (it starts with AIza).', 'Paste it here, tap <b>Test</b>, then <b>Save</b>.'] },
+  openrouter: { name: 'OpenRouter', tag: 'free models', rx: /^sk-or-/, hint: 'sk-or-…', url: 'https://openrouter.ai/keys',
+    steps: ['Open <b>openrouter.ai/keys</b> (button below) and sign in with Google.', 'Tap <b>Create Key</b>, name it Jarvis, then copy it (it starts with sk-or-).', 'Paste it here, tap <b>Test</b>, then <b>Save</b>. Jarvis uses a free model (about 50 questions a day).'] },
+};
+export function mountKeySetup(o) {
+  const brain = () => (o && typeof o.brain === 'function' ? o.brain() : o && o.brain), toast = (o && o.toast) || (() => {});
+  style();
+  const el = document.createElement('div');
+  el.className = 'sheet jx-key'; el.id = 'keySheet'; el.hidden = true;
+  el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-labelledby', 'keyT');
+  el.innerHTML = `<form class="sheet-in" id="keyF" autocomplete="off">
+    <h2 id="keyT">Free smart mode</h2>
+    <p class="st">Answers to anything, notes into Obsidian, the weather and more, on your own free key. One minute, no card.</p>
+    <div class="seg3" id="keyProv" role="group" aria-label="Provider">${Object.keys(KEY_STEPS).map((p) => `<button type="button" data-p="${p}">${esc(KEY_STEPS[p].name)}</button>`).join('')}</div>
+    <div class="jx-steps" id="keySteps"></div>
+    <div class="sheet-row"><a class="btn ghost" id="keyGo" target="_blank" rel="noopener noreferrer" href="#">Open the key page</a></div>
+    <label>Key<input id="keyIn" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Paste the key (kept on this phone only)"></label>
+    <p class="st" id="keyRes" role="status"></p>
+    <div class="sheet-row"><button class="btn ghost" type="button" id="keyX">Close</button><button class="btn ghost" type="button" id="keyTest">Test</button><button class="btn solid" type="submit" id="keySave">Save</button></div>
+    <p class="note">The key stays on this phone and goes only to that provider's own API. Jarvis asks you before it writes anything to Obsidian.</p>
+  </form>`;
+  document.body.appendChild(el);
+  const $ = (s) => el.querySelector(s);
+  let prov = 'groq', okFor = '', busy = false;
+  function render() {
+    const P = KEY_STEPS[prov], sm = safe(() => brain().smart, null);
+    for (const b of $('#keyProv').children) b.setAttribute('aria-pressed', String(b.dataset.p === prov));
+    $('#keySteps').innerHTML = `<b>${esc(P.name)} (${esc(P.tag)}), 3 steps:</b><ol>${P.steps.map((s) => `<li>${s}</li>`).join('')}</ol>`;
+    $('#keyGo').href = P.url; $('#keyGo').textContent = `Open ${P.url.replace(/^https:\/\//, '')}`;
+    $('#keyIn').placeholder = `Paste the key (${P.hint}, kept on this phone only)`;
+    if (!busy) $('#keyRes').textContent = sm && sm.keys && sm.keys[prov] ? `A ${P.name} key is saved${sm.provider === prov && sm.active ? ' and in use' : ''}. Paste a new one to replace it, or tap Test.` : `No ${P.name} key yet.`;
+  }
+  $('#keyProv').addEventListener('click', (e) => { const b = e.target.closest('[data-p]'); if (b) { prov = b.dataset.p; okFor = ''; render(); } });
+  $('#keyIn').addEventListener('input', () => {             // the key says which provider it is
+    const k = $('#keyIn').value.trim(), g = Object.keys(KEY_STEPS).find((p) => KEY_STEPS[p].rx.test(k));
+    if (g && g !== prov) { prov = g; render(); }
+    okFor = '';
+  });
+  async function test() {
+    const b = brain(), key = $('#keyIn').value.trim();
+    if (!b || typeof b.testKey !== 'function') { $('#keyRes').textContent = 'Smart mode comes with the new Jarvis brain: reload Jarvis.'; return false; }
+    busy = true; $('#keyRes').textContent = `Testing ${KEY_STEPS[prov].name}…`; $('#keyTest').disabled = true;
+    let r = null;
+    try { r = await b.testKey({ provider: prov, key }); } catch (_) { r = null; }
+    busy = false; $('#keyTest').disabled = false;
+    if (r && r.ok) { okFor = key || 'saved'; $('#keyRes').textContent = `It works: ${KEY_STEPS[prov].name} answered in ${((r.ms || 0) / 1000).toFixed(1)} s.`; return true; }
+    $('#keyRes').textContent = `Not working: ${(r && r.error) || 'no answer'}.`;
+    return false;
+  }
+  $('#keyTest').addEventListener('click', () => { test(); });
+  $('#keyF').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const b = brain(), key = $('#keyIn').value.trim();
+    if (!b || typeof b.setSmart !== 'function') return;
+    if (key && okFor !== key && !(await test())) return;   // a pasted key is saved only once it answered
+    safe(() => b.setSmart(key ? { provider: prov, key, on: true } : { provider: prov, on: true }));
+    $('#keyIn').value = ''; okFor = '';
+    el.hidden = true;
+    toast(`Smart mode is on (${KEY_STEPS[prov].name}). Ask me anything.`, 'AI KEY');
+    if (o && typeof o.onSaved === 'function') safe(() => o.onSaved());
+  });
+  $('#keyX').addEventListener('click', () => { el.hidden = true; });
+  return {
+    open(p) {
+      if (KEY_STEPS[p]) prov = p; else { const sm = safe(() => brain().smart, null); if (sm && KEY_STEPS[sm.provider]) prov = sm.provider; }
+      okFor = ''; render(); el.hidden = false;
+    },
+    close() { el.hidden = true; }, el,
+  };
 }

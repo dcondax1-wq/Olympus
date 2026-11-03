@@ -16,7 +16,11 @@
 //   vault.sync({ force })         incremental: the tree SHA first, then only the notes whose blob SHA changed
 //   vault.search(q, n)            BM25 over titles, headings, tags and text -> [{ path, title, score, snippet }]
 //   vault.daily(ymd) / tasks() / recent(days, ymd) / goals() / links(name) / me()
-//   vault.write(kind, text, ymd)  append-only: 'note' | 'task' | 'remember' | 'me' | 'log' -> { ok, paths, local? }
+//   vault.write(kind, text, ymd, { title }?)  append-only: 'note' | 'task' | 'remember' | 'me' | 'log' | 'daily' (today's daily
+//                                 note) | 'append' (a named note) | 'create' (OLYMPUS/Notes/<title>.md, appended if it exists)
+//                                 -> { ok, paths, local? }
+//   vault.resolve(kind, title)    -> Promise<{ path, exists, title }> where that write would land (said in the confirmation)
+//   vault.read(title)             -> Promise<{ title, path, text } | null> one note as plain words
 //   vault.importNote(title, text) a pasted note, kept and indexed on this phone only
 // Every method is total: junk in, an answer out; network errors become a state, never an exception to the caller (except
 // connect(), which rejects with a plain message the shell shows).
@@ -27,7 +31,9 @@ const OUTBOX_KEY = 'jarvis.vault.outbox';               // confirmed writes wait
 const LOCAL_KEY = 'jarvis.vault.local';                 // pasted / shared notes (no GitHub)
 const IDX_KEY = 'vault.index.v1';                       // the index in kv
 export const LEARNED_KEY = 'jarvis.vault.learned';      // what Jarvis saved or learned: [{ t (unix s), text, note (path) | null }]
-export const PATHS = { inbox: 'OLYMPUS/Inbox', memory: 'OLYMPUS/Jarvis/Memory.md', me: 'OLYMPUS/Jarvis/Me.md', logs: 'OLYMPUS/Logs' };
+export const PATHS = { inbox: 'OLYMPUS/Inbox', memory: 'OLYMPUS/Jarvis/Memory.md', me: 'OLYMPUS/Jarvis/Me.md', logs: 'OLYMPUS/Logs', notes: 'OLYMPUS/Notes' };
+export const KINDS = ['note', 'task', 'remember', 'me', 'log', 'daily', 'append', 'create'];
+const BLOCK_KINDS = ['append', 'create'];
 const MAX_NOTES = 2000, MAX_FETCH = 400, MAX_BYTES = 300000, TEXT_CUT = 12000, CONC = 6;
 const REPO_RX = /^[A-Za-z0-9_.-]{1,100}\/[A-Za-z0-9_.-]{1,100}$/;
 
@@ -87,6 +93,12 @@ function hmOf(ms) {
 }
 // one line of the owner's words, safe to append to Markdown: no line breaks, no leading list / heading marks
 export const cleanLine = (s) => str(s, 1000).replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().replace(/^[#>\-*+\s]+/, '').slice(0, 600);
+// a block of the owner's (or the model's) Markdown for a note body: no frontmatter fence, at most 8,000 characters
+export const cleanBlock = (s) => str(s, 9000).replace(/\r/g, '').replace(/^\s*---\s*$/gm, '—').replace(/\n{3,}/g, '\n\n').trim().slice(0, 8000);
+// a note title safe as a file name: no path parts, no Obsidian link marks
+export const cleanTitle = (s) => cleanLine(s).replace(/[\\/:*?"<>|#^[\]]/g, ' ').replace(/\.+$/, '').replace(/\s+/g, ' ').trim().slice(0, 80);
+// a path Jarvis may append to: a Markdown note, never a hidden / system folder or a path that climbs out
+export const safePath = (p) => typeof p === 'string' && /\.md$/i.test(p) && !/(^|\/)\.\.?(\/|$)/.test(p) && !/(^|\/)\.(obsidian|git|trash)(\/|$)/.test(p) && !/^\//.test(p) && p.length < 300;
 
 // ------------------------------------------------------------------------------------------------ parsing a note
 const STOP = new Set('a an and are as at be but by for from has have i in is it its me my of on or our so that the this to was we what when where which who why will with you your about did do does not no yes up out how all any can just than then them they there these those were been into over very more most also if'.split(' '));
@@ -392,13 +404,48 @@ export function createVault(opts) {
     }
     throw new Error('the note changed while saving: try again');
   }
-  function blocksFor(kind, text, ymd) {
+  // where a named note lives: the owner's own note with that title (exact, then the closest), else a new OLYMPUS/Notes/<title>.md
+  async function resolve(kind, title) {
+    const t = cleanTitle(title), day = ymdOf(nowMs());
+    if (kind === 'daily') {
+      await load();
+      const d = IX.notes.find((x) => x.daily === day && !x.path.startsWith('OLYMPUS/'));
+      return d ? { path: d.path, exists: true, title: d.title } : { path: `${PATHS.inbox}/${day}.md`, exists: false, title: `Inbox ${day}` };
+    }
+    if (kind !== 'append' && kind !== 'create') return { path: kind === 'me' ? PATHS.me : kind === 'log' ? `${PATHS.logs}/${day}.md` : `${PATHS.inbox}/${day}.md`, exists: true, title: '' };
+    if (!t) return null;
+    const own = `${PATHS.notes}/${t}.md`, notes = await all(), low = t.toLowerCase();
+    const exact = notes.find((x) => !x.local && x.title.toLowerCase() === low) || notes.find((x) => !x.local && x.path.toLowerCase() === own.toLowerCase());
+    if (exact) return { path: exact.path, exists: true, title: exact.title };
+    if (kind === 'append') {                       // "my gym note": the note whose title starts with or holds that word
+      const near = notes.filter((x) => !x.local && !x.daily && (x.title.toLowerCase().startsWith(low) || x.title.toLowerCase().split(/\s+/).includes(low)))
+        .sort((p, q) => p.title.length - q.title.length)[0];
+      if (near) return { path: near.path, exists: true, title: near.title };
+    }
+    return { path: own, exists: false, title: t };
+  }
+  async function read(title) {
+    const t = cleanTitle(title).toLowerCase();
+    if (!t) return null;
+    const notes = await all();
+    const n = notes.find((x) => x.title.toLowerCase() === t) || notes.filter((x) => x.title.toLowerCase().includes(t)).sort((p, q) => p.title.length - q.title.length)[0];
+    return n ? { title: n.title, path: n.path, text: plainText(n.text).replace(/\n{3,}/g, '\n\n').trim().slice(0, 6000) } : null;
+  }
+  async function blocksFor(kind, text, ymd, title) {
     const day = str(ymd, 10) || ymdOf(nowMs()), at = hmOf(nowMs()), line = cleanLine(text), inbox = `${PATHS.inbox}/${day}.md`;
     const head = (t) => `# ${t}\n\n`;
     if (kind === 'task') return [[inbox, `- [ ] ${line}\n`, head(`Inbox ${day}`)]];
     if (kind === 'remember') return [[inbox, `- ${at} remember: ${line}\n`, head(`Inbox ${day}`)], [PATHS.memory, `- ${day}: ${line}\n`, head('Jarvis memory')]];
     if (kind === 'me') return [[PATHS.me, `- ${line} (${day})\n`, ME_TEMPLATE]];
     if (kind === 'log') return [[`${PATHS.logs}/${day}.md`, str(text, 8000).replace(/\r/g, '').trim() + '\n', head(`OLYMPUS log ${day}`)]];
+    if (kind === 'daily') { const r = await resolve('daily'); return [[r.path, `- ${at} ${line}\n`, head(`Inbox ${day}`)]]; }
+    if (kind === 'append' || kind === 'create') {
+      const r = await resolve(kind, title), body = cleanBlock(text), multi = body.includes('\n');
+      if (!r) throw new Error('the note needs a title');
+      // a new note: its title, then the text; an existing one: the text appended (a dated line, or a dated section for a block)
+      const block = r.exists ? (multi ? `\n## ${day} ${at}\n${body}\n` : `- ${body} (${day})\n`) : `${body}\n`;
+      return [[r.path, block, `# ${r.title}\n\n`]];
+    }
     return [[inbox, `- ${at} ${line}\n`, head(`Inbox ${day}`)]];
   }
   // kind: note | task | remember | me | log. Connected: one commit per file, plus a line in today's daily note when it exists.
@@ -408,29 +455,32 @@ export function createVault(opts) {
     l.push({ t: Math.floor(nowMs() / 1000), kind, text: kind === 'log' ? 'Wrote the OLYMPUS log' : cleanLine(text).slice(0, 300), note: path || null });
     lset(LEARNED_KEY, l);
   }
-  async function write(kind, text, ymd) {
-    kind = ['note', 'task', 'remember', 'me', 'log'].includes(kind) ? kind : 'note';
+  async function write(kind, text, ymd, opt) {
+    kind = KINDS.includes(kind) ? kind : 'note';
+    const title = cleanTitle(isObj(opt) ? opt.title : '');
     if (!cleanLine(text)) return { ok: false, error: 'nothing to save' };
+    if ((kind === 'append' || kind === 'create') && !title) return { ok: false, error: 'the note needs a title' };
     const day = str(ymd, 10) || ymdOf(nowMs());
-    const r = await writeNow(kind, text, day);
+    const r = await writeNow(kind, text, day, title);
     if (r.ok && !r.flushing) { learned(kind, text, (r.paths || [])[0] || null); notify(); }
     return r;
   }
-  async function writeNow(kind, text, day) {
+  async function writeNow(kind, text, day, title) {
     if (!cfg) {
       const ob = arr(lget(OUTBOX_KEY, [])).slice(-199);
-      ob.push({ kind, text: kind === 'log' ? str(text, 8000) : cleanLine(text), day, t: nowMs() });
+      ob.push({ kind, text: kind === 'log' ? str(text, 8000) : BLOCK_KINDS.includes(kind) ? cleanBlock(text) : cleanLine(text), day, t: nowMs(), title: title || undefined });
       lset(OUTBOX_KEY, ob);
       return { ok: true, local: true, paths: [] };
     }
     const paths = [];
     try {
       await load();
-      for (const [path, block, header] of blocksFor(kind, text, day)) {
+      for (const [path, block, header] of await blocksFor(kind, text, day, title)) {
+        if (!safePath(path)) throw new Error('refused: not a note path');
         await appendTo(path, block, false, header);
         paths.push(path);
       }
-      if (kind !== 'me' && kind !== 'log') {
+      if (['note', 'task', 'remember'].includes(kind)) {
         const d = IX.notes.find((x) => x.daily === day && !x.path.startsWith('OLYMPUS/'));
         if (d) { await appendTo(d.path, `- ${hmOf(nowMs())} ${kind === 'task' ? '[ ] ' : ''}${cleanLine(text)} (via Jarvis)\n`); paths.push(d.path); }
       }
@@ -444,7 +494,7 @@ export function createVault(opts) {
     const left = [];
     for (const w of ob) {
       if (!isObj(w)) continue;
-      const r = await writeNow(w.kind, w.text, w.day);
+      const r = await writeNow(KINDS.includes(w.kind) ? w.kind : 'note', w.text, w.day, cleanTitle(w.title));
       if (r.ok && !r.local) sent++; else left.push(w);
     }
     lset(OUTBOX_KEY, left.length ? left : null);
@@ -461,7 +511,7 @@ export function createVault(opts) {
     return { ok: true, title: t };
   }
   return {
-    connect, disconnect, status, sync, search, daily, tasks, recent, goals, links, me, write, flush, importNote,
+    connect, disconnect, status, sync, search, daily, tasks, recent, goals, links, me, write, flush, importNote, resolve, read,
     get connected() { return !!cfg; },
     hasNotes: async () => (await all()).length > 0,
   };
