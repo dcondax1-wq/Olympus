@@ -39,6 +39,10 @@ h1, h2, p, ol { margin: 0; }
 }
 #stage { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
 #stage:active { cursor: grabbing; }
+/* the render core's overlay (glow.js): the tree stays drawn on #stage (touch and tests), the overlay is what is seen */
+#gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+#gl[hidden] { display: none; }
+#app[data-gl="on"]::before { opacity: .35; }
 
 .hud { position: absolute; z-index: 2; pointer-events: none; }
 .hud > *, .hud button { pointer-events: auto; }
@@ -244,7 +248,7 @@ h1, h2, p, ol { margin: 0; }
   .hud-foot .col.search { grid-column: auto; }
   .hud-foot .col:has(.roots) { display: none; }
   .verdict { margin: 4px 0 2px; padding: 4px 8px; }
-  .sheet-tabs button { white-space: nowrap; padding: 0 8px; letter-spacing: .08em; }
+  .sheet-tabs button { white-space: nowrap; padding: 0 6px; letter-spacing: .03em; font-size: 11px; }
   .hud-foot { gap: 6px; }
   .steps li { padding: 0; font-size: 10px; }
   .verdict { font-size: 9px; margin-top: 0; }
@@ -267,3 +271,17 @@ h1, h2, p, ol { margin: 0; }
 @media (prefers-reduced-motion: reduce) {
   .sigil, .loading { animation: none; }
 }
+
+/* BEST: the best branch in plain words (2026-11-03) */
+.pane[data-pane="best"] { display: block; max-height: 27vh; max-height: 27dvh; overflow: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.best p { margin: 0 0 8px; font-size: 13px; line-height: 1.5; color: var(--ink); }
+.best h3 { margin: 0 0 4px; font-size: 10px; letter-spacing: .16em; color: var(--dim); font-weight: 600; }
+.best .big { font-size: 15px; color: #fff; }
+.best .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 4px 0 10px; }
+.best .stats div { border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; background: var(--panel); }
+.best .stats b { display: block; font-size: 15px; }
+.best .stats small { font-size: 9px; letter-spacing: .1em; color: var(--dim); }
+.best .pos { color: var(--green); } .best .neg { color: var(--red); }
+.best .go { min-height: 44px; padding: 0 14px; border: 1px solid rgba(70, 255, 154, .5); border-radius: 6px; background: rgba(70, 255, 154, .1); color: var(--ink); font: inherit; letter-spacing: .1em; }
+.toast-new { position: fixed; z-index: 30; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 150px); padding: 8px 14px; border-radius: 8px;
+  border: 1px solid rgba(70, 255, 154, .5); background: rgba(3, 12, 8, .92); color: var(--ink); font-size: 12px; letter-spacing: .08em; }

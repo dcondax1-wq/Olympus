@@ -10,7 +10,7 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import { openFeed } from './data.js';
 import { createDemo } from './demo.js';
-import { buildGraph, diffGraphs, search, resolve, thoughts } from './graph.js';
+import { buildGraph, diffGraphs, search, resolve, thoughts, dayLog } from './graph.js';
 import { anchorsFor, createLayoutHost, ringRadius, ringSpot } from './layout.js';
 import { Brain } from './render.js';
 import { OrbitRig } from './controls.js';
@@ -61,6 +61,12 @@ const ui = createUI({
   },
   onView() { setView(state.view === 'stars' ? 'galaxy' : 'stars'); ui.toast(state.view === 'stars' ? 'Constellation view' : 'Galaxy view'); },
   resolve: (name) => (state.graph ? resolve(state.graph, name) : null),
+  onToday(open) {
+    const want = typeof open === 'boolean' ? open : document.getElementById('day').hidden;
+    ui.dayOpen(want);
+    if (want && state.graph) ui.day(dayLog(state.graph, Date.now()), state.graph.nodes);
+  },
+  onReplayDay() { replayDay(); },
   onTimeLapse() { if (state.lapse) stopLapse(); else startLapse(); },
   onQuality() {
     setQuality(state.quality === 'high' ? 'low' : 'high');
@@ -93,7 +99,11 @@ if (hasWebGL()) {
   }
 }
 if (!brain) { ui.noGL(); O?.ready(); }        // the numbers and the search still work: the page is up
-else brain.setView(state.view);
+else {
+  brain.setView(state.view);
+  // the OLYMPUS render core (bloom, MSAA, film finish) loads beside the first frame; without it the plain renderer keeps drawing
+  import('../olympus/render.js').then((m) => { if (brain.useCore(m.createRenderer)) needsDraw = true; }).catch(() => { /* old build: plain look */ });
+}
 O?.mode(state.quality === 'low');
 const layout = brain ? createLayoutHost((pos, asleep) => { brain.setTargets(pos); state.settled = asleep; needsDraw = true; }) : null;
 addEventListener('resize', () => { if (brain) { brain.resize(); frameFocus(); needsDraw = true; } });
@@ -156,6 +166,7 @@ function onUpdate(update) {
   ui.focusBar(next.clusters.find((c) => c.key === state.filter) || null);
   if (d.first || d.learned.length) ui.ticker(next.learned, !d.first && d.learned.length > 0);
   stream(next, d.first);
+  ui.day(dayLog(next, now), next.nodes, now);
   state.focus = focusId && next.index.has(focusId) ? next.index.get(focusId) : -1;
   if (state.focus >= 0) ui.card.show(next.nodes[state.focus], next); else ui.card.hide();
   frameFocus();
@@ -173,6 +184,24 @@ function onUpdate(update) {
   state.matches = state.query.trim() ? new Set(search(next, state.query).map((x) => x.i)) : null;
   look();
   postCard(next, mode);
+}
+
+let replayTimers = [];
+/** Replay today's lessons: a spark flies to each note in time order (reduced motion: faster, no flight needed). */
+function replayDay() {
+  replayTimers.forEach(clearTimeout); replayTimers = [];
+  const g = state.graph;
+  if (!g) return;
+  const log = dayLog(g, Date.now()), me = meId(g), gap = reduced ? 250 : 700;
+  log.items.forEach((l, k) => {
+    replayTimers.push(setTimeout(() => {
+      ui.dayMark(l.t);
+      const to = l.i >= 0 ? l.i : me && g.index.has(me) ? g.index.get(me) : -1;
+      if (brain && to >= 0) { brain.spark(to); needsDraw = true; }
+    }, k * gap));
+  });
+  replayTimers.push(setTimeout(() => ui.dayMark(null), log.items.length * gap + 900));
+  if (!log.items.length) ui.toast('Nothing learned yet today');
 }
 
 /** The thought stream: lessons and edits, newest first; the ones that were not there before slide in. */
@@ -411,6 +440,8 @@ window.mind = {
   get synapses() { return brain ? brain.synapses.count : 0; },
   get nebulae() { return brain ? brain.nebulae.puffs.length : 0; },
   get ring() { return brain && brain.ringInfo ? { ...brain.ringInfo } : null; },
+  get day() { return state.graph ? dayLog(state.graph, Date.now()) : null; },
+  get core() { return brain && brain.rc ? brain.rc.passes() : null; },
   get thoughts() { return document.querySelectorAll('#stream li').length; },
   memoryOnRing: () => {                                  // how far each memory sits from the ring (share of its radius)
     const r = brain && brain.ringInfo, g = state.graph;
