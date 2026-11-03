@@ -425,13 +425,13 @@ def part_node(O):
           and "ATLAS: flat" in e2 and "Paper only" in e2, e2)
     check("e. what a bot waits for: its waiting text and entry window", "Waiting for a sweep of a LIT level" in e3 and "next entry window Mon 02:00-15:30 ET" in e3, e3)
     check("e. the money goal card from live.json", "Road to $10K" in e4 and "Next: Buy 2 MFFU Builder 25K" in e4, e4)
-    check("e. 'what should I do now': the open position first, then the money step", e5.startswith("Zlarior: long 3 micros") and "Money: Buy 2" in e5, e5)
+    check("e. 'what should I do now': the open position first; no sales line unless asked (owner 2026-11-02)", e5.startswith("Zlarior: long 3 micros") and "Money" not in e5 and "Buy 2" not in e5, e5)
     n1 = t("now_plain", 0)
     check("e. 'what should I do now' with nothing urgent: the open task and the next session", "Open task: Buy BLITZ 25K" in n1 and "opens today 6:00 PM ET" in n1, n1)
     n2 = t("now_bad", 0)
     check("e. 'what should I do now' with a feed problem in session: that problem and its fix first", n2.startswith("FEED STALE") and "Reload NinjaScript" in n2, n2)
     n3, s3 = t("now_stale", 0), t("now_stale", 1)
-    check("e. a live feed 3 h old: check the PC; the status says it is old", n3.startswith("Check the PC") and "3 h ago" in n3
+    check("e. a live feed 3 h old: turn the PC on; the status says it is old", n3.startswith("The PC has been silent since 3 h ago: turn it on and start the bot") and "3 h ago" in n3
           and "Heads up: the live feed is from 3 h ago" in s3, (n3, s3))
     n4, k4 = t("now_kalshi_setup", 0), t("now_kalshi_setup", 1)
     check("e. nothing else to do: connect Kalshi (the kalshi-server chat), never 'PC'", "kalshi-server" in n4 and "PC" not in k4, (n4, k4))
@@ -449,7 +449,7 @@ def part_node(O):
     mi = [t("more_intents", i) for i in range(6)]
     check("e. the NQ price from the bot's feed, with its age", mi[0].startswith("NQ 25,123.50 (the bot's last price, 2 min ago)"), mi[0])
     check("e. the daily loss limit and what is used of it", "Zlarior: daily loss limit $1,000, used $212; $1,106 of room to the floor" in mi[1], mi[1])
-    check("e. 'is the pc on': its last check-in and the verdict", mi[2].startswith("The PC last checked in 2 min ago: RUNNING: bot trading"), mi[2])
+    check("e. 'is the pc on': the one fix first (none), its last check-in and the verdict", mi[2].startswith("The PC looks healthy: nothing to fix.") and "checked in 2 min ago" in mi[2] and "RUNNING: bot trading" in mi[2], mi[2])
     check("e. 'is nq open' is a market question, not 'open Zenith'", mi[3].startswith("NQ market open · regular session") and not g("more_intents")[3].get("open"), mi[3])
     check("e. trades today per bot (with the daily maximum)", "Zlarior: 1 trade today (max 1 a day)" in mi[4] and "BLITZ: 2 trades today" in mi[4], mi[4])
     check("e. balances: each account and Kalshi", "Zlarior 50K balance $49,274" in mi[5] and "Kalshi balance $512.34" in mi[5], mi[5])
@@ -471,13 +471,13 @@ def part_node(O):
     check("e. the shell's liveError: the live feed cannot be reached", "cannot reach the bots' live feed" in se1 and "Bots: I cannot reach the live feed" in se2, (se1, se2[:160]))
     ph = [t("phrasings", i) for i in range(11)]
     check("e. phrasings: 'how close to passing' is the target, 'where's nq' the price (missing: said so), 'is the bot trading my eval' the status",
-          ph[0].startswith("Zlarior: $3,726 to the target") and ph[1].startswith("No NQ price in the live feed right now") and ph[2].startswith("RUNNING"),
+          ph[0].startswith("Zlarior: $3,726 to the target") and ph[1].startswith("No NQ price in the live feed right now") and ph[2].startswith("The bot is running (RUNNING"),
           ph[:3])
     check("e. 'who made you', trading actions refused ('flatten everything', 'stop the bot'), 'take me home'",
           "You did, sir" in ph[3] and g("phrasings")[4].get("intent") == "refuse_trade" and g("phrasings")[5].get("intent") == "refuse_trade"
           and g("phrasings")[6].get("open") == "home", ph[3:7])
     check("e. 'anything overdue' lists the overdue tasks; 'what's up' is a short status", "open task" in ph[7] and ph[8].startswith("All quiet: RUNNING: bot trading"), ph[7:9])
-    check("e. 'should I ...' without smart mode: the numbers, the call left to the owner", ph[9].startswith("Your call, sir. The numbers I have:") and "Zlarior 50K eval" in ph[9], ph[9])
+    check("e. 'should I ...' without smart mode: the numbers, the call left to the owner", ph[9].startswith("Your call, sir. The numbers I have:") and "Zlarior 50K: session" in ph[9], ph[9])
     check("e. a greeting at the wrong hour gets a polite 'technically'", ph[10].startswith("Good morning, technically."), ph[10])
     sdec = O["smart_decision"]
     check("h. 'should I ...' with smart mode on goes to the model, deep (the expert persona)", len(sdec["calls"]) == 1
@@ -660,16 +660,16 @@ def part_system(O):
     it = lambda n, i: (O[n]["res"][i] or {}).get("intent")           # noqa: E731
     s1, s2, pc, s4, bots = (t("system", i) for i in range(5))
     check("k. 'status': the verdict and the one thing to do first, then one line per system (PC, Zlarior, ATLAS, BLITZ, Kalshi, Planner)",
-          s1.startswith("HEADS UP: PC: RAM 89%") and all(x in s1 for x in ("PC (bot server", "CPU 23% · RAM 89%", "Zlarior (50K eval): +$213",
+          s1.startswith("HEADS UP: RAM 89% in use on the PC: close the browser tabs") and all(x in s1 for x in ("PC (bot server", "CPU 23% · RAM 89%", "Zlarior (50K eval): +$213",
                                                                           "ATLAS (25K)", "BLITZ (25K): OFF", "Kalshi (its own server): +$18.50", "Planner (your day): 4:15 PM"))
           and it("system", 0) == "system", s1)
     check("k. 'is everything ok?' and 'all good' give the same System answer", s2 == s1 and s4 == s1 and it("system", 1) == "system", (s2[:80], s4[:80]))
     check("k. the System answer speaks short and plain (the one thing to watch, the PC's check-in; no symbols)",
           sp("system", 0).startswith("All running, one thing to watch:") and "checked in 2 minutes ago, feed 12 seconds" in sp("system", 0) and "·" not in sp("system", 0)
           and "$" not in sp("system", 0), sp("system", 0))
-    check("k. 'how's the pc': its check-in and verdict, CPU and RAM, the amber line (not repeated as a to-do)",
-          "The PC last checked in" in pc and "RUNNING" in pc and "CPU 23%, RAM 89%." in pc and "Memory (RAM): RAM 89% in use" in pc and "To do" not in pc
-          and it("system", 2) == "pc" and "CPU 23 percent, memory 89 percent" in sp("system", 2), (pc, sp("system", 2)))
+    check("k. 'how's the pc': the one fix first (the amber RAM line), then its check-in, verdict, CPU and RAM",
+          pc.startswith("The fix: RAM 89% in use on the PC: close the browser tabs") and "checked in 2 min ago" in pc and "RUNNING" in pc and "CPU 23%, RAM 89%" in pc
+          and it("system", 2) == "pc" and "RAM 89 percent in use on the PC" in sp("system", 2), (pc, sp("system", 2)))
     check("k. 'how are the bots' stays the bots' status (unchanged)", "RUNNING" in bots and "Zlarior 50K" in bots and "PC (bot server" not in bots, bots)
     sg = (O["system"]["res"][5] or {}).get("list") or []
     check("k. suggestions: 'Is everything OK?' first while the System view has something", sg[:1] == ["Is everything OK?"] and 4 <= len(sg) <= 6, sg)
@@ -678,7 +678,7 @@ def part_system(O):
           g1.startswith("ALL GOOD: nothing needs you.") and g2 == g1 and sp("system_good", 0).startswith("All good, sir. Nothing needs you."), (g1[:80], sp("system_good", 0)))
     n1, n2 = t("system_none", 0), t("system_none", 1)
     check("k. a shell without the System view: 'status' is the bots' status as before; 'how's the pc' says the CPU / RAM reading is missing",
-          "RUNNING" in n1 and "Zlarior 50K" in n1 and "The PC last checked in" in n2 and "No CPU or RAM reading" in n2, (n1[:120], n2))
+          "RUNNING" in n1 and "Zlarior 50K" in n1 and "checked in 2 min ago" in n2 and "no CPU / RAM reading yet" in n2, (n1[:120], n2))
     j = [t("system_junk", i) for i in range(3)]
     check("k. junk System facts never raise and never print undefined / NaN / [object",
           all(x and not re.search(r"undefined|NaN|\[object", x) for x in j) and not any("exception" in (r or {}) for r in O["system_junk"]["res"]), j)
