@@ -104,7 +104,7 @@ def flags(st, i, today: Today) -> int:
 
 def row(st, i, today: Today) -> list:
     c, s = st.combos[i], st.rows[i]
-    r10 = lambda x, k=10: int(round((x or 0) * k))  # noqa: E731
+    r10 = lambda x, k=10: int(round((x or 0) * k))  # noqa: E731, RUF046 (a numpy float rounds to a float)
     return code(c) + [G.DISTRICTS.index(c["district"]), CLS.index(s["cls"]), r10(s["mu"], 1), r10(s["r"], 100),
                       r10(s["win"], 100), s["n"], r10(s["tpw"], 100), r10(s["mu26"], 1), s["n26"], r10(s["muold"], 1), s["nold"],
                       flags(st, i, today)]

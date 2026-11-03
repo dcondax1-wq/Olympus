@@ -229,7 +229,7 @@ class App {
     this.applyStates();
     const hits = items.map((it, i) => [it, i]).filter(([it, i]) => keep[i] && it.kind === 'b')
       .sort((a, b) => clsRank(a[0].b.cls) - clsRank(b[0].b.cls) || (b[0].b.e || 0) - (a[0].b.e || 0));
-    UI.fillFound(hits.map(([it, i]) => ({ ...it, i })), (b) => labelOf(b, D), (it) => this.open(it.i), filtering ? hits.length : 0);
+    UI.fillFound(hits.slice(0, 30).map(([it, i]) => ({ ...it, i })), (b) => labelOf(b, D), (it) => this.open(it.i), filtering ? hits.length : 0);
     state.found = filtering ? hits.length : 0;
     if (filtering && hits.length) { const [it] = hits[0]; this.city.beam.show(it.x, it.z, it.h, it.color); }
     else if (!filtering) this.city.beam.hide();

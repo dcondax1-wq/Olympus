@@ -149,6 +149,8 @@ def run(full=False, heartbeat=False, out=OUT, web=WEB, store_run=True, df=None, 
              "jarvis.json": RP.jarvis_card(guard, leaderboard, st.last_day, built, now)}
     for name, obj in files.items():
         write_json(os.path.join(out, name), obj)
+    for name, obj in plugins:                              # plug-in districts ride along with city.json (datacity branch)
+        write_json(os.path.join(out, name), obj)
     if web:
         os.makedirs(web, exist_ok=True)
         for name in ("city.json", "jarvis.json"):

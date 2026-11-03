@@ -357,7 +357,6 @@ def test_districts_today():
     check("h. district counts: every district has combinations", {c["district"] for c in combos} == set(G.DISTRICTS))
     feat = F.build(slice_df(), **src())
     ev = feat["ev"]
-    pre = (ev["slot"] < 39) | (ev["slot"] >= 96)                       # before 09:45 ET (slot 39 = 09:45)
     check("h. no look-ahead in the new states: opening-range states only from 09:45, RTH gap types only from 09:30",
           (ev["s_orw"][ev["slot"] < 39] == -1).all() and (ev["s_orp"][ev["slot"] < 39] == -1).all() and (ev["s_gapt"][ev["slot"] < 38] == -1).all())
     gr = G.Grid(feat)
