@@ -92,7 +92,9 @@ def outgoing_summary(folder: str | None) -> dict:
             pos_accts[acct] = pos_accts.get(acct, 0) + 1
         elif n.startswith("LE") and low.endswith(".txt"):
             ours.append(n)
-        elif low.endswith(".txt") and "_" not in n and len(n) < 60:
+        elif low.endswith(".txt") and len(n) < 60:
+            # (2026-11-03) no "_" exclusion any more: a connection named e.g. "MFFU_Rithmic" was counted as "other" and
+            # the block showed only Simulation (position files are matched above; NinjaTrader's order ids have no "_")
             try:
                 txt = open(os.path.join(d, n), encoding="utf-8", errors="replace").read(40).strip().upper()
             except Exception:

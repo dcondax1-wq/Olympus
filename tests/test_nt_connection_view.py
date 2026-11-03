@@ -109,6 +109,11 @@ def main() -> int:
         check("7c. heartbeat outgoing summary: connected + live account count + note",
               sm.get("connections") == ["Simulation=CONNECTED"] and sm.get("connected") is True and sm.get("live_accounts") == 1
               and "only" in (sm.get("note") or ""), sm)
+        folder(f, {"Simulation": "CONNECTED", "MFFU_Rithmic": "CONNECTED"}, [])
+        sm = nt_log.outgoing_summary(f)
+        check("7c2. a connection name with '_' is listed (was counted as 'other': only Simulation showed)",
+              sorted(sm.get("connections") or []) == ["MFFU_Rithmic=CONNECTED", "Simulation=CONNECTED"], sm)
+        folder(f, {"Simulation": "CONNECTED"}, [("MFFUEVAL50K123", now - 20)])
         pr = botctl.folder_probe(f, now)
         check("7d. botctl folder probe: connected with its reasons", pr.get("connected") is True and "live account in accounts.csv" in pr.get("connected_via"), pr)
         # 8. (same QA pass) the bar reader drops a last line still being appended (no "\n" yet): "21000.5" cut to "2100"
