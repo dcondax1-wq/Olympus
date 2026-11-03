@@ -24,6 +24,7 @@
     datacity: ['Data City', 'Δ', '#4f8cff'], mind: ['Mind', 'Ω', '#5eead4'], tree: ['Daphne', 'Ψ', '#34f5a0'],
     oracle: ['Oracle', 'Θ', '#7fe9ff'], odeon: ['Odeon', 'Ξ', '#ff6b7f'], fates: ['Fates', 'Φ', '#ffcf5a'],
     hermes: ['Hermes', 'Η', '#f7c948'], prometheus: ['Prometheus', 'Π', '#ff7a1a'], tyche: ['Tyche', 'Τ', '#e879f9'],
+    pantheon: ['Pantheon', 'Σ', '#f2d68a'],
   };
   var id = (me && me.getAttribute('data-app')) || '', info = APPS[id] || [id || 'OLYMPUS', 'Ο', '#a855f7'];
   var get = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
