@@ -147,6 +147,41 @@ def weather() -> dict:
     return out
 
 
+PLUGIN_DIR = os.path.join(B.OUT, "plugins")
+PLUGIN_MAX_ITEMS = 4000
+PLUGIN_MAX_BYTES = 400_000
+
+
+def collect_plugins(folder=PLUGIN_DIR) -> list:
+    """Plug-in districts from other data sources (PANTHEON feeds ...): every research/datacity/plugins/*.json that follows
+    the contract in tools/web_public/datacity/data.js ({key, name, blurb, color, items: [{id, lab, value, unit, cls, note,
+    sp}]}). Returns [(file name for the page, the cleaned district)]; a bad file is skipped, never fatal."""
+    out = []
+    if not os.path.isdir(folder):
+        return out
+    for name in sorted(os.listdir(folder)):
+        p = os.path.join(folder, name)
+        if not name.endswith(".json") or os.path.getsize(p) > PLUGIN_MAX_BYTES:
+            continue
+        try:
+            with open(p, encoding="utf-8") as fh:
+                d = json.load(fh)
+            key = "".join(ch for ch in str(d["key"]) if ch.isalnum() or ch in "_-")[:24]
+            items = [{"id": str(x.get("id", k))[:60], "lab": str(x.get("lab", ""))[:160], "value": float(x.get("value", 0) or 0),
+                      **{f: x[f] for f in ("unit", "cls", "note") if isinstance(x.get(f), str)},
+                      **({"sp": [float(v) for v in x["sp"][:60]]} if isinstance(x.get("sp"), list) else {})}
+                     for k, x in enumerate(d["items"][:PLUGIN_MAX_ITEMS]) if isinstance(x, dict)]
+        except (OSError, ValueError, KeyError, TypeError):
+            continue
+        if not key or key in G.DISTRICTS or not items:
+            continue
+        clean = {"v": 1, "key": key, "name": str(d.get("name", key))[:24], "blurb": str(d.get("blurb", ""))[:200],
+                 "color": d["color"] if isinstance(d.get("color"), str) and len(d["color"]) == 7 and d["color"][0] == "#" else "#7fe9ff",
+                 "items": items}
+        out.append((f"district_{key}.json", clean))
+    return out
+
+
 def harbor(root=B.ROOT) -> dict | None:
     """The live bot's trades as ships: run lit_live (the live settings replayed, costs in). Each row [day, dir, R, $, exit]."""
     try:

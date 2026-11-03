@@ -283,9 +283,18 @@ def test_outputs():
               and {"net", "per_month", "p10", "f10", "dec10", "pass_med"} <= sp.keys() and sp["n"] == len(T), sp)
         check("f. jarvis.json follows the Jarvis card contract", not jarvis_problems(files["jarvis.json"]), jarvis_problems(files["jarvis.json"]))
         h1 = files["history.json"]
-        learn.run(df=slice_df(), out=tmp, web=None, store_run=False, src=src(), log=lambda *_: None, now=1793500600)
+        os.makedirs(os.path.join(tmp, "plugins"))
+        with open(os.path.join(tmp, "plugins", "rates.json"), "w", encoding="utf-8") as fh:   # a new data source's district
+            json.dump(PLUGIN, fh)
+        with open(os.path.join(tmp, "plugins", "bad.json"), "w", encoding="utf-8") as fh:
+            fh.write("{not json")
+        web = os.path.join(tmp, "web")
+        f2 = learn.run(df=slice_df(), out=tmp, web=web, store_run=False, src=src(), log=lambda *_: None, now=1793500600)
         h2 = read_json(os.path.join(tmp, "history.json"))
         check("f. a rerun on the same data keeps one history row", len(h2["runs"]) == len(h1["runs"]) == 1)
+        pl = read_json(os.path.join(web, "district_rates_demo.json")) if os.path.exists(os.path.join(web, "district_rates_demo.json")) else {}
+        check("f. plug-in districts: research/datacity/plugins/*.json is listed in city.json and copied next to the page (a bad file is skipped)",
+              f2["city.json"]["plugins"] == ["district_rates_demo.json"] and len(pl.get("items", [])) == len(PLUGIN["items"]), f2["city.json"]["plugins"])
         lb = read_json(os.path.join(tmp, "leaderboard.json"))["rows"]
         check("f. the leaderboard says plain-language findings with $ and trades/week",
               all("/trade/micro" in r["text"] and "a week" in r["text"] for r in lb))

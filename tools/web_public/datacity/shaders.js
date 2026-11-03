@@ -22,11 +22,13 @@ float noise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f);
 
 export const BUILD_VS = `
 attribute vec3 aColor; attribute vec4 aData; attribute vec4 aState; attribute float aSeed;
-uniform float uMirror;
+uniform float uMirror; uniform float uGrow;
 varying vec3 vColor; varying vec4 vData; varying vec4 vState; varying vec3 vLocal; varying vec3 vN; varying float vFD; varying float vWy; varying float vSeed;
 void main(){
   vColor=aColor; vData=aData; vState=aState; vLocal=position; vSeed=aSeed;
-  vec4 wp = modelMatrix * instanceMatrix * vec4(position,1.0);
+  vec3 c0 = (modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+  float gr = clamp(uGrow * 1.9 - length(c0.xz) / 480.0 - aSeed * 0.15, 0.0, 1.0); gr = gr*gr*(3.0-2.0*gr);
+  vec4 wp = modelMatrix * instanceMatrix * vec4(position.x, position.y * max(gr, 0.001), position.z, 1.0);
   if(uMirror>0.5) wp.y = -wp.y;
   vWy = wp.y;
   vN = normalize(mat3(modelMatrix*instanceMatrix)*normal);
@@ -77,12 +79,15 @@ void main(){
 }`;
 export const IMP_VS = `
 attribute float aSub; attribute vec4 aHa; attribute vec4 aHb; attribute float aHc; attribute vec3 aColor; attribute vec4 aMeta;
+uniform float uGrow;
 varying vec3 vColor; varying vec4 vMeta; varying vec3 vW; varying vec3 vN; varying float vFD; varying float vY;
 void main(){
   vec4 sa = step(abs(vec4(aSub) - vec4(0.0,1.0,2.0,3.0)), vec4(0.5));
   vec4 sb = step(abs(vec4(aSub) - vec4(4.0,5.0,6.0,7.0)), vec4(0.5));
   float h = dot(aHa, sa) + dot(aHb, sb) + aHc * step(abs(aSub - 8.0), 0.5);
-  vec3 p = position; p.y *= h; p *= aMeta.w;
+  vec3 c0 = (modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+  float gr = clamp(uGrow * 1.9 - length(c0.xz) / 480.0, 0.0, 1.0); gr = gr*gr*(3.0-2.0*gr);
+  vec3 p = position; p.y *= h * max(gr, 0.001); p *= aMeta.w;
   vColor = aColor; vMeta = aMeta; vY = position.y;
   vec4 wp = modelMatrix * instanceMatrix * vec4(p,1.0);
   vW = wp.xyz;

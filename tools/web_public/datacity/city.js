@@ -63,10 +63,10 @@ class App {
     this.wxOn = settings.get('dc.wx', '1') === '1';
     this.weather = weatherOf(P.has('vix') ? +P.get('vix') : model.weather?.vix);
     const winRate = model.buildings.reduce((a, b) => a + (b.w || 50), 0) / Math.max(1, model.buildings.length) / 100;
-    this.city = new CityScene($('#c'), this.L, { quality: this.quality, winRate: Math.max(0.3, Math.min(0.7, winRate)), billboards: billboards(model) });
+    this.calm = O ? O.reduced() : !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    this.city = new CityScene($('#c'), this.L, { quality: this.quality, winRate: Math.max(0.3, Math.min(0.7, winRate)), billboards: billboards(model), calm: this.calm });
     O?.track(this.city.renderer);
     O?.mode(this.quality === 'lq');
-    this.calm = O ? O.reduced() : !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     this.orbit = new Orbit(this.city.camera, $('#c'), {
       calm: this.calm, radius: Math.max(160, Math.min(520, (this.L.bounds.x1 - this.L.bounds.x0) * 0.62)),
       onTap: (x, y) => this.tap(x, y), onFlyEnd: () => this.endTour(),
@@ -280,6 +280,7 @@ class App {
     const speed = Math.max(1, Math.min(50, +P.get('tourSpeed') || 1));            // tests fast-forward the tour
     this.orbit.drive((dt) => this.tour?.step(dt * speed) ?? null);
     $('#tourB').classList.add('on');
+    document.body.classList.add('cine');
   }
 
   endTour() {
@@ -289,6 +290,7 @@ class App {
     UI.caption('');
     this.setToday(this.todayBefore, true);
     $('#tourB').classList.remove('on');
+    document.body.classList.remove('cine');
     state.tour = { on: false, step: -1, steps: 0, caption: '', done: (state.tour.done || 0) + 1, last: state.tour.step };
   }
 

@@ -112,6 +112,7 @@ def run(full=False, heartbeat=False, out=OUT, web=WEB, store_run=True, df=None, 
         save_run(port_T, port_S, strategies[-1]["members"], log)
     today = st.today()
     tl = SK.Today(grid)
+    plugins = SK.collect_plugins(os.path.join(out, "plugins"))
     buildings = st.buildings()
     for b in buildings:                                   # the Today layer on the full cards
         i = st.index[b["id"]]
@@ -140,7 +141,7 @@ def run(full=False, heartbeat=False, out=OUT, web=WEB, store_run=True, df=None, 
             "sections": SK.sections(guard), "dict": SK.dictionary(RP.WIN_LABEL),
             "skyline": SK.skyline(st, tl, skip={st.index[b["id"]] for b in buildings}),
             "today_layer": tl.summary(combos, rows, shown), "weather": SK.weather(), "harbor": SK.harbor(),
-            "plugins": []}
+            "plugins": [name for name, _ in plugins]}
     files = {"city.json": city, "leaderboard.json": {"v": 1, "built": built, "rows": leaderboard},
              "discoveries.json": {"v": 1, "built": built, "last_day": st.last_day, "items": discoveries, "today": today,
                                   "strategies": strategies},
@@ -152,6 +153,8 @@ def run(full=False, heartbeat=False, out=OUT, web=WEB, store_run=True, df=None, 
         os.makedirs(web, exist_ok=True)
         for name in ("city.json", "jarvis.json"):
             write_json(os.path.join(web, name), files[name])
+        for name, obj in plugins:                          # plug-in districts next to the page (city.json lists them)
+            write_json(os.path.join(web, name), obj)
     log(f"datacity: {len(city['buildings'])} buildings, {len(leaderboard)} on the leaderboard, {len(today)} fired on "
         f"{st.last_day}, {time.time() - t0:.1f}s")
     return files

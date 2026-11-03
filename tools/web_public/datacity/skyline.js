@@ -50,7 +50,7 @@ export class Skyline {
     box.computeBoundingBox(); box.computeBoundingSphere();
     this.box = box;
     const mat = (mirror) => new THREE.ShaderMaterial({ vertexShader: SH.BUILD_VS, fragmentShader: SH.BUILD_FS,
-      uniforms: { ...pick(U, 'uTime', 'uFog', 'uFogD', 'uHaze', 'uDay', 'uToday', 'uWet'), uMirror: { value: mirror ? 1 : 0 } },
+      uniforms: { ...pick(U, 'uTime', 'uFog', 'uFogD', 'uHaze', 'uDay', 'uToday', 'uWet', 'uGrow'), uMirror: { value: mirror ? 1 : 0 } },
       ...(mirror ? { transparent: true, depthWrite: false, side: THREE.DoubleSide } : {}) });
     this.mat = mat(false); this.mirrorMat = mat(true);
     this.where = new Int32Array(L.items.length * 2).fill(-1);       // item -> [mesh index, local index]
@@ -104,7 +104,7 @@ export class Skyline {
     this.impMeta = new Float32Array(n * 4);
     const m4 = new THREE.Matrix4(), c = new THREE.Color();
     this.imp = new THREE.InstancedMesh(geo, new THREE.ShaderMaterial({ vertexShader: SH.IMP_VS, fragmentShader: SH.IMP_FS,
-      uniforms: pick(this.U, 'uTime', 'uFog', 'uFogD', 'uHaze', 'uDay', 'uToday') }), n);
+      uniforms: pick(this.U, 'uTime', 'uFog', 'uFogD', 'uHaze', 'uDay', 'uToday', 'uGrow') }), n);
     B.forEach((b, k) => {
       const hs = new Array(9).fill(0.05), w = Math.max(1e-6, b.x1 - b.x0), d = Math.max(1e-6, b.z1 - b.z0);
       let r = 0, g = 0, bl = 0, wt = 0, lit = 0;

@@ -48,7 +48,8 @@ export class CityScene {
     const v3 = () => new THREE.Vector3();
     this.U = { uTime: { value: 0 }, uFog: { value: new THREE.Color(FOG.night) }, uFogD: { value: DENSITY.night }, uHaze: { value: 0.2 },
                uDay: { value: 0 }, uDusk: { value: 0 }, uToday: { value: 0 }, uWet: { value: 0.6 }, uRain: { value: 0 }, uPR: { value: 1 },
-               uAccent: { value: new THREE.Color(0x3fd8ff) }, uSun: { value: v3().set(0, -1, 0) }, uCloud: { value: 0 }, uFlash: { value: 0 } };
+               uAccent: { value: new THREE.Color(0x3fd8ff) }, uSun: { value: v3().set(0, -1, 0) }, uCloud: { value: 0 }, uFlash: { value: 0 },
+               uGrow: { value: opts.calm ? 1 : 0 } };                      // the rise on load (0 -> 1)
     this.flash = 0;
     this.storm = false;
     this.resize();
@@ -291,6 +292,7 @@ export class CityScene {
   render(dt) {
     const U = this.U;
     U.uTime.value += dt;
+    if (U.uGrow.value < 1) U.uGrow.value = Math.min(1, U.uGrow.value + dt / 2.6);
     this.tower.rotation.y += dt * 0.15;
     this.skyline.update(this.camera);
     this.rays.update(U.uTime.value);

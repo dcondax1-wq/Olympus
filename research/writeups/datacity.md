@@ -118,7 +118,7 @@ Fear (VIX 25+, an inverted curve) and an unfilled gap help these structure-stop 
 | Effects | neon windows (lit = sample size, a few flicker), neon edges and crowns, wet-street reflections, god-ray searchlights and district sky beams, drifting fog layers, flying traffic along splines, holographic billboards cycling the discoveries, a beam of light onto a found building |
 | Useful | Today layer (buildings whose trigger and states were true on the last session, and "armed" ones whose day states were), Watchlist (pins, kept on the device), history sparklines (quarter by quarter, per year, run by run), search by words / class / district, minimap, tap a district (or a far block) to fly there, a captioned tour |
 | Honesty | grey stays grey; the Today glow never recolours a building; the plaza and the tour say how many are noise |
-| Plug-ins | a new data source adds a district by writing one JSON next to the page and listing it in `plugins.json` (contract in `data.js`) |
+| Plug-ins | a new data source adds a district by dropping one JSON in `research/datacity/plugins/` (the nightly run validates it, copies it next to the page and lists it in city.json), or next to the page listed in `plugins.json`; contract in `data.js` |
 | LITE | automatic below 40 fps when the owner did not choose: no reflections, one fog layer, fewer cars / drops / stars, pixel ratio <= 1.5 |
 
 ## Constantly learning
