@@ -7,13 +7,13 @@
 //   kit.json (the pin of the server script, written by the site build) is network first like the page;
 // - only its own 'kalshi-*' caches are ever deleted; only same-origin files inside this folder are handled, so kalshi.json
 //   (raw.githubusercontent.com / api.github.com) is never touched or cached;
-// - Jarvis's fonts (../jarvis/*.woff2, the page's @font-face) are saved here too and answered from the copy first, so the page
-//   keeps its Orbitron / Rajdhani look offline.
-const CACHE = 'kalshi-k12';                      // = 'kalshi-' + the ?v= of kalshi.css / kalshi.js (index.html, SHELL): a new version, a new cache
+// - Jarvis's fonts (../jarvis/*.woff2, the page's @font-face) and its three.js (the 3D header, korb.js) are saved here too and
+//   answered from the copy first, so the page keeps its Orbitron / Rajdhani look and its orb offline.
+const CACHE = 'kalshi-k13';                      // = 'kalshi-' + the ?v= of kalshi.css / kalshi.js (index.html, SHELL): a new version, a new cache
 const NAV_WAIT_MS = 3500;
-const SHELL = ['./', './index.html', './kalshi.css?v=k12', './kalshi.js?v=k12', './kit.json'];
+const SHELL = ['./', './index.html', './kalshi.css?v=k13', './kalshi.js?v=k13', './kfx.js?v=k13', './korb.js?v=k13', './kit.json'];
 const FONTS = ['../jarvis/orbitron.woff2', '../jarvis/rajdhani-400.woff2', '../jarvis/rajdhani-500.woff2', '../jarvis/rajdhani-600.woff2',
-  '../jarvis/rajdhani-700.woff2'];
+  '../jarvis/rajdhani-700.woff2', '../jarvis/three.module.min.js'];   // + the 3D header's three.js (korb.js): offline, and never a hung fetch
 const FONT_URLS = FONTS.map((f) => new URL(f, self.registration.scope).href);
 let probed = 0;
 
@@ -83,16 +83,24 @@ self.addEventListener('fetch', (e) => {
     return;
   }
   e.respondWith((async () => {
-    // kalshi.css / kalshi.js are versioned (?v=): the exact saved copy answers at once and is refreshed behind it, so a page
-    // drawn from its saved copy after NAV_WAIT_MS never waits again on a slow site for its own style and script.
+    // kalshi.css / kalshi.js / kfx.js / korb.js are versioned (?v=): the exact saved copy answers at once, so a page drawn from
+    // its saved copy after NAV_WAIT_MS never waits again on a slow site for its own files. A versioned file never changes (a
+    // new version is a new ?v= and a new cache), so nothing is fetched behind it: no extra requests holding the phone's few
+    // connections to a slow site.
     // Everything else here (kit.json: the server script's pin) is network first, the saved copy only when the site fails.
     if (u.searchParams.has('v')) {
       const hit = await caches.match(req);
-      if (hit) { e.waitUntil(fetch(req).then((r) => store(req, r)).catch(() => null)); return hit; }
+      if (hit) return hit;
     }
     try {
-      const r = await fetch(req);
-      if (r && r.ok) return store(req, r);
+      // network first, but a dead site (a dropped connection the browser retries) never outwaits the page's own 3 s: after
+      // 2 s the saved copy answers, and a late answer still refreshes it
+      const net = fetch(req).then((x) => store(req, x));
+      net.catch(() => null);
+      const copy = await saved(req);
+      const r = copy ? await Promise.race([net, new Promise((ok) => setTimeout(() => ok(null), 2000))]) : await net;
+      if (!r) { e.waitUntil(net.catch(() => null)); return copy; }
+      if (r && r.ok) return r;
       return (await saved(req)) || r;
     } catch (_) {
       return (await saved(req)) || Response.error();

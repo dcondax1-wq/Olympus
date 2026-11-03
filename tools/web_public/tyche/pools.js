@@ -55,9 +55,25 @@ export class Pools {
     const n = this.lite ? 260 : 720;
     this.jet = this.glow.points(n, this.lite ? 0.16 : 0.12, 0.95);
     this.jetV = new Float32Array(n * 3);
-    const c = this.jet.geometry.attributes.color.array, gold = new this.T.Color(GOLD), white = new this.T.Color('#fff6dc');
-    for (let i = 0; i < n; i++) { const k = i % 4 ? gold : white; c.set([k.r, k.g, k.b], i * 3); this.spawnDrop(i, Math.random()); }
+    const c = this.jet.geometry.attributes.color.array, gold = new this.T.Color(GOLD), white = new this.T.Color('#fff6dc'), mint = new this.T.Color(MINT), amber = new this.T.Color('#ffa53d');
+    for (let i = 0; i < n; i++) { const k = i % 13 === 0 ? mint : i % 4 === 0 ? white : i % 7 === 0 ? amber : gold; c.set([k.r, k.g, k.b], i * 3); this.spawnDrop(i, Math.random()); }
     this.group.add(this.jet);
+    // the mist: fewer, bigger, softer drops thrown wider and lower round the jet (the fountain's glow)
+    const m = this.lite ? 50 : 150;
+    this.mist = this.glow.points(m, this.lite ? 0.36 : 0.3, 0.32);
+    this.mistV = new Float32Array(m * 3);
+    const mc = this.mist.geometry.attributes.color.array, pale = new this.T.Color('#ffe7a8');
+    for (let i = 0; i < m; i++) { mc.set([pale.r, pale.g, pale.b], i * 3); this.spawnMist(i, Math.random()); }
+    this.group.add(this.mist);
+  }
+
+  spawnMist(i, life) {
+    const p = this.mist.geometry.attributes.position.array, v = this.mistV, a = Math.random() * Math.PI * 2, y = this.surfaceY();
+    v[i * 3] = Math.cos(a) * (0.6 + Math.random() * 0.8);
+    v[i * 3 + 1] = (1.3 + Math.random() * 1.1) * (1 + this.burst * 0.6);
+    v[i * 3 + 2] = Math.sin(a) * (0.6 + Math.random() * 0.8);
+    p.set([FOUNTAIN[0], y, FOUNTAIN[2]], i * 3);
+    if (life) { for (let k = 0; k < 3; k++) p[i * 3 + k] += v[i * 3 + k] * life * 0.6; p[i * 3 + 1] = Math.max(y, p[i * 3 + 1] - 4.9 * life * life * 0.3); }
   }
 
   spawnDrop(i, life) {
@@ -163,6 +179,15 @@ export class Pools {
     geo.setAttribute('color', new T.BufferAttribute(col, 3));
     this.helix = new T.Mesh(geo, new T.MeshBasicMaterial({ vertexColors: true, toneMapped: false }));
     this.column.add(this.helix);
+    // drawn in from the foot (update() grows its draw range), and a comet with a short tail runs up the curve, foot to now
+    this.curve = curve;
+    this.helixN = geo.index ? geo.index.count : geo.attributes.position.count;
+    this.helixStep = radial * 6;
+    this.grow = this.grown ? 1 : 0;                     // drawn in once per visit; a minute's new point just appears
+    this.grown = true;
+    if (this.grow < 1) geo.setDrawRange(0, 0);
+    if (!this.comet) this.comet = [1, 0.62, 0.38].map((s, i) => this.glow.sprite(i ? GOLD : '#ffffff', 0.62 * s, 0.95 - i * 0.25));
+    this.comet.forEach((c) => this.helix.add(c));
   }
 
   sizeColumn() {
@@ -224,12 +249,15 @@ export class Pools {
     this.liquidGlow.position.set(FOUNTAIN[0], sy + 0.2, FOUNTAIN[2]);
     if (!motion) {                            // reduced motion: everything at rest, only the levels speak
       this.jet.visible = false;
+      this.mist.visible = false;
+      if (this.helix) { this.helix.geometry.setDrawRange(0, Infinity); this.comet.forEach((c) => { c.visible = false; }); }
       this.falling.forEach((f) => this.group.remove(f.mesh));
       this.falling = [];
       this.queue = [];
       return;
     }
     this.jet.visible = true;
+    this.mist.visible = true;
     this.burst = Math.max(0, this.burst - dt * 0.8);
     this.liquidGlow.material.opacity = 0.3 + this.burst * 0.5 + Math.sin(t * 2) * 0.04;
     // the jet
@@ -240,6 +268,13 @@ export class Pools {
       if (p[i * 3 + 1] < sy && v[i * 3 + 1] < 0) this.spawnDrop(i, 0);
     }
     this.jet.geometry.attributes.position.needsUpdate = true;
+    const mp = this.mist.geometry.attributes.position.array, mv = this.mistV;
+    for (let i = 0; i < mp.length / 3; i++) {
+      mv[i * 3 + 1] -= 3.2 * dt;
+      mp[i * 3] += mv[i * 3] * dt; mp[i * 3 + 1] += mv[i * 3 + 1] * dt; mp[i * 3 + 2] += mv[i * 3 + 2] * dt;
+      if (mp[i * 3 + 1] < sy && mv[i * 3 + 1] < 0) this.spawnMist(i, 0);
+    }
+    this.mist.geometry.attributes.position.needsUpdate = true;
     // the sand's loose grains
     const q = this.puff.geometry.attributes.position.array, w = this.puffV;
     for (let i = 0; i < q.length / 3; i++) {
@@ -256,7 +291,19 @@ export class Pools {
     for (let i = 0; i < m.length / 3; i++) { m[i * 3 + 1] += dt * (0.6 + (i % 5) * 0.15); if (m[i * 3 + 1] > this.colH) m[i * 3 + 1] = 0; }
     this.motes.geometry.attributes.position.needsUpdate = true;
     this.head.material.opacity = 0.75 + Math.sin(t * 3) * 0.15;
-    if (this.helix) this.helix.rotation.y += dt * 0.12;
+    if (this.helix) {
+      this.helix.rotation.y += dt * 0.12;
+      // the equity curve draws itself in (2.4 s, eased), whole segments only; then the comet runs foot to top every 6 s
+      this.grow = Math.min(1, this.grow + dt / 2.4);
+      const e = 1 - Math.pow(1 - this.grow, 3), segs = Math.round((e * this.helixN) / this.helixStep);
+      this.helix.geometry.setDrawRange(0, segs * this.helixStep);
+      const head = this.grow < 1 ? e : (t / 6) % 1;
+      this.comet.forEach((c, i) => {
+        const u = Math.max(0, Math.min(1, head - i * 0.012));
+        c.position.copy(this.curve.getPointAt(u));
+        c.visible = head > 0.002;
+      });
+    }
     // the falling coins: one every GAP_S; when all fell, the last few fall again after a pause
     this.wait -= dt;
     if (this.wait <= 0) {
