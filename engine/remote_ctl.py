@@ -516,7 +516,10 @@ class RemoteControl:
             try:
                 self.tick()
             except Exception as e:
-                self.log(f"[remote] error: {e.__class__.__name__}: {e}")
+                try:                                 # a failing log (closed console) must not end the remote thread
+                    self.log(f"[remote] error: {e.__class__.__name__}: {e}")
+                except Exception:
+                    pass
             self._stop.wait(self.every_s)
 
     def start(self) -> bool:

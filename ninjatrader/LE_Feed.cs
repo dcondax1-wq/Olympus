@@ -31,10 +31,17 @@
 //
 // Install: copy this file to Documents\NinjaTrader 8\bin\Custom\AddOns\, NinjaScript Editor, F5. Nothing else: no chart.
 //
+// PROOF OF LIFE (2026-11-03): the moment it starts it writes le_feed\le_feed_status.txt and prints
+// "LE_Feed: started ..." in NinjaTrader's Output window (New > NinjaScript Output) and le_feed\le_feed_log.txt.
+// No such line a minute after F5 = it did not start (look for a red error at the bottom of the NinjaScript Editor).
+// START: whichever comes first of State.Active, OnWindowCreated (the Control Center window: NinjaTrader calls this for
+// every add-on, also right after F5) and a 10 s timer from State.Configure; only one LE_Feed ever runs.
+// ONE WRITER ACROSS RECOMPILES: each start writes a fresh token to le_feed\le_feed_owner.txt; an older copy (the assembly
+// before an F5, if NinjaTrader did not terminate it) sees the new token on its next 15 s tick and stops itself.
+//
 // UNVERIFIED (written without a NinjaTrader install; only compiled with mono mcs -langversion:5 against hand-made stubs
 // of the NinjaTrader types below, which checks the C# 5 syntax but not the real API; check these first if F5 shows an error):
-//  1. AddOnBase.OnStateChange reaching State.Active. Fallback built in: State.Configure starts the feed 10 s later if
-//     State.Active has not come by then (a Terminated instance never starts).
+//  1. AddOnBase.OnStateChange / OnWindowCreated(System.Windows.Window). Three start paths, see START above.
 //  2. new BarsRequest(Instrument, DateTime from, DateTime to); .BarsPeriod, .TradingHours, .Update (+= a method
 //     (object, BarsUpdateEventArgs)), .Request(Action<BarsRequest, ErrorCode, string>), .Bars (Count, GetTime/GetOpen/
 //     GetHigh/GetLow/GetClose/GetVolume(i)). Dispose is called through IDisposable only if BarsRequest implements it.
@@ -44,7 +51,10 @@
 //     MarketDataEventArgs.Time assumed in the display time zone, as in an indicator's OnMarketData.
 //  5. Connection.Connections (lockable collection), Connection.PriceStatus, the static Connection.ConnectionStatusUpdate
 //     event with ConnectionStatusEventArgs.PriceStatus / PreviousPriceStatus.
-//  6. Print() inside an AddOn (NinjaScriptBase.Print); only used for one start line, inside try/catch.
+//  6. NinjaTrader.Code.Output.Process(text, PrintTo.OutputTab1) for the Output window lines (start, stop, re-subscribes,
+//     first history written), each inside try/catch.
+// NinjaTrader's own types are named in full where an AddOn property of the same name could hide them (Instrument,
+// TradingHours, Account, Connection); the nested helper classes are FeedSeries / FeedInst (never NinjaScript's Series<T>).
 //  7. Live bars arrive through BarsRequest.Update after Request() (a bar is written once the NEXT bar exists, the same
 //     "closed" rule as Calculate.OnBarClose on the chart).
 
@@ -123,10 +133,10 @@ namespace NinjaTrader.NinjaScript.AddOns
         private static LE_Feed running;                    // one feed per NinjaTrader
 
         // one bar file (5m or 1m) of one instrument, fed by its own BarsRequest
-        private class Series
+        private class FeedSeries
         {
             public LE_Feed Feed;
-            public Inst Owner;
+            public FeedInst Owner;
             public int Minutes;
             public int Days;
             public int MaxBars;
@@ -146,20 +156,22 @@ namespace NinjaTrader.NinjaScript.AddOns
             }
         }
 
-        private class Inst
+        private class FeedInst
         {
             public LE_Feed Feed;
             public string Name;
             public string Root;
             public Instrument Instrument;
-            public Series S5;
-            public Series S1;
+            public FeedSeries S5;
+            public FeedSeries S1;
             public string OpenPath;
             public string InstPath;
             public MarketData Md;
             public long LastOpenMinute = long.MinValue;
             public DateTime LastNew1mUtc = DateTime.UtcNow;   // wall clock of the last new closed 1-minute bar (or request)
             public DateTime LastResubUtc = DateTime.MinValue;
+            public DateTime LastLiveBarUtc = DateTime.MinValue; // wall clock of the last LIVE closed 1-minute bar (not history)
+            public int StaleStreak;                        // stale re-requests in a row without a live bar since (backoff)
             public bool Subscribed;
 
             public void OnMarketData(object sender, MarketDataEventArgs e)
@@ -173,12 +185,17 @@ namespace NinjaTrader.NinjaScript.AddOns
         private string statusPath;
         private string logPath;
         private string accountsPath;
-        private readonly List<Inst> insts = new List<Inst>();
+        private string ownerPath;
+        private readonly string ownerToken = Guid.NewGuid().ToString("N");
+        private DateTime startedUtc = DateTime.MinValue;
+        private bool historyAnnounced;
+        private readonly List<FeedInst> insts = new List<FeedInst>();
         private readonly object Gate = new object();       // one housekeeping pass at a time
         private System.Threading.Timer timer;
         private System.Threading.Timer startTimer;
         private bool started;
         private volatile bool terminated;
+        private bool stopped;
         private volatile bool reconnectPending;
         private volatile bool acctDue;
         private bool connSubscribed;
@@ -204,7 +221,8 @@ namespace NinjaTrader.NinjaScript.AddOns
                 else if (State == State.Configure)
                 {
                     // fallback in case State.Active never comes for an AddOn on this NinjaTrader version (see the top)
-                    startTimer = new System.Threading.Timer(DelayedStart, null, 10000, System.Threading.Timeout.Infinite);
+                    if (startTimer == null)
+                        startTimer = new System.Threading.Timer(DelayedStart, null, 10000, System.Threading.Timeout.Infinite);
                 }
                 else if (State == State.Active)
                 {
@@ -217,7 +235,22 @@ namespace NinjaTrader.NinjaScript.AddOns
             }
             catch (Exception e)
             {
-                LogLine("state " + State + ": " + e.Message);
+                Say("LE_Feed: state " + State + " failed: " + e.Message);
+            }
+        }
+
+        // NinjaTrader calls this for every open NinjaTrader window, the Control Center included, on every running add-on
+        // (also right after F5): the start path that does not depend on which States an AddOn goes through.
+        protected override void OnWindowCreated(System.Windows.Window window)
+        {
+            try
+            {
+                if (!terminated)
+                    Start();
+            }
+            catch (Exception e)
+            {
+                Say("LE_Feed: start from the window event failed: " + e.Message);
             }
         }
 
@@ -245,12 +278,31 @@ namespace NinjaTrader.NinjaScript.AddOns
                 running = this;
                 started = true;
             }
-            folder = Path.Combine(NinjaTrader.Core.Globals.UserDataDir, "le_feed");
-            Directory.CreateDirectory(folder);
+            startedUtc = DateTime.UtcNow;
+            try
+            {
+                folder = Path.Combine(NinjaTrader.Core.Globals.UserDataDir, "le_feed");
+                Directory.CreateDirectory(folder);
+            }
+            catch (Exception e)
+            {
+                // no folder = nothing can be written: say so in the Output window and let a later start path try again
+                Say("LE_Feed: NOT started, cannot create the le_feed folder (" + e.Message + ")");
+                lock (RunLock)
+                {
+                    started = false;
+                    if (running == this)
+                        running = null;
+                }
+                return;
+            }
             listPath = Path.Combine(folder, "feed_instruments.txt");
             statusPath = Path.Combine(folder, "le_feed_status.txt");
             logPath = Path.Combine(folder, "le_feed_log.txt");
             accountsPath = Path.Combine(folder, "accounts.csv");
+            ownerPath = Path.Combine(folder, "le_feed_owner.txt");
+            lock (FileLock)
+                SwapSmall(ownerPath, ownerToken + "\n");
             try
             {
                 eastern = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
@@ -263,26 +315,56 @@ namespace NinjaTrader.NinjaScript.AddOns
             LE_FeedHub.AccountsOn = true;
             try
             {
-                Connection.ConnectionStatusUpdate += OnConnectionStatus;
+                NinjaTrader.Cbi.Connection.ConnectionStatusUpdate += OnConnectionStatus;
                 connSubscribed = true;
             }
             catch (Exception e)
             {
                 LogLine("connection events not available (" + e.Message + "): the 3-minute self-heal still runs");
             }
-            LogLine("LE_Feed started (no chart): folder " + folder);
+            Say("LE_Feed: started, writing bars to " + folder + " (no chart needed)");
+            WriteStatus(DateTime.UtcNow, PriceConnected());    // proof of life at once, before the first bar
+            lastStatus = DateTime.UtcNow;
+            timer = new System.Threading.Timer(OnTimer, null, 1000, TickMs);
+        }
+
+        // a line in NinjaTrader's Output window (New > NinjaScript Output) and in le_feed_log.txt; never throws
+        private void Say(string text)
+        {
+            LogLine(text);
             try
             {
-                Print("LE_Feed: started, writing bars to " + folder + " (no chart needed)");
+                NinjaTrader.Code.Output.Process(text, PrintTo.OutputTab1);
             }
             catch (Exception)
             {
             }
-            timer = new System.Threading.Timer(OnTimer, null, 1000, TickMs);
+        }
+
+        // a newer LE_Feed (the assembly after an F5) wrote its own token: this older copy stops writing
+        private bool Superseded()
+        {
+            try
+            {
+                if (ownerPath == null || !File.Exists(ownerPath))
+                    return false;
+                string t = File.ReadAllText(ownerPath).Trim();
+                return t.Length > 0 && t != ownerToken;
+            }
+            catch (Exception)
+            {
+                return false;                              // unreadable for a moment: keep going
+            }
         }
 
         private void Stop()
         {
+            lock (RunLock)
+            {
+                if (stopped)
+                    return;                                // a takeover stop, then State.Terminated: once is enough
+                stopped = true;
+            }
             terminated = true;
             try
             {
@@ -311,33 +393,33 @@ namespace NinjaTrader.NinjaScript.AddOns
             try
             {
                 if (connSubscribed)
-                    Connection.ConnectionStatusUpdate -= OnConnectionStatus;
+                    NinjaTrader.Cbi.Connection.ConnectionStatusUpdate -= OnConnectionStatus;
             }
             catch (Exception)
             {
             }
             lock (Gate)
             {
-                foreach (Inst i in insts)
+                foreach (FeedInst i in insts)
                     Unsubscribe(i);
                 insts.Clear();
-            }
-            try
-            {
-                foreach (Account a in acctSubscribed)
+                try
                 {
-                    try
+                    foreach (Account a in acctSubscribed)
                     {
-                        a.AccountItemUpdate -= OnAccountItemUpdate;
+                        try
+                        {
+                            a.AccountItemUpdate -= OnAccountItemUpdate;
+                        }
+                        catch (Exception)
+                        {
+                        }
                     }
-                    catch (Exception)
-                    {
-                    }
+                    acctSubscribed.Clear();
                 }
-                acctSubscribed.Clear();
-            }
-            catch (Exception)
-            {
+                catch (Exception)
+                {
+                }
             }
             lock (RunLock)
             {
@@ -347,7 +429,7 @@ namespace NinjaTrader.NinjaScript.AddOns
                     LE_FeedHub.Clear();
                 }
             }
-            LogLine("LE_Feed stopped");
+            Say("LE_Feed: stopped");
         }
 
         // ------------------------------------------------------------------ housekeeping (a pool thread, every 15 s)
@@ -358,6 +440,12 @@ namespace NinjaTrader.NinjaScript.AddOns
             try
             {
                 DateTime now = DateTime.UtcNow;
+                if (Superseded())
+                {
+                    Say("LE_Feed: a newer LE_Feed took over (NinjaScript recompiled): this older copy stops");
+                    Stop();
+                    return;
+                }
                 if ((now - lastListRead).TotalSeconds >= ListEverySeconds || listText == null)
                 {
                     lastListRead = now;
@@ -371,7 +459,7 @@ namespace NinjaTrader.NinjaScript.AddOns
                     lastReconnectResub = now;
                 }
                 bool open = MarketShouldBeOpen(now) && MarketShouldBeOpen(now.AddSeconds(-StaleSeconds - 60));
-                foreach (Inst i in insts)
+                foreach (FeedInst i in insts)
                 {
                     try
                     {
@@ -391,8 +479,9 @@ namespace NinjaTrader.NinjaScript.AddOns
                             Resubscribe(i, "the last request failed");
                         }
                         else if (open && (now - i.LastNew1mUtc).TotalSeconds >= StaleSeconds
-                                 && (now - i.LastResubUtc).TotalSeconds >= ResubGapSeconds)
+                                 && (now - i.LastResubUtc).TotalSeconds >= StaleGap(i))
                         {
+                            i.StaleStreak++;
                             Resubscribe(i, "no new 1-minute bar for " + (int)(now - i.LastNew1mUtc).TotalMinutes + " min");
                         }
                     }
@@ -423,7 +512,17 @@ namespace NinjaTrader.NinjaScript.AddOns
             }
         }
 
-        private static bool Failed(Inst i)
+        // 2, 4, 8, 16, then 30 minutes between stale re-requests while no live bar comes in between (a holiday or an early
+        // close the market hours below do not know): a live bar resets it to 2 minutes
+        private static int StaleGap(FeedInst i)
+        {
+            if (i.LastLiveBarUtc > i.LastResubUtc)
+                i.StaleStreak = 0;
+            int gap = ResubGapSeconds << Math.Min(i.StaleStreak, 4);
+            return Math.Min(gap, 1800);
+        }
+
+        private static bool Failed(FeedInst i)
         {
             return (i.S5 != null && i.S5.Failed) || (i.S1 != null && i.S1.Failed);
         }
@@ -453,9 +552,9 @@ namespace NinjaTrader.NinjaScript.AddOns
         {
             try
             {
-                lock (Connection.Connections)
+                lock (NinjaTrader.Cbi.Connection.Connections)
                 {
-                    foreach (Connection c in Connection.Connections)
+                    foreach (Connection c in NinjaTrader.Cbi.Connection.Connections)
                         if (c.PriceStatus == ConnectionStatus.Connected)
                             return true;
                 }
@@ -530,7 +629,7 @@ namespace NinjaTrader.NinjaScript.AddOns
             foreach (string n in names)
             {
                 bool have = false;
-                foreach (Inst i in insts)
+                foreach (FeedInst i in insts)
                     if (string.Equals(i.Name, n, StringComparison.OrdinalIgnoreCase))
                         have = true;
                 if (have)
@@ -538,7 +637,7 @@ namespace NinjaTrader.NinjaScript.AddOns
                 Instrument ins = null;
                 try
                 {
-                    ins = Instrument.GetInstrument(n);
+                    ins = NinjaTrader.Cbi.Instrument.GetInstrument(n);
                 }
                 catch (Exception e)
                 {
@@ -551,7 +650,7 @@ namespace NinjaTrader.NinjaScript.AddOns
                 }
                 string root = ins.MasterInstrument.Name;
                 bool clash = false;
-                foreach (Inst i in insts)
+                foreach (FeedInst i in insts)
                     if (string.Equals(i.Root, root, StringComparison.OrdinalIgnoreCase))
                         clash = true;
                 if (clash)
@@ -559,10 +658,10 @@ namespace NinjaTrader.NinjaScript.AddOns
                     LogLine(n + ": another " + root + " contract is listed first; one contract per root, " + n + " skipped");
                     continue;
                 }
-                Inst it = new Inst { Feed = this, Name = n, Root = root, Instrument = ins };
-                it.S5 = new Series { Feed = this, Owner = it, Minutes = 5, Days = Days5m, MaxBars = MaxBars5m };
+                FeedInst it = new FeedInst { Feed = this, Name = n, Root = root, Instrument = ins };
+                it.S5 = new FeedSeries { Feed = this, Owner = it, Minutes = 5, Days = Days5m, MaxBars = MaxBars5m };
                 it.S5.FilePath = Path.Combine(folder, root + "_5m.csv");
-                it.S1 = new Series { Feed = this, Owner = it, Minutes = 1, Days = Days1m, MaxBars = MaxBars1m };
+                it.S1 = new FeedSeries { Feed = this, Owner = it, Minutes = 1, Days = Days1m, MaxBars = MaxBars1m };
                 it.S1.FilePath = Path.Combine(folder, root + "_1m.csv");
                 it.OpenPath = Path.Combine(folder, root + "_1m_open.csv");
                 it.InstPath = Path.Combine(folder, root + "_instrument.txt");
@@ -571,7 +670,7 @@ namespace NinjaTrader.NinjaScript.AddOns
         }
 
         // ------------------------------------------------------------------ subscribe / re-subscribe
-        private void Subscribe(Inst i, string why)
+        private void Subscribe(FeedInst i, string why)
         {
             i.LastResubUtc = DateTime.UtcNow;
             i.LastNew1mUtc = DateTime.UtcNow;              // the stale clock starts at the request
@@ -604,17 +703,17 @@ namespace NinjaTrader.NinjaScript.AddOns
             LogLine(i.Name + ": bars requested (" + why + ")");
         }
 
-        private void Resubscribe(Inst i, string why)
+        private void Resubscribe(FeedInst i, string why)
         {
             resubs++;
-            LogLine(i.Name + ": RE-SUBSCRIBE #" + resubs + " (" + why + ")");
+            Say("LE_Feed: " + i.Name + ": RE-SUBSCRIBE #" + resubs + " (" + why + ")");
             DropSeries(i.S5);
             DropSeries(i.S1);
             DropMarketData(i);
             Subscribe(i, "re-subscribe");
         }
 
-        private void Unsubscribe(Inst i)
+        private void Unsubscribe(FeedInst i)
         {
             DropSeries(i.S5);
             DropSeries(i.S1);
@@ -622,7 +721,7 @@ namespace NinjaTrader.NinjaScript.AddOns
             i.Subscribed = false;
         }
 
-        private void DropMarketData(Inst i)
+        private void DropMarketData(FeedInst i)
         {
             MarketData md = i.Md;
             i.Md = null;
@@ -646,7 +745,7 @@ namespace NinjaTrader.NinjaScript.AddOns
             }
         }
 
-        private void DropSeries(Series s)
+        private void DropSeries(FeedSeries s)
         {
             if (s == null)
                 return;
@@ -678,7 +777,7 @@ namespace NinjaTrader.NinjaScript.AddOns
             }
         }
 
-        private void Request(Series s)
+        private void Request(FeedSeries s)
         {
             int gen;
             BarsRequest req;
@@ -693,7 +792,7 @@ namespace NinjaTrader.NinjaScript.AddOns
                 TradingHours th = null;
                 try
                 {
-                    th = TradingHours.Get(TradingHoursName);
+                    th = NinjaTrader.Data.TradingHours.Get(TradingHoursName);
                 }
                 catch (Exception)
                 {
@@ -704,7 +803,7 @@ namespace NinjaTrader.NinjaScript.AddOns
                 s.Req = req;
             }
             req.Update += s.OnUpdate;
-            Series ser = s;
+            FeedSeries ser = s;
             req.Request(new Action<BarsRequest, ErrorCode, string>(delegate(BarsRequest b, ErrorCode code, string msg)
             {
                 SafeLoaded(ser, gen, b, code, msg);
@@ -712,7 +811,7 @@ namespace NinjaTrader.NinjaScript.AddOns
         }
 
         // ------------------------------------------------------------------ history (the request's callback)
-        private void SafeLoaded(Series s, int gen, BarsRequest b, ErrorCode code, string msg)
+        private void SafeLoaded(FeedSeries s, int gen, BarsRequest b, ErrorCode code, string msg)
         {
             try
             {
@@ -721,7 +820,7 @@ namespace NinjaTrader.NinjaScript.AddOns
                     lock (s.Sync)
                         if (gen == s.Gen)
                             s.Failed = true;
-                    LogLine(s.Owner.Name + " " + s.Minutes + "m: request failed: " + code + " " + msg);
+                    Say("LE_Feed: " + s.Owner.Name + " " + s.Minutes + "m: request failed: " + code + " " + msg);
                     return;
                 }
                 int n = 0;
@@ -763,7 +862,14 @@ namespace NinjaTrader.NinjaScript.AddOns
                     else
                         s.Failed = true;
                 }
-                LogLine(s.Owner.Name + " " + s.Minutes + "m: " + (ok ? n + " bars written to " + Path.GetFileName(s.FilePath) + "; appending each new bar" : "history NOT written"));
+                string done = s.Owner.Name + " " + s.Minutes + "m: " + (ok ? n + " bars written to " + Path.GetFileName(s.FilePath) + "; appending each new bar" : "history NOT written");
+                if (!historyAnnounced || !ok)
+                {
+                    historyAnnounced = historyAnnounced || ok;
+                    Say("LE_Feed: " + done);               // the first history (and every failure) also in the Output window
+                }
+                else
+                    LogLine(done);
             }
             catch (Exception e)
             {
@@ -781,7 +887,7 @@ namespace NinjaTrader.NinjaScript.AddOns
         }
 
         // ------------------------------------------------------------------ live bars (every tick: cheap unless a bar closed)
-        private void SafeUpdate(Series s)
+        private void SafeUpdate(FeedSeries s)
         {
             // never wait on NinjaTrader's data thread: while the history is being written (the lock is busy) this tick is
             // skipped; the next one catches up, since the scan starts at NextIndex
@@ -819,7 +925,10 @@ namespace NinjaTrader.NinjaScript.AddOns
                                 Trim(s);
                         }
                         if (s.Minutes == 1)
+                        {
                             s.Owner.LastNew1mUtc = DateTime.UtcNow;
+                            s.Owner.LastLiveBarUtc = s.Owner.LastNew1mUtc;
+                        }
                     }
                     if (count - 1 > s.NextIndex)
                         s.NextIndex = count - 1;
@@ -836,7 +945,7 @@ namespace NinjaTrader.NinjaScript.AddOns
         }
 
         // the first trade of every new minute -> <ROOT>_1m_open.csv (one line, swapped in whole), as LE_BarFeed.OnMarketData
-        private void SafeMarketData(Inst i, MarketDataEventArgs e)
+        private void SafeMarketData(FeedInst i, MarketDataEventArgs e)
         {
             try
             {
@@ -879,7 +988,7 @@ namespace NinjaTrader.NinjaScript.AddOns
                  + ((double)b.GetVolume(k)).ToString("0.########", c);
         }
 
-        private void Trim(Series s)
+        private void Trim(FeedSeries s)
         {
             try
             {
@@ -959,7 +1068,7 @@ namespace NinjaTrader.NinjaScript.AddOns
                 CultureInfo c = CultureInfo.InvariantCulture;
                 long last1 = long.MinValue;
                 List<string> names = new List<string>();
-                foreach (Inst i in insts)
+                foreach (FeedInst i in insts)
                 {
                     names.Add(i.Name);
                     if (i.S1 != null && i.S1.LastOpen > last1)
@@ -967,7 +1076,8 @@ namespace NinjaTrader.NinjaScript.AddOns
                 }
                 string line = ((now.Ticks - EpochTicks) / TimeSpan.TicksPerSecond).ToString(c) + ",source=addon,instruments="
                             + string.Join(";", names.ToArray()) + ",last_1m=" + (last1 == long.MinValue ? "" : last1.ToString(c))
-                            + ",resubs=" + resubs.ToString(c) + ",connected=" + (connected ? "1" : "0") + "\n";
+                            + ",resubs=" + resubs.ToString(c) + ",connected=" + (connected ? "1" : "0")
+                            + ",started=" + ((startedUtc.Ticks - EpochTicks) / TimeSpan.TicksPerSecond).ToString(c) + "\n";
                 lock (FileLock)
                     SwapSmall(statusPath, line);
             }
@@ -1047,9 +1157,9 @@ namespace NinjaTrader.NinjaScript.AddOns
                 StringBuilder sb = new StringBuilder(256);
                 sb.Append("name,time,cash,realized,unrealized,netliq\n");
                 List<Account> seen = new List<Account>();
-                lock (Account.All)
+                lock (NinjaTrader.Cbi.Account.All)
                 {
-                    foreach (Account a in Account.All)
+                    foreach (Account a in NinjaTrader.Cbi.Account.All)
                         seen.Add(a);
                 }
                 foreach (Account a in seen)

@@ -675,6 +675,81 @@ def feed_status_text(st: dict | None) -> str | None:
     return out
 
 
+# ---------------------------------------------------------------------- is NinjaTrader connected? (2026-11-03)
+# NinjaTrader's AT Interface writes outgoing\<connection>.txt (CONNECTED / DISCONNECTED) when a connection CHANGES state
+# while the ATI runs, and NinjaTrader empties outgoing\ when it starts: a connection that came up before the ATI wrote its
+# file (Connect on startup) can have no file at all. 2026-11-02: outgoing\ held only "Simulation=CONNECTED" while the MFFU
+# connection fed live prices and its account traded. So the files are one piece of evidence; the others are NinjaTrader's
+# own account list (le_feed\accounts.csv, written from Account.All every minute by LE_Feed / LE_BarFeed: a fresh row of a
+# non-Sim account) and live bars (a 1-minute bar closed in the last 4 minutes, or LE_Feed's status "connected=1").
+# Display and health only, plus the "every connection DISCONNECTED" refusal (NinjaTraderAdapter._all_disconnected).
+SIM_CONNECTION = re.compile(r"^(Simulation|Sim\d*|Playback.*|Replay.*)$", re.I)
+LIVE_BAR_S = 240                         # a 1-minute bar that closed this recently = prices are flowing
+
+
+def live_accounts(folder: str | None = None, now=None) -> list:
+    """Non-simulation accounts with a fresh row in le_feed\\accounts.csv (NinjaTrader lists an account while its connection
+    is up). [] when the file is missing / stale. Never raises."""
+    try:
+        from .broker_balance import SIM, read as _bb_read
+        r = _bb_read(folder or default_folder(), now=now)
+        return sorted(n for n, row in (r.get("rows") or {}).items() if row.get("fresh") and not SIM.match(n))
+    except Exception:
+        return []
+
+
+def last_1m_age(folder: str | None = None, now=None, roots=("MNQ", "NQ")) -> int | None:
+    """Seconds since the newest le_feed\\<ROOT>_1m.csv bar CLOSED (time = bar open + 60), None = no file / no bar."""
+    now = time.time() if now is None else now
+    best = None
+    for root in roots:
+        p = os.path.join(folder or default_folder(), FEED_DIR, f"{root}_1m.csv")
+        try:
+            with open(p, "rb") as fh:
+                fh.seek(0, os.SEEK_END)
+                fh.seek(max(0, fh.tell() - 1024))
+                tail = fh.read().decode("utf-8", "replace").strip().splitlines()
+        except OSError:
+            continue
+        for ln in reversed(tail):
+            head = ln.split(",")[0].strip()
+            if head.isdigit():
+                best = max(best or 0, int(head))
+                break
+    return None if best is None else int(now - best - 60)
+
+
+def connection_view(conns: dict | None, folder: str | None = None, now=None) -> dict:
+    """{"connected": True / False / None, "via": [...], "live_accounts": n, "note"}. connected: any CONNECTED file, or a
+    live account in accounts.csv, or live bars; False only when there are connection files, every one DISCONNECTED and
+    nothing else says connected; None = no file and no evidence (NinjaTrader closed or just started). Never raises."""
+    conns = dict(conns or {})
+    out = {"connected": None, "via": [], "live_accounts": 0, "note": None}
+    try:
+        up = [k for k, v in conns.items() if v == "CONNECTED"]
+        if up:
+            out["via"].append("connection file")
+        accts = live_accounts(folder, now)
+        out["live_accounts"] = len(accts)
+        if accts:
+            out["via"].append("live account in accounts.csv")
+        age = last_1m_age(folder, now)
+        st = read_feed_status(folder, now)
+        if (age is not None and -60 <= age <= LIVE_BAR_S) or (st and st.get("fresh") and st.get("connected")):
+            out["via"].append("live bars")
+        out["connected"] = True if out["via"] else (False if conns else None)
+        if out["connected"] and not [k for k in up if not SIM_CONNECTION.match(k)] and (accts or "live bars" in out["via"]):
+            shown = ", ".join(f"{k}={v}" for k, v in conns.items()) or "no connection file"
+            out["note"] = (f"outgoing shows {shown} only: NinjaTrader writes a connection file when a connection changes "
+                           "state, so a connection already up may have none; " +
+                           (f"{len(accts)} live account(s) in accounts.csv" if accts else "live bars are arriving") + ": connected")
+    except Exception as e:
+        out["error"] = e.__class__.__name__
+        if out["connected"] is None and conns:
+            out["connected"] = any(v == "CONNECTED" for v in conns.values())
+    return out
+
+
 def default_folder() -> str:
     """Documents\\NinjaTrader 8 (NINJATRADER_FOLDER overrides). Follows OneDrive-redirected Documents on Windows."""
     env = os.environ.get("NINJATRADER_FOLDER")
@@ -1196,6 +1271,20 @@ class NinjaTraderAdapter:
                 return p
         return None
 
+    def _all_disconnected(self, conn: dict) -> bool:
+        """Every connection file says DISCONNECTED (the old rule) AND NinjaTrader does not list this bot's own account as live
+        in le_feed\\accounts.csv. A connection file is written only when a connection changes state (connection_view), so a
+        stale "Simulation=DISCONNECTED" next to a live MFFU connection with no file must not refuse the MFFU account's
+        entry. Simulation accounts keep the old rule. Any error -> the old rule."""
+        if not (conn and all(v == "DISCONNECTED" for v in conn.values())):
+            return False
+        try:
+            if SIM_ACCOUNT.match(str(self.account or "")):
+                return True
+            return str(self.account) not in live_accounts(self.folder, self.clock())
+        except Exception:
+            return True
+
     def connections(self) -> dict:
         """{connection name: CONNECTED | DISCONNECTED} from outgoing/<connection>.txt. NinjaTrader's outgoing folder also
         holds one <order id>.txt per order it has seen, and every call used to open all of them (2026-10-26: 604 file
@@ -1348,7 +1437,7 @@ class NinjaTraderAdapter:
             if p and p["side"] != "FLAT":
                 return {"ok": False, "error": f"REFUSED: NinjaTrader shows {p['side']} {p['qty']} {inst} on {self.account}: not adding to it"}
         conn = self.connections()
-        if conn and all(v == "DISCONNECTED" for v in conn.values()):
+        if self._all_disconnected(conn):
             return {"ok": False, "error": f"REFUSED: NinjaTrader reports every connection DISCONNECTED ({', '.join(conn)})"}
         ts = int(action.get("entry_t") or self.clock())
         tag = _nonce()
@@ -1608,7 +1697,7 @@ class NinjaTraderAdapter:
             return {"ok": False, "error": f"REFUSED: NinjaTrader shows {p and p['side']} {p and p['qty']} {lg['instrument']}, "
                                           f"the bot's bracket holds {want} {self._total(lg)}: not adding"}
         conn = self.connections()
-        if conn and all(v == "DISCONNECTED" for v in conn.values()):
+        if self._all_disconnected(conn):
             return {"ok": False, "error": f"REFUSED: NinjaTrader reports every connection DISCONNECTED ({', '.join(conn)})"}
         n = len(lg.get("adds") or []) + 1
         aid = f"{lg['entry_id'][:-1]}A{n}"
@@ -2067,7 +2156,7 @@ class NinjaTraderAdapter:
                 self._after_reset()
                 self._save()
         conn = self.connections()
-        if open_legs and conn and all(v == "DISCONNECTED" for v in conn.values()) and now - self._conn_alert_at >= 600:
+        if open_legs and self._all_disconnected(conn) and now - self._conn_alert_at >= 600:
             self._conn_alert_at = now
             self._risk(f"NinjaTrader reports every connection DISCONNECTED ({', '.join(conn)}) with the bot's trade open: the stop "
                        "and target sit at the broker, but the bot cannot see fills or move the stop. Reconnect NinjaTrader; if it "
@@ -2338,7 +2427,7 @@ class NinjaTraderAdapter:
         if self.state_problem and not self._state_problem_resolved():
             out.append(self.state_problem["text"])
         conn = self.connections()
-        if conn and all(v == "DISCONNECTED" for v in conn.values()):
+        if self._all_disconnected(conn):
             out.append(f"every NinjaTrader connection DISCONNECTED ({', '.join(conn)})")
         insts = self._our_instruments()
         bad = self._contract_mismatch(insts)
@@ -2412,6 +2501,17 @@ class NinjaTraderBars:
                              engine="python")
         except Exception:
             return None
+        # (2026-11-03) every line LE_Feed / LE_BarFeed writes ends with "\n": a last line without it is still being
+        # appended, and a cut number ("21000.5" read as "2100") would parse as a valid but wrong close. Dropped; the
+        # next read (the file's size changes, so the cache misses) has it whole.
+        try:
+            with open(path, "rb") as fh:
+                fh.seek(-1, os.SEEK_END)
+                torn = fh.read(1) not in (b"\n", b"\r")
+        except OSError:
+            torn = False
+        if torn and len(df):
+            df = df.iloc[:-1]
         for c in cols:
             df[c] = pd.to_numeric(df[c], errors="coerce")
         df = df.dropna(subset=["time", "open", "high", "low", "close"])          # header row, half-written last line

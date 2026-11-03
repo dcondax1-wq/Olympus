@@ -3028,7 +3028,12 @@ class LiveBot:
                 self._note_error(f"poll failed: {e.__class__.__name__}: {e}")
                 self.health["ok"] = False
                 traceback.print_exc()
-            self.stop_flag.wait(self._sleep_s())
+            try:
+                wait = self._sleep_s()
+            except Exception as e:                  # (2026-11-03) a failing wait computation must never end the poll loop
+                wait = 30.0
+                self._note_error(f"poll wait failed: {e.__class__.__name__}: {e}")
+            self.stop_flag.wait(wait)
 
     def _sleep_s(self):
         """Seconds to the next poll: aligned to the minute (cfg poll_offsets, default 2 s and 32 s after each minute boundary,

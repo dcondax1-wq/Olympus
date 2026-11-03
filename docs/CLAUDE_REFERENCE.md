@@ -1186,6 +1186,18 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   `feed_addon` / `--status` "Bar source": "bars from LE_Feed (no chart), N re-subscribes". Selftest checks 13b (74 total).
   Checked here only by compiling both .cs files with mono `mcs -langversion:5` against stub NT8 types. Unverified NT8
   API points are listed at the top of LE_Feed.cs. Owner steps: SETUP.md "No-chart mode".
+  **2026-11-03 QA (`docs/QA_2026-11-03.md`):** starts from whichever comes first of State.Active, `OnWindowCreated` (the
+  Control Center: called for every add-on, also right after F5) and a 10 s timer from State.Configure; on start it writes
+  `le_feed_status.txt` at once (+ `started=<unix>`) and prints "LE_Feed: started ..." in the NinjaScript Output window
+  (`NinjaTrader.Code.Output.Process`). `le_feed_owner.txt` holds the running copy's token: an older copy (pre-F5 assembly)
+  stops itself. Stale re-requests back off 2/4/8/16/30 min without a live bar (holidays). Stubs + driver in
+  `tests/nt_stub/`, run by `tests/test_le_feed_cs.py` (skips without mono).
+- **Is NinjaTrader connected? (`ninjatrader.connection_view`, 2026-11-03):** the ATI writes `outgoing\<conn>.txt` only on a
+  state change, so 11-02 showed only `Simulation=CONNECTED` while MFFU fed prices. Connected = a CONNECTED file, or a fresh
+  non-Sim row in `le_feed\accounts.csv`, or live bars (1m closed <= 4 min ago / LE_Feed `connected=1`). Used by the
+  heartbeat `nt` block (`connected_via`, `live_accounts` count, `note`; names never published), `nt_log.outgoing`, ops
+  check, botctl/pcops rows, autoresume; the "every connection DISCONNECTED" entry refusal (`_all_disconnected`) is skipped
+  only when the bot's own non-Sim account is live in accounts.csv. Test: `tests/test_nt_connection_view.py`.
 - **MNQ feed vs NQ backtest + the NQ signal chart (2026-10-26, `research/writeups/mnq-vs-nq-feed.md`, OFF by default):**
   the PC's MNQ bars, collected from the heartbeat branch's history (`tools/hb_bars.py`: the branch is one force-pushed
   commit, older ones fetched by SHA from GitHub's activity API -> `research/feed/nt_mnq_{5m,1m}.csv.gz`; 5m from 09-17,
