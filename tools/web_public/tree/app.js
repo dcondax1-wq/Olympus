@@ -284,24 +284,41 @@ function stepFx(now) {
 }
 
 // ------------------------------------------------------------------------------------------------ OLYMPUS themes
-// applyTheme(tokens): {bg, accent, text, dim, panel, line} or CSS variable names ('--x': value). The canvas reads the
-// background on the next frame. Hooked to OLYMPUS.theme() / onTheme when the kit has them.
-const THEME_VARS = { bg: '--bg', accent: '--green', text: '--text', dim: '--dim', panel: '--panel', line: '--line', ink: '--ink' };
+// applyTheme(tokens): the OLYMPUS theme tokens ({bg, glass, line, text, dim, accent, mix, harmony, ...}) or CSS variable
+// names ('--x': value). bg blends into DAPHNE's own phosphor dark by `mix`, the accent into its green by `harmony` (0 in the
+// default theme: nothing changes; missing: as given); the canvas takes the background on its next frame. With the kit's
+// themes (olympus.js theme / onTheme) the kit paints the CSS tokens itself: the canvas then reads the kit's --bg.
+const OWN = { bg: '#030705', accent: '#46ff9a' };
+const THEME_VARS = { text: '--text', dim: '--dim', glass: '--panel', panel: '--panel', line: '--line' };
+// '#rrggbb' a -> b by t (0 = a untouched); anything else: b when t > 0 (the OLYMPUS themes' own mix rule, kept local)
+function mixHex(a, b, t) {
+  const p = (h) => (/^#[0-9a-f]{6}$/i.test(h) ? [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)) : null);
+  const A = p(a), B = p(b);
+  if (!(t > 0)) return a;
+  if (!A || !B) return b;
+  return '#' + A.map((x, i) => Math.round(x + (B[i] - x) * Math.min(1, t)).toString(16).padStart(2, '0')).join('');
+}
 export function applyTheme(tok) {
   if (!tok || typeof tok !== 'object') return;
-  const root = document.documentElement.style;
+  const root = document.documentElement.style, mix = typeof tok.mix === 'number' ? tok.mix : 1, har = typeof tok.harmony === 'number' ? tok.harmony : 1;
+  const bg = tok.bg ? mixHex(OWN.bg, tok.bg, mix) : tok['--bg'] || null, acc = tok.accent ? mixHex(OWN.accent, tok.accent, har) : null;
+  if (bg && mix > 0) { root.setProperty('--bg', bg); S.bg = bg; }
+  if (acc && har > 0) root.setProperty('--green', acc);
   for (const [k, v] of Object.entries(tok)) {
     if (typeof v !== 'string') continue;
-    if (k.startsWith('--')) root.setProperty(k, v); else if (THEME_VARS[k]) root.setProperty(THEME_VARS[k], v);
+    if (k.startsWith('--')) root.setProperty(k, v); else if (THEME_VARS[k] && mix > 0) root.setProperty(THEME_VARS[k], v);
   }
   S.theme = tok;
-  if (typeof (tok.bg || tok['--bg']) === 'string') S.bg = tok.bg || tok['--bg'];
 }
 window.applyTheme = applyTheme;
 function hookTheme() {
   if (!O) return;
-  try { if (typeof O.theme === 'function') applyTheme(O.theme()); } catch (e) { /* kit without themes */ }
-  try { if (typeof O.onTheme === 'function') O.onTheme(applyTheme); } catch (e) { /* kit without themes */ }
+  const fromKit = () => { const v = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(); if (v) S.bg = v; };
+  try {
+    if (typeof O.themeScene === 'function') { fromKit(); S.themeHook = 'kit'; if (typeof O.onTheme === 'function') O.onTheme(fromKit); return; }
+    if (typeof O.theme === 'function') { applyTheme(O.theme()); S.themeHook = 'theme'; }
+    if (typeof O.onTheme === 'function') O.onTheme(applyTheme);
+  } catch (e) { /* a kit without themes */ }
 }
 
 // ------------------------------------------------------------------------------------------------ touch: pan, pinch, tap

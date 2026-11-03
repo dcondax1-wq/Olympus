@@ -370,6 +370,14 @@ def _page_checks(br, url, url_nodata):
     check("e. reduced motion: no errors", not errs3, errs3[:5])
 
 
+THEME_STUB = """(() => { const scene = %s;
+  window.OLYMPUS = { app: 'x', fx: () => 'high', chosen: () => true, lite: () => false, reduced: () => false, dpr: () => 1, setFx() {}, onFx() {},
+    mode() {}, hidden: () => document.hidden, track: (r) => r, stats: () => ({}), ready() {}, fail() {}, state: () => 'ready',
+    theme: () => ({ bg: '#000814', accent: '#4da3ff', mix: 0.5, harmony: 0.3, glass: 'rgba(0, 0, 0, .7)', line: 'rgba(1, 1, 1, .1)', text: '#ffffff', dim: '#cccccc' }),
+    onTheme(cb) { window.__onTheme = cb; } };
+  if (scene) window.OLYMPUS.themeScene = (o) => { window.__themeScene = o; return () => {}; }; })()"""
+
+
 def _upgrade_checks(p):
     d = json.load(open(os.path.join(PAGE, "forge.json"), encoding="utf-8"))
     live = d["genomes"][d["live"]["k"]]
@@ -410,6 +418,15 @@ def _upgrade_checks(p):
         return [cs.getPropertyValue('--fire').trim(), cs.getPropertyValue('--gold').trim()]; }""")
     check("f. applyTheme(tokens): the page's colours follow the theme", got == ["#33ccff", "#ffee00"], got)
     p.evaluate("applyTheme({ accent: '#ff7a1a', '--gold': '#ffc24a' })")
+    ctx = p.context.browser.new_context(viewport={"width": 390, "height": 844})
+    ctx.add_init_script(THEME_STUB % "true")
+    q = ctx.new_page()
+    q.goto(p.url)
+    q.wait_for_function("window.__forge && window.__forge.ready", timeout=30000)
+    got = q.evaluate("() => ({ scene: !!(window.__themeScene && window.__themeScene.scene && window.__themeScene.scene.fog), "
+                     "renderer: !!(window.__themeScene && window.__themeScene.renderer) })")
+    check("f. OLYMPUS themes: with the kit's themeScene the arena (its fog) is handed to the kit", got == {"scene": True, "renderer": True}, got)
+    ctx.close()
 
 
 def main(argv):

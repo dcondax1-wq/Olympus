@@ -455,6 +455,14 @@ def test_page():
             shutil.rmtree(t, ignore_errors=True)
 
 
+THEME_STUB = """(() => { const scene = %s;
+  window.OLYMPUS = { app: 'x', fx: () => 'high', chosen: () => true, lite: () => false, reduced: () => false, dpr: () => 1, setFx() {}, onFx() {},
+    mode() {}, hidden: () => document.hidden, track: (r) => r, stats: () => ({}), ready() {}, fail() {}, state: () => 'ready',
+    theme: () => ({ bg: '#000814', accent: '#4da3ff', mix: 0.5, harmony: 0.3, glass: 'rgba(0, 0, 0, .7)', line: 'rgba(1, 1, 1, .1)', text: '#ffffff', dim: '#cccccc' }),
+    onTheme(cb) { window.__onTheme = cb; } };
+  if (scene) window.OLYMPUS.themeScene = (o) => { window.__themeScene = o; return () => {}; }; })()"""
+
+
 def next10_expect(s, k=10):
     """fates-core nextSessions, row k: the share of threads passed / failed by session k."""
     o, b = s["threads"]["o"], s["threads"]["b"]
@@ -487,8 +495,11 @@ def test_upgrade(p, fx, url2, tmp2):
     p.click("#next10")
     check("f. Next 10 toggles closed", not p.is_visible("#follow"))
     pr0 = p.evaluate("__fates.probe()")
-    p.wait_for_timeout(500)
-    pr1 = p.evaluate("__fates.probe()")
+    for _ in range(12):                                  # software GL can be slow: up to 3 s for the next frames
+        p.wait_for_timeout(250)
+        pr1 = p.evaluate("__fates.probe()")
+        if pr1["spin"] != pr0["spin"]:
+            break
     check("f. the spindle spins; snaps and passes ring out; golden motes in the gate", pr1["spin"] != pr0["spin"] and pr1["rings"] > 0 and pr1["motes"] > 0, pr1)
     check(f"f. at most 24 draw calls a frame ({pr1['calls']}: the OLYMPUS budget)", 0 < pr1["calls"] <= 24, pr1)
     # live.json: in sync, then moved on one session and +$500
@@ -516,6 +527,17 @@ def test_upgrade(p, fx, url2, tmp2):
     got = p.evaluate("""() => { applyTheme({ accent: '#00ff88', '--txt': '#fafafa' }); const cs = getComputedStyle(document.documentElement);
         return [cs.getPropertyValue('--gold').trim(), cs.getPropertyValue('--txt').trim()]; }""")
     check("f. applyTheme(tokens): the page's colours follow the theme", got == ["#00ff88", "#fafafa"], got)
+    ctx = p.context.browser.new_context(viewport={"width": 390, "height": 844})
+    ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith("http://127.0.0.1") else r.abort())
+    ctx.add_init_script(THEME_STUB % "true")
+    q = ctx.new_page()
+    q.goto(url2 + "?full=1#zlarior/2026")
+    q.wait_for_function("window.__fates && window.__fates.ready", timeout=30000)
+    got = q.evaluate("() => ({ hook: __fates.themeHook, scene: !!(window.__themeScene && window.__themeScene.scene && window.__themeScene.renderer), "
+                     "emissive: window.__themeScene && window.__themeScene.emissive.length, isColor: !!(window.__themeScene && window.__themeScene.emissive[0].isColor) })")
+    check("f. OLYMPUS themes: with the kit's themeScene the scene (fog, clear colour, the gate accent) is handed to the kit",
+          got == {"hook": "themeScene", "scene": True, "emissive": 1, "isColor": True}, got)
+    ctx.close()
 
 
 def shots(br, out):

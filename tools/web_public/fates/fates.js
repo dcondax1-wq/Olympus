@@ -59,7 +59,7 @@ function renderHud() {
   $('sub').textContent = h.title;
   // the caption: the legend + the one caveat that matters (the live strip already says where the eval stands)
   $('cap').innerHTML = '<span class="k g">gold</span> pass · <span class="k r">red</span> fail · <span class="k v">violet</span> open · tap a thread' +
-    (h.mode === 'money' ? ` · ${esc(h.caption)}` : '') + (h.note ? `<br>${esc(h.note)}` : '');
+    (h.note ? `<br>${esc(h.note)}` : '');
   $('weak').hidden = !h.weak;
   $('acctsRow').hidden = S.route.scen !== 'money';
   $('next10').hidden = S.route.scen === 'money';
@@ -97,7 +97,9 @@ function renderLive() {
   if (s.kind !== 'eval') {
     const L = S.data.live || {};
     el.className = 'live';
-    el.innerHTML = `<i class="dot"></i><span>From today's evals (${esc(L.source || 'build')}${L.t ? ', ' + esc(C.ago(L.t)) : ''}) → funded → payouts</span>`;
+    const slot = (s.slots || [])[S.route.accts - 1];                // the account the last tap added
+    el.innerHTML = `<i class="dot"></i><span>From today's evals (${esc(L.source || 'build')}${L.t ? ', ' + esc(C.ago(L.t)) : ''}) → funded → payouts` +
+      (slot ? ` · account ${S.route.accts}: ${esc(slot.label)}` : '') + '</span>';
     S.odds = null;
     return;
   }
@@ -284,24 +286,42 @@ S.pointOf = (id, i = 2) => (sc ? sc.pointOf(S.threads.find((t) => t.id === id), 
 S.probe = () => (sc ? sc.probe() : { k: null, calls: 0 });
 
 // ------------------------------------------------------------------------------------------------ OLYMPUS themes
-// applyTheme(tokens): {bg, accent, text, dim, panel, line} or CSS variable names ('--x': value). The page's CSS variables
-// follow; the scene re-tints its clear colour, fog, gate, motes and spindle. Hooked to OLYMPUS.theme() / onTheme when the kit has them.
-const THEME_VARS = { bg: '--bg', accent: '--gold', text: '--txt', dim: '--mut', panel: '--panel', line: '--line' };
+// applyTheme(tokens): the OLYMPUS theme tokens ({bg, glass, line, text, dim, accent, mix, harmony, ...}) or CSS variable
+// names ('--x': value). bg blends into FATES's own night by the theme's `mix`, the accent into its gold by `harmony` (both
+// 0 in the default theme: nothing changes; missing: the token as given). The scene re-tints its clear colour, fog, gate,
+// motes and spindle. With the kit's themes (olympus.js theme / onTheme / themeScene) the kit paints the CSS tokens itself
+// and themeScene keeps the scene's fog, clear colour and accent in step; without themeScene, theme() / onTheme feed this.
+const OWN = { bg: '#07050f', accent: '#ffcf5a' };
+const THEME_VARS = { text: '--txt', dim: '--mut', glass: '--panel', panel: '--panel', line: '--line' };
+// '#rrggbb' a -> b by t (0 = a untouched); anything else: b when t > 0 (the OLYMPUS themes' own mix rule, kept local)
+function mixHex(a, b, t) {
+  const p = (h) => (/^#[0-9a-f]{6}$/i.test(h) ? [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)) : null);
+  const A = p(a), B = p(b);
+  if (!(t > 0)) return a;
+  if (!A || !B) return b;
+  return '#' + A.map((x, i) => Math.round(x + (B[i] - x) * Math.min(1, t)).toString(16).padStart(2, '0')).join('');
+}
 export function applyTheme(tok) {
   if (!tok || typeof tok !== 'object') return;
-  const root = document.documentElement.style;
+  const root = document.documentElement.style, mix = typeof tok.mix === 'number' ? tok.mix : 1, har = typeof tok.harmony === 'number' ? tok.harmony : 1;
+  const bg = tok.bg ? mixHex(OWN.bg, tok.bg, mix) : null, acc = tok.accent ? mixHex(OWN.accent, tok.accent, har) : null;
+  if (bg && mix > 0) root.setProperty('--bg', bg);
+  if (acc && har > 0) root.setProperty('--gold', acc);
   for (const [k, v] of Object.entries(tok)) {
     if (typeof v !== 'string') continue;
-    if (k.startsWith('--')) root.setProperty(k, v); else if (THEME_VARS[k]) root.setProperty(THEME_VARS[k], v);
+    if (k.startsWith('--')) root.setProperty(k, v); else if (THEME_VARS[k] && mix > 0) root.setProperty(THEME_VARS[k], v);
   }
   S.theme = tok;
-  sc?.theme(tok);
+  sc?.theme({ bg: mix > 0 ? bg : null, accent: har > 0 ? acc : null });
 }
 window.applyTheme = applyTheme;
 function hookTheme() {
   if (!O) return;
-  try { if (typeof O.theme === 'function') applyTheme(O.theme()); } catch (_) { /* kit without themes */ }
-  try { if (typeof O.onTheme === 'function') O.onTheme(applyTheme); } catch (_) { /* kit without themes */ }
+  try {
+    if (typeof O.themeScene === 'function' && sc) { O.themeScene({ scene: sc.scene, renderer: sc.R, emissive: [sc.accent] }); S.themeHook = 'themeScene'; return; }
+    if (typeof O.theme === 'function') { applyTheme(O.theme()); S.themeHook = 'theme'; }
+    if (typeof O.onTheme === 'function') O.onTheme(applyTheme);
+  } catch (_) { /* a kit without themes */ }
 }
 
 // ------------------------------------------------------------------------------------------------ Jarvis's live card

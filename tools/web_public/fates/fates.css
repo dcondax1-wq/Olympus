@@ -117,7 +117,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .sheet li.up .m { color: var(--up); } .sheet li.dn .m { color: var(--red); } .sheet li.gold .m { color: var(--gold); }
 .sheet li.now { background: rgba(var(--vio-rgb), .16); }
 .sheet ol.next li { align-items: center; }
-.sheet ol.next .m { font-size: 12.5px; color: var(--mut); white-space: nowrap; }
+.sheet ol.next .m { display: block; font-size: 12.5px; color: var(--mut); white-space: nowrap; }
 .sheet ol.next li { grid-template-columns: 70px minmax(0, 1fr) auto; padding: 4px 12px; }
 .stack { display: flex; height: 7px; margin-bottom: 3px; border-radius: 4px; overflow: hidden; background: rgba(255, 255, 255, .05); }
 .stack b { display: block; height: 100%; transition: width .5s ease-out; }

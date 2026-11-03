@@ -318,7 +318,7 @@ export function createScene(canvas, opt = {}) {
 
   // ---------------------------------------------------------------------------------------------- the public face
   const sc = {
-    R, cam, scene, get lite() { return lite; },
+    R, cam, scene, get lite() { return lite; }, accent: U.uAccent.value,   // the gate / motes / spindle colour (a THREE.Color)
     /** threads: from fates-core (evalThreads / moneyThreads); map: {H, tPow, yOf, gateY, floorY, gateText, abyssText, spread, money} */
     build(list, map, secAt) {
       for (const k of ['threads', 'sparks', 'bead']) clear(k);
@@ -336,7 +336,7 @@ export function createScene(canvas, opt = {}) {
       G.abyss.position.y = ay; G.floorRim.position.y = ay + 0.01; U.uFloorY.value = ay;
       const lab = (t, c, h, x, y, z, left = true) => { const s = label(t, c, h); s.position.set(left ? x + s.scale.x / 2 : x, y, z); G.labels.add(s); };
       lab(map.gateText, '#ffd36a', 0.3, -1.75, map.gateY + 0.2, -1.6);
-      lab(map.abyssText, '#ff5a6e', 0.26, -1.75, (map.floorY != null ? ay : map.yOf(0)) + 0.2, -1.6);
+      lab(map.abyssText, '#ff5a6e', 0.26, -1.75, map.floorY != null ? ay + 0.2 : map.yOf(0) - 0.2, -1.6);   // money: $0 under its line, clear of the goal
       lab('TODAY', '#e5d6ff', 0.17, 0, startY - 0.5, zOf(0), false);
       lab(map.money ? '12 MONTHS' : `DAY ${map.H}`, '#9b8cc4', 0.5, 0, map.gateY * 0.5, zOf(map.H) - 1, false);
       if (!map.money && map.H > 12) lab('SESSION 10', '#ffe7a8', 0.22, 2.2, map.gateY + 0.14, zOf(10), false);
@@ -369,7 +369,7 @@ export function createScene(canvas, opt = {}) {
       }
       const sway = still ? 0 : Math.sin(tg * 0.17) * 0.45;
       cam.position.set(sway, 1.55 + (still ? 0 : Math.sin(tg * 0.23) * 0.1), 7.4);
-      cam.lookAt(sway * 0.2, 1.45, -14);
+      cam.lookAt(sway * 0.2, MAP && MAP.money ? 0.2 : 1.45, -14);       // money threads start low ($0): look a little down at them
       R.render(scene, cam);
     },
     bead(th, k) {

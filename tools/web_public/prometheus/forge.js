@@ -596,25 +596,41 @@ function measureBars() {
 }
 
 // ------------------------------------------------------------------------------------------------ OLYMPUS themes
-// applyTheme(tokens): {bg, accent, text, dim, panel, line} or CSS variable names ('--x': value); the arena's fog follows
-// the background. Hooked to OLYMPUS.theme() / onTheme when the kit has them.
-const THEME_VARS = { bg: '--bg', accent: '--fire', text: '--text', dim: '--dim', panel: '--panel', line: '--line', gold: '--gold' };
+// applyTheme(tokens): the OLYMPUS theme tokens ({bg, glass, line, text, dim, accent, mix, harmony, ...}) or CSS variable
+// names ('--x': value). bg blends into the forge's own ember dark by `mix`, the accent into its fire by `harmony` (0 in the
+// default theme: nothing changes; missing: as given); the arena's fog follows the background. With the kit's themes
+// (olympus.js theme / onTheme / themeScene) the kit paints the CSS tokens and themeScene keeps the fog in step.
+const OWN = { bg: '#120806', accent: '#ff7a1a' };
+const THEME_VARS = { text: '--text', dim: '--dim', glass: '--panel', panel: '--panel', line: '--line' };
+// '#rrggbb' a -> b by t (0 = a untouched); anything else: b when t > 0 (the OLYMPUS themes' own mix rule, kept local)
+function mixHex(a, b, t) {
+  const p = (h) => (/^#[0-9a-f]{6}$/i.test(h) ? [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)) : null);
+  const A = p(a), B = p(b);
+  if (!(t > 0)) return a;
+  if (!A || !B) return b;
+  return '#' + A.map((x, i) => Math.round(x + (B[i] - x) * Math.min(1, t)).toString(16).padStart(2, '0')).join('');
+}
 export function applyTheme(tok) {
   if (!tok || typeof tok !== 'object') return;
-  const root = document.documentElement.style;
+  const root = document.documentElement.style, mix = typeof tok.mix === 'number' ? tok.mix : 1, har = typeof tok.harmony === 'number' ? tok.harmony : 1;
+  const bg = tok.bg ? mixHex(OWN.bg, tok.bg, mix) : null, acc = tok.accent ? mixHex(OWN.accent, tok.accent, har) : null;
+  if (bg && mix > 0) root.setProperty('--bg', bg);
+  if (acc && har > 0) root.setProperty('--fire', acc);
   for (const [k, v] of Object.entries(tok)) {
     if (typeof v !== 'string') continue;
-    if (k.startsWith('--')) root.setProperty(k, v); else if (THEME_VARS[k]) root.setProperty(THEME_VARS[k], v);
+    if (k.startsWith('--')) root.setProperty(k, v); else if (THEME_VARS[k] && mix > 0) root.setProperty(THEME_VARS[k], v);
   }
-  const bg = tok.bg || tok['--bg'];
-  try { if (bg && STATE.arena) STATE.arena.scene.fog.color.set(bg); } catch (e) { /* not a colour */ }
+  try { if (bg && mix > 0 && STATE.arena) STATE.arena.scene.fog.color.set(bg); } catch (e) { /* not a colour */ }
   STATE.theme = tok;
 }
 window.applyTheme = applyTheme;
 function hookTheme() {
   if (!O) return;
-  try { if (typeof O.theme === 'function') applyTheme(O.theme()); } catch (e) { /* kit without themes */ }
-  try { if (typeof O.onTheme === 'function') O.onTheme(applyTheme); } catch (e) { /* kit without themes */ }
+  try {
+    if (typeof O.themeScene === 'function' && STATE.arena) { O.themeScene({ scene: STATE.arena.scene, renderer: STATE.arena.renderer }); STATE.themeHook = 'themeScene'; return; }
+    if (typeof O.theme === 'function') { applyTheme(O.theme()); STATE.themeHook = 'theme'; }
+    if (typeof O.onTheme === 'function') O.onTheme(applyTheme);
+  } catch (e) { /* a kit without themes */ }
 }
 
 async function main() {
@@ -636,7 +652,6 @@ async function main() {
   $('banner').addEventListener('click', openTruth);
   $('lin-b').addEventListener('click', (e) => { const svg = $('lin-b').querySelector('svg'); const id = svg && pickAt(svg, F, e.clientX, e.clientY); if (id != null) openCard(id); });
   $('hall-b').addEventListener('click', (e) => { const tr = e.target.closest('tr[data-id]'); if (tr) openCard(tr.dataset.id === 'live' ? 'live' : Number(tr.dataset.id)); });
-  hookTheme();
   addEventListener('resize', measureBars);
   measureBars();
   addEventListener('keydown', (e) => {
@@ -652,6 +667,7 @@ async function main() {
     STATE.arena = null;
     O?.ready();                                     // no 3D here: the list below is the page
   }
+  hookTheme();                                      // after the arena: themeScene needs its scene
   renderBanner();
   setGen(0);
   window.__forge = {

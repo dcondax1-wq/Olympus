@@ -279,6 +279,14 @@ def test_demo_fixture():
           "rerun python -X utf8 -m tools.strategytree.demo" if on_disk != json.loads(json.dumps(doc)) else "")
 
 
+THEME_STUB = """(() => { const scene = %s;
+  window.OLYMPUS = { app: 'x', fx: () => 'high', chosen: () => true, lite: () => false, reduced: () => false, dpr: () => 1, setFx() {}, onFx() {},
+    mode() {}, hidden: () => document.hidden, track: (r) => r, stats: () => ({}), ready() {}, fail() {}, state: () => 'ready',
+    theme: () => ({ bg: '#000814', accent: '#4da3ff', mix: 0.5, harmony: 0.3, glass: 'rgba(0, 0, 0, .7)', line: 'rgba(1, 1, 1, .1)', text: '#ffffff', dim: '#cccccc' }),
+    onTheme(cb) { window.__onTheme = cb; } };
+  if (scene) window.OLYMPUS.themeScene = (o) => { window.__themeScene = o; return () => {}; }; })()"""
+
+
 PAGE_SHOTS = os.environ.get("DAPHNE_SHOTS") or os.path.join(ROOT, "research", "handoff", "2026-11-03-day", "research_apps", "daphne")
 
 
@@ -365,6 +373,18 @@ def test_page():
                 .getPropertyValue('--green').trim(), window.__daphne.state.bg]; }""")
             check("page: applyTheme(tokens): the colours and the canvas background follow", got == ["#00e0ff", "#010203"], got)
             check("page: no page or console errors", not errs, errs[:3])
+            ctx.close()
+            ctx = br.new_context(viewport={"width": 390, "height": 844})
+            ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith("http://127.0.0.1") else r.abort())
+            ctx.add_init_script(THEME_STUB % "false")
+            pg = ctx.new_page()
+            pg.goto(base + "?at=9300")
+            pg.wait_for_function("() => window.__daphne && window.__daphne.ready", timeout=30000)
+            a = pg.evaluate("() => [window.__daphne.state.themeHook, getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(), window.__daphne.state.bg]")
+            pg.evaluate("() => window.__onTheme({ bg: '#123456', accent: '#46ff9a', mix: 1, harmony: 0 })")
+            b = pg.evaluate("() => [getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(), window.__daphne.state.bg]")
+            check("page: OLYMPUS themes: theme() applied at start (bg blended by the theme's mix), onTheme follows every change",
+                  a == ["theme", "#02080d", "#02080d"] and b == ["#123456", "#123456"], (a, b))
             ctx.close()
             ctx = br.new_context(viewport={"width": 390, "height": 844}, reduced_motion="reduce")
             ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith("http://127.0.0.1") else r.abort())
