@@ -12,8 +12,8 @@
 <link rel="stylesheet" href="../olympus/olympus.css?v=o2">
 <script src="../olympus/themes.js?v=o2"></script>
 <script src="../olympus/olympus.js?v=o2" data-app="mind"></script>
-<link rel="stylesheet" href="mind.css?v=m2">
-<script type="module" src="main.js?v=m2"></script>
+<link rel="stylesheet" href="mind.css?v=m3">
+<script type="module" src="main.js?v=m3"></script>
 </head>
 <body>
 <canvas id="gl" aria-label="Your notes as a 3D brain. Drag to turn, pinch to zoom, tap a note to open it."></canvas>
@@ -53,6 +53,15 @@
 
 <div id="tl" class="tl" hidden aria-live="polite"><span id="tl-date"></span><i><b id="tl-bar"></b></i><span id="tl-count"></span></div>
 
+<!-- what did Jarvis learn today: the day as a 24-hour strip (taller bar = more learned) and the lessons in time order -->
+<section id="day" class="day glass" hidden aria-labelledby="day-title">
+  <header><h2 id="day-title">Learned today</h2><span id="day-sum" class="day-sum"></span>
+    <button id="day-replay" class="ghost" type="button" title="Replay today's lessons as sparks">Replay</button>
+    <button id="day-close" class="close" type="button" aria-label="Close">×</button></header>
+  <div id="day-strip" class="day-strip" aria-hidden="true"></div>
+  <ol id="day-list" class="day-list"></ol>
+</section>
+
 <!-- the note card: the bottom sheet opened up (the sheet steps aside while it shows) -->
 <aside id="card" class="card glass" hidden aria-labelledby="c-title">
   <button id="c-close" class="close" type="button" aria-label="Close">×</button>
@@ -78,6 +87,7 @@
     <span class="spark-dot" aria-hidden="true"></span>
     <span class="tk-label">Jarvis learned</span>
     <span id="tk-text" class="tk-text">Listening…</span>
+    <button id="today" class="ghost today-btn" type="button" aria-pressed="false" aria-controls="day" title="What Jarvis learned today">Today <b id="today-n">0</b></button>
   </div>
   <ol id="stream" class="stream" aria-label="Thought stream: what Jarvis learned and what changed, newest first"></ol>
   <div id="chips" class="chips" role="toolbar" aria-label="Focus on one galaxy"></div>

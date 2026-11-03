@@ -98,3 +98,9 @@ h3 { font: 700 12px var(--oly-display, 'Orbitron', sans-serif); letter-spacing: 
 .nogl button { margin: 4px 6px 0 0; padding: 0 10px; }
 
 @media (prefers-reduced-motion: reduce) { .card { animation: none; } }
+
+/* verdict history (2026-11-03): one tick per council reading, colour = verdict */
+.vh { display: flex; align-items: flex-end; gap: 1px; height: 54px; padding: 4px 0; }
+.vh i { flex: 1 1 0; min-width: 2px; border-radius: 1px; opacity: .9; }
+.vh i:last-child { box-shadow: 0 0 8px currentColor; opacity: 1; outline: 1px solid rgba(255, 255, 255, .6); }
+.vh-sum { line-height: 1.5; }

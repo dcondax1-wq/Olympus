@@ -141,6 +141,7 @@ export function councilHtml(d) {
     <p class="mean">${esc(c.text)}</p>
     ${c.caution ? `<p class="honest" style="color:var(--caution)">${esc(c.caution)}</p>` : ''}
     <p class="honest ${c.stats && c.stats.holds ? 'holds' : ''}">${esc(c.honesty || '')}</p>
+    <h3>Verdict history</h3>${historyHtml(d)}
     <h3>The votes (risk-off −1 … +1 risk-on)</h3>${votes}
     <p class="note">ATHENA (the calendar) has no direction and ARTEMIS (crypto) is not futures data: neither votes.</p>
     <h3>Honest check: NQ futures next session</h3>
@@ -151,6 +152,33 @@ export function councilHtml(d) {
     <h3>Sources tonight</h3><div class="tw"><table aria-label="Sources"><thead><tr><th>Source</th><th>From</th><th>Newest</th></tr></thead><tbody>${src}</tbody></table></div>
     <h3>Skipped</h3><ul class="note">${skipped}</ul>
     <p class="note">Built ${esc(d.built)} · next session ${esc(d.next_session)} · refreshed nightly by CRONOS.</p>`;
+}
+
+/** The Council's regime verdict history from council.spark (daily scores, the last year, about 64 samples, oldest first):
+ *  {cells: [{score, label}], counts: {RISK-ON, MIXED, RISK-OFF}, streak: {label, n}, flips} (RISK-ON at >= +0.20, RISK-OFF at <= -0.20,
+ *  the build's own rule). Empty when the build carries no history. */
+export function verdictHistory(d) {
+  const raw = ((d && d.council && d.council.spark) || []).filter((x) => typeof x === 'number' && isFinite(x));
+  const lab = (s) => (s >= 0.2 ? 'RISK-ON' : s <= -0.2 ? 'RISK-OFF' : 'MIXED');
+  const cells = raw.map((score) => ({ score, label: lab(score) }));
+  const counts = { 'RISK-ON': 0, MIXED: 0, 'RISK-OFF': 0 };
+  cells.forEach((c) => { counts[c.label]++; });
+  let n = 0, flips = 0;
+  for (let i = cells.length - 1; i >= 0 && cells[i].label === cells[cells.length - 1].label; i--) n++;
+  for (let i = 1; i < cells.length; i++) if (cells[i].label !== cells[i - 1].label) flips++;
+  return { cells, counts, streak: cells.length ? { label: cells[cells.length - 1].label, n } : null, flips };
+}
+
+/** the verdict history as HTML: one coloured tick per reading (height = strength), what share of the year each verdict held */
+export function historyHtml(d) {
+  const h = verdictHistory(d);
+  if (!h.cells.length) return '<p class="note">No verdict history in this build yet.</p>';
+  const tot = h.cells.length, pc = (k) => Math.round((100 * h.counts[k]) / tot);
+  const ticks = h.cells.map((c) => `<i style="height:${Math.round(18 + 70 * Math.min(1, Math.abs(c.score) / 0.6))}%;background:${VERDICT[c.label]}" title="${esc(c.label)} ${c.score > 0 ? '+' : ''}${c.score.toFixed(2)}"></i>`).join('');
+  return `<div class="vh" role="img" aria-label="Council verdict over the last year, oldest to newest">${ticks}</div>
+    <p class="note vh-sum"><b style="color:${VERDICT['RISK-ON']}">risk-on ${pc('RISK-ON')}%</b> · <b style="color:${VERDICT.MIXED}">mixed ${pc('MIXED')}%</b> · <b style="color:${VERDICT['RISK-OFF']}">risk-off ${pc('RISK-OFF')}%</b>
+    · now ${esc(h.streak.label)} for ${h.streak.n} reading${h.streak.n === 1 ? '' : 's'} · ${h.flips} flip${h.flips === 1 ? '' : 's'} in the year</p>
+    <p class="note">Each tick is one council reading (about four sessions apart across the last 12 months); taller = a stronger lean. Context, not a signal.</p>`;
 }
 
 /** the strip chip value of a god */

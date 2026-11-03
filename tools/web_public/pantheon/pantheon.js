@@ -5,14 +5,22 @@
 // Performance: instanced pillars, one merged beam mesh, one Points buffer for the motes, one for the stars; auto LITE
 // when frames run slow (or ?lite=1); reduced motion = no drift, no bob, a still scene redrawn only on input.
 import * as THREE from '../jarvis/three.module.min.js';
-import { loadPantheon, godCard, councilHtml, chipValue, esc, LEAN, VERDICT } from './pantheoncore.js';
+import { loadPantheon, godCard, councilHtml, chipValue, esc, LEAN, VERDICT, verdictHistory } from './pantheoncore.js';
 import { drawGlyph } from './glyphs.js';
+
+// the OLYMPUS render core (../olympus/render.js + materials.js): tone mapping, a night environment for real marble and gold
+// reflections, bloom on the live-data glow, MSAA, a film finish. Without it the hall draws with the plain renderer as before.
+let CORE = null;
+try {
+  const [r, m] = await Promise.all([import('../olympus/render.js'), import('../olympus/materials.js')]);
+  CORE = { createRenderer: r.createRenderer, marble: m.marble, metal: m.metal };
+} catch (_) { CORE = null; }
 
 const O = window.OLYMPUS || null;
 const Q = new URLSearchParams(location.search);
 const RM = O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
 const $ = (id) => document.getElementById(id);
-const RING_R = 4.2, ORB_Y = 2.9, TOP_Y = 3.05, GLYPH_Y = 3.95;
+const RING_R = 4.2, ORB_Y = 2.9, TOP_Y = 3.05, GLYPH_Y = 4.85, STATUE_H = 1.6, HIST_R = 6.15;
 const STATE = { d: null, hall: null, sel: null, errors: [] };
 
 // ------------------------------------------------------------------------------------------------ canvas textures
@@ -114,13 +122,23 @@ class Hall {
     this.d = d;
     this.lite = Q.get('lite') === '1' || !!(O && O.lite());
     this.chosen = Q.get('lite') === '1' || Q.get('full') === '1' || !!(O && O.chosen());
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: !this.lite, alpha: true, powerPreference: 'high-performance' });
-    O?.track(this.renderer);
-    this.renderer.setClearColor(0x000000, 0);
-    this.renderer.setPixelRatio(O ? O.dpr(this.lite) : Math.min(devicePixelRatio || 1, this.lite ? 1.5 : 2));
     this.scene = new THREE.Scene();
     this.scene.fog = new THREE.FogExp2(0x0b0a18, 0.035);
     this.camera = new THREE.PerspectiveCamera(56, 1, 0.1, 200);
+    this.rc = null;
+    if (CORE) {
+      try {
+        this.rc = CORE.createRenderer({ canvas, scene: this.scene, camera: this.camera, alpha: true, env: 'night', quality: ['ultra', 'high', 'low', 'off'].includes(Q.get('q')) ? Q.get('q') : undefined, exposure: 1.05, autoSize: false,
+          maxDpr: this.lite ? 1.5 : 2, bloom: { strength: 0.7, radius: 0.6, threshold: 0.9 }, onQuality: (l) => { this.lite = l === 'low' || l === 'off'; this.resize(); } });
+        this.renderer = this.rc.renderer;
+      } catch (_) { this.rc = null; }
+    }
+    if (!this.rc) {
+      this.renderer = new THREE.WebGLRenderer({ canvas, antialias: !this.lite, alpha: true, powerPreference: 'high-performance' });
+      O?.track(this.renderer);
+      this.renderer.setClearColor(0x000000, 0);
+      this.renderer.setPixelRatio(O ? O.dpr(this.lite) : Math.min(devicePixelRatio || 1, this.lite ? 1.5 : 2));
+    }
     this.yaw = Math.PI / 2 + 0.35; this.yawTo = this.yaw; this.pitch = 0.58; this.dist = 16;
     this.t = 0; this.last = performance.now(); this.frames = []; this.dirty = true; this.idleAt = 0;
     this.tex = { glow: glowTex(), marble: marbleTex(this.lite ? 128 : 256), floor: floorTex(this.lite ? 512 : 1024) };
@@ -134,7 +152,7 @@ class Hall {
 
   build() {
     const S = this.scene, n = this.gods.length, T = this.tex;
-    S.add(new THREE.HemisphereLight(0xd6dcff, 0x2a2440, 1.25));
+    S.add(new THREE.HemisphereLight(0xd6dcff, 0x2a2440, CORE ? 0.9 : 1.25));
     const vc = new THREE.Color(VERDICT[this.d.council.label] || VERDICT.SILENT);
     this.orbLight = new THREE.PointLight(vc, 26, 14, 1.6);
     this.orbLight.position.set(0, ORB_Y, 0);
@@ -147,15 +165,22 @@ class Hall {
     rim.position.y = -0.3; S.add(rim);
 
     // pillars: instanced base, shaft, capital (three draw calls for all eight)
-    const marble = new THREE.MeshStandardMaterial({ map: T.marble, roughness: 0.42, metalness: 0.05 });
+    const marble = CORE ? CORE.marble({ scale: 0.9 }) : new THREE.MeshStandardMaterial({ map: T.marble, roughness: 0.42, metalness: 0.05 });
+    const gold = CORE ? CORE.metal({ kind: 'gold' }) : new THREE.MeshStandardMaterial({ color: 0xe9b75a, roughness: 0.35, metalness: 0.9 });
     const mk = (geo, count) => { const m = new THREE.InstancedMesh(geo, marble, count); S.add(m); return m; };
     const base = mk(new THREE.BoxGeometry(0.95, 0.3, 0.95), n), shaft = mk(new THREE.CylinderGeometry(0.27, 0.32, 2.5, 20, 1, true), n),
       echinus = mk(new THREE.CylinderGeometry(0.46, 0.3, 0.16, 20), n), cap = mk(new THREE.BoxGeometry(0.98, 0.16, 0.98), n);
-    const bands = new THREE.InstancedMesh(new THREE.TorusGeometry(0.42, 0.045, 8, 32), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.95,
-      blending: THREE.AdditiveBlending, depthWrite: false }), n);
+    const bandMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false });
+    if (CORE) bandMat.color.setScalar(2.6);                // brighter than 1 in HDR: the live-data band blooms
+    const bands = new THREE.InstancedMesh(new THREE.TorusGeometry(0.42, 0.045, 8, 32), bandMat, n);
     S.add(bands);
     const M = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(1, 1, 1), p = new THREE.Vector3();
     const flat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+    // the statues: a draped figure turned on a lathe (robe, shoulders, neck), a head and a gold laurel, one per capital
+    const robe = new THREE.LatheGeometry([[0.21, 0], [0.22, 0.05], [0.17, 0.3], [0.125, 0.5], [0.15, 0.62], [0.14, 0.69], [0.07, 0.74], [0.045, 0.78], [0.001, 0.79]]
+      .map(([r, y]) => new THREE.Vector2(r, y)), this.lite ? 14 : 28);
+    const headG = new THREE.SphereGeometry(0.085, this.lite ? 10 : 18, this.lite ? 8 : 14), laurel = new THREE.TorusGeometry(0.09, 0.012, 6, this.lite ? 14 : 24);
+    const staffG = new THREE.CylinderGeometry(0.014, 0.014, 1.05, 6), beltG = new THREE.TorusGeometry(0.135, 0.016, 6, this.lite ? 14 : 24), orbG = new THREE.SphereGeometry(0.05, 10, 8);
     this.pillars = this.gods.map((g, i) => {
       const a = -Math.PI / 2 + (i / n) * Math.PI * 2, x = Math.cos(a) * RING_R, z = Math.sin(a) * RING_R;
       base.setMatrixAt(i, M.compose(p.set(x, 0.15, z), q.identity(), sc));
@@ -166,14 +191,21 @@ class Hall {
       const col = new THREE.Color(g.ok ? g.color : '#4a4858');
       bands.setColorAt(i, col);
       shaft.setColorAt(i, new THREE.Color('#ffffff').lerp(col, 0.18));
+      const st = new THREE.Group(), body = new THREE.Mesh(robe, marble), head = new THREE.Mesh(headG, marble), crown = new THREE.Mesh(laurel, gold);
+      head.position.y = 0.87; crown.position.y = 0.93; crown.rotation.x = Math.PI / 2;
+      const staff = new THREE.Mesh(staffG, gold), belt = new THREE.Mesh(beltG, gold), ember = new THREE.Mesh(orbG, new THREE.MeshBasicMaterial({ color: col.clone().multiplyScalar(CORE ? 4 : 1) }));
+      staff.position.set(0.2, 0.52, 0.04); ember.position.set(0.2, 1.08, 0.04); belt.position.y = 0.42; belt.rotation.x = Math.PI / 2;   // a staff topped with the god's own light
+      st.add(body, head, crown, staff, belt, ember); st.scale.setScalar(STATUE_H); st.position.set(x, 3.08, z); st.rotation.y = -a + Math.PI / 2;
+      S.add(st);
       const glyph = new THREE.Sprite(new THREE.SpriteMaterial({ map: emblemTex(g.glyph, g.color), transparent: true, depthWrite: false, opacity: g.ok ? 1 : 0.35 }));
-      glyph.scale.set(1.05, 1.05, 1); glyph.position.set(x, GLYPH_Y, z);
+      glyph.scale.set(1.0, 1.0, 1); glyph.position.set(x, GLYPH_Y, z);
+      if (CORE) glyph.material.color.setScalar(1.5);
       const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.tex.glow, color: col, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: g.ok ? 0.55 : 0.15 }));
       halo.scale.set(2.3, 2.3, 1); halo.position.copy(glyph.position);
       const label = new THREE.Sprite(new THREE.SpriteMaterial({ map: labelTex(g.name, chipValue(g), g.color), transparent: true, depthWrite: false }));
       label.scale.set(2.3, 0.86, 1); label.position.set(x, GLYPH_Y + 1.0, z);
       S.add(halo, glyph, label);
-      return { g, a, x, z, glyph, halo, label, col, ph: i * 0.9 };
+      return { g, a, x, z, glyph, halo, label, col, ph: i * 0.9, statue: st };
     });
     for (const m of [shaft, bands]) if (m.instanceColor) m.instanceColor.needsUpdate = true;
 
@@ -199,9 +231,10 @@ class Hall {
     const c = this.d.council;
     this.orbLabel = new THREE.Sprite(new THREE.SpriteMaterial({ map: labelTex(c.label, c.gauge == null ? '—' : `${c.gauge} / 100`, VERDICT[c.label] || '#fff'), transparent: true, depthWrite: false }));
     this.orbLabel.scale.set(2.4, 0.9, 1); this.orbLabel.position.set(0, ORB_Y + 1.75, 0);
-    const pedestal = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.9, 1.3, 24), marble);
+    const pedestal = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.9, 1.3, 24), CORE ? CORE.marble({ scale: 1.4, gold: '#e9b75a', color: '#8a869c' }) : marble);
     pedestal.position.set(0, 0.65, 0);
     S.add(pedestal, this.orbGlow, this.orb, this.orbCore, this.ring, this.orbLabel);
+    this.verdictRing(vc);
 
     // beams
     this.beamMat = new THREE.ShaderMaterial({ uniforms: { uTime: { value: 0 } }, vertexShader: BEAM_VS, fragmentShader: BEAM_FS,
@@ -248,6 +281,31 @@ class Hall {
       s.position.set(Math.cos(a) * rr, -1.2 - r() * 1.2, Math.sin(a) * rr); s.scale.set(9 + r() * 5, 3.2 + r() * 1.5, 1);
       this.clouds.push({ s, a, rr, sp: 0.01 + r() * 0.02 }); S.add(s);
     }
+  }
+
+  /** The Council chamber: a gold-edged dais, a column of verdict light over the orb and a ring of blocks, one per past council
+   *  reading (council.spark, the last year, oldest first, ending in front): colour = that day's verdict, height = how strong. */
+  verdictRing(vc) {
+    const S = this.scene, hist = verdictHistory(this.d), N = hist.cells.length;
+    const dais = new THREE.Mesh(new THREE.CylinderGeometry(HIST_R + 0.35, HIST_R + 0.5, 0.12, 72), CORE ? CORE.marble({ scale: 0.7, gold: '#e9b75a', color: '#5b5870', clearcoat: 0.4 }) : new THREE.MeshStandardMaterial({ color: 0x3a3650, roughness: 0.6 }));
+    dais.position.y = 0.04; S.add(dais);
+    const edge = new THREE.Mesh(new THREE.TorusGeometry(HIST_R + 0.42, 0.035, 8, 96), new THREE.MeshStandardMaterial({ color: 0xe9b75a, roughness: 0.3, metalness: 0.9 }));
+    edge.rotation.x = Math.PI / 2; edge.position.y = 0.11; S.add(edge);
+    this.column = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.5, 6.5, 24, 1, true), new THREE.MeshBasicMaterial({ color: vc, transparent: true, opacity: 0.045,
+      blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    this.column.position.set(0, ORB_Y + 2.2, 0); S.add(this.column);
+    this.history = hist;
+    if (!N) return;
+    const mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    if (CORE) mat.color.setScalar(1.9);                      // HDR: the ring glows in the verdict colours
+    const blocks = new THREE.InstancedMesh(new THREE.BoxGeometry(0.34, 1, 0.2), mat, N), M = new THREE.Matrix4(), q = new THREE.Quaternion(), p = new THREE.Vector3(), sc = new THREE.Vector3();
+    const up = new THREE.Vector3(0, 1, 0);
+    hist.cells.forEach((c, i) => {
+      const a = Math.PI / 2 + ((i + 1) / N) * Math.PI * 2, h = 0.1 + 0.55 * Math.min(1, Math.abs(c.score) / 0.6);
+      q.setFromAxisAngle(up, -a + Math.PI / 2); p.set(Math.cos(a) * HIST_R, 0.1 + h / 2, Math.sin(a) * HIST_R); sc.set(1, h, 1);
+      blocks.setMatrixAt(i, M.compose(p, q, sc)); blocks.setColorAt(i, new THREE.Color(VERDICT[c.label] || VERDICT.SILENT).multiplyScalar(i === N - 1 ? 1.6 : 0.8));
+    });
+    blocks.instanceColor.needsUpdate = true; S.add(blocks); this.blocks = blocks;
   }
 
   beamPow(g) {
@@ -310,7 +368,7 @@ class Hall {
 
   resize() {
     const w = innerWidth, h = innerHeight;
-    this.renderer.setSize(w, h, false);
+    if (this.rc) this.rc.resize(w, h); else this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;
     const hfov = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2)) * this.camera.aspect);
     this.dist = Math.max(10, Math.min(22, (RING_R + 1.7) / Math.tan(hfov / 2)));
@@ -321,7 +379,7 @@ class Hall {
   place() {
     const c = this.camera, d = this.dist;
     c.position.set(Math.cos(this.yaw) * Math.cos(this.pitch) * d, 1.4 + Math.sin(this.pitch) * d, Math.sin(this.yaw) * Math.cos(this.pitch) * d);
-    c.lookAt(0, 2.0, 0);
+    c.lookAt(0, 2.45, 0);
     if (this.skyG) this.skyG.rotation.y = Math.PI / 2 - this.yaw;
     this.moon.position.set(c.position.x * 0.6 - c.position.z * 0.3, 14, c.position.z * 0.6 + c.position.x * 0.3);
   }
@@ -403,7 +461,7 @@ class Hall {
       P[i * 3 + 2] = pl.z * (1 - f) + this.moteJ[i * 2 + 1] * (1 - f);
     }
     this.motes.geometry.attributes.position.needsUpdate = true;
-    this.renderer.render(this.scene, this.camera);
+    if (this.rc) this.rc.render(); else this.renderer.render(this.scene, this.camera);
     this.dirty = false;
     this.frames.push(now);
     while (this.frames.length && now - this.frames[0] > 1000) this.frames.shift();
@@ -414,7 +472,7 @@ class Hall {
 
   autoLite(now) {
     // the OLYMPUS rule: an automatic LITE only when nobody chose a level; never stored
-    if (this.chosen || RM) return;
+    if (this.chosen || RM || this.rc) return;          // on the core the render core steps itself down
     this.started = this.started || now;
     if (now - this.started < 2500 || this.frames.length < 2) return;
     if (!this.lite && this.fps() < 45) {
@@ -519,6 +577,7 @@ async function main() {
     ready: true, get demo() { return !!d.demo; }, get lite() { return STATE.hall ? STATE.hall.lite : null; },
     get fps() { return STATE.hall ? STATE.hall.fps() : 0; }, keys: d.gods.map((g) => g.key), errors: STATE.errors,
     screenOf(key) { return STATE.hall ? STATE.hall.anchorOf(key) : null; }, open: openGod, council: openCouncil,
+    get core() { return STATE.hall && STATE.hall.rc ? STATE.hall.rc.passes() : null; }, get history() { return STATE.hall ? STATE.hall.history : null; },
     get sel() { return STATE.sel; }, get yaw() { return STATE.hall ? STATE.hall.yaw : null; },
   };
   requestAnimationFrame(tick);
