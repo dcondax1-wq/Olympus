@@ -10,6 +10,10 @@
   d. slow frames step the quality down (ultra -> high -> low), never stored in 'jfx'
   e. the hidden tab: no WebGL draw call while document.hidden, drawing again once visible
   f. every material factory compiles (marble, metal x3, glass, glass + transmission, neon, fresnelRim, nebula, starfield, beam)
+  g. Jarvis's home backdrop (jarvis/backdrop.js) runs on the core (3 passes at high), hides the flat 2D layers, and draws
+     nothing while an app is open
+  h. the portal jump (jarvis/portal.js): opening an app plays the warp over the loading frame, it ends by itself, a tap
+     skips it, reduced motion gets the 0.2 s fade; no page error
     python -X utf8 -m tests.test_olympus_render
 """
 from __future__ import annotations
@@ -151,6 +155,56 @@ def test_adapt(br, origin):
     ctx.close()
 
 
+def jarvis(br, origin, reduced=False):
+    """Jarvis's home on the real site layout (no network: its live cards stay offline), with jfx = high"""
+    ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=3, is_mobile=True, has_touch=True,
+                         reduced_motion="reduce" if reduced else "no-preference")
+    ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(origin) else r.abort())
+    ctx.add_init_script(COUNT_DRAWS + "try { localStorage.setItem('jfx', 'high'); } catch (e) {}")
+    p = ctx.new_page()
+    errs: list = []
+    p.on("pageerror", lambda e: errs.append(str(e)))
+    p.goto(origin + "/jarvis/")
+    return ctx, p, errs
+
+
+def test_jarvis(br, origin):
+    ctx, p, errs = jarvis(br, origin)
+    try:
+        p.wait_for_function("() => window.__jarvisBackdrop && window.__jarvisBackdrop.state !== 'loading' && window.__jarvisBackdrop.frames > 2",
+                            timeout=60000)
+    except Exception:
+        pass
+    b = p.evaluate("() => Object.assign({}, window.__jarvisBackdrop, { stats: null, bg3d: document.documentElement.dataset.bg3d,"
+                   " stars: getComputedStyle(document.getElementById('stars')).display })")
+    check("g. Jarvis home: the 3D backdrop is up on the render core (3 passes at high) and the flat 2D layers step aside",
+          b.get("state") == "on" and b.get("passes") == 3 and b.get("bg3d") == "on" and b.get("stars") == "none", b)
+    p.evaluate("() => window.jarvisPortal.warm()")
+    p.evaluate("() => document.querySelector('[data-app=\"oracle\"]').click()")
+    s0 = p.evaluate("() => Object.assign({}, window.__jarvisPortal, { overlay: !!document.querySelector('.jportal') })")
+    check("h. opening an app plays the portal warp over it (overlay up, the app's frame already loading underneath)",
+          s0["mode"] == "warp" and s0["active"] and s0["overlay"] and s0["app"] == "oracle"
+          and p.evaluate("() => !!document.querySelector('iframe[src*=\"oracle\"]')"), s0)
+    f0 = p.evaluate("() => window.__jarvisBackdrop.frames")
+    p.wait_for_timeout(2200)
+    s1 = p.evaluate("() => Object.assign({}, window.__jarvisPortal, { overlay: !!document.querySelector('.jportal') })")
+    check("h. the warp ends by itself (~0.8 s) and leaves nothing behind", not s1["active"] and not s1["overlay"] and 0 < s1["ms"] < 2500, s1)
+    f1 = p.evaluate("() => window.__jarvisBackdrop.frames")
+    check("g. the backdrop draws nothing while an app is open", f1 - f0 <= 1, (f0, f1))
+    p.evaluate("() => window.jarvisPortal.jump({ id: 'mind', name: 'Mind', color: '#5eead4' })")
+    p.locator(".jportal").dispatch_event("pointerdown")
+    check("h. a tap skips the warp at once", p.evaluate("() => !window.__jarvisPortal.active && !document.querySelector('.jportal')"))
+    check("h. no page error from the backdrop or the portal", not errs, errs[:4])
+    ctx.close()
+    ctx, p, errs = jarvis(br, origin, reduced=True)
+    p.wait_for_function("() => !!window.jarvisPortal", timeout=30000)
+    mode = p.evaluate("() => window.jarvisPortal.jump({ id: 'oracle', name: 'Oracle', color: '#7fe9ff' })")
+    p.wait_for_timeout(600)
+    check("h. reduced motion: a 0.2 s fade instead of the warp, gone after", mode == "fade"
+          and p.evaluate("() => !document.querySelector('.jportal-fade, .jportal')"), mode)
+    ctx.close()
+
+
 def test_hidden(br, origin):
     ctx, p, errs, _ = lab(br, origin, "?q=high")
     p.evaluate(HIDE, True)
@@ -199,6 +253,7 @@ def main():
         test_hidden(br, origin)
         test_materials(br, origin)
         test_adapt(br, origin)
+        test_jarvis(br, origin)
         br.close()
     srv.shutdown()
 

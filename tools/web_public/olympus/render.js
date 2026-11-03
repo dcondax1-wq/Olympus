@@ -135,7 +135,8 @@ const SKY_FS = `uniform vec3 top, mid, low; varying vec3 vDir;
 void main() { float y = normalize(vDir).y; vec3 c = y > 0.0 ? mix(mid, top, pow(y, 0.6)) : mix(mid, low, pow(-y, 0.5)); gl_FragColor = vec4(c, 1.0); }`;
 const SKY_VS = 'varying vec3 vDir; void main() { vDir = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }';
 
-/** a procedural night studio: a deep sky gradient and soft light strips (a white key, two coloured rims, a floor bounce) */
+/** a procedural night studio: a deep sky gradient, a warm horizon band and soft light strips (a white key, a warm front
+ *  box, two rims in the theme's colours, a floor bounce) */
 function nightScene(pal) {
   const s = new THREE.Scene(), c = (h, k) => new THREE.Color(h).multiplyScalar(k);
   s.add(new THREE.Mesh(new THREE.SphereGeometry(40, 32, 16), new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false,
@@ -145,7 +146,11 @@ function nightScene(pal) {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: col, side: THREE.DoubleSide }));
     m.position.set(x, y, z); m.lookAt(0, 0, 0); s.add(m);
   };
+  const band = new THREE.Mesh(new THREE.CylinderGeometry(30, 30, 3, 48, 1, true),   // a warm horizon band: metals read as metal
+    new THREE.MeshBasicMaterial({ color: c('#ffe8cc', 0.9), side: THREE.BackSide }));
+  band.position.y = 2; s.add(band);
   strip(16, 1.2, c('#ffffff', 7), 0, 12, 4);             // the key: a long soft box overhead, slightly in front
+  strip(8, 5, c('#fff4e6', 2.2), 6, 6, 12);             // a warm front softbox, high on the right
   strip(1.4, 14, c(pal.emissive, 5), -13, 1, -3);       // the rims, in the theme's colours: chrome edges pick them up
   strip(1.4, 14, c(pal.bloom, 4), 13, 2, -4);
   strip(10, 4, c('#ffffff', 1.4), 0, 2, 14);            // a faint fill behind the camera
@@ -178,12 +183,13 @@ export function makeEnvironment(renderer, kind, pal) {
  *   space     'linear' (default: light adds up in linear HDR, tone mapped once at the end) | 'display' (each material tone maps
  *             and encodes itself, additive glows add up on screen colours, as a scene tuned for a plain renderer looks; bloom
  *             thresholds are then 0..1 screen values)
- *   bloom     { strength, radius, threshold } overrides of the tier's values; grade { grain, vignette, aberration } likewise
+ *   bloom     { strength, radius, threshold } overrides of the tier's values; grade { grain, vignette, aberration, saturation }
+ *             likewise (they tune a tier, never switch bloom or the grade on for low / off)
  *   adapt     step down on slow frames: true (default: only when the owner has not chosen a level) | 'always' | false
  *   maxDpr    a lower pixel-ratio cap than the tier's; autoSize (default true) sizes from the canvas's CSS box
  *   onQuality(level)   told after every tier change (the owner's choice or the automatic step down)
  * -> { renderer, composer, scene, camera, render(), resize(w?, h?), setQuality(level), quality(), passes(), setTheme(t),
- *      addPass(pass), start(cb), stop(), stats(), dispose() }
+ *      setBloom({ strength?, radius?, threshold?, tint? }), addPass(pass), start(cb), stop(), stats(), dispose() }
  */
 export function createRenderer(opts) {
   const o = Object.assign({ env: 'night', alpha: false, exposure: 1, adapt: true, autoSize: true, space: 'linear' }, opts || {});
@@ -267,7 +273,6 @@ export function createRenderer(opts) {
     finish = new FinishPass();
     finish.configure(renderer, tier.grade, tier.fxaa, display);
     composer.addPass(finish);
-    size(true);
   }
 
   function size(force) {
@@ -367,7 +372,7 @@ export function createRenderer(opts) {
       bloom.bloomTintColors.forEach((v) => v.set(bloomTint.r, bloomTint.g, bloomTint.b));
     },
     /** an app's own pass, run after bloom and before the finish */
-    addPass(p) { if (p && extra.indexOf(p) < 0) { extra.push(p); build(); } return p; },
+    addPass(p) { if (p && extra.indexOf(p) < 0) { extra.push(p); build(); size(true); } return p; },
     start(cb) { loop = typeof cb === 'function' ? cb : () => {}; onVisible(); return api; },
     stop() { loop = null; if (raf) cancelAnimationFrame(raf); raf = 0; },
     stats() {

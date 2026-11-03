@@ -44,8 +44,9 @@ the loading veil lifts on the first frame and `OLYMPUS.stats()` keeps working.
 | `background` | false | the environment is also the visible sky |
 | `alpha` | false | a transparent canvas; glows add light to the page behind it |
 | `exposure` | 1 | tone-mapping exposure |
+| `space` | `'linear'` | `'linear'`: light adds up in linear HDR and is tone-mapped once, at the end (physically right: use it for new scenes). `'display'`: every material tone-maps itself and additive glows add up on screen colours, the way a scene tuned for a plain renderer looks (Jarvis's reactor); bloom thresholds are then 0..1 screen values |
 | `bloom` | the tier's | `{ strength, radius, threshold }` overrides |
-| `grade` | the tier's | `{ grain, vignette, aberration }` overrides (0 turns one off) |
+| `grade` | the tier's | `{ grain, vignette, aberration, saturation }` overrides (0 turns one off; saturation 1 = none, the tiers use 1.1 to give back what ACES greys) |
 | `adapt` | true | step down on slow frames when the owner has not chosen a level; `'always'`; `false` |
 | `maxDpr` | 2 | a lower pixel-ratio cap (a soft backdrop can use 1) |
 | `autoSize` | true | size from the canvas's CSS box every frame (cheap: only a change resizes); false = `resize(w, h)` |
@@ -55,8 +56,9 @@ the loading veil lifts on the first frame and `OLYMPUS.stats()` keeps working.
 ### The object it returns
 
 `renderer`, `composer` (null on `off`), `scene`, `camera`, `render()`, `resize(w?, h?)`, `setQuality(level)`,
-`quality()`, `passes()` (e.g. `['scene', 'bloom', 'finish']`), `setTheme(tokens)`, `addPass(pass)` (runs after bloom,
-before the finish), `start(cb)` / `stop()`, `stats()` and `dispose()`.
+`quality()`, `passes()` (e.g. `['scene', 'bloom', 'finish']`), `setTheme(tokens)`, `setBloom({ strength, radius,
+threshold, tint })` (live, no rebuild; a per-frame `tint` is cheap: the reactor tints its glow with the state's colour),
+`addPass(pass)` (runs after bloom, before the finish), `start(cb)` / `stop()`, `stats()` and `dispose()`.
 
 ## The tiers
 
@@ -102,9 +104,19 @@ before the finish), `start(cb)` / `stop()`, `stats()` and `dispose()`.
 | `rc.render()` or `rc.start()` | `renderer.render()` straight to the screen (no tone mapping, no AA, no bloom) |
 | Test with `?q=low` too: LITE must still look good | Rely on bloom for legibility (low has none) |
 
+## Jarvis on the core
+
+| Piece | File | What it does |
+|---|---|---|
+| The reactor | `jarvis/core-visual.js` | its own renderer through `createRenderer({ renderer, alpha: true, space: 'display', env: 'none' })`: real bloom tinted by the state's colour (violet idle, red listening), 4x MSAA, the film finish. Its tiers follow its own adapt (`setQuality`). If `../olympus/render.js` cannot load, it draws as before. |
+| The home backdrop | `jarvis/backdrop.js` | a full-screen 3D space behind the home screen: nebula, starfield, obsidian floor with a neon grid fading into fog, a light shaft and pool on the horizon under the core, halo rings, glass and chrome shards. 30 fps, pixel ratio ≤ 1.25, no frame while an app is open or the tab is hidden, one still frame on `off` / reduced motion. It replaces the flat 2D layers (stars canvas, SVG globe, CSS floor) once its first frame is drawn (`html[data-bg3d="on"]`); without WebGL2 they stay. Loads after the page is idle. |
+| The portal jump | `jarvis/portal.js` | every time Jarvis opens an app (orb, tile, quick row, voice: they all go through `show()`): tunnel streaks in the app's colour, a ring portal opening, a flash, the app revealed through the ring. 820 ms, a tap or Esc skips, one raw-WebGL shader (no three.js, compiled at idle). Reduced motion or 3D off: a 0.2 s fade. It never delays the app: `show()` opens the frame first. |
+
+`jarvis/index.html` has one hook line in `show()` and the two `<script type="module">` lines before `</body>`.
+
 ## The Jarvis service worker
 
-The new files are part of the Jarvis shell when Jarvis uses them (its core and backdrop):
+The new files are part of the Jarvis shell: `./backdrop.js?v=b1`, `./portal.js?v=p1`, and (outside `jarvis/`)
 `../olympus/render.js`, `../olympus/materials.js` and the nine files of `../olympus/three-addons/` (`EffectComposer.js`,
 `RenderPass.js`, `ShaderPass.js`, `MaskPass.js`, `Pass.js`, `CopyShader.js`, `UnrealBloomPass.js`,
 `LuminosityHighPassShader.js`, `RoomEnvironment.js`).

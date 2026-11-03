@@ -103,7 +103,7 @@ export function marble(o = {}) {
       .replace('#include <color_fragment>', `#include <color_fragment>
         vec3 mp = vOlyP * uScale;
         float warp = olyFbm(mp * 0.9), fine = olyFbm(mp * 3.1 + 3.0);
-        float band = abs(sin((mp.y * 0.55 + mp.x * 0.35 + mp.z * 0.2 + warp * 2.6 + fine * 0.35) * 3.14159));
+        float band = abs(sin((mp.y * 1.1 + mp.x * 0.45 + mp.z * 0.3 + warp * 1.5 + fine * 0.25) * 3.14159));   // long diagonal veins
         float vein = (1.0 - smoothstep(0.0, 0.07, band)) * (0.45 + 0.55 * fine);           // thin, branching dark veins
         float haze = 1.0 - smoothstep(0.0, 0.35, band);                                     // a soft halo around them
         float cloudy = olyFbm(mp * 5.0 + 7.0);
