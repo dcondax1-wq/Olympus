@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DAPHNE</title>
+<meta name="description" content="DAPHNE: the strategy-tree search on NQ. Every branch adds one condition to a plain level trade; the bound cuts what cannot win; the best path lights up, then meets the out-of-sample test.">
+<meta name="theme-color" content="#030705">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="../jarvis/icon-192.png?v=j1">
+<!-- DAPHNE (2026-11-03): the strategy-tree search of tools/strategytree, drawn as a growing tree. Read-only, paper only.
+     Data: tree.json next to this page (python -X utf8 -m tools.strategytree), else demo.json (synthetic, marked DEMO).
+     Logic: core.js (data + layout, no DOM), app.js (canvas, playback, touch, HUD). Look: tree.css. -->
+<script>try { if (window.top !== window) document.documentElement.classList.add('framed'); } catch (e) { document.documentElement.classList.add('framed'); }</script>
+<link rel="stylesheet" href="tree.css?v=d1">
+</head>
+<body>
+<div id="app" data-state="loading">
+  <canvas id="stage" aria-label="The search tree"></canvas>
+
+  <header class="hud hud-top">
+    <div class="brand"><span class="sigil" aria-hidden="true"></span><h1>DAPHNE</h1><span class="dim">· PATH</span>
+      <span class="badge" id="demo" hidden>DEMO DATA</span></div>
+    <p class="line" id="topo">TOPOLOGY · NODES — · CUT — · BEST — · BOUND —</p>
+    <p class="line rule" id="rule">RULE · loading the search…</p>
+    <p class="line dim" id="crit">CRITERION: MEAN EXCESS</p>
+    <p class="line money" id="money"></p>
+  </header>
+
+  <div class="tools" role="toolbar" aria-label="View">
+    <div class="lens" role="radiogroup" aria-label="Colour the tree by">
+      <button type="button" role="radio" aria-checked="true" data-lens="train">TRAIN</button>
+      <button type="button" role="radio" aria-checked="false" data-lens="test">TEST</button>
+    </div>
+    <button type="button" class="tool" id="replay" title="Replay the search">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 8A5.5 5.5 0 1 1 11.9 4.1M13.5 2.5v3h-3"/></svg><span>REPLAY</span></button>
+    <button type="button" class="tool" id="openTop" title="The top 10 rules">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 4h10M3 8h10M3 12h6"/></svg><span>TOP 10</span></button>
+  </div>
+
+  <section class="hud hud-foot" id="foot" aria-label="The search">
+    <div class="col search">
+      <h2>THE SEARCH · <b id="nsteps">0</b> STEPS TO THE BEST</h2>
+      <ol class="steps" id="steps"></ol>
+    </div>
+    <div class="col">
+      <h2>GAP · BOUND · BEST</h2>
+      <div class="bars" id="bars"></div>
+    </div>
+    <div class="col">
+      <h2 class="roots-title">ROOTS · SEARCHED TO THE END VS OPEN</h2>
+      <div class="roots" id="roots"></div>
+      <p class="roots-legend" id="rootsLegend"></p>
+    </div>
+    <p class="verdict" id="verdict"></p>
+  </section>
+
+  <nav class="seeds" id="seeds" aria-label="Roots"></nav>
+
+  <aside class="card" id="card" role="dialog" aria-modal="false" aria-labelledby="cardTitle" hidden>
+    <button type="button" class="close" data-close aria-label="Close">×</button>
+    <div id="cardBody"></div>
+  </aside>
+
+  <aside class="sheet" id="top" role="dialog" aria-modal="true" aria-labelledby="topTitle" hidden>
+    <div class="sheet-head"><h2 id="topTitle">TOP 10 RULES · BEST TRAIN SCORE, ONE PER SETUP</h2>
+      <button type="button" class="close" data-close aria-label="Close">×</button></div>
+    <p class="sheet-sub" id="topSub"></p>
+    <ol class="toplist" id="toplist"></ol>
+  </aside>
+
+  <p class="loading" id="loading" aria-live="polite">GROWING THE TREE…</p>
+</div>
+<script type="module" src="app.js?v=d1"></script>
+</body>
+</html>
