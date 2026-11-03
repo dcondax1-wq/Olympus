@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Labyrinth</title>
+<meta name="description" content="LABYRINTH: the risk maze of a prop-firm eval. Your balance runs a corridor between the floor wall (max loss) and the target gate; slide the size and see how many runs pass or bust. A what-if on the trades the site shows, never an order.">
+<meta name="theme-color" content="#09050d">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="icon" href="icon.svg">
+<link rel="apple-touch-icon" href="../jarvis/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<!-- LABYRINTH (OLYMPUS, 2026-11-03): a what-if on the LIT trades the site already publishes (../odeon/trades.json: usd, risk, day)
+     and the live eval of ../home.json (balance, floor, target). labcore.js = the maths (pure), scene.js = the 3D maze on the
+     OLYMPUS render core, labyrinth.js = the page. Nothing here writes anywhere: no orders, no bot setting. -->
+<script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
+<link rel="stylesheet" href="../olympus/olympus.css?v=o2">
+<script src="../olympus/themes.js?v=o2"></script>
+<script src="../olympus/olympus.js?v=o2" data-app="labyrinth"></script>
+<script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#ff4d57'); r.setProperty('--oly-accent-rgb', '255, 77, 87'); })();</script>
+<link rel="stylesheet" href="labyrinth.css?v=l1">
+</head>
+<body>
+<canvas id="maze" aria-label="The risk maze: a corridor between the red floor wall and the gold target gate, with your balance as a light trail" role="img"></canvas>
+<main id="ui">
+  <header class="top">
+    <div class="brand"><h1>LABYRINTH</h1><p class="sub">The risk maze</p></div>
+    <div class="tags"><span id="demo" class="tag demo" hidden>DEMO</span><span id="lite" class="tag" hidden>LITE</span></div>
+  </header>
+  <section class="verdict" id="verdict" aria-live="polite">
+    <p class="v" id="vText">Reading the trades...</p>
+    <div class="odds">
+      <div class="odd pass"><span class="k">Reach the target</span><b id="oPass">-</b></div>
+      <div class="odd bust"><span class="k">Hit the floor</span><b id="oBust">-</b></div>
+      <div class="odd"><span class="k">Trades to pass</span><b id="oMed">-</b></div>
+    </div>
+    <p class="live" id="live" hidden></p>
+  </section>
+  <nav class="pills" id="pills" aria-label="Views">
+    <button type="button" data-view="sizes" aria-pressed="false">Sizes</button>
+    <button type="button" data-view="march" aria-pressed="false">The march</button>
+    <button type="button" data-view="rules" aria-pressed="false">Rules</button>
+  </nav>
+</main>
+<section class="sheet" id="sheet" hidden aria-labelledby="sheetTitle">
+  <header><h2 id="sheetTitle"></h2><button type="button" class="oly-close" id="close" aria-label="Close">×</button></header>
+  <div class="body" id="sheetBody"></div>
+</section>
+<section class="dock" id="dock" aria-label="What-if controls">
+  <div class="row size">
+    <label for="mult">Size <b id="multV">1.00x</b></label>
+    <input id="mult" type="range" min="0.25" max="2" step="0.05" value="1" aria-describedby="multHelp">
+  </div>
+  <div class="row chips" id="presets" role="group" aria-label="Size presets">
+    <button type="button" data-m="0.5">0.5x</button>
+    <button type="button" data-m="1">1x</button>
+    <button type="button" data-m="1.5">1.5x</button>
+    <button type="button" data-m="sweet" id="sweetBtn">Sweet spot</button>
+  </div>
+  <div class="row sel">
+    <label>Risk cap per trade
+      <select id="cap"><option value="0">Off</option><option value="150">$150</option><option value="300">$300</option><option value="500">$500</option><option value="750">$750</option><option value="1000">$1,000</option></select>
+    </label>
+    <label>Look ahead
+      <select id="hor"><option value="8">8 trades</option><option value="15" selected>15 trades</option><option value="30">30 trades</option></select>
+    </label>
+  </div>
+  <p class="help" id="multHelp">Size multiplies every trade's $ (1x = what the bot sized). The cap ceilings the $ at risk on a trade: a wide stop gets fewer micros.</p>
+</section>
+<script type="module" src="labyrinth.js?v=l1"></script>
+</body>
+</html>

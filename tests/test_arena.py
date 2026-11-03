@@ -6,6 +6,7 @@
   d. the twins agree: tools/arena/score.py and arena/rules.js (node) give the same JSON on the demo and on edge cases
   e. the builder: publish(site), the Jarvis card contract (docs/JARVIS_APPS.md), the committed demo, the site hooks
   f. static page rules: the kit, safe areas, the orb's corner, reduced motion, no CDN, no innerHTML
+  h. the 2026-11 upgrade: weekly discipline bosses (bosses.js), 28 trophies (trophies.js), the boss XP in both twins
   g. the page in Chromium at 390 x 844: no errors, the level-up plays on a fixture XP jump (once), no sideways scroll,
      nothing in the orb's corner, the sheets, a labour card, the real mode with a Planner on the phone (ledger + export),
      reduced motion; screenshots to research/handoff/2026-11-03-day/arena/
@@ -213,6 +214,8 @@ def part_d():
     d = build.demo()
     cases = {"demo": [d["events"], d["today"]],
              "grace": [d["events"], "2026-10-31"], "late": [d["events"], "2026-11-04"],
+             "boss": [[{"id": "boss:2026-10-26:cerberus", "day": "2026-10-30", "kind": "boss", "src": "quest", "note": "x"}, {"id": "boss:2026-10-26:sphinx", "day": "2026-10-29", "kind": "boss", "src": "quest"},
+                      {"id": "b3", "day": "2026-10-29", "kind": "boss"}, {"id": "b4", "day": "2026-10-29", "kind": "boss"}, {"id": "b5", "day": "2026-10-29", "kind": "boss"}, {"id": "b6", "day": "2026-10-29", "kind": "boss"}], "2026-10-30"],
              "edge": [[{"id": "x", "day": "2026-10-20", "kind": "clean_trade", "t": 5}, {"id": "y", "day": "2026-10-20", "kind": "rule_broken", "t": 3},
                        {"id": "z", "day": "2026-10-20", "kind": "clean_trade"}, {"id": "w", "day": "bad", "kind": "bot_day"},
                        {"id": "v", "day": "2026-10-21", "kind": "nope"}, {"id": "u", "day": "2026-10-21", "kind": "journal", "note": "n" * 300}], "2026-10-21"]}
@@ -304,6 +307,60 @@ def part_e():
     check("e. the site's service worker leaves arena/ alone (OTHER_APPS)", re.search(r"const OTHER_APPS = \[[^\]]*'arena/'", sw) is not None)
 
 
+# ------------------------------------------------------------------------------------------------ h. bosses and trophies
+def part_h():
+    js = node("""const R = JSON.parse(fs.readFileSync(dir + '/rules.json', 'utf8'));
+      const B = await import(url + '/bosses.js'), T = await import(url + '/trophies.js'), r = await import(url + '/rules.js');
+      const MON = '2026-10-26', D = ['2026-10-26', '2026-10-27', '2026-10-28', '2026-10-29', '2026-10-30'];
+      const ev = (id, day, kind, src) => ({ id, day, kind, src: src || 'site' });
+      const base = [];                                              // five days the bot ran, clean trades on Tue and Thu
+      D.forEach((d) => base.push(ev('bd' + d, d, 'bot_day')));
+      base.push(ev('t1', D[1], 'clean_trade'), ev('t2', D[3], 'clean_trade'));
+      const J = (days) => days.map((d) => ev('j' + d, d, 'journal', 'obsidian')), G = (days) => days.map((d) => ev('g' + d, d, 'goal_day', 'planner'));
+      const all = { planner: true, vault: true };
+      const ids = (rs) => Object.fromEntries(rs.map((x) => [x.id, [x.state, x.hits, x.day]]));
+      const A = B.evaluateWeek([...base, ...J(D.slice(0, 4)), ...G(D.slice(0, 3))], MON, '2026-10-30', 17, all, R);
+      const brokenEv = [...base, ev('rb', D[2], 'rule_broken')], twoTrades = [...base, ev('t3', D[3], 'clean_trade')];
+      const six = [...base, ev('s1', D[0], 'clean_trade'), ev('s2', D[0], 'clean_trade'), ev('s3', D[2], 'clean_trade'), ev('s4', D[4], 'clean_trade')];
+      const open = B.evaluateWeek(base.filter((e) => e.day <= D[2]), MON, D[2], 15, {}, R);
+      const fri = (h) => B.evaluateWeek(base, MON, D[4], h, all, R);
+      const evs = B.bossEvents(A, MON);
+      const sc0 = r.score([...base, ...evs], R, '2026-10-30'), sc1 = r.score(base, R, '2026-10-30');
+      const tr = T.trophies(sc0, B.bossStats(evs));
+      out({ A: ids(A), broken: ids(B.evaluateWeek(brokenEv, MON, '2026-10-30', 17, all, R)), two: ids(B.evaluateWeek(twoTrades, MON, '2026-10-30', 17, all, R)),
+        six: ids(B.evaluateWeek(six, MON, '2026-10-30', 17, all, R)), open: ids(open), f159: ids(fri(15.9)), f160: ids(fri(16)),
+        parts: A[0].parts.map((p) => p.state), evs: evs.map((e) => e.id).sort(), xp: sc0.xp - sc1.xp,
+        ws: [B.weekStart('2026-11-01'), B.weekStart('2026-10-26'), B.weekStart('2026-10-30')], feat: [0, 1, 2, 3, 4].map((i) => B.featured(r.addDays(MON, 7 * i))),
+        stats: B.bossStats([{ kind: 'boss', day: '2026-10-30' }, { kind: 'boss', day: '2026-10-28' }, { kind: 'boss', day: '2026-11-06' }, { kind: 'boss', day: '2026-11-20' }]),
+        hist: B.history(base, '2026-10-30', 17, all, 4, R).map((w) => [w.mon, w.bosses.length]),
+        tl: tr.length, tearn: tr.filter((t) => t.earned).map((t) => t.id), tids: new Set(tr.map((t) => t.id)).size,
+        tiers: [...new Set(tr.map((t) => t.tier))].sort(), caps: r.score(Array.from({ length: 6 }, (_, i) => ev('c' + i, '2026-10-30', 'boss', 'quest')), R, '2026-10-30').xp });""")
+    if js.get("error"):
+        check("h. node runs bosses.js and trophies.js", False, js["error"])
+        return
+    A = js["A"]
+    check("h. a quiet, clean week with the notes and the goals: all four bosses slain, on the day the last blow landed",
+          A == {"minotaur": ["slain", 5, "2026-10-30"], "cerberus": ["slain", 3, "2026-10-30"], "sphinx": ["slain", 4, "2026-10-29"], "chimera": ["slain", 3, "2026-10-28"]}, A)
+    check("h. a broken rule lets the Minotaur and Cerberus escape; a second trade in a day (revenge) too; 6 trades break the plan (Cerberus)",
+          js["broken"]["minotaur"][0] == "escaped" and js["broken"]["cerberus"][0] == "escaped" and js["two"]["minotaur"][0] == "escaped" and js["two"]["cerberus"][0] == "slain"
+          and js["six"]["cerberus"][0] == "escaped" and js["six"]["minotaur"][0] == "escaped", (js["broken"], js["two"], js["six"]))
+    check("h. mid-week nothing is slain early (Minotaur and Cerberus settle on Friday's close); without Obsidian and the Planner the journal and goal bosses are locked",
+          js["open"]["minotaur"][0] == "fighting" and js["open"]["minotaur"][1] == 2 and js["open"]["cerberus"][0] == "fighting"
+          and js["open"]["sphinx"][0] == "locked" and js["open"]["chimera"][0] == "locked", js["open"])
+    check("h. a market day counts as finished from 16:00 ET (Friday 15:59 still fights, 16:00 slays)",
+          js["f159"]["minotaur"] == ["fighting", 4, None] and js["f160"]["minotaur"] == ["slain", 5, "2026-10-30"], (js["f159"]["minotaur"], js["f160"]["minotaur"]))
+    check("h. boss events: one per slain boss, id boss:<monday>:<boss>; 4 x 100 XP; the cap per day is 4 bosses",
+          js["evs"] == ["boss:2026-10-26:cerberus", "boss:2026-10-26:chimera", "boss:2026-10-26:minotaur", "boss:2026-10-26:sphinx"] and js["xp"] == 400 and js["caps"] == 400,
+          (js["evs"], js["xp"], js["caps"]))
+    check("h. weeks start on Monday (a Sunday belongs to the week before), the spotlight boss rotates through all four, the Minotaur's days read ok x5",
+          js["ws"] == ["2026-10-26", "2026-10-26", "2026-10-26"] and len(set(js["feat"][:4])) == 4 and js["feat"][0] == js["feat"][4] and js["parts"] == ["ok"] * 5, (js["ws"], js["feat"], js["parts"]))
+    check("h. history lists the last 4 finished weeks, newest first; bossStats counts slain bosses and the best run of weeks in a row",
+          [w[0] for w in js["hist"]] == ["2026-10-19", "2026-10-12", "2026-10-05", "2026-09-28"] and all(w[1] == 4 for w in js["hist"]) and js["stats"] == {"slain": 4, "weeks": 3, "best": 2}, (js["hist"], js["stats"]))
+    check("h. trophies: 28 unique, every tier used, earned from the score (First Blood and Boss Slayer yes; Boss Hunter and Centurion not yet)",
+          js["tl"] == 28 and js["tids"] == 28 and js["tiers"] == ["bronze", "gold", "legend", "silver"] and "first_blood" in js["tearn"] and "boss_slayer" in js["tearn"]
+          and "boss_hunter" not in js["tearn"] and "centurion" not in js["tearn"], js["tearn"])
+
+
 # ------------------------------------------------------------------------------------------------ f. static rules
 def part_f():
     html = open(os.path.join(PAGE, "index.html"), encoding="utf-8").read()
@@ -323,8 +380,12 @@ def part_f():
     check("f. reduced motion (CSS media + the kit's fx=off), touch-action none on the canvas, dvh after vh",
           "@media (prefers-reduced-motion: reduce)" in css and 'html[data-fx="off"]' in css and "touch-action: none" in css
           and re.search(r"max-height: calc\(100vh[^;]*; max-height: calc\(100dvh", css) is not None)
-    check("f. the frame loop: O.hidden() guard, O.dpr(), O.track(renderer), automatic LITE only when the owner chose nothing",
-          "O.hidden()" in js["scene.js"] and "O.dpr(" in js["scene.js"] and "O.track(renderer)" in js["scene.js"] and "O.chosen()" in js["scene.js"])
+    check("f. the render core: createRenderer from ../olympus/render.js (tiers, tone mapping, bloom, hidden-tab pause, automatic step down), materials from ../olympus/materials.js, rc.render() in the frame loop, no WebGLRenderer of its own",
+          "from '../olympus/render.js'" in js["scene.js"] and "from '../olympus/materials.js'" in js["scene.js"] and "createRenderer(" in js["scene.js"]
+          and "rc.render()" in js["scene.js"] and "new THREE.WebGLRenderer" not in js["scene.js"] and "rc.dispose()" in js["scene.js"])
+    check("f. the new modules exist and are wired: bosses.js, trophies.js (imported by main.js), no network API in them",
+          "from './bosses.js'" in js["main.js"] and "from './trophies.js'" in js["main.js"]
+          and not re.search(r"fetch\(|XMLHttpRequest|localStorage|Date\.now|new Date\(", js["bosses.js"] + js["trophies.js"]))
     check("f. themes: Olympus.theme() / onTheme hooked when present, else applyTheme(tokens)",
           "O.onTheme" in js["main.js"] and "export function applyTheme" in js["main.js"])
 
@@ -401,15 +462,18 @@ def run_browser():
             exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
             br = pw.chromium.launch(**({"executable_path": exe} if exe else {}), args=["--use-gl=swiftshader", "--enable-webgl", "--ignore-gpu-blocklist"])
 
-            def page(init=(), reduced=False):
-                ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, has_touch=True, accept_downloads=True,
+            def page(init=(), reduced=False, quality="low"):
+                ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=1, has_touch=True, accept_downloads=True,
                                      reduced_motion="reduce" if reduced else "no-preference")
+                if quality:           # SwiftShader is a CPU rasteriser: a chosen LITE tier keeps the frames cheap (the one HD context below checks the passes)
+                    ctx.add_init_script(f"try {{ localStorage.setItem('jfx', '{quality}'); }} catch (e) {{}}")
                 for s in init:
                     ctx.add_init_script(s)
                 cors = {"Access-Control-Allow-Origin": "*"}
                 ctx.route(re.compile(r"^https?://(?!127\.0\.0\.1)"), lambda r: r.fulfill(status=404, body="not found", headers=cors))   # nothing leaves the machine
                 p = ctx.new_page()
                 p.errs, p.bad = [], []
+                p.set_default_timeout(120000)
                 p.on("pageerror", lambda e: p.errs.append(str(e)))
                 p.on("console", lambda m: m.type == "error" and "Failed to load resource" not in m.text and p.errs.append(m.text))
                 p.on("response", lambda r: r.status >= 400 and "127.0.0.1" in r.url and "favicon" not in r.url and p.bad.append(f"{r.status} {r.url}"))
@@ -417,7 +481,7 @@ def run_browser():
 
             def ready(p, url=base):
                 p.goto(url)
-                p.wait_for_function("window.ARENA && ARENA.state().ready", timeout=20000)
+                p.wait_for_function("window.ARENA && ARENA.state().ready", timeout=90000)
 
             st = lambda p: p.evaluate("ARENA.state()")  # noqa: E731
 
@@ -426,14 +490,14 @@ def run_browser():
             seen = "localStorage.setItem('arena.demo.seen', JSON.stringify({ xp: 2400, level: 10, rank_i: 1, earned: ['lion'] }))"
             ctx, p = page([seen])
             ready(p)
-            p.wait_for_function("ARENA.state().levelups > 0", timeout=8000)
+            p.wait_for_function("ARENA.state().levelups > 0", timeout=120000)
             s = st(p)
-            check("g. demo: DEMO badge, Demigod level 15, 4 Labours, today's 3 quests done, no errors",
-                  s["demo"] and p.is_visible("#demo") and (s["rank"], s["level"], s["earned"]) == ("Demigod", 15, 4)
+            check("g. demo: DEMO badge, Demigod level 18 (the demo's slain bosses count), 4 Labours, today's 3 quests done, no errors",
+                  s["demo"] and p.is_visible("#demo") and (s["rank"], s["level"], s["earned"]) == ("Demigod", 18, 4)
                   and [q["done"] for q in s["quests"]] == [True, True, True] and not p.errs and not p.bad, (s, p.errs, p.bad))
             sc = s["scene"] or {}
-            check("g. the fixture XP jump (level 10 -> 15, Hero -> Demigod) plays the rank-up: lightning bolts, the gold burst, the banner",
-                  s["levelups"] == 1 and sc.get("levelups") == 1 and (sc.get("bolts", 0) >= 3 or sc.get("burst")) and s["banner"] == "Rank up Demigod Level 15"
+            check("g. the fixture XP jump (level 10 -> 18, Hero -> Demigod) plays the rank-up ceremony: lightning bolts, the gold burst, three shockwave rings, the banner",
+                  s["levelups"] == 1 and sc.get("levelups") == 1 and (sc.get("bolts", 0) >= 3 or sc.get("burst")) and sc.get("rings") == 3 and s["banner"] == "Rank up Demigod Level 18"
                   and p.get_attribute("html", "data-levelup") == "1", (sc, s["banner"]))
             p.wait_for_timeout(3200)
             check("g. the new Labour's card opens after the burst (the Hind, earned since the last visit)",
@@ -443,14 +507,16 @@ def run_browser():
             p.evaluate("ARENA.hold(true)")                             # the same rank-up frozen at its peak for the picture
             p.wait_for_timeout(900)
             p.screenshot(path=os.path.join(SHOTS, "arena-levelup.png"))
+            check("g. the rank-up banner shows the ladder: five pips, three lit (Mortal, Hero, Demigod)", p.locator("#banner .pips i").count() == 5 and p.locator("#banner .pips i.on").count() == 3
+                  and p.evaluate("document.getElementById('banner').classList.contains('rankup')"))
             p.evaluate("ARENA.hold(false)")
             ov = p.evaluate(OVERFLOW)
             check("g. home at 390 x 844: inside the 16 px gutters, nothing in the orb's 80 x 160 corner, no sideways scroll", not ov, ov)
             p.screenshot(path=os.path.join(SHOTS, "arena-home.png"))
             fr = p.evaluate("new Promise((ok) => { let n = 0; const t0 = performance.now(); const f = () => { n++; if (performance.now() - t0 < 1000) requestAnimationFrame(f); else ok(n); }; requestAnimationFrame(f); })")
             sc = st(p)["scene"] or {}
-            check(f"g. the frame loop runs ({fr} fps headless SwiftShader, relative only); slow frames switched to LITE by themselves",
-                  fr >= 2 and sc.get("frames", 0) > 10 and (sc.get("lite") or fr >= 30), (fr, sc))
+            check(f"g. the frame loop runs ({fr} fps headless SwiftShader, relative only) on the chosen LITE tier: 2 passes (scene + finish with FXAA), the LITE tag shown",
+                  fr >= 2 and sc.get("frames", 0) > 10 and sc.get("lite") and sc.get("passes") == 2 and p.is_visible("#lite"), (fr, sc))
             for tab, shot in (("quests", "arena-quests.png"), ("labours", "arena-labours.png"), ("log", "arena-log.png")):
                 p.click(f"[data-tab={tab}]")
                 p.wait_for_timeout(350)
@@ -467,6 +533,40 @@ def run_browser():
             check("g. a Labour tile opens its card: the Stymphalian Birds, 13 of 25, how it is earned",
                   p.is_visible("#pop") and "13 of 25" in p.inner_text("#pop") and "Trade inside every rule" in p.inner_text("#pop"), p.inner_text("#pop") if p.is_visible("#pop") else None)
             p.screenshot(path=os.path.join(SHOTS, "arena-card.png"))
+            # ---- the 2026-11 upgrade: bosses, trophies, the rank ladder, the render core
+            s = st(p)
+            sc = s["scene"] or {}
+            check("g. the scene runs on the render core: a tier is set, 1-3 post passes, the ladder shows 3 steps lit (Demigod), the trophies match the sheet, the week's boss is in the sky",
+                  sc.get("quality") == "low" and sc.get("passes") == 2 and sc.get("steps") == 3 and sc.get("trophies") == s["trophies"] and s["trophyTotal"] == 28
+                  and sc.get("boss") in ("fighting", "slain", "escaped", "locked"), (sc, s["trophies"]))
+            p.click("[data-tab=bosses]")
+            p.wait_for_timeout(300)
+            ov = p.evaluate(OVERFLOW)
+            txt = p.inner_text("#sheet").lower()
+            check("g. the Bosses sheet: 4 bosses, the boss of the week first and big, HP pips, the discipline-only promise, +100 XP, the last four weeks; inside the gutters",
+                  p.locator(".boss").count() == 4 and p.locator(".boss.big").count() == 1 and p.evaluate("document.querySelector('.boss').classList.contains('big')")
+                  and "no $, size or r" in txt and "+100 xp" in txt and "last four weeks" in txt and p.locator(".week").count() == 4 and not ov and p.evaluate("location.hash") == "#bosses", (ov, txt[:200]))
+            check("g. the tab counts: bosses slain this week, trophies earned of 28", p.inner_text("#bCount") == "2/4" and p.inner_text("#tCount") == f"{s['trophies']}/28", (p.inner_text("#bCount"), p.inner_text("#tCount")))
+            p.screenshot(path=os.path.join(SHOTS, "arena-bosses.png"))
+            p.click("[data-tab=trophies]")
+            p.wait_for_timeout(300)
+            ov = p.evaluate(OVERFLOW)
+            check("g. the Trophy room: 28 tiles in three tiers of metal, the earned ones lit, inside the gutters",
+                  p.locator(".trophy").count() == 28 and p.locator(".trophy.earned").count() == s["trophies"] and p.locator(".trophy.legend").count() == 2 and not ov, ov)
+            p.screenshot(path=os.path.join(SHOTS, "arena-trophies.png"))
+            p.click("[data-trophy=first_blood]")
+            p.wait_for_timeout(200)
+            check("g. a trophy tile opens its card (First Blood, bronze, honour not XP)",
+                  p.is_visible("#pop") and "First Blood" in p.inner_text("#pop") and "Honour, not XP" in p.inner_text("#pop"), p.inner_text("#pop") if p.is_visible("#pop") else None)
+            p.click("#popClose")
+            p.click("#rank")
+            p.wait_for_timeout(300)
+            ov = p.evaluate(OVERFLOW)
+            check("g. the rank card opens the ladder: five rungs, Titan on top, 'You are here' on Demigod, URL #ranks, inside the gutters",
+                  p.locator(".rung").count() == 5 and p.locator(".rung.here").get_attribute("data-rank") == "demigod" and "You are here" in p.inner_text(".rung.here")
+                  and p.locator(".rung").first.get_attribute("data-rank") == "titan" and p.evaluate("location.hash") == "#ranks" and not ov, ov)
+            p.screenshot(path=os.path.join(SHOTS, "arena-ladder.png"))
+            p.keyboard.press("Escape")
             p.keyboard.press("Escape")
             p.mouse.click(195, 520)                                    # a tap on the arena floor (no statue) closes nothing open, picks nothing
             p.wait_for_timeout(200)
@@ -474,11 +574,19 @@ def run_browser():
             ctx.close()
 
             # ---- 2. the demo again with the current level seen: nothing plays
-            cur = "localStorage.setItem('arena.demo.seen', JSON.stringify({ xp: 3575, level: 15, rank_i: 2, earned: ['lion','hind','stables','apples'] }))"
+            cur = "localStorage.setItem('arena.demo.seen', JSON.stringify({ xp: 4475, level: 18, rank_i: 2, earned: ['lion','hind','stables','apples'] }))"
             ctx, p = page([cur])
             ready(p)
             p.wait_for_timeout(1200)
             check("g. no XP jump since the last visit: no level-up", st(p)["levelups"] == 0 and not p.is_visible("#banner"))
+            ctx.close()
+
+            # ---- 2b. the HD tier: the render core's three passes (scene, bloom, finish)
+            ctx, p = page([cur], quality="high")
+            ready(p)
+            p.wait_for_function("ARENA.state().scene && ARENA.state().scene.drawn > 0", timeout=180000)
+            sc = st(p)["scene"]
+            check("g. the HD tier (high): the render core draws 3 passes (scene, bloom, finish), no errors", sc["quality"] == "high" and sc["passes"] == 3 and not p.errs, (sc, p.errs))
             ctx.close()
 
             # ---- 3. the real mode: the site's events + a Planner on this phone; the ledger keeps it, the export carries it
@@ -509,7 +617,7 @@ def run_browser():
             check("g. the Export button downloads arena-progress-<day>.json", dl.value.suggested_filename == f"arena-progress-{today}.json", dl.value.suggested_filename)
             check("g. the Planner's task titles stay text (no HTML from the phone's data)", p.evaluate("document.querySelectorAll('#sheet b b').length") == 0)
             p.reload()
-            p.wait_for_function("window.ARENA && ARENA.state().ready", timeout=20000)
+            p.wait_for_function("window.ARENA && ARENA.state().ready", timeout=90000)
             p.wait_for_timeout(800)
             s2 = st(p)
             check("g. reload: the same XP from the kept ledger, no level-up replay", s2["xp"] == s["xp"] and s2["levelups"] == 0, (s2["xp"], s["xp"]))
@@ -522,7 +630,7 @@ def run_browser():
             make_site(tmp)
             ctx, p = page([seen], reduced=True)
             ready(p)
-            p.wait_for_function("ARENA.state().levelups > 0", timeout=8000)
+            p.wait_for_function("ARENA.state().levelups > 0", timeout=120000)
             anim = p.evaluate("getComputedStyle(document.getElementById('flash')).animationName")
             check("g. reduced motion: the level-up still says so (banner), no flash animation, no errors",
                   st(p)["banner"].startswith("Rank up") and anim in ("none", "") and not p.errs, (anim, p.errs))
@@ -540,6 +648,7 @@ def main():
     part_d()
     part_e()
     part_f()
+    part_h()
     if os.environ.get("ARENA_NO_BROWSER") != "1":
         run_browser()
     print(f"\n{sum(RES)}/{len(RES)} passed")

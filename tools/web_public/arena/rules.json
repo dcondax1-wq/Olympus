@@ -18,7 +18,8 @@
     "journal":     {"xp": 15,  "cap_day": 1, "label": "Daily note written", "src": "obsidian", "why": "A daily note for that date in the Obsidian vault (cached on this phone)"},
     "kalshi_day":  {"xp": 10,  "cap_day": 1, "label": "Kalshi bot ran", "src": "kalshi", "why": "The Kalshi bot's own feed lists the day (kalshi.json days); its P&L never counts"},
     "quest":       {"xp": 15,  "cap_day": 3, "label": "Daily quest", "src": "quest", "why": "Verified on this phone from the quest's own source"},
-    "quest_sweep": {"xp": 25,  "cap_day": 1, "label": "All 3 quests", "src": "quest", "why": "All three of the day's quests verified"}
+    "quest_sweep": {"xp": 25,  "cap_day": 1, "label": "All 3 quests", "src": "quest", "why": "All three of the day's quests verified"},
+    "boss":        {"xp": 100, "cap_day": 4, "label": "Weekly boss slain", "src": "quest", "why": "A discipline boss beaten for the finished week (follow the plan, no revenge trade, journal, daily goal), checked on this phone from the week's events; $, size and R never count"}
   },
   "ranks": [
     {"id": "mortal",   "name": "Mortal",   "xp": 0,     "glyph": "M", "color": "#9aa4b2"},
