@@ -25,7 +25,7 @@ export class Rays {
     this.n = towerBeams;
     const geo = rayGeo(), color = new Float32Array(n * 3), alpha = new Float32Array(n), c = new THREE.Color();
     this.mesh = new THREE.InstancedMesh(geo, new THREE.ShaderMaterial({ vertexShader: SH.RAY_VS, fragmentShader: SH.RAY_FS,
-      uniforms: pick(U, 'uTime', 'uDay', 'uHaze'), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      uniforms: { ...pick(U, 'uTime', 'uDay', 'uHaze'), uGain: { value: 1 }, uFlip: { value: 0 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
       side: THREE.DoubleSide }), n);
     for (let i = 0; i < towerBeams; i++) { c.setHex(0x3fd8ff); color.set([c.r, c.g, c.b], i * 3); alpha[i] = 0.55; }
     this.fixed = [];
@@ -54,6 +54,43 @@ export class Rays {
       const a = t * 0.25 + (i / this.n) * Math.PI * 2;
       e.set(Math.cos(a) * 0.55, 0, Math.sin(a) * 0.55, 'XYZ');
       m4.compose(new THREE.Vector3(0, 48, 0), q.setFromEuler(e), new THREE.Vector3(16, 260, 16));
+      this.mesh.setMatrixAt(i, m4);
+    }
+    this.mesh.instanceMatrix.needsUpdate = true;
+  }
+}
+
+export class SunRays {
+  /** Crepuscular rays at dawn and dusk: wide cones from the low sun through the haze onto the city (one instanced draw). */
+  constructor(U, n = 7) {
+    const geo = rayGeo(), color = new Float32Array(n * 3), alpha = new Float32Array(n);
+    for (let i = 0; i < n; i++) { color.set([1.0, 0.62 + 0.05 * (i % 3), 0.38], i * 3); alpha[i] = 0.10 + 0.05 * (i % 2); }
+    geo.setAttribute('aColor', new THREE.InstancedBufferAttribute(color, 3));
+    geo.setAttribute('aAlpha', new THREE.InstancedBufferAttribute(alpha, 1));
+    this.gain = { value: 0 };
+    this.mesh = new THREE.InstancedMesh(geo, new THREE.ShaderMaterial({ vertexShader: SH.RAY_VS, fragmentShader: SH.RAY_FS,
+      uniforms: { ...pick(U, 'uTime', 'uHaze'), uDay: { value: 0 }, uGain: this.gain, uFlip: { value: 1 } }, transparent: true, depthWrite: false,
+      blending: THREE.AdditiveBlending, side: THREE.DoubleSide }), n);
+    this.mesh.frustumCulled = false;
+    this.mesh.renderOrder = 4;
+    this.mesh.visible = false;
+    this.n = n;
+  }
+
+  /** sunDir: unit vector to the sun; dusk 0..1; day 0..1 */
+  set(sunDir, dusk, day) {
+    const g = Math.max(0, dusk) * (1 - day * 0.5);
+    this.gain.value = g * 0.6;
+    this.mesh.visible = g > 0.03 && sunDir.y > -0.12;
+    if (!this.mesh.visible) return;
+    const src = new THREE.Vector3(sunDir.x, Math.max(0.04, sunDir.y), sunDir.z).normalize().multiplyScalar(900);
+    const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0);
+    for (let i = 0; i < this.n; i++) {
+      const aim = new THREE.Vector3(Math.sin(i * 2.1) * 220, 0, Math.cos(i * 1.7) * 220);
+      const dir = aim.sub(src);
+      const len = dir.length();
+      q.setFromUnitVectors(up, dir.normalize());
+      m4.compose(src, q, new THREE.Vector3(26 + (i % 3) * 12, len * 1.05, 26 + (i % 3) * 12));
       this.mesh.setMatrixAt(i, m4);
     }
     this.mesh.instanceMatrix.needsUpdate = true;
@@ -166,7 +203,7 @@ export class Beam {
     geo.setAttribute('aColor', new THREE.InstancedBufferAttribute(col, 3));
     geo.setAttribute('aAlpha', new THREE.InstancedBufferAttribute(a, 1));
     this.mesh = new THREE.InstancedMesh(geo, new THREE.ShaderMaterial({ vertexShader: SH.RAY_VS, fragmentShader: SH.RAY_FS,
-      uniforms: pick(U, 'uTime', 'uDay', 'uHaze'), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }), 1);
+      uniforms: { ...pick(U, 'uTime', 'uDay', 'uHaze'), uGain: { value: 1 }, uFlip: { value: 0 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }), 1);
     this.mesh.frustumCulled = false;
     this.mesh.renderOrder = 7;
     this.ring = new THREE.Mesh(new THREE.RingGeometry(1.6, 2.1, 48), new THREE.MeshBasicMaterial({ color: 0xffe08a, transparent: true,
@@ -243,6 +280,8 @@ export class Billboards {
     b.tex.needsUpdate = true;
     b.mat.uniforms.uTint.value.set(it.color || '#3fd8ff');
   }
+
+  redrawAll() { for (const b of this.boards) this._draw(b); }
 
   update(dt) {
     this.clock += dt;

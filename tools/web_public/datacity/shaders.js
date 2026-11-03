@@ -262,12 +262,13 @@ void main(){
   gl_Position = projectionMatrix * viewMatrix * wp;
 }`;
 export const RAY_FS = `
-uniform float uTime; uniform float uDay; uniform float uHaze;
+uniform float uTime; uniform float uDay; uniform float uHaze; uniform float uGain; uniform float uFlip;
 varying vec3 vColor; varying float vY; varying vec3 vN; varying vec3 vV; varying float vA;
 void main(){
   float core = pow(abs(dot(normalize(vN), normalize(vV))), 1.6);
-  float a = core * smoothstep(0.0, 0.03, vY) * (1.0 - smoothstep(0.25, 1.0, vY)) * vA;
-  a *= (0.75 + 0.25*sin(vY*30.0 - uTime*2.0)) * mix(1.0, 0.35, uDay) * (0.8 + uHaze*0.8);
+  float y = mix(vY, 1.0 - vY, uFlip);                    // 1: brightest at the wide end (sun rays onto the city)
+  float a = core * smoothstep(0.0, 0.03, y) * (1.0 - smoothstep(0.25, 1.0, y)) * vA;
+  a *= (0.75 + 0.25*sin(vY*30.0 - uTime*2.0)) * mix(1.0, 0.35, uDay) * (0.8 + uHaze*0.8) * uGain;
   gl_FragColor = vec4(vColor * a, 1.0);
 }`;
 export const HOLO_VS = `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`;

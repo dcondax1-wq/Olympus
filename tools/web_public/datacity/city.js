@@ -90,6 +90,7 @@ class App {
     this.setToday(this.todayOn, true);
     this.applySky(true);
     watchTheme((t) => applyTheme(t, this.city));
+    document.fonts?.ready?.then(() => this.city.refreshText()).catch(() => {});
     $('#qB').textContent = this.quality.toUpperCase();
   }
 
@@ -163,9 +164,11 @@ class App {
     this.orbit.focus(0, 16, 0, 90);
   }
 
-  /** Tap-to-zoom: the camera hops over to a district (or a far block) and the sheet shows what lives there. */
-  openDistrict(d) {
-    this.orbit.focus(d.cx, 0, d.cz, Math.max(70, (d.wide ? d.w * 0.5 : d.half) * 2.3), 0.9);
+  /** Tap-to-zoom: the camera hops over to a district (or to a point in it: a far block, a tapped street) and the sheet
+   *  shows what lives there. */
+  openDistrict(d, at) {
+    if (at) this.orbit.focus(at.x, 0, at.z, at.r, 0.85);
+    else this.orbit.focus(d.cx, 0, d.cz, Math.max(70, (d.wide ? d.w * 0.5 : d.half) * 2.3), 0.9);
     const best = this.L.items.map((it, i) => [it, i]).filter(([it]) => this.L.districts[it.d] === d && it.kind !== 'ship')
       .sort((a, b) => clsRank(a[0].b.cls) - clsRank(b[0].b.cls) || (b[0].b.e || 0) - (a[0].b.e || 0)).slice(0, 8);
     UI.showDistrict(d, (body) => {
@@ -188,14 +191,15 @@ class App {
 
   tap(x, y) {
     const hit = this.city.pick(x, y);
-    if (!hit) { UI.sheet.close(); return; }
-    if (hit.lit) this.openLit();
-    else if (hit.item !== undefined) this.open(hit.item);
-    else if (hit.block !== undefined) {
+    if (hit?.lit) this.openLit();
+    else if (hit?.item !== undefined) this.open(hit.item);
+    else if (hit?.block !== undefined) {
       const B = this.L.blocks[hit.block];
-      this.orbit.focus((B.x0 + B.x1) / 2, 0, (B.z0 + B.z1) / 2, 46, 0.85);
-      this.openDistrict(this.L.districts[B.d]);
-      this.orbit.focus((B.x0 + B.x1) / 2, 0, (B.z0 + B.z1) / 2, 46, 0.85);
+      this.openDistrict(this.L.districts[B.d], { x: (B.x0 + B.x1) / 2, z: (B.z0 + B.z1) / 2, r: 46 });
+    } else {                                                    // a street or an empty lot: zoom to its district, if any
+      const g = this.city.groundAt(x, y), d = g && this.L.districts.find((q) => Math.abs(q.cx - g.x) <= (q.wide ? q.w / 2 : q.half) && Math.abs(q.cz - g.z) <= q.half);
+      if (d && (UI.sheet.view !== 'district' || state.district !== d.key)) this.openDistrict(d, { x: g.x, z: g.z, r: 70 });
+      else UI.sheet.close();
     }
   }
 
@@ -253,7 +257,6 @@ class App {
       this.find('', this.findUI.state);
       setTimeout(() => this.findUI?.q.focus({ preventScroll: true }), 50);
     } else if (name === 'read') UI.sheet.open('read', 'How to read the city', (b) => UI.viewRead(b, m));
-    if (name === 'today') { /* layer stays on */ }
   }
 
   route() {

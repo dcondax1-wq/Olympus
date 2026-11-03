@@ -5,7 +5,7 @@ import * as THREE from '../jarvis/three.module.min.js';
 import { COLORS } from './util.js';
 import * as SH from './shaders.js';
 import { Skyline, pick } from './skyline.js';
-import { Rays, FogLayers, Rain, Traffic, Beam, Billboards } from './fx.js';
+import { Rays, SunRays, FogLayers, Rain, Traffic, Beam, Billboards } from './fx.js';
 
 const FOG = { night: 0x070a1c, day: 0x9fbbe2, dusk: 0x4a2a4a, storm: 0x2a3140 };
 const DENSITY = { night: 0.0024, day: 0.0015 };
@@ -25,12 +25,18 @@ export function textSprite(text, color, size = 1) {
   const c = document.createElement('canvas');
   c.width = 512; c.height = 96;
   const g = c.getContext('2d');
-  g.font = '800 44px Orbitron, Rajdhani, -apple-system, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.shadowColor = color; g.shadowBlur = 18; g.fillStyle = color;
-  g.fillText(text.split('').join(String.fromCharCode(8202)), 256, 50);
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
+  const draw = () => {
+    g.clearRect(0, 0, 512, 96);
+    g.font = '800 44px Orbitron, Rajdhani, -apple-system, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.shadowColor = color; g.shadowBlur = 18; g.fillStyle = color;
+    g.fillText(text.split('').join(String.fromCharCode(8202)), 256, 50);
+    tex.needsUpdate = true;
+  };
+  draw();
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, fog: false }));
+  s.userData.redraw = draw;
   s.scale.set(16 * size, 3 * size, 1);
   s.renderOrder = 10;
   return s;
@@ -64,6 +70,7 @@ export class CityScene {
     this._harbor();
     this._pins();
     this.rays = new Rays(L, this.U); this.scene.add(this.rays.mesh);
+    this.sunRays = new SunRays(this.U); this.scene.add(this.sunRays.mesh);
     this.fog = new FogLayers(this.U, this.quality); this.scene.add(this.fog.group);
     this.rain = new Rain(this.U, this.quality); this.scene.add(this.rain.lines);
     this.traffic = new Traffic(L, this.U, this.quality); this.scene.add(this.traffic.points);
@@ -170,6 +177,7 @@ export class CityScene {
     const merged = mergeSimple(ringGeo);
     this.tower.add(new THREE.Mesh(merged, new THREE.MeshBasicMaterial({ color: COLORS.lit, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false })));
     const name = textSprite('LIT · ZLARIOR', '#7fe9ff', 0.9);
+    this.towerName = name;
     name.position.set(0, 53, 0);
     this.tower.add(name);
     this.scene.add(this.tower);
@@ -249,6 +257,7 @@ export class CityScene {
     this.stars.material.opacity = 0.85 * (1 - sun.day) * (1 - U.uCloud.value * 0.8);
     this.stars.visible = this.stars.material.opacity > 0.02;
     this.rain.set(w.rain);
+    this.sunRays.set(U.uSun.value, U.uDusk.value * (1 - U.uCloud.value * 0.7), sun.day);
     this.fog.setHaze(w.haze);
     this.storm = !!w.storm;
     return '#' + fog.getHexString();
@@ -287,6 +296,21 @@ export class CityScene {
     const s = this.skyline.pick(ray);
     if (t && (!s || t.distance < s.distance)) return { lit: true };
     return s;
+  }
+
+  /** The ground point (y = 0) under a screen point, or null (the sky). */
+  groundAt(x, y) {
+    const ray = new THREE.Raycaster();
+    ray.setFromCamera(new THREE.Vector2((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1), this.camera);
+    const p = new THREE.Vector3();
+    return ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), p) ? p : null;
+  }
+
+  /** Redraw every canvas text once the HUD fonts (Orbitron / Rajdhani) are in: the first draw used a fallback. */
+  refreshText() {
+    for (const s of this.signs) s.userData.redraw?.();
+    this.towerName?.userData.redraw?.();
+    this.boards.redrawAll();
   }
 
   render(dt) {
