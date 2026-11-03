@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12081f">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HERMES">
+<meta name="description" content="OLYMPUS Wrapped: the week of the bots as stories. Net $, $ a month, the best and worst trade, evals, discipline.">
+<title>HERMES · OLYMPUS Wrapped</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="hermes.css">
+</head>
+<body class="loading">
+<canvas id="bg" aria-hidden="true"></canvas>
+<canvas id="fx" aria-hidden="true"></canvas>
+<header class="top">
+  <div id="prog" class="prog" aria-hidden="true"></div>
+  <div class="bar">
+    <span class="brand"><svg viewBox="0 0 32 20" aria-hidden="true"><path d="M2 14c6-1 9-5 12-12-1 6 0 9 2 11 2-2 3-5 2-11 3 7 6 11 12 12-7 2-11 1-14-2-3 3-7 4-14 2z"/></svg>HERMES</span>
+    <span id="demo" class="demo" hidden>DEMO</span>
+    <nav id="periods" class="periods" aria-label="Period"></nav>
+  </div>
+</header>
+<main id="stage" class="stage" aria-live="polite">
+  <div class="splash"><span>HERMES</span><small>OLYMPUS Wrapped</small></div>
+</main>
+<footer class="foot">
+  <button id="share" type="button" class="btn share" aria-label="Share this card as an image"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>Share</button>
+  <span id="pos" class="pos"></span>
+</footer>
+<div id="toast" class="toast" role="status"></div>
+<script type="module" src="app.js"></script>
+</body>
+</html>

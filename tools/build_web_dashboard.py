@@ -1215,6 +1215,13 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
             for name in os.listdir(src_dir):
                 if os.path.isfile(os.path.join(src_dir, name)):
                     shutil.copy(os.path.join(src_dir, name), os.path.join(out, app, name))
+    # HERMES (tools/hermes/, OLYMPUS Wrapped, 2026-11-03): wrapped.json + jarvis.json from this build's data.json / home.json
+    # over the page's demo copies; a failure keeps the demo (it says DEMO) and never stops the publish
+    try:
+        from tools.hermes import build as _hermes
+        print("  hermes:", _hermes.publish(out))
+    except Exception as e:
+        print("  hermes unavailable:", e.__class__.__name__, e)
     # the Kalshi kit's public files (tools/kalshi_kit/public/: the read-only status builder + SETUP.md the Kalshi bot's own
     # server session follows, 2026-11-01) next to the Kalshi page; never over a page file of the same name
     kit = os.path.join(ROOT, "tools", "kalshi_kit", "public")
