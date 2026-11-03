@@ -175,7 +175,7 @@ def part_b(bundle, extra):
 # ------------------------------------------------------------------ c. the page's files
 def part_c():
     files = {n: open(os.path.join(OD, n), encoding="utf-8").read() for n in os.listdir(OD) if n.endswith((".html", ".js", ".css"))}
-    need = {"index.html", "odeon.css", "app.js", "data.js", "timeline.js", "scene.js", "director.js", "captions.js", "ui.js", "flat.js", "fixture.js"}
+    need = {"index.html", "odeon.css", "app.js", "data.js", "timeline.js", "scene.js", "director.js", "captions.js", "ui.js", "flat.js", "fixture.js", "arena.js", "strip.js"}
     check("c. the modules (data, timeline, scene, director, captions, ui, app, flat fallback, fixture)", need <= set(files), sorted(need - set(files)))
     html, css = files["index.html"], files["odeon.css"]
     check("c. phone viewport with safe areas, own theme-color, dark scheme", 'viewport-fit=cover' in html and 'name="theme-color" content="#07060c"' in html
@@ -242,6 +242,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const t = document.querySelector('#cc .cc-text');
   new MutationObserver(() => { const s = t.textContent; if (s && window.__cc[window.__cc.length - 1] !== s) window.__cc.push(s); })
     .observe(t, { childList: true, characterData: true, subtree: true });
+  // the lens flare is a short animation: on a slow (software GL, loaded) machine the poll can miss the class, so it is recorded
+  const f = document.querySelector('#flare');
+  window.__flareSeen = false;
+  if (f) new MutationObserver(() => { if (f.classList.contains('go')) window.__flareSeen = true; }).observe(f, { attributes: true, attributeFilter: ['class'] });
 });
 """
 
@@ -271,7 +275,7 @@ def wait_state(p, cond, timeout=90):
 def shot(p, name):
     """a JPEG of the screen (the PNGs were ~700 KB each)"""
     os.makedirs(SHOTS, exist_ok=True)
-    p.screenshot(path=os.path.join(SHOTS, name.replace(".png", ".jpg")), type="jpeg", quality=82)
+    p.screenshot(path=os.path.join(SHOTS, name.replace(".png", ".jpg")), type="jpeg", quality=82, timeout=120000)
 
 
 def run_browser(fx, tj):
@@ -300,7 +304,7 @@ def run_browser(fx, tj):
                 # ---- the demo fixture (no trades file): plays to the end, stats card, captions in order
                 MODE["trades"] = "404"
                 p.goto(base + "?speed=60&lite=0")         # full effects for the screenshots (no auto LITE)
-                p.wait_for_function("document.body.dataset.ready === 'true'", timeout=30000)
+                p.wait_for_function("document.body.dataset.ready === 'true'", timeout=90000)
                 st = p.evaluate("window.__odeon.state()")
                 check(f"d. {tag}: no trades file -> the demo fixture reel (DEMO badge), WebGL theater", st["demo"] and st["id"] == fx["id"]
                       and p.is_visible("#demoBadge") and st["gl"] == "webgl", st)
@@ -313,12 +317,12 @@ def run_browser(fx, tj):
                   lb: document.body.dataset.slowmo, spans: document.querySelectorAll('#cc .cc-text > span').length,
                   text: document.querySelector('#cc .cc-text').textContent, typing: document.querySelector('#cc .cc-text').classList.contains('typing') })""")
                 try:                                       # the ramp eases in over the next frames (wall-clock seconds)
-                    p.wait_for_function("window.__odeon.state().slow < 0.6 && document.body.dataset.slowmo === 'true'", timeout=30000)
+                    p.wait_for_function("window.__odeon.state().slow < 0.6 && document.body.dataset.slowmo === 'true'", timeout=90000)
                     fl["slowmo"] = True
                 except Exception:
                     fl["slowmo"] = False
                 check(f"e. {tag}: on the entry: the lens flare, the slow-motion ramp (letterbox in), the caption typed in word by word",
-                      fl["go"] and fl["slowmo"] and fl["typing"] and fl["spans"] == len(fl["text"].split()) and fl["text"] in fx_texts, fl)
+                      (fl["go"] or p.evaluate("window.__flareSeen")) and fl["slowmo"] and fl["typing"] and fl["spans"] == len(fl["text"].split()) and fl["text"] in fx_texts, fl)
                 time.sleep(0.4)
                 shot(p, f"{tag}_2_entry.png")
                 wait_state(p, "s.T > " + str(fx["entry"]["t"] + 3600), 180)
@@ -364,7 +368,7 @@ def run_browser(fx, tj):
                 check(f"d. {tag}: speech is silent until the Narrate tap", p.evaluate("window.__spoken.length") == 0)
                 p.click("#narrate")
                 p.evaluate("window.__odeon.speed(5); window.__odeon.play()")
-                p.wait_for_function("window.__spoken.length > 0", timeout=30000)
+                p.wait_for_function("window.__spoken.length > 0", timeout=90000)
                 check(f"d. {tag}: after the tap the captions are spoken", p.get_attribute("#narrate", "aria-pressed") == "true"
                       and p.evaluate("window.__spoken[0]").replace("C I S D", "CISD") in fx_texts + [fx_texts[-1]])
                 p.click("#narrate")
@@ -378,7 +382,7 @@ def run_browser(fx, tj):
                 # ---- the real trades file: reels, filters, an ATLAS reel to its stats card
                 MODE["trades"] = "ok"
                 p.goto(base + "?speed=60&from=reels#reels")
-                p.wait_for_function("document.body.dataset.ready === 'true'", timeout=30000)
+                p.wait_for_function("document.body.dataset.ready === 'true'", timeout=90000)
                 n = len(tj["trades"])
                 p.wait_for_selector("#reels:not([hidden])")
                 time.sleep(0.4)
@@ -432,13 +436,13 @@ def run_browser(fx, tj):
                     lit = next(t for t in tj["trades"] if t["bot"] == "LIT" and t["id"] != top5[0])
                     key = lit["id"].split(".", 1)[1]
                     p.goto(base + "?speed=60#trade=" + key)
-                    p.wait_for_function("document.body.dataset.ready === 'true'", timeout=30000)
+                    p.wait_for_function("document.body.dataset.ready === 'true'", timeout=90000)
                     st = p.evaluate("window.__odeon.state()")
                     near = p.evaluate(f"window.__odeon.find('{lit['day']}_{hhmm(lit['entry']['t'] + 120, lit['off']).replace(':', '')}_{lit['side'].lower()}')")
                     check(f"e. {tag}: Oracle's #trade= link plays that trade's reel (and a time 2 minutes off finds it too)",
                           st["id"] == lit["id"] and st["playing"] and not st["hl"] and near == lit["id"], [st["id"], lit["id"], near])
                     p.goto(base + "?speed=60#trade=2020-01-02_0930_long")
-                    p.wait_for_function("document.body.dataset.ready === 'true'", timeout=30000)
+                    p.wait_for_function("document.body.dataset.ready === 'true'", timeout=90000)
                     p.wait_for_selector("#reels:not([hidden])")
                     check(f"e. {tag}: a trade with no film opens the gallery with a plain note", p.is_visible("#reelNote") and "No film" in p.inner_text("#reelNote"))
                     r = p.evaluate("window.__odeon.applyTheme({ accent: '#ff8800', bg: '#020304' })")
@@ -457,7 +461,7 @@ def run_browser(fx, tj):
             p.on("pageerror", lambda e: errs.append(str(e)))
             p.on("console", lambda m: errs.append(m.text) if m.type == "error" else None)
             p.goto(base + "?speed=60&lite=1")
-            p.wait_for_function("document.body.dataset.ready === 'true'", timeout=30000)
+            p.wait_for_function("document.body.dataset.ready === 'true'", timeout=90000)
             time.sleep(1.5)
             check("d. reduced motion: flagged, no film grain; ?lite=1: LITE badge", p.evaluate("document.body.dataset.reduced") == "true"
                   and not p.is_visible(".grain") and p.is_visible("#liteBadge") and p.evaluate("window.__odeon.state().lite"))
@@ -469,16 +473,99 @@ def run_browser(fx, tj):
             time.sleep(1.0)
             check("d. reduced motion still plays the reel", p.evaluate("window.__odeon.state().T") > st0)
             p.goto(base + "?speed=60&flat=1")
-            p.wait_for_function("document.body.dataset.ready === 'true'", timeout=30000)
+            p.wait_for_function("document.body.dataset.ready === 'true'", timeout=90000)
             time.sleep(1.5)
             shot(p, "390x844_9_flat_fallback.png")
             st = p.evaluate("window.__odeon.state()")
             check("d. without WebGL the 2D stage plays the same reel", st["gl"] == "flat" and st["T"] > st["tStart"] and st["n"] == len(tj["trades"]), st)
             check("d. no console errors (reduced motion, LITE, 2D)", not errs, errs[:5])
             ctx.close()
+            look_checks(br, base, tj)
             br.close()
     finally:
         srv.shutdown()
+
+
+def look_checks(br, base, tj):
+    """h. the 2026-11-03 look pass: the OLYMPUS render core, the amphitheatre, the trade strip (drag to scrub trade by trade), the R ruler
+    and the live P&L tag in the scene."""
+    html = open(os.path.join(OD, "index.html"), encoding="utf-8").read()
+    sc = open(os.path.join(OD, "scene.js"), encoding="utf-8").read()
+    ar = open(os.path.join(OD, "arena.js"), encoding="utf-8").read()
+    check("h. static: scene.js on the render core, arena.js (cavea, skene, torches, orchestra) on materials.js, the trade strip in the dock",
+          "from '../olympus/render.js'" in sc and "from '../olympus/materials.js'" in ar and "createRenderer(" in sc and 'id="strip"' in html
+          and html.index('id="dock"') < html.index('id="strip"') < html.index('id="cc"') and os.path.isfile(os.path.join(OD, "strip.js")))
+    trades = sorted(tj["trades"], key=lambda t: (t["entry"]["t"], t["id"]))
+    ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=1, has_touch=False)
+    ctx.add_init_script(SPEECH_STUB)
+    p = ctx.new_page()
+    errs = []
+    p.on("pageerror", lambda e: errs.append("pageerror: " + str(e)))
+    p.on("console", lambda m: errs.append(m.text) if m.type == "error" and "favicon" not in m.text else None)
+    MODE["trades"] = "ok"
+    p.goto(base + "?speed=60&autoplay=0")
+    p.wait_for_function("document.body.dataset.ready === 'true' && window.__odeon.look()", timeout=60000)
+    look = p.evaluate("window.__odeon.look()")
+    n = len(trades)
+    net = sum(t["usd"] for t in trades)
+    bars = p.evaluate("document.querySelectorAll('#strip .st-bars .b').length")
+    lab = p.inner_text("#strip .st-lab")
+    on = p.evaluate("(() => { const b = document.querySelector('#strip .st-bars .b.on'); return b ? +b.dataset.i : -1; })()")
+    cur = p.evaluate("window.__odeon.state().id")
+    check(f"h. trade strip: {n} bars in time order, the open reel marked and named in the label (k/{n}, day, side, R, $, running total)",
+          p.is_visible("#strip") and bars == n and on >= 0 and cur == trades[on]["id"] and f"/{n}" in lab and "running" in lab, (bars, n, lab, on, cur))
+    # drag: press at the bar k, move to the bar j, let go -> the reel of trade j opens
+    box = p.locator("#strip .st-bars").bounding_box()
+    j = 0 if cur != trades[0]["id"] else n - 1
+    x = box["x"] + box["width"] * (j + 0.5) / n
+    y = box["y"] + box["height"] / 2
+    p.mouse.move(box["x"] + box["width"] * 0.5, y)
+    p.mouse.down()
+    p.mouse.move(x, y, steps=4)
+    mid = p.inner_text("#strip .st-lab")
+    p.mouse.up()
+    p.wait_for_function(f"window.__odeon.state().id === {json.dumps(trades[j]['id'])}", timeout=90000)
+    check("h. trade strip: dragging shows the trade under the finger (day, side, R, $, running total) and letting go opens its reel",
+          f"{j + 1}/{n}" in mid and usd(trades[j]["usd"]) in mid and rr(trades[j]["r"]) in mid and usd(sum(t["usd"] for t in trades[:j + 1])) in mid, (mid, trades[j]["id"]))
+    p.click("#strip .st-next")
+    nxt = trades[(j + 1) % n]["id"]
+    p.wait_for_function(f"window.__odeon.state().id === {json.dumps(nxt)}", timeout=90000)
+    check("h. trade strip: the arrow steps to the next trade (and the bar under it lights up)", p.evaluate("document.querySelector('#strip .b.on') && +document.querySelector('#strip .b.on').dataset.i") == (j + 1) % n)
+    # the R ruler and the live P&L tag
+    tr = p.evaluate("window.__odeon.trade()")
+    risk = tr["risk_pts"]
+    t_r = abs(tr["target"] - tr["entry"]["px"]) / risk
+    want = [-1] + list(range(1, min(10, int(t_r + 1e-6)) + 1))
+    look = p.evaluate("window.__odeon.look()")
+    check("h. the R ruler: -1R (the stop) and every whole R up to the target, standing beside the entry", [r["n"] for r in look["rungs"]] == want, (look["rungs"], want))
+    p.evaluate(f"window.__odeon.seek({tr['exit']['t_end'] + 60})")
+    p.wait_for_function("window.__odeon.look().tag && window.__odeon.look().tag.on", timeout=90000)       # software GL: a frame can take seconds
+    look = p.evaluate("window.__odeon.look()")
+    m = re.search(r"([+\u2212])([\d.]+)R", look["tag"]["text"])
+    got_r = (-1 if m and m.group(1) == "\u2212" else 1) * float(m.group(2)) if m else None
+    check("h. after the exit the R ruler is up and the P&L tag rests on the exit with the trade's R and $",
+          look["tag"]["on"] and all(r["on"] for r in look["rungs"]) and got_r is not None and abs(got_r - tr["r"]) <= 0.35 and "$" in look["tag"]["text"], (look["tag"], tr["r"]))
+    p.evaluate(f"window.__odeon.seek({tr['entry']['t'] - 600})")
+    p.wait_for_function("window.__odeon.look().tag && !window.__odeon.look().tag.on", timeout=90000)
+    look = p.evaluate("window.__odeon.look()")
+    check("h. before the entry: no ruler, no tag", not look["tag"]["on"] and not any(r["on"] for r in look["rungs"]), look)
+    check("h. software GL runs the render core on the LITE tier (scene + finish); the arena is in the scene: marble on physical materials, instanced colonnade, torch and lamp lights",
+          look["passes"] == ["scene", "finish"] and look["arena"] and look["kinds"].count("physical") >= 5 and look["kinds"].count("instanced") >= 6 and look["kinds"].count("light") >= 3, look)
+    check("h. no console errors with the arena and the strip", not errs, errs[:5])
+    shot(p, "390x844_h_strip_lite.png")
+    ctx.close()
+    # HD tier (?q=high) on a small canvas: bloom + 4x MSAA, three passes
+    ctx = br.new_context(viewport={"width": 390, "height": 700}, device_scale_factor=1)
+    q = ctx.new_page()
+    herr = []
+    q.on("pageerror", lambda e: herr.append(str(e)))
+    q.goto(base + "?speed=60&autoplay=0&lite=0&q=high")
+    q.wait_for_function("document.body.dataset.ready === 'true' && window.__odeon.look() && window.__odeon.look().stats.calls > 0", timeout=150000)
+    hd = q.evaluate("window.__odeon.look()")
+    check("h. HD tier: scene + bloom + finish with 4x MSAA, the amphitheatre in the same frame, no page error",
+          hd["passes"] == ["scene", "bloom", "finish"] and hd["stats"]["samples"] == 4 and hd["stats"]["bloom"] and hd["quality"] == "high" and not herr, (hd["passes"], hd["stats"], herr))
+    shot(q, "390x700_h_hd.png")
+    ctx.close()
 
 
 def main():

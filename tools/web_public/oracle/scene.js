@@ -1,11 +1,19 @@
 // ORACLE scene: the renderer, the camera rig (drag to turn, pinch / wheel to zoom, double tap to re-centre, a slow idle
 // orbit), the price -> height scale that follows the live price, and the two worlds it draws (layers.js on the column,
 // sky.js around it). setWorld(w) when the data changes; frame(nowT) every animation frame.
+import { createRenderer } from '../olympus/render.js';
 import { Market, Y_MAX } from './layers.js';
+import { Arena } from './arena.js';
 import { Sky, weatherOf, fitPoints } from './sky.js';
 import { newSweeps } from './data.js';
 
 const EL = [-0.12, 0.95];
+
+// Render tier policy (one copy per app): ?q=ultra|high|low|off forces a tier (tests, screenshots, perf probes, like render-lab);
+// a software GL renderer (SwiftShader, llvmpipe: no GPU) is held to LITE, 4x MSAA + bloom would be a slideshow there; otherwise the kit's level.
+const forcedTier = () => { const q = new URLSearchParams(location.search).get('q'); return ['ultra', 'high', 'low', 'off'].indexOf(q) >= 0 ? q : null; };
+const softwareGL = (gl) => { try { const e = gl.getExtension('WEBGL_debug_renderer_info'); return !!e && /swiftshader|llvmpipe|software/i.test(String(gl.getParameter(e.UNMASKED_RENDERER_WEBGL))); } catch (_) { return false; } };
+
 
 /** The visible half range in points: the nearest levels each side, the open position, at least 4 ATR. */
 function halfRange(w) {
@@ -25,15 +33,21 @@ export class Scene {
     this.canvas = canvas;
     this.reduced = reduced;
     this.quality = quality;
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: quality === 'high', powerPreference: 'high-performance' });
-    this.renderer.setClearColor(0x02030a, 1);
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.FogExp2(0x02030a, 0.011);
+    this.scene.fog = new THREE.FogExp2(0x02030a, 0.0085);
     this.camera = new THREE.PerspectiveCamera(50, 1, 0.1, 800);
+    // the OLYMPUS render core (docs/OLYMPUS_RENDER.md): ACES + sRGB, the environment light, bloom, 4x MSAA on HD, FXAA on LITE. 'display'
+    // space: the glow shaders keep the colours they were tuned in. The pixel size comes from resize() (the band logic below).
+    this.rc = createRenderer({ canvas, scene: this.scene, camera: this.camera, space: 'display', env: 'night', tint: '#7fe9ff', autoSize: false,
+      fitCamera: false, adapt: false, maxDpr: 1.75, exposure: 1, bloom: { strength: 0.8, radius: 0.62, threshold: 0.74 },
+      grade: { vignette: 0.34, grain: 0.03 } });
+    this.renderer = this.rc.renderer;
+    this.renderer.setClearColor(0x02030a, 1);
     this.rig = { az: -0.55, el: 0.2, zoom: 1, vaz: 0, idle: 0, fit: 40, target: new THREE.Vector3(0, 0.5, 0) };
     this.cam = { right: new THREE.Vector3(1, 0, 0), dir: new THREE.Vector3(0, 0, 1), q: this.camera.quaternion };
     this.map = { center: null, half: 60, y: (p) => ((p - this.map.center) / this.map.half) * Y_MAX };
     this.sky = new Sky(THREE, this.scene, { quality, reduced });
+    this.arena = new Arena(THREE, this.scene, { quality, reduced });
     this.market = new Market(THREE, this.scene, { quality, reduced });
     this.fitPts = fitPoints(THREE);
     this.probe = new THREE.PerspectiveCamera();
@@ -48,7 +62,8 @@ export class Scene {
 
   setQuality(q) {
     this.quality = q;
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, q === 'high' ? 2 : 1.25));
+    this.rc.setQuality(forcedTier() || (softwareGL(this.renderer.getContext()) ? 'low' : q === 'low' ? 'low' : ['ultra', 'high'].includes(this.rc.quality()) ? this.rc.quality() : 'high'));
+    this.arena.setQuality(q);
     if (this.sky.lite !== (q === 'low')) { this.sky.setQuality(q); this.market.setQuality(q); }
     this.resize();
   }
@@ -63,7 +78,7 @@ export class Scene {
     const W = this.canvas.clientWidth || innerWidth, H = this.canvas.clientHeight || innerHeight;
     const full = { x0: 0, y0: 0, x1: W, y1: H }, b0 = this.band || full;
     const b = b0.x1 - b0.x0 < 140 || b0.y1 - b0.y0 < 180 ? full : b0;      // a band too small to use: the whole screen
-    this.renderer.setSize(W, H, false);
+    this.rc.resize(W, H);
     this.H = H;
     this.camera.aspect = W / H;
     // shift the projection centre to the band's centre, then fit the column + clock (height ~26) and the rings (width ~17)
@@ -94,6 +109,7 @@ export class Scene {
     const swept = newSweeps(this.world, w);
     this.world = w;
     this.market.setWorld(w);
+    this.arena.setWorld(w);
     this.sky.setStages(w.stages);
     this.sky.setWeather(weatherOf(w));
     this.goal = { center: w.price, half: halfRange(w) };
@@ -117,7 +133,7 @@ export class Scene {
   /** A theme's colours (OLYMPUS themes): the column and the comet take the accent, the sky the background. */
   applyTheme(accent, bg) {
     const T = this.renderer && this.market.T;
-    if (accent) { this.market.colMats[0].uniforms.uC.value.set(accent); this.market.comet.children[0].material.color.set(accent); }
+    if (accent) { this.market.colMats[0].uniforms.uC.value.set(accent); this.market.comet.children[0].material.color.set(accent); this.arena.applyTheme(accent); }
     if (bg && T) { this.renderer.setClearColor(new T.Color(bg), 1); this.scene.fog.color.set(bg); }
   }
 
@@ -181,6 +197,7 @@ export class Scene {
     this.cam.right.set(1, 0, 0).applyQuaternion(this.camera.quaternion).setY(0).normalize();
     if (this.map.center != null) this.market.frame(this.t, dt, this.map, this.cam);
     this.sky.frame(this.t, dt, nowT, this.cam);
-    this.renderer.render(this.scene, this.camera);
+    this.arena.frame(this.t, this.market.cometWorld(), this.renderer.getPixelRatio());
+    this.rc.render();
   }
 }

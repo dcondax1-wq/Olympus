@@ -3,6 +3,7 @@
 // trail, the open position's entry / stop / target planes with a P&L glow, lightning when a level is swept (a branching
 // bolt in two draw calls, re-strikes, then an afterglow that keeps the swept ring hot for a few seconds), and ATLAS's
 // members as satellites. The scene owns the price -> height mapping (map.y(price)); everything re-places itself from it.
+import { heatOf } from './heat.js';
 import { kindOf, COLOR, additive, glowSprite, labelSprite, setLabel, ringLine, lightDisc, hex, glowTexture } from './glow.js';
 
 export const Y_MAX = 7.5;                           // half height of the column's scale (world units)
@@ -164,7 +165,7 @@ export class Market {
         const ring = ringLine(T, k.r, k.color, 0.8), disc = lightDisc(T, k.r, k.color, 0.12);
         g.add(disc, ring);
         this.g.add(g);
-        o = { g, ring, disc, k, flash: 0, glow: 0, phase: Math.random() * 6.28 };
+        o = { g, ring, disc, k, flash: 0, glow: 0, heat: 0, base: new T.Color(k.color), phase: Math.random() * 6.28 };
         this.levels.set(lv.id, o);
       }
       o.lv = lv;
@@ -267,6 +268,12 @@ export class Market {
     this.bolts.push({ g, core, halo, flash, ripple, r, age: 0, life: this.reduced ? 0.8 : 1.6 });
   }
 
+  /** the comet's world position (the arena's price lamp follows it) */
+  cometWorld() { return this.comet.visible ? this.comet.position : null; }
+
+  /** the open levels with their live heat, hottest first (tests, the HUD) */
+  heat() { return this.order.filter((o) => !o.lv.taken).map((o) => ({ label: o.lv.label, price: o.lv.price, heat: o.heat })).sort((a, b) => b.heat - a.heat); }
+
   // ---------------------------------------------------------------- every frame
   frame(t, dt, map, cam) {
     const w = this.world;
@@ -283,8 +290,11 @@ export class Market {
         const edge = 1 - Math.max(0, Math.abs(y) - Y_MAX + 1.6) / 2.4;
         const shimmer = this.reduced ? 0 : 0.12 * Math.sin(t * 1.7 + o.phase);
         const ember = o.glow * (this.reduced ? 0.5 : 0.5 + 0.18 * Math.sin(t * 9 + o.phase));
+        // heat: a level close to price runs hotter (HDR ring colour: it blooms) and its light plane fills in; a swept one is cold
+        o.heat = o.lv.taken || this.shown == null ? 0 : heatOf(o.lv.price - this.shown, w.atr);
+        o.ring.material.color.copy(o.base).multiplyScalar(1 + o.heat * 2.2 + o.flash * 1.5);
         o.ring.material.opacity = (o.lv.taken ? 0.22 : 0.72 + shimmer) * edge + o.flash + ember;
-        o.disc.material.opacity = (o.lv.taken ? 0.04 : 0.11) * edge + o.flash * 0.5 + ember * 0.4;
+        o.disc.material.opacity = (o.lv.taken ? 0.04 : 0.11 + o.heat * 0.16) * edge + o.flash * 0.5 + ember * 0.4;
         o.ring.rotation.y = this.reduced ? 0 : t * 0.05 + o.phase;
       }
     }
