@@ -951,8 +951,8 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
     maps an Olympus theme (id, colour object or JSON in `localStorage['olympus.theme']`, `Olympus.onTheme`, the storage
     event) onto it; an unknown id clears back to Zenith's own look. Worker le-public-v52, PC le-shell-next-v32.
   - Also fixed: "On this page" chips jump and light the card (a smooth scroll could stall short; test_ui_polish failed on
-    the base). Open: test_holo_ui "replay advances" fails on the base too (the view's time stays clamped at its first
-    bar under the test's fixture day), not touched here.
+    the base). test_holo_ui's "replay advances" failed on the base and here while the shared machine was at load 40-60
+    (4 cores) and passes 62/62 at a lower load: a timing flake, the Holodeck code is unchanged.
   - Test `python -X utf8 -m tests.test_zenith_shell` (23).
 - **Zenith Scorecard (2026-11-03, night quest "the best trading dashboard there is"; `docs/ZENITH_COMPARISON.md`):** one renderer
   `tools/web_public/procore.js` = `web_next/js/next/procore.js` (byte-identical, `window.ProUI`), phone glue `pro.js` (`#/pro/<part>`:
