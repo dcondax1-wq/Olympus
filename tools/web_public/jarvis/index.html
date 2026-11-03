@@ -1167,6 +1167,7 @@ function show(id, opts = {}) {
   else { stopListening(); closeMore(); if (a.id === 'zenith') showZenith(a, opts.route, seq); else frameView(a, opts.url); }
   renderBar();
   fx.restart();
+  if (was !== a.id && a.id !== 'home' && window.jarvisPortal) safe(() => window.jarvisPortal.jump({ id: a.id, name: a.name, color: a.accent, glyph: a.glyph }));   // portal.js: the warp plays over the loading app
   if (was !== a.id) { sfx('open'); if (a.id !== 'home') logAct(`Opened ${a.name}`); if (nx) safe(() => nx.use(a.id)); }
   // The address stays the Jarvis screen (no #zenith): a reopen, or the iPhone reloading Jarvis in the background, always
   // starts on the Jarvis screen, never straight inside a dashboard.
@@ -2698,5 +2699,8 @@ if ('serviceWorker' in navigator) {
   safe(() => navigator.serviceWorker.startMessages());
 }
 </script>
+<!-- the home backdrop and the portal jump on the OLYMPUS render core (docs/OLYMPUS_RENDER.md): each self-contained, each optional -->
+<script type="module" src="./backdrop.js?v=b1"></script>
+<script type="module" src="./portal.js?v=p1"></script>
 </body>
 </html>

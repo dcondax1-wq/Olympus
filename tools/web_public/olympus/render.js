@@ -208,6 +208,7 @@ export function createRenderer(opts) {
   let theme = o.theme !== undefined ? o.theme : O ? O.theme() : null;
   let composer = null, bloom = null, finish = null, envTex = null, dead = false, extra = [];
   let width = 0, height = 0, dpr = 1, raf = 0, loop = null, tPrev = 0, firstFrame = true;
+  const bloomTint = new THREE.Color(1, 1, 1);
   const perf = { last: 0, n: 0, sum: 0, warm: 0, fps: 0, steps: 0 };
   const reduced = prefersReduced();
   const t0 = performance.now();
@@ -215,6 +216,7 @@ export function createRenderer(opts) {
   function tierOf(l) {
     const base = TIERS[l];
     return { dpr: base.dpr, samples: gl2 ? base.samples : 0, fxaa: base.fxaa,
+      // an app's overrides tune the tier's bloom and grade, never switch them on for low / off
       bloom: base.bloom && Object.assign({}, base.bloom, o.bloom), grade: base.grade && Object.assign({}, base.grade, o.grade) };
   }
   let tier = tierOf(level);
@@ -258,6 +260,7 @@ export function createRenderer(opts) {
       // pure additive (one, one) and alpha untouched: a transparent canvas stays transparent, glows light what is behind
       Object.assign(bloom.blendMaterial, { blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor,
         blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor });
+      bloom.bloomTintColors.forEach((v) => v.set(bloomTint.r, bloomTint.g, bloomTint.b));
       composer.addPass(bloom);
     }
     extra.forEach((p) => composer.addPass(p));
@@ -353,6 +356,16 @@ export function createRenderer(opts) {
     passes: () => (composer ? composer.passes.map((p) => (p === bloom ? 'bloom' : p === finish ? 'finish' : p instanceof RenderPass ? 'scene' : 'app'))
       : ['direct']),
     setTheme(t) { theme = t || null; environment(); },
+    /** live bloom changes, kept across tier changes: { strength, radius, threshold, tint (a THREE.Color, '#hex' or 0xhex) } */
+    setBloom(b) {
+      if (!b) return;
+      const { tint, ...rest } = b, changed = Object.keys(rest).length > 0;
+      if (changed) { o.bloom = Object.assign({}, o.bloom, rest); tier = tierOf(level); }
+      if (tint !== undefined) bloomTint.set(tint);           // a per-frame tint is cheap: five vector writes
+      if (!bloom) return;
+      if (changed) Object.assign(bloom, rest);
+      bloom.bloomTintColors.forEach((v) => v.set(bloomTint.r, bloomTint.g, bloomTint.b));
+    },
     /** an app's own pass, run after bloom and before the finish */
     addPass(p) { if (p && extra.indexOf(p) < 0) { extra.push(p); build(); } return p; },
     start(cb) { loop = typeof cb === 'function' ? cb : () => {}; onVisible(); return api; },
