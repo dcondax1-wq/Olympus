@@ -975,6 +975,34 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
       switch. On a phone <= 360 px the SEND key hides (the keyboard sends).
     - Test `PLAYWRIGHT_BROWSERS_PATH=<dir> python -X utf8 -m tests.test_jarvis_talk` (node speaker + Chromium + WebKit
       iPhone 13 on a mocked voice that drops a speak() outside a tap like iOS). New SHELL file: `voice-out.js`.
+  - **Modes + "think for me" (2026-11-03 night, owner: "make modes for research, trading, business whatever so it is smart.
+    You should think about things, it shouldn't just be me"):** new `modes.js` (no imports, no network; passed as
+    `createBrain({ modes })`, the shell loads it as `ready.modes`; absent = the brain as before).
+    - Modes Auto (default) · Trading · Research · Business · Life, kept in localStorage `jarvis.mode`. Switch: the chip row above
+      the quick asks (`#modeRow`, assist-ui.js `mountModes`) or the words ("switch to research mode", "Research mode.", "money
+      mode" = Business, "personal mode" = Life, "auto mode"; `parseSwitch`). The reply: control `mode`, the mode's greeting
+      (said out loud) + its list. Auto picks the mode per question from its words (`pickMode`).
+    - Each mode changes: the smart prompt (a `MODE: ...` line in `systemFor`), the tools offered first (`orderTools`, every
+      provider's format), the quick asks (`brain.suggestions()`: the urgent chip first, then the mode's), the home cards (the
+      mode's apps with their live status in the list box), the greeting. Trading = bots, room, the plan, risk; Research = Data
+      City / Prometheus / DAPHNE / the Mind + Wikipedia / web + research notes to Obsidian (one tap = "make a note called
+      Research log: ...", confirmed by the vault); Business = money goal, more accounts (real prices), Kalshi edge, to-dos with
+      deadlines ("by friday", "due nov 5", `parseDeadline`); Life = Planner, reminders, Ascend.
+    - "Here's what I'd do" (`thinkAll` / `thinkFor`, rules, no key): from `brain.digest()` (the ranked priorities, quiet days,
+      accounts, window, Kalshi, Planner, his to-dos + reminders, the Mind, the money card, apps) + the research apps' last
+      cards: the 7-day rule (early at day 3-4, urgent from day 5), room under 40%, near a pass / passed, stale feed or research
+      data (> 36 h: CRONOS), overdue / due-soon to-dos, a reminder within 3 h, the Mind's idea, the newest finding, tomorrow's
+      plan (evening), the money goal, the Kalshi edge, Ascend. Urgent (p <= 2.5) first in every mode; 3 items. Every action is
+      ask / open / mode / control (key setup): never a trade.
+    - The modes' own quick asks answered by rules (`modes.answer`, no key): "Am I at risk?", "Today's trading plan", "Research
+      findings" / "A research idea worth testing" / "Data City findings", "Plan for more accounts", "My to-dos with deadlines";
+      with a key the idea and accounts questions go to the model (the rule answer is its fallback).
+    - "Think for me" (button, or "think for me" / "what would you do" / "any ideas"): with a key, one request (no tools) with
+      the MODE line + the rule list, the model's 3 suggestions as JSON with follow-up asks; any error = the rules.
+    - Proactive: on open the list shows unasked (quiet); at 7:30, 12:00, 4:15 PM and 9 PM ET (once per slot, `jarvis.mode.slots`)
+      while Jarvis is open: the list, a toast and her voice (never over the mic or a reply).
+    - Test `python -X utf8 -m tests.test_jarvis_modes` (31: node + Chromium; `JARVIS_MODES_NO_BROWSER=1` = node only). New SHELL
+      file: `modes.js` (worker not bumped).
   - **Icons:** the re-rendered old reactor icon (`?v=j2`).
   - **Workers:**
     - jarvis-v4: a 3.5 s navigation race; shell files stale-while-revalidate once a page came from the copy.

@@ -977,6 +977,41 @@ const geoHere = () => new Promise((ok, no) => {
 });
 ready.tools = load('tools', './tools.js', (m) => typeof m.createTools === 'function')
   .then((m) => { const t = m ? safe(() => m.createTools({ geo: geoHere }), null) : null; if (t) brainDeps.tools = t; return t; });
+// the modes (modes.js, 2026-11-03): Trading / Research / Business / Life / Auto and "think for me". The rules read the brain's
+// facts plus the research apps' last live cards (apps.js, kept on this phone); optional (absent = the brain as before).
+let modesI = null, modesUI = null;
+ready.modes = load('modes', './modes.js', (m) => typeof m.createModes === 'function').then((m) => {
+  if (m) modesI = safe(() => m.createModes({ cards: (ids) => { const o = {}; for (const id of ids || []) { const c = cardOf(id); if (c) o[id] = c; } return o; } }), null);
+  if (modesI) brainDeps.modes = modesI;
+  return modesI;
+});
+// a one-tap action from "Here's what I'd do": ask Jarvis, open an app, a mode, or a control (the key setup). Never a trade.
+function modeAction(a) {
+  if (!a || typeof a !== 'object') return;
+  if (a.type === 'ask' && a.value) ask(String(a.value));
+  else if (a.type === 'mode' && a.value) ask(String(a.value) + ' mode');
+  else if (a.type === 'control' && a.value === 'ai_setup') openKeySetup();
+  else if (a.type === 'open' && a.value) { if (!byId(a.value)) { toast(`${a.value === 'ascend' ? 'Ascend' : a.value} is not added yet: tap + under the apps to add it.`, 'APPS'); return; } openSoon(a.route ? { id: a.value, route: a.route } : a.value); }
+}
+function mountModesUI() {
+  if (modesUI || !modesI || !assist || typeof assist.mountModes !== 'function') return;
+  modesUI = safe(() => assist.mountModes({ brain: () => brain, modes: modesI, anchor: $('#sugs'), onAsk: (t) => ask(t), onAction: modeAction,
+    cards: (ids) => modesI.cards(ids), appName: (id) => { const a = byId(id); return a ? a.name : null; } }), null);
+  if (modesUI) { safe(() => modesUI.render()); if (modesI.mode !== 'auto' && !$('#talk').children.length) $('#says').textContent = safe(() => modesI.greeting(modesI.mode), '') || $('#says').textContent; }
+}
+// the set times (ET 7:30, 12:00, 4:15 PM, 9 PM): Jarvis thinks for him unasked, once per slot, said out loud while he looks
+async function thinkSlot(quiet) {                      // quiet (at the start): the list is on screen already, nothing said
+  if (!modesUI || !visible() || active !== 'home' || brain.fallback || typeof brain.digest !== 'function') return;
+  const d = safe(() => brain.digest(), null), slot = d ? safe(() => modesI.dueSlot(d), null) : null;
+  if (!slot) return;
+  modesI.markSlot(d, slot);
+  const r = await Promise.resolve(safe(() => brain.think(modesI.mode), null)).catch(() => null);
+  if (!r || !Array.isArray(r.items) || !r.items.length) return;
+  modesUI.show(r);
+  if (quiet) return;
+  toast(r.items[0].text, "HERE'S WHAT I'D DO");
+  if (S.speakOn() && state === 'idle' && !listening && !speaking) speak(r.speak || r.text, false);
+}
 let keyUI = null;
 function openKeySetup(provider) {
   closeSheets(); closeMore();
@@ -1770,7 +1805,7 @@ function fallbackBrain({ getFacts }) {
 const brainDeps = { getFacts: D.getFacts, open: (id, route) => openSoon(route ? { id, route } : id), now: () => new Date(), autoOpen: false };
 const builtinBrain = fallbackBrain(brainDeps);
 let brain = builtinBrain;
-Promise.all([ready.brain, within(ready.vault, 4000), within(ready.assistant, 4000), within(ready.tools, 4000)]).then(([m]) => {      // the brain gets the memory when it loaded in time
+Promise.all([ready.brain, within(ready.vault, 4000), within(ready.assistant, 4000), within(ready.tools, 4000), within(ready.modes, 4000)]).then(([m]) => {      // the brain gets the memory when it loaded in time
   if (!m) return;
   try { const b = m.createBrain(brainDeps); if (!b || typeof b.ask !== 'function') throw new Error('no ask'); brain = b; root.dataset.brain = 'module'; }
   catch (_) { brain = builtinBrain; root.dataset.brain = 'fallback'; }
@@ -1778,9 +1813,11 @@ Promise.all([ready.brain, within(ready.vault, 4000), within(ready.assistant, 400
   if (idle && !$('#talk').children.length) $('#says').textContent = idle;        // the old Jarvis's line until the first question
   if (typeof brain.hidden === 'boolean' && brain.hidden !== S.hideMoney()) setHide(brain.hidden, false);
   renderSugs(); renderBrainPanel(); renderMore();
+  ready.assist.then(() => { mountModesUI(); setTimeout(() => thinkSlot(true), 4000); });
   ready.assist.then((a) => { if (a && !proUI) { proUI = safe(() => a.mountProactive({ brain: () => brain, anchor: $('#sugs'), onAsk: (t) => ask(t) }), null); if (proUI) safe(() => proUI.render()); } });
 });
-D.onChange(() => { if (proUI) safe(() => proUI.render()); });                // the proactive line follows the data
+D.onChange(() => { if (proUI) safe(() => proUI.render()); if (modesUI) safe(() => modesUI.render()); });
+setInterval(() => { safe(() => thinkSlot(false)); }, 60e3);                // the proactive line follows the data
 function renderSugs() {
   let s = safe(() => brain.suggestions());
   if (!Array.isArray(s) || !s.length) s = builtinBrain.suggestions();
@@ -1830,6 +1867,7 @@ function control(c) {                                  // -> true when the reply
   if (c === 'unmute') { setVoiceOn(true); return false; }
   if (c === 'hide_balance') { setHide(true, false); return false; }
   if (c === 'show_balance') { setHide(false, false); return false; }
+  if (c === 'mode') { safe(renderSugs); if (modesUI) safe(() => modesUI.sync()); return false; }     // the greeting is said
   if (c === 'manual_trade') { setTimeout(() => { safe(renderBar); if (active === 'home') { greet(); safe(renderOlympus); safe(renderCards); } if (nx) safe(() => nx.update()); }, 0); return false; }
   return false;
 }
@@ -1878,6 +1916,7 @@ async function answer(t, voice) {
   say('j', r.text);
   $('#says').textContent = headline(r.text);
   sayCards(r.cards);
+  if (modesUI && Array.isArray(r.items) && r.items.length) safe(() => modesUI.show(r));     // "Here's what I'd do" with its one-tap actions
   sfx('answer');
   if (r.intent === 'assistant_reminder') offerAlerts();
   logAct(`Asked: ${t}`);
