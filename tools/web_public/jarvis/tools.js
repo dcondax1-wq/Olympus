@@ -163,6 +163,8 @@ const LOOKUP_RX = /^(?:look up|search for|search|google|wiki|wikipedia|tell me a
 const NOT_LOOKUP_RX = /\b(my|me|i|your|you|this|that|it|today|tomorrow|now|up|wrong|new|next|the time|the date|the plan|the room|the target|the balance|the market|the status|on|going on|happening|left|due)\b|^(my|the) /;
 const FOLLOW_DAY_RX = /^(?:and|ok and|okay and|so|what about|how about|and what about|and how about)\s+(today|tonight|tomorrow|this week|the week|next week|this weekend|the weekend|monday|tuesday|wednesday|thursday|friday|saturday|sunday)$|^(?:and )?(tomorrow|tonight)$/;
 const FOLLOW_PLACE_RX = /^(?:and|what about|how about|and what about|and how about)\s+(?:in\s+)?([a-z][a-z .'-]{1,40})$/;
+// what follows "no, ..." / "what about ..." that is not a place (thanks, the bots, a pronoun ...)
+const NOT_PLACE_RX = /^(?:the )?(?:thanks?|thank you|thx|worries|problem|need|nothing|never ?mind|stop|cancel|that'?s (?:all|it|fine)|it'?s fine|i'?m good|good|ok|okay|bots?|zlarior|atlas|blitz|kalshi|planner|plan|market|markets|p&l|room|balance|target|money|it|that|this|them|him|her|me|you|us|my .+|your .+)$/;
 const CORRECT_RX = /^(?:no|nah|nope|not that|wrong)[, ]+(?:i meant |i mean |i said |in |the )?([a-z][a-z .'-]{1,60})$|^i meant (?:in )?([a-z][a-z .'-]{1,60})$/;
 
 export function createTools(opts) {
@@ -385,7 +387,7 @@ export function createTools(opts) {
       const fd = FOLLOW_DAY_RX.exec(t);
       if (fd && ctx.kind === 'weather') return wrap(weather(ctx.place, fd[1] || fd[2], E));
       const cr = CORRECT_RX.exec(t), fp = FOLLOW_PLACE_RX.exec(t), np = cr ? cr[1] || cr[2] : fp ? fp[1] : '';
-      if (np && !/^(the )?(bots?|zlarior|atlas|blitz|kalshi|planner)$/.test(np)) {
+      if (np && !NOT_PLACE_RX.test(np)) {
         if (ctx.kind === 'weather') return wrap(weather(np.replace(/\b(today|tomorrow|tonight)\b/g, '').trim(), (DAY_RX.exec(np) || [])[1] || ctx.day, E));
         if (ctx.kind === 'time') return wrap(timeIn(np));
         if (ctx.kind === 'wiki' && cr) return wrap(wiki(np));
