@@ -1035,7 +1035,7 @@ export function createBrain(opts) {
     if (!V.nq) { if (V.liveState === 'error') add(3, 'nolive', 'I cannot reach the bots\' live feed from this phone: check the phone\'s signal, then the PC.', 'I cannot reach the bots. Check the signal, then the PC.', 'zenith'); return; }
     const it = (k) => V.nq.health.find((x) => x.key === k) || null, feed = it('age_1m_s'), nt = it('nt');
     let big = true;
-    if (V.nq.stale || V.nq.cached) add(live ? 1 : 7, 'silent', `The PC has been silent since ${ago(V.nq.t, V.now)}: ${live ? 'turn it on and start the bot' : 'fine while the market is closed; have it on before the open'}.`, live ? 'The PC is silent. Turn it on and start the bot.' : 'The PC is quiet, fine while the market is closed.', 'zenith');
+    if (V.nq.stale || V.nq.cached) add(live ? 1 : 7, 'silent', `The PC has been silent${V.nq.t ? " since " + ago(V.nq.t, V.now) : " (no check-in time)"}: ${live ? 'turn it on and start the bot' : 'fine while the market is closed; have it on before the open'}.`, live ? 'The PC is silent. Turn it on and start the bot.' : 'The PC is quiet, fine while the market is closed.', 'zenith');
     else if (V.nq.running === false) add(1, 'stopped', 'Start the bot on the PC: it is stopped.', 'The bot is stopped. Start it on the PC.', 'zenith');
     else if (feed && feed.ok === false) add(live ? 1.5 : 6, 'feed', 'Check NinjaTrader on the PC: the bar feed is stale, so no new entries until it is fresh.', 'The NinjaTrader feed is stale. Check it on the PC.', 'zenith');
     else if (nt && nt.ok === false) add(live ? 1.5 : 6, 'nt', 'Reconnect NinjaTrader on the PC.', 'Reconnect NinjaTrader on the PC.', 'zenith');
@@ -1160,7 +1160,7 @@ export function createBrain(opts) {
     if (!V.nq) return needLive(V);
     const nw = nextWindow(V), vd = V.nq.verdict || {}, M = V.M;
     const pcOk = !(V.nq.stale || V.nq.cached) && V.nq.running !== false;
-    const out = [pcOk ? `The bot is running (${str(vd.label, 60) || 'status unknown'}).` : V.nq.running === false ? 'The bot is stopped on the PC: start it.' : `The PC is silent since ${ago(V.nq.t, V.now)}: nothing trades until it is back.`];
+    const out = [pcOk ? `The bot is running (${str(vd.label, 60) || 'status unknown'}).` : V.nq.running === false ? 'The bot is stopped on the PC: start it.' : `The PC is silent${V.nq.t ? " since " + ago(V.nq.t, V.now) : " (no check-in time)"}: nothing trades until it is back.`];
     const say = [pcOk ? 'The bot is running.' : 'The PC is not running the bot.'];
     for (const key of sel) {
       const bot = BOT[key], c = card(V, key);
