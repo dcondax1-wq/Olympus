@@ -492,7 +492,7 @@ def run_a(br, url):
     a5 = ask("is the market open")
     check("d. the market, and when it opens or closes next", "NQ market" in a5 and re.search(r"(Opens|Closes) in \d", a5), a5)
     check("d. status / room / target carry BLITZ next to Zlarior and ATLAS",
-          "BLITZ 25K" in a1 and "$612" in a1 and "BLITZ 25K: $612 of room above the floor ($24,500)" in a2 and "BLITZ: $1,388 to the target" in a3,
+          "BLITZ 25K" in a1 and "$612" in a1 and "BLITZ 25K: drawdown left $612" in a2 and "BLITZ: $1,388 to the target" in a3,
           (a1, a2, a3))
     a8 = ask("today's p&l")
     check("d. P&L: Zlarior, ATLAS and BLITZ (today and this week)", "Zlarior today +$213" in a8 and "ATLAS today" in a8
@@ -501,7 +501,7 @@ def run_a(br, url):
     check("d. 'how's blitz' answers BLITZ alone (not 'Opening Zenith')", "BLITZ 25K: today +$95, room $612, $1,388 to target, 2 trades today" in a9
           and "Zlarior" not in a9 and "Opening" not in a9 and p.locator("#home").is_visible(), a9)
     a10 = ask("blitz room")
-    check("d. 'blitz room' answers BLITZ's room alone", "BLITZ 25K: $612" in a10 and "Zlarior" not in a10, a10)
+    check("d. 'blitz room' answers BLITZ's room alone", "BLITZ 25K: drawdown left $612" in a10 and "Zlarior" not in a10, a10)
     a15 = ask("btc price")
     check("d. the latest answer is the line under the core", "BTC $77,000" in p.text_content("#says"), p.text_content("#says"))
     check("d. the old add-ons answer too: crypto, the verse, the quote", "BTC $77,000 (+1.5% in 24 h)" in a15 and "ETH $2,250" in a15

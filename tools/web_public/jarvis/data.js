@@ -538,7 +538,7 @@ function systemOf(f) {
     const pnl = Number.isFinite(+c.today_pnl) ? +c.today_pnl : null;
     r.value = usd(pnl, true); r.tone = pnl > 0 ? 'up' : pnl < 0 ? 'dn' : '';
     const rf = Number.isFinite(+c.room_frac) ? +c.room_frac : null;
-    r.text = [useVerdict && vd ? txt(vd.label) : txt(c.status), `room ${usd(c.room)}`].filter(Boolean).join(' · ');
+    r.text = [useVerdict && vd ? txt(vd.label) : txt(c.status), `drawdown left ${usd(c.room)}`].filter(Boolean).join(' · ');
     r.level = 'ok';
     if (useVerdict && vd && SYS_LV(vd.level) && SYS_LV(vd.level) !== 'ok') {
       r.level = SYS_LV(vd.level);

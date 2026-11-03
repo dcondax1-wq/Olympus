@@ -233,7 +233,7 @@ console.log(JSON.stringify(out));
           [x[0] for x in o["a3"]] == ["lit", "atlas", "blitz"] and o["a3"][2][3] is False and o["p3"].count('class="mc-orbit ') == 3, o["a3"])
     check("b. the page: three orbits, today's mission, the 9 feature cards; the strip: 3 chips + the mission list",
           o["p2"].count('class="mc-orbit ') == 3 and o["p2"].count("data-mc-f=") == 10 and o["s2"].count('class="mc-chip ') == 3 and "mc-mission" in o["s2"])
-    check("b. open position shows $ at stop / target and 'If it stops out now' the room after", "-$450" in o["p2"] and "+$3,600" in o["p2"] and "room left" in o["p2"])
+    check("b. open position shows $ at stop / target and 'If it stops out now' the drawdown after", "-$450" in o["p2"] and "+$3,600" in o["p2"] and "drawdown left" in o["p2"])
     check("b. satellites: Zlarior in a trade, BLITZ off until its account; with 3 accounts BLITZ idle",
           o["bots2"]["lit"] == "trade" and o["bots2"]["scalp"] in ("off", "idle", "trade") and o["bots3"]["scalp"] == "idle", (o["bots2"], o["bots3"]))
     check("b. closed trades for the shooting stars (newest first, stable ids)", o["closed"] and o["closed"][0]["usd"] == 800.0 and "|" in o["closed"][0]["id"], o["closed"])

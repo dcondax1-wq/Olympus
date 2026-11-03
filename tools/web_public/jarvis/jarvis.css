@@ -281,6 +281,7 @@ button.panel:active { transform: translateY(1px) scale(.995); }
 .kv span { display: block; font: 600 10px var(--fh); letter-spacing: .08em; color: var(--mut); text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .kv strong { display: block; margin-top: 3px; font: 600 14px/1.2 var(--fh); letter-spacing: .02em; color: var(--txt); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
 .kv strong.up { color: var(--ok); } .kv strong.dn { color: var(--bad); }
+.kv em { display: block; margin-top: 2px; font: 500 10px var(--fh); font-style: normal; color: var(--mut); white-space: nowrap; }
 .seg { display: grid; grid-template-columns: repeat(24, 1fr); gap: 2px; height: 7px; }
 .seg i { background: rgba(var(--cr), .14); }
 .seg i.on { background: var(--c); box-shadow: 0 0 5px rgba(var(--cr), .7); }

@@ -133,11 +133,11 @@
       <div class="bd-bar"><i style="width:${(prog * 100).toFixed(1)}%"></i></div>
       <div class="bd-kpis">
         <div><span>Balance</span><b>${usd(a.balance, 2)}</b></div>
-        <div><span>Room to floor</span><b class="${roomK === 'bad' ? 'dn' : ''}">${usd(a.room)}</b><em>floor ${usd(a.floor)}</em></div>
+        <div><span>Drawdown left</span><b class="${roomK === 'bad' ? 'dn' : ''}">${usd(a.room)}</b><em>of ${usd(a.mll || (a.id === 'lit' ? 2000 : 1000))} max loss</em></div>
         <div><span>Today</span><b class="${cl(a.today_pnl)}">${susd(a.today_pnl)}</b><em>${esc(a.trades_today ?? 0)} of ${esc(a.max_day)} trade${a.max_day === 1 ? '' : 's'}</em></div>
         ${funded
     ? `<div><span>Payouts</span><b>${esc(F.payouts_n ?? 0)} of ${esc(F.payouts_max ?? 5)}</b><em>${usd(F.paid_to_you)} to you</em></div>`
-    : `<div><span>Session</span><b>${ok(a.session) ? `${esc(a.session)} of ${esc(a.sessions || 10)}` : '—'}</b><em>goal: pass in 10</em></div>`}
+    : `<div><span>Profit</span><b class="${cl(a.profit)}">${susd(a.profit)}</b></div>`}
       </div>
       ${funded ? fundedHtml(F) : ''}
       ${posHtml(a.position)}
@@ -206,17 +206,13 @@
     if (!P || P.error) return `<section class="bd-card"><p class="bd-note">${esc((P && P.error) || 'No progress data yet.')}</p></section>`;
     const w = P.week || {};
     const wk = w.n >= w.lo && w.n <= w.hi ? 'good' : w.n > w.hi ? 'warn' : w.status === 'behind' ? 'warn' : '';
-    const s = ok(P.session) ? +P.session : 0, max = P.sessions_max || 15;
-    const sK = s > (P.sessions || 10) ? 'warn' : '';
     const O = (P.odds && P.odds.rows) || {};
     const oRow = (k) => O[k] ? `<div class="bd-odd"><span>${esc(O[k].label)}</span><div><b class="up">${pct(O[k].p10)}</b><em>pass in 2 weeks</em></div>
       <div><b class="${+O[k].f10 > 0 ? 'dn' : ''}">${pct(O[k].f10)}</b><em>fail in 2 weeks</em></div>${ok(O[k].pass_med) ? `<div><b>${esc(O[k].pass_med)}</b><em>sessions to pass (median)</em></div>` : ''}</div>` : '';
     const E = P.expected || {}, A = P.actual || {};
     return `<section class="bd-card bd-prog"><div class="bd-h"><div class="bd-eye">${esc(name)}<em>week and eval</em></div>${chip(`${w.n ?? 0} of ${w.lo}-${w.hi} this week`, wk)}</div>
       ${weekDays(w)}<p class="bd-line">${esc(w.sentence || '')}</p>
-      <div class="bd-meter"><div class="bd-meter-h"><span>Eval session</span><b>${ok(P.session) ? `${esc(s)} of ${esc(P.sessions || 10)}` : 'not started'}</b></div>
-        <div class="bd-sbar ${sK}"><i style="width:${Math.min(100, s / max * 100).toFixed(1)}%"></i><u style="left:${(10 / max * 100).toFixed(1)}%" title="10 sessions = 2 weeks"></u></div>
-        <div class="bd-meter-s"><span>${ok(P.sessions_left) ? esc(P.sessions_left) + ' left of the 2-week goal' : ''}${ok(P.days_traded) ? ` · ${esc(P.days_traded)} of ${esc(P.min_days || 2)} min. days traded` : ''}</span><span>10 = 2 weeks · 15 = 3 weeks</span></div></div>
+      ${ok(P.days_traded) && +P.days_traded < (P.min_days || 2) ? `<p class="bd-line">MFFU needs ${esc(P.min_days || 2)} trading days to pass: ${esc(P.days_traded)} done.</p>` : ''}
       ${Object.keys(O).length ? `<h4>Pass / fail odds <span>backtest Monte Carlo</span></h4>${oRow('H2')}${oRow('H1')}` : ''}
       <h4>$ a month</h4><div class="bd-money"><div><span>Expected</span><b>${usd(E.per_month)}</b><em>${esc(E.src ? E.src.split(',')[0] : 'no backtest number')}</em></div>
         <div><span>Actual so far</span><b class="${cl(A.profit)}">${susd(A.profit)}</b><em>${ok(A.sessions) ? `in ${esc(A.sessions)} session${A.sessions === 1 ? '' : 's'}` : ''}${ok(A.per_month_pace) && A.sessions >= 1 ? ` · pace ${susd(A.per_month_pace)}/mo` : ''}</em></div>
@@ -333,7 +329,7 @@
     const m = a.micros || {};
     return `<div class="bd-mini ${esc(a.id)}${blocked ? ' blocked' : ''}"><div class="bd-h"><div class="bd-eye">${esc(a.name)} · right now</div>${blocked ? chip('blocked', 'bad') : chip(w.open ? 'window open' : 'waiting', w.open ? 'good' : '')}</div>
       <p class="bd-line clamp">${esc(a.id === 'lit' && a.done_today ? 'Done for today (1 trade a day).' : a.waiting || '—')}</p>
-      <div class="bd-mrow2"><span>Entry window ${win(w)}</span>${a.id === 'lit' && ok(m.qty) ? `<span>size now <b>${esc(m.qty)} micros</b> (risk ${usd(m.risk_usd)}, the target pays ${usd(m.win_usd)})</span>` : ''}<span>today <b class="${cl(a.today_pnl)}">${susd(a.today_pnl)}</b> · room <b>${usd(a.room)}</b> · <b>${usd(a.to_target)}</b> to go</span></div>
+      <div class="bd-mrow2"><span>Entry window ${win(w)}</span>${a.id === 'lit' && ok(m.qty) ? `<span>size now <b>${esc(m.qty)} micros</b> (risk ${usd(m.risk_usd)}, the target pays ${usd(m.win_usd)})</span>` : ''}<span>today <b class="${cl(a.today_pnl)}">${susd(a.today_pnl)}</b> · drawdown left <b>${usd(a.room)}</b> ·<b>${usd(a.to_target)}</b> to go</span></div>
       ${(a.blocks || []).slice(0, 2).map(blockRow).join('')}</div>`;
   }
   function home(B, opts) {

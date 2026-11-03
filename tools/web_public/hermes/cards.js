@@ -109,7 +109,7 @@ function evalCard(w, p, peers) {
     return `<div class="ev"><div class="rings">${ring(e.progress, 'prog', 'progress to the target')}${ring(e.room_frac, 'room', 'room above the floor')}
       <span class="pct">${Math.round(e.progress * 100)}%</span></div><div class="evt"><b>${esc(e.bot)} · ${esc(e.plan || e.name)}</b>
       <span>${done ? 'Target reached' : `${esc(usd(e.profit))} of ${esc(usd(e.target, { sign: false, cents: false }))} · ${esc(usd(e.to_target, { sign: false, cents: false }))} to go`}</span>
-      <span>${e.room != null ? `Floor ${esc(usd(e.room, { sign: false, cents: false }))} below` : ''}${e.session ? ` · session ${esc(e.session)} of ${esc(e.sessions || 10)}` : ''}</span></div></div>`;
+      <span>${e.room != null ? `Drawdown left ${esc(usd(e.room, { sign: false, cents: false }))}${e.mll != null ? ` of ${esc(usd(e.mll, { sign: false, cents: false }))}` : ''}` : ''}</span></div></div>`;
   }).join('');
   return {
     id: 'eval', name: 'Evals', colors: ['#040a1a', '#1a3f8f', '#59d0ff'], mode: 6, ms: 8000,

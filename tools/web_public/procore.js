@@ -324,9 +324,9 @@
     return `<section class="pr-card pr-pace" id="pr-pace-${esc(key)}" style="--c:${key === 'lit' ? '#4f9bff' : '#ff9a3d'}"><div class="pr-h"><h3>${esc(name)} · ${esc(A.plan || (key === 'lit' ? 'MFFU Builder 50K' : '25K'))}</h3><span class="pr-meta">${esc(A.badge || '')}${A.status ? ' · ' + esc(A.status) : ''}</span></div>
       <div class="pr-pace-g">${ring(passed ? 1 : p, 140, 11, col, inner, 'p' + key)}
         <div class="pr-pace-t"><span>Balance <b>${usd(bal)}</b> · profit <b class="${cls(prof)}">${usd(prof, true)}</b></span>
-          <span>Room to the floor <b class="${ok(room) && room < mll * 0.35 ? 'dn' : ''}">${usd(room)}</b>${ok(floor) ? ` (floor ${usd(floor)})` : ''}</span>
+          <span>Drawdown left <b class="${ok(room) && room < mll * 0.35 ? 'dn' : ''}">${usd(room)}</b> of ${usd(mll)}</span>
           ${lossesLeft != null ? `<span>That is <b>${lossesLeft}</b> typical full loss${lossesLeft === 1 ? '' : 'es'} (${usd(risk1)} each)</span>` : ''}
-          ${s != null ? `<span>Session <b>${s}</b> · ${left10 > 0 ? `${left10} left in the 2-week goal` : `past the 2-week goal: ${left15} left to the 3-week limit`}</span>` : ''}</div></div>
+</div></div>
       ${pace ? `<p class="pr-pace-l">${pace}</p>` : ''}
       ${projS != null && !passed ? `<p class="pr-mut">At the bot's own H2 pace (${usd(avg)} a session, backtest) the rest takes about <b>${projS}</b> session${projS === 1 ? '' : 's'}: ${s != null && s + projS - 1 <= sMax ? 'inside' : 'past'} the 3-week limit.</p>` : ''}
       ${oddsRows.length ? `<ul class="pr-odds">${oddsRows.map(([k, r]) => `<li><span>${esc(r.label || k)}</span><i><b class="p" style="width:${clamp(n(r.p10) || 0, 0, 100)}%"></b><b class="f" style="width:${clamp(n(r.f10) || 0, 0, 100)}%"></b></i><em>pass ${pc(r.p10)} · fail ${pc(r.f10)} in 2 wks</em></li>`).join('')}</ul><p class="pr-mut">Research odds of an eval started fresh (the live board), not of this one from today's balance (that is Trader's deck > eval odds).</p>` : ''}

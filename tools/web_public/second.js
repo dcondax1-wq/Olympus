@@ -59,8 +59,7 @@
     const target = 3000, prof = ok(e.profit) ? e.profit : null;
     const parts = [];
     if (ok(e.to_target)) parts.push('$' + Math.round(e.to_target).toLocaleString('en-US') + ' to pass');
-    if (ok(e.session)) parts.push('session ' + e.session + '/' + (e.sessions || 10));
-    if (ok(e.room)) parts.push('room $' + Math.round(e.room).toLocaleString('en-US'));
+    if (ok(e.room)) parts.push('drawdown left $' + Math.round(e.room).toLocaleString('en-US') + ' of $' + Math.round(+e.mll || 2000).toLocaleString('en-US'));
     return { name: 'Zlarior', plan: (a && a.plan) ? 'MFFU ' + String(a.plan).replace(/^MFFU\s*/, '') + (a.source === 'cloud' ? ' · cloud paper' : '') : 'MFFU Builder 50K',
       status, lvl, today: pn.today, week: pn.week, prog: prof != null ? prof / target : 0, progText: parts.join(' · ') || 'eval not reporting yet', next, go: 'today' };
   }

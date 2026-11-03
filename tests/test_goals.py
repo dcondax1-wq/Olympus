@@ -59,7 +59,7 @@ def account_checks():
     check("LIT: room / floor carried", lit["room"] == 1542.60 and lit["floor"] == 48168.20, lit)
     check("LIT: sessions left from the clock text", lit["sessions_left"] == 6 and lit["sessions_used"] == 4, lit)
     check("LIT: days traded counts non-zero days", lit["days_traded"] == 1 and lit["min_days"] == 2, lit)
-    check("LIT: plain sentence", lit["sentence"].startswith("$3,289 to go on the 50K, 6 sessions left"), lit["sentence"])
+    check("LIT: plain sentence", lit["sentence"] == "$3,289 to go on the 50K, drawdown left $1,543 of $2,000.", lit["sentence"])
     check("LIT: progress 0 when below the start", lit["progress"] == 0.0, lit["progress"])
     check("LIT: the PC account wins over the cloud paper", lit["source"] == "PC bot" and lit["anchored"], lit)
     check("ATLAS: not started without account B", at["stage"] == "planned" and at["level"] == "idle" and at["balance"] is None, at)
@@ -75,7 +75,7 @@ def account_checks():
     f = G.account_goal("lit50k", lit_eval(status="failed", room=0), "eval", "PC bot")
     check("failed: sentence + bad", f["level"] == "bad" and "failed" in f["sentence"], f)
     late = G.account_goal("lit50k", lit_eval(session=12, clock_text=""), "eval", "PC bot")
-    check("past session 10: warn + the 3-week line", late["level"] == "warn" and "session 15" in late["sentence"], late)
+    check("past session 10: warn, no session counter in the sentence (owner 2026-11-03)", late["level"] == "warn" and "session" not in late["sentence"], late)
     low = G.account_goal("lit50k", lit_eval(room=300), "eval", "PC bot")
     check("room under 25% of the MLL: bad", low["level"] == "bad", low)
 

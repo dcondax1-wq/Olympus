@@ -42,6 +42,10 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   changes into one merge when possible.
 - **Verify live** after a publish: the file on `https://demetrades2000-coder.github.io/nq-dashboard/...` (e.g. the worker's
   `CACHE` name), then one WebKit open of the live page.
+- **Eval cards (owner 2026-11-03):** no "session X of 10" bars / dots / counters on any card (phone, PC copies, Jarvis);
+  the room is shown as **"Drawdown left $X of $max loss"** (= balance - the MFFU max-loss floor, the number MFFU shows).
+  Eval HQ / LIT kit / eval curve read the real PC account (`data.json` "accounts" source pc, anchored) before the cloud
+  paper ledger (`live.eval`: its own trail, floor $48,000 / room $389 on 11-03 while the real 50K had $1,133 left).
 
 ## Hard rules (never break)
 - **Futures data only:** TradingView CME `NQ1!` / `ES1!` exports in `data/` (5m 2021-11 → 2026-10-16; 1m for 2026). Never CFD,
