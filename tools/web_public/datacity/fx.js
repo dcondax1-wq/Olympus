@@ -217,7 +217,7 @@ export class Billboards {
         blending: THREE.AdditiveBlending, uniforms: { ...pick(U, 'uTime'), uMap: { value: tex }, uTint: { value: new THREE.Color(0x3fd8ff) }, uFade: { value: 1 } } });
       const m = new THREE.Mesh(new THREE.PlaneGeometry(22, 11), mat);
       const a = (k / n) * Math.PI * 2 + Math.PI / 4;
-      m.position.set(Math.cos(a) * 25, 15 + (k % 2) * 4, Math.sin(a) * 25);
+      m.position.set(Math.cos(a) * 29, 27 + (k % 2) * 5, Math.sin(a) * 29);
       m.lookAt(Math.cos(a) * 60, m.position.y, Math.sin(a) * 60);           // facing out of the plaza
       m.renderOrder = 9;
       this.group.add(m);

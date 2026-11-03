@@ -97,13 +97,14 @@ ${HASH}
 void main(){
   vec3 n = abs(vN);
   float side = 1.0 - step(0.5, n.y);
-  vec2 g = vec2((n.x > 0.5 ? vW.z : vW.x) * 1.3, vW.y * 1.7);
+  vec2 g = vec2((n.x > 0.5 ? vW.z : vW.x) * 1.1, vW.y * 1.4);
   vec2 f = fract(g);
-  float win = step(0.25,f.x)*step(f.x,0.75)*step(0.3,f.y)*step(f.y,0.72);
+  float win = step(0.22,f.x)*step(f.x,0.78)*step(0.28,f.y)*step(f.y,0.74);
   float lit = step(hash(floor(g)), vMeta.x);
   float diff = 0.3 + 0.55*max(dot(normalize(vN), normalize(vec3(0.45,0.8,0.25))), 0.0);
-  vec3 col = mix(vColor*0.13, vColor*0.5 + 0.05, uDay)*diff + side*win*lit*mix(vec3(1.0,0.85,0.6), vColor, 0.4)*mix(1.2, 0.35, uDay);
-  col += vColor * (1.0 - side) * 0.55;
+  vec3 col = mix(vColor*0.16, vColor*0.5 + 0.05, uDay)*diff + side*win*lit*mix(vec3(1.0,0.85,0.6), vColor, 0.45)*mix(1.5, 0.4, uDay);
+  col += vColor * side * smoothstep(0.6, 1.0, vY) * 0.35 * (1.0 - uDay*0.5);
+  col += vColor * (1.0 - side) * 0.75;
   if (uToday > 0.5) col = col * mix(0.3, 1.0, step(0.5, vMeta.y)) + vec3(0.3,0.95,1.0) * step(1.5, vMeta.y) * 0.25;
   col *= mix(1.0, 0.12, vMeta.z);
   col = mix(col, uFog, fogAmount(vFD, vW.y));

@@ -73,8 +73,8 @@ def enumerate_combos():
         if key in ids:                             # a session open x weekday / DST / news / VIX lives in Times only
             return
         ids.add(key)
-        out.append({"id": key, "district": district_of(district, conds), "trig": trig, "win": win, "slot": slot,
-                    "conds": tuple(conds)})
+        out.append({"id": key, "district": district_of(district, conds), "kind": district, "trig": trig, "win": win,
+                    "slot": slot, "conds": tuple(conds)})
     # Times: every 15-minute slot (18:00-16:00 ET) both ways; every session open both ways x weekday / month / DST / news / VIX
     for trig in SLOT_TRIGS:
         for s in range(96):

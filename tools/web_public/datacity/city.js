@@ -277,7 +277,8 @@ class App {
     const cam = this.city.camera, look = new THREE.Vector3();
     cam.getWorldDirection(look);
     this.tour.start(cam.position, cam.position.clone().add(look.multiplyScalar(80)));
-    this.orbit.drive((dt) => this.tour.step(dt));
+    const speed = Math.max(1, Math.min(50, +P.get('tourSpeed') || 1));            // tests fast-forward the tour
+    this.orbit.drive((dt) => this.tour?.step(dt * speed) ?? null);
     $('#tourB').classList.add('on');
   }
 
@@ -357,6 +358,7 @@ class App {
       this.lastCalls = info.calls; this.lastTris = info.triangles;
       this.minimap.draw(this.city.camera, this.tour ? this.orbit.at : this.orbit.view.target, dt);
       if (this.tour) state.tour = { ...state.tour, ...this.tour.info };
+      state.beam = !!this.city.beam.at;
       state.frames++;
       frames++; acc += dt;
       if (acc >= 1) {

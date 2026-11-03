@@ -262,7 +262,7 @@ class Study:
         base = {(c["trig"], c["win"]): i for i, c in enumerate(self.combos) if not c["conds"] and c["slot"] < 0}
         acc = {}
         for i, c in enumerate(self.combos):
-            if c["district"] != "while" or len(c["conds"]) != 1 or self.rows[i].get("n", 0) < G.MIN_N:
+            if c.get("kind", c["district"]) != "while" or len(c["conds"]) != 1 or self.rows[i].get("n", 0) < G.MIN_N:
                 continue
             b = base.get((c["trig"], c["win"]))
             if b is None or self.rows[b].get("n", 0) < G.MIN_N:
@@ -274,7 +274,7 @@ class Study:
         out = sorted(({"key": f"{fam}={v}", "fam": fam, "lab": F.STATES[fam][v], "med_r": round(float(np.median(a["d"])), 3),
                        "bases": len(a["d"]), "both_pct": round(100 * a["both"] / len(a["d"]), 1)}
                       for (fam, v), a in acc.items() if len(a["d"]) >= 5), key=lambda x: -x["med_r"])
-        return out[:k_top] + out[-k_bottom:]
+        return out if len(out) <= k_top + k_bottom else out[:k_top] + out[-k_bottom:]
 
     def today(self) -> list:
         """Leaderboard setups that fired on the last complete day (one line per trade) and how they did."""
