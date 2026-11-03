@@ -21,6 +21,15 @@ from engine.data import available, load
 from engine.instruments import INSTRUMENTS
 from engine.live import BOT
 from engine.model import DEFAULTS
+# ---- LITE MODE ---- (engine/lite.py: data/lite.json {"on": true} or LE_LITE=1; read-only add-ons off, 100 days of history;
+# trading decisions unchanged, tests/test_lite.py). Before anything below reads the LE_* switches it sets.
+from engine import lite as _lite
+LITE = _lite.settings()
+if LITE["on"]:
+    _lite.apply_env()
+    _lite.install(BOT, LITE)
+    print(f"[lite] LITE mode on ({LITE.get('why')}): add-ons off, {BOT.lite['hist_days']} days of history", flush=True)
+# ---- END LITE MODE ----
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 WEB = os.path.join(ROOT, "web")

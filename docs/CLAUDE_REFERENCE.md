@@ -32,6 +32,7 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
 | PANTHEON (free data gods: liquidity, rates, vol, calendar, COT, dollar, credit, crypto; council verdict; `states.json` for Data City) | `tools/pantheon/` (fetchers + builder), `research/pantheon/`, `tools/web_public/pantheon/`, `docs/PANTHEON.md` | the CRONOS nightly task `pantheon`; published with every build | `tests.test_pantheon` (`fast` without the browser) |
 | CRONOS (nightly refresh of the OLYMPUS research apps) | `tools/cronos/`, `.github/workflows/cronos.yml` (+ `datacity.yml`), branches `cronos` / `datacity`, `docs/CRONOS.md` | main -> runs on its own schedule; the next cloud-monitor publish pulls the branches and stamps the cards | `tests.test_cronos` (`--quick` without the site builds) |
 | PC speed (Surface + main PC) | `CLEAN_PC.bat`, `scripts/clean_pc.ps1`, `docs/PC_PERFORMANCE.md` | main -> the PC's auto-update; the main PC gets the `PC_KIT` copy (OneDrive or Desktop) | `tests.test_clean_pc` |
+| LITE mode (bot on low memory) + PC-off plan | `engine/lite.py`, `BOT_LITE.bat`, `scripts/bot_lite.ps1`, `docs/PC_OFF_PLAN.md` | main -> the PC's auto-update; the owner double-clicks BOT_LITE once | `tests.test_lite` (`--quick` = unit only), `tests.test_win_scripts` |
 
 - **Phone changes:** check in WebKit (the iPhone's engine) before shipping: `PLAYWRIGHT_BROWSERS_PATH=<dir> python -m playwright
   install webkit` + `install-deps webkit`, iPhone 13 / SE profiles (see the Jarvis worker notes under Infrastructure).
@@ -1439,6 +1440,17 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   passes once (guard 0 `startup_reconcile`). Unreadable `ninjatrader_state.json` -> `.corrupt-*`, entries blocked until
   the account is flat (orphan bot orders from the audit log cancelled) or `--confirm-reset`. Order files are published
   with no overwrite (`_publish`); stale `le_outbox` files are deleted at start. Runbook: `.../STARTUP_AND_RECOVERY_RUNBOOK.md`.
+- **LITE mode (2026-11-03, `engine/lite.py`, `tests/test_lite.py`):** switch `data/lite.json` {"on": true, "hist_days": 100}
+  (gitignored, written by `BOT_LITE.bat` / `python -m engine.lite on|off`) or env `LE_LITE=1` (`LE_LITE=0` forces off); read once
+  at server start (server.py `# ---- LITE MODE ----`). Off: Bot Brain, Trade pictures, paper second strategies / ATLAS + BLITZ
+  shadows (no bg_worker child), AI watch, Mind (LE_MIND=0, LE_MIND_RESEARCH=0), exec audit (LE_EXEC_AUDIT=0), dashboard prewarm
+  (LE_PREWARM=0); env set by the owner wins. Kept: LIT + routing, guards, account B/C/fleet, routed second route, setup-armed
+  pushes, narrator, heartbeat (bars for the cloud), live feed, autoupdate, PC watcher. History read cut to 100 days (floor 75; LIT's
+  window_start reaches <= 69 days). engine/live.py untouched (instance wrappers like poll_timing). Measured here (server import +
+  36 polls on data/ with add-ons on, incl. children): **full peak 687 MB -> LITE 180 MB**. Replay test: full vs LITE LiveBot on
+  2026-10-13..15, identical ledger / state / routing log. `BOT_LITE.bat`: lite.json on, starts NinjaTrader if closed, starts the
+  server or restarts it via /api/next/botctl/restart (refused when not flat), pc_keeper -Bot once, NinjaTrader memory checklist.
+  PC-off answer (Azure for Students costs, free tiers, mini PC, MFFU VPS question): `docs/PC_OFF_PLAN.md`.
 - **PC off, free:** `scripts/PC_OFF_OPTIONS.md` (A: TradingView brain + one tap on the phone; B: the PC wakes itself at 07:50 ET,
   trades through NinjaTrader, hibernates at 16:35: `scripts/schedule_pc.ps1`; E: a spare Surface on 24/7: `scripts/setup_dedicated_pc.ps1`;
   paid bridges / VPS only as options C-D). The always-on PC pushes a heartbeat (`engine/heartbeat.py`, branch `heartbeat`,

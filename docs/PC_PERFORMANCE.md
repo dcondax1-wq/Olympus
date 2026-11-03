@@ -5,6 +5,9 @@ NinjaTrader plus the bot will always fill 4 GB. The best fix for the money is a 
 (i5-9500T, 16 GB, SSD), about $250** as the bot's own computer (details below). Until then, `CLEAN_PC.bat` keeps
 the Surface as light as it can be.
 
+**Low memory now (2026-11-03):** double-click **`BOT_LITE.bat`**: the bot drops from ~690 MB to ~180 MB and trades the
+same. PC-off options and costs: `docs/PC_OFF_PLAN.md`.
+
 ## Surface (the bot PC): 3 steps
 1. After 4:05 PM ET (or on the weekend), double-click **`CLEAN_PC.bat`** in the bot folder. Click **Yes** once when
    Windows asks. It cleans, then runs the **v2 deep tune** (below) and prints a **health score** before and after.
