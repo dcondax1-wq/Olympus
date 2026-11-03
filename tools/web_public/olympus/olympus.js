@@ -73,11 +73,21 @@
     if (map) for (var k in map) out[k] = map[k] === 'bg' ? bg : t[map[k]];
     return out;
   }
+  var rootStyle0 = root.getAttribute('style') || '';          // before any theme paints (restoreRoot)
   var theme = TH ? TH.apply('stage', { meta: function (t) { return TH.mix(ownBg, t.bg, t.mix); }, extra: appVars }) : null;
   accent(theme);
 
   function emit() { for (var i = 0; i < subs.length; i++) { try { subs[i](level); } catch (e) { /* one listener never stops the rest */ } } }
-  var themeSubs = [];
+  var themeSubs = [], appSubs = [];
+  // the apps' own hooks (onTheme / theme()) never see the default theme: on 'olympus' every app keeps today's look exactly.
+  // Coming back to the default, the inline CSS variables an app painted are put back as they were before any theme.
+  var isDefault = function (t) { return !t || t.id === 'olympus'; };
+  function restoreRoot() {
+    var keep = {}, names = ['--oly-accent', '--oly-accent-rgb'];
+    for (var i = 0; i < names.length; i++) keep[names[i]] = root.style.getPropertyValue(names[i]);
+    root.setAttribute('style', rootStyle0);
+    for (var k in keep) if (keep[k]) root.style.setProperty(k, keep[k]);
+  }
   // a THREE.Color-like object (getHex / setHex) keeps its own colour as the base; the theme blends it by its 'mix'
   function tint(base, kind) { return TH && theme ? TH.mix(base, theme[kind || 'fog'], theme.mix) : base; }
   function sceneHook(o) {
@@ -139,9 +149,9 @@
         pixelRatio: renderer.getPixelRatio ? renderer.getPixelRatio() : null };
     },
     /** the theme's tokens ({ id, name, bg, glass, line, text, dim, accent, glow, fog, sky, emissive, bloom, mix, harmony, ... }) */
-    theme: function () { return theme || null; },
-    /** cb(tokens) after every theme change (not at start: read theme() for that) */
-    onTheme: function (cb) { if (typeof cb === 'function') themeSubs.push(cb); },
+    theme: function () { return isDefault(theme) ? null : theme; },
+    /** cb(tokens) after every theme change (not at start: read theme() for that); cb(null) when back on the default */
+    onTheme: function (cb) { if (typeof cb === 'function') appSubs.push(cb); },
     tint: tint,
     themeScene: function (o) { try { return sceneHook(o || {}); } catch (e) { return null; } },
     ready: function () { ready(); },
@@ -233,6 +243,10 @@
   if (TH) TH.on(function (t) {
     theme = t; accent(t); O.color = info[2];
     for (var i = 0; i < themeSubs.length; i++) { try { themeSubs[i](t); } catch (e) { /* one listener never stops the rest */ } }
+    var def = isDefault(t);
+    if (def) restoreRoot();
+    for (var j = 0; j < appSubs.length; j++) { try { if (!def) appSubs[j](t); } catch (e) { /* one listener never stops the rest */ } }
+    if (def && appSubs.length) try { window.dispatchEvent(new CustomEvent('olympus:theme-default')); } catch (e) { /* old browsers */ }
   });
   timer = setTimeout(function () { if (state === 'loading') lift(); }, 12000);   // never a wall: it lifts by itself
   // mounted as soon as the body is parsed (readyState 'interactive' comes before the app's deferred modules run)

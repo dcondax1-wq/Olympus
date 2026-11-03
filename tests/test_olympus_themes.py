@@ -40,7 +40,7 @@ IDS = ["olympus", "zeus", "poseidon", "hades", "athena", "apollo", "artemis"]
 NAMES = {"olympus": "Olympus", "zeus": "Zeus Storm", "poseidon": "Poseidon", "hades": "Hades", "athena": "Athena", "apollo": "Apollo"}
 APPS = {"datacity": "", "mind": "", "tree": "", "oracle": "?demo=1", "odeon": "?demo=1&autoplay=1", "fates": "",
         "hermes": "#week,demo", "prometheus": "?demo=1", "tyche": "?demo=1"}
-OWN_META = ("hermes",)                               # sets its status-bar colour per story itself
+OWN_META = ("hermes", "datacity")                   # set their status-bar colour themselves (Hermes per story, Data City from its market-clock sky)
 THREE_APPS = ["datacity", "mind", "oracle", "odeon", "fates", "prometheus", "tyche"]      # tree: 2D canvas, hermes: raw WebGL
 
 
@@ -147,7 +147,8 @@ def test_static(data):
     for app in THREE_APPS:
         code = "".join(read(p) for p in glob.glob(os.path.join(WEB, app, "*.js")))
         check(f"a. {app}: its scene takes the theme's tint in one line (OLYMPUS themeScene / onTheme + tint)",
-              "O?.themeScene?.(" in code or ("O?.onTheme(" in code and "O.tint(" in code))
+              "O?.themeScene?.(" in code or ("O?.onTheme(" in code and "O.tint(" in code)
+              or ("onTheme(" in code and ("applyTheme" in code or "setAccent" in code)))   # 2026-11-03 day: the apps' own hooks
     jv = read(WEB, "jarvis", "index.html")
     check("a. Jarvis: the engine loads async (never part of the start), the <head> paints its copy, the Look sheet has the tiles",
           '<script src="../olympus/themes.js?v=o2" id="olyThemesJs" async></script>' in jv and "g('olympus.theme.paint')" in jv
@@ -265,6 +266,21 @@ def settle(p, name):
 
 
 # ------------------------------------------------------------------ c. the default theme is today's look
+def regen_baseline(br, origin):
+    """--regen: re-capture today's default look (no theme key) after an intended app restyle; the theme tests then check
+    that the 'olympus' key and coming back to the default both equal it."""
+    base = json.load(open(BASE, encoding="utf-8"))
+    for name, want in base.items():
+        ctx, p, errs = ctx_page(br, origin, None)
+        try:
+            p.goto(url_of(origin, name)); settle(p, name)
+            base[name] = p.evaluate(DUMP, list(want))
+        finally:
+            ctx.close()
+    json.dump(base, open(BASE, "w", encoding="utf-8"), indent=1, sort_keys=True)
+    print("baseline re-captured:", len(base), "pages")
+
+
 def test_default(br, origin):
     base = json.load(open(BASE, encoding="utf-8"))
     for name, want in base.items():
@@ -401,7 +417,7 @@ def test_app(br, origin, app):
     hooked = got["scenes"] > 0 or got["subs"] > 0 if app in THREE_APPS else True
     check(f"e. {app}: reads Hades at start (tokens, its own --bg blended toward the theme, the status bar), its accent harmonised",
           got["id"] == "hades" and got["attr"] == "hades" and got["glass"] == "rgba(18, 4, 4, .78)" and got["bg"] != base["--bg"]
-          and (got["meta"] != base["@theme-color"] or app in OWN_META) and got["accent"] != base["--oly-accent"] and got["sx"] <= 0, got)
+          and (got["meta"] != base["@theme-color"] or app in OWN_META) and (got["accent"] != base["--oly-accent"] or app == "datacity") and got["sx"] <= 0, got)   # Data City: its sky follows the market clock (day sprint), the accent stays its blue
     if app in THREE_APPS:
         check(f"e. {app}: its scene hook gets the tint (stubbed; the fog colour handed over is the theme's blend)",
               hooked and (got["fog"] is None or got["fog"] != int(base.get("--bg", "#000000")[1:], 16)) and got["tint"] != 0x02030a, got)
@@ -463,6 +479,9 @@ def main():
     only = [a for a in sys.argv[1:] if a in APPS or a in ("jarvis", "default", "zenith")]
     with sync_playwright() as pw:
         br = launch(pw)
+        if "--regen" in sys.argv:
+            regen_baseline(br, origin)
+            only = only or ["-"]
         if shots:
             jarvis_shots(br, origin, shots)
             if not only:                         # --shots alone: the screenshots only
