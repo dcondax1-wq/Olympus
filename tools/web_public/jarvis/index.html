@@ -43,19 +43,28 @@
   if (n > 0) { d.setAttribute('data-safe', '1'); if (g('jarvis.core3d') === '1') s('jarvis.no3d', '1'); }
   s('jarvis.core3d', null);
   s('jarvis.unfinished', String(n + 1));
-  // OLYMPUS intro (the olympus-intro script, 2026-11-03): which version this start gets. full = the first start of the day, short = 1 s later
-  // the same day, fade = reduce motion / a safe start / an intro that did not finish, off = 3D effects Off (0.5 s). Never under
+  // OLYMPUS intro (the olympus-intro script, 2026-11-03): which version this start gets. full = a new launch (10 s film), lite = the same
+  // film at 5 s (low-end phone / 3D Low), short = 1 s (the same launch seen again), calm = reduce motion (3.5 s fade), fade = a safe start / an
+  // intro that did not finish (0.8 s), off = 3D effects Off (0.5 s). Never under
   // automation unless a test asks ('jarvis.intro.force'); 'jarvis.intro' = 'off' turns it off (⋯ → Theme → Extras).
   try {
     var im = '', fo = g('jarvis.intro.force'), now = new Date(), day = now.getFullYear() + '-' + (now.getMonth() + 1) + '-' + now.getDate();
     if (g('jarvis.intro') !== 'off' && (!navigator.webdriver || fo)) {
       if (fo === 'full' || fo === 'short' || fo === 'fade' || fo === 'off') im = fo;
       else if (d.getAttribute('data-fx') === 'off') im = 'off';
-      else if ((window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) || n > 0 || g('jarvis.intro.run')) im = 'fade';
-      else im = g('jarvis.intro.day') === day ? 'short' : 'full';
+      else if (n > 0 || g('jarvis.intro.run')) im = 'fade';
+      else if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) im = 'calm';
+      else {
+        // once per app launch: the same launch seen again (a reload after an app switch: sessionStorage still has 'jarvis.booted') or a
+        // start within 20 minutes of the last full one gets the 1 s version; a new launch gets the film (5 s on a low-end phone / 3D Low)
+        var again = false;
+        try { again = !!sessionStorage.getItem('jarvis.booted') || (g('jarvis.intro.day') === day && Date.now() - (parseInt(g('jarvis.intro.at') || '0', 10) || 0) < 20 * 60 * 1000); } catch (e) { /* private mode */ }
+        im = again ? 'short' : (d.getAttribute('data-fx') === 'low' || (navigator.hardwareConcurrency || 8) <= 2 || (navigator.deviceMemory && navigator.deviceMemory <= 2) ? 'lite' : 'full');
+      }
     }
     if (im) {
       d.setAttribute('data-intro', im); window.__olyT0 = Date.now();
+      if (im !== 'fade' && im !== 'off') { var pl = document.createElement('link'); pl.rel = 'preload'; pl.as = 'image'; pl.href = 'intro-logo.webp'; document.head.appendChild(pl); }
       // the overlay's first deadline on this start's own clock (its CSS deadline only starts once the overlay is styled):
       // the intro not running by 0.7 s = the overlay steps aside
       setTimeout(function () { if (!window.__olyIntro) { var o = document.getElementById('olyIntro'); if (o) o.style.visibility = 'hidden'; } }, 700);
@@ -105,49 +114,59 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
 .oly canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block}
 .oly .oly-w{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:radial-gradient(ellipse at 50% 42%,#1a0b2e,#000 62%)}
 .oly .oly-w b{font:800 38px/1 Orbitron,-apple-system,system-ui,sans-serif;letter-spacing:.32em;padding-left:.32em;color:#ffd98a;background:linear-gradient(180deg,#fff3d1,#ffc95c 45%,#c084fc);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 14px rgba(168,85,247,.75))}
+.oly .oly-w canvas.oly-l{width:min(78vw,52vh,400px);height:min(78vw,52vh,400px);margin-bottom:-4px}
 .oly .oly-w small{font:600 11px/1 Orbitron,-apple-system,system-ui,sans-serif;letter-spacing:.5em;padding-left:.5em;color:rgba(222,190,255,.6)}
 .oly .oly-skip{position:absolute;left:0;right:0;bottom:calc(22px + env(safe-area-inset-bottom,0px));text-align:center;font:600 10px/1 -apple-system,system-ui,sans-serif;letter-spacing:.32em;color:rgba(236,233,242,.34);pointer-events:none}</style>
 </head>
 <body>
 <div class="oly" id="olyIntro" aria-hidden="true"></div>
 <script id="olympus-intro">
-/* OLYMPUS intro (2026-11-03, owner: "it needs to be SICK"). It plays over Jarvis while Jarvis starts underneath and never
- * holds Jarvis up: the void, a spark on the ground, Zeus's lightning strikes it, the temple's columns rise out of a sea of
- * clouds, embers fly into the letters OLYMPUS on the frieze (gold, a violet glow), the pediment draws itself in light, an orb
- * wakes in the pediment, the camera pushes through the clouds into it and it ignites as Jarvis's own core. A bass "whoom"
- * (Web Audio) only after a gesture: the tap that skips, or a replay from the command palette; never on a cold open.
+/* OLYMPUS intro (2026-11-03, owner: "INSANE, about 10 seconds, ending on my logo"). It plays over Jarvis while Jarvis starts
+ * underneath and never holds Jarvis up. One WebGL1 full-screen shader (procedural storm, ridge, marble columns) plus one
+ * point-sprite pass (gold sparks that become the letters) around the owner's logo, which is a texture (intro-logo.webp: 1024 x 512,
+ * the eclipse ring on the left half, the gold peaks on the right half, so they can arrive separately; preloaded, ~13 KB, in the
+ * service worker's SHELL; if it has not arrived by the time it is needed a drawn stand-in takes its place).
  *
- * Inline, in its own script: it never waits for a file (WebKit runs an async script only after the page's module, i.e. after
- * Jarvis has shown: tested), and a throw here stays in this script.
+ * The 10 s (full), phases in the clock "tau" (seconds):
+ *   0.0  heart   black, a heartbeat of light (lub-dub x2) from where the ring will be, thunder far away
+ *   1.0  storm   the camera flies into storm clouds; lightning strikes light the ridge of Mount Olympus from below
+ *   3.3  rise    the camera rises past marble columns and a field of gold sparks; a gold glow builds above
+ *   5.5  eclipse the eclipse ring ignites (bloom flare), the scene falls dark, the gold peaks slide into place, the temple lights
+ *   7.05 word    the sparks fly into OLYMPUS (Orbitron, gold, a light sweep), JARVIS ONLINE beneath
+ *   8.7  portal  the camera punches through the ring: the ring grows past the screen and its inside is a hole onto Jarvis
  *
  * Versions (picked before the first paint by the start script in <head>, html[data-intro]):
- *   full   3.6 s, the first start of the day          short  1 s, later starts the same day
- *   fade   0.8 s still word mark (reduce motion, a start after one that did not finish, an intro that did not finish)
- *   off    0.5 s fade (3D effects: Off)
- * Drawing: one WebGL1 full-screen shader and one point-sprite pass; every particle moves on the GPU (no per-frame JS but
- * uniforms). Rendered below the screen's resolution (1.5x; 1x on low-end or 3D Low); late frames step the resolution down and
- * a phone under 20 fps cuts to the reveal. No WebGL: the still version.
+ *   full   10 s, a new launch (first start, or 20+ minutes after the last one)     lite   5 s, the same film at 2x on a low-end
+ *   short  1 s, the same launch seen again (an app switch that reloaded the page): the logo and the portal only        phone / 3D Low
+ *   calm   3.5 s, reduce motion: the logo and the word mark fading in and out, nothing moves
+ *   fade   0.8 s still word mark (a start after one that did not finish, no WebGL)     off   0.5 s fade (3D effects: Off)
+ * Rendered below the screen's resolution (1.5x; 1x on low-end or 3D Low); late frames step the resolution down and a phone under
+ * 20 fps cuts to the reveal: never a slideshow. No WebGL: the still version.
  *
  * Fail-safes (the iPhone black-screen lesson): every step runs in try/catch and any error removes the overlay; the overlay also
  * hides by itself (the start script's 0.7 s timer, then CSS by 0.95 s, when this script never gets going; its length + 0.6 s
  * once it runs); a timer, a hidden page, a lost WebGL context and the start watchdog's note end it too. 'jarvis.intro.run'
  * marks an intro in progress: if the phone closes Jarvis under it, the next start gets the fade.
- * Tap anywhere (or Esc / Enter / Space) to skip. window.__olyIntro is its state (tests); window.__olyIntroPlay(mode) replays it.
+ * Tap anywhere (or Esc / Enter / Space) to skip: instant (60 ms). window.__olyIntro is its state (tests); window.__olyIntroPlay(mode) replays it.
+ * Sound: window.OLYMPUS_SFX (../olympus/sfx.js) when the page has it (tick / thunder / pad / rankup / portal, guarded); otherwise a
+ * bass "whoom" through Web Audio at the portal, only after a gesture. Never on a cold open without the owner's sound file's own rules.
  */
 (function () {
   'use strict';
   var W = window, doc = document, root = doc.documentElement;
-  var st = W.__olyIntro = { mode: '', q: '', state: 'idle', frames: 0, ms: 0, err: '', done: false, scale: 0, n: 0, fps: 0 };
-  var LEN = { full: 3.6, short: 1.0, fade: 0.8, off: 0.5 };
+  var st = W.__olyIntro = { mode: '', q: '', state: 'idle', frames: 0, ms: 0, err: '', done: false, scale: 0, n: 0, fps: 0, phase: '', cues: [], logo: false };
+  var LEN = { full: 10, lite: 5, short: 1.0, calm: 3.5, fade: 0.8, off: 0.5 };
+  var RATE = { full: 1, lite: 2, short: 1 };                // the film's clock runs at this multiple of the wall clock
   var ls = function (k, v) {
     try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* private mode */ }
     return null;
   };
-  var el = null, cv = null, gl = null, raf = 0, killT = 0, t0 = 0, ended = false, audio = null, gesture = false, holdUp = false;
+  var el = null, cv = null, gl = null, raf = 0, killT = 0, t0 = 0, ended = false, audio = null, gesture = false, holdUp = false, logoImg = null;
   var now = function () { return (W.performance && performance.now) ? performance.now() : Date.now(); };
-  // a still frame for screenshots (docs, research/handoff): 'jarvis.intro.hold' = the second to hold, under automation only
+  // a still frame for screenshots (docs, research/handoff): 'jarvis.intro.hold' = the film's second to hold, under automation only
   var HOLD = navigator.webdriver && isFinite(parseFloat(ls('jarvis.intro.hold'))) ? parseFloat(ls('jarvis.intro.hold')) : -1;
   var dayKey = function () { var d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); };
+  var lowTier = function () { return root.getAttribute('data-fx') === 'low' || (navigator.hardwareConcurrency || 8) <= 2 || !!(navigator.deviceMemory && navigator.deviceMemory <= 2); };
 
   function signalEnd() {
     if (ended) return; ended = true;
@@ -188,10 +207,18 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     tick();
   }
 
-  // ---------------------------------------------------------------- sound: only after a gesture, never on a cold open
+  // ---------------------------------------------------------------- sound
   function canSound() {
     if (ls('jarvis.intro.sound') === 'off' || ls('jarvis.mute') === 'true') return false;
     return gesture || !!(navigator.userActivation && navigator.userActivation.hasBeenActive);
+  }
+  function sfx(name) {                                     // the owner's sound kit, when the page has it (never edited here)
+    try {
+      if (ls('jarvis.intro.sound') === 'off' || ls('jarvis.mute') === 'true') return true;
+      var S = W.OLYMPUS_SFX;
+      if (S && typeof S.play === 'function') { S.play(name); return true; }
+    } catch (e) { /* the kit failing never stops the film */ }
+    return false;
   }
   function whoom(strength) {
     if (!canSound()) return;
@@ -212,6 +239,10 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
       n.connect(f); f.connect(gn); gn.connect(a.destination); n.start(t); n.stop(t + 1.1);
     } catch (e) { /* no audio here */ }
   }
+  function cue(name) {
+    st.cues.push(name);
+    if (!sfx(name) && name === 'portal') whoom(1);
+  }
   function haptic() {
     try { if (navigator.vibrate) { navigator.vibrate(12); return; } } catch (e) { /* */ }
     try {                                                  // iOS 18 Safari: a switch control's toggle is the one web haptic
@@ -222,131 +253,166 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     } catch (e) { /* */ }
   }
 
-  // ---------------------------------------------------------------- skip: a tap anywhere, Esc / Enter / Space
+  // ---------------------------------------------------------------- skip: a tap anywhere, Esc / Enter / Space. Instant.
   function skip(e) {
     if (st.done || st.state === 'skipped') return;
     gesture = true;
     if (e && e.type === 'pointerdown') holdUp = true;
-    whoom(0.7); haptic();
-    fadeOut(220, 'skipped');
+    if (!sfx('tick')) whoom(0.7);
+    haptic();
+    fadeOut(60, 'skipped');
   }
   function onKey(e) { if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') skip(e); }
   function onVis() { if (doc.visibilityState !== 'visible') finish('hidden'); }
   var up = function () { if (holdUp) setTimeout(function () { holdUp = false; }, 80); };
 
-  // ---------------------------------------------------------------- the still versions: reduce motion, 3D off, no WebGL
+  // ---------------------------------------------------------------- the still versions: calm (reduce motion), fade, 3D off, no WebGL
   function still(mode) {
     st.q = 'still';
     var w = doc.createElement('div');
     w.className = 'oly-w';
-    w.innerHTML = '<b>OLYMPUS</b><small>J.A.R.V.I.S.</small>';
+    w.innerHTML = '<b>OLYMPUS</b><small>' + (mode === 'calm' ? 'JARVIS ONLINE' : 'J.A.R.V.I.S.') + '</small>';
+    if (mode === 'calm') {                                 // the logo from the shared file: the left half (ring) and the right half (peaks), drawn on a canvas
+      var c = doc.createElement('canvas'); c.width = 512; c.height = 512; c.className = 'oly-l';
+      w.insertBefore(c, w.firstChild);
+      var paint = function () {
+        try {
+          var x = c.getContext('2d'); x.globalCompositeOperation = 'lighter';
+          x.drawImage(logoImg, 0, 0, 512, 512, 0, 0, 512, 512); x.drawImage(logoImg, 512, 0, 512, 512, 0, 0, 512, 512);
+        } catch (e) { /* the word mark alone */ }
+      };
+      if (logoImg && logoImg.complete && logoImg.naturalWidth) paint(); else if (logoImg) logoImg.onload = paint;
+    }
     el.appendChild(w);
     var len = LEN[mode] || 0.5;
-    if (HOLD < 0) setTimeout(function () { fadeOut(Math.round(len * 600), 'reveal'); }, Math.round(len * 400));
+    if (mode === 'calm') { w.style.opacity = '0'; w.style.transition = 'opacity ' + Math.round(len * 380) + 'ms ease-out'; setTimeout(function () { w.style.opacity = '1'; }, 30); }
+    if (HOLD < 0) setTimeout(function () { fadeOut(Math.round(len * (mode === 'calm' ? 280 : 600)), 'reveal'); }, Math.round(len * (mode === 'calm' ? 720 : 400)));
   }
 
   // ---------------------------------------------------------------- WebGL
   var VS_BG = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
   var FS_BG = [
     '#ifdef GL_FRAGMENT_PRECISION_HIGH', 'precision highp float;', '#else', 'precision mediump float;', '#endif',
-    'uniform vec2 uRes;uniform float uT,uS,uZoom,uStrike,uFlash,uRise,uPed,uForm,uShine,uOrb,uPush,uIgn,uSpark,uHasTex;',
-    'uniform vec2 uO,uPo;uniform vec4 uTxt;uniform vec2 uBolt[14];uniform vec2 uBr[6];uniform sampler2D uTex;',
+    'uniform vec2 uRes,uO,uPo,uShock;',
+    'uniform float uT,uS,uZoom,uFly,uCam,uHeart,uStorm,uStrike,uFlash,uRidge,uCols,uBg,uGlow,uRing,uFlare,uAsm,uTemple,uForm,uShine,uSub,uPush,uRR,uHasLogo,uHasTxt;',
+    'uniform vec4 uTxt;uniform vec2 uBolt[14];uniform vec2 uBr[6];uniform sampler2D uLogo,uTxtT;',
+    'const vec2 RC=vec2(.4928,.597);const vec2 QC=vec2(.0075,.139);const float QS=1.04;const float RR0=.251;',
     'float h21(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}',
     'float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h21(i),h21(i+vec2(1.,0.)),f.x),mix(h21(i+vec2(0.,1.)),h21(i+vec2(1.,1.)),f.x),f.y);}',
     'float fbm(vec2 p){float s=0.,a=.5;for(int i=0;i<OCT;i++){s+=a*vn(p);p=p*2.03+vec2(1.7,9.2);a*=.5;}return s;}',
     'float sg(vec2 p,vec2 a,vec2 b){vec2 pa=p-a,ba=b-a;float h=clamp(dot(pa,ba)/dot(ba,ba),0.,1.);return length(pa-ba*h);}',
+    'float tri(float x){return abs(fract(x)-.5)*2.;}',
     'void main(){',
     ' vec2 p=(gl_FragCoord.xy-.5*uRes)/uRes.x;',
     ' vec2 q=uO+(p-uPo)/(uS*uZoom);',
-    ' float hz=-.36,H=.42,top=hz+H*uRise,scene=1.-smoothstep(.45,.9,uPush);',
-    ' vec3 gold=vec3(1.,.78,.40),vio=vec3(.66,.33,.97);',
-    ' vec3 col=vec3(.012,.006,.03)+vec3(.07,.025,.13)*exp(-abs(q.y-hz-.05)*2.6)*smoothstep(0.,.6,uT);',
-    // stars
-    ' vec2 sq=floor(p*80.);float sh=h21(sq);',
-    ' if(sh>.982){vec2 sf=fract(p*80.)-.5;col+=vec3(.75,.65,1.)*smoothstep(.16,0.,length(sf))*(.35+.35*sin(uT*3.+sh*70.));}',
-    // the sea of clouds below Olympus
-    ' float below=smoothstep(hz+.03,hz-.3,q.y);',
-    ' if(below>0.){float cl=fbm(vec2(q.x*2.6+uT*.06,q.y*7.-uT*.03));col+=(vec3(.17,.08,.30)*cl*cl*1.5+gold*pow(cl,5.)*.9*uRise)*below*(.35+.65*uRise);}',
-    // the stylobate: three steps, lit from the strike outward
-    ' float spread=clamp(uRise*1.4,0.,1.)*.47;',
-    ' if(q.y<hz&&q.y>hz-.066){float stp=floor((hz-q.y)/.022);float hw=.40+.03*stp;',
-    '  if(abs(q.x)<min(hw,spread)){float ly=fract((hz-q.y)/.022);vec3 m=vec3(.13,.10,.19)*(.8+.3*fbm(q*vec2(30.,60.)));',
-    '   m+=gold*smoothstep(.12,0.,ly)*.55+vio*smoothstep(.85,1.,ly)*.2;col=m*(.6+1.6*uFlash);}}',
-    // the columns rise
-    ' float ax=abs(q.x),k=clamp(floor(ax/.13),0.,2.),dx=ax-(.065+k*.13),ly=q.y-(top-H);',
-    ' if(q.y>hz&&q.y<top&&ax<.36){float cap=step(H-.024,ly),bas=step(ly,.014);float w=.024-.005*(ly/H)+cap*.013+bas*.008;',
-    '  if(abs(dx)<w){float u=dx/w;float cyl=sqrt(max(0.,1.-u*u));float fl=mix(.78+.22*cos(u*18.85),1.,max(cap,bas));',
-    '   vec3 m=vec3(.31,.26,.40)*cyl*fl*(.8+.35*fbm(vec2(q.x*38.,ly*14.)))*(.55+.6*smoothstep(0.,H,ly))*(.6+.4*smoothstep(0.,.05,ly));',
-    '   float side=sign(q.x)*u;m+=vio*smoothstep(.55,1.,side)*.45+gold*smoothstep(.55,1.,-side)*.35*(.3+uForm);',
-    '   m+=gold*cap*.25*uPed;col=m*(.55+1.7*uFlash);}}',
-    // rising dust at the base
-    ' col+=vec3(.35,.24,.5)*fbm(q*vec2(14.,24.)-vec2(0.,uT*.5))*exp(-max(q.y-hz,0.)*22.)*step(hz,q.y)*uRise*(1.-uRise)*3.;',
-    // the entablature and the frieze
-    ' float e0=hz+H,e1=e0+.15;',
-    ' if(q.y>e0&&q.y<e1&&abs(q.x)<.43*uPed+.0001){float m=.11+.04*fbm(q*vec2(26.,50.));col=vec3(m*.9,m*.75,m*1.25)*(.6+1.4*uFlash);',
-    '  col+=gold*(smoothstep(.006,0.,abs(q.y-e0-.006))+smoothstep(.006,0.,abs(q.y-e1+.006)))*.8;}',
-    // the pediment, drawn in light from its apex
-    ' vec2 ap=vec2(0.,e1+.19),cl=vec2(-.46,e1+.01),cr=vec2(.46,e1+.01);',
-    ' float dp=min(min(sg(q,ap,mix(ap,cl,uPed)),sg(q,ap,mix(ap,cr,uPed))),sg(q,vec2(-.46*uPed,cl.y),vec2(.46*uPed,cl.y)));',
-    ' col+=(gold*smoothstep(.0035,0.,dp)*1.4+gold*exp(-dp*70.)*.25+vio*exp(-dp*22.)*.12)*step(.001,uPed);',
-    ' float inT=step(cl.y,q.y)*step(abs(q.x)/.46,(ap.y-q.y)/(ap.y-cl.y));',
-    ' col+=vec3(.07,.05,.11)*inT*uPed*(.7+.6*fbm(q*40.));',
-    // OLYMPUS on the frieze: a lightning dissolve with an electric edge, a shine that sweeps across
-    ' if(uHasTex>.5){vec2 tu=(q-uTxt.xy)/uTxt.zw;',
-    '  if(tu.x>0.&&tu.x<1.&&tu.y>0.&&tu.y<1.){vec3 t=texture2D(uTex,tu).rgb;',
-    '   float n=vn(tu*vec2(90.,24.))*.6+vn(tu*vec2(260.,70.))*.25+tu.x*.15,th=uForm*1.3-.15;',
-    '   float vis=smoothstep(th,th-.05,n),edge=smoothstep(.06,0.,abs(n-th))*step(.001,uForm)*step(uForm,.999);',
-    '   float sx=uShine*1.7-.35,shine=exp(-pow(tu.x-sx-(tu.y-.5)*.35,2.)*160.)*step(.001,uShine)*step(uShine,.999);',
-    '   float fe=smoothstep(0.,.06,tu.x)*smoothstep(1.,.94,tu.x)*smoothstep(0.,.2,tu.y)*smoothstep(1.,.8,tu.y);',
-    '   vec3 face=mix(vec3(1.,.66,.24),vec3(1.,.86,.52),clamp(.55+.6*(tu.y-.5)+.15*sin(tu.x*9.+uT*2.),0.,1.));',
-    '   float halo=t.g*t.g;',
-    '   col=mix(col,face*(.95+2.2*shine),t.r*vis)+(vio*halo*.28+vec3(.5,.25,.9)*t.b*t.b*.1)*vis*fe+gold*t.g*(1.-t.r)*.18*vis+vec3(.85,.7,1.)*edge*(t.r+t.g*.4)*1.6;}}',
-    // the orb that wakes in the pediment
-    ' float ro=length(q-uO);col+=(vec3(.8,.6,1.)*.004/(ro+.004)+vio*exp(-abs(ro-.03-.01*sin(uT*9.))*240.)*.6)*uOrb;',
-    // the spark, the lightning, its impact
-    ' vec2 imp=vec2(0.,hz);float ri=length((q-imp)*vec2(1.,2.6));',
-    ' float dsp=length(q-imp);col+=(vec3(1.,.88,.7)*(.004/(dsp+.003))+vio*exp(-dsp*18.)*.35)*uSpark;',
+    ' vec2 rc=q-uO;float rl=length(rc);',
+    ' vec3 gold=vec3(1.,.74,.32),org=vec3(1.,.5,.12),vio=vec3(.55,.36,.95);',
+    ' vec3 col=vec3(.004,.003,.012);',
+    // 1. the heartbeat: a warm glow where the ring will be, and a shock ring each lub
+    ' col+=org*uHeart*.0042/(rl+.008)+vec3(1.,.8,.6)*uHeart*exp(-rl*13.)*.5;',
+    ' col+=org*exp(-abs(rl-uShock.x)*36.)*uShock.y*.8;',
+    // 2. the storm: a tunnel of cloud streaming past the camera, lit by the lightning
+    ' if(uStorm>.001){vec2 vp=q-vec2(0.,.12);float vr=length(vp);vec2 dir=vp/max(vr,1e-4);float z=.2/(vr+.05)+uFly;',
+    '  float c1=fbm(dir*2.3+vec2(z*.9,z*.6));float dn=smoothstep(.34,.8,c1)*smoothstep(.0,.2,vr)*uStorm;',
+    '  vec3 cc=mix(vec3(.05,.05,.12),vec3(.22,.19,.36),c1)*(.3+uFlash*1.9);cc+=vio*smoothstep(.55,.85,c1)*.12*uStorm;',
+    '  col+=cc*dn*1.6;',
+    '  #ifdef HI', '  float c2=fbm(dir*3.4+vec2(z*1.7+4.,z*1.1));float d2=smoothstep(.42,.85,c2)*smoothstep(.1,.5,vr)*uStorm;',
+    '  col+=mix(vec3(.04,.04,.1),vec3(.3,.26,.46),c2)*(.25+uFlash*3.)*d2*1.2;', '  #endif',
+    '  col+=vec3(.5,.42,.9)*exp(-vr*3.)*uFlash*.18;}',
+    // the lightning
     ' if(uStrike>.001){float d=1e3,db=1e3;',
     '  for(int i=0;i<13;i++)d=min(d,sg(q,uBolt[i],uBolt[i+1]));',
     '  for(int i=0;i<5;i++)db=min(db,sg(q,uBr[i],uBr[i+1]));',
-    '  float c=smoothstep(.0045,.0,d)*1.6+exp(-d*85.)*.7+exp(-d*16.)*.25,cb=smoothstep(.003,0.,db)*.9+exp(-db*100.)*.35;',
-    '  col+=(vec3(.9,.86,1.)*c+vec3(.62,.42,1.)*cb)*uStrike+vec3(.75,.5,1.)*exp(-ri*9.)*uStrike*1.4;}',
-    ' col*=scene;',
-    // through the clouds: a tunnel of cloud streaming past the camera, lit from the core ahead
-    ' vec2 r=p-uPo;float rl=length(r);',
-    ' if(uPush>.001){vec2 dir=r/max(rl,1e-4);float z=.22/(rl+.04)-uPush*uPush*7.;',
-    '  float c1=fbm(dir*2.2+vec2(z*.9,z*.55)),env=sin(3.14159*clamp(uPush*1.15,0.,1.));',
-    '  float dens=smoothstep(.38,.85,c1)*smoothstep(.0,.25,rl)*env;',
-    '  col+=mix(vec3(.30,.16,.52),vec3(1.,.82,.55),exp(-rl*3.))*dens*1.3+vio*exp(-rl*5.)*env*.6;}',
-    // the core ignites where Jarvis's own core is
-    ' if(uIgn>.001){float R=uIgn*.95,R2=uIgn*.6,on=smoothstep(0.,.12,uIgn);',
-    '  col+=vec3(1.,.92,1.)*(.006/(rl+.004))*on*(1.-uIgn*.5)+vio*exp(-rl*7.)*on*(1.-uIgn)*1.2;',
-    '  col+=(vec3(.75,.55,1.)*exp(-abs(r.y)*160.)*exp(-abs(r.x)*2.2)+gold*exp(-abs(r.y)*420.)*exp(-abs(r.x)*5.)*.6)*on*(1.-uIgn*.8)*1.4;',
-    '  col+=(vio*exp(-abs(rl-R)*55.)*1.5+gold*exp(-abs(rl-R2)*120.)*1.1)*(1.-uIgn);}',
-    ' col+=vec3(.62,.45,1.)*uFlash*.5;',
+    '  float c=smoothstep(.0045,.0,d)*1.7+exp(-d*85.)*.75+exp(-d*16.)*.28,cb=smoothstep(.003,0.,db)*.9+exp(-db*100.)*.35;',
+    '  col+=(vec3(.92,.88,1.)*c+vec3(.62,.42,1.)*cb)*uStrike;}',
+    // the ridge of Mount Olympus seen from below: three layers, lit only by the flashes; the camera rises and it sinks away
+    ' if(uRidge>.001){for(int j=0;j<3;j++){float fi=2.-float(j);',
+    '  float xs=q.x*(1.15-fi*.18)+fi*3.7;',
+    '  float hg=.2*tri(xs*1.3)+.1*tri(xs*3.1+1.3)+.05*tri(xs*7.3+.4)+(1.-step(.5,fi))*.24*exp(-q.x*q.x*7.);',
+    '  float ry=-.6+fi*.15+hg*(1.-fi*.16)-uCam*(1.7-fi*.3);',
+    '  float ins=step(q.y,ry);float ed=smoothstep(.011,0.,abs(q.y-ry));',
+    '  float rk=fbm(q*vec2(10.,16.)+fi*7.);float lit=uFlash*(1.7-fi*.35)+.05*uRidge;',
+    '  vec3 rcol=mix(vec3(.1,.08,.2),vec3(.75,.74,.95),rk*rk)*lit*.6*(.25+.75*smoothstep(ry-.25,ry,q.y))*(1.+fi*.3);',
+    '  col=mix(col,rcol+vec3(.012,.01,.03),ins*uRidge);col+=ed*vec3(1.,.9,.85)*uFlash*(.9-fi*.2)*uRidge;}}',
+    // the rise: marble columns (fluted, banded, lit gold on the side facing the centre) streaming past, and a gold glow above
+    ' col+=(org*exp(-rl*2.4)*.5+gold*exp(-rl*7.)*.5)*uGlow;',
+    ' if(uCols>.001){for(int i=0;i<3;i++){float fi=float(i);',
+    '  float xc=.17+fi*.16+fi*fi*.02,w=.036+fi*.032,ax=abs(q.x);',
+    '  float yy=(q.y+uCam*2.2*(1.+fi*.9))*.62+fi*.37,f=fract(yy);',
+    '  float band=smoothstep(.9,.96,f)+smoothstep(.1,.04,f)*.7,ww=w*(1.+.38*band),dx=ax-xc;',
+    '  if(abs(dx)<ww){float u=dx/ww,cyl=sqrt(max(0.,1.-u*u));float fl=.8+.2*cos(u*14.);',
+    '   float lg=uGlow*smoothstep(-.6,.9,q.y)*1.4+uFlash*1.5+.12;',
+    '   vec3 m=vec3(.8,.76,.88)*cyl*fl*(.8+.4*fbm(vec2(u*3.,yy*3.)))*lg*(1.-fi*.16);',
+    '   m+=gold*smoothstep(.45,1.,-u)*.8*uGlow*cyl+vio*smoothstep(.6,1.,u)*.12*lg;m+=gold*band*.18*uGlow;',
+    '   col=mix(col,m,uCols);}}}',
+    ' col*=uBg;',
+    // 4. the logo: the eclipse ring lights round from the top, the peaks slide in from outside and below, the temple flares
+    ' vec2 lu=(q-QC)/QS+.5;vec2 rd=lu-RC;float rr=length(rd);',
+    ' float inb=step(0.,lu.x)*step(lu.x,1.)*step(0.,lu.y)*step(lu.y,1.);',
+    ' vec3 lg=vec3(0.);float fz=1.-smoothstep(.3,.8,uPush);',
+    ' if(uHasLogo>.5){',
+    '  float a01=fract(atan(rd.x,rd.y)/6.28318);float dd=min(a01,1.-a01)*2.;float edge=uRing*1.12-.06;',
+    '  float rv=1.-smoothstep(edge-.06,edge+.02,dd);float head=exp(-pow((dd-edge)*22.,2.))*step(.002,uRing)*smoothstep(.04,0.,abs(rr-RR0));',
+    '  vec2 ru=vec2(lu.x*.5,lu.y);',
+    '  lg+=(texture2D(uLogo,ru).rgb*1.1+texture2D(uLogo,ru,3.5).rgb*1.5)*rv*inb+org*head*3.;',
+    '  float side=(lu.x-.5)*2.;float kk=clamp(uAsm*1.45-abs(side)*.3,0.,1.);kk=1.-pow(1.-kk,3.);',
+    '  vec2 pu=lu-vec2(side*.3,-.6+.12*abs(side))*(1.-kk);',
+    '  float pin=step(0.,pu.x)*step(pu.x,1.)*step(0.,pu.y)*step(pu.y,1.);vec2 su=vec2(.5+pu.x*.5,pu.y);',
+    '  float vis=smoothstep(0.,.3,uAsm),gk=clamp((uAsm-.8)*5.,0.,1.);',
+    '  float gli=exp(-pow((lu.x+lu.y*.55-gk*2.3+.45)*8.,2.))*step(.001,gk)*step(gk,.999);',
+    '  lg+=(texture2D(uLogo,su).rgb*(1.+(1.-kk)*.9+gli*2.2)+texture2D(uLogo,su,3.).rgb*(.5+(1.-kk)*1.2))*pin*vis*fz;',
+    ' }else{',
+    // the drawn stand-in (the logo file has not arrived): the ring and three peaks
+    '  float ra=(1.-smoothstep(uRing*1.1,uRing*1.1+.1,min(fract(atan(rd.x,rd.y)/6.28318),1.-fract(atan(rd.x,rd.y)/6.28318))*2.))*step(.001,uRing);',
+    '  lg+=(org*smoothstep(.006,0.,abs(rr-RR0))*1.3+org*exp(-abs(rr-RR0)*28.)*.35)*ra;',
+    '  float pk=0.;vec2 pp=lu-vec2(.5,.25);',
+    '  pk=max(pk,step(abs(pp.x-0.),(.2-pp.y)*.9)*step(0.,pp.y+.02)*step(pp.y,.2));',
+    '  pk=max(pk,step(abs(pp.x+.31),(.11-pp.y)*1.2)*step(0.,pp.y+.02)*step(pp.y,.11));pk=max(pk,step(abs(pp.x-.31),(.11-pp.y)*1.2)*step(0.,pp.y+.02)*step(pp.y,.11));',
+    '  lg+=gold*pk*smoothstep(0.,.3,uAsm)*(.7+.3*smoothstep(.3,.0,pp.y));',
+    ' }',
+    ' vec2 td=(lu-vec2(.5,.526))*vec2(1.,1.1);float tl=length(td);',
+    ' lg+=(vec3(1.,.82,.5)*exp(-tl*38.)*1.3+vec3(1.,.9,.7)*(exp(-abs(td.y)*160.)*exp(-abs(td.x)*14.)+exp(-abs(td.x)*160.)*exp(-abs(td.y)*14.))*.7)*uTemple*fz;',
+    ' col+=lg;',
+    // the ring's bloom flare: a glow, a hot core, an anamorphic streak
+    ' col+=org*exp(-rr*4.)*uFlare*.8+vec3(1.,.8,.55)*exp(-rr*15.)*uFlare*.45+vec3(1.,.6,.25)*exp(-abs(rd.y)*65.)*exp(-abs(rd.x)*3.)*uFlare*.9;',
+    // 5. OLYMPUS and JARVIS ONLINE: a lightning dissolve with an electric edge, a shine that sweeps across
+    ' if(uHasTxt>.5){vec2 tu=(q-uTxt.xy)/uTxt.zw;',
+    '  if(tu.x>0.&&tu.x<1.&&tu.y>0.&&tu.y<1.){vec3 t=texture2D(uTxtT,tu).rgb;float isS=step(tu.y,.3);',
+    '   float n=vn(tu*vec2(90.,24.))*.6+vn(tu*vec2(260.,70.))*.25+tu.x*.15,th=uForm*1.3-.15;',
+    '   float vis=mix(smoothstep(th,th-.05,n),smoothstep(uSub*1.5-.15,uSub*1.5-.35,tu.x),isS)*fz;',
+    '   float edge=smoothstep(.06,0.,abs(n-th))*step(.001,uForm)*step(uForm,.999)*(1.-isS);',
+    '   float sx=uShine*1.7-.35,shine=exp(-pow(tu.x-sx-(tu.y-.5)*.35,2.)*160.)*step(.001,uShine)*step(uShine,.999)*(1.-isS);',
+    '   float fe=smoothstep(0.,.06,tu.x)*smoothstep(1.,.94,tu.x);',
+    '   vec3 face=mix(vec3(1.,.66,.24),vec3(1.,.86,.52),clamp(.55+.6*(tu.y-.65)*2.+.15*sin(tu.x*9.+uT*2.),0.,1.));',
+    '   face=mix(face,vec3(1.,.93,.78),isS*.8);',
+    '   col=mix(col,face*(.95+2.2*shine),t.r*vis)+(vio*t.g*t.g*.1)*vis*fe+gold*t.g*t.g*(1.-t.r)*.22*vis+vec3(.85,.7,1.)*edge*(t.r+t.g*.4)*1.6;}}',
+    ' col+=vec3(.5,.42,.9)*uFlash*.2;',
+    // 6. the portal: a crisp rim on the ring as it grows past the screen; its inside is a hole onto Jarvis
+    ' float pr=length(p-uPo);',
+    ' col+=mix(org,vec3(1.,.9,.7),.5)*exp(-pow((pr-uRR)/(.005*uS*uZoom+.002),2.))*smoothstep(.02,.2,uPush)*1.6;',
     ' col*=1.-.22*dot(p,p);',
-    ' col=1.-exp(-col*1.35);',
-    ' col+=(h21(gl_FragCoord.xy+fract(uT)*91.)-.5)*.012;',
-    ' gl_FragColor=vec4(col,1.);',
+    ' col=col/(1.+max(col-.85,0.)*.7);',
+    ' float wd=.03*uS*uZoom;',
+    ' float a=1.-(1.-smoothstep(.96*uRR-wd,.96*uRR,pr))*smoothstep(0.,.1,uPush);',
+    ' col+=(h21(gl_FragCoord.xy+fract(uT)*91.)-.5)*.012*a;',
+    ' a=max(a,max(col.r,max(col.g,col.b)));',
+    ' gl_FragColor=vec4(col,a);',
     '}'].join('\n');
   var VS_PT = [
     'attribute vec2 aT;attribute vec4 aS;',
-    'uniform vec2 uRes,uO,uPo;uniform float uT,uS,uZoom,uForm,uPush,uBurst,uPx;',
+    'uniform vec2 uRes,uO,uPo;uniform float uT,uS,uZoom,uForm,uPush,uSpk,uPx;',
     'varying vec4 vC;',
     'void main(){',
-    ' float amb=step(aS.z,.2);',
-    ' float a=aS.x*6.2832,sp=.12+aS.y*.6,tb=max(uBurst,0.);',
-    ' vec2 ember=vec2(0.,-.36)+vec2(cos(a)*sp*.85,abs(sin(a))*sp*1.15)*(1.-exp(-tb*2.4))+vec2(sin(uT*3.+aS.w*20.)*.01,tb*.05);',
-    ' vec2 dust=vec2(aS.x-.5,(aS.y-.5)*2.3)+vec2(sin(uT*.7+aS.w*9.)*.02,uT*.025*(aS.w+.3));',
+    ' vec2 sp=vec2((aS.x-.5)*1.5+sin(uT*1.3+aS.w*30.)*.03,fract((aS.y*3.+uT*(.16+aS.w*.34))/3.)*3.-1.45);',
     ' float k=clamp(uForm*1.4-aS.w*.4,0.,1.);k=k*k*(3.-2.*k);',
     ' vec2 tg=aT+vec2(sin(uT*7.+aS.w*40.),cos(uT*6.+aS.x*30.))*.0016;',
-    ' vec2 pos=amb>.5?dust:mix(ember,tg,k);',
+    ' vec2 pos=mix(sp,tg,k);',
     ' vec2 sc=uPo+(pos-uO)*uS*uZoom;',
     ' gl_Position=vec4(sc.x*2.,sc.y*2.*uRes.x/uRes.y,0.,1.);',
-    ' float on=amb>.5?.4:step(.0001,uBurst)*(1.-k*.78);',
-    ' gl_PointSize=uPx*(amb>.5?1.1+aS.y*1.5:1.5+aS.y*2.4)*(1.+(uZoom-1.)*.12);',
-    ' vec3 c=mix(vec3(1.,.72,.3),vec3(.72,.45,1.),aS.y*(1.-k*.7));',
-    ' vC=vec4(c,on*(.6+.4*sin(uT*9.+aS.w*50.))*(1.-smoothstep(.5,.95,uPush)));',
+    ' float on=uSpk*(1.-k)+k*.35*step(.001,uForm);',
+    ' gl_PointSize=uPx*(1.5+aS.y*2.6)*(1.+(uZoom-1.)*.12)*(1.-k*.35);',
+    ' vec3 c=mix(vec3(1.,.66,.26),vec3(1.,.92,.7),aS.y*aS.y);',
+    ' vC=vec4(c,on*(.55+.45*sin(uT*9.+aS.w*50.))*(1.-smoothstep(.5,.95,uPush)));',
     '}'].join('\n');
   var FS_PT = 'precision mediump float;varying vec4 vC;void main(){float r=length(gl_PointCoord-.5);float a=smoothstep(.5,0.,r);gl_FragColor=vec4(vC.rgb*a*a*vC.a,1.);}';
 
@@ -363,85 +429,89 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
   }
   function locs(p, names) { var o = {}; names.forEach(function (n) { o[n] = gl.getUniformLocation(p, n); }); return o; }
 
-  // the timeline: every effect is an envelope of the clock (seconds); the clock runs on wall time, so slow frames never stretch it
+  // the timeline: every effect is an envelope of the film's clock tau (seconds); the clock runs on wall time, so slow frames never stretch it
   var cl = function (x) { return x < 0 ? 0 : x > 1 ? 1 : x; };
   var ramp = function (t, a, b) { return cl((t - a) / (b - a)); };
   var ease = function (x) { return 1 - Math.pow(1 - x, 3); };
   var sm = function (x) { return x * x * (3 - 2 * x); };
   var pulse = function (t, a, peak) { var d = t - a; return d < 0 ? 0 : peak * Math.exp(-d * 9); };
+  var strike = function (t, a) { var d = t - a; return d < 0 || d > 0.5 ? 0 : d < 0.15 ? 1 : Math.exp(-(d - 0.15) * 12); };
+  var PHASES = [[0, 'heart'], [1.0, 'storm'], [3.3, 'rise'], [5.5, 'eclipse'], [7.05, 'word'], [8.7, 'portal']];
+  var CUES = [[0.28, 'tick'], [0.9, 'thunder'], [0.98, 'tick'], [2.35, 'thunder'], [3.45, 'thunder'], [5.5, 'pad'], [7.1, 'rankup'], [8.68, 'portal']];
   function envFull(t) {
-    var s = { spark: ramp(t, 0.05, 0.32) * (1 - ramp(t, 0.32, 0.4)) * (0.8 + 0.2 * Math.sin(t * 60)) };
-    var on = (t > 0.30 && t < 0.37) || (t > 0.41 && t < 0.48) ? 1 : 0;
-    s.strike = t < 0.30 ? 0 : Math.max(on, 0.55 * (1 - ramp(t, 0.48, 0.9))) * (t < 0.9 ? 1 : 0);
-    s.flash = pulse(t, 0.30, 0.95) + pulse(t, 0.41, 0.45) + pulse(t, 2.93, 0.4);
-    s.burst = t > 0.30 ? t - 0.30 : -1;
-    s.rise = ease(ramp(t, 0.42, 1.35));
-    s.ped = sm(ramp(t, 1.0, 1.7));
-    s.form = sm(ramp(t, 0.8, 1.95));
-    s.shine = ramp(t, 1.9, 2.45);
-    s.orb = sm(ramp(t, 1.75, 2.25));
-    s.push = ramp(t, 2.25, 3.15);
-    s.ign = ramp(t, 2.88, 3.6);
-    s.reveal = 3.12; s.restrike = 0.41;
+    var lub = t < 0.98 ? 0.28 : 0.98, s = {};
+    s.heart = pulse(t, 0.28, 0.9) + pulse(t, 0.58, 0.55) + pulse(t, 0.98, 1.1) + pulse(t, 1.28, 0.65);
+    s.shockR = Math.max(0, t - lub); s.shockA = t < 0.28 ? 0 : Math.exp(-(t - lub) * 3.2) * (lub > 0.5 ? 1 : 0.7);
+    s.storm = sm(ramp(t, 0.95, 2.0));
+    var f = Math.max(0, t - 0.9); s.fly = f * 0.9 + f * f * 0.35;
+    s.strike = Math.max(strike(t, 1.75) * 0.6, strike(t, 2.35), strike(t, 2.92), strike(t, 3.45));
+    s.bolt = t < 2.2 ? 0 : t < 2.8 ? 1 : t < 3.3 ? 2 : 3;
+    s.flash = pulse(t, 0.95, 0.14) + pulse(t, 1.75, 0.5) + pulse(t, 2.35, 1) + pulse(t, 2.47, 0.6) + pulse(t, 2.92, 0.9) + pulse(t, 3.03, 0.5) +
+      pulse(t, 3.45, 1.2) + pulse(t, 3.58, 0.6) + pulse(t, 8.7, 0.3);
+    s.ridge = sm(ramp(t, 1.7, 2.4)) * (1 - sm(ramp(t, 4.4, 5.2)));
+    s.cam = sm(ramp(t, 2.1, 6.0));
+    s.cols = sm(ramp(t, 3.2, 4.1)) * (1 - sm(ramp(t, 5.2, 5.9)));
+    s.glow = sm(ramp(t, 3.0, 5.5));
+    s.bg = 1 - 0.92 * sm(ramp(t, 5.5, 6.4));
+    s.spk = sm(ramp(t, 3.3, 4.2));
+    s.ring = ease(ramp(t, 5.55, 6.5));
+    s.flare = (t < 5.55 ? 0 : Math.exp(-(t - 5.55) * 2.6) * 1.4) + (t < 8.7 ? 0 : Math.exp(-(t - 8.7) * 5) * 1.1);
+    s.asm = ramp(t, 6.1, 7.3);
+    s.temple = t < 6.95 ? 0 : t < 7.15 ? (t - 6.95) / 0.2 : 0.14 + 0.86 * Math.exp(-(t - 7.15) * 2.4);
+    s.form = sm(ramp(t, 7.05, 8.0));
+    s.shine = ramp(t, 7.9, 8.55);
+    s.sub = ramp(t, 8.0, 8.65);
+    s.push = ramp(t, 8.7, 9.95);
+    s.reveal = 9.82; s.cues = CUES;
     return s;
   }
-  function envShort(t) {
-    var s = { spark: 0 };
-    s.strike = t < 0.02 ? 0 : 1 - ramp(t, 0.1, 0.32);
-    s.flash = pulse(t, 0.02, 0.8) + pulse(t, 0.66, 0.6);
-    s.burst = t > 0.02 ? t - 0.02 + 0.5 : -1;
-    s.rise = ease(ramp(t, 0, 0.28));
-    s.ped = sm(ramp(t, 0.1, 0.38));
-    s.form = sm(ramp(t, 0.05, 0.42));
-    s.shine = ramp(t, 0.36, 0.58);
-    s.orb = sm(ramp(t, 0.3, 0.45));
-    s.push = ramp(t, 0.42, 0.82);
-    s.ign = ramp(t, 0.64, 1.0);
-    s.reveal = 0.76; s.restrike = 9;
+  function envShort(t) {                                   // a launch seen again: the finished logo, a flare, the portal
+    var s = envFull(7.6 + t * 0.2);
+    s.heart = 0; s.shockA = 0; s.storm = 0; s.strike = 0; s.flash = pulse(t, 0.02, 0.5); s.ridge = 0; s.cols = 0; s.glow = 0; s.spk = 0;
+    s.bg = 0.08; s.ring = 1; s.asm = 1; s.temple = 0.14 + 0.5 * Math.exp(-t * 6); s.form = 1; s.shine = ramp(t, 0.05, 0.4); s.sub = 1;
+    s.flare = (t < 0.02 ? 0 : Math.exp(-t * 5) * 0.9) + (t < 0.3 ? 0 : Math.exp(-(t - 0.3) * 5) * 1.0);
+    s.push = ramp(t, 0.3, 0.9); s.reveal = 0.82; s.cues = [[0.02, 'rankup'], [0.3, 'portal']];
     return s;
   }
 
-  function bolt(seed) {                                    // a jagged bolt from above the screen to the spark on the ground
+  function bolt(seed) {                                    // a jagged bolt from above the screen to the peak
     var rnd = function () { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
-    var pts = [], x0 = (rnd() - 0.5) * 0.24, y0 = 1.3, y1 = -0.36;
+    var pts = [], x0 = (rnd() - 0.5) * 0.5, y0 = 1.3, y1 = -0.12, x1 = (rnd() - 0.5) * 0.12;
     for (var i = 0; i < 14; i++) {
       var t = i / 13, j = i === 0 || i === 13 ? 0 : (rnd() - 0.5) * 0.13 * (1 - t * 0.55);
-      pts.push(x0 * (1 - t) + j, y0 + (y1 - y0) * t + (i && i < 13 ? (rnd() - 0.5) * 0.03 : 0));
+      pts.push(x0 * (1 - t) + x1 * t + j, y0 + (y1 - y0) * t + (i && i < 13 ? (rnd() - 0.5) * 0.03 : 0));
     }
     var br = [], bi = 4 + Math.floor(rnd() * 3), bx = pts[bi * 2], by = pts[bi * 2 + 1], dir = rnd() < 0.5 ? -1 : 1;
     for (var b = 0; b < 6; b++) { br.push(bx, by); bx += dir * (0.025 + rnd() * 0.04); by -= 0.04 + rnd() * 0.05; }
     return { a: new Float32Array(pts), b: new Float32Array(br) };
   }
 
-  // OLYMPUS as a texture: R = the sharp letters, G = a close glow, B = a wide glow (shadowBlur, drawn once)
+  // OLYMPUS + JARVIS ONLINE as a texture (1024 x 320): R = the sharp letters, G = a close glow, B = a wide glow (shadowBlur, drawn once)
   function textTex(fontOk) {
-    var c = doc.createElement('canvas'); c.width = 1024; c.height = 256;
+    var c = doc.createElement('canvas'); c.width = 1024; c.height = 320;
     var x = c.getContext('2d'); if (!x) throw new Error('no 2d');
-    var fam = fontOk ? '800 118px Orbitron, sans-serif' : '800 112px -apple-system, "Segoe UI", system-ui, sans-serif';
-    var word = 'OLYMPUS', sp = 26;
-    x.font = fam;
-    var ws = 0, i; for (i = 0; i < word.length; i++) ws += x.measureText(word[i]).width + (i ? sp : 0);
-    var fit = Math.min(1, 900 / ws);
-    x.font = fam.replace(/\d+px/, Math.floor((fontOk ? 118 : 112) * fit) + 'px');
-    ws = 0; for (i = 0; i < word.length; i++) ws += x.measureText(word[i]).width + (i ? sp * fit : 0);
-    x.textBaseline = 'middle';
-    var draw = function (style, blur) {
-      var px = 512 - ws / 2;
-      x.fillStyle = style; x.shadowColor = style; x.shadowBlur = blur;
-      x.shadowOffsetX = blur ? 3000 : 0;
-      for (var j = 0; j < word.length; j++) { x.fillText(word[j], px - (blur ? 3000 : 0), 132); px += x.measureText(word[j]).width + sp * fit; }
+    var face = fontOk ? 'Orbitron, sans-serif' : '-apple-system, "Segoe UI", system-ui, sans-serif';
+    var draw = function (word, size, wgt, sp, cy, maxW, style, blur) {
+      x.font = wgt + ' ' + size + 'px ' + face;
+      var ws = 0, i; for (i = 0; i < word.length; i++) ws += x.measureText(word[i]).width + (i ? sp : 0);
+      var fit = Math.min(1, maxW / ws), px = 512 - ws * fit / 2;
+      x.font = wgt + ' ' + Math.floor(size * fit) + 'px ' + face;
+      x.textBaseline = 'middle'; x.fillStyle = style; x.shadowColor = style; x.shadowBlur = blur; x.shadowOffsetX = blur ? 3000 : 0;
+      for (var j = 0; j < word.length; j++) { x.fillText(word[j], px - (blur ? 3000 : 0), cy); px += x.measureText(word[j]).width + sp * fit; }
     };
     x.globalCompositeOperation = 'lighter';
-    draw('#0000ff', 34); draw('#00ff00', 10); x.shadowBlur = 0; x.shadowOffsetX = 0; draw('#ff0000', 0);
-    var px2 = x.getImageData(0, 0, 1024, 256).data, pts = [];
-    for (var yy = 0; yy < 256; yy += 2) for (var xx = 0; xx < 1024; xx += 2) if (px2[(yy * 1024 + xx) * 4] > 140) pts.push(xx / 1024, 1 - yy / 256);
+    var pass = function (style, blur) { draw('OLYMPUS', fontOk ? 118 : 112, 800, 26, 112, 900, style, blur); draw('JARVIS ONLINE', 40, 700, 15, 262, 560, style, blur * 0.5); };
+    pass('#0000ff', 34); pass('#00ff00', 10); x.shadowBlur = 0; x.shadowOffsetX = 0; pass('#ff0000', 0);
+    var px2 = x.getImageData(0, 0, 1024, 320).data, pts = [];
+    for (var yy = 0; yy < 224; yy += 2) for (var xx = 0; xx < 1024; xx += 2) if (px2[(yy * 1024 + xx) * 4] > 140) pts.push(xx / 1024, 1 - yy / 320);
     return { canvas: c, pts: pts };
   }
 
   function glRun(mode, lite) {
     cv = doc.createElement('canvas');
     el.appendChild(cv);
-    var opt = { alpha: false, antialias: false, depth: false, stencil: false, premultipliedAlpha: false, preserveDrawingBuffer: false, powerPreference: 'high-performance' };
+    // alpha + premultiplied: the portal's inside is a hole onto Jarvis (the overlay's black backing goes when the push starts)
+    var opt = { alpha: true, antialias: false, depth: false, stencil: false, premultipliedAlpha: true, preserveDrawingBuffer: false, powerPreference: 'high-performance' };
     gl = cv.getContext('webgl', opt) || cv.getContext('experimental-webgl', opt);
     if (!gl) { cv.parentNode.removeChild(cv); cv = null; return false; }
     cv.addEventListener('webglcontextlost', function (e) { try { e.preventDefault(); } catch (_) { /* */ } finish('lost'); });
@@ -457,27 +527,41 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
       gl.viewport(0, 0, w, h); st.scale = +scale.toFixed(2);
     };
     size();
-    var FS = FS_BG.replace(/OCT/g, lite ? '2' : '4');
+    var FS = FS_BG.replace(/OCT/g, lite ? '2' : '4').replace('#ifdef HI', lite ? '#if 0' : '#if 1');
     var pb = prog(VS_BG, FS), pp = prog(VS_PT, FS_PT);
-    var ub = locs(pb, ['uRes', 'uT', 'uS', 'uZoom', 'uStrike', 'uFlash', 'uRise', 'uPed', 'uForm', 'uShine', 'uOrb', 'uPush', 'uIgn', 'uSpark', 'uHasTex', 'uO', 'uPo', 'uTxt', 'uBolt', 'uBr', 'uTex']);
-    var up_ = locs(pp, ['uRes', 'uO', 'uPo', 'uT', 'uS', 'uZoom', 'uForm', 'uPush', 'uBurst', 'uPx']);
+    var ub = locs(pb, ['uRes', 'uT', 'uS', 'uZoom', 'uFly', 'uCam', 'uHeart', 'uStorm', 'uStrike', 'uFlash', 'uRidge', 'uCols', 'uBg', 'uGlow', 'uRing', 'uFlare', 'uAsm', 'uTemple', 'uForm', 'uShine', 'uSub', 'uPush', 'uRR', 'uHasLogo', 'uHasTxt',
+      'uO', 'uPo', 'uShock', 'uTxt', 'uBolt', 'uBr', 'uLogo', 'uTxtT']);
+    var up_ = locs(pp, ['uRes', 'uO', 'uPo', 'uT', 'uS', 'uZoom', 'uForm', 'uPush', 'uSpk', 'uPx']);
     var quad = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, quad);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
     var aBg = gl.getAttribLocation(pb, 'a'), aT = gl.getAttribLocation(pp, 'aT'), aS = gl.getAttribLocation(pp, 'aS');
-    var B1 = bolt(7 + Math.floor(Math.random() * 1e6)), B2 = bolt(11 + Math.floor(Math.random() * 1e6));
-    var env = mode === 'full' ? envFull : envShort, len = LEN[mode];
-    var TXT = [-0.43, 0.135 - 0.1075, 0.86, 0.215];      // OLYMPUS on the frieze (centre 0.135): x, y, w, h in scene units
-    var tex = null, pbuf = null, nPts = 0;
-    var halfH = 0.5 * innerHeight / innerWidth, S = Math.min(1, halfH / 0.52);
-    var O = [0, -0.36 + 0.42 + 0.15 + 0.075];             // the orb, in the pediment
+    var BOLTS = [1, 2, 3, 4].map(function (i) { return bolt(i * 7 + Math.floor(Math.random() * 1e6)); });
+    var env = mode === 'short' ? envShort : envFull, len = LEN[mode], rate = RATE[mode] || 1;
+    var TXT = [-0.43, -0.4247, 0.86, 0.26875];            // OLYMPUS + JARVIS ONLINE: x, y, w, h in scene units (OLYMPUS centred at y -0.25)
+    var tex = null, logoTex = null, pbuf = null, nPts = 0;
+    var halfH = 0.5 * innerHeight / innerWidth, S = Math.min(1, halfH / 0.58);
+    var O = [0, 0.24];                                    // the ring's centre, in scene units
+    var RR = 0.251 * 1.04;                                // the ring's radius, in scene units
     var coreAt = null;                                    // Jarvis's own core, in screen units (measured when the push starts)
+    var texOn = function (unit, t) { gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t); };
+    var buildLogo = function () {                         // the logo file (ring | peaks) as a mipmapped texture, once it has arrived
+      if (logoTex || st.done || !logoImg || !logoImg.complete || !logoImg.naturalWidth || logoImg.naturalWidth !== 1024) return;
+      try {
+        logoTex = gl.createTexture(); texOn(0, logoTex);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, logoImg);
+        gl.generateMipmap(gl.TEXTURE_2D);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        st.logo = true;
+      } catch (e) { logoTex = null; /* the drawn stand-in */ }
+    };
     var buildText = function (fontOk) {
       if (tex || st.done) return;
       try {
         var T = textTex(fontOk);
-        tex = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, tex);
+        tex = gl.createTexture(); texOn(1, tex);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -492,19 +576,27 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
         nPts = np ? N : 0; st.n = nPts;
       } catch (e) { tex = null; /* the intro still plays without the word */ }
     };
-    // Orbitron is Jarvis's own font (saved by its worker): wait for it 300 ms at most, while the void plays
-    var fontT = setTimeout(function () { buildText(false); }, 300);
+    // Orbitron is Jarvis's own font (saved by its worker): the word is needed at ~7 s, so wait for it up to 1.8 s while the film plays
+    var fontT = setTimeout(function () { buildText(false); }, mode === 'short' ? 150 : 1800);
     try {
       if (doc.fonts && doc.fonts.load) doc.fonts.load('800 100px Orbitron').then(function (f) { clearTimeout(fontT); buildText(!!(f && f.length)); }, function () { /* the timer */ });
     } catch (e) { /* the timer */ }
-    var last = 0, firstAt = 0, stepped = 0, revealed = false, sounded = false, frameMs = [];
+    var last = 0, firstAt = 0, stepped = 0, revealed = false, frameMs = [], cued = 0, hole = false, fc0 = 0;
+    // the film's clock starts at its first drawn frame (after the shader compile, which a phone may take a while over), and the hard
+    // stops are set again from there: a slow compile never eats the film's end
+    var rearm = function () {
+      clearTimeout(killT); killT = setTimeout(function () { finish('deadline'); }, Math.round((len + 1.2) * 1000));
+      el.style.animation = 'none'; void el.offsetWidth; el.style.animation = 'olyEnd .45s linear ' + (len + 0.6).toFixed(2) + 's forwards';
+    };
     var failAt = ls('jarvis.intro.fail');                // tests: 'init' | 'frame' make it fail on purpose
     var frame = function () {
       raf = 0;
       if (st.done || !gl) return;
       try {
         if (failAt === 'frame' && st.frames > 3) throw new Error('test: a frame failed');
-        var tn = now(), t = HOLD >= 0 ? HOLD : (tn - t0) / 1000;
+        var tn = now();
+        if (!fc0) { fc0 = tn; if (HOLD < 0) rearm(); }
+        var t = HOLD >= 0 ? HOLD : (tn - fc0) / 1000 * rate;
         if (last) { var dt = tn - last; frameMs.push(dt); if (frameMs.length > 30) frameMs.shift(); }
         last = tn; st.frames++;
         // a phone that cannot keep up: step the resolution down (twice at most); one that still runs under 20 fps half a
@@ -519,30 +611,39 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
           var avg = frameMs.reduce(function (a, b) { return a + b; }, 0) / frameMs.length;
           if (avg > 24) { scale = Math.max(Math.min(scale, 0.6), scale * 0.7); size(); stepped++; frameMs = []; }
         }
+        if (!logoTex && (t > 0.5 || mode === 'short')) buildLogo();     // uploaded in a later frame than the first: the void paints first
         var e = env(t);
+        for (var pi = 0; pi < PHASES.length; pi++) if (mode !== 'short' && t >= PHASES[pi][0]) st.phase = PHASES[pi][1];
+        if (mode === 'short') st.phase = 'portal';
+        while (cued < e.cues.length && t >= e.cues[cued][0] && HOLD < 0) cue(e.cues[cued++][1]);
         if (!coreAt && e.push > 0) {
           var c = doc.getElementById('core'), r = c && c.getBoundingClientRect();
           coreAt = r && r.width > 20 && r.bottom > 0 && r.top < innerHeight
             ? [((r.left + r.width / 2) - innerWidth / 2) / innerWidth, (innerHeight / 2 - (r.top + r.height / 2)) / innerWidth] : [0, 0.12];
         }
-        var k = sm(cl((e.push - 0.15) / 0.85)), zoom = Math.exp(Math.pow(e.push, 2.2) * Math.log(16));
+        if (e.push > 0 && !hole) { hole = true; el.style.background = 'transparent'; }   // the hole shows Jarvis: drop the black backing
+        var k = sm(cl((e.push - 0.15) / 0.85)), zoom = Math.exp(Math.pow(e.push, 2.2) * Math.log(11));
         var po = [O[0] * S * (1 - k) + (coreAt ? coreAt[0] : 0) * k, O[1] * S * (1 - k) + (coreAt ? coreAt[1] : 0) * k];
-        if (!sounded && e.ign > 0) { sounded = true; whoom(1); }
+        var B = BOLTS[e.bolt || 0];
         gl.disable(gl.BLEND);
         gl.useProgram(pb);
         gl.bindBuffer(gl.ARRAY_BUFFER, quad);
         gl.enableVertexAttribArray(aBg); gl.vertexAttribPointer(aBg, 2, gl.FLOAT, false, 0, 0);
-        gl.uniform2f(ub.uRes, cv.width, cv.height); gl.uniform1f(ub.uT, t); gl.uniform1f(ub.uS, S); gl.uniform1f(ub.uZoom, zoom);
-        gl.uniform1f(ub.uStrike, e.strike); gl.uniform1f(ub.uFlash, e.flash); gl.uniform1f(ub.uRise, e.rise); gl.uniform1f(ub.uPed, e.ped);
-        gl.uniform1f(ub.uForm, e.form); gl.uniform1f(ub.uShine, e.shine); gl.uniform1f(ub.uOrb, e.orb); gl.uniform1f(ub.uPush, e.push);
-        gl.uniform1f(ub.uIgn, e.ign); gl.uniform1f(ub.uSpark, e.spark); gl.uniform1f(ub.uHasTex, tex ? 1 : 0);
-        gl.uniform2f(ub.uO, O[0], O[1]); gl.uniform2f(ub.uPo, po[0], po[1]); gl.uniform4f(ub.uTxt, TXT[0], TXT[1], TXT[2], TXT[3]);
-        var B = t > e.restrike ? B2 : B1;
+        var f1 = function (n, v) { gl.uniform1f(ub[n], v); };
+        gl.uniform2f(ub.uRes, cv.width, cv.height); f1('uT', t); f1('uS', S); f1('uZoom', zoom); f1('uFly', e.fly || 0); f1('uCam', e.cam || 0);
+        f1('uHeart', e.heart); f1('uStorm', e.storm); f1('uStrike', e.strike); f1('uFlash', e.flash); f1('uRidge', e.ridge); f1('uCols', e.cols);
+        f1('uBg', e.bg); f1('uGlow', e.glow); f1('uRing', e.ring); f1('uFlare', e.flare); f1('uAsm', e.asm); f1('uTemple', e.temple);
+        f1('uForm', e.form); f1('uShine', e.shine); f1('uSub', e.sub); f1('uPush', e.push); f1('uRR', RR * S * zoom);
+        f1('uHasLogo', logoTex ? 1 : 0); f1('uHasTxt', tex ? 1 : 0);
+        gl.uniform2f(ub.uO, O[0], O[1]); gl.uniform2f(ub.uPo, po[0], po[1]); gl.uniform2f(ub.uShock, e.shockR || 0, e.shockA || 0);
+        gl.uniform4f(ub.uTxt, TXT[0], TXT[1], TXT[2], TXT[3]);
         gl.uniform2fv(ub.uBolt, B.a); gl.uniform2fv(ub.uBr, B.b);
-        if (tex) { gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex); gl.uniform1i(ub.uTex, 0); }
+        gl.uniform1i(ub.uLogo, 0); gl.uniform1i(ub.uTxtT, 1);
+        if (logoTex) texOn(0, logoTex);
+        if (tex) texOn(1, tex);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
         gl.disableVertexAttribArray(aBg);
-        if (nPts && e.push < 0.95) {
+        if (nPts && (e.spk > 0.001 || e.form > 0.001) && e.push < 0.95) {
           gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
           gl.useProgram(pp);
           gl.bindBuffer(gl.ARRAY_BUFFER, pbuf);
@@ -550,12 +651,12 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
           gl.enableVertexAttribArray(aS); gl.vertexAttribPointer(aS, 4, gl.FLOAT, false, 24, 8);
           gl.uniform2f(up_.uRes, cv.width, cv.height); gl.uniform2f(up_.uO, O[0], O[1]); gl.uniform2f(up_.uPo, po[0], po[1]);
           gl.uniform1f(up_.uT, t); gl.uniform1f(up_.uS, S); gl.uniform1f(up_.uZoom, zoom); gl.uniform1f(up_.uForm, e.form);
-          gl.uniform1f(up_.uPush, e.push); gl.uniform1f(up_.uBurst, e.burst); gl.uniform1f(up_.uPx, scale * 1.15);
+          gl.uniform1f(up_.uPush, e.push); gl.uniform1f(up_.uSpk, e.spk); gl.uniform1f(up_.uPx, scale * 1.15);
           gl.drawArrays(gl.POINTS, 0, nPts);
           gl.disableVertexAttribArray(aT); gl.disableVertexAttribArray(aS);
         }
-        if (!revealed && t >= e.reveal && HOLD < 0) { revealed = true; fadeOut(Math.round((len - e.reveal) * 1000), 'reveal'); }
-        if (t < len + 0.1 || HOLD >= 0) raf = requestAnimationFrame(frame);
+        if (!revealed && t >= e.reveal && HOLD < 0) { revealed = true; fadeOut(180, 'reveal'); }
+        if (t < len * rate + 0.1 || HOLD >= 0) raf = requestAnimationFrame(frame);
       } catch (err) { fail(err); }
     };
     W.addEventListener('resize', function () { if (!st.done && gl) { try { size(); } catch (e) { fail(e); } } });
@@ -566,7 +667,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
   // ---------------------------------------------------------------- start
   function start(mode, replay) {
     t0 = now();
-    st.mode = mode; st.state = 'playing'; st.done = false; st.frames = 0; st.err = ''; ended = false;
+    st.mode = mode; st.state = 'playing'; st.done = false; st.frames = 0; st.err = ''; ended = false; st.cues = [];
     if (ls('jarvis.intro.fail') === 'init') throw new Error('test: the intro failed to start');
     var len = LEN[mode] || 0.5;
     st.len = len;
@@ -584,10 +685,13 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     if (!replay) {
       var sk = doc.createElement('small'); sk.className = 'oly-skip'; sk.textContent = 'TAP TO SKIP'; el.appendChild(sk);
     }
-    if (mode === 'full' || mode === 'short') {
+    if (mode !== 'fade' && mode !== 'off') {               // the logo file starts loading now (the start script has preloaded it)
+      try { logoImg = new Image(); logoImg.src = 'intro-logo.webp'; } catch (e) { logoImg = null; }
+    }
+    if (mode === 'full' || mode === 'lite' || mode === 'short') {
       ls('jarvis.intro.run', '1');
-      if (mode === 'full') ls('jarvis.intro.day', dayKey());
-      var lite = root.getAttribute('data-fx') === 'low' || (navigator.hardwareConcurrency || 8) <= 2 || (navigator.deviceMemory && navigator.deviceMemory <= 2);
+      if (mode !== 'short') { ls('jarvis.intro.day', dayKey()); ls('jarvis.intro.at', String(Date.now())); }
+      var lite = mode === 'lite' || lowTier();
       st.q = lite ? 'lite' : 'hi';
       // WebGL is set up in the first frame: the black overlay paints first and the page's parsing is never held by it
       requestAnimationFrame(function () {
@@ -613,17 +717,19 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     } catch (e) { fail(e); }
   }
 
-  // a replay (the command palette: "Play the OLYMPUS intro"): a new overlay; the tap that asked for it lets the whoom play
+  // a replay (the command palette: "Play the OLYMPUS intro"): a new overlay; the tap that asked for it lets the sound play
   W.__olyIntroPlay = function (mode) {
     try {
       if (el && el.parentNode && !st.done) return false;
       gesture = true;
+      mode = mode || 'full';
+      if (mode === 'full' && lowTier()) mode = 'lite';
       var o = doc.createElement('div'); o.className = 'oly'; o.id = 'olyIntro'; o.setAttribute('aria-hidden', 'true');
       doc.body.appendChild(o);
-      root.setAttribute('data-intro', mode || 'full');
-      W.__olyIntro = st = { mode: '', q: '', state: 'idle', frames: 0, ms: 0, err: '', done: false, scale: 0, n: 0, fps: 0 };
+      root.setAttribute('data-intro', mode);
+      W.__olyIntro = st = { mode: '', q: '', state: 'idle', frames: 0, ms: 0, err: '', done: false, scale: 0, n: 0, fps: 0, phase: '', cues: [], logo: false };
       gl = null; cv = null; holdUp = false;
-      boot(mode || 'full', true);
+      boot(mode, true);
       return true;
     } catch (e) { fail(e); return false; }
   };
@@ -2520,12 +2626,12 @@ function readColors() { const cs = getComputedStyle(root); COL = { cr: cs.getPro
 function boot() {
   const el = $('#bootfx');
   // the OLYMPUS intro (the olympus-intro script) plays instead of the boot log. The 3D core waits for its end (its first frames
-  // would hold the intro up), 4.5 s at most; when the intro is not running (it ended, failed or never got going) nothing waits.
+  // would hold the intro up), 11 s at most (the film is 10 s); when the intro is not running (it ended, failed or never got going) nothing waits.
   if (root.hasAttribute('data-intro')) {
     if (el) el.remove();
     try { sessionStorage.setItem('jarvis.booted', '1'); } catch (_) { /* private mode */ }
     const it = window.__olyIntro;
-    if (it && !it.done) { window.addEventListener('oly:intro-end', () => bootEnd(), { once: true }); setTimeout(bootEnd, 4500); }
+    if (it && !it.done) { window.addEventListener('oly:intro-end', () => bootEnd(), { once: true }); setTimeout(bootEnd, 11000); }
     else {
       bootEnd();
       if (!it) { const o = $('#olyIntro'); if (o) o.remove(); root.removeAttribute('data-intro'); }   // its script never ran
