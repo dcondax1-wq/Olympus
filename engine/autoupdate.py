@@ -43,7 +43,6 @@ from __future__ import annotations
 import datetime as dt
 import json
 import os
-import subprocess
 import sys
 import threading
 import time
@@ -223,12 +222,20 @@ class Shell:
         self.cwd, self.python, self.log = cwd, python, log or (lambda t: None)
 
     def run(self, args, timeout=120):
+        """(returncode, output). Through heartbeat.run_cmd (2026-11-03): on Windows subprocess.run(timeout=) waits without
+        a limit for its pipes while git-remote-https / the credential manager hang (the heartbeat's 2026 fix); run_cmd
+        uses temp files and kills the whole process tree at the timeout. Git never prompts (GIT_TERMINAL_PROMPT=0)."""
         try:
-            r = subprocess.run(args, cwd=self.cwd, capture_output=True, text=True, timeout=timeout,
-                               env={**os.environ, "PYTHONIOENCODING": "utf-8", "LE_HEARTBEAT": "0", "LE_NO_AUTOSTART": "1"})
-            return r.returncode, (r.stdout or "") + (r.stderr or "")
-        except subprocess.TimeoutExpired:
-            return 124, f"timed out after {timeout} s"
+            from .heartbeat import run_cmd
+            r = run_cmd(args, cwd=self.cwd, timeout=timeout,
+                        env={**os.environ, "PYTHONIOENCODING": "utf-8", "LE_HEARTBEAT": "0", "LE_NO_AUTOSTART": "1",
+                             "GIT_TERMINAL_PROMPT": "0", "GCM_INTERACTIVE": "never"})
+            if r.timed_out:
+                return 124, f"timed out after {timeout} s"
+            if r.returncode == -1:                       # could not start
+                return 127, r.err
+            out, err = (r.stdout or b"").decode("utf-8", "replace"), (r.stderr or b"").decode("utf-8", "replace")
+            return r.returncode, out + err
         except Exception as e:
             return 127, f"{e.__class__.__name__}: {e}"
 

@@ -798,10 +798,12 @@ class Rehearsal:
         for n in range(1, (self.server.n if self.server else 0) + 1):
             try:
                 txt = open(os.path.join(self.base, f"server_{n}.log"), encoding="utf-8", errors="replace").read()
-                tb += [ln for ln in txt.splitlines() if "Traceback" in ln]
+                lines = txt.splitlines()
+                # (2026-11-03) the whole traceback, not only its first line: the sandbox (and its log) is deleted after
+                tb += ["\n".join(lines[i:i + 14]) for i, ln in enumerate(lines) if "Traceback" in ln]
             except OSError:
                 pass
-        check("server logs: no traceback", not tb, "\n".join(tb[:5]))
+        check("server logs: no traceback", not tb, "\n---\n".join(tb[:3]))
 
 
 def summary(rows, bugs, out=None):

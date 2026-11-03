@@ -730,7 +730,8 @@ def pc_sync(force: bool = False, fetch=None, key_path: str | None = None, cache_
             st = fetch()
         else:
             import subprocess
-            r = subprocess.run(["git", "fetch", "-q", "--depth", "1", "origin", "dashboard"], cwd=ROOT, capture_output=True, text=True, timeout=60)
+            from .heartbeat import _NET_CFG, _git_env, run_cmd    # (2026-11-03) no Windows pipe hang on a stuck fetch
+            r = run_cmd(["git", *_NET_CFG, "fetch", "-q", "--depth", "1", "origin", "dashboard"], cwd=ROOT, timeout=60, env=_git_env())
             if r.returncode:
                 raise RuntimeError("no dashboard branch")
             r = subprocess.run(["git", "show", "FETCH_HEAD:state.json"], cwd=ROOT, capture_output=True, text=True, timeout=30)

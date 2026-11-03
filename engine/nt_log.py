@@ -92,7 +92,9 @@ def outgoing_summary(folder: str | None) -> dict:
             pos_accts[acct] = pos_accts.get(acct, 0) + 1
         elif n.startswith("LE") and low.endswith(".txt"):
             ours.append(n)
-        elif low.endswith(".txt") and "_" not in n and len(n) < 60:
+        elif low.endswith(".txt") and len(n) < 60:
+            # (2026-11-03) no "_" exclusion any more: a connection named e.g. "MFFU_Rithmic" was counted as "other" and
+            # the block showed only Simulation (position files are matched above; NinjaTrader's order ids have no "_")
             try:
                 txt = open(os.path.join(d, n), encoding="utf-8", errors="replace").read(40).strip().upper()
             except Exception:
@@ -104,8 +106,19 @@ def outgoing_summary(folder: str | None) -> dict:
         else:
             other += 1
     ours.sort(key=lambda n: os.path.getmtime(os.path.join(d, n)) if os.path.exists(os.path.join(d, n)) else 0)
-    return {"files": len(names), "connections": conns, "position_accounts": pos_accts, "le_orders": len(ours),
-            "le_newest": [_clean(x) for x in ours[-8:]], "other": other}
+    out = {"files": len(names), "connections": conns, "position_accounts": pos_accts, "le_orders": len(ours),
+           "le_newest": [_clean(x) for x in ours[-8:]], "other": other}
+    try:
+        # the connection files alone can say "Simulation=CONNECTED" only while the MFFU connection is up (a file is
+        # written on a state change): NinjaTrader's live accounts and live bars complete the picture (2026-11-03)
+        from .ninjatrader import connection_view
+        cv = connection_view({c.split("=", 1)[0]: c.split("=", 1)[1] for c in conns if "=" in c}, folder)
+        out.update({"connected": cv["connected"], "connected_via": cv["via"], "live_accounts": cv["live_accounts"]})
+        if cv.get("note"):
+            out["note"] = _clean(cv["note"])
+    except Exception:
+        pass
+    return out
 
 
 def hb_block(bot) -> dict | None:

@@ -77,10 +77,14 @@ def _hm(t) -> str:
 def fetch(cwd: str = ROOT, remote: str = "origin", branch: str = BRANCH, timeout=60) -> dict:
     """git fetch the control branch into LOCAL_REF and read control/command.json. {"ok", "text" | "error", "commit"}."""
     try:
-        r = subprocess.run(["git", "fetch", "-q", "--no-tags", remote, f"+refs/heads/{branch}:{LOCAL_REF}"], cwd=cwd,
-                           capture_output=True, text=True, timeout=timeout)
+        # (2026-11-03) the network step goes through heartbeat.run_cmd: on Windows subprocess.run(timeout=) waits without a
+        # limit for its pipes while git-remote-https / the credential manager hang, which would stall this thread and with
+        # it every phone command (kill included). run_cmd uses temp files, kills the whole tree at the timeout, never prompts.
+        from .heartbeat import _NET_CFG, _git_env, run_cmd
+        r = run_cmd(["git", *_NET_CFG, "fetch", "-q", "--no-tags", remote, f"+refs/heads/{branch}:{LOCAL_REF}"], cwd=cwd,
+                    timeout=timeout, env=_git_env())
         if r.returncode:
-            err = (r.stderr or "").strip()
+            err = r.err
             return {"ok": False, "error": "no control branch yet (tools/init_control_branch.py makes it)"
                     if "couldn't find remote ref" in err.lower() else (err[-200:] or "git fetch failed")}
         c = subprocess.run(["git", "rev-parse", LOCAL_REF], cwd=cwd, capture_output=True, text=True, timeout=30)
@@ -516,7 +520,10 @@ class RemoteControl:
             try:
                 self.tick()
             except Exception as e:
-                self.log(f"[remote] error: {e.__class__.__name__}: {e}")
+                try:                                 # a failing log (closed console) must not end the remote thread
+                    self.log(f"[remote] error: {e.__class__.__name__}: {e}")
+                except Exception:
+                    pass
             self._stop.wait(self.every_s)
 
     def start(self) -> bool:

@@ -34,6 +34,7 @@ if ROOT not in sys.path:
 from engine import live  # noqa: E402
 from engine import ninjatrader as N  # noqa: E402
 from engine.ninjatrader import ET, NinjaTraderAdapter, _FakeNT  # noqa: E402
+from engine.sizing import LIVE_COMM  # noqa: E402  (live bookings: $1.90 a micro, not the research $1.40)
 
 RES = []
 P = ("Sim101", "MNQ 12-26")
@@ -215,7 +216,7 @@ def bot_tests():
     tr = {"entry_t": t_b, "exit_t": t_b + 1800, "exit_reason": "TARGET", "qty": 4, "pnl": 0.0, "dir": 1, "entry": 25020.0,
           "exit_price": 25110.0, "pts": 90.0, "adds": [{"px": 25045.25, "qty": 4, "pts": 64.75}]}
     from engine import lit as _lit
-    want = round(4 * (90.0 * _lit.PV - _lit.COMM) + 3 * ((25110.0 - 25047.0) * _lit.PV - _lit.COMM), 2)
+    want = round(4 * (90.0 * _lit.PV - LIVE_COMM) + 3 * ((25110.0 - 25047.0) * _lit.PV - LIVE_COMM), 2)
     pnl = b._routed_pnl(tr, 4)
     check("4. add cancelled unfilled -> 0 micros; partial fill 3 @ 25047 -> ledger P&L from 3 @ 25047 (not 4 @ 25045.25)",
           q_cancel == 0 and q_part == 3 and abs(pnl - want) < 0.01, f"{q_cancel} {q_part} {pnl} {want}")
@@ -248,7 +249,7 @@ def cloud_tests():
     room = cm.eval_track(before, "2026-10-19")["cushion"]
     want_q = sizing.scale_in_qty(6, 6, 30.0, [{"rk": 24.0, "prev_rk": []}], f=1.0, state={"room": room, "cum": 0.0})
     from engine import lit as _lit
-    want = round(6 * (90.0 * _lit.PV - _lit.COMM) + want_q[0] * (64.75 * _lit.PV - _lit.COMM), 2)
+    want = round(6 * (90.0 * _lit.PV - LIVE_COMM) + want_q[0] * (64.75 * _lit.PV - LIVE_COMM), 2)
     check("6. cloud ledger: the add sized by scale_in_qty on the ledger's eval state (as the PC), $ includes it",
           qa == want_q and abs(usd - want) < 0.01, f"{qa} {want_q} {usd} {want} room {room}")
     usd_n, qa_n = cm.lit_add_usd({}, tr, 5, {"mode": "normal"}, 1.0)
@@ -402,7 +403,7 @@ def review2_tests():
     tr = {"entry_t": t, "exit_t": t + 1800, "exit_reason": "TARGET", "qty": 2, "pnl": 0.0, "dir": 1, "entry": 25020.0,
           "exit_price": 25100.0, "pts": 80.0}
     from engine import lit as _lit
-    want = round(2 * (80.0 * _lit.PV - _lit.COMM) + 3 * ((25100.0 - 25040.0) * _lit.PV - _lit.COMM), 2)
+    want = round(2 * (80.0 * _lit.PV - LIVE_COMM) + 3 * ((25100.0 - 25040.0) * _lit.PV - LIVE_COMM), 2)
     pnl = b._routed_pnl(tr, 2)
     check("C. LiveBot restart without the add in its ledger: booked from NinjaTrader's fill (3 @ 25040) in qty and P&L",
           q == 3 and abs(pnl - want) < 0.01 and b._open_adds and b._open_adds[0].get("restored"), f"{q} {pnl} {want} {b._open_adds}")

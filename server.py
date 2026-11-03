@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+import hmac
 import json
 import os
 import subprocess
@@ -530,7 +531,7 @@ async def api_tv_hook(req: Request):
 async def api_tv_webhook(req: Request, key: str = ""):
     """TradingView alert webhook. The key in the URL is the only credential; payload is data, shown in the live feed."""
     cfg = _tv_cfg()
-    if not key or key != cfg["key"]:
+    if not key or not cfg.get("key") or not hmac.compare_digest(str(key), str(cfg["key"])):     # constant-time compare
         return J({"error": "bad key"}, 403)
     raw = (await req.body())[:4000].decode("utf-8", "replace")
     try:

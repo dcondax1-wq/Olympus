@@ -159,6 +159,13 @@ def folder_probe(folder: str, now=None) -> dict:
                 continue
             if v in ("CONNECTED", "DISCONNECTED"):
                 res["connections"][accounts.clean_text(n[:-4], 40)] = v
+    try:            # a connection file is written only on a state change: live accounts / live bars count (2026-11-03)
+        from .ninjatrader import connection_view
+        cv = connection_view(res["connections"], folder, now)
+        res["connected"], res["connected_via"] = cv["connected"], cv["via"]
+    except Exception:
+        res["connected"] = any(v == "CONNECTED" for v in res["connections"].values()) if res["connections"] else None
+        res["connected_via"] = []
     return res
 
 
@@ -400,9 +407,10 @@ def preflight(bot, account: str, now: int, lm: dict | None = None, env=None, pro
                      "in NinjaTrader: Tools > Options > Automated trading interface > tick 'AT Interface', then restart NinjaTrader"
                      if not stuck else "NinjaTrader is not reading order files: turn the AT Interface on and keep NinjaTrader open"))
     conns = probe["connections"]
-    up = [k for k, v in conns.items() if v == "CONNECTED"]
+    up = [k for k, v in conns.items() if v == "CONNECTED"] or (["live"] if probe.get("connected") else [])
     rows.append(_row("connection", "Connection CONNECTED", bool(up),
-                     (", ".join(f"{k} {v}" for k, v in conns.items()) or "no connection file yet"),
+                     (", ".join(f"{k} {v}" for k, v in conns.items()) or "no connection file yet")
+                     + (f" (connected: {', '.join(probe.get('connected_via') or [])})" if probe.get("connected") else ""),
                      "in NinjaTrader: Connections > connect your MFFU / Tradovate login (or the Sim connection for Sim101)"))
     known = any(p["account"] == account for p in probe["positions"])
     if not sim:
