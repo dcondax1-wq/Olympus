@@ -397,7 +397,7 @@ def _nt_said_no_account(adapter, entry_t) -> bool:
 
 def _no_trace(adapter, entry_t, rl, now=None) -> bool:
     """A "fill not reported yet" entry the adapter no longer knows (a restart lost its retired legs) never became a position
-    when, NO_TRACE_S after it: NinjaTrader wrote no order file for any of its orders (outgoing\ holds no name with
+    when, NO_TRACE_S after it: NinjaTrader wrote no order file for any of its orders (outgoing\\ holds no name with
     LE<entry_t>) AND it shows a FLAT position file for every contract of it (2026-10-27: Zlarior's 06:12 SELL 7 and
     ATLAS's 03:30 BUY 3 were picked up, never answered, the accounts flat). A missing position file proves nothing."""
     try:
