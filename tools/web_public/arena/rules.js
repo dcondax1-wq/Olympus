@@ -75,12 +75,13 @@ export function score(events, R, today) {
   const used = new Map(), counts = {}, bySrc = {}, st = {}, log = [];
   const labours = R.labours.map((l) => ({ id: l.id, n: l.n, name: l.name, task: l.task, goal: l.goal, value: 0, earned: false, day: null }));
   for (const s of R.streaks) st[s.id] = { cur: 0, best: 0, last: null };
-  let xp = 0;
+  let xp = 0, xpToday = 0;
   for (const e of evs) {
     const rule = R.xp[e.kind], key = e.kind + '|' + e.day, n = used.get(key) || 0;
     used.set(key, n + 1);
     const got = n < rule.cap_day ? rule.xp : 0;
     xp += got;
+    if (e.day === today) xpToday += got;
     bySrc[e.src] = (bySrc[e.src] || 0) + got;
     counts[e.kind] = (counts[e.kind] || 0) + 1;
     for (const def of R.streaks) stepStreak(st[def.id], def, e);
@@ -101,7 +102,7 @@ export function score(events, R, today) {
   }
   const ri = rankOf(xp, R), lx = R.level_xp;
   const next = R.ranks[ri + 1] ? { ...R.ranks[ri + 1], need: R.ranks[ri + 1].xp - xp } : null;
-  return { xp, level: 1 + Math.floor(xp / lx), into: xp % lx, level_xp: lx, rank: { ...R.ranks[ri], i: ri }, next,
+  return { xp, xpToday, level: 1 + Math.floor(xp / lx), into: xp % lx, level_xp: lx, rank: { ...R.ranks[ri], i: ri }, next,
     streaks, labours, earned: labours.filter((l) => l.earned).length, counts, bySrc, log: log.slice(-60).reverse(), n: evs.length };
 }
 

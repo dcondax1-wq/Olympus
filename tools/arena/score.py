@@ -105,13 +105,15 @@ def score(events, R, today: str) -> dict:
     defs = {l["id"]: l for l in R["labours"]}
     labours = [{"id": l["id"], "n": l["n"], "name": l["name"], "task": l["task"], "goal": l["goal"], "value": 0, "earned": False,
                 "day": None} for l in R["labours"]]
-    xp = 0
+    xp = xp_today = 0
     for e in evs:
         rule, key = R["xp"][e["kind"]], (e["kind"], e["day"])
         n = used.get(key, 0)
         used[key] = n + 1
         got = rule["xp"] if n < rule["cap_day"] else 0
         xp += got
+        if e["day"] == today:
+            xp_today += got
         by_src[e["src"]] = by_src.get(e["src"], 0) + got
         counts[e["kind"]] = counts.get(e["kind"], 0) + 1
         for d in R["streaks"]:
@@ -131,7 +133,7 @@ def score(events, R, today: str) -> dict:
                             "last": s["last"]}
     ri, lx = _rank_of(xp, R), R["level_xp"]
     nxt = R["ranks"][ri + 1] if ri + 1 < len(R["ranks"]) else None
-    return {"xp": xp, "level": 1 + xp // lx, "into": xp % lx, "level_xp": lx, "rank": {**R["ranks"][ri], "i": ri},
+    return {"xp": xp, "xpToday": xp_today, "level": 1 + xp // lx, "into": xp % lx, "level_xp": lx, "rank": {**R["ranks"][ri], "i": ri},
             "next": {**nxt, "need": nxt["xp"] - xp} if nxt else None, "streaks": streaks, "labours": labours,
             "earned": sum(1 for l in labours if l["earned"]), "counts": counts, "bySrc": by_src, "log": log[-60:][::-1],
             "n": len(evs)}
