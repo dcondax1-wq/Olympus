@@ -462,3 +462,37 @@ html.framed .secnav { top: 0; }
   .cd em, .cw { font-size: 11.5px; }
   .kpis strong { font-size: 17px; }
 }
+
+/* ---------------- 2026-11-03 upgrade: the edge map, the Kelly growth curve, the bet journal */
+.emap { display: block; width: 100%; height: auto; max-height: 260px; background: rgba(var(--cr), .035); border: 1px solid var(--dim); }
+.emap .gx { stroke: rgba(var(--cr), .12); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.emap .ax { fill: var(--mut); font: 600 9px var(--fh); }
+.emap .em-fair { stroke: rgba(var(--cr), .7); stroke-width: 1.4; stroke-dasharray: 5 4; vector-effect: non-scaling-stroke; }
+.emap .em-up { fill: rgba(var(--ok-rgb), .06); }
+.em-d { stroke-width: 1.5; fill-opacity: .55; transform-box: fill-box; transform-origin: center; }
+.em-d.ok { fill: var(--ok); stroke: #b8ffd0; filter: drop-shadow(0 0 6px rgba(var(--ok-rgb), .8)); }
+.em-d.warn { fill: var(--warn); stroke: #ffe9a0; filter: drop-shadow(0 0 6px rgba(var(--warn-rgb), .7)); }
+.em-d.bad { fill: var(--bad); stroke: #ffb3c0; filter: drop-shadow(0 0 6px rgba(var(--bad-rgb), .7)); }
+.kcurve { display: grid; gap: 6px; }
+.kcurve-s { display: block; width: 100%; height: auto; max-height: 150px; background: rgba(var(--cr), .035); border: 1px solid var(--dim); }
+.kcurve-s .kc-z { stroke: rgba(var(--cr), .4); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.kcurve-s .kc-l { fill: none; stroke: var(--c); stroke-width: 2.2; vector-effect: non-scaling-stroke; filter: drop-shadow(0 0 5px rgba(var(--cr), .8)); }
+.kcurve-s .kc-a { fill: rgba(var(--cr), .12); stroke: none; }
+.kcurve-s .kc-m { stroke-width: 1; stroke-dasharray: 3 3; vector-effect: non-scaling-stroke; stroke: rgba(var(--cr), .5); }
+.kcurve-s .kc-m.f { stroke: var(--ok); } .kcurve-s .kc-m.x { stroke: var(--bad); }
+.kcurve-s .kc-t { fill: var(--mut); font: 700 8.5px var(--fh); } .kcurve-s .kc-t.f { fill: var(--ok); } .kcurve-s .kc-t.x { fill: var(--bad); }
+.kcurve-s .kc-p { fill: #fff; stroke: var(--c); stroke-width: 2; filter: drop-shadow(0 0 6px var(--c)); }
+.journal { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.jd { padding: 10px 10px 8px; border: 1px solid var(--dim); background: rgba(var(--pr), .5); min-width: 0; }
+.jd-h { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.jd-h b { font: 700 14px var(--fh); letter-spacing: .04em; }
+.jd-h span { font: 700 14px var(--fh); } .jd-h small { color: var(--mut); }
+.jn-b { margin-left: auto; min-height: 36px; padding: 0 12px; border: 1px solid var(--dim2); background: transparent; color: var(--mut); border-radius: 999px; font: 600 12px var(--fb); }
+.jn-b[aria-expanded="true"] { color: var(--c); border-color: var(--c); }
+.jn-t { margin: 6px 0 0; padding: 6px 8px; border-left: 2px solid var(--c); color: var(--tint); font-size: 14px; overflow-wrap: anywhere; }
+textarea.jn { width: 100%; margin: 8px 0 0; padding: 8px; font-size: 16px; line-height: 1.35; resize: vertical; background: rgba(0, 0, 0, .35); border: 1px solid var(--dim2); color: var(--txt); border-radius: 8px; }
+.jl { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 4px; }
+.jr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1px 10px; padding: 6px 0; border-top: 1px solid var(--dim); min-width: 0; }
+.jr .t { min-width: 0; overflow-wrap: anywhere; font-weight: 600; } .jr .v { font: 700 14px var(--fh); white-space: nowrap; }
+.jr small { grid-column: 1 / -1; color: var(--mut); overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: no-preference) { .em-d { animation: emp 1.2s ease-out both; animation-delay: calc(var(--i) * 70ms); } @keyframes emp { from { transform: scale(.2); opacity: 0; } } }

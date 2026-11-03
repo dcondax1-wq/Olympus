@@ -152,3 +152,14 @@ h1 { margin: 0; font: 700 16px Orbitron, sans-serif; letter-spacing: .26em; colo
   .mode[data-mode="live"] i { animation: none; }
   * { scroll-behavior: auto !important; transition: none !important; }
 }
+
+/* ---------------- the Bank panel: the bankroll curve + the risk of ruin (2026-11-03) */
+.bk { display: block; width: 100%; height: 96px; margin: 0 0 6px; border-radius: 10px; background: rgba(255, 207, 90, .04); }
+.bk path, .bk line { vector-effect: non-scaling-stroke; fill: none; }
+.bk-line { stroke: var(--gold); stroke-width: 2; stroke-linejoin: round; filter: drop-shadow(0 0 4px rgba(255, 207, 90, .7)); }
+.bk-fan { fill: rgba(94, 242, 192, .17) !important; stroke: none; }
+.bk-med { stroke: var(--mint); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.bk-floor { stroke: #ff6b7f; stroke-width: 1; stroke-dasharray: 3 4; opacity: .7; }
+.bk-now { stroke: rgba(255, 255, 255, .25); stroke-width: 1; }
+.bk-dot { fill: #fff3cf; filter: drop-shadow(0 0 5px var(--gold)); }
+#bk-ruin[data-sign="up"], #bk-med[data-sign="up"] { color: var(--mint); } #bk-ruin[data-sign="down"], #bk-half[data-sign="down"], #bk-med[data-sign="down"] { color: #ff6b7f; }

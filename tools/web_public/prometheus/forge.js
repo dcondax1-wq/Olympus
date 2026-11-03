@@ -10,6 +10,9 @@ import * as THREE from '../jarvis/three.module.min.js';
 import { loadForge, FMT } from './forgecore.js';
 import { FlameField } from './flames.js';
 import { lineageSvg, pickAt, heatRgb } from './lineage.js';
+import { createRenderer } from '../olympus/render.js';     // the OLYMPUS render core: ACES, PMREM sky, bloom, MSAA, film finish
+import { metal } from '../olympus/materials.js';
+import { buildForgeSet } from './forgeset.js';             // the set: obsidian floor, lava cracks, molten gold ring, braziers
 
 const O = window.OLYMPUS || null;   // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
 const Q = new URLSearchParams(location.search);
@@ -19,7 +22,7 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
 const ARENA_R = 7;
 const STEP_MS = RM ? 1300 : 1750;
 const ORIGIN = { L: 'the live strategy', S: 'a spark of live (mutant)', R: 'random', E: 'elite (survived as is)', C: 'child' };
-const STATE = { forge: null, arena: null, gen: 0, playing: false, lastStep: 0, errors: [], panel: null, sel: null, theme: null };
+const STATE = { filter: 'all', forge: null, arena: null, gen: 0, playing: false, lastStep: 0, errors: [], panel: null, sel: null, theme: null };
 
 // ------------------------------------------------------------------------------------------------ textures
 function canvasTex(w, h, draw) {
@@ -64,9 +67,10 @@ function heatColor(h, out = new THREE.Color()) {
 }
 
 // ------------------------------------------------------------------------------------------------ embers (one Points buffer)
+const GAIN = 2.6;
 class Embers {
   constructor(scene, tex, n) {
-    this.n = n; this.next = 0;
+    this.n = n; this.cap = n; this.next = 0;
     this.pos = new Float32Array(n * 3); this.col = new Float32Array(n * 3);
     this.vel = new Float32Array(n * 3); this.base = new Float32Array(n * 3);
     this.life = new Float32Array(n); this.max = new Float32Array(n); this.grav = new Float32Array(n);
@@ -81,8 +85,10 @@ class Embers {
     scene.add(this.points);
   }
 
+  setCap(c) { this.cap = Math.max(1, Math.min(this.n, c)); this.next %= this.cap; }
+
   spawn(x, y, z, vx, vy, vz, life, color, grav = 0.6) {
-    const i = this.next; this.next = (this.next + 1) % this.n;
+    const i = this.next; this.next = (this.next + 1) % this.cap;
     const j = i * 3;
     this.pos[j] = x; this.pos[j + 1] = y; this.pos[j + 2] = z;
     this.vel[j] = vx; this.vel[j + 1] = vy; this.vel[j + 2] = vz;
@@ -109,7 +115,8 @@ class Embers {
       if (pos[j + 1] < 0.02) { pos[j + 1] = 0.02; vel[j + 1] = 0; }
       const f = Math.max(0, life[i] / max[i]);
       const k = f * f * (3 - 2 * f);
-      col[j] = base[j] * k; col[j + 1] = base[j + 1] * k; col[j + 2] = base[j + 2] * k;
+      const hk = k * GAIN;                           // HDR: a hot ember is brighter than 1, so the bloom takes it
+      col[j] = base[j] * hk; col[j + 1] = base[j + 1] * hk; col[j + 2] = base[j + 2] * hk;
     }
     this.geo.attributes.position.needsUpdate = true;
     this.geo.attributes.color.needsUpdate = true;
@@ -122,7 +129,7 @@ class Flame {
     this.field = field; this.i = i;
     this.pos = new THREE.Vector3(); this.from = new THREE.Vector3(); this.to = new THREE.Vector3();
     this.heat = 0; this.heatFrom = 0; this.heatTo = 0; this.t0 = 0; this.dur = 0; this.ph = Math.random() * 10;
-    this.id = null; this.alive = false; this.fixedColor = null; this.flare = null; this.dim = 1;
+    this.id = null; this.alive = false; this.fixedColor = null; this.flare = null; this.dim = 1; this.vis = 1; this.visTo = 1;
     this.tmp = new THREE.Color();
   }
 
@@ -141,12 +148,13 @@ class Flame {
       if (u >= 1) this.dur = 0;
     }
     if (!this.alive) { this.field.hide(this.i); return; }
+    this.vis += (this.visTo - this.vis) * (still ? 1 : 0.14);       // the half-year filter dims what does not match
     const h = Math.max(0, this.heat);
     const fl = still ? 1 : 1 + 0.05 * Math.sin(t * 9.1 + this.ph) + 0.035 * Math.sin(t * 23.7 + this.ph * 1.7);   // the noise does the rest
     const H = (0.55 + 2.7 * h) * fl, W = (0.42 + 0.95 * h) * (2 - fl) * 0.95;
     const ice = this.fixedColor ? 1 : 0;
     const col = this.fixedColor || heatColor(Math.min(1, h + 0.12), this.tmp);
-    this.field.set(this.i, this.pos, W, H, col, ice ? 0.75 : h, ice ? 0.95 : (0.35 + 0.75 * h) * this.dim, this.ph, ice);
+    this.field.set(this.i, this.pos, W, H, col, ice ? 0.75 : h, ice ? 0.95 : (0.35 + 0.75 * h) * this.dim * this.vis, this.ph, ice);
   }
 
   /** the flame's centre (for taps) */
@@ -161,19 +169,26 @@ class Arena {
     // ?lite=1 wins (tests); else the owner's OLYMPUS choice (Jarvis ⋯ → 3D); the auto LITE below only when nobody chose
     this.lite = Q.get('lite') === '1' || !!(O && O.lite());
     this.chosen = Q.get('lite') === '1' || !!(O && O.chosen());
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: true, powerPreference: 'high-performance' });
-    O?.track(this.renderer);
-    this.renderer.setClearColor(0x000000, 0);          // the sky is the page's CSS ember gradient behind the canvas
     this.scene = new THREE.Scene();
     this.scene.fog = new THREE.FogExp2(0x120806, 0.028);
-    O?.themeScene?.({ scene: this.scene, renderer: this.renderer });   // OLYMPUS theme: the fog follows it (the sky is the CSS --bg)
     this.camera = new THREE.PerspectiveCamera(48, 1, 0.1, 200);
+    // the render core owns the renderer, the frame passes and the quality tiers (OLYMPUS.fx(), stepped down on slow frames)
+    this.rc = createRenderer({ canvas, scene: this.scene, camera: this.camera, env: 'night', tint: '#ff7a1a', exposure: 0.95, maxDpr: 1.75,
+      quality: Q.get('lite') === '1' ? 'low' : undefined, adapt: true, bloom: { strength: 0.75, radius: 0.6, threshold: 0.9 },
+      grade: { vignette: 0.42, grain: 0.04, aberration: 0.003 },
+      onQuality: (l) => { this.lite = l === 'low' || l === 'off'; this.field?.setLite(this.lite); this.embers?.setCap(this.lite ? 260 : 700); O?.mode(this.lite); } });
+    this.renderer = this.rc.renderer;
+    this.lite = this.rc.quality() === 'low' || this.rc.quality() === 'off';
+    this.scene.background = new THREE.Color(0x0a0403);
+    O?.themeScene?.({ scene: this.scene, renderer: this.renderer });   // OLYMPUS theme: the fog follows it
     this.az = -0.6; this.el = 0.8; this.drag = null;
     this.tex = { glow: glowTex() };
     this.rand = (() => { let s = 12345; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; })();
-    this.buildFloor();
+    this.set = buildForgeSet(THREE, this.scene, { metal, ARENA_R, lite: this.lite });
+    this.rim = this.set.ring;
     this.buildSky();
-    this.embers = new Embers(this.scene, this.tex.glow, this.lite ? 260 : 700);
+    this.embers = new Embers(this.scene, this.tex.glow, 700);
+    this.embers.setCap(this.lite ? 260 : 700);
     const nPool = Math.max(...forge.d.gens.map((g) => g.length)) + 2;
     this.field = new FlameField(this.scene, nPool + 1, this.lite);
     this.pool = Array.from({ length: nPool }, (_, i) => new Flame(this.field, i));
@@ -184,28 +199,16 @@ class Arena {
     this.liveLabel = new THREE.Sprite(new THREE.SpriteMaterial({ map: textTex('LIVE', '#8fdcff'), transparent: true, depthWrite: false }));
     this.liveLabel.scale.set(2.6, 0.65, 1); this.liveLabel.position.copy(lp).setY(3.2);
     this.scene.add(this.liveLabel);
-    const ring = new THREE.Mesh(new THREE.RingGeometry(0.45, 0.6, 40), new THREE.MeshBasicMaterial({ color: C_ICE, transparent: true,
-      opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false }));
+    const ring = new THREE.Mesh(new THREE.RingGeometry(0.45, 0.6, 40), new THREE.MeshBasicMaterial({ color: C_ICE.clone().multiplyScalar(2.2), transparent: true,
+      opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false }));
     ring.rotation.x = -Math.PI / 2; ring.position.copy(lp).setY(0.03);
     this.scene.add(ring);
     this.buildTrail();
     this.byCreature = new Map();
     this.frames = []; this.t = 0; this.wall = 0; this.slowSince = null; this.last = performance.now(); this.emitAcc = 0;
-    this.dprCap = 2;                                    // 2 -> 1.25 (LITE) -> 1 (LITE, still slow)
     this.resize();
     addEventListener('resize', () => this.resize());
     this.bindPointer();
-  }
-
-  buildFloor() {
-    const floor = new THREE.Mesh(new THREE.CircleGeometry(ARENA_R + 2.6, 72), new THREE.MeshBasicMaterial({ map: floorTex() }));
-    floor.rotation.x = -Math.PI / 2;
-    this.scene.add(floor);
-    const rim = new THREE.Mesh(new THREE.RingGeometry(ARENA_R + 2.35, ARENA_R + 2.55, 120), new THREE.MeshBasicMaterial({ color: C_FIRE,
-      transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
-    rim.rotation.x = -Math.PI / 2; rim.position.y = 0.01;
-    this.scene.add(rim);
-    this.rim = rim;
   }
 
   buildSky() {
@@ -227,13 +230,13 @@ class Arena {
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(this.trailPos, 3));
     g.setDrawRange(0, 0);
-    this.trail = new THREE.Line(g, new THREE.LineBasicMaterial({ color: 0xffe3a0, transparent: true, opacity: 0.85,
+    this.trail = new THREE.Line(g, new THREE.LineBasicMaterial({ color: new THREE.Color(0xffe3a0).multiplyScalar(2.4), transparent: true, opacity: 0.85,
       blending: THREE.AdditiveBlending, depthWrite: false }));
     this.trail.frustumCulled = false;
     const bg = new THREE.BufferGeometry();
     bg.setAttribute('position', new THREE.BufferAttribute(this.trailPos, 3));
     bg.setDrawRange(0, 0);
-    this.beads = new THREE.Points(bg, new THREE.PointsMaterial({ size: 0.7, map: this.tex.glow, color: 0xffd27a, transparent: true,
+    this.beads = new THREE.Points(bg, new THREE.PointsMaterial({ size: 0.7, map: this.tex.glow, color: new THREE.Color(0xffd27a).multiplyScalar(2.2), transparent: true,
       depthWrite: false, blending: THREE.AdditiveBlending }));
     this.beads.frustumCulled = false;
     this.scene.add(this.trail, this.beads);
@@ -294,6 +297,7 @@ class Arena {
     }
     for (const f of free) if (![...next.values()].includes(f)) { f.alive = false; f.id = null; }
     this.byCreature = next;
+    for (const c of gen) { const f = next.get(c.id); if (f) { f.visTo = F.matches(c, STATE.filter) ? 1 : 0.09; if (!anim) f.vis = f.visTo; } }
     // the champion's lineage up to this generation
     const line = F.lineageUpTo(g);
     line.forEach((c, i) => {
@@ -305,16 +309,18 @@ class Arena {
     this.beads.geometry.setDrawRange(0, line.length);
   }
 
+  /** the half-year filter changed: dim the flames that do not match (they ease, no rebuild) */
+  refilter() {
+    const F = this.forge;
+    for (const c of F.gen(STATE.gen)) { const f = this.byCreature.get(c.id); if (f) f.visTo = F.matches(c, STATE.filter) ? 1 : 0.09; }
+  }
+
   resize() {
     const w = innerWidth, h = innerHeight;
-    if (this.lite) this.dprCap = Math.min(this.dprCap, 1.25);
     O?.mode(this.lite);
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, this.dprCap));
-    this.renderer.setSize(w, h, false);
-    this.camera.aspect = w / h;
-    const half = THREE.MathUtils.degToRad(this.camera.fov / 2);
-    this.dist = THREE.MathUtils.clamp((ARENA_R + 1.2) / (Math.tan(half) * Math.min(1, this.camera.aspect)) * 0.7, 12, 40);
-    this.camera.updateProjectionMatrix();
+    const aspect = w / h, half = THREE.MathUtils.degToRad(this.camera.fov / 2);
+    this.dist = THREE.MathUtils.clamp((ARENA_R + 1.2) / (Math.tan(half) * Math.min(1, aspect)) * 0.7, 12, 40);
+    this.rc.resize();
     this.placeCamera();
   }
 
@@ -370,11 +376,6 @@ class Arena {
     this.last = now; this.t += dt; this.wall += raw;
     this.frames.push(raw);
     if (this.frames.length > 60) this.frames.shift();
-    if (this.wall > 2.5 && this.frames.length >= 20 && this.dprCap > 1 && !this.chosen) {   // auto LITE: under ~45 fps, then still under ~30
-      const avg = this.frames.reduce((a, b) => a + b, 0) / this.frames.length;
-      if (!this.lite && avg > 1 / 45) { this.lite = true; this.slowSince = this.wall; this.frames.length = 0; this.field.setLite(true); this.resize(); }
-      else if (this.lite && avg > 1 / 30 && this.wall - this.slowSince > 3) { this.dprCap = 1; this.frames.length = 0; this.resize(); }
-    }
     if (!RM && !this.drag) { this.az += dt * 0.045; this.placeCamera(); }
     const all = [...this.byCreature.values()];
     for (const f of all) {
@@ -399,11 +400,16 @@ class Arena {
             f.heat > 0.3 ? heatColor(Math.min(1, f.heat + 0.15)) : C_RED, 0.15);
         }
       }
-      this.rim.material.opacity = 0.45 + 0.12 * Math.sin(this.t * 1.7);
+      if (this.rand() < (this.lite ? 0.25 : 0.6)) {   // molten gold spits sparks off the ring
+        const a = this.rand() * Math.PI * 2, R = ARENA_R + 2.45;
+        this.embers.spawn(Math.cos(a) * R, 0.2, Math.sin(a) * R, (this.rand() - 0.5) * 0.5, 0.8 + this.rand() * 1.4, (this.rand() - 0.5) * 0.5,
+          0.9 + this.rand() * 1.2, this.rand() < 0.5 ? C_GOLD : C_FIRE, -0.5);
+      }
       this.dust.rotation.y += dt * 0.02; this.dust.position.y = 0.4 * Math.sin(this.t * 0.3);
     }
     this.embers.update(dt);
-    this.renderer.render(this.scene, this.camera);
+    this.set.update(this.t, RM, this.rc.renderer.getPixelRatio());
+    this.rc.render();                                // tone mapping, bloom, MSAA and the film finish
   }
 
   fps() { const a = this.frames.reduce((x, y) => x + y, 0) / Math.max(1, this.frames.length); return a ? Math.round(1 / a) : 0; }
@@ -457,7 +463,7 @@ function openCard(id) {
     : `gen ${c.gen + 1} · ${ORIGIN[c.o] || c.o}${parents}${mut} · fitness ${FMT.num(c.f, 3)} (live 1.00)`;
   const rows = F.diffRows(k);
   const nchg = rows.filter((r) => r.changed).length;
-  $('card-b').innerHTML = `${numRows(G, F.live)}
+  $('card-b').innerHTML = `${isLive ? '' : changeBlock(id)}${numRows(G, F.live)}
     <p class="note">Top: this variant · <span style="color:var(--ice)">bottom: live</span>. H1 is all the forge saw; H2 and 2021-25 are checks it never saw. 2021-25 has no 1m bars (eval = LIT size rule).</p>
     <table aria-label="Parameters against live"><thead><tr><th>Knob</th><th>Live</th><th>This</th></tr></thead><tbody>
     ${rows.map((r) => `<tr class="${r.changed ? 'chg' : ''}"><td>${esc(r.knob.label)}</td><td>${esc(FMT.knob(r.knob, r.live))}</td><td>${esc(FMT.knob(r.knob, r.val))}</td></tr>`).join('')}
@@ -466,6 +472,34 @@ function openCard(id) {
   $('card').scrollTop = 0;
 }
 function closeCard() { $('card').hidden = true; }
+
+// "would this change live?": the one answer the owner wants per creature, with the reasons and the half-year pass / fail marks
+const pill = (ok, t) => `<span class="pill ${ok ? 'ok' : 'no'}">${t} ${ok ? '✓' : '✗'}</span>`;
+function changeBlock(id) {
+  const F = STATE.forge, c = F.creature(id), w = F.wouldChange(id), p = F.halfPass(c.k);
+  return `<div class="chg-box ${w.level}" id="chg"><b class="chg-t">Would this change live? ${esc(w.title)}</b>
+    <div class="pills">${pill(p.h1, 'H1')}${pill(p.h2, 'H2')}</div>
+    <ul>${w.why.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+    <small>Pass = more $/month than live in that half, eval speed not worse, 2+ trades a week. Only the owner changes live.</small></div>`;
+}
+
+// the half-year filter (dock chips): which creatures keep burning bright
+const FILTERS = { all: 'All', h1: 'Pass H1', h2: 'Pass H2', both: 'Both', fail2: 'Fail H2' };
+function renderChips() {
+  const F = STATE.forge, gen = F.gen(STATE.gen), n = (f) => gen.filter((c) => F.matches(c, f)).length;
+  document.querySelectorAll('#chips button').forEach((b) => {
+    const f = b.dataset.f; b.setAttribute('aria-pressed', String(STATE.filter === f));
+    b.querySelector('small').textContent = String(n(f));
+  });
+  $('chipn').textContent = STATE.filter === 'all' ? `${n('h2')} of ${gen.length} pass H2 · ${n('h1')} pass H1 in this generation`
+    : `${n(STATE.filter)} of ${gen.length} creatures match "${FILTERS[STATE.filter]}"`;
+}
+function setFilter(f) {
+  STATE.filter = FILTERS[f] ? f : 'all';
+  renderChips();
+  STATE.arena?.refilter();
+  if (STATE.panel === 'hall' && !$('truth').hidden) openHall();
+}
 
 // the verdict banner (top bar): one honest line, always on screen
 function renderBanner() {
@@ -523,13 +557,14 @@ function openLineage() {
 }
 
 function openHall() {
-  const F = STATE.forge, L = F.live, rows = F.hall(8);
+  const F = STATE.forge, L = F.live, rows = F.hall(80).filter((r) => F.matches({ k: r.k }, STATE.filter)).slice(0, 8);
   showPanel('hall');
   const tr = (r) => `<tr data-id="${r.id}" class="${r.champ ? 'champ' : ''}"><td><b>${r.rank}</b> #${r.id}<small> gen ${r.gen + 1} · ${r.changed} knob${r.changed === 1 ? '' : 's'}</small></td>
-    <td>${FMT.num(r.fit)}</td><td>${esc(FMT.usd(r.h1))}</td><td class="${r.h2Beats ? 'up' : 'down'}">${esc(FMT.usd(r.h2))}</td><td>${esc(FMT.usd(r.y))}</td></tr>`;
+    <td>${FMT.num(r.fit)}</td><td class="${F.halfPass(r.k).h1 ? 'up' : ''}">${esc(FMT.usd(r.h1))}</td><td class="${r.h2Beats ? 'up' : 'down'}">${esc(FMT.usd(r.h2))}</td><td>${esc(FMT.usd(r.y))}</td></tr>`;
   const beat = rows.filter((r) => r.h2Beats).length;
-  $('hall-b').innerHTML = `<p class="big">${beat ? `${beat} of the ${rows.length} fittest beat live on H2.` : `None of the ${rows.length} fittest beats live on H2.`}
-      H1 is all the forge saw.</p>
+  const fnote = STATE.filter === 'all' ? '' : ` Filter: ${FILTERS[STATE.filter]}.`;
+  $('hall-b').innerHTML = `<p class="big">${!rows.length ? 'No variant matches this filter.' : beat ? `${beat} of the ${rows.length} fittest beat live on H2.` : `None of the ${rows.length} fittest beats live on H2.`}
+      H1 is all the forge saw.${fnote}</p>
     <table class="hall" aria-label="Hall of Champions"><thead><tr><th>Creature</th><th>Fit H1</th><th>H1 $/mo</th><th>H2 $/mo</th><th>21-25</th></tr></thead><tbody>
     <tr class="live" data-id="live"><td><b>◆</b> LIVE LIT<small> the reference</small></td><td>1.00</td><td>${esc(FMT.usd(L.h1.pm))}</td><td>${esc(FMT.usd(L.h2.pm))}</td><td>${esc(FMT.usd(L.y.pm))}</td></tr>
     ${rows.map(tr).join('')}</tbody></table>
@@ -547,6 +582,7 @@ function setGen(g, step = false) {
   renderHud(g);
   if (STATE.arena) STATE.arena.show(g, isStep);
   else renderNoGl(g);
+  renderChips();
   if (STATE.panel === 'lineage' && !$('truth').hidden) openLineage();
 }
 
@@ -645,6 +681,7 @@ async function main() {
   sl.max = String(F.nGens - 1);
   sl.addEventListener('input', () => { setPlaying(false); setGen(Number(sl.value)); });
   $('play').addEventListener('click', () => setPlaying(!STATE.playing));
+  $('chips').addEventListener('click', (e) => { const b = e.target.closest('button[data-f]'); if (b) setFilter(b.dataset.f); });
   $('cardX').addEventListener('click', closeCard);
   $('truthX').addEventListener('click', closeTruth);
   $('truthBtn').addEventListener('click', () => togglePanel('verdict', openTruth));
@@ -672,11 +709,11 @@ async function main() {
   renderBanner();
   setGen(0);
   window.__forge = {
-    get gen() { return STATE.gen; }, setGen, openCard, get lite() { return STATE.arena ? STATE.arena.lite : null; }, get clock() { const a = STATE.arena; return a ? { t: a.t, frames: a.frames.length } : null; },
+    get gen() { return STATE.gen; }, get scene() { return STATE.arena && STATE.arena.scene; }, setGen, setFilter, setQuality(l) { STATE.arena?.rc.setQuality(l); }, get filter() { return STATE.filter; }, flameVis(id) { const f = STATE.arena && STATE.arena.byCreature.get(id); return f ? f.visTo : null; }, openCard, get lite() { return STATE.arena ? STATE.arena.lite : null; }, get clock() { const a = STATE.arena; return a ? { t: a.t, frames: a.frames.length } : null; },
     get fps() { return STATE.arena ? STATE.arena.fps() : 0; }, get demo() { return F.demo; }, errors: STATE.errors,
     screenOf(id) { const a = STATE.arena; if (!a) return null; const f = id === 'live' ? a.liveFlame : a.byCreature.get(id); return f ? a.screenOf(f) : null; },
     ids() { return F.gen(STATE.gen).map((c) => c.id); }, champion: F.d.champion.id, ready: true,
-    get calls() { return STATE.arena ? STATE.arena.renderer.info.render.calls : 0; }, get panel() { return STATE.panel; }, heatRgb,
+    get calls() { return STATE.arena ? STATE.arena.rc.stats().calls : 0; }, get passes() { return STATE.arena ? STATE.arena.rc.passes() : []; }, get quality() { return STATE.arena ? STATE.arena.rc.quality() : ''; }, get panel() { return STATE.panel; }, heatRgb,
     lineageDot(id) { const c = document.querySelector(`#lin-b circle[data-id="${id}"]`); if (!c) return null; const r = c.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; },
   };
   requestAnimationFrame(tick);

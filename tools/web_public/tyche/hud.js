@@ -5,6 +5,7 @@
 //   labels: the scene's anchors (countdowns on coins, pools, the balance, the pans, the towers) placed in 2D
 import { usd, pct, cents, edgeC, countdown, ago } from './fmt.js';
 import { kellyStake } from './data.js';
+import { bankCurve, simulate } from './bankroll.js';
 
 export const KELLY_STOPS = [0.25, 0.5, 1];
 const KELLY_NAMES = ['¼', '½', 'Full'], KELLY_WORDS = ['a quarter Kelly', 'a half Kelly', 'full Kelly'];
@@ -72,6 +73,7 @@ export class Hud {
     this.legend();
     this.pools();
     this.scales();
+    this.bank();
     this.kellySum();
     if (this.selected && !model.open.some((o) => o.key === this.selected)) this.select(null);
     else if (this.selected) this.select(this.selected);
@@ -147,6 +149,41 @@ export class Hud {
     const best = rows.slice().sort((a, b) => b.roi - a.roi)[0], worst = rows.slice().sort((a, b) => a.roi - b.roi)[0];
     const rng = (r) => `${Math.round(r.lo * 100)}–${Math.round(r.hi * 100)}¢`;
     set('sc-best', `Skyline = ROI by price paid. Best ${rng(best)} ${pct(best.roi, true)}${worst !== best ? ` · worst ${rng(worst)} ${pct(worst.roi, true)}` : ''}.`);
+  }
+
+  // ------------------------------------------------------------------ the bankroll: its curve and the risk of ruin
+  /** The bankroll curve (what happened) with a fan of what the bot's own settled bets could do next, and the odds of ruin. SVG built
+   *  node by node (text is never parsed as markup): history in gold, the 10-90% fan in mint, the ruin line (down 80%) in red. */
+  bank() {
+    const m = this.model, svg = $('bk-svg'), sim = simulate(m), cur = bankCurve(m);
+    this.sim = sim;
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    const NS = svg.namespaceURI, W = 320, H = 118, PX = 6, PY = 8;
+    const node = (tag, attrs) => { const n = document.createElementNS(NS, tag); Object.keys(attrs).forEach((k) => n.setAttribute(k, attrs[k])); svg.appendChild(n); return n; };
+    const hist = cur.pts, bank = m.balance;
+    if (!sim.ok || hist.length < 2) {
+      set('bk-ruin', '–', 'flat'); set('bk-half', '–', 'flat'); set('bk-med', '–', 'flat');
+      set('bk-text', sim.ok ? 'The bankroll curve draws once the bot sends two or more points.' : `Risk of ruin needs ${sim.need || 8} settled bets (${sim.n || 0} so far): the bot's own results are the dice.`);
+      set('bk-size', '');
+      return;
+    }
+    const xs0 = hist[0][0], xs1 = hist[hist.length - 1][0], split = 0.62;
+    const fan = sim.fan, lo = Math.min(...hist.map((p) => p[1]), ...fan.map((f) => f[1] * bank), bank * 0.2), hi = Math.max(...hist.map((p) => p[1]), ...fan.map((f) => f[3] * bank));
+    const X1 = (t) => PX + (xs1 > xs0 ? (t - xs0) / (xs1 - xs0) : 1) * (W * split - PX), X2 = (h) => W * split + (h / sim.horizon) * (W - PX - W * split);
+    const Y = (v) => H - PY - ((v - lo) / Math.max(1e-9, hi - lo)) * (H - 2 * PY);
+    node('line', { class: 'bk-floor', x1: PX, x2: W - PX, y1: Y(bank * 0.2), y2: Y(bank * 0.2) });
+    node('line', { class: 'bk-now', x1: W * split, x2: W * split, y1: PY, y2: H - PY });
+    node('path', { class: 'bk-fan', d: 'M' + fan.map((f) => `${X2(f[0]).toFixed(1)},${Y(f[3] * bank).toFixed(1)}`).join('L') + 'L' + fan.slice().reverse().map((f) => `${X2(f[0]).toFixed(1)},${Y(f[1] * bank).toFixed(1)}`).join('L') + 'Z' });
+    node('path', { class: 'bk-med', d: 'M' + fan.map((f) => `${X2(f[0]).toFixed(1)},${Y(f[2] * bank).toFixed(1)}`).join('L') });
+    node('path', { class: 'bk-line', d: 'M' + hist.map((p) => `${X1(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`).join('L') });
+    node('circle', { class: 'bk-dot', cx: X1(xs1).toFixed(1), cy: Y(hist[hist.length - 1][1]).toFixed(1), r: 3.2 });
+    const odds = (x) => (x < 0.0005 ? '<0.1%' : x > 0.995 ? '>99%' : `${(x * 100).toFixed(x < 0.1 ? 1 : 0)}%`);
+    set('bk-ruin', odds(sim.ruin), sim.ruin > 0.1 ? 'down' : sim.ruin > 0.02 ? 'flat' : 'up');
+    set('bk-half', odds(sim.half), sim.half > 0.25 ? 'down' : 'flat');
+    set('bk-med', usd(sim.p50), sim.p50 >= bank ? 'up' : 'down');
+    set('bk-text', `${sim.n} settled bets replayed ${sim.paths} ways over the next ${sim.horizon}: ${(sim.hit * 100).toFixed(0)}% win, each bet risks about ${(sim.share * 100).toFixed(1)}% of the bankroll. 10-90% range ${usd(sim.p10)} to ${usd(sim.p90)}. The past repeating, not a forecast.`);
+    const sz = sim.sizes.map((s) => `${s.k === 1 ? 'now' : '×' + s.k} ${odds(s.ruin)}`).join(' · ');
+    set('bk-size', `Risk of ruin if every stake were: ${sz}`);
   }
 
   setView(v) {

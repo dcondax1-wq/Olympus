@@ -85,10 +85,25 @@ function foot(ctx, text) {
   ctx.globalAlpha = 1;
 }
 
+/** The foil finish of every share image: a thin gold frame that catches the light and one soft diagonal sheen across the top. */
+function foil(ctx) {
+  ctx.save();
+  const g = ctx.createLinearGradient(0, 0, W, H);
+  g.addColorStop(0, 'rgba(255,231,163,.85)'); g.addColorStop(0.5, 'rgba(247,201,72,.12)'); g.addColorStop(1, 'rgba(255,231,163,.75)');
+  ctx.strokeStyle = g; ctx.lineWidth = 5; ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(34, 34, W - 68, H - 68, 60); else ctx.rect(34, 34, W - 68, H - 68);
+  ctx.stroke();
+  const s2 = ctx.createLinearGradient(0, 0, W, H * 0.45);
+  s2.addColorStop(0, 'rgba(255,255,255,0)'); s2.addColorStop(0.5, 'rgba(255,255,255,.08)'); s2.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = s2; ctx.fillRect(0, 0, W, H * 0.6);
+  ctx.restore();
+}
+
 export function drawCard(canvas, spec, colors) {
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
   backdrop(ctx, colors);
+  foil(ctx);
   ctx.fillStyle = '#ffffff';
   ctx.globalAlpha = 0.75; ctx.font = `700 40px ${UI}`; ctx.fillText(String(spec.kicker || '').toUpperCase(), L, 270); ctx.globalAlpha = 1;
   ctx.font = `700 100px ${UI}`;
@@ -114,6 +129,7 @@ export function drawWeek(canvas, w, key, colors) {
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d'), p = w.periods[key] || w.periods.week;
   backdrop(ctx, colors || ['#12081f', '#5b1fd1', '#f7c948'], p.label);
+  foil(ctx);
   let y = 300;
   ctx.fillStyle = '#ffffff'; ctx.globalAlpha = 0.75; ctx.font = `700 40px ${UI}`;
   ctx.fillText(`${p.label} · ${span(p)}`.toUpperCase(), L, y); ctx.globalAlpha = 1;
