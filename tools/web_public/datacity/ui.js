@@ -38,10 +38,10 @@ export function toast(text) {
   toast.timer = setTimeout(() => t.classList.remove('on'), 2600);
 }
 
-export function caption(text, i, n) {
+export function caption(text, i, n, tag) {
   const c = $('#caption');
   if (!text) { c.classList.remove('on'); return; }
-  c.replaceChildren(el('small', null, `${i + 1} / ${n}`), el('span', null, text));
+  c.replaceChildren(el('small', null, tag || `${i + 1} / ${n}`), el('span', null, text));
   c.classList.remove('on');
   void c.offsetWidth;                                     // restart the fade (once per shot, never per frame)
   c.classList.add('on');
@@ -246,6 +246,17 @@ export function showShip(t) {
   });
 }
 
+/** A landmark's card: info = { name, kind, blurb, tiles: [[label, value]], lines: [text], go: { label, fn } } */
+export function showLandmark(info) {
+  sheet.open('card', info.name, (body) => {
+    tags(body.appendChild(el('div', 'tags')), [['fdr', info.kind || 'landmark']]);
+    if (info.blurb) body.appendChild(el('div', 'note', info.blurb));
+    if (info.tiles?.length) { const g = el('div', 'grid4'); for (const [k, v] of info.tiles) tile(g, k, v); body.appendChild(g); }
+    for (const l of info.lines || []) body.appendChild(el('div', 'note', l));
+    if (info.go) { const a = el('div', 'actions'), b = el('button', 'pill', info.go.label); b.addEventListener('click', info.go.fn); a.appendChild(b); body.appendChild(a); }
+  });
+}
+
 export function showDistrict(d, onTop) {
   sheet.open('district', d.name, (body) => {
     if (d.blurb) body.appendChild(el('div', 'note', d.blurb));
@@ -337,6 +348,7 @@ export function viewRead(body, model) {
   p('Height = $ per trade per micro. Gold = positive in 2026, in 2021-25 and in every year with 8+ trades AND passes the Benjamini-Hochberg false-discovery guard. Green = positive in both periods. Amber = one period only. Grey = noise or a loser. Lit windows = sample size. A pulsing roof = rising lately.');
   p(`Honesty: ${(g.tried || 0).toLocaleString()} combinations tried, ${(g.tested || 0).toLocaleString()} with 30+ trades, ${g.fdr_pos ?? '–'} pass the FDR guard (a shuffled-sign placebo passes ${g.placebo_fdr ?? '–'}). Picked on 2021-24 only, ${g.holdout?.picked_2021_24 ?? '–'} combinations; ${g.holdout?.pct_positive ?? '–'}% stayed positive in 2025-26. Most of the city is noise, and the city says so.`);
   p('The sky follows the futures clock (sunrise at the 18:00 ET Asia open, noon at the NY open, sunset at the 16:00 close, night in the break and the weekend). The weather is the VIX (CBOE close): clear under 15, haze to 20, rain to 25, a storm above.');
+  p('Landmarks (Greek-futuristic, decor with the numbers on their cards): the Temple of the Gold on its acropolis (the gold buildings), the Forum round the plaza (the honesty guard), the Pharos lighthouse (LIT\'s trades), the Gate of Poseidon (its lantern is the VIX) and a gate at the start of every district. Light arcs are data streams: districts into LIT\'s tower, LIT into the Harbor; they run faster when the VIX is high and slow down when the futures market is closed. The towers beyond the districts are scenery. The cameras (ORBIT, SKIM, DRONE, GRAND) fly through it all; a drag takes the camera back.');
   p('Districts: ' + model.sections.map((s) => s.name).join(' · ') + '. The Harbor holds LIT\'s trades as ships. The middle tower is LIT (Zlarior), the live strategy. Paper only: nothing here changes the bot.');
   const lift = model.city.lift || [];
   if (!lift.length) return;

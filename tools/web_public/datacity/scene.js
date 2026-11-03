@@ -6,6 +6,10 @@ import { COLORS } from './util.js';
 import * as SH from './shaders.js';
 import { Skyline, pick } from './skyline.js';
 import { Rays, SunRays, FogLayers, Rain, Traffic, Beam, Billboards } from './fx.js';
+import { createRenderer } from '../olympus/render.js';          // the OLYMPUS render core: ACES, MSAA, bloom, the film finish, tiers
+import { Landmarks } from './landmarks.js';
+import { Outskirts } from './outskirts.js';
+import { Streams } from './streams.js';
 
 const FOG = { night: 0x070a1c, day: 0x9fbbe2, dusk: 0x4a2a4a, storm: 0x2a3140 };
 const DENSITY = { night: 0.0024, day: 0.0015 };
@@ -47,18 +51,25 @@ export class CityScene {
   constructor(canvas, L, opts) {
     this.L = L;
     this.quality = opts.quality;
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: opts.quality === 'hq', powerPreference: 'high-performance' });
+    this.onTier = opts.onTier || (() => {});
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.FogExp2(FOG.night, DENSITY.night);        // the few built-in materials (piers, rings)
+    this.scene.fog = new THREE.FogExp2(FOG.night, DENSITY.night);        // the few built-in materials (piers, rings, landmarks)
     this.camera = new THREE.PerspectiveCamera(52, 1, 0.5, 3200);
+    // the render core in 'display' space: this city's shaders write screen colours (windows, neon, glows), so bloom reads the
+    // 0..1 screen value; the PBR landmarks tone-map themselves. Tier from OLYMPUS.fx() (followed live); the app steps down itself.
+    this.rc = createRenderer({ canvas, scene: this.scene, camera: this.camera, space: 'display', env: 'night', adapt: false, maxDpr: 1.75,
+      bloom: { strength: 0.62, radius: 0.5, threshold: 0.8 }, grade: { grain: 0.035, vignette: 0.26, aberration: 0.002, saturation: 1.04 },
+      onQuality: (lv) => this._tier(lv) });
+    this.renderer = this.rc.renderer;
+    this.quality = this.rc.quality() === 'low' || this.rc.quality() === 'off' ? 'lq' : 'hq';
     const v3 = () => new THREE.Vector3();
     this.U = { uTime: { value: 0 }, uFog: { value: new THREE.Color(FOG.night) }, uFogD: { value: DENSITY.night }, uHaze: { value: 0.2 },
                uDay: { value: 0 }, uDusk: { value: 0 }, uToday: { value: 0 }, uWet: { value: 0.6 }, uRain: { value: 0 }, uPR: { value: 1 },
                uAccent: { value: new THREE.Color(0x3fd8ff) }, uSun: { value: v3().set(0, -1, 0) }, uCloud: { value: 0 }, uFlash: { value: 0 },
-               uGrow: { value: opts.calm ? 1 : 0 } };                      // the rise on load (0 -> 1)
+               uGrow: { value: opts.calm ? 1 : 0 }, uFlow: { value: 1 } };  // the rise on load (0 -> 1); the data streams' speed
     this.flash = 0;
     this.storm = false;
-    this.resize();
+    this.bloomK = -1;
     this._sky();
     this._ground();
     this.skyline = new Skyline(L, this.U, this.quality);
@@ -69,6 +80,9 @@ export class CityScene {
     this._names();
     this._harbor();
     this._pins();
+    this.lm = new Landmarks(L, this.quality); this.scene.add(this.lm.group);
+    this.outskirts = new Outskirts(L, this.U, this.quality, [{ x: this.lm.site.x, z: this.lm.site.z, r: 110 }]); this.scene.add(this.outskirts.group);
+    this.streams = new Streams(L, this.lm, this.U, this.quality); this.scene.add(this.streams.group);
     this.rays = new Rays(L, this.U); this.scene.add(this.rays.mesh);
     this.sunRays = new SunRays(this.U); this.scene.add(this.sunRays.mesh);
     this.fog = new FogLayers(this.U, this.quality); this.scene.add(this.fog.group);
@@ -76,7 +90,7 @@ export class CityScene {
     this.traffic = new Traffic(L, this.U, this.quality); this.scene.add(this.traffic.points);
     this.beam = new Beam(this.U); this.scene.add(this.beam.mesh, this.beam.ring);
     this.boards = new Billboards(this.U, opts.billboards || []); this.scene.add(this.boards.group);
-    this.setQuality(opts.quality);
+    this._tier(this.rc.quality());
   }
 
   _sky() {
@@ -260,6 +274,11 @@ export class CityScene {
     this.sunRays.set(U.uSun.value, U.uDusk.value * (1 - U.uCloud.value * 0.7), sun.day);
     this.fog.setHaze(w.haze);
     this.storm = !!w.storm;
+    this.lm.setSun(sun, w, U);
+    U.uFlow.value = (sun.open ? 1 : 0.4) * (0.75 + Math.min(1.2, (w.vix || 16) / 22));            // the market drives the data streams
+    const bk = +(0.55 + 0.5 * (1 - sun.day) + 0.12 * U.uCloud.value).toFixed(2);                  // more glow at night, less by day
+    if (bk !== this.bloomK) { this.bloomK = bk; this.rc.setBloom({ strength: bk }); }
+    this.rc.renderer.toneMappingExposure = 1 + 0.12 * sun.day - 0.1 * (w.storm ? 1 : 0);
     return '#' + fog.getHexString();
   }
 
@@ -268,10 +287,18 @@ export class CityScene {
   /** The theme's accent (olympus.theme or applyTheme): plaza glow, water and tower tint, the sky's city glow. */
   setAccent(hex) { try { this.U.uAccent.value.set(hex); } catch (e) { /* a bad token: keep the last */ } }
 
+  /** 'hq' | 'lq': the app's two looks. The core's tier follows (hq = the OLYMPUS level, high or ultra; lq = low). */
   setQuality(q) {
+    const O = window.OLYMPUS, hq = O && (O.fx() === 'ultra' || O.fx() === 'high') ? O.fx() : 'high';
+    this.rc.setQuality(q === 'hq' ? hq : 'low');
+    this._tier(this.rc.quality());
+  }
+
+  /** the core changed tier (the viewer's choice in OLYMPUS, or our own setQuality): follow with every sub-system */
+  _tier(level) {
+    const q = level === 'low' || level === 'off' ? 'lq' : 'hq', changed = q !== this.quality || !this.skyline;
     this.quality = q;
-    const O = window.OLYMPUS;
-    this.renderer.setPixelRatio(O ? O.dpr(q === 'lq') : (q === 'hq' ? Math.min(window.devicePixelRatio || 1, 2) : 1));
+    if (!this.skyline) return;
     this.U.uPR.value = this.renderer.getPixelRatio();
     this.flow.geometry.setDrawRange(0, FLOW[q]);
     this.stars.geometry.setDrawRange(0, STARS[q]);
@@ -279,22 +306,23 @@ export class CityScene {
     this.fog.setQuality(q);
     this.rain.setQuality(q);
     this.traffic.setQuality(q);
-    this.resize();
+    this.streams.setQuality(q);
+    this.outskirts.setQuality(q);
+    this.lm.setQuality(q);
+    this.bloomK = -1;
+    if (changed) this.onTier(q, level);
   }
 
-  resize() {
-    this.camera.aspect = window.innerWidth / window.innerHeight;
-    this.camera.updateProjectionMatrix();
-    this.renderer.setSize(window.innerWidth, window.innerHeight, false);
-  }
+  resize() { this.rc?.resize(); }
 
   /** What is under a screen point: { item }, { block }, { lit: true } for the tower, or null. */
   pick(x, y) {
     const ray = new THREE.Raycaster();
     ray.setFromCamera(new THREE.Vector2((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1), this.camera);
     const t = ray.intersectObject(this.tower, true)[0];
-    const s = this.skyline.pick(ray);
-    if (t && (!s || t.distance < s.distance)) return { lit: true };
+    const s = this.skyline.pick(ray), l = this.lm.pick(ray);
+    if (t && (!s || t.distance < s.distance) && (!l || t.distance < l.distance)) return { lit: true };
+    if (l && (!s || l.distance < s.distance)) return { landmark: l.key };
     return s;
   }
 
@@ -328,7 +356,9 @@ export class CityScene {
       this.flash = Math.max(0, this.flash - dt * 3.2);
       U.uFlash.value = this.flash > 0 ? this.flash * (0.6 + 0.4 * Math.sin(U.uTime.value * 60)) : 0;
     } else U.uFlash.value = 0;
-    this.renderer.render(this.scene, this.camera);
+    this.lm.update(U.uTime.value);
+    this.U.uPR.value = this.renderer.getPixelRatio();
+    this.rc.render();
   }
 }
 
