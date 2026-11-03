@@ -114,6 +114,11 @@ threshold, tint })` (live, no rebuild; a per-frame `tint` is cheap: the reactor 
 
 `jarvis/index.html` has one hook line in `show()` and the two `<script type="module">` lines before `</body>`.
 
+## Shipping
+
+`tools/build_web_dashboard.py` publishes `olympus/` with its subfolder `three-addons/` (the build now copies an app
+folder's subfolders too; before, it copied only top-level files).
+
 ## The Jarvis service worker
 
 The new files are part of the Jarvis shell: `./backdrop.js?v=b1`, `./portal.js?v=p1`, and (outside `jarvis/`)

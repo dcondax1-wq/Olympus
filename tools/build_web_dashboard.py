@@ -1216,6 +1216,9 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
             for name in os.listdir(src_dir):
                 if os.path.isfile(os.path.join(src_dir, name)):
                     shutil.copy(os.path.join(src_dir, name), os.path.join(out, app, name))
+                elif os.path.isdir(os.path.join(src_dir, name)) and not name.startswith((".", "__")):
+                    # a folder of the app's own files (olympus/three-addons/: the render core's vendored three.js addons)
+                    shutil.copytree(os.path.join(src_dir, name), os.path.join(out, app, name), dirs_exist_ok=True)
     # CRONOS (tools/cronos/, docs/CRONOS.md, 2026-11-03): the nightly / weekly research data from the `cronos` and `datacity`
     # branches over the page copies when newer, then every research app's jarvis.json stamped with this publish and its
     # honest freshness (amber "not updated since ..." when a job failed or its data is too old); never stops the publish

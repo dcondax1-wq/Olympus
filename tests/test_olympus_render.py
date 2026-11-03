@@ -71,6 +71,9 @@ def test_static():
     urls = [f for f in glob.glob(os.path.join(KIT, "**", "*.*"), recursive=True)
             if f.endswith((".js", ".html")) and re.search(r"(?:import|from|src=|href=)[^\n]{0,8}['\"]https?://", read(f))]
     check("a. no external URL is loaded by the kit (no CDN)", not urls, urls)
+    build = read(os.path.join(ROOT, "tools", "build_web_dashboard.py"))
+    check("a. the site build publishes the app folders' subfolders (olympus/three-addons/)",
+          "shutil.copytree(os.path.join(src_dir, name), os.path.join(out, app, name), dirs_exist_ok=True)" in build)
     for f in ("render.js", "materials.js"):
         src = read(os.path.join(KIT, f))
         check(f"a. {f}: no localStorage write (the owner's choice is the kit's)", "localStorage" not in src)
