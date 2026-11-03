@@ -564,7 +564,7 @@ def test_upgrade(p, fx, url2, tmp2):
     hp = hx.new_page()
     herr = []
     hp.on("pageerror", lambda e: herr.append(str(e)))
-    hp.goto(url2 + "?full=1&q=high&live=live_moved.json#zlarior/2026")
+    hp.goto(url2 + "?full=1&q=high&live=live_moved.json#zlarior/2026", wait_until="commit", timeout=120000)
     hp.wait_for_function("window.__fates && window.__fates.ready && window.__fates.frames >= 1", timeout=150000)
     pr = hp.evaluate("__fates.sc.probe()")
     st = hp.evaluate("__fates.sc.rc.stats()")
