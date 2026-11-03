@@ -23,6 +23,9 @@ the Jarvis card read. No real keys and no network beyond 127.0.0.1. Checks:
   p. (security review) the pinned script: print_sha.py, CRLF-proof hash, sha256sum -c passes / fails, SETUP.md wording
   q. (security review) every published text field redacted (links, IPs, e-mails, tokens, paths, ids, PEM); tickers kept
   r. (security review) the PC task gets srv.py's absolute path, resolved once at install time
+  s. contract v3 (2026-11-03): categories / buckets / calibration / calib_basis / alerts / kelly / stats and rows' category /
+     prob only when given (then "v": 3; v1 / v2 unchanged), junk dropped, capped, redacted, idempotent, trimmed by fit(); the
+     bot's own files give the breakdowns over EVERY settled trade (sell-backs out), categories, alerts, Kelly settings
     python -X utf8 -m tests.test_kalshi_publish      (temp folders only; nothing else touched)
 """
 from __future__ import annotations
@@ -909,6 +912,70 @@ def part_r():
 
 
 
+# ================================================================================================ contract v3
+def part_s(tmp):
+    v3 = kp.clean(kp.SAMPLE_V3, now=NOW)
+    check("s. v3 sample -> v 3 with every v3 key; v1 and v2 inputs keep v 1 / v 2 and no v3 key",
+          v3["v"] == 3 and all(k in v3 for k in ("categories", "buckets", "calibration", "calib_basis", "alerts", "kelly", "stats"))
+          and kp.clean(kp.SAMPLE, now=NOW)["v"] == 1 and kp.clean(kp.SAMPLE_V2, now=NOW)["v"] == 2
+          and not any(k in kp.clean(kp.SAMPLE_V2, now=NOW) for k in ("categories", "alerts", "kelly", "stats")), sorted(v3))
+    check("s. rows carry category and prob", v3["positions"][0]["category"] == "Weather" and v3["positions"][0]["prob"] == 0.61
+          and v3["trades"][0]["prob"] == 0.61, v3["positions"])
+    raw = {"categories": [{"name": "Market name " * 8, "trades": "4", "wins": 3, "losses": 1, "pnl": "2.5", "staked": 10, "api_key": "k"}, {"trades": 3}, "junk"] * 15,
+           "buckets": [{"lo": 0.9, "hi": 0.95, "trades": 2}, {"lo": 0.95, "hi": 0.9}, {"lo": -1, "hi": 0.5}, {"lo": 0.2, "hi": 7}],
+           "calibration": [{"p": 0.96, "n": 5, "hit": 0.8}, {"p": 1.5, "n": 5, "hit": 0.8}, {"p": 0.5, "n": 0, "hit": 0.5}, {"p": 0.5, "hit": 0.2}],
+           "calib_basis": "magic",
+           "alerts": [{"t": 1, "level": "BAD", "text": "see https://x.y/tok?a=b and C:\\Users\\me\\k.pem"}, {"level": "loud", "text": "hi"}, {"text": ""}],
+           "kelly": {"fraction": 3, "bankroll": "100", "max_bet": 20, "secret": "s"}, "stats": {"trades": 7.9, "pnl": "x"},
+           "positions": [{**kp.SAMPLE["positions"][0], "prob": 1.7, "category": "<b>Weather</b>"}]}
+    c = kp.clean(raw, now=NOW)
+    check("s. categories: capped at 20, nameless / junk rows dropped, names capped at 40, counts whole, secrets gone",
+          len(c["categories"]) == 15 and len(c["categories"][0]["name"]) == 40 and c["categories"][0]["trades"] == 4
+          and "api_key" not in c["categories"][0] and c["categories"][0]["pnl"] == 2.5, c["categories"][:2])
+    check("s. buckets: only 0-1 ranges with lo < hi; calibration: p / hit in 0-1 and n >= 1; an unknown calib_basis is dropped",
+          c["buckets"] == [{"lo": 0.9, "hi": 0.95, "trades": 2}] and c["calibration"] == [{"p": 0.96, "n": 5, "hit": 0.8}]
+          and "calib_basis" not in c, (c["buckets"], c["calibration"]))
+    check("s. alerts: level info / warn / bad (else info), empty text dropped, text redacted (links, paths)",
+          [a["level"] for a in c["alerts"]] == ["bad", "info"] and "https://" not in c["alerts"][0]["text"] and "Users" not in c["alerts"][0]["text"], c["alerts"])
+    check("s. kelly: a fraction outside 0-1 dropped, numbers as numbers, secrets gone; stats: whole counts, junk P&L dropped as None",
+          c["kelly"] == {"bankroll": 100.0, "max_bet": 20.0} and c["stats"]["trades"] == 7 and c["stats"].get("pnl") is None
+          and c["positions"][0].get("prob") is None and c["v"] == 3, (c["kelly"], c["stats"]))
+    check("s. clean() stays idempotent with v3", {**kp.clean(v3, now=NOW + 9), "pub_t": 0} == {**v3, "pub_t": 0})
+    big = kp.clean({**kp.SAMPLE_V3, "alerts": [{"t": 1, "level": "warn", "text": "y" * 140}] * 20,
+                    "trades": [{**kp.SAMPLE["trades"][0], "title": "x" * 150}] * 40}, now=NOW)
+    f = KIT.fit(json.loads(json.dumps(big)), max_bytes=6 * 1024)
+    check("s. fit() trims the v3 lists too and gets under the limit", len(json.dumps(f, separators=(",", ":"))) <= 6 * 1024, len(json.dumps(f)))
+    # the bot's own files: every settled trade (not just the last 40), sell-backs out of the breakdowns
+    extra = [(MID - 86400 * 20 - i * 3600, "live", f"KXBTC15M-26OCT1{i % 10}0915-15", "UP", 10, 0.96, "yes" if i % 10 else "no",
+              0.4 if i % 10 else -9.6, "main") for i in range(60)]
+    bot = make_bot(os.path.join(tmp, "bot_v3"), extra_rows=extra)
+    p = KIT.bot_payload(bot, now=NOW, units=())
+    cats = {x["name"]: x for x in p["categories"]}
+    check("s. bot files: categories over every settled buy (60 + 6, the exit sell-back left out), coins by name, groups",
+          p["v"] == 3 and cats["Bitcoin"]["trades"] == 62 and cats["Bitcoin"]["group"] == "Crypto" and cats["Gold"]["group"] == "Commodities"
+          and sum(x["trades"] for x in p["categories"]) == 66 and len(p["trades"]) == 40, p["categories"])
+    b = {(x["lo"], x["hi"]): x for x in p["buckets"]}
+    check("s. bot files: buckets by the price paid (95-97c holds the 96c rows), ROI inputs (staked = contracts x price)",
+          b[(0.95, 0.97)]["trades"] == 65 and b[(0.9, 0.95)]["trades"] == 1 and round(b[(0.9, 0.95)]["staked"], 2) == 2.7, p["buckets"])
+    cal = p["calibration"]
+    check("s. bot files: calibration by price (basis 'price'), sample sizes add up, the stats total",
+          p["calib_basis"] == "price" and sum(x["n"] for x in cal) == 66 and p["stats"]["trades"] == 66
+          and abs(p["stats"]["pnl"] - round(sum(x["pnl"] for x in p["categories"]), 2)) < 0.02, (cal, p["stats"]))
+    check("s. bot files: rows carry their category", p["positions"][0]["category"] == "Ethereum" and p["trades"][0]["category"] == "Ethereum")
+    check("s. category_of(): coins, gold, weather, indices, else Other", KIT.category_of("KXHIGHNY-26NOV02-B58.5") == ("Weather", "Climate")
+          and KIT.category_of("KXINXU-26NOV03-B6000") == ("S&P 500", "Financials") and KIT.category_of("KXETH15M-X", None) == ("Ethereum", "Crypto")
+          and KIT.category_of("WEIRD") == ("Other", "Other") and KIT.category_of("X", "gold") == ("Gold", "Commodities"))
+    json.dump({"MAIN_BOOK": 1, "KELLY_FRACTION": 0.25, "MAX_BET": 15}, open(os.path.join(bot, "bot_settings.json"), "w"))
+    lose = [(NOW - 3000 + i * 60, "live", f"KXETH15M-26NOV01120{i}-00", "UP", 10, 0.97, "no", -9.7, "main") for i in range(3)]
+    bot2 = make_bot(os.path.join(tmp, "bot_v3b"), extra_rows=lose)
+    json.dump({"MAIN_BOOK": 1, "KELLY_FRACTION": 0.25, "MAX_BET": 15}, open(os.path.join(bot2, "bot_settings.json"), "w"))
+    p2 = KIT.bot_payload(bot2, now=NOW, units=())
+    check("s. bot files: Kelly settings from bot_settings (fraction, max bet, the balance as bankroll); alerts for a 3-loss run and a red day",
+          p2["kelly"] == {"fraction": 0.25, "max_bet": 15.0, "bankroll": 67.98} and any("3 losses in a row" in a["text"] for a in p2["alerts"])
+          and any(a["level"] == "bad" and "Down $" in a["text"] for a in p2["alerts"]), (p2.get("kelly"), p2["alerts"]))
+    check("s. bot files: no Kelly settings -> no kelly key; a calm bot -> an empty alerts list", "kelly" not in p and p["alerts"] == [])
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix="le_kalshi_")
     try:
@@ -931,6 +998,7 @@ def main():
         part_p(tmp)
         part_q(tmp)
         part_r()
+        part_s(tmp)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     n = sum(RES)

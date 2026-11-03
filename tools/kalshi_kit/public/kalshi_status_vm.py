@@ -117,11 +117,25 @@ BASE_ENV = ("KALSHI_API_BASE", "KALSHI_BASE_URL")
 # ------------------------------------------------------------------------------------------------- the contract
 TOP = ("name", "mode", "status", "running", "t", "balance", "today_pnl", "week_pnl", "total_pnl", "note")
 NUM = ("balance", "today_pnl", "week_pnl", "total_pnl")
-POS = ("ticker", "title", "side", "contracts", "avg_price", "price", "value", "pnl", "closes", "asset", "strategy")
-TRADE = ("t", "ticker", "title", "side", "action", "contracts", "price", "pnl", "asset", "strategy")
+POS = ("ticker", "title", "side", "contracts", "avg_price", "price", "value", "pnl", "closes", "asset", "strategy",
+       "category", "prob")
+TRADE = ("t", "ticker", "title", "side", "action", "contracts", "price", "pnl", "asset", "strategy", "category", "prob")
 STRAT = ("name", "mode", "running", "today_pnl", "total_pnl", "trades", "wins", "losses")
-ROW_NUM = ("contracts", "avg_price", "price", "value", "pnl", "t", "today_pnl", "total_pnl", "trades", "wins", "losses")
-CAPS = {"positions": 60, "trades": 40, "days": 120, "strategies": 10, "equity": 500}
+# contract v3 (2026-11-03, all optional, additive): breakdowns over EVERY settled trade (the trades list holds only the last 40)
+CAT = ("name", "group", "trades", "wins", "losses", "pnl", "staked")            # P&L by market category
+BUCKET = ("lo", "hi", "trades", "wins", "losses", "pnl", "staked")              # by entry price (dollars 0-1)
+CALIB = ("p", "n", "hit")                                                        # predicted chance vs how often it won
+ALERT = ("t", "level", "text")                                                   # level: info / warn / bad
+KELLY = ("fraction", "bankroll", "max_bet", "min_edge")                          # the bot's own sizing settings
+STATS = ("trades", "wins", "losses", "staked", "pnl", "avg_price")               # all-time totals of settled trades
+ROW_NUM = ("contracts", "avg_price", "price", "value", "pnl", "t", "today_pnl", "total_pnl", "trades", "wins", "losses",
+           "prob", "staked", "lo", "hi", "p", "n", "hit", "fraction", "bankroll", "max_bet", "min_edge")
+ROW_INT = ("t", "trades", "wins", "losses", "n")
+UNIT = ("prob", "lo", "hi", "p", "hit", "fraction", "min_edge")                 # a chance / a price bucket: 0-1, else dropped
+CAPS = {"positions": 60, "trades": 40, "days": 120, "strategies": 10, "equity": 500,
+        "categories": 20, "buckets": 12, "calibration": 12, "alerts": 20}
+LEVELS = ("info", "warn", "bad")
+V3_LISTS = (("categories", CAT, 40), ("buckets", BUCKET, 40), ("calibration", CALIB, 40), ("alerts", ALERT, 140))
 
 # Same patterns as engine/live_publish.py (a test keeps them identical).
 _SECRET_KEY = re.compile(r"(password|passwd|^pass$|secret|token|webhook|api_?key|confirm|phrase|private|vapid|endpoint|^auth|cookie|"
@@ -144,6 +158,21 @@ SAMPLE_V2 = {**SAMPLE,
                             {"name": "Index ranges", "mode": "paper", "running": False, "today_pnl": 6.4, "total_pnl": 31.94,
                              "trades": 12, "wins": 7, "losses": 5}],
              "equity": [[1793289600, 470.24], [1793376000, 467.14], [1793462400, 493.84], [1793548800, 512.34]]}
+# v3 (2026-11-03): the page's breakdowns over every settled trade, calibration, alerts, Kelly settings. --sample prints this.
+SAMPLE_V3 = {**SAMPLE_V2,
+             "positions": [{**SAMPLE["positions"][0], "category": "Weather", "prob": 0.61}],
+             "trades": [{**SAMPLE["trades"][0], "category": "Weather", "prob": 0.61}],
+             "categories": [{"name": "Weather", "group": "Climate", "trades": 41, "wins": 27, "losses": 14, "pnl": 80.4, "staked": 402.5},
+                            {"name": "S&P 500 range", "group": "Financials", "trades": 12, "wins": 7, "losses": 5, "pnl": 31.94,
+                             "staked": 140.0}],
+             "buckets": [{"lo": 0.2, "hi": 0.4, "trades": 9, "wins": 4, "losses": 5, "pnl": 12.3, "staked": 28.1},
+                         {"lo": 0.4, "hi": 0.6, "trades": 30, "wins": 18, "losses": 12, "pnl": 61.2, "staked": 151.0},
+                         {"lo": 0.6, "hi": 0.8, "trades": 14, "wins": 12, "losses": 2, "pnl": 38.84, "staked": 98.4}],
+             "calibration": [{"p": 0.31, "n": 9, "hit": 0.44}, {"p": 0.5, "n": 30, "hit": 0.6}, {"p": 0.69, "n": 14, "hit": 0.86}],
+             "calib_basis": "model",
+             "alerts": [{"t": 1793545200, "level": "warn", "text": "3 losses in a row on Index ranges"}],
+             "kelly": {"fraction": 0.25, "bankroll": 512.34, "max_bet": 25.0, "min_edge": 0.03},
+             "stats": {"trades": 53, "wins": 34, "losses": 19, "staked": 542.5, "pnl": 112.34, "avg_price": 0.49}}
 
 
 def _num(v):
@@ -204,11 +233,17 @@ def _row(r, keys, n=160):
             continue
         if k == "running":
             out[k] = bool(v)
-        elif k in ("t", "trades", "wins", "losses"):
+        elif k in ROW_INT:
             x = _num(v)
             out[k] = None if x is None else int(x)
         elif k in ROW_NUM:
-            out[k] = _num(v)
+            x = _num(v)
+            if k in UNIT and x is not None and not 0 <= x <= 1:
+                continue                                    # a chance / a price bucket is 0-1 dollars, never anything else
+            out[k] = x
+        elif k == "level":
+            lv = str(v).strip().lower()
+            out[k] = lv if lv in LEVELS else "info"
         else:
             f = _field(k, v, n)
             if f is not None:
@@ -256,7 +291,8 @@ def _equity(rows):
 
 def clean(raw, now=None, phrases=()):
     """A status (from the bot's file or built from the API) -> kalshi.json: only the contract's keys, numbers as numbers,
-    lists capped, secrets dropped, paths redacted. v1 keys always; the v2 keys `strategies` / `equity` only when given
+    lists capped, secrets dropped, paths redacted. v1 keys always; the v2 keys `strategies` / `equity` and the v3 keys
+    (`categories`, `buckets`, `calibration`, `calib_basis`, `alerts`, `kelly`, `stats`, rows' `category` / `prob`) only when given
     (then "v": 2). Never raises on junk (returns a card with an error note instead)."""
     now = float(now or time.time())
     try:
@@ -287,6 +323,25 @@ def clean(raw, now=None, phrases=()):
         if isinstance(src.get("equity"), (list, tuple)):
             out["equity"] = _equity(src["equity"])
             out["v"] = 2
+        # v3: breakdowns, calibration, alerts, Kelly settings, all-time stats (each only when given; then "v": 3)
+        v3 = False
+        for key, keys, n in V3_LISTS:
+            if isinstance(src.get(key), (list, tuple)):
+                rows = (_row(r, keys, n) for r in src[key][:CAPS[key] * 5])         # junk rows never crowd out good ones
+                out[key] = [x for x in rows if x and _v3_ok(key, x)][:CAPS[key]]
+                v3 = True
+        for key, keys in (("kelly", KELLY), ("stats", STATS)):
+            if isinstance(src.get(key), dict):
+                r = _row(src[key], keys)
+                if r:
+                    out[key] = r
+                    v3 = True
+        cb = str(src.get("calib_basis") or "").strip().lower()
+        if cb in ("price", "model"):
+            out["calib_basis"] = cb
+            v3 = True
+        if v3:
+            out["v"] = 3
         out["pub_t"] = int(now)
         return out
     except Exception as e:
@@ -294,14 +349,28 @@ def clean(raw, now=None, phrases=()):
                 "note": f"status could not be read: {e.__class__.__name__}", "positions": [], "trades": [], "days": []}
 
 
+def _v3_ok(key, r):
+    """A v3 row is kept only when it means something: a name, a real 0-1 bucket, a sample, a text."""
+    if key == "categories":
+        return bool(r.get("name"))
+    if key == "buckets":
+        return r.get("lo") is not None and r.get("hi") is not None and r["lo"] < r["hi"]
+    if key == "calibration":
+        return r.get("p") is not None and r.get("hit") is not None and (r.get("n") or 0) >= 1
+    if key == "alerts":
+        return bool(r.get("text"))
+    return True
+
+
 def _size(p):
     return len(json.dumps(p, separators=(",", ":"), default=str).encode("utf-8"))
 
 
 def fit(p, max_bytes=MAX_BYTES):
-    """Trim until the JSON fits: the oldest trades, the oldest days, positions, then equity points, then strategies."""
+    """Trim until the JSON fits: the oldest trades, the oldest days, positions, equity points, alerts, the v3 breakdowns,
+    then strategies."""
     while _size(p) > max_bytes:
-        for k in ("trades", "days", "positions", "equity", "strategies"):
+        for k in ("trades", "days", "positions", "equity", "alerts", "calibration", "buckets", "categories", "strategies"):
             v = p.get(k)
             if v:
                 n = len(v) // 2
@@ -905,6 +974,85 @@ def ticker_title(tk):
     return tk
 
 
+# Kalshi's own market categories, read from a ticker (offline): crypto coins by name, the rest by series.
+_SERIES_CAT = (("HIGH", "Weather", "Climate"), ("LOWT", "Weather", "Climate"), ("RAIN", "Weather", "Climate"), ("SNOW", "Weather", "Climate"),
+               ("INX", "S&P 500", "Financials"), ("NASDAQ", "Nasdaq", "Financials"), ("EURUSD", "FX", "Financials"),
+               ("USDJPY", "FX", "Financials"), ("WTI", "Oil", "Commodities"), ("FED", "Fed rates", "Economics"),
+               ("CPI", "Inflation", "Economics"), ("GDP", "GDP", "Economics"), ("PAYROLL", "Jobs", "Economics"),
+               ("NFL", "NFL", "Sports"), ("NBA", "NBA", "Sports"), ("MLB", "MLB", "Sports"), ("NHL", "NHL", "Sports"),
+               ("PRES", "Politics", "Politics"), ("SENATE", "Politics", "Politics"), ("HOUSE", "Politics", "Politics"))
+_ASSET_CAT = {"BTC": "Bitcoin", "ETH": "Ethereum", "SOL": "Solana", "XRP": "XRP", "DOGE": "Dogecoin", "HYPE": "HYPE",
+              "BNB": "BNB", "GOLD": "Gold", "SILVER": "Silver"}
+
+
+def category_of(ticker, asset=None):
+    """(category, group) for a market: the coin for crypto ("Ethereum", "Crypto"), gold / silver ("Gold", "Commodities"),
+    else Kalshi's series families (weather, indices, economics, sports, politics); unknown -> ("Other", "Other")."""
+    a = str(asset or "").strip().upper()
+    tk = str(ticker or "").upper()
+    series = tk.split("-")[0]
+    series = series[2:] if series.startswith("KX") else series
+    if not a:
+        a = next((c for c in _ASSET_CAT if series.startswith(c)), "")
+    if a in _ASSET_CAT:
+        return _ASSET_CAT[a], "Commodities" if a in ("GOLD", "SILVER") else "Crypto"
+    for pre, name, group in _SERIES_CAT:
+        if series.startswith(pre):
+            return name, group
+    return "Other", "Other"
+
+
+# entry-price buckets: finer at the top, where the favourites trade (95-97c)
+BUCKET_EDGES = (0.0, 0.2, 0.4, 0.6, 0.8, 0.9, 0.95, 0.97, 0.99, 1.0001)
+
+
+def breakdowns(rows, basis="price"):
+    """Settled buys [(price 0-1, contracts, pnl, category, group, prob|None)] -> the v3 lists: categories, buckets,
+    calibration and the all-time stats. Price = what the side held cost (its implied chance); a win = pnl > 0.
+    Calibration uses the bot's own chance (`prob`) when every row has one (basis "model"), else the price ("price")."""
+    cats, bks, cal = {}, {}, {}
+    tot = {"trades": 0, "wins": 0, "losses": 0, "staked": 0.0, "pnl": 0.0, "px": 0.0}
+    model = basis == "model" or (rows and all(r[5] is not None for r in rows))
+    for px, n, pnl, cat, group, prob in rows:
+        if px is None or pnl is None:
+            continue
+        px = float(px) / 100 if float(px) > 1 else float(px)
+        if not 0 < px < 1.0001:
+            continue
+        stake = abs(float(n or 0)) * px
+        w, lo = (1 if pnl > 0.005 else 0), (1 if pnl < -0.005 else 0)
+        for d, k, extra in ((cats, cat, {"name": cat, "group": group}), (bks, next(i for i in range(len(BUCKET_EDGES) - 1)
+                                                                               if px < BUCKET_EDGES[i + 1]), {})):
+            r = d.setdefault(k, {**extra, "trades": 0, "wins": 0, "losses": 0, "pnl": 0.0, "staked": 0.0})
+            r["trades"] += 1
+            r["wins"] += w
+            r["losses"] += lo
+            r["pnl"] += float(pnl)
+            r["staked"] += stake
+        p = float(prob) if model and prob is not None else px
+        b = next(i for i in range(len(BUCKET_EDGES) - 1) if min(p, 0.99999) < BUCKET_EDGES[i + 1])
+        c = cal.setdefault(b, [0, 0.0, 0])
+        c[0] += 1
+        c[1] += p
+        c[2] += w
+        tot["trades"] += 1
+        tot["wins"] += w
+        tot["losses"] += lo
+        tot["staked"] += stake
+        tot["pnl"] += float(pnl)
+        tot["px"] += px
+    r2 = lambda d: {**d, "pnl": round(d["pnl"], 2), "staked": round(d["staked"], 2)}     # noqa: E731
+    out = {"categories": sorted((r2(v) for v in cats.values()), key=lambda r: (-r["trades"], r["name"]))[:CAPS["categories"]],
+           "buckets": [{"lo": BUCKET_EDGES[i], "hi": min(1.0, BUCKET_EDGES[i + 1]), **{k: v for k, v in r2(bks[i]).items()}}
+                       for i in sorted(bks)],
+           "calibration": [{"p": round(c[1] / c[0], 4), "n": c[0], "hit": round(c[2] / c[0], 4)} for _, c in sorted(cal.items())],
+           "calib_basis": "model" if model and rows else "price"}
+    if tot["trades"]:
+        out["stats"] = {"trades": tot["trades"], "wins": tot["wins"], "losses": tot["losses"], "staked": round(tot["staked"], 2),
+                        "pnl": round(tot["pnl"], 2), "avg_price": round(tot["px"] / tot["trades"], 4)}
+    return out
+
+
 def _jload(path):
     try:
         with open(path, encoding="utf-8-sig") as fh:
@@ -1018,18 +1166,21 @@ def read_bot(bot_dir, now=None, units=UNITS, week="monday"):
         strategies.append({"name": BOOKS.get(b, b), "mode": m, "running": None if m is None else (running and m != "off"),
                            "today_pnl": round(v["today"], 2), "total_pnl": round(v["total"], 2), "trades": v["n"],
                            "wins": v["w"], "losses": v["l"]})
+    settled = [(avg, filled, pnl, *category_of(tk, asset), None)
+               for ts, tk, side, book, filled, avg, pnl, result, close_ts, asset in graded if (book or "main") not in ("exit", "partial")]
+    extra = breakdowns(settled)
     opened = [r for r in rows if r[7] is None and (r[3] or "main") != "exit"]
     positions = []
     for ts, tk, side, book, filled, avg, pnl, result, close_ts, asset in sorted(opened, key=lambda r: (r[8] or 0, r[0])):
         positions.append({"ticker": tk, "title": ticker_title(tk), "side": _side(side), "contracts": filled,
-                          "asset": asset or None, "strategy": BOOKS.get(book or "main", book),
+                          "asset": asset or None, "strategy": BOOKS.get(book or "main", book), "category": category_of(tk, asset)[0],
                           "avg_price": avg, "value": None if avg is None else round(float(filled) * float(avg), 2),
                           "closes": None if not _f(close_ts) else _dt.datetime.fromtimestamp(float(close_ts), _dt.timezone.utc)
                           .strftime("%Y-%m-%dT%H:%M:%SZ")})
     trades = []
     for ts, tk, side, book, filled, avg, pnl, result, close_ts, asset in reversed(rows[-CAPS["trades"]:]):
         trades.append({"t": int(ts), "ticker": tk, "title": ticker_title(tk), "side": _side(side),
-                       "asset": asset or None, "strategy": BOOKS.get(book or "main", book),
+                       "asset": asset or None, "strategy": BOOKS.get(book or "main", book), "category": category_of(tk, asset)[0],
                        "action": "sell" if (book or "main") in ("exit", "partial") else "buy", "contracts": filled,
                        "price": avg, "pnl": None if pnl is None else round(float(pnl), 2)})
     balance = next((v for v in (_f(truth.get("total")), _f(truth.get("cash")), _f(st.get("balance"))) if v is not None), None)
@@ -1050,6 +1201,28 @@ def read_bot(bot_dir, now=None, units=UNITS, week="monday"):
         status = "No word from the trader for " + ("over an hour" if age > 3600 else f"{max(3, int(age // 60))} min")
     else:
         status = f"Trading · {live_n} live strateg{'y' if live_n == 1 else 'ies'} · {len(positions)} open bet{'' if len(positions) == 1 else 's'}"
+    alerts = []                                              # what needs the owner's eye, newest first (the page adds countdowns)
+    if paused or (st.get("blocked") or st.get("problem")) or db_err or alive is False or not fresh:
+        alerts.append({"t": int(now), "level": "bad" if (st.get("problem") or db_err or alive is False) else "warn", "text": status})
+    streak = 0
+    for r in reversed(graded):
+        if float(r[6]) < -0.005:
+            streak += 1
+        elif float(r[6]) > 0.005:
+            break
+    if streak >= 3:
+        alerts.append({"t": int(graded[-1][0]), "level": "warn", "text": f"{streak} losses in a row"})
+    today_pnl = round(sum(float(r[6]) for r in graded if r[0] >= t_today), 2)
+    if balance and today_pnl < 0 and -today_pnl >= 0.1 * balance:
+        alerts.append({"t": int(now), "level": "bad", "text": f"Down ${-today_pnl:,.2f} today, {(-today_pnl / balance) * 100:.0f}% of the balance"})
+    kelly = {}
+    for key, names in (("fraction", ("KELLY_FRACTION", "KELLY_FRAC", "KELLY")), ("max_bet", ("MAX_BET", "MAX_STAKE", "MAX_BET_USD")),
+                       ("min_edge", ("MIN_EDGE", "EDGE_MIN"))):
+        v = next((_f(x.get(n)) for x in (bset, cset) for n in names if _f(x.get(n)) is not None), None)
+        if v is not None:
+            kelly[key] = v
+    if balance is not None and kelly:
+        kelly["bankroll"] = round(balance, 2)
     return {"name": BOT_NAME, "mode": mode, "running": running, "status": status, "t": int(now), "balance": balance,
             "today_pnl": round(sum(float(r[6]) for r in graded if r[0] >= t_today), 2),
             "week_pnl": round(sum(float(r[6]) for r in graded if r[0] >= t_week), 2),
@@ -1057,7 +1230,8 @@ def read_bot(bot_dir, now=None, units=UNITS, week="monday"):
             "note": "Real money · main account" if mode == "live" else f"{mode.title()} account",
             "positions": positions, "trades": trades,
             "days": [[d, round(v, 2)] for d, v in sorted(per_day.items())][-CAPS["days"]:],
-            "strategies": strategies[:CAPS["strategies"]], "equity": equity}
+            "strategies": strategies[:CAPS["strategies"]], "equity": equity,
+            **extra, "alerts": alerts[:CAPS["alerts"]], **({"kelly": kelly} if kelly else {})}
 
 
 def bot_payload(bot_dir, now=None, units=UNITS, week="monday", max_bytes=MAX_BYTES):
@@ -1477,7 +1651,7 @@ def main(argv=None, push_fn=None, prog=None, defaults=None):
         ap.set_defaults(**defaults)
     a = ap.parse_args(argv)
     if a.sample:
-        print(json.dumps(SAMPLE_V2, indent=2, ensure_ascii=False))
+        print(json.dumps(SAMPLE_V3, indent=2, ensure_ascii=False))
         return 0
     if a.from_api or a.from_bot or a.from_vm:
         a.src = None

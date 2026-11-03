@@ -9,9 +9,9 @@
 //   (raw.githubusercontent.com / api.github.com) is never touched or cached;
 // - Jarvis's fonts (../jarvis/*.woff2, the page's @font-face) are saved here too and answered from the copy first, so the page
 //   keeps its Orbitron / Rajdhani look offline.
-const CACHE = 'kalshi-k11';                      // = 'kalshi-' + the ?v= of kalshi.css / kalshi.js (index.html, SHELL): a new version, a new cache
+const CACHE = 'kalshi-k12';                      // = 'kalshi-' + the ?v= of kalshi.css / kalshi.js (index.html, SHELL): a new version, a new cache
 const NAV_WAIT_MS = 3500;
-const SHELL = ['./', './index.html', './kalshi.css?v=k11', './kalshi.js?v=k11', './kit.json'];
+const SHELL = ['./', './index.html', './kalshi.css?v=k12', './kalshi.js?v=k12', './kit.json'];
 const FONTS = ['../jarvis/orbitron.woff2', '../jarvis/rajdhani-400.woff2', '../jarvis/rajdhani-500.woff2', '../jarvis/rajdhani-600.woff2',
   '../jarvis/rajdhani-700.woff2'];
 const FONT_URLS = FONTS.map((f) => new URL(f, self.registration.scope).href);

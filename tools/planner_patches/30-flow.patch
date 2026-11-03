@@ -1,0 +1,530 @@
+diff --git a/planner/docs/features-flow.md b/planner/docs/features-flow.md
+new file mode 100644
+index 0000000..a628562
+--- /dev/null
++++ b/planner/docs/features-flow.md
+@@ -0,0 +1,40 @@
++# Flow features: Workload, Deadline risk, Daily goal
++
++Plain text for the Help sheet and README (merge by hand). What Sunsama, Motion and Todoist have and the Planner lacked.
++
++## Workload (`#workload`)
++- **Workload** (Today; tile in All tools; palette "Workload today"; link `#workload`): today's tasks against the free time
++  left today, as a bar and one line: "5h of tasks, 4h 40m free: over by 20m". Free time is 7am to 10pm from now, after
++  shifts, events, travel and time blocks. A task without an estimate counts as 30 minutes; ideas are left out; a task
++  already time-blocked today counts as its block, never twice.
++- On an over-planned day it is a full card in red with **Trim**. Any other day it is one line under Dashboards
++  ("4h planned, 4h 40m free").
++- **Trim to fit** shows what fits (highest priority first, then oldest) and what moves to tomorrow. Nothing changes until
++  **Apply**; the toast offers **Undo**.
++
++## Deadline risk (`#deadlines`)
++- Tasks dated in the next 14 days, earliest date first, against 60% of each day's free time (the same share as Catch up).
++  A task is at risk when it, plus everything due before it, needs more time than there is before its date. Today's own
++  tasks use up time but are Workload's to report. A task with a time block before its date is planned, never at risk.
++- At risk: a line in Needs you now ("Write the eval report may miss Thu Nov 5", **Fix**). The sheet lists each one with
++  what it needs and how short it is.
++- **Block** puts the task in the first free gap before its date that holds all of it, else the longest one ("Block today
++  10am, 3h"). It is a normal time block linked to the task (Undo works). **Open** opens the task to move its date or cut
++  its estimate.
++
++## Daily goal (`#daily-goal`)
++- One line under Dashboards ("2 of 3 done · 2 days in a row"); open it for a ring, the last 7 days as bars (green = goal
++  met) and the run of days in a row. Counted from the tasks you tick off (their done time).
++- **Goal** sets 1 to 10 tasks a day (this phone). The run counts back from today once today's goal is met, else from
++  yesterday, so it is never lost before the day is over.
++
++## Notes for the lead (not for the Help sheet)
++- Code: `planner/ext-flow.js`, loaded by one `<script src="ext-flow.js">` in `<head>` after ext-power.js. It waits for
++  `planner:ready` (`window.PlannerAPI`). Nothing else in `index.html` changed.
++- Data: no new synced collection and no new field. Task moves and time blocks go through `snapshot()` + `commit()`. The
++  only new key is the device-only `planner.flow.goal` (1-10, default 3).
++- Today cards: `flrisk` (Needs you now, soft label "Deadline risk", only while something is at risk), `flwork` (Today
++  while over-planned, else Dashboards), `flgoal` (Dashboards). All are in Customize Today. Tiles `flwork`, `flrisk`
++  (Calendar) and `flgoal` (Me); commands `fx-work`, `fx-risk`, `fx-goal`.
++- Pure helpers on `window.__fl`: `trim(tasks, freeMinutes)`, `risk(tasks, days)`, `goal(doneByDay, today, goal)`, `est(task)`.
++- Tests: `planner/tests/flow.test.js` (PORT env, default 8790; 41 checks).
+diff --git a/planner/ext-flow.js b/planner/ext-flow.js
+new file mode 100644
+index 0000000..0041d35
+--- /dev/null
++++ b/planner/ext-flow.js
+@@ -0,0 +1,292 @@
++// ===== FLOW: Workload, Deadline risk, Daily goal (ext-flow.js; docs/features-flow.md; tests/flow.test.js) =====
++// What Sunsama, Motion and Todoist have and the Planner lacked (2026-11-03):
++//  - Workload (Sunsama's "you planned more than you can do"): today's task estimates against the free time left today, a bar,
++//    and Trim to fit: the lowest-priority tasks move to tomorrow (preview first, Apply, Undo).
++//  - Deadline risk (Motion's "at risk"): tasks dated in the next 14 days, earliest date first, against 60% of each day's free
++//    time. A task whose date comes before there is time for it (and everything due before it) is at risk; Block time puts it
++//    in the best free gap before its date.
++//  - Daily goal (Todoist's Karma goal): tasks done today against a goal you pick, the run of days in a row, the last 7 days.
++// Loaded in <head>; waits for 'planner:ready' (window.PlannerAPI, the EXT API block in index.html). Changes to tasks and events go
++// through snapshot() + commit() like the app's own sheets (sync stamps, tombstones, Undo). Own data: the device key
++// planner.flow.goal (the daily goal, 1-10). Nothing existing is renamed, migrated or removed.
++(function () {
++  'use strict';
++  const GOAL_KEY = 'planner.flow.goal', GOAL_DEF = 3, GOAL_MAX = 10;
++  const DAY_FROM = 7 * 60, DAY_TO = 22 * 60, SHARE = 0.6, HORIZON = 14, EST_DEF = 30;
++  const HASHES = { workload: () => wlOpen(), deadlines: () => drOpen(), 'daily-goal': () => dgOpen() };
++  let A = null, wanted = '';
++
++  // ---------- deep links: read before the app's router clears the address ----------
++  const readHash = () => { try { const h = decodeURIComponent(location.hash.replace(/^#\/?/, '')).trim(); return Object.prototype.hasOwnProperty.call(HASHES, h) ? h : ''; } catch (e) { return ''; } };
++  wanted = readHash();
++  addEventListener('hashchange', () => { const h = readHash(); if (!h) return; if (A) setTimeout(() => runHash(h), 0); else wanted = h; });
++  function runHash(h) { try { A.goToday(); HASHES[h](); } catch (e) { console.error('Planner flow link:', e); } }
++
++  // ---------- small helpers (local dates as YYYY-MM-DD, minutes since midnight) ----------
++  const p2 = (n) => String(n).padStart(2, '0');
++  const kOf = (d) => `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
++  const dOf = (k) => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); };
++  const plus = (k, n) => { const d = dOf(k); d.setDate(d.getDate() + n); return kOf(d); };
++  const today = () => kOf(new Date());
++  const WDN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
++  const MON3 = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
++  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
++  const dur = (m) => { m = Math.max(0, Math.round(m)); return m >= 60 ? `${Math.floor(m / 60)}h${m % 60 ? ' ' + (m % 60) + 'm' : ''}` : `${m}m`; };
++  const t12 = (m) => { let h = Math.floor(m / 60) % 24; const mm = m % 60, ap = h < 12 ? 'am' : 'pm'; h = h % 12 || 12; return (mm ? `${h}:${p2(mm)}` : `${h}`) + ap; };
++  const dateTxt = (k) => { const d = dOf(k); return `${WDN[d.getDay()]} ${MON3[d.getMonth()]} ${d.getDate()}`; };
++  const dayTxt = (k, t) => (k === t ? 'today' : k === plus(t, 1) ? 'tomorrow' : dateTxt(k));
++  const hm = (m) => `${p2(Math.floor(m / 60))}:${p2(m % 60)}`;
++  const est = (x) => (+x.est > 0 ? +x.est : EST_DEF);
++  const prio = (x) => (+x.p > 0 ? +x.p : 0);
++  const isIdea = (x) => x.tag === 'idea' || /^Idea:/.test(x.title || '');
++  const open = (x) => !!x && !x.done && !isIdea(x);
++
++  // ---------- the app's time: free gaps of a day (7am-10pm, shifts, events and travel out; today from now) ----------
++  function gapsOf(k) {
++    try { const trv = (A.bfSpans(k) || []).map((x) => [x.s, x.e]); return A.freeGaps(k, DAY_FROM, DAY_TO, 15, trv); } catch (e) { return []; }
++  }
++  const freeOf = (k) => gapsOf(k).reduce((a, [s, e]) => a + (e - s), 0);
++  // a task already time-blocked on a day is busy time there, never counted twice
++  const blockedOn = (S, id, k) => S.events.some((e) => e && e.taskId === id && e.date === k);
++
++  // =====================================================================================================================
++  // Pure planning (window.__fl for the tests): no DOM, no app state.
++  // =====================================================================================================================
++  // trim(tasks, free) -> { keep, move, used, need }: highest priority first, then oldest, each kept while it still fits.
++  function trim(tasks, free) {
++    const order = tasks.slice().sort((a, b) => (prio(b) - prio(a)) || ((a.created || 0) - (b.created || 0)));
++    const keep = [], move = []; let used = 0;
++    order.forEach((x) => { if (used + est(x) <= free) { keep.push(x); used += est(x); } else move.push(x); });
++    return { keep, move, used, need: tasks.reduce((a, x) => a + est(x), 0) };
++  }
++  // risk(tasks, days) with days [{ k, cap }] (cap in minutes, in date order from today): earliest date first (then priority), the
++  // running need against the running capacity up to each task's date -> [{ t, need, cum, room, short }] for the tasks at risk.
++  // Tasks dated on the first day use up capacity but are Workload's to report; risk names the later ones.
++  function risk(tasks, days) {
++    if (!days.length) return [];
++    const capTo = {}; let c = 0;
++    days.forEach((d) => { c += Math.max(0, d.cap); capTo[d.k] = c; });
++    const first = days[0].k, last = days[days.length - 1].k;
++    const order = tasks.filter((x) => x.date && x.date >= first && x.date <= last)
++      .sort((a, b) => a.date.localeCompare(b.date) || (prio(b) - prio(a)) || ((a.created || 0) - (b.created || 0)));
++    const out = []; let cum = 0;
++    order.forEach((x) => { cum += est(x); const room = capTo[x.date] || 0; if (cum > room && x.date > first) out.push({ t: x, need: est(x), cum, room, short: cum - room }); });
++    return out;
++  }
++  // goal(doneDays, t, goal) with doneDays { 'YYYY-MM-DD': n }: { done, goal, met, streak, week: [{ k, n }] (7 days, oldest first) }.
++  // The run counts back from today when today's goal is met, else from yesterday (it is never lost before the day is over).
++  function goal(doneDays, t, g) {
++    const n = (k) => doneDays[k] || 0, met = n(t) >= g;
++    let streak = 0, k = met ? t : plus(t, -1);
++    for (let i = 0; i < 3660 && n(k) >= g; i++) { streak++; k = plus(k, -1); }
++    const week = []; for (let i = 6; i >= 0; i--) { const d = plus(t, -i); week.push({ k: d, n: n(d) }); }
++    return { done: n(t), goal: g, met, streak, week };
++  }
++
++  // =====================================================================================================================
++  // Workload
++  // =====================================================================================================================
++  function wlState() {
++    const S = A.S, t = today(), list = S.tasks.filter((x) => open(x) && x.date === t && !blockedOn(S, x.id, t));
++    const free = freeOf(t), need = list.reduce((a, x) => a + est(x), 0);
++    return { t, list, free, need, over: need - free };
++  }
++  function wlBar(st) {
++    const max = Math.max(st.need, st.free, 1), w = (m) => ((m / max) * 100).toFixed(1);
++    return `<div class="fx-bar" role="img" aria-label="${esc(`${dur(st.need)} of tasks planned, ${dur(st.free)} free`)}"><i class="fx-free" style="width:${w(st.free)}%"></i><i class="fx-need${st.over > 0 ? ' over' : ''}" style="width:${w(st.need)}%"></i><b class="fx-cap" style="left:${w(st.free)}%" title="free time ends here"></b></div>`;
++  }
++  function wlLine(st) {
++    if (!st.list.length) return st.free ? `Nothing planned yet · <b>${dur(st.free)}</b> free today` : 'Nothing planned and no free time left today.';
++    return st.over > 0 ? `<b>${dur(st.need)}</b> of tasks, <b>${dur(st.free)}</b> free: <span class="fx-red">over by ${dur(st.over)}</span>`
++      : `<b>${dur(st.need)}</b> of tasks, <b>${dur(st.free)}</b> free · <span class="fx-ok">${dur(-st.over)} to spare</span>`;
++  }
++  function wlCard() {
++    const st = wlState();
++    if (!st.list.length && st.free <= 0) return '';
++    return `<section class="td-card fx-card" id="flWork"><h3>Workload<button type="button" data-flopen="workload">${st.over > 0 ? 'Trim' : 'More'}</button></h3>${wlBar(st)}<div class="fx-line" role="status">${wlLine(st)}</div></section>`;
++  }
++  const wlSum = () => { const st = wlState(); return st.list.length ? (st.over > 0 ? `over by ${dur(st.over)}` : `${dur(st.need)} planned, ${dur(st.free)} free`) : 'nothing planned'; };
++  let wlDlg = null, wlPlan = null;
++  function wlPaint() {
++    if (!wlDlg) return;
++    const st = wlState(), r = trim(st.list, st.free), body = wlDlg.querySelector('#flWlDlgB');
++    wlPlan = r.move.map((x) => x.id);
++    const row = (x) => { const pj = A.projOf(x.proj); return `<li><b>${esc(x.title)}</b><small>${esc([dur(est(x)) + (+x.est > 0 ? '' : ' (guess)'), x.p === 3 ? 'high priority' : x.p === 2 ? 'medium' : '', pj ? pj.name : ''].filter(Boolean).join(' · '))}</small></li>`; };
++    const moving = r.move.reduce((a, x) => a + est(x), 0);
++    body.innerHTML = `${wlBar(st)}<div class="fx-line">${wlLine(st)}</div>
++      <div class="hint">Free time is 7am to 10pm from now, after shifts, events, travel and time blocks. A task without an estimate counts as ${EST_DEF} minutes.</div>
++      ${r.keep.length ? `<div class="fx-h">Fits today · ${dur(r.used)}</div><ul class="fx-ul">${r.keep.map(row).join('')}</ul>` : ''}
++      ${r.move.length ? `<div class="fx-h">Move to tomorrow · ${dur(moving)}</div><ul class="fx-ul fx-mv">${r.move.map(row).join('')}</ul>` : ''}
++      <div class="dlg-f"><div class="sub">${r.move.length ? 'Lowest priority first. Nothing changes until Apply.' : st.list.length ? 'Everything fits. Nice.' : 'Nothing planned today.'}</div><div style="display:flex;gap:8px"><button type="button" class="btn" data-close>${r.move.length ? 'Cancel' : 'Done'}</button>${r.move.length ? '<button type="button" class="btn primary" id="flWlApply">Apply</button>' : ''}</div></div>`;
++  }
++  function wlOpen() { if (!wlDlg) wlDlg = A.makeDlg('flWlDlg', 'Workload today'); wlPaint(); if (!wlDlg.open) wlDlg.showModal(); }
++  function wlApply() {
++    const ids = wlPlan || [], S = A.S, to = plus(today(), 1); let n = 0;
++    if (!ids.length) return;
++    A.snapshot();
++    A.commit(() => { ids.forEach((id) => { const x = S.tasks.find((y) => y && y.id === id); if (x && !x.done) { x.date = to; n++; } }); });
++    wlDlg.close(); wlPlan = null; A.render();
++    A.toast(`Moved ${n} task${n === 1 ? '' : 's'} to tomorrow`, true);
++  }
++
++  // =====================================================================================================================
++  // Deadline risk
++  // =====================================================================================================================
++  function drState() {
++    const S = A.S, t = today(), days = [];
++    for (let i = 0; i < HORIZON; i++) { const k = plus(t, i); days.push({ k, cap: Math.round(freeOf(k) * SHARE) }); }
++    // a task with a time block between today and its date is planned: it is never at risk
++    const list = S.tasks.filter((x) => open(x) && x.date && !S.events.some((e) => e && e.taskId === x.id && e.date >= t && e.date <= x.date));
++    return { t, days, at: risk(list, days) };
++  }
++  function drCard() {
++    const st = drState(); if (!st.at.length) return '';
++    const f = st.at[0], when = esc(dayTxt(f.t.date, st.t));
++    const line = st.at.length === 1 ? `${esc(f.t.title)} may miss ${when}` : `${st.at.length} tasks may miss their date, first ${esc(f.t.title)} (${when})`;
++    return `<section class="td-card fx-card" id="flRisk"><div class="fx-row"><div><b>Deadline risk</b><div class="sub">${line}</div></div><button type="button" class="btn sm primary" data-flopen="deadlines">Fix</button></div></section>`;
++  }
++  const drSum = () => { const n = drState().at.length; return n ? `${n} at risk` : 'all on time'; };
++  let drDlg = null;
++  // the best free gap on or before the task's date: the first that holds it all, else the longest
++  function drSlot(x, t) {
++    let best = null;
++    for (let k = t; k <= x.date; k = plus(k, 1)) {
++      for (const [s, e] of gapsOf(k)) {
++        const g = { k, s, len: e - s };
++        if (g.len >= est(x)) return g;
++        if (!best || g.len > best.len) best = g;
++      }
++    }
++    return best;
++  }
++  function drPaint() {
++    if (!drDlg) return;
++    const st = drState(), body = drDlg.querySelector('#flDrDlgB');
++    if (!st.at.length) { body.innerHTML = '<div class="empty-s">Every dated task has time before its date. Nice.</div><div class="dlg-f"><div></div><div><button type="button" class="btn primary" data-close>Done</button></div></div>'; return; }
++    body.innerHTML = `<div class="hint">Earliest date first, against 60% of each day's free time (7am to 10pm, after shifts, events and travel). A task without an estimate counts as ${EST_DEF} minutes.</div>
++      <ul class="fx-ul fx-risk">${st.at.map((r) => {
++        const g = drSlot(r.t, st.t), where = g ? `${dayTxt(g.k, st.t)} ${t12(g.s)}, ${dur(Math.min(r.need, g.len))}` : '';
++        return `<li data-flt="${esc(r.t.id)}"><div><b>${esc(r.t.title)}</b><small>${esc(`due ${dayTxt(r.t.date, st.t)} · needs ${dur(r.need)} · ${dur(r.short)} short with everything due before it`)}</small></div>
++          <div class="fx-acts">${g ? `<button type="button" class="btn sm primary" data-flblock>Block ${esc(where)}</button>` : ''}<button type="button" class="btn sm" data-fldetail>Open</button></div></li>`;
++      }).join('')}</ul>
++      <div class="dlg-f"><div class="sub">Or open a task to move its date or cut its estimate.</div><div><button type="button" class="btn" data-close>Close</button></div></div>`;
++  }
++  function drOpen() { if (!drDlg) drDlg = A.makeDlg('flDrDlg', 'Deadline risk'); drPaint(); if (!drDlg.open) drDlg.showModal(); }
++  function drBlock(id) {
++    const S = A.S, x = S.tasks.find((y) => y && y.id === id); if (!x) return;
++    const g = drSlot(x, today()); if (!g) { A.toast('No free time before its date'); return; }
++    const len = Math.min(est(x), g.len);
++    A.snapshot();
++    A.commit(() => {
++      S.events.push({ id: A.uid(), title: x.title, cat: S.lastCat, date: g.k, allDay: false, start: hm(g.s), end: hm(g.s + len), endDate: '', repeat: 'none', until: '', notes: x.notes || '', ex: [], proj: x.proj || '', taskId: x.id, created: Date.now() });
++    });
++    A.render(); drPaint();
++    A.toast(`Blocked ${dur(len)} ${dayTxt(g.k, today())} at ${t12(g.s)}: ${x.title}`, true);
++  }
++
++  // =====================================================================================================================
++  // Daily goal
++  // =====================================================================================================================
++  const goalGet = () => { try { const g = parseInt(localStorage.getItem(GOAL_KEY), 10); return g >= 1 && g <= GOAL_MAX ? g : GOAL_DEF; } catch (e) { return GOAL_DEF; } };
++  const goalSet = (g) => { try { localStorage.setItem(GOAL_KEY, String(g)); } catch (e) { /* this phone only, a convenience */ } };
++  function doneDays() {
++    const out = {};
++    A.S.tasks.forEach((x) => { if (x && x.done && +x.doneAt > 0) { const k = kOf(new Date(+x.doneAt)); out[k] = (out[k] || 0) + 1; } });
++    return out;
++  }
++  const dgState = () => goal(doneDays(), today(), goalGet());
++  function dgHtml(st, inSheet) {
++    const pc = Math.min(1, st.done / st.goal), R = 22, C = 2 * Math.PI * R;
++    const ring = `<svg class="fx-ring" viewBox="0 0 54 54" aria-hidden="true"><circle cx="27" cy="27" r="${R}" class="bg"/><circle cx="27" cy="27" r="${R}" class="fg${st.met ? ' met' : ''}" stroke-dasharray="${(pc * C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 27 27)"/><text x="27" y="31" text-anchor="middle">${st.done}/${st.goal}</text></svg>`;
++    const mx = Math.max(st.goal, ...st.week.map((d) => d.n), 1);
++    const bars = `<div class="fx-wk" role="img" aria-label="${esc('Tasks done, last 7 days: ' + st.week.map((d) => d.n).join(', '))}">${st.week.map((d) => `<span title="${esc(d.k + ': ' + d.n)}"><i class="${d.n >= st.goal ? 'met' : ''}" style="height:${Math.max(4, (d.n / mx) * 100).toFixed(0)}%"></i><em>${WDN[dOf(d.k).getDay()][0]}</em></span>`).join('')}</div>`;
++    const run = (n) => `${n} day${n === 1 ? '' : 's'} in a row`;
++    const line = st.met ? `<b>Goal met.</b> ${run(st.streak)}` : `${st.goal - st.done} more to hit today's goal${st.streak ? ` · ${run(st.streak)} so far` : ''}`;
++    const pick = inSheet ? `<label class="fx-goal">Daily goal <select id="flGoal" aria-label="Tasks a day">${Array.from({ length: GOAL_MAX }, (_, i) => i + 1).map((n) => `<option value="${n}"${n === st.goal ? ' selected' : ''}>${n} task${n === 1 ? '' : 's'}</option>`).join('')}</select></label>` : '';
++    return `<div class="fx-dg">${ring}<div class="fx-dgt"><div class="fx-line" role="status">${line}</div>${bars}</div></div>${pick}`;
++  }
++  const dgCard = () => `<section class="td-card fx-card" id="flGoalCard"><h3>Daily goal<button type="button" data-flopen="daily-goal">Goal</button></h3>${dgHtml(dgState(), false)}</section>`;
++  const dgSum = () => { const st = dgState(); return `${st.done} of ${st.goal} done${st.streak ? ` · ${st.streak} day${st.streak === 1 ? '' : 's'} in a row` : ''}`; };
++  let dgDlg = null;
++  function dgPaint() { if (dgDlg) dgDlg.querySelector('#flDgDlgB').innerHTML = `${dgHtml(dgState(), true)}<div class="hint">Counted from the tasks you tick off each day; this phone keeps the goal. The run of days only grows on days you hit it.</div>`; }
++  function dgOpen() {
++    if (!dgDlg) {
++      dgDlg = A.makeDlg('flDgDlg', 'Daily goal');
++      dgDlg.addEventListener('change', (e) => { if (e.target.id === 'flGoal') { goalSet(+e.target.value); dgPaint(); if (A.S.view === 'today') A.renderMain(); } });
++    }
++    dgPaint(); if (!dgDlg.open) dgDlg.showModal();
++  }
++
++  // =====================================================================================================================
++  // Wiring: Today cards, All tools tiles, palette commands, styles
++  // =====================================================================================================================
++  function register() {
++    const at = (id) => { const i = A.TO_CARDS.findIndex((c) => c.id === id); return i < 0 ? A.TO_CARDS.length : i; };
++    const card = (def, before) => { if (A.TO_BY[def.id]) return; A.TO_CARDS.splice(at(before), 0, def); A.TO_BY[def.id] = def; };
++    card({ id: 'flrisk', n: 'Deadline risk', home: 'now', fn: () => drCard(), tier: () => (drState().at.length ? A.toNowTier('Deadline risk', 'amber', true) : { tier: 'today' }), sum: () => drSum() }, 'sched');
++    // Workload is a full card only on an over-planned day; otherwise it folds to one line under Dashboards, like Daily goal
++    card({ id: 'flwork', n: 'Workload', home: 'today', fn: () => wlCard(), tier: () => (wlState().over > 0 ? { tier: 'today' } : { tier: 'dash' }), sum: () => wlSum() }, 'sched');
++    card({ id: 'flgoal', n: 'Daily goal', home: 'dash', fn: () => dgCard(), sum: () => dgSum() }, 'score');
++    const tool = (def) => { if (!A.HB_TOOLS.some((x) => x.id === def.id)) A.HB_TOOLS.push(def); };
++    tool({ id: 'flwork', g: 'Calendar', n: 'Workload', d: 'Planned tasks against your free time today, Trim to fit', k: 'workload capacity overplanned too much trim fit today sunsama', open: () => wlOpen(), st: () => wlSum() });
++    tool({ id: 'flrisk', g: 'Calendar', n: 'Deadline risk', d: 'Tasks that may miss their date, and time to block for them', k: 'deadline risk late due at risk motion block time', open: () => drOpen(), st: () => drSum() });
++    tool({ id: 'flgoal', g: 'Me', n: 'Daily goal', d: 'Tasks done today against your goal, days in a row', k: 'daily goal streak karma productivity tasks done todoist', open: () => dgOpen(), st: () => dgSum() });
++    const cmd = (def) => { if (!A.PK_CMDS.some((x) => x.id === def.id)) A.PK_CMDS.push(def); };
++    cmd({ id: 'fx-work', l: 'Workload today', k: 'workload capacity overplanned trim fit', run: () => wlOpen() });
++    cmd({ id: 'fx-risk', l: 'Deadline risk', k: 'deadline risk late due at risk block time', run: () => drOpen() });
++    cmd({ id: 'fx-goal', l: 'Daily goal', k: 'daily goal streak karma productivity', run: () => dgOpen() });
++  }
++  function wire() {
++    document.addEventListener('click', (e) => {
++      const t = e.target; if (!t || !t.closest) return;
++      const o = t.closest('[data-flopen]'); if (o) { const h = o.dataset.flopen; if (HASHES[h]) HASHES[h](); return; }
++      if (t.closest('#flWlApply')) { wlApply(); return; }
++      const li = t.closest('#flDrDlg [data-flt]'); if (!li) return;
++      if (t.closest('[data-flblock]')) drBlock(li.dataset.flt);
++      else if (t.closest('[data-fldetail]')) { drDlg.close(); A.openTask(li.dataset.flt); }
++    });
++  }
++  const CSS = `
++.fx-card{gap:8px}
++.fx-bar{position:relative;height:12px;border-radius:999px;background:var(--soft2)}
++.fx-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:999px}
++.fx-free{background:var(--kb-dcfce7)}
++.fx-cap{position:absolute;top:-1px;bottom:-1px;width:2px;margin-left:-1px;background:var(--ink);border-radius:1px}
++.fx-bar i.fx-need{top:3px;bottom:3px;background:var(--ok);opacity:.85}.fx-bar i.fx-need.over{background:var(--now,#dc2626)}
++.fx-line{font-size:13px;color:var(--ink2);line-height:1.4}.fx-line b{color:var(--ink);font-weight:600}
++.fx-red{color:var(--now,#dc2626);font-weight:600}.fx-ok{color:var(--ok);font-weight:600}
++.fx-h{font-size:11.5px;font-weight:600;color:var(--mute);letter-spacing:.02em;text-transform:uppercase;margin-top:4px}
++.fx-ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
++.fx-ul li{display:flex;flex-direction:column;gap:1px;padding:7px 0;border-top:1px solid var(--line2)}.fx-ul li:first-child{border-top:0}
++.fx-ul b{font-weight:500;font-size:14px;overflow-wrap:anywhere}.fx-ul small{font-size:11.5px;color:var(--mute)}
++.fx-mv b{color:var(--ink2)}
++.fx-risk li{flex-direction:row;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.fx-risk li>div:first-child{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1 1 180px}
++.fx-acts{display:flex;gap:6px;flex-wrap:wrap}.fx-acts .btn{min-height:36px}
++.fx-row{display:flex;align-items:center;justify-content:space-between;gap:10px}.fx-row b{font-size:13.5px;font-weight:600}.fx-row .btn{flex:none}
++.fx-dg{display:flex;align-items:center;gap:12px}.fx-dgt{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
++.fx-ring{width:54px;height:54px;flex:none}.fx-ring circle{fill:none;stroke-width:6}.fx-ring .bg{stroke:var(--soft2)}.fx-ring .fg{stroke:var(--ink2);stroke-linecap:round}.fx-ring .fg.met{stroke:var(--ok)}
++.fx-ring text{font-size:12px;font-weight:700;fill:var(--ink);font-variant-numeric:tabular-nums}
++.fx-wk{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;height:38px;align-items:end}
++.fx-wk span{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:2px}
++.fx-wk i{display:block;width:100%;max-width:18px;border-radius:3px;background:var(--line);min-height:3px}.fx-wk i.met{background:var(--ok)}
++.fx-wk em{font-style:normal;font-size:9.5px;color:var(--faint);line-height:1}
++.fx-goal{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;margin-top:6px}
++.fx-goal select{height:40px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);padding:0 8px;font-size:16px}
++#flWlDlg .dlg,#flDrDlg .dlg,#flDgDlg .dlg{max-height:calc(100dvh - 24px);overflow:auto}
++#flWlDlg .dlg-f,#flDrDlg .dlg-f{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
++`;
++  function init(api) {
++    A = api;
++    try { document.head.insertAdjacentHTML('beforeend', `<style id="flStyle">${CSS}</style>`); } catch (e) { /* unstyled is still usable */ }
++    register(); wire();
++    if (wanted) { const h = wanted; wanted = ''; setTimeout(() => runHash(h), 0); }
++  }
++  function ready(api) {
++    if (A || !api || !Array.isArray(api.TO_CARDS) || !api.TO_BY || !Array.isArray(api.HB_TOOLS) || !Array.isArray(api.PK_CMDS) || typeof api.commit !== 'function' || typeof api.freeGaps !== 'function') return;
++    try { init(api); } catch (e) { console.error('Planner flow features failed to start:', e); }
++  }
++  addEventListener('planner:ready', (e) => ready(e.detail));
++  if (window.PlannerAPI) ready(window.PlannerAPI);
++  // Pure helpers for the tests and the console (same pattern as window.__pw).
++  window.__fl = { trim, risk, goal, est };
++})();
+diff --git a/planner/index.html b/planner/index.html
+index 5d0a694..257b8a4 100644
+--- a/planner/index.html
++++ b/planner/index.html
+@@ -10,6 +10,7 @@
+ <meta name="color-scheme" content="light">
+ <script>(function(){try{var t=localStorage.getItem('planner.theme');if(t!=='dark'&&t!=='system')t='light';var d=t==='dark'||(t==='system'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);var h=document.documentElement;h.setAttribute('data-theme',d?'dark':'light');h.setAttribute('data-pref',t);var m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',d?'#0f1115':'#ffffff');var c=document.querySelector('meta[name=color-scheme]');if(c)c.setAttribute('content',d?'dark':'light');}catch(e){}})();</script>
+ <script src="ext-power.js"></script>
++<script src="ext-flow.js"></script>
+ <meta name="apple-mobile-web-app-capable" content="yes">
+ <meta name="apple-mobile-web-app-status-bar-style" content="default">
+ <meta name="apple-mobile-web-app-title" content="Planner">
+diff --git a/planner/tests/flow.test.js b/planner/tests/flow.test.js
+new file mode 100644
+index 0000000..bfad297
+--- /dev/null
++++ b/planner/tests/flow.test.js
+@@ -0,0 +1,168 @@
++// Flow features (ext-flow.js): Workload, Deadline risk, Daily goal. node planner/tests/flow.test.js
++// Serve the site first (see shifts.test.js); PORT env, default 8790. Fixed clock: Tuesday 2026-11-03, 10:00 in New York.
++// Today's free time in the seed: 10am-1pm (180m) and 2pm-3:40pm (100m, travel to the 4pm shift after it) = 280m.
++const { chromium } = require('playwright');
++const URL = 'http://127.0.0.1:' + (process.env.PORT || 8790) + '/nq-dashboard/planner/index.html';
++const NOW = new Date('2026-11-03T15:00:00Z').getTime(); // 10:00 am New York
++const T = '2026-11-03', TM = '2026-11-04';
++const at = (k, h) => new Date(`${k}T${String(h).padStart(2, '0')}:00:00-05:00`).getTime();
++const ev = (id, title, cat, date, start, end, x = {}) => ({ id, title, cat, date, allDay: false, start, end, endDate: '', repeat: 'none', until: '', notes: '', proj: '', ex: [], ...x });
++const tk = (id, title, x = {}) => ({ id, title, date: '', done: false, p: 0, proj: '', rep: '', created: 1, ...x });
++function seed(extra = {}) {
++  return {
++    v: 1, view: 'today', weekStart: 0,
++    jobs: [{ id: 'job-outback', name: 'Outback Steakhouse', color: '#b91c1c', start: '16:00', end: '22:00', rate: 12, days: [] }],
++    categories: [{ id: 'job-outback', name: 'Outback Steakhouse', color: '#b91c1c' }, { id: 'personal', name: 'Personal', color: '#64748b' }],
++    events: [
++      ev('e1', 'Standup', 'personal', T, '09:00', '09:30'),
++      ev('e2', 'Dentist', 'personal', T, '13:00', '14:00'),
++      ev('e3', 'Outback Steakhouse', 'job-outback', T, '16:00', '22:00'),
++      // tomorrow and Thursday are full 7am-10pm: nothing fits before Thursday
++      ev('e4', 'Training', 'personal', TM, '07:00', '22:00'),
++      ev('e5', 'Training', 'personal', '2026-11-05', '07:00', '22:00'),
++    ],
++    tasks: [
++      tk('a', 'Ship the Kalshi fix', { date: T, p: 3, est: 120, created: 1 }),
++      tk('b', 'Review fills', { date: T, p: 2, est: 90, created: 2 }),
++      tk('c', 'Tidy inbox', { date: T, p: 0, est: 60, created: 3 }),
++      tk('d', 'Read docs', { date: T, p: 1, created: 4 }), // no estimate: 30m
++      tk('i', 'Idea: sell kits', { date: T, tag: 'idea', est: 600, created: 5 }),
++      tk('big', 'Write the eval report', { date: '2026-11-05', p: 2, est: 300, created: 6 }),
++      tk('ok', 'Renew passport', { date: '2026-11-12', est: 30, created: 7 }),
++      tk('d1', 'Done 1', { done: true, doneAt: at(T, 8), created: 8 }),
++      tk('d2', 'Done 2', { done: true, doneAt: at(T, 9), created: 9 }),
++      tk('y1', 'Yesterday 1', { done: true, doneAt: at('2026-11-02', 10), created: 10 }),
++      tk('y2', 'Yesterday 2', { done: true, doneAt: at('2026-11-02', 11), created: 11 }),
++      tk('y3', 'Yesterday 3', { done: true, doneAt: at('2026-11-02', 12), created: 12 }),
++      tk('z1', 'Sunday 1', { done: true, doneAt: at('2026-11-01', 10), created: 13 }),
++      tk('z2', 'Sunday 2', { done: true, doneAt: at('2026-11-01', 11), created: 14 }),
++      tk('z3', 'Sunday 3', { done: true, doneAt: at('2026-11-01', 12), created: 15 }),
++    ],
++    ...extra,
++  };
++}
++(async () => {
++  let checks = 0;
++  const errs = [], ok = (c, m) => { checks++; if (!c) errs.push(m); }, wait = (ms) => new Promise((r) => setTimeout(r, ms));
++  const b = await chromium.launch();
++  async function open(hash = '', width = 390, state = seed()) {
++    const ctx = await b.newContext({ viewport: { width, height: 844 }, timezoneId: 'America/New_York' });
++    const p = await ctx.newPage(); const pe = [];
++    p.on('pageerror', (e) => pe.push(e.message));
++    await p.route('**/data.json*', (r) => r.abort());
++    await p.clock.install({ time: NOW });
++    await p.addInitScript((s) => { try { if (localStorage.getItem('fl.seeded')) return; localStorage.setItem('fl.seeded', '1'); localStorage.setItem('planner.v1', JSON.stringify(s)); } catch (e) { /* none */ } }, state);
++    await p.goto(URL + hash); await wait(900);
++    return { ctx, p, pe };
++  }
++  const st = (p) => p.evaluate(() => JSON.parse(localStorage.getItem('planner.v1')));
++  const txt = async (p, sel) => (await p.textContent(sel)).replace(/\s+/g, ' ').trim();
++  const closeAll = (p) => p.evaluate(() => document.querySelectorAll('dialog[open]').forEach((d) => d.close()));
++
++  // ---------- 1. the pure planners ----------
++  let { ctx, p, pe } = await open('#today');
++  const pure = await p.evaluate(() => {
++    const F = window.__fl, t = (id, x) => ({ id, ...x });
++    const r1 = F.trim([t('lo', { p: 0, est: 60, created: 1 }), t('hi', { p: 3, est: 120, created: 2 }), t('mid', { p: 2, est: 90, created: 3 }), t('n', { p: 2, created: 4 })], 240);
++    const days = [{ k: '2026-11-03', cap: 60 }, { k: '2026-11-04', cap: 0 }, { k: '2026-11-05', cap: 120 }];
++    const r2 = F.risk([t('x', { date: '2026-11-04', est: 90 }), t('y', { date: '2026-11-05', est: 60 }), t('z', { date: '2026-11-09', est: 10 }), t('w', { date: '2026-11-03' })], days);
++    const g = F.goal({ '2026-11-03': 2, '2026-11-02': 3, '2026-11-01': 4, '2026-10-31': 1 }, '2026-11-03', 3);
++    const g2 = F.goal({ '2026-11-03': 3, '2026-11-02': 3 }, '2026-11-03', 3);
++    return { keep: r1.keep.map((x) => x.id), move: r1.move.map((x) => x.id), used: r1.used, need: r1.need, risk: r2.map((r) => [r.t.id, r.cum, r.room, r.short]), none: F.risk([t('q', { date: '2026-11-03' })], []), g, g2 };
++  });
++  ok(JSON.stringify(pure.keep) === '["hi","mid","n"]' && JSON.stringify(pure.move) === '["lo"]' && pure.used === 240 && pure.need === 300,
++    'trim keeps the highest priority while it fits (no estimate = 30m): ' + JSON.stringify(pure));
++  // w (Tue, 30m) uses today's 60m; x (Wed): 120m needed by Wed vs 60m -> 60m short; y (Thu): 180m vs 180m fits; z is past the horizon
++  ok(JSON.stringify(pure.risk) === '[["x",120,60,60]]', 'risk: earliest date first against the running capacity: ' + JSON.stringify(pure.risk));
++  ok(JSON.stringify(pure.none) === '[]', 'risk with no days: nothing, no crash');
++  ok(pure.g.done === 2 && !pure.g.met && pure.g.streak === 2 && pure.g.week.length === 7 && pure.g.week[6].n === 2 && pure.g.week[3].n === 1,
++    'goal: not met yet today, the run counts from yesterday (2 days): ' + JSON.stringify(pure.g));
++  ok(pure.g2.met && pure.g2.streak === 2, 'goal met today: today joins the run');
++
++  // ---------- 2. Workload card + Trim to fit ----------
++  ok(await p.isVisible('#flWork'), 'over-planned: Workload is a full card on Today');
++  // today: a 120 + b 90 + c 60 + d 30 = 300m planned (the idea is left out) vs 280m free
++  ok(/^5h of tasks, 4h 40m free: over by 20m$/.test(await txt(p, '#flWork .fx-line')) && /Trim/.test(await txt(p, '#flWork h3')), 'workload line: ' + await txt(p, '#flWork'));
++  ok(await p.locator('#flWork .fx-need.over').count() === 1, 'the bar turns red when over');
++  await p.click('#flWork [data-flopen="workload"]'); await wait(250);
++  ok(await p.isVisible('#flWlDlg'), 'Trim opens the sheet');
++  const sheet = await txt(p, '#flWlDlg');
++  ok(/Fits today · 4h/.test(sheet) && /Move to tomorrow · 1h/.test(sheet) && /Tidy inbox/.test(sheet.split('Move to tomorrow')[1]) && /30m \(guess\)/.test(sheet),
++    'the lowest priority (Tidy inbox, 60m) moves; a missing estimate is marked as a guess: ' + sheet);
++  const before = await st(p);
++  await p.click('#flWlApply'); await wait(300);
++  let s = await st(p);
++  ok(s.tasks.find((x) => x.id === 'c').date === TM && s.tasks.find((x) => x.id === 'c').u > 0 && s.tasks.find((x) => x.id === 'a').date === T, 'Apply moves it to tomorrow through commit (stamped)');
++  ok(/Moved 1 task to tomorrow/.test(await p.textContent('#toast')), 'toast says what moved');
++  ok(/to spare/.test(await txt(p, '#flWork')), 'the card now fits: ' + await txt(p, '#flWork'));
++  ok(/^4h planned, 4h 40m free$/.test(await txt(p, '[data-toid="flwork"] .to-k')), 'a day that fits: Workload folds to one line: ' + await txt(p, '[data-toid="flwork"] .to-k'));
++  await p.click('#toastBtn'); await wait(300);
++  ok(JSON.stringify((await st(p)).tasks.map((x) => [x.id, x.date])) === JSON.stringify(before.tasks.map((x) => [x.id, x.date])), 'Undo puts it back');
++
++  // ---------- 3. Deadline risk ----------
++  // capacity to Thursday = 60% of today's 280m = 168m (Wed and Thu are full); today's 300m of tasks come first, so the 300m
++  // report due Thursday is 432m short -> at risk. Today's own tasks are Workload's to report, never listed here.
++  ok(await p.isVisible('#flRisk') && /Write the eval report may miss Thu Nov 5/.test(await txt(p, '#flRisk')), 'risk card: ' + (await p.locator('#flRisk').count() ? await txt(p, '#flRisk') : 'none'));
++  const order = await p.evaluate(() => [...document.querySelectorAll('.tdy [data-toid]')].map((x) => x.dataset.toid));
++  ok(order.indexOf('flrisk') >= 0 && order.indexOf('flrisk') < order.indexOf('flwork'), 'risk sits in Needs you now, above Workload: ' + order.join(','));
++  await p.click('#flRisk [data-flopen="deadlines"]'); await wait(250);
++  const rs = await txt(p, '#flDrDlg');
++  ok(/needs 5h · 7h 12m short/.test(rs) && !/Renew passport/.test(rs) && !/Review fills/.test(rs), 'the sheet lists only the later task at risk: ' + rs);
++  ok(/Block today 10am, 3h/.test(await txt(p, '#flDrDlg [data-flt="big"] [data-flblock]')), 'Block offers the longest free gap before its date (nothing holds 5h): ' + await txt(p, '#flDrDlg [data-flblock]'));
++  const n0 = (await st(p)).events.length;
++  await p.click('#flDrDlg [data-flt="big"] [data-flblock]'); await wait(300);
++  s = await st(p);
++  const blk = s.events.find((e) => e.taskId === 'big');
++  ok(s.events.length === n0 + 1 && blk && blk.date === T && blk.start === '10:00' && blk.end === '13:00' && blk.title === 'Write the eval report', 'Block time adds a linked time block: ' + JSON.stringify(blk));
++  ok(/Blocked 3h today at 10am/.test(await p.textContent('#toast')), 'toast: ' + await p.textContent('#toast'));
++  ok(/Every dated task has time/.test(await txt(p, '#flDrDlg')), 'a blocked task is no longer at risk');
++  await p.click('#toastBtn'); await wait(300);
++  ok((await st(p)).events.length === n0, 'Undo removes the block');
++  await closeAll(p);
++  await p.click('#flRisk [data-flopen="deadlines"]'); await wait(250);
++  await p.click('#flDrDlg [data-flt="big"] [data-fldetail]'); await wait(250);
++  ok(await p.isVisible('#taskDlg') && (await p.inputValue('#tTitle')) === 'Write the eval report', 'Open opens the app\'s task details');
++  await closeAll(p);
++
++  // ---------- 4. Daily goal (one folded line under Dashboards, the card inside) ----------
++  ok(/^2 of 3 done · 2 days in a row$/.test(await txt(p, '[data-toid="flgoal"] .to-k')), 'folded line: ' + await txt(p, '[data-toid="flgoal"] .to-k'));
++  await p.click('[data-toid="flgoal"] summary'); await wait(200);
++  ok(await p.isVisible('#flGoalCard') && /2\/3/.test(await txt(p, '#flGoalCard')) && /1 more to hit today's goal · 2 days in a row so far/.test(await txt(p, '#flGoalCard')), 'goal card: ' + await txt(p, '#flGoalCard'));
++  ok(await p.locator('#flGoalCard .fx-wk i').count() === 7 && await p.locator('#flGoalCard .fx-wk i.met').count() === 2, '7 bars, 2 days met');
++  const tasks0 = JSON.stringify((await st(p)).tasks);
++  await p.click('#flGoalCard [data-flopen="daily-goal"]'); await wait(250);
++  await p.selectOption('#flGoal', '2'); await wait(250);
++  ok(await p.evaluate(() => localStorage.getItem('planner.flow.goal')) === '2' && /Goal met\. 3 days in a row/.test(await txt(p, '#flDgDlg')), 'a goal of 2: met today, 3 days in a row: ' + await txt(p, '#flDgDlg'));
++  await closeAll(p);
++  ok(/Goal met/.test(await txt(p, '#flGoalCard')), 'the card follows the new goal');
++  ok(JSON.stringify((await st(p)).tasks) === tasks0, 'changing the goal never touches your tasks');
++
++  // ---------- 5. All tools, palette, deep links ----------
++  const tools = await p.evaluate(() => window.PlannerAPI.HB_TOOLS.filter((x) => /^fl/.test(x.id)).map((x) => x.id));
++  const cmds = await p.evaluate(() => window.PlannerAPI.PK_CMDS.filter((x) => /^fx-/.test(x.id)).map((x) => x.id));
++  ok(JSON.stringify(tools) === '["flwork","flrisk","flgoal"]' && JSON.stringify(cmds) === '["fx-work","fx-risk","fx-goal"]', 'tiles and commands: ' + tools + ' / ' + cmds);
++  ok(!pe.length, 'no page errors: ' + pe.join(' | '));
++  await ctx.close();
++  for (const h of ['workload', 'deadlines', 'daily-goal']) {
++    ({ ctx, p, pe } = await open('#' + h));
++    ok(await p.isVisible({ workload: '#flWlDlg', deadlines: '#flDrDlg', 'daily-goal': '#flDgDlg' }[h]), `#${h} opens its sheet`);
++    await ctx.close();
++  }
++
++  // ---------- 6. quiet when there is nothing to say; junk never breaks Today ----------
++  ({ ctx, p, pe } = await open('#today', 390, seed({ tasks: [tk('q', 'One thing', { date: T, est: 15 }), tk('bad', 'Junk', { date: T, est: 'lots', p: 'x' }), null] })));
++  ok(await p.locator('#flRisk').count() === 0, 'no risk card when everything fits');
++  ok(/^45m planned, 4h 40m free$/.test(await txt(p, '[data-toid="flwork"] .to-k')), 'a junk estimate counts as 30m: ' + await txt(p, '[data-toid="flwork"] .to-k'));
++  ok(/^0 of 3 done$/.test(await txt(p, '[data-toid="flgoal"] .to-k')), 'no tasks done: 0 of 3');
++  ok(!pe.length, 'no page errors with junk: ' + pe.join(' | '));
++  await ctx.close();
++  ({ ctx, p, pe } = await open('#today', 390, seed({ events: [], tasks: [] })));
++  const sw = await p.evaluate(() => document.documentElement.scrollWidth);
++  ok(sw <= 390, 'no sideways scroll at 390px: ' + sw);
++  ok(/Nothing planned yet · 12h free today/.test(await txt(p, '#flWork')), 'an empty day: ' + await txt(p, '#flWork'));
++  await ctx.close();
++
++  await b.close();
++  if (errs.length) { console.log('FAIL\n' + errs.join('\n')); process.exit(1); }
++  console.log(`FLOW OK (${checks} checks)`);
++})().catch((e) => { console.error(e); process.exit(1); });

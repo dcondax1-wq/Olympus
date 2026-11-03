@@ -100,7 +100,7 @@ python -m engine.kalshi_publish --ssh --once
 
 ## The contract: kalshi.json
 Every key is optional except `t`. `clean()` keeps only these keys, caps the lists and keeps the file under 200 KB. It
-writes `"v": 1`, or `"v": 2` when `strategies` or `equity` is present. It also cleans what goes public:
+writes `"v": 1`, `"v": 2` when `strategies` or `equity` is present, `"v": 3` when any v3 key is present. It also cleans what goes public:
 - Credential-looking keys are dropped.
 - Every free-text string goes through `public_text()`, which redacts links (a tunnel link carries its token), IP and
   e-mail addresses, local paths, PEM keys, UUIDs, long hex or token-like strings, and `NAME=value` / `Bearer` secrets.
@@ -123,6 +123,20 @@ writes `"v": 1`, or `"v": 2` when `strategies` or `equity` is present. It also c
 | `days` (120) | `["YYYY-MM-DD", dollars]` |
 | `strategies` (10, v2) | `name`, `mode` (`live`/`paper`/`off`), `running`, `today_pnl`, `total_pnl`, `trades`, `wins`, `losses` |
 | `equity` (500, v2) | `[unix, dollars]`, oldest first; longer lists are evenly downsampled, first and last kept |
+| `categories` (20, v3) | `name`, `group`, `trades`, `wins`, `losses`, `pnl`, `staked`: every settled buy by market category (the bot: by coin) |
+| `buckets` (12, v3) | `lo`, `hi` (0-1 $), `trades`, `wins`, `losses`, `pnl`, `staked`: by the price paid (edges 0, .2, .4, .6, .8, .9, .95, .97, .99, 1) |
+| `calibration` (12, v3) | `p` (mean predicted chance), `n`, `hit` (share won); top-level `calib_basis` `"price"` or `"model"` |
+| `alerts` (20, v3) | `t`, `level` (`info`/`warn`/`bad`, else info), `text` (redacted like every text) |
+
+| object (v3) | keys |
+|---|---|
+| `kelly` | `fraction` (0-1), `bankroll`, `max_bet`, `min_edge` (0-1) |
+| `stats` | `trades`, `wins`, `losses`, `staked`, `pnl`, `avg_price`: all settled buys |
+
+Rows of `positions` and `trades` may also carry `category` and `prob` (0-1, the bot's own chance for the side held;
+outside 0-1 it is dropped). v3 rows that mean nothing (no name, a bucket with lo >= hi, a calibration point with n < 1, an
+alert without text) are dropped before the cap. From the bot's files the script fills every v3 key except `prob`
+(`trades.db` has no model chance) and `kelly` (only when the settings files hold `KELLY_FRACTION` / `MAX_BET` / `MIN_EDGE`).
 
 ## Rules
 - **Read-only.** Never touch trading: no change to the bot, its settings, its services, cron jobs or keys. Paper or real

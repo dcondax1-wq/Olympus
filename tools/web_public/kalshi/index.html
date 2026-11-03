@@ -1,37 +1,41 @@
 <!doctype html>
-<html lang="en" data-theme="eclipse">
+<html lang="en" data-theme="kalshi">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Kalshi</title>
-<meta name="description" content="The Kalshi bot: balance, P&L, equity, open bets, strategies and recent trades, from the numbers its server sends.">
-<meta name="theme-color" content="#000000">
+<meta name="description" content="The Kalshi bot: balance, P&L, alerts, open bets with live edge, Kelly sizing, P&L by market and price, calibration, equity and trades, from the numbers its server sends.">
+<meta name="theme-color" content="#010a07">
 <meta name="color-scheme" content="dark">
 <link rel="icon" href="../jarvis/icon-192.png?v=j1">
 <!-- Kalshi page (owner 2026-11-01): the Kalshi bot runs on its own server; its numbers arrive as kalshi.json
      (engine/kalshi_publish.py, docs/KALSHI_PUBLISH.md) and this page shows them, inside Jarvis or on its own. Read-only.
-     Look: kalshi.css (the old Jarvis HUD); logic: kalshi.js; offline: sw.js. Bump ?v= on both when either changes, and in sw.js its SHELL and CACHE ('kalshi-' + the version). -->
-<script>(function () { var d = document.documentElement, t = 'eclipse'; try { t = String(localStorage.getItem('jtheme') || 'eclipse').replace(/"/g, ''); } catch (e) { t = 'eclipse'; }
-  d.setAttribute('data-theme', t.indexOf('reactor') === 0 ? 'reactor' : 'eclipse');
+     Its own dashboard (2026-11-03): the Kalshi theme (mint on deep green-black, its own top colour above), its own header
+     with the K mark and a ticker tape. Look: kalshi.css; logic: kalshi.js; offline: sw.js. Bump ?v= on both when either
+     changes, and in sw.js its SHELL and CACHE ('kalshi-' + the version). -->
+<script>(function () { var d = document.documentElement; d.setAttribute('data-theme', 'kalshi');
   /* inside Jarvis (a frame under its bar) the notch is Jarvis's: no second top inset */
   try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
-<link rel="stylesheet" href="kalshi.css?v=k11">
+<link rel="stylesheet" href="kalshi.css?v=k12">
 </head>
 <body>
+<div class="aurora" aria-hidden="true"></div>
 <main>
   <header class="top">
+    <div class="mark" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none"><path d="M20 2.5 35.2 11.25v17.5L20 37.5 4.8 28.75v-17.5Z" stroke="currentColor" stroke-width="1.6"/><path d="M15 12v16M15 20.5l9.5-8.5M17.6 18.2 25 28" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     <div class="top-t">
-      <h1>Kalshi</h1>
+      <h1>Kalshi <span class="h1s">Edge</span></h1>
       <p class="sub" id="sub" aria-live="polite">Loading…</p>
     </div>
-    <button type="button" class="refresh" id="refresh" aria-busy="false" title="Refresh">
+    <button type="button" class="refresh" id="refresh" aria-busy="false" aria-label="Refresh" title="Refresh">
       <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13.5 8A5.5 5.5 0 1 1 11.9 4.1M13.5 2.5v3h-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span>Refresh</span>
     </button>
   </header>
+  <div class="tape" id="tape" aria-hidden="true" hidden></div>
   <div id="body" aria-busy="true" data-state="loading"><div class="sk sk1" aria-hidden="true"></div><div class="sk sk2" aria-hidden="true"></div><div class="sk sk3" aria-hidden="true"></div></div>
   <p class="foot" id="foot"></p>
 </main>
-<script src="kalshi.js?v=k11"></script>
+<script src="kalshi.js?v=k12"></script>
 </body>
 </html>

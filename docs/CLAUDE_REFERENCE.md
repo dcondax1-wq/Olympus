@@ -890,10 +890,19 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
       `install_windows.ps1`.
     - API mode: off by default.
   - **Contract v2:** adds `strategies` and `equity`.
-  - **Phone page:** `tools/web_public/kalshi/` with its own `sw.js`.
-    - Sections: equity, a P&L calendar, stats, strategies, open bets (UP/DOWN), trades.
-    - The waiting card shows the one step and a SAMPLE preview that is never saved.
-  - **Tests:** test_kalshi_publish (98), test_kalshi_page (185). The build writes `<site>/kalshi/kit.json` (the script's
+  - **Contract v3 (2026-11-03, additive, optional):** `categories`, `buckets` (by price paid), `calibration` + `calib_basis`,
+    `alerts`, `kelly`, `stats`, rows' `category` / `prob`. `read_bot()` fills them over EVERY settled buy (`breakdowns()`,
+    `category_of()`; sell-backs out); `prob` (the bot's own chance) only the bot can add; `kelly` only from
+    `KELLY_FRACTION` / `MAX_BET` / `MIN_EDGE` in its settings. Fields in `docs/KALSHI_PUBLISH.md` and the kit's SETUP.md.
+  - **Phone page:** `tools/web_public/kalshi/` with its own `sw.js` (kalshi-k12).
+    - Its own dashboard: the Kalshi theme (`data-theme="kalshi"`, mint + cyan on #010a07 = its `theme-color`), K mark,
+      ticker tape, aurora; never Jarvis's `jtheme`.
+    - Sections: alerts, equity, open bets (UP/DOWN, live edge + EV, next settles), Edge & sizing (Kelly per bet + calculator),
+      strategies, by market, by price, calibration, daily P&L, a P&L calendar, stats (all-time win / ROI), trades. A v1/v2
+      feed works the breakdowns out from the trades list and says so.
+    - The waiting card shows the one step, what lights up once connected, and a SAMPLE preview that is never saved.
+    - Comparison with Kalshi / Polymarket / trackers: `docs/KALSHI_PLANNER_COMPARISON.md`.
+  - **Tests:** test_kalshi_publish (113), test_kalshi_page (198). The build writes `<site>/kalshi/kit.json` (the script's
     SHA-256), which the page's paste line carries. Never turn on GitHub Pages for kalshi-feed.
 - **Planner add-ons (2026-11-01):** the Planner lives on nq-dashboard `planner-backup`, built by its own session, and this repo
   can't push there.
@@ -912,7 +921,12 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
     Everything goes through the Planner's own `commit()`, via the `window.PlannerAPI` hook. Bot colors are hex-validated;
     synced/stored ids and colors are cleaned at every entry point (safe ids, stable replacement ids); only the Planner's
     own worker counts for the 'new version' bar.
-  - **Test:** test_planner_addons (section f checks the real patches against the live branch).
+  - **30-flow (2026-11-03, Sunsama / Motion / Todoist):** Workload (today's estimates vs free time, Trim to fit), Deadline
+    risk (14-day earliest-date-first vs 60% of free time, Block the best gap), Daily goal (ring, 7 days, days in a row;
+    device key `planner.flow.goal`). `ext-flow.js`, its own `planner/tests/flow.test.js` (41). Workload and Daily goal fold
+    to Dashboards lines so todayorg's Today height limit holds.
+  - **Test:** test_planner_addons (section f checks the real patches against the live branch and that each `ext-*.js` is
+    loaded once).
   - **When the Planner session deploys again:** rebase or refresh the patches if test_planner_addons f reports a skip.
 - **Market structure, playbook, discretion advisor (2026-10-29, read-only, never an order):** `engine/structure.py`
   (Tracker per timeframe on closed bars: fractal k=2 swings, HH/HL/LH/LL, BOS / CHoCH on a close, protected swing = origin
