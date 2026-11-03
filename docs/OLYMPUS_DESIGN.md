@@ -126,7 +126,23 @@ The rules every app keeps:
 4. **One three.js**: every app imports `../jarvis/three.module.min.js` (Data City had its own 670 KB copy, now removed),
    cached once for the whole site.
 
-PERF_TABLE
+Measured 2026-11-03 (`python -X utf8 -m tests.test_olympus_kit --table`), HD, after 2.5 s on screen. Per frame: draw calls
+and triangles from three.js `renderer.info`. Mind and Tyche draw most of their scene as points, which are not counted as
+triangles. Daphne (2D canvas) and Hermes (one raw-WebGL shader plus a 2D layer) have no three.js renderer. The heap is
+Chrome's `JSHeapUsedSize`. Layouts per frame come from CDP `LayoutCount` / frames: 1.0 means one layout for a
+changed HUD text, never a forced one in the loop.
+
+| app | three.js | draw calls | triangles | geometries | textures | programs | pixel ratio | JS heap MB | layouts/frame | fps (headless) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| datacity | yes | 19 | 34864 | 14 | 6 | 11 | 2 | 6.7 | 0.0 | 6.5 |
+| mind | yes | 20 | 28 | 7 | 0 | 7 | 2 | 5.1 | 0.0 | 27.5 |
+| tree | no | - | - | - | - | - | - | 11.0 | 0.11 | 61.0 |
+| oracle | yes | 132 | 4032 | 50 | 37 | 11 | 2 | 8.9 | 0.95 | 10.0 |
+| odeon | yes | 12 | 22382 | 10 | 1 | 8 | 2 | 5.0 | 1.0 | 9.0 |
+| fates | yes | 15 | 16232 | 11 | 4 | 8 | 2 | 7.1 | 0.0 | 7.5 |
+| hermes | no | - | - | - | - | - | - | 2.0 | 0.0 | 60.0 |
+| prometheus | yes | 84 | 784 | 8 | 4 | 8 | 2 | 7.1 | 0.05 | 9.5 |
+| tyche | yes | 158 | 22338 | 42 | 6 | 15 | 2 | 7.6 | 0.67 | 4.5 |
 
 Budgets (`tests/test_olympus_kit.py` `BUDGET`): draw calls / triangles per frame per app at about 1.25 × the measured
 value, the JS heap ≤ 40 MB, layouts per frame ≤ 1.1. Headless fps is SwiftShader (software GL) and only shows relative

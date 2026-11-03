@@ -28,6 +28,7 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
 | Ascend | its own host (made with ChatGPT) | added in Jarvis with + (`docs/JARVIS_APPS.md`) | — |
 | The PC (Windows) | NinjaTrader, the bot server | git auto-update; NinjaTrader login and live arming are the owner's | — |
 | DAPHNE (strategy-tree search page) | `tools/strategytree/` (engine), `tools/web_public/tree/` (page, tree.json, demo.json, jarvis.json) | rerun `python -X utf8 -m tools.strategytree` (~3 CPU-min) for new data, then same as Zenith | `tests.test_strategytree`, `tests.shots_strategytree` |
+| OLYMPUS kit (shared look, veil, one 3D quality `jfx`, perf rules of the nine 3D apps) | `tools/web_public/olympus/`, `docs/OLYMPUS_DESIGN.md` | same as Zenith (published with every build) | `tests.test_olympus_kit` (+ the app's own test) |
 | CRONOS (nightly refresh of the OLYMPUS research apps) | `tools/cronos/`, `.github/workflows/cronos.yml` (+ `datacity.yml`), branches `cronos` / `datacity`, `docs/CRONOS.md` | main -> runs on its own schedule; the next cloud-monitor publish pulls the branches and stamps the cards | `tests.test_cronos` (`--quick` without the site builds) |
 | PC speed (Surface + main PC) | `CLEAN_PC.bat`, `scripts/clean_pc.ps1`, `docs/PC_PERFORMANCE.md` | main -> the PC's auto-update; the main PC gets the `PC_KIT` copy (OneDrive or Desktop) | `tests.test_clean_pc` |
 
