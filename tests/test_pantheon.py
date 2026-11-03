@@ -21,6 +21,7 @@ import glob
 import http.server
 import json
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -310,7 +311,7 @@ def part_f():
           and t.files[-1] == "jarvis.json" and "states.json" in t.files and not t.heavy)
     with open(os.path.join(ROOT, "tools", "build_web_dashboard.py"), encoding="utf-8") as fh:
         b = fh.read()
-    check("f. the site build publishes tools/web_public/pantheon/", '"tyche", "pantheon", "olympus"):' in b)
+    check("f. the site build publishes tools/web_public/pantheon/", bool(re.search(r'for app in \([^)]*"pantheon"[^)]*\):', b)))
     with open(os.path.join(ROOT, "tools", "web_public", "sw.js"), encoding="utf-8") as fh:
         check("f. the dashboard's service worker leaves pantheon/ alone (OTHER_APPS)", "'pantheon/'" in fh.read())
     with open(os.path.join(ROOT, "tools", "web_public", "olympus", "olympus.js"), encoding="utf-8") as fh:

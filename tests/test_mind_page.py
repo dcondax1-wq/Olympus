@@ -567,14 +567,16 @@ def upgrade_cases(br, origin):
     check("j. no console errors on LITE", not real_errors(log), real_errors(log))
     ctx.close()
     # the OLYMPUS theme hook: a kit with theme() / onTheme
+    # (the real kit now ships themes: a non-default olympus.theme at load reaches Mind through OLYMPUS.theme(), and
+    #  applyTheme repaints on a change; the default theme leaves Mind's own cyan alone)
     ctx, p, log = new_page(br, origin, (390, 844))
-    p.add_init_script(THEMED)
+    p.add_init_script("try { localStorage.setItem('olympus.theme', 'zeus'); } catch (e) {}")
     p.goto(origin + "/mind/")
     ready(p)
     a = p.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--cyan').trim()")
-    p.evaluate("window.__theme.subs.forEach((cb) => cb({ accent: '#33ff66' }))")
+    p.evaluate("window.mind.applyTheme({ accent: '#33ff66' })")
     b = p.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--cyan').trim()")
-    check("j. the OLYMPUS theme hook: OLYMPUS.theme() at load, onTheme on a change", a == "#ff3d9a" and b == "#33ff66" and not real_errors(log), (a, b, real_errors(log)))
+    check("j. the OLYMPUS theme hook: a theme at load changes Mind's accent, applyTheme on a change", a not in ("", "#6ff6ff") and b == "#33ff66" and not real_errors(log), (a, b, real_errors(log)))
     ctx.close()
 
 
