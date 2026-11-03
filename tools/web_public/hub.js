@@ -40,6 +40,9 @@
   const notesKey = 'notes';
   const getNotes = () => store.get(notesKey, {}) || {};
   const tid = (t) => `${t.day || ''}_${t.entry_t || t.time || ''}`;
+  // journal tags (2026-11-03, the Scorecard's "$ by tag"): { tradeId: [tag] } in le.jtags, this device only
+  const JTAGS = (window.ProUI && window.ProUI.TAGS) || ['A+ setup', 'Textbook', 'News day', 'Bad fill', 'Late entry', 'Early exit', 'Would skip', 'Lesson'];
+  const getTags = () => store.get('jtags', {}) || {};
 
   // the eval account the Home screen follows: the PC bot's (MFFU 50K) when it reports, else the cloud paper ledger
   function mainAcct() {
@@ -273,17 +276,17 @@
     const T = D.trades || [];
     return src === 'all' ? T : T.filter((t) => String(t.day) >= '2026');
   }
-  const JF = () => ({ src: '2026', side: 'all', res: 'all', sess: 'all', month: 'all', q: '', ...(store.get('jf', {}) || {}) });
+  const JF = () => ({ src: '2026', side: 'all', res: 'all', sess: 'all', month: 'all', tag: 'all', q: '', ...(store.get('jf', {}) || {}) });
   function jFilter(T, f) {
-    const q = f.q.trim().toLowerCase(), N = getNotes();
-    return T.filter((t) => (f.side === 'all' || t.side === f.side) && (f.res === 'all' || resOf(t) === f.res) && (f.sess === 'all' || sessOf(t) === f.sess)
+    const q = f.q.trim().toLowerCase(), N = getNotes(), TG = getTags();
+    return T.filter((t) => (f.side === 'all' || t.side === f.side) && (!f.tag || f.tag === 'all' || (TG[tid(t)] || []).includes(f.tag)) && (f.res === 'all' || resOf(t) === f.res) && (f.sess === 'all' || sessOf(t) === f.sess)
       && (f.month === 'all' || String(t.day).slice(0, 7) === f.month)
-      && (!q || [t.day, t.side, t.exit, t.target_label, t.trigger, N[tid(t)], ...(t.report?.why || []), t.report?.result].join(' ').toLowerCase().includes(q)));
+      && (!q || [t.day, t.side, t.exit, t.target_label, t.trigger, N[tid(t)], ...(TG[tid(t)] || []), ...(t.report?.why || []), t.report?.result].join(' ').toLowerCase().includes(q)));
   }
   const JSHOW = { n: 40 };
   VIEWS.journal = (el) => {
     if (!D) { el.innerHTML = skel(3); return; }
-    const f = JF(), all = srcTrades(f.src), T = jFilter(all, f), N = getNotes();
+    const f = JF(), all = srcTrades(f.src), T = jFilter(all, f), N = getNotes(), TG = getTags();
     const months = [...new Set(all.map((t) => String(t.day).slice(0, 7)))].sort().reverse();
     const k = (t) => tid(t), net = sum(T, (t) => +t.pnl || 0), wins = T.filter((t) => resOf(t) === 'win').length;
     const sel = (id, opts, cur) => `<select class="hb-sel" id="${id}">${opts.map(([v, l]) => `<option value="${esc(v)}"${String(v) === String(cur) ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
@@ -291,29 +294,33 @@
       + `<div class="card hb-filt">
         <div class="hb-frow">${sel('jSrc', [['2026', 'Backtest 2026'], ['all', 'Backtest 5 years'], ['live', 'Live eval (PC)'], ['paper', 'Cloud paper']], f.src)}
           ${sel('jSide', [['all', 'Both sides'], ['LONG', 'Long'], ['SHORT', 'Short']], f.side)}${sel('jRes', [['all', 'Any result'], ['win', 'Winners'], ['loss', 'Losers'], ['be', 'Breakeven']], f.res)}
-          ${sel('jSess', SESS.map(([v, l]) => [v, v === 'all' ? 'Any session' : l]), f.sess)}${sel('jMon', [['all', 'Any month'], ...months.map((m) => [m, fDate(m)])], f.month)}</div>
+          ${sel('jSess', SESS.map(([v, l]) => [v, v === 'all' ? 'Any session' : l]), f.sess)}${sel('jMon', [['all', 'Any month'], ...months.map((m) => [m, fDate(m)])], f.month)}${sel('jTag', [['all', 'Any tag'], ...JTAGS.map((g) => [g, g])], f.tag)}</div>
         <div class="hb-frow"><input class="hb-in" id="jQ" type="search" placeholder="Search: day, exit, level, your notes…" value="${esc(f.q)}" autocomplete="off">
           <button class="btn ghost" type="button" id="jCsv">${icon('share')}CSV</button><button class="btn ghost" type="button" id="jNotes">${icon('doc')}Notes</button><button class="btn ghost" type="button" id="jReset">${icon('close')}Reset</button></div>
         <p class="small mut" style="margin:8px 0 0"><b>${T.length}</b> of ${all.length} trades · net <b class="${cls(net)}">${susd(net)}</b> · win ${T.length ? pct(100 * wins / T.length) : '—'}${f.src === '2026' || f.src === 'all' ? ' · backtest at the LIT rule ($800 up to a 20-pt stop)' : ''}</p></div>
       <div class="hb-jl">${T.slice(0, JSHOW.n).map((t, i) => `<div class="hb-jr" data-i="${i}"><button type="button" class="hb-jm" data-open="${i}">
           <span class="side-i ${t.side === 'LONG' ? 'L' : 'S'}">${icon(t.side === 'LONG' ? 'long' : 'short')}</span>
-          <span class="hb-jt"><b>${esc(fDate(t.day))} · ${hmET(t.entry_t)} ET</b><span class="small mut">${esc(t.side)} · ${t.qty ?? '—'} MNQ · ${num(t.risk_pts, 1)} pt stop · ${esc(t.exit || '')}${N[k(t)] ? ' · ' + icon('doc') + ' note' : ''}</span></span>
+          <span class="hb-jt"><b>${esc(fDate(t.day))} · ${hmET(t.entry_t)} ET</b><span class="small mut">${esc(t.side)} · ${t.qty ?? '—'} MNQ · ${num(t.risk_pts, 1)} pt stop · ${esc(t.exit || '')}${N[k(t)] ? ' · ' + icon('doc') + ' note' : ''}${(TG[k(t)] || []).length ? ' · ' + esc(TG[k(t)].join(', ')) : ''}</span></span>
           <span class="hb-jv"><b class="${cls(t.pnl)}">${susd(t.pnl)}</b><span class="small ${cls(t.r)}">${fR(t.r)}</span></span></button>
-        <details class="hb-note"${N[k(t)] ? ' open' : ''}><summary>${icon('doc')}My note</summary><textarea data-note="${esc(k(t))}" rows="2" placeholder="What did you see? (saved on this phone)">${esc(N[k(t)] || '')}</textarea></details></div>`).join('')
+        <details class="hb-note"${N[k(t)] ? ' open' : ''}><summary>${icon('doc')}My note &amp; tags</summary><textarea data-note="${esc(k(t))}" rows="2" placeholder="What did you see? (saved on this phone)">${esc(N[k(t)] || '')}</textarea>
+          <div class="hb-tags" role="group" aria-label="Tags">${JTAGS.map((g) => `<button type="button" class="hb-tag" data-jtag="${esc(g)}" data-tid="${esc(k(t))}" aria-pressed="${(TG[k(t)] || []).includes(g)}">${esc(g)}</button>`).join('')}</div></details></div>`).join('')
         || emptyBox('No trades match.', 'Change a filter or the source.')}${T.length > JSHOW.n ? `<button class="btn ghost hb-more" type="button" id="jMore">${icon('down')}Show ${Math.min(40, T.length - JSHOW.n)} more (${T.length - JSHOW.n} left)</button>` : ''}</div>`;
     $('#jMore')?.addEventListener('click', () => { JSHOW.n += 40; render(true); });
     const save = (p) => { store.set('jf', { ...JF(), ...p }); JSHOW.n = 40; render(true); };
-    [['jSrc', 'src'], ['jSide', 'side'], ['jRes', 'res'], ['jSess', 'sess'], ['jMon', 'month']].forEach(([id, key]) => { const s = $('#' + id); if (s) s.onchange = () => save({ [key]: s.value, ...(key === 'src' ? { month: 'all' } : {}) }); });
+    [['jSrc', 'src'], ['jSide', 'side'], ['jRes', 'res'], ['jSess', 'sess'], ['jMon', 'month'], ['jTag', 'tag']].forEach(([id, key]) => { const s = $('#' + id); if (s) s.onchange = () => save({ [key]: s.value, ...(key === 'src' ? { month: 'all' } : {}) }); });
     let qt; $('#jQ').oninput = (e) => { clearTimeout(qt); qt = setTimeout(() => { store.set('jf', { ...JF(), q: e.target.value }); const pos = e.target.selectionStart; render(true); const q = $('#jQ'); if (q) { q.focus(); try { q.setSelectionRange(pos, pos); } catch { } } }, 350); };
     $('#jReset').onclick = () => { store.set('jf', {}); render(true); };
     $('#jCsv').onclick = () => {
-      const cols = ['day', 'entry_time_et', 'side', 'qty', 'entry', 'stop', 'target', 'exit_price', 'exit', 'risk_pts', 'r', 'pnl', 'session', 'note'];
-      const rows = T.map((t) => [t.day, hmET(t.entry_t), t.side, t.qty, t.entry, t.stop, t.target, t.exit_price, t.exit, t.risk_pts, t.r, t.pnl, sessOf(t), N[k(t)] || '']);
+      const cols = ['day', 'entry_time_et', 'side', 'qty', 'entry', 'stop', 'target', 'exit_price', 'exit', 'risk_pts', 'r', 'pnl', 'session', 'note', 'tags'];
+      const rows = T.map((t) => [t.day, hmET(t.entry_t), t.side, t.qty, t.entry, t.stop, t.target, t.exit_price, t.exit, t.risk_pts, t.r, t.pnl, sessOf(t), N[k(t)] || '', (TG[k(t)] || []).join('; ')]);
       download(`lit-trades-${f.src}-${new Date().toISOString().slice(0, 10)}.csv`, [cols, ...rows].map((r) => r.map(csvCell).join(',')).join('\n'));
     };
     $('#jNotes').onclick = () => { const n = getNotes(), rows = Object.entries(n).filter(([, v]) => v); if (!rows.length) { toast('No notes yet'); return; }
       download(`lit-notes-${new Date().toISOString().slice(0, 10)}.csv`, [['trade', 'note'], ...rows].map((r) => r.map(csvCell).join(',')).join('\n')); };
     el.querySelectorAll('[data-open]').forEach((b) => { b.onclick = () => { const t = T[+b.dataset.open]; if (t) openSheet(t); }; });
+    el.querySelectorAll('button[data-jtag]').forEach((b) => { b.onclick = () => { const g = getTags(), id = b.dataset.tid, L = new Set(g[id] || []);
+      if (L.has(b.dataset.jtag)) L.delete(b.dataset.jtag); else L.add(b.dataset.jtag);
+      if (L.size) g[id] = [...L]; else delete g[id]; store.set('jtags', g); b.setAttribute('aria-pressed', String(L.has(b.dataset.jtag))); }; });
     el.querySelectorAll('textarea[data-note]').forEach((ta) => { ta.oninput = () => { const n = getNotes(); if (ta.value.trim()) n[ta.dataset.note] = ta.value; else delete n[ta.dataset.note]; store.set(notesKey, n); }; });
   };
 
@@ -745,6 +752,7 @@
 .hb-more{align-self:center;margin-top:4px}.hb-jl{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}.hb-jr{border:1px solid var(--line);border-radius:14px;background:rgba(16,19,26,.6);overflow:hidden}
 .hb-jm{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px}.hb-jm .side-i{width:32px;height:32px;border-radius:10px;flex:none}
 .hb-jt{flex:1;min-width:0;display:flex;flex-direction:column}.hb-jt .small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hb-jt .ico{width:12px;height:12px}.hb-jv{display:flex;flex-direction:column;align-items:flex-end}.hb-jv b{font:700 14px var(--mono)}
+.hb-tags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}.hb-tag{min-height:44px;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink-2);font:600 12.5px var(--sans);cursor:pointer}.hb-tag[aria-pressed="true"]{border-color:rgba(62,224,200,.7);background:rgba(62,224,200,.16);color:var(--ink)}
 .hb-note{border-top:1px solid var(--line);padding:0 12px}.hb-note summary{cursor:pointer;list-style:none;display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted);padding:7px 0}.hb-note summary::-webkit-details-marker{display:none}.hb-note .ico{width:13px;height:13px}
 .hb-note textarea{width:100%;margin:0 0 10px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);font:13px var(--sans);resize:vertical}
 .hb-hist{display:grid;grid-template-columns:repeat(9,1fr);gap:6px;align-items:end;height:190px;margin-bottom:10px}.hb-hist>div{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px}

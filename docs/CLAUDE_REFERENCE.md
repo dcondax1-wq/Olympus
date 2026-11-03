@@ -896,6 +896,17 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   - Kalshi 404 = "NOT LINKED" (grey), asked once per page load. Planner: read from its own sync (`planner.sync`) when set up on
     this phone, else one grey "open the Planner once" line.
   - Tests: test_jarvis_brain (165), test_jarvis_system (36), test_jarvis_obsidian (46).
+- **Zenith Scorecard (2026-11-03, night quest "the best trading dashboard there is"; `docs/ZENITH_COMPARISON.md`):** one renderer
+  `tools/web_public/procore.js` = `web_next/js/next/procore.js` (byte-identical, `window.ProUI`), phone glue `pro.js` (`#/pro/<part>`:
+  Zlarior > Results first chip, More > Insight, a Home card under the quick tiles), PC glue `web_next/js/next/pro.js` (sidebar
+  Insight, data `GET /api/next/lit_backtest?period=all`). Parts: Score (Zenith score 0-100 on six fixed-scale axes, expectancy
+  $ / R, $ a month, SQN, recovery, streaks, R buckets with $, $ by weekday / hour / side / exit), Eval pace (real board: $ needed
+  per session vs the bot's H2 $ per session), Risk (underwater vs the $1,000 DLL / $2,000 MLL, quick day-resample eval odds),
+  Playbook (LIT rules + a graded card per level family), What if (0.25x-2x size), Tags (journal tags `le.jtags`, hub.js v9).
+  Spans 2026 / H2 / H1 / 2021-25 / Real (closed NinjaTrader fills). Read-only, state in localStorage (`le.pro.span`,
+  `le.pro.mult`). More > Today also links the sibling pages Data City (`datacity/`) and the Strategy Tree (`tree/`); Zenith's
+  worker (le-public-v51) keeps out of both and of every OLYMPUS app folder (OTHER_APPS: jarvis/, planner/, kalshi/, datacity/,
+  mind/, tree/, oracle/, odeon/, fates/, hermes/, prometheus/). Test `python -X utf8 -m tests.test_zenith_pro` (41).
 - **Kalshi in Jarvis (2026-11-01):** the Kalshi bot runs 24/7 on its own Oracle Cloud server with real money, not on the PC.
   Its own Claude chat is "kalshi-server". The phone reads `kalshi.json` from its OWN public repo,
   `demetrades2000-coder/kalshi-feed` (main): raw first, then the API.

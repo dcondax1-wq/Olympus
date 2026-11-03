@@ -258,7 +258,7 @@ def part_c(shots):
             check("c. the Strategy page sits in the Zlarior tab (Strategy section)", "Strategy" in st and pg.eval_on_selector("#tabs a.on", "e => e.dataset.t") == "lit", st[:300])
             pg.goto(url + "?fxoff#/system")
             pg.wait_for_timeout(800)
-            ids = pg.eval_on_selector_all("#page .cl-row", "els => els.map(e => e.dataset.go)")
+            ids = pg.eval_on_selector_all("#page .cl-row[data-go]", "els => els.map(e => e.dataset.go)")   # Zenith pages (not the site links: Data City, Strategy Tree)
             check("c. More: one grouped list, each page once", len(ids) == len(set(ids)) and len(ids) > 20, len(ids))
             check("c. no page / console errors on the phone", not errs, errs[:5])
             b.close()

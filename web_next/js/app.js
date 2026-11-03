@@ -66,7 +66,8 @@ import { real as realPage } from './next/real.js';
 import { liveview as liveviewPage } from './next/liveview.js';   // Live View page (engine/liveview_api.py, read-only)
 import { mission as missionPage, initMissionSync } from './next/mission.js';   // Mission Control (missioncore.js, read-only, 2026-10-29)
 import { holo as holoPage } from './next/holo.js';   // Holodeck: the day in 3D (holocore.js, fx.js holo.js; read-only, 2026-10-29)
-import { blitz as blitzPage, mind as mindPage, deck as deckPage, initBlitzSync } from './next/blitz.js';   // BLITZ, the Mind, Trader's deck (read-only, 2026-10-29)
+import { blitz as blitzPage, mind as mindPage, deck as deckPage, initBlitzSync } from './next/blitz.js';
+import { pro as proPage } from './next/pro.js';   // the Scorecard (read-only, 2026-11-03)   // BLITZ, the Mind, Trader's deck (read-only, 2026-10-29)
 import { fleet as fleetPage } from './next/fleet.js';   // Fleet: copy trading to the follower accounts (engine/fleet_api.py, read-only, 2026-10-30)
 import { initPolish } from './next/polish.js';   // status bar + Sunday open on Home, sidebar sections, motion (statuscore.js, read-only, 2026-10-30)
 
@@ -94,6 +95,7 @@ PAGES.holo = holoPage;
 PAGES.blitz = blitzPage;
 PAGES.mind = mindPage;
 PAGES.deck = deckPage;
+PAGES.pro = proPage;
 PAGES.fleet = fleetPage;
 const TITLES = { ...TITLES_CLASSIC, ...NX_TITLES };
 
