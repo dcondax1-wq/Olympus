@@ -23,7 +23,8 @@ const PENDING_MS = 3 * 60e3;              // a confirmation waits 3 minutes, the
 // ------------------------------------------------------------------------------------------------ what the owner says
 // each matcher: (raw text, normalized q) -> a parsed request or null. Raw keeps the owner's own words for the note.
 const WRITE_RX = [
-  ['task', /^(?:hey jarvis,?\s*)?(?:add (?:a )?(?:task|to ?do)|new task|task|to ?do)\s*[:,-]?\s+(.+)$/i],
+  ['task', /^(?:hey jarvis,?\s*)?(?:add (?:a )?(?:task|to ?do)|new task)\s*[:,-]?\s+(.+)$/i],
+  ['task', /^(?:hey jarvis,?\s*)?(?:task|to ?do)\s*:\s*(.+)$/i],                 // a bare "task" / "todo" needs its colon ("task list" is a question)
   ['task', /^(?:hey jarvis,?\s*)?add (.+?) to (?:my |the )?(?:tasks|to ?do(?: list)?|list|inbox)\.?$/i],
   ['remember', /^(?:hey jarvis,?\s*)?(?:remember|don'?t forget)(?: that)?\s*[:,-]?\s+(.+)$/i],
   ['note', /^(?:hey jarvis,?\s*)?(?:note|jot(?: down)?|write down|save (?:a )?note|take (?:a )?note)\s*[:,-]?\s+(.+)$/i],

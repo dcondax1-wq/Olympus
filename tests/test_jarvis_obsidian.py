@@ -58,6 +58,9 @@ VAULT = {
     "Attachments/big.png": "binary",
 }
 
+PHRASES = ["note: call the broker", "Hey Jarvis, remember that ATLAS likes the 9:35 open", "add task renew the VPS", "add milk to my list",
+           "todo: check fills", "task list", "to do today?", "what did I write about sleep?", "never mind", "I love you",
+           "Always give me the dollars first", "I don't like long answers", "stop saying sir", "what links to Goals", "how are the bots"]
 RUNNER = r"""
 import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
@@ -241,6 +244,7 @@ function kvStore() { const m = new Map(); return { async get(k) { return m.has(k
   const body = ai.map((x) => String(x.init.body)).join('\n');
   out.j_ai = { n: ai.length, urls: ai.map((x) => x.url), notes: body.includes('MFFU notes'), me: body.includes('HOW THE OWNER THINKS'), token: body.includes(TOKEN) || JSON.stringify(ai.map((x) => x.init.headers)).includes(TOKEN) };
 }
+out.parse = Object.fromEntries(scen.phrases.map((t) => [t, { w: Mm.parseWrite(t), p: Mm.parsePreference(t, t.toLowerCase()), r: Mm.parseRead(t.toLowerCase()) }]));
 out.e_console = logs.filter((l) => l.includes(TOKEN));
 process.stdout.write(JSON.stringify(out));
 """
@@ -348,7 +352,7 @@ def main() -> int:
     try:
         rp, sp = os.path.join(tmp, "runner.mjs"), os.path.join(tmp, "scen.json")
         open(rp, "w", encoding="utf-8").write(RUNNER)
-        open(sp, "w", encoding="utf-8").write(json.dumps({"vault": VAULT, "token": TOKEN}))
+        open(sp, "w", encoding="utf-8").write(json.dumps({"vault": VAULT, "token": TOKEN, "phrases": PHRASES}))
         r = subprocess.run([node, rp, JV, sp], capture_output=True, text=True, timeout=120)
         check("node ran obsidian.js + memory.js + brain.js", r.returncode == 0, r.stderr[-1500:])
         if r.returncode:
@@ -440,6 +444,19 @@ def main() -> int:
     check("h. graphSnapshot() learned: what Jarvis saved, newest last, with the note it went to",
           any("check the ATLAS fills tonight" in x["text"] and x["note"] == "OLYMPUS/Inbox/2026-11-02.md" for x in sn.get("learned", [])) and all(isinstance(x["t"], int) for x in sn.get("learned", [])), sn.get("learned"))
     check("h. onIndexChange(cb): called after a refresh, silent after unsubscribe; a junk callback is a no-op", O["h_fired"][0] >= 1 and O["h_fired"][1] == O["h_fired"][0] and O["h_bad_cb"] == "function", O["h_fired"])
+    P = O["parse"]
+    w = {t: (P[t]["w"] or {}) for t in PHRASES}
+    check("i. what counts as a write: 'note:', 'remember (that)', 'add task', 'add X to my list', 'todo:'; never 'task list' or 'to do today?'",
+          w["note: call the broker"] == {"kind": "note", "text": "call the broker"} and w["Hey Jarvis, remember that ATLAS likes the 9:35 open"] == {"kind": "remember", "text": "ATLAS likes the 9:35 open"}
+          and w["add task renew the VPS"]["kind"] == "task" and w["add milk to my list"] == {"kind": "task", "text": "milk"} and w["todo: check fills"]["text"] == "check fills"
+          and not w["task list"] and not w["to do today?"] and not w["what did I write about sleep?"], w)
+    pf = {t: P[t]["p"] for t in PHRASES}
+    check("i. what counts as a preference: 'always ...', 'I don't like ...', 'stop saying ...'; never 'never mind', 'I love you' or a question",
+          pf["Always give me the dollars first"]["text"] == "Always give me the dollars first" and pf["I don't like long answers"] and pf["stop saying sir"]
+          and not pf["never mind"] and not pf["I love you"] and not pf["what did I write about sleep?"] and not pf["how are the bots"], pf)
+    check("i. read intents: 'what did I write about sleep?' (topic without the '?'), 'what links to Goals'; the bots' questions are not vault questions",
+          P["what did I write about sleep?"]["r"] == {"name": "search", "topic": "sleep"} and P["what links to Goals"]["r"] == {"name": "links", "topic": "goals"}
+          and P["how are the bots"]["r"] is None, (P["what did I write about sleep?"]["r"], P["what links to Goals"]["r"]))
     # i. memory intents
     i = O["i"]
     check("i. 'what did I write about X': the top notes with their words", i["what did i write about trailing drawdown"].startswith("Your notes on “trailing drawdown”") and "1. MFFU notes:" in i["what did i write about trailing drawdown"], i["what did i write about trailing drawdown"])
