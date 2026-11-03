@@ -163,6 +163,12 @@ absent). Read-only: no new control, only links. Tests: `python -X utf8 -m tests.
 | 107 | On this page | new | Phone: long pages (3+ screens: Trader's deck, Mind, Mission Control, Settings, the Brains, Rules ...) get a row of chips under the section bar, one per card; a tap scrolls to it |
 | 108 | Intro switch | new | Phone Settings > Intro: the once-a-day intro on / off for this device |
 | 109 | Crisp icons | new | Both apps: every line icon a touch heavier (1.9 on the 24 grid, 2.1 on the open tab / sidebar item) and drawn with geometric precision, so an 18 px icon stays sharp on a plain screen |
+| 110 | Scorecard | new | Both apps (phone #/pro: Zlarior > Results first chip, More > Insight, a Home card; PC sidebar Insight): Zenith score 0-100 on six axes with a radar, expectancy in $ and R, $ a month, SQN, recovery factor, streaks, R distribution with $ per bucket, where the $ comes from (weekday, hour, side, exit); procore.js |
+| 111 | Eval pace | new | Scorecard > Eval pace: progress ring per real eval, $ needed per session vs the bot's own H2 $ per session, sessions it should take, losses in a row the room can take, research odds, the payout path |
+| 112 | Underwater vs the MFFU floor | new | Scorecard > Risk: $ below the last high against the $2,000 max loss and the $1,000 daily limit, longest drawdown, worst week, quick eval odds / risk of ruin |
+| 113 | Playbook | new | Scorecard > Playbook: the LIT rules as a numbered checklist + one graded card (A-D) per level family swept: trades, net $, $ a month, expectancy, win rate, PF |
+| 114 | What-if sizing | new | Scorecard > What if: a 0.25x-2x size slider -> net $, $ a month, max drawdown, worst day vs the daily limit, eval pass / fail odds; a 0.5x / 1x / 1.5x / 2x table |
+| 115 | Journal tags + share card | new | Phone journal: 8 tags per trade (A+ setup, Textbook, News day, Bad fill ...), a tag filter, tags in the CSV; Scorecard > Tags = $ by tag; Share my scorecard = a 1080x1350 PNG for the share sheet |
 
 ## Organization (2026-10-30, night 3: "organized, clean")
 - One information architecture on both apps. **Home** = the status bar, the three accounts, what matters now (+ the Sunday

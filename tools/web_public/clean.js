@@ -178,7 +178,7 @@
     ['Today', ['lit', 'eval', 'evalhq', 'plan', 'levels'], ['live', 'engine', 'cockpit', 'curve', 'day', 'radar', 'brief']],
     ['Brain', ['brain'], []],
     ['Trades', ['trades', 'last10', 'recaps', 'intel', 'journal', 'stats', 'weekly'], ['tplay', 'weekcal', 'activity', 'replays']],
-    ['Results', ['perf', 'results', 'pnlcal', 'edge', 'execq', 'learning'], ['stops', 'evals']],
+    ['Results', ['pro', 'perf', 'results', 'pnlcal', 'edge', 'execq', 'learning'], ['stops', 'evals']],   // pro: Scorecard (pro.js + procore.js) 2026-11-03
     ['Rules', ['strategy', 'risk', 'mffurules'], []],
   ];
   const AT_SEGS = [
@@ -189,7 +189,7 @@
   const BZ_SEGS = [['Today', ['blitz'], []], ['Brain', ['blitz/brain'], []], ['Trades', ['blitz/trades'], []], ['Results', ['blitz/results'], []],
     ['Rules', ['blitz/rules', 'blitz/golive'], []]];
   const BOTS = { lit: { name: 'Zlarior', segs: ZL_SEGS }, atlas: { name: 'ATLAS', segs: AT_SEGS }, blitz: { name: 'BLITZ', segs: BZ_SEGS } };
-  const CHIP = { lit: 'Overview', eval: '50K eval', evalhq: 'Eval HQ', cockpit: 'Eval cockpit', curve: 'Eval curve', trades: 'All trades', intel: 'Trade intel',
+  const CHIP = { pro: 'Scorecard', lit: 'Overview', eval: '50K eval', evalhq: 'Eval HQ', cockpit: 'Eval cockpit', curve: 'Eval curve', trades: 'All trades', intel: 'Trade intel',
     plan: 'Plan', day: 'Day plan', levels: 'Levels', radar: 'Radar', brief: 'Briefing', perf: 'Performance', results: 'Replay', pnlcal: 'Calendar',
     execq: 'Execution', risk: 'Risk & sizing', mffurules: 'MFFU rules', 'atlas/setups': 'Rules & members', atstats: 'Setup stats', strategy: 'Strategy',
     'blitz/rules': 'Rules', 'blitz/golive': 'Go live', levels: 'Levels',
@@ -255,8 +255,8 @@
   // 2026-10-30: "Today" = the live views, "Insight" = what the bots think and what is coming, "Money planning" = every
   // research / backtest $ page (the Money tab is real money only now)
   const SECTIONS = [
-    ['Today', ['liveview', 'holo', 'mission', 'board', 'live', 'homefull']],   // liveview: Live View (liveview.js) 2026-10-28; mission: Mission Control (mission.js) 2026-10-29; holo: Holodeck (holo.js) 2026-10-29
-    ['Insight', ['mind', 'deck', 'goals', 'news', 'market']],                  // mind / deck: Mind + Trader's deck (blitz.js) 2026-10-29
+    ['Today', ['liveview', 'holo', 'mission', 'datacity', 'tree', 'board', 'live', 'homefull']],   // datacity / tree: sibling pages on the site (SITE_PAGES) 2026-11-03   // liveview: Live View (liveview.js) 2026-10-28; mission: Mission Control (mission.js) 2026-10-29; holo: Holodeck (holo.js) 2026-10-29
+    ['Insight', ['pro', 'mind', 'deck', 'goals', 'news', 'market']],          // pro: the Scorecard (also Zlarior > Results) 2026-11-03                  // mind / deck: Mind + Trader's deck (blitz.js) 2026-10-29
     ['Bot and health', ['launch', 'lights', 'ops', 'engine', 'alerts', 'activity', 'remote', 'aiwatch']],
     ['Trades', ['tplay', 'weekcal', 'replays', 'accounts']],
     ['Money planning', ['money', 'props', 'whatif', 'scale', 'share', 'evals', 'stops']],
@@ -267,15 +267,27 @@
   // research $ pages (Money plan, prop firms, what-if, scale) are under More > Money planning and keep their links
   const TAB_MAIN = { money: ['real', 'realtoday', 'evaltl'] };   // 'real' (Real results, real.js) 2026-10-28
   const ON_TABS = () => [...new Set(ZL_SEGS.flatMap((s) => s[1]).concat(['atlas', 'atstats', 'blitz'], TAB_MAIN.money))];
+  // pages of their own on the same site (own folders, not Zenith routes): a plain relative link, kept out of Zenith's worker
+  const SITE_PAGES = {
+    datacity: ['Data City', 'datacity/', 'layers', 'Every number of the bots as a living 3D city'],
+    tree: ['Strategy Tree', 'tree/', 'lab', 'Every strategy the research tried, as an animated growing decision tree'],
+  };
+  window.CLEAN.sitePages = SITE_PAGES;
   function moreView(el) {
     const used = new Set(['today', 'system']);
     const row = (id) => {
+      const sp = SITE_PAGES[id];
+      if (sp) {
+        if (used.has(id)) return ''; used.add(id);
+        return `<a class="cl-row cl-site" href="${esc(sp[1])}" data-site="${esc(id)}" data-s="${esc((sp[0] + ' ' + sp[3] + ' ' + id).toLowerCase())}"><span class="cl-ri">${icon(sp[2]) || icon('layers')}</span>
+        <span class="cl-rt"><b>${esc(sp[0])}</b><em>${esc(sp[3])}</em></span>${icon('right', 'cl-go')}</a>`;
+      }
       const p = PAGES[id]; if (!p || used.has(id)) return ''; used.add(id);
       return `<button type="button" class="cl-row" data-go="${esc(id)}" data-s="${esc((p.label + ' ' + (p.desc || '') + ' ' + id).toLowerCase())}"><span class="cl-ri">${icon(p.icon) || icon('layers')}</span>
         <span class="cl-rt"><b>${esc(p.label)}</b>${p.desc ? `<em>${esc(p.desc)}</em>` : ''}</span>${icon('right', 'cl-go')}</button>`;
     };
     // the tabs' own main pages are found by search only (they are one tap away on their tab)
-    const tabRows = ON_TABS().map(row).join('');
+    const tabRows = ON_TABS().filter((id) => id !== 'pro').map(row).join('');   // the Scorecard also has its own row under Insight
     const secs = SECTIONS.map(([t, ids]) => { const r = ids.map(row).join(''); return r ? `<section class="cl-sec"><h4>${esc(t)}</h4><div class="card cl-card cl-list">${r}</div></section>` : ''; }).join('');
     const advIds = ADV.slice();
     Object.keys(PAGES).forEach((id) => { if (!used.has(id) && !advIds.includes(id)) advIds.push(id); });   // anything new lands in Advanced
@@ -489,6 +501,7 @@ button.cl-card{cursor:pointer;transition:transform .15s var(--ease),border-color
 .cl-tv{flex:none;font:700 17px var(--sans);font-variant-numeric:tabular-nums}
 .cl-empty p{margin:8px 0 0;color:var(--ink-2);line-height:1.5}
 :root[data-clean="on"] .card.cl-list{padding:4px 0}.cl-list>.cl-eye{padding:12px 16px 4px}
+a.cl-row.cl-site{text-decoration:none;box-sizing:border-box}
 .cl-row{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:8px 16px;border:0;border-top:1px solid var(--line);background:none;text-align:left;font:inherit;color:inherit;cursor:pointer}
 .cl-list>.cl-row:first-child,.cl-list>.cl-eye+.cl-row{border-top:0}.cl-row[hidden]{display:none}
 .cl-row:active{background:var(--hover)}.cl-row .cl-ri{width:36px;height:36px;border-radius:10px}.cl-row .cl-rt b{font-size:15px}
