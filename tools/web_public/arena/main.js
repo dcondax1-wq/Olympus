@@ -85,6 +85,7 @@ function checkLevelUp() {
     document.documentElement.dataset.levelup = String(S.levelups);
     if (S.scene) S.scene.levelUp({ rank: rankUp });
     HUD.celebrate({ level: sc.level, rank: rankUp ? sc.rank.name : null, reduced: reducedMotion() });
+    S.banner = rankUp ? `Rank up ${sc.rank.name} Level ${sc.level}` : `Level up Level ${sc.level}`;
     const fresh = mark.earned.filter((id) => !(seen.earned || []).includes(id));
     if (fresh.length) setTimeout(() => openLabour(fresh[0]), reducedMotion() ? 600 : 2400);
   }
@@ -181,9 +182,16 @@ window.ARENA = {
   state: () => ({ ready: S.ready, demo: S.demo, today: S.today, xp: S.sc && S.sc.xp, level: S.sc && S.sc.level, rank: S.sc && S.sc.rank.name,
     earned: S.sc && S.sc.earned, quests: S.quests.map((q, i) => ({ id: q.id, done: !!(S.results[i] && S.results[i].done) })),
     streaks: S.sc && Object.fromEntries(Object.values(S.sc.streaks).map((s) => [s.id, s.cur])), levelups: S.levelups,
-    scene: S.scene ? S.scene.stats() : null, linked: S.linked, error: S.error, exported: S.exported || 0, bySrc: S.sc && S.sc.bySrc }),
+    scene: S.scene ? S.scene.stats() : null, linked: S.linked, error: S.error, exported: S.exported || 0, banner: S.banner || '', bySrc: S.sc && S.sc.bySrc }),
   exportText: () => exportText(),
   card: () => card(),
+  /** the rank-up frozen at its peak (lightning + burst + banner) for screenshots; hold(false) ends it */
+  hold: (on = true) => {
+    if (!on) { if (S.scene) S.scene.endHold(); document.getElementById('banner').hidden = true; return; }
+    HUD.hideLabour();
+    if (S.scene) S.scene.levelUp({ rank: true, hold: true });
+    HUD.celebrate({ level: S.sc.level, rank: S.sc.rank.name, reduced: true, hold: true });
+  },
   refresh: async () => { await refreshPhone(); compute(); render(); checkLevelUp(); return window.ARENA.state(); },
 };
 

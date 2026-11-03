@@ -181,13 +181,13 @@ export function createScene(canvas, { O = null } = {}) {
     if (reduced()) st.shown = st.progress;
     dirty = true;
   }
-  function levelUp({ rank = false } = {}) {
+  function levelUp({ rank = false, hold = false } = {}) {      // hold: freeze at the peak (screenshots)
     levelups++;
     clearFx();
     const nb = reduced() ? 1 : rank ? 5 : 3;
     for (let i = 0; i < nb; i++) { const a = Math.random() * TAU; fx.bolts.push(bolt(Math.cos(a) * 4, Math.sin(a) * 4)); }
     fx.burst = burst((lite ? 160 : 420) * (rank ? 1.5 : 1) | 0);
-    fx.t0 = performance.now(); fx.rank = rank;
+    fx.t0 = performance.now(); fx.rank = rank; fx.hold = !!hold;
     dirty = true;
   }
 
@@ -232,7 +232,7 @@ export function createScene(canvas, { O = null } = {}) {
   resize();
 
   // ---- the frame loop
-  let last = performance.now(), slow = 0, frames = 0, raf = 0, stopped = false;
+  let last = performance.now(), slow = null, frames = 0, raf = 0, stopped = false;
   function setLite(v) {
     lite = !!v;
     renderer.setPixelRatio(O ? O.dpr(lite) : lite ? 1 : Math.min(devicePixelRatio || 1, 2));
@@ -247,7 +247,12 @@ export function createScene(canvas, { O = null } = {}) {
     if (stopped || (O && O.hidden())) { last = now; return; }
     const dt = Math.min(0.1, (now - last) / 1000); last = now;
     frames++;
-    if (frames > 30 && frames < 150 && !lite && !(O && O.chosen())) { slow = dt > 0.034 ? slow + 1 : Math.max(0, slow - 1); if (slow > 40) setLite(true); }
+    // automatic LITE (never stored): 1.5 s of frames slower than 30 fps on average, when the owner chose no level
+    if (!lite && !(O && O.chosen())) {
+      if (!slow) slow = { t0: now + 800, n: 0 };              // the first 0.8 s (shader compiles) never count
+      if (now >= slow.t0) slow.n++;
+      if (now - slow.t0 > 1500 && slow.n) { if (slow.n / ((now - slow.t0) / 1000) < 30) setLite(true); slow = { t0: now, n: 0 }; }
+    }
     const still = reduced();
     const busy = fx.bolts.length || fx.burst || Math.abs(st.shown - st.progress) > 0.001;
     if (still && !busy && !dirty) return;
@@ -264,17 +269,19 @@ export function createScene(canvas, { O = null } = {}) {
       statues.forEach((s) => { if (s.earned) s.halo.material.opacity = 0.42 + Math.sin(t * 1.5 + s.i) * 0.1; });
     }
     if (fx.bolts.length || fx.burst) {
-      const age = (now - fx.t0) / 1000;
+      const age = fx.hold ? 0.12 : (now - fx.t0) / 1000;
       for (const b of fx.bolts) b.material.opacity = age < 0.9 ? (Math.sin(age * 40) > -0.2 ? 1 : 0.15) * (1 - age / 0.9) : 0;
       crownLight.intensity = 7 + (age < 0.9 ? 60 * (1 - age / 0.9) : 0);
       if (fx.burst) {
         const B = fx.burst, a = B.pts.geometry.attributes.position.array;
-        B.age += dt;
-        for (let i = 0; i < B.n; i++) { a[i * 3] += B.vel[i * 3] * dt; a[i * 3 + 1] += B.vel[i * 3 + 1] * dt; a[i * 3 + 2] += B.vel[i * 3 + 2] * dt; B.vel[i * 3 + 1] -= 6 * dt; }
+        B.age += fx.hold && B.age > 0.45 ? 0 : fx.hold ? 0.09 : dt;
+        const step = fx.hold ? (B.age > 0.45 ? 0 : 0.09) : dt;
+        for (let i = 0; i < B.n; i++) { a[i * 3] += B.vel[i * 3] * step; a[i * 3 + 1] += B.vel[i * 3 + 1] * step; a[i * 3 + 2] += B.vel[i * 3 + 2] * step; B.vel[i * 3 + 1] -= 6 * step; }
         B.pts.geometry.attributes.position.needsUpdate = true;
         B.pts.material.opacity = Math.max(0, 1 - B.age / 2.6);
       }
       if (age > 2.8) { clearFx(); crownLight.intensity = 7; }
+      dirty = true;
     }
     placeCamera();
     renderer.render(scene, camera);
@@ -285,6 +292,7 @@ export function createScene(canvas, { O = null } = {}) {
 
   return {
     setState, levelUp, setLite,
+    endHold() { clearFx(); crownLight.intensity = 7; dirty = true; },
     onPick(cb) { pick = typeof cb === 'function' ? cb : null; },
     lite: () => lite,
     stats: () => ({ levelups, lite, bolts: fx.bolts.length, burst: !!fx.burst, frames, statues: statues.filter((s) => s.earned).length }),

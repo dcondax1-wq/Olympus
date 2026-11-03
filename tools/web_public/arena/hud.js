@@ -128,12 +128,13 @@ export function showLabour(l, R) {
 export function hideLabour() { $('pop').hidden = true; }
 
 let bannerTimer = 0;
-export function celebrate({ level, rank, reduced }) {
+export function celebrate({ level, rank, reduced, hold = false }) {
   const b = $('banner');
   kids(b, h('span', 'k', rank ? 'Rank up' : 'Level up'), h('b', '', rank ? rank : `Level ${level}`), rank ? h('span', 's', `Level ${level}`) : null);
   b.hidden = false; b.classList.remove('go'); void b.offsetWidth; b.classList.add('go');
   if (!reduced) { const f = $('flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); }
   clearTimeout(bannerTimer);
+  if (hold) { b.classList.remove('go'); return; }                // a still for screenshots: no fade, no timer
   bannerTimer = setTimeout(() => { b.hidden = true; }, reduced ? 2200 : 3200);
   try { if (!reduced && navigator.vibrate) navigator.vibrate([30, 40, 60]); } catch (_) { /* no haptics */ }
 }
