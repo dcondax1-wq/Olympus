@@ -1,0 +1,105 @@
+# CRONOS: the nightly / weekly refresh that keeps the OLYMPUS research apps alive (tools/cronos, docs/CRONOS.md).
+# Research and paper only: it never touches live_model*.json, trading code or an order.
+#   nightly  Mon-Fri nights after the CME close (after datacity.yml): FATES (1,000 futures from the latest live.json state)
+#            and ODEON (the reels, only when the PC pushed new NinjaTrader bars to the heartbeat branch)
+#   weekly   Sunday afternoon, before the Sunday 17:47 ET monitor publish: DAPHNE (strategy tree) and PROMETHEUS (forge),
+#            each rerun only when its data or code changed
+# Outputs: ONE force-pushed commit on the `cronos` branch (small JSON laid out like the site + cronos/status.json); main
+# never gets bot commits. The site build (tools/build_web_dashboard.py -> tools/cronos/site.py) pulls them at the next
+# cloud-monitor publish and stamps each app's Jarvis card fresh, or amber "not updated since ..." when a job failed or the
+# data is older than 36 weekday hours (a week for the weekly ones).
+# Free: ~6 billed minutes a night + ~2 a Sunday when nothing changed (~22 when it did): ~150-220 of the 2,000 monthly
+# minutes (docs/CRONOS.md). In Actions saver mode (budget.json on the dashboard branch) the heavy tasks are skipped.
+# No secrets: GITHUB_TOKEN with contents: write, like datacity.yml.
+name: cronos
+
+on:
+  schedule:
+    - cron: "7 4 * * 2-6"            # 04:07 UTC Tue-Sat = 23:07 ET (EST) / 00:07 ET (EDT), Mon-Fri nights, after datacity (03:37 UTC)
+    - cron: "17 19 * * 0"            # Sunday 19:17 UTC = 14:17 ET (EST) / 15:17 ET (EDT): the weekly tasks
+  workflow_dispatch:
+    inputs:
+      group:
+        description: "nightly | weekly | all"
+        type: choice
+        options: [nightly, weekly, all]
+        default: nightly
+      task:
+        description: "Only these tasks (comma separated: fates, odeon, tree, prometheus); empty = the group"
+        type: string
+        default: ""
+      force:
+        description: "Rebuild even when nothing new came in"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cronos
+  cancel-in-progress: false
+
+jobs:
+  cronos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75              # weekly worst case: tree 30 + prometheus 30 (each task has its own timeout) + setup
+    steps:
+      - name: Checkout (code + the TradingView history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-cloud.txt
+
+      - name: Install
+        run: pip install -q -r requirements-cloud.txt
+
+      - name: Previous outputs (cronos branch), the PC's bars (heartbeat branch), the Actions budget
+        id: prep
+        run: |
+          mkdir -p pub
+          if git fetch -q --depth 1 origin cronos 2>/dev/null; then
+            git archive --format=tar FETCH_HEAD | tar -x -C pub || true
+          fi
+          git fetch -q --depth 1 origin +refs/heads/heartbeat:refs/remotes/origin/heartbeat 2>/dev/null || echo "no heartbeat branch"
+          b=$(curl -fsS --max-time 10 -H "Authorization: Bearer ${{ github.token }}" -H "Accept: application/vnd.github.raw" \
+              "https://api.github.com/repos/${{ github.repository }}/contents/budget.json?ref=dashboard" 2>/dev/null || true)
+          month=$(TZ=America/New_York date +%Y-%m)
+          saver=off
+          if echo "$b" | grep -q "\"month\": *\"$month\"" && echo "$b" | grep -q '"saver": *true'; then saver=on; fi
+          echo "saver=$saver" >> "$GITHUB_OUTPUT"
+          echo "Actions saver mode: $saver"
+
+      - name: Run CRONOS
+        timeout-minutes: 70
+        continue-on-error: true      # a failure is in cronos/status.json (the cards go amber); the branch is still published
+        env:
+          GROUP: ${{ github.event_name == 'workflow_dispatch' && inputs.group || (github.event.schedule == '17 19 * * 0' && 'weekly' || 'nightly') }}
+          TASKS: ${{ github.event_name == 'workflow_dispatch' && inputs.task || '' }}
+          FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force && '--force' || '' }}
+          MPLBACKEND: Agg
+        run: |
+          if [ -n "$TASKS" ]; then sel="--task $TASKS"; else sel="--group $GROUP"; fi
+          python -X utf8 -m tools.cronos $sel --out pub --saver ${{ steps.prep.outputs.saver }} $FORCE
+
+      - name: Publish the cronos branch (one commit, small JSON)
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test -f pub/cronos/status.json || { echo "no status: nothing to publish"; exit 0; }
+          rm -rf pub/.cronos_tmp pub/.git
+          du -ch pub | tail -1
+          cd pub
+          git init -q -b cronos
+          git config user.name "liquidity-engine-cronos"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "cronos $(TZ=America/New_York date '+%Y-%m-%d %H:%M ET')"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" cronos
