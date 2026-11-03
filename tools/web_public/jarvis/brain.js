@@ -1084,7 +1084,7 @@ export function createBrain(opts) {
     if (!s.length) {
       const miss = [!V.nq ? 'the bots\' feed' : '', !V.plan ? 'your Planner' : ''].filter(Boolean);
       const later = ranked(V).find((x) => x.p > 8);          // context only (e.g. Kalshi not linked yet: planned)
-      const text = lines('Nothing needs you right now, sir.', cl.text, miss.length ? `(I cannot see ${miss.join(' or ')} yet, so that part is unchecked.)` : later ? later.text : '');
+      const text = lines('Nothing needs you right now, sir.', cl.text, [miss.length ? `(I cannot see ${miss.join(' or ')} yet, so that part is unchecked.)` : '', later ? later.text : ''].filter(Boolean).join(' '));
       return { text, speak: toSpeech('Nothing needs you right now. ' + cl.say, 260), intent: 'what_now', priorities: [] };
     }
     const top = s[0], two = s[1] && s[1].p <= 6 ? s[1] : null;

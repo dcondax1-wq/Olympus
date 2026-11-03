@@ -155,24 +155,20 @@ export const liveLoading = () => !!L.busy;
 
 // ------------------------------------------------------------------------------------------------ kalshi.json: the Kalshi bot (its own server)
 const K = { j: null, at: 0, state: '', busy: null, n404: 0 };      // state: '' not asked yet | ok | waiting (not published yet) | error
-// kalshi.json not published yet (404): asked once, then never again this session (no 404 every few minutes in the console).
-// The session flag survives a reload of the same tab; a new session (or kalshiRetry()) asks again.
-const K404 = 'jarvis.kalshi404';
-const ssGet = (k) => { try { return typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(k) : null; } catch (_) { return null; } };
-const ssSet = (k, v) => { try { if (typeof sessionStorage !== 'undefined') { if (v == null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } } catch (_) { /* nothing kept */ } };
-if (ssGet(K404) === '1') K.state = 'waiting';
-export const kalshiBackedOff = () => K.state === 'waiting' && (K.n404 > 0 || ssGet(K404) === '1');
-export function kalshiRetry() { ssSet(K404, null); K.n404 = 0; return refreshKalshi(true); }
-export function refreshKalshi(force) {
+// kalshi.json not published yet (404, "not linked yet"): asked once per page load, then left alone (no 404 every few minutes
+// in the console). Opening Jarvis again (or kalshiRetry()) asks once more: that is how a newly linked bot shows up.
+export const kalshiBackedOff = () => K.state === 'waiting' && K.n404 > 0;
+export function kalshiRetry() { K.n404 = 0; return kalshiFetch(); }
+export function refreshKalshi() { return kalshiBackedOff() ? (K.at = Date.now(), Promise.resolve()) : kalshiFetch(); }
+function kalshiFetch() {
   if (K.busy) return K.busy;
-  if (!force && kalshiBackedOff()) { K.at = Date.now(); return Promise.resolve(); }
   K.busy = (async () => {
     try {
       let r = null;
       try { r = await get(URLS.kalshiRaw + '?t=' + Math.floor(Date.now() / 60000), { cache: 'no-cache' }); } catch (_) { r = null; }
       if (!r || (!r.ok && r.status !== 404)) { try { r = await get(URLS.kalshiApi, { cache: 'no-cache', headers: { Accept: 'application/vnd.github.raw+json' } }); } catch (_) { r = null; } }
-      if (r && r.ok) { const j = await r.json(); if (j && typeof j === 'object') { K.j = j; K.state = 'ok'; K.n404 = 0; ssSet(K404, null); LS.set('jarvis.lastKalshi', j); } else K.state = 'error'; }
-      else if (r && r.status === 404) { K.state = 'waiting'; K.n404++; ssSet(K404, '1'); }
+      if (r && r.ok) { const j = await r.json(); if (j && typeof j === 'object') { K.j = j; K.state = 'ok'; K.n404 = 0; LS.set('jarvis.lastKalshi', j); } else K.state = 'error'; }
+      else if (r && r.status === 404) { K.state = 'waiting'; K.n404++; }
       else K.state = 'error';
     } catch (_) { K.state = 'error'; }
     K.at = Date.now(); K.busy = null;

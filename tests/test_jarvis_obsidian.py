@@ -16,12 +16,18 @@ tools/web_public/jarvis/obsidian.js (the vault: GitHub index, search, append-onl
      links, my goals, a stated preference offered for Me.md
   j. the brain with memory: "remember ..." -> confirm -> saved; smart mode sends the top note snippets and Me.md (never the
      GitHub token) and cites note titles
+  k. Chromium (assist-ui.js + the real IndexedDB): the proactive line (shown once per change, dismissed by its key), the free
+     AI key steps, the Obsidian sheet (the 3 steps, paste a note, kept in IndexedDB-backed search), graphSnapshot() in a page
     python -X utf8 -m tests.test_jarvis_obsidian      (node + a temp folder; nothing else touched; a few seconds)
 """
 from __future__ import annotations
 
+import functools
+import glob
+import http.server
 import json
 import os
+import threading
 import shutil
 import subprocess
 import sys
@@ -240,6 +246,99 @@ process.stdout.write(JSON.stringify(out));
 """
 
 
+PAGE = """<!doctype html><html><head><meta charset="utf-8"></head><body>
+<form id="setF"><label><select id="setProv"></select></label></form><div id="sugs"></div>
+<script type="module">
+import { createVault, graphSnapshot } from './obsidian.js';
+import { mountObsidianSheet, mountProactive, mountKeySteps } from './assist-ui.js';
+let H = { text: 'Both evals are on day 5 with no trade.', more: 1, level: 'bad', key: 'quiet5:lit5,atlas5' };
+const brain = { headline: () => H };
+const asked = [];
+const pro = mountProactive({ brain, anchor: document.getElementById('sugs'), onAsk: (t) => asked.push(t) });
+const vault = createVault();
+const toasts = [];
+const obs = mountObsidianSheet({ vault, toast: (t) => toasts.push(t) });
+window.T = { pro, obs, vault, asked, toasts, mountKeySteps, graphSnapshot, setH: (h) => { H = h; pro.render(); } };
+pro.render();
+window.ready = true;
+</script></body></html>"""
+
+
+def part_browser():
+    try:
+        from playwright.sync_api import sync_playwright
+    except Exception as e:                                   # pragma: no cover
+        check("k. Chromium: playwright available", False, e)
+        return
+    tmp = tempfile.mkdtemp(prefix="le_jobs_web_")
+    for f in ("obsidian.js", "assist-ui.js"):
+        shutil.copy(os.path.join(JV, f), os.path.join(tmp, f))
+    open(os.path.join(tmp, "index.html"), "w", encoding="utf-8").write(PAGE)
+
+    class Quiet(http.server.SimpleHTTPRequestHandler):
+        def log_message(self, *a):
+            pass
+    srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(Quiet, directory=tmp))
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    try:
+        with sync_playwright() as pw:
+            exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
+            br = pw.chromium.launch(**({"executable_path": exe} if exe else {}))
+            p = br.new_page()
+            errs, reqs = [], []
+            p.on("pageerror", lambda e: errs.append(str(e)))
+            p.on("request", lambda r: reqs.append(r.url))
+            url = f"http://127.0.0.1:{srv.server_address[1]}/index.html"
+            p.goto(url)
+            p.wait_for_function("window.ready === true", timeout=10000)
+            shown = p.is_visible("#proLine") and "Both evals are on day 5" in p.inner_text("#proLine")
+            p.click("#proLine .t")
+            asked = p.evaluate("window.T.asked")
+            p.click("#proLine .x")
+            hidden = not p.is_visible("#proLine")
+            p.reload()
+            p.wait_for_function("window.ready === true", timeout=10000)
+            still_hidden = not p.is_visible("#proLine")
+            p.evaluate("window.T.setH({ text: 'Zlarior is on day 6 with no trade.', more: 0, level: 'bad', key: 'quiet6:lit6' })")
+            back = p.is_visible("#proLine") and "day 6" in p.inner_text("#proLine")
+            p.evaluate("window.T.setH({ text: 'All quiet', level: 'ok', key: 'quiet' })")
+            calm_hidden = not p.is_visible("#proLine")
+            check("k. the proactive line: shown, a tap asks 'what should I do', dismissed by its key (stays dismissed after a reload), back when it changes, hidden when all quiet",
+                  shown and asked == ["What should I do now?"] and hidden and still_hidden and back and calm_hidden, (shown, asked, hidden, still_hidden, back, calm_hidden))
+            p.evaluate("window.T.mountKeySteps(document.getElementById('setF')); window.T.mountKeySteps(document.getElementById('setF'))")
+            ks = p.inner_text("#setF")
+            check("k. the free AI key steps: Groq (console.groq.com/keys, Create API Key, paste, Save), Gemini as the other free one; mounted once",
+                  "console.groq.com/keys" in ks and "Create API Key" in ks and "aistudio.google.com/apikey" in ks and p.evaluate("document.querySelectorAll('#setF .jx-steps').length") == 1, ks[:300])
+            p.evaluate("window.T.obs.open()")
+            sh = p.inner_text("#obsSheet")
+            check("k. the Obsidian sheet: not connected, three numbered steps (private repo, token with Contents read and write, the Git plugin), repo + token fields",
+                  p.is_visible("#obsSheet") and "Not connected" in sh and p.evaluate("document.querySelectorAll('#obsSheet ol li').length") == 3
+                  and "Contents: Read and write" in sh and "Git" in sh and p.is_visible("#obsRepo") and p.is_visible("#obsTok"), sh[:400])
+            p.fill("#obsRepo", "not a repo")
+            p.fill("#obsTok", "github_pat_X")
+            p.click("#obsGo")
+            p.wait_for_timeout(300)
+            check("k. a wrong repo name: said plainly in the sheet, no request sent", "owner/name" in p.inner_text("#obsErr") and not any("api.github.com" in u for u in reqs), p.inner_text("#obsErr"))
+            p.fill("#obsPT", "Morning plan")
+            p.fill("#obsPB", "Wake 6:30, gym, then the 9:30 open review. #routine")
+            p.click("#obsPaste")
+            p.wait_for_timeout(200)
+            res = p.evaluate("(async () => ({ s: await window.T.vault.search('gym open review', 2), snap: await window.T.graphSnapshot(), st: window.T.vault.status() }))()")
+            check("k. paste a note (no GitHub): kept on this phone, searchable, in graphSnapshot() with what was learned; the status says so",
+                  res["s"][:1] and res["s"][0]["title"] == "Morning plan" and any(n["title"] == "Morning plan" for n in res["snap"]["notes"])
+                  and res["st"]["local"] == 1 and "1 pasted note" in p.inner_text("#obsSt") and p.evaluate("window.T.toasts")[-1].startswith("Saved “Morning plan”"), res)
+            p.once("dialog", lambda d: d.accept())
+            p.click("#obsOff")
+            p.wait_for_timeout(300)
+            wiped = p.evaluate("(async () => ({ keys: Object.keys(localStorage).filter((k) => k.startsWith('jarvis.vault')), snap: await window.T.graphSnapshot() }))()")
+            check("k. Disconnect (after a confirm) wipes everything of the vault from the phone", wiped["keys"] == [] and wiped["snap"] is None, wiped)
+            check("k. no page errors; no request leaves the page's own address", not errs and all(u.startswith(url.rsplit("/", 1)[0]) for u in reqs), (errs, [u for u in reqs if not u.startswith("http://127.0.0.1")]))
+            br.close()
+    finally:
+        srv.shutdown()
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def main() -> int:
     node = shutil.which("node")
     if not node:
@@ -360,6 +459,8 @@ def main() -> int:
     check("j. smart off: the local list; smart on: the model gets the top notes and Me.md, never the GitHub token, and cites the note",
           O["j3"].startswith("Your notes on") and O["j4"]["smart"] is True and "[MFFU notes]" in O["j4"]["text"] and O["j_ai"]["notes"] and O["j_ai"]["me"]
           and not O["j_ai"]["token"] and all(u.startswith("https://api.groq.com/") for u in O["j_ai"]["urls"]), (O["j4"], O["j_ai"]))
+    if "--no-browser" not in sys.argv:
+        part_browser()
     n = sum(RES)
     print(f"\njarvis obsidian: {n}/{len(RES)} " + ("ALL PASS" if n == len(RES) else "FAILED"))
     return 0 if n == len(RES) else 1
