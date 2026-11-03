@@ -1,6 +1,6 @@
 // Jarvis's voice (owner 2026-11-03: "a voice that doesn't sound like a bot. Should be a female voice."). One ES module, no
 // imports, no DOM except speechSynthesis / Audio when a speaker is made. Shared by the Jarvis screen (index.html speak()) and
-// voice mode (voice-mode.js), so both use the same chosen voice.
+// voice mode (voice-mode.js), so both use the same chosen voice. The Jarvis screen's switch and first-tap unlock: voice-out.js.
 //
 //   import { bestVoice, voiceChoices, voiceScore, voiceLabel, cleanSpeech, speechChunks, createSpeaker, savedVoiceName } from './tts.js';
 //   voiceScore(v)              a natural female English voice first (Ava / Zoe / Allison / Samantha, premium > enhanced > compact);

@@ -920,6 +920,27 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
       voices best first with labels, talk style, the cloud switch, a one-time Ava (Premium) tip (`jarvis.tip.ava`).
     - Tests: `tests.test_jarvis_assistant` (node on a mocked ET clock + mocked Groq, then Chromium); test_jarvis_voice
       now expects Ava (Premium). New files for the worker's SHELL: `assistant.js`, `tts.js`.
+  - **Jarvis talks (2026-11-03 evening, owner: "the Jarvis isn't talking, I want you to fully make the bot talk"):**
+    - Root causes: (1) typed answers were never read (`jarvis.speakAll` "Read every answer" was off by default; only
+      answers to the mic were); (2) iOS WebKit plays speech only after a `speak()` made inside a tap, and every answer is
+      said after an await (the brain, the mic), so on a fresh launch it was dropped silently with no end event; (3) the
+      speaker spoke right after `cancel()` (WebKit swallows it), kept no utterance refs, had no watchdog for a missing
+      `onend`, and passed unchecked rate / pitch.
+    - `voice-out.js` `createVoiceOut({cfg, cloud, onSpeaking, onWord, onPending, micBusy})` (loaded at the start): the
+      switch `jarvis.speak` on/off (default on; first run clears an old `jarvis.mute`, kept in step for the intro), the
+      first-tap unlock (capture listeners on touchend / pointerup / click / keydown: a silent primer utterance on Apple
+      WebKit (`tts.needsPrimer`), an AudioContext resumed + one silent sample), an answer before any tap waits and is said
+      at the next one ("TAP TO HEAR"), the voice list re-polled while empty (+ `voiceschanged`; empty = the default voice,
+      en-US), iOS 17 `navigator.audioSession` 'playback' while she speaks / 'auto' before the mic, stop when hidden.
+    - `tts.js` speaker: utterances referenced until they end, a per-chunk end watchdog, a start watchdog (`onstall(rest)`:
+      on the iPhone the rest waits for a tap), 70 ms after a cancel before the next speak, `synth.resume()` when paused,
+      rate / pitch clamped 0.5-2. Voice mode uses the same speaker and primes on its taps.
+    - Shell: every answer said while the dock's speaker button (`#spk`, next to the mic) is on; "mute" / "unmute" and the
+      Voice sheet's "Read answers out loud" are the same switch; a waveform across the core + "TAP TO STOP" while she
+      speaks (tap the core or the mic to stop); Test voice says one sentence; the Voice sheet notes the Ring / Silent
+      switch. On a phone <= 360 px the SEND key hides (the keyboard sends).
+    - Test `PLAYWRIGHT_BROWSERS_PATH=<dir> python -X utf8 -m tests.test_jarvis_talk` (node speaker + Chromium + WebKit
+      iPhone 13 on a mocked voice that drops a speak() outside a tap like iOS). New SHELL file: `voice-out.js`.
   - **Icons:** the re-rendered old reactor icon (`?v=j2`).
   - **Workers:**
     - jarvis-v4: a 3.5 s navigation race; shell files stale-while-revalidate once a page came from the copy.

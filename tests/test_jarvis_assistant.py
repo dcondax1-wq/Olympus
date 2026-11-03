@@ -364,9 +364,12 @@ def part_browser():
             p.click("#vTipX")
             st = p.evaluate("[JSON.parse(localStorage.getItem('jarvis.persona')).style, localStorage.getItem('jarvis.tip.ava'), document.getElementById('vTip').hidden]")
             check("k. talk style kept ('chatty'); the tip dismissed once and for all", st == ["chatty", "1", True], st)
+            p.evaluate("window.__said = []")
             p.click("#vTest")
-            p.wait_for_function("window.__said.length > 0", timeout=5000)
-            check("k. Test voice speaks in sentence chunks", len(p.evaluate("window.__said")) >= 2, p.evaluate("window.__said"))
+            p.wait_for_function("window.__said.some((t) => /how I'll sound/.test(t))", timeout=5000)
+            check("k. Test voice says one natural sentence (2026-11-03 evening: tts.js via voice-out.js)",
+                  [t for t in p.evaluate("window.__said") if t.strip()] == ["Hi, I'm Jarvis, and this is how I'll sound when I read your answers out loud."],
+                  p.evaluate("window.__said"))
             check("k. no page errors", not errs, errs)
             br.close()
     finally:

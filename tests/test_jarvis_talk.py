@@ -16,7 +16,7 @@ Jarvis screen, tools/web_public/jarvis/voice-out.js + tts.js + the speech parts 
      - the mic: tap -> heard -> answered out loud; hands-free keeps listening
      - no page errors
     PLAYWRIGHT_BROWSERS_PATH=<dir with webkit> python -X utf8 -m tests.test_jarvis_talk     (~1-2 min; WebKit skipped, and said
-    so, when it is not installed)
+    so, when it is not installed). Screenshots (WebKit): research/handoff/2026-11-03/talk/ (JARVIS_TALK_SHOTS='' = none).
 """
 from __future__ import annotations
 
@@ -34,6 +34,7 @@ from tests import test_jarvis_hub as H
 JV = H.JV
 VO = os.path.join(JV, "voice-out.js")
 TTS = os.path.join(JV, "tts.js")
+SHOTS = os.environ.get("JARVIS_TALK_SHOTS", os.path.join(H.ROOT, "research", "handoff", "2026-11-03", "talk"))   # '' = none
 RES = []
 TEST_LINE = "Hi, I'm Jarvis, and this is how I'll sound when I read your answers out loud."
 
@@ -277,6 +278,10 @@ def run(br, url, name, ios, device=None):
     look = p.evaluate("[getComputedStyle(document.getElementById('vwave')).opacity, getComputedStyle(document.getElementById('vstop')).opacity, document.getElementById('vwave').children.length, document.getElementById('state').textContent]")
     check(f"{tag} speaking: the waveform on the core and 'TAP TO STOP' show, the state says SPEAKING",
           float(look[0]) > 0.5 and float(look[1]) > 0.5 and look[2] >= 12 and look[3] == "SPEAKING", look)
+    if SHOTS and ios:
+        os.makedirs(SHOTS, exist_ok=True)
+        p.locator(".stagebox").screenshot(path=os.path.join(SHOTS, "talk_speaking_iphone13.png"))
+        p.locator("#dock").screenshot(path=os.path.join(SHOTS, "talk_dock_iphone13.png"))
     c0 = p.evaluate("window.__cancels")
     p.click("#stage", position={"x": 40, "y": 40})
     p.wait_for_timeout(250)
