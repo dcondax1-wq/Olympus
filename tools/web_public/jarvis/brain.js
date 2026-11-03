@@ -468,9 +468,12 @@ function sayText(s) {
   let t = String(s || '').replace(/```[\s\S]*?```/g, ' ').replace(/`([^`]*)`/g, '$1').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/https?:\/\/\S+/g, '')
     .replace(/\*\*|__|~~/g, '').replace(/(^|\s)[*_](\S[^*_]*\S|\S)[*_](?=\s|[.,!?]|$)/g, '$1$2').replace(/^\s{0,3}#{1,6}\s+/gm, '').replace(/^\s*>\s?/gm, '')
     .replace(/^\s*(?:[-*+•]|\d+[.)])\s+/gm, '').replace(/\|/g, ', ').replace(EMOJI_RX, '').replace(/[“”]/g, '"').replace(/[→⋯]/g, ' ');
-  t = toSpeech(t, 900).replace(/[#*_~<>{}[\]\\^=]/g, ' ').replace(/"/g, '').replace(/\s+([.,!?])/g, '$1').replace(/\s+/g, ' ').trim();
+  t = toSpeech(t, 900).replace(/°C\b/g, ' degrees Celsius').replace(/°/g, ' degrees ').replace(/\s*•\s*/g, ' ').replace(/:\s*\./g, ':').replace(/[#*_~<>{}[\]\\^=]/g, ' ').replace(/"/g, '').replace(/\s+([.,!?])/g, '$1').replace(/\s+/g, ' ').trim();
   return t;
 }
+// with smart mode on, a request to make / write / explain something is the model's (the rules would only match a word of it)
+const WANTS_MODEL_RX = /^(?:make|write|create|draft|give me|build|come up with|generate|brainstorm|summari[sz]e|explain|teach me|compare|rewrite|translate|suggest|recommend|design|outline|prepare|put together|plan (?:me|my|a|out)|help me (?:with|write|make|plan|decide|figure|think|come up|study|prepare))\b|\b(?:save (?:it|this|that)|(?:to|in|into) my (?:obsidian|vault)|into obsidian)\b/;
+const NOT_MODEL_RX = /\b(?:bots?|zlarior|atlas|blitz|nq|mnq|kalshi|evals?|mffu|p&l|balances?|room|drawdown|trades?|traded|market|positions?|status|briefing|brief)\b/;
 // "set up smart mode", "connect my brain", "set up the free ai key": the key setup screen (the shell opens it)
 const SETUP_RX = /^(?:(?:set ?up|setup|connect|turn on|enable|get|add)(?: my| the| a)?(?: free)? (?:smart mode|smart answers|ai|ai key|api key|my brain|brain|groq|gemini|openrouter|smart)(?: key| mode| up)?|smart mode setup|ai setup|test (?:my|the) (?:ai |smart )?key)$/;
 
@@ -2003,7 +2006,12 @@ export function createBrain(opts) {
           let tr = null;
           if (!good(mr) && tools) { try { tr = await tools.local(raw, q, toolEnv(V), { late: false }); } catch (_) { tr = null; } }
           if (good(tr)) r = tr;
-          else if (good(mr)) {
+          else if (!good(mr) && smartOn() && WANTS_MODEL_RX.test(q) && !NOT_MODEL_RX.test(q)) {
+            // "make me a leg day plan and save it", "write a text to her", "explain ...": the model's job, with the rule answer as fallback
+            let fb = null;
+            try { fb = route(q, V, 0); } catch (_) { fb = null; }
+            r = await smartAnswer(raw, V, fb && fb.text ? fb : { text: FALLBACK, intent: 'fallback' }, voice, true);
+          } else if (good(mr)) {
             r = mr.smart && S.on && S.keys[S.provider] ? await smartAnswer(raw, V, mr, voice) : mr;     // summaries: the model, the local list as fallback
             delete r.smart;
             if (r.provider) r.smart = true;

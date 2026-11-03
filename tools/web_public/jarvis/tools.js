@@ -111,8 +111,8 @@ export function parseUnits(raw) {
   }
   if (!m || !a || !b || a.kind !== b.kind || !Number.isFinite(v)) return null;
   const out = a.kind === 'temp' ? fromC(toC(v, a.u), b.u) : (v * a.f) / b.f;
-  const nm = (x) => (x.kind === 'temp' ? '°' + x.u : UNIT_NAME[x.u] || x.u);
-  return { text: `${fmt(v)} ${nm(a)} is ${fmt(out)} ${nm(b)}.`, value: out };
+  const nm = (x) => (x.kind === 'temp' ? '°' + x.u : ' ' + (UNIT_NAME[x.u] || x.u));
+  return { text: `${fmt(v)}${nm(a)} is ${fmt(out)}${nm(b)}.`, value: out };
 }
 
 // ------------------------------------------------------------------------------------------------ time zones (no network first)
@@ -158,7 +158,7 @@ const WEATHER_PLACE_RX = /\b(?:in|for|at|around)\s+([a-z][a-z .'-]{1,40}?)(?:\s+
 const DAY_RX = /\b(today|tonight|tomorrow|this week|the week|next week|this weekend|the weekend|weekend|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b/;
 const TIME_IN_RX = /^(?:what(?:'s| is)? )?(?:the )?(?:time|clock|local time)(?: is it| now| right now)? in (.{2,40})$|^what time is it in (.{2,40})$|^time in (.{2,40})$/;
 const DEFINE_RX = /^(?:define|definition of|meaning of|what's the meaning of|what is the meaning of|what does the word) ([a-z][a-z' -]{1,40}?)(?: mean)?$|^what does ([a-z][a-z'-]{1,30}) mean$/;
-const LOOKUP_RX = /^(?:look up|search for|search|google|wiki|wikipedia|tell me about|who's|who is|who was|who are|who were|what's|what is|what was|what are|what were|where is|where's|explain)\s+(.{2,80})$/;
+const LOOKUP_RX = /^(?:look up|search for|search|google|wiki|wikipedia|tell me about|about|who's|who is|who was|who are|who were|what's|what is|what was|what are|what were|where is|where's|explain)\s+(.{2,80})$/;
 // "who / what is X" that the brain or the assistant own: never a lookup
 const NOT_LOOKUP_RX = /\b(my|me|i|your|you|this|that|it|today|tomorrow|now|up|wrong|new|next|the time|the date|the plan|the room|the target|the balance|the market|the status|on|going on|happening|left|due)\b|^(my|the) /;
 const FOLLOW_DAY_RX = /^(?:and|ok and|okay and|so|what about|how about|and what about|and how about)\s+(today|tonight|tomorrow|this week|the week|next week|this weekend|the weekend|monday|tuesday|wednesday|thursday|friday|saturday|sunday)$|^(?:and )?(tomorrow|tonight)$/;
@@ -400,7 +400,7 @@ export function createTools(opts) {
       const df = DEFINE_RX.exec(t);
       if (df) return wrap(define(df[1] || df[2]));
       const lk = /^(?:look up|search for|search|google|wiki|wikipedia)\s+(.{2,80})$/.exec(t);
-      if (lk) return wrap(search(lk[1]));
+      if (lk && !/\b(my notes|notes|vault|obsidian|my files)\b/.test(lk[1])) return wrap(search(lk[1]));
       return null;
     }
     // late: after the brain's own answers found nothing ("who is ...", "what is ...", "tell me about ...")

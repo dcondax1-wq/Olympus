@@ -184,7 +184,7 @@ export function parseNote(raw) {
   }
   return null;
 }
-const noteTitle = (s) => str(s, 60).replace(/[\\/:*?"<>|#^[\]]/g, ' ').replace(/\s+/g, ' ').trim().replace(/\b([a-z])/, (c) => c.toUpperCase());
+const noteTitle = (s) => str(s, 60).replace(/[\\/:*?"<>|#^[\]]/g, ' ').replace(/\s+/g, ' ').trim().replace(/^[a-z]/, (c) => c.toUpperCase());
 
 // ------------------------------------------------------------------------------------------------ maths and money
 // a small safe parser (no eval): + - * / ^ ( ), "x" / "times" / "divided by" / "plus" / "minus", N% of M, "split $X N ways"
