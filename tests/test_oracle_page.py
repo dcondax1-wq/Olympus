@@ -272,7 +272,7 @@ def shot(p, name):
     if SHOTS:
         os.makedirs(SHOTS, exist_ok=True)
         p.wait_for_timeout(600)
-        p.screenshot(path=os.path.join(SHOTS, name + ".png"))
+        p.screenshot(path=os.path.join(SHOTS, name + ".jpg"), type="jpeg", quality=82)
 
 
 # ------------------------------------------------------------------ formats (the page's own)

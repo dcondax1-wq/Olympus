@@ -119,7 +119,7 @@ export function todayFx(w, ohlc, hist) {
   const pos = w.position;
   frames.push({ t: w.t, stage: { ...w.stage }, stages: w.stages.map((s) => [s.key, s.state]), atr: w.atr, day_pnl: w.pnlToday || 0,
     trade: pos ? { ...(trade || {}), ...pos, entry_t: pos.entry_t || (trade && trade.entry_t) || w.t } : null });
-  const takenT = (l) => (l.takenHm ? Math.min(w.t, tOf(l.takenHm) + 300) : w.t);
+  const takenT = (l) => (l.takenHm ? Math.min(w.t, tOf(l.takenHm) + 300) : start);   // no time known: taken before the replay
   return {
     v: 1, kind: 'oracle-demo', today: true, day: 'today', bars, vix: w.vix || {}, regime: w.regime,
     levels: w.levels.map((l) => ({ label: l.label, price: l.price, kind: l.kind, from_t: start, taken_t: l.taken ? takenT(l) : null })),
