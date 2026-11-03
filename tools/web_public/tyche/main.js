@@ -249,6 +249,7 @@ window.tyche = {
   get fps() { return state.fps; },
   get requests() { return state.feed.requests; },
   get view() { return state.view; },
+  get intro() { return scene ? scene.intro : 1; },          // the intro camera move: 0 -> 1 (1 = done or skipped)
   get coins() { return scene ? scene.wheel.coins.size : 0; },
   get falling() { return scene ? scene.pools.falling.length + scene.pools.queue.length : 0; },
   kellyStake(key) { const c = scene && Array.from(scene.wheel.coins.values()).find((x) => x.key === key); return c && c.kelly ? c.kelly.stake : null; },

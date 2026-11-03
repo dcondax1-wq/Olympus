@@ -410,6 +410,20 @@ def part_a():
                                               r"\.nav \{[^}]*width: 44px; height: 44px", r"\.cd \{[^}]*height: 44px", r"\.more \{[^}]*height: 44px",
                                               r"::after \{[^}]*width: max\(100%, 44px\); height: max\(100%, 44px\)")))
     check("a. text wraps instead of being cut (no ellipsis, no line clamp)", "text-overflow: ellipsis" not in css and "line-clamp" not in css)
+    kfx = open(os.path.join(KS, "kfx.js"), encoding="utf-8").read() if os.path.exists(os.path.join(KS, "kfx.js")) else ""
+    korb = open(os.path.join(KS, "korb.js"), encoding="utf-8").read() if os.path.exists(os.path.join(KS, "korb.js")) else ""
+    check("x. clean modules (2026-11-03): kfx.js (the look) before kalshi.js, korb.js (the 3D orb) as a module, both versioned and in the worker's shell",
+          kfx and korb and html.index('src="kfx.js?v=') < html.index('src="kalshi.js?v=') < html.index('type="module" src="korb.js?v=')
+          and f"'./kfx.js?v={ver}'" in sw and f"'./korb.js?v={ver}'" in sw and "'../jarvis/three.module.min.js'" in sw)
+    kcode = re.sub(r"//[^\n]*", "", korb)
+    check("x. the orb: three.js only from ../jarvis/ (the site's one copy), no other address; paused when hidden or off screen; 30 fps at most; jfx 'off' = no WebGL",
+          re.findall(r"import\(['\"]([^'\"]+)", kcode) == ["../jarvis/three.module.min.js"] and not re.findall(r"https?://", kcode)
+          and "document.hidden" in kcode and "IntersectionObserver" in kcode and "now - last < 33" in kcode and "fx() === 'off'" in kcode)
+    check("x. themes: one applyTheme(tokens), hex colours only, hooked to Olympus.theme() / onTheme and the 'olympus.theme' key",
+          "window.applyTheme = applyTheme" in kfx and "HEX.test" in kfx and "O.onTheme" in kfx and "O.theme()" in kfx and "'olympus.theme'" in kfx)
+    check("x. the hierarchy: Today -> Edge -> Performance -> Alerts, and the section bar for them",
+          code.index("groupHtml('today'") < code.index("groupHtml('edge'") < code.index("groupHtml('perf'") < code.index("groupHtml('alerts'")
+          and 'id="secnav"' in html and all(f'data-go="{g}"' in html for g in ("today", "edge", "perf", "alerts")))
     b = open(os.path.join(ROOT, "tools", "build_web_dashboard.py"), encoding="utf-8").read()
     check("a. the site build publishes every file of kalshi/ (index.html, kalshi.js, kalshi.css, sw.js)",
           'for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "olympus"):' in b and "for name in os.listdir(src_dir):" in b)
@@ -610,6 +624,7 @@ def run_browser(url, tmp):
         check("e. the curve's reading: the last balance and the change over the month",
               usd(eq[-1][1]) in idle and usd(eq[-1][1] - first, True) in idle, (idle, usd(eq[-1][1]), usd(eq[-1][1] - first, True)))
         p.evaluate("document.getElementById('chart').scrollIntoView({ block: 'center' })")   # Performance sits below Today and Edge
+        p.wait_for_timeout(900)                                                                # the groups' one-time rise-in is over
         box = p.locator("#chart").bounding_box()
         p.mouse.move(box["x"] + 0.5, box["y"] + box["height"] / 2)
         r1 = p.inner_text("#eqRead")
@@ -923,6 +938,42 @@ def run_browser(url, tmp):
         check("v3. the ticker tape under the header (open bet and results), hidden from screen readers",
               p.is_visible("#tape") and "edge +5.0¢" in p.inner_text("#tape") and p.get_attribute("#tape", "aria-hidden") == "true")
         shot(p, "9_v3")
+        # ---- x. 2026-11-03: the four groups, money (month, ROI), the section bar, the odometer, applyTheme, the orb
+        ids = p.evaluate("[...document.querySelectorAll('#body > .grp')].map((g) => g.id)")
+        where = p.evaluate("""() => Object.fromEntries(['sec-kpi', 'sec-pos', 'sec-edge', 'sec-kelly', 'sec-eq', 'sec-cal', 'sec-bk', 'sec-cb', 'sec-al', 'sec-tr']
+            .map((i) => { const e = document.getElementById(i); return [i, e && e.closest('.grp') ? e.closest('.grp').id : null]; }))""")
+        check("x. the hierarchy: Today (balance, open bets) -> Edge (live edge, Kelly) -> Performance (curve, calendar, buckets, calibration) -> Alerts",
+              ids == ["g-today", "g-edge", "g-perf", "g-alerts"] and where == {"sec-kpi": "g-today", "sec-pos": "g-today", "sec-edge": "g-edge", "sec-kelly": "g-edge",
+              "sec-eq": "g-perf", "sec-cal": "g-perf", "sec-bk": "g-perf", "sec-cb": "g-perf", "sec-al": "g-alerts", "sec-tr": "g-alerts"}, (ids, where))
+        tiles = {t.locator(".lab").inner_text().strip().upper(): t.text_content() for t in p.locator("#sec-kpi .kpi").all()}
+        mon = sum(x for d, x in raw3["days"] if d[:7] == dt.datetime.now(NY).date().isoformat()[:7])
+        check("x. money: balance, today, week, month (the days since the 1st, ET), all time, ROI on the money bet, open bets",
+              set(tiles) == {"TODAY", "WEEK", "MONTH", "ALL TIME", "ROI", "OPEN BETS"} and usd(mon, True) in tiles["MONTH"] and "+21%" in tiles["ROI"]
+              and "on $542.50 bet" in tiles["ROI"] and "$9.20" in tiles["OPEN BETS"] and "$100.00" in p.locator("#sec-kpi .bal").text_content(), tiles)
+        edge = p.inner_text("#sec-edge")
+        check("x. the live edge card: EV, the average edge, EV on the money at risk, a bar per bet", "+$0.50 EV" in edge and "+5.0¢" in edge
+              and p.locator("#sec-edge .edge-l li").count() == 1 and p.locator("#sec-edge .dv i.pos").count() == 1, edge)
+        nav = p.evaluate("""() => { const b = [...document.querySelectorAll('#secnav [data-go]')]; return [document.getElementById('secnav').hidden,
+            b.map((x) => Math.round(x.getBoundingClientRect().height)), document.querySelector('#secnav [data-go=alerts] b').textContent,
+            document.querySelector('#secnav [data-go=alerts] b').className]; }""")
+        check("x. the section bar: shown with data, 44 px taps, the alerts count (red when one needs you)",
+              nav[0] is False and all(h >= 44 for h in nav[1]) and nav[2] == "3" and nav[3] == "bad", nav)
+        p.click("#secnav [data-go=perf]")
+        p.wait_for_timeout(1200)
+        top = p.evaluate("[document.getElementById('g-perf').getBoundingClientRect().top, document.getElementById('secnav').getBoundingClientRect().bottom]")
+        check("x. tapping Performance glides there, its heading just under the bar", top[1] - 2 <= top[0] <= top[1] + 40, top)
+        p.evaluate("window.scrollTo(0, 0)")
+        th = p.evaluate("""() => { const r = getComputedStyle(document.documentElement), o = window.applyTheme({ accent: '#ff00aa', accent2: 'red;}body{x', bg: '#000' });
+            const a = [r.getPropertyValue('--c').trim(), r.getPropertyValue('--cr').trim(), r.getPropertyValue('--cy').trim(), JSON.stringify(o)];
+            window.applyTheme(null); return a.concat([getComputedStyle(document.documentElement).getPropertyValue('--c').trim()]); }""")
+        check("x. applyTheme(tokens): hex colours only (a CSS-looking value is dropped), null = the Kalshi colours again",
+              th[0] == "#ff00aa" and th[1] == "255,0,170" and th[2] == "#38e1ff" and "accent2" not in th[3] and th[4] == "#1fe5a6", th)
+        try:
+            p.wait_for_function("document.querySelector('.mark.gl canvas.orb')", timeout=9000)
+        except Exception:
+            pass
+        orb = p.evaluate("[!!document.querySelector('.mark.gl canvas.orb'), !!window.KalshiOrb, document.querySelector('.mark svg') !== null]")
+        check("x. the 3D header: the market orb's canvas in the K mark (WebGL here), the SVG K kept as the fallback", orb == [True, True, True], orb)
         # a v2 feed: the same sections from the recent trades list, said so; no alerts list -> a losing run is found
         lose = [{"t": n3 - 600 * i, "ticker": f"KXHYPE15M-X{i}", "title": "HYPE up or down", "side": "yes", "action": "buy", "contracts": 10,
                  "price": 0.96, "pnl": -9.6 if i < 3 else 0.4, "asset": "HYPE"} for i in range(8)]
@@ -953,6 +1004,14 @@ def run_browser(url, tmp):
         check("i. inside Jarvis with a 47 px notch: no second inset (16 px under the bar, no empty band)",
               inner[0] is True and inner[1] == "16px" and inner[2] <= 20, inner)
         shot(p, "8a_framed_notch")
+        fpad = fr.locator("html").evaluate("""(d) => { const w = d.ownerDocument.defaultView; w.scrollTo(0, 1e6);
+            const W = w.innerWidth, H = w.innerHeight, bad = [];
+            for (const e of d.querySelectorAll('body *')) { const c = w.getComputedStyle(e); if (c.position !== 'fixed' && c.position !== 'sticky') continue;
+              const r = e.getBoundingClientRect(); if (r.width && r.right > W - 80 && r.bottom > H - 160 && r.top < H && c.pointerEvents !== 'none') bad.push(e.id || e.className); }
+            const f = d.ownerDocument.getElementById('foot').getBoundingClientRect();
+            return [w.getComputedStyle(d.querySelector('main')).paddingBottom, bad, f.bottom <= H - 160]; }""")
+        check("x. inside Jarvis's full-screen frame: nothing fixed in the orb's 80 x 160 px corner, the page ends above it (176 px + the home bar)",
+              fpad[0] == "210px" and not fpad[1] and fpad[2], fpad)                  # 176 + the emulated 34 px bottom inset
         cdp.send("Emulation.setSafeAreaInsetsOverride", {"insets": {"top": 0, "bottom": 0, "left": 0, "right": 0}})
         cdp.detach()
 

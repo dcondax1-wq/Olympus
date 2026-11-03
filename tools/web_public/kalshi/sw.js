@@ -83,12 +83,14 @@ self.addEventListener('fetch', (e) => {
     return;
   }
   e.respondWith((async () => {
-    // kalshi.css / kalshi.js are versioned (?v=): the exact saved copy answers at once and is refreshed behind it, so a page
-    // drawn from its saved copy after NAV_WAIT_MS never waits again on a slow site for its own style and script.
+    // kalshi.css / kalshi.js / kfx.js / korb.js are versioned (?v=): the exact saved copy answers at once, so a page drawn from
+    // its saved copy after NAV_WAIT_MS never waits again on a slow site for its own files. A versioned file never changes (a
+    // new version is a new ?v= and a new cache), so nothing is fetched behind it: no extra requests holding the phone's few
+    // connections to a slow site.
     // Everything else here (kit.json: the server script's pin) is network first, the saved copy only when the site fails.
     if (u.searchParams.has('v')) {
       const hit = await caches.match(req);
-      if (hit) { e.waitUntil(fetch(req).then((r) => store(req, r)).catch(() => null)); return hit; }
+      if (hit) return hit;
     }
     try {
       // network first, but a dead site (a dropped connection the browser retries) never outwaits the page's own 3 s: after

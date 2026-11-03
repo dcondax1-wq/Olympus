@@ -166,8 +166,9 @@ export class FortuneScene {
 
   /** The intro (once, on the first frames with data): the camera starts high above the wheel, a quarter turn round, and
    *  glides down into the view in INTRO_S, eased. A drag or a pinch ends it at once; reduced motion skips it. */
-  introMove(g, dt) {
-    this.intro = Math.min(1, this.intro + dt / INTRO_S);
+  introMove(g, t) {
+    if (this.introT0 == null) this.introT0 = t;               // wall-clock seconds: a slow phone never drags it out
+    this.intro = Math.min(1, Math.max(0.0001, (t - this.introT0) / INTRO_S));
     const e = 1 - Math.pow(1 - this.intro, 3), off = 1 - e, T = this.T;
     const rel = g.eye.clone().sub(g.look), d = rel.length();
     const yaw = Math.atan2(rel.x, rel.z) + off * 1.35, elev = Math.asin(Math.max(-1, Math.min(1, rel.y / d))) + off * 0.62, dist = d * (1 + off * 0.9);
@@ -207,7 +208,7 @@ export class FortuneScene {
     this.snap = false;
     this.eye.lerp(g.eye, k);
     this.look.lerp(g.look, k);
-    if (this.intro < 1) this.introMove(g, dt);
+    if (this.intro < 1) this.introMove(g, t);
     this.camera.position.copy(this.eye);
     this.camera.lookAt(this.look);
     this.renderer.render(this.scene, this.camera);
