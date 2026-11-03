@@ -840,7 +840,15 @@ namespace NinjaTrader.NinjaScript.AddOns
                     long last = long.MinValue;
                     for (int k = first; k <= lastClosed; k++)
                     {
-                        long open = OpenUnix(bars.GetTime(k), s.Minutes);
+                        long open;
+                        try
+                        {
+                            open = OpenUnix(bars.GetTime(k), s.Minutes);
+                        }
+                        catch (Exception)
+                        {
+                            continue;                      // a time the display zone cannot convert (a DST gap): skip one bar, not the history
+                        }
                         if (open <= last)
                             continue;
                         last = open;
@@ -904,7 +912,15 @@ namespace NinjaTrader.NinjaScript.AddOns
                         s.NextIndex = 0;                   // the series was rebuilt: the time check below skips bars already written
                     for (int k = s.NextIndex; k < count - 1; k++)     // bar k is closed once bar k+1 exists
                     {
-                        long open = OpenUnix(bars.GetTime(k), s.Minutes);
+                        long open;
+                        try
+                        {
+                            open = OpenUnix(bars.GetTime(k), s.Minutes);
+                        }
+                        catch (Exception)
+                        {
+                            continue;                      // unconvertible time (DST gap): skip it, never stall on it every tick
+                        }
                         if (open <= s.LastOpen)
                             continue;
                         s.LastOpen = open;
