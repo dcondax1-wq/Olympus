@@ -1449,7 +1449,7 @@ export function createBrain(opts) {
     return null;
   }
   function help() {
-    const t = 'I can switch dashboards ("open planner", "open Zenith", "Kalshi"), check every system at once ("status", "is everything ok", "how\'s the PC"), tell you how the bots are doing ("how are the bots", "room", "today\'s P&L", "how far to target"), what is on your plan today, and whether the market is open.\nAlso: "brief me", "what should I do now", "when does the market open", "how\'s the eval", "Kalshi positions", and follow-ups like "and ATLAS?".';
+    const t = 'I can switch dashboards ("open planner", "open Zenith", "Kalshi"), check every system at once ("status", "is everything ok", "how\'s the PC"), tell you how the bots are doing ("how are the bots", "room", "today\'s P&L", "how far to target"), what is on your plan today, and whether the market is open.\nAlso: "brief me", "what should I do now", "eval pace", "why no trade", "when does it trade next", "last trade", "P&L this month", "MFFU inactivity rule", "what did the bots learn", "Kalshi positions", and follow-ups like "and ATLAS?".\nYour notes (⋯ → Obsidian): "what did I write about …", "today\'s daily note", "open tasks", "note: …", "remember …", "add task …".';
     return { text: t, speak: 'Ask me how the bots are doing, what is on today, when the market opens, or what you should do now. I can also open any dashboard.', intent: 'help' };
   }
   function timeAnswer(V) {
@@ -1813,7 +1813,9 @@ export function createBrain(opts) {
       const out = [];
       const bad = V.nq && (V.nq.lines.some((x) => x.level === 'bad') || (V.nq.verdict && str(V.nq.verdict.level, 10) === 'bad'));
       if (V.sys && (V.sys.level === 'bad' || V.sys.level === 'warn')) out.push('Is everything OK?');     // the System view has something
-      if (bad || (V.nq && V.nq.stale)) out.push('What should I do now?');
+      const urgent = ranked(V).some((x) => x.p <= 6);
+      if (bad || urgent || (V.nq && V.nq.stale)) out.push('What should I do now?');
+      if (quietOf(V).some((x) => x.q >= 3)) out.push('Why no trade?');
       if (ctx && V.now - ctx.t < FOLLOW_MS && !ctx.kalshi && ['status', 'room', 'target', 'pnl', 'eval'].includes(ctx.topic) && ctx.only && ctx.sel.length === 1) {
         const other = ALL.find((k) => k !== ctx.sel[0] && card(V, k));
         if (other) out.push(`And ${BOT[other].name}?`);
