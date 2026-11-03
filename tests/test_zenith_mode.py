@@ -63,7 +63,7 @@ def part_a():
                                  "targetOrigin", "event.origin", "event.source")))
     check("a. sw.js: le-public-v50, OTHER_APPS / live.json bypass / own-cache cleanup kept as they were",
           "const CACHE = 'le-public-v50';" in sw and int(re.search(r"le-public-v(\d+)", sw).group(1)) == 50
-          and "const OTHER_APPS = ['jarvis/', 'planner/', 'kalshi/', 'prometheus/'];" in sw and "url.pathname.endsWith('live.json')) return;" in sw
+          and "const OTHER_APPS = ['jarvis/', 'planner/', 'kalshi/', 'datacity/', 'mind/', 'tree/', 'oracle/', 'odeon/', 'fates/', 'hermes/', 'prometheus/', 'tyche/'];" in sw and "url.pathname.endsWith('live.json')) return;" in sw
           and "k.startsWith('le-public-') && k !== CACHE" in sw)
     head = idx[:idx.index("</head>")]
     check("a. index.html: the inside-Jarvis check in the head (frame + same site), embed.js loaded last, no intro inside Jarvis",
