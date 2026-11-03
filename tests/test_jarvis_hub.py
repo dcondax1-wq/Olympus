@@ -229,7 +229,7 @@ def part_a():
           "const NAV_WAIT_MS = 3500;" in sw and "Promise.race([net, slow])" in sw and "return copy || offlinePage();" in sw
           and "background:#000" in sw and "location.reload()" in sw)
     check("a. worker v7: data.js, jarvis.css, the fonts, every separate part and switcher.js in SHELL, each saved on its own (a missing part is skipped)",
-          "const CACHE = 'jarvis-v11';" in sw and "'./switcher.js'" in sw and all(f"'./{f}'" in sw for f in ("data.js",) + PARTS + FONTS) and "'./jarvis.css?v=j7'" in sw
+          "const CACHE = 'jarvis-v12';" in sw and "'./switcher.js'" in sw and all(f"'./{f}'" in sw for f in ("data.js",) + PARTS + FONTS) and "'./jarvis.css?v=j8'" in sw
           and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
     # 2026-11-01 ("Just a black screen" on the iPhone): no endless network wait, the previous copy as a fallback, old copies kept
     # until the new one holds every core file, and the page draws even when its stylesheet never arrives
@@ -237,7 +237,7 @@ def part_a():
           "const NET_MAX_MS = 9000;" in sw and "copy ? NAV_WAIT_MS : NET_MAX_MS" in sw and "return offlinePage();" in sw
           and "await net" not in sw.replace("await Promise.race([net", ""))
     check("a. worker v6: a file this copy lacks comes from the previous Jarvis copy; old copies go only when every CORE file is saved",
-          "const OLD = ['jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];" in sw and "for (const name of [CACHE, ...OLD])" in sw
+          "const OLD = ['jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];" in sw and "for (const name of [CACHE, ...OLD])" in sw
           and "CORE.map((u) => c.match(u, { ignoreSearch: true }))" in sw)
     jhtml = open(os.path.join(JV, "index.html"), encoding="utf-8").read()
     check("a. the page draws without its stylesheet after 5 s (a stylesheet still on the way keeps an iPhone screen black)",
@@ -338,7 +338,7 @@ def new_page(br, width=390, sw=False, boot=False, voice=False, height=844, news=
     if not boot:                                   # the boot screen plays once per launch: skipped where it is not the subject
         ctx.add_init_script("try { sessionStorage.setItem('jarvis.booted', '1'); } catch (e) {}")
     if not news:                                   # so is the What's new card (once per release)
-        ctx.add_init_script("try { localStorage.setItem('jarvis.seen', JSON.stringify('j6')); } catch (e) {}")
+        ctx.add_init_script("try { localStorage.setItem('jarvis.seen', JSON.stringify('j7')); } catch (e) {}")
     if voice:
         ctx.add_init_script(FAKE_VOICE)
     p = ctx.new_page()
@@ -774,8 +774,8 @@ def run_c(br, url):
         const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
-          const c = await caches.open('jarvis-v11');
-          const got = await Promise.all(['./index.html', './data.js', './jarvis.css?v=j7', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
+          const c = await caches.open('jarvis-v12');
+          const got = await Promise.all(['./index.html', './data.js', './jarvis.css?v=j8', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));
         }
@@ -1279,8 +1279,257 @@ def run_switcher(br, url):
     ctx.close()
 
 
+def part_intro_files():
+    """o. the OLYMPUS intro in the page: self-contained (its own inline script, no file to fetch), every fail-safe in place."""
+    page = open(os.path.join(JV, "index.html"), encoding="utf-8").read()
+    m = re.search(r'<script id="olympus-intro">(.*?)</script>', page, re.S)
+    js = m.group(1) if m else ""
+    check("o. the intro script: inline right after its overlay (WebKit runs an async file only after the page's module), small, no fetch / import, Safari 16 safe",
+          bool(js) and page.index('id="olyIntro"') < page.index('<script id="olympus-intro">') < page.index('<script type="module">')
+          and not os.path.exists(os.path.join(JV, "intro.js")) and len(js.encode()) < 60_000 and "fetch(" not in js and "import " not in js and "XMLHttpRequest" not in js and "(?<" not in js
+          and not re.search(r"[\w)\]]\?\.[A-Za-z_$]", js) and "??" not in js, len(js))
+    node = shutil.which("node")
+    if node and js:
+        import subprocess
+        with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as fh:
+            fh.write(js)
+        r = subprocess.run([node, "--check", fh.name], capture_output=True, text=True)
+        os.remove(fh.name)
+        check("o. the intro script parses (node --check): a syntax error would leave only its fail-safes", r.returncode == 0, r.stderr[-300:])
+    check("o. the overlay is in the page with its own CSS deadline (gone by 0.95 s when intro.js never runs), above the orb, async script",
+          '<div class="oly" id="olyIntro" aria-hidden="true"></div>' in page
+          and "if (!window.__olyIntro) { var o = document.getElementById('olyIntro'); if (o) o.style.visibility = 'hidden'; } }, 700);" in page
+          and "html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}" in page and "z-index:2147483640" in page
+          and "@keyframes olyEnd" in page)
+    check("o. the start script picks the version before the first paint: full / short (same day) / fade (reduce motion, safe start, unfinished intro) / off (3D Off); none under automation",
+          all(x in page for x in ("g('jarvis.intro.day') === day ? 'short' : 'full'", "im = 'off'", "|| n > 0 || g('jarvis.intro.run')) im = 'fade'",
+                                  "(!navigator.webdriver || fo)", "g('jarvis.intro') !== 'off'")))
+    check("o. the intro's fail-safes: try/catch at start and in every frame, a kill timer, a lost context, a hidden page, the 0.65 s late rule, the unfinished flag",
+          all(x in js for x in ("} catch (err) { fail(err); }", "} catch (e) { fail(e); }", "finish('deadline')", "webglcontextlost", "finish('hidden')",
+                                "Date.now() - W.__olyT0 > 650", "ls('jarvis.intro.run', '1')", "ls('jarvis.intro.run', null)")))
+    check("o. sound only after a gesture (userActivation / a skip tap / a replay), never on a cold open",
+          "navigator.userActivation.hasBeenActive" in js and "return gesture ||" in js and "gesture = true;" in js)
+    check("o. the start watchdog's note removes the intro; the boot log steps aside for it; the 3D core waits for its end (4.5 s at most)",
+          "var o = document.getElementById('olyIntro'); if (o && o.parentNode) o.parentNode.removeChild(o);" in page
+          and "window.addEventListener('oly:intro-end', () => bootEnd(), { once: true }); setTimeout(bootEnd, 4500);" in page)
+
+
+# The intro's own clock, read in the page (this machine may be loaded: wall-clock times from Python would measure the test
+# runner, not the phone). It records, in ms since the start script chose the intro (window.__olyT0):
+#   ready      Jarvis's start finished (html[data-ready])          gone   the overlay left the page
+#   end        the intro said it is over (oly:intro-end)            down   a tap's pointerdown
+#   cover1s    at 1 s, whether the overlay still covers the mic (elementFromPoint: a faded, hidden overlay does not count)
+INTRO_PROBE = """(() => {
+  const P = window.__probe = {};
+  const at = () => Math.round(Date.now() - (window.__olyT0 || Date.now()));
+  window.addEventListener('oly:intro-end', () => { if (P.end == null) P.end = at(); });
+  window.addEventListener('pointerdown', () => { P.down = at(); }, true);
+  document.addEventListener('DOMContentLoaded', () => {
+    const root = document.documentElement;
+    new MutationObserver(() => {
+      if (P.ready == null && root.dataset.ready === '1') P.ready = at();
+      if (P.gone == null && !document.getElementById('olyIntro')) P.gone = at();
+    }).observe(document, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-ready'] });
+    setTimeout(() => {
+      const b = document.getElementById('bigmic').getBoundingClientRect();
+      const e = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2);
+      P.cover1s = !!(e && e.closest('#olyIntro')); P.at1s = at();
+    }, Math.max(0, 1000 - at()));
+  });
+})();"""
+# a phone that cannot keep up: every frame costs 80 ms of main thread
+SLOW_FRAMES = """(() => { const r = window.requestAnimationFrame.bind(window);
+  window.requestAnimationFrame = (f) => r((t) => { const e = performance.now() + 80; while (performance.now() < e) { /* busy */ } f(t); }); })();"""
+NO_WEBGL = """HTMLCanvasElement.prototype.getContext = (function (g) {
+  return function (t) { return /webgl/.test(t) ? null : g.apply(this, arguments); }; })(HTMLCanvasElement.prototype.getContext);"""
+INTRO_GONE = "!document.getElementById('olyIntro') && !document.documentElement.hasAttribute('data-intro')"
+MIC_FREE = """(() => { const b = document.getElementById('bigmic').getBoundingClientRect();
+  const e = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return !!e && !!e.closest('#bigmic'); })()"""
+
+
+def intro_page(br, url, force="1", extra="", reduced=None, block=False, scale="0.3", init=(), cut=False):
+    """A phone (390 x 844) opening Jarvis with the intro allowed ('jarvis.intro.force'; '1' = let the intro choose its version).
+    scale: the intro's render scale here (a software-rendered test browser draws ~2 fps at the phone's 1.5x; '' = the phone's)."""
+    ctx, p, errs, _ = new_page(br, **({"reduced_motion": reduced} if reduced else {}))
+    sc = f"localStorage.setItem('jarvis.intro.scale', '{scale}');" if scale else ""
+    nc = "" if cut else "localStorage.setItem('jarvis.intro.nocut', '1');"
+    ctx.add_init_script(f"try {{ localStorage.setItem('jarvis.intro.force', '{force}'); {sc} {nc} {extra} }} catch (e) {{}}")
+    # no 3D core here (core-visual.js blocked: the 2D core takes over): three.js in a software renderer on a busy machine stalls
+    # the page for seconds right after the reveal, which would time the test machine, not the intro
+    ctx.route(re.compile(r".*/core-visual\.js.*"), lambda r: r.abort())
+    ctx.add_init_script(INTRO_PROBE)
+    for s in init:
+        ctx.add_init_script(s)
+    if block:                                     # the intro's script never gets going (as if it threw while being parsed)
+        ctx.add_init_script("Object.defineProperty(window, '__olyIntro', { get() { return undefined; }, set() { throw new Error('blocked'); } });")
+    p.goto(url + "jarvis/", wait_until="commit")
+    return ctx, p, errs
+
+
+def intro_state(p):
+    return p.evaluate("JSON.parse(JSON.stringify({ st: window.__olyIntro || null, pr: window.__probe || {} }))")
+
+
+def ready_slow(p):
+    p.wait_for_function("document.documentElement.dataset.ready === '1'", timeout=30000)
+
+
+def run_intro(br, url):
+    """o. the OLYMPUS intro on a phone: plays and ends by itself, skips on a tap, removes itself on any error, cuts short on a
+    phone that cannot keep up, never covers Jarvis past 1 s when it fails or never arrives, its versions, its replay; and the
+    home extras that came with it (quick actions, today's timeline, the core's satellites)."""
+    wait = lambda p, js, ms=20000: p.wait_for_function(js, timeout=ms)
+
+    # 1. a cold open: the full version in WebGL, Jarvis starting underneath, then it reveals Jarvis and removes itself
+    ctx, p, errs = intro_page(br, url)
+    wait(p, "window.__olyIntro && (window.__olyIntro.frames > 3 || window.__olyIntro.done)")
+    s = intro_state(p)
+    check("o. a cold open plays the full version in WebGL (its canvas, the OLYMPUS particles, frames running)",
+          s["st"]["mode"] == "full" and s["st"]["state"] == "playing" and s["st"]["n"] > 0 and p.locator("#olyIntro canvas").count() == 1, s)
+    check("o. while it plays it covers the screen (the mic under it), the boot log steps aside",
+          p.evaluate(MIC_FREE.replace("closest('#bigmic')", "closest('#olyIntro')")) and p.locator("#bootfx").count() == 0, s)
+    wait(p, INTRO_GONE)
+    ready_slow(p)
+    s = intro_state(p)
+    check("o. it reveals Jarvis by itself at ~3.1 s of its clock and removes itself: overlay and data-intro gone, the mic tappable",
+          s["st"]["state"] == "done" and 2900 <= s["pr"]["end"] <= 4500 and s["pr"]["gone"] >= s["pr"]["end"] and p.evaluate(MIC_FREE), s)
+    check("o. Jarvis started underneath it, never after it (ready before the intro's end)",
+          s["pr"].get("ready") is not None and s["pr"].get("end") is not None and s["pr"]["ready"] < s["pr"]["end"], s["pr"])
+    check("o. the day is remembered, the in-progress flag cleared, no page errors",
+          bool(p.evaluate("localStorage.getItem('jarvis.intro.day')")) and p.evaluate("localStorage.getItem('jarvis.intro.run')") is None and not errs, errs)
+    vr = p.evaluate("['#hf', '#bigmic', '#vset'].map((s) => document.querySelector(s).getBoundingClientRect().bottom)")
+    check("o. after it, the mic / HANDS-FREE / VOICE are on the first 390 x 844 screen", all(0 < b <= 844 for b in vr), vr)
+
+    # 2. a later open the same day: the 1 s version
+    p.reload(wait_until="commit")
+    wait(p, "window.__olyIntro && window.__olyIntro.mode")
+    wait(p, INTRO_GONE)
+    s = intro_state(p)
+    check("o. a later open the same day gets the 1 s version", s["st"]["mode"] == "short" and s["st"]["state"] == "done" and s["st"]["ms"] <= 2500, s)
+
+    # 3. the replay (command palette: Play the OLYMPUS intro)
+    ready_slow(p)
+    played = p.evaluate("window.__olyIntroPlay('short')")
+    wait(p, "window.__olyIntro && (window.__olyIntro.frames > 1 || window.__olyIntro.done)")
+    wait(p, INTRO_GONE)
+    s = intro_state(p)
+    check("o. the replay plays it again and ends the same way (the mic tappable after)",
+          played is True and s["st"]["mode"] == "short" and s["st"]["state"] == "done" and p.evaluate(MIC_FREE), s)
+    p.evaluate("document.getElementById('fab').click()")
+    p.fill("#palQ", "olympus")
+    check("o. the command palette lists it", "Play the OLYMPUS intro" in p.locator("#palList").inner_text(), p.locator("#palList").inner_text())
+    ctx.close()
+
+    # 4. a tap skips it, and the tap never lands on what is underneath (the core: talk)
+    ctx, p, errs = intro_page(br, url, "full")
+    wait(p, "window.__olyIntro && window.__olyIntro.frames > 2")
+    ready_slow(p)
+    box = p.locator("#stage").bounding_box()
+    p.mouse.click(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
+    wait(p, INTRO_GONE)
+    s = intro_state(p)
+    check("o. a tap skips it: gone within 1 s of the tap (its own clock), the mic tappable",
+          s["st"]["state"] == "skipped" and s["pr"]["gone"] - s["pr"]["down"] < 1000 and p.evaluate(MIC_FREE), s)
+    check("o. the skip tap did not reach the core under it (Jarvis is not listening), no page errors",
+          p.evaluate("document.documentElement.dataset.state") != "listening" and not errs, (p.evaluate("document.documentElement.dataset.state"), errs))
+    ctx.close()
+
+    # 5. it fails: at its start, in a frame, no WebGL, intro.js never arrives
+    ctx, p, errs = intro_page(br, url, "full", "localStorage.setItem('jarvis.intro.fail', 'init');")
+    wait(p, INTRO_GONE)
+    ready_slow(p)
+    wait(p, "window.__probe && window.__probe.cover1s !== undefined")
+    s = intro_state(p)
+    check("o. an error at its start removes it (state failed): the mic free by 1 s, Jarvis starts, no page error",
+          s["st"]["state"] == "failed" and s["pr"].get("cover1s") is False and p.evaluate(MIC_FREE) and not errs, (s, errs))
+    check("o. ...and the next start plays it again (the failure clears its in-progress flag)", p.evaluate("localStorage.getItem('jarvis.intro.run')") is None, "")
+    ctx.close()
+    ctx, p, errs = intro_page(br, url, "full", "localStorage.setItem('jarvis.intro.fail', 'frame');")
+    wait(p, INTRO_GONE)
+    s = intro_state(p)
+    check("o. an error in a frame removes it (state failed), no page error", s["st"]["state"] == "failed" and "frame" in s["st"]["err"] and not errs, (s, errs))
+    ctx.close()
+    ctx, p, errs = intro_page(br, url, "full", init=[NO_WEBGL])
+    wait(p, INTRO_GONE)
+    s = intro_state(p)
+    check("o. no WebGL: the still OLYMPUS word mark fades instead (< 1.6 s)", s["st"]["mode"] == "fade" and s["st"]["q"] == "still" and s["st"]["ms"] < 1600, s)
+    ctx.close()
+    ctx, p, errs = intro_page(br, url, "full", block=True)
+    ready_slow(p)
+    wait(p, "window.__probe && window.__probe.cover1s !== undefined")
+    s = intro_state(p)
+    check("o. the intro script never runs: by 1 s its overlay no longer covers Jarvis (the 0.7 s / CSS deadlines), the mic tappable",
+          s["st"] is None and s["pr"]["cover1s"] is False and p.evaluate(MIC_FREE), s)
+    wait(p, INTRO_GONE, 5000)
+    check("o. ...and the page tidies the dead overlay away", True)
+    ctx.close()
+
+    # 6. a phone that cannot keep up (every frame 80 ms) at the phone's own scale: a quick cut to the reveal, never a slideshow
+    ctx, p, errs = intro_page(br, url, "full", init=[SLOW_FRAMES], cut=True)
+    wait(p, INTRO_GONE)
+    s = intro_state(p)
+    check("o. a phone that cannot keep up: it cuts to the reveal early (before the 3.1 s reveal), never a slideshow",
+          s["st"].get("slow") is True and s["st"]["state"] == "done" and s["pr"]["end"] < 3000, s)
+    ctx.close()
+
+    # 7. the versions it picks by itself
+    for label, kw, want, length in (("reduce motion: a simple 0.8 s fade", {"reduced": "reduce"}, "fade", 0.8),
+                                     ("3D effects Off: a 0.5 s fade", {"extra": "localStorage.setItem('jfx', 'off');"}, "off", 0.5),
+                                     ("after a start that did not finish: the fade, never WebGL", {"extra": "localStorage.setItem('jarvis.unfinished', '1');"}, "fade", 0.8),
+                                     ("after an intro that did not finish (the phone closed it): the fade", {"extra": "localStorage.setItem('jarvis.intro.run', '1');"}, "fade", 0.8)):
+        ctx, p, errs = intro_page(br, url, **kw)
+        wait(p, "window.__olyIntro && window.__olyIntro.mode")
+        gl = p.evaluate("!!document.querySelector('#olyIntro canvas')")
+        wait(p, INTRO_GONE)
+        s = intro_state(p)
+        check(f"o. {label}", s["st"]["mode"] == want and s["st"]["q"] == "still" and s["st"]["len"] == length and not gl and s["st"]["state"] == "done", s)
+        ctx.close()
+    ctx, p, errs = intro_page(br, url, extra="localStorage.setItem('jarvis.intro', 'off');")
+    ready_slow(p)
+    check("o. switched off (Look → OLYMPUS intro): none", p.evaluate("!document.documentElement.hasAttribute('data-intro') && !(window.__olyIntro && window.__olyIntro.mode)"), intro_state(p))
+    ctx.close()
+
+    # 8. under automation with no test asking: no intro (every other check sees Jarvis at once); the home extras
+    ctx, p, errs, _ = new_page(br)
+    p.goto(url + "planner/")                      # the stand-in Planner saves today (Gym 7:30 AM, Review fills 4:15 PM, a task)
+    p.goto(url + "jarvis/")
+    ready_slow(p)
+    check("o. under automation, unasked: no intro, and nothing waits for one (state off)",
+          p.evaluate("!document.documentElement.hasAttribute('data-intro') && window.__olyIntro.state === 'off' && window.__olyIntro.done === true"), intro_state(p))
+    qa = p.evaluate("[...document.querySelectorAll('#qa .qa-t')].map((b) => [b.dataset.qa, Math.round(b.getBoundingClientRect().height)])")
+    check("o. quick actions: 8 tiles (briefing, system, NQ bot, planner, kalshi, search, hide $, look), each >= 44 px tall",
+          [q[0] for q in qa] == ["brief", "system", "zenith", "planner", "kalshi", "search", "hide", "look"] and all(q[1] >= 44 for q in qa), qa)
+    tl = p.evaluate("""(() => { const b = document.getElementById('p-today'); return { rows: b.querySelectorAll('.tl-row').length, now: !!b.querySelector('.tl-now'),
+        ev: b.querySelectorAll('.tl-ev').length, task: !!b.querySelector('.tl-row.plan[data-app="planner"]'), next: b.querySelectorAll('.tl-row.next').length,
+        head: b.querySelector('.tl-head').textContent }; })()""")
+    # the stand-in Planner has Gym at 7:30 AM and Review fills at 4:15 PM today, and one open task (whatever the time of day)
+    check("o. today's timeline: the trading day with the Planner's events on the day bar, the now needle, the to-do row, one NEXT row at most",
+          tl["rows"] >= 3 and tl["now"] and tl["ev"] == 2 and tl["task"] and tl["next"] <= 1 and tl["head"], tl)
+    sats = p.evaluate("[...document.querySelectorAll('#sats .sat')].map((s) => s.className.replace('sat ', ''))")
+    dots = p.evaluate("[...document.querySelectorAll('#sysdots i')].map((i) => i.className)")
+    check("o. the core's satellites: one per system, each coloured by that system's verdict (as the System strip)", sats == dots and len(sats) >= 4, (sats, dots))
+    p.evaluate("document.querySelector('#sats .sat').click()")
+    near = "Math.abs(document.getElementById('p-system').getBoundingClientRect().top) < 120"
+    try:
+        p.wait_for_function(near, timeout=5000)
+    except Exception:
+        pass
+    check("o. a satellite opens the System panel and never starts listening",
+          p.evaluate("document.documentElement.dataset.state") != "listening" and p.evaluate(near), p.evaluate("document.getElementById('p-system').getBoundingClientRect().top"))
+    p.evaluate("window.scrollTo(0, 0)")
+    p.click('#qa [data-qa="hide"]')
+    p.wait_for_function("document.documentElement.classList.contains('money-hidden')", timeout=4000)
+    p.wait_for_function("document.querySelector('#qa [data-qa=\"hide\"]').textContent.trim() === 'Show $'", timeout=4000)
+    check("o. Hide $ hides the balances and its tile turns into Show $", True)
+    p.click('#qa [data-qa="planner"]')
+    p.wait_for_function("window.__jarvis.active() === 'planner'", timeout=6000)
+    check("o. a quick action opens its app (Planner); no page errors", not errs, errs)
+    ctx.close()
+
+
 def main():
     part_a()
+    part_intro_files()
     tmp = tempfile.mkdtemp(prefix="le_jarvis_")
     variants = {"A": site(tmp, "A", "none"), "B": site(tmp, "B", "stub"), "C": site(tmp, "C", "asis")}
     for f in PARTS:
@@ -1299,6 +1548,7 @@ def main():
             run_look(br, host + variants["C"])
             run_switcher(br, host + variants["C"])
             run_system(br, host + variants["C"])
+            run_intro(br, host + variants["C"])
             br.close()
     finally:
         srv.shutdown()
