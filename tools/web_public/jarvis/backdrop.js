@@ -148,7 +148,11 @@ async function mount() {
   kick();
 }
 
-// after the page has loaded and gone idle: three.js and the shaders never hold up Jarvis's boot
+// once Jarvis has booted (the boot log or the OLYMPUS intro gone) and the page is idle: compiling the shaders and the
+// environment takes the main thread for a moment, and that must never hold up the boot screen or the intro
 const start = () => mount().catch((e) => { state.state = 'off'; state.error = String((e && (e.stack || e.message)) || e); delete root.dataset.bg3d; });
+const booted = () => !document.getElementById('bootfx') && (!window.__olyIntro || window.__olyIntro.done);
 const idle = () => (window.requestIdleCallback ? requestIdleCallback(start, { timeout: 2500 }) : setTimeout(start, 600));
-if (document.readyState === 'complete') idle(); else window.addEventListener('load', idle, { once: true });
+let waited = 0;
+const whenBooted = () => { if (booted() || (waited += 250) > 15000) setTimeout(idle, 400); else setTimeout(whenBooted, 250); };
+if (document.readyState === 'complete') whenBooted(); else window.addEventListener('load', whenBooted, { once: true });
