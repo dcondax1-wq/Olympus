@@ -216,17 +216,21 @@
   const vt = () => Z.canVT();
   R.classList.toggle('zn-vt', vt());
   const r0 = typeof render === 'function' ? render : null;
-  let lastPage = typeof PAGE !== 'undefined' ? PAGE : null, lastG = null;
+  let lastPage = typeof PAGE !== 'undefined' ? PAGE : null, lastG = null, busy = false;
+  const FULL3D = new Set(['liveview', 'holo']);
   if (r0 && !r0.__zn) {
     render = function (soft) { // eslint-disable-line no-global-assign
       const self = this, args = arguments, p = typeof PAGE !== 'undefined' ? PAGE : null, g = groupOf(p);
       const moved = !soft && p !== lastPage && lastPage != null;
-      const a = ORD.indexOf(lastG), b = ORD.indexOf(g);
+      const a = ORD.indexOf(lastG), b = ORD.indexOf(g), prevPage = lastPage;
       lastPage = p; lastG = g;
       R.classList.toggle('zn-vt', vt());
-      if (!moved || !vt() || document.hidden) { const out = r0.apply(self, args); post(); return out; }
+      // full-screen 3D pages (their own WebGL scene) switch at once: a View Transition would snapshot a live canvas
+      const heavy = FULL3D.has(p) || FULL3D.has(prevPage);
+      if (!moved || !vt() || heavy || busy || document.hidden) { const out = r0.apply(self, args); post(); return out; }
       R.dataset.znDir = a >= 0 && b >= 0 && a !== b ? (b > a ? 'r' : 'l') : 'u';
-      Z.transition(() => { r0.apply(self, args); post(); });
+      busy = true;                                            // a tap during the transition draws at once (no queue)
+      Z.transition(() => { r0.apply(self, args); post(); }).then(() => { setTimeout(() => { busy = false; }, 340); });
       return undefined;
     };
     render.__zn = true;
