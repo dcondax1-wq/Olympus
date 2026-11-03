@@ -26,7 +26,7 @@ from . import store
 
 OUT = B.OUT
 WEB = os.path.join(B.ROOT, "tools", "web_public", "datacity")
-HIST_KEEP = 200
+HIST_KEEP = 120                    # ~6 months of nightly rows (~0.5 MB): research/datacity JSON stays <= 3 MB
 RUN_ID = "datacity_holdout_portfolio"
 
 
