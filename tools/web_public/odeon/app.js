@@ -15,6 +15,7 @@ import { loadReels, demoBundle, fmtUsd, fmtR, fmtPx, dayLabel, hhmm } from './da
 import { phase, openPnl, stopAt } from './timeline.js';
 import { Captions, Callouts } from './captions.js';
 import { Reels, Transport, SPEEDS, fillStats, sortReels } from './ui.js';
+import { TradeStrip } from './strip.js';
 
 const O = window.OLYMPUS || null;   // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
 const $ = (s) => document.querySelector(s);
@@ -36,6 +37,7 @@ const canvas = $('#stage');
 const cc = new Captions({ line: $('#cc'), transcript: $('#transcript'), reduced });
 const callouts = new Callouts($('#callouts'));
 const reels = new Reels($('#reels'), (id) => { S.hl = null; openReel(id, true); showReels(false); });
+const strip = new TradeStrip($('#strip'), (id) => { S.hl = null; openReel(id, true); });
 const transport = new Transport($('#transport'), {
   toggle: () => (S.ended ? restart() : setPlaying(!S.playing)),
   speed: (x) => setSpeed(x),
@@ -50,10 +52,11 @@ async function makeStage() {
     const ok = !!(probe.getContext('webgl2') || probe.getContext('webgl'));
     if (!ok || qs.get('flat') === '1') throw new Error('no webgl');
     const [{ Theater }, { Director }, THREE] = await Promise.all([import('./scene.js'), import('./director.js'), import('../jarvis/three.module.min.js')]);
-    const th = new Theater(canvas, { lite: S.lite, reduced });
+    const cam = new THREE.PerspectiveCamera(42, 1, 0.1, 1500);
+    const th = new Theater(canvas, { lite: S.lite, reduced, camera: cam });
+    th.cam = cam;
     O?.track(th.renderer);
     O?.themeScene?.({ scene: th.scene, renderer: th.renderer });   // OLYMPUS theme: fog + clear colour follow it
-    const cam = new THREE.PerspectiveCamera(42, 1, 0.1, 1500);
     S.three = THREE; S.camera = cam; S.dir = new Director(cam, { reduced });
     S.stage = th;
     S.project = (a) => {
@@ -154,6 +157,7 @@ function openReel(id, play) {
   transport.load(tr);
   fillStats($('#stats'), tr);
   reels.mark(tr.id);
+  strip.mark(tr.id);
   $('#title').textContent = `${tr.bot === 'ATLAS' ? 'ATLAS · ' + tr.strat : 'LIT'} · ${tr.side}`;
   $('#sub').textContent = `${dayLabel(tr.day)} · ${hhmm(tr.entry.t, tr.off)} ET`;
   const src = $('#srcBadge');
@@ -491,6 +495,7 @@ async function start() {
   S.demo = b.demo;
   $('#demoBadge').hidden = !S.demo;
   reels.set(S.trades, S.demo);
+  strip.set(S.trades);
   const h = decodeURIComponent(location.hash.slice(1));
   const m = /^reel=(.+)$/.exec(h);
   const first = m && S.trades.some((t) => t.id === m[1]) ? m[1] : S.trades[0].id;
@@ -517,6 +522,15 @@ window.__odeon = {
     const L = b.local ? b.local(34) : null;
     return { shot: S.dir && S.dir.s, head: S.stage && S.stage.head, floorY: S.stage && S.stage.floorY, band: S.band, fill: S.fill,
       yStop: b.yStop, yEntry: b.yEntry, yTarget: b.yTarget, local: L, cam: S.camera && S.camera.position.toArray() };
+  },
+  /** the 2026-11-03 look pass, for the tests: the render core's passes, the arena, the R ruler and the live P&L tag */
+  look: () => {
+    const th = S.stage;
+    if (!th || !th.rc) return null;
+    const kinds = [];
+    th.scene.traverse((o) => { if (o.isLight) kinds.push('light'); if (o.isInstancedMesh) kinds.push('instanced'); if (o.material && o.material.isMeshPhysicalMaterial) kinds.push('physical'); });
+    return { passes: th.rc.passes(), quality: th.rc.quality(), stats: th.rc.stats(), arena: !!th.arena, kinds,
+      rungs: (th.rungs || []).map((r) => ({ n: r.n, on: r.s.visible })), tag: th.pnlTag ? { on: th.pnlTag.visible, text: th.pnlTag.userData.text || '' } : null };
   },
   seek, play: () => setPlaying(true), pause: () => setPlaying(false), speed: setSpeed, open: (id, play) => openReel(id, play !== false),
   highlights: () => startHighlights(), applyTheme, find: (key) => { const t = findTrade(key); return t ? t.id : null; },

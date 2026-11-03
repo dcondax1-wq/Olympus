@@ -8,8 +8,15 @@
 //
 // Look: silk ribbons (a fibre core, a scattered-light halo, twisted sheen bands that run along the thread), a spindle that
 // spins (a lathe body with wound-thread spirals + a wobbling whorl), red snaps that splash a ring across the floor, gold
-// passes that ripple a ring through the gate, golden motes drifting through the gate. Draw calls: about 16 (budget 24).
+// passes that ripple a ring through the gate, golden motes drifting through the gate.
+// Render (2026-11-03, docs/OLYMPUS_RENDER.md): the OLYMPUS render core in 'display' space (the silk keeps its colours) with
+// bloom + 4x MSAA on HD and FXAA on LITE; the arena is the loom of the Moirai (fates-loom.js: marble posts, gold beams, a sheet of
+// warp fibres, a colonnade); the spindle is gold; the eval gauge stands beside the loom (sc.gauge). Draw calls: about 50 with the
+// post passes (budget 64).
 import * as THREE from '../jarvis/three.module.min.js';
+import { createRenderer } from '../olympus/render.js';
+import * as M from '../olympus/materials.js';
+import { buildLoom } from './fates-loom.js';
 
 export const COL = { gold: [1.0, 0.76, 0.28], red: [1.0, 0.26, 0.34], violet: [0.62, 0.46, 1.0] };
 export const Y1 = 3.0;            // the target's height (progress 1)
@@ -18,6 +25,12 @@ const FOG_D = 0.045;
 const FOG = `
   uniform float uFog;
   float fogOf(vec4 mv) { float d = -mv.z; return 1.0 - exp(-uFog * uFog * d * d); }`;
+
+
+// Render tier policy (one copy per app): ?q=ultra|high|low|off forces a tier (tests, screenshots, perf probes, like render-lab);
+// a software GL renderer (SwiftShader, llvmpipe: no GPU) is held to LITE, 4x MSAA + bloom would be a slideshow there; otherwise the kit's level.
+const forcedTier = () => { const q = new URLSearchParams(location.search).get('q'); return ['ultra', 'high', 'low', 'off'].indexOf(q) >= 0 ? q : null; };
+const softwareGL = (gl) => { try { const e = gl.getExtension('WEBGL_debug_renderer_info'); return !!e && /swiftshader|llvmpipe|software/i.test(String(gl.getParameter(e.UNMASKED_RENDERER_WEBGL))); } catch (_) { return false; } };
 
 function label(text, color, h = 0.32) {
   const c = document.createElement('canvas');
@@ -38,13 +51,20 @@ function label(text, color, h = 0.32) {
 function dispose(o) { o.traverse((x) => { x.geometry?.dispose(); if (x.material) { x.material.map?.dispose(); x.material.dispose(); } }); }
 
 export function createScene(canvas, opt = {}) {
-  let R;
-  try { R = new THREE.WebGLRenderer({ canvas, antialias: !opt.lite, alpha: false, powerPreference: 'high-performance' }); } catch (e) { return null; }
   const BG = new THREE.Color(0x07050f);
-  R.setClearColor(BG, 1);
   const scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2(BG.getHex(), FOG_D);
   const cam = new THREE.PerspectiveCamera(56, 1, 0.1, 120);
+  let rc;
+  try {
+    rc = createRenderer({ canvas, scene, camera: cam, space: 'display', env: 'night', tint: '#ffd36a', autoSize: false, fitCamera: false, adapt: false,
+      maxDpr: 1.75, bloom: { strength: 0.72, radius: 0.6, threshold: 0.8 }, grade: { vignette: 0.36, grain: 0.035 } });
+  } catch (e) { return null; }
+  const R = rc.renderer;
+  R.setClearColor(BG, 1);
+  const baseTier = () => forcedTier() || (softwareGL(R.getContext()) ? 'low' : null);
+  const tierFor = (v) => baseTier() || (v ? 'low' : ['ultra', 'high'].indexOf(rc.quality()) >= 0 ? rc.quality() : 'high');
+  if (opt.lite || baseTier()) rc.setQuality(tierFor(!!opt.lite));
   const G = {};
   const U = { uT: { value: 0 }, uFog: { value: FOG_D }, uGateY: { value: Y1 }, uFloorY: { value: 0 }, uPx: { value: 1 },
     uAccent: { value: new THREE.Color(1.0, 0.81, 0.35) } };   // shared uniforms (one update a frame reaches every shader)
@@ -106,15 +126,38 @@ export function createScene(canvas, opt = {}) {
       }`,
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
   }));
-  G.whorl = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.02, 8, 48), rimMat(0xc9a8ff, 0.9));
+  G.spinBody.scale.setScalar(1.04);                       // the silk shader wraps a solid gold core
+  G.spinCore = new THREE.Mesh(new THREE.LatheGeometry(prof, lite ? 18 : 32), M.metal({ kind: 'gold', roughness: 0.22 }));
+  G.whorl = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.032, 12, 48), M.metal({ kind: 'gold', roughness: 0.18 }));
   G.whorl.rotation.x = Math.PI / 2;
+  G.whorlGlass = new THREE.Mesh(new THREE.CircleGeometry(0.29, 40).rotateX(-Math.PI / 2), M.glass({ color: '#e9ddff', rim: '#c9a8ff', opacity: 0.3 }));
+  G.whorlGlass.material.side = THREE.DoubleSide;
+  G.whorl.add(G.whorlGlass); G.whorlGlass.rotation.x = -Math.PI / 2;
   G.spindle = new THREE.Group();
-  G.spindle.add(G.spinBody, G.whorl);
+  G.spindle.add(G.spinCore, G.spinBody, G.whorl);
   G.spindle.scale.setScalar(0.62);
   scene.add(G.spindle);
 
   G.labels = new THREE.Group();
   scene.add(G.labels);
+
+  // the arena: the loom of the Moirai (marble, gold, a sheet of warp fibres), lit for the physical materials
+  const loom = buildLoom({ lite, len: LEN, y1: Y1 });
+  scene.add(loom.group);
+
+  // the eval gauge (sc.gauge): a rod beside the loom, red from the floor up to today's balance (the drawdown left), gold from there
+  // to the gate (still to earn), a pearl at today; and a pass-odds wheel above the gate (gold arc = pass, dim ring = the rest)
+  G.gauge = new THREE.Group();
+  G.gauge.visible = false;
+  const rod = (c) => new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 1, 12), M.neon({ color: c, intensity: 2.4, fog: true }));
+  G.gRoom = rod('#ff4d64'); G.gToGo = rod('#ffc65a');
+  G.gPearl = new THREE.Mesh(new THREE.SphereGeometry(0.095, 20, 14), M.glass({ color: '#ffffff', rim: '#ffffff', opacity: 0.85 }));
+  G.gWheelBg = new THREE.Mesh(new THREE.RingGeometry(0.3, 0.34, 64), M.neon({ color: '#6b5aa8', intensity: 1.0, fog: true, opacity: 0.8 }));
+  G.gWheel = new THREE.Mesh(new THREE.RingGeometry(0.29, 0.355, 64, 1, 0, 0.01), M.neon({ color: '#ffc65a', intensity: 3.2, fog: true }));
+  G.gWheel.rotation.z = Math.PI / 2; G.gWheelBg.rotation.z = 0;
+  G.gauge.add(G.gRoom, G.gToGo, G.gPearl, G.gWheelBg, G.gWheel);
+  scene.add(G.gauge);
+  const GX = 1.45, GZ = -1.6;
 
   // motes: violet / gold dust in the air + golden motes rising through the gate (one Points buffer)
   function makeMotes() {
@@ -318,7 +361,7 @@ export function createScene(canvas, opt = {}) {
 
   // ---------------------------------------------------------------------------------------------- the public face
   const sc = {
-    R, cam, scene, get lite() { return lite; }, accent: U.uAccent.value,   // the gate / motes / spindle colour (a THREE.Color)
+    R, rc, cam, scene, loom, get lite() { return lite; }, accent: U.uAccent.value,   // the gate / motes / spindle colour (a THREE.Color)
     /** threads: from fates-core (evalThreads / moneyThreads); map: {H, tPow, yOf, gateY, floorY, gateText, abyssText, spread, money} */
     build(list, map, secAt) {
       for (const k of ['threads', 'sparks', 'bead']) clear(k);
@@ -334,6 +377,9 @@ export function createScene(canvas, opt = {}) {
       const minY = Math.min(0, ...W.map((p) => Math.min(...p.map((q) => q.y))));
       const ay = map.floorY != null ? map.floorY : minY - 0.08;
       G.abyss.position.y = ay; G.floorRim.position.y = ay + 0.01; U.uFloorY.value = ay;
+      loom.place(map.gateY, ay);
+      sc.floorY = ay; sc.gateY = map.gateY;
+      G.gauge.visible = false;
       const lab = (t, c, h, x, y, z, left = true) => { const s = label(t, c, h); s.position.set(left ? x + s.scale.x / 2 : x, y, z); G.labels.add(s); };
       lab(map.gateText, '#ffd36a', 0.3, -1.75, map.gateY + 0.2, -1.6);
       lab(map.abyssText, '#ff5a6e', 0.26, -1.75, map.floorY != null ? ay + 0.2 : map.yOf(0) - 0.2, -1.6);   // money: $0 under its line, clear of the goal
@@ -343,11 +389,10 @@ export function createScene(canvas, opt = {}) {
       return W;
     },
     reseed() { seedBase = (seedBase * 9301 + 49297) % 233280 || 7; },
-    setLite(v) { if (lite === v) return; lite = v; makeMotes(); },
+    setLite(v) { if (lite === v) return; lite = v; rc.setQuality(tierFor(v)); makeMotes(); },
     resize(top, bottom) {
       const w = window.innerWidth, h = window.innerHeight;
-      R.setPixelRatio(Math.min(window.devicePixelRatio || 1, lite ? 1.25 : 2));
-      R.setSize(w, h, false);
+      rc.resize(w, h);
       cam.aspect = w / h;
       const shift = Math.max(-h * 0.3, Math.min(h * 0.3, (top - (h - bottom)) / 2));   // centre the vanishing point in the free band
       cam.setViewOffset(w, h, 0, -shift, w, h);
@@ -370,7 +415,8 @@ export function createScene(canvas, opt = {}) {
       const sway = still ? 0 : Math.sin(tg * 0.17) * 0.45;
       cam.position.set(sway, 1.55 + (still ? 0 : Math.sin(tg * 0.23) * 0.1), 7.4);
       cam.lookAt(sway * 0.2, MAP && MAP.money ? 0.2 : 1.45, -14);       // money threads start low ($0): look a little down at them
-      R.render(scene, cam);
+      loom.update(tg, still);
+      rc.render();
     },
     bead(th, k) {
       if (!G.bead) return;
@@ -417,13 +463,34 @@ export function createScene(canvas, opt = {}) {
     theme(tok) {
       const bg = tok && (tok.bg || tok['--bg']), acc = tok && (tok.accent || tok['--oly-accent'] || tok.gold);
       try { if (bg) { BG.set(bg); R.setClearColor(BG, 1); scene.fog.color.copy(BG); } } catch (e) { /* not a colour */ }
-      try { if (acc) U.uAccent.value.set(acc); } catch (e) { /* not a colour */ }
+      try { if (acc) { U.uAccent.value.set(acc); loom.setAccent(U.uAccent.value); } } catch (e) { /* not a colour */ }
+    },
+    /** The eval gauge: g = { p0 (today's balance as progress 0..1 between the floor and the gate), room, toGo, pass, fail } (fates-core
+        gaugeOf), or null to hide it. Money scenarios have no floor, so no gauge. */
+    gauge(g) {
+      if (!g || !MAP || MAP.money) { G.gauge.visible = false; return; }
+      const fy = sc.floorY, gy = MAP.gateY, y = fy + (gy - fy) * Math.max(0, Math.min(1, g.p0));
+      G.gauge.visible = true;
+      const seg = (m, y0, y1) => { m.position.set(GX, (y0 + y1) / 2, GZ); m.scale.set(1, Math.max(0.001, y1 - y0), 1); };
+      seg(G.gRoom, fy, y); seg(G.gToGo, y, gy);
+      G.gPearl.position.set(GX, y, GZ);
+      G.gWheelBg.position.set(GX, gy + 0.62, GZ);
+      G.gWheel.position.copy(G.gWheelBg.position);
+      const th = Math.max(0.01, Math.min(6.2832, (g.pass == null ? 0 : g.pass) / 100 * Math.PI * 2));
+      G.gWheel.geometry.dispose();
+      G.gWheel.geometry = new THREE.RingGeometry(0.29, 0.355, 64, 1, 0, th);
+      for (const k of ['gLabRoom', 'gLabGo', 'gLabOdds']) { if (G[k]) { G.gauge.remove(G[k]); dispose(G[k]); G[k] = null; } }
+      G.gLabRoom = label(`ROOM ${g.roomText}`, '#ff7a8c', 0.15); G.gLabRoom.position.set(GX + 0.1 + G.gLabRoom.scale.x / 2, (fy + y) / 2, GZ);
+      G.gLabGo = label(`TO GO ${g.goText}`, '#ffd88a', 0.15); G.gLabGo.position.set(GX + 0.1 + G.gLabGo.scale.x / 2, (y + gy) / 2 + 0.05, GZ);
+      G.gLabOdds = label(`PASS ${g.passText}`, '#ffe9b0', 0.17); G.gLabOdds.position.set(GX + 0.46 + G.gLabOdds.scale.x / 2, gy + 0.62, GZ);
+      G.gauge.add(G.gLabRoom, G.gLabGo, G.gLabOdds);
     },
     probe() {
-      return { k: G.threads ? G.threads.material.uniforms.uTime.value : null, calls: R.info.render.calls, tris: R.info.render.triangles,
+      return { gauge: G.gauge.visible, loom: loom.group.children.length, passes: rc.passes(), quality: rc.quality(), bloom: rc.stats().bloom,
+       ...{ k: G.threads ? G.threads.material.uniforms.uTime.value : null, calls: R.info.render.calls, tris: R.info.render.triangles,
         verts: G.threads ? G.threads.geometry.attributes.position.count : 0, spin: G.spinBody.rotation.y,
         sparks: G.sparks ? G.sparks.geometry.attributes.position.count : 0, rings: G.sparks ? Array.from(G.sparks.geometry.attributes.aKind.array).filter((x) => x > 0.5).length : 0,
-        motes: G.motes ? Array.from(G.motes.geometry.attributes.aSeed.array).filter((x) => x >= 1.5).length : 0 };
+        motes: G.motes ? Array.from(G.motes.geometry.attributes.aSeed.array).filter((x) => x >= 1.5).length : 0 } };
     },
   };
   return sc;

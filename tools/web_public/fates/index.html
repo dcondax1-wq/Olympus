@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="../olympus/olympus.css?v=o2">
 <script src="../olympus/themes.js?v=o2"></script>
 <script src="../olympus/olympus.js?v=o2" data-app="fates"></script>
-<link rel="stylesheet" href="fates.css?v=f3">
+<link rel="stylesheet" href="fates.css?v=f5">
 </head>
 <body>
 <canvas id="scene" aria-hidden="true"></canvas>
@@ -55,6 +55,11 @@
     <div class="tile" data-id="pay30"><span class="l"></span><b class="v"></b><span class="s"></span></div>
   </section>
   <p class="live" id="live" aria-live="polite"></p>
+  <section class="gauge" id="gauge" aria-label="Eval gauge: drawdown left, distance to target, pass odds" hidden>
+    <div class="g" data-id="dd"><span class="l">Drawdown left</span><b class="v"></b><i class="gb"><u></u></i><span class="s"></span></div>
+    <div class="g" data-id="tgt"><span class="l">To target</span><b class="v"></b><i class="gb"><u></u></i><span class="s"></span></div>
+    <div class="g" data-id="odds"><span class="l">Pass odds</span><b class="v"></b><i class="gb"><u></u></i><span class="s"></span></div>
+  </section>
   <p class="cap" id="cap"></p>
   <div class="bottom">
     <button type="button" class="spin" id="spin">Spin again</button>
@@ -66,6 +71,6 @@
   </section>
   <p class="nogl" id="nogl" hidden>3D is off on this device: the numbers above are the full result.</p>
 </main>
-<script type="module" src="fates.js?v=f3"></script>
+<script type="module" src="fates.js?v=f5"></script>
 </body>
 </html>

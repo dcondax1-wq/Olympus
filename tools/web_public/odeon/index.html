@@ -46,6 +46,14 @@
 <div class="edge" aria-hidden="true"><span id="mkTarget" class="edge-mk target" hidden></span><span id="mkStop" class="edge-mk stop" hidden></span></div>
 
 <section id="dock" class="dock" aria-label="The film: captions and playback">
+  <section id="strip" class="strip" aria-label="Every trade in order: drag to scrub from trade to trade" hidden>
+    <button class="st-prev" type="button" aria-label="Previous trade">‹</button>
+    <div class="st-mid">
+      <div class="st-bars" role="slider" tabindex="0" aria-label="Trades, oldest to newest" aria-valuemin="1" aria-valuemax="1" aria-valuenow="1"></div>
+      <p class="st-lab" aria-live="polite"></p>
+    </div>
+    <button class="st-next" type="button" aria-label="Next trade">›</button>
+  </section>
   <section id="cc" class="cc" aria-live="polite"><time class="cc-time"></time><span class="cc-text"></span></section>
   <nav id="transport" class="transport" aria-label="Playback">
     <div class="row scrub-row">
