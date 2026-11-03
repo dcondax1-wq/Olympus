@@ -43,7 +43,7 @@ export const MODES = {
     prompt: 'MODE: TRADING. He wants the trading desk: the bots\' status, each eval\'s room to its floor (drawdown), MFFU\'s 7-day rule, the day\'s plan and entry window, and risk. Lead with money at risk. Use FACTS only for every number; say plainly when one is missing. Never suggest a manual trade beyond the 1 MNQ keep-alive, never sizing up, never arming or going live: paper rules and his own tap.',
     tools: ['get_bots_status', 'get_money', 'calc', 'open_app', 'set_reminder'],
     quick: ['How are the bots?', 'Am I at risk?', "Today's trading plan", 'How much room is left?', 'Why no trade?', 'When is the next setup?'],
-    apps: ['zenith', 'fates', 'oracle', 'odeon'],
+    apps: ['zenith', 'ares', 'fates', 'oracle'],
     words: /\b(bots?|zlarior|atlas|blitz|nq|mnq|es|evals?|mffu|drawdown|room|floor|trades?|traded|trading|setup|entry|stop|target|risk|p&l|pnl|market|futures|ninja ?trader|pc|chart|vix|sweep|cisd|fvg|ifvg)\b/ },
   research: { id: 'research', name: 'Research', glyph: '◇', blurb: 'Data City, Prometheus, the Mind, the web, notes',
     prompt: 'MODE: RESEARCH. He wants to dig: what Data City, Prometheus, DAPHNE and the Mind found (FACTS.research), ideas worth testing, facts from Wikipedia and the web tools. A trading idea is only worth adopting if it holds in 2026 AND 2021-25 and keeps 2-4 trades a week; say so, and never call an untested idea an edge. Cite where each fact came from. Offer to save findings as a research note in Obsidian (obsidian_create_note "Research - <topic>"); he confirms every write.',
@@ -55,7 +55,7 @@ export const MODES = {
     prompt: 'MODE: BUSINESS. Think like a self-made operator: his money goals (FACTS.money / the Road to $10K), the plan for more funded accounts (MFFU Builder 50K $91.80 and Builder 25K $63, one-time, his real prices), the Kalshi bot\'s edge by strategy, and his to-dos with deadlines. One clear recommendation with the real numbers, then the next step and its deadline. Check the maths with calc. Treat every edge as unproven; never promise returns.',
     tools: ['calc', 'get_money', 'list_tasks', 'add_task', 'set_reminder', 'obsidian_create_note', 'web_search'],
     quick: ['How close am I to my money goal?', 'Plan for more accounts', 'How is the Kalshi edge?', 'My to-dos with deadlines', 'Deals on evals'],
-    apps: ['hermes', 'kalshi', 'tyche', 'fates'],
+    apps: ['plutus', 'hermes', 'kalshi', 'tyche'],
     words: /\b(business|money goal|goals?|10 ?k|income|revenue|profit|payouts?|accounts? plan|more accounts|scale|scaling|buy (an? )?evals?|kalshi|edge|deadlines?|due|invest\w*|budget|savings|costs?|price|pricing|deal|deals|discount|side hustle|sell|clients?)\b/ },
   life: { id: 'life', name: 'Life', glyph: '☼', blurb: 'Planner, reminders, Ascend, your day',
     prompt: 'MODE: LIFE. He wants his day sorted: the Planner (events, tasks), his reminders and to-dos, gym and looks (his Ascend app), school, sleep and people. Warm and short, like a sharp friend who keeps him on schedule. Use set_reminder / add_task when he asks, never invent his schedule.',
@@ -125,7 +125,7 @@ const dayWord = (dn, et) => (dn === et.dn ? 'today' : dn === et.dn + 1 ? 'tomorr
 const ask = (value) => ({ type: 'ask', value });
 const open = (value, route) => (route ? { type: 'open', value, route } : { type: 'open', value });
 const MODE_OF_APP = { zenith: 'trading', fates: 'trading', oracle: 'trading', odeon: 'trading', planner: 'life', ascend: 'life', arena: 'life', kalshi: 'business', tyche: 'business', hermes: 'business',
-  datacity: 'research', prometheus: 'research', tree: 'research', mind: 'research', pantheon: 'research' };
+  ares: 'trading', plutus: 'business', datacity: 'research', prometheus: 'research', tree: 'research', mind: 'research', pantheon: 'research' };
 const APP_NAME = { datacity: 'Data City', prometheus: 'Prometheus', tree: 'DAPHNE', mind: 'the Mind', pantheon: 'Pantheon', fates: 'Fates', oracle: 'Oracle', odeon: 'Odeon', hermes: 'Hermes', tyche: 'Tyche', arena: 'Arena' };
 
 /** The rule items for every mode, most urgent first. No key, no network: only what D holds. */
