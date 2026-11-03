@@ -324,6 +324,7 @@ def run_browser():
             check("e. the money counter lands on +$2,072.50", p.inner_text(".card.on .count") == "+$2,072.50", p.inner_text(".card.on .count"))
             check("e. the progress bar fills while the card shows", p.evaluate("parseFloat(getComputedStyle(document.querySelector('#prog i')).transform.split(',')[0].replace('matrix(',''))") > 0.05)
             p.screenshot(path=os.path.join(SHOTS, "01_money.jpg"), type="jpeg", quality=82)
+            p.evaluate("HERMES.go(0)"); p.wait_for_timeout(200)        # a fresh 8 s on the first card (a slow screenshot can use it up)
             p.mouse.move(320, 420); p.mouse.down(); p.mouse.move(80, 430, steps=6); p.mouse.up()
             p.wait_for_timeout(250)
             s1 = st(p)
@@ -378,7 +379,7 @@ def run_browser():
             ctx.close()
 
             # ---- f. the day upgrade: confetti, the hall, pause / play, the progress bar, Share the week, themes, LITE
-            ctx, p = page()
+            ctx, p = page(expect=("/hermes/wrapped.json",))            # still the demo site: no wrapped.json
             ready(p, base)
             p.wait_for_timeout(900)
             check("f. a green week: confetti and coins fly on the money card", st(p)["particles"] > 20, st(p))
@@ -395,7 +396,7 @@ def run_browser():
             check("f. the hall card stays inside the gutters and out of the orb's corner", not bad, bad)
             p.screenshot(path=os.path.join(SHOTS, "04_hall.jpg"), type="jpeg", quality=82)
             depth = p.evaluate("getComputedStyle(document.querySelector('.card.on [data-z=\"3\"]')).translate")
-            check("f. 3D depth: the hero number floats above the card in the tilt", depth.endswith("16px"), depth)
+            check("f. 3D depth: the hero number moves with the tilt (parallax above the card)", depth not in ("", "none"), depth)
             p.evaluate("HERMES.go(0); HERMES.pause(false)"); p.wait_for_timeout(300)
             p.click("#play")
             a = [st(p)["paused"], p.get_attribute("#play", "aria-pressed")]
@@ -419,12 +420,15 @@ def run_browser():
                   sh and sh["type"] == "image/png" and sh["sig"][:4] == [137, 80, 78, 71] and sh["size"] > 40_000 and ls["card"] == "week"
                   and sh["name"] == "olympus-wrapped-week.png", (sh, ls, p.inner_text("#toast")))
             p.screenshot(path=os.path.join(SHOTS, "05_next_share_week.jpg"), type="jpeg", quality=82)
+            p.click(".card.on [data-act='replay']")
+            p.wait_for_timeout(300)
+            check("f. the buttons on a tilted card take a real tap (Watch again restarts the story)", st(p)["i"] == 0, st(p))
             got = p.evaluate("[HERMES.applyTheme({ accent: '#33ddff', junk: 1, bg: 'red; } body { display:none' }), getComputedStyle(document.documentElement).getPropertyValue('--gold').trim()]")
             check("f. applyTheme(theme): the accent restyles the gold; junk and CSS injection ignored", got[1] == "#33ddff" and "--bg" not in got[0], got)
             check("f. no page errors in the upgrade checks", not p.errs and not p.bad, (p.errs, p.bad))
             ctx.close()
             # the OLYMPUS theme hook, and LITE (fewer particles)
-            ctx, p = page()
+            ctx, p = page(expect=("/hermes/wrapped.json",))
             ctx.add_init_script("""(() => { const subs = []; window.__theme = { subs };
               Object.defineProperty(window, 'OLYMPUS', { configurable: true, get() { return undefined; }, set(v) {
                 Object.defineProperty(window, 'OLYMPUS', { value: v, writable: true, configurable: true });

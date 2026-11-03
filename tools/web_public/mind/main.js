@@ -377,7 +377,19 @@ function labels() {
     const s = brain.screenOf(brain.nodePoint(i));
     if (s.front) out.push({ key: 'note:' + g.nodes[i].id, text: g.nodes[i].title, x: s.x, y: s.y, alpha: 1, colour: '#fff', note: true });
   }
-  ui.labels(out);
+  ui.labels(declutter(out));
+}
+
+/** Galaxy names never sit on top of each other: a note's name first, then Jarvis's memory ring, then the nearer (brighter)
+ * galaxy; a name that would overlap one already placed waits for the view to turn. */
+function declutter(list) {
+  const kept = [], rank = (l) => (l.note ? 2 : l.key === 'c:memory' ? 1 : 0);
+  for (const l of list.slice().sort((a, b) => rank(b) - rank(a) || b.alpha - a.alpha)) {
+    const w = l.note ? 0 : l.text.length * 4.6 + 20;                       // about half a name's width at 11 px, spaced
+    if (!l.note && kept.some((k) => !k.note && Math.abs(k.y - l.y) < 16 && Math.abs(k.x - l.x) < w + k.text.length * 4.6)) continue;
+    kept.push(l);
+  }
+  return kept;
 }
 
 // ------------------------------------------------------------------ start (a debug handle for the console and the tests)

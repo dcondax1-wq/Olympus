@@ -58,7 +58,7 @@ function money(w, p, peers) {
     enter(el, fx) {
       if (!p.trades) return;
       fx.burst(up ? 'coins' : 'embers', up ? 60 : 50, { colors: up ? ['#f7c948'] : ['#ff7a8a', '#ffb199'] });
-      if (up) fx.burst('confetti', 110, { colors: ['#5ef2a8', '#f7c948', '#ffffff', '#59d0ff', '#ff5edb'] });   // a green week: confetti
+      if (up) fx.burst('confetti', 80, { colors: ['#5ef2a8', '#f7c948', '#ffffff', '#59d0ff', '#ff5edb'] });   // a green week: confetti
     },
     share: () => ({ kicker: `${p.label} · ${span(p)}`, title: 'The money', big: usd(p.net), tone: tone(p.net),
       lines: [`${plural(p.trades, 'trade')}: ${p.wins} won, ${p.losses} lost`, `Won ${usd(p.won_usd)} · Lost ${usd(p.lost_usd)}`,
@@ -254,6 +254,8 @@ export function animateCounts(el, still) {
     C.forEach((c) => { c.textContent = fmt(c, +c.dataset.to * k); });
     raf = k < 1 ? requestAnimationFrame(step) : 0;
   };
+  const land = () => { if (raf) cancelAnimationFrame(raf); raf = 0; C.forEach((c) => { c.textContent = fmt(c, +c.dataset.to); }); };
   raf = requestAnimationFrame(step);
-  return () => { if (raf) cancelAnimationFrame(raf); C.forEach((c) => { c.textContent = fmt(c, +c.dataset.to); }); };
+  const done = setTimeout(land, dur + 80);              // slow frames never leave a number short of its value
+  return () => { clearTimeout(done); land(); };
 }

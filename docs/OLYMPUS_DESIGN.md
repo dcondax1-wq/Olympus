@@ -178,7 +178,7 @@ or `window.Olympus`), each app applies it at load and on every change; without i
 | Mind | Galaxy / constellation view (crisp stars, bright lines; kept in `mind.view`), focus mode (one galaxy lit, a pill, × / Escape) | `mind/render.js`, `mind/main.js` |
 | Mind | The thought stream (lessons and edits, newest first, a tap flies there), an ambient camera when idle | `mind/ui.js`, `mind/controls.js` |
 | Mind | The note card: a markdown-ish preview (headings, lists, tasks, quotes, code, `[[links]]` that fly, `#tags`, textContent only), links and backlinks apart; reads the optional `preview` field of `graphSnapshot()` notes, else `snippet` | `mind/markdown.js` |
-| Hermes | A scene per card (aurora on a green week, horizon grid on the evals, warp on the hall), a light sweep, kinetic type (words flip up, a gold rule draws), 3D depth in the tilt with a sheen | `hermes/fx.js`, `hermes/hermes.css` |
+| Hermes | A scene per card (aurora on a green week, horizon grid on the evals, warp on the hall), a light sweep, kinetic type (words flip up, a gold rule draws), parallax depth in the 3D tilt with a sheen (flat, not preserve-3d: Chromium mis-hit-tests buttons under a preserve-3d tilt, which had broken "Watch again") | `hermes/fx.js`, `hermes/hermes.css` |
 | Hermes | Confetti cannons on a green week, gold glitter on the hall, paper confetti that flutters | `hermes/fx.js` |
 | Hermes | The all-time hall card (lifetime $, best trade ever, best day, longest green run, win rate) | `hermes/cards.js` |
 | Hermes | Pause / play, a tap on the progress bar jumps, the sheet names the story, "Share the week" (one PNG of the whole recap, OLYMPUS fonts) | `hermes/app.js`, `hermes/share.js` |

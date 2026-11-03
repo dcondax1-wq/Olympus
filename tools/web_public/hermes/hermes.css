@@ -48,10 +48,12 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .card.on { opacity: 1; transform: none; }
 .card.leave { opacity: 0; transform: translate3d(calc(var(--dir, 1) * -36px), 0, 0) scale(1.02); pointer-events: none; }
 .tilt { position: relative; transform: perspective(900px) rotateY(calc((var(--px, 0) * .8 + var(--sx, 0) * .4) * 9deg)) rotateX(calc((var(--py, 0) * .8 + var(--sy, 0) * .4) * -7deg)) scale(var(--fit, 1));
-  transform-style: preserve-3d; will-change: transform; transition: transform .25s linear; min-width: 0; padding: 0 5px; }
-/* the 3D tilt's depth: the hero number floats above the card, the tiles a little less; a sheen follows the tilt like light on glass */
-.tilt [data-z="3"] { translate: 0 0 16px; }
-.tilt [data-z="2"] { translate: 0 0 8px; }
+  will-change: transform; transition: transform .25s linear; min-width: 0; padding: 0 5px; }
+/* the 3D tilt's depth, as parallax: the hero number slides with the tilt as if it floated above the card, the tiles a little
+   less. (Not preserve-3d: Chromium then hit-tests the card's buttons wrongly under the tilt.) A sheen follows the tilt like
+   light on glass. */
+.tilt [data-z="3"] { translate: calc((var(--px, 0) * .8 + var(--sx, 0) * .4) * 6px) calc((var(--py, 0) * .8 + var(--sy, 0) * .4) * 5px); }
+.tilt [data-z="2"] { translate: calc((var(--px, 0) * .8 + var(--sx, 0) * .4) * 3px) calc((var(--py, 0) * .8 + var(--sy, 0) * .4) * 2.5px); }
 .tilt::after { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: 24px; mix-blend-mode: screen;
   background: radial-gradient(60% 38% at calc(50% + var(--px, 0) * 90% + var(--sx, 0) * 30%) calc(28% + var(--py, 0) * 80% + var(--sy, 0) * 20%), rgba(255, 255, 255, .08), transparent 70%); }
 /* the 5 px inner pad: the tilt's sway and depth never cross the 16 px gutter */

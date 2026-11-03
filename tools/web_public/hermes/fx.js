@@ -89,7 +89,7 @@ export function createFx(bg, layer, { still = false, lite = false } = {}) {
   const gl = shader(bg);
   const ctx = layer.getContext('2d');
   const BG_SCALE = lite ? 0.3 : 0.42;                        // shader pixels per CSS pixel: soft gradients, ~1/20 of the work
-  const CAP = lite ? 90 : 180;                               // particles on screen at once
+  const CAP = lite ? 90 : 150;                               // particles on screen at once
 
   function size() {
     const w = Math.max(1, innerWidth), h = Math.max(1, innerHeight);
