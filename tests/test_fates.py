@@ -14,6 +14,10 @@ threads of fate. Checks:
   e. the page in Chromium at 390 x 844 (a temp copy of the site layout): no errors, the HUD = the fixture's numbers,
      DEMO without fates.json, the scenario / sample / accounts / 6M-12M toggles and the #route, a tap follows a thread day
      by day, Spin again, prefers-reduced-motion (no animation), LITE, no sideways scroll, the orb's corner free
+  f. the day-sprint upgrade (2026-11-03): the Jul-Oct sample in the switcher, the verdict banner (2026 / Jul-Oct /
+     2021-25 side by side), "your next 10 sessions" (= the threads), the live odds from a live.json (in sync = the build's
+     odds; moved on = re-weighted), the spinning spindle, the snap / gate rings and the gate motes, applyTheme(tokens),
+     at most 24 draw calls (the OLYMPUS budget)
     python -X utf8 -m tests.test_fates                 (~1-2 min; temp folders only)
 FATES_SHOTS=<dir> also saves screenshots of every scenario on the real tools/web_public/fates/fates.json.
 """
@@ -326,6 +330,7 @@ def test_page():
         with sync_playwright() as pw:
             br = pw.chromium.launch(**({"executable_path": exe} if exe else {}), args=args)
             ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2)
+            ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith("http://127.0.0.1") else r.abort())  # no real live.json
             p = ctx.new_page()
             errs = []
             p.on("pageerror", lambda e: errs.append(str(e)))
@@ -419,6 +424,8 @@ def test_page():
             ready()
             check("e. with fates.json: no DEMO badge, the same numbers", not p.is_visible("#demo") and same(hud_text(p), ez))
 
+            test_upgrade(p, fx, url2, tmp2)
+
             # LITE
             p.goto(url + "?lite=1")
             ready()
@@ -446,6 +453,69 @@ def test_page():
             s.shutdown()
         for t in (tmp, tmp2):
             shutil.rmtree(t, ignore_errors=True)
+
+
+def next10_expect(s, k=10):
+    """fates-core nextSessions, row k: the share of threads passed / failed by session k."""
+    o, b = s["threads"]["o"], s["threads"]["b"]
+    n = len(b)
+    p = sum(1 for i in range(n) if o[i] == "p" and len(b[i]) <= k)
+    f = sum(1 for i in range(n) if o[i] not in ("p", "o") and len(b[i]) <= k)
+    return 100 * p / n, 100 * f / n
+
+
+def test_upgrade(p, fx, url2, tmp2):
+    ez = fx["scenarios"]["eval:zlarior:2026"]
+    p.goto(url2 + "?full=1#zlarior/2026")
+    p.wait_for_function("window.__fates && window.__fates.ready", timeout=30000)
+    p.click("#period button[data-period='H2']")
+    check("f. Jul-Oct in the switcher: #zlarior/H2 and its own numbers", p.evaluate("location.hash") == "#zlarior/H2"
+          and same(hud_text(p), expect_eval(fx["scenarios"]["eval:zlarior:H2"])), hud_text(p))
+    v = p.inner_text("#verdict")
+    want = [pct(fx["scenarios"][f"eval:zlarior:{x}"]["summary"]["pass"]) for x in ("2026", "H2", "2021-25")]
+    check("f. the verdict banner: 2026, Jul-Oct and 2021-25 pass odds side by side", p.is_visible("#verdict") and all(w in v for w in want), (v, want))
+    p.click("#period button[data-period='2026']")
+    p.click("#next10")
+    p.wait_for_timeout(300)
+    rows = p.evaluate("[...document.querySelectorAll('#fRows li')].map((li) => li.querySelector('.m').textContent)")
+    ep, ef = next10_expect(ez)
+    check("f. Next 10: one bottom sheet, 10 sessions, session 10 = the threads' pass / fail", p.is_visible("#follow")
+          and p.evaluate("document.getElementById('follow').dataset.kind") == "next10" and len(rows) == 10
+          and rows[-1].startswith(f"{pct(ep)} pass · {pct(ef)} fail"), (rows[-1:], ep, ef))
+    check("f. Next 10: the sheet clears the orb corner", p.evaluate(
+        "() => document.getElementById('follow').getBoundingClientRect().right <= innerWidth - 80"))
+    p.click("#next10")
+    check("f. Next 10 toggles closed", not p.is_visible("#follow"))
+    pr0 = p.evaluate("__fates.probe()")
+    p.wait_for_timeout(500)
+    pr1 = p.evaluate("__fates.probe()")
+    check("f. the spindle spins; snaps and passes ring out; golden motes in the gate", pr1["spin"] != pr0["spin"] and pr1["rings"] > 0 and pr1["motes"] > 0, pr1)
+    check(f"f. at most 24 draw calls a frame ({pr1['calls']}: the OLYMPUS budget)", 0 < pr1["calls"] <= 24, pr1)
+    # live.json: in sync, then moved on one session and +$500
+    st = ez["start"]
+
+    def card(dp, ds):
+        return {"room": round(st["room"] + dp, 2), "to_target": round(st["to_target"] - dp, 2), "session": st["session"] + ds,
+                "quiet_days": 0 if ds else st["quiet_days"], "status": "open"}
+    for name, dp, ds in (("live_same.json", 0, 0), ("live_moved.json", 500, 1)):
+        with open(os.path.join(tmp2, "fates", name), "w", encoding="utf-8") as fh:
+            json.dump({"t": int(time.time()) - 120, "board": {"lit": card(dp, ds), "atlas": None}}, fh)
+    p.goto(url2 + "?full=1&live=live_same.json#zlarior/2026")
+    p.wait_for_function("window.__fates && window.__fates.ready && window.__fates.live", timeout=30000)
+    p.wait_for_timeout(200)
+    o = p.evaluate("__fates.odds")
+    check("f. live.json in sync: LIVE, the build's own odds", "LIVE" in p.inner_text("#live") and o and o["sync"]
+          and abs(o["pass"] - ez["summary"]["pass"]) < 1e-9, o)
+    p.goto(url2 + "?full=1&live=live_moved.json#zlarior/2026")
+    p.wait_for_function("window.__fates && window.__fates.ready && window.__fates.live", timeout=30000)
+    p.wait_for_timeout(200)
+    o, txt = p.evaluate("__fates.odds"), p.inner_text("#live")
+    check("f. live.json moved on (+1 session, +$500): the odds re-weighted to today, on the live strip",
+          o and not o["sync"] and o["n"] == 1 and o["k"] >= 30 and f"now {pct(o['pass'])} pass" in txt and "session 14 next" in txt, (o, txt))
+    check("f. the HUD tiles keep the build's numbers (the live odds sit on their own strip)", same(hud_text(p), expect_eval(ez)))
+    got = p.evaluate("""() => { applyTheme({ accent: '#00ff88', '--txt': '#fafafa' }); const cs = getComputedStyle(document.documentElement);
+        return [cs.getPropertyValue('--gold').trim(), cs.getPropertyValue('--txt').trim()]; }""")
+    check("f. applyTheme(tokens): the page's colours follow the theme", got == ["#00ff88", "#fafafa"], got)
 
 
 def shots(br, out):
@@ -479,10 +549,11 @@ def shots(br, out):
 
 def main():
     t0 = time.time()
-    test_rules()
-    test_bootstrap()
-    test_engine()
-    test_json()
+    if "page" not in sys.argv[1:]:                     # `python -X utf8 -m tests.test_fates page`: the page parts only (~1 min)
+        test_rules()
+        test_bootstrap()
+        test_engine()
+        test_json()
     test_page()
     n, ok = len(RES), sum(RES)
     print(f"\n{ok}/{n} passed ({time.time() - t0:.0f}s)")

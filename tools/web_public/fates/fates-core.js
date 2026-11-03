@@ -1,9 +1,13 @@
 // FATES core (no DOM, no WebGL): the data model of the page. fates.js draws it; tests import it in the browser.
 //   data   = fates.json (tools/fates/build.py, schema in tools/fates/export.py), or fixture.json for the demo
-//   route  = { scen: 'zlarior' | 'atlas' | 'money', period: '2026' | '2021-25', accts: 1..6, span: '6m' | '12m' }
+//   route  = { scen: 'zlarior' | 'atlas' | 'money', period: '2026' | 'H2' | '2021-25', accts: 1..6, span: '6m' | '12m' }
+//   nextSessions(data, s)            "your next 10 sessions": pass / fail / open by each session, the open futures' $ range
+//   liveBot(live, bot, rules)        today's eval state from live.json (the PC's heartbeat publish)
+//   liveOdds(s, state)               the odds re-weighted to that state (the threads nearest it)
 
 export const BOTS = { zlarior: 'Zlarior', atlas: 'ATLAS' };
-export const PERIODS = ['2026', '2021-25'];
+export const PERIODS = ['2026', 'H2', '2021-25'];
+const PERIOD_OF = { '2026': '2026', h2: 'H2', '2021-25': '2021-25' };     // the #route is lower case
 export const OUTCOME = {
   p: { key: 'pass', label: 'PASSED', color: 'gold' },
   f: { key: 'fail', label: 'FAILED at the floor', color: 'red' },
@@ -22,7 +26,7 @@ export function parseRoute(hash) {
   const r = { scen: 'zlarior', period: '2026', accts: 2, span: '12m' };
   if (a === 'zlarior' || a === 'atlas') r.scen = a;
   else if (m) { r.scen = 'money'; if (m[1]) r.accts = Math.min(6, Math.max(1, +m[1])); }
-  if (PERIODS.includes(b)) r.period = b;
+  if (PERIOD_OF[b]) r.period = PERIOD_OF[b];
   return r;
 }
 export function routeHash(r) {
@@ -191,4 +195,75 @@ export function jarvisCard(data, nowS = Math.floor(Date.now() / 1000)) {
     lines: [`Pass odds this eval: ${Math.round(zp)}% (Zlarior, 2026 sample${zr ? `; 2021-25: ${Math.round(zr.summary.pass)}%` : ''})`.slice(0, 120)],
     t: nowS, open: '#zlarior/2026', theme: '#07050f',
   };
+}
+
+// ------------------------------------------------------------------------------------------------ your next 10 sessions
+// From the scenario's drawn threads (400 of the 1,000 futures): after each of the next n sessions, the share already passed /
+// failed / still open, and the p10 / p50 / p90 of the open futures' profit ($ vs the eval's start). Row n's pass / fail
+// match summary.p10 / f10 within the sampling error of 400 threads; the summary's own numbers ride along for the caption.
+export function nextSessions(data, s, n = 10) {
+  const t = (s && s.threads) || { o: '', b: [] }, N = t.b.length, cal = (data && data.calendar) || [];
+  const q = (xs, f) => (xs.length ? xs[Math.min(xs.length - 1, Math.floor(f * (xs.length - 1) + 0.5))] : null);
+  const rows = [];
+  for (let k = 1; k <= n; k++) {
+    let p = 0, f = 0;
+    const open = [];
+    for (let i = 0; i < N; i++) {
+      const h = t.b[i], o = t.o[i] || 'o';
+      if (o !== 'o' && h.length <= k) { if (o === 'p') p++; else f++; } else open.push(h.length ? h[Math.min(k, h.length) - 1] : s.start.profit);
+    }
+    open.sort((a, b) => a - b);
+    rows.push({ k, day: cal[k - 1] || null, text: cal[k - 1] ? fmtDate(cal[k - 1]) : `session ${k}`,
+      pass: N ? 100 * p / N : 0, fail: N ? 100 * f / N : 0, open: N ? 100 * (N - p - f) / N : 0,
+      p10: q(open, 0.1), p50: q(open, 0.5), p90: q(open, 0.9) });
+  }
+  const m = (s && s.summary) || {};
+  return { rows, threads: N, paths: data && data.paths, p10: m.p10, f10: m.f10, target: s && s.rules ? s.rules.target : null };
+}
+
+// ------------------------------------------------------------------------------------------------ live odds
+// live.json (the PC's heartbeat publish, the file Jarvis reads): board.lit = Zlarior, board.atlas = ATLAS, each with room,
+// to_target, session, quiet_days (tools/fates/live.py bot_state reads the same card at build time).
+export const BOARD = { zlarior: 'lit', atlas: 'atlas' };
+const num = (x) => (x == null || x === '' || !Number.isFinite(+x) ? null : +x);
+export function liveBot(live, bot, rules) {
+  const c = live && live.board && live.board[BOARD[bot]];
+  if (!c || !rules) return null;
+  const room = num(c.room), toT = num(c.to_target);
+  if (room == null || toT == null) return null;
+  const profit = rules.target - toT;
+  return { bot, profit, floor: profit - room, room, toTarget: toT, session: num(c.session), quiet: num(c.quiet_days),
+    status: String(c.status || 'open').toLowerCase(), t: num(live.t) };
+}
+// The odds from today's live state. Same state as the build (same session, profit within $1): the build's own odds.
+// Moved on: the futures still open after the sessions traded since the build, the K nearest to today's profit (K = 20%,
+// at least 30), and how they end. An estimate (a rebuild runs the exact Monte Carlo); null when too few threads are left.
+export function liveOdds(s, st) {
+  if (!s || s.kind !== 'eval' || !st) return null;
+  const S0 = s.start, m = s.summary;
+  if (st.status === 'passed' || st.status === 'failed') return { sync: false, done: st.status, pass: st.status === 'passed' ? 100 : 0, fail: st.status === 'failed' ? 100 : 0, open: 0 };
+  const n = Math.max(0, (st.session == null ? S0.session : st.session) - S0.session);
+  if (n === 0 && Math.abs(st.profit - S0.profit) < 1) return { sync: true, n: 0, k: m.paths, pass: m.pass, fail: m.fail, open: m.open, pass_med: m.pass_med };
+  const t = s.threads, near = [];
+  t.b.forEach((h, i) => {
+    if (n > 0 && h.length <= n) return;                      // decided before today: not one of today's futures
+    near.push({ i, d: Math.abs((n > 0 ? h[n - 1] : S0.profit) - st.profit), h });
+  });
+  if (near.length < 30) return null;
+  near.sort((a, b) => a.d - b.d || a.i - b.i);
+  const pick = near.slice(0, Math.max(30, Math.round(near.length * 0.2)));
+  let p = 0, f = 0;
+  const days = [];
+  for (const x of pick) {
+    const o = t.o[x.i] || 'o';
+    if (o === 'p') { p++; days.push(x.h.length - n); } else if (o !== 'o') f++;
+  }
+  days.sort((a, b) => a - b);
+  return { sync: false, n, k: pick.length, pass: 100 * p / pick.length, fail: 100 * f / pick.length, open: 100 * (pick.length - p - f) / pick.length,
+    pass_med: days.length ? days[Math.floor((days.length - 1) / 2)] : null, within: pick[pick.length - 1].d };
+}
+export function ago(tSec, nowMs = Date.now()) {
+  if (!tSec) return '';
+  const m = Math.max(0, Math.round((nowMs / 1000 - tSec) / 60));
+  return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : m < 48 * 60 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} days ago`;
 }
