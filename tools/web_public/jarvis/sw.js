@@ -32,7 +32,7 @@
 // (quick actions, today's timeline, the core's satellites).
 // v13 (2026-11-03, the OLYMPUS apps): Jarvis's new brain parts join the saved ones (obsidian.js: the owner's vault, memory.js:
 // what Jarvis remembers, assist-ui.js: their screens), so they open offline too; jarvis.css?v=j9 (the OLYMPUS apps grid), a fresh
-// index.html, apps.js (the eight OLYMPUS apps built in, by group) and switcher.js (groups, the most used apps on the ring).
+// index.html, apps.js (the nine OLYMPUS apps built in, by group) and switcher.js (groups, the most used apps on the ring).
 const CACHE = 'jarvis-v13';
 const OLD = ['jarvis-v12', 'jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];
 const NAV_WAIT_MS = 3500;

@@ -2,7 +2,7 @@
 // app platform. Any dashboard plugs in with one link and can show a live card on the Jarvis screen.
 //
 //   listApps({hidden})       the dashboards for the bar, by group (GROUPS): the OLYMPUS built-ins (BUILT_INS: Zenith, Oracle,
-//                            Odeon, Fates, Data City, Daphne, Prometheus, Planner, Mind, Kalshi, Hermes), Ascend once enabled (LIFE), then the ones the owner
+//                            Odeon, Fates, Data City, Daphne, Prometheus, Planner, Mind, Kalshi, Tyche, Hermes), Ascend once enabled (LIFE), then the ones the owner
 //                            added with + (MORE), in the order added. Fresh copies; Jarvis's own screen is the shell's.
 //   missing(app)             a built-in whose folder is not on the site yet (its jarvis.json answered 404): not opened
 //   getApp(id)               one of them (the hidden Ascend slot too), or null
@@ -80,6 +80,7 @@ export const BUILT_INS = Object.freeze([
   app('planner', 'Planner', 'life', '#60a5fa', 'Calendar, tasks and projects', { icon: '../planner/icon-192.png', live: false }),
   app('mind', 'Mind', 'life', '#5eead4', 'Your vault as a living 3D brain', { glyph: '\u03a9' }),
   app('kalshi', 'Kalshi', 'money', '#2ef2d0', 'Kalshi bot \u00b7 from your PC', { glyph: 'K', live: false }),
+  app('tyche', 'Tyche', 'money', '#e879f9', 'The Kalshi bets as a 3D fortune wheel', { glyph: '\u03a4' }),
   app('hermes', 'Hermes', 'money', '#f7c948', 'OLYMPUS Wrapped: your money', { glyph: '\u0397' }),
 ]);
 const GROUP_IDS = GROUPS.map((g) => g.id);

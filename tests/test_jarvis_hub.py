@@ -1107,8 +1107,8 @@ def run_look(br, url):
 
 
 # the switch order: Jarvis, TRADING, LIFE, MONEY (apps.js BUILT_INS); the test site has Data City's folder, not the others'
-ORDER = ["home", "zenith", "oracle", "odeon", "fates", "datacity", "tree", "prometheus", "planner", "mind", "kalshi", "hermes"]
-NOT_ON_SITE = ["oracle", "odeon", "fates", "tree", "prometheus", "mind", "hermes"]
+ORDER = ["home", "zenith", "oracle", "odeon", "fates", "datacity", "tree", "prometheus", "planner", "mind", "kalshi", "tyche", "hermes"]
+NOT_ON_SITE = ["oracle", "odeon", "fates", "tree", "prometheus", "mind", "tyche", "hermes"]
 
 
 def run_olympus(br, url):
@@ -1343,9 +1343,9 @@ def run_switcher(br, url):
       lines: [...c.querySelectorAll('.nx-ln')].map((l) => l.textContent) }))""")
     names = [c["name"] for c in cards]
     check("n. tap: the switcher opens with JARVIS, then TRADING (NQ BOT, ORACLE, ODEON, FATES, DATA CITY, DAPHNE, PROMETHEUS), LIFE (CALENDAR, MIND), "
-          "MONEY (KALSHI, HERMES) and + ADD, "
+          "MONEY (KALSHI, TYCHE, HERMES) and + ADD, "
           "Jarvis's card marked NOW",
-          names == ["JARVIS", "NQ BOT", "ORACLE", "ODEON", "FATES", "DATA CITY", "DAPHNE", "PROMETHEUS", "CALENDAR", "MIND", "KALSHI", "HERMES", "ADD"]
+          names == ["JARVIS", "NQ BOT", "ORACLE", "ODEON", "FATES", "DATA CITY", "DAPHNE", "PROMETHEUS", "CALENDAR", "MIND", "KALSHI", "TYCHE", "HERMES", "ADD"]
           and cards[0]["now"] and not any(c["now"] for c in cards[1:]), cards)
     nq = next((c for c in cards if c["id"] == "zenith"), {})
     cal = next((c for c in cards if c["id"] == "planner"), {})
