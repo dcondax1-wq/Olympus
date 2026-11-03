@@ -4,8 +4,10 @@
 //   - each cluster is pulled to its own anchor and flattened into a tilted disc (the galaxy look).
 // It cools like d3-force (alpha decays to ALPHA_MIN, then the simulation sleeps until the next graph).
 // Pure and DOM-free: it runs in layout-worker.js, or on the main thread when module workers are missing.
+//   - Jarvis's memories (the `ring` cluster) are held on a tilted ring around "Me" at the centre (the cyan memory ring).
 //   anchorsFor(sizes, center) -> {pos, normal, radius}          where each cluster lives (shared with the seeding in main.js)
-//   new Layout().setGraph({pos, cluster, edges, sizes, center, alpha}); layout.tick() -> alpha
+//   ringSpot(k, count, radius) -> [x, y, z]                      the k-th memory's seat on the ring (also the seeding and the drawn ring)
+//   new Layout().setGraph({pos, cluster, edges, sizes, center, ring, alpha}); layout.tick() -> alpha
 //   createLayoutHost(onPositions) -> {run(graph), mode}         worker first, main-thread fallback; stale results dropped
 
 const ALPHA_MIN = 0.004;
@@ -19,6 +21,23 @@ const LINK_IN = 14, LINK_OUT = 90, LINK_OUT_K = 0.05;
 const PULL = 0.07, FLATTEN = 0.1;
 const MAX_DEPTH = 18;
 const GOLDEN = Math.PI * (3 - Math.sqrt(5));
+const RING_PULL = 0.5;                              // the memory ring holds tight: a ring, not a cloud
+/** The memory ring's plane (unit normal): tilted toward the camera's usual view so it reads as a ring, not a line. */
+export const RING_NORMAL = (() => { const x = 0.32, y = 1, z = 0.22, l = Math.hypot(x, y, z); return [x / l, y / l, z / l]; })();
+
+/** The memory ring's radius for a vault of `total` notes (inside the galaxies, outside Me's glow). */
+export function ringRadius(total) { return 30 + 2.6 * Math.sqrt(total); }
+
+/** Seat k of `count` on the memory ring around the origin (where Me sits). */
+export function ringSpot(k, count, radius) {
+  const [nx, ny, nz] = RING_NORMAL;
+  // two axes in the ring's plane: u = normal x Z, w = normal x u
+  let ux = ny * 1 - nz * 0, uy = nz * 0 - nx * 1, uz = 0;
+  const ul = Math.hypot(ux, uy, uz) || 1; ux /= ul; uy /= ul; uz /= ul;
+  const wx = ny * uz - nz * uy, wy = nz * ux - nx * uz, wz = nx * uy - ny * ux;
+  const a = (k / Math.max(1, count)) * Math.PI * 2 + 0.4, c = Math.cos(a) * radius, s = Math.sin(a) * radius;
+  return [ux * c + wx * s, uy * c + wy * s, uz * c + wz * s];
+}
 
 /** Cluster anchors on a Fibonacci sphere (the center cluster, "me", at the origin) and a tilted disc normal per cluster. */
 export function anchorsFor(sizes, center = -1) {
@@ -47,7 +66,7 @@ export function anchorsFor(sizes, center = -1) {
 export class Layout {
   constructor() { this.n = 0; this.alpha = 0; this.cap = 0; }
 
-  setGraph({ pos, cluster, edges, sizes, center = -1, alpha = 1 }) {
+  setGraph({ pos, cluster, edges, sizes, center = -1, ring = -1, alpha = 1 }) {
     const n = (this.n = cluster.length);
     this.pos = pos;
     this.vel = new Float32Array(n * 3);
@@ -56,6 +75,16 @@ export class Layout {
     this.center = center;
     const { pos: anchor, normal } = anchorsFor(sizes, center);
     this.anchor = anchor; this.normal = normal;
+    // the memory ring: each memory's seat, in order (NaN = a free note)
+    this.seat = null;
+    if (ring >= 0 && center >= 0 && cluster.indexOf(center) >= 0) {
+      const members = [];
+      for (let i = 0; i < n; i++) if (cluster[i] === ring) members.push(i);
+      this.me = cluster.indexOf(center);                           // the ring turns with Me, wherever the springs pull it
+      const r = ringRadius(n);
+      this.seat = new Float32Array(n * 3).fill(NaN);
+      members.forEach((i, k) => this.seat.set(ringSpot(k, members.length, r), i * 3));
+    }
     // springs (d3-force link): strength 1 / min degree, bias toward the lighter end
     const m = edges.length >> 1, deg = new Uint16Array(n);
     for (let e = 0; e < m * 2; e++) deg[edges[e]]++;
@@ -204,8 +233,14 @@ export class Layout {
 
   _galaxies(a) {
     const { pos: p, vel: v, cluster, anchor: A, normal: N } = this;
-    const kf = FLATTEN * a;
+    const kf = FLATTEN * a, seat = this.seat;
     for (let i = 0; i < this.n; i++) {
+      const i3s = i * 3;
+      if (seat && seat[i3s] === seat[i3s]) {                       // a memory: pulled to its seat on the ring
+        const kr = RING_PULL * a, m3 = this.me * 3;
+        for (let x = 0; x < 3; x++) v[i3s + x] += (p[m3 + x] + seat[i3s + x] - p[i3s + x]) * kr;
+        continue;
+      }
       const c = cluster[i] * 3, i3 = i * 3, kp = PULL * a * (cluster[i] === this.center ? 5 : 1);   // "me" holds the centre
       const dx = A[c] - p[i3], dy = A[c + 1] - p[i3 + 1], dz = A[c + 2] - p[i3 + 2];
       const off = -(dx * N[c] + dy * N[c + 1] + dz * N[c + 2]);     // height above the galaxy's disc

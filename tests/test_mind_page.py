@@ -16,8 +16,13 @@ tools/web_public/ and serves a fake obsidian.js when a case asks for one, and ch
   g. reduced motion: no flight animation, sparks become instant ignitions, no errors
   h. 2,000 notes (?demo=2000): loads, the worker layout settles, no errors (frame rate printed; SwiftShader is not a GPU)
   i. across every case: no request and no fetch to anything but the page's own origin
+  j. the 2026-11-03 day upgrade: nebula clouds per galaxy (fewer on LITE), Jarvis's memories seated on the cyan ring around
+     Me, the constellation view (kept on this phone), focus mode (one galaxy, its pill, × and Escape leave it), the thought
+     stream (newest first, a tap flies to the note), synapse pulses when a note opens (none under reduced motion), the
+     markdown-ish preview (headings, lists, tasks, [[links]] that fly, #tags; vault markup stays text), links and backlinks
+     apart, applyTheme(theme) and the OLYMPUS theme hook (OLYMPUS.theme() / onTheme) when the kit has one
     python -X utf8 -m tests.test_mind_page
-MIND_SHOTS=<dir> also saves screenshots (overview, a node card, the learning spark) there.
+MIND_SHOTS=<dir> also saves screenshots (overview, a node card, the learning spark, the views, focus mode) there.
 """
 from __future__ import annotations
 
@@ -34,7 +39,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB = os.path.join(ROOT, "tools", "web_public")
 MIND = os.path.join(WEB, "mind")
 SHOTS = os.environ.get("MIND_SHOTS")
-MODULES = ["main.js", "data.js", "demo.js", "graph.js", "layout.js", "layout-worker.js", "render.js", "controls.js", "ui.js"]
+MODULES = ["main.js", "data.js", "demo.js", "graph.js", "layout.js", "layout-worker.js", "render.js", "controls.js", "ui.js",
+           "nebula.js", "synapse.js", "memring.js", "markdown.js"]
 RES = []
 MOCK = {"js": None}                       # the fake ../jarvis/obsidian.js (None = 404, like a Jarvis without it)
 OUTSIDE = []                              # every request to another origin (must stay empty)
@@ -61,7 +67,12 @@ def static_checks():
     net = [f for f, s in src.items() if re.search(r"\bfetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket|EventSource|importScripts", s)]
     check("a. no network API in the page's code", not net, net)
     keys = set(re.findall(r"localStorage\.\w+\(([^,)]+)", "".join(src.values())))
-    check("a. storage only under the page's own 'mind.' key", keys == {"QUALITY_KEY"} and "const QUALITY_KEY = 'mind.quality';" in src["main.js"], keys)
+    check("a. storage only under the page's own 'mind.' keys", keys == {"QUALITY_KEY", "VIEW_KEY"} and "const QUALITY_KEY = 'mind.quality';" in src["main.js"]
+          and "const VIEW_KEY = 'mind.view';" in src["main.js"], keys)
+    check("a. vault text never goes in as HTML (no innerHTML / insertAdjacentHTML / outerHTML in the page's code)",
+          not re.search(r"innerHTML|insertAdjacentHTML|outerHTML|document\.write", "".join(src.values())))
+    check("a. only transform / opacity animate in the sheet and the stream (no layout transitions)",
+          not re.search(r"transition:[^;]*\b(width|height|top|left|right|bottom|margin|padding)\b", css))
     code = re.sub(r"//.*", "", "".join(src.values()))
     check("a. never touches a token (no token, secret or password in the code)", not re.search(r"token|secret|password", code, re.I))
     outside = [u for u in re.findall(r"https?://[^\s'\"`)]+", "".join(src.values()) + html + css)]
@@ -143,6 +154,9 @@ def mock_vault(now_ms):
     notes.append({"id": "Jarvis/Memory/1.md", "title": "Likes gold", "path": "Jarvis/Memory/1.md", "tags": ["jarvis"],
                   "links": ["Me.md"], "mtime": now_ms, "words": 10, "kind": "memory"})
     notes.append({"id": "Evil.md", "title": EVIL, "path": "Evil.md", "tags": ["<script>x</script>"], "links": [], "mtime": now_ms, "words": 3, "kind": "weird"})
+    notes.append({"id": "Notes/Markdown.md", "title": "Markdown", "path": "Notes/Markdown.md", "tags": ["notes"], "links": ["Trading/Mock Trading 1.md"],
+                  "mtime": now_ms - 99 * 3600_000, "words": 80, "kind": "note",
+                  "preview": "## Plan\n- [x] done task\n- [ ] open task\n- link to [[Mock Trading 1]] and [[Nowhere]]\n" + EVIL + " **bold** #tagged"})
     notes += [None, {"title": "no id"}, dict(notes[0])]                       # junk: dropped
     learned = [{"t": now_ms - 7200_000, "text": "Older lesson about sleep", "note": "Gym/Mock Gym 2.md"},
                {"t": (now_ms - 600_000) // 1000, "text": "Mock lesson: trade the NY open", "note": "Trading/Mock Trading 0.md"},
@@ -150,7 +164,7 @@ def mock_vault(now_ms):
     return {"v": 1, "t": now_ms, "notes": notes, "learned": learned}
 
 
-MOCK_NOTES = 4 * 12 + 5 + 2 + 1
+MOCK_NOTES = 4 * 12 + 5 + 2 + 1 + 1
 
 
 def expected_links(snap):
@@ -310,7 +324,8 @@ def search_and_tap(p, tag):
     hub = "Trading/LIT strategy.md"
     wait_flight(p)
     scr = p.evaluate(f"mind.screenOf({json.dumps(hub)})")
-    if not (20 < scr["x"] < p.viewport_size["width"] - 20 and 260 < scr["y"] < p.viewport_size["height"] - 200):
+    band = p.evaluate("mind.labelBand()")                 # the open sky between the top bar and the bottom sheet
+    if not (20 < scr["x"] < p.viewport_size["width"] - 20 and band["top"] + 30 < scr["y"] < band["bottom"] - 30):
         p.fill("#q", "LIT strategy")                      # bring it on screen first (search, then close the card)
         p.press("#q", "Enter")
         wait_flight(p)
@@ -389,6 +404,25 @@ def mock_cases(br, origin):
     check("e. the stats follow (one more note, one more lesson this week)", st2["notes"] == MOCK_NOTES + 1 and st2["learnedWeek"] == 3, st2)
     p.wait_for_function("mind.sparks === 0", timeout=6000)
     check("e. the spark lands (and ignites the note)", True)
+    # the markdown preview from the optional `preview` field: structure shown, links resolved, vault markup still text
+    p.fill("#q", "Markdown")
+    p.press("#q", "Enter")
+    p.wait_for_function("mind.focus === 'Notes/Markdown.md'", timeout=3000)
+    md = p.evaluate("""() => { const s = document.getElementById('c-snippet');
+      return { h: s.querySelectorAll('h4').length, tasks: s.querySelectorAll('li.md-task').length, done: s.querySelectorAll('li.md-task.done').length,
+               links: [...s.querySelectorAll('button.md-link')].map((b) => b.textContent), missing: s.querySelectorAll('.md-link.missing').length,
+               bold: s.querySelectorAll('b').length, tags: s.querySelectorAll('.md-tag').length, img: s.querySelectorAll('img').length, text: s.innerText }; }""")
+    check("j. the card's markdown preview: heading, tasks (one done), a [[link]] that resolves and one that does not, bold, #tag; markup stays text",
+          md["h"] == 1 and md["tasks"] == 2 and md["done"] == 1 and md["links"] == ["Mock Trading 1"] and md["missing"] == 1
+          and md["bold"] >= 1 and md["tags"] == 1 and md["img"] == 0 and "<img src=x" in md["text"] and not p.evaluate("window.__pwned"), md)
+    p.click("#c-snippet button.md-link")
+    p.wait_for_function("mind.focus === 'Trading/Mock Trading 1.md'", timeout=3000)
+    check("j. a [[link]] in the preview flies to its note", True)
+    groups = p.evaluate("[...document.querySelectorAll('#c-near h3')].map((h) => h.textContent)")
+    check("j. the card lists links and backlinks apart ('Links to', 'Linked from' with counts)",
+          any(g.startswith("Links to") for g in groups) and any(g.startswith("Linked from") for g in groups), groups)
+    p.click("#c-close")
+    wait_flight(p)
     calls = p.evaluate("globalThis.__obs.calls")
     p.evaluate("globalThis.__obs.snap = null; globalThis.__obs.fire();")
     p.wait_for_function("mind.mode === 'offline'", timeout=4000)
@@ -425,6 +459,10 @@ def other_cases(br, origin):
     p.wait_for_function("document.getElementById('tk-text').textContent === 'Calm lesson'", timeout=4000)
     check("g. reduced motion: the flight is a cut, the spark an instant ignition, no errors",
           not flying and p.evaluate("mind.sparks") == 0 and not real_errors(log), (flying, real_errors(log)))
+    p.fill("#q", "Mock Gym 6")
+    p.press("#q", "Enter")
+    p.wait_for_function("mind.focus === 'Gym/Mock Gym 6.md'", timeout=3000)
+    check("g. reduced motion: no synapse pulses and no idle thinking", p.evaluate("mind.synapses") == 0)
     ctx.close()
 
     MOCK["js"] = None
@@ -442,6 +480,102 @@ def other_cases(br, origin):
     ctx.close()
 
 
+# ------------------------------------------------------------------ j. the day upgrade (2026-11-03)
+THEMED = """(() => { const subs = []; window.__theme = { subs };
+  const hook = () => { const O = window.OLYMPUS; if (!O || O.theme) return;
+    O.theme = () => ({ name: 'test', vars: { accent: '#ff3d9a', '--glass': 'rgba(40, 0, 20, 0.6)' } });
+    O.onTheme = (cb) => subs.push(cb); };
+  Object.defineProperty(window, 'OLYMPUS', { configurable: true, set(v) { Object.defineProperty(window, 'OLYMPUS', { value: v, writable: true, configurable: true }); hook(); }, get() { return undefined; } });
+})();"""
+
+
+def upgrade_cases(br, origin):
+    MOCK["js"] = None
+    ctx, p, log = new_page(br, origin, (390, 844))
+    p.goto(origin + "/mind/")
+    ready(p)
+    p.wait_for_function("mind.settled", timeout=60000)
+    time.sleep(1.2)
+    neb, ring, off = p.evaluate("[mind.nebulae, mind.ring, mind.memoryOnRing()]")
+    check(f"j. nebula clouds: layered sprites per galaxy ({neb} puffs on HD)", neb >= 7 * 4, neb)
+    check(f"j. Jarvis's memories sit on the cyan ring around Me ({ring and ring['count']} memories, radius {ring and round(ring['r'])}, worst {max(off or [9]):.2f} of r)",
+          ring and ring["count"] == 8 and ring["r"] > 20 and off and max(off) < 0.2, (ring, off))
+    lbl = p.evaluate("[...document.querySelectorAll('#labels .lbl')].filter((e) => !e.hidden).map((e) => e.textContent)")
+    check("j. the memory ring is named ('Jarvis memory')", "Jarvis memory" in lbl, lbl)
+    # the thought stream: newest first, a tap flies to the note
+    items = p.evaluate("[...document.querySelectorAll('#stream li')].map((li) => [li.className, li.querySelector('small').textContent, li.querySelector('span').textContent])")
+    check(f"j. the thought stream shows lessons and edits, newest first ({len(items)} thoughts)",
+          len(items) >= 10 and any("learned" in c for c, _, _ in items) and any("edit" in c for c, _, _ in items), items[:4])
+    first_edit = next(t for c, _, t in items if "edit" in c)
+    p.click("#stream li.edit button")
+    p.wait_for_function("mind.focus !== null", timeout=3000)
+    focus = p.evaluate("mind.focus")
+    check("j. tapping a thought opens its note", focus and p.inner_text("#c-title") == first_edit, (focus, first_edit))
+    p.wait_for_function("mind.synapses > 0", timeout=3000)
+    check(f"j. opening a note fires its synapses (pulses running: {p.evaluate('mind.synapses')})", True)
+    time.sleep(0.4)
+    shot(p, "synapse_390.png")
+    p.keyboard.press("Escape")
+    wait_flight(p)
+    # constellation view
+    p.click("#view")
+    time.sleep(1.4)
+    v = p.evaluate("[mind.view, document.getElementById('view').getAttribute('aria-pressed'), localStorage.getItem('mind.view')]")
+    check("j. the constellation view: the toggle, its state, kept on this phone", v == ["stars", "true", "stars"], v)
+    px = lit_pixels(p)
+    check(f"j. the constellation view is drawn ({px} bright pixels)", px == -1 or px > 150, px)
+    shot(p, "constellation_390.png")
+    p.reload()
+    ready(p)
+    check("j. the view survives a reload", p.evaluate("mind.view") == "stars")
+    p.click("#view")
+    check("j. back to the galaxy view", p.evaluate("mind.view") == "galaxy" and p.get_attribute("#view", "aria-pressed") == "false")
+    # focus mode
+    p.click(".chip[data-key='health']")
+    wait_flight(p)
+    time.sleep(0.6)
+    fb = p.evaluate("[!document.getElementById('focusbar').hidden, document.getElementById('focus-name').textContent, mind.filter]")
+    check("j. focus mode: one galaxy lit, its pill under the top bar", fb == [True, "Health", "health"], fb)
+    lbl = p.evaluate("[...document.querySelectorAll('#labels .lbl:not(.note)')].filter((e) => !e.hidden && +e.style.opacity > 0.3).map((e) => e.textContent)")
+    check("j. focus mode: the other galaxies' names fade", lbl in ([], ["Health"]), lbl)
+    free = orb_corner_free(p)
+    check("j. focus mode: the orb's corner stays free", not free, free)
+    shot(p, "focus_390.png")
+    p.click("#focus-exit")
+    check("j. × leaves focus mode", p.evaluate("mind.filter") is None and p.is_hidden("#focusbar"))
+    p.click(".chip[data-key='trading']")
+    p.keyboard.press("Escape")
+    check("j. Escape leaves focus mode", p.evaluate("mind.filter") is None and p.is_hidden("#focusbar"))
+    # applyTheme by hand
+    got = p.evaluate("[mind.applyTheme({ accent: '#ffaa00', bg: '#000000', junk: 'x', '--glass': 'rgba(0,0,0,.5)', text: 'red; } body { display: none' }), getComputedStyle(document.documentElement).getPropertyValue('--cyan').trim()]")
+    check("j. applyTheme(theme): known colours and custom properties applied, junk and CSS injection ignored",
+          got[1] == "#ffaa00" and "--cyan-rgb" in got[0] and "--text" not in got[0] and "junk" not in str(got[0]), got)
+    check("j. no console errors in the upgrade checks", not real_errors(log), real_errors(log))
+    ctx.close()
+    # LITE: fewer clouds; landscape: the sheet in two columns, the corner free
+    ctx, p, log = new_page(br, origin, (844, 390), quality="low")
+    p.goto(origin + "/mind/")
+    ready(p)
+    time.sleep(1.5)
+    neb = p.evaluate("mind.nebulae")
+    check(f"j. LITE: fewer nebula puffs ({neb})", 0 < neb <= 2 * 9, neb)
+    free = orb_corner_free(p)
+    sw = p.evaluate("[document.scrollingElement.scrollWidth, innerWidth]")
+    check("j. 844 x 390 LITE: the orb's corner free, no sideways scroll", not free and sw[0] <= sw[1], (free, sw))
+    check("j. no console errors on LITE", not real_errors(log), real_errors(log))
+    ctx.close()
+    # the OLYMPUS theme hook: a kit with theme() / onTheme
+    ctx, p, log = new_page(br, origin, (390, 844))
+    p.add_init_script(THEMED)
+    p.goto(origin + "/mind/")
+    ready(p)
+    a = p.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--cyan').trim()")
+    p.evaluate("window.__theme.subs.forEach((cb) => cb({ accent: '#33ff66' }))")
+    b = p.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--cyan').trim()")
+    check("j. the OLYMPUS theme hook: OLYMPUS.theme() at load, onTheme on a change", a == "#ff3d9a" and b == "#33ff66" and not real_errors(log), (a, b, real_errors(log)))
+    ctx.close()
+
+
 def main():
     static_checks()
     srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -454,6 +588,7 @@ def main():
         try:
             demo_cases(br, origin)
             mock_cases(br, origin)
+            upgrade_cases(br, origin)
             other_cases(br, origin)
         finally:
             br.close()
