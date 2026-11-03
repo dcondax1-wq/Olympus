@@ -159,11 +159,10 @@
   // (off Home since 2026-10-22: to go / room / session sit in the "LIT · 50K" card on top, second.js; kept for reuse)
   function kpiRow(M) {
     const e = M.a?.eval || {}, tw = HD()?.extras?.two_week?.eval?.H2;
-    const toGo = ok(e.to_target) ? e.to_target : null, room = e.room, ses = e.session;
+    const toGo = ok(e.to_target) ? e.to_target : null, room = e.room;
     return `<div class="hb-tiles">
       ${tile('To +$3,000', toGo != null ? usd(toGo) : '—', ok(e.profit) ? `profit ${susd(e.profit)}` : '', toGo === 0 ? 'up' : '')}
-      ${tile('Room to floor', ok(room) ? usd(room) : '—', ok(e.floor) ? `floor ${usd(e.floor)}${e.locked ? ' · locked' : ''}` : '', ok(room) && room < 700 ? 'dn' : '')}
-      ${tile('Session', ok(ses) ? `${ses}<small> / ${e.sessions || 10}</small>` : '—', e.clock_text ? esc(e.clock_text).slice(0, 60) : 'two-week eval clock')}
+      ${tile('Drawdown left', ok(room) ? usd(room) : '—', `of ${usd(e.mll || 2000)} max loss${e.locked ? ' · floor locked' : ''}`, ok(room) && room < 700 ? 'dn' : '')}
       ${tile('Pass odds', tw ? pct(tw.p10) : '—', tw ? `in 2 weeks · fail ${pct(tw.f10)}` : 'backtest odds')}</div>`;
   }
   function tradeCard() {
@@ -194,11 +193,9 @@
     const e = M.a?.eval; if (!e) return '';
     const tw = HD()?.extras?.two_week?.eval, ev = HD()?.extras?.eventual;
     const prog = Math.max(0, Math.min(1, (e.profit || 0) / 3000)), roomF = Math.max(0, Math.min(1, (e.room || 0) / (e.mll || 2000)));
-    const n = e.sessions || 10, s = e.session || 0;
     return `<div class="card"><div class="card-h"><h3>${icon('prop')}MFFU Builder 50K eval</h3><button class="chipbtn" type="button" data-go="whatif"><span>What if</span>${icon('right')}</button></div>
       <div class="hb-prog"><div class="hb-ph"><span>Profit <b class="${cls(e.profit)}">${susd(e.profit)}</b> of +$3,000</span><span>${usd(e.balance)}</span></div>${meter(prog, 'good')}
-        <div class="hb-ph"><span>Room above the floor <b>${usd(e.room)}</b> of ${usd(e.mll || 2000)}</span><span>daily loss used ${usd(e.dll_used)} / ${usd(e.dll || 1000)}</span></div>${meter(roomF, roomF < 0.35 ? 'bad' : '')}</div>
-      <div class="hb-ses" aria-label="Session ${s} of ${n}">${Array.from({ length: n }, (_, i) => `<i class="${i + 1 < s ? 'done' : i + 1 === s ? 'now' : ''}">${i + 1}</i>`).join('')}</div>
+        <div class="hb-ph"><span>Drawdown left <b>${usd(e.room)}</b> of ${usd(e.mll || 2000)}</span><span>daily loss used ${usd(e.dll_used)} / ${usd(e.dll || 1000)}</span></div>${meter(roomF, roomF < 0.35 ? 'bad' : '')}</div>
       <p class="small mut" style="margin:10px 0 0">${tw?.H2 ? `Backtest odds with today's two-week sizing: pass in 2 weeks <b class="up">${pct(tw.H2.p10)}</b> (Jul–Oct check) / ${pct(tw.H1?.p10)} (Jan–Jun), fail ${pct(tw.H2.f10)} / ${pct(tw.H1?.f10)}.` : ''}
         ${ev && (ev['MC H1'] || ev.H1) ? ` Eventual pass (no reset, safe_eval after session 10): ${pct((ev['MC H1'] || ev.H1).pass)} / ${pct((ev['MC H2'] || ev.H2 || {}).pass)}.` : ' After session 10 the eval keeps going in safe_eval (no reset).'}</p></div>`;
   }
@@ -378,10 +375,10 @@
   function accTable() {
     const A = ACC(); if (!A.length) return '';
     return `<div class="card"><div class="card-h"><h3>${icon('wallet')}Accounts side by side</h3><button class="chipbtn" type="button" data-go="accounts"><span>Accounts</span>${icon('right')}</button></div>
-      <div class="tw"><table class="ht hb-at"><tr><th>Account</th><th class="c">Balance</th><th class="c">Profit</th><th class="c">Today</th><th class="c">To target</th><th class="c">Room</th><th class="c">Session</th><th class="c">Trades</th><th class="c">Win</th><th class="c">PF</th></tr>
+      <div class="tw"><table class="ht hb-at"><tr><th>Account</th><th class="c">Balance</th><th class="c">Profit</th><th class="c">Today</th><th class="c">To target</th><th class="c">Drawdown left</th><th class="c">Trades</th><th class="c">Win</th><th class="c">PF</th></tr>
       ${A.map((a) => { const e = a.eval || {}, s = a.stats || {}, p = a.pnl || {};
         return `<tr><td class="k"><b>${esc(a.name)}</b> ${accBadge(a)}${a.extra ? ' <span class="small mut">extra</span>' : ''}</td><td class="v">${usd(e.balance)}</td><td class="v ${cls(e.profit)}">${susd(e.profit)}</td><td class="v ${cls(p.today)}">${susd(p.today)}</td>
-          <td class="v">${usd(e.to_target)}</td><td class="v ${ok(e.room) && e.room < 700 ? 'dn' : ''}">${usd(e.room)}</td><td class="v">${ok(e.session) ? `${e.session}/${e.sessions}` : '—'}</td><td class="v">${s.n ?? 0}</td><td class="v">${pct(s.win_pct)}</td><td class="v">${fPF(s.pf)}</td></tr>`; }).join('')}</table></div>
+          <td class="v">${usd(e.to_target)}</td><td class="v ${ok(e.room) && e.room < 700 ? 'dn' : ''}">${usd(e.room)}${ok(e.mll) ? `<small class="mut"> of ${usd(e.mll)}</small>` : ''}</td><td class="v">${s.n ?? 0}</td><td class="v">${pct(s.win_pct)}</td><td class="v">${fPF(s.pf)}</td></tr>`; }).join('')}</table></div>
       <p class="small mut" style="margin:8px 0 0">Extra accounts appear here as soon as the PC bot routes them (live_model.json “accounts”, engine/multi_account.py).</p></div>`;
   }
   // Funded & payouts (2026-10-25, data.json "funded_life" = engine/funded_life.block, read-only): per funded account the
@@ -456,10 +453,10 @@
       const one = next ? next.win >= 3000 - profit : null;
       return `<div class="card hb-wi ${k}"><div class="eyebrow">${label}</div><b class="hb-wib ${cls(pnl)}">${susd(pnl)}</b>
         <div class="kv one"><div><span>Balance</span><b>${usd(bal)}</b></div><div><span>$ still to +$3,000</span><b>${passed ? '<span class="up">PASSED</span>' : usd(3000 - profit)}</b></div>
-          <div><span>Room above the floor</span><b class="${room < 700 ? 'dn' : ''}">${failed ? '<span class="dn">FAILED</span>' : usd(room)}</b></div>
+          <div><span>Drawdown left</span><b class="${room < 700 ? 'dn' : ''}">${failed ? '<span class="dn">FAILED</span>' : usd(room)}</b></div>
           <div><span>Can one winner still pass?</span><b>${passed ? '—' : one == null ? '—' : one ? '<span class="up">yes</span>' : `<span class="wn">no: ${esc(next.why)}</span>`}</b></div></div></div>`;
     };
-    el.innerHTML = head('Money · what if', 'The next trade', `With today’s eval (${usd(e.balance)}, ${usd(e.room)} of room) and the live two-week sizing: what a win at the target, a stop-out or a breakeven exit does.`)
+    el.innerHTML = head('Money · what if', 'The next trade', `With today’s eval (${usd(e.balance)}, ${usd(e.room)} of drawdown left) and the live two-week sizing: what a win at the target, a stop-out or a breakeven exit does.`)
       + `<div class="card hb-filt"><div class="hb-frow"><label class="hb-lab">Stop <input class="hb-in sm" id="wiS" type="number" min="8" max="90" step="0.25" value="${stop}"> pts</label>
           <label class="hb-lab">Target <input class="hb-in sm" id="wiT" type="number" min="10" max="900" step="1" value="${tgt}"> pts</label></div>
         <p class="small" style="margin:10px 0 0"><b>${q.q} micros</b> (${esc(q.why || '')}) · ${usd(q.risk)} at risk · ${usd(q.win)} at the target. Defaults: today’s typical stop and ~¾ of the VIX one-day move.</p></div>

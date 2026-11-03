@@ -29,7 +29,7 @@
   feat('Goals', '50K progress ring', 'How much of the +$3,000 target the 50K has made, as a ring.', 'goals', 1);
   feat('Goals', 'Profit bar', 'Profit so far against the target, with the $ still to go.', 'goals', 1);
   feat('Goals', 'Room-to-floor bar', 'How far the balance is above the trailing floor; turns red when it gets thin.', 'goals', 1);
-  feat('Goals', 'Session counter', 'Session X of 10 and how many sessions are left of the 2-week goal.', 'goals', 1);
+  feat('Goals', 'Drawdown left', 'What each eval can still lose before MFFU closes it: balance minus the max-loss floor, out of the full max loss.', 'goals', 1);
   feat('Goals', 'Session dots 1-15', 'Fifteen dots: done, today, and the dashed ones past the 2-week goal up to the 3-week limit.', 'goals', 1);
   feat('Goals', '$ needed per session', 'The $ still to go divided by the sessions left.', 'goals', 1);
   feat('Goals', 'Pass-by dates', 'The calendar date of session 10 (goal) and session 15 (limit).', 'goals', 1);

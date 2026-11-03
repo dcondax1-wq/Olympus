@@ -37,8 +37,10 @@
 // jarvis.css?v=j10 (its quick-action tile), a fresh index.html and brain.js ("Jarvis, voice mode").
 // v15 (2026-11-03, the OLYMPUS home-screen icon): icons and manifest ?v=j3 (name Olympus).
 // v16 (2026-11-03 day sprint): themes (jarvis.css?v=j12), the assistant (assistant.js, tts.js), Pantheon + Arena built in.
-const CACHE = 'jarvis-v16';
-const OLD = ['jarvis-v15', 'jarvis-v14', 'jarvis-v13', 'jarvis-v12', 'jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];
+// v17 (2026-11-03 night): the bot cards and answers say "Drawdown left $X of $max loss" (brain.js, data.js, index.html,
+// jarvis.css .kv em); new cache name so every phone refetches them (jarvis.css keeps ?v=j12).
+const CACHE = 'jarvis-v17';
+const OLD = ['jarvis-v16', 'jarvis-v15','jarvis-v14', 'jarvis-v13', 'jarvis-v12', 'jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];
 const NAV_WAIT_MS = 3500;
 const NET_MAX_MS = 9000;
 const SHELL = ['./', './index.html', './manifest.webmanifest?v=j3', './apple-touch-icon.png?v=j3', './icon-192.png?v=j3', './icon-512.png?v=j3',

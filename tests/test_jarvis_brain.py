@@ -400,12 +400,12 @@ def part_node(O):
     check("b. today's plan from the Planner (done tasks left out)", "Gym" in a4 and "Buy BLITZ 25K" in a4 and "Old" not in a4 and "7:30 AM" in a4, a4)
     check("b. the market", "NQ market" in a5, a5)
     check("b. status / room / target carry BLITZ next to Zlarior and ATLAS",
-          "BLITZ 25K" in a1 and "$612" in a1 and "BLITZ 25K: $612 of room above the floor ($24,500)" in a2 and "BLITZ: $1,388 to the target" in a3, (a1, a2, a3))
+          "BLITZ 25K" in a1 and "$612" in a1 and "BLITZ 25K: drawdown left $612" in a2 and "BLITZ: $1,388 to the target" in a3, (a1, a2, a3))
     check("b. P&L: Zlarior, ATLAS and BLITZ (today and this week)", "Zlarior today +$213" in a8 and "ATLAS today" in a8 and "BLITZ today +$95, this week +$140" in a8, a8)
     r9 = g("today_waiting")[6]
     check("b. 'how's blitz' answers BLITZ alone (not 'Opening Zenith')", "BLITZ 25K: today +$95, room $612, $1,388 to target, 2 trades today" in a9
           and "Zlarior" not in a9 and "Opening" not in a9 and not r9.get("open"), a9)
-    check("b. 'blitz room' answers BLITZ's room alone", "BLITZ 25K: $612" in a10 and "Zlarior" not in a10, a10)
+    check("b. 'blitz room' answers BLITZ's room alone", "BLITZ 25K: drawdown left $612" in a10 and "Zlarior" not in a10, a10)
     r6 = g("today_waiting")[8]
     check("b. 'open planner' switches to the Planner (reply.open and the shell's open())", "Opening Planner" in a6 and r6.get("open") == "planner"
           and ["planner", None] in O["today_waiting"]["opened"], (a6, O["today_waiting"]["opened"]))
@@ -467,7 +467,7 @@ def part_node(O):
     f = [t("follow", i) for i in range(8)]
     check("e. follow-up 'and atlas?' after 'how's blitz': ATLAS alone", "ATLAS 25K: today $0, room $750, $1,750 to target" in f[1] and "BLITZ" not in f[1]
           and "Zlarior" not in f[1], f[1])
-    check("e. follow-up keeps the topic: 'blitz room' -> 'and atlas' = ATLAS's room", "ATLAS 25K: $750 of room" in f[3] and "BLITZ" not in f[3], f[3])
+    check("e. follow-up keeps the topic: 'blitz room' -> 'and atlas' = ATLAS's room", "ATLAS 25K: drawdown left $750" in f[3] and "BLITZ" not in f[3], f[3])
     check("e. 'what about kalshi' after the P&L: Kalshi's P&L", "Kalshi today +$18.50" in f[5] and "Zlarior" not in f[5], f[5])
     check("e. 'and the target?' after Zlarior's room: Zlarior's target alone", "Zlarior: $3,726 to the target" in f[7] and "ATLAS" not in f[7], f[7])
     ba = g("bare_atlas")[0]
@@ -476,8 +476,9 @@ def part_node(O):
     check("e. 'how are the bots doing today' is the status; 'how's today looking' is the plan", "Zlarior 50K: today +$213" in t("bare_atlas", 1)
           and "Gym" in t("bare_atlas", 2), (t("bare_atlas", 1)[:80], t("bare_atlas", 2)[:80]))
     e1, e2, e3, e4, e5 = (t("eval_pos", i) for i in range(5))
-    check("e. eval progress: profit, % of the way, to target, room, session X of 10", "Zlarior 50K eval: profit −$726" in e1 and "$3,726 to the target" in e1
-          and "session 3 of 10" in e1, e1)
+    # owner 2026-11-03: no "session X of 10" counter; the drawdown left (balance - the max-loss floor) instead
+    check("e. eval progress: profit, % of the way, to target, drawdown left, no session X of 10", "Zlarior 50K eval: profit −$726" in e1
+          and "$3,726 to the target" in e1 and "drawdown left $1,106" in e1 and "session 3 of 10" not in e1, e1)
     check("e. positions: the open trade (paper only, read-only)", "Zlarior: long 3 micros from 20,100.25, stop 20,080, target 20,160" in e2
           and "ATLAS: flat" in e2 and "Paper only" in e2, e2)
     check("e. what a bot waits for: its waiting text and entry window", "Waiting for a sweep of a LIT level" in e3 and "next entry window Mon 02:00-15:30 ET" in e3, e3)

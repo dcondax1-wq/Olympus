@@ -1339,7 +1339,7 @@ function zenithCard() {
     if (!x) return '';
     const set = x.room != null;
     const rf = Number.isFinite(+x.room_frac) ? +x.room_frac : null;
-    return `<div class="acct"><i>${esc(label)} · ${esc(x.plan || '')}${x.badge ? ' · ' + esc(x.badge) : ''}</i>${set ? `<div class="kv"><div><span>Today</span><strong class="m ${sgn(+x.today_pnl)}">${D.usd(x.today_pnl, true)}</strong></div><div><span>Room</span><strong class="m">${D.usd(x.room)}</strong></div><div><span>To target</span><strong class="m">${D.usd(x.to_target)}</strong></div></div>${rf != null ? segBar(rf, rf < .25 ? 'bad' : rf < .5 ? 'warn' : 'ok') : ''}` : `<p class="muted">${esc(x.off ? 'Account C off · paper only until its own 25K' : x.status || 'not set up')}</p>`}</div>`;
+    return `<div class="acct"><i>${esc(label)} · ${esc(x.plan || '')}${x.badge ? ' · ' + esc(x.badge) : ''}</i>${set ? `<div class="kv"><div><span>Today</span><strong class="m ${sgn(+x.today_pnl)}">${D.usd(x.today_pnl, true)}</strong></div><div><span>Drawdown left</span><strong class="m">${D.usd(x.room)}</strong>${Number.isFinite(+x.mll) && x.mll != null ? `<em>of ${D.usd(x.mll)}</em>` : ''}</div><div><span>To target</span><strong class="m">${D.usd(x.to_target)}</strong></div></div>${rf != null ? segBar(rf, rf < .25 ? 'bad' : rf < .5 ? 'warn' : 'ok') : ''}` : `<p class="muted">${esc(x.off ? 'Account C off · paper only until its own 25K' : x.status || 'not set up')}</p>`}</div>`;
   };
   const line = (v.lines || []).find((x) => x.level === 'bad' || x.level === 'warn');
   return `<button class="panel card" type="button" data-app="zenith">${head(lvl)}<span class="pill ${lvl}">${esc(vd.label || 'Bot status')}${v.t ? ' · ' + esc(D.ago(v.t)) : ''}${v.cached ? ' · saved' : ''}</span>`
@@ -1678,8 +1678,9 @@ function fallbackBrain({ getFacts }) {
     const pick = (lit, atl, blz) => (onlyBz ? [blz || bzWhy()] : [lit, atl, blz]).filter(Boolean).join('\n');
     if (/\b(room|floor|drawdown|max loss)\b/.test(q)) {
       if (!v) return need();
-      return { text: pick(v.lit && v.lit.room != null ? `Zlarior 50K: ${usd(v.lit.room)} of room above the floor (${usd(v.lit.floor)}).` : '', v.atlas && v.atlas.room != null ? `ATLAS 25K: ${usd(v.atlas.room)} of room.` : '',
-        bz && !bzOff ? `BLITZ 25K: ${usd(bz.room)} of room above the floor (${usd(bz.floor)}).` : '') || 'No account room to show right now: the bot is not running. Zenith has the details.' };
+      const mx = (x, d) => usd(x.mll != null ? x.mll : d);
+      return { text: pick(v.lit && v.lit.room != null ? `Zlarior 50K: drawdown left ${usd(v.lit.room)} of ${mx(v.lit, 2000)}.` : '', v.atlas && v.atlas.room != null ? `ATLAS 25K: drawdown left ${usd(v.atlas.room)} of ${mx(v.atlas, 1000)}.` : '',
+        bz && !bzOff ? `BLITZ 25K: drawdown left ${usd(bz.room)} of ${mx(bz, 1000)}.` : '') || 'No account room to show right now: the bot is not running. Zenith has the details.' };
     }
     if (/\b(target|to go|pass|passing)\b/.test(q)) {
       if (!v) return need();

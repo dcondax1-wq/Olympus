@@ -275,6 +275,10 @@
     let bal = st, peak = st, floor = st - mll;
     const pts = [{ day: 'start', bal, floor }];
     for (const [d, p] of days) { bal += +p || 0; peak = Math.max(peak, bal); floor = Math.min(Math.max(floor, peak - mll), lock); pts.push({ day: d, bal, floor, pnl: +p || 0 }); }
+    // the account's own (MFFU-anchored) floor and balance win over the replay of the bot's booked days
+    const L = pts[pts.length - 1];
+    if (Number.isFinite(+A.ev.floor) && A.ev.floor !== null) L.floor = +A.ev.floor;
+    if (Number.isFinite(+A.ev.balance) && A.ev.balance !== null) L.bal = +A.ev.balance;
     return { pts, tgt, st, lock };
   }
   function curveSVG(C, W = 360, H = 240) {
@@ -304,7 +308,7 @@
       <div class="card"><div class="card-h"><h3>${icon('results')}${esc(pick.name)}</h3>${chip(esc(ev.clock_text || ev.status || ''), ev.status === 'passed' ? 'good' : ev.status === 'failed' ? 'bad' : '')}</div>
         ${curveSVG(C)}
         <div class="legend"><span><i style="background:var(--accent)"></i>balance</span><span><i style="background:var(--good)"></i>target $${C.tgt.toLocaleString('en-US')}</span><span><i style="background:var(--bad)"></i>trailing floor</span><span><i style="background:var(--muted)"></i>start / lock</span></div></div>
-      <div class="mo-tiles">${statBox('Balance', usd(ev.balance ?? last.bal))}${statBox('To target', usd(ev.to_target ?? C.tgt - last.bal), 'of $3,000')}${statBox('Room to floor', usd(ev.room ?? last.bal - last.floor), ev.locked ? 'floor locked' : 'floor trails')}${statBox('Sessions', `${ev.session ?? C.pts.length - 1}/${ev.sessions ?? 10}`, 'pass within 10')}</div>
+      <div class="mo-tiles">${statBox('Balance', usd(ev.balance ?? last.bal))}${statBox('To target', usd(ev.to_target ?? C.tgt - last.bal), 'of $3,000')}${statBox('Drawdown left', usd(ev.room ?? last.bal - last.floor), `of ${usd(ev.mll ?? 2000)} max loss${ev.locked ? ' · floor locked' : ''}`)}</div>
       ${C.pts.length < 3 ? `<p class="small mut">${C.pts.length - 1} session${C.pts.length === 2 ? '' : 's'} so far; the curve grows by one point after every session that trades.</p>` : ''}`;
     onSeg('moAcct', (v) => { store.set('more.curveAcct', v); render(true); });
   };

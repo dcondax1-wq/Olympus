@@ -625,7 +625,7 @@ export function createBrain(opts) {
     if (!c) return null;
     const off = isOff(c, bot);
     return { title: labelOf(c, bot), kv: off ? [['Status', key === 'blitz' && c.off ? 'off' : str(c.status, 30) || 'not set up']]
-      : [['Today', usd(c.today_pnl, true) || 'missing'], ['Room', usd(c.room) || 'missing'], ['To target', usd(c.to_target) || 'missing']], open: 'zenith', route: bot.route };
+      : [['Today', usd(c.today_pnl, true) || 'missing'], ['Drawdown left', usd(c.room) || 'missing'], ['To target', usd(c.to_target) || 'missing']], open: 'zenith', route: bot.route };
   }
   function posLine(c, bot) {
     const p = c.position, side = str(p.side, 10) || (num(p.dir) > 0 ? 'long' : num(p.dir) < 0 ? 'short' : 'open'), q = num(p.qty);
@@ -639,9 +639,9 @@ export function createBrain(opts) {
     for (const key of sel) {
       const bot = BOT[key], c = card(V, key);
       if (isOff(c, bot)) { if (only) { out.push(offWhy(c, bot)); say.push(bot.name + ' has no room figure.'); } continue; }
-      const fl = usd(c.floor);
-      out.push(`${labelOf(c, bot)}: ${usd(c.room)} of room${fl ? ` above the floor (${fl})` : ''}.`);
-      say.push(`${bot.name} has ${sayAmt(c.room)} of room.`);
+      const mx = usd(c.mll);
+      out.push(`${labelOf(c, bot)}: drawdown left ${usd(c.room)}${mx ? ` of the ${mx} max loss` : ''}.`);
+      say.push(`${bot.name} has ${sayAmt(c.room)} of drawdown left.`);
     }
     setCtx('room', sel, only, false, V);
     if (!out.length) return { text: 'No account room in the live feed right now. ' + BOT_FIX, intent: 'room' };
@@ -708,17 +708,16 @@ export function createBrain(opts) {
       if (isOff(c, bot)) { if (only || key !== 'blitz') out.push(offWhy(c, bot)); continue; }
       const st = str(c.status, 20).toLowerCase(), stage = str(c.stage, 20).toLowerCase();
       if (st === 'passed' || st === 'failed') { out.push(`${labelOf(c, bot)}: eval ${st.toUpperCase()}.`); say.push(`${bot.name}'s eval ${st}.`); continue; }
-      const prof = num(c.profit), tt = num(c.to_target), sess = num(c.session), of = num(c.sessions);
+      const prof = num(c.profit), tt = num(c.to_target);
       const pc = prof != null && tt != null && prof + tt > 0 ? Math.max(0, Math.min(100, Math.round((100 * prof) / (prof + tt)))) : null;
       const bits = [];
       if (prof != null) bits.push(`profit ${usd(prof, true)}${pc != null ? ` (${pc}% of the way)` : ''}`);
       bits.push(tt != null ? `${usd(tt)} to the target` : 'distance to the target missing');
-      bits.push(`${usd(c.room) || 'missing'} of room`);
-      bits.push(sess != null ? `session ${sess}${of ? ' of ' + of : ''}` : 'session count missing');
+      bits.push(`drawdown left ${usd(c.room) || 'missing'}${num(c.mll) != null ? ` of ${usd(c.mll)}` : ''}`);
       out.push(`${labelOf(c, bot)} ${stage === 'funded' ? 'funded' : 'eval'}: ${bits.join(', ')}.`);
       const wk = isObj(P[key]) && isObj(P[key].week) ? P[key].week : null;
       if (wk && num(wk.n) != null) out.push(`  This week ${plural(num(wk.n), 'trade')}${num(wk.lo) != null ? ` (goal ${num(wk.lo)}-${num(wk.hi)})` : ''}.`);
-      say.push(`${bot.name}: ${tt != null ? sayAmt(tt) + ' to go' : 'target distance missing'}${sess != null ? `, session ${sess}${of ? ' of ' + of : ''}` : ''}.`);
+      say.push(`${bot.name}: ${tt != null ? sayAmt(tt) + ' to go' : 'target distance missing'}${num(c.room) != null ? `, ${sayAmt(c.room)} of drawdown left` : ''}.`);
     }
     setCtx('eval', sel, only, false, V);
     if (!out.length) return { text: 'No eval numbers in the live feed right now. ' + BOT_FIX, intent: 'eval' };

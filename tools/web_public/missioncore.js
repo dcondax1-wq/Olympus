@@ -194,8 +194,8 @@
     const nums = A.placeholder
       ? `<div class="mc-nums"><div><em>Account</em><b>not live yet</b></div><div><em>Mode</em><b>paper</b></div></div>`
       : `<div class="mc-nums"><div><em>Balance</em><b data-dp-n="mc-${esc(A.key)}-bal">${money(A.balance)}</b></div><div><em>To target</em><b data-dp-n="mc-${esc(A.key)}-tgt">${okN(A.toTarget) && A.toTarget <= 0 ? 'passed' : money(A.toTarget)}</b></div>
-          <div><em>Room to floor</em><b data-dp-n="mc-${esc(A.key)}-room" class="${okN(A.roomFrac) && A.roomFrac < 0.35 ? 'dn' : ''}">${money(A.room)}</b></div><div><em>Today</em><b class="${cls(A.today)}">${smoney(A.today)}</b></div></div>`;
-    const day = A.placeholder ? 'paper shadow' : okN(A.session) ? `eval day ${A.session} of ${A.sessions || 10}` : A.funded ? 'funded' : '';
+          <div><em>Drawdown left${okN(A.mll) ? ` of ${money(A.mll)}` : ''}</em><b data-dp-n="mc-${esc(A.key)}-room" class="${okN(A.roomFrac) && A.roomFrac < 0.35 ? 'dn' : ''}">${money(A.room)}</b></div><div><em>Today</em><b class="${cls(A.today)}">${smoney(A.today)}</b></div></div>`;
+    const day = A.placeholder ? 'paper shadow' : A.funded ? 'funded' : '';
     return `<article class="mc-orbit dp-tilt ${big ? 'big' : ''} st-${A.state} lt-${lt}${A.placeholder ? ' ph' : ''}" style="--c:${A.color}" data-mc-acct="${esc(A.key)}">
       <div class="mc-planet" aria-hidden="true" style="--p:${prog != null ? (prog * 100).toFixed(1) : 0}%"><i class="mc-prog"></i><i class="mc-o1"></i><i class="mc-o2"></i><b class="mc-ball"></b><i class="mc-sat"></i></div>
       <header><span class="mc-name"><b>${esc(A.name)}</b> · ${esc(A.size || '')}</span><span class="mc-light ${lt}" title="health">${LBL[A.state]}</span></header>
@@ -245,7 +245,7 @@
       else if (A.micros && okN(+A.micros.risk_usd)) { loss = -Math.abs(+A.micros.risk_usd); what = `a full stop at today's size (${A.micros.qty} micros, ${A.micros.risk_pts || '—'} pts)`; }
       if (loss == null) return `<li><b>${esc(A.name)}</b><span>no position and no size yet</span></li>`;
       const after = okN(A.room) ? A.room + loss : null, frac = okN(after) && A.mll ? after / A.mll : null;
-      return `<li class="${okN(frac) && frac < 0.25 ? 'warn' : ''}"><b>${esc(A.name)}</b><span>If ${esc(what)}: <i class="dn">${smoney(loss)}</i> → room left <i class="${okN(frac) && frac < 0.25 ? 'dn' : ''}">${money(after)}</i>${okN(A.today) && okN(A.dll) ? ` · day loss ${money(Math.max(0, -(A.today + loss)))} of ${money(A.dll)}` : ''}</span></li>`;
+      return `<li class="${okN(frac) && frac < 0.25 ? 'warn' : ''}"><b>${esc(A.name)}</b><span>If ${esc(what)}: <i class="dn">${smoney(loss)}</i> → drawdown left <i class="${okN(frac) && frac < 0.25 ? 'dn' : ''}">${money(after)}</i>${okN(A.today) && okN(A.dll) ? ` · day loss ${money(Math.max(0, -(A.today + loss)))} of ${money(A.dll)}` : ''}</span></li>`;
     });
     return card('stop', 'If it stops out now', 'What one stop-out costs, and the room to the floor after it', `<ul class="mc-rows">${rows.join('')}</ul>`);
   }

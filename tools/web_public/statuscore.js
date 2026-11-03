@@ -261,7 +261,7 @@
     let days = arr(A.days).map((d) => (Array.isArray(d) ? num(d[1]) : num(obj(d).usd)));
     if (days.length < 3) { const wk = arr(obj(obj(obj(obj(M.board).progress)[k]).week).days).filter((d) => d && !d.future).map((d) => num(d.usd) || 0); if (wk.length >= 3) days = wk; }
     const big = passed ? 'Passed' : okN(A.toTarget) ? money(A.toTarget) : '—';
-    const sub = [okN(A.room) ? `Room ${money(A.room)}` : '', okN(A.session) && okN(A.sessions) ? `day ${A.session} of ${A.sessions}` : ''].filter(Boolean).join(' · ');
+    const sub = okN(A.room) ? `Drawdown left ${money(A.room)}${okN(A.mll) ? ` of ${money(A.mll)}` : ''}` : '';
     const roomLvl = okN(A.roomFrac) ? (A.roomFrac < 0.25 ? 'bad' : A.roomFrac < 0.5 ? 'warn' : 'good') : 'idle';
     const tc = okN(A.today) && A.today > 0 ? 'up' : okN(A.today) && A.today < 0 ? 'dn' : '';
     return `<a class="su-acct${A.pos ? ' trading' : ''}" data-bot="${k}" style="--c:${c}" ${goA(o, page)} aria-label="${NAME[k]} ${esc(A.size || '')}: ${esc(big)} to the target"><i class="su-sheen" aria-hidden="true"></i>

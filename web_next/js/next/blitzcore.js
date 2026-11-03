@@ -250,7 +250,7 @@
     const prog = ok(num(e.profit)) ? Math.max(0, Math.min(1, num(e.profit) / tgt)) : 0;
     return `<div class="bl-eval"><div class="bl-eval-h"><span>${esc(label)}</span>${e.status ? chip(e.status, /pass/.test(e.status) ? 'good' : /fail|stuck|lost/.test(e.status) ? 'bad' : '') : ''}</div>
       <div class="bl-tiles"><div><span>Balance</span><b>${usd(e.balance)}</b></div><div><span>To target</span><b>${usd(e.to_target)}</b></div>
-        <div><span>Room</span><b>${usd(e.room)}</b></div><div><span>Session</span><b>${ok(num(e.session)) ? e.session : '—'}</b></div></div>
+        <div><span>Drawdown left</span><b>${usd(e.room)}</b></div><div><span>Profit</span><b>${usd(e.profit)}</b></div></div>
       <div class="bl-bar"><i style="width:${(prog * 100).toFixed(1)}%"></i></div></div>`;
   }
   function scoreRow(s) {

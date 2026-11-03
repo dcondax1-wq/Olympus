@@ -92,13 +92,16 @@
     return { q, why, short, need, risk: q * ((stop + TW.SLIP) * TW.PV + TW.COMM), win: q * (tgt * TW.PV - TW.COMM) };
   }
   function evalNow() {
-    const lv = L(), ev = lv.eval || {}, e2 = lv.eval_2wk || {}, P = { start: 50000, target: 3000, mll: 2000, dll: 1000, lock_at: 50100, ...(D.lit_extra?.plan || {}) };
+    // the real MFFU account (the PC bot's anchored eval: balance, floor, room = what MFFU shows) beats the cloud paper ledger
+    // ("eval": its own paper trail, e.g. floor $48,000 / room $389 while the real 50K had $1,133 left, 2026-11-03)
+    const real = ((D && D.accounts) || []).find((a) => a && a.source === 'pc' && a.eval && ok(a.eval.room) && ok(a.eval.balance));
+    const lv = L(), ev = real ? { ...real.eval, trailing_mll: real.eval.floor ?? real.eval.balance - real.eval.room } : (lv.eval || {}), e2 = lv.eval_2wk || {}, P = { start: 50000, target: 3000, mll: 2000, dll: 1000, lock_at: 50100, ...(D.lit_extra?.plan || {}) };
     const bal = ok(ev.balance) ? +ev.balance : P.start, floor = ok(ev.trailing_mll) ? +ev.trailing_mll : P.start - P.mll;
     const profit = ok(ev.profit) ? +ev.profit : bal - P.start, toGo = Math.max(0, P.target - profit), room = bal - floor;
     const today = (lv.ledger || []).filter((v) => v.day === lv.today), cum = sum(today, (v) => +v.usd || 0);
     const limit = +e2.limit || 10, done = ok(e2.sessions_done) ? +e2.sessions_done : null, session = ok(e2.session) ? +e2.session : null;
     const left = done == null ? null : Math.max(0, limit - done);
-    return { lv, ev, e2, P, bal, floor, profit, toGo, room, today, cum, limit, done, session, left, mode: lv.lit_sizing || D.lit_extra?.sizing?.mode || 'normal',
+    return { real: !!real, lv, ev, e2, P, bal, floor, profit, toGo, room, today, cum, limit, done, session, left, mode: lv.lit_sizing || D.lit_extra?.sizing?.mode || 'normal',
       tradedToday: today.length >= ((D.lit_extra?.rules?.max_per_day) || 1), status: e2.status || (profit >= P.target ? 'passed' : bal <= floor ? 'failed' : 'open') };
   }
   // eval lifecycle (engine/eval_life.py): the PC bot's (heartbeat health.eval_life, the real account) when it reports one,
@@ -123,8 +126,6 @@
     const stops = [...new Set([15, 25, 35, Math.round(ty.stop), 60, 80])].sort((a, b) => a - b);
     const tbl = stops.map((s) => { const tg = Math.min(8 * s, Math.max(1.5 * s, ty.tgt)), z = twQty(s, tg, next); return { s, tg, ...z, typ: s === Math.round(ty.stop) }; });
     const tz = tbl.find((r) => r.typ);
-    const dots = Array.from({ length: E.limit }, (_, i) => { const n = i + 1, k = E.session == null ? '' : n < E.session ? 'done' : n === E.session ? 'now' : '';
-      return `<i class="${k}" title="Session ${n}">${n}</i>`; }).join('');
     const statusK = E.status === 'passed' ? 'good' : E.status === 'failed' ? 'bad' : '';
     const ODDS = tw?.eval ? [['H2', 'H2 starts · the check (quote this)'], ['H1', 'H1 starts · picked on'], ['2026', 'All 2026 starts'], ['mc_H2', 'Monte Carlo · H2 days'],
       ['mc_H1', 'Monte Carlo · H1 days'], ['2021-25', '2021-25 · reference (5m bars)']].filter(([k]) => tw.eval[k]) : [];
@@ -135,12 +136,10 @@
         <li><b>One winner passes</b>: the live two_week sizing buys enough micros that one trade reaching its target covers everything still needed, but never more than ${RFP()}% of the room to the trailing floor and never more than the $1,000 soft daily loss on a full stop. The table shows that rule at different stop sizes (the target is 2026’s median target distance, kept between 1.5R and 8R).</li>
         <li><b>Odds</b>: replays of every possible eval start in 2026 with the live sizing (${esc(tw?.run || "run lit_2wk_rec")}: Monte Carlo starts at the live two_week switches, research/lit/uprisk_eval.json). Pass / fail / still open after 10 sessions. H2 (Jul–Oct) is the honest check; H1 is where the rules were picked.</li>
         <li>All of it is the paper eval and the backtest. The bot never places real orders.</li></ul>`) +
-      `<div class="card lex-hq"><div class="card-h"><h3>Pass path · paper eval</h3>${tag(esc(E.status).toUpperCase(), statusK)}</div>
+      `<div class="card lex-hq"><div class="card-h"><h3>Pass path · ${E.real ? 'real MFFU account' : 'paper eval'}</h3>${tag(esc(E.status).toUpperCase(), statusK)}</div>
         <div class="lex-big"><b>${usd(E.bal)}</b><span class="${cls(E.profit)}">${susd(E.profit)} since the start${E.ev.start ? ` (${fDate(E.ev.start)})` : ''}</span></div>
-        <div class="lex-dots">${dots}</div>
-        <p class="small mut" style="margin:6px 0 12px">${esc(E.e2.text || (E.session ? `session ${E.session} of ${E.limit}` : 'eval clock not started'))}${E.e2.reset === false || E.e2.reset == null ? ' · no reset: after session 10 it keeps going in safe_eval' : ''}</p>
         <div class="lex-prog"><div class="meter good"><i style="width:${Math.max(0, Math.min(100, E.profit / E.P.target * 100)).toFixed(1)}%"></i></div><div class="small"><span>To the $${E.P.target.toLocaleString('en-US')} target</span><b>${usd(E.toGo)} to go</b></div></div>
-        <div class="lex-prog"><div class="meter"><i style="width:${Math.max(0, Math.min(100, E.room / E.P.mll * 100)).toFixed(1)}%"></i></div><div class="small"><span>Room above the floor ${usd(E.floor)}${E.floor >= E.P.lock_at - .5 ? ' (locked)' : ''}</span><b>${usd(E.room)}</b></div></div>
+        <div class="lex-prog"><div class="meter"><i style="width:${Math.max(0, Math.min(100, E.room / E.P.mll * 100)).toFixed(1)}%"></i></div><div class="small"><span>Drawdown left${E.floor >= E.P.lock_at - .5 ? ' (floor locked)' : ''}</span><b>${usd(E.room)} of ${usd(E.P.mll)}</b></div></div>
         ${lifeLine(E.lv)}
       </div>
       <div class="stats">
@@ -387,7 +386,7 @@
       if (!D || !D.live) return '';
       const E = evalNow(), tw = X()?.two_week?.eval?.H2, perSess = E.left ? E.toGo / E.left : null;
       return `<div class="card lex-tc"><div class="card-h"><h3>${icon('prop')} Eval HQ · 2-week pass path</h3><button class="chipbtn" type="button" data-go="evalhq"><span>Open</span>${icon('right')}</button></div>
-        <div class="lex-tcg"><div><span>To pass</span><b>${usd(E.toGo)}</b></div><div><span>Sessions left</span><b>${E.left ?? '—'}<small class="mut"> / ${E.limit}</small></b></div>
+        <div class="lex-tcg"><div><span>To pass</span><b>${usd(E.toGo)}</b></div><div><span>Drawdown left</span><b>${usd(E.room)}<small class="mut"> of ${usd(E.P.mll)}</small></b></div>
           <div><span>Needed / session</span><b>${perSess != null ? usd(perSess) : '—'}</b></div><div><span>2-wk pass odds</span><b>${tw ? pct(tw.p10) : '—'}<small class="mut">${tw ? ' · ' + pct(tw.f10) + ' fail' : ''}</small></b></div></div>
         <div class="lex-links"><button class="chipbtn" type="button" data-go="edge">${icon('heat')}<span>Edge</span></button><button class="chipbtn" type="button" data-go="pnlcal">${icon('results')}<span>Calendar</span></button>
           <button class="chipbtn" type="button" data-go="ops">${icon('check')}<span>Ops check</span></button><button class="chipbtn" type="button" data-go="mffurules">${icon('rules')}<span>MFFU rules</span></button></div>
