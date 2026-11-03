@@ -105,6 +105,28 @@ curl -fsSL "https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/m
 The address can lag a few minutes behind the push. When it shows the bot's numbers, tell the owner in one line:
 "Done: Jarvis shows your Kalshi bot now, updated every minute."
 
+## The v3 fields (2026-11-03): what the Kalshi page shows from them
+The script already sends these from the bot's own files: nothing to wire for the basics. They are all optional and
+additive (`"v": 3` when any is present); the page works without them, from the last 40 trades, and says so.
+
+| field | from the bot's files | the page shows |
+|---|---|---|
+| `categories` [{name, group, trades, wins, losses, pnl, staked}] | every settled buy, by coin (Bitcoin, Ethereum, HYPE, Gold …) | By market: P&L bars, win rate, ROI |
+| `buckets` [{lo, hi, trades, wins, losses, pnl, staked}] | every settled buy, by the price paid (90-95¢, 95-97¢, 97-99¢ …) | By price: win rate vs break-even, ROI |
+| `calibration` [{p, n, hit}] + `calib_basis` | the price paid as the predicted chance (`"price"`) | Calibration chart |
+| `alerts` [{t, level, text}] | paused / blocked / a service down / no word; 3+ losses in a row; a day down 10%+ of the balance | Alerts card |
+| `kelly` {fraction, bankroll, max_bet, min_edge} | `KELLY_FRACTION`, `MAX_BET`, `MIN_EDGE` in `bot_settings.json` / `combo_settings.json`, if they exist | Edge & sizing: Kelly per bet |
+| `stats` {trades, wins, losses, staked, pnl, avg_price} | every settled buy | All-time win rate and ROI |
+| rows: `category` | the market's category | the Market line of an open bet |
+
+**One thing only the bot can add: its own chance.** `prob` (0-1) on `positions` and `trades` is the bot's estimated
+chance that the side it holds wins. The script cannot see it in `trades.db`. With it the page shows live edge (chance −
+price), EV and Kelly per open bet, and calibrates on the bot's own chance (`calib_basis` becomes `"model"`). To add it,
+the bot writes it to a column the script can read (for example `orders.model_p`); ask the owner before changing the bot,
+and never change its trading.
+
+`python3 -I kalshi_status_vm.py --sample` prints the full v3 shape.
+
 ## Later
 - **Update the script:** only when the owner asks, with a new `sha256` in his message. Run step 1 again, including the
   hash check. Cron uses the new file from the next minute.

@@ -11,6 +11,8 @@ Data Server" problem). After this, your routine is only: turn the PC on.
 2. Control Center > Connections > Configure > your MFFU connection > tick **Connect on startup** > OK.
 3. Close the MNQ chart (or keep it: it then writes nothing, so there are never two writers).
 
+Check it started: Control Center > New > NinjaScript Output shows `LE_Feed: started, writing bars to ...` within seconds
+of F5 (no NinjaTrader restart needed), and `le_feed\le_feed_status.txt` appears at once. No such line = it did not start.
 Check: `python -m engine.ninjatrader --status` says `Bar source : bars from LE_Feed (no chart), 0 re-subscribes`.
 Its log is `Documents\NinjaTrader 8\le_feed\le_feed_log.txt`. The bot tells it which contract to write
 (`le_feed\feed_instruments.txt`), so the December roll needs no click either. Not yet compiled on a real NinjaTrader:

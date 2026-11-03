@@ -1,0 +1,29 @@
+{
+ "v": 1,
+ "name": "DAPHNE",
+ "status": {
+  "level": "warn",
+  "label": "31/80 rules hold, no better than chance"
+ },
+ "kpis": [
+  {
+   "label": "Nodes searched",
+   "value": "1.13M"
+  },
+  {
+   "label": "Cut by the bound",
+   "value": "54.6%"
+  },
+  {
+   "label": "Hold vs placebo",
+   "value": "39% vs 35%"
+  }
+ ],
+ "lines": [
+  "#1 AL·SHORT: train +$43.70, test +$14.81 a trade per micro",
+  "Out of sample it is chance level: paper only"
+ ],
+ "t": 1793672405,
+ "open": "#top",
+ "theme": "#030705"
+}

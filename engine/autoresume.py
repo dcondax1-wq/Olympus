@@ -256,7 +256,11 @@ def nt_connected(cfg: dict):
         from .ninjatrader import NinjaTraderAdapter
         ad = NinjaTraderAdapter({**cfg, "nt_state_path": os.path.join(ROOT, "data", "_nt_probe_state.json")}, readonly=True)
         c = ad.connections()
-        return any(v == "CONNECTED" for v in c.values()) if c else None
+        try:        # a connection file is written only on a state change: live accounts / live bars count (2026-11-03)
+            from .ninjatrader import connection_view
+            return connection_view(c, ad.folder).get("connected")
+        except Exception:
+            return any(v == "CONNECTED" for v in c.values()) if c else None
     except Exception:
         return None
 

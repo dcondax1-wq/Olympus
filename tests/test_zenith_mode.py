@@ -3,7 +3,7 @@ of the features"): tools/web_public/jarvis/zenith-mode.js (the full-screen Zenit
 postMessage protocol) and Zenith's side (index.html's head + embed.js: inside-Jarvis detection, safe areas, the settings code).
 Runs the real Zenith app (a copy of tools/web_public with a live-board fixture) in Chromium, inside a small Jarvis page that
 mounts the module the way the hub does, with iPhone safe areas simulated (--zm-safe-*), and checks:
-  a. static    the module's API + the protocol documented at its top; sw.js le-public-v50 with the three kept lines; index.html
+  a. static    the module's API + the protocol documented at its top; sw.js le-public-v50+ with the three kept lines; index.html
                loads embed.js last and adapts in its head; the settings code never lists a secret
   b. mode      show(): one full-screen layer over the Jarvis bar, Zenith inside it knows it is in Jarvis; hide() / the control:
                onExit, Zenith paused (document.hidden) but alive: the same document, its route and scroll kept
@@ -61,9 +61,9 @@ def part_a():
     check("a. the protocol is documented at the top: both directions, every type, same-site origin + source checks",
           all(w in top for w in ("Zenith -> Jarvis", "Jarvis -> Zenith", "hello", "state", "layout", "exit", "open", "insets", "visible", "ping",
                                  "targetOrigin", "event.origin", "event.source")))
-    check("a. sw.js: le-public-v50, OTHER_APPS / live.json bypass / own-cache cleanup kept as they were",
-          "const CACHE = 'le-public-v50';" in sw and int(re.search(r"le-public-v(\d+)", sw).group(1)) == 50
-          and "const OTHER_APPS = ['jarvis/', 'planner/', 'kalshi/'];" in sw and "url.pathname.endsWith('live.json')) return;" in sw
+    check(f"a. sw.js: {ZCACHE} (v50+), OTHER_APPS (every OLYMPUS app folder) / live.json bypass / own-cache cleanup kept as they were",
+          f"const CACHE = '{ZCACHE}';" in sw and int(ZCACHE.rsplit("v", 1)[1]) >= 50
+          and "const OTHER_APPS = ['jarvis/', 'planner/', 'kalshi/', 'datacity/', 'mind/', 'tree/', 'oracle/', 'odeon/', 'fates/', 'hermes/', 'prometheus/', 'tyche/', 'olympus/'];" in sw and "url.pathname.endsWith('live.json')) return;" in sw
           and "k.startsWith('le-public-') && k !== CACHE" in sw)
     head = idx[:idx.index("</head>")]
     check("a. index.html: the inside-Jarvis check in the head (frame + same site), embed.js loaded last, no intro inside Jarvis",
@@ -179,7 +179,9 @@ def serve(d):
 
 
 ZENITH_READY = "() => { const p = document.querySelector('#page'); return !!p && !p.querySelector(':scope > .skel') && p.textContent.trim().length > 40; }"
-SAVED = """async () => { const c = await caches.open('le-public-v50'); const g = async (u) => { const r = await c.match(u); return r ? (await r.text()).slice(0, 60) : null; };
+# Zenith's cache name as the checkout's worker has it (v50 when this test was written; v51 2026-11-03: the Scorecard)
+ZCACHE = re.search(r"const CACHE = '(le-public-v\d+)';", open(os.path.join(ROOT, "tools", "web_public", "sw.js"), encoding="utf-8").read()).group(1)
+SAVED = """async () => { const c = await caches.open('""" + ZCACHE + """'); const g = async (u) => { const r = await c.match(u); return r ? (await r.text()).slice(0, 60) : null; };
   return { page: await g('./index.html'), data: await g('./data.json'), home: await g('./home.json') }; }"""
 
 
@@ -199,7 +201,7 @@ def part_sw(br, base, errs):
         while time.time() - t0 < 10 and not all(sv.values()):
             pg.wait_for_timeout(300)
             sv = pg.evaluate(SAVED)
-        check("h. the worker keeps Zenith's page, data.json and home.json (le-public-v50)", all(sv.values()) and sv["page"].lower().startswith("<!doctype html"), sv)
+        check(f"h. the worker keeps Zenith's page, data.json and home.json ({ZCACHE})", all(sv.values()) and sv["page"].lower().startswith("<!doctype html"), sv)
         # a picture / a file opened in a tab is no longer saved as the app's page
         p2 = ctx.new_page()
         p2.goto(base + "manifest.webmanifest")
@@ -246,7 +248,7 @@ def part_sw(br, base, errs):
         SITE["mode"] = "ok"
         pg.wait_for_timeout(500)
         # no saved copy and no site: a small dark page with Retry, never white
-        pg.evaluate("() => caches.open('le-public-v50').then((c) => Promise.all([c.delete('./index.html'), c.delete('./')]))")
+        pg.evaluate("() => caches.open('" + ZCACHE + "').then((c) => Promise.all([c.delete('./index.html'), c.delete('./')]))")
         SITE["mode"] = "down"
         pg.reload()
         pg.wait_for_timeout(600)

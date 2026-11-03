@@ -74,6 +74,13 @@ def _data_key():
     return f"{st.st_size}-{_DK[k]}:{ENGINE_EPOCH}"
 
 
+def keyed(path: str) -> str:
+    """A cache file name that carries the NQ data key (x.pkl -> x_<size>-<hash>_<epoch>.pkl): a cache built on other data
+    (a rehearsal sandbox symlinks research/ and runs on a cut NQ_5m.csv) is never read back as this data's (2026-11-03)."""
+    root, ext = os.path.splitext(path)
+    return f"{root}_{_data_key().replace(':', '_')}{ext}"
+
+
 def _dump(obj, path, **kw):
     """Atomic JSON write (several research processes save runs at the same time)."""
     tmp = f"{path}.{os.getpid()}.tmp"

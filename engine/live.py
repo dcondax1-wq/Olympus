@@ -514,7 +514,7 @@ class LiveBot:
             self._note_error(f"feed_instruments.txt not written: {e.__class__.__name__}: {e}")
         try:
             st = _nt.read_feed_status(folder)
-            self.health["feed_addon"] = _nt.feed_status_text(st)
+            self.health["feed_addon"] = _nt.feed_status_text(st) if st else _nt.feed_addon_line(folder)
             self.health["feed_addon_resubs"] = st.get("resubs") if st else None
         except Exception:
             self.health["feed_addon"] = None
@@ -3028,7 +3028,12 @@ class LiveBot:
                 self._note_error(f"poll failed: {e.__class__.__name__}: {e}")
                 self.health["ok"] = False
                 traceback.print_exc()
-            self.stop_flag.wait(self._sleep_s())
+            try:
+                wait = self._sleep_s()
+            except Exception as e:                  # (2026-11-03) a failing wait computation must never end the poll loop
+                wait = 30.0
+                self._note_error(f"poll wait failed: {e.__class__.__name__}: {e}")
+            self.stop_flag.wait(wait)
 
     def _sleep_s(self):
         """Seconds to the next poll: aligned to the minute (cfg poll_offsets, default 2 s and 32 s after each minute boundary,

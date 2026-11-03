@@ -26,6 +26,13 @@ Planner pages), with the live feed, kalshi.json and the crypto prices served fro
   s. the System view (2026-11-02): the header strip (one verdict, one dot per system), the System panel (the PC with CPU /
      RAM, Zlarior, ATLAS, BLITZ, Kalshi, the Planner; the one thing to do), the orb's strip and alert dot, "status" /
      "how's the pc"; light (no blur)
+  p. the OLYMPUS apps (2026-11-03): the built-ins from apps.js (Data City, Mind, Daphne next to Zenith, the Planner, Kalshi),
+     the OLYMPUS grid on the Jarvis screen (grouped tiles in each app's colour, live status from its jarvis.json, one-time
+     stagger), an app whose folder is not on the site shown as "not on the site yet" and never opened, the orb's groups and
+     group chips, its scrollable 44 px quick row, the ring's most used six plus "more"
+Waiting: every start waits on the page's own ready marker (html[data-ready], window.__jarvisReadyMs), never on a wall clock: on
+a loaded machine the 3D core, drawn in software, can hold the page's main thread for seconds after Jarvis has started, which
+only delays when the test sees the marker (measured 2026-11-03: ready at 0.4-1.1 s on the page's clock, seen 10-16 s later).
 Runs A (fallbacks), B (stand-ins), C (the folder as is) and the missing-part runs each get their own copy of the site.
     python -X utf8 -m tests.test_jarvis_hub      (temp folder + a local server; nothing else touched; ~4 min)
 Screenshots of the phone sizes: set JARVIS_SHOTS=<folder>.
@@ -177,6 +184,13 @@ def site(tmp, name, parts):
     with open(os.path.join(base, "planner", "index.html"), "w") as f:
         f.write("<!doctype html><title>Planner stub</title><style>body{background:#0b0b0d;color:#eee}</style><h1>Planner stub</h1><script>"
                 f"localStorage.setItem('planner.v1', JSON.stringify({json.dumps(S)}));window.loads=(window.loads||0)+1;</script>")
+    os.makedirs(os.path.join(base, "datacity"))
+    with open(os.path.join(base, "datacity", "index.html"), "w") as f:
+        f.write("<!doctype html><title>Data City stub</title><meta name='theme-color' content='#05060f'><style>body{background:#05060f;color:#eee}</style><h1>Data City stub</h1>")
+    with open(os.path.join(base, "datacity", "jarvis.json"), "w") as f:
+        json.dump({"v": 1, "name": "Data City", "status": {"level": "ok", "label": "25 pass the noise guard"},
+                   "kpis": [{"label": "Combos tested", "value": "19,942"}], "lines": ["Data to 2026-11-02"], "t": int(time.time()) - 60,
+                   "theme": "#05060f"}, f)
     os.makedirs(os.path.join(base, "kalshi-stub"))
     with open(os.path.join(base, "kalshi-stub", "index.html"), "w") as f:
         f.write("<!doctype html><title>Kalshi stub</title><style>body{background:#0b0b0d;color:#eee}</style><h1>Kalshi stub</h1>")
@@ -212,7 +226,7 @@ def part_a():
           and m["theme_color"] == "#000000" and all(i["src"].endswith("?v=j2") for i in m["icons"]), m)
     b = open(os.path.join(ROOT, "tools", "build_web_dashboard.py"), encoding="utf-8").read()
     check("a. the site build publishes jarvis/ and kalshi/ with every build (every top-level file: fonts and parts too)",
-          'for app in ("jarvis", "kalshi"):' in b and 'os.path.join(out, app, name)' in b)
+          'for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "olympus"):' in b and 'os.path.join(out, app, name)' in b)
     check("a. kalshi/index.html exists", os.path.exists(os.path.join(KS, "index.html")))
     sw = open(os.path.join(JV, "sw.js"), encoding="utf-8").read()
     check("a. the hub's service worker only handles its own folder", "u.pathname.startsWith(scope.pathname)" in sw)
@@ -228,16 +242,23 @@ def part_a():
     check("a. opening Jarvis waits on the network at most NAV_WAIT_MS when a saved copy exists; no network + no copy = a dark Retry page",
           "const NAV_WAIT_MS = 3500;" in sw and "Promise.race([net, slow])" in sw and "return copy || offlinePage();" in sw
           and "background:#000" in sw and "location.reload()" in sw)
-    check("a. worker v7: data.js, jarvis.css, the fonts, every separate part and switcher.js in SHELL, each saved on its own (a missing part is skipped)",
-          "const CACHE = 'jarvis-v11';" in sw and "'./switcher.js'" in sw and all(f"'./{f}'" in sw for f in ("data.js",) + PARTS + FONTS) and "'./jarvis.css?v=j7'" in sw
-          and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
+    check("a. worker v14: data.js, jarvis.css, the fonts, every separate part, switcher.js, the new brain's obsidian.js / memory.js / "
+          "assist-ui.js and voice-mode.js in SHELL, each saved on its own (a missing part is skipped)",
+          "const CACHE = 'jarvis-v14';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js") + PARTS + FONTS)
+          and "'./jarvis.css?v=j10'" in sw and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
+    shell = re.search(r"const SHELL = \[([^\]]*)\]", sw)
+    shell_files = re.findall(r"'\./([^'?]+)", shell.group(1)) if shell else []
+    check("a. every file of SHELL is in the folder (a part the page loads is never left out of the saved copy, nor a saved file missing)",
+          shell_files and all(os.path.exists(os.path.join(JV, f)) for f in shell_files if f)
+          and all(f"'./{f}'" in sw for f in re.findall(r"load\('\w+', '\./([\w-]+\.js)'", open(os.path.join(JV, "index.html"), encoding="utf-8").read())),
+          [f for f in shell_files if f and not os.path.exists(os.path.join(JV, f))])
     # 2026-11-01 ("Just a black screen" on the iPhone): no endless network wait, the previous copy as a fallback, old copies kept
     # until the new one holds every core file, and the page draws even when its stylesheet never arrives
     check("a. worker v6: never an endless network wait (NET_MAX_MS for a page or file with no copy; then the dark page / a failed file)",
           "const NET_MAX_MS = 9000;" in sw and "copy ? NAV_WAIT_MS : NET_MAX_MS" in sw and "return offlinePage();" in sw
           and "await net" not in sw.replace("await Promise.race([net", ""))
     check("a. worker v6: a file this copy lacks comes from the previous Jarvis copy; old copies go only when every CORE file is saved",
-          "const OLD = ['jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];" in sw and "for (const name of [CACHE, ...OLD])" in sw
+          "const OLD = ['jarvis-v13', 'jarvis-v12', 'jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];" in sw and "for (const name of [CACHE, ...OLD])" in sw
           and "CORE.map((u) => c.match(u, { ignoreSearch: true }))" in sw)
     jhtml = open(os.path.join(JV, "index.html"), encoding="utf-8").read()
     check("a. the page draws without its stylesheet after 5 s (a stylesheet still on the way keeps an iPhone screen black)",
@@ -281,7 +302,7 @@ def part_a():
           and "clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px))" in css)
     keys = re.findall(r"\['(\w+)', ", page[page.index("function moreKeys()"):page.index("function renderMore()")])
     check("a. PC-only features left out quietly: the ⋯ keys have no wake word, double clap, look-at-my-screen or Kill",
-          len(keys) == 12 and not set(keys) & {"wake", "clap", "screen", "kill"}, keys)
+          len(keys) == 13 and "obsidian" in keys and not set(keys) & {"wake", "clap", "screen", "kill"}, keys)
 
 
 def launch(pw):
@@ -338,7 +359,7 @@ def new_page(br, width=390, sw=False, boot=False, voice=False, height=844, news=
     if not boot:                                   # the boot screen plays once per launch: skipped where it is not the subject
         ctx.add_init_script("try { sessionStorage.setItem('jarvis.booted', '1'); } catch (e) {}")
     if not news:                                   # so is the What's new card (once per release)
-        ctx.add_init_script("try { localStorage.setItem('jarvis.seen', JSON.stringify('j6')); } catch (e) {}")
+        ctx.add_init_script("try { localStorage.setItem('jarvis.seen', JSON.stringify('j9')); } catch (e) {}")
     if voice:
         ctx.add_init_script(FAKE_VOICE)
     p = ctx.new_page()
@@ -347,8 +368,10 @@ def new_page(br, width=390, sw=False, boot=False, voice=False, height=844, news=
     return ctx, p, errs, kal
 
 
-def ready(p):
-    p.wait_for_function("document.documentElement.dataset.ready === '1'", timeout=10000)
+def ready(p, timeout=60000):
+    """Until Jarvis's start finished: the page's own marker (set ~0.5 s into the start). The long limit only matters on a loaded
+    machine, where the software-drawn 3D core can hold the main thread after the start (see the module docstring)."""
+    p.wait_for_function("document.documentElement.dataset.ready === '1'", timeout=timeout, polling=100)
 
 
 def go(p, app):
@@ -361,6 +384,22 @@ def go(p, app):
     p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=3000)
     p.wait_for_timeout(450)
     p.click(f'.nx-qb[data-nx="{app}"]')
+
+
+def add_sheet(p, name, link):
+    """The + sheet like the owner: open it, type the name and the link (each checked: a loaded machine can land a fill before the
+    sheet is up), Add. -> what the fields held when Add was tapped."""
+    p.click("#addB")
+    p.wait_for_function("!document.getElementById('sheet').hidden", timeout=10000)
+    for _ in range(3):
+        p.fill("#addName", name)
+        p.fill("#addUrl", link)
+        if p.input_value("#addName") == name and p.input_value("#addUrl") == link:
+            break
+        p.wait_for_timeout(200)
+    sent = [p.input_value("#addName"), p.input_value("#addUrl")]
+    p.click('#addF button[type="submit"]')
+    return sent
 
 
 def asker(p):
@@ -502,22 +541,19 @@ def run_a(br, url):
           "$512.34" in kb and "+$18.50" in kb and "+$112.34" in kb and "NYC high 58-59°F on Nov 2" in kb and "10 × 42¢ → 55¢" in kb
           and "Recent trades" in kb and p.frame_locator("#v-kalshi iframe").locator("svg.bars rect").count() == 3, kb[:500])
     go(p, "home")
-    p.wait_for_timeout(300)
-    p.click("#addB")
-    p.fill("#addName", "Clipper")
-    p.fill("#addUrl", url + "kalshi-stub/")
-    p.click('#addF button[type="submit"]')
-    p.wait_for_timeout(500)
-    p.wait_for_function("!!document.getElementById('v-x-clipper') || !!document.getElementById('addErr').textContent", timeout=5000)
+    p.wait_for_function("window.__jarvis.active() === 'home'", timeout=10000)
+    sent = add_sheet(p, "Clipper", url + "kalshi-stub/")
+    p.wait_for_function("!!document.getElementById('v-x-clipper') || !!document.getElementById('addErr').textContent", timeout=10000)
     check("e. an added dashboard shows in the bar and opens", "Clipper" in p.text_content("#apps") and p.locator("#v-x-clipper").is_visible(),
-          p.evaluate("[document.documentElement.dataset.mode, document.getElementById('addErr').textContent, document.getElementById('sheet').hidden, String(document.getElementById('apps') && document.getElementById('apps').textContent)]"))
+          [sent] + p.evaluate("[document.documentElement.dataset.mode, document.getElementById('addErr').textContent, document.getElementById('sheet').hidden, String(document.getElementById('apps') && document.getElementById('apps').textContent)]"))
     fr = p.evaluate("(() => { const f = document.querySelector('#v-x-clipper iframe'); return [f.getAttribute('allow') || '', f.getAttribute('sandbox')]; })()")
     go(p, "home")
-    p.click("#addB")
-    p.fill("#addName", "Other")
-    p.fill("#addUrl", url.replace("127.0.0.1", "localhost") + "kalshi-stub/")      # another origin: another site
-    p.click('#addF button[type="submit"]')
-    p.wait_for_timeout(500)
+    p.wait_for_function("window.__jarvis.active() === 'home'", timeout=10000)
+    add_sheet(p, "Other", url.replace("127.0.0.1", "localhost") + "kalshi-stub/")      # another origin: another site
+    try:
+        p.wait_for_function("!!document.querySelector('#v-x-other iframe')", timeout=10000)
+    except Exception:                                   # noqa: BLE001 - reported below
+        pass
     fo = p.evaluate("(() => { const f = document.querySelector('#v-x-other iframe'); return f ? [f.getAttribute('allow'), f.getAttribute('sandbox') || ''] : null; })()")
     check("e. frames: this site's apps get the phone's features (allow, no sandbox); another site's page is sandboxed, never allowed to move Jarvis",
           "microphone" in fr[0] and fr[1] is None and fo and fo[0] is None and "allow-scripts" in fo[1] and "allow-same-origin" in fo[1]
@@ -774,8 +810,8 @@ def run_c(br, url):
         const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
-          const c = await caches.open('jarvis-v11');
-          const got = await Promise.all(['./index.html', './data.js', './jarvis.css?v=j7', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
+          const c = await caches.open('jarvis-v14');
+          const got = await Promise.all(['./index.html', './data.js', './jarvis.css?v=j10', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));
         }
@@ -788,18 +824,17 @@ def run_c(br, url):
     # QA 2026-11-01: on a slow network only the page waits (3.5 s), then its files come from the saved copy at once; it used to
     # wait 3.5 s more for each file (css, data.js ...): usable after ~10 s instead of ~3.6 s
     SLOW["s"] = 6.0
-    t0 = time.time()
     p.reload(wait_until="commit")
-    t1 = time.time()
     try:
-        p.wait_for_function("document.documentElement.dataset.ready === '1'", timeout=20000)
-        t2 = time.time()
+        ready(p)
+        # the page's own clock (from its navigation): when the saved page arrived, when its start finished
+        t1, t2 = p.evaluate("[performance.getEntriesByType('navigation')[0].responseStart / 1000, window.__jarvisReadyMs / 1000]")
     except Exception:                                   # noqa: BLE001 - reported below
-        t2 = t1 + 99.0
+        t1, t2 = 99.0, 99.0
     SLOW["s"] = 0.0
     # the page itself waits up to 3.5 s; after it, the old chain waited 3.5 s more for each file (css, data.js, ...)
     check("j. slow network (every answer 6 s): the saved page in ~3.5 s, then usable at once (its own files never wait again)",
-          t1 - t0 < 6.0 and t2 - t1 < 5.0, (round(t1 - t0, 2), round(t2 - t1, 2)))     # the old chain: 3.5 s per file after the page (7 s and more)
+          t1 < 6.0 and t2 - t1 < 5.0, (round(t1, 2), round(t2 - t1, 2)))     # the old chain: 3.5 s per file after the page (7 s and more)
     p.wait_for_timeout(300)
     ctx.set_offline(True)
     p.reload()
@@ -862,7 +897,7 @@ def run_c(br, url):
             check(f"k. {sz}: HANDS-FREE · mic · VOICE on the first screen, as on the old Jarvis (no scrolling)", first[0] <= first[1], first)
         # D1: nothing cut short (KALSHI TODAY's words, the Market card's NQ last, the ⋯ keys), every tap target 44 px tall (pads count)
         tsz = """(q) => {
-            const hitH = (el) => { el.scrollIntoView({ block: 'center' }); const r = el.getBoundingClientRect(); if (r.height >= 43.5) return r.height;
+            const hitH = (el) => { el.scrollIntoView({ block: 'center', inline: 'center' }); const r = el.getBoundingClientRect(); if (r.height >= 43.5) return r.height;
               const x = r.left + r.width / 2, a = document.elementFromPoint(x, r.top - 4.5), b = document.elementFromPoint(x, r.bottom + 4.5);
               return r.height + (a && el.contains(a) ? 5 : 0) + (b && el.contains(b) ? 5 : 0); };
             const out = [];
@@ -940,8 +975,8 @@ def run_look(br, url):
     check("l. the next-event chip from the Planner (or 'Nothing scheduled today')", "Gym" in nxt or "Review fills" in nxt or "Nothing" in nxt or "TO-DO" in nxt, nxt)
     p.click("#moreB")
     keys = p.evaluate("[...document.querySelectorAll('#more [data-key]')].map((b) => b.dataset.key + ':' + b.textContent)")
-    check("l. the ⋯ menu: Core, Full screen, Theme, AI key, Hold-to-talk, 3D, Tilt (off), Alerts, Sound, Hide $, Briefing, Apps",
-          [k.split(":")[0] for k in keys] == ["core", "full", "theme", "aikey", "hold", "fx", "tilt", "alerts", "sound", "hide", "brief", "apps"]
+    check("l. the ⋯ menu: Core, Full screen, Theme, AI key, Hold-to-talk, 3D, Tilt (off), Alerts, Sound, Hide $, Briefing, Apps, Obsidian",
+          [k.split(":")[0] for k in keys] == ["core", "full", "theme", "aikey", "hold", "fx", "tilt", "alerts", "sound", "hide", "brief", "apps", "obsidian"]
           and "tilt:Tilt: off" in keys and "fx:3D: high" in keys and "hold:Hold-talk: on" in keys and "sound:Sound: off" in keys, keys)
     p.click('#more [data-key="fx"]')
     fx = p.evaluate("[document.documentElement.dataset.fx, localStorage.getItem('jfx'), document.documentElement.dataset.fxSet]")
@@ -1071,6 +1106,121 @@ def run_look(br, url):
     ctx.close()
 
 
+# the switch order: Jarvis, TRADING, LIFE, MONEY (apps.js BUILT_INS); the test site has Data City's folder, not the others'
+ORDER = ["home", "zenith", "oracle", "odeon", "fates", "datacity", "tree", "prometheus", "planner", "mind", "kalshi", "tyche", "hermes"]
+NOT_ON_SITE = ["oracle", "odeon", "fates", "tree", "prometheus", "mind", "tyche", "hermes"]
+
+
+def run_olympus(br, url):
+    """p. the OLYMPUS apps (2026-11-03): the grid on the Jarvis screen, an app not on the site, the orb's groups, quick row and ring.
+    The test site has Data City (its jarvis.json) but not Mind or Daphne (their folders missing)."""
+    ctx, p, errs, _ = new_page(br)
+    ctx.add_init_script("try { if (!localStorage.getItem('jarvis.orb.use')) localStorage.setItem('jarvis.orb.use', JSON.stringify({ kalshi: 4, datacity: 2 })); } catch (e) {}")   # once (init scripts run in every frame)
+    p.goto(url + "jarvis/")
+    ready(p)
+    p.wait_for_function("document.documentElement.dataset.switcher === 'module' && !!document.getElementById('nxOrb')", timeout=30000)
+    # the cards arrive: Data City's from its jarvis.json, Mind's and Daphne's folders answer 404
+    p.wait_for_function("""(ids) => { const t = (id) => document.querySelector(`#olyApps [data-app="${id}"]`);
+        return t('datacity') && /19,942/.test(t('datacity').textContent) && ids.every((id) => t(id) && t(id).classList.contains('soon')); }""",
+        arg=NOT_ON_SITE, timeout=30000, polling=100)
+    g = p.evaluate("""(() => { const box = document.getElementById('olyApps');
+        return { heads: [...box.querySelectorAll('.og-g')].map((h) => h.textContent), tiles: [...box.querySelectorAll('.og-t')].map((t) => ({ id: t.dataset.app || (t.dataset.ogAdd ? 'add' : ''),
+          name: (t.querySelector('.og-n') || {}).textContent, v: (t.querySelector('.og-v') || {}).textContent || '', s: (t.querySelector('.og-s') || {}).textContent || '',
+          soon: t.classList.contains('soon'), acr: t.style.getPropertyValue('--acr'), h: t.getBoundingClientRect().height, label: t.getAttribute('aria-label') })),
+          cards: [...document.querySelectorAll('#cards > [data-own]')].map((c) => c.dataset.app || c.dataset.slot || '') }; })()""")
+    t = {x["id"]: x for x in g["tiles"]}
+    check("p. the OLYMPUS grid: TRADING, LIFE, MONEY with every app in the orb's order (+ ADD), each tile in its own colour, 44 px+",
+          g["heads"] == ["TRADING", "LIFE", "MONEY"] and [x["id"] for x in g["tiles"]] == ORDER[1:] + ["add"]
+          and t["datacity"]["acr"] == "79,140,255" and t["tree"]["acr"] == "52,245,160" and all(x["h"] >= 44 for x in g["tiles"]), g)
+    check("p. live status on the tiles: Data City from its jarvis.json (19,942 · 25 pass the noise guard), NQ BOT and KALSHI from the shell's own feeds",
+          t["datacity"]["v"] == "19,942" and "25 pass the noise guard" in t["datacity"]["s"] and t["zenith"]["name"] == "NQ BOT" and t["zenith"]["v"].startswith("+$")
+          and t["kalshi"]["v"] and "Data City" in t["datacity"]["label"], g["tiles"])
+    check("p. an app whose folder is not on the site (Mind, Daphne): 'Not on the site yet', dimmed, never an error",
+          t["mind"]["soon"] and t["tree"]["soon"] and "Not on the site yet" in t["mind"]["s"] and t["mind"]["v"] == "SOON" and not t["datacity"]["soon"], g["tiles"])
+    check("p. the OLYMPUS apps are tiles, not cards: the project cards stay Zenith, the Planner and Kalshi", g["cards"] == ["zenith", "planner", "kalshi"], g["cards"])
+    # the stagger: once, when the grid comes into view (3D effects High here)
+    st0 = p.evaluate("document.getElementById('olyApps').className")
+    p.evaluate("document.getElementById('olyApps').scrollIntoView({ block: 'center' })")
+    try:
+        p.wait_for_function("!document.getElementById('olyApps').classList.contains('pre')", timeout=8000, polling=50)
+        p.wait_for_function("!document.getElementById('olyApps').classList.contains('go')", timeout=8000, polling=100)
+    except Exception:                                   # noqa: BLE001 - reported below
+        pass
+    op = p.evaluate("[...document.querySelectorAll('#olyApps .og-t')].map((t) => +getComputedStyle(t).opacity)")
+    check("p. the tiles come in one after the other the first time the grid is seen (High), then stay put",
+          "pre" in st0.split() and min(op) >= 0.55 and p.evaluate("document.getElementById('olyApps').className") == "og", (st0, op))
+    # a tap on Mind (not on the site): a note, Jarvis stays; on Data City: it opens full screen in its own colour
+    p.evaluate("document.querySelector('#olyApps [data-app=\"mind\"]').click()")
+    p.wait_for_function("(() => { const t = document.getElementById('toast'); return !!t && !t.hidden && /not on the site yet/.test(t.textContent); })()", timeout=5000)
+    check("p. a tap on an app not on the site: 'not on the site yet', Jarvis stays (no 404 page inside Jarvis)",
+          p.evaluate("window.__jarvis.active()") == "home" and not p.locator("#v-mind").count())
+    p.evaluate("document.querySelector('#olyApps [data-app=\"datacity\"]').click()")
+    p.wait_for_function("window.__jarvis.active() === 'datacity' && !!document.querySelector('#v-datacity iframe')", timeout=8000)
+    try:
+        p.wait_for_function("document.querySelector('meta[name=\"theme-color\"]').content === '#05060f'", timeout=8000)
+    except Exception:                                   # noqa: BLE001 - reported below
+        pass
+    dc = p.evaluate("[document.querySelector('#v-datacity iframe').src, document.querySelector('meta[name=\"theme-color\"]').content, document.documentElement.dataset.mode]")
+    check("p. a tap on Data City opens it full screen (its own page in Jarvis's frame), its colour behind the status bar",
+          dc[0].endswith("/datacity/") and dc[1] == "#05060f" and dc[2] == "app", dc)
+    # the orb: groups, chips, the quick row
+    p.click("#nxOrb")
+    p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=5000)
+    p.wait_for_timeout(450)
+    o = p.evaluate("""(() => { const row = document.getElementById('nxRow');
+        return { heads: [...document.querySelectorAll('#nxTrack .nx-gl')].map((h) => h.textContent), chips: [...document.querySelectorAll('#nxGroups .nx-gb')].map((b) => [b.dataset.nxJump, b.classList.contains('on'), Math.round(b.getBoundingClientRect().height)]),
+          off: [...document.querySelectorAll('#nxTrack .nx-card.off')].map((c) => c.dataset.nx), now: (document.querySelector('#nxTrack .nx-card.now') || {}).dataset,
+          q: [...row.querySelectorAll('.nx-qb')].map((b) => [b.dataset.nx, Math.round(b.getBoundingClientRect().height)]), seps: row.querySelectorAll('.nx-qs').length,
+          scroll: [row.scrollWidth, row.clientWidth, getComputedStyle(row).overflowX], sw: document.documentElement.scrollWidth }; })()""")
+    check("p. the orb: group headings and chips (TRADING, LIFE, MONEY; Data City's group lit), the not-yet apps dimmed, Data City NOW",
+          o["heads"] == ["TRADING", "LIFE", "MONEY"] and [c[0] for c in o["chips"]] == ["trading", "life", "money"] and o["chips"][0][1] and all(c[2] >= 44 for c in o["chips"])
+          and sorted(o["off"]) == sorted(NOT_ON_SITE) and o["now"] and o["now"].get("nx") == "datacity", o)
+    check("p. the quick row: every app in group order with separators, 44 px+ buttons, one scrollable line (no page sideways scroll)",
+          [x[0] for x in o["q"]] == ORDER and o["seps"] == 3 and all(x[1] >= 44 for x in o["q"])
+          and o["scroll"][2] == "auto" and o["sw"] <= 390, o)
+    p.click('#nxGroups [data-nx-jump="money"]')
+    try:
+        p.wait_for_function("""(() => { const t = document.getElementById('nxTrack'), c = t.querySelector('.nx-card[data-nx="kalshi"]');
+            return Math.abs(c.offsetLeft + c.offsetWidth / 2 - (t.scrollLeft + t.clientWidth / 2)) < 30; })()""", timeout=5000, polling=50)
+        jumped = True
+    except Exception:                                   # noqa: BLE001 - reported below
+        jumped = False
+    check("p. a group chip glides the cards to that group (MONEY: Kalshi in the middle), the switcher stays open",
+          jumped and p.evaluate("document.getElementById('nxRoot').classList.contains('on')"))
+    p.click('#nxRow .nx-qb[data-nx="home"]')
+    p.wait_for_function("window.__jarvis.active() === 'home'", timeout=5000)
+    use = p.evaluate("JSON.parse(localStorage.getItem('jarvis.orb.use'))")
+    check("p. every switch counts on this phone for the ring (Data City opened once more, Jarvis once)", use.get("datacity") == 3 and use.get("home") == 1 and use.get("kalshi") == 4, use)
+    # the ring with more than six apps: the six most opened, then "more" (the whole switcher)
+    p.evaluate("""() => import('./apps.js').then((A) => { for (const n of ['Alpha', 'Beta', 'Gamma']) A.addApp({ name: n, url: 'https://' + n.toLowerCase() + '.example/' }); })""")
+    p.evaluate("localStorage.setItem('jarvis.orb.use', JSON.stringify({ 'x-gamma': 9, kalshi: 7, 'x-alpha': 5, zenith: 1 }))")
+    p.reload()
+    ready(p)
+    p.wait_for_function("document.documentElement.dataset.switcher === 'module' && !!document.getElementById('nxOrb')", timeout=30000)
+    r = p.evaluate("(() => { const b = document.getElementById('nxOrb').getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2]; })()")
+    p.mouse.move(r[0], r[1]); p.mouse.down()
+    p.wait_for_function("document.querySelectorAll('.nx-fan.on .nx-fb').length > 0", timeout=5000)
+    p.wait_for_function("[...document.querySelectorAll('.nx-fb')].every((b) => !b.getAnimations || !b.getAnimations().length)", timeout=5000)   # grown out
+    ring = p.evaluate("[...document.querySelectorAll('.nx-fan.on .nx-fb')].map((b) => { const q = b.getBoundingClientRect(); return { id: b.dataset.nx || (b.dataset.nxMore ? 'MORE' : ''), x: q.left + q.width / 2, y: q.top + q.height / 2 }; })")
+    more = next((b for b in ring if b["id"] == "MORE"), None)
+    if more:                                            # slide onto "more" and let go
+        p.mouse.move((r[0] + more["x"]) / 2, (r[1] + more["y"]) / 2); p.mouse.move(more["x"], more["y"])
+    p.mouse.up()
+    ids = [b["id"] for b in ring]
+    check("p. the ring: the six most opened apps (most first), then 'more'; none on top of another, all on screen",
+          ids[:3] == ["x-gamma", "kalshi", "x-alpha"] and len(ids) == 7 and ids[-1] == "MORE" and "mind" not in ids and "tree" not in ids
+          and all((a["x"] - b["x"]) ** 2 + (a["y"] - b["y"]) ** 2 >= 44 ** 2 for i, a in enumerate(ring) for b in ring[i + 1:])
+          and all(30 <= b["x"] <= 360 and 30 <= b["y"] <= 844 for b in ring), ring)
+    try:
+        p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=5000)
+    except Exception:                                   # noqa: BLE001 - reported below
+        pass
+    heads = p.evaluate("[...document.querySelectorAll('#nxTrack .nx-gl')].map((h) => h.textContent)")
+    check("p. 'more' opens the whole switcher; the added apps have their own group (MORE)", heads == ["TRADING", "LIFE", "MONEY", "MORE"], heads)
+    check("p. no page errors", not errs, errs)
+    ctx.close()
+
+
 def run_system(br, url):
     """Run S (2026-11-02, the System view): "everything combined and simple". One line per system (the PC, Zlarior, ATLAS,
     BLITZ, Kalshi, the Planner), one verdict (ALL GOOD / HEADS UP / NEEDS YOU + the one thing to do): the strip in the header,
@@ -1095,10 +1245,14 @@ def run_system(br, url):
           s["v"] == "ALL GOOD" and s["t"] == "Nothing needs you" and [d.split(":")[0] for d in s["dots"]] == ["PC", "Z", "A", "B", "K", "P"] and s["bar"] >= 34, s)
     check("s. the System panel: PC (CPU / RAM from live.json pc_health, checked in), Zlarior +$213, ATLAS, BLITZ, Kalshi (not connected), Planner",
           list(rows) == ["pc", "lit", "atlas", "blitz", "kalshi", "planner"] and rows["pc"]["v"] == "CPU 23% · RAM 61%" and "checked in 2 min ago" in rows["pc"]["t"]
-          and rows["pc"]["lvl"] == "ok" and rows["lit"]["v"] == "+$213" and "RUNNING" in rows["lit"]["t"] and rows["kalshi"]["v"] == "OFFLINE"
+          and rows["pc"]["lvl"] == "ok" and rows["lit"]["v"] == "+$213" and "RUNNING" in rows["lit"]["t"] and rows["kalshi"]["v"] == "NOT LINKED"
           and rows["kalshi"]["app"] == "kalshi" and rows["planner"]["app"] == "planner" and not s["todo"], s["rows"])
     p.click("#sysbar")
-    p.wait_for_timeout(900)
+    try:                                                # a smooth scroll (longer since the OLYMPUS grid sits above): waited for, not timed
+        p.wait_for_function("(() => { const a = document.getElementById('p-system').getBoundingClientRect(), h = document.getElementById('home').getBoundingClientRect();"
+                            " return h.top - 2 <= a.top && a.top < h.bottom - 100; })()", timeout=8000, polling=100)
+    except Exception:                                   # noqa: BLE001 - reported below
+        pass
     top = p.evaluate("(() => { const a = document.getElementById('p-system').getBoundingClientRect(), h = document.getElementById('home').getBoundingClientRect(); return [Math.round(a.top), Math.round(h.top), Math.round(h.bottom)]; })()")
     check("s. a tap on the strip brings the System panel into view", top[1] - 2 <= top[0] < top[2] - 100, top)
     p.click('#p-system .srow[data-sys-row="kalshi"]')
@@ -1110,9 +1264,9 @@ def run_system(br, url):
     ask = asker(p)
     a1 = ask("status")
     check("s. 'status': the verdict first, then one line per system", a1.startswith("ALL GOOD: nothing needs you.") and "PC (bot server" in a1
-          and "Zlarior (50K eval): +$213" in a1 and "Kalshi (its own server): OFFLINE" in a1, a1)
+          and "Zlarior (50K eval): +$213" in a1 and "Kalshi (its own server): NOT LINKED" in a1, a1)
     a2 = ask("how's the pc")
-    check("s. 'how's the pc': its check-in, CPU and RAM", "The PC last checked in" in a2 and "CPU 23%, RAM 61%, every health line green." in a2, a2)
+    check("s. 'how's the pc': the one fix first (none), its check-in, CPU and RAM", a2.startswith("The PC looks healthy: nothing to fix.") and "checked in 2 min ago" in a2 and "CPU 23%, RAM 61%" in a2, a2)
     a3 = ask("is everything ok")
     check("s. 'is everything ok' is the System answer too", a3 == a1, a3[:100])
     check("s. no page errors (all good)", not errs, errs)
@@ -1148,9 +1302,13 @@ def run_system(br, url):
                cards: [...document.querySelectorAll('#nxTrack .nx-card')].map((c) => (c.querySelector('.nx-nm b') || {}).textContent) }; }""")
     check("s. the switcher: the System strip on top (NEEDS YOU, what, 6 dots, 44 px+), the app cards unchanged",
           not st["hidden"] and st["text"].startswith("NEEDS YOU") and "PC: Memory (RAM) red" in st["text"] and "bad" in st["cls"] and st["dots"] == 6
-          and st["h"] >= 44 and st["w"] and st["cards"][:4] == ["JARVIS", "NQ BOT", "CALENDAR", "KALSHI"], st)
+          and st["h"] >= 44 and st["w"] and st["cards"][:2] == ["JARVIS", "NQ BOT"] and {"CALENDAR", "KALSHI", "ADD"} <= set(st["cards"]), st)
     p.click("#nxSys")
-    p.wait_for_timeout(900)
+    try:                                                # the switcher closes, then a smooth scroll: waited for, not timed
+        p.wait_for_function("(() => { const a = document.getElementById('p-system').getBoundingClientRect(), h = document.getElementById('home').getBoundingClientRect();"
+                            " return h.top - 2 <= a.top && a.top < h.bottom - 100; })()", timeout=8000, polling=100)
+    except Exception:                                   # noqa: BLE001 - reported below
+        pass
     after = p.evaluate("""(() => { const a = document.getElementById('p-system').getBoundingClientRect(), h = document.getElementById('home').getBoundingClientRect();
       return { open: document.getElementById('nxRoot').classList.contains('on'), home: !document.getElementById('home').hidden, top: [Math.round(a.top), Math.round(h.top), Math.round(h.bottom)] }; })()""")
     check("s. a tap on the switcher's strip closes it and shows the System panel on the Jarvis screen",
@@ -1184,8 +1342,11 @@ def run_switcher(br, url):
       name: (c.querySelector('.nx-nm b') || {}).textContent, val: (c.querySelector('.nx-val') || {}).textContent || '', now: c.classList.contains('now'),
       lines: [...c.querySelectorAll('.nx-ln')].map((l) => l.textContent) }))""")
     names = [c["name"] for c in cards]
-    check("n. tap: the switcher opens with JARVIS, NQ BOT, CALENDAR, KALSHI and + ADD, Jarvis's card marked NOW",
-          names[:4] == ["JARVIS", "NQ BOT", "CALENDAR", "KALSHI"] and names[-1] == "ADD" and cards[0]["now"] and not any(c["now"] for c in cards[1:]), cards)
+    check("n. tap: the switcher opens with JARVIS, then TRADING (NQ BOT, ORACLE, ODEON, FATES, DATA CITY, DAPHNE, PROMETHEUS), LIFE (CALENDAR, MIND), "
+          "MONEY (KALSHI, TYCHE, HERMES) and + ADD, "
+          "Jarvis's card marked NOW",
+          names == ["JARVIS", "NQ BOT", "ORACLE", "ODEON", "FATES", "DATA CITY", "DAPHNE", "PROMETHEUS", "CALENDAR", "MIND", "KALSHI", "TYCHE", "HERMES", "ADD"]
+          and cards[0]["now"] and not any(c["now"] for c in cards[1:]), cards)
     nq = next((c for c in cards if c["id"] == "zenith"), {})
     cal = next((c for c in cards if c["id"] == "planner"), {})
     check("n. the cards are live: NQ BOT shows today's $ across the accounts (+$308) and their status; CALENDAR the next thing or FREE",
@@ -1211,7 +1372,8 @@ def run_switcher(br, url):
         return p.evaluate("(document.querySelector('#modes [aria-current=\"page\"]') || {dataset: {}}).dataset.app")
     a1 = swipe(-80)
     a2 = swipe(80)
-    check("n. swipe the orb left: the next app (Kalshi); right: back (the Planner)", a1 == "kalshi" and a2 == "planner", (a1, a2))
+    # the next app in the switch order that can open: Mind's folder is not on this test site (its card dimmed), so Kalshi
+    check("n. swipe the orb left: the next app that can open (Mind is not on this site: Kalshi); right: back (the Planner)", a1 == "kalshi" and a2 == "planner", (a1, a2))
     # hold: the ring; slide onto Jarvis and let go
     p.mouse.move(cx, cy); p.mouse.down(); p.wait_for_timeout(520)
     ring = p.evaluate("""() => [...document.querySelectorAll('.nx-fan.on .nx-fb')].map((b) => { const r = b.getBoundingClientRect(); return { id: b.dataset.nx, x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width }; })""")
@@ -1220,9 +1382,10 @@ def run_switcher(br, url):
         p.mouse.move((cx + home["x"]) / 2, (cy + home["y"]) / 2); p.mouse.move(home["x"], home["y"])
     p.mouse.up(); p.wait_for_timeout(450)
     cur = p.evaluate("(document.querySelector('#modes [aria-current=\"page\"]') || {dataset: {}}).dataset.app")
-    check("n. hold: the ring fans out with every other app (44 px+ each, on screen); slide onto Jarvis and let go: Jarvis",
-          len(ring) == 3 and all(b["w"] >= 44 and 0 <= b["x"] <= 390 and 0 <= b["y"] <= 844 for b in ring) and cur == "home"
-          and p.evaluate("!document.querySelector('.nx-fan.on')"), (ring, cur))
+    check("n. hold: the ring fans out with every other app that can open (44 px+ each, on screen, none on another); slide onto Jarvis and let go: Jarvis",
+          sorted(b["id"] for b in ring) == ["datacity", "home", "kalshi", "zenith"] and all(b["w"] >= 44 and 0 <= b["x"] <= 390 and 0 <= b["y"] <= 844 for b in ring)
+          and all((a["x"] - b["x"]) ** 2 + (a["y"] - b["y"]) ** 2 >= 44 ** 2 for i, a in enumerate(ring) for b in ring[i + 1:])
+          and cur == "home" and p.evaluate("!document.querySelector('.nx-fan.on')"), (ring, cur))
     # drag: move it (kept on this phone)
     p.mouse.move(cx, cy); p.mouse.down()
     for k in range(1, 9):
@@ -1232,15 +1395,22 @@ def run_switcher(br, url):
       cur: (document.querySelector('#modes [aria-current="page"]') || {dataset: {}}).dataset.app, open: document.getElementById('nxRoot').classList.contains('on') })""")
     check("n. drag: the orb moves up and stays there (kept on this phone); no app switch, no switcher",
           moved["pos"] and moved["pos"]["side"] == "r" and moved["top"] < r[1] - 80 and moved["cur"] == "home" and not moved["open"], moved)
-    # it steps aside for the keyboard and the ⋯ keys
-    p.focus("#q"); p.wait_for_timeout(150)
-    kb = p.evaluate("getComputedStyle(document.getElementById('nxOrb')).visibility")
-    p.evaluate("document.activeElement.blur()"); p.wait_for_timeout(200)
-    kb2 = p.evaluate("getComputedStyle(document.getElementById('nxOrb')).visibility")
-    p.click("#moreB"); p.wait_for_timeout(200)
-    mk = p.evaluate("getComputedStyle(document.getElementById('nxOrb')).visibility")
-    p.click("#moreB"); p.wait_for_timeout(200)
-    mk2 = p.evaluate("getComputedStyle(document.getElementById('nxOrb')).visibility")
+    # it steps aside for the keyboard and the ⋯ keys: each state waited for (a 60 ms timer brings it back after the keyboard,
+    # which a loaded machine can stretch past any fixed wait)
+    def orb_is(state):
+        try:
+            p.wait_for_function(f"getComputedStyle(document.getElementById('nxOrb')).visibility === '{state}'", timeout=5000, polling=50)
+        except Exception:                               # noqa: BLE001 - reported below
+            pass
+        return p.evaluate("getComputedStyle(document.getElementById('nxOrb')).visibility")
+    p.focus("#q")
+    kb = orb_is("hidden")
+    p.evaluate("document.activeElement.blur()")
+    kb2 = orb_is("visible")
+    p.click("#moreB")
+    mk = orb_is("hidden")
+    p.click("#moreB")
+    mk2 = orb_is("visible")
     check("n. the orb steps aside while typing and while the ⋯ keys are open, then comes back", (kb, kb2, mk, mk2) == ("hidden", "visible", "hidden", "visible"), (kb, kb2, mk, mk2))
     # Zenith mode: the orb stays on top, Zenith mode's own control is hidden; tap -> the switcher over Zenith
     go(p, "zenith"); p.wait_for_timeout(1200)
@@ -1279,8 +1449,257 @@ def run_switcher(br, url):
     ctx.close()
 
 
+def part_intro_files():
+    """o. the OLYMPUS intro in the page: self-contained (its own inline script, no file to fetch), every fail-safe in place."""
+    page = open(os.path.join(JV, "index.html"), encoding="utf-8").read()
+    m = re.search(r'<script id="olympus-intro">(.*?)</script>', page, re.S)
+    js = m.group(1) if m else ""
+    check("o. the intro script: inline right after its overlay (WebKit runs an async file only after the page's module), small, no fetch / import, Safari 16 safe",
+          bool(js) and page.index('id="olyIntro"') < page.index('<script id="olympus-intro">') < page.index('<script type="module">')
+          and not os.path.exists(os.path.join(JV, "intro.js")) and len(js.encode()) < 60_000 and "fetch(" not in js and "import " not in js and "XMLHttpRequest" not in js and "(?<" not in js
+          and not re.search(r"[\w)\]]\?\.[A-Za-z_$]", js) and "??" not in js, len(js))
+    node = shutil.which("node")
+    if node and js:
+        import subprocess
+        with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as fh:
+            fh.write(js)
+        r = subprocess.run([node, "--check", fh.name], capture_output=True, text=True)
+        os.remove(fh.name)
+        check("o. the intro script parses (node --check): a syntax error would leave only its fail-safes", r.returncode == 0, r.stderr[-300:])
+    check("o. the overlay is in the page with its own CSS deadline (gone by 0.95 s when intro.js never runs), above the orb, async script",
+          '<div class="oly" id="olyIntro" aria-hidden="true"></div>' in page
+          and "if (!window.__olyIntro) { var o = document.getElementById('olyIntro'); if (o) o.style.visibility = 'hidden'; } }, 700);" in page
+          and "html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}" in page and "z-index:2147483640" in page
+          and "@keyframes olyEnd" in page)
+    check("o. the start script picks the version before the first paint: full / short (same day) / fade (reduce motion, safe start, unfinished intro) / off (3D Off); none under automation",
+          all(x in page for x in ("g('jarvis.intro.day') === day ? 'short' : 'full'", "im = 'off'", "|| n > 0 || g('jarvis.intro.run')) im = 'fade'",
+                                  "(!navigator.webdriver || fo)", "g('jarvis.intro') !== 'off'")))
+    check("o. the intro's fail-safes: try/catch at start and in every frame, a kill timer, a lost context, a hidden page, the 0.65 s late rule, the unfinished flag",
+          all(x in js for x in ("} catch (err) { fail(err); }", "} catch (e) { fail(e); }", "finish('deadline')", "webglcontextlost", "finish('hidden')",
+                                "Date.now() - W.__olyT0 > 650", "ls('jarvis.intro.run', '1')", "ls('jarvis.intro.run', null)")))
+    check("o. sound only after a gesture (userActivation / a skip tap / a replay), never on a cold open",
+          "navigator.userActivation.hasBeenActive" in js and "return gesture ||" in js and "gesture = true;" in js)
+    check("o. the start watchdog's note removes the intro; the boot log steps aside for it; the 3D core waits for its end (4.5 s at most)",
+          "var o = document.getElementById('olyIntro'); if (o && o.parentNode) o.parentNode.removeChild(o);" in page
+          and "window.addEventListener('oly:intro-end', () => bootEnd(), { once: true }); setTimeout(bootEnd, 4500);" in page)
+
+
+# The intro's own clock, read in the page (this machine may be loaded: wall-clock times from Python would measure the test
+# runner, not the phone). It records, in ms since the start script chose the intro (window.__olyT0):
+#   ready      Jarvis's start finished (html[data-ready])          gone   the overlay left the page
+#   end        the intro said it is over (oly:intro-end)            down   a tap's pointerdown
+#   cover1s    at 1 s, whether the overlay still covers the mic (elementFromPoint: a faded, hidden overlay does not count)
+INTRO_PROBE = """(() => {
+  const P = window.__probe = {};
+  const at = () => Math.round(Date.now() - (window.__olyT0 || Date.now()));
+  window.addEventListener('oly:intro-end', () => { if (P.end == null) P.end = at(); });
+  window.addEventListener('pointerdown', () => { P.down = at(); }, true);
+  document.addEventListener('DOMContentLoaded', () => {
+    const root = document.documentElement;
+    new MutationObserver(() => {
+      if (P.ready == null && root.dataset.ready === '1') P.ready = at();
+      if (P.gone == null && !document.getElementById('olyIntro')) P.gone = at();
+    }).observe(document, { subtree: true, childList: true, attributes: true, attributeFilter: ['data-ready'] });
+    setTimeout(() => {
+      const b = document.getElementById('bigmic').getBoundingClientRect();
+      const e = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2);
+      P.cover1s = !!(e && e.closest('#olyIntro')); P.at1s = at();
+    }, Math.max(0, 1000 - at()));
+  });
+})();"""
+# a phone that cannot keep up: every frame costs 80 ms of main thread
+SLOW_FRAMES = """(() => { const r = window.requestAnimationFrame.bind(window);
+  window.requestAnimationFrame = (f) => r((t) => { const e = performance.now() + 80; while (performance.now() < e) { /* busy */ } f(t); }); })();"""
+NO_WEBGL = """HTMLCanvasElement.prototype.getContext = (function (g) {
+  return function (t) { return /webgl/.test(t) ? null : g.apply(this, arguments); }; })(HTMLCanvasElement.prototype.getContext);"""
+INTRO_GONE = "!document.getElementById('olyIntro') && !document.documentElement.hasAttribute('data-intro')"
+MIC_FREE = """(() => { const b = document.getElementById('bigmic').getBoundingClientRect();
+  const e = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return !!e && !!e.closest('#bigmic'); })()"""
+
+
+def intro_page(br, url, force="1", extra="", reduced=None, block=False, scale="0.3", init=(), cut=False):
+    """A phone (390 x 844) opening Jarvis with the intro allowed ('jarvis.intro.force'; '1' = let the intro choose its version).
+    scale: the intro's render scale here (a software-rendered test browser draws ~2 fps at the phone's 1.5x; '' = the phone's)."""
+    ctx, p, errs, _ = new_page(br, **({"reduced_motion": reduced} if reduced else {}))
+    sc = f"localStorage.setItem('jarvis.intro.scale', '{scale}');" if scale else ""
+    nc = "" if cut else "localStorage.setItem('jarvis.intro.nocut', '1');"
+    ctx.add_init_script(f"try {{ localStorage.setItem('jarvis.intro.force', '{force}'); {sc} {nc} {extra} }} catch (e) {{}}")
+    # no 3D core here (core-visual.js blocked: the 2D core takes over): three.js in a software renderer on a busy machine stalls
+    # the page for seconds right after the reveal, which would time the test machine, not the intro
+    ctx.route(re.compile(r".*/core-visual\.js.*"), lambda r: r.abort())
+    ctx.add_init_script(INTRO_PROBE)
+    for s in init:
+        ctx.add_init_script(s)
+    if block:                                     # the intro's script never gets going (as if it threw while being parsed)
+        ctx.add_init_script("Object.defineProperty(window, '__olyIntro', { get() { return undefined; }, set() { throw new Error('blocked'); } });")
+    p.goto(url + "jarvis/", wait_until="commit")
+    return ctx, p, errs
+
+
+def intro_state(p):
+    return p.evaluate("JSON.parse(JSON.stringify({ st: window.__olyIntro || null, pr: window.__probe || {} }))")
+
+
+def ready_slow(p):
+    p.wait_for_function("document.documentElement.dataset.ready === '1'", timeout=30000)
+
+
+def run_intro(br, url):
+    """o. the OLYMPUS intro on a phone: plays and ends by itself, skips on a tap, removes itself on any error, cuts short on a
+    phone that cannot keep up, never covers Jarvis past 1 s when it fails or never arrives, its versions, its replay; and the
+    home extras that came with it (quick actions, today's timeline, the core's satellites)."""
+    wait = lambda p, js, ms=20000: p.wait_for_function(js, timeout=ms)
+
+    # 1. a cold open: the full version in WebGL, Jarvis starting underneath, then it reveals Jarvis and removes itself
+    ctx, p, errs = intro_page(br, url)
+    wait(p, "window.__olyIntro && (window.__olyIntro.frames > 3 || window.__olyIntro.done)")
+    s = intro_state(p)
+    check("o. a cold open plays the full version in WebGL (its canvas, the OLYMPUS particles, frames running)",
+          s["st"]["mode"] == "full" and s["st"]["state"] == "playing" and s["st"]["n"] > 0 and p.locator("#olyIntro canvas").count() == 1, s)
+    check("o. while it plays it covers the screen (the mic under it), the boot log steps aside",
+          p.evaluate(MIC_FREE.replace("closest('#bigmic')", "closest('#olyIntro')")) and p.locator("#bootfx").count() == 0, s)
+    wait(p, INTRO_GONE)
+    ready_slow(p)
+    s = intro_state(p)
+    check("o. it reveals Jarvis by itself at ~3.1 s of its clock and removes itself: overlay and data-intro gone, the mic tappable",
+          s["st"]["state"] == "done" and 2900 <= s["pr"]["end"] <= 4500 and s["pr"]["gone"] >= s["pr"]["end"] and p.evaluate(MIC_FREE), s)
+    check("o. Jarvis started underneath it, never after it (ready before the intro's end)",
+          s["pr"].get("ready") is not None and s["pr"].get("end") is not None and s["pr"]["ready"] < s["pr"]["end"], s["pr"])
+    check("o. the day is remembered, the in-progress flag cleared, no page errors",
+          bool(p.evaluate("localStorage.getItem('jarvis.intro.day')")) and p.evaluate("localStorage.getItem('jarvis.intro.run')") is None and not errs, errs)
+    vr = p.evaluate("['#hf', '#bigmic', '#vset'].map((s) => document.querySelector(s).getBoundingClientRect().bottom)")
+    check("o. after it, the mic / HANDS-FREE / VOICE are on the first 390 x 844 screen", all(0 < b <= 844 for b in vr), vr)
+
+    # 2. a later open the same day: the 1 s version
+    p.reload(wait_until="commit")
+    wait(p, "window.__olyIntro && window.__olyIntro.mode")
+    wait(p, INTRO_GONE)
+    s = intro_state(p)
+    check("o. a later open the same day gets the 1 s version", s["st"]["mode"] == "short" and s["st"]["state"] == "done" and s["st"]["ms"] <= 2500, s)
+
+    # 3. the replay (command palette: Play the OLYMPUS intro)
+    ready_slow(p)
+    played = p.evaluate("window.__olyIntroPlay('short')")
+    wait(p, "window.__olyIntro && (window.__olyIntro.frames > 1 || window.__olyIntro.done)")
+    wait(p, INTRO_GONE)
+    s = intro_state(p)
+    check("o. the replay plays it again and ends the same way (the mic tappable after)",
+          played is True and s["st"]["mode"] == "short" and s["st"]["state"] == "done" and p.evaluate(MIC_FREE), s)
+    p.evaluate("document.getElementById('fab').click()")
+    p.fill("#palQ", "olympus")
+    check("o. the command palette lists it", "Play the OLYMPUS intro" in p.locator("#palList").inner_text(), p.locator("#palList").inner_text())
+    ctx.close()
+
+    # 4. a tap skips it, and the tap never lands on what is underneath (the core: talk)
+    ctx, p, errs = intro_page(br, url, "full")
+    wait(p, "window.__olyIntro && window.__olyIntro.frames > 2")
+    ready_slow(p)
+    box = p.locator("#stage").bounding_box()
+    p.mouse.click(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
+    wait(p, INTRO_GONE)
+    s = intro_state(p)
+    check("o. a tap skips it: gone within 1 s of the tap (its own clock), the mic tappable",
+          s["st"]["state"] == "skipped" and s["pr"]["gone"] - s["pr"]["down"] < 1000 and p.evaluate(MIC_FREE), s)
+    check("o. the skip tap did not reach the core under it (Jarvis is not listening), no page errors",
+          p.evaluate("document.documentElement.dataset.state") != "listening" and not errs, (p.evaluate("document.documentElement.dataset.state"), errs))
+    ctx.close()
+
+    # 5. it fails: at its start, in a frame, no WebGL, intro.js never arrives
+    ctx, p, errs = intro_page(br, url, "full", "localStorage.setItem('jarvis.intro.fail', 'init');")
+    wait(p, INTRO_GONE)
+    ready_slow(p)
+    wait(p, "window.__probe && window.__probe.cover1s !== undefined")
+    s = intro_state(p)
+    check("o. an error at its start removes it (state failed): the mic free by 1 s, Jarvis starts, no page error",
+          s["st"]["state"] == "failed" and s["pr"].get("cover1s") is False and p.evaluate(MIC_FREE) and not errs, (s, errs))
+    check("o. ...and the next start plays it again (the failure clears its in-progress flag)", p.evaluate("localStorage.getItem('jarvis.intro.run')") is None, "")
+    ctx.close()
+    ctx, p, errs = intro_page(br, url, "full", "localStorage.setItem('jarvis.intro.fail', 'frame');")
+    wait(p, INTRO_GONE)
+    s = intro_state(p)
+    check("o. an error in a frame removes it (state failed), no page error", s["st"]["state"] == "failed" and "frame" in s["st"]["err"] and not errs, (s, errs))
+    ctx.close()
+    ctx, p, errs = intro_page(br, url, "full", init=[NO_WEBGL])
+    wait(p, INTRO_GONE)
+    s = intro_state(p)
+    check("o. no WebGL: the still OLYMPUS word mark fades instead (< 1.6 s)", s["st"]["mode"] == "fade" and s["st"]["q"] == "still" and s["st"]["ms"] < 1600, s)
+    ctx.close()
+    ctx, p, errs = intro_page(br, url, "full", block=True)
+    ready_slow(p)
+    wait(p, "window.__probe && window.__probe.cover1s !== undefined")
+    s = intro_state(p)
+    check("o. the intro script never runs: by 1 s its overlay no longer covers Jarvis (the 0.7 s / CSS deadlines), the mic tappable",
+          s["st"] is None and s["pr"]["cover1s"] is False and p.evaluate(MIC_FREE), s)
+    wait(p, INTRO_GONE, 5000)
+    check("o. ...and the page tidies the dead overlay away", True)
+    ctx.close()
+
+    # 6. a phone that cannot keep up (every frame 80 ms) at the phone's own scale: a quick cut to the reveal, never a slideshow
+    ctx, p, errs = intro_page(br, url, "full", init=[SLOW_FRAMES], cut=True)
+    wait(p, INTRO_GONE)
+    s = intro_state(p)
+    check("o. a phone that cannot keep up: it cuts to the reveal early (before the 3.1 s reveal), never a slideshow",
+          s["st"].get("slow") is True and s["st"]["state"] == "done" and s["pr"]["end"] < 3000, s)
+    ctx.close()
+
+    # 7. the versions it picks by itself
+    for label, kw, want, length in (("reduce motion: a simple 0.8 s fade", {"reduced": "reduce"}, "fade", 0.8),
+                                     ("3D effects Off: a 0.5 s fade", {"extra": "localStorage.setItem('jfx', 'off');"}, "off", 0.5),
+                                     ("after a start that did not finish: the fade, never WebGL", {"extra": "localStorage.setItem('jarvis.unfinished', '1');"}, "fade", 0.8),
+                                     ("after an intro that did not finish (the phone closed it): the fade", {"extra": "localStorage.setItem('jarvis.intro.run', '1');"}, "fade", 0.8)):
+        ctx, p, errs = intro_page(br, url, **kw)
+        wait(p, "window.__olyIntro && window.__olyIntro.mode")
+        gl = p.evaluate("!!document.querySelector('#olyIntro canvas')")
+        wait(p, INTRO_GONE)
+        s = intro_state(p)
+        check(f"o. {label}", s["st"]["mode"] == want and s["st"]["q"] == "still" and s["st"]["len"] == length and not gl and s["st"]["state"] == "done", s)
+        ctx.close()
+    ctx, p, errs = intro_page(br, url, extra="localStorage.setItem('jarvis.intro', 'off');")
+    ready_slow(p)
+    check("o. switched off (Look → OLYMPUS intro): none", p.evaluate("!document.documentElement.hasAttribute('data-intro') && !(window.__olyIntro && window.__olyIntro.mode)"), intro_state(p))
+    ctx.close()
+
+    # 8. under automation with no test asking: no intro (every other check sees Jarvis at once); the home extras
+    ctx, p, errs, _ = new_page(br)
+    p.goto(url + "planner/")                      # the stand-in Planner saves today (Gym 7:30 AM, Review fills 4:15 PM, a task)
+    p.goto(url + "jarvis/")
+    ready_slow(p)
+    check("o. under automation, unasked: no intro, and nothing waits for one (state off)",
+          p.evaluate("!document.documentElement.hasAttribute('data-intro') && window.__olyIntro.state === 'off' && window.__olyIntro.done === true"), intro_state(p))
+    qa = p.evaluate("[...document.querySelectorAll('#qa .qa-t')].map((b) => [b.dataset.qa, Math.round(b.getBoundingClientRect().height)])")
+    check("o. quick actions: the wide Voice mode tile, then 8 tiles (briefing, system, NQ bot, planner, kalshi, search, hide $, look), each >= 44 px tall",
+          [q[0] for q in qa] == ["voice", "brief", "system", "zenith", "planner", "kalshi", "search", "hide", "look"] and all(q[1] >= 44 for q in qa), qa)
+    tl = p.evaluate("""(() => { const b = document.getElementById('p-today'); return { rows: b.querySelectorAll('.tl-row').length, now: !!b.querySelector('.tl-now'),
+        ev: b.querySelectorAll('.tl-ev').length, task: !!b.querySelector('.tl-row.plan[data-app="planner"]'), next: b.querySelectorAll('.tl-row.next').length,
+        head: b.querySelector('.tl-head').textContent }; })()""")
+    # the stand-in Planner has Gym at 7:30 AM and Review fills at 4:15 PM today, and one open task (whatever the time of day)
+    check("o. today's timeline: the trading day with the Planner's events on the day bar, the now needle, the to-do row, one NEXT row at most",
+          tl["rows"] >= 3 and tl["now"] and tl["ev"] == 2 and tl["task"] and tl["next"] <= 1 and tl["head"], tl)
+    sats = p.evaluate("[...document.querySelectorAll('#sats .sat')].map((s) => s.className.replace('sat ', ''))")
+    dots = p.evaluate("[...document.querySelectorAll('#sysdots i')].map((i) => i.className)")
+    check("o. the core's satellites: one per system, each coloured by that system's verdict (as the System strip)", sats == dots and len(sats) >= 4, (sats, dots))
+    p.evaluate("document.querySelector('#sats .sat').click()")
+    near = "Math.abs(document.getElementById('p-system').getBoundingClientRect().top) < 120"
+    try:
+        p.wait_for_function(near, timeout=5000)
+    except Exception:
+        pass
+    check("o. a satellite opens the System panel and never starts listening",
+          p.evaluate("document.documentElement.dataset.state") != "listening" and p.evaluate(near), p.evaluate("document.getElementById('p-system').getBoundingClientRect().top"))
+    p.evaluate("window.scrollTo(0, 0)")
+    p.click('#qa [data-qa="hide"]')
+    p.wait_for_function("document.documentElement.classList.contains('money-hidden')", timeout=4000)
+    p.wait_for_function("document.querySelector('#qa [data-qa=\"hide\"]').textContent.trim() === 'Show $'", timeout=4000)
+    check("o. Hide $ hides the balances and its tile turns into Show $", True)
+    p.click('#qa [data-qa="planner"]')
+    p.wait_for_function("window.__jarvis.active() === 'planner'", timeout=6000)
+    check("o. a quick action opens its app (Planner); no page errors", not errs, errs)
+    ctx.close()
+
+
 def main():
     part_a()
+    part_intro_files()
     tmp = tempfile.mkdtemp(prefix="le_jarvis_")
     variants = {"A": site(tmp, "A", "none"), "B": site(tmp, "B", "stub"), "C": site(tmp, "C", "asis")}
     for f in PARTS:
@@ -1298,7 +1717,9 @@ def main():
             run_c(br, host + variants["C"])
             run_look(br, host + variants["C"])
             run_switcher(br, host + variants["C"])
+            run_olympus(br, host + variants["C"])
             run_system(br, host + variants["C"])
+            run_intro(br, host + variants["C"])
             br.close()
     finally:
         srv.shutdown()

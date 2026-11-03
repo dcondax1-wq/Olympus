@@ -671,6 +671,16 @@ def _nt_status(ad) -> dict:
             c = ad.connections()
             out["connections"] = {clean_text(k, 40): str(v) for k, v in list(c.items())[:6]}
             out["connected"] = (any(v == "CONNECTED" for v in c.values()) if c else None)
+            if getattr(ad, "folder", None):
+                # a connection file is written only on a state change: also NinjaTrader's live accounts + live bars
+                # (engine/ninjatrader.connection_view, 2026-11-03); account names stay out of the published block
+                from .ninjatrader import connection_view
+                v = connection_view(c, ad.folder, getattr(ad, "clock", time.time)())
+                out["connected"] = v["connected"]
+                out["connected_via"] = v["via"]
+                out["live_accounts"] = v["live_accounts"]
+                if v.get("note"):
+                    out["note"] = clean_text(v["note"], 240)
         if callable(getattr(ad, "folder_status", None)):
             fs = ad.folder_status()
             out["folder_ok"] = bool(fs.get("incoming")) and bool(fs.get("outgoing"))

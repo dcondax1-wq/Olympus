@@ -1,7 +1,7 @@
 /* Kalshi page (tools/web_public/kalshi/, owner 2026-11-01): the dashboard of the Kalshi bot (its own server, real money).
-   The old Jarvis look (scratchpad spec old_jarvis.md "a. LOOK"): black + violet HUD, clipped-corner panels with a glowing
-   tick, Orbitron for labels and numbers, Rajdhani for text. Theme from Jarvis's localStorage 'jtheme' (eclipse default,
-   the reactor family -> reactor), set on <html data-theme> before paint. Green / red only for money.
+   Its own dashboard (2026-11-03): the Kalshi theme, mint + cyan on a deep green-black, an aurora behind the header, the K mark,
+   a ticker tape; the HUD build of Jarvis (clipped-corner panels with a glowing tick, Orbitron for labels and numbers, Rajdhani
+   for text). <html data-theme="kalshi"> is set before paint. Green / red only for money.
    Safari 16 safe: no CSS nesting, no container queries, no color-mix; every animation sits behind prefers-reduced-motion. */
 /* Fonts: Jarvis's own files, shipped with the site (tools/web_public/jarvis/), so Kalshi looks like Jarvis from the first paint,
    with or without the service worker (private mode too); the worker keeps a copy for offline (sw.js). */
@@ -10,21 +10,19 @@
 @font-face { font-family: "Rajdhani"; src: url("../jarvis/rajdhani-500.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
 @font-face { font-family: "Rajdhani"; src: url("../jarvis/rajdhani-600.woff2") format("woff2"); font-weight: 600; font-style: normal; font-display: swap; }
 @font-face { font-family: "Rajdhani"; src: url("../jarvis/rajdhani-700.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
-:root, :root[data-theme="eclipse"] {
-  --bg: #000; --bg2: #0b0a10; --pr: 12,10,20; --txt: #ece9f2; --mut: #8a8499; --dim: #221b2e; --dim2: #3b2a5c; --dim3: #4c2f86;
-  --c: #a855f7; --c2: #7c3aed; --c3: #c084fc; --cr: 168,85,247; --cr2: 124,58,237; --tint: #e9ddff;
+:root, :root[data-theme="kalshi"] {
+  /* its own dashboard (owner 2026-11-02 / 2026-11-03): Kalshi mint on a deep green-black, cyan for the second accent; the top colour
+     (index.html theme-color #010a07) is the page background, so Jarvis's status-bar strip matches */
+  --bg: #010a07; --bg2: #04170f; --pr: 3,22,16; --txt: #e6fff5; --mut: #7ea596; --dim: #0e2a20; --dim2: #1b4a3a; --dim3: #237058;
+  --c: #1fe5a6; --c2: #0bb07c; --c3: #8dffd8; --cr: 31,229,166; --cr2: 11,176,124; --tint: #cbfff0;
+  --cy: #38e1ff; --cy-rgb: 56,225,255;
   --ok: #4ade80; --bad: #ff4d6d; --warn: #fbbf24; --ok-rgb: 74,222,128; --bad-rgb: 255,77,109; --warn-rgb: 251,191,36;
-  --glow: radial-gradient(ellipse at 50% 0%, var(--bg2) 0%, #000 70%);
+  --glow: radial-gradient(ellipse at 18% -6%, rgba(31,229,166,.20) 0%, transparent 52%), radial-gradient(ellipse at 92% 4%, rgba(56,225,255,.13) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 110%, rgba(11,176,124,.10) 0%, transparent 60%), #010a07;
   --fh: "Orbitron", "Bahnschrift", "SF Pro Display", -apple-system, system-ui, sans-serif;
   --fb: "Rajdhani", "Segoe UI", -apple-system, "SF Pro Text", system-ui, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   color-scheme: dark;
-}
-:root[data-theme="reactor"] {
-  --bg: #03010a; --bg2: #0d0620; --pr: 14,8,30; --txt: #efe9ff; --mut: #958ab3; --dim: #1f1538; --dim2: #3a2766; --dim3: #5233a0;
-  --c: #a95cff; --c2: #6d28d9; --c3: #22d3ee; --cr: 169,92,255; --cr2: 109,40,217; --tint: #f5d0fe;
-  --glow: radial-gradient(ellipse at 26% 18%, rgba(124,58,237,.2) 0%, transparent 55%), radial-gradient(ellipse at 78% 14%, rgba(37,99,235,.14) 0%, transparent 55%),
-    radial-gradient(ellipse at 50% 100%, rgba(34,211,238,.07) 0%, transparent 60%), #03010a;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 [hidden] { display: none !important; }
@@ -48,9 +46,33 @@ html.framed .note.sample { top: 8px; }
 .n, .num { font-family: var(--fh); font-variant-numeric: tabular-nums; letter-spacing: .02em; }
 
 /* ---- the header: name, state, Refresh */
-.top { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.top { display: flex; align-items: center; gap: 12px; min-width: 0; position: relative; }
+.top::after { content: ""; position: absolute; left: 0; right: 0; bottom: -8px; height: 1px; background: linear-gradient(90deg, transparent, rgba(var(--cr), .8), rgba(var(--cy-rgb), .7), transparent);
+  box-shadow: 0 0 10px rgba(var(--cr), .6); }
+.mark { flex: none; width: 44px; height: 44px; display: grid; place-items: center; color: var(--c); filter: drop-shadow(0 0 8px rgba(var(--cr), .75)); }
+.mark svg { width: 40px; height: 40px; display: block; }
+.h1s { font-weight: 500; color: var(--c); letter-spacing: .2em; }
+@media (max-width: 459px) {                        /* a phone: the K mark, the name and the state get the room; Refresh is its icon */
+  .top h1 { font-size: 17px; letter-spacing: .16em; }
+  .refresh { width: 44px; padding: 0; justify-content: center; }
+  .refresh span { display: none; }                 /* its name stays: aria-label / title "Refresh" */
+  .refresh svg { width: 18px; height: 18px; }
+}
+.aurora { position: fixed; left: -20%; right: -20%; top: -30vh; height: 70vh; pointer-events: none; z-index: 0; opacity: .55;
+  background: radial-gradient(ellipse at 30% 50%, rgba(31,229,166,.22), transparent 60%), radial-gradient(ellipse at 70% 40%, rgba(56,225,255,.16), transparent 55%);
+  -webkit-mask-image: linear-gradient(#000 40%, transparent); mask-image: linear-gradient(#000 40%, transparent); }
+/* ---- the ticker tape: open bets and the latest results under the header */
+.tape { position: relative; overflow: hidden; height: 30px; margin-top: 2px; border-top: 1px solid rgba(var(--cr), .22); border-bottom: 1px solid rgba(var(--cr), .22);
+  background: linear-gradient(90deg, rgba(var(--pr), .9), rgba(var(--pr), .5), rgba(var(--pr), .9));
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.tape-in { display: inline-flex; align-items: center; gap: 14px; height: 100%; white-space: nowrap; padding-left: 8px; font: 600 10.5px/1 var(--fh); letter-spacing: .06em; color: var(--txt); }
+.tape-in span { display: inline-flex; align-items: center; gap: 6px; }
+.tape-in em { font-style: normal; color: var(--mut); }
+.tape-in em.up { color: var(--ok); } .tape-in em.down { color: var(--bad); }
+.tape-in b { color: rgba(var(--cr), .55); font-size: 8px; }
+.tape .tag { margin-right: 0; }
 .top-t { flex: 1; min-width: 0; }
-.top h1 { margin: 0; font: 700 21px/1.2 var(--fh); letter-spacing: .32em; text-transform: uppercase; color: var(--txt); text-shadow: 0 0 14px rgba(var(--cr), .75); }
+.top h1 { margin: 0; font: 700 21px/1.2 var(--fh); letter-spacing: .24em; white-space: nowrap; text-transform: uppercase; color: var(--txt); text-shadow: 0 0 14px rgba(var(--cr), .75); }
 .sub { margin: 5px 0 0; color: var(--mut); font-size: 13.5px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-height: 1.45em; }
 .refresh { flex: none; display: inline-flex; align-items: center; gap: 7px; height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(var(--cr), .7);
   background: rgba(var(--pr), .6); color: var(--c3); font: 600 10.5px/1 var(--fh); letter-spacing: .16em; text-transform: uppercase; box-shadow: 0 0 12px rgba(var(--cr), .18); }
@@ -77,7 +99,7 @@ html.framed .note.sample { top: 8px; }
 .note.bad { border-color: rgba(var(--bad-rgb), .5); background: linear-gradient(90deg, rgba(var(--bad-rgb), .1), rgba(var(--pr), .7)); }
 .note.bad b { color: var(--bad); }
 .note.sample { position: -webkit-sticky; position: sticky; top: calc(8px + env(safe-area-inset-top, 0px)); z-index: 4; border-color: rgba(var(--warn-rgb), .65);
-  background: linear-gradient(90deg, rgba(var(--warn-rgb), .16), rgba(var(--pr), .96)), #0b0a10; box-shadow: 0 6px 18px rgba(0,0,0,.55); }
+  background: linear-gradient(90deg, rgba(var(--warn-rgb), .16), rgba(var(--pr), .96)), var(--bg2); box-shadow: 0 6px 18px rgba(0,0,0,.55); }
 .note.sample { flex-wrap: nowrap; gap: 10px; padding: 8px 10px 9px 13px; }
 .note.sample p { flex: 1 1 auto; }
 .note.sample b { color: var(--warn); display: block; margin: 0 0 1px; font-size: 9.5px; letter-spacing: .1em; line-height: 1.35; }
@@ -161,6 +183,7 @@ html.framed .note.sample { top: 8px; }
 
 /* ---- daily bars + P&L calendar */
 .bars { display: block; width: 100%; height: 64px; }
+.bars .mid { stroke: rgba(var(--cr), .3); }
 .cal-h { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .cal-h b { font: 600 12px/1.3 var(--fh); letter-spacing: .14em; text-transform: uppercase; white-space: nowrap; }
 .nav { width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(var(--cr), .6); background: rgba(var(--pr), .7); color: var(--c3); display: grid; place-items: center;
@@ -220,7 +243,7 @@ html.framed .note.sample { top: 8px; }
 /* ---- open bets + trades */
 .ctl { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; min-width: 0; }
 .sel { height: 44px; max-width: 100%; margin-left: auto; padding: 0 32px 0 13px; border-radius: 999px; border: 1px solid var(--dim2); color: var(--txt); font: 500 16px/1 var(--fb);
-  -webkit-appearance: none; appearance: none; background: rgba(var(--pr), .7) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23c084fc' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 13px center; }
+  -webkit-appearance: none; appearance: none; background: rgba(var(--pr), .7) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%238dffd8' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 13px center; }
 .q { width: 100%; height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--dim2); background: rgba(var(--pr), .7); color: var(--txt); font: 500 16px/1 var(--fb); outline: none;
   -webkit-appearance: none; appearance: none; }
 .q::placeholder { color: var(--mut); }
@@ -260,6 +283,58 @@ html.framed .note.sample { top: 8px; }
 .empty::before { content: ""; width: 26px; height: 26px; flex: none; border-radius: 50%; border: 1px solid rgba(var(--cr), .5); box-shadow: 0 0 10px rgba(var(--cr), .25) inset;
   background: radial-gradient(circle, rgba(var(--cr), .55) 0 2px, transparent 3px); }
 
+/* ---- v3: alerts, live edge, Kelly, by market, by price, calibration */
+.al { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.al li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 9px 10px; border: 1px solid var(--dim2); background: rgba(var(--pr), .6); }
+.al li i { width: 9px; height: 9px; border-radius: 50%; background: var(--cy); box-shadow: 0 0 8px var(--cy); }
+.al li.warn { border-color: rgba(var(--warn-rgb), .45); background: linear-gradient(90deg, rgba(var(--warn-rgb), .1), rgba(var(--pr), .6)); } .al li.warn i { background: var(--warn); box-shadow: 0 0 8px var(--warn); }
+.al li.bad { border-color: rgba(var(--bad-rgb), .5); background: linear-gradient(90deg, rgba(var(--bad-rgb), .12), rgba(var(--pr), .6)); } .al li.bad i { background: var(--bad); box-shadow: 0 0 8px var(--bad); }
+.al li span { font-size: 15px; overflow-wrap: anywhere; }
+.al li small { color: var(--mut); font-size: 13px; white-space: nowrap; }
+.calm { margin: 0; display: flex; align-items: center; gap: 10px; color: var(--txt); opacity: .85; font-size: 15px; }
+.calm i { width: 9px; height: 9px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); flex: none; }
+.pos-live { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; color: var(--mut); }
+.pos-live b { font: 700 12.5px/1.3 var(--fh); letter-spacing: .02em; color: var(--txt); font-variant-numeric: tabular-nums; }
+.pos-live b.up { color: var(--ok); } .pos-live b.down { color: var(--bad); }
+.edge { font: 700 10px/1.4 var(--fh); letter-spacing: .04em; padding: 0 6px; border: 1px solid currentColor; border-radius: 999px; white-space: nowrap; }
+.kel > li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 10px 2px; }
+.kel small { grid-column: 1 / -1; }
+.kt { display: inline-block; font: 700 8.5px/1.6 var(--fh); letter-spacing: .1em; text-transform: uppercase; padding: 0 6px; border-radius: 999px; border: 1px solid var(--dim2); color: var(--mut); margin-left: 4px; }
+.kt.ok { color: var(--ok); border-color: rgba(var(--ok-rgb), .5); } .kt.warn { color: var(--warn); border-color: rgba(var(--warn-rgb), .5); } .kt.bad { color: var(--bad); border-color: rgba(var(--bad-rgb), .5); }
+.calc { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 10px; padding: 12px; border: 1px dashed rgba(var(--cr), .35); background: rgba(var(--pr), .45); }
+.calc label { display: grid; gap: 5px; min-width: 0; }
+.calc-o { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; font-size: 14.5px; color: var(--txt); min-height: 1.45em; }
+.calc-o b { font: 700 14px/1.3 var(--fh); letter-spacing: .02em; }
+.calc-o b.up { color: var(--ok); text-shadow: 0 0 10px rgba(var(--ok-rgb), .4); } .calc-o b.down { color: var(--bad); }
+.brk { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.brk li { display: grid; gap: 4px; min-width: 0; }
+.bk-t { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.bk-t b { font-weight: 600; font-size: 16px; min-width: 0; overflow-wrap: anywhere; }
+.bk-t small { color: var(--mut); font-size: 13px; }
+.bk-t .v { margin-left: auto; }
+.brk > li > small { color: var(--mut); font-size: 14px; }
+.dv { position: relative; height: 6px; background: rgba(var(--cr), .08); }
+.dv::before { content: ""; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: rgba(var(--cr), .4); }
+.dv i { position: absolute; top: 0; bottom: 0; display: block; }
+.dv i.pos { left: 50%; background: linear-gradient(90deg, rgba(var(--ok-rgb), .55), var(--ok)); box-shadow: 0 0 8px rgba(var(--ok-rgb), .55); }
+.dv i.neg { right: 50%; background: linear-gradient(270deg, rgba(var(--bad-rgb), .55), var(--bad)); box-shadow: 0 0 8px rgba(var(--bad-rgb), .5); }
+.tbl td.up { color: var(--ok); } .tbl td.down { color: var(--bad); }
+.src { margin-top: -4px; }
+.cb { position: relative; width: 100%; max-width: 340px; justify-self: center; aspect-ratio: 1 / 1; }
+.cb svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.cb-g { stroke: rgba(var(--cr), .1); stroke-width: 1; }
+.cb-d { stroke: rgba(var(--cy-rgb), .65); stroke-width: 1.5; stroke-dasharray: 4 5; }
+.cb-p { fill: rgba(var(--ok-rgb), .35); stroke: var(--ok); stroke-width: 1.5; }
+.cb-n { fill: rgba(var(--bad-rgb), .35); stroke: var(--bad); stroke-width: 1.5; }
+.cb-ax { position: absolute; font: 600 9px/1.3 var(--fh); letter-spacing: .12em; text-transform: uppercase; color: var(--mut); }
+.cb-y { left: 10px; top: 4px; }
+.cb-t.a0 { transform: none; } .cb-t.a1 { transform: translateX(-100%); }
+.cb-t { position: absolute; bottom: -18px; transform: translateX(-50%); font: 600 9px/1.3 var(--fh); letter-spacing: .04em; color: var(--mut); font-variant-numeric: tabular-nums; }
+/* the waiting card: what lights up once the bot is connected */
+.feat { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.feat li { font: 600 9.5px/1.3 var(--fh); letter-spacing: .1em; text-transform: uppercase; color: var(--c3); padding: 5px 9px; border: 1px solid rgba(var(--cr), .35); background: rgba(var(--cr), .07); border-radius: 999px; }
+#sec-cb .muted.small { margin-top: 22px; }
+
 /* ---- waiting, error, loading */
 .wait p { margin: 0; color: var(--txt); font-size: 15.5px; }
 .wait p.muted { color: var(--mut); font-size: 14px; }
@@ -276,7 +351,16 @@ html.framed .note.sample { top: 8px; }
   .refresh[aria-busy="true"] svg { animation: spin .9s linear infinite; }
   .pill.ok::before { animation: pulse 2.6s ease-in-out infinite; }
   .intro .card { animation: rise .35s ease-out both; }
+  .tape-in { animation: tape 38s linear infinite; }
+  .aurora { animation: aurora 18s ease-in-out infinite alternate; }
+  .mark { animation: markglow 4s ease-in-out infinite; }
+  .al li.bad i, .al li.warn i { animation: pulse 1.6s ease-in-out infinite; }
+  .card::before { animation: tick 6s ease-in-out infinite; }
 }
+@keyframes tape { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes aurora { from { transform: translateX(-6%) scaleY(1); } to { transform: translateX(6%) scaleY(1.15); } }
+@keyframes markglow { 0%, 100% { filter: drop-shadow(0 0 6px rgba(31,229,166,.55)); } 50% { filter: drop-shadow(0 0 14px rgba(31,229,166,.95)); } }
+@keyframes tick { 0%, 100% { width: 36px; } 50% { width: 64px; } }
 @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }

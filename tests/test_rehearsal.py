@@ -820,7 +820,11 @@ class Rehearsal:
               x is not None and len(exits) == 1 and x.get("reason") in (t["exit"], want_reason) and int(x.get("exit_t") or 0) == int(t["exit_t"]),
               json.dumps(exits)[:300])
         if x is not None:
-            want_pnl = round(t["pnl"] * int(e["qty"]) / t["qty"], 2)
+            # the research trade is booked at lit.COMM ($1.40 a micro); the bot books every live trade at sizing.LIVE_COMM
+            # ($1.90, since 5a2cf72): $0.50 less per micro (tests/test_lit_live.py re-prices the same way)
+            from engine import lit as _lit
+            from engine.sizing import LIVE_COMM
+            want_pnl = round(t["pnl"] * int(e["qty"]) / t["qty"] - int(e["qty"]) * (LIVE_COMM - _lit.COMM), 2)
             check(f"{day} routed P&L ${x.get('pnl')} = backtest ${t['pnl']} at {e['qty']} micros (${want_pnl})",
                   abs(float(x.get("pnl") or 0) - want_pnl) < 0.01)
         # the broker's own P&L from the fills
@@ -927,8 +931,16 @@ class Rehearsal:
         if killed:
             ok = bool(rows) and (r.get("status") == "matched" or (r.get("status") == "extra" and "kill switch" in str(r.get("reason"))))
         else:
+            # a TARGET exit fills at the target rounded to the tick toward the entry (live.tick_px; LIT's VIX-band target is not
+            # a tick price): engine/fill_audit counts that fraction of a tick on purpose (tests/test_fill_audit "slipped fill").
+            # Anything beyond that fraction is real slippage (2026-11-03: 09-23's 30,730.93 target -> 0.28 t failed this check)
+            exp_exit = 0.0
+            if r.get("bt_exit_reason") == "TARGET" and r.get("bt_exit") is not None:
+                d_ = 1 if r.get("side") == "LONG" else -1
+                from engine.live import tick_px
+                exp_exit = round((float(r["bt_exit"]) - tick_px(float(r["bt_exit"]), d_, target=True)) * d_ / 0.25, 2)
             ok = bool(rows) and r.get("status") == "matched" and abs(float(r.get("entry_slip_ticks") or 0)) < 1e-9 \
-                and abs(float(r.get("exit_slip_ticks") or 0)) < 1e-9
+                and abs(float(r.get("exit_slip_ticks") or 0) - exp_exit) < 1e-6
         check(f"{day} execution tracker: {r.get('status')} (entry slip {r.get('entry_slip_ticks')} t, exit slip {r.get('exit_slip_ticks')} t, "
               f"latency {r.get('latency_s')} s, live ${r.get('live_pnl')}){' - ' + str(r.get('reason')) if r.get('reason') else ''}",
               ok, json.dumps(r)[:500])

@@ -153,7 +153,7 @@ def build(hb_payload: dict, now=None, lm: dict | None = None, hb_last: dict | No
     now = int(now or time.time())
     hb = dict(hb_payload or {})
     pc = {k: hb.get(k) for k in ("running", "adapter", "position", "model_state", "host", "model", "health", "ops", "remote", "acct",
-                                 "brain", "second", "ai", "launch", "mind")}   # brain: the Bot Brain's phone cut (< 16 KB); second: paper EMA / MACD; mind: engine/mind.compact (< 12 KB)
+                                 "brain", "second", "ai", "launch", "mind", "learn")}   # brain: the Bot Brain's phone cut (< 16 KB); second: paper EMA / MACD; mind: engine/mind.compact (< 12 KB); learn: live learning's fill reviews (< 3 KB, Jarvis's "what did the bots learn")
     pc.update(present=True, t=now, age_s=0, silent=False, every_s=int(every_s), live=True)
     if isinstance(hb.get("account_c"), dict):           # BLITZ on its own account (engine/account_c.py): only when it is on
         pc["account_c"] = hb["account_c"]
@@ -312,7 +312,7 @@ def fit(p: dict, max_bytes: int = MAX_BYTES) -> dict:
     if bd and size() > max_bytes and len(bd.get("trades") or []) > 4:     # the live board: its trade list first
         bd["trades"] = bd["trades"][:4]
         p["trimmed"] = True
-    for k in ("mind", "fleet", "ai", "second", "ops", "remote", "brain"):     # mind first: liveview.json carries it too; fleet: the PC page has it
+    for k in ("mind", "learn", "fleet", "ai", "second", "ops", "remote", "brain"):     # mind first: liveview.json carries it too; fleet: the PC page has it
         if size() > max_bytes and isinstance(p.get("pc"), dict):
             p["pc"].pop(k, None)
             p["trimmed"] = True
@@ -386,8 +386,9 @@ def push(payload: dict, url: str, branch: str = BRANCH, git_dir: str = SCRATCH, 
         commit = _out(r)
         if r.returncode or not commit:
             return {"ok": False, "error": "commit-tree failed"}
-        r = subprocess.run(["git", "--git-dir", git_dir, "push", "-q", "--force", url, f"{commit}:refs/heads/{branch}"],
-                           capture_output=True, timeout=90, env=env)
+        from .heartbeat import _NET_CFG, run_cmd      # (2026-11-03) a hung git-remote-https can never block this thread
+        r = run_cmd(["git", *_NET_CFG, "--git-dir", git_dir, "push", "-q", "--force", url, f"{commit}:refs/heads/{branch}"],
+                    timeout=90, env={**env, "GCM_INTERACTIVE": "never"})
         if r.returncode:
             return {"ok": False, "error": _redact((r.stderr or b"").decode(errors="replace").strip()[-200:]) or "push failed"}
         if prune:                                    # the old live commits are unreachable: drop them (only this scratch dir)

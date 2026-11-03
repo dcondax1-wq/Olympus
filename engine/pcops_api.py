@@ -485,8 +485,9 @@ def nt_view(bot, now: int | None = None, folder: str | None = None, logs_dir=Non
                       "interface > AT Interface. The bot withdraws files that wait too long, so nothing runs late." if stuck else
                       "In NinjaTrader: Tools > Options > Automated trading interface > tick 'AT Interface', then restart NinjaTrader.")))
     conns = probe["connections"]
-    up = [k for k, v in conns.items() if v == "CONNECTED"]
-    rows.append(_row("connection", "Connection", bool(up), ", ".join(f"{k} {v}" for k, v in conns.items()) or "no connection file yet",
+    up = [k for k, v in conns.items() if v == "CONNECTED"] or (["live"] if probe.get("connected") else [])
+    rows.append(_row("connection", "Connection", bool(up), (", ".join(f"{k} {v}" for k, v in conns.items()) or "no connection file yet")
+                     + (f" (connected: {', '.join(probe.get('connected_via') or [])})" if probe.get("connected") else ""),
                      "" if up else "In NinjaTrader's Control Center: Connections > connect your MFFU / Tradovate login (Sim101 needs the "
                      "Simulated Data Feed or your data connection). The file appears once a connection changes state."))
     for tf, lim in (("5m", 420), ("1m", 180)):

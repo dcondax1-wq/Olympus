@@ -1,0 +1,542 @@
+// Jarvis VOICE MODE (owner 2026-11-03: "like the movie J.A.R.V.I.S."): a full-screen conversation. The 3D core fills the
+// screen and reacts to the voice: to yours through a Web Audio analyser on the mic, to Jarvis's own from the speech's word
+// timing (a phone cannot analyse its synthesized voice). Live captions of both sides, a HUD arc with the system verdict, and
+// small holographic cards of the numbers Jarvis cites ("ZLARIOR · ROOM  $1,106"), each floating out as its name is spoken.
+// Turn-taking: listen -> think -> speak -> listen, until END (or "stop", "exit voice mode"); a tap on the core interrupts.
+// DOM and audio only: the answers come from the shell (index.html: answer(), the brain's spoken form); nothing here parses a
+// question. Read-only like every Jarvis part: it never places a trade.
+//
+//   import { createVoiceMode } from './voice-mode.js';
+//   const vm = createVoiceMode({
+//     answer(text) -> Promise<reply>   the brain's reply ({text, speak, cards, control, open, route}), side effects done by the shell
+//     mountCore(el, {size, reduced}) -> core | null   a core-visual.js core ({setState, setLevel, destroy}); null = the 2D orb
+//     verdict() -> {text, level}       the system's one-line verdict for the HUD arc (level 'ok' | 'warn' | 'bad')
+//     greeting() -> 'Good evening'     fx() -> 'ultra' | 'high' | 'low' | 'off'     reduced() -> bool (reduce motion applies)
+//     voiceCfg() -> {rate, pitch} | null (the owner's own voice settings)            muted() -> bool
+//     onOpen(), onClose(why), openApp(reply)
+//   });
+//   vm.open({gesture}) · vm.close(why) · vm.isOpen() · vm.stats()
+//   gesture: true when called from a tap (iPhone: the mic and the voice may only start from one). Without it (a spoken
+//   "Jarvis, voice mode") the conversation starts at once and the mic analyser joins at the first tap.
+//
+// iPhone rules: the AudioContext and getUserMedia start inside a tap; the mic is released (tracks stopped, context closed) on
+// END, when Jarvis goes out of sight and when another app opens. No speech recognition (some browsers, a Home Screen app):
+// the same screen with a type-to-talk field, said once per launch; the recognizer refusing the mic switches to it too.
+// Reduce motion (unless the owner picked a 3D level himself) and 3D effects Off: no animation loop, no flying cards, the
+// core still. Voice: the best English voice the phone has, British first for the J.A.R.V.I.S. feel (Daniel, premium /
+// enhanced before compact); the owner can step through them on the VOICE button and the pick is kept ('jarvis.vmVoice').
+// iPhone Safari 16: plain ES2020, no regex lookbehind.
+
+export const VOICE_KEY = 'jarvis.vmVoice';
+const SILENT_TURNS = 3;          // turns with nothing heard before voice mode waits for a tap (no endless listening)
+const LISTEN_MAX_MS = 15000;     // one listening turn at most
+const WPS = 2.7;                 // words per second at rate 1, for the speaking pulse until the phone reports word timing
+const PHASE_WORD = { idle: 'STANDBY', listening: 'LISTENING', thinking: 'THINKING', speaking: 'SPEAKING' };
+const CORE_STATE = { idle: 'idle', listening: 'listening', thinking: 'thinking', speaking: 'speaking' };
+const NOVELTY = /\b(albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|deranged|hysterical|pipe organ|grandma|grandpa|eddy|flo|reed|rocko|sandy|shelley)\b/i;
+
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const safe = (f, d) => { try { return f(); } catch (_) { return d; } };
+const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+const now = () => (window.performance && performance.now ? performance.now() : Date.now());
+const ls = {
+  get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } },
+  set(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (_) { /* private mode */ } },
+};
+
+// ------------------------------------------------------------------------------------------------ the voice
+// A score per voice: English only; British and the J.A.R.V.I.S.-like male voices first; premium / enhanced before compact;
+// the novelty voices (Zarvox, Bubbles, ...) never.
+export function voiceScore(v) {
+  if (!v || !/^en([-_]|$)/i.test(v.lang || '')) return -1;
+  const id = `${v.name || ''} ${v.voiceURI || ''}`;
+  if (NOVELTY.test(v.name || '')) return 0;
+  let s = 10;
+  if (/^en[-_]gb/i.test(v.lang)) s += 30;
+  if (/\bdaniel\b/i.test(id)) s += 50;
+  else if (/\b(arthur|oliver|malcolm|george|jamie)\b/i.test(id)) s += 28;
+  else if (/google uk english male/i.test(id)) s += 40;
+  if (/premium/i.test(id)) s += 20;
+  else if (/enhanced|neural|natural/i.test(id)) s += 15;
+  if (/compact/i.test(id)) s -= 4;
+  if (v.localService) s += 2;
+  return s;
+}
+// the voice to use: the owner's pick when the phone still has it, else the best scored English voice (null: the phone's default)
+export function bestVoice(list, saved) {
+  const all = Array.isArray(list) ? list : [];
+  const mine = saved ? all.find((v) => v && v.name === saved) : null;
+  if (mine) return mine;
+  let best = null, bs = 0;
+  for (const v of all) { const s = voiceScore(v); if (s > bs) { bs = s; best = v; } }
+  return best;
+}
+// every English voice worth offering, best first (the VOICE button steps through them)
+export function voiceChoices(list) {
+  return (Array.isArray(list) ? list : []).filter((v) => voiceScore(v) > 0).sort((a, b) => voiceScore(b) - voiceScore(a));
+}
+
+// ------------------------------------------------------------------------------------------------ the holographic cards
+// The numbers a reply cites, as small cards: its cards' rows first ("Zlarior · Today  +$213"), then the "Name: ... $x ..." lines
+// of its text ("Zlarior · room  $1,106"). Nothing is computed: each value is copied from the reply as it was written.
+const AMOUNT = /[+−-]?\$\d[\d,]*(?:\.\d+)?|[+−-]?\d[\d,]*(?:\.\d+)?\s?(?:%|R\b|pts?\b|points\b|micros?\b)/;
+const FILLER = /^(of|the|a|an|to|is|at|on|in|with|and|has|have|had|its|it|now|left|than|from|above|below)$/i;
+const short = (s, n) => { const t = String(s == null ? '' : s).replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n - 1) + '…' : t; };
+export function fragmentsOf(reply, max) {
+  const lim = max || 4, out = [], seen = {};
+  const push = (k, v) => {
+    k = short(k, 26); v = short(v, 22);
+    if (!v || seen[k + '|' + v] || out.length >= lim) return;
+    seen[k + '|' + v] = 1; out.push({ k, v });
+  };
+  const r = reply && typeof reply === 'object' ? reply : {};
+  for (const c of Array.isArray(r.cards) ? r.cards : []) {
+    if (!c || typeof c !== 'object') continue;
+    const title = c.title || c.name || '';
+    const rows = Array.isArray(c.kv) ? c.kv : Array.isArray(c.kpis) ? c.kpis : Array.isArray(c.rows) ? c.rows : [];
+    for (const row of rows.slice(0, 2)) {
+      const label = Array.isArray(row) ? row[0] : row && row.label, value = Array.isArray(row) ? row[1] : row && row.value;
+      if (value != null && value !== '') push(title ? `${title} · ${label}` : label, String(value));
+    }
+    const st = c.status && typeof c.status === 'object' ? c.status.label : '';
+    if (!rows.length && st) push(title || 'Status', st);
+  }
+  for (const line of String(r.text || '').split('\n')) {
+    const m = /^([^:\n]{2,24}):\s*(.+)$/.exec(line.trim());
+    if (!m) continue;
+    const rest = m[2], a = AMOUNT.exec(rest);
+    if (!a) continue;
+    const before = rest.slice(0, a.index).split(/\s+/).filter((w) => w && !FILLER.test(w)).slice(-2).join(' ');
+    const after = (/^\s*(?:of |to the |in |a )?([a-z][a-z-]*)/i.exec(rest.slice(a.index + a[0].length)) || [])[1] || '';
+    const ctx = (before || (FILLER.test(after) ? '' : after)).replace(/[,;.]+$/, '').toLowerCase();
+    push(ctx ? `${m[1]} · ${ctx}` : m[1], a[0].trim());
+  }
+  return out;
+}
+
+// ------------------------------------------------------------------------------------------------ the look (one stylesheet)
+let styled = false;
+function style() {
+  if (styled) return;
+  styled = true;
+  const s = document.createElement('style');
+  s.id = 'vmCss';
+  s.textContent = `
+.vm{position:fixed;inset:0;z-index:2147483300;display:flex;flex-direction:column;align-items:center;color:var(--txt,#ece9f2);
+  background:radial-gradient(120% 80% at 50% 38%,rgba(var(--cr2,124,58,237),.28),rgba(0,0,0,.94) 62%),#000;
+  padding:max(12px,env(safe-area-inset-top)) 16px max(14px,env(safe-area-inset-bottom));box-sizing:border-box;overflow:hidden;
+  font-family:var(--fb,"Rajdhani",system-ui,sans-serif);-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.vm[hidden]{display:none}
+.vm::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 3px)}
+.vm-top{position:relative;width:100%;max-width:640px;display:flex;align-items:center;gap:8px;z-index:3}
+.vm-tag{flex:1;min-width:0;font:600 11px var(--fh,"Orbitron",sans-serif);letter-spacing:.16em;color:var(--c3,#c084fc);text-shadow:0 0 10px rgba(var(--cr,168,85,247),.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vm-btn{min-height:44px;min-width:44px;padding:0 11px;border-radius:22px;border:1px solid rgba(var(--cr,168,85,247),.55);background:rgba(var(--cr,168,85,247),.12);
+  color:var(--txt,#fff);font:600 11px var(--fh,"Orbitron",sans-serif);letter-spacing:.08em;cursor:pointer;max-width:42vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vm-x{border-color:rgba(255,77,109,.7);background:rgba(255,77,109,.16)}
+.vm-stage{position:relative;flex:1 1 auto;width:100%;display:flex;align-items:center;justify-content:center;min-height:0;cursor:pointer;outline:none;z-index:1}
+.vm-ring{position:relative;flex:none}
+.vm-core{position:absolute;inset:0}
+.vm-spec,.vm-hud{position:absolute;inset:-9%;width:118%;height:118%;pointer-events:none}
+.vm-hud text{font:600 11px var(--fh,"Orbitron",sans-serif);letter-spacing:.3em;fill:var(--c3,#c084fc)}
+.vm-hud .arc{fill:none;stroke:rgba(var(--cr,168,85,247),.35);stroke-width:1.2}
+.vm-hud .gauge{fill:none;stroke:var(--c,#a855f7);stroke-width:3;stroke-linecap:round;filter:drop-shadow(0 0 4px var(--c,#a855f7))}
+.vm[data-verdict=ok] .vm-hud .vd{fill:var(--ok,#4ade80)} .vm[data-verdict=warn] .vm-hud .vd{fill:var(--warn,#fbbf24)} .vm[data-verdict=bad] .vm-hud .vd{fill:var(--bad,#ff4d6d)}
+.vm-orb{position:absolute;inset:14%;border-radius:50%;border:2px solid rgba(var(--cr,168,85,247),.8);box-shadow:0 0 40px rgba(var(--cr,168,85,247),.6),inset 0 0 40px rgba(var(--cr,168,85,247),.45);
+  transform:scale(calc(.92 + var(--lv,0) * .16))}
+.vm-orb i{position:absolute;inset:30%;border-radius:50%;background:radial-gradient(circle,#fff,var(--c3,#c084fc) 40%,transparent 72%);opacity:calc(.6 + var(--lv,0) * .4)}
+.vm[data-phase=listening] .vm-orb{border-color:rgba(255,77,109,.85);box-shadow:0 0 40px rgba(255,77,109,.55),inset 0 0 40px rgba(255,77,109,.4)}
+.vm-frags{position:absolute;inset:0;pointer-events:none}
+.vm-frag{position:absolute;left:50%;top:50%;padding:6px 10px 7px;border:1px solid rgba(var(--cr,168,85,247),.6);background:rgba(var(--pr,12,10,20),.62);
+  clip-path:polygon(0 0,calc(100% - 9px) 0,100% 9px,100% 100%,9px 100%,0 calc(100% - 9px));box-shadow:0 0 18px rgba(var(--cr,168,85,247),.35);
+  -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);white-space:nowrap;opacity:0;transform:translate(-50%,-50%) scale(.6);
+  transition:opacity .45s ease,transform .7s cubic-bezier(.2,.9,.3,1.15)}
+.vm-frag.on{opacity:1;transform:translate(calc(-50% + var(--fx)),calc(-50% + var(--fy))) scale(1)}
+.vm-frag b{display:block;font:600 9px var(--fh,"Orbitron",sans-serif);letter-spacing:.2em;color:var(--c3,#c084fc);text-transform:uppercase}
+.vm-frag span{display:block;font:700 17px var(--fb,"Rajdhani",sans-serif);color:#fff;text-shadow:0 0 8px rgba(var(--cr,168,85,247),.8)}
+.vm-cap{position:relative;z-index:2;width:100%;max-width:640px;min-height:118px;text-align:center}
+.vm-you{margin:0 0 6px;font-size:15px;color:var(--mut,#8a8499);min-height:20px;font-style:italic}
+.vm-you:not(:empty)::before{content:"YOU · ";font:600 9px var(--fh,"Orbitron",sans-serif);letter-spacing:.2em;font-style:normal;color:#ffb3c2}
+.vm-jar{margin:0;font-size:21px;line-height:1.3;font-weight:600;min-height:28px;max-height:34vh;overflow:auto}
+.vm-jar .w{opacity:.32;transition:opacity .18s}
+.vm-jar .w.on{opacity:1;text-shadow:0 0 12px rgba(var(--cr,168,85,247),.75)}
+.vm-hint{position:relative;z-index:2;margin:6px 0 0;font:600 9px var(--fh,"Orbitron",sans-serif);letter-spacing:.24em;color:var(--mut,#8a8499);text-align:center}
+.vm-type{position:relative;z-index:3;display:flex;gap:8px;width:100%;max-width:640px;margin-top:8px}
+.vm-type[hidden]{display:none}
+.vm-type input{flex:1;min-width:0;min-height:44px;padding:0 14px;border-radius:22px;border:1px solid rgba(var(--cr,168,85,247),.6);background:rgba(0,0,0,.5);color:#fff;font:500 16px var(--fb,"Rajdhani",sans-serif)}
+.vm[data-phase=listening] .vm-tag{color:#ffd0da;text-shadow:0 0 10px var(--bad,#ff4d6d)}
+.vm[data-motion=on] .vm-tag{animation:vmBlink 2.4s ease-in-out infinite}
+@keyframes vmBlink{50%{opacity:.55}}
+.vm[data-motion=off] .vm-frag,.vm[data-motion=off] .vm-jar .w,.vm[data-motion=off] .vm-orb{transition:none;animation:none}
+@media (prefers-reduced-motion: reduce){.vm[data-motion=off] *{animation:none !important;transition:none !important}}`;
+  document.head.appendChild(s);
+}
+
+// ------------------------------------------------------------------------------------------------ voice mode
+export function createVoiceMode(deps) {
+  const d = deps && typeof deps === 'object' ? deps : {};
+  const call = (name, ...a) => { const f = d[name]; return typeof f === 'function' ? safe(() => f(...a), null) : null; };
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const synth = 'speechSynthesis' in window ? window.speechSynthesis : null;
+  let el = null, open = false, phase = 'idle', turn = 0, silent = 0, motion = false, typed = false;
+  let core = null, rec = null, recT = 0, raf = 0, lastT = 0, level = 0, evLv = 0, pulse = 0;
+  let actx = null, stream = null, src = null, an = null, buf = null, fbuf = null, micErr = '', wake = null;
+  let speech = null, sess = 0, specCol = '#c084fc';   // speech: the reply being spoken {words, frags, t0, real, idx, done}
+  let voices = [], said = { noSR: false }, turns = 0, lastReply = null;
+  const $ = (s) => (el ? el.querySelector(s) : null);
+
+  // ---------------------------------------------------------------- the voice list (iPhone loads it late)
+  const loadVoices = () => { voices = synth ? safe(() => synth.getVoices() || [], []) : []; renderVoice(); };
+  if (synth) safe(() => synth.addEventListener('voiceschanged', loadVoices));
+  const voice = () => bestVoice(voices, ls.get(VOICE_KEY));
+  function renderVoice() { const b = $('#vmVoice'), v = voice(); if (b) b.textContent = 'VOICE · ' + (v ? v.name.replace(/\s*\(.*\)$/, '').toUpperCase() : 'AUTO'); }
+  function nextVoice() {
+    loadVoices();
+    const list = voiceChoices(voices);
+    if (!list.length) return;
+    const cur = voice(), i = list.findIndex((v) => cur && v.name === cur.name), v = list[(i + 1) % list.length];
+    ls.set(VOICE_KEY, v.name); renderVoice();
+    sayLine(`${v.name.replace(/\s*\(.*\)$/, '')}, at your service.`, null);
+  }
+
+  // ---------------------------------------------------------------- the screen
+  function build() {
+    style();
+    el = document.createElement('div');
+    el.className = 'vm'; el.id = 'vm'; el.hidden = true;
+    el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Voice mode');
+    el.innerHTML = `<div class="vm-top"><span class="vm-tag" id="vmTag">J.A.R.V.I.S</span>
+      <button class="vm-btn" type="button" id="vmVoice" title="Change Jarvis's voice">VOICE · AUTO</button>
+      <button class="vm-btn" type="button" id="vmKb" aria-label="Type instead" title="Type instead">⌨</button>
+      <button class="vm-btn vm-x" type="button" id="vmX" aria-label="End voice mode">END</button></div>
+    <div class="vm-stage" id="vmStage" role="button" tabindex="0" aria-label="Tap to talk, or to interrupt Jarvis">
+      <div class="vm-ring" id="vmRing">
+        <canvas class="vm-spec" id="vmSpec" aria-hidden="true"></canvas>
+        <div class="vm-core" id="vmCore" aria-hidden="true"></div>
+        <svg class="vm-hud" viewBox="0 0 400 400" aria-hidden="true"><defs>
+          <path id="vmArcT" d="M 38 200 A 162 162 0 0 1 362 200"/><path id="vmArcB" d="M 30 200 A 170 170 0 0 0 370 200"/></defs>
+          <path class="arc" d="M 30 200 A 170 170 0 0 1 370 200"/><path class="arc" d="M 22 200 A 178 178 0 0 0 378 200"/>
+          <path class="gauge" id="vmGauge" d="M 52 290 A 170 170 0 0 0 348 290" pathLength="100" stroke-dasharray="0 100"/>
+          <text><textPath href="#vmArcT" startOffset="50%" text-anchor="middle" class="vd" id="vmVerdict">SYSTEM · —</textPath></text>
+          <text><textPath href="#vmArcB" startOffset="50%" text-anchor="middle" id="vmPhase">STANDBY</textPath></text>
+        </svg>
+        <div class="vm-frags" id="vmFrags"></div>
+      </div>
+    </div>
+    <div class="vm-cap"><p class="vm-you" id="vmYou"></p><p class="vm-jar" id="vmJar" aria-live="polite"></p></div>
+    <p class="vm-hint" id="vmHint">TAP THE CORE TO TALK OR INTERRUPT · END TO STOP</p>
+    <form class="vm-type" id="vmType" autocomplete="off" hidden><input id="vmQ" type="text" enterkeyhint="send" placeholder="Type to Jarvis…" aria-label="Type to Jarvis"><button class="vm-btn" type="submit">SEND</button></form>`;
+    document.body.appendChild(el);
+    $('#vmX').addEventListener('click', (e) => { e.stopPropagation(); close('end'); });
+    $('#vmVoice').addEventListener('click', (e) => { e.stopPropagation(); ensureMic(); nextVoice(); });
+    $('#vmKb').addEventListener('click', (e) => { e.stopPropagation(); showType(true, true); });
+    $('#vmStage').addEventListener('click', tapCore);
+    $('#vmStage').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tapCore(); } });
+    $('#vmType').addEventListener('submit', (e) => { e.preventDefault(); const q = $('#vmQ'), t = q.value.trim(); q.value = ''; if (t) { stopTalk(); submit(t); } });
+    el.addEventListener('keydown', (e) => { if (e.key === 'Escape') close('end'); });
+  }
+  function setPhase(p, hint) {
+    phase = PHASE_WORD[p] ? p : 'idle';
+    if (!el) return;
+    el.dataset.phase = phase;
+    $('#vmPhase').textContent = PHASE_WORD[phase];
+    if (core) safe(() => core.setState(CORE_STATE[phase]));
+    if (hint != null) $('#vmHint').textContent = hint;
+    if (!motion) paintLevel(phase === 'listening' || phase === 'speaking' ? 0.5 : 0.15);
+  }
+  function renderVerdict() {
+    const v = call('verdict') || {};
+    el.dataset.verdict = ['ok', 'warn', 'bad'].indexOf(v.level) >= 0 ? v.level : '';
+    $('#vmVerdict').textContent = 'SYSTEM · ' + short(String(v.text || 'no verdict yet').replace(/[.:]+$/, ''), 34).toUpperCase();
+  }
+  function capYou(t) { $('#vmYou').textContent = t || ''; }
+  function capJar(words, on) {             // words: the spoken line split in words; on: how many are lit
+    $('#vmJar').innerHTML = words.map((w, i) => `<span class="w${i < on ? ' on' : ''}">${esc(w.w)}</span>`).join(' ');
+  }
+  function showType(on, focus) {
+    typed = typed || !!on;
+    $('#vmType').hidden = !typed;
+    if (typed && focus) setTimeout(() => safe(() => $('#vmQ').focus()), 30);
+  }
+
+  // ---------------------------------------------------------------- the core, the level and the audio-reactive ring
+  function mountCore() {
+    const ring = $('#vmRing'), box = $('#vmCore');
+    const size = Math.max(160, Math.round(Math.min(innerWidth - 32, innerHeight * 0.52, 470)));
+    ring.style.width = ring.style.height = size + 'px';
+    box.innerHTML = '';
+    core = call('mountCore', box, { size, reduced: !motion });
+    if (!core || typeof core.setLevel !== 'function') { core = null; box.innerHTML = '<div class="vm-orb"><i></i></div>'; }
+    $('#vmPhase').style.display = core ? 'none' : '';        // the 3D core writes its own state on its ring
+    const cv = $('#vmSpec'), dpr = Math.min(2, window.devicePixelRatio || 1), px = Math.round(size * 1.18 * dpr);
+    cv.width = cv.height = px;
+    cv.hidden = !motion;
+    specCol = (getComputedStyle(el).getPropertyValue('--c3') || '').trim() || '#c084fc';      // the theme's colour, read once
+  }
+  function paintLevel(v) {
+    level = v;
+    if (core) safe(() => core.setLevel(v));
+    el.style.setProperty('--lv', v.toFixed(3));
+    $('#vmGauge').setAttribute('stroke-dasharray', `${Math.round(v * 100)} 100`);
+  }
+  function micLevel() {
+    if (!an) return null;
+    an.getByteTimeDomainData(buf);
+    let sum = 0;
+    for (let i = 0; i < buf.length; i++) { const x = (buf[i] - 128) / 128; sum += x * x; }
+    return clamp(Math.sqrt(sum / buf.length) * 4.2, 0, 1);
+  }
+  function frame(ts) {
+    raf = requestAnimationFrame(frame);
+    const dt = Math.min(100, ts - (lastT || ts)); lastT = ts;
+    let target = 0.12;
+    if (phase === 'listening') { const m = micLevel(); evLv *= Math.exp(-dt / 260); target = m == null ? 0.18 + evLv * 0.7 : Math.max(m, evLv * 0.5); }
+    else if (phase === 'speaking') { speakTick(ts); pulse *= Math.exp(-dt / 170); target = 0.16 + pulse * (0.6 + 0.4 * Math.abs(Math.sin(ts / 55))); }
+    else if (phase === 'thinking') target = 0.3 + 0.12 * Math.sin(ts / 160);
+    const k = target > level ? 0.45 : 0.12;
+    paintLevel(clamp(level + (target - level) * k, 0, 1));
+    drawSpec(ts);
+  }
+  function drawSpec(ts) {                  // a ring of bars round the core: the mic's spectrum while you talk, the pulse while Jarvis does
+    const cv = $('#vmSpec'); if (!cv || cv.hidden) return;
+    const g = cv.getContext('2d'); if (!g) return;
+    const W = cv.width, c = W / 2, r0 = W * 0.39, n = 72;
+    g.clearRect(0, 0, W, W);
+    if (an && phase === 'listening') an.getByteFrequencyData(fbuf);
+    g.strokeStyle = phase === 'listening' ? '#ff6b88' : specCol; g.lineWidth = Math.max(1.5, W / 260); g.lineCap = 'round';
+    g.globalAlpha = 0.85; g.beginPath();
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2 - Math.PI / 2, j = i < n / 2 ? i : n - i;          // mirrored: low notes at the top
+      let v;
+      if (an && phase === 'listening') v = fbuf[Math.min(fbuf.length - 1, 2 + j * 2)] / 255;
+      else v = level * (0.45 + 0.55 * Math.abs(Math.sin(ts / 240 + j * 0.55)));
+      const h = W * 0.012 + v * W * 0.085;
+      g.moveTo(c + Math.cos(a) * r0, c + Math.sin(a) * r0); g.lineTo(c + Math.cos(a) * (r0 + h), c + Math.sin(a) * (r0 + h));
+    }
+    g.stroke();
+  }
+  function startLoop() { if (motion && !raf) { lastT = 0; raf = requestAnimationFrame(frame); } }
+  function stopLoop() { if (raf) cancelAnimationFrame(raf); raf = 0; }
+
+  // the mic analyser: only from a tap (the iPhone's rule); its failure never stops the conversation
+  function ensureMic() {
+    if (!open || stream || micErr || !motion) return;     // once per session: a refusal or a busy mic is not asked again
+    const md = navigator.mediaDevices;
+    if (!md || typeof md.getUserMedia !== 'function') { micErr = 'none'; return; }
+    try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); } catch (_) { actx = null; micErr = 'audio'; return; }
+    micErr = 'pending';
+    const mine = sess;
+    md.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }).then((s) => {
+      if (!open || !actx || mine !== sess) { s.getTracks().forEach((t) => t.stop()); return; }
+      micErr = '';
+      stream = s; src = actx.createMediaStreamSource(s); an = actx.createAnalyser();
+      an.fftSize = 512; an.smoothingTimeConstant = 0.55; src.connect(an);
+      buf = new Uint8Array(an.fftSize); fbuf = new Uint8Array(an.frequencyBinCount);
+    }).catch((e) => { if (mine === sess) micErr = (e && e.name) || 'denied'; });
+  }
+  function releaseMic() {
+    if (stream) safe(() => stream.getTracks().forEach((t) => t.stop()));
+    if (src) safe(() => src.disconnect());
+    if (actx) safe(() => actx.close());
+    stream = null; src = null; an = null; actx = null; buf = null; fbuf = null;
+  }
+
+  // ---------------------------------------------------------------- listening (the phone's speech recognition)
+  function stopRec() { clearTimeout(recT); if (rec) { const r = rec; rec = null; safe(() => r.abort()); } }
+  function toTyping(why) {                 // no voice input here: the same screen, a field to type in, said once per launch
+    stopRec(); showType(true, false);
+    if (!said.noSR) {
+      said.noSR = true;
+      sayLine(why === 'blocked' ? 'The microphone is blocked for speech here, so type below and I will answer out loud.'
+        : 'Voice input is not available here, so type below and I will answer out loud.', null);
+    } else setPhase('idle', 'TYPE BELOW · END TO STOP');
+  }
+  function listen() {
+    if (!open) return;
+    if (!SR || said.blocked) { toTyping(said.blocked ? 'blocked' : ''); return; }
+    stopRec(); stopTalk();
+    const my = ++turn;
+    let fin = '', inter = '', sent = false;
+    const done = () => {
+      if (sent || my !== turn) return;
+      sent = true;
+      const t = (fin || inter).trim();
+      if (t) { silent = 0; submit(t); return; }
+      silent++;
+      if (silent < SILENT_TURNS) setTimeout(() => { if (open && my === turn && phase === 'listening') listen(); }, 350);
+      else setPhase('idle', 'TAP THE CORE WHEN YOU NEED ME · END TO STOP');
+    };
+    try {
+      const r = rec = new SR();
+      r.lang = 'en-US'; r.continuous = false; r.interimResults = true; r.maxAlternatives = 1;
+      r.onresult = (e) => {
+        if (my !== turn) return;
+        fin = ''; inter = '';
+        const res = e && e.results ? e.results : [];
+        for (let i = 0; i < res.length; i++) { const a = res[i] && res[i][0]; if (!a) continue; if (res[i].isFinal) fin += a.transcript + ' '; else inter += a.transcript + ' '; }
+        capYou((fin + inter).trim()); evLv = 1;
+        if (fin.trim()) { safe(() => r.stop()); done(); }
+      };
+      r.onspeechstart = () => { evLv = 1; };
+      r.onerror = (e) => {
+        if (my !== turn) return;
+        const er = e && e.error;
+        if (er === 'not-allowed' || er === 'service-not-allowed') { said.blocked = true; sent = true; rec = null; toTyping('blocked'); }
+        else if (er === 'audio-capture' && stream) { releaseMic(); micErr = 'busy'; }        // the phone gives the mic to one of them: speech wins
+      };
+      r.onend = () => { if (my !== turn) return; rec = null; clearTimeout(recT); done(); };
+      r.start();
+      recT = setTimeout(() => { if (rec === r) safe(() => r.stop()); }, LISTEN_MAX_MS);
+      setPhase('listening', 'LISTENING · TAP TO PAUSE · END TO STOP');
+    } catch (_) { rec = null; toTyping(''); }
+  }
+
+  // ---------------------------------------------------------------- thinking: the shell's answer (the brain, in its spoken form)
+  async function submit(text) {
+    if (!open) return;
+    stopRec(); stopTalk();
+    const my = ++turn;
+    turns++;
+    capYou(text); $('#vmJar').textContent = ''; clearFrags();
+    setPhase('thinking', 'THINKING · TAP TO CANCEL');
+    let r = null;
+    try { r = await Promise.resolve(d.answer ? d.answer(text) : null); } catch (_) { r = null; }
+    if (!open || my !== turn) return;
+    if (!r || typeof r.text !== 'string' || !r.text) r = { text: 'Pardon me, something went wrong there. Ask me again.', speak: '' };
+    lastReply = r;
+    renderVerdict();
+    if (r.control === 'stop' || r.control === 'voice_mode_off') { sayLine('Standing by.', null, () => close('stop')); return; }
+    sayLine(r.speak || r.text, r, r.end ? () => close('bye') : null);      // a farewell ("goodbye") is said, then voice mode ends
+  }
+
+  // ---------------------------------------------------------------- speaking: the phone's voice, the captions, the cards
+  function wordsOf(line) { const out = [], rx = /\S+/g; let m; while ((m = rx.exec(line))) out.push({ w: m[0], i: m.index }); return out; }
+  function clearFrags() { const f = $('#vmFrags'); if (f) f.innerHTML = ''; }
+  function placeFrags(list, line) {
+    const box = $('#vmFrags'), rr = $('#vmRing').getBoundingClientRect(), R = (rr.width || 300) * 0.5, cx = rr.left + R, low = line.toLowerCase();
+    const slots = [[-0.82, -0.62], [0.82, -0.5], [-0.78, 0.6], [0.8, 0.66]], vw = document.documentElement.clientWidth || innerWidth;
+    box.innerHTML = list.map((f, i) => `<div class="vm-frag" data-i="${i}"><b>${esc(f.k)}</b><span>${esc(f.v)}</span></div>`).join('');
+    return list.map((f, i) => {
+      const el2 = box.children[i], half = (el2.offsetWidth || 120) / 2;
+      // the card's slot round the core, kept on screen (12 px from either edge)
+      const x = clamp(slots[i % 4][0] * R, 12 + half - cx, vw - 12 - half - cx);
+      el2.style.setProperty('--fx', Math.round(x) + 'px'); el2.style.setProperty('--fy', Math.round(slots[i % 4][1] * R) + 'px');
+      // it floats out when its name is spoken ("Zlarior 50K · room" -> "zlarior"), else at the start
+      const key = String(f.k).split(/[·\s]/)[0].trim().toLowerCase(), at = key ? low.indexOf(key) : -1;
+      return { el: el2, at: at < 0 ? 0 : at };
+    });
+  }
+  function mark(ci) {                         // the word at character ci is being spoken: light it and what came before
+    const s = speech; if (!s) return;
+    let n = 0;
+    while (n < s.words.length && s.words[n].i <= ci) n++;
+    if (n > s.idx) {
+      const spans = $('#vmJar').children;
+      for (let i = s.idx; i < n && i < spans.length; i++) spans[i].classList.add('on');
+      const w = s.words[n - 1].w;
+      pulse = Math.min(1, 0.55 + w.length / 14);
+      s.idx = n;
+    }
+    for (const f of s.frags) if (!f.on && f.at <= ci + 2 && f.el) { f.on = true; f.el.classList.add('on'); }
+  }
+  function speakTick(ts) {                    // until the phone reports word timing, the words follow the estimated pace
+    const s = speech; if (!s || s.real || s.done) return;
+    const k = Math.max(0, Math.floor(((ts - s.t0) / 1000) * WPS * s.rate));     // a frame stamped just before t0: word 0
+    if (k < s.words.length) mark(s.words[k].i);
+  }
+  function revealAll() {
+    const s = speech; if (!s) return;
+    for (const sp of $('#vmJar').children) sp.classList.add('on');
+    for (const f of s.frags) if (f.el) { f.on = true; f.el.classList.add('on'); }
+  }
+  function stopTalk() {                       // barge-in: the voice stops at once
+    if (speech) { speech.done = true; clearTimeout(speech.watch); speech = null; }
+    if (synth) safe(() => synth.cancel());
+  }
+  // sayLine(line, reply?, after?): speak one line with its captions and the reply's cards; then after(), or the reply's app
+  // opens, or the next turn: listening (typing when this phone has no voice input)
+  function sayLine(line, reply, after) {
+    if (!open) return;
+    stopTalk();
+    const my = ++turn, text = String(line || '').replace(/\s*\n+\s*/g, '. ').trim(), words = wordsOf(text);
+    const cfg = call('voiceCfg') || {}, rate = +cfg.rate || 1.02;
+    const s = speech = { words, frags: [], t0: now(), real: false, idx: 0, done: false, rate, watch: 0 };
+    capJar(words, motion ? 0 : words.length);
+    s.frags = reply ? placeFrags(fragmentsOf(reply), text) : (clearFrags(), []);
+    if (!motion) revealAll();
+    setPhase('speaking', 'SPEAKING · TAP TO INTERRUPT · END TO STOP');
+    const finish = () => {
+      if (s.done || my !== turn || !open) return;
+      s.done = true; clearTimeout(s.watch); revealAll(); speech = null;
+      if (typeof after === 'function') { after(); return; }
+      if (reply && reply.open) { close('open'); call('openApp', reply); return; }
+      if (SR && !said.blocked) setTimeout(() => { if (open && my === turn) listen(); }, 300);
+      else setPhase('idle', 'TYPE BELOW · END TO STOP');
+    };
+    const est = 900 + (words.length / (WPS * rate)) * 1000;
+    if (!synth || call('muted') || !text) { s.watch = setTimeout(finish, Math.min(est, 9000)); return; }
+    try {
+      const u = new SpeechSynthesisUtterance(text), v = voice();
+      if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-GB';
+      u.rate = rate; u.pitch = +cfg.pitch || 0.98;
+      u.onboundary = (e) => { if (my !== turn || s.done) return; if (e && e.name && e.name !== 'word') return; s.real = true; mark(+e.charIndex || 0); };
+      u.onend = finish;
+      u.onerror = (e) => { if (e && (e.error === 'interrupted' || e.error === 'canceled') && s.done) return; finish(); };
+      s.watch = setTimeout(finish, est * 2 + 4000);       // a voice that never says it finished (iPhone) never stalls the turn
+      synth.speak(u);
+    } catch (_) { s.watch = setTimeout(finish, Math.min(est, 9000)); }
+  }
+
+  // ---------------------------------------------------------------- taps: talk, interrupt, pause
+  function tapCore() {
+    if (!open) return;
+    ensureMic();
+    if (phase === 'speaking' || phase === 'thinking') { stopTalk(); ++turn; silent = 0; listen(); return; }
+    if (phase === 'listening') { stopRec(); ++turn; setPhase('idle', 'PAUSED · TAP THE CORE TO TALK · END TO STOP'); return; }
+    silent = 0; listen();
+  }
+
+  // ---------------------------------------------------------------- open / close
+  const onHide = () => { if (document.visibilityState !== 'visible') close('hidden'); };
+  function openVM(o) {
+    if (open) return;
+    if (!el) build();
+    open = true; sess++; turns = 0; silent = 0; typed = false; said.blocked = false; micErr = '';
+    motion = call('fx') !== 'off' && !call('reduced');
+    el.dataset.motion = motion ? 'on' : 'off';
+    el.hidden = false;
+    call('onOpen');
+    capYou(''); $('#vmJar').textContent = ''; clearFrags(); showType(false);
+    loadVoices(); renderVerdict(); mountCore(); setPhase('idle', '');
+    document.addEventListener('visibilitychange', onHide);
+    if (o && o.gesture) ensureMic();
+    else window.addEventListener('pointerup', ensureMic, { once: true, capture: true });   // a hold: the release is the tap
+    safe(() => { if (navigator.wakeLock) navigator.wakeLock.request('screen').then((w) => { if (open) wake = w; else w.release(); }).catch(() => {}); });
+    startLoop();
+    safe(() => $('#vmX').focus({ preventScroll: true }));
+    if (!SR) { toTyping(''); return; }
+    const g = String(call('greeting') || 'At your service').replace(/[.!]+$/, '');
+    sayLine(`${g}. I'm listening.`, null);
+  }
+  function close(why) {
+    if (!open) return;
+    open = false; ++turn;
+    stopRec(); stopTalk(); stopLoop(); releaseMic();
+    window.removeEventListener('pointerup', ensureMic, { capture: true });
+    document.removeEventListener('visibilitychange', onHide);
+    if (wake) { safe(() => wake.release()); wake = null; }
+    if (core) safe(() => core.destroy());
+    core = null;
+    if (el) { el.hidden = true; $('#vmCore').innerHTML = ''; }
+    call('onClose', why || 'end');
+  }
+  return {
+    open: (o) => safe(() => openVM(o || {})),
+    close: (why) => safe(() => close(why)),
+    isOpen: () => open,
+    stats: () => ({ open, phase, level: +level.toFixed(3), turns, motion, typing: typed, recognition: !!SR && !said.blocked,
+      mic: !!stream, micLive: !!(stream && stream.getTracks().some((t) => t.readyState === 'live')), micErr, audio: actx ? actx.state : 'closed',
+      core: core ? safe(() => (typeof core.stats === 'function' ? core.stats() : 'mounted'), 'mounted') : null, loop: !!raf,
+      voice: (voice() || {}).name || '', speaking: !!speech, reply: lastReply ? lastReply.speak || lastReply.text : '' }),
+  };
+}
+export default createVoiceMode;

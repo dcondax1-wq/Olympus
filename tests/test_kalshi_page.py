@@ -16,7 +16,10 @@ connection / later, and checks:
      ranges, sort / filter / search, details, show more, calendar months and days
   f. stale (> 15 min), stopped, error (no copy), bad JSON, offline copy, loading (no copy / saved copy), Refresh
   g. escaping (<script> and <img onerror> in every text), empty lists, junk values
-  h. Jarvis's theme (localStorage 'jtheme'): eclipse by default, the reactor family, a live switch
+  h. its own theme (data-theme kalshi, theme-color #010a07): Jarvis's 'jtheme' never changes it
+  v3. contract v3 (2026-11-03): alerts (the bot's + settles-soon), live edge on open bets, Edge & sizing (Kelly per bet, the
+     calculator), by market, by price (win vs break-even, ROI), calibration; a v2 feed works them out from the trades list
+     and says so; junk v3 values never break a section
   i. 375 / 390 / 430 px: no sideways scroll, nothing past the 16 px gutter, numbers not cut off
   j. no page errors (uncaught exceptions or a section that failed), no failed same-site request, no font asked by the page
   kit. the server script's pin (kit.json from the site build): a valid sha256 = the pinned step and Copy, anything else
@@ -378,11 +381,16 @@ def part_a():
           re.search(r"\.q \{[^}]*font: 500 16px", css) and re.search(r"\.sel \{[^}]*font: 500 16px", css)
           and "env(safe-area-inset-left" in css and "env(safe-area-inset-bottom" in css and "viewport-fit=cover" in html
           and "@media (prefers-reduced-motion: no-preference)" in css and "animation:" not in pre)
-    check("a. the old Jarvis look: black + violet eclipse tokens, the reactor theme, clipped panels with the glowing tick",
-          "--bg: #000; --bg2: #0b0a10;" in css and "--c: #a855f7; --c2: #7c3aed; --c3: #c084fc;" in css and "--txt: #ece9f2; --mut: #8a8499;" in css
-          and ':root[data-theme="reactor"]' in css and "--c: #a95cff;" in css and "clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px" in css
+    check("a. its own look (2026-11-03): the Kalshi mint + cyan tokens on a deep green-black, clipped panels with the glowing tick",
+          ':root, :root[data-theme="kalshi"]' in css and "--bg: #010a07;" in css and "--c: #1fe5a6;" in css and "--cy: #38e1ff;" in css
+          and "eclipse" not in css and "reactor" not in css and "clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px" in css
           and ".card::before" in css and "width: 36px; height: 2px" in css)
-    check("a. the theme is set before paint from Jarvis's 'jtheme'", "localStorage.getItem('jtheme')" in html and html.index("jtheme") < html.index('href="kalshi.css'))
+    check("a. its own top colour = its background (Jarvis's status-bar strip takes it); the theme set before paint, never Jarvis's 'jtheme'",
+          '<meta name="theme-color" content="#010a07">' in html and "d.setAttribute('data-theme', 'kalshi')" in html
+          and html.index("data-theme', 'kalshi'") < html.index('href="kalshi.css') and "jtheme" not in html + js)
+    check("a. its own header: the K mark, KALSHI EDGE, the ticker tape (aria-hidden), the aurora; the tape animation behind reduced motion",
+          'class="mark"' in html and '<span class="h1s">Edge</span>' in html and 'id="tape" aria-hidden="true" hidden' in html
+          and 'class="aurora"' in html and ".tape-in { animation: tape" in css.split("@media (prefers-reduced-motion: no-preference)")[1])
     check("a. framed (inside Jarvis): a 'framed' class before paint drops the second notch inset; on its own the inset stays",
           "if (window.top !== window) d.classList.add('framed')" in html and html.index("framed") < html.index('href="kalshi.css')
           and "html.framed main { padding-top: 16px; }" in css and "padding: calc(16px + env(safe-area-inset-top, 0px))" in css)
@@ -401,7 +409,7 @@ def part_a():
     check("a. text wraps instead of being cut (no ellipsis, no line clamp)", "text-overflow: ellipsis" not in css and "line-clamp" not in css)
     b = open(os.path.join(ROOT, "tools", "build_web_dashboard.py"), encoding="utf-8").read()
     check("a. the site build publishes every file of kalshi/ (index.html, kalshi.js, kalshi.css, sw.js)",
-          'for app in ("jarvis", "kalshi"):' in b and "for name in os.listdir(src_dir):" in b)
+          'for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "olympus"):' in b and "for name in os.listdir(src_dir):" in b)
 
 
 # ------------------------------------------------------------------ the browser parts
@@ -450,6 +458,10 @@ def run_browser(url, tmp):
               "runs on its own server" in body and "One paste in its own chat" in body and "every minute" in body
               and not re.search(r"\bPC\b", body + p.inner_text("#foot")), body)
         check("b. waiting: no numbers, no sections", p.locator("#body .card").count() == 1 and p.locator("#sec-kpi").count() == 0)
+        feats = [x.inner_text().strip().lower() for x in p.locator("#body .wait .feat li").all()]
+        check("b. waiting: what lights up once connected (9 chips: alerts, live edge, Kelly, by market / price, calibration ...)",
+              len(feats) == 9 and {"alerts", "kelly sizing", "calibration", "by market", "by price"} <= set(feats)
+              and p.is_hidden("#tape"), feats)
         ctx.grant_permissions(["clipboard-read", "clipboard-write"], origin=url.rstrip("/").rsplit("/", 1)[0])
         p.click("[data-act=copy]")
         p.wait_for_function("document.getElementById('copied').textContent.length > 0", timeout=3000)
@@ -537,8 +549,8 @@ def run_browser(url, tmp):
         rb, rtr = realbot(time.time())
         open_("ok", rb)
         body = p.locator("#body").text_content()
-        check("d. LIVE · real money: a calm badge (violet, not red)", " ".join(p.locator("#mode").text_content().split()) == "LIVE · real money"
-              and p.evaluate("getComputedStyle(document.getElementById('mode')).color") == "rgb(192, 132, 252)", p.inner_text("#mode"))
+        check("d. LIVE · real money: a calm badge (mint, not red)", " ".join(p.locator("#mode").text_content().split()) == "LIVE · real money"
+              and p.evaluate("getComputedStyle(document.getElementById('mode')).color") == "rgb(141, 255, 216)", (p.inner_text("#mode"), p.evaluate("getComputedStyle(document.getElementById('mode')).color")))
         today = dt.datetime.now(NY).date().isoformat()
         tw = sum(1 for x in rtr if x["pnl"] is not None and x["pnl"] > 0 and et_day(x["t"]) == today)
         tl = sum(1 for x in rtr if x["pnl"] is not None and x["pnl"] < 0 and et_day(x["t"]) == today)
@@ -843,23 +855,83 @@ def run_browser(url, tmp):
         check("g. junk values: dashes, no crash, the one good day kept", "could not be shown" not in bt and "—" in bt
               and p.locator("svg.bars rect").count() == 1, bt[:400])
 
-        # ---- h. Jarvis's theme
+        # ---- h. its own theme (owner 2026-11-02 "everything its own dashboard"): Jarvis's theme never changes it
         open_("ok", sample(time.time()))
         acc = lambda: p.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--c').trim()")  # noqa: E731
-        check("h. eclipse by default (violet #a855f7)", p.get_attribute("html", "data-theme") == "eclipse" and acc() == "#a855f7", acc())
-        for val, want, c in (("reactor", "reactor", "#a95cff"), ('"reactor-ice"', "reactor", "#a95cff"), ("tokyo", "eclipse", "#a855f7")):
+        bg = lambda: p.evaluate("getComputedStyle(document.body).backgroundColor")  # noqa: E731
+        check("h. the Kalshi theme (mint #1fe5a6) on its own top colour's background", p.get_attribute("html", "data-theme") == "kalshi"
+              and acc() == "#1fe5a6" and bg() == "rgb(1, 10, 7)", (acc(), bg()))
+        for val in ("reactor", '"reactor-ice"', "eclipse"):
             p.evaluate(f"localStorage.setItem('jtheme', {json.dumps(val)})")
             p.reload()
             ready(p)
-            check(f"h. jtheme {val} -> {want}", p.get_attribute("html", "data-theme") == want and acc() == c, (p.get_attribute("html", "data-theme"), acc()))
-            if val == "reactor":
-                shot(p, "9_reactor")
-        p2 = ctx.new_page()
-        p2.goto(page_url)
-        p2.evaluate("localStorage.setItem('jtheme', 'eclipse')")
-        p2.close()
-        p.wait_for_function("document.documentElement.getAttribute('data-theme') === 'eclipse'", timeout=3000)
-        check("h. Jarvis switching its theme switches this page live", p.get_attribute("html", "data-theme") == "eclipse")
+            check(f"h. Jarvis's jtheme {val} leaves it as it is", p.get_attribute("html", "data-theme") == "kalshi" and acc() == "#1fe5a6")
+        p.evaluate("localStorage.removeItem('jtheme')")
+
+        # ---- v3. alerts, live edge, Kelly, by market, by price, calibration (contract v3, 2026-11-03)
+        n3 = int(time.time())
+        closes = dt.datetime.fromtimestamp(n3 + 480, dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        raw3 = {**kp.SAMPLE_V3, "t": n3 - 60, "balance": 100.0,
+                "positions": [{"ticker": "KXETH15M-26NOV031215-15", "title": "ETH up or down", "side": "no", "contracts": 10, "avg_price": 0.9,
+                               "price": 0.92, "prob": 0.97, "closes": closes, "category": "Ethereum"}],
+                "kelly": {"fraction": 0.25, "bankroll": 100.0, "max_bet": 50},
+                "alerts": [{"t": n3 - 300, "level": "bad", "text": "Down $12 today"}, {"t": n3 - 900, "level": "nonsense", "text": "<img src=x onerror=alert(1)>"}]}
+        open_("ok", kp.clean(raw3))
+        al = p.inner_text("#sec-al")
+        check("v3. alerts: the bot's own (bad first, an unknown level = info, escaped) and 'settles soon' with its countdown",
+              p.locator("#sec-al .al li").count() == 3 and p.locator("#sec-al .al li.bad").count() == 1 and "Down $12 today" in al
+              and "<img src=x onerror=alert(1)>" in al and p.locator("#sec-al img").count() == 0 and "Settles soon" in al
+              and p.locator("#sec-al .cdn[data-c]").count() == 1 and "1 needs you" in al, al)
+        pos3 = p.inner_text("#sec-pos")
+        # edge = chance 0.97 - price now 0.92 = +5.0c; EV = 10 x 0.05 = +$0.50
+        check("v3. open bets: live edge on the row, Live edge EV and Next settles in the header",
+              "edge +5.0¢" in pos3 and "+$0.50" in pos3 and "Next settles" in pos3, pos3[:300])
+        k3 = p.inner_text("#sec-kelly")
+        # full Kelly (0.97 - 0.92) / (1 - 0.92) = 62.5% (shown 62%, float); a quarter of $100 = $15.62; bet $9.00 = 0.58 of it -> on size
+        check("v3. Edge & sizing: Kelly per open bet (62.5% full, quarter = $15.62 of the bot's bankroll), its size tag",
+              "62%" in k3 and "$15.62" in k3 and "ON SIZE" in k3.upper() and "25% Kelly" in k3 and "$100.00" in k3, k3)
+        p.click("#sec-kelly [data-act=kf][data-v='1']")
+        check("v3. Full Kelly: capped at the bot's max bet ($50)", "$50.00 (max bet)" in p.inner_text("#sec-kelly")
+              and p.get_attribute("#sec-kelly [data-v='1']", "aria-pressed") == "true", p.inner_text("#sec-kelly"))
+        p.fill("#kcP", "62")
+        p.fill("#kcC", "55")
+        out3 = p.inner_text("#kcOut")
+        # (0.62 - 0.55) / 0.45 = 15.6% full Kelly; $15.56 of $100 -> 28 contracts at 55c
+        check("v3. the calculator: chance 62% at 55¢ -> 16% of the bankroll, +7.0¢ edge, bet $15.56 ≈ 28 contracts; inputs 16px",
+              "16% of the bankroll" in out3 and "edge +7.0¢" in out3 and "$15.56" in out3 and "28 contracts" in out3
+              and p.evaluate("getComputedStyle(document.getElementById('kcP')).fontSize") == "16px", out3)
+        p.fill("#kcP", "40")
+        check("v3. the calculator: a price above your chance = No bet", "No bet" in p.inner_text("#kcOut"))
+        cat3 = p.inner_text("#sec-cat")
+        check("v3. by market: the bot's categories, best first, win rate and ROI (Weather 27-14 = 66%, $80.40 on $402.50 = +20%)",
+              cat3.index("Weather") < cat3.index("S&P 500 range") and "win 66%" in cat3 and "ROI +20%" in cat3 and "+$80.40" in cat3
+              and "From the last" not in cat3 and p.locator("#sec-cat .dv i.pos").count() == 2, cat3)
+        bk3 = p.inner_text("#sec-bk")
+        check("v3. by price: ranges in cents, win rate vs break-even, ROI and P&L", "20–40¢" in bk3 and "40–60¢" in bk3 and "needs ~50%" in bk3
+              and "+$61.20" in bk3 and p.locator("#sec-bk tbody tr").count() == 3, bk3)
+        cb3 = p.inner_text("#sec-cb")
+        check("v3. calibration: a dot per group, the diagonal, the bot's own chance named, the weighted gap in points",
+              p.locator("#sec-cb circle").count() == 3 and p.locator("#sec-cb .cb-d").count() == 1 and "the bot's own chance" in cb3
+              and "pts" in cb3, cb3)
+        stt3 = p.inner_text("#sec-stats")
+        check("v3. stats: all-time win rate and ROI from the bot's totals (34-19 = 64%; $112.34 on $542.50 = +21%)",
+              "64%" in stt3 and "+21%" in stt3, stt3)
+        check("v3. the ticker tape under the header (open bet and results), hidden from screen readers",
+              p.is_visible("#tape") and "edge +5.0¢" in p.inner_text("#tape") and p.get_attribute("#tape", "aria-hidden") == "true")
+        shot(p, "9_v3")
+        # a v2 feed: the same sections from the recent trades list, said so; no alerts list -> a losing run is found
+        lose = [{"t": n3 - 600 * i, "ticker": f"KXHYPE15M-X{i}", "title": "HYPE up or down", "side": "yes", "action": "buy", "contracts": 10,
+                 "price": 0.96, "pnl": -9.6 if i < 3 else 0.4, "asset": "HYPE"} for i in range(8)]
+        open_("ok", kp.clean({**kp.SAMPLE_V2, "t": n3 - 60, "trades": lose}))
+        check("v3. a v2 feed: by market / by price / calibration from the trades list, labelled; a 3-loss run alert; Edge & sizing calculator",
+              all(p.locator(x).count() == 1 for x in ("#sec-cat", "#sec-bk", "#sec-cb", "#sec-kelly"))
+              and "From the last 8 settled trades" in p.inner_text("#sec-cat") and "3 losses in a row" in p.inner_text("#sec-al")
+              and "95–97¢" in p.inner_text("#sec-bk") and "the price paid" in p.inner_text("#sec-cb"), p.inner_text("#sec-al"))
+        junk3 = {**kp.SAMPLE_V2, "t": n3 - 60, "categories": "x", "buckets": [{"lo": "a"}], "calibration": [None, {"p": 5}], "alerts": {"a": 1},
+                 "kelly": [1], "stats": "x", "positions": [{**kp.SAMPLE["positions"][0], "prob": "abc"}]}
+        open_("ok", junk3)
+        check("v3. junk v3 values (sent raw, not cleaned): no section fails, no page error", "could not be shown" not in text(p)
+              and p.locator("#sec-al").count() == 1)
 
         # ---- i. notch insets (iPhone, emulated 47 px top / 34 px bottom): on its own the page clears the notch; inside Jarvis
         # (framed under its bar) it must not add the notch a second time

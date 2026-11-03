@@ -54,7 +54,10 @@ def main():
     check("BACKLOG.md: one row and one section per lead", all(md.count(f"(`{i}`)") == 1 for i in ids))
     fake = json.loads(json.dumps(res))
     lid = ids[0]
-    fake["leads"][lid] = {**fake["leads"][lid], "crossed": True}
+    real_crossed = [i for i, r in fake["leads"].items() if r.get("crossed")]
+    print(f"   (leads crossed on the real data: {real_crossed or 'none'})")
+    for i in fake["leads"]:             # only the lead under test is crossed (a real crossed lead made this 2 notices)
+        fake["leads"][i] = {**fake["leads"][i], "crossed": i == lid}
     n1 = BR.notices(fake, 1_800_000_000)
     check("crossed lead -> one notice keyed by lead + data version", len(n1) == 1 and n1[0]["key"] == f"backlog:{lid}:{res['data_key']}", n1[0]["key"] if n1 else None)
     check("notice says it is not switched on", "Not switched on" in n1[0]["body"])

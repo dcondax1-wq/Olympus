@@ -16,6 +16,10 @@ with two local servers (two sites, for CORS), and checks:
   g. Ascend: hidden until enabled, one tap only from its known link (nothing guessed, never a same-site link), one pasted
      link (a same-site one with the warning), a new link replaces the old, CORS needed on another site
   h. the phone refusing to save: the session keeps working; no page errors
+  i. OLYMPUS (2026-11-03): the built-ins come from one table (BUILT_INS: id, name, group, colour; Data City, Mind, Daphne next
+     to Zenith, the Planner, Kalshi), listed by group (TRADING, LIFE, MONEY, then the added ones), byGroup's sections, their
+     live cards from <folder>/jarvis.json, a folder not on the site = missing() (never a throw), their ids reserved and their
+     folders "ours" (no same-site warning), a hand-added copy of a built-in shown once
     python -X utf8 -m tests.test_jarvis_apps      (temp folder + two local servers; nothing else touched, ~20 s)
 Screenshots of the cards inside Jarvis: set JARVIS_APPS_SHOTS=<folder>.
 """
@@ -181,8 +185,10 @@ WARN = "same-site apps can read Jarvis's saved keys"
 def part_b(p, harness, oa, ob):
     fresh(p, harness)
     ids = p.evaluate("() => A.listApps().map((a) => [a.id, a.url, a.builtin, a.removable].join('|'))")
-    check("b. built in: Zenith ../, Planner ../planner/, Kalshi ../kalshi/ (as the Jarvis page has them), not removable",
-          ids == ["zenith|../|true|false", "planner|../planner/|true|false", "kalshi|../kalshi/|true|false"], ids)
+    want = p.evaluate("() => A.BUILT_INS.map((b) => [b.id, b.url, true, false].join('|'))")
+    check("b. built in: Zenith ../, Planner ../planner/, Kalshi ../kalshi/ (as the Jarvis page has them) and every OLYMPUS app, not removable",
+          sorted(ids) == sorted(want) and {"zenith|../|true|false", "planner|../planner/|true|false", "kalshi|../kalshi/|true|false"} <= set(ids), ids)
+    nb = len(want)
     h = p.evaluate("() => A.listApps({hidden: true}).find((a) => a.id === 'ascend')")
     check("b. the Ascend slot is registered but hidden (enabled false, no link)", h and h["enabled"] is False and h["url"] == "" and h["hidden"] is True, h)
     clip = oa + "/clip/"
@@ -226,7 +232,7 @@ def part_b(p, harness, oa, ob):
     ex = p.evaluate("() => JSON.parse(localStorage.getItem('jarvis.extra'))")
     check("b. adds and removals are mirrored into jarvis.extra as an older Jarvis writes it ({id, name, url})",
           {"id": "x-clipper", "name": "Clipper", "url": clip} in ex and not any(e["id"] == "x-clipper-2" for e in ex) and all(set(e) == {"id", "name", "url"} for e in ex)
-          and len(ex) == len(after) - 3 - 1, ex)
+          and len(ex) == len(after) - nb - 1, ex)
     ws = p.evaluate("""([oa, ob]) => [oa + '/nq-dashboard/ascend/', oa + '/ascend/', oa + '/nq-dashboard/next/', oa + '/nq-dashboard/planner/week/',
         oa + '/nq-dashboard/planner', oa + '/nq-dashboard/kalshi/history.html', oa + '/nq-dashboard/jarvis/other.html', oa + '/nq-dashboard/index.html',
         ob + '/x/', 'https://ascend.example/'].map((u) => { const r = A.addApp({name: 'W', url: u}); return [r.ok, r.warn === A.SAME_SITE_WARN, A.sameSiteRisk(u)]; })""", [oa, ob])
@@ -263,8 +269,9 @@ def part_c(p, harness, oa):
           and got["https://noid.example/"]["id"] == "x-no-id" and got["https://z2.example/"]["id"] == "x-zenith-2" and len(ids) == len(set(ids)), apps)
     check("c. 'Ascend' fills the Ascend slot; a Kalshi link pasted before Kalshi was built in stays as 'Kalshi link'",
           got["https://asc.example/"]["id"] == "ascend" and got["https://my-kalshi.example/"]["name"] == "Kalshi link" and got["https://foo.example/"]["name"] == "Foo bar", apps)
+    core = {a["id"]: a["url"] for a in apps if a["id"] in ("zenith", "planner", "kalshi")}
     check("c. the built-ins keep their own links (a saved link equal to the built-in's adds nothing)",
-          [a["url"] for a in apps[:3]] == ["../", "../planner/", "../kalshi/"] and planner not in got, apps[:4])
+          core == {"zenith": "../", "planner": "../planner/", "kalshi": "../kalshi/"} and planner not in got, apps[:8])
     check("c. names capped at 24", got["https://long.example/"]["name"] == "A very long dashboard na", got["https://long.example/"])
     raw1 = p.evaluate("() => [localStorage.getItem('jarvis.extra'), localStorage.getItem('jarvis.links')]")
     check("c. non-destructive: moving them leaves the old keys untouched, byte for byte", raw0 == raw1, (raw0, raw1))
@@ -307,6 +314,8 @@ def part_d(p, harness, oa, example):
           r["ok"] and k[2]["value"] == "82" and k[2]["delta"] == "-3" and k[2]["trend"] == "down" and k[0]["trend"] == "up" and "delta" not in k[1]
           and r["card"]["openUrl"] == base + "#today" and set(r["card"]) == {"v", "name", "status", "kpis", "lines", "t", "open", "openUrl", "theme"} and r["card"]["theme"] == "#0b0b0d", r)
     bt = p.evaluate("([j, b]) => [A.validateStatus(Object.assign({}, j, {theme: 'red'}), {base: b}).ok, A.validateStatus(Object.assign({}, j, {theme: '#0B0B0D '}), {base: b}).card.theme]", [good, base])
+    sa = p.evaluate("([j, b]) => [A.validateStatus(Object.assign({}, j, {stale_after: 259200}), {base: b}).card.stale_after, A.validateStatus(Object.assign({}, j, {stale_after: 5}), {base: b}).ok, A.validateStatus(Object.assign({}, j, {stale_after: 'x'}), {base: b}).ok]", [good, base])
+    check("d. stale_after (2026-11-03, CRONOS): seconds kept (60 s - 14 days), anything else refused", sa == [259200, False, False], sa)
     check("d. theme (2026-11-02): only a #rrggbb colour (its top colour inside Jarvis), kept lower-case", bt == [False, "#0b0b0d"], bt)
     check("d. the same as text, as it is fetched", p.evaluate("([j, b]) => A.validateStatus(JSON.stringify(j), {base: b}).ok", [good, base]) is True)
 
@@ -563,8 +572,10 @@ def part_g(p, harness, oa, ob, tmp):
     p.evaluate("() => A.addApp({name: 'Clipper', url: 'https://clip.example/'})")
     f1 = p.evaluate("(u) => A.findAscend({url: u})", asc)
     order = p.evaluate("() => A.listApps().map((a) => a.id)")
-    check("g. with its known link (ASCEND_URL, on its own site) the one tap adds it right after the built-ins, no warning",
-          f1["ok"] and f1["app"]["id"] == "ascend" and f1["app"]["url"] == asc and "warn" not in f1 and order == ["zenith", "planner", "kalshi", "ascend", "x-clipper"], (f1, order))
+    life = p.evaluate("() => A.BUILT_INS.filter((b) => b.group === 'life').map((b) => b.id)")
+    check("g. with its known link (ASCEND_URL, on its own site) the one tap adds it in LIFE right after its built-ins, no warning",
+          f1["ok"] and f1["app"]["id"] == "ascend" and f1["app"]["url"] == asc and "warn" not in f1 and f1["app"]["group"] == "life"
+          and order.index("ascend") == order.index(life[-1]) + 1 and order[-1] == "x-clipper", (f1, order))
     ac = p.evaluate("() => A.appStatus('ascend')")
     check("g. Ascend's live card from jarvis.json on its own site (sent with Access-Control-Allow-Origin: *)",
           ac and ac["name"] == "Ascend" and ac["app"] == "ascend" and ac["stale"] is False, ac)
@@ -598,6 +609,54 @@ def part_h(p, harness):
     check("h. the phone refusing to save (private mode, full): add and remove still work for the session, nothing thrown", r == [True, True, True, False], r)
 
 
+def part_i(p, harness, oa, tmp):
+    """OLYMPUS: the built-ins from one table, by group; live cards from their folders; a folder not on the site."""
+    fresh(p, harness)
+    t = p.evaluate("""() => ({ rows: A.BUILT_INS.map((b) => ({ id: b.id, name: b.name, group: b.group, accent: b.accent, url: b.url, live: b.live })),
+        groups: A.GROUPS.map((g) => g.id), order: A.listApps().map((a) => a.id + ':' + a.group) })""")
+    rows = {r["id"]: r for r in t["rows"]}
+    check("i. one table: Data City, Mind and Daphne built in (names, group, colour, ../<id>/, live card) next to Zenith, the Planner, Kalshi",
+          all(rows.get(i, {}).get("name") == n and rows[i]["group"] == g and rows[i]["url"] == f"../{i}/" and rows[i]["live"] is True
+              and re.fullmatch(r"#[0-9a-f]{6}", rows[i]["accent"] or "") for i, n, g in (("datacity", "Data City", "trading"), ("mind", "Mind", "life"), ("tree", "Daphne", "trading")))
+          and rows["zenith"]["live"] is False and rows["planner"]["live"] is False and rows["kalshi"]["live"] is False
+          and t["groups"] == ["trading", "life", "money", "more"] and all(r["group"] in t["groups"] for r in t["rows"]), t["rows"])
+    ranks = [t["groups"].index(x.split(":")[1]) for x in t["order"]]
+    check("i. listApps by group (TRADING, LIFE, MONEY), each group in the table's order", ranks == sorted(ranks)
+          and [x.split(":")[0] for x in t["order"]] == [r["id"] for g in t["groups"] for r in t["rows"] if r["group"] == g], t["order"])
+    sec = p.evaluate("""() => { A.addApp({name: 'Clipper', url: 'https://clip.example/'});
+        return A.byGroup([{id: 'home'}].concat(A.listApps()).concat([{id: 'odd', group: 'nope'}])).map((s) => [s.group ? s.group.id : null, s.apps.map((a) => a.id)]); }""")
+    check("i. byGroup: Jarvis first on its own, then the groups in order, an unknown group in MORE with the added apps, no empty group",
+          sec[0] == [None, ["home"]] and [s[0] for s in sec[1:]] == ["trading", "life", "money", "more"] and sec[-1][1] == ["x-clipper", "odd"], sec)
+    su = p.evaluate("() => A.BUILT_INS.map((b) => [b.id, A.statusUrlOf(b.id), A.statusUrlOf({id: b.id, url: b.url})])")
+    check("i. a live built-in's card is <its folder>/jarvis.json (the page's own site); Zenith, the Planner, Kalshi: none (their own cards)",
+          all((u1.endswith(f"/nq-dashboard/{i}/jarvis.json") and u1 == u2) if rows[i]["live"] else (u1 == "" and u2 == "") for i, u1, u2 in su), su)
+    os.makedirs(os.path.join(tmp, "nq-dashboard", "datacity"), exist_ok=True)
+    put(os.path.join(tmp, "nq-dashboard", "datacity", "jarvis.json"), card("Data City", t=int(time.time()) - 60, theme="#05060f"))
+    shutil.rmtree(os.path.join(tmp, "nq-dashboard", "tree"), ignore_errors=True)
+    r = p.evaluate("""async () => { const dc = await A.appStatus('datacity'), tr = await A.appStatus('tree');
+        return { dc: dc && [dc.name, dc.app, dc.theme], tr, missDc: A.missing('datacity'), missTr: A.missing('tree'), err: A.statusError('tree'), zen: A.missing('zenith'), nope: A.missing('nope') }; }""")
+    check("i. Data City's live card from its folder (its theme = its top colour); Daphne's folder not on the site: no card, missing() true, "
+          "never a throw; Zenith / an unknown id: not missing",
+          r["dc"] == ["Data City", "datacity", "#05060f"] and r["tr"] is None and r["missTr"] is True and r["missDc"] is False and r["err"] == "http 404"
+          and r["zen"] is False and r["nope"] is False, r)
+    put(os.path.join(tmp, "nq-dashboard", "tree", "jarvis.json"), card("DAPHNE", t=int(time.time()) - 60))
+    r2 = p.evaluate("async () => { const c = await A.appStatus('tree'); return [!!c, A.missing('tree')]; }")
+    check("i. once its folder is published the app is no longer missing (its card arrives)", r2 == [True, False], r2)
+    ss = p.evaluate("""(oa) => [A.sameSiteRisk(oa + '/nq-dashboard/datacity/'), A.sameSiteRisk(oa + '/nq-dashboard/mind/x.html'),
+        A.sameSiteRisk(oa + '/nq-dashboard/tree'), A.sameSiteRisk(oa + '/nq-dashboard/other/')]""", oa)
+    check("i. the built-ins' folders are ours (no same-site warning); another folder on the site still warns", ss == [False, False, False, True], ss)
+    ids = p.evaluate("""() => [A.addApp({name: 'Data City', url: 'https://dc.example/'}).app.id, A.addApp({name: 'Mind', url: 'https://mind.example/'}).app.id,
+        A.addApp({name: 'x', url: '../datacity/'}), A.listApps().filter((a) => a.url.endsWith('/datacity/') || a.url === '../datacity/').length]""")
+    check("i. a built-in's name added again gets its own x- id; its own folder added by hand returns the built-in (existed)",
+          ids[0] == "x-data-city" and ids[1] == "x-mind" and ids[2]["ok"] and ids[2].get("existed") and ids[2]["app"]["id"] == "datacity" and ids[3] == 1, ids)
+    # an older Jarvis's jarvis.extra holding a built-in's own folder (added by hand before it was built in): shown once
+    p.evaluate("(u) => { localStorage.clear(); localStorage.setItem('jarvis.extra', JSON.stringify([{id: 'x-mind', name: 'Mind', url: u}])); }", oa + "/nq-dashboard/mind/")
+    p.reload()
+    p.wait_for_function("window.ready === true")
+    once = p.evaluate("() => A.listApps().filter((a) => /\\/mind\\/$/.test(new URL(a.url, location.href).href)).map((a) => a.id)")
+    check("i. a hand-added copy of a built-in (the same folder) is shown once, as the built-in", once == ["mind"], once)
+
+
 def run_browser(oa, ob, tmp, example):
     from playwright.sync_api import sync_playwright
     harness = oa + "/nq-dashboard/jarvis/apps_harness.html"
@@ -615,6 +674,7 @@ def run_browser(oa, ob, tmp, example):
         part_f(p, harness, oa, ob, tmp)
         part_g(p, harness, oa, ob, tmp)
         part_h(p, harness)
+        part_i(p, harness, oa, tmp)
         ctx.close()
         part_e_shell(br, oa + "/nq-dashboard/jarvis/", oa, os.environ.get("JARVIS_APPS_SHOTS"))
         check("h. no page errors", not ERRS, ERRS)

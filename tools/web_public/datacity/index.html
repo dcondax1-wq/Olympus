@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Olympus Data City</title>
+<meta name="description" content="The NQ data machine as a night city: every tested time, confluence and while-state is a building.">
+<meta name="theme-color" content="#05060f">
+<link rel="icon" href="data:,">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="../olympus/olympus.css?v=o1">
+<script src="../olympus/olympus.js?v=o1" data-app="datacity"></script>
+<style>
+:root{--bg:#05060f;--panel:rgba(14,17,34,.86);--line:rgba(255,255,255,.10);--text:#f4f4f6;--sub:#aeb3c6;--gold:#ffc94a;--green:#39e59a;
+--amber:#ff9f43;--grey:#7c8299;--red:#ff6b7f;--cyan:#3fd8ff;--violet:#a68bff;
+--st:env(safe-area-inset-top,0px);--sr:env(safe-area-inset-right,0px);--sb:env(safe-area-inset-bottom,0px);--sl:env(safe-area-inset-left,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:500 15px/1.35 var(--oly-ui,-apple-system,system-ui,"Segoe UI",Roboto,sans-serif);
+overflow:hidden;overscroll-behavior:none;touch-action:none;color-scheme:dark}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.hud{position:fixed;left:calc(12px + var(--sl));right:calc(12px + var(--sr));top:calc(10px + var(--st));pointer-events:none;z-index:3}
+.hud h1{margin:0;font:800 var(--oly-t-name,15px)/1.2 var(--oly-display,sans-serif);letter-spacing:var(--oly-track-name,.22em);text-transform:uppercase;
+background:linear-gradient(90deg,#fff,#ffd987 40%,#7fe9ff);-webkit-background-clip:text;background-clip:text;color:transparent;
+text-shadow:0 0 18px rgba(255,201,74,.18)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{pointer-events:auto;font-size:12px;padding:4px 9px;border-radius:999px;background:var(--panel);border:1px solid var(--line);color:var(--sub);
+backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);white-space:nowrap}
+.chip b{color:var(--text);font-weight:700}
+.chip.demo{color:#111;background:var(--amber);border-color:transparent;font-weight:700}
+.legend{display:inline-flex;gap:10px;flex-wrap:wrap;margin-top:6px;font-size:11px;color:var(--sub);padding:4px 10px;border-radius:10px;background:rgba(14,17,34,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.panel{position:fixed;left:calc(12px + var(--sl));right:calc(12px + var(--sr));top:calc(96px + var(--st));max-height:calc(100% - 96px - 132px - var(--st) - var(--sb));
+overflow:auto;-webkit-overflow-scrolling:touch;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 14px 12px;
+backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);z-index:5;display:none;touch-action:pan-y;box-shadow:0 10px 40px rgba(0,0,0,.45)}
+.panel.on{display:block;animation:pop .18s ease-out}
+@keyframes pop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.panel.on{animation:none}}
+.panel h2{margin:0 44px 6px 0;font-family:var(--oly-display,inherit);font-size:15px;letter-spacing:.04em;font-size:16px;line-height:1.3}
+.x{position:absolute;right:6px;top:6px;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.06);
+color:var(--text);font-size:18px;line-height:1;cursor:pointer}
+.badge{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:6px;margin-right:6px}
+.b-gold{background:var(--gold);color:#221a00}.b-green{background:var(--green);color:#00210f}.b-amber{background:var(--amber);color:#2a1300}
+.b-grey{background:#3b4057;color:#e6e8f0}.b-thin{background:#2a2e40;color:#cfd3e2}.b-fdr{background:transparent;border:1px solid var(--gold);color:var(--gold)}
+.b-rising{background:transparent;border:1px solid var(--green);color:var(--green)}.b-decaying{background:transparent;border:1px solid var(--red);color:var(--red)}
+.big{display:flex;gap:16px;align-items:baseline;margin:10px 0 6px;flex-wrap:wrap}
+.big .v{font:800 var(--oly-t-num,26px)/1.1 var(--oly-display,inherit);letter-spacing:0;font-variant-numeric:tabular-nums}
+.big .u{font-size:12px;color:var(--sub)}
+.pos{color:var(--green)}.neg{color:var(--red)}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}
+.grid4 div{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:10px;padding:6px 7px;min-width:0}
+.grid4 small{display:block;font-size:10.5px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.grid4 b{font-size:15px}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0}
+th,td{padding:5px 4px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--sub);font-weight:600;font-size:11.5px}
+.note{font-size:12px;color:var(--sub);margin-top:8px}
+.list{list-style:none;margin:4px 0 0;padding:0}
+.list li{display:flex;gap:10px;align-items:center;padding:9px 2px;border-bottom:1px solid var(--line);cursor:pointer;min-height:44px}
+.list li .k{flex:0 0 auto;width:22px;height:22px;border-radius:6px;font-size:11px;font-weight:800;display:grid;place-items:center;color:#111}
+.list li .t{flex:1;min-width:0;font-size:13px}
+.list li .m{flex:0 0 auto;font-size:13px;font-weight:700;text-align:right}
+.list li small{color:var(--sub)}
+.bar{position:fixed;left:calc(12px + var(--sl));bottom:calc(12px + var(--sb));right:calc(104px + var(--sr));display:flex;gap:8px;z-index:4;flex-wrap:wrap}
+.btn{width:44px;height:44px;border-radius:var(--oly-r-btn,12px);font-family:var(--oly-ui,inherit);border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:11px;font-weight:700;
+display:grid;place-items:center;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:0;letter-spacing:.02em}
+.btn.on{border-color:var(--gold);color:var(--gold);box-shadow:0 0 14px rgba(255,201,74,.25)}
+.btn svg{width:20px;height:20px;display:block;margin:0 auto 1px}
+input[type=search]{width:100%;font-size:16px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.35);color:var(--text);outline:none}
+.seg{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.seg button{font-size:12px;padding:7px 10px;min-height:44px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--sub);cursor:pointer}
+.seg button.on{color:#111;background:var(--gold);border-color:transparent;font-weight:700}
+.spark{width:100%;height:56px;display:block;margin:6px 0 2px}
+.panel h2.sub{margin:16px 0 4px;font-size:14px;color:#ffe08a}
+.lift{list-style:none;margin:6px 0 0;padding:0}
+.lift li{display:grid;grid-template-columns:minmax(0,1fr) 92px 52px 58px;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.lift .lb{position:relative;height:8px;border-radius:4px;background:rgba(255,255,255,.06)}
+.lift .lb i{position:absolute;top:0;bottom:0;border-radius:4px}
+.lift .lb i.up{left:50%;background:var(--green)}.lift .lb i.dn{right:50%;background:var(--red)}
+.lift .lv{text-align:right;font-weight:700}.lift .lp{text-align:right;color:var(--sub);font-size:11px}
+.toast{position:fixed;left:50%;top:calc(96px + var(--st));transform:translateX(-50%);background:var(--panel);border:1px solid var(--line);padding:8px 12px;
+border-radius:12px;font-size:12px;color:var(--sub);z-index:6;display:none}
+.loading{position:fixed;inset:0;display:grid;place-items:center;color:var(--sub);font:600 13px var(--oly-display,inherit);letter-spacing:.2em;z-index:2;pointer-events:none}
+.err{position:fixed;left:16px;right:16px;top:40%;text-align:center;color:var(--sub);z-index:9}
+</style>
+</head>
+<body>
+<canvas id="c" aria-label="Olympus Data City, a 3D night city of NQ research results"></canvas>
+<div class="loading" id="loading">BUILDING THE CITY…</div>
+<div class="hud" id="hud">
+  <h1>Olympus Data City</h1>
+  <div class="chips" id="chips"></div>
+  <div class="legend" id="legend">
+    <span><i style="background:var(--gold)"></i>holds everywhere + FDR</span>
+    <span><i style="background:var(--green)"></i>both periods</span>
+    <span><i style="background:var(--amber)"></i>one period</span>
+    <span><i style="background:var(--grey)"></i>noise</span>
+  </div>
+</div>
+<section class="panel" id="card" role="dialog" aria-label="Details"><button class="x" data-close="card" aria-label="Close">×</button><div id="cardBody"></div></section>
+<section class="panel" id="topP" role="dialog" aria-label="Top 10"><button class="x" data-close="topP" aria-label="Close">×</button><div id="topBody"></div></section>
+<section class="panel" id="todayP" role="dialog" aria-label="Today's discoveries"><button class="x" data-close="todayP" aria-label="Close">×</button><div id="todayBody"></div></section>
+<section class="panel" id="findP" role="dialog" aria-label="Search"><button class="x" data-close="findP" aria-label="Close">×</button>
+  <h2>Search the city</h2>
+  <input type="search" id="q" placeholder="e.g. London, VWAP, sweep, VIX, Monday" autocomplete="off" enterkeyhint="search">
+  <div class="seg" id="seg"></div>
+  <ul class="list" id="findList"></ul>
+</section>
+<section class="panel" id="aboutP" role="dialog" aria-label="About"><button class="x" data-close="aboutP" aria-label="Close">×</button><div id="aboutBody"></div></section>
+<nav class="bar" id="bar" aria-label="City controls">
+  <button class="btn" data-open="topP" aria-label="Top 10"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>Top</button>
+  <button class="btn" data-open="todayP" aria-label="Today's discoveries"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.6 6.3L21 9l-5 4.4L17.5 20 12 16.7 6.5 20 8 13.4 3 9l6.4-.7z"/></svg>Today</button>
+  <button class="btn" data-open="findP" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5"/></svg>Find</button>
+  <button class="btn" id="flyB" aria-label="Fly through"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 16l20-8-8 14-2-6z"/></svg>Fly</button>
+  <button class="btn" id="skyB" aria-label="Day or night"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>Sky</button>
+  <button class="btn" id="qB" aria-label="Quality">HQ</button>
+  <button class="btn" data-open="aboutP" aria-label="How to read the city"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>Read</button>
+</nav>
+<div class="toast" id="toast"></div>
+<script type="module" src="./city.js"></script>
+</body>
+</html>

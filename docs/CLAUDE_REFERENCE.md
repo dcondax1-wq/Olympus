@@ -27,6 +27,9 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
 | Kalshi bot itself | the Oracle VM, `/home/ubuntu/kalshi` (real money) | not reachable from this cloud chat: its own server chat, or Remote Control on the VM (`claude remote-control` there) | — |
 | Ascend | its own host (made with ChatGPT) | added in Jarvis with + (`docs/JARVIS_APPS.md`) | — |
 | The PC (Windows) | NinjaTrader, the bot server | git auto-update; NinjaTrader login and live arming are the owner's | — |
+| DAPHNE (strategy-tree search page) | `tools/strategytree/` (engine), `tools/web_public/tree/` (page, tree.json, demo.json, jarvis.json) | rerun `python -X utf8 -m tools.strategytree` (~3 CPU-min) for new data, then same as Zenith | `tests.test_strategytree`, `tests.shots_strategytree` |
+| OLYMPUS kit (shared look, veil, one 3D quality `jfx`, perf rules of the nine 3D apps) | `tools/web_public/olympus/`, `docs/OLYMPUS_DESIGN.md` | same as Zenith (published with every build) | `tests.test_olympus_kit` (+ the app's own test) |
+| CRONOS (nightly refresh of the OLYMPUS research apps) | `tools/cronos/`, `.github/workflows/cronos.yml` (+ `datacity.yml`), branches `cronos` / `datacity`, `docs/CRONOS.md` | main -> runs on its own schedule; the next cloud-monitor publish pulls the branches and stamps the cards | `tests.test_cronos` (`--quick` without the site builds) |
 | PC speed (Surface + main PC) | `CLEAN_PC.bat`, `scripts/clean_pc.ps1`, `docs/PC_PERFORMANCE.md` | main -> the PC's auto-update; the main PC gets the `PC_KIT` copy (OneDrive or Desktop) | `tests.test_clean_pc` |
 
 - **Phone changes:** check in WebKit (the iPhone's engine) before shipping: `PLAYWRIGHT_BROWSERS_PATH=<dir> python -m playwright
@@ -678,6 +681,14 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   +4 ticks an add all hold; owner $/slot $827 / $815 vs $827 / $804 a month). Needs new code first: `lit_sizing`
   `scale_in_from_session` / `scale_in_funded` in `engine/live.py _add_qty` + `cloud_monitor.lit_add_usd` (not built).
 
+- **DAPHNE strategy-tree search (2026-11-03, `2026-11-03-strategy-tree.md`, `tools/strategytree/`, runs `strategytree_top1` /
+  `_top5`, page `tools/web_public/tree/`):** 80 plain level roots (PDH/PDL, overnight, Asia, London, opening-range high/low;
+  fade = sweep + reclaim, break = 5m close through; 1R / 2R; 60 / 120 min) x up to 5 conditions (vol quintile, gap, open vs
+  yesterday's range, distance from the open, hour, weekday, VWAP side, EMA trend, VIX, OR width; ES agreement skipped: no ES
+  before 2025-04), best-first branch-and-bound, train <= 2024, test 2025-26. 1,127,006 nodes, 54.6% cut by the bound; 31 of 80
+  best rules hold out of sample vs 25 / 28 with shuffled conditions = chance. Every rule trades 0.1-0.5 a week. Nothing
+  adopted; the page is a research lens, paper only.
+
 ## Key commands (run from the repo root)
 - **START BOT (owner's one start, 2026-10-26):** the owner now starts from the dashboard only (desktop **LE START** -> the
   Start page's **Start trading**, `go.step_auto`; Infrastructure, "Start & Accounts page"). `START_BOT.bat` -> `engine/go.py`
@@ -740,6 +751,7 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   raising stub), FEED STALE blocks entries, PC bars push/read roundtrip, roll back-adjustment, CBOE VIX (23 checks, ~10 s).
 
 ## Infrastructure
+- **CRONOS (2026-11-03, `docs/CRONOS.md`, `tools/cronos/`):** keeps the research apps' data and Jarvis cards alive for free. `cronos.yml` nightly 04:07 UTC Tue-Sat (= Mon-Fri nights, after `datacity.yml` 03:37 UTC): FATES (from the latest live.json) + ODEON (only when the heartbeat branch has newer PC bars); Sunday 19:17 UTC: DAPHNE + PROMETHEUS (only when their data/code fingerprint changed). Each task in a subprocess with its own timeout (5-30 min); outputs replace the last good ones only when valid; `cronos/status.json` records ok / error / last_ok_t; one force-pushed commit to the `cronos` branch (main never gets bot commits, GITHUB_TOKEN only). Saver mode (`budget.json`) skips the heavy tasks. At every site build `tools/cronos/site.py` (called before HERMES, in try/except) fetches `cronos` + `datacity` (only in Actions or with CRONOS_FETCH=1; CRONOS_DIR=<dir> for a local copy), copies an app in when its branch card is newer, then stamps every research card (datacity, fates, odeon, tree, prometheus) with t = the publish: fresh = engine status + "Updated nightly · last run ..."; stale (> 36 weekday hours, weekly 156) or failed = amber "Not updated since ...". Budget ~175 min/month (at most ~260) + Data City ~66. Jarvis still greys every card 30 min after a publish (apps.js STALE_AFTER_S), i.e. overnight and on Saturdays.
 - **CLEAN_PC + PC kit (2026-11-02, `docs/PC_PERFORMANCE.md`):** `scripts/clean_pc.ps1` auto-detects the bot folder
   (server.py + engine/ninjatrader.py); without it (main PC) it runs STANDALONE: closes nothing (lists only), keeps Xbox /
   gaming apps, deep part any time unless NinjaTrader is open. Every run: a read-only NinjaTrader check (OneDrive, ATI,
@@ -845,6 +857,35 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
     System view (data.js `bot()`): day 5 amber "place 1 MNQ by hand by tomorrow", day 6+ red "today", also while the PC is
     silent. `jarvis.json` may carry `theme: "#rrggbb"` (another site's top colour, e.g. Ascend; apps.js validateStatus).
     Worker jarvis-v10. Tests: test_jarvis_system (28), test_jarvis_apps (85).
+  - **Manual keep-alive trades (2026-11-03):** the bot's ledger only sees its own orders. "I traded on both" / "traded on
+    ATLAS" (brain.js) or "I did it" under the System warning writes `jarvis.manualTrades` {lit, atlas: ET date}; data.js
+    `withManualTrades` (applied in getFacts().live incl. `.raw`, and in systemStatus from `f.manualTrades`) counts the quiet
+    days from the mark while it is newer than the card's last trade. Tests: test_jarvis_system m, test_jarvis_brain m.
+  - **OLYMPUS apps in Jarvis (2026-11-03):** one table, apps.js `BUILT_INS` (`app(id, name, group, accent, sub, more)`;
+    url `../<id>/`, live card from its `jarvis.json`, top colour from its `theme`). Adding an app = one row there (and its
+    folder in build_web_dashboard's app list). Groups `GROUPS` (TRADING, LIFE, MONEY, MORE) drive the bar order, the orb
+    (headings, group chips, scrollable quick row, ring = 6 most opened + "more", `jarvis.orb.use`) and the Jarvis screen's
+    OLYMPUS grid (`#olyApps`, stagger once at 3D High/Ultra). A folder not on the site (jarvis.json 404, no card) =
+    `missing()`: tile "SOON", never opened, the swipe/ring skip it. Worker jarvis-v13 (obsidian.js, memory.js,
+    assist-ui.js saved), jarvis.css?v=j9, What's new j8. Test waits use the page's ready marker (`html[data-ready]`,
+    `window.__jarvisReadyMs`): under load the software-drawn 3D core holds the main thread 10-16 s after a 0.5 s start.
+  - **Voice mode (2026-11-03, owner: "like the movie J.A.R.V.I.S."):** `voice-mode.js` `createVoiceMode(deps)`, a full-screen
+    conversation. Enter: the wide "Voice mode" quick-action tile, hold the big mic 0.45 s (the dock's mic keeps
+    push-to-talk), "Jarvis, voice mode" (brain.js control `voice_mode`), or search. Leave: END, "stop" / "exit voice mode"
+    (`voice_mode_off`), a farewell (brain reply `end: true`), Jarvis out of sight, another app opening.
+    - The 3D core full screen (the home core is destroyed while it is open: one WebGL core at a time), `setLevel` driven by
+      a Web Audio analyser on the mic while you talk (getUserMedia only inside a tap; a hold's release counts) and by the
+      voice's word boundaries while Jarvis talks (estimated pace until the phone reports them). A ring of spectrum bars,
+      captions of both sides lit word by word, a HUD arc with the bots' verdict, and holographic cards of the numbers cited
+      (`fragmentsOf`: the reply's card rows and "Name: $x" lines, copied as written) that float out as the name is spoken.
+    - Turns: listen -> the shell's `answer(t, true)` (the same path as the Jarvis screen: brain, chat log, controls) ->
+      speak `r.speak` -> listen; 3 silent turns = waits for a tap; tap = barge-in / pause. The voice: best English voice,
+      British first (Daniel premium / enhanced), novelty voices never; VOICE button steps through them (`jarvis.vmVoice`).
+    - No recognition (Home Screen app) or the recognizer refusing the mic: a type-to-talk field, said once per launch.
+      Reduce motion (unless a 3D level was picked) / 3D Off: no loop, no analyser, all shown at once. The mic is released
+      on every exit (tracks stopped, AudioContext closed). Loaded 1.5 s after the start, never part of it.
+    - Worker jarvis-v14, jarvis.css?v=j10, What's new j9. Test `python -X utf8 -m tests.test_jarvis_voice` (fake mic flags,
+      mocked recognition / voice; screenshots in `research/handoff/2026-11-03/voice/`).
   - **Icons:** the re-rendered old reactor icon (`?v=j2`).
   - **Workers:**
     - jarvis-v4: a 3.5 s navigation race; shell files stale-while-revalidate once a page came from the copy.
@@ -871,6 +912,33 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   - **Tests:** test_jarvis_hub (198), test_jarvis_brain (139), test_jarvis_system (24), test_jarvis_core (58), test_jarvis_apps (84),
     test_zenith_mode (70), test_kalshi_page (185), test_phone_e2e (local https end to end: modes, slow / offline / 404, worker
     updates, one frame, real taps, nothing white).
+- **Jarvis smart + connected (2026-11-02 night, owner: "I want the Jarvis perfect again ... connected to my Obsidian"):**
+  - **Priority engine** (`brain.js ranked()`): "what should I do" / "brief me" / "status" / the proactive line rank by money
+    at risk: MFFU 7-day inactivity (quiet_days 5 = before day 7, 6 = today, 7 = may be closed), PC silent / bot stopped /
+    feed stale, red verdicts, near floor, PC health lines with the one fix, the Planner, Kalshi; sales ideas only on "deals".
+    data.js `systemStatus().todo` uses the same order (`todos` lists them all).
+  - **Intents**: eval pace, why no trade, next setup, last trade, P&L today / week / month, MFFU rules (data.js
+    `MFFU_RULES`, a copy of research/lit/mffu_rules.json, checked by test_jarvis_brain), what the bots learned (live.json
+    `pc.mind` / `pc.learn`), how's my PC (the fix first).
+  - **Smart mode**: 8 s timeout, offline = the local answer at once; the model gets the ranked priorities, quiet days, PC
+    health, next window, MFFU rules, plus Obsidian snippets and Me.md. Free key steps (Groq, else Gemini) in ⋯ → AI key.
+  - **Obsidian** (`obsidian.js`, `memory.js`, `assist-ui.js`, owner steps in `docs/JARVIS_OBSIDIAN.md`): a private GitHub repo
+    synced by the Obsidian Git plugin; token only in localStorage `jarvis.vault`, only to api.github.com; index in IndexedDB;
+    confirmed append-only writes to `OLYMPUS/Inbox|Jarvis|Logs`; `graphSnapshot()` / `onIndexChange()` for the Mind page.
+  - Kalshi 404 = "NOT LINKED" (grey), asked once per page load. Planner: read from its own sync (`planner.sync`) when set up on
+    this phone, else one grey "open the Planner once" line.
+  - Tests: test_jarvis_brain (165), test_jarvis_system (36), test_jarvis_obsidian (46).
+- **Zenith Scorecard (2026-11-03, night quest "the best trading dashboard there is"; `docs/ZENITH_COMPARISON.md`):** one renderer
+  `tools/web_public/procore.js` = `web_next/js/next/procore.js` (byte-identical, `window.ProUI`), phone glue `pro.js` (`#/pro/<part>`:
+  Zlarior > Results first chip, More > Insight, a Home card under the quick tiles), PC glue `web_next/js/next/pro.js` (sidebar
+  Insight, data `GET /api/next/lit_backtest?period=all`). Parts: Score (Zenith score 0-100 on six fixed-scale axes, expectancy
+  $ / R, $ a month, SQN, recovery, streaks, R buckets with $, $ by weekday / hour / side / exit), Eval pace (real board: $ needed
+  per session vs the bot's H2 $ per session), Risk (underwater vs the $1,000 DLL / $2,000 MLL, quick day-resample eval odds),
+  Playbook (LIT rules + a graded card per level family), What if (0.25x-2x size), Tags (journal tags `le.jtags`, hub.js v9).
+  Spans 2026 / H2 / H1 / 2021-25 / Real (closed NinjaTrader fills). Read-only, state in localStorage (`le.pro.span`,
+  `le.pro.mult`). More > Today also links the sibling pages Data City (`datacity/`) and the Strategy Tree (`tree/`); Zenith's
+  worker (le-public-v51) keeps out of both and of every OLYMPUS app folder (OTHER_APPS: jarvis/, planner/, kalshi/, datacity/,
+  mind/, tree/, oracle/, odeon/, fates/, hermes/, prometheus/). Test `python -X utf8 -m tests.test_zenith_pro` (41).
 - **Kalshi in Jarvis (2026-11-01):** the Kalshi bot runs 24/7 on its own Oracle Cloud server with real money, not on the PC.
   Its own Claude chat is "kalshi-server". The phone reads `kalshi.json` from its OWN public repo,
   `demetrades2000-coder/kalshi-feed` (main): raw first, then the API.
@@ -890,10 +958,19 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
       `install_windows.ps1`.
     - API mode: off by default.
   - **Contract v2:** adds `strategies` and `equity`.
-  - **Phone page:** `tools/web_public/kalshi/` with its own `sw.js`.
-    - Sections: equity, a P&L calendar, stats, strategies, open bets (UP/DOWN), trades.
-    - The waiting card shows the one step and a SAMPLE preview that is never saved.
-  - **Tests:** test_kalshi_publish (98), test_kalshi_page (185). The build writes `<site>/kalshi/kit.json` (the script's
+  - **Contract v3 (2026-11-03, additive, optional):** `categories`, `buckets` (by price paid), `calibration` + `calib_basis`,
+    `alerts`, `kelly`, `stats`, rows' `category` / `prob`. `read_bot()` fills them over EVERY settled buy (`breakdowns()`,
+    `category_of()`; sell-backs out); `prob` (the bot's own chance) only the bot can add; `kelly` only from
+    `KELLY_FRACTION` / `MAX_BET` / `MIN_EDGE` in its settings. Fields in `docs/KALSHI_PUBLISH.md` and the kit's SETUP.md.
+  - **Phone page:** `tools/web_public/kalshi/` with its own `sw.js` (kalshi-k12).
+    - Its own dashboard: the Kalshi theme (`data-theme="kalshi"`, mint + cyan on #010a07 = its `theme-color`), K mark,
+      ticker tape, aurora; never Jarvis's `jtheme`.
+    - Sections: alerts, equity, open bets (UP/DOWN, live edge + EV, next settles), Edge & sizing (Kelly per bet + calculator),
+      strategies, by market, by price, calibration, daily P&L, a P&L calendar, stats (all-time win / ROI), trades. A v1/v2
+      feed works the breakdowns out from the trades list and says so.
+    - The waiting card shows the one step, what lights up once connected, and a SAMPLE preview that is never saved.
+    - Comparison with Kalshi / Polymarket / trackers: `docs/KALSHI_PLANNER_COMPARISON.md`.
+  - **Tests:** test_kalshi_publish (113), test_kalshi_page (198). The build writes `<site>/kalshi/kit.json` (the script's
     SHA-256), which the page's paste line carries. Never turn on GitHub Pages for kalshi-feed.
 - **Planner add-ons (2026-11-01):** the Planner lives on nq-dashboard `planner-backup`, built by its own session, and this repo
   can't push there.
@@ -912,7 +989,12 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
     Everything goes through the Planner's own `commit()`, via the `window.PlannerAPI` hook. Bot colors are hex-validated;
     synced/stored ids and colors are cleaned at every entry point (safe ids, stable replacement ids); only the Planner's
     own worker counts for the 'new version' bar.
-  - **Test:** test_planner_addons (section f checks the real patches against the live branch).
+  - **30-flow (2026-11-03, Sunsama / Motion / Todoist):** Workload (today's estimates vs free time, Trim to fit), Deadline
+    risk (14-day earliest-date-first vs 60% of free time, Block the best gap), Daily goal (ring, 7 days, days in a row;
+    device key `planner.flow.goal`). `ext-flow.js`, its own `planner/tests/flow.test.js` (41). Workload and Daily goal fold
+    to Dashboards lines so todayorg's Today height limit holds.
+  - **Test:** test_planner_addons (section f checks the real patches against the live branch and that each `ext-*.js` is
+    loaded once).
   - **When the Planner session deploys again:** rebase or refresh the patches if test_planner_addons f reports a skip.
 - **Market structure, playbook, discretion advisor (2026-10-29, read-only, never an order):** `engine/structure.py`
   (Tracker per timeframe on closed bars: fractal k=2 swings, HH/HL/LH/LL, BOS / CHoCH on a close, protected swing = origin
@@ -1189,6 +1271,18 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   `feed_addon` / `--status` "Bar source": "bars from LE_Feed (no chart), N re-subscribes". Selftest checks 13b (74 total).
   Checked here only by compiling both .cs files with mono `mcs -langversion:5` against stub NT8 types. Unverified NT8
   API points are listed at the top of LE_Feed.cs. Owner steps: SETUP.md "No-chart mode".
+  **2026-11-03 QA (`docs/QA_2026-11-03.md`):** starts from whichever comes first of State.Active, `OnWindowCreated` (the
+  Control Center: called for every add-on, also right after F5) and a 10 s timer from State.Configure; on start it writes
+  `le_feed_status.txt` at once (+ `started=<unix>`) and prints "LE_Feed: started ..." in the NinjaScript Output window
+  (`NinjaTrader.Code.Output.Process`). `le_feed_owner.txt` holds the running copy's token: an older copy (pre-F5 assembly)
+  stops itself. Stale re-requests back off 2/4/8/16/30 min without a live bar (holidays). Stubs + driver in
+  `tests/nt_stub/`, run by `tests/test_le_feed_cs.py` (skips without mono).
+- **Is NinjaTrader connected? (`ninjatrader.connection_view`, 2026-11-03):** the ATI writes `outgoing\<conn>.txt` only on a
+  state change, so 11-02 showed only `Simulation=CONNECTED` while MFFU fed prices. Connected = a CONNECTED file, or a fresh
+  non-Sim row in `le_feed\accounts.csv`, or live bars (1m closed <= 4 min ago / LE_Feed `connected=1`). Used by the
+  heartbeat `nt` block (`connected_via`, `live_accounts` count, `note`; names never published), `nt_log.outgoing`, ops
+  check, botctl/pcops rows, autoresume; the "every connection DISCONNECTED" entry refusal (`_all_disconnected`) is skipped
+  only when the bot's own non-Sim account is live in accounts.csv. Test: `tests/test_nt_connection_view.py`.
 - **MNQ feed vs NQ backtest + the NQ signal chart (2026-10-26, `research/writeups/mnq-vs-nq-feed.md`, OFF by default):**
   the PC's MNQ bars, collected from the heartbeat branch's history (`tools/hb_bars.py`: the branch is one force-pushed
   commit, older ones fetched by SHA from GitHub's activity API -> `research/feed/nt_mnq_{5m,1m}.csv.gz`; 5m from 09-17,

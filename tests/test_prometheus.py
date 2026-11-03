@@ -1,0 +1,383 @@
+"""PROMETHEUS (tools/prometheus/, tools/web_public/prometheus/, 2026-11-03): the strategy-evolution forge.
+
+  a. the GA is deterministic with a seed (same seed = the same history creature for creature; another seed differs), on a
+     synthetic fitness and on the real H1 fitness
+  b. the bounds: every creature of a long high-mutation run is on the knob grid; the knobs exist in live_model_lit.json and
+     the live genome reads them; genome -> params never edits the model; live_model*.json unchanged by the whole test
+  c. the fitness uses only 2026 H1: every session handed to engine/lit.py run_x, every trade, every eval unit and every eval
+     session index is in 2026-01-01 .. 2026-06-30 (live and random genomes); live reproduces run lit_live's H1 and scores 1.0
+  d. the outputs: forge.json schema and size (<= 1 MB), jarvis.json contract (docs/JARVIS_APPS.md), forge_results.json, the
+     runlib runs prometheus_s*
+  e. the page in Playwright Chromium at 390 x 844: no page / console errors, the generation slider, a tap on a flame opens its
+     card (diff vs live, H1 / H2 / 2021-25), the live flame, the verdict panel, the demo fixture (no forge.json), reduced
+     motion, no sideways scroll, the bottom-right 80 x 160 px free; screenshots in research/handoff/2026-11-03/prometheus/
+
+    python -X utf8 -m tests.test_prometheus            (parts a-e; e needs Playwright's Chromium)
+    python -X utf8 -m tests.test_prometheus fast       (a, b, d: no backtest, no browser)
+"""
+from __future__ import annotations
+
+import functools
+import glob
+import hashlib
+import http.server
+import json
+import os
+import random
+import re
+import shutil
+import sys
+import tempfile
+import threading
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
+from tools.prometheus import ga as GA  # noqa: E402
+from tools.prometheus import genome as G  # noqa: E402
+
+PAGE = os.path.join(ROOT, "tools", "web_public", "prometheus")
+SHOTS = os.path.join(ROOT, "research", "handoff", "2026-11-03", "prometheus")
+RES = []
+
+
+def check(name, ok, info=""):
+    RES.append(bool(ok))
+    print(("[PASS] " if ok else "[FAIL] ") + name + ("" if ok else f"  -> {str(info)[:400]}"), flush=True)
+
+
+def model_hashes():
+    return {p: hashlib.sha256(open(p, "rb").read()).hexdigest() for p in sorted(glob.glob(os.path.join(ROOT, "live_model*.json")))}
+
+
+def synth(g):
+    """A cheap deterministic fitness with a known optimum (for GA tests)."""
+    target = [k.n // 3 for k in G.KNOBS]
+    f = -sum((a - b) ** 2 / k.n for a, b, k in zip(g, target, G.KNOBS))
+    return round(f, 6), {"pm": f}
+
+
+def fingerprint(hist):
+    return [(c.id, c.gen, c.genome, c.parents, c.mutated, c.origin, c.fit) for gen in hist for c in gen]
+
+
+# ------------------------------------------------------------------------------------------------ a. determinism
+def part_a(real=True):
+    sizes = [k.n for k in G.KNOBS]
+    base = G.live_genome()
+    cfg = GA.GAConfig(pop=16, gens=8, seed=3)
+    h1, h2 = GA.evolve(synth, sizes, base, cfg), GA.evolve(synth, sizes, base, cfg)
+    check("a. same seed, same history (synthetic fitness: ids, genomes, parents, mutations, fitness)", fingerprint(h1) == fingerprint(h2))
+    h3 = GA.evolve(synth, sizes, base, GA.GAConfig(pop=16, gens=8, seed=4))
+    check("a. another seed, another history", fingerprint(h1) != fingerprint(h3))
+    check("a. generation 0 starts from the live genome (creature #0)", any(c.id == 0 and c.origin == "live" and c.genome == base for c in h1[0]))
+    best = [gen[0].fit for gen in h1]
+    check("a. elitism: the best fitness never falls from one generation to the next", all(b >= a for a, b in zip(best, best[1:])), best)
+    ch = GA.champion(h1)
+    line, anc = GA.lineage(h1, ch.id)
+    by = {c.id: c for c in GA.all_creatures(h1)}
+    check("a. the champion's lineage runs back to generation 0 through real parents",
+          line[0] == ch.id and by[line[-1]].gen == 0 and all(line[i + 1] in by[line[i]].parents for i in range(len(line) - 1)), line)
+    hof = GA.hall_of_fame(h1, 5)
+    check("a. the hall of fame holds distinct genomes, fittest first", len({c.genome for c in hof}) == len(hof)
+          and all(a.fit >= b.fit for a, b in zip(hof, hof[1:])))
+    if real:
+        from tools.prometheus import fitness as FT
+        f1, f2 = FT.Fitness(persist=False), FT.Fitness(persist=False)
+        c = GA.GAConfig(pop=6, gens=2, n_spark=2, seed=9)
+        r1, r2 = GA.evolve(f1, sizes, base, c), GA.evolve(f2, sizes, base, c)
+        check("a. same seed, same history on the real H1 fitness (two fresh caches)", fingerprint(r1) == fingerprint(r2))
+
+
+# ------------------------------------------------------------------------------------------------ b. bounds
+def part_b():
+    sizes = [k.n for k in G.KNOBS]
+    m = G.load_model()
+    check("b. 6-10 knobs, each read from live_model_lit.json", 6 <= len(G.KNOBS) <= 10 and all(G._get(m, k.path) is not None for k in G.KNOBS))
+    lv = G.live_values(m)
+    check("b. the live genome decodes to the live values", G.values(G.live_genome()) == lv, (G.values(G.live_genome()), lv))
+    hist = GA.evolve(synth, sizes, G.live_genome(), GA.GAConfig(pop=24, gens=30, pm=0.9, seed=1))
+    allc = GA.all_creatures(hist)
+    check(f"b. all {len(allc)} creatures of a 30-generation, 90%-mutation run are inside the bounds",
+          all(G.in_bounds(c.genome) for c in allc))
+    vals = [G.values(c.genome) for c in allc]
+    check("b. every decoded value is within its knob's lo..hi", all(k.lo - 1e-9 <= v[k.key] <= k.hi + 1e-9 for v in vals for k in G.KNOBS))
+    rng = random.Random(5)
+    junk = [tuple(rng.randint(-50, 80) for _ in G.KNOBS) for _ in range(200)]
+    check("b. clamp() puts any index vector back on the grid", all(G.in_bounds(G.clamp(g)) for g in junk))
+    check("b. sane bounds: entries end before the 15:55 flat, bank above the 1.5R minimum, room share <= 1",
+          max(G.KNOBS[G.KEYS.index("win_end")].hi, 0) < 955 and G.KNOBS[G.KEYS.index("max_rr")].lo > G.KNOBS[G.KEYS.index("min_rr")].hi
+          and G.KNOBS[G.KEYS.index("room_f")].hi <= 1.0)
+    before = json.dumps(m, sort_keys=True)
+    g = tuple(k.n - 1 for k in G.KNOBS)
+    p = G.lit_params(g, m)
+    check("b. genome -> params writes the genome's values and leaves the loaded model untouched",
+          json.dumps(m, sort_keys=True) == before and p["cisd1m"] == 40 and p["window"][0][1] == 945 and p["t_check"]["at"] == 40)
+    check("b. diff() names exactly the knobs that differ from live", set(G.diff(g)) == {k.key for k in G.KNOBS if G.live_genome()[G.KNOBS.index(k)] != k.n - 1})
+
+
+# ------------------------------------------------------------------------------------------------ c. H1 only
+def part_c():
+    from engine import lit
+    from tools.prometheus import fitness as FT
+    F, A, AC = FT._mods()
+    seen = {"sess": [], "trades": [], "evalidx": []}
+    orig_run_x, orig_eval = lit.run_x, A.run_eval
+
+    def spy_run_x(M, C, P, sessions=None, **kw):
+        seen["sess"].append(list(sessions) if sessions is not None else None)
+        T = orig_run_x(M, C, P, sessions, **kw)
+        seen["trades"] += [t["day"] for t in T]
+        return T
+
+    def spy_eval(seq, by, *a, **kw):
+        seen["evalidx"] += list(seq)
+        return orig_eval(seq, by, *a, **kw)
+    lit.run_x, A.run_eval = spy_run_x, spy_eval
+    try:
+        rng = random.Random(11)
+        gs = [G.live_genome()] + [tuple(rng.randrange(k.n) for k in G.KNOBS) for _ in range(3)]
+        out = [FT.h1_metrics(g) for g in gs]
+    finally:
+        lit.run_x, A.run_eval = orig_run_x, orig_eval
+    a, z = FT.SPANS["H1"]
+    sess = [d for s in seen["sess"] for d in (s or ["ALL"])]
+    check(f"c. every session handed to run_x is a 2026 H1 session ({len(sess)} over {len(gs)} genomes)",
+          sess and all(a <= d <= z for d in sess), [d for d in sess if not a <= d <= z][:3])
+    check(f"c. every trade the fitness saw is in 2026 H1 ({len(seen['trades'])})", all(a <= d <= z for d in seen["trades"]))
+    dates = [A.S26[i] for i in seen["evalidx"]]
+    check(f"c. every eval session the fitness simulated is in 2026 H1 ({len(dates)} session steps)",
+          dates and all(a <= d <= z for d in dates), max(dates) if dates else None)
+    check("c. no H2 date anywhere in the fitness evaluation (latest trade / eval day <= 2026-06-30)",
+          max(seen["trades"] + dates) <= "2026-06-30")
+    try:
+        FT.assert_h1([{"day": "2026-07-01"}])
+        raised = False
+    except AssertionError:
+        raised = True
+    check("c. assert_h1 refuses an H2 row", raised)
+    L = out[0]
+    check("c. live genome on H1 = run lit_live's H1 (80 trades, +$33,901, PF 4.98)", (L["n"], L["net"], L["pf"]) == (80, 33901, 4.98), L)
+    check("c. live genome on the H1 eval path = 2-week pass/fail 57.1 / 1.7 (lit_adv_manage.evals)", (L["p10"], L["f10"]) == (57.1, 1.7), L)
+    ref = FT.Fitness(persist=False)
+    check("c. the live strategy scores fitness 1.0", abs(ref(G.live_genome())[0] - 1.0) < 1e-9)
+    check("c. eval_cfg(live) == lit_adv_manage.CFG (the live eval sizing)", FT.eval_cfg(G.live_genome()) == A.CFG)
+    low = FT.score({"pm": ref.ref["pm"], "p10": ref.ref["p10"], "f10": ref.ref["f10"], "tpw": 1.0}, ref.ref)
+    check("c. fewer than 2 trades a week is penalised (1/wk: fitness 0.5)", abs(low - 0.5) < 1e-9, low)
+
+
+# ------------------------------------------------------------------------------------------------ d. outputs
+TEXT_OK = re.compile(r"^[^<>\n\r&]*$")
+
+
+def part_d():
+    p = os.path.join(PAGE, "forge.json")
+    check("d. forge.json exists", os.path.exists(p))
+    if not os.path.exists(p):
+        return
+    raw = open(p, "rb").read()
+    check(f"d. forge.json <= 1 MB ({len(raw):,} bytes)", len(raw) <= 1_000_000)
+    d = json.loads(raw)
+    need = ("v", "app", "built", "seed", "pop", "gens_n", "knobs", "live", "genomes", "gens", "champion", "verdict", "honesty", "seeds", "proposal")
+    check("d. forge.json has every top-level key", all(k in d for k in need), [k for k in need if k not in d])
+    check("d. app 'prometheus', v 1, not demo", d.get("app") == "prometheus" and d.get("v") == 1 and d.get("demo") is False)
+    check("d. gens_n generations of pop creatures", len(d["gens"]) == d["gens_n"] and all(len(g) == d["pop"] for g in d["gens"]))
+    ks = {c["k"] for g in d["gens"] for c in g}
+    check("d. every creature's genome is in genomes, on the grid, with h1 / h2 / y numbers and a map point",
+          ks <= set(d["genomes"]) and all(G.in_bounds(tuple(v["v"])) and {"h1", "h2", "y", "xy"} <= set(v) for v in d["genomes"].values()))
+    ids = {c["id"] for g in d["gens"] for c in g}
+    check("d. creature ids unique; parents refer to the generation before",
+          len(ids) == sum(len(g) for g in d["gens"]) and all(set(c["p"]) <= {x["id"] for x in d["gens"][i - 1]}
+                                                             for i, g in enumerate(d["gens"]) if i for c in g))
+    check("d. the champion and its lineage exist; the live genome is in genomes", d["champion"]["id"] in ids
+          and set(d["champion"]["line"]) <= ids and d["live"]["k"] in d["genomes"] and d["live"]["k"] == G.key(G.live_genome()))
+    check("d. generations listed fittest first", all(all(a["f"] >= b["f"] for a, b in zip(g, g[1:])) for g in d["gens"]))
+    j = os.path.join(PAGE, "jarvis.json")
+    c = json.load(open(j, encoding="utf-8")) if os.path.exists(j) else {}
+    texts = [c.get("name", ""), c.get("status", {}).get("label", "")] + [str(x.get(k, "")) for x in c.get("kpis", []) for k in ("label", "value", "delta")] + c.get("lines", [])
+    check("d. jarvis.json: the Jarvis card contract (v 1, name, status, <= 3 kpis / lines, t, theme, <= 8 KB, plain text)",
+          c.get("v") == 1 and 0 < len(c.get("name", "")) <= 40 and c.get("status", {}).get("level") in ("ok", "warn", "bad", "off")
+          and len(c["status"].get("label", "")) <= 48 and len(c.get("kpis", [])) <= 3 and len(c.get("lines", [])) <= 3
+          and all(len(x["label"]) <= 20 and len(str(x["value"])) <= 24 and len(str(x.get("delta", ""))) <= 16 for x in c["kpis"])
+          and all(len(x) <= 120 for x in c["lines"]) and isinstance(c.get("t"), int) and re.fullmatch(r"#[0-9a-f]{6}", c.get("theme", ""))
+          and os.path.getsize(j) <= 8192 and all(TEXT_OK.match(t) for t in texts), c)
+    html = open(os.path.join(PAGE, "index.html"), encoding="utf-8").read()
+    check("d. the page's theme-color = jarvis.json theme", f'<meta name="theme-color" content="{c.get("theme")}">' in html)
+    r = os.path.join(ROOT, "research", "prometheus", "forge_results.json")
+    rr = json.load(open(r, encoding="utf-8")) if os.path.exists(r) else {}
+    check("d. research/prometheus/forge_results.json: seeds, hall of fame with H1 / H2 / 2021-25, honesty",
+          rr.get("seed_champions") and rr.get("hall_of_fame") and all({"H1", "H2", "2021-25"} <= set(h) for h in rr["hall_of_fame"])
+          and "spearman_h1_h2_fit" in rr.get("honesty", {}))
+    runs = [os.path.join(ROOT, "research", "runs", f"prometheus_s{s}.json") for s in rr.get("seeds", [])]
+    check("d. every seed's champion is stored as a runlib run (research/runs/prometheus_s*.json)", runs and all(os.path.exists(x) for x in runs))
+    js = open(os.path.join(PAGE, "forge.js"), encoding="utf-8").read()
+    check("d. three.js from ../jarvis/ (no CDN), reduced motion and auto LITE in the page",
+          "from '../jarvis/three.module.min.js'" in js and "prefers-reduced-motion" in js and "this.lite = true" in js and "http" not in
+          js.replace("https://demetrades2000-coder.github.io", ""))
+
+
+# ------------------------------------------------------------------------------------------------ e. the page in Chromium
+class _Quiet(http.server.SimpleHTTPRequestHandler):
+    def log_message(self, *a):
+        pass
+
+
+def _site(with_data=True):
+    base = tempfile.mkdtemp(prefix="prometheus_page_")
+    os.makedirs(os.path.join(base, "jarvis"))
+    for f in ["three.module.min.js", "icon-192.png"] + [os.path.basename(x) for x in glob.glob(os.path.join(ROOT, "tools", "web_public", "jarvis", "*.woff2"))]:
+        shutil.copy(os.path.join(ROOT, "tools", "web_public", "jarvis", f), os.path.join(base, "jarvis", f))
+    shutil.copytree(PAGE, os.path.join(base, "prometheus"))
+    shutil.copytree(os.path.join(ROOT, "tools", "web_public", "olympus"), os.path.join(base, "olympus"))   # the OLYMPUS kit
+    if not with_data:
+        for f in ("forge.json", "jarvis.json"):
+            p = os.path.join(base, "prometheus", f)
+            if os.path.exists(p):
+                os.remove(p)
+    srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(_Quiet, directory=base))
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    return base, srv, f"http://127.0.0.1:{srv.server_address[1]}/prometheus/"
+
+
+def part_e():
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        check("e. Playwright is installed", False)
+        return
+    os.makedirs(SHOTS, exist_ok=True)
+    sites = [_site(True), _site(False)]
+    try:
+        with sync_playwright() as pw:
+            exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
+            br = pw.chromium.launch(**({"executable_path": exe} if exe else {}), args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader"])
+            _page_checks(br, sites[0][2], sites[1][2])
+            br.close()
+    finally:
+        for base, srv, _ in sites:
+            srv.shutdown()
+            shutil.rmtree(base, ignore_errors=True)
+
+
+def _new(br, url, errs, reduced=False):
+    ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, has_touch=False,
+                         reduced_motion="reduce" if reduced else "no-preference")
+    p = ctx.new_page()
+    p.on("pageerror", lambda e: errs.append("pageerror: " + str(e)))
+    p.on("console", lambda m: errs.append("console: " + m.text) if m.type == "error" else None)
+    p.on("requestfailed", lambda r: errs.append("requestfailed: " + r.url))
+    p.goto(url)
+    p.wait_for_function("window.__forge && window.__forge.ready", timeout=30000)
+    p.wait_for_timeout(600)
+    return ctx, p
+
+
+def _orb_free(p):
+    """No button / input / card reaches into the bottom-right 80 x 160 px (Jarvis's orb)."""
+    return p.evaluate("""() => {
+      const W = innerWidth, H = innerHeight, box = {l: W - 80, t: H - 160, r: W, b: H};
+      const hit = [...document.querySelectorAll('button, input, a:not(.oly-home), .card:not([hidden])')].filter((e) => {
+        const r = e.getBoundingClientRect(); if (!r.width || !r.height || e.closest('[hidden]')) return false;
+        return r.right > box.l && r.left < box.r && r.bottom > box.t && r.top < box.b; });
+      return hit.map((e) => e.id || e.className || e.tagName); }""")
+
+
+def _page_checks(br, url, url_nodata):
+    errs = []
+    ctx, p = _new(br, url + "?autoplay=0", errs)
+    check("e. the page loads forge.json (not the demo) at 390 x 844", p.evaluate("window.__forge.demo") is False)
+    check("e. no sideways scroll", p.evaluate("document.documentElement.scrollWidth <= innerWidth"))
+    check("e. the bottom-right 80 x 160 px stays free for Jarvis's orb", not _orb_free(p), _orb_free(p))
+    p.screenshot(path=os.path.join(SHOTS, "01_gen1.png"))
+    n = p.evaluate("Number(document.getElementById('gen').max) + 1")
+    p.evaluate("(v) => { const s = document.getElementById('gen'); s.value = String(v); s.dispatchEvent(new Event('input', {bubbles: true})); }", 5)
+    p.wait_for_timeout(300)
+    check("e. the generation slider moves the forge (gen 6 of n in the HUD)", p.evaluate("window.__forge.gen") == 5
+          and p.inner_text("#s-gen") == f"6/{n}", p.inner_text("#s-gen"))
+    hud = p.evaluate("[...document.querySelectorAll('.st b')].map((e) => e.textContent)")
+    check("e. the HUD shows best H1 $/mo, its H2 $/mo, p10/f10, trades/week (no blanks)", all(x and x != "—" for x in hud), hud)
+    ch = p.evaluate("window.__forge.champion")
+    p.evaluate("(v) => { const s = document.getElementById('gen'); s.value = String(v); s.dispatchEvent(new Event('input', {bubbles: true})); }", n - 1)
+    p.wait_for_timeout(500)
+    p.screenshot(path=os.path.join(SHOTS, "02_last_gen.png"))
+    ids = p.evaluate("window.__forge.ids()")
+    target = ch if ch in ids else ids[0]
+    pt = p.evaluate("(id) => window.__forge.screenOf(id)", target)
+    p.mouse.click(pt["x"], pt["y"])
+    p.wait_for_timeout(300)
+    opened = p.is_visible("#card")
+    title = p.inner_text("#card-h") if opened else ""
+    picked = re.search(r"#(\d+)", title)
+    check("e. a tap on a flame opens its creature card", opened and "Creature #" in title, title)
+    body = p.inner_text("#card-b") if opened else ""
+    check("e. the card shows its H1 / H2 / 2021-25 numbers and the knob diff vs live",
+          all(s in body for s in ("2026 H1", "2026 H2", "2021-25", "$ / month", "Knob", "Live", "This", "Last entry (ET)")), body[:300])
+    if picked:
+        pc = p.evaluate("(id) => window.__forge.screenOf(id)", int(picked.group(1)))
+        check("e. the card belongs to the flame under the tap (within 40 px)", abs(pc["x"] - pt["x"]) <= 40 and abs(pc["y"] - pt["y"]) <= 40)
+    check("e. the card stays clear of the orb corner", not _orb_free(p), _orb_free(p))
+    p.screenshot(path=os.path.join(SHOTS, "03_creature_card.png"))
+    p.click("#cardX")
+    lp = p.evaluate("window.__forge.screenOf('live')")
+    p.mouse.click(lp["x"], lp["y"])
+    p.wait_for_timeout(300)
+    check("e. the live reference flame opens the LIVE LIT card", p.is_visible("#card") and "LIVE LIT" in p.inner_text("#card-h"),
+          p.inner_text("#card-h") if p.is_visible("#card") else "")
+    p.click("#truthBtn")
+    p.wait_for_timeout(300)
+    tb = p.inner_text("#truth-b") if p.is_visible("#truth") else ""
+    check("e. the Verdict panel: champion vs live, every seed, the H1->H2 rank correlation", p.is_visible("#truth")
+          and "Seed" in tb and "Rank correlation" in tb and "bootstrap" in tb, tb[:200])
+    p.screenshot(path=os.path.join(SHOTS, "04_verdict.png"))
+    p.click("#truthX")
+    p.click("#play")
+    p.wait_for_timeout(4200)
+    g_after = p.evaluate("window.__forge.gen")
+    check("e. Play runs the time-lapse (generations advance)", g_after >= 1, g_after)
+    p.screenshot(path=os.path.join(SHOTS, "05_timelapse.png"))
+    fps, lite = p.evaluate("window.__forge.fps"), p.evaluate("window.__forge.lite")
+    print(f"     (headless software GL: {fps} fps, LITE {lite})", flush=True)
+    ctx.close()
+    check("e. no page errors, console errors or failed requests (forge.json)", not errs, errs[:5])
+
+    errs2 = []
+    ctx, p = _new(br, url_nodata + "?autoplay=0", errs2)
+    check("e. no forge.json: the demo fixture loads, marked DEMO DATA", p.evaluate("window.__forge.demo") is True and p.is_visible("#demo"))
+    p.screenshot(path=os.path.join(SHOTS, "06_demo.png"))
+    ctx.close()
+    bad = [e for e in errs2 if "forge.json" not in e and "jarvis.json" not in e and "404" not in e]
+    check("e. the demo runs without page errors (only the missing forge.json 404)", not bad, bad[:5])
+
+    errs4 = []
+    ctx, p = _new(br, url + "?lite=1&autoplay=0", errs4)
+    check("e. ?lite=1 forces LITE (the auto LITE switch: under ~45 fps, then 1x pixels under ~30 fps)", p.evaluate("window.__forge.lite") is True
+          and not errs4, errs4[:3])
+    ctx.close()
+
+    errs3 = []
+    ctx, p = _new(br, url, errs3, reduced=True)
+    p.wait_for_timeout(2500)
+    check("e. reduced motion: no autoplay, the forge stays still", p.evaluate("window.__forge.gen") == 0)
+    p.evaluate("(v) => { const s = document.getElementById('gen'); s.value = String(v); s.dispatchEvent(new Event('input', {bubbles: true})); }", 3)
+    check("e. reduced motion: the slider still steps generations", p.evaluate("window.__forge.gen") == 3)
+    p.screenshot(path=os.path.join(SHOTS, "07_reduced_motion.png"))
+    ctx.close()
+    check("e. reduced motion: no errors", not errs3, errs3[:5])
+
+
+def main(argv):
+    fast = "fast" in argv
+    h0 = model_hashes()
+    part_a(real=not fast)
+    part_b()
+    if not fast:
+        part_c()
+    part_d()
+    if not fast:
+        part_e()
+    check("live_model*.json unchanged by the whole test", model_hashes() == h0)
+    print(f"\n{sum(RES)}/{len(RES)} passed", flush=True)
+    return 0 if all(RES) else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

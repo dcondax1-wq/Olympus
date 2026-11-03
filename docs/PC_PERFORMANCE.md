@@ -1,4 +1,4 @@
-# Both computers fast (2026-11-02)
+# Both computers fast (2026-11-02; v2 deep tune 2026-11-03)
 
 **The short answer:** the Surface's 4 GB memory is soldered to the board and can't be upgraded. Cleaning helps, but
 NinjaTrader plus the bot will always fill 4 GB. The best fix for the money is a **used Lenovo ThinkCentre M720q Tiny
@@ -6,14 +6,16 @@ NinjaTrader plus the bot will always fill 4 GB. The best fix for the money is a 
 the Surface as light as it can be.
 
 ## Surface (the bot PC): 3 steps
-1. After 4:05 PM ET, double-click **`CLEAN_PC.bat`** in the bot folder. Click **Yes** once when Windows asks.
-2. Do what its **NinjaTrader check** lines say (yellow lines). The bot's MNQ chart with LE_BarFeed stays at **30 days**.
-   Set charts you only look at to **3-5 days**, turn Tick Replay off, and close workspaces you don't use.
-3. Keep it plugged in and standing up on its kickstand (air needs to reach the back). The heat glitch is a hardware
-   problem: if it gets worse, move the bot to the box below.
+1. After 4:05 PM ET (or on the weekend), double-click **`CLEAN_PC.bat`** in the bot folder. Click **Yes** once when
+   Windows asks. It cleans, then runs the **v2 deep tune** (below) and prints a **health score** before and after.
+2. Restart the Surface after 4:05 PM ET (the bot comes back by itself).
+3. Do what its **NinjaTrader check** lines say (yellow lines). The bot's MNQ chart with LE_BarFeed stays at **30 days**.
+
+Something feels wrong after the tune? Double-click **`UNDO_PC_TUNE.bat`** and click **Yes**: every deep-tune change goes
+back to exactly what it was (safe any time, also while the bot trades). Keep the Surface plugged in and on its kickstand.
 
 ## Main PC: 3 steps
-1. After step 1 on the Surface, a **`PC_KIT`** folder appears in your OneDrive (or on the Surface's Desktop if it has
+1. After step 1 on the Surface, a **`PC_KIT`** folder (with the deep tune and `UNDO_PC_TUNE.bat`) appears in your OneDrive (or on the Surface's Desktop if it has
    no OneDrive: copy it to a USB stick). Open it on the main PC.
 2. Double-click **`CLEAN_PC.bat`** in it. Click **Yes** once.
 3. Send Claude the **`PC_REPORT-<name>.txt`** it writes next to CLEAN_PC.bat (a photo is fine). It shows what the main PC
@@ -36,8 +38,49 @@ the Surface as light as it can be.
   power mode, apps that start with Windows, and a verdict: GOOD or WEAK as a bot computer.
 - **Main PC differences (found on its own, no bot folder there):** nothing running gets closed (it only lists those
   apps). Xbox and gaming apps stay. The deep part runs any time unless NinjaTrader is open.
-- **Main PC tip:** Settings > System > Power > Power mode: **Best performance** (when plugged in). Don't do this on
-  the Surface: more heat makes the glitch worse.
+- **Main PC:** the v2 deep tune gives it a full-speed plugged-in power plan by itself (the Surface gets the cooler one).
+- **Obsidian is never closed or switched off** (the owner's vault; see the v2 section).
+
+## v2 deep tune: every change, why, and how it is undone
+
+`CLEAN_PC.bat` runs `scripts\pc_tune.ps1` in its Administrator part, only outside trading hours (weekdays 01:15-16:05 ET it
+waits; on the main PC only while NinjaTrader is open). **Before each change it writes the old value** to
+`C:\ProgramData\LiquidityEngine\pc_tune_state.json`; **`UNDO_PC_TUNE.bat`** reads that file and puts every value back,
+then archives it. Running the tune twice keeps the first old values. NinjaTrader and python are never closed, NinjaTrader's
+files are never changed, nothing is downloaded.
+
+"Surface" = a hot, small PC (any Surface, or a laptop with 8 GB or less). "Main PC" = the PC_KIT copy (no bot folder).
+
+| Change | Surface (bot PC) | Main PC | Why | Undo puts back |
+|---|---|---|---|---|
+| Power plan "Liquidity Engine trading" (a copy), plugged in: never sleeps / hibernates, disk never sleeps, USB suspend off, Wi-Fi power saving off | from Balanced | from Ultimate / High performance | a 24/5 bot must never nap; on battery it acts like the original plan | the old plan, the copy deleted |
+| CPU top speed capped at **2,800 MHz** when plugged in | yes | no | far less heat, so less screen glitching; a hot Surface throttles below that anyway. Not "max processor state 85%": anything under 100% switches turbo off, and this CPU's base speed is only 1.1 GHz | the cap goes with the plan |
+| PCI Express link power saving off | no (heat) | yes | no wake-up delay on the disk / network card | goes with the plan |
+| Services off: telemetry (DiagTrack, dmwappushservice), Maps, Retail demo, Fax, Media Player sharing, Remote Registry | yes | yes | background CPU / disk / network nobody uses; Remote Registry off is also safer | each service's old start type |
+| Xbox services off (XblAuthManager, XblGameSave, XboxNetApiSvc, XboxGipSvc) | yes | no (games stay) | no games on the bot PC | old start type |
+| Print Spooler off | only if no printer | only if no printer | nothing to print to | old start type |
+| SysMain (Superfetch) off | 6 GB or less on an SSD | kept (16 GB helps) | on 4 GB it fills scarce memory with guesses | old start type |
+| Compressed memory | kept / turned on | kept / turned on | holds ~30% more in memory before using the disk | as it was |
+| Page file back to "system managed" | only if set by hand under 4 GB | same | too small = NinjaTrader can run out of memory | set by hand again |
+| Defender skips **only** NinjaTrader 8's `db`, `log`, `trace` and the bot's `data`, `logs` folders | yes | NinjaTrader's only | their many small writes stall behind the scanner. Trade-off: files in those folders are not scanned when written; the rest of the PC and the weekly scan are unchanged; no program is excluded | the exclusions removed |
+| Network card: Energy Efficient / Green Ethernet off; Windows may not turn the card off to save power | yes | yes | no wake-up delay on the line | old values |
+| Not done on purpose: Nagle / TcpAckFrequency, DNS changes | | | folklore for NinjaTrader's feed; DNS is only the first lookup | |
+| Edge: startup boost off, no background running, sleeping tabs on (Surface 5 min, main 15 min); Surface: efficiency mode on | yes | yes | Edge was pre-loading at sign-in and staying in memory. Edge may say "managed by your organization": that is these settings | the settings removed (or the old value) |
+| Chrome (if installed): no background running, Memory Saver on | yes | yes | same, for Chrome | removed |
+| Office startup-boost task off | yes | yes | Office pre-loads at sign-in | task back on |
+| Storage Sense on: weekly, temp files, recycle bin after 30 days | yes | yes | junk stays away by itself; Downloads and OneDrive files are never touched | old values / removed |
+| Game Bar background recording off | yes | no | records the screen in the background | old values |
+| Task **LiquidityEngine-Keeper** (every 15 min + at sign-in, no window) | NinjaTrader + the bot's python AboveNormal | NinjaTrader AboveNormal | Windows serves trading first; OneDrive, Teams, Discord, Spotify ... BelowNormal; at 85%+ memory it trims idle background apps. Never closes anything, never High / Realtime | task + its file removed |
+| Task **LiquidityEngine-WeeklyCare** (Sunday 11:00, low priority) | yes | yes | Windows temp, component store clean-up, Defender quick scan; refuses weekdays 01:15-16:05 ET while trading | task + its file removed |
+| **Health score** 0-100 before and after (free memory, CPU idle, start-up apps, free disk, temperature when readable) | yes | yes | one number to compare runs; also in `PC_REPORT-<name>.txt` | nothing to undo (read-only) |
+
+**Obsidian is protected (2026-11-03):** it is the owner's notes vault and Jarvis syncs it with the Obsidian Git plugin.
+CLEAN_PC never closes it, never switches it off at sign-in, the keeper never lowers it, and if an older CLEAN_PC run
+had switched its sign-in entry off, every CLEAN_PC run (and `UNDO_PC_TUNE.bat`) switches it back on.
+
+The NinjaTrader check also prints, read-only: untick Tools > Options > Market data > "Show Tick Replay"; once a month after
+4:05 PM ET, Tools > Database Management > Repair DB (never "Reset DB"); pause OneDrive syncing while trading (don't switch
+off OneDrive's Documents backup without asking Claude: NinjaTrader's folder would stay in OneDrive and a new empty one start).
 
 ## The Surface options (prices checked 2026-11-02, US)
 

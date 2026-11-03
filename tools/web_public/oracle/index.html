@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#04050d">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="OLYMPUS Oracle: a live 3D radar of NQ, the LIT bot's levels, sweeps, stage and position.">
+<title>OLYMPUS Oracle</title>
+<link rel="icon" href="../jarvis/icon.svg">
+<link rel="apple-touch-icon" href="../jarvis/apple-touch-icon.png">
+<link rel="stylesheet" href="../olympus/olympus.css?v=o1">
+<script src="../olympus/olympus.js?v=o1" data-app="oracle"></script>
+<link rel="stylesheet" href="oracle.css">
+<script type="module" src="main.js"></script>
+</head>
+<body>
+<canvas id="gl" aria-label="NQ as a 3D radar: the price column, the LIT levels as rings, the session clock and the bot's stage. Drag to turn, pinch to zoom, double tap to reset."></canvas>
+
+<header id="top" class="hud">
+  <div class="bar">
+    <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+      <ellipse cx="16" cy="16" rx="13" ry="5" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".55"/>
+      <ellipse cx="16" cy="11" rx="9" ry="3.4" fill="none" stroke="currentColor" stroke-width="1" opacity=".4"/>
+      <path d="M16 2v28" stroke="currentColor" stroke-width="1.4"/>
+      <circle cx="16" cy="13.5" r="2.6" fill="currentColor"/>
+    </svg>
+    <h1>ORACLE</h1>
+    <span id="mode" class="mode" data-mode="loading" role="status"><i></i><span>CONNECTING</span></span>
+    <button id="replay" class="ghost" type="button" hidden>Replay a day</button>
+    <button id="quality" class="ghost q" type="button" aria-pressed="true" title="Quality: HD or LITE">HD</button>
+  </div>
+  <div class="row">
+    <div class="px"><span class="lbl">NQ</span><b id="price">–</b></div>
+    <div class="pnl"><span class="lbl">P&amp;L today</span><b id="pnl" data-sign="flat">–</b><span id="pnl-note"></span></div>
+  </div>
+  <div id="stage" class="stage">
+    <p class="st"><b id="stage-n">–</b><span id="stage-label">Reading the market</span></p>
+    <p id="waiting"></p>
+  </div>
+  <div class="row small">
+    <p id="window" data-open="false"><i></i><span id="win-text"></span></p>
+    <p id="session"></p>
+  </div>
+  <div id="wx" class="wx"></div>
+</header>
+
+<section id="dock" class="hud">
+  <div id="demo-bar" class="demo-bar glass" hidden><span id="demo-tag" class="tag">REPLAY</span><span id="demo-time"></span><i><b id="demo-fill"></b></i></div>
+  <div id="pos" class="pos glass" hidden>
+    <p id="pos-side"></p>
+    <p id="pos-levels"></p>
+    <b id="pos-pnl" data-sign="up"></b>
+    <span id="pos-r"></span>
+  </div>
+  <div id="levels" class="levels glass">
+    <button id="lv-toggle" type="button" aria-expanded="true"><span>Levels</span><span id="lv-meta"></span></button>
+    <ul id="lv-list"></ul>
+  </div>
+</section>
+
+<div id="nogl" class="nogl" hidden><p>This device can't draw the 3D radar.</p><p>The numbers still update.</p></div>
+</body>
+</html>

@@ -7,12 +7,13 @@ Runs the real script against a local stand-in repo (PLANNER_REPO / PLANNER_PATCH
   d. a patch made on an older base still applies by a 3-way merge when the newer base changed other lines
   e. the script never fails the caller (unreachable repo -> exit 0, no planner)
   g. confinement: a patch touching anything outside planner/ or adding a symlink is skipped; links are deleted
-  f. every real patch in tools/planner_patches/ applies to the live planner-backup (network; skipped offline)
+  f. every real patch in tools/planner_patches/ applies to the live planner-backup and its ext-*.js is loaded once (network; skipped offline)
     python -X utf8 -m tests.test_planner_addons      (temp folders only)
 """
 from __future__ import annotations
 
 import json
+import re
 import os
 import shutil
 import subprocess
@@ -161,6 +162,12 @@ def main():
             a = json.load(open(os.path.join(site, "planner", "addons.json")))
             check(f"f. every real add-on ({len(names)}) applies to the live planner-backup",
                   a["skipped"] == [] and len(a["applied"]) == len(names), (r.stdout, a))
+            # each add-on's script is published and hooked into the page exactly once (a lost hook = a dead add-on)
+            idx = open(os.path.join(site, "planner", "index.html"), encoding="utf-8").read()
+            exts = sorted(f for f in os.listdir(os.path.join(site, "planner")) if f.startswith("ext-") and f.endswith(".js"))
+            check("f. every add-on script (ext-projects, ext-power, ext-flow ...) is published and loaded once by index.html",
+                  {"ext-projects.js", "ext-power.js", "ext-flow.js"} <= set(exts)
+                  and all(len(re.findall(r'<script src="%s"' % re.escape(f), idx)) == 1 for f in exts), exts)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     n = sum(RES)

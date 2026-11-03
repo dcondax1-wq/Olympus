@@ -381,32 +381,25 @@ def check_nt_folder(folder: str) -> dict:
 
 
 def nt_connections(folder: str) -> dict:
-    """{connection name: CONNECTED | DISCONNECTED} from outgoing/<connection>.txt (same rule as the adapter)."""
-    out = {}
-    d = os.path.join(folder, "outgoing")
-    try:
-        names = os.listdir(d)
-    except OSError:
-        return out
-    for n in names:
-        if not n.lower().endswith(".txt") or "_position" in n.lower():
-            continue
-        try:
-            with open(os.path.join(d, n), encoding="utf-8", errors="replace") as fh:
-                v = fh.read(64).strip().upper()
-        except OSError:
-            continue
-        if v in ("CONNECTED", "DISCONNECTED"):
-            out[n[:-4]] = v
-    return out
+    """{connection name: CONNECTED | DISCONNECTED} from outgoing/<connection>.txt (engine/ninjatrader.connection_files)."""
+    from .ninjatrader import connection_files
+    return connection_files(folder)
 
 
-def check_nt_connection(conns: dict, now) -> dict:
+def check_nt_connection(conns: dict, now, folder: str | None = None) -> dict:
+    """With folder: NinjaTrader's live accounts (accounts.csv) and live bars count as connected too, since a connection
+    file is written only on a state change (engine/ninjatrader.connection_view, 2026-11-03)."""
+    view = None
+    if folder:
+        from .ninjatrader import connection_view
+        view = connection_view(conns, folder, now)
+    up = [k for k, v in (conns or {}).items() if v == "CONNECTED"]
+    if view and view.get("connected") and not up:
+        return _c("nt_conn", "NinjaTrader connection", OK, "connected (" + ", ".join(view["via"]) + ")")
     if not conns:
         return _c("nt_conn", "NinjaTrader connection", WARN if market_open(now) else INFO,
                   "no connection file (NinjaTrader closed, or never connected since it started)",
                   "Open NinjaTrader 8 and connect your account (Connections menu).")
-    up = [k for k, v in conns.items() if v == "CONNECTED"]
     if up:
         return _c("nt_conn", "NinjaTrader connection", OK, "connected: " + ", ".join(scrub(k, 40) for k in up[:3]))
     return _c("nt_conn", "NinjaTrader connection", BAD, "DISCONNECTED: " + ", ".join(scrub(k, 40) for k in list(conns)[:3]),
@@ -761,7 +754,7 @@ def run_checks(ctx: dict) -> list:
     checks += check_server(ctx["ping"])
     checks += check_account(ctx["hb"], now)
     checks.append(check_nt_folder(folder))
-    checks.append(check_nt_connection(nt_connections(folder), now))
+    checks.append(check_nt_connection(nt_connections(folder), now, folder))
     try:                                          # the chart the bot decides on: MNQ, or NQ with signal_root "NQ"
         from .ninjatrader import NinjaTraderBars
         root = NinjaTraderBars(folder).root_for("NQ") or "MNQ"
@@ -1108,6 +1101,12 @@ def watch(ctx: dict, state: dict, now) -> list:
     conns = nt_connections(ctx["folder"])
     watch_hours = _et(now).weekday() < 5 and 90 <= _et(now).hour * 60 + _et(now).minute <= 16 * 60 + 30
     down = bool(conns) and not any(v == "CONNECTED" for v in conns.values())
+    if down:
+        try:                    # a stale DISCONNECTED file next to a live connection with no file: not down (connection_view)
+            from .ninjatrader import connection_view
+            down = connection_view(conns, ctx["folder"], now).get("connected") is False
+        except Exception:
+            pass
     if down and net.get("up"):
         state["nt_down_n"] = int(state.get("nt_down_n") or 0) + 1
         state.setdefault("nt_down_since", int(now))
