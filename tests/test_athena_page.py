@@ -81,6 +81,23 @@ def part_b():
     check("b. every shelf is stocked (strategy 8+, MFFU 8+, rejected 8+, words 30+, playbooks 6+, numbers 3+)",
           len(kinds["strategy"]) >= 8 and len(kinds["mffu"]) >= 8 and len(kinds["rejected"]) >= 8 and len(kinds["words"]) >= 30 and len(kinds["playbook"]) >= 6 and len(kinds["numbers"]) >= 3,
           {k: len(v) for k, v in kinds.items()})
+    ol = kinds["olympus"]
+    apps = {"jarvis": "o-jarvis", "modes": "o-jarvis-modes", "think": "o-jarvis-think", "talking": "o-jarvis-talk", "smart key": "o-jarvis-key", "obsidian": "o-jarvis-obsidian",
+            "zenith": "o-zenith", "oracle": "o-oracle", "odeon": "o-odeon", "fates": "o-fates", "data city": "o-datacity", "daphne": "o-daphne", "prometheus": "o-prometheus",
+            "pantheon": "o-pantheon", "planner": "o-planner", "mind": "o-mind", "arena": "o-arena", "kalshi": "o-kalshi", "tyche": "o-tyche", "hermes": "o-hermes",
+            "bridge": "o-bridge", "bridge sync": "o-bridge-sync", "ares": "o-ares", "plutus": "o-plutus", "athena": "o-athena", "phone": "o-phone"}
+    check("b. the OLYMPUS shelf has an entry for every app asked for, a Phone setup entry and a Daily routine playbook (before / during / after)",
+          all(v in byid and byid[v]["kind"] == "olympus" for v in apps.values()) and len(ol) >= 26 and "p-daily" in byid
+          and all(w in " ".join(byid["p-daily"]["body"]) for w in ("BEFORE", "DURING", "AFTER")), [k for k, v in apps.items() if v not in byid])
+    check("b. every app entry says what it is, when to open it and the one thing to look at; every app folder it names exists",
+          all(any(b.startswith("Open it when:") for b in byid[v]["body"]) and any(b.startswith("The one thing to look at:") for b in byid[v]["body"]) for v in apps.values() if v != "o-phone")
+          and all(os.path.exists(os.path.join(ROOT, *s.split("/"))) for e in ol for s in e["src"]), [s for e in ol for s in e["src"] if not os.path.exists(os.path.join(ROOT, *s.split("/")))])
+    ph = " ".join([byid["o-phone"]["short"], *byid["o-phone"]["body"]])
+    check("b. Phone setup: add to Home Screen, close and reopen after updates, and the Ava (Premium) voice path",
+          "Add to Home Screen" in ph and "reopen" in ph and "Settings, then Accessibility, then Spoken Content, then Voices, then Ava (Premium)" in ph)
+    bs = " ".join(byid["o-bridge-sync"]["body"])
+    check("b. the ChatGPT sync steps match handoff/ONBOARD.md (handoff/inbox, paper only, no keys, 'Bridge: <job> done')",
+          all(w in bs for w in ("ONBOARD.md", "handoff/inbox", "Bridge:", "paper only", "no keys")) and "handoff/inbox" in open(os.path.join(ROOT, "handoff", "ONBOARD.md"), encoding="utf-8").read())
     need = ["sweep", "ifvg", "cisd", "floor", "r", "pf", "inducement", "displacement", "eod-trailing", "drawdown", "atr", "vix-band", "breakeven", "consistency", "payout", "buffer", "eval", "funded"]
     check("b. the glossary has the terms asked for (sweep, IFVG, CISD, drawdown floor, R, PF ...)", all(n in byid and byid[n]["kind"] == "words" for n in need), [n for n in need if n not in byid])
     check("b. the four playbooks exist: a loss, 7-day inactivity, an eval fail, a payout (and each has numbered steps)",
@@ -127,15 +144,15 @@ def part_c(tmp, lib):
             reqs = []
             ctx, p = open_page(br, url + "?seed=7", errs, "__athena", reduced=True, wait_site=False)
             p.on("request", lambda r: reqs.append(r.url))
-            check("c. the page opens; the library has its entries; the 3D room is up with 6 shelves",
-                  p.evaluate("window.__athena.lib.entries.length") == len(lib["entries"]) and p.evaluate("window.__athena.ready3d") is True and p.evaluate("window.__athena.shelves") == 6)
+            check("c. the page opens; the library has its entries; the 3D room is up with one shelf per topic (7)",
+                  p.evaluate("window.__athena.lib.entries.length") == len(lib["entries"]) and p.evaluate("window.__athena.ready3d") is True and p.evaluate("window.__athena.shelves") == len(lib["tags"]))
             q = p.evaluate("window.__athena.quality")
             ps = p.evaluate("window.__athena.passes")
             check("c. it runs on the render core: the pass list matches the tier (%s: %s)" % (q, ps), {"ultra": 3, "high": 3, "low": 2, "off": 1}[q] == len(ps), ps)
             check("c. no sideways scroll at 390 x 844", p.evaluate("document.documentElement.scrollWidth <= innerWidth && document.body.scrollWidth <= innerWidth"))
             check("c. the orb corner (bottom-right 80 x 160) is free of buttons and inputs", orb_hits(p) == [], orb_hits(p))
             n0 = len(p.query_selector_all("#list .item"))
-            check("c. the list starts with every entry; six shelf chips with their counts", n0 == len(lib["entries"]) and len(p.query_selector_all("#chips .chip")) == 6, n0)
+            check("c. the list starts with every entry; a shelf chip for each topic, with its count", n0 == len(lib["entries"]) and len(p.query_selector_all("#chips .chip")) == len(lib["tags"]) == 7, n0)
 
             def top(term):
                 p.fill("#q", term); p.wait_for_timeout(80)

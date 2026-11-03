@@ -195,3 +195,31 @@ header.top .iconbtn::after { content: ""; position: absolute; inset: -4px; borde
 :root[data-zq="high"] .zh-sync::after, :root[data-zq="ultra"] .zh-sync::after { animation: zh-sweep 1s ease-in-out infinite; }
 #ptr { background: linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, .03)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18), 0 8px 22px -10px rgba(var(--zn-accent-rgb), .7); }
 :root.zn-still .zh-skel::after, :root.zn-still .zh-sync::after { animation: none !important; }
+
+/* ---------- Money now / Payouts / Path to $X a month (zenith_money.js): one number per tile ---------- */
+.zm-card .zm-p { margin: 10px 0 0; color: var(--ink-2); font-size: 13px; line-height: 1.5; } .zm-card .zm-p.small { font-size: 12px; color: var(--muted); }
+.zm-acct + .zm-acct { margin-top: var(--zn-s3); padding-top: var(--zn-s3); border-top: 1px solid rgba(170, 182, 235, .10); }
+.zm-an { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; } .zm-an i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); box-shadow: 0 0 10px var(--c); }
+.zm-an b { font: 700 14px var(--sans); color: var(--ink); } .zm-an span { font: 600 11px var(--sans); color: var(--muted); letter-spacing: .06em; }
+.zm-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--zn-s2); }
+@media (min-width: 620px) { .zm-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); } .zm-tiles.two { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+#zmPay .zm-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 460px) { #zmPay .zm-tiles { grid-template-columns: 1fr; } }
+.zm-t { display: flex; flex-direction: column; min-width: 0; padding: 10px 12px; border-radius: 14px; background: rgba(255, 255, 255, .035); border: 1px solid rgba(170, 182, 235, .09); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06); }
+.zm-t em { font: 650 10.5px/1.3 var(--sans); font-style: normal; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.zm-t b { font: 780 22px/1.15 var(--sans); letter-spacing: -.02em; font-variant-numeric: tabular-nums; color: var(--ink); margin: 2px 0; white-space: nowrap; }
+.zm-t b.up { color: var(--good-ink, #4ff0ae); } .zm-t b.dn { color: var(--bad); }
+.zm-t small { font: 500 11.5px/1.35 var(--sans); color: var(--ink-2); }
+.zm-pill { font: 700 11px var(--sans); padding: 4px 10px; border-radius: 999px; } .zm-pill.ok { background: rgba(46, 229, 157, .16); color: #4ff0ae; } .zm-pill.wait { background: rgba(255, 200, 87, .14); color: #ffc857; }
+.zm-lab { display: flex; justify-content: space-between; margin: 12px 0 5px; font: 600 11.5px var(--sans); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.zm-bar { height: 8px; border-radius: 999px; background: rgba(255, 255, 255, .07); overflow: hidden; } .zm-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #6d7cff, #3dffb0); transition: width .8s var(--zn-out, ease-out); }
+:root.zn-still .zm-bar i { transition: none; }
+.zm-seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; background: rgba(255, 255, 255, .05); border: 1px solid rgba(170, 182, 235, .12); }
+.zm-seg button { position: relative; min-height: 28px; padding: 0 11px; border: 0; border-radius: 999px; background: transparent; color: var(--ink-2); font: 650 11.5px var(--sans); cursor: pointer; }
+.zm-seg button::after { content: ""; position: absolute; left: 0; right: 0; top: -8px; bottom: -8px; }
+.zm-seg button.on { background: rgba(var(--zn-accent-rgb), .28); color: var(--ink); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .15); }
+.zm-rows { margin-top: var(--zn-s3); display: flex; flex-direction: column; gap: 6px; }
+.zm-r { display: grid; grid-template-columns: 74px 1fr 1fr; gap: 8px; align-items: start; padding: 10px 12px; border-radius: 14px; background: rgba(255, 255, 255, .03); border: 1px solid rgba(170, 182, 235, .08); }
+.zm-r.hit { border-color: rgba(46, 229, 157, .4); background: rgba(46, 229, 157, .06); }
+.zm-n { font: 700 13px var(--sans); color: var(--ink); padding-top: 3px; } .zm-g { display: flex; flex-direction: column; min-width: 0; }
+.zm-g b { font: 760 17px/1.15 var(--sans); font-variant-numeric: tabular-nums; color: var(--ink); } .zm-g small { font: 500 11px/1.3 var(--sans); color: var(--muted); }
