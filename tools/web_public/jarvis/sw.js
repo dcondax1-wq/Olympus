@@ -39,11 +39,11 @@
 // v16 (2026-11-03 day sprint): themes (jarvis.css?v=j13), the assistant (assistant.js, tts.js), Pantheon + Arena built in.
 // v18: the 3D home backdrop + portal jump on the OLYMPUS render core (backdrop.js, portal.js).
 // v17 (2026-11-03 evening): smart-mode tools (tools.js), Jarvis talks by default (voice-out.js, jarvis.css?v=j13).
-const CACHE = 'jarvis-v18';
-const OLD = ['jarvis-v17', 'jarvis-v16', 'jarvis-v15', 'jarvis-v14', 'jarvis-v13', 'jarvis-v12', 'jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];
+const CACHE = 'jarvis-v19';
+const OLD = ['jarvis-v18', 'jarvis-v17', 'jarvis-v16', 'jarvis-v15', 'jarvis-v14', 'jarvis-v13', 'jarvis-v12', 'jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];
 const NAV_WAIT_MS = 3500;
 const NET_MAX_MS = 9000;
-const SHELL = ['./', './index.html', './manifest.webmanifest?v=j3', './apple-touch-icon.png?v=j3', './icon-192.png?v=j3', './icon-512.png?v=j3',
+const SHELL = ['./', './index.html', './manifest.webmanifest?v=j4', './apple-touch-icon.png?v=j4', './icon-192.png?v=j4', './icon-512.png?v=j4',
   './jarvis.css?v=j13', './data.js', './brain.js', './core-visual.js', './apps.js', './zenith-mode.js', './switcher.js',
   './obsidian.js', './memory.js', './assist-ui.js', './voice-mode.js', './assistant.js', './tools.js', './tts.js', './voice-out.js', './backdrop.js?v=b1', './portal.js?v=p1', './three.module.min.js', './orbitron.woff2', './rajdhani-400.woff2', './rajdhani-500.woff2', './rajdhani-600.woff2', './rajdhani-700.woff2'];
 const CORE = ['./index.html', './jarvis.css?v=j13', './data.js'];
