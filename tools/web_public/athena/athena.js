@@ -1,4 +1,4 @@
-// ATHENA: the library. A round room of six shelves, one per topic, built on the OLYMPUS render core (render.js + materials.js).
+// ATHENA: the library. A round room of shelves, one per topic, built on the OLYMPUS render core (render.js + materials.js).
 // Every book / scroll is one entry of library.json; tapping a shelf (or a chip) filters the list below. All the logic is in athenacore.js.
 import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
@@ -98,7 +98,7 @@ function bind() {
 }
 
 // ------------------------------------------------------------------------------------------------ the 3D library
-const R = 7.2, STEP = (Math.PI * 2) / 6;
+const R = 8.2;
 class Hall {
   constructor(canvas) {
     this.canvas = canvas; this.yaw = 0; this.target = null; this.dirty = true; this.auto = !RM; this.shelves = [];
@@ -123,7 +123,7 @@ class Hall {
     const geo = { back: new THREE.BoxGeometry(4.5, 3.4, 0.18), plank: new THREE.BoxGeometry(4.5, 0.1, 0.62), post: new THREE.BoxGeometry(0.14, 3.5, 0.66), book: new THREE.BoxGeometry(1, 1, 1), scroll: new THREE.CylinderGeometry(0.11, 0.11, 0.5, 14), cap: new THREE.CylinderGeometry(0.125, 0.125, 0.04, 14), strip: new THREE.BoxGeometry(1, 1, 1) };
     const c = counts(S.lib);
     S.lib.tags.forEach((t, i) => {
-      const g = new THREE.Group(), a = i * STEP;
+      const g = new THREE.Group(), a = i * (Math.PI * 2) / S.lib.tags.length;
       g.position.set(Math.sin(a) * R, 0, -Math.cos(a) * R); g.userData = { tag: t.id, a }; g.lookAt(0, 0, 0);
       const back = new THREE.Mesh(geo.back, slab); back.position.set(0, 1.75, -0.28); g.add(back);
       for (const x of [-2.2, 2.2]) { const p = new THREE.Mesh(geo.post, gold); p.position.set(x, 1.75, -0.02); g.add(p); }
