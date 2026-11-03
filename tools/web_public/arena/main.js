@@ -87,6 +87,7 @@ function checkLevelUp() {
     HUD.celebrate({ level: sc.level, rank: rankUp ? sc.rank.name : null, reduced: reducedMotion() });
     S.banner = rankUp ? `Rank up ${sc.rank.name} Level ${sc.level}` : `Level up Level ${sc.level}`;
     const fresh = mark.earned.filter((id) => !(seen.earned || []).includes(id));
+    if (O && O.sfx && (rankUp || fresh.length)) O.sfx('rankup');   // olympus/olympus.js: the rank-up / Labour sound, guarded
     if (fresh.length) setTimeout(() => openLabour(fresh[0]), reducedMotion() ? 600 : 2400);
   }
   if (!seen || sc.xp !== seen.xp || sc.level !== seen.level) S.ledger.setSeen(mark);

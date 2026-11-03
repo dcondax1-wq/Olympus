@@ -152,6 +152,20 @@
     theme: function () { return isDefault(theme) ? null : theme; },
     /** cb(tokens) after every theme change (not at start: read theme() for that); cb(null) when back on the default */
     onTheme: function (cb) { if (typeof cb === 'function') appSubs.push(cb); },
+    /** play a sound of the OLYMPUS kit (tick | tap | portal | thunder | rankup | pad): loads olympus/sfx.js on the first call, never throws,
+     *  does nothing when the file is missing or the host (Jarvis) says it is talking or listening (window.OLYMPUS_QUIET). Returns true if it sounded. */
+    sfx: function (name) {
+      try {
+        if (window.OLYMPUS_QUIET && window.OLYMPUS_QUIET()) return false;
+        var k = window.OLYMPUS_SFX;
+        if (k) return !!k.play(name);
+        if (me && me.src && !d.getElementById('olySfxJs')) {
+          var s = d.createElement('script'); s.id = 'olySfxJs'; s.async = true; s.src = me.src.replace(/olympus\.js.*$/, 'sfx.js?v=s1');
+          (d.head || root).appendChild(s);
+        }
+      } catch (e) { /* the sound is never needed */ }
+      return false;
+    },
     tint: tint,
     themeScene: function (o) { try { return sceneHook(o || {}); } catch (e) { return null; } },
     ready: function () { ready(); },
