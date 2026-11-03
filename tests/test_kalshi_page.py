@@ -56,6 +56,7 @@ from engine import kalshi_publish as kp  # noqa: E402
 
 KS = os.path.join(ROOT, "tools", "web_public", "kalshi")
 JV_ICON = os.path.join(ROOT, "tools", "web_public", "jarvis", "icon-192.png")
+JV_THREE = os.path.join(ROOT, "tools", "web_public", "jarvis", "three.module.min.js")
 STEP = ("Open your kalshi-server chat in the Claude app and paste: Set up Jarvis for my Kalshi bot by following "
         "https://demetrades2000-coder.github.io/nq-dashboard/kalshi/SETUP.md")
 PASTE = STEP.split("paste: ", 1)[1]
@@ -217,6 +218,8 @@ def site(tmp):
     os.makedirs(os.path.join(base, "jarvis"))
     if os.path.exists(JV_ICON):
         shutil.copy(JV_ICON, os.path.join(base, "jarvis", "icon-192.png"))
+    if os.path.exists(JV_THREE):                                                       # the 3D header's one dependency (korb.js)
+        shutil.copy(JV_THREE, os.path.join(base, "jarvis", "three.module.min.js"))
     for f in glob.glob(os.path.join(os.environ.get("KALSHI_FONTS_DIR") or os.path.dirname(JV_ICON), "*.woff2")):
         shutil.copy(f, os.path.join(base, "jarvis", os.path.basename(f)))      # Jarvis's fonts: the widths are tested with them
         FONTS.append(os.path.basename(f))
@@ -606,6 +609,7 @@ def run_browser(url, tmp):
         idle = p.inner_text("#eqRead")
         check("e. the curve's reading: the last balance and the change over the month",
               usd(eq[-1][1]) in idle and usd(eq[-1][1] - first, True) in idle, (idle, usd(eq[-1][1]), usd(eq[-1][1] - first, True)))
+        p.evaluate("document.getElementById('chart').scrollIntoView({ block: 'center' })")   # Performance sits below Today and Edge
         box = p.locator("#chart").bounding_box()
         p.mouse.move(box["x"] + 0.5, box["y"] + box["height"] / 2)
         r1 = p.inner_text("#eqRead")
@@ -1114,6 +1118,9 @@ def part_k(br, url, tmp):
     keys = q.evaluate("caches.keys()")
     check(f"k. an update: the old '{cn}' goes, Jarvis's and Zenith's caches stay", upd and "jarvis-v3" in keys and "le-public-x" in keys, keys)
     open(swp, "w", encoding="utf-8").write(sw0)
+    # the restored worker takes over before the next steps (else its install races the kit.json steps below for the cache)
+    q.evaluate("navigator.serviceWorker.getRegistration().then((r) => r.update()).then(() => true)")
+    until(f"caches.keys().then((k) => k.indexOf('{cn}') >= 0 && k.indexOf('{cn}u') < 0)", 15000)
     c = q.evaluate(allc)
     check("k. kalshi.json never cached (the feed is cross-origin and left alone)", not any("kalshi.json" in u for v in c.values() for u in v), c)
     # kit.json is network first: a new pin on the site shows on the next open; offline, the saved pin stays
@@ -1128,8 +1135,10 @@ def part_k(br, url, tmp):
           until(f"(document.getElementById('step') || {{}}).textContent.indexOf('{new}') > 0", 5000))
     SITE["mode"] = "down"
     q.reload()
-    check("k. offline: the Connect card keeps the last pin (the worker's saved kit.json)",
-          until(f"(document.getElementById('step') || {{}}).textContent.indexOf('{new}') > 0", 8000))
+    kept = until(f"(document.getElementById('step') || {{}}).textContent.indexOf('{new}') > 0", 8000)
+    check("k. offline: the Connect card keeps the last pin (the worker's saved kit.json)", kept,
+          "" if kept else (q.evaluate("(document.getElementById('step') || document.body).textContent.slice(-90)"),
+                           q.evaluate("caches.match(location.href.split('#')[0].replace(/[^/]*$/, '') + 'kit.json').then((r) => r ? r.text() : 'none')")))
     SITE["mode"] = "ok"
     with open(kj, "w", encoding="utf-8") as f:
         f.write(KIT_JSON)

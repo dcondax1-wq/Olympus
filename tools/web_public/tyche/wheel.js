@@ -49,7 +49,7 @@ export class Wheel {
 
   buildWheel(lite) {
     const T = this.T, g = this.glow, w = this.wheel;
-    const gold = g.metal(GOLD, 0.55);
+    const gold = g.coin(GOLD, { emissiveIntensity: 0.34, roughness: 0.26 });   // polished gold: the environment shines in it
     const rim = new T.Mesh(new T.TorusGeometry(WHEEL_R, 0.085, 14, lite ? 64 : 128), gold);
     rim.rotation.x = Math.PI / 2;
     w.add(rim);
@@ -103,7 +103,7 @@ export class Wheel {
       let c = this.coins.get(o.key);
       const color = colors.get(o.category) || GOLD;
       if (!c) {
-        const side = g.metal(color, 0.45), face = g.metal(color, 0.4, { map: g.face });
+        const side = g.coin(color, { bumpMap: g.reeds, bumpScale: 2.5 }), face = g.coin(color, { map: g.face, bumpMap: g.face, bumpScale: 1.6, roughness: 0.26 });   // minted: reeded edge, embossed face
         const mesh = new T.Mesh(this.coinGeo, [side, face, face]);
         const aura = g.sprite(color, 1, 0.5);
         const halo = g.sprite('#fff4d6', 1, 0.75, g.ring);

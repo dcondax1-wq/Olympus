@@ -39,7 +39,9 @@ button:disabled { cursor: default; }
 main { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px;
   padding: calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(40px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
 html.framed main { padding-top: 16px; }            /* inside Jarvis: its bar already sits below the notch, no second inset */
-html.framed .note.sample { top: 8px; }
+html.framed .note.sample { top: 56px; }
+/* inside Jarvis: its orb floats in the bottom-right 80 x 160 px; the page ends well above it */
+html.framed main { padding-bottom: calc(176px + env(safe-area-inset-bottom, 0px)); }
 #body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; min-width: 0; }
 .up { color: var(--ok); } .down { color: var(--bad); }
 .muted { color: var(--mut); font-size: 14.5px; margin: 0; }
@@ -49,7 +51,11 @@ html.framed .note.sample { top: 8px; }
 .top { display: flex; align-items: center; gap: 12px; min-width: 0; position: relative; }
 .top::after { content: ""; position: absolute; left: 0; right: 0; bottom: -8px; height: 1px; background: linear-gradient(90deg, transparent, rgba(var(--cr), .8), rgba(var(--cy-rgb), .7), transparent);
   box-shadow: 0 0 10px rgba(var(--cr), .6); }
-.mark { flex: none; width: 44px; height: 44px; display: grid; place-items: center; color: var(--c); filter: drop-shadow(0 0 8px rgba(var(--cr), .75)); }
+.mark { flex: none; position: relative; width: 48px; height: 48px; display: grid; place-items: center; color: var(--c); filter: drop-shadow(0 0 8px rgba(var(--cr), .75)); }
+/* the 3D header (korb.js): the market orb's canvas overflows the mark so its glow bleeds out; the SVG K stays as the fallback */
+.mark .orb { position: absolute; left: 50%; top: 50%; width: 76px; height: 76px; transform: translate(-50%, -50%); pointer-events: none; }
+.mark.gl { filter: none; }
+.mark.gl svg { opacity: 0; }
 .mark svg { width: 40px; height: 40px; display: block; }
 .h1s { font-weight: 500; color: var(--c); letter-spacing: .2em; }
 @media (max-width: 459px) {                        /* a phone: the K mark, the name and the state get the room; Refresh is its icon */
@@ -98,7 +104,7 @@ html.framed .note.sample { top: 8px; }
 .note.warn b { color: var(--warn); }
 .note.bad { border-color: rgba(var(--bad-rgb), .5); background: linear-gradient(90deg, rgba(var(--bad-rgb), .1), rgba(var(--pr), .7)); }
 .note.bad b { color: var(--bad); }
-.note.sample { position: -webkit-sticky; position: sticky; top: calc(8px + env(safe-area-inset-top, 0px)); z-index: 4; border-color: rgba(var(--warn-rgb), .65);
+.note.sample { position: -webkit-sticky; position: sticky; top: calc(56px + env(safe-area-inset-top, 0px)); z-index: 4; border-color: rgba(var(--warn-rgb), .65);
   background: linear-gradient(90deg, rgba(var(--warn-rgb), .16), rgba(var(--pr), .96)), var(--bg2); box-shadow: 0 6px 18px rgba(0,0,0,.55); }
 .note.sample { flex-wrap: nowrap; gap: 10px; padding: 8px 10px 9px 13px; }
 .note.sample p { flex: 1 1 auto; }
@@ -115,8 +121,10 @@ html.framed .note.sample { top: 8px; }
 .card { position: relative; padding: 14px 14px 16px; border: 1px solid var(--dim2); display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; min-width: 0;
   background: linear-gradient(225deg, transparent 0 9.4px, rgba(var(--cr), .55) 9.4px 10.4px, transparent 10.4px) top right / 15px 15px no-repeat border-box,
     linear-gradient(45deg, transparent 0 9.4px, rgba(var(--cr), .55) 9.4px 10.4px, transparent 10.4px) bottom left / 15px 15px no-repeat border-box,
-    linear-gradient(180deg, rgba(var(--pr), .58), rgba(var(--pr), .7));
-  box-shadow: inset 0 0 24px rgba(var(--cr), .07);
+    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,0) 34%),
+    linear-gradient(180deg, rgba(var(--pr), .5), rgba(var(--pr), .66));
+  box-shadow: inset 0 0 24px rgba(var(--cr), .07), inset 0 1px 0 rgba(255,255,255,.06);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3); backdrop-filter: blur(12px) saturate(1.3);
   -webkit-clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px)); clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px)); }
 .card::before { content: ""; position: absolute; left: 0; top: 0; width: 36px; height: 2px; background: var(--c); box-shadow: 0 0 8px var(--c), 0 0 2px var(--c); }
 .card::after { content: ""; position: absolute; right: 6px; bottom: 6px; width: 11px; height: 11px; border-right: 1px solid rgba(var(--cr), .45); border-bottom: 1px solid rgba(var(--cr), .45); pointer-events: none; }
@@ -140,7 +148,7 @@ html.framed .note.sample { top: 8px; }
 .lab { display: block; color: var(--mut); font: 600 9.5px/1.4 var(--fh); letter-spacing: .2em; text-transform: uppercase; overflow-wrap: anywhere; }
 .bal { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .bal > div { min-width: 0; }
-.bal strong { display: block; font: 700 32px/1.12 var(--fh); letter-spacing: .02em; font-variant-numeric: tabular-nums; white-space: nowrap; color: #fff;
+.bal strong { display: block; font: 700 32px/1.2 var(--fh); letter-spacing: .02em; font-variant-numeric: tabular-nums; white-space: nowrap; color: #fff;
   text-shadow: 0 0 18px rgba(var(--cr), .65); }
 .bal .ago2 { font-size: 13.5px; color: var(--mut); white-space: nowrap; }
 .kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
@@ -148,7 +156,7 @@ html.framed .note.sample { top: 8px; }
   linear-gradient(45deg, transparent 0 5.1px, var(--dim2) 5.1px 6.1px, transparent 6.1px) bottom left / 9px 9px no-repeat border-box, rgba(var(--pr), .55); }
 .kpis > div { padding: 9px 9px 10px; border: 1px solid var(--dim); min-width: 0;
   -webkit-clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px)); clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px)); }
-.kpis strong { display: block; margin-top: 3px; font: 700 15px/1.25 var(--fh); letter-spacing: .01em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.kpis strong { display: block; margin-top: 3px; font: 700 15px/1.2 var(--fh); letter-spacing: .01em; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .kpis strong.up { text-shadow: 0 0 10px rgba(var(--ok-rgb), .45); } .kpis strong.down { text-shadow: 0 0 10px rgba(var(--bad-rgb), .45); }
 .kpis em { display: block; font-style: normal; font-size: 14px; color: var(--mut); font-variant-numeric: tabular-nums; line-height: 1.3; }
 .status { margin: 0; color: var(--txt); font-size: 15px; opacity: .9; }
@@ -346,6 +354,71 @@ html.framed .note.sample { top: 8px; }
 .sk1 { height: 168px; } .sk2 { height: 238px; } .sk3 { height: 150px; }
 .foot { color: var(--mut); font-size: 13px; text-align: center; margin: 4px 0 0; letter-spacing: .02em; }
 
+/* ==== 2026-11-03 "way higher quality, 3D, futuristic, organized": the section bar, the four groups, the 3D hero, odometer
+   counters, glowing sparklines, the live edge card */
+/* ---- the section bar: Today / Edge / Performance / Alerts, stuck to the top while scrolling */
+.secnav { position: -webkit-sticky; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 6; display: flex; gap: 3px; padding: 3px; min-width: 0;
+  border: 1px solid rgba(var(--cr), .28); border-radius: 999px; background: linear-gradient(180deg, rgba(var(--pr), .97), rgba(1,10,7,.95)); box-shadow: 0 10px 26px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); }
+html.framed .secnav { top: 0; }
+.secnav button { flex: 1 1 auto; min-width: 0; height: 44px; padding: 0 8px; border: 1px solid transparent; border-radius: 999px; background: transparent; color: var(--mut);
+  font: 600 9.5px/1 var(--fh); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+.secnav button[aria-current="true"] { color: var(--txt); border-color: rgba(var(--cr), .7); background: linear-gradient(180deg, rgba(var(--cr), .22), rgba(var(--cr), .08));
+  box-shadow: 0 0 14px rgba(var(--cr), .28), inset 0 0 10px rgba(var(--cr), .18); text-shadow: 0 0 10px rgba(var(--cr), .7); }
+.secnav b { min-width: 17px; height: 17px; padding: 0 4px; border-radius: 999px; font: 700 9px/17px var(--fh); letter-spacing: 0; color: #00140d; background: var(--c); box-shadow: 0 0 8px var(--c); }
+.secnav b:empty { display: none; }
+.secnav b.bad { color: #fff; background: var(--bad); box-shadow: 0 0 10px var(--bad); }
+/* ---- the groups: a numbered heading with its one-line summary, then its cards */
+.grp { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; min-width: 0; scroll-margin-top: 64px; }
+.grp + .grp { margin-top: 12px; }
+.grp-h { display: flex; align-items: baseline; gap: 10px; min-width: 0; padding: 4px 2px 8px; position: relative; }
+.grp-h::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: linear-gradient(90deg, rgba(var(--cr), .75), rgba(var(--cy-rgb), .35) 45%, transparent);
+  box-shadow: 0 0 8px rgba(var(--cr), .45); }
+.grp-n { font: 700 11px/1 var(--fh); color: var(--cy); letter-spacing: .08em; text-shadow: 0 0 10px rgba(var(--cy-rgb), .8); }
+.grp-h h2 { margin: 0; font: 700 15px/1.2 var(--fh); letter-spacing: .3em; text-transform: uppercase; color: var(--txt); text-shadow: 0 0 16px rgba(var(--cr), .65); }
+.grp-s { margin-left: auto; font-size: 14px; color: var(--mut); white-space: nowrap; min-width: 0; }
+.grp-s b { font: 700 12.5px/1 var(--fh); letter-spacing: .02em; font-variant-numeric: tabular-nums; }
+.grp-s b.up { color: var(--ok); } .grp-s b.down { color: var(--bad); }
+/* ---- the 3D hero: perspective, a light that follows the mouse (kfx.js tilt; never under a finger) */
+.hero { transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  background: radial-gradient(circle at var(--mx, 18%) var(--my, 0%), rgba(var(--cr), .16), transparent 46%),
+    linear-gradient(225deg, transparent 0 9.4px, rgba(var(--cr), .55) 9.4px 10.4px, transparent 10.4px) top right / 15px 15px no-repeat border-box,
+    linear-gradient(45deg, transparent 0 9.4px, rgba(var(--cr), .55) 9.4px 10.4px, transparent 10.4px) bottom left / 15px 15px no-repeat border-box,
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0) 34%), linear-gradient(160deg, rgba(var(--cr), .1), rgba(var(--pr), .62) 55%); }
+.bal { align-items: center; flex-wrap: nowrap; }
+.bal > div:first-child { flex: 1 1 auto; }
+.bal-sp { flex: 0 1 40%; max-width: 220px; min-width: 90px; }
+.bal-sp .spark { height: 42px; margin: 0; }
+.kpi { position: relative; }
+/* ---- the link to Tyche (the same numbers as a 3D wheel of fortune) */
+.lnk3d { justify-self: start; display: inline-flex; align-items: center; gap: 9px; min-height: 44px; padding: 0 16px 0 12px; border-radius: 999px; text-decoration: none;
+  border: 1px solid rgba(232,121,249,.5); background: linear-gradient(90deg, rgba(232,121,249,.14), rgba(var(--pr), .5)); color: var(--txt); font-size: 14.5px;
+  box-shadow: 0 0 14px rgba(232,121,249,.18); }
+.lnk3d i { width: 16px; height: 16px; border-radius: 50%; flex: none; background: radial-gradient(circle at 35% 30%, #fff, #ffcf5a 40%, #e879f9 75%); box-shadow: 0 0 10px rgba(232,121,249,.8); }
+.lnk3d b { font: 700 10px/1 var(--fh); letter-spacing: .14em; text-transform: uppercase; color: #f5c2ff; }
+/* ---- sparklines (kfx.js spark): a glowing line over a soft fill, the last point lit */
+.spark { display: block; width: 100%; height: 20px; margin-top: 6px; overflow: visible; color: var(--c); filter: drop-shadow(0 0 3px currentColor); }
+.spark.up { color: var(--ok); } .spark.down { color: var(--bad); }
+.spark .sp-l { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+.spark .sp-a { fill: currentColor; opacity: .13; }
+.spark .sp-d { fill: #fff; }
+/* ---- odometer counters (kfx.js): each digit rolls from 0; the real digit stays in the DOM (transparent while it rolls) */
+.odo .od { display: inline-block; position: relative; height: 1.2em; overflow: hidden; overflow: clip; vertical-align: top; font-style: normal; -webkit-text-fill-color: transparent; text-shadow: none; }
+.odo .od::after { content: "0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9"; white-space: pre; position: absolute; left: 0; right: 0; top: 0; text-align: center; line-height: 1.2em;
+  -webkit-text-fill-color: currentColor; text-shadow: none; transform: translateY(calc(var(--d) * -1.2em)); }
+/* ---- the live edge card */
+.edge-k { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.edge-k > div { min-width: 0; padding: 9px 9px 10px; border: 1px solid var(--dim); background: rgba(var(--pr), .55);
+  -webkit-clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px)); clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px)); }
+.edge-k b { display: block; margin-top: 3px; font: 700 15px/1.2 var(--fh); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.edge-k b small { font: 500 13px/1 var(--fb); color: var(--mut); }
+.edge-k b.up { color: var(--ok); text-shadow: 0 0 10px rgba(var(--ok-rgb), .45); } .edge-k b.down { color: var(--bad); }
+.dv u { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--cy); box-shadow: 0 0 6px var(--cy); }
+@media (hover: hover) and (pointer: fine) {
+  .card:hover { border-color: rgba(var(--cr), .42); }
+  .secnav button:hover { color: var(--txt); }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .sk { animation: shimmer 1.4s ease-in-out infinite; }
   .refresh[aria-busy="true"] svg { animation: spin .9s linear infinite; }
@@ -356,7 +429,22 @@ html.framed .note.sample { top: 8px; }
   .mark { animation: markglow 4s ease-in-out infinite; }
   .al li.bad i, .al li.warn i { animation: pulse 1.6s ease-in-out infinite; }
   .card::before { animation: tick 6s ease-in-out infinite; }
+  .mark.gl { animation: none; }
+  .intro .grp { animation: rise3d .6s cubic-bezier(.2, .8, .2, 1) both; }
+  .intro .grp:nth-child(2) { animation-delay: .06s; } .intro .grp:nth-child(3) { animation-delay: .12s; } .intro .grp:nth-child(4) { animation-delay: .18s; }
+  .intro .grp:nth-child(5) { animation-delay: .24s; }
+  .odo .od::after { animation: odo 1.2s cubic-bezier(.16, .84, .24, 1) both; animation-delay: calc(var(--k) * 55ms); }
+  .spark .sp-l { stroke-dasharray: 100; animation: draw 1.3s ease-out both; }
+  .spark .sp-d { animation: blink 2.4s ease-in-out infinite; }
+  .hero { transition: transform .35s ease-out; }
+  .card, .secnav button { transition: border-color .25s, background-color .25s, box-shadow .25s, color .25s; }
+  .grp-n { animation: pulse 3.2s ease-in-out infinite; }
+  .lnk3d i { animation: spin 6s linear infinite; }
 }
+@keyframes rise3d { from { opacity: 0; transform: perspective(900px) translateY(14px) rotateX(7deg); } to { opacity: 1; transform: none; } }
+@keyframes odo { from { transform: translateY(0); } }
+@keyframes draw { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 @keyframes tape { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 @keyframes aurora { from { transform: translateX(-6%) scaleY(1); } to { transform: translateX(6%) scaleY(1.15); } }
 @keyframes markglow { 0%, 100% { filter: drop-shadow(0 0 6px rgba(31,229,166,.55)); } 50% { filter: drop-shadow(0 0 14px rgba(31,229,166,.95)); } }

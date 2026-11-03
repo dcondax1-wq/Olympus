@@ -147,7 +147,7 @@
       sort: SORTS.some((r) => r[0] === u.sort) ? u.sort : 'closes',
       side: SIDES.indexOf(u.side) >= 0 ? u.side : 'all',
     },
-    preview: false, q: '', kf: 0, calc: { p: '', c: '' }, trShown: TR_PAGE, cal: '', calSel: '', calGr: '', open: new Set(), scrub: false, pend: false, chart: null, series: null, v: null, pos: [],
+    preview: false, q: '', kf: 0, calc: { p: '', c: '' }, trShown: TR_PAGE, cal: '', calSel: '', calGr: '', open: new Set(), scrub: false, pend: false, chart: null, series: null, v: null, pos: [], fresh: false, alerts: null,
   };
   const saveUi = () => LS.set('kalshi.ui', S.ui);
   const cached = LS.get('kalshi.last', null);
@@ -177,7 +177,7 @@
     if (st === 'ok') {
       if (S.preview) { S.preview = false; S.raw = ''; }       // real data: the sample preview is over for good
       const raw = JSON.stringify(j), same = raw === S.raw && S.state === 'ok';
-      S.k = j; S.raw = raw; S.state = 'ok';
+      S.k = j; S.raw = raw; S.state = 'ok'; S.fresh = !same;
       LS.set('kalshi.last', j);
       if (same) { busyUi(); tick(); return; }               // nothing new: keep the page as it is (open rows, scroll, typing)
     } else S.state = st;
@@ -243,8 +243,32 @@
     return '';
   }
 
+  // ---- Today: the money first (owner 2026-11-03 "balance, $ today / week / month, ROI"). Month = the bot's month_pnl when it
+  // sends one, else the sum of `days` since the 1st (ET; the same basis as today / week). ROI = P&L on the money bet (the bot's
+  // `stats`, else the settled trades in the list); never P&L on the balance (deposits make the start unknown).
+  const FX = () => window.KFX || null;                       // kfx.js: the look (odometer, sparklines, section bar, themes)
+  const monday = (key) => {
+    const p = pd(key);
+    if (!p) return '';
+    const dw = (new Date(Date.UTC(p.y, p.m - 1, p.d)).getUTCDay() + 6) % 7;
+    return new Date(Date.UTC(p.y, p.m - 1, p.d - dw)).toISOString().slice(0, 10);
+  };
+  function monthPnl(k, v) {
+    const own = num(k.month_pnl);
+    if (own != null) return own;
+    const ym = (dayKey(nowS()) || '').slice(0, 7), ds = v.days.filter((d) => d[0].slice(0, 7) === ym);
+    return ds.length ? Math.round(sum(ds.map((d) => d[1])) * 100) / 100 : null;
+  }
+  function roiOf(k, v) {
+    const at = isObj(k.stats) ? k.stats : null, st = at ? num(at.staked) : null, p = at ? num(at.pnl) : null;
+    if (st != null && st > 0 && p != null) return { x: p / st, sub: 'on ' + usd(st) + ' bet' };
+    let ss = 0, sp = 0, n = 0;
+    settled(v).forEach((t) => { const c = num(t.contracts), px = dol(t.price); if (c != null && px != null) { ss += Math.abs(c) * px; sp += num(t.pnl); n++; } });
+    return ss > 0 ? { x: sp / ss, sub: `last ${n} ${n === 1 ? 'bet' : 'bets'}` } : null;
+  }
+  const cumul = (xs) => { let c = 0; return [0].concat(xs.map((x) => (c += x))); };
   function heroHtml(k, v) {
-    const bal = num(k.balance), today = dayKey(nowS());
+    const bal = num(k.balance), today = dayKey(nowS()), fx = FX();
     // today's wins / losses, as in the bot's own money text, when the trades list covers the whole day
     const tt = v.tr.filter((t) => { const x = parseT(t.t); return x && dayKey(x) === today; });
     const whole = v.tr.length < TR_CAP || v.tr.some((t) => { const x = parseT(t.t); return x && dayKey(x) < today; });
@@ -252,13 +276,31 @@
     // all time: the strategies' own W / L totals; no % there (deposits and withdrawals make the start unknown)
     let aw = 0, al = 0, ok = false;
     v.strat.forEach((s) => { const w = num(s.wins), l = num(s.losses); if (w != null && l != null) { aw += w; al += l; ok = true; } });
-    const kp = (lab, val, extra, withPct) => {
+    const sp = (vals) => (fx && vals.length > 2 ? fx.spark(vals, { cls: cls(vals[vals.length - 1] - vals[0]) }) : '');
+    const kp = (id, lab, val, extra, withPct, spk) => {
       const x = num(val), base = bal != null && x != null ? bal - x : null, p = withPct && base && base > 0 ? pct(x / base, true) : '';
-      return `<div><span class="lab">${lab}</span><strong class="fit ${cls(x)}">${esc(usd(x, true))}</strong>${[extra, p].filter(Boolean).map((t) => `<em>${esc(t)}</em>`).join('')}</div>`;
+      return `<div class="kpi" data-k="${id}"><span class="lab">${lab}</span><strong class="fit ${cls(x)}" data-odo="${id}">${esc(usd(x, true))}</strong>`
+        + `${[extra, p].filter(Boolean).map((t) => `<em>${esc(t)}</em>`).join('')}${spk || ''}</div>`;
     };
-    return `<section class="card hero" id="sec-kpi"><div class="bal"><div><span class="lab">${esc(k.name ? String(k.name).slice(0, 40) : 'Balance')}${k.name ? ' · balance' : ''}</span><strong class="fit">${esc(usd(bal))}</strong></div></div>`
-      + `<div class="kpis">${kp('Today', k.today_pnl, whole && tw + tl ? `${tw}W ${tl}L` : '', true)}${kp('This week', k.week_pnl, '', true)}${kp('All time', k.total_pnl, ok && aw + al ? `${fmtN(aw)}W ${fmtN(al)}L` : '', false)}</div>`
-      + (k.status ? `<p class="status">${esc(k.status)}</p>` : '') + (k.note ? `<p class="muted">${esc(k.note)}</p>` : '') + '</section>';
+    // the sparklines (running sums): today's settled trades, this week's and this month's days; the balance's own curve
+    const pnlToday = tt.slice().reverse().map((t) => num(t.pnl)).filter((x) => x != null);
+    const mon = monday(today), wk = v.days.filter((d) => mon && d[0] >= mon && d[0] <= today).map((d) => d[1]);
+    const mo = v.days.filter((d) => today && d[0].slice(0, 7) === today.slice(0, 7)).map((d) => d[1]);
+    const s = series(v), eqVals = s ? thin(s.pts, 80).map((p) => p[1]) : [];
+    const month = monthPnl(k, v), roi = roiOf(k, v);
+    const pv = v.pos.map(posModel), pVal = sum(pv.map((m) => (m.value != null ? m.value : m.cost != null ? m.cost : 0))), evs = pv.filter((m) => m.ev != null);
+    const roiTile = `<div class="kpi" data-k="roi"><span class="lab">ROI</span><strong class="fit ${roi ? cls(roi.x) : ''}" data-odo="roi">${roi ? esc(pct(roi.x, true)) : '—'}</strong>`
+      + `<em>${esc(roi ? roi.sub : 'no settled bets yet')}</em></div>`;
+    const openTile = `<div class="kpi" data-k="open"><span class="lab">Open bets</span><strong class="fit" data-odo="open">${esc(usd(pv.length ? pVal : 0))}</strong>`
+      + `<em>${pv.length ? `${pv.length} ${pv.length === 1 ? 'bet' : 'bets'}${evs.length ? ' · EV ' + esc(usd(sum(evs.map((m) => m.ev)), true)) : ''}` : 'none open'}</em></div>`;
+    const balSp = sp(eqVals);
+    return `<section class="card hero" id="sec-kpi" data-tilt><div class="bal"><div><span class="lab">${esc(k.name ? String(k.name).slice(0, 40) : 'Balance')}${k.name ? ' · balance' : ''}</span>`
+      + `<strong class="fit" data-odo="bal">${esc(usd(bal))}</strong></div>${balSp ? `<div class="bal-sp">${balSp}</div>` : ''}</div>`
+      + `<div class="kpis">${kp('today', 'Today', k.today_pnl, whole && tw + tl ? `${tw}W ${tl}L` : '', true, sp(cumul(pnlToday)))}`
+      + `${kp('week', 'Week', k.week_pnl, '', true, sp(cumul(wk)))}${kp('month', 'Month', month, '', true, sp(cumul(mo)))}`
+      + `${kp('all', 'All time', k.total_pnl, ok && aw + al ? `${fmtN(aw)}W ${fmtN(al)}L` : '', false, '')}${roiTile}${openTile}</div>`
+      + (k.status ? `<p class="status">${esc(k.status)}</p>` : '') + (k.note ? `<p class="muted">${esc(k.note)}</p>` : '')
+      + '<a class="lnk3d" href="../tyche/#wheel"><i aria-hidden="true"></i><span>See it in 3D</span><b>Tyche ›</b></a></section>';
   }
 
   // ---- equity curve: `equity` when published, else the running sum of the daily P&L
@@ -656,6 +698,27 @@
       + (stake != null ? `<span>bet ${esc(usd(stake))} ≈ ${esc(fmtN(Math.floor(stake / cc)))} contracts</span>` : '');
   }
 
+  // ---- live edge: the bot's chance against the price, per open bet (only bets that carry `prob`), the EV it adds up to, and
+  // where each bet sits against the bot's own minimum edge
+  function edgeHtml(k, v) {
+    const ps = v.pos.map(posModel).filter((m) => m.edge != null).sort(by((m) => m.edge, true));
+    if (!ps.length) return '';
+    const cfg = kellyCfg(k), evT = sum(ps.map((m) => m.ev || 0)), n = sum(ps.map((m) => m.n || 0));
+    const avg = n ? sum(ps.map((m) => m.edge * (m.n || 0))) / n : sum(ps.map((m) => m.edge)) / ps.length;
+    const risk = sum(ps.map((m) => m.cost || 0)), mx = Math.max(0.02, Math.max.apply(null, ps.map((m) => Math.abs(m.edge))));
+    const me = cfg.minEdge, meX = me != null ? Math.min(50, (me / mx) * 50) : null;
+    const rows = ps.map((m) => {
+      const w = Math.max(1.5, (Math.abs(m.edge) / mx) * 50), under = me != null && m.edge < me;
+      return `<li><div class="bk-t"><b>${sideTag(m.side)}${esc(m.title)}</b><span class="v ${cls(m.edge)}">${esc(edgeC(m.edge))}</span></div>`
+        + `<div class="dv" aria-hidden="true">${meX != null ? `<u style="left:${(50 + meX).toFixed(1)}%"></u>` : ''}<i class="${m.edge < 0 ? 'neg' : 'pos'}" style="width:${w.toFixed(1)}%"></i></div>`
+        + `<small>chance ${esc(pct(m.prob))} vs ${esc(cents(m.px != null ? m.px : m.avg))}${m.ev != null ? ' · EV ' + esc(usd(m.ev, true)) : ''}${under ? ' · <span class="down">under the bot\'s min edge</span>' : ''}</small></li>`;
+    }).join('');
+    return `<section class="card" id="sec-edge"><div class="card-h"><h2>Live edge</h2><span class="r ${cls(evT)}">${esc(usd(evT, true))} EV</span></div>`
+      + `<div class="edge-k"><div><span class="lab">Avg edge</span><b class="${cls(avg)}">${esc(edgeC(avg))}</b></div><div><span class="lab">EV / risk</span><b class="${cls(evT)}">${risk > 0 ? esc(pct(evT / risk, true)) : '—'}</b></div>`
+      + `<div><span class="lab">Bets</span><b>${ps.length}<small> of ${v.pos.length}</small></b></div></div>`
+      + `<ul class="brk edge-l">${rows}</ul><p class="muted small">Edge = the bot's own chance − the price now, per contract; EV = edge × contracts${me != null ? `; the line = its min edge ${esc((me * 100).toFixed(1))}¢` : ''}.</p></section>`;
+  }
+
   // ---- P&L by market category
   function catRows(k, v) {
     if (Array.isArray(k.categories)) {
@@ -863,6 +926,41 @@
     return `Read-only · the bot's own numbers and prices, as of its last update${pt ? ' · sent ' + esc(when(pt)) : ''}`;
   }
 
+  // ------------------------------------------------------------------ the four groups and their one-line summaries
+  const GROUPS = { today: '01', edge: '02', perf: '03', alerts: '04' };
+  function groupHtml(id, title, summary, cards) {
+    const body = cards.filter(Boolean).join('');
+    if (!body) return '';
+    return `<section class="grp" id="g-${id}" aria-labelledby="gh-${id}"><header class="grp-h"><span class="grp-n" aria-hidden="true">${GROUPS[id]}</span>`
+      + `<h2 id="gh-${id}">${esc(title)}</h2>${summary ? `<span class="grp-s">${summary}</span>` : ''}</header>${body}</section>`;
+  }
+  const todaySum = (k) => (num(k.today_pnl) == null ? '' : `<b class="${cls(k.today_pnl)}">${esc(usd(k.today_pnl, true))}</b> today`);
+  function edgeSum(v) {
+    const ev = v.pos.map(posModel).filter((m) => m.ev != null);
+    return ev.length ? `<b class="${cls(sum(ev.map((m) => m.ev)))}">${esc(usd(sum(ev.map((m) => m.ev)), true))}</b> EV` : v.pos.length ? 'Kelly sizing' : 'no open bets';
+  }
+  const perfSum = (k) => (num(k.total_pnl) == null ? '' : `<b class="${cls(k.total_pnl)}">${esc(usd(k.total_pnl, true))}</b> all time`);
+  function alertSum(k, v) {
+    const a = alertsList(k, v), bad = a.filter((x) => x.lv !== 'info').length;
+    S.alerts = { n: a.length, bad };
+    return bad ? `<b class="down">${bad} need${bad === 1 ? 's' : ''} you</b>` : a.length ? `${a.length} note${a.length === 1 ? '' : 's'}` : 'all quiet';
+  }
+  function navUi(data) {                     // the section bar: shown with data, the alerts count on its last button
+    const bar = $('#secnav');
+    if (!bar) return;
+    const b = bar.querySelector('[data-go="alerts"] b');
+    if (b) { const a = S.alerts || { n: 0, bad: 0 }; b.textContent = a.n ? String(a.n) : ''; b.className = a.bad ? 'bad' : ''; }
+    if (!data) { bar.hidden = true; return; }
+    const fx = FX();
+    if (fx) fx.nav(); else bar.hidden = false;
+  }
+  function emitData(v, data) {               // korb.js (the 3D header) listens: a point per open bet, a pulse on new numbers
+    const detail = { bets: data && v ? v.pos.map((p) => ({ side: sideKey(sideOf(p)) })) : [], fresh: S.fresh, state: S.state, shown: !!data };
+    S.fresh = false;
+    window.__kalshiData = detail;
+    try { document.dispatchEvent(new CustomEvent('kalshi:data', { detail })); } catch (_) { /* old browser */ }
+  }
+
   // ------------------------------------------------------------------ render
   function fit(root) {                    // shrink a number until it fits its box (long values, wide fonts): never cut off
     (root || document).querySelectorAll('.fit').forEach((el) => {
@@ -889,10 +987,14 @@
     else {
       const k = pv ? sample() : S.k, v = norm(k);
       S.v = v;
-      html = [pv ? previewBar() : notesHtml(k), safe('balance', () => heroHtml(k, v)), safe('alerts', () => alertsHtml(k, v)), safe('equity', () => eqHtml(v)),
-        safe('open bets', () => posHtml(v)), safe('sizing', () => kellyHtml(k, v)), safe('strategies', () => stratHtml(v)), safe('markets', () => catHtml(k, v)),
-        safe('prices', () => bucketHtml(k, v)), safe('calibration', () => calibHtml(k, v)), safe('daily P&L', () => barsHtml(v)), safe('calendar', () => calHtml(v)),
-        safe('stats', () => statsHtml(v, k)), safe('trades', () => tradesHtml(v))].join('');
+      // one clean hierarchy (owner 2026-11-03 "more organized"): Today -> Edge -> Performance -> Alerts
+      const eq = safe('equity', () => eqHtml(v));              // first: the stats read its series (max drawdown)
+      html = (pv ? previewBar() : notesHtml(k))
+        + groupHtml('today', 'Today', todaySum(k), [safe('balance', () => heroHtml(k, v)), safe('open bets', () => posHtml(v))])
+        + groupHtml('edge', 'Edge', edgeSum(v), [safe('live edge', () => edgeHtml(k, v)), safe('sizing', () => kellyHtml(k, v))])
+        + groupHtml('perf', 'Performance', perfSum(k), [eq, safe('calendar', () => calHtml(v)), safe('daily P&L', () => barsHtml(v)), safe('stats', () => statsHtml(v, k)),
+          safe('prices', () => bucketHtml(k, v)), safe('calibration', () => calibHtml(k, v)), safe('markets', () => catHtml(k, v)), safe('strategies', () => stratHtml(v))])
+        + groupHtml('alerts', 'Alerts', alertSum(k, v), [safe('alerts', () => alertsHtml(k, v)), safe('trades', () => tradesHtml(v))]);
     }
     S.label = S.k && S.state !== 'waiting' ? stateOf(S.k)[1] : '';
     const data = !!S.k && S.state !== 'waiting';
@@ -907,6 +1009,10 @@
     if (tape) { let th = ''; try { th = S.v && (S.k || pv) && S.state !== 'waiting' ? tapeHtml(S.v) : ''; } catch (_) { th = ''; } tape.innerHTML = th; tape.hidden = !th; }
     bindChart();
     fit(body);
+    const shown = pv || data, fx = FX();
+    navUi(shown);
+    emitData(S.v, shown);
+    if (fx && shown) { fx.odometer(body); fx.tilt(body); }
     if (fid) {
       const nEl = document.getElementById(fid);
       if (nEl) {

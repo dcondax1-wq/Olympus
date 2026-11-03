@@ -222,6 +222,25 @@ function autoLite(dt) {
   if (perf.slow >= 2 && state.quality === 'high' && !state.chosen && !reduced) setQuality('low', false);
 }
 
+// ------------------------------------------------------------------ OLYMPUS themes
+/** The page's one theme entry point: an OLYMPUS theme's tokens ({ accent, accent2, bg, text, muted } as #rrggbb) -> the HUD's
+ *  colours (gold, mint, text, dim). Only plain hex colours are taken; null / {} = Tyche's own gold and mint again. The 3D scene
+ *  keeps its gold: it is the fortune itself. Hooked to Olympus.theme() / onTheme when the kit has them. */
+const HEX = /^#([0-9a-f]{6}|[0-9a-f]{3})$/i, THEME_VARS = { accent: '--gold', accent2: '--mint', text: '--text', muted: '--dim', bg: '--bg' };
+function applyTheme(tokens) {
+  const root = document.documentElement, out = {};
+  Object.keys(THEME_VARS).forEach((k) => {
+    const v = tokens && typeof tokens === 'object' ? (tokens[k] != null ? tokens[k] : tokens['--oly-' + k]) : null;
+    if (typeof v === 'string' && HEX.test(v.trim())) { root.style.setProperty(THEME_VARS[k], v.trim()); out[k] = v.trim(); } else root.style.removeProperty(THEME_VARS[k]);
+  });
+  return out;
+}
+window.applyTheme = applyTheme;
+try {
+  if (O && typeof O.onTheme === 'function') O.onTheme(applyTheme);
+  if (O && typeof O.theme === 'function') { const t = O.theme(); if (t && typeof t === 'object') applyTheme(t); }
+} catch (_) { /* a kit without themes */ }
+
 // ------------------------------------------------------------------ boot
 window.tyche = {
   get mode() { return state.mode; },

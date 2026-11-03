@@ -39,6 +39,16 @@ export class Glow {
       g.strokeStyle = 'rgba(80,80,80,.6)'; g.lineWidth = 2;
       g.beginPath(); g.arc(s / 2, s / 2, s / 2 - 26, 0, Math.PI * 2); g.stroke();
     });
+    this.reeds = this.texture(128, (g, s) => {               // a milled coin edge: fine vertical reeds (a bump map, wrapped round)
+      g.fillStyle = '#808080'; g.fillRect(0, 0, s, s);
+      for (let x = 0; x < s; x += 4) {
+        const r = g.createLinearGradient(x, 0, x + 4, 0);
+        r.addColorStop(0, '#303030'); r.addColorStop(0.5, '#ffffff'); r.addColorStop(1, '#303030');
+        g.fillStyle = r; g.fillRect(x, 0, 4, s);
+      }
+    }, true);
+    this.reeds.colorSpace = THREE.NoColorSpace;
+    this.reeds.repeat.set(6, 1);
     this.fade = this.texture(64, (g, s) => {                 // vertical fade for the column of light (bright at the foot)
       const r = g.createLinearGradient(0, 0, 0, s);
       r.addColorStop(0, 'rgba(255,255,255,.05)');
@@ -102,6 +112,14 @@ export class Glow {
   metal(color, emissive = 0.35, opts = {}) {
     const T = this.T, c = new T.Color(color);
     return new T.MeshStandardMaterial({ color: c, metalness: 0.75, roughness: 0.32, emissive: c, emissiveIntensity: emissive, ...opts });
+  }
+
+  /** Minted metal: polished under a clear coat, so the scene's environment map (scene.js environment()) shines in it; only a
+   *  faint glow of its own, so the reflections carry the look. The coins (reeded edge, embossed face) and the wheel's gold. */
+  coin(color, opts = {}) {
+    const T = this.T, c = new T.Color(color);
+    return new T.MeshPhysicalMaterial({ color: c, metalness: 1, roughness: 0.22, clearcoat: 1, clearcoatRoughness: 0.1, emissive: c, emissiveIntensity: 0.16,
+      envMapIntensity: 1.6, ...opts });
   }
 
   /** A light that ignores the lights: for things that are light themselves. */

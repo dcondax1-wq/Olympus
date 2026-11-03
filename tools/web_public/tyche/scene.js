@@ -8,6 +8,7 @@ import { Scales, SCALES_X } from './scales.js';
 import { Glow } from './glow.js';
 
 export const BG = '#07060b';
+const INTRO_S = 2.6;                 // the intro camera move, seconds
 // each view: what the camera looks at, how much must fit (radius), its height angle and turn
 export const VIEWS = {
   wheel: { target: [0, 0.1, 0.3], r: 5.8, elev: 0.48, yaw: 0 },
@@ -38,6 +39,7 @@ export class FortuneScene {
     this.build();
     this.resize();
     this.snap = true;
+    this.intro = this.reduced ? 1 : 0;
   }
 
   makeRenderer() {
@@ -76,6 +78,13 @@ export class FortuneScene {
     panel('#5ef2c0', 6, 0, 2, [0.2, 3, 5]);
     panel('#ffa53d', 0, -1, -6, [8, 2, 0.2]);
     panel('#2a1c08', 0, -5, 0, [12, 0.2, 12]);
+    // a ring of eight warm softboxes overhead and two cool strips: the coins and the wheel's gold catch moving highlights
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      panel(i % 2 ? '#fff6e0' : '#ffd88a', Math.cos(a) * 4.2, 4.4, Math.sin(a) * 4.2, [1.4, 0.12, 0.5]);
+    }
+    panel('#9ff7dc', -4.5, 2.5, 4.5, [0.12, 0.35, 5]);
+    panel('#e8a8ff', 4.8, -0.5, -4, [0.12, 0.25, 4]);
     const pm = new T.PMREMGenerator(this.renderer);
     this.scene.environment = pm.fromScene(room, 0.04).texture;
     pm.dispose();
@@ -155,8 +164,19 @@ export class FortuneScene {
     return { look: t, eye: new T.Vector3(t.x + Math.sin(yaw) * Math.cos(v.elev) * d, t.y + Math.sin(v.elev) * d, t.z + Math.cos(yaw) * Math.cos(v.elev) * d) };
   }
 
-  drag(dx) { this.userYaw = Math.max(-1.1, Math.min(1.1, this.userYaw - dx * 0.006)); }
-  pinch(k) { this.zoom = Math.max(0.6, Math.min(1.5, this.zoom / k)); }
+  /** The intro (once, on the first frames with data): the camera starts high above the wheel, a quarter turn round, and
+   *  glides down into the view in INTRO_S, eased. A drag or a pinch ends it at once; reduced motion skips it. */
+  introMove(g, dt) {
+    this.intro = Math.min(1, this.intro + dt / INTRO_S);
+    const e = 1 - Math.pow(1 - this.intro, 3), off = 1 - e, T = this.T;
+    const rel = g.eye.clone().sub(g.look), d = rel.length();
+    const yaw = Math.atan2(rel.x, rel.z) + off * 1.35, elev = Math.asin(Math.max(-1, Math.min(1, rel.y / d))) + off * 0.62, dist = d * (1 + off * 0.9);
+    this.eye.copy(new T.Vector3(g.look.x + Math.sin(yaw) * Math.cos(elev) * dist, g.look.y + Math.sin(elev) * dist, g.look.z + Math.cos(yaw) * Math.cos(elev) * dist));
+    this.look.copy(g.look);
+  }
+
+  drag(dx) { this.intro = 1; this.userYaw = Math.max(-1.1, Math.min(1.1, this.userYaw - dx * 0.006)); }
+  pinch(k) { this.intro = 1; this.zoom = Math.max(0.6, Math.min(1.5, this.zoom / k)); }
   reset() { this.userYaw = 0; this.zoom = 1; }
 
   /** A tap at client (x, y) -> the key of the coin under it, or null. The hit spheres are generous (a fingertip), so when
@@ -187,6 +207,7 @@ export class FortuneScene {
     this.snap = false;
     this.eye.lerp(g.eye, k);
     this.look.lerp(g.look, k);
+    if (this.intro < 1) this.introMove(g, dt);
     this.camera.position.copy(this.eye);
     this.camera.lookAt(this.look);
     this.renderer.render(this.scene, this.camera);
