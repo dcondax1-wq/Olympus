@@ -200,7 +200,8 @@ export class CityScene {
     w.position.set((h.x0 + h.x1) / 2, 0.05, (h.z0 + h.z1) / 2);
     w.renderOrder = 1;
     this.scene.add(w);
-    const pier = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 0.3, 1.2), new THREE.MeshBasicMaterial({ color: 0x1c2442 }), h.piers);
+    const pier = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 0.12, 0.5), new THREE.MeshBasicMaterial({ color: 0x3fd8ff, transparent: true, opacity: 0.35,
+      blending: THREE.AdditiveBlending, depthWrite: false }), h.piers);              // neon pier lines
     const m4 = new THREE.Matrix4();
     for (let k = 0; k < h.piers; k++) { m4.makeScale(h.x1 - h.x0 - 20, 1, 1).setPosition((h.x0 + h.x1) / 2, 0.15, h.z0 + 7 + k * 7 - 2.2); pier.setMatrixAt(k, m4); }
     pier.renderOrder = 2;
@@ -237,7 +238,7 @@ export class CityScene {
     U.uHaze.value = 0.15 + w.haze;
     U.uWet.value = Math.min(1, 0.45 + w.rain * 0.8);
     U.uRain.value = w.rain;
-    const fog = new THREE.Color(FOG.night).lerp(new THREE.Color(FOG.day), sun.day).lerp(new THREE.Color(FOG.dusk), sun.dusk * 0.35 * (1 - sun.day));
+    const fog = new THREE.Color(FOG.night).lerp(new THREE.Color(FOG.day), sun.day).lerp(new THREE.Color(FOG.dusk), sun.dusk * 0.6 * (1 - sun.day * 0.5));
     if (w.storm || w.rain > 0) fog.lerp(new THREE.Color(FOG.storm), 0.35 + w.rain * 0.2);
     U.uFog.value.copy(fog);
     U.uFogD.value = (DENSITY.night + (DENSITY.day - DENSITY.night) * sun.day) * (1 + w.haze * 0.5);
