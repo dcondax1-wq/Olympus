@@ -52,3 +52,16 @@ Compared with Sunsama, Motion, Akiflow, Todoist, Notion Calendar and Structured.
 All three go through the Planner's own `snapshot()` + `commit()` (sync, tombstones, Undo); the only new key is the
 device-only `planner.flow.goal`. Tests: the patch's own `planner/tests/flow.test.js` (41 behaviour checks) and
 `tests.test_planner_addons` (the real patches apply to the live planner-backup and every `ext-*.js` is loaded once).
+
+## Day sprint 2026-11-03: the Kalshi page and Tyche, "higher quality, 3D, organized, futuristic"
+
+Screens (390 x 844, demo and live): `research/handoff/2026-11-03-day/kalshi/`.
+
+| Page | What changed |
+|---|---|
+| Kalshi: order | Four numbered groups: **Today** (balance, today / week / month, all time, ROI, open bets) -> **Edge** (live edge card, Kelly) -> **Performance** (curve, calendar, daily bars, stats, by price, calibration, by market, strategies) -> **Alerts** (alerts, recent trades). A sticky section bar (44 px taps, the alerts count) glides to each. |
+| Kalshi: money | Month = the bot's `month_pnl` when sent, else the sum of `days` since the 1st (ET). ROI = P&L on the money bet (`stats`, else the settled trades in the list), never on the balance. |
+| Kalshi: look | Glass cards (blur), a 3D market orb in the K mark (`korb.js`, three.js from `../jarvis/`, started after the first numbers, 30 fps max, paused when hidden or off screen, one still frame when `jfx` is off), odometer counters and glowing sparklines (`kfx.js`), a mouse tilt on the hero. Inside Jarvis the page ends 176 px above the bottom (the orb's corner). |
+| Kalshi: modules | `kalshi.js` (data + sections), `kfx.js` (the look), `korb.js` (the orb), `sw.js` k13 (versioned files from the copy with no refetch; kit.json waits 2 s at most on a dead site). |
+| Tyche | Minted coins (clear-coated metal, reeded edge, embossed face), richer reflections (softbox ring in the environment map), a mist round the fountain, the equity curve draws itself in with a comet running up it, an intro camera move (2.6 s, labels wait for it), a money strip and a "Kalshi ›" link (the Kalshi page links back: "See it in 3D"). |
+| Themes | Each page has one `window.applyTheme(tokens)` (`accent`, `accent2`, `bg`, `text`, `muted`; hex only). Hooked to `Olympus.theme()` / `onTheme` when the kit has them; the Kalshi page also follows `localStorage['olympus.theme']` (JSON tokens). |
