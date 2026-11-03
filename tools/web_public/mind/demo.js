@@ -52,6 +52,15 @@ const LEARNING = [
   ['Cold outreach works best on Tuesdays', 'Business/Cold outreach.md'],
 ];
 
+// a few notes carry a markdown preview (the card renders headings, lists, tasks, [[links]] and #tags)
+const PREVIEWS = {
+  'Trading/LIT strategy.md': '## The setup\n- Sweep of a LIT level, then **inducement**\n- Displacement, then the 5m CISD\n- Entry on the [[1m CISD trigger]]\n\n## Risk\n- Stop: [[Stop beyond the sweep extreme]]\n- [[Size follows the stop]], ==bank at 8R==\n\n#trading #lit',
+  'Goals/2027 goals.md': '## This year\n- [x] Start the Builder 50K eval\n- [ ] Pass it inside two weeks\n- [ ] [[Funded by spring]]\n> One clear target, no greed.',
+  'Health/Push day.md': '## Push\n1. Bench 5 x 5\n2. Overhead press 4 x 8\n3. Dips to failure\n\nSee [[Protein 180 g]] and [[Sleep 8 hours]].',
+  'Kalshi/Kalshi bot.md': '## Kalshi bot\nRuns 24/7 on its own server.\n- Strategy: [[Fade the favourite]]\n- Caps: [[Kalshi risk caps]]\n`paper first, then real money`',
+  'Business/OLYMPUS.md': '# OLYMPUS\nThe system that runs my life: **Jarvis** plus nine 3D apps.\n- [[Jarvis roadmap]]\n- [[Pricing]]\n- [ ] Landing page',
+};
+
 const IDEAS = ['Idea: Jarvis voice journal', 'Idea: Kalshi weather markets', 'Idea: gym PR wall', 'Idea: funded-trader content',
   'Idea: auto weekly review', 'Idea: OLYMPUS landing page'];
 
@@ -75,6 +84,7 @@ function build(size, now) {
       id: `${folder}/${title}.md`, title, path: `${folder}/${title}.md`, tags: k % 3 ? [...tags, pick(sub)] : tags.slice(),
       links: [], mtime: now - Math.floor(r() * r() * 420) * D - Math.floor(r() * D), words: Math.floor(80 + r() * r() * 2400),
       kind: 'note', snippet: k === 0 ? `${title}: the hub for everything ${folder.toLowerCase()}. Rules, numbers and what I learned.` : '',
+      ...(PREVIEWS[`${folder}/${title}.md`] ? { preview: PREVIEWS[`${folder}/${title}.md`] } : {}),
     }));
   }
   // links: each topic is a hub-and-spoke web with some cross-links, the way a real vault grows

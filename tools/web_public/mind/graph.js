@@ -2,6 +2,8 @@
 //   buildGraph(snap, now) -> {nodes, index, edges, clusters, learned, stats, sig}
 //   diffGraphs(prev, next) -> {first, added, changed, learned, structural}
 //   search(graph, query) -> every matching node, best first (title, then tag, then path)
+//   resolve(graph, name) -> the id a [[wikilink]] names (by title, file name or path), or null
+//   thoughts(graph, limit) -> the thought stream: what Jarvis learned and which notes changed, newest first
 // Clusters ("galaxies"): Jarvis memories, daily notes, the inbox and the "me" note by kind; every other note by its first tag
 // or folder that names a known topic (trading, goals, health, Kalshi, business), else its own tag or folder, else "Other".
 
@@ -88,7 +90,7 @@ export function buildGraph(snap, now = Date.now()) {
     }
   }
   for (const n of nodes) {
-    n.size = Math.min(26, 4.6 + 2.1 * Math.log2(1 + n.degree) + 1.1 * Math.log2(1 + n.words / 150)) * (n.kind === 'me' ? 1.8 : n.kind === 'memory' ? 0.85 : 1);
+    n.size = Math.min(26, 4.6 + 2.1 * Math.log2(1 + n.degree) + 1.1 * Math.log2(1 + n.words / 150)) * (n.kind === 'me' ? 1.8 : n.kind === 'memory' ? 1.2 : 1);
   }
   const learned = snap.learned.map((l) => ({ ...l, i: l.note != null && index.has(l.note) ? index.get(l.note) : -1 }));
   const weekAgo = now - WEEK;
@@ -136,4 +138,23 @@ export function search(graph, query) {
   }
   scored.sort((a, b) => a[0] - b[0] || a[1] - b[1] || a[2].title.localeCompare(b[2].title));
   return scored.map((x) => x[2]);
+}
+
+/** The note a [[wikilink]] points at: its title, its file name or its path (case-insensitive), else null. */
+export function resolve(graph, name) {
+  if (!graph.byName) {
+    const m = new Map(), put = (k, id) => { k = String(k || '').toLowerCase(); if (k && !m.has(k)) m.set(k, id); };
+    for (const n of graph.nodes) { put(n.path.replace(/\.md$/i, ''), n.id); put(n.title, n.id); put(n.path.split('/').pop().replace(/\.md$/i, ''), n.id); put(n.id, n.id); }
+    graph.byName = m;
+  }
+  return graph.byName.get(String(name || '').trim().toLowerCase()) || null;
+}
+
+/** The thought stream, newest first: every lesson Jarvis learned ({kind: 'learned', t, text, i}) and the notes edited most
+ * recently ({kind: 'edit', t, text, i}); i = -1 for a lesson about no note in particular. */
+export function thoughts(graph, limit = 24) {
+  const learned = graph.learned.map((l) => ({ kind: 'learned', t: l.t, text: l.text, i: l.i }));
+  const edits = graph.nodes.filter((n) => n.mtime && n.kind !== 'memory').sort((a, b) => b.mtime - a.mtime).slice(0, limit)
+    .map((n) => ({ kind: 'edit', t: n.mtime, text: n.title, i: n.i }));
+  return learned.concat(edits).sort((a, b) => b.t - a.t).slice(0, limit);
 }
