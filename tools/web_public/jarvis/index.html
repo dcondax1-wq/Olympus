@@ -96,6 +96,7 @@ window.addEventListener('error', function (e) {
 </script>
 <link rel="stylesheet" id="jcss" href="jarvis.css?v=j13">
 <script src="../olympus/themes.js?v=o2" id="olyThemesJs" async></script>
+<script src="../olympus/sfx.js?v=s1" id="olySfxJs" async></script>
 <style>.booted #bootfx{display:none}
 /* the start note works without jarvis.css (the stylesheet may be what did not arrive) */
 [hidden]{display:none!important}
@@ -904,6 +905,8 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     <label class="row-t"><span>Sounds<small>Soft clicks and chimes</small></span><input type="checkbox" id="setSound"></label>
     <label class="row-t"><span>Calm motion<small>Follow the iPhone's reduce-motion setting (off: the core always moves)</small></span><input type="checkbox" id="setCalm"></label>
     <label class="row-t"><span>OLYMPUS intro<small>The opening when Jarvis starts (full once a day, 1 s after that)</small></span><input type="checkbox" id="setIntro"></label>
+    <label class="row-t"><span>OLYMPUS sounds<small>Ticks, a portal whoosh, thunder, rank-ups. Follows the silent switch; never while Jarvis talks or listens</small></span><input type="checkbox" id="setOlySfx"></label>
+    <label>Sound volume<input id="setOlyVol" type="range" min="0" max="100" step="5" value="35"></label>
     <label class="row-t"><span>Haptics<small>A light tap you feel on buttons (iPhone: iOS 18 and later)</small></span><input type="checkbox" id="setHaptic"></label>
     <label class="row-t"><span>Tilt<small>The core leans with the phone (asks for motion access)</small></span><input type="checkbox" id="setTilt"></label>
     <div class="sheet-row"><button class="btn solid" type="button" id="lookX">Done</button></div>
@@ -1201,9 +1204,20 @@ function setFx(level, byOwner = true) {
   fx.restart();
   renderLook(); renderMore();
 }
+// OLYMPUS sounds (olympus/sfx.js, window.OLYMPUS_SFX; docs/OLYMPUS_SFX.md): ticks on taps, the portal whoosh on an app open. Silent until the
+// first touch (the kit's own rule), never while Jarvis speaks or listens, never over the intro (the intro calls the kit itself). The
+// switcher and the kit's OLYMPUS.sfx() ask window.OLYMPUS_QUIET first. Volume and mute: the kit's own key 'olympus.sfx' (⋯ → Look).
+function olyQuiet() {
+  try { return !!(root.hasAttribute('data-intro') || listening || speaking || state === 'listening' || state === 'speaking' || (vo && vo.speaking)); } catch (_) { return false; }
+}
+function olySfx(name) {
+  try { const k = window.OLYMPUS_SFX; if (!k || olyQuiet()) return false; return !!k.play(name); } catch (_) { return false; }
+}
+window.OLYMPUS_QUIET = olyQuiet; window.jarvisSfx = olySfx;
 let actx = null;
 function sfx(kind) {                                          // tiny synthesized cues; off unless the owner turns sounds on
   if (!S.sound()) return;
+  try { if (window.OLYMPUS_SFX && !window.OLYMPUS_SFX.state().muted) return; } catch (_) { /* the old cues */ }   // the OLYMPUS layer replaces them
   try {
     actx = actx || new (window.AudioContext || window.webkitAudioContext)();
     const t = actx.currentTime, o = actx.createOscillator(), g = actx.createGain();
@@ -1337,7 +1351,7 @@ function show(id, opts = {}) {
   else { stopListening(); closeMore(); if (a.id === 'zenith') showZenith(a, opts.route, seq); else frameView(a, opts.url); }
   renderBar();
   fx.restart();
-  if (was !== a.id && a.id !== 'home' && window.jarvisPortal) safe(() => window.jarvisPortal.jump({ id: a.id, name: a.name, color: a.accent, glyph: a.glyph }));   // portal.js: the warp plays over the loading app
+  if (was !== a.id && a.id !== 'home' && window.jarvisPortal) safe(() => { olySfx('portal'); window.jarvisPortal.jump({ id: a.id, name: a.name, color: a.accent, glyph: a.glyph }); });   // portal.js: the warp plays over the loading app
   if (was !== a.id) { sfx('open'); if (a.id !== 'home') logAct(`Opened ${a.name}`); if (nx) safe(() => nx.use(a.id)); }
   // The address stays the Jarvis screen (no #zenith): a reopen, or the iPhone reloading Jarvis in the background, always
   // starts on the Jarvis screen, never straight inside a dashboard.
@@ -2477,6 +2491,7 @@ function renderLook() {
   $('#hue').value = String(+(D.LS.get('jcustom', { h: 275 }) || {}).h || 275);
   $('#setSound').checked = S.sound(); $('#setTilt').checked = S.tilt(); $('#setCalm').checked = S.calm();
   $('#setIntro').checked = raw('jarvis.intro') !== 'off'; $('#setHaptic').checked = hapticOn();
+  safe(() => { const k = window.OLYMPUS_SFX, s = k && k.state(); $('#setOlySfx').checked = !!s && !s.muted; $('#setOlySfx').disabled = $('#setOlyVol').disabled = !k; if (s) $('#setOlyVol').value = String(Math.round(s.volume * 100)); });
   $('#fxNote').textContent = root.dataset.fxAuto ? 'Jarvis lowered the effects to keep this phone smooth. Pick a level to override.' : 'High is the phone default. Low keeps the glass and stops the motion; Off is fully static.';
 }
 function openLook() { closeSheets(); closeMore(); $('#look').hidden = false; renderLook(); }
@@ -2487,6 +2502,8 @@ $('#setGrain').addEventListener('change', () => { if (TH()) TH().grain($('#setGr
 $('#fxSeg').addEventListener('click', (e) => { const b = e.target.closest('[data-fx]'); if (b) setFx(b.dataset.fx); });
 $('#coreSeg').addEventListener('click', (e) => { const b = e.target.closest('[data-core-k]'); if (b) setCoreDesign(b.dataset.coreK); });
 $('#hue').addEventListener('input', () => { D.LS.set('jcustom', { h: +$('#hue').value }); if (root.dataset.theme !== 'custom') setTheme('custom'); else { applyCustom(); readColors(); if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme())); } });
+$('#setOlySfx').addEventListener('change', () => { safe(() => { const k = window.OLYMPUS_SFX; if (!k) return; k.mute(!$('#setOlySfx').checked); if ($('#setOlySfx').checked) k.play('tap'); }); });
+$('#setOlyVol').addEventListener('change', () => { safe(() => { const k = window.OLYMPUS_SFX; if (!k) return; k.setVolume(+$('#setOlyVol').value / 100); k.play('tap'); }); });
 $('#setSound').addEventListener('change', () => { D.LS.set('jarvis.sound', $('#setSound').checked); sfx('tap'); renderMore(); });
 $('#setTilt').addEventListener('change', async () => { await setTilt($('#setTilt').checked); renderLook(); });
 $('#setCalm').addEventListener('change', () => { D.LS.set('jarvis.calm', $('#setCalm').checked); if (core && mods.core) mountCore3d(); });
@@ -2673,8 +2690,8 @@ function haptic() {                                    // Android: vibrate; iPho
   });
 }
 document.addEventListener('click', (e) => {
-  const b = e.target && e.target.closest && e.target.closest('#home button, #home [role=button], .dock button, .tl-row, .nextchip, .fab');
-  if (b) haptic();
+  const b = e.target && e.target.closest && e.target.closest('#home button, #home [role=button], .dock button, .tl-row, .nextchip, .fab, #nxOrb');
+  if (b) { haptic(); olySfx('tick'); }
 }, { capture: true, passive: true });
 const ICO = {
   voice: '<path d="M3 12h2M7 8v8M11 5v14M15 8v8M19 11v2"/>',

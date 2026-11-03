@@ -366,6 +366,7 @@ export function mountSwitcher(opts = {}) {
     wake();
   }
   function go(id) {
+    try { if (win.jarvisSfx) win.jarvisSfx('tap'); } catch (_) { /* the sound layer is optional */ }
     close(); hideFan();
     if (id && id !== activeId()) call(opts.onSwitch, id);
     orb.classList.remove('pulse'); void orb.offsetWidth; orb.classList.add('pulse');
