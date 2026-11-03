@@ -251,11 +251,22 @@ function autoLite(dt) {
 }
 
 // ------------------------------------------------------------------ themes (OLYMPUS)
-/** An OLYMPUS theme's tokens ({accent, bg} or the CSS names --oly-accent / --bg) onto the HUD and the 3D column. */
+const OWN_ACCENT = '#7fe9ff';
+const hexOk = (c) => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
+/** '#rrggbb' a blended toward b by t (0 = a untouched): the kit's own mix when it is there. */
+function blend(a, b, t) {
+  const TH = window.OLYMPUS_THEMES;
+  if (TH && typeof TH.mix === 'function') return TH.mix(a, b, t);
+  const n = (h, i) => parseInt(h.substr(i, 2), 16);
+  return '#' + [1, 3, 5].map((i) => Math.round(n(a, i) + (n(b, i) - n(a, i)) * t).toString(16).padStart(2, '0')).join('');
+}
+/** An OLYMPUS theme's tokens onto the HUD accent and the 3D column. The kit's themes (they carry harmony / mix) lean the
+    app's own cyan toward the theme accent by `harmony` (the default theme: harmony 0, nothing changes); the kit itself
+    repaints --bg / --glass and the scene's fog. Plain tokens ({accent, bg}) are applied as they are. */
 function applyTheme(tokens) {
-  const t = tokens || {}, root = document.documentElement.style;
-  const accent = t.accent || t['--oly-accent'] || t['--accent'], bg = t.bg || t.background || t['--bg'];
-  const hexOk = (c) => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
+  const t = tokens || {}, root = document.documentElement.style, kit = t.harmony != null || t.mix != null;
+  let accent = t.accent || t['--oly-accent'] || t['--accent'], bg = kit ? null : (t.bg || t.background || t['--bg']);
+  if (kit) accent = hexOk(accent) ? blend(OWN_ACCENT, accent, +t.harmony || 0) : OWN_ACCENT;
   if (hexOk(accent)) {
     root.setProperty('--accent', accent);
     root.setProperty('--accent-rgb', [1, 3, 5].map((i) => parseInt(accent.substr(i, 2), 16)).join(', '));

@@ -1,4 +1,5 @@
-// ODEON UI: the reel list (film reels), the transport (play, speed, scrub with event ticks) and the stats card.
+// ODEON UI: the reels gallery (3D poster cards, best $ first), the transport (play, speed, scrub with event ticks), the
+// stats card.
 // DOM only; no three.js. Every text goes in with textContent (no HTML from the data).
 import { fmtUsd, fmtR, fmtPx, dayLabel, hhmm, heldLabel, exitLabel, outcomeOf, spark } from './data.js';
 
@@ -11,34 +12,61 @@ const el = (tag, cls, text) => {
   return e;
 };
 
-function sparkSvg(tr) {
-  const v = spark(tr, 40);
-  const lo = Math.min(...v), hi = Math.max(...v), W = 92, H = 34;
-  const pts = v.map((p, i) => `${((i / (v.length - 1)) * W).toFixed(1)},${(H - 3 - ((p - lo) / Math.max(1e-6, hi - lo)) * (H - 6)).toFixed(1)}`);
+/** The poster's art: the trade's tape as a glowing line, the entry marked (an SVG, built once per card). */
+function posterArt(tr) {
+  const v = spark(tr, 48);
+  const lo = Math.min(...v), hi = Math.max(...v), W = 160, H = 64;
+  const y = (p) => H - 6 - ((p - lo) / Math.max(1e-6, hi - lo)) * (H - 14);
+  const pts = v.map((p, i) => `${((i / (v.length - 1)) * W).toFixed(1)},${y(p).toFixed(1)}`);
   const ns = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(ns, 'svg');
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('preserveAspectRatio', 'none');
   svg.setAttribute('aria-hidden', 'true');
+  const area = document.createElementNS(ns, 'polygon');
+  area.setAttribute('points', `0,${H} ${pts.join(' ')} ${W},${H}`);
+  area.setAttribute('class', 'p-area');
   const pl = document.createElementNS(ns, 'polyline');
   pl.setAttribute('points', pts.join(' '));
-  svg.append(pl);
+  pl.setAttribute('class', 'p-line');
+  const B = tr.B, ix = Math.max(0, Math.min(v.length - 1, Math.round(((tr.entry.t - B.t[0]) / Math.max(1, B.t[B.n - 1] - B.t[0])) * (v.length - 1))));
+  const dot = document.createElementNS(ns, 'circle');
+  dot.setAttribute('cx', ((ix / (v.length - 1)) * W).toFixed(1));
+  dot.setAttribute('cy', y(tr.entry.px).toFixed(1));
+  dot.setAttribute('r', '3');
+  dot.setAttribute('class', 'p-entry');
+  svg.append(area, pl, dot);
   return svg;
 }
 
-/** the reel list: one film reel per trade, filters, tap to play */
+/** The reels in the order the gallery shows them: 'usd' = the best $ first (the owner's default), 'new' = newest first. */
+export function sortReels(trades, by) {
+  const T = trades.slice();
+  if (by === 'usd') T.sort((a, b) => b.usd - a.usd || b.entry.t - a.entry.t);
+  else T.sort((a, b) => b.entry.t - a.entry.t);
+  return T;
+}
+
+const SRC = { backtest: 'replay', paper: 'paper', real: 'real', pc: 'pc bars' };
+
+/** The reels gallery: one 3D poster card per trade (sorted by $ or by date), filters, tap to play */
 export class Reels {
   constructor(root, onPick) {
     this.root = root;
     this.list = root.querySelector('#reelList');
     this.sum = root.querySelector('#reelSum');
+    this.note = root.querySelector('#reelNote');
     this.onPick = onPick;
     this.filter = 'all';
+    this.sort = 'usd';
     this.trades = [];
-    root.querySelectorAll('.chip[data-f]').forEach((b) => b.addEventListener('click', () => {
-      this.filter = b.dataset.f;
-      root.querySelectorAll('.chip[data-f]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    const group = (sel, key) => root.querySelectorAll(sel).forEach((b) => b.addEventListener('click', () => {
+      this[key] = b.dataset[key === 'filter' ? 'f' : 's'];
+      root.querySelectorAll(sel).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
       this.render();
     }));
+    group('.chip[data-f]', 'filter');
+    group('.chip[data-s]', 'sort');
   }
 
   set(trades, demo) {
@@ -47,38 +75,44 @@ export class Reels {
     this.render();
   }
 
-  render(activeId) {
+  /** a line above the posters (e.g. the trade Oracle asked for has no film yet); '' hides it */
+  say(text) {
+    this.note.textContent = text || '';
+    this.note.hidden = !text;
+  }
+
+  render() {
     const f = this.filter;
-    const T = this.trades.filter((t) => f === 'all' || (f === 'lit' && t.bot === 'LIT') || (f === 'atlas' && t.bot === 'ATLAS')
-      || (f === 'win' && outcomeOf(t) === 'win') || (f === 'loss' && outcomeOf(t) === 'loss'));
+    const T = sortReels(this.trades.filter((t) => f === 'all' || (f === 'lit' && t.bot === 'LIT') || (f === 'atlas' && t.bot === 'ATLAS')
+      || (f === 'win' && outcomeOf(t) === 'win') || (f === 'loss' && outcomeOf(t) === 'loss')), this.sort);
     this.list.textContent = '';
     const net = T.reduce((a, t) => a + t.usd, 0);
-    const last = this.trades.length ? this.trades[this.trades.length - 1].day : '';
-    const first = this.trades.length ? this.trades[0].day : '';
+    const days = this.trades.map((t) => t.day).sort();
     this.sum.textContent = this.demo ? 'Demo reel (no trades file yet)'
-      : `${T.length} reels · ${dayLabel(last)} → ${dayLabel(first)} · net ${fmtUsd(net)}`;
-    for (const t of T) {
+      : `${T.length} reels · ${dayLabel(days[0] || '')} → ${dayLabel(days[days.length - 1] || '')} · net ${fmtUsd(net)}`;
+    T.forEach((t, k) => {
       const o = outcomeOf(t);
       const li = el('li');
       const b = el('button', 'reel o-' + o);
       b.type = 'button';
       b.dataset.id = t.id;
-      if (t.id === (activeId || this.active)) b.setAttribute('aria-current', 'true');
+      b.style.setProperty('--i', String(Math.min(k, 18)));
+      if (t.id === this.active) b.setAttribute('aria-current', 'true');
+      b.setAttribute('aria-label', `${t.bot === 'ATLAS' ? 'ATLAS ' + t.strat : 'LIT'} ${t.side.toLowerCase()} ${dayLabel(t.day)}: ${fmtUsd(t.usd)}, ${fmtR(t.r)}`);
+      const poster = el('span', 'poster');
+      poster.append(posterArt(t), el('span', 'p-rank', this.sort === 'usd' ? '#' + (k + 1) : dayLabel(t.day).split(' ').slice(1).join(' ')),
+        el('b', 'p-usd', fmtUsd(t.usd)), el('span', 'p-r', fmtR(t.r)));
       const top = el('span', 'r-top');
       top.append(el('span', 'r-bot b-' + t.bot.toLowerCase(), t.bot === 'ATLAS' ? 'ATLAS · ' + t.strat : 'LIT'),
-        el('span', 'r-src s-' + t.src, t.src === 'backtest' ? 'replay' : t.src));
-      const mid = el('span', 'r-mid');
+        el('span', 'r-src s-' + t.src, SRC[t.src] || t.src));
       const info = el('span', 'r-info');
       info.append(el('span', 'r-date', `${dayLabel(t.day)} · ${hhmm(t.entry.t, t.off)} ET`),
-        el('span', 'r-side ' + (t.side === 'LONG' ? 'long' : 'short'), `${t.side} · ${t.qty} micro${t.qty === 1 ? '' : 's'}`));
-      const res = el('span', 'r-res');
-      res.append(el('b', '', fmtR(t.r)), el('span', '', fmtUsd(t.usd)));
-      mid.append(info, sparkSvg(t), res);
-      b.append(top, mid);
+        el('span', 'r-side ' + (t.side === 'LONG' ? 'long' : 'short'), `${t.side} · ${t.qty} micro${t.qty === 1 ? '' : 's'} · ${exitLabel(t.exit.kind).toLowerCase()}`));
+      b.append(poster, top, info);
       b.addEventListener('click', () => this.onPick(t.id));
       li.append(b);
       this.list.append(li);
-    }
+    });
   }
 
   mark(id) {
