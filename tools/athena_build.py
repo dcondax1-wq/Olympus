@@ -32,6 +32,7 @@ TAGS = [
     {"id": "words", "name": "Words", "color": "#7ef0c4", "blurb": "Every term in plain words"},
     {"id": "playbook", "name": "When...", "color": "#d49bff", "blurb": "What to do when something happens"},
     {"id": "numbers", "name": "Numbers", "color": "#ff9f5a", "blurb": "The results and the money"},
+    {"id": "olympus", "name": "OLYMPUS", "color": "#9d8cff", "blurb": "How to use each app, and your daily routine"},
 ]
 
 # sentences the library relies on: the build fails when one of these is no longer in its source file
@@ -346,6 +347,150 @@ def entries():
     add("p-new", "playbook", "When... I want to try a new idea",
         "Search the rejected list first. Then test it on both halves with costs and 2 or more trades a week.",
         ["Keep it only if it is better in 2026 and in 2021 to 2025.", "Ask the chat to run it. Do not change live rules by hand."], ["rejected"], [D])
+    # ---------------------------------------------------------------- how to use OLYMPUS (one entry per app; facts from each app's own
+    # folder under tools/web_public/ (meta description + jarvis.json card), docs/CLAUDE_REFERENCE.md, docs/JARVIS_OBSIDIAN.md, handoff/ONBOARD.md)
+    WP = "tools/web_public/"
+    REF = "docs/CLAUDE_REFERENCE.md"
+    SITE = "https://demetrades2000-coder.github.io/nq-dashboard/"
+
+    def app(id, title, short, look, body=(), tags=(), src=(), quiz=None):
+        add(id, "olympus", title, short, [*body, "Open it when: " + look[0], "The one thing to look at: " + look[1]], tags, src, quiz=quiz)
+
+    app("o-jarvis", "Jarvis: the home app",
+        "Jarvis is your home screen app. You see a greeting, the NQ market line and a card for each of your apps. You can type to it or talk to it.",
+        ("you start the day, or want any answer fast.", "the short list of what needs you first. Urgent things come first."),
+        ["The round orb in the corner jumps you to any other OLYMPUS app.",
+         "Without any key it answers from your own numbers: status, room left to the floor, today's P&L, \"open Zenith\".",
+         "It never places a trade. It reads and it opens things."], [], [REF, "tools/web_public/jarvis/"])
+    add("o-jarvis-modes", "olympus", "Jarvis modes",
+        "Jarvis has five modes: Auto, Trading, Research, Business and Life. A mode changes the quick questions, which apps show first and how Jarvis thinks.",
+        ["Switch with the chips above the quick questions, or say \"switch to research mode\".",
+         "Auto (the default) picks the mode from the words of your question.",
+         "Trading = the bots, the room left and the plan. Research = Data City, Prometheus, DAPHNE and the Mind. Business = money goal, more accounts, Kalshi, to-dos with deadlines. Life = Planner and reminders.",
+         "Open it when: you switch from trading to studying or planning.", "The one thing to look at: the quick questions change with the mode."], [], [REF])
+    add("o-jarvis-think", "olympus", "Jarvis: Think for me",
+        "Tap Think for me (or say \"think for me\" or \"what would you do\") and Jarvis gives you 3 ideas of what to do next, most urgent first.",
+        ["With no key it uses rules over your numbers: the 7-day rule, room left, a stale feed, due to-dos, a reminder soon, tomorrow's plan.",
+         "With a free key a model writes the 3 ideas instead. If anything fails, the rules answer.",
+         "Every idea is an ask, an open or a mode switch. It is never a trade.",
+         "Open it when: you do not know what to do next.", "The one thing to look at: the first idea. It is the urgent one."], [], [REF])
+    add("o-jarvis-talk", "olympus", "Jarvis: talking",
+        "Jarvis speaks every answer out loud by default, and you can talk to it when your phone allows the mic. There is a speaker toggle to turn the voice off.",
+        ["On iPhone the first tap unlocks the sound. After that it can speak.",
+         "If the mic is not allowed (common in a Home Screen app) there is a type-to-talk field instead.",
+         "The Voice sheet lists the voices, best first. See [[o-phone]] for the best voice.",
+         "Open it when: your hands are busy.", "The one thing to look at: the speaker toggle, if you want it quiet."], [], [REF])
+    add("o-jarvis-key", "olympus", "Jarvis: smart mode (free key)",
+        "Smart mode makes Jarvis answer anything, not only your numbers. It needs a free key from Groq, Gemini or OpenRouter. The setup screen walks you through it.",
+        ["1. In Jarvis tap the three dots, then AI key, then Free key setup. (Or say \"set up smart mode\".)",
+         "2. Pick Groq, Gemini or OpenRouter. Each tab has 3 steps and a button to the key page.",
+         "3. Paste the key and tap Test. It saves only after Jarvis got an answer.",
+         "The key stays on your phone and is only sent to the company you chose. Never paste it in chat.",
+         "Open it when: you want questions answered that your numbers cannot answer.",
+         "The one thing to look at: the Test result."], [], [REF],
+        quiz={"q": "Where does your smart mode key live?", "a": "Only on your phone", "wrong": ["In the GitHub repo", "In the Telegram chat", "On the PC bot"]})
+    add("o-jarvis-obsidian", "olympus", "Jarvis and Obsidian notes",
+        "Jarvis reads your Obsidian notes, answers from them and adds to them, but only after you say yes. It is free.",
+        ["Set up once (about 5 minutes): install the Git plugin in Obsidian, make a private GitHub repo named obsidian-vault, make a token with Contents read and write for that repo.",
+         "Then in Jarvis: three dots, Obsidian, paste the repo and the token, Connect.",
+         "Say \"what did I write about drawdown\", \"open tasks\" or \"today's daily note\". Say \"note: ...\" to save one. It asks first.",
+         "Open it when: you want to write something down or find something you wrote.", "The one thing to look at: the yes or no question before it saves."], [], ["docs/JARVIS_OBSIDIAN.md"])
+    app("o-zenith", "Zenith: the phone dashboard",
+        "Zenith is the dashboard that runs even when the PC is off. It shows the bots' state, today's result, the equity curve against the drawdown floor and the next trading window.",
+        ("you want the full picture of the bots, trades and results.", "the equity curve and how far it sits above the drawdown floor ([[floor]])."),
+        ["It is read-only and paper first. It never places or changes a trade.", "It refreshes when the cloud monitor runs, so a number can be a few minutes old."],
+        [], [REF, "docs/ZENITH_COMPARISON.md"])
+    app("o-oracle", "Oracle: the live radar",
+        "Oracle is a live 3D radar of NQ. It draws the bot's levels, the sweeps, which stage the bot is in and its position.",
+        ("you want to see what the bot is waiting for right now.", "the stage the bot is in, and whether it holds a position."),
+        ["Look at the levels it draws: they are the same levels the strategy marks (see [[step-1]])."], [], ["tools/web_public/oracle/"])
+    app("o-odeon", "Odeon: trade replays",
+        "Odeon replays the bots' trades as a 3D film, bar by bar, with captions. Each trade is a reel.",
+        ("a trade is done and you want to see how it played out.", "the caption on the latest reel: the result in dollars and in [[r]]."),
+        ["The card in Jarvis shows the number of reels and the net of all of them."], [], ["tools/web_public/odeon/"])
+    app("o-fates", "Fates: your odds",
+        "Fates runs a Monte Carlo (many simulated futures) on the bots' own results and shows how likely an eval is to pass, to fail, and what a month is worth. Paper only.",
+        ("you start a new eval, or wonder how risky it is.", "the pass odds and the fail odds next to each other."),
+        ["It is a simulation of the past. It is not a promise."], [], ["tools/web_public/fates/"])
+    app("o-datacity", "Data City: tested ideas",
+        "Data City draws every tested time of day, confluence and market state as a building. It is the machine that tests ideas against the data.",
+        ("you are curious what was tested, or you have a new idea.", "how many buildings pass the noise guard, and how many a placebo test lets through."),
+        ["Before you suggest an idea, look at [[x-all]]. Many ideas died here."], [], ["tools/web_public/datacity/"])
+    app("o-daphne", "DAPHNE: the strategy tree",
+        "DAPHNE searches a tree of rules. Each branch adds one condition to a plain level trade. It cuts branches that cannot win and tests the best path on data it never saw.",
+        ("you want to know if a rule idea holds up.", "the out-of-sample result. If it is no better than chance, it is paper only."),
+        ["Today's card says the top rules are no better than chance, so nothing changes in the bot."], [], ["tools/web_public/tree/", "docs/CLAUDE_REFERENCE.md"])
+    app("o-prometheus", "Prometheus: evolving the bot",
+        "Prometheus breeds many versions of the live strategy's settings and checks each survivor on data it was not bred on.",
+        ("you wonder if the live settings can be improved.", "does the champion still win on the second half (H2). If it drops, the live settings stay."),
+        ["Nothing it finds changes the bot by itself."], [], ["tools/web_public/prometheus/"])
+    app("o-pantheon", "Pantheon: the market mood",
+        "Pantheon collects free market data (liquidity, rates, volatility, the calendar, the dollar, credit, crypto), one Greek god per source, and ends with a Council verdict.",
+        ("before the session, for the big picture.", "the Council verdict, for example Mixed 44 out of 100."),
+        ["It is context only. The bot does not use it to trade."], [], ["tools/web_public/pantheon/", "docs/PANTHEON.md"])
+    app("o-planner", "Planner: your calendar",
+        "Planner is your calendar. Jarvis reads it for the day's card and for reminders.",
+        ("you plan the day or the week.", "what is due today."),
+        ["On iPhone each Home Screen app keeps its own storage, so link the Planner's sync once inside Jarvis."], [], [REF, "docs/JARVIS_APPS.md"])
+    app("o-mind", "Mind: your notes as a brain",
+        "Mind shows your Obsidian notes and Jarvis's memory as a living 3D brain.",
+        ("you want to see what you have been thinking about.", "the big clusters: they are the themes of your notes."),
+        [], [], ["tools/web_public/mind/"])
+    app("o-arena", "Arena: ranks and labours",
+        "Arena gives you XP, ranks, 12 Labours, daily quests and streaks. XP comes only from things that can be checked, like the bots running.",
+        ("you want a small goal for the day.", "today's quests."),
+        ["It is a game layer over real events. Paper only."], [], ["tools/web_public/arena/"])
+    app("o-kalshi", "Kalshi: the other bot",
+        "The Kalshi page shows your Kalshi bot's balance, profit, open bets with their edge, the size it uses and how well its odds were right.",
+        ("you want to check the Kalshi bot.", "balance and today's profit."),
+        ["The page only shows numbers the bot's server sends. It is a separate bot with real money, and it lives on its own server."], [], ["tools/web_public/kalshi/", "handoff/ONBOARD.md"])
+    app("o-tyche", "Tyche: Kalshi as a wheel",
+        "Tyche draws the Kalshi bot's bets as a wheel of fortune. Open bets orbit as coins. Wins fall into the gold fountain.",
+        ("you want a fun look at the Kalshi bot.", "the coins that are still open."),
+        ["It is read-only."], [], ["tools/web_public/tyche/"])
+    app("o-hermes", "Hermes: your week",
+        "Hermes (Wrapped) tells the week of the bots as stories: net dollars, dollars a month, the best and worst trade, evals and discipline.",
+        ("on Friday evening or the weekend.", "the net for the week and the best trade."),
+        [], [], ["tools/web_public/hermes/"])
+    app("o-bridge", "Bridge: working with ChatGPT",
+        "Bridge is a page of jobs you can hand to ChatGPT (art, text, bulk work). Claude does the engine, the tests and the publishing.",
+        ("you want ChatGPT to make something for OLYMPUS.", "the list of job cards."),
+        ["It never touches the bots. ChatGPT only adds files in a folder called handoff/inbox."], [], ["handoff/ONBOARD.md", "handoff/SYNC.md", "tools/web_public/bridge/"])
+    add("o-bridge-sync", "olympus", "Bridge: the ChatGPT sync steps",
+        "Paste the onboarding text into ChatGPT once. After that ChatGPT and Claude stay in step through one GitHub repo.",
+        ["1. One time: open handoff/ONBOARD.md in the repo and paste it into ChatGPT.",
+         "2. Copy a job card from the Bridge page and give it to ChatGPT.",
+         "3. ChatGPT builds it and adds the files under handoff/inbox/<job>/ in a pull request. It never edits the bots.",
+         "4. Tell Claude \"Bridge: <job> done\". Claude checks it, wires it in and ships it.",
+         "Rules for ChatGPT: paper only, no keys or logins, no changes to the engine or live settings.",
+         "Open it when: you want ChatGPT to build something.", "The one thing to look at: the job card you copy."], [], ["handoff/ONBOARD.md", "handoff/SYNC.md"])
+    app("o-ares", "Ares: the war room",
+        "Ares is the checklist and the risk calculator. You type the entry and the stop and it says GO, WAIT or HALT and how many contracts fit.",
+        ("before you place any trade by hand.", "the verdict: GO, WAIT or HALT."),
+        ["Size follows the stop: a wide stop means fewer contracts."], [], ["tools/web_public/ares/"])
+    app("o-plutus", "Plutus: the money plan",
+        "Plutus shows how many prop accounts you could run, what they cost, when payouts land and what a month is worth. Sliders, no promises.",
+        ("you plan more accounts or wonder about money.", "dollars a month on the later half of the data (Jul to Oct)."),
+        ["2021 to 2025 is shown as a reference only."], [], ["tools/web_public/plutus/"])
+    app("o-athena", "Athena: this library",
+        "Athena is this library. Search it, tap a shelf, read the playbooks or take the quiz.",
+        ("you forget a rule or a word, or something happens and you want the playbook.", "the search box: type one word."),
+        ["Quiz me gives 5 questions from the library and saves nothing."], [], ["tools/web_public/athena/"])
+    add("o-phone", "olympus", "Phone setup",
+        "Add each OLYMPUS app to your Home Screen, close and reopen it after an update, and pick the best voice for Jarvis.",
+        ["1. Open the page in Safari, tap Share, then Add to Home Screen. Do it for Jarvis, and for any app you use a lot.",
+         "2. After an update, fully close OLYMPUS (swipe it away) and reopen it so the new version loads.",
+         "3. A white or black screen means the page did not load. Delete the icon and add it again from Safari.",
+         "4. Voice tip: Settings, then Accessibility, then Spoken Content, then Voices, then Ava (Premium). Download it and Jarvis sounds better.",
+         "5. Each Home Screen app keeps its own storage, so connect the Planner, your key and Obsidian inside Jarvis once.",
+         "Main page: " + SITE + " (Jarvis is at /jarvis/)."], [], [REF, "docs/JARVIS_APPS.md"],
+        quiz={"q": "Where do you get the best Jarvis voice on iPhone?", "a": "Settings, Accessibility, Spoken Content, Voices, Ava (Premium)", "wrong": ["Jarvis menu, Sound, Robot", "Settings, Siri, Language", "App Store, Voices"]})
+    add("p-daily", "playbook", "Daily routine",
+        "A simple day: look before the session, leave the bot alone during it, review after. Three short steps each.",
+        ["BEFORE the session: 1. Open Jarvis and read the first item on its list. 2. Check the bot is on and its feed is not stale in [[o-zenith]]. 3. Check days since the last trade (the [[m-idle]] rule) and the room left to the [[floor]].",
+         "DURING: 1. Let the bot trade. New entries can start from 02:00 to 15:30 New York time. 2. Watch in [[o-oracle]] if you like, but change nothing. 3. Do not trade by hand without [[o-ares]] saying GO.",
+         "AFTER: 1. Everything is flat by 15:55. Look at the result in [[o-zenith]]. 2. If a trade closed, watch it in [[o-odeon]]. 3. Write one line in your notes (say \"note: ...\" to Jarvis) and read tomorrow's plan.",
+         "If something looks wrong, tell the chat. Do not change settings yourself."], ["olympus"], [REF, "STRATEGY.md"])
     return E
 
 
