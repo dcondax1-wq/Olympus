@@ -6,9 +6,11 @@ page), Explorer, OneDrive (Documents and NinjaTrader's folder may live in OneDri
 
 LIGHT part (any time, also while the bot trades; no Administrator):
   1. before: memory, CPU, the 12 programs using the most memory, disk
-  2. closes programs not needed for trading (Discord, Obsidian, Spotify, Steam, Epic, Teams, Skype, Zoom, Widgets,
+  2. closes programs not needed for trading (Discord, Spotify, Steam, Epic, Teams, Skype, Zoom, Widgets,
      Phone Link, Xbox / Game Bar, Telegram, WhatsApp ...)
-  3. keeps those from starting at sign-in: the same switch as Task Manager > Startup apps > Disabled (turn one back on there)
+  3. keeps those from starting at sign-in: the same switch as Task Manager > Startup apps > Disabled (turn one back on there).
+     Obsidian is protected (2026-11-03: the owner's notes vault, Jarvis syncs it with Obsidian Git): never closed, never
+     switched off, and a sign-in entry an older CLEAN_PC switched off is switched back on (every run and -Undo).
   4. a lighter Windows: transparency, taskbar animations and window animations off; the Widgets and Copilot buttons off;
      no more suggested / silently installed apps
   5. junk: your Temp folder (files older than 2 days), crash dumps, NinjaTrader's own old log and trace files (14+ days)
@@ -21,7 +23,12 @@ each heavy step checks the clock again and stops before 01:15 ET so it never run
      People, Movies & TV, Skype, Teams (personal), Mixed Reality (they come back from the Microsoft Store if wanted)
  10. Windows' component store clean-up (DISM /StartComponentCleanup: old update files; this one takes a while)
  11. a Microsoft Defender quick scan
-  after: memory again and what changed. Log: logs\clean_pc-YYYYMMDD-HHMM.txt
+ 12. v2 DEEP TUNE (scripts\pc_tune.ps1, before step 10): a trading power plan (Surface: CPU capped for less heat), unneeded
+     services off, memory settings by RAM size, Defender skips only NinjaTrader's / the bot's data folders, network power
+     saving off, Edge / Chrome / Office lighter, Storage Sense, a priority helper task and a Sunday care task. Every change is
+     recorded first and UNDO_PC_TUNE.bat (or -Undo) puts it all back. Details: the top of scripts\pc_tune.ps1.
+  after: memory again and what changed, a HEALTH SCORE before and after (0-100: free memory, CPU idle, start-up apps, free
+  disk, temperature when readable). Log: logs\clean_pc-YYYYMMDD-HHMM.txt
 ALSO (read-only, every run):
   NinjaTrader check: reads (never changes) NinjaTrader's folder: OneDrive sync, workspaces and charts (days loaded, Tick
      Replay, indicators), ATI, the size of its historical data; prints what to change by hand. Copies the workspaces to
@@ -37,17 +44,20 @@ MAIN PC (no bot folder): copy the PC_KIT folder (CLEAN_PC.bat + scripts\clean_pc
   powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\clean_pc.ps1            (CLEAN_PC.bat runs this)
   powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\clean_pc.ps1 -DryRun    (shows the plan, changes nothing)
   powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\clean_pc.ps1 -Report    (only the PC report + NinjaTrader check)
+  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\clean_pc.ps1 -Undo      (undo the deep tune; UNDO_PC_TUNE.bat)
 #>
 param(
     [switch]$DryRun,
     [switch]$LightOnly,
     [switch]$Standalone,    # main PC: no bot folder (auto when server.py / engine\ninjatrader.py are missing)
     [switch]$Report,        # only the PC report and the NinjaTrader check; changes nothing
+    [switch]$Undo,          # undo the v2 deep tune (scripts\pc_tune.ps1 -Undo)
     [switch]$AdminPart,     # internal: the elevated deep part, started by this script with a UAC prompt
     [string]$Log = ""       # internal: the same log file for both parts
 )
 
 $ErrorActionPreference = 'Continue'
+$script:HealthBefore = $null
 $Root = Split-Path -Parent $PSScriptRoot
 function Test-BotFolder([string]$Dir) {
     if (-not $Dir) { return $false }
@@ -68,15 +78,15 @@ function Say([string]$Kind, [string]$Text) {
 function Head([string]$Text) { Write-Host ""; Write-Host $Text -ForegroundColor Cyan; try { Add-Content -LiteralPath $Log -Value ("`r`n" + $Text) -Encoding UTF8 } catch { } }
 
 # ------------------------------------------------------------------ what is never touched, and what goes
-$Protect = @('ninjatrader', 'liquidity', 'le start', 'le_start', 'python', 'pythonw', 'onedrive', 'securityhealth', 'windowsdefender',
+$Protect = @('ninjatrader', 'liquidity', 'le start', 'le_start', 'python', 'pythonw', 'onedrive', 'obsidian', 'securityhealth', 'windowsdefender',
              'msmpeng', 'realtek', 'rtkaud', 'intel', 'igfx', 'surface', 'synaptics', 'bluetooth', 'audio', 'claude', 'git')
 # process names (exact, any case) closed now
-$CloseProcs = @('Discord', 'Obsidian', 'Spotify', 'steam', 'steamwebhelper', 'EpicGamesLauncher', 'EpicWebHelper', 'Teams', 'ms-teams',
+$CloseProcs = @('Discord', 'Spotify', 'steam', 'steamwebhelper', 'EpicGamesLauncher', 'EpicWebHelper', 'Teams', 'ms-teams',
                 'msteams', 'Skype', 'Zoom', 'Telegram', 'WhatsApp', 'Messenger', 'Widgets', 'WidgetService', 'PhoneExperienceHost',
                 'YourPhone', 'GameBar', 'GameBarFTServer', 'XboxPcApp', 'XboxPcAppFT', 'Overwolf', 'RiotClientServices', 'Battle.net',
                 'EADesktop', 'Origin', 'GrammarlyHelper', 'Grammarly.Desktop')
 # start-up entries (name or command contains, any case) switched off at sign-in
-$StartupOff = @('discord', 'obsidian', 'spotify', 'steam', 'epicgames', 'teams', 'skype', 'zoom', 'telegram', 'whatsapp', 'messenger',
+$StartupOff = @('discord', 'spotify', 'steam', 'epicgames', 'teams', 'skype', 'zoom', 'telegram', 'whatsapp', 'messenger',
                 'grammarly', 'overwolf', 'riotclient', 'battle.net', 'eadesktop', 'microsoftedgeautolaunch', 'yourphone', 'phonelink')
 $BloatApps = @('Microsoft.BingNews', 'Microsoft.BingWeather', 'Microsoft.GetHelp', 'Microsoft.Getstarted', 'Microsoft.MicrosoftSolitaireCollection',
                'Microsoft.WindowsFeedbackHub', 'Microsoft.WindowsMaps', 'Microsoft.XboxApp', 'Microsoft.GamingApp', 'Microsoft.XboxGamingOverlay',
@@ -116,6 +126,54 @@ function Mem-Line {
         return [pscustomobject]@{ Used = $used; FreeGB = $free; TotalGB = $tot; Cpu = $cpu; Text = "memory $used% used ($free GB free of $tot GB), CPU $cpu%" }
     } catch { return [pscustomobject]@{ Used = $null; FreeGB = $null; TotalGB = $null; Cpu = $null; Text = 'memory: not readable' } }
 }
+# HEALTH SCORE 0-100 (higher = more room for NinjaTrader and the bot): free memory 30, CPU idle 30, start-up apps 15,
+# free disk 15, temperature 10 (when Windows lets it be read; otherwise the other parts are scaled to 100)
+function Get-HealthScore($FreePct, $IdlePct, $Startup, $DiskGB, $TempC) {
+    $pts = 0.0; $max = 0.0
+    if ($null -ne $FreePct) { $pts += 30 * [math]::Min(1, [math]::Max(0, [double]$FreePct / 40)); $max += 30 }
+    if ($null -ne $IdlePct) { $pts += 30 * [math]::Min(1, [math]::Max(0, [double]$IdlePct / 100)); $max += 30 }
+    if ($null -ne $Startup) { $pts += 15 * [math]::Max(0, 1 - [double]$Startup / 20); $max += 15 }
+    if ($null -ne $DiskGB) { $pts += 15 * [math]::Min(1, [math]::Max(0, [double]$DiskGB / 30)); $max += 15 }
+    if ($null -ne $TempC) { $pts += 10 * [math]::Min(1, [math]::Max(0, (95 - [double]$TempC) / 35)); $max += 10 }
+    if ($max -le 0) { return $null }
+    return [int][math]::Round(100 * $pts / $max)
+}
+function Measure-Health {
+    $free = $null; $idle = $null; $st = $null; $disk = $null; $temp = $null
+    try { $os = Get-CimInstance Win32_OperatingSystem -ErrorAction Stop; $free = [math]::Round(100 * $os.FreePhysicalMemory / $os.TotalVisibleMemorySize) } catch { }
+    try {
+        $s = @()
+        for ($i = 0; $i -lt 3; $i++) {
+            $s += [double]((@(Get-CimInstance Win32_Processor -ErrorAction Stop) | Measure-Object -Property LoadPercentage -Average).Average)
+            if ($i -lt 2) { Start-Sleep -Milliseconds 700 }
+        }
+        $idle = [math]::Round(100 - (($s | Measure-Object -Average).Average))
+    } catch { }
+    try { $st = @(Get-CimInstance Win32_StartupCommand -ErrorAction Stop).Count } catch { }
+    try {
+        $sd = $env:SystemDrive; if (-not $sd) { $sd = 'C:' }
+        foreach ($v in @(Get-CimInstance Win32_LogicalDisk -Filter 'DriveType=3' -ErrorAction Stop)) { if ("$($v.DeviceID)" -eq $sd) { $disk = [math]::Round($v.FreeSpace / 1GB) } }
+    } catch { }
+    try {
+        $tz = @(Get-CimInstance -Namespace 'root/wmi' -ClassName MSAcpi_ThermalZoneTemperature -ErrorAction Stop)
+        $k = ($tz | Measure-Object -Property CurrentTemperature -Maximum).Maximum
+        if ($k -gt 2732) { $temp = [math]::Round(($k - 2732) / 10) }
+    } catch { }
+    $score = Get-HealthScore $free $idle $st $disk $temp
+    $parts = @()
+    if ($null -ne $free) { $parts += "memory $free% free" }
+    if ($null -ne $idle) { $parts += "CPU $idle% idle" }
+    if ($null -ne $st) { $parts += "$st start-up apps" }
+    if ($null -ne $disk) { $parts += "$disk GB disk free" }
+    if ($null -ne $temp) { $parts += "$temp C" } else { $parts += 'temperature not readable' }
+    $txt = 'not readable'; if ($null -ne $score) { $txt = "$score/100 (" + ($parts -join ', ') + ')' }
+    return [pscustomobject]@{ Score = $score; Text = $txt }
+}
+function Get-TuneStateLine {
+    $f = ''; if ($env:ProgramData) { $f = Join-Path (Join-Path $env:ProgramData 'LiquidityEngine') 'pc_tune_state.json' }
+    if (-not $f -or -not (Test-Path -LiteralPath $f)) { return 'not applied yet (CLEAN_PC.bat applies it outside trading hours)' }
+    try { $o = (Get-Content -LiteralPath $f -Raw -ErrorAction Stop) | ConvertFrom-Json; return "on, $(@($o.changes).Count) changes saved $($o.saved) (undo: UNDO_PC_TUNE.bat)" } catch { return 'on (undo: UNDO_PC_TUNE.bat)' }
+}
 function Top-Programs([int]$N = 12) {
     try {
         Get-Process | Group-Object ProcessName | ForEach-Object { [pscustomobject]@{ Name = $_.Name; MB = [math]::Round((($_.Group | Measure-Object WorkingSet64 -Sum).Sum) / 1MB) } } |
@@ -123,6 +181,25 @@ function Top-Programs([int]$N = 12) {
     } catch { @() }
 }
 function Disabled-Bytes { $b = New-Object byte[] 12; $b[0] = 3; [BitConverter]::GetBytes((Get-Date).ToFileTime()).CopyTo($b, 4); return ,$b }
+# StartupApproved values: byte 0 odd (3) = switched off in Task Manager, even (2) = on
+function Test-StartupDisabled($Bytes) { $b = @($Bytes); return ($b.Count -gt 0 -and (([int]$b[0]) -band 1) -eq 1) }
+function Enabled-Bytes { $b = New-Object byte[] 12; $b[0] = 2; return ,$b }
+# protected sign-in entries (Obsidian: an older CLEAN_PC switched it off) found off are switched back on: [names]
+function Restore-ProtectedStartup {
+    $back = @()
+    foreach ($k in @('HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run',
+                     'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\StartupFolder')) {
+        $props = $null; try { $props = Get-ItemProperty -Path $k -ErrorAction Stop } catch { continue }
+        foreach ($p in $props.PSObject.Properties) {
+            if ($p.Name -like 'PS*') { continue }
+            if (-not ($p.Name.ToLowerInvariant().Contains('obsidian'))) { continue }
+            if (-not (Test-StartupDisabled $p.Value)) { continue }
+            if (-not $DryRun) { try { New-ItemProperty -Path $k -Name $p.Name -PropertyType Binary -Value (Enabled-Bytes) -Force -ErrorAction Stop | Out-Null } catch { continue } }
+            $back += $p.Name
+        }
+    }
+    return ,$back
+}
 function Set-StartupOff([string]$ApprovedKey, [string]$ValueName) {
     if ($DryRun) { return $true }
     try {
@@ -254,6 +331,11 @@ function NinjaTrader-Check([bool]$Backup) {
     Say '..' 'By hand, with NinjaTrader open (all undo-able): 1) only the windows you use: File > Workspaces, close the others;'
     Say '..' '   2) charts you only look at: Data Series > Days to load 3-5 (the bot''s MNQ chart with LE_BarFeed stays at 30);'
     Say '..' '   3) Tick Replay off, unused indicators removed, fewer Market Analyzer rows and DOMs open.'
+    Say '..' '   4) Tools > Options > Market data: untick "Show Tick Replay" (then no chart can turn it on again).'
+    Say '..' '   5) once a month, after 4:05 PM ET with no charts open: Tools > Database Management > Repair DB (never "Reset DB").'
+    Say '..' '   6) NinjaTrader 8 inside OneDrive: pause syncing while trading. Do NOT switch off OneDrive''s Documents backup'
+    Say '..' '      without asking Claude: it leaves NinjaTrader''s folder in OneDrive and starts an empty one.'
+    Say '..' '   Never change these files by hand while NinjaTrader is open; this check only reads them.'
 }
 
 # ================================================================== PC report (read-only)
@@ -328,6 +410,9 @@ function Get-PcReport {
         $L += "Start at sign-in ($($st.Count)): " + (($st | ForEach-Object { $_.Name }) -join ', ')
     } catch { $L += 'Start at sign-in: not readable' }
     $L += 'Verdict  : ' + (Get-Verdict $ram $ssd $cores)
+    $h = Measure-Health
+    if ($script:HealthBefore) { $L += "Health   : before $($script:HealthBefore.Text)"; $L += "Health   : after  $($h.Text)" } else { $L += "Health   : $($h.Text)" }
+    $L += 'Tune     : ' + (Get-TuneStateLine)
     return ,$L
 }
 function Write-PcReport {
@@ -347,8 +432,20 @@ function Copy-PcKit {
         if (-not (Test-Path -LiteralPath $ks)) { New-Item -ItemType Directory -Path $ks -Force | Out-Null }
         Copy-Item -LiteralPath (Join-Path $Root 'CLEAN_PC.bat') -Destination $kit -Force
         Copy-Item -LiteralPath $PSCommandPath -Destination $ks -Force
+        foreach ($x in @('pc_tune.ps1', 'pc_keeper.ps1')) { $src = Join-Path $PSScriptRoot $x; if (Test-Path -LiteralPath $src) { Copy-Item -LiteralPath $src -Destination $ks -Force } }
+        $ub = Join-Path $Root 'UNDO_PC_TUNE.bat'; if (Test-Path -LiteralPath $ub) { Copy-Item -LiteralPath $ub -Destination $kit -Force }
         Say 'OK' "Cleaner for your main PC: $kit (on the main PC double-click CLEAN_PC.bat in it)"
     } catch { Say 'SKIP' "PC_KIT not copied: $($_.Exception.Message)" }
+}
+
+# ================================================================== undo the deep tune
+if ($Undo) {
+    $tune = Join-Path $PSScriptRoot 'pc_tune.ps1'
+    $back = Restore-ProtectedStartup
+    if ($back.Count) { Say 'OK' ('Switched back on at sign-in: ' + ($back -join ', ') + ' (Obsidian stays on: the owner''s notes vault)') }
+    if (-not (Test-Path -LiteralPath $tune)) { Say 'FIX' 'scripts\pc_tune.ps1 is missing: nothing to undo with'; exit 1 }
+    & $tune -Undo -Log $Log -DryRun:$DryRun -Standalone:$Standalone
+    exit $LASTEXITCODE
 }
 
 # ================================================================== the deep part (elevated)
@@ -370,6 +467,11 @@ if ($AdminPart) {
     Say 'OK' "Windows error reports: $(MB $wer) MB"
     $r = Remove-Old "$env:WINDIR\Minidump" 0; Say 'OK' "Crash dumps (Windows): $($r[0]) files, $(MB $r[1]) MB"
     try { if (-not $DryRun) { Delete-DeliveryOptimizationCache -Force -ErrorAction Stop | Out-Null }; Say 'OK' 'Delivery Optimization cache emptied' } catch { Say 'SKIP' 'Delivery Optimization cache: not available here' }
+    # 12. v2 deep tune (recorded first, undo-able: UNDO_PC_TUNE.bat); before the slow steps
+    $tune = Join-Path $PSScriptRoot 'pc_tune.ps1'
+    if (-not (Test-Path -LiteralPath $tune)) { Say 'SKIP' 'Deep tune: scripts\pc_tune.ps1 is missing (run UPDATE.bat)' }
+    elseif (Deep-Allowed) { & $tune -Log $Log -DryRun:$DryRun -Standalone:$Standalone -NoElevate }
+    else { Say 'SKIP' 'Deep tune: too close to trading hours; next time after 4:05 PM ET' }
     # 10. component store (slow): only when there is time before 01:15 ET
     if (Deep-Allowed) {
         Say '..' 'Windows component store clean-up (old update files). This can take 10-30 minutes on this PC; leave the window open.'
@@ -395,6 +497,8 @@ if ($Report) {
 Head "CLEAN PC: $(Get-Date -Format 'ddd yyyy-MM-dd HH:mm')$(if ($DryRun) { ' - DRY RUN: shows the plan, changes nothing' })$(if ($Standalone) { ' - STANDALONE (no bot folder here: main PC mode)' })"
 $before = Mem-Line
 Say '..' "Before: $($before.Text)"
+$script:HealthBefore = Measure-Health
+Say '..' "Health score before: $($script:HealthBefore.Text)"
 Say '..' ('Using the most memory: ' + ((Top-Programs 12 | ForEach-Object { "$($_.Name) $($_.MB) MB" }) -join ', '))
 
 # 2. close what trading does not need (bot PC); the main PC (standalone) only lists them: they may be in use
@@ -432,6 +536,8 @@ if (Test-Path -LiteralPath $startDir) {
     }
 }
 if ($off.Count) { Say 'OK' ('Off at sign-in: ' + ($off -join ', ') + '  (back on: Task Manager > Startup apps > Enable)') } else { Say 'OK' 'No extra apps start at sign-in' }
+$back = Restore-ProtectedStartup
+if ($back.Count) { Say 'OK' ('Switched back on at sign-in (protected, an older CLEAN_PC had switched it off): ' + ($back -join ', ')) }
 if ($kept.Count) { Say '..' ('Still starting (left as is): ' + ($kept -join ', ')) }
 
 # 4. a lighter Windows
@@ -470,7 +576,7 @@ if (-not $LightOnly) {
         if ($Standalone) { Say 'SKIP' 'NinjaTrader is open in trading hours (weekdays 01:15-16:05 ET): the deep part waits. Run it again after 4:05 PM ET or with NinjaTrader closed.' }
         else { Say 'SKIP' 'Trading hours (weekdays 01:15-16:05 ET): the deep part waits so it never slows the bot. Double-click CLEAN_PC.bat again after 4:05 PM ET.' }
     } elseif ($DryRun) {
-        Say '..' 'Would ask Windows for Administrator and run steps 6-11 (search indexing off, background Store apps off, Windows junk, unused preinstalled apps, component store, Defender quick scan).'
+        Say '..' 'Would ask Windows for Administrator and run steps 6-12 (search indexing off, background Store apps off, Windows junk, unused preinstalled apps, the v2 deep tune, component store, Defender quick scan).'
     } else {
         # 9. preinstalled apps: removed for this user (here, not elevated: the apps belong to the signed-in user)
         $gone = @()
