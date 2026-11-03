@@ -33,14 +33,16 @@
 // v13 (2026-11-03, the OLYMPUS apps): Jarvis's new brain parts join the saved ones (obsidian.js: the owner's vault, memory.js:
 // what Jarvis remembers, assist-ui.js: their screens), so they open offline too; jarvis.css?v=j9 (the OLYMPUS apps grid), a fresh
 // index.html, apps.js (the nine OLYMPUS apps built in, by group) and switcher.js (groups, the most used apps on the ring).
-const CACHE = 'jarvis-v13';
-const OLD = ['jarvis-v12', 'jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];
+// v14 (2026-11-03, voice mode): voice-mode.js joins the saved parts (the full-screen conversation opens offline too);
+// jarvis.css?v=j10 (its quick-action tile), a fresh index.html and brain.js ("Jarvis, voice mode").
+const CACHE = 'jarvis-v14';
+const OLD = ['jarvis-v13', 'jarvis-v12', 'jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];
 const NAV_WAIT_MS = 3500;
 const NET_MAX_MS = 9000;
 const SHELL = ['./', './index.html', './manifest.webmanifest?v=j2', './apple-touch-icon.png?v=j2', './icon-192.png?v=j2', './icon-512.png?v=j2',
-  './jarvis.css?v=j9', './data.js', './brain.js', './core-visual.js', './apps.js', './zenith-mode.js', './switcher.js',
-  './obsidian.js', './memory.js', './assist-ui.js', './three.module.min.js', './orbitron.woff2', './rajdhani-400.woff2', './rajdhani-500.woff2', './rajdhani-600.woff2', './rajdhani-700.woff2'];
-const CORE = ['./index.html', './jarvis.css?v=j9', './data.js'];
+  './jarvis.css?v=j10', './data.js', './brain.js', './core-visual.js', './apps.js', './zenith-mode.js', './switcher.js',
+  './obsidian.js', './memory.js', './assist-ui.js', './voice-mode.js', './three.module.min.js', './orbitron.woff2', './rajdhani-400.woff2', './rajdhani-500.woff2', './rajdhani-600.woff2', './rajdhani-700.woff2'];
+const CORE = ['./index.html', './jarvis.css?v=j10', './data.js'];
 const STATIC_RX = /\.(woff2|png|svg|jpg|webp|webmanifest)$/i;
 // how each page was answered ('cache' | 'net'), by its client id; lastNav when the browser gives no client ids
 const navFrom = new Map();

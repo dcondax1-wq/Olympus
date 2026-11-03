@@ -866,6 +866,23 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
     `missing()`: tile "SOON", never opened, the swipe/ring skip it. Worker jarvis-v13 (obsidian.js, memory.js,
     assist-ui.js saved), jarvis.css?v=j9, What's new j8. Test waits use the page's ready marker (`html[data-ready]`,
     `window.__jarvisReadyMs`): under load the software-drawn 3D core holds the main thread 10-16 s after a 0.5 s start.
+  - **Voice mode (2026-11-03, owner: "like the movie J.A.R.V.I.S."):** `voice-mode.js` `createVoiceMode(deps)`, a full-screen
+    conversation. Enter: the wide "Voice mode" quick-action tile, hold the big mic 0.45 s (the dock's mic keeps
+    push-to-talk), "Jarvis, voice mode" (brain.js control `voice_mode`), or search. Leave: END, "stop" / "exit voice mode"
+    (`voice_mode_off`), a farewell (brain reply `end: true`), Jarvis out of sight, another app opening.
+    - The 3D core full screen (the home core is destroyed while it is open: one WebGL core at a time), `setLevel` driven by
+      a Web Audio analyser on the mic while you talk (getUserMedia only inside a tap; a hold's release counts) and by the
+      voice's word boundaries while Jarvis talks (estimated pace until the phone reports them). A ring of spectrum bars,
+      captions of both sides lit word by word, a HUD arc with the bots' verdict, and holographic cards of the numbers cited
+      (`fragmentsOf`: the reply's card rows and "Name: $x" lines, copied as written) that float out as the name is spoken.
+    - Turns: listen -> the shell's `answer(t, true)` (the same path as the Jarvis screen: brain, chat log, controls) ->
+      speak `r.speak` -> listen; 3 silent turns = waits for a tap; tap = barge-in / pause. The voice: best English voice,
+      British first (Daniel premium / enhanced), novelty voices never; VOICE button steps through them (`jarvis.vmVoice`).
+    - No recognition (Home Screen app) or the recognizer refusing the mic: a type-to-talk field, said once per launch.
+      Reduce motion (unless a 3D level was picked) / 3D Off: no loop, no analyser, all shown at once. The mic is released
+      on every exit (tracks stopped, AudioContext closed). Loaded 1.5 s after the start, never part of it.
+    - Worker jarvis-v14, jarvis.css?v=j10, What's new j9. Test `python -X utf8 -m tests.test_jarvis_voice` (fake mic flags,
+      mocked recognition / voice; screenshots in `research/handoff/2026-11-03/voice/`).
   - **Icons:** the re-rendered old reactor icon (`?v=j2`).
   - **Workers:**
     - jarvis-v4: a 3.5 s navigation race; shell files stale-while-revalidate once a page came from the copy.
