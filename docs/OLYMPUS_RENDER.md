@@ -1,0 +1,110 @@
+# OLYMPUS render core
+
+One premium three.js pipeline for every OLYMPUS app and Jarvis, so no scene looks like "Play-Doh" (flat materials, no
+environment light, no tone mapping, no bloom, no anti-aliasing). It lives in `tools/web_public/olympus/`:
+
+| File | What it is |
+|---|---|
+| `render.js` | `createRenderer()`: tone mapping, environment light, bloom, anti-aliasing, grain / vignette / aberration, quality tiers, the hidden-tab pause |
+| `materials.js` | procedural, theme-aware surfaces: marble, gold / chrome / gunmetal, holographic glass, neon, a fresnel rim, nebula, starfield, energy beam |
+| `three-addons/` | the three.js addons the core uses (composer, render pass, bloom, studio environment), vendored from `three@0.160.0` (the same r160 as `jarvis/three.module.min.js`, see `VERSION`, MIT `LICENSE`); imports rewritten to `../../jarvis/three.module.min.js`. No CDN. FXAA and the output transform are folded into the core's own finish pass, so SMAA / FXAA / OutputPass are not vendored. |
+| `render-lab.html` | every material on the pipeline. `?q=ultra\|high\|low\|off` picks the tier, `?flat=1` draws the old flat look, `?still=1` draws one frame |
+
+Test: `python -X utf8 -m tests.test_olympus_render` (the build, the pass count per tier, tier switching, the automatic
+step down, the hidden-tab pause, every material compiling, no console error, no request off the site).
+
+## Adopting it in an app (about 10 lines)
+
+```js
+import * as THREE from '../jarvis/three.module.min.js';
+import { createRenderer } from '../olympus/render.js';
+import { marble, metal, glass, neon, starfield } from '../olympus/materials.js';
+
+const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(50, 1, 0.1, 200);
+const rc = createRenderer({ canvas: document.querySelector('#view'), scene, camera });   // quality + theme follow OLYMPUS
+scene.add(new THREE.Mesh(new THREE.SphereGeometry(1, 64, 32), glass({ rim: '#7fe9ff' })));
+const stars = starfield(); scene.add(stars);
+rc.start((dt, t) => { stars.update(t, rc.renderer.getPixelRatio()); });          // no frame while the tab is hidden
+```
+
+That replaces the app's `new WebGLRenderer(...)`, its `setPixelRatio` / `setSize` / resize handler, its quality switch
+and its frame loop. If the app keeps its own loop, call `rc.render()` in it instead of `renderer.render(scene, camera)`;
+it returns `false` and draws nothing while the tab is hidden. `createRenderer` also calls `OLYMPUS.track(renderer)`, so
+the loading veil lifts on the first frame and `OLYMPUS.stats()` keeps working.
+
+### Options
+
+| Option | Default | Use |
+|---|---|---|
+| `canvas`, `context` | | the canvas (and an existing WebGL context) to draw into |
+| `renderer` | | reuse a `WebGLRenderer` you made instead (Jarvis's core does this) |
+| `quality` | `OLYMPUS.fx()`, followed live | force a tier: `'ultra' \| 'high' \| 'low' \| 'off'` |
+| `theme` | `OLYMPUS.theme()`, followed live | the tokens for the environment's colours; `tint` = the app's colour on the default theme |
+| `env` | `'night'` | `'night'` (a procedural sky + soft light strips in the theme colours), `'room'` (three's studio), `'none'` |
+| `background` | false | the environment is also the visible sky |
+| `alpha` | false | a transparent canvas; glows add light to the page behind it |
+| `exposure` | 1 | tone-mapping exposure |
+| `bloom` | the tier's | `{ strength, radius, threshold }` overrides |
+| `grade` | the tier's | `{ grain, vignette, aberration }` overrides (0 turns one off) |
+| `adapt` | true | step down on slow frames when the owner has not chosen a level; `'always'`; `false` |
+| `maxDpr` | 2 | a lower pixel-ratio cap (a soft backdrop can use 1) |
+| `autoSize` | true | size from the canvas's CSS box every frame (cheap: only a change resizes); false = `resize(w, h)` |
+| `fitCamera` | true | keep a perspective camera's aspect in step with the canvas |
+| `onQuality(level)` | | told after every tier change |
+
+### The object it returns
+
+`renderer`, `composer` (null on `off`), `scene`, `camera`, `render()`, `resize(w?, h?)`, `setQuality(level)`,
+`quality()`, `passes()` (e.g. `['scene', 'bloom', 'finish']`), `setTheme(tokens)`, `addPass(pass)` (runs after bloom,
+before the finish), `start(cb)` / `stop()`, `stats()` and `dispose()`.
+
+## The tiers
+
+| Tier | Passes per frame | Anti-aliasing | Bloom | Grade | Pixel ratio |
+|---|---|---|---|---|---|
+| ultra | 3: scene, bloom, finish | 4x MSAA (WebGL2) | half resolution, strength 0.95 | grain, vignette, aberration | ≤ 2 |
+| high | 3: scene, bloom, finish | 4x MSAA (WebGL2) | half resolution, strength 0.85 | grain, vignette, light aberration | ≤ 2 |
+| low | 2: scene, finish | FXAA inside the finish pass | none | grain, vignette | ≤ 1.5 |
+| off | 1: straight to the screen | none | none | none | 1 |
+
+- Every tier tone-maps with ACES filmic, outputs sRGB and lights Standard / Physical materials from the PMREM
+  environment. Lights are physically based (r160's default).
+- The **finish pass** is one draw: tone mapping, sRGB, vignette, film grain and chromatic aberration (or FXAA on low).
+- **Bloom is selective by brightness:** only what is brighter than about 0.85 in linear HDR blooms. Use `neon()`
+  (colour × intensity > 1) or `emissiveIntensity > 1` for things that should glow, and keep matte things under 1.
+- **Automatic step down:** a mean frame slower than 24 ms over 60 frames (after 45 warm-up frames) steps ultra → high →
+  low, never lower, never stored in `jfx`. It only runs when the owner has not chosen a level (the kit's rule).
+- **Hidden tab:** `render()` draws nothing and `start()` asks for no frame until the tab is visible again.
+- `prefers-reduced-motion` with no choice starts on low (the kit), and the grain stops moving.
+
+## Budgets (iPhone 13, 60 fps on high)
+
+- At most **3 full-screen passes** on high (scene + half-resolution bloom + finish), 2 on low.
+- **MSAA memory:** only the scene buffer is multisampled. A full-screen app at pixel ratio 2 on an iPhone 13 costs about
+  60 MB for it; a smaller canvas (Jarvis's core) much less. If an app is full screen and heavy, pass `maxDpr: 1.5`.
+- **No transmission by default.** `glass()` is reflections + iridescence + a fresnel rim (no extra scene render).
+  `glass({ transmission: true })` re-renders the scene behind it: one hero object at most, high and ultra only.
+- **Textures:** everything is procedural; the only generated textures are a 128 px brushed-metal map and a 128 px cloud
+  puff, shared by every material.
+- Draw calls go up by the post passes (UnrealBloomPass is ~12 small draws): the kit's per-app budget in
+  `tests/test_olympus_kit.py` needs about +15 draw calls for an app that adopts the core.
+
+## Do / don't
+
+| Do | Don't |
+|---|---|
+| One `createRenderer` per canvas, `dispose()` it when the view goes | Make a second `WebGLRenderer` or `EffectComposer` yourself |
+| Let quality and theme come from `OLYMPUS` | Write `localStorage['jfx']` or keep a per-app quality key |
+| `MeshStandardMaterial` / `MeshPhysicalMaterial` or `materials.js` for solids | `MeshBasicMaterial` / `MeshLambertMaterial` for solids (flat: no reflections) |
+| Vary roughness: polished 0.05-0.2, satin 0.3-0.5, matte 0.7+ | Give everything the same roughness |
+| Glow = HDR colour (`neon()`, `emissiveIntensity` 2-6) | Fake glow with big additive sprites on top of bloom |
+| `import` from `../olympus/three-addons/` | Load anything from a CDN |
+| `rc.render()` or `rc.start()` | `renderer.render()` straight to the screen (no tone mapping, no AA, no bloom) |
+| Test with `?q=low` too: LITE must still look good | Rely on bloom for legibility (low has none) |
+
+## The Jarvis service worker
+
+The new files are part of the Jarvis shell when Jarvis uses them (its core and backdrop):
+`../olympus/render.js`, `../olympus/materials.js` and the nine files of `../olympus/three-addons/` (`EffectComposer.js`,
+`RenderPass.js`, `ShaderPass.js`, `MaskPass.js`, `Pass.js`, `CopyShader.js`, `UnrealBloomPass.js`,
+`LuminosityHighPassShader.js`, `RoomEnvironment.js`).
