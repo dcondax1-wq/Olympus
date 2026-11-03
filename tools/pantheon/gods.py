@@ -267,9 +267,10 @@ def athena(store, days, now=None) -> Reading:
     r.states["athena.fomc_day"] = ("FOMC decision / minutes day", pd.Series(days.isin(fomc_days), index=days), first)
     nxt = ev[ev["when"] >= now - pd.Timedelta(minutes=30)]
     week_end = now.normalize() + pd.Timedelta(days=7)
-    r.ok, r.asof = True, str(ev["day"].max().date())
+    r.ok, r.asof = True, str(now.date())
+    r.extra["calendar_to"] = str(ev["day"].max().date())
     r.change = float(((ev["when"] >= now) & (ev["when"] < week_end)).sum())
-    r.change_text, r.window = f"{int(r.change)} in 7 days", "next 7 days"
+    r.change_text, r.window = f"{int(r.change)} high-impact", "next 7 days"
     if nxt.empty:
         r.text, r.value = "No event listed", None
         r.meaning = "No high-impact US event on the calendar ahead (the calendar may not be extended yet)."
@@ -278,7 +279,7 @@ def athena(store, days, now=None) -> Reading:
     dd = (e["day"] - now.normalize()).days
     r.value = float(dd)
     when = "today" if dd == 0 else "tomorrow" if dd == 1 else f"in {dd} days"
-    r.text = f"{e['event'][:28]}"
+    r.text = f"{when.capitalize()} {e['when']:%H:%M}" if dd <= 1 else f"{e['when']:%a %b %d}"
     r.extra["next"] = {"event": e["event"], "when": e["when"].strftime("%a %b %d, %H:%M ET"), "days": int(dd)}
     r.extra["upcoming"] = [{"event": x["event"], "when": x["when"].strftime("%a %b %d %H:%M")} for _, x in nxt.head(5).iterrows()]
     r.subs = [{"label": "Next", "value": f"{e['when']:%a %H:%M} ET ({when})"}] + \

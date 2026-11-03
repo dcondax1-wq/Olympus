@@ -45,6 +45,7 @@ button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 .god .n { font: 700 10.5px var(--oly-display, 'Orbitron', sans-serif); letter-spacing: .1em; color: var(--c, var(--gold)); }
 .god .v { font: 700 14px/1.1 var(--oly-ui, 'Rajdhani', sans-serif); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .god.sel { background: rgba(242, 214, 138, .14); }
+.god { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(16, 14, 28, .92); }   /* on the opaque dock: no blur to repaint */
 
 /* ---------------- cards (between the HUD and the bottom 172 px) */
 .card { position: fixed; left: calc(12px + var(--sl)); right: calc(12px + var(--sr)); top: calc(132px + var(--st));
