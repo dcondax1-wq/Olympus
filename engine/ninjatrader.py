@@ -659,6 +659,27 @@ def read_feed_status(folder: str | None = None, now=None) -> dict | None:
     return st
 
 
+ADDON_NOT_STARTED = ("LE_Feed is installed but has not started (no le_feed_status.txt): in NinjaTrader press F5 in the "
+                     "NinjaScript Editor; New > NinjaScript Output must say 'LE_Feed: started'")
+
+
+def addon_installed(folder: str | None = None) -> bool:
+    """bin\\Custom\\AddOns\\LE_Feed.cs is in the NinjaTrader folder (NO_CHART_MODE.bat copied it)."""
+    try:
+        return os.path.isfile(os.path.join(folder or default_folder(), "bin", "Custom", "AddOns", "LE_Feed.cs"))
+    except Exception:
+        return False
+
+
+def feed_addon_line(folder: str | None = None, now=None) -> str | None:
+    """The health line: feed_status_text of the status file; with no status file but the add-on installed, the plain
+    'installed but has not started' hint (2026-11-03: the owner's F5 that showed nothing); None = chart mode."""
+    st = read_feed_status(folder, now)
+    if st:
+        return feed_status_text(st)
+    return ADDON_NOT_STARTED if addon_installed(folder) else None
+
+
 def feed_status_text(st: dict | None) -> str | None:
     """One line for the health block / --status: "bars from LE_Feed (no chart), 2 re-subscribes", None in chart mode."""
     if not st:
@@ -2681,7 +2702,7 @@ def _cli_status(cfg):
           f"signal_root {signal_root(cfg)}) -> orders {', '.join(st['instruments'])}" + (f"  ** {bad}" if bad else ""))
     fst = read_feed_status(cfg.get("nt_folder"))
     last1 = f", last 1m bar {_et(fst['last_1m']):%a %H:%M} ET" if fst and fst.get("last_1m") else ""
-    print(f"Bar source         : {(feed_status_text(fst) + last1) if fst else 'the LE_BarFeed chart (no LE_Feed add-on status file)'}")
+    print(f"Bar source         : {(feed_status_text(fst) + last1) if fst else (feed_addon_line(cfg.get('nt_folder')) or 'the LE_BarFeed chart (no LE_Feed add-on status file)')}")
     print(f"Feed instruments   : {', '.join(feed_instruments(cfg))}  (le_feed\\{FEED_INSTRUMENTS}: what the LE_Feed add-on writes)")
     for interval in ("5m", "1m", "1h"):
         df, why, full = feed.recent_bars("NQ", interval, "5d")

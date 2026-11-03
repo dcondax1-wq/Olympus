@@ -132,6 +132,16 @@ def main() -> int:
         with open(p, "w", newline="") as fh:
             fh.write("time,open,high,low,close,volume\r\n1793668020,21000,21001,20999,21000.5,5\r\n")
         check("8c. Windows line ends read as before", list(nt.NinjaTraderBars(f).load(p)["time"]) == [1793668020])
+        # 9. LE_Feed installed (NO_CHART_MODE.bat copied it) but never started: the health line says so
+        folder(f, {}, None)
+        check("9a. no add-on, no status: chart mode (None)", nt.feed_addon_line(f, now) is None)
+        os.makedirs(os.path.join(f, "bin", "Custom", "AddOns"))
+        open(os.path.join(f, "bin", "Custom", "AddOns", "LE_Feed.cs"), "w").close()
+        check("9b. add-on installed, no status file: 'installed but has not started'", nt.feed_addon_line(f, now) == nt.ADDON_NOT_STARTED)
+        with open(os.path.join(f, "le_feed", "le_feed_status.txt"), "w") as fh:
+            fh.write(f"{now - 5},source=addon,instruments=MNQ 12-26,last_1m=,resubs=0,connected=1,started={now - 5}\n")
+        check("9c. once it writes its status: the usual line", nt.feed_addon_line(f, now) == "bars from LE_Feed (no chart), 0 re-subscribes (MNQ 12-26)",
+              nt.feed_addon_line(f, now))
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print("ALL PASS" if not FAILS else f"{len(FAILS)} FAILED: {FAILS}")

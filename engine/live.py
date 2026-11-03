@@ -514,7 +514,7 @@ class LiveBot:
             self._note_error(f"feed_instruments.txt not written: {e.__class__.__name__}: {e}")
         try:
             st = _nt.read_feed_status(folder)
-            self.health["feed_addon"] = _nt.feed_status_text(st)
+            self.health["feed_addon"] = _nt.feed_status_text(st) if st else _nt.feed_addon_line(folder)
             self.health["feed_addon_resubs"] = st.get("resubs") if st else None
         except Exception:
             self.health["feed_addon"] = None
