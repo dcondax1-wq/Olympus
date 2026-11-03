@@ -1,5 +1,6 @@
 // Jarvis home backdrop (jarvis/backdrop.js, 2026-11-03; docs/OLYMPUS_RENDER.md): the 3D space behind the home screen, on the
-// OLYMPUS render core. A deep nebula and a twinkling starfield, a glossy obsidian floor that reflects the sky with a neon
+// OLYMPUS render core. A deep nebula and a twinkling starfield, the temple of OLYMPUS on the horizon (marble columns, gold
+// capitals, fading into the fog), a glossy obsidian floor that reflects the sky with a neon
 // grid fading into fog, a light shaft where the core floats, two slow halo rings in the sky and drifting glass shards that
 // catch the light. It replaces the flat 2D layers of .bgfx (stars canvas, SVG globe, CSS floor) once its first frame is drawn;
 // without WebGL or the render core, those stay exactly as they were.
@@ -39,7 +40,7 @@ async function mount() {
 
   const scene = new T.Scene(), camera = new T.PerspectiveCamera(58, 1, 0.1, 400);
   camera.position.set(0, 1.5, 10); camera.lookAt(0, 1.6, 0);
-  const fog = new T.FogExp2(0x05040c, 0.034); scene.fog = fog;
+  const fog = new T.FogExp2(0x0b0a24, 0.03); scene.fog = fog;      // a deep violet haze: far things fade into colour, not black
   const K = colours();
   const rc = RC.createRenderer({ canvas: probe, scene, camera, quality: level(), env: 'night', tint: K.c, maxDpr: 1.25, adapt: false, exposure: 0.8,
     theme: null, bloom: { strength: 0.75, radius: 0.7, threshold: 0.82 }, grade: { vignette: 0.42, grain: 0.035, aberration: 0.003 } });
@@ -74,6 +75,20 @@ async function mount() {
   ringB.position.set(0, 7.5, -14); ringB.rotation.set(1.4, 0.2, -0.3); scene.add(ringB);
   const horizon = new T.Mesh(new T.TorusGeometry(40, 0.08, 8, 320), M.neon({ color: K.c2, intensity: 2.5, fog: true }));
   horizon.rotation.x = Math.PI / 2; horizon.position.y = -2.55; scene.add(horizon);
+
+  // the temple of OLYMPUS on the horizon: an arc of polished marble columns with gold capitals, fading into the fog
+  const N = 14, colGeo = new T.CylinderGeometry(0.55, 0.62, 10, 20, 1), capGeo = new T.BoxGeometry(1.5, 0.35, 1.5);
+  const columns = new T.InstancedMesh(colGeo, M.marble({ color: '#e8e4ee', vein: '#5b5470', gold: true, scale: 0.6 }), N);
+  const capitals = new T.InstancedMesh(capGeo, M.metal({ kind: 'gold', roughness: 0.25 }), N * 2);
+  const at = new T.Object3D();
+  for (let i = 0; i < N; i++) {
+    const a = Math.PI * (0.12 + 0.76 * i / (N - 1)), x = Math.cos(a) * 30, z = -Math.sin(a) * 30 - 8;
+    at.position.set(x, 2.4, z); at.rotation.set(0, 0, 0); at.updateMatrix(); columns.setMatrixAt(i, at.matrix);
+    at.position.set(x, 7.55, z); at.updateMatrix(); capitals.setMatrixAt(i * 2, at.matrix);
+    at.position.set(x, -2.4, z); at.updateMatrix(); capitals.setMatrixAt(i * 2 + 1, at.matrix);
+  }
+  scene.add(columns, capitals);
+  const moon = new T.DirectionalLight(0xe4dcff, 2.2); moon.position.set(4, 12, 10); scene.add(moon);   // the temple's key light
 
   // drifting glass shards (env reflections + iridescence: the light catches them as they turn)
   const shardMat = M.glass({ color: '#e9ddff', rim: K.c3, opacity: 0.22 }), chromeMat = M.metal({ kind: 'chrome' });
