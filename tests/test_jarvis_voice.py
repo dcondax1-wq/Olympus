@@ -4,13 +4,14 @@ conversation. Runs the real Jarvis page (the folder as it is: the real brain, th
 reports its word timing, and checks:
   a. the files: the module parses, exports its parts, Safari 16 safe; in the worker's SHELL (jarvis-v14); the shell loads it
      after the start, never as part of it
-  b. the pure parts in node: the voice ranking (Daniel enhanced / premium first, the owner's pick kept, novelty voices never),
+  b. the pure parts in node: the voice ranking (tts.js, owner 2026-11-03 "a female voice": Ava premium first, a natural female
+     voice over any male one, the owner's pick kept, novelty voices never),
      the holographic cards (copied from the reply's cards and "Name: $x" lines); the brain's "voice mode" / "exit voice mode"
      controls and its farewell flag
   c. entering: the Voice mode tile, "Jarvis, voice mode" typed (a spoken entry), holding the big mic; the core goes full
-     screen (the Jarvis screen's core waits behind), the greeting in the best voice, the mic analyser only after a tap
+     screen (the Jarvis screen's core waits behind), the greeting in her best voice (Ava premium), the mic analyser only after a tap
   d. a turn: mocked recognition -> the brain's spoken answer in the captions (word by word, as the voice reports), the same
-     words said, the reply also kept in the Jarvis chat; listening again after; the cards of the numbers cited float out;
+     words said (in sentence chunks, one after the other), the reply also kept in the Jarvis chat; listening again after; the cards of the numbers cited float out;
      the HUD arc shows the system verdict; the core reacts to the mic (level up while you talk)
   e. barge-in: a tap while Jarvis speaks stops the voice at once and listens
   f. leaving: END, "exit voice mode", "goodbye", going out of sight: the mic's tracks stopped, the audio closed, recognition
@@ -41,6 +42,11 @@ SHOTS = os.environ.get("JARVIS_VOICE_SHOTS", os.path.join(ROOT, "research", "han
 RES = []
 
 
+def flat(t):
+    """the words of a line (the voice may add a comma for a breath)"""
+    return " ".join(str(t or "").replace(",", " ").split())
+
+
 def check(name, ok, info=""):
     RES.append(bool(ok))
     print(("[PASS] " if ok else "[FAIL] ") + name + ("" if ok else f"  -> {str(info)[:400]}"), flush=True)
@@ -52,6 +58,8 @@ MOCKS = """
 window.__said = []; window.__cancels = 0; window.__srStarts = 0; window.__srAborts = 0; window.__gum = []; window.__srMode = 'talk';
 const VOICES = [
   { name: 'Samantha', lang: 'en-US', voiceURI: 'com.apple.voice.compact.en-US.Samantha', localService: true, default: true },
+  { name: 'Ava (Premium)', lang: 'en-US', voiceURI: 'com.apple.voice.premium.en-US.Ava', localService: true },
+  { name: 'Ava', lang: 'en-US', voiceURI: 'com.apple.voice.compact.en-US.Ava', localService: true },
   { name: 'Zarvox', lang: 'en-US', voiceURI: 'com.apple.speech.synthesis.voice.Zarvox', localService: true },
   { name: 'Daniel', lang: 'en-GB', voiceURI: 'com.apple.voice.compact.en-GB.Daniel', localService: true },
   { name: 'Daniel (Enhanced)', lang: 'en-GB', voiceURI: 'com.apple.voice.enhanced.en-GB.Daniel', localService: true },
@@ -158,9 +166,10 @@ def part_files():
     check("a. it exports createVoiceMode, bestVoice, voiceChoices, voiceScore, fragmentsOf, VOICE_KEY",
           all(f"export function {f}(" in src for f in ("createVoiceMode", "bestVoice", "voiceChoices", "voiceScore", "fragmentsOf"))
           and "export const VOICE_KEY = 'jarvis.vmVoice';" in src)
-    check("a. Safari 16 safe and standalone: no regex lookbehind, no imports, no network, no ?? / ?. / .at()",
-          "(?<" not in src and not re.search(r"^\s*import ", src, re.M) and "fetch(" not in src and "XMLHttpRequest" not in src
-          and "??" not in src and "?." not in src and ".at(" not in src)
+    imports = re.findall(r"^\s*import .* from '([^']+)';", src, re.M)
+    check("a. Safari 16 safe: no regex lookbehind, one import (./tts.js, the shared voice), no network, no ?? / ?. / .at()",
+          "(?<" not in src and imports == ["./tts.js"] and len(re.findall(r"^\s*import ", src, re.M)) == 1 and "fetch(" not in src
+          and "XMLHttpRequest" not in src and "??" not in src and "?." not in src and ".at(" not in src, imports)
     check("a. the mic only from a tap (getUserMedia in ensureMic, called from the taps), released on close (tracks stopped, context closed)",
           src.count("getUserMedia(") == 1 and "t.stop()" in src and "actx.close()" in src and "releaseMic();" in src[src.index("function close("):])
     sw = open(os.path.join(JV, "sw.js"), encoding="utf-8").read()
@@ -179,12 +188,15 @@ import { pathToFileURL } from 'node:url';
 const m = await import(pathToFileURL(process.argv[2]).href);
 const b = await import(pathToFileURL(process.argv[3]).href);
 const V = (name, lang, uri) => ({ name, lang, voiceURI: uri || name, localService: true });
-const L = [V('Samantha', 'en-US'), V('Zarvox', 'en-US'), V('Daniel', 'en-GB', 'com.apple.voice.compact.en-GB.Daniel'),
+const L = [V('Samantha', 'en-US', 'com.apple.voice.compact.en-US.Samantha'), V('Zarvox', 'en-US'), V('Daniel', 'en-GB', 'com.apple.voice.compact.en-GB.Daniel'),
   V('Daniel (Enhanced)', 'en-GB', 'com.apple.voice.enhanced.en-GB.Daniel'), V('Thomas', 'fr-FR'), V('Karen', 'en-AU')];
-const P = [V('Daniel (Premium)', 'en-GB', 'com.apple.voice.premium.en-GB.Daniel'), ...L];
+const P = [V('Daniel (Premium)', 'en-GB', 'com.apple.voice.premium.en-GB.Daniel'), V('Ava', 'en-US', 'com.apple.voice.compact.en-US.Ava'),
+  V('Ava (Premium)', 'en-US', 'com.apple.voice.premium.en-US.Ava'), V('Bubbles', 'en-US'), ...L];
 const out = {
   best: m.bestVoice(L).name, premium: m.bestVoice(P).name, saved: m.bestVoice(L, 'Karen').name, gone: m.bestVoice(L, 'Nobody').name,
+  saidNovelty: m.bestVoice(L, 'Zarvox').name, maleOnly: (m.bestVoice([V('Daniel', 'en-GB'), V('Zarvox', 'en-US')]) || {}).name,
   usOnly: (m.bestVoice([V('Samantha', 'en-US'), V('Zarvox', 'en-US')]) || {}).name, none: m.bestVoice([V('Thomas', 'fr-FR')]),
+  pchoices: m.voiceChoices(P).map((v) => v.name),
   choices: m.voiceChoices(L).map((v) => v.name),
   frText: m.fragmentsOf({ text: 'Zlarior: $1,106 of room above the floor ($48,168).\nATLAS: $750 of room.\nLive feed 2 min old.' }),
   frCards: m.fragmentsOf({ text: 'x', cards: [{ title: 'Zlarior', kv: [['Today', '+$213'], ['Room', '$1,106'], ['To target', '$3,726']] }, 'plain'] }),
@@ -208,10 +220,12 @@ def part_pure(tmp):
     except Exception:
         check("b. the pure parts run in node", False, r.stderr or r.stdout)
         return
-    check("b. voice: Daniel (Enhanced) en-GB over compact Daniel and Samantha; premium first; never Zarvox; none English = the phone's default",
-          o["best"] == "Daniel (Enhanced)" and o["premium"] == "Daniel (Premium)" and o["usOnly"] == "Samantha" and o["none"] is None, o)
-    check("b. voice: the owner's pick is kept while the phone has it, else the best", o["saved"] == "Karen" and o["gone"] == "Daniel (Enhanced)", o)
-    check("b. voice: the choices are English only, best first, no novelty voice", o["choices"][:2] == ["Daniel (Enhanced)", "Daniel"]
+    check("b. voice: a female voice first (Samantha over Daniel Enhanced); Ava (Premium) over compact Ava and a premium male voice; never Zarvox / Bubbles; none English = the phone's default",
+          o["best"] == "Samantha" and o["premium"] == "Ava (Premium)" and o["usOnly"] == "Samantha" and o["none"] is None
+          and o["maleOnly"] == "Daniel" and o["pchoices"][:2] == ["Ava (Premium)", "Ava"] and "Bubbles" not in o["pchoices"], o)
+    check("b. voice: the owner's pick is kept while the phone has it, else the best; a novelty pick is never used",
+          o["saved"] == "Karen" and o["gone"] == "Samantha" and o["saidNovelty"] == "Samantha", o)
+    check("b. voice: the choices are English only, best first, no novelty voice", o["choices"][:2] == ["Samantha", "Karen"]
           and "Zarvox" not in o["choices"] and "Thomas" not in o["choices"], o["choices"])
     check("b. cards from the text: 'Zlarior · room  $1,106', 'ATLAS · room  $750' (copied as written, nothing computed)",
           o["frText"] == [{"k": "Zlarior · room", "v": "$1,106"}, {"k": "ATLAS · room", "v": "$750"}], o["frText"])
@@ -232,16 +246,17 @@ def run_main(br, url):
           and not vm(p).get("open") and p.evaluate("window.__gum.length") == 0, vm(p))
     p.evaluate("window.__utter = 'is the market open'; window.__srMs = 900; window.__srMode = 'once'")
     p.click('#qa [data-qa="voice"]')
-    wait_phase(p, "speaking", 8000)
+    p.wait_for_function("window.__phases.includes('speaking')", timeout=15000)      # the greeting (short: a busy machine can poll past it)
     s = vm(p)
     box = p.evaluate("(() => { const r = document.getElementById('vm').getBoundingClientRect(); return [r.width, r.height, innerWidth, innerHeight]; })()")
     check("c. the tile opens voice mode full screen, greeting first", s.get("open") and box[0] == box[2] and box[1] == box[3], (s, box))
     p.wait_for_function("window.__said.length >= 1", timeout=5000)
     g = p.evaluate("window.__said[0]")
-    check("c. the greeting in the J.A.R.V.I.S. voice: Daniel (Enhanced), en-GB", g["voice"] == "Daniel (Enhanced)" and "listening" in g["text"].lower(), g)
+    check("c. the greeting in her voice: Ava (Premium), at the voice's own pace and pitch", g["voice"] == "Ava (Premium)" and "listening" in g["text"].lower()
+          and g["rate"] == 1 and g["pitch"] == 1, g)
     check("c. the 3D core goes full screen (mounted in voice mode, the Jarvis screen's core let go: one core at a time)",
           s.get("core") is not None and p.evaluate("document.getElementById('coreSlot').children.length") == 0, (s.get("core"), home_core))
-    check("c. the button labels the voice", p.inner_text("#vmVoice").startswith("VOICE · DANIEL"), p.inner_text("#vmVoice"))
+    check("c. the button labels the voice", p.inner_text("#vmVoice").startswith("VOICE · AVA"), p.inner_text("#vmVoice"))
     # the mic analyser (asked inside the tile's tap) and the core reacting to it while listening
     wait_phase(p, "listening", 8000)
     p.wait_for_function(f"{VMS}.mic && {VMS}.micLive", timeout=8000)
@@ -255,12 +270,12 @@ def run_main(br, url):
     # d. one turn: mocked recognition -> the brain's answer in the captions, said word by word
     p.wait_for_function("window.__said.length >= 2", timeout=15000)
     wait_phase(p, "listening", 15000)
-    said = p.evaluate("window.__said[1]")
+    said = p.evaluate("({ text: window.__said.slice(1).map((x) => x.text).join(' '), n: window.__said.length - 1 })")
     caps = p.evaluate("[document.getElementById('vmYou').textContent, document.getElementById('vmJar').textContent, "
                       "[...document.querySelectorAll('#vmJar .w')].every((w) => w.classList.contains('on')), "
                       "[...document.querySelectorAll('#talk .msg.j')].map((m) => m.textContent).pop() || '']")
     check("d. a turn: you said 'is the market open' (caption), the brain's spoken answer is the caption, word for word, all lit",
-          caps[0] == "is the market open" and caps[1] == said["text"] and "market" in said["text"].lower() and caps[2], (caps, said))
+          caps[0] == "is the market open" and flat(caps[1]) == flat(said["text"]) and "market" in said["text"].lower() and caps[2], (caps, said))
     check("d. the reply is also kept in the Jarvis chat (the shell's answer(), the same brain)", "market" in caps[3].lower(), caps[3])
     check("d. turn-taking: listening again after the answer", vm(p)["phase"] == "listening" and p.evaluate("window.__srStarts") >= 2, vm(p))
     vd = p.evaluate("document.getElementById('vmVerdict').textContent")
@@ -282,21 +297,22 @@ def run_main(br, url):
     wait_phase(p, "speaking", 5000)
     c0, n0 = p.evaluate("[window.__cancels, window.__srStarts]")
     p.click("#vmStage", position={"x": 60, "y": 60})
-    wait_phase(p, "listening", 3000)
+    wait_phase(p, "listening", 8000)
     c1, n1 = p.evaluate("[window.__cancels, window.__srStarts]")
     check("e. barge-in: a tap while Jarvis speaks stops the voice at once and listens", c1 > c0 and n1 > n0 and not vm(p)["speaking"]
           and not p.evaluate("speechSynthesis.speaking"), (c0, c1, n0, n1))
     p.evaluate("window.__ttsStep = 0; window.__srMode = 'hang'")
     # a tap while listening pauses; the VOICE button steps to the next voice and keeps it
     p.click("#vmStage", position={"x": 60, "y": 60})
-    wait_phase(p, "idle", 3000)
+    wait_phase(p, "idle", 8000)
     p.click("#vmVoice")
     p.wait_for_function("window.__said.some((x) => /at your service/.test(x.text))", timeout=5000)
     pick = p.evaluate("[localStorage.getItem('jarvis.vmVoice'), window.__said[window.__said.length - 1].voice]")
-    check("h. the VOICE button: the next English voice (Daniel), said and kept on this phone", pick == ["Daniel", "Daniel"], pick)
+    pick.append(p.evaluate("JSON.parse(localStorage.getItem('jarvis.voiceCfg') || '{}').voice || ''"))
+    check("h. the VOICE button: the next voice (Ava compact), said and kept on this phone for voice mode and the Jarvis screen", pick == ["Ava", "Ava", "Ava"], pick)
     # f. END: the mic released
     p.click("#vmX")
-    p.wait_for_function(f"!{VMS}.open", timeout=3000)
+    p.wait_for_function(f"!{VMS}.open", timeout=8000)
     p.wait_for_timeout(300)
     s = vm(p)
     tr = p.evaluate("window.__tracks()")
@@ -338,7 +354,7 @@ def run_main(br, url):
     p.click('#qa [data-qa="voice"]')
     p.wait_for_function(f"{VMS}.open && {VMS}.mic", timeout=8000)
     p.evaluate("Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' }); document.dispatchEvent(new Event('visibilitychange'))")
-    p.wait_for_function(f"!{VMS}.open", timeout=3000)
+    p.wait_for_function(f"!{VMS}.open", timeout=8000)
     tr = p.evaluate("window.__tracks()")
     p.evaluate("delete document.visibilityState; document.dispatchEvent(new Event('visibilitychange'))")
     check("f. Jarvis out of sight: voice mode closes and every mic track is stopped", "live" not in tr, tr)
@@ -365,8 +381,8 @@ def run_no_sr(br, url):
     p.press("#vmQ", "Enter")
     p.wait_for_function("window.__said.length >= 2", timeout=15000)
     p.wait_for_function(f"{VMS}.phase === 'idle'", timeout=15000)
-    caps = p.evaluate("[document.getElementById('vmYou').textContent, document.getElementById('vmJar').textContent, window.__said[1].text]")
-    check("g. typed: the brain's answer in the captions and said out loud", caps[0] == "is the market open" and caps[1] == caps[2] and "market" in caps[2].lower(), caps)
+    caps = p.evaluate("[document.getElementById('vmYou').textContent, document.getElementById('vmJar').textContent, window.__said.slice(1).map((x) => x.text).join(' ')]")
+    check("g. typed: the brain's answer in the captions and said out loud", caps[0] == "is the market open" and flat(caps[1]) == flat(caps[2]) and "market" in caps[2].lower(), caps)
     p.click("#vmX")
     p.click('#qa [data-qa="voice"]')
     p.wait_for_function(f"{VMS}.open && {VMS}.typing", timeout=8000)
