@@ -68,6 +68,9 @@ export function parseRead(q) {
 }
 
 // ------------------------------------------------------------------------------------------------ the memory
+// the same Markdown -> plain words as obsidian.js plainText (this module stays import-free)
+const plain = (md) => String(md || '').replace(/^\s{0,3}#{1,6}\s+/gm, '').replace(/^\s*[-*+]\s+\[[ xX/-]\]\s+.*$/gm, '').replace(/^\s*[-*+]\s+/gm, '')
+  .replace(/!?\[\[([^\]|]+)(\|([^\]]+))?\]\]/g, (m0, a, b, c) => c || a).replace(/(\*\*|__|`)/g, '');
 export function createMemory(opts) {
   const o = isObj(opts) ? opts : {};
   const vault = o.vault && typeof o.vault.search === 'function' ? o.vault : null;
@@ -84,7 +87,8 @@ export function createMemory(opts) {
     pending = { ...req, t: nowMs() };
     const what = req.kind === 'task' ? 'Add the task' : req.kind === 'me' ? 'Save this to your Me profile' : req.kind === 'log' ? 'Write today\'s OLYMPUS log' : req.kind === 'remember' ? 'Remember' : 'Save the note';
     const quote = req.kind === 'log' ? '' : ` “${req.text}”`;
-    return { text: `${what}${quote} to ${where(req.kind)}? Say yes to save, or no.`, speak: `${what}? Say yes to save.`, intent: 'memory_confirm', pending: true };
+    const text = req.kind === 'me' ? `${what}:${quote} (${where('me')})? Say yes to save, or no.` : `${what}${quote} to ${where(req.kind)}? Say yes to save, or no.`;
+    return { text, speak: `${what}? Say yes to save.`, intent: 'memory_confirm', pending: true };
   }
   async function commit() {
     const req = pending; pending = null;
@@ -113,7 +117,7 @@ export function createMemory(opts) {
     const n = await vault.daily(day);
     if (!n) return { text: `No daily note for ${label} (${day}) in your vault yet.`, speak: `No daily note for ${label}.`, intent: 'memory_daily' };
     const open = arr(n.tasks).filter((t) => !t.done);
-    const body = str(n.text, 600);
+    const body = str(plain(n.text), 600);
     return { text: lines(`${cap(label)}'s note (${n.title}):`, body || '(empty)', open.length ? `${plural(open.length, 'open task')}: ${open.slice(0, 3).map((t) => t.text).join('; ')}` : ''),
       speak: `${cap(label)}'s note has ${plural(n.words || body.split(' ').length, 'word')}${open.length ? ` and ${plural(open.length, 'open task')}` : ''}.`, intent: 'memory_daily', smart: true };
   }
@@ -127,7 +131,7 @@ export function createMemory(opts) {
     const r = await vault.recent(days, ymd(nowMs()));
     const all = r.notes.concat(r.inbox);
     if (!all.length) return { text: `No daily or inbox notes from ${r.start} to ${r.end}.`, intent };
-    const heads = r.notes.slice(0, 5).map((n) => `${n.daily}: ${str(n.text, 120) || '(empty)'}`);
+    const heads = r.notes.slice(0, 5).map((n) => `${n.daily}: ${str(plain(n.text), 120) || '(empty)'}`);
     return { text: lines(intent === 'memory_mind' ? `On your mind lately: ${r.themes.slice(0, 5).join(', ') || 'no clear theme yet'}.` : `This week in your notes (${r.start} to ${r.end}): ${plural(all.length, 'note')}.`,
       ...heads, r.inbox.length ? `Inbox: ${plural(r.inbox.length, 'page')} from Jarvis.` : ''),
     speak: intent === 'memory_mind' ? `Lately you write most about ${r.themes.slice(0, 3).join(', ') || 'nothing in particular'}.` : `${plural(all.length, 'note')} this week.`, intent, smart: true };

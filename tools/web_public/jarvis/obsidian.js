@@ -146,8 +146,13 @@ export function parseNote(path, text) {
   return { path, title, fm, tags: [...tags].slice(0, 40), links: links.slice(0, 80), headings: headings.slice(0, 60), tasks: tasks.slice(0, 200),
     daily, text: body.slice(0, TEXT_CUT), len: body.length, words: (body.match(/\S+/g) || []).length };
 }
+// Markdown -> plain words for a spoken / chat answer: no heading marks, task boxes, link brackets, emphasis or code fences
+export function plainText(md) {
+  return str(md).replace(/```[\s\S]*?```/g, ' ').replace(/^\s{0,3}#{1,6}\s+/gm, '').replace(/^\s*[-*+]\s+\[[ xX/-]\]\s+/gm, '').replace(/^\s*[-*+]\s+/gm, '')
+    .replace(/!?\[\[([^\]|]+)(\|([^\]]+))?\]\]/g, (m0, a, b, c) => c || a).replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/(\*\*|__|`)/g, '');
+}
 function snippetOf(note, qt) {
-  const body = str(note.text).replace(/\s+/g, ' ');
+  const body = plainText(note.text).replace(/\s+/g, ' ').trim();
   if (!body) return '';
   const low = body.toLowerCase();
   let best = -1;
@@ -336,7 +341,11 @@ export function createVault(opts) {
     const notes = (await all()).filter((x) => x.daily && x.daily >= start && x.daily <= end).sort((a, b) => b.daily.localeCompare(a.daily));
     const inbox = (await all()).filter((x) => x.path.startsWith(PATHS.inbox + '/') && x.path.slice(-13, -3) >= start && x.path.slice(-13, -3) <= end);
     const tf = new Map();
-    for (const x of notes.concat(inbox)) for (const t of tokens(x.text + ' ' + x.tags.join(' '))) if (t.length > 3 && !/^\d+$/.test(t)) tf.set(t, (tf.get(t) || 0) + 1);
+    const skip = /^(mon|tue|wed|thu|fri|sat|sun|monday|tuesday|wednesday|thursday|friday|saturday|sunday|jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec|today|week|daily|inbox|remember|jarvis|note|call)$/;
+    for (const x of notes.concat(inbox)) {          // themes: the tags count three times, the words once (no dates, no filler)
+      for (const t of x.tags) if (!skip.test(t)) tf.set(t, (tf.get(t) || 0) + 3);
+      for (const t of tokens(x.text)) if (t.length > 3 && !/^\d+$/.test(t) && !skip.test(t)) tf.set(t, (tf.get(t) || 0) + 1);
+    }
     const themes = [...tf.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map((x) => x[0]);
     return { start, end, notes, inbox, themes };
   }

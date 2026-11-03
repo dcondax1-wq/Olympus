@@ -382,7 +382,8 @@ def main() -> int:
     sr = O["b_search"]
     check("b. BM25 search: 'trailing drawdown' -> MFFU notes first; 'sweep stop size' -> Playbook; 'kalshi' -> the daily note; junk -> nothing",
           sr[0][0][0] == "MFFU notes" and sr[1][0][0] == "Playbook" and sr[2][0][0] == "2026-11-01" and sr[3] == [] and sr[0][0][1] > (sr[0][1][1] if len(sr[0]) > 1 else 0), sr)
-    check("b. the snippet shows the matching words", "railing drawdown" in (O["b_snippet"] or ""), O["b_snippet"])
+    check("b. the snippet shows the matching words, as plain words (no Markdown marks, [[links]] as names)", "railing drawdown" in (O["b_snippet"] or "")
+          and "#" not in O["b_snippet"] and "[[" not in O["b_snippet"] and "See Goals and Trading/Playbook" in O["b_snippet"], O["b_snippet"])
     check("b. daily notes by file name; Jarvis's inbox page is not a daily note",
           O["b_daily"] and O["b_daily"]["path"] == "Daily/2026-11-02.md" and O["b_daily_inbox"] is None, O["b_daily"] and O["b_daily"]["path"])
     tk = [t["text"] for t in O["b_tasks"]]
