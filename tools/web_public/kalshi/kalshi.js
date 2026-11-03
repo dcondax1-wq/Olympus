@@ -754,7 +754,8 @@
       + `<div class="cb"><svg viewBox="0 0 ${W} ${W}" role="img" aria-label="${esc(`Calibration, ${n} settled bets: ${rows.map((r) => pct(r.p) + ' said, ' + pct(r.hit) + ' won').join('; ')}`)}">`
       + ticks.map((t) => `<line class="cb-g" x1="${X(t).toFixed(1)}" x2="${X(t).toFixed(1)}" y1="${P}" y2="${W - P}"/><line class="cb-g" y1="${Y(t).toFixed(1)}" y2="${Y(t).toFixed(1)}" x1="${P}" x2="${W - P}"/>`).join('')
       + `<line class="cb-d" x1="${X(lo)}" y1="${Y(lo)}" x2="${X(1)}" y2="${Y(1)}"/>${dots}</svg>`
-      + `<span class="cb-ax cb-x">${esc(Math.round(lo * 100) + '%')} → 100% said</span><span class="cb-ax cb-y">won</span></div>`
+      + ticks.map((t, i) => `<span class="cb-t${i === 0 ? ' a0' : i === ticks.length - 1 ? ' a1' : ''}" style="left:${(X(t) / W * 100).toFixed(1)}%">${Math.round(t * 100)}%</span>`).join('')
+      + '<span class="cb-ax cb-y">↑ won · said →</span></div>'
       + `<p class="muted small">Predicted = ${esc(what)}. On the line = honest odds; above it = the bets win more than they cost (green), below = less (red). `
       + `Biggest group: ${esc(pct(big.p))} said, ${esc(pct(big.hit))} won, ${esc(fmtN(big.n))} ${big.n === 1 ? 'bet' : 'bets'}.</p>${d.own ? '' : fromNote(n)}</section>`;
   }
@@ -847,6 +848,8 @@
   const waitHtml = () => '<section class="card wait"><h2>Connect your Kalshi bot</h2><p>Your Kalshi bot runs on its own server. One paste in its own chat connects it to Jarvis:</p>'
     + `<code id="step">${esc(STEP)}</code><div class="wait-a"><button type="button" class="btn" data-act="copy">Copy the message</button><span class="muted" id="copied" role="status"></span></div>`
     + '<p class="muted">After that it sends its numbers here every minute, by itself.</p>'
+    + `<ul class="feat" aria-label="What this page shows once connected">${['Balance &amp; P&amp;L', 'Alerts', 'Open bets · live edge', 'Kelly sizing', 'By market', 'By price', 'Calibration', 'P&amp;L calendar', 'Equity curve']
+      .map((f) => `<li>${f}</li>`).join('')}</ul>`
     + (S.k ? '' : '<button type="button" class="quiet" data-act="preview">Preview with sample data</button>') + '</section>';
   const errHtml = () => `<section class="card err"><p class="muted">No connection to the Kalshi feed right now${navigator.onLine === false ? ' (this phone is offline)' : ''}. Tap Refresh to try again.</p>`
     + '<div><button type="button" class="btn ghost" data-act="retry">Try again</button></div></section>';

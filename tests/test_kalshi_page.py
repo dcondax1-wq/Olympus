@@ -458,6 +458,10 @@ def run_browser(url, tmp):
               "runs on its own server" in body and "One paste in its own chat" in body and "every minute" in body
               and not re.search(r"\bPC\b", body + p.inner_text("#foot")), body)
         check("b. waiting: no numbers, no sections", p.locator("#body .card").count() == 1 and p.locator("#sec-kpi").count() == 0)
+        feats = [x.inner_text().strip().lower() for x in p.locator("#body .wait .feat li").all()]
+        check("b. waiting: what lights up once connected (9 chips: alerts, live edge, Kelly, by market / price, calibration ...)",
+              len(feats) == 9 and {"alerts", "kelly sizing", "calibration", "by market", "by price"} <= set(feats)
+              and p.is_hidden("#tape"), feats)
         ctx.grant_permissions(["clipboard-read", "clipboard-write"], origin=url.rstrip("/").rsplit("/", 1)[0])
         p.click("[data-act=copy]")
         p.wait_for_function("document.getElementById('copied').textContent.length > 0", timeout=3000)
