@@ -2,7 +2,8 @@
 // Default design "reactor": the owner's violet Gimbal Reactor, ported from his old Jarvis (specs/old_jarvis_ui/reactor_r3d2.html):
 // a faceted plasma core with lightning, 3 chrome gimbal rings with energy strips, orbiting cubes, a particle disk, a glass and
 // hex shell, a hologram globe and a projector dial on a grid floor. "singularity": a black hole with a white-violet accretion
-// ring. Real 3D with Three.js (./three.module.min.js, r160, loaded on demand). A 2D canvas draws the ticked HUD ring on top
+// ring. Real 3D with Three.js (./three.module.min.js, r160, loaded on demand) through the OLYMPUS render core
+// (../olympus/render.js: real bloom, 4x MSAA / FXAA, the film finish; docs/OLYMPUS_RENDER.md). A 2D canvas draws the ticked HUD ring on top
 // (clock, state, level gauge) at once, and is the whole core (a flat arc-reactor) when WebGL or three is missing.
 //   mountCore(el, {size, design: 'reactor'|'singularity', theme: {c, c2, c3, tint} or an old key ('eclipse', 'reactor',
 //                  'reactor-stark', 'reactor-ice', 'reactor-emerald'), effects: 'ultra'|'high'|'low'|'off',
@@ -127,14 +128,16 @@ export function mountCore(el, opts) {
     retry = 0;
     if (dead || opts.webgl === false) { three = 'off'; return; }
     tries++;
-    const c = document.createElement('canvas'), A = { alpha: true, antialias: tier > 1, premultipliedAlpha: true, depth: true, stencil: false, powerPreference: 'high-performance' };
+    // no context antialias: the render core anti-aliases its own buffer (an MSAA screen buffer would be wasted memory)
+    const c = document.createElement('canvas'), A = { alpha: true, antialias: false, premultipliedAlpha: true, depth: true, stencil: false, powerPreference: 'high-performance' };
     try { c.gl = c.getContext('webgl2', A); } catch (e) { c.gl = null; }
     if (!c.gl) { three = 'off'; return; }
     three = 'loading'; cv3 = c;
-    import('./three.module.min.js').then((T) => {
+    // the render core is optional: missing (an old cached shell), the reactor draws straight to the screen as before
+    Promise.all([import('./three.module.min.js'), import('../olympus/render.js').catch(() => null)]).then(([T, RC]) => {
       if (dead || cv3 !== c) return;
       c.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;opacity:0' + (still ? '' : ';transition:opacity .8s ease');
-      try { r3 = makeReactor(T, c, c.gl, A, design, tier, theme); } catch (e) { r3 = null; drop3D(); return; }
+      try { r3 = makeReactor(T, RC, c, c.gl, A, design, tier, theme); } catch (e) { r3 = null; drop3D(); return; }
       c.addEventListener('webglcontextlost', onLost);
       box.insertBefore(c, cv); three = 'on'; labKey = ''; fit(); rewarm();
       if (still) snap(); else kick();
@@ -466,7 +469,7 @@ export function mountCore(el, opts) {
       box.remove();
     },
     stats: () => ({ state: STATES[st], level: +L.toFixed(3), design, effects: EFFECTS[tier ? Math.min(tier, 3) : 1], tier, three, fps, ms: +ms0.toFixed(2),
-      frames, frames3, running: !!raf, reduced: still, dpr }),
+      frames, frames3, running: !!raf, reduced: still, dpr, post: r3 ? r3.post() : null }),
   };
 }
 
@@ -489,12 +492,19 @@ const VN = 'varying vec3 vN, vP, vV; void main(){ vN = normalize(normalMatrix * 
 const VUV = 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }';
 const TAIL = '\n#include <tonemapping_fragment>\n#include <colorspace_fragment>\n}';
 
-function makeReactor(T, canvas, context, attrs, design0, tier0, theme0) {
+function makeReactor(T, RC, canvas, context, attrs, design0, tier0, theme0) {
   const ren = new T.WebGLRenderer(Object.assign({ canvas, context }, attrs));
   ren.setClearColor(0x000000, 0);
   ren.toneMapping = T.ACESFilmicToneMapping; ren.toneMappingExposure = 0.95; ren.outputColorSpace = T.SRGBColorSpace;
   const scene = new T.Scene(), cam = new T.PerspectiveCamera(30, 1, 0.1, 200);
   cam.position.set(0, 2.1, 17.8); cam.lookAt(0, -0.35, 0);
+  // the OLYMPUS render core on this renderer: the reactor keeps its own studio environment (tinted per theme), its own
+  // effects tiers (the core's adapt() steps them) and its look (display space: its glows were tuned on screen colours);
+  // a transparent canvas, so the bloom lights the page behind the core
+  const rc = RC ? RC.createRenderer({ renderer: ren, scene, camera: cam, alpha: true, env: 'none', exposure: 0.95, space: 'display',
+    quality: EFFECTS[tier0], adapt: false, autoSize: false, fitCamera: false, bloom: { strength: 0.65, radius: 0.6, threshold: 0.85 },
+    grade: { vignette: 0, grain: 0.02, saturation: 1.1 } }) : null;
+  const bloomTint = { tint: new T.Color() }, WHITE3 = new T.Color(1, 1, 1);
   // additive that keeps the canvas transparent (alpha untouched), so glows light the page behind instead of covering it
   const ADD = { transparent: true, depthWrite: false, blending: T.CustomBlending, blendSrc: T.SrcAlphaFactor, blendDst: T.OneFactor, blendSrcAlpha: T.ZeroFactor, blendDstAlpha: T.OneFactor };
   const K = { main: new T.Color(), acc: new T.Color(), hot: new T.Color(), core: new T.Color(), deep: new T.Color(), bad: new T.Color(1, 0.08, 0.15) };
@@ -740,6 +750,7 @@ function makeReactor(T, canvas, context, attrs, design0, tier0, theme0) {
   }
   function quality(q) {
     tier = q;
+    if (rc) rc.setQuality(EFFECTS[q]);
     parts.forEach(([g, n]) => g.setDrawRange(0, q > 1 ? n : Math.ceil(n * 0.45)));
     if (X.globe) X.globe.visible = q > 0;
     if (X.grid) X.grid.visible = q > 1;               // the grid floor is a full-width layer: 'high' and up
@@ -801,15 +812,23 @@ function makeReactor(T, canvas, context, attrs, design0, tier0, theme0) {
         const e = 1 - (1 - k) * (1 - k);
         m.scale.setScalar(m.dir > 0 ? 1.4 + 3.2 * e : 4 - 2.5 * e); m.material.opacity = Math.pow(Math.sin(k * Math.PI), 1.5) * 0.75;
       });
-      ren.render(scene, cam);
+      if (rc) { bloomTint.tint.copy(WHITE3).lerp(K.core, 0.7); rc.setBloom(bloomTint); rc.render(); }   // the glow takes the state's colour
+      else ren.render(scene, cam);
     },
-    size(w, d) { if (w === sz[0] && d === sz[1]) return; sz = [w, d]; ren.setPixelRatio(d); ren.setSize(w, w, false); },
+    size(w, d) {
+      if (w === sz[0] && d === sz[1]) return;
+      sz = [w, d];
+      if (rc) rc.resize(w, w); else { ren.setPixelRatio(d); ren.setSize(w, w, false); }
+    },
     quality,
+    /** the render core's stats (passes, bloom, MSAA / FXAA), or null when it is missing */
+    post: () => (rc ? rc.stats() : null),
     burst(i) { if (i === 4) bAcc = 3; },
     theme(th) { colours(th); envMap(); },
     design(name) { build(name); },
     dispose() {
       free(); texs.forEach((x) => x.dispose()); if (env) env.dispose();
+      if (rc) rc.dispose();
       ren.dispose(); if (!context.isContextLost()) ren.forceContextLoss();
     },
   };
