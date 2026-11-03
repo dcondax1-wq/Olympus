@@ -52,12 +52,12 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 60%, #2a1c0
 
 /* ---- the tabs (left of the orb) */
 .tabs { position: fixed; left: calc(var(--sl) + 16px); right: calc(var(--sr) + var(--oly-orb-clear, 96px)); bottom: calc(var(--sb) + 12px);
-  display: flex; gap: 6px; z-index: 5; }
-.tabs button { flex: 1 1 0; min-width: 0; min-height: var(--oly-tap, 44px); padding: 4px 6px; border-radius: var(--oly-r-btn, 12px);
+  display: flex; gap: 4px; z-index: 5; }
+.tabs button { flex: 1 1 0; min-width: 0; min-height: var(--oly-tap, 44px); padding: 4px 2px; border-radius: var(--oly-r-btn, 12px);
   border: 1px solid var(--oly-line); background: var(--oly-glass); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
-  font: 700 12.5px/1.1 var(--oly-ui); letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  font: 700 10.5px/1.1 var(--oly-ui); letter-spacing: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tabs button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; }
-.tabs button b { font: 700 10.5px/1 var(--oly-display, sans-serif); color: var(--a-gold); }
+.tabs button b { font: 700 9.5px/1 var(--oly-display, sans-serif); color: var(--a-gold); }
 .tabs button[aria-pressed="true"] { border-color: rgba(var(--a-gold-rgb), .7); box-shadow: 0 0 16px rgba(var(--a-gold-rgb), .25) inset; }
 
 /* ---- the sheet (quests, labours, log): above the orb's corner */
@@ -153,3 +153,70 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 60%, #2a1c0
 html[data-fx="off"] .banner.go { animation: none; opacity: 1; }
 html[data-fx="off"] #flash.go { animation: none; }
 @media (max-height: 700px) { .rank { padding: 8px 10px; } .emblem { width: 44px; height: 44px; } .rk b { font-size: 19px; } }
+
+/* ---- 2026-11-03 upgrade: the rank card opens the ladder; weekly bosses, trophies, the ladder sheet, the rank-up banner */
+.rank { cursor: pointer; }
+.rank:focus-visible { outline: 2px solid var(--a-gold); outline-offset: 2px; }
+.boss { --bc: #ff5a6e; display: flex; flex-direction: column; gap: 6px; padding: 12px; margin-bottom: 8px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--bc) 45%, transparent);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--bc) 14%, transparent), rgba(255, 255, 255, .02)); }
+.boss.big { box-shadow: 0 0 22px color-mix(in srgb, var(--bc) 25%, transparent); }
+.boss.slain { border-color: rgba(var(--a-gold-rgb), .7); background: linear-gradient(160deg, rgba(var(--a-gold-rgb), .18), rgba(var(--a-gold-rgb), .03)); }
+.boss.escaped, .boss.locked { opacity: .72; }
+.boss .bh { display: flex; align-items: center; gap: 10px; }
+.boss .glyph { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid var(--bc);
+  font: 800 12px/1 var(--oly-display, sans-serif); letter-spacing: .04em; color: var(--bc); box-shadow: 0 0 14px color-mix(in srgb, var(--bc) 50%, transparent) inset; }
+.boss .bn { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.boss .bn b { font: 700 15px/1.2 var(--oly-ui); overflow-wrap: anywhere; }
+.boss .bt { font-size: 11.5px; color: var(--oly-dim); letter-spacing: .08em; text-transform: uppercase; }
+.boss .bs { flex: none; font: 700 10.5px/1 var(--oly-display, sans-serif); letter-spacing: .08em; color: var(--bc); text-align: right; max-width: 84px; }
+.boss.slain .bs { color: var(--a-gold); }
+.boss .bx { margin: 0; font-size: 13px; }
+.boss .hp { display: flex; gap: 4px; }
+.boss .hp i { flex: 1 1 0; height: 8px; border-radius: 4px; background: rgba(255, 255, 255, .1); }
+.boss .hp i.hit { background: var(--bc); box-shadow: 0 0 8px var(--bc); }
+.boss.slain .hp i.hit { background: var(--a-gold); box-shadow: 0 0 8px var(--a-gold); }
+.boss .parts { display: flex; flex-wrap: wrap; gap: 4px; }
+.part { padding: 3px 7px; border-radius: 999px; font-size: 11px; border: 1px solid var(--oly-line); color: var(--oly-dim); }
+.part.ok { color: #0f2a1d; background: var(--a-ok); border-color: transparent; font-weight: 700; }
+.part.miss { color: #ffb3bd; border-color: rgba(255, 90, 110, .6); text-decoration: line-through; }
+.part.nodata { opacity: .55; }
+.boss .bnote { margin: 0; font-size: 11.5px; color: var(--oly-dim); overflow-wrap: anywhere; }
+.boss .bxp { margin: 0; font: 700 11.5px/1 var(--oly-display, sans-serif); color: var(--a-gold); }
+.weeks { display: flex; flex-direction: column; gap: 4px; }
+.week { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 10px; background: rgba(255, 255, 255, .03); border: 1px solid var(--oly-line); }
+.week b { flex: 1; font-size: 12.5px; }
+.wchip { min-width: 30px; padding: 3px 5px; text-align: center; border-radius: 8px; font: 700 10px/1.2 var(--oly-display, sans-serif); border: 1px solid var(--oly-line); color: var(--oly-dim); }
+.wchip.slain { color: #1a1002; background: var(--a-gold); border-color: transparent; }
+.wchip.escaped { color: #ffb3bd; border-color: rgba(255, 90, 110, .5); }
+
+.trophies { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.trophy { --tc: #8d8799; display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 44px; padding: 8px 4px; text-align: center; min-width: 0;
+  border-radius: 12px; border: 1px solid var(--oly-line); background: rgba(255, 255, 255, .03); opacity: .78; }
+.trophy.bronze { --tc: #c9833f; } .trophy.silver { --tc: #dfe7f5; } .trophy.gold { --tc: #ffcf5a; } .trophy.legend { --tc: #b98bff; }
+.trophy .cup { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--oly-line);
+  font: 800 12px/1 var(--oly-display, sans-serif); color: var(--oly-dim); }
+.trophy b { font: 700 12px/1.15 var(--oly-ui); overflow-wrap: anywhere; }
+.trophy .tt { font: 700 9.5px/1 var(--oly-display, sans-serif); letter-spacing: .14em; text-transform: uppercase; color: var(--oly-dim); }
+.trophy .st { font-size: 10.5px; color: var(--oly-dim); }
+.trophy.earned { opacity: 1; border-color: color-mix(in srgb, var(--tc) 70%, transparent); background: linear-gradient(160deg, color-mix(in srgb, var(--tc) 18%, transparent), rgba(255, 255, 255, .02));
+  box-shadow: 0 0 16px color-mix(in srgb, var(--tc) 22%, transparent); }
+.trophy.earned .cup { color: #1a1002; background: var(--tc); border-color: transparent; box-shadow: 0 0 14px var(--tc); }
+.trophy.earned .tt, .trophy.earned .st { color: var(--tc); }
+
+.ladder { display: flex; flex-direction: column; gap: 6px; }
+.rung { --rc: #9aa4b2; display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; border: 1px solid var(--oly-line); background: rgba(255, 255, 255, .03); opacity: .66; }
+.rung.got { opacity: 1; border-color: color-mix(in srgb, var(--rc) 55%, transparent); }
+.rung.here { background: linear-gradient(160deg, color-mix(in srgb, var(--rc) 22%, transparent), rgba(255, 255, 255, .02)); box-shadow: 0 0 20px color-mix(in srgb, var(--rc) 30%, transparent); }
+.rung .rg { flex: none; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--rc); color: var(--rc);
+  font: 800 15px/1 var(--oly-display, sans-serif); }
+.rung.here .rg { background: var(--rc); color: #120c02; box-shadow: 0 0 16px var(--rc); }
+.rung .rt { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.rung .rt b { font: 700 15px/1.2 var(--oly-display, sans-serif); letter-spacing: .1em; text-transform: uppercase; color: var(--rc); }
+.rung .rt span { font-size: 12px; color: var(--oly-text); overflow-wrap: anywhere; }
+.rung .rt .rd { color: var(--oly-dim); font-size: 11.5px; }
+.rung .rx { flex: none; font: 700 11px/1 var(--oly-display, sans-serif); color: var(--oly-dim); }
+
+.banner .pips { display: flex; gap: 8px; margin-top: 8px; }
+.banner .pips i { width: 12px; height: 12px; border-radius: 50%; background: rgba(255, 255, 255, .15); }
+.banner .pips i.on { background: var(--rc); box-shadow: 0 0 12px var(--rc), 0 0 28px var(--rc); }
+.banner.rankup b { font-size: 40px; }

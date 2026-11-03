@@ -1,0 +1,13 @@
+{
+  "name": "Labyrinth",
+  "short_name": "Labyrinth",
+  "description": "LABYRINTH: the risk maze of a prop-firm eval, with a size what-if.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#09050d",
+  "theme_color": "#09050d",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
