@@ -66,7 +66,8 @@ MAX_BYTES = kit.MAX_BYTES
 EVERY_S = kit.EVERY_S
 KEEPALIVE_S = kit.KEEPALIVE_S
 TOP, NUM, POS, TRADE, STRAT, CAPS = kit.TOP, kit.NUM, kit.POS, kit.TRADE, kit.STRAT, kit.CAPS
-SAMPLE, SAMPLE_V2 = kit.SAMPLE, kit.SAMPLE_V2
+CAT, BUCKET, CALIB, ALERT, KELLY, STATS = kit.CAT, kit.BUCKET, kit.CALIB, kit.ALERT, kit.KELLY, kit.STATS
+SAMPLE, SAMPLE_V2, SAMPLE_V3 = kit.SAMPLE, kit.SAMPLE_V2, kit.SAMPLE_V3
 ReadOnlyError, ApiError = kit.ReadOnlyError, kit.ApiError
 
 

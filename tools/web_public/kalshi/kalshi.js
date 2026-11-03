@@ -7,7 +7,7 @@
    Sides: yes / no, or the bot's own UP / DOWN. Optional per row: `asset` (else read from the ticker) and `book` / `strategy`.
    Live prices: Kalshi's public API (api.elections.kalshi.com) answers browsers only from kalshi.com (CloudFront 403 for any
    other Origin, checked 2026-11-01), so prices are the bot's own, as of its last update.
-   Look: kalshi.css, the old Jarvis HUD; the theme follows Jarvis's localStorage 'jtheme' (index.html sets it before paint).
+   Look: kalshi.css, its own Kalshi theme (index.html sets data-theme="kalshi" before paint; never Jarvis's theme).
    Safari 16 safe: no regex lookbehind, no Array copy methods, no Object.groupBy, no AbortSignal.timeout. */
 (() => {
   'use strict';
@@ -134,10 +134,8 @@
     get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (_) { return d; } },
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) { /* private mode / storage full */ } },
   };
-  function theme() {                                          // Jarvis's theme: eclipse (default) or the reactor family
-    let t = 'eclipse';
-    try { t = String(localStorage.getItem('jtheme') || 'eclipse').replace(/"/g, ''); } catch (_) { t = 'eclipse'; }
-    document.documentElement.setAttribute('data-theme', t.indexOf('reactor') === 0 ? 'reactor' : 'eclipse');
+  function theme() {                                          // its own dashboard (owner 2026-11-02): always the Kalshi theme
+    document.documentElement.setAttribute('data-theme', 'kalshi');
   }
 
   // ------------------------------------------------------------------ state
@@ -149,7 +147,7 @@
       sort: SORTS.some((r) => r[0] === u.sort) ? u.sort : 'closes',
       side: SIDES.indexOf(u.side) >= 0 ? u.side : 'all',
     },
-    preview: false, q: '', trShown: TR_PAGE, cal: '', calSel: '', calGr: '', open: new Set(), scrub: false, pend: false, chart: null, series: null, v: null, pos: [],
+    preview: false, q: '', kf: 0, calc: { p: '', c: '' }, trShown: TR_PAGE, cal: '', calSel: '', calGr: '', open: new Set(), scrub: false, pend: false, chart: null, series: null, v: null, pos: [],
   };
   const saveUi = () => LS.set('kalshi.ui', S.ui);
   const cached = LS.get('kalshi.last', null);
@@ -391,7 +389,7 @@
     }).join('');
     const tot = sum(d.map((x) => x[1]));
     return `<section class="card" id="sec-days"><div class="card-h"><h2>Daily P&amp;L · ${d.length} ${d.length === 1 ? 'day' : 'days'}</h2><span class="r ${cls(tot)}">${esc(usd(tot, true))}</span></div>`
-      + `<svg class="bars" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="Daily P&amp;L, last ${d.length} days"><line x1="0" x2="${w}" y1="${mid}" y2="${mid}" stroke="rgba(168,85,247,.3)"/>${rects}</svg></section>`;
+      + `<svg class="bars" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="Daily P&amp;L, last ${d.length} days"><line class="mid" x1="0" x2="${w}" y1="${mid}" y2="${mid}"/>${rects}</svg></section>`;
   }
 
   const ymAdd = (ym, n) => { const y = +ym.slice(0, 4), m = +ym.slice(5, 7) - 1 + n, yy = y + Math.floor(m / 12), mm = ((m % 12) + 12) % 12; return `${yy}-${String(mm + 1).padStart(2, '0')}`; };
@@ -443,7 +441,7 @@
   }
 
   // ---- stats
-  function statsHtml(v) {
+  function statsHtml(v, k) {
     const pn = v.tr.map((t) => num(t.pnl)).filter((x) => x != null);
     const wins = pn.filter((x) => x > 0.005), losses = pn.filter((x) => x < -0.005);
     const tile = (lab, vals, sub, extra) => `<div class="stat"><span class="lab">${lab}</span>${vals}${sub ? `<em>${sub}</em>` : ''}${extra || ''}</div>`;
@@ -476,6 +474,11 @@
       tiles.push(tile('Green days', one(`${g} / ${dv.length}`), `${esc(pct(g / dv.length))}${ds ? ` · now ${ds} ${dS > 0 ? 'green' : 'red'}` : ''}`));
       tiles.push(tile('Best / worst day', two(dv[bi], ff(F.mdU, dayT(v.days[bi][0])), dv[wi], ff(F.mdU, dayT(v.days[wi][0]))), ''));
     }
+    const at = k && isObj(k.stats) ? k.stats : null, aw = at ? num(at.wins) : null, al = at ? num(at.losses) : null, ast = at ? num(at.staked) : null, ap = at ? num(at.pnl) : null;
+    if (aw != null && al != null && aw + al > 0) {
+      tiles.push(tile('All-time win', one(esc(pct(aw / (aw + al)))), `${esc(fmtN(aw))}W · ${esc(fmtN(al))}L${num(at.avg_price) != null ? ' · avg ' + esc(cents(at.avg_price)) : ''}`));
+    }
+    if (ast != null && ast > 0 && ap != null) tiles.push(tile('All-time ROI', one(`<span class="${cls(ap)}">${esc(pct(ap / ast, true))}</span>`), `${esc(usd(ap, true))} on ${esc(usd(ast))} bet`));
     const s = S.series;
     if (s) {
       let peak = -Infinity, dd = 0, at = 0;
@@ -520,7 +523,9 @@
     const value = num(p.value) != null ? num(p.value) : n != null && px != null ? n * px : null;
     const pnl = num(p.pnl) != null ? num(p.pnl) : px != null && value != null && cost != null ? value - cost : null;
     const title = String(p.title == null || p.title === '' ? (p.ticker == null ? '' : p.ticker) : p.title), ticker = String(p.ticker == null ? '' : p.ticker);
-    return { p, side, sk: sideKey(side), n, avg, px, cost, value, pnl, closes: parseT(p.closes), title, ticker, asset: assetOf(p), key: (ticker || title) + '#' + i };
+    const prob = unit(p.prob), ref = px != null ? px : avg, edge = prob != null && ref != null ? prob - ref : null;      // v3: the bot's own chance
+    return { p, side, sk: sideKey(side), n, avg, px, cost, value, pnl, closes: parseT(p.closes), title, ticker, asset: assetOf(p), key: (ticker || title) + '#' + i,
+      prob, edge, ev: edge != null && n != null ? edge * n : null };
   }
   function posHtml(v) {
     const ps = v.pos.map(posModel);
@@ -528,15 +533,17 @@
     const n = ps.length;
     let tv = 0, tp = 0, hv = false, hp = false;
     ps.forEach((m) => { if (m.value != null) { tv += m.value; hv = true; } if (m.pnl != null) { tp += m.pnl; hp = true; } });
+    const evs = ps.filter((m) => m.ev != null), evT = sum(evs.map((m) => m.ev)), soon = ps.filter((m) => m.closes != null && m.closes > nowS()).sort(by((m) => m.closes))[0];
     const head = `<div class="card-h"><h2>Open bets · ${n}</h2>${n ? `<span class="r">${hv ? `<span class="muted">${esc(usd(tv))}</span>` : ''}${hv && hp ? ' · ' : ''}${hp ? `<span class="${cls(tp)}">${esc(usd(tp, true))}</span>` : ''}</span>` : ''}</div>`;
     if (!n) return `<section class="card" id="sec-pos">${head}<p class="empty">No open bets right now.</p></section>`;
+    const live = evs.length || soon ? `<div class="pos-live">${evs.length ? `<span>Live edge <b class="${cls(evT)}">${esc(usd(evT, true))}</b> EV</span>` : ''}${soon ? `<span>Next settles <b class="cdn${cdnCls(soon.closes)}" data-c="${soon.closes}">${esc(closesTxt(soon.closes))}</b></span>` : ''}</div>` : '';
     const updown = ps.every((m) => m.side === 'up' || m.side === 'down');
     const cnt = { all: n, yes: ps.filter((m) => m.sk === 'yes').length, no: ps.filter((m) => m.sk === 'no').length };
     const lab = { all: 'All', yes: updown ? 'UP' : 'YES', no: updown ? 'DOWN' : 'NO' };
     const ctl = n > 1 ? `<div class="ctl"><div class="seg" role="group" aria-label="Side">${SIDES.map((k) => `<button type="button" data-act="side" data-v="${k}" aria-pressed="${S.ui.side === k}">${lab[k]} <span>${cnt[k]}</span></button>`).join('')}</div>`
       + `<select id="posSort" class="sel" aria-label="Sort open bets">${SORTS.map((s) => `<option value="${s[0]}"${S.ui.sort === s[0] ? ' selected' : ''}>${esc(s[1])}</option>`).join('')}</select></div>` : '';
     const q = n > 5 ? `<input id="posQ" class="q" type="search" placeholder="Search open bets" aria-label="Search open bets" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value="${esc(S.q)}">` : '';
-    return `<section class="card" id="sec-pos">${head}${ctl}${q}<ul class="rows" id="posList">${posRows()}</ul></section>`;
+    return `<section class="card" id="sec-pos">${head}${live}${ctl}${q}<ul class="rows" id="posList">${posRows()}</ul></section>`;
   }
   function posRows() {
     const q = S.q.trim().toLowerCase(), k = S.ui.sort, n = S.pos.length;
@@ -557,12 +564,209 @@
       m.px != null || num(p.value) != null ? dd('Value now', `${esc(usd(m.value))}${m.px != null ? ' · ' + esc(cents(p.price)) + ' each' : ''}`) : '',
       m.n != null && m.cost != null ? dd('If it wins', `pays ${esc(usd(m.n))} · <span class="up">${esc(usd(m.n - m.cost, true))}</span>`) : '',
       m.closes != null ? dd('Closes', esc(ff(F.full, m.closes)) + ' ET') : '',
+      m.prob != null ? dd('Live edge', `<span class="${cls(m.edge)}">${esc(edgeC(m.edge))}</span> · chance ${esc(pct(m.prob))}${m.ev != null ? ' · EV ' + esc(usd(m.ev, true)) : ''}`) : '',
+      p.category ? dd('Market', esc(String(p.category).slice(0, 40))) : '',
     ].join('');
     const price = num(p.price) != null ? ' → ' + esc(cents(p.price)) : '';
     return `<li class="pos" data-side="${esc(m.sk)}"><details data-k="${esc(m.key)}"${S.open.has(m.key) ? ' open' : ''}><summary><div class="pr">`
       + `<b class="t">${sideTag(m.side)}${m.asset ? `<span class="asset">${esc(m.asset)}</span>` : ''}${esc(m.title)}</b><span class="v ${cls(m.pnl)}">${m.pnl == null ? '<span class="open">OPEN</span>' : esc(usd(m.pnl, true))}</span>`
-      + `<small>${esc(m.n == null ? '?' : fmtN(m.n))} × ${esc(cents(p.avg_price))}${price}</small>`
+      + `<small>${esc(m.n == null ? '?' : fmtN(m.n))} × ${esc(cents(p.avg_price))}${price}${m.edge != null ? ` <span class="edge ${cls(m.edge)}">edge ${esc(edgeC(m.edge))}</span>` : ''}</small>`
       + `<span class="v2">${m.value == null ? '' : esc(usd(m.value))}${ret ? ' · ' + esc(ret) : ''}</span>${cdn ? `<small class="cdl">${cdn}</small>` : ''}</div></summary><dl class="dl">${det}</dl></details></li>`;
+  }
+
+  // ================================================================== contract v3 (2026-11-03): what Kalshi's own app, Polymarket
+  // and the prediction-market trackers show and this page lacked: alerts, live edge, Kelly sizing, P&L by market category, win rate
+  // and ROI by price, calibration. Each reads the bot's own v3 list when it sends one (every settled trade), else works it out from
+  // the recent trades list (the last 40) and says so. All optional: a v1 / v2 feed shows exactly the sections it showed before.
+  const LEVELS = ['bad', 'warn', 'info'];
+  const edgeC = (x) => sgn(x, true) + Math.abs(x * 100).toFixed(1) + '¢';           // 0.05 -> '+5.0¢'
+  const unit = (v) => { const x = num(v); return x != null && x >= 0 && x <= 1 ? x : null; };
+  const settled = (v) => v.tr.filter((t) => num(t.pnl) != null && String(t.action == null ? '' : t.action).trim().toLowerCase() !== 'sell');
+  const catOf = (r) => {
+    const c = r.category == null ? '' : String(r.category).trim().slice(0, 40);
+    if (c) return c;
+    const a = assetOf(r);
+    return a ? ({ BTC: 'Bitcoin', ETH: 'Ethereum', SOL: 'Solana', DOGE: 'Dogecoin', GOLD: 'Gold', SILVER: 'Silver' }[a] || a) : 'Other';
+  };
+  const roiTxt = (pnl, st) => (st > 0 && pnl != null ? pct(pnl / st, true) : '—');
+  const fromNote = (n) => `<p class="muted small src">From the last ${n} settled ${n === 1 ? 'trade' : 'trades'} in the list: the bot's own totals show once it sends them.</p>`;
+
+  // ---- alerts: the bot's own list, plus what the page sees (a bet settling within 15 min, a losing run, a quiet bot)
+  function alertsList(k, v) {
+    const out = [];
+    arr(k.alerts).filter(isObj).forEach((a) => {
+      const tx = a.text == null ? '' : String(a.text).trim().slice(0, 160);
+      const lv = String(a.level == null ? '' : a.level).trim().toLowerCase();
+      if (tx) out.push({ t: parseT(a.t), lv: LEVELS.indexOf(lv) >= 0 ? lv : 'info', tx });
+    });
+    v.pos.forEach((p) => {
+      const c = parseT(p.closes), s = c ? c - nowS() : 0;
+      if (c && s > 0 && s < 900) out.push({ t: c, lv: 'info', tx: 'Settles soon: ' + String(p.title || p.ticker || 'an open bet').slice(0, 100), c });
+    });
+    if (!Array.isArray(k.alerts)) {
+      let run = 0;
+      for (let i = 0; i < v.tr.length; i++) { const x = num(v.tr[i].pnl); if (x == null) continue; if (x < -0.005) run++; else if (x > 0.005) break; }
+      if (run >= 3) out.push({ t: parseT(v.tr[0].t), lv: 'warn', tx: `${run} losses in a row` });
+    }
+    return out.sort((a, b) => LEVELS.indexOf(a.lv) - LEVELS.indexOf(b.lv) || (b.t || 0) - (a.t || 0)).slice(0, 12);
+  }
+  function alertsHtml(k, v) {
+    const a = alertsList(k, v), bad = a.filter((x) => x.lv !== 'info').length;
+    const head = `<div class="card-h"><h2>Alerts${a.length ? ' · ' + a.length : ''}</h2>${bad ? `<span class="r down">${bad} need${bad === 1 ? 's' : ''} you</span>` : ''}</div>`;
+    if (!a.length) return `<section class="card al-card" id="sec-al">${head}<p class="calm"><i aria-hidden="true"></i>All quiet: nothing needs you.</p></section>`;
+    return `<section class="card al-card" id="sec-al">${head}<ul class="al">${a.map((x) => `<li class="${x.lv}"><i aria-hidden="true"></i><span>${esc(x.tx)}</span>`
+      + `<small${x.c ? ` class="cdn soon" data-c="${x.c}"` : ''}>${x.c ? esc(closesTxt(x.c)) : x.t ? esc(ago(x.t)) : ''}</small></li>`).join('')}</ul></section>`;
+  }
+
+  // ---- Kelly: the bot's own settings (fraction, bankroll, max bet, min edge), else a quarter Kelly of the balance
+  const kellyCfg = (k) => {
+    const c = isObj(k.kelly) ? k.kelly : {}, f = unit(c.fraction), b = num(c.bankroll), mb = num(c.max_bet), me = unit(c.min_edge);
+    return { f: f && f > 0 ? f : 0.25, own: f != null && f > 0, bank: b != null && b > 0 ? b : num(k.balance), max: mb != null && mb > 0 ? mb : null, minEdge: me };
+  };
+  // full Kelly for a binary contract bought at price c with a chance p of paying $1: (p - c) / (1 - c)
+  const kellyF = (p, c) => (p == null || c == null || c <= 0 || c >= 1 ? null : (p - c) / (1 - c));
+  function kellyHtml(k, v) {
+    const cfg = kellyCfg(k), ps = v.pos.map(posModel).filter((m) => m.prob != null && (m.px != null || m.avg != null));
+    const fr = S.kf || cfg.f, fl = fr === 1 ? 'Full' : fr === 0.5 ? '½' : fr === 0.25 ? '¼' : Math.round(fr * 100) + '%';
+    const bank = cfg.bank;
+    const rows = ps.map((m) => {
+      const c = m.px != null ? m.px : m.avg, f = kellyF(m.prob, c), raw = f != null && f > 0 && bank ? f * fr * bank : 0, cap = cfg.max != null && raw > cfg.max;
+      const want = cap ? cfg.max : raw, cost = m.cost, ratio = want > 0 && cost != null ? cost / want : null;
+      const tag = f == null ? '' : f <= 0 ? '<span class="kt bad">no edge</span>' : ratio == null ? '' : ratio > 1.5 ? '<span class="kt warn">over</span>' : ratio < 0.5 ? '<span class="kt">under</span>' : '<span class="kt ok">on size</span>';
+      return `<li><b class="t">${sideTag(m.side)}${esc(m.title)}</b><span class="v ${f != null && f > 0 ? 'up' : 'down'}">${f == null ? '—' : esc(pct(Math.max(-1, f), false))}</span>`
+        + `<small>chance ${esc(pct(m.prob))} vs ${esc(cents(c))} · edge ${esc(edgeC(m.prob - c))}</small>`
+        + `<small class="kk">${esc(fl)} Kelly ${esc(usd(want))}${cap ? ' (max bet)' : ''} · bet ${esc(usd(cost))} ${tag}</small></li>`;
+    }).join('');
+    const seg = `<div class="seg" role="group" aria-label="Kelly fraction">${[[0.25, '¼'], [0.5, '½'], [1, 'Full']].map((x) => `<button type="button" data-act="kf" data-v="${x[0]}" aria-pressed="${fr === x[0]}">${x[1]}</button>`).join('')}</div>`;
+    const c0 = S.calc;
+    return `<section class="card" id="sec-kelly"><div class="card-h"><h2>Edge &amp; sizing</h2>${seg}</div>`
+      + `<p class="muted small">Kelly = the share of the bankroll a bet is worth: (chance − price) ÷ (1 − price). ${cfg.own ? `The bot sizes at ${esc(pct(cfg.f))} Kelly` : 'Most pros bet a quarter of it'}${bank ? ` · bankroll ${esc(usd(bank))}` : ''}${cfg.max ? ` · max bet ${esc(usd(cfg.max))}` : ''}${cfg.minEdge != null ? ` · min edge ${esc((cfg.minEdge * 100).toFixed(1))}¢` : ''}.</p>`
+      + (rows ? `<ul class="rows kel">${rows}</ul>` : '<p class="empty">No open bet carries the bot\'s own chance yet (the <code>prob</code> field): try the calculator.</p>')
+      + `<div class="calc" role="group" aria-label="Kelly calculator"><label><span class="lab">Your chance %</span><input id="kcP" class="q" type="text" inputmode="decimal" autocomplete="off" value="${esc(c0.p)}" aria-label="Your chance in percent"></label>`
+      + `<label><span class="lab">Price ¢</span><input id="kcC" class="q" type="text" inputmode="decimal" autocomplete="off" value="${esc(c0.c)}" aria-label="Price in cents"></label>`
+      + `<output id="kcOut" class="calc-o" aria-live="polite">${calcOut(cfg, fr)}</output></div></section>`;
+  }
+  function calcOut(cfg, fr) {
+    const p = num(S.calc.p), c = num(S.calc.c);
+    if (p == null || c == null || p <= 0 || p >= 100 || c <= 0 || c >= 100) return '<span class="muted">Type a chance and a price (1-99).</span>';
+    const pp = p / 100, cc = c / 100, f = kellyF(pp, cc), ev = pp - cc;
+    if (f <= 0) return `<b class="down">No bet</b><span>edge ${esc(edgeC(ev))} · the price is above your chance</span>`;
+    const bank = cfg.bank, stake = bank ? Math.min(f * fr * bank, cfg.max || Infinity) : null;
+    return `<b class="up">${esc(pct(f * fr))} of the bankroll</b><span>edge ${esc(edgeC(ev))} · ROI ${esc(pct(ev / cc, true))} a contract</span>`
+      + (stake != null ? `<span>bet ${esc(usd(stake))} ≈ ${esc(fmtN(Math.floor(stake / cc)))} contracts</span>` : '');
+  }
+
+  // ---- P&L by market category
+  function catRows(k, v) {
+    if (Array.isArray(k.categories)) {
+      return { own: true, rows: arr(k.categories).filter(isObj).map((c) => ({ name: String(c.name == null ? '' : c.name).slice(0, 40), group: c.group == null ? '' : String(c.group).slice(0, 30),
+        n: num(c.trades), w: num(c.wins), l: num(c.losses), pnl: num(c.pnl), st: num(c.staked) })).filter((c) => c.name) };
+    }
+    const m = new Map();
+    settled(v).forEach((t) => {
+      const name = catOf(t), r = m.get(name) || { name, group: '', n: 0, w: 0, l: 0, pnl: 0, st: 0 }, x = num(t.pnl), c = num(t.contracts), px = dol(t.price);
+      r.n++; r.pnl += x; if (x > 0.005) r.w++; else if (x < -0.005) r.l++;
+      if (c != null && px != null) r.st += Math.abs(c) * px;
+      m.set(name, r);
+    });
+    return { own: false, rows: Array.from(m.values()) };
+  }
+  function catHtml(k, v) {
+    const d = catRows(k, v), rows = d.rows.sort(by((r) => r.pnl, true));
+    if (!rows.length) return '';
+    const mx = Math.max.apply(null, rows.map((r) => Math.abs(r.pnl || 0))) || 1, n = sum(rows.map((r) => r.n || 0));
+    return `<section class="card" id="sec-cat"><div class="card-h"><h2>By market · ${rows.length}</h2><span class="r muted">${esc(fmtN(n))} trades</span></div>`
+      + `<ul class="brk">${rows.map((r) => {
+        const wr = r.w != null && r.l != null && r.w + r.l > 0 ? r.w / (r.w + r.l) : null, w = Math.max(2, (Math.abs(r.pnl || 0) / mx) * 50);
+        return `<li><div class="bk-t"><b>${esc(r.name)}</b>${r.group ? `<small>${esc(r.group)}</small>` : ''}<span class="v ${cls(r.pnl)}">${esc(usd(r.pnl, true))}</span></div>`
+          + `<div class="dv" aria-hidden="true"><i class="${(r.pnl || 0) < 0 ? 'neg' : 'pos'}" style="width:${w.toFixed(1)}%"></i></div>`
+          + `<small>${esc(fmtN(r.n || 0))} ${r.n === 1 ? 'trade' : 'trades'}${wr == null ? '' : ' · win ' + esc(pct(wr))}${r.st ? ' · ROI ' + esc(roiTxt(r.pnl, r.st)) : ''}</small></li>`;
+      }).join('')}</ul>${d.own ? '' : fromNote(n)}</section>`;
+  }
+
+  // ---- win rate and ROI by entry price: is the bot paid enough for the risk at each price?
+  const EDGES = [0, 0.2, 0.4, 0.6, 0.8, 0.9, 0.95, 0.97, 0.99, 1.0001];
+  function bucketRows(k, v) {
+    if (Array.isArray(k.buckets)) {
+      return { own: true, rows: arr(k.buckets).filter(isObj).map((b) => ({ lo: unit(b.lo), hi: unit(b.hi), n: num(b.trades), w: num(b.wins), l: num(b.losses), pnl: num(b.pnl), st: num(b.staked) }))
+        .filter((b) => b.lo != null && b.hi != null && b.lo < b.hi).sort(by((b) => b.lo)) };
+    }
+    const m = new Map();
+    settled(v).forEach((t) => {
+      const px = dol(t.price), x = num(t.pnl), c = num(t.contracts);
+      if (px == null || px <= 0 || px >= 1.0001) return;
+      let i = 0; while (i < EDGES.length - 2 && px >= EDGES[i + 1]) i++;
+      const r = m.get(i) || { lo: EDGES[i], hi: Math.min(1, EDGES[i + 1]), n: 0, w: 0, l: 0, pnl: 0, st: 0 };
+      r.n++; r.pnl += x; if (x > 0.005) r.w++; else if (x < -0.005) r.l++;
+      if (c != null) r.st += Math.abs(c) * px;
+      m.set(i, r);
+    });
+    return { own: false, rows: Array.from(m.values()).sort(by((b) => b.lo)) };
+  }
+  const cRange = (lo, hi) => `${Math.round(lo * 100)}–${Math.round(hi * 100)}¢`;
+  function bucketHtml(k, v) {
+    const d = bucketRows(k, v), rows = d.rows;
+    if (!rows.length) return '';
+    const n = sum(rows.map((r) => r.n || 0));
+    // the win rate a bucket needs to break even is about the price paid (fees aside): the staked share of the contracts' payout
+    const body = rows.map((r) => {
+      const wr = r.w != null && r.l != null && r.w + r.l > 0 ? r.w / (r.w + r.l) : null, need = (r.lo + r.hi) / 2, short = r.pnl != null ? r.pnl < -0.005 : wr != null && wr + 0.0001 < need;
+      return `<tr><td>${esc(cRange(r.lo, r.hi))}<small>${esc(fmtN(r.n || 0))} ${r.n === 1 ? 'trade' : 'trades'}</small></td>`
+        + `<td class="${wr == null ? '' : short ? 'down' : 'up'}">${wr == null ? '—' : esc(pct(wr))}<small>needs ~${esc(pct(need))}</small></td>`
+        + `<td class="${cls(r.pnl)}">${esc(roiTxt(r.pnl, r.st))}</td><td class="${cls(r.pnl)}">${esc(usd(r.pnl, true))}</td></tr>`;
+    }).join('');
+    return `<section class="card" id="sec-bk"><div class="card-h"><h2>By price</h2><span class="r muted">${esc(fmtN(n))} trades</span></div>`
+      + `<table class="tbl"><thead><tr><th scope="col">Paid</th><th scope="col">Win</th><th scope="col">ROI</th><th scope="col">P&amp;L</th></tr></thead><tbody>${body}</tbody></table>`
+      + `<p class="muted small">A contract bought at 96¢ must win about 96% of the time to break even: red = that price range lost money.</p>${d.own ? '' : fromNote(n)}</section>`;
+  }
+
+  // ---- calibration: when the bot (or the price) said X%, how often did it win?
+  function calibRows(k, v) {
+    if (Array.isArray(k.calibration)) {
+      return { own: true, basis: String(k.calib_basis || '') === 'model' ? 'model' : 'price',
+        rows: arr(k.calibration).filter(isObj).map((c) => ({ p: unit(c.p), n: num(c.n), hit: unit(c.hit) })).filter((c) => c.p != null && c.hit != null && c.n >= 1) };
+    }
+    const m = new Map();
+    let model = true;
+    const st = settled(v);
+    st.forEach((t) => { if (unit(t.prob) == null) model = false; });
+    st.forEach((t) => {
+      const p = model ? unit(t.prob) : dol(t.price), x = num(t.pnl);
+      if (p == null || p <= 0 || p > 1) return;
+      let i = 0; while (i < EDGES.length - 2 && p >= EDGES[i + 1]) i++;
+      const r = m.get(i) || { s: 0, n: 0, w: 0 };
+      r.s += p; r.n++; if (x > 0.005) r.w++;
+      m.set(i, r);
+    });
+    return { own: false, basis: model && st.length ? 'model' : 'price', rows: Array.from(m.values()).map((r) => ({ p: r.s / r.n, n: r.n, hit: r.w / r.n })).sort(by((r) => r.p)) };
+  }
+  function calibHtml(k, v) {
+    const d = calibRows(k, v), rows = d.rows;
+    if (!rows.length) return '';
+    const n = sum(rows.map((r) => r.n)), lo0 = Math.min.apply(null, rows.map((r) => Math.min(r.p, r.hit)));
+    const lo = Math.max(0, lo0 > 0.6 ? Math.floor((lo0 - 0.02) * 20) / 20 : Math.floor((lo0 - 0.05) * 10) / 10), span = 1 - lo, W = 300, P = 8;
+    const X = (x) => P + ((x - lo) / span) * (W - 2 * P), Y = (y) => W - P - ((y - lo) / span) * (W - 2 * P);
+    const gap = sum(rows.map((r) => r.n * (r.hit - r.p))) / n, big = rows.slice().sort(by((r) => r.n, true))[0];
+    const ticks = []; for (let t = lo; t <= 1.0001; t += span > 0.5 ? 0.25 : 0.05) ticks.push(+t.toFixed(2));
+    const dots = rows.map((r) => `<circle cx="${X(r.p).toFixed(1)}" cy="${Y(r.hit).toFixed(1)}" r="${Math.min(12, 4 + Math.sqrt(r.n) * 0.9).toFixed(1)}" class="${r.hit + 0.0001 < r.p ? 'cb-n' : 'cb-p'}"><title>${esc(pct(r.p))} said, ${esc(pct(r.hit))} won (${r.n})</title></circle>`).join('');
+    const what = d.basis === 'model' ? "the bot's own chance" : 'the price paid (the market\'s chance)';
+    return `<section class="card" id="sec-cb"><div class="card-h"><h2>Calibration</h2><span class="r ${gap < -0.005 ? 'down' : gap > 0.005 ? 'up' : 'muted'}">${esc(sgn(gap, true) + Math.abs(gap * 100).toFixed(1))} pts</span></div>`
+      + `<div class="cb"><svg viewBox="0 0 ${W} ${W}" role="img" aria-label="${esc(`Calibration, ${n} settled bets: ${rows.map((r) => pct(r.p) + ' said, ' + pct(r.hit) + ' won').join('; ')}`)}">`
+      + ticks.map((t) => `<line class="cb-g" x1="${X(t).toFixed(1)}" x2="${X(t).toFixed(1)}" y1="${P}" y2="${W - P}"/><line class="cb-g" y1="${Y(t).toFixed(1)}" y2="${Y(t).toFixed(1)}" x1="${P}" x2="${W - P}"/>`).join('')
+      + `<line class="cb-d" x1="${X(lo)}" y1="${Y(lo)}" x2="${X(1)}" y2="${Y(1)}"/>${dots}</svg>`
+      + `<span class="cb-ax cb-x">${esc(Math.round(lo * 100) + '%')} → 100% said</span><span class="cb-ax cb-y">won</span></div>`
+      + `<p class="muted small">Predicted = ${esc(what)}. On the line = honest odds; above it = the bets win more than they cost (green), below = less (red). `
+      + `Biggest group: ${esc(pct(big.p))} said, ${esc(pct(big.hit))} won, ${esc(fmtN(big.n))} ${big.n === 1 ? 'bet' : 'bets'}.</p>${d.own ? '' : fromNote(n)}</section>`;
+  }
+
+  // ---- the ticker tape under the header: open bets and the latest results, scrolling (still with reduced motion)
+  function tapeHtml(v) {
+    const it = [];
+    v.pos.slice(0, 6).forEach((p) => { const m = posModel(p, 0); it.push(`<span>${sideTag(m.side)}${esc((m.asset || '') + ' ' + cents(p.avg_price))}${m.prob != null ? ` <em class="up">edge ${esc(edgeC(m.edge))}</em>` : ''}${m.closes ? ` <em>${esc(left(m.closes) || 'settling')}</em>` : ''}</span>`); });
+    settled(v).slice(0, 10).forEach((t) => { const x = num(t.pnl), a = assetOf(t); it.push(`<span>${esc(a || catOf(t))} <em class="${cls(x)}">${esc(usd(x, true))}</em></span>`); });
+    if (!it.length) return '';
+    const run = it.join('<b aria-hidden="true">◆</b>');
+    return `<div class="tape-in">${run}<b aria-hidden="true">◆</b>${run}<b aria-hidden="true">◆</b></div>`;
   }
 
   // ---- recent trades, grouped by day, with show more
@@ -624,7 +828,9 @@
       v: 1, kind: 'kalshi', name: 'Sample bot', mode: 'live', running: true, t: now - 30, pub_t: now - 20, balance: 68.12,
       status: 'Sample · 3 live strategies · 1 open bet', note: 'Sample data, not your account',
       today_pnl: todayPnl, week_pnl: -6.4, total_pnl: -14.45,
-      positions: [{ ticker: first.ticker, title: first.title, side: first.side, contracts: first.contracts, avg_price: first.price,
+      kelly: { fraction: 0.25, bankroll: 68.12, max_bet: 20 },
+      alerts: [{ t: now - 1800, level: 'warn', text: 'Sample alert: 2 losses in a row on HYPE' }],
+      positions: [{ ticker: first.ticker, title: first.title, side: first.side, contracts: first.contracts, avg_price: first.price, prob: 0.985,
         value: r2(first.contracts * first.price), closes: new Date((Math.ceil((now + 60) / 900) * 900) * 1000).toISOString() }],
       trades, days, equity,
       strategies: [
@@ -680,9 +886,10 @@
     else {
       const k = pv ? sample() : S.k, v = norm(k);
       S.v = v;
-      html = [pv ? previewBar() : notesHtml(k), safe('balance', () => heroHtml(k, v)), safe('equity', () => eqHtml(v)), safe('open bets', () => posHtml(v)),
-        safe('strategies', () => stratHtml(v)), safe('daily P&L', () => barsHtml(v)), safe('calendar', () => calHtml(v)),
-        safe('stats', () => statsHtml(v)), safe('trades', () => tradesHtml(v))].join('');
+      html = [pv ? previewBar() : notesHtml(k), safe('balance', () => heroHtml(k, v)), safe('alerts', () => alertsHtml(k, v)), safe('equity', () => eqHtml(v)),
+        safe('open bets', () => posHtml(v)), safe('sizing', () => kellyHtml(k, v)), safe('strategies', () => stratHtml(v)), safe('markets', () => catHtml(k, v)),
+        safe('prices', () => bucketHtml(k, v)), safe('calibration', () => calibHtml(k, v)), safe('daily P&L', () => barsHtml(v)), safe('calendar', () => calHtml(v)),
+        safe('stats', () => statsHtml(v, k)), safe('trades', () => tradesHtml(v))].join('');
     }
     S.label = S.k && S.state !== 'waiting' ? stateOf(S.k)[1] : '';
     const data = !!S.k && S.state !== 'waiting';
@@ -693,6 +900,8 @@
     body.setAttribute('data-state', pv ? 'preview' : S.state === 'waiting' ? 'waiting' : !S.k ? S.state : S.state === 'error' ? 'offline' : S.label === 'Not updating' && S.state === 'ok' ? 'stale' : S.state === 'loading' ? 'loading' : 'ok');
     const foot = $('#foot');
     if (foot) foot.innerHTML = footHtml();
+    const tape = $('#tape');
+    if (tape) { let th = ''; try { th = S.v && (S.k || pv) && S.state !== 'waiting' ? tapeHtml(S.v) : ''; } catch (_) { th = ''; } tape.innerHTML = th; tape.hidden = !th; }
     bindChart();
     fit(body);
     if (fid) {
@@ -730,7 +939,8 @@
     const b = e.target && e.target.closest ? e.target.closest('[data-act]') : null;
     if (!b || b.disabled) return;
     const a = b.getAttribute('data-act'), val = b.getAttribute('data-v') || '';
-    if (a === 'range') { S.ui.range = val; saveUi(); if (S.v) { swap('sec-eq', eqHtml(S.v)); bindChart(); } }
+    if (a === 'kf') { const f = +val; S.kf = [0.25, 0.5, 1].indexOf(f) >= 0 ? f : 0; if (S.v) swap('sec-kelly', kellyHtml(previewing() ? sample() : S.k, S.v)); }
+    else if (a === 'range') { S.ui.range = val; saveUi(); if (S.v) { swap('sec-eq', eqHtml(S.v)); bindChart(); } }
     else if (a === 'side') {
       S.ui.side = SIDES.indexOf(val) >= 0 ? val : 'all';
       saveUi();
@@ -770,6 +980,12 @@
     if (e.target && e.target.id === 'posSort') { S.ui.sort = SORTS.some((s) => s[0] === e.target.value) ? e.target.value : 'closes'; saveUi(); const l = $('#posList'); if (l) l.innerHTML = posRows(); }
   });
   document.addEventListener('input', (e) => {
+    if (e.target && (e.target.id === 'kcP' || e.target.id === 'kcC')) {
+      S.calc[e.target.id === 'kcP' ? 'p' : 'c'] = String(e.target.value || '').replace(/[^\d.]/g, '').slice(0, 6);
+      const o = $('#kcOut'), k = previewing() ? sample() : S.k;
+      if (o && k) o.innerHTML = calcOut(kellyCfg(k), S.kf || kellyCfg(k).f);
+      return;
+    }
     if (e.target && e.target.id === 'posQ') { S.q = String(e.target.value || '').slice(0, 80); const l = $('#posList'); if (l) l.innerHTML = posRows(); }
   });
   document.addEventListener('focusout', (e) => {
@@ -812,7 +1028,6 @@
 
   // ------------------------------------------------------------------ start
   theme();
-  window.addEventListener('storage', (e) => { if (!e || e.key === 'jtheme' || e.key == null) theme(); });     // Jarvis changed its theme
   $('#refresh').addEventListener('click', () => load());
   render();                         // the saved copy (or the loading cards) at once, then the feed
   load();
