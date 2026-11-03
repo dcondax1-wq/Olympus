@@ -40,6 +40,7 @@ IDS = ["olympus", "zeus", "poseidon", "hades", "athena", "apollo", "artemis"]
 NAMES = {"olympus": "Olympus", "zeus": "Zeus Storm", "poseidon": "Poseidon", "hades": "Hades", "athena": "Athena", "apollo": "Apollo"}
 APPS = {"datacity": "", "mind": "", "tree": "", "oracle": "?demo=1", "odeon": "?demo=1&autoplay=1", "fates": "",
         "hermes": "#week,demo", "prometheus": "?demo=1", "tyche": "?demo=1"}
+OWN_META = ("hermes",)                               # sets its status-bar colour per story itself
 THREE_APPS = ["datacity", "mind", "oracle", "odeon", "fates", "prometheus", "tyche"]      # tree: 2D canvas, hermes: raw WebGL
 
 
@@ -205,7 +206,10 @@ def launch(pw):
 
 
 # the scene hook, stubbed: every themeScene / onTheme call is kept, so the test reads the colours the app handed over
+# (CLEAR(): the renderer's clear colour, read into a duck Color: three's getClearColor(target) only calls target.copy)
 STUB = """
+window.CLEAR = () => { const s = window.__oly.scenes[0]; if (!s || !s.renderer) return null;
+  const c = { copy(x) { this.v = [x.r, x.g, x.b].map((n) => Math.round(n * 1e4)).join(','); return this; } }; s.renderer.getClearColor(c); return c.v || null; };
 (() => {
   window.__oly = { scenes: [], themes: 0 };
   let O;
@@ -390,13 +394,13 @@ def test_app(br, origin, app):
         const hex = (c) => c && c.getHex ? c.getHex() : null;
         return { id: t && t.id, attr: document.documentElement.dataset.olyTheme, accent: cs.getPropertyValue('--oly-accent').trim(), own: O.color,
                  bg: cs.getPropertyValue('--bg').trim(), glass: cs.getPropertyValue('--oly-glass').trim(), scenes: window.__oly.scenes.length, subs: window.__oly.themes,
-                 fog: s && s.scene && s.scene.fog ? hex(s.scene.fog.color) : null, sx: document.documentElement.scrollWidth - innerWidth,
+                 fog: s && s.scene && s.scene.fog ? hex(s.scene.fog.color) : null, clear: CLEAR(), sx: document.documentElement.scrollWidth - innerWidth,
                  tint: O.tint(0x02030a, 'fog'), meta: (document.querySelector('meta[name="theme-color"]') || {}).content }; }""")
     base = json.load(open(BASE, encoding="utf-8"))[app]
     hooked = got["scenes"] > 0 or got["subs"] > 0 if app in THREE_APPS else True
     check(f"e. {app}: reads Hades at start (tokens, its own --bg blended toward the theme, the status bar), its accent harmonised",
           got["id"] == "hades" and got["attr"] == "hades" and got["glass"] == "rgba(18, 4, 4, .78)" and got["bg"] != base["--bg"]
-          and got["meta"] != base["@theme-color"] and got["accent"] != base["--oly-accent"] and got["sx"] <= 0, got)
+          and (got["meta"] != base["@theme-color"] or app in OWN_META) and got["accent"] != base["--oly-accent"] and got["sx"] <= 0, got)
     if app in THREE_APPS:
         check(f"e. {app}: its scene hook gets the tint (stubbed; the fog colour handed over is the theme's blend)",
               hooked and (got["fog"] is None or got["fog"] != int(base.get("--bg", "#000000")[1:], 16)) and got["tint"] != 0x02030a, got)
@@ -404,13 +408,22 @@ def test_app(br, origin, app):
     p2 = ctx.new_page()
     p2.goto(origin + "/olympus/themes.js")
     p2.evaluate("localStorage.setItem('olympus.theme', 'poseidon')")
-    p.wait_for_timeout(500)
+    try:                                     # a busy software-GL frame loop can hold the storage event a moment
+        p.wait_for_function("() => OLYMPUS.theme() && OLYMPUS.theme().id === 'poseidon'", timeout=8000)
+    except Exception:
+        pass
+    p.wait_for_timeout(300)
     live = p.evaluate("""() => ({ id: OLYMPUS.theme().id, glass: getComputedStyle(document.documentElement).getPropertyValue('--oly-glass').trim(), last: window.__oly.lastTheme,
-        fog: window.__oly.scenes[0] && window.__oly.scenes[0].scene.fog ? window.__oly.scenes[0].scene.fog.color.getHex() : null })""")
+        fog: window.__oly.scenes[0] && window.__oly.scenes[0].scene.fog ? window.__oly.scenes[0].scene.fog.color.getHex() : null, clear: CLEAR() })""")
     check(f"e. {app}: follows a live change (storage event): Poseidon's glass" + (", the scene hook re-tinted" if app in THREE_APPS else ""),
-          live["id"] == "poseidon" and live["glass"] == "rgba(2, 20, 28, .74)" and (app not in THREE_APPS or live["last"] == "poseidon" or live["fog"] != got["fog"]), live)
+          live["id"] == "poseidon" and live["glass"] == "rgba(2, 20, 28, .74)"
+          and (app not in THREE_APPS or live["last"] == "poseidon" or live["fog"] != got["fog"] or live["clear"] != got["clear"]), (live, got))
     p2.evaluate("localStorage.setItem('olympus.theme', 'olympus')")
-    p.wait_for_timeout(500)
+    try:
+        p.wait_for_function("() => OLYMPUS.theme() && OLYMPUS.theme().id === 'olympus'", timeout=8000)
+    except Exception:
+        pass
+    p.wait_for_timeout(300)
     back = p.evaluate("""(names) => { const cs = getComputedStyle(document.documentElement), o = {}; for (const n of names) o[n] = cs.getPropertyValue(n).trim(); return o; }""",
                       [k for k in base if k.startswith("--")])
     diff = {k: (base[k], back[k]) for k in back if back[k] != base[k]}

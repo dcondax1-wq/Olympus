@@ -198,14 +198,15 @@ export class CityScene {
 
   /** Night or day; returns the theme colour for the status bar. */
   setDay(day) {
-    const mode = day ? DAY : NIGHT, O = window.OLYMPUS;
-    const fog = O && O.tint ? O.tint(mode.fog, 'fog') : mode.fog;     // the OLYMPUS theme's fog (the default: mode.fog itself)
+    // the OLYMPUS theme tints the night sky (the default: mode.fog itself); a daylight sky stays daylight
+    const mode = day ? DAY : NIGHT, O = !day && window.OLYMPUS && window.OLYMPUS.tint ? window.OLYMPUS : null;
+    const fog = O ? O.tint(mode.fog, 'fog') : mode.fog;
     this.U.uDay.value = day ? 1 : 0;
     this.U.uFog.value.setHex(fog);
     this.U.uFogD.value = mode.density;
     this.scene.background = new THREE.Color(fog);
     this.stars.visible = !day;
-    return mode.theme;
+    return O ? O.tint(mode.theme, 'fog') : mode.theme;
   }
 
   setQuality(q) {
