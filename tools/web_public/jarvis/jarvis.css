@@ -638,7 +638,7 @@ html[data-fx="off"] .og-t, html[data-fx="off"] .og-ic, html[data-fx="off"] .og-v
 /* ---------------------------------------------------------------- OLYMPUS light themes (Athena; ../olympus/themes.js scheme 'light')
    The palette itself comes from the theme (painted on <html>); these are the few places the dark HUD hard-codes black or white:
    a marble page, white glass panels, ink text, soft shadows. The text pairs are WCAG AA (tests/test_olympus_themes.py). */
-html[data-oly-scheme="light"] { color-scheme: light; --ok: #15803d; --warn: #92400e; --bad: #be123c; }
+html[data-oly-scheme="light"] { color-scheme: light; --ok: #166534; --warn: #92400e; --bad: #be123c; }
 html[data-oly-scheme="light"] body { background: radial-gradient(ellipse at 50% 30%, var(--bg2) 0%, var(--bg) 70%) var(--bg); }
 html[data-oly-scheme="light"] .bgglobe { opacity: .3; }
 html[data-oly-scheme="light"] .floor { opacity: .28; }

@@ -83,7 +83,7 @@
     var list = [], add = function (c, kind) { if (c && typeof c.getHex === 'function') list.push([c, c.getHex(), kind]); };
     var sc = o.scene, r = o.renderer, clear = null, alpha = 1;
     if (sc && sc.fog) add(sc.fog.color, 'fog');
-    if (sc && sc.background && sc.background.isColor) add(sc.background, 'sky');
+    if (sc && sc.background && sc.background.isColor) add(sc.background, 'fog');
     if (typeof o.clear === 'number') { clear = o.clear; try { alpha = r.getClearAlpha(); } catch (e) { alpha = 1; } }
     else if (r && typeof r.getClearColor === 'function' && sc && sc.fog) {
       try { clear = r.getClearColor(sc.fog.color.clone()).getHex(); alpha = r.getClearAlpha(); } catch (e) { clear = null; }

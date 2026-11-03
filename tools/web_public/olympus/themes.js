@@ -67,7 +67,7 @@
       // fog would wash every glow out), and the 'stage' palette dresses the HUD that floats on it.
       tokens: { bg: '#f3f1ea', bg2: '#ffffff', glass: 'rgba(255, 255, 255, .74)', glass2: 'rgba(255, 255, 255, .94)', line: 'rgba(52, 58, 42, .16)',
         edge: 'rgba(122, 134, 74, .50)', text: '#1d211a', dim: '#4a5143', accent: '#55631f', accent2: '#6b7480', glow: '#9aa86a',
-        ok: '#15803d', bad: '#b91c1c', warn: '#92400e', shadow: '0 12px 36px rgba(60, 58, 40, .18)', scheme: 'light', themeColor: '#f3f1ea',
+        ok: '#166534', bad: '#b91c1c', warn: '#92400e', shadow: '0 12px 36px rgba(60, 58, 40, .18)', scheme: 'light', themeColor: '#f3f1ea',
         fog: '#2a3027', sky: '#3a4236', emissive: '#c8d39a', bloom: '#eef0e2', mix: 0.6, harmony: 0.35 },
       stage: { bg: '#161a14', bg2: '#262c22', glass: 'rgba(30, 34, 28, .74)', glass2: 'rgba(36, 41, 33, .93)', line: 'rgba(225, 230, 210, .18)',
         edge: 'rgba(200, 211, 154, .45)', text: '#f6f5ee', dim: 'rgba(222, 226, 210, .74)', accent: '#c8d39a', accent2: '#d9dde3', glow: '#dfe6c0',
