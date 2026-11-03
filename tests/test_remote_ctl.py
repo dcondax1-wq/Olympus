@@ -126,6 +126,10 @@ def names(calls):
 def main():
     w = World()
     try:
+        # ---- 2026-11-03: the fetch runs through heartbeat.run_cmd (no Windows pipe hang); its errors read as before
+        f0 = rc.fetch(w.pc, "origin")
+        check("fetch before the control branch exists: the plain 'no control branch yet' error (heartbeat.run_cmd)",
+              not f0["ok"] and "no control branch yet" in f0.get("error", ""), f0)
         # ---- the control branch template
         r1 = icb.init(w.pc, "origin")
         r2 = icb.init(w.pc, "origin")
