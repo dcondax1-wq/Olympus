@@ -269,6 +269,16 @@ def child_main() -> int:
         try:
             _write(out, res)
         except Exception:
+            # (2026-11-03) the PC bot is gone: drop the half-written answer, or the copy's finalizer flushes it into the dead
+            # pipe and prints "Exception ignored ... BrokenPipeError" into the server log
+            try:
+                os.close(out.fileno())
+            except OSError:
+                pass
+            try:
+                out.close()
+            except Exception:
+                pass
             return 3
 
 
