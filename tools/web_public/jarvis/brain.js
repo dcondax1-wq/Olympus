@@ -11,7 +11,8 @@
 //     open(appId, route?)  switches the app: 'home', 'zenith', 'planner', 'kalshi' or an added id; open('zenith', '#/blitz')
 //     now() -> Date or ms (else facts.now, else the phone's clock)
 //   brain.ask(text, {voice}?) -> Promise<{ text, speak, open?, route?, cards?, control?, intent, smart?, smartError? }>
-//                          control: 'stop' | 'mute' | 'unmute' | 'hide_balance' | 'show_balance' | 'manual_trade' (the shell may act on it)
+//                          control: 'stop' | 'mute' | 'unmute' | 'hide_balance' | 'show_balance' | 'manual_trade' | 'voice_mode' |
+//                                   'voice_mode_off' (the shell may act on it); end: true on a farewell ("goodbye", "that's all")
 //   "I traded on both" / "I placed my keep-alive trade" / "traded on Zlarior": today's ET date per account goes in
 //   localStorage 'jarvis.manualTrades' ({lit, atlas}: data.js MANUAL_KEY); the quiet days come back through the facts
 //   (data.js withManualTrades: getFacts().live already counts from the mark), so the warning stops
@@ -1432,7 +1433,7 @@ export function createBrain(opts) {
     if (exact(/^(bye|goodbye|good bye|see you|see ya|later|good night|night|goodnight|that's all|that is all|nothing|never mind|nevermind|go to sleep|sleep)$/)) {
       const night = /night|sleep/.test(q) || V.et.h >= 21 || V.et.h < 4;
       const t = night ? 'Good night, sir. I will keep an eye on things.' : 'Very well. I am here when you need me.';
-      return { text: t, speak: t, intent: 'smalltalk' };
+      return { text: t, speak: t, intent: 'smalltalk', end: true };     // end: a farewell (voice mode closes after saying it)
     }
     if (exact(/^(good job|nice|nice job|well done|great|awesome|cool|perfect|love it|you're the best|you are the best|good bot|amazing|ok|okay|got it|understood|sounds good)$/)) {
       const t = /^(ok|okay|got it|understood|sounds good)$/.test(q) ? 'Very good.' : 'I do try.';
@@ -1558,6 +1559,9 @@ export function createBrain(opts) {
     if (/^(stop|kill|shut up|be quiet|quiet|silence|hush|stop talking|stop speaking|enough|cancel)$/.test(q)) return { text: 'Standing by.', speak: '', control: 'stop', intent: 'control' };
     if (/^(mute|voice off|sound off|mute yourself|mute voice)$/.test(q)) return { text: 'Muted. I will answer in text.', speak: '', control: 'mute', intent: 'control' };
     if (/^(unmute|voice on|sound on|talk to me|speak to me|speak)$/.test(q)) return { text: 'Voice on.', speak: 'Voice on.', control: 'unmute', intent: 'control' };
+    // voice mode (2026-11-03, voice-mode.js): the full-screen conversation; the shell opens and closes it
+    if (/^(?:(?:start|enter|open|go to|switch to|turn on) )?(?:voice|conversation|talk) mode(?: on)?$/.test(q)) return { text: 'Voice mode.', speak: '', control: 'voice_mode', intent: 'control' };
+    if (/^(?:(?:exit|end|leave|close|quit|stop|turn off) )(?:voice|conversation|talk) mode$|^(?:voice|conversation|talk) mode off$/.test(q)) return { text: 'Standing by.', speak: '', control: 'voice_mode_off', intent: 'control' };
     const oj = oldJarvis(q, V);
     if (oj) return oj;
     const st = smalltalk(q, V, false);

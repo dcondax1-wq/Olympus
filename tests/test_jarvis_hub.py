@@ -242,10 +242,10 @@ def part_a():
     check("a. opening Jarvis waits on the network at most NAV_WAIT_MS when a saved copy exists; no network + no copy = a dark Retry page",
           "const NAV_WAIT_MS = 3500;" in sw and "Promise.race([net, slow])" in sw and "return copy || offlinePage();" in sw
           and "background:#000" in sw and "location.reload()" in sw)
-    check("a. worker v13: data.js, jarvis.css, the fonts, every separate part, switcher.js and the new brain's obsidian.js / memory.js / "
-          "assist-ui.js in SHELL, each saved on its own (a missing part is skipped)",
-          "const CACHE = 'jarvis-v13';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js") + PARTS + FONTS)
-          and "'./jarvis.css?v=j9'" in sw and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
+    check("a. worker v14: data.js, jarvis.css, the fonts, every separate part, switcher.js, the new brain's obsidian.js / memory.js / "
+          "assist-ui.js and voice-mode.js in SHELL, each saved on its own (a missing part is skipped)",
+          "const CACHE = 'jarvis-v14';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js") + PARTS + FONTS)
+          and "'./jarvis.css?v=j10'" in sw and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
     shell = re.search(r"const SHELL = \[([^\]]*)\]", sw)
     shell_files = re.findall(r"'\./([^'?]+)", shell.group(1)) if shell else []
     check("a. every file of SHELL is in the folder (a part the page loads is never left out of the saved copy, nor a saved file missing)",
@@ -258,7 +258,7 @@ def part_a():
           "const NET_MAX_MS = 9000;" in sw and "copy ? NAV_WAIT_MS : NET_MAX_MS" in sw and "return offlinePage();" in sw
           and "await net" not in sw.replace("await Promise.race([net", ""))
     check("a. worker v6: a file this copy lacks comes from the previous Jarvis copy; old copies go only when every CORE file is saved",
-          "const OLD = ['jarvis-v12', 'jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];" in sw and "for (const name of [CACHE, ...OLD])" in sw
+          "const OLD = ['jarvis-v13', 'jarvis-v12', 'jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];" in sw and "for (const name of [CACHE, ...OLD])" in sw
           and "CORE.map((u) => c.match(u, { ignoreSearch: true }))" in sw)
     jhtml = open(os.path.join(JV, "index.html"), encoding="utf-8").read()
     check("a. the page draws without its stylesheet after 5 s (a stylesheet still on the way keeps an iPhone screen black)",
@@ -359,7 +359,7 @@ def new_page(br, width=390, sw=False, boot=False, voice=False, height=844, news=
     if not boot:                                   # the boot screen plays once per launch: skipped where it is not the subject
         ctx.add_init_script("try { sessionStorage.setItem('jarvis.booted', '1'); } catch (e) {}")
     if not news:                                   # so is the What's new card (once per release)
-        ctx.add_init_script("try { localStorage.setItem('jarvis.seen', JSON.stringify('j8')); } catch (e) {}")
+        ctx.add_init_script("try { localStorage.setItem('jarvis.seen', JSON.stringify('j9')); } catch (e) {}")
     if voice:
         ctx.add_init_script(FAKE_VOICE)
     p = ctx.new_page()
@@ -810,8 +810,8 @@ def run_c(br, url):
         const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
-          const c = await caches.open('jarvis-v13');
-          const got = await Promise.all(['./index.html', './data.js', './jarvis.css?v=j9', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
+          const c = await caches.open('jarvis-v14');
+          const got = await Promise.all(['./index.html', './data.js', './jarvis.css?v=j10', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));
         }
@@ -1667,8 +1667,8 @@ def run_intro(br, url):
     check("o. under automation, unasked: no intro, and nothing waits for one (state off)",
           p.evaluate("!document.documentElement.hasAttribute('data-intro') && window.__olyIntro.state === 'off' && window.__olyIntro.done === true"), intro_state(p))
     qa = p.evaluate("[...document.querySelectorAll('#qa .qa-t')].map((b) => [b.dataset.qa, Math.round(b.getBoundingClientRect().height)])")
-    check("o. quick actions: 8 tiles (briefing, system, NQ bot, planner, kalshi, search, hide $, look), each >= 44 px tall",
-          [q[0] for q in qa] == ["brief", "system", "zenith", "planner", "kalshi", "search", "hide", "look"] and all(q[1] >= 44 for q in qa), qa)
+    check("o. quick actions: the wide Voice mode tile, then 8 tiles (briefing, system, NQ bot, planner, kalshi, search, hide $, look), each >= 44 px tall",
+          [q[0] for q in qa] == ["voice", "brief", "system", "zenith", "planner", "kalshi", "search", "hide", "look"] and all(q[1] >= 44 for q in qa), qa)
     tl = p.evaluate("""(() => { const b = document.getElementById('p-today'); return { rows: b.querySelectorAll('.tl-row').length, now: !!b.querySelector('.tl-now'),
         ev: b.querySelectorAll('.tl-ev').length, task: !!b.querySelector('.tl-row.plan[data-app="planner"]'), next: b.querySelectorAll('.tl-row.next').length,
         head: b.querySelector('.tl-head').textContent }; })()""")

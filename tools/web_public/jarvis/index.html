@@ -76,7 +76,7 @@ window.addEventListener('error', function (e) {
   if (!window.__jarvisErr) window.__jarvisErr = String(e.message || 'Script error') + (e.filename ? ' (' + String(e.filename).split('/').pop() + ':' + e.lineno + ')' : '');
 }, true);
 </script>
-<link rel="stylesheet" id="jcss" href="jarvis.css?v=j9">
+<link rel="stylesheet" id="jcss" href="jarvis.css?v=j10">
 <style>.booted #bootfx{display:none}
 /* the start note works without jarvis.css (the stylesheet may be what did not arrive) */
 [hidden]{display:none!important}
@@ -684,12 +684,12 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
       <p class="hint" id="hint" hidden></p>
       <div class="vrow">
         <button class="pillb" id="hf" type="button" aria-pressed="false" title="Keep listening while Jarvis is open"><i class="ld"></i>HANDS-FREE</button>
-        <button class="bigmic" id="bigmic" type="button" aria-label="Talk to Jarvis" title="Tap to talk · hold for push-to-talk">
+        <button class="bigmic" id="bigmic" type="button" aria-label="Talk to Jarvis" title="Tap to talk · hold for voice mode">
           <svg width="26" height="26" viewBox="0 0 18 18" fill="none" aria-hidden="true"><rect x="6.2" y="2" width="5.6" height="9" rx="2.8" stroke="currentColor" stroke-width="1.5"/><path d="M3.8 8.6a5.2 5.2 0 0 0 10.4 0M9 13.8V16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         </button>
         <button class="pillb" id="vset" type="button" title="Voice settings">VOICE ⚙</button>
       </div>
-      <p class="hint2">TAP · HANDS-FREE · HOLD · PUSH-TO-TALK</p>
+      <p class="hint2">TAP · HANDS-FREE · HOLD · VOICE MODE</p>
       <div class="sugs" id="sugs"></div>
       <div class="talk" id="talk" aria-live="polite"></div>
       <div id="brainp"></div>
@@ -864,6 +864,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
 //   apps.js         listApps / addApp / removeApp / appStatus / cachedStatus / renderCard / listen / ascendSlot / findAscend
 //                                                           fallback: data.js fallbackApps
 //   zenith-mode.js  mountZenithMode({host, onExit})         fallback: Zenith in a frame
+//   voice-mode.js   createVoiceMode(deps)                   loaded after the start; fallback: none (the mic and the chat stay)
 // Old Jarvis features left out on purpose (PC only): the wake word, the double clap, "look at my screen" and the Kill switch.
 // The CPU / RAM gauges came back (2026-11-02) from the PC's own report (live.json pc_health), with the System view.
 import * as D from './data.js';
@@ -930,6 +931,9 @@ let vault = null, assist = null, obsUI = null, proUI = null;
 ready.vault = Promise.all([load('obsidian', './obsidian.js', (m) => typeof m.createVault === 'function'), load('memory', './memory.js', (m) => typeof m.createMemory === 'function')])
   .then(([ob, me]) => { if (ob && me) { vault = ob.createVault(); brainDeps.memory = me.createMemory({ vault }); } return vault; }).catch(() => null);
 ready.assist = load('assist', './assist-ui.js', (m) => typeof m.mountObsidianSheet === 'function').then((m) => { assist = m; return m; });
+// voice mode (voice-mode.js, 2026-11-03): the full-screen conversation. Loaded after the start (never part of it), or at first use.
+let vmP = null, vm = null;
+const voiceMod = () => vmP || (vmP = load('voice', './voice-mode.js', (m) => typeof m.createVoiceMode === 'function'));
 function openObsidian() { closeSheets(); closeMore(); if (!obsUI && assist && vault) obsUI = safe(() => assist.mountObsidianSheet({ vault, toast }), null); if (obsUI) obsUI.open(); else toast('The Obsidian part is still loading. Try again in a second.', 'OBSIDIAN'); }
 
 // ------------------------------------------------------------------ theme, effects level, sounds
@@ -1094,6 +1098,7 @@ function show(id, opts = {}) {
     return;
   }
   const seq = ++showSeq, was = active;
+  if (a.id !== 'home' && vm && vm.isOpen()) vm.close('app');      // another app: voice mode lets the mic go
   active = a.id;
   $('#home').hidden = a.id !== 'home';
   for (const k of Object.keys(frames)) frames[k].hidden = k !== a.id;
@@ -1197,6 +1202,7 @@ function mountCore3d() {
 let bootEnd = null;
 const bootDone = new Promise((ok) => { bootEnd = ok; });
 ready.core.then((m) => { if (m) bootDone.then(mountCore3d); });
+bootDone.then(() => setTimeout(voiceMod, 1500));
 let coreRT = 0;
 window.addEventListener('resize', () => { clearTimeout(coreRT); coreRT = setTimeout(() => { const w = Math.round($('#stage').getBoundingClientRect().width); if (core && w && Math.abs(w - coreSize) > 8) mountCore3d(); }, 300); }, { passive: true });
 // the backdrop's wireframe globe (as the old Jarvis's scene behind everything): meridians, parallels and a tilted orbit, drawn
@@ -1727,6 +1733,8 @@ function setHide(on, tellBrain = true) {
 function control(c) {                                  // -> true when the reply must not be read out loud
   if (c === 'stop') { hush(); stopListening(); if (handsFree) setHandsFree(false); setState('idle'); return true; }
   if (c === 'obsidian') { setTimeout(openObsidian, 600); return false; }
+  if (c === 'voice_mode') { if (!(vm && vm.isOpen())) setTimeout(() => voiceMode(false), 0); return true; }
+  if (c === 'voice_mode_off') return true;              // voice mode closes itself on it (voice-mode.js)
   if (c === 'mute') { D.LS.set('jarvis.mute', true); hush(); setState('idle'); return true; }
   if (c === 'unmute') { D.LS.set('jarvis.mute', false); return false; }
   if (c === 'hide_balance') { setHide(true, false); return false; }
@@ -1765,10 +1773,8 @@ function sayCards(cards) {
   while ($('#talk').children.length > 8) $('#talk').removeChild($('#talk').firstChild);
 }
 function headline(text) { const t = String(text || '').split('\n')[0]; return t.length > 160 ? t.slice(0, 157) + '…' : t; }
-async function ask(text, voice = false) {
-  const t = String(text || '').trim();
-  if (!t) return;
-  if (/^(what'?s|whats) new\??$/i.test(t)) { say('me', t); whatsNew(); return; }
+// one turn, shared by the Jarvis screen and voice mode: the brain's answer, kept in the chat, its control acted on -> {r, quiet}
+async function answer(t, voice) {
   say('me', t);
   setState('thinking'); sfx('tap');
   // nothing loaded yet for what is asked: fetch it first (an answer from data that is still loading would be wrong)
@@ -1783,11 +1789,18 @@ async function ask(text, voice = false) {
   sayCards(r.cards);
   sfx('answer');
   logAct(`Asked: ${t}`);
-  const quiet = r.control ? control(r.control) : false;
+  return { r, quiet: r.control ? control(r.control) : false };
+}
+async function ask(text, voice = false) {
+  const t = String(text || '').trim();
+  if (!t) return;
+  if (/^(what'?s|whats) new\??$/i.test(t)) { say('me', t); whatsNew(); return; }
+  const { r, quiet } = await answer(t, voice);
   if (!quiet && (voice || S.speakAll())) speak(r.speak || r.text, voice); else setState('idle');
   if (r.open) openSoon(r.route && typeof r.open === 'string' ? { id: r.open, route: r.route } : r.open);
 }
-const WN_VER = 'j8', WHATSNEW = [
+const WN_VER = 'j9', WHATSNEW = [
+  'Voice mode: a full-screen conversation like the film. Hold the mic, tap the Voice mode tile or say "Jarvis, voice mode". The core reacts to your voice and to Jarvis\'s, with live captions and the numbers it cites floating out; tap the core to interrupt, END to stop.',
   'OLYMPUS apps: Oracle, Odeon, Fates, Data City, Daphne, Prometheus, Mind, Tyche and Hermes join Zenith, the Planner and Kalshi. Every app is a glowing tile on the Jarvis screen with its live status; the orb groups them into Trading, Life and Money, and holding it shows the ones you open most.',
   'The OLYMPUS entrance: lightning, a temple rising out of the clouds, and Jarvis\'s core igniting. Full once a day, 1 s after that; tap to skip. Replay it from search; turn it off under ⋯ → Theme.',
   'Today\'s timeline under the mic: the trading day in ET (game plans, entries, NY open, bots flat) with your Planner events, and what is next counting down.',
@@ -1796,7 +1809,7 @@ const WN_VER = 'j8', WHATSNEW = [
   'Every app is its own dashboard now: the Planner, Kalshi and the NQ bot open full screen in their own look, no Jarvis bar on top.',
   'The orb switches apps: tap it for all apps, swipe it for the next one, hold it for the ring.',
   'The old Jarvis look: the violet reactor, the HUD panels and the command bar.',
-  'Voice: tap the mic, hands-free, or hold to talk. Answers in the phone\'s own voice.',
+  'Voice: tap the mic or hands-free; hold the dock\'s mic to talk. Answers in the phone\'s own voice.',
   'Smart answers with your own AI key (Groq, Gemini or Anthropic), kept only on this phone: ⋯ → AI key.',
   'Themes, 3D effects and the core design: ⋯ → Theme. Search anything with the round button.',
 ];
@@ -1892,19 +1905,61 @@ function setHandsFree(on) {
 }
 $('#hf').addEventListener('click', () => setHandsFree(!handsFree));
 $('#vset').addEventListener('click', () => openVoice());
-for (const id of ['#bigmic', '#mic']) {                  // tap = one question; hold (0.35 s) = push-to-talk until let go
-  const b = $(id);
+// tap = one question; hold the big mic (0.45 s) = voice mode; hold the dock's mic (0.35 s) = push-to-talk until let go
+for (const id of ['#bigmic', '#mic']) {
+  const b = $(id), big = id === '#bigmic';
   let holdT = 0, held = false;
   b.addEventListener('pointerdown', (e) => {
     if (e.button > 0) return;
     held = false;
+    if (big) { holdT = setTimeout(() => { held = true; stopListening(); voiceMode(false); }, 450); return; }
     if (!S.hold() || !SR) return;
     holdT = setTimeout(() => { held = true; stopListening(); listen('hold'); }, 350);
   });
-  const up = () => { clearTimeout(holdT); if (held && rec) safe(() => rec.stop()); };
+  const up = () => { clearTimeout(holdT); if (held && rec && !big) safe(() => rec.stop()); };
   b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up); b.addEventListener('pointerleave', up);
   b.addEventListener('click', (e) => { e.preventDefault(); if (held) { held = false; return; } if (rec) { stopListening(); return; } if (speaking) { hush(); setState('idle'); return; } listen('tap'); });
   b.addEventListener('contextmenu', (e) => e.preventDefault());
+}
+// voice mode: gesture = opened from a tap (the iPhone lets the mic and the voice start only from one; a hold's release counts)
+async function voiceMode(gesture) {
+  if (!S.voice()) { toast('Voice is off. Turn it on under ⋯ → AI key.', 'VOICE'); return; }
+  if (vm && vm.isOpen()) return;
+  const now = !!mods.voice, m = mods.voice || await within(voiceMod(), 6000);       // loaded already: still inside the tap
+  if (m && !vm) vm = safe(() => m.createVoiceMode(vmDeps()), null);
+  if (!vm) { toast('Voice mode is not available right now. The mic below still works.', 'VOICE'); return; }
+  closeSheets(); closeMore();
+  if (active !== 'home') show('home');
+  vm.open({ gesture: !!gesture && now });
+}
+const reducedMotion = () => !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) && (S.calm() || !root.dataset.fxSet);
+function vmVerdict() {                                  // the HUD arc: the bots' verdict, else the brain's one most important thing
+  const v = D.liveView(), vd = (v && v.verdict) || {};
+  if (vd.label) return { text: vd.label, level: vd.level === 'good' || vd.level === 'ok' ? 'ok' : vd.level === 'bad' ? 'bad' : 'warn' };
+  const h = safe(() => (typeof brain.headline === 'function' ? brain.headline() : null));
+  return h && h.text ? { text: h.text, level: h.level } : { text: 'systems loading', level: '' };
+}
+let vmHadCore = false;
+function vmDeps() {
+  return {
+    answer: (t) => answer(t, true).then((x) => x.r),
+    mountCore: (el, o) => {
+      const m = mods.core; if (!m) return null;
+      const opt = { size: o.size, design: coreDesign(), theme: coreTheme(), effects: root.dataset.fx, adapt: !root.dataset.fxSet };
+      if (!o.reduced) opt.motion = 'always';
+      return m.mountCore(el, opt);
+    },
+    verdict: vmVerdict, greeting: () => D.greeting(), fx: () => root.dataset.fx, reduced: reducedMotion,
+    voiceCfg: () => D.LS.get('jarvis.voiceCfg', null), muted: S.muted,
+    onOpen: () => {                                     // one core at a time on the phone: the Jarvis screen's waits behind
+      stopListening(); if (handsFree) setHandsFree(false); hush(); setState('idle');
+      vmHadCore = !!core;
+      if (core) { safe(() => core.destroy()); core = null; $('#coreSlot').innerHTML = ''; }
+      root.dataset.voiceMode = '1'; logAct('Voice mode');
+    },
+    onClose: () => { delete root.dataset.voiceMode; setState('idle'); if (vmHadCore && mods.core) mountCore3d(); vmHadCore = false; },
+    openApp: (r) => openSoon(r.route && typeof r.open === 'string' ? { id: r.open, route: r.route } : r.open),
+  };
 }
 $('#stage').addEventListener('click', () => { if (speaking) { hush(); setState('idle'); return; } if (rec) { stopListening(); return; } listen('tap'); });
 $('#stage').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#stage').click(); } });
@@ -1964,7 +2019,7 @@ function paletteItems() {
   for (const t of THEMES) items.push({ label: `Theme: ${t[1]}`, tag: 'look', run: () => setTheme(t[0]) });
   for (const c of CORE_DESIGNS) items.push({ label: `Core: ${c[1]}`, tag: 'look', run: () => setCoreDesign(c[0]) });
   for (const l of ['ultra', 'high', 'low', 'off']) items.push({ label: `3D effects: ${l}`, tag: 'look', run: () => setFx(l) });
-  items.push({ label: 'Voice settings', tag: 'voice', run: () => openVoice() }, { label: 'AI key · smart mode', tag: 'brain', run: () => openSettings() },
+  items.push({ label: 'Voice mode · talk full screen', tag: 'voice', run: () => voiceMode(true) }, { label: 'Voice settings', tag: 'voice', run: () => openVoice() }, { label: 'AI key · smart mode', tag: 'brain', run: () => openSettings() },
     { label: 'Add a dashboard', tag: 'apps', run: () => openSheet() }, { label: S.hideMoney() ? 'Show balances' : 'Hide balances', tag: 'privacy', run: () => moreKey('hide') },
     { label: 'Hands-free on / off', tag: 'voice', run: () => setHandsFree(!handsFree) }, { label: 'Connect Obsidian · notes', tag: 'notes', run: () => openObsidian() });
   const sug = safe(() => brain.suggestions(), []);
@@ -2300,6 +2355,7 @@ document.addEventListener('click', (e) => {
   if (b) haptic();
 }, { capture: true, passive: true });
 const ICO = {
+  voice: '<path d="M3 12h2M7 8v8M11 5v14M15 8v8M19 11v2"/>',
   brief: '<path d="M4 18h16M7 14a5 5 0 0 1 10 0M12 4v3M5 8l2 2M19 8l-2 2"/>',
   system: '<path d="M3 12h4l2-5 4 10 2-5h6"/>',
   zenith: '<path d="M7 4v16M17 4v16"/><rect x="5" y="8" width="4" height="7" rx="1"/><rect x="15" y="6" width="4" height="9" rx="1"/>',
@@ -2310,6 +2366,7 @@ const ICO = {
   look: '<path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/>',
 };
 const QA = () => [
+  ['voice', 'Voice mode', () => voiceMode(true)],
   ['brief', 'Briefing', () => briefing()], ['system', 'System', () => showSystem()], ['zenith', 'NQ bot', () => show('zenith')],
   ['planner', 'Planner', () => show('planner')], ['kalshi', 'Kalshi', () => show('kalshi')], ['search', 'Search', () => openPalette()],
   ['hide', S.hideMoney() ? 'Show $' : 'Hide $', () => { moreKey('hide'); setTimeout(() => safe(renderQA), 60); }], ['look', 'Look', () => openLook()],
@@ -2516,7 +2573,8 @@ if (window.visualViewport) {
   const fitDock = () => { const kb = Math.max(0, innerHeight - visualViewport.height - visualViewport.offsetTop); $('#dock').style.transform = kb > 60 ? `translateY(${-Math.round(kb)}px)` : ''; };
   visualViewport.addEventListener('resize', fitDock); visualViewport.addEventListener('scroll', fitDock);
 }
-window.__jarvis = { show, ask, facts: D.getFacts, active: () => active, setTheme, setFx, state: () => state, core: () => (core && typeof core.stats === 'function' ? safe(() => core.stats()) : null) };   // for tests and the console; read-only
+window.__jarvis = { show, ask, facts: D.getFacts, active: () => active, setTheme, setFx, state: () => state, core: () => (core && typeof core.stats === 'function' ? safe(() => core.stats()) : null),
+  voiceMode: (g) => voiceMode(!!g), vm: () => (vm ? vm.stats() : null), closeVoiceMode: () => { if (vm) vm.close('test'); } };   // for tests and the console; read-only
 if ('serviceWorker' in navigator) {
   // a tapped Zenith notification while Jarvis runs (Zenith's sw.js v50: {type: 'open', app: 'zenith', hash}): Zenith mode at
   // that page, from the start (once Zenith mode is mounted it hears the message itself and calls onWantShow)
