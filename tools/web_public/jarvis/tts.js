@@ -11,10 +11,18 @@
 //   speechChunks(text, max?)   natural sentence chunks (<= max chars, split at . ! ? then ; : , then a space), commas added
 //                              before "but / so / because" in long sentences
 //   createSpeaker({ synth, voices(), cfg(), cloud() , fetch, Audio })
-//     .speak(text, { onstart, onend, onboundary(charIndex in the cleaned text) }) -> { text (cleaned), cancel() }
-//     .cancel() · .speaking
+//     .speak(text, { onstart, onend, onboundary(charIndex in the cleaned text), onstall(rest) }) -> { text (cleaned), cancel() }
+//     .cancel() · .speaking · .prime() (a silent utterance: call it inside a tap, the iPhone's unlock)
 //   One utterance per chunk, each started when the last one ends, with a 140 ms breath between sentences (shorter chunks also
-//   keep Chrome from cutting long utterances off). The first one starts inside the caller's tap (the iPhone's rule).
+//   keep Chrome from cutting long utterances off).
+//   iPhone traps handled here (2026-11-03 evening, owner: "the Jarvis isn't talking"): each utterance stays referenced until
+//   it ends (a collected one loses its events); a chunk whose end never comes is passed by a watchdog; one that never starts
+//   (WebKit silently drops a speak() made before any tap) calls onstall(rest), so the caller can say it at the next tap; a
+//   speak() right after cancel() waits 70 ms (WebKit swallows it otherwise); a paused voice is resumed; rate and pitch are
+//   always finite and in range (an out-of-range value throws).
+//   primeSpeech(synth)         one silent utterance (volume 0): inside a tap it lifts WebKit's tap-only rule for the page
+//   needsPrimer(navigator)     true on Apple WebKit (iPhone Safari, the Home Screen app, any iPhone browser): only a speak()
+//                              inside a tap unlocks the voice there; Chrome / Android / Edge unlock on any earlier tap
 //
 // The optional cloud voice (Groq's Orpheus text-to-speech on the owner's own free Groq key): only when he turns it on AND has
 // a Groq key (the smart-mode one). The key is sent only to api.groq.com. Any failure (no key, the model's terms not accepted,
@@ -25,7 +33,11 @@ export const CFG_KEY = 'jarvis.voiceCfg';           // { voice, rate, pitch } (t
 export const VM_KEY = 'jarvis.vmVoice';             // voice mode's old pick (read as a fallback, kept in step)
 export const CLOUD_KEY = 'jarvis.tts';               // { cloud: bool, voice: 'hannah' | 'diana' | 'autumn' }
 export const DEFAULTS = { rate: 1.0, pitch: 1.0 };
-const PAUSE_MS = 140;                                 // the breath between two sentences (half after a comma cut)   // premium voices sound most human at their own pace and pitch
+const PAUSE_MS = 140;                                 // the breath between two sentences (half after a comma cut)
+const AFTER_CANCEL_MS = 70;                           // WebKit swallows a speak() made right after cancel()
+const START_MS = 5000;                                // a chunk not started by then never will (no tap yet on the iPhone)
+const num = (v, lo, hi, d) => { const x = +v; return v != null && v !== '' && Number.isFinite(x) && x >= lo && x <= hi ? x : d; };
+const safe = (f, d) => { try { return f(); } catch (_) { return d; } };
 export const CLOUD = { url: 'https://api.groq.com/openai/v1/audio/speech', model: 'canopylabs/orpheus-v1-english', voices: ['hannah', 'diana', 'autumn'], max: 200 };
 
 // ------------------------------------------------------------------------------------------------ ranking the phone's voices
@@ -148,42 +160,85 @@ export function speechChunks(text, max) {
   return merged;
 }
 
+// ------------------------------------------------------------------------------------------------ the iPhone's unlock
+const PRIMERS = [];                                   // kept referenced until they end
+export function needsPrimer(nav) {
+  const ua = String(((nav || (typeof navigator !== 'undefined' ? navigator : null)) || {}).userAgent || '');
+  return /AppleWebKit/i.test(ua) && /iPhone|iPad|iPod|Macintosh/i.test(ua) && !/Chrome\/|Chromium|Edg\/|Android/i.test(ua);
+}
+export function primeSpeech(synth) {
+  if (!synth || typeof SpeechSynthesisUtterance === 'undefined') return false;
+  try {
+    const u = new SpeechSynthesisUtterance(' ');
+    u.volume = 0; u.rate = 1; u.pitch = 1; u.lang = 'en-US';
+    u.onend = u.onerror = () => { const i = PRIMERS.indexOf(u); if (i >= 0) PRIMERS.splice(i, 1); };
+    PRIMERS.push(u); if (PRIMERS.length > 4) PRIMERS.shift();
+    if (synth.paused && typeof synth.resume === 'function') synth.resume();
+    synth.speak(u);
+    return true;
+  } catch (_) { return false; }
+}
+
 // ------------------------------------------------------------------------------------------------ the speaker
 export function createSpeaker(opts) {
   const o = opts && typeof opts === 'object' ? opts : {};
   const synth = o.synth !== undefined ? o.synth : (typeof speechSynthesis !== 'undefined' ? speechSynthesis : null);
-  const voices = () => { try { return typeof o.voices === 'function' ? o.voices() || [] : synth ? synth.getVoices() || [] : []; } catch (_) { return []; } };
+  const own = () => safe(() => (synth ? synth.getVoices() || [] : []), []);
+  const voices = () => { const l = typeof o.voices === 'function' ? safe(() => o.voices() || [], []) : []; return l.length ? l : own(); };   // the caller's list, else ask again
   const cfg = () => { try { return Object.assign({}, DEFAULTS, typeof o.cfg === 'function' ? o.cfg() || {} : voiceCfg()); } catch (_) { return Object.assign({}, DEFAULTS); } };
   const cloudCfg = () => { try { return typeof o.cloud === 'function' ? o.cloud() : null; } catch (_) { return null; } };   // { key, voice } | null
   const doFetch = (...a) => (typeof o.fetch === 'function' ? o.fetch : fetch)(...a);
-  let cur = null, parkedDay = '';
+  let cur = null, parkedDay = '', cancelT = 0;
+  const live = [];                                    // the utterances being said, referenced until they end
+  const drop = (u) => { const j = live.indexOf(u); if (j >= 0) live.splice(j, 1); };
+  const hardCancel = () => { safe(() => synth.cancel()); cancelT = Date.now(); live.length = 0; };
 
   // one utterance per chunk, each started when the last one ends, with a short breath between them (PAUSE_MS)
   function phone(text, chunks, h) {
-    const v = bestVoice(voices(), cfg().voice || savedVoiceName(o.storage)), c = cfg();
+    const c = cfg(), rate = num(c.rate, 0.5, 2, 1), pitch = num(c.pitch, 0.5, 2, 1);
     let at = 0, i = 0;
-    try { synth.cancel(); } catch (_) { /* nothing queued */ }
+    const busy = !!safe(() => synth.speaking || synth.pending, false);
+    if (busy) hardCancel();
     const offs = chunks.map((chunk) => { const b = text.indexOf(chunk.slice(0, 12), at), off = b < 0 ? at : b; at = off + chunk.length; return off; });
     const next = () => {
       if (h.done) return;
       if (i >= chunks.length) { h.finish(); return; }
       const k = i++, u = new SpeechSynthesisUtterance(chunks[k]), off = offs[k];
-      if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-US';
-      u.rate = c.rate; u.pitch = c.pitch;
-      let ended = false;
-      u.onstart = () => { if (k === 0 && !h.done && h.onstart) h.onstart(); };
-      u.onboundary = (e) => { if (h.done || (e && e.name && e.name !== 'word')) return; if (h.onboundary) h.onboundary(off + (+(e && e.charIndex) || 0)); };
-      u.onend = u.onerror = (e) => {
+      const v = bestVoice(voices(), c.voice || savedVoiceName(o.storage));     // read each time: the iPhone's list comes late
+      if (v) { u.voice = v; u.lang = v.lang || 'en-US'; } else u.lang = 'en-US';    // no list yet: the phone's default voice
+      u.rate = rate; u.pitch = pitch; u.volume = 1;
+      let ended = false, started = false;
+      const end = () => {
         if (ended || h.done) return;
-        if (e && (e.error === 'interrupted' || e.error === 'canceled')) return;      // cancelled: the next reply owns the voice
-        ended = true;
+        ended = true; clearTimeout(h.wd); drop(u);
         if (h.onboundary && k + 1 < chunks.length) h.onboundary(offs[k + 1]);
-        if (k + 1 >= chunks.length) { h.finish(); return; }                     // the last one: done at once
+        if (k + 1 >= chunks.length) { h.finish(); return; }                    // the last one: done at once
         h.timer = setTimeout(next, /[.!?]$/.test(chunks[k]) ? PAUSE_MS : PAUSE_MS / 2);
       };
+      const begin = () => {
+        if (started || ended) return;
+        started = true; clearTimeout(h.wd);
+        if (k === 0 && !h.done && h.onstart) h.onstart();
+        h.wd = setTimeout(end, 2500 + (chunks[k].length * 95) / rate);         // its end never came (iPhone): move on
+      };
+      u.onstart = begin;
+      u.onboundary = (e) => { begin(); if (h.done || (e && e.name && e.name !== 'word')) return; if (h.onboundary) h.onboundary(off + (+(e && e.charIndex) || 0)); };
+      u.onend = u.onerror = (e) => {
+        if (e && (e.error === 'interrupted' || e.error === 'canceled')) { drop(u); return; }   // cancelled: the next reply owns the voice
+        end();
+      };
+      live.push(u);
+      safe(() => { if (synth.paused) synth.resume(); });
       synth.speak(u);
+      // never started: WebKit dropped it (no tap yet), so the caller may say the rest at the next tap; else move on
+      h.wd = setTimeout(() => {
+        if (started || ended || h.done) return;
+        if (safe(() => synth.speaking, false)) { begin(); return; }            // speaking without saying so (an old WebKit)
+        if (typeof h.onstall === 'function') { h.stalled = true; drop(u); h.finish(); h.onstall(chunks.slice(k).join(' ')); return; }
+        end();
+      }, START_MS);
     };
-    next();
+    if (busy || Date.now() - cancelT < AFTER_CANCEL_MS) h.timer = setTimeout(next, AFTER_CANCEL_MS); else next();
   }
   async function cloud(text, chunks, h, cc) {
     const audio = typeof o.Audio === 'function' ? o.Audio : (typeof Audio !== 'undefined' ? Audio : null);
@@ -215,9 +270,9 @@ export function createSpeaker(opts) {
     cancel();
     const c = cb && typeof cb === 'object' ? cb : {};
     const text = cleanSpeech(input), chunks = speechChunks(text);
-    const h = { done: false, onstart: c.onstart, onboundary: c.onboundary, audio: null,
-      finish() { if (h.done) return; h.done = true; if (cur === h) cur = null; if (typeof c.onend === 'function') c.onend(); } };
-    h.cancel = () => { if (h.done) return; h.done = true; clearTimeout(h.timer); if (cur === h) cur = null; if (h.audio) try { h.audio.pause(); } catch (_) { /* stopped */ } try { if (synth) synth.cancel(); } catch (_) { /* nothing */ } };
+    const h = { done: false, onstart: c.onstart, onboundary: c.onboundary, onstall: c.onstall, audio: null,
+      finish() { if (h.done) return; h.done = true; clearTimeout(h.timer); clearTimeout(h.wd); if (cur === h) cur = null; if (!h.stalled && typeof c.onend === 'function') c.onend(); } };
+    h.cancel = () => { if (h.done) return; h.done = true; clearTimeout(h.timer); clearTimeout(h.wd); if (cur === h) cur = null; if (h.audio) try { h.audio.pause(); } catch (_) { /* stopped */ } if (synth) hardCancel(); };
     cur = h;
     if (!chunks.length) { setTimeout(() => h.finish(), 0); return { text, cancel: h.cancel }; }
     const cc = cloudCfg(), today = new Date().toDateString();
@@ -228,6 +283,6 @@ export function createSpeaker(opts) {
     return { text, cancel: h.cancel };
   }
   function cancel() { if (cur) cur.cancel(); cur = null; }
-  return { speak, cancel, get speaking() { return !!cur; }, voice: () => bestVoice(voices(), cfg().voice || savedVoiceName(o.storage)) };
+  return { speak, cancel, get speaking() { return !!cur; }, prime: () => primeSpeech(synth), voice: () => bestVoice(voices(), cfg().voice || savedVoiceName(o.storage)) };
 }
 export default createSpeaker;

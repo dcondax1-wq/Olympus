@@ -686,6 +686,9 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
           <text class="vt" transform="translate(12 200) rotate(-90)" text-anchor="middle">JARVIS // CORE</text>
         </svg>
         <div class="sats" id="sats" aria-hidden="true"></div>
+        <!-- Jarvis talking (2026-11-03 evening): a waveform on the core while she speaks, and what a tap does then -->
+        <div class="vwave" id="vwave" aria-hidden="true"></div>
+        <span class="vstop" id="vstop" aria-hidden="true">TAP TO STOP</span>
       </div>
       </div>
       <div class="vbars" id="vbars" aria-hidden="true"></div>
@@ -730,7 +733,10 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     <button class="key ic" type="button" id="mic" aria-label="Talk to Jarvis" title="Talk to Jarvis">
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><rect x="6.2" y="2" width="5.6" height="9" rx="2.8" stroke="currentColor" stroke-width="1.7"/><path d="M3.8 8.6a5.2 5.2 0 0 0 10.4 0M9 13.8V16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
     </button>
-    <button class="key" type="submit">SEND</button>
+    <button class="key ic spk" type="button" id="spk" aria-pressed="true" aria-label="Voice on: answers are read out loud" title="Voice on / off">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 7.5h3l4-3.5v12l-4-3.5H3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path class="w" d="M13 7.2a4 4 0 0 1 0 5.6M15.3 5a7 7 0 0 1 0 10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path class="x" d="m13.2 7.6 4.6 4.8m0-4.8-4.6 4.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </button>
+    <button class="key send" type="submit">SEND</button>
     <button class="key ic" type="button" id="moreB" aria-label="More" aria-expanded="false" title="More">⋯</button>
   </form>
 </div>
@@ -763,7 +769,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     <label>Model<input id="setModel" type="text" autocapitalize="off" spellcheck="false" placeholder="Leave empty for the default"></label>
     <p class="note" id="smartState"></p>
     <h3>Voice</h3>
-    <label class="row-t"><span>Talk to Jarvis<small>The mic, and answers read out loud when you talk</small></span><input type="checkbox" id="setVoice"></label>
+    <label class="row-t"><span>Talk to Jarvis<small>The mic, hands-free and voice mode (her voice: the speaker button in the dock)</small></span><input type="checkbox" id="setVoice"></label>
     <h3>Apps</h3>
     <div class="mine" id="setApps"></div>
     <div class="sheet-row"><button class="btn ghost" type="button" id="setAdd">Add a dashboard</button></div>
@@ -803,7 +809,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     <label>Voice<select id="vVoice"></select></label>
     <label>Speed <span id="vRateV"></span><input id="vRate" type="range" min="0.8" max="1.4" step="0.02"></label>
     <label>Pitch <span id="vPitchV"></span><input id="vPitch" type="range" min="0.7" max="1.5" step="0.05"></label>
-    <label class="row-t"><span>Read every answer<small>Off: Jarvis speaks only when you talk to it</small></span><input type="checkbox" id="vAll"></label>
+    <label class="row-t"><span>Read answers out loud<small>Every answer, typed or spoken (the speaker button in the dock)</small></span><input type="checkbox" id="vAll"></label>
     <label class="row-t"><span>Hold to talk<small>Hold the mic to talk, let go to send</small></span><input type="checkbox" id="vHold"></label>
     <p class="note" id="vNote"></p>
     <!-- assistant (2026-11-03): her talk style, the optional free cloud voice, the one-time Ava tip (tts.js, assistant.js) -->
@@ -900,13 +906,14 @@ const visible = () => document.visibilityState === 'visible';
 const safe = (f, d = null) => { try { return f(); } catch (_) { return d; } };
 
 // ------------------------------------------------------------------ settings kept on this phone
+let vo = null;                                               // her voice out (voice-out.js): the switch, the iPhone's unlock, speaking
 const S = {
   voice: () => D.LS.get('jarvis.voice', true) !== false,
-  speakAll: () => D.LS.get('jarvis.speakAll', false) === true,
+  speakOn: () => (vo ? vo.on() : raw('jarvis.speak') !== 'off'),   // her voice: every answer read out loud (default on; voice-out.js)
   hold: () => D.LS.get('jarvis.hold', true) !== false,
   sound: () => D.LS.get('jarvis.sound', false) === true,
   hideMoney: () => raw('jarvis.hide') === '1',              // the brain's own "hide my balance" switch (brain.js HIDE_KEY)
-  muted: () => D.LS.get('jarvis.mute', false) === true,
+  muted: () => !S.speakOn(),
   tilt: () => raw('jp3dtilt') === '1',
   calm: () => D.LS.get('jarvis.calm', false) === true,     // the 3D core follows the iPhone's reduce-motion switch (off: it always moves)
   vcfg: () => Object.assign({ rate: 1.0, pitch: 1.0, voice: '' }, D.LS.get('jarvis.voiceCfg', {}) || {}),
@@ -950,8 +957,15 @@ ready.vault = Promise.all([load('obsidian', './obsidian.js', (m) => typeof m.cre
   .then(([ob, me]) => { if (ob && me) { vault = ob.createVault(); brainDeps.memory = me.createMemory({ vault }); } return vault; }).catch(() => null);
 ready.assist = load('assist', './assist-ui.js', (m) => typeof m.mountObsidianSheet === 'function').then((m) => { assist = m; return m; });
 // the voice (tts.js) and the personal assistant (assistant.js), 2026-11-03: each optional (absent = the old voice, the brain alone)
-let tts = null, speaker = null, assistant = null;
+let tts = null, assistant = null;
 ready.tts = load('tts', './tts.js', (m) => typeof m.createSpeaker === 'function').then((m) => { tts = m; return m; });
+// her voice on the Jarvis screen (voice-out.js, 2026-11-03 evening): loaded at the start, so the first tap unlocks the iPhone's voice
+ready.voiceout = load('voiceout', './voice-out.js', (m) => typeof m.createVoiceOut === 'function').then((m) => {
+  if (m) vo = safe(() => m.createVoiceOut({ cfg: S.vcfg, cloud: cloudVoice, micBusy: () => !!rec || !!(vm && vm.isOpen()),
+    onSpeaking: onVoice, onWord: () => { wordKick = 1; }, onPending: (t) => { root.dataset.vpending = t ? '1' : ''; } }), null);
+  renderSpk();
+  return vo;
+});
 ready.assistant = load('assistant', './assistant.js', (m) => typeof m.createAssistant === 'function')
   .then((m) => { if (m) { assistant = safe(() => m.createAssistant(), null); if (assistant) brainDeps.assistant = assistant; } return assistant; });
 const cloudVoice = () => {                              // Groq's free voice: on, and a Groq key from the AI key settings
@@ -1794,8 +1808,8 @@ function control(c) {                                  // -> true when the reply
   if (c === 'obsidian') { setTimeout(openObsidian, 600); return false; }
   if (c === 'voice_mode') { if (!(vm && vm.isOpen())) setTimeout(() => voiceMode(false), 0); return true; }
   if (c === 'voice_mode_off') return true;              // voice mode closes itself on it (voice-mode.js)
-  if (c === 'mute') { D.LS.set('jarvis.mute', true); hush(); setState('idle'); return true; }
-  if (c === 'unmute') { D.LS.set('jarvis.mute', false); return false; }
+  if (c === 'mute') { setVoiceOn(false); hush(); setState('idle'); return true; }      // the same switch as the dock's speaker
+  if (c === 'unmute') { setVoiceOn(true); return false; }
   if (c === 'hide_balance') { setHide(true, false); return false; }
   if (c === 'show_balance') { setHide(false, false); return false; }
   if (c === 'manual_trade') { setTimeout(() => { safe(renderBar); if (active === 'home') { greet(); safe(renderOlympus); safe(renderCards); } if (nx) safe(() => nx.update()); }, 0); return false; }
@@ -1856,7 +1870,7 @@ async function ask(text, voice = false) {
   if (!t) return;
   if (/^(what'?s|whats) new\??$/i.test(t)) { say('me', t); whatsNew(); return; }
   const { r, quiet } = await answer(t, voice);
-  if (!quiet && (voice || S.speakAll())) speak(r.speak || r.text, voice); else setState('idle');
+  if (!quiet && S.speakOn()) speak(r.speak || r.text, voice); else setState('idle');     // every answer said while her voice is on
   if (r.open) openSoon(r.route && typeof r.open === 'string' ? { id: r.open, route: r.route } : r.open);
 }
 const WN_VER = 'j9', WHATSNEW = [
@@ -1886,48 +1900,71 @@ async function briefing() {
   say('j', r.text); $('#says').textContent = headline(r.text);
   D.LS.set('jarvis.briefDay', D.ymd(new Date()));
   logAct('Briefing');
-  if (S.voice()) speak(r.speak || r.text, true); else setState('idle');
+  if (S.speakOn()) speak(r.speak || r.text, true); else setState('idle');
 }
 $('#ask').addEventListener('submit', (e) => { e.preventDefault(); const q = $('#q'); ask(q.value); q.value = ''; });
 
-// ------------------------------------------------------------------ voice out: the phone's own voice (Ava, then Samantha), rate 1.06, pitch 1.1
-let voices = [];
-function loadVoices() { voices = safe(() => speechSynthesis.getVoices() || [], []); }
-function pickVoice() {
-  if (tts) return tts.bestVoice(voices, S.vcfg().voice || tts.savedVoiceName());
-  const want = S.vcfg().voice, en = voices.filter((v) => /^en(-|_|$)/i.test(v.lang || ''));
-  return (want && voices.find((v) => v.name === want)) || en.find((v) => /ava/i.test(v.name) && /en.?US/i.test(v.lang)) || en.find((v) => /ava/i.test(v.name))
-    || en.find((v) => /samantha/i.test(v.name)) || en.find((v) => /en.?US/i.test(v.lang)) || en[0] || null;
-}
-if ('speechSynthesis' in window) { loadVoices(); try { speechSynthesis.addEventListener('voiceschanged', loadVoices); } catch (_) { speechSynthesis.onvoiceschanged = loadVoices; } }
-let lvlT = 0;
-function levelPulse(on) {                               // the voice bars and the core's level while Jarvis listens or speaks
+// ------------------------------------------------------------------ voice out: her voice (voice-out.js + tts.js; Ava Premium, else Samantha ...)
+// Every answer is read while the dock's speaker is on (default on). The waveform on the core and the bars follow her words;
+// a tap on the core (or the mic) stops her. Without voice-out.js: one plain utterance, the phone's default voice.
+const voices = () => (vo ? vo.voices() : safe(() => speechSynthesis.getVoices() || [], []));
+const pickVoice = () => (vo ? vo.voice() : null);
+let lvlT = 0, wordKick = 0;
+function levelPulse(on) {                               // the voice bars, the core's waveform and level while Jarvis listens or speaks
   clearInterval(lvlT);
-  const bars = $('#vbars').children;
-  if (!on) { for (const b of bars) b.style.height = '4px'; setLevel(0); return; }
+  const bars = $('#vbars').children, wave = $('#vwave').children;
+  if (!on) { for (const b of bars) b.style.height = '4px'; for (const w of wave) w.style.transform = ''; setLevel(0); return; }
   lvlT = setInterval(() => {
     if (!visible()) return;
     let sum = 0;
-    for (let i = 0; i < bars.length; i++) { const h = 4 + Math.round(Math.random() * Math.random() * 26 * (1 - Math.abs(i - bars.length / 2) / (bars.length / 1.6))); bars[i].style.height = h + 'px'; sum += h; }
+    const k = state === 'speaking' ? 0.55 + wordKick * 0.6 : 1;
+    wordKick *= 0.6;
+    for (let i = 0; i < bars.length; i++) { const h = 4 + Math.round(Math.random() * Math.random() * 26 * k * (1 - Math.abs(i - bars.length / 2) / (bars.length / 1.6))); bars[i].style.height = h + 'px'; sum += h; }
+    for (let i = 0; i < wave.length; i++) wave[i].style.transform = `scaleY(${(0.15 + Math.random() * k * (1 - Math.abs(i - wave.length / 2) / (wave.length / 1.7))).toFixed(2)})`;
     setLevel(Math.min(1, sum / bars.length / 16));
   }, 90);
 }
-function speak(text, fromVoice) {
-  if (!S.voice() || S.muted() || !('speechSynthesis' in window)) { setState('idle'); return; }
-  if (tts && !speaker) speaker = safe(() => tts.createSpeaker({ voices: () => voices, cfg: S.vcfg, cloud: cloudVoice }), null);
-  if (speaker) {
-    const done = () => { speaking = false; levelPulse(false); setState('idle'); if (handsFree && fromVoice) setTimeout(() => listen('hf'), 350); };
-    try { hush(); speaking = true; setState('speaking'); levelPulse(true); speaker.speak(String(text), { onend: done }); return; } catch (_) { speaker = null; }
-  }
-  try {
-    const cfg = S.vcfg(), u = new SpeechSynthesisUtterance(String(text).replace(/\n/g, '. '));
-    const v = pickVoice(); if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-US';
-    u.rate = +cfg.rate || 1.06; u.pitch = +cfg.pitch || 1.1;
-    u.onend = u.onerror = () => { speaking = false; levelPulse(false); setState('idle'); if (handsFree && fromVoice) setTimeout(() => listen('hf'), 350); };
-    speechSynthesis.cancel(); speaking = true; setState('speaking'); levelPulse(true); speechSynthesis.speak(u);
-  } catch (_) { speaking = false; setState('idle'); }
+function onVoice(on) {                                  // voice-out.js: she started / stopped talking
+  speaking = !!on;
+  if (on) { setState('speaking'); levelPulse(true); return; }
+  levelPulse(false);
+  if (state === 'speaking') setState('idle');
 }
-function hush() { if (speaker) safe(() => speaker.cancel()); safe(() => speechSynthesis.cancel()); speaking = false; levelPulse(false); }
+function speak(text, fromVoice) {
+  const again = () => { if (handsFree && fromVoice) setTimeout(() => listen('hf'), 350); };
+  if (vo) {
+    const r = vo.speak(String(text), { onend: again });
+    if (r !== 'spoken' && state !== 'listening') setState('idle');
+    if (r === 'off' || r === 'hidden' || r === 'none') again();
+    return r;
+  }
+  if (!S.speakOn() || !('speechSynthesis' in window)) { setState('idle'); return 'off'; }
+  try {
+    const u = new SpeechSynthesisUtterance(String(text).replace(/\n/g, '. '));
+    u.lang = 'en-US';
+    u.onend = u.onerror = () => { onVoice(false); again(); };
+    window.__jarvisUtter = u;                           // referenced until it ends (a collected utterance loses its events)
+    speechSynthesis.cancel(); onVoice(true); speechSynthesis.speak(u);
+    return 'spoken';
+  } catch (_) { onVoice(false); return 'none'; }
+}
+function hush() { if (vo) vo.stop(); else safe(() => speechSynthesis.cancel()); speaking = false; levelPulse(false); }
+// the dock's speaker: her voice on / off, kept on this phone (turning it on says so: the tap also unlocks the iPhone's voice)
+function renderSpk() {
+  const on = S.speakOn(), b = $('#spk');
+  b.setAttribute('aria-pressed', String(on)); b.classList.toggle('off', !on);
+  b.setAttribute('aria-label', on ? 'Voice on: answers are read out loud' : 'Voice off: answers are not read out loud');
+  root.dataset.speak = on ? 'on' : 'off';
+}
+function setVoiceOn(on, tell) {
+  if (vo) vo.setOn(on); else { rawSet('jarvis.speak', on ? 'on' : 'off'); rawSet('jarvis.mute', on ? 'false' : 'true'); if (!on) hush(); }
+  renderSpk();
+  if (!tell) return;
+  toast(on ? 'Voice on: I read every answer out loud.' : 'Voice off: answers stay on screen.', 'VOICE');
+  if (on) speak('Voice on.', false);
+}
+$('#spk').addEventListener('click', () => setVoiceOn(!S.speakOn(), true));
+renderSpk();
 
 // ------------------------------------------------------------------ voice in: tap, hands-free (while Jarvis is open) and hold-to-talk
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1945,6 +1982,7 @@ function listen(mode) {                                 // mode: tap | hold | hf
   if (!S.voice() || active !== 'home' || !visible()) return;
   if (rec) return;
   hush();
+  if (vo) vo.session('auto');                           // iOS: the 'playback' session she speaks in cannot record
   heard = '';
   try {
     rec = new SR(); rec.lang = 'en-US'; rec.maxAlternatives = 1; rec.continuous = mode === 'hold'; rec.interimResults = mode === 'hold';
@@ -2018,7 +2056,7 @@ function vmDeps() {
     verdict: vmVerdict, greeting: () => D.greeting(), fx: () => root.dataset.fx, reduced: reducedMotion,
     voiceCfg: () => D.LS.get('jarvis.voiceCfg', null), muted: S.muted, cloudVoice,
     onOpen: () => {                                     // one core at a time on the phone: the Jarvis screen's waits behind
-      stopListening(); if (handsFree) setHandsFree(false); hush(); setState('idle');
+      stopListening(); if (handsFree) setHandsFree(false); hush(); setState('idle'); if (vo) vo.session('auto');
       vmHadCore = !!core;
       if (core) { safe(() => core.destroy()); core = null; $('#coreSlot').innerHTML = ''; }
       root.dataset.voiceMode = '1'; logAct('Voice mode');
@@ -2027,7 +2065,10 @@ function vmDeps() {
     openApp: (r) => openSoon(r.route && typeof r.open === 'string' ? { id: r.open, route: r.route } : r.open),
   };
 }
-$('#stage').addEventListener('click', () => { if (speaking) { hush(); setState('idle'); return; } if (rec) { stopListening(); return; } listen('tap'); });
+$('#stage').addEventListener('click', () => {
+  if (speaking && vo && vo.since() < 450) return;      // this tap just started a waiting answer ("TAP TO HEAR"): not a stop
+  if (speaking) { hush(); setState('idle'); return; } if (rec) { stopListening(); return; } listen('tap');
+});
 $('#stage').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#stage').click(); } });
 
 // ------------------------------------------------------------------ the ⋯ menu (pill keys), the command palette, toasts
@@ -2075,7 +2116,7 @@ function checkReminders() {
   for (const r of due) {
     const line = `Reminder: ${r.text}${r.late ? ` (it was due ${new Date(r.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })})` : ''}.`;
     say('j', '⏰ ' + line); toast(line, 'REMINDER'); sfx('listen');
-    if (S.voice() && !S.muted() && !(vm && vm.isOpen())) speak(line, false);
+    if (S.speakOn() && !(vm && vm.isOpen())) speak(line, false);
     safe(() => { if ('Notification' in window && Notification.permission === 'granted' && swReg && swReg.showNotification) swReg.showNotification('Jarvis', { body: line, tag: 'jarvis-' + r.id }); });
   }
 }
@@ -2285,8 +2326,8 @@ $('#setSound').addEventListener('change', () => { D.LS.set('jarvis.sound', $('#s
 $('#setTilt').addEventListener('change', async () => { await setTilt($('#setTilt').checked); renderLook(); });
 $('#setCalm').addEventListener('change', () => { D.LS.set('jarvis.calm', $('#setCalm').checked); if (core && mods.core) mountCore3d(); });
 function openVoice() {
-  closeSheets(); closeMore(); loadVoices();
-  const cfg = S.vcfg(), en = tts ? tts.voiceChoices(voices) : voices.filter((v) => /^en/i.test(v.lang || '')), cur = pickVoice();
+  closeSheets(); closeMore();
+  const list = voices(), cfg = S.vcfg(), en = tts ? tts.voiceChoices(list) : list.filter((v) => /^en/i.test(v.lang || '')), cur = pickVoice();
   const lab = (v) => (tts ? tts.voiceLabel(v) : `${v.name} · ${v.lang}`);
   $('#vVoice').innerHTML = `<option value="">Automatic${cur ? ' (' + esc(lab(cur)) + ')' : ''}</option>` + en.map((v) => `<option value="${esc(v.name)}"${cfg.voice === v.name ? ' selected' : ''}>${esc(lab(v))}</option>`).join('');
   $('#vStyle').value = assistant ? assistant.settings().style : 'short';
@@ -2294,17 +2335,19 @@ function openVoice() {
   $('#vTip').hidden = !!raw('jarvis.tip.ava') || (!!cur && /premium/i.test(cur.name + ' ' + (cur.voiceURI || '')));
   $('#vRate').value = String(cfg.rate); $('#vPitch').value = String(cfg.pitch);
   $('#vRateV').textContent = (+cfg.rate).toFixed(2); $('#vPitchV').textContent = (+cfg.pitch).toFixed(2);
-  $('#vAll').checked = S.speakAll(); $('#vHold').checked = S.hold();
-  $('#vNote').textContent = !('speechSynthesis' in window) ? 'This browser cannot speak.' : en.length ? 'Automatic picks her most natural voice: Ava or Zoe (Premium) first, then Allison, Samantha.' : 'No English voices loaded yet; they appear after the first answer.';
+  $('#vAll').checked = S.speakOn(); $('#vHold').checked = S.hold();
+  $('#vNote').textContent = (!('speechSynthesis' in window) ? 'This browser cannot speak.' : en.length ? 'Automatic picks her most natural voice: Ava or Zoe (Premium) first, then Allison, Samantha.'
+    : 'The voice list has not loaded yet: she uses the phone\'s default voice until it does.') + ' No sound? Turn the Ring / Silent switch to ring and the volume up.';
   $('#voice').hidden = false;
 }
 function saveVoice() {
   D.LS.set('jarvis.voiceCfg', { voice: $('#vVoice').value, rate: +$('#vRate').value, pitch: +$('#vPitch').value });
-  D.LS.set('jarvis.speakAll', $('#vAll').checked); D.LS.set('jarvis.hold', $('#vHold').checked);
+  D.LS.set('jarvis.hold', $('#vHold').checked);
   $('#vRateV').textContent = (+$('#vRate').value).toFixed(2); $('#vPitchV').textContent = (+$('#vPitch').value).toFixed(2);
   renderMore();
 }
-for (const id of ['#vVoice', '#vRate', '#vPitch', '#vAll', '#vHold']) $(id).addEventListener('input', saveVoice);
+for (const id of ['#vVoice', '#vRate', '#vPitch', '#vHold']) $(id).addEventListener('input', saveVoice);
+$('#vAll').addEventListener('change', () => setVoiceOn($('#vAll').checked, false));
 $('#vStyle').addEventListener('change', () => { if (assistant) assistant.setSettings({ style: $('#vStyle').value }); });
 $('#vCloud').addEventListener('change', () => {
   const on = $('#vCloud').checked, c = D.LS.get('jarvis.tts', {}) || {};
@@ -2312,7 +2355,11 @@ $('#vCloud').addEventListener('change', () => {
   if (on && !cloudVoice()) toast('The cloud voice needs your free Groq key: ⋯ → AI key. Until then she uses the phone\'s voice.', 'VOICE');
 });
 $('#vTipX').addEventListener('click', () => { rawSet('jarvis.tip.ava', '1'); $('#vTip').hidden = true; });
-$('#vTest').addEventListener('click', () => speak(`${D.greeting()}. I'm right here, and everything is online. What do you need?`, false));
+// Test voice: one natural sentence, inside the tap (testing her voice turns it on)
+$('#vTest').addEventListener('click', () => {
+  if (!S.speakOn()) { setVoiceOn(true); $('#vAll').checked = true; }
+  speak("Hi, I'm Jarvis, and this is how I'll sound when I read your answers out loud.", false);
+});
 $('#vX').addEventListener('click', () => { $('#voice').hidden = true; });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeSheets(); closeMore(); } });
 
@@ -2635,6 +2682,7 @@ ready.apps.then((m) => {
 // ------------------------------------------------------------------ start (each step on its own: a broken one never stops the rest)
 if ('serviceWorker' in navigator) safe(() => navigator.serviceWorker.register('sw.js', { scope: './' }).then((r) => { swReg = r || null; }).catch(() => { /* works without it */ }));
 $('#vbars').innerHTML = '<i></i>'.repeat(32);
+$('#vwave').innerHTML = '<i></i>'.repeat(21);
 $('#orb').dataset.design = coreDesign();
 safe(applyCustom); safe(readColors);
 // the OLYMPUS theme engine: here already, or when its async script arrives (never part of the start)
@@ -2686,7 +2734,8 @@ if (window.visualViewport) {
   visualViewport.addEventListener('resize', fitDock); visualViewport.addEventListener('scroll', fitDock);
 }
 window.__jarvis = { show, ask, facts: D.getFacts, active: () => active, setTheme, setOlyTheme, setFx, state: () => state, core: () => (core && typeof core.stats === 'function' ? safe(() => core.stats()) : null),
-  voiceMode: (g) => voiceMode(!!g), vm: () => (vm ? vm.stats() : null), closeVoiceMode: () => { if (vm) vm.close('test'); } };   // for tests and the console; read-only
+  voiceMode: (g) => voiceMode(!!g), vm: () => (vm ? vm.stats() : null), closeVoiceMode: () => { if (vm) vm.close('test'); },
+  voice: () => (vo ? vo.stats() : null) };   // for tests and the console; read-only
 if ('serviceWorker' in navigator) {
   // a tapped Zenith notification while Jarvis runs (Zenith's sw.js v50: {type: 'open', app: 'zenith', hash}): Zenith mode at
   // that page, from the start (once Zenith mode is mounted it hears the message itself and calls onWantShow)

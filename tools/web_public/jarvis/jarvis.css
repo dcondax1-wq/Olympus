@@ -199,6 +199,21 @@ html[data-core="module"] .stagebox { padding: 4px 0 6px; }
 .vbars { pointer-events: none; display: flex; align-items: center; justify-content: center; gap: 3px; height: 22px; width: min(320px, 82%); margin: -4px auto -6px; }
 .vbars i { display: block; width: 4px; height: 4px; border-radius: 2px; background: var(--c); opacity: .35; box-shadow: 0 0 6px var(--c); transition: height .08s linear, opacity .1s; }
 .vbars.live i { opacity: 1; }
+/* Jarvis talking (2026-11-03 evening): a waveform across the core while she speaks, "TAP TO STOP" (or "TAP TO HEAR" for an answer
+   waiting for the iPhone's first tap) under it; the dock's speaker shows her voice on / off */
+.vwave { position: absolute; left: 22%; right: 22%; top: 50%; height: 34%; margin-top: -17%; z-index: 4; display: flex; align-items: center; justify-content: center; gap: 3%;
+  pointer-events: none; opacity: 0; transition: opacity .2s; }
+.vwave i { flex: 1; max-width: 6px; height: 100%; border-radius: 3px; background: #fff; box-shadow: 0 0 8px var(--c), 0 0 2px #fff; transform: scaleY(.15); transition: transform .09s linear; }
+html[data-state="speaking"] .vwave { opacity: .92; }
+.vstop { position: absolute; left: 50%; bottom: 13%; z-index: 4; transform: translateX(-50%); padding: 4px 10px; border-radius: 999px; pointer-events: none;
+  font: 600 9px var(--fh); letter-spacing: .22em; color: #fff; background: rgba(0,0,0,.55); border: 1px solid rgba(var(--cr), .6); white-space: nowrap; opacity: 0; transition: opacity .2s; }
+html[data-state="speaking"] .vstop { opacity: 1; }
+html[data-vpending="1"]:not([data-state="speaking"]) .vstop { opacity: 1; font-size: 0; }
+html[data-vpending="1"]:not([data-state="speaking"]) .vstop::after { content: "TAP TO HEAR"; font-size: 9px; }
+.ask .spk .x { display: none; }
+.ask .spk.off { color: var(--mut); border-color: rgba(var(--cr), .3); }
+.ask .spk.off .w { display: none; } .ask .spk.off .x { display: inline; }
+@media (max-width: 360px) { .ask .key.send { display: none; } }      /* a small phone: the keyboard's Send key sends */
 .state { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 0; font: 600 12px var(--fh); letter-spacing: .5em; padding-left: .5em; color: var(--c3);
   text-shadow: 0 0 8px var(--c); text-transform: uppercase; }
 .state::before, .state::after { content: ""; flex: none; width: 64px; height: 1px; background: linear-gradient(90deg, transparent, rgba(var(--cr), .75)); }
