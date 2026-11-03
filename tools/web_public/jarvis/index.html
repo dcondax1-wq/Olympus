@@ -34,6 +34,24 @@
   if (n > 0) { d.setAttribute('data-safe', '1'); if (g('jarvis.core3d') === '1') s('jarvis.no3d', '1'); }
   s('jarvis.core3d', null);
   s('jarvis.unfinished', String(n + 1));
+  // OLYMPUS intro (the olympus-intro script, 2026-11-03): which version this start gets. full = the first start of the day, short = 1 s later
+  // the same day, fade = reduce motion / a safe start / an intro that did not finish, off = 3D effects Off (0.5 s). Never under
+  // automation unless a test asks ('jarvis.intro.force'); 'jarvis.intro' = 'off' turns it off (⋯ → Theme → Extras).
+  try {
+    var im = '', fo = g('jarvis.intro.force'), now = new Date(), day = now.getFullYear() + '-' + (now.getMonth() + 1) + '-' + now.getDate();
+    if (g('jarvis.intro') !== 'off' && (!navigator.webdriver || fo)) {
+      if (fo === 'full' || fo === 'short' || fo === 'fade' || fo === 'off') im = fo;
+      else if (d.getAttribute('data-fx') === 'off') im = 'off';
+      else if ((window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) || n > 0 || g('jarvis.intro.run')) im = 'fade';
+      else im = g('jarvis.intro.day') === day ? 'short' : 'full';
+    }
+    if (im) {
+      d.setAttribute('data-intro', im); window.__olyT0 = Date.now();
+      // the overlay's first deadline on this start's own clock (its CSS deadline only starts once the overlay is styled):
+      // the intro not running by 0.7 s = the overlay steps aside
+      setTimeout(function () { if (!window.__olyIntro) { var o = document.getElementById('olyIntro'); if (o) o.style.visibility = 'hidden'; } }, 700);
+    }
+  } catch (e) { /* no intro */ }
 })();
 // Black-screen guard (2026-11-01, "Just a black screen" on the iPhone): the browser draws nothing at all while the stylesheet below
 // is still on the way, so a weak signal kept the whole screen black. After 5 s Jarvis stops waiting for it: it draws with the dark
@@ -58,7 +76,7 @@ window.addEventListener('error', function (e) {
   if (!window.__jarvisErr) window.__jarvisErr = String(e.message || 'Script error') + (e.filename ? ' (' + String(e.filename).split('/').pop() + ':' + e.lineno + ')' : '');
 }, true);
 </script>
-<link rel="stylesheet" id="jcss" href="jarvis.css?v=j7">
+<link rel="stylesheet" id="jcss" href="jarvis.css?v=j8">
 <style>.booted #bootfx{display:none}
 /* the start note works without jarvis.css (the stylesheet may be what did not arrive) */
 [hidden]{display:none!important}
@@ -66,9 +84,545 @@ window.addEventListener('error', function (e) {
 .boot small{display:block;margin-top:4px;color:#8a8499;font-size:12px;word-break:break-word}
 .boot .boot-b{display:flex;gap:8px;flex:none}
 .boot button{height:44px;padding:0 14px;border-radius:11px;border:0;background:#a855f7;color:#fff;font:700 15px -apple-system,system-ui,sans-serif}
-.boot button.alt{background:transparent;border:1px solid #a855f7}</style>
+.boot button.alt{background:transparent;border:1px solid #a855f7}
+/* the OLYMPUS intro's overlay (the olympus-intro script below it). Built into the page, so it never waits for a file, and it goes
+   away by itself: gone by 0.95 s when the script never gets going; the script swaps in its own deadline (olyEnd) and removes the
+   overlay when it ends, skips or fails */
+.oly{position:fixed;top:0;left:0;right:0;bottom:0;z-index:2147483640;background:#000;display:none;overflow:hidden;-webkit-tap-highlight-color:transparent;touch-action:none;-webkit-user-select:none;user-select:none}
+html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
+@keyframes olyGo{to{opacity:0;visibility:hidden}}
+@keyframes olyEnd{to{opacity:0;visibility:hidden}}
+.oly canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block}
+.oly .oly-w{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:radial-gradient(ellipse at 50% 42%,#1a0b2e,#000 62%)}
+.oly .oly-w b{font:800 38px/1 Orbitron,-apple-system,system-ui,sans-serif;letter-spacing:.32em;padding-left:.32em;color:#ffd98a;background:linear-gradient(180deg,#fff3d1,#ffc95c 45%,#c084fc);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 14px rgba(168,85,247,.75))}
+.oly .oly-w small{font:600 11px/1 Orbitron,-apple-system,system-ui,sans-serif;letter-spacing:.5em;padding-left:.5em;color:rgba(222,190,255,.6)}
+.oly .oly-skip{position:absolute;left:0;right:0;bottom:calc(22px + env(safe-area-inset-bottom,0px));text-align:center;font:600 10px/1 -apple-system,system-ui,sans-serif;letter-spacing:.32em;color:rgba(236,233,242,.34);pointer-events:none}</style>
 </head>
 <body>
+<div class="oly" id="olyIntro" aria-hidden="true"></div>
+<script id="olympus-intro">
+/* OLYMPUS intro (2026-11-03, owner: "it needs to be SICK"). It plays over Jarvis while Jarvis starts underneath and never
+ * holds Jarvis up: the void, a spark on the ground, Zeus's lightning strikes it, the temple's columns rise out of a sea of
+ * clouds, embers fly into the letters OLYMPUS on the frieze (gold, a violet glow), the pediment draws itself in light, an orb
+ * wakes in the pediment, the camera pushes through the clouds into it and it ignites as Jarvis's own core. A bass "whoom"
+ * (Web Audio) only after a gesture: the tap that skips, or a replay from the command palette; never on a cold open.
+ *
+ * Inline, in its own script: it never waits for a file (WebKit runs an async script only after the page's module, i.e. after
+ * Jarvis has shown: tested), and a throw here stays in this script.
+ *
+ * Versions (picked before the first paint by the start script in <head>, html[data-intro]):
+ *   full   3.6 s, the first start of the day          short  1 s, later starts the same day
+ *   fade   0.8 s still word mark (reduce motion, a start after one that did not finish, an intro that did not finish)
+ *   off    0.5 s fade (3D effects: Off)
+ * Drawing: one WebGL1 full-screen shader and one point-sprite pass; every particle moves on the GPU (no per-frame JS but
+ * uniforms). Rendered below the screen's resolution (1.5x; 1x on low-end or 3D Low); late frames step the resolution down and
+ * a phone under 20 fps cuts to the reveal. No WebGL: the still version.
+ *
+ * Fail-safes (the iPhone black-screen lesson): every step runs in try/catch and any error removes the overlay; the overlay also
+ * hides by itself (the start script's 0.7 s timer, then CSS by 0.95 s, when this script never gets going; its length + 0.6 s
+ * once it runs); a timer, a hidden page, a lost WebGL context and the start watchdog's note end it too. 'jarvis.intro.run'
+ * marks an intro in progress: if the phone closes Jarvis under it, the next start gets the fade.
+ * Tap anywhere (or Esc / Enter / Space) to skip. window.__olyIntro is its state (tests); window.__olyIntroPlay(mode) replays it.
+ */
+(function () {
+  'use strict';
+  var W = window, doc = document, root = doc.documentElement;
+  var st = W.__olyIntro = { mode: '', q: '', state: 'idle', frames: 0, ms: 0, err: '', done: false, scale: 0, n: 0, fps: 0 };
+  var LEN = { full: 3.6, short: 1.0, fade: 0.8, off: 0.5 };
+  var ls = function (k, v) {
+    try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* private mode */ }
+    return null;
+  };
+  var el = null, cv = null, gl = null, raf = 0, killT = 0, t0 = 0, ended = false, audio = null, gesture = false, holdUp = false;
+  var now = function () { return (W.performance && performance.now) ? performance.now() : Date.now(); };
+  // a still frame for screenshots (docs, research/handoff): 'jarvis.intro.hold' = the second to hold, under automation only
+  var HOLD = navigator.webdriver && isFinite(parseFloat(ls('jarvis.intro.hold'))) ? parseFloat(ls('jarvis.intro.hold')) : -1;
+  var dayKey = function () { var d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); };
+
+  function signalEnd() {
+    if (ended) return; ended = true;
+    try { W.dispatchEvent(new Event('oly:intro-end')); } catch (e) { /* old browser */ }
+  }
+  function finish(how) {                                   // removes everything; safe to call any number of times
+    if (st.done) return;
+    st.done = true; st.state = how || 'done'; st.ms = Math.round(now() - t0);
+    try { cancelAnimationFrame(raf); } catch (e) { /* */ }
+    clearTimeout(killT);
+    ls('jarvis.intro.run', null);
+    try { var x = gl && gl.getExtension('WEBGL_lose_context'); if (x) x.loseContext(); } catch (e) { /* */ }
+    gl = null;
+    try { if (el && el.parentNode) el.parentNode.removeChild(el); } catch (e) { /* */ }
+    root.removeAttribute('data-intro');
+    try {
+      doc.removeEventListener('keydown', onKey, true); doc.removeEventListener('visibilitychange', onVis);
+      W.removeEventListener('pointerup', up, true); W.removeEventListener('pointercancel', up, true);
+    } catch (e) { /* */ }
+    signalEnd();
+  }
+  function fail(e) { st.err = String((e && e.message) || e || 'error'); finish('failed'); }
+
+  // the reveal: a composited opacity fade (smooth even while Jarvis's 3D core compiles under it); taps go through at once,
+  // except right after a skip tap (the finger is still down: its click must not land on what is underneath)
+  function fadeOut(ms, how) {
+    if (!el || st.done) return;
+    signalEnd();
+    st.state = how || 'reveal';
+    el.style.transition = 'opacity ' + ms + 'ms ease-out';
+    el.style.opacity = '0';
+    if (!holdUp) el.style.pointerEvents = 'none';
+    setTimeout(function () { waitUp(function () { finish(how === 'skipped' ? 'skipped' : 'done'); }); }, ms + 20);
+  }
+  function waitUp(go) {                                    // a skip tap: the overlay stays until the finger is up (1.2 s at most)
+    if (!holdUp) return go();
+    var t = 0, tick = function () { if (!holdUp || (t += 50) > 1200) go(); else setTimeout(tick, 50); };
+    tick();
+  }
+
+  // ---------------------------------------------------------------- sound: only after a gesture, never on a cold open
+  function canSound() {
+    if (ls('jarvis.intro.sound') === 'off' || ls('jarvis.mute') === 'true') return false;
+    return gesture || !!(navigator.userActivation && navigator.userActivation.hasBeenActive);
+  }
+  function whoom(strength) {
+    if (!canSound()) return;
+    try {
+      var A = W.AudioContext || W.webkitAudioContext; if (!A) return;
+      var a = audio || (audio = new A());
+      if (a.state === 'suspended' && a.resume) a.resume();
+      var t = a.currentTime + 0.01, k = strength || 1;
+      var o = a.createOscillator(), g = a.createGain();
+      o.type = 'sine'; o.frequency.setValueAtTime(96, t); o.frequency.exponentialRampToValueAtTime(31, t + 1.15);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.55 * k, t + 0.07); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.35);
+      o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + 1.4);
+      var len = Math.floor(a.sampleRate * 1.1), b = a.createBuffer(1, len, a.sampleRate), d = b.getChannelData(0);
+      for (var i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      var n = a.createBufferSource(), f = a.createBiquadFilter(), gn = a.createGain();
+      n.buffer = b; f.type = 'lowpass'; f.frequency.setValueAtTime(2200, t); f.frequency.exponentialRampToValueAtTime(110, t + 1.0);
+      gn.gain.setValueAtTime(0.0001, t); gn.gain.exponentialRampToValueAtTime(0.2 * k, t + 0.04); gn.gain.exponentialRampToValueAtTime(0.0001, t + 1.05);
+      n.connect(f); f.connect(gn); gn.connect(a.destination); n.start(t); n.stop(t + 1.1);
+    } catch (e) { /* no audio here */ }
+  }
+  function haptic() {
+    try { if (navigator.vibrate) { navigator.vibrate(12); return; } } catch (e) { /* */ }
+    try {                                                  // iOS 18 Safari: a switch control's toggle is the one web haptic
+      var l = doc.createElement('label'), i = doc.createElement('input');
+      i.type = 'checkbox'; i.setAttribute('switch', ''); l.appendChild(i);
+      l.style.cssText = 'position:fixed;left:-99px;top:0;opacity:0;pointer-events:none';
+      doc.body.appendChild(l); l.click(); setTimeout(function () { if (l.parentNode) l.parentNode.removeChild(l); }, 50);
+    } catch (e) { /* */ }
+  }
+
+  // ---------------------------------------------------------------- skip: a tap anywhere, Esc / Enter / Space
+  function skip(e) {
+    if (st.done || st.state === 'skipped') return;
+    gesture = true;
+    if (e && e.type === 'pointerdown') holdUp = true;
+    whoom(0.7); haptic();
+    fadeOut(220, 'skipped');
+  }
+  function onKey(e) { if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') skip(e); }
+  function onVis() { if (doc.visibilityState !== 'visible') finish('hidden'); }
+  var up = function () { if (holdUp) setTimeout(function () { holdUp = false; }, 80); };
+
+  // ---------------------------------------------------------------- the still versions: reduce motion, 3D off, no WebGL
+  function still(mode) {
+    st.q = 'still';
+    var w = doc.createElement('div');
+    w.className = 'oly-w';
+    w.innerHTML = '<b>OLYMPUS</b><small>J.A.R.V.I.S.</small>';
+    el.appendChild(w);
+    var len = LEN[mode] || 0.5;
+    if (HOLD < 0) setTimeout(function () { fadeOut(Math.round(len * 600), 'reveal'); }, Math.round(len * 400));
+  }
+
+  // ---------------------------------------------------------------- WebGL
+  var VS_BG = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
+  var FS_BG = [
+    '#ifdef GL_FRAGMENT_PRECISION_HIGH', 'precision highp float;', '#else', 'precision mediump float;', '#endif',
+    'uniform vec2 uRes;uniform float uT,uS,uZoom,uStrike,uFlash,uRise,uPed,uForm,uShine,uOrb,uPush,uIgn,uSpark,uHasTex;',
+    'uniform vec2 uO,uPo;uniform vec4 uTxt;uniform vec2 uBolt[14];uniform vec2 uBr[6];uniform sampler2D uTex;',
+    'float h21(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}',
+    'float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h21(i),h21(i+vec2(1.,0.)),f.x),mix(h21(i+vec2(0.,1.)),h21(i+vec2(1.,1.)),f.x),f.y);}',
+    'float fbm(vec2 p){float s=0.,a=.5;for(int i=0;i<OCT;i++){s+=a*vn(p);p=p*2.03+vec2(1.7,9.2);a*=.5;}return s;}',
+    'float sg(vec2 p,vec2 a,vec2 b){vec2 pa=p-a,ba=b-a;float h=clamp(dot(pa,ba)/dot(ba,ba),0.,1.);return length(pa-ba*h);}',
+    'void main(){',
+    ' vec2 p=(gl_FragCoord.xy-.5*uRes)/uRes.x;',
+    ' vec2 q=uO+(p-uPo)/(uS*uZoom);',
+    ' float hz=-.36,H=.42,top=hz+H*uRise,scene=1.-smoothstep(.45,.9,uPush);',
+    ' vec3 gold=vec3(1.,.78,.40),vio=vec3(.66,.33,.97);',
+    ' vec3 col=vec3(.012,.006,.03)+vec3(.07,.025,.13)*exp(-abs(q.y-hz-.05)*2.6)*smoothstep(0.,.6,uT);',
+    // stars
+    ' vec2 sq=floor(p*80.);float sh=h21(sq);',
+    ' if(sh>.982){vec2 sf=fract(p*80.)-.5;col+=vec3(.75,.65,1.)*smoothstep(.16,0.,length(sf))*(.35+.35*sin(uT*3.+sh*70.));}',
+    // the sea of clouds below Olympus
+    ' float below=smoothstep(hz+.03,hz-.3,q.y);',
+    ' if(below>0.){float cl=fbm(vec2(q.x*2.6+uT*.06,q.y*7.-uT*.03));col+=(vec3(.17,.08,.30)*cl*cl*1.5+gold*pow(cl,5.)*.9*uRise)*below*(.35+.65*uRise);}',
+    // the stylobate: three steps, lit from the strike outward
+    ' float spread=clamp(uRise*1.4,0.,1.)*.47;',
+    ' if(q.y<hz&&q.y>hz-.066){float stp=floor((hz-q.y)/.022);float hw=.40+.03*stp;',
+    '  if(abs(q.x)<min(hw,spread)){float ly=fract((hz-q.y)/.022);vec3 m=vec3(.13,.10,.19)*(.8+.3*fbm(q*vec2(30.,60.)));',
+    '   m+=gold*smoothstep(.12,0.,ly)*.55+vio*smoothstep(.85,1.,ly)*.2;col=m*(.6+1.6*uFlash);}}',
+    // the columns rise
+    ' float ax=abs(q.x),k=clamp(floor(ax/.13),0.,2.),dx=ax-(.065+k*.13),ly=q.y-(top-H);',
+    ' if(q.y>hz&&q.y<top&&ax<.36){float cap=step(H-.024,ly),bas=step(ly,.014);float w=.024-.005*(ly/H)+cap*.013+bas*.008;',
+    '  if(abs(dx)<w){float u=dx/w;float cyl=sqrt(max(0.,1.-u*u));float fl=mix(.78+.22*cos(u*18.85),1.,max(cap,bas));',
+    '   vec3 m=vec3(.31,.26,.40)*cyl*fl*(.8+.35*fbm(vec2(q.x*38.,ly*14.)))*(.55+.6*smoothstep(0.,H,ly))*(.6+.4*smoothstep(0.,.05,ly));',
+    '   float side=sign(q.x)*u;m+=vio*smoothstep(.55,1.,side)*.45+gold*smoothstep(.55,1.,-side)*.35*(.3+uForm);',
+    '   m+=gold*cap*.25*uPed;col=m*(.55+1.7*uFlash);}}',
+    // rising dust at the base
+    ' col+=vec3(.35,.24,.5)*fbm(q*vec2(14.,24.)-vec2(0.,uT*.5))*exp(-max(q.y-hz,0.)*22.)*step(hz,q.y)*uRise*(1.-uRise)*3.;',
+    // the entablature and the frieze
+    ' float e0=hz+H,e1=e0+.15;',
+    ' if(q.y>e0&&q.y<e1&&abs(q.x)<.43*uPed+.0001){float m=.11+.04*fbm(q*vec2(26.,50.));col=vec3(m*.9,m*.75,m*1.25)*(.6+1.4*uFlash);',
+    '  col+=gold*(smoothstep(.006,0.,abs(q.y-e0-.006))+smoothstep(.006,0.,abs(q.y-e1+.006)))*.8;}',
+    // the pediment, drawn in light from its apex
+    ' vec2 ap=vec2(0.,e1+.19),cl=vec2(-.46,e1+.01),cr=vec2(.46,e1+.01);',
+    ' float dp=min(min(sg(q,ap,mix(ap,cl,uPed)),sg(q,ap,mix(ap,cr,uPed))),sg(q,vec2(-.46*uPed,cl.y),vec2(.46*uPed,cl.y)));',
+    ' col+=(gold*smoothstep(.0035,0.,dp)*1.4+gold*exp(-dp*70.)*.25+vio*exp(-dp*22.)*.12)*step(.001,uPed);',
+    ' float inT=step(cl.y,q.y)*step(abs(q.x)/.46,(ap.y-q.y)/(ap.y-cl.y));',
+    ' col+=vec3(.07,.05,.11)*inT*uPed*(.7+.6*fbm(q*40.));',
+    // OLYMPUS on the frieze: a lightning dissolve with an electric edge, a shine that sweeps across
+    ' if(uHasTex>.5){vec2 tu=(q-uTxt.xy)/uTxt.zw;',
+    '  if(tu.x>0.&&tu.x<1.&&tu.y>0.&&tu.y<1.){vec3 t=texture2D(uTex,tu).rgb;',
+    '   float n=vn(tu*vec2(90.,24.))*.6+vn(tu*vec2(260.,70.))*.25+tu.x*.15,th=uForm*1.3-.15;',
+    '   float vis=smoothstep(th,th-.05,n),edge=smoothstep(.06,0.,abs(n-th))*step(.001,uForm)*step(uForm,.999);',
+    '   float sx=uShine*1.7-.35,shine=exp(-pow(tu.x-sx-(tu.y-.5)*.35,2.)*160.)*step(.001,uShine)*step(uShine,.999);',
+    '   float fe=smoothstep(0.,.06,tu.x)*smoothstep(1.,.94,tu.x)*smoothstep(0.,.2,tu.y)*smoothstep(1.,.8,tu.y);',
+    '   vec3 face=mix(vec3(1.,.66,.24),vec3(1.,.86,.52),clamp(.55+.6*(tu.y-.5)+.15*sin(tu.x*9.+uT*2.),0.,1.));',
+    '   float halo=t.g*t.g;',
+    '   col=mix(col,face*(.95+2.2*shine),t.r*vis)+(vio*halo*.28+vec3(.5,.25,.9)*t.b*t.b*.1)*vis*fe+gold*t.g*(1.-t.r)*.18*vis+vec3(.85,.7,1.)*edge*(t.r+t.g*.4)*1.6;}}',
+    // the orb that wakes in the pediment
+    ' float ro=length(q-uO);col+=(vec3(.8,.6,1.)*.004/(ro+.004)+vio*exp(-abs(ro-.03-.01*sin(uT*9.))*240.)*.6)*uOrb;',
+    // the spark, the lightning, its impact
+    ' vec2 imp=vec2(0.,hz);float ri=length((q-imp)*vec2(1.,2.6));',
+    ' float dsp=length(q-imp);col+=(vec3(1.,.88,.7)*(.004/(dsp+.003))+vio*exp(-dsp*18.)*.35)*uSpark;',
+    ' if(uStrike>.001){float d=1e3,db=1e3;',
+    '  for(int i=0;i<13;i++)d=min(d,sg(q,uBolt[i],uBolt[i+1]));',
+    '  for(int i=0;i<5;i++)db=min(db,sg(q,uBr[i],uBr[i+1]));',
+    '  float c=smoothstep(.0045,.0,d)*1.6+exp(-d*85.)*.7+exp(-d*16.)*.25,cb=smoothstep(.003,0.,db)*.9+exp(-db*100.)*.35;',
+    '  col+=(vec3(.9,.86,1.)*c+vec3(.62,.42,1.)*cb)*uStrike+vec3(.75,.5,1.)*exp(-ri*9.)*uStrike*1.4;}',
+    ' col*=scene;',
+    // through the clouds: a tunnel of cloud streaming past the camera, lit from the core ahead
+    ' vec2 r=p-uPo;float rl=length(r);',
+    ' if(uPush>.001){vec2 dir=r/max(rl,1e-4);float z=.22/(rl+.04)-uPush*uPush*7.;',
+    '  float c1=fbm(dir*2.2+vec2(z*.9,z*.55)),env=sin(3.14159*clamp(uPush*1.15,0.,1.));',
+    '  float dens=smoothstep(.38,.85,c1)*smoothstep(.0,.25,rl)*env;',
+    '  col+=mix(vec3(.30,.16,.52),vec3(1.,.82,.55),exp(-rl*3.))*dens*1.3+vio*exp(-rl*5.)*env*.6;}',
+    // the core ignites where Jarvis's own core is
+    ' if(uIgn>.001){float R=uIgn*.95,R2=uIgn*.6,on=smoothstep(0.,.12,uIgn);',
+    '  col+=vec3(1.,.92,1.)*(.006/(rl+.004))*on*(1.-uIgn*.5)+vio*exp(-rl*7.)*on*(1.-uIgn)*1.2;',
+    '  col+=(vec3(.75,.55,1.)*exp(-abs(r.y)*160.)*exp(-abs(r.x)*2.2)+gold*exp(-abs(r.y)*420.)*exp(-abs(r.x)*5.)*.6)*on*(1.-uIgn*.8)*1.4;',
+    '  col+=(vio*exp(-abs(rl-R)*55.)*1.5+gold*exp(-abs(rl-R2)*120.)*1.1)*(1.-uIgn);}',
+    ' col+=vec3(.62,.45,1.)*uFlash*.5;',
+    ' col*=1.-.22*dot(p,p);',
+    ' col=1.-exp(-col*1.35);',
+    ' col+=(h21(gl_FragCoord.xy+fract(uT)*91.)-.5)*.012;',
+    ' gl_FragColor=vec4(col,1.);',
+    '}'].join('\n');
+  var VS_PT = [
+    'attribute vec2 aT;attribute vec4 aS;',
+    'uniform vec2 uRes,uO,uPo;uniform float uT,uS,uZoom,uForm,uPush,uBurst,uPx;',
+    'varying vec4 vC;',
+    'void main(){',
+    ' float amb=step(aS.z,.2);',
+    ' float a=aS.x*6.2832,sp=.12+aS.y*.6,tb=max(uBurst,0.);',
+    ' vec2 ember=vec2(0.,-.36)+vec2(cos(a)*sp*.85,abs(sin(a))*sp*1.15)*(1.-exp(-tb*2.4))+vec2(sin(uT*3.+aS.w*20.)*.01,tb*.05);',
+    ' vec2 dust=vec2(aS.x-.5,(aS.y-.5)*2.3)+vec2(sin(uT*.7+aS.w*9.)*.02,uT*.025*(aS.w+.3));',
+    ' float k=clamp(uForm*1.4-aS.w*.4,0.,1.);k=k*k*(3.-2.*k);',
+    ' vec2 tg=aT+vec2(sin(uT*7.+aS.w*40.),cos(uT*6.+aS.x*30.))*.0016;',
+    ' vec2 pos=amb>.5?dust:mix(ember,tg,k);',
+    ' vec2 sc=uPo+(pos-uO)*uS*uZoom;',
+    ' gl_Position=vec4(sc.x*2.,sc.y*2.*uRes.x/uRes.y,0.,1.);',
+    ' float on=amb>.5?.4:step(.0001,uBurst)*(1.-k*.78);',
+    ' gl_PointSize=uPx*(amb>.5?1.1+aS.y*1.5:1.5+aS.y*2.4)*(1.+(uZoom-1.)*.12);',
+    ' vec3 c=mix(vec3(1.,.72,.3),vec3(.72,.45,1.),aS.y*(1.-k*.7));',
+    ' vC=vec4(c,on*(.6+.4*sin(uT*9.+aS.w*50.))*(1.-smoothstep(.5,.95,uPush)));',
+    '}'].join('\n');
+  var FS_PT = 'precision mediump float;varying vec4 vC;void main(){float r=length(gl_PointCoord-.5);float a=smoothstep(.5,0.,r);gl_FragColor=vec4(vC.rgb*a*a*vC.a,1.);}';
+
+  function prog(vs, fs) {
+    var p = gl.createProgram();
+    [[gl.VERTEX_SHADER, vs], [gl.FRAGMENT_SHADER, fs]].forEach(function (x) {
+      var s = gl.createShader(x[0]); gl.shaderSource(s, x[1]); gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS) && !gl.isContextLost()) throw new Error('shader: ' + gl.getShaderInfoLog(s));
+      gl.attachShader(p, s);
+    });
+    gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS) && !gl.isContextLost()) throw new Error('link: ' + gl.getProgramInfoLog(p));
+    return p;
+  }
+  function locs(p, names) { var o = {}; names.forEach(function (n) { o[n] = gl.getUniformLocation(p, n); }); return o; }
+
+  // the timeline: every effect is an envelope of the clock (seconds); the clock runs on wall time, so slow frames never stretch it
+  var cl = function (x) { return x < 0 ? 0 : x > 1 ? 1 : x; };
+  var ramp = function (t, a, b) { return cl((t - a) / (b - a)); };
+  var ease = function (x) { return 1 - Math.pow(1 - x, 3); };
+  var sm = function (x) { return x * x * (3 - 2 * x); };
+  var pulse = function (t, a, peak) { var d = t - a; return d < 0 ? 0 : peak * Math.exp(-d * 9); };
+  function envFull(t) {
+    var s = { spark: ramp(t, 0.05, 0.32) * (1 - ramp(t, 0.32, 0.4)) * (0.8 + 0.2 * Math.sin(t * 60)) };
+    var on = (t > 0.30 && t < 0.37) || (t > 0.41 && t < 0.48) ? 1 : 0;
+    s.strike = t < 0.30 ? 0 : Math.max(on, 0.55 * (1 - ramp(t, 0.48, 0.9))) * (t < 0.9 ? 1 : 0);
+    s.flash = pulse(t, 0.30, 0.95) + pulse(t, 0.41, 0.45) + pulse(t, 2.93, 0.4);
+    s.burst = t > 0.30 ? t - 0.30 : -1;
+    s.rise = ease(ramp(t, 0.42, 1.35));
+    s.ped = sm(ramp(t, 1.0, 1.7));
+    s.form = sm(ramp(t, 0.8, 1.95));
+    s.shine = ramp(t, 1.9, 2.45);
+    s.orb = sm(ramp(t, 1.75, 2.25));
+    s.push = ramp(t, 2.25, 3.15);
+    s.ign = ramp(t, 2.88, 3.6);
+    s.reveal = 3.12; s.restrike = 0.41;
+    return s;
+  }
+  function envShort(t) {
+    var s = { spark: 0 };
+    s.strike = t < 0.02 ? 0 : 1 - ramp(t, 0.1, 0.32);
+    s.flash = pulse(t, 0.02, 0.8) + pulse(t, 0.66, 0.6);
+    s.burst = t > 0.02 ? t - 0.02 + 0.5 : -1;
+    s.rise = ease(ramp(t, 0, 0.28));
+    s.ped = sm(ramp(t, 0.1, 0.38));
+    s.form = sm(ramp(t, 0.05, 0.42));
+    s.shine = ramp(t, 0.36, 0.58);
+    s.orb = sm(ramp(t, 0.3, 0.45));
+    s.push = ramp(t, 0.42, 0.82);
+    s.ign = ramp(t, 0.64, 1.0);
+    s.reveal = 0.76; s.restrike = 9;
+    return s;
+  }
+
+  function bolt(seed) {                                    // a jagged bolt from above the screen to the spark on the ground
+    var rnd = function () { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+    var pts = [], x0 = (rnd() - 0.5) * 0.24, y0 = 1.3, y1 = -0.36;
+    for (var i = 0; i < 14; i++) {
+      var t = i / 13, j = i === 0 || i === 13 ? 0 : (rnd() - 0.5) * 0.13 * (1 - t * 0.55);
+      pts.push(x0 * (1 - t) + j, y0 + (y1 - y0) * t + (i && i < 13 ? (rnd() - 0.5) * 0.03 : 0));
+    }
+    var br = [], bi = 4 + Math.floor(rnd() * 3), bx = pts[bi * 2], by = pts[bi * 2 + 1], dir = rnd() < 0.5 ? -1 : 1;
+    for (var b = 0; b < 6; b++) { br.push(bx, by); bx += dir * (0.025 + rnd() * 0.04); by -= 0.04 + rnd() * 0.05; }
+    return { a: new Float32Array(pts), b: new Float32Array(br) };
+  }
+
+  // OLYMPUS as a texture: R = the sharp letters, G = a close glow, B = a wide glow (shadowBlur, drawn once)
+  function textTex(fontOk) {
+    var c = doc.createElement('canvas'); c.width = 1024; c.height = 256;
+    var x = c.getContext('2d'); if (!x) throw new Error('no 2d');
+    var fam = fontOk ? '800 118px Orbitron, sans-serif' : '800 112px -apple-system, "Segoe UI", system-ui, sans-serif';
+    var word = 'OLYMPUS', sp = 26;
+    x.font = fam;
+    var ws = 0, i; for (i = 0; i < word.length; i++) ws += x.measureText(word[i]).width + (i ? sp : 0);
+    var fit = Math.min(1, 900 / ws);
+    x.font = fam.replace(/\d+px/, Math.floor((fontOk ? 118 : 112) * fit) + 'px');
+    ws = 0; for (i = 0; i < word.length; i++) ws += x.measureText(word[i]).width + (i ? sp * fit : 0);
+    x.textBaseline = 'middle';
+    var draw = function (style, blur) {
+      var px = 512 - ws / 2;
+      x.fillStyle = style; x.shadowColor = style; x.shadowBlur = blur;
+      x.shadowOffsetX = blur ? 3000 : 0;
+      for (var j = 0; j < word.length; j++) { x.fillText(word[j], px - (blur ? 3000 : 0), 132); px += x.measureText(word[j]).width + sp * fit; }
+    };
+    x.globalCompositeOperation = 'lighter';
+    draw('#0000ff', 34); draw('#00ff00', 10); x.shadowBlur = 0; x.shadowOffsetX = 0; draw('#ff0000', 0);
+    var px2 = x.getImageData(0, 0, 1024, 256).data, pts = [];
+    for (var yy = 0; yy < 256; yy += 2) for (var xx = 0; xx < 1024; xx += 2) if (px2[(yy * 1024 + xx) * 4] > 140) pts.push(xx / 1024, 1 - yy / 256);
+    return { canvas: c, pts: pts };
+  }
+
+  function glRun(mode, lite) {
+    cv = doc.createElement('canvas');
+    el.appendChild(cv);
+    var opt = { alpha: false, antialias: false, depth: false, stencil: false, premultipliedAlpha: false, preserveDrawingBuffer: false, powerPreference: 'high-performance' };
+    gl = cv.getContext('webgl', opt) || cv.getContext('experimental-webgl', opt);
+    if (!gl) { cv.parentNode.removeChild(cv); cv = null; return false; }
+    cv.addEventListener('webglcontextlost', function (e) { try { e.preventDefault(); } catch (_) { /* */ } finish('lost'); });
+    var dpr = W.devicePixelRatio || 1;
+    var scale = lite ? Math.min(dpr, 1) : Math.min(dpr, root.getAttribute('data-fx') === 'ultra' ? 2 : 1.5);
+    // tests in a software-rendered browser: a lower render scale ('jarvis.intro.scale', under automation only)
+    var forced = navigator.webdriver ? parseFloat(ls('jarvis.intro.scale')) : NaN;
+    if (forced > 0 && forced <= 3) scale = forced;
+    var cutOK = !(navigator.webdriver && ls('jarvis.intro.nocut') === '1');   // tests on a busy machine: the full run, uncut
+    var size = function () {
+      var w = Math.max(1, Math.round(innerWidth * scale)), h = Math.max(1, Math.round(innerHeight * scale));
+      if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+      gl.viewport(0, 0, w, h); st.scale = +scale.toFixed(2);
+    };
+    size();
+    var FS = FS_BG.replace(/OCT/g, lite ? '2' : '4');
+    var pb = prog(VS_BG, FS), pp = prog(VS_PT, FS_PT);
+    var ub = locs(pb, ['uRes', 'uT', 'uS', 'uZoom', 'uStrike', 'uFlash', 'uRise', 'uPed', 'uForm', 'uShine', 'uOrb', 'uPush', 'uIgn', 'uSpark', 'uHasTex', 'uO', 'uPo', 'uTxt', 'uBolt', 'uBr', 'uTex']);
+    var up_ = locs(pp, ['uRes', 'uO', 'uPo', 'uT', 'uS', 'uZoom', 'uForm', 'uPush', 'uBurst', 'uPx']);
+    var quad = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    var aBg = gl.getAttribLocation(pb, 'a'), aT = gl.getAttribLocation(pp, 'aT'), aS = gl.getAttribLocation(pp, 'aS');
+    var B1 = bolt(7 + Math.floor(Math.random() * 1e6)), B2 = bolt(11 + Math.floor(Math.random() * 1e6));
+    var env = mode === 'full' ? envFull : envShort, len = LEN[mode];
+    var TXT = [-0.43, 0.135 - 0.1075, 0.86, 0.215];      // OLYMPUS on the frieze (centre 0.135): x, y, w, h in scene units
+    var tex = null, pbuf = null, nPts = 0;
+    var halfH = 0.5 * innerHeight / innerWidth, S = Math.min(1, halfH / 0.52);
+    var O = [0, -0.36 + 0.42 + 0.15 + 0.075];             // the orb, in the pediment
+    var coreAt = null;                                    // Jarvis's own core, in screen units (measured when the push starts)
+    var buildText = function (fontOk) {
+      if (tex || st.done) return;
+      try {
+        var T = textTex(fontOk);
+        tex = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, T.canvas);
+        var N = lite ? 900 : (root.getAttribute('data-fx') === 'ultra' ? 3600 : 2400), d = new Float32Array(N * 6), np = T.pts.length / 2;
+        for (var i = 0; i < N; i++) {
+          var j = Math.floor(Math.random() * np) * 2;
+          d[i * 6] = TXT[0] + T.pts[j] * TXT[2]; d[i * 6 + 1] = TXT[1] + T.pts[j + 1] * TXT[3];
+          d[i * 6 + 2] = Math.random(); d[i * 6 + 3] = Math.random(); d[i * 6 + 4] = Math.random(); d[i * 6 + 5] = Math.random();
+        }
+        pbuf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, pbuf); gl.bufferData(gl.ARRAY_BUFFER, d, gl.STATIC_DRAW);
+        nPts = np ? N : 0; st.n = nPts;
+      } catch (e) { tex = null; /* the intro still plays without the word */ }
+    };
+    // Orbitron is Jarvis's own font (saved by its worker): wait for it 300 ms at most, while the void plays
+    var fontT = setTimeout(function () { buildText(false); }, 300);
+    try {
+      if (doc.fonts && doc.fonts.load) doc.fonts.load('800 100px Orbitron').then(function (f) { clearTimeout(fontT); buildText(!!(f && f.length)); }, function () { /* the timer */ });
+    } catch (e) { /* the timer */ }
+    var last = 0, firstAt = 0, stepped = 0, revealed = false, sounded = false, frameMs = [];
+    var failAt = ls('jarvis.intro.fail');                // tests: 'init' | 'frame' make it fail on purpose
+    var frame = function () {
+      raf = 0;
+      if (st.done || !gl) return;
+      try {
+        if (failAt === 'frame' && st.frames > 3) throw new Error('test: a frame failed');
+        var tn = now(), t = HOLD >= 0 ? HOLD : (tn - t0) / 1000;
+        if (last) { var dt = tn - last; frameMs.push(dt); if (frameMs.length > 30) frameMs.shift(); }
+        last = tn; st.frames++;
+        // a phone that cannot keep up: step the resolution down (twice at most); one that still runs under 20 fps half a
+        // second in (the first frame, with the shader compile, not counted) cuts straight to the reveal: never a slideshow
+        if (st.frames === 2) firstAt = tn;
+        if (!revealed && cutOK && HOLD < 0 && st.frames > 2 && tn - firstAt > 450) {
+          var fpsNow = (st.frames - 2) * 1000 / (tn - firstAt);
+          st.fps = Math.round(fpsNow);
+          if (fpsNow < 20 && (stepped >= 2 || tn - firstAt > 900)) { revealed = true; st.slow = true; fadeOut(220, 'reveal'); }
+        }
+        if (frameMs.length >= 12 && st.frames % 12 === 0 && stepped < 2) {
+          var avg = frameMs.reduce(function (a, b) { return a + b; }, 0) / frameMs.length;
+          if (avg > 24) { scale = Math.max(Math.min(scale, 0.6), scale * 0.7); size(); stepped++; frameMs = []; }
+        }
+        var e = env(t);
+        if (!coreAt && e.push > 0) {
+          var c = doc.getElementById('core'), r = c && c.getBoundingClientRect();
+          coreAt = r && r.width > 20 && r.bottom > 0 && r.top < innerHeight
+            ? [((r.left + r.width / 2) - innerWidth / 2) / innerWidth, (innerHeight / 2 - (r.top + r.height / 2)) / innerWidth] : [0, 0.12];
+        }
+        var k = sm(cl((e.push - 0.15) / 0.85)), zoom = Math.exp(Math.pow(e.push, 2.2) * Math.log(16));
+        var po = [O[0] * S * (1 - k) + (coreAt ? coreAt[0] : 0) * k, O[1] * S * (1 - k) + (coreAt ? coreAt[1] : 0) * k];
+        if (!sounded && e.ign > 0) { sounded = true; whoom(1); }
+        gl.disable(gl.BLEND);
+        gl.useProgram(pb);
+        gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+        gl.enableVertexAttribArray(aBg); gl.vertexAttribPointer(aBg, 2, gl.FLOAT, false, 0, 0);
+        gl.uniform2f(ub.uRes, cv.width, cv.height); gl.uniform1f(ub.uT, t); gl.uniform1f(ub.uS, S); gl.uniform1f(ub.uZoom, zoom);
+        gl.uniform1f(ub.uStrike, e.strike); gl.uniform1f(ub.uFlash, e.flash); gl.uniform1f(ub.uRise, e.rise); gl.uniform1f(ub.uPed, e.ped);
+        gl.uniform1f(ub.uForm, e.form); gl.uniform1f(ub.uShine, e.shine); gl.uniform1f(ub.uOrb, e.orb); gl.uniform1f(ub.uPush, e.push);
+        gl.uniform1f(ub.uIgn, e.ign); gl.uniform1f(ub.uSpark, e.spark); gl.uniform1f(ub.uHasTex, tex ? 1 : 0);
+        gl.uniform2f(ub.uO, O[0], O[1]); gl.uniform2f(ub.uPo, po[0], po[1]); gl.uniform4f(ub.uTxt, TXT[0], TXT[1], TXT[2], TXT[3]);
+        var B = t > e.restrike ? B2 : B1;
+        gl.uniform2fv(ub.uBolt, B.a); gl.uniform2fv(ub.uBr, B.b);
+        if (tex) { gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex); gl.uniform1i(ub.uTex, 0); }
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        gl.disableVertexAttribArray(aBg);
+        if (nPts && e.push < 0.95) {
+          gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
+          gl.useProgram(pp);
+          gl.bindBuffer(gl.ARRAY_BUFFER, pbuf);
+          gl.enableVertexAttribArray(aT); gl.vertexAttribPointer(aT, 2, gl.FLOAT, false, 24, 0);
+          gl.enableVertexAttribArray(aS); gl.vertexAttribPointer(aS, 4, gl.FLOAT, false, 24, 8);
+          gl.uniform2f(up_.uRes, cv.width, cv.height); gl.uniform2f(up_.uO, O[0], O[1]); gl.uniform2f(up_.uPo, po[0], po[1]);
+          gl.uniform1f(up_.uT, t); gl.uniform1f(up_.uS, S); gl.uniform1f(up_.uZoom, zoom); gl.uniform1f(up_.uForm, e.form);
+          gl.uniform1f(up_.uPush, e.push); gl.uniform1f(up_.uBurst, e.burst); gl.uniform1f(up_.uPx, scale * 1.15);
+          gl.drawArrays(gl.POINTS, 0, nPts);
+          gl.disableVertexAttribArray(aT); gl.disableVertexAttribArray(aS);
+        }
+        if (!revealed && t >= e.reveal && HOLD < 0) { revealed = true; fadeOut(Math.round((len - e.reveal) * 1000), 'reveal'); }
+        if (t < len + 0.1 || HOLD >= 0) raf = requestAnimationFrame(frame);
+      } catch (err) { fail(err); }
+    };
+    W.addEventListener('resize', function () { if (!st.done && gl) { try { size(); } catch (e) { fail(e); } } });
+    raf = requestAnimationFrame(frame);
+    return true;
+  }
+
+  // ---------------------------------------------------------------- start
+  function start(mode, replay) {
+    t0 = now();
+    st.mode = mode; st.state = 'playing'; st.done = false; st.frames = 0; st.err = ''; ended = false;
+    if (ls('jarvis.intro.fail') === 'init') throw new Error('test: the intro failed to start');
+    var len = LEN[mode] || 0.5;
+    st.len = len;
+    root.setAttribute('data-intro', mode);
+    // the hard stops: the overlay's own CSS fade (index.html) and a timer, whatever happens here
+    el.style.animation = 'olyEnd .45s linear ' + (len + 0.6).toFixed(2) + 's forwards';
+    el.classList.add('run');
+    if (HOLD >= 0) { len = 60; el.style.animation = 'none'; }
+    killT = setTimeout(function () { finish('deadline'); }, Math.round((len + 1.2) * 1000));
+    el.addEventListener('pointerdown', skip);
+    el.addEventListener('click', skip);
+    W.addEventListener('pointerup', up, true); W.addEventListener('pointercancel', up, true);
+    doc.addEventListener('keydown', onKey, true);
+    doc.addEventListener('visibilitychange', onVis);
+    if (!replay) {
+      var sk = doc.createElement('small'); sk.className = 'oly-skip'; sk.textContent = 'TAP TO SKIP'; el.appendChild(sk);
+    }
+    if (mode === 'full' || mode === 'short') {
+      ls('jarvis.intro.run', '1');
+      if (mode === 'full') ls('jarvis.intro.day', dayKey());
+      var lite = root.getAttribute('data-fx') === 'low' || (navigator.hardwareConcurrency || 8) <= 2 || (navigator.deviceMemory && navigator.deviceMemory <= 2);
+      st.q = lite ? 'lite' : 'hi';
+      // WebGL is set up in the first frame: the black overlay paints first and the page's parsing is never held by it
+      requestAnimationFrame(function () {
+        try {
+          if (st.done || glRun(mode, lite)) return;
+          st.mode = 'fade'; st.len = LEN.fade;              // no WebGL here: the still version
+          el.style.animation = 'olyEnd .45s linear 1.4s forwards';
+          still('fade');
+        } catch (e) { fail(e); }
+      });
+      return;
+    }
+    still(mode);
+  }
+
+  function boot(mode, replay) {
+    try {
+      el = doc.getElementById('olyIntro');
+      if (!el || !mode) return;
+      // too late (the page took more than 0.65 s to get here: its own 0.7 s deadline is about to hide the overlay): no intro
+      if (!replay && HOLD < 0 && W.__olyT0 && Date.now() - W.__olyT0 > 650) { st.state = 'late'; finish('late'); return; }
+      start(mode, replay);
+    } catch (e) { fail(e); }
+  }
+
+  // a replay (the command palette: "Play the OLYMPUS intro"): a new overlay; the tap that asked for it lets the whoom play
+  W.__olyIntroPlay = function (mode) {
+    try {
+      if (el && el.parentNode && !st.done) return false;
+      gesture = true;
+      var o = doc.createElement('div'); o.className = 'oly'; o.id = 'olyIntro'; o.setAttribute('aria-hidden', 'true');
+      doc.body.appendChild(o);
+      root.setAttribute('data-intro', mode || 'full');
+      W.__olyIntro = st = { mode: '', q: '', state: 'idle', frames: 0, ms: 0, err: '', done: false, scale: 0, n: 0, fps: 0 };
+      gl = null; cv = null; holdUp = false;
+      boot(mode || 'full', true);
+      return true;
+    } catch (e) { fail(e); return false; }
+  };
+
+  st.at = W.__olyT0 ? Date.now() - W.__olyT0 : -1;
+  if (root.getAttribute('data-intro')) boot(root.getAttribute('data-intro'), false);
+  else { st.state = 'off'; st.done = true; }               // no intro this start: nothing may wait for one
+}());
+</script>
 <div class="bgfx" aria-hidden="true"><canvas id="stars"></canvas><svg class="bgglobe" id="bgglobe" viewBox="-130 -130 260 260"></svg><div class="floor"></div></div>
 <div class="scan" aria-hidden="true"></div>
 
@@ -121,6 +675,7 @@ window.addEventListener('error', function (e) {
           <text><textPath href="#arcBot" xlink:href="#arcBot" startOffset="50%" text-anchor="middle" id="hudBot">--:--:-- · STANDBY</textPath></text>
           <text class="vt" transform="translate(12 200) rotate(-90)" text-anchor="middle">JARVIS // CORE</text>
         </svg>
+        <div class="sats" id="sats" aria-hidden="true"></div>
       </div>
       </div>
       <div class="vbars" id="vbars" aria-hidden="true"></div>
@@ -138,6 +693,9 @@ window.addEventListener('error', function (e) {
       <div class="sugs" id="sugs"></div>
       <div class="talk" id="talk" aria-live="polite"></div>
       <div id="brainp"></div>
+      <div class="qa" id="qa" role="group" aria-label="Quick actions"></div>
+      <p class="sec-t">Today · timeline</p>
+      <section class="panel tl" id="p-today" aria-label="Today: the trading day and your plan"></section>
 
       <p class="sec-t">Olympus · System</p>
       <section class="panel sys" id="p-system" aria-label="System: every bot and app at a glance"></section>
@@ -216,6 +774,8 @@ window.addEventListener('error', function (e) {
     <h3>Extras</h3>
     <label class="row-t"><span>Sounds<small>Soft clicks and chimes</small></span><input type="checkbox" id="setSound"></label>
     <label class="row-t"><span>Calm motion<small>Follow the iPhone's reduce-motion setting (off: the core always moves)</small></span><input type="checkbox" id="setCalm"></label>
+    <label class="row-t"><span>OLYMPUS intro<small>The opening when Jarvis starts (full once a day, 1 s after that)</small></span><input type="checkbox" id="setIntro"></label>
+    <label class="row-t"><span>Haptics<small>A light tap you feel on buttons (iPhone: iOS 18 and later)</small></span><input type="checkbox" id="setHaptic"></label>
     <label class="row-t"><span>Tilt<small>The core leans with the phone (asks for motion access)</small></span><input type="checkbox" id="setTilt"></label>
     <div class="sheet-row"><button class="btn solid" type="button" id="lookX">Done</button></div>
   </div>
@@ -259,6 +819,8 @@ window.addEventListener('error', function (e) {
     if (m && why) m.textContent = why;
     b.hidden = false;
     var f = document.getElementById('bootfx'); if (f && f.parentNode) f.parentNode.removeChild(f);
+    var o = document.getElementById('olyIntro'); if (o && o.parentNode) o.parentNode.removeChild(o);   // the note is never under the intro
+    document.documentElement.removeAttribute('data-intro');
   }
   window.__jarvisRepair = function () {
     setU();
@@ -1200,7 +1762,10 @@ async function ask(text, voice = false) {
   if (!quiet && (voice || S.speakAll())) speak(r.speak || r.text, voice); else setState('idle');
   if (r.open) openSoon(r.route && typeof r.open === 'string' ? { id: r.open, route: r.route } : r.open);
 }
-const WN_VER = 'j6', WHATSNEW = [
+const WN_VER = 'j7', WHATSNEW = [
+  'The OLYMPUS entrance: lightning, a temple rising out of the clouds, and Jarvis\'s core igniting. Full once a day, 1 s after that; tap to skip. Replay it from search; turn it off under ⋯ → Theme.',
+  'Today\'s timeline under the mic: the trading day in ET (game plans, entries, NY open, bots flat) with your Planner events, and what is next counting down.',
+  'Quick actions (briefing, system, NQ bot, planner, Kalshi, search, hide $, look), the systems orbiting the core in their colours, and haptics.',
   'The whole system has a name: OLYMPUS. Jarvis, Zenith, the Planner, Kalshi and Ascend all live there.',
   'Every app is its own dashboard now: the Planner, Kalshi and the NQ bot open full screen in their own look, no Jarvis bar on top.',
   'The orb switches apps: tap it for all apps, swipe it for the next one, hold it for the ring.',
@@ -1369,6 +1934,7 @@ function toast(text, label = 'INFO', action) {
 function paletteItems() {
   const items = apps().map((a) => ({ label: `Open ${a.name}`, tag: 'mode', run: () => show(a.id) }));
   items.push({ label: 'Briefing', tag: 'jarvis', run: () => briefing() }, { label: "What's new", tag: 'jarvis', run: () => whatsNew() });
+  items.push({ label: 'Play the OLYMPUS intro', tag: 'look', run: () => playIntro() }, { label: "Today's timeline", tag: 'jarvis', run: () => showToday() });
   for (const t of THEMES) items.push({ label: `Theme: ${t[1]}`, tag: 'look', run: () => setTheme(t[0]) });
   for (const c of CORE_DESIGNS) items.push({ label: `Core: ${c[1]}`, tag: 'look', run: () => setCoreDesign(c[0]) });
   for (const l of ['ultra', 'high', 'low', 'off']) items.push({ label: `3D effects: ${l}`, tag: 'look', run: () => setFx(l) });
@@ -1526,6 +2092,7 @@ function renderLook() {
   $('#coreSeg').innerHTML = CORE_DESIGNS.map(([k, n]) => `<button type="button" data-core-k="${k}" aria-pressed="${coreDesign() === k}">${esc(n)}</button>`).join('');
   $('#hue').value = String(+(D.LS.get('jcustom', { h: 275 }) || {}).h || 275);
   $('#setSound').checked = S.sound(); $('#setTilt').checked = S.tilt(); $('#setCalm').checked = S.calm();
+  $('#setIntro').checked = raw('jarvis.intro') !== 'off'; $('#setHaptic').checked = hapticOn();
   $('#fxNote').textContent = root.dataset.fxAuto ? 'Jarvis lowered the effects to keep this phone smooth. Pick a level to override.' : 'High is the phone default. Low keeps the glass and stops the motion; Off is fully static.';
 }
 function openLook() { closeSheets(); closeMore(); $('#look').hidden = false; renderLook(); }
@@ -1655,6 +2222,19 @@ function readColors() { const cs = getComputedStyle(root); COL = { cr: cs.getPro
 // ------------------------------------------------------------------ the boot screen (once per launch, at most 1.2 s, tap to skip)
 function boot() {
   const el = $('#bootfx');
+  // the OLYMPUS intro (the olympus-intro script) plays instead of the boot log. The 3D core waits for its end (its first frames
+  // would hold the intro up), 4.5 s at most; when the intro is not running (it ended, failed or never got going) nothing waits.
+  if (root.hasAttribute('data-intro')) {
+    if (el) el.remove();
+    try { sessionStorage.setItem('jarvis.booted', '1'); } catch (_) { /* private mode */ }
+    const it = window.__olyIntro;
+    if (it && !it.done) { window.addEventListener('oly:intro-end', () => bootEnd(), { once: true }); setTimeout(bootEnd, 4500); }
+    else {
+      bootEnd();
+      if (!it) { const o = $('#olyIntro'); if (o) o.remove(); root.removeAttribute('data-intro'); }   // its script never ran
+    }
+    return;
+  }
   if (!el) { bootEnd(); return; }
   const quick = root.classList.contains('booted') || root.dataset.fx === 'off' || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches && !root.dataset.fxSet);
   try { sessionStorage.setItem('jarvis.booted', '1'); } catch (_) { /* private mode */ }
@@ -1670,6 +2250,135 @@ function boot() {
   step();
   setTimeout(end, 1200 - 360);                          // never longer than 1.2 s with the fade
 }
+
+// ------------------------------------------------------------------ OLYMPUS home (2026-11-03): quick actions, today's timeline, the core's
+// satellites, haptics and micro-animations (docs/JARVIS_COMPARISON.md: what the best hub apps have that Jarvis lacked). Each part
+// is drawn on its own (safe): one that breaks never touches the rest of the screen. Read-only, like everything here.
+const hapticOn = () => raw('jarvis.haptics') !== 'off';
+let hapT = 0, hapL = null;
+function haptic() {                                    // Android: vibrate; iPhone (iOS 18+): a hidden switch's toggle is the one web haptic
+  if (!hapticOn()) return;
+  const t = Date.now(); if (t - hapT < 70) return; hapT = t;
+  try { if (navigator.vibrate) { navigator.vibrate(8); return; } } catch (_) { /* not here */ }
+  safe(() => {
+    if (!hapL) {
+      hapL = document.createElement('label'); hapL.setAttribute('aria-hidden', 'true'); hapL.className = 'hapl';
+      const i = document.createElement('input'); i.type = 'checkbox'; i.setAttribute('switch', ''); i.tabIndex = -1; hapL.appendChild(i);
+      document.body.appendChild(hapL);
+    }
+    hapL.click();
+  });
+}
+document.addEventListener('click', (e) => {
+  const b = e.target && e.target.closest && e.target.closest('#home button, #home [role=button], .dock button, .tl-row, .nextchip, .fab');
+  if (b) haptic();
+}, { capture: true, passive: true });
+const ICO = {
+  brief: '<path d="M4 18h16M7 14a5 5 0 0 1 10 0M12 4v3M5 8l2 2M19 8l-2 2"/>',
+  system: '<path d="M3 12h4l2-5 4 10 2-5h6"/>',
+  zenith: '<path d="M7 4v16M17 4v16"/><rect x="5" y="8" width="4" height="7" rx="1"/><rect x="15" y="6" width="4" height="9" rx="1"/>',
+  planner: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+  kalshi: '<path d="M4 17l5-5 4 3 7-8"/><path d="M15 7h5v5"/>',
+  search: '<circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/>',
+  hide: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  look: '<path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/>',
+};
+const QA = () => [
+  ['brief', 'Briefing', () => briefing()], ['system', 'System', () => showSystem()], ['zenith', 'NQ bot', () => show('zenith')],
+  ['planner', 'Planner', () => show('planner')], ['kalshi', 'Kalshi', () => show('kalshi')], ['search', 'Search', () => openPalette()],
+  ['hide', S.hideMoney() ? 'Show $' : 'Hide $', () => { moreKey('hide'); setTimeout(() => safe(renderQA), 60); }], ['look', 'Look', () => openLook()],
+];
+function renderQA() {
+  $('#qa').innerHTML = QA().map(([k, label]) => `<button class="qa-t" type="button" data-qa="${k}" aria-label="${esc(label)}">`
+    + `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[k]}</svg><span>${esc(label)}</span></button>`).join('');
+}
+$('#qa').addEventListener('click', (e) => { const b = e.target.closest('[data-qa]'); if (!b) return; const a = QA().find((x) => x[0] === b.dataset.qa); if (a) safe(a[2]); });
+
+// today's timeline: the trading day (ET) as the bots live it, with the Planner's events; the next one counts down
+const TL_DAY = [
+  [105, 'Game plan', 'Mind · the overnight plan'], [120, 'Entries open', 'Zlarior hunts until 3:30 PM'], [570, 'NY open', 'Regular session'],
+  [645, 'Game plan', 'Mind · the midday update'], [930, 'Last entry', 'No new trades after 3:30 PM'], [955, 'Bots flat', 'Every position closed'],
+  [960, 'RTH close', 'Regular session ends'],
+];
+const tlHM = (m) => D.hm(`${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`);
+const tlIn = (n) => (n >= 60 ? `in ${Math.floor(n / 60)} h ${String(n % 60).padStart(2, '0')} min` : `in ${Math.max(1, n)} min`);
+function todayItems(d = new Date()) {
+  const { wd, h, m } = D.etParts(d), items = [];
+  const weekday = !['Sat', 'Sun'].includes(wd);
+  if (weekday) {
+    for (const [at, title, sub] of TL_DAY) items.push({ m: at, title, sub, app: 'zenith', kind: 'mkt' });
+    items.push(wd === 'Fri' ? { m: 1020, title: 'Weekend close', sub: 'NQ closes until Sunday 6 PM', app: 'zenith', kind: 'mkt' }
+      : { m: 1020, title: 'Daily halt', sub: 'CME pause 5 – 6 PM', app: 'zenith', kind: 'mkt' });
+    if (wd !== 'Fri') items.push({ m: 1080, title: 'Globex opens', sub: 'The overnight session', app: 'zenith', kind: 'mkt' });
+  } else if (wd === 'Sun') items.push({ m: 1080, title: 'Globex opens', sub: 'The trading week starts', app: 'zenith', kind: 'mkt' });
+  const p = safe(() => D.plannerDay(d));
+  for (const e of (p && p.ev) || []) {
+    const st = String(e.start || ''), mm = /^\d{1,2}:\d{2}/.test(st) ? +st.split(':')[0] * 60 + +st.split(':')[1] : -1;
+    items.push({ m: e.allDay || mm < 0 ? -1 : mm, title: String(e.title || 'Event'), sub: e.allDay || mm < 0 ? 'All day · Planner' : 'Planner', app: 'planner', kind: 'plan' });
+  }
+  items.sort((a, b) => a.m - b.m || (a.kind === 'plan' ? -1 : 1));
+  return { items, now: h * 60 + m, weekday, tasks: ((p && p.tasks) || []).length };
+}
+function renderToday() {
+  const box = $('#p-today'); if (!box) return;
+  const T = todayItems(), nowM = T.now, next = T.items.find((x) => x.m > nowM);
+  // the day bar: 24 h, the overnight / RTH sessions, the bots' entry window, the halt, your events, now
+  const pc = (m) => (m / 14.4).toFixed(2) + '%';
+  const bar = `<div class="tl-bar" aria-hidden="true">${T.weekday ? `<i class="tl-s on" style="left:0;width:${pc(1020)}"></i><i class="tl-s rth" style="left:${pc(570)};width:${pc(390)}"></i>`
+    + `<i class="tl-s win" style="left:${pc(120)};width:${pc(810)}"></i><i class="tl-s on" style="left:${pc(1080)};width:${pc(360)}"></i>` : ''}`
+    + T.items.filter((x) => x.kind === 'plan' && x.m >= 0).map((x) => `<b class="tl-ev" style="left:${pc(x.m)}"></b>`).join('')
+    + `<em class="tl-now" style="left:${pc(nowM)}"></em></div><div class="tl-ax" aria-hidden="true"><span>12A</span><span>6A</span><span>12P</span><span>6P</span><span>12A</span></div>`;
+  // the list: all-day items first, then two done items, what is next and after (8 rows at most; the day's last 8 once it is over)
+  const allDay = T.items.filter((x) => x.m < 0).slice(0, 3), timed = T.items.filter((x) => x.m >= 0);
+  const keep = 8 - allDay.length, ni = next ? timed.indexOf(next) : timed.length;
+  const from = Math.max(0, Math.min(ni - 2, timed.length - keep));
+  const rows = allDay.concat(timed.slice(from, from + keep));
+  const row = (x) => {
+    const past = x.m >= 0 && x.m <= nowM, isNext = x === next;
+    return `<button class="tl-row ${x.kind}${past ? ' past' : ''}${isNext ? ' next' : ''}" type="button" data-app="${esc(x.app)}">`
+      + `<b class="m">${x.m < 0 ? 'ALL DAY' : esc(tlHM(x.m))}</b><i class="tl-dot"></i><span><strong>${esc(x.title)}</strong><small>${esc(x.sub)}</small></span>`
+      + `<em>${isNext ? esc(tlIn(x.m - nowM)) : past ? 'done' : ''}</em></button>`;
+  };
+  const head = next ? `<b>NEXT</b> ${esc(next.title)} · ${esc(tlIn(next.m - nowM))}` : T.weekday ? 'The trading day is done' : 'Weekend: NQ is closed';
+  box.innerHTML = `<p class="ph"><span class="t">Today · ET</span><span class="badge ${next ? 'ok' : ''}">${esc(D.clock())}</span></p><p class="tl-head">${head}</p>${bar}`
+    + `<div class="tl-list">${rows.map(row).join('') || '<p class="muted">Nothing on today.</p>'}</div>`
+    + (T.tasks ? `<button class="tl-row plan" type="button" data-app="planner"><b class="m">TO-DO</b><i class="tl-dot"></i><span><strong>${T.tasks} open task${T.tasks > 1 ? 's' : ''}</strong><small>Planner</small></span><em></em></button>` : '');
+}
+function showToday() {
+  if (active !== 'home') show('home');
+  setTimeout(() => { const p = $('#p-today'); if (p) safe(() => p.scrollIntoView({ block: 'start', behavior: calmScroll() ? 'auto' : 'smooth' })); }, 60);
+}
+
+// the core's satellites: one per system, coloured by its verdict, orbiting the core (CSS only); a tap opens the System panel.
+// A pulse leaves the core when fresh numbers arrive.
+function renderSats() {
+  const rows = sysOf().rows || [], n = rows.length || 1;
+  $('#sats').innerHTML = rows.map((r, i) => `<button type="button" tabindex="-1" class="sat ${esc(r.level || 'off')}" style="--a:${(360 * i / n - 90).toFixed(1)}deg" data-sat="${esc(r.id)}" title="${esc(r.name)}"><i>${esc(SYS_SHORT[r.id] || String(r.name || '?').charAt(0))}</i></button>`).join('');
+}
+$('#sats').addEventListener('click', (e) => { const b = e.target.closest('[data-sat]'); if (!b) return; e.stopPropagation(); showSystem(); });
+function corePulse() {
+  if (active !== 'home' || !visible() || (root.dataset.fx !== 'high' && root.dataset.fx !== 'ultra')) return;
+  const st = $('#stage'); if (!st || st.querySelector('.cpulse')) return;
+  const w = document.createElement('i'); w.className = 'cpulse'; w.setAttribute('aria-hidden', 'true'); st.appendChild(w); setTimeout(() => w.remove(), 1300);
+}
+// a number that changes glows once (KALSHI TODAY, NQ BOTS TODAY)
+if ('MutationObserver' in window) {
+  for (const id of ['#npnl', '#kpct']) {
+    const el = $(id); let was = el ? el.textContent : '';
+    if (el) new MutationObserver(() => { if (el.textContent !== was && was !== '--') { el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick'); } was = el.textContent; }).observe(el, { childList: true, characterData: true, subtree: true });
+  }
+}
+function renderOlympus() { safe(renderQA); safe(renderToday); safe(renderSats); }
+D.onChange(({ source }) => { if (active !== 'home') return; if (source === 'live' || source === 'kalshi' || source === 'planner') { renderOlympus(); if (source === 'live') corePulse(); } });
+setInterval(() => { if (visible() && active === 'home') { safe(renderToday); safe(renderSats); } }, 30e3);
+document.addEventListener('visibilitychange', () => { if (visible() && active === 'home') renderOlympus(); });
+$('#setIntro').addEventListener('change', () => rawSet('jarvis.intro', $('#setIntro').checked ? null : 'off'));
+$('#setHaptic').addEventListener('change', () => { rawSet('jarvis.haptics', $('#setHaptic').checked ? null : 'off'); haptic(); });
+function playIntro() {                                 // the command palette: replay the OLYMPUS opening, any time
+  if (window.__olyIntroPlay && window.__olyIntroPlay(root.dataset.fx === 'off' ? 'off' : 'full')) return;
+  toast('The OLYMPUS intro is not loaded right now. It plays at the next start.', 'OLYMPUS');
+}
+renderOlympus();
 
 // ------------------------------------------------------------------ apps.js, when it is here: its list, its cards, cards posted by open apps
 ready.apps.then((m) => {

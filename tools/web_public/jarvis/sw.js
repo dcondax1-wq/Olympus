@@ -28,14 +28,16 @@
 // v9 (2026-11-02, every dashboard its own): jarvis.css?v=j6 (Jarvis's bar on the Jarvis screen only), a fresh index.html.
 // v10 (2026-11-02, MFFU 7-day count): a fresh data.js (the System view warns from day 5 without a trade), apps.js (theme).
 // v11 (2026-11-03, the name OLYMPUS): jarvis.css?v=j7, switcher.js (its header), index.html.
-const CACHE = 'jarvis-v11';
-const OLD = ['jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];
+// v12 (2026-11-03, the OLYMPUS entrance): index.html (the opening is inline in the page: nothing more to fetch), jarvis.css?v=j8
+// (quick actions, today's timeline, the core's satellites).
+const CACHE = 'jarvis-v12';
+const OLD = ['jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];
 const NAV_WAIT_MS = 3500;
 const NET_MAX_MS = 9000;
 const SHELL = ['./', './index.html', './manifest.webmanifest?v=j2', './apple-touch-icon.png?v=j2', './icon-192.png?v=j2', './icon-512.png?v=j2',
-  './jarvis.css?v=j7', './data.js', './brain.js', './core-visual.js', './apps.js', './zenith-mode.js', './switcher.js',
+  './jarvis.css?v=j8', './data.js', './brain.js', './core-visual.js', './apps.js', './zenith-mode.js', './switcher.js',
   './three.module.min.js', './orbitron.woff2', './rajdhani-400.woff2', './rajdhani-500.woff2', './rajdhani-600.woff2', './rajdhani-700.woff2'];
-const CORE = ['./index.html', './jarvis.css?v=j7', './data.js'];
+const CORE = ['./index.html', './jarvis.css?v=j8', './data.js'];
 const STATIC_RX = /\.(woff2|png|svg|jpg|webp|webmanifest)$/i;
 // how each page was answered ('cache' | 'net'), by its client id; lastNav when the browser gives no client ids
 const navFrom = new Map();
