@@ -79,6 +79,8 @@ export const BUILT_INS = Object.freeze([
   app('prometheus', 'Prometheus', 'trading', '#ff7a1a', 'The Forge: strategies tested', { glyph: '\u03a0' }),
   app('pantheon', 'Pantheon', 'trading', '#f2d68a', 'The data gods: rates, liquidity, fear', { glyph: '\u03a3' }),
   app('ares', 'Ares', 'trading', '#ff3b30', 'The war room: GO, WAIT or HALT', { glyph: '\u039b' }),
+  app('forum', 'Forum', 'trading', '#b8e04a', 'Morning briefing at the real NY hour', { glyph: '\u0393' }),
+  app('labyrinth', 'Labyrinth', 'trading', '#ff4d57', 'The risk maze: size your eval', { glyph: '\u039e' }),
   app('planner', 'Planner', 'life', '#60a5fa', 'Calendar, tasks and projects', { icon: '../planner/icon-192.png', live: false }),
   app('mind', 'Mind', 'life', '#5eead4', 'Your vault as a living 3D brain', { glyph: '\u03a9' }),
   app('arena', 'Arena', 'life', '#ffb547', 'Olympian ranks: XP for discipline', { glyph: '\u0391' }),
