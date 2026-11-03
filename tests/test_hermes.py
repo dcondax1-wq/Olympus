@@ -173,7 +173,7 @@ def part_c():
     check("c. the committed jarvis.json is the demo card", json.load(open(os.path.join(PAGE, "jarvis.json"), encoding="utf-8")) == wrapped.jarvis_card(build.demo()))
     b = open(os.path.join(ROOT, "tools", "build_web_dashboard.py"), encoding="utf-8").read()
     check("c. the site build publishes hermes/ with the other apps",
-          'for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes"):' in b)
+          bool(re.search(r'for app in \([^)]*"hermes"[^)]*\):', b)))
     m = re.search(r"\n(\s*)try:\n\s*from tools\.hermes import build as _hermes\n\s*print\(\"  hermes:\", _hermes\.publish\(out\)\)\n\s*except Exception", b)
     check("c. the site build runs hermes.publish(out) inside try / except (a failure never stops the publish)", bool(m))
     check("c. the builder never imports trading code and never reads live_model*.json",
