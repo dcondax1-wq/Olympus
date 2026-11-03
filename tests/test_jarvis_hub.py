@@ -1487,6 +1487,10 @@ def part_intro_files():
     logo = os.path.join(JV, "intro-logo.webp")
     sw = open(os.path.join(JV, "sw.js"), encoding="utf-8").read()
     head = open(logo, "rb").read(12) if os.path.exists(logo) else b""
+    swr = open(os.path.join(JV, "sw.js"), encoding="utf-8").read()
+    ren = ["../olympus/render.js", "../olympus/materials.js"] + ["../olympus/three-addons/%s.js" % n for n in ("EffectComposer", "RenderPass", "ShaderPass", "MaskPass", "Pass", "CopyShader", "UnrealBloomPass", "LuminosityHighPassShader", "RoomEnvironment")]
+    check("o. the render core (render.js, materials.js, the nine three-addons) is in the worker's SHELL and on disk, so the 3D backdrop and core work offline",
+          all(f"'{f}'" in swr and os.path.exists(os.path.normpath(os.path.join(JV, f))) for f in ren), [f for f in ren if f"'{f}'" not in swr])
     check("o. the logo texture ships next to the page (WebP, 1024 x 512 = ring | peaks, under 60 KB), is in the worker's SHELL and is preloaded by the start script",
           head[:4] == b"RIFF" and head[8:12] == b"WEBP" and os.path.getsize(logo) < 60_000 and "'./intro-logo.webp'" in sw and "pl.href = 'intro-logo.webp'" in page,
           os.path.getsize(logo) if os.path.exists(logo) else None)
