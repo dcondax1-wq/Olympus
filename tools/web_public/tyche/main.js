@@ -44,6 +44,7 @@ let scene = null;
 try {
   scene = new FortuneScene(THREE, document.getElementById('gl'), { quality: state.quality, reduced });
   O?.track(scene.renderer);
+  O?.themeScene?.({ scene: scene.scene, renderer: scene.renderer });   // OLYMPUS theme: fog + sky follow it
 } catch (e) {
   document.getElementById('nogl').hidden = false;
   O?.ready();                                  // the numbers above still update: the page is up

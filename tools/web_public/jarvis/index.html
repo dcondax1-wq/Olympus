@@ -22,6 +22,15 @@
   var d = document.documentElement, g = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
   var s = function (k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* private mode */ } };
   d.setAttribute('data-theme', g('jtheme') || 'reactor');
+  // the OLYMPUS theme (../olympus/themes.js, key 'olympus.theme'): its colours from the first paint, from the copy the theme engine
+  // keeps of what it painted ('olympus.theme.paint'); the engine loads after the start (async, never waited on) and repaints
+  try {
+    var ot = g('olympus.theme'), op = JSON.parse(g('olympus.theme.paint') || 'null'), on = [];
+    if (ot && ot !== 'olympus' && op && op.id === ot && op.vars) {
+      for (var vk in op.vars) { d.style.setProperty(vk, op.vars[vk]); on.push(vk); }
+      d.setAttribute('data-oly-theme', ot); d.setAttribute('data-oly-scheme', op.scheme === 'light' ? 'light' : 'dark'); window.__olyPaint = on;
+    }
+  } catch (e) { /* the default look */ }
   var fx = g('jfx');
   if (fx === 'ultra' || fx === 'high' || fx === 'low' || fx === 'off') { d.setAttribute('data-fx', fx); d.setAttribute('data-fx-set', '1'); }
   else d.setAttribute('data-fx', window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches ? 'low' : 'high');
@@ -77,6 +86,7 @@ window.addEventListener('error', function (e) {
 }, true);
 </script>
 <link rel="stylesheet" id="jcss" href="jarvis.css?v=j11">
+<script src="../olympus/themes.js?v=o2" id="olyThemesJs" async></script>
 <style>.booted #bootfx{display:none}
 /* the start note works without jarvis.css (the stylesheet may be what did not arrive) */
 [hidden]{display:none!important}
@@ -765,7 +775,10 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
 <div class="sheet" id="look" hidden role="dialog" aria-modal="true" aria-labelledby="lookT">
   <div class="sheet-in">
     <h2 id="lookT">Look</h2>
-    <h3>Theme</h3>
+    <h3>OLYMPUS theme</h3>
+    <div class="othemes" id="olyThemes" role="group" aria-label="OLYMPUS theme: Jarvis and every app"></div>
+    <p class="note" id="olyNote">The whole system: Jarvis now, and each app the next time it opens.</p>
+    <h3>Jarvis colour</h3>
     <div class="themes" id="themes"></div>
     <label>Custom hue<input id="hue" type="range" min="0" max="359" step="1" value="275"></label>
     <h3>3D effects</h3>
@@ -774,6 +787,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     <h3>Core</h3>
     <div class="seg3" id="coreSeg"></div>
     <h3>Extras</h3>
+    <label class="row-t"><span>Scanlines<small>Fine scanlines and film grain over Jarvis and every app</small></span><input type="checkbox" id="setGrain"></label>
     <label class="row-t"><span>Sounds<small>Soft clicks and chimes</small></span><input type="checkbox" id="setSound"></label>
     <label class="row-t"><span>Calm motion<small>Follow the iPhone's reduce-motion setting (off: the core always moves)</small></span><input type="checkbox" id="setCalm"></label>
     <label class="row-t"><span>OLYMPUS intro<small>The opening when Jarvis starts (full once a day, 1 s after that)</small></span><input type="checkbox" id="setIntro"></label>
@@ -944,6 +958,7 @@ function hsl2rgb(h, s, l) {
 }
 function applyCustom() {
   const st = root.style, props = ['--c', '--c2', '--c3', '--cr', '--cr2', '--cr3', '--tint', '--neb1', '--neb2', '--neb3', '--dim2', '--dim3'];
+  if (olyOn()) return;                                       // an OLYMPUS theme owns the colours (themes.js painted them)
   if (root.dataset.theme !== 'custom') { for (const p of props) st.removeProperty(p); return; }
   const h = +(D.LS.get('jcustom', { h: 275 }) || {}).h || 275, c = hsl2rgb(h, 85, 62), c2 = hsl2rgb(h, 70, 46), c3 = hsl2rgb((h + 25) % 360, 90, 78);
   const rgb = (x) => x.join(','), hex = (x) => '#' + x.map((v) => v.toString(16).padStart(2, '0')).join('');
@@ -951,8 +966,37 @@ function applyCustom() {
   st.setProperty('--cr3', rgb(hsl2rgb(h, 90, 88))); st.setProperty('--tint', hex(hsl2rgb(h, 90, 92))); st.setProperty('--neb1', rgb(c2)); st.setProperty('--neb2', rgb(hsl2rgb((h + 40) % 360, 70, 50)));
   st.setProperty('--neb3', rgb(c3)); st.setProperty('--dim2', hex(hsl2rgb(h, 35, 25))); st.setProperty('--dim3', hex(hsl2rgb(h, 45, 36)));
 }
+// ------------------------------------------------------------------ the OLYMPUS theme (../olympus/themes.js: the themes are data there)
+// One key for the whole system, 'olympus.theme'. The default ('olympus') leaves Jarvis's own colour (jtheme) as it is; any other
+// theme paints Jarvis's palette too. The engine loads async: until it is here, the <head> copy painted the same colours.
+const TH = () => window.OLYMPUS_THEMES || null;
+const olyId = () => (TH() ? TH().id() : root.dataset.olyTheme || 'olympus');
+const olyOn = () => olyId() !== 'olympus';
+function olyRefresh() {
+  readColors();
+  if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme()));
+  if (active === 'home') setTint(homeTint());
+  window.dispatchEvent(new Event('jtheme'));
+  renderLook();
+}
+function setOlyTheme(id) {
+  const t = TH();
+  if (!t) { toast('The OLYMPUS themes are still loading. Try again in a second.', 'OLYMPUS'); return; }
+  t.set(id);                                                 // the engine repaints, then tells olyStart's listener below
+  sfx('tap');
+}
+function olyStart() {
+  const t = TH();
+  if (!t) return false;
+  t.apply('page', { jarvis: true, cache: true });
+  t.on(() => { applyCustom(); olyRefresh(); });            // a new theme (here or in another tab); back on the default, Custom returns
+  safe(applyCustom); olyRefresh();
+  return true;
+}
+const homeTint = () => (olyOn() && TH() ? TH().tokens(olyId(), 'page').themeColor : '#000000');
 function setTheme(k) {
   if (!THEMES.find((t) => t[0] === k)) k = 'reactor';
+  if (olyOn() && TH()) TH().set('olympus');                 // a Jarvis colour is a colour of the default OLYMPUS theme
   root.dataset.theme = k; rawSet('jtheme', k); applyCustom();
   readColors();
   if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme()));
@@ -1103,7 +1147,7 @@ function show(id, opts = {}) {
   $('#home').hidden = a.id !== 'home';
   for (const k of Object.keys(frames)) frames[k].hidden = k !== a.id;
   if (a.id !== 'zenith') hideZen(a.id !== 'home');
-  if (a.id === 'home') setTint('#000000'); else if (a.id !== 'zenith') setTint(tintOf(a.id));
+  if (a.id === 'home') setTint(homeTint()); else if (a.id !== 'zenith') setTint(tintOf(a.id));
   if (a.id === 'home') { refreshHome(); if (!listening && !speaking) setState('idle'); }
   else { stopListening(); closeMore(); if (a.id === 'zenith') showZenith(a, opts.route, seq); else frameView(a, opts.url); }
   renderBar();
@@ -1179,7 +1223,7 @@ function setCoreDesign(d) {
 function themeColors() { const cs = getComputedStyle(root), g = (k) => cs.getPropertyValue(k).trim(); return { c: g('--c'), c2: g('--c2'), c3: g('--c3'), tint: g('--tint') }; }
 // the core knows the old theme keys (eclipse, reactor, reactor-stark / -ice / -emerald); any other theme passes its colours
 const CORE_KEYS = ['eclipse', 'reactor', 'reactor-stark', 'reactor-ice', 'reactor-emerald'];
-const coreTheme = () => (CORE_KEYS.includes(root.dataset.theme) ? root.dataset.theme : themeColors());
+const coreTheme = () => (CORE_KEYS.includes(root.dataset.theme) && !olyOn() ? root.dataset.theme : themeColors());
 let coreSize = 0;
 function mountCore3d() {
   const m = mods.core;
@@ -2017,6 +2061,7 @@ function paletteItems() {
   items.push({ label: 'Briefing', tag: 'jarvis', run: () => briefing() }, { label: "What's new", tag: 'jarvis', run: () => whatsNew() });
   items.push({ label: 'Play the OLYMPUS intro', tag: 'look', run: () => playIntro() }, { label: "Today's timeline", tag: 'jarvis', run: () => showToday() });
   for (const t of THEMES) items.push({ label: `Theme: ${t[1]}`, tag: 'look', run: () => setTheme(t[0]) });
+  if (TH()) for (const t of TH().list()) items.push({ label: `OLYMPUS theme: ${t.name}`, tag: 'look', run: () => setOlyTheme(t.id) });
   for (const c of CORE_DESIGNS) items.push({ label: `Core: ${c[1]}`, tag: 'look', run: () => setCoreDesign(c[0]) });
   for (const l of ['ultra', 'high', 'low', 'off']) items.push({ label: `3D effects: ${l}`, tag: 'look', run: () => setFx(l) });
   items.push({ label: 'Voice mode · talk full screen', tag: 'voice', run: () => voiceMode(true) }, { label: 'Voice settings', tag: 'voice', run: () => openVoice() }, { label: 'AI key · smart mode', tag: 'brain', run: () => openSettings() },
@@ -2166,9 +2211,24 @@ $('#setF').addEventListener('submit', (e) => {
   $('#settings').hidden = true;
   renderBrainPanel(); renderMore();
 });
+// the OLYMPUS theme tiles: a live mini scene in each theme's own colours (its sky, a turning ring, the glowing core, a scan line)
+function olyTiles() {
+  const t = TH(), cur = olyId();
+  if (!t) return '<p class="note">Loading the OLYMPUS themes…</p>';
+  return t.list().map((th) => {
+    const k = th.tokens, v = `--ta:${k.accent};--tb:${k.accent2};--tg:${k.glow};--tbg:${k.bg};--tbg2:${k.bg2};--ttx:${k.text};--tdim:${k.dim};--tline:${k.line}`;
+    return `<button class="oth" type="button" data-oly-k="${esc(th.id)}" data-scheme="${esc(th.scheme)}" aria-pressed="${cur === th.id}" style="${v}">`
+      + `<span class="oth-sw" aria-hidden="true"><i class="r"></i><i class="o"></i><i class="s"></i></span>`
+      + `<b>${esc(th.name)}</b><small>${esc(th.greek)}</small><em>${esc(th.tag)}</em></button>`;
+  }).join('');
+}
 function renderLook() {
   if ($('#look').hidden) return;
-  $('#themes').innerHTML = THEMES.map(([k, n, tag, a, b]) => `<button class="th" type="button" data-theme-k="${k}" aria-pressed="${root.dataset.theme === k}"><i style="background:${k === 'custom' ? 'conic-gradient(#f43f5e,#f59e0b,#22c55e,#06b6d4,#6366f1,#d946ef,#f43f5e)' : `radial-gradient(circle at 40% 38%, #fff 0 8%, ${a} 26%, ${b} 62%, #000 100%)`}"></i>${esc(n)}<small>${esc(tag)}</small></button>`).join('');
+  $('#olyThemes').innerHTML = olyTiles();
+  $('#setGrain').checked = !!(TH() && TH().grain());
+  $('#olyNote').textContent = olyOn() ? `${(TH() && TH().get(olyId()).name) || 'This theme'} colours Jarvis and every app. Jarvis colour below goes back to the OLYMPUS default.`
+    : 'The whole system: Jarvis now, and each app the next time it opens. Jarvis colour below tunes the default.';
+  $('#themes').innerHTML = THEMES.map(([k, n, tag, a, b]) => `<button class="th" type="button" data-theme-k="${k}" aria-pressed="${!olyOn() && root.dataset.theme === k}"><i style="background:${k === 'custom' ? 'conic-gradient(#f43f5e,#f59e0b,#22c55e,#06b6d4,#6366f1,#d946ef,#f43f5e)' : `radial-gradient(circle at 40% 38%, #fff 0 8%, ${a} 26%, ${b} 62%, #000 100%)`}"></i>${esc(n)}<small>${esc(tag)}</small></button>`).join('');
   for (const b of $('#fxSeg').children) b.setAttribute('aria-pressed', String(b.dataset.fx === root.dataset.fx));
   $('#coreSeg').innerHTML = CORE_DESIGNS.map(([k, n]) => `<button type="button" data-core-k="${k}" aria-pressed="${coreDesign() === k}">${esc(n)}</button>`).join('');
   $('#hue').value = String(+(D.LS.get('jcustom', { h: 275 }) || {}).h || 275);
@@ -2179,6 +2239,8 @@ function renderLook() {
 function openLook() { closeSheets(); closeMore(); $('#look').hidden = false; renderLook(); }
 $('#lookX').addEventListener('click', () => { $('#look').hidden = true; });
 $('#themes').addEventListener('click', (e) => { const b = e.target.closest('[data-theme-k]'); if (b) setTheme(b.dataset.themeK); });
+$('#olyThemes').addEventListener('click', (e) => { const b = e.target.closest('[data-oly-k]'); if (b) setOlyTheme(b.dataset.olyK); });
+$('#setGrain').addEventListener('change', () => { if (TH()) TH().grain($('#setGrain').checked); });
 $('#fxSeg').addEventListener('click', (e) => { const b = e.target.closest('[data-fx]'); if (b) setFx(b.dataset.fx); });
 $('#coreSeg').addEventListener('click', (e) => { const b = e.target.closest('[data-core-k]'); if (b) setCoreDesign(b.dataset.coreK); });
 $('#hue').addEventListener('input', () => { D.LS.set('jcustom', { h: +$('#hue').value }); if (root.dataset.theme !== 'custom') setTheme('custom'); else { applyCustom(); readColors(); if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme())); } });
@@ -2527,6 +2589,8 @@ if ('serviceWorker' in navigator) safe(() => navigator.serviceWorker.register('s
 $('#vbars').innerHTML = '<i></i>'.repeat(32);
 $('#orb').dataset.design = coreDesign();
 safe(applyCustom); safe(readColors);
+// the OLYMPUS theme engine: here already, or when its async script arrives (never part of the start)
+if (!safe(olyStart, false)) { const s = document.getElementById('olyThemesJs'); if (s) s.addEventListener('load', () => safe(olyStart)); }
 root.classList.toggle('money-hidden', S.hideMoney());
 $('#says').textContent = `${D.greeting()}. Tap the core or type below to speak with me.`;
 greet();
@@ -2573,7 +2637,7 @@ if (window.visualViewport) {
   const fitDock = () => { const kb = Math.max(0, innerHeight - visualViewport.height - visualViewport.offsetTop); $('#dock').style.transform = kb > 60 ? `translateY(${-Math.round(kb)}px)` : ''; };
   visualViewport.addEventListener('resize', fitDock); visualViewport.addEventListener('scroll', fitDock);
 }
-window.__jarvis = { show, ask, facts: D.getFacts, active: () => active, setTheme, setFx, state: () => state, core: () => (core && typeof core.stats === 'function' ? safe(() => core.stats()) : null),
+window.__jarvis = { show, ask, facts: D.getFacts, active: () => active, setTheme, setOlyTheme, setFx, state: () => state, core: () => (core && typeof core.stats === 'function' ? safe(() => core.stats()) : null),
   voiceMode: (g) => voiceMode(!!g), vm: () => (vm ? vm.stats() : null), closeVoiceMode: () => { if (vm) vm.close('test'); } };   // for tests and the console; read-only
 if ('serviceWorker' in navigator) {
   // a tapped Zenith notification while Jarvis runs (Zenith's sw.js v50: {type: 'open', app: 'zenith', hash}): Zenith mode at

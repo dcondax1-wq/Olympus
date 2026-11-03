@@ -42,6 +42,7 @@ class App {
     const winRate = data.buildings.reduce((a, b) => a + (b.w || 50), 0) / Math.max(1, data.buildings.length) / 100;
     this.city = new CityScene($('#c'), this.L, { quality: this.quality, day: this.day, winRate: Math.max(0.3, Math.min(0.7, winRate)) });
     O?.track(this.city.renderer);
+    O?.onTheme(() => this.city.setDay(this.day));   // OLYMPUS theme: the sky / fog follow it (scene.js setDay)
     O?.mode(this.quality === 'lq');
     this.orbit = new Orbit(this.city.camera, $('#c'), {
       calm: O ? O.reduced() : window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,

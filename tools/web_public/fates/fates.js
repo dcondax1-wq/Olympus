@@ -100,6 +100,7 @@ function initGL() {
   O?.track(R);
   scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2(BG, 0.045);
+  O?.themeScene?.({ scene, renderer: R });   // OLYMPUS theme: fog + clear colour follow it
   cam = new THREE.PerspectiveCamera(56, 1, 0.1, 120);
   resize();
   window.addEventListener('resize', resize);
