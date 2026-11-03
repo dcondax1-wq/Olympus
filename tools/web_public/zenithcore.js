@@ -10,7 +10,7 @@
 //   glass(root, sel, {deg, skip})  glass cards with an edge light that follows the finger / pointer, and a small 3D tilt (one shared
 //                    overlay, one listener set; nothing per card, nothing per frame unless a card is touched)
 //   count(el, to)    an animated number (from what the element shows now to `to`, the final text is the real one)
-//   ribbon(box, v)   the equity "energy ribbon": a 3D ribbon of the curve on a 2D canvas (perspective, depth, flowing light),
+//   ribbon(box, v, {top, color})  the equity "energy ribbon": a 3D ribbon of the curve on a 2D canvas (perspective, depth, flowing light),
 //                    paused off screen / in a hidden tab, drawn once when still
 //   transition(fn)   View Transitions where supported (and allowed), else fn() now; resolves when the DOM is updated
 (function () {
@@ -203,11 +203,12 @@
   // off screen or in a hidden tab
   const RIB = new Set();
   let ribLoop = 0, ribLast = 0, scrollUntil = 0;
-  function ribFrame(t) {
+  function ribFrame() {
     ribLoop = 0;
+    const t = performance.now();          // one clock for the cap and the motion (a frame stamp can disagree with it)
     if (document.hidden || !moving()) return;
     let any = false;
-    const draw = t - ribLast >= 31 && performance.now() > scrollUntil;
+    const draw = t - ribLast >= 31 && t > scrollUntil;
     if (draw) ribLast = t;
     RIB.forEach((r) => { if (!r.box.isConnected) { r.stop(); return; } if (r.vis) { if (draw) r.draw(t); any = true; } });
     if (any) ribLoop = requestAnimationFrame(ribFrame);
@@ -236,7 +237,7 @@
       ctx.setTransform(k, 0, 0, k, 0, 0); ctx.clearRect(0, 0, W, H);
       const mv = moving(), sway = mv ? Math.sin(tt * 0.5) * 0.08 : 0;
       const depth = Math.min(26, H * 0.24), ang = -0.55 + sway, dx = Math.cos(ang) * depth, dy = Math.sin(ang) * depth;
-      const padX = 10, padT = 8 + Math.abs(dy), padB = 12, n = pts.length;
+      const padX = 10, padT = (o.top || 8) + Math.abs(dy), padB = 12, n = pts.length;
       const X = (i) => padX + (W - padX * 2 - dx) * (n === 1 ? 0.5 : i / (n - 1));
       const Y = (v) => padT + (H - padT - padB) * (1 - (v - lo) / span);
       // the floor grid (perspective lines), HD only

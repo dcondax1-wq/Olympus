@@ -85,7 +85,10 @@
         }));
       } catch (e) { /* no week yet */ }
     }
-    const days = [...byDay.keys()].sort(), ym = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }).slice(0, 7);
+    // today's live $ is the ribbon's last point (and in this month) unless the board already closed today into its days
+    const td = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }), ym = td.slice(0, 7);
+    if (okN(today) && !byDay.has(td)) byDay.set(td, today);
+    const days = [...byDay.keys()].sort();
     let run = 0; const curve = [0].concat(days.map((d) => (run += byDay.get(d))));
     const month = days.length ? days.filter((d) => d.slice(0, 7) === ym).reduce((s, d) => s + byDay.get(d), 0) : null;
     return { today, total, month, curve, n: days.length, accounts: As.length };
@@ -110,7 +113,7 @@
     if (M.n < 2) { if (!note) { note = document.createElement('span'); note.className = 'zn-rib-note'; rb.appendChild(note); } note.textContent = 'The ribbon grows with every real trading day'; }
     else if (note) note.remove();
     const sig = M.curve.join(',') + '|' + Z.quality();
-    if (sig !== ribSig || !rb.__zr) { ribSig = sig; Z.ribbon(rb, M.curve.length >= 2 ? M.curve : [0, 0]); }
+    if (sig !== ribSig || !rb.__zr) { ribSig = sig; Z.ribbon(rb, M.curve.length >= 2 ? M.curve : [0, 0], { top: 52 }); }
   }
 
   // ------------------------------------------------------------------ numbers that count to their new value

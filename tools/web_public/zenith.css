@@ -30,6 +30,16 @@ header.top .iconbtn::after { content: ""; position: absolute; inset: -4px; borde
 .hero.zn-hdup { margin-top: 0; }
 .hero.zn-hdup p { margin-top: 0; }
 
+/* ---------- 44 px taps everywhere: the compact controls keep their look and get an invisible 44 px hit area; the strips
+   that scroll sideways get the padding the hit area needs (a scroller clips what sticks out) ---------- */
+:root[data-zn="on"] :is(.su-go, .pl-btn, .pl-why-go, .zl-seg button, .zl-chips button, .strip button, .pl-chips button, .pl-chips a, .mc-af button, .chipbtn) { position: relative; }
+:root[data-zn="on"] :is(.su-go, .pl-btn, .pl-why-go, .zl-seg button, .zl-chips button, .strip button, .pl-chips button, .pl-chips a, .mc-af button, .chipbtn)::after {
+  content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, 44px); height: max(100%, 44px); transform: translate(-50%, -50%); border-radius: inherit; }
+:root[data-zn="on"] .zl-seg button { min-height: 38px; }                                  /* 38 + the bar's 3 px each side = 44 */
+:root[data-zn="on"] .zl-chips { margin-top: 0; padding-top: 6px; padding-bottom: 6px; margin-bottom: -6px; }
+:root[data-zn="on"] .pl-chips { padding-top: 6px; padding-bottom: 6px; margin-top: -6px; margin-bottom: -6px; }
+:root[data-zn="on"] .pl-why-go { padding: 4px 0; }
+
 /* ---------- one card system: glass, an edge light on top, the same radius and spacing ---------- */
 :root:not([data-theme="light"]) #page .card {
   background: linear-gradient(180deg, rgba(255, 255, 255, .045), rgba(255, 255, 255, .012) 42%), color-mix(in srgb, var(--surface) 86%, transparent);
@@ -54,21 +64,21 @@ header.top .iconbtn::after { content: ""; position: absolute; inset: -4px; borde
 }
 :root.zn-still :is(button.card, a.card, .cl-row, .pl-quick a, .tabs a):active { transform: none; }
 
-/* ---------- Home: money first, the energy ribbon under the greeting ---------- */
-.pl-hi .zn-hi { flex: 1 0 100%; margin-top: var(--zn-s3); }
-.zn-money { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--zn-s2); margin-bottom: var(--zn-s2); }
-.zn-m { display: flex; flex-direction: column; min-width: 0; padding: var(--zn-s2) var(--zn-s3); border-radius: 12px; border: 1px solid rgba(170, 182, 235, .12);
-  background: linear-gradient(180deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .01)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07); }
-.zn-m em { font: 600 10.5px/1.25 var(--sans); font-style: normal; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* ---------- Home: money first: one glass panel under the greeting, today's / this month's / the eval's real $ over the
+   3D energy ribbon of the accounts' real days ---------- */
+.pl-hi .zn-hi { position: relative; flex: 1 0 100%; margin-top: var(--zn-s3); min-height: 116px; border-radius: var(--zn-r); overflow: hidden;
+  border: 1px solid rgba(170, 182, 235, .14); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08); }
+.zn-hi > .zn-rib { position: absolute; inset: 0; height: auto; border-radius: 0; }
+.zn-money { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--zn-s2); padding: var(--zn-s3) var(--zn-s3) 0; pointer-events: none; }
+.zn-m { display: flex; flex-direction: column; min-width: 0; }
+.zn-m + .zn-m { padding-left: var(--zn-s3); border-left: 1px solid rgba(170, 182, 235, .12); }
+.zn-m em { font: 600 10.5px/1.25 var(--sans); font-style: normal; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: none; }
 .zn-m b { font: 760 18px/1.2 var(--sans); letter-spacing: -.02em; font-variant-numeric: tabular-nums; white-space: nowrap; -webkit-text-fill-color: currentColor; background: none; filter: none; color: var(--ink); }
 .zn-m b.up { color: var(--good-ink, #4ff0ae); } .zn-m b.dn { color: var(--bad); }
-.zn-m.today b { font-size: 20px; text-shadow: 0 0 18px rgba(46, 229, 157, .25); }
-.zn-rib { border: 1px solid rgba(170, 182, 235, .12); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06); }
-.zn-rib-note { position: absolute; left: 12px; top: 8px; z-index: 1; font-size: 11.5px; color: var(--ink-2); pointer-events: none; }
-:root[data-theme="light"] .zn-m, :root[data-theme="light"] .zn-rib { background: rgba(20, 30, 60, .04); border-color: rgba(20, 30, 60, .12); }
-
-/* ---------- Settings: the shared 3D quality ---------- */
-.zn-set .note { margin: 0 0 var(--zn-s3); color: var(--ink-2); line-height: 1.5; }
+.zn-m.today b { font-size: 21px; text-shadow: 0 0 18px rgba(46, 229, 157, .28); }
+.zn-rib-note { position: absolute; left: 12px; bottom: 8px; z-index: 1; font-size: 11.5px; color: var(--ink-2); pointer-events: none; }
+:root[data-theme="light"] .pl-hi .zn-hi { border-color: rgba(20, 30, 60, .12); }
+:root[data-theme="light"] .zn-rib { background: rgba(20, 30, 60, .04); }
 
 /* ---------- Holodeck: a glass control bar, 44 px taps (an invisible hit area keeps the compact look) ---------- */
 .hd-root .hd-bar { -webkit-backdrop-filter: blur(16px) saturate(1.25); backdrop-filter: blur(16px) saturate(1.25);
@@ -86,7 +96,12 @@ header.top .iconbtn::after { content: ""; position: absolute; inset: -4px; borde
 .mc-af button::after, .mc-why summary::after { content: ""; position: absolute; inset: -6px 0; }
 
 @media (max-width: 760px) {
-  .zn-m { padding: 7px 9px; }
-  .zn-m b { font-size: 16px; } .zn-m.today b { font-size: 17px; }
-  .zn-rib { height: 84px; }
+  .zn-m b { font-size: 16px; } .zn-m.today b { font-size: 18px; }
+  .zn-m + .zn-m { padding-left: var(--zn-s2); }
 }
+
+/* ---------- "On this page" chips: the card the page jumped to lights up once ---------- */
+.pl-flash { animation: zn-flash 1.2s var(--zn-out); }
+@keyframes zn-flash { 0% { box-shadow: 0 0 0 0 rgba(var(--zn-accent-rgb), 0); }
+  25% { box-shadow: 0 0 0 2px rgba(var(--zn-accent-rgb), .65), 0 0 28px -6px rgba(var(--zn-accent-rgb), .7); }
+  100% { box-shadow: 0 0 0 0 rgba(var(--zn-accent-rgb), 0); } }
