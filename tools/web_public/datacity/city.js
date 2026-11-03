@@ -13,6 +13,7 @@ import { CityScene } from './scene.js';
 import { Orbit } from './controls.js';
 import * as UI from './ui.js';
 
+const O = window.OLYMPUS || null;   // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
 const LQ_FPS = 40;           // below this for 3 s in a row (HQ, not chosen by the viewer) -> low quality
 const state = window.__city = { ready: false, mode: null, buildings: 0, quality: null, fps: 0, found: 0, errors: [] };
 
@@ -35,13 +36,15 @@ class App {
   constructor(data, demo) {
     this.data = data;
     this.L = layout(data);
-    this.quality = settings.get('dc.q', 'hq');
+    this.quality = O ? (O.lite() ? 'lq' : 'hq') : settings.get('dc.q', 'hq');
     this.day = settings.get('dc.day', '0') === '1';
     this.cls = 'all';
     const winRate = data.buildings.reduce((a, b) => a + (b.w || 50), 0) / Math.max(1, data.buildings.length) / 100;
     this.city = new CityScene($('#c'), this.L, { quality: this.quality, day: this.day, winRate: Math.max(0.3, Math.min(0.7, winRate)) });
+    O?.track(this.city.renderer);
+    O?.mode(this.quality === 'lq');
     this.orbit = new Orbit(this.city.camera, $('#c'), {
-      calm: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,
+      calm: O ? O.reduced() : window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,
       onTap: (x, y) => this.tap(x, y),
       onFlyEnd: () => $('#flyB').classList.remove('on'),
     });
@@ -120,8 +123,9 @@ class App {
   setQuality(q, auto) {
     this.quality = q;
     state.quality = q;
-    if (!auto) settings.set('dc.q', q);
+    if (!auto) { if (O) O.setFx(q === 'hq' ? 'high' : 'low'); else settings.set('dc.q', q); }
     this.city.setQuality(q);
+    O?.mode(q === 'lq');
     $('#qB').textContent = q.toUpperCase();
     if (auto) UI.toast('Low-quality mode on for a smoother city (tap LQ to switch back)');
   }
@@ -170,6 +174,7 @@ class App {
   start() {
     let last = performance.now(), frames = 0, acc = 0, slow = 0;
     const frame = (now) => {
+      if (O ? O.hidden() : document.hidden) { last = now; requestAnimationFrame(frame); return; }   // hidden tab: no frame
       const dt = Math.min(0.1, Math.max(0, (now - last) / 1000));
       last = now;
       this.orbit.update(dt);
@@ -179,7 +184,7 @@ class App {
         state.fps = Math.round(frames / acc);
         frames = 0; acc = 0;
         slow = this.quality === 'hq' && state.fps < LQ_FPS && !document.hidden ? slow + 1 : 0;
-        if (slow >= 3 && settings.get('dc.q', null) === null) this.setQuality('lq', true);
+        if (slow >= 3 && (O ? !O.chosen() : settings.get('dc.q', null) === null)) this.setQuality('lq', true);
       }
       requestAnimationFrame(frame);
     };
@@ -207,6 +212,7 @@ async function main() {
 window.addEventListener('error', (e) => state.errors.push(String(e.message || e)));
 main().catch((e) => {
   state.errors.push(String(e?.message || e));
-  document.body.appendChild(el('div', 'err', `The city could not be drawn on this device (${e?.message || 'error'}).`));
   $('#loading')?.remove();
+  if (O) O.fail(`the city could not be drawn on this device (${e?.message || 'error'})`);
+  else document.body.appendChild(el('div', 'err', `The city could not be drawn on this device (${e?.message || 'error'}).`));
 });

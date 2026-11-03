@@ -75,7 +75,7 @@ export function createFx(bg, layer, { still = false } = {}) {
     if (w === S.lastW && h === S.lastH) return;
     S.lastW = w; S.lastH = h;
     bg.width = Math.round(w * BG_SCALE); bg.height = Math.round(h * BG_SCALE);
-    const d = Math.min(2, devicePixelRatio || 1);
+    const d = window.OLYMPUS ? window.OLYMPUS.dpr() : Math.min(2, devicePixelRatio || 1);   // <= 2, <= 1.5 on LITE
     layer.width = Math.round(w * d); layer.height = Math.round(h * d);
     ctx.setTransform(d, 0, 0, d, 0, 0);
   }
@@ -113,7 +113,7 @@ export function createFx(bg, layer, { still = false } = {}) {
   let last = performance.now();
   function frame(now) {
     S.raf = 0;
-    if (document.hidden) return;
+    if (window.OLYMPUS ? window.OLYMPUS.hidden() : document.hidden) return;   // hidden tab: no frame (the battery)
     const dt = Math.min(0.05, (now - last) / 1000), t = (now - S.t0) / 1000;
     last = now;
     size();

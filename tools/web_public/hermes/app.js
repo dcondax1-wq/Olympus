@@ -10,11 +10,13 @@ import { renderPNG, share } from './share.js';
 const JARVIS_ORIGIN = 'https://demetrades2000-coder.github.io';
 const PERIODS = [['week', 'Week'], ['month', 'Month'], ['all', 'All time']];
 const PEERS_WAIT_MS = 1500;
-const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const O = window.OLYMPUS || null;   // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
+const still = O ? O.reduced() : matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = (s) => document.querySelector(s);
 
 const S = { w: null, demo: false, key: 'week', peers: {}, cards: [], i: -1, el: null, html: '', t0: 0, held: 0, paused: false, stopCount: null, raf: 0, lastShare: null };
 const fx = createFx($('#bg'), $('#fx'), { still });
+O?.mode(O.lite());                          // LITE: the effects layer at 1.5 px per CSS px (fx.js)
 
 function route() {
   const parts = decodeURIComponent(location.hash.slice(1)).split(/[,/]/);
@@ -209,6 +211,7 @@ async function start() {
   if (!got.w) {
     $('#stage').innerHTML = '<section class="card on c-err"><div class="tilt"><p class="kicker">HERMES</p><h1 class="title">The recap could not load</h1><button type="button" class="btn" onclick="location.reload()">Try again</button></div></section>';
     fx.palette(['#120810', '#40142a', '#ff7a8a'], 0);
+    O?.fail('the recap could not load');
     return;
   }
   S.w = got.w; S.demo = got.demo;
@@ -217,6 +220,7 @@ async function start() {
   const splash = $('.splash');
   if (splash) splash.remove();
   build(r.key);
+  O?.ready();                               // the first card is on screen
   peers.then((p) => {                       // a peer that answered late: its card joins the deck, the story keeps its place
     const late = (p.kalshi && !S.peers.kalshi) || (p.discovery && !S.peers.discovery) || (p.fates && !S.peers.fates);
     S.peers = p;

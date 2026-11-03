@@ -5,6 +5,7 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import * as C from './fates-core.js';
 
+const O = window.OLYMPUS || null;   // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
 const $ = (id) => document.getElementById(id);
 const Q = new URLSearchParams(location.search);
 const RM = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : { matches: false, addEventListener() {} };
@@ -13,8 +14,10 @@ const BG = 0x07050f;
 const Y1 = 3.0;            // the target's height (progress 1)
 const LEN = 34;            // how far the future runs into the distance
 const S = {
-  data: null, demo: false, route: C.parseRoute(location.hash), lite: Q.get('lite') === '1', forcedFull: Q.get('full') === '1',
-  reduced: RM.matches, threads: [], sel: -1, follow: null, ready: false, webgl: false, errors: [], hud: null, frames: 0,
+  data: null, demo: false, route: C.parseRoute(location.hash),
+  // ?lite=1 / ?full=1 win (tests); else the owner's OLYMPUS choice (Jarvis ⋯ → 3D); auto LITE only when nobody chose
+  lite: Q.get('lite') === '1' || (Q.get('full') !== '1' && !!(O && O.lite())), forcedFull: Q.get('full') === '1' || !!(O && O.chosen() && !O.lite()),
+  reduced: O ? O.reduced() : RM.matches, threads: [], sel: -1, follow: null, ready: false, webgl: false, errors: [], hud: null, frames: 0,
 };
 window.__fates = S;                                 // read by tests/test_fates.py
 
@@ -94,6 +97,7 @@ function initGL() {
     return false;
   }
   R.setClearColor(BG, 1);
+  O?.track(R);
   scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2(BG, 0.045);
   cam = new THREE.PerspectiveCamera(56, 1, 0.1, 120);
@@ -108,6 +112,7 @@ function resize() {
   if (!R) return;
   const w = window.innerWidth, h = window.innerHeight;
   R.setPixelRatio(Math.min(window.devicePixelRatio || 1, S.lite ? 1.25 : 2));
+  O?.mode(S.lite);
   R.setSize(w, h, false);
   cam.aspect = w / h;
   // keep the vanishing point in the free band between the HUD (top) and the controls (bottom)
@@ -437,7 +442,7 @@ function spin() {
 }
 function frame(now) {
   requestAnimationFrame(frame);
-  if (!S.webgl || !G.threads) return;
+  if (!S.webgl || !G.threads || (O ? O.hidden() : document.hidden)) return;     // hidden tab: no frame (the battery)
   const sec = (now - clock0) / 1000, tg = now / 1000;
   const k = S.reduced ? MAP.H + 1 : Math.min(MAP.H + 1, kAt(sec) + (sec >= DUR() ? 1 : 0));
   const px = R.getPixelRatio();
@@ -574,7 +579,7 @@ window.addEventListener('error', (e) => S.errors.push(String(e.message || e)));
 (async function main() {
   wire();
   const got = await loadData();
-  if (!got) { $('sub').textContent = 'No data yet: run python -X utf8 -m tools.fates.build'; S.ready = true; return; }
+  if (!got) { $('sub').textContent = 'No data yet: run python -X utf8 -m tools.fates.build'; S.ready = true; O?.fail('no data yet'); return; }
   S.data = got.j; S.demo = got.demo;
   $('demo').hidden = !S.demo;
   if (S.lite) $('lite').hidden = false;
@@ -585,6 +590,7 @@ window.addEventListener('error', (e) => S.errors.push(String(e.message || e)));
     requestAnimationFrame(frame);
   } else {
     S.threads = currentThreads();
+    O?.ready();                                    // no 3D on this device: the numbers are the page
   }
   postCard();
   S.ready = true;

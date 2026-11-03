@@ -207,10 +207,12 @@ export class Hud {
     this.rects = r;
   }
 
-  /** Place the scene's labels: one element per anchor id, reused frame to frame. */
+  /** Place the scene's labels: one element per anchor id, reused frame to frame. Three passes so a frame never thrashes the
+   *  layout: every DOM write first (class, text, unhide what needs measuring), then every size read (one layout at most),
+   *  then the placing (transforms only). */
   labels(list) {
-    const seen = new Set(), placed = [];
-    list.forEach((a) => {
+    const seen = new Set(), placed = [], todo = [];
+    list.forEach((a) => {                                 // 1. writes
       if (a.view !== this.view) return;
       const text = this.labelText(a);
       if (!text) return;
@@ -220,17 +222,21 @@ export class Hud {
         + (a.kind === 'pool' || a.kind === 'pop' ? (a.win ? ' win' : ' loss') : '') + (a.kind === 'tower' && a.row.roi != null ? (a.row.roi < 0 ? ' loss' : ' win') : '');
       if (e.className !== cls) e.className = cls;
       if (e._t !== text) { e.textContent = ''; text.forEach((x, i) => e.append(i ? el('b', null, x) : document.createTextNode(x))); e._t = text; e._w = 0; }
-      if (!e._w) { e._w = e.offsetWidth; e._h = e.offsetHeight; }
+      if (!e._w && e.hidden) e.hidden = false;            // measured in 2., hidden again in 3. when it does not fit
+      todo.push([a, e]);
+    });
+    for (const [, e] of todo) if (!e._w) { e._w = e.offsetWidth; e._h = e.offsetHeight; }   // 2. reads
+    for (const [a, e] of todo) {                          // 3. placing
       const y = a.low ? a.y + e._h + 4 : a.y;             // a "low" label hangs one label-height under its anchor
-      if (this.blocked(a.x, y, e._w, e._h)) return;
+      if (this.blocked(a.x, y, e._w, e._h)) continue;
       const box = { l: a.x - e._w / 2 - 2, r: a.x + e._w / 2 + 2, t: y - e._h - 2, b: y + 2 };
-      if (a.kind !== 'pop' && placed.some((q) => box.l < q.r && box.r > q.l && box.t < q.b && box.b > q.t)) return;
+      if (a.kind !== 'pop' && placed.some((q) => box.l < q.r && box.r > q.l && box.t < q.b && box.b > q.t)) continue;
       placed.push(box);
       seen.add(a.id);
       e.style.transform = `translate3d(${Math.round(a.x - e._w / 2)}px, ${Math.round(y - e._h)}px, 0)`;
       e.style.opacity = a.kind === 'pop' ? String(Math.max(0, 1 - a.age / 2.4)) : '';
       if (e.hidden) e.hidden = false;
-    });
+    }
     this.pool.forEach((e, id) => {
       if (seen.has(id)) return;
       if (id.startsWith('p:') && !list.some((a) => a.id === id)) { e.remove(); this.pool.delete(id); return; }

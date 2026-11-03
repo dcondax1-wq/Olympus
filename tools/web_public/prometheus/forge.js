@@ -7,8 +7,9 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import { loadForge, FMT } from './forgecore.js';
 
+const O = window.OLYMPUS || null;   // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
 const Q = new URLSearchParams(location.search);
-const RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const RM = O ? O.reduced() : window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const ARENA_R = 7;
@@ -178,8 +179,11 @@ class Arena {
   constructor(canvas, forge) {
     this.forge = forge;
     this.canvas = canvas;
-    this.lite = Q.get('lite') === '1';
+    // ?lite=1 wins (tests); else the owner's OLYMPUS choice (Jarvis ⋯ → 3D); the auto LITE below only when nobody chose
+    this.lite = Q.get('lite') === '1' || !!(O && O.lite());
+    this.chosen = Q.get('lite') === '1' || !!(O && O.chosen());
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: true, powerPreference: 'high-performance' });
+    O?.track(this.renderer);
     this.renderer.setClearColor(0x000000, 0);          // the sky is the page's CSS ember gradient behind the canvas
     this.scene = new THREE.Scene();
     this.scene.fog = new THREE.FogExp2(0x120806, 0.028);
@@ -322,6 +326,7 @@ class Arena {
   resize() {
     const w = innerWidth, h = innerHeight;
     if (this.lite) this.dprCap = Math.min(this.dprCap, 1.25);
+    O?.mode(this.lite);
     this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, this.dprCap));
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;
@@ -383,7 +388,7 @@ class Arena {
     this.last = now; this.t += dt; this.wall += raw;
     this.frames.push(raw);
     if (this.frames.length > 60) this.frames.shift();
-    if (this.wall > 2.5 && this.frames.length >= 20 && this.dprCap > 1) {   // auto LITE: under ~45 fps, then still under ~30
+    if (this.wall > 2.5 && this.frames.length >= 20 && this.dprCap > 1 && !this.chosen) {   // auto LITE: under ~45 fps, then still under ~30
       const avg = this.frames.reduce((a, b) => a + b, 0) / this.frames.length;
       if (!this.lite && avg > 1 / 45) { this.lite = true; this.slowSince = this.wall; this.frames.length = 0; this.resize(); }
       else if (this.lite && avg > 1 / 30 && this.wall - this.slowSince > 3) { this.dprCap = 1; this.frames.length = 0; this.resize(); }
@@ -530,7 +535,7 @@ function tick(now) {
     STATE.lastStep = now;
     if (STATE.gen < STATE.forge.nGens - 1) setGen(STATE.gen + 1, true); else setPlaying(false);
   }
-  if (STATE.arena && !document.hidden) STATE.arena.frame(now);
+  if (STATE.arena && !(O ? O.hidden() : document.hidden)) STATE.arena.frame(now);   // hidden tab: no frame (the battery)
   requestAnimationFrame(tick);
 }
 
@@ -579,6 +584,7 @@ async function main() {
     STATE.arena = new Arena($('arena'), F);
   } catch (e) {
     STATE.arena = null;
+    O?.ready();                                     // no 3D here: the list below is the page
   }
   verdictLine();
   setGen(0);
@@ -594,4 +600,4 @@ async function main() {
   postJarvisCard();
 }
 
-main();
+main().catch((e) => { STATE.errors.push(String(e && e.message || e)); O?.fail(e && e.message ? e.message : String(e)); });

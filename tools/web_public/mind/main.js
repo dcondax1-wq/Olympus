@@ -13,15 +13,16 @@ import { Brain } from './render.js';
 import { OrbitRig } from './controls.js';
 import { createUI } from './ui.js';
 
-const QUALITY_KEY = 'mind.quality';
+const O = window.OLYMPUS || null;          // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
+const QUALITY_KEY = 'mind.quality';        // the old per-app key: read only when the kit is missing
 const THEME = '#03040a';
-const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reduced = O ? O.reduced() : matchMedia('(prefers-reduced-motion: reduce)').matches;
 const canvas = document.getElementById('gl');
 
 const saved = savedQuality();
 const state = {
   graph: null, mode: 'loading', filter: null, query: '', matches: null, focus: -1, lapse: null, pending: null,
-  quality: saved || autoQuality(), chosen: !!saved, fps: 0, settled: false,
+  quality: saved || (O && O.lite() ? 'low' : autoQuality()), chosen: !!saved, fps: 0, settled: false,
 };
 
 const ui = createUI({
@@ -49,7 +50,8 @@ const ui = createUI({
   onQuality() {
     setQuality(state.quality === 'high' ? 'low' : 'high');
     state.chosen = true;
-    try { localStorage.setItem(QUALITY_KEY, state.quality); } catch (_) { /* private mode: this visit only */ }
+    if (O) O.setFx(state.quality === 'high' ? 'high' : 'low');
+    else try { localStorage.setItem(QUALITY_KEY, state.quality); } catch (_) { /* private mode: this visit only */ }
     ui.toast(state.quality === 'high' ? 'High quality' : 'Light mode: smoother on older phones');
   },
 });
@@ -60,6 +62,7 @@ let brain = null, rig = null, needsDraw = true;
 if (hasWebGL()) {
   try {
     brain = new Brain(THREE, canvas, { quality: state.quality, reduced });
+    O?.track(brain.renderer);
     rig = new OrbitRig(brain.camera, canvas, {
       reduced,
       onTap(x, y) { const i = brain.pick(x, y); if (i >= 0) focus(state.graph.nodes[i].id, false); else if (state.focus >= 0) unfocus(); },
@@ -72,7 +75,8 @@ if (hasWebGL()) {
     brain = null;
   }
 }
-if (!brain) ui.noGL();
+if (!brain) { ui.noGL(); O?.ready(); }        // the numbers and the search still work: the page is up
+O?.mode(state.quality === 'low');
 const layout = brain ? createLayoutHost((pos, asleep) => { brain.setTargets(pos); state.settled = asleep; needsDraw = true; }) : null;
 addEventListener('resize', () => { if (brain) { brain.resize(); frameFocus(); needsDraw = true; } });
 
@@ -86,6 +90,7 @@ function hasWebGL() {
 }
 
 function savedQuality() {
+  if (O) return O.chosen() ? (O.lite() ? 'low' : 'high') : null;
   try {
     const q = localStorage.getItem(QUALITY_KEY);
     return q === 'high' || q === 'low' ? q : null;
@@ -101,6 +106,7 @@ function autoQuality() {
 
 function setQuality(q) {
   state.quality = q;
+  O?.mode(q === 'low');
   ui.quality(q);
   if (brain) { brain.setQuality(q); look(); }
 }
@@ -266,7 +272,7 @@ function postCard(g, mode) {
 let last = performance.now(), win = { t: 0, frames: 0, slow: 0 }, labelTick = 0;
 function frame(now) {
   requestAnimationFrame(frame);
-  if (!brain || document.hidden || !state.graph) return;
+  if (!brain || (O ? O.hidden() : document.hidden) || !state.graph) return;     // hidden tab: no frame (the battery)
   const dt = Math.min(0.1, (now - last) / 1000);
   last = now;
   if (state.lapse) stepLapse(now);
@@ -328,6 +334,7 @@ window.mind = {
   get layout() { return layout ? layout.mode : 'none'; },
   get settled() { return state.settled; },
   camera: () => rig && { target: { ...rig.target }, radius: rig.radius, flying: !!rig.flight },
+  labelBand: () => ui.band(),
   nodePoint: (id) => (brain && state.graph.index.has(id) ? brain.nodePoint(state.graph.index.get(id)) : null),
   screenOf: (id) => (brain && state.graph.index.has(id) ? brain.screenOf(brain.nodePoint(state.graph.index.get(id))) : null),
 };

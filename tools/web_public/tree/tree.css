@@ -50,7 +50,7 @@ h1, h2, p, ol { margin: 0; }
   background: linear-gradient(var(--bg) 0, rgba(3, 7, 5, .86) 65%, transparent);
 }
 .brand { display: flex; align-items: center; gap: 8px; color: var(--ink); }
-.brand h1 { font-size: 13px; font-weight: 700; letter-spacing: .32em; text-shadow: var(--glow); }
+.brand h1 { font: 700 var(--oly-t-name, 15px)/1.1 var(--oly-display, var(--mono)); letter-spacing: var(--oly-track-name, .22em); text-shadow: var(--glow); }
 .brand .dim { color: var(--dim); letter-spacing: .2em; }
 .sigil { width: 9px; height: 9px; border-radius: 50%; background: var(--green); box-shadow: var(--glow); animation: breathe 2.4s ease-in-out infinite; }
 @keyframes breathe { 50% { opacity: .35; transform: scale(.8); } }
@@ -68,12 +68,12 @@ h1, h2, p, ol { margin: 0; }
   display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
 }
 .lens { display: flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--panel); }
-.lens button { min-width: 52px; min-height: 36px; padding: 0 9px; border: 0; background: none; color: var(--dim); font-size: 10px; letter-spacing: .14em; cursor: pointer; }
+.lens button { min-width: 52px; min-height: 44px; padding: 0 9px; border: 0; background: none; color: var(--dim); font: 700 var(--oly-t-label, 12px)/1 var(--oly-ui, var(--mono)); letter-spacing: .14em; cursor: pointer; }
 .lens button[aria-checked="true"] { color: var(--bg); background: var(--green); box-shadow: var(--glow); }
 .lens button[data-lens="test"][aria-checked="true"] { background: var(--amber); box-shadow: 0 0 10px rgba(245, 184, 74, .45); }
 .tool {
-  display: flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px; cursor: pointer;
-  border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--text); font-size: 10px; letter-spacing: .14em;
+  display: flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--text); font: 700 var(--oly-t-label, 12px)/1 var(--oly-ui, var(--mono)); letter-spacing: .14em;
 }
 .tool svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .tool:active, .lens button:active { filter: brightness(1.3); }

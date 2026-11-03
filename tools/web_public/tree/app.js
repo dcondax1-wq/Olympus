@@ -5,6 +5,8 @@
 
 import * as C from './core.js?v=d1';
 
+const O = window.OLYMPUS || null;   // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
+
 const GROW_MS = 6500;            // the whole search grows in this long
 const EDGE_MS = 340;             // one branch grows in this long
 const FADE_MS = 800;             // a cut branch dims over this long
@@ -18,13 +20,14 @@ const $ = (id) => document.getElementById(id);
 const app = $('app'), canvas = $('stage'), ctx = canvas.getContext('2d', { alpha: false });
 const query = new URLSearchParams(location.search);
 const frozenAt = query.has('at') ? Number(query.get('at')) : null;
-const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reduced = O ? O.reduced() : matchMedia('(prefers-reduced-motion: reduce)').matches;
 const SIDE_PANEL = matchMedia('(orientation: landscape) and (max-height: 520px)');   // as in tree.css
 
 const S = {
   model: null, rootId: null, root: null, tree: null, layouts: new Map(),
   lens: 'train', t0: 0, view: { s: 1, x: 0, y: 0 }, geo: null, w: 0, h: 0, dpr: 1,
-  quality: (devicePixelRatio >= 2 && (navigator.hardwareConcurrency || 4) >= 4) ? 2 : 1,
+  // 2: full (dpr up to 2), 1: light (1.5), 0: lightest (1). The owner's OLYMPUS choice wins; else the phone decides
+  quality: O && O.chosen() ? (O.fx() === 'off' ? 0 : O.lite() ? 1 : 2) : O && O.lite() ? 1 : (devicePixelRatio >= 2 && (navigator.hardwareConcurrency || 4) >= 4) ? 2 : 1,
   frameMs: 16, slowSince: 0, selected: null, hudAt: -1, lit: -1,
   maxScore: 1, maxOos: 1, maxN: 1, minN: 60, positiveLeaves: [],
 };
@@ -80,6 +83,7 @@ function selectRoot(id) {
 function resize() {
   const cap = S.quality >= 2 ? 2 : S.quality === 1 ? 1.5 : 1;
   S.dpr = Math.min(devicePixelRatio || 1, cap);
+  O?.mode(S.quality < 2);
   S.w = canvas.clientWidth; S.h = canvas.clientHeight;
   canvas.width = Math.round(S.w * S.dpr); canvas.height = Math.round(S.h * S.dpr);
   // the search panel sits on the seeds (and, as a left column on a landscape phone, under the header)
@@ -573,10 +577,11 @@ function route() {
 }
 
 function loop(now) {
-  if (!document.hidden) {
+  if (!(O ? O.hidden() : document.hidden)) {                    // hidden tab: no frame (the battery)
     const t0 = performance.now();
     frame(now);
     adapt(performance.now() - t0, now);
+    if (O && O.state() === 'loading') O.ready();               // the first frame is drawn: the veil lifts
   }
   requestAnimationFrame(loop);
 }
@@ -584,7 +589,7 @@ function loop(now) {
 function adapt(ms, now) {
   // a frame that takes more than ~22 ms of drawing on a weak phone steps the quality down (fewer strands, lower dpr)
   S.frameMs = S.frameMs * 0.92 + ms * 0.08;
-  if (S.frameMs > 22 && S.quality > 0) {
+  if (S.frameMs > 22 && S.quality > 0 && !(O && O.chosen())) {   // the automatic step down, unless the owner chose
     if (!S.slowSince) S.slowSince = now;
     if (now - S.slowSince > 1500) { S.quality--; S.slowSince = 0; S.frameMs = 12; resize(); }
   } else S.slowSince = 0;
@@ -608,6 +613,7 @@ async function main() {
   } catch (e) {
     app.dataset.state = 'error';
     $('loading').textContent = 'NO SEARCH DATA · ' + String(e.message || e).toUpperCase();
+    O?.fail('no search data (' + String(e.message || e) + ')');
     return;
   }
   app.dataset.state = 'ready';

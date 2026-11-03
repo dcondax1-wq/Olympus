@@ -77,6 +77,19 @@ export function createUI(h) {
 
   // ---------------------------------------------------------------- labels (galaxy names + the focused note)
   const layer = $('labels'), pool = new Map();
+  // the open band between the top HUD and the bottom stats, measured when they change size (never in the frame loop):
+  // a galaxy name fades out as it nears either edge instead of sitting under the HUD's glass
+  const band = { top: 0, bottom: innerHeight };
+  const measure = () => {
+    const t = $('top'), b = $('bottom');
+    band.top = t ? t.getBoundingClientRect().bottom + 6 : 0;
+    band.bottom = b ? b.getBoundingClientRect().top - 6 : innerHeight;
+  };
+  if (typeof ResizeObserver === 'function') { const ro = new ResizeObserver(measure); ['top', 'bottom'].forEach((k) => $(k) && ro.observe($(k))); }
+  addEventListener('resize', measure);
+  addEventListener('orientationchange', measure);
+  measure();
+  const FADE = 28;                                             // px over which a label fades in from the HUD's edge
 
   return {
     mode(m) {
@@ -156,11 +169,14 @@ export function createUI(h) {
     labels(listed) {
       const seen = new Set();
       for (const l of listed) {
+        let alpha = l.alpha;
+        if (!l.note) alpha *= Math.max(0, Math.min(1, (l.y - band.top) / FADE, (band.bottom - l.y) / FADE));
+        if (alpha < 0.03) continue;                            // under the HUD: hidden below
         let e = pool.get(l.key);
         if (!e) { e = el('span', { class: 'lbl' + (l.note ? ' note' : '') }); pool.set(l.key, e); layer.append(e); }
         if (e.textContent !== l.text) e.textContent = l.text;
         e.style.setProperty('--c', l.colour);
-        e.style.opacity = l.alpha.toFixed(2);
+        e.style.opacity = alpha.toFixed(2);
         e.style.transform = `translate(${l.x.toFixed(1)}px, ${l.y.toFixed(1)}px) translate(-50%, ${l.note ? '-160%' : '-50%'})`;
         e.hidden = false;
         seen.add(l.key);
@@ -198,5 +214,7 @@ export function createUI(h) {
     },
 
     noGL() { $('nogl').hidden = false; },
+    /** the open band the galaxy names keep to (tests) */
+    band() { return { ...band }; },
   };
 }

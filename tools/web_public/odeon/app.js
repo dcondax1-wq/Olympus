@@ -12,15 +12,17 @@ import { phase, openPnl, stopAt } from './timeline.js';
 import { Captions, Callouts } from './captions.js';
 import { Reels, Transport, SPEEDS, fillStats } from './ui.js';
 
+const O = window.OLYMPUS || null;   // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
 const $ = (s) => document.querySelector(s);
 const qs = new URLSearchParams(location.search);
 const mq = (q) => (window.matchMedia ? window.matchMedia(q).matches : false);
-const reduced = mq('(prefers-reduced-motion: reduce)');
+const reduced = O ? O.reduced() : mq('(prefers-reduced-motion: reduce)');
 const liteParam = qs.get('lite');
 
 const S = {
   trades: [], demo: false, tr: null, T: 0, playing: false, ended: false, speed: Number(qs.get('speed')) || 10,
-  lite: liteParam === '1', autoLite: liteParam == null, statsAt: 0, wall: 0, stage: null, three: null, camera: null, dir: null,
+  // ?lite= wins (tests, screenshots); else the owner's OLYMPUS choice; else the frame rate decides (auto LITE)
+  lite: liteParam != null ? liteParam === '1' : !!(O && O.lite()), autoLite: liteParam == null && !(O && O.chosen()), statsAt: 0, wall: 0, stage: null, three: null, camera: null, dir: null,
   fps: { n: 0, sum: 0, slow: 0 }, statsShown: false, crossed: [],
 };
 if (SPEEDS.indexOf(S.speed) < 0) S.speed = 10;
@@ -44,6 +46,7 @@ async function makeStage() {
     if (!ok || qs.get('flat') === '1') throw new Error('no webgl');
     const [{ Theater }, { Director }, THREE] = await Promise.all([import('./scene.js'), import('./director.js'), import('../jarvis/three.module.min.js')]);
     const th = new Theater(canvas, { lite: S.lite, reduced });
+    O?.track(th.renderer);
     const cam = new THREE.PerspectiveCamera(42, 1, 0.1, 1500);
     S.three = THREE; S.camera = cam; S.dir = new Director(cam, { reduced });
     S.stage = th;
@@ -185,6 +188,7 @@ function showReels(on) {
 let last = 0;
 function frame(now) {
   requestAnimationFrame(frame);
+  if (O ? O.hidden() : document.hidden) { last = now; return; }     // hidden tab: no frame (the battery)
   const rawDt = last ? (now - last) / 1000 : 1 / 60;
   const dt = Math.min(0.1, rawDt);
   last = now;
@@ -280,6 +284,7 @@ function setLite(on, why) {
   S.lite = !!on;
   if (S.stage) S.stage.setLite(S.lite);
   document.body.dataset.lite = S.lite ? why || 'on' : '';
+  O?.mode(S.lite);
   $('#liteBadge').hidden = !S.lite;
 }
 
@@ -365,7 +370,8 @@ async function start() {
   $('#stReels').addEventListener('click', () => { showStats(false); showReels(true); });
   setSpeed(S.speed);
   if (reduced) document.body.dataset.reduced = 'true';
-  if (S.lite) setLite(true, 'param');
+  if (S.lite) setLite(true, liteParam === '1' ? 'param' : 'olympus');
+  else O?.mode(false);
   const bundle = await loadReels('trades.json', { forceDemo: qs.get('demo') === '1' });
   const b = bundle.trades.length ? bundle : demoBundle();
   S.trades = b.trades;
@@ -381,6 +387,7 @@ async function start() {
   postCard();
   document.body.dataset.ready = 'true';
   requestAnimationFrame(frame);
+  if (document.body.dataset.gl === 'flat') O?.ready();             // the 2D stage: no three.js renderer to watch
 }
 
 // test and debug handle (read-only views + the same controls the buttons use)
@@ -401,6 +408,7 @@ window.__odeon = {
 start().catch((e) => {
   document.body.dataset.ready = 'error';
   const n = $('#fatal');
-  if (n) { n.hidden = false; n.textContent = 'ODEON could not start: ' + (e && e.message ? e.message : e); }
+  if (O) O.fail(e && e.message ? e.message : String(e));
+  else if (n) { n.hidden = false; n.textContent = 'ODEON could not start: ' + (e && e.message ? e.message : e); }
   throw e;
 });

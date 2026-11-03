@@ -12,9 +12,10 @@ import { categoryColors, usd, pct, countdown } from './fmt.js';
 import { FortuneScene } from './scene.js';
 import { Hud, KELLY_STOPS } from './hud.js';
 
-const QUALITY_KEY = 'tyche.quality', VIEW_KEY = 'tyche.view';
+const O = window.OLYMPUS || null;   // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
+const QUALITY_KEY = 'tyche.quality', VIEW_KEY = 'tyche.view';   // quality: the old per-app key, read only without the kit
 const THEME = '#07060b';
-const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reduced = O ? O.reduced() : matchMedia('(prefers-reduced-motion: reduce)').matches;
 const params = new URLSearchParams(location.search);
 const forced = params.has('demo');
 const VIEWS = ['wheel', 'pools', 'scales'];
@@ -23,9 +24,9 @@ const store = {
   get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } },
   set(k, v) { try { localStorage.setItem(k, v); } catch (_) { /* private mode: this visit only */ } },
 };
-const savedQ = store.get(QUALITY_KEY), hashView = location.hash.slice(1), savedView = store.get(VIEW_KEY);
+const savedQ = O ? (O.chosen() ? (O.lite() ? 'low' : 'high') : null) : store.get(QUALITY_KEY), hashView = location.hash.slice(1), savedView = store.get(VIEW_KEY);
 const state = {
-  mode: 'loading', model: null, raw: '', colors: new Map(), quality: savedQ === 'low' || savedQ === 'high' ? savedQ : 'high',
+  mode: 'loading', model: null, raw: '', colors: new Map(), quality: savedQ === 'low' || savedQ === 'high' ? savedQ : O && O.lite() ? 'low' : 'high',
   chosen: savedQ === 'low' || savedQ === 'high', fps: 0, card: '', view: VIEWS.indexOf(hashView) >= 0 ? hashView : VIEWS.indexOf(savedView) >= 0 ? savedView : 'wheel',
   kelly: 0, selected: null, feed: new Feed(), timer: 0, demoAt: 0,
 };
@@ -42,13 +43,17 @@ hud.quality(state.quality);
 let scene = null;
 try {
   scene = new FortuneScene(THREE, document.getElementById('gl'), { quality: state.quality, reduced });
+  O?.track(scene.renderer);
 } catch (e) {
   document.getElementById('nogl').hidden = false;
+  O?.ready();                                  // the numbers above still update: the page is up
 }
+O?.mode(state.quality === 'low');
 
 function setQuality(q, chosen) {
   state.quality = q;
-  if (chosen) { state.chosen = true; store.set(QUALITY_KEY, q); }
+  if (chosen) { state.chosen = true; if (O) O.setFx(q === 'high' ? 'high' : 'low'); else store.set(QUALITY_KEY, q); }
+  O?.mode(q === 'low');
   hud.quality(q);
   if (scene) scene.setQuality(q);
 }
@@ -187,6 +192,7 @@ const perf = { frames: 0, t: 0, slow: 0 };
 let last = performance.now(), lastDraw = 0, lastTick = 0;
 function frame(ts) {
   requestAnimationFrame(frame);
+  if (O ? O.hidden() : document.hidden) { last = ts; return; }     // hidden tab: no frame (the battery)
   const dt = Math.min(0.1, Math.max(0, (ts - last) / 1000));
   last = ts;
   if (ts - lastTick > 1000) {

@@ -13,7 +13,7 @@ export class FlatStage {
   setLite() {}
 
   resize(w, h) {
-    const r = Math.min(2, window.devicePixelRatio || 1);
+    const r = window.OLYMPUS ? window.OLYMPUS.dpr() : Math.min(2, window.devicePixelRatio || 1);
     this.w = w; this.h = h; this.r = r;
     this.c.width = Math.round(w * r); this.c.height = Math.round(h * r);
   }

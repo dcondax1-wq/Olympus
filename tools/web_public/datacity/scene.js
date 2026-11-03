@@ -1,6 +1,6 @@
 // The Data City's three.js world: sky, ground, every building in one InstancedMesh (+ its reflection), glow sprites,
 // streets with flowing trades, the LIT tower and the district names. No DOM beyond the canvas; city.js drives it.
-import * as THREE from './three.module.min.js';
+import * as THREE from '../jarvis/three.module.min.js';
 import { COLORS } from './util.js';
 import { streets } from './layout.js';
 import * as SH from './shaders.js';

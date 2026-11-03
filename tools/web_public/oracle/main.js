@@ -9,17 +9,19 @@ import { loadDemo, docAt, span } from './demo.js';
 import { Scene } from './scene.js';
 import { Hud, usd } from './hud.js';
 
-const QUALITY_KEY = 'oracle.quality';
+const O = window.OLYMPUS || null;          // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
+const QUALITY_KEY = 'oracle.quality';      // the old per-app key: read only when the kit is missing
 const THEME = '#04050d';
 const SITE_EVERY_S = 300;
-const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reduced = O ? O.reduced() : matchMedia('(prefers-reduced-motion: reduce)').matches;
 const forced = new URLSearchParams(location.search).has('demo');
 
 let saved = null;
-try { saved = localStorage.getItem(QUALITY_KEY); } catch (_) { /* private mode */ }
+if (O) saved = O.chosen() ? (O.lite() ? 'low' : 'high') : null;
+else try { saved = localStorage.getItem(QUALITY_KEY); } catch (_) { /* private mode */ }
 const state = {
   mode: 'loading', world: null, live: null, site: null, gate: { apiUntil: 0 }, every: 45, history: [],
-  demo: null, demoT: 0, playing: true, hold: 0, userDemo: forced, quality: saved === 'low' || saved === 'high' ? saved : 'high',
+  demo: null, demoT: 0, playing: true, hold: 0, userDemo: forced, quality: saved === 'low' || saved === 'high' ? saved : O && O.lite() ? 'low' : 'high',
   chosen: saved === 'low' || saved === 'high', fps: 0, card: '', lastDemoDoc: 0, siteAt: 0, span: null,
 };
 const nowS = () => (state.mode === 'demo' ? state.demoT : Date.now() / 1000);
@@ -29,13 +31,21 @@ hud.quality(state.quality);
 let scene = null;
 try {
   scene = new Scene(THREE, document.getElementById('gl'), { quality: state.quality, reduced });
+  O?.track(scene.renderer);
 } catch (e) {
   hud.noGL();
+  O?.ready();                                  // the numbers still update: the page is up
 }
+O?.mode(state.quality === 'low');
 
 function setQuality(q, chosen) {
   state.quality = q;
-  if (chosen) { state.chosen = true; try { localStorage.setItem(QUALITY_KEY, q); } catch (_) { /* this visit only */ } }
+  if (chosen) {
+    state.chosen = true;
+    if (O) O.setFx(q === 'high' ? 'high' : 'low');
+    else try { localStorage.setItem(QUALITY_KEY, q); } catch (_) { /* this visit only */ }
+  }
+  O?.mode(q === 'low');
   hud.quality(q);
   if (scene) scene.setQuality(q);
 }
@@ -169,6 +179,7 @@ const perf = { frames: 0, t: 0, slow: 0 };
 let last = performance.now(), lastDraw = 0, lastTick = 0;
 function frame(ts) {
   requestAnimationFrame(frame);
+  if (O ? O.hidden() : document.hidden) { last = ts; return; }       // hidden tab: no frame (the battery)
   const dt = Math.min(0.1, (ts - last) / 1000);
   last = ts;
   if (state.mode === 'demo' && state.demo) demoAdvance(dt);

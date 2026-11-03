@@ -1,6 +1,6 @@
 // Camera of the Data City: orbit (one finger / mouse drag), pinch zoom + two-finger pan, wheel zoom, a damped intro
 // swoop, slow idle rotation, focus on a building, and a fly-through. Taps (short, still presses) are handed back.
-import * as THREE from './three.module.min.js';
+import * as THREE from '../jarvis/three.module.min.js';
 
 const TAP_MOVE = 6;          // px
 const TAP_MS = 450;
