@@ -423,6 +423,7 @@ LAYOUT = """async () => { const { decode } = await import('./data.js'); const { 
     if (Math.abs(D[i].cx - D[j].cx) < D[i].half + D[j].half && Math.abs(D[i].cz - D[j].cz) < D[i].half + D[j].half) over.push([D[i].key, D[j].key]);
   return { n: it.length, want: M.buildings.length + (city.strategies || []).length + (city.discoveries || []).length + (city.harbor?.rows.length || 0),
            clash, over, inTower: it.filter((x) => Math.hypot(x.x, x.z) < 6).length,
+           inPlaza: it.filter((x) => x.kind === 'b' && Math.hypot(x.x, x.z) < L.plazaR).length,
            ok: it.every((x) => x.h > 0 && Number.isFinite(x.h) && x.lit >= 0 && x.lit <= 1), tiles: L.tiles.length, blocks: L.blocks.length }; }"""
 
 
@@ -504,8 +505,8 @@ def test_page(shots=None):
                             "document.querySelector('meta[name=viewport]').content.includes('viewport-fit=cover')")
                             and "safe-area-inset-bottom" in read_text(os.path.join(PAGE, "index.html")))
                         lay = pg.evaluate(LAYOUT)
-                        check(f"g. {mode}: layout places everything once, no two buildings overlap, districts apart",
-                              lay["n"] == lay["want"] and not lay["clash"] and not lay["over"] and not lay["inTower"] and lay["ok"], lay)
+                        check(f"g. {mode}: layout places everything once, no two buildings overlap, districts apart, the plaza free",
+                              lay["n"] == lay["want"] and not lay["clash"] and not lay["over"] and not lay["inTower"] and not lay["inPlaza"] and lay["ok"], lay)
                     if mode == "demo" and w == 390:
                         check("g. demo: the DEMO chip shows", pg.locator(".chip.demo").count() == 1)
                         pg.evaluate("location.hash = '#today'")

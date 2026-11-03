@@ -15,7 +15,7 @@ export const TILE = 4;               // blocks a tile side
 const BW = 1.45;                     // building width
 const STREET_W = 2.6;                // a street between two blocks
 const PLAZA_R = 34;                  // the plaza (LIT tower, the discoveries, the billboards)
-const MARGIN = 10;                   // between two districts
+const MARGIN = 7;                    // between two districts
 const MONUMENT_RING = 15;
 const hex = (s, d = 0xe9ecf6) => (/^#[0-9a-f]{6}$/i.test(s || '') ? parseInt(s.slice(1), 16) : d);
 
@@ -40,19 +40,23 @@ function cellsOf(n, lot = LOT) {
   return { S, half: span / 2, cells: cells.slice(0, n), off, span };
 }
 
-/** Greedy spiral packing of squares round the plaza: the first free spot, starting at a golden-angle offset. */
+/** Greedy spiral packing of squares round the plaza, the biggest first (a dense skyline round the plaza): the first free
+ *  spot on a spiral, starting at a golden-angle offset. Returns the spots in the input order. */
 function pack(halves) {
-  const placed = [], out = [];
-  halves.forEach((h, i) => {
-    const a0 = i * 2.39996;
+  const placed = [], out = new Array(halves.length);
+  const order = halves.map((h, i) => i).sort((a, b) => halves[b] - halves[a] || a - b);
+  order.forEach((i, rank) => {
+    const h = halves[i];
+    const a0 = rank * 2.39996 + 0.6;
     for (let r = PLAZA_R + h + MARGIN; ; r += 3) {
       const steps = Math.max(12, Math.ceil((2 * Math.PI * r) / 4));
       let hit = null;
       for (let s = 0; s < steps && !hit; s++) {
         const a = a0 + (s / steps) * Math.PI * 2, x = Math.cos(a) * r, z = Math.sin(a) * r;
-        if (placed.every((p) => Math.abs(p.x - x) >= p.h + h + MARGIN || Math.abs(p.z - z) >= p.h + h + MARGIN)) hit = { x, z, h };
+        const clear = Math.hypot(Math.max(0, Math.abs(x) - h), Math.max(0, Math.abs(z) - h)) >= PLAZA_R + MARGIN;   // the plaza stays free
+        if (clear && placed.every((p) => Math.abs(p.x - x) >= p.h + h + MARGIN || Math.abs(p.z - z) >= p.h + h + MARGIN)) hit = { x, z, h };
       }
-      if (hit) { placed.push(hit); out.push(hit); break; }
+      if (hit) { placed.push(hit); out[i] = hit; break; }
     }
   });
   return out;

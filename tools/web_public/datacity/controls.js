@@ -14,7 +14,7 @@ export class Orbit {
   constructor(camera, dom, opts) {
     this.camera = camera;
     this.opts = opts;
-    this.goal = { theta: -0.75, phi: 0.98, radius: opts.radius || 360, target: new THREE.Vector3(0, 0, 8) };
+    this.goal = { theta: -0.75, phi: 1.04, radius: opts.radius || 360, target: new THREE.Vector3(0, 0, 8) };
     this.view = opts.calm ? { ...this.goal, target: this.goal.target.clone() }
                           : { theta: this.goal.theta - 0.9, phi: 0.55, radius: this.goal.radius * 2.2, target: this.goal.target.clone() };  // intro swoop
     this.focusTo = null;
