@@ -386,8 +386,9 @@ def push(payload: dict, url: str, branch: str = BRANCH, git_dir: str = SCRATCH, 
         commit = _out(r)
         if r.returncode or not commit:
             return {"ok": False, "error": "commit-tree failed"}
-        r = subprocess.run(["git", "--git-dir", git_dir, "push", "-q", "--force", url, f"{commit}:refs/heads/{branch}"],
-                           capture_output=True, timeout=90, env=env)
+        from .heartbeat import _NET_CFG, run_cmd      # (2026-11-03) a hung git-remote-https can never block this thread
+        r = run_cmd(["git", *_NET_CFG, "--git-dir", git_dir, "push", "-q", "--force", url, f"{commit}:refs/heads/{branch}"],
+                    timeout=90, env={**env, "GCM_INTERACTIVE": "never"})
         if r.returncode:
             return {"ok": False, "error": _redact((r.stderr or b"").decode(errors="replace").strip()[-200:]) or "push failed"}
         if prune:                                    # the old live commits are unreachable: drop them (only this scratch dir)
