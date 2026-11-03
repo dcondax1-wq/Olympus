@@ -51,6 +51,7 @@ Put it next to the app's `index.html`, for example `https://ascend-dash.netlify.
 | `t` | number | unix **seconds** when the file was written |
 | `open` | text, optional | a route inside the app that the card opens, e.g. `#today` |
 | `theme` | text, optional | the app's top colour, `#rrggbb` (e.g. `#0b0b0d`): shown behind the iPhone's status bar while it is open in Jarvis |
+| `stale_after` | number, optional | seconds the card stays current (60 to 1,209,600; default 1,800 = 30 min). A nightly-refreshed app can say 259200 (3 days) |
 
 `kpis` and `lines` can be empty or left out. Full example:
 

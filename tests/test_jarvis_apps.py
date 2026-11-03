@@ -314,6 +314,8 @@ def part_d(p, harness, oa, example):
           r["ok"] and k[2]["value"] == "82" and k[2]["delta"] == "-3" and k[2]["trend"] == "down" and k[0]["trend"] == "up" and "delta" not in k[1]
           and r["card"]["openUrl"] == base + "#today" and set(r["card"]) == {"v", "name", "status", "kpis", "lines", "t", "open", "openUrl", "theme"} and r["card"]["theme"] == "#0b0b0d", r)
     bt = p.evaluate("([j, b]) => [A.validateStatus(Object.assign({}, j, {theme: 'red'}), {base: b}).ok, A.validateStatus(Object.assign({}, j, {theme: '#0B0B0D '}), {base: b}).card.theme]", [good, base])
+    sa = p.evaluate("([j, b]) => [A.validateStatus(Object.assign({}, j, {stale_after: 259200}), {base: b}).card.stale_after, A.validateStatus(Object.assign({}, j, {stale_after: 5}), {base: b}).ok, A.validateStatus(Object.assign({}, j, {stale_after: 'x'}), {base: b}).ok]", [good, base])
+    check("d. stale_after (2026-11-03, CRONOS): seconds kept (60 s - 14 days), anything else refused", sa == [259200, False, False], sa)
     check("d. theme (2026-11-02): only a #rrggbb colour (its top colour inside Jarvis), kept lower-case", bt == [False, "#0b0b0d"], bt)
     check("d. the same as text, as it is fetched", p.evaluate("([j, b]) => A.validateStatus(JSON.stringify(j), {base: b}).ok", [good, base]) is True)
 

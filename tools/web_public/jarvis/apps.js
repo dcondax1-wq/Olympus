@@ -518,6 +518,12 @@ export function validateStatus(input, opts) {
   const card = { v: 1, name: name.value, status: { level: j.status.level, label: label.value }, kpis, lines, t: j.t };
   // theme (optional, 2026-11-02): the app's own colour, "#rrggbb", shown behind the iPhone's status bar while it is open
   // (Jarvis cannot read another site's page, so the app says it here)
+  // stale_after (optional, 2026-11-03): how long the card stays current, in seconds (60 s to 14 days; default 30 min).
+  // Apps refreshed nightly / weekly (CRONOS) say so, so Jarvis does not grey them between site publishes.
+  if (!absent(j.stale_after)) {
+    if (typeof j.stale_after !== 'number' || !Number.isFinite(j.stale_after) || j.stale_after < 60 || j.stale_after > 14 * 86400) return bad('stale_after must be seconds, 60 to 1209600');
+    card.stale_after = Math.round(j.stale_after);
+  }
   if (!absent(j.theme) && j.theme !== '') {
     if (typeof j.theme !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(j.theme.trim())) return bad('theme must be a colour like "#0b0b0d"');
     card.theme = j.theme.trim().toLowerCase();
@@ -606,7 +612,7 @@ const lastErr = new Map();
 function finish(card, a, at, cached) {
   const nowS = at / 1000;
   return Object.assign({}, card, { app: a.id, appName: a.name || card.name, sub: a.sub || hostOf(a.url), url: a.url || '', icon: a.icon || '', glyph: a.glyph || firstChar(a.name || card.name),
-    age: Math.max(0, Math.round(nowS - card.t)), stale: nowS - card.t > STALE_AFTER_S, cached });
+    age: Math.max(0, Math.round(nowS - card.t)), stale: nowS - card.t > (card.stale_after || STALE_AFTER_S), cached });
 }
 function cards() { const m = read(CARDS_KEY); return isObj(m) ? m : {}; }
 function storedCard(a, url) {
@@ -771,7 +777,7 @@ export function renderCard(card, doc) {
   const label = clip(st.label, LIMITS.label) || LEVEL_WORD[level];
   const t = Number(c.t);
   const age = Number.isFinite(c.age) ? Math.max(0, c.age) : Number.isFinite(t) && t > 0 ? Math.max(0, Date.now() / 1000 - t) : null;
-  const stale = c.stale === true || (age != null && age > STALE_AFTER_S);
+  const stale = c.stale === true || (age != null && age > (Number(c.stale_after) > 0 ? Number(c.stale_after) : STALE_AFTER_S));
   const root = el(d, id ? 'button' : 'article', 'card jx-card jx-' + level + (stale ? ' jx-stale' : ''));
   if (id) {
     root.type = 'button';
