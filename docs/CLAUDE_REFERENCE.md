@@ -24,6 +24,7 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
 | Kalshi bot itself | the Oracle VM, `/home/ubuntu/kalshi` (real money) | not reachable from this cloud chat: its own server chat, or Remote Control on the VM (`claude remote-control` there) | — |
 | Ascend | its own host (made with ChatGPT) | added in Jarvis with + (`docs/JARVIS_APPS.md`) | — |
 | The PC (Windows) | NinjaTrader, the bot server | git auto-update; NinjaTrader login and live arming are the owner's | — |
+| DAPHNE (strategy-tree search page) | `tools/strategytree/` (engine), `tools/web_public/tree/` (page, tree.json, demo.json, jarvis.json) | rerun `python -X utf8 -m tools.strategytree` (~3 CPU-min) for new data, then same as Zenith | `tests.test_strategytree`, `tests.shots_strategytree` |
 | PC speed (Surface + main PC) | `CLEAN_PC.bat`, `scripts/clean_pc.ps1`, `docs/PC_PERFORMANCE.md` | main -> the PC's auto-update; the main PC gets the `PC_KIT` copy (OneDrive or Desktop) | `tests.test_clean_pc` |
 
 - **Phone changes:** check in WebKit (the iPhone's engine) before shipping: `PLAYWRIGHT_BROWSERS_PATH=<dir> python -m playwright
@@ -674,6 +675,14 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   +$38.7k / +$24.9k vs +$34.8k / +$16.3k, 2-week pass/fail 60.5/1.7 and 58.0/5.8 vs 57.1/1.7 and 52.2/5.8, sessions 2-6 and
   +4 ticks an add all hold; owner $/slot $827 / $815 vs $827 / $804 a month). Needs new code first: `lit_sizing`
   `scale_in_from_session` / `scale_in_funded` in `engine/live.py _add_qty` + `cloud_monitor.lit_add_usd` (not built).
+
+- **DAPHNE strategy-tree search (2026-11-03, `2026-11-03-strategy-tree.md`, `tools/strategytree/`, runs `strategytree_top1` /
+  `_top5`, page `tools/web_public/tree/`):** 80 plain level roots (PDH/PDL, overnight, Asia, London, opening-range high/low;
+  fade = sweep + reclaim, break = 5m close through; 1R / 2R; 60 / 120 min) x up to 5 conditions (vol quintile, gap, open vs
+  yesterday's range, distance from the open, hour, weekday, VWAP side, EMA trend, VIX, OR width; ES agreement skipped: no ES
+  before 2025-04), best-first branch-and-bound, train <= 2024, test 2025-26. 1,127,006 nodes, 54.6% cut by the bound; 31 of 80
+  best rules hold out of sample vs 25 / 28 with shuffled conditions = chance. Every rule trades 0.1-0.5 a week. Nothing
+  adopted; the page is a research lens, paper only.
 
 ## Key commands (run from the repo root)
 - **START BOT (owner's one start, 2026-10-26):** the owner now starts from the dashboard only (desktop **LE START** -> the
