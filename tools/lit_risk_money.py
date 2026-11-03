@@ -79,7 +79,7 @@ def _cache_path():
     """The units cache keyed by the NQ data (2026-11-03: a rehearsal sandbox, which symlinks research/ and runs on a cut
     NQ_5m.csv, wrote its 31-trade units into the shared un-keyed file and test_eval_lifecycle then found no payout)."""
     from tools import runlib as rl
-    return CACHE.replace(".pkl", f"_{rl._data_key().replace(':', '_')}.pkl")
+    return rl.keyed(CACHE)
 
 
 def load(fresh=False):

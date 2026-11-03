@@ -84,8 +84,10 @@ def _sh_units(nm, trades=None):
 
 
 def sh_units():
-    if os.path.exists(SH_CACHE):
-        return pickle.load(open(SH_CACHE, "rb"))
+    from tools import runlib as _rl
+    path = _rl.keyed(SH_CACHE)                  # keyed by the NQ data (2026-11-03: never a sandbox run's units)
+    if os.path.exists(path):
+        return pickle.load(open(path, "rb"))
     U = {nm: _sh_units(nm) for nm in SH}
     seen, first = set(), []
     for u in sorted(U["SHT"], key=lambda u: u["entry_t"]):
@@ -93,7 +95,7 @@ def sh_units():
             seen.add(u["day"])
             first.append({**u, "src": "SHT1"})
     U["SHT1"] = first
-    pickle.dump(U, open(SH_CACHE, "wb"))
+    pickle.dump(U, open(path, "wb"))
     return U
 
 
