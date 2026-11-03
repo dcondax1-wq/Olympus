@@ -1564,14 +1564,17 @@ def part_i(br, S, base):
         for what, kv in JUNK:
             p.evaluate("(kv) => { for (const [k, v] of Object.entries(kv)) localStorage.setItem(k, v); }", kv)
             p.goto(jarvis_url(base), wait_until="commit")
-            ok = True
+            ok, why = True, ""
             try:
-                wait_ready(p, 10000)
-                p.wait_for_timeout(300)
-                ok = p.evaluate(JARVIS_HOME) and p.locator("#cards [data-app]").count() >= 3
-            except Exception:
-                ok = False
-            check(f"i. junk on the phone ({what}) does not stop Jarvis", ok)
+                # Jarvis's own marker (the page's clock says when): the limit only covers a loaded machine, where the 3D core,
+                # drawn in software at 3x, can hold the page's main thread for seconds after Jarvis started (2026-11-03)
+                wait_ready(p, 60000)
+                p.wait_for_function(JARVIS_HOME, timeout=10000)
+                ok = p.locator("#cards [data-app]").count() >= 3
+                why = f"started at {_ev(p, 'window.__jarvisReadyMs')} ms, {p.locator('#cards [data-app]').count()} cards"
+            except Exception as e:
+                ok, why = False, str(e).splitlines()[0][:160]
+            check(f"i. junk on the phone ({what}) does not stop Jarvis", ok, why)
             if ok and "planner" in what:
                 a = ask(p, "what's on today")
                 check(f"i. ... and 'what's on today' still answers ({what})", len(a.strip()) > 0, a[:120])

@@ -26,6 +26,13 @@ Planner pages), with the live feed, kalshi.json and the crypto prices served fro
   s. the System view (2026-11-02): the header strip (one verdict, one dot per system), the System panel (the PC with CPU /
      RAM, Zlarior, ATLAS, BLITZ, Kalshi, the Planner; the one thing to do), the orb's strip and alert dot, "status" /
      "how's the pc"; light (no blur)
+  p. the OLYMPUS apps (2026-11-03): the built-ins from apps.js (Data City, Mind, Daphne next to Zenith, the Planner, Kalshi),
+     the OLYMPUS grid on the Jarvis screen (grouped tiles in each app's colour, live status from its jarvis.json, one-time
+     stagger), an app whose folder is not on the site shown as "not on the site yet" and never opened, the orb's groups and
+     group chips, its scrollable 44 px quick row, the ring's most used six plus "more"
+Waiting: every start waits on the page's own ready marker (html[data-ready], window.__jarvisReadyMs), never on a wall clock: on
+a loaded machine the 3D core, drawn in software, can hold the page's main thread for seconds after Jarvis has started, which
+only delays when the test sees the marker (measured 2026-11-03: ready at 0.4-1.1 s on the page's clock, seen 10-16 s later).
 Runs A (fallbacks), B (stand-ins), C (the folder as is) and the missing-part runs each get their own copy of the site.
     python -X utf8 -m tests.test_jarvis_hub      (temp folder + a local server; nothing else touched; ~4 min)
 Screenshots of the phone sizes: set JARVIS_SHOTS=<folder>.
@@ -177,6 +184,13 @@ def site(tmp, name, parts):
     with open(os.path.join(base, "planner", "index.html"), "w") as f:
         f.write("<!doctype html><title>Planner stub</title><style>body{background:#0b0b0d;color:#eee}</style><h1>Planner stub</h1><script>"
                 f"localStorage.setItem('planner.v1', JSON.stringify({json.dumps(S)}));window.loads=(window.loads||0)+1;</script>")
+    os.makedirs(os.path.join(base, "datacity"))
+    with open(os.path.join(base, "datacity", "index.html"), "w") as f:
+        f.write("<!doctype html><title>Data City stub</title><meta name='theme-color' content='#05060f'><style>body{background:#05060f;color:#eee}</style><h1>Data City stub</h1>")
+    with open(os.path.join(base, "datacity", "jarvis.json"), "w") as f:
+        json.dump({"v": 1, "name": "Data City", "status": {"level": "ok", "label": "25 pass the noise guard"},
+                   "kpis": [{"label": "Combos tested", "value": "19,942"}], "lines": ["Data to 2026-11-02"], "t": int(time.time()) - 60,
+                   "theme": "#05060f"}, f)
     os.makedirs(os.path.join(base, "kalshi-stub"))
     with open(os.path.join(base, "kalshi-stub", "index.html"), "w") as f:
         f.write("<!doctype html><title>Kalshi stub</title><style>body{background:#0b0b0d;color:#eee}</style><h1>Kalshi stub</h1>")
@@ -228,16 +242,23 @@ def part_a():
     check("a. opening Jarvis waits on the network at most NAV_WAIT_MS when a saved copy exists; no network + no copy = a dark Retry page",
           "const NAV_WAIT_MS = 3500;" in sw and "Promise.race([net, slow])" in sw and "return copy || offlinePage();" in sw
           and "background:#000" in sw and "location.reload()" in sw)
-    check("a. worker v7: data.js, jarvis.css, the fonts, every separate part and switcher.js in SHELL, each saved on its own (a missing part is skipped)",
-          "const CACHE = 'jarvis-v12';" in sw and "'./switcher.js'" in sw and all(f"'./{f}'" in sw for f in ("data.js",) + PARTS + FONTS) and "'./jarvis.css?v=j8'" in sw
-          and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
+    check("a. worker v13: data.js, jarvis.css, the fonts, every separate part, switcher.js and the new brain's obsidian.js / memory.js / "
+          "assist-ui.js in SHELL, each saved on its own (a missing part is skipped)",
+          "const CACHE = 'jarvis-v13';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js") + PARTS + FONTS)
+          and "'./jarvis.css?v=j9'" in sw and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
+    shell = re.search(r"const SHELL = \[([^\]]*)\]", sw)
+    shell_files = re.findall(r"'\./([^'?]+)", shell.group(1)) if shell else []
+    check("a. every file of SHELL is in the folder (a part the page loads is never left out of the saved copy, nor a saved file missing)",
+          shell_files and all(os.path.exists(os.path.join(JV, f)) for f in shell_files if f)
+          and all(f"'./{f}'" in sw for f in re.findall(r"load\('\w+', '\./([\w-]+\.js)'", open(os.path.join(JV, "index.html"), encoding="utf-8").read())),
+          [f for f in shell_files if f and not os.path.exists(os.path.join(JV, f))])
     # 2026-11-01 ("Just a black screen" on the iPhone): no endless network wait, the previous copy as a fallback, old copies kept
     # until the new one holds every core file, and the page draws even when its stylesheet never arrives
     check("a. worker v6: never an endless network wait (NET_MAX_MS for a page or file with no copy; then the dark page / a failed file)",
           "const NET_MAX_MS = 9000;" in sw and "copy ? NAV_WAIT_MS : NET_MAX_MS" in sw and "return offlinePage();" in sw
           and "await net" not in sw.replace("await Promise.race([net", ""))
     check("a. worker v6: a file this copy lacks comes from the previous Jarvis copy; old copies go only when every CORE file is saved",
-          "const OLD = ['jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];" in sw and "for (const name of [CACHE, ...OLD])" in sw
+          "const OLD = ['jarvis-v12', 'jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];" in sw and "for (const name of [CACHE, ...OLD])" in sw
           and "CORE.map((u) => c.match(u, { ignoreSearch: true }))" in sw)
     jhtml = open(os.path.join(JV, "index.html"), encoding="utf-8").read()
     check("a. the page draws without its stylesheet after 5 s (a stylesheet still on the way keeps an iPhone screen black)",
@@ -338,7 +359,7 @@ def new_page(br, width=390, sw=False, boot=False, voice=False, height=844, news=
     if not boot:                                   # the boot screen plays once per launch: skipped where it is not the subject
         ctx.add_init_script("try { sessionStorage.setItem('jarvis.booted', '1'); } catch (e) {}")
     if not news:                                   # so is the What's new card (once per release)
-        ctx.add_init_script("try { localStorage.setItem('jarvis.seen', JSON.stringify('j7')); } catch (e) {}")
+        ctx.add_init_script("try { localStorage.setItem('jarvis.seen', JSON.stringify('j8')); } catch (e) {}")
     if voice:
         ctx.add_init_script(FAKE_VOICE)
     p = ctx.new_page()
@@ -347,8 +368,10 @@ def new_page(br, width=390, sw=False, boot=False, voice=False, height=844, news=
     return ctx, p, errs, kal
 
 
-def ready(p):
-    p.wait_for_function("document.documentElement.dataset.ready === '1'", timeout=10000)
+def ready(p, timeout=60000):
+    """Until Jarvis's start finished: the page's own marker (set ~0.5 s into the start). The long limit only matters on a loaded
+    machine, where the software-drawn 3D core can hold the main thread after the start (see the module docstring)."""
+    p.wait_for_function("document.documentElement.dataset.ready === '1'", timeout=timeout, polling=100)
 
 
 def go(p, app):
@@ -774,8 +797,8 @@ def run_c(br, url):
         const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
-          const c = await caches.open('jarvis-v12');
-          const got = await Promise.all(['./index.html', './data.js', './jarvis.css?v=j8', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
+          const c = await caches.open('jarvis-v13');
+          const got = await Promise.all(['./index.html', './data.js', './jarvis.css?v=j9', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));
         }
@@ -788,18 +811,17 @@ def run_c(br, url):
     # QA 2026-11-01: on a slow network only the page waits (3.5 s), then its files come from the saved copy at once; it used to
     # wait 3.5 s more for each file (css, data.js ...): usable after ~10 s instead of ~3.6 s
     SLOW["s"] = 6.0
-    t0 = time.time()
     p.reload(wait_until="commit")
-    t1 = time.time()
     try:
-        p.wait_for_function("document.documentElement.dataset.ready === '1'", timeout=20000)
-        t2 = time.time()
+        ready(p)
+        # the page's own clock (from its navigation): when the saved page arrived, when its start finished
+        t1, t2 = p.evaluate("[performance.getEntriesByType('navigation')[0].responseStart / 1000, window.__jarvisReadyMs / 1000]")
     except Exception:                                   # noqa: BLE001 - reported below
-        t2 = t1 + 99.0
+        t1, t2 = 99.0, 99.0
     SLOW["s"] = 0.0
     # the page itself waits up to 3.5 s; after it, the old chain waited 3.5 s more for each file (css, data.js, ...)
     check("j. slow network (every answer 6 s): the saved page in ~3.5 s, then usable at once (its own files never wait again)",
-          t1 - t0 < 6.0 and t2 - t1 < 5.0, (round(t1 - t0, 2), round(t2 - t1, 2)))     # the old chain: 3.5 s per file after the page (7 s and more)
+          t1 < 6.0 and t2 - t1 < 5.0, (round(t1, 2), round(t2 - t1, 2)))     # the old chain: 3.5 s per file after the page (7 s and more)
     p.wait_for_timeout(300)
     ctx.set_offline(True)
     p.reload()
@@ -1071,6 +1093,116 @@ def run_look(br, url):
     ctx.close()
 
 
+def run_olympus(br, url):
+    """p. the OLYMPUS apps (2026-11-03): the grid on the Jarvis screen, an app not on the site, the orb's groups, quick row and ring.
+    The test site has Data City (its jarvis.json) but not Mind or Daphne (their folders missing)."""
+    ctx, p, errs, _ = new_page(br)
+    ctx.add_init_script("try { if (!localStorage.getItem('jarvis.orb.use')) localStorage.setItem('jarvis.orb.use', JSON.stringify({ kalshi: 4, datacity: 2 })); } catch (e) {}")   # once (init scripts run in every frame)
+    p.goto(url + "jarvis/")
+    ready(p)
+    p.wait_for_function("document.documentElement.dataset.switcher === 'module' && !!document.getElementById('nxOrb')", timeout=30000)
+    # the cards arrive: Data City's from its jarvis.json, Mind's and Daphne's folders answer 404
+    p.wait_for_function("""(() => { const t = (id) => document.querySelector(`#olyApps [data-app="${id}"]`);
+        return t('datacity') && /19,942/.test(t('datacity').textContent) && t('mind') && t('mind').classList.contains('soon') && t('tree').classList.contains('soon'); })()""",
+        timeout=30000, polling=100)
+    g = p.evaluate("""(() => { const box = document.getElementById('olyApps');
+        return { heads: [...box.querySelectorAll('.og-g')].map((h) => h.textContent), tiles: [...box.querySelectorAll('.og-t')].map((t) => ({ id: t.dataset.app || (t.dataset.ogAdd ? 'add' : ''),
+          name: (t.querySelector('.og-n') || {}).textContent, v: (t.querySelector('.og-v') || {}).textContent || '', s: (t.querySelector('.og-s') || {}).textContent || '',
+          soon: t.classList.contains('soon'), acr: t.style.getPropertyValue('--acr'), h: t.getBoundingClientRect().height, label: t.getAttribute('aria-label') })),
+          cards: [...document.querySelectorAll('#cards > [data-own]')].map((c) => c.dataset.app || c.dataset.slot || '') }; })()""")
+    t = {x["id"]: x for x in g["tiles"]}
+    check("p. the OLYMPUS grid: TRADING, LIFE, MONEY with every app in the orb's order (+ ADD), each tile in its own colour, 44 px+",
+          g["heads"] == ["TRADING", "LIFE", "MONEY"] and [x["id"] for x in g["tiles"]] == ["zenith", "datacity", "tree", "planner", "mind", "kalshi", "add"]
+          and t["datacity"]["acr"] == "34,211,238" and t["tree"]["acr"] == "52,245,160" and all(x["h"] >= 44 for x in g["tiles"]), g)
+    check("p. live status on the tiles: Data City from its jarvis.json (19,942 · 25 pass the noise guard), NQ BOT and KALSHI from the shell's own feeds",
+          t["datacity"]["v"] == "19,942" and "25 pass the noise guard" in t["datacity"]["s"] and t["zenith"]["name"] == "NQ BOT" and t["zenith"]["v"].startswith("+$")
+          and t["kalshi"]["v"] and "Data City" in t["datacity"]["label"], g["tiles"])
+    check("p. an app whose folder is not on the site (Mind, Daphne): 'Not on the site yet', dimmed, never an error",
+          t["mind"]["soon"] and t["tree"]["soon"] and "Not on the site yet" in t["mind"]["s"] and t["mind"]["v"] == "SOON" and not t["datacity"]["soon"], g["tiles"])
+    check("p. the OLYMPUS apps are tiles, not cards: the project cards stay Zenith, the Planner and Kalshi", g["cards"] == ["zenith", "planner", "kalshi"], g["cards"])
+    # the stagger: once, when the grid comes into view (3D effects High here)
+    st0 = p.evaluate("document.getElementById('olyApps').className")
+    p.evaluate("document.getElementById('olyApps').scrollIntoView({ block: 'center' })")
+    try:
+        p.wait_for_function("!document.getElementById('olyApps').classList.contains('pre')", timeout=8000, polling=50)
+        p.wait_for_function("!document.getElementById('olyApps').classList.contains('go')", timeout=8000, polling=100)
+    except Exception:                                   # noqa: BLE001 - reported below
+        pass
+    op = p.evaluate("[...document.querySelectorAll('#olyApps .og-t')].map((t) => +getComputedStyle(t).opacity)")
+    check("p. the tiles come in one after the other the first time the grid is seen (High), then stay put",
+          "pre" in st0.split() and min(op) >= 0.55 and p.evaluate("document.getElementById('olyApps').className") == "og", (st0, op))
+    # a tap on Mind (not on the site): a note, Jarvis stays; on Data City: it opens full screen in its own colour
+    p.evaluate("document.querySelector('#olyApps [data-app=\"mind\"]').click()")
+    p.wait_for_function("(() => { const t = document.getElementById('toast'); return !!t && !t.hidden && /not on the site yet/.test(t.textContent); })()", timeout=5000)
+    check("p. a tap on an app not on the site: 'not on the site yet', Jarvis stays (no 404 page inside Jarvis)",
+          p.evaluate("window.__jarvis.active()") == "home" and not p.locator("#v-mind").count())
+    p.evaluate("document.querySelector('#olyApps [data-app=\"datacity\"]').click()")
+    p.wait_for_function("window.__jarvis.active() === 'datacity' && !!document.querySelector('#v-datacity iframe')", timeout=8000)
+    try:
+        p.wait_for_function("document.querySelector('meta[name=\"theme-color\"]').content === '#05060f'", timeout=8000)
+    except Exception:                                   # noqa: BLE001 - reported below
+        pass
+    dc = p.evaluate("[document.querySelector('#v-datacity iframe').src, document.querySelector('meta[name=\"theme-color\"]').content, document.documentElement.dataset.mode]")
+    check("p. a tap on Data City opens it full screen (its own page in Jarvis's frame), its colour behind the status bar",
+          dc[0].endswith("/datacity/") and dc[1] == "#05060f" and dc[2] == "app", dc)
+    # the orb: groups, chips, the quick row
+    p.click("#nxOrb")
+    p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=5000)
+    p.wait_for_timeout(450)
+    o = p.evaluate("""(() => { const row = document.getElementById('nxRow');
+        return { heads: [...document.querySelectorAll('#nxTrack .nx-gl')].map((h) => h.textContent), chips: [...document.querySelectorAll('#nxGroups .nx-gb')].map((b) => [b.dataset.nxJump, b.classList.contains('on'), Math.round(b.getBoundingClientRect().height)]),
+          off: [...document.querySelectorAll('#nxTrack .nx-card.off')].map((c) => c.dataset.nx), now: (document.querySelector('#nxTrack .nx-card.now') || {}).dataset,
+          q: [...row.querySelectorAll('.nx-qb')].map((b) => [b.dataset.nx, Math.round(b.getBoundingClientRect().height)]), seps: row.querySelectorAll('.nx-qs').length,
+          scroll: [row.scrollWidth, row.clientWidth, getComputedStyle(row).overflowX], sw: document.documentElement.scrollWidth }; })()""")
+    check("p. the orb: group headings and chips (TRADING, LIFE, MONEY; Data City's group lit), the not-yet apps dimmed, Data City NOW",
+          o["heads"] == ["TRADING", "LIFE", "MONEY"] and [c[0] for c in o["chips"]] == ["trading", "life", "money"] and o["chips"][0][1] and all(c[2] >= 44 for c in o["chips"])
+          and sorted(o["off"]) == ["mind", "tree"] and o["now"] and o["now"].get("nx") == "datacity", o)
+    check("p. the quick row: every app in group order with separators, 44 px+ buttons, one scrollable line (no page sideways scroll)",
+          [x[0] for x in o["q"]] == ["home", "zenith", "datacity", "tree", "planner", "mind", "kalshi"] and o["seps"] == 3 and all(x[1] >= 44 for x in o["q"])
+          and o["scroll"][2] == "auto" and o["sw"] <= 390, o)
+    p.click('#nxGroups [data-nx-jump="money"]')
+    try:
+        p.wait_for_function("""(() => { const t = document.getElementById('nxTrack'), c = t.querySelector('.nx-card[data-nx="kalshi"]');
+            return Math.abs(c.offsetLeft + c.offsetWidth / 2 - (t.scrollLeft + t.clientWidth / 2)) < 30; })()""", timeout=5000, polling=50)
+        jumped = True
+    except Exception:                                   # noqa: BLE001 - reported below
+        jumped = False
+    check("p. a group chip glides the cards to that group (MONEY: Kalshi in the middle), the switcher stays open",
+          jumped and p.evaluate("document.getElementById('nxRoot').classList.contains('on')"))
+    p.click('#nxRow .nx-qb[data-nx="home"]')
+    p.wait_for_function("window.__jarvis.active() === 'home'", timeout=5000)
+    use = p.evaluate("JSON.parse(localStorage.getItem('jarvis.orb.use'))")
+    check("p. every switch counts on this phone for the ring (Data City opened once more, Jarvis once)", use.get("datacity") == 3 and use.get("home") == 1 and use.get("kalshi") == 4, use)
+    # the ring with more than six apps: the six most opened, then "more" (the whole switcher)
+    p.evaluate("""() => import('./apps.js').then((A) => { for (const n of ['Alpha', 'Beta', 'Gamma']) A.addApp({ name: n, url: 'https://' + n.toLowerCase() + '.example/' }); })""")
+    p.evaluate("localStorage.setItem('jarvis.orb.use', JSON.stringify({ 'x-gamma': 9, kalshi: 7, 'x-alpha': 5, zenith: 1 }))")
+    p.reload()
+    ready(p)
+    p.wait_for_function("document.documentElement.dataset.switcher === 'module' && !!document.getElementById('nxOrb')", timeout=30000)
+    r = p.evaluate("(() => { const b = document.getElementById('nxOrb').getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2]; })()")
+    p.mouse.move(r[0], r[1]); p.mouse.down()
+    p.wait_for_function("document.querySelectorAll('.nx-fan.on .nx-fb').length > 0", timeout=5000)
+    p.wait_for_function("[...document.querySelectorAll('.nx-fb')].every((b) => !b.getAnimations || !b.getAnimations().length)", timeout=5000)   # grown out
+    ring = p.evaluate("[...document.querySelectorAll('.nx-fan.on .nx-fb')].map((b) => { const q = b.getBoundingClientRect(); return { id: b.dataset.nx || (b.dataset.nxMore ? 'MORE' : ''), x: q.left + q.width / 2, y: q.top + q.height / 2 }; })")
+    more = next((b for b in ring if b["id"] == "MORE"), None)
+    if more:                                            # slide onto "more" and let go
+        p.mouse.move((r[0] + more["x"]) / 2, (r[1] + more["y"]) / 2); p.mouse.move(more["x"], more["y"])
+    p.mouse.up()
+    ids = [b["id"] for b in ring]
+    check("p. the ring: the six most opened apps (most first), then 'more'; none on top of another, all on screen",
+          ids[:3] == ["x-gamma", "kalshi", "x-alpha"] and len(ids) == 7 and ids[-1] == "MORE" and "mind" not in ids and "tree" not in ids
+          and all((a["x"] - b["x"]) ** 2 + (a["y"] - b["y"]) ** 2 >= 44 ** 2 for i, a in enumerate(ring) for b in ring[i + 1:])
+          and all(30 <= b["x"] <= 360 and 30 <= b["y"] <= 844 for b in ring), ring)
+    try:
+        p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=5000)
+    except Exception:                                   # noqa: BLE001 - reported below
+        pass
+    heads = p.evaluate("[...document.querySelectorAll('#nxTrack .nx-gl')].map((h) => h.textContent)")
+    check("p. 'more' opens the whole switcher; the added apps have their own group (MORE)", heads == ["TRADING", "LIFE", "MONEY", "MORE"], heads)
+    check("p. no page errors", not errs, errs)
+    ctx.close()
+
+
 def run_system(br, url):
     """Run S (2026-11-02, the System view): "everything combined and simple". One line per system (the PC, Zlarior, ATLAS,
     BLITZ, Kalshi, the Planner), one verdict (ALL GOOD / HEADS UP / NEEDS YOU + the one thing to do): the strip in the header,
@@ -1184,8 +1316,9 @@ def run_switcher(br, url):
       name: (c.querySelector('.nx-nm b') || {}).textContent, val: (c.querySelector('.nx-val') || {}).textContent || '', now: c.classList.contains('now'),
       lines: [...c.querySelectorAll('.nx-ln')].map((l) => l.textContent) }))""")
     names = [c["name"] for c in cards]
-    check("n. tap: the switcher opens with JARVIS, NQ BOT, CALENDAR, KALSHI and + ADD, Jarvis's card marked NOW",
-          names[:4] == ["JARVIS", "NQ BOT", "CALENDAR", "KALSHI"] and names[-1] == "ADD" and cards[0]["now"] and not any(c["now"] for c in cards[1:]), cards)
+    check("n. tap: the switcher opens with JARVIS, then TRADING (NQ BOT, DATA CITY, DAPHNE), LIFE (CALENDAR, MIND), MONEY (KALSHI) and + ADD, "
+          "Jarvis's card marked NOW",
+          names == ["JARVIS", "NQ BOT", "DATA CITY", "DAPHNE", "CALENDAR", "MIND", "KALSHI", "ADD"] and cards[0]["now"] and not any(c["now"] for c in cards[1:]), cards)
     nq = next((c for c in cards if c["id"] == "zenith"), {})
     cal = next((c for c in cards if c["id"] == "planner"), {})
     check("n. the cards are live: NQ BOT shows today's $ across the accounts (+$308) and their status; CALENDAR the next thing or FREE",
@@ -1211,7 +1344,8 @@ def run_switcher(br, url):
         return p.evaluate("(document.querySelector('#modes [aria-current=\"page\"]') || {dataset: {}}).dataset.app")
     a1 = swipe(-80)
     a2 = swipe(80)
-    check("n. swipe the orb left: the next app (Kalshi); right: back (the Planner)", a1 == "kalshi" and a2 == "planner", (a1, a2))
+    # the next app in the switch order that can open: Mind's folder is not on this test site (its card dimmed), so Kalshi
+    check("n. swipe the orb left: the next app that can open (Mind is not on this site: Kalshi); right: back (the Planner)", a1 == "kalshi" and a2 == "planner", (a1, a2))
     # hold: the ring; slide onto Jarvis and let go
     p.mouse.move(cx, cy); p.mouse.down(); p.wait_for_timeout(520)
     ring = p.evaluate("""() => [...document.querySelectorAll('.nx-fan.on .nx-fb')].map((b) => { const r = b.getBoundingClientRect(); return { id: b.dataset.nx, x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width }; })""")
@@ -1220,9 +1354,10 @@ def run_switcher(br, url):
         p.mouse.move((cx + home["x"]) / 2, (cy + home["y"]) / 2); p.mouse.move(home["x"], home["y"])
     p.mouse.up(); p.wait_for_timeout(450)
     cur = p.evaluate("(document.querySelector('#modes [aria-current=\"page\"]') || {dataset: {}}).dataset.app")
-    check("n. hold: the ring fans out with every other app (44 px+ each, on screen); slide onto Jarvis and let go: Jarvis",
-          len(ring) == 3 and all(b["w"] >= 44 and 0 <= b["x"] <= 390 and 0 <= b["y"] <= 844 for b in ring) and cur == "home"
-          and p.evaluate("!document.querySelector('.nx-fan.on')"), (ring, cur))
+    check("n. hold: the ring fans out with every other app that can open (44 px+ each, on screen, none on another); slide onto Jarvis and let go: Jarvis",
+          sorted(b["id"] for b in ring) == ["datacity", "home", "kalshi", "zenith"] and all(b["w"] >= 44 and 0 <= b["x"] <= 390 and 0 <= b["y"] <= 844 for b in ring)
+          and all((a["x"] - b["x"]) ** 2 + (a["y"] - b["y"]) ** 2 >= 44 ** 2 for i, a in enumerate(ring) for b in ring[i + 1:])
+          and cur == "home" and p.evaluate("!document.querySelector('.nx-fan.on')"), (ring, cur))
     # drag: move it (kept on this phone)
     p.mouse.move(cx, cy); p.mouse.down()
     for k in range(1, 9):
@@ -1232,15 +1367,22 @@ def run_switcher(br, url):
       cur: (document.querySelector('#modes [aria-current="page"]') || {dataset: {}}).dataset.app, open: document.getElementById('nxRoot').classList.contains('on') })""")
     check("n. drag: the orb moves up and stays there (kept on this phone); no app switch, no switcher",
           moved["pos"] and moved["pos"]["side"] == "r" and moved["top"] < r[1] - 80 and moved["cur"] == "home" and not moved["open"], moved)
-    # it steps aside for the keyboard and the ⋯ keys
-    p.focus("#q"); p.wait_for_timeout(150)
-    kb = p.evaluate("getComputedStyle(document.getElementById('nxOrb')).visibility")
-    p.evaluate("document.activeElement.blur()"); p.wait_for_timeout(200)
-    kb2 = p.evaluate("getComputedStyle(document.getElementById('nxOrb')).visibility")
-    p.click("#moreB"); p.wait_for_timeout(200)
-    mk = p.evaluate("getComputedStyle(document.getElementById('nxOrb')).visibility")
-    p.click("#moreB"); p.wait_for_timeout(200)
-    mk2 = p.evaluate("getComputedStyle(document.getElementById('nxOrb')).visibility")
+    # it steps aside for the keyboard and the ⋯ keys: each state waited for (a 60 ms timer brings it back after the keyboard,
+    # which a loaded machine can stretch past any fixed wait)
+    def orb_is(state):
+        try:
+            p.wait_for_function(f"getComputedStyle(document.getElementById('nxOrb')).visibility === '{state}'", timeout=5000, polling=50)
+        except Exception:                               # noqa: BLE001 - reported below
+            pass
+        return p.evaluate("getComputedStyle(document.getElementById('nxOrb')).visibility")
+    p.focus("#q")
+    kb = orb_is("hidden")
+    p.evaluate("document.activeElement.blur()")
+    kb2 = orb_is("visible")
+    p.click("#moreB")
+    mk = orb_is("hidden")
+    p.click("#moreB")
+    mk2 = orb_is("visible")
     check("n. the orb steps aside while typing and while the ⋯ keys are open, then comes back", (kb, kb2, mk, mk2) == ("hidden", "visible", "hidden", "visible"), (kb, kb2, mk, mk2))
     # Zenith mode: the orb stays on top, Zenith mode's own control is hidden; tap -> the switcher over Zenith
     go(p, "zenith"); p.wait_for_timeout(1200)
@@ -1547,6 +1689,7 @@ def main():
             run_c(br, host + variants["C"])
             run_look(br, host + variants["C"])
             run_switcher(br, host + variants["C"])
+            run_olympus(br, host + variants["C"])
             run_system(br, host + variants["C"])
             run_intro(br, host + variants["C"])
             br.close()

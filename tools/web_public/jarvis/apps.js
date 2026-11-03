@@ -1,8 +1,10 @@
 // Jarvis apps (owner 2026-11-01: "I'm getting ChatGPT to make an Ascend dashboard we will eventually add"): Jarvis as an
 // app platform. Any dashboard plugs in with one link and can show a live card on the Jarvis screen.
 //
-//   listApps({hidden})       the dashboards for the bar: Zenith, Planner, Kalshi (built in), Ascend once enabled, then the
-//                            ones the owner added with +, in the order added. Fresh copies; Jarvis's own screen is the shell's.
+//   listApps({hidden})       the dashboards for the bar, by group (GROUPS): the OLYMPUS built-ins (BUILT_INS: Zenith, Data
+//                            City, Daphne, Planner, Mind, Kalshi ...), Ascend once enabled (LIFE), then the ones the owner
+//                            added with + (MORE), in the order added. Fresh copies; Jarvis's own screen is the shell's.
+//   missing(app)             a built-in whose folder is not on the site yet (its jarvis.json answered 404): not opened
 //   getApp(id)               one of them (the hidden Ascend slot too), or null
 //   addApp({name, url, statusUrl?, icon?})  -> {ok: true, app, existed?} | {ok: false, field, error (plain words)}
 //                            no name: one is made from the link (and replaced by the name in its jarvis.json);
@@ -53,18 +55,45 @@ export const ASCEND_NAME = 'Ascend';
 // Ascend's link once the owner sends it (owner: "send it and it is built in"): then "Add Ascend" adds it with one tap.
 // Always another site, never under demetrades2000-coder.github.io (see SAME_SITE_WARN). Empty: "Add Ascend" asks for the link.
 export const ASCEND_URL = '';
-// Every page on Jarvis's origin (demetrades2000-coder.github.io) can read what Jarvis and the Planner keep in localStorage
-// (AI keys, the Planner's sync token). Ours there: the dashboard site's root page (Zenith) and its planner/, kalshi/ and
-// jarvis/ folders; a link anywhere else on that origin is still added, with this warning in the result and on the app.
-export const SAME_SITE_WARN = "same-site apps can read Jarvis's saved keys";
-const OWN_FOLDERS = ['planner/', 'kalshi/', 'jarvis/'];
-
-export const BUILT_INS = Object.freeze([
-  Object.freeze({ id: 'zenith', name: 'Zenith', sub: 'NQ bots \u00b7 Zlarior \u00b7 ATLAS \u00b7 BLITZ', url: '../', icon: '../icons/icon-192.png?v=p111030' }),
-  Object.freeze({ id: 'planner', name: 'Planner', sub: 'Calendar, tasks and projects', url: '../planner/', icon: '../planner/icon-192.png' }),
-  Object.freeze({ id: 'kalshi', name: 'Kalshi', sub: 'Kalshi bot \u00b7 from your PC', url: '../kalshi/', glyph: 'K' }),
+// ------------------------------------------------------------------ OLYMPUS: every built-in app, one row each (2026-11-03)
+// Adding an app to OLYMPUS is one row in BUILT_INS, nothing else: its folder on the dashboard site (../<id>/) holds its
+// index.html and its jarvis.json (the status contract below: its live card, its `theme` = its top colour). The bar, the
+// orb's switcher and ring, the OLYMPUS grid on the Jarvis screen, the same-site check and the reserved ids all read this list.
+// A row whose folder is not on the site yet (its jarvis.json answers 404) never breaks anything: missing(app) is true, the
+// shell shows "not on the site yet" and does not open it.
+//   app(id, name, group, accent, sub, more?)   group: a GROUPS id; accent: its glow colour on the Jarvis screen;
+//   more: {url (default ../<id>/), icon, glyph, live (default true: its card from its jarvis.json; false: the shell draws it)}
+// The switcher shows JARVIS first, then the groups in GROUPS order, each in this list's order; apps added with + go in MORE.
+export const GROUPS = Object.freeze([
+  Object.freeze({ id: 'trading', name: 'TRADING' }), Object.freeze({ id: 'life', name: 'LIFE' }),
+  Object.freeze({ id: 'money', name: 'MONEY' }), Object.freeze({ id: 'more', name: 'MORE' }),
 ]);
-const RESERVED = new Set(['home', 'jarvis', 'zenith', 'planner', 'kalshi', ASCEND_ID]);
+const app = (id, name, group, accent, sub, more) => Object.freeze(Object.assign({ id, name, group, accent, sub, url: '../' + id + '/', live: true }, more));
+export const BUILT_INS = Object.freeze([
+  app('zenith', 'Zenith', 'trading', '#a855f7', 'NQ bots \u00b7 Zlarior \u00b7 ATLAS \u00b7 BLITZ', { url: '../', icon: '../icons/icon-192.png?v=p111030', live: false }),
+  app('datacity', 'Data City', 'trading', '#22d3ee', 'Every combo tested, as a city', { glyph: '\u0394' }),
+  app('tree', 'Daphne', 'trading', '#34f5a0', 'The strategy tree search', { glyph: '\u03a8' }),
+  app('planner', 'Planner', 'life', '#60a5fa', 'Calendar, tasks and projects', { icon: '../planner/icon-192.png', live: false }),
+  app('mind', 'Mind', 'life', '#c084fc', 'Your vault as a living 3D brain', { glyph: '\u03a9' }),
+  app('kalshi', 'Kalshi', 'money', '#2ef2d0', 'Kalshi bot \u00b7 from your PC', { glyph: 'K', live: false }),
+]);
+const GROUP_IDS = GROUPS.map((g) => g.id);
+const groupRank = (g) => { const i = GROUP_IDS.indexOf(g); return i < 0 ? GROUP_IDS.length - 1 : i; };     // unknown: MORE
+/** Any list of apps ({id, group}) in sections, as the switcher and the Jarvis screen show them: Jarvis ('home') first on its
+ *  own (group null), then each of GROUPS in order with its apps in list order; an unknown group counts as MORE; no empty ones. */
+export function byGroup(list) {
+  const all = (Array.isArray(list) ? list : []).filter((a) => isObj(a) && a.id);
+  const home = all.filter((a) => a.id === 'home'), rest = all.filter((a) => a.id !== 'home');
+  const out = GROUPS.map((g, i) => ({ group: g, apps: rest.filter((a) => groupRank(a.group) === i) })).filter((s) => s.apps.length);
+  return home.length ? [{ group: null, apps: home }].concat(out) : out;
+}
+
+// Every page on Jarvis's origin (demetrades2000-coder.github.io) can read what Jarvis and the Planner keep in localStorage
+// (AI keys, the Planner's sync token). Ours there: the dashboard site's root page (Zenith), jarvis/ and every built-in's
+// folder; a link anywhere else on that origin is still added, with this warning in the result and on the app.
+export const SAME_SITE_WARN = "same-site apps can read Jarvis's saved keys";
+const OWN_FOLDERS = ['jarvis/'].concat(BUILT_INS.map((b) => b.url.replace(/^\.\.\//, '')).filter(Boolean));
+const RESERVED = new Set(['home', 'jarvis', ASCEND_ID].concat(BUILT_INS.map((b) => b.id)));
 const ID_RE = /^[A-Za-z0-9][A-Za-z0-9_-]{0,47}$/;
 const CTRL_RE = /[\u0000-\u001f\u007f-\u009f\u2028\u2029\u202a-\u202e\u2066-\u2069]/;
 const CTRL_G = /[\u0000-\u001f\u007f-\u009f\u2028\u2029\u202a-\u202e\u2066-\u2069]/g;
@@ -276,29 +305,34 @@ function mirrorRemove(fp) {
   }
 }
 
-function builtinView(b) { return Object.assign({}, b, { statusUrl: b.statusUrl || '', builtin: true, extra: false, removable: false }); }
+// a built-in with a live card gets its folder's jarvis.json (read against this page, like its link)
+function builtinView(b) {
+  return Object.assign({}, b, { glyph: b.glyph || firstChar(b.name), statusUrl: b.live ? defaultStatusUrl(cleanUrl(b.url)) : '', builtin: true, extra: false, removable: false });
+}
 const warned = (v) => { if (sameSiteRisk(v.url)) v.warn = SAME_SITE_WARN; return v; };
 function slotView(s) {
   return warned({ id: ASCEND_ID, name: ASCEND_NAME, sub: hostOf(s.url), url: s.url, icon: s.icon || '', glyph: 'A', statusUrl: s.statusUrl || defaultStatusUrl(s.url),
-    builtin: false, extra: true, removable: true, slot: true, enabled: true });
+    group: 'life', builtin: false, extra: true, removable: true, slot: true, enabled: true });
 }
 function addedView(a) {
   const v = { id: a.id, name: a.name, sub: hostOf(a.url), url: a.url, icon: a.icon || '', glyph: firstChar(a.name), statusUrl: a.statusUrl || defaultStatusUrl(a.url),
-    builtin: false, extra: true, removable: true };
+    group: 'more', builtin: false, extra: true, removable: true };
   if (a.autoName) v.autoName = true;
   return warned(v);
 }
 // an add's result carries the app's warning (a link on Jarvis's own site outside our pages)
 const added = (app, existed) => { const r = { ok: true, app }; if (existed) r.existed = true; if (app.warn) r.warn = app.warn; return r; };
-/** The dashboards, in bar order. {hidden: true} also lists the Ascend slot while it is not enabled (enabled: false). */
+/** The dashboards in switch order: by group (GROUPS: trading, life, money, then the ones added with +), each group in
+ *  BUILT_INS order, Ascend in LIFE once enabled. {hidden: true} also lists the Ascend slot while it is not enabled. */
 export function listApps(opts) {
   const st = load();
   const out = BUILT_INS.map(builtinView);
+  const own = new Set(out.map((b) => cleanUrl(b.url)));
   if (st.ascend) out.push(slotView(st.ascend));
   else if (opts && opts.hidden) out.push({ id: ASCEND_ID, name: ASCEND_NAME, sub: 'Paste its link once to add it', url: '', icon: '', glyph: 'A', statusUrl: '',
-    builtin: false, extra: true, removable: false, slot: true, enabled: false, hidden: true });
-  for (const a of st.apps) out.push(addedView(a));
-  return out;
+    group: 'life', builtin: false, extra: true, removable: false, slot: true, enabled: false, hidden: true });
+  for (const a of st.apps) if (!own.has(a.url)) out.push(addedView(a));    // one added by hand before it was built in: once
+  return out.map((a, i) => [groupRank(a.group), i, a]).sort((x, y) => x[0] - y[0] || x[1] - y[1]).map((x) => x[2]);
 }
 export function getApp(id) { return listApps({ hidden: true }).find((a) => a.id === id) || null; }
 
@@ -497,13 +531,15 @@ export function validateStatus(input, opts) {
 }
 
 // ------------------------------------------------------------------ fetching cards (5 s, 8 KB, last good card kept)
-/** The status link: the app's statusUrl, else jarvis.json in the app's folder. '' for the built-ins (their own cards). */
+/** The status link: the app's statusUrl, else jarvis.json in the app's folder (a live built-in's too); '' for Zenith, the
+ *  Planner and Kalshi (the shell draws their cards). */
 export function statusUrlOf(app) {
   const a = typeof app === 'string' ? getApp(app) : app;
   if (!isObj(a)) return '';
   const base = cleanUrl(typeof a.url === 'string' ? a.url : '');
   if (typeof a.statusUrl === 'string' && a.statusUrl) return cleanUrl(a.statusUrl, base || undefined);
-  if (a.builtin || BUILT_INS.some((b) => b.id === a.id)) return '';
+  const b = BUILT_INS.find((x) => x.id === a.id);
+  if (a.builtin || b) return b && b.live ? builtinView(b).statusUrl : '';       // Zenith, the Planner, Kalshi: their own cards
   return defaultStatusUrl(base);
 }
 // the app's folder: no ?query or #route, no file name (".../ascend/index.html" and ".../ascend" are ".../ascend/")
@@ -599,6 +635,12 @@ export function cachedStatus(app, opts) {
   return c ? finish(c, a, nowMs(opts), true) : null;
 }
 export function statusError(app) { const id = isObj(app) ? app.id : app; return lastErr.get(id) || ''; }
+/** True when a built-in's folder is not on the site (yet): its jarvis.json answered 404 and no good card was ever seen.
+ *  The shell shows it as "not on the site yet" and does not open it (a 404 page inside Jarvis would be a white screen). */
+export function missing(app) {
+  const a = appOf(app);
+  return !!a && !!a.builtin && lastErr.get(a.id) === 'http 404' && !cachedStatus(a);
+}
 // a name made from the link gives way to the app's own name the first time its card arrives
 function adoptName(a, card) {
   if (!a.autoName) return;

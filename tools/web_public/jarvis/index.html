@@ -76,7 +76,7 @@ window.addEventListener('error', function (e) {
   if (!window.__jarvisErr) window.__jarvisErr = String(e.message || 'Script error') + (e.filename ? ' (' + String(e.filename).split('/').pop() + ':' + e.lineno + ')' : '');
 }, true);
 </script>
-<link rel="stylesheet" id="jcss" href="jarvis.css?v=j8">
+<link rel="stylesheet" id="jcss" href="jarvis.css?v=j9">
 <style>.booted #bootfx{display:none}
 /* the start note works without jarvis.css (the stylesheet may be what did not arrive) */
 [hidden]{display:none!important}
@@ -694,6 +694,8 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
       <div class="talk" id="talk" aria-live="polite"></div>
       <div id="brainp"></div>
       <div class="qa" id="qa" role="group" aria-label="Quick actions"></div>
+      <p class="sec-t">OLYMPUS · apps</p>
+      <div class="og" id="olyApps" role="group" aria-label="OLYMPUS: every app"></div>
       <p class="sec-t">Today · timeline</p>
       <section class="panel tl" id="p-today" aria-label="Today: the trading day and your plan"></section>
 
@@ -1085,6 +1087,7 @@ function appTint(id, f) {
 let showSeq = 0;
 function show(id, opts = {}) {
   const a = byId(id) || HOME;
+  if (a.id !== 'home' && notOnSite(a)) { toast(`${a.name} is not on the site yet. It opens here as soon as it is published.`, 'OLYMPUS'); return; }
   if (a.id !== 'home' && !a.url) {
     show('home');
     setTimeout(() => { const f = document.getElementById('link-' + a.id); if (f) { f.scrollIntoView({ block: 'center' }); f.focus(); } }, 50);
@@ -1100,7 +1103,7 @@ function show(id, opts = {}) {
   else { stopListening(); closeMore(); if (a.id === 'zenith') showZenith(a, opts.route, seq); else frameView(a, opts.url); }
   renderBar();
   fx.restart();
-  if (was !== a.id) { sfx('open'); if (a.id !== 'home') logAct(`Opened ${a.name}`); }
+  if (was !== a.id) { sfx('open'); if (a.id !== 'home') logAct(`Opened ${a.name}`); if (nx) safe(() => nx.use(a.id)); }
   // The address stays the Jarvis screen (no #zenith): a reopen, or the iPhone reloading Jarvis in the background, always
   // starts on the Jarvis screen, never straight inside a dashboard.
 }
@@ -1304,8 +1307,15 @@ function linkCard(a) {
 }
 // added apps' live cards (apps.js): the last good card first, then the app's jarvis.json, or a card the open app posted
 const statusCards = {};
+// an app's live card: the one that just arrived, else its last good one (apps.js keeps it on this phone)
+const cardOf = (id) => statusCards[id] || safe(() => (mods.apps && byId(id) ? mods.apps.cachedStatus(byId(id)) : null), null);
+// a built-in whose folder is not on the site yet (apps.js: its jarvis.json answers 404, no card ever seen)
+const notOnSite = (a) => !!(a && a.id && mods.apps && typeof mods.apps.missing === 'function' && safe(() => mods.apps.missing(a.id), false));
+let cardsT = 0;
+const cardsSoon = () => { clearTimeout(cardsT); cardsT = setTimeout(() => { if (active === 'home') safe(renderCards); }, 60); };
 function renderCards() {
-  const list = D.listApps(), A = mods.apps;
+  safe(renderGrid);
+  const list = D.listApps().filter((a) => !(a.builtin && a.live)), A = mods.apps;
   const one = (a) => {
     try { return a.id === 'zenith' ? zenithCard() : a.id === 'planner' ? plannerCard() : a.id === 'kalshi' ? kalshiCard() : linkCard(a); }
     catch (_) { return `<button class="panel card" type="button" data-app="${esc(a.id)}"><p class="ph"><span class="t">${esc(a.name)}</span></p><p class="muted">This card could not be drawn. Open ${esc(a.name)} for everything.</p></button>`; }
@@ -1331,9 +1341,9 @@ function refreshStatusCards() {
   if (!A || typeof A.appStatus !== 'function' || Date.now() - statusAt < 60e3) return;
   statusAt = Date.now();
   for (const a of D.listApps()) {
-    if (BUILTIN_IDS.includes(a.id) || !a.url) continue;
+    if (!a.url || !a.statusUrl) continue;                       // Zenith, the Planner, Kalshi: the shell's own cards
     const p = safe(() => A.appStatus(a));
-    if (p && typeof p.then === 'function') p.then((card) => { if (card) { statusCards[a.id] = card; if (active === 'home') renderCards(); } }).catch(() => null);
+    if (p && typeof p.then === 'function') p.then((card) => { if (card) statusCards[a.id] = card; cardsSoon(); }).catch(() => null);
   }
 }
 document.addEventListener('submit', (e) => {
@@ -1427,8 +1437,11 @@ function systemPanel(S) {
     + `<i class="sdot ${esc(r.level || 'off')}"></i><span class="sn"><b>${esc(r.name)}</b><small>${esc(r.sub || '')}</small></span>`
     + `<span class="st">${esc(r.text || '')}</span><strong class="sv m ${esc(r.tone || '')}">${esc(r.value || '—')}</strong></button>`;
   const todo = S.todo ? `<button class="stodo ${esc(S.level)}" type="button" data-app="${esc(S.todoApp || 'zenith')}"><small>THE ONE THING</small>${esc(S.todo)}</button>` : '';
+  // the inactivity warning: the owner placed the keep-alive trade himself (the bot's ledger cannot see it): one tap marks it
+  const marks = Array.isArray(S.marks) ? S.marks : [];
+  const did = marks.length ? `<button class="smark" type="button" data-mark="${esc(marks.join(','))}">I did it · I placed the 1 MNQ${marks.length > 1 ? ' on both' : ''} today</button>` : '';
   return `<p class="ph"><span class="t">System</span><span class="badge ${S.level === 'ok' ? 'ok' : S.level === 'bad' ? 'bad' : ''}">${esc(S.verdict)}</span></p>`
-    + todo + `<div class="srows">${S.rows.map(row).join('')}</div>`
+    + todo + did + `<div class="srows">${S.rows.map(row).join('')}</div>`
     + '<p class="cnote">Tap a line to open it. Read-only: Jarvis never places a trade.</p>';
 }
 function renderSystem() {                              // the panel itself is in the page (#p-system): only its inside is drawn
@@ -1442,6 +1455,14 @@ function showSystem() {                               // the System panel on the
   setTimeout(() => { const p = $('#p-system'); if (p) safe(() => p.scrollIntoView({ block: 'start', behavior: calmScroll() ? 'auto' : 'smooth' })); }, 60);
 }
 document.addEventListener('click', (e) => { if (e.target.closest('#sysbar')) showSystem(); });
+document.addEventListener('click', (e) => {                // "I did it" on the inactivity warning: today's manual trade, per account
+  const b = e.target.closest('[data-mark]'); if (!b) return;
+  const ids = String(b.dataset.mark || '').split(',').filter(Boolean);
+  safe(() => D.markManualTrade(ids));
+  const names = ids.map((id) => ({ lit: 'Zlarior', atlas: 'ATLAS', blitz: 'BLITZ' }[id] || id)).join(' and ');
+  toast(`Noted: your keep-alive trade on ${names} today. The 7-day count restarts from today.`, 'MFFU');
+  logAct(`Manual keep-alive trade · ${names}`);
+});
 function renderPanels() {$('#panels').innerHTML = [marketPanel, feedPanel, addonsPanel, corePanel].map((f) => safe(f, '')).join(''); fx.adopt(); }
 function renderNext() {
   const p = D.plannerDay(), el = $('#next');
@@ -1470,7 +1491,9 @@ function kalshiAlerts() {                              // the owner's "🌌 +$1.
 // ring. Without it (absent or broken) the bar's chips and Zenith mode's own control switch as before.
 const NX_NAMES = { home: ['JARVIS', 'Your assistant'], zenith: ['NQ BOT', 'Zenith · Zlarior · ATLAS · BLITZ'],
   planner: ['CALENDAR', 'Planner · your day'], kalshi: ['KALSHI', 'Kalshi bot · its own server'] };
-const nxApps = () => apps().map((a) => { const n = NX_NAMES[a.id]; return { id: a.id, name: a.name, label: n ? n[0] : a.name, sub: n ? n[1] : (a.sub || ''), icon: a.icon || '', glyph: a.glyph || '' }; });
+const nxApps = () => apps().map((a) => { const n = NX_NAMES[a.id]; return { id: a.id, name: a.name, label: n ? n[0] : a.name, sub: n ? n[1] : (a.sub || ''), icon: a.icon || '', glyph: a.glyph || '', group: a.group || '', accent: a.accent || '', off: notOnSite(a) }; });
+// the apps in their groups (apps.js byGroup: Jarvis, TRADING, LIFE, MONEY, MORE); null without apps.js (one plain list)
+const nxSections = (list) => (mods.apps && typeof mods.apps.byGroup === 'function' ? safe(() => mods.apps.byGroup(list), null) : null);
 function nxStatus(id) {
   if (id === 'home') {
     const m = D.market();
@@ -1501,7 +1524,8 @@ function nxStatus(id) {
     const [lvl, label] = D.kalshiRun(k), pnl = +k.today_pnl;
     return { value: D.usd2(k.today_pnl, true), tone: pnl > 0 ? 'up' : pnl < 0 ? 'dn' : '', lines: [`Balance ${D.usd2(k.balance)}`, label], level: lvl };
   }
-  const c = statusCards[id], a = byId(id) || {};
+  const c = cardOf(id), a = byId(id) || {};
+  if (notOnSite(a)) return { value: 'SOON', lines: ['Not on the site yet', a.sub || ''], level: '' };
   if (!c) return { value: 'OPEN', lines: [a.sub || (a.url ? safe(() => new URL(a.url, location.href).host, '') : 'Add its link')], level: '' };
   const st = c.status || {}, k1 = (Array.isArray(c.kpis) ? c.kpis : [])[0];
   return { value: k1 ? String(k1.value || '') : String(st.label || 'OPEN'), lines: [k1 ? `${k1.label || ''} · ${st.label || ''}` : (c.sub || ''), (Array.isArray(c.lines) ? c.lines : [])[0] || ''],
@@ -1516,7 +1540,7 @@ function nxCover() {
 }
 function mountNexus(m) {
   try {
-    nx = m.mountSwitcher({ apps: nxApps, active: () => active, status: (id) => safe(() => nxStatus(id), {}) || {},
+    nx = m.mountSwitcher({ apps: nxApps, sections: nxSections, active: () => active, status: (id) => safe(() => nxStatus(id), {}) || {},
       onSwitch: (id) => show(id), onAdd: () => openSheet(),
       system: () => sysOf(), onSystem: () => showSystem() });
     if (!nx || typeof nx.open !== 'function') throw new Error('no switcher');
@@ -1707,6 +1731,7 @@ function control(c) {                                  // -> true when the reply
   if (c === 'unmute') { D.LS.set('jarvis.mute', false); return false; }
   if (c === 'hide_balance') { setHide(true, false); return false; }
   if (c === 'show_balance') { setHide(false, false); return false; }
+  if (c === 'manual_trade') { setTimeout(() => { safe(renderBar); if (active === 'home') { greet(); safe(renderOlympus); safe(renderCards); } if (nx) safe(() => nx.update()); }, 0); return false; }
   return false;
 }
 
@@ -1762,7 +1787,8 @@ async function ask(text, voice = false) {
   if (!quiet && (voice || S.speakAll())) speak(r.speak || r.text, voice); else setState('idle');
   if (r.open) openSoon(r.route && typeof r.open === 'string' ? { id: r.open, route: r.route } : r.open);
 }
-const WN_VER = 'j7', WHATSNEW = [
+const WN_VER = 'j8', WHATSNEW = [
+  'OLYMPUS apps: Data City, Mind and Daphne join Zenith, the Planner and Kalshi. Every app is a glowing tile on the Jarvis screen with its live status; the orb groups them into Trading, Life and Money, and holding it shows the ones you open most.',
   'The OLYMPUS entrance: lightning, a temple rising out of the clouds, and Jarvis\'s core igniting. Full once a day, 1 s after that; tap to skip. Replay it from search; turn it off under ⋯ → Theme.',
   'Today\'s timeline under the mic: the trading day in ET (game plans, entries, NY open, bots flat) with your Planner events, and what is next counting down.',
   'Quick actions (briefing, system, NQ bot, planner, Kalshi, search, hide $, look), the systems orbiting the core in their colours, and haptics.',
@@ -2294,6 +2320,57 @@ function renderQA() {
 }
 $('#qa').addEventListener('click', (e) => { const b = e.target.closest('[data-qa]'); if (!b) return; const a = QA().find((x) => x[0] === b.dataset.qa); if (a) safe(a[2]); });
 
+// the OLYMPUS apps grid (2026-11-03): every app as a glowing tile in its own colour with its live status line, grouped like the
+// orb (TRADING, LIFE, MONEY, then the ones added with +); a tap opens it full screen. Light on purpose: plain boxes, no blur,
+// no 3D; the tiles come in one after the other the first time the grid scrolls into view (3D effects High / Ultra only, never
+// with reduce motion), and the glow goes at 3D Off. The list, the groups and the colours all come from apps.js.
+const hexRgb = (h) => { const m = /^#([0-9a-f]{6})$/i.exec(String(h || '').trim()); if (!m) return null; const n = parseInt(m[1], 16); return [n >> 16, (n >> 8) & 255, n & 255]; };
+// an added app has no colour of its own: its jarvis.json theme's hue, made bright (themes are near-black), else Jarvis violet
+function accentOf(a) {
+  const own = hexRgb(a.accent);
+  if (own) return own;
+  const t = hexRgb((cardOf(a.id) || {}).theme);
+  if (!t) return [168, 85, 247];
+  const [r, g, b] = t.map((x) => x / 255), mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+  const h = !d ? 275 : mx === r ? 60 * (((g - b) / d) % 6) : mx === g ? 60 * ((b - r) / d + 2) : 60 * ((r - g) / d + 4);
+  return hsl2rgb((h + 360) % 360, 85, 62);
+}
+function tileOf(a, i) {
+  const s = safe(() => nxStatus(a.id), {}) || {}, c = cardOf(a.id), soon = notOnSite(a);
+  let line = c && c.status ? c.status.label || '' : (s.lines || [])[0] || '';
+  if (line === s.value) line = (c && (c.lines || [])[0]) || (s.lines || [])[1] || '';
+  const lvl = ['ok', 'warn', 'bad'].includes(s.level) ? s.level : '', rgb = accentOf(a);
+  const ch = esc(Array.from(String(a.glyph || a.name || '?'))[0].toUpperCase());
+  const mark = a.icon ? `<img src="${esc(a.icon)}" alt="" width="42" height="42" loading="lazy" decoding="async" data-g="${ch}">` : ch;
+  const say = `${a.label}. ${soon ? 'Not on the site yet' : [s.value, line].filter(Boolean).join(', ')}.${soon ? '' : ` Opens ${a.name}.`}`;
+  return `<button class="og-t${soon ? ' soon' : ''}" type="button" data-app="${esc(a.id)}" style="--ac:rgb(${rgb.join(',')});--acr:${rgb.join(',')};--i:${i}" aria-label="${esc(say)}">`
+    + `<span class="og-ic" aria-hidden="true">${mark}</span><b class="og-n">${esc(a.label)}</b>`
+    + `<span class="og-v m${s.tone === 'up' ? ' up' : s.tone === 'dn' ? ' dn' : ''}">${esc(soon ? 'SOON' : s.value || '—')}</span>`
+    + `<small class="og-s"><i class="og-d ${lvl}"></i>${esc(soon ? 'Not on the site yet' : line || a.sub || '')}</small></button>`;
+}
+let ogStart = false;
+const ogIO = 'IntersectionObserver' in window ? new IntersectionObserver((es) => {
+  if (!es.some((e) => e.isIntersecting)) return;
+  ogIO.disconnect();
+  const g = $('#olyApps'); g.classList.remove('pre'); g.classList.add('go');
+  setTimeout(() => g.classList.remove('go'), 1800);          // played once: later redraws never replay it
+}, { threshold: 0.12 }) : null;
+function renderGrid() {
+  const box = $('#olyApps'); if (!box) return;
+  const list = nxApps().filter((a) => a.id !== 'home'), parts = nxSections(list) || [{ group: null, apps: list }];
+  let i = 0;
+  box.innerHTML = parts.map((p) => (p.group && parts.length > 1 ? `<p class="og-g">${esc(p.group.name)}</p>` : '') + p.apps.map((a) => tileOf(a, i++)).join('')).join('')
+    + `<button class="og-t og-add" type="button" data-og-add="1" style="--i:${i}" aria-label="Add a dashboard"><span class="og-ic" aria-hidden="true">+</span><b class="og-n">ADD</b><small class="og-s">Any app with a link</small></button>`;
+  // the stagger plays once, when the grid first comes into view (only where the effects move)
+  if (!ogStart) {
+    ogStart = true;
+    const moves = (root.dataset.fx === 'high' || root.dataset.fx === 'ultra') && !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+    if (ogIO && moves) { box.classList.add('pre'); ogIO.observe(box); }
+  }
+}
+$('#olyApps').addEventListener('click', (e) => { if (e.target.closest('[data-og-add]')) openSheet(); });
+$('#olyApps').addEventListener('error', (e) => { const t = e.target; if (t && t.tagName === 'IMG' && t.parentNode) t.parentNode.replaceChild(document.createTextNode(t.dataset.g || '?'), t); }, true);   // a broken icon: the app's letter
+
 // today's timeline: the trading day (ET) as the bots live it, with the Planner's events; the next one counts down
 const TL_DAY = [
   [105, 'Game plan', 'Mind · the overnight plan'], [120, 'Entries open', 'Zlarior hunts until 3:30 PM'], [570, 'NY open', 'Regular session'],
@@ -2406,6 +2483,7 @@ try { show('home'); } catch (_) { /* the screen still shows; the next refresh dr
 safe(boot);
 clearTimeout(window.__jarvisBoot); const bootNote = document.getElementById('boot'); if (bootNote) bootNote.remove();
 root.dataset.ready = '1';
+window.__jarvisReadyMs = Math.round(performance.now());     // when the start finished, on the page's own clock (tests)
 // the start guard (<head>): this start finished once Jarvis has run for 4 s or the owner leaves it normally
 const finishStart = () => { if (started) return; started = true; rawSet('jarvis.unfinished', '0'); rawSet('jarvis.core3d', null); };
 setTimeout(finishStart, 4000);

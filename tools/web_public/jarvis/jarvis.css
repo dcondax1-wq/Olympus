@@ -318,6 +318,10 @@ button.panel:active { transform: translateY(1px) scale(.995); }
 .stodo small { font: 700 9.5px var(--fh); letter-spacing: .24em; color: var(--c3); }
 .stodo.warn { border-color: rgba(251,191,36,.6); color: #ffe6a8; } .stodo.warn small { color: var(--warn); }
 .stodo.bad { border-color: rgba(255,77,109,.75); color: #ffc2cd; background: rgba(70,8,22,.45); } .stodo.bad small { color: var(--bad); }
+/* "I did it" under the inactivity warning (the owner's own keep-alive trade, 2026-11-03) */
+.smark { justify-self: start; min-height: 44px; margin: -2px 0 2px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(74,222,128,.55);
+  background: rgba(74,222,128,.1); color: #d7ffe6; font: 600 14px/1.2 var(--fb); letter-spacing: .02em; cursor: pointer; }
+.smark:active { transform: scale(.96); }
 .srows { display: grid; gap: 6px; }
 .srow { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; grid-template-areas: "d n v" ". t t"; gap: 2px 9px; align-items: center; width: 100%; min-width: 0; min-height: 46px;
   margin: 0; padding: 6px 10px; text-align: left; cursor: pointer; border: 1px solid rgba(var(--cr), .14); background: rgba(0,0,0,.3); color: var(--txt); font: inherit; border-radius: 0; }
@@ -556,3 +560,40 @@ html[data-fx="high"] .sat i, html[data-fx="ultra"] .sat i { animation: satSpin 9
 @media (prefers-reduced-motion: reduce) {
   html:not([data-fx-set]) .sats, html:not([data-fx-set]) .sat i, html:not([data-fx-set]) .qa-t, html:not([data-fx-set]) .tl-row .tl-dot, .cpulse, .kbox span.tick { animation: none !important; }
 }
+
+/* ---------------------------------------------------------------- the OLYMPUS apps grid (2026-11-03): a pantheon of glowing tiles,
+   one per app in its own colour (--ac / --acr, from apps.js), grouped TRADING / LIFE / MONEY. Light: no blur, no 3D, only opacity
+   and transform; the stagger plays once (index.html renderGrid: .pre until the grid is in view, then .go) at High / Ultra only */
+.og { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin: 2px 0 0; }
+.og-g { grid-column: 1 / -1; margin: 6px 2px -3px; font: 600 9.5px/1 var(--fh); letter-spacing: .38em; color: var(--mut); }
+.og-g:first-child { margin-top: 0; }
+.og-t { --ac: rgb(var(--cr)); --acr: var(--cr); position: relative; min-height: 118px; padding: 13px 6px 10px; border-radius: 16px; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; gap: 5px; text-align: center; color: var(--txt); font: 600 12.5px/1.15 var(--fb);
+  border: 1px solid rgba(var(--acr), .42); background: linear-gradient(172deg, rgba(var(--acr), .2), rgba(var(--pr), .78) 58%);
+  box-shadow: 0 0 18px rgba(var(--acr), .16), inset 0 1px 0 rgba(255,255,255,.06); -webkit-tap-highlight-color: transparent;
+  transition: transform .42s cubic-bezier(.34, 1.56, .64, 1), box-shadow .25s, border-color .25s; }
+/* the column's capital: a lit bar along the top in the app's colour */
+.og-t::before { content: ""; position: absolute; left: 20%; right: 20%; top: 0; height: 2px; border-radius: 0 0 2px 2px; background: var(--ac); box-shadow: 0 0 10px var(--ac), 0 0 2px #fff; }
+.og-t:active { transform: scale(.94); transition-duration: .08s; border-color: rgba(var(--acr), .85); box-shadow: 0 0 24px rgba(var(--acr), .45), inset 0 0 16px rgba(var(--acr), .22); }
+.og-ic { flex: none; width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; overflow: hidden; color: #fff; font: 700 19px/1 var(--fh);
+  background: radial-gradient(circle at 50% 38%, rgba(var(--acr), .62), rgba(var(--acr), .1) 72%); border: 1px solid rgba(var(--acr), .55);
+  box-shadow: 0 0 16px rgba(var(--acr), .5), inset 0 0 10px rgba(255,255,255,.08); text-shadow: 0 0 10px var(--ac); }
+.og-ic img { width: 100%; height: 100%; object-fit: cover; }
+.og-n { max-width: 100%; font: 700 9.5px/1.2 var(--fh); letter-spacing: .16em; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.og-v { max-width: 100%; font: 700 13px/1.15 var(--fh); letter-spacing: .02em; color: var(--ac); text-shadow: 0 0 10px rgba(var(--acr), .5);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+.og-v.up { color: var(--ok); } .og-v.dn { color: var(--bad); }
+.og-s { max-width: 100%; color: var(--mut); font: 500 11.5px/1.25 var(--fb); overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.og-d { display: inline-block; width: 6px; height: 6px; margin: 0 5px 1px 0; border-radius: 50%; background: #4a4458; vertical-align: middle; }
+.og-d.ok { background: var(--ok); box-shadow: 0 0 6px var(--ok); } .og-d.warn { background: var(--warn); box-shadow: 0 0 6px var(--warn); } .og-d.bad { background: var(--bad); box-shadow: 0 0 6px var(--bad); }
+.og-t.soon { border-style: dashed; opacity: .6; }
+.og-t.soon .og-ic, .og-t.soon::before { -webkit-filter: saturate(.3); filter: saturate(.3); }
+.og-add { border-style: dashed; background: rgba(var(--pr), .55); justify-content: center; }
+.og-add::before { display: none; }
+.og-add .og-ic { background: transparent; box-shadow: none; font-size: 24px; color: var(--mut); text-shadow: none; }
+html[data-fx="high"] .og.pre .og-t, html[data-fx="ultra"] .og.pre .og-t { opacity: 0; }
+html[data-fx="high"] .og.go .og-t, html[data-fx="ultra"] .og.go .og-t { animation: ogIn .55s cubic-bezier(.2, .85, .3, 1.15) both; animation-delay: calc(var(--i, 0) * 45ms); }
+@keyframes ogIn { from { opacity: 0; transform: translateY(12px) scale(.94); } to { opacity: 1; transform: none; } }
+html[data-fx="off"] .og-t, html[data-fx="off"] .og-ic, html[data-fx="off"] .og-v, html[data-fx="off"] .og-t::before { box-shadow: none; text-shadow: none; }
+@media (min-width: 560px) { .og { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: reduce) { html:not([data-fx-set]) .og .og-t { animation: none !important; opacity: 1 !important; } }

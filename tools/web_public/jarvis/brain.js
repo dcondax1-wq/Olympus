@@ -11,7 +11,10 @@
 //     open(appId, route?)  switches the app: 'home', 'zenith', 'planner', 'kalshi' or an added id; open('zenith', '#/blitz')
 //     now() -> Date or ms (else facts.now, else the phone's clock)
 //   brain.ask(text, {voice}?) -> Promise<{ text, speak, open?, route?, cards?, control?, intent, smart?, smartError? }>
-//                          control: 'stop' | 'mute' | 'unmute' | 'hide_balance' | 'show_balance' (the shell may act on it)
+//                          control: 'stop' | 'mute' | 'unmute' | 'hide_balance' | 'show_balance' | 'manual_trade' (the shell may act on it)
+//   "I traded on both" / "I placed my keep-alive trade" / "traded on Zlarior": today's ET date per account goes in
+//   localStorage 'jarvis.manualTrades' ({lit, atlas}: data.js MANUAL_KEY); the quiet days come back through the facts
+//   (data.js withManualTrades: getFacts().live already counts from the mark), so the warning stops
 //   brain.briefing()     -> Promise<{ text, speak, cards, intent }>
 //   brain.suggestions()  -> string[]  (4-6 chips for right now)
 //   brain.setSmart({ provider, key, model, depth, on }) -> brain.smart = { on, provider, model, depth, hasKey, active, keys }
@@ -45,6 +48,9 @@ const DEPTHS = ['auto', 'quick', 'think', 'deep'];
 const BUDGET = { quick: { anthropic: 300, other: 1024 }, think: { anthropic: 1000, other: 2048 }, deep: { anthropic: 2500, other: 4096 } };
 const SMART_TIMEOUT_MS = 8000;           // smart mode answers within 8 s, else the local brain's answer (owner 2026-11-02: fast)
 const HIDE_KEY = 'jarvis.hide';            // "hide my balance" (this phone only)
+const MANUAL_KEY = 'jarvis.manualTrades';   // the owner's own keep-alive trades by account, ET dates (data.js reads it)
+// "i traded on both", "i've placed my keep-alive trade", "just traded on atlas", "i did the keep alive": a statement, never a question
+const MANUAL_RX = /^(?:(?:i|i've|ive|i have|we|we've)\s+)?(?:just\s+|already\s+|also\s+)?(?:traded|placed)\b(?:$|.*\b(?:both|zlarior|lit|atlas|blitz|evals?|accounts?|trades?|keep ?-?alive|mnq|micro)\b)|^(?:i|i've|ive|i have|we|we've)\s+(?:just\s+|already\s+|also\s+)?(?:took|did|made|put in)\b.*\b(?:trades?|keep ?-?alive|mnq|micro)\b/;
 const IDLE_LINE = 'Good day. Tap the core or type below to speak with me.';     // the old Jarvis's line, for a phone
 const LIVE_STALE_MS = 20 * 60e3;          // live.json older than this: say so (the PC may be off)
 const KALSHI_STALE_S = 15 * 60;           // kalshi.json older than this: "not updating" (as the hub's card)
@@ -1764,6 +1770,29 @@ export function createBrain(opts) {
     }
     return r;
   }
+  // the owner placed a trade by hand (a keep-alive 1 MNQ): which accounts (named, else "both" / unnamed = the open evals that
+  // count quiet days, else Zlarior and ATLAS), today's ET date kept for each
+  function manualTrade(q, V) {
+    const named = botsIn(q), open = quietOf(V).map((x) => x.key);
+    const ids = named.length && !/\b(both|all|every)\b/.test(q) ? named : open.length ? open : ['lit', 'atlas'];
+    const e = V.et, day = `${e.y}-${String(e.mo).padStart(2, '0')}-${String(e.d).padStart(2, '0')}`;
+    let kept = false;
+    try {
+      const st = store();
+      if (st) {
+        let m = {};
+        try { m = JSON.parse(st.getItem(MANUAL_KEY) || '{}'); } catch (_) { m = {}; }
+        if (!isObj(m)) m = {};
+        for (const id of ids) m[id] = day;
+        st.setItem(MANUAL_KEY, JSON.stringify(m));
+        kept = true;
+      }
+    } catch (_) { kept = false; }
+    const names = ids.map((k) => BOT[k].name), who = names.length > 1 ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : names[0];
+    if (!kept) return { text: `I could not save that on this phone (storage is off). The ${who} count stays as the bot sees it.`, speak: 'I could not save that on this phone.', intent: 'manual_trade' };
+    const text = `Noted: your keep-alive trade on ${who} today (${dayLabel(e.dn)}). The 7-day count restarts from today; the next one is due by ${dayLabel(e.dn + 6, true)}. The bot's own trades take over again from its next one.`;
+    return { text, speak: `Noted. Your trade on ${who} today resets the seven day count.`, control: 'manual_trade', intent: 'manual_trade' };
+  }
   const oops = () => ({ text: 'Something in the data tripped me up. Ask me again in a moment.', speak: 'Something in the data tripped me up. Ask me again in a moment.', intent: 'error' });
   async function ask(text, opt) {
     const voice = !!(isObj(opt) && opt.voice);
@@ -1776,6 +1805,7 @@ export function createBrain(opts) {
       const q = norm(raw);
       if (/^(hide|mask) (my |the )?(balances?|money|numbers|figures|p&l)$|^privacy (mode )?on$/.test(q)) { setHide(true); r = { text: 'Balances hidden. Say "show my balance" to bring them back.', speak: 'Balances hidden.', control: 'hide_balance', intent: 'control' }; }
       else if (/^(show|unhide|unmask) (my |the )?(balances?|money|numbers|figures|p&l)$|^privacy (mode )?off$/.test(q)) { setHide(false); r = { text: 'Balances visible again.', speak: 'Balances visible again.', control: 'show_balance', intent: 'control' }; }
+      else if (MANUAL_RX.test(q)) r = manualTrade(q, V);
       else {
         let mr = null;
         if (memory && typeof memory.handle === 'function') { try { mr = await memory.handle(raw, q, { now: V.now, facts: V.f }); } catch (_) { mr = null; } }

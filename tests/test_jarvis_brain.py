@@ -149,6 +149,10 @@ for (const sc of scen) {
   for (const st of sc.steps) {
     try {
       if (st.facts) { cur = st.facts; res.push({}); }
+      else if (st.shellFacts) {          // the shell's next getFacts(): the marks this brain saved, counted by data.js
+        const mt = JSON.parse(store.get('jarvis.manualTrades') || '{}');
+        cur = { ...cur, manualTrades: mt, live: D.withManualTrades(cur.live, mt, sc.now) }; cur.system = D.systemStatus(cur); res.push({ marks: mt });
+      }
       else if (st.ask !== undefined) res.push(await brain.ask(st.ask, st.opt));
       else if (st.briefing) res.push(await brain.briefing());
       else if (st.suggestions) res.push({ list: brain.suggestions() });
@@ -320,6 +324,11 @@ def scenarios():
         S("tonight_q7", [{"headline": True}] + ask("what should I do"), now=T_MON1958, f=tonight(T_MON1958, q_lit=7, q_atlas=3), withShell=True),
         S("tonight_calm", [{"headline": True}] + ask("what should I do"), now=T_MON1958, f=tonight(T_MON1958, q_lit=1, q_atlas=2, ram=50), withShell=True),
         S("tonight_stopped", ask("what should I do"), now=T_MON1958, f=tonight(T_MON1958, running=False), withShell=True),
+        # the owner placed his keep-alive trades by hand (2026-11-02 ~10 PM ET): said once, the day-5 warning goes
+        S("manual", [{"headline": True}] + ask("did I trade today", "I traded on both") + [{"shellFacts": True}, {"headline": True}] + ask("what should I do", "status"),
+          now=T_MON1958, f=tonight(T_MON1958), withShell=True),
+        S("manual_atlas", ask("I placed my keep-alive trade on ATLAS") + [{"shellFacts": True}, {"headline": True}], now=T_MON1958, f=tonight(T_MON1958), withShell=True),
+        S("manual_plain", ask("I traded") + [{"shellFacts": True}, {"headline": True}], now=T_MON1958, f=tonight(T_MON1958, q_lit=6, q_atlas=2), withShell=True),
         S("smart_timeout", [{"setSmart": {"key": "gsk_FAKE", "on": True}}, {"timed": "blorp zzz what is the meaning of it all"}], now=T_MON1958, f=tonight(T_MON1958),
           withShell=True, fetch={"hang": True}),
         S("smart_offline", [{"setSmart": {"key": "gsk_FAKE", "on": True}}, {"timed": "blorp zzz what is the meaning of it all"}], now=T_MON1958, f=tonight(T_MON1958),
@@ -796,6 +805,26 @@ def part_tonight(O):
           bool(m) and (int(m[1]), int(m[2]), int(m[3])) == (int(e50["profit_target"]["value"]), int(e50["max_loss"]["value"]["amount"]), int(e50["daily_loss_limit"]["value"]["amount"])), m and m.groups())
 
 
+def part_manual(O):
+    """m. the owner's manual keep-alive trades (2026-11-03): "I traded on both" marks today per account; the warning goes."""
+    r, st = O["manual"]["res"], O["manual"]["storage"]
+    day = "2026-11-02"
+    check("m. before: both evals on day 5 lead the headline; 'did I trade today' is a question (nothing marked)",
+          r[0]["headline"]["key"].startswith("quiet5") and r[1].get("intent") != "manual_trade" and r[1].get("control") != "manual_trade", (r[0]["headline"], r[1].get("intent")))
+    check("m. 'I traded on both': today's ET date for Zlarior and ATLAS kept on this phone, said back, the shell told (control manual_trade)",
+          r[2].get("intent") == "manual_trade" and r[2].get("control") == "manual_trade" and "Zlarior and ATLAS" in r[2]["text"]
+          and json.loads(st["jarvis.manualTrades"]) == {"lit": day, "atlas": day} and r[3]["marks"] == {"lit": day, "atlas": day}, (r[2], st))
+    check("m. after: the quiet days count from the mark, so no inactivity warning in the headline, 'what should I do' or 'status'",
+          not r[4]["headline"]["key"].startswith("quiet") and not any(x["key"].startswith("quiet") for x in r[4]["priorities"])
+          and "place 1 MNQ" not in r[5]["text"] + r[6]["text"] and "day 5" not in r[5]["text"], (r[4]["headline"], r[5]["text"][:200], r[6]["text"][:200]))
+    a = O["manual_atlas"]
+    check("m. 'I placed my keep-alive trade on ATLAS': ATLAS only; Zlarior still on day 5",
+          json.loads(a["storage"]["jarvis.manualTrades"]) == {"atlas": day} and a["res"][2]["headline"]["key"].startswith("quiet5:lit5"), (a["storage"], a["res"][2]["headline"]))
+    p = O["manual_plain"]
+    check("m. 'I traded' with no account named: the open evals that count quiet days (both)", json.loads(p["storage"]["jarvis.manualTrades"]) == {"lit": day, "atlas": day}
+          and not p["res"][2]["headline"]["key"].startswith("quiet"), (p["storage"], p["res"][2]["headline"]))
+
+
 def main():
     part_a()
     tmp = tempfile.mkdtemp(prefix="le_jbrain_")
@@ -806,6 +835,7 @@ def main():
             part_node(O)
             part_system(O)
             part_tonight(O)
+            part_manual(O)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     if "--no-browser" not in sys.argv:

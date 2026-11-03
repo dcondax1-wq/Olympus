@@ -9,8 +9,10 @@
 // Light on purpose (the iPhone draws Jarvis black when a page asks too much of it): no backdrop blur, only transform / opacity
 // animations, and none with reduced motion.
 //
-// mountSwitcher(opts) -> { update(), open(), close(), isOpen(), flick(dir), setHidden(on), destroy(), el }
-//   opts.apps()        [{ id, name, label?, sub?, icon?, glyph? }] in switch order; 'home' is Jarvis itself
+// mountSwitcher(opts) -> { update(), open(), close(), isOpen(), flick(dir), setHidden(on), use(id), destroy(), el }
+//   opts.apps()        [{ id, name, label?, sub?, icon?, glyph?, group?, accent? ('#rrggbb', its card's colour), off? }] in switch
+//                      order; 'home' is Jarvis itself. off: true = it cannot open now (not on the site yet): its card shows
+//                      dimmed, the swipe and the ring skip it
 //   opts.active()      the id on screen now
 //   opts.status(id)    { value?, tone? ('up'|'dn'), lines?: [string, string?], level? ('ok'|'warn'|'bad'|'') }: the card's live text
 //   opts.onSwitch(id)  go to that app (the shell does it)
@@ -19,11 +21,19 @@
 //                      a strip at the top of the switcher (one dot per system + the one thing to do) and a dot on the orb when
 //                      something needs the owner (amber / red)
 //   opts.onSystem()    optional: the strip was tapped (the shell shows its System panel)
+//   opts.sections(a)   optional (2026-11-03, OLYMPUS with ~12 apps): opts.apps() in groups, [{ group: { id, name } | null, apps }]
+//                      (the shell passes apps.js byGroup: Jarvis first, then TRADING, LIFE, MONEY ...). The cards, the quick row
+//                      and the swipe follow that order, each group under its heading; chips over the cards jump to a group.
+//                      Without it (or when it fails): one list, as opts.apps() gives it.
 //   opts.doc           optional: the document (tests)
+// use(id) counts an app's opens on this phone ('jarvis.orb.use'; the shell calls it on every switch): the hold ring shows the
+// RING_MAX most opened apps, plus a "more" slice (the whole switcher) when there are more.
 const VERSION = 1;
 const POS_KEY = 'jarvis.orb';
 const TIP_KEY = 'jarvis.orb.tips';
+const USE_KEY = 'jarvis.orb.use';
 const HOLD_MS = 380;
+const RING_MAX = 6;
 
 const CSS = `
 .nx-orb{position:fixed;z-index:2147483100;width:56px;height:56px;margin:0;padding:0;border:0;background:none;border-radius:50%;
@@ -87,7 +97,10 @@ const CSS = `
   border:1px solid rgba(168,85,247,.45);background:linear-gradient(165deg,rgba(38,20,72,.97),rgba(12,8,24,.98) 60%);color:inherit;text-align:left;
   display:flex;flex-direction:column;gap:10px;overflow:hidden;font:inherit;box-shadow:0 18px 50px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.06);
   transform-origin:50% 60%;will-change:transform}
-.nx-card::after{content:"";position:absolute;inset:auto -30% -45% -30%;height:70%;background:radial-gradient(closest-side,rgba(168,85,247,.32),transparent);pointer-events:none}
+.nx-card::after{content:"";position:absolute;inset:auto -30% -45% -30%;height:70%;background:radial-gradient(closest-side,rgba(var(--nx-acr,168,85,247),.32),transparent);pointer-events:none}
+.nx-card[style]{border-color:rgba(var(--nx-acr),.5)}
+.nx-card[style]::before{content:"";position:absolute;left:22%;right:22%;top:0;height:2px;border-radius:0 0 2px 2px;background:rgb(var(--nx-acr));box-shadow:0 0 12px rgb(var(--nx-acr))}
+.nx-card[style] .nx-emb .i{background:radial-gradient(circle at 50% 40%,rgba(var(--nx-acr),.85),rgba(16,10,30,.98));box-shadow:0 0 34px rgba(var(--nx-acr),.5),inset 0 0 0 1px rgba(var(--nx-acr),.55)}
 .nx-card.now{border-color:#c084fc;box-shadow:0 0 0 1px rgba(192,132,252,.5),0 0 34px rgba(168,85,247,.45),0 18px 50px rgba(0,0,0,.55)}
 .nx-card .nx-top{display:flex;align-items:center;gap:12px}
 .nx-mini{display:block;border-radius:50%;background:radial-gradient(circle at 50% 45%,#fff 0,#e9d5ff 18%,#a855f7 46%,#3b0d6e 100%)}
@@ -119,11 +132,26 @@ const CSS = `
   font:700 11px "Orbitron",-apple-system,system-ui,sans-serif;letter-spacing:.2em;color:#c084fc}
 .nx-dot{width:9px;height:9px;border-radius:50%;background:#5b5470;display:inline-block;margin-right:8px;vertical-align:1px}
 .nx-dot.ok{background:#4ade80;box-shadow:0 0 8px #4ade80}.nx-dot.warn{background:#fbbf24;box-shadow:0 0 8px #fbbf24}.nx-dot.bad{background:#ff4d6d;box-shadow:0 0 8px #ff4d6d}
+.nx-card.off,.nx-qb.off{opacity:.5;border-style:dashed}
 .nx-card.add{align-items:center;justify-content:center;text-align:center;border-style:dashed;background:rgba(14,10,26,.85)}
 .nx-card.add .nx-ic{width:64px;height:64px;font-size:30px}
-.nx-row{display:flex;justify-content:center;gap:10px;padding:6px 16px 0;flex-wrap:wrap}
-.nx-qb{width:46px;height:46px;border-radius:50%;padding:0;border:1px solid rgba(168,85,247,.45);background:rgba(20,12,36,.92);color:#ece9f2;
+.nx-row{display:flex;gap:10px;padding:6px 16px 2px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+  overscroll-behavior-x:contain}
+.nx-row::-webkit-scrollbar{display:none}
+.nx-row>:first-child{margin-left:auto}.nx-row>:last-child{margin-right:auto}
+.nx-qb{flex:none;width:46px;height:46px;border-radius:50%;padding:0;border:1px solid rgba(168,85,247,.45);background:rgba(20,12,36,.92);color:#ece9f2;
   display:grid;place-items:center;font:700 14px "Orbitron",-apple-system,system-ui,sans-serif;overflow:hidden}
+.nx-qs{flex:none;width:1px;height:28px;align-self:center;background:rgba(168,85,247,.35)}
+.nx-gr{display:flex;gap:8px;padding:8px 16px 0;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.nx-gr::-webkit-scrollbar{display:none}
+.nx-gr[hidden]{display:none}
+.nx-gb{flex:none;min-height:44px;padding:0 14px;border-radius:999px;border:1px solid rgba(168,85,247,.35);background:rgba(20,12,36,.85);color:#cfc8e3;
+  font:700 11px "Orbitron",-apple-system,system-ui,sans-serif;letter-spacing:.18em}
+.nx-gb i{font-style:normal;color:#8a8499;margin-left:6px;letter-spacing:0}
+.nx-gb.on{border-color:#c084fc;color:#fff;box-shadow:0 0 12px rgba(192,132,252,.45)}
+.nx-gl{flex:0 0 auto;align-self:center;padding:14px 0;-webkit-writing-mode:vertical-rl;writing-mode:vertical-rl;transform:rotate(180deg);
+  font:700 11px "Orbitron",-apple-system,system-ui,sans-serif;letter-spacing:.42em;color:#a99fc4;border-left:1px solid rgba(168,85,247,.4);padding-left:6px}
+.nx-fb.more{font-size:22px;border-style:dashed}
 .nx-qb img{width:26px;height:26px;border-radius:7px;object-fit:cover}
 .nx-qb.now{border-color:#c084fc;box-shadow:0 0 12px rgba(192,132,252,.7)}
 .nx-qb .nx-mini{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 50% 45%,#fff 0,#e9d5ff 18%,#a855f7 46%,#3b0d6e 100%)}
@@ -153,7 +181,27 @@ export function mountSwitcher(opts = {}) {
   const doc = opts.doc || document, win = doc.defaultView || window;
   const reduce = () => !!(win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const call = (f, ...a) => { try { return typeof f === 'function' ? f(...a) : undefined; } catch (e) { console.error(e); return undefined; } };
-  const list = () => { const l = call(opts.apps); return Array.isArray(l) ? l.filter((a) => a && a.id) : []; };
+  const given = () => { const l = call(opts.apps); return Array.isArray(l) ? l.filter((a) => a && a.id) : []; };
+  // the apps in their groups (opts.sections), else one list: every app of opts.apps() once (one left out goes at the end)
+  function sections() {
+    const all = given(), s = typeof opts.sections === 'function' ? call(opts.sections, all) : null;
+    if (!Array.isArray(s)) return [{ g: null, apps: all }];
+    const byId = new Map(all.map((a) => [a.id, a])), seen = new Set();
+    const out = s.map((p) => ({ g: p && p.group && p.group.id && p.group.name ? p.group : null,
+      apps: (p && Array.isArray(p.apps) ? p.apps : []).map((a) => a && byId.get(a.id)).filter((a) => a && !seen.has(a.id) && seen.add(a.id)) }));
+    out.push({ g: null, apps: all.filter((a) => !seen.has(a.id)) });
+    return out.filter((p) => p.apps.length);
+  }
+  const list = () => sections().reduce((all, p) => all.concat(p.apps), []);
+  // opens per app on this phone: the hold ring's order
+  const uses = () => { const u = lsGet(USE_KEY, null); return u && typeof u === 'object' && !Array.isArray(u) ? u : {}; };
+  function use(id) {
+    if (!id || typeof id !== 'string') return;
+    const u = uses(), ids = new Set(given().map((a) => a.id));
+    u[id] = Math.min(1e6, (+u[id] || 0) + 1);
+    for (const k of Object.keys(u)) if (!ids.has(k) && k !== id) delete u[k];      // apps no longer here
+    lsSet(USE_KEY, u);
+  }
   const activeId = () => call(opts.active) || 'home';
 
   if (!doc.getElementById('nx-css')) { const st = doc.createElement('style'); st.id = 'nx-css'; st.textContent = CSS; doc.head.appendChild(st); }
@@ -172,9 +220,13 @@ export function mountSwitcher(opts = {}) {
   rootEl.innerHTML = '<div class="nx-head"><div><h2>OLYMPUS</h2><small>SWITCH \u00b7 SWIPE OR HOLD THE ORB</small></div>'
     + '<button class="nx-x" type="button" aria-label="Close">×</button></div>'
     + '<button class="nx-sys" type="button" id="nxSys" hidden></button>'
+    + '<div class="nx-gr" id="nxGroups" role="group" aria-label="Jump to a group" hidden></div>'
     + '<div class="nx-stage"><div class="nx-track" id="nxTrack"></div></div><div class="nx-row" id="nxRow"></div>';
   doc.body.appendChild(fan); doc.body.appendChild(rootEl); doc.body.appendChild(orb); doc.body.appendChild(tip);
+  const noImg = (e) => { const t = e.target; if (t && t.tagName === 'IMG' && t.parentNode) t.parentNode.replaceChild(doc.createTextNode(t.dataset.g || '?'), t); };
+  rootEl.addEventListener('error', noImg, true); fan.addEventListener('error', noImg, true);
   const track = rootEl.querySelector('.nx-track'), row = rootEl.querySelector('.nx-row'), sysEl = rootEl.querySelector('.nx-sys');
+  const groupsEl = rootEl.querySelector('.nx-gr');
 
   // position: a side ('r' | 'l') and a height (fraction of the screen), kept on this phone
   let pos = lsGet(POS_KEY, null);
@@ -215,16 +267,18 @@ export function mountSwitcher(opts = {}) {
   const label = (a) => String(a.label || a.name || a.id).toUpperCase();
   function inner(a) {                                   // the app's mark: Jarvis's reactor, its icon, else its first letter
     if (a.id === 'home') return '<span class="nx-mini"></span>';
-    const src = safeUrl(a.icon);
-    if (src) return `<img src="${escH(src)}" alt="" loading="lazy" decoding="async">`;
-    return escH(String(a.glyph || a.name || '?').charAt(0).toUpperCase());
+    const src = safeUrl(a.icon), ch = escH(String(a.glyph || a.name || '?').charAt(0).toUpperCase());
+    if (src) return `<img src="${escH(src)}" alt="" loading="lazy" decoding="async" data-g="${ch}">`;
+    return ch;
   }
   const icon = (a, cls) => `<span class="${cls}">${inner(a)}</span>`;
-  function card(a, now) {
+  function card(a, now, g) {
     const s = call(opts.status, a.id) || {};
     const lines = (Array.isArray(s.lines) ? s.lines : []).filter(Boolean).slice(0, 2);
     const lvl = ['ok', 'warn', 'bad'].includes(s.level) ? s.level : '';
-    return `<button class="nx-card${now ? ' now' : ''}" type="button" data-nx="${escH(a.id)}" aria-label="${escH(label(a))}${now ? ' (on screen now)' : ''}">`
+    const ac = /^#[0-9a-f]{6}$/i.test(a.accent || '') ? parseInt(a.accent.slice(1), 16) : -1;
+    const tint = ac < 0 ? '' : ` style="--nx-acr:${ac >> 16},${(ac >> 8) & 255},${ac & 255}"`;
+    return `<button class="nx-card${now ? ' now' : ''}${a.off ? ' off' : ''}" type="button"${tint} data-nx="${escH(a.id)}" aria-label="${escH(label(a))}${g ? ', ' + escH(g.name.toLowerCase()) : ''}${now ? ' (on screen now)' : ''}">`
       + `<div class="nx-top"><div class="nx-nm"><b>${escH(label(a))}</b><span>${escH(a.sub || '')}</span></div></div>`
       + (now ? '<span class="nx-now">NOW</span>' : '')
       + `<div class="nx-emb" aria-hidden="true"><span class="e"><span class="i">${inner(a)}</span></span></div>`
@@ -248,11 +302,24 @@ export function mountSwitcher(opts = {}) {
   }
   function render() {
     renderSys();
-    const all = list(), cur = activeId();
-    track.innerHTML = all.map((a) => card(a, a.id === cur)).join('')
+    const parts = sections(), cur = activeId(), many = parts.filter((p) => p.g).length > 1;
+    const head = (p) => (many && p.g ? `<div class="nx-gl" data-nx-g="${escH(p.g.id)}" aria-hidden="true">${escH(p.g.name)}</div>` : '');
+    track.innerHTML = parts.map((p) => head(p) + p.apps.map((a) => card(a, a.id === cur, many && p.g)).join('')).join('')
       + (typeof opts.onAdd === 'function' ? '<button class="nx-card add" type="button" data-nx-add="1" aria-label="Add a dashboard">'
         + '<span class="nx-ic">+</span><div class="nx-nm"><b>ADD</b><span>Any dashboard with a link (Ascend too)</span></div></button>' : '');
-    row.innerHTML = all.map((a) => `<button class="nx-qb${a.id === cur ? ' now' : ''}" type="button" data-nx="${escH(a.id)}" aria-label="${escH(label(a))}">${inner(a)}</button>`).join('');
+    const qb = (a) => `<button class="nx-qb${a.id === cur ? ' now' : ''}${a.off ? ' off' : ''}" type="button" data-nx="${escH(a.id)}" aria-label="${escH(label(a))}">${inner(a)}</button>`;
+    row.innerHTML = parts.map((p, i) => (i && many ? '<i class="nx-qs" aria-hidden="true"></i>' : '') + p.apps.map(qb).join('')).join('');
+    groupsEl.hidden = !many;
+    groupsEl.innerHTML = !many ? '' : parts.filter((p) => p.g).map((p) => `<button class="nx-gb${p.apps.some((a) => a.id === cur) ? ' on' : ''}" type="button" `
+      + `data-nx-jump="${escH(p.g.id)}" aria-label="${escH(p.g.name)}: ${p.apps.length} apps">${escH(p.g.name)}<i>${p.apps.length}</i></button>`).join('');
+  }
+  // a group chip: the carousel glides to that group's first card
+  function jump(gid) {
+    const c = [...track.querySelectorAll('[data-nx-g]')].find((h) => h.dataset.nxG === gid);
+    const first = c && c.nextElementSibling;
+    if (!first) return;
+    const left = Math.max(0, first.offsetLeft - (track.clientWidth - first.offsetWidth) / 2);
+    try { track.scrollTo({ left, behavior: reduce() ? 'auto' : 'smooth' }); } catch (_) { track.scrollLeft = left; }
   }
   // the 3D carousel: cards turn away from the middle as they scroll (one transform per card, on the next frame)
   let raf = 0;
@@ -261,6 +328,7 @@ export function mountSwitcher(opts = {}) {
     if (reduce()) return;
     const mid = track.scrollLeft + track.clientWidth / 2;
     for (const c of track.children) {
+      if (!c.classList.contains('nx-card')) continue;               // the group headings stay flat
       const d = (c.offsetLeft + c.offsetWidth / 2 - mid) / (c.offsetWidth || 1);
       const k = Math.max(-1.6, Math.min(1.6, d));
       c.style.transform = `rotateY(${(-k * 16).toFixed(2)}deg) scale(${(1 - Math.min(1, Math.abs(k)) * 0.1).toFixed(3)})`;
@@ -282,12 +350,13 @@ export function mountSwitcher(opts = {}) {
     openNow = true; openedAt = Date.now();
     rootEl.classList.add('on'); rootEl.setAttribute('aria-hidden', 'false');
     orb.classList.add('hide'); tip.classList.remove('on');
-    // the current app's card in the middle
-    const all = list(), i = Math.max(0, all.findIndex((a) => a.id === activeId()));
-    const c = track.children[i];
+    // the current app's card in the middle, its quick button in view
+    const c = track.querySelector('.nx-card.now') || track.querySelector('.nx-card');
     if (c) track.scrollLeft = c.offsetLeft - (track.clientWidth - c.offsetWidth) / 2;
+    const q = row.querySelector('.nx-qb.now');
+    if (q) row.scrollLeft = Math.max(0, q.offsetLeft - (row.clientWidth - q.offsetWidth) / 2);
     tilt();
-    setTimeout(() => { const f = track.children[i] || rootEl.querySelector('.nx-x'); if (f) { try { f.focus({ preventScroll: true }); } catch (_) { f.focus(); } } }, 60);
+    setTimeout(() => { const f = c || rootEl.querySelector('.nx-x'); if (f) { try { f.focus({ preventScroll: true }); } catch (_) { f.focus(); } } }, 60);
   }
   function close() {
     if (!openNow) return;
@@ -304,8 +373,10 @@ export function mountSwitcher(opts = {}) {
   rootEl.addEventListener('click', (e) => {
     if (Date.now() - openedAt < 350) return;              // the tap that opened it, landing again (never a switch by itself)
     if (e.target.closest('.nx-sys')) { close(); call(opts.onSystem); return; }
+    const j = e.target.closest('[data-nx-jump]');
+    if (j) { jump(j.dataset.nxJump); return; }
     const t = e.target.closest('[data-nx], [data-nx-add], .nx-x');
-    if (!t) { if (!e.target.closest('.nx-card, .nx-qb')) close(); return; }
+    if (!t) { if (!e.target.closest('.nx-card, .nx-qb, .nx-row, .nx-gr')) close(); return; }
     if (t.classList.contains('nx-x')) { close(); return; }
     if (t.dataset.nxAdd) { close(); call(opts.onAdd); return; }
     go(t.dataset.nx);
@@ -314,9 +385,9 @@ export function mountSwitcher(opts = {}) {
 
   // ---------------------------------------------------------------- swipe: the next / previous app
   function flick(dir) {
-    const all = list();
+    const cur = activeId(), all = list().filter((a) => !a.off || a.id === cur);      // the next one that can open
     if (all.length < 2) return null;
-    const i = all.findIndex((a) => a.id === activeId());
+    const i = all.findIndex((a) => a.id === cur);
     const n = all[((i < 0 ? 0 : i) + (dir > 0 ? 1 : -1) + all.length) % all.length];
     showTip(`${dir > 0 ? '→' : '←'} <b>${escH(label(n))}</b>`, 900);
     go(n.id);
@@ -325,14 +396,25 @@ export function mountSwitcher(opts = {}) {
 
   // ---------------------------------------------------------------- hold: the ring of apps around the orb
   let fanOn = false, hot = null;
+  // the ring: the RING_MAX most opened apps (ties: switch order), then "more" (the whole switcher) when there are others
+  function ringApps() {
+    const others = list().filter((a) => a.id !== activeId() && !a.off), u = uses();
+    if (others.length <= RING_MAX) return others;
+    const top = others.map((a, i) => [a, +u[a.id] || 0, i]).sort((x, y) => y[1] - x[1] || x[2] - y[2]).slice(0, RING_MAX).map((x) => x[0]);
+    return top.concat([{ id: '', more: true }]);
+  }
   function showFan() {
-    const all = list().filter((a) => a.id !== activeId());
+    const all = ringApps();
     if (!all.length) return;
     fanOn = true;
     const r = orb.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, W = win.innerWidth, H = win.innerHeight;
-    // an arc that opens toward the middle of the screen, wide enough for every app
-    const toward = Math.atan2(H / 2 - cy, W / 2 - cx), n = all.length;
-    const spread = Math.min(Math.PI * 1.25, 0.78 * Math.max(1, n - 1) + 0.0001), R = n > 5 ? 150 : n > 3 ? 132 : 118;
+    // an arc that opens toward the middle of the screen: at most ~150 degrees and at least 66 px of arc per button, kept on the
+    // screen's side of the orb (an end past the edge would be pushed onto its neighbour)
+    const n = all.length, R = n > 5 ? 158 : n > 3 ? 132 : 118, step = Math.max(66 / R, Math.min(0.78, 2.6 / Math.max(1, n - 1)));
+    const spread = step * Math.max(1, n - 1) + 0.0001, half = Math.min(Math.PI / 2, spread / 2);
+    let toward = Math.atan2(H / 2 - cy, W / 2 - cx);
+    if (cx >= W / 2) { if (toward < 0) toward += 2 * Math.PI; toward = Math.max(Math.PI / 2 + half, Math.min(1.5 * Math.PI - half, toward)); }
+    else toward = Math.max(-Math.PI / 2 + half, Math.min(Math.PI / 2 - half, toward));
     fan.classList.toggle('l', cx < W / 2);                // the orb on the left: the names go to the right of their buttons
     fan.querySelectorAll('.nx-fb').forEach((b) => b.remove());
     all.forEach((a, k) => {
@@ -340,14 +422,18 @@ export function mountSwitcher(opts = {}) {
       let x = cx + R * Math.cos(ang), y = cy + R * Math.sin(ang);
       x = Math.max(34, Math.min(W - 34, x)); y = Math.max(40, Math.min(H - 60, y));
       const b = doc.createElement('button');
-      b.type = 'button'; b.className = 'nx-fb'; b.dataset.nx = a.id; b.setAttribute('aria-label', label(a));
+      b.type = 'button'; b.className = 'nx-fb' + (a.more ? ' more' : '');
+      if (a.more) b.dataset.nxMore = '1'; else b.dataset.nx = a.id;
+      b.setAttribute('aria-label', a.more ? 'All apps' : label(a));
       b.style.left = Math.round(x) + 'px'; b.style.top = Math.round(y) + 'px';
       b.style.setProperty('--fx0', Math.round(cx - x) + 'px'); b.style.setProperty('--fy0', Math.round(cy - y) + 'px');
-      b.innerHTML = inner(a) + `<span class="nx-fl">${escH(label(a))}</span>`;
+      b.innerHTML = a.more ? '\u22ef<span class="nx-fl">ALL APPS</span>' : inner(a) + `<span class="nx-fl">${escH(label(a))}</span>`;
       fan.appendChild(b);
     });
-    // a frame later, so the buttons grow out of the orb
-    win.requestAnimationFrame(() => fan.classList.add('on'));
+    // the buttons grow out of the orb: their start is laid out first (a reflow, not a frame: WebKit can hold frames back, and
+    // the ring stayed invisible under a held finger until one came; tested in WebKit's iPhone profile)
+    void fan.offsetWidth;
+    fan.classList.add('on');
     orb.classList.add('press');
     try { if (win.navigator.vibrate) win.navigator.vibrate(8); } catch (_) { /* no vibration on the iPhone */ }
   }
@@ -366,9 +452,10 @@ export function mountSwitcher(opts = {}) {
     if (best !== hot) { if (hot) hot.classList.remove('hot'); hot = best; if (hot) hot.classList.add('hot'); }
     return hot;
   }
+  const pick = (b) => { if (b.dataset.nxMore) { hideFan(); open(); } else go(b.dataset.nx); };
   fan.addEventListener('click', (e) => {
     const b = e.target.closest('.nx-fb');
-    if (b) go(b.dataset.nx); else hideFan();
+    if (b) pick(b); else hideFan();
   });
 
   // ---------------------------------------------------------------- the orb's gestures (one pointer)
@@ -378,7 +465,14 @@ export function mountSwitcher(opts = {}) {
     wake();
     g = { id: e.pointerId, x: e.clientX, y: e.clientY, t: Date.now(), moved: false, drag: false, held: false };
     try { orb.setPointerCapture(e.pointerId); } catch (_) { /* fine */ }
-    g.timer = setTimeout(() => { if (g && !g.moved) { g.held = true; showFan(); } }, HOLD_MS);
+    // a hold: still unmoved HOLD_MS later. Decided on the next frame (the moves a busy phone has queued come first, so a drag
+    // started while Jarvis was busy never turns into the ring), or 120 ms later when no frame comes
+    const s0 = g;
+    g.timer = setTimeout(() => {
+      let done = false;
+      const hold = () => { if (done) return; done = true; if (g === s0 && !s0.moved) { s0.held = true; showFan(); } };
+      win.requestAnimationFrame(hold); setTimeout(hold, 120);
+    }, HOLD_MS);
   });
   orb.addEventListener('pointermove', (e) => {
     if (!g || e.pointerId !== g.id) return;
@@ -394,7 +488,7 @@ export function mountSwitcher(opts = {}) {
     clearTimeout(s.timer);
     const dx = e ? e.clientX - s.x : 0, dy = e ? e.clientY - s.y : 0, dt = Date.now() - s.t;
     if (cancel) { if (s.held) hideFan(); if (s.drag) snap(); return; }
-    if (s.held) { const b = hitFan(e.clientX, e.clientY); if (b) go(b.dataset.nx); return; }   // let go on an app; else the ring stays to tap
+    if (s.held) { const b = hitFan(e.clientX, e.clientY); if (b) pick(b); return; }   // let go on an app (or "more"); else the ring stays to tap
     if (s.drag) { snap(); return; }
     if (s.moved) {
       if (Math.abs(dx) > 34 && Math.abs(dx) > Math.abs(dy) * 1.3 && dt < 600) flick(dx < 0 ? 1 : -1);
@@ -426,5 +520,5 @@ export function mountSwitcher(opts = {}) {
     for (const el of [orb, tip, fan, rootEl]) el.remove();
     doc.documentElement.removeAttribute('data-nexus');
   }
-  return { update, open, close, isOpen, flick, setHidden, destroy, el: orb, version: VERSION };
+  return { update, open, close, isOpen, flick, setHidden, use, destroy, el: orb, version: VERSION };
 }

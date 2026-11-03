@@ -5,6 +5,7 @@
 //   refreshLive(), refreshKalshi() -> Promise (an in-flight call is shared) · refresh({ maxAge }) refreshes what is older
 //   onChange(fn) -> off()   fn({ source: 'live' | 'kalshi' | 'planner' | 'apps' }) · the same 'change' event on `events`
 //   setAppsSource(mod)      the apps list getFacts() reports (apps.js when it loaded, else fallbackApps below)
+//   markManualTrade(ids) / manualTrades() / withManualTrades(live, marks, now)   the owner's own keep-alive trades (below)
 // Sources (read-only; nothing here ever writes to a bot):
 //   live.json   the NQ bots (the PC's heartbeat publish, branch `live` of nq-dashboard): the GitHub API first (fresh), then
 //               raw.githubusercontent (GitHub's CDN keeps it ~5 min); after a 403 / 429 the API rests 15 min.
@@ -151,6 +152,46 @@ export function liveView() {                // today's numbers, or the last ones
   return c && c.board ? { ...c.board, cached: true, raw: null, err: L.err } : null;
 }
 export const liveError = () => L.err;
+
+// ------------------------------------------------------------------------------------------------ manual keep-alive trades
+// (owner 2026-11-02: "I placed my 1-MNQ keep-alive trades from the Tradovate app"). The bot's ledger only sees its own orders,
+// so live.json's quiet_days kept counting and Jarvis kept saying "place 1 MNQ". The owner says so ("I traded on both", brain.js)
+// or taps "I did it" on the warning: today's ET date per account, kept on this phone ('jarvis.manualTrades' {lit, atlas}).
+// The quiet days everywhere are then the days since the later of the card's own last trade and the mark; a mark counts only
+// while it is newer than the card's last trade (a bot trade after it takes over again). getFacts().live has it applied (its
+// cards and its .raw board, which brain.js reads); systemStatus applies f.manualTrades itself, so it stays pure.
+export const MANUAL_KEY = 'jarvis.manualTrades';
+const MANUAL_IDS = ['lit', 'atlas', 'blitz'];
+const dayOf = (s) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || '')); return m ? Date.UTC(+m[1], +m[2] - 1, +m[3]) / 864e5 : null; };
+export function manualTrades() { const m = LS.get(MANUAL_KEY, null); return isObj(m) ? m : {}; }
+/** The owner traded by hand today on these accounts ('lit', 'atlas', 'blitz'): -> the marks kept. */
+export function markManualTrade(ids, now = new Date()) {
+  const m = manualTrades(), day = ymd(now);
+  for (const id of list(ids)) if (MANUAL_IDS.includes(id)) m[id] = day;
+  LS.set(MANUAL_KEY, m);
+  emit('live');
+  return m;
+}
+/** live (liveView()) with the marks applied to each card's quiet_days (and manual_mark); the same live when nothing applies. */
+export function withManualTrades(live, marks, now = Date.now()) {
+  if (!isObj(live) || !isObj(marks) || !MANUAL_IDS.some((id) => dayOf(marks[id]) != null)) return live;
+  const ms = now instanceof Date ? now.getTime() : +now, today = dayOf(ymd(new Date(ms)));
+  const raw = isObj(live.raw) ? live.raw : null, t = Number.isFinite(+live.t) && +live.t > 0 ? +live.t : raw && Number.isFinite(+raw.t) ? +raw.t : 0;
+  const pub = t ? dayOf(ymd(new Date(t * 1000))) : today;          // the day the card's quiet_days was counted on
+  const fix = (c, id) => {
+    const q = isObj(c) && c.quiet_days != null && c.quiet_days !== '' && Number.isFinite(+c.quiet_days) ? Math.round(+c.quiet_days) : null, mk = dayOf(marks[id]);
+    if (q == null || mk == null || mk > today || mk <= pub - q) return c;          // no count, no mark, or a trade since the mark
+    return { ...c, quiet_days: Math.max(0, today - mk), manual_mark: marks[id] };
+  };
+  const out = { ...live };
+  for (const id of MANUAL_IDS) if (isObj(live[id])) out[id] = fix(live[id], id);
+  if (raw) {
+    const board = isObj(raw.board) ? { ...raw.board } : null;
+    if (board) for (const id of MANUAL_IDS) if (isObj(board[id])) board[id] = fix(board[id], id);
+    out.raw = { ...raw, board: board || raw.board, blitz: isObj(raw.blitz) ? fix(raw.blitz, 'blitz') : raw.blitz };
+  }
+  return out;
+}
 export const liveLoading = () => !!L.busy;
 
 // ------------------------------------------------------------------------------------------------ kalshi.json: the Kalshi bot (its own server)
@@ -430,7 +471,8 @@ export const MFFU_RULES = {
 // The owner (2026-11-02): "everything combined and simple". One line per system and one verdict for all of them:
 //   systemStatus(facts) -> { verdict: 'ALL GOOD' | 'HEADS UP' | 'NEEDS YOU' | 'CHECKING', level: 'ok' | 'warn' | 'bad' | '',
 //                            todo: the one thing to do ('' when none), short: the same in a few words (the header strip), todoApp,
-//                            rows: [{ id, name, sub, app, level, value, tone?, text, todo, short? }] }
+//                            rows: [{ id, name, sub, app, level, value, tone?, text, todo, short?, mark? }],
+//                            marks: the accounts on day 5+ with no trade (what an "I did it" on the warning marks) }
 //   rows: pc (the PC: checking in? bot running? NinjaTrader feed fresh? CPU / RAM), lit (Zlarior, 50K), atlas (ATLAS, 25K),
 //   blitz (BLITZ; off = grey), kalshi (the Kalshi bot), planner (the day). level '' = off / unknown: never counted against
 //   the verdict. A red line wins over an amber one; the first red line in that order is the one thing to do.
@@ -443,7 +485,7 @@ export function systemStatus(f) {
 }
 function systemOf(f) {
   const nowMs = f.now instanceof Date ? f.now.getTime() : Number.isFinite(+f.now) && +f.now > 0 ? +f.now : Date.now(), now = nowMs / 1000;
-  const v = isObj(f.live) ? f.live : null, m = isObj(f.market) ? f.market : {};
+  const v = isObj(f.live) ? withManualTrades(f.live, f.manualTrades, nowMs) : null, m = isObj(f.market) ? f.market : {};
   const nextMin = isObj(m.next) && Number.isFinite(+m.next.mins) ? +m.next.mins : null;
   const soon = !!m.open || (nextMin != null && nextMin <= 120);       // the market is open or opens within 2 h: the PC should be on
   const rows = [];
@@ -511,6 +553,7 @@ function systemOf(f) {
     if (q != null && q >= 5) {
       const left = Math.max(0, 7 - q);
       r.text += ` · ${q} days no trade`;
+      r.mark = id;                      // the shell's "I did it" on the warning (markManualTrade)
       if (r.level !== 'bad') {
         r.level = q >= 6 ? 'bad' : 'warn';
         r.short = `${name}: ${q} days no trade`;
@@ -558,6 +601,7 @@ function systemOf(f) {
   const known = rows.some((r) => r.level);
   return { verdict: bad.length ? 'NEEDS YOU' : warn.length ? 'HEADS UP' : known ? 'ALL GOOD' : 'CHECKING', level: bad.length ? 'bad' : warn.length ? 'warn' : known ? 'ok' : '',
     todo: first ? first.todo : '', short: first ? first.short || first.name : '', todoApp: first ? first.app : '', rows, t:v && Number.isFinite(+v.t) ? +v.t : null,
+    marks: rows.filter((r) => r.mark).map((r) => r.mark),       // the accounts on day 5+ with no trade: what "I did it" marks     // the accounts an "I did it" marks
     todos: todos.map((r) => ({ id: r.id, level: r.level, todo: r.todo, short: r.short || r.name, app: r.app })) };
 }
 
@@ -568,7 +612,8 @@ export function getFacts() {               // each part on its own: one broken s
   const f = {
     now,
     market: tryf(() => ({ ...market(now), next: marketNext(now) }), { open: false, text: 'NQ market: unknown', next: null }),
-    live: tryf(liveView, null),
+    manualTrades: tryf(manualTrades, {}),
+    live: tryf(() => withManualTrades(liveView(), manualTrades(), now), null),
     liveError: L.err,
     kalshi: k,
     kalshiState: K.state,
