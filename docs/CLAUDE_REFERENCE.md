@@ -994,13 +994,17 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
     device key `planner.flow.goal`). `ext-flow.js`, its own `planner/tests/flow.test.js` (41). Workload and Daily goal fold
     to Dashboards lines so todayorg's Today height limit holds.
   - **40-olympus (2026-11-03, owner "3D, futuristic, organized like a maid swept"):** `ext-olympus.js`, its own
-    `planner/tests/olympus.test.js` (43).
-    - Look: glass cards (real glass in dark; light keeps theme.test's exact colours, depth from shadows / background images),
-      a slow aurora, rise-in on a view change, mouse tilt, press-in, tick pop + short vibrate.
-    - Today swept: one-line date, an even button row on phones, hairline section labels, the status line as a pill with a
-      green / red dot.
-    - Day timeline under the status line: today's events in up to 3 lanes, a NOW beam, now / next, the "wide open" empty state.
-    - Focus mode (`#focus-mode`, palette, All tools, the timeline's Focus, a tap on the timer bar): a full-screen ring that
+    `planner/tests/olympus.test.js` (47).
+    - Look: glass cards (translucent in dark; light keeps theme.test's exact colours, depth from shadows / background
+      images), an aurora that glides once per view change, rise-in on a view change (not at start), mouse tilt, press-in,
+      tick pop + short vibrate. No blur filters, no endless full-screen motion, no dialog fades: with them the Planner's own
+      timing-sensitive tests (habits, journal, people deletes) failed under load. Small endless pulses only (status dot,
+      NOW beam).
+    - Today swept: one-line date, an even button row on phones (Focus first), hairline section labels, the status line
+      with a green / red dot, a 12 px card gap on phones.
+    - Day timeline fused into the status line (no header of its own): today's events in up to 3 lanes, a NOW beam, the
+      "wide open" empty state. todayorg's busy phone Today: 4563 px (4560 without, limit 4571): keep it that small.
+    - Focus mode (`#focus-mode`, palette, All tools, the header's Focus, a tap on the timer bar): a full-screen ring that
       drives the app's own focus timer (openFocus + its form, the bar's buttons), so logging is unchanged; a 5-min break
       in memory.
     - Switches: device `planner.olympus.fx`=off; Olympus `jfx` off = plain, low = still; prefers-reduced-motion = still.
