@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#06040d">
+<meta name="color-scheme" content="dark">
+<title>Bridge · OLYMPUS</title>
+<link rel="icon" href="../jarvis/icon-192.png?v=j3">
+<!-- BRIDGE (2026-11-03, owner: "a clear way we can connect you and ChatGPT"): every job for ChatGPT as a card with a ready
+     prompt (Copy) and where its result goes (handoff/inbox/<id>/ in nq-liquidity-engine, by Codex PR or a GitHub upload).
+     Claude then builds the results in. Static: no network, nothing stored but which cards are ticked (localStorage). -->
+<style>
+@font-face { font-family: Orbitron; src: url(../jarvis/orbitron.woff2) format('woff2'); font-weight: 400 900; font-display: swap; }
+@font-face { font-family: Rajdhani; src: url(../jarvis/rajdhani-500.woff2) format('woff2'); font-weight: 500; font-display: swap; }
+@font-face { font-family: Rajdhani; src: url(../jarvis/rajdhani-700.woff2) format('woff2'); font-weight: 700; font-display: swap; }
+:root { --bg: #06040d; --card: rgba(22, 14, 40, .78); --line: rgba(192, 132, 252, .22); --ink: #ece9f2; --mut: #9d95b3; --vio: #c084fc; --gold: #f5c96a; --ok: #4ade80; }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: radial-gradient(120% 70% at 50% -10%, #241046 0%, var(--bg) 60%) fixed, var(--bg); color: var(--ink);
+  font: 500 17px/1.45 Rajdhani, system-ui, sans-serif; -webkit-text-size-adjust: 100%; }
+.w { max-width: 760px; margin: 0 auto; padding: calc(env(safe-area-inset-top, 0px) + 22px) 16px calc(env(safe-area-inset-bottom, 0px) + 180px); display: grid; gap: 14px; }
+h1 { margin: 0; font: 800 clamp(26px, 8vw, 36px)/1 Orbitron, sans-serif; letter-spacing: .16em; text-shadow: 0 0 22px rgba(168, 85, 247, .6); }
+.e { font: 700 11px Orbitron, sans-serif; letter-spacing: .3em; color: var(--gold); }
+.how { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; }
+.how ol { margin: 6px 0 0; padding-left: 20px; display: grid; gap: 6px; }
+.bar { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
+.prog { font: 700 12px Orbitron, sans-serif; letter-spacing: .14em; color: var(--mut); }
+.card { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; display: grid; gap: 8px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06); }
+.card.done { opacity: .55; }
+.top { display: flex; gap: 10px; align-items: baseline; justify-content: space-between; }
+.t { font: 700 16px Orbitron, sans-serif; letter-spacing: .06em; }
+.tag { font: 700 10px Orbitron, sans-serif; letter-spacing: .16em; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--vio); white-space: nowrap; }
+.tag.codex { color: var(--gold); border-color: rgba(245, 201, 106, .35); }
+.why { color: var(--mut); }
+.to { font-size: 15px; }
+.to code { font-size: 14px; color: var(--gold); }
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+button { min-height: 44px; padding: 0 16px; border-radius: 12px; border: 1px solid var(--line); background: rgba(124, 58, 237, .22); color: #fff;
+  font: 700 14px Rajdhani, sans-serif; letter-spacing: .04em; cursor: pointer; }
+button.copied { background: rgba(74, 222, 128, .22); border-color: rgba(74, 222, 128, .5); }
+details summary { cursor: pointer; color: var(--vio); min-height: 32px; }
+pre { white-space: pre-wrap; word-break: break-word; margin: 6px 0 0; padding: 10px 12px; border-radius: 10px; background: rgba(0, 0, 0, .35); font: 14px/1.45 ui-monospace, Menlo, monospace; }
+a { color: var(--vio); }
+</style>
+</head>
+<body>
+<div class="w">
+  <div><div class="e">OLYMPUS · CLAUDE × CHATGPT</div><h1>BRIDGE</h1></div>
+  <section class="how">
+    <b>How it works</b>
+    <ol>
+      <li>Tap <b>Copy prompt</b> on a card and paste it into ChatGPT.</li>
+      <li>Send the result back: <b>image cards</b> → upload the files in GitHub to <code>handoff/inbox/&lt;id&gt;/</code> (or attach them in the Claude chat). <b>Codex cards</b> → ChatGPT Codex opens a pull request on the repo.</li>
+      <li>Tell Claude "<b>Bridge: &lt;id&gt; done</b>". Claude checks it and builds it in.</li>
+    </ol>
+  </section>
+  <div class="bar"><span class="prog" id="prog"></span><button id="reset" type="button">Reset ticks</button></div>
+  <div id="list"></div>
+</div>
+<script>
+(function () {
+  var REPO = 'demetrades2000-coder/nq-liquidity-engine';
+  var CTX = 'Context: I am building OLYMPUS, a set of phone web apps (three.js, dark futuristic Greek-god theme, violet #a855f7 + gold #f5c96a on near-black). ';
+  // the jobs: id, title, tool (chatgpt = images / writing; codex = a pull request on the repo), why it matters, where it goes, the prompt
+  var JOBS = [
+    { id: 'icons', t: '14 app icons', tool: 'chatgpt', why: 'One look for the orb, the grid and the home screen.',
+      to: 'handoff/inbox/icons/ (1024x1024 PNGs, named jarvis.png, zenith.png, ...)',
+      p: CTX + 'Make 14 square app icons, 1024x1024, one consistent style: a single glowing Greek emblem in gold and violet light on a near-black background, no text, crisp, premium, like a luxury game UI. One per app: Jarvis (an AI core orb), Zenith (a rising star over a chart), Oracle (an eye with a radar ring), Odeon (a film reel as a Greek theatre), Fates (three threads and a spindle), Data City (a skyline of glowing towers), Daphne (a laurel tree made of light), Prometheus (a torch flame), Pantheon (a temple with columns), Mind (a galaxy brain), Arena (a colosseum with a laurel crown), Kalshi (a K coin), Tyche (a wheel of fortune), Hermes (a winged helmet). Give each as its own image.' },
+    { id: 'skies', t: '8 sky backgrounds', tool: 'chatgpt', why: 'Real depth in the 3D apps instead of flat colour.',
+      to: 'handoff/inbox/skies/ (the widest size it can make, PNG)',
+      p: CTX + 'Make 8 ultra-wide (as wide as you can) seamless night-sky panoramas for 3D backgrounds: 1) violet nebula with gold dust, 2) Mount Olympus above the clouds at night, 3) deep blue storm with lightning far away, 4) aurora over a dark ocean, 5) red ember underworld haze, 6) moonlit silver sky, 7) a sunrise of gold clouds, 8) a dense star field with a faint Milky Way. No text, no foreground objects, soft, cinematic, high detail.' },
+    { id: 'textures', t: 'Material textures', tool: 'chatgpt', why: 'Marble, gold and glass that look real, not like Play-Doh.',
+      to: 'handoff/inbox/textures/ (square, seamless/tileable PNG)',
+      p: 'Make 8 square seamless tileable textures, each 1024x1024, photo-real: 1) white Greek marble with grey veins, 2) black marble with gold veins, 3) brushed gold, 4) aged bronze, 5) obsidian stone, 6) holographic iridescent glass, 7) dark carbon fibre, 8) subtle hexagon tech grid (dark, faint violet lines). Flat, evenly lit, no shadows, no text.' },
+    { id: 'me', t: 'Your "Me" note', tool: 'chatgpt', why: 'Jarvis learns how you think.',
+      to: 'your Obsidian vault as Jarvis/Me.md (or paste it to Claude)',
+      p: 'Interview me with 25 short questions, one at a time, about my goals, daily routine, gym, school, money, trading rules, what I like and hate, how I want to be talked to. Then write a note called "Me" in Markdown: short bullet sections (Goals, Routine, Trading rules, Money, Health, Likes, Dislikes, How to talk to me). Plain words, no fluff.' },
+    { id: 'persona', t: 'Jarvis personality', tool: 'chatgpt', why: 'How she talks to you.',
+      to: 'paste into the Claude chat',
+      p: CTX + 'Write the personality for my assistant Jarvis (female voice): warm, sharp, loyal, money-first, short answers unless I want to chat, a little witty, never fake. Give: 1) a one-page persona description, 2) 10 rules she always follows, 3) 30 sample replies in her voice to things like "good morning", "I failed my eval", "should I trade today", "I am tired", "how are the bots", "I made money today".' },
+    { id: 'labours', t: 'Arena text', tool: 'chatgpt', why: 'The 12 Labours and daily quests with Greek myth lines.',
+      to: 'paste into the Claude chat',
+      p: 'For a gamified discipline app called Arena (ranks Mortal, Hero, Demigod, Olympian, Titan): write 12 achievements named after the Labours of Heracles, each with a one-line myth quote and what earns it (trading discipline, bots running, evals passed, payouts, gym, study, notes). Then write 30 daily quests (trading process, gym, study, sleep, money), each one short line. Reward process, never risk.' },
+    { id: 'lore', t: 'Pantheon lore', tool: 'chatgpt', why: 'Each data god gets a story line.',
+      to: 'paste into the Claude chat',
+      p: 'Two lines of lore each, in a cinematic tone, for 8 Greek gods who each watch one market force: Poseidon (Fed liquidity), Zeus (interest rates), Ares (volatility / fear), Athena (economic calendar), Demeter (big-money positioning), Helios (the dollar), Nyx (credit stress), Artemis (Bitcoin / risk appetite). Plus one line for "the Council of the Gods" that combines them.' },
+    { id: 'deals', t: 'Prop firm deals', tool: 'chatgpt', why: 'Cheaper evals = more money.',
+      to: 'paste into the Claude chat',
+      p: 'Search the web for the current discount codes and prices this week for futures prop firms: MyFundedFutures (Builder 25K / 50K), Lucid Trading, FundedNext Futures, Apex Trader Funding, Topstep, Take Profit Trader. For each: plan, list price, best code, price after code, one-time or monthly, activation fee, and the source link. Table only.' },
+    { id: 'obsidian', t: 'Obsidian setup guide', tool: 'chatgpt', why: 'So Jarvis can write into your vault.',
+      to: 'follow it, then tell Claude "vault ready"',
+      p: 'Give me exact step-by-step instructions (for someone who is not a coder) to sync my Obsidian vault to a PRIVATE GitHub repo called obsidian-vault using the Obsidian Git community plugin, on both iPhone and Windows. Then suggest a folder layout: Daily, Notes, Trading, Gym, Goals, OLYMPUS. Then how to make a fine-grained GitHub token with Contents read/write on only that repo.' },
+    { id: 'ascend', t: 'Finish Ascend', tool: 'chatgpt', why: 'Your looksmaxing dashboard, inside Jarvis.',
+      to: 'send the live link to Claude',
+      p: 'Finish my Ascend (looksmaxing / self-improvement) dashboard and host it free (Netlify or Vercel). Follow this spec for it to plug into my hub app: https://github.com/' + REPO + '/blob/main/docs/JARVIS_APPS.md . Dark futuristic look, phone first, a jarvis.json live card with a theme colour.' },
+    { id: 'codex-portal', t: 'Codex: polish one app on the new 3D engine', tool: 'codex', why: 'More apps upgraded without spending Claude usage.',
+      to: 'a pull request on ' + REPO + ' (branch chatgpt/<app>)',
+      p: 'Repo ' + REPO + '. Read docs/OLYMPUS_RENDER.md and docs/OLYMPUS_DESIGN.md. Pick ONE app folder under tools/web_public/ (start with tyche/, then oracle/, fates/, mind/, arena/) and move its three.js scene onto the shared render core in tools/web_public/olympus/render.js and materials.js (tone mapping, environment light, bloom, real materials). Keep the app working on iPhone at 60 fps, keep its tests passing (tests/test_<app>*.py), touch only that app folder and its test, and open a pull request on a branch chatgpt/<app>. Do not touch engine/, live_model*.json or anything trading-related.' },
+  ];
+  var KEY = 'bridge.done', done = {};
+  try { done = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { done = {}; }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) { /* private mode */ } }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function render() {
+    var list = document.getElementById('list'); list.textContent = '';
+    var n = 0;
+    JOBS.forEach(function (j) {
+      if (done[j.id]) n++;
+      var c = el('article', 'card' + (done[j.id] ? ' done' : '')); c.id = 'job-' + j.id;
+      var top = el('div', 'top'); top.appendChild(el('span', 't', j.t)); top.appendChild(el('span', 'tag' + (j.tool === 'codex' ? ' codex' : ''), j.tool === 'codex' ? 'CODEX · PR' : 'CHATGPT'));
+      c.appendChild(top);
+      c.appendChild(el('div', 'why', j.why));
+      var to = el('div', 'to'); to.appendChild(document.createTextNode('Result → ')); to.appendChild(el('code', '', j.to)); c.appendChild(to);
+      var d = el('details'); d.appendChild(el('summary', '', 'Show prompt')); d.appendChild(el('pre', '', j.p)); c.appendChild(d);
+      var row = el('div', 'row');
+      var cp = el('button', '', 'Copy prompt'); cp.type = 'button';
+      cp.onclick = function () {
+        var ok = function () { cp.textContent = 'Copied ✓'; cp.classList.add('copied'); setTimeout(function () { cp.textContent = 'Copy prompt'; cp.classList.remove('copied'); }, 1600); };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(j.p).then(ok, function () { d.open = true; });
+        else d.open = true;
+      };
+      var tick = el('button', '', done[j.id] ? 'Done ✓' : 'Mark done'); tick.type = 'button';
+      tick.onclick = function () { done[j.id] = !done[j.id]; save(); render(); };
+      row.appendChild(cp); row.appendChild(tick); c.appendChild(row);
+      list.appendChild(c);
+    });
+    document.getElementById('prog').textContent = n + ' / ' + JOBS.length + ' DONE';
+  }
+  document.getElementById('reset').onclick = function () { done = {}; save(); render(); };
+  render();
+})();
+</script>
+</body>
+</html>
