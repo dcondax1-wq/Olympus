@@ -423,7 +423,7 @@ html:not([data-mode="jarvis"]) .dockfade { display: none; }
    colours: its sky, a turning ring in its two accents, the glowing core, a scan line. Animated only while the Look sheet is open
    (a hidden sheet runs no animation), still on Low / Off and under reduce motion. */
 .othemes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.oth { position: relative; display: grid; grid-template-columns: 52px minmax(0, 1fr); grid-template-rows: auto auto auto; column-gap: 10px; row-gap: 2px;
+.oth { position: relative; display: grid; grid-template-columns: 46px minmax(0, 1fr); grid-template-rows: auto auto auto; column-gap: 9px; row-gap: 2px;
   align-content: center; min-height: 74px; padding: 10px 10px 10px 9px; text-align: left; overflow: hidden; border-radius: 14px;
   border: 1px solid var(--tline); color: var(--ttx); background: radial-gradient(130% 150% at 0% 0%, var(--tbg2), var(--tbg) 72%);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 6px 18px rgba(0,0,0,.28);
@@ -431,7 +431,7 @@ html:not([data-mode="jarvis"]) .dockfade { display: none; }
 .oth[data-oly-k="olympus"] { grid-column: 1 / -1; }
 .oth::before { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
   background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.07) 46%, transparent 60%); }
-.oth-sw { grid-row: 1 / 4; position: relative; width: 52px; height: 52px; border-radius: 50%; overflow: hidden;
+.oth-sw { grid-row: 1 / 4; position: relative; width: 46px; height: 46px; border-radius: 50%; overflow: hidden;
   background: radial-gradient(circle, var(--tbg2) 0%, var(--tbg) 74%); box-shadow: inset 0 0 0 1px var(--tline); }
 .oth-sw i { position: absolute; display: block; }
 .oth-sw .r { inset: 4px; border-radius: 50%; background: conic-gradient(from 0deg, transparent 0 14%, var(--ta) 30%, transparent 46%, var(--tb) 72%, transparent 88%);
@@ -441,15 +441,15 @@ html:not([data-mode="jarvis"]) .dockfade { display: none; }
   animation: oth-pulse 2.4s cubic-bezier(.65,0,.35,1) infinite; }
 .oth-sw .s { left: 8%; right: 8%; top: 50%; height: 1px; background: linear-gradient(90deg, transparent, var(--ta), transparent); opacity: .85;
   animation: oth-scan 3.2s cubic-bezier(.65,0,.35,1) infinite; }
-.oth b { font: 700 11.5px/1.1 var(--fh); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.oth b { font: 700 11px/1.1 var(--fh); letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .oth small { font: 600 9.5px/1.1 var(--fh); letter-spacing: .24em; color: var(--ta); white-space: nowrap; overflow: hidden; }
 .oth em { font: 500 12px/1.15 var(--fb); font-style: normal; color: var(--tdim); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .oth[aria-pressed="true"] { border-color: var(--ta); box-shadow: 0 0 0 1px var(--ta), 0 0 22px -4px var(--tg), inset 0 1px 0 rgba(255,255,255,.08); }
-.oth[aria-pressed="true"]::after { content: ""; position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--ta); box-shadow: 0 0 10px var(--tg); }
+.oth[aria-pressed="true"]::after { content: ""; position: absolute; bottom: 9px; right: 9px; width: 8px; height: 8px; border-radius: 50%; background: var(--ta); box-shadow: 0 0 10px var(--tg); }
 .oth:active { transform: scale(.97); }
 @keyframes oth-spin { to { transform: rotate(360deg); } }
 @keyframes oth-pulse { 50% { transform: scale(.8); opacity: .78; } }
-@keyframes oth-scan { 0%, 100% { transform: translateY(-17px); } 50% { transform: translateY(17px); } }
+@keyframes oth-scan { 0%, 100% { transform: translateY(-15px); } 50% { transform: translateY(15px); } }
 html[data-fx="low"] .oth-sw i, html[data-fx="off"] .oth-sw i { animation: none; }
 @media (prefers-reduced-motion: reduce) { .oth-sw i, .oth { animation: none; transition: none; } }
 .pal-list { display: grid; gap: 4px; max-height: 52vh; overflow-y: auto; }

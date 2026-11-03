@@ -15,7 +15,7 @@ every request off the page's origin refused, and checks:
      from the first paint (the <head> copy); a Jarvis colour goes back to the default theme; the scanline option
   e. each app at 390 x 844 under a theme: its kit reads the theme (tokens, harmonised accent, its own CSS tokens), its scene
      hook is called with the tint (stubbed: the hook's colours are checked), it follows a live change, and no console error
-    python -X utf8 -m tests.test_olympus_themes          (--shots <dir>: Jarvis in every theme, home + Look sheet)
+    python -X utf8 -m tests.test_olympus_themes          (--shots <dir>: only Jarvis in every theme, home + Look sheet)
 """
 from __future__ import annotations
 
@@ -465,6 +465,8 @@ def main():
         br = launch(pw)
         if shots:
             jarvis_shots(br, origin, shots)
+            if not only:                         # --shots alone: the screenshots only
+                only = ["-"]
         if not only or "jarvis" in only:
             test_jarvis(br, origin)
         if not only or "default" in only:
