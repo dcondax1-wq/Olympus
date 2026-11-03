@@ -339,6 +339,67 @@ def checks(O):
           and "🚀" not in j1 and "*" not in j1, j1)
 
 
+def part_browser():
+    """k. Chromium, the real shell: tools.js loads; "set up smart mode" opens the key setup; the key picks its tab; Test proves it
+    (a mocked Groq); Save turns smart mode on; the weather without a key (mocked open-meteo); no page errors."""
+    from tests import test_jarvis_hub as H
+    tmp = tempfile.mkdtemp(prefix="le_jarvis_tools_web_")
+    path = H.site(tmp, "A", "asis")
+    srv = H.serve(tmp)
+    url = f"http://127.0.0.1:{srv.server_address[1]}/" + path
+    try:
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as pw:
+            exe = next(iter(sorted(__import__("glob").glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
+            br = pw.chromium.launch(**({"executable_path": exe} if exe else {}))
+            ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, service_workers="block")
+            H.feeds(ctx, H.kalshi_feed())
+            seen = []
+            ctx.route("https://api.groq.com/**", lambda r: (seen.append(r.request.url), r.fulfill(status=200, content_type="application/json",
+                      headers={"access-control-allow-origin": "*"}, body=json.dumps({"choices": [{"message": {"content": "OK"}, "finish_reason": "stop"}]}))))
+            ctx.route("https://geocoding-api.open-meteo.com/**", lambda r: r.fulfill(status=200, content_type="application/json", headers={"access-control-allow-origin": "*"},
+                      body=json.dumps({"results": [{"name": "Boston", "latitude": 42.36, "longitude": -71.06, "timezone": "America/New_York", "country_code": "US", "admin1": "Massachusetts"}]})))
+            ctx.route("https://api.open-meteo.com/**", lambda r: r.fulfill(status=200, content_type="application/json", headers={"access-control-allow-origin": "*"},
+                      body=json.dumps({"current": {"temperature_2m": 52, "apparent_temperature": 47, "weather_code": 61, "wind_speed_10m": 12},
+                                       "daily": {"time": ["2026-11-03"], "weather_code": [61], "temperature_2m_max": [55], "temperature_2m_min": [44], "precipitation_probability_max": [80]}})))
+            ctx.add_init_script("try { sessionStorage.setItem('jarvis.booted', '1'); localStorage.setItem('jarvis.seen', JSON.stringify('j9')); localStorage.setItem('jarvis.intro', 'off'); } catch (e) {}")
+            p = ctx.new_page()
+            errs = []
+            p.on("pageerror", lambda e: errs.append(str(e)))
+            p.goto(url + "jarvis/")
+            H.ready(p)
+            p.wait_for_function("document.documentElement.dataset.tools === 'module' && document.documentElement.dataset.brain === 'module'", timeout=20000)
+            p.fill("#q", "what's the weather in Boston")
+            p.press("#q", "Enter")
+            p.wait_for_function("[...document.querySelectorAll('#talk .msg')].some((m) => /Boston right now: 52°F/.test(m.textContent))", timeout=15000)
+            check("k. Chromium: tools.js loads in the shell; the weather without a key (open-meteo)", True)
+            p.fill("#q", "set up smart mode")
+            p.press("#q", "Enter")
+            p.wait_for_function("document.getElementById('keySheet') && !document.getElementById('keySheet').hidden", timeout=8000)
+            tabs = p.evaluate("[...document.querySelectorAll('#keyProv [data-p]')].map((b) => b.dataset.p)")
+            steps = p.inner_text("#keySteps")
+            p.fill("#keyIn", "sk-or-v1-not-real")
+            orp = p.evaluate("document.querySelector('#keyProv [aria-pressed=true]').dataset.p")
+            p.fill("#keyIn", "gsk_browser_not_real")
+            p.click("#keyTest")
+            p.wait_for_function("/It works/.test(document.getElementById('keyRes').textContent)", timeout=8000)
+            res = p.inner_text("#keyRes")
+            p.click("#keySave")
+            p.wait_for_timeout(300)
+            sm = p.evaluate("JSON.parse(localStorage.getItem('jarvis.smart') || '{}')")
+            hidden = p.evaluate("document.getElementById('keySheet').hidden")
+            check("k. 'set up smart mode' opens one screen: Groq, Gemini, OpenRouter, 3 steps each; an sk-or- key picks OpenRouter",
+                  tabs == ["groq", "gemini", "openrouter"] and "3 steps" in steps and "console.groq.com/keys" in steps and orp == "openrouter", (tabs, steps, orp))
+            check("k. Test proves the key (one request to api.groq.com only), Save turns smart mode on and closes the screen",
+                  "It works: Groq answered" in res and seen and all(u.startswith("https://api.groq.com/") for u in seen) and sm.get("on") is True
+                  and sm.get("provider") == "groq" and sm.get("keys", {}).get("groq") == "gsk_browser_not_real" and hidden, (res, seen, sm, hidden))
+            check("k. no page errors", not errs, errs)
+            br.close()
+    finally:
+        srv.shutdown()
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def main() -> int:
     if not shutil.which("node"):
         check("node is installed", False, "node not found")
@@ -347,6 +408,8 @@ def main() -> int:
     O = run_node()
     if O:
         checks(O)
+    if os.environ.get("JARVIS_TOOLS_NO_BROWSER") != "1":
+        part_browser()
     n = sum(RES)
     print(f"\njarvis tools: {n}/{len(RES)} " + ("ALL PASS" if n == len(RES) else "FAILED"))
     return 0 if n == len(RES) else 1
