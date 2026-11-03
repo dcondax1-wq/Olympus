@@ -16,11 +16,12 @@
 <link rel="stylesheet" href="../olympus/olympus.css?v=o2">
 <script src="../olympus/themes.js?v=o2"></script>
 <script src="../olympus/olympus.js?v=o2" data-app="tree"></script>
-<link rel="stylesheet" href="tree.css?v=d3">
+<link rel="stylesheet" href="tree.css?v=d4">
 </head>
 <body>
 <div id="app" data-state="loading">
   <canvas id="stage" aria-label="The search tree"></canvas>
+  <canvas id="gl" hidden aria-hidden="true"></canvas>   <!-- the OLYMPUS render core over the tree: bloom, film finish, fireflies (glow.js) -->
 
   <header class="hud hud-top">
     <div class="brand"><span class="sigil" aria-hidden="true"></span><h1>DAPHNE</h1><span class="dim">· PATH</span>
@@ -46,6 +47,7 @@
     <div class="sheet-tabs" role="tablist" aria-label="Panel">
       <button type="button" role="tab" data-tab="search" aria-selected="true">THE SEARCH</button>
       <button type="button" role="tab" data-tab="rules" aria-selected="false">TOP RULES</button>
+      <button type="button" role="tab" data-tab="best" aria-selected="false">BEST</button>
     </div>
     <div class="pane" data-pane="search">
     <div class="col search">
@@ -63,6 +65,7 @@
     </div>
     <p class="line dim crit" id="crit">CRITERION: MEAN EXCESS</p>
     </div>
+    <div class="pane" data-pane="best" hidden><div id="best" class="best" aria-live="polite"></div></div>
     <div class="pane" data-pane="rules" hidden>
       <ol class="rules" id="rules"></ol>
       <p class="roots-legend" id="rulesNote"></p>
@@ -87,6 +90,6 @@
 
   <p class="loading" id="loading" aria-live="polite">GROWING THE TREE…</p>
 </div>
-<script type="module" src="app.js?v=d3"></script>
+<script type="module" src="app.js?v=d4"></script>
 </body>
 </html>

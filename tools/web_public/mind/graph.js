@@ -3,6 +3,7 @@
 //   diffGraphs(prev, next) -> {first, added, changed, learned, structural}
 //   search(graph, query) -> every matching node, best first (title, then tag, then path)
 //   resolve(graph, name) -> the id a [[wikilink]] names (by title, file name or path), or null
+//   dayLog(graph, now) -> today's lessons (local midnight on): {items oldest first, hours[24], edits, start}
 //   thoughts(graph, limit) -> the thought stream: what Jarvis learned and which notes changed, newest first
 // Clusters ("galaxies"): Jarvis memories, daily notes, the inbox and the "me" note by kind; every other note by its first tag
 // or folder that names a known topic (trading, goals, health, Kalshi, business), else its own tag or folder, else "Other".
@@ -157,4 +158,14 @@ export function thoughts(graph, limit = 24) {
   const edits = graph.nodes.filter((n) => n.mtime && n.kind !== 'memory').sort((a, b) => b.mtime - a.mtime).slice(0, limit)
     .map((n) => ({ kind: 'edit', t: n.mtime, text: n.title, i: n.i }));
   return learned.concat(edits).sort((a, b) => b.t - a.t).slice(0, limit);
+}
+
+/** What Jarvis learned today (since local midnight): the lessons in time order, how many per hour, and how many notes were edited. */
+export function dayLog(graph, now = Date.now()) {
+  const d = new Date(now); d.setHours(0, 0, 0, 0);
+  const start = d.getTime(), hours = new Array(24).fill(0);
+  const items = graph.learned.filter((l) => l.t >= start && l.t <= now + 60000).sort((a, b) => a.t - b.t);
+  for (const l of items) hours[Math.min(23, new Date(l.t).getHours())]++;
+  const edits = graph.nodes.filter((n) => n.mtime && n.mtime >= start && n.kind !== 'memory').length;
+  return { start, items, hours, edits };
 }

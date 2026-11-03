@@ -66,6 +66,9 @@ export function createUI(h) {
 
   // ---------------------------------------------------------------- buttons
   $('timelapse').addEventListener('click', () => h.onTimeLapse());
+  $('today').addEventListener('click', () => h.onToday());
+  $('day-close').addEventListener('click', () => h.onToday(false));
+  $('day-replay').addEventListener('click', () => h.onReplayDay());
   $('quality').addEventListener('click', () => h.onQuality());
   $('view').addEventListener('click', () => h.onView());
   $('focus-exit').addEventListener('click', () => h.onFilter(null));
@@ -142,6 +145,29 @@ export function createUI(h) {
         }, [el('i'), el('small', { text: (x.kind === 'learned' ? 'Learned · ' : 'Edited · ') + ago(x.t, now) }), el('span', { text: x.text })]),
       ])));
       if (fresh.size) box.scrollLeft = 0;
+    },
+
+    /** Today's lessons: the count on the button, the 24-hour strip, the list (a tap flies to the note); `log` from graph.dayLog. */
+    day(log, nodes, now = Date.now()) {
+      const n = log.items.length, nowH = new Date(now).getHours(), peak = Math.max(1, ...log.hours);
+      $('today-n').textContent = String(n);
+      $('day-sum').textContent = n ? `${n} lesson${n === 1 ? '' : 's'} · ${log.edits} note${log.edits === 1 ? '' : 's'} edited` : `Nothing yet · ${log.edits} note${log.edits === 1 ? '' : 's'} edited`;
+      $('day-strip').replaceChildren(...log.hours.map((c, hr) => el('i', {
+        class: (c ? 'on ' : '') + (hr === nowH ? 'now' : ''), style: { '--h': String(c ? 0.22 + 0.78 * (c / peak) : 0.08) }, title: `${hr}:00 · ${c}`,
+      })));
+      $('day-list').replaceChildren(...(n ? log.items.slice().reverse().map((l) => {
+        const note = l.i >= 0 && nodes[l.i] ? nodes[l.i] : null, t = new Date(l.t);
+        return el('li', {}, [el('button', { type: 'button', 'data-t': String(l.t), onclick: () => note && h.onFly(note.id) }, [
+          el('small', { text: t.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) }),
+          el('span', { text: l.text }), note ? el('em', { text: note.title }) : null].filter(Boolean))]);
+      }) : [el('li', { class: 'empty', text: 'Tell Jarvis something to remember and it lands here.' })]));
+    },
+    dayOpen(open) {
+      $('day').hidden = !open; $('today').setAttribute('aria-pressed', String(open));
+    },
+    /** Light the list row of the lesson being replayed (by time stamp). */
+    dayMark(t) {
+      for (const b of $('day-list').querySelectorAll('button')) b.classList.toggle('replay', b.dataset.t === String(t));
     },
 
     /** The latest learned items (oldest first), the newest shown first then rotating; `fresh` = one just arrived (flash). */

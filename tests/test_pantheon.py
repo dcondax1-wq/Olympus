@@ -371,6 +371,9 @@ def _open(br, url, errs, reduced=False):
     p.on("pageerror", lambda e: errs.append("pageerror: " + str(e)))
     p.on("console", lambda m: errs.append("console: " + m.text) if m.type == "error" else None)
     p.on("requestfailed", lambda r: errs.append("requestfailed: " + r.url))
+    if "q=" not in url:                      # software GPU: pin the render core's cheapest tier ('off': straight draw); part h checks the real tiers
+        head, _, frag = url.partition("#")
+        url = head + ("&" if "?" in head else "?") + "q=off" + ("#" + frag if frag else "")
     p.goto(url)
     p.wait_for_function("window.__pantheon && window.__pantheon.ready", timeout=30000)
     p.wait_for_timeout(700)
@@ -453,6 +456,26 @@ def part_g(tmp):
             p.click(".god[data-key='ares']")
             p.wait_for_timeout(200)
             check("g. reduced motion: cards still open, no errors", p.is_visible("#card") and not errs4, errs4[:3])
+            ctx.close()
+            # 2026-11-03: the OLYMPUS render core (statues, marble, bloom) and the Council's regime verdict history
+            errs5 = []
+            ctx, p = _open(br, url + "?q=low", errs5)
+            check("h. on the render core: LITE draws scene + finish (FXAA), no errors", p.evaluate("window.__pantheon.core") == ["scene", "finish"] and not errs5,
+                  (p.evaluate("window.__pantheon.core"), errs5[:3]))
+            hist = p.evaluate("window.__pantheon.history")
+            check("h. the Council chamber carries the verdict history ring (one block per reading)", hist and len(hist["cells"]) >= 8 and hist["streak"]["n"] >= 1, hist and len(hist["cells"]))
+            p.click("#councilBtn")
+            p.wait_for_timeout(300)
+            check("h. the council card shows the verdict history: a tick per reading, shares, the current streak and flips",
+                  p.evaluate("document.querySelectorAll('#council-b .vh i').length") == len(hist["cells"]) and "Verdict history" in p.inner_text("#council-b")
+                  and "flip" in p.inner_text("#council-b .vh-sum") and "now " in p.inner_text("#council-b .vh-sum"), p.inner_text("#council-b")[:200])
+            vh = p.evaluate("import('./pantheoncore.js').then((m) => m.verdictHistory({ council: { spark: [0.3, 0.1, -0.5, -0.5, 0.25] } }))")
+            check("h. verdictHistory: the build's own bands (risk-on >= +0.20, risk-off <= -0.20), counts, streak, flips",
+                  vh["counts"] == {"RISK-ON": 2, "MIXED": 1, "RISK-OFF": 2} and vh["streak"] == {"label": "RISK-ON", "n": 1} and vh["flips"] == 3, vh)
+            ctx.close()
+            errs6 = []
+            ctx, p = _open(br, url + "?q=high", errs6)
+            check("h. on HD: scene + bloom + finish, no errors", p.evaluate("window.__pantheon.core") == ["scene", "bloom", "finish"] and not errs6, errs6[:3])
             ctx.close()
             br.close()
     finally:
