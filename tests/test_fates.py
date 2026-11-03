@@ -528,11 +528,15 @@ def shots(br, out):
         for name, route, tap in (("01_zlarior_2026", "#zlarior/2026", False), ("02_atlas_2026", "#atlas/2026", False),
                                  ("03_zlarior_2021-25", "#zlarior/2021-25", False), ("04_atlas_2021-25", "#atlas/2021-25", False),
                                  ("05_money_2_2026", "#money-2/2026", False), ("06_money_6_2026", "#money-6/2026", False),
-                                 ("07_money_6_2021-25", "#money-6/2021-25", False), ("08_follow_zlarior", "#zlarior/2026", True)):
+                                 ("07_money_6_2021-25", "#money-6/2021-25", False), ("08_follow_zlarior", "#zlarior/2026", True),
+                                 ("09_next10_zlarior", "#zlarior/2026", "next10"), ("10_zlarior_jul-oct", "#zlarior/H2", False)):
             p.goto(url + "?full=1" + route)
             p.wait_for_function("window.__fates && window.__fates.ready", timeout=30000)
             time.sleep(7)
-            if tap:
+            if tap == "next10":
+                p.click("#next10")
+                time.sleep(1)
+            elif tap:
                 for i in range(40):
                     q = p.evaluate(f"__fates.pointOf({i}, 4)")
                     if q and 20 < q["x"] < 370 and 330 < q["y"] < 700:

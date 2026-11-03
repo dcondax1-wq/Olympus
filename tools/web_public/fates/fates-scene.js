@@ -62,8 +62,7 @@ export function createScene(canvas, opt = {}) {
       void main() {
         float g = max(line(vW.x * 0.5, 0.04), line((vW.z - uT * 0.6) * 0.5, 0.04));
         float glow = exp(-length(vW.xz * vec2(0.12, 0.05)));
-        float heat = 0.5 + 0.5 * sin(vW.x * 0.7 + uT * 0.9) * sin(vW.z * 0.31 - uT * 0.6);
-        vec3 c = vec3(0.05, 0.0, 0.03) + vec3(0.55, 0.06, 0.12) * g * 0.35 * (0.4 + glow) + vec3(0.28, 0.02, 0.08) * glow * (0.35 + 0.3 * heat);
+        vec3 c = vec3(0.05, 0.0, 0.03) + vec3(0.55, 0.06, 0.12) * g * 0.35 * (0.4 + glow) + vec3(0.28, 0.02, 0.08) * glow * 0.5;
         gl_FragColor = vec4(mix(c, vec3(0.027, 0.02, 0.059), vF), 1.0);
       }`,
   }));
@@ -204,7 +203,7 @@ export function createScene(canvas, opt = {}) {
     // silk: the ribbon is wider than the fibre; the fragment shader paints a bright core, a soft scattered halo and sheen
     // bands that travel along the fibre (a twisted thread catching the light); forward scatter brightens near the gate
     G.threads = new THREE.Mesh(g, new THREE.ShaderMaterial({
-      uniforms: { uTime: { value: 0 }, uClock: U.uT, uAspect: { value: 1 }, uPx: { value: 0.003 }, uW: { value: lite ? 2.6 : 3.4 }, uSel: { value: -1 },
+      uniforms: { uTime: { value: 0 }, uClock: U.uT, uAspect: { value: 1 }, uPx: { value: 0.003 }, uW: { value: lite ? 2.4 : 3.0 }, uSel: { value: -1 },
         uGain: { value: Math.min(0.5, 3.4 / Math.sqrt(Math.max(1, list.length))) }, uFog: U.uFog, uGateY: U.uGateY, uFocus: { value: -1 } },
       vertexShader: `attribute vec3 aPrev, aNext, aCol; attribute float aSide, aK, aId, aEnd;
         uniform float uAspect, uPx, uW, uSel, uGateY; varying float vSide, vK, vEnd, vSel, vF, vId, vScat; varying vec3 vCol; ${FOG}
@@ -227,14 +226,15 @@ export function createScene(canvas, opt = {}) {
         void main() {
           if (vK > uTime) discard;
           float s2 = vSide * vSide;
+          float c2 = exp(-s2 * 20.0), c8 = c2 * c2 * c2 * c2;                                  // core^8, a sharp white fibre
           float core = exp(-s2 * 10.0), halo = exp(-s2 * 2.4);
           float twist = 0.5 + 0.5 * sin(vK * 2.1 - uClock * 2.2 + vId * 1.618 + vSide * 2.4);
-          float sheen = pow(twist, 7.0) * core;
+          float t2 = twist * twist, t4 = t2 * t2, sheen = t4 * t2 * twist * core;        // twist^7 without pow
           float head = uTime < vEnd + 0.4 ? exp(-(uTime - vK) * 1.8) : 0.0;
           float dim = vSel < -0.5 ? 0.12 : vSel > 0.5 ? 2.2 : 1.0;
           if (uFocus > 0.0 && vK > uFocus) dim *= 0.16;
           vec3 col = vCol * (halo * (0.32 + 0.5 * vScat) + core * (0.85 + 2.2 * head))
-                   + vec3(1.0, 0.95, 0.88) * (sheen * 0.75 + pow(core, 9.0) * (0.22 + head));
+                   + vec3(1.0, 0.95, 0.88) * (sheen * 0.75 + c8 * (0.22 + head));
           gl_FragColor = vec4(col * uGain * dim * (1.0 - vF * 0.8), 1.0);
         }`,
       transparent: true, depthWrite: false, depthTest: true, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,

@@ -323,7 +323,8 @@ window.addEventListener('error', (e) => S.errors.push(String(e.message || e)));
   if (S.lite) $('lite').hidden = false;
   if (!S.data.scenarios[C.scenKey(S.route)]) S.route.period = '2026';
   renderHud();
-  sc = createScene($('scene'), { lite: S.lite });
+  sc = createScene($("scene"), { lite: S.lite });
+  S.sc = sc;                                       // the scene, for the tests and the perf probe
   if (sc) {
     O?.track(sc.R);
     S.webgl = true;

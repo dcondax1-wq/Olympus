@@ -21,9 +21,9 @@ button { font: inherit; color: inherit; cursor: pointer; }
 
 /* ---------------------------------------------------------------- the one top bar: brand, scenario switcher, sample */
 .bar { pointer-events: auto; display: flex; flex-direction: column; gap: 6px; padding: 8px 10px 8px; border-radius: var(--oly-r-card, 16px);
-  background: linear-gradient(180deg, rgba(24, 16, 44, .72), rgba(12, 8, 24, .6)); border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(24, 16, 44, .9), rgba(12, 8, 24, .82)); border: 1px solid var(--line);
   box-shadow: 0 10px 30px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(255, 255, 255, .05);
-  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+  }   /* no backdrop blur: a big blurred panel over the moving scene costs a full re-blur every frame */
 .brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
 .brand h1 { margin: 0; flex: none; font: 800 19px/1 "Orbitron", system-ui, sans-serif; letter-spacing: .32em;
   background: linear-gradient(90deg, #fff1c7, var(--gold) 40%, var(--vio)); -webkit-background-clip: text; background-clip: text; color: transparent;
@@ -93,8 +93,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .spin { white-space: nowrap; flex: none; min-height: 48px; padding: 0 18px; border-radius: 999px; border: 1px solid rgba(var(--gold-rgb), .55); font-weight: 700; font-size: 15px; letter-spacing: .08em;
   text-transform: uppercase; color: #1a1205; background: linear-gradient(180deg, #ffe39a, var(--gold)); box-shadow: 0 0 22px rgba(var(--gold-rgb), .35); }
 .ghost { white-space: nowrap; flex: none; min-height: 48px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(var(--vio-rgb), .55); font-weight: 700; font-size: 15px;
-  letter-spacing: .06em; text-transform: uppercase; color: var(--txt); background: rgba(var(--vio-rgb), .16); box-shadow: 0 0 16px rgba(var(--vio-rgb), .2);
-  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+  letter-spacing: .06em; text-transform: uppercase; color: var(--txt); background: rgba(28, 18, 52, .85); box-shadow: 0 0 16px rgba(var(--vio-rgb), .2);
+  }
 .ghost[aria-expanded="true"] { background: rgba(var(--vio-rgb), .38); }
 .spin:active, .ghost:active { transform: scale(.97); }
 .sheet { position: fixed; left: calc(var(--sl) + 12px); right: calc(var(--sr) + 96px); bottom: calc(var(--sb) + 72px); max-height: 38vh; max-height: 38dvh;   /* above the bottom bar: Spin / Next 10 stay tappable */
