@@ -117,6 +117,18 @@ input[type=search]{width:100%;font-size:16px;padding:10px 12px;border-radius:12p
 .lift .lb i{position:absolute;top:0;bottom:0;border-radius:4px}
 .lift .lb i.up{left:50%;background:var(--green)}.lift .lb i.dn{right:50%;background:var(--red)}
 .lift .lv{text-align:right;font-weight:700}.lift .lp{text-align:right;color:var(--sub);font-size:11px}
+/* --- camera modes (fly-through) and the tap tag */
+.cams{position:fixed;left:calc(10px + var(--sl));top:calc(var(--top-h) + 20px + var(--st));z-index:3;display:flex;flex-direction:column;gap:6px}
+.cams button{width:56px;min-height:40px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--sub);font:700 10px/1 var(--oly-display,inherit);
+letter-spacing:.14em;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);touch-action:manipulation}
+.cams button.on{color:var(--gold);border-color:rgba(255,201,74,.45);background:rgba(255,201,74,.10)}
+body.cine .cams{opacity:.18;transition:opacity .6s}
+@media (orientation:landscape) and (max-height:520px){.sheet.on ~ .cams{display:none}}
+.tag{position:fixed;left:0;top:0;z-index:3;pointer-events:none;display:none;padding:5px 9px;border-radius:10px;background:rgba(8,10,24,.82);border:1px solid rgba(255,201,74,.45);
+font:600 12px/1.25 var(--oly-ui,inherit);color:var(--text);white-space:nowrap;max-width:200px;box-shadow:0 4px 18px rgba(0,0,0,.5)}
+.tag b{display:block;font-weight:700;overflow:hidden;text-overflow:ellipsis}
+.tag span{color:var(--sub);font-size:11px}
+.tag::after{content:"";position:absolute;left:50%;bottom:-6px;width:1px;height:6px;background:rgba(255,201,74,.6)}
 /* --- the tour caption, toasts, loading */
 .caption{position:fixed;left:50%;bottom:calc(var(--sheet-bottom) + 10px + var(--sb));transform:translateX(-50%);width:min(640px,calc(100% - 28px));z-index:4;
 pointer-events:none;opacity:0;text-align:center;font:600 15px/1.35 var(--oly-ui,inherit);color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.9)}
@@ -156,6 +168,13 @@ body.cine .top,body.cine .mini,body.cine .dock .tab:not(#tourB){opacity:.18;tran
   <header><h2 id="sheetTitle"></h2><button class="x" id="sheetX" aria-label="Close">×</button></header>
   <div id="sheetBody"></div>
 </section>
+<div class="cams" id="cams" role="group" aria-label="Camera mode">
+  <button data-cam="orbit" class="on" aria-label="Orbit camera">ORBIT</button>
+  <button data-cam="skim" aria-label="Fly low through the districts">SKIM</button>
+  <button data-cam="drone" aria-label="Drone loop over the city">DRONE</button>
+  <button data-cam="grand" aria-label="Grand tour of the landmarks">GRAND</button>
+</div>
+<div class="tag" id="tag" aria-hidden="true"></div>
 <nav class="dock" id="dock" aria-label="City views">
   <button class="tab" data-tab="top" aria-label="Top 10"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>Top</button>
   <button class="tab" data-tab="today" aria-label="Today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.6 6.3L21 9l-5 4.4L17.5 20 12 16.7 6.5 20 8 13.4 3 9l6.4-.7z"/></svg>Today</button>

@@ -12,13 +12,18 @@
 //   data.js (decode + plug-ins) · layout.js (where things stand) · scene.js (three.js world) · skyline.js (tiles + LOD)
 //   fx.js (rays, fog, rain, traffic, beam, billboards) · sky.js (market clock, weather) · controls.js (camera)
 //   tour.js (the cinematic tour) · minimap.js · ui.js (top bar, sheet, cards) · theme.js · city.js (this: wiring, frame loop)
+//   OLYMPUS v2 (2026-11-03): scene.js draws through the OLYMPUS render core (../olympus/render.js: ACES, 4x MSAA, bloom, film finish,
+//   tiers from OLYMPUS.fx(); LITE = 2 passes + a 30 fps cap) · landmarks.js (temple, forum, Pharos, Poseidon gate, district gates: PBR
+//   marble / gold / glass, tap for a card) · streams.js (data arcs + pulses) · outskirts.js (scenery ring) · fly.js (SKIM / DRONE /
+//   GRAND cameras; routes #cam=skim|drone|grand, #l=temple|forum|pharos|poseidon).
 import * as THREE from '../jarvis/three.module.min.js';
-import { $, el, clsRank, settings, money } from './util.js';
+import { $, el, clsRank, settings, money, num, pct } from './util.js';
 import { decode, loadPlugins, labelOf } from './data.js';
 import { layout } from './layout.js';
 import { CityScene } from './scene.js';
 import { Orbit } from './controls.js';
 import { Tour, shots } from './tour.js';
+import { MODES, flight } from './fly.js';
 import { Minimap } from './minimap.js';
 import { etClock, sunOf, weatherOf } from './sky.js';
 import { applyTheme, watchTheme } from './theme.js';
@@ -29,7 +34,7 @@ const LQ_FPS = 40;                  // below this for 3 s in a row (HQ, not chos
 const SKY_MODES = ['live', 'night', 'day'];
 const P = new URLSearchParams(location.search);
 const state = window.__city = { ready: false, mode: null, buildings: 0, quality: null, fps: 0, found: 0, errors: [], today: { on: false, lit: 0 },
-                                tour: { on: false, step: -1, steps: 0, caption: '' }, sky: null, weather: null, frames: 0 };
+                                tour: { on: false, step: -1, steps: 0, caption: '' }, cam: { mode: 'orbit', on: false }, landmark: null, sky: null, weather: null, frames: 0 };
 
 async function getJSON(url) {
   const r = await fetch(url, { cache: 'no-cache' });
@@ -64,13 +69,14 @@ class App {
     this.weather = weatherOf(P.has('vix') ? +P.get('vix') : model.weather?.vix);
     const winRate = model.buildings.reduce((a, b) => a + (b.w || 50), 0) / Math.max(1, model.buildings.length) / 100;
     this.calm = O ? O.reduced() : !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    this.city = new CityScene($('#c'), this.L, { quality: this.quality, winRate: Math.max(0.3, Math.min(0.7, winRate)), billboards: billboards(model), calm: this.calm });
-    O?.track(this.city.renderer);
+    this.city = new CityScene($('#c'), this.L, { quality: this.quality, winRate: Math.max(0.3, Math.min(0.7, winRate)), billboards: billboards(model), calm: this.calm,
+      onTier: (q) => this.onTier(q) });
+    this.quality = this.city.quality;     // the render core's tier decides (OLYMPUS.fx())
     O?.onTheme(() => this.applyDay());   // OLYMPUS theme: the sky / fog follow it (scene.js setDay)
     O?.mode(this.quality === 'lq');
     this.orbit = new Orbit(this.city.camera, $('#c'), {
       calm: this.calm, radius: Math.max(150, Math.min(460, (this.L.bounds.x1 - this.L.bounds.x0) * 0.5)),
-      onTap: (x, y) => this.tap(x, y), onFlyEnd: () => this.endTour(),
+      onTap: (x, y) => this.tap(x, y), onFlyEnd: () => { this.endTour(); this.endCam(); },
     });
     this.index = new Map();
     this.L.items.forEach((it, i) => { if (it.b?.id && (!this.index.has(it.b.id) || it.kind !== 'd')) this.index.set(it.b.id, i); });
@@ -155,6 +161,7 @@ class App {
     this.selected = i;
     this.applyStates();
     this.city.beam.show(it.x, it.z, it.h, it.color);
+    this.setTag(it, labelOf(b, this.model.D));
     if (!quiet) this.orbit.focus(it.x, Math.min(it.h * 0.5, 6), it.z, 34 + it.h * 2);
     try { history.replaceState(null, '', '#b=' + encodeURIComponent(b.id)); } catch (e) { /* file:// */ }
   }
@@ -193,6 +200,7 @@ class App {
   tap(x, y) {
     const hit = this.city.pick(x, y);
     if (hit?.lit) this.openLit();
+    else if (hit?.landmark) this.openLandmark(hit.landmark);
     else if (hit?.item !== undefined) this.open(hit.item);
     else if (hit?.block !== undefined) {
       const B = this.L.blocks[hit.block];
@@ -201,6 +209,114 @@ class App {
       const g = this.city.groundAt(x, y), d = g && this.L.districts.find((q) => Math.abs(q.cx - g.x) <= (q.wide ? q.w / 2 : q.half) && Math.abs(q.cz - g.z) <= q.half);
       if (d && (UI.sheet.view !== 'district' || state.district !== d.key)) this.openDistrict(d, { x: g.x, z: g.z, r: 70 });
       else UI.sheet.close();
+    }
+  }
+
+  // -- the tag over a tapped building (its name and result, riding on the building until the card closes)
+  setTag(it, label) {
+    const t = $('#tag');
+    if (!it || !t) { this.tagAt = null; if (t) t.style.display = 'none'; return; }
+    const b = it.b || {};
+    t.replaceChildren(el('b', null, label || b.lab || b.id || ''), el('span', null,
+      it.kind === 'ship' ? `${money(b.pnl)} · ${b.R >= 0 ? '+' : ''}${num(b.R, 2)}R` : it.kind === 's' ? 'strategy tower'
+      : `${money(b.e)}/trade/micro · ${b.cls || ''}${b.n ? ' · ' + b.n.toLocaleString() + ' trades' : ''}`));
+    this.tagAt = { it, v: new THREE.Vector3() };
+    state.tag = label || b.id || '';
+  }
+
+  updateTag() {
+    const k = this.tagAt, t = $('#tag');
+    if (!k || !t) return;
+    k.v.set(k.it.x, k.it.h + 1.5, k.it.z).project(this.city.camera);
+    if (k.v.z > 1 || k.v.z < -1) { t.style.display = 'none'; return; }
+    const W = innerWidth, H = innerHeight, w = t.offsetWidth || 120;
+    const x = Math.max(8, Math.min(W - w - 90, (k.v.x * 0.5 + 0.5) * W - w / 2)), y = Math.max(96, Math.min(H - 190, (-k.v.y * 0.5 + 0.5) * H - 46));
+    t.style.display = 'block';
+    t.style.transform = `translate(${x.toFixed(0)}px,${y.toFixed(0)}px)`;
+  }
+
+  // -- the landmarks: tap one for its card (real numbers from the model), the camera glides there
+  landmarkInfo(key) {
+    const m = this.model, g = m.guard || {}, lit = m.lit?.spans?.['2026'], S = this.city.lm.spots[key];
+    if (key === 'temple') {
+      const gold = m.buildings.filter((b) => b.cls === 'gold').sort((a, c) => (c.e || 0) - (a.e || 0));
+      return { name: 'Temple of the Gold', kind: 'landmark', blurb: 'The acropolis: the few combinations that hold in 2026, in 2021-25 and in every year, and pass the false-discovery guard. The hologram turns over the roof, the beam reaches into the sky.',
+        tiles: [['gold buildings', String(gold.length)], ['pass FDR', String(g.fdr_pos ?? '–')], ['placebo passes', String(g.placebo_fdr ?? '–')], ['discoveries', String((m.discoveries || []).length)]],
+        lines: gold.slice(0, 3).map((b) => `${labelOf(b, m.D)}: ${money(b.e)} per trade per micro`) };
+    }
+    if (key === 'forum') {
+      const c = g.classes || {};
+      return { name: 'The Forum', kind: 'landmark', blurb: 'The colonnade round the plaza: every claim in the city is tested in the open here. The gaps in the columns are the boulevards to the districts.',
+        tiles: [['tried', (g.tried || 0).toLocaleString()], ['tested (30+ trades)', (g.tested || 0).toLocaleString()], ['gold / green', `${c.gold ?? '–'} / ${c.green ?? '–'}`], ['grey (noise)', (c.grey ?? 0).toLocaleString()]],
+        lines: [`Picked on 2021-24 only, ${g.holdout?.picked_2021_24 ?? '–'} combinations; ${g.holdout?.pct_positive ?? '–'}% stayed positive in 2025-26. Most of the city is noise, and the city says so.`] };
+    }
+    if (key === 'pharos') {
+      const ships = this.L.items.filter((it) => it.kind === 'ship').map((it) => it.b), won = ships.filter((x) => x.pnl >= 0).length, net = ships.reduce((a, x) => a + (x.pnl || 0), 0);
+      return { name: 'Pharos lighthouse', kind: 'landmark', blurb: 'The harbor\'s lighthouse: its beams sweep the water where one ship per LIT trade is moored (the live settings replayed, costs in; paper, not broker fills).',
+        tiles: [['ships (trades)', ships.length.toLocaleString()], ['won', ships.length ? pct((100 * won) / ships.length) : '–'], ['net', money(net)], ['2026 PF', num(lit?.pf, 2)]],
+        go: { label: 'Fly to the Harbor', fn: () => { const d = this.L.districts.find((q) => q.kind === 'harbor'); if (d) this.openDistrict(d); } } };
+    }
+    if (key === 'poseidon') {
+      const w = m.weather || {}, v = this.weather;
+      return { name: 'Gate of Poseidon', kind: 'weather gate', blurb: 'The trident\'s lantern is the weather: cyan under VIX 15, amber to 20, blue to 25, red above (it pulses faster as the VIX rises). The city\'s rain and storms follow the same number.',
+        tiles: [['VIX', num(w.vix ?? v.vix, 1)], ['VXN', num(w.vxn, 1)], ['VIX3M', num(w.vix3m, 1)], ['sky', v.sky]],
+        lines: [`CBOE closes${w.vix_date ? ': VIX ' + w.vix_date : ''}${w.source ? ' · ' + w.source : ''}.`] };
+    }
+    return { name: S?.name || key, kind: 'landmark', blurb: '' };
+  }
+
+  openLandmark(key) {
+    state.landmark = key;
+    if (key.startsWith('gate:')) {
+      const d = this.L.districts.find((q) => q.key === key.slice(5));
+      if (d) this.openDistrict(d);
+      return;
+    }
+    const S = this.city.lm.spots[key];
+    if (!S) return;
+    UI.showLandmark(this.landmarkInfo(key));
+    this.setTag(null);
+    this.orbit.focus(S.x, Math.min(S.h * 0.4, 24), S.z, S.r * 1.7, 0.95);
+    try { history.replaceState(null, '', '#l=' + key); } catch (e) { /* file:// */ }
+  }
+
+  // -- the fly-through cameras (fly.js): the manual orbit is the fourth
+  startCam(mode) {
+    if (mode === 'orbit') { this.orbit.stopFly(); this.endCam(); return; }
+    if (this.tour) this.orbit.stopFly();
+    const cam = this.city.camera, dir = new THREE.Vector3();
+    cam.getWorldDirection(dir);
+    const f = flight(mode, this.L, this.city.lm.spots, { pos: cam.position.clone(), look: cam.position.clone().add(dir.multiplyScalar(70)) });
+    if (!f) return;
+    this.orbit.drive((dt) => f.step(dt));
+    this.cam = { mode, f, lm: null };
+    state.cam = { mode, on: true };
+    UI.sheet.close();
+    UI.caption(MODES.find((x) => x.key === mode).hint + ' · drag to take over', 0, 0, mode.toUpperCase());
+    this.camButtons();
+  }
+
+  endCam() {
+    if (!this.cam) { this.camButtons(); return; }
+    this.cam = null;
+    state.cam = { mode: 'orbit', on: false };
+    UI.caption('');
+    this.camButtons();
+  }
+
+  camButtons() {
+    const cur = this.cam?.mode || 'orbit';
+    document.querySelectorAll('#cams [data-cam]').forEach((b) => b.classList.toggle('on', b.dataset.cam === cur));
+  }
+
+  updateCam() {
+    const c = this.cam;
+    if (!c) return;
+    const i = c.f.info();
+    state.cam = { ...state.cam, ...i };
+    if (c.mode === 'grand' && i.landmark && i.landmark !== c.lm) {
+      c.lm = i.landmark;
+      UI.caption(this.landmarkInfo(i.landmark).blurb, 0, 0, (this.city.lm.spots[i.landmark]?.name || '').toUpperCase());
     }
   }
 
@@ -266,6 +382,8 @@ class App {
     else if (h === '#discoveries') this.showView('today');
     else if (h === '#tour') this.startTour();
     else if (h.startsWith('#b=')) this.openId(h.slice(3));
+    else if (h.startsWith('#l=')) this.openLandmark(h.slice(3));
+    else if (h.startsWith('#cam=') && MODES.some((x) => x.key === h.slice(5))) this.startCam(h.slice(5));
     else if (h.startsWith('#d=')) { const d = this.L.districts.find((x) => x.key === h.slice(3)); if (d) this.openDistrict(d); }
   }
 
@@ -299,6 +417,14 @@ class App {
   }
 
   // -- switches
+  /** the render core changed tier (OLYMPUS choice or the core's own step-down): the page follows */
+  onTier(q) {
+    this.quality = q;
+    state.quality = q;
+    O?.mode(q === 'lq');
+    $('#qB').textContent = q.toUpperCase();
+  }
+
   setQuality(q, auto) {
     this.quality = q;
     state.quality = q;
@@ -316,12 +442,14 @@ class App {
       this.showView(v);
     }));
     UI.sheet.onClose = () => {
+      this.setTag(null);
       if (this.keep) this.resetFind();
       this.selected = -1;
       this.applyStates();
       this.city.beam.hide();
     };
     $('#sheetX').addEventListener('click', () => UI.sheet.close());
+    document.querySelectorAll('#cams [data-cam]').forEach((b) => b.addEventListener('click', () => this.startCam(b.dataset.cam)));
     $('#tourB').addEventListener('click', () => (this.tour ? this.orbit.stopFly() : this.startTour()));
     $('#skyB').addEventListener('click', () => {
       this.skyMode = SKY_MODES[(SKY_MODES.indexOf(this.skyMode) + 1) % SKY_MODES.length];
@@ -354,15 +482,18 @@ class App {
     const frame = (now) => {
       requestAnimationFrame(frame);
       if (O ? O.hidden() : document.hidden) { last = now; return; }          // hidden tab: no frame at all
+      if (this.quality === 'lq' && now - last < 28) return;                  // LITE draws at 30 fps (half the work, half the heat)
       const dt = Math.min(0.1, Math.max(0, (now - last) / 1000));
       last = now;
       this.orbit.update(dt);
       skyT += dt;
       if (skyT > (this.tour ? 0.05 : 1)) { skyT = 0; this.applySky(); }
+      this.updateCam();
       this.city.render(dt);
+      this.updateTag();
       const info = this.city.renderer.info.render;
       this.lastCalls = info.calls; this.lastTris = info.triangles;
-      this.minimap.draw(this.city.camera, this.tour ? this.orbit.at : this.orbit.view.target, dt);
+      this.minimap.draw(this.city.camera, this.tour || this.cam ? this.orbit.at : this.orbit.view.target, dt);
       if (this.tour) state.tour = { ...state.tour, ...this.tour.info };
       state.beam = !!this.city.beam.at;
       state.frames++;
