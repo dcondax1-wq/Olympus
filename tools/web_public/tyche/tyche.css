@@ -113,6 +113,7 @@ h1 { margin: 0; font: 700 16px Orbitron, sans-serif; letter-spacing: .26em; colo
 
 /* ---------------------------------------------------------------- 3D labels (placed by hud.js; never in the orb's corner) */
 #labels { position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; contain: strict; }
+#labels.wait { visibility: hidden; }                 /* during the intro camera move (main.js) */
 .lb { position: absolute; left: 0; top: 0; white-space: nowrap; font: 700 11px Orbitron, sans-serif; letter-spacing: .02em; color: var(--text);
   padding: 2px 6px; border-radius: 8px; background: rgba(7, 6, 11, .62); border: 1px solid rgba(255, 207, 90, .22); will-change: transform; }
 .lb.coin { color: #fff3cf; }

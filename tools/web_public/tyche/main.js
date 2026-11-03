@@ -190,6 +190,7 @@ canvas.addEventListener('pointercancel', (e) => { touch.pts.delete(e.pointerId);
 // ------------------------------------------------------------------ the frame loop
 const perf = { frames: 0, t: 0, slow: 0 };
 let last = performance.now(), lastDraw = 0, lastTick = 0;
+const labelLayer = document.getElementById('labels');
 function frame(ts) {
   requestAnimationFrame(frame);
   if (O ? O.hidden() : document.hidden) { last = ts; return; }     // hidden tab: no frame (the battery)
@@ -208,7 +209,10 @@ function frame(ts) {
   if (!scene || !state.model || (reduced && ts - lastDraw < 250)) return;
   scene.frame(ts / 1000, reduced ? 0 : Math.min(0.1, (ts - lastDraw) / 1000), nowS());
   lastDraw = ts;
-  hud.labels(scene.labels(nowS(), state.quality === 'high' ? 14 : 8));
+  // the 3D labels wait for the intro camera move to land (no labels sliding about, no layout work while the camera flies)
+  const flying = scene.intro < 1;
+  if (labelLayer.classList.contains('wait') !== flying) labelLayer.classList.toggle('wait', flying);
+  if (!flying) hud.labels(scene.labels(nowS(), state.quality === 'high' ? 14 : 8));
   autoLite(dt);
 }
 /** Two slow 2-second windows in a row on HD (and no saved choice): LITE, once. */
