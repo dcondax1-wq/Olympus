@@ -36,7 +36,10 @@ export function applyAppearance() {
   r.dataset.ticker = A.ticker ? 'on' : 'off';
   r.dataset.motion = A.motion ? 'on' : 'off';
   r.dataset.hollow = A.hollow ? 'on' : 'off';
-  if (A.accent) { r.style.setProperty('--accent', A.accent); r.style.setProperty('--glow', hexA(A.accent, 0.35)); }
+  // the one token writer (zenithcore.js, shared with the phone and the Olympus themes); the inline path when it is missing
+  const Z = window.ZenithFX, tok = { accent: A.accent || null, glow: A.accent ? hexA(A.accent, 0.35) : null };
+  if (Z) Z.applyTokens(tok);
+  else if (A.accent) { r.style.setProperty('--accent', A.accent); r.style.setProperty('--glow', tok.glow); }
   else { r.style.removeProperty('--accent'); r.style.removeProperty('--glow'); }
   store.set('appearance', A);
 }
@@ -47,8 +50,11 @@ export function setAppearance(patch) {
   document.dispatchEvent(new CustomEvent('le-appearance'));
 }
 
-// ---- cursor spotlight on panels (CSS reads --mx / --my)
+// ---- cursor spotlight on panels: zenithcore.js's glass (an edge light + a small tilt, the same as the phone, jfx quality,
+// the Olympus theme); the old --mx / --my spotlight when it is missing. depth.js keeps its own tilt on .dp-tilt cards.
 export function installSpotlight() {
+  const Z = window.ZenithFX;
+  if (Z) { Z.css(); Z.glass(document.body, '.card, .kpi, .guard, .pr-card, .rc-card, .bl-card, .sc-card, .mn-card', { deg: 3, skip: '.dp-tilt, .dp-tilt *' }); Z.followOlympus(); return; }
   document.addEventListener('pointermove', (e) => {
     const el = e.target.closest?.('.card, .kpi, .guard');
     if (!el) return;

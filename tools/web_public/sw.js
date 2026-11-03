@@ -82,7 +82,11 @@
 // first chip, More > Insight, a Home card), hub.js v9 (journal tags), clean.js (?v=3 kept, the new cache name refreshes it).
 // OTHER_APPS: + the OLYMPUS app folders (datacity/ ... tyche/) and their shared olympus/ kit, never handled
 // or cached here. live.json stays network-only. New cache name so every iPhone refreshes.
-const CACHE = 'le-public-v51';
+// v52 (2026-11-03 day, "way higher quality, 3D UI effects ... organized, like a maid swept"): zenithcore.js + zenith.js +
+// zenith.css (the breadcrumb on every page, one card system / spacing scale / empty state, glass cards with an edge light and
+// a small 3D tilt, numbers that count to their new value, Home's money line + the 3D equity energy ribbon, View Transitions
+// between pages, the shared 3D quality key jfx, Olympus themes through one token function). OTHER_APPS unchanged.
+const CACHE = 'le-public-v52';
 const NAV_WAIT_MS = 3500;
 let SLOW_UNTIL = 0;       // the site was just slow (the page waited NAV_WAIT_MS): data.json / home.json then wait 0.4 s, not 3.5 s
 const COPY_CLIENTS = new Map();   // a page (client id) answered from the saved copy -> until when its data.json / home.json are too
