@@ -993,6 +993,20 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
     risk (14-day earliest-date-first vs 60% of free time, Block the best gap), Daily goal (ring, 7 days, days in a row;
     device key `planner.flow.goal`). `ext-flow.js`, its own `planner/tests/flow.test.js` (41). Workload and Daily goal fold
     to Dashboards lines so todayorg's Today height limit holds.
+  - **40-olympus (2026-11-03, owner "3D, futuristic, organized like a maid swept"):** `ext-olympus.js`, its own
+    `planner/tests/olympus.test.js` (43).
+    - Look: glass cards (real glass in dark; light keeps theme.test's exact colours, depth from shadows / background images),
+      a slow aurora, rise-in on a view change, mouse tilt, press-in, tick pop + short vibrate.
+    - Today swept: one-line date, an even button row on phones, hairline section labels, the status line as a pill with a
+      green / red dot.
+    - Day timeline under the status line: today's events in up to 3 lanes, a NOW beam, now / next, the "wide open" empty state.
+    - Focus mode (`#focus-mode`, palette, All tools, the timeline's Focus, a tap on the timer bar): a full-screen ring that
+      drives the app's own focus timer (openFocus + its form, the bar's buttons), so logging is unchanged; a 5-min break
+      in memory.
+    - Switches: device `planner.olympus.fx`=off; Olympus `jfx` off = plain, low = still; prefers-reduced-motion = still.
+      Olympus themes: `olympus.theme` = a theme id; tokens from `OLYMPUS_THEMES.tokens(id, 'page')` (the Jarvis frame's, or
+      `../olympus/themes.js` loaded once): accent / accent2 / glow -> `--ox-a/--ox-b/--ox-glow`. No key, `olympus`, an
+      unknown id or no themes.js = the Planner's own indigo / cyan.
   - **Test:** test_planner_addons (section f checks the real patches against the live branch and that each `ext-*.js` is
     loaded once).
   - **When the Planner session deploys again:** rebase or refresh the patches if test_planner_addons f reports a skip.

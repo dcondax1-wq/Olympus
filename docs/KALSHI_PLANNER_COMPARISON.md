@@ -37,7 +37,7 @@ Compared with Sunsama, Motion, Akiflow, Todoist, Notion Calendar and Structured.
 | Feature | Who has it | Planner before | Added now |
 |---|---|---|---|
 | Time-blocking tasks | all six | yes (Block time, Plan my day, drag) | Block time straight from Deadline risk |
-| Focus timer | Structured, Akiflow, Sunsama | yes | — |
+| Focus timer | Structured, Akiflow, Sunsama | yes (a bar at the bottom) | 40-olympus **Focus mode**: full-screen ring, task + length pick, 5-min break, minutes today |
 | Habits and streaks | Structured, Todoist (habits via recurring) | yes (Habits) | — |
 | Daily planning / shutdown review | Sunsama | yes (Plan day, Close out the day, Weekly review + reminder) | — |
 | Quick add with natural language | Todoist, Akiflow, Motion | yes (20-power: "gym tue thu 7am", bills …) | — |
@@ -47,7 +47,7 @@ Compared with Sunsama, Motion, Akiflow, Todoist, Notion Calendar and Structured.
 | **Deadline risk** (tasks that will miss their date) | Motion | no | **Deadline risk**: 14-day earliest-date-first check against 60% of free time; Fix → Block the best gap |
 | **Daily task goal + streak** (Karma) | Todoist | no (Daily score is broader) | **Daily goal**: ring, 7-day bars, days in a row; goal 1-10 |
 | Scheduling links / time zones | Notion Calendar | Find a time + copy availability | not added (needs a server; the Planner is static) |
-| Energy-based day timeline | Structured | Now and next strip | not added |
+| Day timeline | Structured | Now and next strip | 40-olympus **Day timeline**: today's events on one track, a NOW beam, now / next, an empty state |
 
 All three go through the Planner's own `snapshot()` + `commit()` (sync, tombstones, Undo); the only new key is the
 device-only `planner.flow.goal`. Tests: the patch's own `planner/tests/flow.test.js` (41 behaviour checks) and
