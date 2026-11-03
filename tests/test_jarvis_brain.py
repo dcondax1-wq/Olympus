@@ -120,9 +120,14 @@ import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
 const [brainPath, scenPath] = process.argv.slice(2);
 const mod = await import(pathToFileURL(brainPath).href);
+const D = await import(pathToFileURL(brainPath.replace(/brain\.js$/, 'data.js')).href);      // the shell's MFFU rules and System view
 const scen = JSON.parse(fs.readFileSync(scenPath, 'utf8'));
 const out = { exports: Object.keys(mod).sort() };
+const NAV = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
 for (const sc of scen) {
+  if (sc.withShell) { sc.facts = { ...sc.facts, mffu: D.MFFU_RULES }; sc.facts.system = D.systemStatus(sc.facts); }
+  if (NAV) Object.defineProperty(globalThis, 'navigator', NAV);
+  if (sc.offline) Object.defineProperty(globalThis, 'navigator', { value: { onLine: false }, configurable: true });
   const store = new Map(Object.entries(sc.storage || {}));
   const storage = { getItem: (k) => (store.has(k) ? store.get(k) : null), setItem: (k, v) => store.set(k, String(v)), removeItem: (k) => store.delete(k) };
   const calls = [], opened = [];
@@ -132,6 +137,7 @@ for (const sc of scen) {
     calls.push({ url, method: init.method, headers: init.headers, body: JSON.parse(init.body) });
     const p = plans[Math.min(calls.length - 1, plans.length - 1)];
     if (p.throw) throw new TypeError('Failed to fetch');
+    if (p.hang) return new Promise((ok, no) => { const sg = init.signal; if (sg) sg.addEventListener('abort', () => { const e = new Error('aborted'); e.name = 'AbortError'; no(e); }); });
     const status = p.status || 200;
     return { ok: status < 400, status, json: async () => p.json, text: async () => JSON.stringify(p.json || {}) };
   };
@@ -149,6 +155,8 @@ for (const sc of scen) {
       else if (st.setSmart) res.push({ smart: brain.setSmart(st.setSmart) });
       else if (st.smart) res.push({ smart: brain.smart });
       else if (st.idle) res.push({ text: brain.idle() });
+      else if (st.headline) res.push({ headline: brain.headline(), priorities: brain.priorities() });
+      else if (st.timed !== undefined) { const t0 = Date.now(); const r = await brain.ask(st.timed); res.push({ ...r, ms: Date.now() - t0 }); }
       else if (st.outcomes) res.push({ list: mod.outcomeAlerts(st.outcomes[0], st.outcomes[1]) });
     } catch (e) { res.push({ exception: String((e && e.stack) || e) }); }
   }
@@ -157,6 +165,34 @@ for (const sc of scen) {
 }
 process.stdout.write(JSON.stringify(out));
 """
+
+
+T_MON1958 = at(2026, 11, 2, 19, 58)
+TONIGHT_Q = ("what should I do today", "brief me", "status", "how's my PC", "eval pace", "why no trade", "when does it trade next", "last trade",
+             "how much did I make this month", "what is the MFFU inactivity rule", "mffu payout rules", "whats the daly loss limit rule", "deals",
+             "how are the bots", "what did the bots learn", "kalshi", "is zlarior trading", "pnl this week")
+
+
+def tonight(now_ms, q_lit=5, q_atlas=5, ram=95, running=True):
+    """live.json as the shell sees it tonight: Zlarior room $1,106 / $3,726 to go, ATLAS $746 / $1,754, both 5 days with no trade."""
+    t = now_ms // 1000 - 60
+    card = lambda **o: {"status": "open", "today_pnl": 0.0, "week_pnl": 0.0, "trades_today": 0, **o}      # noqa: E731
+    ph = {"level": "bad" if ram >= 95 else "ok", "cpu": 31, "ram": ram,
+          "lines": [{"key": "ram", "label": "Memory (RAM)", "level": "bad" if ram >= 95 else "ok", "text": f"RAM {ram}% in use (3.4 of 3.6 GB): close other apps (browser tabs)"}]}
+    lv = {"t": t, "running": running, "verdict": {"level": "good", "label": "TRADING YOUR EVAL", "reason": "heartbeat fresh"},
+          "lit": card(name="Zlarior", plan="MFFU Builder 50K", balance=49273.8, floor=48168.2, room=1105.6, room_frac=0.55, to_target=3726.2, profit=-726.2,
+                      session=6, sessions=10, quiet_days=q_lit, waiting="Waiting for the 02:00 ET window (Asia range building).",
+                      days=[["2026-10-27", -400.0], ["2026-10-28", -326.2]]),
+          "atlas": card(name="ATLAS", plan="MFFU Builder 25K", balance=24746.0, floor=24000.0, room=746.0, room_frac=0.746, to_target=1754.0, profit=-254.0,
+                        session=5, sessions=10, quiet_days=q_atlas, waiting="All 3 members are outside their hours. Next: EMA at Tue 09:35 ET."),
+          "blitz": {"off": True, "status": "off"}, "health": [{"key": "age_1m_s", "value": "14 s", "ok": True}, {"key": "nt", "ok": True}],
+          "pc_health": ph, "lines": [],
+          "trades": [{"acct": "lit", "side": "LONG", "qty": 4, "exit": "stop", "usd": -326.2, "r": -1.0, "entry_t": at(2026, 10, 28, 10, 5) // 1000, "day": "2026-10-28"}],
+          "money": {"next": {"kind": "buy", "text": "Buy 2 LucidPro 50K evals (about $231): code VIBES"}},
+          "mind": {"regime": {"label": "range, low volatility", "why": "VXN 18, inside last week's range"},
+                   "reviews": [{"bot": "lit", "grade": "B", "lesson": "Entered on the 1m CISD before the 5m confirmed: wait for the 5m close."}]}}
+    return {"now": now_ms, "market": {"open": True, "rth": False, "next": {"mins": 1262}}, "live": lv, "kalshi": None, "kalshiState": "waiting",
+            "planner": None, "apps": APPS}
 
 
 def S(name, steps, now=T_SUN13, f=None, **kw):
@@ -278,6 +314,18 @@ def scenarios():
         S("system_none", ask("status", "how's the pc")),
         S("system_junk", ask("status", "is everything ok", "how's the pc"),
           f=facts(T_SUN13, live={**live(T_SUN13), "pc_health": {"cpu": "x", "lines": [None, 5, {"level": "bad"}]}}, system={"verdict": "NEEDS YOU", "rows": [None, 3, {"name": 7}, {"id": "pc"}]})),
+        # tonight (2026-11-02 7:58 PM ET): both evals quiet 5 days, the PC's RAM at 95%, the market open overnight, Kalshi not linked
+        S("tonight", [{"headline": True}] + ask(*TONIGHT_Q), now=T_MON1958, f=tonight(T_MON1958), withShell=True),
+        S("tonight_q6", [{"headline": True}] + ask("what should I do", "status"), now=T_MON1958, f=tonight(T_MON1958, q_lit=6), withShell=True),
+        S("tonight_q7", [{"headline": True}] + ask("what should I do"), now=T_MON1958, f=tonight(T_MON1958, q_lit=7, q_atlas=3), withShell=True),
+        S("tonight_calm", [{"headline": True}] + ask("what should I do"), now=T_MON1958, f=tonight(T_MON1958, q_lit=1, q_atlas=2, ram=50), withShell=True),
+        S("tonight_stopped", ask("what should I do"), now=T_MON1958, f=tonight(T_MON1958, running=False), withShell=True),
+        S("smart_timeout", [{"setSmart": {"key": "gsk_FAKE", "on": True}}, {"timed": "blorp zzz what is the meaning of it all"}], now=T_MON1958, f=tonight(T_MON1958),
+          withShell=True, fetch={"hang": True}),
+        S("smart_offline", [{"setSmart": {"key": "gsk_FAKE", "on": True}}, {"timed": "blorp zzz what is the meaning of it all"}], now=T_MON1958, f=tonight(T_MON1958),
+          withShell=True, offline=True, fetch=groq_ok),
+        S("smart_grounded", [{"setSmart": {"key": "gsk_FAKE", "on": True}}] + ask("blorp zzz what is the meaning of it all"), now=T_MON1958, f=tonight(T_MON1958),
+          withShell=True, fetch=groq_ok),
     ]
 
 
@@ -425,13 +473,13 @@ def part_node(O):
           and "ATLAS: flat" in e2 and "Paper only" in e2, e2)
     check("e. what a bot waits for: its waiting text and entry window", "Waiting for a sweep of a LIT level" in e3 and "next entry window Mon 02:00-15:30 ET" in e3, e3)
     check("e. the money goal card from live.json", "Road to $10K" in e4 and "Next: Buy 2 MFFU Builder 25K" in e4, e4)
-    check("e. 'what should I do now': the open position first, then the money step", e5.startswith("Zlarior: long 3 micros") and "Money: Buy 2" in e5, e5)
+    check("e. 'what should I do now': the open position first; no sales line unless asked (owner 2026-11-02)", e5.startswith("Zlarior: long 3 micros") and "Money" not in e5 and "Buy 2" not in e5, e5)
     n1 = t("now_plain", 0)
     check("e. 'what should I do now' with nothing urgent: the open task and the next session", "Open task: Buy BLITZ 25K" in n1 and "opens today 6:00 PM ET" in n1, n1)
     n2 = t("now_bad", 0)
     check("e. 'what should I do now' with a feed problem in session: that problem and its fix first", n2.startswith("FEED STALE") and "Reload NinjaScript" in n2, n2)
     n3, s3 = t("now_stale", 0), t("now_stale", 1)
-    check("e. a live feed 3 h old: check the PC; the status says it is old", n3.startswith("Check the PC") and "3 h ago" in n3
+    check("e. a live feed 3 h old: turn the PC on; the status says it is old", n3.startswith("The PC has been silent since 3 h ago: turn it on and start the bot") and "3 h ago" in n3
           and "Heads up: the live feed is from 3 h ago" in s3, (n3, s3))
     n4, k4 = t("now_kalshi_setup", 0), t("now_kalshi_setup", 1)
     check("e. nothing else to do: connect Kalshi (the kalshi-server chat), never 'PC'", "kalshi-server" in n4 and "PC" not in k4, (n4, k4))
@@ -449,7 +497,7 @@ def part_node(O):
     mi = [t("more_intents", i) for i in range(6)]
     check("e. the NQ price from the bot's feed, with its age", mi[0].startswith("NQ 25,123.50 (the bot's last price, 2 min ago)"), mi[0])
     check("e. the daily loss limit and what is used of it", "Zlarior: daily loss limit $1,000, used $212; $1,106 of room to the floor" in mi[1], mi[1])
-    check("e. 'is the pc on': its last check-in and the verdict", mi[2].startswith("The PC last checked in 2 min ago: RUNNING: bot trading"), mi[2])
+    check("e. 'is the pc on': the one fix first (none), its last check-in and the verdict", mi[2].startswith("The PC looks healthy: nothing to fix.") and "checked in 2 min ago" in mi[2] and "RUNNING: bot trading" in mi[2], mi[2])
     check("e. 'is nq open' is a market question, not 'open Zenith'", mi[3].startswith("NQ market open · regular session") and not g("more_intents")[3].get("open"), mi[3])
     check("e. trades today per bot (with the daily maximum)", "Zlarior: 1 trade today (max 1 a day)" in mi[4] and "BLITZ: 2 trades today" in mi[4], mi[4])
     check("e. balances: each account and Kalshi", "Zlarior 50K balance $49,274" in mi[5] and "Kalshi balance $512.34" in mi[5], mi[5])
@@ -471,13 +519,13 @@ def part_node(O):
     check("e. the shell's liveError: the live feed cannot be reached", "cannot reach the bots' live feed" in se1 and "Bots: I cannot reach the live feed" in se2, (se1, se2[:160]))
     ph = [t("phrasings", i) for i in range(11)]
     check("e. phrasings: 'how close to passing' is the target, 'where's nq' the price (missing: said so), 'is the bot trading my eval' the status",
-          ph[0].startswith("Zlarior: $3,726 to the target") and ph[1].startswith("No NQ price in the live feed right now") and ph[2].startswith("RUNNING"),
+          ph[0].startswith("Zlarior: $3,726 to the target") and ph[1].startswith("No NQ price in the live feed right now") and ph[2].startswith("The bot is running (RUNNING"),
           ph[:3])
     check("e. 'who made you', trading actions refused ('flatten everything', 'stop the bot'), 'take me home'",
           "You did, sir" in ph[3] and g("phrasings")[4].get("intent") == "refuse_trade" and g("phrasings")[5].get("intent") == "refuse_trade"
           and g("phrasings")[6].get("open") == "home", ph[3:7])
     check("e. 'anything overdue' lists the overdue tasks; 'what's up' is a short status", "open task" in ph[7] and ph[8].startswith("All quiet: RUNNING: bot trading"), ph[7:9])
-    check("e. 'should I ...' without smart mode: the numbers, the call left to the owner", ph[9].startswith("Your call, sir. The numbers I have:") and "Zlarior 50K eval" in ph[9], ph[9])
+    check("e. 'should I ...' without smart mode: the numbers, the call left to the owner", ph[9].startswith("Your call, sir. The numbers I have:") and "Zlarior 50K: session" in ph[9], ph[9])
     check("e. a greeting at the wrong hour gets a polite 'technically'", ph[10].startswith("Good morning, technically."), ph[10])
     sdec = O["smart_decision"]
     check("h. 'should I ...' with smart mode on goes to the model, deep (the expert persona)", len(sdec["calls"]) == 1
@@ -660,16 +708,16 @@ def part_system(O):
     it = lambda n, i: (O[n]["res"][i] or {}).get("intent")           # noqa: E731
     s1, s2, pc, s4, bots = (t("system", i) for i in range(5))
     check("k. 'status': the verdict and the one thing to do first, then one line per system (PC, Zlarior, ATLAS, BLITZ, Kalshi, Planner)",
-          s1.startswith("HEADS UP: PC: RAM 89%") and all(x in s1 for x in ("PC (bot server", "CPU 23% · RAM 89%", "Zlarior (50K eval): +$213",
+          s1.startswith("HEADS UP: RAM 89% in use on the PC: close the browser tabs") and all(x in s1 for x in ("PC (bot server", "CPU 23% · RAM 89%", "Zlarior (50K eval): +$213",
                                                                           "ATLAS (25K)", "BLITZ (25K): OFF", "Kalshi (its own server): +$18.50", "Planner (your day): 4:15 PM"))
           and it("system", 0) == "system", s1)
     check("k. 'is everything ok?' and 'all good' give the same System answer", s2 == s1 and s4 == s1 and it("system", 1) == "system", (s2[:80], s4[:80]))
     check("k. the System answer speaks short and plain (the one thing to watch, the PC's check-in; no symbols)",
           sp("system", 0).startswith("All running, one thing to watch:") and "checked in 2 minutes ago, feed 12 seconds" in sp("system", 0) and "·" not in sp("system", 0)
           and "$" not in sp("system", 0), sp("system", 0))
-    check("k. 'how's the pc': its check-in and verdict, CPU and RAM, the amber line (not repeated as a to-do)",
-          "The PC last checked in" in pc and "RUNNING" in pc and "CPU 23%, RAM 89%." in pc and "Memory (RAM): RAM 89% in use" in pc and "To do" not in pc
-          and it("system", 2) == "pc" and "CPU 23 percent, memory 89 percent" in sp("system", 2), (pc, sp("system", 2)))
+    check("k. 'how's the pc': the one fix first (the amber RAM line), then its check-in, verdict, CPU and RAM",
+          pc.startswith("The fix: RAM 89% in use on the PC: close the browser tabs") and "checked in 2 min ago" in pc and "RUNNING" in pc and "CPU 23%, RAM 89%" in pc
+          and it("system", 2) == "pc" and "RAM 89 percent in use on the PC" in sp("system", 2), (pc, sp("system", 2)))
     check("k. 'how are the bots' stays the bots' status (unchanged)", "RUNNING" in bots and "Zlarior 50K" in bots and "PC (bot server" not in bots, bots)
     sg = (O["system"]["res"][5] or {}).get("list") or []
     check("k. suggestions: 'Is everything OK?' first while the System view has something", sg[:1] == ["Is everything OK?"] and 4 <= len(sg) <= 6, sg)
@@ -678,10 +726,74 @@ def part_system(O):
           g1.startswith("ALL GOOD: nothing needs you.") and g2 == g1 and sp("system_good", 0).startswith("All good, sir. Nothing needs you."), (g1[:80], sp("system_good", 0)))
     n1, n2 = t("system_none", 0), t("system_none", 1)
     check("k. a shell without the System view: 'status' is the bots' status as before; 'how's the pc' says the CPU / RAM reading is missing",
-          "RUNNING" in n1 and "Zlarior 50K" in n1 and "The PC last checked in" in n2 and "No CPU or RAM reading" in n2, (n1[:120], n2))
+          "RUNNING" in n1 and "Zlarior 50K" in n1 and "checked in 2 min ago" in n2 and "no CPU / RAM reading yet" in n2, (n1[:120], n2))
     j = [t("system_junk", i) for i in range(3)]
     check("k. junk System facts never raise and never print undefined / NaN / [object",
           all(x and not re.search(r"undefined|NaN|\[object", x) for x in j) and not any("exception" in (r or {}) for r in O["system_junk"]["res"]), j)
+
+
+def part_tonight(O):
+    """l. the priority engine and the new intents (2026-11-02), on tonight's live.json; smart mode's fallback (timeout, offline)."""
+    r = O["tonight"]["res"]
+    hd = r[0]["headline"]
+    A = {q: (r[i + 1] or {}).get("text") or "" for i, q in enumerate(TONIGHT_Q)}
+    check("l. the proactive line: both evals on day 5, one MNQ on each before Wednesday Nov 4; red; '+1 more' (the PC)",
+          hd["text"] == "Both evals are on day 5 with no trade: place 1 MNQ on each before Wednesday Nov 4 (MFFU can close them at day 7)."
+          and hd["level"] == "bad" and hd["more"] == 1 and hd["key"].startswith("quiet5:lit5,atlas5"), hd)
+    check("l. the ranking: the evals first (money at risk), then the PC's RAM, then Kalshi (context only); no sales line",
+          [x["key"].split(":")[0] for x in r[0]["priorities"]] == ["quiet5", "pc", "kalshi"] and not any("Buy" in x["text"] or "VIBES" in x["text"] for x in r[0]["priorities"]), r[0]["priorities"])
+    w = A["what should I do today"]
+    check("l. 'what should I do': 1-3 lines, the evals first, then the PC fix, then the market and Zlarior's next window; never a sale",
+          w.split("\n")[0].startswith("Both evals are on day 5") and w.split("\n")[1].startswith("Then: RAM 95% in use on the PC: close the browser tabs")
+          and "Zlarior's next window: tomorrow (Tue) 2:00 AM ET" in w and len(w.split("\n")) <= 3 and "Buy" not in w and "VIBES" not in w, w)
+    check("l. 'what should I do' speaks short: the one action, then the next", (r[1].get("speak") or "").startswith("Both evals are on day 5 with no trade. Place one micro on each before Wednesday."), r[1].get("speak"))
+    check("l. 'brief me' puts the urgent thing first ('First: ...') and has no sales line", A["brief me"].split("\n")[1].startswith("First: Both evals") and "VIBES" not in A["brief me"], A["brief me"][:300])
+    check("l. 'status' (System view): the verdict with the priority engine's one thing; Kalshi NOT LINKED, the Planner NOT LINKED (grey, intentional)",
+          A["status"].startswith("NEEDS YOU: Both evals are on day 5") and "Kalshi (its own server): NOT LINKED · not linked yet · planned" in A["status"]
+          and "Planner (your day): NOT LINKED · open the Planner once on this phone" in A["status"], A["status"])
+    check("l. 'how's my PC': the one fix first, then the numbers", A["how's my PC"].startswith("The fix: RAM 95% in use on the PC: close the browser tabs") and "CPU 31%, RAM 95%" in A["how's my PC"], A["how's my PC"])
+    check("l. eval pace: session X of 10, $ to go, $ a session to pass, days left before the 7-day rule",
+          "Zlarior 50K: session 6 of 10, $3,726 to go, about $932 a session to pass in 4 sessions, 5 days since its last trade (2 left before the 7-day rule)" in A["eval pace"]
+          and "ATLAS 25K: session 5 of 10, $1,754 to go, about $351 a session" in A["eval pace"], A["eval pace"])
+    check("l. 'why no trade': the bot runs, what each account waits for, 5 days without a trade, outside the window, the A-setups line",
+          A["why no trade"].startswith("The bot is running (TRADING YOUR EVAL).") and "Zlarior: waiting: Waiting for the 02:00 ET window" in A["why no trade"]
+          and "no trade for 5 days" in A["why no trade"] and "outside the entry window" in A["why no trade"] and "2-4 a week" in A["why no trade"], A["why no trade"])
+    check("l. 'when does it trade next': Zlarior's window (02:00-15:30 ET) and the setup", A["when does it trade next"].startswith("Zlarior's next window: tomorrow (Tue) 2:00 AM ET (entries 02:00-15:30 ET")
+          and "sweep extreme" in A["when does it trade next"], A["when does it trade next"])
+    check("l. 'last trade' explained: account, side, size, time, result in $ and R, the Mind's lesson",
+          A["last trade"].startswith("Last trade: Zlarior long 4 micros, Wed Oct 28 10:05 AM ET: stop, −$326 (-1.0R).") and "wait for the 5m close" in A["last trade"], A["last trade"])
+    check("l. P&L this month from the booked days ($0 in November); this week; ATLAS without days is 'missing', never a guess",
+          "Zlarior this month: $0." in A["how much did I make this month"] and "ATLAS this month: missing." in A["how much did I make this month"]
+          and "Zlarior this week: $0." in A["pnl this week"], (A["how much did I make this month"], A["pnl this week"]))
+    check("l. MFFU rules Q&A: inactivity, payouts, the daily loss limit (a typo tolerated)",
+          A["what is the MFFU inactivity rule"].startswith("Inactivity: no trade for 7 calendar days") and "$2,100 buffer" in A["mffu payout rules"]
+          and A["whats the daly loss limit rule"].startswith("Daily loss limit: $1,000 on the 50K, $600 on the 25K; soft"), (A["what is the MFFU inactivity rule"][:80], A["whats the daly loss limit rule"][:80]))
+    check("l. sales only when asked: 'deals' shows the money idea and the evals' pace", A["deals"].startswith("Money idea: Buy 2 LucidPro 50K evals") and "Zlarior 50K: session 6 of 10" in A["deals"], A["deals"])
+    check("l. 'how are the bots' names what needs you (the evals)", "Needs you: Both evals are on day 5" in A["how are the bots"], A["how are the bots"])
+    check("l. 'what did the bots learn': the regime and the Mind's lesson", "Regime: range, low volatility" in A["what did the bots learn"] and "wait for the 5m close" in A["what did the bots learn"], A["what did the bots learn"])
+    check("l. 'is zlarior trading': the trading answer for Zlarior alone", A["is zlarior trading"].startswith("The bot is running") and "ATLAS" not in A["is zlarior trading"], A["is zlarior trading"])
+    check("l. Kalshi not linked: the one step, calm (not an error)", "not connected yet" in A["kalshi"] and "kalshi-server" in A["kalshi"], A["kalshi"])
+    q6 = O["tonight_q6"]["res"]
+    check("l. day 6 on Zlarior, day 5 on ATLAS: 'today', both named with their days, red",
+          q6[0]["headline"]["text"].startswith("Both evals are on Zlarior day 6, ATLAS day 5 with no trade: place 1 MNQ on each today.") and q6[0]["headline"]["level"] == "bad"
+          and q6[2]["text"].startswith("NEEDS YOU: Both evals are on Zlarior day 6"), (q6[0]["headline"], q6[2]["text"][:120]))
+    q7 = O["tonight_q7"]["res"]
+    check("l. day 7 on Zlarior alone: 'MFFU may close it now', check the dashboard", q7[1]["text"].startswith("Zlarior (50K) has gone 7 days with no trade: MFFU may close it now."), q7[1]["text"])
+    c = O["tonight_calm"]["res"]
+    check("l. nothing urgent: 'Nothing needs you', the market and the next window, Kalshi's planned link; the proactive line says all quiet (level ok)",
+          c[1]["text"].startswith("Nothing needs you right now, sir.") and "Kalshi: not linked yet (planned" in c[1]["text"] and c[0]["headline"]["level"] == "ok", (c[0]["headline"], c[1]["text"]))
+    check("l. a stopped bot beats the quiet days (it is why nothing trades)", O["tonight_stopped"]["res"][0]["text"].startswith("Start the bot on the PC: it is stopped."), O["tonight_stopped"]["res"][0]["text"])
+    to, of = O["smart_timeout"]["res"][1], O["smart_offline"]["res"][1]
+    check("l. smart mode times out within 8 s: the local answer, with the reason", to.get("smartError") == "Groq timed out" and to["ms"] < 9500 and "Smart mode is unavailable: Groq timed out" in to["text"], {k: to.get(k) for k in ("smartError", "ms")})
+    check("l. smart mode offline: the local answer at once, no network call", of.get("smartError") == "offline" and of["ms"] < 1500 and not O["smart_offline"]["calls"], {k: of.get(k) for k in ("smartError", "ms")})
+    body = json.dumps(O["smart_grounded"]["calls"][0]["body"]) if O["smart_grounded"]["calls"] else ""
+    check("l. smart mode is grounded: the priorities, the quiet days, the PC's RAM, the next window and the MFFU rules go with the question; no key in the body",
+          "Both evals are on day 5" in body and "quiet_days_no_trade" in body and "RAM 95%" in body and "next window" in body and "inactivity" in body and "gsk_FAKE" not in body, body[:300])
+    rules = json.load(open(os.path.join(ROOT, "research", "lit", "mffu_rules.json"), encoding="utf-8"))
+    e50 = rules["builder_50k"]["eval"]
+    m = re.search(r"b50: \{[^}]*target: (\d+), mll: (\d+), dll: (\d+)", open(os.path.join(ROOT, "tools", "web_public", "jarvis", "data.js"), encoding="utf-8").read())
+    check("l. data.js MFFU_RULES matches research/lit/mffu_rules.json (50K target, max loss, daily loss)",
+          bool(m) and (int(m[1]), int(m[2]), int(m[3])) == (int(e50["profit_target"]["value"]), int(e50["max_loss"]["value"]["amount"]), int(e50["daily_loss_limit"]["value"]["amount"])), m and m.groups())
 
 
 def main():
@@ -693,6 +805,7 @@ def main():
         if O:
             part_node(O)
             part_system(O)
+            part_tonight(O)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     if "--no-browser" not in sys.argv:

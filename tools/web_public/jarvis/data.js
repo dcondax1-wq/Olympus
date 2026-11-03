@@ -9,9 +9,12 @@
 //   live.json   the NQ bots (the PC's heartbeat publish, branch `live` of nq-dashboard): the GitHub API first (fresh), then
 //               raw.githubusercontent (GitHub's CDN keeps it ~5 min); after a 403 / 429 the API rests 15 min.
 //   kalshi.json the Kalshi bot's status (it runs on its own server and publishes to its own repo, kalshi-feed): raw first,
-//               then the API; 404 = 'waiting'.
+//               then the API; 404 = 'waiting' (not linked yet: asked once a session, then left alone, no console spam).
 //   Planner     localStorage 'planner.today.v1' {day, events, tasks} when it is today's, else today computed from what the
-//               Planner saved on this phone ('planner.v1' / 'planner.hosted.v1').
+//               Planner saved on this phone ('planner.v1' / 'planner.hosted.v1'). When the Planner's own sync is set up on this
+//               phone ('planner.sync' {token, repo}: same site), refreshPlanner() also reads its planner.json from GitHub (GET only,
+//               to api.github.com only, the Planner's own route), so the day is fresh without opening the Planner.
+//   MFFU_RULES  the MFFU Builder rulebook (a small copy of research/lit/mffu_rules.json) for Jarvis's rules answers.
 //   the market  CME NQ: Sunday 18:00 to Friday 17:00 ET, daily halt 17:00-18:00 (exchange holidays are not known here).
 //   extras      the old Jarvis add-ons: BTC / ETH / SOL from CoinGecko's public price API (CORS open, no key; cached 5 min),
 //               the verse and the quote of the day (bundled here, so they work offline).
@@ -112,8 +115,16 @@ function slim(j) {                          // what Jarvis needs, also kept for 
   const ph0 = j && j.pc_health && typeof j.pc_health === 'object' && Array.isArray(j.pc_health.lines) ? j.pc_health : null;
   const pc_health = ph0 ? { t: num(ph0.t), level: ph0.level, cpu: num(ph0.cpu), ram: num(ph0.ram),
     lines: ph0.lines.slice(0, 8).map((x) => x && ({ key: x.key, label: x.label, level: x.level, text: x.text })).filter((x) => x && x.key) } : null;
+  // Mind (engine/mind.compact) and Live learning (the heartbeat's "learn"), cut to what Jarvis says: kept for an offline start
+  const pcj = j && isObj(j.pc) ? j.pc : {}, mi = isObj(pcj.mind) ? pcj.mind : null, le = isObj(pcj.learn) ? pcj.learn : null;
+  const mind = mi ? { t: num(mi.t), regime: isObj(mi.regime) ? { label: txt(mi.regime.label).slice(0, 80), why: txt(mi.regime.why).slice(0, 240) } : null,
+    plans: isObj(mi.plans) ? Object.fromEntries(Object.entries(mi.plans).slice(0, 4).map(([k, p]) => [k, { headline: txt(isObj(p) ? p.headline : '').slice(0, 200) }])) : {},
+    reviews: list(mi.reviews).filter(isObj).slice(0, 3).map((r) => ({ bot: txt(r.bot), grade: txt(r.grade), lesson: txt(r.lesson).slice(0, 200), t: num(r.t) })),
+    proposals: list(mi.proposals).filter(isObj).slice(0, 3).map((x) => ({ bot: txt(x.bot), idea: txt(x.idea).slice(0, 140), status: txt(x.status) })) } : null;
+  const learn = le ? { reviews: list(le.reviews).filter(isObj).slice(0, 4).map((r) => ({ bot: txt(r.bot), day: txt(r.day), status: txt(r.status), cause: txt(r.cause).slice(0, 120), gap_usd: num(r.gap_usd) })) } : null;
   return { lit: b.lit || null, atlas: b.atlas || null, blitz: bz, verdict: (j && j.pc_verdict) || null, running: b.running, t: j && j.t,
-    trades, health, lines, level: b.level || null, price: num(j && j.price), last_signal: (j && j.last_signal) || null, pc_health };
+    trades, health, lines, level: b.level || null, price: num(j && j.price), last_signal: (j && j.last_signal) || null, pc_health,
+    progress: isObj(b.progress) ? b.progress : null, money: j && isObj(j.money) && !j.money.error ? j.money : null, mind, learn };
 }
 export function refreshLive() {
   if (L.busy) return L.busy;
@@ -143,16 +154,22 @@ export const liveError = () => L.err;
 export const liveLoading = () => !!L.busy;
 
 // ------------------------------------------------------------------------------------------------ kalshi.json: the Kalshi bot (its own server)
-const K = { j: null, at: 0, state: '', busy: null };      // state: '' not asked yet | ok | waiting (not published yet) | error
-export function refreshKalshi() {
+const K = { j: null, at: 0, state: '', busy: null, n404: 0 };      // state: '' not asked yet | ok | waiting (not published yet) | error
+// kalshi.json not published yet (404, "not linked yet"): asked once per page load, then left alone (no 404 every few minutes
+// in the console). Opening Jarvis again (or kalshiRetry()) asks once more: that is how a newly linked bot shows up.
+export const kalshiBackedOff = () => K.state === 'waiting' && K.n404 > 0;
+export function kalshiRetry() { K.n404 = 0; return kalshiFetch(); }
+export function refreshKalshi() { return kalshiBackedOff() ? (K.at = Date.now(), Promise.resolve()) : kalshiFetch(); }
+function kalshiFetch() {
   if (K.busy) return K.busy;
   K.busy = (async () => {
     try {
       let r = null;
       try { r = await get(URLS.kalshiRaw + '?t=' + Math.floor(Date.now() / 60000), { cache: 'no-cache' }); } catch (_) { r = null; }
       if (!r || (!r.ok && r.status !== 404)) { try { r = await get(URLS.kalshiApi, { cache: 'no-cache', headers: { Accept: 'application/vnd.github.raw+json' } }); } catch (_) { r = null; } }
-      if (r && r.ok) { const j = await r.json(); if (j && typeof j === 'object') { K.j = j; K.state = 'ok'; LS.set('jarvis.lastKalshi', j); } else K.state = 'error'; }
-      else K.state = r && r.status === 404 ? 'waiting' : 'error';
+      if (r && r.ok) { const j = await r.json(); if (j && typeof j === 'object') { K.j = j; K.state = 'ok'; K.n404 = 0; LS.set('jarvis.lastKalshi', j); } else K.state = 'error'; }
+      else if (r && r.status === 404) { K.state = 'waiting'; K.n404++; }
+      else K.state = 'error';
     } catch (_) { K.state = 'error'; }
     K.at = Date.now(); K.busy = null;
     emit('kalshi');
@@ -167,8 +184,36 @@ export const kalshiRun = (k) => (!k ? null : k.running === false ? ['bad', 'Stop
 
 // ------------------------------------------------------------------------------------------------ the Planner's day
 function plannerState() {
+  if (PS.doc) return PS.doc;                     // the Planner's synced planner.json, fresher than this phone's copy
   for (const k of ['planner.v1', 'planner.hosted.v1']) { const s = LS.get(k, null); if (s && (Array.isArray(s.events) || Array.isArray(s.tasks))) return s; }
   return null;
+}
+// The Planner's own sync (its settings 'planner.sync' = {token, repo}, saved by the Planner on this same site): read-only GET
+// of planner.json from api.github.com, every 5 min at most. The token goes to api.github.com only and is never kept here.
+const PS = { doc: null, at: 0, okAt: 0, busy: null, state: '' };       // state: '' | 'nosync' | 'ok' | 'error'
+export const plannerSyncState = () => PS.state;
+export function plannerLinked() { const s = LS.get('planner.sync', null); return !!(isObj(s) && typeof s.token === 'string' && s.token && /^[\w.-]+\/[\w.-]+$/.test(String(s.repo || ''))); }
+export function refreshPlanner({ maxAge = 5 * 60e3 } = {}) {
+  if (PS.busy) return PS.busy;
+  if (!plannerLinked()) { PS.state = 'nosync'; PS.doc = null; return Promise.resolve(null); }
+  if (PS.doc && Date.now() - PS.at < maxAge) return Promise.resolve(PS.doc);
+  PS.busy = (async () => {
+    try {
+      const sy = LS.get('planner.sync', {}), url = `https://api.github.com/repos/${sy.repo}/contents/planner.json`;
+      const r = await get(url, { cache: 'no-cache', headers: { Authorization: 'Bearer ' + sy.token, Accept: 'application/vnd.github.raw+json', 'X-GitHub-Api-Version': '2022-11-28' } });
+      if (!r.ok) throw new Error('planner sync ' + r.status);
+      const j = await r.json();
+      if (!isObj(j)) throw new Error('planner sync: not a document');
+      const dead = isObj(j.deleted) ? j.deleted : {};
+      const alive = (x) => isObj(x) && !(x.id && Number(dead[x.id]) >= Number(x.u || 0));
+      PS.doc = { events: list(j.events).filter(alive), tasks: list(j.tasks).filter(alive), projects: list(j.projects).filter(alive) };
+      PS.okAt = Date.now(); PS.state = 'ok';
+    } catch (_) { PS.state = 'error'; }
+    PS.at = Date.now(); PS.busy = null;
+    emit('planner');
+    return PS.doc;
+  })();
+  return PS.busy;
 }
 export function occursOn(e, day) {
   if (!e || !e.date) return false;
@@ -197,7 +242,7 @@ function plannerDayOf(d) {
   const day = ymd(d);
   // 1. the Planner's own summary of today (written by the Planner on this phone), when it is today's
   const t = LS.get('planner.today.v1', null);
-  if (isObj(t) && t.day === day && (Array.isArray(t.events) || Array.isArray(t.tasks))) {
+  if (isObj(t) && t.day === day && (Array.isArray(t.events) || Array.isArray(t.tasks)) && !(PS.doc && Number(t.updated || 0) < PS.okAt)) {
     const ev = list(t.events).filter((e) => isObj(e) && txt(e.title || e.name))
       .map((e) => ({ ...e, title: txt(e.title || e.name), start: hhmm(txt(e.start || e.time)), allDay: !!e.allDay || !txt(e.start || e.time) })).sort(byStart);
     const tasks = list(t.tasks).filter((x) => isObj(x) && !x.done && txt(x.title || x.name)).map((x) => ({ ...x, title: txt(x.title || x.name) }));
@@ -209,7 +254,7 @@ function plannerDayOf(d) {
   const ev = list(S.events).filter((e) => isObj(e) && typeof e.date === 'string' && occursOn(e, day)).map((e) => ({ ...e, title: txt(e.title), start: txt(e.start) })).sort(byStart);
   const tasks = list(S.tasks).filter((x) => isObj(x) && !x.done && typeof x.date === 'string' && x.date <= day).map((x) => ({ ...x, title: txt(x.title) }));
   const projects = list(S.projects).filter((p) => isObj(p) && txt(p.name));
-  return { day, ev, tasks, projects, source: 'planner' };
+  return { day, ev, tasks, projects, source: S === PS.doc ? 'planner-sync' : 'planner' };
 }
 
 // ------------------------------------------------------------------------------------------------ the apps (fallback for apps.js)
@@ -361,6 +406,26 @@ export function dayPick(list, d = new Date()) {     // the same pick all day (ET
   return list[((n % list.length) + list.length) % list.length];
 }
 
+// ------------------------------------------------------------------------------------------------ the MFFU rulebook
+// A small copy of research/lit/mffu_rules.json (built 2026-10-18 from MFFU's help pages; "check" = re-check with MFFU support).
+// tests/test_jarvis_brain.py checks it still matches that file.
+export const MFFU_RULES = {
+  checked: '2026-10-18',
+  b50: { name: 'Builder 50K', target: 3000, mll: 2000, dll: 1000, max_minis: 4, max_micros: 40, price: 91.8, inactivity: 7, min_days: 1 },
+  b25: { name: 'Builder 25K', target: 1500, mll: 1000, dll: 600, max_minis: 2, max_micros: 20, price: 63, inactivity: 7 },
+  mll_type: 'end-of-day trailing: the floor moves up only at the session close and stops at the start + $100; open losses still count intraday',
+  dll_type: 'soft: hitting it pauses trading for the rest of that session; the account stays open',
+  inactivity: 'no trade for 7 calendar days in a row can close an eval or a sim-funded account (one-time-payment accounts); live accounts have no inactivity rule',
+  flat: 'intraday only: flat by 16:10 ET (the platform auto-liquidates at 16:10 ET); no overnight or weekend holds; on CME half-days you must close before the early halt yourself',
+  news: 'Builder: news trading allowed in the eval and the sim-funded account (Rapid and Pro have the Tier-1 news rule, Builder does not)',
+  consistency: 'eval: no consistency rule (one big day can pass it); funded: at payout time the best day must be at most 50% of the cycle\'s profit',
+  payout: 'funded 50K: clear the $2,100 buffer, then at least $500 above it (balance $2,600+), 2 traded days a cycle, $500-$2,000 a payout, 80% split; after 5 sim payouts you move to a live account. 25K: buffer $1,100, $250-$1,000 a payout',
+  bots: 'bots and automation are allowed (your own parameters); high-frequency trading and exploiting sim fills are not',
+  hedging: 'hedging is prohibited: no long and short on the same market at the same time, also across accounts',
+  contracts: 'minis and micros count together (10 micros = 1 mini): 50K max 4 minis / 40 micros, 25K max 2 minis / 20 micros',
+  min_days: 'the eval can pass in 1 trading day (no minimum days)',
+};
+
 // ------------------------------------------------------------------------------------------------ the System view
 // The owner (2026-11-02): "everything combined and simple". One line per system and one verdict for all of them:
 //   systemStatus(facts) -> { verdict: 'ALL GOOD' | 'HEADS UP' | 'NEEDS YOU' | 'CHECKING', level: 'ok' | 'warn' | 'bad' | '',
@@ -412,9 +477,9 @@ function systemOf(f) {
     } else if (nt && nt.ok === false) {
       pc.level = 'bad'; pc.todo = 'Reconnect NinjaTrader on the PC'; bits.unshift('NinjaTrader not connected');
     } else if (phBad.length) {
-      pc.level = 'bad'; pc.todo = `PC: ${txt(phBad[0].text) || txt(phBad[0].label)}`; bits.unshift(txt(phBad[0].label) + ' red');
+      pc.level = 'bad'; pc.prio = 3; pc.todo = `PC: ${txt(phBad[0].text) || txt(phBad[0].label)}`; bits.unshift(txt(phBad[0].label) + ' red');
     } else if (phWarn.length) {
-      pc.level = 'warn'; pc.todo = `PC: ${txt(phWarn[0].text) || txt(phWarn[0].label)}`; bits.unshift(txt(phWarn[0].label) + ' to watch');
+      pc.level = 'warn'; pc.prio = 5; pc.todo = `PC: ${txt(phWarn[0].text) || txt(phWarn[0].label)}`; bits.unshift(txt(phWarn[0].label) + ' to watch');
     } else pc.level = 'ok';
     if (v.cached) bits.push('saved copy');
     pc.text = bits.join(' · ');
@@ -450,6 +515,7 @@ function systemOf(f) {
         r.level = q >= 6 ? 'bad' : 'warn';
         r.short = `${name}: ${q} days no trade`;
         r.todo = `${name}: place 1 MNQ by hand ${q >= 6 ? 'today' : 'by tomorrow'}: no trade for ${q} days, MFFU can close the account at 7 (${left} left)`;
+        r.prio = q >= 6 ? 1 : 2;        // money at risk: the eval itself can be closed
       }
     }
     return r;
@@ -460,7 +526,8 @@ function systemOf(f) {
   // the Kalshi bot (its own server)
   const k = isObj(f.kalshi) ? f.kalshi : null, ks = txt(f.kalshiState);
   const kr = { id: 'kalshi', name: 'Kalshi', sub: 'its own server', app: 'kalshi', level: '', value: '—', text: '', todo: '' };
-  if (!k) { kr.value = ks === 'waiting' ? 'OFFLINE' : ks === 'error' ? 'NO SIGNAL' : 'LINKING…'; kr.text = ks === 'waiting' ? 'not connected yet' : ks === 'error' ? 'feed unreachable' : 'loading'; }
+  // not published yet: an intentional "not linked yet" state (grey, never counted), not a broken one
+  if (!k) { kr.value = ks === 'waiting' ? 'NOT LINKED' : ks === 'error' ? 'NO SIGNAL' : 'LINKING…'; kr.text = ks === 'waiting' ? 'not linked yet · planned: one step in your kalshi-server chat' : ks === 'error' ? 'feed unreachable' : 'loading'; }
   else {
     const run = kalshiRun(k) || ['', ''];
     const pnl = Number.isFinite(+k.today_pnl) ? +k.today_pnl : null;
@@ -473,7 +540,7 @@ function systemOf(f) {
   rows.push(kr);
   // the Planner's day
   const p = isObj(f.planner) ? f.planner : null;
-  const pr = { id: 'planner', name: 'Planner', sub: 'your day', app: 'planner', level: '', value: '—', text: 'open the Planner once to see your day here', todo: '' };
+  const pr = { id: 'planner', name: 'Planner', sub: 'your day', app: 'planner', level: '', value: 'NOT LINKED', text: 'open the Planner once on this phone to link your day', todo: '' };
   if (p) {
     const nowHM = new Intl.DateTimeFormat('en-GB', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(nowMs));
     const ev = list(p.ev).filter(isObj), tasks = list(p.tasks).filter(isObj);
@@ -483,11 +550,15 @@ function systemOf(f) {
     pr.text = [nx ? txt(nx.title) : 'nothing else on today', tasks.length ? `${tasks.length} ${tasks.length === 1 ? 'task' : 'tasks'} open` : ''].filter(Boolean).join(' · ');
   }
   rows.push(pr);
+  // the one thing to do: ranked by money at risk (an eval about to be closed for inactivity beats a PC warning), then red over amber
+  const pr0 = (r) => (Number.isFinite(r.prio) ? r.prio : r.level === 'bad' ? (r.id === 'pc' ? 1 : 2.5) : 4);
   const bad = rows.filter((r) => r.level === 'bad'), warn = rows.filter((r) => r.level === 'warn');
-  const first = bad[0] || warn[0] || null;
+  const todos = bad.concat(warn).filter((r) => r.todo).sort((a, b) => pr0(a) - pr0(b));
+  const first = todos[0] || bad[0] || warn[0] || null;
   const known = rows.some((r) => r.level);
   return { verdict: bad.length ? 'NEEDS YOU' : warn.length ? 'HEADS UP' : known ? 'ALL GOOD' : 'CHECKING', level: bad.length ? 'bad' : warn.length ? 'warn' : known ? 'ok' : '',
-    todo: first ? first.todo : '', short: first ? first.short || first.name : '', todoApp: first ? first.app : '', rows, t:v && Number.isFinite(+v.t) ? +v.t : null };
+    todo: first ? first.todo : '', short: first ? first.short || first.name : '', todoApp: first ? first.app : '', rows, t:v && Number.isFinite(+v.t) ? +v.t : null,
+    todos: todos.map((r) => ({ id: r.id, level: r.level, todo: r.todo, short: r.short || r.name, app: r.app })) };
 }
 
 // ------------------------------------------------------------------------------------------------ the facts
@@ -503,6 +574,8 @@ export function getFacts() {               // each part on its own: one broken s
     kalshiState: K.state,
     kalshiRun: tryf(() => kalshiRun(k), null),
     planner: plannerDay(now),
+    plannerLinked: tryf(plannerLinked, false),
+    mffu: MFFU_RULES,
     apps: tryf(listApps, []),
     extras: { crypto: C.j, verse: tryf(() => dayPick(VERSES, now), VERSES[0]), quote: tryf(() => dayPick(QUOTES, now), QUOTES[0]) },
   };
@@ -514,7 +587,8 @@ export function refresh({ maxAge = 50e3 } = {}) {
   const jobs = [];
   if (Date.now() - L.at > maxAge) jobs.push(refreshLive());
   // while kalshi.json is not published (404), every 5 minutes is enough (less noise on the phone and in the console)
-  if (Date.now() - K.at > (K.state === 'waiting' ? Math.max(maxAge, 5 * 60e3) : maxAge)) jobs.push(refreshKalshi());
+  if (!kalshiBackedOff() && Date.now() - K.at > maxAge) jobs.push(refreshKalshi());
+  if (Date.now() - PS.at > Math.max(maxAge, 5 * 60e3)) jobs.push(refreshPlanner({ maxAge: 5 * 60e3 }));
   return Promise.all(jobs).then(() => getFacts());
 }
 // the Planner saves in another frame of this site: its writes reach Jarvis as storage events

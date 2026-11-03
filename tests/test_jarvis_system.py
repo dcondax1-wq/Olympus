@@ -39,8 +39,11 @@ const store = new Map();
 globalThis.localStorage = { getItem: (k) => (store.has(k) ? store.get(k) : null), setItem: (k, v) => store.set(k, String(v)), removeItem: (k) => store.delete(k) };
 const scen = JSON.parse(fs.readFileSync(scenPath, 'utf8'));
 let liveBody = null;
-globalThis.fetch = async (url) => {
+const calls = [];
+globalThis.fetch = async (url, init) => {
+  calls.push({ url: String(url), auth: ((init || {}).headers || {}).Authorization || '' });
   if (String(url).includes('live.json') && liveBody) return { ok: true, status: 200, json: async () => liveBody };
+  if (String(url).startsWith('https://api.github.com/repos/owner/planner-data/contents/planner.json')) return { ok: true, status: 200, json: async () => scen.plannerDoc };
   return { ok: false, status: 404, json: async () => ({}) };
 };
 const D = await import(pathToFileURL(dataPath).href);
@@ -55,6 +58,24 @@ for (const [name, facts] of Object.entries(scen.cases)) {
   try { out[name] = D.systemStatus(facts === '__throw__' ? { get live() { throw new Error('boom'); } } : facts); }
   catch (e) { out[name] = { exception: String(e) }; }
 }
+// e. Kalshi not linked (404): asked once per page load, then left alone
+const kc = () => calls.filter((c) => c.url.includes('kalshi')).length;
+const k0 = kc();
+await D.refreshKalshi(); const k1 = kc();
+await D.refreshKalshi(); await D.refresh({ maxAge: 0 }); await D.refreshKalshi();
+out.kalshi = { first: k1 - k0, after: kc() - k1, state: D.kalshiState(), backedOff: D.kalshiBackedOff(), row: D.systemStatus(D.getFacts()).rows.find((r) => r.id === 'kalshi') };
+await D.kalshiRetry(); out.kalshi.retry = kc() - k1;
+// f. the Planner: not linked -> one clear grey line; linked (its own sync on this phone) -> today's day from planner.json, read-only
+out.planner0 = { day: D.plannerDay(), row: D.systemStatus(D.getFacts()).rows.find((r) => r.id === 'planner'), linked: D.plannerLinked() };
+localStorage.setItem('planner.sync', JSON.stringify({ token: 'ghp_PLANNERFAKE', repo: 'owner/planner-data' }));
+await D.refreshPlanner({ maxAge: 0 });
+const pc = calls.filter((c) => c.url.includes('planner.json'));
+out.planner1 = { day: D.plannerDay(), state: D.plannerSyncState(), calls: pc.map((c) => c.url), auth: pc.map((c) => c.auth), row: D.systemStatus(D.getFacts()).rows.find((r) => r.id === 'planner'),
+  linked: D.plannerLinked(), factsHasToken: JSON.stringify(D.getFacts()).includes('PLANNERFAKE') };
+const pn = calls.length; await D.refreshPlanner(); out.planner1.cached = calls.length === pn;
+// g. data.js MFFU rules and the slim live view keeps the Mind for an offline start
+out.mffu = D.MFFU_RULES;
+out.slimMind = (JSON.parse(localStorage.getItem('jarvis.lastLive')).board || {}).mind;
 process.stdout.write(JSON.stringify(out));
 """
 
@@ -73,6 +94,10 @@ def hb_payload(now):
                                 "last_1m_t": now - 72, "last_5m_t": now - 340, "stale": False, "market_open": True, "entries_blocked": False},
                        "poll": {"last_t": now - 3, "age_s": 3, "errors": 0}, "nt": {"connected": True},
                        "lit": {"stage": "levels", "text": "watching", "price": 25070.5}},
+            "mind": {"t": now - 60, "regime": {"label": "range, low volatility", "why": "VXN 18"}, "plans": {}, "similar": {},
+                     "reviews": [{"bot": "lit", "grade": "B", "lesson": "Wait for the 5m close."}], "proposals": [], "alerts": []},
+            "learn": {"costs": {"t": now - 600, "bots": {}}, "recent": [], "reviews": [{"key": "k1", "bot": "lit", "day": "2026-10-28", "status": "ok",
+                                                                                   "gap_usd": -12.5, "cause": "slippage on the stop", "notes": ""}]},
             "pc_health": {"t": now - 30, "level": "green", "skipped": [], "lines": [
                 {"key": "cpu", "level": "green", "text": "CPU 23%"},
                 {"key": "ram", "level": "green", "text": "RAM 61% in use (2.2 of 3.6 GB)"},
@@ -121,11 +146,24 @@ def cases(now_s):
         "silent_weekend": c(live=live(age=3 * 86400), market=wkend),
         "no_signal": c(live=None, liveError="Failed to fetch"),
         "loading": {"now": now_ms},
+        "rank_quiet_ram": c(live=live(lit=card(quiet_days=5), atlas=card(room=750.4, room_frac=0.75, today_pnl=0.0, quiet_days=5),
+                                      pc_health={"level": "bad", "cpu": 31, "ram": 95, "lines": [{"key": "ram", "label": "Memory (RAM)", "level": "bad", "text": "RAM 95% in use: close other apps (browser tabs)"}]})),
+        "rank_stopped": c(live=live(running=False, lit=card(quiet_days=6))),
         "junk_null": None,
         "junk_types": {"now": "x", "market": 7, "live": {"t": "soon", "lit": "x", "atlas": {"room": "abc"}, "health": "x", "pc_health": {"lines": [None, 5]}},
                        "kalshi": {"t": "x", "running": "maybe"}, "kalshiState": 9, "planner": {"ev": [None, 5], "tasks": "x"}},
         "junk_throw": "__throw__",
     }
+
+
+def planner_doc(now_s):
+    """The Planner's synced planner.json (its own sync repo): today's event, a deleted one (tombstone), an open and a done task."""
+    import datetime as dt
+    from zoneinfo import ZoneInfo
+    day = dt.datetime.fromtimestamp(now_s, ZoneInfo("America/New_York")).date().isoformat()
+    return {"v": 2, "events": [{"id": "e1", "title": "Dentist", "date": day, "start": "23:58", "u": 5}, {"id": "e2", "title": "Deleted thing", "date": day, "start": "23:59", "u": 1}],
+            "tasks": [{"id": "t1", "title": "Call MFFU", "date": day, "done": False, "u": 3}, {"id": "t2", "title": "Done one", "date": day, "done": True}],
+            "projects": [], "deleted": {"e2": 9}}
 
 
 def main() -> int:
@@ -139,7 +177,7 @@ def main() -> int:
     try:
         rp, sp = os.path.join(tmp, "runner.mjs"), os.path.join(tmp, "scen.json")
         open(rp, "w", encoding="utf-8").write(RUNNER)
-        open(sp, "w", encoding="utf-8").write(json.dumps({"published": published, "cases": cases(now)}))
+        open(sp, "w", encoding="utf-8").write(json.dumps({"published": published, "cases": cases(now), "plannerDoc": planner_doc(now)}))
         r = subprocess.run([node, rp, DATA, sp], capture_output=True, text=True, timeout=60)
         check("node ran data.js", r.returncode == 0, r.stderr[-800:])
         if r.returncode:
@@ -199,6 +237,32 @@ def main() -> int:
         x = v(name)
         check(f"d. {name}: an answer, never an exception", "exception" not in x and x.get("verdict") in ("CHECKING", "ALL GOOD", "HEADS UP", "NEEDS YOU")
               and isinstance(x.get("rows"), list) and "undefined" not in json.dumps(x) and "NaN" not in json.dumps(x), x)
+    pcp = published.get("pc") or {}
+    sm = O["slimMind"] or {}
+    check("a. live.json carries the Mind and Live learning (pc.mind, pc.learn); the phone keeps a short cut of both for an offline start",
+          (pcp.get("learn") or {}).get("reviews", [{}])[0].get("cause") == "slippage on the stop" and (pcp.get("mind") or {}).get("regime", {}).get("label") == "range, low volatility"
+          and sm.get("regime", {}).get("label") == "range, low volatility" and sm.get("reviews", [{}])[0].get("lesson") == "Wait for the 5m close.", (pcp.get("learn"), sm))
+    # b2. the one thing to do is ranked by money at risk (owner 2026-11-02): an eval near closure beats a red RAM line
+    rk = v("rank_quiet_ram")
+    check("b2. two evals on day 5 and the PC's RAM red: NEEDS YOU (red counts), but the one thing to do is the eval; todos ranked",
+          rk["verdict"] == "NEEDS YOU" and rk["todo"].startswith("Zlarior: place 1 MNQ by hand") and [x["id"] for x in rk["todos"]] == ["lit", "atlas", "pc"], {k: rk.get(k) for k in ("todo", "todos")})
+    rs = v("rank_stopped")
+    check("b2. a stopped bot still beats the quiet days (nothing can trade)", rs["todo"].startswith("Start the bot on the PC"), rs["todo"])
+    k = O["kalshi"]
+    check("e. Kalshi not linked (404): one request per page load, then none; grey 'NOT LINKED' with the planned step; kalshiRetry() asks again",
+          k["first"] == 1 and k["after"] == 0 and k["state"] == "waiting" and k["backedOff"] and k["row"]["value"] == "NOT LINKED" and k["row"]["level"] == ""
+          and "planned" in k["row"]["text"] and k["retry"] == 1, k)
+    p0, p1 = O["planner0"], O["planner1"]
+    check("f. the Planner not linked on this phone: one clear grey line (NOT LINKED, open it once), no error", p0["day"] is None and p0["row"]["value"] == "NOT LINKED"
+          and p0["row"]["level"] == "" and "open the Planner once on this phone" in p0["row"]["text"] and not p0["linked"], p0)
+    check("f. the Planner's own sync on this phone: today read from planner.json (GET, api.github.com only), the tombstone respected, done tasks left out",
+          p1["state"] == "ok" and [e["title"] for e in p1["day"]["ev"]] == ["Dentist"] and [t["title"] for t in p1["day"]["tasks"]] == ["Call MFFU"]
+          and p1["calls"] == ["https://api.github.com/repos/owner/planner-data/contents/planner.json"] and p1["auth"] == ["Bearer ghp_PLANNERFAKE"]
+          and p1["row"]["level"] == "ok" and p1["day"]["source"] == "planner-sync" and p1["cached"], p1)
+    check("f. the Planner's token never enters getFacts() (what Jarvis answers from or sends a model)", p1["linked"] and not p1["factsHasToken"], p1["factsHasToken"])
+    m = O["mffu"]
+    check("g. MFFU_RULES: the 50K and 25K numbers, the 7-day inactivity rule, flat by 16:10 ET", m["b50"]["target"] == 3000 and m["b50"]["mll"] == 2000 and m["b50"]["dll"] == 1000
+          and m["b25"]["target"] == 1500 and m["b25"]["dll"] == 600 and "7 calendar days" in m["inactivity"] and "16:10 ET" in m["flat"], m["b50"])
     n = sum(RES)
     print(f"\njarvis system: {n}/{len(RES)} " + ("ALL PASS" if n == len(RES) else "FAILED"))
     return 0 if n == len(RES) else 1

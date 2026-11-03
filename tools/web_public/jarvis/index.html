@@ -361,6 +361,12 @@ const ready = {
   switcher: load('switcher', './switcher.js', (m) => typeof m.mountSwitcher === 'function'),
 };
 const within = (p, ms) => Promise.race([p, new Promise((ok) => setTimeout(() => ok(null), ms))]);
+// the owner's Obsidian vault and Jarvis's memory (obsidian.js + memory.js) and their screens (assist-ui.js): each optional
+let vault = null, assist = null, obsUI = null, proUI = null;
+ready.vault = Promise.all([load('obsidian', './obsidian.js', (m) => typeof m.createVault === 'function'), load('memory', './memory.js', (m) => typeof m.createMemory === 'function')])
+  .then(([ob, me]) => { if (ob && me) { vault = ob.createVault(); brainDeps.memory = me.createMemory({ vault }); } return vault; }).catch(() => null);
+ready.assist = load('assist', './assist-ui.js', (m) => typeof m.mountObsidianSheet === 'function').then((m) => { assist = m; return m; });
+function openObsidian() { closeSheets(); closeMore(); if (!obsUI && assist && vault) obsUI = safe(() => assist.mountObsidianSheet({ vault, toast }), null); if (obsUI) obsUI.open(); else toast('The Obsidian part is still loading. Try again in a second.', 'OBSIDIAN'); }
 
 // ------------------------------------------------------------------ theme, effects level, sounds
 function hsl2rgb(h, s, l) {
@@ -712,7 +718,7 @@ function zenithCard() {
 function plannerCard() {
   const p = D.plannerDay();
   const head = `<p class="ph"><span class="t">Today · Planner</span><i class="sdot ${p ? 'ok' : 'off'}"></i><span class="go">OPEN ›</span></p>`;
-  if (!p) return `<button class="panel card" type="button" data-app="planner">${head}<p class="muted">Open the Planner to see your day here.</p></button>`;
+  if (!p) return `<button class="panel card" type="button" data-app="planner">${head}<p class="muted">Not linked on this phone yet: open the Planner once and your day shows here.</p></button>`;
   const evs = p.ev.slice(0, 5).map((e) => `<li><b>${e.allDay ? 'All day' : esc(D.hm(e.start))}</b><span>${esc(e.title)}</span></li>`).join('');
   const tk = p.tasks.length ? `<li><b>${p.tasks.length}</b><span>${p.tasks.length === 1 ? 'task' : 'tasks'} open: ${esc(p.tasks.slice(0, 2).map((t) => t.title).join(', '))}${p.tasks.length > 2 ? '…' : ''}</span></li>` : '';
   const body = evs || tk ? `<ul class="list">${evs}${tk}</ul>` : '<p class="muted">Nothing planned today.</p>';
@@ -1083,7 +1089,7 @@ function fallbackBrain({ getFacts }) {
 const brainDeps = { getFacts: D.getFacts, open: (id, route) => openSoon(route ? { id, route } : id), now: () => new Date(), autoOpen: false };
 const builtinBrain = fallbackBrain(brainDeps);
 let brain = builtinBrain;
-ready.brain.then((m) => {
+Promise.all([ready.brain, within(ready.vault, 4000)]).then(([m]) => {      // the brain gets the memory when it loaded in time
   if (!m) return;
   try { const b = m.createBrain(brainDeps); if (!b || typeof b.ask !== 'function') throw new Error('no ask'); brain = b; root.dataset.brain = 'module'; }
   catch (_) { brain = builtinBrain; root.dataset.brain = 'fallback'; }
@@ -1091,7 +1097,9 @@ ready.brain.then((m) => {
   if (idle && !$('#talk').children.length) $('#says').textContent = idle;        // the old Jarvis's line until the first question
   if (typeof brain.hidden === 'boolean' && brain.hidden !== S.hideMoney()) setHide(brain.hidden, false);
   renderSugs(); renderBrainPanel(); renderMore();
+  ready.assist.then((a) => { if (a && !proUI) { proUI = safe(() => a.mountProactive({ brain: () => brain, anchor: $('#sugs'), onAsk: (t) => ask(t) }), null); if (proUI) safe(() => proUI.render()); } });
 });
+D.onChange(() => { if (proUI) safe(() => proUI.render()); });                // the proactive line follows the data
 function renderSugs() {
   let s = safe(() => brain.suggestions());
   if (!Array.isArray(s) || !s.length) s = builtinBrain.suggestions();
@@ -1132,6 +1140,7 @@ function setHide(on, tellBrain = true) {
 }
 function control(c) {                                  // -> true when the reply must not be read out loud
   if (c === 'stop') { hush(); stopListening(); if (handsFree) setHandsFree(false); setState('idle'); return true; }
+  if (c === 'obsidian') { setTimeout(openObsidian, 600); return false; }
   if (c === 'mute') { D.LS.set('jarvis.mute', true); hush(); setState('idle'); return true; }
   if (c === 'unmute') { D.LS.set('jarvis.mute', false); return false; }
   if (c === 'hide_balance') { setHide(true, false); return false; }
@@ -1317,6 +1326,7 @@ function moreKeys() {
     ['aikey', `AI key${sm && sm.on ? ': on' : ''}`, sm && sm.on], ['hold', `Hold-talk: ${S.hold() ? 'on' : 'off'}`, S.hold()], ['fx', `3D: ${fxl}`, fxl !== 'off'],
     ['tilt', `Tilt: ${S.tilt() ? 'on' : 'off'}`, S.tilt()], ['alerts', 'Alerts'], ['sound', `Sound: ${S.sound() ? 'on' : 'off'}`, S.sound()],
     ['hide', S.hideMoney() ? 'Show $' : 'Hide $', S.hideMoney()], ['brief', 'Briefing'], ['apps', 'Apps'],
+    ['obsidian', `Obsidian${vault && safe(() => vault.status().connected, false) ? ': on' : ''}`, !!(vault && safe(() => vault.status().connected, false))],
   ];
 }
 function renderMore() { $('#more').innerHTML = moreKeys().map(([k, label, on]) => `<button class="key${on ? ' on' : ''}" type="button" data-key="${k}">${esc(label)}</button>`).join(''); }
@@ -1343,6 +1353,7 @@ async function moreKey(k) {
   else if (k === 'sound') { D.LS.set('jarvis.sound', !S.sound()); renderMore(); sfx('tap'); }
   else if (k === 'hide') setHide(!S.hideMoney());
   else if (k === 'brief') { closeMore(); briefing(); }
+  else if (k === 'obsidian') openObsidian();
   if (['theme', 'aikey', 'apps', 'alerts', 'brief'].includes(k)) closeMore();
 }
 let toastT = 0;
@@ -1363,7 +1374,7 @@ function paletteItems() {
   for (const l of ['ultra', 'high', 'low', 'off']) items.push({ label: `3D effects: ${l}`, tag: 'look', run: () => setFx(l) });
   items.push({ label: 'Voice settings', tag: 'voice', run: () => openVoice() }, { label: 'AI key · smart mode', tag: 'brain', run: () => openSettings() },
     { label: 'Add a dashboard', tag: 'apps', run: () => openSheet() }, { label: S.hideMoney() ? 'Show balances' : 'Hide balances', tag: 'privacy', run: () => moreKey('hide') },
-    { label: 'Hands-free on / off', tag: 'voice', run: () => setHandsFree(!handsFree) });
+    { label: 'Hands-free on / off', tag: 'voice', run: () => setHandsFree(!handsFree) }, { label: 'Connect Obsidian · notes', tag: 'notes', run: () => openObsidian() });
   const sug = safe(() => brain.suggestions(), []);
   for (const s of (Array.isArray(sug) ? sug : []).concat(builtinBrain.suggestions())) items.push({ label: `Ask: ${s}`, tag: 'ask', run: () => ask(s) });
   return items;
@@ -1390,7 +1401,7 @@ function linkOf(raw0) {
   const u = /^[a-z][a-z0-9+.-]*:/i.test(t) ? t : /^[\w-]+(\.[\w-]+)+(:\d+)?(\/|$)/.test(t) || /^localhost(:\d+)?(\/|$)/i.test(t) ? 'https://' + t : null;
   return u ? D.okUrl(u) : null;
 }
-function closeSheets() { for (const id of ['#sheet', '#settings', '#look', '#voice', '#palette']) $(id).hidden = true; }
+function closeSheets() { for (const id of ['#sheet', '#settings', '#look', '#voice', '#palette']) $(id).hidden = true; if ($('#obsSheet')) $('#obsSheet').hidden = true; }
 const removable = (a) => a.removable === true || (a.removable === undefined && a.extra === true);
 function renderMine(el) {
   const rows = D.listApps().filter(removable);
@@ -1466,6 +1477,7 @@ function smartLine(sm) {                               // brain.smart, as words:
 function openSettings(appsFirst) {
   closeSheets(); closeMore();
   $('#setVoice').checked = S.voice();
+  if (assist) safe(() => assist.mountKeySteps($('#setF')));          // the free key steps (Groq, then Gemini), once
   const sm = smartInfo(), can = smartCapable();
   for (const id of ['#setSmart', '#setKey', '#setModel', '#setForget', '#setProv']) $(id).disabled = !can;
   for (const b of $('#setDepth').children) b.disabled = !can;

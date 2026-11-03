@@ -281,7 +281,7 @@ def part_a():
           and "clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px))" in css)
     keys = re.findall(r"\['(\w+)', ", page[page.index("function moreKeys()"):page.index("function renderMore()")])
     check("a. PC-only features left out quietly: the ⋯ keys have no wake word, double clap, look-at-my-screen or Kill",
-          len(keys) == 12 and not set(keys) & {"wake", "clap", "screen", "kill"}, keys)
+          len(keys) == 13 and "obsidian" in keys and not set(keys) & {"wake", "clap", "screen", "kill"}, keys)
 
 
 def launch(pw):
@@ -1095,7 +1095,7 @@ def run_system(br, url):
           s["v"] == "ALL GOOD" and s["t"] == "Nothing needs you" and [d.split(":")[0] for d in s["dots"]] == ["PC", "Z", "A", "B", "K", "P"] and s["bar"] >= 34, s)
     check("s. the System panel: PC (CPU / RAM from live.json pc_health, checked in), Zlarior +$213, ATLAS, BLITZ, Kalshi (not connected), Planner",
           list(rows) == ["pc", "lit", "atlas", "blitz", "kalshi", "planner"] and rows["pc"]["v"] == "CPU 23% · RAM 61%" and "checked in 2 min ago" in rows["pc"]["t"]
-          and rows["pc"]["lvl"] == "ok" and rows["lit"]["v"] == "+$213" and "RUNNING" in rows["lit"]["t"] and rows["kalshi"]["v"] == "OFFLINE"
+          and rows["pc"]["lvl"] == "ok" and rows["lit"]["v"] == "+$213" and "RUNNING" in rows["lit"]["t"] and rows["kalshi"]["v"] == "NOT LINKED"
           and rows["kalshi"]["app"] == "kalshi" and rows["planner"]["app"] == "planner" and not s["todo"], s["rows"])
     p.click("#sysbar")
     p.wait_for_timeout(900)
@@ -1110,9 +1110,9 @@ def run_system(br, url):
     ask = asker(p)
     a1 = ask("status")
     check("s. 'status': the verdict first, then one line per system", a1.startswith("ALL GOOD: nothing needs you.") and "PC (bot server" in a1
-          and "Zlarior (50K eval): +$213" in a1 and "Kalshi (its own server): OFFLINE" in a1, a1)
+          and "Zlarior (50K eval): +$213" in a1 and "Kalshi (its own server): NOT LINKED" in a1, a1)
     a2 = ask("how's the pc")
-    check("s. 'how's the pc': its check-in, CPU and RAM", "The PC last checked in" in a2 and "CPU 23%, RAM 61%, every health line green." in a2, a2)
+    check("s. 'how's the pc': the one fix first (none), its check-in, CPU and RAM", a2.startswith("The PC looks healthy: nothing to fix.") and "checked in 2 min ago" in a2 and "CPU 23%, RAM 61%" in a2, a2)
     a3 = ask("is everything ok")
     check("s. 'is everything ok' is the System answer too", a3 == a1, a3[:100])
     check("s. no page errors (all good)", not errs, errs)
