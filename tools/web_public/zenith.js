@@ -141,6 +141,8 @@
     let note = rb.querySelector('.zn-rib-note');
     if (M.n < 2) { if (!note) { note = document.createElement('span'); note.className = 'zn-rib-note'; rb.appendChild(note); } note.textContent = 'The ribbon grows with every real trading day'; }
     else if (note) note.remove();
+    // the once-a-day intro is on screen: the ribbon waits for it (the first seconds belong to the intro and the data)
+    if (document.getElementById('splash')) { clearTimeout(greeting.t); greeting.t = setTimeout(soon, 700); return; }
     const sig = M.curve.join(',') + '|' + Z.quality();
     if (sig !== ribSig || !rb.__zr) { ribSig = sig; Z.ribbon(rb, M.curve.length >= 2 ? M.curve : [0, 0], { top: 52 }); }
   }
@@ -228,7 +230,6 @@
       return undefined;
     };
     render.__zn = true;
-    render.__pl = r0.__pl;
   }
 
   // ------------------------------------------------------------------ glass + tilt, themes, quality

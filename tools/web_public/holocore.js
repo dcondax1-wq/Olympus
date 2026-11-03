@@ -171,11 +171,9 @@ export function mountHolodeck(host, env) {
   function pause() { S.playing = false; seg(); }
   function loop() {
     cancelAnimationFrame(S.raf); S.last = performance.now();
-    const step = () => {
+    const step = (now) => {
       if (!S.playing || !root.isConnected) return;
-      // performance.now(), not the frame stamp: the two clocks can disagree (a test clock, a resumed tab) and a negative step
-      // ran the replay backwards
-      const t = performance.now(), dt = Math.max(0, Math.min(0.25, (t - S.last) / 1000)); S.last = t;
+      const dt = Math.min(0.25, (now - S.last) / 1000); S.last = now;
       S.T = Math.min(tEnd(), S.T + dt * S.speed);
       if (view) view.setTime(S.T, { pop: true }); else draw2d();
       clock(); if ((S._f = (S._f || 0) + 1) % 8 === 0) { side(); hud(); }
