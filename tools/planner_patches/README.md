@@ -18,6 +18,8 @@ Claude session, and this repo can't push there. Features built here ship as patc
 | `30-flow` | Workload (Trim to fit), Deadline risk (Block time), Daily goal (days in a row) |
 | `40-olympus` | the futuristic look (glass cards, aurora, motion; follows Olympus themes and `jfx`), Day timeline with a NOW beam, Focus mode (full-screen Pomodoro) |
 
+| `50-temple` | the Temple sheet: the day as a temple (NOW beam, hour columns, 14 steps ahead with deadline-risk flags), voice add, Arena rank + streak (read only), weekly review card, a glowing tick-and-comet Focus ring |
+
 ## Making a patch
 1. Clone planner-backup.
 2. Build the feature, mostly in new files (`planner/ext-*.js`) with minimal hooks in `index.html`.
