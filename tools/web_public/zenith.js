@@ -236,6 +236,20 @@
   Z.glass(document.getElementById('page') || document.body, CARDS, { deg: 4 });
   Z.followOlympus();
   addEventListener('storage', (e) => { if (e.key === 'jfx') { R.classList.toggle('zn-vt', vt()); ribSig = ''; soon(); } });
+  // More > All features: today's features, marked new (the same list the other modules add to)
+  (function whatsNew() {
+    const FL = window.Features && Array.isArray(window.Features.list) ? window.Features.list : null;
+    const G = 'Futuristic & organized (Nov 3)';
+    if (!FL || FL.some((f) => f.group === G)) return;
+    [['today', 'Money first on Home', 'Today\'s real $ across every account, this month\'s $ and the eval P&L over a 3D energy ribbon of the real days'],
+      ['lit', 'A ribbon per bot', 'Each bot\'s Today: its real $ so far and the $ a month at that pace, over its own ribbon in its colour'],
+      ['lit', 'Where am I', 'Every page: the tab and section over the title (ZLARIOR › RESULTS / Performance); no title said twice'],
+      ['today', 'Glass and light', 'Cards light their edge where the finger is and lean a little in 3D; numbers count to their new value'],
+      ['system', 'Smooth pages', 'Pages change with a View Transition (a fade and a small slide toward the tab), never sideways scroll'],
+      ['settings', 'One 3D quality', 'Settings > 3D effects > 3D quality: Ultra / High / Low / Off, shared with Jarvis and every OLYMPUS app'],
+    ].reverse().forEach(([go, name, line]) => FL.unshift({ group: G, name, line: line + '.', go, isNew: true }));
+    window.Features.count = FL.length; window.Features.newCount = FL.filter((f) => f.isNew).length;
+  })();
   window.ZENITH.post = post;
   window.ZENITH.trail = trail;
   post();

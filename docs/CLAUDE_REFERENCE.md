@@ -928,6 +928,31 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   - Kalshi 404 = "NOT LINKED" (grey), asked once per page load. Planner: read from its own sync (`planner.sync`) when set up on
     this phone, else one grey "open the Planner once" line.
   - Tests: test_jarvis_brain (165), test_jarvis_system (36), test_jarvis_obsidian (46).
+- **Zenith shell (2026-11-03 day, owner: "way higher quality, 3D UI effects", "organized ... like a maid swept"; the map
+  table is in `docs/ZENITH_COMPARISON.md` "The map"):**
+  - Files: `tools/web_public/zenithcore.js` = `web_next/js/next/zenithcore.js` (byte-identical classic script,
+    `window.ZenithFX`), phone glue `zenith.js` + `zenith.css` (loaded last: after pro.js / polish.css). Read-only UI.
+  - Where am I: one header on every page, breadcrumb TAB › SECTION over the title; a hero that only repeated the title
+    keeps its description (`.zn-hdup`); bot main pages are titled by their chip ("ZLARIOR › TODAY / Overview"); Holodeck /
+    Live View (old "chart" group) sit under Home with Home lit (display only, routes unchanged).
+  - Money first: Home's greeting carries one glass panel, Today · This month · Eval P&L in real $ over the 3D energy
+    ribbon (accounts' `days` from the live board + today's live $); each bot's Today has its own ribbon with real $ and
+    $ a month at that pace. Edge and Trades show $ per trade next to the average R.
+  - Look: one glass card (gradient, 1 px rim, top edge light, no per-card blur or drop shadow: scroll frames), one
+    spacing scale `--zn-s1..s6` (4-32 px), one dashed empty state, a shared glint (edge light following the finger /
+    mouse) + up to 4° tilt (`ZenithFX.glass`, one overlay, nothing per frame unless touched), numbers that count to their
+    new value on live redraws, an invisible 44 px hit area on every compact control.
+  - Motion: View Transitions between pages (`#page` named `zn-page`, header / tabs / sub-bar pinned), CSS slide as the
+    fallback; `.main { overflow-x: clip }` ended the 28 px sideways scroll of the old slide.
+  - Quality: `jfx` (Jarvis / OLYMPUS key; Settings > 3D effects > 3D quality writes it): off = still, low = no tilt or glow
+    pass; reduced motion and Zenith's own 3D effects Off (default under automation) = nothing moves (`ZenithFX.use3d`).
+    The ribbons share one loop: <= 30 fps, none while scrolling, off screen or hidden.
+  - Themes: `ZenithFX.applyTokens()` is the one token writer (PC `skins.js` accent goes through it); `ZenithFX.olympus()`
+    maps an Olympus theme (id, colour object or JSON in `localStorage['olympus.theme']`, `Olympus.onTheme`, the storage
+    event) onto it; an unknown id clears back to Zenith's own look. Worker le-public-v52, PC le-shell-next-v32.
+  - Also fixed: the Holodeck replay ran backwards under a test clock (holocore.js: one clock, `performance.now()`); "On this
+    page" chips jump and light the card (a smooth scroll could stall short).
+  - Test `python -X utf8 -m tests.test_zenith_shell` (23).
 - **Zenith Scorecard (2026-11-03, night quest "the best trading dashboard there is"; `docs/ZENITH_COMPARISON.md`):** one renderer
   `tools/web_public/procore.js` = `web_next/js/next/procore.js` (byte-identical, `window.ProUI`), phone glue `pro.js` (`#/pro/<part>`:
   Zlarior > Results first chip, More > Insight, a Home card under the quick tiles), PC glue `web_next/js/next/pro.js` (sidebar

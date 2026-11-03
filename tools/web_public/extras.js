@@ -198,7 +198,7 @@
         <li><b>R</b> = the result in units of the money at risk on that trade. A full stop is −1R; LIT banks winners at the VIX target, up to 8R.</li>
         <li>The $ figures are at the normal backtest size. The eval runs the two_week size, so its $ per trade differ; R and the patterns are the same trades.</li>
         <li>Few trades in a row means little: a bucket with under 10 trades is a hint, not a rule.</li></ul>`) +
-      `<div class="stats">${statBox('Trades', K.n, P.per_week ? `${num(P.per_week, 2)} a week · ${P.weeks_2plus_pct ?? '—'}% weeks with 2+` : '')}${statBox('Won', pct(K.win), `avg ${fR(K.avg)} a trade`)}
+      `<div class="stats">${statBox('Trades', K.n, P.per_week ? `${num(P.per_week, 2)} a week · ${P.weeks_2plus_pct ?? '—'}% weeks with 2+` : '')}${statBox('Won', pct(K.win), `avg ${K.n ? susd(Math.round(K.net / K.n)) + ' · ' : ''}${fR(K.avg)} a trade`)}
         ${statBox('Net', kusd(K.net), `${kusd(K.net / mo)} a month · ${fR(K.netR, 1)}`, cls(K.net))}${statBox('Profit factor', fPF(K.pf), P.max_dd != null ? `max DD ${kusd(P.max_dd)}` : '')}</div>
       <div class="grid g2"><div class="card"><div class="card-h"><h3>R multiples</h3><span class="meta">trades per result · $ in each</span></div>${hbars(hist, { fmt: (v) => String(v), signed: false })}</div>
         <div class="card"><div class="card-h"><h3>How each trade ended</h3><span class="meta">net $ · trades · avg R</span></div>${hbars(ex)}<div style="height:12px"></div>${hbars(ls)}</div></div>

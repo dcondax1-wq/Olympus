@@ -2324,7 +2324,7 @@ VIEWS.trades = (el) => {
     + `<div class="stats">
       ${statBox('Trades', `<span data-count="${s.n}">${s.n}</span>`, `${num(s.tpw, 1)} a week`)}
       ${statBox('Net', `<span data-count="${s.net}" data-fmt="s$">${susd(s.net)}</span>`, `${kusd(s.pm)} a month · win ${num(s.win, 1)}%`, cls(s.net))}
-      ${statBox('Profit factor', s.pf != null ? fPF(s.pf) : '—', `average trade ${fR(s.avg)}`)}
+      ${statBox('Profit factor', s.pf != null ? fPF(s.pf) : '—', `average trade ${s.n ? susd(Math.round(s.net / s.n)) + ' · ' : ''}${fR(s.avg)}`)}
       ${statBox('Half size', s.half, isLIT() ? 'weekly-stop trades' : 'cold-streak trades')}</div>
     ${!paperSrc && fxOn() ? `<div class="card fx-card"><div class="card-h"><h3>Trade galaxy · ${rows.length} trades</h3><span class="meta">drag to turn · tap a star for its report</span></div><div class="fx3d galaxy" id="trGal"></div></div>` : ''}
     ${!paperSrc ? `<div class="card"><div class="card-h"><h3>Equity · the trades shown</h3><span class="meta">cumulative net $</span></div><div id="trEq"></div></div>` : ''}
