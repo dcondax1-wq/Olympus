@@ -1,8 +1,9 @@
-// ORACLE HUD: the few numbers over the 3D view. Price, P&L today, the stage, the next LIT window, the weather, today's
-// nearest levels with their distance in points and $ per MNQ, the open position, and where the data comes from.
-// Text only through textContent (nothing from the feed is ever parsed as HTML).
-import { litWindow, fmtDur, hm, dayLabel, sessionAt, killzoneAt } from './time.js';
+// ORACLE HUD: the top bar (where the data comes from, price, P&L today, the stage) and the bottom sheet (the replay
+// scrubber, the open position with its Odeon link, the next LIT window and the weather, today's nearest levels with their
+// distance in points and $ per MNQ). Text only through textContent (nothing from the feed is ever parsed as HTML).
+import { litWindow, fmtDur, hm, dayLabel, sessionAt, killzoneAt, etParts } from './time.js';
 import { kindOf, hex } from './glow.js';
+import { filmLink } from './events.js';
 
 const $ = (id) => document.getElementById(id);
 const px = (p) => (p == null ? '–' : p.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
@@ -23,7 +24,7 @@ function el(tag, cls, text) {
 export class Hud {
   constructor() {
     this.world = null;
-    this.levelsOpen = true;
+    this.levelsOpen = false;                       // calm by default: the ladder already names the nearest levels
     $('lv-toggle').addEventListener('click', () => {
       this.levelsOpen = !this.levelsOpen;
       $('levels').classList.toggle('closed', !this.levelsOpen);
@@ -93,6 +94,12 @@ export class Hud {
     box.hidden = !p;
     if (!p) return;
     box.dataset.side = p.side.toLowerCase();
+    const film = $('pos-film');
+    film.hidden = !p.entry_t;
+    if (p.entry_t) {
+      const e = etParts(p.entry_t);
+      film.href = filmLink(`${e.y}-${String(e.mo).padStart(2, '0')}-${String(e.d).padStart(2, '0')}`, hm(p.entry_t), p.side);
+    }
     $('pos-side').textContent = `${p.side} ${p.qty} @ ${px(p.entry)}`;
     $('pos-levels').textContent = `stop ${p.be ? 'BE ' : ''}${px(p.stop)} · tgt ${px(p.target)}`;
     const v = $('pos-pnl');
@@ -111,16 +118,24 @@ export class Hud {
     $('session').textContent = `${s.label}${killzoneAt(nowT) ? ' killzone' : ''} · ${hm(nowT)} ET`;
   }
 
-  demoProgress(t, span) {
-    $('demo-time').textContent = `${hm(t)} ET`;
-    $('demo-fill').style.transform = `scaleX(${Math.max(0, Math.min(1, (t - span.from) / (span.to - span.from))).toFixed(4)})`;
+  /** The replay's clock and scrubber (left alone while the owner drags it). */
+  demoProgress(t, span, dragging) {
+    const txt = `${hm(t)} ET`;
+    if ($('demo-time').textContent !== txt) $('demo-time').textContent = txt;
+    if (!dragging) $('scrub').value = String(Math.round(Math.max(0, Math.min(1, (t - span.from) / Math.max(1, span.to - span.from))) * 1000));
+  }
+
+  playing(on) {
+    const b = $('demo-play');
+    b.dataset.playing = String(on);
+    b.setAttribute('aria-label', on ? 'Pause the replay' : 'Play the replay');
   }
 
   /** The part of the screen the HUD leaves free (CSS px); the scene centres itself there (it may run a little under the glass). */
   freeRect() {
     const W = innerWidth, H = innerHeight, t = $('top').getBoundingClientRect(), d = $('dock').getBoundingClientRect();
-    if (W > H && H <= 500) return { x0: t.right * 0.75, y0: 0, x1: d.left + (W - d.left) * 0.25, y1: H };
-    return { x0: 0, y0: t.bottom - 28, x1: W, y1: d.top + 16 };
+    if (W > H && H <= 500) return { x0: t.right * 0.75, y0: 0, x1: d.left + (W - d.left) * 0.25, y1: H, ly0: 8, ly1: H - 8 };
+    return { x0: 0, y0: t.bottom - 28, x1: W, y1: d.top + 16, ly0: t.bottom - 4, ly1: d.top - 6 };
   }
 
   quality(q) {

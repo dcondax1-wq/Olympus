@@ -20,7 +20,7 @@ Brain is the fixture day at 09:40 ET), and checks:
   f. reduced motion, no sideways scroll, the orb's 80 x 160 px corner left free, and across every case: no request outside
      the page's origin but the two GitHub endpoints
     python -X utf8 -m tests.test_oracle_page
-ORACLE_SHOTS=<dir> saves screenshots there (default research/handoff/2026-11-03/oracle/ when --shots is given).
+ORACLE_SHOTS=<dir> saves screenshots there (default research/handoff/2026-11-03-day/oracle_odeon/oracle/ when --shots is given).
 """
 from __future__ import annotations
 
@@ -43,7 +43,7 @@ ORC = os.path.join(WEB, "oracle")
 DEMO = os.path.join(ORC, "demo_day.json")
 ET = ZoneInfo("America/New_York")
 DAY = "2026-01-22"
-MODULES = ["main.js", "data.js", "demo.js", "time.js", "scene.js", "layers.js", "sky.js", "glow.js", "hud.js"]
+MODULES = ["main.js", "data.js", "demo.js", "time.js", "scene.js", "layers.js", "sky.js", "glow.js", "hud.js", "ladder.js", "events.js"]
 API = "https://api.github.com/repos/demetrades2000-coder/nq-dashboard/contents/live.json?ref=live"
 RAW = "https://raw.githubusercontent.com/demetrades2000-coder/nq-dashboard/live/live.json"
 RES: list = []
@@ -616,7 +616,7 @@ def main(argv=None) -> int:
         return 0
     global SHOTS
     if "--shots" in argv and not SHOTS:
-        SHOTS = os.path.join(ROOT, "research", "handoff", "2026-11-03", "oracle")
+        SHOTS = os.path.join(ROOT, "research", "handoff", "2026-11-03-day", "oracle_odeon", "oracle")
     static_checks()
     from playwright.sync_api import sync_playwright
     srv, origin = serve()
