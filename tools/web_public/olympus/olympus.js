@@ -33,7 +33,7 @@
     oracle: ['Oracle', 'Θ', '#7fe9ff'], odeon: ['Odeon', 'Ξ', '#ff6b7f'], fates: ['Fates', 'Φ', '#ffcf5a'],
     hermes: ['Hermes', 'Η', '#f7c948'], prometheus: ['Prometheus', 'Π', '#ff7a1a'], tyche: ['Tyche', 'Τ', '#e879f9'],
     pantheon: ['Pantheon', 'Σ', '#f2d68a'], arena: ['Arena', 'Α', '#ffb547'],
-    ares: ['Ares', 'Λ', '#ff3b30'], plutus: ['Plutus', 'Ρ', '#9be84a'],
+    ares: ['Ares', 'Λ', '#ff3b30'], plutus: ['Plutus', 'Ρ', '#9be84a'], athena: ['Athena', '🦉', '#5ea8ff'],
   };
   // each app's own CSS tokens -> the theme token they take under any theme but the default (bg = the app's own page colour
   // blended toward the theme's by its 'mix', so every app keeps a trace of its own sky)

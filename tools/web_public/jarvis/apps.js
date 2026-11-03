@@ -82,6 +82,7 @@ export const BUILT_INS = Object.freeze([
   app('planner', 'Planner', 'life', '#60a5fa', 'Calendar, tasks and projects', { icon: '../planner/icon-192.png', live: false }),
   app('mind', 'Mind', 'life', '#5eead4', 'Your vault as a living 3D brain', { glyph: '\u03a9' }),
   app('arena', 'Arena', 'life', '#ffb547', 'Olympian ranks: XP for discipline', { glyph: '\u0391' }),
+  app('athena', 'Athena', 'life', '#5ea8ff', 'The library: strategy, rules, quiz', { glyph: '\ud83e\udd89' }),
   app('kalshi', 'Kalshi', 'money', '#2ef2d0', 'Kalshi bot \u00b7 from your PC', { glyph: 'K', live: false }),
   app('tyche', 'Tyche', 'money', '#e879f9', 'The Kalshi bets as a 3D fortune wheel', { glyph: '\u03a4' }),
   app('hermes', 'Hermes', 'money', '#f7c948', 'OLYMPUS Wrapped: your money', { glyph: '\u0397' }),

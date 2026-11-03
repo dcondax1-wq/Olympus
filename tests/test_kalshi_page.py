@@ -428,7 +428,7 @@ def part_a():
           and 'id="secnav"' in html and all(f'data-go="{g}"' in html for g in ("today", "edge", "perf", "alerts")))
     b = open(os.path.join(ROOT, "tools", "build_web_dashboard.py"), encoding="utf-8").read()
     check("a. the site build publishes every file of kalshi/ (index.html, kalshi.js, kalshi.css, sw.js)",
-          'for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "pantheon", "olympus", "arena", "bridge", "ares", "plutus"):' in b and "for name in os.listdir(src_dir):" in b)
+          'for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "pantheon", "olympus", "arena", "bridge", "ares", "plutus", "athena"):' in b and "for name in os.listdir(src_dir):" in b)
 
 
 # ------------------------------------------------------------------ the browser parts

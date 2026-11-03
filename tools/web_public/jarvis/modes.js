@@ -49,7 +49,7 @@ export const MODES = {
     prompt: 'MODE: RESEARCH. He wants to dig: what Data City, Prometheus, DAPHNE and the Mind found (FACTS.research), ideas worth testing, facts from Wikipedia and the web tools. A trading idea is only worth adopting if it holds in 2026 AND 2021-25 and keeps 2-4 trades a week; say so, and never call an untested idea an edge. Cite where each fact came from. Offer to save findings as a research note in Obsidian (obsidian_create_note "Research - <topic>"); he confirms every write.',
     tools: ['wiki_summary', 'web_search', 'obsidian_search', 'obsidian_read', 'obsidian_create_note', 'obsidian_append_note', 'define', 'calc'],
     quick: ['Research findings', 'A research idea worth testing', 'What did the bots learn?', 'Data City findings', 'Look up mean reversion'],
-    apps: ['datacity', 'prometheus', 'mind', 'tree', 'pantheon'],
+    apps: ['datacity', 'prometheus', 'athena', 'mind', 'tree'],
     words: /\b(research|study|studies|test(ed|ing)?|backtests?|hypothes\w*|idea|ideas|data city|datacity|prometheus|daphne|pantheon|mind|wiki\w*|look up|search|who is|what is|explain|why does|paper|sources?|findings?|learn\w*|notes?|obsidian)\b/ },
   business: { id: 'business', name: 'Business', glyph: '$', blurb: 'Money goals, more accounts, Kalshi edge, deadlines',
     prompt: 'MODE: BUSINESS. Think like a self-made operator: his money goals (FACTS.money / the Road to $10K), the plan for more funded accounts (MFFU Builder 50K $91.80 and Builder 25K $63, one-time, his real prices), the Kalshi bot\'s edge by strategy, and his to-dos with deadlines. One clear recommendation with the real numbers, then the next step and its deadline. Check the maths with calc. Treat every edge as unproven; never promise returns.',
@@ -125,7 +125,7 @@ const dayWord = (dn, et) => (dn === et.dn ? 'today' : dn === et.dn + 1 ? 'tomorr
 const ask = (value) => ({ type: 'ask', value });
 const open = (value, route) => (route ? { type: 'open', value, route } : { type: 'open', value });
 const MODE_OF_APP = { zenith: 'trading', fates: 'trading', oracle: 'trading', odeon: 'trading', planner: 'life', ascend: 'life', arena: 'life', kalshi: 'business', tyche: 'business', hermes: 'business',
-  ares: 'trading', plutus: 'business', datacity: 'research', prometheus: 'research', tree: 'research', mind: 'research', pantheon: 'research' };
+  ares: 'trading', plutus: 'business', athena: 'research', datacity: 'research', prometheus: 'research', tree: 'research', mind: 'research', pantheon: 'research' };
 const APP_NAME = { datacity: 'Data City', prometheus: 'Prometheus', tree: 'DAPHNE', mind: 'the Mind', pantheon: 'Pantheon', fates: 'Fates', oracle: 'Oracle', odeon: 'Odeon', hermes: 'Hermes', tyche: 'Tyche', arena: 'Arena' };
 
 /** The rule items for every mode, most urgent first. No key, no network: only what D holds. */
