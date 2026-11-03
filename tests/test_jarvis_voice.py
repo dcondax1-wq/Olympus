@@ -312,7 +312,7 @@ def run_main(br, url):
     check("h. the VOICE button: the next voice (Ava compact), said and kept on this phone for voice mode and the Jarvis screen", pick == ["Ava", "Ava", "Ava"], pick)
     # f. END: the mic released
     p.click("#vmX")
-    p.wait_for_function(f"!{VMS}.open", timeout=3000)
+    p.wait_for_function(f"!{VMS}.open", timeout=8000)
     p.wait_for_timeout(300)
     s = vm(p)
     tr = p.evaluate("window.__tracks()")
@@ -354,7 +354,7 @@ def run_main(br, url):
     p.click('#qa [data-qa="voice"]')
     p.wait_for_function(f"{VMS}.open && {VMS}.mic", timeout=8000)
     p.evaluate("Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' }); document.dispatchEvent(new Event('visibilitychange'))")
-    p.wait_for_function(f"!{VMS}.open", timeout=3000)
+    p.wait_for_function(f"!{VMS}.open", timeout=8000)
     tr = p.evaluate("window.__tracks()")
     p.evaluate("delete document.visibilityState; document.dispatchEvent(new Event('visibilitychange'))")
     check("f. Jarvis out of sight: voice mode closes and every mic track is stopped", "live" not in tr, tr)

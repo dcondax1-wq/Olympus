@@ -84,7 +84,7 @@ export function parseFact(raw) {
   if (!t || /\?$/.test(str(raw)) || t.split(' ').length > 30) return null;
   let m = /^(?:remember|don't forget|dont forget|keep in mind|note to self)(?: that)?[:,]?\s+(.{3,300})$/i.exec(t);
   if (m) return { kind: 'remember', text: cap(m[1]), subject: '' };
-  m = /^call me ([a-z][a-z .'-]{0,30})$/i.exec(t);
+  m = /^(?:call me|my name is|my name's|i'm called|people call me) ([a-z][a-z .'-]{0,30})$/i.exec(t);
   if (m) return { kind: 'name', text: `Call me ${cap(m[1].trim())}`, subject: 'name', value: cap(m[1].trim()) };
   if (t.split(' ').length > 18) return null;
   m = /^my (.{2,50}?)(?:'s| is| are| was| were| has| have)\s+(.{1,160})$/i.exec(t);
