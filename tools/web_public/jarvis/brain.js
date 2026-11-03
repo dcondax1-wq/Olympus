@@ -498,6 +498,9 @@ export function createBrain(opts) {
   const assistant = isObj(o.assistant) && typeof o.assistant.handle === 'function' ? o.assistant : null;
   // the tools (tools.js, optional): function calling for smart mode, and the no-key answers (weather, Wikipedia, units ...)
   const tools = isObj(o.tools) && typeof o.tools.run === 'function' ? o.tools : null;
+  // the modes (modes.js, optional, 2026-11-03): Trading / Research / Business / Life / Auto, and "think for me"
+  const modes = isObj(o.modes) && typeof o.modes.think === 'function' ? o.modes : null;
+  let curMode = 'auto';     // the mode of the question being answered (auto = picked from its words): the prompt and the tools' order
   const openDelay = num(o.openDelay) != null ? Math.max(0, num(o.openDelay)) : 0;     // the shell's open() waits 450 ms itself
   const store = () => { if (o.storage) return o.storage; try { return typeof localStorage !== 'undefined' ? localStorage : null; } catch (_) { return null; } };
   const doFetch = (...a) => (typeof o.fetch === 'function' ? o.fetch : fetch)(...a);
@@ -1685,6 +1688,7 @@ export function createBrain(opts) {
       depth === 'deep' ? EXPERT : P ? null : depth === 'think' ? 'Think it through, then answer in 2-5 short sentences.' : 'Answer in 1-3 short sentences.',
       voice ? (P && P.style === 'chatty' ? 'This answer is spoken aloud: natural sentences, numbers said naturally, no symbols.' : 'This answer is spoken aloud: at most 2 short sentences, numbers said naturally, no symbols.') : 'Plain text, no markdown, no emojis.',
       'Lead with what puts money at risk (FACTS.priorities is already ranked): the one action first.',
+      modes && curMode !== 'auto' ? safeCall(() => modes.prompt(curMode)) || null : null,
       tools ? 'TOOLS: call them whenever they beat memory: get_weather, wiki_summary, web_search (quick answers only), define, time_in, calc (exact maths and units), his Obsidian notes (obsidian_search, obsidian_read, obsidian_append_note, obsidian_create_note), add_task, list_tasks, set_reminder, remember_fact, recall, get_bots_status, get_money, open_app. When he asks to write, note, log or save something, call the Obsidian tool: he confirms every write himself, so never say it is saved before a tool result says so. Never invent a tool result.' : null,
       'Every answer may be read aloud: plain sentences, no markdown, no tables, no links, no emojis.',
       mem && mem.me ? 'HOW THE OWNER THINKS (his own Me note; follow it for priorities and phrasing):\n' + str(mem.me, 2500) : null,
@@ -1712,7 +1716,8 @@ export function createBrain(opts) {
   // one request in provider p's wire format: { url, headers, body }. opt: { key, model, tokens, effort, full, tools, depth }
   function wire(p, sys, msgs, opt) {
     const x = isObj(opt) ? opt : {}, model = x.model || modelOf(p), key = x.key != null ? x.key : S.keys[p], tokens = x.tokens || 1024, full = x.full !== false;
-    const tl = x.tools && tools ? tools.schema(p === 'anthropic' ? 'anthropic' : p === 'gemini' ? 'gemini' : 'openai') : null;
+    let tl = x.tools && tools ? tools.schema(p === 'anthropic' ? 'anthropic' : p === 'gemini' ? 'gemini' : 'openai') : null;
+    if (tl && modes && curMode !== 'auto') tl = safeCall(() => modes.orderTools(tl, curMode)) || tl;     // the mode's tools first
     if (p === 'anthropic') {
       const body = { model, max_tokens: tokens, system: sys, messages: msgs };
       if (full) {
@@ -1977,19 +1982,75 @@ export function createBrain(opts) {
     if (off.intent === 'assistant_care' && !/988/.test(r.text)) { r.text += '\n' + off.text; r.speak = (r.speak || '') + ' ' + off.speak; }
     return r;
   }
+  // ---------------------------------------------------------------------------------------------- modes + "think for me"
+  // the digest modes.js thinks from (every number from the facts; nothing invented): see modes.js for the shape
+  function digest(V) {
+    const accounts = liveBots(V).map((key) => { const c = card(V, key); return { key, name: BOT[key].name, status: str(c.status, 20), room: num(c.room), room_frac: num(c.room_frac), to_target: num(c.to_target), today_pnl: num(c.today_pnl) }; });
+    const m = V.nq && V.nq.mind, plan = m && isObj(m.plans) ? Object.values(m.plans).find((x) => isObj(x) && str(x.headline, 200)) : null;
+    const k = V.k ? { state: 'ok', run: kalshiRun(V.k, V.now)[1], today_pnl: num(V.k.today_pnl), week_pnl: num(V.k.week_pnl), total_pnl: num(V.k.total_pnl),
+      strategies: arr(V.k.strategies).filter(isObj).map((x) => ({ name: str(x.name || x.id || x.key, 40), pnl: num(x.pnl != null ? x.pnl : x.total_pnl) })) } : { state: V.kState || 'missing' };
+    return {
+      now: V.now, et: V.et, priorities: ranked(V), quiet: quietOf(V), accounts, window: nextWindow(V), market: { open: !!(V.M && V.M.open) },
+      live: { missing: !V.nq, stale: !!(V.nq && (V.nq.stale || V.nq.cached)), ago: V.nq && V.nq.t ? ago(V.nq.t, V.now) : '' }, kalshi: k,
+      plan: V.plan ? { ev: V.plan.ev, tasks: V.plan.tasks } : null,
+      todos: assistant && typeof assistant.todos === 'function' ? arr(safeCall(() => assistant.todos())) : [],
+      reminders: assistant && typeof assistant.upcoming === 'function' ? arr(safeCall(() => assistant.upcoming())) : [],
+      mind: m ? { regime: isObj(m.regime) ? str(m.regime.label, 80) : '', proposals: arr(m.proposals).filter(isObj).slice(0, 4).map((x) => ({ idea: str(x.idea, 160), status: str(x.status, 20) })), plan: plan ? str(plan.headline, 200) : '' } : null,
+      money: V.nq && isObj(V.nq.money) ? { next: isObj(V.nq.money.next) ? str(V.nq.money.next.text, 200) : '', goals: arr(V.nq.money.goals).filter(isObj).slice(0, 3).map((g) => str(g.sentence || g.title, 160)) } : null,
+      apps: V.apps.map((a) => ({ id: a.id, name: a.name })), smart: smartOn(), vault: !!(memory && memory.connected),
+    };
+  }
+  const THINK_RX = /^(?:(?:please |can you |jarvis,? )?think for me|think|think about it|what would you do|what'?d you do|here'?s what i'?d do|what do you suggest|any (?:ideas|suggestions)|give me (?:ideas|suggestions|3 suggestions|three suggestions)|suggest something|suggestions|ideas|what should i be doing|what am i missing|plan my (?:day|evening|night|week))$/;
+  // the rules' list (modes.js), and with a key the model's 3 suggestions from the same digest (the rules are its fallback)
+  async function thinkReply(V, mode, wantSmart) {
+    const D = digest(V), id = mode || (modes ? modes.mode : 'auto');
+    const base = modes.think(D, id, 3);
+    const r = { text: base.text, speak: base.say, items: base.items, mode: base.mode, intent: 'think' };
+    if (!wantSmart || !smartOn() || offline()) return r;
+    const p = S.provider, prev = curMode;
+    curMode = id;
+    try {
+      const sys = systemFor(V, 'think', false, null, null) + '\nRULE LIST (already checked from the data, most urgent first): ' + JSON.stringify(thinkAllSafe(D).slice(0, 8).map((x) => ({ text: x.text, mode: x.mode })));
+      const ask0 = `Think for me${id !== 'auto' ? ' in ' + modes.name(id) + ' mode' : ''}: give exactly 3 suggestions of what I should do next, most important first, each one short and concrete, from the FACTS and the RULE LIST only (money at risk first). Reply with JSON only: [{"text": "...", "ask": "the question I tap to follow up, in my words"}].`;
+      const req = wire(p, sys, [{ role: 'user', content: ask0 }], { tokens: BUDGET.think[p === 'anthropic' ? 'anthropic' : 'other'], effort: 'low', full: true, depth: 'think', tools: false });
+      const rep = await callSmart(p, req);
+      const t = String((rep && rep.text) || ''), a = t.indexOf('['), b = t.lastIndexOf(']');
+      const list = a >= 0 && b > a ? JSON.parse(t.slice(a, b + 1)) : null;
+      const items = arr(list).filter((x) => isObj(x) && str(x.text, 240)).slice(0, 3).map((x, i) => ({ p: i, mode: id, key: 'ai:' + i, text: str(x.text, 240), say: sayText(str(x.text, 240)), label: 'Ask',
+        action: str(x.ask, 160) ? { type: 'ask', value: str(x.ask, 160) } : base.items[i] ? base.items[i].action : null }));
+      if (items.length < 2) throw new Error('no list');
+      const head = id === 'auto' ? "Here's what I'd do:" : `Here's what I'd do (${modes.name(id)}):`;
+      return { ...r, text: head + '\n' + items.map((x, i) => `${i + 1}. ${x.text}`).join('\n'), speak: toSpeech("Here's what I'd do. " + items.map((x) => x.text).join(' '), 420), items, smart: true, provider: p };
+    } catch (_) { return r; }
+    finally { curMode = prev; }
+  }
+  const thinkAllSafe = (D) => { try { return modes.think(D, 'auto', 8).items; } catch (_) { return []; } };
+  function modeReply(id, V) {
+    modes.set(id);
+    const D = digest(V), g = modes.greeting(id, D), t = modes.think(D, id, 3);
+    const top = t.items[0];
+    return { text: g + '\n' + t.text, speak: toSpeech(g + (top ? ' First: ' + top.say : ''), 320), control: 'mode', mode: id, items: t.items, intent: 'mode' };
+  }
   const oops = () => ({ text: 'Something in the data tripped me up. Ask me again in a moment.', speak: 'Something in the data tripped me up. Ask me again in a moment.', intent: 'error' });
   async function ask(text, opt) {
     const voice = !!(isObj(opt) && opt.voice);
-    let r;
+    let r, mr0 = null;
     try {
       const raw = String(text == null ? '' : text).slice(0, 600);
       if (zrWait) await Promise.race([zrWait, new Promise((ok) => setTimeout(ok, 1500))]);
       const f = await loadFacts();
       const V = view(f);
       const q = norm(raw);
+      curMode = modes ? safeCall(() => modes.effective(q)) || 'auto' : 'auto';
       if (/^(hide|mask) (my |the )?(balances?|money|numbers|figures|p&l)$|^privacy (mode )?on$/.test(q)) { setHide(true); r = { text: 'Balances hidden. Say "show my balance" to bring them back.', speak: 'Balances hidden.', control: 'hide_balance', intent: 'control' }; }
       else if (/^(show|unhide|unmask) (my |the )?(balances?|money|numbers|figures|p&l)$|^privacy (mode )?off$/.test(q)) { setHide(false); r = { text: 'Balances visible again.', speak: 'Balances visible again.', control: 'show_balance', intent: 'control' }; }
       else if (MANUAL_RX.test(q)) r = manualTrade(q, V);
+      else if (modes && safeCall(() => modes.parseSwitch(raw))) r = modeReply(modes.parseSwitch(raw), V);
+      else if (modes && THINK_RX.test(q)) r = await thinkReply(V, modes.mode, true);
+      else if (modes && typeof modes.answer === 'function' && (mr0 = safeCall(() => modes.answer(raw, digest(V))))) {     // the modes' quick asks (modes.js)
+        const fb = { text: mr0.text, speak: mr0.speak, intent: mr0.intent };
+        r = mr0.model && smartOn() ? await smartAnswer(raw, V, fb, voice) : fb;
+      }
       else if (SETUP_RX.test(q)) r = { text: smartOn() ? `Smart mode is on (${PROVIDERS[S.provider].name}). Opening the key setup in case you want another one.` : 'Opening the free smart mode setup: three steps, about a minute, no card.', speak: 'Opening the smart mode setup.', control: 'ai_setup', intent: 'control' };
       else {
         // order: a "yes" / "no" to a pending save (memory.js) -> the assistant (facts, reminders, to-dos, notes, recall, maths) ->
@@ -2065,6 +2126,8 @@ export function createBrain(opts) {
       if (V.plan && (V.plan.ev.length || V.plan.tasks.length)) out.push("What's on today?");
       if (V.k) out.push("How's Kalshi?");
       out.push("Today's P&L", 'What should I do now?', 'Open Zenith');
+      // a mode picked (modes.js): what needs him first, then that mode's own quick asks
+      if (modes && modes.mode !== 'auto') return uniq(out.filter((x) => /^(Is everything OK\?|What should I do now\?|Why no trade\?)$/.test(x) && (urgent || bad)).concat(arr(safeCall(() => modes.quick(modes.mode))))).slice(0, 6);
       return uniq(out).slice(0, 6);
     } catch (_) { return ['Brief me', 'How are the bots?', "What's on today?", 'Open Zenith']; }
   }
@@ -2096,6 +2159,14 @@ export function createBrain(opts) {
   }
   return {
     ask, briefing, suggestions, setSmart, testKey,
+    // modes (modes.js): the mode picked on this phone; think() = "Here's what I'd do" ({ text, say, speak, items, mode, smart? })
+    get mode() { return modes ? modes.mode : 'auto'; },
+    setMode(id) { return modes ? modes.set(id) : 'auto'; },
+    async think(mode, opt) {
+      if (!modes) return finish({ text: 'Modes are still loading.', intent: 'think', items: [] });
+      try { const V = view(await loadFacts()); return finish(await thinkReply(V, mode || modes.mode, !(isObj(opt) && opt.smart === false))); } catch (_) { return finish(oops()); }
+    },
+    digest() { try { return digest(view(lastFacts)); } catch (_) { return null; } },
     get smart() { return smartView(); },
     get hidden() { return hide; },
     forgetKey(provider) { if (PROVIDERS[provider]) S.keys[provider] = ''; else for (const p of Object.keys(PROVIDERS)) S.keys[p] = ''; if (!S.keys[S.provider]) S.on = false; saveSmart(); return smartView(); },
