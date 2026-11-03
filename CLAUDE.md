@@ -6,7 +6,7 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
 **Steps for the owner (2026-10-20): at most 3 numbered steps, one copy-paste line, no options or side notes; do every other
 part yourself or fold it into a script.**
 
-**Every report has a table (owner 2026-11-02)**: what was done / the numbers / what's next, in a table.
+**Every report has a table and is SIMPLE (owner 2026-11-02 / 11-03)**: one short table (what / result), plain words, no tech detail, then at most 3 steps.
 **One chat (owner 2026-11-01; "our lead chat" 2026-11-02):** he makes every change, for every project, from his one Claude Code chat on this repo, to
 save time and usage. Start from the map (CLAUDE_REFERENCE "One chat"), run only the tests for the area touched, no agent
 swarms unless he asks.
