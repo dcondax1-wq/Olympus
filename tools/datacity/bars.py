@@ -101,6 +101,18 @@ def load_daily(name) -> pd.DataFrame:
     return d.sort_values("date").reset_index(drop=True)
 
 
+def load_cboe(col) -> pd.DataFrame:
+    """One column of CBOE's own index file (data/CBOE_vol_1d.csv: vix9d, vix3m, vix1d, vvix, skew) as date, close."""
+    p = os.path.join(ROOT, "data", "CBOE_vol_1d.csv")
+    if not os.path.exists(p):
+        return pd.DataFrame(columns=["date", "close"])
+    d = pd.read_csv(p)
+    if col not in d.columns:
+        return pd.DataFrame(columns=["date", "close"])
+    d = d[["date", col]].rename(columns={col: "close"}).dropna()
+    return d.sort_values("date").reset_index(drop=True)
+
+
 def load_news() -> pd.DataFrame:
     """High-impact scheduled US releases (data/news/events.csv: FOMC, CPI, PPI, NFP ...). Scheduled in advance: no look-ahead."""
     p = os.path.join(ROOT, "data", "news", "events.csv")

@@ -21,6 +21,24 @@ KEY = ("vwap", "ema", "atr", "vix", "lsa", "today", "gap", "smt")          # fam
 YEARS = (2021, 2022, 2023, 2024, 2025, 2026)
 SLOT_TRIGS = ("slot_long", "slot_short")
 SEED = 20261103
+# the newer families (2026-11-03) are crossed with a few partners only, not with every KEY family
+NEW_PAIRS = {"orw": ("vwap", "today", "gap"), "orp": ("vwap", "today", "atr"), "gapt": ("vwap", "today", "atr"),
+             "vts": ("atr", "today", "vwap"), "vtr": ("atr", "today", "vwap"), "esr": ("vwap", "today", "smt"),
+             "cal": ("vwap", "today", "atr")}
+TIME_FAMS = ("wd", "dst", "news", "vix", "mon", "cal", "vts", "vtr", "orw", "gapt")   # a session open x one state
+# districts: a combination lives where its most specific state belongs (first match wins), else times / confluences / while
+DISTRICT_OF_FAMILY = (("esnq", ("smt", "esr")), ("orange", ("orw", "orp")), ("gaps", ("gap", "gapt")),
+                      ("volatility", ("vix", "vxn", "atr", "vts", "vtr")), ("week", ("wd",)), ("seasons", ("mon", "cal")))
+DISTRICTS = ("times", "confluences", "week", "seasons", "volatility", "gaps", "orange", "esnq", "while")
+
+
+def district_of(base, conds) -> str:
+    """The district of a combination: base is "times" / "confluences" / "while" (how it was made), conds its states."""
+    fams = {f for f, _ in conds}
+    for d, fs in DISTRICT_OF_FAMILY:
+        if fams & set(fs):
+            return d
+    return base
 
 
 def p_values(tstat):
@@ -55,16 +73,19 @@ def enumerate_combos():
         if key in ids:                             # a session open x weekday / DST / news / VIX lives in Times only
             return
         ids.add(key)
-        out.append({"id": key, "district": district, "trig": trig, "win": win, "slot": slot, "conds": tuple(conds)})
+        out.append({"id": key, "district": district_of(district, conds), "trig": trig, "win": win, "slot": slot,
+                    "conds": tuple(conds)})
     # Times: every 15-minute slot (18:00-16:00 ET) both ways; every session open both ways x weekday / month / DST / news / VIX
     for trig in SLOT_TRIGS:
         for s in range(96):
             if 64 <= s < 72:                       # 16:00-18:00 ET: no entries
                 continue
             mk("times", trig, slot=s)
+            for v in range(5):                     # the week: weekday x 15-minute slot
+                mk("times", trig, slot=s, conds=(("wd", v),))
         for w in range(len(F.WINDOWS)):
             mk("times", trig, w)
-            for fam in ("wd", "dst", "news", "vix", "mon"):
+            for fam in TIME_FAMS:
                 vals = range(12) if fam == "mon" else range(len(F.STATES[fam]))
                 for v in vals:
                     mk("times", trig, w, conds=((fam, v),))
@@ -77,6 +98,11 @@ def enumerate_combos():
     pairs = []
     for i, a in enumerate(KEY):
         for b in KEY[i + 1:]:
+            for va in range(len(F.STATES[a])):
+                for vb in range(len(F.STATES[b])):
+                    pairs.append(((a, va), (b, vb)))
+    for a, partners in NEW_PAIRS.items():
+        for b in partners:
             for va in range(len(F.STATES[a])):
                 for vb in range(len(F.STATES[b])):
                     pairs.append(((a, va), (b, vb)))
@@ -161,6 +187,7 @@ class Grid:
             m = y == yy
             if m.any():
                 yrs[yy] = (int(m.sum()), round(float(p[m].mean()), 1), round(float(q[m].mean()), 3))
+        out["ld"] = int(self.ev["day"][r[-1]])            # the last day it traded (the Today layer)
         f = lambda a: float(np.nanmean(a)) if np.isfinite(a).any() else None  # noqa: E731
         out.update({"win": float((p > 0).mean()), "h1": float(ev["h1"][r].mean()), "h2": float(ev["h2"][r].mean()),
                     "h3": float(ev["h3"][r].mean()), "risk": float(np.median(ev["risk"][r])),
