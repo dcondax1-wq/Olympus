@@ -9,11 +9,12 @@ function global:Get-CimInstance {
         'Win32_OperatingSystem' { [pscustomobject]@{ Caption = 'Microsoft Windows 11 Home'; BuildNumber = '26100'; Version = '10.0.26100'
                                                       TotalVisibleMemorySize = 3774873; FreePhysicalMemory = 377487; LastBootUpTime = (Get-Date).AddHours(-30) } }
         'Win32_Processor' { [pscustomobject]@{ Name = 'Intel(R) Core(TM) i5-1035G4 CPU @ 1.10GHz  '; NumberOfCores = 2; NumberOfLogicalProcessors = 4; MaxClockSpeed = 1498; LoadPercentage = 97 } }
-        'Win32_ComputerSystem' { [pscustomobject]@{ Manufacturer = 'Microsoft Corporation'; Model = 'Surface Pro 7'; TotalPhysicalMemory = 4GB } }
+        'Win32_ComputerSystem' { [pscustomobject]@{ Manufacturer = 'Microsoft Corporation'; Model = 'Surface Pro 7'; TotalPhysicalMemory = 4GB; PCSystemType = 2; AutomaticManagedPagefile = $true } }
         'Win32_PhysicalMemory' { [pscustomobject]@{ Capacity = 4GB; Speed = 3733; ConfiguredClockSpeed = 3733 } }
         'Win32_PhysicalMemoryArray' { [pscustomobject]@{ MemoryDevices = 1 } }
         'Win32_LogicalDisk' { [pscustomobject]@{ DeviceID = 'C:'; FreeSpace = 21GB; Size = 118GB } }
         'Win32_VideoController' { [pscustomobject]@{ Name = 'Intel(R) Iris(R) Plus Graphics'; DriverVersion = '31.0.101.2111'; CurrentHorizontalResolution = 2736; CurrentVerticalResolution = 1824; CurrentRefreshRate = 60 } }
+        'MSAcpi_ThermalZoneTemperature' { [pscustomobject]@{ CurrentTemperature = 3432 } }
         'Win32_Battery' { [pscustomobject]@{ EstimatedChargeRemaining = 100 } }
         'Win32_StartupCommand' { @([pscustomobject]@{ Name = 'OneDrive'; Command = 'OneDrive.exe /background' }, [pscustomobject]@{ Name = 'Discord'; Command = 'Update.exe --processStart Discord.exe' }) }
         default { throw "harness: Get-CimInstance $ClassName not stubbed" }
@@ -28,7 +29,7 @@ function global:Start-Process { [CmdletBinding()] param([Parameter(Position = 0)
 function global:Get-AppxPackage { [CmdletBinding()] param([string]$Name) }
 function global:Remove-AppxPackage { [CmdletBinding()] param([string]$Package) [Console]::WriteLine("HARNESS-CHANGE Remove-AppxPackage $Package") }
 function global:Start-MpScan { [CmdletBinding()] param([string]$ScanType) [Console]::WriteLine("HARNESS-CHANGE Start-MpScan") }
-function global:Get-Service { [CmdletBinding()] param([Parameter(Position = 0)][string]$Name) [pscustomobject]@{ Name = $Name; Status = 'Running' } }
+function global:Get-Service { [CmdletBinding()] param([Parameter(Position = 0)][string]$Name) [pscustomobject]@{ Name = $Name; Status = 'Running'; StartType = 'Automatic' } }
 function global:Stop-Service { [CmdletBinding()] param([Parameter(Position = 0)][string]$Name, [switch]$Force) [Console]::WriteLine("HARNESS-CHANGE Stop-Service $Name") }
 function global:Set-Service { [CmdletBinding()] param([Parameter(Position = 0)][string]$Name, [string]$StartupType) [Console]::WriteLine("HARNESS-CHANGE Set-Service $Name") }
 function global:Delete-DeliveryOptimizationCache { [CmdletBinding()] param([switch]$Force) [Console]::WriteLine("HARNESS-CHANGE Delete-DeliveryOptimizationCache") }
