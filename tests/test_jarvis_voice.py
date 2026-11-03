@@ -164,7 +164,7 @@ def part_files():
     check("a. the mic only from a tap (getUserMedia in ensureMic, called from the taps), released on close (tracks stopped, context closed)",
           src.count("getUserMedia(") == 1 and "t.stop()" in src and "actx.close()" in src and "releaseMic();" in src[src.index("function close("):])
     sw = open(os.path.join(JV, "sw.js"), encoding="utf-8").read()
-    check("a. worker jarvis-v14 saves voice-mode.js (and jarvis.css?v=j10)", "const CACHE = 'jarvis-v14';" in sw and "'./voice-mode.js'" in sw and "'./jarvis.css?v=j10'" in sw)
+    check("a. worker jarvis-v15 saves voice-mode.js (and jarvis.css?v=j10)", "const CACHE = 'jarvis-v15';" in sw and "'./voice-mode.js'" in sw and "'./jarvis.css?v=j10'" in sw)
     page = open(os.path.join(JV, "index.html"), encoding="utf-8").read()
     check("a. the shell loads it after the start (bootDone + 1.5 s, or at first use), never in the start's own list",
           "load('voice', './voice-mode.js'" in page and "bootDone.then(() => setTimeout(voiceMod, 1500));" in page
