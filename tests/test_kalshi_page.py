@@ -215,6 +215,8 @@ def wide(now, long_text=False):
 def site(tmp):
     base = os.path.join(tmp, "nq-dashboard")
     shutil.copytree(KS, os.path.join(base, "kalshi"))
+    # the OLYMPUS theme engine the page loads (../olympus/themes.js), published with the site
+    shutil.copytree(os.path.join(os.path.dirname(KS), "olympus"), os.path.join(base, "olympus"))
     os.makedirs(os.path.join(base, "jarvis"))
     if os.path.exists(JV_ICON):
         shutil.copy(JV_ICON, os.path.join(base, "jarvis", "icon-192.png"))

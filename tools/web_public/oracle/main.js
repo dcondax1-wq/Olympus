@@ -38,6 +38,7 @@ let scene = null;
 try {
   scene = new Scene(THREE, document.getElementById('gl'), { quality: state.quality, reduced });
   O?.track(scene.renderer);
+  O?.themeScene?.({ scene: scene.scene, renderer: scene.renderer });   // OLYMPUS theme: fog + clear colour follow it
 } catch (e) {
   hud.noGL();
   O?.ready();                                  // the numbers still update: the page is up

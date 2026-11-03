@@ -161,6 +161,7 @@ def site(tmp, name, parts):
     base = os.path.join(tmp, name, "nq-dashboard")
     shutil.copytree(JV, os.path.join(base, "jarvis"))
     shutil.copytree(KS, os.path.join(base, "kalshi"))
+    shutil.copytree(os.path.join(os.path.dirname(JV), "olympus"), os.path.join(base, "olympus"))   # the OLYMPUS theme engine
     for f in PARTS:
         dst = os.path.join(base, "jarvis", f)
         if parts == "none" and os.path.exists(dst):

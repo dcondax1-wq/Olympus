@@ -52,6 +52,7 @@ async function makeStage() {
     const [{ Theater }, { Director }, THREE] = await Promise.all([import('./scene.js'), import('./director.js'), import('../jarvis/three.module.min.js')]);
     const th = new Theater(canvas, { lite: S.lite, reduced });
     O?.track(th.renderer);
+    O?.themeScene?.({ scene: th.scene, renderer: th.renderer });   // OLYMPUS theme: fog + clear colour follow it
     const cam = new THREE.PerspectiveCamera(42, 1, 0.1, 1500);
     S.three = THREE; S.camera = cam; S.dir = new Director(cam, { reduced });
     S.stage = th;

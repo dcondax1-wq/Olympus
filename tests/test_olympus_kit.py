@@ -104,7 +104,7 @@ def test_static():
     check("a. the veil never takes a tap", re.search(r"\.oly-veil \{[^}]*pointer-events: none", css))
     for app, (_, entry, _) in APPS.items():
         html = read(os.path.join(WEB, app, "index.html"))
-        i_css, i_js = html.find("../olympus/olympus.css"), html.find(f'../olympus/olympus.js?v=o1" data-app="{app}"')
+        i_css, i_js = html.find("../olympus/olympus.css"), html.find(f'../olympus/olympus.js?v=o2" data-app="{app}"')
         own = [m.start() for m in re.finditer(r'<link rel="stylesheet" href="(?!\.\./olympus)', html)] + [html.find("<style>")]
         mods = [m.start() for m in re.finditer(r'<script type="module"', html)]
         code = "".join(read(p) for p in glob.glob(os.path.join(WEB, app, "*.js")))

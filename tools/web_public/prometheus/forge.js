@@ -166,6 +166,7 @@ class Arena {
     this.renderer.setClearColor(0x000000, 0);          // the sky is the page's CSS ember gradient behind the canvas
     this.scene = new THREE.Scene();
     this.scene.fog = new THREE.FogExp2(0x120806, 0.028);
+    O?.themeScene?.({ scene: this.scene, renderer: this.renderer });   // OLYMPUS theme: the fog follows it (the sky is the CSS --bg)
     this.camera = new THREE.PerspectiveCamera(48, 1, 0.1, 200);
     this.az = -0.6; this.el = 0.8; this.drag = null;
     this.tex = { glow: glowTex() };

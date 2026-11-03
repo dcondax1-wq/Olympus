@@ -79,6 +79,7 @@ if (hasWebGL()) {
   try {
     brain = new Brain(THREE, canvas, { quality: state.quality, reduced });
     O?.track(brain.renderer);
+    O?.themeScene?.({ scene: brain.scene, renderer: brain.renderer, clear: 0x03040a, redraw: () => { needsDraw = true; } });   // OLYMPUS theme tints
     rig = new OrbitRig(brain.camera, canvas, {
       reduced,
       onTap(x, y) { const i = brain.pick(x, y); if (i >= 0) focus(state.graph.nodes[i].id, false); else if (state.focus >= 0) unfocus(); },
