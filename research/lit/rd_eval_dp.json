@@ -1,0 +1,831 @@
+{
+ "built": "2026-11-03",
+ "n": 1000,
+ "acts": [
+  [
+   0.5,
+   0.4
+  ],
+  [
+   0.5,
+   0.6
+  ],
+  [
+   0.5,
+   0.8
+  ],
+  [
+   0.5,
+   1.0
+  ],
+  [
+   0.75,
+   0.4
+  ],
+  [
+   0.75,
+   0.6
+  ],
+  [
+   0.75,
+   0.8
+  ],
+  [
+   0.75,
+   1.0
+  ],
+  [
+   1.0,
+   0.4
+  ],
+  [
+   1.0,
+   0.6
+  ],
+  [
+   1.0,
+   0.8
+  ],
+  [
+   1.0,
+   1.0
+  ],
+  [
+   1.25,
+   0.4
+  ],
+  [
+   1.25,
+   0.6
+  ],
+  [
+   1.25,
+   0.8
+  ],
+  [
+   1.25,
+   1.0
+  ],
+  [
+   1.5,
+   0.4
+  ],
+  [
+   1.5,
+   0.6
+  ],
+  [
+   1.5,
+   0.8
+  ],
+  [
+   1.5,
+   1.0
+  ],
+  [
+   2.0,
+   0.4
+  ],
+  [
+   2.0,
+   0.6
+  ],
+  [
+   2.0,
+   0.8
+  ],
+  [
+   2.0,
+   1.0
+  ],
+  [
+   3.0,
+   0.4
+  ],
+  [
+   3.0,
+   0.6
+  ],
+  [
+   3.0,
+   0.8
+  ],
+  [
+   3.0,
+   1.0
+  ]
+ ],
+ "grid": 25.0,
+ "horizon": 10,
+ "fit": "2026 H1 sessions",
+ "res": {
+  "live": {
+   "H1": {
+    "p10": 52.9,
+    "f10": 17.8,
+    "dec10": 70.7,
+    "p_ever": 73.5,
+    "pass_med": 6.0,
+    "slow_pass": 17.3,
+    "usd_per_pass": 124.9,
+    "max_risk": 991,
+    "sess_per_try": 9.9,
+    "roll": {
+     "windows": 119,
+     "p10": 57.1,
+     "f10": 16.0
+    },
+    "roll15": {
+     "windows": 114,
+     "p10": 64.9,
+     "f10": 17.5
+    },
+    "slot_m": 823,
+    "slot_p10": 1416,
+    "slot_pneg": 5.8,
+    "evals6": 1.68
+   },
+   "H2": {
+    "p10": 58.6,
+    "f10": 20.9,
+    "dec10": 79.5,
+    "p_ever": 71.8,
+    "pass_med": 5.0,
+    "slow_pass": 13.8,
+    "usd_per_pass": 127.9,
+    "max_risk": 995,
+    "sess_per_try": 9.3,
+    "roll": {
+     "windows": 69,
+     "p10": 52.2,
+     "f10": 23.2
+    },
+    "roll15": {
+     "windows": 64,
+     "p10": 53.1,
+     "f10": 28.1
+    },
+    "slot_m": 798,
+    "slot_p10": 1293,
+    "slot_pneg": 7.6,
+    "evals6": 1.67
+   },
+   "REF": {
+    "p10": 20.7,
+    "f10": 24.9,
+    "dec10": 45.6,
+    "p_ever": 31.5,
+    "pass_med": 8.0,
+    "slow_pass": 26.7,
+    "usd_per_pass": 291.4,
+    "max_risk": 994,
+    "sess_per_try": 19.0,
+    "slot_m": -7,
+    "slot_p10": -468,
+    "slot_pneg": 87.6,
+    "evals6": 2.86
+   }
+  },
+  "rf70": {
+   "H1": {
+    "p10": 52.6,
+    "f10": 13.9,
+    "dec10": 66.5,
+    "p_ever": 75.8,
+    "pass_med": 6.0,
+    "slow_pass": 19.1,
+    "usd_per_pass": 121.1,
+    "max_risk": 991,
+    "sess_per_try": 10.5,
+    "roll": {
+     "windows": 119,
+     "p10": 57.1,
+     "f10": 15.1
+    },
+    "roll15": {
+     "windows": 114,
+     "p10": 66.7,
+     "f10": 15.8
+    },
+    "slot_m": 818,
+    "slot_p10": 1416,
+    "slot_pneg": 6.4,
+    "evals6": 1.64
+   },
+   "H2": {
+    "p10": 57.9,
+    "f10": 16.5,
+    "dec10": 74.4,
+    "p_ever": 73.4,
+    "pass_med": 5.0,
+    "slow_pass": 16.6,
+    "usd_per_pass": 125.1,
+    "max_risk": 995,
+    "sess_per_try": 10.7,
+    "roll": {
+     "windows": 69,
+     "p10": 52.2,
+     "f10": 17.4
+    },
+    "roll15": {
+     "windows": 64,
+     "p10": 53.1,
+     "f10": 23.4
+    },
+    "slot_m": 789,
+    "slot_p10": 1233,
+    "slot_pneg": 8.0,
+    "evals6": 1.63
+   },
+   "REF": {
+    "p10": 19.1,
+    "f10": 19.2,
+    "dec10": 38.3,
+    "p_ever": 30.0,
+    "pass_med": 8.0,
+    "slow_pass": 27.0,
+    "usd_per_pass": 306.0,
+    "max_risk": 994,
+    "sess_per_try": 20.5,
+    "slot_m": -7,
+    "slot_p10": -551,
+    "slot_pneg": 87.5,
+    "evals6": 2.89
+   }
+  },
+  "rf60": {
+   "H1": {
+    "p10": 52.8,
+    "f10": 9.6,
+    "dec10": 62.4,
+    "p_ever": 78.2,
+    "pass_med": 7.0,
+    "slow_pass": 21.5,
+    "usd_per_pass": 117.4,
+    "max_risk": 991,
+    "sess_per_try": 11.3,
+    "roll": {
+     "windows": 119,
+     "p10": 57.1,
+     "f10": 13.4
+    },
+    "roll15": {
+     "windows": 114,
+     "p10": 66.7,
+     "f10": 14.9
+    },
+    "slot_m": 814,
+    "slot_p10": 1411,
+    "slot_pneg": 6.3,
+    "evals6": 1.59
+   },
+   "H2": {
+    "p10": 54.9,
+    "f10": 9.3,
+    "dec10": 64.2,
+    "p_ever": 75.4,
+    "pass_med": 5.0,
+    "slow_pass": 21.1,
+    "usd_per_pass": 121.8,
+    "max_risk": 995,
+    "sess_per_try": 12.7,
+    "roll": {
+     "windows": 69,
+     "p10": 52.2,
+     "f10": 10.1
+    },
+    "roll15": {
+     "windows": 64,
+     "p10": 51.6,
+     "f10": 18.8
+    },
+    "slot_m": 776,
+    "slot_p10": 1224,
+    "slot_pneg": 8.2,
+    "evals6": 1.57
+   },
+   "REF": {
+    "p10": 17.3,
+    "f10": 11.6,
+    "dec10": 28.9,
+    "p_ever": 28.9,
+    "pass_med": 9.0,
+    "slow_pass": 29.1,
+    "usd_per_pass": 317.6,
+    "max_risk": 994,
+    "sess_per_try": 22.3,
+    "slot_m": -10,
+    "slot_p10": -459,
+    "slot_pneg": 88.0,
+    "evals6": 2.89
+   }
+  },
+  "rf55_wk1200": {
+   "H1": {
+    "p10": 53.0,
+    "f10": 3.6,
+    "dec10": 56.6,
+    "p_ever": 82.8,
+    "pass_med": 7.0,
+    "slow_pass": 24.9,
+    "usd_per_pass": 110.9,
+    "max_risk": 991,
+    "sess_per_try": 12.7,
+    "roll": {
+     "windows": 119,
+     "p10": 57.1,
+     "f10": 5.0
+    },
+    "roll15": {
+     "windows": 114,
+     "p10": 69.3,
+     "f10": 7.9
+    },
+    "slot_m": 804,
+    "slot_p10": 1416,
+    "slot_pneg": 6.6,
+    "evals6": 1.45
+   },
+   "H2": {
+    "p10": 53.7,
+    "f10": 2.2,
+    "dec10": 55.9,
+    "p_ever": 79.7,
+    "pass_med": 6.0,
+    "slow_pass": 26.9,
+    "usd_per_pass": 115.2,
+    "max_risk": 995,
+    "sess_per_try": 15.3,
+    "roll": {
+     "windows": 69,
+     "p10": 50.7,
+     "f10": 0.0
+    },
+    "roll15": {
+     "windows": 64,
+     "p10": 51.6,
+     "f10": 4.7
+    },
+    "slot_m": 766,
+    "slot_p10": 1211,
+    "slot_pneg": 8.6,
+    "evals6": 1.49
+   },
+   "REF": {
+    "p10": 15.6,
+    "f10": 4.0,
+    "dec10": 19.6,
+    "p_ever": 27.8,
+    "pass_med": 9.0,
+    "slow_pass": 33.5,
+    "usd_per_pass": 330.2,
+    "max_risk": 994,
+    "sess_per_try": 25.6,
+    "slot_m": -14,
+    "slot_p10": -459,
+    "slot_pneg": 90.1,
+    "evals6": 2.79
+   }
+  },
+  "lam0": {
+   "H1": {
+    "p10": 55.3,
+    "f10": 21.2,
+    "dec10": 76.5,
+    "p_ever": 71.4,
+    "pass_med": 6.0,
+    "slow_pass": 13.4,
+    "usd_per_pass": 128.6,
+    "max_risk": 991,
+    "sess_per_try": 8.9,
+    "roll": {
+     "windows": 119,
+     "p10": 58.8,
+     "f10": 19.3
+    },
+    "roll15": {
+     "windows": 114,
+     "p10": 65.8,
+     "f10": 21.1
+    },
+    "slot_m": 826,
+    "slot_p10": 1416,
+    "slot_pneg": 5.6,
+    "evals6": 1.72
+   },
+   "H2": {
+    "p10": 58.6,
+    "f10": 23.4,
+    "dec10": 82.0,
+    "p_ever": 70.8,
+    "pass_med": 4.0,
+    "slow_pass": 12.7,
+    "usd_per_pass": 129.7,
+    "max_risk": 995,
+    "sess_per_try": 8.7,
+    "roll": {
+     "windows": 69,
+     "p10": 52.2,
+     "f10": 24.6
+    },
+    "roll15": {
+     "windows": 64,
+     "p10": 54.7,
+     "f10": 26.6
+    },
+    "slot_m": 801,
+    "slot_p10": 1257,
+    "slot_pneg": 7.7,
+    "evals6": 1.72
+   },
+   "REF": {
+    "p10": 20.3,
+    "f10": 29.8,
+    "dec10": 50.1,
+    "p_ever": 30.5,
+    "pass_med": 7.0,
+    "slow_pass": 25.6,
+    "usd_per_pass": 301.0,
+    "max_risk": 994,
+    "sess_per_try": 17.9,
+    "slot_m": -6,
+    "slot_p10": -551,
+    "slot_pneg": 86.8,
+    "evals6": 2.95
+   },
+   "table": {
+    "differs_from_live_pct": {
+     "10": 50.9,
+     "5": 73.3,
+     "1": 84.4
+    },
+    "start_action": [
+     1.0,
+     0.8
+    ],
+    "mean_k": {
+     "10": 0.88,
+     "5": 1.08,
+     "1": 1.48
+    },
+    "mean_f": {
+     "10": 0.73,
+     "5": 0.85,
+     "1": 0.8
+    }
+   }
+  },
+  "lam0.1": {
+   "H1": {
+    "p10": 55.5,
+    "f10": 15.6,
+    "dec10": 71.1,
+    "p_ever": 73.7,
+    "pass_med": 6.0,
+    "slow_pass": 16.3,
+    "usd_per_pass": 124.6,
+    "max_risk": 991,
+    "sess_per_try": 9.8,
+    "roll": {
+     "windows": 119,
+     "p10": 58.0,
+     "f10": 19.3
+    },
+    "roll15": {
+     "windows": 114,
+     "p10": 64.0,
+     "f10": 21.1
+    },
+    "slot_m": 820,
+    "slot_p10": 1416,
+    "slot_pneg": 6.2,
+    "evals6": 1.68
+   },
+   "H2": {
+    "p10": 57.4,
+    "f10": 19.1,
+    "dec10": 76.5,
+    "p_ever": 71.6,
+    "pass_med": 5.0,
+    "slow_pass": 14.9,
+    "usd_per_pass": 128.2,
+    "max_risk": 995,
+    "sess_per_try": 9.8,
+    "roll": {
+     "windows": 69,
+     "p10": 50.7,
+     "f10": 18.8
+    },
+    "roll15": {
+     "windows": 64,
+     "p10": 54.7,
+     "f10": 23.4
+    },
+    "slot_m": 792,
+    "slot_p10": 1233,
+    "slot_pneg": 8.0,
+    "evals6": 1.68
+   },
+   "REF": {
+    "p10": 20.1,
+    "f10": 22.2,
+    "dec10": 42.3,
+    "p_ever": 30.1,
+    "pass_med": 7.0,
+    "slow_pass": 25.2,
+    "usd_per_pass": 305.0,
+    "max_risk": 994,
+    "sess_per_try": 18.7,
+    "slot_m": -9,
+    "slot_p10": -551,
+    "slot_pneg": 87.7,
+    "evals6": 2.94
+   },
+   "table": {
+    "differs_from_live_pct": {
+     "10": 53.2,
+     "5": 67.0,
+     "1": 99.9
+    },
+    "start_action": [
+     1.0,
+     0.8
+    ],
+    "mean_k": {
+     "10": 0.86,
+     "5": 1.01,
+     "1": 1.37
+    },
+    "mean_f": {
+     "10": 0.7,
+     "5": 0.8,
+     "1": 0.72
+    }
+   }
+  },
+  "lam0.25": {
+   "H1": {
+    "p10": 55.9,
+    "f10": 6.4,
+    "dec10": 62.3,
+    "p_ever": 77.5,
+    "pass_med": 6.0,
+    "slow_pass": 20.4,
+    "usd_per_pass": 118.5,
+    "max_risk": 994,
+    "sess_per_try": 11.3,
+    "roll": {
+     "windows": 119,
+     "p10": 57.1,
+     "f10": 9.2
+    },
+    "roll15": {
+     "windows": 114,
+     "p10": 64.9,
+     "f10": 12.3
+    },
+    "slot_m": 810,
+    "slot_p10": 1340,
+    "slot_pneg": 6.8,
+    "evals6": 1.57
+   },
+   "H2": {
+    "p10": 56.4,
+    "f10": 6.6,
+    "dec10": 63.0,
+    "p_ever": 74.8,
+    "pass_med": 5.0,
+    "slow_pass": 19.4,
+    "usd_per_pass": 122.7,
+    "max_risk": 995,
+    "sess_per_try": 12.5,
+    "roll": {
+     "windows": 69,
+     "p10": 52.2,
+     "f10": 10.1
+    },
+    "roll15": {
+     "windows": 64,
+     "p10": 53.1,
+     "f10": 14.1
+    },
+    "slot_m": 770,
+    "slot_p10": 1209,
+    "slot_pneg": 8.1,
+    "evals6": 1.57
+   },
+   "REF": {
+    "p10": 19.9,
+    "f10": 12.8,
+    "dec10": 32.7,
+    "p_ever": 29.9,
+    "pass_med": 7.0,
+    "slow_pass": 25.1,
+    "usd_per_pass": 307.0,
+    "max_risk": 994,
+    "sess_per_try": 20.1,
+    "slot_m": -8,
+    "slot_p10": -551,
+    "slot_pneg": 87.9,
+    "evals6": 2.88
+   },
+   "table": {
+    "differs_from_live_pct": {
+     "10": 59.8,
+     "5": 60.1,
+     "1": 97.7
+    },
+    "start_action": [
+     1.0,
+     0.8
+    ],
+    "mean_k": {
+     "10": 0.83,
+     "5": 0.93,
+     "1": 1.3
+    },
+    "mean_f": {
+     "10": 0.66,
+     "5": 0.71,
+     "1": 0.68
+    }
+   }
+  },
+  "lam0.5": {
+   "H1": {
+    "p10": 55.3,
+    "f10": 2.9,
+    "dec10": 58.2,
+    "p_ever": 79.9,
+    "pass_med": 7.0,
+    "slow_pass": 23.3,
+    "usd_per_pass": 114.9,
+    "max_risk": 991,
+    "sess_per_try": 12.1,
+    "roll": {
+     "windows": 119,
+     "p10": 57.1,
+     "f10": 5.0
+    },
+    "roll15": {
+     "windows": 114,
+     "p10": 64.9,
+     "f10": 8.8
+    },
+    "slot_m": 805,
+    "slot_p10": 1334,
+    "slot_pneg": 6.9,
+    "evals6": 1.53
+   },
+   "H2": {
+    "p10": 55.7,
+    "f10": 2.9,
+    "dec10": 58.6,
+    "p_ever": 76.9,
+    "pass_med": 5.0,
+    "slow_pass": 21.8,
+    "usd_per_pass": 119.4,
+    "max_risk": 995,
+    "sess_per_try": 13.2,
+    "roll": {
+     "windows": 69,
+     "p10": 52.2,
+     "f10": 1.4
+    },
+    "roll15": {
+     "windows": 64,
+     "p10": 53.1,
+     "f10": 6.2
+    },
+    "slot_m": 764,
+    "slot_p10": 1188,
+    "slot_pneg": 8.8,
+    "evals6": 1.54
+   },
+   "REF": {
+    "p10": 19.3,
+    "f10": 8.3,
+    "dec10": 27.6,
+    "p_ever": 29.3,
+    "pass_med": 7.0,
+    "slow_pass": 25.6,
+    "usd_per_pass": 313.3,
+    "max_risk": 994,
+    "sess_per_try": 21.2,
+    "slot_m": -10,
+    "slot_p10": -551,
+    "slot_pneg": 88.4,
+    "evals6": 2.88
+   },
+   "table": {
+    "differs_from_live_pct": {
+     "10": 61.2,
+     "5": 59.5,
+     "1": 93.3
+    },
+    "start_action": [
+     1.0,
+     0.8
+    ],
+    "mean_k": {
+     "10": 0.82,
+     "5": 0.91,
+     "1": 1.26
+    },
+    "mean_f": {
+     "10": 0.62,
+     "5": 0.65,
+     "1": 0.65
+    }
+   }
+  },
+  "lam1": {
+   "H1": {
+    "p10": 54.9,
+    "f10": 1.9,
+    "dec10": 56.8,
+    "p_ever": 80.6,
+    "pass_med": 7.0,
+    "slow_pass": 23.7,
+    "usd_per_pass": 113.9,
+    "max_risk": 991,
+    "sess_per_try": 12.3,
+    "roll": {
+     "windows": 119,
+     "p10": 57.1,
+     "f10": 3.4
+    },
+    "roll15": {
+     "windows": 114,
+     "p10": 64.9,
+     "f10": 7.0
+    },
+    "slot_m": 802,
+    "slot_p10": 1333,
+    "slot_pneg": 7.1,
+    "evals6": 1.52
+   },
+   "H2": {
+    "p10": 55.5,
+    "f10": 2.5,
+    "dec10": 58.0,
+    "p_ever": 77.2,
+    "pass_med": 5.0,
+    "slow_pass": 22.4,
+    "usd_per_pass": 118.9,
+    "max_risk": 995,
+    "sess_per_try": 13.5,
+    "roll": {
+     "windows": 69,
+     "p10": 52.2,
+     "f10": 0.0
+    },
+    "roll15": {
+     "windows": 64,
+     "p10": 53.1,
+     "f10": 4.7
+    },
+    "slot_m": 764,
+    "slot_p10": 1189,
+    "slot_pneg": 8.6,
+    "evals6": 1.53
+   },
+   "REF": {
+    "p10": 18.7,
+    "f10": 5.4,
+    "dec10": 24.1,
+    "p_ever": 28.4,
+    "pass_med": 8.0,
+    "slow_pass": 25.4,
+    "usd_per_pass": 323.2,
+    "max_risk": 994,
+    "sess_per_try": 22.2,
+    "slot_m": -11,
+    "slot_p10": -459,
+    "slot_pneg": 88.8,
+    "evals6": 2.86
+   },
+   "table": {
+    "differs_from_live_pct": {
+     "10": 62.2,
+     "5": 62.9,
+     "1": 92.2
+    },
+    "start_action": [
+     1.0,
+     0.8
+    ],
+    "mean_k": {
+     "10": 0.81,
+     "5": 0.9,
+     "1": 1.24
+    },
+    "mean_f": {
+     "10": 0.6,
+     "5": 0.63,
+     "1": 0.62
+    }
+   }
+  }
+ }
+}
