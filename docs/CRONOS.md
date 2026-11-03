@@ -1,6 +1,6 @@
 # CRONOS: the nightly refresh that keeps OLYMPUS alive
 
-Before CRONOS, the research apps (Data City, FATES, ODEON, DAPHNE, PROMETHEUS) only changed when someone reran them by
+Before CRONOS, the research apps (Data City, FATES, ODEON, DAPHNE, PROMETHEUS; PANTHEON since 2026-11-03) only changed when someone reran them by
 hand, so their Jarvis cards went grey. CRONOS reruns them on a schedule, for free, and makes every card say honestly how
 fresh it is. Research and paper only: it never touches trading logic, `live_model*.json` or an order.
 
@@ -11,6 +11,7 @@ fresh it is. Research and paper only: it never touches trading logic, `live_mode
 | Data City | PC's new 5m bars appended, ~67k combinations re-scored (`datacity.yml`) | Mon-Fri nights, 22:37 (winter) / 23:37 (summer) | never | 20 min | 36 weekday hours |
 | FATES | 1,000 futures of today's evals from the latest `live.json` state | Mon-Fri nights, 23:07 / 00:07 | Actions saver mode | 15 min | 36 weekday hours |
 | ODEON | the replay reels, with the PC's NinjaTrader bars (heartbeat branch) + the paper ledger | Mon-Fri nights, with FATES | no new PC bars since the last run | 5 min | 36 weekday hours |
+| PANTHEON | the eight free data gods re-read (FRED, CBOE, CFTC, SqueezeMetrics, US Treasury, the calendar: key-less public files), the council verdict, `states.json` for Data City (`docs/PANTHEON.md`) | Mon-Fri nights, with FATES | never (light: also in saver mode) | 8 min | 36 weekday hours |
 | HERMES | OLYMPUS Wrapped | inside every site publish | never | - | (always fresh: rebuilt each publish) |
 | DAPHNE (tree) | the strategy-tree search | Sundays 14:17 / 15:17 | its data or code did not change; saver mode | 30 min | a week + 36 h (156 weekday hours) |
 | PROMETHEUS | the LIT evolution forge | Sundays, with DAPHNE | its data, LIT or code did not change; saver mode | 30 min | 156 weekday hours |
@@ -43,16 +44,16 @@ Estimated on a 2-core GitHub runner, each job rounded up to the minute; ~22 week
 
 | Job | Per run | Runs a month | Minutes a month |
 |---|---|---|---|
-| CRONOS nightly (setup 1.5 + FATES 5.5 + ODEON 0.5) | ~7.5 | 22 | ~165 |
+| CRONOS nightly (setup 1.5 + FATES 5.5 + ODEON 0.5 + PANTHEON 1) | ~8.5 | 22 | ~187 |
 | CRONOS weekly, nothing changed (setup + two quick checks) | ~2 | 4.35 | ~9 |
 | CRONOS weekly, data changed (setup + DAPHNE 11 + PROMETHEUS 9) | ~21.5 | at most 4.35 | at most ~94 |
-| **CRONOS total** | | | **~175, at most ~260** |
+| **CRONOS total** | | | **~196, at most ~281** |
 | Data City (`datacity.yml`) | ~3 | 22 | ~66 |
 | Cloud monitor + watcher (measured Oct 27-31: 219 min in 5 weekdays) | | | ~960 (cap ~1,850) |
 | **All workflows** | | | **~1,200-1,300 of 2,000** |
 
 Guard: when the monitor's `budget.json` (dashboard branch) says "saver" this month, CRONOS skips FATES, DAPHNE and PROMETHEUS
-(their cards go amber after their limit, honestly) and keeps the cheap ODEON.
+(their cards go amber after their limit, honestly) and keeps the cheap ODEON and PANTHEON.
 
 ## Commands
 
