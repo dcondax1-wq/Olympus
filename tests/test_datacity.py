@@ -614,6 +614,11 @@ def _live_checks(pg, shots):
     _frames(pg, 1, 30000)
     f2 = pg.evaluate("window.__city.frames")
     check("g. live: hidden tab = no frame, drawing again once visible", f1 <= f0 + 1 and f2 > f1, (f0, f1, f2))
+    th = pg.evaluate("""() => { window.__city.applyTheme({ accent: '#ff3399', panel: 'rgba(20,4,30,.9)', bg: 'url(x)' });
+      return [getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(), '#' + window.__app.city.U.uAccent.value.getHexString(),
+              getComputedStyle(document.documentElement).getPropertyValue('--panel').trim()]; }""")
+    check("g. live: applyTheme(tokens) sets the page tokens and the scene accent (a bad token is ignored)",
+          th[0] == "#ff3399" and th[1] == "#ff3399" and th[2].startswith("rgba(20"), th)
     pg.evaluate("window.__app.setQuality('lq')")
     _frames(pg, 2)
     s = pg.evaluate("window.__city.stats()")

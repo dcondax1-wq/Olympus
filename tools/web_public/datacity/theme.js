@@ -15,7 +15,7 @@ export function applyTheme(tokens, city) {
 
 /** Follow the OLYMPUS kit's theme when it has one; returns true when it does. */
 export function watchTheme(cb) {
-  const O = window.OLYMPUS;
+  const O = window.OLYMPUS || window.Olympus;
   let on = false;
   try { if (O && typeof O.theme === 'function') { const t = O.theme(); if (t) cb(t); on = true; } } catch (e) { /* the kit's theme is optional */ }
   try { if (O && typeof O.onTheme === 'function') { O.onTheme(cb); on = true; } } catch (e) { /* the kit's theme is optional */ }
