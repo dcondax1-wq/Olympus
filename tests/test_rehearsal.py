@@ -931,8 +931,16 @@ class Rehearsal:
         if killed:
             ok = bool(rows) and (r.get("status") == "matched" or (r.get("status") == "extra" and "kill switch" in str(r.get("reason"))))
         else:
+            # a TARGET exit fills at the target rounded to the tick toward the entry (live.tick_px; LIT's VIX-band target is not
+            # a tick price): engine/fill_audit counts that fraction of a tick on purpose (tests/test_fill_audit "slipped fill").
+            # Anything beyond that fraction is real slippage (2026-11-03: 09-23's 30,730.93 target -> 0.28 t failed this check)
+            exp_exit = 0.0
+            if r.get("bt_exit_reason") == "TARGET" and r.get("bt_exit") is not None:
+                d_ = 1 if r.get("side") == "LONG" else -1
+                from engine.live import tick_px
+                exp_exit = round((float(r["bt_exit"]) - tick_px(float(r["bt_exit"]), d_, target=True)) * d_ / 0.25, 2)
             ok = bool(rows) and r.get("status") == "matched" and abs(float(r.get("entry_slip_ticks") or 0)) < 1e-9 \
-                and abs(float(r.get("exit_slip_ticks") or 0)) < 1e-9
+                and abs(float(r.get("exit_slip_ticks") or 0) - exp_exit) < 1e-6
         check(f"{day} execution tracker: {r.get('status')} (entry slip {r.get('entry_slip_ticks')} t, exit slip {r.get('exit_slip_ticks')} t, "
               f"latency {r.get('latency_s')} s, live ${r.get('live_pnl')}){' - ' + str(r.get('reason')) if r.get('reason') else ''}",
               ok, json.dumps(r)[:500])
