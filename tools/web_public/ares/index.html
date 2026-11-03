@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ares</title>
+<meta name="description" content="ARES, the war room: the pre-trade checklist and the risk calculator for NQ / MNQ sized to your stop and the MFFU drawdown left, with a GO / WAIT / HALT verdict.">
+<meta name="theme-color" content="#0b0608">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="../jarvis/icon-192.png?v=j1">
+<!-- ARES (tools/web_public/ares/, 2026-11-03): the war room. Rules as numbers: rules.json (tools/ares_plutus_build.py from
+     research/lit/mffu_rules.json; an embedded copy in arescore.js when it is missing). Look: ares.css; the rules and the sizing:
+     arescore.js (pure functions); the 3D room + the UI: ares.js (three.js from ../jarvis/). The only other data it reads is the
+     site's own ../data.json (the eval account's balance + floor, the bot's real stops), when it is there. A calculator for the
+     human: it never places or changes an order. Bump ?v= on all of them when one changes. -->
+<script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
+<link rel="stylesheet" href="../olympus/olympus.css?v=o2">
+<script src="../olympus/themes.js?v=o2"></script>
+<script src="../olympus/olympus.js?v=o2" data-app="ares"></script>
+<script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#ff3b30'); r.setProperty('--oly-accent-rgb', '255, 59, 48'); })();</script>
+<link rel="stylesheet" href="ares.css?v=r1">
+</head>
+<body>
+<canvas id="room" aria-label="The war room: the account as a tower from the max-loss floor up to the target, your balance as an orb and the stop-out you are about to risk as a red slab" role="img"></canvas>
+<div id="nogl" class="nogl" hidden>3D is not available here. Everything works below.</div>
+<header class="hud">
+  <div class="title"><h1>ARES</h1><span class="tag" id="demo" hidden>OFFLINE RULES</span><span class="tag live" id="livetag" hidden>LIVE ACCOUNT</span></div>
+  <p class="sub" id="sub">The war room. Size follows the stop.</p>
+</header>
+<section class="sheet" id="sheet" aria-live="polite">
+  <div class="pane" id="p-trade" role="tabpanel" aria-label="Trade">
+    <div class="row seg" role="group" aria-label="Instrument and side">
+      <button type="button" data-set="inst" data-v="MNQ">MNQ</button><button type="button" data-set="inst" data-v="NQ">NQ</button>
+      <button type="button" data-set="side" data-v="long" class="long">Long</button><button type="button" data-set="side" data-v="short" class="short">Short</button>
+    </div>
+    <div class="grid2">
+      <label>Entry<input id="entry" inputmode="decimal" autocomplete="off" placeholder="21500.00"></label>
+      <label>Stop (beyond the sweep)<input id="stop" inputmode="decimal" autocomplete="off" placeholder="21480.00"></label>
+    </div>
+    <label class="slide">Risk this much of the room left: <b id="riskPctV">40%</b>
+      <input id="riskPct" type="range" min="10" max="90" step="5" value="40"></label>
+    <div class="out" id="out"></div>
+  </div>
+  <div class="pane" id="p-account" role="tabpanel" aria-label="Account" hidden>
+    <div class="row seg" role="group" aria-label="Plan and stage">
+      <button type="button" data-set="plan" data-v="50k">Builder 50K</button><button type="button" data-set="plan" data-v="25k">Builder 25K</button>
+      <button type="button" data-set="stage" data-v="eval">Eval</button><button type="button" data-set="stage" data-v="funded">Funded</button>
+    </div>
+    <div class="grid2">
+      <label>Balance now (open trade in)<input id="balance" inputmode="decimal" autocomplete="off"></label>
+      <label>Best end-of-day balance<input id="peak" inputmode="decimal" autocomplete="off"></label>
+      <label>Today's P&amp;L<input id="today" inputmode="decimal" autocomplete="off" placeholder="0"></label>
+      <label>Risk cap per trade ($, optional)<input id="riskCap" inputmode="decimal" autocomplete="off" placeholder="none"></label>
+      <label>My max trades today<input id="maxTrades" inputmode="numeric" autocomplete="off"></label>
+      <label>Stop for the day after<input id="stopAfter" inputmode="numeric" autocomplete="off"></label>
+      <label>Trades taken today<input id="tradesToday" inputmode="numeric" autocomplete="off"></label>
+      <label>Stop-outs today<input id="lossesToday" inputmode="numeric" autocomplete="off"></label>
+    </div>
+    <div class="out" id="acct"></div>
+    <button type="button" class="wide" id="fromBot" hidden>Use the bot's eval account</button>
+  </div>
+  <div class="pane" id="p-why" role="tabpanel" aria-label="Why" hidden>
+    <div id="why"></div>
+    <label class="tog"><input type="checkbox" id="news"><span>High-impact news in the next 15 minutes</span></label>
+    <label class="tog"><input type="checkbox" id="hedge"><span>I hold the opposite side in another account</span></label>
+  </div>
+  <div class="pane" id="p-list" role="tabpanel" aria-label="Checklist" hidden>
+    <p class="hint"><b id="chkN">0/8</b> ticked. GO needs all eight.</p>
+    <div id="checks"></div>
+    <button type="button" class="wide" id="resetChecks">New trade: clear the list</button>
+  </div>
+  <div class="pane" id="p-rules" role="tabpanel" aria-label="Rules" hidden>
+    <div id="rules"></div>
+    <div id="botstops"></div>
+  </div>
+</section>
+<footer class="dock">
+  <button type="button" class="verdict" id="verdict" aria-controls="p-why" aria-label="Verdict">
+    <span class="vk" id="vk">HALT</span><span class="vs" id="vs"></span>
+  </button>
+  <p class="vline" id="vline"></p>
+  <nav class="tabs" id="tabs" aria-label="Ares">
+    <button type="button" data-tab="trade" aria-pressed="true">Trade</button><button type="button" data-tab="account" aria-pressed="false">Account</button>
+    <button type="button" data-tab="why" aria-pressed="false">Why <b id="whyN">0</b></button><button type="button" data-tab="list" aria-pressed="false">List</button>
+    <button type="button" data-tab="rules" aria-pressed="false">Rules</button>
+  </nav>
+</footer>
+<script type="module" src="ares.js?v=r1"></script>
+</body>
+</html>
