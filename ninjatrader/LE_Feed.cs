@@ -364,8 +364,8 @@ namespace NinjaTrader.NinjaScript.AddOns
                 if (stopped)
                     return;                                // a takeover stop, then State.Terminated: once is enough
                 stopped = true;
+                terminated = true;                         // under RunLock: a Start() racing this one sees it
             }
-            terminated = true;
             try
             {
                 if (startTimer != null)
