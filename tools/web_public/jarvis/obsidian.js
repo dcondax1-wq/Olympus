@@ -26,6 +26,7 @@ export const CFG_KEY = 'jarvis.vault';                 // { repo, token, branch 
 const OUTBOX_KEY = 'jarvis.vault.outbox';               // confirmed writes waiting for a connection
 const LOCAL_KEY = 'jarvis.vault.local';                 // pasted / shared notes (no GitHub)
 const IDX_KEY = 'vault.index.v1';                       // the index in kv
+export const LEARNED_KEY = 'jarvis.vault.learned';      // what Jarvis saved or learned: [{ t (unix s), text, note (path) | null }]
 export const PATHS = { inbox: 'OLYMPUS/Inbox', memory: 'OLYMPUS/Jarvis/Memory.md', me: 'OLYMPUS/Jarvis/Me.md', logs: 'OLYMPUS/Logs' };
 const MAX_NOTES = 2000, MAX_FETCH = 400, MAX_BYTES = 300000, TEXT_CUT = 12000, CONC = 6;
 const REPO_RX = /^[A-Za-z0-9_.-]{1,100}\/[A-Za-z0-9_.-]{1,100}$/;
@@ -143,7 +144,7 @@ export function parseNote(path, text) {
   if (!daily && /(^|\/)(daily|journal|dailies|daily notes)\//i.test(path) && /^20\d\d-\d\d-\d\d/.test(str(fm.date, 10))) daily = str(fm.date, 10);
   if (path.startsWith(PATHS.inbox + '/')) daily = null;          // Jarvis's own inbox pages are not the owner's daily notes
   return { path, title, fm, tags: [...tags].slice(0, 40), links: links.slice(0, 80), headings: headings.slice(0, 60), tasks: tasks.slice(0, 200),
-    daily, text: body.slice(0, TEXT_CUT), len: body.length };
+    daily, text: body.slice(0, TEXT_CUT), len: body.length, words: (body.match(/\S+/g) || []).length };
 }
 function snippetOf(note, qt) {
   const body = str(note.text).replace(/\s+/g, ' ');
@@ -156,6 +157,9 @@ function snippetOf(note, qt) {
 }
 
 // ------------------------------------------------------------------------------------------------ storage
+// one store per page (the Mind page reads the same IndexedDB through graphSnapshot)
+let sharedKV = null;
+const defaultKV = () => sharedKV || (sharedKV = idbKV() || memKV());
 function memKV() { const m = new Map(); return { async get(k) { return m.has(k) ? m.get(k) : null; }, async set(k, v) { m.set(k, v); }, async del(k) { m.delete(k); } }; }
 function idbKV() {
   if (typeof indexedDB === 'undefined') return null;
@@ -178,7 +182,7 @@ export function createVault(opts) {
   const o = isObj(opts) ? opts : {};
   const doFetch = (...a) => (typeof o.fetch === 'function' ? o.fetch : fetch)(...a);
   const ls = () => { if (o.storage) return o.storage; try { return typeof localStorage !== 'undefined' ? localStorage : null; } catch (_) { return null; } };
-  const kv = o.kv || idbKV() || memKV();
+  const kv = o.kv || defaultKV();
   const nowMs = () => { try { const t = o.now ? o.now() : Date.now(); return t instanceof Date ? t.getTime() : +t || Date.now(); } catch (_) { return Date.now(); } };
   const lget = (k, d) => { try { const s = ls(); const v = s ? s.getItem(k) : null; return v == null ? d : JSON.parse(v); } catch (_) { return d; } };
   const lset = (k, v) => { try { const s = ls(); if (s) { if (v == null) s.removeItem(k); else s.setItem(k, JSON.stringify(v)); } } catch (_) { /* private mode */ } };
@@ -194,7 +198,9 @@ export function createVault(opts) {
     if (!cfg) throw new Error('Obsidian is not connected');
     if (Date.now() < rateUntil) { const e = new Error('GitHub rate limit: try again later'); e.status = 429; throw e; }
     const url = API + path;
-    if (!url.startsWith(API + '/')) throw new Error('refused');
+    let origin = '';
+    try { origin = new URL(url).origin; } catch (_) { origin = ''; }
+    if (origin !== API || !path.startsWith('/')) throw new Error('refused');     // the token goes to api.github.com only
     const ac = typeof AbortController === 'function' ? new AbortController() : null;
     const t = ac ? setTimeout(() => ac.abort(), 15000) : 0;
     try {
@@ -234,10 +240,11 @@ export function createVault(opts) {
     return status();
   }
   async function disconnect() {
-    cfg = null; lset(CFG_KEY, null); lset(OUTBOX_KEY, null); lset(LOCAL_KEY, null);
+    cfg = null; lset(CFG_KEY, null); lset(OUTBOX_KEY, null); lset(LOCAL_KEY, null); lset(LEARNED_KEY, null);
     IX = { sha: null, at: 0, notes: [] }; stats = null; loaded = Promise.resolve();
     await kv.del(IDX_KEY);
     st = { state: 'off', error: '' };
+    notify();
     return status();
   }
   function status() {
@@ -270,13 +277,14 @@ export function createVault(opts) {
             try {
               const br = await gh(`/repos/${cfg.repo}/git/blobs/${b.sha}`, { headers: { Accept: 'application/vnd.github.raw+json' } });
               if (!br || !br.ok) { partial = true; if (old.get(b.path)) got.push(old.get(b.path)); continue; }
-              got.push({ ...parseNote(b.path, await br.text()), sha: b.sha });
+              got.push({ ...parseNote(b.path, await br.text()), sha: b.sha, seen: Math.floor(nowMs() / 1000) });
             } catch (_) { partial = true; if (old.get(b.path)) got.push(old.get(b.path)); }
           }
         }));
         IX = { sha: partial ? null : tree.sha, at: nowMs(), notes: keep.concat(got) };
         stats = null;
         await kv.set(IDX_KEY, { repo: cfg.repo, sha: IX.sha, at: IX.at, notes: IX.notes });
+        notify();
         st = { state: partial ? 'partial' : 'ok', error: partial ? 'some notes are still loading (GitHub limits): they arrive on the next sync' : '' };
       } catch (e) { st = { state: 'error', error: String((e && e.message) || e) }; }
       return status();
@@ -364,9 +372,11 @@ export function createVault(opts) {
       if (sha) body.sha = sha;
       const w = await gh(p, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       if (w.ok) {
-        const n = IX.notes.findIndex((x) => x.path === path), parsed = { ...parseNote(path, text), sha: null };
+        const n = IX.notes.findIndex((x) => x.path === path), parsed = { ...parseNote(path, text), sha: null, seen: Math.floor(nowMs() / 1000) };
         if (n >= 0) IX.notes[n] = parsed; else IX.notes.push(parsed);
         IX.sha = null; stats = null;
+        await kv.set(IDX_KEY, { repo: cfg.repo, sha: IX.sha, at: IX.at, notes: IX.notes });
+        notify();
         return { ok: true };
       }
       if (w.status !== 409 && w.status !== 422) throw new Error(errText(w));
@@ -384,10 +394,20 @@ export function createVault(opts) {
   }
   // kind: note | task | remember | me | log. Connected: one commit per file, plus a line in today's daily note when it exists.
   // Not connected: kept in the outbox on this phone and sent on connect.
+  function learned(kind, text, path) {          // the Mind page's "learned" list (this phone only, the last 200)
+    const l = arr(lget(LEARNED_KEY, [])).filter(isObj).slice(-199);
+    l.push({ t: Math.floor(nowMs() / 1000), kind, text: kind === 'log' ? 'Wrote the OLYMPUS log' : cleanLine(text).slice(0, 300), note: path || null });
+    lset(LEARNED_KEY, l);
+  }
   async function write(kind, text, ymd) {
     kind = ['note', 'task', 'remember', 'me', 'log'].includes(kind) ? kind : 'note';
     if (!cleanLine(text)) return { ok: false, error: 'nothing to save' };
     const day = str(ymd, 10) || ymdOf(nowMs());
+    const r = await writeNow(kind, text, day);
+    if (r.ok && !r.flushing) { learned(kind, text, (r.paths || [])[0] || null); notify(); }
+    return r;
+  }
+  async function writeNow(kind, text, day) {
     if (!cfg) {
       const ob = arr(lget(OUTBOX_KEY, [])).slice(-199);
       ob.push({ kind, text: kind === 'log' ? str(text, 8000) : cleanLine(text), day, t: nowMs() });
@@ -415,7 +435,7 @@ export function createVault(opts) {
     const left = [];
     for (const w of ob) {
       if (!isObj(w)) continue;
-      const r = await write(w.kind, w.text, w.day);
+      const r = await writeNow(w.kind, w.text, w.day);
       if (r.ok && !r.local) sent++; else left.push(w);
     }
     lset(OUTBOX_KEY, left.length ? left : null);
@@ -428,6 +448,7 @@ export function createVault(opts) {
     const loc = arr(lget(LOCAL_KEY, [])).filter((n) => isObj(n) && n.path !== `Pasted/${t}.md`).slice(-199);
     loc.push({ path: `Pasted/${t}.md`, text: body, t: nowMs() });
     lset(LOCAL_KEY, loc); stats = null;
+    learned('import', 'Imported the note ' + t, `Pasted/${t}.md`); notify();
     return { ok: true, title: t };
   }
   return {
@@ -435,5 +456,51 @@ export function createVault(opts) {
     get connected() { return !!cfg; },
     hasNotes: async () => (await all()).length > 0,
   };
+}
+
+// ------------------------------------------------------------------------------------------------ for the Mind page (tools/web_public/mind/)
+// onIndexChange(cb): cb() after each refresh / write / disconnect, in this page and in other pages of the site (BroadcastChannel
+// and storage events). Returns an unsubscribe function. Never throws.
+const listeners = new Set();
+let chan = null;
+try { chan = typeof BroadcastChannel === 'function' ? new BroadcastChannel('jarvis-vault') : null; } catch (_) { chan = null; }
+if (chan) { chan.onmessage = () => fire(); if (typeof chan.unref === 'function') chan.unref(); }     // node: never keeps the process alive
+function fire() { for (const cb of [...listeners]) { try { cb(); } catch (_) { /* a listener's error stays its own */ } } }
+function notify() { fire(); try { if (chan) chan.postMessage({ t: Date.now() }); } catch (_) { /* no channel */ } }
+export function onIndexChange(cb) {
+  try {
+    if (typeof cb !== 'function') return () => {};
+    listeners.add(cb);
+    const onStore = (e) => { if (e && /^jarvis\.vault/.test(String(e.key || ''))) { try { cb(); } catch (_) { /* its own */ } } };
+    try { if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('storage', onStore); } catch (_) { /* no window */ }
+    return () => { listeners.delete(cb); try { if (typeof window !== 'undefined' && window.removeEventListener) window.removeEventListener('storage', onStore); } catch (_) { /* no window */ } };
+  } catch (_) { return () => {}; }
+}
+// graphSnapshot(): the vault as a graph, from this phone's cache only (no network, no token in it); null when not connected
+// and nothing is cached. { v: 1, t, notes: [{ id, title, path, tags, links: [ids], mtime, words, kind }], learned: [{ t, text, note }] }
+export async function graphSnapshot(opts) {
+  try {
+    const o = isObj(opts) ? opts : {};
+    const st = o.storage || (typeof localStorage !== 'undefined' ? localStorage : null);
+    const lget = (k, d) => { try { const v = st ? st.getItem(k) : null; return v == null ? d : JSON.parse(v); } catch (_) { return d; } };
+    const c = lget(CFG_KEY, null), connected = isObj(c) && REPO_RX.test(str(c.repo));
+    const ix = await (o.kv || defaultKV()).get(IDX_KEY);
+    const cached = isObj(ix) && Array.isArray(ix.notes) && (!connected || ix.repo === c.repo) ? ix.notes : [];
+    const local = arr(lget(LOCAL_KEY, [])).filter(isObj).map((n) => ({ ...parseNote(n.path, n.text), seen: Math.floor((+n.t || Date.now()) / 1000) }));
+    const notes = cached.concat(local).filter((n) => isObj(n) && str(n.path));
+    const learnedList = arr(lget(LEARNED_KEY, [])).filter(isObj);
+    if (!connected && !notes.length && !learnedList.length) return null;
+    const byName = new Map();
+    for (const n of notes) { byName.set(str(n.title).toLowerCase(), n.path); byName.set(str(n.path).replace(/\.md$/i, '').toLowerCase(), n.path); byName.set(str(n.path).split('/').pop().replace(/\.md$/i, '').toLowerCase(), n.path); }
+    const kind = (n) => (n.path === PATHS.me ? 'me' : n.path === PATHS.memory ? 'memory' : n.path.startsWith(PATHS.inbox + '/') ? 'inbox' : n.daily ? 'daily' : 'note');
+    const mtime = (n) => (n.daily ? Math.floor(Date.parse(n.daily + 'T12:00:00Z') / 1000) : +n.seen || +(ix && ix.at) / 1000 || 0);
+    return {
+      v: 1, t: Math.floor(Date.now() / 1000),
+      notes: notes.slice(0, MAX_NOTES).map((n) => ({ id: n.path, title: str(n.title, 200), path: n.path, tags: arr(n.tags).slice(0, 20),
+        links: [...new Set(arr(n.links).map((l) => byName.get(String(l).toLowerCase()) || byName.get(String(l).split('/').pop().toLowerCase())).filter((x) => x && x !== n.path))],
+        mtime: Math.floor(mtime(n)), words: +n.words || (str(n.text).match(/\S+/g) || []).length, kind: kind(n) })),
+      learned: learnedList.slice(-200).map((x) => ({ t: +x.t || 0, text: str(x.text, 300), note: x.note && byName.has(String(x.note).replace(/\.md$/i, '').toLowerCase()) ? x.note : x.note || null })),
+    };
+  } catch (_) { return null; }
 }
 export default createVault;
