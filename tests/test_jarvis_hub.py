@@ -229,7 +229,7 @@ def part_a():
           "const NAV_WAIT_MS = 3500;" in sw and "Promise.race([net, slow])" in sw and "return copy || offlinePage();" in sw
           and "background:#000" in sw and "location.reload()" in sw)
     check("a. worker v7: data.js, jarvis.css, the fonts, every separate part and switcher.js in SHELL, each saved on its own (a missing part is skipped)",
-          "const CACHE = 'jarvis-v10';" in sw and "'./switcher.js'" in sw and all(f"'./{f}'" in sw for f in ("data.js",) + PARTS + FONTS) and "'./jarvis.css?v=j6'" in sw
+          "const CACHE = 'jarvis-v11';" in sw and "'./switcher.js'" in sw and all(f"'./{f}'" in sw for f in ("data.js",) + PARTS + FONTS) and "'./jarvis.css?v=j7'" in sw
           and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
     # 2026-11-01 ("Just a black screen" on the iPhone): no endless network wait, the previous copy as a fallback, old copies kept
     # until the new one holds every core file, and the page draws even when its stylesheet never arrives
@@ -237,7 +237,7 @@ def part_a():
           "const NET_MAX_MS = 9000;" in sw and "copy ? NAV_WAIT_MS : NET_MAX_MS" in sw and "return offlinePage();" in sw
           and "await net" not in sw.replace("await Promise.race([net", ""))
     check("a. worker v6: a file this copy lacks comes from the previous Jarvis copy; old copies go only when every CORE file is saved",
-          "const OLD = ['jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];" in sw and "for (const name of [CACHE, ...OLD])" in sw
+          "const OLD = ['jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];" in sw and "for (const name of [CACHE, ...OLD])" in sw
           and "CORE.map((u) => c.match(u, { ignoreSearch: true }))" in sw)
     jhtml = open(os.path.join(JV, "index.html"), encoding="utf-8").read()
     check("a. the page draws without its stylesheet after 5 s (a stylesheet still on the way keeps an iPhone screen black)",
@@ -338,7 +338,7 @@ def new_page(br, width=390, sw=False, boot=False, voice=False, height=844, news=
     if not boot:                                   # the boot screen plays once per launch: skipped where it is not the subject
         ctx.add_init_script("try { sessionStorage.setItem('jarvis.booted', '1'); } catch (e) {}")
     if not news:                                   # so is the What's new card (once per release)
-        ctx.add_init_script("try { localStorage.setItem('jarvis.seen', JSON.stringify('j5')); } catch (e) {}")
+        ctx.add_init_script("try { localStorage.setItem('jarvis.seen', JSON.stringify('j6')); } catch (e) {}")
     if voice:
         ctx.add_init_script(FAKE_VOICE)
     p = ctx.new_page()
@@ -774,8 +774,8 @@ def run_c(br, url):
         const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
-          const c = await caches.open('jarvis-v10');
-          const got = await Promise.all(['./index.html', './data.js', './jarvis.css?v=j6', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
+          const c = await caches.open('jarvis-v11');
+          const got = await Promise.all(['./index.html', './data.js', './jarvis.css?v=j7', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));
         }

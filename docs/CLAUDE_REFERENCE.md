@@ -11,6 +11,9 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
 part yourself or fold it into a script.**
 
 ## One chat: where each thing lives and how it ships (owner 2026-11-01)
+
+**The system's name is OLYMPUS (owner 2026-11-03; NEXUS was dropped).** Shown on Jarvis's header (`.hpanel::after`),
+the orb switcher's title (switcher.js) and the System section; worker jarvis-v11, jarvis.css?v=j7, What's new j6.
 The owner: "I want this chat to be the one I make all changes to, for anything. It's gonna save me time and usage." Every
 project is changed from this repo; this map saves the search. Ship = PR on the session branch, squash-merge to main.
 
