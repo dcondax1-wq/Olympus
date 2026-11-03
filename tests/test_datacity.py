@@ -342,6 +342,22 @@ def test_page(shots=None):
                     return bad; }""")
                 check(f"g. {mode}: Jarvis's bottom-right 80 x 160 px stays free", not free, free)
                 check(f"g. {mode}: no sideways scroll", pg.evaluate("document.documentElement.scrollWidth <= innerWidth"))
+                lay = pg.evaluate("""async () => { const { layout } = await import('./layout.js');
+                    const city = await (await fetch('./' + (window.__city.mode === 'live' ? 'city' : 'fixture') + '.json')).json();
+                    const L = layout(city), it = L.items, box = {}, clash = [];
+                    for (let i = 0; i < it.length; i++) for (let j = i + 1; j < it.length; j++)
+                      if (Math.hypot(it[i].x - it[j].x, it[i].z - it[j].z) < (it[i].w + it[j].w) / 2 + 0.3) clash.push([it[i].b.id, it[j].b.id]);
+                    for (const x of it.filter((x) => x.kind === 'b')) { const b = box[x.b.d] ||= [1e9, 1e9, -1e9, -1e9];
+                      b[0] = Math.min(b[0], x.x); b[1] = Math.min(b[1], x.z); b[2] = Math.max(b[2], x.x); b[3] = Math.max(b[3], x.z); }
+                    const inTower = it.filter((x) => Math.hypot(x.x, x.z) < 6).length;
+                    return { n: it.length, want: city.buildings.length + (city.strategies || []).length + (city.discoveries || []).length,
+                             clash: clash.slice(0, 3), boxes: box, inTower,
+                             heightsOk: it.every((x) => x.h > 0 && Number.isFinite(x.h)), litOk: it.every((x) => x.lit >= 0 && x.lit <= 1) }; }""")
+                over = lambda a, b: a[0] < b[2] and b[0] < a[2] and a[1] < b[3] and b[1] < a[3]  # noqa: E731
+                bx = list(lay["boxes"].values())
+                check(f"g. {mode}: layout places every building, tower and monument once, no two overlap, districts apart",
+                      lay["n"] == lay["want"] and not lay["clash"] and not lay["inTower"] and lay["heightsOk"] and lay["litOk"]
+                      and not any(over(a, b) for i, a in enumerate(bx) for b in bx[i + 1:]), lay)
                 pg.click("[data-open=topP]")
                 check(f"g. {mode}: Top 10 panel lists findings", pg.locator("#topBody li").count() >= 1)
                 pg.locator("#topBody li").first.click()
@@ -353,6 +369,14 @@ def test_page(shots=None):
                     pg.wait_for_timeout(2500)
                     pg.screenshot(path=os.path.join(shots, "live_card.jpg"), type="jpeg", quality=80)
                 pg.click("[data-close=card]")
+                pg.wait_for_timeout(3500)                    # the camera glides to the building it just opened
+                pg.mouse.click(195, 422)                     # the screen centre = the middle of the focused building
+                pg.wait_for_timeout(400)
+                tapped = pg.locator("#card.on").count() == 1
+                check(f"g. {mode}: tapping the focused building in the 3D view opens its card",
+                      tapped and "per trade per MNQ micro" in pg.inner_text("#card"))
+                if tapped:
+                    pg.click("[data-close=card]")
                 pg.click("[data-open=findP]")
                 pg.fill("#q", "London")
                 pg.wait_for_timeout(300)
