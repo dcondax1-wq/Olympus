@@ -386,6 +386,22 @@ def go(p, app):
     p.click(f'.nx-qb[data-nx="{app}"]')
 
 
+def add_sheet(p, name, link):
+    """The + sheet like the owner: open it, type the name and the link (each checked: a loaded machine can land a fill before the
+    sheet is up), Add. -> what the fields held when Add was tapped."""
+    p.click("#addB")
+    p.wait_for_function("!document.getElementById('sheet').hidden", timeout=10000)
+    for _ in range(3):
+        p.fill("#addName", name)
+        p.fill("#addUrl", link)
+        if p.input_value("#addName") == name and p.input_value("#addUrl") == link:
+            break
+        p.wait_for_timeout(200)
+    sent = [p.input_value("#addName"), p.input_value("#addUrl")]
+    p.click('#addF button[type="submit"]')
+    return sent
+
+
 def asker(p):
     def ask(q):                    # the chat keeps the last messages: start each question on an empty chat
         p.evaluate("document.getElementById('talk').innerHTML = ''")
@@ -525,22 +541,19 @@ def run_a(br, url):
           "$512.34" in kb and "+$18.50" in kb and "+$112.34" in kb and "NYC high 58-59°F on Nov 2" in kb and "10 × 42¢ → 55¢" in kb
           and "Recent trades" in kb and p.frame_locator("#v-kalshi iframe").locator("svg.bars rect").count() == 3, kb[:500])
     go(p, "home")
-    p.wait_for_timeout(300)
-    p.click("#addB")
-    p.fill("#addName", "Clipper")
-    p.fill("#addUrl", url + "kalshi-stub/")
-    p.click('#addF button[type="submit"]')
-    p.wait_for_timeout(500)
-    p.wait_for_function("!!document.getElementById('v-x-clipper') || !!document.getElementById('addErr').textContent", timeout=5000)
+    p.wait_for_function("window.__jarvis.active() === 'home'", timeout=10000)
+    sent = add_sheet(p, "Clipper", url + "kalshi-stub/")
+    p.wait_for_function("!!document.getElementById('v-x-clipper') || !!document.getElementById('addErr').textContent", timeout=10000)
     check("e. an added dashboard shows in the bar and opens", "Clipper" in p.text_content("#apps") and p.locator("#v-x-clipper").is_visible(),
-          p.evaluate("[document.documentElement.dataset.mode, document.getElementById('addErr').textContent, document.getElementById('sheet').hidden, String(document.getElementById('apps') && document.getElementById('apps').textContent)]"))
+          [sent] + p.evaluate("[document.documentElement.dataset.mode, document.getElementById('addErr').textContent, document.getElementById('sheet').hidden, String(document.getElementById('apps') && document.getElementById('apps').textContent)]"))
     fr = p.evaluate("(() => { const f = document.querySelector('#v-x-clipper iframe'); return [f.getAttribute('allow') || '', f.getAttribute('sandbox')]; })()")
     go(p, "home")
-    p.click("#addB")
-    p.fill("#addName", "Other")
-    p.fill("#addUrl", url.replace("127.0.0.1", "localhost") + "kalshi-stub/")      # another origin: another site
-    p.click('#addF button[type="submit"]')
-    p.wait_for_timeout(500)
+    p.wait_for_function("window.__jarvis.active() === 'home'", timeout=10000)
+    add_sheet(p, "Other", url.replace("127.0.0.1", "localhost") + "kalshi-stub/")      # another origin: another site
+    try:
+        p.wait_for_function("!!document.querySelector('#v-x-other iframe')", timeout=10000)
+    except Exception:                                   # noqa: BLE001 - reported below
+        pass
     fo = p.evaluate("(() => { const f = document.querySelector('#v-x-other iframe'); return f ? [f.getAttribute('allow'), f.getAttribute('sandbox') || ''] : null; })()")
     check("e. frames: this site's apps get the phone's features (allow, no sandbox); another site's page is sandboxed, never allowed to move Jarvis",
           "microphone" in fr[0] and fr[1] is None and fo and fo[0] is None and "allow-scripts" in fo[1] and "allow-same-origin" in fo[1]
@@ -884,7 +897,7 @@ def run_c(br, url):
             check(f"k. {sz}: HANDS-FREE · mic · VOICE on the first screen, as on the old Jarvis (no scrolling)", first[0] <= first[1], first)
         # D1: nothing cut short (KALSHI TODAY's words, the Market card's NQ last, the ⋯ keys), every tap target 44 px tall (pads count)
         tsz = """(q) => {
-            const hitH = (el) => { el.scrollIntoView({ block: 'center' }); const r = el.getBoundingClientRect(); if (r.height >= 43.5) return r.height;
+            const hitH = (el) => { el.scrollIntoView({ block: 'center', inline: 'center' }); const r = el.getBoundingClientRect(); if (r.height >= 43.5) return r.height;
               const x = r.left + r.width / 2, a = document.elementFromPoint(x, r.top - 4.5), b = document.elementFromPoint(x, r.bottom + 4.5);
               return r.height + (a && el.contains(a) ? 5 : 0) + (b && el.contains(b) ? 5 : 0); };
             const out = [];
@@ -962,8 +975,8 @@ def run_look(br, url):
     check("l. the next-event chip from the Planner (or 'Nothing scheduled today')", "Gym" in nxt or "Review fills" in nxt or "Nothing" in nxt or "TO-DO" in nxt, nxt)
     p.click("#moreB")
     keys = p.evaluate("[...document.querySelectorAll('#more [data-key]')].map((b) => b.dataset.key + ':' + b.textContent)")
-    check("l. the ⋯ menu: Core, Full screen, Theme, AI key, Hold-to-talk, 3D, Tilt (off), Alerts, Sound, Hide $, Briefing, Apps",
-          [k.split(":")[0] for k in keys] == ["core", "full", "theme", "aikey", "hold", "fx", "tilt", "alerts", "sound", "hide", "brief", "apps"]
+    check("l. the ⋯ menu: Core, Full screen, Theme, AI key, Hold-to-talk, 3D, Tilt (off), Alerts, Sound, Hide $, Briefing, Apps, Obsidian",
+          [k.split(":")[0] for k in keys] == ["core", "full", "theme", "aikey", "hold", "fx", "tilt", "alerts", "sound", "hide", "brief", "apps", "obsidian"]
           and "tilt:Tilt: off" in keys and "fx:3D: high" in keys and "hold:Hold-talk: on" in keys and "sound:Sound: off" in keys, keys)
     p.click('#more [data-key="fx"]')
     fx = p.evaluate("[document.documentElement.dataset.fx, localStorage.getItem('jfx'), document.documentElement.dataset.fxSet]")
@@ -1093,6 +1106,11 @@ def run_look(br, url):
     ctx.close()
 
 
+# the switch order: Jarvis, TRADING, LIFE, MONEY (apps.js BUILT_INS); the test site has Data City's folder, not the others'
+ORDER = ["home", "zenith", "oracle", "odeon", "fates", "datacity", "tree", "prometheus", "planner", "mind", "kalshi", "hermes"]
+NOT_ON_SITE = ["oracle", "odeon", "fates", "tree", "prometheus", "mind", "hermes"]
+
+
 def run_olympus(br, url):
     """p. the OLYMPUS apps (2026-11-03): the grid on the Jarvis screen, an app not on the site, the orb's groups, quick row and ring.
     The test site has Data City (its jarvis.json) but not Mind or Daphne (their folders missing)."""
@@ -1102,9 +1120,9 @@ def run_olympus(br, url):
     ready(p)
     p.wait_for_function("document.documentElement.dataset.switcher === 'module' && !!document.getElementById('nxOrb')", timeout=30000)
     # the cards arrive: Data City's from its jarvis.json, Mind's and Daphne's folders answer 404
-    p.wait_for_function("""(() => { const t = (id) => document.querySelector(`#olyApps [data-app="${id}"]`);
-        return t('datacity') && /19,942/.test(t('datacity').textContent) && t('mind') && t('mind').classList.contains('soon') && t('tree').classList.contains('soon'); })()""",
-        timeout=30000, polling=100)
+    p.wait_for_function("""(ids) => { const t = (id) => document.querySelector(`#olyApps [data-app="${id}"]`);
+        return t('datacity') && /19,942/.test(t('datacity').textContent) && ids.every((id) => t(id) && t(id).classList.contains('soon')); }""",
+        arg=NOT_ON_SITE, timeout=30000, polling=100)
     g = p.evaluate("""(() => { const box = document.getElementById('olyApps');
         return { heads: [...box.querySelectorAll('.og-g')].map((h) => h.textContent), tiles: [...box.querySelectorAll('.og-t')].map((t) => ({ id: t.dataset.app || (t.dataset.ogAdd ? 'add' : ''),
           name: (t.querySelector('.og-n') || {}).textContent, v: (t.querySelector('.og-v') || {}).textContent || '', s: (t.querySelector('.og-s') || {}).textContent || '',
@@ -1112,8 +1130,8 @@ def run_olympus(br, url):
           cards: [...document.querySelectorAll('#cards > [data-own]')].map((c) => c.dataset.app || c.dataset.slot || '') }; })()""")
     t = {x["id"]: x for x in g["tiles"]}
     check("p. the OLYMPUS grid: TRADING, LIFE, MONEY with every app in the orb's order (+ ADD), each tile in its own colour, 44 px+",
-          g["heads"] == ["TRADING", "LIFE", "MONEY"] and [x["id"] for x in g["tiles"]] == ["zenith", "datacity", "tree", "planner", "mind", "kalshi", "add"]
-          and t["datacity"]["acr"] == "34,211,238" and t["tree"]["acr"] == "52,245,160" and all(x["h"] >= 44 for x in g["tiles"]), g)
+          g["heads"] == ["TRADING", "LIFE", "MONEY"] and [x["id"] for x in g["tiles"]] == ORDER[1:] + ["add"]
+          and t["datacity"]["acr"] == "79,140,255" and t["tree"]["acr"] == "52,245,160" and all(x["h"] >= 44 for x in g["tiles"]), g)
     check("p. live status on the tiles: Data City from its jarvis.json (19,942 · 25 pass the noise guard), NQ BOT and KALSHI from the shell's own feeds",
           t["datacity"]["v"] == "19,942" and "25 pass the noise guard" in t["datacity"]["s"] and t["zenith"]["name"] == "NQ BOT" and t["zenith"]["v"].startswith("+$")
           and t["kalshi"]["v"] and "Data City" in t["datacity"]["label"], g["tiles"])
@@ -1156,9 +1174,9 @@ def run_olympus(br, url):
           scroll: [row.scrollWidth, row.clientWidth, getComputedStyle(row).overflowX], sw: document.documentElement.scrollWidth }; })()""")
     check("p. the orb: group headings and chips (TRADING, LIFE, MONEY; Data City's group lit), the not-yet apps dimmed, Data City NOW",
           o["heads"] == ["TRADING", "LIFE", "MONEY"] and [c[0] for c in o["chips"]] == ["trading", "life", "money"] and o["chips"][0][1] and all(c[2] >= 44 for c in o["chips"])
-          and sorted(o["off"]) == ["mind", "tree"] and o["now"] and o["now"].get("nx") == "datacity", o)
+          and sorted(o["off"]) == sorted(NOT_ON_SITE) and o["now"] and o["now"].get("nx") == "datacity", o)
     check("p. the quick row: every app in group order with separators, 44 px+ buttons, one scrollable line (no page sideways scroll)",
-          [x[0] for x in o["q"]] == ["home", "zenith", "datacity", "tree", "planner", "mind", "kalshi"] and o["seps"] == 3 and all(x[1] >= 44 for x in o["q"])
+          [x[0] for x in o["q"]] == ORDER and o["seps"] == 3 and all(x[1] >= 44 for x in o["q"])
           and o["scroll"][2] == "auto" and o["sw"] <= 390, o)
     p.click('#nxGroups [data-nx-jump="money"]')
     try:
@@ -1230,7 +1248,11 @@ def run_system(br, url):
           and rows["pc"]["lvl"] == "ok" and rows["lit"]["v"] == "+$213" and "RUNNING" in rows["lit"]["t"] and rows["kalshi"]["v"] == "NOT LINKED"
           and rows["kalshi"]["app"] == "kalshi" and rows["planner"]["app"] == "planner" and not s["todo"], s["rows"])
     p.click("#sysbar")
-    p.wait_for_timeout(900)
+    try:                                                # a smooth scroll (longer since the OLYMPUS grid sits above): waited for, not timed
+        p.wait_for_function("(() => { const a = document.getElementById('p-system').getBoundingClientRect(), h = document.getElementById('home').getBoundingClientRect();"
+                            " return h.top - 2 <= a.top && a.top < h.bottom - 100; })()", timeout=8000, polling=100)
+    except Exception:                                   # noqa: BLE001 - reported below
+        pass
     top = p.evaluate("(() => { const a = document.getElementById('p-system').getBoundingClientRect(), h = document.getElementById('home').getBoundingClientRect(); return [Math.round(a.top), Math.round(h.top), Math.round(h.bottom)]; })()")
     check("s. a tap on the strip brings the System panel into view", top[1] - 2 <= top[0] < top[2] - 100, top)
     p.click('#p-system .srow[data-sys-row="kalshi"]')
@@ -1280,9 +1302,13 @@ def run_system(br, url):
                cards: [...document.querySelectorAll('#nxTrack .nx-card')].map((c) => (c.querySelector('.nx-nm b') || {}).textContent) }; }""")
     check("s. the switcher: the System strip on top (NEEDS YOU, what, 6 dots, 44 px+), the app cards unchanged",
           not st["hidden"] and st["text"].startswith("NEEDS YOU") and "PC: Memory (RAM) red" in st["text"] and "bad" in st["cls"] and st["dots"] == 6
-          and st["h"] >= 44 and st["w"] and st["cards"][:4] == ["JARVIS", "NQ BOT", "CALENDAR", "KALSHI"], st)
+          and st["h"] >= 44 and st["w"] and st["cards"][:2] == ["JARVIS", "NQ BOT"] and {"CALENDAR", "KALSHI", "ADD"} <= set(st["cards"]), st)
     p.click("#nxSys")
-    p.wait_for_timeout(900)
+    try:                                                # the switcher closes, then a smooth scroll: waited for, not timed
+        p.wait_for_function("(() => { const a = document.getElementById('p-system').getBoundingClientRect(), h = document.getElementById('home').getBoundingClientRect();"
+                            " return h.top - 2 <= a.top && a.top < h.bottom - 100; })()", timeout=8000, polling=100)
+    except Exception:                                   # noqa: BLE001 - reported below
+        pass
     after = p.evaluate("""(() => { const a = document.getElementById('p-system').getBoundingClientRect(), h = document.getElementById('home').getBoundingClientRect();
       return { open: document.getElementById('nxRoot').classList.contains('on'), home: !document.getElementById('home').hidden, top: [Math.round(a.top), Math.round(h.top), Math.round(h.bottom)] }; })()""")
     check("s. a tap on the switcher's strip closes it and shows the System panel on the Jarvis screen",
@@ -1316,9 +1342,11 @@ def run_switcher(br, url):
       name: (c.querySelector('.nx-nm b') || {}).textContent, val: (c.querySelector('.nx-val') || {}).textContent || '', now: c.classList.contains('now'),
       lines: [...c.querySelectorAll('.nx-ln')].map((l) => l.textContent) }))""")
     names = [c["name"] for c in cards]
-    check("n. tap: the switcher opens with JARVIS, then TRADING (NQ BOT, DATA CITY, DAPHNE), LIFE (CALENDAR, MIND), MONEY (KALSHI) and + ADD, "
+    check("n. tap: the switcher opens with JARVIS, then TRADING (NQ BOT, ORACLE, ODEON, FATES, DATA CITY, DAPHNE, PROMETHEUS), LIFE (CALENDAR, MIND), "
+          "MONEY (KALSHI, HERMES) and + ADD, "
           "Jarvis's card marked NOW",
-          names == ["JARVIS", "NQ BOT", "DATA CITY", "DAPHNE", "CALENDAR", "MIND", "KALSHI", "ADD"] and cards[0]["now"] and not any(c["now"] for c in cards[1:]), cards)
+          names == ["JARVIS", "NQ BOT", "ORACLE", "ODEON", "FATES", "DATA CITY", "DAPHNE", "PROMETHEUS", "CALENDAR", "MIND", "KALSHI", "HERMES", "ADD"]
+          and cards[0]["now"] and not any(c["now"] for c in cards[1:]), cards)
     nq = next((c for c in cards if c["id"] == "zenith"), {})
     cal = next((c for c in cards if c["id"] == "planner"), {})
     check("n. the cards are live: NQ BOT shows today's $ across the accounts (+$308) and their status; CALENDAR the next thing or FREE",

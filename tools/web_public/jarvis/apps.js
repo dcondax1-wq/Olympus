@@ -1,8 +1,8 @@
 // Jarvis apps (owner 2026-11-01: "I'm getting ChatGPT to make an Ascend dashboard we will eventually add"): Jarvis as an
 // app platform. Any dashboard plugs in with one link and can show a live card on the Jarvis screen.
 //
-//   listApps({hidden})       the dashboards for the bar, by group (GROUPS): the OLYMPUS built-ins (BUILT_INS: Zenith, Data
-//                            City, Daphne, Planner, Mind, Kalshi ...), Ascend once enabled (LIFE), then the ones the owner
+//   listApps({hidden})       the dashboards for the bar, by group (GROUPS): the OLYMPUS built-ins (BUILT_INS: Zenith, Oracle,
+//                            Odeon, Fates, Data City, Daphne, Prometheus, Planner, Mind, Kalshi, Hermes), Ascend once enabled (LIFE), then the ones the owner
 //                            added with + (MORE), in the order added. Fresh copies; Jarvis's own screen is the shell's.
 //   missing(app)             a built-in whose folder is not on the site yet (its jarvis.json answered 404): not opened
 //   getApp(id)               one of them (the hidden Ascend slot too), or null
@@ -71,11 +71,16 @@ export const GROUPS = Object.freeze([
 const app = (id, name, group, accent, sub, more) => Object.freeze(Object.assign({ id, name, group, accent, sub, url: '../' + id + '/', live: true }, more));
 export const BUILT_INS = Object.freeze([
   app('zenith', 'Zenith', 'trading', '#a855f7', 'NQ bots \u00b7 Zlarior \u00b7 ATLAS \u00b7 BLITZ', { url: '../', icon: '../icons/icon-192.png?v=p111030', live: false }),
-  app('datacity', 'Data City', 'trading', '#22d3ee', 'Every combo tested, as a city', { glyph: '\u0394' }),
+  app('oracle', 'Oracle', 'trading', '#7fe9ff', 'The market radar, live', { glyph: '\u0398' }),
+  app('odeon', 'Odeon', 'trading', '#ff6b7f', 'Every trade, replayed in 3D', { glyph: '\u039e' }),
+  app('fates', 'Fates', 'trading', '#ffcf5a', 'Pass odds for each eval', { glyph: '\u03a6' }),
+  app('datacity', 'Data City', 'trading', '#4f8cff', 'Every combo tested, as a city', { glyph: '\u0394' }),
   app('tree', 'Daphne', 'trading', '#34f5a0', 'The strategy tree search', { glyph: '\u03a8' }),
+  app('prometheus', 'Prometheus', 'trading', '#ff7a1a', 'The Forge: strategies tested', { glyph: '\u03a0' }),
   app('planner', 'Planner', 'life', '#60a5fa', 'Calendar, tasks and projects', { icon: '../planner/icon-192.png', live: false }),
-  app('mind', 'Mind', 'life', '#c084fc', 'Your vault as a living 3D brain', { glyph: '\u03a9' }),
+  app('mind', 'Mind', 'life', '#5eead4', 'Your vault as a living 3D brain', { glyph: '\u03a9' }),
   app('kalshi', 'Kalshi', 'money', '#2ef2d0', 'Kalshi bot \u00b7 from your PC', { glyph: 'K', live: false }),
+  app('hermes', 'Hermes', 'money', '#f7c948', 'OLYMPUS Wrapped: your money', { glyph: '\u0397' }),
 ]);
 const GROUP_IDS = GROUPS.map((g) => g.id);
 const groupRank = (g) => { const i = GROUP_IDS.indexOf(g); return i < 0 ? GROUP_IDS.length - 1 : i; };     // unknown: MORE

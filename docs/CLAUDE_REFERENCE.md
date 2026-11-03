@@ -854,6 +854,18 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
     System view (data.js `bot()`): day 5 amber "place 1 MNQ by hand by tomorrow", day 6+ red "today", also while the PC is
     silent. `jarvis.json` may carry `theme: "#rrggbb"` (another site's top colour, e.g. Ascend; apps.js validateStatus).
     Worker jarvis-v10. Tests: test_jarvis_system (28), test_jarvis_apps (85).
+  - **Manual keep-alive trades (2026-11-03):** the bot's ledger only sees its own orders. "I traded on both" / "traded on
+    ATLAS" (brain.js) or "I did it" under the System warning writes `jarvis.manualTrades` {lit, atlas: ET date}; data.js
+    `withManualTrades` (applied in getFacts().live incl. `.raw`, and in systemStatus from `f.manualTrades`) counts the quiet
+    days from the mark while it is newer than the card's last trade. Tests: test_jarvis_system m, test_jarvis_brain m.
+  - **OLYMPUS apps in Jarvis (2026-11-03):** one table, apps.js `BUILT_INS` (`app(id, name, group, accent, sub, more)`;
+    url `../<id>/`, live card from its `jarvis.json`, top colour from its `theme`). Adding an app = one row there (and its
+    folder in build_web_dashboard's app list). Groups `GROUPS` (TRADING, LIFE, MONEY, MORE) drive the bar order, the orb
+    (headings, group chips, scrollable quick row, ring = 6 most opened + "more", `jarvis.orb.use`) and the Jarvis screen's
+    OLYMPUS grid (`#olyApps`, stagger once at 3D High/Ultra). A folder not on the site (jarvis.json 404, no card) =
+    `missing()`: tile "SOON", never opened, the swipe/ring skip it. Worker jarvis-v13 (obsidian.js, memory.js,
+    assist-ui.js saved), jarvis.css?v=j9, What's new j8. Test waits use the page's ready marker (`html[data-ready]`,
+    `window.__jarvisReadyMs`): under load the software-drawn 3D core holds the main thread 10-16 s after a 0.5 s start.
   - **Icons:** the re-rendered old reactor icon (`?v=j2`).
   - **Workers:**
     - jarvis-v4: a 3.5 s navigation race; shell files stale-while-revalidate once a page came from the copy.

@@ -460,10 +460,12 @@ export function mountSwitcher(opts = {}) {
 
   // ---------------------------------------------------------------- the orb's gestures (one pointer)
   let g = null;
+  // the finger's own times (the events' timestamps), not when a busy page got round to them: a quick flick stays a flick
+  const when = (e) => (e && Number.isFinite(e.timeStamp) && e.timeStamp > 0 ? e.timeStamp : win.performance ? win.performance.now() : Date.now());
   orb.addEventListener('pointerdown', (e) => {
     if (e.button > 0) return;
     wake();
-    g = { id: e.pointerId, x: e.clientX, y: e.clientY, t: Date.now(), moved: false, drag: false, held: false };
+    g = { id: e.pointerId, x: e.clientX, y: e.clientY, t: when(e), moved: false, drag: false, held: false };
     try { orb.setPointerCapture(e.pointerId); } catch (_) { /* fine */ }
     // a hold: still unmoved HOLD_MS later. Decided on the next frame (the moves a busy phone has queued come first, so a drag
     // started while Jarvis was busy never turns into the ring), or 120 ms later when no frame comes
@@ -480,13 +482,13 @@ export function mountSwitcher(opts = {}) {
     if (g.held) { hitFan(e.clientX, e.clientY); return; }
     if (!g.moved && dx * dx + dy * dy > 64) { g.moved = true; clearTimeout(g.timer); }
     // a slow or mostly up / down move carries the orb; a quick sideways flick switches on release
-    if (g.moved && (Math.abs(dy) > Math.abs(dx) * 0.8 || Date.now() - g.t > 320)) { g.drag = true; place(e.clientX, e.clientY); }
+    if (g.moved && (Math.abs(dy) > Math.abs(dx) * 0.8 || when(e) - g.t > 320)) { g.drag = true; place(e.clientX, e.clientY); }
   });
   function end(e, cancel) {
     if (!g || (e && e.pointerId !== g.id)) return;
     const s = g; g = null;
     clearTimeout(s.timer);
-    const dx = e ? e.clientX - s.x : 0, dy = e ? e.clientY - s.y : 0, dt = Date.now() - s.t;
+    const dx = e ? e.clientX - s.x : 0, dy = e ? e.clientY - s.y : 0, dt = e ? when(e) - s.t : 0;
     if (cancel) { if (s.held) hideFan(); if (s.drag) snap(); return; }
     if (s.held) { const b = hitFan(e.clientX, e.clientY); if (b) pick(b); return; }   // let go on an app (or "more"); else the ring stays to tap
     if (s.drag) { snap(); return; }

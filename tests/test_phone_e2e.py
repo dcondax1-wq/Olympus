@@ -896,7 +896,7 @@ def real_tap(p, loc, what, timeout=5000, done=None):
             loc.dispatch_event("click", timeout=5000)
         except Exception:
             pass
-        return False
+        return info.get("top") == "the button itself"      # on top (only moving, e.g. a tile's one-time entrance): a finger lands
 
 
 # Zenith mode (jarvis/zenith-mode.js): its full-screen layer .zm-root (may sit on <body>), or the hub's #zen view
@@ -1045,8 +1045,13 @@ def clear_http_cache(phone, p):
         note(f"(could not clear the HTTP cache: {e})")
 
 
+# the OLYMPUS apps' live cards (Jarvis's apps.js, 2026-11-03): a jarvis.json request ends aborted when the page moves on (the
+# junk run reopens Jarvis every second) or after its 5 s limit (the slow network); by design, never a failure. A 404 still is.
+STATUS_ABORTED = r"/jarvis\.json\?jt=\d+ failed$"
+
+
 def no_errors(phone, m, label, allow=()):
-    allow = tuple(allow) + tuple(r"/jarvis/" + re.escape(x) for x in MISSING)       # reported once by part a
+    allow = tuple(allow) + (STATUS_ABORTED,) + tuple(r"/jarvis/" + re.escape(x) for x in MISSING)       # MISSING: reported once by part a
     errs, bad = phone.since(m, allow)
     check(f"no page or console errors: {label}", not errs, errs[:4])
     check(f"no failed or missing same-site requests: {label}", not bad, bad[:4])
