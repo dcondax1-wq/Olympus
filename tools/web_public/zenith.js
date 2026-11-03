@@ -28,18 +28,36 @@
 
   // ------------------------------------------------------------------ where am I: breadcrumb + one header
   const txt = (e) => (e && e.textContent ? e.textContent.replace(/\s+/g, ' ').trim() : '');
+  // the pages whose group is no tab any more (Live View and the Holodeck kept the old "chart" group): they are Home's quick
+  // tiles, so they belong to Home (the crumb and the lit tab; their routes and full-screen layout stay as they are)
+  const HOME_TILES = new Set(['liveview', 'holo', 'mission', 'mind']);
+  const tabOf = (p) => { const g = groupOf(p); return GROUPS.some((x) => x.id === g) ? g : HOME_TILES.has(p) ? 'today' : 'system'; };
   function trail() {
-    const p = typeof PAGE !== 'undefined' ? PAGE : 'today', g = groupOf(p), G = GROUPS.find((x) => x.id === g);
+    const p = typeof PAGE !== 'undefined' ? PAGE : 'today', g = tabOf(p), G = GROUPS.find((x) => x.id === g);
     const title = txt(document.getElementById('title'));
     const out = [];
     if (G) out.push(G.label);
-    else { const on = txt(document.querySelector('#tabs a.on span')); if (on) out.push(on); }      // a page outside the tabs' groups
     if (BOT[g]) { const s = txt(document.querySelector('#sub .zl-seg button.on')); if (s) out.push(s); }
     if (typeof DETAIL !== 'undefined' && DETAIL[p] && PAGES[DETAIL[p].back]) out.push(PAGES[DETAIL[p].back].label);
     return out.filter((x, i) => x && x !== title && x !== out[i - 1]);
   }
+  // a bot tab's main page was titled with the bot's name, which the tab bar and the account card already say: the title is
+  // the open chip (Overview) or section instead, and the crumb says the bot (ZLARIOR › TODAY / Overview)
+  function botTitle() {
+    const p = typeof PAGE !== 'undefined' ? PAGE : '', g = tabOf(p), G = GROUPS.find((x) => x.id === g), t = document.getElementById('title');
+    if (!BOT[g] || !G || !t || txt(t) !== G.label) return;
+    const chip = txt(document.querySelector('#sub .zl-chips button.on')), seg = txt(document.querySelector('#sub .zl-seg button.on'));
+    if (chip || seg) t.textContent = chip || seg;
+  }
+  // a page outside the tabs' groups lights the tab it belongs to (polish.js slides its pill there)
+  function litTab() {
+    const T = document.getElementById('tabs'); if (!T || T.querySelector('a.on')) return;
+    const a = T.querySelector(`a[data-t="${tabOf(typeof PAGE !== 'undefined' ? PAGE : 'today')}"]`);
+    if (a) { a.classList.add('on'); if (window.POLISH && window.POLISH.tabInd) window.POLISH.tabInd(); }
+  }
   function crumb() {
     const c = document.getElementById('crumb'); if (!c) return;
+    botTitle(); litTab();
     const T = trail(), html = T.map((t, i) => (i ? '<i class="zn-sep" aria-hidden="true">›</i>' : '') + `<span>${esc(t)}</span>`).join('');
     if (c.innerHTML === html) return;                 // (index.html's route() writes its own one-word crumb first)
     c.setAttribute('aria-label', 'You are in');
@@ -63,6 +81,25 @@
       return M && M.board && window.MissionUI ? (window.MissionUI.accounts(M) || []).filter((a) => a && !a.placeholder) : [];
     } catch (e) { return []; }
   }
+  // an account's closed real days as [day, $] (statuscore's account days: [day, usd] pairs or { day, usd })
+  const etDay = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+  function dayPairs(A) {
+    const out = [];
+    for (const d of (A && A.days) || []) {
+      const day = Array.isArray(d) ? String(d[0]) : String((d || {}).day || (d || {}).d || '');
+      const v = Array.isArray(d) ? +d[1] : +(d || {}).usd;
+      if (day && okN(v)) out.push([day, v]);
+    }
+    return out;
+  }
+  // a ribbon's points: 0, then the running total day by day, today's live $ last unless the days already hold today
+  function curveOf(byDay, today) {
+    const td = etDay();
+    if (okN(today) && !byDay.has(td)) byDay.set(td, today);
+    const days = [...byDay.keys()].sort();
+    let run = 0;
+    return { days, curve: [0].concat(days.map((d) => (run += byDay.get(d)))), ym: td.slice(0, 7) };
+  }
   function moneyModel() {
     const As = accts(); if (!As.length) return null;
     const byDay = new Map();
@@ -70,11 +107,7 @@
     for (const A of As) {
       if (okN(A.today)) today = (today || 0) + A.today;
       if (okN(A.profit)) total = (total || 0) + A.profit;
-      for (const d of A.days || []) {
-        const day = Array.isArray(d) ? String(d[0]) : String((d || {}).day || (d || {}).d || '');
-        const v = Array.isArray(d) ? +d[1] : +(d || {}).usd;
-        if (day && okN(v)) byDay.set(day, (byDay.get(day) || 0) + v);
-      }
+      for (const [day, v] of dayPairs(A)) byDay.set(day, (byDay.get(day) || 0) + v);
     }
     // fewer than 2 closed days: this week's days from the board's progress (the same fallback as the cards' sparklines)
     if (byDay.size < 2) {
@@ -85,11 +118,7 @@
         }));
       } catch (e) { /* no week yet */ }
     }
-    // today's live $ is the ribbon's last point (and in this month) unless the board already closed today into its days
-    const td = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }), ym = td.slice(0, 7);
-    if (okN(today) && !byDay.has(td)) byDay.set(td, today);
-    const days = [...byDay.keys()].sort();
-    let run = 0; const curve = [0].concat(days.map((d) => (run += byDay.get(d))));
+    const { days, curve, ym } = curveOf(byDay, today);
     const month = days.length ? days.filter((d) => d.slice(0, 7) === ym).reduce((s, d) => s + byDay.get(d), 0) : null;
     return { today, total, month, curve, n: days.length, accounts: As.length };
   }
@@ -115,6 +144,24 @@
     const sig = M.curve.join(',') + '|' + Z.quality();
     if (sig !== ribSig || !rb.__zr) { ribSig = sig; Z.ribbon(rb, M.curve.length >= 2 ? M.curve : [0, 0], { top: 52 }); }
   }
+
+  // each bot's Today: its own ribbon under its account card, in its colour: real $ so far and the $ a month at that pace
+  function botRibbon(el) {
+    const box = el.querySelector(':scope > .pl-bot'), card = box && box.querySelector('.su-acct[data-bot]');
+    if (!card || box.querySelector('.zn-botrib')) return;
+    const A = accts().find((a) => a.key === card.dataset.bot); if (!A) return;
+    const { days, curve } = curveOf(new Map(dayPairs(A)), A.today);
+    if (days.length < 2) return;                                  // nothing to draw yet: no empty box
+    const net = curve[curve.length - 1], pm = net / (days.length / 21);
+    const cls = (v) => (v > 0 ? 'up' : v < 0 ? 'dn' : '');
+    const w = document.createElement('div');
+    w.className = 'zn-botrib';
+    w.innerHTML = `<div class="zn-money"><span class="zn-m"><em>Real P&L · ${days.length} days</em><b class="${cls(net)}" data-zn-num="bot-net">${money(net)}</b></span>`
+      + `<span class="zn-m"><em>$ a month at this pace</em><b class="${cls(pm)}" data-zn-num="bot-pm">${money(pm)}</b></span></div><div class="zn-rib" role="img" aria-label="${esc(SUname(A))} real P&L by day"></div>`;
+    card.after(w);
+    Z.ribbon(w.querySelector('.zn-rib'), curve, { top: 50, color: A.color || undefined });
+  }
+  const SUname = (A) => (window.StatusUI && window.StatusUI.NAME && window.StatusUI.NAME[A.key]) || A.name || A.key;
 
   // ------------------------------------------------------------------ numbers that count to their new value
   const LAST = new Map();
@@ -146,7 +193,7 @@
   function post() {
     const el = document.getElementById('page'); if (!el) return;
     try { crumb(); heroes(el); } catch (e) { console.warn('zenith header', e); }
-    try { if (PAGE === 'today') greeting(el); } catch (e) { console.warn('zenith home', e); }
+    try { if (PAGE === 'today') greeting(el); else botRibbon(el); } catch (e) { console.warn('zenith home', e); }
     try { counters(el); } catch (e) { /* optional */ }
     try { if (PAGE === 'settings') settings(el); } catch (e) { /* optional */ }
   }
@@ -155,8 +202,8 @@
   const pg = document.getElementById('page');
   if (pg && typeof MutationObserver !== 'undefined') new MutationObserver((ms) => {
     for (const m of ms) {
-      if (m.target.closest && m.target.closest('.zn-hi, .zn-set')) continue;        // this file's own boxes
-      for (const n of m.addedNodes) if (n.nodeType === 1 && !n.classList.contains('zn-hi')) { soon(); return; }
+      if (m.target.closest && m.target.closest('.zn-hi, .zn-set, .zn-botrib')) continue;        // this file's own boxes
+      for (const n of m.addedNodes) if (n.nodeType === 1 && !n.classList.contains('zn-hi') && !n.classList.contains('zn-botrib')) { soon(); return; }
     }
   }).observe(pg, { childList: true, subtree: true });
   const sub = document.getElementById('sub');

@@ -155,6 +155,15 @@ def part_c(tmp, shots):
         check("c. where am I: 'Zlarior › Results' over 'Performance'; the page's own copy of the title is hidden", B["crumb"] == ["Zlarior", "Results"] and B["title"] == "Performance"
               and (not B["dup"] or B["h2"] == "none"), B)
         sh(pg, "zenith_breadcrumb.png")
+        W = {}
+        for h in ("#/lit", "#/holo"):
+            pg.evaluate(f"() => {{ location.hash = '{h}'; }}")
+            pg.wait_for_timeout(1300)
+            W[h] = pg.evaluate("() => ({ crumb: [...document.querySelectorAll('#crumb span')].map(s => s.textContent), title: document.getElementById('title').textContent, tab: (document.querySelector('#tabs a.on') || {}).dataset?.t || null })")
+        check("c. where am I: Zlarior's main page reads 'Zlarior › Today' over 'Overview' (not the bot's name twice); the Holodeck sits under Home with Home lit",
+              W["#/lit"] == {"crumb": ["Zlarior", "Today"], "title": "Overview", "tab": "lit"} and W["#/holo"]["crumb"] == ["Home"] and W["#/holo"]["tab"] == "today", W)
+        pg.evaluate("() => { location.hash = '#/perf'; }")
+        pg.wait_for_timeout(900)
         # 44 px hit areas on the bot sections and chips
         T = pg.evaluate("""() => [...document.querySelectorAll('#sub .zl-seg button, #sub .zl-chips button')].map(b => { const r = b.getBoundingClientRect(), a = getComputedStyle(b, '::after');
           const hh = a.content !== 'none' ? Math.max(r.height, parseFloat(a.height) || 0) : r.height, ww = a.content !== 'none' ? Math.max(r.width, parseFloat(a.width) || 0) : r.width; return [Math.round(ww), Math.round(hh)]; })""")
