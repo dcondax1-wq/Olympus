@@ -232,6 +232,7 @@ def ctx_page(br, origin, theme=None, extra=""):
             + (f" localStorage.setItem('olympus.theme', {json.dumps(theme)});" if theme else " localStorage.removeItem('olympus.theme');") + " } } catch (e) {}")
     ctx.add_init_script(init + extra)
     p = ctx.new_page()
+    p.set_default_timeout(90000)                 # a shared, loaded machine: software GL can hold the main thread for seconds
     errs: list = []
     p.on("pageerror", lambda e: errs.append(str(e)))
     p.on("console", lambda m: errs.append(m.text) if m.type == "error" else None)

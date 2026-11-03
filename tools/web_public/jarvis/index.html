@@ -976,6 +976,8 @@ function olyRefresh() {
   readColors();
   if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme()));
   if (active === 'home') setTint(homeTint());
+  // the framed apps repaint on their own storage event, a moment later: then their new status-bar colour is read again
+  setTimeout(() => safe(() => { for (const k of Object.keys(frames)) { const f = frames[k] && frames[k].querySelector('iframe'); if (f) appTint(k, f); } }), 400);
   window.dispatchEvent(new Event('jtheme'));
   renderLook();
 }
