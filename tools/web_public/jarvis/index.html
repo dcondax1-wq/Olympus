@@ -2735,7 +2735,7 @@ if (window.visualViewport) {
 }
 window.__jarvis = { show, ask, facts: D.getFacts, active: () => active, setTheme, setOlyTheme, setFx, state: () => state, core: () => (core && typeof core.stats === 'function' ? safe(() => core.stats()) : null),
   voiceMode: (g) => voiceMode(!!g), vm: () => (vm ? vm.stats() : null), closeVoiceMode: () => { if (vm) vm.close('test'); },
-  voice: () => (vo ? vo.stats() : null) };   // for tests and the console; read-only
+  voice: () => (vo ? vo.stats() : null), talk: (t) => speak(String(t || ''), false) };   // for tests and the console; read-only
 if ('serviceWorker' in navigator) {
   // a tapped Zenith notification while Jarvis runs (Zenith's sw.js v50: {type: 'open', app: 'zenith', hash}): Zenith mode at
   // that page, from the start (once Zenith mode is mounted it hears the message itself and calls onWantShow)
