@@ -381,24 +381,9 @@ def check_nt_folder(folder: str) -> dict:
 
 
 def nt_connections(folder: str) -> dict:
-    """{connection name: CONNECTED | DISCONNECTED} from outgoing/<connection>.txt (same rule as the adapter)."""
-    out = {}
-    d = os.path.join(folder, "outgoing")
-    try:
-        names = os.listdir(d)
-    except OSError:
-        return out
-    for n in names:
-        if not n.lower().endswith(".txt") or "_position" in n.lower():
-            continue
-        try:
-            with open(os.path.join(d, n), encoding="utf-8", errors="replace") as fh:
-                v = fh.read(64).strip().upper()
-        except OSError:
-            continue
-        if v in ("CONNECTED", "DISCONNECTED"):
-            out[n[:-4]] = v
-    return out
+    """{connection name: CONNECTED | DISCONNECTED} from outgoing/<connection>.txt (engine/ninjatrader.connection_files)."""
+    from .ninjatrader import connection_files
+    return connection_files(folder)
 
 
 def check_nt_connection(conns: dict, now, folder: str | None = None) -> dict:

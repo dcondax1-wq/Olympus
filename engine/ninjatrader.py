@@ -719,6 +719,28 @@ def last_1m_age(folder: str | None = None, now=None, roots=("MNQ", "NQ")) -> int
     return None if best is None else int(now - best - 60)
 
 
+def connection_files(folder: str | None = None) -> dict:
+    """{connection name: CONNECTED | DISCONNECTED} from <NinjaTrader 8>\\outgoing\\<connection>.txt, read straight from disk
+    (the adapter's connections() is the cached twin for its poll loop). Position files are skipped; {} = no folder."""
+    out = {}
+    d = os.path.join(folder or default_folder(), "outgoing")
+    try:
+        names = os.listdir(d)
+    except OSError:
+        return out
+    for n in names:
+        if not n.lower().endswith(".txt") or "_position" in n.lower():
+            continue
+        try:
+            with open(os.path.join(d, n), encoding="utf-8", errors="replace") as fh:
+                v = fh.read(64).strip().upper()
+        except OSError:
+            continue
+        if v in ("CONNECTED", "DISCONNECTED"):
+            out[n[:-4]] = v
+    return out
+
+
 def connection_view(conns: dict | None, folder: str | None = None, now=None) -> dict:
     """{"connected": True / False / None, "via": [...], "live_accounts": n, "note"}. connected: any CONNECTED file, or a
     live account in accounts.csv, or live bars; False only when there are connection files, every one DISCONNECTED and
