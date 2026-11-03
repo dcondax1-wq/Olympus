@@ -128,12 +128,15 @@ h1 { margin: 0; font: 700 14px var(--display); letter-spacing: .24em; }
 .film { color: var(--accent); font-weight: 700; font-size: 12.5px; text-decoration: none; }
 .pos .film { grid-column: 1 / -1; display: inline-flex; align-items: center; min-height: 44px; }
 
-.cond { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 2px 6px; font-size: 12px; color: var(--dim); border-top: 1px solid var(--line); padding-top: 6px; }
-#window { display: flex; align-items: center; gap: 6px; min-width: 0; }
+/* two fixed rows (the window | the session, then the weather): the sheet's height never changes with the texts */
+.cond { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 10px; padding: 6px 6px 2px; font-size: 12px;
+  color: var(--dim); border-top: 1px solid var(--line); white-space: nowrap; }
+#window { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; }
+#win-text { overflow: hidden; text-overflow: ellipsis; }
 #window i { width: 7px; height: 7px; border-radius: 50%; background: #55607a; flex: none; }
 #window[data-open="true"] { color: var(--gold); } #window[data-open="true"] i { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
 #session { white-space: nowrap; }
-.wx { display: flex; flex-wrap: wrap; gap: 4px; }
+.wx { grid-column: 1 / -1; display: flex; gap: 4px; overflow: hidden; min-height: 18px; }
 .chip { font: 600 11px var(--ui); letter-spacing: .05em; padding: 1px 7px; border-radius: 9px; border: 1px solid var(--line); color: var(--dim); }
 
 .levels { border-top: 1px solid var(--line); }
@@ -158,7 +161,8 @@ h1 { margin: 0; font: 700 14px var(--display); letter-spacing: .24em; }
 
 /* ---------------------------------------------------------------- landscape phone: the bar at the left, the sheet at the right */
 @media (orientation: landscape) and (max-height: 500px) {
-  #top { right: auto; width: min(320px, 40vw); background: linear-gradient(90deg, rgba(4, 5, 13, .85), rgba(4, 5, 13, 0)); padding-bottom: 8px; }
+  #top { right: auto; width: min(320px, 40vw); background: linear-gradient(90deg, rgba(4, 5, 13, .85), rgba(4, 5, 13, 0)); padding-bottom: 14px;
+    -webkit-mask-image: linear-gradient(180deg, #000 78%, transparent); mask-image: linear-gradient(180deg, #000 78%, transparent); }
   #price { font-size: 21px; } #pnl { font-size: 15px; }
   #dock { left: auto; right: calc(var(--sr) + 10px); top: calc(var(--st) + 8px); bottom: calc(var(--sb) + var(--orb-h)); width: min(310px, 37vw);
     overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; }

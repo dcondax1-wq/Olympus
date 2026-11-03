@@ -1,5 +1,6 @@
 // ORACLE event log: the Brain's narration (World.log) cut into the few moments that matter, as a ribbon of chips in the
-// bottom sheet: sweeps, 5m CISDs, the armed limit, the entry and the exit, each with its ET time. An entry (or an exit)
+// bottom sheet, newest first (so a new moment never needs a scroll, never a layout read): sweeps, 5m CISDs, the armed limit,
+// the entry and the exit, each with its ET time. An entry (or an exit)
 // links to Odeon's film of that trade (../odeon/#trade=<day>_<HHMM>_<side>). Text only through textContent.
 import { etParts } from './time.js';
 
@@ -50,7 +51,7 @@ export function filmLink(day, hm, side) {
   return `../odeon/#trade=${day}_${String(hm).replace(':', '')}_${String(side).toLowerCase()}`;
 }
 
-/** The ribbon in the bottom sheet: one chip per moment, newest at the right (scrolled into view when one is added). */
+/** The ribbon in the bottom sheet: one chip per moment, the newest first (at the left). */
 export class Ribbon {
   constructor(list, empty) {
     this.list = list;
@@ -61,10 +62,9 @@ export class Ribbon {
   render(rows) {
     const key = rows.map((r) => r.hm + r.k + r.text).join('|');
     if (key === this.key) return;
-    const grew = rows.length > this.key.split('|').filter(Boolean).length;
     this.key = key;
     this.empty.hidden = rows.length > 0;
-    this.list.replaceChildren(...rows.map((r) => {
+    this.list.replaceChildren(...rows.slice().reverse().map((r) => {
       const li = document.createElement('li');
       li.className = `ev k-${r.k}${r.good ? '' : ' dim'}`;
       const box = r.film ? document.createElement('a') : li;
@@ -78,6 +78,5 @@ export class Ribbon {
       box.append(t, b, s);
       return li;
     }));
-    if (grew && this.list.lastElementChild) this.list.scrollLeft = this.list.scrollWidth;   // only when a moment was added
   }
 }

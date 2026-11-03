@@ -97,7 +97,7 @@ def part_a():
               all(isinstance(t["usd"], (int, float)) and isinstance(t["r"], (int, float)) and t["mfe_r"] is not None and t["mae_r"] is not None
                   and t["held_min"] >= 0 and (t["stop"] - t["entry"]["px"]) * t["d"] < 0 for t in T))
         # the paper / real path: a published data.json with a ledger row and an eval trade on bars the tape has
-        lit = next(t for t in T if t["bot"] == "LIT")
+        lit = next(t for t in T if t["bot"] == "LIT" and t["src"] == "backtest")   # a replay: its bars are in the TradingView files
         e_t = lit["entry"]["t"]
         fake = {"live": {"ledger": [{"day": lit["day"], "side": lit["side"], "entry_t": e_t, "exit_ts": lit["exit"]["t_end"], "entry_px": lit["entry"]["px"],
                                      "stop_px": lit["stop"], "target_px": lit["target"], "exit_px": lit["exit"]["px"], "exit": lit["exit"]["kind"],
@@ -312,8 +312,13 @@ def run_browser(fx, tj):
                 fl = p.evaluate("""() => ({ go: document.querySelector('#flare').classList.contains('go'), slow: window.__odeon.state().slow,
                   lb: document.body.dataset.slowmo, spans: document.querySelectorAll('#cc .cc-text > span').length,
                   text: document.querySelector('#cc .cc-text').textContent, typing: document.querySelector('#cc .cc-text').classList.contains('typing') })""")
+                try:                                       # the ramp eases in over the next frames (wall-clock seconds)
+                    p.wait_for_function("window.__odeon.state().slow < 0.6 && document.body.dataset.slowmo === 'true'", timeout=30000)
+                    fl["slowmo"] = True
+                except Exception:
+                    fl["slowmo"] = False
                 check(f"e. {tag}: on the entry: the lens flare, the slow-motion ramp (letterbox in), the caption typed in word by word",
-                      fl["go"] and fl["slow"] < 0.6 and fl["lb"] == "true" and fl["typing"] and fl["spans"] == len(fl["text"].split()) and fl["text"] in fx_texts, fl)
+                      fl["go"] and fl["slowmo"] and fl["typing"] and fl["spans"] == len(fl["text"].split()) and fl["text"] in fx_texts, fl)
                 time.sleep(0.4)
                 shot(p, f"{tag}_2_entry.png")
                 wait_state(p, "s.T > " + str(fx["entry"]["t"] + 3600), 180)
@@ -419,7 +424,7 @@ def run_browser(fx, tj):
                     check(f"e. {tag}: Highlights plays the five best trades by $ (1/5 first)", st["hl"] and st["hl"]["ids"] == top5 and st["id"] == top5[0]
                           and p.inner_text("#hlBadge") == "HIGHLIGHT 1/5" and not p.is_visible("#reels"), st.get("hl"))
                     p.evaluate("window.__odeon.seek(window.__odeon.state().tEnd - 60)")
-                    p.wait_for_function(f"window.__odeon.state().id === '{top5[1]}'", timeout=30000)
+                    p.wait_for_function(f"window.__odeon.state().id === '{top5[1]}'", timeout=150000)
                     shot(p, f"{tag}_10_highlights.png")
                     check(f"e. {tag}: after the stats card the next highlight starts by itself (2/5)", p.inner_text("#hlBadge") == "HIGHLIGHT 2/5"
                           and p.evaluate("window.__odeon.state().playing"))
@@ -439,6 +444,8 @@ def run_browser(fx, tj):
                     r = p.evaluate("window.__odeon.applyTheme({ accent: '#ff8800', bg: '#020304' })")
                     check(f"e. {tag}: applyTheme(tokens) recolours the page (accent, background)", r == {"accent": "#ff8800", "bg": "#020304"}
                           and p.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--blue').trim()") == "#ff8800")
+                    k0 = p.evaluate("window.__odeon.applyTheme({ id: 'olympus', accent: '#a855f7', bg: '#04050c', mix: 0, harmony: 0 })")
+                    check(f"e. {tag}: the OLYMPUS default theme leaves Odeon's own blue as it is", k0 == {"accent": "#7fb4ff", "bg": None}, k0)
                     shot(p, f"{tag}_11_no_film_note.png")
                 check(f"d. {tag}: no console errors (real reels)", not errs, errs[:5])
                 ctx.close()

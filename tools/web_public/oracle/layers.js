@@ -242,7 +242,7 @@ export class Market {
       const pts = jagged(T, from, to, n, jag);
       for (let i = 0; i < n; i++) segs.push([pts[i], pts[i + 1], w * (1 - 0.45 * i / n), k]);
       if (lvl >= depth) return;
-      const forks = lvl === 0 ? (this.lite ? 2 : 4) : 2;
+      const forks = lvl === 0 ? (this.lite ? 2 : 3) : 1;
       for (let f = 0; f < forks; f++) {
         const i = 2 + Math.floor(Math.random() * (pts.length - 4)), p = pts[i];
         const len = from.distanceTo(to) / n * (3 + Math.random() * 3);
@@ -255,7 +255,7 @@ export class Market {
     const mat = () => new T.MeshBasicMaterial({ vertexColors: true, transparent: true, blending: T.AdditiveBlending, depthWrite: false,
       side: T.DoubleSide, opacity: 1 });
     const core = new T.Mesh(ribbons(T, segs, view, 1, new T.Color(0xffffff)), mat());
-    const halo = new T.Mesh(ribbons(T, segs, view, 6, color), mat());
+    const halo = new T.Mesh(ribbons(T, segs, view, 4.5, color), mat());
     core.frustumCulled = halo.frustumCulled = false;
     const g = new T.Group();
     const flash = glowSprite(T, color.getHex(), 5, 1);
