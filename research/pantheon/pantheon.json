@@ -2,8 +2,8 @@
  "v": 1,
  "app": "pantheon",
  "demo": false,
- "t": 1793722615,
- "built": "2026-11-03 11:16 ET",
+ "t": 1793723240,
+ "built": "2026-11-03 11:27 ET",
  "next_session": "2026-11-04",
  "council": {
   "score": -0.113,
@@ -148,19 +148,19 @@
     {
      "id": "fred:WALCL",
      "name": "Fed balance sheet (total assets, weekly, $m)",
-     "from": "cache",
+     "from": "network",
      "newest": "2026-10-28"
     },
     {
      "id": "fred:WTREGEN",
      "name": "Treasury General Account (weekly, $m)",
-     "from": "cache",
+     "from": "network",
      "newest": "2026-10-28"
     },
     {
      "id": "fred:RRPONTSYD",
      "name": "Fed overnight reverse repo (daily, $bn)",
-     "from": "cache",
+     "from": "network",
      "newest": "2026-11-02"
     }
    ],
@@ -318,31 +318,31 @@
     {
      "id": "fred:DGS10",
      "name": "10-year Treasury yield (%)",
-     "from": "cache",
+     "from": "network",
      "newest": "2026-10-30"
     },
     {
      "id": "fred:DGS2",
      "name": "2-year Treasury yield (%)",
-     "from": "cache",
+     "from": "network",
      "newest": "2026-10-30"
     },
     {
      "id": "fred:T10Y2Y",
      "name": "10y minus 2y spread (%)",
-     "from": "cache",
+     "from": "network",
      "newest": "2026-11-02"
     },
     {
      "id": "fred:DFF",
      "name": "Effective fed funds rate (%)",
-     "from": "cache",
+     "from": "network",
      "newest": "2026-10-30"
     },
     {
      "id": "treasury:curve",
      "name": "US Treasury daily par yield curve (this year)",
-     "from": "cache",
+     "from": "network",
      "newest": "2026-11-02"
     }
    ],
@@ -532,37 +532,37 @@
     {
      "id": "cboe:VIX",
      "name": "Cboe VIX (S&P 500 30-day implied vol)",
-     "from": "cache",
+     "from": "network",
      "newest": "2026-11-02"
     },
     {
      "id": "cboe:VIX9D",
      "name": "Cboe VIX9D (9-day implied vol)",
-     "from": "cache",
+     "from": "network",
      "newest": "2026-11-02"
     },
     {
      "id": "cboe:VIX3M",
      "name": "Cboe VIX3M (3-month implied vol)",
-     "from": "cache",
+     "from": "network",
      "newest": "2026-11-02"
     },
     {
      "id": "cboe:VXN",
      "name": "Cboe VXN (Nasdaq-100 implied vol)",
-     "from": "cache",
+     "from": "network",
      "newest": "2026-11-02"
     },
     {
      "id": "cboe:SKEW",
      "name": "Cboe SKEW (tail-risk pricing)",
-     "from": "cache",
+     "from": "network",
      "newest": "2026-11-02"
     },
     {
      "id": "squeeze:dix",
      "name": "SqueezeMetrics DIX + GEX (S&P 500 dark pools and dealer gamma, daily)",
-     "from": "cache",
+     "from": "network",
      "newest": "2026-11-02"
     }
    ],
@@ -850,7 +850,7 @@
     {
      "id": "cftc:tff_nq",
      "name": "CFTC Traders in Financial Futures: E-mini Nasdaq-100 (weekly, Tuesday positions)",
-     "from": "cache",
+     "from": "network",
      "newest": "2026-10-27"
     }
    ],
@@ -1000,7 +1000,7 @@
     {
      "id": "fred:DTWEXBGS",
      "name": "Broad trade-weighted US dollar index",
-     "from": "cache",
+     "from": "network",
      "newest": "2026-10-30"
     }
    ],
@@ -1148,13 +1148,13 @@
     {
      "id": "fred:BAMLH0A0HYM2",
      "name": "ICE BofA US high-yield option-adjusted spread (%)",
-     "from": "cache",
+     "from": "network",
      "newest": "2026-11-02"
     },
     {
      "id": "fred:NFCI",
      "name": "Chicago Fed National Financial Conditions Index (weekly)",
-     "from": "cache",
+     "from": "network",
      "newest": "2026-10-23"
     }
    ],
@@ -1306,7 +1306,7 @@
     {
      "id": "fred:CBBTCUSD",
      "name": "Bitcoin in USD (Coinbase, daily). Not futures data: display only",
-     "from": "cache",
+     "from": "network",
      "newest": "2026-11-02"
     }
    ],
@@ -1585,16 +1585,7 @@
   {
    "id": "fred:WALCL",
    "name": "Fed balance sheet (total assets, weekly, $m)",
-   "from": "cache",
-   "newest": "2026-10-28",
-   "rows": 617,
-   "error": "",
-   "note": ""
-  },
-  {
-   "id": "fred:WTREGEN",
-   "name": "Treasury General Account (weekly, $m)",
-   "from": "cache",
+   "from": "network",
    "newest": "2026-10-28",
    "rows": 617,
    "error": "",
@@ -1603,16 +1594,25 @@
   {
    "id": "fred:RRPONTSYD",
    "name": "Fed overnight reverse repo (daily, $bn)",
-   "from": "cache",
+   "from": "network",
    "newest": "2026-11-02",
    "rows": 2950,
    "error": "",
    "note": ""
   },
   {
+   "id": "fred:WTREGEN",
+   "name": "Treasury General Account (weekly, $m)",
+   "from": "network",
+   "newest": "2026-10-28",
+   "rows": 617,
+   "error": "",
+   "note": ""
+  },
+  {
    "id": "fred:DGS10",
    "name": "10-year Treasury yield (%)",
-   "from": "cache",
+   "from": "network",
    "newest": "2026-10-30",
    "rows": 2959,
    "error": "",
@@ -1621,7 +1621,7 @@
   {
    "id": "fred:DGS2",
    "name": "2-year Treasury yield (%)",
-   "from": "cache",
+   "from": "network",
    "newest": "2026-10-30",
    "rows": 2959,
    "error": "",
@@ -1630,7 +1630,7 @@
   {
    "id": "fred:T10Y2Y",
    "name": "10y minus 2y spread (%)",
-   "from": "cache",
+   "from": "network",
    "newest": "2026-11-02",
    "rows": 2960,
    "error": "",
@@ -1639,25 +1639,52 @@
   {
    "id": "fred:DFF",
    "name": "Effective fed funds rate (%)",
-   "from": "cache",
+   "from": "network",
    "newest": "2026-10-30",
    "rows": 4321,
    "error": "",
    "note": ""
   },
   {
-   "id": "treasury:curve",
-   "name": "US Treasury daily par yield curve (this year)",
-   "from": "cache",
+   "id": "fred:DTWEXBGS",
+   "name": "Broad trade-weighted US dollar index",
+   "from": "network",
+   "newest": "2026-10-30",
+   "rows": 2950,
+   "error": "",
+   "note": ""
+  },
+  {
+   "id": "fred:BAMLH0A0HYM2",
+   "name": "ICE BofA US high-yield option-adjusted spread (%)",
+   "from": "network",
    "newest": "2026-11-02",
-   "rows": 210,
+   "rows": 784,
+   "error": "",
+   "note": "FRED keeps only the last 3 years of ICE index data"
+  },
+  {
+   "id": "fred:NFCI",
+   "name": "Chicago Fed National Financial Conditions Index (weekly)",
+   "from": "network",
+   "newest": "2026-10-23",
+   "rows": 617,
+   "error": "",
+   "note": ""
+  },
+  {
+   "id": "fred:CBBTCUSD",
+   "name": "Bitcoin in USD (Coinbase, daily). Not futures data: display only",
+   "from": "network",
+   "newest": "2026-11-02",
+   "rows": 4311,
    "error": "",
    "note": ""
   },
   {
    "id": "cboe:VIX",
    "name": "Cboe VIX (S&P 500 30-day implied vol)",
-   "from": "cache",
+   "from": "network",
    "newest": "2026-11-02",
    "rows": 9307,
    "error": "",
@@ -1666,7 +1693,7 @@
   {
    "id": "cboe:VIX9D",
    "name": "Cboe VIX9D (9-day implied vol)",
-   "from": "cache",
+   "from": "network",
    "newest": "2026-11-02",
    "rows": 3981,
    "error": "",
@@ -1675,7 +1702,7 @@
   {
    "id": "cboe:VIX3M",
    "name": "Cboe VIX3M (3-month implied vol)",
-   "from": "cache",
+   "from": "network",
    "newest": "2026-11-02",
    "rows": 4307,
    "error": "",
@@ -1684,7 +1711,7 @@
   {
    "id": "cboe:VXN",
    "name": "Cboe VXN (Nasdaq-100 implied vol)",
-   "from": "cache",
+   "from": "network",
    "newest": "2026-11-02",
    "rows": 4313,
    "error": "",
@@ -1693,27 +1720,36 @@
   {
    "id": "cboe:SKEW",
    "name": "Cboe SKEW (tail-risk pricing)",
-   "from": "cache",
+   "from": "network",
    "newest": "2026-11-02",
    "rows": 9261,
    "error": "",
    "note": ""
   },
   {
+   "id": "cftc:tff_nq",
+   "name": "CFTC Traders in Financial Futures: E-mini Nasdaq-100 (weekly, Tuesday positions)",
+   "from": "network",
+   "newest": "2026-10-27",
+   "rows": 617,
+   "error": "",
+   "note": ""
+  },
+  {
    "id": "squeeze:dix",
    "name": "SqueezeMetrics DIX + GEX (S&P 500 dark pools and dealer gamma, daily)",
-   "from": "cache",
+   "from": "network",
    "newest": "2026-11-02",
    "rows": 3900,
    "error": "",
    "note": ""
   },
   {
-   "id": "local:events",
-   "name": "Curated US high-impact calendar (bls.gov, federalreserve.gov): data/news/events.csv",
-   "from": "local",
-   "newest": "2027-12-08",
-   "rows": 194,
+   "id": "treasury:curve",
+   "name": "US Treasury daily par yield curve (this year)",
+   "from": "network",
+   "newest": "2026-11-02",
+   "rows": 210,
    "error": "",
    "note": ""
   },
@@ -1723,51 +1759,15 @@
    "from": "cache",
    "newest": "2026-11-06",
    "rows": 4,
-   "error": "",
+   "error": "network: HTTPError: HTTP Error 429: Too Many Requests",
    "note": ""
   },
   {
-   "id": "cftc:tff_nq",
-   "name": "CFTC Traders in Financial Futures: E-mini Nasdaq-100 (weekly, Tuesday positions)",
-   "from": "cache",
-   "newest": "2026-10-27",
-   "rows": 617,
-   "error": "",
-   "note": ""
-  },
-  {
-   "id": "fred:DTWEXBGS",
-   "name": "Broad trade-weighted US dollar index",
-   "from": "cache",
-   "newest": "2026-10-30",
-   "rows": 2950,
-   "error": "",
-   "note": ""
-  },
-  {
-   "id": "fred:BAMLH0A0HYM2",
-   "name": "ICE BofA US high-yield option-adjusted spread (%)",
-   "from": "cache",
-   "newest": "2026-11-02",
-   "rows": 784,
-   "error": "",
-   "note": "FRED keeps only the last 3 years of ICE index data"
-  },
-  {
-   "id": "fred:NFCI",
-   "name": "Chicago Fed National Financial Conditions Index (weekly)",
-   "from": "cache",
-   "newest": "2026-10-23",
-   "rows": 617,
-   "error": "",
-   "note": ""
-  },
-  {
-   "id": "fred:CBBTCUSD",
-   "name": "Bitcoin in USD (Coinbase, daily). Not futures data: display only",
-   "from": "cache",
-   "newest": "2026-11-02",
-   "rows": 4311,
+   "id": "local:events",
+   "name": "Curated US high-impact calendar (bls.gov, federalreserve.gov): data/news/events.csv",
+   "from": "local",
+   "newest": "2027-12-08",
+   "rows": 194,
    "error": "",
    "note": ""
   }

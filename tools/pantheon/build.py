@@ -80,10 +80,10 @@ def build(store: SRC.Store, now: dt.datetime | None = None, nq_path: str = S.NQ_
             st = S.relation(r.vote, ret)
             if g.council:
                 votes[g.key] = r.vote
-        for sid, (lab, ser) in r.states.items():
+        for sid, (lab, ser, first) in r.states.items():
             ser = ser.reindex(days).fillna(False).astype(bool)
-            state_rows.append({"id": sid, "god": g.key, "label": lab, "now": bool(ser.iloc[-1]), "days_on": int(ser.sum()),
-                               "on": S.intervals(ser)})
+            state_rows.append({"id": sid, "god": g.key, "label": lab, "from": None if first is None else str(first.date()),
+                               "now": bool(ser.iloc[-1]), "days_on": int(ser.sum()), "on": S.intervals(ser)})
         src = [store.log.get(s, {"id": s, "from": "missing"}) for s in g.sources]
         gods.append({
             "key": g.key, "name": g.name, "glyph": g.glyph, "title": g.title, "why": g.why, "color": g.color,
@@ -133,7 +133,8 @@ def build(store: SRC.Store, now: dt.datetime | None = None, nq_path: str = S.NQ_
     states = {
         "v": 1, "app": "pantheon", "t": doc["t"], "built": doc["built"],
         "sessions": {"first": str(days[0].date()), "last": str(days[-1].date()), "calendar": "Mon-Fri"},
-        "rule": "A state listed for session D used only data published by the close of session D-1 (no look-ahead).",
+        "rule": "A state listed for session D used only data published by the close of session D-1 (no look-ahead). "
+                "Before a state's `from` session its source had no data yet: false there means unknown.",
         "gods": [g.key for g in G.GODS], "states": state_rows,
     }
     return _clean(doc), _clean(states)
@@ -177,7 +178,7 @@ def jarvis_card(doc: dict) -> dict:
         n = ath["extra"]["next"]
         lines.append(_cut(f"ATHENA: {n['event']} {n['when']}", 120))
     lines.append(_cut(cv.get("honesty") or "Context, not a signal.", 120))
-    label = f"Council: {cv['label'].title()} {gauge}" + ("" if level == "ok" else f" · {up}/8 gods")
+    label = f"Council: {cv['label'].title()} {gauge}" + ("" if up == len(doc["gods"]) else f" · {up}/{len(doc['gods'])} gods")
     return {"v": 1, "name": "Pantheon", "status": {"level": level, "label": _cut(label, 48)}, "kpis": kpis[:3],
             "lines": lines[:3], "t": doc["t"], "open": "#council", "theme": THEME, "stale_after": STALE_AFTER}
 

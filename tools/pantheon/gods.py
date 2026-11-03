@@ -49,7 +49,7 @@ class Reading:
     spark: list = dataclasses.field(default_factory=list)
     extra: dict = dataclasses.field(default_factory=dict)
     vote: pd.Series | None = None  # per session (not published as is)
-    states: dict = dataclasses.field(default_factory=dict)
+    states: dict = dataclasses.field(default_factory=dict)   # id -> (label, bool per session, first session with data)
     flag: pd.Series | None = None  # ATHENA: event sessions
 
 
@@ -103,7 +103,9 @@ def _driver(r: Reading, obs_driver: pd.Series, direction: int, days, lag: int):
 
 
 def _state(r: Reading, sid: str, label: str, obs_flag: pd.Series, days, lag: int):
-    r.states[sid] = (label, S.known_on(obs_flag.astype(float), days, lag) > 0.5)
+    """A regime state per session; before the source's first known value it is False and states.json says `from`."""
+    k = S.known_on(obs_flag.dropna().astype(float), days, lag)
+    r.states[sid] = (label, k > 0.5, k.first_valid_index())
 
 
 def _base(r: Reading, s: pd.Series, n: int, window: str, pct: bool = False, years: float = 5.0):
@@ -257,10 +259,12 @@ def athena(store, days, now=None) -> Reading:
     ev_days = pd.Series(1.0, index=pd.DatetimeIndex(ev["day"].unique()))
     flag = pd.Series(days.isin(ev_days.index), index=days)
     r.flag = flag
-    r.states["athena.event_day"] = ("High-impact US event this session (CPI, NFP, PPI, FOMC...)", flag)
-    r.states["athena.event_tomorrow"] = ("High-impact US event the session after", pd.Series((days + S.BDAY).isin(ev_days.index), index=days))
+    first = days[days >= ev["day"].min()][0] if (days >= ev["day"].min()).any() else None
+    r.states["athena.event_day"] = ("High-impact US event this session (CPI, NFP, PPI, FOMC...)", flag, first)
+    r.states["athena.event_tomorrow"] = ("High-impact US event the session after",
+                                         pd.Series((days + S.BDAY).isin(ev_days.index), index=days), first)
     fomc_days = pd.DatetimeIndex(ev[ev["event"].str.contains("|".join(FOMC), case=False)]["day"].unique())
-    r.states["athena.fomc_day"] = ("FOMC decision / minutes day", pd.Series(days.isin(fomc_days), index=days))
+    r.states["athena.fomc_day"] = ("FOMC decision / minutes day", pd.Series(days.isin(fomc_days), index=days), first)
     nxt = ev[ev["when"] >= now - pd.Timedelta(minutes=30)]
     week_end = now.normalize() + pd.Timedelta(days=7)
     r.ok, r.asof = True, str(ev["day"].max().date())

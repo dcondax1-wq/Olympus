@@ -19,6 +19,7 @@ from tools.pantheon import sources as SRC  # noqa: E402
 
 FIXTURES = os.path.join(SRC.ROOT, "tests", "fixtures", "pantheon")
 SINCE = "2024-06-01"           # ~2.4 years: enough for a 250-observation z-score and a 2026 relation row
+COT_SINCE = "2020-06-01"       # the weekly COT needs ~5 years for 250 reports
 
 
 def _trim_csv(text: str, date_col: int, fmt: str | None) -> str:
@@ -37,7 +38,7 @@ def trim(src: SRC.Source, text: str) -> str:
     if src.id == "squeeze:dix":
         return _trim_csv(text, 0, "%Y-%m-%d")
     if src.id == "cftc:tff_nq":
-        rows = [r for r in json.loads(text) if r.get("report_date_as_yyyy_mm_dd", "") >= SINCE]
+        rows = [r for r in json.loads(text) if r.get("report_date_as_yyyy_mm_dd", "") >= COT_SINCE]   # weekly: more years
         keep = ["report_date_as_yyyy_mm_dd", *SRC.TFF_COLS]
         return json.dumps([{k: r[k] for k in keep if k in r} for r in rows], separators=(",", ":"))
     if src.id == "treasury:curve":
