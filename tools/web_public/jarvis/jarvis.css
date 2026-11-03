@@ -426,7 +426,7 @@ html:not([data-mode="jarvis"]) .dockfade { display: none; }
 
 /* ---------------------------------------------------------------- toasts, the boot screen, the slow-start note */
 .toast { position: fixed; z-index: 65; left: max(10px, env(safe-area-inset-left, 0px)); right: max(10px, env(safe-area-inset-right, 0px));
-  bottom: calc(var(--stack) + 10px); display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid rgba(var(--cr), .45);
+  top: calc(var(--bar-h) + env(safe-area-inset-top, 0px) + 10px); bottom: auto; display: flex;   /* top (2026-11-03): never over the mic / dock */ align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid rgba(var(--cr), .45);
   background: linear-gradient(180deg, rgba(var(--pr), .97), rgba(0,0,0,.97)); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 10px 30px rgba(0,0,0,.6), 0 0 20px rgba(var(--cr), .2);
   clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px)); font: 600 15.5px/1.3 var(--fb); max-width: 700px; margin: 0 auto; }
 .toast .ti { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--c); color: #fff; font: 700 15px var(--fh); box-shadow: 0 0 14px var(--c); }

@@ -41,9 +41,9 @@ const OLD = ['jarvis-v14', 'jarvis-v13', 'jarvis-v12', 'jarvis-v11', 'jarvis-v10
 const NAV_WAIT_MS = 3500;
 const NET_MAX_MS = 9000;
 const SHELL = ['./', './index.html', './manifest.webmanifest?v=j3', './apple-touch-icon.png?v=j3', './icon-192.png?v=j3', './icon-512.png?v=j3',
-  './jarvis.css?v=j10', './data.js', './brain.js', './core-visual.js', './apps.js', './zenith-mode.js', './switcher.js',
+  './jarvis.css?v=j11', './data.js', './brain.js', './core-visual.js', './apps.js', './zenith-mode.js', './switcher.js',
   './obsidian.js', './memory.js', './assist-ui.js', './voice-mode.js', './three.module.min.js', './orbitron.woff2', './rajdhani-400.woff2', './rajdhani-500.woff2', './rajdhani-600.woff2', './rajdhani-700.woff2'];
-const CORE = ['./index.html', './jarvis.css?v=j10', './data.js'];
+const CORE = ['./index.html', './jarvis.css?v=j11', './data.js'];
 const STATIC_RX = /\.(woff2|png|svg|jpg|webp|webmanifest)$/i;
 // how each page was answered ('cache' | 'net'), by its client id; lastNav when the browser gives no client ids
 const navFrom = new Map();
