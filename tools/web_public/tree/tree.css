@@ -24,7 +24,7 @@ html.framed { --st: 0px; }
 [hidden] { display: none !important; }
 html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden; }
 body {
-  font: 11px/1.45 var(--mono); color: var(--text); letter-spacing: .04em;
+  font: 500 12px/1.4 var(--oly-ui, var(--mono)); color: var(--text); letter-spacing: .04em;   /* OLYMPUS: Rajdhani; the readouts keep the mono */
   -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none;
 }
 button { font: inherit; color: inherit; letter-spacing: inherit; }
@@ -57,6 +57,7 @@ h1, h2, p, ol { margin: 0; }
 .badge { margin-left: auto; padding: 2px 7px; border: 1px solid var(--amber); color: var(--amber); border-radius: 3px; font-size: 9px; letter-spacing: .18em; }
 .line { margin-top: 3px; font-size: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .line b { color: var(--ink); font-weight: 600; }
+.hud-top .line { font: 11px/1.45 var(--mono); }        /* the terminal readouts (TOPOLOGY, RULE ...): DAPHNE's own mono */
 .line.rule { color: var(--ink); }
 .line.dim { color: var(--dim); }
 .money .pos { color: var(--green); } .money .neg { color: var(--red); }
@@ -113,10 +114,12 @@ h1, h2, p, ol { margin: 0; }
 
 /* ---------------------------------------------------------------- seeds (the other roots) */
 .seeds {
-  position: absolute; z-index: 3; left: 0; right: 0; bottom: 0;
-  display: flex; gap: 8px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
-  padding: 6px calc(var(--sr) + var(--orb)) calc(var(--sb) + 8px) calc(var(--sl) + 16px);
-  background: rgba(3, 7, 5, .94); border-top: 1px solid var(--line);
+  /* the strip stops short of Jarvis's orb (bottom-right 80 x 160): the seeds scroll and fade out before it, never under it */
+  position: absolute; z-index: 3; left: 0; right: calc(var(--sr) + var(--orb)); bottom: 0;
+  display: flex; gap: 8px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  padding: 6px 16px calc(var(--sb) + 8px) calc(var(--sl) + 16px);
+  background: rgba(3, 7, 5, .94); border-top: 1px solid var(--line); border-top-right-radius: 14px;
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent);
 }
 .seeds::-webkit-scrollbar { display: none; }
 .seed {
@@ -138,7 +141,7 @@ h1, h2, p, ol { margin: 0; }
 }
 .card {
   left: calc(var(--sl) + 12px); right: calc(var(--sr) + 12px); bottom: calc(var(--sb) + 84px);
-  max-height: 58vh; overflow: auto; padding: 14px 16px 14px;
+  max-height: 58vh; max-height: 58dvh; overflow: auto; padding: 14px 16px 14px;
   animation: rise .22s cubic-bezier(.2, .8, .2, 1);
 }
 @keyframes rise { from { opacity: 0; transform: translateY(10px); } }

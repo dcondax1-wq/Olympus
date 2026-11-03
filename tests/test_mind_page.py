@@ -108,7 +108,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
     def translate_path(self, path):
         p = path.split("?")[0]
-        if p.startswith("/mind/") or (p.startswith("/jarvis/") and p != "/jarvis/obsidian.js"):
+        if p.startswith("/mind/") or p.startswith("/olympus/") or (p.startswith("/jarvis/") and p != "/jarvis/obsidian.js"):
             return os.path.join(WEB, *p.lstrip("/").split("/"))
         return os.path.join(WEB, "__missing__")
 
@@ -178,7 +178,8 @@ def new_page(br, origin, vw, *, snap=None, reduced=False, quality="high"):
       if (navigator.sendBeacon) { const b = navigator.sendBeacon.bind(navigator); navigator.sendBeacon = (u, d) => { seen.push(String(u)); return b(u, d); }; }
     })();""")
     if quality:
-        ctx.add_init_script(f"try {{ localStorage.setItem('mind.quality', '{quality}'); }} catch (e) {{}}")
+        # the OLYMPUS kit's one 3D level (Jarvis's 'jfx' key) is the page's quality (docs/OLYMPUS_DESIGN.md)
+        ctx.add_init_script(f"try {{ localStorage.setItem('jfx', '{quality}'); }} catch (e) {{}}")
     if snap is not None:
         ctx.add_init_script("globalThis.__obs = { snap: " + json.dumps(snap) + " };")
     p = ctx.new_page()
@@ -225,9 +226,10 @@ def wait_flight(p, timeout=8):
 
 
 def orb_corner_free(p):
+    # the OLYMPUS seal (.oly-home) sits in the orb's seat only when the page is opened alone: Jarvis's orb is there when framed
     return p.evaluate("""() => { const w = innerWidth, h = innerHeight, hits = [];
       for (let x = w - 78; x < w; x += 12) for (let y = h - 158; y < h; y += 12)
-        for (const e of document.elementsFromPoint(x, y)) if (!['HTML', 'BODY', 'CANVAS'].includes(e.tagName) && e.id !== 'labels' && !e.classList.contains('lbl')) hits.push(e.id || e.className || e.tagName);
+        for (const e of document.elementsFromPoint(x, y)) if (!['HTML', 'BODY', 'CANVAS'].includes(e.tagName) && e.id !== 'labels' && !e.classList.contains('lbl') && !e.closest('.oly-home')) hits.push(e.id || e.className || e.tagName);
       return [...new Set(hits)]; }""")
 
 
@@ -339,7 +341,7 @@ def controls(p, tag):
     p.click("#timelapse")
     check(f"d. {tag}: Stop ends the time-lapse", p.is_hidden("#tl") and p.inner_text("#timelapse").strip() == "Time-lapse")
     p.click("#quality")
-    q1 = p.evaluate("[mind.quality, localStorage.getItem('mind.quality')]")
+    q1 = p.evaluate("[mind.quality, localStorage.getItem('jfx')]")          # kept in the shared OLYMPUS key
     p.click("#quality")
     q2 = p.evaluate("mind.quality")
     check(f"d. {tag}: the quality switch (HD / LITE) is kept", q1 == ["low", "low"] and q2 == "high", (q1, q2))

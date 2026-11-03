@@ -8,7 +8,7 @@
   --up: #5ef2a8; --down: #ff7a8a; --gold: #f7c948; --flat: #f4f4f6;
   --st: env(safe-area-inset-top, 0px); --sr: env(safe-area-inset-right, 0px); --sb: env(safe-area-inset-bottom, 0px); --sl: env(safe-area-inset-left, 0px);
   --gut: 16px; --top: calc(var(--st) + 100px); --bot: calc(var(--sb) + 160px);
-  --font: -apple-system, "SF Pro Display", system-ui, "Segoe UI", Roboto, sans-serif;
+  --font: var(--oly-ui, -apple-system, "SF Pro Display", system-ui, "Segoe UI", Roboto, sans-serif);   /* OLYMPUS: Rajdhani */
   --num: "Orbitron", -apple-system, system-ui, sans-serif;
   color-scheme: dark;
 }

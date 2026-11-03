@@ -305,6 +305,11 @@ def test_page(shots=None):
     for mode in ("live", "demo"):
         site = os.path.join(tmp, mode, "datacity")
         shutil.copytree(PAGE, site)
+        # the site layout around it: Jarvis's three.js and fonts (../jarvis/) and the OLYMPUS kit (../olympus/)
+        os.makedirs(os.path.join(tmp, mode, "jarvis"))
+        for f in ["three.module.min.js"] + glob.glob(os.path.join(os.path.dirname(PAGE), "jarvis", "*.woff2")):
+            shutil.copy(os.path.join(os.path.dirname(PAGE), "jarvis", os.path.basename(f)), os.path.join(tmp, mode, "jarvis"))
+        shutil.copytree(os.path.join(os.path.dirname(PAGE), "olympus"), os.path.join(tmp, mode, "olympus"))
         if mode == "demo":
             os.remove(os.path.join(site, "city.json"))
     srv = _serve(tmp)

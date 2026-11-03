@@ -217,7 +217,9 @@ def make_site(tmp, w, peers=False, title="Tuesdays pay the most"):
     site = os.path.join(tmp, "nq-dashboard")
     shutil.copytree(PAGE, os.path.join(site, "hermes"))
     os.makedirs(os.path.join(site, "jarvis"))
-    shutil.copy(os.path.join(ROOT, "tools", "web_public", "jarvis", "orbitron.woff2"), os.path.join(site, "jarvis"))
+    for f in glob.glob(os.path.join(ROOT, "tools", "web_public", "jarvis", "*.woff2")):
+        shutil.copy(f, os.path.join(site, "jarvis"))
+    shutil.copytree(os.path.join(ROOT, "tools", "web_public", "olympus"), os.path.join(site, "olympus"))   # the OLYMPUS kit
     if w is not None:
         with open(os.path.join(site, "hermes", "wrapped.json"), "w", encoding="utf-8") as fh:
             fh.write(build.dumps(w))

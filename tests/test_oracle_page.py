@@ -200,7 +200,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
     def translate_path(self, path):
         p = path.split("?")[0]
-        if p.startswith("/oracle/") or p.startswith("/jarvis/"):
+        if p.startswith("/oracle/") or p.startswith("/jarvis/") or p.startswith("/olympus/"):
             return os.path.join(WEB, *p.lstrip("/").split("/"))
         return os.path.join(WEB, "__missing__")
 
@@ -235,7 +235,8 @@ def new_page(br, origin, vw, *, reduced=False, quality="high"):
         return route.abort()
     ctx.route("**/*", guard)
     if quality:
-        ctx.add_init_script(f"try {{ localStorage.setItem('oracle.quality', '{quality}'); }} catch (e) {{}}")
+        # the OLYMPUS kit's one 3D level (Jarvis's 'jfx' key) is the page's quality (docs/OLYMPUS_DESIGN.md)
+        ctx.add_init_script(f"try {{ localStorage.setItem('jfx', '{quality}'); }} catch (e) {{}}")
     p = ctx.new_page()
     log = {"errors": [], "console": []}
     p.on("pageerror", lambda e: log["errors"].append(str(e)))
@@ -410,10 +411,10 @@ def pure_checks(br, origin, j):
 
 # ------------------------------------------------------------------ c. the demo
 def orb_free(p):
-    """Nothing the owner can tap or read sits in the bottom-right 80 x 160 px (Jarvis's orb)."""
+    """Nothing the owner can tap or read sits in the bottom-right 80 x 160 px (Jarvis's orb); the OLYMPUS seal (.oly-home) sits in the orb's seat only when the page is opened alone: Jarvis's orb is there when framed."""
     return p.evaluate("""() => { const W = innerWidth, H = innerHeight, bad = [];
       for (let x = W - 78; x < W; x += 12) for (let y = H - 158; y < H; y += 12)
-        for (const e of document.elementsFromPoint(x, y)) if (!['HTML', 'BODY', 'CANVAS'].includes(e.tagName)) bad.push(e.id || e.className || e.tagName);
+        for (const e of document.elementsFromPoint(x, y)) if (!['HTML', 'BODY', 'CANVAS'].includes(e.tagName) && !e.closest('.oly-home')) bad.push(e.id || e.className || e.tagName);
       return [...new Set(bad)]; }""")
 
 
@@ -589,8 +590,9 @@ def misc_checks(br, origin):
     ready(p, "demo")
     q0 = p.evaluate("oracle.quality")
     p.click("#quality")
-    check("f. the quality switch: HD <-> LITE, kept on the phone", q0 in ("high", "low") and p.evaluate("oracle.quality") != q0
-          and p.evaluate("localStorage.getItem('oracle.quality')") == p.evaluate("oracle.quality")
+    check("f. the quality switch: HD <-> LITE, kept on the phone (in the shared OLYMPUS key, so Jarvis follows)",
+          q0 in ("high", "low") and p.evaluate("oracle.quality") != q0
+          and p.evaluate("localStorage.getItem('jfx')") == p.evaluate("oracle.quality")
           and p.inner_text("#quality") == ("LITE" if p.evaluate("oracle.quality") == "low" else "HD"))
     p.click("#quality")
     check("f. no errors switching quality twice", not real_errors(log), real_errors(log))

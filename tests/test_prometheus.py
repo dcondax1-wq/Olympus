@@ -227,6 +227,7 @@ def _site(with_data=True):
     for f in ["three.module.min.js", "icon-192.png"] + [os.path.basename(x) for x in glob.glob(os.path.join(ROOT, "tools", "web_public", "jarvis", "*.woff2"))]:
         shutil.copy(os.path.join(ROOT, "tools", "web_public", "jarvis", f), os.path.join(base, "jarvis", f))
     shutil.copytree(PAGE, os.path.join(base, "prometheus"))
+    shutil.copytree(os.path.join(ROOT, "tools", "web_public", "olympus"), os.path.join(base, "olympus"))   # the OLYMPUS kit
     if not with_data:
         for f in ("forge.json", "jarvis.json"):
             p = os.path.join(base, "prometheus", f)
@@ -274,7 +275,7 @@ def _orb_free(p):
     """No button / input / card reaches into the bottom-right 80 x 160 px (Jarvis's orb)."""
     return p.evaluate("""() => {
       const W = innerWidth, H = innerHeight, box = {l: W - 80, t: H - 160, r: W, b: H};
-      const hit = [...document.querySelectorAll('button, input, a, .card:not([hidden])')].filter((e) => {
+      const hit = [...document.querySelectorAll('button, input, a:not(.oly-home), .card:not([hidden])')].filter((e) => {
         const r = e.getBoundingClientRect(); if (!r.width || !r.height || e.closest('[hidden]')) return false;
         return r.right > box.l && r.left < box.r && r.bottom > box.t && r.top < box.b; });
       return hit.map((e) => e.id || e.className || e.tagName); }""")

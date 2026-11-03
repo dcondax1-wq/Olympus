@@ -285,8 +285,9 @@ def site(with_data: str | None):
             shutil.copy(os.path.join(FATES, n), os.path.join(tmp, "fates", n))
     if with_data:
         shutil.copy(with_data, os.path.join(tmp, "fates", "fates.json"))
-    for n in ("three.module.min.js", "orbitron.woff2", "rajdhani-500.woff2", "rajdhani-700.woff2", "icon-192.png"):
+    for n in ("three.module.min.js", "orbitron.woff2", "rajdhani-400.woff2", "rajdhani-500.woff2", "rajdhani-600.woff2", "rajdhani-700.woff2", "icon-192.png"):
         shutil.copy(os.path.join(WEB, "jarvis", n), os.path.join(tmp, "jarvis", n))
+    shutil.copytree(os.path.join(WEB, "olympus"), os.path.join(tmp, "olympus"))    # the OLYMPUS kit (docs/OLYMPUS_DESIGN.md)
     srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(Quiet, directory=tmp))
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     return tmp, srv, f"http://127.0.0.1:{srv.server_address[1]}/fates/"
@@ -401,7 +402,7 @@ def test_page():
             # corner, scroll
             free = p.evaluate("""() => { const W = innerWidth, H = innerHeight, hit = [];
                 for (let x = W - 78; x < W; x += 13) for (let y = H - 158; y < H; y += 13) {
-                  const el = document.elementFromPoint(x, y); if (el && el.closest('button, a, .follow, .tile, .seg, .hint')) hit.push([x, y, el.className]); }
+                  const el = document.elementFromPoint(x, y); if (el && !el.closest('.oly-home') && el.closest('button, a, .follow, .tile, .seg, .hint')) hit.push([x, y, el.className]); }
                 return hit; }""")
             check("e. the bottom-right 80 x 160 px stays free for Jarvis's orb", not free, free[:4])
             for w in (375, 390, 430):

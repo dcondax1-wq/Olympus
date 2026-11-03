@@ -149,7 +149,7 @@
     if (state !== 'loading') return;
     var t = e && e.target;
     if (t && t !== window && t.tagName) {
-      if (t.tagName === 'SCRIPT') fail('a part of the page is missing (' + String(t.getAttribute('src') || 'script').split('?')[0] + ')');
+      if (t.tagName === 'SCRIPT') fail(String(t.getAttribute('src') || 'a script').split('?')[0].replace(/^.*\//, '') + ' is missing');
       return;                                            // an image or a font: never fatal
     }
     fail((e && e.message) || 'a script error');

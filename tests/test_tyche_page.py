@@ -203,7 +203,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
     def translate_path(self, path):
         p = path.split("?")[0].split("#")[0]
-        if p.startswith("/tyche/") or p.startswith("/jarvis/"):
+        if p.startswith("/tyche/") or p.startswith("/jarvis/") or p.startswith("/olympus/"):
             q = p.lstrip("/")
             if q.endswith("/"):
                 q += "index.html"
@@ -241,7 +241,8 @@ def new_page(br, origin, vw, *, reduced=False, quality="high"):
         return route.abort()
     ctx.route("**/*", guard)
     if quality:     # a chosen quality: SwiftShader is slow, and auto-LITE must not change the scene under the checks
-        ctx.add_init_script(f"try {{ localStorage.setItem('tyche.quality', '{quality}'); }} catch (e) {{}}")
+        # the OLYMPUS kit's one 3D level (Jarvis's 'jfx' key) is the page's quality (docs/OLYMPUS_DESIGN.md)
+        ctx.add_init_script(f"try {{ localStorage.setItem('jfx', '{quality}'); }} catch (e) {{}}")
     p = ctx.new_page()
     log = {"errors": [], "console": []}
     p.on("pageerror", lambda e: log["errors"].append(str(e)))
@@ -272,10 +273,10 @@ def shot(p, name):
 
 def orb_free(p):
     """Nothing the owner can tap or read sits in the bottom-right 80 x 160 px (Jarvis's orb): no control under any point of it,
-    and no shown 3D label or HUD box over it (labels let taps through, so they are checked by their boxes)."""
+    and no shown 3D label or HUD box over it (labels let taps through, so they are checked by their boxes); the OLYMPUS seal (.oly-home) sits in the orb's seat only when the page is opened alone: Jarvis's orb is there when framed."""
     return p.evaluate("""() => { const W = innerWidth, H = innerHeight, bad = [];
       for (let x = W - 78; x < W; x += 6) for (let y = H - 158; y < H; y += 6)
-        for (const e of document.elementsFromPoint(x, y)) if (!['HTML', 'BODY', 'CANVAS'].includes(e.tagName) && e.id !== 'labels') bad.push(e.id || e.className || e.tagName);
+        for (const e of document.elementsFromPoint(x, y)) if (!['HTML', 'BODY', 'CANVAS'].includes(e.tagName) && e.id !== 'labels' && !e.closest('.oly-home')) bad.push(e.id || e.className || e.tagName);
       for (const e of document.querySelectorAll('#labels .lb, #dock, .panel, .sheet, .tabs')) {
         if (e.hidden || e.closest('[hidden]')) continue;
         const r = e.getBoundingClientRect();
@@ -340,7 +341,7 @@ def static_checks():
           and isinstance(j.get("t"), int) and j.get("theme") == THEME and re.fullmatch(r"#[0-9a-f]{6}", j["theme"])
           and len(jj.encode()) <= 8192 and not any(re.search(r"<[a-z/]|&[a-z]+;|\n", x) for x in texts), j)
     b = read(os.path.join(ROOT, "tools", "build_web_dashboard.py"))
-    check("a. the site build publishes tyche/", 'for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche"):' in b)
+    check("a. the site build publishes tyche/", 'for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "olympus"):' in b)
     sw = read(os.path.join(WEB, "sw.js"))
     m = re.search(r"const OTHER_APPS = \[([^\]]*)\]", sw)
     check("a. the root worker leaves tyche/ alone (OTHER_APPS)", bool(m) and "'tyche/'" in m.group(1), m and m.group(1))
@@ -476,6 +477,21 @@ def v3_checks(br, origin, vw):
     ok = (abs(stakes[0][0] - 37.5) < 1e-6 and abs(stakes[1][0] - 75) < 1e-6 and stakes[2][0] == 120 and [s[1] for s in stakes] == ["¼", "½", "Full"]
           and "on 5 bets" in stakes[0][2] and "at the $120.00 max" in stakes[2][2])
     check(f"d. {tag}: the Kelly slider sizes each coin's halo (¼ $37.50, ½ $75, full capped at the $120 max bet)", ok, stakes)
+    # the slider's focus ring (tyche.css #kelly:focus { none } / :focus-visible { gold }): the keyboard shows the 2 px gold ring
+    # (iOS Safari never matches :focus-visible on a tap; desktop Chromium does for a range input, so a tap is not asserted);
+    # the slider is a 44 px tap target (OLYMPUS)
+    p.evaluate("document.activeElement && document.activeElement.blur()")
+    p.keyboard.press("Tab")
+    for _ in range(12):
+        if p.evaluate("document.activeElement && document.activeElement.id") == "kelly":
+            break
+        p.keyboard.press("Tab")
+    ring = p.evaluate("""(() => { const s = getComputedStyle(document.getElementById('kelly'));
+      return [document.activeElement.id, s.outlineStyle, s.outlineWidth, s.outlineColor, document.getElementById('kelly').getBoundingClientRect().height]; })()""")
+    check(f"d. {tag}: the Kelly slider: the gold focus ring from the keyboard, a 44 px tap target",
+          ring[0] == "kelly" and ring[1] == "solid" and ring[2] == "2px" and "255, 207, 90" in ring[3] and ring[4] >= 44, ring)
+    p.locator("#kelly").fill("2")                         # back to full Kelly, as the loop above left it
+    p.evaluate("document.activeElement && document.activeElement.blur()")
     shot(p, f"v3-wheel-{tag}")
     p.locator(".tabs button[data-view=pools]").click()
     p.wait_for_timeout(600)

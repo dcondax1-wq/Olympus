@@ -83,7 +83,7 @@ h1 { margin: 0; font: 700 15px Orbitron, sans-serif; letter-spacing: .22em; text
 .pos #pos-r { grid-row: 2; grid-column: 2; text-align: right; color: var(--dim); font-size: 12px; font-variant-numeric: tabular-nums; }
 .pos p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .levels { padding: 0 4px 6px; }
-#lv-toggle { width: 100%; min-height: 36px; display: flex; justify-content: space-between; align-items: center; padding: 0 8px; border: 0; background: none;
+#lv-toggle { width: 100%; min-height: 44px; display: flex; justify-content: space-between; align-items: center; padding: 0 8px; border: 0; background: none;
   font: 700 12px Rajdhani, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--cyan); cursor: pointer; }
 #lv-meta { color: var(--dim); letter-spacing: .04em; text-transform: none; font-weight: 600; }
 .levels.closed ul { display: none; }
