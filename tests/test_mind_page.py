@@ -392,14 +392,16 @@ def mock_cases(br, origin):
     p.click("#c-close")
     wait_flight(p)
     # onIndexChange: a new lesson about an existing note, and a new note
+    launched0 = p.evaluate("mind.sparksLaunched")
     p.evaluate("""() => { const s = globalThis.__obs.snap;
       s.notes.push({ id: 'Goals/Fresh idea.md', title: 'Fresh idea', path: 'Goals/Fresh idea.md', tags: ['goals'], links: ['Goals/Mock Goals 0.md'], mtime: Date.now(), words: 50, kind: 'note' });
       s.learned.push({ t: Date.now(), text: 'Brand new lesson from the mock vault', note: 'Trading/Mock Trading 4.md' });
       globalThis.__obs.fire(); }""")
     p.wait_for_function("document.getElementById('tk-text').textContent === 'Brand new lesson from the mock vault'", timeout=4000)
-    sparks = p.evaluate("mind.sparks")
+    sparks, launched = p.evaluate("[mind.sparks, mind.sparksLaunched]")
     shot(p, "spark_390.png")                              # a screenshot takes ~1 s on SwiftShader: the comet is mid-flight
-    check("e. onIndexChange: the ticker shows the new lesson at once and a spark flies to its note", sparks >= 1, sparks)
+    # a busy machine can draw so few frames that the 2.4 s comet has already landed: what counts is that one was sent
+    check("e. onIndexChange: the ticker shows the new lesson at once and a spark flies to its note", launched - launched0 >= 1, (sparks, launched0, launched))
     st2 = p.evaluate("mind.stats")
     check("e. the stats follow (one more note, one more lesson this week)", st2["notes"] == MOCK_NOTES + 1 and st2["learnedWeek"] == 3, st2)
     p.wait_for_function("mind.sparks === 0", timeout=6000)

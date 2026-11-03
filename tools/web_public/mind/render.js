@@ -179,7 +179,7 @@ export class Brain {
     this.clusterEmph = [];
     this.n = 0; this.graph = null; this.extent = 300; this.centre = new THREE.Vector3();
     this.layers = {};
-    this.sparks = []; this.burstNext = 0;
+    this.sparks = []; this.burstNext = 0; this.launched = 0;   // launched: every spark ever sent (tests)
     this.shift = { x: 0, y: 0, tx: 0, ty: 0 };
     this._v = new THREE.Vector3();
     this._buildSparks();
@@ -524,6 +524,7 @@ export class Brain {
     const side = new T.Vector3().crossVectors(dir, end.clone().sub(from)).normalize().multiplyScalar(dist * 0.08);
     const ctrl = from.clone().add(end).multiplyScalar(0.5).add(side).addScaledVector(cam.up, dist * 0.06);   // a gentle arc, on screen
     if (this.sparks.length >= SPARKS) this.sparks.shift();
+    this.launched++;
     this.sparks.push({ i, id: this.graph.nodes[i].id, t0: this.u.uTime.value, from: from.toArray(), ctrl: ctrl.toArray() });
   }
 

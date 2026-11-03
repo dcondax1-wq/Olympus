@@ -1,11 +1,23 @@
-// HERMES share: one card as a 1080 x 1920 PNG (drawn on a canvas, never a screenshot of the page), then the phone's share
+// HERMES share: a story as a 1080 x 1920 PNG (drawn on a canvas, never a screenshot of the page), then the phone's share
 // sheet (Web Share API with a file), else the image opens in a new tab to save.
-//   renderPNG(spec, colors) -> Promise<Blob>   spec {kicker, title, big, tone 'up'|'down'|'flat', lines: [..], foot, spark?}
-//   share(blob, name)       -> Promise<'shared'|'opened'|'cancelled'>
+//   renderPNG(spec, colors)        -> Promise<Blob>   one card: spec {kicker, title, big, tone 'up'|'down'|'flat', lines, foot, spark?}
+//   renderWeekPNG(w, key, colors)  -> Promise<Blob>   "Share the week": the whole recap on one image (net, record, best and
+//                                                    worst trade, discipline, evals, next goal)
+//   share(blob, name)              -> Promise<'shared'|'opened'|'cancelled'|'failed'>
+// The image uses OLYMPUS's own fonts (Orbitron numbers, Rajdhani words) once they are loaded, the system font before that.
+import { usd, tone, plural, span, dayLabel } from './data.js';
 
-const W = 1080, H = 1920;
-const FONT = '-apple-system, "SF Pro Display", system-ui, "Segoe UI", Roboto, sans-serif';
+const W = 1080, H = 1920, L = 96, MW = W - 2 * L;
+const SYS = '-apple-system, "SF Pro Display", system-ui, "Segoe UI", Roboto, sans-serif';
+const UI = `"Rajdhani", ${SYS}`, NUM = `"Orbitron", ${SYS}`;
 const TONE = { up: '#5ef2a8', down: '#ff7a8a', flat: '#f4f4f6' };
+
+/** Wait (at most ~1.2 s) for the fonts the image uses; a font that never loads leaves the system font. */
+async function fonts() {
+  if (!document.fonts || !document.fonts.load) return;
+  const want = ['700 50px Rajdhani', '600 50px Rajdhani', '800 90px Orbitron'];
+  await Promise.race([Promise.all(want.map((f) => document.fonts.load(f).catch(() => null))), new Promise((ok) => setTimeout(ok, 1200))]);
+}
 
 function wrap(ctx, text, maxW) {
   const words = String(text || '').split(' '), lines = [];
@@ -18,57 +30,142 @@ function wrap(ctx, text, maxW) {
   return lines;
 }
 
-function fit(ctx, text, maxW, size, weight) {
+function fit(ctx, text, maxW, size, weight, family = NUM) {
   let s = size;
-  do { ctx.font = `${weight} ${s}px ${FONT}`; s -= 6; } while (ctx.measureText(text).width > maxW && s > 40);
+  do { ctx.font = `${weight} ${s}px ${family}`; s -= 6; } while (ctx.measureText(text).width > maxW && s > 40);
 }
 
 function spark(ctx, pts, x, y, w, h, color) {
   if (!Array.isArray(pts) || pts.length < 2) return;
   const lo = Math.min(...pts), hi = Math.max(...pts), r = hi - lo || 1;
+  const P = (p, i) => [x + (i / (pts.length - 1)) * w, y + h - ((p - lo) / r) * h];
+  // a soft glow under the line, then the line
+  const g = ctx.createLinearGradient(0, y, 0, y + h);
+  g.addColorStop(0, color + '55'); g.addColorStop(1, color + '00');
+  ctx.beginPath(); pts.forEach((p, i) => { const [px, py] = P(p, i); i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); });
+  ctx.lineTo(x + w, y + h); ctx.lineTo(x, y + h); ctx.closePath(); ctx.fillStyle = g; ctx.fill();
   ctx.lineWidth = 10; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = color;
   ctx.shadowColor = color; ctx.shadowBlur = 30;
-  ctx.beginPath();
-  pts.forEach((p, i) => { const px = x + (i / (pts.length - 1)) * w, py = y + h - ((p - lo) / r) * h; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); });
+  ctx.beginPath(); pts.forEach((p, i) => { const [px, py] = P(p, i); i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); });
   ctx.stroke(); ctx.shadowBlur = 0;
 }
 
-export function drawCard(canvas, spec, colors) {
-  canvas.width = W; canvas.height = H;
-  const ctx = canvas.getContext('2d');
+/** The backdrop every image shares: the card's colours as light, a fine grid, a gold frame, the HERMES mark. */
+function backdrop(ctx, colors, label) {
   const [c0, c1, c2] = colors && colors.length === 3 ? colors : ['#12081f', '#3b1a6b', '#f2c14e'];
   ctx.fillStyle = c0; ctx.fillRect(0, 0, W, H);
   let g = ctx.createRadialGradient(W * 0.2, H * 0.18, 0, W * 0.2, H * 0.18, H * 0.75);
   g.addColorStop(0, c1); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   g = ctx.createRadialGradient(W * 0.9, H * 0.85, 0, W * 0.9, H * 0.85, H * 0.6);
   g.addColorStop(0, c2 + '88'); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = 'rgba(0,0,0,.28)'; ctx.fillRect(0, 0, W, H);
-  const L = 96, MW = W - 2 * L;
-  ctx.fillStyle = '#ffffff'; ctx.textBaseline = 'alphabetic';
-  ctx.font = `800 44px ${FONT}`; ctx.fillText('HERMES · OLYMPUS WRAPPED', L, 190);
-  ctx.globalAlpha = 0.75; ctx.font = `600 40px ${FONT}`; ctx.fillText(String(spec.kicker || ''), L, 260); ctx.globalAlpha = 1;
-  ctx.font = `800 92px ${FONT}`;
+  ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.fillRect(0, 0, W, H);
+  // the grid: a futuristic floor that fades out upward
+  ctx.save(); ctx.globalAlpha = 0.09; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2;
+  for (let x = 0; x <= W; x += 90) { ctx.beginPath(); ctx.moveTo(x, H * 0.55); ctx.lineTo(x, H); ctx.stroke(); }
+  for (let y = H * 0.55; y <= H; y += 90) { ctx.globalAlpha = 0.09 * ((y - H * 0.55) / (H * 0.45)); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+  ctx.restore();
+  // a light sweep across the glass
+  g = ctx.createLinearGradient(0, 0, W, H);
+  g.addColorStop(0.3, 'rgba(255,255,255,0)'); g.addColorStop(0.42, 'rgba(255,255,255,.07)'); g.addColorStop(0.5, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  // the frame and the mark
+  ctx.strokeStyle = 'rgba(247, 201, 72, .55)'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.roundRect ? ctx.roundRect(40, 40, W - 80, H - 80, 48) : ctx.rect(40, 40, W - 80, H - 80); ctx.stroke();
+  ctx.fillStyle = '#f7c948'; ctx.font = `800 40px ${NUM}`; ctx.textBaseline = 'alphabetic';
+  ctx.fillText('HERMES', L, 170);
+  const mark = ctx.measureText('HERMES').width;
+  ctx.globalAlpha = 0.75; ctx.fillStyle = '#ffffff'; ctx.font = `600 36px ${UI}`;
+  ctx.fillText('OLYMPUS WRAPPED' + (label ? ' · ' + String(label).toUpperCase() : ''), L + mark + 24, 168);
+  ctx.globalAlpha = 1;
+}
+
+function foot(ctx, text) {
+  ctx.globalAlpha = 0.7; ctx.fillStyle = '#ffffff'; ctx.font = `600 34px ${UI}`;
+  ctx.fillText(String(text || 'Paper and eval accounts. Real numbers, losses included.'), L, H - 110);
+  ctx.globalAlpha = 1;
+}
+
+export function drawCard(canvas, spec, colors) {
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  backdrop(ctx, colors);
+  ctx.fillStyle = '#ffffff';
+  ctx.globalAlpha = 0.75; ctx.font = `700 40px ${UI}`; ctx.fillText(String(spec.kicker || '').toUpperCase(), L, 270); ctx.globalAlpha = 1;
+  ctx.font = `700 100px ${UI}`;
   let y = 520;
-  for (const ln of wrap(ctx, spec.title, MW).slice(0, 3)) { ctx.fillText(ln, L, y); y += 104; }
-  y += 120;
-  fit(ctx, String(spec.big || ''), MW, 230, 900);
-  ctx.fillStyle = TONE[spec.tone] || TONE.flat; ctx.fillText(String(spec.big || ''), L, y);
-  y += 90;
-  if (spec.spark) { spark(ctx, spec.spark, L, y, MW, 260, TONE[spec.tone] || '#ffffff'); y += 360; }
-  ctx.fillStyle = '#f4f4f6'; ctx.font = `600 50px ${FONT}`;
+  for (const ln of wrap(ctx, spec.title, MW).slice(0, 3)) { ctx.fillText(ln, L, y); y += 108; }
+  y += 140;
+  const col = TONE[spec.tone] || TONE.flat;
+  fit(ctx, String(spec.big || ''), MW, 190, 800);
+  ctx.fillStyle = col; ctx.shadowColor = col; ctx.shadowBlur = 50; ctx.fillText(String(spec.big || ''), L, y); ctx.shadowBlur = 0;
+  y += 100;
+  if (spec.spark) { spark(ctx, spec.spark, L, y, MW, 260, col); y += 360; }
+  ctx.fillStyle = '#f4f4f6'; ctx.font = `600 52px ${UI}`;
   for (const line of (spec.lines || []).slice(0, 5)) {
-    for (const ln of wrap(ctx, line, MW).slice(0, 2)) { if (y > H - 260) break; ctx.fillText(ln, L, y); y += 66; }
+    for (const ln of wrap(ctx, line, MW).slice(0, 2)) { if (y > H - 260) break; ctx.fillText(ln, L, y); y += 68; }
     y += 18;
   }
-  ctx.globalAlpha = 0.7; ctx.font = `600 36px ${FONT}`;
-  ctx.fillText(String(spec.foot || 'Paper and eval accounts. Real numbers, losses included.'), L, H - 140);
-  ctx.globalAlpha = 1;
+  foot(ctx, spec.foot);
   return canvas;
 }
 
-export function renderPNG(spec, colors) {
-  const c = drawCard(document.createElement('canvas'), spec, colors);
-  return new Promise((ok, bad) => c.toBlob((b) => (b ? ok(b) : bad(new Error('no image'))), 'image/png'));
+/** The whole period on one image: the money, the record, the best and the worst trade, discipline, evals, the next goal. */
+export function drawWeek(canvas, w, key, colors) {
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d'), p = w.periods[key] || w.periods.week;
+  backdrop(ctx, colors || ['#12081f', '#5b1fd1', '#f7c948'], p.label);
+  let y = 300;
+  ctx.fillStyle = '#ffffff'; ctx.globalAlpha = 0.75; ctx.font = `700 40px ${UI}`;
+  ctx.fillText(`${p.label} · ${span(p)}`.toUpperCase(), L, y); ctx.globalAlpha = 1;
+  y += 210;
+  const col = TONE[tone(p.net)];
+  fit(ctx, usd(p.net), MW, 200, 800);
+  ctx.fillStyle = col; ctx.shadowColor = col; ctx.shadowBlur = 60; ctx.fillText(usd(p.net), L, y); ctx.shadowBlur = 0;
+  y += 90;
+  ctx.fillStyle = '#f4f4f6'; ctx.font = `600 50px ${UI}`;
+  ctx.fillText(`${plural(p.trades, 'trade')} · ${p.wins} won · ${p.losses} lost${p.win_pct != null ? ` · ${p.win_pct}%` : ''}`, L, y);
+  y += 70;
+  ctx.globalAlpha = 0.75; ctx.font = `600 42px ${UI}`;
+  ctx.fillText(`${usd(p.per_month, { cents: false })} a month at this pace`, L, y); ctx.globalAlpha = 1;
+  // tiles: best, worst, discipline, eval
+  const tiles = [];
+  if (p.best) tiles.push(['Best trade', usd(p.best.pnl), `${p.best.bot} · ${dayLabel(p.best.day)}`, 'up']);
+  if (p.worst) tiles.push(['Worst trade', usd(p.worst.pnl), `${p.worst.bot} · ${dayLabel(p.worst.day)}`, 'down']);
+  if (p.discipline && p.discipline.score != null) tiles.push(['Discipline', `${p.discipline.score}/100`, `${p.discipline.kept} of ${p.discipline.checked} checks kept`, p.discipline.score >= 90 ? 'up' : 'flat']);
+  const E = (w.eval || [])[0];
+  if (E) tiles.push(['Road to funded', `${Math.round(E.progress * 100)}%`, `${E.bot} · ${E.plan || E.name}`, E.progress >= 1 ? 'up' : 'flat']);
+  y += 90;
+  const tw = (MW - 30) / 2, th = 250;
+  tiles.slice(0, 4).forEach(([label, big, sub, t], i) => {
+    const x = L + (i % 2) * (tw + 30), ty = y + Math.floor(i / 2) * (th + 30);
+    ctx.fillStyle = 'rgba(0,0,0,.32)'; ctx.strokeStyle = 'rgba(255,255,255,.16)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, ty, tw, th, 32) : ctx.rect(x, ty, tw, th); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#ffffff'; ctx.globalAlpha = 0.7; ctx.font = `700 32px ${UI}`; ctx.fillText(label.toUpperCase(), x + 32, ty + 62); ctx.globalAlpha = 1;
+    fit(ctx, big, tw - 64, 76, 800);
+    ctx.fillStyle = TONE[t] || TONE.flat; ctx.fillText(big, x + 32, ty + 152);
+    ctx.fillStyle = '#f4f4f6'; ctx.globalAlpha = 0.8; ctx.font = `600 32px ${UI}`;
+    ctx.fillText(wrap(ctx, sub, tw - 64)[0] || '', x + 32, ty + 210); ctx.globalAlpha = 1;
+  });
+  y += 2 * (th + 30) + 70;
+  if (w.next && w.next.goal) {
+    ctx.fillStyle = '#f7c948'; ctx.font = `700 36px ${UI}`; ctx.fillText("NEXT WEEK'S ONE GOAL", L, y); y += 74;
+    ctx.fillStyle = '#ffffff'; ctx.font = `700 60px ${UI}`;
+    for (const ln of wrap(ctx, w.next.goal, MW).slice(0, 2)) { ctx.fillText(ln, L, y); y += 70; }
+  }
+  foot(ctx, w.demo ? 'DEMO data. Paper and eval accounts, losses included.' : null);
+  return canvas;
+}
+
+const toBlob = (c) => new Promise((ok, bad) => c.toBlob((b) => (b ? ok(b) : bad(new Error('no image'))), 'image/png'));
+
+export async function renderPNG(spec, colors) {
+  await fonts();
+  return toBlob(drawCard(document.createElement('canvas'), spec, colors));
+}
+
+export async function renderWeekPNG(w, key, colors) {
+  await fonts();
+  return toBlob(drawWeek(document.createElement('canvas'), w, key, colors));
 }
 
 export async function share(blob, name = 'olympus-wrapped.png') {

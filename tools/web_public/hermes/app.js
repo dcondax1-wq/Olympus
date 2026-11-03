@@ -1,11 +1,14 @@
 // HERMES, the messenger god: OLYMPUS Wrapped. Full-screen stories over wrapped.json (tools/hermes/build.py).
 // Tap the right side or swipe left = next, tap the left side or swipe right = back, hold = pause, arrows / space on a
-// keyboard. Routes: #week (default), #month, #all; add ",demo" (e.g. #week,demo) for the demo data.
+// keyboard, a tap on the progress bar jumps to that story, the ❚❚ button pauses. Routes: #week (default), #month, #all;
+// add ",demo" (e.g. #week,demo) for the demo data. "Share" makes the card on screen an image; "Share the week" on the
+// last story makes the whole recap one image.
 // Inside Jarvis it posts its card (jarvis.json) to Jarvis. window.HERMES is a small handle for tests and Jarvis.
+// Themes: applyTheme(theme) restyles the page; it follows olympus.js's theme (OLYMPUS.theme() / onTheme) when the kit has one.
 import { loadWrapped, loadPeers, plannerPeriod } from './data.js';
 import { deck, animateCounts } from './cards.js';
 import { createFx } from './fx.js';
-import { renderPNG, share } from './share.js';
+import { renderPNG, renderWeekPNG, share } from './share.js';
 
 const JARVIS_ORIGIN = 'https://demetrades2000-coder.github.io';
 const PERIODS = [['week', 'Week'], ['month', 'Month'], ['all', 'All time']];
@@ -15,8 +18,11 @@ const still = O ? O.reduced() : matchMedia('(prefers-reduced-motion: reduce)').m
 const $ = (s) => document.querySelector(s);
 
 const S = { w: null, demo: false, key: 'week', peers: {}, cards: [], i: -1, el: null, html: '', t0: 0, held: 0, paused: false, stopCount: null, raf: 0, lastShare: null };
-const fx = createFx($('#bg'), $('#fx'), { still });
-O?.mode(O.lite());                          // LITE: the effects layer at 1.5 px per CSS px (fx.js)
+const lite = O ? O.lite() : false;
+const fx = createFx($('#bg'), $('#fx'), { still, lite });
+O?.mode(lite);                              // LITE: a smaller shader buffer, fewer particles, 1.5 px per CSS px (fx.js)
+// a theme's colour names -> this page's CSS custom properties (hermes.css :root)
+const THEME_KEYS = { accent: '--gold', gold: '--gold', bg: '--bg', background: '--bg', text: '--text', dim: '--text2', line: '--line', up: '--up', down: '--down' };
 
 function route() {
   const parts = decodeURIComponent(location.hash.slice(1)).split(/[,/]/);
@@ -29,6 +35,12 @@ function chrome() {
   $('#prog').innerHTML = S.cards.map(() => '<span><i></i></span>').join('');
   $('#demo').hidden = !S.demo;
   document.documentElement.dataset.period = S.key;
+}
+
+function setPaused(v) {
+  S.paused = !!v;
+  const b = $('#play');
+  if (b) { b.setAttribute('aria-pressed', String(S.paused)); b.setAttribute('aria-label', S.paused ? 'Play' : 'Pause'); }
 }
 
 function progress(frac) {
@@ -62,7 +74,7 @@ function show(i, dir = 1) {
   fx.palette(c.colors, c.mode);
   S.stopCount = animateCounts(el, still);
   setTimeout(() => { if (S.el === el) c.enter(el, fx, still); }, still ? 0 : 380);
-  $('#pos').textContent = `${i + 1}/${S.cards.length}`;
+  $('#pos').replaceChildren(Object.assign(document.createElement('b'), { textContent: `${i + 1}/${S.cards.length}` }), document.createTextNode(c.name || ''));
   document.querySelector('meta[name="theme-color"]').content = c.colors[0];
   progress(still ? 1 : 0);
   tick();
@@ -72,7 +84,7 @@ function fit(el) {
   const t = el.querySelector('.tilt'), room = el.clientHeight, need = t.scrollHeight;
   if (need > room && room > 0) { el.classList.add('fit'); el.style.setProperty('--fit', (room / need).toFixed(4)); }
 }
-const next = () => (S.i < S.cards.length - 1 ? show(S.i + 1, 1) : (S.paused = true, progress(1)));
+const next = () => (S.i < S.cards.length - 1 ? show(S.i + 1, 1) : (setPaused(true), progress(1)));
 const prev = () => show(S.i - 1, -1);
 
 function tick() {
@@ -111,7 +123,7 @@ function refresh() {
 function build(key) {
   S.key = key;
   S.cards = cardsFor(key);
-  S.paused = false;
+  setPaused(false);
   chrome();
   show(0);
 }
@@ -123,7 +135,7 @@ function input() {
   stage.addEventListener('pointerdown', (e) => {
     if (e.target.closest('button, a')) return;
     down = { x: e.clientX, y: e.clientY, t: performance.now(), id: e.pointerId };
-    holdT = setTimeout(() => { S.paused = true; document.body.classList.add('held'); }, 260);
+    holdT = setTimeout(() => { setPaused(true); document.body.classList.add('held'); }, 260);
   });
   const end = (e, cancel) => {
     clearTimeout(holdT);
@@ -131,11 +143,11 @@ function input() {
     const dx = e.clientX - down.x, dy = e.clientY - down.y, dt = performance.now() - down.t, wasHeld = document.body.classList.contains('held');
     down = null;
     document.body.classList.remove('held');
-    if (wasHeld) S.paused = false;
+    if (wasHeld) setPaused(false);
     if (cancel) return;
-    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) { S.paused = false; dx < 0 ? next() : prev(); return; }
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) { setPaused(false); dx < 0 ? next() : prev(); return; }
     if (wasHeld || dt > 260 || Math.abs(dy) > 40) return;
-    S.paused = false;
+    setPaused(false);
     e.clientX < innerWidth * 0.3 ? prev() : next();
   };
   stage.addEventListener('pointerup', (e) => end(e, false));
@@ -146,9 +158,19 @@ function input() {
     S.el.style.setProperty('--py', ((e.clientY / innerHeight) - 0.5).toFixed(3));
   });
   stage.addEventListener('click', (e) => {
-    const b = e.target.closest('[data-act="replay"]');
-    if (b) build(S.key);
+    const b = e.target.closest('[data-act]');
+    if (b && b.dataset.act === 'replay') build(S.key);
+    if (b && b.dataset.act === 'share-week') onShareWeek(b);
   });
+  // the progress bar: a tap on a segment jumps to that story
+  $('#prog').addEventListener('click', (e) => {
+    const r = $('#prog').getBoundingClientRect(), n = S.cards.length;
+    if (!n || !r.width) return;
+    const i = Math.max(0, Math.min(n - 1, Math.floor(((e.clientX - r.left) / r.width) * n)));
+    setPaused(false);
+    show(i, i >= S.i ? 1 : -1);
+  });
+  $('#play').addEventListener('click', () => { setPaused(!S.paused); if (!S.paused && S.i === S.cards.length - 1 && S.held >= S.cards[S.i].ms) show(0); });
   $('#periods').addEventListener('click', (e) => {
     const b = e.target.closest('button[data-k]');
     if (!b) return;
@@ -171,7 +193,7 @@ async function onShare() {
   if (!c) return;
   const btn = $('#share');
   btn.disabled = true;
-  S.paused = true;
+  setPaused(true);
   try {
     const blob = await renderPNG(c.share(), fx.colors());
     S.lastShare = { type: blob.type, size: blob.size, card: c.id };
@@ -182,8 +204,49 @@ async function onShare() {
     toast('Could not make the image');
   } finally {
     btn.disabled = false;
-    S.paused = false;
+    setPaused(false);
   }
+}
+
+async function onShareWeek(btn) {
+  if (!S.w) return;
+  btn.disabled = true;
+  setPaused(true);
+  try {
+    const blob = await renderWeekPNG(S.w, S.key, ['#12081f', '#5b1fd1', '#f7c948']);
+    S.lastShare = { type: blob.type, size: blob.size, card: 'week', key: S.key };
+    dispatchEvent(new CustomEvent('hermes:share', { detail: S.lastShare }));
+    const how = await share(blob, `olympus-wrapped-${S.key}.png`);
+    toast(how === 'shared' ? 'Shared' : how === 'opened' ? 'Image opened: press and hold to save' : how === 'cancelled' ? 'Cancelled' : 'Could not share');
+  } catch (e) {
+    toast('Could not make the image');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/** Restyle the page from a theme: {accent, bg, text, up, down, ...} or CSS custom properties ('--x': value), flat or one
+ * level down (e.g. {name, vars: {...}}). Unknown keys and unsafe values are ignored. Returns what it applied. */
+function applyTheme(theme) {
+  if (!theme || typeof theme !== 'object') return {};
+  const known = (o) => Object.keys(o).some((k) => k.startsWith('--') || k in THEME_KEYS);
+  const t = known(theme) ? theme : Object.values(theme).find((v) => v && typeof v === 'object' && !Array.isArray(v) && known(v));
+  if (!t) return {};
+  const root = document.documentElement.style, done = {};
+  for (const [k, v] of Object.entries(t)) {
+    const prop = k.startsWith('--') ? k : THEME_KEYS[k];
+    if (prop && typeof v === 'string' && v.length < 200 && !/[;{}<>]/.test(v)) { root.setProperty(prop, v); done[prop] = v; }
+  }
+  return done;
+}
+
+function followTheme() {
+  const api = window.OLYMPUS || window.Olympus || null;
+  if (!api) return;
+  try {
+    if (typeof api.theme === 'function') { const t = api.theme(); if (t && typeof t === 'object') applyTheme(t); }
+    if (typeof api.onTheme === 'function') api.onTheme((t) => applyTheme(t));
+  } catch (_) { /* an older kit: the page's own look */ }
 }
 
 function toast(msg) {
@@ -229,7 +292,8 @@ async function start() {
   postToJarvis();
 }
 
-window.HERMES = { next: () => next(), prev: () => prev(), go: (i) => show(i), state: () => ({ key: S.key, i: S.i, n: S.cards.length, id: (S.cards[S.i] || {}).id, ids: S.cards.map((c) => c.id), demo: S.demo, paused: S.paused, gl: fx.gl, still }),
-  get lastShare() { return S.lastShare; }, pause: (v = true) => { S.paused = v; } };
+window.HERMES = { next: () => next(), prev: () => prev(), go: (i) => show(i), state: () => ({ key: S.key, i: S.i, n: S.cards.length, id: (S.cards[S.i] || {}).id, ids: S.cards.map((c) => c.id), demo: S.demo, paused: S.paused, gl: fx.gl, still, particles: fx.count(), name: (S.cards[S.i] || {}).name }),
+  get lastShare() { return S.lastShare; }, pause: (v = true) => setPaused(v), applyTheme: (t) => applyTheme(t) };
+followTheme();
 input();
 start();

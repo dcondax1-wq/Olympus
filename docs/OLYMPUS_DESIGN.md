@@ -161,3 +161,28 @@ cost; an iPhone runs all nine at 60 fps on HD.
 | `vh` panel heights under iOS toolbars (Mind, Daphne, Fates) | `dvh` after the `vh` |
 | Fates canvas `100vw` (sideways scroll with a scrollbar) | `100%` |
 | Two copies of three.js on the site | Data City uses Jarvis's copy |
+
+## Mind and Hermes, the day upgrade (2026-11-03)
+
+Both apps now have **one top bar and one bottom sheet** (glass, the kit's tokens, the orb's corner free) and expose
+`applyTheme(theme)` (`window.mind.applyTheme`, `window.HERMES.applyTheme`). A theme is a flat object of colour names
+(`accent`, `bg`, `text`, ...) or CSS custom properties (`'--x': value`), or the same one level down (`{name, vars: {...}}`).
+Unknown keys and values with `; { } < >` are ignored. When the kit has a theme API (`OLYMPUS.theme()` / `OLYMPUS.onTheme(cb)`,
+or `window.Olympus`), each app applies it at load and on every change; without it nothing changes.
+
+| App | What is new | Module |
+|---|---|---|
+| Mind | Nebula clouds per galaxy: layered sprites from a cloud atlas baked once, drawn at 1/4 resolution (1/16 of the pixels) | `mind/nebula.js` |
+| Mind | Jarvis's memories seated on a tilted cyan ring around Me (the layout pulls them to their seats; the ring follows Me) | `mind/memring.js`, `mind/layout.js` |
+| Mind | Synapse pulses along the links when a note opens or learns; quiet idle "thinking" pulses (none under reduced motion) | `mind/synapse.js` |
+| Mind | Galaxy / constellation view (crisp stars, bright lines; kept in `mind.view`), focus mode (one galaxy lit, a pill, × / Escape) | `mind/render.js`, `mind/main.js` |
+| Mind | The thought stream (lessons and edits, newest first, a tap flies there), an ambient camera when idle | `mind/ui.js`, `mind/controls.js` |
+| Mind | The note card: a markdown-ish preview (headings, lists, tasks, quotes, code, `[[links]]` that fly, `#tags`, textContent only), links and backlinks apart; reads the optional `preview` field of `graphSnapshot()` notes, else `snippet` | `mind/markdown.js` |
+| Hermes | A scene per card (aurora on a green week, horizon grid on the evals, warp on the hall), a light sweep, kinetic type (words flip up, a gold rule draws), 3D depth in the tilt with a sheen | `hermes/fx.js`, `hermes/hermes.css` |
+| Hermes | Confetti cannons on a green week, gold glitter on the hall, paper confetti that flutters | `hermes/fx.js` |
+| Hermes | The all-time hall card (lifetime $, best trade ever, best day, longest green run, win rate) | `hermes/cards.js` |
+| Hermes | Pause / play, a tap on the progress bar jumps, the sheet names the story, "Share the week" (one PNG of the whole recap, OLYMPUS fonts) | `hermes/app.js`, `hermes/share.js` |
+
+Perf: Mind stays inside its budget (17 draw calls, 110 triangles, 4.6 MB heap on the kit test); the nebula pass is one extra
+small render each frame. LITE keeps two clouds per galaxy, fewer ring motes and no idle thinking; Hermes on LITE draws
+its shader at 0.3 px per CSS px and caps particles at 90. Screenshots: `research/handoff/2026-11-03-day/mind_hermes/`.

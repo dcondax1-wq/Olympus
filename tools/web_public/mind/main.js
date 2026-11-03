@@ -390,6 +390,7 @@ window.mind = {
   get quality() { return state.quality; },
   get fps() { return state.fps; },
   get sparks() { return brain ? brain.sparks.length : 0; },
+  get sparksLaunched() { return brain ? brain.launched : 0; },
   get layout() { return layout ? layout.mode : 'none'; },
   get settled() { return state.settled; },
   get view() { return state.view; },
