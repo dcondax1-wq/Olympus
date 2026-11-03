@@ -160,14 +160,27 @@
   }
 
   let HERO = null, H0 = null, tick = 0;
+  // no board yet: the hero's own shape as a shimmer, so the cards under it do not jump when the data lands (it is gone for good
+  // once the first board has come: a Home with no account at all just shows none)
+  let seen = false;
+  function skeleton(home) {
+    const hi = home.querySelector(':scope > .pl-hi');
+    if (seen || !hi) { if (HERO) { HERO.remove(); HERO = null; } return; }
+    if (!HERO) { HERO = document.createElement('section'); HERO.className = 'zh-hero zh-skel'; HERO.setAttribute('aria-hidden', 'true'); wire(HERO); }
+    if (!HERO.classList.contains('zh-skel')) return;
+    if (HERO.parentNode !== hi) hi.appendChild(HERO);
+    if (!HERO.firstChild) HERO.innerHTML = '<i class="zh-sk a"></i><i class="zh-sk b"></i><div class="zh-sk-row"><i class="zh-sk c"></i><i class="zh-sk c"></i></div><i class="zh-sk d"></i>';
+  }
   function paint(sync) {
     const home = document.querySelector('#page > .pl-home');
     if (!home) { if (HERO) { HERO.remove(); HERO = null; } return; }
-    const M = model(); if (!M) return;
-    const As = accounts(M), H = build(M, As);
-    if (!H) { if (HERO) { HERO.remove(); HERO = null; } return; }
+    const M = model(), As = M ? accounts(M) : [], H = M ? build(M, As) : null;
+    if (!H) { skeleton(home); return; }
+    if (HERO && HERO.classList.contains('zh-skel')) { HERO.classList.remove('zh-skel'); ST.sig = ''; }
     H0 = H;
+    seen = true;
     if (!HERO) { HERO = document.createElement('section'); HERO.className = 'zh-hero'; HERO.setAttribute('aria-label', 'Today'); wire(HERO); }
+    HERO.removeAttribute('aria-hidden'); HERO.setAttribute('aria-label', 'Today');
     // inside the greeting box (Home's child order stays: greeting, status bar, account cards ...), ahead of the money ribbon
     const hi = home.querySelector(':scope > .pl-hi');
     if (!hi) return;
@@ -181,7 +194,8 @@
       HERO.querySelectorAll('[data-zn-num]').forEach((e) => { const p = Z.parse(e.textContent); if (p) prev[e.dataset.znNum] = p.v; });
       ST.sig = sig;
       HERO.innerHTML = html(H);
-      HERO.querySelectorAll('[data-zn-num]').forEach((e) => { const o = prev[e.dataset.znNum]; if (Number.isFinite(o)) Z.count(e, o, 800); });
+      HERO.querySelectorAll('[data-zn-num]').forEach((e) => { const o = prev[e.dataset.znNum]; if (Number.isFinite(o)) Z.count(e, o, 800); else if (!ST.shown && e.dataset.znNum === 'zh-today') Z.count(e, 0, 1100); });
+      ST.shown = true;
       ST.pts = S;
       if (sync) chart(); else requestAnimationFrame(chart);
     }
@@ -242,6 +256,10 @@
   }).observe(pg, { childList: true, subtree: true });
   addEventListener('hashchange', soon);
   addEventListener('storage', (e) => { if (e.key === 'jfx') { ST.sig = ''; soon(); } });
+  // pull to refresh (index.html's #ptr) or the refresh button: a light sweep over the hero while the data loads
+  const ptr = document.getElementById('ptr'), rf = document.getElementById('refresh');
+  const sync = () => { if (HERO) HERO.classList.toggle('zh-sync', !!((ptr && ptr.classList.contains('go')) || (rf && /spin|busy|load/.test(rf.className)))); };
+  if (typeof MutationObserver !== 'undefined') [ptr, rf].forEach((n) => n && new MutationObserver(sync).observe(n, { attributes: true, attributeFilter: ['class'] }));
   window.ZENITH_HERO = { version: 1, series, nextWindow, paint: soon };
   soon();
 })();

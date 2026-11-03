@@ -173,3 +173,25 @@ header.top .iconbtn::after { content: ""; position: absolute; inset: -4px; borde
 :root:not([data-theme="light"]) #page :is(.stat, .su-acct) { background-image: linear-gradient(135deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, 0) 38%, rgba(255, 255, 255, .02) 70%, rgba(255, 255, 255, .06)); }
 #page .card-h h3 { letter-spacing: -.01em; }
 .pl-hi .zh-hero b { background: none; filter: none; -webkit-text-fill-color: currentColor; -webkit-background-clip: border-box; background-clip: border-box; }
+
+/* ---------- Home order + one number per tile + skeleton + refresh feel ---------- */
+/* one Today: the hero carries it, the old money ribbon keeps This month and Eval P&L */
+.zn-hi .zn-m.today { display: none; }
+.zn-hi .zn-money { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.zn-hi .zn-m.month { padding-left: 0; border-left: 0; }
+/* top to bottom: hero (today, bots, equity curve + floor), the bot cards, this week, the status / alerts, what matters now, market, tiles */
+#page.pl-h > .pl-home > .su-accts { order: 1; } #page.pl-h > .pl-home > .su-week { order: 2; } #page.pl-h > .pl-home > .su-bar { order: 3; }
+#page.pl-h > .pl-home > .pl-now { order: 4; } #page.pl-h > .pl-home > .su-mkt { order: 5; } #page.pl-h > .pl-home > .pl-quick { order: 6; }
+/* skeleton: the hero's own size, a slow shimmer (transform only), still on Low / Off / reduced motion */
+.zh-hero.zh-skel { min-height: 410px; display: flex; flex-direction: column; gap: 14px; overflow: hidden; }
+.zh-hero.zh-skel::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, .07) 50%, transparent 70%); pointer-events: none; }
+:root[data-zq="high"] .zh-skel::after, :root[data-zq="ultra"] .zh-skel::after { animation: zh-sweep 1.6s ease-in-out infinite; }
+.zh-sk { display: block; border-radius: 10px; background: rgba(255, 255, 255, .06); }
+.zh-sk.a { height: 54px; width: 55%; } .zh-sk.b { height: 24px; width: 38%; } .zh-sk.c { height: 52px; flex: 1; } .zh-sk.d { height: 150px; border-radius: 14px; }
+.zh-sk-row { display: flex; gap: 8px; }
+@keyframes zh-sweep { to { transform: translateX(100%); } }
+/* refresh: the same sweep over the live hero while the data loads */
+.zh-hero.zh-sync::after { content: ""; position: absolute; inset: 0; border-radius: inherit; transform: translateX(-100%); background: linear-gradient(100deg, transparent 30%, rgba(var(--zn-accent-rgb), .12) 50%, transparent 70%); pointer-events: none; }
+:root[data-zq="high"] .zh-sync::after, :root[data-zq="ultra"] .zh-sync::after { animation: zh-sweep 1s ease-in-out infinite; }
+#ptr { background: linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, .03)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18), 0 8px 22px -10px rgba(var(--zn-accent-rgb), .7); }
+:root.zn-still .zh-skel::after, :root.zn-still .zh-sync::after { animation: none !important; }

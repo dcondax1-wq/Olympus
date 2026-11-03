@@ -1,0 +1,1598 @@
+{
+ "v": 1,
+ "kind": "olympus-athena-library",
+ "sources": [
+  "CLAUDE.md",
+  "STRATEGY.md",
+  "docs/CLAUDE_REFERENCE.md",
+  "research/lit/mffu_rules.json",
+  "research/writeups/uprisk.md"
+ ],
+ "tags": [
+  {
+   "id": "strategy",
+   "name": "Strategy",
+   "color": "#6aa8ff",
+   "blurb": "How the bot trades, step by step"
+  },
+  {
+   "id": "mffu",
+   "name": "MFFU rules",
+   "color": "#ffcf5a",
+   "blurb": "The prop firm's rules that matter"
+  },
+  {
+   "id": "rejected",
+   "name": "Rejected",
+   "color": "#ff7a7a",
+   "blurb": "Tested, did not work, and why"
+  },
+  {
+   "id": "words",
+   "name": "Words",
+   "color": "#7ef0c4",
+   "blurb": "Every term in plain words"
+  },
+  {
+   "id": "playbook",
+   "name": "When...",
+   "color": "#d49bff",
+   "blurb": "What to do when something happens"
+  },
+  {
+   "id": "numbers",
+   "name": "Numbers",
+   "color": "#ff9f5a",
+   "blurb": "The results and the money"
+  }
+ ],
+ "entries": [
+  {
+   "id": "lit-in-one",
+   "kind": "strategy",
+   "tags": [
+    "strategy",
+    "numbers"
+   ],
+   "title": "The bot in one minute",
+   "short": "The bot waits for price to poke through an obvious high or low, trap the late traders, then turn. It buys (or sells) the turn with a stop right behind the poke.",
+   "body": [
+    "Big groups of traders park their stops and orders at obvious highs and lows. That pile of orders is [[liquidity]].",
+    "Price often runs through such a level (a [[sweep]]), traps the traders who reacted, then reverses. The bot trades that reversal.",
+    "It is one fixed set of written rules, called LIT. It trades NQ futures as [[mnq]], using [[micro]] contracts, one trade a day at most, paper only.",
+    "Every rule was picked on Jan to Jun 2026 and checked on Jul to Oct 2026."
+   ],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "quiz": {
+    "q": "What is the idea behind the bot?",
+    "a": "Trade the turn after price pokes through an obvious high or low and traps traders",
+    "wrong": [
+     "Buy every dip in the morning",
+     "Follow the news and trade the headline",
+     "Trade a moving average cross"
+    ]
+   }
+  },
+  {
+   "id": "step-1",
+   "kind": "strategy",
+   "tags": [
+    "strategy"
+   ],
+   "title": "Step 1: mark the levels",
+   "short": "Before anything happens, the bot lists the obvious highs and lows: session highs and lows, yesterday, last week, last month, opening gaps, equal highs or lows.",
+   "body": [
+    "Asia, London and New York [[session]] highs and lows count, once their box has closed.",
+    "[[pdh]] and PDL (yesterday), the week and the month high and low count.",
+    "The weekly and daily opening gaps count, and so do \"equal lows\": two swing lows at the same price, untouched in between.",
+    "A level is marked before the [[sweep]], never after. Marking it afterwards would be cheating the test."
+   ],
+   "src": [
+    "STRATEGY.md"
+   ]
+  },
+  {
+   "id": "step-2",
+   "kind": "strategy",
+   "tags": [
+    "strategy"
+   ],
+   "title": "Step 2: wait for a sweep",
+   "short": "Price makes a new 2-hour low (or high) and runs through a marked level (a [[sweep]]) by at least half an [[atr]].",
+   "body": [
+    "A swept low sets up a long (buy). A swept high sets up a short (sell). Shorts are the mirror image of everything here.",
+    "Half an ATR is the filter that stops tiny pokes from counting."
+   ],
+   "src": [
+    "STRATEGY.md"
+   ]
+  },
+  {
+   "id": "step-3",
+   "kind": "strategy",
+   "tags": [
+    "strategy"
+   ],
+   "title": "Step 3: the trap (inducement)",
+   "short": "Just before the [[sweep]] a small swing low sat a little above the level. The final push ran through it, so early buyers got stopped out: that is the [[inducement]].",
+   "body": [
+    "The small swing is at most 1 [[atr]] above the level and at most 3 hours old.",
+    "Nothing may touch it until the last push into the low."
+   ],
+   "src": [
+    "STRATEGY.md"
+   ]
+  },
+  {
+   "id": "step-4",
+   "kind": "strategy",
+   "tags": [
+    "strategy"
+   ],
+   "title": "Step 4: the shift (5m CISD)",
+   "short": "Price must close back above the start of the last fall. That close is the [[cisd]], proof the sellers lost control. One strong candle on the way ([[displacement]]) is required.",
+   "body": [
+    "The CISD level is the open of the first candle of the last run of down-closing 5-minute candles.",
+    "One candle body must be at least 0.8 [[atr]] (that is the displacement).",
+    "The bot only looks for entries between 02:00 and 15:30 New York time."
+   ],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "quiz": {
+    "q": "In the bot's rules, which hours can a new trade start?",
+    "a": "02:00 to 15:30 New York time",
+    "wrong": [
+     "09:30 to 11:00 only",
+     "All day and night",
+     "18:00 to 02:00"
+    ]
+   }
+  },
+  {
+   "id": "step-5",
+   "kind": "strategy",
+   "tags": [
+    "strategy"
+   ],
+   "title": "Step 5: the entry",
+   "short": "A buy [[limit-order]] sits at the CISD level for 30 minutes. After price taps it, the bot waits for a small 1-minute [[cisd]], then buys.",
+   "body": [
+    "Once price taps the limit, the bot gives it up to 20 one-minute candles to confirm.",
+    "The setup is dropped if the [[sweep]] low breaks, the target trades first, 30 minutes pass with no tap, or it is 15:55.",
+    "The bot never chases with a market order. A missed move stays missed."
+   ],
+   "src": [
+    "STRATEGY.md"
+   ]
+  },
+  {
+   "id": "step-6",
+   "kind": "strategy",
+   "tags": [
+    "strategy"
+   ],
+   "title": "Step 6: the stop",
+   "short": "The [[stop]] goes 1 [[tick]] beyond the extreme of the [[sweep]], never a fixed distance. Under 8 points or over 80 points means no trade.",
+   "body": [
+    "The sweep extreme is the high or low made before the turn. If price goes back through it, the idea was wrong, so you are out.",
+    "A wide stop means fewer [[micro]] contracts (less risk). A small stop allows more. Size follows the stop."
+   ],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "quiz": {
+    "q": "Where does the bot put its stop?",
+    "a": "1 tick beyond the sweep extreme",
+    "wrong": [
+     "A fixed 20 points away",
+     "10 ticks under the entry",
+     "At the previous day's close"
+    ]
+   }
+  },
+  {
+   "id": "step-7",
+   "kind": "strategy",
+   "tags": [
+    "strategy"
+   ],
+   "title": "Step 7: the target",
+   "short": "The target is the 18:00 open plus (long) or minus (short) one day's expected move from the [[vix-band]]. It must be at least 1.5R away, and profit is banked at 8R.",
+   "body": [
+    "One move = yesterday's VIX close divided by 100, divided by the square root of 252, times the 18:00 open.",
+    "Closer than 1.5[[r]] means no trade. Further than 8R means take the money at 8R. No greed."
+   ],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "quiz": {
+    "q": "Where does the bot bank profit at most?",
+    "a": "At 8R",
+    "wrong": [
+     "At 2R, always",
+     "It never takes profit early",
+     "At 20 points"
+    ]
+   }
+  },
+  {
+   "id": "step-8",
+   "kind": "strategy",
+   "tags": [
+    "strategy"
+   ],
+   "title": "Step 8: manage the trade",
+   "short": "At +1R the stop moves to [[breakeven]] (plus 1.25 points for costs). A trade that is not working 15 minutes after the fill is closed early. Everything is flat by 15:55.",
+   "body": [
+    "Breakeven: after +1R the stop goes to entry + 1.25 points, so a breakeven exit does not lose the costs.",
+    "15-minute check: if the trade never reached +0.5R and is more than 0.3R under water, it is closed at the next 1-minute open.",
+    "Flat by 15:55 New York time. MFFU needs you flat by 16:10, so there is a safety gap.",
+    "Adding to a winner ([[scale-in]]) is built but OFF until a Sim test passes."
+   ],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "quiz": {
+    "q": "When is everything flat?",
+    "a": "15:55 New York time",
+    "wrong": [
+     "17:00 New York time",
+     "Whenever the target hits",
+     "Overnight is fine"
+    ]
+   }
+  },
+  {
+   "id": "step-9",
+   "kind": "strategy",
+   "tags": [
+    "strategy"
+   ],
+   "title": "Step 9: the size",
+   "short": "Size follows the stop: about $800 of risk up to a 20-point stop, then less as the stop gets wider. Evals use a special size so one winner can pass.",
+   "body": [
+    "$800 risk up to a 20-point stop, then 800 x 20 / stop. A 40-point stop risks $400, an 80-point stop $200.",
+    "[[micro]] count = risk / (stop x $2), rounded down, at most 40. Under 1 micro means no trade.",
+    "After 2 stop-outs in a week the size is halved for the rest of that week (outside the eval sizing)."
+   ],
+   "src": [
+    "STRATEGY.md"
+   ]
+  },
+  {
+   "id": "one-trade",
+   "kind": "strategy",
+   "tags": [
+    "strategy"
+   ],
+   "title": "One trade a day",
+   "short": "The bot takes one trade a day at most, and never two at once. Expect 2 to 4 trades a week.",
+   "body": [
+    "Fewer than 2 a week is too slow for an eval. The rule is: never make a filter that pauses trading for weeks.",
+    "A quiet day with no setup is normal. It is not a bug."
+   ],
+   "src": [
+    "STRATEGY.md"
+   ]
+  },
+  {
+   "id": "eval-sizing",
+   "kind": "strategy",
+   "tags": [
+    "strategy",
+    "mffu"
+   ],
+   "title": "Eval size: one winner passes",
+   "short": "In an eval the bot buys enough [[micro]] contracts that one winning trade to its target reaches the +$3,000 goal, but never risks more than 80% of the room to the floor.",
+   "body": [
+    "The target is known at entry, so the bot can work out how many micros one winner needs.",
+    "A full stop-out must stay inside 80% of the room and inside the $1,000 daily loss.",
+    "The cost: about 1 eval in 5 fails within 2 weeks. The gain: most evals are decided within 2 weeks.",
+    "Near the target the size shrinks by itself."
+   ],
+   "src": [
+    "STRATEGY.md",
+    "research/writeups/uprisk.md"
+   ]
+  },
+  {
+   "id": "funded-sizing",
+   "kind": "strategy",
+   "tags": [
+    "strategy",
+    "mffu"
+   ],
+   "title": "Funded size",
+   "short": "On a funded account the bot risks 60% of the room to the floor, at most $1,500 a trade, and a winner is capped at $2,000.",
+   "body": [
+    "The cap on a winner is one full payout request.",
+    "When one [[micro]] could reach the floor, the bot skips."
+   ],
+   "src": [
+    "STRATEGY.md"
+   ]
+  },
+  {
+   "id": "paper-only",
+   "kind": "strategy",
+   "tags": [
+    "strategy",
+    "mffu"
+   ],
+   "title": "Paper only, you go live",
+   "short": "The bot trades paper (simulated) money. It never arms live trading for you. Going live on the eval is your own decision and MFFU needs you present.",
+   "body": [
+    "No real order is placed unless you switch it on yourself.",
+    "Keys and secrets never go in the repo or in chat."
+   ],
+   "src": [
+    "CLAUDE.md"
+   ]
+  },
+  {
+   "id": "n-headline",
+   "kind": "numbers",
+   "tags": [
+    "numbers",
+    "strategy"
+   ],
+   "title": "How good is it? The headline",
+   "short": "2026 so far: [[pf]] 4.19, +$43,820 on paper with costs in. The honest number to expect is the later half: PF 2.91, +$9,919 (about $2,670 a month).",
+   "body": [
+    "Quote the Jul to Oct check, not the best-looking number. It was not used to pick the rules.",
+    "PF 2.91 means every $1 lost was matched by $2.91 won.",
+    "2021 to 2025 is only a reference line. The bot is tuned and judged on 2026."
+   ],
+   "src": [
+    "CLAUDE.md"
+   ],
+   "quiz": {
+    "q": "Which result should you quote as the one to expect?",
+    "a": "The Jul to Oct check, PF 2.91",
+    "wrong": [
+     "The best month ever",
+     "The 2026 full-year PF 4.19 only",
+     "Any single winning week"
+    ]
+   }
+  },
+  {
+   "id": "n-money",
+   "kind": "numbers",
+   "tags": [
+    "numbers",
+    "mffu"
+   ],
+   "title": "Money, not only R",
+   "short": "Every result shows net dollars and dollars a month next to [[pf]] and [[r]]. R alone hides how much real money is at stake.",
+   "body": [
+    "Eval prices you pay: Builder 50K $91.80, Builder 25K $63, one-time, $0 activation. Not the list price.",
+    "On funded accounts you keep 80% of each payout."
+   ],
+   "src": [
+    "CLAUDE.md",
+    "research/lit/mffu_rules.json"
+   ]
+  },
+  {
+   "id": "n-eval-speed",
+   "kind": "numbers",
+   "tags": [
+    "numbers",
+    "mffu"
+   ],
+   "title": "Eval speed: 2 weeks",
+   "short": "An eval should be passed or failed within 2 weeks (10 sessions) and never take more than 3 weeks to pass.",
+   "body": [
+    "Each run shows p10 and f10 (passed or failed within 10 sessions), the share decided in 10, and the median sessions to pass.",
+    "On the Jul to Oct check, 58.6% passed and 20.9% failed within 2 weeks."
+   ],
+   "src": [
+    "CLAUDE.md",
+    "STRATEGY.md"
+   ]
+  },
+  {
+   "id": "n-two-halves",
+   "kind": "numbers",
+   "tags": [
+    "numbers",
+    "strategy"
+   ],
+   "title": "Two halves rule",
+   "short": "A rule change is only kept if it also works on the second half of the data it was not picked on.",
+   "body": [
+    "Pick on Jan to Jun 2026, check on Jul to Oct 2026, report both.",
+    "This is how the bot avoids fooling itself with luck."
+   ],
+   "src": [
+    "CLAUDE.md"
+   ]
+  },
+  {
+   "id": "m-floor",
+   "kind": "mffu",
+   "tags": [
+    "mffu",
+    "words"
+   ],
+   "title": "The drawdown floor",
+   "short": "Your account fails if your balance, with any open trade, touches the floor. On the 50K the floor starts at $48,000.",
+   "body": [
+    "The floor only moves up, and only at the end of the day, from your best end-of-day balance (this is [[eod-trailing]]).",
+    "It stops at $50,100 (start + $100) and stays there.",
+    "An open loss counts the moment it happens, not at the close.",
+    "The room to the floor is what the bot sizes against."
+   ],
+   "src": [
+    "research/lit/mffu_rules.json"
+   ],
+   "quiz": {
+    "q": "On the Builder 50K, what happens if your balance touches the floor?",
+    "a": "The account fails",
+    "wrong": [
+     "You are paused for the day",
+     "Nothing, it is a warning",
+     "You lose half the profit"
+    ]
+   }
+  },
+  {
+   "id": "m-dll",
+   "kind": "mffu",
+   "tags": [
+    "mffu",
+    "words"
+   ],
+   "title": "The daily loss limit",
+   "short": "On the 50K the daily loss limit is $1,000. It is soft: hit it and you are paused for the session, but the account stays open.",
+   "body": [
+    "The bot keeps every full stop-out inside this number.",
+    "The Builder 25K limit is $600."
+   ],
+   "src": [
+    "research/lit/mffu_rules.json"
+   ]
+  },
+  {
+   "id": "m-target",
+   "kind": "mffu",
+   "tags": [
+    "mffu"
+   ],
+   "title": "The profit target",
+   "short": "The 50K eval passes at +$3,000. There is no [[consistency]] rule in the eval. The 25K needs +$1,500.",
+   "body": [
+    "There is no time limit counting down on the eval. The 7-day inactivity rule still applies."
+   ],
+   "src": [
+    "research/lit/mffu_rules.json"
+   ]
+  },
+  {
+   "id": "m-size",
+   "kind": "mffu",
+   "tags": [
+    "mffu"
+   ],
+   "title": "How many contracts",
+   "short": "The 50K allows 40 micros or 4 minis, counted together: 10 micros = 1 mini. The 25K allows 20 micros.",
+   "body": [
+    "Over the limit, the order is rejected.",
+    "A [[micro]] is the small contract."
+   ],
+   "src": [
+    "research/lit/mffu_rules.json"
+   ]
+  },
+  {
+   "id": "m-flat",
+   "kind": "mffu",
+   "tags": [
+    "mffu"
+   ],
+   "title": "Flat by 16:10",
+   "short": "Trading is intraday only. You must be flat by 16:10 New York time and no weekend holds. The bot is flat by 15:55 to be safe.",
+   "body": [
+    "The platform closes you at 16:10. Never force orders after it."
+   ],
+   "src": [
+    "research/lit/mffu_rules.json"
+   ],
+   "quiz": {
+    "q": "MFFU needs you flat by what time?",
+    "a": "16:10 New York time",
+    "wrong": [
+     "17:00 New York time",
+     "15:00 New York time",
+     "Midnight"
+    ]
+   }
+  },
+  {
+   "id": "m-hedge",
+   "kind": "mffu",
+   "tags": [
+    "mffu"
+   ],
+   "title": "No long and short at once",
+   "short": "You may not hold a long and a short on the same market at the same time, also across your accounts.",
+   "body": [
+    "That is why one strategy always has priority when two want opposite sides."
+   ],
+   "src": [
+    "research/lit/mffu_rules.json"
+   ]
+  },
+  {
+   "id": "m-bots",
+   "kind": "mffu",
+   "tags": [
+    "mffu"
+   ],
+   "title": "Bots are allowed",
+   "short": "Bots are allowed with your own settings and you watching. No high-frequency trading and no exploiting simulated fills.",
+   "body": [
+    "MFFU requires you to be present for live trading."
+   ],
+   "src": [
+    "research/lit/mffu_rules.json"
+   ]
+  },
+  {
+   "id": "m-news",
+   "kind": "mffu",
+   "tags": [
+    "mffu"
+   ],
+   "title": "News",
+   "short": "News is allowed in the eval and on a sim-funded account. On a live account MFFU advises against trading it.",
+   "body": [],
+   "src": [
+    "research/lit/mffu_rules.json"
+   ]
+  },
+  {
+   "id": "m-idle",
+   "kind": "mffu",
+   "tags": [
+    "mffu"
+   ],
+   "title": "The 7-day rule",
+   "short": "Trade at least once every 7 days or the account can be closed.",
+   "body": [
+    "The bot normally trades 2 to 4 times a week, so this only matters in a quiet or holiday week."
+   ],
+   "src": [
+    "research/lit/mffu_rules.json"
+   ],
+   "quiz": {
+    "q": "How often must you trade so the account is not closed?",
+    "a": "At least once every 7 days",
+    "wrong": [
+     "Once a month",
+     "Every day",
+     "Never, there is no rule"
+    ]
+   }
+  },
+  {
+   "id": "m-pay",
+   "kind": "mffu",
+   "tags": [
+    "mffu"
+   ],
+   "title": "Payouts",
+   "short": "On a funded account the first payout opens once you are $500 above the $2,100 [[buffer]], so a balance of $52,600. Payouts run $500 to $2,000, and 80% is yours.",
+   "body": [
+    "Your best day must stay under 50% of the cycle's profit ([[consistency]]).",
+    "After 5 sim payouts the account moves to live.",
+    "Check MFFU's own pages before asking for a payout. The rules were last checked on 2026-10-18."
+   ],
+   "src": [
+    "research/lit/mffu_rules.json"
+   ],
+   "quiz": {
+    "q": "What share of each payout is yours?",
+    "a": "80%",
+    "wrong": [
+     "50%",
+     "100%",
+     "65%"
+    ]
+   }
+  },
+  {
+   "id": "m-price",
+   "kind": "mffu",
+   "tags": [
+    "mffu",
+    "numbers"
+   ],
+   "title": "What the evals cost you",
+   "short": "You paid $91.80 for the Builder 50K and $63 for the Builder 25K. One-time payment, no activation fee, no monthly renewal.",
+   "body": [
+    "List prices are higher. Always use your real price when comparing."
+   ],
+   "src": [
+    "research/lit/mffu_rules.json"
+   ]
+  },
+  {
+   "id": "x-all",
+   "kind": "rejected",
+   "tags": [
+    "rejected"
+   ],
+   "title": "The graveyard: 19 lists of dead ends",
+   "short": "Many ideas were tested properly and dropped. Before you suggest a new strategy idea, search here first.",
+   "body": [
+    "Do not redo it unless you have a genuinely new idea.",
+    "The rule for keeping an idea: better in 2026 and better in 2021 to 2025, and still 2 or more trades a week."
+   ],
+   "src": [
+    "docs/CLAUDE_REFERENCE.md"
+   ]
+  },
+  {
+   "id": "x-books",
+   "kind": "rejected",
+   "tags": [
+    "rejected"
+   ],
+   "title": "Famous models as taught",
+   "short": "ICT 2022, Silver Bullet, Mech/IFVG and similar models, traded exactly as taught, made 0.2 to 1.5 trades a week and a [[pf]] near 1 (break-even).",
+   "body": [
+    "That is why the bot has its own rules, written down and tested with costs.",
+    "IFVG is explained here: [[ifvg]]. The bot uses a simpler signal.",
+    "Do not redo it unless you have a genuinely new idea."
+   ],
+   "src": [
+    "docs/CLAUDE_REFERENCE.md"
+   ]
+  },
+  {
+   "id": "x-conf",
+   "kind": "rejected",
+   "tags": [
+    "rejected"
+   ],
+   "title": "More confluences (92 tried)",
+   "short": "92 extra confirmations, 6 ways to guess the daily bias, and sizing by trade \"grade\" were tested. None held up.",
+   "body": [
+    "Adding conditions made trades rarer without making them better. Partials and trailing stops also failed."
+   ],
+   "src": [
+    "docs/CLAUDE_REFERENCE.md"
+   ]
+  },
+  {
+   "id": "x-fixed",
+   "kind": "rejected",
+   "tags": [
+    "rejected"
+   ],
+   "title": "Fixed small stops",
+   "short": "Stops of a fixed 10 to 15 points got wicked out and lost money. Real structure stops are rarely that small.",
+   "body": [
+    "Your own principle: the stop sits at the protected low or high, never a random distance."
+   ],
+   "src": [
+    "docs/CLAUDE_REFERENCE.md"
+   ]
+  },
+  {
+   "id": "x-target",
+   "kind": "rejected",
+   "tags": [
+    "rejected"
+   ],
+   "title": "Other targets",
+   "short": "No cap, \"draw on liquidity\" and \"last real pool\" targets all did worse (profit factor 1.6 to 2.2 against 3.48).",
+   "body": [
+    "The single VIX-band target banked at 8R stayed."
+   ],
+   "src": [
+    "docs/CLAUDE_REFERENCE.md"
+   ]
+  },
+  {
+   "id": "x-streak",
+   "kind": "rejected",
+   "tags": [
+    "rejected"
+   ],
+   "title": "Skip after a cold streak",
+   "short": "A filter that stops trading after losers had the best profit factor, but paused trading for 14 weeks. You rejected it.",
+   "body": [
+    "Rule: prefer a size change over skipping. Never pause for weeks."
+   ],
+   "src": [
+    "docs/CLAUDE_REFERENCE.md"
+   ]
+  },
+  {
+   "id": "x-lit",
+   "kind": "rejected",
+   "tags": [
+    "rejected",
+    "strategy"
+   ],
+   "title": "The LIT extras (none adopted)",
+   "short": "Order blocks, higher-timeframe confluences, other hours, extra continuation trades, looser filters and other markets were tested in hundreds of variants. None held in both halves.",
+   "body": [
+    "Two small upgrades did pass and are ON: the 15-minute check and [[breakeven]] with costs.",
+    "Do not redo it unless you have a genuinely new idea."
+   ],
+   "src": [
+    "docs/CLAUDE_REFERENCE.md"
+   ]
+  },
+  {
+   "id": "x-exit",
+   "kind": "rejected",
+   "tags": [
+    "rejected"
+   ],
+   "title": "Fancier exits",
+   "short": "Exit on a sharp reversal, trailing behind swings, and [[breakeven]] at other points: 103 variants, none better in both halves.",
+   "body": [
+    "Do not redo it unless you have a genuinely new idea."
+   ],
+   "src": [
+    "docs/CLAUDE_REFERENCE.md"
+   ]
+  },
+  {
+   "id": "x-div",
+   "kind": "rejected",
+   "tags": [
+    "rejected"
+   ],
+   "title": "A second strategy alone",
+   "short": "Breakout and intraday-momentum ideas were real but too weak to pass a prop eval alone. They only work as a small add-on.",
+   "body": [
+    "Prop rules (floor, 50% best day) punish strategies with long losing runs."
+   ],
+   "src": [
+    "docs/CLAUDE_REFERENCE.md"
+   ]
+  },
+  {
+   "id": "x-struct",
+   "kind": "rejected",
+   "tags": [
+    "rejected"
+   ],
+   "title": "Structure-based management",
+   "short": "Targets at the next pool, half off early, stops to protected swings, trend filters: 101 variants. None beat the live rules in both halves.",
+   "body": [
+    "One lead is being watched (a 15-minute structure trail after +1R) but it is not switched on."
+   ],
+   "src": [
+    "docs/CLAUDE_REFERENCE.md"
+   ]
+  },
+  {
+   "id": "x-bholds",
+   "kind": "rejected",
+   "tags": [
+    "rejected"
+   ],
+   "title": "Skipping LIT to protect a second account",
+   "short": "Letting the second account (ATLAS) block LIT's opposite trade made the 2021 to 2025 result worse. LIT keeps priority.",
+   "body": [
+    "Do not redo it unless you have a genuinely new idea."
+   ],
+   "src": [
+    "docs/CLAUDE_REFERENCE.md"
+   ]
+  },
+  {
+   "id": "x-blitz",
+   "kind": "rejected",
+   "tags": [
+    "rejected"
+   ],
+   "title": "A scalper like a person",
+   "short": "A fast scalping strategy on its own 25K account, with many exit and filter ideas (about 2,000 variants), did not beat today's rule.",
+   "body": [
+    "Do not redo it unless you have a genuinely new idea."
+   ],
+   "src": [
+    "docs/CLAUDE_REFERENCE.md"
+   ]
+  },
+  {
+   "id": "liquidity",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "Liquidity",
+   "short": "Obvious highs and lows where lots of traders have parked stops and orders. Price is pulled toward them.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does Liquidity mean?",
+    "a": "Obvious highs and lows where lots of traders have parked stops and orders. Price is pulled toward them."
+   }
+  },
+  {
+   "id": "sweep",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "Sweep",
+   "short": "Price runs through a level of liquidity, takes the orders there, then often turns around.",
+   "body": [
+    "The bot needs at least half an [[atr]] past the level."
+   ],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does Sweep mean?",
+    "a": "Price runs through a level of liquidity, takes the orders there, then often turns around."
+   }
+  },
+  {
+   "id": "inducement",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "Inducement (the trap)",
+   "short": "A small swing that lures traders in just before the real move, so they get stopped out.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does Inducement mean?",
+    "a": "A small swing that lures traders in just before the real move, so they get stopped out."
+   }
+  },
+  {
+   "id": "displacement",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "Displacement",
+   "short": "One strong candle that shows real force. The bot needs a body of at least 0.8 [[atr]].",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does Displacement mean?",
+    "a": "One strong candle that shows real force. The bot needs a body of at least 0.8 [[atr]]."
+   }
+  },
+  {
+   "id": "cisd",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "CISD",
+   "short": "Change in state of delivery: price closes back above the start of the last run of falling candles, showing sellers lost control.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does CISD mean?",
+    "a": "Change in state of delivery: price closes back above the start of the last run of falling candles, showing sellers lost control."
+   }
+  },
+  {
+   "id": "ifvg",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "IFVG",
+   "short": "Inverse fair value gap: a gap that price filled, then flipped to the other side. A signal older models use; this bot uses the [[cisd]] instead.",
+   "body": [
+    "See also [[fvg]]."
+   ],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does IFVG mean?",
+    "a": "Inverse fair value gap: a gap that price filled, then flipped to the other side. A signal older models use; this bot uses the [[cisd]] instead."
+   }
+  },
+  {
+   "id": "fvg",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "FVG",
+   "short": "Fair value gap: a three-candle jump that leaves a hole where little trading happened.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does FVG mean?",
+    "a": "Fair value gap: a three-candle jump that leaves a hole where little trading happened."
+   }
+  },
+  {
+   "id": "atr",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "ATR",
+   "short": "Average true range: how far a candle usually moves lately. The bot measures things in ATRs so they fit the day.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does ATR mean?",
+    "a": "Average true range: how far a candle usually moves lately. The bot measures things in ATRs so they fit the day."
+   }
+  },
+  {
+   "id": "r",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "R",
+   "short": "Your risk on a trade. If you risk $300 and win $600, that is 2R. Losing the stop is -1R.",
+   "body": [
+    "The bot's target must be at least 1.5R and it banks at 8R."
+   ],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does R mean?",
+    "a": "Your risk on a trade. If you risk $300 and win $600, that is 2R. Losing the stop is -1R."
+   }
+  },
+  {
+   "id": "pf",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "PF (profit factor)",
+   "short": "Money won divided by money lost. Above 1 makes money. 2.91 means $2.91 won per $1 lost.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does PF mean?",
+    "a": "Money won divided by money lost. Above 1 makes money. 2.91 means $2.91 won per $1 lost."
+   }
+  },
+  {
+   "id": "drawdown",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "Drawdown",
+   "short": "How far your account falls from its best point. The max drawdown is the worst fall in a test.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does Drawdown mean?",
+    "a": "How far your account falls from its best point. The max drawdown is the worst fall in a test."
+   }
+  },
+  {
+   "id": "eod-trailing",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "EOD trailing drawdown",
+   "short": "A floor that follows your best end-of-day balance up and never goes down. It locks at start + $100.",
+   "body": [
+    "See [[drawdown]] and [[floor]]."
+   ],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does EOD trailing drawdown mean?",
+    "a": "A floor that follows your best end-of-day balance up and never goes down. It locks at start + $100."
+   }
+  },
+  {
+   "id": "floor",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "Drawdown floor",
+   "short": "The balance at which the account fails. $48,000 at the start of a 50K eval.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does Drawdown floor mean?",
+    "a": "The balance at which the account fails. $48,000 at the start of a 50K eval."
+   }
+  },
+  {
+   "id": "dll",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "Daily loss limit",
+   "short": "How much you may lose in one day. Soft: you are paused, not failed.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does Daily loss limit mean?",
+    "a": "How much you may lose in one day. Soft: you are paused, not failed."
+   }
+  },
+  {
+   "id": "consistency",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "Consistency rule",
+   "short": "On funded accounts your best day must be under 50% of the cycle's profit, so one lucky day cannot carry a payout.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does Consistency rule mean?",
+    "a": "On funded accounts your best day must be under 50% of the cycle's profit, so one lucky day cannot carry a payout."
+   }
+  },
+  {
+   "id": "vix-band",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "VIX band",
+   "short": "A fair guess of one day's move from the VIX fear index. The bot's target is the 18:00 open plus or minus one such move.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does VIX band mean?",
+    "a": "A fair guess of one day's move from the VIX fear index. The bot's target is the 18:00 open plus or minus one such move."
+   }
+  },
+  {
+   "id": "breakeven",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "Breakeven",
+   "short": "Moving the stop to your entry (plus costs) so the trade cannot lose.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does Breakeven mean?",
+    "a": "Moving the stop to your entry (plus costs) so the trade cannot lose."
+   }
+  },
+  {
+   "id": "stop",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "Stop",
+   "short": "The order that closes a trade at a loss if price goes against you. It defines your risk.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does Stop mean?",
+    "a": "The order that closes a trade at a loss if price goes against you. It defines your risk."
+   }
+  },
+  {
+   "id": "limit-order",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "Limit order",
+   "short": "An order to buy at a price or better, waiting for price to come to you.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does Limit order mean?",
+    "a": "An order to buy at a price or better, waiting for price to come to you."
+   }
+  },
+  {
+   "id": "tick",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "Tick",
+   "short": "The smallest NQ move: 0.25 points. One MNQ tick is worth $0.50.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does Tick mean?",
+    "a": "The smallest NQ move: 0.25 points. One MNQ tick is worth $0.50."
+   }
+  },
+  {
+   "id": "point",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "Point",
+   "short": "One full NQ point (4 ticks). One MNQ is worth $2 per point.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does Point mean?",
+    "a": "One full NQ point (4 ticks). One MNQ is worth $2 per point."
+   }
+  },
+  {
+   "id": "mnq",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "MNQ and NQ",
+   "short": "NQ is the Nasdaq-100 future ($20 a point). MNQ is the micro, a tenth of it ($2 a point).",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does MNQ and NQ mean?",
+    "a": "NQ is the Nasdaq-100 future ($20 a point). MNQ is the micro, a tenth of it ($2 a point)."
+   }
+  },
+  {
+   "id": "micro",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "Micro",
+   "short": "A micro contract: MNQ. Ten micros equal one mini (NQ).",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does Micro mean?",
+    "a": "A micro contract: MNQ. Ten micros equal one mini (NQ)."
+   }
+  },
+  {
+   "id": "session",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "Session",
+   "short": "A part of the day: Asia (evening), London (early morning), New York (morning). All times here are New York time.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does Session mean?",
+    "a": "A part of the day: Asia (evening), London (early morning), New York (morning). All times here are New York time."
+   }
+  },
+  {
+   "id": "pdh",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "PDH / PDL",
+   "short": "Previous day high and low: yesterday's top and bottom, a classic level traders watch.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does PDH / PDL mean?",
+    "a": "Previous day high and low: yesterday's top and bottom, a classic level traders watch."
+   }
+  },
+  {
+   "id": "eval",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "Eval",
+   "short": "The test account you pay for. Hit +$3,000 without touching the floor and you pass.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does Eval mean?",
+    "a": "The test account you pay for. Hit +$3,000 without touching the floor and you pass."
+   }
+  },
+  {
+   "id": "funded",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "Funded account",
+   "short": "The account you get after passing. You trade it (simulated) and request payouts.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does Funded account mean?",
+    "a": "The account you get after passing. You trade it (simulated) and request payouts."
+   }
+  },
+  {
+   "id": "payout",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "Payout",
+   "short": "A withdrawal of profit from a funded account. You keep 80%.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does Payout mean?",
+    "a": "A withdrawal of profit from a funded account. You keep 80%."
+   }
+  },
+  {
+   "id": "buffer",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "Buffer",
+   "short": "Extra profit you must hold on a funded account before the first payout. $2,100 on the 50K.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does Buffer mean?",
+    "a": "Extra profit you must hold on a funded account before the first payout. $2,100 on the 50K."
+   }
+  },
+  {
+   "id": "scale-in",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "Scale-in",
+   "short": "Adding to a trade that is already working. Built into the bot but switched OFF for now.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does Scale-in mean?",
+    "a": "Adding to a trade that is already working. Built into the bot but switched OFF for now."
+   }
+  },
+  {
+   "id": "paper",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "Paper trading",
+   "short": "Practice trading with fake money, so a bug cannot cost a cent.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does Paper trading mean?",
+    "a": "Practice trading with fake money, so a bug cannot cost a cent."
+   }
+  },
+  {
+   "id": "slippage",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "Slippage",
+   "short": "Getting a slightly worse price than you wanted. The tests include it.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does Slippage mean?",
+    "a": "Getting a slightly worse price than you wanted. The tests include it."
+   }
+  },
+  {
+   "id": "commission",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "Commission",
+   "short": "The fee per trade. About $1.9 round trip per micro.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does Commission mean?",
+    "a": "The fee per trade. About $1.9 round trip per micro."
+   }
+  },
+  {
+   "id": "candle",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "1m and 5m candles",
+   "short": "One bar of price for one minute or five minutes. The bot finds setups on 5m and enters on 1m.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does 1m and 5m candles mean?",
+    "a": "One bar of price for one minute or five minutes. The bot finds setups on 5m and enters on 1m."
+   }
+  },
+  {
+   "id": "trades-week",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "Trades a week",
+   "short": "How often the bot trades. Aim: 2 to 4 a week.",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does Trades a week mean?",
+    "a": "How often the bot trades. Aim: 2 to 4 a week."
+   }
+  },
+  {
+   "id": "ninjatrader",
+   "kind": "words",
+   "tags": [
+    "words"
+   ],
+   "title": "NinjaTrader",
+   "short": "The trading platform the PC bot sends orders to (Sim by default).",
+   "body": [],
+   "src": [
+    "STRATEGY.md"
+   ],
+   "ask": {
+    "q": "What does NinjaTrader mean?",
+    "a": "The trading platform the PC bot sends orders to (Sim by default)."
+   }
+  },
+  {
+   "id": "p-loss",
+   "kind": "playbook",
+   "tags": [
+    "playbook",
+    "strategy"
+   ],
+   "title": "When... I have a loss",
+   "short": "A stop-out is a normal cost of the system, not a mistake. Do nothing special: no revenge trade, no bigger size.",
+   "body": [
+    "1. Check the stop was hit where the rules say (1 tick beyond the [[sweep]] extreme). If yes, it worked as designed.",
+    "2. Do not change any rule because of one loss or one bad week. Rules change only with two-halves proof.",
+    "3. After 2 stop-outs in a week the size halves by itself (outside the eval).",
+    "4. If the account is near the [[floor]], look at the room left before the next trade; the bot shrinks size by itself.",
+    "5. Tell the chat if something looks off. It checks the trade against the bot's twin."
+   ],
+   "src": [
+    "STRATEGY.md"
+   ]
+  },
+  {
+   "id": "p-two-losses",
+   "kind": "playbook",
+   "tags": [
+    "playbook"
+   ],
+   "title": "When... two losses in a row",
+   "short": "A short losing run is expected. The system's worst runs in testing were still inside the limits. Keep the size the bot gives you.",
+   "body": [
+    "Never double up to win it back.",
+    "Never skip trades by hand because you feel unsure: skipping the one winner is the real cost."
+   ],
+   "src": [
+    "STRATEGY.md"
+   ]
+  },
+  {
+   "id": "p-idle",
+   "kind": "playbook",
+   "tags": [
+    "playbook",
+    "mffu"
+   ],
+   "title": "When... 7 days with no trade",
+   "short": "The account can be closed after 7 days with no trade. Watch the calendar in a quiet or holiday week.",
+   "body": [
+    "1. Count days since the last fill. Warn yourself at day 5.",
+    "2. Tell the chat at day 5 so it can check for a real setup or a feed problem.",
+    "3. Do not force a big trade just to reset the clock. Keep size small and inside the rules.",
+    "4. A \"feed stale\" message means the bot will not enter. Fix the feed rather than guessing."
+   ],
+   "src": [
+    "research/lit/mffu_rules.json"
+   ]
+  },
+  {
+   "id": "p-fail",
+   "kind": "playbook",
+   "tags": [
+    "playbook",
+    "numbers",
+    "mffu"
+   ],
+   "title": "When... an eval fails",
+   "short": "A fail costs the eval fee ($91.80). About 1 eval in 5 fails within 2 weeks by design: the fast size accepts that for speed.",
+   "body": [
+    "1. Do not panic and do not change the rules. A fail is in the numbers.",
+    "2. Buy the next eval (no reset price is published for one-time plans; check the MFFU dashboard).",
+    "3. Tell the chat the new start date so the session count starts fresh.",
+    "4. Look for a code or fill problem first, but expect it to be normal variance."
+   ],
+   "src": [
+    "STRATEGY.md",
+    "research/lit/mffu_rules.json"
+   ]
+  },
+  {
+   "id": "p-pass",
+   "kind": "playbook",
+   "tags": [
+    "playbook",
+    "mffu"
+   ],
+   "title": "When... an eval passes",
+   "short": "You hit +$3,000. Stop trading the eval and move the account to funded.",
+   "body": [
+    "1. Do not keep trading the eval after the target.",
+    "2. Tell the chat so the funded size (60% of the room, at most $1,500) is switched on.",
+    "3. Funded rules differ: payouts need a buffer and a best-day check."
+   ],
+   "src": [
+    "STRATEGY.md"
+   ]
+  },
+  {
+   "id": "p-payout",
+   "kind": "playbook",
+   "tags": [
+    "playbook",
+    "mffu"
+   ],
+   "title": "When... I want a payout",
+   "short": "Check three things before you ask: balance, buffer, best day.",
+   "body": [
+    "1. Your balance is at least $52,600 for the first payout ($2,100 buffer + $500).",
+    "2. Your best day is under 50% of the cycle's profit ([[consistency]]).",
+    "3. Ask for between $500 and $2,000. You get 80%.",
+    "4. Re-check MFFU's own payout page that day. Rules change.",
+    "5. After 5 sim payouts the account moves to live, and you must be present to trade it."
+   ],
+   "src": [
+    "research/lit/mffu_rules.json"
+   ]
+  },
+  {
+   "id": "p-dll",
+   "kind": "playbook",
+   "tags": [
+    "playbook",
+    "mffu"
+   ],
+   "title": "When... I hit the daily loss limit",
+   "short": "You are paused for the session, not failed. Stop for the day.",
+   "body": [
+    "1. Do not try to trade it back.",
+    "2. Check that the account is not also close to the floor.",
+    "3. Come back next session with the normal size."
+   ],
+   "src": [
+    "research/lit/mffu_rules.json"
+   ]
+  },
+  {
+   "id": "p-live",
+   "kind": "playbook",
+   "tags": [
+    "playbook",
+    "strategy",
+    "mffu"
+   ],
+   "title": "When... I want to go live",
+   "short": "Going live is only ever your decision. The bot is paper only and never arms live trading for you.",
+   "body": [
+    "1. MFFU requires you to be present for live trading.",
+    "2. Run the Sim test first and read the go-live checklist.",
+    "3. Start with the smallest size."
+   ],
+   "src": [
+    "CLAUDE.md"
+   ]
+  },
+  {
+   "id": "p-new",
+   "kind": "playbook",
+   "tags": [
+    "playbook",
+    "rejected"
+   ],
+   "title": "When... I want to try a new idea",
+   "short": "Search the rejected list first. Then test it on both halves with costs and 2 or more trades a week.",
+   "body": [
+    "Keep it only if it is better in 2026 and in 2021 to 2025.",
+    "Ask the chat to run it. Do not change live rules by hand."
+   ],
+   "src": [
+    "docs/CLAUDE_REFERENCE.md"
+   ]
+  }
+ ]
+}

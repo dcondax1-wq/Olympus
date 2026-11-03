@@ -1478,6 +1478,12 @@ def part_intro_files():
     check("o. the film: 10 s full / 5 s lite, six phases (heart, storm, rise, eclipse, word, portal), the sound cues, the logo texture, skip in 60 ms",
           all(x in js for x in ("full: 10, lite: 5", "full: 1, lite: 2", "'heart'", "'storm'", "'rise'", "'eclipse'", "'word'", "'portal'", "[8.68, 'portal']", "[2.35, 'thunder']",
                                 "[5.5, 'pad']", "[7.1, 'rankup']", "[0.28, 'tick']", "intro-logo.webp", "fadeOut(60, 'skipped')", "premultipliedAlpha: true")))
+    sfxw = open(os.path.join(JV, "switcher.js"), encoding="utf-8").read()
+    check("o. the OLYMPUS sound layer in Jarvis: sfx.js loaded async and in SHELL, ticks on taps (dock / cards / orb), the portal sound on an app open, a tap in the switcher, "
+          "quiet while speaking / listening / over the intro, a toggle + volume in the settings sheet",
+          all(x in page for x in ('src="../olympus/sfx.js?v=s1" id="olySfxJs" async', "function olyQuiet()", "root.hasAttribute('data-intro') || listening || speaking", "window.OLYMPUS_QUIET = olyQuiet",
+                                  "olySfx('portal'); window.jarvisPortal.jump", "{ haptic(); olySfx('tick'); }", "#nxOrb", 'id="setOlySfx"', 'id="setOlyVol"', "k.mute(!$('#setOlySfx').checked)", "k.setVolume("))
+          and "'../olympus/sfx.js?v=s1'" in open(os.path.join(JV, "sw.js"), encoding="utf-8").read() and "win.jarvisSfx('tap')" in sfxw)
     logo = os.path.join(JV, "intro-logo.webp")
     sw = open(os.path.join(JV, "sw.js"), encoding="utf-8").read()
     head = open(logo, "rb").read(12) if os.path.exists(logo) else b""
