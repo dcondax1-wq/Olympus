@@ -16,6 +16,7 @@ Claude session, and this repo can't push there. Features built here ship as patc
 | `10-projects` | the bots, Kalshi and projects in the Planner; market hours; `planner.today.v1` for Jarvis |
 | `20-power` | Now and next, Catch up, smarter quick add, the weekly review reminder; the `window.PlannerAPI` hook |
 | `30-flow` | Workload (Trim to fit), Deadline risk (Block time), Daily goal (days in a row) |
+| `40-olympus` | the futuristic look (glass cards, aurora, motion; follows Olympus themes and `jfx`), Day timeline with a NOW beam, Focus mode (full-screen Pomodoro) |
 
 ## Making a patch
 1. Clone planner-backup.

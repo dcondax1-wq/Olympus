@@ -10,11 +10,12 @@ Jarvis (`jarvis/`) is not changed. It already owns the same quality key and font
   the veil, the orb's seat, `hidden()` and `track(renderer)`.
 - Test: `python -X utf8 -m tests.test_olympus_kit` (`--table` prints the perf table below). Each app's own test still runs.
 
-## Wiring an app (two lines, before the app's own sheet and modules)
+## Wiring an app (three lines, before the app's own sheet and modules)
 
 ```html
-<link rel="stylesheet" href="../olympus/olympus.css?v=o1">
-<script src="../olympus/olympus.js?v=o1" data-app="mind"></script>
+<link rel="stylesheet" href="../olympus/olympus.css?v=o2">
+<script src="../olympus/themes.js?v=o2"></script>
+<script src="../olympus/olympus.js?v=o2" data-app="mind"></script>
 <link rel="stylesheet" href="mind.css">
 ```
 
@@ -33,6 +34,10 @@ if `olympus/` is missing. In that case it falls back to its old per-app quality 
 | `O.hidden()` | the frame-loop guard: no frame while the tab is hidden |
 | `O.track(renderer)` | wraps three.js's `render`. The first call lifts the veil, and `O.stats()` reads `renderer.info`. |
 | `O.ready()` / `O.fail(msg)` | lifts the veil (2D apps, no-WebGL fallbacks) / swaps it for the error line |
+| `O.theme()` | the OLYMPUS theme's tokens (`{ id, name, bg, glass, line, text, dim, accent, glow, fog, sky, emissive, bloom, mix, harmony, ... }`) |
+| `O.onTheme(cb)` | `cb(tokens)` after every theme change (Jarvis's Look sheet, another tab, the frame around the app) |
+| `O.tint(base, kind)` | an app colour (`0xrrggbb` or `'#rrggbb'`) blended toward the theme's `fog` / `sky` / `emissive` / `bloom` by its `mix` |
+| `O.themeScene({ scene, renderer, clear?, fog?, emissive?, bloom?, redraw? })` | the one-line scene hook: fog, clear colour, background and the listed `THREE.Color`s follow the theme, from their own colours |
 
 ## One quality setting
 
@@ -161,3 +166,76 @@ cost; an iPhone runs all nine at 60 fps on HD.
 | `vh` panel heights under iOS toolbars (Mind, Daphne, Fates) | `dvh` after the `vh` |
 | Fates canvas `100vw` (sideways scroll with a scrollbar) | `100%` |
 | Two copies of three.js on the site | Data City uses Jarvis's copy |
+
+## Mind and Hermes, the day upgrade (2026-11-03)
+
+Both apps now have **one top bar and one bottom sheet** (glass, the kit's tokens, the orb's corner free) and expose
+`applyTheme(theme)` (`window.mind.applyTheme`, `window.HERMES.applyTheme`). A theme is a flat object of colour names
+(`accent`, `bg`, `text`, ...) or CSS custom properties (`'--x': value`), or the same one level down (`{name, vars: {...}}`).
+Unknown keys and values with `; { } < >` are ignored. When the kit has a theme API (`OLYMPUS.theme()` / `OLYMPUS.onTheme(cb)`,
+or `window.Olympus`), each app applies it at load and on every change; without it nothing changes.
+
+| App | What is new | Module |
+|---|---|---|
+| Mind | Nebula clouds per galaxy: layered sprites from a cloud atlas baked once, drawn at 1/4 resolution (1/16 of the pixels) | `mind/nebula.js` |
+| Mind | Jarvis's memories seated on a tilted cyan ring around Me (the layout pulls them to their seats; the ring follows Me) | `mind/memring.js`, `mind/layout.js` |
+| Mind | Synapse pulses along the links when a note opens or learns; quiet idle "thinking" pulses (none under reduced motion) | `mind/synapse.js` |
+| Mind | Galaxy / constellation view (crisp stars, bright lines; kept in `mind.view`), focus mode (one galaxy lit, a pill, × / Escape) | `mind/render.js`, `mind/main.js` |
+| Mind | The thought stream (lessons and edits, newest first, a tap flies there), an ambient camera when idle | `mind/ui.js`, `mind/controls.js` |
+| Mind | The note card: a markdown-ish preview (headings, lists, tasks, quotes, code, `[[links]]` that fly, `#tags`, textContent only), links and backlinks apart; reads the optional `preview` field of `graphSnapshot()` notes, else `snippet` | `mind/markdown.js` |
+| Hermes | A scene per card (aurora on a green week, horizon grid on the evals, warp on the hall), a light sweep, kinetic type (words flip up, a gold rule draws), parallax depth in the 3D tilt with a sheen (flat, not preserve-3d: Chromium mis-hit-tests buttons under a preserve-3d tilt, which had broken "Watch again") | `hermes/fx.js`, `hermes/hermes.css` |
+| Hermes | Confetti cannons on a green week, gold glitter on the hall, paper confetti that flutters | `hermes/fx.js` |
+| Hermes | The all-time hall card (lifetime $, best trade ever, best day, longest green run, win rate) | `hermes/cards.js` |
+| Hermes | Pause / play, a tap on the progress bar jumps, the sheet names the story, "Share the week" (one PNG of the whole recap, OLYMPUS fonts) | `hermes/app.js`, `hermes/share.js` |
+
+Perf: Mind stays inside its budget (17 draw calls, 110 triangles, 4.6 MB heap on the kit test); the nebula pass is one extra
+small render each frame. LITE keeps two clouds per galaxy, fewer ring motes and no idle thinking; Hermes on LITE draws
+its shader at 0.3 px per CSS px and caps particles at 90. Screenshots: `research/handoff/2026-11-03-day/mind_hermes/`.
+
+## Themes (2026-11-03, owner: "whole themes for Olympus, a default (what it is now) and more")
+
+The themes are **data** in `olympus/themes.js` (`window.OLYMPUS_THEMES`, ES5, never throws): seven palettes, each with every
+token in `TOKENS` and, except the default, Jarvis's own palette (`--bg`, `--c`, `--neb1` ...). One key on the shared origin,
+`localStorage['olympus.theme']` (unknown or missing = `olympus`). Jarvis's Look sheet writes it; every page reads it at start
+and on the `storage` event, so an app framed in Jarvis changes live and the others on their next open.
+
+| Theme | Greek | Look | 3D tint (fog) | Scheme |
+|---|---|---|---|---|
+| **Olympus** (default) | ΟΛΥΜΠΟΣ | today's violet + gold, pixel for pixel (nothing is painted) | each app's own | dark |
+| Zeus Storm | ΖΕΥΣ | electric blue, white lightning | `#06142e` | dark |
+| Poseidon | ΠΟΣΕΙΔΩΝ | deep ocean teal, aqua | `#03252e` | dark |
+| Hades | ΑΙΔΗΣ | black, ember red | `#1a0403` | dark |
+| Athena | ΑΘΗΝΑ | marble white, silver, olive (the light theme) | `#2a3027` (a dusk stage) | light |
+| Apollo | ΑΠΟΛΛΩΝ | sunrise gold, orange | `#241004` | dark |
+| Artemis | ΑΡΤΕΜΙΣ | moonlight silver, indigo night | `#0e1230` | dark |
+
+- **Tokens** (`--oly-*` on `<html>`): `bg`, `bg2`, `glass`, `glass2`, `line`, `edge` (the lit glass rim), `text`, `dim`,
+  `accent` (`--oly-tone`), `accent2` (`--oly-tone2`), `glow`, `ok` / `bad` / `warn`, `shadow`, `scheme`, `themeColor` (the
+  status bar), and the 3D tints `fog`, `sky`, `emissive`, `bloom` with `mix` (how far an app's own scene colours lean toward
+  them) and `harmony` (how far an app's identity colour turns toward the theme accent, at most 16 degrees of hue: Tyche stays
+  gold, Oracle cyan).
+- **The default paints nothing**: no inline variable, `mix` 0 and `harmony` 0, so every stylesheet value, accent and scene colour
+  is exactly today's. `tests/test_olympus_themes.py` compares every computed CSS variable of Jarvis, the nine apps, Zenith and
+  Kalshi with the baseline taken before the themes (`tests/fixtures/olympus_default_vars.json`).
+- **Where**: `apply('page')` in Jarvis (the full palette; Athena is a marble page with ink text) and `apply('stage')` in the 3D
+  apps, Zenith and Kalshi (surfaces that are dark by design: a light theme gives its dark `stage` variant there, because a light
+  fog washes every additive glow out).
+- **Apps**: `olympus.js` re-points each app's own CSS tokens (`APP_VARS`: `--bg` blended from the app's own page colour, its
+  panel / glass, line, text, dim) and the theme-color meta, and harmonises `--oly-accent`. Each three.js app hooks its scene in
+  one line (`O?.themeScene?.(...)`, Data City `O?.onTheme(...)` + `O.tint` in `setDay`). Daphne (2D) and Hermes (raw WebGL)
+  take the CSS tokens only.
+- **Zenith** (root `index.html`) and **Kalshi**: the engine loads async; Zenith's dark look blends `--page` / `--surface*` and
+  takes `--line` / `--ink` (its own light look and its accent stay its own); Kalshi blends `--bg` / `--bg2` / `--pr` and keeps
+  its mint.
+- **Jarvis**: the engine loads async (never part of the start). It keeps a copy of what it painted (`olympus.theme.paint`), which
+  Jarvis's `<head>` paints before the first frame, so a theme is there from the first paint, offline too. The Look sheet shows
+  seven live tiles (a turning ring in the two accents, the glowing core, a scan line; still on Low / Off and reduce motion).
+  The old Jarvis colours (Reactor ... Custom) are now "Jarvis colour": colours of the default theme, so picking one goes back
+  to Olympus. Light themes get `html[data-oly-scheme="light"]` overrides in `jarvis.css` (white glass, ink text, the reactor in
+  a dark lens).
+- **Polish shared by all** (`olympus.css`): one set of motion curves (`--oly-ease`, `--oly-ease-in-out`, `--oly-spring`,
+  `--oly-dur-1/2/3`), a keyboard focus ring with zero specificity (`:where(...)`: an app's own ring wins), glass with a lit
+  edge (`.oly-glass`, `.oly-card`), and the **Scanlines** option (Look sheet; `localStorage['olympus.grain']`): one static
+  composited layer of fine scanlines + SVG film grain, no animation, never a tap, so the perf budgets hold.
+- **Adding a theme**: one entry in `THEMES` with every token (+ `jarvis`, + `stage` if light). The test lists any token
+  missing and checks WCAG AA (4.5:1) for the text of every theme on its page and glass (the light one everywhere it is read).

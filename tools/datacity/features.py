@@ -69,6 +69,14 @@ STATES = {
     "news": ("no big news today", "big-news day"),
     "gap": ("flat open", "gap up", "gap down"),
     "smt": ("no ES-NQ SMT", "ES-NQ SMT with the trade", "ES-NQ SMT against the trade"),
+    # added 2026-11-03 (the bigger city): opening-range types, gap types, the VIX curve and trend, ES-NQ strength, calendar
+    "orw": ("a narrow opening range", "a normal opening range", "a wide opening range"),
+    "orp": ("beyond the opening range with the trade", "inside the opening range", "beyond the opening range against the trade"),
+    "gapt": ("no RTH gap", "a gap up already filled", "a gap up still open", "a gap down already filled", "a gap down still open"),
+    "vts": ("the VIX curve in contango", "a flat VIX curve", "the VIX curve inverted"),
+    "vtr": ("VIX falling", "VIX steady", "VIX rising"),
+    "esr": ("NQ outpacing ES the trade's way", "NQ and ES in step", "NQ lagging ES the trade's way"),
+    "cal": ("the turn of the month", "OpEx week", "a plain week"),
 }
 FAMILIES = list(STATES)
 
@@ -76,7 +84,11 @@ FAMILIES = list(STATES)
 HIGH_LEVELS = ("asia_h", "lon_h", "pdh", "pwh", "orh")
 LEVEL_VALID_FROM = {"asia_h": 480, "asia_l": 480, "lon_h": 780, "lon_l": 780, "pdh": 0, "pdl": 0, "pwh": 0, "pwl": 0,
                     "orh": 945, "orl": 945}
-STATE_EDGES = {"vix": (15, 20, 25), "vxn": (20, 28), "atr": (1 / 3, 2 / 3)}
+STATE_EDGES = {"vix": (15, 20, 25), "vxn": (20, 28), "atr": (1 / 3, 2 / 3), "orw": (1 / 3, 2 / 3), "vts": (0.9, 1.0),
+               "vtr": (0.95, 1.05)}
+DAY_FAMILIES = ("wd", "dst", "news", "vix", "vxn", "atr", "prev", "vts", "vtr", "cal", "mon")   # known before the day trades
+ESR_PCT = 0.15                    # NQ vs ES % change since the day's open: beyond +/- this = one leads the other
+GAP_X = 0.15                      # an RTH gap: |09:30 open - prior RTH close| > this x the daily ATR
 
 
 # ------------------------------------------------------------------------------------------------ helpers
@@ -125,6 +137,46 @@ def _cboe_before(d, days):
     return out
 
 
+def _past_pct(x, k=250, min_n=40):
+    """Share of the previous k finite values below today's (NaN when today's is NaN or too little history)."""
+    out = np.full(len(x), np.nan)
+    for i in range(len(x)):
+        if not np.isfinite(x[i]):
+            continue
+        w = x[max(0, i - k):i]
+        w = w[np.isfinite(w)]
+        if len(w) >= min_n:
+            out[i] = float(np.mean(w < x[i]))
+    return out
+
+
+def _vix_trend(vix):
+    """VIX close / the mean of the 5 closes before it, as a CBOE-style frame (date, close)."""
+    if vix is None or not len(vix):
+        return None
+    c = vix["close"].astype(float)
+    return pd.DataFrame({"date": vix["date"], "close": (c / c.shift(1).rolling(5, min_periods=5).mean()).to_numpy()}).dropna()
+
+
+def _calendar(days):
+    """0 the turn of the month (last 2 / first 3 weekdays), 1 OpEx week (the Mon-Fri week of the 3rd Friday), 2 plain."""
+    out = np.full(len(days), 2, dtype=np.int8)
+    for i, d in enumerate(days.astype(object)):
+        if d.weekday() > 4:
+            out[i] = -1
+            continue
+        first = dt.date(d.year, d.month, 1)
+        nxt = dt.date(d.year + (d.month == 12), d.month % 12 + 1, 1)
+        wd_before = int(np.busday_count(first, d))                # weekdays of the month before d
+        wd_after = int(np.busday_count(d, nxt)) - 1                # weekdays of the month after d
+        fri = first + dt.timedelta(days=(4 - first.weekday()) % 7 + 14)
+        if wd_before < 3 or wd_after < 2:
+            out[i] = 0
+        elif 0 <= (fri - d).days <= 4:
+            out[i] = 1
+    return out
+
+
 class Bars:
     """The 5m bars as arrays, with their ET clock and CME day."""
 
@@ -166,7 +218,7 @@ class Bars:
 
 
 # ------------------------------------------------------------------------------------------------ facts
-def day_facts(b: Bars, vix=None, vxn=None, news=None) -> dict:
+def day_facts(b: Bars, vix=None, vxn=None, news=None, vix3m=None) -> dict:
     """Day-level facts. Levels of the day itself (Asia, London, opening range) are only used after they are complete;
     everything else comes from earlier days or from a schedule known in advance."""
     every = np.ones(b.n, bool)
@@ -186,17 +238,23 @@ def day_facts(b: Bars, vix=None, vxn=None, news=None) -> dict:
     pc = _shift(rth_close, 1)
     wd = np.array([d.weekday() for d in b.days.astype(object)], dtype=np.int8)
     news_dates = set(news["date"].astype(str)) if news is not None and len(news) else set()
+    orh, orl = b.per_day(orng, b.h, "max"), b.per_day(orng, b.l, "min")
+    v_prev, v3_prev = _cboe_before(vix, b.days), _cboe_before(vix3m, b.days)
     return {
         "levels": {"asia_h": b.per_day(asia, b.h, "max"), "asia_l": b.per_day(asia, b.l, "min"),
                    "lon_h": b.per_day(lon, b.h, "max"), "lon_l": b.per_day(lon, b.l, "min"),
                    "pdh": _shift(hi, 1), "pdl": _shift(lo, 1), "pwh": w_hi[wid], "pwl": w_lo[wid],
-                   "orh": b.per_day(orng, b.h, "max"), "orl": b.per_day(orng, b.l, "min")},
+                   "orh": orh, "orl": orl},
         "open": op, "datr": datr, "pc": pc, "gapx": (rth_open - pc) / datr,
         "atr": _bucket(pct, STATE_EDGES["atr"]), "prev": np.r_[-1, prev_type[:-1]].astype(np.int8),
         "vix": _bucket(_cboe_before(vix, b.days), STATE_EDGES["vix"]),
         "vxn": _bucket(_cboe_before(vxn, b.days), STATE_EDGES["vxn"]),
         "dst": _dst_state(b.days), "wd": np.where(wd > 4, -1, wd).astype(np.int8),
         "news": np.array([1 if str(d) in news_dates else 0 for d in b.days.astype(object)], dtype=np.int8),
+        "orw": _bucket(_past_pct((orh - orl) / datr), STATE_EDGES["orw"]),           # today's OR vs the last 250 days
+        "vts": _bucket(v_prev / v3_prev, STATE_EDGES["vts"]),                           # VIX / VIX3M, closes before the day
+        "vtr": _bucket(_cboe_before(_vix_trend(vix), b.days), STATE_EDGES["vtr"]),
+        "cal": _calendar(b.days),
     }
 
 
@@ -225,13 +283,32 @@ def bar_facts(b: Bars, D: dict, es=None) -> dict:
     swept_h = b.in_day(np.where(lon, h, -np.inf), "max") > D["levels"]["asia_h"][did]
     swept_l = b.in_day(np.where(lon, lo, np.inf), "min") < D["levels"]["asia_l"][did]
     drift = np.where(b.mod >= 930, D["gapx"][did], (c - D["pc"][did]) / datr)
-    return {"pcl": pcl, "atr": pd.Series(tr).rolling(14, min_periods=5).mean().to_numpy(),
+    rth = b.mod >= 930
+    pc, gx = D["pc"][did], D["gapx"][did]
+    lo_rth, hi_rth = b.in_day(np.where(rth, lo, np.inf), "min"), b.in_day(np.where(rth, h, -np.inf), "max")
+    gapt = np.where(gx > GAP_X, np.where(lo_rth <= pc, 1, 2), np.where(gx < -GAP_X, np.where(hi_rth >= pc, 3, 4), 0))
+    gapt = np.where(rth & (b.mod < 1320) & np.isfinite(gx), gapt, -1)
+    orh, orl = D["levels"]["orh"][did], D["levels"]["orl"][did]
+    or_side = np.where((b.mod >= 945) & np.isfinite(orh), np.where(c > orh, 1.0, np.where(c < orl, -1.0, 0.0)), np.nan)
+    return {"gapt": gapt.astype(np.int8), "or_side": or_side, "esrel": es_rel(b, es),"pcl": pcl, "atr": pd.Series(tr).rolling(14, min_periods=5).mean().to_numpy(),
             "ema": pd.Series(c).ewm(span=200, adjust=False).mean().to_numpy(), "vwap": vw,
             "today": today.astype(np.int8),
             "lsa": np.where(b.mod < 480, -1, swept_h.astype(int) + 2 * swept_l.astype(int)).astype(np.int8),
             "gap": np.where(~np.isfinite(drift), -1, np.where(drift > 0.15, 1, np.where(drift < -0.15, 2, 0))).astype(np.int8),
             "smt": smt(b, hi_sofar, lo_sofar, es),
             "lo6": b.rolling(lo, 6, "min"), "hi6": b.rolling(h, 6, "max")}
+
+
+def es_rel(b: Bars, es=None) -> np.ndarray:
+    """NQ's % change since the CME day's first bar minus ES's, at each bar's close (NaN without ES bars or in the first hour)."""
+    if es is None or not len(es):
+        return np.full(b.n, np.nan)
+    e = es.set_index("time").reindex(b.t)
+    ec, eo = e["close"].to_numpy(dtype=float), e["open"].to_numpy(dtype=float)
+    first = lambda a: pd.Series(a).groupby(b.did).transform("first").to_numpy()   # noqa: E731 (first non-NaN of the day)
+    nq0, es0 = first(b.o), first(eo)
+    have = np.isfinite(ec) & np.isfinite(es0) & (b.mod >= 60)
+    return np.where(have, 100 * ((b.c / nq0 - 1) - (ec / np.where(have, es0, 1.0) - 1)), np.nan)
 
 
 def smt(b: Bars, hi_sofar, lo_sofar, es=None) -> np.ndarray:
@@ -438,19 +515,25 @@ def states(b: Bars, D: dict, X: dict, ti, dirs) -> dict:
     """The "while" states at each decision bar (direction-relative where it matters: with / against)."""
     day = b.did[ti]
     side = lambda x: np.where(~np.isfinite(x), -1, np.where(np.sign(x) == dirs, 0, 1)).astype(np.int8)  # noqa: E731
+    rel3 = lambda x: np.where(~np.isfinite(x), -1, np.where(x > 0, 0, np.where(x == 0, 1, 2))).astype(np.int8)  # noqa: E731
+    er = X["esrel"][ti]
     s = X["smt"][ti]
     with_trade = ((s == 1) & (dirs < 0)) | ((s == 2) & (dirs > 0))
     return {"vwap": side(b.c[ti] - X["vwap"][ti]), "ema": side(b.c[ti] - X["ema"][ti]), "atr": D["atr"][day],
             "vix": D["vix"][day], "vxn": D["vxn"][day], "lsa": X["lsa"][ti], "today": X["today"][ti], "prev": D["prev"][day],
             "wd": D["wd"][day], "dst": D["dst"][day], "news": D["news"][day], "gap": X["gap"][ti],
-            "smt": np.where(s < 0, -1, np.where(s == 0, 0, np.where(with_trade, 1, 2))).astype(np.int8)}
+            "smt": np.where(s < 0, -1, np.where(s == 0, 0, np.where(with_trade, 1, 2))).astype(np.int8),
+            "orw": np.where(b.mod[ti] >= 945, D["orw"][day], -1).astype(np.int8),
+            "orp": rel3(X["or_side"][ti] * dirs), "gapt": X["gapt"][ti], "vts": D["vts"][day], "vtr": D["vtr"][day],
+            "esr": rel3(np.where(np.isfinite(er), np.where(np.abs(er) > ESR_PCT, np.sign(er), 0.0), np.nan) * dirs),
+            "cal": D["cal"][day]}
 
 
 # ------------------------------------------------------------------------------------------------ build
-def build(df: pd.DataFrame, es=None, vix=None, vxn=None, news=None) -> dict:
+def build(df: pd.DataFrame, es=None, vix=None, vxn=None, news=None, vix3m=None) -> dict:
     """The event table of a tidy 5m frame: {"ev": {column: array}, "days", "last_t", "last_mod", "bars": bar facts}."""
     b = Bars(df)
-    D = day_facts(b, vix, vxn, news)
+    D = day_facts(b, vix, vxn, news, vix3m)
     X = bar_facts(b, D, es)
     E = Events()
     level_triggers(b, D, X, E)

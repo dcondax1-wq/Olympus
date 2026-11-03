@@ -1,20 +1,27 @@
 // OLYMPUS Mind: the page. Wires the data adapter (data.js), the model (graph.js), the layout (layout.js, in a worker), the
 // renderer (render.js), the camera (controls.js) and the overlay (ui.js). Owns the page's state: the current graph, the
-// filter, the search, the focused note and the time-lapse.
+// focus mode (one galaxy), the search, the focused note, the view (galaxy / constellation) and the time-lapse.
 // "Constantly learning": a fresh snapshot every 60 s and on every index change; new notes fly in from the edge and ignite,
-// edited notes ignite, recently edited notes pulse, and each new "learned" item becomes a cyan spark that flies from the
-// ticker to its note. While open inside Jarvis it posts its live card (notes, links, learned this week) to Jarvis.
+// edited notes ignite and fire a synapse, recently edited notes pulse, each new "learned" item becomes a cyan spark that
+// flies from the ticker to its note and bursts into synapses there, and the thought stream at the bottom grows. While idle
+// the brain "thinks": quiet pulses run along its links. Jarvis's memories ring "Me" in cyan.
+// While open inside Jarvis it posts its live card (notes, links, learned this week) to Jarvis.
+// Themes: applyTheme(theme) restyles the page; it follows olympus.js's theme (OLYMPUS.theme() / onTheme) when the kit has one.
 import * as THREE from '../jarvis/three.module.min.js';
 import { openFeed } from './data.js';
 import { createDemo } from './demo.js';
-import { buildGraph, diffGraphs, search } from './graph.js';
-import { anchorsFor, createLayoutHost } from './layout.js';
+import { buildGraph, diffGraphs, search, resolve, thoughts } from './graph.js';
+import { anchorsFor, createLayoutHost, ringRadius, ringSpot } from './layout.js';
 import { Brain } from './render.js';
 import { OrbitRig } from './controls.js';
 import { createUI } from './ui.js';
 
 const O = window.OLYMPUS || null;          // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
 const QUALITY_KEY = 'mind.quality';        // the old per-app key: read only when the kit is missing
+const VIEW_KEY = 'mind.view';              // galaxy | stars (this phone only)
+// a theme's colour names -> this page's CSS custom properties (mind.css :root)
+const THEME_KEYS = { accent: '--cyan', primary: '--cyan', bg: '--bg', background: '--bg', glass: '--glass', panel: '--glass-hi',
+  text: '--text', dim: '--dim', muted: '--mut', line: '--line', gold: '--gold' };
 const THEME = '#03040a';
 const reduced = O ? O.reduced() : matchMedia('(prefers-reduced-motion: reduce)').matches;
 const canvas = document.getElementById('gl');
@@ -23,6 +30,7 @@ const saved = savedQuality();
 const state = {
   graph: null, mode: 'loading', filter: null, query: '', matches: null, focus: -1, lapse: null, pending: null,
   quality: saved || (O && O.lite() ? 'low' : autoQuality()), chosen: !!saved, fps: 0, settled: false,
+  view: savedView(), streamKeys: new Set(),
 };
 
 const ui = createUI({
@@ -38,14 +46,21 @@ const ui = createUI({
   onPick(id) { state.query = ''; state.matches = null; focus(id, true); },
   onFly(id) { focus(id, true); },
   onCloseCard: unfocus,
-  onFilter(key) {
+  onFilter(key) {                                // focus mode: one galaxy lit, the rest dimmed to a whisper
+    if (!state.graph) return;
     state.filter = key;
+    const c = state.graph.clusters.find((k) => k.key === key) || null;
     ui.chips(state.graph.clusters, key);
+    ui.focusBar(c);
     look();
     if (!brain) return;
-    const c = state.graph.clusters.find((k) => k.key === key);
-    if (c && brain.centres) { const p = brain.centres[c.i]; rig.flyTo(p, Math.max(90, p.r * 3)); } else home();
+    if (c && brain.centres) {
+      const ring = c.key === 'memory' && brain.ringInfo, p = ring || brain.centres[c.i];
+      rig.flyTo(p, Math.max(90, (ring ? ring.r * 1.4 : p.r) * 3));
+    } else home();
   },
+  onView() { setView(state.view === 'stars' ? 'galaxy' : 'stars'); ui.toast(state.view === 'stars' ? 'Constellation view' : 'Galaxy view'); },
+  resolve: (name) => (state.graph ? resolve(state.graph, name) : null),
   onTimeLapse() { if (state.lapse) stopLapse(); else startLapse(); },
   onQuality() {
     setQuality(state.quality === 'high' ? 'low' : 'high');
@@ -56,6 +71,7 @@ const ui = createUI({
   },
 });
 ui.quality(state.quality);
+ui.view(state.view);
 
 // ------------------------------------------------------------------ the 3D view (the overlay alone without WebGL)
 let brain = null, rig = null, needsDraw = true;
@@ -63,6 +79,7 @@ if (hasWebGL()) {
   try {
     brain = new Brain(THREE, canvas, { quality: state.quality, reduced });
     O?.track(brain.renderer);
+    O?.themeScene?.({ scene: brain.scene, renderer: brain.renderer, clear: 0x03040a, redraw: () => { needsDraw = true; } });   // OLYMPUS theme tints
     rig = new OrbitRig(brain.camera, canvas, {
       reduced,
       onTap(x, y) { const i = brain.pick(x, y); if (i >= 0) focus(state.graph.nodes[i].id, false); else if (state.focus >= 0) unfocus(); },
@@ -76,6 +93,7 @@ if (hasWebGL()) {
   }
 }
 if (!brain) { ui.noGL(); O?.ready(); }        // the numbers and the search still work: the page is up
+else brain.setView(state.view);
 O?.mode(state.quality === 'low');
 const layout = brain ? createLayoutHost((pos, asleep) => { brain.setTargets(pos); state.settled = asleep; needsDraw = true; }) : null;
 addEventListener('resize', () => { if (brain) { brain.resize(); frameFocus(); needsDraw = true; } });
@@ -97,6 +115,17 @@ function savedQuality() {
   } catch (_) {
     return null;                                    // no storage: decide again on each visit
   }
+}
+
+function savedView() {
+  try { return localStorage.getItem(VIEW_KEY) === 'stars' ? 'stars' : 'galaxy'; } catch (_) { return 'galaxy'; }
+}
+
+function setView(v) {
+  state.view = v;
+  ui.view(v);
+  if (brain) { brain.setView(v); needsDraw = true; }
+  try { localStorage.setItem(VIEW_KEY, v); } catch (_) { /* private mode: this visit only */ }
 }
 
 function autoQuality() {
@@ -124,7 +153,9 @@ function onUpdate(update) {
   ui.mode(mode);
   ui.stats(next.stats);
   ui.chips(next.clusters, state.filter);
+  ui.focusBar(next.clusters.find((c) => c.key === state.filter) || null);
   if (d.first || d.learned.length) ui.ticker(next.learned, !d.first && d.learned.length > 0);
+  stream(next, d.first);
   state.focus = focusId && next.index.has(focusId) ? next.index.get(focusId) : -1;
   if (state.focus >= 0) ui.card.show(next.nodes[state.focus], next); else ui.card.hide();
   frameFocus();
@@ -137,19 +168,39 @@ function onUpdate(update) {
       if (to >= 0) { brain.spark(to); sparked.add(to); }
     }
     for (const i of d.added) brain.ignite(i, null, false);           // it glows as it flies in from the edge
-    for (const i of d.changed) if (!sparked.has(i)) brain.ignite(i);
+    for (const i of d.changed) if (!sparked.has(i)) { brain.ignite(i); brain.synapse(i); }
   }
   state.matches = state.query.trim() ? new Set(search(next, state.query).map((x) => x.i)) : null;
   look();
   postCard(next, mode);
 }
 
+/** The thought stream: lessons and edits, newest first; the ones that were not there before slide in. */
+function stream(g, first) {
+  const list = thoughts(g, 24).map((x) => {
+    const node = x.i >= 0 ? g.nodes[x.i] : null;
+    return { ...x, key: x.kind + '|' + x.t + '|' + x.text, id: node ? node.id : meId(g), colour: node ? g.clusters[node.cluster].colour : '#fff' };
+  });
+  const fresh = first ? new Set() : new Set(list.filter((x) => !state.streamKeys.has(x.key)).map((x) => x.key));
+  state.streamKeys = new Set(list.map((x) => x.key));
+  ui.stream(list, fresh);
+}
+
+function meId(g) {
+  const me = g.clusters.find((c) => c.key === 'me'), n = me ? g.nodes.find((x) => x.cluster === me.i) : null;
+  return n ? n.id : null;
+}
+
 /** Positions for the new graph: kept notes stay where they are; new ones are seeded near their links (or their galaxy) for the
- * layout, and drawn from far out so they fly in. The first graph is a big bang from the centre. */
+ * layout, and drawn from far out so they fly in. The first graph is a big bang from the centre. Jarvis's memories take their
+ * seats on the ring around Me. */
 function place(prev, next, d) {
   const n = next.nodes.length, sizes = next.clusters.map((c) => c.count);
   const center = next.clusters.findIndex((c) => c.key === 'me');
+  const ring = center >= 0 ? next.clusters.findIndex((c) => c.key === 'memory') : -1;
   const anchors = anchorsFor(sizes, center);
+  const memories = ring >= 0 ? next.nodes.filter((x) => x.cluster === ring) : [];
+  const seat = new Map(memories.map((x, k) => [x.i, ringSpot(k, memories.length, ringRadius(n))]));
   const targets = new Float32Array(n * 3), start = new Float32Array(n * 3);
   const old = (node) => (prev ? prev.index.get(node.id) : undefined);
   const jitter = (s) => (Math.random() - 0.5) * s;
@@ -163,7 +214,8 @@ function place(prev, next, d) {
     const near = node.out.map(old).filter((k) => k !== undefined);
     const src = near.length ? brain.target : anchors.pos, at = near.length ? near[0] * 3 : node.cluster * 3;
     const spread = near.length ? 12 : 30 + 3 * Math.sqrt(next.clusters[node.cluster].count);
-    for (let a = 0; a < 3; a++) targets[i3 + a] = src[at + a] + jitter(spread);
+    if (seat.has(node.i)) targets.set(seat.get(node.i), i3);
+    else for (let a = 0; a < 3; a++) targets[i3 + a] = src[at + a] + jitter(spread);
     if (d.first) for (let a = 0; a < 3; a++) start[i3 + a] = reduced ? targets[i3 + a] : targets[i3 + a] * 0.03;
     else start.set(brain.edgePoint(targets, node.i), i3);
   }
@@ -171,7 +223,7 @@ function place(prev, next, d) {
   if (d.first) { rig.target = { x: 0, y: 0, z: 0 }; rig.radius = (anchors.radius + 40) * (innerWidth < innerHeight ? 3.1 : 2.2); }
   if (d.structural) {
     state.settled = false;
-    layout.run({ pos: targets, cluster: Int32Array.from(next.nodes, (x) => x.cluster), edges: next.edges, sizes, center, alpha: d.first ? 1 : 0.3 });
+    layout.run({ pos: targets, cluster: Int32Array.from(next.nodes, (x) => x.cluster), edges: next.edges, sizes, center, ring, alpha: d.first ? 1 : 0.3 });
   }
   needsDraw = true;
 }
@@ -181,24 +233,31 @@ function look() {
   const g = state.graph;
   if (!g || !brain) return;
   const n = g.nodes.length, emph = new Float32Array(n).fill(1);
-  if (state.filter) for (const node of g.nodes) if (g.clusters[node.cluster].key !== state.filter) emph[node.i] = 0.1;
-  if (state.matches) for (let i = 0; i < n; i++) emph[i] = state.matches.has(i) ? 1.6 : Math.min(emph[i], 0.16);
+  const cluster = g.clusters.map((c) => (state.filter && c.key !== state.filter ? 0.03 : 1));
+  if (state.filter) for (const node of g.nodes) if (g.clusters[node.cluster].key !== state.filter) emph[node.i] = 0.07;
+  if (state.matches) {
+    for (let i = 0; i < n; i++) emph[i] = state.matches.has(i) ? 1.6 : Math.min(emph[i], 0.16);
+    cluster.forEach((v, k) => { cluster[k] = v * 0.45; });
+  }
   if (state.focus >= 0) {
     const f = g.nodes[state.focus], near = new Set(f.out);
     for (const m of g.nodes) if (m.out.includes(f.i)) near.add(m.i);
     for (let i = 0; i < n; i++) emph[i] = i === f.i ? 2 : near.has(i) ? Math.max(emph[i], 1.2) : emph[i] * 0.45;
+    cluster.forEach((v, k) => { cluster[k] = v * (k === f.cluster ? 0.9 : 0.5); });
   }
-  brain.setLook(emph, state.lapse ? state.lapse.show : new Float32Array(n).fill(1));
+  brain.setLook(emph, state.lapse ? state.lapse.show : new Float32Array(n).fill(1), cluster);
   needsDraw = true;
 }
 
 function focus(id, fly) {
   const g = state.graph, i = g ? g.index.get(id) : undefined;
   if (i === undefined) return;
+  const opened = state.focus !== i;
   state.focus = i;
   ui.card.show(g.nodes[i], g);
   frameFocus();
   look();
+  if (brain && opened) brain.synapse(i);              // opening a note fires its synapses
   if (fly && brain) rig.flyTo(brain.nodePoint(i), 70 + g.nodes[i].size * 7);
 }
 
@@ -300,9 +359,10 @@ function meter(dt) {
 function labels() {
   const g = state.graph, out = [];
   if (brain.centres) {
-    const cam = brain.camera.position, reach = rig.radius + brain.extent;
+    const cam = brain.camera.position, reach = rig.radius + brain.extent, ring = brain.ringInfo;
     g.clusters.forEach((c, k) => {
-      const p = brain.centres[k];
+      let p = brain.centres[k];
+      if (c.key === 'memory' && ring) p = { x: ring.x, y: ring.y + ring.r * 0.55, z: ring.z, r: ring.r * 0.5 };   // above the ring
       if (!p || c.count < 3 || c.key === 'me') return;
       const s = brain.screenOf({ x: p.x, y: p.y + p.r * 0.75 + 8, z: p.z });
       if (!s.front) return;
@@ -318,7 +378,19 @@ function labels() {
     const s = brain.screenOf(brain.nodePoint(i));
     if (s.front) out.push({ key: 'note:' + g.nodes[i].id, text: g.nodes[i].title, x: s.x, y: s.y, alpha: 1, colour: '#fff', note: true });
   }
-  ui.labels(out);
+  ui.labels(declutter(out));
+}
+
+/** Galaxy names never sit on top of each other: a note's name first, then Jarvis's memory ring, then the nearer (brighter)
+ * galaxy; a name that would overlap one already placed waits for the view to turn. */
+function declutter(list) {
+  const kept = [], rank = (l) => (l.note ? 2 : l.key === 'c:memory' ? 1 : 0);
+  for (const l of list.slice().sort((a, b) => rank(b) - rank(a) || b.alpha - a.alpha)) {
+    const w = l.note ? 0 : l.text.length * 4.6 + 20;                       // about half a name's width at 11 px, spaced
+    if (!l.note && kept.some((k) => !k.note && Math.abs(k.y - l.y) < 16 && Math.abs(k.x - l.x) < w + k.text.length * 4.6)) continue;
+    kept.push(l);
+  }
+  return kept;
 }
 
 // ------------------------------------------------------------------ start (a debug handle for the console and the tests)
@@ -331,11 +403,60 @@ window.mind = {
   get quality() { return state.quality; },
   get fps() { return state.fps; },
   get sparks() { return brain ? brain.sparks.length : 0; },
+  get sparksLaunched() { return brain ? brain.launched : 0; },
   get layout() { return layout ? layout.mode : 'none'; },
   get settled() { return state.settled; },
+  get view() { return state.view; },
+  get filter() { return state.filter; },
+  get synapses() { return brain ? brain.synapses.count : 0; },
+  get nebulae() { return brain ? brain.nebulae.puffs.length : 0; },
+  get ring() { return brain && brain.ringInfo ? { ...brain.ringInfo } : null; },
+  get thoughts() { return document.querySelectorAll('#stream li').length; },
+  memoryOnRing: () => {                                  // how far each memory sits from the ring (share of its radius)
+    const r = brain && brain.ringInfo, g = state.graph;
+    if (!r || !g) return null;
+    const mem = g.clusters.findIndex((c) => c.key === 'memory');
+    return g.nodes.filter((x) => x.cluster === mem).map((x) => {
+      const p = brain.nodePoint(x.i);
+      return Math.abs(Math.hypot(p.x - r.x, p.y - r.y, p.z - r.z) - r.r) / r.r;
+    });
+  },
+  setView: (v) => setView(v === 'stars' ? 'stars' : 'galaxy'),
+  applyTheme: (t) => applyTheme(t),
   camera: () => rig && { target: { ...rig.target }, radius: rig.radius, flying: !!rig.flight },
   labelBand: () => ui.band(),
   nodePoint: (id) => (brain && state.graph.index.has(id) ? brain.nodePoint(state.graph.index.get(id)) : null),
   screenOf: (id) => (brain && state.graph.index.has(id) ? brain.screenOf(brain.nodePoint(state.graph.index.get(id))) : null),
 };
 openFeed(onUpdate, { demo: createDemo({ size: demoSize }) });
+
+// ------------------------------------------------------------------ themes (olympus.js: OLYMPUS.theme() / onTheme, when present)
+/** Restyle the page from a theme: {accent, bg, glass, text, ...} or CSS custom properties ('--x': value), flat or one level
+ * down (e.g. {name, vars: {...}}). Unknown keys are ignored; a bad value never breaks the page. Returns what it applied. */
+function applyTheme(theme) {
+  if (!theme || typeof theme !== 'object') return {};
+  const known = (o) => Object.keys(o).some((k) => k.startsWith('--') || k in THEME_KEYS);
+  const t = known(theme) ? theme : Object.values(theme).find((v) => v && typeof v === 'object' && !Array.isArray(v) && known(v));
+  if (!t) return {};
+  const root = document.documentElement.style, done = {};
+  const hexRgb = (c) => { const m = /^#?([0-9a-f]{6})$/i.exec(String(c || '').trim()); if (!m) return null; const v = parseInt(m[1], 16); return [v >> 16 & 255, v >> 8 & 255, v & 255].join(', '); };
+  const set = (k, v) => { if (typeof v === 'string' && v.length < 200 && !/[;{}<>]/.test(v)) { root.setProperty(k, v); done[k] = v; } };
+  for (const [k, v] of Object.entries(t)) {
+    if (k.startsWith('--')) set(k, v);
+    else if (THEME_KEYS[k]) set(THEME_KEYS[k], v);
+  }
+  const accent = t.accent || t.primary || t['--cyan'];
+  if (hexRgb(accent)) { set('--cyan-rgb', hexRgb(accent)); set('--line-hi', `rgba(${hexRgb(accent)}, 0.35)`); }
+  const bg = t.bg || t.background || t['--bg'];
+  if (brain && hexRgb(bg)) { brain.setBackground(bg); needsDraw = true; }
+  return done;
+}
+
+(function followTheme() {
+  const api = window.OLYMPUS || window.Olympus || null;
+  if (!api) return;
+  try {
+    if (typeof api.theme === 'function') { const t = api.theme(); if (t && typeof t === 'object') applyTheme(t); }
+    if (typeof api.onTheme === 'function') api.onTheme((t) => applyTheme(t));
+  } catch (_) { /* an older kit: the page's own look */ }
+})();

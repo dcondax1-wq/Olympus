@@ -190,6 +190,14 @@ def run_odeon(task, tmp, ctx):
             "inputs": {"bars_t": newest or prev}}
 
 
+def run_pantheon(task, tmp, ctx):
+    """PANTHEON (tools/pantheon): fetch the free sources (a failed source falls back to the repo's own files) and write
+    pantheon.json, states.json and the card straight into tmp; research/ and the page copies are left alone."""
+    sub(py("-m", "tools.pantheon", "--out", tmp, "--no-research", "--no-web"), task.timeout_s, ctx["log"])
+    up = next((x for x in reversed(ctx["log"]) if x.startswith("PANTHEON:")), "")
+    return {"ran": True, "note": up[len("PANTHEON: "):][:120] if up else "rebuilt"}
+
+
 def _weekly(cmd_args):
     def runner(task, tmp, ctx):
         fp = fingerprint(task.inputs)
@@ -206,6 +214,7 @@ def _weekly(cmd_args):
 RUNNERS = {
     "fates": run_fates,
     "odeon": run_odeon,
+    "pantheon": run_pantheon,
     "tree": _weekly(("-m", "tools.strategytree", "--no-runs", "--procs", str(max(1, min(4, os.cpu_count() or 1))))),
     "prometheus": _weekly(("-m", "tools.prometheus.forge", "--no-runs")),
 }

@@ -21,11 +21,12 @@ from . import bars as B
 from . import features as F
 from . import grid as G
 from . import report as RP
+from . import skyline as SK
 from . import store
 
 OUT = B.OUT
 WEB = os.path.join(B.ROOT, "tools", "web_public", "datacity")
-HIST_KEEP = 200
+HIST_KEEP = 120                    # ~6 months of nightly rows (~0.5 MB): research/datacity JSON stays <= 3 MB
 RUN_ID = "datacity_holdout_portfolio"
 
 
@@ -110,6 +111,15 @@ def run(full=False, heartbeat=False, out=OUT, web=WEB, store_run=True, df=None, 
     if store_run and port_T:
         save_run(port_T, port_S, strategies[-1]["members"], log)
     today = st.today()
+    tl = SK.Today(grid)
+    plugins = SK.collect_plugins(os.path.join(out, "plugins"))
+    buildings = st.buildings()
+    for b in buildings:                                   # the Today layer on the full cards
+        i = st.index[b["id"]]
+        f = tl.flag(combos[i], rows[i])
+        if f:
+            b["td"] = 2 if f == SK.FL_FIRED else 1
+    shown = SK.tested(st)
     history = add_history(history, st.history_row(now))
     built = dt.datetime.fromtimestamp(now, dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     summary = {"v": 1, "built": built, "t": int(now),
@@ -124,10 +134,14 @@ def run(full=False, heartbeat=False, out=OUT, web=WEB, store_run=True, df=None, 
                "guard": guard, "run": how, "heartbeat": hb,
                "seconds": {"events": round(t1 - t0, 1), "grid": round(t2 - t1, 1), "total": round(time.time() - t0, 1)}}
     city = {"v": 1, "built": built, "t": int(now), "last_day": st.last_day, "summary": summary, "lit": RP.lit_tower(),
-            "buildings": st.buildings(), "strategies": strategies,
+            "buildings": buildings, "strategies": strategies,
             "top10": [{k: d[k] for k in ("id", "lab", "e", "w", "tpw", "cls", "tr")} for d in leaderboard[:10]],
             "discoveries": discoveries, "today": today, "lift": st.lift(),
-            "districts": ["times", "confluences", "while", "strategies", "discoveries"]}
+            "districts": list(G.DISTRICTS) + ["strategies", "discoveries", "harbor"],
+            "sections": SK.sections(guard), "dict": SK.dictionary(RP.WIN_LABEL),
+            "skyline": SK.skyline(st, tl, skip={st.index[b["id"]] for b in buildings}),
+            "today_layer": tl.summary(combos, rows, shown), "weather": SK.weather(), "harbor": SK.harbor(),
+            "plugins": [name for name, _ in plugins]}
     files = {"city.json": city, "leaderboard.json": {"v": 1, "built": built, "rows": leaderboard},
              "discoveries.json": {"v": 1, "built": built, "last_day": st.last_day, "items": discoveries, "today": today,
                                   "strategies": strategies},
@@ -135,10 +149,14 @@ def run(full=False, heartbeat=False, out=OUT, web=WEB, store_run=True, df=None, 
              "jarvis.json": RP.jarvis_card(guard, leaderboard, st.last_day, built, now)}
     for name, obj in files.items():
         write_json(os.path.join(out, name), obj)
+    for name, obj in plugins:                              # plug-in districts ride along with city.json (datacity branch)
+        write_json(os.path.join(out, name), obj)
     if web:
         os.makedirs(web, exist_ok=True)
         for name in ("city.json", "jarvis.json"):
             write_json(os.path.join(web, name), files[name])
+        for name, obj in plugins:                          # plug-in districts next to the page (city.json lists them)
+            write_json(os.path.join(web, name), obj)
     log(f"datacity: {len(city['buildings'])} buildings, {len(leaderboard)} on the leaderboard, {len(today)} fired on "
         f"{st.last_day}, {time.time() - t0:.1f}s")
     return files

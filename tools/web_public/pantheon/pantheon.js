@@ -1,0 +1,529 @@
+// PANTHEON: Mount Olympus at night. A marble platform above the clouds; one glowing pillar per data god in a circle, its
+// emblem hovering over the capital; energy beams run from every pillar into the central Council orb, whose colour is the
+// verdict (green risk-on, amber mixed, red risk-off). Tap a pillar (or its chip) for the god's card, the orb for the
+// council and the honest NQ check. Data: pantheon.json (tools/pantheon/build.py) or the demo fixture.
+// Performance: instanced pillars, one merged beam mesh, one Points buffer for the motes, one for the stars; auto LITE
+// when frames run slow (or ?lite=1); reduced motion = no drift, no bob, a still scene redrawn only on input.
+import * as THREE from '../jarvis/three.module.min.js';
+import { loadPantheon, godCard, councilHtml, chipValue, esc, LEAN, VERDICT } from './pantheoncore.js';
+import { drawGlyph } from './glyphs.js';
+
+const O = window.OLYMPUS || null;
+const Q = new URLSearchParams(location.search);
+const RM = O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+const $ = (id) => document.getElementById(id);
+const RING_R = 4.2, ORB_Y = 2.9, TOP_Y = 3.05, GLYPH_Y = 3.95;
+const STATE = { d: null, hall: null, sel: null, errors: [] };
+
+// ------------------------------------------------------------------------------------------------ canvas textures
+function canvasTex(w, h, draw) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+function rng(seed) { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
+const glowTex = () => canvasTex(64, 64, (x, w) => {
+  const g = x.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2);
+  g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.25, 'rgba(255,255,255,.55)');
+  g.addColorStop(0.6, 'rgba(255,255,255,.12)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+  x.fillStyle = g; x.fillRect(0, 0, w, w);
+});
+const marbleTex = (n) => canvasTex(n, n, (x, w) => {
+  const r = rng(7);
+  x.fillStyle = '#e7e1d2'; x.fillRect(0, 0, w, w);
+  for (let i = 0; i < 26; i++) {
+    x.strokeStyle = `rgba(${120 + r() * 40},${115 + r() * 40},${130 + r() * 30},${0.08 + r() * 0.14})`; x.lineWidth = 0.6 + r() * 2.2;
+    x.beginPath(); let px = r() * w, py = 0; x.moveTo(px, py);
+    while (py < w) { const nx = px + (r() - 0.5) * w * 0.25, ny = py + w * (0.08 + r() * 0.12); x.quadraticCurveTo(px + (r() - 0.5) * 30, (py + ny) / 2, nx, ny); px = nx; py = ny; }
+    x.stroke();
+  }
+  for (let i = 0; i < 10; i++) {           // flutes: vertical soft shadows (the texture wraps around the shaft)
+    const fx = (i + 0.5) / 10 * w, g = x.createLinearGradient(fx - w / 20, 0, fx + w / 20, 0);
+    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.5, 'rgba(40,36,60,.16)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    x.fillStyle = g; x.fillRect(fx - w / 20, 0, w / 10, w);
+  }
+});
+const floorTex = (n) => canvasTex(n, n, (x, w) => {
+  const c = w / 2, r = rng(11);
+  const g = x.createRadialGradient(c, c, 0, c, c, c);
+  g.addColorStop(0, '#4a4560'); g.addColorStop(0.35, '#2b2840'); g.addColorStop(0.8, '#17152a'); g.addColorStop(1, 'rgba(10,9,20,0)');
+  x.fillStyle = g; x.fillRect(0, 0, w, w);
+  for (let i = 0; i < 40; i++) {                                                   // marble veins
+    x.strokeStyle = `rgba(220,210,240,${0.03 + r() * 0.05})`; x.lineWidth = 1 + r() * 2;
+    x.beginPath(); x.moveTo(r() * w, r() * w); x.quadraticCurveTo(r() * w, r() * w, r() * w, r() * w); x.stroke();
+  }
+  x.strokeStyle = 'rgba(242,214,138,.55)'; x.lineWidth = w / 340;
+  for (const k of [0.16, 0.6, 0.64, 0.9]) { x.beginPath(); x.arc(c, c, c * k, 0, Math.PI * 2); x.stroke(); }
+  x.strokeStyle = 'rgba(242,214,138,.32)'; x.lineWidth = w / 420;                // the Greek key band between 0.6 and 0.64
+  const n2 = 96;
+  for (let i = 0; i < n2; i++) {
+    const a0 = i / n2 * Math.PI * 2, a1 = (i + 0.5) / n2 * Math.PI * 2, r0 = c * 0.6, r1 = c * 0.64;
+    x.beginPath(); x.moveTo(c + Math.cos(a0) * r0, c + Math.sin(a0) * r0); x.lineTo(c + Math.cos(a0) * r1, c + Math.sin(a0) * r1);
+    x.lineTo(c + Math.cos(a1) * r1, c + Math.sin(a1) * r1); x.lineTo(c + Math.cos(a1) * (r0 + (r1 - r0) * 0.5), c + Math.sin(a1) * (r0 + (r1 - r0) * 0.5)); x.stroke();
+  }
+  x.strokeStyle = 'rgba(167,139,250,.22)'; x.lineWidth = w / 500;
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2 - Math.PI / 2;
+    x.beginPath(); x.moveTo(c + Math.cos(a) * c * 0.17, c + Math.sin(a) * c * 0.17); x.lineTo(c + Math.cos(a) * c * 0.58, c + Math.sin(a) * c * 0.58); x.stroke();
+  }
+});
+function emblemTex(key, color) {
+  return canvasTex(128, 128, (x, w) => {
+    x.shadowColor = color; x.shadowBlur = 16; x.strokeStyle = '#ffffff'; x.fillStyle = color;
+    x.translate(w * 0.12, w * 0.12); drawGlyph(x, key, w * 0.76);
+  });
+}
+function labelTex(name, value, color) {
+  return canvasTex(256, 96, (x, w) => {
+    x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.font = '800 30px Orbitron, sans-serif'; x.shadowColor = color; x.shadowBlur = 12; x.fillStyle = color; x.fillText(name, w / 2, 30);
+    x.shadowBlur = 6; x.font = '700 30px Rajdhani, sans-serif'; x.fillStyle = '#f6f1e4'; x.fillText(value, w / 2, 70);
+  });
+}
+
+// ------------------------------------------------------------------------------------------------ beams (one merged mesh)
+const BEAM_VS = `attribute vec3 aColor; attribute float aPow; varying vec2 vUv; varying vec3 vColor; varying float vPow;
+  void main() { vUv = uv; vColor = aColor; vPow = aPow; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
+const BEAM_FS = `uniform float uTime; varying vec2 vUv; varying vec3 vColor; varying float vPow;
+  void main() {
+    float edge = 1.0 - abs(vUv.x * 2.0 - 1.0); edge = edge * edge;
+    float flow = pow(fract(vUv.y * 2.5 - uTime * 0.55), 6.0);
+    float a = edge * (0.18 + 0.9 * flow) * vPow;
+    gl_FragColor = vec4(vColor * (0.6 + 0.8 * flow), a);
+  }`;
+
+function beamGeometry(n) {
+  // per beam: two crossed ribbons (4 vertices each) from a pillar top to the orb; positions are written by setBeams()
+  const g = new THREE.BufferGeometry();
+  const V = n * 8;
+  g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(V * 3), 3));
+  g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(V * 2), 2));
+  g.setAttribute('aColor', new THREE.BufferAttribute(new Float32Array(V * 3), 3));
+  g.setAttribute('aPow', new THREE.BufferAttribute(new Float32Array(V), 1));
+  const idx = [];
+  for (let b = 0; b < n * 2; b++) { const o = b * 4; idx.push(o, o + 1, o + 2, o + 2, o + 1, o + 3); }
+  g.setIndex(idx);
+  return g;
+}
+
+// ------------------------------------------------------------------------------------------------ the hall
+class Hall {
+  constructor(canvas, d) {
+    this.d = d;
+    this.lite = Q.get('lite') === '1' || !!(O && O.lite());
+    this.chosen = Q.get('lite') === '1' || Q.get('full') === '1' || !!(O && O.chosen());
+    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: !this.lite, alpha: true, powerPreference: 'high-performance' });
+    O?.track(this.renderer);
+    this.renderer.setClearColor(0x000000, 0);
+    this.renderer.setPixelRatio(O ? O.dpr(this.lite) : Math.min(devicePixelRatio || 1, this.lite ? 1.5 : 2));
+    this.scene = new THREE.Scene();
+    this.scene.fog = new THREE.FogExp2(0x0b0a18, 0.035);
+    this.camera = new THREE.PerspectiveCamera(56, 1, 0.1, 200);
+    this.yaw = Math.PI / 2 + 0.35; this.yawTo = this.yaw; this.pitch = 0.58; this.dist = 16;
+    this.t = 0; this.last = performance.now(); this.frames = []; this.dirty = true; this.idleAt = 0;
+    this.tex = { glow: glowTex(), marble: marbleTex(this.lite ? 128 : 256), floor: floorTex(this.lite ? 512 : 1024) };
+    this.gods = d.gods;
+    this.anchors = [];
+    this.build();
+    this.resize();
+    addEventListener('resize', () => this.resize());
+    this.input(canvas);
+  }
+
+  build() {
+    const S = this.scene, n = this.gods.length, T = this.tex;
+    S.add(new THREE.HemisphereLight(0xd6dcff, 0x2a2440, 1.25));
+    const vc = new THREE.Color(VERDICT[this.d.council.label] || VERDICT.SILENT);
+    this.orbLight = new THREE.PointLight(vc, 26, 14, 1.6);
+    this.orbLight.position.set(0, ORB_Y, 0);
+    S.add(this.orbLight);
+    this.moon = new THREE.DirectionalLight(0xe8ebff, 1.5); S.add(this.moon, this.moon.target);   // follows the camera (place())
+
+    const floor = new THREE.Mesh(new THREE.CircleGeometry(7.4, 72), new THREE.MeshStandardMaterial({ map: T.floor, roughness: 0.55, metalness: 0.1, transparent: true }));
+    floor.rotation.x = -Math.PI / 2; S.add(floor);
+    const rim = new THREE.Mesh(new THREE.CylinderGeometry(7.4, 6.9, 0.6, 72, 1, true), new THREE.MeshStandardMaterial({ color: 0x2a2640, roughness: 0.8, side: THREE.DoubleSide }));
+    rim.position.y = -0.3; S.add(rim);
+
+    // pillars: instanced base, shaft, capital (three draw calls for all eight)
+    const marble = new THREE.MeshStandardMaterial({ map: T.marble, roughness: 0.42, metalness: 0.05 });
+    const mk = (geo, count) => { const m = new THREE.InstancedMesh(geo, marble, count); S.add(m); return m; };
+    const base = mk(new THREE.BoxGeometry(0.95, 0.3, 0.95), n), shaft = mk(new THREE.CylinderGeometry(0.27, 0.32, 2.5, 20, 1, true), n),
+      echinus = mk(new THREE.CylinderGeometry(0.46, 0.3, 0.16, 20), n), cap = mk(new THREE.BoxGeometry(0.98, 0.16, 0.98), n);
+    const bands = new THREE.InstancedMesh(new THREE.TorusGeometry(0.42, 0.045, 8, 32), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.95,
+      blending: THREE.AdditiveBlending, depthWrite: false }), n);
+    S.add(bands);
+    const M = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(1, 1, 1), p = new THREE.Vector3();
+    const flat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+    this.pillars = this.gods.map((g, i) => {
+      const a = -Math.PI / 2 + (i / n) * Math.PI * 2, x = Math.cos(a) * RING_R, z = Math.sin(a) * RING_R;
+      base.setMatrixAt(i, M.compose(p.set(x, 0.15, z), q.identity(), sc));
+      shaft.setMatrixAt(i, M.compose(p.set(x, 1.55, z), q.identity(), sc));
+      echinus.setMatrixAt(i, M.compose(p.set(x, 2.86, z), q.identity(), sc));
+      cap.setMatrixAt(i, M.compose(p.set(x, 3.0, z), q.identity(), sc));
+      bands.setMatrixAt(i, M.compose(p.set(x, 2.74, z), flat, sc));
+      const col = new THREE.Color(g.ok ? g.color : '#4a4858');
+      bands.setColorAt(i, col);
+      shaft.setColorAt(i, new THREE.Color('#ffffff').lerp(col, 0.18));
+      const glyph = new THREE.Sprite(new THREE.SpriteMaterial({ map: emblemTex(g.glyph, g.color), transparent: true, depthWrite: false, opacity: g.ok ? 1 : 0.35 }));
+      glyph.scale.set(1.05, 1.05, 1); glyph.position.set(x, GLYPH_Y, z);
+      const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.tex.glow, color: col, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: g.ok ? 0.55 : 0.15 }));
+      halo.scale.set(2.3, 2.3, 1); halo.position.copy(glyph.position);
+      const label = new THREE.Sprite(new THREE.SpriteMaterial({ map: labelTex(g.name, chipValue(g), g.color), transparent: true, depthWrite: false }));
+      label.scale.set(2.3, 0.86, 1); label.position.set(x, GLYPH_Y + 1.0, z);
+      S.add(halo, glyph, label);
+      return { g, a, x, z, glyph, halo, label, col, ph: i * 0.9 };
+    });
+    for (const m of [shaft, bands]) if (m.instanceColor) m.instanceColor.needsUpdate = true;
+
+    // the Council orb: a fresnel sphere, a glow, a core and a turning gauge ring
+    this.orbMat = new THREE.ShaderMaterial({
+      uniforms: { uColor: { value: vc.clone() }, uTime: { value: 0 } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+      vertexShader: `varying vec3 vN; varying vec3 vV; varying vec3 vP; void main() { vN = normalize(normalMatrix * normal); vec4 mv = modelViewMatrix * vec4(position, 1.0); vV = normalize(-mv.xyz); vP = position; gl_Position = projectionMatrix * mv; }`,
+      fragmentShader: `uniform vec3 uColor; uniform float uTime; varying vec3 vN; varying vec3 vV; varying vec3 vP;
+        void main() { float f = pow(1.0 - max(dot(vN, vV), 0.0), 2.2);
+          float swirl = 0.5 + 0.5 * sin(vP.y * 7.0 + uTime * 1.4 + sin(vP.x * 5.0 + uTime) * 1.5);
+          gl_FragColor = vec4(uColor * (0.35 + 1.4 * f + 0.25 * swirl), 0.25 + 0.75 * f); }`,
+    });
+    this.orb = new THREE.Mesh(new THREE.SphereGeometry(0.85, this.lite ? 24 : 40, this.lite ? 16 : 28), this.orbMat);
+    this.orb.position.set(0, ORB_Y, 0);
+    this.orbGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.tex.glow, color: vc, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.8 }));
+    this.orbGlow.scale.set(4.6, 4.6, 1); this.orbGlow.position.copy(this.orb.position);
+    this.orbCore = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.tex.glow, color: 0xffffff, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.9 }));
+    this.orbCore.scale.set(1.0, 1.0, 1); this.orbCore.position.copy(this.orb.position);
+    const gauge = this.d.council.gauge == null ? 50 : this.d.council.gauge;
+    this.ring = new THREE.Mesh(new THREE.TorusGeometry(1.3, 0.03, 6, 96, Math.PI * 2 * gauge / 100),
+      new THREE.MeshBasicMaterial({ color: vc, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
+    this.ring.position.copy(this.orb.position); this.ring.rotation.x = Math.PI / 2.4;
+    const c = this.d.council;
+    this.orbLabel = new THREE.Sprite(new THREE.SpriteMaterial({ map: labelTex(c.label, c.gauge == null ? '—' : `${c.gauge} / 100`, VERDICT[c.label] || '#fff'), transparent: true, depthWrite: false }));
+    this.orbLabel.scale.set(2.4, 0.9, 1); this.orbLabel.position.set(0, ORB_Y + 1.75, 0);
+    const pedestal = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.9, 1.3, 24), marble);
+    pedestal.position.set(0, 0.65, 0);
+    S.add(pedestal, this.orbGlow, this.orb, this.orbCore, this.ring, this.orbLabel);
+
+    // beams
+    this.beamMat = new THREE.ShaderMaterial({ uniforms: { uTime: { value: 0 } }, vertexShader: BEAM_VS, fragmentShader: BEAM_FS,
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+    this.beams = new THREE.Mesh(beamGeometry(n), this.beamMat);
+    this.beams.frustumCulled = false;
+    S.add(this.beams);
+    this.setBeams();
+
+    // motes rising along the beams toward the orb, and the stars
+    this.nMotes = this.lite ? 140 : 420;
+    const mp = new Float32Array(this.nMotes * 3), mc = new Float32Array(this.nMotes * 3);
+    this.moteT = new Float32Array(this.nMotes); this.moteB = new Uint8Array(this.nMotes); this.moteJ = new Float32Array(this.nMotes * 2);
+    const r = rng(3);
+    for (let i = 0; i < this.nMotes; i++) { this.moteT[i] = r(); this.moteB[i] = i % n; this.moteJ[i * 2] = (r() - 0.5) * 0.3; this.moteJ[i * 2 + 1] = (r() - 0.5) * 0.3; }
+    const mg = new THREE.BufferGeometry();
+    mg.setAttribute('position', new THREE.BufferAttribute(mp, 3).setUsage(THREE.DynamicDrawUsage));
+    mg.setAttribute('color', new THREE.BufferAttribute(mc, 3));
+    this.motes = new THREE.Points(mg, new THREE.PointsMaterial({ size: 0.13, map: this.tex.glow, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+    this.motes.frustumCulled = false;
+    S.add(this.motes);
+    this.paintMotes();
+    const ns = this.lite ? 220 : 650, sp = new Float32Array(ns * 3);
+    for (let i = 0; i < ns; i++) {
+      const u = r() * 0.8 - 0.05, a = r() * Math.PI * 2, rr = 60 + r() * 30, y = u * rr * 0.7;
+      sp[i * 3] = Math.cos(a) * rr * Math.sqrt(1 - u * u); sp[i * 3 + 1] = y; sp[i * 3 + 2] = Math.sin(a) * rr * Math.sqrt(1 - u * u);
+    }
+    const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(sp, 3));
+    this.stars = new THREE.Points(sg, new THREE.PointsMaterial({ size: 0.5, map: this.tex.glow, color: 0xdcd6ff, transparent: true, depthWrite: false, fog: false, blending: THREE.AdditiveBlending }));
+    S.add(this.stars);
+    // the sky: a moon and two nebulae (sprites, no fog) fill the space above the summit
+    const sky = [[-8, -1.5, -30, 4.4, 0xf2ecd8, 0.95], [-8, -1.5, -30, 15, 0x8f87d8, 0.28], [13, -3, -34, 24, 0x7a3fb0, 0.24], [2, 2, -42, 36, 0x2f5f9e, 0.2]];
+    this.skyG = new THREE.Group(); S.add(this.skyG);        // turned with the camera in place(): always behind the hall
+    this.sky = (this.lite ? sky.slice(0, 2) : sky).map(([x, y, z, s, c, o]) => {      // LITE: the moon only (less overdraw)
+      const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.tex.glow, color: c, transparent: true, depthWrite: false, fog: false, opacity: o, blending: THREE.AdditiveBlending }));
+      m.position.set(x, y, z); m.scale.set(s, s, 1); this.skyG.add(m); return m;
+    });
+    // the clouds below the summit
+    this.clouds = [];
+    const nc = this.lite ? 5 : 9;
+    for (let i = 0; i < nc; i++) {
+      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.tex.glow, color: 0x6c66a8, transparent: true, depthWrite: false, opacity: 0.22 }));
+      const a = i / nc * Math.PI * 2, rr = 7.5 + r() * 3;
+      s.position.set(Math.cos(a) * rr, -1.2 - r() * 1.2, Math.sin(a) * rr); s.scale.set(9 + r() * 5, 3.2 + r() * 1.5, 1);
+      this.clouds.push({ s, a, rr, sp: 0.01 + r() * 0.02 }); S.add(s);
+    }
+  }
+
+  beamPow(g) {
+    if (!g.ok) return 0.12;
+    const v = g.vote_display == null ? 0.3 : Math.abs(g.vote_display);
+    return (this.sel && this.sel !== g.key ? 0.35 : 1) * (0.45 + 0.75 * Math.min(1, v + 0.2)) * (this.sel === g.key ? 1.6 : 1);
+  }
+
+  beamColor(g) {
+    return new THREE.Color(g.ok ? (LEAN[g.lean] || LEAN.neutral).hex : '#4a4858').lerp(new THREE.Color(g.color), 0.35);
+  }
+
+  setBeams() {
+    const geo = this.beams.geometry, P = geo.attributes.position.array, U = geo.attributes.uv.array,
+      C = geo.attributes.aColor.array, W = geo.attributes.aPow.array;
+    const B = new THREE.Vector3(0, ORB_Y, 0), A = new THREE.Vector3(), dir = new THREE.Vector3(), s1 = new THREE.Vector3(), s2 = new THREE.Vector3();
+    const up = new THREE.Vector3(0, 1, 0);
+    this.pillars.forEach((pl, i) => {
+      A.set(pl.x, TOP_Y, pl.z);
+      dir.subVectors(B, A).normalize();
+      s1.crossVectors(dir, up).normalize(); s2.crossVectors(dir, s1).normalize();
+      const pow = this.beamPow(pl.g), w = 0.09 + 0.12 * Math.min(1.6, pow), col = this.beamColor(pl.g);
+      [s1, s2].forEach((side, k) => {
+        const o = (i * 2 + k) * 4;
+        const quad = [[A, -1, 0], [A, 1, 0], [B, -1, 1], [B, 1, 1]];
+        quad.forEach(([pt, sgn, v], j) => {
+          const ww = v ? w * 0.55 : w;
+          P[(o + j) * 3] = pt.x + side.x * ww * sgn; P[(o + j) * 3 + 1] = pt.y + side.y * ww * sgn; P[(o + j) * 3 + 2] = pt.z + side.z * ww * sgn;
+          U[(o + j) * 2] = sgn < 0 ? 0 : 1; U[(o + j) * 2 + 1] = v;
+          C[(o + j) * 3] = col.r; C[(o + j) * 3 + 1] = col.g; C[(o + j) * 3 + 2] = col.b; W[o + j] = pow;
+        });
+      });
+    });
+    for (const k of ['position', 'uv', 'aColor', 'aPow']) geo.attributes[k].needsUpdate = true;
+    this.dirty = true;
+  }
+
+  paintMotes() {
+    const C = this.motes.geometry.attributes.color.array;
+    for (let i = 0; i < this.nMotes; i++) {
+      const pl = this.pillars[this.moteB[i]], col = this.beamColor(pl.g), k = pl.g.ok ? (this.sel && this.sel !== pl.g.key ? 0.25 : 0.9) : 0.1;
+      C[i * 3] = col.r * k; C[i * 3 + 1] = col.g * k; C[i * 3 + 2] = col.b * k;
+    }
+    this.motes.geometry.attributes.color.needsUpdate = true;
+  }
+
+  select(key) {
+    this.sel = key;
+    const pl = this.pillars.find((p) => p.g.key === key);
+    if (pl) {                                   // turn the hall so the god stands at the front
+      let to = pl.a, cur = this.yaw;
+      while (to - cur > Math.PI) to -= Math.PI * 2;
+      while (to - cur < -Math.PI) to += Math.PI * 2;
+      this.yawTo = to;
+      if (RM) this.yaw = to;
+    }
+    this.pillars.forEach((p) => { p.halo.material.opacity = !p.g.ok ? 0.15 : key && p.g.key !== key ? 0.25 : key ? 0.95 : 0.55; });
+    this.setBeams(); this.paintMotes(); this.idleAt = performance.now();
+  }
+
+  resize() {
+    const w = innerWidth, h = innerHeight;
+    this.renderer.setSize(w, h, false);
+    this.camera.aspect = w / h;
+    const hfov = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2)) * this.camera.aspect);
+    this.dist = Math.max(10, Math.min(22, (RING_R + 1.7) / Math.tan(hfov / 2)));
+    this.camera.updateProjectionMatrix();
+    this.dirty = true;
+  }
+
+  place() {
+    const c = this.camera, d = this.dist;
+    c.position.set(Math.cos(this.yaw) * Math.cos(this.pitch) * d, 1.4 + Math.sin(this.pitch) * d, Math.sin(this.yaw) * Math.cos(this.pitch) * d);
+    c.lookAt(0, 2.0, 0);
+    if (this.skyG) this.skyG.rotation.y = Math.PI / 2 - this.yaw;
+    this.moon.position.set(c.position.x * 0.6 - c.position.z * 0.3, 14, c.position.z * 0.6 + c.position.x * 0.3);
+  }
+
+  input(el) {
+    let down = null;
+    el.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, yaw: this.yawTo, pitch: this.pitch, moved: false }; el.setPointerCapture?.(e.pointerId); });
+    el.addEventListener('pointermove', (e) => {
+      if (!down) return;
+      const dx = e.clientX - down.x, dy = e.clientY - down.y;
+      if (Math.abs(dx) + Math.abs(dy) > 6) down.moved = true;
+      this.yawTo = down.yaw + dx * 0.008; this.pitch = Math.max(0.12, Math.min(0.85, down.pitch + dy * 0.004));
+      if (RM) this.yaw = this.yawTo;
+      this.idleAt = performance.now(); this.dirty = true;
+    });
+    el.addEventListener('pointerup', (e) => {
+      const was = down; down = null;
+      if (!was || was.moved) return;
+      const hit = this.pick(e.clientX, e.clientY);
+      if (hit === 'council') openCouncil(); else if (hit) openGod(hit); else { closeAll(); }
+    });
+    el.addEventListener('pointercancel', () => { down = null; });
+  }
+
+  screenOf(obj) {
+    const v = obj.clone().project(this.camera);
+    return { x: (v.x + 1) / 2 * innerWidth, y: (1 - v.y) / 2 * innerHeight, z: v.z };
+  }
+
+  anchorOf(key) {
+    if (key === 'council') return this.screenOf(this.orb.position);
+    const pl = this.pillars.find((p) => p.g.key === key);
+    return pl ? this.screenOf(new THREE.Vector3(pl.x, 2.2, pl.z)) : null;
+  }
+
+  pick(x, y) {
+    this.place(); this.camera.updateMatrixWorld();
+    let best = null, bd = 1e9;
+    const o = this.screenOf(this.orb.position), od = Math.hypot(o.x - x, o.y - y);
+    if (od < 52) { best = 'council'; bd = od * 0.8; }
+    for (const pl of this.pillars) {
+      for (const yy of [1.4, 2.4, GLYPH_Y]) {
+        const s = this.screenOf(new THREE.Vector3(pl.x, yy, pl.z)), dd = Math.hypot(s.x - x, s.y - y);
+        if (dd < 46 && dd < bd) { bd = dd; best = pl.g.key; }
+      }
+    }
+    return best;
+  }
+
+  frame(now) {
+    const dt = Math.min(0.05, (now - this.last) / 1000); this.last = now;
+    const moving = !RM;
+    if (moving) {
+      this.t += dt;
+      if (!this.sel && now - this.idleAt > 3500) this.yawTo += dt * 0.05;   // a slow idle turn
+    }
+    const dy = this.yawTo - this.yaw;
+    if (Math.abs(dy) > 1e-4) { this.yaw += dy * Math.min(1, dt * 4); this.dirty = true; }
+    if (!moving && !this.dirty) return;
+    this.place();
+    this.beamMat.uniforms.uTime.value = this.t; this.orbMat.uniforms.uTime.value = this.t;
+    if (moving) {
+      for (const pl of this.pillars) {
+        const b = Math.sin(this.t * 1.3 + pl.ph) * 0.08;
+        pl.glyph.position.y = GLYPH_Y + b; pl.halo.position.y = GLYPH_Y + b; pl.label.position.y = GLYPH_Y + 1.0 + b;
+      }
+      this.ring.rotation.z = this.t * 0.4;
+      this.orbCore.scale.setScalar(0.95 + Math.sin(this.t * 2.1) * 0.08);
+      for (const c of this.clouds) { c.a += c.sp * dt; c.s.position.x = Math.cos(c.a) * c.rr; c.s.position.z = Math.sin(c.a) * c.rr; }
+      this.stars.rotation.y = this.t * 0.004;
+    }
+    const P = this.motes.geometry.attributes.position.array;
+    for (let i = 0; i < this.nMotes; i++) {
+      const pl = this.pillars[this.moteB[i]];
+      if (moving) this.moteT[i] = (this.moteT[i] + dt * (pl.g.ok ? 0.22 : 0.05)) % 1;
+      const f = this.moteT[i], arc = Math.sin(f * Math.PI) * 0.45;
+      P[i * 3] = pl.x * (1 - f) + this.moteJ[i * 2] * (1 - f);
+      P[i * 3 + 1] = TOP_Y + (ORB_Y - TOP_Y) * f + arc;
+      P[i * 3 + 2] = pl.z * (1 - f) + this.moteJ[i * 2 + 1] * (1 - f);
+    }
+    this.motes.geometry.attributes.position.needsUpdate = true;
+    this.renderer.render(this.scene, this.camera);
+    this.dirty = false;
+    this.frames.push(now);
+    while (this.frames.length && now - this.frames[0] > 1000) this.frames.shift();
+    this.autoLite(now);
+  }
+
+  fps() { return this.frames.length; }
+
+  autoLite(now) {
+    // the OLYMPUS rule: an automatic LITE only when nobody chose a level; never stored
+    if (this.chosen || RM) return;
+    this.started = this.started || now;
+    if (now - this.started < 2500 || this.frames.length < 2) return;
+    if (!this.lite && this.fps() < 45) {
+      this.lite = true;
+      this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.25));
+      this.motes.geometry.setDrawRange(0, Math.floor(this.nMotes / 3));
+      this.resize(); O?.mode?.(true);
+      this.started = now;
+    } else if (this.lite && this.fps() < 30 && this.renderer.getPixelRatio() > 1) {
+      this.renderer.setPixelRatio(1); this.resize(); this.started = now;
+    }
+  }
+}
+
+// ------------------------------------------------------------------------------------------------ the UI
+function closeAll() {
+  $('card').hidden = true; $('council').hidden = true; $('councilBtn').setAttribute('aria-expanded', 'false');
+  STATE.sel = null; STATE.hall?.select(null); markChips();
+  if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+}
+
+function markChips() {
+  document.querySelectorAll('.god').forEach((b) => b.classList.toggle('sel', b.dataset.key === STATE.sel));
+}
+
+function openGod(key) {
+  const g = STATE.d.gods.find((x) => x.key === key);
+  if (!g) return;
+  $('council').hidden = true; $('councilBtn').setAttribute('aria-expanded', 'false');
+  const c = godCard(g);
+  $('card').style.setProperty('--c', g.color);
+  $('card-h').textContent = c.title; $('card-m').textContent = c.meta; $('card-b').innerHTML = c.body;
+  $('card').hidden = false; $('card').scrollTop = 0;
+  STATE.sel = key; STATE.hall?.select(key); markChips();
+  if (location.hash !== '#god/' + key) history.replaceState(null, '', '#god/' + key);
+}
+
+function openCouncil() {
+  $('card').hidden = true;
+  $('council-b').innerHTML = councilHtml(STATE.d);
+  $('council').hidden = false; $('council').scrollTop = 0; $('councilBtn').setAttribute('aria-expanded', 'true');
+  STATE.sel = null; STATE.hall?.select(null); markChips();
+  if (location.hash !== '#council') history.replaceState(null, '', '#council');
+}
+
+function hud(d) {
+  const c = d.council, col = VERDICT[c.label] || '#fff';
+  $('c-label').textContent = c.label; $('c-label').style.color = col;
+  $('c-gauge').textContent = c.gauge == null ? '' : `${c.gauge} / 100 · ${c.voices} voices`;
+  $('demo').hidden = !d.demo;
+  $('sub').textContent = d.demo ? 'Demo data (pantheon.json not found)' : `Eight free data gods · built ${d.built}`;
+  $('vline').innerHTML = `${esc(c.text)}${c.caution ? ' <b>' + esc(c.caution) + '</b>' : ''}`;
+  $('strip').innerHTML = d.gods.map((g) => `<button type="button" class="god" data-key="${esc(g.key)}" style="--c:${esc(g.color)}" aria-label="${esc(g.name)}: ${esc(g.title)}, ${esc(chipValue(g))}">
+    <span class="n">${esc(g.name)}</span><span class="v">${esc(chipValue(g))}</span></button>`).join('');
+  document.querySelectorAll('.god').forEach((b) => b.addEventListener('click', () => (STATE.sel === b.dataset.key ? closeAll() : openGod(b.dataset.key))));
+}
+
+function renderNoGl(d) {
+  const box = $('nogl');
+  box.hidden = false;
+  box.innerHTML = `<p>3D is not available here. The gods:</p>` + d.gods.map((g) => `<button type="button" data-key="${esc(g.key)}">${esc(g.name)} · ${esc(chipValue(g))}</button>`).join('')
+    + '<button type="button" data-key="council">Council</button>';
+  box.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => (b.dataset.key === 'council' ? openCouncil() : openGod(b.dataset.key))));
+}
+
+function route() {
+  const h = location.hash;
+  if (h === '#council') openCouncil();
+  else if (h.startsWith('#god/')) openGod(h.slice(5));
+}
+
+function postJarvisCard() {
+  if (window.parent === window) return;
+  fetch('jarvis.json', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).then((card) => {
+    if (card) window.parent.postMessage({ jarvis: 1, href: location.href, card: { ...card, t: Math.floor(Date.now() / 1000) } }, 'https://demetrades2000-coder.github.io');
+  }).catch(() => {});
+}
+
+function tick(now) {
+  if (STATE.hall && !(O ? O.hidden() : document.hidden)) STATE.hall.frame(now);   // hidden tab: no frame (the battery)
+  requestAnimationFrame(tick);
+}
+
+async function main() {
+  addEventListener('error', (e) => STATE.errors.push(String(e.message || e)));
+  const d = await loadPantheon('pantheon.json', Q.get('demo') === '1' ? 'demo' : undefined);
+  STATE.d = d;
+  hud(d);
+  $('cardX').addEventListener('click', closeAll);
+  $('councilX').addEventListener('click', closeAll);
+  $('councilBtn').addEventListener('click', () => ($('council').hidden ? openCouncil() : closeAll()));
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(); });
+  addEventListener('hashchange', route);
+  try {
+    STATE.hall = new Hall($('hall'), d);
+  } catch (e) {
+    STATE.hall = null;
+    renderNoGl(d);
+    O?.ready();
+  }
+  window.__pantheon = {
+    ready: true, get demo() { return !!d.demo; }, get lite() { return STATE.hall ? STATE.hall.lite : null; },
+    get fps() { return STATE.hall ? STATE.hall.fps() : 0; }, keys: d.gods.map((g) => g.key), errors: STATE.errors,
+    screenOf(key) { return STATE.hall ? STATE.hall.anchorOf(key) : null; }, open: openGod, council: openCouncil,
+    get sel() { return STATE.sel; }, get yaw() { return STATE.hall ? STATE.hall.yaw : null; },
+  };
+  requestAnimationFrame(tick);
+  route();
+  postJarvisCard();
+}
+
+main().catch((e) => { STATE.errors.push(String(e && e.message || e)); O?.fail(e && e.message ? e.message : String(e)); });

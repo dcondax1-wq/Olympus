@@ -22,6 +22,15 @@
   var d = document.documentElement, g = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
   var s = function (k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* private mode */ } };
   d.setAttribute('data-theme', g('jtheme') || 'reactor');
+  // the OLYMPUS theme (../olympus/themes.js, key 'olympus.theme'): its colours from the first paint, from the copy the theme engine
+  // keeps of what it painted ('olympus.theme.paint'); the engine loads after the start (async, never waited on) and repaints
+  try {
+    var ot = g('olympus.theme'), op = JSON.parse(g('olympus.theme.paint') || 'null'), on = [];
+    if (ot && ot !== 'olympus' && op && op.id === ot && op.vars) {
+      for (var vk in op.vars) { d.style.setProperty(vk, op.vars[vk]); on.push(vk); }
+      d.setAttribute('data-oly-theme', ot); d.setAttribute('data-oly-scheme', op.scheme === 'light' ? 'light' : 'dark'); window.__olyPaint = on;
+    }
+  } catch (e) { /* the default look */ }
   var fx = g('jfx');
   if (fx === 'ultra' || fx === 'high' || fx === 'low' || fx === 'off') { d.setAttribute('data-fx', fx); d.setAttribute('data-fx-set', '1'); }
   else d.setAttribute('data-fx', window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches ? 'low' : 'high');
@@ -76,7 +85,8 @@ window.addEventListener('error', function (e) {
   if (!window.__jarvisErr) window.__jarvisErr = String(e.message || 'Script error') + (e.filename ? ' (' + String(e.filename).split('/').pop() + ':' + e.lineno + ')' : '');
 }, true);
 </script>
-<link rel="stylesheet" id="jcss" href="jarvis.css?v=j11">
+<link rel="stylesheet" id="jcss" href="jarvis.css?v=j12">
+<script src="../olympus/themes.js?v=o2" id="olyThemesJs" async></script>
 <style>.booted #bootfx{display:none}
 /* the start note works without jarvis.css (the stylesheet may be what did not arrive) */
 [hidden]{display:none!important}
@@ -765,7 +775,10 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
 <div class="sheet" id="look" hidden role="dialog" aria-modal="true" aria-labelledby="lookT">
   <div class="sheet-in">
     <h2 id="lookT">Look</h2>
-    <h3>Theme</h3>
+    <h3>OLYMPUS theme</h3>
+    <div class="othemes" id="olyThemes" role="group" aria-label="OLYMPUS theme: Jarvis and every app"></div>
+    <p class="note" id="olyNote">The whole system: Jarvis now, and each app the next time it opens.</p>
+    <h3>Jarvis colour</h3>
     <div class="themes" id="themes"></div>
     <label>Custom hue<input id="hue" type="range" min="0" max="359" step="1" value="275"></label>
     <h3>3D effects</h3>
@@ -774,6 +787,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     <h3>Core</h3>
     <div class="seg3" id="coreSeg"></div>
     <h3>Extras</h3>
+    <label class="row-t"><span>Scanlines<small>Fine scanlines and film grain over Jarvis and every app</small></span><input type="checkbox" id="setGrain"></label>
     <label class="row-t"><span>Sounds<small>Soft clicks and chimes</small></span><input type="checkbox" id="setSound"></label>
     <label class="row-t"><span>Calm motion<small>Follow the iPhone's reduce-motion setting (off: the core always moves)</small></span><input type="checkbox" id="setCalm"></label>
     <label class="row-t"><span>OLYMPUS intro<small>The opening when Jarvis starts (full once a day, 1 s after that)</small></span><input type="checkbox" id="setIntro"></label>
@@ -792,6 +806,10 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     <label class="row-t"><span>Read every answer<small>Off: Jarvis speaks only when you talk to it</small></span><input type="checkbox" id="vAll"></label>
     <label class="row-t"><span>Hold to talk<small>Hold the mic to talk, let go to send</small></span><input type="checkbox" id="vHold"></label>
     <p class="note" id="vNote"></p>
+    <!-- assistant (2026-11-03): her talk style, the optional free cloud voice, the one-time Ava tip (tts.js, assistant.js) -->
+    <label>Talk style<select id="vStyle"><option value="short">Short: straight to the point</option><option value="chatty">Chatty: like a friend</option></select></label>
+    <label class="row-t"><span>Natural cloud voice<small id="vCloudNote">Groq's free voice on your own Groq key (⋯ → AI key); the phone's voice when it can't</small></span><input type="checkbox" id="vCloud"></label>
+    <div class="note" id="vTip" hidden><b>Free upgrade: the iPhone's most natural voice.</b> Settings → Accessibility → Spoken Content → Voices → English → Ava → <b>Ava (Premium)</b> → download (about 400 MB, free). Then pick Ava here. <button class="btn ghost" type="button" id="vTipX">Got it</button></div>
     <div class="sheet-row"><button class="btn ghost" type="button" id="vTest">Test voice</button><button class="btn solid" type="button" id="vX">Done</button></div>
   </div>
 </div>
@@ -891,7 +909,7 @@ const S = {
   muted: () => D.LS.get('jarvis.mute', false) === true,
   tilt: () => raw('jp3dtilt') === '1',
   calm: () => D.LS.get('jarvis.calm', false) === true,     // the 3D core follows the iPhone's reduce-motion switch (off: it always moves)
-  vcfg: () => Object.assign({ rate: 1.06, pitch: 1.1, voice: '' }, D.LS.get('jarvis.voiceCfg', {}) || {}),
+  vcfg: () => Object.assign({ rate: 1.0, pitch: 1.0, voice: '' }, D.LS.get('jarvis.voiceCfg', {}) || {}),
 };
 const THEMES = [
   ['reactor', 'Reactor', 'Violet + cyan · default', '#a95cff', '#22d3ee'], ['eclipse', 'Eclipse', 'Violet', '#a855f7', '#7c3aed'],
@@ -931,6 +949,15 @@ let vault = null, assist = null, obsUI = null, proUI = null;
 ready.vault = Promise.all([load('obsidian', './obsidian.js', (m) => typeof m.createVault === 'function'), load('memory', './memory.js', (m) => typeof m.createMemory === 'function')])
   .then(([ob, me]) => { if (ob && me) { vault = ob.createVault(); brainDeps.memory = me.createMemory({ vault }); } return vault; }).catch(() => null);
 ready.assist = load('assist', './assist-ui.js', (m) => typeof m.mountObsidianSheet === 'function').then((m) => { assist = m; return m; });
+// the voice (tts.js) and the personal assistant (assistant.js), 2026-11-03: each optional (absent = the old voice, the brain alone)
+let tts = null, speaker = null, assistant = null;
+ready.tts = load('tts', './tts.js', (m) => typeof m.createSpeaker === 'function').then((m) => { tts = m; return m; });
+ready.assistant = load('assistant', './assistant.js', (m) => typeof m.createAssistant === 'function')
+  .then((m) => { if (m) { assistant = safe(() => m.createAssistant(), null); if (assistant) brainDeps.assistant = assistant; } return assistant; });
+const cloudVoice = () => {                              // Groq's free voice: on, and a Groq key from the AI key settings
+  const c = D.LS.get('jarvis.tts', {}) || {}, sm = D.LS.get('jarvis.smart', {}) || {}, k = sm && sm.keys && typeof sm.keys.groq === 'string' ? sm.keys.groq : '';
+  return c.cloud && k ? { key: k, voice: c.voice || 'hannah' } : null;
+};
 // voice mode (voice-mode.js, 2026-11-03): the full-screen conversation. Loaded after the start (never part of it), or at first use.
 let vmP = null, vm = null;
 const voiceMod = () => vmP || (vmP = load('voice', './voice-mode.js', (m) => typeof m.createVoiceMode === 'function'));
@@ -944,6 +971,7 @@ function hsl2rgb(h, s, l) {
 }
 function applyCustom() {
   const st = root.style, props = ['--c', '--c2', '--c3', '--cr', '--cr2', '--cr3', '--tint', '--neb1', '--neb2', '--neb3', '--dim2', '--dim3'];
+  if (olyOn()) return;                                       // an OLYMPUS theme owns the colours (themes.js painted them)
   if (root.dataset.theme !== 'custom') { for (const p of props) st.removeProperty(p); return; }
   const h = +(D.LS.get('jcustom', { h: 275 }) || {}).h || 275, c = hsl2rgb(h, 85, 62), c2 = hsl2rgb(h, 70, 46), c3 = hsl2rgb((h + 25) % 360, 90, 78);
   const rgb = (x) => x.join(','), hex = (x) => '#' + x.map((v) => v.toString(16).padStart(2, '0')).join('');
@@ -951,8 +979,39 @@ function applyCustom() {
   st.setProperty('--cr3', rgb(hsl2rgb(h, 90, 88))); st.setProperty('--tint', hex(hsl2rgb(h, 90, 92))); st.setProperty('--neb1', rgb(c2)); st.setProperty('--neb2', rgb(hsl2rgb((h + 40) % 360, 70, 50)));
   st.setProperty('--neb3', rgb(c3)); st.setProperty('--dim2', hex(hsl2rgb(h, 35, 25))); st.setProperty('--dim3', hex(hsl2rgb(h, 45, 36)));
 }
+// ------------------------------------------------------------------ the OLYMPUS theme (../olympus/themes.js: the themes are data there)
+// One key for the whole system, 'olympus.theme'. The default ('olympus') leaves Jarvis's own colour (jtheme) as it is; any other
+// theme paints Jarvis's palette too. The engine loads async: until it is here, the <head> copy painted the same colours.
+const TH = () => window.OLYMPUS_THEMES || null;
+const olyId = () => (TH() ? TH().id() : root.dataset.olyTheme || 'olympus');
+const olyOn = () => olyId() !== 'olympus';
+function olyRefresh() {
+  readColors();
+  if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme()));
+  if (active === 'home') setTint(homeTint());
+  // the framed apps repaint on their own storage event, a moment later: then their new status-bar colour is read again
+  setTimeout(() => safe(() => { for (const k of Object.keys(frames)) { const f = frames[k] && frames[k].querySelector('iframe'); if (f) appTint(k, f); } }), 400);
+  window.dispatchEvent(new Event('jtheme'));
+  renderLook();
+}
+function setOlyTheme(id) {
+  const t = TH();
+  if (!t) { toast('The OLYMPUS themes are still loading. Try again in a second.', 'OLYMPUS'); return; }
+  t.set(id);                                                 // the engine repaints, then tells olyStart's listener below
+  sfx('tap');
+}
+function olyStart() {
+  const t = TH();
+  if (!t) return false;
+  t.apply('page', { jarvis: true, cache: true });
+  t.on(() => { applyCustom(); olyRefresh(); });            // a new theme (here or in another tab); back on the default, Custom returns
+  safe(applyCustom); olyRefresh();
+  return true;
+}
+const homeTint = () => (olyOn() && TH() ? TH().tokens(olyId(), 'page').themeColor : '#000000');
 function setTheme(k) {
   if (!THEMES.find((t) => t[0] === k)) k = 'reactor';
+  if (olyOn() && TH()) TH().set('olympus');                 // a Jarvis colour is a colour of the default OLYMPUS theme
   root.dataset.theme = k; rawSet('jtheme', k); applyCustom();
   readColors();
   if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme()));
@@ -1103,7 +1162,7 @@ function show(id, opts = {}) {
   $('#home').hidden = a.id !== 'home';
   for (const k of Object.keys(frames)) frames[k].hidden = k !== a.id;
   if (a.id !== 'zenith') hideZen(a.id !== 'home');
-  if (a.id === 'home') setTint('#000000'); else if (a.id !== 'zenith') setTint(tintOf(a.id));
+  if (a.id === 'home') setTint(homeTint()); else if (a.id !== 'zenith') setTint(tintOf(a.id));
   if (a.id === 'home') { refreshHome(); if (!listening && !speaking) setState('idle'); }
   else { stopListening(); closeMore(); if (a.id === 'zenith') showZenith(a, opts.route, seq); else frameView(a, opts.url); }
   renderBar();
@@ -1179,7 +1238,7 @@ function setCoreDesign(d) {
 function themeColors() { const cs = getComputedStyle(root), g = (k) => cs.getPropertyValue(k).trim(); return { c: g('--c'), c2: g('--c2'), c3: g('--c3'), tint: g('--tint') }; }
 // the core knows the old theme keys (eclipse, reactor, reactor-stark / -ice / -emerald); any other theme passes its colours
 const CORE_KEYS = ['eclipse', 'reactor', 'reactor-stark', 'reactor-ice', 'reactor-emerald'];
-const coreTheme = () => (CORE_KEYS.includes(root.dataset.theme) ? root.dataset.theme : themeColors());
+const coreTheme = () => (CORE_KEYS.includes(root.dataset.theme) && !olyOn() ? root.dataset.theme : themeColors());
 let coreSize = 0;
 function mountCore3d() {
   const m = mods.core;
@@ -1681,7 +1740,7 @@ function fallbackBrain({ getFacts }) {
 const brainDeps = { getFacts: D.getFacts, open: (id, route) => openSoon(route ? { id, route } : id), now: () => new Date(), autoOpen: false };
 const builtinBrain = fallbackBrain(brainDeps);
 let brain = builtinBrain;
-Promise.all([ready.brain, within(ready.vault, 4000)]).then(([m]) => {      // the brain gets the memory when it loaded in time
+Promise.all([ready.brain, within(ready.vault, 4000), within(ready.assistant, 4000)]).then(([m]) => {      // the brain gets the memory when it loaded in time
   if (!m) return;
   try { const b = m.createBrain(brainDeps); if (!b || typeof b.ask !== 'function') throw new Error('no ask'); brain = b; root.dataset.brain = 'module'; }
   catch (_) { brain = builtinBrain; root.dataset.brain = 'fallback'; }
@@ -1788,6 +1847,7 @@ async function answer(t, voice) {
   $('#says').textContent = headline(r.text);
   sayCards(r.cards);
   sfx('answer');
+  if (r.intent === 'assistant_reminder') offerAlerts();
   logAct(`Asked: ${t}`);
   return { r, quiet: r.control ? control(r.control) : false };
 }
@@ -1834,6 +1894,7 @@ $('#ask').addEventListener('submit', (e) => { e.preventDefault(); const q = $('#
 let voices = [];
 function loadVoices() { voices = safe(() => speechSynthesis.getVoices() || [], []); }
 function pickVoice() {
+  if (tts) return tts.bestVoice(voices, S.vcfg().voice || tts.savedVoiceName());
   const want = S.vcfg().voice, en = voices.filter((v) => /^en(-|_|$)/i.test(v.lang || ''));
   return (want && voices.find((v) => v.name === want)) || en.find((v) => /ava/i.test(v.name) && /en.?US/i.test(v.lang)) || en.find((v) => /ava/i.test(v.name))
     || en.find((v) => /samantha/i.test(v.name)) || en.find((v) => /en.?US/i.test(v.lang)) || en[0] || null;
@@ -1853,6 +1914,11 @@ function levelPulse(on) {                               // the voice bars and th
 }
 function speak(text, fromVoice) {
   if (!S.voice() || S.muted() || !('speechSynthesis' in window)) { setState('idle'); return; }
+  if (tts && !speaker) speaker = safe(() => tts.createSpeaker({ voices: () => voices, cfg: S.vcfg, cloud: cloudVoice }), null);
+  if (speaker) {
+    const done = () => { speaking = false; levelPulse(false); setState('idle'); if (handsFree && fromVoice) setTimeout(() => listen('hf'), 350); };
+    try { hush(); speaking = true; setState('speaking'); levelPulse(true); speaker.speak(String(text), { onend: done }); return; } catch (_) { speaker = null; }
+  }
   try {
     const cfg = S.vcfg(), u = new SpeechSynthesisUtterance(String(text).replace(/\n/g, '. '));
     const v = pickVoice(); if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-US';
@@ -1861,7 +1927,7 @@ function speak(text, fromVoice) {
     speechSynthesis.cancel(); speaking = true; setState('speaking'); levelPulse(true); speechSynthesis.speak(u);
   } catch (_) { speaking = false; setState('idle'); }
 }
-function hush() { safe(() => speechSynthesis.cancel()); speaking = false; levelPulse(false); }
+function hush() { if (speaker) safe(() => speaker.cancel()); safe(() => speechSynthesis.cancel()); speaking = false; levelPulse(false); }
 
 // ------------------------------------------------------------------ voice in: tap, hands-free (while Jarvis is open) and hold-to-talk
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1950,7 +2016,7 @@ function vmDeps() {
       return m.mountCore(el, opt);
     },
     verdict: vmVerdict, greeting: () => D.greeting(), fx: () => root.dataset.fx, reduced: reducedMotion,
-    voiceCfg: () => D.LS.get('jarvis.voiceCfg', null), muted: S.muted,
+    voiceCfg: () => D.LS.get('jarvis.voiceCfg', null), muted: S.muted, cloudVoice,
     onOpen: () => {                                     // one core at a time on the phone: the Jarvis screen's waits behind
       stopListening(); if (handsFree) setHandsFree(false); hush(); setState('idle');
       vmHadCore = !!core;
@@ -2003,6 +2069,21 @@ async function moreKey(k) {
   if (['theme', 'aikey', 'apps', 'alerts', 'brief'].includes(k)) closeMore();
 }
 let toastT = 0;
+function checkReminders() {
+  if (!assistant || !visible()) return;
+  const due = safe(() => assistant.due(), []) || [];
+  for (const r of due) {
+    const line = `Reminder: ${r.text}${r.late ? ` (it was due ${new Date(r.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })})` : ''}.`;
+    say('j', '⏰ ' + line); toast(line, 'REMINDER'); sfx('listen');
+    if (S.voice() && !S.muted() && !(vm && vm.isOpen())) speak(line, false);
+    safe(() => { if ('Notification' in window && Notification.permission === 'granted' && swReg && swReg.showNotification) swReg.showNotification('Jarvis', { body: line, tag: 'jarvis-' + r.id }); });
+  }
+}
+function offerAlerts() {                              // the first reminder: a tap to allow the phone's alerts (iPhone: Home Screen app only)
+  safe(() => { if ('Notification' in window && Notification.permission === 'default' && !raw('jarvis.alertsAsked')) { rawSet('jarvis.alertsAsked', '1'); toast('Want a phone alert when a reminder is due? On iPhone it works from the Home Screen app.', 'REMINDER', ['Allow', () => safe(() => Notification.requestPermission())]); } });
+}
+ready.assistant.then((a) => { if (!a) return; bootDone.then(() => setTimeout(checkReminders, 2500)); setInterval(checkReminders, 15000); });
+document.addEventListener('visibilitychange', () => { if (visible()) setTimeout(checkReminders, 800); });
 function toast(text, label = 'INFO', action) {
   let el = $('#toast');
   if (!el) { el = document.createElement('div'); el.id = 'toast'; el.className = 'toast'; el.setAttribute('role', 'status'); document.body.appendChild(el); }
@@ -2017,6 +2098,7 @@ function paletteItems() {
   items.push({ label: 'Briefing', tag: 'jarvis', run: () => briefing() }, { label: "What's new", tag: 'jarvis', run: () => whatsNew() });
   items.push({ label: 'Play the OLYMPUS intro', tag: 'look', run: () => playIntro() }, { label: "Today's timeline", tag: 'jarvis', run: () => showToday() });
   for (const t of THEMES) items.push({ label: `Theme: ${t[1]}`, tag: 'look', run: () => setTheme(t[0]) });
+  if (TH()) for (const t of TH().list()) items.push({ label: `OLYMPUS theme: ${t.name}`, tag: 'look', run: () => setOlyTheme(t.id) });
   for (const c of CORE_DESIGNS) items.push({ label: `Core: ${c[1]}`, tag: 'look', run: () => setCoreDesign(c[0]) });
   for (const l of ['ultra', 'high', 'low', 'off']) items.push({ label: `3D effects: ${l}`, tag: 'look', run: () => setFx(l) });
   items.push({ label: 'Voice mode · talk full screen', tag: 'voice', run: () => voiceMode(true) }, { label: 'Voice settings', tag: 'voice', run: () => openVoice() }, { label: 'AI key · smart mode', tag: 'brain', run: () => openSettings() },
@@ -2166,9 +2248,24 @@ $('#setF').addEventListener('submit', (e) => {
   $('#settings').hidden = true;
   renderBrainPanel(); renderMore();
 });
+// the OLYMPUS theme tiles: a live mini scene in each theme's own colours (its sky, a turning ring, the glowing core, a scan line)
+function olyTiles() {
+  const t = TH(), cur = olyId();
+  if (!t) return '<p class="note">Loading the OLYMPUS themes…</p>';
+  return t.list().map((th) => {
+    const k = th.tokens, v = `--ta:${k.accent};--tb:${k.accent2};--tg:${k.glow};--tbg:${k.bg};--tbg2:${k.bg2};--ttx:${k.text};--tdim:${k.dim};--tline:${k.line}`;
+    return `<button class="oth" type="button" data-oly-k="${esc(th.id)}" data-scheme="${esc(th.scheme)}" aria-pressed="${cur === th.id}" style="${v}">`
+      + `<span class="oth-sw" aria-hidden="true"><i class="r"></i><i class="o"></i><i class="s"></i></span>`
+      + `<b>${esc(th.name)}</b><small>${esc(th.greek)}</small><em>${esc(th.tag)}</em></button>`;
+  }).join('');
+}
 function renderLook() {
   if ($('#look').hidden) return;
-  $('#themes').innerHTML = THEMES.map(([k, n, tag, a, b]) => `<button class="th" type="button" data-theme-k="${k}" aria-pressed="${root.dataset.theme === k}"><i style="background:${k === 'custom' ? 'conic-gradient(#f43f5e,#f59e0b,#22c55e,#06b6d4,#6366f1,#d946ef,#f43f5e)' : `radial-gradient(circle at 40% 38%, #fff 0 8%, ${a} 26%, ${b} 62%, #000 100%)`}"></i>${esc(n)}<small>${esc(tag)}</small></button>`).join('');
+  $('#olyThemes').innerHTML = olyTiles();
+  $('#setGrain').checked = !!(TH() && TH().grain());
+  $('#olyNote').textContent = olyOn() ? `${(TH() && TH().get(olyId()).name) || 'This theme'} colours Jarvis and every app. Jarvis colour below goes back to the OLYMPUS default.`
+    : 'The whole system: Jarvis now, and each app the next time it opens. Jarvis colour below tunes the default.';
+  $('#themes').innerHTML = THEMES.map(([k, n, tag, a, b]) => `<button class="th" type="button" data-theme-k="${k}" aria-pressed="${!olyOn() && root.dataset.theme === k}"><i style="background:${k === 'custom' ? 'conic-gradient(#f43f5e,#f59e0b,#22c55e,#06b6d4,#6366f1,#d946ef,#f43f5e)' : `radial-gradient(circle at 40% 38%, #fff 0 8%, ${a} 26%, ${b} 62%, #000 100%)`}"></i>${esc(n)}<small>${esc(tag)}</small></button>`).join('');
   for (const b of $('#fxSeg').children) b.setAttribute('aria-pressed', String(b.dataset.fx === root.dataset.fx));
   $('#coreSeg').innerHTML = CORE_DESIGNS.map(([k, n]) => `<button type="button" data-core-k="${k}" aria-pressed="${coreDesign() === k}">${esc(n)}</button>`).join('');
   $('#hue').value = String(+(D.LS.get('jcustom', { h: 275 }) || {}).h || 275);
@@ -2179,6 +2276,8 @@ function renderLook() {
 function openLook() { closeSheets(); closeMore(); $('#look').hidden = false; renderLook(); }
 $('#lookX').addEventListener('click', () => { $('#look').hidden = true; });
 $('#themes').addEventListener('click', (e) => { const b = e.target.closest('[data-theme-k]'); if (b) setTheme(b.dataset.themeK); });
+$('#olyThemes').addEventListener('click', (e) => { const b = e.target.closest('[data-oly-k]'); if (b) setOlyTheme(b.dataset.olyK); });
+$('#setGrain').addEventListener('change', () => { if (TH()) TH().grain($('#setGrain').checked); });
 $('#fxSeg').addEventListener('click', (e) => { const b = e.target.closest('[data-fx]'); if (b) setFx(b.dataset.fx); });
 $('#coreSeg').addEventListener('click', (e) => { const b = e.target.closest('[data-core-k]'); if (b) setCoreDesign(b.dataset.coreK); });
 $('#hue').addEventListener('input', () => { D.LS.set('jcustom', { h: +$('#hue').value }); if (root.dataset.theme !== 'custom') setTheme('custom'); else { applyCustom(); readColors(); if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme())); } });
@@ -2187,12 +2286,16 @@ $('#setTilt').addEventListener('change', async () => { await setTilt($('#setTilt
 $('#setCalm').addEventListener('change', () => { D.LS.set('jarvis.calm', $('#setCalm').checked); if (core && mods.core) mountCore3d(); });
 function openVoice() {
   closeSheets(); closeMore(); loadVoices();
-  const cfg = S.vcfg(), en = voices.filter((v) => /^en/i.test(v.lang || '')), cur = pickVoice();
-  $('#vVoice').innerHTML = `<option value="">Automatic${cur ? ' (' + esc(cur.name) + ')' : ''}</option>` + en.map((v) => `<option value="${esc(v.name)}"${cfg.voice === v.name ? ' selected' : ''}>${esc(v.name)} · ${esc(v.lang)}</option>`).join('');
+  const cfg = S.vcfg(), en = tts ? tts.voiceChoices(voices) : voices.filter((v) => /^en/i.test(v.lang || '')), cur = pickVoice();
+  const lab = (v) => (tts ? tts.voiceLabel(v) : `${v.name} · ${v.lang}`);
+  $('#vVoice').innerHTML = `<option value="">Automatic${cur ? ' (' + esc(lab(cur)) + ')' : ''}</option>` + en.map((v) => `<option value="${esc(v.name)}"${cfg.voice === v.name ? ' selected' : ''}>${esc(lab(v))}</option>`).join('');
+  $('#vStyle').value = assistant ? assistant.settings().style : 'short';
+  $('#vCloud').checked = !!(D.LS.get('jarvis.tts', {}) || {}).cloud;
+  $('#vTip').hidden = !!raw('jarvis.tip.ava') || (!!cur && /premium/i.test(cur.name + ' ' + (cur.voiceURI || '')));
   $('#vRate').value = String(cfg.rate); $('#vPitch').value = String(cfg.pitch);
   $('#vRateV').textContent = (+cfg.rate).toFixed(2); $('#vPitchV').textContent = (+cfg.pitch).toFixed(2);
   $('#vAll').checked = S.speakAll(); $('#vHold').checked = S.hold();
-  $('#vNote').textContent = !('speechSynthesis' in window) ? 'This browser cannot speak.' : en.length ? 'The original voice (Ava) is used when the phone has it, then Samantha.' : 'No English voices loaded yet; they appear after the first answer.';
+  $('#vNote').textContent = !('speechSynthesis' in window) ? 'This browser cannot speak.' : en.length ? 'Automatic picks her most natural voice: Ava or Zoe (Premium) first, then Allison, Samantha.' : 'No English voices loaded yet; they appear after the first answer.';
   $('#voice').hidden = false;
 }
 function saveVoice() {
@@ -2202,7 +2305,14 @@ function saveVoice() {
   renderMore();
 }
 for (const id of ['#vVoice', '#vRate', '#vPitch', '#vAll', '#vHold']) $(id).addEventListener('input', saveVoice);
-$('#vTest').addEventListener('click', () => speak(`${D.greeting()}. All systems are online.`, false));
+$('#vStyle').addEventListener('change', () => { if (assistant) assistant.setSettings({ style: $('#vStyle').value }); });
+$('#vCloud').addEventListener('change', () => {
+  const on = $('#vCloud').checked, c = D.LS.get('jarvis.tts', {}) || {};
+  D.LS.set('jarvis.tts', Object.assign({}, c, { cloud: on }));
+  if (on && !cloudVoice()) toast('The cloud voice needs your free Groq key: ⋯ → AI key. Until then she uses the phone\'s voice.', 'VOICE');
+});
+$('#vTipX').addEventListener('click', () => { rawSet('jarvis.tip.ava', '1'); $('#vTip').hidden = true; });
+$('#vTest').addEventListener('click', () => speak(`${D.greeting()}. I'm right here, and everything is online. What do you need?`, false));
 $('#vX').addEventListener('click', () => { $('#voice').hidden = true; });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeSheets(); closeMore(); } });
 
@@ -2527,6 +2637,8 @@ if ('serviceWorker' in navigator) safe(() => navigator.serviceWorker.register('s
 $('#vbars').innerHTML = '<i></i>'.repeat(32);
 $('#orb').dataset.design = coreDesign();
 safe(applyCustom); safe(readColors);
+// the OLYMPUS theme engine: here already, or when its async script arrives (never part of the start)
+if (!safe(olyStart, false)) { const s = document.getElementById('olyThemesJs'); if (s) s.addEventListener('load', () => safe(olyStart)); }
 root.classList.toggle('money-hidden', S.hideMoney());
 $('#says').textContent = `${D.greeting()}. Tap the core or type below to speak with me.`;
 greet();
@@ -2573,7 +2685,7 @@ if (window.visualViewport) {
   const fitDock = () => { const kb = Math.max(0, innerHeight - visualViewport.height - visualViewport.offsetTop); $('#dock').style.transform = kb > 60 ? `translateY(${-Math.round(kb)}px)` : ''; };
   visualViewport.addEventListener('resize', fitDock); visualViewport.addEventListener('scroll', fitDock);
 }
-window.__jarvis = { show, ask, facts: D.getFacts, active: () => active, setTheme, setFx, state: () => state, core: () => (core && typeof core.stats === 'function' ? safe(() => core.stats()) : null),
+window.__jarvis = { show, ask, facts: D.getFacts, active: () => active, setTheme, setOlyTheme, setFx, state: () => state, core: () => (core && typeof core.stats === 'function' ? safe(() => core.stats()) : null),
   voiceMode: (g) => voiceMode(!!g), vm: () => (vm ? vm.stats() : null), closeVoiceMode: () => { if (vm) vm.close('test'); } };   // for tests and the console; read-only
 if ('serviceWorker' in navigator) {
   // a tapped Zenith notification while Jarvis runs (Zenith's sw.js v50: {type: 'open', app: 'zenith', hash}): Zenith mode at

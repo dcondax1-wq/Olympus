@@ -1209,7 +1209,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     # it opens; published with every build so a publish never drops them
     # 2026-11-03: the OLYMPUS apps Jarvis opens full screen: Data City, Mind (the Obsidian brain), the strategy tree ...;
     # olympus/ is their shared kit (tokens, fonts, the loading veil, the one 3D-quality setting: docs/OLYMPUS_DESIGN.md)
-    for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "olympus"):
+    for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "pantheon", "olympus", "arena"):
         src_dir = os.path.join(WEB, app)
         if os.path.isdir(src_dir):
             os.makedirs(os.path.join(out, app), exist_ok=True)
@@ -1231,6 +1231,12 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
         print("  hermes:", _hermes.publish(out))
     except Exception as e:
         print("  hermes unavailable:", e.__class__.__name__, e)
+    # ARENA (tools/arena/, Olympian Ranks, 2026-11-03): events.json (verifiable trading events) + jarvis.json over the demo
+    try:
+        from tools.arena import build as _arena
+        print("  arena:", _arena.publish(out))
+    except Exception as e:
+        print("  arena unavailable:", e.__class__.__name__, e)
     # the Kalshi kit's public files (tools/kalshi_kit/public/: the read-only status builder + SETUP.md the Kalshi bot's own
     # server session follows, 2026-11-01) next to the Kalshi page; never over a page file of the same name
     kit = os.path.join(ROOT, "tools", "kalshi_kit", "public")

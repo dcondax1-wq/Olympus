@@ -10,11 +10,15 @@ Sources (futures only, never Yahoo):
   ATLAS   the members' stored research trades (research/second/ema_best.json, md_best.json, sr_best.json) and, when a
           trade has a picture, its plain-words setup line (research/lab/chart_examples/index.json, the "alt" text up to
           "Result:", which engine/trade_chart.py builds from what the bot saw at the entry)
-  paper / real  --data <site data.json> (the cloud monitor's published file): the paper ledger (live.ledger) and the MFFU
-          eval's closed trades (accounts); each gets its backtest / paper twin (same entry time) when there is one
+  paper / real  the cloud's own trades since the PC feed (2026-10-19 on): research/odeon/cloud_trades.json, a snapshot of the
+          `dashboard` branch's state.json (the cloud paper ledger + the PC account's closed MFFU eval trades from its
+          heartbeat), refreshed by `--snapshot`; or --data <site data.json> (the published file: live.ledger + accounts)
+          instead. Each gets its backtest / paper twin (same entry time) when there is one
   bars    data/NQ_1m.csv (TradingView CME NQ1! 1m, moved onto the 5m file's price basis window by window, as
           engine/lit.py bars_1m does), data/NQ_5m.csv when a window has no 1m bars, any --bars CSV (time,open,high,low,close:
-          e.g. the PC's NinjaTrader MNQ archive) and the data.json's live.bars1
+          e.g. the PC's NinjaTrader MNQ archive), the data.json's live.bars1, and for the cloud's trades the PC's own
+          NinjaTrader MNQ 1m bars around each one (research/odeon/pc_bars_1m.csv.gz, from the dashboard branch's bars_1m.csv
+          and research/feed/nt_mnq_1m.csv.gz of tools/hb_bars.py)
 A trade without bars is left out (it cannot be played).
 
 Caption track ("events"): one row per moment, {t, k, text, refs}. t is the second the fact is known (a bar's close, a fill),
@@ -24,7 +28,8 @@ Bars: quarter points relative to p0 (price = (p0 + v) / 4), times t0 + dt * s.
 
 The output is deterministic (no clock, sorted keys, fixed float rounding): the same inputs give the same bytes.
 
-  python tools/odeon_export.py                      # 44 LIT + 16 ATLAS -> tools/web_public/odeon/trades.json
+  python tools/odeon_export.py                      # 42 LIT + 14 ATLAS + the cloud's trades -> tools/web_public/odeon/trades.json
+  python tools/odeon_export.py --snapshot           # first refresh research/odeon/ from the dashboard branch (git fetch origin dashboard)
   python tools/odeon_export.py --data site/data.json --bars data/nt_bars/MNQ_1m.csv --out /tmp/trades.json
 """
 from __future__ import annotations
@@ -33,9 +38,12 @@ import argparse
 import bisect
 import csv
 import datetime as dt
+import gzip
+import io
 import json
 import os
 import re
+import subprocess
 from zoneinfo import ZoneInfo
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -46,6 +54,10 @@ BACKTEST = os.path.join(ROOT, "research", "lab", "backtest_live.json")
 EXAMPLES = os.path.join(ROOT, "research", "lab", "chart_examples", "index.json")
 BARS_1M = os.path.join(ROOT, "data", "NQ_1m.csv")
 BARS_5M = os.path.join(ROOT, "data", "NQ_5m.csv")
+SNAP = os.path.join(ROOT, "research", "odeon")
+CLOUD = os.path.join(SNAP, "cloud_trades.json")          # the cloud's paper ledger + the PC's eval trades (a snapshot)
+CLOUD_BARS = os.path.join(SNAP, "pc_bars_1m.csv.gz")     # the PC's NinjaTrader MNQ 1m bars around them
+NT_1M = os.path.join(ROOT, "research", "feed", "nt_mnq_1m.csv.gz")
 ATLAS = (("ema_lon_vix", "EMA", "London EMA trend pullback", "research/second/ema_best.json"),
          ("macd_sweep", "MACD", "MACD divergence at a liquidity sweep", "research/second/md_best.json"),
          ("sr_nyreclaim", "S/R", "NY sweep-and-reclaim", "research/second/sr_best.json"))
@@ -125,7 +137,7 @@ def _read_csv(path: str, a: int, z: int) -> dict:
     out = {}
     if not path or not os.path.exists(path):
         return out
-    with open(path, encoding="utf-8") as fh:
+    with (gzip.open(path, "rt", encoding="utf-8") if path.endswith(".gz") else open(path, encoding="utf-8")) as fh:
         rd = csv.reader(fh)
         head = [h.strip().lower() for h in next(rd)]
         ix = [head.index(k) for k in ("time", "open", "high", "low", "close")]
@@ -490,12 +502,68 @@ def live_trades(tape: Tape, data: dict, twins: dict) -> list:
     return out
 
 
+# ---------------------------------------------------------------- the cloud's own trades (a snapshot of the dashboard branch)
+def _git_show(ref: str) -> bytes | None:
+    p = subprocess.run(["git", "-C", ROOT, "show", ref], capture_output=True, timeout=120)
+    return p.stdout if p.returncode == 0 else None
+
+
+def snapshot(out_dir: str = SNAP, pad_before: int = 6 * 3600, pad_after: int = 3600) -> dict:
+    """research/odeon/: the cloud's paper ledger and the PC account's closed trades (origin/dashboard state.json), as a
+    data.json-shaped doc, and the PC's NinjaTrader MNQ 1m bars around each trade (the dashboard's bars_1m.csv, newest, over
+    research/feed/nt_mnq_1m.csv.gz). Market data and trade records only: no account secret is in either file."""
+    raw = _git_show("origin/dashboard:state.json")
+    if raw is None:
+        raise SystemExit("no origin/dashboard: run `git fetch origin dashboard` first")
+    st = json.loads(raw)
+    keep = ("day", "side", "entry_t", "exit_ts", "entry_px", "stop_px", "target_px", "exit_px", "exit", "R", "usd", "qty", "risk_pts")
+    ledger = []
+    for k, v in sorted(((st.get("ledger") or {}).items() if isinstance(st.get("ledger"), dict) else [])):
+        row = {x: v.get(x) for x in keep if x != "entry_t"}
+        row["entry_t"] = int(k)
+        ledger.append(row)
+    acct = (st.get("pc") or {}).get("acct") or {}
+    tkeep = ("day", "entry_t", "exit_t", "side", "qty", "entry", "stop", "target", "exit_px", "exit", "r", "pnl", "risk_pts", "swept")
+    trades = [{x: t.get(x) for x in tkeep} for t in acct.get("trades") or [] if t.get("entry_t") and t.get("exit_t")]
+    data = {"live": {"ledger": ledger}, "accounts": [{"name": "MFFU 50K Builder eval", "kind": "eval", "trades": trades}] if trades else []}
+    spans = [(int(r["entry_t"]) - pad_before, int(r["exit_ts"]) + pad_after) for r in ledger if r.get("exit_ts")]
+    spans += [(int(t["entry_t"]) - pad_before, int(t["exit_t"]) + pad_after) for t in trades]
+    bars = {}
+    for src in (gzip.open(NT_1M, "rt", encoding="utf-8").read() if os.path.exists(NT_1M) else "",
+                (_git_show("origin/dashboard:bars_1m.csv") or b"").decode("utf-8")):
+        rd = csv.reader(io.StringIO(src))
+        head = [h.strip().lower() for h in next(rd, [])]
+        if not head:
+            continue
+        ix = [head.index(k) for k in ("time", "open", "high", "low", "close")]
+        for row in rd:
+            t = int(float(row[ix[0]]))
+            if t % 60 == 0 and any(a <= t <= z for a, z in spans):
+                bars[t] = [float(row[k]) for k in ix[1:]]                 # the dashboard's (newer) bar wins
+    os.makedirs(out_dir, exist_ok=True)
+    body = "time,open,high,low,close\n" + "".join(f"{t},{o:g},{h:g},{l:g},{c:g}\n" for t, (o, h, l, c) in sorted(bars.items()))
+    with open(os.path.join(out_dir, os.path.basename(CLOUD_BARS)), "wb") as fh:
+        with gzip.GzipFile(fileobj=fh, mode="wb", mtime=0, filename="") as gz:   # the same bars give the same bytes
+            gz.write(body.encode("utf-8"))
+    doc = {"v": 1, "kind": "odeon-cloud", "source": "origin/dashboard state.json (cloud paper ledger + the PC's eval trades) as of "
+           + str(st.get("last_run") or "?"), "bars": f"{len(bars)} PC NinjaTrader MNQ 1m bars ({os.path.basename(CLOUD_BARS)})", "data": data}
+    with open(os.path.join(out_dir, os.path.basename(CLOUD)), "w", encoding="utf-8", newline="\n") as fh:
+        json.dump(doc, fh, indent=1, sort_keys=True, ensure_ascii=False)
+    return doc
+
+
 # ---------------------------------------------------------------- the bundle
-def build(n_lit: int = 44, n_atlas: int = 16, data_path: str | None = None, extra_bars=()) -> dict:
+def build(n_lit: int = 42, n_atlas: int = 14, data_path: str | None = None, extra_bars=(), cloud: bool = True) -> dict:
+    """the reels: the last n_lit LIT + n_atlas ATLAS replays, plus the live trades: --data's when given, else the cloud
+    snapshot's (research/odeon/, when `cloud` and it is there)"""
     data = None
     if data_path:
         with open(data_path, encoding="utf-8") as fh:
             data = json.load(fh)
+    elif cloud and os.path.exists(CLOUD):
+        with open(CLOUD, encoding="utf-8") as fh:
+            data = json.load(fh)["data"]
+        extra_bars = tuple(extra_bars) + (CLOUD_BARS,)
     with open(REPLAYS, encoding="utf-8") as fh:
         charts = json.load(fh).get("charts") or {}
     ts = [r["entry"]["t"] for r in charts.values()] or [0]
@@ -523,7 +591,8 @@ def build(n_lit: int = 44, n_atlas: int = 16, data_path: str | None = None, extr
     last = max((t["day"] for t in uniq), default="")
     return {"v": 1, "app": "odeon", "upto": last, "n": len(uniq),
             "source": "TradingView CME NQ1! 1m (data/NQ_1m.csv on the 5m basis; data/NQ_5m.csv where 1m is missing); "
-                      "LIT: research/lab/replays.json charts (engine markers); ATLAS: research/second/*_best.json",
+                      "LIT: research/lab/replays.json charts (engine markers); ATLAS: research/second/*_best.json"
+                      + ("; paper / real: the cloud's ledger and the PC's eval trades on the PC's NinjaTrader MNQ 1m bars" if data else ""),
             "trades": uniq}
 
 
@@ -568,13 +637,19 @@ def write_fixture(bundle: dict, tid: str, path: str = FIXTURE) -> None:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="ODEON exporter (tools/web_public/odeon/trades.json)")
-    ap.add_argument("--lit", type=int, default=44, help="the last N LIT trades (default 44)")
-    ap.add_argument("--atlas", type=int, default=16, help="the last N ATLAS member trades (default 16)")
+    ap.add_argument("--lit", type=int, default=42, help="the last N LIT trades (default 42)")
+    ap.add_argument("--atlas", type=int, default=14, help="the last N ATLAS member trades (default 14)")
+    ap.add_argument("--snapshot", action="store_true", help="first refresh research/odeon/ (the cloud's trades and their PC bars) "
+                    "from origin/dashboard")
     ap.add_argument("--data", default=None, help="the site's data.json: adds the paper ledger and the eval's real trades")
     ap.add_argument("--bars", action="append", default=[], help="extra 1m futures bars (CSV time,open,high,low,close)")
     ap.add_argument("--out", default=OUT)
     ap.add_argument("--fixture", default=None, help="also freeze this trade id as the demo reel (odeon/fixture.js)")
     a = ap.parse_args(argv)
+    if a.snapshot:
+        doc = snapshot()
+        print(f"snapshot -> {SNAP}: {len(doc['data']['live']['ledger'])} paper trades, "
+              f"{sum(len(x['trades']) for x in doc['data']['accounts'])} eval trades, {doc['bars']}")
     bundle = build(a.lit, a.atlas, a.data, a.bars)
     size = write(bundle, a.out)
     print(f"odeon -> {a.out}: {bundle['n']} trades, {size // 1024} KB")

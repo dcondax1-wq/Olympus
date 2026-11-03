@@ -1,0 +1,155 @@
+/* ARENA: the HUD over the colosseum. The kit (../olympus/olympus.css) gives the fonts, tokens, chips, the close button and
+   the veil. Jarvis's orb owns the bottom-right 80 x 160 px: everything fixed at the bottom stops 96 px from the right, and the
+   sheet sits 168 px above the bottom. Safe areas on every edge; no sideways scroll at 390 px. */
+:root {
+  --a-bg: #0a0710; --a-gold: #ffb547; --a-gold-rgb: 255, 181, 71; --a-ok: #46d79a; --rank: #ffcf5a;
+  --st: var(--oly-st, env(safe-area-inset-top, 0px)); --sr: var(--oly-sr, env(safe-area-inset-right, 0px));
+  --sb: var(--oly-sb, env(safe-area-inset-bottom, 0px)); --sl: var(--oly-sl, env(safe-area-inset-left, 0px));
+  --vh: var(--oly-vh, 100vh);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--a-bg); color: var(--oly-text, #f3f5fb); overflow: hidden; }
+body { font: 500 var(--oly-t-body, 14px)/1.35 var(--oly-ui, -apple-system, system-ui, sans-serif); min-height: var(--vh); }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible { outline: 2px solid var(--a-gold); outline-offset: 2px; }
+button:focus:not(:focus-visible) { outline: none; }
+
+#scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+html[data-noscene] #scene { display: none; }
+html[data-noscene] body { background: radial-gradient(ellipse at 50% 60%, #2a1c08 0%, var(--a-bg) 60%); }
+
+/* ---- the top HUD */
+#ui { position: fixed; top: 0; left: 0; right: 0; padding: calc(var(--st) + 10px) calc(var(--sr) + 16px) 0 calc(var(--sl) + 16px);
+  pointer-events: none; display: flex; flex-direction: column; gap: 8px; }
+#ui > * { pointer-events: auto; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 36px; }
+.brand h1 { margin: 0; font: 800 18px/1 var(--oly-display, sans-serif); letter-spacing: .26em; color: var(--a-gold);
+  text-shadow: 0 0 18px rgba(var(--a-gold-rgb), .45); }
+.brand .sub { margin: 3px 0 0; font-size: var(--oly-t-micro, 10.5px); letter-spacing: var(--oly-track-label, .14em); text-transform: uppercase; color: var(--oly-dim); }
+.tags { display: flex; gap: 6px; }
+.tag { padding: 3px 8px; border-radius: 999px; font: 700 10.5px/1 var(--oly-display, sans-serif); letter-spacing: .14em; border: 1px solid var(--oly-line); color: var(--oly-dim); background: var(--oly-glass); }
+.tag.demo { color: #ffd88a; border-color: rgba(255, 216, 138, .5); }
+
+.rank { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--oly-r-card, 16px);
+  background: var(--oly-glass); border: 1px solid var(--oly-line); -webkit-backdrop-filter: blur(var(--oly-blur, 14px)); backdrop-filter: blur(var(--oly-blur, 14px)); }
+.emblem { flex: none; width: 54px; height: 54px; color: var(--rank); filter: drop-shadow(0 0 8px var(--rank)); }
+.rk { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.rk .l { font-size: var(--oly-t-micro); letter-spacing: var(--oly-track-label); text-transform: uppercase; color: var(--oly-dim); }
+.rk b { font: 800 22px/1.1 var(--oly-display, sans-serif); letter-spacing: .12em; text-transform: uppercase; color: var(--rank); text-shadow: 0 0 14px var(--rank); }
+.rk .lv { font: 600 var(--oly-t-label)/1.3 var(--oly-ui); color: var(--oly-text); margin-top: 2px; }
+.rk .bar { height: 6px; border-radius: 6px; background: rgba(255, 255, 255, .08); overflow: hidden; margin: 5px 0 3px; }
+.rk .bar i { display: block; height: 100%; background: linear-gradient(90deg, #a86a1b, var(--a-gold), #fff1c8); transform-origin: 0 50%;
+  transform: scaleX(0); transition: transform 1.1s cubic-bezier(.2, .8, .2, 1); box-shadow: 0 0 10px rgba(var(--a-gold-rgb), .6); }
+.rk .s { font-size: var(--oly-t-micro); color: var(--oly-dim); overflow-wrap: anywhere; }
+
+.streaks { display: flex; flex-wrap: wrap; gap: 6px; }
+.streak { gap: 5px; }
+.streak .k { color: var(--oly-dim); }
+.streak b { font: 700 13px/1 var(--oly-display, sans-serif); color: var(--oly-text); }
+.streak .u { font-size: 10.5px; color: var(--oly-dim); }
+.streak.on { border-color: rgba(var(--a-gold-rgb), .45); }
+.streak.on b { color: var(--a-gold); }
+
+/* ---- the tabs (left of the orb) */
+.tabs { position: fixed; left: calc(var(--sl) + 16px); right: calc(var(--sr) + var(--oly-orb-clear, 96px)); bottom: calc(var(--sb) + 12px);
+  display: flex; gap: 6px; z-index: 5; }
+.tabs button { flex: 1 1 0; min-width: 0; min-height: var(--oly-tap, 44px); padding: 4px 6px; border-radius: var(--oly-r-btn, 12px);
+  border: 1px solid var(--oly-line); background: var(--oly-glass); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  font: 700 12.5px/1.1 var(--oly-ui); letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tabs button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; }
+.tabs button b { font: 700 10.5px/1 var(--oly-display, sans-serif); color: var(--a-gold); }
+.tabs button[aria-pressed="true"] { border-color: rgba(var(--a-gold-rgb), .7); box-shadow: 0 0 16px rgba(var(--a-gold-rgb), .25) inset; }
+
+/* ---- the sheet (quests, labours, log): above the orb's corner */
+.sheet { position: fixed; z-index: 6; left: calc(var(--sl) + 16px); right: calc(var(--sr) + 16px); bottom: calc(var(--sb) + 168px);
+  max-height: calc(100vh - var(--st) - 420px); max-height: calc(100dvh - var(--st) - 420px); min-height: 220px; display: flex; flex-direction: column;
+  border-radius: var(--oly-r-card, 16px); border: 1px solid var(--oly-line); background: rgba(10, 8, 18, .86);
+  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: var(--oly-shadow); }
+.sheet[hidden] { display: none; }
+.sheet header { display: flex; align-items: center; justify-content: space-between; padding: 4px 4px 0 14px; }
+.sheet h2 { margin: 0; font: 700 13px/1 var(--oly-display, sans-serif); letter-spacing: .14em; text-transform: uppercase; color: var(--a-gold); }
+.sheet .body { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 4px 12px 12px; }
+.sheet h3 { margin: 12px 0 6px; font: 700 11px/1 var(--oly-display, sans-serif); letter-spacing: .14em; text-transform: uppercase; color: var(--oly-dim); }
+
+.quests { display: flex; flex-direction: column; gap: 8px; }
+.quest { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; border: 1px solid var(--oly-line); background: rgba(255, 255, 255, .03); }
+.quest .mark { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--oly-line);
+  font: 700 13px/1 var(--oly-display, sans-serif); color: var(--oly-dim); }
+.quest.done { border-color: rgba(var(--a-gold-rgb), .5); background: rgba(var(--a-gold-rgb), .07); }
+.quest.done .mark { background: var(--a-gold); color: #1a1002; border-color: transparent; box-shadow: 0 0 14px rgba(var(--a-gold-rgb), .6); }
+.quest .qt { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.quest .qt b { font: 700 var(--oly-t-title, 16px)/1.2 var(--oly-ui); }
+.quest .qd { color: var(--oly-text); font-size: 13px; }
+.quest .qs { color: var(--oly-dim); font-size: 11.5px; overflow-wrap: anywhere; }
+.quest .xp { flex: none; font: 700 12px/1 var(--oly-display, sans-serif); color: var(--a-gold); }
+.sweep { margin: 10px 2px 0; font-size: 12.5px; color: var(--oly-dim); }
+.sweep.done { color: var(--a-gold); }
+
+.labours { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.labour { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 44px; padding: 9px 10px; text-align: left;
+  border-radius: 12px; border: 1px solid var(--oly-line); background: rgba(255, 255, 255, .03); min-width: 0; }
+.labour .n { font: 700 10.5px/1 var(--oly-display, sans-serif); letter-spacing: .14em; color: var(--oly-dim); }
+.labour b { font: 700 13.5px/1.15 var(--oly-ui); overflow-wrap: anywhere; }
+.labour .task { font-size: 12px; color: var(--oly-dim); overflow-wrap: anywhere; }
+.labour .st { font-size: 11px; color: var(--oly-dim); }
+.labour .lb { display: block; width: 100%; height: 4px; border-radius: 4px; background: rgba(255, 255, 255, .08); overflow: hidden; margin: 4px 0 2px; }
+.labour .lb i { display: block; height: 100%; background: #8d8799; transform-origin: 0 50%; }
+.labour.earned { border-color: rgba(var(--a-gold-rgb), .6); background: linear-gradient(160deg, rgba(var(--a-gold-rgb), .16), rgba(var(--a-gold-rgb), .03));
+  box-shadow: 0 0 18px rgba(var(--a-gold-rgb), .18); }
+.labour.earned .n, .labour.earned .st { color: var(--a-gold); }
+.labour.earned .lb i { background: var(--a-gold); }
+
+.srcs { display: flex; flex-direction: column; gap: 6px; }
+.src { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 8px; padding: 8px 10px; border-radius: 10px; background: rgba(255, 255, 255, .03); border: 1px solid var(--oly-line); }
+.src b { font-size: 13px; }
+.src .v { font: 700 12px/1.3 var(--oly-display, sans-serif); color: var(--a-gold); }
+.src .why { grid-column: 1 / -1; font-size: 11.5px; color: var(--oly-dim); overflow-wrap: anywhere; }
+.src.off { opacity: .6; }
+.honest { font-size: 12px; color: var(--oly-dim); margin: 6px 2px; }
+.export { width: 100%; min-height: 44px; margin-top: 6px; border-radius: 12px; border: 1px solid rgba(var(--a-gold-rgb), .55); background: rgba(var(--a-gold-rgb), .1);
+  font-weight: 700; color: var(--a-gold); }
+.log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.log li { display: grid; grid-template-columns: 40px minmax(0, 1fr) 36px; gap: 6px; padding: 5px 2px; border-bottom: 1px solid rgba(255, 255, 255, .05); font-size: 12.5px; }
+.log .d { color: var(--oly-dim); font-variant-numeric: tabular-nums; }
+.log .w { overflow-wrap: anywhere; }
+.log .x { text-align: right; font: 700 11.5px/1.4 var(--oly-display, sans-serif); color: var(--a-gold); }
+.log li.zero .x { color: var(--oly-dim); }
+
+/* ---- a labour's card (a tap on a statue or a tile) */
+.pop { position: fixed; z-index: 8; left: calc(var(--sl) + 16px); right: calc(var(--sr) + 16px); top: calc(var(--st) + 130px); margin: 0 auto; max-width: 420px;
+  max-height: calc(100vh - var(--st) - 310px); max-height: calc(100dvh - var(--st) - 310px); overflow-y: auto;
+  padding: 16px 16px 14px; border-radius: 18px; border: 1px solid var(--oly-line); background: rgba(12, 9, 20, .92);
+  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: var(--oly-shadow); }
+.pop[hidden] { display: none; }
+.pop.earned { border-color: rgba(var(--a-gold-rgb), .7); box-shadow: 0 0 40px rgba(var(--a-gold-rgb), .25), var(--oly-shadow); }
+.pop .oly-close { position: absolute; top: 4px; right: 4px; }
+.pop .n { font: 700 11px/1 var(--oly-display, sans-serif); letter-spacing: .18em; text-transform: uppercase; color: var(--oly-dim); }
+.pop.earned .n { color: var(--a-gold); }
+.pop h2 { margin: 6px 44px 6px 0; font: 800 17px/1.2 var(--oly-display, sans-serif); letter-spacing: .06em; }
+.pop .task { margin: 0 0 6px; font-size: 15px; }
+.pop .st { margin: 0 0 6px; font-weight: 700; color: var(--a-gold); }
+.pop .how { margin: 0; font-size: 12.5px; color: var(--oly-dim); }
+
+/* ---- level-up: the banner and the flash */
+.banner { position: fixed; z-index: 9; left: calc(var(--sl) + 16px); right: calc(var(--sr) + 16px); top: 40%; display: flex; flex-direction: column; align-items: center;
+  gap: 4px; pointer-events: none; text-align: center; }
+.banner[hidden] { display: none; }
+.banner .k { font: 700 12px/1 var(--oly-display, sans-serif); letter-spacing: .4em; padding-left: .4em; text-transform: uppercase; color: #fff4d6; }
+.banner b { font: 800 34px/1.05 var(--oly-display, sans-serif); letter-spacing: .12em; text-transform: uppercase; color: var(--a-gold);
+  text-shadow: 0 0 24px rgba(var(--a-gold-rgb), .9), 0 0 60px rgba(var(--a-gold-rgb), .5); overflow-wrap: anywhere; max-width: 100%; }
+.banner .s { font: 600 14px/1 var(--oly-ui); color: var(--oly-text); }
+.banner.go { animation: a-banner 3.1s ease forwards; }
+@keyframes a-banner { 0% { opacity: 0; transform: scale(.7); } 12% { opacity: 1; transform: scale(1.06); } 22% { transform: scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(-14px); } }
+#flash { position: fixed; inset: 0; z-index: 7; pointer-events: none; opacity: 0;
+  background: radial-gradient(ellipse at 50% 38%, rgba(230, 242, 255, .95) 0%, rgba(255, 207, 90, .35) 35%, rgba(0, 0, 0, 0) 70%); }
+#flash.go { animation: a-flash 1s ease-out; }
+@keyframes a-flash { 0% { opacity: 0; } 8% { opacity: 1; } 16% { opacity: .2; } 24% { opacity: .85; } 100% { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .rk .bar i { transition: none; }
+  .banner.go { animation: none; opacity: 1; }
+  #flash.go { animation: none; }
+}
+html[data-fx="off"] .banner.go { animation: none; opacity: 1; }
+html[data-fx="off"] #flash.go { animation: none; }
+@media (max-height: 700px) { .rank { padding: 8px 10px; } .emblem { width: 44px; height: 44px; } .rk b { font-size: 19px; } }

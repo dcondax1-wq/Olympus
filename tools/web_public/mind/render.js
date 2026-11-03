@@ -1,14 +1,22 @@
-// OLYMPUS Mind: the renderer (three.js r160, from ../jarvis/). One draw call per layer (the haze: two per galaxy):
+// OLYMPUS Mind: the renderer (three.js r160, from ../jarvis/). One draw call per layer (the haze: one per galaxy):
 //   stars       a twinkling shell far away
-//   haze        per galaxy a spiral disc in the cluster's plane plus a soft glow (high quality only)
+//   nebulae     layered cloud sprites per galaxy (nebula.js; light mode: two per galaxy)
+//   haze        per galaxy a faint spiral disc in the cluster's plane (high quality only)
+//   memory      Jarvis's memory ring around Me (memring.js)
 //   filaments   every link as a thin additive line, coloured from end to end
 //   flow        particles running along the links (none under reduced motion)
 //   nodes       glowing spheres (point sprites with a lit core and a halo) sized by words and links
+//   synapses    pulses along the links when a note opens or learns, and idle "thinking" (synapse.js)
 //   sparks      "Jarvis learned" comets that fly from the ticker to their note; bursts are the rings when a note ignites
+// Two views, eased into each other (uStar): galaxy (spheres, nebulae, flow) and constellation (crisp stars and bright lines).
 // Positions come from the layout as targets; what is drawn eases toward them, so new notes fly in from the edge.
 //   const b = new Brain(THREE, canvas, {quality, reduced}); b.setGraph(graph, {targets, start, normals}); b.setTargets(pos)
-//   b.frame(dt, seconds, rig); b.setLook(emph, show); b.ignite(i); b.spark(i); b.shiftTo(dx, dy)
-//   b.pick(x, y) -> index | -1; b.screenOf(point); b.nodePoint(i); b.edgePoint(targets, i); b.centres (per cluster)
+//   b.frame(dt, seconds, rig); b.setLook(emph, show, clusterEmph); b.ignite(i); b.spark(i); b.synapse(i); b.shiftTo(dx, dy)
+//   b.setView('galaxy' | 'stars'); b.setBackground(colour)
+//   b.pick(x, y) -> index | -1; b.screenOf(point); b.nodePoint(i); b.edgePoint(targets, i); b.centres (per cluster); b.ringInfo
+import { Nebulae } from './nebula.js';
+import { Synapses, SYNAPSE_VS } from './synapse.js';
+import { MemoryRing, RING_COLOUR } from './memring.js';
 
 const GLSL_FOG = `
 uniform float uFogNear, uFogFar;
@@ -16,7 +24,7 @@ float fogOf(float d) { return mix(0.16, 1.0, smoothstep(uFogFar, uFogNear, d)); 
 
 const NODE_VS = `
 attribute vec3 aColor; attribute float aSize; attribute vec4 aFx;   // fx: ignite time, pulse, emphasis, shown
-uniform float uTime, uScale, uMotion;
+uniform float uTime, uScale, uMotion, uStar;
 varying vec3 vColor; varying float vAlpha, vFlash, vFocus;
 ${GLSL_FOG}
 void main() {
@@ -25,7 +33,7 @@ void main() {
   float age = uTime - aFx.x;
   float flash = (age >= 0.0 && age < 3.5) ? exp(-age * 1.5) : 0.0;
   float pulse = aFx.y * (0.5 + 0.5 * sin(uTime * 2.6 * uMotion + position.x * 0.05 + position.z * 0.03));
-  float size = aSize * (0.8 + 0.2 * min(aFx.z, 1.6) + 0.5 * pulse + 2.0 * flash) * aFx.w;
+  float size = aSize * (0.8 + 0.2 * min(aFx.z, 1.6) + 0.5 * pulse + 2.0 * flash) * aFx.w * (1.0 + 0.35 * uStar);
   gl_PointSize = clamp(size * uScale / dist, 0.0, 420.0);
   vAlpha = fogOf(dist) * clamp(aFx.z, 0.0, 1.0) * aFx.w;
   vFlash = flash + 0.4 * pulse;
@@ -35,6 +43,7 @@ void main() {
 }`;
 
 const NODE_FS = `
+uniform float uStar;
 varying vec3 vColor; varying float vAlpha, vFlash, vFocus;
 void main() {
   vec2 p = gl_PointCoord * 2.0 - 1.0;
@@ -51,7 +60,13 @@ void main() {
   float halo = (exp(-r * r * 7.0) * 0.5 + exp(-r * r * 26.0) * 0.4) * (1.0 + 2.4 * vFlash + 0.6 * vFocus);
   float ring = vFocus * smoothstep(0.05, 0.0, abs(r - 0.6));
   vec3 col = sphere * core + (vColor * halo + vec3(ring)) * (1.0 - core) + vec3(vFlash * 0.7) * core;
-  gl_FragColor = vec4(col, (core + (halo + ring) * (1.0 - core)) * vAlpha);
+  float a = core + (halo + ring) * (1.0 - core);
+  // the constellation view: a crisp star with four diffraction spikes
+  float spikes = max(exp(-abs(p.x) * 26.0), exp(-abs(p.y) * 26.0)) * (1.0 - r) * 0.9;
+  float star = (exp(-r * r * 60.0) * 1.6 + exp(-r * r * 9.0) * 0.25 + spikes) * (1.0 + 1.5 * vFlash + 0.8 * vFocus);
+  col = mix(col, mix(vColor, vec3(1.0), 0.35) * star + vec3(ring) * 0.8, uStar);
+  a = mix(a, min(1.0, star + ring), uStar);
+  gl_FragColor = vec4(col, a * vAlpha);
 }`;
 
 const EDGE_VS = `
@@ -64,11 +79,12 @@ void main() {
   vColor = aColor;
   gl_Position = projectionMatrix * mv;
 }`;
-const EDGE_FS = `varying vec3 vColor; varying float vA; void main() { gl_FragColor = vec4(vColor, vA); }`;
+const EDGE_FS = `uniform float uStar; varying vec3 vColor; varying float vA;
+void main() { gl_FragColor = vec4(mix(vColor, vec3(0.8, 0.9, 1.0), uStar * 0.5), vA * (1.0 + 1.3 * uStar)); }`;
 
 const FLOW_VS = `
 attribute vec3 aB, aColor; attribute vec2 aSeed; attribute float aAlpha;
-uniform float uTime, uScale;
+uniform float uTime, uScale, uStar;
 varying vec3 vColor; varying float vA;
 ${GLSL_FOG}
 void main() {
@@ -76,7 +92,7 @@ void main() {
   vec4 mv = modelViewMatrix * vec4(mix(position, aB, t), 1.0);
   float dist = max(1.0, -mv.z);
   gl_PointSize = clamp(2.6 * uScale / dist, 1.5, 12.0);
-  vA = aAlpha * sin(3.14159 * t) * fogOf(dist);
+  vA = aAlpha * sin(3.14159 * t) * fogOf(dist) * (1.0 - uStar);
   vColor = aColor;
   gl_Position = projectionMatrix * mv;
 }`;
@@ -131,18 +147,19 @@ void main() { float r = length(gl_PointCoord * 2.0 - 1.0); if (r > 1.0) discard;
 
 const HAZE_VS = `varying vec2 vUv; void main() { vUv = uv * 2.0 - 1.0; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
 const HAZE_FS = `
-uniform vec3 uColor; uniform float uAlpha, uTime, uSpiral;
+uniform vec3 uColor; uniform float uAlpha, uTime, uSpiral, uStar;
 varying vec2 vUv;
 void main() {
   float r = length(vUv);
   if (r > 1.0) discard;
   float arms = 0.5 + 0.5 * sin(atan(vUv.y, vUv.x) * 2.0 - r * 9.0 + uTime * 0.05);
   float a = exp(-r * r * 3.4) * (1.0 - uSpiral + uSpiral * (0.35 + 0.9 * arms * smoothstep(0.0, 0.25, r)));
-  gl_FragColor = vec4(uColor, a * uAlpha);
+  gl_FragColor = vec4(uColor, a * uAlpha * (1.0 - uStar));
 }`;
 
 const SPARKS = 16, TRAIL = 24, TRAIL_GAP = 0.014, BURSTS = 24, SPARK_SECONDS = 2.4;
-const SPARK_COLOUR = 0x6ff6ff;
+const SPARK_COLOUR = RING_COLOUR;                        // Jarvis's cyan: the sparks, the memory ring, the synapses of learning
+const VIEW_SECONDS = 0.9;                                // galaxy <-> constellation
 
 export class Brain {
   constructor(THREE, canvas, { quality = 'high', reduced = false } = {}) {
@@ -151,18 +168,24 @@ export class Brain {
     this.reduced = reduced;
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance' });
     this.renderer.setClearColor(0x03040a, 1);
+    this.view = 'galaxy';
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(52, 1, 1, 12000);
     this.u = {
       uTime: { value: 0 }, uScale: { value: 1 }, uDpr: { value: 1 }, uMotion: { value: reduced ? 0 : 1 },
-      uFogNear: { value: 300 }, uFogFar: { value: 1500 },
+      uFogNear: { value: 300 }, uFogFar: { value: 1500 }, uStar: { value: 0 },
     };
+    this.nebulae = new Nebulae(THREE, this.u);
+    this.clusterEmph = [];
     this.n = 0; this.graph = null; this.extent = 300; this.centre = new THREE.Vector3();
     this.layers = {};
-    this.sparks = []; this.burstNext = 0;
+    this.sparks = []; this.burstNext = 0; this.launched = 0;   // launched: every spark ever sent (tests)
     this.shift = { x: 0, y: 0, tx: 0, ty: 0 };
     this._v = new THREE.Vector3();
     this._buildSparks();
+    this._swap('nebulae', this.nebulae.quad, 1);
+    this.synapses = new Synapses(THREE, this._material(SYNAPSE_VS, GLOW_FS));
+    this._swap('synapses', this.synapses.points, 7);
     this.setQuality(quality);
   }
 
@@ -198,6 +221,8 @@ export class Brain {
     this.quality = q;
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, q === 'high' ? 2 : 1));
     this._buildStars(q === 'high' ? 2200 : 700);
+    this.ring = new MemoryRing(this.T, this.u, q);
+    this._swap('memory', this.ring.group, 2);
     if (this.graph) this._buildGraphLayers();
     this.resize();
   }
@@ -210,6 +235,7 @@ export class Brain {
     const dpr = this.renderer.getPixelRatio();
     this.u.uDpr.value = dpr;
     this.u.uScale.value = (h * dpr) / (2 * Math.tan((this.camera.fov * Math.PI) / 360));
+    this.nebulae.resize(w * dpr, h * dpr);
     this.width = w; this.height = h;
     if (this.shift.x || this.shift.y) this.camera.setViewOffset(w, h, -this.shift.x, -this.shift.y, w, h);
   }
@@ -259,6 +285,7 @@ export class Brain {
     this.show = new Float32Array(n).fill(1);
     this.ignited = new Float32Array(n).fill(-99);
     this.sparks = this.sparks.filter((s) => s.id && graph.index.has(s.id)).map((s) => ({ ...s, i: graph.index.get(s.id) }));
+    this.synapses.live = [];                               // pulses ran on the old indices
     this._buildGraphLayers();
     this._measure();
   }
@@ -307,17 +334,18 @@ export class Brain {
 
   _buildHaze() {
     const T = this.T, g = this.graph;
+    this.nebulae.build(g.clusters, this.clusterColours, this.quality);
     if (this.quality !== 'high' || !g.clusters.length) { this._swap('haze', null); this.hazes = []; return; }
     const group = new T.Group(), plane = new T.PlaneGeometry(2, 2);
     this.hazes = g.clusters.map((c, k) => {
-      const make = (alpha, spiral) => new T.Mesh(plane, new T.ShaderMaterial({
-        uniforms: { uTime: this.u.uTime, uColor: { value: this.clusterColours[k] }, uAlpha: { value: alpha }, uSpiral: { value: spiral } },
+      const alpha = { value: c.key === 'me' || c.key === 'memory' ? 0 : 0.12 };
+      const disc = new T.Mesh(plane, new T.ShaderMaterial({
+        uniforms: { uTime: this.u.uTime, uStar: this.u.uStar, uColor: { value: this.clusterColours[k] }, uAlpha: alpha, uSpiral: { value: 1 } },
         vertexShader: HAZE_VS, fragmentShader: HAZE_FS, transparent: true, depthWrite: false, depthTest: false,
         blending: T.AdditiveBlending, side: T.DoubleSide,
       }));
-      const disc = make(c.key === 'me' ? 0.1 : 0.16, 1), glow = make(0.07, 0);
-      group.add(disc, glow);
-      return { disc, glow, count: c.count };
+      group.add(disc);
+      return { disc, alpha, base: alpha.value, count: c.count };
     });
     this._swap('haze', group, 1);
   }
@@ -405,22 +433,38 @@ export class Brain {
   }
 
   _placeHaze() {
+    this.nebulae.place(this.centres, this.normals);
+    this._placeRing();
     if (!this.hazes || !this.hazes.length) return;
     this.hazes.forEach((h, k) => {
       const c = this.centres[k], r = Math.max(24, c.r * 1.25), nm = this.normals;
       h.disc.position.set(c.x, c.y, c.z);
       h.disc.lookAt(c.x + nm[k * 3], c.y + nm[k * 3 + 1], c.z + nm[k * 3 + 2]);
       h.disc.scale.setScalar(r);
-      h.glow.position.set(c.x, c.y, c.z);
-      h.glow.scale.setScalar(r * 0.9);
-      h.disc.visible = h.glow.visible = h.count > 2;
+      h.disc.visible = h.count > 2;
     });
   }
 
+  /** The memory ring: centred on Me, as wide as the memories sit from it (this.ringInfo for the label and the tests). */
+  _placeRing() {
+    const g = this.graph, me = g.clusters.findIndex((c) => c.key === 'me'), mem = g.clusters.findIndex((c) => c.key === 'memory');
+    if (me < 0 || mem < 0 || !this.centres[me]) { this.ring.place(null); this.ringInfo = null; return; }
+    const c = this.centres[me], d = this.disp;
+    let sum = 0, k = 0;
+    for (const node of g.nodes) {
+      if (node.cluster !== mem) continue;
+      sum += Math.hypot(d[node.i * 3] - c.x, d[node.i * 3 + 1] - c.y, d[node.i * 3 + 2] - c.z); k++;
+    }
+    const r = k ? sum / k : 0;
+    this.ring.place(k ? c : null, r);
+    this.ringInfo = k ? { x: c.x, y: c.y, z: c.z, r, count: k } : null;
+  }
+
   // ------------------------------------------------------------------ look: emphasis (filters, search, focus) and time-lapse
-  setLook(emph, show) {
+  setLook(emph, show, clusterEmph = null) {
     this.emph.set(emph);
     this.show.set(show);
+    this.clusterEmph = clusterEmph || this.graph.clusters.map(() => 1);
     this._applyLook();
   }
 
@@ -434,6 +478,23 @@ export class Brain {
     }
     for (let k = 0; k < this.flowEdge.length; k++) this.flowAlpha[k] = this.edgeAlpha[this.flowEdge[k]] * 3.2;
     this._dirty('nodes', 'aFx'); this._dirty('lines', 'aAlpha'); this._dirty('flow', 'aAlpha');
+    // focus mode: the clouds, the discs and the memory ring of the other galaxies fade with them
+    const ce = this.clusterEmph.length === g.clusters.length ? this.clusterEmph : g.clusters.map(() => 1);
+    this.nebulae.emphasis(ce);
+    if (this.hazes) this.hazes.forEach((h, k) => { h.alpha.value = h.base * ce[k]; });
+    const mem = g.clusters.findIndex((c) => c.key === 'memory');
+    this.ring.strength(mem >= 0 ? Math.max(0.08, ce[mem]) : 1);
+  }
+
+  /** 'galaxy' (spheres, nebulae, flow) or 'stars' (the constellation view); eased over VIEW_SECONDS. */
+  setView(v) { this.view = v === 'stars' ? 'stars' : 'galaxy'; }
+
+  setBackground(colour) { try { this.renderer.setClearColor(new this.T.Color(colour), 1); } catch (_) { /* a bad colour: keep the last */ } }
+
+  /** A synapse burst from note i (opened, or learned something): pulses run out along its links. */
+  synapse(i, colour = null) {
+    if (this.reduced || !this.graph || i < 0 || i >= this.n) return;
+    this.synapses.fire(i, this.graph, this.u.uTime.value, colour);
   }
 
   // ------------------------------------------------------------------ events: ignite, bursts, sparks
@@ -453,16 +514,17 @@ export class Brain {
     this._dirty('bursts', 'position', 'aT0', 'aSize', 'aColor');
   }
 
-  /** A "Jarvis learned" comet from the top of the screen (under the ticker) to note i. */
+  /** A "Jarvis learned" comet from the bottom sheet's ticker to note i (a synapse burst where it lands). */
   spark(i) {
     if (this.reduced) { this.ignite(i, SPARK_COLOUR); return; }
     const T = this.T, cam = this.camera, end = this._v.set(this.disp[i * 3], this.disp[i * 3 + 1], this.disp[i * 3 + 2]);
     const dist = cam.position.distanceTo(end);
-    const dir = new T.Vector3(0, 0.82, 0.5).unproject(cam).sub(cam.position).normalize();
-    const from = cam.position.clone().addScaledVector(dir, Math.max(20, dist * 0.5));      // under the ticker, mid-depth
+    const dir = new T.Vector3(-0.35, -0.6, 0.5).unproject(cam).sub(cam.position).normalize();
+    const from = cam.position.clone().addScaledVector(dir, Math.max(20, dist * 0.5));      // above the ticker, mid-depth
     const side = new T.Vector3().crossVectors(dir, end.clone().sub(from)).normalize().multiplyScalar(dist * 0.08);
     const ctrl = from.clone().add(end).multiplyScalar(0.5).add(side).addScaledVector(cam.up, dist * 0.06);   // a gentle arc, on screen
     if (this.sparks.length >= SPARKS) this.sparks.shift();
+    this.launched++;
     this.sparks.push({ i, id: this.graph.nodes[i].id, t0: this.u.uTime.value, from: from.toArray(), ctrl: ctrl.toArray() });
   }
 
@@ -471,7 +533,7 @@ export class Brain {
     this.sparkAlpha.fill(0);
     this.sparks = this.sparks.filter((s) => {
       const u = (now - s.t0) / SPARK_SECONDS;
-      if (u >= 1) { this.ignite(s.i, SPARK_COLOUR); return false; }
+      if (u >= 1) { this.ignite(s.i, SPARK_COLOUR); this.synapse(s.i, SPARK_COLOUR); return false; }
       return true;
     });
     this.sparks.forEach((s, slot) => {
@@ -498,18 +560,29 @@ export class Brain {
     return true;
   }
 
-  get busy() { return this.moving || this.shift.x !== this.shift.tx || this.shift.y !== this.shift.ty || this.sparks.length > 0 || this.u.uTime.value - Math.max(...this.burstT0) < 1.7; }
+  get busy() {
+    return this.moving || this.shift.x !== this.shift.tx || this.shift.y !== this.shift.ty || this.sparks.length > 0 || this.synapses.count > 0
+      || this.u.uStar.value !== (this.view === 'stars' ? 1 : 0) || this.u.uTime.value - Math.max(...this.burstT0) < 1.7;
+  }
 
   // ------------------------------------------------------------------ the frame
   frame(dt, seconds, rig) {
     this.u.uTime.value = seconds;
     this.moving = this.n ? this._ease(dt) : 0;
     if (this.sparks.length || this.sparkAlpha[0]) this._updateSparks();
+    const star = this.u.uStar, want = this.view === 'stars' ? 1 : 0;
+    star.value = this.reduced ? want : want > star.value ? Math.min(1, star.value + dt / VIEW_SECONDS) : Math.max(0, star.value - dt / VIEW_SECONDS);
+    if (this.n) {
+      if (!this.reduced && this.quality === 'high') this.synapses.think(this.graph, seconds);
+      if (this.synapses.count || this._synapsesShown) {        // one more pass after the last pulse clears the layer
+        this._synapsesShown = this.synapses.update(seconds, this.disp, this.colour, this.graph, (i, quiet) => { if (!quiet) this.ignite(i, null, false); }) > 0;
+      }
+    }
     rig.update(dt);
     this._easeShift(dt);
     const near = rig.radius - this.extent * 0.15, far = rig.radius + this.extent * 1.25;
     this.u.uFogNear.value = Math.max(1, near); this.u.uFogFar.value = Math.max(near + 50, far);
-    if (this.hazes && this.hazes.length) for (const h of this.hazes) h.glow.quaternion.copy(this.camera.quaternion);
+    this.nebulae.render(this.renderer, this.camera);
     this.renderer.render(this.scene, this.camera);
   }
 

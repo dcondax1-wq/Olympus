@@ -12,11 +12,27 @@
      (engine/kalshi_publish.py, docs/KALSHI_PUBLISH.md) and this page shows them, inside Jarvis or on its own. Read-only.
      Its own dashboard (2026-11-03): the Kalshi theme (mint on deep green-black, its own top colour above), its own header
      with the K mark and a ticker tape. Look: kalshi.css; logic: kalshi.js; offline: sw.js. Bump ?v= on both when either
-     changes, and in sw.js its SHELL and CACHE ('kalshi-' + the version). -->
+     changes, and in sw.js its SHELL and CACHE ('kalshi-' + the version).
+     2026-11-03 "way higher quality, 3D, futuristic, organized": four groups (Today -> Edge -> Performance -> Alerts) with a section
+     bar; kfx.js = the look (odometer counters, glowing sparklines, the bar, OLYMPUS themes via applyTheme); korb.js = the 3D
+     market orb in the K mark (three.js from ../jarvis/, cheap, optional: the SVG K stays without WebGL). -->
 <script>(function () { var d = document.documentElement; d.setAttribute('data-theme', 'kalshi');
   /* inside Jarvis (a frame under its bar) the notch is Jarvis's: no second top inset */
   try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
-<link rel="stylesheet" href="kalshi.css?v=k12">
+<link rel="stylesheet" href="kalshi.css?v=k13">
+<!-- OLYMPUS theme (../olympus/themes.js, key 'olympus.theme', picked in Jarvis's Look sheet): the shared --oly-* tokens and Kalshi's
+     page / panels blended toward the theme (the mint stays Kalshi's own). Async, never waited on; the default changes nothing. -->
+<script>(function () {
+  var K = { '--bg': ['#010a07', 'bg'], '--bg2': ['#04170f', 'bg2'] };
+  function go() {
+    var T = window.OLYMPUS_THEMES; if (!T) return;
+    T.apply('stage', { meta: true, extra: function (t) {
+      var o = { '--pr': T.rgb(T.mix('#031610', t.bg2, t.mix)).join(','), '--txt': t.text };
+      for (var k in K) o[k] = T.mix(K[k][0], t[K[k][1]], t.mix);
+      return o; } });
+  }
+  var s = document.createElement('script'); s.src = '../olympus/themes.js?v=o2'; s.async = true; s.onload = go; document.head.appendChild(s);
+})();</script>
 </head>
 <body>
 <div class="aurora" aria-hidden="true"></div>
@@ -33,9 +49,14 @@
     </button>
   </header>
   <div class="tape" id="tape" aria-hidden="true" hidden></div>
+  <nav class="secnav" id="secnav" aria-label="Sections" hidden>
+    <button type="button" data-go="today">Today</button><button type="button" data-go="edge">Edge</button><button type="button" data-go="perf">Performance</button><button type="button" data-go="alerts">Alerts <b></b></button>
+  </nav>
   <div id="body" aria-busy="true" data-state="loading"><div class="sk sk1" aria-hidden="true"></div><div class="sk sk2" aria-hidden="true"></div><div class="sk sk3" aria-hidden="true"></div></div>
   <p class="foot" id="foot"></p>
 </main>
-<script src="kalshi.js?v=k12"></script>
+<script src="kfx.js?v=k13"></script>
+<script src="kalshi.js?v=k13"></script>
+<script type="module" src="korb.js?v=k13"></script>
 </body>
 </html>

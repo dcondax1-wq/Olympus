@@ -131,6 +131,26 @@ void main() {
   gl_FragColor = vec4(a + b + vec3(0.25, 0.18, 0.5) * hz, 1.0);
 }`;
 
+// the dust in the beam as bokeh: a point grows and softens with its distance from the focus plane (the director's shot
+// distance), with the bright rim of a lens's out-of-focus disc. This is the depth of field: no post pass, one draw call.
+const BOKEH_VS = `
+uniform float uSize; uniform float uH; uniform float uFocus; varying float vA;
+void main() {
+  vec4 mv = modelViewMatrix * vec4(position, 1.0);
+  float dist = max(0.5, -mv.z);
+  float blur = min(3.0, abs(dist - uFocus) / max(1.0, uFocus));
+  gl_PointSize = clamp(uSize * (1.0 + 7.0 * blur) * projectionMatrix[1][1] * uH * 0.5 / dist, 1.0, 96.0);
+  vA = 0.6 / (1.0 + 9.0 * blur * blur);
+  gl_Position = projectionMatrix * mv;
+}`;
+const BOKEH_FS = `
+uniform vec3 uColor; varying float vA;
+void main() {
+  float d = length(gl_PointCoord - 0.5) * 2.0;
+  float disc = smoothstep(1.0, 0.82, d) * (0.55 + 0.45 * smoothstep(0.5, 0.92, d));
+  gl_FragColor = vec4(uColor * disc * vA, 1.0);
+}`;
+
 function glowTexture() {
   const c = document.createElement('canvas');
   c.width = c.height = 128;
@@ -259,8 +279,10 @@ export class Theater {
     for (let i = 0; i < N; i++) { pos[i * 3] = (Math.random() - 0.5) * 30; pos[i * 3 + 1] = Math.random() * 14; pos[i * 3 + 2] = (Math.random() - 0.6) * 14; }
     const dg = new THREE.BufferGeometry();
     dg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    this.dust = new THREE.Points(dg, new THREE.PointsMaterial({ size: 0.07, map: this.glow, color: '#9fb4ff', transparent: true, opacity: 0.55,
-      depthWrite: false, blending: THREE.AdditiveBlending }));
+    this.dustMat = new THREE.ShaderMaterial({ uniforms: { uSize: { value: 0.07 }, uH: { value: 800 }, uFocus: { value: 12 },
+      uColor: { value: new THREE.Color('#9fb4ff') } }, vertexShader: BOKEH_VS, fragmentShader: BOKEH_FS, transparent: true,
+      depthWrite: false, blending: THREE.AdditiveBlending });
+    this.dust = new THREE.Points(dg, this.dustMat);
     this.dust.renderOrder = 8;
     this.dustN = N;
     this.scene.add(this.dust);
@@ -289,9 +311,19 @@ export class Theater {
     if (this._w) this.resize(this._w, this._h);
   }
 
+  /** A theme's colours (OLYMPUS themes): the liquidity planes take the accent, the room the background. */
+  applyTheme(accent, bg) {
+    if (accent) COL.level.set(accent);
+    if (bg) { this.renderer.setClearColor(bg, 1); this.scene.fog.color.set(bg); }
+  }
+
+  /** the focus plane of the bokeh dust: the camera's distance to the shot's look-at point */
+  setFocus(d) { this.dustMat.uniforms.uFocus.value = d; }
+
   resize(w, h) {
     this._w = w; this._h = h;
     this.renderer.setSize(w, h, false);
+    this.dustMat.uniforms.uH.value = h * this.renderer.getPixelRatio();
   }
 
   // ------------------------------------------------------------ one trade

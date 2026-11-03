@@ -1,0 +1,86 @@
+{
+ "bars": "1521 PC NinjaTrader MNQ 1m bars (pc_bars_1m.csv.gz)",
+ "data": {
+  "accounts": [
+   {
+    "kind": "eval",
+    "name": "MFFU 50K Builder eval",
+    "trades": [
+     {
+      "day": "2026-10-28",
+      "entry": 29945.0,
+      "entry_t": 1793173380,
+      "exit": "STOP",
+      "exit_px": 29987.75,
+      "exit_t": 1793174520,
+      "pnl": -437.0,
+      "qty": 5,
+      "r": -1.028,
+      "risk_pts": 42.5,
+      "side": "SHORT",
+      "stop": 29987.5,
+      "swept": [
+       "Asia 18-00 high",
+       "Tokyo high",
+       "Asia high",
+       "Frankfurt high"
+      ],
+      "target": 29665.75
+     }
+    ]
+   }
+  ],
+  "live": {
+   "ledger": [
+    {
+     "R": -0.02,
+     "day": "2026-10-19",
+     "entry_px": 29763.25,
+     "entry_t": 1792393740,
+     "exit": "BE",
+     "exit_px": 29763.5,
+     "exit_ts": 1792406400,
+     "qty": 6,
+     "risk_pts": 50.5,
+     "side": "SHORT",
+     "stop_px": 29813.75,
+     "target_px": 29489.75,
+     "usd": -11.4
+    },
+    {
+     "R": -1.02,
+     "day": "2026-10-27",
+     "entry_px": 29412.0,
+     "entry_t": 1793095920,
+     "exit": "STOP",
+     "exit_px": 29480.0,
+     "exit_ts": 1793097600,
+     "qty": 6,
+     "risk_pts": 67.75,
+     "side": "SHORT",
+     "stop_px": 29479.75,
+     "target_px": 29139.47,
+     "usd": -827.4
+    },
+    {
+     "R": -1.03,
+     "day": "2026-10-28",
+     "entry_px": 29945.0,
+     "entry_t": 1793173380,
+     "exit": "STOP",
+     "exit_px": 29987.75,
+     "exit_ts": 1793174520,
+     "qty": 8,
+     "risk_pts": 42.5,
+     "side": "SHORT",
+     "stop_px": 29987.5,
+     "target_px": 29665.75,
+     "usd": -699.2
+    }
+   ]
+  }
+ },
+ "kind": "odeon-cloud",
+ "source": "origin/dashboard state.json (cloud paper ledger + the PC's eval trades) as of 1793720242",
+ "v": 1
+}

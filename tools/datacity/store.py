@@ -17,7 +17,7 @@ from . import features as F
 
 CACHE = os.path.join(B.OUT, "_cache")
 CONTEXT_DAYS = 420
-TABLE_VERSION = f"1|{F.COST}|{F.H}|{F.MIN_STOP}|{F.MAX_STOP}|{F.TGT_R}"      # any change = full rebuild
+TABLE_VERSION = f"2|{F.COST}|{F.H}|{F.MIN_STOP}|{F.MAX_STOP}|{F.TGT_R}"      # any change = full rebuild
 EV_COLS = ("t", "dnum", "trig", "dir", "win", "slot", "risk", "R", "pnl", "h1", "h2", "h3", "f15", "f30", "f60") + \
           tuple("s_" + f for f in F.FAMILIES)
 DAY_END = 21 * 3600 + 57 * 60      # UTC seconds after midnight: past 16:55 ET (EST), before 18:00 ET (EDT) of the next day
@@ -25,7 +25,8 @@ DAY_END = 21 * 3600 + 57 * 60      # UTC seconds after midnight: past 16:55 ET (
 
 def sources() -> dict:
     """The side inputs of features.build: ES bars, CBOE VIX / VXN, the news calendar."""
-    return {"es": B.load_es(), "vix": B.load_daily("VIX"), "vxn": B.load_daily("VXN"), "news": B.load_news()}
+    return {"es": B.load_es(), "vix": B.load_daily("VIX"), "vxn": B.load_daily("VXN"), "news": B.load_news(),
+            "vix3m": B.load_cboe("vix3m")}
 
 
 def _table(feat) -> dict:

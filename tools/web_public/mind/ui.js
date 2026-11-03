@@ -1,6 +1,10 @@
 // OLYMPUS Mind: everything on top of the 3D view (plain DOM; vault text only ever goes in as textContent).
-//   createUI(handlers) -> {mode, stats, chips, ticker, results, card, labels, timeLapse, quality, toast, noGL}
-// handlers: onSearch(q), onPick(id), onFilter(key|null), onTimeLapse(), onQuality(), onCloseCard(), onFly(id)
+// One top bar (name, state, view, quality, search, time-lapse) and one bottom sheet (what Jarvis learned, the thought
+// stream, the galaxy chips for focus mode, the numbers); the note card is the sheet opened up.
+//   createUI(handlers) -> {mode, stats, chips, focusBar, ticker, stream, results, card, labels, timeLapse, quality, view, toast, noGL, band}
+// handlers: onSearch(q), onPick(id), onFilter(key|null), onTimeLapse(), onQuality(), onView(), onCloseCard(), onFly(id),
+//           resolve(name) -> id | null (a [[wikilink]] in the preview)
+import { mdPreview } from './markdown.js';
 
 const $ = (id) => document.getElementById(id);
 const fmt = new Intl.NumberFormat('en-US');
@@ -57,11 +61,14 @@ export function createUI(h) {
   document.addEventListener('keydown', (e) => {
     if (e.key === '/' && document.activeElement !== q) { e.preventDefault(); q.focus(); }
     if (e.key === 'Escape' && !$('card').hidden) h.onCloseCard();
+    else if (e.key === 'Escape' && !$('focusbar').hidden && document.activeElement !== q) h.onFilter(null);
   });
 
   // ---------------------------------------------------------------- buttons
   $('timelapse').addEventListener('click', () => h.onTimeLapse());
   $('quality').addEventListener('click', () => h.onQuality());
+  $('view').addEventListener('click', () => h.onView());
+  $('focus-exit').addEventListener('click', () => h.onFilter(null));
   $('c-close').addEventListener('click', () => h.onCloseCard());
   let cardId = null;
   $('c-fly').addEventListener('click', () => { if (cardId) h.onFly(cardId); });
@@ -108,11 +115,33 @@ export function createUI(h) {
 
     chips(clusters, current) {
       const box = $('chips');
-      box.replaceChildren(...[{ key: null, label: 'All', colour: '#ffffff', count: clusters.reduce((a, c) => a + c.count, 0) }, ...clusters.filter((c) => c.count && c.key !== 'me')]
+      box.replaceChildren(...[{ key: null, label: 'All', colour: '#ffffff', count: clusters.reduce((a, c) => a + c.count, 0) }, ...clusters.filter((c) => c.count && c.key !== 'me')
+        .sort((a, b) => (a.key === 'memory') - (b.key === 'memory') || b.count - a.count)]
         .map((c) => el('button', {
           class: 'chip', type: 'button', 'aria-pressed': String(c.key === current), 'data-key': c.key || '', style: { '--c': c.colour },
           onclick: () => h.onFilter(c.key === current ? null : c.key),
         }, [el('i'), el('span', { text: c.label }), el('small', { text: fmt.format(c.count) })])));
+    },
+
+    /** Focus mode's pill under the top bar (cluster or null). */
+    focusBar(c) {
+      const bar = $('focusbar');
+      bar.hidden = !c;
+      if (!c) return;
+      bar.style.setProperty('--c', c.colour);
+      $('focus-name').textContent = c.label;
+    },
+
+    /** The thought stream: [{kind: 'learned' | 'edit', t, text, colour, id}] newest first; `fresh` = ids that just arrived. */
+    stream(list, fresh = new Set(), now = Date.now()) {
+      const box = $('stream');
+      box.replaceChildren(...list.map((x) => el('li', { class: x.kind + (fresh.has(x.key) ? ' new' : '') }, [
+        el('button', {
+          type: 'button', style: { '--c': x.kind === 'learned' ? 'var(--cyan)' : x.colour }, title: x.text,
+          'aria-label': (x.kind === 'learned' ? 'Jarvis learned: ' : 'Edited: ') + x.text, onclick: () => x.id && h.onFly(x.id),
+        }, [el('i'), el('small', { text: (x.kind === 'learned' ? 'Learned · ' : 'Edited · ') + ago(x.t, now) }), el('span', { text: x.text })]),
+      ])));
+      if (fresh.size) box.scrollLeft = 0;
     },
 
     /** The latest learned items (oldest first), the newest shown first then rotating; `fresh` = one just arrived (flash). */
@@ -150,14 +179,17 @@ export function createUI(h) {
         $('c-words').textContent = fmt.format(node.words);
         $('c-edited').textContent = ago(node.mtime, now);
         $('c-edited').title = node.mtime ? new Date(node.mtime).toLocaleString() : '';
-        $('c-snippet').textContent = node.snippet || '';
+        $('c-snippet').replaceChildren(mdPreview(node.snippet || '', { link: h.resolve, onLink: (id) => h.onFly(id) }));
         $('c-learned').replaceChildren(...graph.learned.filter((l) => l.i === node.i).slice(-3).reverse()
           .map((l) => el('p', {}, [el('b', { text: 'Jarvis learned ' }), document.createTextNode(`${ago(l.t, now)}: ${l.text}`)])));
-        const near = [...new Set([...node.out, ...graph.nodes.filter((m) => m.out.includes(node.i)).map((m) => m.i)])]
-          .map((i) => graph.nodes[i]).sort((a, b) => b.degree - a.degree).slice(0, 8);
-        $('c-near').replaceChildren(...near.map((m) => el('button', {
+        // links out of the note, then its backlinks (the notes that link to it)
+        const byDegree = (a, b) => b.degree - a.degree;
+        const out = node.out.map((i) => graph.nodes[i]).sort(byDegree);
+        const back = graph.nodes.filter((m) => m.out.includes(node.i)).sort(byDegree);
+        const group = (title, list, cls) => (list.length ? [el('h3', { text: `${title} · ${fmt.format(list.length)}` }), el('div', { class: cls }, list.slice(0, 8).map((m) => el('button', {
           type: 'button', style: { '--c': graph.clusters[m.cluster].colour }, onclick: () => h.onFly(m.id),
-        }, [el('i'), document.createTextNode(m.title)])));
+        }, [el('i'), document.createTextNode(m.title)])))] : []);
+        $('c-near').replaceChildren(...group('Links to', out, 'out'), ...group('Linked from', back, 'back'));
         card.hidden = false;
         card.scrollTop = 0;
         document.body.classList.add('card-open');
@@ -194,7 +226,7 @@ export function createUI(h) {
       box.hidden = !state;
       if (!state) return;
       $('tl-date').textContent = new Date(state.t).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-      $('tl-bar').style.width = (state.progress * 100).toFixed(1) + '%';
+      $('tl-bar').style.transform = `scaleX(${state.progress.toFixed(3)})`;
       $('tl-count').textContent = `${fmt.format(state.count)} notes`;
     },
 
@@ -203,6 +235,13 @@ export function createUI(h) {
       b.textContent = q === 'high' ? 'HD' : 'LITE';
       b.setAttribute('aria-pressed', String(q === 'high'));
       b.title = q === 'high' ? 'High quality (tap for the light mode)' : 'Light mode (tap for high quality)';
+    },
+
+    view(v) {
+      const b = $('view'), stars = v === 'stars';
+      b.setAttribute('aria-pressed', String(stars));
+      b.title = stars ? 'Galaxy view' : 'Constellation view';
+      b.setAttribute('aria-label', b.title);
     },
 
     toast(text) {

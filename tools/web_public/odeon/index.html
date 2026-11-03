@@ -11,62 +11,69 @@
 <title>ODEON</title>
 <link rel="icon" href="../jarvis/icon.svg">
 <link rel="apple-touch-icon" href="../jarvis/apple-touch-icon.png">
-<link rel="stylesheet" href="../olympus/olympus.css?v=o1">
-<script src="../olympus/olympus.js?v=o1" data-app="odeon"></script>
+<link rel="stylesheet" href="../olympus/olympus.css?v=o2">
+<script src="../olympus/themes.js?v=o2"></script>
+<script src="../olympus/olympus.js?v=o2" data-app="odeon"></script>
 <link rel="stylesheet" href="odeon.css">
 </head>
 <body data-ready="false">
 <canvas id="stage" aria-label="3D replay of the selected trade"></canvas>
+<div class="dof" aria-hidden="true"></div>
 <div class="vignette" aria-hidden="true"></div>
+<div class="letterbox" aria-hidden="true"><i class="lb-t"></i><i class="lb-b"><span>SLOW-MO</span></i></div>
 <div class="grain" aria-hidden="true"></div>
 <div id="flash" aria-hidden="true"></div>
+<div id="flare" class="flare" aria-hidden="true"><i class="f-core"></i><i class="f-streak"></i><i class="f-ring"></i><i class="f-g"></i><i class="f-g"></i><i class="f-g"></i><i class="f-g"></i><i class="f-g"></i></div>
 <div id="callouts" aria-hidden="true"></div>
 <div id="titleCard" class="title-card" aria-hidden="true"><span class="tc-pre">ODEON presents</span><b id="tcMain"></b><span id="tcSub"></span></div>
 
 <header class="top">
-  <div class="brand" aria-label="ODEON"><span class="logo">ODEON</span><span class="tag">replay theater</span></div>
-  <div class="now"><span id="title">Loading…</span><span id="sub"></span></div>
-  <button id="reelsBtn" class="btn reels-btn" type="button" aria-controls="reels" aria-expanded="false">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="7.5" r="1.8"/><circle cx="12" cy="16.5" r="1.8"/><circle cx="7.5" cy="12" r="1.8"/><circle cx="16.5" cy="12" r="1.8"/></svg>
-    <span>Reels</span>
-  </button>
+  <div class="bar">
+    <div class="brand" aria-label="ODEON"><span class="logo">ODEON</span><span class="tag">replay theater</span></div>
+    <div class="now"><span id="title">Loading…</span><span id="sub"></span></div>
+    <button id="reelsBtn" class="btn reels-btn" type="button" aria-controls="reels" aria-expanded="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="7.5" r="1.8"/><circle cx="12" cy="16.5" r="1.8"/><circle cx="7.5" cy="12" r="1.8"/><circle cx="16.5" cy="12" r="1.8"/></svg>
+      <span>Reels</span>
+    </button>
+  </div>
+  <div id="hud" class="hud" aria-live="off"><span class="rec" aria-hidden="true"></span><time id="clock">--:--</time><span id="tLeft"></span>
+    <span id="srcBadge" class="badge src"></span>
+    <span id="demoBadge" class="badge demo" hidden>DEMO</span>
+    <span id="hlBadge" class="badge hl" hidden></span>
+    <span id="liteBadge" class="badge lite" hidden title="Light mode: fewer effects for a smooth frame rate">LITE</span>
+  </div>
 </header>
-
-<div id="hud" class="hud" aria-live="off"><span class="rec" aria-hidden="true"></span><time id="clock">--:--</time><span id="tLeft"></span>
-  <span id="srcBadge" class="badge src"></span>
-  <span id="demoBadge" class="badge demo" hidden>DEMO</span>
-  <span id="liteBadge" class="badge lite" hidden title="Light mode: fewer effects for a smooth frame rate">LITE</span>
-</div>
 <div class="edge" aria-hidden="true"><span id="mkTarget" class="edge-mk target" hidden></span><span id="mkStop" class="edge-mk stop" hidden></span></div>
 
-<section id="cc" class="cc" aria-live="polite"><time class="cc-time"></time><span class="cc-text"></span></section>
-
-<nav id="transport" class="transport" aria-label="Playback">
-  <div class="row scrub-row">
-    <div class="scrub-wrap">
-      <input id="scrub" type="range" min="0" max="1000" step="1" value="0" aria-label="Scrub through the trade">
-      <div id="ticks" class="ticks"></div>
+<section id="dock" class="dock" aria-label="The film: captions and playback">
+  <section id="cc" class="cc" aria-live="polite"><time class="cc-time"></time><span class="cc-text"></span></section>
+  <nav id="transport" class="transport" aria-label="Playback">
+    <div class="row scrub-row">
+      <div class="scrub-wrap">
+        <input id="scrub" type="range" min="0" max="1000" step="1" value="0" aria-label="Scrub through the trade">
+        <div id="ticks" class="ticks"></div>
+      </div>
     </div>
-  </div>
-  <div class="row btn-row">
-    <button id="play" class="btn round play" type="button" aria-label="Play" data-state="paused">
-      <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
-      <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
-      <svg class="i-replay" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5a7 7 0 1 1-6.6 4.7l1.9.6A5 5 0 1 0 12 7v3L7.5 6 12 2z"/></svg>
-    </button>
-    <button id="restart" class="btn round" type="button" aria-label="Back to the start">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h2v14H6zM19 5.5v13L9.5 12z"/></svg>
-    </button>
-    <button id="speed" class="btn speed" type="button">10x</button>
-    <span class="spacer"></span>
-    <button id="narrate" class="btn round" type="button" aria-pressed="false" aria-label="Narrate (spoken captions)">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h4L13 5v14l-5-4.5H4z"/><path class="wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/></svg>
-    </button>
-    <button id="scriptBtn" class="btn round" type="button" aria-pressed="false" aria-controls="script" aria-label="Show the caption script">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14M5 10h14M5 14h9M5 18h6"/></svg>
-    </button>
-  </div>
-</nav>
+    <div class="row btn-row">
+      <button id="play" class="btn round play" type="button" aria-label="Play" data-state="paused">
+        <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+        <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
+        <svg class="i-replay" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5a7 7 0 1 1-6.6 4.7l1.9.6A5 5 0 1 0 12 7v3L7.5 6 12 2z"/></svg>
+      </button>
+      <button id="restart" class="btn round" type="button" aria-label="Back to the start">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h2v14H6zM19 5.5v13L9.5 12z"/></svg>
+      </button>
+      <button id="speed" class="btn speed" type="button">10x</button>
+      <span class="spacer"></span>
+      <button id="narrate" class="btn round" type="button" aria-pressed="false" aria-label="Narrate (spoken captions)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h4L13 5v14l-5-4.5H4z"/><path class="wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/></svg>
+      </button>
+      <button id="scriptBtn" class="btn round" type="button" aria-pressed="false" aria-controls="script" aria-label="Show the caption script">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14M5 10h14M5 14h9M5 18h6"/></svg>
+      </button>
+    </div>
+  </nav>
+</section>
 
 <aside id="script" class="sheet script" hidden aria-label="Caption script">
   <h2>Script</h2>
@@ -76,6 +83,10 @@
 <aside id="reels" class="sheet reels" hidden aria-label="Reels">
   <div class="sheet-head">
     <h2>Reels</h2>
+    <button id="hlBtn" class="btn primary hl-btn" type="button" aria-label="Highlights: the five best trades, back to back">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>
+      <span>Highlights</span>
+    </button>
     <button id="reelsClose" class="btn round" type="button" aria-label="Close the reels">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
     </button>
@@ -88,6 +99,11 @@
     <button class="chip" type="button" data-f="win" aria-pressed="false">Wins</button>
     <button class="chip" type="button" data-f="loss" aria-pressed="false">Losses</button>
   </div>
+  <div class="chips sorts" role="group" aria-label="Sort">
+    <button class="chip" type="button" data-s="usd" aria-pressed="true">Top $</button>
+    <button class="chip" type="button" data-s="new" aria-pressed="false">Newest</button>
+  </div>
+  <p id="reelNote" class="note" hidden></p>
   <ol id="reelList" class="reel-list"></ol>
   <p class="foot">Futures only: TradingView CME NQ1! bars. Replays are the live-settings backtest (costs in); paper only.</p>
 </aside>

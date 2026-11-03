@@ -2,10 +2,14 @@
 // weak gutter into embers, children spark out of their parents (crossover) with a cold flare when a gene mutated. The
 // champion's lineage is a gold trail; the live LIT params burn as a fixed ice-blue reference flame. Tap a flame for its
 // parameter card (diff vs live) and its H1 / H2 / 2021-25 numbers. Data: forge.json (tools/prometheus/forge.py) or a demo.
-// Performance: one Points buffer for every ember, three sprites per flame, no lights; auto LITE when frames run slow
-// (or ?lite=1); prefers-reduced-motion = no flicker, no drift, no autoplay, instant steps.
+// Performance: one Points buffer for every ember, ONE draw call for every flame (flames.js: a noise fire shader), no
+// lights; auto LITE when frames run slow (or ?lite=1); prefers-reduced-motion = no flicker, no drift, no autoplay.
+// Layout: one top bar (title, stats, the verdict banner), one bottom bar (play, generations, Verdict / Lineage / Hall), one
+// bottom sheet (a creature's card, or the Verdict / Lineage / Hall of Champions panel).
 import * as THREE from '../jarvis/three.module.min.js';
 import { loadForge, FMT } from './forgecore.js';
+import { FlameField } from './flames.js';
+import { lineageSvg, pickAt, heatRgb } from './lineage.js';
 
 const O = window.OLYMPUS || null;   // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
 const Q = new URLSearchParams(location.search);
@@ -15,7 +19,7 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
 const ARENA_R = 7;
 const STEP_MS = RM ? 1300 : 1750;
 const ORIGIN = { L: 'the live strategy', S: 'a spark of live (mutant)', R: 'random', E: 'elite (survived as is)', C: 'child' };
-const STATE = { forge: null, arena: null, gen: 0, playing: false, lastStep: 0, errors: [] };
+const STATE = { forge: null, arena: null, gen: 0, playing: false, lastStep: 0, errors: [], panel: null, sel: null, theme: null };
 
 // ------------------------------------------------------------------------------------------------ textures
 function canvasTex(w, h, draw) {
@@ -30,16 +34,6 @@ const glowTex = () => canvasTex(64, 64, (x, w) => {
   g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.2, 'rgba(255,255,255,.8)');
   g.addColorStop(0.5, 'rgba(255,255,255,.22)'); g.addColorStop(1, 'rgba(255,255,255,0)');
   x.fillStyle = g; x.fillRect(0, 0, w, w);
-});
-const flameTex = () => canvasTex(64, 128, (x, w, h) => {
-  x.globalCompositeOperation = 'lighter';
-  const N = 16;
-  for (let i = 0; i < N; i++) {                     // soft teardrop: stacked glows that shrink upward
-    const f = i / (N - 1), cy = h - 26 - f * (h - 40), r = 26 * Math.pow(1 - f, 0.75) + 2;
-    const g = x.createRadialGradient(w / 2, cy, 0, w / 2, cy, r);
-    g.addColorStop(0, `rgba(255,255,255,${0.32 - 0.12 * f})`); g.addColorStop(1, 'rgba(255,255,255,0)');
-    x.fillStyle = g; x.beginPath(); x.arc(w / 2, cy, r, 0, Math.PI * 2); x.fill();
-  }
 });
 const floorTex = () => canvasTex(512, 512, (x, w) => {
   const c = w / 2;
@@ -122,17 +116,10 @@ class Embers {
   }
 }
 
-// ------------------------------------------------------------------------------------------------ one flame (3 sprites)
+// ------------------------------------------------------------------------------------------------ one flame (a slot in the field)
 class Flame {
-  constructor(scene, tex, color) {
-    const mk = (map, op) => new THREE.Sprite(new THREE.SpriteMaterial({ map, color: color.clone(), transparent: true, opacity: op,
-      depthWrite: false, depthTest: false, fog: false, blending: THREE.AdditiveBlending }));   // always above the floor: no clipping at the base
-    this.halo = mk(tex.glow, 0.28); this.body = mk(tex.flame, 0.9); this.core = mk(tex.flame, 0.95);
-    this.body.center.set(0.5, 0.12); this.core.center.set(0.5, 0.12);
-    this.core.material.color.copy(C_WHITE);
-    this.group = new THREE.Group();
-    this.group.add(this.halo, this.body, this.core);
-    scene.add(this.group);
+  constructor(field, i) {
+    this.field = field; this.i = i;
     this.pos = new THREE.Vector3(); this.from = new THREE.Vector3(); this.to = new THREE.Vector3();
     this.heat = 0; this.heatFrom = 0; this.heatTo = 0; this.t0 = 0; this.dur = 0; this.ph = Math.random() * 10;
     this.id = null; this.alive = false; this.fixedColor = null; this.flare = null; this.dim = 1;
@@ -146,28 +133,20 @@ class Flame {
     this.heatFrom = fromHeat == null ? this.heat : fromHeat; this.heatTo = heat; this.t0 = now; this.dur = dur;
   }
 
-  update(now, t, still, lite) {
+  update(now, t, still) {
     if (this.dur > 0) {
       const u = Math.max(0, Math.min(1, (now - this.t0) / this.dur)), e = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
       this.pos.lerpVectors(this.from, this.to, e);
       this.heat = this.heatFrom + (this.heatTo - this.heatFrom) * e;
       if (u >= 1) this.dur = 0;
     }
+    if (!this.alive) { this.field.hide(this.i); return; }
     const h = Math.max(0, this.heat);
-    const fl = still ? 1 : 1 + 0.07 * Math.sin(t * 9.1 + this.ph) + 0.05 * Math.sin(t * 23.7 + this.ph * 1.7);
-    const H = (0.55 + 2.7 * h) * fl, W = 0.42 + 0.95 * h;
-    this.group.position.copy(this.pos);
-    this.body.scale.set(W * (2 - fl), H, 1);
-    this.core.scale.set(W * 0.42, H * 0.5, 1);
-    this.halo.scale.set(W * 3.4, W * 3.4, 1);
-    this.halo.position.y = H * 0.32;
-    const col = this.fixedColor || heatColor(h, this.tmp);
-    this.body.material.color.copy(col);
-    this.halo.material.color.copy(col);
-    this.body.material.opacity = this.fixedColor ? 0.95 : (0.3 + 0.7 * h) * this.dim;
-    this.core.material.opacity = this.fixedColor ? 0.9 : Math.max(0, h - 0.15) * 1.1 * this.dim;
-    this.halo.material.opacity = lite ? 0 : (this.fixedColor ? 0.3 : (0.06 + 0.3 * h * h) * this.dim);
-    this.group.visible = this.alive;
+    const fl = still ? 1 : 1 + 0.05 * Math.sin(t * 9.1 + this.ph) + 0.035 * Math.sin(t * 23.7 + this.ph * 1.7);   // the noise does the rest
+    const H = (0.55 + 2.7 * h) * fl, W = (0.42 + 0.95 * h) * (2 - fl) * 0.95;
+    const ice = this.fixedColor ? 1 : 0;
+    const col = this.fixedColor || heatColor(Math.min(1, h + 0.12), this.tmp);
+    this.field.set(this.i, this.pos, W, H, col, ice ? 0.75 : h, ice ? 0.95 : (0.35 + 0.75 * h) * this.dim, this.ph, ice);
   }
 
   /** the flame's centre (for taps) */
@@ -187,15 +166,18 @@ class Arena {
     this.renderer.setClearColor(0x000000, 0);          // the sky is the page's CSS ember gradient behind the canvas
     this.scene = new THREE.Scene();
     this.scene.fog = new THREE.FogExp2(0x120806, 0.028);
+    O?.themeScene?.({ scene: this.scene, renderer: this.renderer });   // OLYMPUS theme: the fog follows it (the sky is the CSS --bg)
     this.camera = new THREE.PerspectiveCamera(48, 1, 0.1, 200);
     this.az = -0.6; this.el = 0.8; this.drag = null;
-    this.tex = { glow: glowTex(), flame: flameTex() };
+    this.tex = { glow: glowTex() };
     this.rand = (() => { let s = 12345; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; })();
     this.buildFloor();
     this.buildSky();
     this.embers = new Embers(this.scene, this.tex.glow, this.lite ? 260 : 700);
-    this.pool = Array.from({ length: Math.max(...forge.d.gens.map((g) => g.length)) + 2 }, () => new Flame(this.scene, this.tex, C_FIRE));
-    this.liveFlame = new Flame(this.scene, this.tex, C_ICE);
+    const nPool = Math.max(...forge.d.gens.map((g) => g.length)) + 2;
+    this.field = new FlameField(this.scene, nPool + 1, this.lite);
+    this.pool = Array.from({ length: nPool }, (_, i) => new Flame(this.field, i));
+    this.liveFlame = new Flame(this.field, nPool);
     this.liveFlame.fixedColor = C_ICE; this.liveFlame.alive = true; this.liveFlame.id = 'live';
     const lp = this.posOf(forge.d.live.k, 0, 1);
     this.liveFlame.place(lp, 0.7);
@@ -390,19 +372,21 @@ class Arena {
     if (this.frames.length > 60) this.frames.shift();
     if (this.wall > 2.5 && this.frames.length >= 20 && this.dprCap > 1 && !this.chosen) {   // auto LITE: under ~45 fps, then still under ~30
       const avg = this.frames.reduce((a, b) => a + b, 0) / this.frames.length;
-      if (!this.lite && avg > 1 / 45) { this.lite = true; this.slowSince = this.wall; this.frames.length = 0; this.resize(); }
+      if (!this.lite && avg > 1 / 45) { this.lite = true; this.slowSince = this.wall; this.frames.length = 0; this.field.setLite(true); this.resize(); }
       else if (this.lite && avg > 1 / 30 && this.wall - this.slowSince > 3) { this.dprCap = 1; this.frames.length = 0; this.resize(); }
     }
     if (!RM && !this.drag) { this.az += dt * 0.045; this.placeCamera(); }
     const all = [...this.byCreature.values()];
     for (const f of all) {
-      f.update(now, this.t, RM, this.lite);
+      f.update(now, this.t, RM);
       if (f.flare && now >= f.flare.at) {          // a mutation flare once the child reached its place
         this.embers.burst(f.flare.p, f.flare.n, C_ICE, 2.8, 0.8, 0.2, this.rand); f.flare = null;
       }
     }
-    this.liveFlame.update(now, this.t, RM, this.lite);
-    for (const f of this.pool) if (!f.alive) f.group.visible = false;
+    this.liveFlame.update(now, this.t, RM);
+    for (const f of this.pool) if (!f.alive) this.field.hide(f.i);
+    this.field.uniforms.uT.value = RM ? 0 : this.t;
+    this.field.commit();
     if (!RM) {                                     // ambient embers: the fitter, the more
       this.emitAcc += dt * (this.lite ? 0.45 : 1);
       while (this.emitAcc > 0.016) {
@@ -464,6 +448,7 @@ function openCard(id) {
   const c = isLive ? null : F.creature(id);
   if (!isLive && !c) return;
   const k = isLive ? F.d.live.k : c.k, G = F.genome(k);
+  STATE.sel = id;
   const champ = !isLive && id === F.d.champion.id;
   $('card-h').textContent = isLive ? 'LIVE LIT · reference flame' : `${champ ? 'Champion · ' : ''}Creature #${id}`;
   const parents = !isLive && c.p.length ? ` · from #${c.p.join(' × #')}` : '';
@@ -482,11 +467,13 @@ function openCard(id) {
 }
 function closeCard() { $('card').hidden = true; }
 
-function verdictLine() {
-  const F = STATE.forge, V = F.d.verdict;
-  const surv = V.survive_pct == null ? 'no H1 gain' : `${FMT.num(V.survive_pct, 0)}% kept`;
-  $('vline').innerHTML = `Champion <b>${esc(FMT.dUsd(V.h1_gain_pm))}</b>/mo on H1 → <b class="${V.h2_gain_pm > 0 ? 'up' : 'down'}">${esc(FMT.dUsd(V.h2_gain_pm))}</b>/mo on H2 (${esc(surv)}). `
-    + (F.d.proposal ? '<b class="up">A candidate to review.</b>' : '<b>Live LIT holds: nothing to switch.</b>');
+// the verdict banner (top bar): one honest line, always on screen
+function renderBanner() {
+  const v = STATE.forge.verdict(), el = $('banner');
+  el.className = 'banner ' + (v.liveBest ? 'ok' : 'cand');
+  $('bn-t').textContent = v.title;
+  $('bn-s').innerHTML = `best variant <b>${esc(FMT.dUsd(v.h1))}</b>/mo on H1 → <b class="${v.h2 > 0 ? 'up' : 'down'}">${esc(FMT.dUsd(v.h2))}</b>/mo on H2` +
+    ` · live H2 <b>${esc(FMT.usd(v.liveH2))}</b>/mo · ${v.real}/${v.seeds} seeds hold`;
 }
 
 function openTruth() {
@@ -507,9 +494,49 @@ function openTruth() {
       $/mo <b>${H.spearman_h1_h2_pm ?? '—'}</b>. More $/mo than live on H1: <b>${H.beat_live_h1_pm ?? '—'}</b> · on H2: <b>${H.beat_live_h2_pm ?? '—'}</b> ·
       on both: <b>${H.beat_live_both_pm ?? '—'}</b> (fitness: ${H.beat_live_h1 ?? '—'} · ${H.beat_live_h2 ?? '—'} · ${H.beat_live_both ?? '—'}).</p>
     <p class="note">Fitness (H1 only): ${esc(d.fitness)}.</p>`;
-  $('truth').hidden = false; $('truthBtn').setAttribute('aria-expanded', 'true');
+  showPanel('verdict');
 }
-function closeTruth() { $('truth').hidden = true; $('truthBtn').setAttribute('aria-expanded', 'false'); }
+const PANELS = { verdict: ['truthBtn', 'truth-b', 'Does the fire survive H2?'], lineage: ['linBtn', 'lin-b', 'Lineage · the champion\'s ancestry'],
+  hall: ['hallBtn', 'hall-b', 'Hall of Champions'] };
+function showPanel(kind) {
+  closeCard();
+  STATE.panel = kind;
+  for (const [k, [btn, body]] of Object.entries(PANELS)) { $(body).hidden = k !== kind; $(btn).setAttribute('aria-expanded', String(k === kind)); }
+  $('truth-h').textContent = PANELS[kind][2];
+  $('truth').dataset.kind = kind;
+  $('truth').hidden = false;
+}
+function closeTruth() {
+  $('truth').hidden = true; STATE.panel = null;
+  for (const [btn] of Object.values(PANELS)) $(btn).setAttribute('aria-expanded', 'false');
+}
+function togglePanel(kind, open) { if (STATE.panel === kind && !$('truth').hidden) closeTruth(); else open(); }
+
+function openLineage() {
+  const F = STATE.forge, box = $('lin-b');
+  showPanel('lineage');
+  const w = Math.max(240, Math.round(box.clientWidth || 300));   // measured once on open, never per frame
+  box.innerHTML = lineageSvg(F, { gen: STATE.gen, sel: STATE.sel, w, h: Math.round(w * 0.78) }) +
+    `<p class="note"><span class="sw gold"></span>champion #${F.d.champion.id}'s ancestry (both parents, back to generation 1) ·
+      <span class="sw ice"></span>the creature you opened · dots: every creature, fittest at the top, hotter = fitter · the lit column is
+      the slider's generation. Tap a dot for its card.</p>`;
+}
+
+function openHall() {
+  const F = STATE.forge, L = F.live, rows = F.hall(8);
+  showPanel('hall');
+  const tr = (r) => `<tr data-id="${r.id}" class="${r.champ ? 'champ' : ''}"><td><b>${r.rank}</b> #${r.id}<small> gen ${r.gen + 1} · ${r.changed} knob${r.changed === 1 ? '' : 's'}</small></td>
+    <td>${FMT.num(r.fit)}</td><td>${esc(FMT.usd(r.h1))}</td><td class="${r.h2Beats ? 'up' : 'down'}">${esc(FMT.usd(r.h2))}</td><td>${esc(FMT.usd(r.y))}</td></tr>`;
+  const beat = rows.filter((r) => r.h2Beats).length;
+  $('hall-b').innerHTML = `<p class="big">${beat ? `${beat} of the ${rows.length} fittest beat live on H2.` : `None of the ${rows.length} fittest beats live on H2.`}
+      H1 is all the forge saw.</p>
+    <table class="hall" aria-label="Hall of Champions"><thead><tr><th>Creature</th><th>Fit H1</th><th>H1 $/mo</th><th>H2 $/mo</th><th>21-25</th></tr></thead><tbody>
+    <tr class="live" data-id="live"><td><b>◆</b> LIVE LIT<small> the reference</small></td><td>1.00</td><td>${esc(FMT.usd(L.h1.pm))}</td><td>${esc(FMT.usd(L.h2.pm))}</td><td>${esc(FMT.usd(L.y.pm))}</td></tr>
+    ${rows.map(tr).join('')}</tbody></table>
+    <p class="note">The fittest distinct variants of the whole run (fitness on 2026 H1 only), each against live on the H2 check and the
+      2021-25 reference. Tap a row for its card.</p>`;
+}
+
 
 // ------------------------------------------------------------------------------------------------ time-lapse
 function setGen(g, step = false) {
@@ -520,6 +547,7 @@ function setGen(g, step = false) {
   renderHud(g);
   if (STATE.arena) STATE.arena.show(g, isStep);
   else renderNoGl(g);
+  if (STATE.panel === 'lineage' && !$('truth').hidden) openLineage();
 }
 
 function setPlaying(on) {
@@ -557,6 +585,53 @@ function postJarvisCard() {
 
 function route() {
   if (location.hash === '#verdict') openTruth();
+  else if (location.hash === '#lineage') openLineage();
+  else if (location.hash === '#hall') openHall();
+}
+
+// the bottom sheet sits between the top bar and the bottom bar: their heights, measured on resize only (never per frame)
+function measureBars() {
+  const r = document.documentElement.style;
+  r.setProperty('--hud-b', Math.round($('hud').getBoundingClientRect().bottom) + 'px');
+  r.setProperty('--dock-h', Math.round(innerHeight - $('dock').getBoundingClientRect().top) + 'px');
+}
+
+// ------------------------------------------------------------------------------------------------ OLYMPUS themes
+// applyTheme(tokens): the OLYMPUS theme tokens ({bg, glass, line, text, dim, accent, mix, harmony, ...}) or CSS variable
+// names ('--x': value). bg blends into the forge's own ember dark by `mix`, the accent into its fire by `harmony` (0 in the
+// default theme: nothing changes; missing: as given); the arena's fog follows the background. With the kit's themes
+// (olympus.js theme / onTheme / themeScene) the kit paints the CSS tokens and themeScene keeps the fog in step.
+const OWN = { bg: '#120806', accent: '#ff7a1a' };
+const THEME_VARS = { text: '--text', dim: '--dim', glass: '--panel', panel: '--panel', line: '--line' };
+// '#rrggbb' a -> b by t (0 = a untouched); anything else: b when t > 0 (the OLYMPUS themes' own mix rule, kept local)
+function mixHex(a, b, t) {
+  const p = (h) => (/^#[0-9a-f]{6}$/i.test(h) ? [1, 3, 5].map((i) => parseInt(h.substr(i, 2), 16)) : null);
+  const A = p(a), B = p(b);
+  if (!(t > 0)) return a;
+  if (!A || !B) return b;
+  return '#' + A.map((x, i) => Math.round(x + (B[i] - x) * Math.min(1, t)).toString(16).padStart(2, '0')).join('');
+}
+export function applyTheme(tok) {
+  if (!tok || typeof tok !== 'object') return;
+  const root = document.documentElement.style, mix = typeof tok.mix === 'number' ? tok.mix : 1, har = typeof tok.harmony === 'number' ? tok.harmony : 1;
+  const bg = tok.bg ? mixHex(OWN.bg, tok.bg, mix) : null, acc = tok.accent ? mixHex(OWN.accent, tok.accent, har) : null;
+  if (bg && mix > 0) root.setProperty('--bg', bg);
+  if (acc && har > 0) root.setProperty('--fire', acc);
+  for (const [k, v] of Object.entries(tok)) {
+    if (typeof v !== 'string') continue;
+    if (k.startsWith('--')) root.setProperty(k, v); else if (THEME_VARS[k] && mix > 0) root.setProperty(THEME_VARS[k], v);
+  }
+  try { if (bg && mix > 0 && STATE.arena) STATE.arena.scene.fog.color.set(bg); } catch (e) { /* not a colour */ }
+  STATE.theme = tok;
+}
+window.applyTheme = applyTheme;
+function hookTheme() {
+  if (!O) return;
+  try {
+    if (typeof O.themeScene === 'function' && STATE.arena) { O.themeScene({ scene: STATE.arena.scene, renderer: STATE.arena.renderer }); STATE.themeHook = 'themeScene'; return; }
+    if (typeof O.theme === 'function') { applyTheme(O.theme()); STATE.themeHook = 'theme'; }
+    if (typeof O.onTheme === 'function') O.onTheme(applyTheme);
+  } catch (e) { /* a kit without themes */ }
 }
 
 async function main() {
@@ -572,7 +647,14 @@ async function main() {
   $('play').addEventListener('click', () => setPlaying(!STATE.playing));
   $('cardX').addEventListener('click', closeCard);
   $('truthX').addEventListener('click', closeTruth);
-  $('truthBtn').addEventListener('click', () => ($('truth').hidden ? openTruth() : closeTruth()));
+  $('truthBtn').addEventListener('click', () => togglePanel('verdict', openTruth));
+  $('linBtn').addEventListener('click', () => togglePanel('lineage', openLineage));
+  $('hallBtn').addEventListener('click', () => togglePanel('hall', openHall));
+  $('banner').addEventListener('click', openTruth);
+  $('lin-b').addEventListener('click', (e) => { const svg = $('lin-b').querySelector('svg'); const id = svg && pickAt(svg, F, e.clientX, e.clientY); if (id != null) openCard(id); });
+  $('hall-b').addEventListener('click', (e) => { const tr = e.target.closest('tr[data-id]'); if (tr) openCard(tr.dataset.id === 'live' ? 'live' : Number(tr.dataset.id)); });
+  addEventListener('resize', measureBars);
+  measureBars();
   addEventListener('keydown', (e) => {
     if (e.key === 'Escape') { closeCard(); closeTruth(); }
     if (e.target === sl) return;
@@ -586,13 +668,16 @@ async function main() {
     STATE.arena = null;
     O?.ready();                                     // no 3D here: the list below is the page
   }
-  verdictLine();
+  hookTheme();                                      // after the arena: themeScene needs its scene
+  renderBanner();
   setGen(0);
   window.__forge = {
     get gen() { return STATE.gen; }, setGen, openCard, get lite() { return STATE.arena ? STATE.arena.lite : null; }, get clock() { const a = STATE.arena; return a ? { t: a.t, frames: a.frames.length } : null; },
     get fps() { return STATE.arena ? STATE.arena.fps() : 0; }, get demo() { return F.demo; }, errors: STATE.errors,
     screenOf(id) { const a = STATE.arena; if (!a) return null; const f = id === 'live' ? a.liveFlame : a.byCreature.get(id); return f ? a.screenOf(f) : null; },
     ids() { return F.gen(STATE.gen).map((c) => c.id); }, champion: F.d.champion.id, ready: true,
+    get calls() { return STATE.arena ? STATE.arena.renderer.info.render.calls : 0; }, get panel() { return STATE.panel; }, heatRgb,
+    lineageDot(id) { const c = document.querySelector(`#lin-b circle[data-id="${id}"]`); if (!c) return null; const r = c.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; },
   };
   requestAnimationFrame(tick);
   if (!RM && Q.get('autoplay') !== '0') setPlaying(true);

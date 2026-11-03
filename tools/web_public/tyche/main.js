@@ -44,6 +44,7 @@ let scene = null;
 try {
   scene = new FortuneScene(THREE, document.getElementById('gl'), { quality: state.quality, reduced });
   O?.track(scene.renderer);
+  O?.themeScene?.({ scene: scene.scene, renderer: scene.renderer });   // OLYMPUS theme: fog + sky follow it
 } catch (e) {
   document.getElementById('nogl').hidden = false;
   O?.ready();                                  // the numbers above still update: the page is up
@@ -190,6 +191,7 @@ canvas.addEventListener('pointercancel', (e) => { touch.pts.delete(e.pointerId);
 // ------------------------------------------------------------------ the frame loop
 const perf = { frames: 0, t: 0, slow: 0 };
 let last = performance.now(), lastDraw = 0, lastTick = 0;
+const labelLayer = document.getElementById('labels');
 function frame(ts) {
   requestAnimationFrame(frame);
   if (O ? O.hidden() : document.hidden) { last = ts; return; }     // hidden tab: no frame (the battery)
@@ -208,7 +210,10 @@ function frame(ts) {
   if (!scene || !state.model || (reduced && ts - lastDraw < 250)) return;
   scene.frame(ts / 1000, reduced ? 0 : Math.min(0.1, (ts - lastDraw) / 1000), nowS());
   lastDraw = ts;
-  hud.labels(scene.labels(nowS(), state.quality === 'high' ? 14 : 8));
+  // the 3D labels wait for the intro camera move to land (no labels sliding about, no layout work while the camera flies)
+  const flying = scene.intro < 1;
+  if (labelLayer.classList.contains('wait') !== flying) labelLayer.classList.toggle('wait', flying);
+  if (!flying) hud.labels(scene.labels(nowS(), state.quality === 'high' ? 14 : 8));
   autoLite(dt);
 }
 /** Two slow 2-second windows in a row on HD (and no saved choice): LITE, once. */
@@ -222,6 +227,25 @@ function autoLite(dt) {
   if (perf.slow >= 2 && state.quality === 'high' && !state.chosen && !reduced) setQuality('low', false);
 }
 
+// ------------------------------------------------------------------ OLYMPUS themes
+/** The page's one theme entry point: an OLYMPUS theme's tokens ({ accent, accent2, bg, text, muted } as #rrggbb) -> the HUD's
+ *  colours (gold, mint, text, dim). Only plain hex colours are taken; null / {} = Tyche's own gold and mint again. The 3D scene
+ *  keeps its gold: it is the fortune itself. Hooked to Olympus.theme() / onTheme when the kit has them. */
+const HEX = /^#([0-9a-f]{6}|[0-9a-f]{3})$/i, THEME_VARS = { accent: '--gold', accent2: '--mint', text: '--text', muted: '--dim', bg: '--bg' };
+function applyTheme(tokens) {
+  const root = document.documentElement, out = {};
+  Object.keys(THEME_VARS).forEach((k) => {
+    const v = tokens && typeof tokens === 'object' ? (tokens[k] != null ? tokens[k] : tokens['--oly-' + k]) : null;
+    if (typeof v === 'string' && HEX.test(v.trim())) { root.style.setProperty(THEME_VARS[k], v.trim()); out[k] = v.trim(); } else root.style.removeProperty(THEME_VARS[k]);
+  });
+  return out;
+}
+window.applyTheme = applyTheme;
+try {
+  if (O && typeof O.onTheme === 'function') O.onTheme(applyTheme);
+  if (O && typeof O.theme === 'function') { const t = O.theme(); if (t && typeof t === 'object') applyTheme(t); }
+} catch (_) { /* a kit without themes */ }
+
 // ------------------------------------------------------------------ boot
 window.tyche = {
   get mode() { return state.mode; },
@@ -230,6 +254,7 @@ window.tyche = {
   get fps() { return state.fps; },
   get requests() { return state.feed.requests; },
   get view() { return state.view; },
+  get intro() { return scene ? scene.intro : 1; },          // the intro camera move: 0 -> 1 (1 = done or skipped)
   get coins() { return scene ? scene.wheel.coins.size : 0; },
   get falling() { return scene ? scene.pools.falling.length + scene.pools.queue.length : 0; },
   kellyStake(key) { const c = scene && Array.from(scene.wheel.coins.values()).find((x) => x.key === key); return c && c.kelly ? c.kelly.stake : null; },

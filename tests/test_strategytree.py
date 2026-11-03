@@ -279,6 +279,131 @@ def test_demo_fixture():
           "rerun python -X utf8 -m tools.strategytree.demo" if on_disk != json.loads(json.dumps(doc)) else "")
 
 
+THEME_STUB = """(() => { const scene = %s;
+  window.OLYMPUS = { app: 'x', fx: () => 'high', chosen: () => true, lite: () => false, reduced: () => false, dpr: () => 1, setFx() {}, onFx() {},
+    mode() {}, hidden: () => document.hidden, track: (r) => r, stats: () => ({}), ready() {}, fail() {}, state: () => 'ready',
+    theme: () => ({ bg: '#000814', accent: '#4da3ff', mix: 0.5, harmony: 0.3, glass: 'rgba(0, 0, 0, .7)', line: 'rgba(1, 1, 1, .1)', text: '#ffffff', dim: '#cccccc' }),
+    onTheme(cb) { window.__onTheme = cb; } };
+  if (scene) window.OLYMPUS.themeScene = (o) => { window.__themeScene = o; return () => {}; }; })()"""
+
+
+PAGE_SHOTS = os.environ.get("DAPHNE_SHOTS") or os.path.join(ROOT, "research", "handoff", "2026-11-03-day", "research_apps", "daphne")
+
+
+def test_page():
+    """The DAPHNE page in Chromium at 390 x 844 (the day-sprint upgrade, 2026-11-03): the tree grows with tapered branches
+    and leaves on the surviving ones, the verdict banner on top (beats chance or not, this root holds or fails), the TRAIN /
+    TEST lens sweeps a wavefront and stamps the test's verdict, the TOP RULES tab of the bottom sheet opens a root, the
+    orb corner stays free, no sideways scroll, reduced motion, applyTheme, no console error. Screenshots: PAGE_SHOTS."""
+    import functools
+    import http.server
+    import threading
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        check("page: Playwright is installed (skipped)", True)
+        return
+    site = os.path.join(ROOT, "tools", "web_public")
+    doc = json.load(open(os.path.join(site, "tree", "tree.json"), encoding="utf-8"))
+
+    class Quiet(http.server.SimpleHTTPRequestHandler):
+        def log_message(self, *a):
+            pass
+    srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(Quiet, directory=site))
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    base = f"http://127.0.0.1:{srv.server_address[1]}/tree/index.html"
+    os.makedirs(PAGE_SHOTS, exist_ok=True)
+    exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
+    real = doc["honesty"]["real"]
+    plc = [x["hold_pct"] for x in doc["honesty"].get("placebo", [])]
+    chance_beaten = bool(plc) and real["hold_pct"] > max(plc) + 10
+    try:
+        with sync_playwright() as pw:
+            br = pw.chromium.launch(**({"executable_path": exe} if exe else {}))
+            ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2)
+            ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith("http://127.0.0.1") else r.abort())
+            pg = ctx.new_page()
+            errs = []
+            pg.on("pageerror", lambda e: errs.append(str(e)))
+            pg.on("console", lambda m: errs.append(m.text) if m.type == "error" else None)
+            pg.goto(base + "?at=9300")
+            pg.wait_for_function("() => window.__daphne && window.__daphne.ready", timeout=30000)
+            pg.wait_for_timeout(800)
+            st = pg.evaluate("() => { const S = window.__daphne.state; return { leaves: S.leafCount, root: S.rootId, held: S.root.best.holds }; }")
+            check(f"page: the tree grows, leaves on the surviving branches ({st['leaves']})", st["leaves"] > 0, st)
+            v = pg.inner_text("#verdict")
+            check("page: the verdict banner on top: beats chance or chance level, the hold rate, this root holds / fails",
+                  ("BEATS CHANCE" if chance_beaten else "CHANCE LEVEL") in v and f"{real['hold']}/{real['best_rules']}" in v
+                  and ("HOLDS" if st["held"] else "FAILS") in v, v)
+            pg.screenshot(path=os.path.join(PAGE_SHOTS, "01_grown_train.png"))
+            pg.click('.lens [data-lens="test"]')
+            pg.wait_for_timeout(350)
+            fx = pg.evaluate("() => ({ shown: !document.getElementById('lensFx').hidden, t: document.getElementById('lensT').textContent, "
+                             "s: document.getElementById('lensS').textContent, lens: document.getElementById('app').dataset.lens, "
+                             "at: window.__daphne.state.lensAt })")
+            check("page: TEST lens: the flash + stamp (out of sample, this root's best holds / fails) and the wavefront starts",
+                  fx["shown"] and "OUT OF SAMPLE" in fx["t"] and ("HOLDS" if st["held"] else "FAILS") in fx["s"] and fx["lens"] == "test" and fx["at"] > 0, fx)
+            # the screenshot: a moment of the switch held still (headless frames are slow), like ?at= for the growth
+            pg.evaluate("() => { const S = window.__daphne.state, f = () => { S.fxAt = performance.now() - 520; S.lensAt = performance.now() - 520; document.getElementById(\"lensFx\").hidden = false; }; "
+                        "f(); window.__hold = setInterval(f, 30); }")
+            pg.wait_for_timeout(700)
+            pg.screenshot(path=os.path.join(PAGE_SHOTS, "02_test_lens_wave.png"))
+            pg.evaluate("() => { clearInterval(window.__hold); const S = window.__daphne.state; S.lensAt = performance.now() - 2000; S.fxAt = performance.now() - 1500; }")
+            pg.wait_for_timeout(1800)
+            check("page: the stamp clears by itself", pg.evaluate("document.getElementById('lensFx').hidden"))
+            pg.screenshot(path=os.path.join(PAGE_SHOTS, "03_test_lens.png"))
+            pg.click('.sheet-tabs [data-tab="rules"]')
+            pg.wait_for_timeout(300)
+            n = pg.evaluate("document.querySelectorAll('#rules li').length")
+            check("page: TOP RULES tab: one row per top rule, HOLDS / FAILS on each", n == len(doc["top"]) and pg.is_visible("#rules")
+                  and pg.evaluate("document.querySelectorAll('#rules li .tag').length") == n, n)
+            pg.screenshot(path=os.path.join(PAGE_SHOTS, "04_top_rules.png"))
+            pick = next((i for i, r in enumerate(doc["top"]) if r["root"] in doc["trees"] and r["root"] != st["root"]), None)
+            if pick is not None:
+                pg.click(f"#rules li:nth-child({pick + 1})")
+                pg.wait_for_timeout(300)
+                check("page: a tap on a top rule grows its tree", pg.evaluate("window.__daphne.state.rootId") == doc["top"][pick]["root"])
+            free = pg.evaluate("""() => { const W = innerWidth, H = innerHeight, hit = [];
+                for (let x = W - 78; x < W; x += 13) for (let y = H - 158; y < H; y += 13) {
+                  const el = document.elementFromPoint(x, y); if (el && !el.closest('.oly-home') && el.closest('button, a, li, .card, .sheet')) hit.push([x, y, el.className]); }
+                return hit; }""")
+            check("page: the bottom-right 80 x 160 px stays free for Jarvis's orb", not free, free[:3])
+            check("page: no sideways scroll", pg.evaluate("document.documentElement.scrollWidth <= innerWidth"))
+            got = pg.evaluate("""() => { applyTheme({ accent: '#00e0ff', bg: '#010203' }); return [getComputedStyle(document.documentElement)
+                .getPropertyValue('--green').trim(), window.__daphne.state.bg]; }""")
+            check("page: applyTheme(tokens): the colours and the canvas background follow", got == ["#00e0ff", "#010203"], got)
+            check("page: no page or console errors", not errs, errs[:3])
+            ctx.close()
+            ctx = br.new_context(viewport={"width": 390, "height": 844})
+            ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith("http://127.0.0.1") else r.abort())
+            ctx.add_init_script(THEME_STUB % "false")
+            pg = ctx.new_page()
+            pg.goto(base + "?at=9300")
+            pg.wait_for_function("() => window.__daphne && window.__daphne.ready", timeout=30000)
+            a = pg.evaluate("() => [window.__daphne.state.themeHook, getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(), window.__daphne.state.bg]")
+            pg.evaluate("() => window.__onTheme({ bg: '#123456', accent: '#46ff9a', mix: 1, harmony: 0 })")
+            b = pg.evaluate("() => [getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(), window.__daphne.state.bg]")
+            check("page: OLYMPUS themes: theme() applied at start (bg blended by the theme's mix), onTheme follows every change",
+                  a == ["theme", "#02080d", "#02080d"] and b == ["#123456", "#123456"], (a, b))
+            ctx.close()
+            ctx = br.new_context(viewport={"width": 390, "height": 844}, reduced_motion="reduce")
+            ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith("http://127.0.0.1") else r.abort())
+            pg = ctx.new_page()
+            errs2 = []
+            pg.on("pageerror", lambda e: errs2.append(str(e)))
+            pg.goto(base)
+            pg.wait_for_function("() => window.__daphne && window.__daphne.ready", timeout=30000)
+            pg.wait_for_timeout(600)
+            pg.click('.lens [data-lens="test"]')
+            pg.wait_for_timeout(200)
+            check("page: reduced motion: grown at once, the lens switches without the sweep, no errors",
+                  pg.evaluate("window.__daphne.state.leafCount") > 0 and pg.evaluate("document.getElementById('app').dataset.lens") == "test" and not errs2, errs2[:3])
+            ctx.close()
+            br.close()
+    finally:
+        srv.shutdown()
+
+
 def test_paper_only():
     src = "".join(open(p, encoding="utf-8").read() for p in glob.glob(os.path.join(ROOT, "tools", "strategytree", "*.py")))
     check("tools/strategytree never names live_model*.json or imports engine trading code",
@@ -286,6 +411,10 @@ def test_paper_only():
 
 
 def main():
+    if "page" in sys.argv[1:]:                        # `python -X utf8 -m tests.test_strategytree page`: the page only
+        test_page()
+        print(f"strategytree page: {sum(R)}/{len(R)} {'ALL PASS' if all(R) else 'FAIL'}")
+        return 0 if all(R) else 1
     test_bound_brute_force()
     test_search_is_exact()
     test_search_deterministic()
@@ -294,6 +423,7 @@ def main():
     test_build_and_json()
     test_demo_fixture()
     test_paper_only()
+    test_page()
     print(f"strategytree: {sum(R)}/{len(R)} {'ALL PASS' if all(R) else 'FAIL'}")
     return 0 if all(R) else 1
 

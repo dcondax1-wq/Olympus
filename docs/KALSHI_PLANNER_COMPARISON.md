@@ -37,7 +37,7 @@ Compared with Sunsama, Motion, Akiflow, Todoist, Notion Calendar and Structured.
 | Feature | Who has it | Planner before | Added now |
 |---|---|---|---|
 | Time-blocking tasks | all six | yes (Block time, Plan my day, drag) | Block time straight from Deadline risk |
-| Focus timer | Structured, Akiflow, Sunsama | yes | — |
+| Focus timer | Structured, Akiflow, Sunsama | yes (a bar at the bottom) | 40-olympus **Focus mode**: full-screen ring, task + length pick, 5-min break, minutes today |
 | Habits and streaks | Structured, Todoist (habits via recurring) | yes (Habits) | — |
 | Daily planning / shutdown review | Sunsama | yes (Plan day, Close out the day, Weekly review + reminder) | — |
 | Quick add with natural language | Todoist, Akiflow, Motion | yes (20-power: "gym tue thu 7am", bills …) | — |
@@ -47,8 +47,21 @@ Compared with Sunsama, Motion, Akiflow, Todoist, Notion Calendar and Structured.
 | **Deadline risk** (tasks that will miss their date) | Motion | no | **Deadline risk**: 14-day earliest-date-first check against 60% of free time; Fix → Block the best gap |
 | **Daily task goal + streak** (Karma) | Todoist | no (Daily score is broader) | **Daily goal**: ring, 7-day bars, days in a row; goal 1-10 |
 | Scheduling links / time zones | Notion Calendar | Find a time + copy availability | not added (needs a server; the Planner is static) |
-| Energy-based day timeline | Structured | Now and next strip | not added |
+| Day timeline | Structured | Now and next strip | 40-olympus **Day timeline**: today's events on one track, a NOW beam, now / next, an empty state |
 
 All three go through the Planner's own `snapshot()` + `commit()` (sync, tombstones, Undo); the only new key is the
 device-only `planner.flow.goal`. Tests: the patch's own `planner/tests/flow.test.js` (41 behaviour checks) and
 `tests.test_planner_addons` (the real patches apply to the live planner-backup and every `ext-*.js` is loaded once).
+
+## Day sprint 2026-11-03: the Kalshi page and Tyche, "higher quality, 3D, organized, futuristic"
+
+Screens (390 x 844, demo and live): `research/handoff/2026-11-03-day/kalshi/`.
+
+| Page | What changed |
+|---|---|
+| Kalshi: order | Four numbered groups: **Today** (balance, today / week / month, all time, ROI, open bets) -> **Edge** (live edge card, Kelly) -> **Performance** (curve, calendar, daily bars, stats, by price, calibration, by market, strategies) -> **Alerts** (alerts, recent trades). A sticky section bar (44 px taps, the alerts count) glides to each. |
+| Kalshi: money | Month = the bot's `month_pnl` when sent, else the sum of `days` since the 1st (ET). ROI = P&L on the money bet (`stats`, else the settled trades in the list), never on the balance. |
+| Kalshi: look | Glass cards (blur), a 3D market orb in the K mark (`korb.js`, three.js from `../jarvis/`, started after the first numbers, 30 fps max, paused when hidden or off screen, one still frame when `jfx` is off), odometer counters and glowing sparklines (`kfx.js`), a mouse tilt on the hero. Inside Jarvis the page ends 176 px above the bottom (the orb's corner). |
+| Kalshi: modules | `kalshi.js` (data + sections), `kfx.js` (the look), `korb.js` (the orb), `sw.js` k13 (versioned files from the copy with no refetch; kit.json waits 2 s at most on a dead site). |
+| Tyche | Minted coins (clear-coated metal, reeded edge, embossed face), richer reflections (softbox ring in the environment map), a mist round the fountain, the equity curve draws itself in with a comet running up it, an intro camera move (2.6 s, labels wait for it), a money strip and a "Kalshi ›" link (the Kalshi page links back: "See it in 3D"). |
+| Themes | Each page has one `window.applyTheme(tokens)` (`accent`, `accent2`, `bg`, `text`, `muted`; hex only). Hooked to `Olympus.theme()` / `onTheme` when the kit has them; the Kalshi page also follows `localStorage['olympus.theme']` (JSON tokens). |

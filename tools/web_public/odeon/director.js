@@ -8,7 +8,9 @@
 
 const BEATS = { sweep: [1.8, 0.55, 0.0, 0.34], entry: [2.4, -0.45, -0.12, 0.3], exit: [3.0, 0.5, 0.06, 0.22], be: [1.2, 0.2, 0, 0.12],
   cisd5: [1.2, -0.2, 0, 0.15], cisd1: [1.0, 0.18, 0, 0.12] }; // [seconds, yaw, pitch, push-in]
+const RAMP = { sweep: [0.3, 0.7], entry: [0.12, 1.5], exit: [0.15, 1.9] }; // [speed at the bottom, seconds held]
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const ease = (u) => { const x = clamp(u, 0, 1); return x * x * (3 - 2 * x); };
 const bell = (u) => { const s = Math.sin(Math.PI * clamp(u, 0, 1)); return s * s; };
 
 export class Director {
@@ -34,12 +36,17 @@ export class Director {
     if (kind === 'exit') this.shake = 0.35;
   }
 
-  /** while a beat plays the app slows the tape (the slow-motion moment) */
+  /** The time ramp of the slow-motion moments: the tape eases down to RAMP's speed in 0.3 s, holds, then eases back up in
+      0.6 s (the sweep a short dip, the entry and the exit a real slow-motion shot). 1 = normal speed. */
   slowmo(wall) {
     let k = 1;
     for (const b of this.beats) {
-      const u = (wall - b.at) / b.dur;
-      if (u >= 0 && u < 1 && (b.kind === 'sweep' || b.kind === 'entry' || b.kind === 'exit')) k = Math.min(k, 1 - 0.75 * bell(u));
+      const r = RAMP[b.kind];
+      if (!r) continue;
+      const age = wall - b.at, [low, hold] = r, a = 0.3, z = 0.6;
+      if (age < 0 || age > a + hold + z) continue;
+      const f = age < a ? ease(age / a) : age < a + hold ? 1 : 1 - ease((age - a - hold) / z);
+      k = Math.min(k, 1 - (1 - low) * f);
     }
     return k;
   }

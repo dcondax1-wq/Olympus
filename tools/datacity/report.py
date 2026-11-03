@@ -20,11 +20,11 @@ TOP_N = 60                # leaderboard length
 N_DISCOVERIES = 12
 N_STRATEGIES = 8
 N_PORTFOLIO = 10
-CITY_CAPS = {             # buildings a district shows per class: all gold, the best greens / ambers, the biggest greys
-    "times": {"gold": 999, "green": 999, "amber": 999, "grey": 999},
-    "confluences": {"gold": 999, "green": 999, "amber": 999, "grey": 999},
-    "while": {"gold": 999, "green": 320, "amber": 160, "grey": 160},
-}
+# full cards a district carries per class (all gold, the best greens / ambers, the biggest greys); every other tested
+# combination is a compact skyline row (skyline.py), so the page still draws all of them
+CITY_CAPS = {"times": {"gold": 999, "green": 999, "amber": 60, "grey": 40},
+             "confluences": {"gold": 999, "green": 999, "amber": 999, "grey": 999}}
+CAPS_DEFAULT = {"gold": 999, "green": 110, "amber": 30, "grey": 30}
 THEME = "#05060f"
 WIN_LABEL = {"asia": "Asia (18:00-02:00)", "london": "London (02:00-07:00)", "pre": "NY pre-open (07:00-09:30)",
              "nyam": "NY AM (09:30-11:30)", "lunch": "NY lunch (11:30-13:30)", "pm": "NY PM (13:30-16:00)", "all": "any time"}
@@ -54,7 +54,7 @@ def label(c) -> str:
     if c["trig"] in G.SLOT_TRIGS:
         head = f"{where}: plain {side} at the open of the {'slot' if c['slot'] >= 0 else 'session'}"
     else:
-        head = f"{where} {side} after a {what}"
+        head = f"{where} {side} after {'an' if what[0] in 'aeiouAEIOU' else 'a'} {what}"
     conds = [MONTHS[v] if fam == "mon" else F.STATES[fam][v] for fam, v in c["conds"]]
     return head + (" while " + " and ".join(conds) if conds else "")
 
@@ -142,6 +142,7 @@ class Study:
         self.last_day = str(grid.days[-1])
         self.ranked = self._ranked()
         self.lead = self.ranked[:TOP_N]
+        self.index = {c["id"]: i for i, c in enumerate(combos)}
 
     # -- ranking
     def _ranked(self):
@@ -218,7 +219,8 @@ class Study:
     def buildings(self) -> list:
         """The city's buildings, district by district; the leaderboard is always in."""
         lead, out, ids = set(self.lead), [], set()
-        for district, caps in CITY_CAPS.items():
+        for district in G.DISTRICTS:
+            caps = CITY_CAPS.get(district, CAPS_DEFAULT)
             pool = [i for i, s in enumerate(self.rows)
                     if self.combos[i]["district"] == district and s.get("n", 0) >= G.MIN_N and "dup_of" not in s]
             for cls, cap in caps.items():
@@ -260,7 +262,7 @@ class Study:
         base = {(c["trig"], c["win"]): i for i, c in enumerate(self.combos) if not c["conds"] and c["slot"] < 0}
         acc = {}
         for i, c in enumerate(self.combos):
-            if c["district"] != "while" or len(c["conds"]) != 1 or self.rows[i].get("n", 0) < G.MIN_N:
+            if c.get("kind", c["district"]) != "while" or len(c["conds"]) != 1 or self.rows[i].get("n", 0) < G.MIN_N:
                 continue
             b = base.get((c["trig"], c["win"]))
             if b is None or self.rows[b].get("n", 0) < G.MIN_N:
@@ -272,7 +274,7 @@ class Study:
         out = sorted(({"key": f"{fam}={v}", "fam": fam, "lab": F.STATES[fam][v], "med_r": round(float(np.median(a["d"])), 3),
                        "bases": len(a["d"]), "both_pct": round(100 * a["both"] / len(a["d"]), 1)}
                       for (fam, v), a in acc.items() if len(a["d"]) >= 5), key=lambda x: -x["med_r"])
-        return out[:k_top] + out[-k_bottom:]
+        return out if len(out) <= k_top + k_bottom else out[:k_top] + out[-k_bottom:]
 
     def today(self) -> list:
         """Leaderboard setups that fired on the last complete day (one line per trade) and how they did."""
@@ -311,9 +313,17 @@ def jarvis_card(guard, leaderboard, last_day, built, now) -> dict:
 def fixture(city, per=14) -> dict:
     """The page's demo city (tools/web_public/datacity/fixture.json): a small cut of a real city, marked demo."""
     keep = []
-    for district in ("times", "confluences", "while"):
+    for district in G.DISTRICTS:
         b = [x for x in city["buildings"] if x["d"] == district]
-        keep += b[:per] + b[-4:]
+        keep += b[:per] + b[-3:]
     ids = {b["id"] for b in keep}
+    sky = city.get("skyline") or {"cols": [], "rows": []}
+    dcol = sky["cols"].index("d") if sky["rows"] else 0
+    rows = []
+    for k in range(len(G.DISTRICTS)):           # a slice of every district's skyline, so the demo city has every district
+        rows += [r for r in sky["rows"] if r[dcol] == k][:70]
+    harbor = city.get("harbor")
     return {**city, "demo": True, "buildings": keep, "discoveries": [d for d in city["discoveries"] if d["id"] in ids][:4],
-            "top10": [t for t in city["top10"] if t["id"] in ids], "today": city["today"][:2], "strategies": city["strategies"][:3]}
+            "top10": [t for t in city["top10"] if t["id"] in ids], "today": city["today"][:2], "strategies": city["strategies"][:3],
+            "skyline": {"cols": sky["cols"], "rows": rows},
+            "harbor": {**harbor, "rows": harbor["rows"][-60:]} if harbor else None}

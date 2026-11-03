@@ -46,6 +46,32 @@ phone glue `pro.js`, PC glue `web_next/js/next/pro.js`, journal tags in `hub.js`
 - More: Today (+ **Data City** `datacity/` and the **Strategy Tree** `tree/`, sibling pages on the same site) · Insight
   (Scorecard first) · Bot and health · Trades · Money planning · This app · Advanced (folded).
 
+## The map (2026-11-03 day, "organized ... like a maid swept"; `zenith.js` + `zenith.css` + `zenithcore.js`)
+
+Every page has one header: the breadcrumb (TAB › SECTION, small caps) over the page title, then the status pill, the status
+dot, search and refresh. A page's own hero that only repeated the title keeps its description and drops the copy.
+
+| Tab | What is on it (in this order) | Breadcrumb example |
+|---|---|---|
+| Home | greeting + **money panel** (Today · This month · Eval P&L in $, over the 3D energy ribbon of the real days) · status bar · the three account cards · what matters now · NQ now · this week · quick tiles (Live View, Holodeck, Mission, Mind) · Scorecard · "Everything else on Home" (folded) | — (Home) |
+| Zlarior | Today · Brain · Trades · Results · Rules, each section's pages as chips; Today opens on the 50K card + **its ribbon** (real $, $ a month at that pace) | ZLARIOR › RESULTS / Performance |
+| ATLAS | the same five sections; Today: the 25K card + its ribbon | ATLAS › BRAIN / ATLAS |
+| BLITZ | the same five + Go live; Today: the card + its ribbon | BLITZ › TODAY |
+| Money | Real results · Accounts today · Eval timeline (real money only) | MONEY / Real results |
+| More | search · recent · Today · Insight · Bot and health · Trades · Money planning · This app · Advanced (folded) | MORE / Settings |
+| (Home tiles) | Live View, Holodeck, Mission Control, Mind: full-screen pages, Home lit in the tab bar | HOME / Holodeck |
+
+| Cleaned up | Before | Now |
+|---|---|---|
+| Title said twice | header "Performance" + hero "ZLARIOR · RESULTS / Performance"; "Real results" twice | the breadcrumb says where, the hero keeps only its description |
+| Bot name twice | header "Zlarior" over the Zlarior card, crumb "Today" under it | ZLARIOR › TODAY / Overview |
+| Orphan pages | Holodeck and Live View kept a removed group ("chart"): no tab lit, no crumb | under Home (their quick tiles), Home lit |
+| Two 3D settings | Settings > 3D effects (Zenith's sky) and Jarvis's jfx quality | 3D quality sits inside the 3D effects card, writes `jfx` |
+| Taps under 44 px | section bar 34 px, chips 32 px, status-bar arrows 32 px, Holodeck selects 36 px | an invisible 44 px hit area on every compact control (the look is unchanged) |
+| Sideways scroll | the tab-to-tab slide pushed the page 28 px wider (test_zenith_mode) | View Transitions (a fade + small slide in the top layer); the CSS fallback is clipped (`.main { overflow-x: clip }`) |
+| Cards | five card looks (clean, polish, glass, deep space, per-renderer) | one glass card: soft gradient, 1 px rim, a top edge light, 16 px radius, the 4-8-12-16-24-32 spacing scale; one dashed empty state |
+| Dead links | none found (every `data-go` / `#/` link on every page resolves) | checked by the audit script, kept at zero |
+
 ## Honest limits
 - Backtest spans are the live-settings replay with costs in; the 2021-25 line is a reference, 2026 H2 is the check
   period. The "Real" span counts only closed NinjaTrader fills (few so far).

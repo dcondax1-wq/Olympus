@@ -161,6 +161,7 @@ def site(tmp, name, parts):
     base = os.path.join(tmp, name, "nq-dashboard")
     shutil.copytree(JV, os.path.join(base, "jarvis"))
     shutil.copytree(KS, os.path.join(base, "kalshi"))
+    shutil.copytree(os.path.join(os.path.dirname(JV), "olympus"), os.path.join(base, "olympus"))   # the OLYMPUS theme engine
     for f in PARTS:
         dst = os.path.join(base, "jarvis", f)
         if parts == "none" and os.path.exists(dst):
@@ -226,7 +227,7 @@ def part_a():
           and m["theme_color"] == "#000000" and all(i["src"].endswith("?v=j3") for i in m["icons"]), m)
     b = open(os.path.join(ROOT, "tools", "build_web_dashboard.py"), encoding="utf-8").read()
     check("a. the site build publishes jarvis/ and kalshi/ with every build (every top-level file: fonts and parts too)",
-          'for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "olympus"):' in b and 'os.path.join(out, app, name)' in b)
+          'for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "pantheon", "olympus", "arena"):' in b and 'os.path.join(out, app, name)' in b)
     check("a. kalshi/index.html exists", os.path.exists(os.path.join(KS, "index.html")))
     sw = open(os.path.join(JV, "sw.js"), encoding="utf-8").read()
     check("a. the hub's service worker only handles its own folder", "u.pathname.startsWith(scope.pathname)" in sw)
@@ -244,8 +245,8 @@ def part_a():
           and "background:#000" in sw and "location.reload()" in sw)
     check("a. worker v14: data.js, jarvis.css, the fonts, every separate part, switcher.js, the new brain's obsidian.js / memory.js / "
           "assist-ui.js and voice-mode.js in SHELL, each saved on its own (a missing part is skipped)",
-          "const CACHE = 'jarvis-v15';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js") + PARTS + FONTS)
-          and "'./jarvis.css?v=j11'" in sw and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
+          "const CACHE = 'jarvis-v16';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js") + PARTS + FONTS)
+          and "'./jarvis.css?v=j12'" in sw and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
     shell = re.search(r"const SHELL = \[([^\]]*)\]", sw)
     shell_files = re.findall(r"'\./([^'?]+)", shell.group(1)) if shell else []
     check("a. every file of SHELL is in the folder (a part the page loads is never left out of the saved copy, nor a saved file missing)",
@@ -258,7 +259,7 @@ def part_a():
           "const NET_MAX_MS = 9000;" in sw and "copy ? NAV_WAIT_MS : NET_MAX_MS" in sw and "return offlinePage();" in sw
           and "await net" not in sw.replace("await Promise.race([net", ""))
     check("a. worker v6: a file this copy lacks comes from the previous Jarvis copy; old copies go only when every CORE file is saved",
-          "const OLD = ['jarvis-v14', 'jarvis-v13', 'jarvis-v12', 'jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];" in sw and "for (const name of [CACHE, ...OLD])" in sw
+          "const OLD = ['jarvis-v15', 'jarvis-v14', 'jarvis-v13', 'jarvis-v12', 'jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];" in sw and "for (const name of [CACHE, ...OLD])" in sw
           and "CORE.map((u) => c.match(u, { ignoreSearch: true }))" in sw)
     jhtml = open(os.path.join(JV, "index.html"), encoding="utf-8").read()
     check("a. the page draws without its stylesheet after 5 s (a stylesheet still on the way keeps an iPhone screen black)",
@@ -810,8 +811,8 @@ def run_c(br, url):
         const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
-          const c = await caches.open('jarvis-v15');
-          const got = await Promise.all(['./index.html', './data.js', './jarvis.css?v=j11', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
+          const c = await caches.open('jarvis-v16');
+          const got = await Promise.all(['./index.html', './data.js', './jarvis.css?v=j12', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));
         }
@@ -1019,14 +1020,14 @@ def run_look(br, url):
     th = p.evaluate("[document.documentElement.dataset.theme, getComputedStyle(document.documentElement).getPropertyValue('--c').trim(), !!document.getElementById('bootfx')]")
     check("l. reopened: the theme is there from the first paint; no boot screen again in the same launch", th == ["reactor-stark", "#ffbe3d", False], th)
     p.evaluate("window.__jarvis.setTheme('reactor')")
-    # voice: tap the big mic, Jarvis hears, answers out loud in the phone's voice (1.06 / 1.1), the state word follows
+    # voice: tap the big mic, Jarvis hears, answers out loud in her voice at its own pace (tts.js: rate 1.0 / pitch 1.0, 2026-11-03), the state word follows
     p.evaluate("window.__utter = 'is the market open'; window.__states = []; window.__said = []")
     p.click("#bigmic")
     p.wait_for_function("window.__said.length > 0", timeout=6000)
     p.wait_for_function("document.documentElement.dataset.state === 'idle'", timeout=4000)
     said, states = p.evaluate("[window.__said, window.__states]")
-    check("l. voice: tap the mic -> LISTENING -> THINKING -> SPEAKING -> STANDBY; the answer is read at rate 1.06, pitch 1.1",
-          "market" in said[0][0].lower() and abs(said[0][1] - 1.06) < 1e-6 and abs(said[0][2] - 1.1) < 1e-6
+    check("l. voice: tap the mic -> LISTENING -> THINKING -> SPEAKING -> STANDBY; the answer is read at the voice's own rate 1.0, pitch 1.0",
+          "market" in said[0][0].lower() and abs(said[0][1] - 1.0) < 1e-6 and abs(said[0][2] - 1.0) < 1e-6
           and [s for s in states if s in ("listening", "thinking", "speaking", "idle")][:4] == ["listening", "thinking", "speaking", "idle"], (said, states))
     p.click("#hf")
     p.wait_for_function("window.__srStarts >= 3", timeout=8000)
@@ -1107,8 +1108,8 @@ def run_look(br, url):
 
 
 # the switch order: Jarvis, TRADING, LIFE, MONEY (apps.js BUILT_INS); the test site has Data City's folder, not the others'
-ORDER = ["home", "zenith", "oracle", "odeon", "fates", "datacity", "tree", "prometheus", "planner", "mind", "kalshi", "tyche", "hermes"]
-NOT_ON_SITE = ["oracle", "odeon", "fates", "tree", "prometheus", "mind", "tyche", "hermes"]
+ORDER = ["home", "zenith", "oracle", "odeon", "fates", "datacity", "tree", "prometheus", "pantheon", "planner", "mind", "arena", "kalshi", "tyche", "hermes"]
+NOT_ON_SITE = ["oracle", "odeon", "fates", "tree", "prometheus", "pantheon", "mind", "arena", "tyche", "hermes"]
 
 
 def run_olympus(br, url):
@@ -1342,10 +1343,10 @@ def run_switcher(br, url):
       name: (c.querySelector('.nx-nm b') || {}).textContent, val: (c.querySelector('.nx-val') || {}).textContent || '', now: c.classList.contains('now'),
       lines: [...c.querySelectorAll('.nx-ln')].map((l) => l.textContent) }))""")
     names = [c["name"] for c in cards]
-    check("n. tap: the switcher opens with JARVIS, then TRADING (NQ BOT, ORACLE, ODEON, FATES, DATA CITY, DAPHNE, PROMETHEUS), LIFE (CALENDAR, MIND), "
+    check("n. tap: the switcher opens with JARVIS, then TRADING (NQ BOT, ORACLE, ODEON, FATES, DATA CITY, DAPHNE, PROMETHEUS, PANTHEON), LIFE (CALENDAR, MIND, ARENA), "
           "MONEY (KALSHI, TYCHE, HERMES) and + ADD, "
           "Jarvis's card marked NOW",
-          names == ["JARVIS", "NQ BOT", "ORACLE", "ODEON", "FATES", "DATA CITY", "DAPHNE", "PROMETHEUS", "CALENDAR", "MIND", "KALSHI", "TYCHE", "HERMES", "ADD"]
+          names == ["JARVIS", "NQ BOT", "ORACLE", "ODEON", "FATES", "DATA CITY", "DAPHNE", "PROMETHEUS", "PANTHEON", "CALENDAR", "MIND", "ARENA", "KALSHI", "TYCHE", "HERMES", "ADD"]
           and cards[0]["now"] and not any(c["now"] for c in cards[1:]), cards)
     nq = next((c for c in cards if c["id"] == "zenith"), {})
     cal = next((c for c in cards if c["id"] == "planner"), {})

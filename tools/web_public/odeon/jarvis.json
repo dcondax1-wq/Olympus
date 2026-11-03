@@ -12,19 +12,19 @@
   },
   {
    "label": "Latest",
-   "value": "Oct 14"
+   "value": "Oct 28"
   },
   {
    "label": "Last reel",
-   "value": "+3.80R",
-   "delta": "+$579.48"
+   "value": "-1.03R",
+   "delta": "-$437.00"
   }
  ],
  "lines": [
-  "LIT short 2026-10-14: +$579.48 (+3.80R)",
-  "Net of the 60 reels: +$16,509.60"
+  "LIT short 2026-10-28: -$437.00 (-1.03R)",
+  "Net of the 60 reels: +$14,622.58"
  ],
- "t": 1793675068,
+ "t": 1793723165,
  "open": "#reels",
  "theme": "#07060c"
 }

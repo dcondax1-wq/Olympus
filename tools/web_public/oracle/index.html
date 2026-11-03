@@ -9,13 +9,16 @@
 <title>OLYMPUS Oracle</title>
 <link rel="icon" href="../jarvis/icon.svg">
 <link rel="apple-touch-icon" href="../jarvis/apple-touch-icon.png">
-<link rel="stylesheet" href="../olympus/olympus.css?v=o1">
-<script src="../olympus/olympus.js?v=o1" data-app="oracle"></script>
+<link rel="stylesheet" href="../olympus/olympus.css?v=o2">
+<script src="../olympus/themes.js?v=o2"></script>
+<script src="../olympus/olympus.js?v=o2" data-app="oracle"></script>
 <link rel="stylesheet" href="oracle.css">
 <script type="module" src="main.js"></script>
 </head>
 <body>
 <canvas id="gl" aria-label="NQ as a 3D radar: the price column, the LIT levels as rings, the session clock and the bot's stage. Drag to turn, pinch to zoom, double tap to reset."></canvas>
+
+<div id="ladder" class="ladder" aria-hidden="true"></div>
 
 <header id="top" class="hud">
   <div class="bar">
@@ -27,6 +30,7 @@
     </svg>
     <h1>ORACLE</h1>
     <span id="mode" class="mode" data-mode="loading" role="status"><i></i><span>CONNECTING</span></span>
+    <span class="grow"></span>
     <button id="replay" class="ghost" type="button" hidden>Replay a day</button>
     <button id="quality" class="ghost q" type="button" aria-pressed="true" title="Quality: HD or LITE">HD</button>
   </div>
@@ -38,23 +42,34 @@
     <p class="st"><b id="stage-n">–</b><span id="stage-label">Reading the market</span></p>
     <p id="waiting"></p>
   </div>
-  <div class="row small">
-    <p id="window" data-open="false"><i></i><span id="win-text"></span></p>
-    <p id="session"></p>
-  </div>
-  <div id="wx" class="wx"></div>
 </header>
 
-<section id="dock" class="hud">
-  <div id="demo-bar" class="demo-bar glass" hidden><span id="demo-tag" class="tag">REPLAY</span><span id="demo-time"></span><i><b id="demo-fill"></b></i></div>
-  <div id="pos" class="pos glass" hidden>
+<section id="dock" class="hud sheet" aria-label="Today">
+  <div class="ev-row">
+    <ol id="events" class="events" aria-label="Today's moments: sweeps, CISDs, the entry and the exit"></ol>
+    <p id="ev-empty" class="ev-empty">No sweep yet today</p>
+    <button id="today" class="ghost today" type="button" hidden>Replay today</button>
+  </div>
+  <div id="demo-bar" class="demo-bar" hidden>
+    <button id="demo-play" class="ghost play" type="button" aria-label="Pause the replay" data-playing="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-pause" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/><path class="i-play" d="M8 5.5v13l11-6.5z"/></svg></button>
+    <span id="demo-tag" class="tag">REPLAY</span>
+    <input id="scrub" type="range" min="0" max="1000" step="1" value="0" aria-label="Scrub through the session">
+    <span id="demo-time"></span>
+  </div>
+  <div id="pos" class="pos" hidden>
     <p id="pos-side"></p>
     <p id="pos-levels"></p>
     <b id="pos-pnl" data-sign="up"></b>
     <span id="pos-r"></span>
+    <a id="pos-film" class="film" hidden>Watch in Odeon ▸</a>
   </div>
-  <div id="levels" class="levels glass">
-    <button id="lv-toggle" type="button" aria-expanded="true"><span>Levels</span><span id="lv-meta"></span></button>
+  <div class="cond">
+    <p id="window" data-open="false"><i></i><span id="win-text"></span></p>
+    <p id="session"></p>
+    <div id="wx" class="wx"></div>
+  </div>
+  <div id="levels" class="levels closed">
+    <button id="lv-toggle" type="button" aria-expanded="false"><span>Levels</span><span id="lv-meta"></span></button>
     <ul id="lv-list"></ul>
   </div>
 </section>

@@ -23,9 +23,13 @@
 // END, when Jarvis goes out of sight and when another app opens. No speech recognition (some browsers, a Home Screen app):
 // the same screen with a type-to-talk field, said once per launch; the recognizer refusing the mic switches to it too.
 // Reduce motion (unless the owner picked a 3D level himself) and 3D effects Off: no animation loop, no flying cards, the
-// core still. Voice: the best English voice the phone has, British first for the J.A.R.V.I.S. feel (Daniel, premium /
-// enhanced before compact); the owner can step through them on the VOICE button and the pick is kept ('jarvis.vmVoice').
+// core still. Voice (2026-11-03, owner: "a voice that doesn't sound like a bot. Should be a female voice."): the same voice as
+// the Jarvis screen, from tts.js: the owner's pick (the Voice sheet, else the VOICE button here), else the most natural female
+// English voice the phone has (Ava / Zoe premium first, novelty voices never), said in sentence chunks with the text cleaned
+// for speech. The VOICE button steps through them; the pick is kept for both ('jarvis.voiceCfg' and 'jarvis.vmVoice').
 // iPhone Safari 16: plain ES2020, no regex lookbehind.
+
+import { voiceScore as ttsScore, bestVoice as ttsBest, voiceChoices as ttsChoices, cleanSpeech, createSpeaker, savedVoiceName, CFG_KEY, DEFAULTS } from './tts.js';
 
 export const VOICE_KEY = 'jarvis.vmVoice';
 const SILENT_TURNS = 3;          // turns with nothing heard before voice mode waits for a tap (no endless listening)
@@ -33,7 +37,6 @@ const LISTEN_MAX_MS = 15000;     // one listening turn at most
 const WPS = 2.7;                 // words per second at rate 1, for the speaking pulse until the phone reports word timing
 const PHASE_WORD = { idle: 'STANDBY', listening: 'LISTENING', thinking: 'THINKING', speaking: 'SPEAKING' };
 const CORE_STATE = { idle: 'idle', listening: 'listening', thinking: 'thinking', speaking: 'speaking' };
-const NOVELTY = /\b(albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|deranged|hysterical|pipe organ|grandma|grandpa|eddy|flo|reed|rocko|sandy|shelley)\b/i;
 
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const safe = (f, d) => { try { return f(); } catch (_) { return d; } };
@@ -44,37 +47,10 @@ const ls = {
   set(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (_) { /* private mode */ } },
 };
 
-// ------------------------------------------------------------------------------------------------ the voice
-// A score per voice: English only; British and the J.A.R.V.I.S.-like male voices first; premium / enhanced before compact;
-// the novelty voices (Zarvox, Bubbles, ...) never.
-export function voiceScore(v) {
-  if (!v || !/^en([-_]|$)/i.test(v.lang || '')) return -1;
-  const id = `${v.name || ''} ${v.voiceURI || ''}`;
-  if (NOVELTY.test(v.name || '')) return 0;
-  let s = 10;
-  if (/^en[-_]gb/i.test(v.lang)) s += 30;
-  if (/\bdaniel\b/i.test(id)) s += 50;
-  else if (/\b(arthur|oliver|malcolm|george|jamie)\b/i.test(id)) s += 28;
-  else if (/google uk english male/i.test(id)) s += 40;
-  if (/premium/i.test(id)) s += 20;
-  else if (/enhanced|neural|natural/i.test(id)) s += 15;
-  if (/compact/i.test(id)) s -= 4;
-  if (v.localService) s += 2;
-  return s;
-}
-// the voice to use: the owner's pick when the phone still has it, else the best scored English voice (null: the phone's default)
-export function bestVoice(list, saved) {
-  const all = Array.isArray(list) ? list : [];
-  const mine = saved ? all.find((v) => v && v.name === saved) : null;
-  if (mine) return mine;
-  let best = null, bs = 0;
-  for (const v of all) { const s = voiceScore(v); if (s > bs) { bs = s; best = v; } }
-  return best;
-}
-// every English voice worth offering, best first (the VOICE button steps through them)
-export function voiceChoices(list) {
-  return (Array.isArray(list) ? list : []).filter((v) => voiceScore(v) > 0).sort((a, b) => voiceScore(b) - voiceScore(a));
-}
+// ------------------------------------------------------------------------------------------------ the voice (tts.js)
+export function voiceScore(v) { return ttsScore(v); }
+export function bestVoice(list, saved) { return ttsBest(list, saved); }
+export function voiceChoices(list) { return ttsChoices(list); }
 
 // ------------------------------------------------------------------------------------------------ the holographic cards
 // The numbers a reply cites, as small cards: its cards' rows first ("Zlarior · Today  +$213"), then the "Name: ... $x ..." lines
@@ -187,15 +163,20 @@ export function createVoiceMode(deps) {
   // ---------------------------------------------------------------- the voice list (iPhone loads it late)
   const loadVoices = () => { voices = synth ? safe(() => synth.getVoices() || [], []) : []; renderVoice(); };
   if (synth) safe(() => synth.addEventListener('voiceschanged', loadVoices));
-  const voice = () => bestVoice(voices, ls.get(VOICE_KEY));
+  const voice = () => bestVoice(voices, savedVoiceName());
+  const speaker = synth ? createSpeaker({ synth, voices: () => voices, cfg: () => Object.assign({}, DEFAULTS, call('voiceCfg') || {}, { voice: savedVoiceName() }), cloud: () => call('cloudVoice') }) : null;
   function renderVoice() { const b = $('#vmVoice'), v = voice(); if (b) b.textContent = 'VOICE · ' + (v ? v.name.replace(/\s*\(.*\)$/, '').toUpperCase() : 'AUTO'); }
   function nextVoice() {
     loadVoices();
     const list = voiceChoices(voices);
     if (!list.length) return;
     const cur = voice(), i = list.findIndex((v) => cur && v.name === cur.name), v = list[(i + 1) % list.length];
-    ls.set(VOICE_KEY, v.name); renderVoice();
-    sayLine(`${v.name.replace(/\s*\(.*\)$/, '')}, at your service.`, null);
+    ls.set(VOICE_KEY, v.name);
+    let c = {};
+    try { c = JSON.parse(ls.get(CFG_KEY) || '{}') || {}; } catch (_) { c = {}; }
+    c.voice = v.name; ls.set(CFG_KEY, JSON.stringify(c));                    // the Jarvis screen speaks with it too
+    renderVoice();
+    sayLine(`Hi, I'm ${v.name.replace(/\s*\(.*\)$/, '')}, at your service.`, null);
   }
 
   // ---------------------------------------------------------------- the screen
@@ -450,6 +431,7 @@ export function createVoiceMode(deps) {
   }
   function stopTalk() {                       // barge-in: the voice stops at once
     if (speech) { speech.done = true; clearTimeout(speech.watch); speech = null; }
+    if (speaker) safe(() => speaker.cancel());
     if (synth) safe(() => synth.cancel());
   }
   // sayLine(line, reply?, after?): speak one line with its captions and the reply's cards; then after(), or the reply's app
@@ -457,8 +439,8 @@ export function createVoiceMode(deps) {
   function sayLine(line, reply, after) {
     if (!open) return;
     stopTalk();
-    const my = ++turn, text = String(line || '').replace(/\s*\n+\s*/g, '. ').trim(), words = wordsOf(text);
-    const cfg = call('voiceCfg') || {}, rate = +cfg.rate || 1.02;
+    const my = ++turn, text = cleanSpeech(line), words = wordsOf(text);
+    const cfg = call('voiceCfg') || {}, rate = +cfg.rate || DEFAULTS.rate;
     const s = speech = { words, frags: [], t0: now(), real: false, idx: 0, done: false, rate, watch: 0 };
     capJar(words, motion ? 0 : words.length);
     s.frags = reply ? placeFrags(fragmentsOf(reply), text) : (clearFrags(), []);
@@ -475,15 +457,9 @@ export function createVoiceMode(deps) {
     const est = 900 + (words.length / (WPS * rate)) * 1000;
     if (!synth || call('muted') || !text) { s.watch = setTimeout(finish, Math.min(est, 9000)); return; }
     try {
-      const u = new SpeechSynthesisUtterance(text), v = voice();
-      if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-GB';
-      u.rate = rate; u.pitch = +cfg.pitch || 0.98;
-      u.onboundary = (e) => { if (my !== turn || s.done) return; if (e && e.name && e.name !== 'word') return; s.real = true; mark(+e.charIndex || 0); };
-      u.onend = finish;
-      u.onerror = (e) => { if (e && (e.error === 'interrupted' || e.error === 'canceled') && s.done) return; finish(); };
       s.watch = setTimeout(finish, est * 2 + 4000);       // a voice that never says it finished (iPhone) never stalls the turn
-      synth.speak(u);
-    } catch (_) { s.watch = setTimeout(finish, Math.min(est, 9000)); }
+      speaker.speak(text, { onboundary: (ci) => { if (my !== turn || s.done) return; s.real = true; mark(ci); }, onend: finish });
+    } catch (_) { clearTimeout(s.watch); s.watch = setTimeout(finish, Math.min(est, 9000)); }
   }
 
   // ---------------------------------------------------------------- taps: talk, interrupt, pause

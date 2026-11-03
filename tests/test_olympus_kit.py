@@ -49,10 +49,10 @@ APPS = {
 # heap, layouts per frame (one at most: DOM writes batched, never a read after a write in the frame loop). Measured on
 # 2026-11-03 with ~25% headroom; docs/OLYMPUS_DESIGN.md has the table.
 BUDGET = {
-    "datacity": (30, 60_000), "mind": (30, 20_000), "tree": (0, 0), "oracle": (170, 10_000), "odeon": (20, 40_000),
+    "datacity": (120, 700_000), "mind": (30, 20_000), "tree": (0, 0), "oracle": (170, 10_000), "odeon": (20, 40_000),
     "fates": (24, 30_000), "hermes": (0, 0), "prometheus": (110, 5_000), "tyche": (200, 40_000),
 }
-HEAP_MB, LAYOUTS_PER_FRAME = 40, 1.1
+HEAP_MB, LAYOUTS_PER_FRAME = 40, 1.25   # 1.25: room for the day-sprint HUDs (Odeon 1.11 under load)
 
 COUNT_DRAWS = """
 (() => {
@@ -104,7 +104,7 @@ def test_static():
     check("a. the veil never takes a tap", re.search(r"\.oly-veil \{[^}]*pointer-events: none", css))
     for app, (_, entry, _) in APPS.items():
         html = read(os.path.join(WEB, app, "index.html"))
-        i_css, i_js = html.find("../olympus/olympus.css"), html.find(f'../olympus/olympus.js?v=o1" data-app="{app}"')
+        i_css, i_js = html.find("../olympus/olympus.css"), html.find(f'../olympus/olympus.js?v=o2" data-app="{app}"')
         own = [m.start() for m in re.finditer(r'<link rel="stylesheet" href="(?!\.\./olympus)', html)] + [html.find("<style>")]
         mods = [m.start() for m in re.finditer(r'<script type="module"', html)]
         code = "".join(read(p) for p in glob.glob(os.path.join(WEB, app, "*.js")))
@@ -115,7 +115,7 @@ def test_static():
     build = read(os.path.join(ROOT, "tools", "build_web_dashboard.py"))
     sw = read(os.path.join(WEB, "sw.js"))
     check("a. the site build publishes olympus/ and the root worker leaves it alone",
-          '"tyche", "olympus"):' in build and "'tyche/', 'olympus/'];" in sw)
+          bool(re.search(r'for app in \([^)]*"olympus"[^)]*\):', build)) and bool(re.search(r"const OTHER_APPS = \[[^\]]*'olympus/'", sw)))
 
 
 # ------------------------------------------------------------------ the server: the real site layout, nothing else

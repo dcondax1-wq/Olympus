@@ -82,12 +82,16 @@
 // first chip, More > Insight, a Home card), hub.js v9 (journal tags), clean.js (?v=3 kept, the new cache name refreshes it).
 // OTHER_APPS: + the OLYMPUS app folders (datacity/ ... tyche/) and their shared olympus/ kit, never handled
 // or cached here. live.json stays network-only. New cache name so every iPhone refreshes.
-const CACHE = 'le-public-v51';
+// v52 (2026-11-03 day, "way higher quality, 3D UI effects ... organized, like a maid swept"): zenithcore.js + zenith.js +
+// zenith.css (the breadcrumb on every page, one card system / spacing scale / empty state, glass cards with an edge light and
+// a small 3D tilt, numbers that count to their new value, Home's money line + the 3D equity energy ribbon, View Transitions
+// between pages, the shared 3D quality key jfx, Olympus themes through one token function). OTHER_APPS unchanged.
+const CACHE = 'le-public-v52';
 const NAV_WAIT_MS = 3500;
 let SLOW_UNTIL = 0;       // the site was just slow (the page waited NAV_WAIT_MS): data.json / home.json then wait 0.4 s, not 3.5 s
 const COPY_CLIENTS = new Map();   // a page (client id) answered from the saved copy -> until when its data.json / home.json are too
 const BADGE = 'le-badge', BADGE_URL = './__badge';
-const OTHER_APPS = ['jarvis/', 'planner/', 'kalshi/', 'datacity/', 'mind/', 'tree/', 'oracle/', 'odeon/', 'fates/', 'hermes/', 'prometheus/', 'tyche/', 'olympus/']; // own folders (own workers or none): never handled or cached here
+const OTHER_APPS = ['jarvis/', 'planner/', 'kalshi/', 'datacity/', 'mind/', 'tree/', 'oracle/', 'odeon/', 'fates/', 'hermes/', 'prometheus/', 'tyche/', 'pantheon/', 'olympus/', 'arena/']; // own folders (own workers or none): never handled or cached here
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=p111030', './icons/apple-touch-icon.png?v=p111030', './icons/icon-512.png?v=p111030'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });
 self.addEventListener('activate', (e) => {

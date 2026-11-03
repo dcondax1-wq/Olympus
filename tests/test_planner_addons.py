@@ -165,8 +165,8 @@ def main():
             # each add-on's script is published and hooked into the page exactly once (a lost hook = a dead add-on)
             idx = open(os.path.join(site, "planner", "index.html"), encoding="utf-8").read()
             exts = sorted(f for f in os.listdir(os.path.join(site, "planner")) if f.startswith("ext-") and f.endswith(".js"))
-            check("f. every add-on script (ext-projects, ext-power, ext-flow ...) is published and loaded once by index.html",
-                  {"ext-projects.js", "ext-power.js", "ext-flow.js"} <= set(exts)
+            check("f. every add-on script (ext-projects, ext-power, ext-flow, ext-olympus ...) is published and loaded once by index.html",
+                  {"ext-projects.js", "ext-power.js", "ext-flow.js", "ext-olympus.js"} <= set(exts)
                   and all(len(re.findall(r'<script src="%s"' % re.escape(f), idx)) == 1 for f in exts), exts)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

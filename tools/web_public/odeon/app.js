@@ -4,13 +4,17 @@
 //   scene.js     the 3D theater (three.js) | flat.js the 2D fallback without WebGL
 //   director.js  the camera shots and beats
 //   captions.js  the caption track, transcript, speech, callouts
-//   ui.js        reels, transport, stats card
-// Market time T runs at speed x 60 market seconds per real second (1x = one 1m bar a second), slowed for a moment on the
-// sweep, the entry and the exit. Routes: #reels (the list), #reel=<id> (play that reel). ?demo=1 the fixture, ?lite=1|0.
+//   ui.js        the reels gallery, transport, stats card
+// Market time T runs at speed x 60 market seconds per real second (1x = one 1m bar a second), with a slow-motion time ramp
+// on the sweep, the entry and the exit (director.js: a letterbox closes in while it lasts). Film effects over the canvas:
+// bokeh depth of field (scene.js) and a focus falloff around the free band, a lens flare on the entry, grain and vignette
+// (off on LITE / reduced motion). Highlights: the five best trades by $, back to back. Routes: #reels (the gallery), #reel=<id> (play that reel),
+// #trade=<day>_<HHMM>_<side> (Oracle's link: the reel of that trade, any source), #highlights. ?demo=1 the fixture,
+// ?lite=1|0. applyTheme(tokens) takes an OLYMPUS theme (window.OLYMPUS.theme() / onTheme, when the kit has them).
 import { loadReels, demoBundle, fmtUsd, fmtR, fmtPx, dayLabel, hhmm } from './data.js';
 import { phase, openPnl, stopAt } from './timeline.js';
 import { Captions, Callouts } from './captions.js';
-import { Reels, Transport, SPEEDS, fillStats } from './ui.js';
+import { Reels, Transport, SPEEDS, fillStats, sortReels } from './ui.js';
 
 const O = window.OLYMPUS || null;   // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
 const $ = (s) => document.querySelector(s);
@@ -23,14 +27,15 @@ const S = {
   trades: [], demo: false, tr: null, T: 0, playing: false, ended: false, speed: Number(qs.get('speed')) || 10,
   // ?lite= wins (tests, screenshots); else the owner's OLYMPUS choice; else the frame rate decides (auto LITE)
   lite: liteParam != null ? liteParam === '1' : !!(O && O.lite()), autoLite: liteParam == null && !(O && O.chosen()), statsAt: 0, wall: 0, stage: null, three: null, camera: null, dir: null,
-  fps: { n: 0, sum: 0, slow: 0 }, statsShown: false, crossed: [],
+  fps: { n: 0, sum: 0, slow: 0 }, statsShown: false, crossed: [], slow: 1, hl: null,
 };
+const HL_N = 5, HL_GAP = 2.8;          // highlights: the five best trades; seconds on each stats card before the next
 if (SPEEDS.indexOf(S.speed) < 0) S.speed = 10;
 
 const canvas = $('#stage');
-const cc = new Captions({ line: $('#cc'), transcript: $('#transcript') });
+const cc = new Captions({ line: $('#cc'), transcript: $('#transcript'), reduced });
 const callouts = new Callouts($('#callouts'));
-const reels = new Reels($('#reels'), (id) => { openReel(id, true); showReels(false); });
+const reels = new Reels($('#reels'), (id) => { S.hl = null; openReel(id, true); showReels(false); });
 const transport = new Transport($('#transport'), {
   toggle: () => (S.ended ? restart() : setPlaying(!S.playing)),
   speed: (x) => setSpeed(x),
@@ -47,6 +52,7 @@ async function makeStage() {
     const [{ Theater }, { Director }, THREE] = await Promise.all([import('./scene.js'), import('./director.js'), import('../jarvis/three.module.min.js')]);
     const th = new Theater(canvas, { lite: S.lite, reduced });
     O?.track(th.renderer);
+    O?.themeScene?.({ scene: th.scene, renderer: th.renderer });   // OLYMPUS theme: fog + clear colour follow it
     const cam = new THREE.PerspectiveCamera(42, 1, 0.1, 1500);
     S.three = THREE; S.camera = cam; S.dir = new Director(cam, { reduced });
     S.stage = th;
@@ -66,13 +72,19 @@ async function makeStage() {
 }
 
 function measureBand() {
-  // the free band of the screen: below the HUD, above the captions and the controls
-  const head = document.querySelector('.top'), hud = document.getElementById('hud'), cap = document.getElementById('cc');
-  if (head) hud.style.top = Math.round(head.getBoundingClientRect().bottom + 6) + 'px';
-  const top = hud.getBoundingClientRect().bottom + 8;
-  const bottom = cap.getBoundingClientRect().top - 8;
+  // the free band of the screen: below the top bar, above the dock (the captions and the controls)
+  const head = document.querySelector('.top'), dock = document.getElementById('dock');
+  const top = head.getBoundingClientRect().bottom + 2;
+  const dockTop = dock.getBoundingClientRect().top;
+  const bottom = dockTop - 8;
   const band = { top, bottom: Math.max(top + 80, bottom) };
   const moved = !S.band || Math.abs(S.band.top - band.top) > 1 || Math.abs(S.band.bottom - band.bottom) > 1;
+  if (moved) {                                // the film layers (depth of field, letterbox) and the sheets follow the band
+    const r = document.documentElement.style;
+    r.setProperty('--band-top', Math.round(band.top) + 'px');
+    r.setProperty('--band-bot', Math.round(band.bottom) + 'px');
+    r.setProperty('--dock-h', Math.round(S.h - dockTop) + 'px');
+  }
   S.band = band;
   if (S.stage) S.stage.band = band;
   S.fill = Math.max(0.3, Math.min(1, (band.bottom - band.top) / S.h));
@@ -128,6 +140,7 @@ function restart() {
 
 function openReel(id, play) {
   const tr = S.trades.find((t) => t.id === id) || S.trades[0];
+  if (S.hl && S.hl.ids[S.hl.i] !== tr.id) S.hl = null;         // a reel picked by hand ends the highlights
   if (!tr) return;
   S.tr = tr;
   S.T = tr.tStart;
@@ -144,7 +157,7 @@ function openReel(id, play) {
   $('#title').textContent = `${tr.bot === 'ATLAS' ? 'ATLAS · ' + tr.strat : 'LIT'} · ${tr.side}`;
   $('#sub').textContent = `${dayLabel(tr.day)} · ${hhmm(tr.entry.t, tr.off)} ET`;
   const src = $('#srcBadge');
-  src.textContent = tr.src === 'backtest' ? 'REPLAY' : tr.src.toUpperCase();
+  src.textContent = ({ backtest: 'REPLAY', pc: 'PC BARS' })[tr.src] || tr.src.toUpperCase();
   src.dataset.src = tr.src;
   src.hidden = S.demo;
   document.body.dataset.outcome = '';
@@ -154,6 +167,68 @@ function openReel(id, play) {
   cc.sync(S.T, false);
   setPlaying(!!play);
   if (play) titleCard(tr);
+  hlBadge();
+}
+
+// ---------------------------------------------------------------- highlights: the five best trades by $, back to back
+function startHighlights() {
+  const ids = sortReels(S.trades.filter((t) => t.usd > 0), 'usd').slice(0, HL_N).map((t) => t.id);
+  if (!ids.length) return;
+  S.hl = { ids, i: 0, at: null };
+  showReels(false);
+  openReel(ids[0], true);
+}
+
+function nextHighlight() {
+  if (!S.hl) return;
+  if (S.hl.i + 1 >= S.hl.ids.length) { S.hl = null; hlBadge(); showReels(true); return; }
+  S.hl.i++;
+  S.hl.at = null;
+  openReel(S.hl.ids[S.hl.i], true);
+}
+
+function hlBadge() {
+  const b = $('#hlBadge');
+  b.hidden = !S.hl;
+  if (S.hl) b.textContent = `HIGHLIGHT ${S.hl.i + 1}/${S.hl.ids.length}`;
+  $('#stNext').textContent = S.hl ? (S.hl.i + 1 < S.hl.ids.length ? 'Next highlight' : 'All reels') : 'Next reel';
+}
+
+/** Oracle's link (#trade=<day>_<HHMM>_<side>): the reel of that trade from any source, else the closest one that day. */
+function findTrade(key) {
+  const exact = S.trades.find((t) => t.id.split('.').slice(1).join('.') === key);
+  if (exact) return exact;
+  const m = /^(\d{4}-\d{2}-\d{2})_(\d{2})(\d{2})_(long|short)$/.exec(key);
+  if (!m) return null;
+  const want = (+m[2]) * 60 + (+m[3]);
+  const near = S.trades.filter((t) => t.day === m[1] && t.side === m[4].toUpperCase())
+    .map((t) => { const [h, mi] = hhmm(t.entry.t, t.off).split(':').map(Number); return [Math.abs(h * 60 + mi - want), t]; })
+    .filter(([d]) => d <= 30).sort((a, b) => a[0] - b[0]);
+  return near.length ? near[0][1] : null;
+}
+
+function openTrade(key) {
+  const t = findTrade(key);
+  if (t) { showReels(false); reels.say(''); openReel(t.id, true); return true; }
+  reels.say(`No film of the ${key.replace(/_/g, ' ')} trade yet: the reels are the replays and the published trades.`);
+  showReels(true);
+  return false;
+}
+
+// ---------------------------------------------------------------- the lens flare on the entry (DOM ghosts, no draw call)
+const FLARE = [0, 0, 1, 0.55, 0.2, -0.25, -0.6, -1.05];   // core, streak, ring at the light; the ghosts along the axis
+function flare(p) {
+  if (!p || reduced) return;
+  const f = $('#flare'), cx = S.w / 2, cy = (S.band.top + S.band.bottom) / 2;
+  [...f.children].forEach((g, i) => {
+    const k = i < 3 ? 1 : FLARE[i];
+    g.style.transform = `translate3d(${(cx + (p.x - cx) * k).toFixed(1)}px, ${(cy + (p.y - cy) * k).toFixed(1)}px, 0)`;
+  });
+  f.classList.remove('go');
+  void f.offsetWidth;
+  f.classList.add('go');
+  clearTimeout(flare.t);
+  flare.t = setTimeout(() => f.classList.remove('go'), 1800);      // off the compositor once it has faded
 }
 
 // the opening title of a reel (never the result: that is the film's ending)
@@ -178,10 +253,7 @@ function showStats(on) {
 function showReels(on) {
   $('#reels').hidden = !on;
   $('#reelsBtn').setAttribute('aria-expanded', String(!!on));
-  if (on) {
-    const cur = $('#reelList .reel[aria-current="true"]');
-    if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: 'center' });
-  }
+  if (on) $('#reels').scrollTop = 0;                 // the gallery opens on its best posters
 }
 
 // ---------------------------------------------------------------- the frame loop
@@ -197,6 +269,8 @@ function frame(now) {
   const wall = S.wall;
   if (S.playing) {
     const slow = S.dir ? S.dir.slowmo(wall) : 1;
+    if ((slow < 0.6) !== (S.slow < 0.6)) document.body.dataset.slowmo = String(slow < 0.6);   // the letterbox, on change only
+    S.slow = slow;
     S.T = Math.min(S.tr.tEnd, S.T + dt * S.speed * 60 * slow);
     const fresh = cc.sync(S.T, true);
     for (const e of fresh) cue(e, wall);
@@ -209,13 +283,18 @@ function frame(now) {
     }
   }
   if (S.ended && !S.statsShown && wall >= S.statsAt) showStats(true);
+  if (S.hl && S.statsShown && !reduced) {                       // highlights: the next one after a look at the card
+    if (S.hl.at == null) S.hl.at = wall;
+    else if (wall - S.hl.at > HL_GAP) nextHighlight();
+  }
+  if (!S.playing && S.slow < 1) { S.slow = 1; document.body.dataset.slowmo = 'false'; }
   if ((S.frameN = (S.frameN || 0) + 1) % 20 === 0 && measureBand()) lens();  // the HUD / captions changed height
   S.stage.update(S.T, dt, wall);
   $('#cc').classList.toggle('rest', wall - (S.ccAt || 0) > 7);
   if (S.dir) {
     S.dir.update(dt, wall, { b: S.stage.bounds(S.T), head: S.stage.head, phase: phase(S.tr, S.T), aspect: S.w / S.h, dx: S.stage.dx, fill: S.fill });
     // depth of field, faked: the fog thickens with the shot's distance so the far tape melts into the dark
-    if (S.dir.s) S.stage.scene.fog.density = 0.55 / Math.max(8, S.dir.s.d + 4);
+    if (S.dir.s) { S.stage.scene.fog.density = 0.55 / Math.max(8, S.dir.s.d + 4); S.stage.setFocus(S.dir.s.d); }
   }
   S.stage.render(S.camera);
   callouts.update(wall, S.project, S.w, S.h, S.band.top, S.band.bottom);
@@ -231,7 +310,7 @@ function cue(e, wall) {
   if (S.dir) S.dir.beat(e.k, wall);
   const tr = S.tr;
   let at = { t: e.t - tr.B.s, price: e.price != null ? e.price : S.stage.head ? S.stage.head.price : tr.entry.px };
-  if (e.k === 'entry') at = { t: tr.entry.t, price: tr.entry.px };
+  if (e.k === 'entry') { at = { t: tr.entry.t, price: tr.entry.px }; flare(S.project(at)); }
   if (e.k === 'exit') at = { t: tr.exit.t, price: tr.exit.px };
   const extra = e.k === 'exit' ? `${fmtUsd(tr.usd)} · ${fmtR(tr.r)}` : null;
   callouts.add(e, at, wall, tr.off, extra);
@@ -338,9 +417,41 @@ function postCard() {
   try { window.parent.postMessage({ jarvis: 1, href: location.href, card }, 'https://demetrades2000-coder.github.io'); } catch (e) { /* not in Jarvis */ }
 }
 
+// ---------------------------------------------------------------- themes (OLYMPUS)
+const OWN_ACCENT = '#7fb4ff';
+const hexOk = (c) => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
+/** '#rrggbb' a blended toward b by t (0 = a untouched): the kit's own mix when it is there. */
+function blend(a, b, t) {
+  const TH = window.OLYMPUS_THEMES;
+  if (TH && typeof TH.mix === 'function') return TH.mix(a, b, t);
+  const n = (h, i) => parseInt(h.substr(i, 2), 16);
+  return '#' + [1, 3, 5].map((i) => Math.round(n(a, i) + (n(b, i) - n(a, i)) * t).toString(16).padStart(2, '0')).join('');
+}
+/** An OLYMPUS theme's tokens onto the film's accent (the liquidity planes, the scrubber, the captions' edge). The kit's
+    themes (they carry harmony / mix) lean the app's own blue toward the theme accent by `harmony` (the default theme
+    changes nothing); the kit itself repaints --bg / --panel and the fog. Plain tokens ({accent, bg}) apply as they are. */
+function applyTheme(tokens) {
+  const t = tokens || {}, r = document.documentElement.style, kit = t.harmony != null || t.mix != null;
+  let accent = t.accent || t['--oly-accent'] || t['--accent'];
+  const bg = kit ? null : (t.bg || t.background || t['--bg']);
+  if (kit) accent = hexOk(accent) ? blend(OWN_ACCENT, accent, +t.harmony || 0) : OWN_ACCENT;
+  if (hexOk(accent)) r.setProperty('--blue', accent);
+  if (hexOk(bg)) r.setProperty('--bg', bg);
+  if (S.stage && S.stage.applyTheme) S.stage.applyTheme(hexOk(accent) ? accent : null, hexOk(bg) ? bg : null);
+  return { accent: hexOk(accent) ? accent : null, bg: hexOk(bg) ? bg : null };
+}
+function hookTheme() {
+  const K = O || window.Olympus || null;
+  if (K && typeof K.onTheme === 'function') K.onTheme((tk) => applyTheme(tk));
+  if (K && typeof K.theme === 'function') { try { const tk = K.theme(); if (tk && typeof tk === 'object') applyTheme(tk); } catch (e) { /* no theme */ } }
+}
+
 function route() {
   const h = decodeURIComponent(location.hash.slice(1));
   if (h === 'reels') { showReels(true); return; }
+  if (h === 'highlights') { if (!S.hl) startHighlights(); return; }
+  const k = /^trade=(.+)$/.exec(h);
+  if (k) { openTrade(k[1]); return; }
   const m = /^reel=(.+)$/.exec(h);
   if (m && S.trades.some((t) => t.id === m[1]) && (!S.tr || S.tr.id !== m[1])) openReel(m[1], true);
 }
@@ -364,9 +475,11 @@ async function start() {
   });
   $('#stReplay').addEventListener('click', () => restart());
   $('#stNext').addEventListener('click', () => {
+    if (S.hl) { nextHighlight(); return; }
     const i = S.trades.indexOf(S.tr);
     openReel((S.trades[(i + 1) % S.trades.length] || S.tr).id, true);
   });
+  $('#hlBtn').addEventListener('click', () => startHighlights());
   $('#stReels').addEventListener('click', () => { showStats(false); showReels(true); });
   setSpeed(S.speed);
   if (reduced) document.body.dataset.reduced = 'true';
@@ -381,8 +494,11 @@ async function start() {
   const h = decodeURIComponent(location.hash.slice(1));
   const m = /^reel=(.+)$/.exec(h);
   const first = m && S.trades.some((t) => t.id === m[1]) ? m[1] : S.trades[0].id;
-  openReel(first, qs.get('autoplay') !== '0');
+  const tk = /^trade=(.+)$/.exec(h);
+  if (h === 'highlights') startHighlights();
+  else if (!(tk && openTrade(tk[1]))) openReel(first, qs.get('autoplay') !== '0' && !tk);
   if (h === 'reels') showReels(true);
+  hookTheme();
   window.addEventListener('hashchange', route);
   postCard();
   document.body.dataset.ready = 'true';
@@ -394,7 +510,7 @@ async function start() {
 window.__odeon = {
   state: () => ({ T: S.T, playing: S.playing, ended: S.ended, speed: S.speed, id: S.tr && S.tr.id, demo: S.demo, lite: S.lite,
     stats: S.statsShown, captions: cc.texts(), crossed: S.crossed.slice(), tStart: S.tr && S.tr.tStart, tEnd: S.tr && S.tr.tEnd,
-    gl: document.body.dataset.gl, n: S.trades.length }),
+    gl: document.body.dataset.gl, n: S.trades.length, slow: S.slow, hl: S.hl && { i: S.hl.i, ids: S.hl.ids.slice() } }),
   trade: () => S.tr,
   debug: () => {
     const b = S.stage && S.stage.bounds ? S.stage.bounds(S.T) : {};
@@ -403,6 +519,7 @@ window.__odeon = {
       yStop: b.yStop, yEntry: b.yEntry, yTarget: b.yTarget, local: L, cam: S.camera && S.camera.position.toArray() };
   },
   seek, play: () => setPlaying(true), pause: () => setPlaying(false), speed: setSpeed, open: (id, play) => openReel(id, play !== false),
+  highlights: () => startHighlights(), applyTheme, find: (key) => { const t = findTrade(key); return t ? t.id : null; },
 };
 
 start().catch((e) => {

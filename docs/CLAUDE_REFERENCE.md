@@ -29,6 +29,7 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
 | The PC (Windows) | NinjaTrader, the bot server | git auto-update; NinjaTrader login and live arming are the owner's | — |
 | DAPHNE (strategy-tree search page) | `tools/strategytree/` (engine), `tools/web_public/tree/` (page, tree.json, demo.json, jarvis.json) | rerun `python -X utf8 -m tools.strategytree` (~3 CPU-min) for new data, then same as Zenith | `tests.test_strategytree`, `tests.shots_strategytree` |
 | OLYMPUS kit (shared look, veil, one 3D quality `jfx`, perf rules of the nine 3D apps) | `tools/web_public/olympus/`, `docs/OLYMPUS_DESIGN.md` | same as Zenith (published with every build) | `tests.test_olympus_kit` (+ the app's own test) |
+| PANTHEON (free data gods: liquidity, rates, vol, calendar, COT, dollar, credit, crypto; council verdict; `states.json` for Data City) | `tools/pantheon/` (fetchers + builder), `research/pantheon/`, `tools/web_public/pantheon/`, `docs/PANTHEON.md` | the CRONOS nightly task `pantheon`; published with every build | `tests.test_pantheon` (`fast` without the browser) |
 | CRONOS (nightly refresh of the OLYMPUS research apps) | `tools/cronos/`, `.github/workflows/cronos.yml` (+ `datacity.yml`), branches `cronos` / `datacity`, `docs/CRONOS.md` | main -> runs on its own schedule; the next cloud-monitor publish pulls the branches and stamps the cards | `tests.test_cronos` (`--quick` without the site builds) |
 | PC speed (Surface + main PC) | `CLEAN_PC.bat`, `scripts/clean_pc.ps1`, `docs/PC_PERFORMANCE.md` | main -> the PC's auto-update; the main PC gets the `PC_KIT` copy (OneDrive or Desktop) | `tests.test_clean_pc` |
 
@@ -879,13 +880,46 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
       captions of both sides lit word by word, a HUD arc with the bots' verdict, and holographic cards of the numbers cited
       (`fragmentsOf`: the reply's card rows and "Name: $x" lines, copied as written) that float out as the name is spoken.
     - Turns: listen -> the shell's `answer(t, true)` (the same path as the Jarvis screen: brain, chat log, controls) ->
-      speak `r.speak` -> listen; 3 silent turns = waits for a tap; tap = barge-in / pause. The voice: best English voice,
-      British first (Daniel premium / enhanced), novelty voices never; VOICE button steps through them (`jarvis.vmVoice`).
+      speak `r.speak` -> listen; 3 silent turns = waits for a tap; tap = barge-in / pause. The voice (since 2026-11-03: tts.js,
+      the same as the Jarvis screen): a natural female voice first (Ava / Zoe premium), novelty voices never; VOICE button
+      steps through them (`jarvis.vmVoice` + `jarvis.voiceCfg.voice`).
     - No recognition (Home Screen app) or the recognizer refusing the mic: a type-to-talk field, said once per launch.
       Reduce motion (unless a 3D level was picked) / 3D Off: no loop, no analyser, all shown at once. The mic is released
       on every exit (tracks stopped, AudioContext closed). Loaded 1.5 s after the start, never part of it.
     - Worker jarvis-v14, jarvis.css?v=j10, What's new j9. Test `python -X utf8 -m tests.test_jarvis_voice` (fake mic flags,
       mocked recognition / voice; screenshots in `research/handoff/2026-11-03/voice/`).
+  - **The personal assistant + her voice (2026-11-03, owner: "my own personal assistant that I can tell anything. ANYTHING.
+    And it responds with a voice that doesn't sound like a bot. Should be a female voice."):** two new optional modules.
+    - `assistant.js` `createAssistant()` (no imports, no network; localStorage `jarvis.assistant.v1`, persona `jarvis.persona`
+      {name 'Jarvis', style short | chatty}). The brain asks it after a pending "yes"/"no" (memory.js) and before the vault:
+      facts ("my mom's birthday is March 3", "I'm allergic to …", "I love …", "remember …", "call me D"; same subject =
+      replaced; "forget …"; passwords / keys / card numbers refused, never kept), recall ("when is my mom's birthday", "what
+      did I tell you about Sam", "what do you know about me"; a weak "what's my X" only on a match, so "what's my balance"
+      stays the brain's), reminders ("remind me at 5 / in 20 minutes / tomorrow at 9am / on friday / tonight to …"; no time
+      = the to-do list; `due()` fires each once, a missed one marked late), to-dos (Jarvis's own list: the Planner's data is
+      only changed by the Planner, so nothing is written into it), notes, maths and money (a safe parser, no eval), talk style
+      and her name ("your name is Nova").
+    - With the vault connected, what she kept is offered to Obsidian through `memory.offer(kind, text)` (the same confirmed,
+      append-only write: "Save it to … too? Say yes."). `memory.connected` says whether it is.
+    - Open conversation: `assistant.isChat()` (life, school, gym, money, girls, plans, venting, long messages; never a
+      system word) after the rule answers (greetings, thanks, help stay). Smart mode on: `smartAnswer(…, chat)` with
+      `assistant.persona()` as the system prompt's head (a warm, sharp, loyal young woman; money first; his trading rules;
+      the talk style; what he told her; 988 if he talks about hurting himself) + the FACTS JSON for every number of his;
+      the model's `[remember: …]` line is learned (`assistant.learn`), never shown or said. No key: her short line + the
+      3-step key hint (`assistant.offline`). "should I …" chat is never "Your call, sir".
+    - `tts.js` (the shared voice, also voice mode's): `voiceScore` female natural first (Ava > Zoe > Allison > Samantha;
+      premium +50, enhanced +30, compact −10; male −40; Zarvox / Bubbles / Bad News / Fred … = never), `cleanSpeech` (no
+      markdown, emojis, links, symbols; $ / k / % / per month in words), `speechChunks` (sentences ≤ 180 chars, commas for a
+      breath), `createSpeaker` (one utterance per chunk, 140 ms between sentences; rate / pitch 1.0 by default). The
+      optional cloud voice: Groq Orpheus (`canopylabs/orpheus-v1-english`, voice hannah) on his own Groq key, only with the
+      Voice sheet's switch on; any error = the phone's voice, a 429 parks it for the day. Groq lists Orpheus on its free
+      tier (no card) with small daily limits (unverified from the cloud session: console.groq.com was not reachable).
+    - Shell (`index.html`): loads both after the start (`ready.tts`, `ready.assistant`, the brain waits 4 s for the
+      assistant); `speak()` uses the speaker; reminders checked every 15 s and on open (chat line, toast, voice, a
+      Notification when allowed: the first reminder offers "Allow"; iPhone only from the Home Screen app); the Voice sheet:
+      voices best first with labels, talk style, the cloud switch, a one-time Ava (Premium) tip (`jarvis.tip.ava`).
+    - Tests: `tests.test_jarvis_assistant` (node on a mocked ET clock + mocked Groq, then Chromium); test_jarvis_voice
+      now expects Ava (Premium). New files for the worker's SHELL: `assistant.js`, `tts.js`.
   - **Icons:** the re-rendered old reactor icon (`?v=j2`).
   - **Workers:**
     - jarvis-v4: a 3.5 s navigation race; shell files stale-while-revalidate once a page came from the copy.
@@ -928,6 +962,32 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   - Kalshi 404 = "NOT LINKED" (grey), asked once per page load. Planner: read from its own sync (`planner.sync`) when set up on
     this phone, else one grey "open the Planner once" line.
   - Tests: test_jarvis_brain (165), test_jarvis_system (36), test_jarvis_obsidian (46).
+- **Zenith shell (2026-11-03 day, owner: "way higher quality, 3D UI effects", "organized ... like a maid swept"; the map
+  table is in `docs/ZENITH_COMPARISON.md` "The map"):**
+  - Files: `tools/web_public/zenithcore.js` = `web_next/js/next/zenithcore.js` (byte-identical classic script,
+    `window.ZenithFX`), phone glue `zenith.js` + `zenith.css` (loaded last: after pro.js / polish.css). Read-only UI.
+  - Where am I: one header on every page, breadcrumb TAB › SECTION over the title; a hero that only repeated the title
+    keeps its description (`.zn-hdup`); bot main pages are titled by their chip ("ZLARIOR › TODAY / Overview"); Holodeck /
+    Live View (old "chart" group) sit under Home with Home lit (display only, routes unchanged).
+  - Money first: Home's greeting carries one glass panel, Today · This month · Eval P&L in real $ over the 3D energy
+    ribbon (accounts' `days` from the live board + today's live $); each bot's Today has its own ribbon with real $ and
+    $ a month at that pace. Edge and Trades show $ per trade next to the average R.
+  - Look: one glass card (gradient, 1 px rim, top edge light, no per-card blur or drop shadow: scroll frames), one
+    spacing scale `--zn-s1..s6` (4-32 px), one dashed empty state, a shared glint (edge light following the finger /
+    mouse) + up to 4° tilt (`ZenithFX.glass`, one overlay, nothing per frame unless touched), numbers that count to their
+    new value on live redraws, an invisible 44 px hit area on every compact control.
+  - Motion: View Transitions between pages (`#page` named `zn-page`, header / tabs / sub-bar pinned), CSS slide as the
+    fallback; `.main { overflow-x: clip }` ended the 28 px sideways scroll of the old slide.
+  - Quality: `jfx` (Jarvis / OLYMPUS key; Settings > 3D effects > 3D quality writes it): off = still, low = no tilt or glow
+    pass; reduced motion and Zenith's own 3D effects Off (default under automation) = nothing moves (`ZenithFX.use3d`).
+    The ribbons share one loop: <= 30 fps, none while scrolling, off screen or hidden.
+  - Themes: `ZenithFX.applyTokens()` is the one token writer (PC `skins.js` accent goes through it); `ZenithFX.olympus()`
+    maps an Olympus theme (id, colour object or JSON in `localStorage['olympus.theme']`, `Olympus.onTheme`, the storage
+    event) onto it; an unknown id clears back to Zenith's own look. Worker le-public-v52, PC le-shell-next-v32.
+  - Also fixed: "On this page" chips jump and light the card (a smooth scroll could stall short; test_ui_polish failed on
+    the base). test_holo_ui's "replay advances" failed on the base and here while the shared machine was at load 40-60
+    (4 cores) and passes 62/62 at a lower load: a timing flake, the Holodeck code is unchanged.
+  - Test `python -X utf8 -m tests.test_zenith_shell` (23).
 - **Zenith Scorecard (2026-11-03, night quest "the best trading dashboard there is"; `docs/ZENITH_COMPARISON.md`):** one renderer
   `tools/web_public/procore.js` = `web_next/js/next/procore.js` (byte-identical, `window.ProUI`), phone glue `pro.js` (`#/pro/<part>`:
   Zlarior > Results first chip, More > Insight, a Home card under the quick tiles), PC glue `web_next/js/next/pro.js` (sidebar
@@ -993,6 +1053,24 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
     risk (14-day earliest-date-first vs 60% of free time, Block the best gap), Daily goal (ring, 7 days, days in a row;
     device key `planner.flow.goal`). `ext-flow.js`, its own `planner/tests/flow.test.js` (41). Workload and Daily goal fold
     to Dashboards lines so todayorg's Today height limit holds.
+  - **40-olympus (2026-11-03, owner "3D, futuristic, organized like a maid swept"):** `ext-olympus.js`, its own
+    `planner/tests/olympus.test.js` (47).
+    - Look: glass cards (translucent in dark; light keeps theme.test's exact colours, depth from shadows / background
+      images), an aurora that glides once per view change, rise-in on a view change (not at start), mouse tilt, press-in,
+      tick pop + short vibrate. No blur filters, no endless full-screen motion, no dialog fades: with them the Planner's own
+      timing-sensitive tests (habits, journal, people deletes) failed under load. Small endless pulses only (status dot,
+      NOW beam).
+    - Today swept: one-line date, an even button row on phones (Focus first), hairline section labels, the status line
+      with a green / red dot, a 12 px card gap on phones.
+    - Day timeline fused into the status line (no header of its own): today's events in up to 3 lanes, a NOW beam, the
+      "wide open" empty state. todayorg's busy phone Today: 4563 px (4560 without, limit 4571): keep it that small.
+    - Focus mode (`#focus-mode`, palette, All tools, the header's Focus, a tap on the timer bar): a full-screen ring that
+      drives the app's own focus timer (openFocus + its form, the bar's buttons), so logging is unchanged; a 5-min break
+      in memory.
+    - Switches: device `planner.olympus.fx`=off; Olympus `jfx` off = plain, low = still; prefers-reduced-motion = still.
+      Olympus themes: `olympus.theme` = a theme id; tokens from `OLYMPUS_THEMES.tokens(id, 'page')` (the Jarvis frame's, or
+      `../olympus/themes.js` loaded once): accent / accent2 / glow -> `--ox-a/--ox-b/--ox-glow`. No key, `olympus`, an
+      unknown id or no themes.js = the Planner's own indigo / cyan.
   - **Test:** test_planner_addons (section f checks the real patches against the live branch and that each `ext-*.js` is
     loaded once).
   - **When the Planner session deploys again:** rebase or refresh the patches if test_planner_addons f reports a skip.

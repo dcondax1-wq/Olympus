@@ -1,5 +1,6 @@
 // OLYMPUS Mind: the data adapter. The only door to the vault is Jarvis's own module, ../jarvis/obsidian.js:
-//   graphSnapshot() -> null (not connected) | {v: 1, t, notes: [{id, title, path, tags, links, mtime, words, kind, snippet?}],
+//   graphSnapshot() -> null (not connected) | {v: 1, t, notes: [{id, title, path, tags, links, mtime, words, kind, snippet?,
+//                                                                  preview? (optional, newer Jarvis: the note's first lines)}],
 //                                             learned: [{t, text, note}]}
 //   onIndexChange(cb) -> unsubscribe
 // This page never reads a token, never fetches and never sends anything: it only calls those two functions.
@@ -13,6 +14,8 @@ const KINDS = new Set(['note', 'daily', 'memory', 'inbox', 'me']);
 const MAX_NOTES = 5000;
 const POLL_MS = 60000;                              // a fresh snapshot every minute, besides onIndexChange
 const text = (v, max = 300) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : '');
+/** Note text for the card's markdown preview: line breaks kept (at most one blank line in a row), spaces tidied, capped. */
+const lines = (v, max) => (typeof v === 'string' ? v.replace(/\r\n?/g, '\n').replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n').replace(/\n{3,}/g, '\n\n').trim().slice(0, max) : '');
 const ms = (v) => { const x = Number(v); return Number.isFinite(x) && x > 0 ? (x < 1e11 ? x * 1000 : x) : 0; };   // seconds or ms
 const strings = (v, max) => (Array.isArray(v) ? v.filter((x) => typeof x === 'string' || typeof x === 'number').map(String).slice(0, max) : []);
 const baseName = (p) => p.split('/').pop().replace(/\.md$/i, '');
@@ -34,7 +37,7 @@ function normalize(raw) {
       mtime: ms(n.mtime),
       words: Math.max(0, Math.floor(Number(n.words) || 0)),
       kind: KINDS.has(n.kind) ? n.kind : 'note',
-      snippet: text(n.snippet, 600),
+      snippet: lines(n.preview, 1500) || lines(n.snippet, 600),
     });
     if (notes.length >= MAX_NOTES) break;
   }

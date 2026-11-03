@@ -994,7 +994,20 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
   .acc-grid i { height: 36px; }
 }
 </style>
-<link rel="stylesheet" href="space.css?v=1"><link rel="stylesheet" href="mission.css?v=1"><link rel="stylesheet" href="polish.css?v=1">
+<link rel="stylesheet" href="space.css?v=1"><link rel="stylesheet" href="mission.css?v=1"><link rel="stylesheet" href="polish.css?v=1"><link rel="stylesheet" href="zenith.css?v=1">
+<!-- OLYMPUS theme (olympus/themes.js; the owner picks it in Jarvis: Look, OLYMPUS theme; key 'olympus.theme'): the shared --oly-*
+     tokens, and on Zenith's own dark look its page and surfaces in the theme's colours (its accent stays Zenith's own). Loaded
+     async, never waited on; the default theme changes nothing. -->
+<script>(function () {
+  var Z = { '--page': '#07080c', '--surface': '#10131a', '--surface-2': '#161a23', '--surface-3': '#1e2330' };
+  function go() {
+    var T = window.OLYMPUS_THEMES; if (!T) return;
+    T.apply('stage', { meta: true, extra: function (t) {
+      if (document.documentElement.getAttribute('data-theme') === 'light') return {};      /* Zenith's own light look stays its own */
+      var o = { '--line': t.line, '--ink': t.text }; for (var k in Z) o[k] = T.mix(Z[k], k === '--page' ? t.bg : t.bg2, t.mix); return o; } });
+  }
+  var s = document.createElement('script'); s.src = 'olympus/themes.js?v=o2'; s.async = true; s.onload = go; document.head.appendChild(s);
+})();</script>
 <script>
 /* Inside Jarvis (2026-11-01, owner: "on Jarvis I can switch between that mode [Jarvis], zenith mode with all of the
    features"): Zenith in a same-site frame of the Jarvis hub (jarvis/zenith-mode.js) knows it before the first paint:
@@ -2324,7 +2337,7 @@ VIEWS.trades = (el) => {
     + `<div class="stats">
       ${statBox('Trades', `<span data-count="${s.n}">${s.n}</span>`, `${num(s.tpw, 1)} a week`)}
       ${statBox('Net', `<span data-count="${s.net}" data-fmt="s$">${susd(s.net)}</span>`, `${kusd(s.pm)} a month · win ${num(s.win, 1)}%`, cls(s.net))}
-      ${statBox('Profit factor', s.pf != null ? fPF(s.pf) : '—', `average trade ${fR(s.avg)}`)}
+      ${statBox('Profit factor', s.pf != null ? fPF(s.pf) : '—', `average trade ${s.n ? susd(Math.round(s.net / s.n)) + ' · ' : ''}${fR(s.avg)}`)}
       ${statBox('Half size', s.half, isLIT() ? 'weekly-stop trades' : 'cold-streak trades')}</div>
     ${!paperSrc && fxOn() ? `<div class="card fx-card"><div class="card-h"><h3>Trade galaxy · ${rows.length} trades</h3><span class="meta">drag to turn · tap a star for its report</span></div><div class="fx3d galaxy" id="trGal"></div></div>` : ''}
     ${!paperSrc ? `<div class="card"><div class="card-h"><h3>Equity · the trades shown</h3><span class="meta">cumulative net $</span></div><div id="trEq"></div></div>` : ''}
@@ -4641,6 +4654,8 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.se
 <script src="polish.js?v=1" defer></script>
 <script src="procore.js?v=1" defer></script>
 <script src="pro.js?v=1" defer></script>
+<script src="zenithcore.js?v=1" defer></script>
+<script src="zenith.js?v=1" defer></script>
 <script src="embed.js?v=1" defer></script>
 </body>
 </html>

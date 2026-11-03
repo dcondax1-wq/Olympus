@@ -341,7 +341,7 @@ def static_checks():
           and isinstance(j.get("t"), int) and j.get("theme") == THEME and re.fullmatch(r"#[0-9a-f]{6}", j["theme"])
           and len(jj.encode()) <= 8192 and not any(re.search(r"<[a-z/]|&[a-z]+;|\n", x) for x in texts), j)
     b = read(os.path.join(ROOT, "tools", "build_web_dashboard.py"))
-    check("a. the site build publishes tyche/", 'for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "olympus"):' in b)
+    check("a. the site build publishes tyche/", bool(re.search(r'for app in \([^)]*"tyche"[^)]*\):', b)))
     sw = read(os.path.join(WEB, "sw.js"))
     m = re.search(r"const OTHER_APPS = \[([^\]]*)\]", sw)
     check("a. the root worker leaves tyche/ alone (OTHER_APPS)", bool(m) and "'tyche/'" in m.group(1), m and m.group(1))
@@ -512,6 +512,11 @@ def v3_checks(br, origin, vw):
           and "Best 20–40¢ +28.4%" in sc[3] and "worst 90–95¢ " + MINUS + "4.1%" in sc[3], sc)
     bad = orb_free(p)
     check(f"d. {tag}: no sideways scroll, the orb's corner free (v3)", no_sideways(p) and not bad, bad)
+    lk = p.evaluate("""() => { const a = document.getElementById('to-kalshi'), r = a.getBoundingClientRect(), s = getComputedStyle(document.documentElement);
+        window.applyTheme({ accent: '#ff00aa', text: 'x;y' }); const g = s.getPropertyValue('--gold').trim(), t = s.getPropertyValue('--text').trim();
+        window.applyTheme(null); return [a.getAttribute('href'), Math.round(r.height), g, t, s.getPropertyValue('--gold').trim(), window.tyche.intro]; }""")
+    check(f"d. {tag}: the link to the Kalshi page (44 px), applyTheme (hex only, null = Tyche's gold), the intro camera move done",
+          lk[0] == "../kalshi/" and lk[1] >= 44 and lk[2] == "#ff00aa" and lk[3] == "#fff8e8" and lk[4] == "#ffcf5a" and lk[5] == 1, lk)
     shot(p, f"v3-scales-{tag}")
     errs = real_errors(log)
     check(f"d. {tag}: no console errors with the v3 feed", not errs, errs)

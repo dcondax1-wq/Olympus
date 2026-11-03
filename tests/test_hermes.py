@@ -8,8 +8,12 @@
   e. the page in Chromium at 390 x 844: no errors, swipe / tap / keys move through the cards, periods, counters, the share
      button makes a PNG blob, nothing past the 16 px gutter or in the orb's 80 x 160 corner, no sideways scroll, peers
      (Fates odds, Data City, Kalshi, Planner) and escaping, reduced motion, screenshots to research/handoff/2026-11-03/hermes/
+  f. the 2026-11-03 day upgrade: a scene per card (aurora on a green week, horizon grid on the evals, warp on the hall),
+     confetti on a green week, the all-time hall card (lifetime $, best trade, best day, longest green run, win rate),
+     pause / play, a tap on the progress bar jumps, "Share the week" makes one PNG of the whole recap, the 3D depth and
+     kinetic type, LITE (fewer particles), applyTheme(theme) and the OLYMPUS theme hook (OLYMPUS.theme() / onTheme)
     python -X utf8 -m tests.test_hermes            (temp folders + a local server; nothing else touched)
-HERMES_NO_BROWSER=1 skips part e.
+HERMES_NO_BROWSER=1 skips parts e and f. HERMES_SHOTS=<dir> puts the screenshots there instead.
 """
 from __future__ import annotations
 
@@ -30,7 +34,7 @@ sys.path.insert(0, ROOT)
 from tools.hermes import build, fixture, wrapped  # noqa: E402
 
 PAGE = os.path.join(ROOT, "tools", "web_public", "hermes")
-SHOTS = os.path.join(ROOT, "research", "handoff", "2026-11-03", "hermes")
+SHOTS = os.environ.get("HERMES_SHOTS") or os.path.join(ROOT, "research", "handoff", "2026-11-03", "hermes")
 RES = []
 
 
@@ -320,6 +324,7 @@ def run_browser():
             check("e. the money counter lands on +$2,072.50", p.inner_text(".card.on .count") == "+$2,072.50", p.inner_text(".card.on .count"))
             check("e. the progress bar fills while the card shows", p.evaluate("parseFloat(getComputedStyle(document.querySelector('#prog i')).transform.split(',')[0].replace('matrix(',''))") > 0.05)
             p.screenshot(path=os.path.join(SHOTS, "01_money.jpg"), type="jpeg", quality=82)
+            p.evaluate("HERMES.go(0)"); p.wait_for_timeout(200)        # a fresh 8 s on the first card (a slow screenshot can use it up)
             p.mouse.move(320, 420); p.mouse.down(); p.mouse.move(80, 430, steps=6); p.mouse.up()
             p.wait_for_timeout(250)
             s1 = st(p)
@@ -353,8 +358,8 @@ def run_browser():
                 if cid == "kalshi":
                     teaser = p.inner_text(".card.on")
                 p.screenshot(path=os.path.join(SHOTS, f"demo_{i + 1:02d}_{cid}.jpg"), type="jpeg", quality=82)
-            check("e. the demo deck: money, best, worst, eval, discipline, learned, Kalshi teaser, next",
-                  ids == ["money", "best", "worst", "eval", "discipline", "learned", "kalshi", "next"], ids)
+            check("e. the demo deck: money, best, worst, eval, discipline, learned, Kalshi teaser, the hall, next",
+                  ids == ["money", "best", "worst", "eval", "discipline", "learned", "kalshi", "hall", "next"], ids)
             check("e. every card: inside the 16 px gutters, nothing in the orb's 80 x 160 corner, no sideways scroll", not overflow, overflow)
             check("e. without the Kalshi feed its card is a teaser", "COMING SOON" in teaser.upper() and "joins next" in teaser, teaser[:200])
             p.evaluate("HERMES.go(0)"); p.wait_for_timeout(300)
@@ -371,6 +376,73 @@ def run_browser():
                   and p.inner_text(".card.on .count") == f"+${mo:,.2f}" and "month" in p.url, (st(p), p.inner_text(".card.on .count")))
             p.screenshot(path=os.path.join(SHOTS, "02_month.jpg"), type="jpeg", quality=82)
             check("e. no page errors, no failed request of the page's own files (demo)", not p.errs and not p.bad, (p.errs, p.bad))
+            ctx.close()
+
+            # ---- f. the day upgrade: confetti, the hall, pause / play, the progress bar, Share the week, themes, LITE
+            ctx, p = page(expect=("/hermes/wrapped.json",))            # still the demo site: no wrapped.json
+            ready(p, base)
+            p.wait_for_timeout(900)
+            check("f. a green week: confetti and coins fly on the money card", st(p)["particles"] > 20, st(p))
+            deck_ids = st(p)["ids"]
+            p.evaluate(f"HERMES.go({deck_ids.index('hall')}); HERMES.pause(true)")
+            p.wait_for_timeout(2300)
+            hall = p.inner_text(".card.on")
+            check("f. the all-time hall: lifetime $, best trade ever, best day, longest green run, win rate",
+                  "hall of fame" in hall.lower() and "+$4,515.40" in hall and "Best trade ever".upper() in hall.upper()
+                  and "LONGEST GREEN RUN" in hall.upper() and "46.2%" in hall and "3 days" in hall, hall[:400])
+            check("f. the hall's records come from the all-time period (best day = the biggest green day)",
+                  "+$1,912.50" in hall and "6 of 12 trading days green" in hall, hall[:400])
+            bad = p.evaluate(OVERFLOW)
+            check("f. the hall card stays inside the gutters and out of the orb's corner", not bad, bad)
+            p.screenshot(path=os.path.join(SHOTS, "04_hall.jpg"), type="jpeg", quality=82)
+            depth = p.evaluate("getComputedStyle(document.querySelector('.card.on [data-z=\"3\"]')).translate")
+            check("f. 3D depth: the hero number moves with the tilt (parallax above the card)", depth not in ("", "none"), depth)
+            p.evaluate("HERMES.go(0); HERMES.pause(false)"); p.wait_for_timeout(300)
+            p.click("#play")
+            a = [st(p)["paused"], p.get_attribute("#play", "aria-pressed")]
+            p.click("#play")
+            b = [st(p)["paused"], p.get_attribute("#play", "aria-pressed")]
+            check("f. the pause button pauses and plays (its state on the button)", a == [True, "true"] and b == [False, "false"], (a, b))
+            box = p.locator("#prog").bounding_box()
+            p.mouse.click(box["x"] + box["width"] * (3.5 / len(deck_ids)), box["y"] + box["height"] / 2)
+            p.wait_for_timeout(300)
+            check("f. a tap on the progress bar jumps to that story", st(p)["i"] == 3 and st(p)["id"] == "eval", st(p))
+            pos = p.inner_text("#pos")
+            check("f. the bottom sheet names the story (4/9 · Evals)", pos.replace("\n", " ").startswith("4/9") and "EVALS" in pos.upper(), pos)
+            p.evaluate(f"HERMES.go({deck_ids.index('next')}); HERMES.pause(true)")
+            p.wait_for_timeout(1800)
+            p.evaluate("window.__shared = null")
+            p.click(".card.on [data-act='share-week']")
+            p.wait_for_function("window.__shared || /Could not/.test(document.getElementById('toast').textContent)", timeout=30000)
+            sh = p.evaluate("window.__shared")
+            ls = p.evaluate("HERMES.lastShare")
+            check("f. Share the week: one PNG of the whole recap (> 40 KB) to the share sheet",
+                  sh and sh["type"] == "image/png" and sh["sig"][:4] == [137, 80, 78, 71] and sh["size"] > 40_000 and ls["card"] == "week"
+                  and sh["name"] == "olympus-wrapped-week.png", (sh, ls, p.inner_text("#toast")))
+            p.screenshot(path=os.path.join(SHOTS, "05_next_share_week.jpg"), type="jpeg", quality=82)
+            p.click(".card.on [data-act='replay']")
+            p.wait_for_timeout(300)
+            check("f. the buttons on a tilted card take a real tap (Watch again restarts the story)", st(p)["i"] == 0, st(p))
+            got = p.evaluate("[HERMES.applyTheme({ accent: '#33ddff', junk: 1, bg: 'red; } body { display:none' }), getComputedStyle(document.documentElement).getPropertyValue('--gold').trim()]")
+            check("f. applyTheme(theme): the accent restyles the gold; junk and CSS injection ignored", got[1] == "#33ddff" and "--bg" not in got[0], got)
+            check("f. no page errors in the upgrade checks", not p.errs and not p.bad, (p.errs, p.bad))
+            ctx.close()
+            # the OLYMPUS theme hook, and LITE (fewer particles)
+            ctx, p = page(expect=("/hermes/wrapped.json",))
+            ctx.add_init_script("""(() => { const subs = []; window.__theme = { subs };
+              Object.defineProperty(window, 'OLYMPUS', { configurable: true, get() { return undefined; }, set(v) {
+                Object.defineProperty(window, 'OLYMPUS', { value: v, writable: true, configurable: true });
+                v.theme = () => ({ name: 'test', vars: { accent: '#ff3d9a' } }); v.onTheme = (cb) => subs.push(cb); } });
+              try { localStorage.setItem('jfx', 'low'); } catch (e) {} })();""")
+            ready(p, base)
+            a = p.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--gold').trim()")
+            p.evaluate("window.__theme.subs.forEach((cb) => cb({ gold: '#00ff88' }))")
+            b = p.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--gold').trim()")
+            check("f. the OLYMPUS theme hook: OLYMPUS.theme() at load, onTheme on a change", a == "#ff3d9a" and b == "#00ff88", (a, b))
+            p.wait_for_timeout(900)
+            lite = st(p)["particles"]
+            check(f"f. LITE: the particle cap is lower ({lite} particles)", 0 < lite <= 90, lite)
+            check("f. no page errors (theme hook, LITE)", not p.errs and not p.bad, (p.errs, p.bad))
             ctx.close()
 
             # ---- real data + every peer (Fates odds, Data City, Kalshi, Planner)
@@ -405,7 +477,7 @@ def run_browser():
                     check("e. real data: no DEMO badge; the money card lists Kalshi beside the bots",
                           not p.is_visible("#demo") and "Kalshi Edge v2" in txt and "+$7.25" in txt and "Paper twin" in txt, txt[:400])
             check("e. with every peer: Data City, the real Kalshi and the Planner join the deck",
-                  ids == ["money", "best", "worst", "eval", "discipline", "learned", "discovery", "kalshi", "planner", "next"], ids)
+                  ids == ["money", "best", "worst", "eval", "discipline", "learned", "discovery", "kalshi", "planner", "hall", "next"], ids)
             check("e. peers' cards stay inside the gutters and out of the orb's corner", not overflow, overflow)
             p.evaluate("HERMES.go(1)"); p.wait_for_timeout(300)
             p.evaluate("window.__shared = null"); p.click("#share"); p.wait_for_function("window.__shared", timeout=10000)
@@ -469,8 +541,9 @@ def run_browser():
             ctx, p = page(reduced=True)
             ready(p, base)
             s = st(p)
-            check("e. reduced motion: no animation loop, the numbers shown at once, no auto-advance",
-                  s["still"] and p.inner_text(".card.on .count") == "+$2,072.50" and p.evaluate("getComputedStyle(document.querySelector('.card.on .kt .w > span')).opacity") == "1", s)
+            check("e. reduced motion: no animation loop, the numbers shown at once, no auto-advance, no particles",
+                  s["still"] and p.inner_text(".card.on .count") == "+$2,072.50" and p.evaluate("getComputedStyle(document.querySelector('.card.on .kt .w > span')).opacity") == "1"
+                  and s["particles"] == 0, s)
             p.wait_for_timeout(8600)
             check("e. reduced motion: still on the first card after 8.6 s", st(p)["i"] == 0, st(p))
             p.keyboard.press("ArrowRight"); p.wait_for_timeout(100)

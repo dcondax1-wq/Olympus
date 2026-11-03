@@ -25,15 +25,17 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 
 /* ---------------------------------------------------------------- top: progress, brand, periods */
 .top { position: fixed; z-index: 5; top: 0; left: 0; right: 0; padding: calc(var(--st) + 8px) calc(var(--sr) + 12px) 0 calc(var(--sl) + 12px); }
-.prog { display: flex; gap: 4px; height: 3px; }
-.prog span { flex: 1; background: rgba(255, 255, 255, .26); border-radius: 2px; overflow: hidden; }
-.prog i { display: block; height: 100%; background: #fff; transform-origin: 0 50%; transform: scaleX(0); box-shadow: 0 0 8px rgba(255, 255, 255, .6); }
-.bar { display: flex; align-items: center; gap: 8px; margin-top: 6px; min-height: 44px; }
+/* the progress: thin glowing segments; the whole strip is a 24 px tap target (a tap jumps to that story) */
+.prog { display: flex; gap: 4px; height: 24px; align-items: center; margin: -10px 0 -8px; cursor: pointer; }
+.prog span { flex: 1; height: 3px; background: rgba(255, 255, 255, .22); border-radius: 2px; overflow: hidden; }
+.prog i { display: block; height: 100%; background: linear-gradient(90deg, #fff, var(--gold)); transform-origin: 0 50%; transform: scaleX(0); box-shadow: 0 0 8px rgba(255, 255, 255, .6); }
+.bar { display: flex; align-items: center; gap: 8px; margin-top: 6px; min-height: 48px; padding: 2px 2px 2px 14px; border-radius: 999px;
+  background: rgba(8, 4, 16, .42); border: 1px solid var(--line); -webkit-backdrop-filter: blur(14px) saturate(140%); backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .25), inset 0 1px 0 rgba(255, 255, 255, .06); }
 .brand { display: inline-flex; align-items: center; gap: 6px; font: 800 13px/1 var(--num); letter-spacing: .22em; }
 .brand svg { width: 26px; height: 16px; fill: var(--gold); filter: drop-shadow(0 0 6px rgba(247, 201, 72, .6)); }
 .demo { font: 700 11px/1 var(--font); letter-spacing: .12em; padding: 5px 7px; border-radius: 6px; background: var(--gold); color: #1a1000; }
-.periods { margin-left: auto; display: flex; gap: 2px; background: rgba(0, 0, 0, .28); border: 1px solid var(--line); border-radius: 22px; padding: 2px;
-  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.periods { margin-left: auto; display: flex; gap: 2px; background: rgba(0, 0, 0, .28); border: 1px solid var(--line); border-radius: 22px; padding: 2px; }
 .periods button { height: 40px; min-width: 44px; padding: 0 10px; border: 0; border-radius: 20px; background: transparent; color: var(--text2);
   font: 600 13px/1 var(--font); cursor: pointer; white-space: nowrap; }
 .periods button[aria-pressed="true"] { background: #fff; color: #12081f; }
@@ -45,9 +47,16 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   transform: translate3d(calc(var(--dir, 1) * 36px), 0, 0) scale(.97); transition: opacity .45s ease, transform .55s cubic-bezier(.2, .8, .2, 1); }
 .card.on { opacity: 1; transform: none; }
 .card.leave { opacity: 0; transform: translate3d(calc(var(--dir, 1) * -36px), 0, 0) scale(1.02); pointer-events: none; }
-.tilt { transform: perspective(900px) rotateY(calc((var(--px, 0) * .8 + var(--sx, 0) * .4) * 9deg)) rotateX(calc((var(--py, 0) * .8 + var(--sy, 0) * .4) * -7deg)) scale(var(--fit, 1));
-  transform-style: preserve-3d; will-change: transform; transition: transform .25s linear; min-width: 0; padding: 0 3px; }
-/* the 3 px inner pad: the tilt's few px of sway never cross the 16 px gutter */
+.tilt { position: relative; transform: perspective(900px) rotateY(calc((var(--px, 0) * .8 + var(--sx, 0) * .4) * 9deg)) rotateX(calc((var(--py, 0) * .8 + var(--sy, 0) * .4) * -7deg)) scale(var(--fit, 1));
+  will-change: transform; transition: transform .25s linear; min-width: 0; padding: 0 5px; }
+/* the 3D tilt's depth, as parallax: the hero number slides with the tilt as if it floated above the card, the tiles a little
+   less. (Not preserve-3d: Chromium then hit-tests the card's buttons wrongly under the tilt.) A sheen follows the tilt like
+   light on glass. */
+.tilt [data-z="3"] { translate: calc((var(--px, 0) * .8 + var(--sx, 0) * .4) * 6px) calc((var(--py, 0) * .8 + var(--sy, 0) * .4) * 5px); }
+.tilt [data-z="2"] { translate: calc((var(--px, 0) * .8 + var(--sx, 0) * .4) * 3px) calc((var(--py, 0) * .8 + var(--sy, 0) * .4) * 2.5px); }
+.tilt::after { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: 24px; mix-blend-mode: screen;
+  background: radial-gradient(60% 38% at calc(50% + var(--px, 0) * 90% + var(--sx, 0) * 30%) calc(28% + var(--py, 0) * 80% + var(--sy, 0) * 20%), rgba(255, 255, 255, .08), transparent 70%); }
+/* the 5 px inner pad: the tilt's sway and depth never cross the 16 px gutter */
 .tilt > * { min-width: 0; }
 .splash { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 8px; }
 .splash span { font: 800 34px/1 var(--num); letter-spacing: .3em; animation: pulse 1.6s ease-in-out infinite; }
@@ -56,11 +65,22 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 
 .kicker { margin: 0 0 10px; font: 700 12px/1.3 var(--font); letter-spacing: .14em; text-transform: uppercase; color: var(--text2); }
 .title { margin: 0 0 14px; font: 900 clamp(32px, 9.6vw, 50px)/1.02 var(--font); letter-spacing: -.025em; overflow-wrap: anywhere; }
-.title.goal { font-size: clamp(36px, 11vw, 58px); background: linear-gradient(100deg, #fff 10%, #ffd1f4 50%, #f7c948 90%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.title.goal { font-size: clamp(36px, 11vw, 58px); }
+/* gradient words: the gradient sits on each word (a word in its own 3D slot is not clipped by its title's background) */
+.title.goal .w > span { background: linear-gradient(100deg, #fff 10%, #ffd1f4 50%, #f7c948 90%); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .kt .w { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: .06em; }
-.kt .w > span { display: inline-block; transform: translate3d(0, 105%, 0) rotate(7deg); opacity: 0; transform-origin: 0 100%;
-  transition: transform .75s cubic-bezier(.16, 1, .3, 1) calc(var(--i) * 70ms + 100ms), opacity .4s ease calc(var(--i) * 70ms + 100ms); }
+/* kinetic type: each word flips up out of its own slot, then a gold rule draws under the title */
+.kt .w { perspective: 400px; }
+.kt .w > span { display: inline-block; transform: translate3d(0, 105%, 0) rotateX(-75deg) rotate(4deg); opacity: 0; transform-origin: 0 100%;
+  transition: transform .8s cubic-bezier(.16, 1, .3, 1) calc(var(--i) * 70ms + 100ms), opacity .45s ease calc(var(--i) * 70ms + 100ms); }
 .card.on .kt .w > span { transform: none; opacity: 1; }
+.kt::after { content: ""; display: block; width: 72px; height: 3px; margin-top: 12px; border-radius: 2px; background: linear-gradient(90deg, var(--gold), transparent);
+  transform: scaleX(0); transform-origin: 0 50%; transition: transform .8s cubic-bezier(.2, .8, .2, 1) .55s; }
+.card.on .kt::after { transform: none; }
+.kicker { opacity: 0; transform: translate3d(-14px, 0, 0); transition: opacity .5s ease .05s, transform .6s cubic-bezier(.2, .8, .2, 1) .05s; }
+.card.on .kicker { opacity: 1; transform: none; }
+.hero .count { transform: scale(.84); transform-origin: 0 60%; transition: transform 1s cubic-bezier(.2, 1.35, .3, 1) .4s; }
+.card.on .hero .count { transform: none; }
 /* the rest of a card rises in after the title */
 .tilt > :not(.kicker):not(.title) { opacity: 0; transform: translate3d(0, 14px, 0); transition: opacity .5s ease .45s, transform .6s cubic-bezier(.2, .8, .2, 1) .45s; }
 .tilt > :nth-child(4) { transition-delay: .6s; } .tilt > :nth-child(5) { transition-delay: .75s; } .tilt > :nth-child(6) { transition-delay: .9s; }
@@ -149,18 +169,40 @@ blockquote.lesson small { display: block; font: 700 11px/1.2 var(--font); letter
 .rules li, .learn li { opacity: 0; transform: translate3d(-12px, 0, 0); transition: opacity .45s ease calc(.5s + var(--i) * 120ms), transform .5s ease calc(.5s + var(--i) * 120ms); }
 .card.on .rules li, .card.on .learn li { opacity: 1; transform: none; }
 
-.end { margin-top: 16px; }
+.end { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 10px; }
 .btn { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 22px; border: 1px solid var(--line);
   background: rgba(255, 255, 255, .14); color: #fff; font: 700 15px/1 var(--font); cursor: pointer; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
 .btn:disabled { opacity: .5; }
 .btn.ghost { background: transparent; }
+.btn.gold { background: linear-gradient(135deg, #ffe08a, var(--gold)); color: #1a1000; border-color: transparent; box-shadow: 0 8px 26px -8px rgba(247, 201, 72, .8); }
+.btn:focus-visible, .periods button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+/* the all-time hall */
+.hall-t .w > span { background: linear-gradient(100deg, #fff 5%, #ffe7a3 45%, var(--gold) 95%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.count.gold { color: var(--gold); text-shadow: 0 0 34px rgba(247, 201, 72, .55); }
+.plaques { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.plaque { position: relative; padding: 10px 12px; border-radius: 14px; min-width: 0; overflow: hidden;
+  background: linear-gradient(160deg, rgba(247, 201, 72, .16), rgba(0, 0, 0, .3) 60%); border: 1px solid rgba(247, 201, 72, .35); }
+.plaque small { display: block; font: 700 10.5px/1.2 var(--font); letter-spacing: .12em; text-transform: uppercase; color: #ffe7a3; }
+.plaque b { display: block; margin-top: 4px; font: 800 17px/1.15 var(--num); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.plaque i { display: block; margin-top: 3px; font: 500 12px/1.25 var(--font); font-style: normal; color: var(--text2); }
+.plaque.up b { color: var(--up); }
 
 /* ---------------------------------------------------------------- footer (left only: the orb's corner stays free) */
 .foot { position: fixed; z-index: 6; left: calc(var(--sl) + var(--gut)); bottom: calc(var(--sb) + 18px); right: calc(var(--sr) + 96px);
-  display: flex; align-items: center; gap: 12px; pointer-events: none; }
-.foot > * { pointer-events: auto; }
-.share svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-.pos { font: 700 12px var(--num); color: var(--text2); letter-spacing: .1em; }
+  display: flex; align-items: center; gap: 8px; padding: 3px; border-radius: 999px; max-width: 420px;
+  background: rgba(8, 4, 16, .42); border: 1px solid var(--line); -webkit-backdrop-filter: blur(14px) saturate(140%); backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .25), inset 0 1px 0 rgba(255, 255, 255, .06); }
+.foot .btn { -webkit-backdrop-filter: none; backdrop-filter: none; }
+.share svg, .play svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.btn.icon { width: 44px; padding: 0; justify-content: center; border-radius: 50%; }
+.play .i-play { display: none; fill: currentColor; stroke: none; }
+.play[aria-pressed="true"] .i-play { display: block; }
+.play[aria-pressed="true"] .i-pause { display: none; }
+.pos { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 8px; font: 700 12px/1.2 var(--font); color: var(--text2); letter-spacing: .1em;
+  text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pos b { font: 700 12px var(--num); color: #fff; letter-spacing: .06em; }
+.share { margin-left: auto; }
 .toast { position: fixed; z-index: 7; left: calc(var(--sl) + var(--gut)); bottom: calc(var(--sb) + 76px); max-width: calc(100% - 2 * var(--gut) - 96px);
   padding: 10px 14px; border-radius: 14px; background: rgba(0, 0, 0, .7); font: 600 14px/1.3 var(--font); opacity: 0; transform: translate3d(0, 8px, 0);
   transition: opacity .25s, transform .25s; pointer-events: none; }
@@ -177,7 +219,9 @@ body.loading .foot, body.loading .periods { visibility: hidden; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
-  .card, .card.on, .kt .w > span, .tilt > *, .rules li, .learn li, .dbar i { opacity: 1; transform: none !important; }
+  .card, .card.on, .kt .w > span, .tilt > *, .rules li, .learn li, .dbar i, .kicker, .hero .count, .kt::after { opacity: 1; transform: none !important; }
+  .tilt [data-z] { translate: none; }
+  .tilt::after { display: none; }
   .tilt { transform: scale(var(--fit, 1)) !important; }
   .card.leave { display: none; }
   .spark .path { stroke-dashoffset: 0; } .spark .dot { opacity: 1; }

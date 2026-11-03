@@ -63,11 +63,15 @@ def rjson(path):
 # ------------------------------------------------------------------------------------------------------------ a
 def test_registry():
     names = [t.name for t in registry.TASKS]
-    check("a. registry: unique names, the six research apps", len(names) == len(set(names))
-          and set(names) == {"datacity", "fates", "odeon", "hermes", "tree", "prometheus"}, names)
-    check("a. groups: nightly = fates + odeon, weekly = tree + prometheus, all = both",
-          registry.GROUPS["nightly"] == ("fates", "odeon") and registry.GROUPS["weekly"] == ("tree", "prometheus")
-          and registry.GROUPS["all"] == ("fates", "odeon", "tree", "prometheus"), registry.GROUPS)
+    check("a. registry: unique names, the seven research apps", len(names) == len(set(names))
+          and set(names) == {"datacity", "fates", "odeon", "pantheon", "hermes", "tree", "prometheus"}, names)
+    check("a. groups: nightly = fates + odeon + pantheon, weekly = tree + prometheus, all = both",
+          registry.GROUPS["nightly"] == ("fates", "odeon", "pantheon") and registry.GROUPS["weekly"] == ("tree", "prometheus")
+          and registry.GROUPS["all"] == ("fates", "odeon", "pantheon", "tree", "prometheus"), registry.GROUPS)
+    pt = registry.get("pantheon")
+    check("a. pantheon: nightly, run by CRONOS, light (not skipped in saver mode), publishes pantheon.json + states.json + card",
+          pt.cadence == "nightly" and pt.runner == "cronos" and not pt.heavy and pt.max_age_h == 36
+          and pt.files == ("pantheon.json", "states.json", "jarvis.json") and pt.timeout_s <= 10 * 60, pt)
     check("a. every task CRONOS runs has a runner", all(n in run.RUNNERS for n in registry.GROUPS["all"]))
     for t in registry.TASKS:
         check(f"a. {t.name}: its page folder and jarvis.json exist", os.path.exists(os.path.join(WEB, t.app, "index.html"))
@@ -84,7 +88,7 @@ def test_registry():
     check("a. fates' files come from the cronos branch as fates/...",
           registry.site_files(registry.get("fates")) == [("fates/fates.json", "fates/fates.json"), ("fates/jarvis.json", "fates/jarvis.json")])
     check("a. hermes is stamped by itself (runs in the build), the others by CRONOS", "hermes" not in registry.STAMPED
-          and set(registry.STAMPED) == {"datacity", "fates", "odeon", "tree", "prometheus"})
+          and set(registry.STAMPED) == {"datacity", "fates", "odeon", "pantheon", "tree", "prometheus"})
     try:
         registry.get("nope")
         check("a. an unknown task is refused", False)
