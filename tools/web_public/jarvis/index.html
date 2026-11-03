@@ -1786,7 +1786,7 @@ function renderBrainPanel() {                          // CONNECT MY BRAIN: only
   box.innerHTML = '<section class="panel"><p class="ph"><span class="t">Connect my brain</span><i class="sdot warn"></i></p>'
     + '<p class="muted">Smart answers use your own AI key. Paste it once; it stays only on this phone.</p>'
     + '<form class="link-f" id="brainF" autocomplete="off"><input id="brainKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste key" aria-label="AI key"><button type="submit">Save</button></form>'
-    + '<div class="sheet-row"><button class="btn ghost" type="button" id="brainNo">Not now</button><button class="btn solid" type="button" id="brainGuide">Free setup · 1 min</button></div></section>';
+    + '<div class="sheet-row"><button class="btn ghost" type="button" id="brainNo">Not now</button><button class="btn solid" type="button" data-guide="1">Free setup · 1 min</button></div></section>';
   $('#brainF').addEventListener('submit', (e) => {
     e.preventDefault();
     const key = $('#brainKey').value.trim(); if (!key) return;
@@ -1794,7 +1794,7 @@ function renderBrainPanel() {                          // CONNECT MY BRAIN: only
     $('#brainKey').value = ''; renderBrainPanel(); renderMore(); toast('Smart mode is on. The key stays on this phone.', 'AI KEY');
   });
   $('#brainNo').addEventListener('click', () => { D.LS.set('jarvis.brainPanelOff', true); renderBrainPanel(); });
-  $('#brainGuide').addEventListener('click', () => openKeySetup());
+  document.querySelector("#brainp [data-guide]").addEventListener('click', () => openKeySetup());
 }
 
 // ------------------------------------------------------------------ the brain's control replies: stop, mute / unmute, hide / show balances
