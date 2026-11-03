@@ -1,0 +1,642 @@
+diff --git a/planner/docs/features-olympus.md b/planner/docs/features-olympus.md
+new file mode 100644
+index 0000000..89c65ad
+--- /dev/null
++++ b/planner/docs/features-olympus.md
+@@ -0,0 +1,51 @@
++# Olympus layer: the look, Day timeline, Focus mode
++
++Plain text for the Help sheet and README (merge by hand). The owner asked for "way higher quality, 3D UI effects",
++"organized like a maid swept" and "futuristic".
++
++## The look
++- Cards have depth: soft layered shadows, a faint accent sheen, rounded corners. In dark mode they are glass (the aurora
++  shows through). Light mode keeps every colour it had.
++- A soft aurora sits behind the page and glides to a new place when you switch views; cards rise in then, and tilt a
++  little under the mouse. Buttons press in when tapped. A ticked task pops, with a short buzz on phones that can.
++- Today, tidied: the date on one line, the header buttons in one even row on a phone, quiet section labels with a hairline,
++  the status line with a dot (green when nothing is urgent, red when something needs you) and a tighter rhythm on phones.
++- **Off switch:** palette "Olympus effects off" (this device). The Olympus 3D quality setting is followed too: Off = plain
++  look, Low = no motion. When the phone asks for reduced motion, nothing moves.
++- **Olympus themes:** the theme picked in Olympus (Jarvis) recolours the accents (aurora, timeline, Focus ring). No theme =
++  the default indigo and cyan.
++
++## Day timeline (Today, joined to the status line)
++- Today's events on one track from 7am to 10pm (wider if your day is), overlaps in a second or third lane, with a glowing
++  NOW beam; what is on now glows. It sits inside the status line ("3 things need you · next: Dentist 2pm"), one unit, so the
++  busy Today is no longer than before. Tap a block to open the event. **Focus** (first in the header's button row) opens
++  Focus mode.
++- A clear day (no events, no tasks) shows "Your day is wide open" with **Add a task** and **Focus**.
++
++## Focus mode (`#focus-mode`)
++- Full screen, a glowing ring counting down. Pick one of today's tasks and a length (15, 25, 45 or 60 minutes), then
++  **Start focus**. It is the same focus timer as the clock button on a task: minutes are logged on the task the same way.
++- While it runs: **Finish and log** (stop now, log the minutes so far), **Cancel** (no log), **Minimise** (the timer keeps
++  running in the bar at the bottom; tap the time there to come back).
++- At the end: **5 min break** (a green ring), **Another round** or **Close**. It shows the minutes focused today.
++- Also in the palette ("Focus mode") and All tools.
++
++## Notes for the lead (not for the Help sheet)
++- Code: `planner/ext-olympus.js`, loaded by one `<script src="ext-olympus.js">` in `<head>` after ext-flow.js. It waits for
++  `planner:ready` (`window.PlannerAPI`). Nothing else in `index.html` changed.
++- Data: none synced. Focus mode starts the timer through the app's own Focus timer sheet (`openFocus` + its form) and stops it
++  through the timer bar's own buttons, so `S.focus`, logging and Undo are the app's. The break lives in memory only. Device
++  keys: `planner.olympus.fx` (`off` = plain look). Read only: `olympus.theme` (Olympus theme), `jfx` (Olympus 3D quality).
++- Theme map: `olympus.theme` is a theme id (Jarvis's Look sheet). Its tokens come from Olympus's `themes.js`
++  (`window.OLYMPUS_THEMES.tokens(id, 'page')`), taken from the Jarvis frame around the Planner (same origin) or loaded once
++  from `../olympus/themes.js`. `accent` -> `--ox-a`, `accent2` -> `--ox-b`, `glow` -> `--ox-glow` (colours only). No key, the
++  default `olympus` theme, an unknown id or no themes.js on the site = the Planner's own accents. A JSON object of tokens is
++  accepted too (top level, `.tokens` or `.vars`).
++- The timeline is drawn after each Today render (a MutationObserver on `#main`, before paint) and redrawn every 30 seconds.
++  Height: the busy phone day of todayorg.test.js is 4563 px with it (4560 without; the limit is 4571), so it has no header
++  of its own and phones use a 12 px card gap. Only compositor-cheap animations run forever (transform / opacity, no blur
++  filters, no endless full-screen motion; the aurora moves once per view change): the Planner's own timing-sensitive
++  tests stay green.
++- Light-mode colours of the theme test's key elements are unchanged (depth uses shadows and background images only).
++- Pure helpers on `window.__ox`: `level`, `themeVars`, `line`, `state`, `applyLook`.
++- Tests: `planner/tests/olympus.test.js` (PORT env, default 8789; 47 checks).
+diff --git a/planner/ext-olympus.js b/planner/ext-olympus.js
+new file mode 100644
+index 0000000..c351d8c
+--- /dev/null
++++ b/planner/ext-olympus.js
+@@ -0,0 +1,427 @@
++// ===== OLYMPUS: the futuristic layer, Day timeline, Focus mode (ext-olympus.js; docs/features-olympus.md; tests/olympus.test.js) =====
++// (2026-11-03, owner: "way higher quality, 3D UI effects", "organized like a maid swept", "futuristic")
++//  - Look: glass cards (translucent in dark mode; light mode keeps its exact colours and gains depth), an aurora behind the
++//    page that glides on a view change, cards that rise in then and tilt a little under the mouse, press feedback, a tick pop.
++//  - Day timeline (Today, joined to the status line): today's events on one track with a glowing NOW beam, what is on now,
++//    and a calm empty state on a clear day.
++//  - Focus mode (#focus-mode, palette, All tools, the Timeline's Focus button, a tap on the running timer): a full-screen
++//    Pomodoro with a glowing ring. It drives the app's own focus timer (S.focus, the Focus timer sheet, the timer bar), so
++//    minutes are logged exactly as before; only the 5-minute break is this add-on's own (memory, never saved).
++//  - Olympus themes: the shared 'olympus.theme' key (a theme id; tokens from Olympus's themes.js) recolours the layer's accents
++//    through a small CSS variable map. No key or the default 'olympus' theme = the Planner's own look. The 'jfx' key (Olympus 3D quality) is followed:
++//    off = no effects, low = no motion. prefers-reduced-motion = no motion. Device key planner.olympus.fx = 'off' turns it off.
++// Loaded in <head>; waits for 'planner:ready' (window.PlannerAPI). Writes no synced data of its own.
++(function () {
++  'use strict';
++  const FX_KEY = 'planner.olympus.fx', THEME_KEY = 'olympus.theme', JFX_KEY = 'jfx';
++  const LENS = [15, 25, 45, 60], BREAK_MIN = 5, DAY_FROM = 7 * 60, DAY_TO = 22 * 60, MAX_LANES = 3;
++  const root = document.documentElement;
++  let A = null, wanted = '', lastView = '';
++
++  const get = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
++  const set = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* this visit only */ } };
++  const mq = (q) => { try { return matchMedia(q).matches; } catch (e) { return false; } };
++  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
++  const p2 = (n) => String(n).padStart(2, '0');
++  const dur = (m) => { m = Math.max(0, Math.round(m)); return m >= 60 ? `${Math.floor(m / 60)}h${m % 60 ? ' ' + (m % 60) + 'm' : ''}` : `${m}m`; };
++  const clock = (ms) => { const s = Math.max(0, Math.ceil(ms / 1000)); return `${p2(Math.floor(s / 60))}:${p2(s % 60)}`; };
++  const nowMin = () => { const n = new Date(); return n.getHours() * 60 + n.getMinutes(); };
++  const toMin = (hm) => { const m = /^(\d{1,2}):(\d{2})/.exec(hm || ''); return m ? +m[1] * 60 + +m[2] : null; };
++  const t12 = (m) => { let h = Math.floor(m / 60) % 24; const mm = m % 60, ap = h < 12 ? 'am' : 'pm'; h = h % 12 || 12; return (mm ? `${h}:${p2(mm)}` : `${h}`) + ap; };
++  const buzz = (ms) => { try { if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.isActive)) navigator.vibrate(ms); } catch (e) { /* optional */ } };
++
++  // =====================================================================================================================
++  // Look: effects level and the Olympus theme map (pure helpers on window.__ox)
++  // =====================================================================================================================
++  // level(planner key, jfx, reduced motion) -> 'off' | 'still' | 'move'
++  function level(own, jfx, reduced) {
++    if (own === 'off' || jfx === 'off') return 'off';
++    return reduced || jfx === 'low' ? 'still' : 'move';
++  }
++  // themeVars(theme) -> { '--ox-a', '--ox-b', '--ox-glow' } from an Olympus theme: an object (or its JSON), its tokens at the top or
++  // under .tokens / .vars, named accent / accent2 / glow (aliases below). Anything else, or a colour that is not a colour: {}.
++  const COLOR = /^(#[0-9a-f]{3,8}|(rgb|hsl)a?\([\d\s.,%/deg]+\))$/i;
++  const MAP = { '--ox-a': ['accent', 'primary', '--oly-accent'], '--ox-b': ['accent2', 'secondary', '--oly-accent2'], '--ox-glow': ['glow', '--oly-glow'] };
++  function themeVars(theme) {
++    let o = theme;
++    if (typeof o === 'string') { try { o = JSON.parse(o); } catch (e) { return {}; } }
++    if (!o || typeof o !== 'object') return {};
++    const t = [o.tokens, o.vars].find((x) => x && typeof x === 'object') || o, out = {};
++    Object.entries(MAP).forEach(([v, names]) => { const c = names.map((n) => t[n]).find((x) => typeof x === 'string' && COLOR.test(x.trim())); if (c) out[v] = c.trim(); });
++    if (out['--ox-a']) { out['--ox-b'] = out['--ox-b'] || out['--ox-a']; out['--ox-glow'] = out['--ox-glow'] || out['--ox-a']; }
++    return out;
++  }
++  // 'olympus.theme' holds a theme id (Jarvis's Look sheet); its tokens are in Olympus's themes.js (window.OLYMPUS_THEMES), from
++  // the Jarvis frame around the Planner (same origin) or loaded once from ../olympus/. No key or the default 'olympus' = nothing
++  // to do (today's look); a theme page that is not there (an old site) also leaves the default.
++  let loading = false;
++  function olympusTheme() {
++    const id = (get(THEME_KEY) || '').trim();
++    if (!id || id === 'olympus') return null;
++    if (id[0] === '{') return id; // tokens written as JSON
++    for (const w of [window, window.parent]) {
++      try { const T = w && w.OLYMPUS_THEMES; if (T && typeof T.tokens === 'function') return T.get(id) && T.get(id).id === id ? T.tokens(id, 'page') : null; } catch (e) { /* another origin */ }
++    }
++    if (!loading) {
++      loading = true;
++      const s = document.createElement('script');
++      s.src = '../olympus/themes.js'; s.onload = () => applyLook(); s.onerror = () => {};
++      document.head.appendChild(s);
++    }
++    return null;
++  }
++  let themed = [];
++  function applyLook() {
++    const lv = level(get(FX_KEY), get(JFX_KEY), mq('(prefers-reduced-motion: reduce)'));
++    root.classList.toggle('ox', lv !== 'off');
++    root.classList.toggle('ox-move', lv === 'move');
++    const vars = lv === 'off' ? {} : themeVars(olympusTheme());
++    themed.forEach((k) => { if (!(k in vars)) root.style.removeProperty(k); });
++    Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
++    themed = Object.keys(vars);
++    root.toggleAttribute('data-ox-theme', themed.length > 0);
++    return lv;
++  }
++  applyLook(); // before the first paint: the page never flashes the plain look first
++
++  // =====================================================================================================================
++  // Day timeline (pure model on window.__ox)
++  // =====================================================================================================================
++  // line(items, now) with items [{ id, occ, title, s, e, c }] (minutes) -> { from, to, now, items (+lane, past, cur), lanes, cur, next }
++  function line(items, now) {
++    const list = items.filter((x) => x.s != null && x.e > x.s).sort((a, b) => a.s - b.s || b.e - a.e);
++    const from = Math.min(DAY_FROM, ...list.map((x) => Math.floor(x.s / 60) * 60));
++    const to = Math.min(1440, Math.max(DAY_TO, ...list.map((x) => Math.ceil(x.e / 60) * 60)));
++    const ends = [];
++    const out = list.map((x) => {
++      let lane = ends.findIndex((e) => e <= x.s);
++      if (lane < 0) lane = ends.length < MAX_LANES ? ends.length : ends.indexOf(Math.min(...ends));
++      ends[lane] = Math.max(ends[lane] || 0, x.e);
++      return { ...x, lane, past: x.e <= now, cur: x.s <= now && now < x.e };
++    });
++    return { from, to, now, items: out, lanes: Math.max(1, ends.length), cur: out.find((x) => x.cur) || null, next: out.find((x) => x.s > now) || null };
++  }
++  function todayItems() {
++    const k = A.todayKey();
++    return A.eventsOn(k).filter((o) => o && o.ev && !o.ev.bot && !o.ev.allDay && o.ev.start).map((o) => {
++      const s = toMin(o.ev.start), e = toMin(o.ev.end);
++      return { id: o.ev.id, occ: o.occ, title: o.ev.title || 'Event', s, e: e != null && e > s ? e : Math.min(s + 60, 1440), c: A.colorOf(o.ev) };
++    });
++  }
++  const openTasks = () => { const k = A.todayKey(); return A.S.tasks.filter((t) => t && !t.done && t.date && t.date <= k && t.tag !== 'idea'); };
++  // what is on now or next, in words (the timeline's label for screen readers and its tooltip)
++  function said(M) {
++    if (M.cur) return `Now: ${M.cur.title} until ${t12(M.cur.e)}`;
++    if (M.next) return `Next: ${M.next.title} at ${t12(M.next.s)}, in ${dur(M.next.s - M.now)}`;
++    return 'Nothing else on the calendar today';
++  }
++  function lineHtml() {
++    const items = todayItems(), tasks = openTasks(), n = nowMin();
++    if (!items.length && !tasks.length) {
++      return `<section class="ox-line ox-empty" aria-label="Day timeline"><div class="ox-orbit" aria-hidden="true"><i></i><i></i><b></b></div>
++        <div class="ox-et"><h3>Your day is wide open</h3><p>Nothing scheduled and nothing to do yet. Add a task, plan the day or start a focus round.</p>
++        <div class="ox-acts"><button type="button" class="btn sm primary" data-oxadd>Add a task</button><button type="button" class="btn sm" data-oxfocus>Focus</button></div></div></section>`;
++    }
++    const M = line(items, n), span = M.to - M.from, x = (m) => (((Math.min(Math.max(m, M.from), M.to) - M.from) / span) * 100).toFixed(2);
++    let ticks = '';
++    for (let h = Math.ceil(M.from / 60); h * 60 <= M.to; h++) ticks += `<i class="ox-tk" style="left:${x(h * 60)}%">${h % 3 === 0 && Math.abs(h * 60 - n) > span * 0.06 ? `<em>${t12(h * 60).replace(/(am|pm)$/, (s) => s[0])}</em>` : ''}</i>`;
++    const blocks = M.items.map((b, i) => `<button type="button" class="ox-blk${b.past ? ' past' : ''}${b.cur ? ' cur' : ''}" style="left:${x(b.s)}%;width:max(26px,calc(${x(b.e)}% - ${x(b.s)}%));top:calc(${b.lane} * var(--ox-lh));--c:${esc(b.c)};--i:${i}" data-ev="${esc(b.id)}" data-occ="${esc(b.occ)}" title="${esc(`${t12(b.s)}-${t12(b.e)} ${b.title}`)}"><span>${esc(b.title)}</span></button>`).join('');
++    const inDay = n >= M.from && n <= M.to;
++    const beam = inDay ? `<div class="ox-past" style="width:${x(n)}%"></div><div class="ox-now" style="left:${x(n)}%" aria-hidden="true"><b>${esc(t12(n))}</b></div>` : '';
++    // fused under the status line (one unit, no header of its own): the busy phone Today stays inside todayorg's height budget
++    return `<section class="ox-line ox-fused" aria-label="${esc('Day timeline. ' + said(M))}" title="${esc(said(M))}"><div class="ox-track" style="--lanes:${M.lanes}">${ticks}${beam}${blocks}</div></section>`;
++  }
++  // Today is drawn by the app (#main.innerHTML); the timeline goes under the status line each time, before the browser paints.
++  function onMain() {
++    const tdy = document.querySelector('#main > .tdy');
++    const view = A.S.view, entered = !!lastView && view !== lastView; lastView = view;
++    const main = document.getElementById('main');
++    // cards rise in (and the aurora glides) when you switch views; never at start (the page is there at once) and never on the
++    // redraws that follow every tick of a task
++    main.classList.toggle('ox-enter', entered && root.classList.contains('ox-move'));
++    if (entered) root.style.setProperty('--ox-d', [...view].reduce((a, c) => a + c.charCodeAt(0), 0) % 5 - 2);
++    if (!tdy || tdy.querySelector(':scope > .ox-line')) return;
++    const at = tdy.querySelector(':scope > #toStrip') || tdy.querySelector(':scope > .td-h');
++    const strip = tdy.querySelector(':scope > #toStrip'), bar = tdy.querySelector(':scope > .td-h > div:last-child');
++    if (strip) strip.classList.toggle('ox-calm', /^Nothing urgent/.test(strip.textContent));
++    // Focus joins the header's even button row (the plain look keeps its own header; Focus mode stays in the palette and tools)
++    if (bar && root.classList.contains('ox') && !bar.querySelector('[data-oxfocus]')) bar.insertAdjacentHTML('afterbegin', '<button type="button" class="btn sm" data-oxfocus title="Full-screen focus timer">Focus</button>');
++    try { if (at) at.insertAdjacentHTML('afterend', lineHtml()); } catch (e) { console.error('Planner timeline:', e); }
++    if (strip) strip.classList.toggle('ox-top', !!tdy.querySelector(':scope > .ox-fused'));
++    [...tdy.children].slice(0, 14).forEach((el, i) => el.style.setProperty('--ox-i', i));
++  }
++  function beamTick() {
++    const old = document.querySelector('#main > .tdy > .ox-line');
++    if (!old || !A) return;
++    try { const fresh = document.createElement('div'); fresh.innerHTML = lineHtml(); fresh.firstElementChild.classList.add('ox-tick'); old.replaceWith(fresh.firstElementChild); } catch (e) { /* next tick */ }
++  }
++
++  // =====================================================================================================================
++  // Focus mode: a full-screen face for the app's own focus timer
++  // =====================================================================================================================
++  let fx = null, fxTimer = 0, fxPick = '', brk = null, painted = '';
++  const R = 108, C = 2 * Math.PI * R;
++  // state(focus, brk, now) -> { k: 'idle' | 'run' | 'done' | 'break', left, total, pc }
++  function state(f, b, now) {
++    if (f && f.status === 'run') { const total = f.min * 60000, left = Math.max(0, f.start + total - now); return { k: 'run', left, total, pc: 1 - left / total }; }
++    if (b && b.end > now) { const total = b.min * 60000, left = b.end - now; return { k: 'break', left, total, pc: 1 - left / total }; }
++    if (f && f.status === 'done') return { k: 'done', left: 0, total: f.min * 60000, pc: 1 };
++    return { k: 'idle', left: 0, total: 0, pc: 0 };
++  }
++  const titleOf = (f) => { const t = A.S.tasks.find((x) => x && x.id === f.tid); return t ? t.title : f.title || 'Task'; };
++  const minsToday = () => { const k = A.todayKey(); return A.S.tasks.reduce((a, t) => a + ((t && t.fl && +t.fl[k]) || 0), 0); };
++  function fxBody(st) {
++    const f = A.S.focus;
++    if (st.k === 'run') return `<div class="ox-fx-acts"><button type="button" class="ox-b go" data-oxf="finish">Finish and log</button><button type="button" class="ox-b" data-oxf="cancel">Cancel</button><button type="button" class="ox-b" data-oxf="close">Minimise</button></div>`;
++    if (st.k === 'break') return `<p class="ox-fx-msg">Stand up, breathe, look far away.</p><div class="ox-fx-acts"><button type="button" class="ox-b" data-oxf="skip">Skip the break</button></div>`;
++    if (st.k === 'done') return `<p class="ox-fx-msg"><b>${f.logged || 0} min logged</b> on ${esc(titleOf(f))}.</p><div class="ox-fx-acts"><button type="button" class="ox-b go" data-oxf="break">${BREAK_MIN} min break</button><button type="button" class="ox-b" data-oxf="again">Another round</button><button type="button" class="ox-b" data-oxf="close">Close</button></div>`;
++    const list = openTasks().sort((a, b) => (+b.p || 0) - (+a.p || 0)).slice(0, 6);
++    if (!list.length) return `<p class="ox-fx-msg">No tasks for today. Add one on Today, then come back for a focus round.</p><div class="ox-fx-acts"><button type="button" class="ox-b" data-oxf="close">Close</button></div>`;
++    if (!list.some((t) => t.id === fxPick)) fxPick = list[0].id;
++    return `<div class="ox-fx-lbl">${brk && brk.over ? 'Break over. ' : ''}Pick a task</div><div class="ox-chips" role="group" aria-label="Task">${list.map((t) => `<button type="button" class="ox-chip" data-oxtask="${esc(t.id)}" aria-pressed="${t.id === fxPick}">${esc(t.title)}</button>`).join('')}</div>
++      <div class="ox-fx-lbl">Length</div><div class="ox-chips" role="group" aria-label="Length">${LENS.map((n) => `<button type="button" class="ox-chip" data-oxlen="${n}" aria-pressed="${n === A.S.focusLen}">${n} min</button>`).join('')}</div>
++      <div class="ox-fx-acts"><button type="button" class="ox-b go" data-oxf="start">Start focus</button></div>`;
++  }
++  function fxPaint() {
++    if (!fx || !fx.open) return;
++    const st = state(A.S.focus, brk, Date.now()), f = A.S.focus;
++    if (brk && st.k !== 'break' && brk.end <= Date.now() && !brk.over) { brk.over = true; buzz([120, 80, 120]); }
++    const key = st.k + '|' + (f ? f.tid + f.start + f.status : '') + '|' + fxPick + '|' + A.S.focusLen + '|' + (brk && brk.over ? 1 : 0);
++    fx.dataset.st = st.k;
++    const shown = st.k === 'idle' ? A.S.focusLen * 60000 : st.left;
++    fx.querySelector('.arc').style.strokeDashoffset = (C * (1 - (st.k === 'idle' ? 1 : st.pc))).toFixed(1);
++    fx.querySelector('#oxFxTime').textContent = clock(shown);
++    fx.querySelector('#oxFxMode').textContent = { run: 'Focus', break: 'Break', done: 'Done', idle: 'Ready' }[st.k];
++    if (key === painted) return;
++    painted = key;
++    fx.querySelector('#oxFxTask').textContent = st.k === 'run' || st.k === 'done' ? titleOf(f) : st.k === 'break' ? 'Break' : 'Focus mode';
++    fx.querySelector('#oxFxBody').innerHTML = fxBody(st);
++    const m = minsToday();
++    fx.querySelector('#oxFxStat').textContent = m ? `${dur(m)} focused today` : 'No focus logged today yet';
++  }
++  function fxStart(tid, min) {
++    const form = document.getElementById('focForm'), dlg = document.getElementById('focDlg');
++    if (!form || !A.S.tasks.some((t) => t && t.id === tid)) return;
++    brk = null;
++    A.S.focusLen = LENS.includes(min) ? min : 25;
++    A.openFocus(tid); // the app's own sheet sets the task; submitting it starts the timer exactly as a tap on Start focus would
++    if (dlg && dlg.open) dlg.close();
++    form.requestSubmit();
++    buzz(14);
++  }
++  const barBtn = (sel) => { const b = document.querySelector('#focusBar ' + sel); if (b) b.click(); };
++  function fxAct(a) {
++    const f = A.S.focus;
++    if (a === 'start') fxStart(fxPick, A.S.focusLen);
++    else if (a === 'finish') { barBtn('[data-ffinish]'); buzz(14); }
++    else if (a === 'cancel') barBtn('[data-fcancel]');
++    else if (a === 'again' && f) fxStart(f.tid, f.min);
++    else if (a === 'break') { barBtn('[data-fdismiss]'); brk = { end: Date.now() + BREAK_MIN * 60000, min: BREAK_MIN }; buzz(14); }
++    else if (a === 'skip') brk = null;
++    else if (a === 'close') { if (f && f.status === 'done') barBtn('[data-fdismiss]'); fx.close(); return; }
++    painted = ''; fxPaint();
++  }
++  function fxOpen() {
++    if (!fx) {
++      document.body.insertAdjacentHTML('beforeend', `<dialog id="oxFocus" class="ox-focus" aria-label="Focus mode"><div class="ox-fx-bg" aria-hidden="true"><i></i><i></i></div>
++        <button type="button" class="ox-fx-x" data-oxf="close" aria-label="Close focus mode"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
++        <div class="ox-fx-in" tabindex="-1"><div class="ox-fx-task" id="oxFxTask"></div>
++        <div class="ox-ring"><svg viewBox="0 0 240 240" aria-hidden="true"><defs><linearGradient id="oxRg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--ox-a)"/><stop offset="1" stop-color="var(--ox-b)"/></linearGradient></defs>
++        <circle class="trk" cx="120" cy="120" r="${R}"/><circle class="arc" cx="120" cy="120" r="${R}" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${C.toFixed(1)}" transform="rotate(-90 120 120)"/></svg>
++        <div class="ox-ring-c"><b id="oxFxTime" role="timer">00:00</b><span id="oxFxMode"></span></div></div>
++        <div class="ox-fx-body" id="oxFxBody"></div><div class="ox-fx-stat" id="oxFxStat"></div></div></dialog>`);
++      fx = document.getElementById('oxFocus');
++      fx.addEventListener('click', (e) => {
++        const t = e.target.closest('button'); if (!t) return;
++        if (t.dataset.oxtask) { fxPick = t.dataset.oxtask; buzz(8); fxPaint(); }
++        else if (t.dataset.oxlen) { A.S.focusLen = +t.dataset.oxlen; A.save(); buzz(8); fxPaint(); }
++        else if (t.dataset.oxf) fxAct(t.dataset.oxf);
++      });
++      fx.addEventListener('close', () => { clearInterval(fxTimer); fxTimer = 0; });
++    }
++    painted = '';
++    if (!fx.open) { fx.showModal(); fx.querySelector(".ox-fx-in").focus(); }
++    fxPaint();
++    clearInterval(fxTimer); fxTimer = setInterval(fxPaint, 1000);
++  }
++
++  // =====================================================================================================================
++  // Micro-interactions: tilt under the mouse, a tick pop with a tap of the vibration motor
++  // =====================================================================================================================
++  let tilted = null;
++  function tilt(e) {
++    if (e.pointerType !== 'mouse' || !root.classList.contains('ox-move')) return;
++    const card = e.target.closest && e.target.closest('#main .td-card, #main .ox-empty');
++    if (tilted && tilted !== card) { tilted.classList.remove('ox-tilt'); tilted.style.removeProperty('--ox-rx'); tilted.style.removeProperty('--ox-ry'); tilted = null; }
++    if (!card) return;
++    const r = card.getBoundingClientRect(), dx = (e.clientX - r.left) / r.width - 0.5, dy = (e.clientY - r.top) / r.height - 0.5;
++    card.style.setProperty('--ox-rx', (-dy * 2).toFixed(2) + 'deg'); card.style.setProperty('--ox-ry', (dx * 2).toFixed(2) + 'deg');
++    card.classList.add('ox-tilt'); tilted = card;
++  }
++
++  // =====================================================================================================================
++  // Wiring
++  // =====================================================================================================================
++  const HASHES = { 'focus-mode': () => fxOpen() };
++  const readHash = () => { try { const h = decodeURIComponent(location.hash.replace(/^#\/?/, '')).trim(); return Object.prototype.hasOwnProperty.call(HASHES, h) ? h : ''; } catch (e) { return ''; } };
++  wanted = readHash();
++  addEventListener('hashchange', () => { const h = readHash(); if (!h) return; if (A) setTimeout(() => HASHES[h](), 0); else wanted = h; });
++  function setFx(on) { set(FX_KEY, on ? null : 'off'); applyLook(); A.toast(on ? 'Olympus effects on' : 'Olympus effects off (this device)'); }
++  function register() {
++    if (!A.HB_TOOLS.some((x) => x.id === 'oxfocus')) A.HB_TOOLS.push({ id: 'oxfocus', g: 'Me', n: 'Focus mode', d: 'A full-screen focus timer with breaks (Pomodoro)', k: 'focus mode pomodoro timer deep work concentrate break full screen', open: () => fxOpen(), st: () => { const m = minsToday(); return m ? `${dur(m)} today` : ''; } });
++    const cmd = (def) => { if (!A.PK_CMDS.some((x) => x.id === def.id)) A.PK_CMDS.push(def); };
++    cmd({ id: 'ox-focus', l: 'Focus mode', k: 'focus mode pomodoro timer deep work full screen', run: () => fxOpen() });
++    cmd({ id: 'ox-fx-on', l: 'Olympus effects on', k: 'olympus effects 3d glass animation futuristic look on', run: () => setFx(true) });
++    cmd({ id: 'ox-fx-off', l: 'Olympus effects off', k: 'olympus effects 3d glass animation plain look off calm', run: () => setFx(false) });
++  }
++  function wire() {
++    const main = document.getElementById('main');
++    if (main) new MutationObserver(onMain).observe(main, { childList: true });
++    document.addEventListener('click', (e) => {
++      const t = e.target; if (!t || !t.closest) return;
++      if (t.closest('[data-oxfocus], #focusBar #fbTime, #focusBar #fbTask')) { fxOpen(); return; }
++      if (t.closest('[data-oxadd]')) { const i = document.querySelector('#main [data-tadd] input') || document.getElementById('taskIn'); if (i) { i.scrollIntoView({ block: 'center' }); i.focus(); } return; }
++    });
++    document.addEventListener('change', (e) => { if (e.target && e.target.matches && e.target.matches('.tasks input[type=checkbox]') && e.target.checked) buzz(10); });
++    if (mq('(hover:hover) and (pointer:fine)')) document.addEventListener('pointermove', tilt, { passive: true });
++    document.addEventListener('touchstart', () => {}, { passive: true }); // iOS Safari shows :active (the press-in) only with a touch listener
++    addEventListener('storage', (e) => { if ([FX_KEY, THEME_KEY, JFX_KEY].includes(e.key)) applyLook(); });
++    try { matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', applyLook); } catch (e) { /* old Safari */ }
++    setInterval(beamTick, 30000); // the NOW beam and now / next move on by themselves
++  }
++  function init(api) {
++    A = api;
++    try { document.head.insertAdjacentHTML('beforeend', `<style id="oxStyle">${CSS}</style>`); document.body.insertAdjacentHTML('afterbegin', '<div class="ox-bg" aria-hidden="true"><i></i><i></i><i></i></div>'); } catch (e) { /* plain look */ }
++    register(); wire(); onMain();
++    if (wanted) { const h = wanted; wanted = ''; setTimeout(() => HASHES[h](), 0); }
++  }
++  function ready(api) {
++    if (A || !api || !Array.isArray(api.HB_TOOLS) || !Array.isArray(api.PK_CMDS) || typeof api.eventsOn !== 'function' || typeof api.openFocus !== 'function') return;
++    try { init(api); } catch (e) { console.error('Planner Olympus layer failed to start:', e); }
++  }
++
++  // =====================================================================================================================
++  // Styles. Light mode keeps every colour the app had (its theme test checks them); depth comes from shadows and gradients.
++  // =====================================================================================================================
++  const CSS = `
++:root{--ox-a:#6366f1;--ox-b:#06b6d4;--ox-glow:#8b5cf6;--ox-lh:24px;--ox-gap:14px;--ox-ease:cubic-bezier(.2,.8,.2,1)}
++html.ox .ox-bg{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
++html.ox .ox-bg i{position:absolute;width:70vmax;height:70vmax;border-radius:50%;opacity:.16;background:radial-gradient(circle,var(--ox-a),transparent 68%);will-change:transform}
++html.ox .ox-bg i:nth-child(1){left:-18vmax;top:-22vmax}
++html.ox .ox-bg i:nth-child(2){right:-24vmax;top:14vh;background:radial-gradient(circle,var(--ox-b),transparent 68%);opacity:.12}
++html.ox .ox-bg i:nth-child(3){left:20vw;bottom:-40vmax;background:radial-gradient(circle,var(--ox-glow),transparent 68%);opacity:.11}
++html.ox[data-theme="dark"] .ox-bg i{opacity:.34}
++/* the aurora glides to a new place on each view change (one transition, never an endless animation: a phone's battery) */
++html.ox .ox-bg i{transform:translate3d(calc(var(--ox-d,0) * 4vw),calc(var(--ox-d,0) * -3vh),0)}
++html.ox .ox-bg i:nth-child(2){transform:translate3d(calc(var(--ox-d,0) * -5vw),calc(var(--ox-d,0) * 2vh),0) scale(1.05)}
++html.ox .ox-bg i:nth-child(3){transform:translate3d(calc(var(--ox-d,0) * 3vw),calc(var(--ox-d,0) * 4vh),0)}
++html.ox-move .ox-bg i{transition:transform 1.8s var(--ox-ease)}
++html:not(.ox) .ox-bg{display:none}
++/* cards: depth in light mode, glass in dark mode */
++html.ox #main .td-card,html.ox #main .to-dash,html.ox #main .ox-empty{border-radius:16px;box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 1px 2px rgba(17,24,39,.04),0 12px 32px -18px rgba(30,27,75,.28);background-image:linear-gradient(135deg,color-mix(in srgb,var(--ox-a) 5%,transparent),transparent 42%)}
++html.ox[data-theme="dark"] #main .td-card,html.ox[data-theme="dark"] #main .to-dash,html.ox[data-theme="dark"] #main .ox-empty{background-color:rgba(23,26,33,.74);border-color:rgba(255,255,255,.08);box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 18px 40px -22px rgba(0,0,0,.8),0 0 0 1px color-mix(in srgb,var(--ox-a) 10%,transparent)}
++html.ox[data-theme="dark"] .side{background-color:rgba(23,26,33,.82)}
++html.ox .top{box-shadow:0 1px 0 color-mix(in srgb,var(--ox-a) 16%,transparent),0 10px 30px -24px var(--ox-a)}
++html.ox-move #main .td-card,html.ox-move #main .ox-empty{transition:transform .35s var(--ox-ease),box-shadow .35s var(--ox-ease)}
++html.ox-move #main .ox-tilt{transform:perspective(1100px) rotateX(var(--ox-rx,0)) rotateY(var(--ox-ry,0)) translateZ(0);box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 22px 44px -22px color-mix(in srgb,var(--ox-a) 45%,rgba(17,24,39,.5))}
++/* press feedback, tick pop, view changes */
++html.ox-move .btn,html.ox-move .pill,html.ox-move .ox-chip,html.ox-move .ox-b{transition:transform .14s var(--ox-ease),background .15s,border-color .15s,box-shadow .2s}
++html.ox-move .btn:active,html.ox-move .pill:active,html.ox-move .ox-chip:active,html.ox-move .ox-b:active{transform:scale(.96)}
++html.ox .btn.primary{box-shadow:0 6px 18px -10px var(--ox-a)}
++html.ox-move .tasks input[type=checkbox]:checked{animation:ox-pop .32s var(--ox-ease)}
++@keyframes ox-pop{40%{transform:scale(1.28);box-shadow:0 0 0 6px color-mix(in srgb,var(--ok) 22%,transparent)}100%{transform:scale(1)}}
++html.ox-move #main.ox-enter>*{animation:ox-fade .3s var(--ox-ease) both}
++html.ox-move #main.ox-enter>.tdy>*{animation:ox-rise .42s var(--ox-ease) both;animation-delay:calc(var(--ox-i,0) * 28ms)}
++@keyframes ox-fade{from{opacity:0}}
++@keyframes ox-rise{from{opacity:0;transform:translate3d(0,10px,0)}}
++/* Today, swept: one-line date, an even button row on phones, quiet section labels, a status pill */
++html.ox .tdy{gap:var(--ox-gap)}
++html.ox .tdy>.td-h h2{white-space:nowrap}
++html.ox .to-h{display:flex;align-items:center;gap:10px}
++html.ox .to-h::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
++html.ox .to-strip{display:flex;align-items:center;gap:9px;border-radius:16px;padding:7px 12px}
++html.ox .to-strip.ox-top{border-radius:16px 16px 0 0}
++html.ox .to-strip::before{content:"";width:8px;height:8px;border-radius:50%;flex:none;background:var(--now);box-shadow:0 0 0 4px color-mix(in srgb,var(--now) 18%,transparent)}
++html.ox .to-strip.ox-calm::before{background:var(--ok);box-shadow:0 0 0 4px color-mix(in srgb,var(--ok) 18%,transparent)}
++html.ox-move .to-strip::before{animation:ox-breathe 2.8s ease-in-out infinite}
++@keyframes ox-breathe{50%{opacity:.45;transform:scale(.8)}}
++@media (max-width:640px){
++  html.ox .tdy>.td-h{flex-direction:column;align-items:stretch;gap:8px}
++  html.ox .tdy{--ox-gap:12px}
++  html.ox .tdy>.td-h>div:last-child{display:grid!important;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
++  html.ox .tdy>.td-h>div:last-child .btn{justify-content:center;padding:0 6px}
++}
++/* Day timeline: fused under the status line (its soft background, no header of its own) */
++.ox-line{border:1px solid var(--line);background:var(--card);border-radius:16px;padding:12px 14px 10px;display:flex;flex-direction:column;gap:10px;min-width:0}
++.to-strip.ox-top{border-radius:10px 10px 0 0}
++.ox-line.ox-fused{margin-top:calc(-1 * var(--ox-gap,14px));padding:0 12px 8px;border:0;border-radius:0 0 10px 10px;background:var(--soft);gap:0}
++html.ox .ox-line.ox-fused{border-radius:0 0 16px 16px}
++.ox-track{position:relative;height:calc(var(--lanes) * var(--ox-lh) + 14px);overflow:hidden}
++.ox-tk{position:absolute;top:13px;bottom:0;width:1px;background:var(--line)}
++.ox-tk em{position:absolute;top:-13px;left:0;transform:translateX(-50%);font-style:normal;font-size:10px;font-weight:600;color:var(--mute);white-space:nowrap}
++.ox-tk:first-child em{transform:none}
++.ox-blk{position:absolute;margin-top:15px;height:calc(var(--ox-lh) - 4px);border-radius:7px;padding:0 6px;display:flex;align-items:center;overflow:hidden;background:color-mix(in srgb,var(--c) 16%,var(--card));border:1px solid color-mix(in srgb,var(--c) 45%,transparent);border-left:3px solid var(--c);color:var(--ink);font-size:11.5px;font-weight:600;text-align:left;z-index:1}
++.ox-blk span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
++.ox-blk.past{opacity:.55}
++.ox-blk.cur{box-shadow:0 0 0 1px var(--c),0 0 16px -2px var(--c)}
++html.ox-move #main.ox-enter .ox-blk{animation:ox-grow .5s var(--ox-ease) both;animation-delay:calc(var(--i) * 40ms);transform-origin:left center}
++html.ox-move #main .ox-tick,html.ox-move #main .ox-tick .ox-blk{animation:none!important}
++@keyframes ox-grow{from{opacity:0;transform:scaleX(.4)}}
++.ox-past{position:absolute;left:0;top:13px;bottom:0;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--ox-a) 7%,transparent));pointer-events:none}
++.ox-now{position:absolute;top:2px;bottom:0;width:2px;margin-left:-1px;z-index:2;pointer-events:none;background:linear-gradient(180deg,var(--ox-b),var(--ox-a));box-shadow:0 0 10px var(--ox-a),0 0 22px color-mix(in srgb,var(--ox-glow) 60%,transparent)}
++.ox-now b{position:absolute;top:-1px;left:50%;transform:translateX(-50%);font-size:9.5px;font-weight:700;letter-spacing:.04em;color:#fff;background:linear-gradient(90deg,var(--ox-a),var(--ox-b));border-radius:999px;padding:1px 6px;white-space:nowrap}
++html.ox-move .ox-now{animation:ox-beam 2.4s ease-in-out infinite}
++@keyframes ox-beam{50%{opacity:.65}}
++/* the empty state */
++.ox-empty{flex-direction:row;align-items:center;gap:16px;padding:18px}
++.ox-orbit{position:relative;width:76px;height:76px;flex:none}
++.ox-orbit i{position:absolute;inset:0;border-radius:50%;border:1.5px solid color-mix(in srgb,var(--ox-a) 40%,transparent)}
++.ox-orbit i+i{inset:14px;border-color:color-mix(in srgb,var(--ox-b) 45%,transparent)}
++.ox-orbit b{position:absolute;inset:30px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff,var(--ox-a) 60%,var(--ox-glow));box-shadow:0 0 18px var(--ox-a)}
++.ox-orbit i::after{content:"";position:absolute;top:-4px;left:50%;width:7px;height:7px;margin-left:-3.5px;border-radius:50%;background:var(--ox-b);box-shadow:0 0 8px var(--ox-b)}
++html.ox-move .ox-orbit i{animation:ox-spin 9s linear infinite}html.ox-move .ox-orbit i+i{animation-duration:5.5s;animation-direction:reverse}
++@keyframes ox-spin{to{transform:rotate(360deg)}}
++.ox-et h3{font-size:16px;font-weight:700;letter-spacing:-.01em}
++.ox-et p{font-size:13px;color:var(--mute);margin:3px 0 10px;line-height:1.4}
++.ox-acts{display:flex;gap:8px;flex-wrap:wrap}
++/* Focus mode */
++.ox-focus{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;border:0;padding:0;background:#05060d;color:#eef0fb;overflow:hidden auto}
++.ox-focus::backdrop{background:#05060d}
++.ox-fx-bg{position:absolute;inset:0;pointer-events:none;overflow:hidden}
++.ox-fx-bg i{position:absolute;left:50%;top:42%;width:120vmin;height:120vmin;margin:-60vmin 0 0 -60vmin;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--ox-a) 34%,transparent),transparent 62%);}
++.ox-fx-bg i+i{width:70vmin;height:70vmin;margin:-35vmin 0 0 -35vmin;background:radial-gradient(circle,color-mix(in srgb,var(--ox-b) 26%,transparent),transparent 65%)}
++.ox-focus[data-st="break"] .ox-fx-bg i{background:radial-gradient(circle,rgba(52,211,153,.3),transparent 62%)}
++html.ox-move .ox-focus[data-st="run"] .ox-fx-bg i{animation:ox-halo 5s ease-in-out infinite}
++@keyframes ox-halo{50%{transform:scale(1.08);opacity:.7}}
++.ox-fx-x{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:14px;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#cfd3e6;background:rgba(255,255,255,.06);z-index:2}
++.ox-fx-in{outline:none;position:relative;min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:calc(64px + env(safe-area-inset-top,0px)) 20px calc(28px + env(safe-area-inset-bottom,0px));text-align:center}
++.ox-fx-task{font-size:15px;font-weight:600;color:#cfd3e6;max-width:520px;overflow-wrap:anywhere}
++.ox-ring{position:relative;width:min(72vw,300px);aspect-ratio:1}
++.ox-ring svg{width:100%;height:100%;overflow:visible}
++.ox-ring circle{fill:none;stroke-width:10}
++.ox-ring .trk{stroke:rgba(255,255,255,.08)}
++.ox-ring .arc{stroke:url(#oxRg);stroke-linecap:round;filter:drop-shadow(0 0 8px var(--ox-a)) drop-shadow(0 0 18px color-mix(in srgb,var(--ox-glow) 70%,transparent))}
++.ox-focus[data-st="break"] .ox-ring .arc{stroke:#34d399;filter:drop-shadow(0 0 10px #34d399)}
++html.ox-move .ox-ring .arc{transition:stroke-dashoffset 1s linear}
++.ox-ring-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
++.ox-ring-c b{font-size:clamp(44px,14vw,64px);font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:#fff;text-shadow:0 0 24px color-mix(in srgb,var(--ox-a) 60%,transparent)}
++.ox-ring-c span{font-size:11px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#a9b0cf}
++.ox-fx-body{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;max-width:520px}
++.ox-fx-lbl{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#a9b0cf}
++.ox-fx-msg{font-size:14px;color:#cfd3e6;line-height:1.45}.ox-fx-msg b{color:#fff}
++.ox-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
++.ox-chip{min-height:40px;max-width:100%;padding:0 14px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#e6e9f7;font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
++.ox-chip[aria-pressed="true"]{border-color:transparent;background:linear-gradient(135deg,color-mix(in srgb,var(--ox-a) 80%,#000),color-mix(in srgb,var(--ox-b) 70%,#000));color:#fff;box-shadow:0 0 18px -4px var(--ox-a)}
++.ox-fx-acts{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:6px}
++.ox-b{flex:none;white-space:nowrap;min-height:46px;padding:0 20px;border-radius:14px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#eef0fb;font-size:15px;font-weight:600}
++.ox-b.go{border-color:transparent;background:linear-gradient(135deg,var(--ox-a),var(--ox-b));color:#fff;box-shadow:0 10px 30px -10px var(--ox-a)}
++.ox-fx-stat{font-size:12.5px;color:#a9b0cf}
++.ox-focus :focus-visible{outline:2px solid #fff}
++@media (prefers-reduced-motion:reduce){html.ox *,html.ox *::before,html.ox *::after,.ox-focus *{animation:none!important;transition:none!important}}
++`;
++
++  addEventListener('planner:ready', (e) => ready(e.detail));
++  if (window.PlannerAPI) ready(window.PlannerAPI);
++  // Pure helpers for the tests and the console (same pattern as window.__fl)
++  window.__ox = { level, themeVars, line, state, applyLook };
++})();
+diff --git a/planner/index.html b/planner/index.html
+index 257b8a4..cc1edb0 100644
+--- a/planner/index.html
++++ b/planner/index.html
+@@ -11,6 +11,7 @@
+ <script>(function(){try{var t=localStorage.getItem('planner.theme');if(t!=='dark'&&t!=='system')t='light';var d=t==='dark'||(t==='system'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);var h=document.documentElement;h.setAttribute('data-theme',d?'dark':'light');h.setAttribute('data-pref',t);var m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',d?'#0f1115':'#ffffff');var c=document.querySelector('meta[name=color-scheme]');if(c)c.setAttribute('content',d?'dark':'light');}catch(e){}})();</script>
+ <script src="ext-power.js"></script>
+ <script src="ext-flow.js"></script>
++<script src="ext-olympus.js"></script>
+ <meta name="apple-mobile-web-app-capable" content="yes">
+ <meta name="apple-mobile-web-app-status-bar-style" content="default">
+ <meta name="apple-mobile-web-app-title" content="Planner">
+diff --git a/planner/tests/olympus.test.js b/planner/tests/olympus.test.js
+new file mode 100644
+index 0000000..0fcb2c0
+--- /dev/null
++++ b/planner/tests/olympus.test.js
+@@ -0,0 +1,134 @@
++// Olympus layer (ext-olympus.js): the look and its switches, Olympus themes, the Day timeline, Focus mode. node planner/tests/olympus.test.js
++// Serve the site first (see shifts.test.js); PORT env, default 8789. Fixed clock: Friday 2026-09-04, 12:30 in New York (lib-todayorg).
++const { chromium } = require('playwright');
++const L = require('./lib-todayorg.js');
++const { wait, open, fullState, seedNq, TODAY } = L;
++const empty = () => ({ v: 1, view: 'today', weekStart: 0, jobs: [], categories: [{ id: 'personal', name: 'Personal', color: '#64748b' }], events: [], tasks: [], habits: [], goals: [], planned: '' });
++(async () => {
++  let checks = 0;
++  const errs = [], ok = (c, m) => { checks++; if (!c) errs.push(m); };
++  const b = await chromium.launch();
++  const txt = async (p, sel) => (await p.textContent(sel)).replace(/\s+/g, ' ').trim();
++  const st = L.st;
++
++  // ---------- 1. the pure helpers ----------
++  let { ctx, p, errs: pe } = await open(b, { state: fullState(), seed: seedNq() });
++  const pure = await p.evaluate(() => {
++    const X = window.__ox;
++    const lv = [X.level(null, null, false), X.level('off', 'high', false), X.level(null, 'off', false), X.level(null, 'low', false), X.level(null, null, true)];
++    const th = [X.themeVars({ accent: '#f7c948', accent2: '#ff7a1a' }), X.themeVars(JSON.stringify({ name: 'sea', tokens: { accent: 'rgb(0, 150, 255)' } })),
++      X.themeVars({ vars: { '--oly-accent': '#abc', glow: 'red; x:y' } }), X.themeVars('gold'), X.themeVars(null), X.themeVars({ accent: 'url(x)' })];
++    const ln = X.line([{ id: 'a', s: 420, e: 930 }, { id: 'b', s: 840, e: 900 }, { id: 'c', s: 960, e: 1320 }, { id: 'd', s: 990, e: 1050 }, { id: 'bad', s: 600, e: 600 }], 750);
++    const late = X.line([{ id: 'x', s: 360, e: 1410 }], 100);
++    const s = [X.state({ status: 'run', start: 0, min: 25 }, null, 5 * 60000), X.state(null, { end: 210000, min: 5 }, 60000), X.state({ status: 'done', min: 25 }, null, 0), X.state(null, { end: 1, min: 5 }, 5)];
++    return { lv, th, ln: { from: ln.from, to: ln.to, lanes: ln.lanes, items: ln.items.map((x) => [x.id, x.lane, x.past, x.cur]), cur: ln.cur && ln.cur.id, next: ln.next && ln.next.id }, late: [late.from, late.to], s: s.map((x) => [x.k, Math.round(x.pc * 100)]) };
++  });
++  ok(JSON.stringify(pure.lv) === '["move","off","off","still","still"]', 'level: on by default, off by the device key or jfx off, still on jfx low or reduced motion: ' + pure.lv);
++  ok(pure.th[0]['--ox-a'] === '#f7c948' && pure.th[0]['--ox-b'] === '#ff7a1a' && pure.th[0]['--ox-glow'] === '#f7c948', 'theme map: accent, accent2, glow falls back to the accent');
++  ok(pure.th[1]['--ox-a'] === 'rgb(0, 150, 255)' && pure.th[1]['--ox-b'] === 'rgb(0, 150, 255)', 'theme map: JSON with .tokens');
++  ok(pure.th[2]['--ox-a'] === '#abc' && pure.th[2]['--ox-glow'] === '#abc', 'theme map: .vars with the kit names; a glow that is not a colour is ignored');
++  ok(JSON.stringify(pure.th.slice(3)) === '[{},{},{}]', 'theme map: a bare name, nothing or a non-colour = no change (default look)');
++  ok(pure.ln.from === 420 && pure.ln.to === 1320 && pure.ln.lanes === 2, 'timeline: 7am-10pm, two lanes for the overlaps: ' + JSON.stringify(pure.ln));
++  ok(JSON.stringify(pure.ln.items) === '[["a",0,false,true],["b",1,false,false],["c",0,false,false],["d",1,false,false]]' && pure.ln.cur === 'a' && pure.ln.next === 'b', 'timeline: lanes, now and next; a zero-length item is dropped');
++  ok(JSON.stringify(pure.late) === '[360,1440]', 'timeline: widens to the earliest start and latest end, never past midnight');
++  ok(JSON.stringify(pure.s) === '[["run",20],["break",50],["done",100],["idle",0]]', 'focus state: run, break, done, idle (a break that ended)');
++  ok(await p.evaluate(() => PlannerAPI.PK_CMDS.some((c) => c.id === 'ox-focus') && PlannerAPI.HB_TOOLS.some((t) => t.id === 'oxfocus')), 'Focus mode is in the palette and All tools');
++
++  // ---------- 2. the look on: classes, light colours unchanged, the background layer ----------
++  const look = await p.evaluate(() => { const h = document.documentElement, cs = (s) => getComputedStyle(document.querySelector(s)); return { ox: h.classList.contains('ox'), mv: h.classList.contains('ox-move'), card: cs('.td-card').backgroundColor, tdy: cs('.tdy').backgroundColor, body: cs('body').backgroundColor, bg: !!document.querySelector('body > .ox-bg') }; });
++  ok(look.ox && look.mv && look.bg, 'the layer is on with motion and its background: ' + JSON.stringify(look));
++  ok(look.card === 'rgb(255, 255, 255)' && look.tdy === 'rgba(0, 0, 0, 0)' && look.body === 'rgb(255, 255, 255)', 'light mode keeps its exact colours: ' + JSON.stringify(look));
++
++  // ---------- 3. the Day timeline ----------
++  const tl = await p.evaluate(() => { const l = document.querySelector('.tdy > .ox-line'); return l && { after: l.previousElementSibling && l.previousElementSibling.id, n: l.querySelectorAll('.ox-blk').length, cur: [...l.querySelectorAll('.ox-blk.cur')].map((x) => x.textContent), past: l.querySelectorAll('.ox-blk.past').length, now: (l.querySelector('.ox-now') || {}).style.left, lanes: l.querySelector('.ox-track').style.getPropertyValue('--lanes') }; });
++  // fullState today: Electric 7am-3:30pm (repeats weekdays), Dentist 2-3pm, Outback 4-10pm, Podcast 4:30-5:30pm, Gym 6-7pm
++  ok(tl && tl.after === 'toStrip' && tl.n === 5, 'the timeline sits under the status line with today\'s 5 events: ' + JSON.stringify(tl));
++  ok(tl && JSON.stringify(tl.cur) === '["Electric"]' && tl.past === 0 && tl.lanes === '2', 'Electric is on now, nothing past, overlaps in a second lane: ' + JSON.stringify(tl));
++  ok(tl && tl.now === `${((750 - 420) / 900 * 100).toFixed(2)}%`, 'the NOW beam sits at 12:30pm: ' + (tl && tl.now));
++  const said = () => p.getAttribute('.ox-line', 'aria-label');
++  ok(await said() === 'Day timeline. Now: Electric until 3:30pm', 'it says what is on now: ' + await said());
++  ok(await p.evaluate(() => document.querySelector('#toStrip').classList.contains('ox-top') && !!document.querySelector('.tdy > .td-h [data-oxfocus]')), 'one unit with the status line; Focus joins the header buttons');
++  ok(await p.locator('.tdy > .ox-line').count() === 1, 'one timeline only');
++  await p.clock.fastForward(3 * 3600e3); await wait(300);
++  ok(await said() === 'Day timeline. Next: Outback Steakhouse at 4pm, in 30m' && await p.locator('.ox-blk.past').count() === 2, 'the beam moves on by itself: ' + await said());
++  await p.click('.ox-blk:has-text("Gym")'); await wait(300);
++  ok(await p.evaluate(() => { const d = document.querySelector('#fTitle').closest('dialog'); return d.open && document.querySelector('#fTitle').value === 'Gym'; }), 'a tap on a block opens that event');
++  await p.keyboard.press('Escape'); await wait(200);
++  ok(await p.evaluate(() => document.documentElement.scrollWidth) <= 390, 'no sideways scroll at 390px');
++  errs.push(...pe); await ctx.close();
++
++  // ---------- 4. a clear day: the empty state ----------
++  ({ ctx, p, errs: pe } = await open(b, { state: empty() }));
++  ok(await p.locator('.ox-line.ox-empty').count() === 1 && /Your day is wide open/.test(await txt(p, '.ox-empty')), 'a clear day shows the empty state');
++  ok(await p.evaluate(() => document.querySelector('#toStrip').classList.contains('ox-calm')), 'nothing urgent: the status dot is green');
++  await p.click('[data-oxadd]'); await wait(200);
++  ok(await p.evaluate(() => !!document.activeElement && !!document.activeElement.closest('[data-tadd]')), 'Add a task puts the cursor in the task box');
++  errs.push(...pe); await ctx.close();
++
++  // ---------- 5. Focus mode drives the app's own timer ----------
++  ({ ctx, p, errs: pe } = await open(b, { state: fullState(), seed: seedNq(), hash: '#focus-mode' }));
++  ok(await p.evaluate(() => document.querySelector('#oxFocus').open), '#focus-mode opens Focus mode');
++  ok(await p.locator('#oxFocus [data-oxtask]').count() >= 3 && /^25:00$/.test(await txt(p, '#oxFxTime')), 'idle: today\'s tasks to pick, the ring shows the length');
++  await p.click('#oxFocus [data-oxtask="t1"]'); await p.click('#oxFocus [data-oxlen="15"]'); await p.click('#oxFocus [data-oxf="start"]'); await wait(300);
++  let s = await st(p);
++  ok(s.focus && s.focus.tid === 't1' && s.focus.min === 15 && s.focus.status === 'run' && s.focusLen === 15, 'Start runs the app\'s focus timer on the task: ' + JSON.stringify(s.focus));
++  ok(await p.evaluate(() => !document.querySelector('#focDlg').open && !document.querySelector('#focusBar').hidden), 'the app\'s sheet never shows; its timer bar runs behind');
++  await p.clock.fastForward(5 * 60e3); await wait(1200);
++  ok(/^(10:00|09:5\d)$/.test(await txt(p, '#oxFxTime')) && (await p.getAttribute('#oxFocus', 'data-st')) === 'run', 'the ring counts down: ' + await txt(p, '#oxFxTime'));
++  await p.clock.fastForward(10 * 60e3 + 2000); await wait(1200);
++  s = await st(p);
++  ok(s.focus && s.focus.status === 'done' && s.tasks.find((t) => t.id === 't1').fl[TODAY] === 15, 'at the end the app logs the 15 minutes on the task');
++  ok((await p.getAttribute('#oxFocus', 'data-st')) === 'done' && /15 min logged/.test(await txt(p, '#oxFxBody')) && /15m focused today/.test(await txt(p, '#oxFxStat')), 'done: minutes logged and today\'s total');
++  await p.click('#oxFocus [data-oxf="break"]'); await wait(300);
++  ok((await p.getAttribute('#oxFocus', 'data-st')) === 'break' && /^0(5:00|4:5\d)$/.test(await txt(p, '#oxFxTime')) && !(await st(p)).focus, 'a 5 minute break; the done bar is dismissed');
++  await p.clock.fastForward(5 * 60e3 + 1000); await wait(1200);
++  ok((await p.getAttribute('#oxFocus', 'data-st')) === 'idle' && /Break over/.test(await txt(p, '#oxFxBody')), 'the break ends by itself, ready for the next round');
++  await p.click('#oxFocus [data-oxf="start"]'); await wait(300);
++  await p.clock.fastForward(3 * 60e3 + 500); await wait(1200);
++  await p.click('#oxFocus [data-oxf="finish"]'); await wait(300);
++  s = await st(p);
++  ok(!s.focus && s.tasks.find((t) => t.id === 't1').fl[TODAY] === 18, 'Finish and log stops early and logs the 3 minutes: ' + JSON.stringify(s.tasks.find((t) => t.id === 't1').fl));
++  await p.click('#oxFocus [data-oxf="start"]'); await wait(200); await p.click('#oxFocus [data-oxf="cancel"]'); await wait(300);
++  ok(!(await st(p)).focus && (await st(p)).tasks.find((t) => t.id === 't1').fl[TODAY] === 18, 'Cancel stops without logging');
++  await p.click('#oxFocus [data-oxf="start"]'); await wait(200); await p.keyboard.press('Escape'); await wait(300);
++  ok(await p.evaluate(() => !document.querySelector('#oxFocus').open) && (await st(p)).focus.status === 'run', 'Escape minimises; the timer keeps running in the bar');
++  await p.click('#fbTime'); await wait(300);
++  ok(await p.evaluate(() => document.querySelector('#oxFocus').open) && (await p.getAttribute('#oxFocus', 'data-st')) === 'run', 'a tap on the bar\'s time brings Focus mode back');
++  ok(await p.evaluate(() => document.documentElement.scrollWidth) <= 390, 'Focus mode: no sideways scroll at 390px');
++  errs.push(...pe); await ctx.close();
++
++  // ---------- 6. Olympus themes, switches and reduced motion ----------
++  ({ ctx, p, errs: pe } = await open(b, { state: fullState(), local: { 'olympus.theme': JSON.stringify({ name: 'gold', accent: '#f7c948', accent2: '#ff7a1a' }) } }));
++  const v = () => p.evaluate(() => [getComputedStyle(document.documentElement).getPropertyValue('--ox-a').trim(), getComputedStyle(document.documentElement).getPropertyValue('--ox-b').trim(), document.documentElement.hasAttribute('data-ox-theme')]);
++  ok(JSON.stringify(await v()) === '["#f7c948","#ff7a1a",true]', 'olympus.theme recolours the layer: ' + JSON.stringify(await v()));
++  const p2 = await ctx.newPage(); await p2.goto(p.url()); await p2.evaluate(() => localStorage.removeItem('olympus.theme')); await wait(300);
++  ok(JSON.stringify(await v()) === '["#6366f1","#06b6d4",false]', 'clearing the theme in another tab (Jarvis) brings the default back live: ' + JSON.stringify(await v()));
++  await p2.evaluate(() => localStorage.setItem('jfx', 'off')); await wait(300);
++  ok(await p.evaluate(() => !document.documentElement.classList.contains('ox')), 'Olympus 3D quality off (jfx) turns the layer off live');
++  await p2.close(); errs.push(...pe); await ctx.close();
++  ({ ctx, p, errs: pe } = await open(b, { state: fullState(), local: { 'planner.olympus.fx': 'off' } }));
++  ok(await p.evaluate(() => !document.documentElement.classList.contains('ox')), 'the device switch turns it off');
++  await p.evaluate(() => PlannerAPI.PK_CMDS.find((c) => c.id === 'ox-fx-on').run()); await wait(200);
++  ok(await p.evaluate(() => document.documentElement.classList.contains('ox') && localStorage.getItem('planner.olympus.fx') === null), 'the palette turns it back on');
++  errs.push(...pe); await ctx.close();
++  // a theme id (what Jarvis's Look sheet stores): the tokens come from Olympus's themes.js, loaded once from ../olympus/
++  for (const [id, want, asked] of [['zeus', '#4da3ff', 1], ['olympus', '#6366f1', 0], ['nope', '#6366f1', 1]]) {
++    const c3 = await b.newContext({ viewport: { width: 390, height: 844 } }); const q = await c3.newPage(); let hits = 0;
++    await q.route('**/olympus/themes.js', (r) => { hits++; r.fulfill({ contentType: 'text/javascript', body: "window.OLYMPUS_THEMES={get:function(i){return i==='zeus'?{id:'zeus'}:null},tokens:function(){return {accent:'#4da3ff',accent2:'#e8f4ff',glow:'#7cc4ff'}}};" }); });
++    await q.addInitScript((v) => { try { localStorage.setItem('olympus.theme', v); } catch (e) { /* none */ } }, id);
++    await q.goto(`http://127.0.0.1:${L.PORT}/nq-dashboard/planner/index.html`); await q.waitForSelector('.tdy'); await wait(500);
++    const got = await q.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--ox-a').trim());
++    ok(got === want && hits === asked, `theme id ${id}: accent ${got} (want ${want}), themes.js asked ${hits}x`);
++    await c3.close();
++  }
++  {
++    const c2 = await b.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' }); const q = await c2.newPage();
++    await q.goto(`http://127.0.0.1:${L.PORT}/nq-dashboard/planner/index.html`); await q.waitForSelector('.tdy'); await wait(500);
++    ok(await q.evaluate(() => document.documentElement.classList.contains('ox') && !document.documentElement.classList.contains('ox-move') && getComputedStyle(document.querySelector('#toStrip'), '::before').animationName === 'none' &&/^(none|(all )?0s)/.test(getComputedStyle(document.querySelector('.ox-bg i')).transition)), 'reduced motion: the look stays, nothing moves');
++    await c2.close();
++  }
++
++  await b.close();
++  if (errs.length) { console.log('FAIL\n' + errs.join('\n')); process.exit(1); }
++  console.log(`OLYMPUS OK (${checks} checks)`);
++})().catch((e) => { console.error(e); process.exit(1); });
