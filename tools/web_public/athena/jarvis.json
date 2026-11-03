@@ -1,0 +1,30 @@
+{
+ "v": 1,
+ "name": "Athena",
+ "status": {
+  "level": "ok",
+  "label": "86 entries, offline"
+ },
+ "kpis": [
+  {
+   "label": "Entries",
+   "value": "86"
+  },
+  {
+   "label": "Words",
+   "value": "38"
+  },
+  {
+   "label": "Playbooks",
+   "value": "9"
+  }
+ ],
+ "lines": [
+  "Your library: the strategy, the MFFU rules, what failed and what to do when.",
+  "Search it, or tap a shelf. Quiz me gives 5 questions."
+ ],
+ "t": 1793700000,
+ "open": "#library",
+ "theme": "#070b14",
+ "stale_after": 2592000
+}
