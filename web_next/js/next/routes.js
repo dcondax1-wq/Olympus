@@ -163,7 +163,7 @@ export const TABS = ['cc', 'zlarior', 'atlas', 'real', 'modules'];   // 2026-10-
 // 2026-10-30 (night 3, "organized, clean"): the Main items in plain sections, the same words as the phone. Each id once;
 // any Main id not listed here is drawn at the end (shell.js buildNav).
 export const MAIN_SECTIONS = [['', ['cc', 'start']], ['Bots', ['zlarior', 'atlas', 'blitz']], ['Live', ['mission', 'liveview', 'holo']],
-  ['Money', ['real']], ['Insight', ['mind', 'deck', 'insight']], ['', ['modules']]];
+  ['Money', ['real']], ['Insight', ['mind', 'deck', 'pro', 'insight']], ['', ['modules']]];
 
 export const TITLES = { cc: 'Home', zlarior: 'Zlarior', data: 'Backtest & research', command: 'Today', brain: 'Bot Brain', atlas: 'ATLAS · strategy 2 (25K)', botctl: 'Bot Control', accounts: 'Accounts', chart: 'Chart', trades: 'Trades', modules: 'All tools', settings: 'Settings' };
 for (const p of [...DATA, ...MODULES, ...CC]) TITLES[p.id] = p.label;
@@ -205,9 +205,16 @@ export const DECK = { id: 'deck', label: 'Trader\'s deck', icon: 'deck', desc: '
 CC.push(MIND, DECK);
 TITLES.mind = MIND.label;
 TITLES.deck = DECK.label;
+// the Scorecard (js/next/pro.js + procore.js, 2026-11-03; read-only): Zenith score, expectancy $, eval pace, underwater vs
+// the MFFU floor, playbook, what-if sizing, $ by tag; Insight, after Trader's deck
+export const PRO = { id: 'pro', label: 'Scorecard', icon: 'deck', desc: 'Zenith score, expectancy in $ and $ a month, eval pace, drawdown vs the MFFU floor, playbook by level, what-if sizing, $ by tag' };
+CC.push(PRO);
+TITLES.pro = PRO.label;
 { const g = GROUPS.find((x) => x.label === 'Main');
   if (g && g.ids && !g.ids.includes('blitz')) { const i = g.ids.indexOf('atlas'); g.ids.splice(i >= 0 ? i + 1 : g.ids.length, 0, 'blitz'); }
   if (g && g.ids && !g.ids.includes('mind')) { const i = g.ids.indexOf('real'); g.ids.splice(i >= 0 ? i + 1 : g.ids.length, 0, 'mind', 'deck'); } }
+// the Scorecard (PRO above) sits right after Trader's deck
+{ const g = GROUPS.find((x) => x.label === 'Main'); if (g && g.ids && !g.ids.includes('pro')) { const i = g.ids.indexOf('deck'); g.ids.splice(i >= 0 ? i + 1 : g.ids.length, 0, 'pro'); } }
 
 // Fleet (js/next/fleet.js, 2026-10-30): copy trading to the follower accounts (engine/fleet.py, GET /api/next/fleet)
 export const FLEET = { id: 'fleet', label: 'Fleet', icon: 'modules', desc: 'Copy trading: every follower account (prop firms, Sim, your LIVE account), room the firm\'s way, today, slippage vs the lead, rule warnings, the firm rules' };

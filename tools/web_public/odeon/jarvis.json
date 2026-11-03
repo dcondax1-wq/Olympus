@@ -1,0 +1,30 @@
+{
+ "v": 1,
+ "name": "ODEON",
+ "status": {
+  "level": "ok",
+  "label": "60 reels ready"
+ },
+ "kpis": [
+  {
+   "label": "Reels",
+   "value": "60"
+  },
+  {
+   "label": "Latest",
+   "value": "Oct 14"
+  },
+  {
+   "label": "Last reel",
+   "value": "+3.80R",
+   "delta": "+$579.48"
+  }
+ ],
+ "lines": [
+  "LIT short 2026-10-14: +$579.48 (+3.80R)",
+  "Net of the 60 reels: +$16,509.60"
+ ],
+ "t": 1793675068,
+ "open": "#reels",
+ "theme": "#07060c"
+}
