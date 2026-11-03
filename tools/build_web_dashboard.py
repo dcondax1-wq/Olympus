@@ -1208,7 +1208,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     # between this dashboard, the Planner and the other projects; the Kalshi page (tools/web_public/kalshi/, 2026-11-01)
     # it opens; published with every build so a publish never drops them
     # 2026-11-03: the OLYMPUS apps Jarvis opens full screen: Data City, Mind (the Obsidian brain), the strategy tree
-    for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates"):
+    for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus"):
         src_dir = os.path.join(WEB, app)
         if os.path.isdir(src_dir):
             os.makedirs(os.path.join(out, app), exist_ok=True)
