@@ -868,6 +868,22 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   - **Tests:** test_jarvis_hub (198), test_jarvis_brain (139), test_jarvis_system (24), test_jarvis_core (58), test_jarvis_apps (84),
     test_zenith_mode (70), test_kalshi_page (185), test_phone_e2e (local https end to end: modes, slow / offline / 404, worker
     updates, one frame, real taps, nothing white).
+- **Jarvis smart + connected (2026-11-02 night, owner: "I want the Jarvis perfect again ... connected to my Obsidian"):**
+  - **Priority engine** (`brain.js ranked()`): "what should I do" / "brief me" / "status" / the proactive line rank by money
+    at risk: MFFU 7-day inactivity (quiet_days 5 = before day 7, 6 = today, 7 = may be closed), PC silent / bot stopped /
+    feed stale, red verdicts, near floor, PC health lines with the one fix, the Planner, Kalshi; sales ideas only on "deals".
+    data.js `systemStatus().todo` uses the same order (`todos` lists them all).
+  - **Intents**: eval pace, why no trade, next setup, last trade, P&L today / week / month, MFFU rules (data.js
+    `MFFU_RULES`, a copy of research/lit/mffu_rules.json, checked by test_jarvis_brain), what the bots learned (live.json
+    `pc.mind` / `pc.learn`), how's my PC (the fix first).
+  - **Smart mode**: 8 s timeout, offline = the local answer at once; the model gets the ranked priorities, quiet days, PC
+    health, next window, MFFU rules, plus Obsidian snippets and Me.md. Free key steps (Groq, else Gemini) in ⋯ → AI key.
+  - **Obsidian** (`obsidian.js`, `memory.js`, `assist-ui.js`, owner steps in `docs/JARVIS_OBSIDIAN.md`): a private GitHub repo
+    synced by the Obsidian Git plugin; token only in localStorage `jarvis.vault`, only to api.github.com; index in IndexedDB;
+    confirmed append-only writes to `OLYMPUS/Inbox|Jarvis|Logs`; `graphSnapshot()` / `onIndexChange()` for the Mind page.
+  - Kalshi 404 = "NOT LINKED" (grey), asked once per page load. Planner: read from its own sync (`planner.sync`) when set up on
+    this phone, else one grey "open the Planner once" line.
+  - Tests: test_jarvis_brain (165), test_jarvis_system (36), test_jarvis_obsidian (46).
 - **Kalshi in Jarvis (2026-11-01):** the Kalshi bot runs 24/7 on its own Oracle Cloud server with real money, not on the PC.
   Its own Claude chat is "kalshi-server". The phone reads `kalshi.json` from its OWN public repo,
   `demetrades2000-coder/kalshi-feed` (main): raw first, then the API.
