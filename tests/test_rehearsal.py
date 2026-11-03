@@ -820,7 +820,11 @@ class Rehearsal:
               x is not None and len(exits) == 1 and x.get("reason") in (t["exit"], want_reason) and int(x.get("exit_t") or 0) == int(t["exit_t"]),
               json.dumps(exits)[:300])
         if x is not None:
-            want_pnl = round(t["pnl"] * int(e["qty"]) / t["qty"], 2)
+            # the research trade is booked at lit.COMM ($1.40 a micro); the bot books every live trade at sizing.LIVE_COMM
+            # ($1.90, since 5a2cf72): $0.50 less per micro (tests/test_lit_live.py re-prices the same way)
+            from engine import lit as _lit
+            from engine.sizing import LIVE_COMM
+            want_pnl = round(t["pnl"] * int(e["qty"]) / t["qty"] - int(e["qty"]) * (LIVE_COMM - _lit.COMM), 2)
             check(f"{day} routed P&L ${x.get('pnl')} = backtest ${t['pnl']} at {e['qty']} micros (${want_pnl})",
                   abs(float(x.get("pnl") or 0) - want_pnl) < 0.01)
         # the broker's own P&L from the fills
