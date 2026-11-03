@@ -254,7 +254,10 @@
       const b = e.target.closest('[data-toc]'); if (!b) return;
       const h = H[+b.dataset.toc][1]; if (!h || !h.isConnected) return;
       const top = h.getBoundingClientRect().top + scrollY - ((document.querySelector('header.top')?.offsetHeight || 0) + (document.getElementById('sub')?.offsetHeight || 0) + 12);
-      scrollTo({ top, behavior: calm() ? 'auto' : 'smooth' });
+      // a jump, then the card lights up once (a smooth scroll over a long page could stall on a busy phone and land short)
+      scrollTo({ top, behavior: 'auto' });
+      const card = h.closest('.card, section, [class*="-card"]') || h;
+      if (!calm()) { card.classList.remove('pl-flash'); void card.offsetWidth; card.classList.add('pl-flash'); setTimeout(() => card.classList.remove('pl-flash'), 1300); }
     });
     const at = [...el.children].filter((c) => c.matches('.mo-strip, .pl-bot')).pop();
     if (at) at.after(box); else el.prepend(box);
