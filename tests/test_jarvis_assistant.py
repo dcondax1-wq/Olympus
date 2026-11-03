@@ -107,6 +107,8 @@ st.setItem('jarvis.smart', JSON.stringify({ v: 2, on: true, provider: 'groq', ke
 a.setSettings({ style: 'chatty' });
 out.g = a.persona("what should I get my mom for her birthday");
 out.g_short = (a.setSettings({ style: 'short' }), a.persona('x'));
+out.g_name = [ask('your name is Nova').text, a.persona('x').prompt.slice(0, 40), a.settings().name];
+a.setSettings({ name: 'Jarvis' });
 // h. the brain with the assistant: offline (no key) first
 const facts = () => ({ now: NOW, market: { open: true, text: 'NQ open' } });
 const bst = mkStore(), ast = mkStore();
@@ -273,6 +275,8 @@ def checks(O):
           and "size follows the stop" in g and "[remember:" in g and "988" in g, g[:400])
     check("g. persona: what he told her (the relevant facts first) and the talk style (chatty vs short)",
           "WHAT HE HAS TOLD YOU" in g and "allergic to peanuts" in g and "Talk style: chatty" in g and "Talk style: short" in gs, g[-600:])
+    check("g. her name: 'your name is Nova' -> 'Nova it is.', the persona says 'You are Nova'", O["g_name"][0].startswith("Nova it is") and O["g_name"][1].startswith("You are Nova,")
+          and O["g_name"][2] == "Nova", O["g_name"])
     check("g. persona: no secrets in it (not the smart key, not a refused password or card)", KEY not in g and "hunter2" not in g and "4111" not in g and "gsk_" not in g)
     # h
     ho = O["h_off"]

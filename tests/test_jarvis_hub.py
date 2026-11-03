@@ -1019,14 +1019,14 @@ def run_look(br, url):
     th = p.evaluate("[document.documentElement.dataset.theme, getComputedStyle(document.documentElement).getPropertyValue('--c').trim(), !!document.getElementById('bootfx')]")
     check("l. reopened: the theme is there from the first paint; no boot screen again in the same launch", th == ["reactor-stark", "#ffbe3d", False], th)
     p.evaluate("window.__jarvis.setTheme('reactor')")
-    # voice: tap the big mic, Jarvis hears, answers out loud in the phone's voice (1.06 / 1.1), the state word follows
+    # voice: tap the big mic, Jarvis hears, answers out loud in her voice at its own pace (tts.js: rate 1.0 / pitch 1.0, 2026-11-03), the state word follows
     p.evaluate("window.__utter = 'is the market open'; window.__states = []; window.__said = []")
     p.click("#bigmic")
     p.wait_for_function("window.__said.length > 0", timeout=6000)
     p.wait_for_function("document.documentElement.dataset.state === 'idle'", timeout=4000)
     said, states = p.evaluate("[window.__said, window.__states]")
-    check("l. voice: tap the mic -> LISTENING -> THINKING -> SPEAKING -> STANDBY; the answer is read at rate 1.06, pitch 1.1",
-          "market" in said[0][0].lower() and abs(said[0][1] - 1.06) < 1e-6 and abs(said[0][2] - 1.1) < 1e-6
+    check("l. voice: tap the mic -> LISTENING -> THINKING -> SPEAKING -> STANDBY; the answer is read at the voice's own rate 1.0, pitch 1.0",
+          "market" in said[0][0].lower() and abs(said[0][1] - 1.0) < 1e-6 and abs(said[0][2] - 1.0) < 1e-6
           and [s for s in states if s in ("listening", "thinking", "speaking", "idle")][:4] == ["listening", "thinking", "speaking", "idle"], (said, states))
     p.click("#hf")
     p.wait_for_function("window.__srStarts >= 3", timeout=8000)

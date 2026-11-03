@@ -1425,7 +1425,9 @@ export function createBrain(opts) {
       return { text: t, speak: t, intent: 'smalltalk' };
     }
     if (exact(/^(who are you|what are you|what's your name|what is your name|your name|introduce yourself)$/)) {
-      const t = 'Jarvis, at your service. I watch Zenith\'s bots, your Planner and Kalshi, brief you, and switch dashboards on request. I read the data; I never place a trade.';
+      const nm = assistant ? str(safeCall(() => assistant.settings().name), 24) || 'Jarvis' : 'Jarvis';
+      const t = assistant ? `${nm}, at your service: your own assistant. Tell me anything, I remember it, set reminders, keep your list, do the maths, and watch your bots, Planner and Kalshi. I read the data; I never place a trade.`
+        : 'Jarvis, at your service. I watch Zenith\'s bots, your Planner and Kalshi, brief you, and switch dashboards on request. I read the data; I never place a trade.';
       return { text: t, speak: t, intent: 'smalltalk' };
     }
     if (exact(/^(tell me a joke|joke|a joke|say something funny|make me laugh|another joke|another one)$/)) {
@@ -1749,11 +1751,13 @@ export function createBrain(opts) {
   }
   const safeCall = (f) => { try { return f(); } catch (_) { return null; } };
   async function smartAnswer(text, V, fallback, voice, chat) {
-    const p = S.provider, name = PROVIDERS[p].name, depth = chat && S.depth === 'auto' && depthFor(norm(text)) !== 'deep' ? 'think' : depthFor(norm(text)), t0 = Date.now();
+    const p = S.provider, name = PROVIDERS[p].name, t0 = Date.now(), pers = personaFor(text, voice);
+    // open chat answers fast: low effort for the short style, medium for chatty; "think hard" / a decision still goes deep
+    const d0 = depthFor(norm(text)), depth = chat && S.depth === 'auto' && d0 !== 'deep' ? (pers && pers.style === 'chatty' ? 'think' : 'quick') : d0;
     if (offline()) return { ...fallback, smartError: 'offline' };              // no signal: the local answer, at once
     try {
       let out;
-      const mem = await memoryFor(text), pers = personaFor(text, voice);
+      const mem = await memoryFor(text);
       try { out = await callSmart(p, smartRequest(p, V, text, depth, voice, true, mem, pers)); }
       catch (e) { if (e && e.status === 400 && !e.auth && p !== 'gemini' && Date.now() - t0 < SMART_TIMEOUT_MS) out = await callSmart(p, smartRequest(p, V, text, depth, voice, false, mem, pers)); else throw e; }
       const tags = learnTags(out);
