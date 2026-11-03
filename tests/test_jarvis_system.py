@@ -94,6 +94,10 @@ def hb_payload(now):
                                 "last_1m_t": now - 72, "last_5m_t": now - 340, "stale": False, "market_open": True, "entries_blocked": False},
                        "poll": {"last_t": now - 3, "age_s": 3, "errors": 0}, "nt": {"connected": True},
                        "lit": {"stage": "levels", "text": "watching", "price": 25070.5}},
+            "mind": {"t": now - 60, "regime": {"label": "range, low volatility", "why": "VXN 18"}, "plans": {}, "similar": {},
+                     "reviews": [{"bot": "lit", "grade": "B", "lesson": "Wait for the 5m close."}], "proposals": [], "alerts": []},
+            "learn": {"costs": {"t": now - 600, "bots": {}}, "recent": [], "reviews": [{"key": "k1", "bot": "lit", "day": "2026-10-28", "status": "ok",
+                                                                                   "gap_usd": -12.5, "cause": "slippage on the stop", "notes": ""}]},
             "pc_health": {"t": now - 30, "level": "green", "skipped": [], "lines": [
                 {"key": "cpu", "level": "green", "text": "CPU 23%"},
                 {"key": "ram", "level": "green", "text": "RAM 61% in use (2.2 of 3.6 GB)"},
@@ -233,6 +237,11 @@ def main() -> int:
         x = v(name)
         check(f"d. {name}: an answer, never an exception", "exception" not in x and x.get("verdict") in ("CHECKING", "ALL GOOD", "HEADS UP", "NEEDS YOU")
               and isinstance(x.get("rows"), list) and "undefined" not in json.dumps(x) and "NaN" not in json.dumps(x), x)
+    pcp = published.get("pc") or {}
+    sm = O["slimMind"] or {}
+    check("a. live.json carries the Mind and Live learning (pc.mind, pc.learn); the phone keeps a short cut of both for an offline start",
+          (pcp.get("learn") or {}).get("reviews", [{}])[0].get("cause") == "slippage on the stop" and (pcp.get("mind") or {}).get("regime", {}).get("label") == "range, low volatility"
+          and sm.get("regime", {}).get("label") == "range, low volatility" and sm.get("reviews", [{}])[0].get("lesson") == "Wait for the 5m close.", (pcp.get("learn"), sm))
     # b2. the one thing to do is ranked by money at risk (owner 2026-11-02): an eval near closure beats a red RAM line
     rk = v("rank_quiet_ram")
     check("b2. two evals on day 5 and the PC's RAM red: NEEDS YOU (red counts), but the one thing to do is the eval; todos ranked",
