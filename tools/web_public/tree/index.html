@@ -10,11 +10,12 @@
 <link rel="icon" href="../jarvis/icon-192.png?v=j1">
 <!-- DAPHNE (2026-11-03): the strategy-tree search of tools/strategytree, drawn as a growing tree. Read-only, paper only.
      Data: tree.json next to this page (python -X utf8 -m tools.strategytree), else demo.json (synthetic, marked DEMO).
-     Logic: core.js (data + layout, no DOM), app.js (canvas, playback, touch, HUD). Look: tree.css. -->
+     Logic: core.js (data + layout, no DOM), paint.js (everything on the canvas), app.js (state, playback, touch, HUD).
+     Look: tree.css. Layout: one top bar (brand, the verdict, the rule), one bottom sheet (THE SEARCH / TOP RULES), the seeds. -->
 <script>try { if (window.top !== window) document.documentElement.classList.add('framed'); } catch (e) { document.documentElement.classList.add('framed'); }</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o1">
 <script src="../olympus/olympus.js?v=o1" data-app="tree"></script>
-<link rel="stylesheet" href="tree.css?v=d2">
+<link rel="stylesheet" href="tree.css?v=d3">
 </head>
 <body>
 <div id="app" data-state="loading">
@@ -23,9 +24,9 @@
   <header class="hud hud-top">
     <div class="brand"><span class="sigil" aria-hidden="true"></span><h1>DAPHNE</h1><span class="dim">· PATH</span>
       <span class="badge" id="demo" hidden>DEMO DATA</span></div>
+    <p class="verdict" id="verdict" aria-live="polite"></p>
     <p class="line" id="topo">TOPOLOGY · NODES — · CUT — · BEST — · BOUND —</p>
     <p class="line rule" id="rule">RULE · loading the search…</p>
-    <p class="line dim" id="crit">CRITERION: MEAN EXCESS</p>
     <p class="line money" id="money"></p>
   </header>
 
@@ -41,6 +42,11 @@
   </div>
 
   <section class="hud hud-foot" id="foot" aria-label="The search">
+    <div class="sheet-tabs" role="tablist" aria-label="Panel">
+      <button type="button" role="tab" data-tab="search" aria-selected="true">THE SEARCH</button>
+      <button type="button" role="tab" data-tab="rules" aria-selected="false">TOP RULES</button>
+    </div>
+    <div class="pane" data-pane="search">
     <div class="col search">
       <h2>THE SEARCH · <b id="nsteps">0</b> STEPS TO THE BEST</h2>
       <ol class="steps" id="steps"></ol>
@@ -54,8 +60,15 @@
       <div class="roots" id="roots"></div>
       <p class="roots-legend" id="rootsLegend"></p>
     </div>
-    <p class="verdict" id="verdict"></p>
+    <p class="line dim crit" id="crit">CRITERION: MEAN EXCESS</p>
+    </div>
+    <div class="pane" data-pane="rules" hidden>
+      <ol class="rules" id="rules"></ol>
+      <p class="roots-legend" id="rulesNote"></p>
+    </div>
   </section>
+
+  <div class="lens-fx" id="lensFx" hidden aria-hidden="true"><b id="lensT"></b><span id="lensS"></span></div>
 
   <nav class="seeds" id="seeds" aria-label="Roots"></nav>
 
@@ -73,6 +86,6 @@
 
   <p class="loading" id="loading" aria-live="polite">GROWING THE TREE…</p>
 </div>
-<script type="module" src="app.js?v=d2"></script>
+<script type="module" src="app.js?v=d3"></script>
 </body>
 </html>

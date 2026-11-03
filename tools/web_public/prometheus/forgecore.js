@@ -166,6 +166,55 @@ export class Forge {
         val: r.knob.unit === 'min' || Number.isInteger(r.knob.step) ? Math.round(r.val) : Math.round(r.val * 1000) / 1000 }));
   }
 
+  /** every ancestor of a creature (both parents, back to generation 1), the creature included */
+  ancestry(id) {
+    const out = new Set(), todo = [id];
+    while (todo.length) {
+      const c = this.byId.get(todo.pop());
+      if (!c || out.has(c.id)) continue;
+      out.add(c.id);
+      for (const p of c.p) todo.push(p);
+    }
+    return out;
+  }
+
+  /** parent -> child edges among a set of creature ids (the lineage graph) */
+  edges(ids) {
+    const out = [];
+    for (const id of ids) { const c = this.byId.get(id); if (c) for (const p of c.p) if (ids.has(p)) out.push([p, id]); }
+    return out;
+  }
+
+  /** rank of a creature in its generation (0 = fittest): the lineage graph's y */
+  rank(id) {
+    const c = this.byId.get(id);
+    return c ? this.gen(c.gen).findIndex((x) => x.id === id) : -1;
+  }
+
+  /** the Hall of Champions: the n fittest distinct genomes of the whole run (H1 fitness), each with its first creature and
+   *  its H2 / 2021-25 checks against live; live itself rides along as the reference row */
+  hall(n = 8) {
+    const first = new Map();                           // genome -> its fittest creature (the earliest on a tie)
+    for (const G of this.d.gens) for (const c of G) { const b = first.get(c.k); if (!b || c.f > b.f) first.set(c.k, this.byId.get(c.id)); }
+    const L = this.live;
+    return [...first.values()].filter((c) => c.k !== this.d.live.k).sort((a, b) => b.f - a.f || a.id - b.id).slice(0, n).map((c, i) => {
+      const G = this.genome(c.k);
+      return { rank: i + 1, id: c.id, gen: c.gen, k: c.k, fit: c.f, h1: G.h1.pm, h2: G.h2.pm, y: G.y.pm, h2Beats: G.h2.pm > L.h2.pm,
+        changed: this.diffRows(c.k).filter((r) => r.changed).length, champ: c.id === this.d.champion.id };
+    });
+  }
+
+  /** the verdict banner: one honest line, the numbers behind it */
+  verdict() {
+    const d = this.d, V = d.verdict, H = d.honesty || {}, L = this.live, seeds = d.seeds || [];
+    const real = seeds.filter((s) => s.real).length;
+    return {
+      liveBest: !d.proposal, title: d.proposal ? 'A CANDIDATE TO REVIEW' : 'LIVE LIT STILL BEST',
+      h1: V.h1_gain_pm, h2: V.h2_gain_pm, kept: V.survive_pct, liveH2: L.h2.pm, liveH1: L.h1.pm, real, seeds: seeds.length,
+      checked: H.genomes_checked, beatBoth: H.beat_live_both_pm, lo5: V.boot && V.boot.lo5, hi95: V.boot && V.boot.hi95,
+    };
+  }
+
   /** the HUD numbers of generation g */
   hud(g) {
     const b = this.best(g), G = this.genome(b.k);

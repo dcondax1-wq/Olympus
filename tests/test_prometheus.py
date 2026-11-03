@@ -10,7 +10,12 @@
      runlib runs prometheus_s*
   e. the page in Playwright Chromium at 390 x 844: no page / console errors, the generation slider, a tap on a flame opens its
      card (diff vs live, H1 / H2 / 2021-25), the live flame, the verdict panel, the demo fixture (no forge.json), reduced
-     motion, no sideways scroll, the bottom-right 80 x 160 px free; screenshots in research/handoff/2026-11-03/prometheus/
+     motion, no sideways scroll, the bottom-right 80 x 160 px free; screenshots in research/handoff/2026-11-03-day/research_apps/
+     prometheus/ (PROMETHEUS_SHOTS=<dir> elsewhere)
+  f. the day-sprint upgrade (2026-11-03): every flame in one draw call (the noise fire shader, <= 20 calls a frame), the
+     verdict banner ("LIVE LIT STILL BEST" with the numbers), the lineage graph (every creature, the champion's ancestry, a
+     tap on a dot opens its card), the Hall of Champions (live first, the fittest distinct genomes, a tap opens the card),
+     one bottom sheet clear of the orb, applyTheme(tokens)
 
     python -X utf8 -m tests.test_prometheus            (parts a-e; e needs Playwright's Chromium)
     python -X utf8 -m tests.test_prometheus fast       (a, b, d: no backtest, no browser)
@@ -36,7 +41,7 @@ from tools.prometheus import ga as GA  # noqa: E402
 from tools.prometheus import genome as G  # noqa: E402
 
 PAGE = os.path.join(ROOT, "tools", "web_public", "prometheus")
-SHOTS = os.path.join(ROOT, "research", "handoff", "2026-11-03", "prometheus")
+SHOTS = os.environ.get("PROMETHEUS_SHOTS") or os.path.join(ROOT, "research", "handoff", "2026-11-03-day", "research_apps", "prometheus")
 RES = []
 
 
@@ -334,6 +339,7 @@ def _page_checks(br, url, url_nodata):
     g_after = p.evaluate("window.__forge.gen")
     check("e. Play runs the time-lapse (generations advance)", g_after >= 1, g_after)
     p.screenshot(path=os.path.join(SHOTS, "05_timelapse.png"))
+    _upgrade_checks(p)
     fps, lite = p.evaluate("window.__forge.fps"), p.evaluate("window.__forge.lite")
     print(f"     (headless software GL: {fps} fps, LITE {lite})", flush=True)
     ctx.close()
@@ -364,12 +370,72 @@ def _page_checks(br, url, url_nodata):
     check("e. reduced motion: no errors", not errs3, errs3[:5])
 
 
+THEME_STUB = """(() => { const scene = %s;
+  window.OLYMPUS = { app: 'x', fx: () => 'high', chosen: () => true, lite: () => false, reduced: () => false, dpr: () => 1, setFx() {}, onFx() {},
+    mode() {}, hidden: () => document.hidden, track: (r) => r, stats: () => ({}), ready() {}, fail() {}, state: () => 'ready',
+    theme: () => ({ bg: '#000814', accent: '#4da3ff', mix: 0.5, harmony: 0.3, glass: 'rgba(0, 0, 0, .7)', line: 'rgba(1, 1, 1, .1)', text: '#ffffff', dim: '#cccccc' }),
+    onTheme(cb) { window.__onTheme = cb; } };
+  if (scene) window.OLYMPUS.themeScene = (o) => { window.__themeScene = o; return () => {}; }; })()"""
+
+
+def _upgrade_checks(p):
+    d = json.load(open(os.path.join(PAGE, "forge.json"), encoding="utf-8"))
+    live = d["genomes"][d["live"]["k"]]
+    p.click("#play")                                     # pause the time-lapse
+    p.wait_for_timeout(200)
+    calls = p.evaluate("window.__forge.calls")
+    check(f"f. every flame in one draw call: {calls} draw calls a frame (was 84; <= 20)", 0 < calls <= 20, calls)
+    bt, bs = p.inner_text("#bn-t"), p.inner_text("#bn-s")
+    want = "LIVE LIT STILL BEST" if not d["proposal"] else "A CANDIDATE TO REVIEW"
+    check("f. the verdict banner: the honest title with the H1 -> H2 numbers and live's H2 $/mo",
+          bt == want and f"${live['h2']['pm']:,}" in bs and "H1" in bs and "H2" in bs and p.is_visible("#banner"), (bt, bs))
+    p.click("#linBtn")
+    p.wait_for_timeout(300)
+    n = sum(len(g) for g in d["gens"])
+    got = p.evaluate("""() => ({ dots: document.querySelectorAll('#lin-b circle').length, champ: document.querySelectorAll('#lin-b circle.champ').length,
+        anc: document.querySelectorAll('#lin-b circle.anc, #lin-b circle.main').length, panel: window.__forge.panel })""")
+    check("f. Lineage: every creature a dot, the champion and its ancestry marked", p.is_visible("#truth") and got["panel"] == "lineage"
+          and got["dots"] == n and got["champ"] == 1 and got["anc"] >= len(d["champion"]["line"]) - 1, got)
+    p.screenshot(path=os.path.join(SHOTS, "08_lineage.png"))
+    dot = p.evaluate("(id) => window.__forge.lineageDot(id)", d["champion"]["id"])
+    p.mouse.click(dot["x"], dot["y"])
+    p.wait_for_timeout(300)
+    check("f. Lineage: a tap on the champion's dot opens its card (one sheet: the panel closes)", p.is_visible("#card")
+          and "Champion" in p.inner_text("#card-h") and not p.is_visible("#truth"), p.inner_text("#card-h") if p.is_visible("#card") else "")
+    p.click("#hallBtn")
+    p.wait_for_timeout(300)
+    rows = p.evaluate("[...document.querySelectorAll('#hall-b tbody tr')].map((r) => r.dataset.id)")
+    best = max(c["f"] for g in d["gens"] for c in g)
+    check("f. Hall of Champions: live first, then the fittest distinct genomes (the run's best fitness on top)", p.is_visible("#truth")
+          and rows[:1] == ["live"] and len(rows) >= 2 and abs(next(c["f"] for g in d["gens"] for c in g if str(c["id"]) == rows[1]) - best) < 1e-9, rows)
+    check("f. the bottom sheet stays clear of the orb corner", not _orb_free(p), _orb_free(p))
+    p.screenshot(path=os.path.join(SHOTS, "09_hall.png"))
+    p.click(f"#hall-b tbody tr[data-id='{rows[1]}']")
+    p.wait_for_timeout(300)
+    check("f. Hall: a tap on a row opens that creature's card", p.is_visible("#card") and f"#{rows[1]}" in p.inner_text("#card-h"))
+    p.click("#cardX")
+    got = p.evaluate("""() => { applyTheme({ accent: '#33ccff', '--gold': '#ffee00' }); const cs = getComputedStyle(document.documentElement);
+        return [cs.getPropertyValue('--fire').trim(), cs.getPropertyValue('--gold').trim()]; }""")
+    check("f. applyTheme(tokens): the page's colours follow the theme", got == ["#33ccff", "#ffee00"], got)
+    p.evaluate("applyTheme({ accent: '#ff7a1a', '--gold': '#ffc24a' })")
+    ctx = p.context.browser.new_context(viewport={"width": 390, "height": 844})
+    ctx.add_init_script(THEME_STUB % "true")
+    q = ctx.new_page()
+    q.goto(p.url)
+    q.wait_for_function("window.__forge && window.__forge.ready", timeout=30000)
+    got = q.evaluate("() => ({ scene: !!(window.__themeScene && window.__themeScene.scene && window.__themeScene.scene.fog), "
+                     "renderer: !!(window.__themeScene && window.__themeScene.renderer) })")
+    check("f. OLYMPUS themes: with the kit's themeScene the arena (its fog) is handed to the kit", got == {"scene": True, "renderer": True}, got)
+    ctx.close()
+
+
 def main(argv):
-    fast = "fast" in argv
+    fast, page = "fast" in argv, "page" in argv           # page: d + e only (the page, ~1 min)
     h0 = model_hashes()
-    part_a(real=not fast)
-    part_b()
-    if not fast:
+    if not page:
+        part_a(real=not fast)
+        part_b()
+    if not fast and not page:
         part_c()
     part_d()
     if not fast:
