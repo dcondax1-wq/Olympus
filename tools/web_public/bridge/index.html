@@ -55,6 +55,13 @@ a { color: var(--vio); }
       <li>Tell Claude "<b>Bridge: &lt;id&gt; done</b>". Claude checks it and builds it in.</li>
     </ol>
   </section>
+  <section class="how" id="sync">
+    <b>Sync ChatGPT (do this once)</b>
+    <ol>
+      <li>In ChatGPT: Settings → Connectors → GitHub → connect, and pick <code>nq-liquidity-engine</code>.</li>
+      <li><button id="copySync" type="button">Copy the sync prompt</button> and paste it into a new ChatGPT chat. From then on it reads <code>handoff/SYNC.md</code> before every job, so you never re-explain.</li>
+    </ol>
+  </section>
   <div class="bar"><span class="prog" id="prog"></span><button id="reset" type="button">Reset ticks</button></div>
   <div id="list"></div>
 </div>
@@ -130,6 +137,12 @@ a { color: var(--vio); }
   document.getElementById('reset').onclick = function () { done = {}; save(); render(); };
   render();
 })();
+</script>
+<script>
+(function(){var b=document.getElementById('copySync');if(!b)return;
+var T="You are my build partner for OLYMPUS (my trading dashboards + Jarvis). Claude (Claude Code) does the engine, tests and publishing; you do creative and bulk work. We stay synced through the GitHub repo demetrades2000-coder/nq-liquidity-engine. Before every job read handoff/ONBOARD.md and handoff/SYNC.md, then the job card on https://demetrades2000-coder.github.io/nq-dashboard/bridge/ . Only add files under handoff/inbox/<task-id>/ via a pull request on branch chatgpt/<task-id>; never edit bots, engine, live_model*.json, .github or existing apps; no secrets; paper trading only. When done add handoff/inbox/<task-id>/DONE.md (what you made + file list); if blocked add QUESTION.md. Style: Greek gods, futuristic, marble + gold + violet neon, plain words.";
+b.addEventListener('click',function(){var d=function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy the sync prompt'},1500)};
+try{navigator.clipboard.writeText(T).then(d,function(){prompt('Copy this:',T)})}catch(e){prompt('Copy this:',T)}})})();
 </script>
 </body>
 </html>
