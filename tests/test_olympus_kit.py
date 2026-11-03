@@ -113,7 +113,8 @@ def test_static():
         code = "".join(read(p) for p in glob.glob(os.path.join(WEB, app, "*.js")))
         check(f"a. {app}: the kit's sheet first, its script before the app's modules, the app reads OLYMPUS (quality, hidden tab)",
               i_css > 0 and all(i_css < o for o in own if o >= 0) and 0 < i_js < min(mods)
-              and "window.OLYMPUS" in code and ".hidden()" in code and ("O?.track(" in code or "O.ready()" in code or "O?.ready()" in code),
+              and "window.OLYMPUS" in code and ".hidden()" in code and ("O?.track(" in code or "O.ready()" in code or "O?.ready()" in code
+                                                                    or "from '../olympus/render.js'" in code),   # the render core lifts the veil (ready / track) itself
               (i_css, own, i_js, mods))
     build = read(os.path.join(ROOT, "tools", "build_web_dashboard.py"))
     sw = read(os.path.join(WEB, "sw.js"))
