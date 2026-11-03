@@ -3,6 +3,9 @@
 // sync(T) shows every caption row known at T (row.t <= T): moving forward it returns the rows just crossed (in order) so
 // the scene and the director can play their effects; moving back (a scrub) it rebuilds the transcript and returns [].
 // Speech uses the phone's own speechSynthesis and only starts after the viewer taps Narrate (browsers require a tap).
+// The caption line types itself in, word by word (a typewriter timed to the line's length, pure CSS: one span per word with
+// its own animation delay, so the frame loop never touches it); the whole text is in the line at once for screen readers,
+// the transcript and the tests. Reduced motion: the line appears whole.
 import { hhmm } from './data.js';
 
 export const CALLOUT = {
@@ -10,12 +13,36 @@ export const CALLOUT = {
   tap: 'LIMIT TAPPED', cisd1: '1M CISD', setup: 'SETUP', entry: 'ENTRY', be: 'BREAKEVEN',
 };
 
+const WORD_MS = [45, 120];              // ms per word: long lines type faster, so every line is in within ~1.5 s
+/** The caption text as per-word spans with their reveal delay (--d), plus the caret; the spaces stay plain text. */
+function typeset(el, text, reduced) {
+  const words = text.split(/(\s+)/), n = words.filter((w) => w.trim()).length;
+  const ms = Math.max(WORD_MS[0], Math.min(WORD_MS[1], 1500 / Math.max(1, n)));
+  if (reduced || !n) { el.textContent = text; el.classList.remove('typing'); return 0; }
+  let k = 0;
+  const parts = words.filter(Boolean).map((w) => {
+    if (!w.trim()) return document.createTextNode(w);
+    const c = document.createElement('span');
+    c.textContent = w;
+    c.style.setProperty('--d', Math.round(k++ * ms) + 'ms');
+    return c;
+  });
+  const caret = document.createElement('i');
+  caret.className = 'caret';
+  caret.setAttribute('aria-hidden', 'true');
+  caret.style.setProperty('--d', Math.round(n * ms) + 'ms');
+  el.replaceChildren(...parts, caret);
+  el.classList.add('typing');
+  return n * ms;
+}
+
 export class Captions {
   constructor(o) {
     this.line = o.line;               // the caption bar element
     this.list = o.transcript;         // <ol> of every caption so far
     this.speech = o.speech || (typeof window !== 'undefined' ? window.speechSynthesis : null);
     this.narrate = false;
+    this.reduced = !!o.reduced;
     this.tr = null;
     this.n = 0;
   }
@@ -67,7 +94,7 @@ export class Captions {
     this.line.classList.toggle('on', !!e);
     const time = this.line.querySelector('.cc-time'), text = this.line.querySelector('.cc-text');
     time.textContent = e ? hhmm(e.t, off) + ' ET' : '';
-    text.textContent = e ? e.text : '';
+    typeset(text, e ? e.text : '', this.reduced);
     // restart the reveal animation for each new line
     this.line.classList.remove('pop');
     void this.line.offsetWidth;

@@ -74,6 +74,7 @@ export async function fetchSite(base = '../') {
         kind: 'le-live', site: true, t: num(bd.data_t) || num(bd.t) || 0, price: num(live.price) ?? num(obj(bd.map).price),
         pc: { brain: obj(live.pc).brain, mind: obj(live.pc).mind }, board: bd,
         bars: arr(live.bars).map((b) => [num(b[0]), num(b[4])]).filter((b) => b[0] && b[1]),
+        ohlc: arr(live.bars).map((b) => [num(b[0]), num(b[1]), num(b[2]), num(b[3]), num(b[4])]).filter((b) => b.every((x) => x != null)),
       };
     } catch (_) { /* the next file */ }
   }
@@ -122,7 +123,8 @@ function positionOf(lit, brain, price) {
     || (stop == null ? null : Math.abs(entry - (num(p.stop0) ?? stop))) || null;
   const usd = num(p.unrealized_usd) ?? num(p.usd_now) ?? (px == null ? null : Math.round(dir * (px - entry) * USD_PT * qty));
   const r = num(p.unrealized_r) ?? num(p.r_now) ?? (risk && px != null ? Math.round((dir * (px - entry) / risk) * 100) / 100 : null);
-  return { side: dir > 0 ? 'LONG' : 'SHORT', dir, qty, entry, stop, target, be: !!(p.be === true || obj(p.be).done), usd, r };
+  return { side: dir > 0 ? 'LONG' : 'SHORT', dir, qty, entry, stop, target, be: !!(p.be === true || obj(p.be).done), usd, r,
+    entry_t: num(p.entry_t) };
 }
 
 function atlasOf(atlas) {
@@ -133,6 +135,15 @@ function atlasOf(atlas) {
       stage: String(m.stage || 'off'), open: !!obj(m.window).open })),
   };
 }
+
+/** The Brain's narration (pc.brain.log, newest first on the PC; the demo's rows carry t): the event log, oldest first. */
+function logOf(brain) {
+  return arr(brain.log).filter((r) => r && r.hm && r.text).map((r) => ({ t: num(r.t), hm: String(r.hm).slice(0, 5),
+    kind: String(r.kind || 'note'), text: String(r.text).slice(0, 240) }))
+    .sort((a, b) => (a.t != null && b.t != null ? a.t - b.t : sessionMin(a.hm) - sessionMin(b.hm)));
+}
+/** Minutes since the 18:00 ET session open ('00:10' comes after '23:50': the futures day starts the evening before). */
+const sessionMin = (hm) => { const [h, m] = String(hm).split(':').map(Number); return ((h * 60 + m) - 1080 + 1440) % 1440; };
 
 /** A live.json-shaped doc -> the World, or null when it has no market in it. */
 export function normalize(doc, now = Date.now() / 1000) {
@@ -159,6 +170,8 @@ export function normalize(doc, now = Date.now() / 1000) {
     atlas: atlasOf(board.atlas),
     regime: reg.trend || reg.vol ? { trend: String(reg.trend || 'range'), vol: String(reg.vol || 'normal'), label: String(reg.label || '') } : null,
     bars: arr(doc.bars),
+    ohlc: arr(doc.ohlc),
+    log: logOf(brain),
   };
 }
 

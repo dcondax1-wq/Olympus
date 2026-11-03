@@ -13,7 +13,11 @@ tools/odeon_export.py (trades.json). Read-only: nothing here touches trading log
      scrubber and the event ticks jump to a time (clock, caption, state); no sideways scroll; Jarvis's orb corner (bottom
      right 80 x 160 px) free; the reels list (filters, pick a reel), the real trades file, an ATLAS reel to its stats card;
      speech only after the Narrate tap; reduced motion; LITE; the 2D fallback without WebGL
-Screenshots go to research/handoff/2026-11-03/odeon/ (ODEON_SHOTS=<dir> to change).
+  e. the 2026-11-03 day pass: typewriter captions (the whole line in the DOM at once), the lens flare and the slow-motion
+     time ramp (letterbox) on the entry, the reels gallery of 3D posters sorted by $ (and by date), Highlights (the five best
+     trades back to back, auto-advancing), Oracle's #trade=<day>_<HHMM>_<side> link, applyTheme() and the OLYMPUS theme hook,
+     one top bar + one bottom dock
+Screenshots go to research/handoff/2026-11-03-day/oracle_odeon/odeon/ (ODEON_SHOTS=<dir> to change).
 
     python -X utf8 -m tests.test_odeon_page            (~3 min; --no-browser: a, b and c only, ~10 s)
 """
@@ -36,7 +40,7 @@ from tools import odeon_export as OX  # noqa: E402
 
 WEB = os.path.join(ROOT, "tools", "web_public")
 OD = os.path.join(WEB, "odeon")
-SHOTS = os.environ.get("ODEON_SHOTS") or os.path.join(ROOT, "research", "handoff", "2026-11-03", "odeon")
+SHOTS = os.environ.get("ODEON_SHOTS") or os.path.join(ROOT, "research", "handoff", "2026-11-03-day", "oracle_odeon", "odeon")
 RES = []
 MINUS = "−"
 
@@ -93,7 +97,7 @@ def part_a():
               all(isinstance(t["usd"], (int, float)) and isinstance(t["r"], (int, float)) and t["mfe_r"] is not None and t["mae_r"] is not None
                   and t["held_min"] >= 0 and (t["stop"] - t["entry"]["px"]) * t["d"] < 0 for t in T))
         # the paper / real path: a published data.json with a ledger row and an eval trade on bars the tape has
-        lit = next(t for t in T if t["bot"] == "LIT")
+        lit = next(t for t in T if t["bot"] == "LIT" and t["src"] == "backtest")   # a replay: its bars are in the TradingView files
         e_t = lit["entry"]["t"]
         fake = {"live": {"ledger": [{"day": lit["day"], "side": lit["side"], "entry_t": e_t, "exit_ts": lit["exit"]["t_end"], "entry_px": lit["entry"]["px"],
                                      "stop_px": lit["stop"], "target_px": lit["target"], "exit_px": lit["exit"]["px"], "exit": lit["exit"]["kind"],
@@ -182,9 +186,17 @@ def part_c():
           and "top.location" not in code, re.findall(r"https?://[^\s'\")]+", code)[:5])
     check("c. prefers-reduced-motion respected (CSS + the director + the effects)", "prefers-reduced-motion" in css and "prefers-reduced-motion" in files["app.js"]
           and "this.reduced" in files["director.js"] and "this.reduced" in files["scene.js"])
-    check("c. the orb corner: everything fixed at the bottom keeps a 96 px right inset", "--orb: 96px" in css
-          and re.search(r"\.transport \{[^}]*right: calc\(var\(--orb\)", css) and re.search(r"\.cc \{[^}]*right: calc\(var\(--orb\)", css))
+    check("c. the orb corner: the bottom dock (captions + transport) keeps a 96 px right inset", "--orb: 96px" in css
+          and re.search(r"\.dock \{[^}]*right: calc\(var\(--orb\)", css) and 'id="dock"' in html
+          and html.index('id="dock"') < html.index('id="cc"') < html.index('id="transport"') < html.index('id="script"'))
     check("c. texts go in as text (no innerHTML)", "innerHTML" not in code)
+    check("e. film effects: typewriter captions, bokeh depth of field, letterbox, lens flare (DOM layers), the slow-motion ramp",
+          "function typeset(" in files["captions.js"] and all(f'class="{c}"' in html for c in ("dof", "letterbox", "flare"))
+          and "const RAMP = " in files["director.js"] and "@keyframes flare" in css and "BOKEH_VS" in files["scene.js"])
+    check("e. the gallery sorts by $ (sortReels), Highlights, Oracle's #trade= route, applyTheme + the OLYMPUS theme hook",
+          "export function sortReels(" in files["ui.js"] and "function startHighlights()" in files["app.js"] and "trade=" in files["app.js"]
+          and "function applyTheme(tokens)" in files["app.js"] and "onTheme" in files["app.js"] and "applyTheme(" in files["scene.js"]
+          and html.count("<header") == 1 and 'id="hlBtn"' in html)
     fx = fixture()
     tj = json.load(open(os.path.join(OD, "trades.json"), encoding="utf-8"))
     same = next((t for t in tj["trades"] if t["id"] == fx["id"]), None)
@@ -294,17 +306,27 @@ def run_browser(fx, tj):
                       and p.is_visible("#demoBadge") and st["gl"] == "webgl", st)
                 time.sleep(0.9)
                 shot(p, f"{tag}_0_title.png")
-                p.wait_for_function("window.__odeon.state().crossed.includes('sweep')", timeout=60000)
+                p.wait_for_function("window.__odeon.state().crossed.includes('sweep')", timeout=180000)
                 shot(p, f"{tag}_1_sweep.png")
-                p.wait_for_function("window.__odeon.state().crossed.includes('entry')", timeout=60000)
+                p.wait_for_function("window.__odeon.state().crossed.includes('entry')", timeout=180000)
+                fl = p.evaluate("""() => ({ go: document.querySelector('#flare').classList.contains('go'), slow: window.__odeon.state().slow,
+                  lb: document.body.dataset.slowmo, spans: document.querySelectorAll('#cc .cc-text > span').length,
+                  text: document.querySelector('#cc .cc-text').textContent, typing: document.querySelector('#cc .cc-text').classList.contains('typing') })""")
+                try:                                       # the ramp eases in over the next frames (wall-clock seconds)
+                    p.wait_for_function("window.__odeon.state().slow < 0.6 && document.body.dataset.slowmo === 'true'", timeout=30000)
+                    fl["slowmo"] = True
+                except Exception:
+                    fl["slowmo"] = False
+                check(f"e. {tag}: on the entry: the lens flare, the slow-motion ramp (letterbox in), the caption typed in word by word",
+                      fl["go"] and fl["slowmo"] and fl["typing"] and fl["spans"] == len(fl["text"].split()) and fl["text"] in fx_texts, fl)
                 time.sleep(0.4)
                 shot(p, f"{tag}_2_entry.png")
-                wait_state(p, "s.T > " + str(fx["entry"]["t"] + 3600), 90)
+                wait_state(p, "s.T > " + str(fx["entry"]["t"] + 3600), 180)
                 shot(p, f"{tag}_3_in_trade.png")
-                p.wait_for_function("window.__odeon.state().crossed.includes('exit')", timeout=90000)
+                p.wait_for_function("window.__odeon.state().crossed.includes('exit')", timeout=180000)
                 time.sleep(0.3)
                 shot(p, f"{tag}_4_exit_burst.png")
-                wait_state(p, "s.ended && s.stats", 60)
+                wait_state(p, "s.ended && s.stats", 180)
                 time.sleep(0.8)
                 shot(p, f"{tag}_5_stats.png")
                 got_usd, got_r = p.inner_text("#statUsd"), p.inner_text("#statR")
@@ -363,6 +385,15 @@ def run_browser(fx, tj):
                 shot(p, f"{tag}_7_reels.png")
                 check(f"d. {tag}: #reels opens the film-reel list with every trade ({n})", p.locator("#reelList .reel").count() == n
                       and not p.evaluate("window.__odeon.state().demo") and no_sideways(p))
+                cards = p.eval_on_selector_all("#reelList .reel", "els => els.map(e => [e.dataset.id, e.querySelector('.p-usd').textContent])")
+                want = sorted(tj["trades"], key=lambda t: (-t["usd"], -t["entry"]["t"]))
+                check(f"e. {tag}: the gallery: one 3D poster per reel, best $ first, each poster with its $",
+                      [c[0] for c in cards] == [t["id"] for t in want] and all(c[1] == usd(t["usd"]) for c, t in zip(cards, want))
+                      and p.evaluate("getComputedStyle(document.querySelector('#reelList')).perspective") != "none", cards[:3])
+                p.click(".chip[data-s='new']")
+                newest = p.eval_on_selector_all("#reelList .reel", "els => els.map(e => e.dataset.id)")
+                check(f"e. {tag}: Newest sorts the posters by date", newest == [t["id"] for t in sorted(tj["trades"], key=lambda t: -t["entry"]["t"])])
+                p.click(".chip[data-s='usd']")
                 p.click(".chip[data-f='atlas']")
                 n_atlas = sum(t["bot"] == "ATLAS" for t in tj["trades"])
                 check(f"d. {tag}: the ATLAS filter shows only ATLAS reels ({n_atlas})", p.locator("#reelList .reel").count() == n_atlas
@@ -373,16 +404,49 @@ def run_browser(fx, tj):
                 check(f"d. {tag}: picking a reel plays it (hash #reel=<id>, list closed)", st["id"] == at["id"] and st["playing"]
                       and p.evaluate("decodeURIComponent(location.hash)") == "#reel=" + at["id"] and not p.is_visible("#reels"))
                 p.evaluate(f"window.__odeon.seek({at['entry']['t'] - 300})")
-                p.wait_for_function("window.__odeon.state().crossed.includes('entry')", timeout=60000)
+                p.wait_for_function("window.__odeon.state().crossed.includes('entry')", timeout=180000)
                 time.sleep(0.5)
                 shot(p, f"{tag}_8_atlas_in_trade.png")
-                wait_state(p, "s.ended && s.stats", 90)
+                wait_state(p, "s.ended && s.stats", 180)
                 check(f"d. {tag}: the ATLAS reel ends on its stats card ({usd(at['usd'])}, {rr(at['r'])})",
                       p.inner_text("#statUsd") == usd(at["usd"]) and p.inner_text("#statR") == rr(at["r"]), p.inner_text("#statUsd"))
                 p.click("#stNext")
                 st = p.evaluate("window.__odeon.state()")
                 ids = [t["id"] for t in tj["trades"]]
                 check(f"d. {tag}: Next reel plays the next one", st["id"] == ids[(ids.index(at["id"]) + 1) % len(ids)] and st["playing"])
+                if vw["width"] == 390:
+                    # ---- Highlights: the five best trades by $, back to back
+                    p.evaluate("window.__odeon.speed(60)")
+                    p.click("#reelsBtn")
+                    p.click("#hlBtn")
+                    top5 = [t["id"] for t in sorted([t for t in tj["trades"] if t["usd"] > 0], key=lambda t: (-t["usd"], -t["entry"]["t"]))[:5]]
+                    st = p.evaluate("window.__odeon.state()")
+                    check(f"e. {tag}: Highlights plays the five best trades by $ (1/5 first)", st["hl"] and st["hl"]["ids"] == top5 and st["id"] == top5[0]
+                          and p.inner_text("#hlBadge") == "HIGHLIGHT 1/5" and not p.is_visible("#reels"), st.get("hl"))
+                    p.evaluate("window.__odeon.seek(window.__odeon.state().tEnd - 60)")
+                    p.wait_for_function(f"window.__odeon.state().id === '{top5[1]}'", timeout=150000)
+                    shot(p, f"{tag}_10_highlights.png")
+                    check(f"e. {tag}: after the stats card the next highlight starts by itself (2/5)", p.inner_text("#hlBadge") == "HIGHLIGHT 2/5"
+                          and p.evaluate("window.__odeon.state().playing"))
+                    # ---- Oracle's link: #trade=<day>_<HHMM>_<side> (any source prefix), and one with no film
+                    lit = next(t for t in tj["trades"] if t["bot"] == "LIT" and t["id"] != top5[0])
+                    key = lit["id"].split(".", 1)[1]
+                    p.goto(base + "?speed=60#trade=" + key)
+                    p.wait_for_function("document.body.dataset.ready === 'true'", timeout=30000)
+                    st = p.evaluate("window.__odeon.state()")
+                    near = p.evaluate(f"window.__odeon.find('{lit['day']}_{hhmm(lit['entry']['t'] + 120, lit['off']).replace(':', '')}_{lit['side'].lower()}')")
+                    check(f"e. {tag}: Oracle's #trade= link plays that trade's reel (and a time 2 minutes off finds it too)",
+                          st["id"] == lit["id"] and st["playing"] and not st["hl"] and near == lit["id"], [st["id"], lit["id"], near])
+                    p.goto(base + "?speed=60#trade=2020-01-02_0930_long")
+                    p.wait_for_function("document.body.dataset.ready === 'true'", timeout=30000)
+                    p.wait_for_selector("#reels:not([hidden])")
+                    check(f"e. {tag}: a trade with no film opens the gallery with a plain note", p.is_visible("#reelNote") and "No film" in p.inner_text("#reelNote"))
+                    r = p.evaluate("window.__odeon.applyTheme({ accent: '#ff8800', bg: '#020304' })")
+                    check(f"e. {tag}: applyTheme(tokens) recolours the page (accent, background)", r == {"accent": "#ff8800", "bg": "#020304"}
+                          and p.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--blue').trim()") == "#ff8800")
+                    k0 = p.evaluate("window.__odeon.applyTheme({ id: 'olympus', accent: '#a855f7', bg: '#04050c', mix: 0, harmony: 0 })")
+                    check(f"e. {tag}: the OLYMPUS default theme leaves Odeon's own blue as it is", k0 == {"accent": "#7fb4ff", "bg": None}, k0)
+                    shot(p, f"{tag}_11_no_film_note.png")
                 check(f"d. {tag}: no console errors (real reels)", not errs, errs[:5])
                 ctx.close()
 
@@ -397,6 +461,10 @@ def run_browser(fx, tj):
             time.sleep(1.5)
             check("d. reduced motion: flagged, no film grain; ?lite=1: LITE badge", p.evaluate("document.body.dataset.reduced") == "true"
                   and not p.is_visible(".grain") and p.is_visible("#liteBadge") and p.evaluate("window.__odeon.state().lite"))
+            check("e. reduced motion: no typewriter (the caption appears whole), no depth-of-field blur, no lens flare",
+                  p.evaluate("document.querySelectorAll('#cc .cc-text > span').length") == 0
+                  and p.evaluate("getComputedStyle(document.querySelector('.dof')).display") == "none"
+                  and p.evaluate("getComputedStyle(document.querySelector('.flare')).display") == "none")
             st0 = p.evaluate("window.__odeon.state().T")
             time.sleep(1.0)
             check("d. reduced motion still plays the reel", p.evaluate("window.__odeon.state().T") > st0)

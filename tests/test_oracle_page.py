@@ -19,8 +19,12 @@ Brain is the fixture day at 09:40 ET), and checks:
   e. a stale live.json (an hour old): LAST SEEN, the last world kept; no live.json and no site files: the demo
   f. reduced motion, no sideways scroll, the orb's 80 x 160 px corner left free, and across every case: no request outside
      the page's origin but the two GitHub endpoints
+  g. the 2026-11-03 day pass: the holographic ladder (round ticks, the nearest open levels named at their ring's height, the
+     price pointer), the event ribbon (sweeps / CISD / limit / entry / exit with ET times, the entry linking to Odeon's film),
+     the replay scrubber (drag = seek + pause), "Replay today" rebuilt from the live World and the site's bars, one top bar +
+     one bottom sheet, applyTheme() and the OLYMPUS theme hook
     python -X utf8 -m tests.test_oracle_page
-ORACLE_SHOTS=<dir> saves screenshots there (default research/handoff/2026-11-03/oracle/ when --shots is given).
+ORACLE_SHOTS=<dir> saves screenshots there (default research/handoff/2026-11-03-day/oracle_odeon/oracle/ when --shots is given).
 """
 from __future__ import annotations
 
@@ -43,7 +47,7 @@ ORC = os.path.join(WEB, "oracle")
 DEMO = os.path.join(ORC, "demo_day.json")
 ET = ZoneInfo("America/New_York")
 DAY = "2026-01-22"
-MODULES = ["main.js", "data.js", "demo.js", "time.js", "scene.js", "layers.js", "sky.js", "glow.js", "hud.js"]
+MODULES = ["main.js", "data.js", "demo.js", "time.js", "scene.js", "layers.js", "sky.js", "glow.js", "hud.js", "ladder.js", "events.js"]
 API = "https://api.github.com/repos/demetrades2000-coder/nq-dashboard/contents/live.json?ref=live"
 RAW = "https://raw.githubusercontent.com/demetrades2000-coder/nq-dashboard/live/live.json"
 RES: list = []
@@ -268,7 +272,7 @@ def shot(p, name):
     if SHOTS:
         os.makedirs(SHOTS, exist_ok=True)
         p.wait_for_timeout(600)
-        p.screenshot(path=os.path.join(SHOTS, name + ".png"))
+        p.screenshot(path=os.path.join(SHOTS, name + ".jpg"), type="jpeg", quality=82)
 
 
 # ------------------------------------------------------------------ formats (the page's own)
@@ -330,6 +334,11 @@ def static_checks():
     keys = set(re.findall(r"localStorage\.\w+\(([^,)]+)", "".join(src.values())))
     check("a. storage only under the page's own key", keys == {"QUALITY_KEY"} and "const QUALITY_KEY = 'oracle.quality';" in src["main.js"], keys)
     check("a. the HUD writes text only (no innerHTML anywhere)", not re.search(r"innerHTML|outerHTML|insertAdjacentHTML", "".join(src.values())))
+    check("g. one top bar and one bottom sheet; the ladder layer; the ribbon, the scrubber and the Odeon link in the sheet",
+          html.count("<header") == 1 and html.count('class="hud sheet"') == 1 and 'id="ladder"' in html
+          and all(html.index('id="dock"') < html.index(f'id="{i}"') for i in ("events", "scrub", "pos-film", "lv-list")))
+    check("g. themes: applyTheme(tokens) per app, hooked to the OLYMPUS kit's theme() / onTheme when it has them",
+          "function applyTheme(tokens)" in src["main.js"] and "onTheme" in src["main.js"] and "applyTheme" in src["scene.js"])
     check("a. viewport-fit=cover and its own theme-color", 'viewport-fit=cover' in html and '<meta name="theme-color" content="#04050d">' in html
           and "const THEME = '#04050d';" in src["main.js"])
     check("a. safe areas on every edge, the orb corner reserved, reduced motion in CSS and in the loop",
@@ -472,6 +481,32 @@ def demo_checks(br, origin, vw):
           and p.inner_text("#pnl") == fmt_usd(open_usd, True) and p.inner_text("#stage-label").startswith("In trade"),
           [p.inner_text("#price"), fmt_px(exp_px), p.inner_text("#pnl"), fmt_usd(open_usd, True)])
     shot(p, f"demo_ny_trade_{vw[0]}")
+    # the event ribbon, the Odeon link, the ladder (09:40, in the short)
+    ev = p.evaluate("oracle.events")
+    film = "../odeon/#trade=2026-01-22_0924_short"
+    kinds = [e["k"] for e in ev]
+    check(f"g. {tag}: the event ribbon at 09:40 = the log's sweeps, CISDs, the armed limit and the entry, each with its ET time",
+          {"sweep", "cisd", "armed", "entry"} <= set(kinds) and kinds.index("armed") < kinds.index("entry")
+          and next(e for e in ev if e["k"] == "entry")["hm"] == "09:24"
+          and p.eval_on_selector_all("#events li", "e => e.length") == len(ev), kinds)
+    check(f"g. {tag}: the entry chip and the position card link to Odeon's film of the trade",
+          p.get_attribute("#events li.k-entry a.film", "href") == film and p.is_visible("#pos-film")
+          and p.get_attribute("#pos-film", "href") == film, [p.get_attribute("#pos-film", "href"), film])
+    lad = p.evaluate("oracle.ladder")
+    w = p.evaluate("oracle.world")
+    near = sorted([l for l in w["levels"] if not l["taken"]], key=lambda l: abs(l["dist"]))[:2]
+    check(f"g. {tag}: the holographic ladder: round-number ticks, the price pointer, the nearest open levels named",
+          sum(bool(re.fullmatch(r"[\d,]+", x)) for x in lad) >= 3 and fmt_px(w["price"]) in lad
+          and all(any(x.startswith(l["label"] + " ") for x in lad) for l in near), [lad, [l["label"] for l in near]])
+    # the scrubber: a drag seeks and pauses
+    sp = p.evaluate("oracle.demo.span")
+    p.evaluate("oracle.demo.play()")
+    p.evaluate("(() => { const s = document.querySelector('#scrub'); s.value = '250'; s.dispatchEvent(new Event('input')); s.dispatchEvent(new Event('change')); })()")
+    t = p.evaluate("oracle.demo.t")
+    want = sp["from"] + 0.25 * (sp["to"] - sp["from"])
+    p.wait_for_timeout(400)
+    check(f"g. {tag}: the replay scrubber: a drag to 25 % seeks there and pauses the replay",
+          abs(t - want) < 2 and abs(p.evaluate("oracle.demo.t") - t) < 1 and p.get_attribute("#demo-play", "data-playing") == "false", [t, want])
     seek(p, 10, 30)
     check(f"c. {tag}: after the target: done for today, no position, P&L today = the fixture's booked day",
           p.evaluate("oracle.constellation")[-1] == "now" and not p.is_visible("#pos") and p.inner_text("#pnl") == fmt_usd(fx["frames"][-1]["day_pnl"], True),
@@ -576,6 +611,51 @@ def state_checks(br, origin, j_now):
 
 
 # ------------------------------------------------------------------ f. reduced motion, quality, Jarvis's card
+def today_checks(br, origin, j_now):
+    """Replay today: live.json + the site's 5m bars of today -> the scrubber walks today's session from the 18:00 open."""
+    FEED.update(api=(200, j_now), raw=None, calls=[])
+    t_now = int(j_now["t"])
+    now_et = dt.datetime.fromtimestamp(t_now, ET)
+    sess = dt.datetime.combine(now_et.date() - dt.timedelta(days=0 if now_et.hour >= 18 else 1), dt.time(18, 0), ET)
+    start = max(int(sess.timestamp()), t_now - 6 * 3600) // 300 * 300
+    n = max(3, min(60, (t_now - start) // 300 - 1))
+    px = j_now["price"]
+    bars = [[start + 300 * i, px - 20 + i * 0.5, px - 18 + i * 0.5, px - 22 + i * 0.5, px - 19.5 + i * 0.5] for i in range(n)]
+    SITE["home"] = {"board": j_now["board"], "live": {"price": px, "bars": bars}}
+    ctx, p, log = new_page(br, origin, (390, 844))
+    p.goto(origin + "/oracle/")
+    ready(p, "live")
+    p.evaluate("oracle.refresh()")
+    p.wait_for_function("oracle.canToday === true", timeout=15000)
+    ok_btn = p.is_visible("#today")
+    p.click("#today")
+    p.wait_for_function("oracle.mode === 'demo' && oracle.demo.today")
+    sp = p.evaluate("oracle.demo.span")
+    check("g. Replay today: offered with today's bars; it replays from the first bar of the session to now (REPLAY · TODAY)",
+          ok_btn and "TODAY" in p.inner_text("#demo-tag") and sp["from"] == bars[0][0] and abs(sp["to"] - t_now) < 2, [ok_btn, sp])
+    k = n // 2
+    p.evaluate(f"oracle.demo.pause(); oracle.demo.seek({bars[k][0] + 150})")
+    p.wait_for_timeout(200)
+    got = p.inner_text("#price")
+    check("g. Replay today: the HUD price walks today's bars (mid-bar half way through the replay)", got.replace(",", "") != "" and
+          bars[k][3] - 0.25 <= float(got.replace(",", "")) <= bars[k][2] + 0.25, [got, bars[k]])
+    shot(p, "today_replay_390")
+    p.click("#replay")
+    p.wait_for_function("oracle.mode === 'live'")
+    check("g. Replay today -> Back to live: the live world again", p.inner_text("#price") == fmt_px(px))
+    r = p.evaluate("oracle.applyTheme({accent: '#ff8800', bg: '#020304'})")
+    check("g. applyTheme(tokens): the HUD accent and the background change", r == {"accent": "#ff8800", "bg": "#020304"}
+          and p.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()") == "#ff8800")
+    k0 = p.evaluate("oracle.applyTheme({ id: 'olympus', accent: '#a855f7', bg: '#04050c', mix: 0, harmony: 0 })")
+    k1 = p.evaluate("oracle.applyTheme({ id: 'zeus', accent: '#6fb8ff', bg: '#06142e', mix: 0.55, harmony: 0.3 })")
+    check("g. an OLYMPUS kit theme: the default leaves Oracle's cyan as it is; another leans it toward the theme accent by its harmony",
+          k0 == {"accent": "#7fe9ff", "bg": None} and k1["accent"] not in ("#7fe9ff", "#6fb8ff") and k1["bg"] is None, [k0, k1])
+    errs = real_errors(log)
+    check("g. no console errors in Replay today", not errs, errs)
+    SITE["home"] = None
+    ctx.close()
+
+
 def misc_checks(br, origin):
     FEED.update(api=None, raw=None, calls=[])
     ctx, p, log = new_page(br, origin, (390, 844), reduced=True)
@@ -616,7 +696,7 @@ def main(argv=None) -> int:
         return 0
     global SHOTS
     if "--shots" in argv and not SHOTS:
-        SHOTS = os.path.join(ROOT, "research", "handoff", "2026-11-03", "oracle")
+        SHOTS = os.path.join(ROOT, "research", "handoff", "2026-11-03-day", "oracle_odeon", "oracle")
     static_checks()
     from playwright.sync_api import sync_playwright
     srv, origin = serve()
@@ -631,6 +711,7 @@ def main(argv=None) -> int:
                 demo_checks(br, origin, vw)
                 live_checks(br, origin, vw, fixture_live(int(time.time())))
             state_checks(br, origin, fixture_live(int(time.time())))
+            today_checks(br, origin, fixture_live(int(time.time())))
             misc_checks(br, origin)
             br.close()
     finally:

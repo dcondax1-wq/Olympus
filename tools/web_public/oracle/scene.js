@@ -37,6 +37,8 @@ export class Scene {
     this.market = new Market(THREE, this.scene, { quality, reduced });
     this.fitPts = fitPoints(THREE);
     this.probe = new THREE.PerspectiveCamera();
+    this._p = new THREE.Vector3();
+    this.H = innerHeight;
     this.world = null;
     this.goal = { center: null, half: 60 };
     this.t = 0;
@@ -62,6 +64,7 @@ export class Scene {
     const full = { x0: 0, y0: 0, x1: W, y1: H }, b0 = this.band || full;
     const b = b0.x1 - b0.x0 < 140 || b0.y1 - b0.y0 < 180 ? full : b0;      // a band too small to use: the whole screen
     this.renderer.setSize(W, H, false);
+    this.H = H;
     this.camera.aspect = W / H;
     // shift the projection centre to the band's centre, then fit the column + clock (height ~26) and the rings (width ~17)
     this.camera.setViewOffset(W, H, W / 2 - (b.x0 + b.x1) / 2, H / 2 - (b.y0 + b.y1) / 2, W, H);
@@ -95,8 +98,27 @@ export class Scene {
     this.sky.setWeather(weatherOf(w));
     this.goal = { center: w.price, half: halfRange(w) };
     if (this.map.center == null && w.price != null) Object.assign(this.map, this.goal);
-    if (strikes) for (const l of swept) this.market.strike(l, this.map, this.cam.right);
+    if (strikes) for (const l of swept) this.market.strike(l, this.map, this.cam);
     return swept;
+  }
+
+  /** The screen y (CSS px) of a price on the column, from the last rendered camera (the ladder reads it every frame). */
+  screenY(price) {
+    if (this.map.center == null) return -1;
+    return ((1 - this._p.set(0, this.map.y(price), 0).project(this.camera).y) / 2) * this.H;
+  }
+
+  /** The price range the column shows now ([lo, hi]). */
+  range() {
+    const k = (Y_MAX + 0.6) / Y_MAX;
+    return this.map.center == null ? [0, 0] : [this.map.center - this.map.half * k, this.map.center + this.map.half * k];
+  }
+
+  /** A theme's colours (OLYMPUS themes): the column and the comet take the accent, the sky the background. */
+  applyTheme(accent, bg) {
+    const T = this.renderer && this.market.T;
+    if (accent) { this.market.colMats[0].uniforms.uC.value.set(accent); this.market.comet.children[0].material.color.set(accent); }
+    if (bg && T) { this.renderer.setClearColor(new T.Color(bg), 1); this.scene.fog.color.set(bg); }
   }
 
   bindControls() {

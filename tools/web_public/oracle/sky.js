@@ -19,20 +19,35 @@ export function weatherOf(w) {
     flow: reg.trend === 'up' ? 1 : reg.trend === 'down' ? -1 : 0, trend: reg.trend || 'range', vol };
 }
 
-const AURORA_FRAG = `uniform float uT; uniform float uFlow; uniform float uI; uniform vec3 uA; uniform vec3 uB; varying vec2 vUv;
+// The aurora as a volume: each curtain sums up to four folded sheets one behind the other (parallax with the camera's
+// azimuth), each with the bright green-white lower fringe of a real aurora, rays that rise from it and a body that fades
+// with height into the second colour. Still one draw call per curtain; LITE sums two sheets.
+const AURORA_FRAG = `uniform float uT; uniform float uFlow; uniform float uI; uniform float uLayers; uniform float uPar;
+  uniform vec3 uA; uniform vec3 uB; varying vec2 vUv;
   float h(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453); }
   float n(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f);
     return mix(mix(h(i), h(i+vec2(1,0)), f.x), mix(h(i+vec2(0,1)), h(i+vec2(1,1)), f.x), f.y); }
   void main(){
     float drift = uT * (0.02 + 0.05 * abs(uFlow)) * (uFlow < 0.0 ? -1.0 : 1.0);
     float sway = uFlow == 0.0 ? 0.08 * sin(uT * 0.3 + vUv.x * 4.0) : 0.0;
-    float q = n(vec2(vUv.x * 7.0 + drift * 3.0 + sway, uT * 0.07)) * 0.65 + n(vec2(vUv.x * 19.0 - drift * 5.0, uT * 0.11)) * 0.35;
-    float rays = 0.55 + 0.45 * sin(vUv.x * 120.0 + q * 9.0 + uFlow * uT * 0.8);
-    float base = 0.18 + 0.25 * q;
-    float body = smoothstep(base, base + 0.1, vUv.y) * pow(max(0.0, 1.0 - (vUv.y - base) / (1.0 - base)), 1.8);
-    float a = body * rays * smoothstep(0.25, 0.75, q) * uI * smoothstep(0.0, 0.08, vUv.x) * smoothstep(1.0, 0.92, vUv.x);
-    vec3 c = mix(uA, uB, clamp(vUv.y * 1.3 + q * 0.2, 0.0, 1.0));
-    gl_FragColor = vec4(c * a * 1.25, 1.0);
+    vec3 col = vec3(0.0);
+    for (int L = 0; L < 4; L++) {
+      float fl = float(L);
+      if (fl >= uLayers) break;
+      float x = vUv.x + fl * 0.047 + uPar * (0.010 + fl * 0.008);
+      float q = n(vec2(x * 6.0 + drift * 3.0 + sway + fl * 3.1, uT * 0.07 + fl)) * 0.65 + n(vec2(x * 17.0 - drift * 5.0, uT * 0.11 - fl)) * 0.35;
+      float base = 0.14 + 0.24 * q + fl * 0.03;
+      float hgt = vUv.y - base;
+      float fringe = exp(-hgt * hgt * 3200.0) * step(-0.02, hgt);
+      float body = smoothstep(-0.01, 0.02, hgt) * exp(-max(hgt, 0.0) * (2.2 + fl * 0.9));
+      float rays = 0.35 + 0.65 * pow(0.5 + 0.5 * sin(x * 150.0 + q * 11.0 + uFlow * uT * 0.8 + fl * 1.7), 2.5);
+      float fold = smoothstep(0.22, 0.72, q + 0.12 * sin(uT * 0.4 + x * 9.0 + fl));
+      float a = (body * 0.9 + fringe * 0.75) * rays * fold / (1.0 + fl * 0.55);
+      vec3 c = mix(mix(uA, vec3(0.85, 1.0, 0.9), fringe * 0.55), uB, clamp(hgt * 2.6 + fl * 0.12, 0.0, 1.0));
+      col += c * a;
+    }
+    float side = smoothstep(0.0, 0.1, vUv.x) * smoothstep(1.0, 0.9, vUv.x);
+    gl_FragColor = vec4(col * uI * side * 1.15, 1.0);
   }`;
 
 const CLOCK_FRAG = `uniform float uNow; varying vec2 vP; varying float vR;
@@ -128,7 +143,8 @@ export class Sky {
       }
       const m = new T.Mesh(geo, new T.ShaderMaterial({
         transparent: true, depthWrite: false, blending: T.AdditiveBlending, side: T.DoubleSide, fog: false,
-        uniforms: { uT: { value: k * 13.0 }, uFlow: { value: 0 }, uI: { value: 0.7 }, uA: { value: new T.Color() }, uB: { value: new T.Color() } },
+        uniforms: { uT: { value: k * 13.0 }, uFlow: { value: 0 }, uI: { value: 0.7 }, uA: { value: new T.Color() }, uB: { value: new T.Color() },
+          uLayers: { value: this.lite ? 2 : 4 }, uPar: { value: 0 } },
         vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
         fragmentShader: AURORA_FRAG,
       }));
@@ -254,7 +270,8 @@ export class Sky {
     const p = etParts(nowT), m = p.mod;
     this.clockMat.uniforms.uNow.value = m;
     this.dial.rotation.y = (m / 1440) * Math.PI * 2 - Math.atan2(cam.dir.z, cam.dir.x);
-    for (const a of this.auroras) a.material.uniforms.uT.value += this.reduced ? 0 : dt;
+    const par = Math.atan2(cam.dir.z, cam.dir.x);
+    for (const a of this.auroras) { a.material.uniforms.uT.value += this.reduced ? 0 : dt; a.material.uniforms.uPar.value = par; }
     if (!this.reduced) this.stars.rotation.y = t * 0.004;
     // the constellation faces the camera; the now-star breathes; a spark runs to a newly lit star
     const S = this.stars3;
