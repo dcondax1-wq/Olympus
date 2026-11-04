@@ -170,3 +170,12 @@ the page has no form, no link to Kalshi and sends nothing. Test: `python -X utf8
   dip and ruin come from 400 seeded runs of the next 200 bets drawn from the same price bands at the bot's usual bet. One line says what the data supports (a set
   whose net beats the bot's with ruin under 5%), or "keep the bot as it is", or "not enough bets" under 100. It is a backtest of past bets, picked after looking:
   suggestions only, try it on paper first. The same maths is `tools/kalshi_whatif.py` (writes `kalshicity/whatif.json`); a test holds the two equal.
+
+## The forward test (2026-11-04)
+The what-if card replays PAST bets with a band picked after looking at them. `tools/kalshi_forward.py` is the honest version: it freezes a start date (the feed's own
+time at its first run, in `forward_state.json`) and from then on applies rule sets A, B and C to every NEW settled bet, once each, in the order they were placed
+(A skips 90-95c; B keeps 95c+ at 2% of the balance; C skips 90-95c and caps the rest at 2%). Nothing placed before the start is counted, so there is no look-ahead; the
+band is still flagged as picked after the fact. It keeps a running net $, wins / losses and max drawdown per set next to the bot as it is, says "collecting" until 30 new bets
+and names a leader only after that. The feed carries only its last 40 bets, so if more than that settle between two runs the tally is flagged "may be incomplete".
+Files (new, in kalshicity/): `forward.json` (the Kalshi page's "Forward test" strip reads it; absent = "collecting: 0 bets so far"), `forward_state.json`, `forward_card.json`.
+Feed unreachable, or no new bets: nothing is rewritten. Test: `python -X utf8 -m tests.test_kalshi_forward` (23 checks) and `tests.test_kalshi_page --only=whatif`.
