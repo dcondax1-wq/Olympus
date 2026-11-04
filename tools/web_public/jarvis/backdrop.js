@@ -5,6 +5,10 @@
 // catch the light. It replaces the flat 2D layers of .bgfx (stars canvas, SVG globe, CSS floor) once its first frame is drawn;
 // without WebGL or the render core, those stay exactly as they were.
 //   self-mounting: <script type="module" src="./backdrop.js"></script>; window.__jarvisBackdrop = its state (tests)
+// 2026-11-04: once its scene is built it hands the scene (the `ext` object below: three, the materials, the composer, the camera, the
+// parts, a per-frame hook list) to ./home3d.js, which adds the sky by the New York clock, light shafts, the mirrored floor, weather
+// from the VIX, the reactive core, the parallax and the constellation lines. It adds objects to THIS scene and THIS composer only;
+// without that file (or if it throws) the backdrop is exactly what it was.
 // Follows html[data-fx] (ultra / high / low / off: off = one still frame), the theme colours (--c / --c2 / --c3) and the
 // home screen: no frame while an app is open, the tab is hidden or the page is not in Jarvis mode. 30 fps (it is a backdrop),
 // pixel ratio <= 1.25 (soft by design), so the core in front keeps the GPU.
@@ -102,6 +106,10 @@ async function mount() {
   }
   const lamp = new T.PointLight(new T.Color(K.c3), 22, 30, 2); lamp.position.set(0, 2.5, -3); scene.add(lamp);
 
+  // what home3d.js may use (see its header); the per-frame hooks run inside step(), the theme hooks inside theme()
+  const ext = { T, M, RC, rc, scene, camera, fog, root, state, nebula, stars, floor, grid, pool, shaft, ringA, ringB, horizon, columns, capitals, shards, lamp, moon,
+    colours, level, baseExposure: 0.8, cam: { x: 0, y: 0, lx: 0, ly: 0 }, onStep: [], onTheme: [] };
+  state.ext = ext;
   let themeKey = '';
   function theme() {
     const k = colours(), sig = k.c + k.c2 + k.c3;
@@ -116,6 +124,7 @@ async function mount() {
     nebula.children.forEach((s, i) => s.material.color.set([k.c, k.c2, k.c3, '#2b1a6b'][i % 4]));
     if (shardMat.userData.rim) shardMat.userData.rim.uRim.value.set(k.c3).multiplyScalar(1.2);
     rc.setTheme({ sky: '#0d0620', fog: '#04050c', emissive: k.c, bloom: k.c3, accent: k.c });
+    for (const f of ext.onTheme) { try { f(); } catch (_) { /* an extra never stops the backdrop */ } }
   }
   theme();
 
@@ -125,9 +134,10 @@ async function mount() {
     t += dt;
     nebula.update(t); stars.update(t, rc.renderer.getPixelRatio()); shaft.update(t);
     gridU.uT.value = t;
-    ringA.rotation.z += dt * 0.05; ringB.rotation.z -= dt * 0.03;
+    ringA.rotation.z += dt * (ringA.userData.spin || 0.05); ringB.rotation.z -= dt * (ringB.userData.spin || 0.03);
     shards.forEach((m, i) => { m.rotation.x += dt * m.userData.s; m.rotation.y += dt * m.userData.s * 0.7; m.position.y = m.userData.y + Math.sin(t * 0.4 + i) * 0.25; });
-    camera.position.x = Math.sin(t * 0.05) * 0.6; camera.lookAt(0, 1.6, 0);
+    camera.position.x = Math.sin(t * 0.05) * 0.6 + ext.cam.x; camera.position.y = 1.5 + ext.cam.y; camera.lookAt(ext.cam.lx, 1.6 + ext.cam.ly, 0);
+    for (const f of ext.onStep) { try { f(dt, t); } catch (e) { ext.onStep.length = 0; state.extError = String((e && e.stack) || e); } }       // a broken extra drops out, the backdrop goes on
   }
   function draw() {
     if (!rc.render()) return;
@@ -164,6 +174,7 @@ async function mount() {
   probe.addEventListener('webglcontextlost', (e) => { e.preventDefault(); delete root.dataset.bg3d; state.state = 'lost'; if (raf) cancelAnimationFrame(raf); raf = 0; });
   state.quality = rc.quality(); state.passes = rc.stats().passes; state.stats = () => rc.stats();
   kick();
+  import('./home3d.js').then((m) => { m.attach(ext); state.extra = 'on'; kick(); }).catch((e) => { state.extra = 'off'; state.extError = String((e && e.stack) || e); });
 }
 
 // once Jarvis has booted (the boot log or the OLYMPUS intro gone) and the page is idle: compiling the shaders and the
