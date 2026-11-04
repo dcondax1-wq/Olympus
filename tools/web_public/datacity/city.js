@@ -34,6 +34,7 @@ import { etClock, sunOf, weatherOf } from './sky.js';
 import { applyTheme, watchTheme } from './theme.js';
 import * as UI from './ui.js';
 import * as PN from './panels.js';
+import { marketNow, parseLit } from './market.js';
 import { parseQuery, filterTest, council, yearsOf, standing, holdOf } from './kinds.js';
 
 const O = window.OLYMPUS || null;   // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
@@ -43,19 +44,23 @@ const P = new URLSearchParams(location.search);
 const state = window.__city = { ready: false, mode: null, buildings: 0, quality: null, fps: 0, found: 0, errors: [], today: { on: false, lit: 0 },
                                 tour: { on: false, step: -1, steps: 0, caption: '' }, cam: { mode: 'orbit', on: false }, landmark: null, sky: null, weather: null, frames: 0 };
 
-async function getJSON(url) {
-  const r = await fetch(url, { cache: 'no-cache' });
+async function getJSON(url, ms = 0) {
+  const ac = ms && typeof AbortController === 'function' ? new AbortController() : null, tm = ac ? setTimeout(() => ac.abort(), ms) : 0;
+  let r;
+  try { r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); } finally { clearTimeout(tm); }
   if (!r.ok) throw new Error(`${url}: ${r.status}`);
   return r.json();
 }
 
 /** The live city, else the demo fixture. */
 async function loadCity() {
+  if (P.has('demo')) return { data: await getJSON('./fixture.json'), demo: true };     // ?demo=1: the fixtures only (offline, tests)
+  let why = 'none';
   try {
-    const d = await getJSON('./city.json');
+    const d = await getJSON('./city.json', 8000);                  // no answer in 8 s (offline, a dead link): the demo city, never a "loading" that does not end
     if (Array.isArray(d?.buildings) && d.buildings.length) return { data: d, demo: !!d.demo };
-  } catch (e) { /* not published yet: the demo city */ }
-  return { data: await getJSON('./fixture.json'), demo: true };
+  } catch (e) { why = 'offline'; /* not published yet, or no connection: the demo city */ }
+  return { data: await getJSON('./fixture.json'), demo: true, why };
 }
 
 function billboards(model) {
@@ -79,7 +84,8 @@ class App {
     this.city = new CityScene($('#c'), this.L, { quality: this.quality, winRate: Math.max(0.3, Math.min(0.7, winRate)), billboards: billboards(model), calm: this.calm,
       onTier: (q) => this.onTier(q) });
     this.quality = this.city.quality;     // the render core's tier decides (OLYMPUS.fx())
-    O?.onTheme(() => this.applyDay());   // OLYMPUS theme: the sky / fog follow it (scene.js setDay)
+    O?.onTheme(() => this.applyDay());
+    O?.onPower?.(() => this.city._tier(this.city.rc.quality()));   // the battery saver switched: the phone-safe caps follow   // OLYMPUS theme: the sky / fog follow it (scene.js setDay)
     O?.mode(this.quality === 'lq');
     this.orbit = new Orbit(this.city.camera, $('#c'), {
       calm: this.calm, radius: Math.max(150, Math.min(460, (this.L.bounds.x1 - this.L.bounds.x0) * 0.5)),
@@ -107,6 +113,7 @@ class App {
                     contrast: settings.get('dc.hc', '0') === '1' };
     this.calm = this.access.calm;
     this.photoUrl = null; this.photoBlob = null;
+    this.lit = null; this.demo = demo;
     Object.assign(state, { mode: demo ? 'demo' : 'live', buildings: this.L.items.filter((it) => it.kind === 'b').length, items: this.L.items.length,
                            quality: this.quality, districts: this.L.districts.map((d) => d.key), tiles: this.L.tiles.length, blocks: this.L.blocks.length });
     state.stats = () => this.stats();
@@ -661,6 +668,16 @@ class App {
       setTimeout(() => this.findUI?.q.focus({ preventScroll: true }), 50);
     } else if (name === 'read') UI.sheet.open('read', 'How to read the city', (b) => UI.viewRead(b, m));
     else if (name === 'menu') UI.sheet.open('menu', 'The city', (b) => PN.viewMenu(b, this.menuItems()));
+    else if (name === 'now') {
+      const card = this.nowCard();
+      UI.sheet.open('now', 'What is moving the market now', (b) => PN.viewNow(b, card, {
+        district: (r) => { const d = this.L.districts.find((q) => q.key === r.key); if (d) this.openDistrict(d); },
+        idea: (r) => { if (r?.id) this.openId(r.id); else UI.toast('The demo sample has no building to open'); },
+        today: () => { this.setToday(true); UI.toast('Today layer: the ideas that fired are lit'); },
+        report: () => this.showView('report') }));
+      this.loadLit();
+      this.announce(card.text);
+    }
     else if (name === 'report') {
       UI.sheet.open('report', 'City report', (b) => PN.viewReport(b, m, this.cou, {
         family: (k) => { this.showView('find'); this.findUI.state.family = k; this.findUI.q.value = ''; this.find('', this.findUI.state); this.findUI.state.family = k; document.querySelectorAll('#fseg button').forEach((x) => x.classList.toggle('on', x.dataset.v === k)); this.flyToMatches(); },
@@ -679,6 +696,20 @@ class App {
     else if (name === 'compare') { if (this.cmp) this.openCompare(this.cmp.a, this.cmp.b); else UI.toast('Open an idea, tap Compare, then tap a second building'); }
   }
 
+  /** today's LIT levels from the dashboard's published data.json (read-only, optional: a missing file leaves the card on the city's own numbers) */
+  loadLit() {
+    if (this.demo || this._litP) return this._litP;
+    this._litP = fetch('../data.json', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).then((j) => { this.lit = parseLit(j); if (UI.sheet.isOpen('now')) this.showView('now'); return this.lit; }).catch(() => null);
+    return this._litP;
+  }
+
+  /** "what is moving the market right now": the first thing the city says */
+  nowCard() {
+    const card = marketNow(this.model, this.lit, { demo: this.demo, label: (b) => labelOf(b, this.model.D) });
+    if (state.v3) state.v3.now = { rows: card.rows.map((r) => ({ key: r.key, name: r.name, fired: r.fired, mnq: r.mnq, nq: r.nq, lit: r.lit.ok, litText: r.lit.text })), demo: card.demo, fallback: card.fallback, sample: card.sample, litLive: card.litLive };
+    return card;
+  }
+
   /** the Council of the Gods (Pantheon) next door, when the site has it: the market mood, context only */
   gods() {
     this._gods ||= fetch('../pantheon/pantheon.json', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
@@ -688,6 +719,7 @@ class App {
   menuItems() {
     const go = (fn) => () => fn();
     return [
+      { key: 'now', title: 'Market now', sub: 'What is moving the market, in dollars, and what matches LIT', fn: go(() => this.showView('now')) },
       { key: 'report', title: 'City report', sub: 'What was tested, who survives, what the Council of ideas says', fn: go(() => this.showView('report')) },
       { key: 'compare', title: 'Compare two ideas', sub: 'Open an idea, tap Compare, tap a second building', fn: go(() => { UI.sheet.close(); UI.toast('Tap a building, then Compare, then a second building'); }) },
       { key: 'timeline', title: 'How it grew', sub: 'Watch the city rise year by year', fn: go(() => this.showView('timeline')) },
@@ -701,7 +733,7 @@ class App {
 
   route() {
     const h = decodeURIComponent(location.hash || '');
-    if (['#top', '#today', '#watch', '#find', '#read', '#menu', '#report', '#timeline', '#access', '#compare'].includes(h)) this.showView(h.slice(1));
+    if (['#top', '#today', '#watch', '#find', '#read', '#menu', '#report', '#timeline', '#access', '#compare', '#now'].includes(h)) this.showView(h.slice(1));
     else if (h === '#photo') this.enterPhoto();
     else if (h === '#fireworks') this.celebrateGold();
     else if (h === '#discoveries') this.showView('today');
@@ -828,6 +860,8 @@ class App {
     const frame = (now) => {
       requestAnimationFrame(frame);
       if (O ? O.hidden() : document.hidden) { last = now; return; }          // hidden tab: no frame at all
+      const gap = O?.frameGap ? O.frameGap() : 0;                            // the kit's idle cap (30 fps idle on high, 15 on low, 2 on off; 30 in battery saver)
+      if (gap && now - last < gap - 3) return;
       if (this.quality === 'lq' && now - last < 28) return;                  // LITE draws at 30 fps (half the work, half the heat)
       const dt = Math.min(0.1, Math.max(0, (now - last) / 1000));
       last = now;
@@ -863,6 +897,7 @@ class App {
     };
     requestAnimationFrame(frame);
     this.route();
+    if (!location.hash && !P.has('nonow')) this.showView('now');           // first open: the money question first (?nonow=1 skips it)
     this.checkGold();
   }
 }
@@ -875,7 +910,7 @@ async function postCard() {
 }
 
 async function main() {
-  const { data, demo } = await loadCity();
+  const { data, demo, why } = await loadCity();
   const plugins = await loadPlugins(data, getJSON);
   const synth = Math.max(0, Math.min(60000, parseInt(P.get('synth') || '0', 10) || 0));
   const model = decode(data, plugins, synth);
@@ -884,6 +919,10 @@ async function main() {
   $('#loading').remove();
   app.start();
   state.ready = true;
+  if (why) {                                                        // plain words: why this is the demo city
+    const note = why === 'offline' ? 'Offline: showing the demo city. The live city comes back with your connection.' : 'The live city is not published yet: showing the demo city.';
+    state.notice = note; setTimeout(() => UI.toast(note), 600);
+  }
   postCard();
 }
 

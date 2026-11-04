@@ -8,6 +8,7 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
 import * as M from '../olympus/materials.js';
+import * as FX from '../olympus/fx-atmos.js';        // JOB 4+5 follow-up: sun shafts, dust in them, torch embers, contact shadows, a polished avenue
 
 const TAU = Math.PI * 2;
 const hdr = (c, k) => new THREE.Color(c).multiplyScalar(k);
@@ -54,9 +55,9 @@ export function createForum(canvas, { O = null } = {}) {
   scene.background = new THREE.Color('#05040c');
   scene.fog = new THREE.FogExp2(0x1a1236, 0.018);
   const camera = new THREE.PerspectiveCamera(62, 1, 0.1, 500);
-  let lite = false, dirty = true, qcb = null, drawn = 0, frames = 0, stopped = false, raf = 0, pick = null;
+  let fxList = [], lite = false, dirty = true, qcb = null, drawn = 0, frames = 0, stopped = false, raf = 0, pick = null;
   const rc = createRenderer({ canvas, scene, camera, env: 'night', tint: '#b8e04a', exposure: 0.9, maxDpr: 1.75, bloom: { strength: 0.7, radius: 0.6, threshold: 0.95 },
-    onQuality: (l) => { lite = l === 'low' || l === 'off'; flameN(); dirty = true; if (qcb) qcb(l); } });
+    onQuality: (l) => { lite = l === 'low' || l === 'off'; flameN(); FX.setQuality(fxList, l); dirty = true; if (qcb) qcb(l); } });
   lite = rc.quality() === 'low' || rc.quality() === 'off';
   const glow = glowTexture();
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e3 = new THREE.Euler(), p3 = new THREE.Vector3(), s3 = new THREE.Vector3(1, 1, 1);
@@ -101,6 +102,17 @@ export function createForum(canvas, { O = null } = {}) {
     }
   }
   scene.add(cols, caps);
+  // the forum's air and light: shafts of sun through the colonnade, dust in them, embers off the torch bowls, a soft shadow under every column, a polished avenue
+  setTimeout(() => {                                                // 0.9 s after the first paint
+    const shafts = FX.shafts({ count: 5, from: [-9, 16, 4], to: [0, 0, -6], width: 5, spread: [10, 0, 22], color: '#ffe3b0', strength: 0.1, seed: 4 });
+    const dust = FX.dust({ count: 240, box: [14, 7, 46], color: '#fff0cf', size: 4, strength: 0.8, seed: 15 }); dust.object.position.set(0, 0, -12);
+    const embers = FX.embers({ count: 140, origin: [-5.1, 2.5, -2], spread: [0.3, 0, 8], rise: 2.6, colors: ['#fff0c0', '#ff9a3a', '#c2300f'], size: 5.5, wind: 0.15, seed: 8 });
+    const embers2 = FX.embers({ count: 140, origin: [5.1, 2.5, -2], spread: [0.3, 0, 8], rise: 2.6, colors: ['#fff0c0', '#ff9a3a', '#c2300f'], size: 5.5, wind: -0.15, seed: 19 });
+    scene.add(shafts.object, dust.object, embers.object, embers2.object);
+    fxList = [shafts, dust, embers, embers2];
+    for (const x of [-6.6, 6.6]) for (let i = 0; i < NC; i += 2) { const ao = FX.contactAO({ radius: 0.9, strength: 0.7 }); ao.object.position.set(x, 0.03, 10 - i * 4.4); scene.add(ao.object); fxList.push(ao); }
+    FX.setQuality(fxList, rc.quality()); dirty = true;
+  }, 900);
   for (const x of [-6.6, 6.6]) { const beam = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.5, 40), stone); beam.position.set(x, 6.9, -9); scene.add(beam); }
   const flameN = () => flames.forEach((f, i) => { f.visible = !lite || i % 2 === 0; });
 
@@ -235,9 +247,13 @@ export function createForum(canvas, { O = null } = {}) {
     if (pick) pick(hit ? hit.object.userData.scroll : null);
   });
 
+  let gapAt = 0;
   function frame(now) {
     raf = requestAnimationFrame(frame);
-    if (stopped) return;
+    if (stopped || (window.OLYMPUS && window.OLYMPUS.hidden())) return;                       // hidden / covered: no JS, no frame
+    const gap = (window.OLYMPUS && window.OLYMPUS.frameGap ? window.OLYMPUS.frameGap() : 0);                   // idle 30 / 15 fps, battery saver, 3D Off (docs/OLYMPUS_PERF.md)
+    if (gap && now - gapAt < gap - 3) return;
+    gapAt = now;
     const live = frameLive(), t = now / 1000;
     const a = canvas.clientWidth / Math.max(1, canvas.clientHeight);
     camera.fov = a < 0.75 ? 62 : a < 1.2 ? 52 : 42; camera.updateProjectionMatrix();
@@ -247,6 +263,7 @@ export function createForum(canvas, { O = null } = {}) {
     cam.pos.lerp(cam.tp, k); cam.look.lerp(cam.tl, k);
     st.gates += (st.gatesTarget - st.gates) * (live ? 0.03 : 1);
     stars.update(t, rc.renderer.getPixelRatio());
+    FX.update(fxList, live ? t : 0, rc.renderer.getPixelRatio());
     const sway = live ? Math.sin(t * 0.3) * 0.18 : 0;
     camera.position.set(cam.pos.x + sway, cam.pos.y + (live ? Math.sin(t * 0.23) * 0.08 : 0), cam.pos.z); camera.lookAt(cam.look);
     doors.forEach((d) => { d.pivot.rotation.y = d.s * st.gates * 1.5; });

@@ -250,3 +250,78 @@ export function botStops(site) {
   const qs = q >= 0 ? ex.trades.map((t) => +t[q]).filter((x) => Number.isFinite(x) && x > 0).sort((a, b) => a - b) : [];
   return { n: v.length, p25: at(0.25), med: at(0.5), p75: at(0.75), max: v[v.length - 1], qty_med: qs.length ? qs[Math.floor(qs.length / 2)] : null };
 }
+
+// ---------------------------------------------------------------------------------------------- JOB 4+5 follow-up (2026-11-04): money maths
+// Five more pure functions for the owner's decisions: what a win must be worth (R and $), which stop width buys which size, how a losing
+// streak eats the drawdown, how fast a pass has to go, the day's loss budget and a funded payout check. Every $ comes with its R.
+// A calculator for the human: nothing here talks to a broker or a bot.
+
+const pctTxt = (x) => `${Math.round(x * 100)}%`;
+/** drawdown left as the page says it: "Drawdown left $1,400 of $2,000 max loss" */
+export const ddText = (room, mll) => (room > mll ? `Drawdown left ${usd(room)} (floor locked, max loss ${usd(mll)})` : `Drawdown left ${usd(Math.max(0, room))} of ${usd(mll)} max loss`);
+
+/** the odds maths for the trade on screen: what each R is worth in dollars (costs in), and the win rate each R needs to break even */
+export function oddsPlan(rules, inp, rs = [1, 1.5, 2, 3, 5, 8]) {
+  const z = sizeTrade(rules, inp);
+  if (!z.valid) return { valid: false, why: z.why, rows: [] };
+  const win1 = z.pts * z.pv - z.comm, loss = z.loss1;           // per contract: a 1R win (after the commission) and a stop-out (slippage + commission)
+  const rows = rs.map((r) => {
+    const win = z.pts * r * z.pv - z.comm, need = loss / (win + loss);
+    return { r, pts: z.pts * r, usd: win * Math.max(1, z.n), perContract: win, need, needTxt: pctTxt(need), price: z.side === 'long' ? +(num(inp.entry) + z.pts * r).toFixed(2) : +(num(inp.entry) - z.pts * r).toFixed(2) };
+  });
+  const lossR = loss / Math.max(1e-9, z.pts * z.pv);              // the stop-out in R: slippage and commission make it a little over 1R
+  return { valid: true, n: z.n, inst: z.inst, loss, lossR, win1, rows, lossAll: loss * Math.max(1, z.n), ref: 'The bot wins about 56% of its trades (2026) and banks 8R when it wins big: at 8R it needs only ' + pctTxt(rows.length ? loss / (z.pts * 8 * z.pv - z.comm + loss) : 0) + '.' };
+}
+
+/** the stop ladder: for the same risk budget, how many contracts each stop width allows ("a wide stop means fewer micros") */
+export function stopLadder(rules, inp, stops = [8, 12, 16, 20, 30, 40, 60, 80]) {
+  const z = sizeTrade(rules, { ...inp, entry: 1000, stop: inp.side === 'short' ? 1010 : 990 });   // only for the plan's numbers, budget and the instrument
+  const budget = z.budget, out = [];
+  for (const pts of stops) {
+    const loss1 = (pts + z.slip) * z.pv + z.comm, by = Math.floor(budget / loss1), n = Math.max(0, Math.min(by, z.maxC));
+    out.push({ pts, loss1, n, risk: n * loss1, roomAfter: z.room - n * loss1, win2: n * (pts * 2 * z.pv - z.comm), capped: by > z.maxC, fits: n > 0 });
+  }
+  return { inst: z.inst, budget, room: z.room, mll: z.plan.mll, rows: out };
+}
+
+/** a losing streak at the size on screen: after k stop-outs in a row, the balance, the drawdown left and whether the floor is gone */
+export function streakTable(rules, inp, n = 5) {
+  const z = sizeTrade(rules, inp);
+  if (!z.valid || z.n < 1) return { valid: false, rows: [], why: z.valid ? 'No size fits this stop.' : z.why };
+  const rows = []; let bal = z.bal;
+  for (let k = 1; k <= n; k++) {
+    bal -= z.risk;
+    const room = bal - z.floor;                                    // the floor does not fall when you lose: it only trails the best end-of-day
+    rows.push({ k, bal, room, dead: room <= 0, text: ddText(room, z.plan.mll), R: -k * (z.risk / Math.max(1, z.risk)) });
+  }
+  const first = rows.find((r) => r.dead);
+  return { valid: true, risk: z.risk, mll: z.plan.mll, rows, bustAt: first ? first.k : null,
+    plain: first ? `${first.k} stop-outs in a row at this size end the account.` : `${n} stop-outs in a row would still leave ${usd(rows[rows.length - 1].room)} of room.` };
+}
+
+/** how fast a pass has to go: the dollars to the target, per session over N sessions, and the winners that takes at the size on screen */
+export function passPace(rules, inp, sessions = 10) {
+  const z = sizeTrade(rules, inp), toT = Math.max(0, z.to_target);
+  const win2 = z.valid && z.n ? z.n * (z.pts * 2 * z.pv - z.comm) : null;
+  return { toTarget: toT, sessions, perSession: toT / sessions, winners2R: win2 ? Math.ceil(toT / win2) : null, win2, tradesAWeek: '2-4',
+    plain: toT <= 0 ? 'The target is reached.' : `${usd(toT)} to go: about ${usd(toT / sessions)} a session to pass inside ${sessions} sessions (2 weeks).${win2 ? ` At this size a 2R winner pays ${usd(win2)}: ${Math.ceil(toT / win2)} of them.` : ''}` };
+}
+
+/** today's loss budget: the daily loss left and how many full stop-outs of this size fit inside it (the account's room is the other limit) */
+export function dayBudget(rules, inp) {
+  const z = sizeTrade(rules, inp), p = z.plan;
+  if (!(p.dll > 0)) return { has: false, plain: 'This plan has no daily loss limit.' };
+  const left = Math.max(0, z.dllLeft), outs = z.valid && z.risk > 0 ? Math.floor(left / z.risk) : null;
+  return { has: true, dll: p.dll, left, used: p.dll - left, frac: p.dll > 0 ? left / p.dll : 0, outs, text: `Daily loss left ${usd(left)} of ${usd(p.dll)}`,
+    plain: outs == null ? `Daily loss left ${usd(left)} of ${usd(p.dll)}.` : `${outs} full stop-out${outs === 1 ? '' : 's'} of this size fit in today's limit (${usd(left)} left).` };
+}
+
+/** a funded account's payout check: the profit above the buffer, what MFFU may pay and what reaches you after the split */
+export function payoutCheck(rules, inp) {
+  const p = planOf(rules, inp.plan), bal = num(inp.balance) ?? p.start, above = bal - (p.start + p.buffer);
+  if (inp.stage !== 'funded') return { funded: false, plain: 'Payouts start once the evaluation is passed and the account is funded.' };
+  const gross = above >= p.pay_min ? Math.min(p.pay_max, above) : 0, net = gross * p.split;
+  return { funded: true, above, buffer: p.buffer, min: p.pay_min, gross, net, ok: above >= p.pay_min,
+    plain: above >= p.pay_min ? `You may ask for ${usd(p.pay_min)} to ${usd(gross)} (the profit above the buffer, at most ${usd(p.pay_max)}); ${usd(net)} reaches you at ${usd(gross)} after the ${pctTxt(p.split)} split. Keep your best day under ${pctTxt(p.cons)} of the cycle's profit.`
+      : `Not yet: ${usd(Math.max(0, p.pay_min - above))} more profit above the ${usd(p.buffer)} buffer before the first ${usd(p.pay_min)} payout.` };
+}

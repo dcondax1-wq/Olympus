@@ -151,3 +151,41 @@ Control (not a trade): fade the extremes, i.e. buy the 1-3c side. The feed says 
 - Bet size per strategy and per loss is inferred from totals, not observed.
 - Fee schedule is from secondary sources; the bot's own P&L supports the 0.07 rate.
 - Everything was looked at in-sample; the positive 95c+ pocket especially needs forward proof.
+
+## In the app: the guard (2026-11-04)
+The top card of the Kalshi page is now "Do not take this bet" (`tools/web_public/kalshi/kalshi.js`, `guardHtml`). For every open bet it checks the
+rules above against the numbers the bot publishes: the price band that loses (a band is only called a leak on 100+ bets; with no published bands the
+90-95c leak of -$248.30 stands in), the fee against the win rate that band / strategy has had (needs p + 0.07 p (1-p)), the size (10% of the balance =
+careful, 25% = do not take), a coin that has lost (3%+ of what was bet, 30+ bets) and bets that settle together. Green / amber / red, each with its dollar
+reason. With nothing open it still shows, and four price chips (91 / 94 / 96 / 98c) check a bet of the bot's usual size before it exists. Suggestions only:
+the page has no form, no link to Kalshi and sends nothing. Test: `python -X utf8 -m tests.test_kalshi_page` (checks g1 to g7; `--only=guard` for just those).
+
+## In the app: "Why am I losing" and "If you change the bot" (2026-11-04)
+- **Why am I losing** is the first card of the Kalshi page: one sentence with the top two dollar leaks of different kinds (a price band, a coin, a strategy,
+  the fees), from the feed's own totals. On the 2026-11-04 feed: "You are down $81.77 mostly because 90–95¢ bets lost $248.30 on 581 bets and XRP bets lost
+  $106.63 on 192 bets. These overlap, so do not add them up." Under 100 settled bets it says "not enough settled bets yet".
+- **If you change the bot** (first card of Edge) replays the past bets under three simple rule sets and shows net $ after fees, the typical worst dip and the
+  chance of ruin next to the bot as it is. A: skip the 90–95¢ band (+$185.48 on the past bets, ruin about 0%, against -$62.82 and 13% as it is). B: only 95¢ and up,
+  every bet capped at 2% of today's balance ($1.12): +$16.46, ruin 0%. C: skip 90–95¢ and cap the rest at 2%: +$5.67, ruin 0%. Net is the past bets replayed (exact);
+  dip and ruin come from 400 seeded runs of the next 200 bets drawn from the same price bands at the bot's usual bet. One line says what the data supports (a set
+  whose net beats the bot's with ruin under 5%), or "keep the bot as it is", or "not enough bets" under 100. It is a backtest of past bets, picked after looking:
+  suggestions only, try it on paper first. The same maths is `tools/kalshi_whatif.py` (writes `kalshicity/whatif.json`); a test holds the two equal.
+
+## The forward test (2026-11-04)
+The what-if card replays PAST bets with a band picked after looking at them. `tools/kalshi_forward.py` is the honest version: it freezes a start date (the feed's own
+time at its first run, in `forward_state.json`) and from then on applies rule sets A, B and C to every NEW settled bet, once each, in the order they were placed
+(A skips 90-95c; B keeps 95c+ at 2% of the balance; C skips 90-95c and caps the rest at 2%). Nothing placed before the start is counted, so there is no look-ahead; the
+band is still flagged as picked after the fact. It keeps a running net $, wins / losses and max drawdown per set next to the bot as it is, says "collecting" until 30 new bets
+and names a leader only after that. The feed carries only its last 40 bets, so if more than that settle between two runs the tally is flagged "may be incomplete".
+Files (new, in kalshicity/): `forward.json` (the Kalshi page's "Forward test" strip reads it; absent = "collecting: 0 bets so far"), `forward_state.json`, `forward_card.json`.
+Feed unreachable, or no new bets: nothing is rewritten. Test: `python -X utf8 -m tests.test_kalshi_forward` (23 checks) and `tests.test_kalshi_page --only=whatif`.
+
+## Where the money is: the scan (2026-11-04)
+`tools/kalshi_scan.py` works out, for every slice of the bot's bets with 30+ bets, the fee-adjusted expected value per $1 risked, (win rate - price - fee) / price with the
+research's own fee function (`tools/kalshi_research.fee_pc`), with a 95% Wilson range, and writes `kalshicity/scan.json` (under 30 KB): the top 5 slices worth a paper test and the
+top 5 to avoid, in plain words with the dollars. Slices from the feed's totals over every settled bet: price band, coin, strategy. Slices from bets seen one by one (the city's ledger
+plus the feed's last 40): the time of day (ET: Asia, London, NY morning, NY afternoon) and its crossings with band and coin. A coin's or a strategy's price is not in the totals, so
+its recent mean price is assumed and a positive result on an assumed price is always flagged fragile (so are cells under 100 bets and ranges that include zero). On the 2026-11-04
+feed: avoid the 90-95c band (-1.1c per $1, lost $248 on $5,343) and XRP (-3.7c, lost $107); paper-test 95-97c (+1.5c, made $137). Looking back, not proven: 18 overlapping
+slices were looked at, so the best are partly luck. The Kalshi page's "Where the money is" card (Edge, under the what-if card) reads scan.json when the site has it, else the same
+maths on the feed's price bands, else a dated sample. Tests: `python -X utf8 -m tests.test_kalshi_scan` (27) and `tests.test_kalshi_page --only=scan` (s1-s7).

@@ -4,7 +4,7 @@
 import { litWindow, fmtDur, hm, dayLabel, sessionAt, killzoneAt, etParts } from './time.js';
 import { kindOf, hex } from './glow.js';
 import { filmLink } from './events.js';
-import { heatOf, waitingOf } from './heat.js';
+import { heatOf, waitingOf, glossOf } from './heat.js';
 
 const $ = (id) => document.getElementById(id);
 const px = (p) => (p == null ? '–' : p.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
@@ -60,6 +60,9 @@ export class Hud {
     $('stage-n').textContent = w.stage.n ? `${w.stage.n}/${w.stage.of}` : '–';
     $('stage-label').textContent = w.stage.label + (w.stage.dir ? (w.stage.dir > 0 ? ' · long' : ' · short') : '');
     $('waiting').textContent = w.stage.waiting || '';
+    const gloss = glossOf(w.stage);
+    $('stage-gloss').textContent = gloss;
+    $('stage').title = gloss;                       // the same sentence as a tooltip on the whole headline
     this.renderWait(w, this.nowT ?? nowT0());
     // the weather
     const wx = $('wx');

@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#03040a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mind">
+<link rel="manifest" href="manifest.webmanifest">
 <meta name="color-scheme" content="dark">
 <meta name="description" content="OLYMPUS Mind: your Obsidian vault and Jarvis's memory as a living 3D brain.">
 <title>OLYMPUS Mind</title>
@@ -20,6 +25,8 @@
 <body>
 <canvas id="gl" aria-label="Your notes as a 3D brain. Drag to turn, pinch to zoom, tap a note to open it."></canvas>
 <div id="labels" aria-hidden="true"></div>
+<p id="boot" class="boot" role="status">Waking your brain…</p>
+<script>setTimeout(function () { var b = document.getElementById('boot'); if (b && !b.hidden) { b.textContent = 'Mind is taking long to wake. Reload the page, or open it again from Jarvis.'; b.style.pointerEvents = 'auto'; } }, 9000);</script>
 
 <!-- the one top bar: name, state, view, quality; search and the time-lapse under it -->
 <header id="top">
@@ -61,6 +68,7 @@
     </nav>
 
   </div>
+  <div id="sparse" class="demo sparse" hidden role="status"><span id="sp-text"></span><button id="sp-teach" type="button">Teach</button><button id="sp-preview" type="button">Preview demo</button></div>
   <p id="demo" class="demo" hidden><b>Demo</b> · Connect your vault in Jarvis ⋯ → Connect Obsidian</p>
   <p id="focusbar" class="focusbar" hidden><i></i><span>Focus</span><b id="focus-name"></b><button id="focus-exit" type="button" aria-label="Leave focus">×</button></p>
   <p id="filterbar" class="focusbar filterbar" hidden><i></i><span id="filter-kind">Showing</span><b id="filter-name"></b><button id="filter-exit" type="button" aria-label="Clear the filter">×</button></p>

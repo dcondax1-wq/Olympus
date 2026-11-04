@@ -718,7 +718,7 @@
  },
  "funded": {
   "src": "research/lit/funded_firms.json (research/writeups/lit-funded-firms.md)",
-  "built": "2026-10-19 13:57",
+  "built": "2026-11-04 05:27",
   "plans": [
    {
     "id": "mffu_builder_50k",
@@ -747,31 +747,31 @@
   ],
   "trio": {
    "H1": {
-    "net_6m": 13888,
-    "net_per_month": 2315,
-    "net_med_6m": 12999,
-    "neg_6m": 4.5,
-    "months4_6_per_month": 2944,
-    "p_months4_6_ge_2000": 66.5,
-    "all_lost_one_funded": 0.1
+    "net_6m": 15930,
+    "net_per_month": 2655,
+    "net_med_6m": 15599,
+    "neg_6m": 3.1,
+    "months4_6_per_month": 3292,
+    "p_months4_6_ge_2000": 73.5,
+    "all_lost_one_funded": 0.0
    },
    "H2": {
-    "net_6m": 10523,
-    "net_per_month": 1754,
-    "net_med_6m": 10354,
-    "neg_6m": 7.8,
-    "months4_6_per_month": 2373,
-    "p_months4_6_ge_2000": 54.8,
+    "net_6m": 12881,
+    "net_per_month": 2147,
+    "net_med_6m": 12673,
+    "neg_6m": 5.2,
+    "months4_6_per_month": 2792,
+    "p_months4_6_ge_2000": 64.7,
     "all_lost_one_funded": 0.1
    },
    "2021-25": {
-    "net_6m": -551,
+    "net_6m": -550,
     "net_per_month": -92,
-    "net_med_6m": -870,
-    "neg_6m": 86.3,
-    "months4_6_per_month": 94,
-    "p_months4_6_ge_2000": 0.5,
-    "all_lost_one_funded": 4.9
+    "net_med_6m": -938,
+    "neg_6m": 83.9,
+    "months4_6_per_month": 100,
+    "p_months4_6_ge_2000": 0.7,
+    "all_lost_one_funded": 5.5
    }
   }
  },
@@ -3077,7 +3077,7 @@
       "h2_per_month": 659
      }
     ],
-    "combo": "MFFU Builder 50K + LucidPro 50K + FundedNext Rapid Daily 50K: $1,754 a month on Jul-Oct trades over 6 months net of fees ($2,373 in months 4-6), $377 up front; 2021-25 reference: -$92 a month (LIT has no edge there). Adding 1 Rapid EOD: $2,413 a month.",
+    "combo": "MFFU Builder 50K + LucidPro 50K + FundedNext Rapid Daily 50K: $2,147 a month on Jul-Oct trades over 6 months net of fees ($2,792 in months 4-6; $2,655 and $3,292 on Jan-Jun), $377 up front; 2021-25 reference: -$92 a month (LIT has no edge there). Adding 1 Rapid EOD: about $660 a month more (H2).",
     "source": "research/writeups/lit-funded-firms.md, lit-mffu-rapid-stack.md, lit-builder-25k.md"
    }
   }

@@ -220,7 +220,8 @@ function frame(ts) {
     }
     if (state.model && isDemo() && nowS() - state.demoAt > 120) showDemo(state.mode);
   }
-  if (!scene || !state.model || (reduced && ts - lastDraw < 250)) return;
+  const gap = O && O.frameGap ? O.frameGap() : 0;                           // idle 30 / 15 fps, battery saver, 3D Off 2 fps (docs/OLYMPUS_PERF.md)
+  if (!scene || !state.model || (reduced && ts - lastDraw < 250) || (gap && ts - lastDraw < gap - 3)) return;
   scene.frame(ts / 1000, reduced ? 0 : Math.min(0.1, (ts - lastDraw) / 1000), nowS());
   lastDraw = ts;
   // the 3D labels wait for the intro camera move to land (no labels sliding about, no layout work while the camera flies)

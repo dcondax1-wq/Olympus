@@ -74,9 +74,9 @@ export function createScene(canvas, { O = null } = {}) {
   sand.rotation.x = -Math.PI / 2; scene.add(sand);
   const disc = new THREE.Mesh(new THREE.CircleGeometry(5.1, 64), M.marble({ color: '#b8b0a2', gold: true, scale: 0.9 }));
   disc.rotation.x = -Math.PI / 2; disc.position.y = 0.02; scene.add(disc);
-  const ringGold = new THREE.Mesh(new THREE.TorusGeometry(5.15, 0.05, 8, 128), M.neon({ color: '#ffb547', intensity: 2.2 }));
+  const ringGold = new THREE.Mesh(new THREE.TorusGeometry(5.15, 0.05, 6, 96), M.neon({ color: '#ffb547', intensity: 2.2 }));
   ringGold.rotation.x = Math.PI / 2; ringGold.position.y = 0.05; scene.add(ringGold);
-  const ringOuter = new THREE.Mesh(new THREE.TorusGeometry(15.4, 0.08, 8, 160), M.neon({ color: '#ffb547', intensity: 1.6, fog: true }));
+  const ringOuter = new THREE.Mesh(new THREE.TorusGeometry(15.4, 0.08, 6, 120), M.neon({ color: '#ffb547', intensity: 1.6, fog: true }));
   ringOuter.rotation.x = Math.PI / 2; ringOuter.position.y = 0.06; scene.add(ringOuter);
 
   // ---- the bowl: four seating tiers (riser + seat surface), marble
@@ -92,9 +92,10 @@ export function createScene(canvas, { O = null } = {}) {
   }
   // the arcade at the back: 56 piers with gold capitals, an arch between each pair, a gold cornice
   const NP = 56, RP = 25.4, PH = 8.5, pierMat = M.marble({ color: '#c7c0b3', gold: false, scale: 0.35, roughness: 0.38 });
-  const piers = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.42, 0.5, PH, 14), pierMat, NP);
+  // 2026-11-04 (docs/OLYMPUS_PERF.md): the arcade, cornice and rings carry fewer segments (the Arena was 64k triangles before the crowd; ~49k now)
+  const piers = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.42, 0.5, PH, 10), pierMat, NP);
   const caps = new THREE.InstancedMesh(new THREE.BoxGeometry(1.15, 0.42, 1.15), M.metal({ kind: 'gold' }), NP);
-  const arches = new THREE.InstancedMesh(new THREE.TorusGeometry(1.0, 0.2, 8, 16, Math.PI), pierMat, NP);
+  const arches = new THREE.InstancedMesh(new THREE.TorusGeometry(1.0, 0.2, 4, 8, Math.PI), pierMat, NP);
   for (let i = 0; i < NP; i++) {
     const a = (i / NP) * TAU, x = Math.cos(a) * RP, z = Math.sin(a) * RP;
     m4.makeTranslation(x, PH / 2, z); piers.setMatrixAt(i, m4);
@@ -103,11 +104,11 @@ export function createScene(canvas, { O = null } = {}) {
     q.setFromEuler(e3.set(0, -b + Math.PI / 2, 0)); p3.set(bx, PH - 1.2, bz); s3.set(1.28, 1, 1); m4.compose(p3, q, s3); arches.setMatrixAt(i, m4); s3.set(1, 1, 1);
   }
   scene.add(piers, caps, arches);
-  const cornice = new THREE.Mesh(new THREE.TorusGeometry(RP, 0.16, 8, 200), M.metal({ kind: 'gold' }));
+  const cornice = new THREE.Mesh(new THREE.TorusGeometry(RP, 0.16, 6, 120), M.metal({ kind: 'gold' }));
   cornice.rotation.x = Math.PI / 2; cornice.position.y = PH + 0.7; scene.add(cornice);
   const frieze = new THREE.Mesh(new THREE.CylinderGeometry(RP + 0.1, RP + 0.1, 1.1, 96, 1, true), pierMat);
   frieze.material.side = THREE.DoubleSide; frieze.position.y = PH + 0.2; scene.add(frieze);
-  const glowBand = new THREE.Mesh(new THREE.TorusGeometry(RP - 0.2, 0.05, 6, 200), M.neon({ color: '#ffb547', intensity: 2.4, fog: true }));
+  const glowBand = new THREE.Mesh(new THREE.TorusGeometry(RP - 0.2, 0.05, 4, 120), M.neon({ color: '#ffb547', intensity: 2.4, fog: true }));
   glowBand.rotation.x = Math.PI / 2; glowBand.position.y = PH + 1.15; scene.add(glowBand);
 
   // braziers on the plaza ring: a metal bowl and a flickering flame
@@ -130,7 +131,7 @@ export function createScene(canvas, { O = null } = {}) {
     const g = new THREE.Mesh(new THREE.CylinderGeometry(STEP_R[i], STEP_R[i] + 0.08, STEP_H, 48), stepMat);
     g.position.y = STEP_H * i + STEP_H / 2 + 0.02; scene.add(g);
     const nm = M.neon({ color: '#9aa4b2', intensity: 0.4 });
-    const edge = new THREE.Mesh(new THREE.TorusGeometry(STEP_R[i] + 0.04, 0.04, 8, 96), nm);
+    const edge = new THREE.Mesh(new THREE.TorusGeometry(STEP_R[i] + 0.04, 0.04, 4, 64), nm);
     edge.rotation.x = Math.PI / 2; edge.position.y = STEP_H * (i + 1) + 0.03; scene.add(edge);
     ladder.push({ nm, edge, top: STEP_H * (i + 1) + 0.03, r: STEP_R[i] + 0.04 });
   }
@@ -144,7 +145,7 @@ export function createScene(canvas, { O = null } = {}) {
   // ---- the crown above the ladder, the column of light
   const crown = new THREE.Group(); crown.position.set(0, TOP + 2.2, 0); crown.rotation.x = 0.55; scene.add(crown);
   const gold = M.metal({ kind: 'gold' });
-  const NL = 15, leafGeo = new THREE.SphereGeometry(1, 10, 6); leafGeo.scale(0.09, 0.03, 0.26);
+  const NL = 15, leafGeo = new THREE.SphereGeometry(1, 6, 4); leafGeo.scale(0.09, 0.03, 0.26);
   const leaves = new THREE.InstancedMesh(leafGeo, gold, NL * 4);
   let li = 0;
   for (const side of [-1, 1]) for (let i = 0; i < NL; i++) for (const row of [0, 1]) {
@@ -252,7 +253,7 @@ export function createScene(canvas, { O = null } = {}) {
     return { pts, vel, age: 0, n };
   }
   function shockRing(delay, color) {
-    const m = new THREE.Mesh(new THREE.TorusGeometry(1, 0.07, 8, 96), new THREE.MeshBasicMaterial({ color: hdr(color, 2), transparent: true, opacity: 0, fog: false, depthWrite: false }));
+    const m = new THREE.Mesh(new THREE.TorusGeometry(1, 0.07, 4, 64), new THREE.MeshBasicMaterial({ color: hdr(color, 2), transparent: true, opacity: 0, fog: false, depthWrite: false }));
     m.rotation.x = Math.PI / 2; m.position.y = 0.3; m.visible = false; scene.add(m);
     return { m, delay };
   }
@@ -409,9 +410,13 @@ export function createScene(canvas, { O = null } = {}) {
 
   // ---- the frame loop
   let last = performance.now(), frames = 0, raf = 0, stopped = false, drew = 0;
+  let gapAt = 0;
   function frame(now) {
     raf = requestAnimationFrame(frame);
-    if (stopped) return;
+    if (stopped || (O && O.hidden())) return;                            // hidden / covered: no JS, no frame (docs/OLYMPUS_PERF.md)
+    const gap = O && O.frameGap ? O.frameGap() : 0;                       // idle 30 / 15 fps, battery saver, 3D Off 2 fps; a touch = full rate
+    if (gap && now - gapAt < gap - 3) return;
+    gapAt = now;
     const dt = Math.min(0.1, (now - last) / 1000); last = now;
     const still = reduced();
     const aspect = canvas.clientWidth / Math.max(1, canvas.clientHeight);

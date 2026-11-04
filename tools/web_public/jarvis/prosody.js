@@ -176,9 +176,9 @@ const PAUSE = { s: 220, q: 280, x: 260, c: 80 };                       // ms aft
 const PITCH = { s: 0.985, q: 1.07, x: 1.05, c: 1.015 };
 const RATE = { s: 1, q: 0.98, x: 1.04, c: 1.01 };
 // a sentence cut at its commas into breaths of >= 4 words (only when it is long: 14+ words); anything over `max` chars cut at a space
-function phrases(sentence, max) {
+function phrases(sentence, max, commas) {
   let parts = [sentence];
-  if (words(sentence) >= 14) {
+  if (commas !== false && words(sentence) >= 14) {
     const bits = sentence.split(/,\s+/), out = [];
     for (let i = 0; i < bits.length; i++) {
       const b = bits[i] + (i < bits.length - 1 ? ',' : '');
@@ -209,7 +209,7 @@ export function plan(input, opts) {
     const s = raw.trim();
     if (!s) continue;
     const type = /\?["')\]]*$/.test(s) ? 'q' : /!["')\]]*$/.test(s) ? 'x' : 's';
-    const ph = phrases(s, max);
+    const ph = phrases(s, max, o.phrases);
     ph.forEach((p, i) => {
       const last = i === ph.length - 1, t = last ? type : 'c';
       const jr = (hash(p) - 0.5) * 0.024, jp = (hash(p + '~') - 0.5) * 0.02;       // steady, tiny: the same phrase always sounds the same
@@ -220,7 +220,7 @@ export function plan(input, opts) {
   const out = [];
   for (const it of items) {
     const prev = out[out.length - 1];
-    if (prev && words(prev.text) <= 2 && prev.text.length + it.text.length + 1 <= max) { prev.text += ' ' + it.text; prev.type = it.type; prev.pause = it.pause; prev.rate = it.rate; prev.pitch = it.pitch; }
+    if (prev && prev.type !== 'q' && (words(prev.text) <= 2 || prev.text.length < 24) && prev.text.length + it.text.length + 1 <= max) { prev.text += ' ' + it.text; prev.type = it.type; prev.pause = it.pause; prev.rate = it.rate; prev.pitch = it.pitch; }
     else out.push(Object.assign({}, it));
   }
   return out;

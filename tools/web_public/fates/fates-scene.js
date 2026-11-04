@@ -61,7 +61,7 @@ export function createScene(canvas, opt = {}) {
   } catch (e) { return null; }
   const R = rc.renderer;
   R.setClearColor(BG, 1);
-  const baseTier = () => rc.forced || (rc.software ? 'low' : null);
+  const baseTier = () => rc.forced || (window.OLYMPUS && window.OLYMPUS.fx() === 'off' ? 'off' : rc.software ? 'low' : null);   // 3D Off = the core's 'off' tier (pixel ratio 1, direct draw)
   const tierFor = (v) => baseTier() || (v ? 'low' : ['ultra', 'high'].indexOf(rc.quality()) >= 0 ? rc.quality() : 'high');
   if (opt.lite || baseTier()) rc.setQuality(tierFor(!!opt.lite));
   const G = {};
@@ -306,8 +306,9 @@ export function createScene(canvas, opt = {}) {
   function makeSparks(list, secAt) {
     const per = lite ? 5 : 14, ring = lite ? 6 : 16, ev = [];
     for (const th of list) {
+      if (!th) continue;
       if (MAP.money) {
-        for (const e of th.ev) {
+        for (const e of th.ev || []) {
           if (e.code !== 4 && e.code !== 3 && e.code !== 2) continue;      // payout, funded lost, eval lost
           if (rnd(th.id, e.k) > (lite ? 0.25 : 0.6)) continue;
           const k = e.k + 1, i = th.ks.findIndex((x) => x >= k);

@@ -6,6 +6,7 @@ import * as CORE from './arescore.js';
 import { loadRules, planOf, floorOf, judge, CHECKS, usd, esc, num, accountFromSite, botStops } from './arescore.js';
 import { initDesk, renderDesk, loadHome, desk } from './aresdesk.js';
 import { dressRoom } from './aresfx.js';
+import { renderPlus } from './aresplus.js';
 
 const O = window.OLYMPUS || null;
 const Q = new URLSearchParams(location.search);
@@ -104,6 +105,7 @@ function update() {
   $('vline').textContent = R.level === 'halt' ? halts[0].text : R.level === 'wait' ? (z.valid ? `Allowed. Size ${z.n} ${z.inst}. Finish the list (${R.checks.done}/${R.checks.total}) to go.` : 'Enter your entry and stop.') : `Size ${z.n} ${z.inst}, stop ${z.pts.toFixed(1)} pts. Place the stop first.`;
   syncFields(); renderOut(R); renderAcct(R); renderWhy(R); renderChecks(R); renderRules(); renderBot();
   renderDesk(S, R);
+  try { renderPlus(S, R, S.rules); } catch (e) { S.errors.push('plus: ' + ((e && e.message) || e)); }
   S.hall?.set(R);
   O?.mode?.(!!(S.hall && S.hall.lite));
 }
@@ -260,8 +262,10 @@ class Room {
   fps() { const a = this.frames; return a.length ? Math.round(a.length / a.reduce((s, x) => s + x, 0)) : 0; }
 }
 
+let gapAt = 0;
 function tick(now) {
-  if (S.hall && !(O ? O.hidden() : document.hidden)) S.hall.frame(now);
+  const gap = O && O.frameGap ? O.frameGap() : 0;                         // idle 30 / 15 fps, battery saver, 3D Off (docs/OLYMPUS_PERF.md)
+  if (S.hall && !(O ? O.hidden() : document.hidden) && !(gap && now - gapAt < gap - 3)) { gapAt = now; S.hall.frame(now); }
   requestAnimationFrame(tick);
 }
 

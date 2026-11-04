@@ -5,6 +5,10 @@ import * as THREE from '../jarvis/three.module.min.js';
 import * as CORE from './plutuscore.js';
 import { loadPlans, project, siteFacts, SPANS, usd, esc, num } from './plutuscore.js';
 import { renderExtras, vaultFx } from './plutusfx.js';
+import { renderPlus } from './plutusplus.js';
+import { startRoadmap } from './plutusroadmap.js';             // the Money plan card (roadmap.json, 12 months)
+import * as AT from '../olympus/fx-atmos.js';                       // JOB 4+5 follow-up: light shafts, gold embers, contact shadow, a studio environment for the metals
+import { RoomEnvironment } from '../olympus/three-addons/RoomEnvironment.js';
 
 const O = window.OLYMPUS || null;
 const Q = new URLSearchParams(location.search);
@@ -80,12 +84,12 @@ function strategyBlock() {
   if (!sa) return '';
   const two = (o, d = 0) => (o && o.H1 != null ? `${usd(o.H1, d)} / ${usd(o.H2, d)}` : '-');
   const pair = (o) => (o && o.H1 != null ? `${o.H1} / ${o.H2}` : '-');
-  const rows = sa.accounts.map((a) => `<tr><td>${esc(a.name)}<br><small>${usd(a.price, a.price % 1 ? 2 : 0)} each</small></td><td>${two(a.funded_per_month)}</td><td>${two(a.net_per_month_from_purchase)}</td>`
+  const rows = sa.accounts.map((a) => `<tr><td>${esc(a.name)}<br><small>${usd(a.price, a.price % 1 ? 2 : 0)} each</small></td><td>${two(a.funded_per_month)}${a.funded_label && a.funded_label !== 'funded study' ? `<br><small>${esc(a.funded_label)}</small>` : ''}</td><td>${two(a.net_per_month_from_purchase)}</td>`
     + `<td>${pair(a.first_pay_from_funded)} / ${pair(a.first_pay_from_purchase)}</td><td>${pair(a.eval_2w_pass)} / ${pair(a.eval_2w_fail)}</td></tr>`).join('');
   const t = sa.three_accounts, cap = sa.mffu_caps;
   return '<div class="line"><b>Your three strategies</b> (Jan-Jun / Jul-Oct 2026)</div>'
     + `<table class="strat"><thead><tr><th>Account</th><th>Funded $ a month</th><th>$ a month from purchase, after eval fees</th><th>First payout, sessions: from funded start / from purchase</th><th>Eval in 2 weeks: pass / fail %</th></tr></thead><tbody>${rows}</tbody></table>`
-    + `<div class="line">Funded $ a month is the payout stage only (80% to you); the next column starts at the purchase and pays every eval. BLITZ has no funded-only study: its slot figure is the research's, the model is lower.</div>`
+    + `<div class="line">Funded $ a month is the payout stage only (80% to you); the next column starts at the purchase and pays every eval. BLITZ's funded column is an estimate (6-month Monte Carlo at the $150 size; many accounts get stuck with the room too small to pay out), its second column is the research slot.</div>`
     + `<div class="line"><b>${esc(cap.text)}</b></div>`
     + `<div class="line"><b>All three</b> (LIT 50K + ATLAS 25K + BLITZ 25K): <b>${two(t.H1 && { H1: t.H1.per_month, H2: t.H2.per_month })}</b> a month after eval fees in the model (first payout around session ${t.H1.first_payout_session_med} / ${t.H2.first_payout_session_med} from purchase, `
     + `${t.H1.evals_per_month} evals bought a month, ${t.H1.fails_per_month} fails). Honest range: <b>${esc(t.range.text)}</b>. It is a bet on the 2026 market continuing; in 2021-25-type markets every account loses.</div>`;
@@ -114,6 +118,7 @@ function update() {
   $('vline').textContent = P.accounts ? `${P.accounts} account${P.accounts === 1 ? '' : 's'}, ${usd(P.upfront)} up front. ${P.payback == null ? 'Not back in profit inside ' + P.months + ' months.' : P.payback < 0.1 ? '' : 'Back in profit in about ' + P.payback.toFixed(1) + ' months.'} Bad case at month ${P.months}: ${usd(P.p10M)}.` : 'Add an account with + on the Plan tab.';
   renderPlan(); renderMoney(P); renderRisk(P); renderNotes();
   renderExtras(S, P, addAccount);
+  try { renderPlus(S, P); } catch (e) { S.errors.push('plus: ' + ((e && e.message) || e)); }
   S.hall?.set(P);
   O?.mode?.(!!(S.hall && S.hall.lite));
 }
@@ -190,6 +195,15 @@ class Vault {
     this.seed = Array.from({ length: n }, (_, i) => ({ x: ((i * 0.61) % 1 - 0.5) * 8, y: (i * 0.37) % 4.5, z: (((i * 0.83) % 1) - 0.5) * 2, s: 0.2 + (i % 5) * 0.07 }));
     const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(this.sparkPos, 3));
     this.sparks = new THREE.Points(g, new THREE.PointsMaterial({ color: 0xffe08a, size: 0.06, transparent: true, opacity: 0.8, depthWrite: false, blending: THREE.AdditiveBlending })); S3.add(this.sparks);
+    // the vault's air and light (fx-atmos): a studio environment so the gold reads as metal, a soft shadow under the vault floor, shafts from above, gold embers rising
+    setTimeout(() => { try {          // 0.9 s after the vault: the first paint is the vault itself
+      const R = this.renderer, pm = new THREE.PMREMGenerator(R); S3.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture; pm.dispose();
+      this.at = [];
+      const ao = AT.contactAO({ radius: 5.6, depth: 1.9, strength: 0.8 }); ao.object.position.set(0, -0.21, 0); S3.add(ao.object); this.at.push(ao);
+      const sh = AT.shafts({ count: 4, from: [-1, 11, 1], to: [0, 0, 0], width: 3.4, spread: [7, 0, 1.5], color: '#ffd978', strength: 0.1, seed: 12 }); S3.add(sh.object); this.at.push(sh);
+      const em = AT.embers({ count: 110, origin: [0, 0, 0.3], spread: [8, 0, 1.4], rise: 4.2, colors: ['#fff2b0', '#ffc247', '#a8741a'], size: 5, wind: 0, seed: 33 }); S3.add(em.object); this.at.push(em);
+      AT.setQuality(this.at, this.lite ? 'low' : 'high'); this.dirty = true;
+    } catch (e) { this.at = []; } }, 900);
   }
   set(P) {
     const M = P.months + 1, mx = Math.max(1, ...P.mean.map(Math.abs), ...P.p10.map(Math.abs), P.goal ? P.goal * P.months : 0), sc = HMAX / mx;
@@ -239,20 +253,29 @@ class Vault {
     }
     this.camera.position.set(Math.sin(this.yaw) * Math.cos(this.pitch) * this.dist, this.mid + Math.sin(this.pitch) * this.dist, Math.cos(this.yaw) * Math.cos(this.pitch) * this.dist);
     this.camera.lookAt(0, this.mid, 0);
+    if (this.at && this.at.length) AT.update(this.at, RM ? 0 : this.t, this.renderer.getPixelRatio());
     this.renderer.render(this.scene, this.camera); this.dirty = false;
   }
   fps() { const a = this.frames; return a.length ? Math.round(a.length / a.reduce((s, x) => s + x, 0)) : 0; }
 }
 
+let gapAt = 0;
 function tick(now) {
-  if (S.hall && !(O ? O.hidden() : document.hidden)) S.hall.frame(now);
+  const gap = O && O.frameGap ? O.frameGap() : 0;                         // idle 30 / 15 fps, battery saver, 3D Off (docs/OLYMPUS_PERF.md)
+  if (S.hall && !(O ? O.hidden() : document.hidden) && !(gap && now - gapAt < gap - 3)) { gapAt = now; S.hall.frame(now); }
   requestAnimationFrame(tick);
 }
 
+// An optional file that answered 404 is not asked again for 6 hours: a browser logs every 404 as a console error, this keeps it to one per phone.
+const GONE_KEY = 'opt404.', GONE_MS = 6 * 3600e3;
+const wasGone = (u) => { try { const t = +localStorage.getItem(GONE_KEY + u); return !!t && Date.now() - t < GONE_MS; } catch (_) { return false; } };
+const markGone = (u) => { try { localStorage.setItem(GONE_KEY + u, String(Date.now())); } catch (_) { /* private mode */ } };
 async function loadSite() {
+  if (wasGone('../data.json')) return null;           // opened on its own (no site around it): not asked again for 6 hours
   try {
     const ac = typeof AbortController === 'function' ? new AbortController() : null; const tm = ac ? setTimeout(() => ac.abort(), 6000) : 0;
     const r = await fetch('../data.json', { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); clearTimeout(tm);
+    if (!r.ok && r.status === 404) markGone('../data.json');
     return r.ok ? await r.json() : null;
   } catch (_) { return null; }
 }
@@ -266,7 +289,8 @@ async function main() {
   try { S.hall = new Vault($('vault')); S.hall.set(S.P); tick(performance.now()); vaultFx(S.hall).then((h) => { S.fx = h; }); } catch (e) { S.hall = null; $('nogl').hidden = false; O?.ready(); }
   window.__plutus = { ready: true, CORE, get state() { return S.st; }, get project() { return S.P; }, get doc() { return S.doc; }, get lite() { return S.hall ? S.hall.lite : null; },
     get fps() { return S.hall ? S.hall.fps() : 0; }, get src() { return S.doc.src; }, get live() { return !!(S.facts && (S.facts.trades || S.facts.trio)); }, errors: S.errors,
-    get yaw() { return S.hall ? S.hall.yaw : 0; }, get fx() { return S.fx || null; }, get tab() { return S.tab; }, get ready3d() { return !!S.hall; } };
+    get yaw() { return S.hall ? S.hall.yaw : 0; }, get roadmap() { return S.roadmap || null; }, get fx() { return S.fx || null; }, get tab() { return S.tab; }, get ready3d() { return !!S.hall; } };
+  startRoadmap().then((r) => { S.roadmap = r; }).catch((e) => S.errors.push('roadmap: ' + ((e && e.message) || e)));
   S.site = await loadSite(); S.facts = siteFacts(S.site);
   if (S.facts.trades || S.facts.trio) $('livetag').hidden = false;
   update();

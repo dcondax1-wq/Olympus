@@ -35,6 +35,8 @@ import re
 import shutil
 import subprocess
 import sys
+
+from tests import browser_kit as BK  # noqa: E402  (shared launch, load-scaled timeouts)
 import tempfile
 import threading
 import time
@@ -662,7 +664,7 @@ def run_browser(oa, ob, tmp, example):
     harness = oa + "/nq-dashboard/jarvis/apps_harness.html"
     with sync_playwright() as pw:
         exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
-        br = pw.chromium.launch(**({"executable_path": exe} if exe else {}))
+        br = BK.launch(pw)
         ctx = br.new_context(viewport={"width": 390, "height": 844})
         ctx.route(re.compile(r"^https?://(?!127\.0\.0\.1[:/])"), lambda r: r.abort())      # nothing leaves this machine
         p = ctx.new_page()

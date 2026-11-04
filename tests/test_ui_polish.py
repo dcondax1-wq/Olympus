@@ -15,11 +15,17 @@ dashboards (read-only UI).
               reduced motion = no intro and no animation; frame time while scrolling Home; the light theme
   d. PC       Playwright 1440x900 on server.py: the status bar on Home, the sidebar sections, five sections on BLITZ
 
+  "Money now" (2026-11-04, moneynowcore.js on both apps): the top card of Home that answers in 5 seconds: per account "Drawdown left $X of $max loss"
+  (never "X of 10 days"), today's $, the next thing the bot waits for, its status in plain words, a red / amber / green edge, "not published yet"
+  for a missing field; static (a), node (b: the model from the boards, edges, missing fields, garbage), phone (c: top of Home, 44 px taps, a tap opens
+  the bot), PC (d: first thing in the status box on Home)
+
   python -X utf8 -m tests.test_ui_polish [--shots <dir>]
 """
 from __future__ import annotations
 
 import json
+from datetime import date
 import os
 import re
 import shutil
@@ -53,6 +59,14 @@ def part_a():
     order = [idx.find(f'src="{n}?v=') for n in ("blitz.js", "statuscore.js", "polish.js")]
     check("a. phone index: statuscore.js then polish.js after blitz.js (last), polish.css in the head", all(i > 0 for i in order) and order == sorted(order)
           and idx.find('polish.css?v=') < idx.find('</head>') and idx.find('polish.css?v=') > 0, order)
+    check("a. moneynowcore.js byte-identical on both apps; the phone loads it and moneynow.js after zenith_money.js; the PC polish.js loads it; read-only (no fetch / POST / innerHTML)",
+          rd("tools", "web_public", "moneynowcore.js") == rd("web_next", "js", "next", "moneynowcore.js")
+          and [idx.find(f'src="{n}?v=') for n in ("zenith_money.js", "moneynowcore.js", "moneynow.js")] == sorted(idx.find(f'src="{n}?v=') for n in ("zenith_money.js", "moneynowcore.js", "moneynow.js"))
+          and idx.find('src="moneynow.js?v=') > 0 and "moneynowcore.js" in rd("web_next", "js", "next", "polish.js")
+          and not re.search(r"fetch\(|POST|innerHTML|/api/|arm_c", rd("tools", "web_public", "moneynowcore.js")) and "fetch(" not in rd("tools", "web_public", "moneynow.js"))
+    check("a. sessioncore.js (window.SessionDay) + sessionday.js: the phone loads them after moneynow.js; read-only (no fetch / POST / innerHTML / arm / route / api)",
+          idx.find('src="sessioncore.js?v=') > idx.find('src="moneynow.js?v=') > 0 and idx.find('src="sessionday.js?v=') > idx.find('src="sessioncore.js?v=')
+          and not re.search(r"fetch\(|POST|innerHTML|/api/|arm_c|route\(", rd("tools", "web_public", "sessioncore.js")) and "fetch(" not in rd("tools", "web_public", "sessionday.js"))
     check("a. caches: phone le-public-v46+, PC le-shell-next-v28+; clean.js?v=3 kept", int(re.search(r"le-public-v(\d+)", psw).group(1)) >= 46
           and int(re.search(r"le-shell-next-v(\d+)", sw).group(1)) >= 28 and 'clean.js?v=3"' in idx and "/css/polish.css" in sw)
     for n in ("statuscore.js", "polish.js"):
@@ -84,7 +98,7 @@ def part_a():
 NODE_JS = r"""
 global.window = {}; global.document = undefined;
 const dir = process.argv[2], fs = require('fs');
-for (const n of ['missioncore.js', 'deckcore.js', 'statuscore.js']) require(dir + '/' + n);
+for (const n of ['missioncore.js', 'deckcore.js', 'statuscore.js', 'moneynowcore.js', 'sessioncore.js']) require(dir + '/' + n);
 const F = JSON.parse(fs.readFileSync(process.argv[3], 'utf8')), S = window.StatusUI, out = { bad: 0 };
 const thu = Date.parse('2026-10-30T01:15:00Z') / 1000, tue = Date.parse('2026-10-27T15:00:00Z') / 1000;
 const M2 = { now: F.now, where: 'phone', board: F.b2 }, M3 = { now: F.now, where: 'phone', board: F.b3 };
@@ -99,6 +113,37 @@ out.pcTue = S.items({ now: tue, board: Object.assign({}, F.b2, { data_t: tue - 7
 out.mkt = S.market(M2); out.mktNone = S.market({ board: {} }); out.hasMap = !!(F.b2.map && F.b2.map.price != null);
 for (const g of [null, {}, { board: 5 }, { board: { lit: 'x', health: { items: 3 } } }, { board: { lit: { position: 5, window: 'y', days: 7 } }, news: 'n' }, { board: { map: { price: 'x', nearest_above: 3 } } }, { board: { map: { price: 5, nearest_above: { price: 1 }, nearest_below: { price: 9 } } } }]) {
   try { S.items(g); S.bar(g); S.accounts(g); S.sunday(g || {}); S.empty('trades', g); S.market(g); S.week(g); } catch (e) { out.bad++; out.err = String(e.stack).slice(0, 300); }
+}
+const MN = window.MoneyNow, cp = (o) => JSON.parse(JSON.stringify(o));
+const mk = (mut) => { const b = cp(F.b3); mut(b); return { now: F.now, where: 'phone', board: b }; };
+out.mn2 = MN.model(M2); out.mn3 = MN.model(M3); out.mnNone = MN.model({}); out.mnNoneHtml = MN.html({}, { where: 'phone' });
+out.mnHtml3 = MN.html(M3, { where: 'phone' }); out.mnPc = MN.html(M3, { where: 'pc' });
+out.mnRaw = window.MissionUI.accounts(M3).map((a) => [a.key, a.placeholder, a.room, a.mll, a.today]);
+out.mnRed = MN.model(mk((b) => { b.lit.room = 300; b.lit.room_frac = 0.15; })).rows[0].edge;
+out.mnAmb = MN.model(mk((b) => { b.lit.room = 800; b.lit.room_frac = 0.4; })).rows[0].edge;
+out.mnMiss = MN.model(mk((b) => { delete b.lit.room; delete b.lit.today_pnl; delete b.lit.mll; delete b.lit.room_frac; }));
+out.mnMissHtml = MN.html(mk((b) => { delete b.lit.room; delete b.lit.today_pnl; delete b.lit.mll; delete b.lit.room_frac; }), { where: 'phone' });
+out.mnStop = MN.model(Object.assign(mk(() => {}), { board: Object.assign(cp(F.b3), { running: false }) })).bot;
+out.mnOld = MN.model({ now: F.now, where: 'phone', board: Object.assign(cp(F.b3), { data_t: F.now - 7200 }) }).bot;
+out.mnEvil = MN.html(mk((b) => { b.lit.name = '<img src=x onerror=1>'; b.lit.waiting = '"><script>1</script>'; b.lit.position = null; }), { where: 'phone' });
+out.lnPc = MN.line(M3, { where: 'pc' }); out.lnStop = MN.line(Object.assign(mk(() => {}), { board: Object.assign(cp(F.b3), { running: false }) }), { where: 'pc' });
+out.lnNone = MN.line({}, { where: 'pc' }); out.lnEvil = MN.line(mk((b) => { b.lit.name = '<img src=x onerror=1>'; }), { where: 'pc' }); out.lnArmed = MN.model(M3).rows.filter((r) => /^(Armed|In a trade)/.test(r.status.text)).map((r) => r.name);
+for (const g of [null, {}, { board: 5 }, { board: { lit: 'x', health: { items: 3 } } }, { board: { lit: { room: 'x', mll: {}, today_pnl: [], position: 5 } }, now: 'n' }]) {
+  try { MN.model(g); MN.html(g); MN.html(g, { where: 'pc' }); MN.line(g); MN.line(g, { where: 'phone' }); } catch (e) { out.bad++; out.err = String(e.stack).slice(0, 300); }
+}
+const SD = window.SessionDay, T = F.sd || {}, nm = (M) => { const m = SD.model(M); return { mode: m.mode, pill: m.pill, edge: m.edge, states: m.rows.map((r) => r.state), keys: m.rows.map((r) => r.key), t: m.rows.map((r) => r.t), tEnd: m.rows.map((r) => r.tEnd), todo: m.todo, doing: m.doing, left: m.left, day: m.day, holiday: m.holiday, news: m.news, newsKnown: m.newsKnown }; };
+out.sd = {};
+for (const [k, t] of Object.entries(T)) out.sd[k] = nm({ now: t, where: 'phone', board: Object.assign(cp(F.b3), { data_t: t - 30 }) });
+out.sdNoBoard = Object.fromEntries(Object.entries(T).map(([k, t]) => [k, nm({ now: t })]));
+out.sdHtml = SD.html({ now: T.open, where: 'phone', board: F.b3, news: F.news }, { go: (p) => 'data-go="' + p + '"' });
+out.sdHtmlNone = SD.html({ now: T.open }, {}); out.sdHtmlNoNews = SD.html({ now: T.open, news: [] }, {});
+out.sdHtmlHol = SD.html({ now: T.holiday, news: [] }, {});
+out.sdNews = SD.model({ now: T.open, news: F.news }).news;
+out.sdStop = SD.model({ now: T.open, board: Object.assign(cp(F.b3), { running: false, data_t: T.open - 30 }) }).todo;
+out.sdBlocked = SD.model({ now: T.open, board: (() => { const b = cp(F.b3); b.data_t = T.open - 30; b.lit.position = null; b.lit.blocks = [{ kind: 'rule', text: 'Daily loss limit <b>hit</b>.' }]; return b; })() }).todo;
+out.sdHol = [2026, 2027, 2028].map((y) => SD.holidays(y));
+for (const g of [null, {}, { board: 5 }, { news: 'x' }, { news: [null, { t: 'x' }, { t: 1, title: {} }], now: 'n' }, { now: NaN }]) {
+  try { SD.model(g); SD.html(g); SD.html(g, {}); } catch (e) { out.bad++; out.err = String(e.stack).slice(0, 300); }
 }
 process.stdout.write(JSON.stringify(out) + '\n');
 """
@@ -115,7 +160,16 @@ def part_b(tmp):
     b2["lit"]["badge"], b2["atlas"]["badge"] = "LIVE", "SIM"
     b3["lit"]["badge"], b3["atlas"]["badge"] = "LIVE", "SIM"
     fp = os.path.join(tmp, "f.json")
-    json.dump({"now": now, "b2": b2, "b3": b3}, open(fp, "w"), default=str)
+    from zoneinfo import ZoneInfo
+    from datetime import datetime
+    ET = ZoneInfo("America/New_York")
+    et = lambda y, mo, d, h, mi=0: int(datetime(y, mo, d, h, mi, tzinfo=ET).timestamp())
+    SDT = {"early": et(2026, 11, 4, 1, 30), "plan": et(2026, 11, 4, 1, 50), "open": et(2026, 11, 4, 10, 0), "late": et(2026, 11, 4, 15, 40), "flat": et(2026, 11, 4, 16, 0),
+           "over": et(2026, 11, 4, 16, 30), "friover": et(2026, 11, 6, 17, 30), "sat": et(2026, 11, 7, 12, 0), "sun": et(2026, 11, 8, 20, 0), "holiday": et(2026, 11, 26, 10, 0),
+           "eveholiday": et(2026, 11, 25, 16, 30), "dstbefore": et(2026, 3, 6, 10, 0), "dstafter": et(2026, 3, 10, 10, 0)}
+    SDN = [{"t": et(2026, 11, 4, 10, 30), "title": "CPI <img src=x onerror=1>", "impact": "high"}, {"t": et(2026, 11, 4, 14, 0), "title": "FOMC minutes", "impact": "fomc"},
+           {"t": et(2026, 11, 4, 11, 0), "title": "Low news", "impact": "low"}, {"t": et(2026, 11, 3, 10, 0), "title": "Yesterday", "impact": "high"}, {"t": et(2026, 11, 4, 18, 0), "title": "After the close", "impact": "high"}]
+    json.dump({"now": now, "b2": b2, "b3": b3, "sd": SDT, "news": SDN}, open(fp, "w"), default=str)
     jp = os.path.join(tmp, "r.js")
     open(jp, "w").write(NODE_JS)
     r = subprocess.run([node, jp, os.path.join(ROOT, "tools", "web_public"), fp], capture_output=True, text=True, timeout=60)
@@ -144,6 +198,73 @@ def part_b(tmp):
     check("b. NQ now: the price between the nearest levels above / below (a ladder), nothing without a price", o["mktNone"] == ""
           and (not o["hasMap"] or ("su-mkt" in o["mkt"] and "NQ" in o["mkt"])), o["mkt"][:300])
     check("b. garbage in: no exception", o["bad"] == 0, o.get("err"))
+    # --- Money now: dynamic counts (the rows follow the accounts the board really has)
+    n_real = sum(1 for a in o["mnRaw"] if not a[1])
+    r2, r3 = o["mn2"]["rows"], o["mn3"]["rows"]
+    check(f"b. Money now: one row per real account, Zlarior and ATLAS always, BLITZ only when it has its own account ({len(r2)} rows on 2 accounts, {len(r3)} on {n_real})",
+          [r["key"] for r in r2] == ["lit", "atlas"] and [r["key"] for r in r3] == ["lit", "atlas", "blitz"][:max(2, n_real)] and len(r3) == max(2, n_real), (o["mn2"]["rows"][0]["key"], o["mnRaw"]))
+    h3 = o["mnHtml3"]
+    txt = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", h3))
+    ok = True
+    for r, raw in zip(r3, o["mnRaw"]):
+        room, mll, today = raw[2], raw[3], raw[4]
+        ok &= (f"${round(room):,}" in txt and f"of ${round(mll):,} max loss" in txt and r["room"] == room and r["mll"] == mll and r["today"] == today)
+    check("b. Money now: 'Drawdown left $X of $max loss' with the board's own room and max loss for every account, today's $ next to it, never 'of 10 days'",
+          ok and h3.count("Drawdown left") == len(r3) and h3.count("max loss") == len(r3) and "10 days" not in txt and "session" not in txt.lower() and h3.count('class="mn-r"') == len(r3), txt[:400])
+    check("b. Money now: each row says what the bot waits for (an open trade: its target / stop) and its status in plain words (In a trade / Running / Armed ...)",
+          all(r["next"] and r["status"]["text"] for r in r3) and "target" in r3[0]["next"] and r3[0]["status"]["text"].startswith("In a trade") and h3.count('class="mn-nx"') == len(r3), [r["next"] for r in r3])
+    check("b. Money now: edge colours: a healthy board is green, 15% of the drawdown left is red, 40% is amber", o["mn3"]["edge"] == "good" and o["mnRed"] == "bad" and o["mnAmb"] == "warn", (o["mn3"]["edge"], o["mnRed"], o["mnAmb"]))
+    check("b. Money now: the PC bot in plain words: running, stopped (red), quiet for 2 hours (amber / red) - from the same check-in the status bar reads",
+          o["mn3"]["bot"]["text"].startswith("Bot running") and o["mnStop"]["text"] == "Bot stopped" and o["mnStop"]["edge"] == "bad" and o["mnOld"]["text"].startswith("Bot quiet") and o["mnOld"]["edge"] in ("warn", "bad"), (o["mnStop"], o["mnOld"]))
+    miss = o["mnMissHtml"]
+    check("b. Money now: a field the board does not carry says 'not published yet' (never a blank): room, max loss, today", o["mnMiss"]["rows"][0]["room"] is None and o["mnMiss"]["rows"][0]["edge"] in ("warn", "bad")
+          and miss.count("not published yet") >= 2 and ">$<" not in miss and "undefined" not in miss and "NaN" not in miss and "null" not in miss, re.sub(r"<[^>]+>", " ", miss)[:300])
+    nh = o["mnNoneHtml"]
+    check("b. Money now: no board at all (nothing published yet): the card is still there, Zlarior and ATLAS rows, every field 'not published yet', amber",
+          len(o["mnNone"]["rows"]) == 2 and nh.count("mn-row") == 2 and nh.count("not published yet") >= 6 and "mn-card a" in nh and o["mnNone"]["edge"] == "warn", nh[:200])
+    check("b. Money now: the PC variant links with data-goto (zlarior / atlas / blitz), the phone with data-go (lit / atlas / blitz); text from the board never becomes markup",
+          'data-goto="zlarior"' in o["mnPc"] and 'data-go="lit"' in h3 and "<img" not in o["mnEvil"] and "<script" not in o["mnEvil"] and "&lt;img" in o["mnEvil"])
+    ltxt = lambda h: re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", h)).strip()
+    check("b. status strip (MoneyNow.line): one line with the bot's state + last check-in age and which bots are armed, a data-goto link, a red/amber/green dot",
+          o["lnPc"].count('<a class="mn-line') == 1 and 'data-goto="cc"' in o["lnPc"] and ltxt(o["lnPc"]).startswith("Bot running") and "Armed:" in o["lnPc"]
+          and all(n in o["lnPc"] for n in o["lnArmed"]) and 'class="mn-line g"' in o["lnPc"], ltxt(o["lnPc"]))
+    check("b. status strip: a stopped bot is red, no board at all still says something plain ('not published yet'), never blank / undefined / NaN",
+          'class="mn-line r"' in o["lnStop"] and "Bot stopped" in o["lnStop"] and "not published yet" in ltxt(o["lnNone"]) and not re.search(r"undefined|NaN|null", o["lnNone"] + o["lnStop"]), (ltxt(o["lnStop"]), ltxt(o["lnNone"])))
+    check("b. status strip: text from the board never becomes markup", "<img" not in o["lnEvil"])
+    # --- Today's session (SessionDay): the modes follow the ET clock, the sentence and the countdown follow the mode
+    sd = o["sd"]
+    want = {"early": "before", "plan": "plan", "open": "open", "late": "late", "flat": "flat", "over": "over", "friover": "over", "sat": "weekend", "sun": "weekend", "holiday": "open", "eveholiday": "over"}
+    check(f"b. session card: the mode follows the New York clock for {len(want)} moments (before / plan / open / late / flat / over / weekend)", all(sd[k]["mode"] == v for k, v in want.items()), {k: sd[k]["mode"] for k in want})
+    st = lambda k: ",".join(sd[k]["states"])
+    check("b. session card: the four windows (game plan, entry window, flat, recap) go next -> now -> done through the day; over a weekend only the first is 'next'",
+          sd["early"]["keys"] == ["plan", "window", "flat", "recap"] and st("early") == "next,later,later,later" and st("plan") == "now,next,later,later" and st("open") == "done,now,next,later"
+          and st("late") == "done,done,next,later" and st("flat") == "done,done,now,next" and st("over") == "done,done,done,now" and st("sat") == "next,later,later,later", {k: st(k) for k in sd})
+    check("b. session card: the times are real ET on both sides of the clock change (01:45, 02:00 -> 15:30 = 13.5 h, 15:55) in March and November",
+          all(sd[k]["tEnd"][1] - sd[k]["t"][1] == 13.5 * 3600 and sd[k]["t"][1] - sd[k]["t"][0] == 15 * 60 and sd[k]["t"][2] - sd[k]["t"][1] == 13.5 * 3600 + 25 * 60 for k in ("dstbefore", "dstafter", "open"))
+          and sd["open"]["t"][1] == et(2026, 11, 4, 2, 0) and sd["dstafter"]["t"][1] == et(2026, 3, 10, 2, 0) and sd["dstbefore"]["t"][1] == et(2026, 3, 6, 2, 0), (sd["open"]["t"], sd["dstafter"]["t"]))
+    L = lambda k: sd[k]["left"]
+    check("b. session card: exact time left: to the 01:45 plan (15 min), to the window opening (10 min), to the 15:30 close (5.5 h), to the flat time (15 min), to the next game plan once over, Monday over a weekend",
+          L("early")["left"] == 900 and L("early")["kind"] == "plan" and L("plan")["left"] == 600 and L("plan")["kind"] == "window" and L("open")["left"] == 5.5 * 3600 and L("open")["kind"] == "closes"
+          and L("late")["left"] == 900 and L("late")["kind"] == "flat" and L("flat")["left"] == 300 and L("over")["left"] == et(2026, 11, 5, 1, 45) - SDT["over"] and L("friover")["left"] == et(2026, 11, 9, 1, 45) - SDT["friover"]
+          and L("sat")["left"] == et(2026, 11, 9, 1, 45) - SDT["sat"] and L("sun")["left"] == et(2026, 11, 9, 1, 45) - SDT["sun"] and all(L(k)["left"] > 0 for k in sd), {k: L(k) for k in ("over", "friover", "sat")})
+    one = lambda t: bool(t) and t.endswith(".") and t.count(". ") == 0 and len(t) < 170
+    check("b. session card: ONE sentence for what to do now in every moment, with and without a board ('Nothing: ...' while the bot just works)",
+          all(one(sd[k]["todo"]) for k in sd) and all(one(o["sdNoBoard"][k]["todo"]) for k in sd) and o["sdNoBoard"]["over"]["todo"] == "You are flat, session over, review in Mnemosyne." and "still open" in sd["over"]["todo"]
+          and "closed" in sd["sat"]["todo"] and "01:45" in sd["sat"]["todo"] and o["sdNoBoard"]["open"]["todo"] == "Nothing: the bot is waiting for a sweep (bot state: not published yet).", ([sd[k]["todo"] for k in sd], o["sdNoBoard"]["open"]["todo"]))
+    check("b. session card: the PC bot stopped = 'Check the PC' sentence; a blocked bot = 'do not trade by hand' with the reason as plain text",
+          o["sdStop"].startswith("Check the PC") and "stopped" in o["sdStop"] and o["sdBlocked"].startswith("Nothing: the bot is blocked") and "do not trade by hand" in o["sdBlocked"], (o["sdStop"], o["sdBlocked"]))
+    hh = o["sdHtml"]
+    exp_news = [n for n in SDN if n["impact"] in ("high", "fomc") and n["t"] > SDT["open"] - 600 and et(2026, 11, 4, 0, 0) <= n["t"] <= et(2026, 11, 4, 17, 0)]
+    check(f"b. session card: news flags from the calendar the page carries ({len(exp_news)} of {len(SDN)} entries qualify: high-impact, today, not past), marked inside the entry window, escaped",
+          len(o["sdNews"]) == len(exp_news) and hh.count('class="sd-flag a"') == len(exp_news) and "inside the entry window" in hh and "<img" not in hh and "&lt;img" in hh, (len(o["sdNews"]), len(exp_news)))
+    check("b. session card: never blank - no calendar says 'not published yet', an empty calendar says 'No big US news left today', every card has the 4 window rows, the one-sentence box and a countdown",
+          "News calendar: not published yet" in o["sdHtmlNone"] and "No big US news left today" in o["sdHtmlNoNews"] and all(h.count('class="sd-row') == 4 and "What to do now" in h and "data-sd-cd=" in h for h in (hh, o["sdHtmlNone"], o["sdHtmlNoNews"]))
+          and not re.search(r"undefined|NaN|null", hh + o["sdHtmlNone"] + o["sdHtmlNoNews"]), re.sub(r"<[^>]+>", " ", o["sdHtmlNone"])[:300])
+    hol = o["sdHol"]
+    check("b. session card: US/CME holidays from rules (Thanksgiving = 4th Thursday, Good Friday from Easter): flagged on the day and the evening before; never on a weekend",
+          sd["holiday"]["holiday"] and sd["holiday"]["holiday"]["name"] == "Thanksgiving" and sd["eveholiday"]["holiday"] and sd["eveholiday"]["holiday"]["name"] == "Thanksgiving" and "Thanksgiving" in o["sdHtmlHol"]
+          and hol[0]["2026-04-03"] == "Good Friday" and hol[1]["2027-03-26"] == "Good Friday" and hol[0]["2026-11-26"] == "Thanksgiving" and hol[1]["2027-11-25"] == "Thanksgiving"
+          and all(date.fromisoformat(k).weekday() < 5 for h in hol for k in h) and sd["open"]["holiday"] is None, hol[0])
 
 
 # ------------------------------------------------------------------------------------------------ c. phone
@@ -196,8 +317,46 @@ def part_c(F, tmp, shots):
         H = pg.evaluate("() => { const h = document.querySelector('#page > .pl-home'); return { kids: [...h.children].map(c => c.className.split(' ')[0]), accts: [...h.querySelectorAll('.su-acct')].map(a => a.dataset.bot), height: document.documentElement.scrollHeight }; }")
         check("c. Home: the greeting, status bar, the three account cards (Zlarior · ATLAS · BLITZ), what matters now, quick tiles", H["kids"][:4] == ["pl-hi", "su-bar", "su-accts", "pl-now"] and "pl-quick" in H["kids"]
               and H["accts"] == ["lit", "atlas", "blitz"], H)
+        MNP = pg.evaluate("""() => { const c = document.querySelector('.pl-home > .pl-hi > #mnCard'); if (!c) return null; const rows = [...c.querySelectorAll('.mn-row')];
+          return { n: rows.length, top: Math.round(c.getBoundingClientRect().top), after: [...c.parentNode.children].indexOf(c), kids: [...c.parentNode.children].slice(0, 4).map(e => e.id || e.className.split(' ')[0]),
+            taps: rows.map(r => Math.round(r.getBoundingClientRect().height)), w: rows.map(r => Math.round(r.getBoundingClientRect().width)), keys: rows.map(r => r.dataset.mn), txt: c.innerText.replace(/\\s+/g, ' '),
+            edge: c.className, x: document.documentElement.scrollWidth - innerWidth }; }""")
+        exp = pg.evaluate("() => Math.max(2, window.MissionUI.accounts(window.POLISH.model()).filter((a) => a && !a.placeholder).length)")      # the accounts the board really has
+        check(f"c. Money now: the top card of Home, inside the greeting box right after the date line ({MNP and MNP['n']} rows), the Home order kept, no sideways scroll",
+              MNP and MNP["after"] == 2 and MNP["kids"][2] == "mnCard" and MNP["n"] >= 2 and MNP["x"] <= 1 and H["kids"][:4] == ["pl-hi", "su-bar", "su-accts", "pl-now"], MNP)
+        check("c. Money now: one row per account the board has (Zlarior, ATLAS, BLITZ when it exists), every row is a 44 px tap, 'Drawdown left $... of $... max loss' and a status word, no 'X of 10 days'",
+              MNP and MNP["keys"][:2] == ["lit", "atlas"] and MNP["n"] == exp and all(h >= 44 for h in MNP["taps"]) and all(w >= 300 for w in MNP["w"])
+              and MNP["txt"].count("Drawdown left") == MNP["n"] and MNP["txt"].count("max loss") >= MNP["n"] and "10 days" not in MNP["txt"] and "next" in MNP["txt"].lower() and "Bot " in MNP["txt"] and "NaN" not in MNP["txt"], MNP)
+        pg.click("#mnCard .mn-row[data-mn='atlas']")
+        pg.wait_for_timeout(700)
+        check("c. Money now: tapping a row opens that bot (ATLAS)", pg.evaluate("() => location.hash") == "#/atlas", pg.evaluate("() => location.hash"))
+        pg.evaluate("() => { location.hash = '#/today'; }")
+        pg.wait_for_selector(".pl-home > .pl-hi > #mnCard", timeout=20000)
+        pg.wait_for_selector(".pl-home > .pl-hi > #sdCard", timeout=20000)
+        SDP = pg.evaluate("""() => { const c = document.querySelector('.pl-home > .pl-hi > #sdCard'); if (!c) return null; const rows = [...c.querySelectorAll('.sd-row')], fl = [...c.querySelectorAll('.sd-flag')];
+          const cd = c.querySelector('[data-sd-cd]'); return { rows: rows.length, flags: fl.length, keys: rows.map(r => r.dataset.sd), prev: c.previousElementSibling && c.previousElementSibling.id, kids: [...c.parentNode.children].slice(0, 5).map(e => e.id || e.className.split(' ')[0]),
+            taps: rows.concat(fl).map(r => Math.round(r.getBoundingClientRect().height)), txt: c.innerText.replace(/\\s+/g, ' '), cd: cd ? cd.textContent : null, x: document.documentElement.scrollWidth - innerWidth, h: Math.round(c.getBoundingClientRect().height),
+            todo: c.querySelector('.sd-todo') ? c.querySelector('.sd-todo').textContent : '', edge: c.className }; }""")
+        check(f"c. Today's session: a card right under Money now ({SDP and SDP['rows']} windows + {SDP and SDP['flags']} flag rows, {SDP and SDP['h']} px), the Home order kept, every row a 44 px tap, no sideways scroll",
+              SDP and SDP["prev"] == "mnCard" and SDP["kids"][2:4] == ["mnCard", "sdCard"] and SDP["rows"] == 4 and SDP["keys"] == ["plan", "window", "flat", "recap"] and SDP["flags"] >= 1
+              and all(h >= 44 for h in SDP["taps"]) and SDP["x"] <= 1, SDP)
+        check("c. Today's session: 'Bot now', 'What to do now' as one sentence, the next window with a ticking H:MM:SS countdown, times in ET, never 'undefined' / 'NaN'",
+              SDP and "what to do now" in SDP["txt"].lower() and "bot now" in SDP["txt"].lower() and re.fullmatch(r"\d+:\d\d:\d\d", SDP["cd"] or "") and "ET" in SDP["txt"] and SDP["todo"].endswith(".")
+              and not re.search(r"undefined|NaN|null", SDP["txt"]), SDP)
+        cd0 = pg.evaluate("() => document.querySelector('#sdCard [data-sd-cd]').textContent")
+        pg.wait_for_timeout(2400)
+        cd1 = pg.evaluate("() => document.querySelector('#sdCard [data-sd-cd]').textContent")
+        sec = lambda v: sum(int(x) * m for x, m in zip(v.split(":"), (3600, 60, 1)))
+        check("c. Today's session: the countdown ticks down every second", sec(cd1) < sec(cd0), (cd0, cd1))
+        pg.click("#sdCard .sd-row[data-sd='window']")
+        pg.wait_for_timeout(700)
+        check("c. Today's session: tapping the entry window opens Zlarior", pg.evaluate("() => location.hash") == "#/lit", pg.evaluate("() => location.hash"))
+        pg.evaluate("() => { location.hash = '#/today'; }")
+        pg.wait_for_selector(".pl-home > .pl-hi > #sdCard", timeout=20000)
+        sh(pg, "session_card_phone.png")
+        sh(pg, "money_now_phone.png")
         PERF["home_height_px"] = H["height"]
-        check("c. Home is short and calm (under 2,600 px at 390 wide with everything else folded)", H["height"] < 2600, H["height"])
+        check("c. Home is short and calm (under 3,500 px at 390 wide with everything else folded; the Money now card is about 330 px and Today's session about 500 px of it)", H["height"] < 3500, H["height"])
         wk = pg.evaluate("() => { const w = document.querySelector('.pl-home .su-week'); return w ? [...w.querySelectorAll('li > b')].map(b => b.textContent) : null; }")
         prog = (F["board"].get("progress") or {})
         check("c. Home: this week's real trades vs each bot's goal (Mon-Fri dots), when the board has its progress", (wk is None and not prog) or (wk and "Zlarior" in wk), (wk, list(prog)))
@@ -295,7 +454,7 @@ def part_c(F, tmp, shots):
           function f(t) { d.push(t - last); last = t; n++; scrollTo(0, (Math.sin(n / 18) * 0.5 + 0.5) * H); if (n < 150) requestAnimationFrame(f); else { d.shift(); d.sort((a, b) => a - b); res({ n: d.length, p50: d[d.length >> 1], p95: d[Math.floor(d.length * 0.95)] }); } }
           requestAnimationFrame(f); })""")
         PERF["phone_scroll_frame_ms"] = fr
-        check("c. frame time while scrolling Home: median <= 20 ms, p95 <= 50 ms (headless, software GPU)", fr["p50"] <= 20 and fr["p95"] <= 50, fr)
+        check("c. frame time while scrolling Home: median <= 20 ms, p95 <= 50 ms (headless, software GPU)", fr["p50"] <= BK.limit_ms(20, "scroll p50") and fr["p95"] <= BK.limit_ms(50, "scroll p95"), fr)
         # layout shift of a fresh open of Home (the first 4 s: home.json, data.json, live.json and the late cards landing);
         # the scroll above scrolls the page, which is no shift. The scrolled position is reset first.
         pg.evaluate("() => scrollTo(0, 0)")
@@ -412,6 +571,32 @@ def part_d(F, shots):
                 break
             except Exception:
                 pass
+        pg.wait_for_selector("#nxStatusHome #mnCard", timeout=30000)
+        MND = pg.evaluate("""() => { const c = document.querySelector('#nxStatusHome > #mnCard'); if (!c) return null; const rows = [...c.querySelectorAll('.mn-row')];
+          return { n: rows.length, first: document.querySelector('#nxStatusHome').firstElementChild.id, keys: rows.map(r => r.dataset.mn), goto: rows.map(r => r.getAttribute('data-goto')), taps: rows.map(r => Math.round(r.getBoundingClientRect().height)),
+            txt: c.innerText.replace(/\\s+/g, ' '), x: document.documentElement.scrollWidth - innerWidth, bar: !!document.querySelector('#nxStatusHome .su-bar') }; }""")
+        check(f"d. PC Home: the Money now card is the first thing in the status box ({MND and MND['n']} rows), the status bar right below it, 'Drawdown left $.. of $.. max loss' per account, rows link to the bots",
+              MND and MND["first"] == "mnCard" and MND["bar"] and MND["keys"][:2] == ["lit", "atlas"] and MND["goto"][:2] == ["zlarior", "atlas"] and all(h >= 44 for h in MND["taps"])
+              and MND["txt"].count("Drawdown left") == MND["n"] and "max loss" in MND["txt"] and "10 days" not in MND["txt"] and "next" in MND["txt"].lower() and MND["x"] <= 1, MND)
+        # --- the one-line sticky status strip on EVERY page (dynamic: the first pages of the sidebar, then a long one scrolled)
+        pages = pg.eval_on_selector_all("#nav a[data-page]", "els => els.map(e => e.dataset.page)")
+        pages = [x for x in dict.fromkeys(["cc"] + pages) if pg.evaluate("(id) => !!document.getElementById('page-' + id)", x)][:8]
+        bad = []
+        for pid in pages:
+            TB.pc_go(pg, pid)
+            pg.wait_for_timeout(700)
+            pg.evaluate("() => window.scrollTo(0, 400)")
+            pg.wait_for_timeout(200)
+            L = pg.evaluate("""() => { const w = document.getElementById('nxLine'); if (!w) return null; const a = w.querySelector('a.mn-line'); const r = (a || w).getBoundingClientRect();
+              return { n: document.querySelectorAll('#nxLine').length, after: w.previousElementSibling && w.previousElementSibling.className, pos: getComputedStyle(w).position, h: Math.round(r.height), top: Math.round(w.getBoundingClientRect().top),
+                scroll: document.documentElement.scrollHeight > innerHeight + 500, txt: w.innerText.replace(/\\s+/g, ' '), goto: a && a.getAttribute('data-goto'), x: document.documentElement.scrollWidth - innerWidth }; }""")
+            if not (L and L["n"] == 1 and "topbar" in (L["after"] or "") and L["pos"] == "sticky" and L["h"] >= 44 and L["goto"] == "cc" and "bot" in L["txt"].lower() and "undefined" not in L["txt"] and L["x"] <= 1
+                    and (not L["scroll"] or 0 <= L["top"] <= 4)):
+                bad.append((pid, L))
+        check(f"d. PC status strip: on all {len(pages)} pages checked ({', '.join(pages[:4])} ...) exactly one sticky line under the top bar with 'Bot ...' + Armed, 44 px or taller, stays at the top when scrolled, links Home", pages and not bad, bad[:2])
+        TB.pc_go(pg, "cc")
+        pg.wait_for_selector("#page-cc.active > #nxStatusHome .su-bar", timeout=30000)
+        pg.evaluate("() => window.scrollTo(0, 0)")
         check("d. PC Home: the status bar on top", ok and pg.evaluate("() => document.querySelector('#page-cc').firstElementChild.id") == "nxStatusHome")
         subs = pg.eval_on_selector_all("#nav .nx-main-sub", "els => els.map(e => e.textContent.trim())")
         side = pg.eval_on_selector_all("#nav > a.nx-gl[data-g='Main']", "els => els.map(e => e.dataset.page)")

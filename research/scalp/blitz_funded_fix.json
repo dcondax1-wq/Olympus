@@ -1,0 +1,593 @@
+{
+ "what": "BLITZ funded 25K, funded stage only, 1,000 paths x 126 sessions",
+ "spans": {},
+ "rows": {
+  "today_f0.10_cap150_tp400": {
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "mode": null,
+   "H1": {
+    "per_month": 322,
+    "p10_per_month": 0,
+    "any_pay_pct": 84.4,
+    "first_med": 30.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 24.0,
+    "maxed_pct": 25.3,
+    "trades_per_week": 8.52
+   },
+   "H2": {
+    "per_month": 82,
+    "p10_per_month": 0,
+    "any_pay_pct": 48.6,
+    "first_med": 53.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 58.9,
+    "maxed_pct": 2.0,
+    "trades_per_week": 6.53
+   }
+  },
+  "size_f0.05_cap100": {
+   "fz": {
+    "mode": "frac",
+    "f": 0.05,
+    "cap": 100.0,
+    "day_tp": 400.0
+   },
+   "mode": null,
+   "H1": {
+    "per_month": 326,
+    "p10_per_month": 0,
+    "any_pay_pct": 84.7,
+    "first_med": 30.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 22.9,
+    "maxed_pct": 26.5,
+    "trades_per_week": 8.53
+   },
+   "H2": {
+    "per_month": 68,
+    "p10_per_month": 0,
+    "any_pay_pct": 46.7,
+    "first_med": 55.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 58.5,
+    "maxed_pct": 1.3,
+    "trades_per_week": 6.53
+   }
+  },
+  "size_f0.15_cap150": {
+   "fz": {
+    "mode": "frac",
+    "f": 0.15,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "mode": null,
+   "H1": {
+    "per_month": 309,
+    "p10_per_month": 0,
+    "any_pay_pct": 81.5,
+    "first_med": 30.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 28.7,
+    "maxed_pct": 24.3,
+    "trades_per_week": 8.56
+   },
+   "H2": {
+    "per_month": 100,
+    "p10_per_month": 0,
+    "any_pay_pct": 53.3,
+    "first_med": 49.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 55.2,
+    "maxed_pct": 3.1,
+    "trades_per_week": 6.52
+   }
+  },
+  "size_f0.1_cap200": {
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 200.0,
+    "day_tp": 400.0
+   },
+   "mode": null,
+   "H1": {
+    "per_month": 320,
+    "p10_per_month": 0,
+    "any_pay_pct": 84.4,
+    "first_med": 30.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 24.2,
+    "maxed_pct": 24.4,
+    "trades_per_week": 8.52
+   },
+   "H2": {
+    "per_month": 83,
+    "p10_per_month": 0,
+    "any_pay_pct": 48.6,
+    "first_med": 53.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 58.3,
+    "maxed_pct": 2.2,
+    "trades_per_week": 6.53
+   }
+  },
+  "size_f0.15_cap250": {
+   "fz": {
+    "mode": "frac",
+    "f": 0.15,
+    "cap": 250.0,
+    "day_tp": 400.0
+   },
+   "mode": null,
+   "H1": {
+    "per_month": 297,
+    "p10_per_month": 0,
+    "any_pay_pct": 81.3,
+    "first_med": 30.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 29.6,
+    "maxed_pct": 21.7,
+    "trades_per_week": 8.55
+   },
+   "H2": {
+    "per_month": 128,
+    "p10_per_month": 0,
+    "any_pay_pct": 55.6,
+    "first_med": 45.5,
+    "lost_pct": 0.0,
+    "stuck_pct": 52.9,
+    "maxed_pct": 5.4,
+    "trades_per_week": 6.52
+   }
+  },
+  "size_f0.2_cap300": {
+   "fz": {
+    "mode": "frac",
+    "f": 0.2,
+    "cap": 300.0,
+    "day_tp": 400.0
+   },
+   "mode": null,
+   "H1": {
+    "per_month": 273,
+    "p10_per_month": 0,
+    "any_pay_pct": 77.3,
+    "first_med": 28.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 34.2,
+    "maxed_pct": 19.0,
+    "trades_per_week": 8.56
+   },
+   "H2": {
+    "per_month": 172,
+    "p10_per_month": 0,
+    "any_pay_pct": 62.9,
+    "first_med": 35.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 47.9,
+    "maxed_pct": 8.6,
+    "trades_per_week": 6.57
+   }
+  },
+  "day_tp_200": {
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 200.0
+   },
+   "mode": null,
+   "H1": {
+    "per_month": 223,
+    "p10_per_month": 0,
+    "any_pay_pct": 77.6,
+    "first_med": 40.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 30.8,
+    "maxed_pct": 14.6,
+    "trades_per_week": 8.52
+   },
+   "H2": {
+    "per_month": 85,
+    "p10_per_month": 0,
+    "any_pay_pct": 51.7,
+    "first_med": 58.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 51.7,
+    "maxed_pct": 4.7,
+    "trades_per_week": 6.47
+   }
+  },
+  "day_tp_300": {
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 300.0
+   },
+   "mode": null,
+   "H1": {
+    "per_month": 306,
+    "p10_per_month": 0,
+    "any_pay_pct": 83.8,
+    "first_med": 32.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 23.7,
+    "maxed_pct": 23.0,
+    "trades_per_week": 8.52
+   },
+   "H2": {
+    "per_month": 108,
+    "p10_per_month": 0,
+    "any_pay_pct": 53.9,
+    "first_med": 49.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 55.2,
+    "maxed_pct": 5.0,
+    "trades_per_week": 6.51
+   }
+  },
+  "day_tp_600": {
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 600.0
+   },
+   "mode": null,
+   "H1": {
+    "per_month": 350,
+    "p10_per_month": 0,
+    "any_pay_pct": 86.9,
+    "first_med": 29.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 17.6,
+    "maxed_pct": 22.7,
+    "trades_per_week": 8.51
+   },
+   "H2": {
+    "per_month": 90,
+    "p10_per_month": 0,
+    "any_pay_pct": 50.6,
+    "first_med": 50.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 56.9,
+    "maxed_pct": 2.1,
+    "trades_per_week": 6.51
+   }
+  },
+  "day_tp_none": {
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": null
+   },
+   "mode": null,
+   "H1": {
+    "per_month": 303,
+    "p10_per_month": 0,
+    "any_pay_pct": 85.2,
+    "first_med": 34.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 19.4,
+    "maxed_pct": 14.5,
+    "trades_per_week": 8.51
+   },
+   "H2": {
+    "per_month": 91,
+    "p10_per_month": 0,
+    "any_pay_pct": 50.8,
+    "first_med": 50.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 57.0,
+    "maxed_pct": 2.1,
+    "trades_per_week": 6.51
+   }
+  },
+  "later_break_size_x0.5_x1.75": {
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "mode": "mult",
+   "H1": {
+    "per_month": 316,
+    "p10_per_month": 0,
+    "any_pay_pct": 81.8,
+    "first_med": 29.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 28.7,
+    "maxed_pct": 26.6,
+    "trades_per_week": 8.56
+   },
+   "H2": {
+    "per_month": 153,
+    "p10_per_month": 0,
+    "any_pay_pct": 58.9,
+    "first_med": 41.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 50.8,
+    "maxed_pct": 7.2,
+    "trades_per_week": 6.53
+   }
+  },
+  "later_break_only": {
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "mode": "only_later",
+   "H1": {
+    "per_month": 370,
+    "p10_per_month": 143,
+    "any_pay_pct": 98.3,
+    "first_med": 38.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 1.0,
+    "maxed_pct": 25.6,
+    "trades_per_week": 6.14
+   },
+   "H2": {
+    "per_month": 22,
+    "p10_per_month": 0,
+    "any_pay_pct": 22.0,
+    "first_med": 74.5,
+    "lost_pct": 0.0,
+    "stuck_pct": 53.3,
+    "maxed_pct": 0.1,
+    "trades_per_week": 4.64
+   }
+  },
+  "later_break_size_cap200": {
+   "fz": {
+    "mode": "frac",
+    "f": 0.12,
+    "cap": 200.0,
+    "day_tp": 400.0
+   },
+   "mode": "mult",
+   "H1": {
+    "per_month": 296,
+    "p10_per_month": 0,
+    "any_pay_pct": 78.4,
+    "first_med": 27.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 35.1,
+    "maxed_pct": 26.9,
+    "trades_per_week": 8.59
+   },
+   "H2": {
+    "per_month": 185,
+    "p10_per_month": 0,
+    "any_pay_pct": 64.3,
+    "first_med": 36.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 46.6,
+    "maxed_pct": 9.6,
+    "trades_per_week": 6.56
+   }
+  },
+  "keep_trading_stuck_x0.75": {
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "_stuck": 0.75
+   },
+   "mode": null,
+   "H1": {
+    "per_month": 331,
+    "p10_per_month": 0,
+    "any_pay_pct": 87.5,
+    "first_med": 31.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 19.8,
+    "maxed_pct": 25.7,
+    "trades_per_week": 8.51
+   },
+   "H2": {
+    "per_month": 89,
+    "p10_per_month": 0,
+    "any_pay_pct": 54.5,
+    "first_med": 58.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 44.0,
+    "maxed_pct": 2.1,
+    "trades_per_week": 6.54
+   }
+  },
+  "keep_trading_stuck_x0.5": {
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "_stuck": 0.5
+   },
+   "mode": null,
+   "H1": {
+    "per_month": 334,
+    "p10_per_month": 0,
+    "any_pay_pct": 88.4,
+    "first_med": 31.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 16.2,
+    "maxed_pct": 25.7,
+    "trades_per_week": 8.53
+   },
+   "H2": {
+    "per_month": 96,
+    "p10_per_month": 0,
+    "any_pay_pct": 60.5,
+    "first_med": 61.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 13.5,
+    "maxed_pct": 2.1,
+    "trades_per_week": 6.53
+   }
+  },
+  "later_break_cap200_stuck_x0.75": {
+   "fz": {
+    "mode": "frac",
+    "f": 0.12,
+    "cap": 200.0,
+    "day_tp": 400.0,
+    "_stuck": 0.75
+   },
+   "mode": "mult",
+   "H1": {
+    "per_month": 305,
+    "p10_per_month": 0,
+    "any_pay_pct": 80.9,
+    "first_med": 28.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 30.6,
+    "maxed_pct": 27.6,
+    "trades_per_week": 8.59
+   },
+   "H2": {
+    "per_month": 199,
+    "p10_per_month": 0,
+    "any_pay_pct": 70.3,
+    "first_med": 39.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 33.7,
+    "maxed_pct": 9.9,
+    "trades_per_week": 6.56
+   }
+  },
+  "later_break_cap200_stuck_x0.5": {
+   "fz": {
+    "mode": "frac",
+    "f": 0.12,
+    "cap": 200.0,
+    "day_tp": 400.0,
+    "_stuck": 0.5
+   },
+   "mode": "mult",
+   "H1": {
+    "per_month": 311,
+    "p10_per_month": 0,
+    "any_pay_pct": 83.0,
+    "first_med": 28.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 24.9,
+    "maxed_pct": 27.9,
+    "trades_per_week": 8.59
+   },
+   "H2": {
+    "per_month": 212,
+    "p10_per_month": 0,
+    "any_pay_pct": 77.2,
+    "first_med": 43.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 10.7,
+    "maxed_pct": 9.9,
+    "trades_per_week": 6.57
+   }
+  },
+  "later_break_size_stuck_x0.5": {
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0,
+    "_stuck": 0.5
+   },
+   "mode": "mult",
+   "H1": {
+    "per_month": 335,
+    "p10_per_month": 0,
+    "any_pay_pct": 87.4,
+    "first_med": 30.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 18.4,
+    "maxed_pct": 27.2,
+    "trades_per_week": 8.56
+   },
+   "H2": {
+    "per_month": 176,
+    "p10_per_month": 0,
+    "any_pay_pct": 70.8,
+    "first_med": 48.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 12.2,
+    "maxed_pct": 7.4,
+    "trades_per_week": 6.55
+   }
+  },
+  "stuck_x0.5_day_tp_600": {
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 600.0,
+    "_stuck": 0.5
+   },
+   "mode": null,
+   "H1": {
+    "per_month": 359,
+    "p10_per_month": 0,
+    "any_pay_pct": 89.9,
+    "first_med": 30.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 12.5,
+    "maxed_pct": 22.9,
+    "trades_per_week": 8.52
+   },
+   "H2": {
+    "per_month": 106,
+    "p10_per_month": 0,
+    "any_pay_pct": 63.8,
+    "first_med": 60.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 12.8,
+    "maxed_pct": 2.3,
+    "trades_per_week": 6.54
+   }
+  },
+  "later_break_size_stuck_x0.5_day_tp_600": {
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 600.0,
+    "_stuck": 0.5
+   },
+   "mode": "mult",
+   "H1": {
+    "per_month": 357,
+    "p10_per_month": 0,
+    "any_pay_pct": 87.6,
+    "first_med": 29.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 15.4,
+    "maxed_pct": 24.9,
+    "trades_per_week": 8.57
+   },
+   "H2": {
+    "per_month": 218,
+    "p10_per_month": 0,
+    "any_pay_pct": 74.5,
+    "first_med": 42.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 11.4,
+    "maxed_pct": 8.6,
+    "trades_per_week": 6.57
+   }
+  }
+ }
+}

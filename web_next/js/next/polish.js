@@ -25,6 +25,19 @@ function loadStatusCore() {
   });
   return SP;
 }
+// "Money now" (moneynowcore.js = tools/web_public/moneynowcore.js, byte-identical): drawdown left, today's $, what the bot waits for, its status
+let MP = null;
+function loadMoneyCore() {
+  if (window.MoneyNow) return Promise.resolve();
+  if (MP) return MP;
+  MP = new Promise((ok) => {
+    const s = document.createElement('script');
+    s.src = new URL(`./moneynowcore.js?v=${V}`, import.meta.url).href;
+    s.onload = () => ok(); s.onerror = () => { MP = null; ok(); };       // a missing file only leaves the card out
+    document.head.appendChild(s);
+  });
+  return MP;
+}
 (function css() {
   if (!document.querySelector('link[href^="/css/polish.css"]')) { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = `/css/polish.css?v=${V}`; document.head.appendChild(l); }
 })();
@@ -51,9 +64,24 @@ function place() {
   else if (el.firstElementChild !== box) el.prepend(box);
   const more = `<a class="pl-btn" ${go('mission')}>Mission Control</a><a class="pl-btn" ${go('board')}>Live board</a><a class="pl-btn" ${go('start')}>Start page</a>`;
   const row = (SU.market ? SU.market(LAST) : '') + (SU.week ? SU.week(LAST) : '') + SU.sunday(LAST, { where: 'pc' });
-  const html = SU.bar(LAST, { open: SU.isOpen(), more, where: 'pc', go }) + (row ? `<div class="nx-st-row">${row}</div>` : '');
+  let mn = '';
+  try { if (window.MoneyNow) { window.MoneyNow.css(); mn = window.MoneyNow.html(LAST, { where: 'pc' }); } } catch (e) { mn = ''; }   // the top card: money now, per account
+  const html = mn + SU.bar(LAST, { open: SU.isOpen(), more, where: 'pc', go }) + (row ? `<div class="nx-st-row">${row}</div>` : '');
   if (box.__h !== html) { box.innerHTML = html; box.__h = html; SU.tick(box); box.querySelectorAll('a[data-goto]:not([href])').forEach((a) => { a.tabIndex = 0; a.setAttribute('role', 'link'); }); }
   SU.wire(box);
+}
+// the one-line sticky status strip under the top bar of EVERY page (bot running / armed + last check-in age; MoneyNow.line, the same core as the Home card)
+function strip() {
+  const main = document.querySelector('main.main'); if (!main) return;
+  let w = document.getElementById('nxLine');
+  if (!w) {
+    w = document.createElement('div'); w.id = 'nxLine'; w.className = 'nx-line'; w.setAttribute('role', 'status'); w.setAttribute('aria-label', 'Bot status');
+    const top = main.querySelector(':scope > .topbar'); if (top) top.after(w); else main.prepend(w);
+  }
+  let h = '';
+  try { if (LAST && window.MoneyNow) { window.MoneyNow.css(); h = window.MoneyNow.line(LAST, { where: 'pc' }); } } catch (e) { h = ''; }
+  if (!h) h = `<a class="mn-line a" data-goto="cc" role="link" tabindex="0" data-mnline="1"><i class="mn-dot" aria-hidden="true"></i><b>Bot: ${LAST ? 'not published yet' : 'checking...'}</b></a>`;
+  if (w.__h !== h) { w.innerHTML = h; w.__h = h; }
 }
 // the sidebar: a light next to each bot (green = in a trade, amber = armed, red = blocked; nothing while it waits)
 function navDots() {
@@ -71,10 +99,11 @@ function navDots() {
   }
 }
 async function refresh() {
-  try { await Promise.all([loadStatusCore(), loadMissionCore()]); } catch (e) { return; }
+  try { await Promise.all([loadStatusCore(), loadMissionCore(), loadMoneyCore()]); } catch (e) { return; }
   LAST = await model();
   window.StatusUI.css();
   if (active('cc')) place();
+  try { strip(); } catch (e) { /* optional */ }
   try { navDots(); } catch (e) { /* optional */ }
 }
 // Ctrl K: each bot's five sections and the status verdict, next to the pages the palette already lists
@@ -99,7 +128,7 @@ export function initPolish() {
   try { addPaletteItems(paletteItems); } catch (e) { /* the palette keeps its own list */ }
   addEventListener('keydown', (e) => {          // Enter / Space on a status-bar link (an <a data-goto> without href)
     if (e.key !== 'Enter' && e.key !== ' ') return;
-    const a = e.target && e.target.closest && e.target.closest('#nxStatusHome a[data-goto]:not([href])');
+    const a = e.target && e.target.closest && e.target.closest('#nxStatusHome a[data-goto]:not([href]), #nxLine a[data-goto]:not([href])');
     if (a) { e.preventDefault(); a.click(); }
   });
   const el = document.getElementById('page-cc');
@@ -107,6 +136,7 @@ export function initPolish() {
     el.__stObs = new MutationObserver(() => { if (LAST && active('cc') && el.firstElementChild?.id !== 'nxStatusHome') place(); });
     el.__stObs.observe(el, { childList: true });
   }
+  try { strip(); } catch (e) { /* optional */ }          // at once, so no page is ever without the line (it fills in on the first refresh)
   refresh();
   setInterval(() => { if (!document.hidden) refresh(); }, 15000);
   addEventListener('hashchange', () => setTimeout(() => { if (active('cc')) place(); }, 300));

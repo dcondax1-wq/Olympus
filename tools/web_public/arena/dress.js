@@ -5,6 +5,7 @@
 // dress(ctx) -> { update(t, dt, still) -> true while it animates, setLite(b), cheer(ms), bossFight(), stats(), dispose() }
 // ctx = { scene, camera, rc, boss (the Group), bossLight (PointLight) }. Everything is optional: any failure leaves the plain scene.
 import * as S from '../olympus/scenery.js';
+import * as AT from '../olympus/fx-atmos.js';        // JOB 47: sparks rising off the fourteen braziers
 
 const { THREE } = S;
 const TAU = Math.PI * 2;
@@ -34,14 +35,15 @@ function moonSprite(scene) {
 
 export function dress(ctx) {
   const { scene, camera, rc } = ctx, out = { ok: false, parts: [] }, sub = [];
-  let crowd = null, banners = null, torches = [], moon = null, sand = null, lite = !!ctx.lite, fxs = [], fight = null, stopped = false, extra = 0;
+  let atm = [], crowd = null, banners = null, torches = [], moon = null, sand = null, lite = !!ctx.lite, fxs = [], fight = null, stopped = false, extra = 0;
   const guard = (name, fn) => { try { const v = fn(); out.parts.push(name); return v; } catch (e) { out['err_' + name] = String((e && e.message) || e); return null; } };
 
   // the bowl: four tiers of spectators, two rows each, on the seats (the tier radius and height come from scene.js: R = 16.2 + 2.2 k, h = 1.5)
   crowd = guard('crowd', () => {
     const rings = [];
     for (let k = 0; k < 4; k++) { const R = 16.2 + k * 2.2, y = (k + 1) * 1.5; rings.push({ r: R + 0.65, y, n: Math.round(R * 5.6) }, { r: R + 1.55, y, n: Math.round((R + 1) * 5.6) }); }
-    const c = S.crowd(scene, { rings, seed: 11 }); c.setLite(lite); return c;
+    // a phone gets 60% of the seats, spread evenly (docs/OLYMPUS_PERF.md)
+    const c = S.crowd(scene, { rings, seed: 11, density: Math.min(innerWidth, innerHeight) < 600 ? 0.6 : 1 }); c.setLite(lite); return c;
   });
   // banners hang between the arcade piers, red and gold, one per 7th pier
   banners = guard('banners', () => {
@@ -59,6 +61,13 @@ export function dress(ctx) {
     if (!lite) guard('heat', () => { if (F && F.heatShimmer) fxs.push(F.heatShimmer(scene, { position: [0, 0.4, 0], height: 2.5 })); });
   };
   if (F && F.load) F.load('3d').then(startFx, () => {}); else if (F) startFx();
+  // sparks off the braziers (fx-atmos, one draw call), 0.9 s after the first paint; ?noatmos=1 is the perf probe; a LITE phone skips them
+  setTimeout(() => guard('embers', () => {
+    if (stopped || lite || /[?&]noatmos=1/.test(location.search)) return;
+    const pts = []; for (let i = 0; i < 14; i++) { const a = (i / 14) * TAU; pts.push([Math.cos(a) * 15.7, 2.6, Math.sin(a) * 15.7]); }
+    const em = AT.embers({ count: 170, points: pts, spread: [0.35, 0, 0.35], rise: 3.2, colors: ['#fff0c0', '#ff9a3a', '#c2300f'], size: 6, wind: 0.3, seed: 14 });
+    scene.add(em.object); atm.push(em); AT.setQuality(atm, 'high');
+  }), 900);
   moon = guard('moon', () => moonSprite(scene));
   sand = guard('sand', () => sandMaterial());
 
@@ -77,6 +86,7 @@ export function dress(ctx) {
     update(t, dt, still) {
       let busy = false;
       if (banners) banners.update(t, still);
+      if (atm.length) { AT.update(atm, t, rc.renderer.getPixelRatio()); if (!still) busy = true; }
       if (crowd) busy = crowd.update(t, dt, still) || busy;
       if (moon) moon.material.opacity = 0.92 + (still ? 0 : Math.sin(t * 0.3) * 0.05);
       if (fight) {
@@ -96,14 +106,16 @@ export function dress(ctx) {
     },
     setLite(b) {
       lite = !!b;
+      atm.forEach((a) => { a.object.visible = !lite; });
       if (crowd) crowd.setLite(lite);
     },
     cheer(ms) { if (crowd) crowd.pulse(ms || 3200); },
     bossFight,
-    stats: () => ({ ok: out.ok, parts: out.parts.slice(), spectators: crowd ? crowd.count : 0, banners: banners ? 8 : 0, torches: torches.length, fx: fxs.length, fight: !!fight, errors: Object.keys(out).filter((k) => k.startsWith('err_')) }),
+    stats: () => ({ ok: out.ok, parts: out.parts.slice(), spectators: crowd ? crowd.count : 0, banners: banners ? 8 : 0, torches: torches.length, fx: fxs.length, embers: atm.length, fight: !!fight, errors: Object.keys(out).filter((k) => k.startsWith('err_')) }),
     dispose() {
       stopped = true;
       sub.forEach((f) => { try { f.stop(); } catch (e) { /* */ } });
+      atm.forEach((a) => { try { scene.remove(a.object); a.object.geometry.dispose(); a.material.dispose(); } catch (e) { /* */ } });
       fxs.forEach((f) => { try { f.stop(); } catch (e) { /* */ } });
       torches.forEach((t) => { try { t.stop(); } catch (e) { /* */ } });
       if (crowd) crowd.dispose();

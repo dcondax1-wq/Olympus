@@ -17,7 +17,8 @@
 <script src="../olympus/themes.js?v=o2"></script>
 <script src="../olympus/olympus.js?v=o2" data-app="prometheus"></script>
 <script src="../olympus/intro-app.js?v=i1" defer></script>
-<link rel="stylesheet" href="forge.css?v=f4">
+<link rel="stylesheet" href="forge.css?v=f5">
+<script src="../olympus/fx-core.js?v=f1"></script>
 </head>
 <body>
 <canvas id="arena" aria-label="The forge arena: each flame is one strategy variant" role="img"></canvas>
@@ -59,6 +60,7 @@
     <button type="button" class="truth" id="truthBtn" aria-controls="truth" aria-expanded="false">Verdict</button>
     <button type="button" class="truth" id="linBtn" aria-controls="truth" aria-expanded="false">Lineage</button>
     <button type="button" class="truth" id="hallBtn" aria-controls="truth" aria-expanded="false">Hall</button>
+    <button type="button" class="truth" id="plusBtn" aria-controls="plus" aria-expanded="false">Tools</button>
   </nav>
 </footer>
 <section class="card" id="card" hidden role="dialog" aria-modal="false" aria-labelledby="card-h">
@@ -74,6 +76,18 @@
   <div id="lin-b" hidden></div>
   <div id="hall-b" hidden></div>
 </section>
-<script type="module" src="forge.js?v=f4"></script>
+<section class="card plus" id="plus" hidden role="dialog" aria-modal="false" aria-labelledby="plus-h">
+  <button type="button" class="x" id="plusX" data-pclose aria-label="Close">✕</button>
+  <h2 id="plus-h">Tools · the forge's own numbers</h2>
+  <nav class="ptabs" role="tablist" aria-label="Tools">
+    <button type="button" role="tab" data-ptab="meter" aria-selected="true">METER</button><button type="button" role="tab" data-ptab="breed" aria-selected="false">BREEDING</button>
+    <button type="button" role="tab" data-ptab="verdicts" aria-selected="false">VERDICTS</button><button type="button" role="tab" data-ptab="survivors" aria-selected="false">SURVIVORS</button>
+    <button type="button" role="tab" data-ptab="compare" aria-selected="false">COMPARE</button><button type="button" role="tab" data-ptab="search" aria-selected="false">SEARCH</button>
+  </nav>
+  <div id="plus-b" class="plus-b"></div>
+</section>
+<div class="fshare" id="fshare" hidden role="dialog" aria-label="Share card"><img alt=""><p>Press and hold the picture to save or share it.</p><button type="button" id="fshareX">CLOSE</button></div>
+<div class="ftoast" id="ftoast" role="status" hidden></div>
+<script type="module" src="forge.js?v=f5"></script>
 </body>
 </html>

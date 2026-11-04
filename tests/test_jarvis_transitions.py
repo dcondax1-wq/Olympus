@@ -57,7 +57,7 @@ def app_ids():
 def test_static():
     js, portal, html = read(os.path.join(JARVIS, "transitions.js")), read(os.path.join(JARVIS, "portal.js")), read(os.path.join(JARVIS, "index.html"))
     ids = app_ids()
-    check("a. jarvis/apps.js has the 24 built-in apps", len(ids) == 24, ids)
+    check("a. jarvis/apps.js has at least the 24 built-in apps", len(ids) >= 24, ids)
     reg = re.search(r"export const REGISTRY = \{(.*?)\n\};", js, re.S).group(1)
     rows = dict((m.group(1), (m.group(2), int(m.group(3)))) for m in re.finditer(r"^\s*(\w+):\s*\{ kind: '(\w+)',\s*ms: (\d+)", reg, re.M))
     kinds = set(re.findall(r"^  (\w+): \{\n    init", js, re.M))
@@ -148,7 +148,7 @@ def test_apps(br, origin):
                 break
         if not ok:
             slow.append((id, mode, up, dur, s, left, round(wall)))
-    check("b. all 24 apps: play by themselves in their own time (600-1100 ms), draw frames, end, leave no overlay / canvas, backing store back to 1 x 1", not slow, slow[:2])
+    check("b. all apps: play by themselves in their own time (600-1100 ms), draw frames, end, leave no overlay / canvas, backing store back to 1 x 1", not slow, slow[:2])
     bad, cost = [], {}
     for id in ids:
         mx, ends, worst = 0, 0, 0
@@ -217,14 +217,20 @@ def test_skip_tiers(br, origin):
         p.evaluate(f"() => {{ document.documentElement.dataset.fx = '{fx}'; }}")
         mode = p.evaluate(PLAY, ["oracle", None])
         s = p.evaluate("() => ({ fade: !!document.querySelector('.jtrans-fade'), flat: !!document.querySelector('.jtrans-fade.flat'), canvas: !!document.querySelector('canvas.jtrans, .jtrans canvas'), tier: window.__jarvisTransitions.tier, dur: window.__jarvisTransitions.dur })")
-        p.wait_for_timeout(500)
+        try:
+            p.wait_for_function("() => !document.querySelector('.jtrans-fade, .jportal-fade, .jtrans')", polling=100, timeout=4000)
+        except Exception:
+            pass
         gone = p.evaluate("() => !document.querySelector('.jtrans-fade, .jportal-fade, .jtrans')")
         check(f"d. LITE (3D effects {fx}): a 250 ms colour fade, no canvas, gone after", mode == "fade" and s["fade"] and not s["flat"] and not s["canvas"] and s["tier"] == "lite" and s["dur"] == 250 and gone, (mode, s, gone))
         ctx.close()
     ctx, p, errs = new_page(br, origin, reduced=True)
     mode = p.evaluate(PLAY, ["pantheon", None])
     s = p.evaluate("() => ({ flat: !!document.querySelector('.jtrans-fade.flat'), canvas: !!document.querySelector('.jtrans canvas'), tier: window.__jarvisTransitions.tier, dur: window.__jarvisTransitions.dur, name: !!document.querySelector('.jtrans-name') })")
-    p.wait_for_timeout(500)
+    try:
+        p.wait_for_function("() => !document.querySelector('.jtrans-fade, .jportal-fade, .jtrans')", polling=100, timeout=4000)          # the 200 ms fade, on a loaded machine
+    except Exception:
+        pass
     gone = p.evaluate("() => !document.querySelector('.jtrans-fade, .jportal-fade, .jtrans')")
     check("d. reduced motion: a 200 ms flat colour fade (nothing moves: no canvas, no name animation), gone after", mode == "fade" and s["flat"] and not s["canvas"] and not s["name"] and s["tier"] == "static" and s["dur"] == 200 and gone, (mode, s, gone))
     pm = p.evaluate("() => window.jarvisPortal.jump({ id: 'oracle', name: 'Oracle', color: '#7fe9ff' })")
@@ -298,6 +304,23 @@ def test_flow(br, origin):
     ctx.close()
 
 
+def test_covered(br, origin):
+    """g. a sheet over a framed app tells the app (postMessage { olympus: 'covered' }), and again when it closes; nothing on the home screen"""
+    ctx, p, errs = new_page(br, origin)
+    p.evaluate("() => document.querySelector('[data-app=\"oracle\"]').click()")
+    p.wait_for_function("() => !!document.querySelector('iframe[src*=\"oracle\"]')", polling=100, timeout=20000)
+    p.evaluate("""() => { const w = document.querySelector('iframe[src*="oracle"]').contentWindow; window.__got = [];
+      w.addEventListener('message', (e) => window.__got.push([e.data && e.data.olympus, e.data && e.data.on])); }""")
+    p.evaluate("() => { document.getElementById('settings').hidden = false; }")
+    p.wait_for_timeout(300)
+    p.evaluate("() => { document.getElementById('settings').hidden = true; }")
+    p.wait_for_timeout(300)
+    got = p.evaluate("() => window.__got")
+    check("g. a sheet opened over a framed app posts { olympus: 'covered', on: true }, and on: false when it closes", got == [["covered", True], ["covered", False]], got)
+    check("g. no page error", not errs, errs[:3])
+    ctx.close()
+
+
 PW = None
 
 
@@ -317,6 +340,7 @@ def main():
         test_skip_tiers(br, origin)
         test_sound(br, origin)
         test_flow(br, origin)
+        test_covered(br, origin)
         br.close()
     srv.shutdown()
 

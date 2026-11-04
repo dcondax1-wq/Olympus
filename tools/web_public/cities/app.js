@@ -945,7 +945,13 @@ function fallbackList(why) {
 
 async function boot() {
   let cfg, fx;
-  try { [cfg, fx] = await Promise.all([getJson('./cities.json'), getJson('./fixture.json')]); } catch (e) { $('#loading').textContent = 'Could not load the city list.'; throw e; }
+  // a build that takes long says so in plain words (the cities use their sample data whenever live data cannot be reached)
+  const slow = setTimeout(() => { const l = $('#loading'); if (l) l.textContent = 'STILL BUILDING THE WORLD… WITHOUT A CONNECTION THE SAMPLE CITIES SHOW.'; }, 8000);
+  try { [cfg, fx] = await Promise.all([getJson('./cities.json'), getJson('./fixture.json')]); } catch (e) {
+    clearTimeout(slow); const l = $('#loading');
+    if (l) { l.style.pointerEvents = 'auto'; l.replaceChildren(el('div', null, 'Could not load the city list. Check your connection, then try again.')); const b = el('button', 'btn', 'Try again'); b.type = 'button'; b.style.cssText = 'min-height:44px;padding:0 18px;margin-top:14px;border-radius:12px'; b.onclick = () => location.reload(); l.firstChild.append(document.createElement('br'), b); }
+    throw e; }
+  clearTimeout(slow);
   for (const s of cfg.cities) {
     const errs = validateSpec(s, DATASETS);
     if (errs.length) { console.warn('city skipped', s.id, errs); continue; }

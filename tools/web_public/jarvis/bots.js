@@ -21,6 +21,12 @@
 // the PC checks in within 15 min (30 min = red while the market is open), the room to the floor under 50% amber and under 25%
 // red, the MFFU 7-day inactivity clock amber from day 4 and red from day 6.
 //
+// Owner rituals (2026-11-04, suggestions only, from the same published JSON, no keys): a pre-market line at 9:15 ET (the nearest LIT levels,
+// the VIX-band targets, the drawdown room left, the one thing to watch), an end-of-session line at 15:55 ET ("you're up / down $X, the rule says
+// stop / continue") and a "don't revenge trade" nudge the moment a second loss of the day closes. Each is at most two spoken sentences.
+//   premarketCard(snap, now) / endCard(snap, now)      cards like plan / recap ({ id, kind: 'pre' | 'end', lines, say }); null when the feed has no numbers for them
+//   the nudge is an event (kind 'revenge') from diff(); settings.rituals (default on) switches all three off
+//
 // Speaking (createBots.flush): never over the mic or another reply (busy()), at least 30 s between two alerts, at most 8 an
 // hour (an exit, a fill or a red light always gets through), one event once ever (seen keys kept on the phone), one repeating
 // warning once per cooldown, quiet hours (optional), stale news dropped after 5 minutes, and one voice line for up to 3 events.
@@ -36,6 +42,7 @@ export const INACTIVITY_DAYS = 7;
 export const PC_OK_S = 15 * 60, PC_BAD_S = 30 * 60;  // Argus: the PC's heartbeat
 export const MIN_GAP_S = 30, PER_HOUR = 8, TTL_S = 300, BATCH = 3;
 export const PLAN_MIN = 105, RECAP_MIN = 16 * 60 + 5;                // 01:45 and 16:05 ET
+export const PRE_MIN = 9 * 60 + 15, PRE_UNTIL = 10 * 60, END_MIN = 15 * 60 + 55;     // the rituals: pre-market 9:15-10:00 ET, end of session 15:55-16:05 ET (then the recap)
 const PLAN_SPEAK_UNTIL = 10 * 60, RECAP_SPEAK_UNTIL = 21 * 60, PLAN_BUILD_UNTIL = 12 * 60;      // spoken only while it is still the plan's / the recap's time
 
 const isObj = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
@@ -222,6 +229,11 @@ export function snapshot(src, nowMs) {
     out.trades.push({ id, bot: key, day: str(t.day, 10), entry_t: num(t.entry_t), exit_t: num(t.exit_t), side: str(t.side, 10).toUpperCase(), qty: num(t.qty), entry: num(t.entry),
       usd: num(t.usd), r: num(t.r), exit: str(t.exit, 20), open: !!t.open, strategy: str(t.strategy || t.src_key, 20) });
   }
+  const lvAll = arr(full.levels).length ? arr(full.levels) : arr(liveB.levels).length ? arr(liveB.levels) : arr(isObj(board.map) ? board.map.levels : null);
+  out.levels = lvAll.filter((l) => isObj(l) && num(l.price) != null).map((l) => ({ label: str(l.label, 24), price: num(l.price), side: str(l.side, 2).toUpperCase(), strength: num(l.strength) || 1, kind: str(l.kind, 12) }));
+  const lit0 = isObj(full.lit) ? full.lit : isObj(liveB.lit) ? liveB.lit : null;
+  out.litday = lit0 ? { today: str(lit0.today, 10), open18: num(lit0.open18), vix_move: num(lit0.vix_move) } : null;
+  out.price = isObj(health.lit) ? num(health.lit.price) : null;
   const mind = isObj(pc.mind) ? pc.mind : isObj(s.mind) ? s.mind : null;
   const plans = mind && isObj(mind.plans) ? mind.plans : {};
   out.plan = str((isObj(plans.lit) ? plans.lit.headline : '') || (Object.values(plans).find((p) => isObj(p) && str(p.headline, 200)) || {}).headline, 200);
@@ -298,6 +310,16 @@ export function diff(prev, cur, now) {
     if ((ll === 'bad' || ll === 'warn') && (!P || RANK[ll] > RANK[lo] || lo === 'ok' || lo === 'idle'))
       out.push(EV('botloop', 'pc', ll, ll === 'bad' ? 2.1 : 3.3, `loop:${ll}:${Math.floor(cur.now / 3600e3)}`, `The bot is not polling the market (last poll ${cur.loop.value || 'a while ago'}): the PC is on, but the bot is not watching. Open the bot window on the PC.`,
         'The bot has stopped polling the market. The PC is on, but the bot is not watching.', { cool: 1800 }));
+  }
+  // --- two losses today: don't revenge trade (a suggestion; nothing is ordered, armed or changed)
+  if (!offline) {
+    const lossesOf = (S) => (S ? S.trades.filter((t) => !t.open && t.exit_t && t.usd != null && t.usd < -0.5 && etOf(t.exit_t * 1000).ymd === cur.day) : []);
+    const now2 = lossesOf(cur), before = lossesOf(P);
+    if (now2.length >= 2 && before.length < 2 && (P || nowS - Math.max(...now2.map((t) => t.exit_t)) < 3 * 3600)) {
+      const sum = now2.reduce((s, t) => s + t.usd, 0);
+      out.push(EV('revenge', 'bots', 'warn', 2.9, `revenge:${cur.day}`, `That is two losses today (${usd(sum)}). Do not revenge trade: step away, the bots already count the risk. Suggestion only.`,
+        'That is two losses today. Do not revenge trade: step away and let the bots do their job.', { cool: 3600 }));
+    }
   }
   for (const k of ['lit', 'atlas']) {
     const b = cur.bots[k], a = P ? P.bots[k] : null;
@@ -429,6 +451,59 @@ export function recapCard(snap, now) {
   return { id: 'recap:' + e.ymd, kind: 'recap', day: e.ymd, title: 'Recap', tag: '16:05 ET', lines: L, say: say.join(' '), t: Math.floor(now / 1000) };
 }
 
+// ------------------------------------------------------------------------------------------------ the rituals (9:15 ET pre-market, 15:55 ET end of session)
+/** the one thing to watch at the open: the first thing in this order that is true */
+function watchOf(snap, lit) {
+  if (snap.pc && snap.pc.level !== 'ok' && snap.pc.level !== 'idle') return { text: `the PC, ${snap.pc.text.replace(/\.$/, '').toLowerCase()}`, say: 'that the PC checks in' };
+  const bl = lit && lit.blocks[0];
+  if (bl) return { text: `the block on Zlarior: ${bl.text.replace(/\.$/, '')}`, say: `the block on Zlarior, ${bl.text.replace(/\.$/, '')}` };
+  if (lit && lit.quiet_days != null && lit.quiet_days >= 4) return { text: `the inactivity clock, day ${lit.quiet_days} of ${INACTIVITY_DAYS}`, say: `the inactivity clock, day ${lit.quiet_days} of ${INACTIVITY_DAYS}` };
+  if (lit && lit.room_frac != null && lit.room_frac < 0.5) return { text: 'your drawdown room, it is under half', say: 'your drawdown room, it is under half' };
+  const px = snap.price != null ? snap.price : snap.litday && snap.litday.open18;
+  const near = px == null ? null : snap.levels.filter((l) => l.kind !== 'vix' && l.strength >= 2 && Math.abs(l.price - px) <= 150).sort((a, c) => Math.abs(a.price - px) - Math.abs(c.price - px))[0];
+  if (near) return { text: `a sweep of the ${near.label} at ${px0(near.price)}`, say: `a sweep of the ${near.label} at ${px0(near.price)}` };
+  return { text: "Zlarior's window and its one trade a day", say: "Zlarior's window and its one trade a day" };
+}
+export function premarketCard(snap, now) {
+  const e = etOf(now);
+  if (!snap || !snap.ok || !snap.bots.lit) return null;
+  const lit = snap.bots.lit, px = snap.price != null ? snap.price : snap.litday && snap.litday.open18, L = [], S = [];
+  const lv = snap.levels.filter((l) => l.kind !== 'vix');
+  const above = px == null ? null : lv.filter((l) => l.price > px).sort((a, c) => a.price - c.price)[0];
+  const below = px == null ? null : lv.filter((l) => l.price < px).sort((a, c) => c.price - a.price)[0];
+  const d = snap.litday, band = d && d.open18 != null && d.vix_move != null ? [d.open18 + d.vix_move, d.open18 - d.vix_move] : null;
+  const near = [above ? `${px0(above.price)} (${above.label}) above` : '', below ? `${px0(below.price)} (${below.label}) below` : ''].filter(Boolean);
+  const nearSay = [above ? `${px0(above.price)} above` : '', below ? `${px0(below.price)} below` : ''].filter(Boolean);
+  if (near.length || band) {
+    L.push(`Pre-market. Zlarior's nearest levels: ${near.join(', ') || 'none in range'}${band ? `; VIX band targets ${px0(band[0])} and ${px0(band[1])}` : ''}.`);
+    S.push(`Pre-market: Zlarior's nearest levels are ${nearSay.join(' and ') || 'not in the feed yet'}${band ? `, and the VIX band targets are ${px0(band[0])} and ${px0(band[1])}` : ''}.`);
+  } else { L.push('Pre-market. I have no LIT levels in the feed yet.'); S.push('Pre-market: I have no levels in the feed yet.'); }
+  const w = watchOf(snap, lit);
+  if (!lit.over && lit.room != null) {
+    L.push(`Room left before the floor: ${usd(lit.room)}${lit.mll ? ` of ${usd(lit.mll)}` : ''}. Watch: ${w.text}.`);
+    S.push(`You have ${sayAmt(lit.room)} of room left, and the thing to watch is ${w.say}.`);
+  } else { L.push(`Watch: ${w.text}.`); S.push(`The thing to watch is ${w.say}.`); }
+  return { id: 'pre:' + e.ymd, kind: 'pre', day: e.ymd, title: 'Pre-market', tag: '09:15 ET', lines: L, say: S.join(' '), t: Math.floor(now / 1000) };
+}
+export function endCard(snap, now) {
+  const e = etOf(now);
+  if (!snap || !snap.ok) return null;
+  const bs = ['lit', 'atlas'].map((k) => snap.bots[k]).filter((b) => b && b.today_pnl != null);
+  if (!bs.length) return null;
+  const tot = bs.reduce((s, b) => s + b.today_pnl, 0);
+  const hot = bs.some((b) => dllLevel(b.dll_used, b.dll) !== 'ok');
+  const lit = snap.bots.lit, done = !!(lit && (lit.done || (lit.max_day && lit.trades_today >= lit.max_day)));
+  let rule, why, whySay;
+  if (tot < -0.5) { rule = 'stop'; why = "no manual trades to win it back; the bots take the next setup"; whySay = 'no manual trades to win it back'; }
+  else if (hot) { rule = 'stop'; why = 'the daily loss limit is close, so no manual trades'; whySay = 'the daily loss limit is close'; }
+  else if (done) { rule = 'stop'; why = "the bot's trade for the day is done"; whySay = "the bot's trade for the day is done"; }
+  else if (lit && lit.window.open) { rule = 'continue'; why = "the bot's window is still open"; whySay = "the bot's window is still open"; }
+  else { rule = 'continue'; why = "nothing more to do today, the bots take tomorrow's window"; whySay = "nothing more to do today"; }
+  const word = Math.abs(tot) < 0.5 ? "You're flat today" : `You're ${tot > 0 ? 'up' : 'down'} ${usd(Math.abs(tot))} today`;
+  const wordSay = Math.abs(tot) < 0.5 ? "You're flat today" : `You're ${tot > 0 ? 'up' : 'down'} ${sayAmt(tot)} today`;
+  return { id: 'end:' + e.ymd, kind: 'end', day: e.ymd, title: 'End of session', tag: '15:55 ET', rule, lines: [`${word}.`, `The rule says ${rule}: ${why}.`], say: `${wordSay}. The rule says ${rule}: ${whySay}.`, t: Math.floor(now / 1000) };
+}
+
 // ------------------------------------------------------------------------------------------------ the panel and "Think for me"
 export function panel(snap, now, hide) {
   const m = (s) => (hide ? String(s).replace(/[+-]?\$\d[\d,]*/g, '$•••') : s);
@@ -510,6 +585,14 @@ export function answer(raw, snap, now, extra) {
   const isTraded = /^(?:did|have|has|was there|were there|any)\b/.test(q) && /\b(?:trade[sd]?|trades|trading|entry|entries|entered|filled|fill|take a trade|got in|get in)\b/.test(q) && (/\b(?:today|so far|yet|this morning|tonight|at all)\b/.test(q) || /\b(?:did|have|has) (?:we|you|i|the bots?|zlarior|atlas|lit|the bot)\b.*\b(?:trade[sd]?|take a trade|entered|got in)$/.test(q));
   const isYest = /\byesterday\b/.test(q) && (sel.length || /\b(?:bots?|we|trade[sd]?|trades|trading|do|did|done|happen(?:ed)?)\b/.test(q)) && !/\bkalshi\b/.test(q);
   const isLog = /^(?:what happened|what'?s (?:new|happened)|anything (?:new|happen(?:ed)?)|any news|what did the bots? (?:just )?do|bots? (?:news|events|log)|what'?s the latest|latest from the bots?)$/.test(q) || /^what did (?:zlarior|atlas|the bot|the bots) (?:just )?do$/.test(q);
+  const isPre = /^(?:what'?s |show me |give me |read me |read |tell me )?(?:the |my )?(?:pre ?-?market(?: (?:line|brief|briefing|check|levels))?|morning (?:line|check|levels))$/.test(q);
+  const isEnd = /^(?:should i (?:stop|keep trading|continue|trade more)(?: today)?|am i done(?: for (?:the )?day| today)?|(?:what'?s |read )?(?:the )?(?:rule check|end of (?:the )?(?:session|day) (?:line|check|rule)))$/.test(q);
+  if (isPre || isEnd) {
+    if (!snap || !snap.ok) return R(needData().text, needData().speak, 'bots_nodata');
+    const c = isPre ? premarketCard(snap, now) : endCard(snap, now);
+    if (!c) return R('I do not have the numbers for that in the feed yet.', 'I do not have the numbers for that yet.', 'bots_nodata');
+    return R(lines(c.title, ...c.lines, freshNote(snap)), c.say, isPre ? 'bots_pre' : 'bots_end', { cards: [{ title: c.title, lines: c.lines.slice(0, 5), open: 'zenith' }] });
+  }
   if (!(isPlan || isRecap || isArmed || isTraded || isYest || isLog)) return null;
   if (!snap || !snap.ok) return R(needData().text, needData().speak, 'bots_nodata');
   const fn = freshNote(snap);
@@ -588,10 +671,10 @@ export function createBots(opts) {
   const clock = () => (typeof o.now === 'function' ? (o.now() instanceof Date ? o.now().getTime() : +o.now()) : Date.now());
   const call = (f, ...a) => { try { return typeof f === 'function' ? f(...a) : undefined; } catch (_) { return undefined; } };
   const DEF = { on: true, quiet: { on: false, from: '23:00', to: '06:00' }, plan: true, recap: true };
-  const settings = () => { const s = lget(SET_KEY, null), q = isObj(s) && isObj(s.quiet) ? s.quiet : {}; return { on: !isObj(s) || s.on !== false, quiet: { on: q.on === true, from: /^\d\d:\d\d$/.test(q.from) ? q.from : DEF.quiet.from, to: /^\d\d:\d\d$/.test(q.to) ? q.to : DEF.quiet.to }, plan: !isObj(s) || s.plan !== false, recap: !isObj(s) || s.recap !== false }; };
+  const settings = () => { const s = lget(SET_KEY, null), q = isObj(s) && isObj(s.quiet) ? s.quiet : {}; return { on: !isObj(s) || s.on !== false, quiet: { on: q.on === true, from: /^\d\d:\d\d$/.test(q.from) ? q.from : DEF.quiet.from, to: /^\d\d:\d\d$/.test(q.to) ? q.to : DEF.quiet.to }, plan: !isObj(s) || s.plan !== false, recap: !isObj(s) || s.recap !== false, rituals: !isObj(s) || s.rituals !== false }; };
   function set(patch) {
     const cur = settings(), p = isObj(patch) ? patch : {};
-    const nx = { on: typeof p.on === 'boolean' ? p.on : cur.on, quiet: { ...cur.quiet, ...(isObj(p.quiet) ? p.quiet : {}) }, plan: typeof p.plan === 'boolean' ? p.plan : cur.plan, recap: typeof p.recap === 'boolean' ? p.recap : cur.recap };
+    const nx = { on: typeof p.on === 'boolean' ? p.on : cur.on, quiet: { ...cur.quiet, ...(isObj(p.quiet) ? p.quiet : {}) }, plan: typeof p.plan === 'boolean' ? p.plan : cur.plan, recap: typeof p.recap === 'boolean' ? p.recap : cur.recap, rituals: typeof p.rituals === 'boolean' ? p.rituals : cur.rituals };
     lset(SET_KEY, nx);
     if (!nx.on) queue.length = 0;
     return settings();
@@ -668,22 +751,26 @@ export function createBots(opts) {
     last.snap = snap;
     if (!snap.ok) return { snap, events: [] };
     const prev = lget(SNAP_KEY, null);
-    const events = offer(snap.cached ? [] : diff(prev && prev.ok ? prev : null, snap, now), now);
+    const rit = settings().rituals;
+    const events = offer(snap.cached ? [] : diff(prev && prev.ok ? prev : null, snap, now).filter((ev) => rit || ev.kind !== 'revenge'), now);
     if (!snap.cached) lset(SNAP_KEY, compact(snap));
     last.events = events;
     return { snap, events };
   }
   const dayKey = (e) => e.ymd;
-  function cards(nowMs) { const c = lget(CARD_KEY, null), d = etOf(num(nowMs) != null ? nowMs : clock()).ymd; return isObj(c) && c.day === d ? c : { day: d, plan: null, recap: null }; }
+  function cards(nowMs) { const c = lget(CARD_KEY, null), d = etOf(num(nowMs) != null ? nowMs : clock()).ymd; return isObj(c) && c.day === d ? c : { day: d, plan: null, recap: null, pre: null, end: null }; }
   /** the card due now (01:45 ET plan, 16:05 ET recap, weekdays), built once a day from a live reading */
   function dueCards(snap, nowMs) {
     const e = etOf(nowMs), out = [], c = cards(nowMs);
     if (!snap || !snap.ok || snap.cached || e.wd < 1 || e.wd > 5) return out;
     const sp = settings();
-    for (const [kind, start, until, flag, build] of [['plan', PLAN_MIN, PLAN_SPEAK_UNTIL, sp.plan, planCard], ['recap', RECAP_MIN, RECAP_SPEAK_UNTIL, sp.recap, recapCard]]) {
+    for (const [kind, start, until, flag, build] of [['plan', PLAN_MIN, PLAN_SPEAK_UNTIL, sp.plan, planCard], ['recap', RECAP_MIN, RECAP_SPEAK_UNTIL, sp.recap, recapCard],
+      ['pre', PRE_MIN, PRE_UNTIL, sp.rituals, premarketCard], ['end', END_MIN, RECAP_MIN, sp.rituals, endCard]]) {
       if (c[kind] || e.min < start || !flag) continue;
       if (kind === 'plan' && e.min >= PLAN_BUILD_UNTIL) continue;              // the morning plan is not built after noon
+      if ((kind === 'pre' || kind === 'end') && e.min >= until) continue;      // a ritual is for its own ten minutes to an hour, never late
       const card = build(snap, nowMs);
+      if (!card) continue;
       c[kind] = card; c.day = dayKey(e);
       out.push(card);
       call(o.onCard, card);
@@ -711,6 +798,8 @@ export function createBots(opts) {
       return answer(raw, snapshot(live, t), t, { set, settings, log: () => lget(LOG_KEY, []) });
     },
     plan: (live, now) => planCard(snapshot(live, num(now) != null ? num(now) : clock()), num(now) != null ? num(now) : clock()),
+    pre: (live, now) => premarketCard(snapshot(live, num(now) != null ? num(now) : clock()), num(now) != null ? num(now) : clock()),
+    end: (live, now) => endCard(snapshot(live, num(now) != null ? num(now) : clock()), num(now) != null ? num(now) : clock()),
     recap: (live, now) => recapCard(snapshot(live, num(now) != null ? num(now) : clock()), num(now) != null ? num(now) : clock()),
     cards, log: () => lget(LOG_KEY, []), queued: () => queue.map((it) => it.ev), last: () => last,
     reset() { for (const k of [SNAP_KEY, SEEN_KEY, LOG_KEY, LOG2_KEY, CARD_KEY, SPOKEN_KEY]) { try { const st = store(); if (st) st.removeItem(k); } catch (_) { /* nothing kept */ } } queue.length = 0; },

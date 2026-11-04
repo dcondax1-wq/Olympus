@@ -26,6 +26,7 @@ h1 { margin: 0; font: 800 22px/1.1 var(--oly-display, 'Orbitron', sans-serif); l
 .sheet { position: fixed; left: calc(10px + var(--sl)); right: calc(10px + var(--sr)); top: clamp(238px, 35vh, 330px); bottom: calc(166px + var(--sb));
   overflow-y: auto; overscroll-behavior: contain; padding: 12px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line);
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+@media (max-height: 700px) and (orientation: portrait) { .sheet { top: 196px; bottom: calc(152px + var(--sb)); } }   /* SE: the plan rows get ~60 px more room, the hero keeps its top */
 .pane[hidden] { display: none; }
 .row { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
 .seg button { flex: 1 1 28%; }
@@ -103,3 +104,47 @@ td.neg { color: var(--bad); } td.pos { color: var(--lime); }
 .addit { min-height: 48px; border-color: var(--gold); font-weight: 700; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* ---- decision blocks (plutusplus.js): details, tables, bars. Taps >= 44 px. ---- */
+.plus { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.pd { border: 1px solid rgba(155, 232, 74, .22); border-radius: 14px; background: linear-gradient(160deg, rgba(155, 232, 74, .07), rgba(245, 197, 66, .04)); overflow: hidden; }
+.pd summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; padding: 6px 12px; cursor: pointer; }
+.pd summary::-webkit-details-marker { display: none; }
+.pd summary b { font: 700 12px/1.2 var(--oly-display, 'Orbitron', sans-serif); letter-spacing: .1em; text-transform: uppercase; color: var(--lime); }
+.pd summary span { font-size: 12px; color: var(--dim); text-align: right; font-variant-numeric: tabular-nums; }
+.pd summary::after { content: ''; flex: none; width: 8px; height: 8px; border-right: 2px solid var(--dim); border-bottom: 2px solid var(--dim); transform: rotate(45deg); transition: transform .2s; margin-left: 2px; }
+.pd[open] summary::after { transform: rotate(-135deg); }
+.pd > div { padding: 2px 12px 12px; }
+.pd p.plain { margin: 4px 0 8px; font-size: 13px; line-height: 1.4; color: var(--text); }
+.pd p.note { margin: 8px 0 0; font-size: 11.5px; color: var(--dim); }
+.ptab { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.ptab th { padding: 3px 4px; text-align: right; font: 600 10px/1.2 var(--oly-ui, sans-serif); letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
+.ptab th:first-child, .ptab td.k { text-align: left; }
+.ptab td { padding: 6px 4px; text-align: right; font-size: 13px; border-top: 1px solid rgba(155, 232, 74, .18); }
+.ptab td.k { font-weight: 700; } .ptab td.good { color: var(--lime); } .ptab td.bad { color: var(--bad); font-weight: 700; }
+.ptab tr.me td { background: rgba(155, 232, 74, .14); } .ptab tr.mine td.k { color: var(--gold); }
+.seg2 { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 8px; }
+.seg2 button { min-height: 44px; min-width: 44px; padding: 4px 12px; border-radius: 12px; border: 1px solid rgba(155, 232, 74, .25); background: rgba(255, 255, 255, .04); color: var(--text); font: 600 12.5px var(--oly-ui, sans-serif); }
+.seg2 button[aria-pressed="true"] { border-color: var(--lime); background: rgba(155, 232, 74, .18); color: #fff; }
+.rbars { display: flex; flex-direction: column; gap: 8px; }
+.rb { display: grid; grid-template-columns: 112px 1fr 48px; gap: 8px; align-items: center; font-size: 12.5px; }
+.rb .n { color: var(--text); } .rb .v { text-align: right; color: var(--dim); font-variant-numeric: tabular-nums; }
+.rb .bar { height: 10px; border-radius: 6px; background: rgba(255, 255, 255, .08); overflow: hidden; } .rb .bar i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--lime), var(--gold)); }
+@media (prefers-reduced-motion: reduce) { .pd summary::after { transition: none; } }
+
+/* ---- Money plan card (plutusroadmap.js, 2026-11-04) */
+.mplan .tag { margin-left: 6px; vertical-align: middle; }
+.mplan p.plain { margin: 4px 0 8px; font-size: 13.5px; line-height: 1.4; }
+.mplan .mp-head { font-weight: 700; color: var(--text); }
+.mplan .mp-now { padding: 8px 10px; border-radius: 10px; border-left: 3px solid var(--lime); background: rgba(155, 232, 74, .08); }
+.mp-two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 6px 0 10px; }
+.mp-cell { padding: 8px 10px; border-radius: 12px; border: 1px solid rgba(155, 232, 74, .22); background: rgba(0, 0, 0, .25); }
+.mp-cell.first { border-color: var(--lime); box-shadow: 0 0 14px rgba(155, 232, 74, .18); }
+.mp-cell span { display: block; font-size: 11px; color: var(--dim); letter-spacing: .04em; }
+.mp-cell b { display: block; font: 800 20px/1.2 var(--oly-display, 'Orbitron', sans-serif); color: var(--lime); font-variant-numeric: tabular-nums; }
+.mp-cell small { display: block; font-size: 11px; color: var(--dim); }
+.mplan .pd { margin-top: 8px; }
+.mp-cav { margin: 4px 0 0; padding-left: 18px; font-size: 12.5px; line-height: 1.4; color: var(--text); }
+.mp-cav li { margin: 0 0 6px; }
+.mp-months td, .mp-months th { white-space: nowrap; }
+@media (max-width: 360px) { .mp-two { grid-template-columns: 1fr; } }

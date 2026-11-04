@@ -6,6 +6,9 @@
 <title>Settings</title>
 <meta name="description" content="OLYMPUS SETTINGS: one place for the whole system. Quality and look (3D quality, theme, motion, battery saver, intros, transitions, sounds, haptics), Jarvis (voice, alerts, quiet hours, briefing, mode, key status), this phone's saved data (clear, export, import), health shortcuts, and a six-card first-run tour. Nothing leaves this phone; keys are never shown.">
 <meta name="theme-color" content="#06050d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Settings">
 <meta name="color-scheme" content="dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="icon" href="icon.svg">
@@ -19,10 +22,13 @@
 <link rel="stylesheet" href="../olympus/olympus.css?v=o2">
 <script src="../olympus/themes.js?v=o2"></script>
 <script src="../olympus/olympus.js?v=o2" data-app="settings"></script>
+<script src="../olympus/intro-app.js?v=i1" defer></script>
 <script src="../olympus/sfx.js?v=s1" defer></script>
 <script src="../olympus/fx-core.js?v=f1"></script><script src="../olympus/fx-ui.js?v=f1"></script><script src="../olympus/fx-text.js?v=f1"></script><script src="../olympus/fx-burst.js?v=f1"></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#b79bff'); r.setProperty('--oly-accent-rgb', '183, 155, 255'); })();</script>
-<link rel="stylesheet" href="settings.css?v=s1">
+<link rel="stylesheet" href="settings.css?v=s2">
+<link rel="stylesheet" href="../olympus/a11y.css?v=a1">
+<script src="../olympus/a11y.js?v=a1" defer></script>
 </head>
 <body>
 <div class="aurora" id="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
@@ -44,7 +50,14 @@
   <section class="panel" id="p-look" role="tabpanel" aria-labelledby="t-look">
     <article class="card" id="c-fx" data-oly-fx="glassSpecular"><h2>3D quality</h2><p class="hint">One setting for every app and Jarvis.</p>
       <div class="seg" id="fxSeg" role="radiogroup" aria-label="3D quality"></div><p class="note" id="fxNote"></p>
-      <div class="prev" id="fxPrev"><canvas id="fxCanvas" width="300" height="96" aria-label="Live preview of the chosen quality" role="img"></canvas><span class="pv" id="fxTag">HIGH</span></div></article>
+      <div class="prev" id="fxPrev"><canvas id="fxCanvas" width="300" height="96" aria-label="Live preview of the chosen quality" role="img"></canvas><span class="pv" id="fxTag">HIGH</span></div>
+      <p class="why" id="fxWhy"></p>
+      <h3 class="sub3">What each level means</h3>
+      <ul class="levels" id="fxLevels" aria-label="What each quality level means"></ul></article>
+    <article class="card" id="c-read" data-oly-fx="glassSpecular"><h2>Reading</h2><p class="hint">Bigger text and stronger lines, for every app, on this phone.</p>
+      <p class="row ro"><span><b>Big text</b><small id="bigNote">Text at normal size</small></span><button type="button" class="mini tog" id="bigText" data-oly-a11y="big-text" aria-pressed="false">Big text: off</button></p>
+      <p class="row ro"><span><b>Stronger contrast</b><small id="conNote">Normal lines and ink</small></span><button type="button" class="mini tog" id="moreContrast" data-oly-a11y="more-contrast" aria-pressed="false">Contrast: normal</button></p>
+      <p class="sample" id="readSample">Sample: this is how the text in every app looks now.</p></article>
     <article class="card" id="c-theme" data-oly-fx="glassSpecular"><h2>Theme</h2><p class="hint">Tap one: the whole page changes now, and every app follows.</p>
       <div class="themes" id="themes" role="radiogroup" aria-label="Theme"></div>
       <label class="row"><span><b>Film grain</b><small>Fine scanlines and grain over everything</small></span><input type="checkbox" class="sw" id="grain" role="switch"></label></article>
@@ -56,6 +69,9 @@
       <label class="row"><span><b>Page transitions</b><small>The smooth glide between pages where the phone supports it</small></span><input type="checkbox" class="sw" id="trans" role="switch"></label>
       <div class="row ro"><span><small id="transNote">&nbsp;</small></span><button type="button" class="mini" id="transTry">Try it</button></div></article>
     <article class="card" id="c-sound" data-oly-fx="glassSpecular"><h2>Sounds and touch</h2>
+      <div class="row ro"><span><b>Sound</b><small id="soundNote">Auto: on, silent in LITE, reduced motion and battery saver</small></span></div>
+      <div class="seg" id="soundSeg" role="radiogroup" aria-label="Sound"></div>
+      <div class="row ro"><span><small id="soundTestNote">Nothing sounds until you tap</small></span><button type="button" class="mini" id="soundTest" data-oly-cue="success">Play a test sound</button></div>
       <label class="row"><span><b>Sounds</b><small id="sfxNote">Synthesized on the phone, silent until you tap</small></span><input type="checkbox" class="sw" id="sfxOn" role="switch"></label>
       <div class="row ro"><span><b>Volume</b></span><input type="range" class="rng" id="vol" min="0" max="100" step="5" aria-label="Volume"><button type="button" class="mini" id="sfxTry">Play</button></div>
       <label class="row"><span><b>Ambient sound</b><small>A soft pad under the apps that use it</small></span><input type="checkbox" class="sw" id="ambient" role="switch"></label>
@@ -82,10 +98,13 @@
 
   <section class="panel" id="p-data" role="tabpanel" aria-labelledby="t-data" hidden>
     <article class="card" id="c-store" data-oly-fx="glassSpecular"><h2>This phone's storage</h2>
+      <p class="hint" id="stWhat">What is saved here: only your own choices and the place you last looked at. Never a key (those stay hidden) and never your money numbers (they live on the servers).</p>
       <div class="big"><b id="stUse" data-oly-fx="odometer">0 KB</b><span id="stOf">of this site's quota</span></div>
       <div class="bar" id="stBar" aria-hidden="true"><i></i></div>
       <p class="note" id="stNote"></p>
-      <ul class="apps" id="appList" aria-label="Saved data by app"></ul></article>
+      <ul class="apps" id="appList" aria-label="Saved data by app"></ul>
+      <button type="button" class="go ghost danger-line" id="clearAll">Clear everything saved on this phone</button>
+      <p class="note">Keys are never cleared. Export first if you want a copy (below).</p></article>
     <article class="card" id="c-cache" data-oly-fx="glassSpecular"><h2>Caches</h2><p class="hint">The offline copies the phone keeps so apps open without a connection. Clearing them is safe: they download again.</p>
       <ul class="apps" id="cacheList" aria-label="Offline caches"></ul><button type="button" class="go ghost" id="cacheAll">Clear all caches</button></article>
     <article class="card" id="c-io" data-oly-fx="glassSpecular"><h2>Export and import</h2><p class="hint">Move your settings, notes and saved choices to another phone. Keys and tokens are left out, always.</p>
@@ -126,6 +145,6 @@
     <div class="tour-a"><button type="button" class="go ghost" id="tourBack">Back</button><button type="button" class="go" id="tourNext">Next</button></div>
   </div>
 </div>
-<script type="module" src="settings.js?v=s1"></script>
+<script type="module" src="settings.js?v=s2"></script>
 </body>
 </html>

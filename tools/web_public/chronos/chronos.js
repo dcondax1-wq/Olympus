@@ -71,9 +71,13 @@ function advance(dt) {
 let raf = 0;
 function tick(now) {
   raf = requestAnimationFrame(tick);
+  if (window.OLYMPUS ? window.OLYMPUS.hidden() : document.hidden) { S.last = now; return; }      // hidden / covered: nothing advances
+  const gap = window.OLYMPUS && window.OLYMPUS.frameGap ? window.OLYMPUS.frameGap() : 0;          // idle / saver / 3D Off (docs/OLYMPUS_PERF.md)
+  if (gap && now - (S.gapAt || 0) < gap - 3) return;
+  S.gapAt = now;
   const dt = Math.min(0.1, (now - (S.last || now)) / 1000);
   S.last = now;
-  if (!document.hidden) advance(dt);
+  advance(dt);
 }
 
 // ------------------------------------------------------------------------------------------------ the words

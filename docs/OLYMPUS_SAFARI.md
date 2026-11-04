@@ -66,3 +66,28 @@ toolbar resizing, real haptics, audio unlock on the first tap, the service worke
 `Array.fromAsync`, `Promise.withResolvers`, `AbortSignal.any`, Set algebra, iterator helpers, a float render target; a `backdrop-filter` or
 `user-select` without its `-webkit-` twin; a `new AudioContext` without the webkit fallback; an unguarded `vibrate` / `getBattery`; a
 `localStorage` call outside a try; a file missing from the Jarvis / Kalshi worker lists. The bundled `fx.js` and `three-addons` are skipped.
+
+## Sweep 2026-11-04 (iPhone Safari, minimum iOS 15)
+
+`tests/test_safari_smoke.py --lint` now also checks (all pass): a `100dvh` twin beside every `100vh` height, no form control under 16px
+(iOS zooms on focus), `Notification.*` and `requestIdleCallback` only behind a feature test, no OffscreenCanvas / AudioWorklet / WebGPU /
+file-system / USB / Bluetooth / orientation lock, touch / wheel listeners with `preventDefault` say `passive: false`, no `getContext('webgl2')`
+dereferenced straight away, autoplay media muted + `playsinline` and every `.play()` handles its rejection, every page has `width=device-width`
+and `viewport-fit=cover` where it uses the safe-area insets, and every script (334) parses as ES2021 (acorn; a classic script may not use
+top-level await). Fixed: `100vh` without `100dvh` in `holo.css` (.hd-pc), `liveview.css` (.lv-root, maximised), `kalshi/kalshi.css`,
+`pc/index.html`; the Chronos compare `<select>` was 12px (now 16px). Reviewed, fine on iOS 15.4+: `.at(`, `findLastIndex` (guarded),
+`||=` / `??=`, top-level await in modules, `color-mix` (iOS 16.2+; the kit says to avoid it: 291 uses in 13 files, each a single declaration that an
+older iOS just drops), `:has` (15.4), `inert` (15.5), `startViewTransition` (guarded), `roundRect` (guarded), canvas `filter` (ignored on iOS).
+
+## The full iPhone walk: `test_safari_smoke --webkit` (2026-11-04)
+Chromium misses WebKit-only bugs, so every app is walked in real WebKit with the `iPhone 13` profile (jfx=low, software GL, a local static server of
+`tools/web_public`; the data files only the site build writes are 404 there, so the apps show their DEMO). Install once, in a scratch folder:
+`PLAYWRIGHT_BROWSERS_PATH=<dir> python -m playwright install webkit` (~300 MB; delete it when done; check `df -h /` first), then
+`PLAYWRIGHT_BROWSERS_PATH=<dir> python -X utf8 -m tests.test_safari_smoke --webkit [id ...]` (about 10 minutes for all 30 apps + Jarvis; `--ready 60`,
+`--no-offline`; `SAFARI_REPORT=<file>` writes the rows as JSON). Per app: loads without a page / console error; the veil lifts (`data-oly-state=ready`, or
+no kit) within 60 s; one touch tap on the first control; the back seal / "Back to Olympus" link reaches Jarvis (Escape first if a sheet or the Settings tour
+covers it). Then Jarvis and the root dashboard reload OFFLINE through their service worker (offline network errors for uncached data are expected and
+ignored; the shell must render), and the first tap on Jarvis (the audio unlock) must throw nothing. Exit 77 = WebKit not installed = SKIP in
+`tests/run_gate.py` (suite `safari_webkit`, not run by `--fast`). Harness notes: the dashboard registers its worker only on https, so the offline check
+registers `sw.js` itself on http://127.0.0.1; Playwright's synthetic WebKit touch does not click a bare link on a page with no touch / click listener, so
+the contexts carry a no-op `touchstart` listener (a real iPhone needs none).

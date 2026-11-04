@@ -86,8 +86,8 @@ export class Streams {
   }
 
   /** lq: fewer pulses per arc (laid out arc by arc, so a draw range cannot thin each arc: the dropped ones get size 0) */
-  setQuality(q) {
-    const keep = PULSES[q] ?? PULSES.hq, per = this.per, a = this.points.geometry.getAttribute('aC');
+  setQuality(q, caps) {
+    const keep = caps?.pulses ?? PULSES[q] ?? PULSES.hq, per = this.per, a = this.points.geometry.getAttribute('aC');
     for (let i = 0; i < this.arcs.length; i++) for (let k = 0; k < per; k++) a.array[(i * per + k) * 4 + 3] = k < keep ? (this.arcs[i].big ? 5.5 : 3.6) : 0;
     a.needsUpdate = true;
     this.pulses = keep * this.arcs.length;

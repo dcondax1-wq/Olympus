@@ -41,6 +41,14 @@ param(
 )
 
 $ErrorActionPreference = 'Continue'
+# any unexpected failure ends with ONE plain sentence of what to do, never a stack trace (the detail goes to the log only)
+trap {
+    Write-Host ''
+    Write-Host '  [FIX] Something unexpected stopped this: take a photo of this window and send it to Claude (what was already done is in the log).' -ForegroundColor Red
+    try { $lg = Get-Variable -Name Log -Scope Script -ValueOnly -ErrorAction SilentlyContinue; if ($lg) { Add-Content -LiteralPath $lg -Value ('  UNEXPECTED: ' + $_.Exception.Message + ' | ' + $_.InvocationInfo.PositionMessage) -Encoding UTF8 } } catch { }
+    exit 1
+}
+if ($env:LE_T_BOOM) { throw 'test: unexpected failure' }
 $script:Freed = [int64]0
 $script:Files = 0
 $script:Locked = 0
@@ -150,9 +158,10 @@ $Busy = ($NtRun -or $BotRun)
 # ------------------------------------------------------------------ the allow-list and the never-touch list
 $ProtectName = @('^\.env', '^live_state', '^ninjatrader_state\.json$', '^guards_state', '^accounts', 'journal', '^memory\.db', '^alerts\.json$',
                  '^tv(_device)?\.json$', '^autostart\.json$', '^start_bot\.json$', '^live_model', '^lit_learning', '^supervisor\.(pid|stop)$',
-                 '^(cookies|login data|web data|history|bookmarks|preferences|local state|key4\.db|logins\.json|places\.sqlite)')
+                 '^(cookies|login data|web data|history|bookmarks|preferences|local state|key4\.db|logins\.json|places\.sqlite)',
+                 '^id_(rsa|dsa|ecdsa|ed25519)', '\.(pem|key|ppk|kdbx|p12|pfx|wallet)$', '^(known_hosts|authorized_keys)$')
 # folder names that protect everything inside them, wherever they are in the path / only below the allowed root
-$ProtectDirAbs = @('nt_bars', '.git', 'workspaces', 'templates', 'le_feed', 'incoming', 'outgoing')
+$ProtectDirAbs = @('nt_bars', '.git', 'workspaces', 'templates', 'le_feed', 'incoming', 'outgoing', '.ssh', '.aws', '.gnupg')
 $ProtectDirRel = @('bin', 'backup', 'sampledata', 'custom')
 $ProtectDir = $ProtectDirAbs + $ProtectDirRel
 function Get-NtFolders {
@@ -171,14 +180,33 @@ function Get-Forbidden {
     $f = @($env:USERPROFILE, $env:WINDIR, $env:SystemDrive, $env:ProgramData, $env:LOCALAPPDATA, $env:APPDATA, $env:OneDrive, $env:HOME,
            $BotRoot, [Environment]::GetFolderPath('MyDocuments'), [Environment]::GetFolderPath('Desktop'))
     $f += $NtFolders
+    # a person's own folders are never a root, whatever an environment variable says (Downloads, Pictures, Desktop ...; OneDrive's too)
+    foreach ($base in @($env:USERPROFILE, $env:OneDrive, $env:HOME)) {
+        if (-not $base) { continue }
+        foreach ($pf in @('Downloads', 'Documents', 'Desktop', 'Pictures', 'Videos', 'Music', 'Dropbox', 'Google Drive', 'iCloudDrive', '.ssh', '.aws', '.gnupg')) { $f += (J2 $base $pf) }
+    }
     $out = @(); foreach ($x in $f) { if ($x) { $out += (Norm $x).ToLowerInvariant() } }
     return ,$out
+}
+# a root INSIDE one of those personal folders is refused too (NinjaTrader's folder and the bot folder, wherever they sit, are the exceptions)
+function Test-InPersonal([string]$P) {
+    $n = (Norm $P).ToLowerInvariant()
+    foreach ($nt in (@($NtFolders) + @($BotRoot))) { if (-not $nt) { continue }; $t = (Norm $nt).ToLowerInvariant(); if ($n -eq $t -or $n.StartsWith($t + '\') -or $n.StartsWith($t + '/')) { return $false } }
+    foreach ($base in @($env:USERPROFILE, $env:OneDrive, $env:HOME)) {
+        if (-not $base) { continue }
+        foreach ($pf in @('Downloads', 'Documents', 'Desktop', 'Pictures', 'Videos', 'Music', 'Dropbox', 'Google Drive', 'iCloudDrive', '.ssh', '.aws', '.gnupg')) {
+            $r = (Norm (J2 $base $pf)).ToLowerInvariant()
+            if ($n -eq $r -or $n.StartsWith($r + '\') -or $n.StartsWith($r + '/')) { return $true }
+        }
+    }
+    return $false
 }
 $Forbidden = Get-Forbidden
 function Test-RootSane([string]$P) {
     if (-not $P) { return $false }
     $n = (Norm $P).ToLowerInvariant()
     if ($Forbidden -contains $n) { return $false }
+    if (Test-InPersonal $P) { return $false }
     if ($n.Length -lt 8) { return $false }
     $cnt = 0
     foreach ($sg in $n.Split([char[]]@('\', '/'))) { if ($sg) { $cnt++ } }

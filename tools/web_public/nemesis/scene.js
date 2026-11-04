@@ -196,9 +196,13 @@ export function createUnderworld(canvas, { O = null } = {}) {
     return { x: r.left + ((v.x + 1) / 2) * r.width, y: r.top + ((1 - v.y) / 2) * r.height, on: v.z < 1 };
   }
 
+  let gapAt = 0;
   function frame(now) {
     raf = requestAnimationFrame(frame);
-    if (stopped) return;
+    if (stopped || (O && O.hidden())) return;                            // hidden / covered: no JS, no frame (docs/OLYMPUS_PERF.md)
+    const gap = O && O.frameGap ? O.frameGap() : 0;                       // idle 30 / 15 fps, battery saver, 3D Off 2 fps; a touch = full rate
+    if (gap && now - gapAt < gap - 3) return;
+    gapAt = now;
     const still = reduced(), t = now / 1000;
     const a = canvas.clientWidth / Math.max(1, canvas.clientHeight);
     const nd = a < 0.6 ? 29 : a < 1 ? 25 : 20, nf = a < 0.6 ? 62 : a < 1 ? 56 : 48;

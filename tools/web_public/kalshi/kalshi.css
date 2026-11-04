@@ -27,7 +27,7 @@
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 [hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; background: var(--bg); }
-body { margin: 0; min-height: 100vh; background: var(--glow); background-color: var(--bg); color: var(--txt); font: 500 16px/1.42 var(--fb); }
+body { margin: 0; min-height: 100vh; min-height: 100dvh; background: var(--glow); background-color: var(--bg); color: var(--txt); font: 500 16px/1.42 var(--fb); }
 body::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 5; background: repeating-linear-gradient(0deg, rgba(var(--cr), .035) 0 1px, transparent 1px 3px); }
 body::after { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0; background-image: linear-gradient(rgba(var(--cr), .05) 1px, transparent 1px),
   linear-gradient(90deg, rgba(var(--cr), .05) 1px, transparent 1px); background-size: 48px 48px;
@@ -730,3 +730,61 @@ textarea.jn { width: 100%; margin: 8px 0 0; padding: 8px; font-size: 16px; line-
 .sw button::after { content: ""; position: absolute; left: 50%; top: 50%; width: max(100%, 44px); height: max(100%, 44px); transform: translate(-50%, -50%); }
 .sw button[aria-pressed="true"] { color: var(--txt); border-color: rgba(var(--cr), .75); background: rgba(var(--cr), .16); box-shadow: 0 0 10px rgba(var(--cr), .3); }
 .card-h .seg + .sw { margin-left: 0; }
+
+/* ---- the guard (2026-11-04): "Do not take this bet", the top card. Suggestions only. */
+.guard { gap: 10px; }
+.guard.red { background: radial-gradient(ellipse at 0% 0%, rgba(var(--bad-rgb), .26), transparent 60%), linear-gradient(180deg, rgba(var(--pr), .92), rgba(var(--pr), .96)); border-color: rgba(var(--bad-rgb), .55); }
+.guard.amber { background: radial-gradient(ellipse at 0% 0%, rgba(var(--warn-rgb), .22), transparent 60%), linear-gradient(180deg, rgba(var(--pr), .92), rgba(var(--pr), .96)); border-color: rgba(var(--warn-rgb), .5); }
+.guard.green, .guard.idle { background: radial-gradient(ellipse at 0% 0%, rgba(var(--ok-rgb), .18), transparent 60%), linear-gradient(180deg, rgba(var(--pr), .92), rgba(var(--pr), .96)); }
+.gd-top { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.gd-light { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 4px rgba(var(--ok-rgb), .22), 0 0 18px var(--ok); }
+.gd-light.red { background: var(--bad); box-shadow: 0 0 0 4px rgba(var(--bad-rgb), .25), 0 0 20px var(--bad); }
+.gd-light.amber { background: var(--warn); box-shadow: 0 0 0 4px rgba(var(--warn-rgb), .25), 0 0 18px var(--warn); }
+.gd-h { min-width: 0; } .gd-h h3 { margin: 2px 0 0; font: 700 19px/1.2 var(--fh); letter-spacing: .02em; overflow-wrap: anywhere; }
+.gd-s { margin: 0; color: var(--mut); font: 500 14px/1.35 var(--fb); }
+.gd-b { display: grid; gap: 6px; padding: 10px 12px; border: 1px solid var(--dim2); border-left-width: 4px; border-radius: 2px; background: rgba(var(--pr), .6); }
+.gd-b.red { border-left-color: var(--bad); } .gd-b.amber { border-left-color: var(--warn); } .gd-b.green { border-left-color: var(--ok); }
+.gd-v { justify-self: start; padding: 2px 8px; border-radius: 3px; font: 800 12px/1.4 var(--fh); letter-spacing: .1em; color: #00140d; background: var(--ok); }
+.gd-v.red { background: var(--bad); color: #fff; } .gd-v.amber { background: var(--warn); }
+.gd-t { font: 600 14.5px/1.3 var(--fb); overflow-wrap: anywhere; }
+.gd-r { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.gd-r li { font: 500 14.5px/1.36 var(--fb); padding-left: 12px; position: relative; }
+.gd-r li::before { content: ""; position: absolute; left: 0; top: .55em; width: 6px; height: 6px; border-radius: 50%; background: var(--ok); }
+.gd-r li.red::before { background: var(--bad); } .gd-r li.amber::before { background: var(--warn); }
+.gd-chk { display: grid; gap: 8px; padding-top: 6px; border-top: 1px solid var(--dim2); }
+.gd-px { display: flex; flex-wrap: wrap; gap: 8px; }
+.gd-px button { min-width: 64px; min-height: 44px; padding: 0 14px; font: 700 16px var(--fh); color: var(--txt); background: rgba(var(--pr), .7); border: 1px solid var(--dim2); border-radius: 2px; }
+.gd-px button[aria-pressed="true"] { border-color: var(--c); background: rgba(var(--cr), .16); box-shadow: 0 0 12px rgba(var(--cr), .3); }
+
+/* ---- "Why am I losing" and "If you change the bot" (2026-11-04) */
+.why { gap: 8px; } .why.neg { background: radial-gradient(ellipse at 0% 0%, rgba(var(--bad-rgb), .2), transparent 60%), linear-gradient(180deg, rgba(var(--pr), .92), rgba(var(--pr), .96)); }
+.why.pos { background: radial-gradient(ellipse at 0% 0%, rgba(var(--ok-rgb), .16), transparent 60%), linear-gradient(180deg, rgba(var(--pr), .92), rgba(var(--pr), .96)); }
+.why-t { margin: 0; font: 600 17px/1.38 var(--fb); overflow-wrap: anywhere; }
+.why-b { justify-self: start; min-height: 46px; padding: 0 14px; font: 700 14px var(--fh); letter-spacing: .04em; color: var(--c); background: rgba(var(--cr), .1); border: 1px solid var(--dim2); border-radius: 2px; }
+.wi-lab { margin: -2px 0 0; color: var(--mut); font: 600 12px/1.3 var(--fh); letter-spacing: .06em; text-transform: uppercase; }
+.wi-rec { margin: 0; font: 600 16px/1.38 var(--fb); }
+.wi-l { display: grid; gap: 8px; }
+.wi-set { border: 1px solid var(--dim2); border-radius: 2px; background: rgba(var(--pr), .6); }
+.wi-set.pick { border-color: var(--ok); box-shadow: 0 0 14px rgba(var(--ok-rgb), .25); }
+.wi-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 46px; padding: 8px 12px; text-align: left; color: var(--txt); background: none; border: 0; font: 700 15px/1.25 var(--fb); }
+.wi-h i { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 3px; font: 800 10px/1.4 var(--fh); letter-spacing: .08em; font-style: normal; text-transform: uppercase; color: #00140d; background: var(--ok); }
+.wi-h em { font-style: normal; font-size: 20px; color: var(--c); }
+.wi-set dl { margin: 0; padding: 0 12px 10px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 12px; }
+.wi-set dt { color: var(--mut); font: 600 12px/1.2 var(--fb); } .wi-set dd { margin: 0; font: 700 17px/1.2 var(--fh); }
+.wi-r { margin: 0; padding: 0 12px 10px; color: var(--mut); font: 500 14px/1.35 var(--fb); }
+.wi-f { font-size: 13px; }
+
+/* the forward test strip (bottom of the what-if card) */
+.wi-fwd { margin: 2px 0 0; padding: 9px 12px; border: 1px dashed var(--dim2); border-radius: 2px; background: rgba(var(--pr), .5); color: var(--mut); font: 500 14px/1.4 var(--fb); }
+.wi-fwd b { color: var(--c); font: 700 13px var(--fh); letter-spacing: .06em; text-transform: uppercase; }
+.wi-fn { display: block; margin-top: 2px; color: var(--txt); font: 700 15px/1.3 var(--fb); }
+
+/* "Where the money is" (2026-11-04) */
+.sc-l { margin: 0; color: var(--mut); font: 500 14px/1.4 var(--fb); }
+.sc-g { margin: 6px 0 0; font: 700 13px var(--fh); letter-spacing: .08em; text-transform: uppercase; color: var(--c); }
+.scan .sc-i { border: 1px solid var(--dim2); border-left-width: 4px; border-radius: 2px; background: rgba(var(--pr), .6); margin-top: 6px; }
+.sc-i.test { border-left-color: var(--ok); } .sc-i.avoid { border-left-color: var(--bad); }
+.sc-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 46px; padding: 8px 12px; text-align: left; color: var(--txt); background: none; border: 0; font: 700 15px/1.25 var(--fb); }
+.sc-h b { flex: none; font: 700 16px var(--fh); }
+.sc-n i { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 3px; font: 800 10px/1.4 var(--fh); letter-spacing: .08em; font-style: normal; text-transform: uppercase; color: #1a1200; background: var(--warn); }
+.sc-d { margin: 0; padding: 0 12px 10px; color: var(--txt); font: 500 14.5px/1.4 var(--fb); overflow-wrap: anywhere; }

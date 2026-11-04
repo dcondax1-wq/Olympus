@@ -34,7 +34,7 @@
 // synth(text, { signal, voice }) -> Promise<Blob> } (voice-engines.js: Gemini, Groq, the on-device Kokoro) instead of the plain Groq
 // call below; `player` ({ play(blob) -> Promise, stop(), unlock() }) is the one audio element the iPhone unlocks with the first tap.
 // A tap (cancel) also aborts the request in flight. A failure parks only that voice (429: its retry-after, else until tomorrow;
-// bad key 10 min) and the rest of the reply, never what was already said again, goes on in the phone's voice.
+// bad key 10 min, no answer in cc.timeoutMs (9 s) 2 min) and the rest of the reply, never what was already said again, goes on in the phone's voice.
 // iPhone Safari 16: plain ES2020, no regex lookbehind.
 
 export const CFG_KEY = 'jarvis.voiceCfg';           // { voice, rate, pitch } (the shell's Voice sheet)
@@ -292,11 +292,13 @@ export function createSpeaker(opts) {
         return r.blob();
       });
     const one = (t) => (typeof cc.synth === 'function' ? Promise.resolve(cc.synth(t, { signal: h.signal || undefined, voice: cc.voice })) : fetchOne(t));
+    const tmo = Math.max(1000, +cc.timeoutMs || 9000);                        // a voice that has not answered by then is passed: the phone says it
+    const timed = (p) => { let t = 0; return Promise.race([p, h.cancelP, new Promise((ok, bad) => { t = setTimeout(() => { const e = new Error('timeout'); e.reason = 'timeout'; e.parkMs = 120000; bad(e); }, tmo); })]).finally(() => clearTimeout(t)); };
     const guard = (p) => { p.catch(() => null); return p; };                 // an abandoned request never becomes an unhandled rejection
     h.parts = parts; h.played = 0;
     let next = guard(one(parts[0].text)), at = 0;
     for (let i = 0; i < parts.length; i++) {
-      const blob = await Promise.race([next, h.cancelP]);
+      const blob = await timed(next);
       if (h.done) return;
       if (i + 1 < parts.length) next = guard(one(parts[i + 1].text));       // the next piece downloads while this one plays
       const off = text.indexOf(parts[i].text.slice(0, 12), at);
@@ -319,12 +321,14 @@ export function createSpeaker(opts) {
     cancel();
     const c = cb && typeof cb === 'object' ? cb : {};
     const pr = pro();
-    let text = cleanSpeech(input);
-    if (pr && typeof pr.prepare === 'function') text = safe(() => pr.prepare(text), text) || text;
+    const shown = cleanSpeech(input);                 // what a caption shows (and what speak() returns); the natural layer may say it in other words ("5 PM" -> "five P M")
+    let text = shown;
+    if (pr && typeof pr.prepare === 'function') text = safe(() => pr.prepare(shown), shown) || shown;
     if (text && !/[.!?]$/.test(text)) text += '.';
-    let items = pr && typeof pr.plan === 'function' ? safe(() => pr.plan(text, { max: 180 }), null) : null;
+    const toShown = (i) => (text === shown || !text.length ? i : Math.max(0, Math.min(shown.length, Math.round((+i || 0) * shown.length / text.length))));     // a spoken-text offset -> the caption's
+    let items = pr && typeof pr.plan === 'function' ? safe(() => pr.plan(text, { max: 180, phrases: false }), null) : null;
     if (!items || !items.length) items = speechChunks(text).map((x) => ({ text: x }));
-    const h = { done: false, onstart: c.onstart, onboundary: c.onboundary, onstall: c.onstall, onengine: c.onengine, audio: null, ctl: null, signal: null, parts: null, played: 0,
+    const h = { done: false, onstart: c.onstart, onboundary: typeof c.onboundary === 'function' ? (i) => c.onboundary(toShown(i)) : null, onstall: c.onstall, onengine: c.onengine, audio: null, ctl: null, signal: null, parts: null, played: 0,
       finish() { if (h.done) return; h.done = true; clearTimeout(h.timer); clearTimeout(h.wd); if (cur === h) cur = null; if (!h.stalled && typeof c.onend === 'function') c.onend(); } };
     h.cancelP = new Promise((ok) => { h.wake = ok; });
     if (typeof AbortController !== 'undefined') { h.ctl = new AbortController(); h.signal = h.ctl.signal; }
@@ -338,7 +342,7 @@ export function createSpeaker(opts) {
       if (synth) hardCancel();
     };
     cur = h;
-    if (!items.length) { setTimeout(() => h.finish(), 0); return { text, cancel: h.cancel }; }
+    if (!items.length) { setTimeout(() => h.finish(), 0); return { text: shown, cancel: h.cancel }; }
     const cc = cloudCfg({ len: text.length }), id = cc && (cc.id || 'groq');
     const usePhone = (rest) => { if (h.done) return; if (synth && typeof SpeechSynthesisUtterance !== 'undefined') { try { phone(text, rest || items, h); } catch (_) { h.finish(); } } else h.finish(); };
     if (cc && cc.key && !(parked[id] > Date.now())) {
@@ -346,13 +350,14 @@ export function createSpeaker(opts) {
         const ms = parkMs(e);
         if (ms) parked[id] = Date.now() + ms;
         if (!h.done) {
+          if (h.ctl) safe(() => h.ctl.abort());                              // (a late answer is not wanted any more)
           if (typeof c.onfallback === 'function') c.onfallback(e, id);
           const rest = h.parts && h.played > 0 && h.played < h.parts.length ? h.parts.slice(h.played) : null;   // what the cloud already said is not said again
           usePhone(rest);
         }
       });
     } else usePhone();
-    return { text, cancel: h.cancel };
+    return { text: shown, cancel: h.cancel };
   }
   function cancel() { if (cur) cur.cancel(); cur = null; }
   return { speak, cancel, get speaking() { return !!cur; }, prime: () => primeSpeech(synth), voice: () => bestVoice(voices(), cfg().voice || savedVoiceName(o.storage)),

@@ -56,7 +56,7 @@ export class FortuneScene {
       grade: { vignette: 0.36, grain: 0.035, aberration: 0.002 } });
   }
 
-  tier(q) { return q === 'low' ? 'low' : O && !O.lite() && O.fx() === 'ultra' ? 'ultra' : 'high'; }
+  tier(q) { return O && O.fx() === 'off' ? 'off' : q === 'low' ? 'low' : O && !O.lite() && O.fx() === 'ultra' ? 'ultra' : 'high'; }   // 3D Off = the core's 'off' tier (pixel ratio 1, direct draw)
 
   lights() {
     const T = this.T;

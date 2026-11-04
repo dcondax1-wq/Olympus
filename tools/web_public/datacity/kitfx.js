@@ -53,16 +53,18 @@ export class KitFx {
   }
 
   /** sun: sky.sunOf(); w: sky.weatherOf(); U: the scene's uniforms (uDay, uCloud, uSun) */
-  set(sun, w, U) {
+  set(sun, w, U, caps) {
     if (!this.ready) return;
+    if (caps) this.caps = caps;
+    const kc = (this.caps || {}).kit || { godGroups: 2, lens: true, aurora: true, fireflies: true, lightning: true };
     const FX = this.FX, t = this.tier, off = t === 'off', day = sun.day, night = day < 0.12, dusk = sun.dusk;
     const clear = !w.storm && w.rain < 0.1;
     const want = {
-      godRays: !off && (dusk > 0.25 || night || w.haze > 0.3),
-      lensFlare: !off && t !== 'low' && day > 0.25 && w.haze < 0.4 && !w.storm && sun.elev > 0.05,
-      aurora: !off && t !== 'low' && night && clear && w.vix < 20,
-      fireflies: !off && night && clear,
-      lightning: !off && !!w.storm,
+      godRays: !off && kc.godGroups > 0 && (dusk > 0.25 || night || w.haze > 0.3),
+      lensFlare: !off && kc.lens && t !== 'low' && day > 0.25 && w.haze < 0.4 && !w.storm && sun.elev > 0.05,
+      aurora: !off && kc.aurora && t !== 'low' && night && clear && w.vix < 20,
+      fireflies: !off && kc.fireflies && night && clear,
+      lightning: !off && kc.lightning && !!w.storm,
     };
     this.want = want;
     const sp = this.spots, R = Math.max(150, this.L.bounds.x1 - this.L.bounds.x0);
@@ -71,7 +73,7 @@ export class KitFx {
     if (want.godRays) {
       this._on('godRays', () => {
         const hs = [FX.godRays(this.target, lo({ position: [0, 78, 0], length: 74, intensity: 0.7, spread: 0.16, color: '#9fe9ff', seed: 4 }))];
-        if (sp.temple) hs.push(FX.godRays(this.target, lo({ position: [sp.temple.x, 92, sp.temple.z], length: 90, intensity: 0.66, spread: 0.12, color: '#ffe3a0', seed: 9 })));
+        if (sp.temple && kc.godGroups > 1) hs.push(FX.godRays(this.target, lo({ position: [sp.temple.x, 92, sp.temple.z], length: 90, intensity: 0.66, spread: 0.12, color: '#ffe3a0', seed: 9 })));
         return { stopped: false, stop() { hs.forEach((x) => x.stop()); this.stopped = true; } };
       });
     }

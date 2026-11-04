@@ -200,6 +200,14 @@ textarea.field { resize: none; line-height: 1.35; font-family: inherit; }
 .msg.ok { color: var(--ok); font-weight: 600; }
 .msg.bad { color: #ff9aa6; font-weight: 600; }
 .titlebox[hidden] { display: none; }
+.starter .st-steps { margin: 0; padding-left: 20px; display: grid; gap: 4px; color: var(--mut); font-size: 13.5px; line-height: 1.35; }
+.starter .cta:disabled { opacity: 0.45; }
+.st-list { display: grid; gap: 6px; }
+.st-group > summary { min-height: 40px; display: flex; align-items: center; cursor: pointer; font-weight: 700; font-size: 14px; color: var(--ink); }
+.st-rows { display: grid; gap: 4px; padding: 2px 0 6px; }
+.st-row { grid-template-columns: auto minmax(0, 1fr) auto; }
+.st-pv { margin: 0 4px 6px 22px; color: var(--mut); font-size: 13px; line-height: 1.4; overflow-wrap: anywhere; }
+.st-pv[hidden] { display: none; }
 
 /* look */
 .skins { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
@@ -235,3 +243,12 @@ textarea.field { resize: none; line-height: 1.35; font-family: inherit; }
 }
 @media (max-width: 360px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .skins { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (prefers-reduced-motion: reduce) { .pulse { animation: none; } }
+
+/* the first seconds and a tiny vault: never a bare screen (2026-11-04) */
+.boot { position: fixed; z-index: 3; left: 0; right: 0; top: 46%; margin: 0; text-align: center; font: 700 14px/1 var(--display); letter-spacing: 0.22em; text-transform: uppercase; color: var(--cyan); text-shadow: 0 0 16px rgba(var(--cyan-rgb), 0.7); animation: beat 1.6s ease-in-out infinite; pointer-events: none; }
+.boot[hidden] { display: none; }
+.sparse { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; border-radius: 18px; padding: 6px 6px 6px 12px; }
+.sparse span { flex: 1 1 160px; min-width: 0; }
+.sparse button { min-height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--line-hi); background: rgba(var(--cyan-rgb), 0.1); color: var(--cyan); font: 700 12px/1 var(--ui); letter-spacing: 0.08em; text-transform: uppercase; }
+.sparse button[hidden] { display: none; }
+@media (prefers-reduced-motion: reduce) { .boot { animation: none; } }
