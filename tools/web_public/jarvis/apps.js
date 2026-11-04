@@ -82,6 +82,8 @@ export const BUILT_INS = Object.freeze([
   app('forum', 'Forum', 'trading', '#b8e04a', 'Morning briefing at the real NY hour', { glyph: '\u0393' }),
   app('labyrinth', 'Labyrinth', 'trading', '#ff4d57', 'The risk maze: size your eval', { glyph: '\u039e' }),
   app('argus', 'Argus', 'trading', '#3ad7ff', 'The hundred eyes: what to fix', { glyph: '\u0391' }),
+  app('nemesis', 'Nemesis', 'trading', '#8a6bff', 'The fallen trades: what went wrong', { glyph: '\u039d' }),
+  app('chronos', 'Chronos', 'trading', '#d4a574', 'Time and the session clock', { glyph: '\u03a7' }),
   app('planner', 'Planner', 'life', '#60a5fa', 'Calendar, tasks and projects', { icon: '../planner/icon-192.png', live: false }),
   app('mind', 'Mind', 'life', '#5eead4', 'Your vault as a living 3D brain', { glyph: '\u03a9' }),
   app('arena', 'Arena', 'life', '#ffb547', 'Olympian ranks: XP for discipline', { glyph: '\u0391' }),

@@ -125,7 +125,7 @@ const dayWord = (dn, et) => (dn === et.dn ? 'today' : dn === et.dn + 1 ? 'tomorr
 const ask = (value) => ({ type: 'ask', value });
 const open = (value, route) => (route ? { type: 'open', value, route } : { type: 'open', value });
 const MODE_OF_APP = { zenith: 'trading', fates: 'trading', oracle: 'trading', odeon: 'trading', planner: 'life', ascend: 'life', arena: 'life', kalshi: 'business', tyche: 'business', hermes: 'business',
-  ares: 'trading', forum: 'trading', argus: 'trading', labyrinth: 'trading', plutus: 'business', athena: 'research', datacity: 'research', prometheus: 'research', tree: 'research', mind: 'research', pantheon: 'research' };
+  ares: 'trading', forum: 'trading', argus: 'trading', nemesis: 'trading', chronos: 'trading', labyrinth: 'trading', plutus: 'business', athena: 'research', datacity: 'research', prometheus: 'research', tree: 'research', mind: 'research', pantheon: 'research' };
 const APP_NAME = { datacity: 'Data City', prometheus: 'Prometheus', tree: 'DAPHNE', mind: 'the Mind', pantheon: 'Pantheon', fates: 'Fates', oracle: 'Oracle', odeon: 'Odeon', hermes: 'Hermes', tyche: 'Tyche', arena: 'Arena' };
 
 /** The rule items for every mode, most urgent first. No key, no network: only what D holds. */

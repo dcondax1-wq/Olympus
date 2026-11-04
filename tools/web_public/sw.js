@@ -94,7 +94,7 @@ const NAV_WAIT_MS = 3500;
 let SLOW_UNTIL = 0;       // the site was just slow (the page waited NAV_WAIT_MS): data.json / home.json then wait 0.4 s, not 3.5 s
 const COPY_CLIENTS = new Map();   // a page (client id) answered from the saved copy -> until when its data.json / home.json are too
 const BADGE = 'le-badge', BADGE_URL = './__badge';
-const OTHER_APPS = ['jarvis/', 'planner/', 'kalshi/', 'datacity/', 'mind/', 'tree/', 'oracle/', 'odeon/', 'fates/', 'hermes/', 'prometheus/', 'tyche/', 'pantheon/', 'olympus/', 'arena/', 'bridge/', 'ares/', 'plutus/', 'athena/', 'forum/', 'labyrinth/', 'argus/']; // own folders (own workers or none): never handled or cached here
+const OTHER_APPS = ['jarvis/', 'planner/', 'kalshi/', 'datacity/', 'mind/', 'tree/', 'oracle/', 'odeon/', 'fates/', 'hermes/', 'prometheus/', 'tyche/', 'pantheon/', 'olympus/', 'arena/', 'bridge/', 'ares/', 'plutus/', 'athena/', 'forum/', 'labyrinth/', 'argus/', 'nemesis/', 'chronos/']; // own folders (own workers or none): never handled or cached here
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=p111030', './icons/apple-touch-icon.png?v=p111030', './icons/icon-512.png?v=p111030'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });
 self.addEventListener('activate', (e) => {

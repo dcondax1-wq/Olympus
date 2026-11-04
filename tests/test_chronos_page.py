@@ -99,8 +99,8 @@ def part_a():
     fx = json.loads(rd(PAGE, "fixture.json"))
     check("a. the demo fixture holds 8 LIT trades with their 1-minute paths and is marked demo, under 100 KB",
           len(fx["trades"]) == 8 and fx["demo"] is True and all(len(t["bars"]["c"]) > 100 and t["strat"] == "LIT" for t in fx["trades"]) and os.path.getsize(os.path.join(PAGE, "fixture.json")) < 100_000)
-    check("a. the shared olympus/ files were not edited for this app (the kit does not know 'chronos': the page sets its own accent)",
-          "chronos" not in rd(WEB, "olympus", "olympus.js") and "--oly-accent', '#9d8cff'" in html)
+    check("a. the kit knows 'chronos' (olympus.js APPS, amber-bronze #d4a574 so it differs from Nemesis) and the page sets the same accent inline",
+          "chronos: ['Chronos', '\u03a7', '#d4a574']" in rd(WEB, "olympus", "olympus.js") and "--oly-accent', '#d4a574'" in html)
 
 
 # ------------------------------------------------------------------------------------------------ b. the maths
