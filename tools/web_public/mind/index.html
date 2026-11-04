@@ -12,8 +12,9 @@
 <link rel="stylesheet" href="../olympus/olympus.css?v=o2">
 <script src="../olympus/themes.js?v=o2"></script>
 <script src="../olympus/olympus.js?v=o2" data-app="mind"></script>
-<link rel="stylesheet" href="mind.css?v=m4">
-<script type="module" src="main.js?v=m4"></script>
+<link rel="stylesheet" href="mind.css?v=m5">
+<link rel="stylesheet" href="panels.css?v=m5">
+<script type="module" src="main.js?v=m5"></script>
 </head>
 <body>
 <canvas id="gl" aria-label="Your notes as a 3D brain. Drag to turn, pinch to zoom, tap a note to open it."></canvas>
@@ -46,9 +47,22 @@
       </button>
       <ul id="results" class="glass" role="listbox" aria-label="Matching notes" hidden></ul>
     </form>
+    <nav id="dock" class="dock" aria-label="Mind pages">
+      <button type="button" data-panel="home" aria-pressed="false" aria-label="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>Home</span></button>
+      <button type="button" data-panel="notes" aria-pressed="false" aria-label="Notes"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="9" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="11" y="11" width="9" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.8" opacity=".75"/></svg><span>Notes</span></button>
+      <button type="button" data-panel="days" aria-pressed="false" aria-label="Days timeline"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 10h16M9 3v4m6-4v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Days</span></button>
+      <button type="button" data-panel="learned" aria-pressed="false" aria-label="What Jarvis learned"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M18 17l.8 2.2L21 20l-2.2.8L18 23l-.8-2.2L15 20l2.2-.8z" fill="currentColor"/></svg><span>Learned</span></button>
+      <button type="button" data-panel="graph" aria-pressed="false" aria-label="Links graph"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="7" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="6" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="18" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 8l8-1.4M7.4 9.2l3.3 6.8m5.8-7.8-3.2 7.8" stroke="currentColor" stroke-width="1.6"/></svg><span>Graph</span></button>
+      <button type="button" data-panel="review" aria-pressed="false" aria-label="Review quiz"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m8.5 12.2 2.4 2.4 4.6-5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Review</span><b class="badge" hidden></b></button>
+      <button type="button" data-panel="teach" aria-pressed="false" aria-label="Teach Jarvis"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-7l-4 3.5V16H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 8v5M9.5 10.5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Teach</span></button>
+      <button type="button" data-panel="stats" aria-pressed="false" aria-label="Stats"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11m7 9V4m7 16v-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span>Stats</span></button>
+      <button type="button" data-panel="look" aria-pressed="false" aria-label="Look and sound"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="8.5" cy="10" r="1.3" fill="currentColor"/><circle cx="12" cy="7.8" r="1.3" fill="currentColor"/><circle cx="15.6" cy="10" r="1.3" fill="currentColor"/><path d="M12 20c-1.5 0-1.8-1.4-1-2.4.8-1 .4-2.6-1.2-2.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><span>Look</span></button>
+    </nav>
+
   </div>
   <p id="demo" class="demo" hidden><b>Demo</b> · Connect your vault in Jarvis ⋯ → Connect Obsidian</p>
   <p id="focusbar" class="focusbar" hidden><i></i><span>Focus</span><b id="focus-name"></b><button id="focus-exit" type="button" aria-label="Leave focus">×</button></p>
+  <p id="filterbar" class="focusbar filterbar" hidden><i></i><span id="filter-kind">Showing</span><b id="filter-name"></b><button id="filter-exit" type="button" aria-label="Clear the filter">×</button></p>
 </header>
 
 <div id="tl" class="tl" hidden aria-live="polite"><span id="tl-date"></span><i><b id="tl-bar"></b></i><span id="tl-count"></span></div>
@@ -78,8 +92,14 @@
   <div id="c-snippet" class="c-md"></div>
   <div id="c-learned" class="c-learned"></div>
   <div id="c-near" class="c-near"></div>
-  <button id="c-fly" class="fly" type="button">Fly to it</button>
+  <div class="c-acts"><button id="c-fly" class="fly" type="button">Fly to it</button><a id="c-obsidian" class="fly alt" href="#" hidden>Open in Obsidian</a></div>
 </aside>
+
+<!-- the nine pages of the dock (Home, Notes, Days, Learned, Graph, Review, Teach, Stats, Look): one glass sheet above the orb's corner -->
+<section id="panel" class="panel glass" hidden aria-labelledby="p-title">
+  <header><h2 id="p-title">Home</h2><span id="p-sub" class="p-sub"></span><button id="p-close" class="close" type="button" aria-label="Close">×</button></header>
+  <div id="p-body" class="p-body"></div>
+</section>
 
 <!-- the one bottom sheet: what Jarvis learned, the thought stream, the galaxies (focus mode), the numbers -->
 <footer id="bottom" class="sheet glass">

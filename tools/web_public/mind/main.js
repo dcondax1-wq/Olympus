@@ -7,6 +7,9 @@
 // the brain "thinks": quiet pulses run along its links. Jarvis's memories ring "Me" in cyan.
 // While open inside Jarvis it posts its live card (notes, links, learned this week) to Jarvis.
 // Themes: applyTheme(theme) restyles the page; it follows olympus.js's theme (OLYMPUS.theme() / onTheme) when the kit has one.
+// 2026-11-04 overhaul: the dock under the search opens nine pages (panels.js: Home, Notes, Days, Learned, Graph, Review, Teach, Stats,
+// Look); graph filters and a tag filter dim the brain (insights.js filterSet); Teach writes into Jarvis's own keys (teach.js, the one
+// writer); skins (skins.js) tint the UI and the nebula sky; ambient dust, sounds through OLYMPUS.sfx, Obsidian deep links on the card.
 import * as THREE from '../jarvis/three.module.min.js';
 import { openFeed } from './data.js';
 import { watchLive, withLive } from './live.js';
@@ -16,6 +19,12 @@ import { anchorsFor, createLayoutHost, ringRadius, ringSpot } from './layout.js'
 import { Brain } from './render.js';
 import { OrbitRig } from './controls.js';
 import { createUI } from './ui.js';
+import { createPanels } from './panels.js';
+import { filterSet, obsidianLink } from './insights.js';
+import { teach } from './teach.js';
+import { createSound } from './sound.js';
+import { SKINS, skinById } from './skins.js';
+import { load, save } from './store.js';
 
 const O = window.OLYMPUS || null;          // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
 const QUALITY_KEY = 'mind.quality';        // the old per-app key: read only when the kit is missing
@@ -31,8 +40,14 @@ const saved = savedQuality();
 const state = {
   graph: null, mode: 'loading', filter: null, query: '', matches: null, focus: -1, lapse: null, pending: null,
   quality: saved || (O && O.lite() ? 'low' : autoQuality()), chosen: !!saved, fps: 0, settled: false,
-  view: savedView(), streamKeys: new Set(),
+  view: savedView(), streamKeys: new Set(), gmode: 'all', gmin: 0, tag: null,
 };
+// this phone's choices (skin, atmosphere, sound, the Obsidian vault name) and the review cards, under 'mind.' keys (store.js)
+const prefs = { skin: 'auto', sky: true, dust: true, sound: true, vault: '', ...load('prefs', {}) };
+if (!SKINS.some((k) => k.id === prefs.skin)) prefs.skin = 'auto';
+let review = load('review', { cards: {}, days: [] });
+if (!review || typeof review !== 'object' || typeof review.cards !== 'object') review = { cards: {}, days: [] };
+const sound = createSound(O, prefs.sound !== false);
 
 const ui = createUI({
   onSearch(q) {
@@ -44,22 +59,12 @@ const ui = createUI({
     ui.results(found.slice(0, 6), g.clusters, q);
     look();
   },
-  onPick(id) { state.query = ''; state.matches = null; focus(id, true); },
-  onFly(id) { focus(id, true); },
+  onPick(id) { state.query = ''; state.matches = null; panels.close(); focus(id, true); },
+  onFly(id) { panels.close(); focus(id, true); },
   onCloseCard: unfocus,
-  onFilter(key) {                                // focus mode: one galaxy lit, the rest dimmed to a whisper
-    if (!state.graph) return;
-    state.filter = key;
-    const c = state.graph.clusters.find((k) => k.key === key) || null;
-    ui.chips(state.graph.clusters, key);
-    ui.focusBar(c);
-    look();
-    if (!brain) return;
-    if (c && brain.centres) {
-      const ring = c.key === 'memory' && brain.ringInfo, p = ring || brain.centres[c.i];
-      rig.flyTo(p, Math.max(90, (ring ? ring.r * 1.4 : p.r) * 3));
-    } else home();
-  },
+  onFilter(key) { applyFilter(key); },
+  onClearFilter() { clearPill(); },
+  obsidian: (n) => obsidianLink(prefs.vault, n),
   onView() { setView(state.view === 'stars' ? 'galaxy' : 'stars'); ui.toast(state.view === 'stars' ? 'Constellation view' : 'Galaxy view'); },
   resolve: (name) => (state.graph ? resolve(state.graph, name) : null),
   onToday(open) {
@@ -79,6 +84,76 @@ const ui = createUI({
 });
 ui.quality(state.quality);
 ui.view(state.view);
+
+/** Focus mode: one galaxy lit, the rest dimmed to a whisper (a chip, a galaxy row on a page, Escape or × to leave). */
+function applyFilter(key) {
+  if (!state.graph) return;
+  state.filter = key;
+  const c = state.graph.clusters.find((k) => k.key === key) || null;
+  ui.chips(state.graph.clusters, key);
+  ui.focusBar(c);
+  look();
+  pushPanels();
+  if (!brain) return;
+  if (c && brain.centres) {
+    const ring = c.key === 'memory' && brain.ringInfo, p = ring || brain.centres[c.i];
+    rig.flyTo(p, Math.max(90, (ring ? ring.r * 1.4 : p.r) * 3));
+  } else home();
+}
+
+// the nine pages of the dock (panels.js); they read a context and call these handlers
+const panels = createPanels({
+  fly(id) { panels.close(); focus(id, true); sound.play('tick'); },
+  cluster(key) { panels.close(); applyFilter(key); },
+  tag(t) { state.tag = t; showPill(); look(); pushPanels(); sound.play('tap'); },
+  gmode(mode, min) { state.gmode = mode; state.gmin = min; showPill(); look(); pushPanels(); sound.play('tap'); },
+  replay(items) { panels.close(); replayItems(items); },
+  teach(input) {
+    const r = teach(input);
+    if (r.ok) sound.play(input.kind === 'note' ? 'portal' : 'rankup');
+    pushPanels();
+    return r;
+  },
+  skin(id) { prefs.skin = id; save('prefs', prefs); applySkin(); pushPanels(); sound.play('tap'); },
+  pref(name, value) {
+    prefs[name] = value;
+    save('prefs', prefs);
+    if (name === 'sound') sound.set(value);
+    if (name === 'sky' || name === 'dust') applyAmbient();
+    if (name === 'vault' && state.focus >= 0 && state.graph) ui.card.show(state.graph.nodes[state.focus], state.graph);
+    pushPanels();
+    if (name === 'sound' && value) sound.play('tap');
+  },
+  review(next) { review = next; save('review', review); pushPanels(); },
+  play: (name) => sound.play(name),
+  surprise() {
+    const g = state.graph, pool = g ? g.nodes.filter((n) => n.kind !== 'me') : [];
+    if (!pool.length) return;
+    panels.close();
+    focus(pool[Math.floor(Math.random() * pool.length)].id, true);
+    sound.play('portal');
+  },
+  toast: (t) => ui.toast(t),
+  beforeOpen() { if (state.focus >= 0) unfocus(); },
+});
+
+function pushPanels() {
+  if (!state.graph) return;
+  panels.update({ g: state.graph, mode: state.mode, now: Date.now(), live, prefs, review, tag: state.tag, gmode: state.gmode, gmin: state.gmin,
+    filter: state.filter, focus: state.focus, soundOk: sound.available });
+}
+
+const GMODE_NAMES = { linked: 'linked notes', hubs: 'hubs', orphans: 'orphans', recent: 'edited this week', all: 'every note' };
+/** The pill under the search bar: the tag filter, else the graph filter (× clears it). */
+function showPill() {
+  if (state.tag) ui.filterBar({ kind: 'Tag', name: '#' + state.tag, colour: 'var(--gold)' });
+  else if (state.gmode !== 'all' || state.gmin) ui.filterBar({ kind: 'Showing', name: GMODE_NAMES[state.gmode] + (state.gmin ? ` · ${state.gmin}+ links` : ''), colour: 'var(--cyan)' });
+  else ui.filterBar(null);
+}
+function clearPill() {
+  state.tag = null; state.gmode = 'all'; state.gmin = 0;
+  showPill(); look(); pushPanels();
+}
 
 // ------------------------------------------------------------------ the 3D view (the overlay alone without WebGL)
 let brain = null, rig = null, needsDraw = true;
@@ -171,6 +246,8 @@ function onUpdate(update) {
   state.focus = focusId && next.index.has(focusId) ? next.index.get(focusId) : -1;
   if (state.focus >= 0) ui.card.show(next.nodes[state.focus], next); else ui.card.hide();
   frameFocus();
+  pushPanels();
+  if (d.first) openHome();
   if (brain) {
     place(prev, next, d);
     const sparked = new Set(), me = next.clusters.find((c) => c.key === 'me');
@@ -188,21 +265,31 @@ function onUpdate(update) {
 }
 
 let replayTimers = [];
-/** Replay today's lessons: a spark flies to each note in time order (reduced motion: faster, no flight needed). */
-function replayDay() {
+/** Replay what Jarvis learned: a spark flies to each note in time order (reduced motion: faster, no flight needed). */
+function replayItems(items) {
   replayTimers.forEach(clearTimeout); replayTimers = [];
   const g = state.graph;
   if (!g) return;
-  const log = dayLog(g, Date.now()), me = meId(g), gap = reduced ? 250 : 700;
-  log.items.forEach((l, k) => {
+  const me = meId(g), gap = reduced ? 250 : 700;
+  items.forEach((l, k) => {
     replayTimers.push(setTimeout(() => {
       ui.dayMark(l.t);
       const to = l.i >= 0 ? l.i : me && g.index.has(me) ? g.index.get(me) : -1;
       if (brain && to >= 0) { brain.spark(to); needsDraw = true; }
+      sound.play('tick');
     }, k * gap));
   });
-  replayTimers.push(setTimeout(() => ui.dayMark(null), log.items.length * gap + 900));
-  if (!log.items.length) ui.toast('Nothing learned yet today');
+  replayTimers.push(setTimeout(() => ui.dayMark(null), items.length * gap + 900));
+  if (!items.length) ui.toast('Nothing to replay yet'); else if (items.length > 1) ui.toast(`Replaying ${items.length} things Jarvis learned`);
+}
+
+/** Replay today's lessons (the Today strip). */
+function replayDay() {
+  const g = state.graph;
+  if (!g) return;
+  const log = dayLog(g, Date.now());
+  if (!log.items.length) { ui.toast('Nothing learned yet today'); return; }
+  replayItems(log.items);
 }
 
 /** The thought stream: lessons and edits, newest first; the ones that were not there before slide in. */
@@ -258,6 +345,15 @@ function place(prev, next, d) {
   needsDraw = true;
 }
 
+/** Home opens by itself on the first visit of a session (a half-height dashboard over the brain), on a portrait phone, never under
+ * automation unless ?home=1, never with ?home=0. */
+function openHome() {
+  const q = params.get('home');
+  if (q === '0' || (navigator.webdriver && q !== '1') || matchMedia('(orientation: landscape) and (max-height: 500px)').matches) return;
+  try { if (sessionStorage.getItem('mind.home') === '1' && q !== '1') return; sessionStorage.setItem('mind.home', '1'); } catch (_) { /* no session storage: every visit */ }
+  panels.open('home', { peek: true });
+}
+
 // ------------------------------------------------------------------ look: filter, search, focus, time-lapse
 function look() {
   const g = state.graph;
@@ -265,6 +361,9 @@ function look() {
   const n = g.nodes.length, emph = new Float32Array(n).fill(1);
   const cluster = g.clusters.map((c) => (state.filter && c.key !== state.filter ? 0.03 : 1));
   if (state.filter) for (const node of g.nodes) if (g.clusters[node.cluster].key !== state.filter) emph[node.i] = 0.07;
+  const gset = filterSet(g, state.gmode, state.gmin, Date.now());                 // the Graph page: linked / hubs / orphans / recent / min links
+  if (gset) for (let i = 0; i < n; i++) if (!gset.has(i)) emph[i] = Math.min(emph[i], 0.08);
+  if (state.tag) for (const node of g.nodes) if (!node.tags.includes(state.tag)) emph[node.i] = Math.min(emph[node.i], 0.08);
   if (state.matches) {
     for (let i = 0; i < n; i++) emph[i] = state.matches.has(i) ? 1.6 : Math.min(emph[i], 0.16);
     cluster.forEach((v, k) => { cluster[k] = v * 0.45; });
@@ -283,6 +382,7 @@ function focus(id, fly) {
   const g = state.graph, i = g ? g.index.get(id) : undefined;
   if (i === undefined) return;
   const opened = state.focus !== i;
+  if (!document.getElementById('panel').hidden) panels.close();
   state.focus = i;
   ui.card.show(g.nodes[i], g);
   frameFocus();
@@ -445,6 +545,13 @@ window.mind = {
   get core() { return brain && brain.rc ? brain.rc.passes() : null; },
   get live() { return live ? { ...live.counts, items: live.items.length } : null; },
   get thoughts() { return document.querySelectorAll('#stream li').length; },
+  get panel() { return panels.current; },
+  get review() { const q = panels.review; return q ? { id: q.id, prompt: q.prompt, choices: q.choices, answer: q.answer, kind: q.kind } : null; },
+  get gmode() { return { mode: state.gmode, min: state.gmin }; },
+  get tag() { return state.tag; },
+  get prefs() { return { ...prefs }; },
+  get ambient() { return brain ? { sky: brain.ambient.sky.visible, dust: brain.ambient.dust.visible, motes: brain.ambient.dust.geometry.attributes.aSeed.count } : null; },
+  get dim() { return brain && brain.emph ? Array.from(brain.emph).filter((v) => v < 0.2).length : 0; },
   memoryOnRing: () => {                                  // how far each memory sits from the ring (share of its radius)
     const r = brain && brain.ringInfo, g = state.graph;
     if (!r || !g) return null;
@@ -473,6 +580,7 @@ watchLive((l, first) => {
   const fresh = first ? [] : l.items.filter((x) => !had.has(x.id));
   onUpdate({ ...rawUpdate, snap: withLive(rawUpdate.snap, l) });
   showBrain(l);
+  if (brain) for (const it of fresh) { const idx = state.graph.index.get('live:' + it.id); if (idx !== undefined) { brain.spark(idx); sound.play('portal'); } }
   if (fresh.length) ui.toast('Jarvis learned: ' + fresh[fresh.length - 1].text.slice(0, 90) + (fresh.length > 1 ? ` (+${fresh.length - 1} more)` : ''));
   needsDraw = true;
 });
@@ -499,11 +607,28 @@ function applyTheme(theme) {
   return done;
 }
 
+// ------------------------------------------------------------------ skins (Look page) and the ambient layers
+let skinKeys = [], kitTheme = null;
+/** The chosen skin on top of the OLYMPUS theme: the accent and page colour as CSS variables, the three colours of the nebula sky. 'auto' = the kit alone. */
+function applySkin() {
+  const sk = skinById(prefs.skin), root = document.documentElement.style;
+  for (const k of skinKeys) root.removeProperty(k);
+  skinKeys = [];
+  if (sk.accent) skinKeys = Object.keys(applyTheme({ accent: sk.accent, bg: sk.bg }));
+  else if (kitTheme) applyTheme(kitTheme);
+  const base = sk.bg || (kitTheme && (kitTheme.bg || kitTheme.background)) || THEME;
+  if (brain) { brain.setSky(sk.sky, base); brain.setBackground(base); needsDraw = true; }
+}
+function applyAmbient() { if (brain) { brain.setAmbient({ sky: prefs.sky !== false, dust: prefs.dust !== false }); needsDraw = true; } }
+applyAmbient();
+applySkin();
+
 (function followTheme() {
   const api = window.OLYMPUS || window.Olympus || null;
   if (!api) return;
   try {
-    if (typeof api.theme === 'function') { const t = api.theme(); if (t && typeof t === 'object') applyTheme(t); }
-    if (typeof api.onTheme === 'function') api.onTheme((t) => applyTheme(t));
+    if (typeof api.theme === 'function') { const t = api.theme(); if (t && typeof t === 'object') { kitTheme = t; applyTheme(t); } }
+    if (typeof api.onTheme === 'function') api.onTheme((t) => { kitTheme = t && typeof t === 'object' ? t : null; applyTheme(t); applySkin(); });
   } catch (_) { /* an older kit: the page's own look */ }
+  applySkin();
 })();

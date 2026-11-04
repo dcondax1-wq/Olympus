@@ -1,40 +1,14 @@
 // OLYMPUS Mind: everything on top of the 3D view (plain DOM; vault text only ever goes in as textContent).
 // One top bar (name, state, view, quality, search, time-lapse) and one bottom sheet (what Jarvis learned, the thought
 // stream, the galaxy chips for focus mode, the numbers); the note card is the sheet opened up.
-//   createUI(handlers) -> {mode, stats, chips, focusBar, ticker, stream, results, card, labels, timeLapse, quality, view, toast, noGL, band}
+//   createUI(handlers) -> {mode, stats, chips, focusBar, filterBar, ticker, stream, results, card, labels, timeLapse, quality, view, toast, noGL, band}
 // handlers: onSearch(q), onPick(id), onFilter(key|null), onTimeLapse(), onQuality(), onView(), onCloseCard(), onFly(id),
-//           resolve(name) -> id | null (a [[wikilink]] in the preview)
+//           resolve(name) -> id | null (a [[wikilink]] in the preview), onClearFilter(), obsidian(node) -> obsidian:// link | null
 import { mdPreview } from './markdown.js';
+import { $, el, fmt, big, ago } from './dom.js';
 
-const $ = (id) => document.getElementById(id);
-const fmt = new Intl.NumberFormat('en-US');
-const compact = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 });
-const big = (n) => (n >= 10000 ? compact.format(n) : fmt.format(n));     // 12.3K fits a stat tile
 const MODES = { loading: 'Waking up', live: 'Live vault', demo: 'Demo', offline: 'Vault offline' };
 const TICK_EVERY = 7000;
-
-function el(tag, props = {}, kids = []) {
-  const e = document.createElement(tag);
-  for (const [k, v] of Object.entries(props)) {
-    if (k === 'text') e.textContent = v;
-    else if (k === 'style') for (const [p, x] of Object.entries(v)) e.style.setProperty(p, x);
-    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
-    else e.setAttribute(k, v);
-  }
-  kids.forEach((c) => e.append(c));
-  return e;
-}
-
-function ago(t, now = Date.now()) {
-  if (!t) return 'unknown';
-  const s = Math.max(0, (now - t) / 1000);
-  if (s < 60) return 'just now';
-  if (s < 3600) return `${Math.floor(s / 60)} min ago`;
-  if (s < 86400) return `${Math.floor(s / 3600)} h ago`;
-  if (s < 86400 * 30) return `${Math.floor(s / 86400)} d ago`;
-  const d = new Date(t), sameYear = d.getFullYear() === new Date(now).getFullYear();
-  return d.toLocaleDateString('en-US', sameYear ? { month: 'short', day: 'numeric' } : { month: 'short', year: 'numeric' });
-}
 
 export function createUI(h) {
   // ---------------------------------------------------------------- search
@@ -60,8 +34,10 @@ export function createUI(h) {
   document.addEventListener('pointerdown', (e) => { if (!$('search').contains(e.target)) list.hidden = true; });
   document.addEventListener('keydown', (e) => {
     if (e.key === '/' && document.activeElement !== q) { e.preventDefault(); q.focus(); }
+    const panelOpen = !$('panel').hidden;
     if (e.key === 'Escape' && !$('card').hidden) h.onCloseCard();
-    else if (e.key === 'Escape' && !$('focusbar').hidden && document.activeElement !== q) h.onFilter(null);
+    else if (e.key === 'Escape' && !panelOpen && !$('focusbar').hidden && document.activeElement !== q) h.onFilter(null);
+    else if (e.key === 'Escape' && !panelOpen && !$('filterbar').hidden && document.activeElement !== q) h.onClearFilter();
   });
 
   // ---------------------------------------------------------------- buttons
@@ -72,6 +48,7 @@ export function createUI(h) {
   $('quality').addEventListener('click', () => h.onQuality());
   $('view').addEventListener('click', () => h.onView());
   $('focus-exit').addEventListener('click', () => h.onFilter(null));
+  $('filter-exit').addEventListener('click', () => h.onClearFilter());
   $('c-close').addEventListener('click', () => h.onCloseCard());
   let cardId = null;
   $('c-fly').addEventListener('click', () => { if (cardId) h.onFly(cardId); });
@@ -91,11 +68,14 @@ export function createUI(h) {
   // a galaxy name fades out as it nears either edge instead of sitting under the HUD's glass
   const band = { top: 0, bottom: innerHeight };
   const measure = () => {
-    const t = $('top'), b = $('bottom');
+    const t = $('top'), b = $('bottom'), p = $('panel');
     band.top = t ? t.getBoundingClientRect().bottom + 6 : 0;
     band.bottom = b ? b.getBoundingClientRect().top - 6 : innerHeight;
+    if (p && !p.hidden && p.getBoundingClientRect().width < innerWidth * 0.8) band.bottom = innerHeight;          // a side sheet: the sky stays open
+    else if (p && !p.hidden) band.bottom = Math.min(band.bottom, p.getBoundingClientRect().top - 6);
+    document.documentElement.style.setProperty('--top-h', (t ? t.getBoundingClientRect().bottom : 0).toFixed(0) + 'px');
   };
-  if (typeof ResizeObserver === 'function') { const ro = new ResizeObserver(measure); ['top', 'bottom'].forEach((k) => $(k) && ro.observe($(k))); }
+  if (typeof ResizeObserver === 'function') { const ro = new ResizeObserver(measure); ['top', 'bottom', 'panel'].forEach((k) => $(k) && ro.observe($(k))); }
   addEventListener('resize', measure);
   addEventListener('orientationchange', measure);
   measure();
@@ -131,6 +111,16 @@ export function createUI(h) {
           class: 'chip', type: 'button', 'aria-pressed': String(c.key === current), 'data-key': c.key || '', style: { '--c': c.colour },
           onclick: () => h.onFilter(c.key === current ? null : c.key),
         }, [el('i'), el('span', { text: c.label }), el('small', { text: fmt.format(c.count) })])));
+    },
+
+    /** The tag / filter pill under the top bar ({kind, name, colour} or null). */
+    filterBar(f) {
+      const bar = $('filterbar');
+      bar.hidden = !f;
+      if (!f) return;
+      bar.style.setProperty('--c', f.colour || 'var(--cyan)');
+      $('filter-kind').textContent = f.kind;
+      $('filter-name').textContent = f.name;
     },
 
     /** Focus mode's pill under the top bar (cluster or null). */
@@ -212,6 +202,9 @@ export function createUI(h) {
         $('c-words').textContent = fmt.format(node.words);
         $('c-edited').textContent = ago(node.mtime, now);
         $('c-edited').title = node.mtime ? new Date(node.mtime).toLocaleString() : '';
+        const link = h.obsidian ? h.obsidian(node) : null, ob = $('c-obsidian');
+        ob.hidden = !link;
+        if (link) ob.setAttribute('href', link); else ob.setAttribute('href', '#');
         $('c-snippet').replaceChildren(mdPreview(node.snippet || '', { link: h.resolve, onLink: (id) => h.onFly(id) }));
         $('c-learned').replaceChildren(...graph.learned.filter((l) => l.i === node.i).slice(-3).reverse()
           .map((l) => el('p', {}, [el('b', { text: 'Jarvis learned ' }), document.createTextNode(`${ago(l.t, now)}: ${l.text}`)])));
