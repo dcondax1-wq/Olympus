@@ -157,3 +157,4 @@ label.row { cursor: pointer; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (min-width: 520px) { .themes { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .intro-prev.flip i { transform: scale(1.35); border-color: #fff; }
+.seg.wrap button { flex: 1 1 30%; }
