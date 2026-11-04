@@ -1,0 +1,447 @@
+diff --git a/planner/docs/features-pulse.md b/planner/docs/features-pulse.md
+new file mode 100644
+index 0000000..7b04ba8
+--- /dev/null
++++ b/planner/docs/features-pulse.md
+@@ -0,0 +1,30 @@
++# Pulse (ext-pulse.js)
++
++One sheet with four cards, money first and in plain words. Open it with the **Pulse** button on Today, "Pulse" in All tools, the
++palette ("Pulse", "Money this month", "Close the day"), or the links `#pulse`, `#trading-clock`, `#one-thing`, `#money-month`,
++`#close-the-day`.
++
++- **Trading clock.** Where the New York session is, as a ring and a sentence: before the window, window open before the NY open,
++  the NY session on, no new entries until flat at 15:55, the bots flat for the day, or no session on a weekend. The bots' entry
++  window is 02:00-15:30 ET, the NY open 09:30, flat 15:55 (STRATEGY.md). It counts the time to the next milestone and adds the bots'
++  last live status (a bot in a trade, stopped, eval room thin or how much is left), read only from the device copy `planner.ext.live`
++  that Bots and projects keeps.
++- **Today's one thing.** If you only finish one task today, which? Pick it from up to four suggestions (overdue first, then priority);
++  a big round tick completes it through the Planner's own `snapshot()` + `commit()` (so Undo works) and says the day is a win.
++  Change it any time. Kept on this device only (`planner.pulse.one`, per day).
++- **Money this month.** Income in, costs out and the net so far this month against the same days of last month ("you are $X ahead /
++  behind"), six months of net as bars, the net by project and the three biggest costs. **+ Money in / - Money out** is a two-tap quick
++  add (amount, what for) written to the money log on today's date, the way the money log's own form writes it. A bad amount shows a
++  plain error and adds nothing.
++- **Close the day.** Tasks done and still open, focus minutes, habits checked, money today, the bots' status and your one thing, in a
++  few lines. **Copy** puts them on the clipboard; **Save to my journal** appends them to today's journal entry once (saving twice never
++  duplicates it).
++
++## Notes for the lead (not for the Help sheet)
++- Code: `planner/ext-pulse.js`, loaded by one `<script src="ext-pulse.js">` in `<head>` after ext-board.js. It waits for `planner:ready`
++  and needs `PlannerAPI` (`commit`, `snapshot`, `upsert`, `uid`, `todayKey`, `refreshTasks`, `HB_TOOLS`, `PK_CMDS`).
++- Data: no new synced collection. Money entries and journal text go through the app's own `S.money` / `S.journal` and `commit()`.
++  The only new key is the device key `planner.pulse.one` (`{ day, id }`).
++- Effects: follows the Olympus layer (`--ox-a`, `--ox-b`, `html.ox-move`); no endless animation; reduced motion = none.
++- Pure helpers on `window.__pu`: `sessionClock`, `moneyMonth`, `suggestOne`, `closeLines`, `WIN`, `etNow`.
++- Tests: `planner/tests/pulse.test.js` (PORT env, default 8789; 41 checks).
+diff --git a/planner/ext-pulse.js b/planner/ext-pulse.js
+new file mode 100644
+index 0000000..f828cb1
+--- /dev/null
++++ b/planner/ext-pulse.js
+@@ -0,0 +1,266 @@
++// ===== PULSE: the trading clock, today's one thing, money this month (+ quick add), close the day (ext-pulse.js; docs/features-pulse.md; tests/pulse.test.js) =====
++// (2026-11-04, owner: "more useful, money first, plain words")
++//  - Trading clock: where the New York session is (the bots' entry window 02:00-15:30 ET, the NY open 09:30, flat 15:55) as a ring, the time to the next
++//    milestone, weekends, and the bots' last live status (device copy planner.ext.live, READ ONLY).
++//  - Today's one thing: pick the one task that makes the day a win; a big tick completes it through the Planner's own commit (Undo works).
++//  - Money this month: in, out and net against the same days last month, six months of net as bars, the net by project, and a two-tap quick add
++//    (money in / money out) written through snapshot() + commit() like the app's own money log.
++//  - Close the day: tasks done, focus minutes, habits, money, the bots' status in a few plain lines; Copy, or Save to today's journal (appended).
++// Loaded in <head>; waits for 'planner:ready'. Own data: the device key planner.pulse.one ({ day, id }); nothing is synced. Follows the Olympus layer (--ox-a, --ox-b).
++(function () {
++  'use strict';
++  let A = null, wanted = '', dlg = null, tick = 0, form = '';
++  const get = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
++  const set = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* private mode: this visit only */ } };
++  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
++  const p2 = (n) => String(n).padStart(2, '0');
++  const kOf = (d) => `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
++  const today = () => kOf(new Date());
++  const usd = (v, sign) => { const x = Math.round(Math.abs(v) * 100) / 100, s = '$' + x.toLocaleString('en-US', { minimumFractionDigits: x % 1 ? 2 : 0, maximumFractionDigits: 2 }); return v < -0.004 ? '-' + s : sign && v > 0.004 ? '+' + s : s; };
++  const dur = (m) => { m = Math.max(0, Math.round(m)); return m >= 60 ? `${Math.floor(m / 60)}h${m % 60 ? ' ' + (m % 60) + 'm' : ''}` : `${m}m`; };
++  const isOpen = (x) => !!x && !x.done && x.tag !== 'idea' && !/^Idea:/.test(x.title || '');
++  const est = (x) => (+x.est > 0 ? +x.est : 30);
++  const ONE_KEY = 'planner.pulse.one';
++
++  // =====================================================================================================================
++  // Pure helpers (also on window.__pu for the tests)
++  // =====================================================================================================================
++  // The New York session: [from, to, open, flat] in minutes of the ET day (STRATEGY.md: entries 02:00-15:30, flat 15:55, the NY open 09:30)
++  const WIN = { from: 2 * 60, to: 15 * 60 + 30, open: 9 * 60 + 30, flat: 15 * 60 + 55 };
++  function etNow(ms) {
++    try {
++      const o = {}; for (const x of new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hourCycle: 'h23', weekday: 'short', hour: '2-digit', minute: '2-digit' }).formatToParts(new Date(ms))) o[x.type] = x.value;
++      return { min: (+o.hour % 24) * 60 + +o.minute, wd: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(o.weekday) };
++    } catch (e) { const d = new Date(ms); return { min: d.getUTCHours() * 60 + d.getUTCMinutes(), wd: d.getUTCDay() }; }
++  }
++  // sessionClock(etMin, wd) -> { phase, label, next: { name, mins } | null, frac (0..1 of 02:00-15:55), live: bool }
++  function sessionClock(min, wd) {
++    const span = WIN.flat - WIN.from;
++    if (wd === 0 || wd === 6) return { phase: 'weekend', label: 'No session today', next: { name: wd === 0 ? 'the Sunday evening open' : 'Monday 02:00 ET', mins: null }, frac: 0, live: false };
++    if (min < WIN.from) return { phase: 'before', label: 'Before the window', next: { name: 'the entry window opens (02:00 ET)', mins: WIN.from - min }, frac: 0, live: false };
++    if (min < WIN.open) return { phase: 'window', label: 'Window open, before the NY open', next: { name: 'the NY open (09:30 ET)', mins: WIN.open - min }, frac: (min - WIN.from) / span, live: true };
++    if (min < WIN.to) return { phase: 'open', label: 'Window open, the NY session is on', next: { name: 'the last entry (15:30 ET)', mins: WIN.to - min }, frac: (min - WIN.from) / span, live: true };
++    if (min < WIN.flat) return { phase: 'flat', label: 'No new entries: flat at 15:55', next: { name: 'flat (15:55 ET)', mins: WIN.flat - min }, frac: (min - WIN.from) / span, live: true };
++    return { phase: 'after', label: 'The bots are flat for the day', next: { name: 'tomorrow 02:00 ET', mins: 1440 - min + WIN.from }, frac: 1, live: false };
++  }
++  const left = (m) => (m == null ? '' : m < 60 ? `${Math.max(1, Math.round(m))} min` : `${Math.floor(m / 60)} h ${Math.round(m % 60)} min`);
++
++  // moneyMonth(rows, todayKey, projName) -> { month: { in, out, net, n }, prev: { in, out, net } (the same days of last month), bars: [{ m, net }] (6 months, oldest first), byProj: [{ name, net }], topOut: [{ note, amt }] }
++  function moneyMonth(rows, t, projName) {
++    const ok = (rows || []).filter((m) => m && /^\d{4}-\d{2}-\d{2}$/.test(m.date || '') && (m.kind === 'in' || m.kind === 'out') && +m.amt > 0);
++    const ym = t.slice(0, 7), day = +t.slice(8, 10), py = +ym.slice(0, 4), pm = +ym.slice(5, 7);
++    const prevYm = pm === 1 ? `${py - 1}-12` : `${py}-${p2(pm - 1)}`;
++    const sum = (list) => { const i = list.filter((m) => m.kind === 'in').reduce((a, m) => a + +m.amt, 0), o = list.filter((m) => m.kind === 'out').reduce((a, m) => a + +m.amt, 0); return { in: Math.round(i * 100) / 100, out: Math.round(o * 100) / 100, net: Math.round((i - o) * 100) / 100, n: list.length }; };
++    const cur = ok.filter((m) => m.date.slice(0, 7) === ym && m.date <= t), prev = ok.filter((m) => m.date.slice(0, 7) === prevYm && +m.date.slice(8, 10) <= day);
++    const bars = []; let y = py, mo = pm;
++    for (let i = 0; i < 6; i++) { const key = `${y}-${p2(mo)}`; bars.unshift({ m: key, net: sum(ok.filter((m) => m.date.slice(0, 7) === key)).net }); mo--; if (mo === 0) { mo = 12; y--; } }
++    const pj = new Map(); cur.forEach((m) => { const n = (m.proj && projName ? projName(m.proj) : '') || 'Untagged'; pj.set(n, (pj.get(n) || 0) + (m.kind === 'in' ? +m.amt : -m.amt)); });
++    return { month: sum(cur), prev: sum(prev), bars, byProj: [...pj.entries()].map(([name, net]) => ({ name, net: Math.round(net * 100) / 100 })).sort((a, b) => Math.abs(b.net) - Math.abs(a.net)).slice(0, 4),
++      topOut: cur.filter((m) => m.kind === 'out').sort((a, b) => +b.amt - +a.amt).slice(0, 3).map((m) => ({ note: String(m.note || 'No note').slice(0, 40), amt: +m.amt })) };
++  }
++
++  // suggestOne(tasks, t) -> up to 4 open tasks for today (overdue first, then priority, then the shortest that is still worth a day)
++  function suggestOne(tasks, t) {
++    return (tasks || []).filter((x) => isOpen(x) && x.date && x.date <= t).sort((a, b) => (a.date < t ? 0 : 1) - (b.date < t ? 0 : 1) || (b.p || 0) - (a.p || 0) || est(b) - est(a)).slice(0, 4);
++  }
++
++  // closeText({ day, done, open, focus, habits, habitsOf, in, out, bots }) -> the lines of the close-the-day note
++  function closeLines(o) {
++    const L = [`Day close, ${o.day}`];
++    L.push(`Tasks: ${o.done} done, ${o.open} still open.`);
++    L.push(`Focus: ${o.focus ? dur(o.focus) : 'none logged'}.`);
++    if (o.habitsOf) L.push(`Habits: ${o.habits} of ${o.habitsOf} checked.`);
++    if (o.in || o.out) L.push(`Money today: ${usd(o.in)} in, ${usd(o.out)} out (${usd(o.in - o.out, true)}).`);
++    if (o.bots) L.push(`Bots: ${o.bots}.`);
++    if (o.one) L.push(`The one thing: ${o.one.title}, ${o.one.done ? 'done' : 'not done'}.`);
++    return L;
++  }
++
++  // =====================================================================================================================
++  // The app's data
++  // =====================================================================================================================
++  const projName = (id) => { const p = (A.S.projects || []).find((x) => x && x.id === id); return p ? p.name || p.title || '' : ''; };
++  function liveBots() {
++    try {
++      const c = JSON.parse(get('planner.ext.live') || 'null'), v = c && c.v;
++      if (!v) return null;
++      const accts = [v.lit, v.atlas, v.blitz].filter(Boolean), room = accts.reduce((m, a) => (a && a.roomFrac != null ? Math.min(m, a.roomFrac) : m), 1);
++      return { running: v.running === true ? true : v.running === false ? false : null, label: v.verdict && v.verdict.label ? String(v.verdict.label).slice(0, 30) : '', reason: v.verdict && v.verdict.reason ? String(v.verdict.reason).slice(0, 80) : '', pos: accts.some((a) => a && a.pos && a.pos.qty), room: accts.some((a) => a && a.roomFrac != null) ? room : null };
++    } catch (e) { return null; }
++  }
++  const oneRec = () => { try { const o = JSON.parse(get(ONE_KEY) || 'null'); return o && o.day === today() && o.id ? o : null; } catch (e) { return null; } };
++  const oneTask = () => { const o = oneRec(); return o ? (A.S.tasks || []).find((x) => x && x.id === o.id) || null : null; };
++  function closeInfo() {
++    const t = today(), S = A.S, done = S.tasks.filter((x) => x && x.done && x.doneAt && kOf(new Date(x.doneAt)) === t).length, open = S.tasks.filter((x) => isOpen(x) && x.date && x.date <= t).length;
++    const focus = S.tasks.reduce((a, x) => a + (x && x.fl && +x.fl[t] > 0 ? +x.fl[t] : 0), 0), hs = (S.habits || []).filter((h) => h && (h.name || h.title));
++    const today$ = S.money.filter((m) => m && m.date === t), b = liveBots(), one = oneTask();
++    return { day: t, done, open, focus, habits: hs.filter((h) => Array.isArray(h.done) && h.done.includes(t)).length, habitsOf: hs.length,
++      in: today$.filter((m) => m.kind === 'in').reduce((a, m) => a + (+m.amt || 0), 0), out: today$.filter((m) => m.kind === 'out').reduce((a, m) => a + (+m.amt || 0), 0),
++      bots: b ? [b.label || (b.running === false ? 'stopped' : 'running'), b.room != null ? `eval room ${Math.round(b.room * 100)}%` : ''].filter(Boolean).join(', ') : '', one: one ? { title: one.title || 'Task', done: !!one.done } : null };
++  }
++
++  // =====================================================================================================================
++  // The sheet
++  // =====================================================================================================================
++  function clockHtml() {
++    const e = etNow(Date.now()), c = sessionClock(e.min, e.wd), b = liveBots(), C = 2 * Math.PI * 46;
++    const ring = `<svg class="pu-ring" viewBox="0 0 110 110" role="img" aria-label="${esc(c.label)}"><circle cx="55" cy="55" r="46" class="trk"/><circle cx="55" cy="55" r="46" class="arc ${c.live ? 'live' : ''}" style="stroke-dasharray:${(C * Math.max(0.02, c.frac)).toFixed(1)} ${C.toFixed(1)}"/>`
++      + `<text x="55" y="52" text-anchor="middle" class="t1">${esc(p2(Math.floor(e.min / 60)))}:${esc(p2(e.min % 60))}</text><text x="55" y="68" text-anchor="middle" class="t2">NEW YORK</text></svg>`;
++    const note = b ? [b.running === false ? 'The bots look stopped' + (b.reason ? ': ' + b.reason : '') + '.' : b.label ? `Bots: ${b.label}.` : '', b.pos ? 'A bot is in a trade right now.' : '', b.room != null && b.room < 0.25 ? 'Eval room is thin: a hands-off day.' : b.room != null ? `Eval room ${Math.round(b.room * 100)}% left.` : ''].filter(Boolean)
++      : ['No live bot status on this phone yet (open Bots and projects once).'];
++    return `<div class="pu-clock">${ring}<div><b class="pu-big">${esc(c.label)}</b>${c.next ? `<p>${c.next.mins != null ? `${esc(left(c.next.mins))} to ${esc(c.next.name)}` : esc(c.next.name)}</p>` : ''}${note.map((n) => `<p class="pu-sm${/stopped|thin|trade/.test(n) ? ' warn' : ''}">${esc(n)}</p>`).join('')}</div></div>`;
++  }
++  function oneHtml() {
++    const t = oneTask();
++    if (t) {
++      return `<div class="pu-one${t.done ? ' done' : ''}"><button type="button" class="pu-tick" data-pu="one-tick" aria-pressed="${!!t.done}" aria-label="${t.done ? 'Mark not done' : 'Mark done'}: ${esc(t.title)}"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></button>`
++        + `<div><b>${esc(t.title || 'Task')}</b><small>${t.done ? 'Done. The day is already a win.' : `about ${esc(dur(est(t)))} · the one thing for today`}</small></div></div><div class="pu-acts"><button type="button" class="pu-b" data-pu="one-change">Change it</button></div>`;
++    }
++    const sug = suggestOne(A.S.tasks, today());
++    if (!sug.length) return '<p class="pu-sm">No open task for today. Add one, then pick the one that makes today a win.</p>';
++    return '<p class="pu-sm">If you only finish one thing today, what is it?</p>' + sug.map((x) => `<button type="button" class="pu-pick" data-pu="one-pick" data-id="${esc(x.id)}"><b>${esc(x.title || 'Task')}</b><small>${x.date < today() ? 'overdue · ' : ''}about ${esc(dur(est(x)))}${(x.p || 0) >= 2 ? ' · high priority' : ''}</small></button>`).join('');
++  }
++  function moneyHtml() {
++    const M = moneyMonth(A.S.money, today(), projName), mx = Math.max(1, ...M.bars.map((b) => Math.abs(b.net)));
++    const d = M.month.net - M.prev.net, none = !M.month.n && !M.prev.n && M.bars.every((b) => !b.net);
++    const mon = (ym) => new Date(+ym.slice(0, 4), +ym.slice(5, 7) - 1, 15).toLocaleDateString(undefined, { month: 'short' });
++    return (none ? '<p class="pu-sm">No money logged yet. Add the first entry below: income in, costs out. It shows up here and in the money log.</p>'
++      : `<div class="pu-stats"><div><b class="${M.month.net >= 0 ? 'up' : 'down'}">${esc(usd(M.month.net, true))}</b><span>net this month</span></div><div><b>${esc(usd(M.month.in))}</b><span>in</span></div><div><b>${esc(usd(M.month.out))}</b><span>out</span></div></div>`
++        + `<p class="pu-sm">Same days last month: ${esc(usd(M.prev.net, true))}. ${M.prev.n || M.month.n ? (d >= 0 ? `You are ${esc(usd(d))} ahead.` : `You are ${esc(usd(-d))} behind.`) : ''}</p>`
++        + `<div class="pu-bars" role="img" aria-label="Net money, last six months">${M.bars.map((b) => `<i class="${b.net >= 0 ? 'up' : 'down'}${b.m === today().slice(0, 7) ? ' cur' : ''}" style="--h:${Math.round(Math.abs(b.net) / mx * 100)}%" title="${esc(mon(b.m))}: ${esc(usd(b.net, true))}"><em>${esc(mon(b.m))}</em></i>`).join('')}</div>`
++        + (M.byProj.length ? `<p class="pu-sm">By project: ${M.byProj.map((x) => `${esc(x.name)} ${esc(usd(x.net, true))}`).join(' · ')}</p>` : '')
++        + (M.topOut.length ? `<p class="pu-sm">Biggest costs: ${M.topOut.map((x) => `${esc(x.note)} ${esc(usd(x.amt))}`).join(' · ')}</p>` : ''))
++      + (form ? `<form class="pu-form" data-pu-form="${esc(form)}"><label>${form === 'in' ? 'Money in' : 'Money out'} ($)<input class="pu-in" name="amt" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00" aria-label="Amount in dollars"></label><label>What for<input class="pu-in" name="note" type="text" maxlength="60" autocomplete="off" placeholder="${form === 'in' ? 'Payout, tips, sale' : 'Fee, rent, data'}" aria-label="What it was for"></label>`
++        + `<div class="pu-acts"><button type="submit" class="pu-b go">Add</button><button type="button" class="pu-b" data-pu="money-cancel">Cancel</button></div><p class="pu-err" role="alert" hidden></p></form>`
++        : '<div class="pu-acts"><button type="button" class="pu-b" data-pu="money-in">+ Money in</button><button type="button" class="pu-b" data-pu="money-out">- Money out</button></div>');
++  }
++  function closeHtml() {
++    const lines = closeLines(closeInfo());
++    return `<ul class="pu-lines">${lines.map((l, i) => `<li${i ? '' : ' class="h"'}>${esc(l)}</li>`).join('')}</ul><div class="pu-acts"><button type="button" class="pu-b go" data-pu="close-copy">Copy</button><button type="button" class="pu-b" data-pu="close-save">Save to my journal</button></div><p class="pu-sm" id="puMsg" role="status"></p>`;
++  }
++  function paint(force) {
++    if (!dlg) return;
++    dlg.querySelector('#puClock').innerHTML = clockHtml();
++    dlg.querySelector('#puOne').innerHTML = oneHtml();
++    if (force || !dlg.contains(document.activeElement) || !document.activeElement.closest('.pu-form')) dlg.querySelector('#puMoney').innerHTML = moneyHtml();
++    dlg.querySelector('#puClose').innerHTML = closeHtml();
++    const sub = dlg.querySelector('#puSub'); if (sub) sub.textContent = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
++  }
++  function msg(t) { const m = dlg && dlg.querySelector('#puMsg'); if (m) m.textContent = t; try { A.toast(t); } catch (e) { /* the line stays */ } }
++  function open(where) {
++    if (!dlg) {
++      document.body.insertAdjacentHTML('beforeend', `<dialog id="puPulse" class="pu" aria-label="Pulse"><div class="pu-bg" aria-hidden="true"><i></i><i></i></div>
++        <button type="button" class="pu-x" data-pu="close" aria-label="Close Pulse"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
++        <div class="pu-in" tabindex="-1"><header><h2>Pulse</h2><p id="puSub"></p></header>
++        <section class="pu-card" id="puClockCard" aria-label="Trading clock"><h3>Trading clock</h3><div id="puClock"></div></section>
++        <section class="pu-card" id="puOneCard" aria-label="Today's one thing"><h3>Today's one thing</h3><div id="puOne"></div></section>
++        <section class="pu-card" id="puMoneyCard" aria-label="Money this month"><h3>Money this month</h3><div id="puMoney"></div></section>
++        <section class="pu-card" id="puCloseCard" aria-label="Close the day"><h3>Close the day</h3><div id="puClose"></div></section>
++        <div class="pu-acts pu-end"><button type="button" class="pu-b" data-pu="close">Close</button></div></div></dialog>`);
++      dlg = document.getElementById('puPulse');
++      dlg.addEventListener('click', (e) => { const b = e.target.closest('[data-pu]'); if (b) act(b.dataset.pu, b); });
++      dlg.addEventListener('submit', (e) => { const f = e.target.closest('[data-pu-form]'); if (f) { e.preventDefault(); addMoney(f); } });
++      dlg.addEventListener('close', () => { clearInterval(tick); tick = 0; form = ''; });
++    }
++    paint();
++    if (!dlg.open) { dlg.showModal(); dlg.querySelector('.pu-in').focus(); }
++    clearInterval(tick); tick = setInterval(() => { if (dlg.open) { dlg.querySelector('#puClock').innerHTML = clockHtml(); } }, 30000);
++    const id = { clock: '#puClockCard', one: '#puOneCard', money: '#puMoneyCard', close: '#puCloseCard' }[where];
++    if (id) setTimeout(() => { const c = dlg.querySelector(id); if (c && c.scrollIntoView) c.scrollIntoView({ block: 'start' }); }, 60);
++  }
++  function addMoney(f) {
++    const amt = Math.round(parseFloat(String(f.amt.value).replace(/[$,\s]/g, '')) * 100) / 100, err = f.querySelector('.pu-err');
++    if (!(amt > 0) || amt > 1e7) { err.textContent = 'Type an amount above zero, like 42.50.'; err.hidden = false; return; }
++    const kind = f.getAttribute('data-pu-form') === 'in' ? 'in' : 'out', note = String(f.note.value || '').trim().slice(0, 60);
++    A.snapshot(); A.commit(() => { A.S.money.push({ id: A.uid(), created: Date.now(), kind, amt, date: today(), note, proj: '' }); });
++    form = ''; try { A.render(); } catch (e) { /* the sheet redraws on its own */ }
++    paint(true); A.toast(`${kind === 'in' ? 'Money in' : 'Money out'} ${usd(amt)} added`, true);
++  }
++  function act(a, el) {
++    if (a === 'close') dlg.close();
++    else if (a === 'one-pick') { set(ONE_KEY, JSON.stringify({ day: today(), id: el.dataset.id })); paint(); }
++    else if (a === 'one-change') { try { localStorage.removeItem(ONE_KEY); } catch (e) { /* kept */ } paint(); }
++    else if (a === 'one-tick') {
++      const t = oneTask(); if (!t) return;
++      A.snapshot(); A.commit(() => { t.done = !t.done; if (t.done) t.doneAt = Date.now(); else delete t.doneAt; });
++      try { A.refreshTasks(); } catch (e) { /* redraws on its own */ }
++      paint();
++    } else if (a === 'money-in' || a === 'money-out') { form = a === 'money-in' ? 'in' : 'out'; dlg.querySelector('#puMoney').innerHTML = moneyHtml(); const i = dlg.querySelector('.pu-form input'); if (i) i.focus(); }
++    else if (a === 'money-cancel') { form = ''; dlg.querySelector('#puMoney').innerHTML = moneyHtml(); }
++    else if (a === 'close-copy') { const txt = closeLines(closeInfo()).join('\n'); try { navigator.clipboard.writeText(txt).then(() => msg('Copied'), () => msg('Could not copy here')); } catch (e) { msg('Could not copy here'); } }
++    else if (a === 'close-save') {
++      const txt = closeLines(closeInfo()).join(' '), jd = A.todayKey();
++      A.snapshot(); A.commit(() => { const j = A.upsert(A.S.journal, 'j:' + jd, () => ({ id: 'j:' + jd, date: jd, note: '', mood: 0, rules: '' }), {}); if (!String(j.note || '').includes('Day close,')) j.note = (j.note ? j.note + '\n' : '') + txt; });
++      msg('Saved to today\'s journal');
++    }
++  }
++
++  // =====================================================================================================================
++  // Wiring
++  // =====================================================================================================================
++  const HASHES = { pulse: () => open(), 'trading-clock': () => open('clock'), 'one-thing': () => open('one'), 'money-month': () => open('money'), 'close-the-day': () => open('close') };
++  const readHash = () => { try { const h = decodeURIComponent(location.hash.replace(/^#\/?/, '')).trim(); return Object.prototype.hasOwnProperty.call(HASHES, h) ? h : ''; } catch (e) { return ''; } };
++  wanted = readHash();
++  addEventListener('hashchange', () => { const h = readHash(); if (!h) return; if (A) setTimeout(() => HASHES[h](), 0); else wanted = h; });
++  function register() {
++    if (!A.HB_TOOLS.some((x) => x.id === 'pupulse')) A.HB_TOOLS.push({ id: 'pupulse', g: 'Me', n: 'Pulse', d: 'The trading clock, your one thing, money this month, close the day', k: 'pulse trading clock new york window one thing money month income close the day journal', open: () => open() });
++    const cmd = (def) => { if (!A.PK_CMDS.some((x) => x.id === def.id)) A.PK_CMDS.push(def); };
++    cmd({ id: 'pu-pulse', l: 'Pulse', k: 'pulse trading clock one thing money close', run: () => open() });
++    cmd({ id: 'pu-money', l: 'Money this month', k: 'money month income expenses net add entry', run: () => open('money') });
++    cmd({ id: 'pu-close', l: 'Close the day', k: 'close the day end of day summary journal', run: () => open('close') });
++  }
++  function onMain() {
++    const bar = document.querySelector('#main > .tdy > .td-h > div:last-child');
++    if (!bar || bar.querySelector('[data-puopen]')) return;
++    bar.insertAdjacentHTML('afterbegin', '<button type="button" class="btn sm" data-puopen title="Pulse: trading clock, your one thing, money this month, close the day">Pulse</button>');
++  }
++  const CSS = `
++.pu{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;border:0;padding:0;background:#06070f;color:#eef0fb;overflow:hidden auto;-webkit-overflow-scrolling:touch}
++.pu::backdrop{background:#06070f}
++.pu-bg{position:fixed;inset:0;pointer-events:none;overflow:hidden}
++.pu-bg i{position:absolute;left:50%;top:-10%;width:130vmax;height:70vmax;margin-left:-65vmax;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--ox-a,#6366f1) 26%,transparent),transparent)}
++.pu-bg i+i{top:60%;width:90vmax;height:60vmax;margin-left:-45vmax;background:radial-gradient(closest-side,color-mix(in srgb,var(--ox-b,#06b6d4) 20%,transparent),transparent)}
++.pu-x{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:12px;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#cfd3e6;background:rgba(255,255,255,.08);z-index:3;border:1px solid rgba(255,255,255,.1)}
++.pu-in{position:relative;outline:none;max-width:640px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top,0px)) 16px calc(40px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
++.pu header h2{font-size:26px;font-weight:700;letter-spacing:-.02em;margin:0;background:linear-gradient(135deg,#fff,color-mix(in srgb,var(--ox-a,#6366f1) 40%,#fff));-webkit-background-clip:text;background-clip:text;color:transparent}
++.pu header p{margin:2px 0 0;font-size:13px;color:#a9b0cf}
++.pu-card{border-radius:20px;padding:14px;border:1px solid rgba(255,255,255,.09);background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.025));box-shadow:0 1px 0 rgba(255,255,255,.07) inset,0 24px 50px -28px rgba(0,0,0,.8)}
++.pu-card h3{margin:0 0 10px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#a9b0cf}
++.pu-clock{display:flex;align-items:center;gap:14px}.pu-ring{flex:none;width:104px;height:104px}.pu-ring .trk{fill:none;stroke:rgba(255,255,255,.1);stroke-width:7}
++.pu-ring .arc{fill:none;stroke:#8b92b2;stroke-width:7;stroke-linecap:round;transform:rotate(-90deg);transform-origin:55px 55px}.pu-ring .arc.live{stroke:var(--ox-b,#06b6d4);filter:drop-shadow(0 0 6px var(--ox-b,#06b6d4))}
++.pu-ring .t1{fill:#fff;font:700 19px system-ui,sans-serif;font-variant-numeric:tabular-nums}.pu-ring .t2{fill:#a9b0cf;font:600 7.5px system-ui,sans-serif;letter-spacing:.14em}
++.pu-big{font-size:17px;line-height:1.25;display:block}.pu-clock p{margin:3px 0 0;font-size:13.5px;color:#cfd3e6}.pu-sm{margin:8px 0 0;font-size:13px;color:#cfd3e6}.pu-sm.warn{color:#fbbf24}
++.pu-one{display:flex;align-items:center;gap:12px;padding:10px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}.pu-one b{display:block;font-size:16px;overflow-wrap:anywhere}.pu-one small{color:#a9b0cf;font-size:12.5px}
++.pu-one.done{border-color:color-mix(in srgb,var(--ox-b,#06b6d4) 60%,transparent);box-shadow:0 0 18px color-mix(in srgb,var(--ox-b,#06b6d4) 30%,transparent)}.pu-one.done b{text-decoration:line-through;color:#a9b0cf}
++.pu-tick{flex:none;width:48px;height:48px;border-radius:50%;border:2px solid #8b92b2;background:none;color:transparent;display:grid;place-items:center;padding:0}.pu-tick[aria-pressed="true"]{background:var(--ox-b,#06b6d4);border-color:transparent;color:#fff}
++.pu-pick{display:block;width:100%;min-height:44px;margin-top:6px;padding:8px 12px;text-align:left;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:inherit;font:inherit;cursor:pointer}.pu-pick b{display:block;overflow-wrap:anywhere}.pu-pick small{color:#a9b0cf;font-size:12.5px}
++.pu-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}.pu-stats div{padding:8px 4px;border-radius:12px;background:rgba(255,255,255,.05)}.pu-stats b{display:block;font-size:18px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.pu-stats span{font-size:11px;color:#a9b0cf}
++.pu b.up{color:#4ade80}.pu b.down{color:#fb7185}
++.pu-bars{display:flex;align-items:flex-end;gap:6px;height:84px;margin-top:10px;padding-bottom:14px}.pu-bars i{position:relative;flex:1;height:max(4px,var(--h));border-radius:5px 5px 2px 2px;opacity:.85}.pu-bars i.up{background:linear-gradient(180deg,#4ade80,#16a34a)}.pu-bars i.down{background:linear-gradient(180deg,#fb7185,#be123c)}.pu-bars i.cur{opacity:1;box-shadow:0 0 10px rgba(255,255,255,.25)}
++.pu-bars em{position:absolute;left:0;right:0;bottom:-15px;text-align:center;font:600 10px system-ui,sans-serif;font-style:normal;color:#a9b0cf}
++.pu-lines{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:14px}.pu-lines li.h{font-weight:700;color:#fff}
++.pu-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.pu-end{justify-content:center}
++.pu-b{min-height:44px;padding:0 16px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:inherit;font:inherit;cursor:pointer}
++.pu-b.go{background:linear-gradient(135deg,var(--ox-a,#6366f1),var(--ox-b,#06b6d4));border-color:transparent;color:#fff;font-weight:600}
++.pu-form{display:grid;gap:8px;margin-top:10px}.pu-form label{display:grid;gap:4px;font-size:12px;color:#a9b0cf}.pu-in{min-height:44px;padding:0 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.3);color:#fff;font-size:16px}.pu-err{margin:0;color:#fb7185;font-size:13px}
++html:not(.ox-move) .pu *{transition:none!important}
++@media (prefers-reduced-motion:reduce){.pu *{animation:none!important;transition:none!important}}
++`;
++  function init(api) {
++    A = api;
++    try { document.head.insertAdjacentHTML('beforeend', `<style id="puStyle">${CSS}</style>`); } catch (e) { /* no styles, the sheet still works */ }
++    register();
++    const main = document.getElementById('main');
++    if (main) new MutationObserver(onMain).observe(main, { childList: true });
++    document.addEventListener('click', (e) => { if (e.target && e.target.closest && e.target.closest('[data-puopen]')) open(); });
++    onMain();
++    if (wanted) { const h = wanted; wanted = ''; setTimeout(() => HASHES[h](), 0); }
++  }
++  function ready(api) {
++    if (A || !api || !Array.isArray(api.HB_TOOLS) || !Array.isArray(api.PK_CMDS) || typeof api.commit !== 'function' || typeof api.upsert !== 'function') return;
++    try { init(api); } catch (e) { console.error('Planner Pulse failed to start:', e); }
++  }
++  addEventListener('planner:ready', (e) => ready(e.detail));
++  if (window.PlannerAPI) ready(window.PlannerAPI);
++  window.__pu = { sessionClock, moneyMonth, suggestOne, closeLines, WIN, etNow };
++})();
+diff --git a/planner/index.html b/planner/index.html
+index d60377f..6834468 100644
+--- a/planner/index.html
++++ b/planner/index.html
+@@ -14,6 +14,7 @@
+ <script src="ext-olympus.js"></script>
+ <script src="ext-temple.js"></script>
+ <script src="ext-board.js"></script>
++<script src="ext-pulse.js"></script>
+ <meta name="apple-mobile-web-app-capable" content="yes">
+ <meta name="apple-mobile-web-app-status-bar-style" content="default">
+ <meta name="apple-mobile-web-app-title" content="Planner">
+diff --git a/planner/tests/pulse.test.js b/planner/tests/pulse.test.js
+new file mode 100644
+index 0000000..7cbd64a
+--- /dev/null
++++ b/planner/tests/pulse.test.js
+@@ -0,0 +1,121 @@
++// Pulse layer (ext-pulse.js): the trading clock, today's one thing, money this month (+ quick add), close the day.
++// node planner/tests/pulse.test.js   Serve the site first (see olympus.test.js); PORT env, default 8789. Clock: Fri 2026-09-04 12:30 NY.
++const { chromium } = require('playwright');
++const L = require('./lib-todayorg.js');
++const { wait, open, fullState, seedNq, st, TODAY } = L;
++(async () => {
++  let checks = 0;
++  const errs = [], ok = (c, m) => { checks++; if (!c) errs.push(m); };
++  const b = await chromium.launch();
++
++  // ---------- 1. pure helpers ----------
++  let { ctx, p, errs: pe } = await open(b, { state: fullState(), seed: seedNq() });
++  const pure = await p.evaluate(() => {
++    const U = window.__pu, c = (min, wd) => { const r = U.sessionClock(min, wd); return [r.phase, r.next && r.next.mins, Math.round(r.frac * 100)]; };
++    const rows = [{ kind: 'in', amt: 800, date: '2026-09-02', proj: 'a' }, { kind: 'out', amt: 120, date: '2026-09-03', note: 'Ads', proj: 'a' }, { kind: 'in', amt: 40, date: '2026-09-04' }, { kind: 'in', amt: 1500, date: '2026-08-20' },
++      { kind: 'out', amt: 50, date: '2026-08-02', note: 'Data' }, { kind: 'in', amt: 100, date: '2026-08-31' }, { kind: 'out', amt: -5, date: '2026-09-01' }, { kind: 'zzz', amt: 9, date: '2026-09-01' }, null, { kind: 'in', amt: 5, date: 'junk' }];
++    const M = U.moneyMonth(rows, '2026-09-04', (id) => (id === 'a' ? 'Alpha' : ''));
++    const jan = U.moneyMonth([{ kind: 'out', amt: 30, date: '2025-12-02' }, { kind: 'in', amt: 10, date: '2026-01-03' }], '2026-01-04');
++    const tasks = [{ id: 'a', date: '2026-09-04', p: 1, title: 'A', est: 20 }, { id: 'b', date: '2026-09-02', p: 0, title: 'B' }, { id: 'c', date: '2026-09-04', p: 3, title: 'C', est: 60 }, { id: 'd', date: '2026-09-05', p: 3, title: 'Future' }, { id: 'e', date: '2026-09-04', done: true, title: 'Done' }, { id: 'f', date: '2026-09-04', tag: 'idea', title: 'Idea' }, { id: 'g', date: '2026-09-04', p: 2, title: 'G', est: 10 }, { id: 'h', date: '2026-09-04', p: 0, title: 'H' }];
++    return { clock: [c(60, 3), c(300, 3), c(700, 3), c(935, 3), c(960, 3), c(1200, 5), c(700, 6), c(700, 0)], M: [M.month, M.prev, M.bars.map((x) => [x.m, x.net]), M.byProj, M.topOut], jan: [jan.month.net, jan.prev.net, jan.bars.map((x) => x.m)],
++      sug: U.suggestOne(tasks, '2026-09-04').map((x) => x.id), lines: U.closeLines({ day: '2026-09-04', done: 2, open: 3, focus: 75, habits: 1, habitsOf: 2, in: 40, out: 0, bots: 'Running, eval room 80%', one: { title: 'Ship it', done: true } }), win: U.WIN };
++  });
++  ok(pure.clock[0][0] === 'before' && pure.clock[0][1] === 60 && pure.clock[1][0] === 'window' && pure.clock[1][1] === 270 && pure.clock[2][0] === 'open' && pure.clock[2][1] === 230 && pure.clock[3][0] === 'flat' && pure.clock[3][1] === 20 && pure.clock[4][0] === 'after' && pure.clock[5][0] === 'after' && pure.clock[6][0] === 'weekend' && pure.clock[7][0] === 'weekend', 'sessionClock: before 02:00, the window, open until 15:30, flat to 15:55, after, weekends (Sat / Sun): ' + JSON.stringify(pure.clock));
++  ok(pure.win.from === 120 && pure.win.to === 930 && pure.win.open === 570 && pure.win.flat === 955, 'the bots\' window is 02:00-15:30 ET, open 09:30, flat 15:55');
++  ok(pure.M[0].in === 840 && pure.M[0].out === 120 && pure.M[0].net === 720 && pure.M[0].n === 3, 'moneyMonth: this month to date (in 840, out 120, net 720; junk, a negative amount, an unknown kind and a bad date are ignored): ' + JSON.stringify(pure.M[0]));
++  ok(pure.M[1].in === 0 && pure.M[1].out === 50 && pure.M[1].net === -50, 'moneyMonth: the same days of last month (Aug 1-4: out 50): ' + JSON.stringify(pure.M[1]));
++  ok(JSON.stringify(pure.M[2]) === JSON.stringify([['2026-04', 0], ['2026-05', 0], ['2026-06', 0], ['2026-07', 0], ['2026-08', 1550], ['2026-09', 720]]), 'moneyMonth: six months of net, oldest first: ' + JSON.stringify(pure.M[2]));
++  ok(pure.M[3][0].name === 'Untagged' || pure.M[3].some((x) => x.name === 'Alpha' && x.net === 680), 'moneyMonth: net by project (Alpha 800-120 = 680, the rest untagged): ' + JSON.stringify(pure.M[3]));
++  ok(pure.M[4].length === 1 && pure.M[4][0].note === 'Ads' && pure.M[4][0].amt === 120, 'moneyMonth: the biggest costs');
++  ok(pure.jan[0] === 10 && pure.jan[1] === -30 && pure.jan[2][0] === '2025-08' && pure.jan[2][5] === '2026-01', 'moneyMonth across New Year: January looks back to December: ' + JSON.stringify(pure.jan));
++  ok(JSON.stringify(pure.sug) === JSON.stringify(['b', 'c', 'g', 'a']), 'suggestOne: overdue first, then priority; not future, done or idea tasks; at most 4: ' + JSON.stringify(pure.sug));
++  ok(pure.lines.length === 7 && pure.lines[0] === 'Day close, 2026-09-04' && /2 done, 3 still open/.test(pure.lines[1]) && /1h 15m/.test(pure.lines[2]) && /1 of 2/.test(pure.lines[3]) && /\$40 in, \$0 out \(\+\$40\)/.test(pure.lines[4]) && /eval room 80%/.test(pure.lines[5]) && /Ship it, done/.test(pure.lines[6]), 'closeLines: ' + JSON.stringify(pure.lines));
++  ok(pe.length === 0, 'no console error loading: ' + pe.join(' | '));
++  await ctx.close();
++
++  // ---------- 2. the sheet ----------
++  const state = fullState();
++  const live = { at: Date.now(), v: { t: 1, running: true, verdict: { label: 'Armed', level: 'ok', reason: '' }, lit: { name: 'Zlarior', roomFrac: 0.8, pos: null }, atlas: null, blitz: null } };
++  ({ ctx, p, errs: pe } = await open(b, { state, seed: seedNq() }));
++  await p.evaluate((v) => localStorage.setItem('planner.ext.live', v), JSON.stringify(live));
++  const keys0 = await p.evaluate(() => Object.keys(localStorage).sort());
++  ok(await p.evaluate(() => !!document.querySelector('[data-puopen]')), 'the Pulse button is on Today');
++  await p.click('[data-puopen]'); await wait(400);
++  ok(await p.evaluate(() => !!document.querySelector('#puPulse[open]')), 'the Pulse button opens the sheet');
++  const clock = await p.evaluate(() => document.querySelector('#puClock').innerText);
++  ok(/NY session is on/i.test(clock) && /3 h 0 min to the last entry/.test(clock) && /Armed/.test(clock) && /80%/.test(clock), 'trading clock at Fri 12:30 NY: the session is on, 3 h to the last entry, the bots\' status: ' + clock.replace(/\n+/g, ' / '));
++  ok(await p.evaluate(() => document.querySelectorAll('.pu-ring').length) === 1, 'a ring is drawn');
++  const picks = await p.evaluate(() => [...document.querySelectorAll('#puOne .pu-pick')].map((x) => x.dataset.id));
++  ok(JSON.stringify(picks) === JSON.stringify(['t3', 't6', 't7', 't2']), 'one thing: four suggestions, overdue first: ' + JSON.stringify(picks));
++  await p.click('#puOne .pu-pick'); await wait(150);
++  ok(await p.evaluate(() => !!document.querySelector('#puOne .pu-one') && /Task number 3/.test(document.querySelector('#puOne').innerText)), 'picking one makes it today\'s one thing');
++  ok(await p.evaluate(() => JSON.parse(localStorage.getItem('planner.pulse.one')).id) === 't3', 'the pick is kept on this device (planner.pulse.one)');
++  await p.click('[data-pu="one-tick"]'); await wait(200);
++  let s1 = await st(p), t3 = s1.tasks.find((x) => x.id === 't3');
++  ok(t3.done === true && t3.doneAt > 0 && /already a win/.test(await p.evaluate(() => document.querySelector('#puOne').innerText)), 'the big tick completes the task through the app and says the day is a win');
++  await p.click('[data-pu="one-tick"]'); await wait(150);
++  s1 = await st(p);
++  ok(s1.tasks.find((x) => x.id === 't3').done === false, 'ticking again puts it back');
++  await p.click('[data-pu="one-change"]'); await wait(100);
++  ok(await p.evaluate(() => document.querySelectorAll('#puOne .pu-pick').length) === 4 && await p.evaluate(() => localStorage.getItem('planner.pulse.one')) === null, 'Change it goes back to the suggestions');
++  const money = await p.evaluate(() => document.querySelector('#puMoney').innerText);
++  ok(/\+\$720/.test(money) && /\$840/.test(money) && /\$120/.test(money) && /Same days last month/.test(money), 'money this month: net +$720, in $840, out $120, against last month: ' + money.replace(/\n+/g, ' / '));
++  ok(await p.evaluate(() => document.querySelectorAll('#puMoney .pu-bars i').length) === 6, 'six months of bars');
++  await p.click('[data-pu="money-in"]'); await wait(150);
++  await p.fill('#puMoney [name=amt]', 'abc'); await p.click('#puMoney button[type=submit]'); await wait(100);
++  ok(await p.evaluate(() => !document.querySelector('#puMoney .pu-err').hidden && /above zero/.test(document.querySelector('#puMoney .pu-err').innerText)), 'a bad amount shows a plain error and adds nothing');
++  const n0 = (await st(p)).money.length;
++  await p.fill('#puMoney [name=amt]', '$42.50'); await p.fill('#puMoney [name=note]', 'Test tip'); await p.click('#puMoney button[type=submit]'); await wait(300);
++  s1 = await st(p); const added = s1.money.find((m) => m.note === 'Test tip');
++  ok(s1.money.length === n0 + 1 && added && added.kind === 'in' && added.amt === 42.5 && added.date === TODAY && !!added.id, 'quick add: money in $42.50 is written through the app on today\'s date: ' + JSON.stringify(added));
++  ok(/\+\$762\.50/.test(await p.evaluate(() => document.querySelector('#puMoney').innerText)), 'the net moves to +$762.50');
++  await p.click('[data-pu="money-out"]'); await wait(100); await p.fill('#puMoney [name=amt]', '10'); await p.click('#puMoney button[type=submit]'); await wait(250);
++  s1 = await st(p);
++  ok(s1.money.some((m) => m.kind === 'out' && m.amt === 10 && m.date === TODAY && m.note === ''), 'quick add: money out $10 with no note');
++  const closeTxt = await p.evaluate(() => document.querySelector('#puClose').innerText);
++  ok(/Day close, 2026-09-04/.test(closeTxt) && /Tasks: 0 done/.test(closeTxt) && /\$82\.50 in, \$10 out/.test(closeTxt) && /Armed/.test(closeTxt), 'close the day lists tasks, focus, habits, money today and the bots: ' + closeTxt.replace(/\n+/g, ' / '));
++  await p.click('[data-pu="close-save"]'); await wait(250);
++  s1 = await st(p); const j = s1.journal.find((x) => x.id === 'j:' + TODAY);
++  ok(j && /Day close, 2026-09-04/.test(j.note), 'Save to my journal appends the note to today\'s journal');
++  await p.click('[data-pu="close-save"]'); await wait(250);
++  s1 = await st(p);
++  ok((s1.journal.find((x) => x.id === 'j:' + TODAY).note.match(/Day close,/g) || []).length === 1, 'saving twice does not duplicate it');
++  const keys1 = await p.evaluate(() => Object.keys(localStorage).sort());
++  ok(JSON.stringify(keys1.filter((k) => !keys0.includes(k))) === JSON.stringify([]) || keys1.filter((k) => !keys0.includes(k)).every((k) => k === 'planner.pulse.one'), 'the only key Pulse adds is planner.pulse.one: ' + keys1.filter((k) => !keys0.includes(k)).join(','));
++  const small = await p.evaluate(() => [...document.querySelectorAll('#puPulse button, #puPulse input')].filter((e) => e.getClientRects().length).filter((e) => { const r = e.getBoundingClientRect(); return r.height < 43.5 || r.width < 43.5; }).map((e) => (e.className || e.tagName) + ' ' + Math.round(e.getBoundingClientRect().width) + 'x' + Math.round(e.getBoundingClientRect().height)));
++  ok(small.length === 0, 'every control in the sheet is at least 44 x 44: ' + small.join(', '));
++  ok(await p.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth && document.querySelector('#puPulse').scrollWidth <= document.querySelector('#puPulse').clientWidth), 'no sideways scroll at 390 px');
++  await p.click('[data-pu="close"]'); await wait(100);
++  ok(await p.evaluate(() => !document.querySelector('#puPulse[open]')), 'close closes');
++  ok(await p.evaluate(() => PlannerAPI.HB_TOOLS.some((x) => x.id === 'pupulse') && ['pu-pulse', 'pu-money', 'pu-close'].every((id) => PlannerAPI.PK_CMDS.some((c) => c.id === id))), 'Pulse is in All tools and the palette');
++  await p.evaluate(() => PlannerAPI.PK_CMDS.find((c) => c.id === 'pu-money').run()); await wait(300);
++  ok(await p.evaluate(() => !!document.querySelector('#puPulse[open]')), 'the palette command "Money this month" opens Pulse');
++  ok(pe.length === 0, 'no console error in the sheet: ' + pe.join(' | '));
++  await ctx.close();
++
++  // ---------- 3. deep links, a weekend, the early morning, an empty planner ----------
++  ({ ctx, p, errs: pe } = await open(b, { state: fullState(), seed: seedNq(), hash: '#close-the-day' }));
++  await wait(500);
++  ok(await p.evaluate(() => !!document.querySelector('#puPulse[open]')), '#close-the-day opens Pulse');
++  await ctx.close();
++  const sat = new Date('2026-09-05T11:00:00-04:00').getTime();
++  ({ ctx, p, errs: pe } = await open(b, { now: sat, state: fullState(), seed: seedNq() }));
++  await p.click('[data-puopen]'); await wait(300);
++  ok(/No session today/i.test(await p.evaluate(() => document.querySelector('#puClock').innerText)), 'Saturday: the clock says no session today');
++  await ctx.close();
++  const early = new Date('2026-09-04T01:15:00-04:00').getTime();
++  ({ ctx, p, errs: pe } = await open(b, { now: early, state: fullState(), seed: seedNq() }));
++  await p.click('[data-puopen]'); await wait(300);
++  ok(/Before the window/i.test(await p.evaluate(() => document.querySelector('#puClock').innerText)) && /45 min to the entry window/.test(await p.evaluate(() => document.querySelector('#puClock').innerText)), 'Friday 01:15 NY: before the window, 45 min to 02:00');
++  await ctx.close();
++  const empty = { v: 1, view: 'today', weekStart: 0, jobs: [], categories: [{ id: 'personal', name: 'Personal', color: '#64748b' }], events: [], tasks: [], habits: [], goals: [], planned: '' };
++  ({ ctx, p, errs: pe } = await open(b, { state: empty }));
++  await p.click('[data-puopen]'); await wait(300);
++  const txt = await p.evaluate(() => document.querySelector('#puPulse').innerText);
++  ok(/Bots/.test(txt) && /No open task for today/.test(txt) && /No money logged yet/.test(txt) && /Tasks: 0 done, 0 still open/.test(txt) && pe.length === 0, 'an empty planner: honest empty lines in every card, no error: ' + pe.join(' | ') + ' TEXT ' + txt.replace(/\n+/g, ' / ').slice(0, 700));
++  await ctx.close();
++
++  await b.close();
++  console.log(errs.length ? 'FAIL\n' + errs.join('\n') : `pulse.test.js: ${checks} checks passed`);
++  process.exit(errs.length ? 1 : 0);
++})();

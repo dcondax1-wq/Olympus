@@ -23,3 +23,21 @@ export function ceremony() {
   if (!fx || !target || !ready) return null;
   try { return fx.shockwave(target, { position: [0, 0.3, 0], radius: 7, color: '#ffcf5a', seconds: 1.8 }); } catch (_) { return null; }
 }
+
+/** The atmosphere kit (../olympus/fx-atmos.js, 2026-11-04): warm light shafts down onto the wheel and gold sparks rising from the fountain. Each is ONE draw
+ *  call; LITE drops the shafts and thins the sparks; reduced motion draws one still frame. The scene's own frame() and setQuality() are wrapped so the
+ *  effects follow it; any failure leaves the scene as it was. Returns a promise of { stop() } or null. */
+export function startAtmosphere(scene, { lite = false, reduced = false } = {}) {
+  if (!scene || !scene.scene || typeof scene.frame !== 'function') return null;
+  return import('../olympus/fx-atmos.js').then((A) => {
+    const parts = [A.shafts({ count: 5, from: [1, 15, 5], to: [3, FLOOR_Y, -1], width: 2.6, color: '#ffd9a0', strength: 0.13, spread: [12, 0, 8] }),
+      A.embers({ count: 120, origin: [5, FLOOR_Y + 0.3, -1], spread: [3.5, 0, 3.5], rise: 6, colors: ['#ffe08a', '#ffb347'] })];
+    const lvl = (q) => (reduced ? 'low' : q === 'low' ? 'low' : 'high');
+    parts.forEach((p) => { p.setQuality(lvl(lite ? 'low' : 'high')); scene.scene.add(p.object); });
+    const frame0 = scene.frame.bind(scene), q0 = scene.setQuality.bind(scene);
+    scene.frame = (t, dt, now) => { if (!reduced) parts.forEach((p) => p.update(t)); return frame0(t, dt, now); };
+    scene.setQuality = (q) => { parts.forEach((p) => p.setQuality(lvl(q))); return q0(q); };
+    if (reduced) parts.forEach((p) => p.update(0));
+    return { parts, stop() { parts.forEach((p) => { scene.scene.remove(p.object); if (p.object.geometry) p.object.geometry.dispose(); if (p.material) p.material.dispose(); }); scene.frame = frame0; scene.setQuality = q0; } };
+  }).catch(() => null);
+}

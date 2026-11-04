@@ -638,6 +638,74 @@ def part_j(tmp):
         srv.shutdown()
 
 
+def part_k(tmp):
+    """MY DESK (2026-11-04): event risk against the 02:00-15:30 window, the gods this phone follows (and who changed their mind), the edge meter, freshness, Copy."""
+    from playwright.sync_api import sync_playwright
+    srv, url = _site(tmp, "site_k", True)
+    try:
+        with sync_playwright() as pw:
+            exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
+            br = pw.chromium.launch(**({"executable_path": exe} if exe else {}), args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader"])
+            errs = []
+            ctx, p = _open(br, url + "?q=off", errs)
+            r = p.evaluate("""async () => {
+              const D = window.__pantheon.DESK, NOW = Date.UTC(2026, 10, 4, 17, 0);                     // Wed 4 Nov 2026 12:00 New York (EST)
+              const d = { t: NOW / 1000 - 3600, council: { label: 'Neutral', gauge: 50, stats: { periods: [{ period: '5y', n: 400, corr: 0.02, hit: 51, chance: 50, calls: 200 }, { period: '2026', n: 200, corr: 0.3, hit: 60, chance: 50, calls: 100 }] } },
+                sources: [], gods: [
+                { key: 'athena', name: 'Athena', title: 'Calendar', color: '#fff', ok: true, lean: 'neutral', asof: '2026-11-04', extra: { upcoming: [
+                  { event: 'ISM services', when: 'Wed Nov 04 14:00' }, { event: 'Fed minutes', when: 'Wed Nov 04 16:30' }, { event: 'Jobs report', when: 'Fri Nov 06 08:30' }, { event: 'Old news', when: 'Wed Nov 04 08:15' }] } },
+                { key: 'zeus', name: 'Zeus', title: 'Rates', color: '#0ff', ok: true, lean: 'risk-on', vote: 0.4, asof: '2026-10-20', reading: { text: 'Yields fall' } }] };
+              const er = D.eventRisk(d, NOW), w1 = D.watchlist(d, ['zeus'], { zeus: 'risk-off' }), w0 = D.watchlist(d, [], null), em = D.edgeMeter(d), fr = D.freshness(d, NOW), line = D.deskLine(d, NOW, ['zeus']);
+              return { ev: er.events.map((e) => [e.event, e.inside, e.today, e.left]), todayIn: er.todayIn.length, level: er.level, line: er.line, flip: w1.flips.map((x) => x.key), flipLine: w1.line, none: w0.line, noWatchFlips: w0.flips.length,
+                em: em.rows.map((x) => x.inside), noise: em.noise, fresh: fr.rows.map((x) => [x.key, x.level]), built: fr.builtLabel, dl: line,
+                empty: [D.eventRisk({ gods: [] }, NOW).events.length, D.watchlist({ gods: [] }, null, null).rows.length, D.edgeMeter({}).rows.length, D.freshness({}, NOW).rows.length, D.deskLine({}, NOW, []).startsWith('Pantheon:')],
+                win: D.WINDOW, leans: D.leansOf(d) }; }""")
+            check("k. event risk: the past event is dropped, today's ISM at 14:00 is INSIDE the window (in 2 h), the Fed minutes at 16:30 are outside, a warning for today's inside event",
+                  [e[0] for e in r["ev"]] == ["ISM services", "Fed minutes", "Jobs report"] and r["ev"][0][1] is True and r["ev"][1][1] is False and r["ev"][2][1] is True and r["ev"][0][3] == "2 h"
+                  and r["todayIn"] == 1 and r["level"] == "warn" and "inside the trading window" in r["line"] and r["win"] == [120, 930], r)
+            check("k. my gods: only a followed god can have changed its mind (Zeus risk-off to risk-on), the line says so; following none says how to start",
+                  r["flip"] == ["zeus"] and "risk-off to risk-on" in r["flipLine"] and r["noWatchFlips"] == 0 and "Follow" in r["none"], r)
+            check("k. edge meter: the 5-year reading is inside the noise band, the 2026 one is outside it; so the Council is not called a coin-toss beater",
+                  r["em"] == [True, False] and r["noise"] is False, r["em"])
+            check("k. freshness: Athena is current, Zeus (14 days old against a 1-day delay) is flagged; the build is 'under 2 hours ago'",
+                  r["fresh"] == [["athena", "ok"], ["zeus", "bad"]] and r["built"] == "under 2 hours ago", r["fresh"])
+            check("k. the desk line starts 'Pantheon:' and ends 'context, not a signal'; empty data = every function answers",
+                  r["dl"].startswith("Pantheon: Council Neutral 50/100") and r["dl"].endswith("context, not a signal") and r["empty"] == [0, 0, 0, 0, True], (r["dl"], r["empty"]))
+            check("k. a first visit is not 'flipped'; the leans are kept for the next one", r["leans"] == {"athena": "neutral", "zeus": "risk-on"})
+            # the page
+            h = p.evaluate("(() => { const b = document.getElementById('deskBtn').getBoundingClientRect(), c = document.getElementById('councilBtn').getBoundingClientRect(); return [b.width, b.height, c.height]; })()")
+            check("k. the Desk button sits beside the Council button, at least 44 px", h[0] >= 43.5 and h[1] >= 43.5, h)
+            p.click("#deskBtn")
+            p.wait_for_selector("#desk-b section.plus")
+            check("k. tapping Desk opens a card with five sections (events, my gods, edge meter, freshness, copy) and the hash is #desk",
+                  p.locator("#desk-b section.plus").count() == 5 and p.is_visible("#desk") and p.evaluate("location.hash") == "#desk" and len(p.inner_text("#desk-b").strip()) > 200)
+            fol = p.locator("#desk-b .fol")
+            n = fol.count()
+            small = [b for b in (fol.nth(i).bounding_box() for i in range(n)) if b["height"] < 43.5 or b["width"] < 43.5]
+            check("k. one Follow button per god, each at least 44 x 44", n == len(json.load(open(os.path.join(PAGE, "pantheon.json"), encoding="utf-8"))["gods"]) and not small, (n, small))
+            fol.first.click()
+            check("k. Follow marks the god (aria-pressed, 'Following') and keeps it on this phone only (localStorage pantheon.watch)",
+                  fol.first.get_attribute("aria-pressed") == "true" and fol.first.inner_text() == "Following" and len(json.loads(p.evaluate("localStorage.getItem('pantheon.watch')"))) == 1)
+            fol.first.click()
+            check("k. tapping again unfollows", fol.first.get_attribute("aria-pressed") == "false" and json.loads(p.evaluate("localStorage.getItem('pantheon.watch')")) == [])
+            cb = p.locator("#dk-copy").bounding_box()
+            p.context.grant_permissions(["clipboard-read", "clipboard-write"], origin=url.split("/pantheon")[0])
+            p.click("#dk-copy")
+            p.wait_for_timeout(400)
+            check("k. Copy my desk line: at least 44 px, the message holds the same 'Pantheon:' sentence", cb["height"] >= 43.5 and (p.get_attribute("#dk-msg", "data-line") or "").startswith("Pantheon:") and len(p.inner_text("#dk-msg")) > 10, cb)
+            check("k. the Desk card: no sideways scroll, the orb's corner free", p.evaluate("document.documentElement.scrollWidth <= innerWidth") and not _orb_hits(p), _orb_hits(p))
+            p.click("#deskX")
+            check("k. the close button hides the card again", p.is_hidden("#desk"))
+            ctx.close()
+            ctx, p = _open(br, url + "?q=off#desk", errs)
+            check("k. the link #desk opens it straight away", p.is_visible("#desk"))
+            ctx.close()
+            check("k. no console errors", not errs, errs[:3])
+            br.close()
+    finally:
+        srv.shutdown()
+
+
 def main(argv):
     fast = "fast" in argv
     tmp = tempfile.mkdtemp(prefix="pantheon_test_")
@@ -652,6 +720,7 @@ def main(argv):
         if not fast:
             part_g(tmp)
             part_j(tmp)
+            part_k(tmp)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print(f"\n{sum(RES)}/{len(RES)} passed", flush=True)

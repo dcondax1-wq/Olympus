@@ -17,7 +17,7 @@
 <script src="../olympus/themes.js?v=o2"></script>
 <script src="../olympus/olympus.js?v=o2" data-app="pantheon"></script>
 <script src="../olympus/intro-app.js?v=i1" defer></script>
-<link rel="stylesheet" href="pantheon.css?v=p3">
+<link rel="stylesheet" href="pantheon.css?v=p4">
 <script src="../olympus/fx-core.js?v=f1"></script>
 </head>
 <body>
@@ -29,10 +29,13 @@
     <span class="tag" id="demo" hidden>DEMO DATA</span>
   </div>
   <p class="sub" id="sub">The gods of free market data</p>
-  <button type="button" class="council" id="councilBtn" aria-controls="council" aria-expanded="false">
-    <span class="ck">COUNCIL OF THE GODS</span>
-    <b id="c-label">—</b><i id="c-gauge"></i>
-  </button>
+  <div class="hudrow">
+    <button type="button" class="council" id="councilBtn" aria-controls="council" aria-expanded="false">
+      <span class="ck">COUNCIL OF THE GODS</span>
+      <b id="c-label">—</b><i id="c-gauge"></i>
+    </button>
+    <button type="button" class="deskbtn" id="deskBtn" aria-controls="desk" aria-expanded="false"><span>MY</span><b>DESK</b></button>
+  </div>
 </header>
 <aside class="flip" id="flip" hidden role="status"><b id="flip-t"></b><button type="button" id="flip-x" aria-label="Dismiss">✕</button></aside>
 <footer class="dock" id="dock">
@@ -50,6 +53,12 @@
   <h2 id="council-h">The Council of the Gods</h2>
   <div id="council-b"></div>
 </section>
-<script type="module" src="pantheon.js?v=p3"></script>
+<section class="card" id="desk" hidden role="dialog" aria-modal="false" aria-labelledby="desk-h">
+  <button type="button" class="x" id="deskX" aria-label="Close">✕</button>
+  <h2 id="desk-h">My desk</h2>
+  <p class="meta">What the gods mean for your day, in plain words. Context, never a signal.</p>
+  <div id="desk-b"></div>
+</section>
+<script type="module" src="pantheon.js?v=p4"></script>
 </body>
 </html>

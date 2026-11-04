@@ -12,7 +12,8 @@ import { categoryColors, usd, pct, countdown } from './fmt.js';
 import { FortuneScene } from './scene.js';
 import { Hud, KELLY_STOPS } from './hud.js';
 import { FortunePanel } from './fortunepanel.js';
-import { startSceneFx, ceremony } from './tychefx.js';
+import { CashPanel } from './cashpanel.js';
+import { startSceneFx, startAtmosphere, ceremony } from './tychefx.js';
 
 const O = window.OLYMPUS || null;   // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
 const QUALITY_KEY = 'tyche.quality', VIEW_KEY = 'tyche.view';   // quality: the old per-app key, read only without the kit
@@ -20,7 +21,7 @@ const THEME = '#07060b';
 const reduced = O ? O.reduced() : matchMedia('(prefers-reduced-motion: reduce)').matches;
 const params = new URLSearchParams(location.search);
 const forced = params.has('demo');
-const VIEWS = ['wheel', 'pools', 'scales', 'bank', 'fortune'];     // fortune: the leaderboard / streak / fortune / compare / replay panel (the wheel stays behind it)
+const VIEWS = ['wheel', 'pools', 'scales', 'bank', 'fortune', 'cash'];     // fortune: the leaderboard / streak / fortune / compare / replay panel (the wheel stays behind it)
 
 const store = {
   get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } },
@@ -43,12 +44,14 @@ const hud = new Hud({
 });
 hud.quality(state.quality);
 const fortune = new FortunePanel(document.getElementById('p-fortune'), { reduced });
+const cash = new CashPanel(document.getElementById('p-cash'), { reduced, now: nowS });     // the money view: break-even, at risk, pace, hours
 let scene = null;
 try {
   scene = new FortuneScene(THREE, document.getElementById('gl'), { quality: state.quality, reduced });
   O?.track(scene.renderer);
   O?.themeScene?.({ scene: scene.scene, renderer: scene.renderer });   // OLYMPUS theme: fog + sky follow it
   startSceneFx(scene, { lite: state.quality === 'low' });                // caustics + gold motes from the effects library (never needed)
+  startAtmosphere(scene, { lite: state.quality === 'low', reduced });      // light shafts + rising sparks from the atmosphere kit (never needed)
 } catch (e) {
   console.warn('tyche: 3D unavailable', e && e.message);
   document.getElementById('nogl').hidden = false;
@@ -71,7 +74,8 @@ function setView(v) {
   if (v !== 'wheel') select(null);
   hud.setView(v);
   if (v === 'fortune') fortune.draw();
-  if (scene) scene.setView(v === 'fortune' ? 'wheel' : v);
+  if (v === 'cash') cash.draw();
+  if (scene) scene.setView(v === 'fortune' || v === 'cash' ? 'wheel' : v);
   fit();
 }
 function setKelly(i) {
@@ -109,6 +113,7 @@ function show(raw, mode) {
     hud.render(m, state.colors);
     if (scene) scene.setModel(m, state.colors);
     fortune.setModel(m);
+    cash.setModel(m);
   } else state.model.age = m.age;
   if (!same || was !== state.mode) hud.mode(state.mode, state.model);
   hud.tick(nowS());
@@ -264,6 +269,7 @@ window.tyche = {
   get requests() { return state.feed.requests; },
   get view() { return state.view; },
   get fortune() { return fortune; },
+  get cash() { return cash; },
   get bank() { return hud.sim || null; },                   // the bankroll panel's simulation (risk of ruin ...)
   get passes() { return scene ? scene.rc.passes() : []; },    // the render core's passes this frame
   get tier() { return scene ? scene.rc.quality() : ''; },

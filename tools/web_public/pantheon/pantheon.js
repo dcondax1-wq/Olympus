@@ -8,6 +8,7 @@ import * as THREE from '../jarvis/three.module.min.js';
 import { loadPantheon, godCard, councilHtml, chipValue, esc, LEAN, VERDICT, verdictHistory } from './pantheoncore.js';
 import { drawGlyph } from './glyphs.js';
 import * as PLUS from './pantheonplus.js';
+import * as DESK from './pantheondesk.js';
 
 // the OLYMPUS render core (../olympus/render.js + materials.js): tone mapping, a night environment for real marble and gold
 // reflections, bloom on the live-data glow, MSAA, a film finish. Without it the hall draws with the plain renderer as before.
@@ -531,7 +532,7 @@ class Hall {
 // ------------------------------------------------------------------------------------------------ the UI
 function closeAll() {
   STATE.hall?.preview(null);
-  $('card').hidden = true; $('council').hidden = true; $('councilBtn').setAttribute('aria-expanded', 'false');
+  $('card').hidden = true; $('council').hidden = true; $('desk').hidden = true; $('councilBtn').setAttribute('aria-expanded', 'false'); $('deskBtn').setAttribute('aria-expanded', 'false');
   STATE.sel = null; STATE.hall?.select(null); markChips();
   if (location.hash) history.replaceState(null, '', location.pathname + location.search);
 }
@@ -543,7 +544,7 @@ function markChips() {
 function openGod(key) {
   const g = STATE.d.gods.find((x) => x.key === key);
   if (!g) return;
-  $('council').hidden = true; $('councilBtn').setAttribute('aria-expanded', 'false');
+  $('council').hidden = true; $('councilBtn').setAttribute('aria-expanded', 'false'); $('desk').hidden = true; $('deskBtn').setAttribute('aria-expanded', 'false');
   const c = godCard(g);
   $('card').style.setProperty('--c', g.color);
   const chart = g.ok ? PLUS.godChartHtml(g) : '';
@@ -555,8 +556,19 @@ function openGod(key) {
   if (location.hash !== '#god/' + key) history.replaceState(null, '', '#god/' + key);
 }
 
+/** MY DESK: the gods in terms of the trading day (event risk against the 02:00-15:30 window, the gods this phone follows, whether the Council has
+ *  mattered for NQ, how fresh the data is, and one line to copy). Read-only context. */
+function openDesk() {
+  $('card').hidden = true; $('council').hidden = true; $('councilBtn').setAttribute('aria-expanded', 'false');
+  let store = null; try { store = localStorage; } catch (_) { store = null; }
+  STATE.desk = DESK.renderDesk($('desk-b'), STATE.d, { storage: store });
+  $('desk').hidden = false; $('desk').scrollTop = 0; $('deskBtn').setAttribute('aria-expanded', 'true');
+  STATE.sel = null; STATE.hall?.select(null); markChips();
+  if (location.hash !== '#desk') history.replaceState(null, '', '#desk');
+}
+
 function openCouncil() {
-  $('card').hidden = true;
+  $('card').hidden = true; $('desk').hidden = true; $('deskBtn').setAttribute('aria-expanded', 'false');
   $('council-b').innerHTML = councilHtml(STATE.d);
   PLUS.enhanceCouncil($('council-b'), STATE.d, { flips: STATE.flips, preview: (r) => STATE.hall?.preview(r), jarvis: postNote });
   $('council').hidden = false; $('council').scrollTop = 0; $('councilBtn').setAttribute('aria-expanded', 'true');
@@ -587,6 +599,7 @@ function renderNoGl(d) {
 function route() {
   const h = location.hash;
   if (h === '#council') openCouncil();
+  else if (h === '#desk') openDesk();
   else if (h.startsWith('#god/')) openGod(h.slice(5));
 }
 
@@ -625,6 +638,8 @@ async function main() {
   hud(d);
   $('cardX').addEventListener('click', closeAll);
   $('councilX').addEventListener('click', closeAll);
+  $('deskX').addEventListener('click', closeAll);
+  $('deskBtn').addEventListener('click', () => ($('desk').hidden ? openDesk() : closeAll()));
   $('councilBtn').addEventListener('click', () => ($('council').hidden ? openCouncil() : closeAll()));
   addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(); });
   addEventListener('hashchange', route);
@@ -638,7 +653,7 @@ async function main() {
   window.__pantheon = {
     ready: true, get demo() { return !!d.demo; }, get lite() { return STATE.hall ? STATE.hall.lite : null; },
     get fps() { return STATE.hall ? STATE.hall.fps() : 0; }, keys: d.gods.map((g) => g.key), errors: STATE.errors,
-    screenOf(key) { return STATE.hall ? STATE.hall.anchorOf(key) : null; }, open: openGod, council: openCouncil,
+    screenOf(key) { return STATE.hall ? STATE.hall.anchorOf(key) : null; }, open: openGod, council: openCouncil, desk: openDesk, DESK,
     get core() { return STATE.hall && STATE.hall.rc ? STATE.hall.rc.passes() : null; }, get history() { return STATE.hall ? STATE.hall.history : null; },
     get sel() { return STATE.sel; }, get yaw() { return STATE.hall ? STATE.hall.yaw : null; },
     PLUS, get flip() { return STATE.flip; }, get fx() { return STATE.hall ? STATE.hall.fxNames : []; }, get preview() { return STATE.hall ? STATE.hall.previewing : null; },
