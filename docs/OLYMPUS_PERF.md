@@ -98,13 +98,34 @@ when they close or Jarvis goes home (a delimited block in `jarvis/index.html`: `
 Measurement caveat: the `rAF loops` column of the first audit is a ratio of rAF callbacks to compositor frames; below ~10 fps (this machine) it is
 inflated and not comparable between runs. Use calls, triangles, 2D draws/s and script ms/s.
 
-### Still open: the apps other agents are rewriting (apply the snippet below; nothing was edited there)
+### Own-loop pass 2 (2026-11-04, later): fates, labyrinth, hephaestus, arena, nemesis, chronos
+
+Same block in each loop (`if (stopped || (O && O.hidden())) return;` + the `frameGap()` gate, `gapAt`); these scenes already use the render core without a forced
+quality, so 3D Off is the core's `off` tier (pixel ratio 1, direct draw) and `reduced()` makes them still frames. Fates is the exception and got more: its
+software / LITE tier choice no longer overrides Off (`baseTier()` returns `off`), and an idle reduced / Off scene redraws at most twice a second; its auto-LITE
+spin meter ignores capped frames. Chronos' progress loop (`chronos.js tick`) sleeps hidden / covered and keeps the gap.
+
+| App | Off, same machine (draws/s) | pixel ratio at Off | calls / tris (LITE under SwiftShader) |
+|---|---|---|---|
+| fates | 19 -> 49 at 16 fps page (was starved), **1.4 renders/s**, no longer a continuous spin | 1.5 -> **1** | 41 / 21,007 |
+| labyrinth | 0 | 1 | 34 / 6,939 |
+| hephaestus | 0 | 1 | 25 / 4,363 |
+| nemesis | 0 | 1 | 22-39 / 23,7xx |
+| chronos | 0 | 1 | 47-54 / 15.6-15.9k |
+| arena | 0 | 1 | 108-127 / **141,9xx** |
+
+Arena grew from 101 calls / 64k triangles to 108-127 / 142k with the new crowd (`olympus/scenery.js` instanced spectators, ~900 x 3 meshes, 4 tiers) and its
+dress; the calls are fine, the triangles are 3 instanced meshes of capsules / spheres (a lower-poly body, `CapsuleGeometry(...,2,6)` -> `(...,1,4)`, would cut
+the crowd to about a third: a change in the shared `scenery.js`, not made here). Budgets: nemesis 49 / 30,000, chronos 59 / 19,500, labyrinth 43 / 8,700,
+hephaestus 32 / 5,500, arena 160 / 178,000.
+
+### Still open: oracle, datacity, odeon, prometheus, argus (other agents own them) (apply the snippet below; nothing was edited there)
 
 | App | What to apply |
 |---|---|
 | oracle (115 calls) | own loop: `OLYMPUS.hidden()` + `frameGap()`; honour `OLYMPUS.dpr()` / the `off` tier (still 1.5 pixel ratio at Off); merge static meshes |
 | datacity (150k tris, 36 MB heap vs 40) | gap in its two loops; LOD for far districts; at Off it still draws (242/s): make Off a still frame like mind / arena |
-| odeon, fates, labyrinth, hephaestus, prometheus, arena, nemesis, chronos, argus | gap + hidden/covered in each own loop (check `grep requestAnimationFrame`: 2-4 loops each); arena (64k tris, 100 calls): merge static meshes |
+| odeon, prometheus, argus | gap + hidden/covered in each own loop (check `grep requestAnimationFrame`: 2-4 loops each) |
 | any new app | `OLYMPUS.hidden()` + `OLYMPUS.frameGap()` in every loop, 3D Off = still frame, never a slow-frame meter that counts capped frames |
 
 1. **tree (Daphne)**: 1,125 2D draws/s and 90 ms/s of script (6.5 fps headless) from the label / link canvas: cache the static layers, draw only when
