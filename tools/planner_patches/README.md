@@ -22,6 +22,8 @@ Claude session, and this repo can't push there. Features built here ship as patc
 
 | `60-board` | the Board sheet: Plan my day (free gaps + open tasks + the bots' trading window 02:00-15:30 ET and their last live status, read only), a Week board (tick a task done or push it a day, through the Planner's own commit), a 12-week Habit heatmap, Pomodoro stats |
 
+| `70-pulse` | the Pulse sheet: the trading clock (the NY session as a ring + the bots' status, read only), today's one thing, money this month with a two-tap quick add, close the day (copy or save to the journal) |
+
 ## Making a patch
 1. Clone planner-backup.
 2. Build the feature, mostly in new files (`planner/ext-*.js`) with minimal hooks in `index.html`.

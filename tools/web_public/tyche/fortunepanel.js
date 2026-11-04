@@ -20,7 +20,7 @@ export class FortunePanel {
   clear() {
     clearInterval(this.timer); this.timer = 0;
     this.fx.forEach((h) => h && h.stop && h.stop()); this.fx = [];
-    if (this.cmp && this.cmp.parentNode === this.body) { this.cmp.hidden = true; this.root.append(this.cmp); }
+    if (this.cmp && this.cmp.parentNode === this.body) { this.cmp.setAttribute('hidden', ''); this.root.append(this.cmp); }
     this.body.replaceChildren();
   }
   draw() {
@@ -69,7 +69,7 @@ export class FortunePanel {
     const c = compareBankrolls(m, 0.5), all = c.a.concat(c.b).map((x) => x.bal), lo = Math.min(...all), hi = Math.max(...all), r = hi - lo || 1;
     const W = 320, H = 86, P = 4, X = (i) => P + (i / Math.max(1, c.n)) * (W - 2 * P), Y = (v) => P + (1 - (v - lo) / r) * (H - 2 * P);
     const svg = this.cmp, ns = svg.namespaceURI;
-    svg.replaceChildren(); svg.hidden = false;
+    svg.replaceChildren(); svg.removeAttribute('hidden');     // an <svg> has no .hidden property: the attribute it is
     [[c.a, '#ffcf5a'], [c.b, '#5ef2c0']].forEach(([f, col]) => { const p = document.createElementNS(ns, 'polyline'); p.setAttribute('points', f.map((x) => `${X(x.i).toFixed(1)},${Y(x.bal).toFixed(1)}`).join(' ')); p.setAttribute('fill', 'none'); p.setAttribute('stroke', col); p.setAttribute('stroke-width', '2'); svg.append(p); });
     this.body.append(svg);
     const duo = el('p', 'duo');

@@ -161,6 +161,7 @@ function input() {
     const b = e.target.closest('[data-act]');
     if (b && b.dataset.act === 'replay') build(S.key);
     if (b && b.dataset.act === 'share-week') onShareWeek(b);
+    if (b && b.dataset.act === 'copy-text') copyText(b);
   });
   // the progress bar: a tap on a segment jumps to that story
   $('#prog').addEventListener('click', (e) => {
@@ -249,6 +250,15 @@ function followTheme() {
   } catch (_) { /* an older kit: the page's own look */ }
 }
 
+// "Copy as text" (the Summary card): the period in one plain line on the clipboard, with a toast; a textarea fallback for a phone that refuses the API
+async function copyText(b) {
+  const text = b.dataset.text || '';
+  let ok = false;
+  try { await navigator.clipboard.writeText(text); ok = true; } catch (_) {
+    try { const t = document.createElement('textarea'); t.value = text; t.style.position = 'fixed'; t.style.opacity = '0'; document.body.append(t); t.select(); ok = document.execCommand('copy'); t.remove(); } catch (__) { ok = false; }
+  }
+  toast(ok ? 'Copied: paste it anywhere' : 'Could not copy: select the text and copy it');
+}
 function toast(msg) {
   const t = $('#toast');
   t.textContent = msg;

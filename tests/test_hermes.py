@@ -359,8 +359,33 @@ def run_browser():
                     teaser = p.inner_text(".card.on")
                 p.screenshot(path=os.path.join(SHOTS, f"demo_{i + 1:02d}_{cid}.jpg"), type="jpeg", quality=82)
             check("e. the demo deck: money, best, worst, eval, discipline, learned, Kalshi teaser, pace, report card, streak, best day, best week, accounts, the hall, next",
-                  ids == ["money", "best", "worst", "eval", "discipline", "learned", "kalshi", "pace", "report", "streak", "bestday", "bestweek", "accounts", "hall", "next"], ids)
+                  ids == ["money", "best", "worst", "eval", "discipline", "learned", "kalshi", "pace", "report", "streak", "bestday", "bestweek", "accounts", "hall", "passclock", "cushion", "weekrank", "weekdays", "summary", "next"], ids)
             check("e. every card: inside the 16 px gutters, nothing in the orb's 80 x 160 corner, no sideways scroll", not overflow, overflow)
+            # ---- 2026-11-04: five more cards, money first (pass clock, cushion, week rank, weekdays, summary + Copy as text)
+            def card_text(cid):
+                p.evaluate(f"HERMES.go(HERMES.state().ids.indexOf('{cid}')); HERMES.pause(true)"); p.wait_for_timeout(2600)
+                return p.inner_text(".card.on")
+            t = card_text("passclock")
+            check("e. pass clock: 5 sessions left, $830 still to bank, $166 needed a session against a $434 pace (2 more at this pace), 'You are ahead', the backtest's median pass",
+                  "5 sessions left" in t and "$830" in t and "$166" in t and "$434" in t and "2 more" in t and "You are ahead: $434 a session so far against $166 needed." in t and "median pass takes 7 sessions" in t, t[:500])
+            t = card_text("cushion")
+            check("e. cushion: losers you can afford = the room above the floor ($2,071) over the average loser ($195) = 10; the worst loser; plain advice",
+                  "10" in t and "$2,071" in t and "−$195" in t and "−$240" in t and "10 of them in a row" in t and "Comfortable" in t, t[:500])
+            t = card_text("weekrank")
+            check("e. week rank: this week against every week so far (rank, better than N, the average week, the difference)",
+                  re.search(r"(Your best week yet|Week \d+ of \d+)", t) and "better than" in t and "average week" in t.lower() and "difference" in t.lower() and "$2,073" in t, t[:500])
+            t = card_text("weekdays")
+            check("e. weekdays: Tuesday pays (+$2,496 over 3 days), the bars Mon-Fri, best and worst, an honest 12-day sample note",
+                  "Tuesday pays" in t and "$2,496" in t and "best" in t.lower() and "worst" in t.lower() and "12 trading days is a small sample" in t and p.locator(".card.on .bars .dbar").count() == 5, t[:500])
+            t = card_text("summary")
+            line = p.get_attribute(".card.on [data-act=copy-text]", "data-text")
+            check("e. summary: the whole period in one plain line (money, a month, W/L, best, worst, eval, next goal) and a Copy as text button that holds the same line",
+                  line and line in t and line.startswith("This week: +$2,072.50 on 5 trades") and "a month at this pace" in line and "3 wins, 2 losses (60%)" in line and "to go" in line and "next: Bank $830" in line, (line, t[:300]))
+            bb = p.locator(".card.on [data-act=copy-text]").bounding_box()
+            check("e. Copy as text is at least 44 px tall", bb and bb["height"] >= 43.5, bb)
+            p.click(".card.on [data-act=copy-text]"); p.wait_for_timeout(400)
+            check("e. Copy as text: a toast says it copied (or says it could not, never silent)", re.search(r"Copied|Could not copy", p.inner_text("#toast")) is not None, p.inner_text("#toast"))
+            check("e. the progress bar's tap row is at least 44 px tall (a tap jumps to a story)", p.locator("#prog").bounding_box()["height"] >= 43.5, p.locator("#prog").bounding_box())
             # ---- the new cards (2026-11-03): money a month, the report card, the streak heat map; every number checked against the data
             dj = json.load(open(os.path.join(PAGE, "demo.json"), encoding="utf-8"))
             wk, al = dj["periods"]["week"], dj["periods"]["all"]
@@ -554,7 +579,7 @@ def run_browser():
                     check("e. real data: no DEMO badge; the money card lists Kalshi beside the bots",
                           not p.is_visible("#demo") and "Kalshi Edge v2" in txt and "+$7.25" in txt and "Paper twin" in txt, txt[:400])
             check("e. with every peer: Data City, the real Kalshi and the Planner join the deck",
-                  ids == ["money", "best", "worst", "eval", "discipline", "learned", "discovery", "kalshi", "planner", "pace", "report", "streak", "bestday", "bestweek", "accounts", "hall", "next"], ids)
+                  ids == ["money", "best", "worst", "eval", "discipline", "learned", "discovery", "kalshi", "planner", "pace", "report", "streak", "bestday", "bestweek", "accounts", "hall", "passclock", "cushion", "weekrank", "weekdays", "summary", "next"], ids)
             check("e. peers' cards stay inside the gutters and out of the orb's corner", not overflow, overflow)
             p.evaluate("HERMES.go(1)"); p.wait_for_timeout(300)
             p.evaluate("window.__shared = null"); p.click("#share"); p.wait_for_function("window.__shared", timeout=10000)

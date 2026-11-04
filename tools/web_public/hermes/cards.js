@@ -5,6 +5,7 @@
 // Order: money, best, worst, eval, discipline, learned, Data City (if any), Kalshi (or a teaser), Planner (if any),
 // the all-time hall, next. A card's parts carry data-z (how far they float off the card in the 3D tilt).
 import { esc, usd, tone, plural, dayLabel, span, num, kalshiPeriod, plannerPeriod } from './data.js';
+import { extraCards } from './cards2.js';
 
 const NBSP = ' ';
 const kt = (text, cls = 'title') => `<h1 class="${cls} kt">${String(text).split(' ').map((w, i) => `<span class="w"><span style="--i:${i}">${esc(w)}</span></span>`).join(' ')}</h1>`;
@@ -394,7 +395,7 @@ function nextCard(w, p) {
 
 export function deck(w, key, peers = {}) {
   const p = w.periods[key] || w.periods.week;
-  return [money, best, worst, evalCard, disciplineCard, learnedCard, discoveryCard, kalshiCard, plannerCard, paceCard, reportCard, streakCard, bestDayCard, bestWeekCard, accountsCard, hallCard, nextCard]
+  return [money, best, worst, evalCard, disciplineCard, learnedCard, discoveryCard, kalshiCard, plannerCard, paceCard, reportCard, streakCard, bestDayCard, bestWeekCard, accountsCard, hallCard, ...extraCards, nextCard]
     .map((f) => f(w, p, peers)).filter(Boolean);
 }
 

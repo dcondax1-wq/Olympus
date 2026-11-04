@@ -115,6 +115,7 @@ export function normalize(k, now = Date.now() / 1000) {
     balance, today: num(k.today_pnl), week: num(k.week_pnl), total: num(k.total_pnl),
     open, settled, next, categories, order, stats, kelly,
     buckets: bucketRows(k, settled), calibration: calibRows(k, settled), equity: equityOf(k, balance, t != null ? t : now),
+    days: daysOf(k),
     alerts: arr(k.alerts).filter(isObj).map((a) => ({ t: parseT(a.t), level: ['bad', 'warn', 'info'].indexOf(str(a.level, 8).toLowerCase()) >= 0 ? str(a.level, 8).toLowerCase() : 'info', text: str(a.text, 160) }))
       .filter((a) => a.text).slice(0, 20),
     hasProb: open.some((o) => o.prob != null),
@@ -208,6 +209,16 @@ function calibRows(k, settled) {
   }
   const n = sum(rows.map((r) => r.n));
   return { own, basis, rows, n, said: n ? sum(rows.map((r) => r.p * r.n)) / n : null, won: n ? sum(rows.map((r) => r.hit * r.n)) / n : null };
+}
+
+/** The daily P&L the bot sends (`days`: [[YYYY-MM-DD, pnl]] or [{ day, pnl }]), oldest first, junk dropped. */
+function daysOf(k) {
+  const m = new Map();
+  arr(k.days).forEach((d) => {
+    const r = Array.isArray(d) ? [str(d[0], 10), num(d[1])] : isObj(d) ? [str(d.day || d.date, 10), num(d.pnl)] : null;
+    if (r && /^\d{4}-\d{2}-\d{2}$/.test(r[0]) && r[1] != null) m.set(r[0], r[1]);
+  });
+  return Array.from(m.entries()).sort((a, b) => (a[0] < b[0] ? -1 : 1));
 }
 
 /** The bankroll's path: `equity` (v2), else the running sum of `days` ending at the balance, else the balance alone. */
