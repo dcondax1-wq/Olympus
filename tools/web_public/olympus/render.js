@@ -37,6 +37,8 @@ const WARM_FRAMES = 45, WINDOW = 60;
 const kit = () => (typeof window !== 'undefined' && window.OLYMPUS) || null;
 const prefersReduced = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
 const pageHidden = () => { const O = kit(); return O ? O.hidden() : document.hidden === true; };
+// the frame gap the kit asks for (OLYMPUS.frameGap(): 30 fps when the owner is idle on high, 15 on low, both in battery saver; 0 = every frame)
+const frameGap = () => { const O = kit(); try { return O && O.frameGap ? O.frameGap() : 0; } catch (e) { return 0; } };
 /** ?q=ultra|high|low|off in the page address forces a tier (tests, screenshots, perf probes); null without it */
 export const forcedTier = () => { try { const q = new URLSearchParams(location.search).get('q'); return LEVELS.indexOf(q) >= 0 ? q : null; } catch (e) { return null; } };
 /** true on a software GL renderer (SwiftShader, llvmpipe: no GPU): 4x MSAA + bloom would be a slideshow there */
@@ -223,7 +225,7 @@ export function createRenderer(opts) {
   let level = levelOf(o.quality) || forced || capSoft(O ? O.fx() : prefersReduced() ? 'low' : 'high');
   let theme = o.theme !== undefined ? o.theme : O ? O.theme() : null;
   let composer = null, bloom = null, finish = null, envTex = null, dead = false, extra = [];
-  let width = 0, height = 0, dpr = 1, raf = 0, loop = null, tPrev = 0, firstFrame = true, asleep = false;
+  let width = 0, height = 0, dpr = 1, raf = 0, loop = null, tPrev = 0, firstFrame = true, asleep = false, tDraw = 0;
   const bloomTint = new THREE.Color(1, 1, 1);
   const perf = { last: 0, n: 0, sum: 0, warm: 0, fps: 0, steps: 0 };
   const reduced = prefersReduced();
@@ -289,7 +291,8 @@ export function createRenderer(opts) {
   function size(force) {
     const w = o.autoSize ? canvas.clientWidth || canvas.width || 1 : width || canvas.width || 1;
     const h = o.autoSize ? canvas.clientHeight || canvas.height || 1 : height || canvas.height || 1;
-    const d = Math.min(window.devicePixelRatio || 1, tier.dpr, o.maxDpr || 2);
+    const Ok = kit(), saver = !!(Ok && Ok.saver && Ok.saver());            // battery saver: never above 1.5 pixels per CSS px
+    const d = Math.min(window.devicePixelRatio || 1, tier.dpr, o.maxDpr || 2, saver ? 1.5 : 9);
     if (!force && w === width && h === height && d === dpr) return;
     width = w; height = h; dpr = d;
     renderer.setPixelRatio(d);
@@ -303,13 +306,15 @@ export function createRenderer(opts) {
     const ms = perf.last ? now - perf.last : 0;
     perf.last = now;
     if (!ms || ms > 1000) return;                   // the first frame, or back from a hidden tab
+    const gap = frameGap();                         // a deliberate frame cap (idle / saver) is judged against the cap, not against 60 fps
+    if (gap !== perf.gap) { perf.gap = gap; perf.sum = perf.n = 0; return; }       // the cap changed: a new window
     if (perf.warm < WARM_FRAMES) { perf.warm++; return; }
     perf.sum += ms; perf.n++;
     if (perf.n < WINDOW) return;
     const avg = perf.sum / perf.n;
     perf.fps = Math.round(1000 / avg); perf.sum = perf.n = 0;
     const may = o.adapt === 'always' || (o.adapt && !(O && O.chosen()));
-    if (may && avg > SLOW_MS && (level === 'ultra' || level === 'high')) {
+    if (may && avg > (gap ? gap + 9 : SLOW_MS) && (level === 'ultra' || level === 'high')) {
       perf.steps++;
       apply(level === 'ultra' ? 'high' : 'low');
       if (O) O.mode(level === 'low');
@@ -322,10 +327,16 @@ export function createRenderer(opts) {
     if (typeof o.onQuality === 'function') o.onQuality(l);
   }
 
-  /** draw one frame (nothing while the tab is hidden); returns true when it drew */
+  /** draw one frame (nothing while the tab is hidden or covered, nothing sooner than the kit's frame gap); returns true when it drew */
   function render() {
     if (dead || asleep || pageHidden()) return false;
+    const g = frameGap();
+    if (g && tDraw && performance.now() - tDraw < g - 3) return false;
+    return drawNow();
+  }
+  function drawNow() {
     const now = performance.now();
+    tDraw = now;
     adapt(now);
     if (o.autoSize) size(false);
     renderer.info.reset();
@@ -344,15 +355,18 @@ export function createRenderer(opts) {
   function tick(now) {
     raf = 0;
     if (dead || asleep || !loop || pageHidden()) return;          // hidden: no new frame is asked for until the tab is back
+    const g = frameGap();
+    if (g && tPrev && now - tPrev < g - 3) { raf = requestAnimationFrame(tick); return; }      // idle / saver: skip the frame (no JS, no draw)
     const dt = tPrev ? Math.min(0.1, (now - tPrev) / 1000) : 1 / 60;
     tPrev = now;
     loop(dt, (now - t0) / 1000);
-    render();
+    if (!pageHidden()) drawNow();
     raf = requestAnimationFrame(tick);
   }
   const onVisible = () => { if (!pageHidden() && loop && !raf && !dead && !asleep) { tPrev = 0; perf.last = 0; raf = requestAnimationFrame(tick); } };
   document.addEventListener('visibilitychange', onVisible);
 
+  if (O && O.onPower) O.onPower(() => { if (!dead) size(true); });
   const followFx = (l) => { if (!forced && !dead && levelOf(l) && capSoft(l) !== level) apply(capSoft(l)); };
   const followTheme = (t) => { if (!dead) api.setTheme(t); };
   const backToDefault = () => followTheme(null);
