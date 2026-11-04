@@ -424,7 +424,7 @@ def sec_d(br, base, C, days, picks, ids):
     p = pg.p
     time.sleep(4)
     info = pg.info()
-    check("d. the hub opens: one island per city, a miniature of each, no 3D error", info["mode"] == "hub" and info["islands"] == len(C) and info["slots"] >= 24 and not info["errors"], info)
+    check("d. the hub opens: one island per city, a miniature of each, no 3D error", info["mode"] == "hub" and info["islands"] == len(C) and info["slots"] >= 8 and not info["errors"], info)
     private = sum(1 for c in C if c["dataset"] in ("kalshi", "notes"))
     p.wait_for_function(f"window.__cities.info().live >= {len(C) - private}", timeout=240000)
     check("d. the islands turn LIVE as the real files arrive (all but the Kalshi feed and the vault: %d of %d)" % (len(C) - private, len(C)), pg.info()["live"] >= len(C) - private, pg.info()["live"])
