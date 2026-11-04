@@ -159,6 +159,85 @@ export function accountFromSite(site) {
   return null;
 }
 
+// ------------------------------------------------------------------------------------------------ 2026-11-04: scenarios, the journal, the
+// "rules you broke" tracker, the live drawdown tie-in and the share card (pure; aresdesk.js is the screen)
+
+/** Scenario presets for the Account tab: what the account looks like at a moment of a Builder 50K / 25K life (numbers from the plan). */
+export const SCENARIOS = [
+  { id: 'e50', plan: '50k', label: 'Eval 50K · day one' }, { id: 'e25', plan: '25k', label: 'Eval 25K · day one' },
+  { id: 'e50m', plan: '50k', label: 'Eval 50K · 40% there' }, { id: 'e25m', plan: '25k', label: 'Eval 25K · 40% there' },
+  { id: 'd50', plan: '50k', label: 'Eval 50K · after a stop-out' }, { id: 'd25', plan: '25k', label: 'Eval 25K · after a stop-out' },
+  { id: 'f50', plan: '50k', label: 'Funded 50K · buffer built' }, { id: 'f25', plan: '25k', label: 'Funded 25K · buffer built' },
+];
+/** The state patch of a scenario (the page merges it into its own state; trades / stop-outs of the day reset). */
+export function scenarioPatch(rules, id) {
+  const sc = SCENARIOS.find((s) => s.id === id);
+  if (!sc) return null;
+  const p = planOf(rules, sc.plan), kind = id[0], base = { plan: sc.plan, stage: kind === 'f' ? 'funded' : 'eval', today: '', tradesToday: 0, lossesToday: 0, checks: {}, news: false, hedge: false, botBalance: false };
+  let bal = p.start, peak = p.start;
+  if (id.endsWith('m')) { bal = peak = p.start + Math.round(p.target * 0.4); }
+  if (kind === 'd') { const loss = Math.round(p.mll * 0.45); bal = p.start - loss; peak = p.start; base.today = String(-loss); base.tradesToday = 1; base.lossesToday = 1; }
+  if (kind === 'f') { bal = peak = p.start + p.buffer; }
+  return { ...base, balance: String(bal), peak: String(peak) };
+}
+
+const REASON_LABEL = { clock: 'Traded outside the market hours', dead: 'Traded a dead account', passed: 'Kept trading after the target', dll: 'Traded after the daily loss limit', count: 'Took more trades than my own cap',
+  losses: 'Traded after my own stop-out limit', hedge: 'Held both sides', input: 'Traded with no stop written', wide: 'Took a stop too wide for the room', list: 'Went before finishing the checklist' };
+const WARN_LABEL = { big: 'Risked more than 60% of the room', thin: 'Traded with two stop-outs left', news: 'Traded into the news', tight: 'Used a stop tighter than the bot\'s', far: 'Used a stop wider than the bot\'s', loss1: 'Made up for a loss' };
+
+/** One journal line from a verdict (what the war room said), whether you took the trade, and the ritual flag. */
+export function journalEntry(R, st, now = new Date(), taken = false, ritual = false) {
+  const z = R.size, halts = R.reasons.filter((x) => x.level === 'halt').map((x) => x.id), warns = R.reasons.filter((x) => x.level === 'warn').map((x) => x.id);
+  return { t: (now instanceof Date ? now : new Date(now)).toISOString(), level: R.level, plan: st.plan, stage: st.stage, inst: z.inst, side: z.side || st.side, pts: z.valid ? Math.round(z.pts * 100) / 100 : null,
+    n: z.valid ? z.n : 0, risk: z.valid ? Math.round(z.risk * 100) / 100 : null, room: Math.round(z.room), checks: R.checks.done, of: R.checks.total, halts, warns, taken: !!taken, ritual: !!ritual };
+}
+
+/** "Rules you broke": from the journal, the taken trades that the war room had stopped (HALT), sent to WAIT (list unfinished), or warned about.
+ *  Self-reported: nothing here sees a broker. Last `days` days. cleanDays = days since the last broken entry (null = none on record). */
+export function brokenRules(list, now = new Date(), days = 30) {
+  const from = +now - days * 864e5, rows = (Array.isArray(list) ? list : []).filter((e) => isObj(e) && Date.parse(e.t) >= from);
+  const broke = new Map(), warned = new Map();
+  let last = null, brokenEntries = 0;
+  for (const e of rows) {
+    if (!e.taken) continue;
+    const ids = e.level === 'halt' ? (e.halts || []) : e.level === 'wait' ? ['list'] : [];
+    if (ids.length) { brokenEntries++; last = Math.max(last ?? 0, Date.parse(e.t)); }
+    for (const id of ids) broke.set(id, (broke.get(id) || 0) + 1);
+    for (const id of e.warns || []) warned.set(id, (warned.get(id) || 0) + 1);
+  }
+  const by = (m, L) => [...m.entries()].map(([id, n]) => ({ id, n, label: L[id] || id })).sort((a, b) => b.n - a.n);
+  return { days, entries: rows.length, taken: rows.filter((e) => e.taken).length, brokenEntries, by: by(broke, REASON_LABEL), warned: by(warned, WARN_LABEL),
+    cleanDays: last == null ? null : Math.floor((+now - last) / 864e5), goClean: rows.filter((e) => e.taken && e.level === 'go').length,
+    ritualShare: rows.length ? rows.filter((e) => e.ritual).length / rows.length : null };
+}
+
+/** The live drawdown left: room to the floor against the plan's max loss, a 0..1 share, and a tone (calm / watch / storm). */
+export function drawdownLeft(rules, st, acct = null) {
+  const p = planOf(rules, st.plan), bal = acct ? acct.balance : num(st.balance) ?? p.start, floor = acct ? acct.floor : floorOf(p, st.peak), room = bal - floor;
+  const frac = Math.max(0, Math.min(1, p.mll > 0 ? room / p.mll : 0));
+  return { room, mll: p.mll, frac, tone: room <= 0 ? 'dead' : frac < 0.25 ? 'storm' : frac < 0.55 ? 'watch' : 'calm', live: !!acct, floor, bal };
+}
+
+/** The account the Forum-style home.json describes: the first account with an eval block (balance, floor). */
+export function accountFromHome(home) {
+  const list = Array.isArray(home && home.accounts) ? home.accounts : [];
+  for (const a of list) {
+    const e = a && a.eval;
+    if (isObj(e) && Number.isFinite(+e.balance) && Number.isFinite(+e.floor)) {
+      return { name: String(a.name || a.id || 'Eval').slice(0, 40), balance: +e.balance, floor: +e.floor, today: Number.isFinite(+e.today) ? +e.today : 0, start: Number.isFinite(+e.start_balance) ? +e.start_balance : null, mll: null, from: 'home' };
+    }
+  }
+  return null;
+}
+
+/** What the share card says: the verdict, the size and the money, in plain words (the page draws it). */
+export function shareSpec(R, st) {
+  const z = R.size, w = { go: 'GO', wait: 'WAIT', halt: 'HALT' }[R.level];
+  const lines = z.valid ? [`${z.n} ${z.inst} ${z.side || ''}, stop ${z.pts.toFixed(1)} pts`, `A stop-out costs ${usd(z.risk)}`, `Room after it: ${usd(z.room_after)}`, `Checklist ${R.checks.done}/${R.checks.total}`] : ['Enter an entry and a stop', `Checklist ${R.checks.done}/${R.checks.total}`];
+  const why = R.reasons.filter((x) => x.level === 'halt').slice(0, 2).map((x) => x.text);
+  return { word: w, level: R.level, title: `${st.plan === '25k' ? 'Builder 25K' : 'Builder 50K'} · ${st.stage}`, lines: lines.concat(why), note: 'A calculator for the human. Paper rules, not advice.' };
+}
+
 /** The bot's real stops (extras.trades rows: tcols names the columns): median / p25 / p75 of risk_pts. */
 export function botStops(site) {
   const ex = site && site.extras;

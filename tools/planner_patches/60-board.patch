@@ -1,0 +1,461 @@
+diff --git a/planner/docs/features-board.md b/planner/docs/features-board.md
+new file mode 100644
+index 0000000..5ec59f3
+--- /dev/null
++++ b/planner/docs/features-board.md
+@@ -0,0 +1,21 @@
++# The Board (ext-board.js)
++
++One sheet with four cards: **Plan my day**, the **Week board**, the **Habit heatmap** and **Pomodoro stats**. Open it with the
++**Board** button on Today, "The Board" in All tools, the palette ("Board", "Plan my day", "Habit heatmap", "Pomodoro stats"), or the
++links `#board`, `#plan-my-day`, `#week-board`, `#habit-heatmap`, `#focus-stats`.
++
++- **Plan my day** reads today's free gaps, your open tasks (today and overdue) and the bots' trading window: entries 02:00-15:30 ET,
++  the NY open 09:30 ET, flat 15:55 ET, weekdays only (converted to your clock by the Planner's own ET converter). It proposes where each
++  task fits and why: overdue first, big or high-priority tasks in a quiet stretch (after the bots are flat, or before the open), short
++  ones in short gaps, a 15-minute pre-open prep slot and a 20-minute journal slot after flat. Tasks that fit no gap are listed. It also
++  reads the bots' last live status (`planner.ext.live`, the copy Bots and projects keeps; read only) and adds a line when a bot is in
++  a trade, looks stopped, or the eval room is thin. Nothing is written: Copy puts the plan on the clipboard.
++- **Week board**: Monday to Sunday (swipe sideways, arrows for other weeks). Each day: its events, its tasks, and a load bar (open task
++  minutes against 60% of the free time, red when over). A round tick marks a task done, the arrow moves it to the next day; both go through
++  the Planner's own snapshot / commit, so Undo works.
++- **Habit heatmap**: the last 12 weeks of every habit (Mon-Sun columns), the run you are on, the best run, the share of the last 30 days.
++- **Pomodoro stats**: focus minutes today, this week against the week before, the average day over 14 days, 14 bars, the best day,
++  rounds today and the top projects (from the focus minutes the Focus mode logs on each task).
++
++Code: `planner/ext-board.js`, loaded by one `<script src="ext-board.js">` in `<head>` after ext-temple.js; it waits for `planner:ready`.
++Storage: none of its own. Pure helpers for the tests: `window.__bd` (`planDay`, `heat`, `pomo`, `planText`, `BOT`). Test: `planner/tests/board.test.js`.
+diff --git a/planner/ext-board.js b/planner/ext-board.js
+new file mode 100644
+index 0000000..2513e65
+--- /dev/null
++++ b/planner/ext-board.js
+@@ -0,0 +1,308 @@
++// ===== BOARD: the week board, plan my day, the habit heatmap, Pomodoro stats (ext-board.js; docs/features-board.md; tests/board.test.js) =====
++// (2026-11-04, owner: "more useful, more futuristic")
++//  - Plan my day: reads today's free gaps, your open tasks and the bots' trading window (entries 02:00-15:30 ET, flat 15:55 ET, the NY
++//    open 09:30 ET) and the bots' last live status (device copy planner.ext.live, READ ONLY) and proposes where each task fits, with
++//    the reason, a pre-open prep slot and a post-flat journal slot. Nothing is written: Copy puts the plan on the clipboard.
++//  - Week board: seven columns, events and tasks per day, a load bar against the free time, tick a task done or push it a day.
++//    Those two go through the Planner's own snapshot / commit, so Undo works.
++//  - Habit heatmap: the last 12 weeks of every habit as a grid, the run you are on, the best run, the 30-day rate.
++//  - Pomodoro stats: focus minutes today / this week against last week, the best day, 14 days of bars, rounds, by project.
++// Loaded in <head>; waits for 'planner:ready'. Own data: none. Device key: none. Follows the Olympus layer's variables (--ox-a, --ox-b).
++(function () {
++  'use strict';
++  const root = document.documentElement;
++  let A = null, wanted = '', dlg = null, weekOff = 0, tick = 0;
++  const get = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
++  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
++  const p2 = (n) => String(n).padStart(2, '0');
++  const kOf = (d) => `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
++  const dOf = (k) => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); };
++  const plus = (k, n) => { const d = dOf(k); d.setDate(d.getDate() + n); return kOf(d); };
++  const today = () => kOf(new Date());
++  const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
++  const toMin = (hm) => { const m = /^(\d{1,2}):(\d{2})/.exec(hm || ''); return m ? +m[1] * 60 + +m[2] : null; };
++  const fromMin = (m) => `${p2(Math.floor(m / 60) % 24)}:${p2(m % 60)}`;
++  const t12 = (m) => { let h = Math.floor(m / 60) % 24; const mm = m % 60, ap = h < 12 ? 'am' : 'pm'; h = h % 12 || 12; return (mm ? `${h}:${p2(mm)}` : `${h}`) + ap; };
++  const dur = (m) => { m = Math.max(0, Math.round(m)); return m >= 60 ? `${Math.floor(m / 60)}h${m % 60 ? ' ' + (m % 60) + 'm' : ''}` : `${m}m`; };
++  const est = (x) => (+x.est > 0 ? +x.est : 30);
++  const isOpen = (x) => !!x && !x.done && x.tag !== 'idea' && !/^Idea:/.test(x.title || '');
++  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
++
++  // =====================================================================================================================
++  // Pure helpers (also on window.__bd for the tests)
++  // =====================================================================================================================
++  // The bots' window in New York minutes: entries 02:00-15:30, the NY open 09:30, flat 15:55 (STRATEGY.md). Weekdays only.
++  const BOT = { from: 2 * 60, to: 15 * 60 + 30, open: 9 * 60 + 30, flat: 15 * 60 + 55 };
++
++  // planDay({ gaps: [[s, e]] free gaps in local minutes, tasks, now (local minutes), win: { from, to, open, flat } in local minutes or null (no bot window today),
++  //           bots: { running, verdict, pos, roomFrac } or null }) -> { slots: [{ s, e, id, title, why }], notes: [string], deep: [s, e] | null, left: [titles that did not fit] }
++  function planDay(o) {
++    const now = Math.ceil((o.now == null ? 0 : o.now) / 5) * 5, win = o.win || null, notes = [], slots = [], BUF = 5;
++    let gaps = (o.gaps || []).map(([s, e]) => [Math.max(s, now), e]).filter(([s, e]) => e - s >= 10).sort((a, b) => a[0] - b[0]);
++    // a pre-open prep slot (15 min) in the last gap that ends before the NY open, a post-flat journal slot (20 min) in the first gap after flat
++    const take = (gi, s, len, id, title, why) => { const [gs, ge] = gaps[gi]; slots.push({ s, e: s + len, id, title, why }); const rest = []; if (s - gs >= 10) rest.push([gs, s]); if (ge - (s + len) >= 10) rest.push([s + len, ge]); gaps.splice(gi, 1, ...rest); };
++    if (win) {
++      const pre = gaps.map((g, i) => [g, i]).filter(([g]) => g[0] < win.open && Math.min(g[1], win.open) - g[0] >= 15).pop();
++      if (pre) take(pre[1], Math.max(pre[0][0], Math.min(pre[0][1], win.open) - 15), 15, 'prep', 'Pre-open prep: read the plan, check the bots', 'before the NY open');
++      const post = gaps.map((g, i) => [g, i]).filter(([g]) => g[1] > win.flat + 5 && g[1] - Math.max(g[0], win.flat + 5) >= 20)[0];
++      if (post) take(post[1], Math.max(post[0][0], win.flat + 5), 20, 'journal', 'Journal: what the bots did, what you did', 'after the bots are flat');
++    }
++    const tasks = (o.tasks || []).slice().sort((a, b) => (b.over ? 1 : 0) - (a.over ? 1 : 0) || (b.p || 0) - (a.p || 0) || est(b) - est(a));
++    const left = [];
++    for (const t of tasks) {
++      const need = est(t) + BUF, big = (t.p || 0) >= 2 || est(t) >= 45;
++      const fits = gaps.map((g, i) => [g, i]).filter(([g]) => g[1] - g[0] >= need);
++      if (!fits.length) { left.push(t.title); continue; }
++      // big tasks take the longest gap that sits outside the bots' busy hours when there is one (quiet = after flat or before the open), else the longest;
++      // small ones take the shortest gap that fits (keep the long gaps for the big ones)
++      const quiet = (g) => !win || g[0] >= win.flat || g[1] <= win.open;
++      const pick = big ? fits.slice().sort((a, b) => (quiet(b[0]) ? 1 : 0) - (quiet(a[0]) ? 1 : 0) || (b[0][1] - b[0][0]) - (a[0][1] - a[0][0]) || a[0][0] - b[0][0])[0] : fits.slice().sort((a, b) => (a[0][1] - a[0][0]) - (b[0][1] - b[0][0]) || a[0][0] - b[0][0])[0];
++      const g = pick[0];
++      take(pick[1], g[0], est(t), t.id, t.title, t.over ? 'overdue: first' : (t.p || 0) >= 2 ? (quiet(g) ? 'priority, in a quiet stretch' : 'priority') : est(t) <= 20 ? 'a short one in a short gap' : 'fits here');
++    }
++    slots.sort((a, b) => a.s - b.s);
++    const bots = o.bots || null;
++    if (!win) notes.push('The bots have no entry window today. Plan around your own day.');
++    else if (bots) {
++      if (bots.pos) notes.push('A bot is in a trade right now. Keep big decisions off the PC until it is flat.');
++      if (bots.running === false || (bots.verdict && /halt|stop|down/i.test(bots.verdict.level || '') )) notes.push('The bots look stopped or halted. Check the PC before the NY open' + (bots.verdict && bots.verdict.reason ? ': ' + bots.verdict.reason : '.'));
++      if (bots.roomFrac != null && bots.roomFrac < 0.25) notes.push('Eval room is thin. Today is a hands-off day: do not add risk.');
++    } else notes.push('No live bot status on this phone yet (open Bots and projects once). The plan uses the window only.');
++    const deep = slots.filter((s) => s.id !== 'prep' && s.id !== 'journal').sort((a, b) => (b.e - b.s) - (a.e - a.s))[0];
++    return { slots, notes, deep: deep ? [deep.s, deep.e] : null, left };
++  }
++
++  // heat(habits, endKey, weeks) -> [{ name, color, cells: [{ k, on, future }], run, best, rate30, total }] cells oldest first, week columns (Mon-Sun) x weeks
++  function heat(habits, endKey, weeks) {
++    weeks = weeks || 12;
++    const endD = dOf(endKey), dow = (endD.getDay() + 6) % 7;                    // Monday = 0
++    const startK = plus(endKey, -(dow + (weeks - 1) * 7));
++    return (habits || []).filter((h) => h && (h.name || h.title)).map((h) => {
++      const done = new Set(Array.isArray(h.done) ? h.done : []), cells = [];
++      for (let i = 0; i < weeks * 7; i++) { const k = plus(startK, i); cells.push({ k, on: done.has(k), future: k > endKey }); }
++      let run = 0, k = done.has(endKey) ? endKey : plus(endKey, -1); while (done.has(k) && run < 3660) { run++; k = plus(k, -1); }
++      const all = [...done].filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x)).sort();
++      let best = 0, cur = 0, prev = '';
++      all.forEach((x) => { cur = prev && plus(prev, 1) === x ? cur + 1 : 1; best = Math.max(best, cur); prev = x; });
++      let n30 = 0; for (let i = 0; i < 30; i++) if (done.has(plus(endKey, -i))) n30++;
++      return { name: h.name || h.title, color: h.color || '#6366f1', cells, run, best, rate30: Math.round(n30 / 30 * 100), total: all.length };
++    });
++  }
++
++  // pomo(tasks, today) -> focus minutes (task.fl = { day: minutes }): today, this week (Mon-today) and the 7 days before, the best day, 14 bars, rounds today, by project
++  function pomo(tasks, t) {
++    const fl = (k) => (tasks || []).reduce((a, x) => a + ((x && x.fl && +x.fl[k]) || 0), 0);
++    const dow = (dOf(t).getDay() + 6) % 7, wk0 = plus(t, -dow);
++    const days = []; for (let i = 13; i >= 0; i--) { const k = plus(t, -i); days.push({ k, m: fl(k) }); }
++    const week = []; for (let i = 0; i <= dow; i++) week.push(fl(plus(wk0, i)));
++    const prev = []; for (let i = 1; i <= 7; i++) prev.push(fl(plus(wk0, -i)));
++    const sum = (a) => a.reduce((x, y) => x + y, 0), best = days.reduce((a, d) => (d.m > a.m ? d : a), { k: '', m: 0 });
++    const proj = new Map(); (tasks || []).forEach((x) => { if (x && x.fl) { const m = days.reduce((a, d) => a + (+x.fl[d.k] || 0), 0); if (m > 0) proj.set(x.proj || 'No project', (proj.get(x.proj || 'No project') || 0) + m); } });
++    return { today: fl(t), week: sum(week), prev: sum(prev), best, days, avg14: Math.round(sum(days.map((d) => d.m)) / 14), rounds: (tasks || []).filter((x) => x && x.fl && +x.fl[t] > 0).length,
++      byProj: [...proj.entries()].map(([name, m]) => ({ name, m })).sort((a, b) => b.m - a.m).slice(0, 4) };
++  }
++
++  // =====================================================================================================================
++  // The app's numbers -> the helpers
++  // =====================================================================================================================
++  function localWin(day) {
++    const dow = dOf(day).getDay(); if (dow === 0 || dow === 6) return null;
++    const conv = (m) => { try { const r = A.etToLocal(day, fromMin(m)); const x = toMin(r.hm); return r.date === day && x != null ? x : (r.date > day ? 1440 : 0); } catch (e) { return m; } };
++    return { from: conv(BOT.from), to: conv(BOT.to), open: conv(BOT.open), flat: conv(BOT.flat) };
++  }
++  function gapsOf(k) { try { const trv = (A.bfSpans(k) || []).map((x) => [x.s, x.e]); return A.freeGaps(k, 6 * 60, 22 * 60, 15, trv); } catch (e) { return []; } }
++  function liveBots() {
++    try {
++      const c = JSON.parse(get('planner.ext.live') || 'null'), v = c && c.v;
++      if (!v) return null;
++      const accts = [v.lit, v.atlas, v.blitz].filter(Boolean);
++      return { running: v.running === true ? true : v.running === false ? false : null, verdict: v.verdict || null, pos: accts.some((a) => a && a.pos && a.pos.qty), roomFrac: accts.reduce((m, a) => (a && a.roomFrac != null ? Math.min(m, a.roomFrac) : m), 1), at: c.at || 0 };
++    } catch (e) { return null; }
++  }
++  function openTasksToday() {
++    const t = today();
++    return A.S.tasks.filter((x) => isOpen(x) && x.date && x.date <= t).map((x) => ({ id: x.id, title: x.title || 'Task', est: est(x), p: x.p || 0, over: x.date < t }));
++  }
++  function dayPlan() {
++    const t = today(), n = new Date();
++    return planDay({ gaps: gapsOf(t), tasks: openTasksToday(), now: n.getHours() * 60 + n.getMinutes(), win: localWin(t), bots: liveBots() });
++  }
++  function planText(P) {
++    return ['Plan for ' + new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })]
++      .concat(P.slots.map((s) => `${t12(s.s)}-${t12(s.e)}  ${s.title} (${s.why})`), P.left.length ? ['Did not fit: ' + P.left.join(', ')] : [], P.notes).join('\n');
++  }
++
++  // =====================================================================================================================
++  // Drawing
++  // =====================================================================================================================
++  function planHtml() {
++    const P = dayPlan(), n = new Date().getHours() * 60 + new Date().getMinutes();
++    const rows = P.slots.length ? P.slots.map((s) => `<li class="bd-slot${P.deep && P.deep[0] === s.s ? ' deep' : ''}"><b>${esc(t12(s.s))}</b><span>${esc(s.title)}<small>${esc(s.why)} · ${dur(s.e - s.s)}</small></span></li>`).join('')
++      : `<li class="bd-none">${n >= 22 * 60 ? 'The day is done. Rest.' : 'Nothing to place: no open task fits a free gap, or you are clear.'}</li>`;
++    return `<ol class="bd-plan">${rows}</ol>${P.left.length ? `<p class="bd-note">Did not fit today: ${P.left.map(esc).join(', ')}. Move one or free some time.</p>` : ''}${P.notes.map((t) => `<p class="bd-note bot">${esc(t)}</p>`).join('')}<div class="bd-acts"><button type="button" class="bd-b" data-bd="copy">Copy the plan</button></div>`;
++  }
++  function weekDays() { const t = today(), dow = (dOf(t).getDay() + 6) % 7, m0 = plus(t, -dow + weekOff * 7); return Array.from({ length: 7 }, (_, i) => plus(m0, i)); }
++  function weekHtml() {
++    const t = today(), days = weekDays(), S = A.S;
++    const cols = days.map((k) => {
++      const evs = (A.eventsOn(k) || []).filter((o) => o && o.ev && !o.ev.bot).sort((a, b) => (toMin(a.ev.start) ?? -1) - (toMin(b.ev.start) ?? -1));
++      const tasks = S.tasks.filter((x) => x && x.date && (x.date === k || (k === t && x.date < t && isOpen(x))) && x.tag !== 'idea');
++      const need = tasks.filter(isOpen).reduce((a, x) => a + est(x), 0), cap = Math.max(60, gapsOf(k).reduce((a, [s, e]) => a + (e - s), 0) * 0.6), load = clamp(need / cap, 0, 1.6);
++      return `<section class="bd-col${k === t ? ' today' : ''}" data-day="${k}"><h4>${WD[dOf(k).getDay()]} <small>${dOf(k).getDate()}</small></h4><i class="bd-load${load > 1 ? ' over' : ''}" style="--w:${Math.round(Math.min(1, load) * 100)}%" title="${dur(need)} of ${dur(cap)}"></i>`
++        + evs.map((o) => `<div class="bd-ev">${o.ev.allDay || !o.ev.start ? '' : `<b>${esc(t12(toMin(o.ev.start)))}</b> `}${esc(o.ev.title || 'Event')}</div>`).join('')
++        + tasks.map((x) => `<div class="bd-t${x.done ? ' done' : ''}${x.date < k ? ' old' : ''}"><button type="button" class="bd-tick" data-bdtask="${esc(x.id)}" aria-label="${x.done ? 'Mark not done' : 'Mark done'}: ${esc(x.title)}" aria-pressed="${!!x.done}"></button><span>${esc(x.title)}</span>${x.done ? '' : `<button type="button" class="bd-push" data-bdpush="${esc(x.id)}" aria-label="Move to the next day: ${esc(x.title)}">›</button>`}</div>`).join('')
++        + (evs.length || tasks.length ? '' : '<p class="bd-empty">Clear</p>') + '</section>';
++    }).join('');
++    const label = `${dOf(days[0]).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} - ${dOf(days[6]).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`;
++    return `<div class="bd-nav"><button type="button" class="bd-b" data-bd="prev" aria-label="Previous week">‹</button><b>${esc(label)}${weekOff === 0 ? ' · this week' : ''}</b><button type="button" class="bd-b" data-bd="next" aria-label="Next week">›</button></div><div class="bd-week">${cols}</div>`;
++  }
++  function heatHtml() {
++    const H = heat(A.S.habits, today(), 12);
++    if (!H.length) return '<p class="bd-note">No habits yet. Add one in Habits and its heatmap shows here.</p>';
++    return H.map((h) => `<div class="bd-h"><div class="bd-hh"><b style="color:${esc(h.color)}">${esc(h.name)}</b><small>${h.run} day${h.run === 1 ? '' : 's'} in a row · best ${h.best} · ${h.rate30}% of 30 days</small></div>`
++      + `<div class="bd-grid" role="img" aria-label="${esc(h.name)}: ${h.total} days done, 12 weeks">${h.cells.map((c) => `<i class="${c.on ? 'on' : ''}${c.future ? ' fut' : ''}" style="--c:${esc(h.color)}" title="${esc(c.k)}"></i>`).join('')}</div></div>`).join('');
++  }
++  function pomoHtml() {
++    const P = pomo(A.S.tasks, today()), mx = Math.max(30, ...P.days.map((d) => d.m)), d = P.week - P.prev;
++    return `<div class="bd-stats"><div><b>${dur(P.today)}</b><span>today · ${P.rounds} task${P.rounds === 1 ? '' : 's'}</span></div><div><b>${dur(P.week)}</b><span>this week${P.prev ? ` · ${d >= 0 ? '+' : '-'}${dur(Math.abs(d))} vs last` : ''}</span></div><div><b>${dur(P.avg14)}</b><span>a day, 14 days</span></div></div>`
++      + `<div class="bd-bars" role="img" aria-label="Focus minutes, last 14 days">${P.days.map((x) => `<i class="${x.k === today() ? 'cur' : ''}" style="--h:${Math.round(x.m / mx * 100)}%" title="${esc(x.k)}: ${dur(x.m)}"></i>`).join('')}</div>`
++      + (P.best.m ? `<p class="bd-note">Best day: ${esc(dOf(P.best.k).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' }))}, ${dur(P.best.m)}.</p>` : '<p class="bd-note">No focus rounds logged in 14 days. One 25-minute round in Focus mode starts the chart.</p>')
++      + (P.byProj.length ? `<p class="bd-note">By project: ${P.byProj.map((x) => `${esc(x.name)} ${dur(x.m)}`).join(' · ')}</p>` : '');
++  }
++  function todayFirst() { const w = dlg && dlg.querySelector('.bd-week'), c = w && w.querySelector('.bd-col.today'); if (c) w.scrollLeft = Math.max(0, c.offsetLeft - 8); }      // today's column is the first one you see
++  function paint() {
++    if (!dlg) return;
++    dlg.querySelector('#bdPlan').innerHTML = planHtml();
++    dlg.querySelector('#bdWeek').innerHTML = weekHtml();
++    if (dlg.open) todayFirst();
++    dlg.querySelector('#bdHeat').innerHTML = heatHtml();
++    dlg.querySelector('#bdPomo').innerHTML = pomoHtml();
++    const sub = dlg.querySelector('#bdSub'); if (sub) sub.textContent = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
++  }
++  function open(where) {
++    if (!dlg) {
++      document.body.insertAdjacentHTML('beforeend', `<dialog id="bdBoard" class="bd" aria-label="The Board"><div class="bd-bg" aria-hidden="true"><i></i><i></i></div>
++        <button type="button" class="bd-x" data-bd="close" aria-label="Close the Board"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
++        <div class="bd-in" tabindex="-1"><header><h2>The Board</h2><p id="bdSub"></p></header>
++        <section class="bd-card" id="bdPlanCard" aria-label="Plan my day"><h3>Plan my day</h3><div id="bdPlan"></div></section>
++        <section class="bd-card" id="bdWeekCard" aria-label="Week board"><h3>Week board</h3><div id="bdWeek"></div></section>
++        <section class="bd-card" id="bdHeatCard" aria-label="Habit heatmap"><h3>Habit heatmap</h3><div id="bdHeat"></div></section>
++        <section class="bd-card" id="bdPomoCard" aria-label="Pomodoro stats"><h3>Pomodoro stats</h3><div id="bdPomo"></div></section>
++        <div class="bd-acts bd-end"><button type="button" class="bd-b go" data-bd="focus">Focus</button><button type="button" class="bd-b" data-bd="close">Close</button></div></div></dialog>`);
++      dlg = document.getElementById('bdBoard');
++      dlg.addEventListener('click', (e) => {
++        const tk = e.target.closest('[data-bdtask]'), pu = e.target.closest('[data-bdpush]'), b = e.target.closest('[data-bd]');
++        if (tk) { toggle(tk.dataset.bdtask); return; }
++        if (pu) { push(pu.dataset.bdpush); return; }
++        if (b) act(b.dataset.bd);
++      });
++      dlg.addEventListener('close', () => { clearInterval(tick); tick = 0; });
++    }
++    paint();
++    if (!dlg.open) { dlg.showModal(); dlg.querySelector('.bd-in').focus(); }
++    todayFirst();
++    clearInterval(tick); tick = setInterval(() => { if (dlg.open) dlg.querySelector('#bdPlan').innerHTML = planHtml(); }, 60000);
++    const id = { plan: '#bdPlanCard', week: '#bdWeekCard', heat: '#bdHeatCard', pomo: '#bdPomoCard' }[where];
++    if (id) setTimeout(() => { const c = dlg.querySelector(id); if (c && c.scrollIntoView) c.scrollIntoView({ block: 'start' }); }, 60);
++  }
++  function toggle(id) {
++    const t = A.S.tasks.find((x) => x && x.id === id); if (!t) return;
++    A.snapshot(); A.commit(() => { t.done = !t.done; if (t.done) t.doneAt = Date.now(); else delete t.doneAt; });
++    try { A.refreshTasks(); } catch (e) { /* the view redraws on its own */ }
++    paint();
++  }
++  function push(id) {
++    const t = A.S.tasks.find((x) => x && x.id === id); if (!t || !t.date) return;
++    A.snapshot(); A.commit(() => { t.date = plus(t.date < today() ? today() : t.date, 1); });
++    try { A.refreshTasks(); } catch (e) { /* ok */ }
++    A.toast(`Moved to ${A.longDate(t.date)}`, true); paint();
++  }
++  function act(a) {
++    if (a === 'close') dlg.close();
++    else if (a === 'prev') { weekOff--; paint(); } else if (a === 'next') { weekOff++; paint(); }
++    else if (a === 'focus') { dlg.close(); const b = document.querySelector('[data-oxfocus]'); if (b) b.click(); else { const c = (A.PK_CMDS || []).find((x) => x.id === 'ox-focus'); if (c) c.run(); } }
++    else if (a === 'copy') { const txt = planText(dayPlan()); try { navigator.clipboard.writeText(txt).then(() => A.toast('Copied'), () => A.toast(txt)); } catch (e) { A.toast(txt); } }
++  }
++
++  // =====================================================================================================================
++  // Wiring
++  // =====================================================================================================================
++  const HASHES = { board: () => open(), 'plan-my-day': () => open('plan'), 'habit-heatmap': () => open('heat'), 'week-board': () => open('week'), 'focus-stats': () => open('pomo') };
++  const readHash = () => { try { const h = decodeURIComponent(location.hash.replace(/^#\/?/, '')).trim(); return Object.prototype.hasOwnProperty.call(HASHES, h) ? h : ''; } catch (e) { return ''; } };
++  wanted = readHash();
++  addEventListener('hashchange', () => { const h = readHash(); if (!h) return; if (A) setTimeout(() => HASHES[h](), 0); else wanted = h; });
++  function register() {
++    if (!A.HB_TOOLS.some((x) => x.id === 'bdboard')) A.HB_TOOLS.push({ id: 'bdboard', g: 'Me', n: 'The Board', d: 'Plan my day, the week board, habit heatmap, Pomodoro stats', k: 'board plan my day week habit heatmap pomodoro focus stats suggestions trading window', open: () => open(), st: () => { const t = today(), P = pomo(A.S.tasks, t); return P.today ? `${dur(P.today)} focus today` : 'Plan my day'; } });
++    const cmd = (def) => { if (!A.PK_CMDS.some((x) => x.id === def.id)) A.PK_CMDS.push(def); };
++    cmd({ id: 'bd-board', l: 'The Board', k: 'board week board plan my day', run: () => open() });
++    cmd({ id: 'bd-plan', l: 'Plan my day', k: 'plan my day suggestions schedule trading window', run: () => open('plan') });
++    cmd({ id: 'bd-heat', l: 'Habit heatmap', k: 'habit heatmap streak grid', run: () => open('heat') });
++    cmd({ id: 'bd-pomo', l: 'Pomodoro stats', k: 'pomodoro focus stats minutes', run: () => open('pomo') });
++  }
++  function onMain() {
++    const bar = document.querySelector('#main > .tdy > .td-h > div:last-child');
++    if (!bar || bar.querySelector('[data-bdopen]')) return;
++    bar.insertAdjacentHTML('afterbegin', '<button type="button" class="btn sm" data-bdopen title="The Board: plan my day, week board, habit heatmap, Pomodoro stats">Board</button>');
++  }
++  function init(api) {
++    A = api;
++    try { document.head.insertAdjacentHTML('beforeend', `<style id="bdStyle">${CSS}</style>`); } catch (e) { /* no styles, the sheet still works */ }
++    register();
++    const main = document.getElementById('main');
++    if (main) new MutationObserver(onMain).observe(main, { childList: true });
++    document.addEventListener('click', (e) => { if (e.target && e.target.closest && e.target.closest('[data-bdopen]')) open(); });
++    onMain();
++    if (wanted) { const h = wanted; wanted = ''; setTimeout(() => HASHES[h](), 0); }
++  }
++  function ready(api) {
++    if (A || !api || !Array.isArray(api.HB_TOOLS) || !Array.isArray(api.PK_CMDS) || typeof api.eventsOn !== 'function' || typeof api.freeGaps !== 'function' || typeof api.commit !== 'function') return;
++    try { init(api); } catch (e) { console.error('Planner Board failed to start:', e); }
++  }
++
++  const CSS = `
++.bd{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;border:0;padding:0;background:#06070f;color:#eef0fb;overflow:hidden auto;-webkit-overflow-scrolling:touch}
++.bd::backdrop{background:#06070f}
++.bd-bg{position:fixed;inset:0;pointer-events:none;overflow:hidden}
++.bd-bg i{position:absolute;left:50%;top:-10%;width:130vmax;height:70vmax;margin-left:-65vmax;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--ox-b,#06b6d4) 24%,transparent),transparent)}
++.bd-bg i+i{top:60%;width:90vmax;height:60vmax;margin-left:-45vmax;background:radial-gradient(closest-side,color-mix(in srgb,var(--ox-a,#6366f1) 18%,transparent),transparent)}
++.bd-x{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:12px;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#cfd3e6;background:rgba(255,255,255,.08);z-index:3;border:1px solid rgba(255,255,255,.1)}
++.bd-in{position:relative;outline:none;max-width:640px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top,0px)) 16px calc(40px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
++.bd header h2{font-size:26px;font-weight:700;letter-spacing:-.02em;margin:0;background:linear-gradient(135deg,#fff,color-mix(in srgb,var(--ox-b,#06b6d4) 40%,#fff));-webkit-background-clip:text;background-clip:text;color:transparent}
++.bd header p{margin:2px 0 0;font-size:13px;color:#a9b0cf}
++.bd-card{border-radius:20px;padding:14px;border:1px solid rgba(255,255,255,.09);background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.025));box-shadow:0 1px 0 rgba(255,255,255,.07) inset,0 24px 50px -28px rgba(0,0,0,.8)}
++.bd-card h3{margin:0 0 10px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#a9b0cf}
++.bd-plan{list-style:none;margin:0;padding:0;display:grid;gap:6px}
++.bd-slot{display:grid;grid-template-columns:64px 1fr;gap:8px;align-items:baseline;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07)}
++.bd-slot.deep{border-color:color-mix(in srgb,var(--ox-b,#06b6d4) 60%,transparent);box-shadow:0 0 14px color-mix(in srgb,var(--ox-b,#06b6d4) 30%,transparent)}
++.bd-slot b{font-variant-numeric:tabular-nums;color:#fff}.bd-slot small{display:block;color:#a9b0cf;font-size:12px}
++.bd-none,.bd-empty{color:#a9b0cf;font-size:13px;margin:0}
++.bd-note{margin:8px 0 0;font-size:13px;color:#cfd3e6}.bd-note.bot{padding:8px 10px;border-radius:10px;background:rgba(251,191,36,.08);border-left:3px solid #fbbf24}
++.bd-acts{display:flex;gap:8px;margin-top:10px}.bd-end{justify-content:center}
++.bd-b{min-height:44px;padding:0 16px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:inherit;font:inherit;cursor:pointer}
++.bd-b.go{background:linear-gradient(135deg,var(--ox-a,#6366f1),var(--ox-b,#06b6d4));border-color:transparent;color:#fff;font-weight:600}
++.bd-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.bd-nav .bd-b{min-width:44px;padding:0}
++.bd-week{position:relative;display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch}
++.bd-col{flex:0 0 138px;padding:8px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;gap:5px}
++.bd-col.today{border-color:color-mix(in srgb,var(--ox-b,#06b6d4) 70%,transparent);box-shadow:0 0 16px color-mix(in srgb,var(--ox-b,#06b6d4) 25%,transparent)}
++.bd-col h4{margin:0;font-size:13px}.bd-col h4 small{color:#a9b0cf;font-weight:500}
++.bd-load{display:block;height:4px;border-radius:3px;background:rgba(255,255,255,.1);position:relative;overflow:hidden}
++.bd-load::after{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--w);background:linear-gradient(90deg,var(--ox-b,#06b6d4),var(--ox-a,#6366f1));border-radius:3px}.bd-load.over::after{background:#fb7185}
++.bd-ev{font-size:12px;padding:4px 6px;border-radius:8px;background:rgba(99,102,241,.16);overflow-wrap:anywhere}.bd-ev b{font-variant-numeric:tabular-nums}
++.bd-t{display:flex;align-items:flex-start;gap:6px;font-size:12.5px;padding:3px 0}.bd-t span{flex:1;overflow-wrap:anywhere}.bd-t.done span{text-decoration:line-through;color:#8b92b2}.bd-t.old span{color:#fbbf24}
++.bd-tick{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid #8b92b2;background:none;padding:0;margin:-3px -2px -3px -4px;position:relative}
++.bd-tick::before{content:"";position:absolute;inset:-10px}
++.bd-tick[aria-pressed="true"]{background:var(--ox-b,#06b6d4);border-color:transparent}.bd-push{flex:none;width:24px;height:24px;border:0;background:none;color:#a9b0cf;font-size:18px;padding:0;position:relative}.bd-push::before{content:"";position:absolute;inset:-10px}
++.bd-h{margin-bottom:12px}.bd-hh{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 10px;margin-bottom:6px}.bd-hh small{color:#a9b0cf;font-size:12px}
++.bd-grid{display:grid;grid-template-rows:repeat(7,1fr);grid-auto-flow:column;gap:3px}
++.bd-grid i{aspect-ratio:1;border-radius:3px;background:rgba(255,255,255,.07)}.bd-grid i.on{background:var(--c);box-shadow:0 0 6px var(--c)}.bd-grid i.fut{opacity:.25}
++.bd-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}.bd-stats div{padding:8px 4px;border-radius:12px;background:rgba(255,255,255,.05)}.bd-stats b{display:block;font-size:19px}.bd-stats span{font-size:11px;color:#a9b0cf}
++.bd-bars{display:flex;align-items:flex-end;gap:4px;height:70px;margin-top:10px}.bd-bars i{flex:1;height:max(4px,var(--h));border-radius:4px 4px 2px 2px;background:linear-gradient(180deg,var(--ox-b,#06b6d4),var(--ox-a,#6366f1));opacity:.85}.bd-bars i.cur{opacity:1;box-shadow:0 0 8px var(--ox-b,#06b6d4)}
++html:not(.ox-move) .bd *{transition:none!important}
++@media (prefers-reduced-motion:reduce){.bd *{animation:none!important;transition:none!important}}
++`;
++
++  addEventListener('planner:ready', (e) => ready(e.detail));
++  if (window.PlannerAPI) ready(window.PlannerAPI);
++  // Pure helpers for the tests and the console (same pattern as window.__ox / __fl / __tp)
++  window.__bd = { planDay, heat, pomo, planText, BOT, weekDays: () => (A ? weekDays() : []) };
++})();
+diff --git a/planner/index.html b/planner/index.html
+index c19c3f7..d60377f 100644
+--- a/planner/index.html
++++ b/planner/index.html
+@@ -13,6 +13,7 @@
+ <script src="ext-flow.js"></script>
+ <script src="ext-olympus.js"></script>
+ <script src="ext-temple.js"></script>
++<script src="ext-board.js"></script>
+ <meta name="apple-mobile-web-app-capable" content="yes">
+ <meta name="apple-mobile-web-app-status-bar-style" content="default">
+ <meta name="apple-mobile-web-app-title" content="Planner">
+diff --git a/planner/tests/board.test.js b/planner/tests/board.test.js
+new file mode 100644
+index 0000000..70ffc32
+--- /dev/null
++++ b/planner/tests/board.test.js
+@@ -0,0 +1,102 @@
++// Board layer (ext-board.js): plan my day (trading windows + the bots' status), the week board, the habit heatmap, Pomodoro stats.
++// node planner/tests/board.test.js   Serve the site first (see olympus.test.js); PORT env, default 8789. Clock: Fri 2026-09-04 12:30 NY.
++const { chromium } = require('playwright');
++const L = require('./lib-todayorg.js');
++const { wait, open, fullState, seedNq, st, TODAY } = L;
++(async () => {
++  let checks = 0;
++  const errs = [], ok = (c, m) => { checks++; if (!c) errs.push(m); };
++  const b = await chromium.launch();
++
++  // ---------- 1. pure helpers ----------
++  let { ctx, p, errs: pe } = await open(b, { state: fullState(), seed: seedNq() });
++  const pure = await p.evaluate(() => {
++    const B = window.__bd, win = { from: 120, to: 930, open: 570, flat: 955 };
++    const gaps = [[420, 540], [780, 900], [1000, 1200]], now = 750;
++    const tasks = [{ id: 'a', title: 'Big', est: 60, p: 3 }, { id: 'b', title: 'Small', est: 10, p: 0 }, { id: 'c', title: 'Late', est: 30, p: 1, over: true }];
++    const plan = B.planDay({ gaps, tasks, now, win, bots: null });
++    const morning = B.planDay({ gaps: [[420, 560], [800, 900]], tasks: [], now: 400, win, bots: null });
++    const notes = (bots, w) => B.planDay({ gaps: [[780, 900]], tasks: [], now, win: w === undefined ? win : w, bots }).notes;
++    const big = B.planDay({ gaps: [[780, 830]], tasks: [{ id: 'x', title: 'Huge', est: 300, p: 3 }], now, win, bots: null });
++    const h = B.heat([{ name: 'Read', color: '#abc', done: ['2026-09-04', '2026-09-03', '2026-09-02', '2026-08-30', 'junk'] }, { title: 'Gym', done: [] }, null], '2026-09-04', 12);
++    const pm = B.pomo([{ proj: 'nq', fl: { '2026-09-04': 25, '2026-09-03': 50, '2026-09-01': 30 } }, { fl: { '2026-09-04': 25 } }, null], '2026-09-04');
++    return { plan: plan.slots.map((s) => [s.id, s.s, s.e]), deep: plan.deep, morning: morning.slots.map((s) => [s.id, s.s, s.e]), nBots: [notes(null).length, notes({ running: false }).join('|'), notes({ pos: true }).join('|'), notes({ roomFrac: 0.2 }).join('|'), notes(null, null).join('|')],
++      big: [big.slots.length, big.left], heat: [h.length, h[0].cells.length, h[0].cells[0].k, h[0].cells.filter((c) => c.on).length, h[0].cells.filter((c) => c.future).length, h[0].run, h[0].best, h[0].rate30, h[1].run, h[1].total],
++      pomo: [pm.today, pm.week, pm.prev, pm.best.m, pm.best.k, pm.avg14, pm.rounds, pm.byProj, pm.days.length], text: B.planText(plan).split('\n').length, BOT: B.BOT };
++  });
++  ok(JSON.stringify(pure.plan) === JSON.stringify([['c', 780, 810], ['b', 810, 820], ['journal', 1000, 1020], ['a', 1020, 1080]]), 'planDay: overdue first, a short one in the short gap, the journal right after flat, the big task in the quiet stretch: ' + JSON.stringify(pure.plan));
++  ok(pure.deep && pure.deep[0] === 1020 && pure.deep[1] === 1080, 'planDay: the deep block is the longest task slot: ' + JSON.stringify(pure.deep));
++  ok(pure.morning.length === 1 && pure.morning[0][0] === 'prep' && pure.morning[0][1] === 545 && pure.morning[0][2] === 560, 'planDay: a pre-open prep slot sits in the last gap before the NY open: ' + JSON.stringify(pure.morning));
++  ok(pure.nBots[0] === 1, 'planDay: with no bot status it says so (one note)');
++  ok(/stopped or halted/.test(pure.nBots[1]) && /in a trade/.test(pure.nBots[2]) && /thin/.test(pure.nBots[3]) && /no entry window/.test(pure.nBots[4]), 'planDay: bot notes (stopped, in a trade, thin room, no window): ' + JSON.stringify(pure.nBots));
++  ok(pure.big[0] === 0 && pure.big[1][0] === 'Huge', 'planDay: a task that fits no gap is listed as not fitting: ' + JSON.stringify(pure.big));
++  ok(pure.heat[0] === 2 && pure.heat[1] === 84 && pure.heat[2] === '2026-06-15' && pure.heat[3] === 4 && pure.heat[4] === 2 && pure.heat[5] === 3 && pure.heat[6] === 3 && pure.heat[7] === 13 && pure.heat[8] === 0 && pure.heat[9] === 0, 'heat: 12 weeks x 7 cells from Monday, future cells flagged, run / best / 30-day rate, junk and null ignored: ' + JSON.stringify(pure.heat));
++  ok(pure.pomo[0] === 50 && pure.pomo[1] === 130 && pure.pomo[2] === 0 && pure.pomo[3] === 50 && pure.pomo[5] === 9 && pure.pomo[6] === 2 && pure.pomo[8] === 14 && pure.pomo[7][0].name === 'nq' && pure.pomo[7][0].m === 105, 'pomo: today / week / previous week / best day / 14-day average / rounds / by project: ' + JSON.stringify(pure.pomo));
++  ok(pure.text >= 4 && pure.BOT.open === 570 && pure.BOT.flat === 955 && pure.BOT.to === 930, 'planText is a few lines; the bots\' window is 02:00-15:30 ET, open 09:30, flat 15:55');
++  ok(pe.length === 0, 'no console error loading: ' + pe.join(' | '));
++  await ctx.close();
++
++  // ---------- 2. the sheet ----------
++  const state = fullState({ clean: true });
++  state.tasks[0].fl = { [TODAY]: 25 }; state.tasks[1].fl = { [TODAY]: 25, '2026-09-03': 50 }; state.tasks[1].proj = 'nq';
++  state.habits[0].done = [TODAY, '2026-09-03', '2026-09-02'];
++  const live = { at: Date.now(), v: { t: 1, running: false, verdict: { label: 'Stopped', level: 'halt', reason: 'the PC is off' }, lit: { name: 'Zlarior', roomFrac: 0.2, pos: null }, atlas: null, blitz: null } };
++  ({ ctx, p, errs: pe } = await open(b, { state, seed: seedNq() }));
++  await p.evaluate((v) => localStorage.setItem('planner.ext.live', v), JSON.stringify(live));        // the Planner's own Bots layer wrote a good copy at start: put a stopped one in its place
++  const keys0 = await p.evaluate(() => Object.keys(localStorage).sort());
++  await p.click('[data-bdopen]');
++  await wait(400);
++  ok(await p.evaluate(() => !!document.querySelector('#bdBoard[open]')), 'the Board button on Today opens the sheet');
++  ok(await p.evaluate(() => document.querySelectorAll('#bdPlan .bd-slot').length) >= 1, 'plan my day: at least one slot proposed');
++  const note = await p.evaluate(() => document.querySelector('#bdPlan').innerText);
++  ok(/stopped or halted/i.test(note) && /the PC is off/.test(note) && /thin/i.test(note), 'plan my day reads the bots\' last live status (planner.ext.live): ' + note.replace(/\n+/g, ' / '));
++  ok(await p.evaluate(() => document.querySelectorAll('#bdWeek .bd-col').length) === 7 && await p.evaluate(() => document.querySelectorAll('#bdWeek .bd-col.today').length) === 1 && await p.evaluate(() => document.querySelector('.bd-col.today').dataset.day) === TODAY, 'week board: seven columns, today lit');
++  ok(await p.evaluate(() => /Dentist/.test(document.querySelector('.bd-col.today').innerText)), 'week board: today\'s events are in the column');
++  const first = await p.evaluate(() => document.querySelector('[data-bdtask]').dataset.bdtask);
++  await p.click(`[data-bdtask="${first}"]`); await wait(200);
++  let s1 = await st(p), t1 = s1.tasks.find((x) => x.id === first);
++  ok(t1.done === true && t1.doneAt > 0, 'week board: ticking a task marks it done through the app (done + doneAt)');
++  await p.click(`[data-bdtask="${first}"]`); await wait(200);
++  s1 = await st(p); t1 = s1.tasks.find((x) => x.id === first);
++  ok(t1.done === false && !t1.doneAt, 'week board: ticking again puts it back');
++  const pushId = await p.evaluate(() => document.querySelector('.bd-col.today [data-bdpush]').dataset.bdpush);
++  await p.click(`[data-bdpush="${pushId}"]`); await wait(200);
++  s1 = await st(p);
++  ok(s1.tasks.find((x) => x.id === pushId).date === '2026-09-05', 'week board: the arrow moves a task to the next day');
++  await p.click('[data-bd="next"]'); await wait(150);
++  ok(await p.evaluate(() => document.querySelectorAll('.bd-col.today').length) === 0 && await p.evaluate(() => /Sep/.test(document.querySelector('.bd-nav b').innerText)), 'week board: next week has no "now" column');
++  await p.click('[data-bd="prev"]'); await wait(100);
++  ok(await p.evaluate(() => document.querySelectorAll('.bd-h').length) === state.habits.length && await p.evaluate(() => document.querySelector('.bd-grid').children.length) === 84, 'heatmap: a row per habit, 84 cells');
++  ok(await p.evaluate(() => document.querySelectorAll('.bd-grid')[0].querySelectorAll('i.on').length) === 3 && /3 days in a row/.test(await p.evaluate(() => document.querySelector('.bd-hh small').innerText)), 'heatmap: the done days light up, the run is 3');
++  ok(await p.evaluate(() => document.querySelector('.bd-stats b').innerText) === '50m' && await p.evaluate(() => document.querySelectorAll('.bd-bars i').length) === 14, 'Pomodoro stats: 50m today (two rounds), 14 bars');
++  const keys1 = await p.evaluate(() => Object.keys(localStorage).sort());
++  ok(JSON.stringify(keys0) === JSON.stringify(keys1), 'the Board adds no storage key of its own: ' + keys1.filter((k) => !keys0.includes(k)).join(','));
++  await p.click('[data-bd="close"]'); await wait(100);
++  ok(await p.evaluate(() => !document.querySelector('#bdBoard[open]')), 'close closes');
++  ok(await p.evaluate(() => PlannerAPI.HB_TOOLS.some((x) => x.id === 'bdboard') && ['bd-board', 'bd-plan', 'bd-heat', 'bd-pomo'].every((id) => PlannerAPI.PK_CMDS.some((c) => c.id === id))), 'registered in All tools and the command palette');
++  await p.evaluate(() => PlannerAPI.PK_CMDS.find((c) => c.id === 'bd-plan').run()); await wait(300);
++  ok(await p.evaluate(() => !!document.querySelector('#bdBoard[open]')), 'the palette command "Plan my day" opens the Board');
++  ok(pe.length === 0, 'no console error in the sheet: ' + pe.join(' | '));
++  await ctx.close();
++
++  // ---------- 3. a deep link, a weekend, an empty planner ----------
++  ({ ctx, p, errs: pe } = await open(b, { state: fullState(), seed: seedNq(), hash: '#habit-heatmap' }));
++  await wait(500);
++  ok(await p.evaluate(() => !!document.querySelector('#bdBoard[open]')), '#habit-heatmap opens the Board');
++  await ctx.close();
++  const sat = new Date('2026-09-05T11:00:00-04:00').getTime();
++  ({ ctx, p, errs: pe } = await open(b, { now: sat, state: fullState(), seed: seedNq() }));
++  await p.click('[data-bdopen]'); await wait(300);
++  ok(/no entry window/i.test(await p.evaluate(() => document.querySelector('#bdPlan').innerText)), 'Saturday: the plan says the bots have no entry window');
++  await ctx.close();
++  const empty = { v: 1, view: 'today', weekStart: 0, jobs: [], categories: [{ id: 'personal', name: 'Personal', color: '#64748b' }], events: [], tasks: [], habits: [], goals: [], planned: '' };
++  ({ ctx, p, errs: pe } = await open(b, { state: empty }));
++  await p.click('[data-bdopen]'); await wait(300);
++  const txt = await p.evaluate(() => document.querySelector('#bdBoard').innerText);
++  ok(/No habits yet/.test(txt) && /No focus rounds/.test(txt) && /Journal/.test(txt) && pe.length === 0, 'an empty planner: honest empty lines, no error: ' + pe.join(' | '));
++  await ctx.close();
++
++  await b.close();
++  console.log(errs.length ? 'FAIL\n' + errs.join('\n') : `board.test.js: ${checks} checks passed`);
++  process.exit(errs.length ? 1 : 0);
++})();
