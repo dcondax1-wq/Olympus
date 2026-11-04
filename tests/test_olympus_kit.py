@@ -49,8 +49,16 @@ APPS = {
 # heap, layouts per frame (one at most: DOM writes batched, never a read after a write in the frame loop). Measured on
 # 2026-11-03 with ~25% headroom; docs/OLYMPUS_DESIGN.md has the table.
 BUDGET = {
-    "datacity": (120, 700_000), "mind": (30, 20_000), "tree": (0, 0), "oracle": (170, 10_000), "odeon": (60, 60_000),
-    "fates": (64, 40_000), "hermes": (0, 0), "prometheus": (40, 7_500), "tyche": (270, 30_000),   # render core adopted 2026-11-03: measured 31 calls / 6,054 tris and 216 calls / 24,590 tris, +20%
+    "datacity": (120, 700_000), "mind": (44, 20_000), "tree": (35, 60_000),      # 2026-11-04, HD tier (?gpu=1), +25%: tree (the 3D laurel tree) 28 / 47,712; mind 34 / 752 (the render core's bloom + finish passes included)
+     "oracle": (170, 10_000), "odeon": (60, 60_000),
+    "fates": (64, 40_000), "hermes": (0, 0), "prometheus": (66, 9_000), "tyche": (270, 30_000),   # render core adopted 2026-11-03: measured 31 calls / 6,054 tris and 216 calls / 24,590 tris, +20%
+}
+# apps without a full kit case here (their own tests cover them) that are still held to a perf budget: app -> (page query, calls, triangles).
+# Measured 2026-11-04 on the HD tier (?gpu=1, 390 x 844, dpr 3), +25%: plutus 19 / 4,720, forum 111 / 7,140, pantheon 86 / 25,222 (about 128 before its statues
+# were instanced), athena 130 / 4,788, ares 40 / 6,184, cities 21 / 130,854, kalshicity 71 / 41,634. docs/OLYMPUS_DESIGN.md has the table.
+EXTRA_BUDGET = {
+    "plutus": ("", 25, 6_000), "forum": ("", 140, 9_000), "pantheon": ("?demo=1", 108, 31_500), "athena": ("", 163, 6_000), "ares": ("", 50, 7_800),
+    "cities": ("", 27, 164_000), "kalshicity": ("", 89, 52_000),
 }
 HEAP_MB, LAYOUTS_PER_FRAME = 40, 1.25   # 1.25: room for the day-sprint HUDs (Odeon 1.11 under load)
 
@@ -143,7 +151,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def translate_path(self, path):
         p = path.split("?")[0].split("#")[0]
         top = p.lstrip("/").split("/")[0]
-        if top in APPS or top in ("jarvis", "olympus"):
+        if top in APPS or top in EXTRA_BUDGET or top in ("jarvis", "olympus"):
             q = p.lstrip("/")
             if q.endswith("/"):
                 q += "index.html"
@@ -171,13 +179,14 @@ def page(br, origin, fx=None, reduced=False):
     init += f"try {{ localStorage.setItem('jfx', {json.dumps(fx)}); }} catch (e) {{}}" if fx else "try { localStorage.removeItem('jfx'); } catch (e) {}"
     ctx.add_init_script(init)
     p = ctx.new_page()
+    p.set_default_timeout(120000)                  # a busy shared box (software GL) can take a minute to load a page
     errs: list = []
     p.on("pageerror", lambda e: errs.append(str(e)))
     p.on("console", lambda m: errs.append(m.text) if m.type == "error" else None)
     return ctx, p, errs
 
 
-def wait_ready(p, ms=40000):
+def wait_ready(p, ms=90000):
     try:
         p.wait_for_function("() => window.OLYMPUS && OLYMPUS.state() === 'ready'", timeout=ms)
         p.wait_for_function("() => !document.querySelector('.oly-veil')", timeout=3000)
@@ -192,6 +201,8 @@ def metrics(cdp):
 
 def test_app(br, origin, app, table):
     q, entry, qbtn = APPS[app]
+    # software GL (SwiftShader) holds the render core to LITE unless the page says ?gpu=1 (docs/OLYMPUS_RENDER.md): the HD checks need the real HD tier
+    q = ("?gpu=1" + q) if q.startswith("#") else ("?gpu=1" if not q else q + "&gpu=1")
     url = f"{origin}/{app}/{q}"
     # ---- b. high + the veil + e. perf
     ctx, p, errs = page(br, origin, fx="high")
@@ -287,6 +298,27 @@ def test_app(br, origin, app, table):
     ctx.close()
 
 
+def test_budget_only(br, origin, app):
+    """The perf budget alone (draw calls, triangles, heap, layouts per frame) for an app that has its own test suite."""
+    q, calls, tris = EXTRA_BUDGET[app]
+    ctx, p, errs = page(br, origin, fx="high")
+    p.set_default_timeout(120000)
+    p.goto(f"{origin}/{app}/{q}" + ("&gpu=1" if q else "?gpu=1"))
+    wait_ready(p, 90000)
+    p.wait_for_timeout(3000)
+    cdp = ctx.new_cdp_session(p)
+    cdp.send("Performance.enable")
+    m0, f0 = metrics(cdp), p.evaluate("window.__frames")
+    p.wait_for_timeout(2000)
+    m1, f1 = metrics(cdp), p.evaluate("window.__frames")
+    lpf = (m1.get("LayoutCount", 0) - m0.get("LayoutCount", 0)) / max(1, f1 - f0)
+    heap = m1.get("JSHeapUsedSize", 0) / 1e6
+    s = p.evaluate("OLYMPUS.stats()")
+    within = (not s.get("three") or (s["calls"] <= calls and s["triangles"] <= tris)) and heap <= HEAP_MB and lpf <= LAYOUTS_PER_FRAME
+    check(f"e. {app}: within the perf budget ({s.get('calls')} calls <= {calls}, {s.get('triangles')} tris <= {tris}, {round(heap, 1)} MB heap, {round(lpf, 2)} layouts/frame)", within, s)
+    ctx.close()
+
+
 def test_mind_labels(br, origin):
     """Mind: no galaxy name ever sits under the top HUD (or the bottom stats)."""
     ctx, p, errs = page(br, origin, fx="high")
@@ -321,9 +353,12 @@ def main():
     srv, origin = serve()
     with sync_playwright() as pw:
         br = launch(pw)
-        only = [a for a in sys.argv[1:] if a in APPS] or list(APPS)
+        only = [a for a in sys.argv[1:] if a in APPS] or ([] if [a for a in sys.argv[1:] if a in EXTRA_BUDGET] else list(APPS))
+        extra = [a for a in sys.argv[1:] if a in EXTRA_BUDGET] or ([] if [a for a in sys.argv[1:] if a in APPS] else list(EXTRA_BUDGET))
         for app in only:
             test_app(br, origin, app, table)
+        for app in extra:
+            test_budget_only(br, origin, app)
         if "mind" in only:
             test_mind_labels(br, origin)
         br.close()

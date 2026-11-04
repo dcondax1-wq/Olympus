@@ -35,6 +35,27 @@ const bronzeTex = (THREE, size) => canvasTex(THREE, size, size, (x, w, h) => {
   for (let i = 0; i < 140; i++) { x.fillStyle = `rgba(70,120,90,${(0.05 + r() * 0.1).toFixed(2)})`; x.beginPath(); x.arc(r() * w, r() * h, 1 + r() * 5, 0, 7); x.fill(); }
 }, [1, 1]);
 
+/** many boxes / cones into ONE geometry (positions placed in the group's space): one draw call per material instead of one per part */
+function merge(THREE, parts) {
+  const pos = [], nor = [], uv = [], idx = [];
+  let base = 0;
+  const M = new THREE.Matrix4(), N = new THREE.Matrix3(), v = new THREE.Vector3();
+  for (const [geo, x, y, z, rx, ry, rz] of parts) {
+    M.compose(new THREE.Vector3(x, y, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(rx || 0, ry || 0, rz || 0)), new THREE.Vector3(1, 1, 1)); N.getNormalMatrix(M);
+    const P = geo.attributes.position, Nn = geo.attributes.normal, U2 = geo.attributes.uv;
+    for (let i = 0; i < P.count; i++) {
+      v.fromBufferAttribute(P, i).applyMatrix4(M); pos.push(v.x, v.y, v.z);
+      v.fromBufferAttribute(Nn, i).applyMatrix3(N).normalize(); nor.push(v.x, v.y, v.z);
+      uv.push(U2.getX(i), U2.getY(i));
+    }
+    const I = geo.index; for (let i = 0; i < I.count; i++) idx.push(I.getX(i) + base);
+    base += P.count;
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx);
+  return g;
+}
+
 export function buildWorks(THREE, scene, o) {
   const R = o.R, lite = !!o.lite, U = { uT: { value: 0 }, uHeat: { value: 0.35 }, uStrike: { value: 0 } }, group = new THREE.Group();
   const soot = new THREE.MeshStandardMaterial({ map: sootTex(THREE, lite ? 128 : 256), color: 0xb8aca0, roughness: 0.92, metalness: 0.04 });
@@ -62,14 +83,13 @@ export function buildWorks(THREE, scene, o) {
   const ang = Math.PI * 0.82, dist = R + 5.6, px = Math.cos(ang) * dist, pz = Math.sin(ang) * dist;
   group.position.set(px, 0, pz); group.rotation.y = -ang + Math.PI / 2; group.scale.setScalar(1.4); scene.add(group);
 
-  // ---- the anvil (bronze): base, waist, face, horn
+  // ---- the anvil (bronze): waist, face, horn, heel (merged: ONE draw call), on an iron block; the arch below joins the same merges
   const anvil = new THREE.Group(); anvil.position.set(0, 0, 0.4); group.add(anvil);
-  const box = (w, h, d, m, x, y, z) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(x, y, z); anvil.add(b); return b; };
-  box(1.7, 0.42, 1.0, iron, 0, 0.21, 0);                                  // the block it sits on
-  box(1.1, 0.5, 0.62, bronze, 0, 0.67, 0);                                // the waist
-  box(1.9, 0.3, 0.8, bronze, 0, 1.07, 0);                                 // the face
-  const horn = new THREE.Mesh(new THREE.ConeGeometry(0.34, 1.0, lite ? 10 : 16), bronze); horn.rotation.z = Math.PI / 2; horn.position.set(-1.45, 1.07, 0); anvil.add(horn);
-  box(0.5, 0.26, 0.74, bronze, 1.1, 1.0, 0).rotation.z = -0.35;           // the heel
+  const B = (w, h, d) => new THREE.BoxGeometry(w, h, d);
+  const bronzeParts = [[B(1.1, 0.5, 0.62), 0, 0.67, 0], [B(1.9, 0.3, 0.8), 0, 1.07, 0], [new THREE.ConeGeometry(0.34, 1.0, lite ? 10 : 16), -1.45, 1.07, 0, 0, 0, Math.PI / 2], [B(0.5, 0.26, 0.74), 1.1, 1.0, 0, 0, 0, -0.35]];
+  const ironParts = [[B(1.7, 0.42, 1.0), 0, 0.21, 0]];
+  const sootParts = [], archBronze = [];
+  const place = (list, dz) => list.map(([g, x, y, z, rx, ry, rz]) => [g, x, y, z + dz, rx, ry, rz]);
   // ---- the molten ingot on the face
   const ingot = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.2, 0.42, lite ? 6 : 14, 3, lite ? 3 : 6), molten); ingot.position.set(0.1, 1.33, 0); anvil.add(ingot);
   // ---- the hammer: a handle on a pivot behind the anvil, an iron head with a bronze band
@@ -79,13 +99,15 @@ export function buildWorks(THREE, scene, o) {
   const head = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.36, 0.36), iron); head.position.set(-1.8, 0, 0); pivot.add(head);
   const band = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.4, 0.4), bronze); band.position.set(-1.8, 0, 0); pivot.add(band);
 
-  // ---- the hearth arch behind it (soot stone): two piers, a lintel, a keystone, the furnace mouth
+  // ---- the hearth arch behind it (soot stone): two piers, a lintel, a keystone, a back wall, the chimney; bronze caps. Merged per material.
   const arch = new THREE.Group(); arch.position.set(0, 0, -2.4); group.add(arch);
-  const pier = (x) => { const p = new THREE.Mesh(new THREE.BoxGeometry(0.9, 4.4, 0.9), soot); p.position.set(x, 2.2, 0); arch.add(p); const cap = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.25, 1.1), bronze); cap.position.set(x, 4.45, 0); arch.add(cap); };
-  pier(-2.2); pier(2.2);
-  const lintel = new THREE.Mesh(new THREE.BoxGeometry(5.8, 0.8, 1.0), soot); lintel.position.set(0, 4.95, 0); arch.add(lintel);
-  const key = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.2, 1.1), bronze); key.position.set(0, 4.95, 0); arch.add(key);
-  const wall = new THREE.Mesh(new THREE.BoxGeometry(3.6, 4.0, 0.6), soot); wall.position.set(0, 2.1, -0.5); arch.add(wall);
+  for (const x of [-2.2, 2.2]) { sootParts.push([B(0.9, 4.4, 0.9), x, 2.2, 0]); archBronze.push([B(1.1, 0.25, 1.1), x, 4.45, 0]); }
+  sootParts.push([B(5.8, 0.8, 1.0), 0, 4.95, 0], [B(3.6, 4.0, 0.6), 0, 2.1, -0.5], [new THREE.CylinderGeometry(0.9, 1.6, 3.4, 4, 1, true), 0, 6.9, -0.3, 0, Math.PI / 4, 0]);
+  archBronze.push([B(0.8, 1.2, 1.1), 0, 4.95, 0]);
+  const put = (geo, mat) => { const m = new THREE.Mesh(geo, mat); group.add(m); return m; };
+  put(merge(THREE, [...bronzeParts.map(([g, x, y, z, rx, ry, rz]) => [g, x, y, z + 0.4, rx, ry, rz]), ...archBronze.map(([g, x, y, z, rx, ry, rz]) => [g, x, y, z - 2.4, rx, ry, rz])]), bronze);
+  put(merge(THREE, place(sootParts, -2.4)), soot);
+  put(merge(THREE, place(ironParts, 0.4)), iron);
   const mouth = new THREE.Mesh(new THREE.PlaneGeometry(2.7, 2.2, 1, 1), new THREE.ShaderMaterial({ uniforms: U, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
     fragmentShader: `uniform float uT; uniform float uHeat; varying vec2 vUv; ${NOISE}
@@ -96,9 +118,6 @@ export function buildWorks(THREE, scene, o) {
   mouth.position.set(0, 1.5, 0.12); arch.add(mouth);
   const fire = new THREE.PointLight(0xff7a22, lite ? 0 : 16, 14, 1.7); fire.position.set(0, 1.6, 0.8); arch.add(fire);
   const strikeLight = new THREE.PointLight(0xffc070, 0, 9, 1.8); strikeLight.position.set(0.1, 1.9, 0.4); anvil.add(strikeLight);
-  // ---- a tapered chimney of dark stone above the lintel
-  const chim = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1.6, 3.4, 4, 1, true), soot); chim.rotation.y = Math.PI / 4; chim.position.set(0, 6.9, -0.3); arch.add(chim);
-
   // ---- the beat: the hammer lifts for 1.7 s, falls fast, rests; the ingot flares and the light kicks on the blow
   const CYCLE = 3.6;
   let strikes = 0, lastPhase = 0, fxNames = [], fxList = [], sparks = null;
