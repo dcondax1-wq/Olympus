@@ -828,7 +828,7 @@ export function createBrain(opts) {
       const bot = BOT[key], c = card(V, key);
       if (!c || (key === 'blitz' && c.off)) { if (only) out.push(offWhy(c, bot)); continue; }
       const d = usd(c.dll), u = usd(c.dll_used);
-      out.push(`${bot.name}: daily loss limit ${d || 'missing'}${u ? `, used ${u}` : ''}${num(c.room) != null ? `; ${usd(c.room)} of room to the floor` : ''}.`);
+      out.push(`${bot.name}: daily loss limit ${d || 'missing'}${u ? `, used ${u}` : ''}${num(c.room) != null ? `; drawdown left ${usd(c.room)}` : ''}.`);
       say.push(`${bot.name}: ${d ? sayAmt(c.dll) + ' a day' : 'limit missing'}${u ? `, ${sayAmt(c.dll_used)} used` : ''}.`);
     }
     setCtx('room', sel, only, false, V);

@@ -108,22 +108,20 @@ def _money(x) -> str:
 
 
 def account_line(name: str, a: dict | None) -> str:
-    """'Zlarior 50K: $1,640 room to the floor, eval day 3 of 10' (funded / passed / failed / not set up said so)."""
+    """'Zlarior 50K: drawdown left $1,640 of $2,000' (funded / passed / failed / not set up said so)."""
     a = a if isinstance(a, dict) else {}
     if not a or a.get("error"):
         return f"{name}: unknown (no board)"
     st = str(a.get("status") or "").lower()
     room = a.get("room")
-    head = f"{name}: " + (f"{_money(room)} room to the floor" if room is not None else "room unknown")
+    head = f"{name}: " + ((f"drawdown left {_money(room)}" + (f" of {_money(a['mll'])}" if a.get("mll") else "")) if room is not None else "drawdown unknown")
     if st in ("passed", "failed"):
-        return f"{name}: eval {st.upper()}" + (f" ({_money(room)} room)" if room is not None else "")
+        return f"{name}: eval {st.upper()}" + (f" (drawdown left {_money(room)})" if room is not None else "")
     if st == "not set up":
         return f"{name}: not set up"
     if a.get("sessions") is None and a.get("session") is not None:
-        return head + f", funded day {a.get('session')}"
-    if a.get("session") is not None:
-        return head + f", eval day {int(a['session'])} of {int(a.get('sessions') or 10)}"
-    return head
+        return head + ", funded"
+    return head                                   # owner 2026-11-03: no "eval day N of 10" counter
 
 
 def blitz_line(bs: dict | None) -> str:

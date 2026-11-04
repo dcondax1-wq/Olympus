@@ -9,8 +9,8 @@ calendar data/news/events.csv), the VIX band and the eval state (state eval / ev
 
   morning  built on the first run after 01:30 ET, refreshed once after 07:30 ET: the LIT map (Asia / London / NY trap boxes,
            PDH/PDL, PWH/PWL, PMH/PML, NWOG/NDOG, build-ups: untaken or taken, which side was taken overnight), the Monday
-           rule, the weekly stop, the VIX one-day band (target), today's high-impact USD news, the eval (session N of 10, $ to
-           the target, room to the floor, max micros + $ risk at a typical stop) and a one-line game plan in plain words
+           rule, the weekly stop, the VIX one-day band (target), today's high-impact USD news, the eval ($ to
+           the target, drawdown left of the max loss, max micros + $ risk at a typical stop) and a one-line game plan in plain words
   now      every run: price, model state, levels left above / below, what the bot waits for
   log      every run: what changed (level swept + depth in ATR, box closed, 5m CISD with its inducement and displacement,
            setup armed / rejected and the rule, limit tapped, entry, exit), newest first, kept for the day; `new` marks the
@@ -451,7 +451,7 @@ def _plan_line(price, levels, mon, band, wk, done, news_ev, open_pos=None):
     return s
 
 
-def morning(M, k, last, now, P, live=None, news=None, ev=None, clock=None, lit_sizing=None, params=None):
+def morning(M, k, last, now, P, live=None, news=None, ev=None, clock=None, lit_sizing=None, params=None, real=None):
     from engine import lit
     x = M.ctx[k]
     day = str(M.days[k][0])
@@ -483,9 +483,15 @@ def morning(M, k, last, now, P, live=None, news=None, ev=None, clock=None, lit_s
            "to_target": (clock or {}).get("to_target", (ev or {}).get("to_target")), "room": (clock or {}).get("room", (ev or {}).get("cushion")),
            "balance": (ev or {}).get("balance"), "floor": (ev or {}).get("trailing_mll"), "max_micros": sz["qty"], "risk_usd": sz["risk_usd"],
            "stop": stop, "mode": sz["mode"], "why": sz["why"][-2:]}
-    if evl["session"]:
-        evl["text"] = (f"Eval session {evl['session']} of {evl['limit']}: {_usd(evl['to_target'] or 0)} to the target, "
-                       f"{_usd(evl['room'] or 0)} of room to the floor. Today's size at a typical {stop:g}-pt stop: "
+    if isinstance(real, dict) and real.get("room") is not None:
+        # owner 2026-11-03: the numbers MFFU shows (the PC's anchored real account), not the cloud paper ledger's own trail.
+        # Text and display fields only: the size above was computed from the paper state as before.
+        evl.update(room=real["room"], balance=real.get("balance"), floor=real.get("floor"),
+                   to_target=real.get("to_target", evl["to_target"]), real=True)
+    if evl["session"] or evl.get("real"):
+        evl["text"] = (f"Eval: {_usd(evl['to_target'] or 0)} to the target, "
+                       f"drawdown left {_usd(evl['room'] or 0)} of {_usd((real or {}).get('mll') or 2000)}. "
+                       f"Today's size at a typical {stop:g}-pt stop: "
                        f"{sz['qty']} micros, {_usd(sz['risk_usd'])} at risk.")
     else:
         evl["text"] = (f"Eval {(clock or {}).get('text') or 'clock unknown'}. Size at a typical {stop:g}-pt stop: {sz['qty']} micros, "
@@ -667,7 +673,7 @@ def recap(M, C, k, last, now, P, live, log, ledger_today=None, learning=None):
 
 
 def build(df5, now, params=None, live=None, prev=None, news=None, ev=None, clock=None, lit_sizing=None, model_params=None,
-          ledger_today=None, learning=None, sym="NQ", ledger=None) -> dict:
+          ledger_today=None, learning=None, sym="NQ", ledger=None, real=None) -> dict:
     """The brief at `now` (see the module doc). prev = the last brief (state["brief"]); live = engine/lit_live.run() at now."""
     now = int(now)
     prev = prev if isinstance(prev, dict) else {}
@@ -702,7 +708,7 @@ def build(df5, now, params=None, live=None, prev=None, news=None, ev=None, clock
     same_date = str(_et(now).date()) == day
     mo = b["morning"]
     if same_date and m >= MORNING_AT and (mo is None or (mo.get("stage") == "early" and m >= REFRESH_AT)):
-        b["morning"] = morning(M, k, last, now, P, live, news, ev, clock, lit_sizing, model_params)
+        b["morning"] = morning(M, k, last, now, P, live, news, ev, clock, lit_sizing, model_params, real=real)
     b["log"] = merge_log(b["log"], _facts(M, C, k, last, now, P, live), now)
     b["now"] = now_block(M, k, last, now, P, live)
     if same_date and m >= RECAP_AT:
@@ -784,7 +790,7 @@ def _insert_readme(path, lines):
         fh.write(txt[:i] + sec + "\n" + txt[i:])
 
 
-def cloud_hook(out, new_state, old_state, res, df_all, now, lm):
+def cloud_hook(out, new_state, old_state, res, df_all, now, lm, real=None):
     """tools/cloud_monitor.py: the brief into new_state["brief"] and a section into <out>/README.md. LIT only."""
     if (lm or {}).get("model") != "lit":
         return None
@@ -799,7 +805,7 @@ def cloud_hook(out, new_state, old_state, res, df_all, now, lm):
     b = build(df_all, now, params=lm.get("lit"), live=res, prev=(old_state or {}).get("brief"), news=hub, ev=new_state.get("eval"),
               clock=new_state.get("eval_2wk"), lit_sizing=lm.get("lit_sizing"), model_params=lm.get("params"), ledger_today=led,
               learning=new_state.get("learning"), sym=lm.get("sym") or "NQ",
-              ledger=[{**v, "entry_t": int(k)} for k, v in (new_state.get("ledger") or {}).items() if str(k).isdigit()])
+              ledger=[{**v, "entry_t": int(k)} for k, v in (new_state.get("ledger") or {}).items() if str(k).isdigit()], real=real)
     new_state["brief"] = b
     _insert_readme(os.path.join(out, "README.md"), readme_lines(b))
     return b

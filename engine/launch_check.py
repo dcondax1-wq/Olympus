@@ -354,7 +354,7 @@ def checklist(f: dict | None, health: dict | None, running: bool, now=None) -> d
     #     anchor exactly as before, so it never blocks the launch)
     bk = f.get("broker") or {}
     if bk.get("fresh"):
-        extra = (f", floor {_usd(bk['floor'])}, room {_usd(bk['room'])}" if bk.get("floor") is not None and bk.get("room") is not None
+        extra = (f", floor {_usd(bk['floor'])}, drawdown left {_usd(bk['room'])}" if bk.get("floor") is not None and bk.get("room") is not None
                  else "")
         items.append(_item("broker", "Real balance from NinjaTrader", "good",
                            f"balance {_usd(bk.get('equity'))}{extra} ({bk.get('age_s')} s old)"))

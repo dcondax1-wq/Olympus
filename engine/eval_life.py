@@ -38,6 +38,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 START_BAL = 50000.0
+MAX_LOSS = 2000.0                 # the Builder 50K max loss, for the "drawdown left $X of $2,000" text only
 OWNER_PRICE = "$91.80"            # the owner's Builder 50K price with a discount code (2026-10-18; verify the code at checkout)
 FUNDED_ID = "mffu50k_funded"
 PAYOUT_ASK_ABOVE = 1500.0         # lit-money-batch2.md: ask only once $1,500+ is above the $2,100 buffer (balance $53,600)
@@ -127,7 +128,7 @@ def view(days: dict, start: str | None, today: str, lsz: dict | None = None, ses
         # 1 micro inside the caps and are skipped, so the eval can sit for weeks without failing or passing
         rf = float(tw.get("room_f") or c.get("safe_cap") or 0.6)
         mx = max(0.0, (rf * st["room"] - sz.LIVE_COMM) / 2.0 - 0.25)
-        trading = (f"stuck: room ${st['room']:,.0f} - 1 micro fits only stops up to {mx:.0f} pts, most entries are skipped; "
+        trading = (f"stuck: drawdown left ${st['room']:,.0f} of ${MAX_LOSS:,.0f} - 1 micro fits only stops up to {mx:.0f} pts, most entries are skipped; "
                    "buy a new eval")
     out = {"start": start, "today": today, "status": status, "balance": round(START_BAL + bal, 2), "profit": round(bal, 2),
            "to_target": round(target - bal, 2), "target_balance": START_BAL + target, "room": st["room"],
@@ -135,7 +136,7 @@ def view(days: dict, start: str | None, today: str, lsz: dict | None = None, ses
            "trading": trading, "wk_stop": wk, "clock_text": clock.get("text"), "stuck": stuck}
     out["text"] = (f"Eval {status.upper()}: balance ${out['balance']:,.0f} ({_money(bal)}), {trading}"
                    if status in ("passed", "failed") else f"Eval {status}: {_money(bal)}, ${max(0.0, out['to_target']):,.0f} to go, "
-                                                          f"room ${st['room']:,.0f}; {wk['text']}")
+                                                          f"drawdown left ${st['room']:,.0f} of ${MAX_LOSS:,.0f}; {wk['text']}")
     if ex:                                   # anchored: the broker's floor rebuilt, shown next to the balance
         out["floor"] = round(out["balance"] - float(st["room"]), 2)
         out["anchor"] = sz.eval_anchor(anchor)
@@ -230,7 +231,7 @@ def anchor_check_payload(rows: list, now) -> dict | None:
     for r in rows:
         s = f"{r.get('name') or 'eval'}: balance ${float(r['balance']):,.2f}, floor ${float(r['floor']):,.2f}"
         if r.get("room") is not None:
-            s += f" (room ${float(r['room']):,.2f}"
+            s += f" (drawdown left ${float(r['room']):,.2f}"
             s += f", ${max(0.0, float(r['to_target'])):,.2f} to target)" if r.get("to_target") is not None else ")"
         a = r.get("anchor")
         s += f", anchored {a['as_of']}" if isinstance(a, dict) and a.get("as_of") else ", not anchored"
@@ -321,7 +322,7 @@ def notices(v: dict, account: str, now) -> list:
 
 
 def stuck_payload(v: dict, account: str, now) -> dict:
-    body = (f"{account}: room ${float(v.get('room') or 0):,.0f} to the max-loss floor. The bot never sends a trade whose "
+    body = (f"{account}: drawdown left ${float(v.get('room') or 0):,.0f} of ${MAX_LOSS:,.0f}. The bot never sends a trade whose "
             "1-micro stop-out does not fit the caps, so most LIT entries are now skipped and this eval can sit for weeks. "
             f"Buy a new MFFU Builder 50K ({OWNER_PRICE} with a code last time) and tell Claude its Name and first session.")
     return _payload("stuck", "EVAL STUCK: buy a new one", body, f"eval:stuck:{v.get('start') or 'nostart'}", now)

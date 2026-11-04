@@ -717,12 +717,12 @@ def _watch_next(state, now, mon, fri, df5, hub, trades, cards) -> list:
                 out.append({"kind": "monday", "text": f"Monday rule: Friday's high {float(f['high'].max()):,.2f} / low "
                                                       f"{float(f['low'].min()):,.2f}. Once Monday takes the high only shorts, the low only longs."})
     ck = state.get("eval_2wk") or {}
+    rv = state.get("eval_real") or {}          # the real MFFU account (owner 2026-11-03), else the cloud paper ledger's own
     if ck.get("session"):
-        rest = int(ck.get("limit") or 10) - int(ck["session"])
-        out.append({"kind": "eval", "text": f"Eval: session {ck['session']} of {ck.get('limit', 10)}, ${float(ck.get('to_target') or 0):,.0f} to the "
-                                            f"target, ${float(ck.get('room') or 0):,.0f} of room to the floor. "
-                                            + (f"{rest} session(s) left in the two-week sizing." if rest > 0 else
-                                               "Past session 10: the eval goes on in safe_eval sizing (smaller).")})
+        room_ = rv.get("room") if rv.get("room") is not None else ck.get("room")
+        togo_ = rv.get("to_target") if rv.get("to_target") is not None else ck.get("to_target")
+        out.append({"kind": "eval", "text": f"Eval: ${float(togo_ or 0):,.0f} to the target, drawdown left "
+                                            f"${float(room_ or 0):,.0f} of ${float(rv.get('mll') or 2000):,.0f}."})
     elif (state.get("eval") or {}).get("balance") is not None:
         e = state["eval"]
         out.append({"kind": "eval", "text": f"Eval balance ${float(e['balance']):,.0f}, ${float(e.get('to_target') or 0):,.0f} to the target."})
