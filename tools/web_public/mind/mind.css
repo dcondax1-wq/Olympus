@@ -270,7 +270,7 @@ h1 b {
 .lbl.note { font: 700 14px/1.1 var(--ui); letter-spacing: 0.02em; text-transform: none; color: #fff; padding: 4px 9px; border-radius: 8px; background: rgba(5, 6, 15, 0.6); border: 1px solid var(--line); text-shadow: none; }
 
 .tl {
-  position: fixed; z-index: 6; left: 50%; transform: translateX(-50%); top: calc(var(--st) + 150px);
+  position: fixed; z-index: 6; left: 50%; transform: translateX(-50%); top: max(calc(var(--st) + 150px), 34vh);   /* below the top bar on a small phone too (SE: the bar is taller) */
   display: grid; justify-items: center; gap: 6px; pointer-events: none; text-align: center;
 }
 #tl-date { font: 700 22px/1 var(--display); letter-spacing: 0.12em; color: var(--gold); text-shadow: 0 0 18px rgba(245, 196, 81, 0.6); }
@@ -326,7 +326,7 @@ html[data-fx="off"] *, html[data-fx="off"] *::before, html[data-fx="off"] *::aft
 /* ------------------------------------------------------------------ Today: what Jarvis learned (2026-11-03) */
 .ticker { flex-wrap: wrap; row-gap: 4px; }
 .ticker .tk-text { flex: 1 1 100%; order: 3; }
-.today-btn { flex: none; margin-left: auto; padding: 4px 10px; min-height: 30px; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
+.today-btn { flex: none; margin-left: auto; padding: 4px 10px; min-height: 44px; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
 .today-btn b { color: var(--cyan); margin-left: 4px; font-variant-numeric: tabular-nums; }
 .day {
   position: fixed; z-index: 22; left: calc(var(--gut) + var(--sl)); right: calc(var(--gut) + var(--sr)); top: calc(var(--st) + 116px);
@@ -352,6 +352,6 @@ html[data-fx="off"] *, html[data-fx="off"] *::before, html[data-fx="off"] *::aft
 .jbrain { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 2px 6px; font-size: 13px; color: var(--mut); }
 .jbrain .jb-t { font: 700 10.5px/1 var(--ui); letter-spacing: 0.16em; text-transform: uppercase; color: var(--cyan); }
 .jbrain b { color: var(--text); font-variant-numeric: tabular-nums; }
-.jbrain a { margin-left: auto; display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; border-radius: 999px; text-decoration: none; color: var(--cyan);
+.jbrain a { margin-left: auto; display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 999px; text-decoration: none; color: var(--cyan);
   border: 1px solid var(--line-hi); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
 @media (orientation: landscape) and (max-height: 500px) { .jbrain { grid-column: 1 / -1; } }

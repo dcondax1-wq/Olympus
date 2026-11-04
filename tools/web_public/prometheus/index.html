@@ -32,8 +32,8 @@
     <div class="st"><span class="k" title="the best creature's 2026 H1 $ per month">BEST H1/MO</span><b id="s-h1">—</b><i id="s-h1l"></i></div>
     <div class="st"><span class="k" title="the same creature on 2026 H2 (never seen by the forge)">ITS H2/MO</span><b id="s-h2">—</b><i id="s-h2l"></i></div>
     <div class="st"><span class="k" title="eval pass / fail % within 10 sessions (2026 H1)">P10/F10</span><b id="s-pf">—</b><i id="s-pfl"></i></div>
-    <div class="st"><span class="k">TR/WK</span><b id="s-tpw">—</b><i id="s-tpwl"></i></div>
-    <div class="st"><span class="k">GEN</span><b id="s-gen">—</b><i id="s-gen2"></i></div>
+    <div class="st"><span class="k" title="trades a week">TR/WK</span><b id="s-tpw">—</b><i id="s-tpwl"></i></div>
+    <div class="st"><span class="k" title="generation: how many rounds of breeding this run has done">GEN</span><b id="s-gen">—</b><i id="s-gen2"></i></div>
   </div>
   <button type="button" class="banner" id="banner" aria-controls="truth"><b id="bn-t">LIVE LIT STILL BEST</b><span id="bn-s"></span></button>
   <div class="legend" aria-hidden="true">
@@ -49,10 +49,10 @@
   </div>
   <div class="chips" id="chips" role="group" aria-label="Filter the creatures by half-year pass or fail">
     <button type="button" data-f="all" aria-pressed="true">All <small></small></button>
-    <button type="button" data-f="h1" aria-pressed="false">H1 ✓ <small></small></button>
-    <button type="button" data-f="h2" aria-pressed="false">H2 ✓ <small></small></button>
-    <button type="button" data-f="both" aria-pressed="false">Both ✓ <small></small></button>
-    <button type="button" data-f="fail2" aria-pressed="false">H2 ✗ <small></small></button>
+    <button type="button" data-f="h1" aria-pressed="false" title="passes the Jan-Jun 2026 eval check (H1 = first half)">H1 ✓ <small></small></button>
+    <button type="button" data-f="h2" aria-pressed="false" title="passes the Jul-Oct 2026 eval check (H2 = second half, never seen while breeding)">H2 ✓ <small></small></button>
+    <button type="button" data-f="both" aria-pressed="false" title="passes both halves">Both ✓ <small></small></button>
+    <button type="button" data-f="fail2" aria-pressed="false" title="fails the Jul-Oct 2026 eval check">H2 ✗ <small></small></button>
   </div>
   <p class="chipn" id="chipn" aria-live="polite"></p>
   <nav class="tabs" aria-label="Panels">
