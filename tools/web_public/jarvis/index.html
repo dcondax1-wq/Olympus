@@ -1060,6 +1060,8 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     <label class="row-t"><span>OLYMPUS intro<small>The opening when Jarvis starts (full once a day, 1 s after that)</small></span><input type="checkbox" id="setIntro"></label>
     <label class="row-t"><span>OLYMPUS sounds<small>Ticks, a portal whoosh, thunder, rank-ups. Follows the silent switch; never while Jarvis talks or listens</small></span><input type="checkbox" id="setOlySfx"></label>
     <label>Sound volume<input id="setOlyVol" type="range" min="0" max="100" step="5" value="35"></label>
+    <label class="row-t"><span>App ambience<small>A quiet sound bed in each app (sea, forge, wind, city hum ...). Starts after your first touch, never while Jarvis talks, off in battery saver unless you turn it on</small></span><input type="checkbox" id="setOlyAmb"></label>
+    <label class="row-t"><span>Battery saver<small>Apps draw at 30 fps and a lighter pixel ratio. Off: Jarvis decides from the battery (20% and not charging) or Save-Data</small></span><input type="checkbox" id="setOlySaver"></label>
     <label class="row-t"><span>Haptics<small>A light tap you feel on buttons (iPhone: iOS 18 and later)</small></span><input type="checkbox" id="setHaptic"></label>
     <label class="row-t"><span>Tilt<small>The core leans with the phone (asks for motion access)</small></span><input type="checkbox" id="setTilt"></label>
     <div class="sheet-row"><button class="btn solid" type="button" id="lookX">Done</button></div>
@@ -2678,7 +2680,9 @@ function renderLook() {
   $('#hue').value = String(+(D.LS.get('jcustom', { h: 275 }) || {}).h || 275);
   $('#setSound').checked = S.sound(); $('#setTilt').checked = S.tilt(); $('#setCalm').checked = S.calm();
   $('#setIntro').checked = raw('jarvis.intro') !== 'off'; $('#setHaptic').checked = hapticOn();
-  safe(() => { const k = window.OLYMPUS_SFX, s = k && k.state(); $('#setOlySfx').checked = !!s && !s.muted; $('#setOlySfx').disabled = $('#setOlyVol').disabled = !k; if (s) $('#setOlyVol').value = String(Math.round(s.volume * 100)); });
+  safe(() => { const k = window.OLYMPUS_SFX, s = k && k.state(); $('#setOlySfx').checked = !!s && !s.muted; $('#setOlySfx').disabled = $('#setOlyVol').disabled = !k; if (s) $('#setOlyVol').value = String(Math.round(s.volume * 100));
+    const am = k && k.ambientState && k.ambientState(); $('#setOlyAmb').disabled = !am; $('#setOlyAmb').checked = !!am && (am.setting === null ? !am.saver : am.setting);
+    $('#setOlySaver').checked = (() => { try { return localStorage.getItem('olympus.saver') === 'on'; } catch (_) { return false; } })(); });
   $('#fxNote').textContent = root.dataset.fxAuto ? 'Jarvis lowered the effects to keep this phone smooth. Pick a level to override.' : 'High is the phone default. Low keeps the glass and stops the motion; Off is fully static.';
 }
 function openLook() { closeSheets(); closeMore(); $('#look').hidden = false; renderLook(); }
@@ -2690,6 +2694,8 @@ $('#fxSeg').addEventListener('click', (e) => { const b = e.target.closest('[data
 $('#coreSeg').addEventListener('click', (e) => { const b = e.target.closest('[data-core-k]'); if (b) setCoreDesign(b.dataset.coreK); });
 $('#hue').addEventListener('input', () => { D.LS.set('jcustom', { h: +$('#hue').value }); if (root.dataset.theme !== 'custom') setTheme('custom'); else { applyCustom(); readColors(); if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme())); } });
 $('#setOlySfx').addEventListener('change', () => { safe(() => { const k = window.OLYMPUS_SFX; if (!k) return; k.mute(!$('#setOlySfx').checked); if ($('#setOlySfx').checked) k.play('tap'); }); });
+$('#setOlyAmb').addEventListener('change', () => { safe(() => { const k = window.OLYMPUS_SFX; if (k && k.ambience) k.ambience($('#setOlyAmb').checked); }); });   // shared with every app (storage event)
+$('#setOlySaver').addEventListener('change', () => { safe(() => { try { if ($('#setOlySaver').checked) localStorage.setItem('olympus.saver', 'on'); else localStorage.removeItem('olympus.saver'); } catch (_) { /* private mode */ } }); });
 $('#setOlyVol').addEventListener('change', () => { safe(() => { const k = window.OLYMPUS_SFX; if (!k) return; k.setVolume(+$('#setOlyVol').value / 100); k.play('tap'); }); });
 $('#setSound').addEventListener('change', () => { D.LS.set('jarvis.sound', $('#setSound').checked); sfx('tap'); renderMore(); });
 $('#setTilt').addEventListener('change', async () => { await setTilt($('#setTilt').checked); renderLook(); });
