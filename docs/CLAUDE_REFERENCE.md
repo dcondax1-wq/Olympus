@@ -717,6 +717,11 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   adopted; the page is a research lens, paper only.
 
 ## Key commands (run from the repo root)
+- **Numbers audit (2026-11-04):** `python tools/numbers_audit.py` (`--check` exits 1 on any 'wrong'; `--all` shows skipped history; `--json`; test `tests.test_numbers_audit`).
+  Read-only. Builds the facts from CLAUDE.md, `research/lit/mffu_rules.json`, `research/props/roadmap.json`, `research/lit/funded_firms.json`, `plutus/plans.json`, then scans
+  every published file (tools/web_public, web_next, handoff, owner docs, hub snapshot, STRATEGY.md) for list prices, old funded figures (the trio: $2,147 a month on Jul-Oct,
+  $2,655 Jan-Jun), the old headline, old 2-week pass / fail, "7 of 10 days", wrong job / app counts, wrong Builder limits. Run it before every publish; fix the SOURCE of a generated file
+  (writeup summary, `build_web_dashboard.py` strings), then rebuild athena / obsidian pack / hub.
 - **START BOT (owner's one start, 2026-10-26):** the owner now starts from the dashboard only (desktop **LE START** -> the
   Start page's **Start trading**, `go.step_auto`; Infrastructure, "Start & Accounts page"). `START_BOT.bat` -> `engine/go.py`
   stays for the console: the update (`autoupdate.pull`, bot stopped), names asked once (`data/start_bot.json`,
