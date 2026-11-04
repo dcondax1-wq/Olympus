@@ -4,10 +4,13 @@
 //   the hammer    strikes (with sparks) every time a dial is turned
 //   the furnace   embers behind, a quench barrel beside
 // createForge(canvas, { O }) -> { setState({ color, scale, kind }), strike(), onQuality(cb), lite(), quality(), stats(), dispose() }
+// JOB 4+5 (2026-11-04): a reflective stone floor around the dais, bronze hoops and an iron-hot ingot rim, light shafts through furnace smoke, dust,
+// big furnace embers, contact shadows under the anvil, furnace and barrel, a cool rim light. One draw call each (OLYMPUS fx-atmos.js).
 // Reduced motion: no frame is drawn while nothing changes; a strike is a single flash instead of an animation.
 import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
 import * as M from '../olympus/materials.js';
+import * as FX from '../olympus/fx-atmos.js';
 
 const hdr = (c, k) => new THREE.Color(c).multiplyScalar(k);
 
@@ -19,15 +22,32 @@ function glowTexture() {
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
 
+// a bevelled block (an extruded rounded rectangle): the ingot and the hammer head catch the light on their edges instead of reading as flat boxes
+function bevelBox(w, h, d, b = 0.04, taper = 0) {
+  const sh = new THREE.Shape(), x = w / 2, y = h / 2, t = taper * w / 2;
+  sh.moveTo(-x, -y); sh.lineTo(x, -y); sh.lineTo(x - t, y); sh.lineTo(-x + t, y); sh.closePath();
+  const g = new THREE.ExtrudeGeometry(sh, { depth: d - 2 * b, bevelEnabled: true, bevelThickness: b, bevelSize: b, bevelSegments: 2, curveSegments: 4 });
+  g.translate(0, 0, -(d - 2 * b) / 2); return g;
+}
+// the anvil's side profile (heel, face, horn, waist, foot) extruded with a bevel: one mesh, one draw call
+function anvilGeometry() {
+  const sh = new THREE.Shape();
+  sh.moveTo(-0.95, 0); sh.lineTo(0.95, 0); sh.lineTo(0.95, 0.1); sh.lineTo(0.64, 0.3); sh.lineTo(0.5, 0.6); sh.lineTo(0.48, 0.95); sh.lineTo(0.7, 1.08);
+  sh.bezierCurveTo(1.4, 1.12, 2.1, 1.2, 2.75, 1.36); sh.lineTo(2.75, 1.4); sh.bezierCurveTo(2.1, 1.5, 1.5, 1.5, 1.35, 1.5);
+  sh.lineTo(-1.2, 1.5); sh.lineTo(-1.38, 1.4); sh.lineTo(-1.2, 1.3); sh.lineTo(-0.7, 1.12); sh.lineTo(-0.5, 0.95); sh.lineTo(-0.5, 0.6); sh.lineTo(-0.64, 0.3); sh.lineTo(-0.95, 0.1); sh.closePath();
+  const g = new THREE.ExtrudeGeometry(sh, { depth: 0.84, bevelEnabled: true, bevelThickness: 0.07, bevelSize: 0.06, bevelSegments: 3, curveSegments: 14 });
+  g.translate(0, 0, -0.42); return g;
+}
+
 export function createForge(canvas, { O = null } = {}) {
   const reduced = () => (O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches));
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('#0b0608');
   scene.fog = new THREE.FogExp2(0x1a0a0c, 0.045);
   const camera = new THREE.PerspectiveCamera(46, 1, 0.1, 100);
-  let lastT = 0, lite = false, dirty = true, qcb = null, drawn = 0, frames = 0, stopped = false, raf = 0, strikes = 0;
+  let fxList = [], lastT = 0, lite = false, dirty = true, qcb = null, drawn = 0, frames = 0, stopped = false, raf = 0, strikes = 0;
   const rc = createRenderer({ canvas, scene, camera, env: 'night', tint: '#d96bff', exposure: 0.95, maxDpr: 1.75, bloom: { strength: 0.8, radius: 0.55, threshold: 0.9 },
-    onQuality: (l) => { lite = l === 'low' || l === 'off'; setCounts(); dirty = true; if (qcb) qcb(l); } });
+    onQuality: (l) => { lite = l === 'low' || l === 'off'; setCounts(); FX.setQuality(fxList, l); dirty = true; if (qcb) qcb(l); } });
   lite = rc.quality() === 'low' || rc.quality() === 'off';
   const glow = glowTexture();
 
@@ -36,27 +56,32 @@ export function createForge(canvas, { O = null } = {}) {
   const key = new THREE.DirectionalLight('#ffe2c4', 1.1); key.position.set(3, 6, 5); scene.add(key);
   const rim = new THREE.DirectionalLight('#9fb4ff', 0.9); rim.position.set(-4, 3, -5); scene.add(rim);
   const fire = new THREE.PointLight('#ff7a30', 26, 14, 1.5); fire.position.set(-3.2, 1.6, -1.6); scene.add(fire);
-  const ingotLight = new THREE.PointLight('#ffb547', 6, 6, 1.6); ingotLight.position.set(0, 2.3, 0.4); scene.add(ingotLight);
+  const ingotLight = new THREE.PointLight('#ffb547', 6, 6, 1.6);   ingotLight.position.set(0, 2.3, 0.4); scene.add(ingotLight);
+  const bounce = new THREE.PointLight('#ff9a5a', 10, 9, 1.8); bounce.position.set(0, 0.35, 1.6); scene.add(bounce);          // the glow of the ingot thrown back on the floor
 
   // ---- floor: a round stone dais
   const dais = new THREE.Mesh(new THREE.CylinderGeometry(4.6, 4.8, 0.3, 48), M.marble({ color: '#3a3238', gold: false, scale: 0.5, roughness: 0.5 }));
   dais.position.y = -0.15; scene.add(dais);
   const ring = new THREE.Mesh(new THREE.TorusGeometry(4.6, 0.04, 8, 96), M.neon({ color: '#d96bff', intensity: 2.2, fog: true }));
   ring.rotation.x = Math.PI / 2; ring.position.y = 0.02; scene.add(ring);
+  const floorFx = FX.polishedFloor({ size: 80, color: '#120a0c', y: -0.32, roughness: 0.3, metalness: 0.4, env: 0.5 }); scene.add(floorFx.object);
+  const shaftFx = FX.shafts({ count: 4, from: [-2, 11, -3], to: [0.5, 0, 0.5], width: 5, spread: [6, 0, 4], color: "#ffc58a", strength: 0.075, seed: 8 }); scene.add(shaftFx.object);
+  const dustFx = FX.dust({ count: 200, box: [16, 7, 14], color: '#ffd9b0', size: 4, strength: 0.8, seed: 12 }); dustFx.object.position.set(0, -0.2, -1); scene.add(dustFx.object);
+  const emberFx = FX.embers({ count: 150, origin: [-3.4, 0.9, -1.6], spread: [1.5, 0, 1.0], rise: 5.2, colors: ['#fff0b0', '#ff9a3a', '#c2300f'], size: 6.5, wind: 0.5, seed: 31 }); scene.add(emberFx.object);
+  const aoAnvil = FX.contactAO({ radius: 1.9, strength: 0.85, depth: 1.3 }), aoFurn = FX.contactAO({ radius: 1.9, strength: 0.8, depth: 1.4 }), aoBarrel = FX.contactAO({ radius: 0.95, strength: 0.75 });
+  aoAnvil.object.position.set(0, 0.01, 0); aoFurn.object.position.set(-3.4, 0.01, -2.2); aoFurn.object.rotation.z = 0.5; aoBarrel.object.position.set(3.3, 0.01, -1.4);
+  scene.add(aoAnvil.object, aoFurn.object, aoBarrel.object);
+  fxList = [floorFx, shaftFx, dustFx, emberFx, aoAnvil, aoFurn, aoBarrel];
 
   // ---- the anvil
   const steel = M.metal({ kind: 'gunmetal', color: '#3c3a48', roughness: 0.38 }), chrome = M.metal({ kind: 'chrome', roughness: 0.18 });
   const anvil = new THREE.Group(); scene.add(anvil);
   const part = (geo, mat, x, y, z, rz = 0) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.z = rz; anvil.add(m); return m; };
-  part(new THREE.BoxGeometry(2.0, 0.45, 1.2), steel, 0, 0.225, 0);
-  part(new THREE.BoxGeometry(1.2, 0.7, 0.8), steel, 0, 0.8, 0);
-  part(new THREE.BoxGeometry(2.7, 0.34, 1.0), chrome, 0, 1.32, 0);
-  part(new THREE.ConeGeometry(0.5, 1.3, 20), chrome, 1.95, 1.32, 0, -Math.PI / 2);
-  part(new THREE.BoxGeometry(0.5, 0.3, 0.9), steel, -1.5, 1.28, 0);
+  part(anvilGeometry(), M.metal({ kind: 'chrome', color: '#a9a6bb', roughness: 0.24 }), -0.3, 0, 0);      // forged steel: the night environment's light strips run along its face and horn
 
   // ---- the ingot (this setting) and its ghost (live)
   const iMat = new THREE.MeshStandardMaterial({ color: '#ffb547', emissive: new THREE.Color('#ffb547'), emissiveIntensity: 1.0, roughness: 0.4, metalness: 0.2 });
-  const ingot = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.3, 0.5), iMat);
+  const ingot = new THREE.Mesh(bevelBox(1.0, 0.3, 0.5, 0.035, 0.16), iMat);
   const ingotG = new THREE.Group(); ingotG.position.set(0, 1.64, 0); ingotG.add(ingot); ingot.position.y = 0.15 - 0.15; scene.add(ingotG);
   const ghost = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.0, 0.3, 0.5)), new THREE.LineBasicMaterial({ color: hdr('#cfd6ff', 1.4), transparent: true, opacity: 0.55 }));
   ghost.position.set(0, 1.64, 0); scene.add(ghost);
@@ -66,7 +91,7 @@ export function createForge(canvas, { O = null } = {}) {
   // ---- the hammer (pivot at the right of the anvil)
   const hammer = new THREE.Group(); hammer.position.set(1.15, 2.05, 0.95); scene.add(hammer);
   const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 1.9, 10), M.metal({ kind: 'gunmetal', color: '#5a3c28', roughness: 0.7 }));
-  handle.position.y = 0.95; const head = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.38, 0.38), chrome); head.position.y = 1.9;
+  handle.position.y = 0.95; const head = new THREE.Mesh(bevelBox(0.75, 0.38, 0.38, 0.04), chrome); head.position.y = 1.9;
   hammer.add(handle, head);
   const REST = -0.95, HIT = 0.0;
   hammer.rotation.z = REST; hammer.rotation.x = 0;
@@ -85,6 +110,8 @@ export function createForge(canvas, { O = null } = {}) {
   // ---- the quench barrel (right-back)
   const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.6, 1.0, 20), M.metal({ kind: 'gunmetal', color: '#2c3548', roughness: 0.5 }));
   barrel.position.set(3.3, 0.5, -1.4); scene.add(barrel);
+  const bronzeMat = FX.bronze({ color: '#9c6a3a', roughness: 0.32 });
+  for (const y of [0.18, 0.82]) { const hoop = new THREE.Mesh(new THREE.TorusGeometry(0.585, 0.035, 8, 40), bronzeMat); hoop.rotation.x = Math.PI / 2; hoop.position.set(3.3, y, -1.4); scene.add(hoop); }
   const water = new THREE.Mesh(new THREE.CircleGeometry(0.5, 24), new THREE.MeshBasicMaterial({ color: hdr('#4aa8ff', 1.1) }));
   water.rotation.x = -Math.PI / 2; water.position.set(3.3, 0.96, -1.4); scene.add(water);
 
@@ -102,9 +129,9 @@ export function createForge(canvas, { O = null } = {}) {
     embers.vel[i * 3] = (Math.random() - 0.3) * 0.25; embers.vel[i * 3 + 1] = 0.3 + Math.random() * 0.6; embers.vel[i * 3 + 2] = (Math.random() - 0.5) * 0.2;
   };
   for (let i = 0; i < EMBERS; i++) resetEmber(i, true);
-  embers.pts.material.opacity = 0.85;
+  embers.pts.material.opacity = 0.85; embers.pts.visible = false;     // replaced by the big furnace embers (fx-atmos)
   function setCounts() { embers.show = lite ? 24 : EMBERS; sparks.show = lite ? 60 : SPARKS; embers.pts.geometry.setDrawRange(0, embers.show); sparks.pts.geometry.setDrawRange(0, sparks.show); }
-  setCounts();
+  setCounts(); FX.setQuality(fxList, rc.quality());
 
   // ---- state
   const st = { color: new THREE.Color('#ffb547'), target: new THREE.Color('#ffb547'), scale: 1, tScale: 1, kind: 'live', strikeT: -1, flash: 0, hitDone: false };
@@ -163,7 +190,8 @@ export function createForge(canvas, { O = null } = {}) {
     // fire + embers + sparks
     fire.intensity = 24 + (live ? Math.sin(t * 9) * 4 + Math.sin(t * 13.7) * 3 : 0);
     fGlow.scale.set(3.2 + (live ? Math.sin(t * 7) * 0.25 : 0), 2.5 + (live ? Math.sin(t * 9) * 0.3 : 0), 1);
-    if (live) {
+    FX.update(fxList, live ? t : 0, rc.renderer.getPixelRatio());
+    if (false) {
       const arr = embers.pts.geometry.attributes.position.array;
       for (let i = 0; i < embers.show; i++) {
         arr[i * 3] += embers.vel[i * 3] * dt; arr[i * 3 + 1] += embers.vel[i * 3 + 1] * dt; arr[i * 3 + 2] += embers.vel[i * 3 + 2] * dt;
@@ -183,7 +211,7 @@ export function createForge(canvas, { O = null } = {}) {
     }
     // the camera: the anvil sits in the upper part of a portrait screen (the sheet covers the lower half)
     const sway = live ? Math.sin(t * 0.25) * 0.35 : 0;
-    camera.position.set(0.5 + sway, 3.4, 10.6); camera.lookAt(0.2, -2.0, 0);
+    camera.position.set(0.7 + sway, 3.6, 11.8); camera.lookAt(0.2, -2.0, 0);
     if (rc.render()) drawn++;
     frames++; dirty = false;
   }
@@ -192,7 +220,7 @@ export function createForge(canvas, { O = null } = {}) {
   return {
     setState, strike, onQuality(cb) { qcb = typeof cb === 'function' ? cb : null; },
     lite: () => lite, quality: () => rc.quality(),
-    stats: () => ({ frames, drawn, quality: rc.quality(), passes: rc.passes().length, strikes, kind: st.kind, scale: Math.round(st.tScale * 100) / 100, color: '#' + st.target.getHexString(),
+    stats: () => ({ frames, drawn, quality: rc.quality(), fx: fxList.length, calls: rc.renderer.info.render.calls, passes: rc.passes().length, strikes, kind: st.kind, scale: Math.round(st.tScale * 100) / 100, color: '#' + st.target.getHexString(),
       sparksLive: sparks.t >= 0 }),
     dispose() { stopped = true; cancelAnimationFrame(raf); rc.dispose(); },
   };

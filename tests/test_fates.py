@@ -565,7 +565,7 @@ def test_upgrade(p, fx, url2, tmp2):
     herr = []
     hp.on("pageerror", lambda e: herr.append(str(e)))
     hp.goto(url2 + "?full=1&q=high&live=live_moved.json#zlarior/2026", wait_until="commit", timeout=120000)
-    hp.wait_for_function("window.__fates && window.__fates.ready && window.__fates.frames >= 1", timeout=150000)
+    hp.wait_for_function("window.__fates && window.__fates.ready && window.__fates.frames >= 1", timeout=360000)   # SwiftShader compiles every shader on the CPU: the atmosphere kit (JOB 4+5) adds five programs, slow machines need minutes
     pr = hp.evaluate("__fates.sc.probe()")
     st = hp.evaluate("__fates.sc.rc.stats()")
     mats = hp.evaluate("() => { const sc = __fates.sc.scene, out = new Set(); sc.traverse((o) => { if (o.material && o.material.isMeshPhysicalMaterial) out.add(o.material.type + (o.material.metalness === 1 ? ':metal' : '')); }); return [...out]; }")

@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="../olympus/olympus.css?v=o2">
 <script src="../olympus/themes.js?v=o2"></script>
 <script src="../olympus/olympus.js?v=o2" data-app="fates"></script>
-<link rel="stylesheet" href="fates.css?v=f5">
+<link rel="stylesheet" href="fates.css?v=f6">
 </head>
 <body>
 <canvas id="scene" aria-hidden="true"></canvas>
@@ -64,13 +64,19 @@
   <div class="bottom">
     <button type="button" class="spin" id="spin">Spin again</button>
     <button type="button" class="ghost" id="next10" aria-controls="follow" aria-expanded="false">Next 10</button>
+    <button type="button" class="ghost gold" id="labBtn" aria-controls="lab" aria-expanded="false">Lab</button>
   </div>
   <section class="sheet follow" id="follow" hidden aria-live="polite">
     <header><b id="fTitle"></b><span id="fEnd"></span><button type="button" class="x" id="fClose" aria-label="Close">×</button></header>
     <ol id="fRows"></ol>
   </section>
+  <section class="sheet lab" id="lab" hidden aria-label="Lab: what-ifs on the futures">
+    <header><b data-lab-title>Lab</b><span data-lab-sub></span><button type="button" class="x" id="labClose" aria-label="Close">×</button></header>
+    <nav class="labtabs" data-lab-tabs role="tablist" aria-label="Lab views"></nav>
+    <div class="labbody" data-lab-body></div>
+  </section>
   <p class="nogl" id="nogl" hidden>3D is off on this device: the numbers above are the full result.</p>
 </main>
-<script type="module" src="fates.js?v=f5"></script>
+<script type="module" src="fates.js?v=f6"></script>
 </body>
 </html>

@@ -1084,6 +1084,18 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
     the base). test_holo_ui's "replay advances" failed on the base and here while the shared machine was at load 40-60
     (4 cores) and passes 62/62 at a lower load: a timing flake, the Holodeck code is unchanged.
   - Test `python -X utf8 -m tests.test_zenith_shell` (23).
+- **FATES + LABYRINTH + HEPHAESTUS overhaul (2026-11-04, overnight JOB 4+5; owner: the apps look Play-Doh):** shared kit `tools/web_public/olympus/fx-atmos.js`
+  (dust, embers, light shafts, contact shadows, polished floor, bronze, forged iron, thread glow; one draw call each, tiers in `QUALITY`; doc
+  section in `docs/OLYMPUS_RENDER.md`). Fates (`fates-lab.js`, bottom bar **Lab**): fan chart with percentiles, pass odds by day, size what-if (1 / 1.25 /
+  1.5 / 2x on the drawn futures), cut a thread (worst session removed, also for a tapped future), eval cost per pass (fee / pass rate), scenario table
+  (Zlarior / ATLAS x 2026 / Jul-Oct / 2021-25); core functions in `fates-core.js` (`resize`, `cutWorst`, `fanChart`, `passTimeline`, `costPerPass`...).
+  Labyrinth (`labcore.js`): maze picker (live / 50K / 25K at half size / 50K tight floor), risk-of-ruin gauge, best size in words + "Best size" button, Danger
+  sheet + a red/green heat strip on the maze floor, "Walk it" (the runner walks its trail trade by trade; text only on LITE). Hephaestus
+  (`hephaestuscore.js`): five recipes each picked from a STORED run by a rule (live / safe / aggressive / fast pass / sharp edge; live is honestly the safest and
+  sharpest), pin A and compare with B, history of dials tried (localStorage, this phone), "Forge a report card" = a 1080 x 1350 PNG drawn on a canvas.
+  Scenes: bevelled forged anvil / ingot / hammer, bronze hoops and walls, reflective floors, shafts + dust + embers, contact shadows; Fates stays <= 64
+  draw calls (41 measured). Test `python -X utf8 -m tests.test_oly_job45` (69). Wiring needed (workers are off limits to the overnight agents): add
+  `olympus/fx-atmos.js` to the Jarvis worker's asset list and to the apps' lists.
 - **Zenith pages / every-tab visual pass (2026-11-04, overnight JOB 28; owner: "every dashboard page top quality, no blank-looking pages"):**
   `tools/web_public/zenpagescore.js` = `web_next/js/next/zenpagescore.js` (byte-identical, `window.ZenithPages`): a page with nothing to
   show yet gets one glass card "what you will see here" (the page's own description, four sample tiles, a sample equity curve with the

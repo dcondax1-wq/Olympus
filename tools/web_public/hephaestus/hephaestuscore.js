@@ -92,3 +92,77 @@ export function summary(data, sc) {
 
 /** colour per verdict kind (the page and the scene share it) */
 export const KIND_COLOR = { live: '#ffb547', beats: '#5cf2a0', tradeoff: '#7fb4ff', mixed: '#ffd24a', still: '#9aa4bd', none: '#7a7f92' };
+
+// ---------------------------------------------------------------------------------------------- JOB 4+5 (2026-11-04): recipes, compare,
+// history, the report card. Still pure and still only a reader: every recipe is one STORED run picked by a rule over its stored numbers;
+// nothing is computed that the stored runs do not already hold.
+
+const sel = (data) => ((data && data.scenarios) || []).filter((s) => s.selectable && s.h1 && s.h2 && s.y26);
+const worst = (s, k) => Math.max(num(s.h1[k]) || 0, num(s.h2[k]) || 0);
+const best = (list, score) => list.reduce((a, b) => (score(b) > score(a) ? b : a), list[0]);
+
+/** the preset recipes: which STORED run each rule picks ({ id, name, rule, sc }); the live setting first */
+export function presets(data) {
+  const l = sel(data); if (!l.length) return [];
+  const live = byId(data, data.live_id) || l[0];
+  const ok = l.filter((s) => HALVES.every((h) => (s[h].tpw || 0) >= 2));
+  const pool = ok.length ? ok : l;
+  const safe = best(pool, (s) => -(worst(s, 'f10') * 1000 + Math.abs(s.y26.dd || 0) / 10) + (s.y26.pf || 0) / 100);
+  const aggr = best(l, (s) => s.y26.net || 0);
+  const fast = best(l, (s) => (s.h1.p10 || 0) + (s.h2.p10 || 0));
+  const sharp = best(pool, (s) => Math.min(s.h1.pf || 0, s.h2.pf || 0));
+  const rows = [
+    { id: 'live', name: 'Live', rule: 'what the bot runs today', sc: live },
+    { id: 'safe', name: 'Safe', rule: 'the fewest evals failing inside 2 weeks, then the smallest drawdown (2+ trades a week kept)', sc: safe },
+    { id: 'aggressive', name: 'Aggressive', rule: 'the most 2026 dollars of any stored run', sc: aggr },
+    { id: 'fast', name: 'Fast pass', rule: 'the most evals passed inside 2 weeks', sc: fast },
+    { id: 'sharp', name: 'Sharp edge', rule: 'the best profit factor in the weaker half', sc: sharp },
+  ];
+  return rows.map((r) => ({ ...r, same: r.id !== 'live' && r.sc.id === live.id, blurb: `${r.name}: ${r.rule}. ${summary(data, r.sc)}.${r.id !== 'live' && r.sc.id === live.id ? ' Nothing stored beats the live setting on this rule: live is already the pick.' : ''}` }));
+}
+
+/** two settings side by side: rows with both values (formatted) and who is better in each half; a plain line for B against A */
+export function compare(data, a, b) {
+  if (!a || !b) return { rows: [], line: 'Pin one setting, then turn the dials to another one.', winner: null };
+  const rows = ROWS.map((r) => {
+    const cells = {};
+    for (const hf of HALVES) {
+      const x = a[hf] ? a[hf][r.k] : null, y = b[hf] ? b[hf][r.k] : null;
+      let who = '';
+      if (r.good && num(x) != null && num(y) != null && x !== y) who = (y - x) * r.good > 0 ? 'b' : 'a';
+      cells[hf] = { a: r.f(x), b: r.f(y), who };
+    }
+    return { k: r.k, label: r.label, cells };
+  });
+  if (a.id === b.id) return { rows, line: 'Both sides are the same setting.', winner: null };
+  const bw = HALVES.filter((h) => win(b[h] || {}, a[h] || {})).length, aw = HALVES.filter((h) => win(a[h] || {}, b[h] || {})).length;
+  const winner = bw === 2 ? 'b' : aw === 2 ? 'a' : null;
+  const line = winner === 'b' ? 'B beats A on both halves: more money and a better profit factor in Jan-Jun and in Jul-Oct.'
+    : winner === 'a' ? 'A beats B on both halves: more money and a better profit factor in Jan-Jun and in Jul-Oct.'
+      : bw || aw ? `Split: ${bw ? 'B' : 'A'} wins ${bw || aw} half, the other side wins the other. The rule is to pick on Jan-Jun and confirm on Jul-Oct.` : 'Neither side beats the other on both money and profit factor in either half: a trade-off, read the rows.';
+  return { rows, line, winner };
+}
+
+/** the history of settings tried: newest first, no repeat of the same run in a row, at most `max` */
+export function pushHistory(list, entry, max = 12) {
+  const l = Array.isArray(list) ? list.filter((e) => e && e.id) : [];
+  if (!entry || !entry.id) return l.slice(0, max);
+  if (l[0] && l[0].id === entry.id) return l.slice(0, max);
+  return [entry, ...l.filter((e) => e.id !== entry.id)].slice(0, max);
+}
+
+/** the text of the report card image: a title, the verdict, four big numbers, the two halves, a footer (all from the stored run) */
+export function cardModel(data, sc, v) {
+  if (!sc) return null;
+  const y = sc.y26 || {};
+  return {
+    title: 'HEPHAESTUS · REPORT CARD',
+    name: sc.label || sc.id,
+    head: (v && v.head) || '',
+    plain: (v && v.plain) || '',
+    big: [['2026 net', usd(y.net)], ['Per month', usd(y.per_month)], ['Profit factor', dec(y.pf)], ['Max drawdown', usd(y.dd)]],
+    rows: ROWS.filter((r) => ['net', 'pf', 'p10', 'f10', 'tpw'].includes(r.k)).map((r) => [r.label, r.f(sc.h1 && sc.h1[r.k]), r.f(sc.h2 && sc.h2[r.k])]),
+    foot: `Stored run ${sc.run}. Read-only: nothing here changes the bot.`,
+    kind: (v && v.kind) || 'none',
+  };
+}

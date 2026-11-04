@@ -21,7 +21,7 @@
 <script src="../olympus/themes.js?v=o2"></script>
 <script src="../olympus/olympus.js?v=o2" data-app="hephaestus"></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#d96bff'); r.setProperty('--oly-accent-rgb', '217, 107, 255'); })();</script>
-<link rel="stylesheet" href="hephaestus.css?v=h1">
+<link rel="stylesheet" href="hephaestus.css?v=h2">
 </head>
 <body>
 <canvas id="view" aria-label="A forge: an anvil with a glowing ingot that is the setting you are testing, a hammer that strikes when you turn a dial, a furnace behind" role="img"></canvas>
@@ -31,17 +31,34 @@
 </header>
 <section class="sheet" id="sheet" aria-label="Dials and numbers">
   <p class="honest" id="honest">This page changes nothing in the bot. It only reads test runs that were already stored.</p>
+  <h2>Recipes <span class="hint">one tap, every one a stored run</span></h2>
+  <div class="recipes" id="recipes" role="group" aria-label="Recipes"></div>
+  <p class="rblurb" id="rblurb"></p>
   <div id="dials" role="group" aria-label="Dials"></div>
-  <div class="row"><button type="button" id="reset" class="ghost">Back to live</button><span id="msg" class="msg" role="status" aria-live="polite"></span></div>
+  <div class="row"><button type="button" id="reset" class="ghost">Back to live</button><button type="button" id="forge" class="ghost gold">Forge a report card</button><span id="msg" class="msg" role="status" aria-live="polite"></span></div>
   <h2>2026 result <span class="hint">this setting, with live underneath</span></h2>
   <table class="tbl" id="tbl" aria-label="Results, Jan-Jun against Jul-Oct">
     <thead><tr><th scope="col"></th><th scope="col">Jan-Jun<small>pick</small></th><th scope="col">Jul-Oct<small>check</small></th></tr></thead>
     <tbody id="rows"></tbody>
   </table>
+  <h2>Compare <span class="hint">pin one, turn the dials to another</span></h2>
+  <div class="row"><button type="button" id="pin" class="ghost">Pin this as A</button><button type="button" id="unpin" class="ghost" hidden>Clear A</button><span class="msg" id="pinmsg"></span></div>
+  <p class="cmpline" id="cmpline"></p>
+  <table class="tbl cmp" id="cmp" aria-label="Side by side: A (pinned) and B (now)" hidden>
+    <thead><tr><th scope="col"></th><th scope="col" colspan="2">Jan-Jun<small>A | B</small></th><th scope="col" colspan="2">Jul-Oct<small>A | B</small></th></tr></thead>
+    <tbody id="cmprows"></tbody>
+  </table>
+  <h2>Dials tried <span class="hint">tap to turn them back</span></h2>
+  <ol class="hist" id="hist"></ol>
   <p class="ref" id="ref2125"></p>
   <p class="src" id="src"></p>
   <h2>What we rejected and why</h2>
   <div class="strip" id="rej" tabindex="0" aria-label="Tested and rejected, scroll sideways"></div>
+</section>
+<section class="cardbox" id="cardbox" hidden aria-label="Report card" role="dialog">
+  <div class="cb"><canvas id="cardCv" width="1080" height="1350" aria-hidden="true"></canvas>
+    <div class="cbtn"><a id="cardDl" class="ghost gold" download="hephaestus-report-card.png" href="#">Save image</a><button type="button" id="cardShare" class="ghost" hidden>Share</button><button type="button" id="cardX" class="ghost">Close</button></div>
+  </div>
 </section>
 <footer class="dock" id="dock" aria-live="polite">
   <div class="verdict" id="verdict" data-kind="live">
@@ -50,6 +67,6 @@
     <span class="vs" id="vs"></span>
   </div>
 </footer>
-<script type="module" src="hephaestus.js?v=h1"></script>
+<script type="module" src="hephaestus.js?v=h2"></script>
 </body>
 </html>
