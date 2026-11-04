@@ -969,6 +969,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
       <div id="brainp"></div>
       <div class="qa" id="qa" role="group" aria-label="Quick actions"></div>
       <p class="sec-t">OLYMPUS · apps</p>
+      <div class="og-find" id="ogFindBox" hidden><input id="ogFind" type="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Find an app" aria-label="Find an app" aria-controls="olyApps"></div>
       <div class="og" id="olyApps" role="group" aria-label="OLYMPUS: every app"></div>
       <p class="sec-t">Today · timeline</p>
       <section class="panel tl" id="p-today" aria-label="Today: the trading day and your plan"></section>
@@ -1022,6 +1023,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
 <div class="sheet" id="settings" hidden role="dialog" aria-modal="true" aria-labelledby="setT">
   <form class="sheet-in" id="setF" autocomplete="off">
     <h2 id="setT">Settings</h2>
+    <div class="sheet-row"><button class="btn ghost" type="button" id="setMore">All settings: look, storage and the tour</button></div>
     <!-- one Jarvis section (2026-11-04): her voice, spoken alerts, quiet hours, the morning briefing and the brain key, together -->
     <h3>Jarvis</h3>
     <label class="row-t"><span>Talk to Jarvis<small>The mic, hands-free and voice mode (her voice: the speaker button in the dock)</small></span><input type="checkbox" id="setVoice"></label>
@@ -1194,6 +1196,7 @@ const BUILTIN_IDS = ['zenith', 'planner', 'kalshi'];
 const raw = (k) => { try { return localStorage.getItem(k); } catch (_) { return null; } };
 const rawSet = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (_) { /* private mode */ } };
 const visible = () => document.visibilityState === 'visible';
+const FIRST_RUN = raw('jarvis.seen') == null;                  // the very first open on this phone (before the what's-new toast marks it): the tour is offered once
 const safe = (f, d = null) => { try { return f(); } catch (_) { return d; } };
 
 // ------------------------------------------------------------------ settings kept on this phone
@@ -1305,6 +1308,16 @@ ready.bots = load('bots', './bots.js', (m) => typeof m.createBots === 'function'
   return botsI;
 });
 ready.botsui = load('botsui', './bots-ui.js', (m) => typeof m.mountBots === 'function');
+// first open: one toast offers the Settings app's one-minute tour (once per phone: 'jarvis.tour.seen'; never when the tour was done there already)
+function tourHint(n = 0) {
+  if (!FIRST_RUN || raw('jarvis.tour.seen') || raw('olympus.tour.done') || active !== 'home' || !visible() || n > 8) return;
+  const t = document.getElementById('toast');
+  if (t && !t.hidden) { setTimeout(() => tourHint(n + 1), 4000); return; }        // the what's-new toast first
+  const a = byId('settings');
+  if (!a || notOnSite(a)) return;
+  rawSet('jarvis.tour.seen', '1');
+  toast('New here? A one-minute tour shows what everything does.', 'WELCOME', ['TAKE THE TOUR', () => show('settings', { url: '../settings/?tour=1' })]);
+}
 function botsTick() {
   if (!botsI) return;
   const f = safe(() => D.getFacts(), null);
@@ -1825,7 +1838,18 @@ function linkCard(a) {
 // added apps' live cards (apps.js): the last good card first, then the app's jarvis.json, or a card the open app posted
 const statusCards = {};
 // an app's live card: the one that just arrived, else its last good one (apps.js keeps it on this phone)
-const cardOf = (id) => statusCards[id] || safe(() => (mods.apps && byId(id) ? mods.apps.cachedStatus(byId(id)) : null), null);
+// Inbox (inbox/): its own card is kept on this phone by the app itself ('inbox.card.v1', the jarvis.json contract: status 'N new' / 'All quiet'),
+// read before the static file; one that is not an object with a status label, or older than its stale_after (two weeks when it has none), is ignored
+function inboxCard(now) {
+  try {
+    const c = JSON.parse(localStorage.getItem('inbox.card.v1') || 'null');
+    if (!c || typeof c !== 'object' || !c.status || typeof c.status !== 'object' || typeof c.status.label !== 'string' || !c.status.label) return null;
+    const t = +c.t, lim = +c.stale_after > 0 ? +c.stale_after : 14 * 86400;
+    return Number.isFinite(t) && t > 0 && (now == null ? Date.now() : now) / 1000 - t > lim ? null : c;
+  } catch (_) { return null; }
+}
+window.addEventListener('storage', (e) => { if (e.key === 'inbox.card.v1') cardsSoon(); });
+const cardOf = (id) => (id === 'inbox' && inboxCard()) || statusCards[id] || safe(() => (mods.apps && byId(id) ? mods.apps.cachedStatus(byId(id)) : null), null);
 // a built-in whose folder is not on the site yet (apps.js: its jarvis.json answers 404, no card ever seen)
 const notOnSite = (a) => !!(a && a.id && mods.apps && typeof mods.apps.missing === 'function' && safe(() => mods.apps.missing(a.id), false));
 let cardsT = 0;
@@ -2216,6 +2240,7 @@ Promise.all([ready.brain, within(ready.vault, 4000), within(ready.assistant, 400
   renderSugs(); renderBrainPanel(); renderMore();
   ready.assist.then(() => { mountModesUI(); mountBotsUI(); setTimeout(() => thinkSlot(true), 4000); });
   ready.bots.then(() => { mountBotsUI(); setTimeout(botsTick, 3000); });
+  setTimeout(tourHint, 7000);
   ready.assist.then((a) => { if (a && !proUI) { proUI = safe(() => a.mountProactive({ brain: () => brain, anchor: $('#sugs'), onAsk: (t) => ask(t) }), null); if (proUI) safe(() => proUI.render()); } });
 });
 D.onChange(({ source }) => { if (proUI) safe(() => proUI.render()); if (modesUI) safe(() => modesUI.render()); if (source === 'live') botsTick(); });
@@ -2737,6 +2762,7 @@ function openSettings(appsFirst) {
 $('#setX').addEventListener('click', () => { $('#settings').hidden = true; });
 $('#setGuide').addEventListener('click', () => openKeySetup($('#setProv').value));
 $('#setAdd').addEventListener('click', () => openSheet());
+$('#setMore').addEventListener('click', () => { $('#settings').hidden = true; show('settings'); });       // the Settings app has the rest (look, storage, the tour)
 $('#setVoiceOpen').addEventListener('click', () => { $('#settings').hidden = true; openVoice(); });
 $('#setForget').addEventListener('click', () => {
   safe(() => (typeof brain.forgetKey === 'function' ? brain.forgetKey() : brain.setSmart({ key: '', on: false })));
@@ -3118,9 +3144,15 @@ const ogIO = 'IntersectionObserver' in window ? new IntersectionObserver((es) =>
 }, { threshold: 0.12 }) : null;
 function renderGrid() {
   const box = $('#olyApps'); if (!box) return;
-  const list = nxApps().filter((a) => a.id !== 'home'), parts = nxSections(list) || [{ group: null, apps: list }];
+  const all = nxApps().filter((a) => a.id !== 'home');
+  // more than 20 apps: a small "Find an app" box above the grid (name, what it does, or its id); the groups that match keep their headings
+  const fb = $('#ogFindBox'), q = fb && all.length > 20 ? String($('#ogFind').value || '').trim().toLowerCase() : '';
+  if (fb) fb.hidden = all.length <= 20;
+  const list = q ? all.filter((a) => [a.name, a.label, a.sub, a.id].some((x) => String(x || '').toLowerCase().includes(q))) : all;
+  const parts = (list.length ? nxSections(list) : null) || [{ group: null, apps: list }];
   let i = 0;
-  box.innerHTML = parts.map((p) => (p.group && parts.length > 1 ? `<p class="og-g">${esc(p.group.name)}</p>` : '') + p.apps.map((a) => tileOf(a, i++)).join('')).join('')
+  box.innerHTML = (q && !list.length ? `<p class="og-g og-none">No app matches “${esc(q)}”.</p>` : '')
+    + parts.map((p) => (p.group && parts.length > 1 ? `<p class="og-g">${esc(p.group.name)}</p>` : '') + p.apps.map((a) => tileOf(a, i++)).join('')).join('')
     + `<button class="og-t og-add" type="button" data-og-add="1" style="--i:${i}" aria-label="Add a dashboard"><span class="og-ic" aria-hidden="true">+</span><b class="og-n">ADD</b><small class="og-s">Any app with a link</small></button>`;
   // the stagger plays once, when the grid first comes into view (only where the effects move)
   if (!ogStart) {
@@ -3130,6 +3162,7 @@ function renderGrid() {
   }
 }
 $('#olyApps').addEventListener('click', (e) => { if (e.target.closest('[data-og-add]')) openSheet(); });
+$('#ogFind').addEventListener('input', () => safe(renderGrid));
 $('#olyApps').addEventListener('error', (e) => { const t = e.target; if (t && t.tagName === 'IMG' && t.parentNode) t.parentNode.replaceChild(document.createTextNode(t.dataset.g || '?'), t); }, true);   // a broken icon: the app's letter
 
 // today's timeline: the trading day (ET) as the bots live it, with the Planner's events; the next one counts down
