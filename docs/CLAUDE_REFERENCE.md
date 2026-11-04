@@ -1123,6 +1123,16 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   today = six gates + countdown to 02:00 ET, both evals in money words and the 7-day clock, what red lights cost; `?demo=1` / "See it with demo data" fills an
   empty page, never saved over the real copy; the tabs are a 2 x 2 grid). All taps >= 44 px (Forum's dots wrap to two rows above the arrows). Test
   `python -X utf8 -m tests.test_oly_job46`. The apps' tests wait up to 150 s for the page (`tests/olympus_money_kit.py`): SwiftShader on a loaded machine.
+- **ARENA + DAPHNE quality pass (2026-11-04, overnight JOB 47; the Arena crowd cut belongs to agent a7eeb8e, not here):** `fx-atmos.js` `embers({ points })` takes several
+  sources. Arena `dress.js`: sparks off the 14 braziers, added 0.9 s after the first paint, skipped on LITE, `?noatmos=1` probe. Arena Bosses tab gets the **Trading
+  desk** (`arena/rhythm.js`, pure functions + textContent renderer; Arena never sees dollars, so it counts trades, days and rule breaks): the weekly rhythm of the main account
+  against the 2-4 plan (8 bars, "need N more in M days" / "the plan is full"), the quiet clock (days left of the 7 without a trade, per account, `lapsed`), the discipline rate
+  (30 days / all time / clean in a row) with the broken rules by name, and the money path (first trade, eval passed, first payout, days between). Daphne (`tree/`):
+  `tree/gate.js` adds to the TOP 10 sheet a sort bar (rank, 2026 $/mo, test $/mo, trades a week, only holds) and a gate card per rule: the owner's four checks
+  (holds out of sample, 2026 and test make money at bot size, 10+ trades in 2026) -> candidate / watch / reject, $ beside R at the bot's size (1R = `meta.bot_risk_usd`),
+  how often (4 like it make 2 a week; 30 live trades take N months to prove), and the losing run ("4 stop-outs in a row = -$1,128: Drawdown left $872 of $2,000 max loss",
+  the odds of it and of the 8 that end the account in the next 40 trades). The TOP RULES tab shows the verdict, $ a month with R and $ a trade with R. `tree3d.js`: pollen
+  (dust) and a contact shadow at the trunk. Test `python -X utf8 -m tests.test_oly_job47`; run `tests.test_arena` and `tests.test_strategytree` too.
 - **FATES + LABYRINTH + HEPHAESTUS overhaul (2026-11-04, overnight JOB 4+5; owner: the apps look Play-Doh):** shared kit `tools/web_public/olympus/fx-atmos.js`
   (dust, embers, light shafts, contact shadows, polished floor, bronze, forged iron, thread glow; one draw call each, tiers in `QUALITY`; doc
   section in `docs/OLYMPUS_RENDER.md`). Fates (`fates-lab.js`, bottom bar **Lab**): fan chart with percentiles, pass odds by day, size what-if (1 / 1.25 /
