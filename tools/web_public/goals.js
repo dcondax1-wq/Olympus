@@ -69,7 +69,7 @@
     if (!w || w.error) return '';
     const up = w.status === 'upcoming';
     const col = w.status === 'met' || w.status === 'on_pace' ? 'var(--good)' : w.status === 'above' ? 'var(--accent)' : up ? 'var(--muted)' : 'var(--warn)';
-    return ring(up ? 0 : w.n / Math.max(1, w.lo), up ? `0` : String(w.n), `${label} · goal ${w.lo}-${w.hi}`, col, 84);
+    return ring(up ? 0 : w.n / Math.max(1, w.lo), up ? `0` : String(w.n), `${label} · ${goalTxt(w)}`, col, 84);
   }
   function card() {
     const G = GL();
@@ -148,6 +148,8 @@
   const fDay = (d) => { try { return new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); } catch (e) { return d; } };
 
   // ------------------------------------------------------------------ #/goals: the full page
+  // a goal reads "goal 2-4" only when the numbers exist (never "goal undefined-undefined")
+  const goalTxt = (w) => (w && Number.isFinite(+w.lo) && Number.isFinite(+w.hi) ? `goal ${w.lo}-${w.hi}` : 'no goal set yet');
   function weekStrip(w) {
     if (!w || w.error) return '';
     const mx = Math.max(1, ...w.days.map((d) => Math.abs(d.usd || 0)));
@@ -167,8 +169,8 @@
       <div class="card"><div class="card-h"><h3>${icon('check')}In one look</h3><div class="row-btns"><button class="chipbtn wide" type="button" id="glShare">${icon('share')}<span>Share</span></button></div></div><ul class="gl-sum">${sum}</ul></div>
       <div class="card">${acctBlock(lit, false)}${pass(lit)}</div>
       <div class="card">${acctBlock(at, false)}${pass(at)}</div>
-      <div class="grid g2 astart"><div class="card"><div class="card-h"><h3>${icon('trades')}Zlarior this week</h3><span class="meta">goal ${(W.lit || {}).lo}-${(W.lit || {}).hi}</span></div>${weekStrip(W.lit)}</div>
-        <div class="card"><div class="card-h"><h3>${icon('atlas')}ATLAS this week</h3><span class="meta">goal ${(W.atlas || {}).lo}-${(W.atlas || {}).hi}</span></div>${weekStrip(W.atlas)}</div></div>
+      <div class="grid g2 astart"><div class="card"><div class="card-h"><h3>${icon('trades')}Zlarior this week</h3><span class="meta">${goalTxt(W.lit)}</span></div>${weekStrip(W.lit)}</div>
+        <div class="card"><div class="card-h"><h3>${icon('atlas')}ATLAS this week</h3><span class="meta">${goalTxt(W.atlas)}</span></div>${weekStrip(W.atlas)}</div></div>
       <div class="card"><div class="card-h"><h3>${icon('results')}Month vs the backtest</h3><span class="meta">${esc((G.month || {}).month || '')}</span></div>${monthBlock(G.month)}
         ${(G.month || {}).per_month_expected ? `<p class="small mut">On average the backtest makes about ${susd((G.month || {}).per_month_expected)} a month on this eval (the Jul-Oct check half, engine/health_band.py); the middle path is lower because a few big winners carry the average.</p>` : ''}</div>
       <div class="grid g2 astart"><div class="card"><div class="card-h"><h3>${icon('radar')}ATLAS go-live check</h3><span class="meta">${esc(sc.text || '')}</span></div>
@@ -178,7 +180,7 @@
           <div class="gl-row"><span>Scale step <b>${(G.scale || {}).step ?? '—'}</b> of ${(G.scale || {}).of ?? '—'}</span><em>${(G.scale || {}).progress ?? 0}% to the next</em></div>${bar((G.scale || {}).frac, 'var(--accent)')}<p class="gl-s small">${esc((G.scale || {}).sentence || '')}</p>
           <button class="chipbtn wide" type="button" data-go="scale" style="margin-top:8px">${icon('layers')}<span>Scaling plan</span></button></div></div>
       ${window.MoneyUI ? `<div class="card gl-moneycard" id="glMoney">${window.MoneyUI.card(MONEY(), { where: 'phone' })}</div>` : ''}
-      <p class="small mut">Read-only. Built ${esc(new Date((G.t || 0) * 1000).toLocaleString())} from ${esc((G.sources || {}).lit_trades || '—')} trades.</p>`);
+      <p class="small mut">Read-only. ${G.t ? `Built ${esc(new Date(G.t * 1000).toLocaleString())} from ${esc((G.sources || {}).lit_trades || '—')} trades.` : 'It fills when the first build runs.'}</p>`);
     if (window.MoneyUI) window.MoneyUI.wire(el.querySelector('#glMoney'), MONEY());
     const sh = el.querySelector('#glShare');
     if (sh) sh.onclick = () => shareText('My goals\n' + (G.lines || []).map((x) => '• ' + x.text).join('\n'));

@@ -1,0 +1,4716 @@
+{
+ "base": {
+  "H1": {
+   "p10": 65.5,
+   "f10": 0.0,
+   "s10": 0.8,
+   "dead10": 0.8,
+   "dec10": 66.3,
+   "p15": 73.7,
+   "f15": 0.0,
+   "pass_med": 5.0,
+   "slow_pass": 4.3,
+   "mp_net_less_fees": 8504,
+   "mp_per_eval": 1546,
+   "mp_passes": 4.45,
+   "net": 6485,
+   "per_month": 1064,
+   "pf": 2.3,
+   "dd": -926,
+   "tpw": 2.11,
+   "sig_tpw": 4.38,
+   "sig_wk2": 96.3,
+   "n": 54,
+   "fund_paid_3m": 1842,
+   "by_src": {
+    "EMA": [
+     29,
+     2658
+    ],
+    "MD": [
+     14,
+     1812
+    ],
+    "SR": [
+     11,
+     2014
+    ]
+   }
+  },
+  "H2": {
+   "p10": 43.5,
+   "f10": 0.0,
+   "s10": 0.0,
+   "dead10": 0.0,
+   "dec10": 43.5,
+   "p15": 54.7,
+   "f15": 0.0,
+   "pass_med": 6.0,
+   "slow_pass": 13.3,
+   "mp_net_less_fees": 2029,
+   "mp_per_eval": 839,
+   "mp_passes": 1.42,
+   "net": 4434,
+   "per_month": 1194,
+   "pf": 3.18,
+   "dd": -816,
+   "tpw": 1.6,
+   "sig_tpw": 3.27,
+   "sig_wk2": 93.8,
+   "n": 25,
+   "fund_paid_3m": 1349,
+   "by_src": {
+    "EMA": [
+     12,
+     2956
+    ],
+    "MD": [
+     5,
+     477
+    ],
+    "SR": [
+     8,
+     1001
+    ]
+   }
+  },
+  "2025": {
+   "p10": 30.1,
+   "f10": 0.0,
+   "s10": 23.3,
+   "dead10": 23.3,
+   "dec10": 53.4,
+   "p15": 32.4,
+   "f15": 0.0,
+   "pass_med": 4.0,
+   "slow_pass": 2.4,
+   "mp_net_less_fees": -1816,
+   "mp_per_eval": -396,
+   "mp_passes": 0.81,
+   "net": -2152,
+   "per_month": -175,
+   "pf": 0.82,
+   "dd": -5816,
+   "tpw": 2.58,
+   "sig_tpw": 4.84,
+   "sig_wk2": 94.3,
+   "n": 133,
+   "fund_paid_3m": 190,
+   "by_src": {
+    "EMA": [
+     75,
+     -649
+    ],
+    "MD": [
+     33,
+     -804
+    ],
+    "SR": [
+     25,
+     -699
+    ]
+   }
+  },
+  "2021-24": {
+   "p10": 22.9,
+   "f10": 0.0,
+   "s10": 27.1,
+   "dead10": 27.1,
+   "dec10": 50.0,
+   "p15": 25.5,
+   "f15": 0.0,
+   "pass_med": 4.0,
+   "slow_pass": 3.3,
+   "mp_net_less_fees": -1388,
+   "mp_per_eval": -49,
+   "mp_passes": 9.31,
+   "net": 2457,
+   "per_month": 63,
+   "pf": 1.05,
+   "dd": -7805,
+   "tpw": 3.05,
+   "sig_tpw": 5.37,
+   "sig_wk2": 99.4,
+   "n": 496,
+   "fund_paid_3m": 246,
+   "by_src": {
+    "EMA": [
+     256,
+     7148
+    ],
+    "MD": [
+     134,
+     -3305
+    ],
+    "SR": [
+     106,
+     -1386
+    ]
+   }
+  }
+ },
+ "members:EMA": {
+  "fam": "members",
+  "name": "EMA",
+  "verdict": {
+   "h1": false,
+   "h2": false,
+   "both": false,
+   "ref": "B",
+   "freq": false,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 42.9,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 42.9,
+    "p15": 50.0,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 7.8,
+    "mp_net_less_fees": 3671,
+    "mp_per_eval": 1122,
+    "mp_passes": 2.27,
+    "net": 3257,
+    "per_month": 534,
+    "pf": 2.11,
+    "dd": -802,
+    "tpw": 1.37,
+    "sig_tpw": 2.15,
+    "sig_wk2": 74.1,
+    "n": 35,
+    "fund_paid_3m": 631,
+    "by_src": {
+     "EMA": [
+      35,
+      3257
+     ]
+    }
+   },
+   "H2": {
+    "p10": 40.6,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 40.6,
+    "p15": 37.5,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 20.0,
+    "mp_net_less_fees": 2465,
+    "mp_per_eval": 1096,
+    "mp_passes": 1.25,
+    "net": 4539,
+    "per_month": 1222,
+    "pf": 5.28,
+    "dd": -290,
+    "tpw": 1.35,
+    "sig_tpw": 1.35,
+    "sig_wk2": 43.8,
+    "n": 21,
+    "fund_paid_3m": 0,
+    "by_src": {
+     "EMA": [
+      21,
+      4538
+     ]
+    }
+   },
+   "2025": {
+    "p10": 22.9,
+    "f10": 0.0,
+    "s10": 0.8,
+    "dead10": 0.8,
+    "dec10": 23.7,
+    "p15": 24.6,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 0.0,
+    "mp_net_less_fees": -1348,
+    "mp_per_eval": -459,
+    "mp_passes": 0.46,
+    "net": -1559,
+    "per_month": -127,
+    "pf": 0.65,
+    "dd": -2789,
+    "tpw": 1.28,
+    "sig_tpw": 2.23,
+    "sig_wk2": 75.5,
+    "n": 66,
+    "fund_paid_3m": 112,
+    "by_src": {
+     "EMA": [
+      66,
+      -1559
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 18.8,
+    "f10": 0.0,
+    "s10": 3.2,
+    "dead10": 3.2,
+    "dec10": 22.0,
+    "p15": 21.5,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 7.9,
+    "mp_net_less_fees": 438,
+    "mp_per_eval": 43,
+    "mp_passes": 3.42,
+    "net": 2173,
+    "per_month": 56,
+    "pf": 1.13,
+    "dd": -5159,
+    "tpw": 1.67,
+    "sig_tpw": 2.38,
+    "sig_wk2": 78.8,
+    "n": 272,
+    "fund_paid_3m": 86,
+    "by_src": {
+     "EMA": [
+      272,
+      2173
+     ]
+    }
+   }
+  }
+ },
+ "members:MD": {
+  "fam": "members",
+  "name": "MD",
+  "verdict": {
+   "h1": false,
+   "h2": false,
+   "both": false,
+   "ref": "B",
+   "freq": false,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 41.2,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 41.2,
+    "p15": 49.1,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 6.2,
+    "mp_net_less_fees": 2089,
+    "mp_per_eval": 1149,
+    "mp_passes": 0.82,
+    "net": 214,
+    "per_month": 35,
+    "pf": 1.17,
+    "dd": -876,
+    "tpw": 0.47,
+    "sig_tpw": 1.13,
+    "sig_wk2": 37.0,
+    "n": 12,
+    "fund_paid_3m": 393,
+    "by_src": {
+     "MD": [
+      12,
+      214
+     ]
+    }
+   },
+   "H2": {
+    "p10": 14.5,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 14.5,
+    "p15": 15.6,
+    "f15": 0.0,
+    "pass_med": 5.5,
+    "slow_pass": 0.0,
+    "mp_net_less_fees": -44,
+    "mp_per_eval": -37,
+    "mp_passes": 0.17,
+    "net": 180,
+    "per_month": 49,
+    "pf": 1.17,
+    "dd": -691,
+    "tpw": 0.77,
+    "sig_tpw": 0.9,
+    "sig_wk2": 12.5,
+    "n": 12,
+    "fund_paid_3m": 0,
+    "by_src": {
+     "MD": [
+      12,
+      180
+     ]
+    }
+   },
+   "2025": {
+    "p10": 19.7,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 19.7,
+    "p15": 24.2,
+    "f15": 0.0,
+    "pass_med": 6.5,
+    "slow_pass": 7.8,
+    "mp_net_less_fees": 727,
+    "mp_per_eval": 262,
+    "mp_passes": 0.94,
+    "net": -231,
+    "per_month": -19,
+    "pf": 0.92,
+    "dd": -1218,
+    "tpw": 0.5,
+    "sig_tpw": 1.34,
+    "sig_wk2": 35.8,
+    "n": 26,
+    "fund_paid_3m": 245,
+    "by_src": {
+     "MD": [
+      26,
+      -231
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 14.5,
+    "f10": 0.0,
+    "s10": 2.9,
+    "dead10": 2.9,
+    "dec10": 17.4,
+    "p15": 17.2,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 12.7,
+    "mp_net_less_fees": -934,
+    "mp_per_eval": -138,
+    "mp_passes": 1.65,
+    "net": -1320,
+    "per_month": -34,
+    "pf": 0.89,
+    "dd": -5664,
+    "tpw": 0.76,
+    "sig_tpw": 1.58,
+    "sig_wk2": 48.5,
+    "n": 124,
+    "fund_paid_3m": 93,
+    "by_src": {
+     "MD": [
+      124,
+      -1320
+     ]
+    }
+   }
+  }
+ },
+ "members:SR": {
+  "fam": "members",
+  "name": "SR",
+  "verdict": {
+   "h1": false,
+   "h2": false,
+   "both": false,
+   "ref": "B",
+   "freq": false,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 40.3,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 40.3,
+    "p15": 44.7,
+    "f15": 0.0,
+    "pass_med": 7.0,
+    "slow_pass": 3.8,
+    "mp_net_less_fees": 2302,
+    "mp_per_eval": 993,
+    "mp_passes": 1.32,
+    "net": 6860,
+    "per_month": 1126,
+    "pf": 3.78,
+    "dd": -479,
+    "tpw": 1.09,
+    "sig_tpw": 1.09,
+    "sig_wk2": 22.2,
+    "n": 28,
+    "fund_paid_3m": 211,
+    "by_src": {
+     "SR": [
+      28,
+      6860
+     ]
+    }
+   },
+   "H2": {
+    "p10": 24.6,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 24.6,
+    "p15": 25.0,
+    "f15": 0.0,
+    "pass_med": 9.0,
+    "slow_pass": 17.9,
+    "mp_net_less_fees": 931,
+    "mp_per_eval": 698,
+    "mp_passes": 0.33,
+    "net": 878,
+    "per_month": 236,
+    "pf": 1.77,
+    "dd": -683,
+    "tpw": 0.9,
+    "sig_tpw": 1.03,
+    "sig_wk2": 18.8,
+    "n": 14,
+    "fund_paid_3m": 0,
+    "by_src": {
+     "SR": [
+      14,
+      878
+     ]
+    }
+   },
+   "2025": {
+    "p10": 11.6,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 11.6,
+    "p15": 14.3,
+    "f15": 0.0,
+    "pass_med": 9.0,
+    "slow_pass": 27.1,
+    "mp_net_less_fees": 293,
+    "mp_per_eval": 207,
+    "mp_passes": 0.42,
+    "net": 150,
+    "per_month": 12,
+    "pf": 1.07,
+    "dd": -854,
+    "tpw": 0.56,
+    "sig_tpw": 1.28,
+    "sig_wk2": 34.0,
+    "n": 29,
+    "fund_paid_3m": 86,
+    "by_src": {
+     "SR": [
+      29,
+      150
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 11.4,
+    "f10": 0.0,
+    "s10": 1.0,
+    "dead10": 1.0,
+    "dec10": 12.4,
+    "p15": 12.2,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 3.9,
+    "mp_net_less_fees": -636,
+    "mp_per_eval": -273,
+    "mp_passes": 0.23,
+    "net": -2594,
+    "per_month": -67,
+    "pf": 0.72,
+    "dd": -3175,
+    "tpw": 0.66,
+    "sig_tpw": 1.41,
+    "sig_wk2": 41.2,
+    "n": 107,
+    "fund_paid_3m": 0,
+    "by_src": {
+     "SR": [
+      107,
+      -2594
+     ]
+    }
+   }
+  }
+ },
+ "members:MD+SR": {
+  "fam": "members",
+  "name": "MD+SR",
+  "verdict": {
+   "h1": false,
+   "h2": false,
+   "both": false,
+   "ref": "B",
+   "freq": false,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 54.6,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 54.6,
+    "p15": 58.8,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 6.5,
+    "mp_net_less_fees": 5130,
+    "mp_per_eval": 1360,
+    "mp_passes": 2.77,
+    "net": -539,
+    "per_month": -88,
+    "pf": 0.51,
+    "dd": -883,
+    "tpw": 0.27,
+    "sig_tpw": 2.23,
+    "sig_wk2": 66.7,
+    "n": 7,
+    "fund_paid_3m": 1078,
+    "by_src": {
+     "MD": [
+      5,
+      -686
+     ],
+     "SR": [
+      2,
+      147
+     ]
+    }
+   },
+   "H2": {
+    "p10": 24.6,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 24.6,
+    "p15": 26.6,
+    "f15": 0.0,
+    "pass_med": 9.0,
+    "slow_pass": 11.5,
+    "mp_net_less_fees": 126,
+    "mp_per_eval": 94,
+    "mp_passes": 0.33,
+    "net": 178,
+    "per_month": 48,
+    "pf": 1.09,
+    "dd": -767,
+    "tpw": 1.35,
+    "sig_tpw": 1.92,
+    "sig_wk2": 68.8,
+    "n": 21,
+    "fund_paid_3m": 0,
+    "by_src": {
+     "MD": [
+      10,
+      -24
+     ],
+     "SR": [
+      11,
+      202
+     ]
+    }
+   },
+   "2025": {
+    "p10": 17.7,
+    "f10": 0.0,
+    "s10": 3.2,
+    "dead10": 3.2,
+    "dec10": 20.9,
+    "p15": 21.3,
+    "f15": 0.0,
+    "pass_med": 7.0,
+    "slow_pass": 6.9,
+    "mp_net_less_fees": 382,
+    "mp_per_eval": 132,
+    "mp_passes": 0.75,
+    "net": 1118,
+    "per_month": 91,
+    "pf": 1.18,
+    "dd": -1736,
+    "tpw": 1.2,
+    "sig_tpw": 2.62,
+    "sig_wk2": 75.5,
+    "n": 62,
+    "fund_paid_3m": 315,
+    "by_src": {
+     "MD": [
+      29,
+      406
+     ],
+     "SR": [
+      33,
+      712
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 17.1,
+    "f10": 0.0,
+    "s10": 11.1,
+    "dead10": 11.1,
+    "dec10": 28.2,
+    "p15": 19.8,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 11.2,
+    "mp_net_less_fees": -695,
+    "mp_per_eval": -47,
+    "mp_passes": 4.21,
+    "net": -2753,
+    "per_month": -71,
+    "pf": 0.88,
+    "dd": -7585,
+    "tpw": 1.33,
+    "sig_tpw": 2.99,
+    "sig_wk2": 83.0,
+    "n": 217,
+    "fund_paid_3m": 149,
+    "by_src": {
+     "MD": [
+      130,
+      -1494
+     ],
+     "SR": [
+      87,
+      -1259
+     ]
+    }
+   }
+  }
+ },
+ "members:EMA+SR": {
+  "fam": "members",
+  "name": "EMA+SR",
+  "verdict": {
+   "h1": false,
+   "h2": false,
+   "both": false,
+   "ref": "-",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 51.3,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 51.3,
+    "p15": 68.4,
+    "f15": 0.0,
+    "pass_med": 7.0,
+    "slow_pass": 9.1,
+    "mp_net_less_fees": 5581,
+    "mp_per_eval": 1411,
+    "mp_passes": 2.95,
+    "net": 4167,
+    "per_month": 684,
+    "pf": 2.01,
+    "dd": -870,
+    "tpw": 1.99,
+    "sig_tpw": 3.24,
+    "sig_wk2": 88.9,
+    "n": 51,
+    "fund_paid_3m": 1111,
+    "by_src": {
+     "EMA": [
+      36,
+      1801
+     ],
+     "SR": [
+      15,
+      2366
+     ]
+    }
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "p15": 46.9,
+    "f15": 0.0,
+    "pass_med": 5.5,
+    "slow_pass": 5.6,
+    "mp_net_less_fees": 1449,
+    "mp_per_eval": 695,
+    "mp_passes": 1.08,
+    "net": 3005,
+    "per_month": 809,
+    "pf": 2.67,
+    "dd": -835,
+    "tpw": 1.28,
+    "sig_tpw": 2.37,
+    "sig_wk2": 75.0,
+    "n": 20,
+    "fund_paid_3m": 800,
+    "by_src": {
+     "EMA": [
+      12,
+      2902
+     ],
+     "SR": [
+      8,
+      103
+     ]
+    }
+   },
+   "2025": {
+    "p10": 20.1,
+    "f10": 0.0,
+    "s10": 12.4,
+    "dead10": 12.4,
+    "dec10": 32.5,
+    "p15": 24.2,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 7.8,
+    "mp_net_less_fees": -2019,
+    "mp_per_eval": -459,
+    "mp_passes": 0.67,
+    "net": -3683,
+    "per_month": -300,
+    "pf": 0.52,
+    "dd": -4166,
+    "tpw": 1.88,
+    "sig_tpw": 3.51,
+    "sig_wk2": 88.7,
+    "n": 97,
+    "fund_paid_3m": 131,
+    "by_src": {
+     "EMA": [
+      68,
+      -3726
+     ],
+     "SR": [
+      29,
+      43
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 23.0,
+    "f10": 0.0,
+    "s10": 16.8,
+    "dead10": 16.8,
+    "dec10": 39.8,
+    "p15": 25.9,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 7.3,
+    "mp_net_less_fees": 5359,
+    "mp_per_eval": 308,
+    "mp_passes": 6.29,
+    "net": 10437,
+    "per_month": 269,
+    "pf": 1.33,
+    "dd": -3673,
+    "tpw": 2.41,
+    "sig_tpw": 3.8,
+    "sig_wk2": 93.3,
+    "n": 393,
+    "fund_paid_3m": 159,
+    "by_src": {
+     "EMA": [
+      275,
+      8902
+     ],
+     "SR": [
+      118,
+      1535
+     ]
+    }
+   }
+  }
+ },
+ "members:EMA+MD": {
+  "fam": "members",
+  "name": "EMA+MD",
+  "verdict": {
+   "h1": false,
+   "h2": true,
+   "both": false,
+   "ref": "B",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 57.1,
+    "f10": 0.0,
+    "s10": 0.8,
+    "dead10": 0.8,
+    "dec10": 57.9,
+    "p15": 68.4,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 3.5,
+    "mp_net_less_fees": 5951,
+    "mp_per_eval": 1271,
+    "mp_passes": 3.64,
+    "net": 6753,
+    "per_month": 1108,
+    "pf": 2.15,
+    "dd": -919,
+    "tpw": 2.62,
+    "sig_tpw": 3.28,
+    "sig_wk2": 92.6,
+    "n": 67,
+    "fund_paid_3m": 1513,
+    "by_src": {
+     "EMA": [
+      42,
+      1630
+     ],
+     "MD": [
+      25,
+      5123
+     ]
+    }
+   },
+   "H2": {
+    "p10": 44.9,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 44.9,
+    "p15": 48.4,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 5.4,
+    "mp_net_less_fees": 2196,
+    "mp_per_eval": 1054,
+    "mp_passes": 1.08,
+    "net": 4389,
+    "per_month": 1182,
+    "pf": 2.87,
+    "dd": -485,
+    "tpw": 1.99,
+    "sig_tpw": 2.24,
+    "sig_wk2": 68.8,
+    "n": 31,
+    "fund_paid_3m": 600,
+    "by_src": {
+     "EMA": [
+      20,
+      4092
+     ],
+     "MD": [
+      11,
+      296
+     ]
+    }
+   },
+   "2025": {
+    "p10": 32.5,
+    "f10": 0.0,
+    "s10": 6.8,
+    "dead10": 6.8,
+    "dec10": 39.3,
+    "p15": 38.9,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 0.0,
+    "mp_net_less_fees": -1132,
+    "mp_per_eval": -270,
+    "mp_passes": 0.9,
+    "net": -4514,
+    "per_month": -367,
+    "pf": 0.25,
+    "dd": -4514,
+    "tpw": 1.55,
+    "sig_tpw": 3.57,
+    "sig_wk2": 90.6,
+    "n": 80,
+    "fund_paid_3m": 112,
+    "by_src": {
+     "EMA": [
+      55,
+      -2015
+     ],
+     "MD": [
+      25,
+      -2499
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 20.4,
+    "f10": 0.0,
+    "s10": 15.4,
+    "dead10": 15.4,
+    "dec10": 35.8,
+    "p15": 23.9,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 6.4,
+    "mp_net_less_fees": -1070,
+    "mp_per_eval": -63,
+    "mp_passes": 4.69,
+    "net": 4909,
+    "per_month": 127,
+    "pf": 1.17,
+    "dd": -7321,
+    "tpw": 2.43,
+    "sig_tpw": 3.96,
+    "sig_wk2": 96.4,
+    "n": 396,
+    "fund_paid_3m": 180,
+    "by_src": {
+     "EMA": [
+      257,
+      5642
+     ],
+     "MD": [
+      139,
+      -733
+     ]
+    }
+   }
+  }
+ },
+ "priority:no armed-LIT block": {
+  "fam": "priority",
+  "name": "no armed-LIT block",
+  "verdict": {
+   "h1": false,
+   "h2": true,
+   "both": false,
+   "ref": "-",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 62.2,
+    "f10": 0.0,
+    "s10": 0.8,
+    "dead10": 0.8,
+    "dec10": 63.0,
+    "p15": 71.9,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 4.4,
+    "mp_net_less_fees": 9074,
+    "mp_per_eval": 1572,
+    "mp_passes": 4.73,
+    "net": 14784,
+    "per_month": 2426,
+    "pf": 2.59,
+    "dd": -1086,
+    "tpw": 3.67,
+    "sig_tpw": 4.45,
+    "sig_wk2": 96.3,
+    "n": 94,
+    "fund_paid_3m": 1842,
+    "by_src": {
+     "EMA": [
+      45,
+      986
+     ],
+     "MD": [
+      27,
+      7942
+     ],
+     "SR": [
+      22,
+      5856
+     ]
+    }
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "p15": 54.7,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 13.3,
+    "mp_net_less_fees": 3115,
+    "mp_per_eval": 890,
+    "mp_passes": 2.0,
+    "net": 6725,
+    "per_month": 1811,
+    "pf": 3.66,
+    "dd": -905,
+    "tpw": 2.24,
+    "sig_tpw": 3.4,
+    "sig_wk2": 93.8,
+    "n": 35,
+    "fund_paid_3m": 1349,
+    "by_src": {
+     "EMA": [
+      17,
+      3036
+     ],
+     "MD": [
+      8,
+      1029
+     ],
+     "SR": [
+      10,
+      2660
+     ]
+    }
+   },
+   "2025": {
+    "p10": 28.5,
+    "f10": 0.0,
+    "s10": 22.9,
+    "dead10": 22.9,
+    "dec10": 51.4,
+    "p15": 30.7,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 2.5,
+    "mp_net_less_fees": -2179,
+    "mp_per_eval": -493,
+    "mp_passes": 0.67,
+    "net": -2362,
+    "per_month": -192,
+    "pf": 0.8,
+    "dd": -6026,
+    "tpw": 2.62,
+    "sig_tpw": 4.98,
+    "sig_wk2": 96.2,
+    "n": 135,
+    "fund_paid_3m": 175,
+    "by_src": {
+     "EMA": [
+      77,
+      -860
+     ],
+     "MD": [
+      33,
+      -804
+     ],
+     "SR": [
+      25,
+      -699
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 23.4,
+    "f10": 0.0,
+    "s10": 29.2,
+    "dead10": 29.2,
+    "dec10": 52.6,
+    "p15": 25.5,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 4.2,
+    "mp_net_less_fees": -3056,
+    "mp_per_eval": -115,
+    "mp_passes": 7.58,
+    "net": -411,
+    "per_month": -11,
+    "pf": 0.99,
+    "dd": -7019,
+    "tpw": 3.22,
+    "sig_tpw": 5.47,
+    "sig_wk2": 99.4,
+    "n": 524,
+    "fund_paid_3m": 253,
+    "by_src": {
+     "EMA": [
+      261,
+      5568
+     ],
+     "MD": [
+      138,
+      -3228
+     ],
+     "SR": [
+      125,
+      -2750
+     ]
+    }
+   }
+  }
+ },
+ "weight:EMAx0.75": {
+  "fam": "weight",
+  "name": "EMAx0.75",
+  "verdict": {
+   "h1": false,
+   "h2": false,
+   "both": false,
+   "ref": "B",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 59.7,
+    "f10": 0.0,
+    "s10": 0.8,
+    "dead10": 0.8,
+    "dec10": 60.5,
+    "p15": 74.6,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 6.2,
+    "mp_net_less_fees": 9871,
+    "mp_per_eval": 1498,
+    "mp_passes": 5.55,
+    "net": 10944,
+    "per_month": 1795,
+    "pf": 3.29,
+    "dd": -926,
+    "tpw": 2.54,
+    "sig_tpw": 4.38,
+    "sig_wk2": 96.3,
+    "n": 65,
+    "fund_paid_3m": 1842,
+    "by_src": {
+     "EMA": [
+      35,
+      5185
+     ],
+     "MD": [
+      15,
+      3340
+     ],
+     "SR": [
+      15,
+      2419
+     ]
+    }
+   },
+   "H2": {
+    "p10": 37.7,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 37.7,
+    "p15": 45.3,
+    "f15": 0.0,
+    "pass_med": 8.0,
+    "slow_pass": 17.5,
+    "mp_net_less_fees": 1876,
+    "mp_per_eval": 938,
+    "mp_passes": 1.0,
+    "net": 3736,
+    "per_month": 1006,
+    "pf": 2.72,
+    "dd": -769,
+    "tpw": 1.92,
+    "sig_tpw": 3.27,
+    "sig_wk2": 93.8,
+    "n": 30,
+    "fund_paid_3m": 1349,
+    "by_src": {
+     "EMA": [
+      13,
+      2962
+     ],
+     "MD": [
+      7,
+      214
+     ],
+     "SR": [
+      10,
+      560
+     ]
+    }
+   },
+   "2025": {
+    "p10": 22.9,
+    "f10": 0.0,
+    "s10": 15.7,
+    "dead10": 15.7,
+    "dec10": 38.6,
+    "p15": 28.3,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 4.1,
+    "mp_net_less_fees": -890,
+    "mp_per_eval": -159,
+    "mp_passes": 1.08,
+    "net": 489,
+    "per_month": 40,
+    "pf": 1.04,
+    "dd": -2742,
+    "tpw": 2.75,
+    "sig_tpw": 4.84,
+    "sig_wk2": 94.3,
+    "n": 142,
+    "fund_paid_3m": 190,
+    "by_src": {
+     "EMA": [
+      80,
+      -1331
+     ],
+     "MD": [
+      31,
+      -407
+     ],
+     "SR": [
+      31,
+      2227
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 16.6,
+    "f10": 0.0,
+    "s10": 22.1,
+    "dead10": 22.1,
+    "dec10": 38.7,
+    "p15": 19.9,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 6.5,
+    "mp_net_less_fees": 957,
+    "mp_per_eval": 42,
+    "mp_passes": 7.27,
+    "net": 3279,
+    "per_month": 85,
+    "pf": 1.08,
+    "dd": -4424,
+    "tpw": 3.13,
+    "sig_tpw": 5.37,
+    "sig_wk2": 99.4,
+    "n": 510,
+    "fund_paid_3m": 246,
+    "by_src": {
+     "EMA": [
+      254,
+      3775
+     ],
+     "MD": [
+      140,
+      -249
+     ],
+     "SR": [
+      116,
+      -247
+     ]
+    }
+   }
+  }
+ },
+ "weight:MDx0.75": {
+  "fam": "weight",
+  "name": "MDx0.75",
+  "verdict": {
+   "h1": false,
+   "h2": false,
+   "both": false,
+   "ref": "-",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 58.8,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 58.8,
+    "p15": 73.7,
+    "f15": 0.0,
+    "pass_med": 7.0,
+    "slow_pass": 5.3,
+    "mp_net_less_fees": 8028,
+    "mp_per_eval": 1271,
+    "mp_passes": 5.32,
+    "net": 4485,
+    "per_month": 736,
+    "pf": 2.05,
+    "dd": -886,
+    "tpw": 1.88,
+    "sig_tpw": 4.38,
+    "sig_wk2": 96.3,
+    "n": 48,
+    "fund_paid_3m": 1842,
+    "by_src": {
+     "EMA": [
+      25,
+      2886
+     ],
+     "MD": [
+      13,
+      323
+     ],
+     "SR": [
+      10,
+      1275
+     ]
+    }
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "p15": 53.1,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 13.6,
+    "mp_net_less_fees": 1729,
+    "mp_per_eval": 741,
+    "mp_passes": 1.33,
+    "net": 1901,
+    "per_month": 512,
+    "pf": 2.02,
+    "dd": -816,
+    "tpw": 1.54,
+    "sig_tpw": 3.27,
+    "sig_wk2": 93.8,
+    "n": 24,
+    "fund_paid_3m": 1349,
+    "by_src": {
+     "EMA": [
+      13,
+      2565
+     ],
+     "MD": [
+      4,
+      -362
+     ],
+     "SR": [
+      7,
+      -303
+     ]
+    }
+   },
+   "2025": {
+    "p10": 24.5,
+    "f10": 0.0,
+    "s10": 20.5,
+    "dead10": 20.5,
+    "dec10": 45.0,
+    "p15": 29.1,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 2.7,
+    "mp_net_less_fees": -1428,
+    "mp_per_eval": -309,
+    "mp_passes": 0.6,
+    "net": -3969,
+    "per_month": -323,
+    "pf": 0.61,
+    "dd": -4335,
+    "tpw": 2.48,
+    "sig_tpw": 4.84,
+    "sig_wk2": 94.3,
+    "n": 128,
+    "fund_paid_3m": 190,
+    "by_src": {
+     "EMA": [
+      73,
+      -3507
+     ],
+     "MD": [
+      30,
+      -2075
+     ],
+     "SR": [
+      25,
+      1613
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 21.1,
+    "f10": 0.0,
+    "s10": 22.4,
+    "dead10": 22.4,
+    "dec10": 43.5,
+    "p15": 23.4,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 4.1,
+    "mp_net_less_fees": -3602,
+    "mp_per_eval": -243,
+    "mp_passes": 3.28,
+    "net": -2873,
+    "per_month": -74,
+    "pf": 0.92,
+    "dd": -7252,
+    "tpw": 2.96,
+    "sig_tpw": 5.37,
+    "sig_wk2": 99.4,
+    "n": 482,
+    "fund_paid_3m": 246,
+    "by_src": {
+     "EMA": [
+      254,
+      854
+     ],
+     "MD": [
+      124,
+      -2984
+     ],
+     "SR": [
+      104,
+      -744
+     ]
+    }
+   }
+  }
+ },
+ "weight:SRx0.75": {
+  "fam": "weight",
+  "name": "SRx0.75",
+  "verdict": {
+   "h1": false,
+   "h2": true,
+   "both": false,
+   "ref": "-",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 58.0,
+    "f10": 0.0,
+    "s10": 3.4,
+    "dead10": 3.4,
+    "dec10": 61.4,
+    "p15": 71.1,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 6.5,
+    "mp_net_less_fees": 8922,
+    "mp_per_eval": 1570,
+    "mp_passes": 4.64,
+    "net": 14238,
+    "per_month": 2336,
+    "pf": 2.65,
+    "dd": -919,
+    "tpw": 3.63,
+    "sig_tpw": 4.38,
+    "sig_wk2": 96.3,
+    "n": 93,
+    "fund_paid_3m": 1842,
+    "by_src": {
+     "EMA": [
+      45,
+      3633
+     ],
+     "MD": [
+      27,
+      6143
+     ],
+     "SR": [
+      21,
+      4462
+     ]
+    }
+   },
+   "H2": {
+    "p10": 53.6,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 53.6,
+    "p15": 57.8,
+    "f15": 0.0,
+    "pass_med": 5.5,
+    "slow_pass": 6.8,
+    "mp_net_less_fees": 2296,
+    "mp_per_eval": 861,
+    "mp_passes": 1.67,
+    "net": 4577,
+    "per_month": 1232,
+    "pf": 3.16,
+    "dd": -800,
+    "tpw": 1.73,
+    "sig_tpw": 3.27,
+    "sig_wk2": 93.8,
+    "n": 27,
+    "fund_paid_3m": 1349,
+    "by_src": {
+     "EMA": [
+      12,
+      3747
+     ],
+     "MD": [
+      6,
+      337
+     ],
+     "SR": [
+      9,
+      493
+     ]
+    }
+   },
+   "2025": {
+    "p10": 28.9,
+    "f10": 0.0,
+    "s10": 12.9,
+    "dead10": 12.9,
+    "dec10": 41.8,
+    "p15": 33.6,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 1.2,
+    "mp_net_less_fees": -2523,
+    "mp_per_eval": -520,
+    "mp_passes": 0.58,
+    "net": -6901,
+    "per_month": -562,
+    "pf": 0.38,
+    "dd": -6901,
+    "tpw": 2.5,
+    "sig_tpw": 4.84,
+    "sig_wk2": 94.3,
+    "n": 129,
+    "fund_paid_3m": 190,
+    "by_src": {
+     "EMA": [
+      70,
+      -2809
+     ],
+     "MD": [
+      34,
+      -3214
+     ],
+     "SR": [
+      25,
+      -878
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 19.9,
+    "f10": 0.0,
+    "s10": 21.1,
+    "dead10": 21.1,
+    "dec10": 41.0,
+    "p15": 23.1,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 4.6,
+    "mp_net_less_fees": 1230,
+    "mp_per_eval": 53,
+    "mp_passes": 7.55,
+    "net": 8926,
+    "per_month": 230,
+    "pf": 1.21,
+    "dd": -5726,
+    "tpw": 3.07,
+    "sig_tpw": 5.37,
+    "sig_wk2": 99.4,
+    "n": 500,
+    "fund_paid_3m": 246,
+    "by_src": {
+     "EMA": [
+      248,
+      9570
+     ],
+     "MD": [
+      140,
+      6
+     ],
+     "SR": [
+      112,
+      -649
+     ]
+    }
+   }
+  }
+ },
+ "weight:EMAx1.25": {
+  "fam": "weight",
+  "name": "EMAx1.25",
+  "verdict": {
+   "h1": true,
+   "h2": true,
+   "both": true,
+   "ref": "-",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 68.1,
+    "f10": 0.0,
+    "s10": 0.8,
+    "dead10": 0.8,
+    "dec10": 68.9,
+    "p15": 71.1,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 5.5,
+    "mp_net_less_fees": 8786,
+    "mp_per_eval": 1584,
+    "mp_passes": 4.5,
+    "net": 6965,
+    "per_month": 1143,
+    "pf": 2.4,
+    "dd": -926,
+    "tpw": 2.07,
+    "sig_tpw": 4.38,
+    "sig_wk2": 96.3,
+    "n": 53,
+    "fund_paid_3m": 1842,
+    "by_src": {
+     "EMA": [
+      29,
+      3024
+     ],
+     "MD": [
+      14,
+      1812
+     ],
+     "SR": [
+      10,
+      2128
+     ]
+    }
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "p15": 54.7,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 13.3,
+    "mp_net_less_fees": 2070,
+    "mp_per_eval": 856,
+    "mp_passes": 1.42,
+    "net": 4494,
+    "per_month": 1210,
+    "pf": 3.14,
+    "dd": -840,
+    "tpw": 1.47,
+    "sig_tpw": 3.27,
+    "sig_wk2": 93.8,
+    "n": 23,
+    "fund_paid_3m": 1349,
+    "by_src": {
+     "EMA": [
+      11,
+      2975
+     ],
+     "MD": [
+      4,
+      518
+     ],
+     "SR": [
+      8,
+      1001
+     ]
+    }
+   },
+   "2025": {
+    "p10": 31.3,
+    "f10": 0.0,
+    "s10": 27.3,
+    "dead10": 27.3,
+    "dec10": 58.6,
+    "p15": 35.2,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 2.2,
+    "mp_net_less_fees": -1960,
+    "mp_per_eval": -279,
+    "mp_passes": 1.65,
+    "net": -777,
+    "per_month": -63,
+    "pf": 0.95,
+    "dd": -4763,
+    "tpw": 2.67,
+    "sig_tpw": 4.84,
+    "sig_wk2": 94.3,
+    "n": 138,
+    "fund_paid_3m": 190,
+    "by_src": {
+     "EMA": [
+      72,
+      -275
+     ],
+     "MD": [
+      38,
+      -1183
+     ],
+     "SR": [
+      28,
+      680
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 24.3,
+    "f10": 0.0,
+    "s10": 30.8,
+    "dead10": 30.8,
+    "dec10": 55.1,
+    "p15": 26.8,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 2.7,
+    "mp_net_less_fees": -4261,
+    "mp_per_eval": -139,
+    "mp_passes": 8.49,
+    "net": -1239,
+    "per_month": -32,
+    "pf": 0.98,
+    "dd": -8351,
+    "tpw": 3.17,
+    "sig_tpw": 5.37,
+    "sig_wk2": 99.4,
+    "n": 516,
+    "fund_paid_3m": 246,
+    "by_src": {
+     "EMA": [
+      263,
+      8062
+     ],
+     "MD": [
+      136,
+      -5622
+     ],
+     "SR": [
+      117,
+      -3679
+     ]
+    }
+   }
+  }
+ },
+ "weight:MDx1.25": {
+  "fam": "weight",
+  "name": "MDx1.25",
+  "verdict": {
+   "h1": false,
+   "h2": false,
+   "both": false,
+   "ref": "-",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 63.0,
+    "f10": 0.0,
+    "s10": 2.5,
+    "dead10": 2.5,
+    "dec10": 65.5,
+    "p15": 72.8,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 5.4,
+    "mp_net_less_fees": 8328,
+    "mp_per_eval": 1593,
+    "mp_passes": 4.23,
+    "net": 4409,
+    "per_month": 723,
+    "pf": 2.01,
+    "dd": -873,
+    "tpw": 1.8,
+    "sig_tpw": 4.38,
+    "sig_wk2": 96.3,
+    "n": 46,
+    "fund_paid_3m": 1842,
+    "by_src": {
+     "EMA": [
+      23,
+      690
+     ],
+     "MD": [
+      13,
+      1762
+     ],
+     "SR": [
+      10,
+      1957
+     ]
+    }
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "p15": 54.7,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 13.3,
+    "mp_net_less_fees": 2008,
+    "mp_per_eval": 831,
+    "mp_passes": 1.42,
+    "net": 4411,
+    "per_month": 1188,
+    "pf": 3.14,
+    "dd": -816,
+    "tpw": 1.6,
+    "sig_tpw": 3.27,
+    "sig_wk2": 93.8,
+    "n": 25,
+    "fund_paid_3m": 1349,
+    "by_src": {
+     "EMA": [
+      12,
+      2998
+     ],
+     "MD": [
+      5,
+      413
+     ],
+     "SR": [
+      8,
+      1001
+     ]
+    }
+   },
+   "2025": {
+    "p10": 30.1,
+    "f10": 0.0,
+    "s10": 24.5,
+    "dead10": 24.5,
+    "dec10": 54.6,
+    "p15": 32.4,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 2.4,
+    "mp_net_less_fees": -1649,
+    "mp_per_eval": -346,
+    "mp_passes": 0.9,
+    "net": -1981,
+    "per_month": -161,
+    "pf": 0.83,
+    "dd": -5890,
+    "tpw": 2.54,
+    "sig_tpw": 4.84,
+    "sig_wk2": 94.3,
+    "n": 131,
+    "fund_paid_3m": 190,
+    "by_src": {
+     "EMA": [
+      71,
+      -999
+     ],
+     "MD": [
+      34,
+      -895
+     ],
+     "SR": [
+      26,
+      -88
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 22.5,
+    "f10": 0.0,
+    "s10": 29.6,
+    "dead10": 29.6,
+    "dec10": 52.1,
+    "p15": 25.4,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 2.9,
+    "mp_net_less_fees": -3947,
+    "mp_per_eval": -153,
+    "mp_passes": 6.04,
+    "net": -4586,
+    "per_month": -118,
+    "pf": 0.91,
+    "dd": -12802,
+    "tpw": 3.18,
+    "sig_tpw": 5.37,
+    "sig_wk2": 99.4,
+    "n": 518,
+    "fund_paid_3m": 246,
+    "by_src": {
+     "EMA": [
+      261,
+      -803
+     ],
+     "MD": [
+      142,
+      -3769
+     ],
+     "SR": [
+      115,
+      -15
+     ]
+    }
+   }
+  }
+ },
+ "weight:SRx1.25": {
+  "fam": "weight",
+  "name": "SRx1.25",
+  "verdict": {
+   "h1": true,
+   "h2": false,
+   "both": false,
+   "ref": "-",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 65.5,
+    "f10": 0.0,
+    "s10": 0.8,
+    "dead10": 0.8,
+    "dec10": 66.3,
+    "p15": 74.6,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 4.3,
+    "mp_net_less_fees": 9466,
+    "mp_per_eval": 1566,
+    "mp_passes": 5.0,
+    "net": 6823,
+    "per_month": 1119,
+    "pf": 2.37,
+    "dd": -926,
+    "tpw": 2.07,
+    "sig_tpw": 4.38,
+    "sig_wk2": 96.3,
+    "n": 53,
+    "fund_paid_3m": 1842,
+    "by_src": {
+     "EMA": [
+      28,
+      2704
+     ],
+     "MD": [
+      14,
+      1845
+     ],
+     "SR": [
+      11,
+      2274
+     ]
+    }
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "p15": 54.7,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 9.3,
+    "mp_net_less_fees": 1928,
+    "mp_per_eval": 798,
+    "mp_passes": 1.42,
+    "net": 4268,
+    "per_month": 1149,
+    "pf": 3.09,
+    "dd": -816,
+    "tpw": 1.6,
+    "sig_tpw": 3.27,
+    "sig_wk2": 93.8,
+    "n": 25,
+    "fund_paid_3m": 1349,
+    "by_src": {
+     "EMA": [
+      12,
+      2630
+     ],
+     "MD": [
+      5,
+      477
+     ],
+     "SR": [
+      8,
+      1161
+     ]
+    }
+   },
+   "2025": {
+    "p10": 28.1,
+    "f10": 0.0,
+    "s10": 24.1,
+    "dead10": 24.1,
+    "dec10": 52.2,
+    "p15": 29.5,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 5.1,
+    "mp_net_less_fees": -2375,
+    "mp_per_eval": -460,
+    "mp_passes": 0.77,
+    "net": -2815,
+    "per_month": -229,
+    "pf": 0.78,
+    "dd": -6641,
+    "tpw": 2.66,
+    "sig_tpw": 4.84,
+    "sig_wk2": 94.3,
+    "n": 137,
+    "fund_paid_3m": 190,
+    "by_src": {
+     "EMA": [
+      77,
+      -1291
+     ],
+     "MD": [
+      32,
+      -825
+     ],
+     "SR": [
+      28,
+      -699
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 23.1,
+    "f10": 0.0,
+    "s10": 28.6,
+    "dead10": 28.6,
+    "dec10": 51.7,
+    "p15": 25.8,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 2.4,
+    "mp_net_less_fees": -3818,
+    "mp_per_eval": -161,
+    "mp_passes": 5.22,
+    "net": -2534,
+    "per_month": -65,
+    "pf": 0.95,
+    "dd": -9482,
+    "tpw": 3.1,
+    "sig_tpw": 5.37,
+    "sig_wk2": 99.4,
+    "n": 504,
+    "fund_paid_3m": 246,
+    "by_src": {
+     "EMA": [
+      250,
+      4918
+     ],
+     "MD": [
+      137,
+      -2717
+     ],
+     "SR": [
+      117,
+      -4734
+     ]
+    }
+   }
+  }
+ },
+ "stopfit:max_usd300": {
+  "fam": "stopfit",
+  "name": "max_usd300",
+  "verdict": {
+   "h1": false,
+   "h2": false,
+   "both": false,
+   "ref": "B",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 32.8,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 32.8,
+    "p15": 76.3,
+    "f15": 0.0,
+    "pass_med": 11.0,
+    "slow_pass": 12.7,
+    "mp_net_less_fees": 8997,
+    "mp_per_eval": 1558,
+    "mp_passes": 4.77,
+    "net": 12463,
+    "per_month": 2045,
+    "pf": 3.25,
+    "dd": -695,
+    "tpw": 3.75,
+    "sig_tpw": 4.38,
+    "sig_wk2": 96.3,
+    "n": 96,
+    "fund_paid_3m": 1842,
+    "by_src": {
+     "EMA": [
+      49,
+      4551
+     ],
+     "MD": [
+      23,
+      4640
+     ],
+     "SR": [
+      24,
+      3272
+     ]
+    }
+   },
+   "H2": {
+    "p10": 5.8,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 5.8,
+    "p15": 23.4,
+    "f15": 0.0,
+    "pass_med": 13.0,
+    "slow_pass": 31.8,
+    "mp_net_less_fees": 1063,
+    "mp_per_eval": 671,
+    "mp_passes": 0.58,
+    "net": 2205,
+    "per_month": 594,
+    "pf": 2.19,
+    "dd": -852,
+    "tpw": 1.79,
+    "sig_tpw": 3.27,
+    "sig_wk2": 93.8,
+    "n": 28,
+    "fund_paid_3m": 1349,
+    "by_src": {
+     "EMA": [
+      13,
+      1630
+     ],
+     "MD": [
+      7,
+      433
+     ],
+     "SR": [
+      8,
+      142
+     ]
+    }
+   },
+   "2025": {
+    "p10": 7.2,
+    "f10": 0.0,
+    "s10": 2.0,
+    "dead10": 2.0,
+    "dec10": 9.2,
+    "p15": 14.8,
+    "f15": 0.0,
+    "pass_med": 12.0,
+    "slow_pass": 25.0,
+    "mp_net_less_fees": -1112,
+    "mp_per_eval": -301,
+    "mp_passes": 0.48,
+    "net": 2595,
+    "per_month": 211,
+    "pf": 1.26,
+    "dd": -2704,
+    "tpw": 3.2,
+    "sig_tpw": 4.84,
+    "sig_wk2": 94.3,
+    "n": 165,
+    "fund_paid_3m": 190,
+    "by_src": {
+     "EMA": [
+      91,
+      3668
+     ],
+     "MD": [
+      36,
+      -1576
+     ],
+     "SR": [
+      38,
+      503
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 6.0,
+    "f10": 0.0,
+    "s10": 5.1,
+    "dead10": 5.1,
+    "dec10": 11.1,
+    "p15": 12.9,
+    "f15": 0.0,
+    "pass_med": 12.0,
+    "slow_pass": 20.2,
+    "mp_net_less_fees": 1633,
+    "mp_per_eval": 129,
+    "mp_passes": 3.43,
+    "net": 5206,
+    "per_month": 134,
+    "pf": 1.18,
+    "dd": -4882,
+    "tpw": 3.03,
+    "sig_tpw": 5.37,
+    "sig_wk2": 99.4,
+    "n": 494,
+    "fund_paid_3m": 246,
+    "by_src": {
+     "EMA": [
+      248,
+      3964
+     ],
+     "MD": [
+      138,
+      1697
+     ],
+     "SR": [
+      108,
+      -455
+     ]
+    }
+   }
+  }
+ },
+ "stopfit:max_usd400": {
+  "fam": "stopfit",
+  "name": "max_usd400",
+  "verdict": {
+   "h1": false,
+   "h2": false,
+   "both": false,
+   "ref": "-",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 47.1,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 47.1,
+    "p15": 76.3,
+    "f15": 0.0,
+    "pass_med": 10.0,
+    "slow_pass": 11.5,
+    "mp_net_less_fees": 9353,
+    "mp_per_eval": 1354,
+    "mp_passes": 5.91,
+    "net": 11963,
+    "per_month": 1963,
+    "pf": 2.53,
+    "dd": -766,
+    "tpw": 3.87,
+    "sig_tpw": 4.38,
+    "sig_wk2": 96.3,
+    "n": 99,
+    "fund_paid_3m": 1842,
+    "by_src": {
+     "EMA": [
+      49,
+      5979
+     ],
+     "MD": [
+      25,
+      3119
+     ],
+     "SR": [
+      25,
+      2865
+     ]
+    }
+   },
+   "H2": {
+    "p10": 14.5,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 14.5,
+    "p15": 37.5,
+    "f15": 0.0,
+    "pass_med": 13.0,
+    "slow_pass": 27.3,
+    "mp_net_less_fees": 1438,
+    "mp_per_eval": 750,
+    "mp_passes": 0.92,
+    "net": 2961,
+    "per_month": 797,
+    "pf": 2.35,
+    "dd": -771,
+    "tpw": 2.18,
+    "sig_tpw": 3.27,
+    "sig_wk2": 93.8,
+    "n": 34,
+    "fund_paid_3m": 1349,
+    "by_src": {
+     "EMA": [
+      15,
+      2328
+     ],
+     "MD": [
+      8,
+      232
+     ],
+     "SR": [
+      11,
+      400
+     ]
+    }
+   },
+   "2025": {
+    "p10": 11.2,
+    "f10": 0.0,
+    "s10": 9.6,
+    "dead10": 9.6,
+    "dec10": 20.8,
+    "p15": 18.0,
+    "f15": 0.0,
+    "pass_med": 10.0,
+    "slow_pass": 17.0,
+    "mp_net_less_fees": -1529,
+    "mp_per_eval": -356,
+    "mp_passes": 0.4,
+    "net": -422,
+    "per_month": -34,
+    "pf": 0.96,
+    "dd": -3560,
+    "tpw": 2.81,
+    "sig_tpw": 4.84,
+    "sig_wk2": 94.3,
+    "n": 145,
+    "fund_paid_3m": 190,
+    "by_src": {
+     "EMA": [
+      77,
+      -307
+     ],
+     "MD": [
+      38,
+      -652
+     ],
+     "SR": [
+      30,
+      537
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 12.7,
+    "f10": 0.0,
+    "s10": 11.6,
+    "dead10": 11.6,
+    "dec10": 24.3,
+    "p15": 18.5,
+    "f15": 0.0,
+    "pass_med": 9.0,
+    "slow_pass": 11.4,
+    "mp_net_less_fees": -2487,
+    "mp_per_eval": -157,
+    "mp_passes": 3.55,
+    "net": -522,
+    "per_month": -13,
+    "pf": 0.99,
+    "dd": -7310,
+    "tpw": 3.14,
+    "sig_tpw": 5.37,
+    "sig_wk2": 99.4,
+    "n": 512,
+    "fund_paid_3m": 246,
+    "by_src": {
+     "EMA": [
+      262,
+      2362
+     ],
+     "MD": [
+      142,
+      179
+     ],
+     "SR": [
+      108,
+      -3064
+     ]
+    }
+   }
+  }
+ },
+ "stopfit:max_usd500": {
+  "fam": "stopfit",
+  "name": "max_usd500",
+  "verdict": {
+   "h1": false,
+   "h2": false,
+   "both": false,
+   "ref": "-",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 57.1,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 57.1,
+    "p15": 79.8,
+    "f15": 0.0,
+    "pass_med": 8.5,
+    "slow_pass": 5.9,
+    "mp_net_less_fees": 8355,
+    "mp_per_eval": 1392,
+    "mp_passes": 5.0,
+    "net": 5203,
+    "per_month": 854,
+    "pf": 2.26,
+    "dd": -857,
+    "tpw": 1.91,
+    "sig_tpw": 4.38,
+    "sig_wk2": 96.3,
+    "n": 49,
+    "fund_paid_3m": 1842,
+    "by_src": {
+     "EMA": [
+      26,
+      2999
+     ],
+     "MD": [
+      13,
+      1130
+     ],
+     "SR": [
+      10,
+      1074
+     ]
+    }
+   },
+   "H2": {
+    "p10": 31.9,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 31.9,
+    "p15": 46.9,
+    "f15": 0.0,
+    "pass_med": 10.0,
+    "slow_pass": 22.5,
+    "mp_net_less_fees": 1144,
+    "mp_per_eval": 572,
+    "mp_passes": 1.0,
+    "net": 2900,
+    "per_month": 781,
+    "pf": 2.2,
+    "dd": -769,
+    "tpw": 2.24,
+    "sig_tpw": 3.27,
+    "sig_wk2": 93.8,
+    "n": 35,
+    "fund_paid_3m": 1349,
+    "by_src": {
+     "EMA": [
+      15,
+      2458
+     ],
+     "MD": [
+      9,
+      144
+     ],
+     "SR": [
+      11,
+      298
+     ]
+    }
+   },
+   "2025": {
+    "p10": 21.7,
+    "f10": 0.0,
+    "s10": 17.3,
+    "dead10": 17.3,
+    "dec10": 39.0,
+    "p15": 28.3,
+    "f15": 0.0,
+    "pass_med": 7.0,
+    "slow_pass": 6.8,
+    "mp_net_less_fees": -1236,
+    "mp_per_eval": -281,
+    "mp_passes": 0.88,
+    "net": 4090,
+    "per_month": 333,
+    "pf": 1.35,
+    "dd": -3421,
+    "tpw": 3.08,
+    "sig_tpw": 4.84,
+    "sig_wk2": 94.3,
+    "n": 159,
+    "fund_paid_3m": 190,
+    "by_src": {
+     "EMA": [
+      89,
+      3713
+     ],
+     "MD": [
+      39,
+      506
+     ],
+     "SR": [
+      31,
+      -129
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 18.9,
+    "f10": 0.0,
+    "s10": 18.9,
+    "dead10": 18.9,
+    "dec10": 37.8,
+    "p15": 22.2,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 6.3,
+    "mp_net_less_fees": -2504,
+    "mp_per_eval": -131,
+    "mp_passes": 5.18,
+    "net": -1333,
+    "per_month": -34,
+    "pf": 0.96,
+    "dd": -8430,
+    "tpw": 3.02,
+    "sig_tpw": 5.37,
+    "sig_wk2": 99.4,
+    "n": 492,
+    "fund_paid_3m": 246,
+    "by_src": {
+     "EMA": [
+      250,
+      1218
+     ],
+     "MD": [
+      136,
+      -218
+     ],
+     "SR": [
+      106,
+      -2333
+     ]
+    }
+   }
+  }
+ },
+ "stopfit:max_usd600": {
+  "fam": "stopfit",
+  "name": "max_usd600",
+  "verdict": {
+   "h1": false,
+   "h2": false,
+   "both": false,
+   "ref": "-",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 63.9,
+    "f10": 0.0,
+    "s10": 2.5,
+    "dead10": 2.5,
+    "dec10": 66.4,
+    "p15": 78.9,
+    "f15": 0.0,
+    "pass_med": 7.0,
+    "slow_pass": 4.0,
+    "mp_net_less_fees": 8432,
+    "mp_per_eval": 1427,
+    "mp_passes": 4.91,
+    "net": 5476,
+    "per_month": 898,
+    "pf": 2.26,
+    "dd": -856,
+    "tpw": 1.91,
+    "sig_tpw": 4.38,
+    "sig_wk2": 96.3,
+    "n": 49,
+    "fund_paid_3m": 1842,
+    "by_src": {
+     "EMA": [
+      26,
+      2972
+     ],
+     "MD": [
+      13,
+      1024
+     ],
+     "SR": [
+      10,
+      1480
+     ]
+    }
+   },
+   "H2": {
+    "p10": 49.3,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 49.3,
+    "p15": 54.7,
+    "f15": 0.0,
+    "pass_med": 7.0,
+    "slow_pass": 13.3,
+    "mp_net_less_fees": 1811,
+    "mp_per_eval": 805,
+    "mp_passes": 1.25,
+    "net": 3533,
+    "per_month": 951,
+    "pf": 2.53,
+    "dd": -847,
+    "tpw": 1.73,
+    "sig_tpw": 3.27,
+    "sig_wk2": 93.8,
+    "n": 27,
+    "fund_paid_3m": 1349,
+    "by_src": {
+     "EMA": [
+      12,
+      3220
+     ],
+     "MD": [
+      6,
+      317
+     ],
+     "SR": [
+      9,
+      -3
+     ]
+    }
+   },
+   "2025": {
+    "p10": 24.9,
+    "f10": 0.0,
+    "s10": 18.1,
+    "dead10": 18.1,
+    "dec10": 43.0,
+    "p15": 29.9,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 2.7,
+    "mp_net_less_fees": -1529,
+    "mp_per_eval": -322,
+    "mp_passes": 0.9,
+    "net": 852,
+    "per_month": 69,
+    "pf": 1.06,
+    "dd": -3485,
+    "tpw": 3.08,
+    "sig_tpw": 4.84,
+    "sig_wk2": 94.3,
+    "n": 159,
+    "fund_paid_3m": 190,
+    "by_src": {
+     "EMA": [
+      86,
+      1962
+     ],
+     "MD": [
+      36,
+      -1503
+     ],
+     "SR": [
+      37,
+      392
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 20.5,
+    "f10": 0.0,
+    "s10": 23.5,
+    "dead10": 23.5,
+    "dec10": 44.0,
+    "p15": 23.0,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 4.7,
+    "mp_net_less_fees": -2314,
+    "mp_per_eval": -123,
+    "mp_passes": 4.92,
+    "net": -3123,
+    "per_month": -81,
+    "pf": 0.92,
+    "dd": -8275,
+    "tpw": 2.99,
+    "sig_tpw": 5.37,
+    "sig_wk2": 99.4,
+    "n": 487,
+    "fund_paid_3m": 246,
+    "by_src": {
+     "EMA": [
+      248,
+      1620
+     ],
+     "MD": [
+      132,
+      -1744
+     ],
+     "SR": [
+      107,
+      -2999
+     ]
+    }
+   }
+  }
+ },
+ "stopfit:dll300": {
+  "fam": "stopfit",
+  "name": "dll300",
+  "verdict": {
+   "h1": false,
+   "h2": false,
+   "both": false,
+   "ref": "B",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 58.0,
+    "f10": 0.0,
+    "s10": 0.8,
+    "dead10": 0.8,
+    "dec10": 58.8,
+    "p15": 70.2,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 4.5,
+    "mp_net_less_fees": 6869,
+    "mp_per_eval": 1337,
+    "mp_passes": 4.09,
+    "net": 9936,
+    "per_month": 1630,
+    "pf": 2.58,
+    "dd": -919,
+    "tpw": 2.85,
+    "sig_tpw": 4.38,
+    "sig_wk2": 96.3,
+    "n": 73,
+    "fund_paid_3m": 1842,
+    "by_src": {
+     "EMA": [
+      38,
+      3682
+     ],
+     "MD": [
+      21,
+      3521
+     ],
+     "SR": [
+      14,
+      2734
+     ]
+    }
+   },
+   "H2": {
+    "p10": 40.6,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 40.6,
+    "p15": 48.4,
+    "f15": 0.0,
+    "pass_med": 9.0,
+    "slow_pass": 15.8,
+    "mp_net_less_fees": 1179,
+    "mp_per_eval": 566,
+    "mp_passes": 1.08,
+    "net": 2330,
+    "per_month": 627,
+    "pf": 2.13,
+    "dd": -831,
+    "tpw": 1.54,
+    "sig_tpw": 3.27,
+    "sig_wk2": 93.8,
+    "n": 24,
+    "fund_paid_3m": 1349,
+    "by_src": {
+     "EMA": [
+      12,
+      2077
+     ],
+     "MD": [
+      5,
+      379
+     ],
+     "SR": [
+      7,
+      -126
+     ]
+    }
+   },
+   "2025": {
+    "p10": 20.5,
+    "f10": 0.0,
+    "s10": 14.9,
+    "dead10": 14.9,
+    "dec10": 35.4,
+    "p15": 25.0,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 4.7,
+    "mp_net_less_fees": -1383,
+    "mp_per_eval": -322,
+    "mp_passes": 0.77,
+    "net": -742,
+    "per_month": -60,
+    "pf": 0.92,
+    "dd": -3769,
+    "tpw": 2.34,
+    "sig_tpw": 4.84,
+    "sig_wk2": 94.3,
+    "n": 121,
+    "fund_paid_3m": 190,
+    "by_src": {
+     "EMA": [
+      69,
+      -423
+     ],
+     "MD": [
+      31,
+      -460
+     ],
+     "SR": [
+      21,
+      141
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 22.0,
+    "f10": 0.0,
+    "s10": 19.3,
+    "dead10": 19.3,
+    "dec10": 41.3,
+    "p15": 24.2,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 4.9,
+    "mp_net_less_fees": -530,
+    "mp_per_eval": -27,
+    "mp_passes": 5.7,
+    "net": 1507,
+    "per_month": 39,
+    "pf": 1.04,
+    "dd": -8076,
+    "tpw": 3.1,
+    "sig_tpw": 5.37,
+    "sig_wk2": 99.4,
+    "n": 505,
+    "fund_paid_3m": 246,
+    "by_src": {
+     "EMA": [
+      265,
+      4523
+     ],
+     "MD": [
+      142,
+      -1684
+     ],
+     "SR": [
+      98,
+      -1333
+     ]
+    }
+   }
+  }
+ },
+ "stopfit:dll450": {
+  "fam": "stopfit",
+  "name": "dll450",
+  "verdict": {
+   "h1": false,
+   "h2": true,
+   "both": false,
+   "ref": "-",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 65.5,
+    "f10": 0.0,
+    "s10": 3.4,
+    "dead10": 3.4,
+    "dec10": 68.9,
+    "p15": 73.7,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 5.3,
+    "mp_net_less_fees": 8176,
+    "mp_per_eval": 1427,
+    "mp_passes": 4.68,
+    "net": 4617,
+    "per_month": 758,
+    "pf": 1.91,
+    "dd": -919,
+    "tpw": 2.07,
+    "sig_tpw": 4.38,
+    "sig_wk2": 96.3,
+    "n": 53,
+    "fund_paid_3m": 1842,
+    "by_src": {
+     "EMA": [
+      28,
+      497
+     ],
+     "MD": [
+      14,
+      2514
+     ],
+     "SR": [
+      11,
+      1607
+     ]
+    }
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "p15": 53.1,
+    "f15": 0.0,
+    "pass_med": 6.5,
+    "slow_pass": 17.4,
+    "mp_net_less_fees": 2203,
+    "mp_per_eval": 853,
+    "mp_passes": 1.58,
+    "net": 4434,
+    "per_month": 1194,
+    "pf": 3.18,
+    "dd": -816,
+    "tpw": 1.6,
+    "sig_tpw": 3.27,
+    "sig_wk2": 93.8,
+    "n": 25,
+    "fund_paid_3m": 1349,
+    "by_src": {
+     "EMA": [
+      12,
+      2956
+     ],
+     "MD": [
+      5,
+      477
+     ],
+     "SR": [
+      8,
+      1001
+     ]
+    }
+   },
+   "2025": {
+    "p10": 30.1,
+    "f10": 0.0,
+    "s10": 20.5,
+    "dead10": 20.5,
+    "dec10": 50.6,
+    "p15": 35.2,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 2.2,
+    "mp_net_less_fees": -1147,
+    "mp_per_eval": -212,
+    "mp_passes": 1.38,
+    "net": 108,
+    "per_month": 9,
+    "pf": 1.01,
+    "dd": -4039,
+    "tpw": 2.93,
+    "sig_tpw": 4.84,
+    "sig_wk2": 94.3,
+    "n": 151,
+    "fund_paid_3m": 190,
+    "by_src": {
+     "EMA": [
+      87,
+      1792
+     ],
+     "MD": [
+      35,
+      -796
+     ],
+     "SR": [
+      29,
+      -887
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 22.5,
+    "f10": 0.0,
+    "s10": 26.5,
+    "dead10": 26.5,
+    "dec10": 49.0,
+    "p15": 25.8,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 4.6,
+    "mp_net_less_fees": -4881,
+    "mp_per_eval": -238,
+    "mp_passes": 5.26,
+    "net": -4705,
+    "per_month": -121,
+    "pf": 0.89,
+    "dd": -7611,
+    "tpw": 3.02,
+    "sig_tpw": 5.37,
+    "sig_wk2": 99.4,
+    "n": 491,
+    "fund_paid_3m": 246,
+    "by_src": {
+     "EMA": [
+      243,
+      3505
+     ],
+     "MD": [
+      137,
+      -3077
+     ],
+     "SR": [
+      111,
+      -5132
+     ]
+    }
+   }
+  }
+ },
+ "idea:london_up125_ny_dn075": {
+  "fam": "idea",
+  "name": "london_up125_ny_dn075",
+  "verdict": {
+   "h1": false,
+   "h2": true,
+   "both": false,
+   "ref": "B",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 61.3,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 61.3,
+    "p15": 66.7,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 10.0,
+    "mp_net_less_fees": 7123,
+    "mp_per_eval": 1536,
+    "mp_passes": 3.64,
+    "net": 4313,
+    "per_month": 708,
+    "pf": 2.0,
+    "dd": -881,
+    "tpw": 1.72,
+    "sig_tpw": 4.38,
+    "sig_wk2": 96.3,
+    "n": 44,
+    "fund_paid_3m": 1842,
+    "by_src": {
+     "EMA": [
+      22,
+      648
+     ],
+     "MD": [
+      12,
+      2163
+     ],
+     "SR": [
+      10,
+      1502
+     ]
+    }
+   },
+   "H2": {
+    "p10": 53.6,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 53.6,
+    "p15": 57.8,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 4.7,
+    "mp_net_less_fees": 2264,
+    "mp_per_eval": 849,
+    "mp_passes": 1.67,
+    "net": 4770,
+    "per_month": 1284,
+    "pf": 3.35,
+    "dd": -837,
+    "tpw": 1.54,
+    "sig_tpw": 3.27,
+    "sig_wk2": 93.8,
+    "n": 24,
+    "fund_paid_3m": 1349,
+    "by_src": {
+     "EMA": [
+      11,
+      3860
+     ],
+     "MD": [
+      5,
+      315
+     ],
+     "SR": [
+      8,
+      595
+     ]
+    }
+   },
+   "2025": {
+    "p10": 30.1,
+    "f10": 0.0,
+    "s10": 25.3,
+    "dead10": 25.3,
+    "dec10": 55.4,
+    "p15": 35.2,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 1.1,
+    "mp_net_less_fees": -1596,
+    "mp_per_eval": -276,
+    "mp_passes": 1.29,
+    "net": -5,
+    "per_month": 0,
+    "pf": 1.0,
+    "dd": -4943,
+    "tpw": 2.75,
+    "sig_tpw": 4.84,
+    "sig_wk2": 94.3,
+    "n": 142,
+    "fund_paid_3m": 190,
+    "by_src": {
+     "EMA": [
+      72,
+      -703
+     ],
+     "MD": [
+      39,
+      623
+     ],
+     "SR": [
+      31,
+      75
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 20.2,
+    "f10": 0.0,
+    "s10": 26.2,
+    "dead10": 26.2,
+    "dec10": 46.4,
+    "p15": 23.4,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 5.6,
+    "mp_net_less_fees": 897,
+    "mp_per_eval": 36,
+    "mp_passes": 7.89,
+    "net": 5971,
+    "per_month": 154,
+    "pf": 1.14,
+    "dd": -5156,
+    "tpw": 3.17,
+    "sig_tpw": 5.37,
+    "sig_wk2": 99.4,
+    "n": 516,
+    "fund_paid_3m": 246,
+    "by_src": {
+     "EMA": [
+      268,
+      4822
+     ],
+     "MD": [
+      141,
+      1720
+     ],
+     "SR": [
+      107,
+      -571
+     ]
+    }
+   }
+  },
+  "desc": "London entries x1.25, NY x0.75"
+ },
+ "idea:ny_up125": {
+  "fam": "idea",
+  "name": "ny_up125",
+  "verdict": {
+   "h1": true,
+   "h2": false,
+   "both": false,
+   "ref": "-",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 65.5,
+    "f10": 0.0,
+    "s10": 0.8,
+    "dead10": 0.8,
+    "dec10": 66.3,
+    "p15": 74.6,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 4.3,
+    "mp_net_less_fees": 9466,
+    "mp_per_eval": 1566,
+    "mp_passes": 5.0,
+    "net": 6823,
+    "per_month": 1119,
+    "pf": 2.37,
+    "dd": -926,
+    "tpw": 2.07,
+    "sig_tpw": 4.38,
+    "sig_wk2": 96.3,
+    "n": 53,
+    "fund_paid_3m": 1842,
+    "by_src": {
+     "EMA": [
+      28,
+      2704
+     ],
+     "MD": [
+      14,
+      1845
+     ],
+     "SR": [
+      11,
+      2274
+     ]
+    }
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "p15": 54.7,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 9.3,
+    "mp_net_less_fees": 1928,
+    "mp_per_eval": 798,
+    "mp_passes": 1.42,
+    "net": 4268,
+    "per_month": 1149,
+    "pf": 3.09,
+    "dd": -816,
+    "tpw": 1.6,
+    "sig_tpw": 3.27,
+    "sig_wk2": 93.8,
+    "n": 25,
+    "fund_paid_3m": 1349,
+    "by_src": {
+     "EMA": [
+      12,
+      2630
+     ],
+     "MD": [
+      5,
+      477
+     ],
+     "SR": [
+      8,
+      1161
+     ]
+    }
+   },
+   "2025": {
+    "p10": 28.1,
+    "f10": 0.0,
+    "s10": 23.7,
+    "dead10": 23.7,
+    "dec10": 51.8,
+    "p15": 29.5,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 5.1,
+    "mp_net_less_fees": -2301,
+    "mp_per_eval": -386,
+    "mp_passes": 1.1,
+    "net": -2815,
+    "per_month": -229,
+    "pf": 0.78,
+    "dd": -6641,
+    "tpw": 2.66,
+    "sig_tpw": 4.84,
+    "sig_wk2": 94.3,
+    "n": 137,
+    "fund_paid_3m": 190,
+    "by_src": {
+     "EMA": [
+      77,
+      -1291
+     ],
+     "MD": [
+      32,
+      -825
+     ],
+     "SR": [
+      28,
+      -699
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 23.1,
+    "f10": 0.0,
+    "s10": 28.9,
+    "dead10": 28.9,
+    "dec10": 52.0,
+    "p15": 25.8,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 2.4,
+    "mp_net_less_fees": -2716,
+    "mp_per_eval": -102,
+    "mp_passes": 6.58,
+    "net": 240,
+    "per_month": 6,
+    "pf": 1.0,
+    "dd": -9505,
+    "tpw": 3.2,
+    "sig_tpw": 5.37,
+    "sig_wk2": 99.4,
+    "n": 521,
+    "fund_paid_3m": 246,
+    "by_src": {
+     "EMA": [
+      256,
+      6470
+     ],
+     "MD": [
+      146,
+      -1978
+     ],
+     "SR": [
+      119,
+      -4252
+     ]
+    }
+   }
+  },
+  "desc": "NY entries x1.25"
+ },
+ "idea:monday_dn075": {
+  "fam": "idea",
+  "name": "monday_dn075",
+  "verdict": {
+   "h1": false,
+   "h2": true,
+   "both": false,
+   "ref": "-",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 58.0,
+    "f10": 0.0,
+    "s10": 0.8,
+    "dead10": 0.8,
+    "dec10": 58.8,
+    "p15": 70.2,
+    "f15": 0.0,
+    "pass_med": 7.0,
+    "slow_pass": 7.6,
+    "mp_net_less_fees": 9347,
+    "mp_per_eval": 1469,
+    "mp_passes": 5.32,
+    "net": 15518,
+    "per_month": 2546,
+    "pf": 2.8,
+    "dd": -926,
+    "tpw": 3.63,
+    "sig_tpw": 4.38,
+    "sig_wk2": 96.3,
+    "n": 93,
+    "fund_paid_3m": 1842,
+    "by_src": {
+     "EMA": [
+      46,
+      4303
+     ],
+     "MD": [
+      26,
+      5963
+     ],
+     "SR": [
+      21,
+      5252
+     ]
+    }
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "p15": 54.7,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 13.3,
+    "mp_net_less_fees": 2039,
+    "mp_per_eval": 816,
+    "mp_passes": 1.5,
+    "net": 4438,
+    "per_month": 1195,
+    "pf": 3.18,
+    "dd": -811,
+    "tpw": 1.54,
+    "sig_tpw": 3.27,
+    "sig_wk2": 93.8,
+    "n": 24,
+    "fund_paid_3m": 1349,
+    "by_src": {
+     "EMA": [
+      12,
+      3022
+     ],
+     "MD": [
+      4,
+      518
+     ],
+     "SR": [
+      8,
+      898
+     ]
+    }
+   },
+   "2025": {
+    "p10": 26.5,
+    "f10": 0.0,
+    "s10": 23.7,
+    "dead10": 23.7,
+    "dec10": 50.2,
+    "p15": 28.3,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 2.7,
+    "mp_net_less_fees": -1695,
+    "mp_per_eval": -373,
+    "mp_passes": 0.65,
+    "net": -1869,
+    "per_month": -152,
+    "pf": 0.84,
+    "dd": -5533,
+    "tpw": 2.6,
+    "sig_tpw": 4.84,
+    "sig_wk2": 94.3,
+    "n": 134,
+    "fund_paid_3m": 190,
+    "by_src": {
+     "EMA": [
+      76,
+      -783
+     ],
+     "MD": [
+      33,
+      -456
+     ],
+     "SR": [
+      25,
+      -630
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 22.2,
+    "f10": 0.0,
+    "s10": 26.0,
+    "dead10": 26.0,
+    "dec10": 48.2,
+    "p15": 25.2,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 3.8,
+    "mp_net_less_fees": -3323,
+    "mp_per_eval": -185,
+    "mp_passes": 3.98,
+    "net": -1384,
+    "per_month": -36,
+    "pf": 0.97,
+    "dd": -8161,
+    "tpw": 3.0,
+    "sig_tpw": 5.37,
+    "sig_wk2": 99.4,
+    "n": 489,
+    "fund_paid_3m": 246,
+    "by_src": {
+     "EMA": [
+      260,
+      6628
+     ],
+     "MD": [
+      132,
+      -4507
+     ],
+     "SR": [
+      97,
+      -3506
+     ]
+    }
+   }
+  },
+  "desc": "Monday x0.75"
+ },
+ "idea:midweek_up125": {
+  "fam": "idea",
+  "name": "midweek_up125",
+  "verdict": {
+   "h1": false,
+   "h2": false,
+   "both": false,
+   "ref": "-",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 63.9,
+    "f10": 0.0,
+    "s10": 2.5,
+    "dead10": 2.5,
+    "dec10": 66.4,
+    "p15": 73.7,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 5.3,
+    "mp_net_less_fees": 8336,
+    "mp_per_eval": 1516,
+    "mp_passes": 4.5,
+    "net": 5987,
+    "per_month": 982,
+    "pf": 2.41,
+    "dd": -873,
+    "tpw": 1.8,
+    "sig_tpw": 4.38,
+    "sig_wk2": 96.3,
+    "n": 46,
+    "fund_paid_3m": 1842,
+    "by_src": {
+     "EMA": [
+      24,
+      2712
+     ],
+     "MD": [
+      13,
+      1079
+     ],
+     "SR": [
+      9,
+      2196
+     ]
+    }
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "p15": 53.1,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 7.3,
+    "mp_net_less_fees": 1827,
+    "mp_per_eval": 783,
+    "mp_passes": 1.33,
+    "net": 4411,
+    "per_month": 1188,
+    "pf": 3.14,
+    "dd": -816,
+    "tpw": 1.6,
+    "sig_tpw": 3.27,
+    "sig_wk2": 93.8,
+    "n": 25,
+    "fund_paid_3m": 1349,
+    "by_src": {
+     "EMA": [
+      12,
+      2998
+     ],
+     "MD": [
+      5,
+      413
+     ],
+     "SR": [
+      8,
+      1001
+     ]
+    }
+   },
+   "2025": {
+    "p10": 30.5,
+    "f10": 0.0,
+    "s10": 23.7,
+    "dead10": 23.7,
+    "dec10": 54.2,
+    "p15": 33.2,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 2.4,
+    "mp_net_less_fees": -2692,
+    "mp_per_eval": -523,
+    "mp_passes": 0.73,
+    "net": -4513,
+    "per_month": -367,
+    "pf": 0.63,
+    "dd": -6783,
+    "tpw": 2.42,
+    "sig_tpw": 4.84,
+    "sig_wk2": 94.3,
+    "n": 125,
+    "fund_paid_3m": 190,
+    "by_src": {
+     "EMA": [
+      68,
+      -2514
+     ],
+     "MD": [
+      35,
+      -730
+     ],
+     "SR": [
+      22,
+      -1269
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 23.6,
+    "f10": 0.0,
+    "s10": 31.1,
+    "dead10": 31.1,
+    "dec10": 54.7,
+    "p15": 26.0,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 2.8,
+    "mp_net_less_fees": -1946,
+    "mp_per_eval": -75,
+    "mp_passes": 7.88,
+    "net": 1582,
+    "per_month": 41,
+    "pf": 1.03,
+    "dd": -8718,
+    "tpw": 2.91,
+    "sig_tpw": 5.37,
+    "sig_wk2": 99.4,
+    "n": 474,
+    "fund_paid_3m": 246,
+    "by_src": {
+     "EMA": [
+      244,
+      7934
+     ],
+     "MD": [
+      127,
+      -2770
+     ],
+     "SR": [
+      103,
+      -3582
+     ]
+    }
+   }
+  },
+  "desc": "Tue/Wed x1.25"
+ },
+ "idea:lit_lost_today_dn05": {
+  "fam": "idea",
+  "name": "lit_lost_today_dn05",
+  "verdict": {
+   "h1": false,
+   "h2": false,
+   "both": false,
+   "ref": "B",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 58.0,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 58.0,
+    "p15": 65.8,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 5.9,
+    "mp_net_less_fees": 8726,
+    "mp_per_eval": 1641,
+    "mp_passes": 4.32,
+    "net": 6504,
+    "per_month": 1067,
+    "pf": 2.42,
+    "dd": -824,
+    "tpw": 2.3,
+    "sig_tpw": 4.38,
+    "sig_wk2": 96.3,
+    "n": 59,
+    "fund_paid_3m": 1842,
+    "by_src": {
+     "EMA": [
+      32,
+      3256
+     ],
+     "MD": [
+      14,
+      1594
+     ],
+     "SR": [
+      13,
+      1654
+     ]
+    }
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "p15": 51.6,
+    "f15": 0.0,
+    "pass_med": 5.5,
+    "slow_pass": 11.9,
+    "mp_net_less_fees": 1914,
+    "mp_per_eval": 792,
+    "mp_passes": 1.42,
+    "net": 4434,
+    "per_month": 1194,
+    "pf": 3.18,
+    "dd": -816,
+    "tpw": 1.6,
+    "sig_tpw": 3.27,
+    "sig_wk2": 93.8,
+    "n": 25,
+    "fund_paid_3m": 1349,
+    "by_src": {
+     "EMA": [
+      12,
+      2956
+     ],
+     "MD": [
+      5,
+      477
+     ],
+     "SR": [
+      8,
+      1001
+     ]
+    }
+   },
+   "2025": {
+    "p10": 30.1,
+    "f10": 0.0,
+    "s10": 20.9,
+    "dead10": 20.9,
+    "dec10": 51.0,
+    "p15": 34.0,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 2.4,
+    "mp_net_less_fees": -1629,
+    "mp_per_eval": -360,
+    "mp_passes": 0.92,
+    "net": -412,
+    "per_month": -34,
+    "pf": 0.96,
+    "dd": -4075,
+    "tpw": 2.5,
+    "sig_tpw": 4.84,
+    "sig_wk2": 94.3,
+    "n": 129,
+    "fund_paid_3m": 190,
+    "by_src": {
+     "EMA": [
+      72,
+      -439
+     ],
+     "MD": [
+      30,
+      -299
+     ],
+     "SR": [
+      27,
+      326
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 22.1,
+    "f10": 0.0,
+    "s10": 23.9,
+    "dead10": 23.9,
+    "dec10": 46.0,
+    "p15": 25.4,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 2.4,
+    "mp_net_less_fees": -275,
+    "mp_per_eval": -12,
+    "mp_passes": 6.69,
+    "net": 9148,
+    "per_month": 236,
+    "pf": 1.21,
+    "dd": -5802,
+    "tpw": 3.21,
+    "sig_tpw": 5.37,
+    "sig_wk2": 99.4,
+    "n": 522,
+    "fund_paid_3m": 246,
+    "by_src": {
+     "EMA": [
+      253,
+      6634
+     ],
+     "MD": [
+      150,
+      1229
+     ],
+     "SR": [
+      119,
+      1285
+     ]
+    }
+   }
+  },
+  "desc": "LIT already lost today: ATLAS x0.5 (avoid a double-loss day)"
+ },
+ "idea:lit_lost_today_up125": {
+  "fam": "idea",
+  "name": "lit_lost_today_up125",
+  "verdict": {
+   "h1": false,
+   "h2": false,
+   "both": false,
+   "ref": "-",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 63.9,
+    "f10": 0.0,
+    "s10": 0.8,
+    "dead10": 0.8,
+    "dec10": 64.7,
+    "p15": 74.6,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 4.3,
+    "mp_net_less_fees": 9395,
+    "mp_per_eval": 1554,
+    "mp_passes": 5.0,
+    "net": 6813,
+    "per_month": 1118,
+    "pf": 2.37,
+    "dd": -926,
+    "tpw": 2.11,
+    "sig_tpw": 4.38,
+    "sig_wk2": 96.3,
+    "n": 54,
+    "fund_paid_3m": 1842,
+    "by_src": {
+     "EMA": [
+      29,
+      2658
+     ],
+     "MD": [
+      14,
+      1812
+     ],
+     "SR": [
+      11,
+      2343
+     ]
+    }
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "p15": 54.7,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 9.3,
+    "mp_net_less_fees": 2011,
+    "mp_per_eval": 832,
+    "mp_passes": 1.42,
+    "net": 4434,
+    "per_month": 1194,
+    "pf": 3.18,
+    "dd": -816,
+    "tpw": 1.6,
+    "sig_tpw": 3.27,
+    "sig_wk2": 93.8,
+    "n": 25,
+    "fund_paid_3m": 1349,
+    "by_src": {
+     "EMA": [
+      12,
+      2956
+     ],
+     "MD": [
+      5,
+      477
+     ],
+     "SR": [
+      8,
+      1001
+     ]
+    }
+   },
+   "2025": {
+    "p10": 29.3,
+    "f10": 0.0,
+    "s10": 23.7,
+    "dead10": 23.7,
+    "dec10": 53.0,
+    "p15": 31.6,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 4.8,
+    "mp_net_less_fees": -1684,
+    "mp_per_eval": -371,
+    "mp_passes": 0.81,
+    "net": -546,
+    "per_month": -44,
+    "pf": 0.94,
+    "dd": -4209,
+    "tpw": 2.36,
+    "sig_tpw": 4.84,
+    "sig_wk2": 94.3,
+    "n": 122,
+    "fund_paid_3m": 190,
+    "by_src": {
+     "EMA": [
+      70,
+      -284
+     ],
+     "MD": [
+      31,
+      -447
+     ],
+     "SR": [
+      21,
+      185
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 22.7,
+    "f10": 0.0,
+    "s10": 28.7,
+    "dead10": 28.7,
+    "dec10": 51.4,
+    "p15": 25.2,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 3.3,
+    "mp_net_less_fees": -3843,
+    "mp_per_eval": -143,
+    "mp_passes": 7.18,
+    "net": -2244,
+    "per_month": -58,
+    "pf": 0.96,
+    "dd": -7693,
+    "tpw": 3.16,
+    "sig_tpw": 5.37,
+    "sig_wk2": 99.4,
+    "n": 515,
+    "fund_paid_3m": 246,
+    "by_src": {
+     "EMA": [
+      255,
+      5751
+     ],
+     "MD": [
+      142,
+      -2628
+     ],
+     "SR": [
+      118,
+      -5367
+     ]
+    }
+   }
+  },
+  "desc": "LIT already lost today: ATLAS x1.25"
+ },
+ "idea:lit_won_today_up125": {
+  "fam": "idea",
+  "name": "lit_won_today_up125",
+  "verdict": {
+   "h1": true,
+   "h2": false,
+   "both": false,
+   "ref": "-",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 65.5,
+    "f10": 0.0,
+    "s10": 0.8,
+    "dead10": 0.8,
+    "dec10": 66.3,
+    "p15": 73.7,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 3.3,
+    "mp_net_less_fees": 9060,
+    "mp_per_eval": 1522,
+    "mp_passes": 4.91,
+    "net": 6470,
+    "per_month": 1061,
+    "pf": 2.29,
+    "dd": -926,
+    "tpw": 1.99,
+    "sig_tpw": 4.38,
+    "sig_wk2": 96.3,
+    "n": 51,
+    "fund_paid_3m": 1842,
+    "by_src": {
+     "EMA": [
+      27,
+      2654
+     ],
+     "MD": [
+      13,
+      1871
+     ],
+     "SR": [
+      11,
+      1946
+     ]
+    }
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "p15": 54.7,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 13.3,
+    "mp_net_less_fees": 2029,
+    "mp_per_eval": 839,
+    "mp_passes": 1.42,
+    "net": 4434,
+    "per_month": 1194,
+    "pf": 3.18,
+    "dd": -816,
+    "tpw": 1.6,
+    "sig_tpw": 3.27,
+    "sig_wk2": 93.8,
+    "n": 25,
+    "fund_paid_3m": 1349,
+    "by_src": {
+     "EMA": [
+      12,
+      2956
+     ],
+     "MD": [
+      5,
+      477
+     ],
+     "SR": [
+      8,
+      1001
+     ]
+    }
+   },
+   "2025": {
+    "p10": 29.7,
+    "f10": 0.0,
+    "s10": 23.7,
+    "dead10": 23.7,
+    "dec10": 53.4,
+    "p15": 32.0,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 2.4,
+    "mp_net_less_fees": -1932,
+    "mp_per_eval": -421,
+    "mp_passes": 0.77,
+    "net": -2140,
+    "per_month": -174,
+    "pf": 0.81,
+    "dd": -5803,
+    "tpw": 2.54,
+    "sig_tpw": 4.84,
+    "sig_wk2": 94.3,
+    "n": 131,
+    "fund_paid_3m": 190,
+    "by_src": {
+     "EMA": [
+      75,
+      -682
+     ],
+     "MD": [
+      33,
+      -804
+     ],
+     "SR": [
+      23,
+      -654
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 22.9,
+    "f10": 0.0,
+    "s10": 27.6,
+    "dead10": 27.6,
+    "dec10": 50.5,
+    "p15": 25.6,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 3.8,
+    "mp_net_less_fees": -1974,
+    "mp_per_eval": -72,
+    "mp_passes": 8.65,
+    "net": -137,
+    "per_month": -4,
+    "pf": 1.0,
+    "dd": -6708,
+    "tpw": 3.1,
+    "sig_tpw": 5.37,
+    "sig_wk2": 99.4,
+    "n": 504,
+    "fund_paid_3m": 246,
+    "by_src": {
+     "EMA": [
+      252,
+      5362
+     ],
+     "MD": [
+      141,
+      -2420
+     ],
+     "SR": [
+      111,
+      -3079
+     ]
+    }
+   }
+  },
+  "desc": "LIT already won today: ATLAS x1.25 (house money)"
+ },
+ "idea:lit_won_today_dn075": {
+  "fam": "idea",
+  "name": "lit_won_today_dn075",
+  "verdict": {
+   "h1": false,
+   "h2": true,
+   "both": false,
+   "ref": "-",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 65.5,
+    "f10": 0.0,
+    "s10": 3.4,
+    "dead10": 3.4,
+    "dec10": 68.9,
+    "p15": 75.4,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 4.2,
+    "mp_net_less_fees": 7962,
+    "mp_per_eval": 1390,
+    "mp_passes": 4.68,
+    "net": 4811,
+    "per_month": 789,
+    "pf": 1.93,
+    "dd": -919,
+    "tpw": 2.11,
+    "sig_tpw": 4.38,
+    "sig_wk2": 96.3,
+    "n": 54,
+    "fund_paid_3m": 1842,
+    "by_src": {
+     "EMA": [
+      30,
+      2311
+     ],
+     "MD": [
+      13,
+      956
+     ],
+     "SR": [
+      11,
+      1544
+     ]
+    }
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "p15": 54.7,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 15.2,
+    "mp_net_less_fees": 2256,
+    "mp_per_eval": 873,
+    "mp_passes": 1.58,
+    "net": 4440,
+    "per_month": 1195,
+    "pf": 3.03,
+    "dd": -809,
+    "tpw": 1.67,
+    "sig_tpw": 3.27,
+    "sig_wk2": 93.8,
+    "n": 26,
+    "fund_paid_3m": 1349,
+    "by_src": {
+     "EMA": [
+      12,
+      3094
+     ],
+     "MD": [
+      5,
+      477
+     ],
+     "SR": [
+      9,
+      870
+     ]
+    }
+   },
+   "2025": {
+    "p10": 28.9,
+    "f10": 0.0,
+    "s10": 20.1,
+    "dead10": 20.1,
+    "dec10": 49.0,
+    "p15": 33.2,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 1.2,
+    "mp_net_less_fees": -2055,
+    "mp_per_eval": -465,
+    "mp_passes": 0.65,
+    "net": -5817,
+    "per_month": -473,
+    "pf": 0.42,
+    "dd": -5817,
+    "tpw": 2.29,
+    "sig_tpw": 4.84,
+    "sig_wk2": 94.3,
+    "n": 118,
+    "fund_paid_3m": 190,
+    "by_src": {
+     "EMA": [
+      67,
+      -1995
+     ],
+     "MD": [
+      31,
+      -2848
+     ],
+     "SR": [
+      20,
+      -974
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 21.5,
+    "f10": 0.0,
+    "s10": 26.0,
+    "dead10": 26.0,
+    "dec10": 47.5,
+    "p15": 24.1,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 2.5,
+    "mp_net_less_fees": -3167,
+    "mp_per_eval": -142,
+    "mp_passes": 6.33,
+    "net": -255,
+    "per_month": -7,
+    "pf": 0.99,
+    "dd": -9718,
+    "tpw": 2.92,
+    "sig_tpw": 5.37,
+    "sig_wk2": 99.4,
+    "n": 475,
+    "fund_paid_3m": 246,
+    "by_src": {
+     "EMA": [
+      248,
+      5948
+     ],
+     "MD": [
+      127,
+      -2967
+     ],
+     "SR": [
+      100,
+      -3235
+     ]
+    }
+   }
+  },
+  "desc": "LIT already won today: ATLAS x0.75"
+ },
+ "idea:with_lit_up125": {
+  "fam": "idea",
+  "name": "with_lit_up125",
+  "verdict": {
+   "h1": true,
+   "h2": false,
+   "both": false,
+   "ref": "-",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 65.5,
+    "f10": 0.0,
+    "s10": 0.8,
+    "dead10": 0.8,
+    "dec10": 66.3,
+    "p15": 75.4,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 3.2,
+    "mp_net_less_fees": 9329,
+    "mp_per_eval": 1629,
+    "mp_passes": 4.68,
+    "net": 6813,
+    "per_month": 1118,
+    "pf": 2.37,
+    "dd": -926,
+    "tpw": 2.11,
+    "sig_tpw": 4.38,
+    "sig_wk2": 96.3,
+    "n": 54,
+    "fund_paid_3m": 1842,
+    "by_src": {
+     "EMA": [
+      29,
+      2658
+     ],
+     "MD": [
+      14,
+      1812
+     ],
+     "SR": [
+      11,
+      2343
+     ]
+    }
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "p15": 54.7,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 9.3,
+    "mp_net_less_fees": 2011,
+    "mp_per_eval": 832,
+    "mp_passes": 1.42,
+    "net": 4434,
+    "per_month": 1194,
+    "pf": 3.18,
+    "dd": -816,
+    "tpw": 1.6,
+    "sig_tpw": 3.27,
+    "sig_wk2": 93.8,
+    "n": 25,
+    "fund_paid_3m": 1349,
+    "by_src": {
+     "EMA": [
+      12,
+      2956
+     ],
+     "MD": [
+      5,
+      477
+     ],
+     "SR": [
+      8,
+      1001
+     ]
+    }
+   },
+   "2025": {
+    "p10": 29.7,
+    "f10": 0.0,
+    "s10": 24.5,
+    "dead10": 24.5,
+    "dec10": 54.2,
+    "p15": 32.4,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 1.2,
+    "mp_net_less_fees": -2039,
+    "mp_per_eval": -357,
+    "mp_passes": 1.19,
+    "net": -1674,
+    "per_month": -136,
+    "pf": 0.85,
+    "dd": -4827,
+    "tpw": 2.31,
+    "sig_tpw": 4.84,
+    "sig_wk2": 94.3,
+    "n": 119,
+    "fund_paid_3m": 190,
+    "by_src": {
+     "EMA": [
+      64,
+      -730
+     ],
+     "MD": [
+      31,
+      -493
+     ],
+     "SR": [
+      24,
+      -450
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 22.9,
+    "f10": 0.0,
+    "s10": 29.1,
+    "dead10": 29.1,
+    "dec10": 52.0,
+    "p15": 25.6,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 3.3,
+    "mp_net_less_fees": -5374,
+    "mp_per_eval": -221,
+    "mp_passes": 6.0,
+    "net": -4547,
+    "per_month": -117,
+    "pf": 0.9,
+    "dd": -8571,
+    "tpw": 3.0,
+    "sig_tpw": 5.37,
+    "sig_wk2": 99.4,
+    "n": 489,
+    "fund_paid_3m": 246,
+    "by_src": {
+     "EMA": [
+      253,
+      1704
+     ],
+     "MD": [
+      123,
+      -1740
+     ],
+     "SR": [
+      113,
+      -4510
+     ]
+    }
+   }
+  },
+  "desc": "same direction as LIT's trade today x1.25"
+ },
+ "idea:against_lit_dn075": {
+  "fam": "idea",
+  "name": "against_lit_dn075",
+  "verdict": {
+   "h1": false,
+   "h2": true,
+   "both": false,
+   "ref": "-",
+   "freq": true,
+   "pass": false
+  },
+  "o": {
+   "H1": {
+    "p10": 65.5,
+    "f10": 0.0,
+    "s10": 3.4,
+    "dead10": 3.4,
+    "dec10": 68.9,
+    "p15": 76.3,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 3.2,
+    "mp_net_less_fees": 9863,
+    "mp_per_eval": 1550,
+    "mp_passes": 5.32,
+    "net": 9774,
+    "per_month": 1604,
+    "pf": 2.79,
+    "dd": -944,
+    "tpw": 2.58,
+    "sig_tpw": 4.38,
+    "sig_wk2": 96.3,
+    "n": 66,
+    "fund_paid_3m": 1842,
+    "by_src": {
+     "EMA": [
+      35,
+      4196
+     ],
+     "MD": [
+      16,
+      2623
+     ],
+     "SR": [
+      15,
+      2956
+     ]
+    }
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "s10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "p15": 54.7,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 15.2,
+    "mp_net_less_fees": 2213,
+    "mp_per_eval": 857,
+    "mp_passes": 1.58,
+    "net": 4440,
+    "per_month": 1195,
+    "pf": 3.03,
+    "dd": -809,
+    "tpw": 1.67,
+    "sig_tpw": 3.27,
+    "sig_wk2": 93.8,
+    "n": 26,
+    "fund_paid_3m": 1349,
+    "by_src": {
+     "EMA": [
+      12,
+      3094
+     ],
+     "MD": [
+      5,
+      477
+     ],
+     "SR": [
+      9,
+      870
+     ]
+    }
+   },
+   "2025": {
+    "p10": 30.5,
+    "f10": 0.0,
+    "s10": 20.5,
+    "dead10": 20.5,
+    "dec10": 51.0,
+    "p15": 32.8,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 2.4,
+    "mp_net_less_fees": -1982,
+    "mp_per_eval": -417,
+    "mp_passes": 0.83,
+    "net": -1465,
+    "per_month": -119,
+    "pf": 0.87,
+    "dd": -5128,
+    "tpw": 2.62,
+    "sig_tpw": 4.84,
+    "sig_wk2": 94.3,
+    "n": 135,
+    "fund_paid_3m": 190,
+    "by_src": {
+     "EMA": [
+      74,
+      84
+     ],
+     "MD": [
+      36,
+      -948
+     ],
+     "SR": [
+      25,
+      -601
+     ]
+    }
+   },
+   "2021-24": {
+    "p10": 22.1,
+    "f10": 0.0,
+    "s10": 25.6,
+    "dead10": 25.6,
+    "dec10": 47.7,
+    "p15": 24.9,
+    "f15": 0.0,
+    "pass_med": 4.0,
+    "slow_pass": 2.0,
+    "mp_net_less_fees": -2491,
+    "mp_per_eval": -103,
+    "mp_passes": 6.94,
+    "net": -844,
+    "per_month": -22,
+    "pf": 0.98,
+    "dd": -9094,
+    "tpw": 3.06,
+    "sig_tpw": 5.37,
+    "sig_wk2": 99.4,
+    "n": 498,
+    "fund_paid_3m": 246,
+    "by_src": {
+     "EMA": [
+      254,
+      5199
+     ],
+     "MD": [
+      138,
+      -4128
+     ],
+     "SR": [
+      106,
+      -1915
+     ]
+    }
+   }
+  },
+  "desc": "opposite to LIT's trade of the day x0.75"
+ }
+}

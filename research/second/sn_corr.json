@@ -1,0 +1,190 @@
+{
+ "sessions": 206,
+ "corr": {
+  "2026": {
+   "LIT ($, LIT size) x ATLAS ($500 risk)": 0.135,
+   "LIT ($, LIT size) x BLITZ ($150 risk)": -0.061,
+   "ATLAS ($500 risk) x BLITZ ($150 risk)": -0.001
+  },
+  "2026_R": {
+   "LIT x ATLAS": 0.2,
+   "LIT x BLITZ": -0.057,
+   "ATLAS x BLITZ": -0.001
+  },
+  "H1": {
+   "LIT ($, LIT size) x ATLAS ($500 risk)": 0.146,
+   "LIT ($, LIT size) x BLITZ ($150 risk)": -0.046,
+   "ATLAS ($500 risk) x BLITZ ($150 risk)": -0.022
+  },
+  "H1_R": {
+   "LIT x ATLAS": 0.242,
+   "LIT x BLITZ": -0.039,
+   "ATLAS x BLITZ": -0.022
+  },
+  "H2": {
+   "LIT ($, LIT size) x ATLAS ($500 risk)": 0.056,
+   "LIT ($, LIT size) x BLITZ ($150 risk)": -0.12,
+   "ATLAS ($500 risk) x BLITZ ($150 risk)": 0.055
+  },
+  "H2_R": {
+   "LIT x ATLAS": 0.058,
+   "LIT x BLITZ": -0.1,
+   "ATLAS x BLITZ": 0.055
+  }
+ },
+ "coloss": {
+  "2026": {
+   "sessions": 206,
+   "days_each_traded": [
+    120,
+    119,
+    88
+   ],
+   "days_each_lost": [
+    53,
+    44,
+    35
+   ],
+   "LIT+ATLAS lose together": 15,
+   "LIT+BLITZ lose together": 9,
+   "ATLAS+BLITZ lose together": 8,
+   "all three lose": 4,
+   "LIT+ATLAS both traded": 75,
+   "LIT+BLITZ both traded": 51,
+   "ATLAS+BLITZ both traded": 47,
+   "worst day LIT": -755,
+   "worst day ATLAS": -1074,
+   "worst day BLITZ": -450,
+   "worst day of the sum": -1616,
+   "sum of the three worst days alone": -2279
+  },
+  "H1": {
+   "sessions": 128,
+   "days_each_traded": [
+    80,
+    82,
+    60
+   ],
+   "days_each_lost": [
+    33,
+    31,
+    24
+   ],
+   "LIT+ATLAS lose together": 13,
+   "LIT+BLITZ lose together": 7,
+   "ATLAS+BLITZ lose together": 7,
+   "all three lose": 4,
+   "LIT+ATLAS both traded": 60,
+   "LIT+BLITZ both traded": 36,
+   "ATLAS+BLITZ both traded": 35,
+   "worst day LIT": -755,
+   "worst day ATLAS": -1052,
+   "worst day BLITZ": -450,
+   "worst day of the sum": -1616,
+   "sum of the three worst days alone": -2257
+  },
+  "H2": {
+   "sessions": 78,
+   "days_each_traded": [
+    40,
+    37,
+    28
+   ],
+   "days_each_lost": [
+    20,
+    13,
+    11
+   ],
+   "LIT+ATLAS lose together": 2,
+   "LIT+BLITZ lose together": 2,
+   "ATLAS+BLITZ lose together": 1,
+   "all three lose": 0,
+   "LIT+ATLAS both traded": 15,
+   "LIT+BLITZ both traded": 15,
+   "ATLAS+BLITZ both traded": 12,
+   "worst day LIT": -635,
+   "worst day ATLAS": -1074,
+   "worst day BLITZ": -315,
+   "worst day of the sum": -832,
+   "sum of the three worst days alone": -2023
+  }
+ },
+ "stopfit": {
+  "BLITZ": {
+   "trades": 323,
+   "stop_pts_p10_med_p90": [
+    33.4,
+    61.1,
+    102.6
+   ],
+   "risk_per_micro_p10_med_p90": [
+    69,
+    125,
+    208
+   ],
+   "share_1_micro_over_150": 0.316,
+   "share_1_micro_over_600": 0.0,
+   "micros_at_400_eval_p10_med_p90": [
+    1,
+    3,
+    5
+   ],
+   "share_20_micro_cap_binds_at_600": 0.0,
+   "share_zero_micros_at_400": 0.003,
+   "micros_at_150_funded": [
+    0,
+    1,
+    2
+   ],
+   "share_zero_micros_at_150": 0.316
+  },
+  "EMA": {
+   "trades": 76,
+   "stop_pts_p10_med_p90": [
+    16.1,
+    40.4,
+    58.2
+   ],
+   "micros_at_500_p10_med_p90": [
+    4,
+    5,
+    14
+   ],
+   "share_20_micro_cap_binds_at_500": 0.053,
+   "share_stop_over_60pts_(risk>$120 a micro)": 0.092,
+   "share_over_$600_for_1_micro": 0.0
+  },
+  "MD": {
+   "trades": 43,
+   "stop_pts_p10_med_p90": [
+    21.7,
+    41.5,
+    74.9
+   ],
+   "micros_at_500_p10_med_p90": [
+    3,
+    5,
+    10
+   ],
+   "share_20_micro_cap_binds_at_500": 0.0,
+   "share_stop_over_60pts_(risk>$120 a micro)": 0.326,
+   "share_over_$600_for_1_micro": 0.0
+  },
+  "SR": {
+   "trades": 44,
+   "stop_pts_p10_med_p90": [
+    32.3,
+    58.1,
+    71.4
+   ],
+   "micros_at_500_p10_med_p90": [
+    3,
+    4,
+    7
+   ],
+   "share_20_micro_cap_binds_at_500": 0.0,
+   "share_stop_over_60pts_(risk>$120 a micro)": 0.455,
+   "share_over_$600_for_1_micro": 0.0
+  }
+ }
+}

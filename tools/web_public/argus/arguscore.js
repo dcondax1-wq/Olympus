@@ -130,7 +130,7 @@ function pipeEyes(home, cronos, now, cards) {
     // cronos/status.json is not published on the site: the cards CRONOS stamps (card.cronos.state) say the same thing
     const st = Object.entries(obj(cards)).filter(([, c]) => isObj(c) && isObj(c.cronos) && c.cronos.state);
     const late = st.filter(([, c]) => c.cronos.state !== 'fresh').map(([id]) => id);
-    if (!st.length) out.push(eye('cronos', 'pipes', 'CRONOS nightly', 'idle', 'no data', 'No CRONOS status on the site yet.', '', 40));
+    if (!st.length) out.push(eye('cronos', 'pipes', 'CRONOS nightly', 'idle', 'not published yet', 'Not published yet: the nightly CRONOS status file is not on the site, and no app card carries its stamp.', '', 40));
     else if (late.length) out.push(eye('cronos', 'pipes', 'CRONOS nightly', 'warn', `${late[0]} late`, `Not refreshed on time: ${late.join(', ')}.`, 'Ask Claude to check the CRONOS nightly workflow.', 40));
     else out.push(eye('cronos', 'pipes', 'CRONOS nightly', 'ok', 'refreshed', `All ${st.length} nightly cards say fresh (newest check ${ageText(now - Math.max(...st.map(([, c]) => num(c.cronos.checked_t) || 0)))} ago).`, '', 40));
   }
@@ -316,4 +316,69 @@ export function cardOf(R, now) {
     kpis: [{ label: 'Red', value: String(c.bad) }, { label: 'Amber', value: String(c.warn) }, { label: 'Green', value: String(c.ok) }],
     lines: R.fix.slice(0, 3).map((e) => `${e.label}: ${e.step || e.detail}`.slice(0, 118)).concat(R.fix.length ? [] : ['Every light that matters is green.']),
     t: Math.floor(now), open: '#fix', theme: '#050912', stale_after: 1800 };
+}
+
+// ---------------------------------------------------------------------------------------------- JOB 4+5 follow-up (2026-11-04): money view
+// demoData (a recorded healthy day relative to "now", for the empty state's "See it with demo data"), readiness (can the bot trade today:
+// the gates in plain words with a countdown to the 02:00 ET entry window), moneyLines (the two evals' drawdown left "$X of $max loss", the
+// inactivity clock, the pace), blindCost (what the red lights of the last 14 days cost in entry-window hours and trades at risk).
+// Read only: nothing here talks to a bot, a broker or an order.
+
+/** a recorded healthy day with one amber (ATLAS has been quiet for 4 days); every time is relative to `now` so the lights read as live */
+export function demoData(now) {
+  const t = Math.floor(now);
+  const home = {
+    built: new Date((t - 600) * 1000).toISOString(),
+    live: { last_run: t - 300, pc: { running: true, health: { running: true, account: { armed: true } } } },
+    board: {
+      data_t: t - 60, running: true,
+      lit: { status: 'open', blocks: [], quiet_days: 1, room: 1805, mll: 2000, floor: 48100, balance: 49905, session: 5, sessions: 10, to_target: 3095 },
+      atlas: { status: 'open', blocks: [], quiet_days: 4, room: 640, mll: 1000, floor: 24000, balance: 24640, session: 5, sessions: 10, to_target: 860 },
+      health: { items: [
+        { key: 'age_1m_s', label: 'Feed 1m', value: '50 s', ok: true, warn: false, detail: 'ninjatrader bars, 50 s old' },
+        { key: 'nt', label: 'NinjaTrader', value: 'connected', ok: true, warn: false, detail: 'Sim101 connected' }] },
+    },
+  };
+  const tasks = {};
+  for (const k of Object.keys(CRONOS_JOBS)) tasks[k] = { ok: true, last_ok_t: t - 6 * 3600, last_run_t: t - 6 * 3600 };
+  const cards = {};
+  for (const [id, name] of APPS) cards[id] = { v: 1, name, status: { level: 'ok', label: 'ok' }, t: t - 7200, stale_after: 7 * 86400 };
+  return { home, cronos: { tasks }, cards, hist: { days: Object.fromEntries([1, 2, 3, 4, 5, 6].map((i) => [dayOf(t - i * 86400), i === 3 ? 'warn' : 'ok'])), open: {}, reds: [{ id: 'pc', label: 'PC bot', from: t - 9 * 86400 + 3600, to: t - 9 * 86400 + 3 * 3600 }] } };
+}
+
+const GATES = [['pc', 'The PC bot is running'], ['feed', 'Fresh prices (NinjaTrader bars)'], ['nt', 'NinjaTrader is connected'], ['cloud', 'The cloud monitor is running'], ['bot_lit', 'Zlarior can take a trade'], ['bot_atlas', 'ATLAS can take a trade']];
+/** can the bot trade today: each gate green / not, the blockers in order, the countdown to the entry window (02:00-15:30 ET) */
+export function readiness(R, now) {
+  const by = (id) => R.eyes.find((e) => e.id === id) || R.eyes.find((e) => e.id.startsWith(id));
+  const gates = GATES.map(([id, label]) => {
+    const e = by(id) || (id === 'feed' ? R.eyes.find((x) => x.group === 'feed') : null);
+    return { id, label, level: e ? e.level : 'idle', value: e ? e.value : 'no reading', step: e ? (e.step || e.fix || '') : '', ok: !!e && (e.level === 'ok' || e.level === 'idle') && e.level !== 'bad' && e.level !== 'warn' };
+  });
+  const blockers = gates.filter((g) => g.level === 'bad' || g.level === 'warn');
+  const p = et(now), hd = p.h + p.m / 60, wk = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].includes(p.wd), mins = wk ? (hd < 2 ? (2 - hd) * 60 : hd < 15.5 ? 0 : (p.wd === 'Fri' ? null : (24 - hd + 2) * 60)) : null;
+  const ready = R.hasData && !blockers.some((g) => g.level === 'bad');
+  const when = mins == null ? 'The market is closed: the bot waits for the next open.' : mins === 0 ? 'The entry window is open now (until 15:30 ET).' : `The entry window opens at 02:00 ET, in ${ageText(mins * 60)}.`;
+  return { ready, gates, blockers, mins, when, plain: !R.hasData ? 'No data yet: I cannot say whether the bot can trade.' : ready ? (blockers.length ? `The bot can trade, but ${blockers.length} light${blockers.length === 1 ? ' needs' : 's need'} a look.` : 'Every gate is green: the bot can trade.') : `The bot cannot trade right now: ${blockers.filter((g) => g.level === 'bad')[0].label.toLowerCase()} is red.` };
+}
+
+/** the two evals in money words (from the same lights as the rest of the page): "Drawdown left $X of $max loss", the inactivity clock, the pace */
+export function moneyLines(R) {
+  const out = [];
+  for (const [key, label, mll0] of [['lit', 'Zlarior 50K', 2000], ['atlas', 'ATLAS 25K', 1000]]) {
+    const room = R.eyes.find((e) => e.id === 'room_' + key), q = R.eyes.find((e) => e.id === 'quiet_' + key);
+    const roomN = room && /\$/.test(room.value) ? +room.value.replace(/[^0-9.-]/g, '') : null;
+    const m = room && room.detail ? /\(of \$([0-9,]+)\)/.exec(room.detail) : null, mll = m ? +m[1].replace(/,/g, '') : mll0;
+    out.push({ key, label, has: roomN != null, room: roomN, mll, frac: roomN != null ? Math.max(0, Math.min(1, roomN / mll)) : null, level: room ? room.level : 'idle',
+      ddText: roomN != null ? (roomN > mll ? `Drawdown left ${usd(roomN)} (floor locked, max loss ${usd(mll)})` : `Drawdown left ${usd(roomN)} of ${usd(mll)} max loss`) : 'Drawdown: no balance yet',
+      quiet: q ? q.value : 'no data', quietLevel: q ? q.level : 'idle', quietText: q ? q.detail : '' });
+  }
+  return out;
+}
+
+/** what red lights cost: the red time of the last 14 days, how much of it fell in the 13.5 h entry window (an estimate: red time x 13.5/24),
+ *  and the trades that may have been missed at the bot's 2-4 a week (0.6 a day) */
+export function blindCost(H, now) {
+  const S = histSummary(H, now), secs = S.reds.reduce((a, r) => a + r.secs, 0), hrs = secs / 3600, inWin = hrs * (13.5 / 24), missed = (inWin / 13.5) * 0.6;
+  return { incidents: S.reds.length, hours: hrs, windowHours: inWin, missed, seen: S.seen,
+    plain: !S.seen ? 'No history yet: I start counting the first time I see the dashboard.' : S.reds.length ? `${S.reds.length} red incident${S.reds.length === 1 ? '' : 's'} in 14 days, ${hrs.toFixed(1)} hours in all: roughly ${inWin.toFixed(1)} hours of the entry window, ${missed < 0.5 ? 'less than one trade' : 'about ' + missed.toFixed(1) + ' trades'} at risk of being missed (an estimate at 2-4 trades a week).` : 'No red hours in the last 14 days: the bot was never blind.' };
 }

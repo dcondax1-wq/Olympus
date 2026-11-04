@@ -45,13 +45,37 @@ APPS = {
     "prometheus": ("?demo=1", "forge.js", None),
     "tyche": ("?demo=1", "main.js", "#quality"),
 }
-# the perf budget per app (390 x 844, HD, SwiftShader): draw calls and triangles per frame (three.js renderer.info), the JS
-# heap, layouts per frame (one at most: DOM writes batched, never a read after a write in the frame loop). Measured on
-# 2026-11-03 with ~25% headroom; docs/OLYMPUS_DESIGN.md has the table.
-BUDGET = {
-    "datacity": (120, 700_000), "mind": (30, 20_000), "tree": (0, 0), "oracle": (170, 10_000), "odeon": (60, 60_000),
-    "fates": (64, 40_000), "hermes": (0, 0), "prometheus": (40, 7_500), "tyche": (270, 30_000),   # render core adopted 2026-11-03: measured 31 calls / 6,054 tris and 216 calls / 24,590 tris, +20%
+# THE perf budget: one table, one run mode (2026-11-04). Every app is measured on the HD tier: the page is opened with ?gpu=1, which lifts the render core's
+# software-GL cap (SwiftShader would otherwise hold every app to LITE and hide the bloom / finish passes and the HD pixel ratio), with the OLYMPUS level forced
+# to 'high' (jfx) and generous waits (a busy shared box needs a minute to load a page). Draw calls and triangles per frame (three.js renderer.info) are portable;
+# fps is not and is never judged. The budget is the measure + 25%, from `python tools/...`-free scratch runs of the same code path (docs/OLYMPUS_DESIGN.md has the
+# table with the measures). The JS heap (HEAP_MB) and layouts per frame (LAYOUTS_PER_FRAME: DOM writes batched, never a read after a write in the frame loop) hold for all.
+# arena: 2026-11-04 crowd LOD (olympus/scenery.js detail 'low' = 40 tris a spectator, 60% of the seats on a phone, a lighter arcade): HD phone scene ~258k -> 60k triangles.
+#   app: (page query, budget calls, budget triangles)     calls 0 = no three.js scene (the heap only)
+PERF = {
+    "mind": ("", 44, 1_500), "tree": ("", 35, 60_000), "oracle": ("?demo=1", 200, 17_000), "odeon": ("?demo=1&autoplay=1", 53, 35_000), "fates": ("", 69, 26_500),
+    "hermes": ("#week,demo", 0, 0), "prometheus": ("?demo=1", 66, 9_000), "tyche": ("?demo=1", 275, 30_700),
+    "nemesis": ("?demo=1", 68, 30_000), "athena": ("?demo=1", 77, 7_900), "argus": ("?demo=1", 32, 118_500), "chronos": ("?demo=1", 84, 22_900),
+    "cities": ("?demo=1", 27, 163_600), "kalshicity": ("?demo=1", 102, 52_200), "labyrinth": ("?demo=1", 60, 8_800), "hephaestus": ("?demo=1", 49, 5_500),
+    "pantheon": ("?demo=1", 108, 31_600), "arena": ("?demo=1", 150, 75_000), "forum": ("?demo=1", 140, 9_000), "plutus": ("?demo=1", 24, 6_000),
+    "ares": ("?demo=1", 50, 7_800), "kalshi": ("?demo=1", 0, 0),
+    "datacity": ("", 120, 700_000),                                 # its own tiers are held by DATACITY_TIERS below
 }
+BUDGET = {a: (c, t) for a, (_, c, t) in PERF.items() if a in APPS}                      # the apps with a full kit case (test_app)
+MORE = {a: v for a, v in PERF.items() if a not in APPS}                                 # the others: the budget alone (test_more)
+
+
+def hd(q):
+    """the one run mode: the page query with ?gpu=1 added"""
+    return ("?gpu=1" + q) if q.startswith("#") else ("?gpu=1" if not q else q + "&gpu=1")
+
+
+# Data City by tier (2026-11-04, datacity/caps.js, docs/OLYMPUS_PERF.md): the page forces the tier with ?q= and the device hint with ?phone=; (calls, triangles) at the far
+# overview and at the close-up of the densest district, measured at 390 x 844 / dpr 3 under SwiftShader + ~20% headroom. "phone-high" = a phone at the high tier (the
+# phone-safe preset), "ultra" = a PC at ultra (the full city). The heap budget is HEAP_MB for phone-high.
+# (query, calls, triangles at the worst of the load view and the close-up, calls at the FAR overview: camera 380 units out, the view a phone opens on).
+# 2026-11-04 after the landmark meshes were merged (52 -> 15 draws) and the overview-only details hidden on phones: phone-high far overview 59 calls (was 78), worst 71.
+DATACITY_TIERS = {"phone-high": ("?q=high&phone=1", 80, 250_000, 60), "ultra": ("?q=ultra&phone=0", 110, 700_000, 100)}
 HEAP_MB, LAYOUTS_PER_FRAME = 40, 1.25   # 1.25: room for the day-sprint HUDs (Odeon 1.11 under load)
 
 COUNT_DRAWS = """
@@ -92,9 +116,34 @@ def test_static():
     js, css = read(os.path.join(KIT, "olympus.js")), read(os.path.join(KIT, "olympus.css"))
     arena = read(os.path.join(os.path.dirname(KIT), "arena", "main.js"))
     check("a. OLYMPUS.sfx(name): loads olympus/sfx.js lazily, never throws, no-op when missing or when the host says it is quiet (OLYMPUS_QUIET); Arena plays rankup through it, guarded",
-          all(x in js for x in ("sfx: function (name)", "window.OLYMPUS_QUIET", "'sfx.js?v=s1'", "k.play(name)")) and "O.sfx('rankup')" in arena and "O && O.sfx" in arena)
+          all(x in js for x in ("sfx: function (name)", "window.OLYMPUS_QUIET", "'sfx.js?v=s2'", "k.play(name)")) and "O.sfx('rankup')" in arena and "O && O.sfx" in arena)
     check("a. the kit: olympus.js reads and writes 'jfx' (Jarvis's key), caps the pixel ratio, pauses on a hidden tab",
           "KEY = 'jfx'" in js and "level === 'off' ? 1 : l ? 1.5 : 2" in js and "visibilityState" in js)
+    render = read(os.path.join(KIT, "render.js"))
+    check("a. power (docs/OLYMPUS_PERF.md): the kit has saver() (battery API, Save-Data, the owner's 'olympus.saver'), idle(), frameGap(), covered(); hidden() includes covered",
+          all(x in js for x in ("getBattery", "saveData", "'olympus.saver'", "frameGap: function", "idle: function", "covered: function", "|| covered;", "data-oly-covered", "e.origin === location.origin")))
+    check("a. the render core keeps the kit's frame gap (30 fps idle on high, 15 on low), never steps down because of its own cap, caps the pixel ratio at 1.5 in saver, sleeps when covered",
+          all(x in render for x in ("O.frameGap", "gap + 9", "saver ? 1.5 : 9", "pageHidden()", "O.onPower"))
+          and all(x in js for x in ("idle ? (level === 'low' ? 66 : 33) : 0", "idle ? 500 : 0", "saverNow()) return idle ? 66 : 33")))
+    check("a. ambience: every app of the kit has a bed in the AMBIENT table, each bed exists in sfx.js, none starts before a gesture or when muted / saver / Jarvis talks",
+          all(f"{a}:" in js.split("var AMBIENT = {")[1].split("};")[0] for a in list(APPS) + list(MORE) + ["bridge"]) and "OLYMPUS_QUIET" in js
+          and all(f"{b}: function" in read(os.path.join(KIT, "sfx.js")) for b in ("wind", "forge", "sea", "city", "forest", "crowd", "chimes", "space")))
+    own = ["tree/app.js", "hermes/fx.js", "hermes/app.js", "tyche/main.js", "ares/ares.js", "plutus/plutus.js", "pantheon/pantheon.js", "forum/scene.js",
+           "kalshicity/cityscene.js", "mind/main.js", "athena/athena.js", "oracle/main.js", "odeon/app.js", "prometheus/forge.js", "argus/argus.js", "datacity/city.js",
+           "fates/fates.js", "labyrinth/scene.js", "hephaestus/scene.js", "arena/scene.js", "nemesis/scene.js", "chronos/scene.js", "chronos/chronos.js"]
+    miss = [f for f in own if "frameGap" not in read(os.path.join(WEB, *f.split("/")))]
+    check("a. every own frame loop (tree, hermes x2, tyche, ares, plutus, pantheon, forum, kalshicity, mind, athena, fates, labyrinth, hephaestus, arena, nemesis, chronos x2) keeps the kit's frame gap (idle / saver / Off) and sleeps hidden or covered", not miss, miss)
+    scen = read(os.path.join(KIT, "scenery.js"))
+    check("a. the shared crowd is low-poly by default (detail 'low' = 40 triangles a spectator, 'full' keeps the capsules) and thins evenly (density); the Arena asks for 60% on a phone",
+          all(x in scen for x in ("detail = 'low'", "density = 1", "low ? new THREE.CylinderGeometry", "SphereGeometry(0.115, 4, 2)")) and "density: Math.min(innerWidth, innerHeight) < 600 ? 0.6 : 1" in read(os.path.join(WEB, "arena", "dress.js")))
+    off_tier = [f for f in ("oracle/scene.js", "odeon/scene.js", "fates/fates-scene.js") if "=== 'off' ? 'off'" not in read(os.path.join(WEB, *f.split("/")))]
+    check("a. oracle, odeon and fates: 3D Off is the core's 'off' tier (not forced to low by the software cap)", not off_tier, off_tier)
+    ath = read(os.path.join(WEB, "athena", "athena.js"))
+    check("a. athena's shelves are instanced (books, strips, scrolls, caps: InstancedMesh), tyche's 3D Off is the core's 'off' tier",
+          ath.count("InstancedMesh(") == 1 and "instanceColor" in ath and "O.fx() === 'off' ? 'off'" in read(os.path.join(WEB, "tyche", "scene.js")))
+    jv = read(os.path.join(WEB, "jarvis", "index.html"))
+    check("a. Jarvis tells a framed app when a sheet covers it: { olympus: 'covered', on } on open and close (delimited block in index.html)",
+          "==== OLYMPUS covered" in jv and "==== end OLYMPUS covered" in jv and "{ olympus: 'covered', on }, location.origin" in jv)
     jarvis = read(os.path.join(WEB, "jarvis", "index.html"))
     check("a. Jarvis keeps its 3D level in the same 'jfx' key with the same four levels",
           "g('jfx')" in jarvis and "rawSet('jfx', level)" in jarvis and "['ultra', 'high', 'low', 'off']" in jarvis)
@@ -107,7 +156,7 @@ def test_static():
     check("a. the veil never takes a tap", re.search(r"\.oly-veil \{[^}]*pointer-events: none", css))
     for app, (_, entry, _) in APPS.items():
         html = read(os.path.join(WEB, app, "index.html"))
-        i_css, i_js = html.find("../olympus/olympus.css"), html.find(f'../olympus/olympus.js?v=o2" data-app="{app}"')
+        i_css, i_js = html.find("../olympus/olympus.css"), html.find(f'../olympus/olympus.js?v=o3" data-app="{app}"')
         own = [m.start() for m in re.finditer(r'<link rel="stylesheet" href="(?!\.\./olympus)', html)] + [html.find("<style>")]
         mods = [m.start() for m in re.finditer(r'<script type="module"', html)]
         code = "".join(read(p) for p in glob.glob(os.path.join(WEB, app, "*.js")))
@@ -143,7 +192,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def translate_path(self, path):
         p = path.split("?")[0].split("#")[0]
         top = p.lstrip("/").split("/")[0]
-        if top in APPS or top in ("jarvis", "olympus"):
+        if top in APPS or top in MORE or top in ("jarvis", "olympus"):
             q = p.lstrip("/")
             if q.endswith("/"):
                 q += "index.html"
@@ -157,10 +206,11 @@ def serve():
     return srv, f"http://127.0.0.1:{srv.server_address[1]}"
 
 
+from tests import browser_kit as BK  # noqa: E402  (shared launch: one reused browser, load-scaled timeouts, one retry of a flaky wait)
+
+
 def launch(pw):
-    exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
-    return pw.chromium.launch(args=["--enable-unsafe-swiftshader", "--ignore-gpu-blocklist", "--enable-precise-memory-info"],
-                              **({"executable_path": exe} if exe else {}))
+    return BK.launch(pw, args=["--enable-unsafe-swiftshader", "--ignore-gpu-blocklist", "--enable-precise-memory-info"])
 
 
 def page(br, origin, fx=None, reduced=False):
@@ -171,16 +221,17 @@ def page(br, origin, fx=None, reduced=False):
     init += f"try {{ localStorage.setItem('jfx', {json.dumps(fx)}); }} catch (e) {{}}" if fx else "try { localStorage.removeItem('jfx'); } catch (e) {}"
     ctx.add_init_script(init)
     p = ctx.new_page()
+    p.set_default_timeout(150000)                  # a busy shared box (software GL) can take a minute or two to load a page
     errs: list = []
     p.on("pageerror", lambda e: errs.append(str(e)))
     p.on("console", lambda m: errs.append(m.text) if m.type == "error" else None)
     return ctx, p, errs
 
 
-def wait_ready(p, ms=40000):
+def wait_ready(p, ms=120000):
     try:
         p.wait_for_function("() => window.OLYMPUS && OLYMPUS.state() === 'ready'", timeout=ms)
-        p.wait_for_function("() => !document.querySelector('.oly-veil')", timeout=3000)
+        p.wait_for_function("() => !document.querySelector('.oly-veil')", timeout=30000)   # software GL: the fade runs on ~1 frame/s
         return True
     except Exception:
         return False
@@ -192,7 +243,7 @@ def metrics(cdp):
 
 def test_app(br, origin, app, table):
     q, entry, qbtn = APPS[app]
-    url = f"{origin}/{app}/{q}"
+    url = f"{origin}/{app}/{hd(q)}"
     # ---- b. high + the veil + e. perf
     ctx, p, errs = page(br, origin, fx="high")
     p.goto(url)
@@ -213,6 +264,10 @@ def test_app(br, origin, app, table):
     cdp.send("Performance.enable")
     m0, f0 = metrics(cdp), p.evaluate("window.__frames")
     p.wait_for_timeout(2000)
+    for _ in range(20):                                    # software GL on a busy box draws ~1 frame/s: measure over at least 8 frames (layouts per FRAME is the claim)
+        if p.evaluate("window.__frames") - f0 >= 8:
+            break
+        p.wait_for_timeout(2000)
     m1, f1 = metrics(cdp), p.evaluate("window.__frames")
     frames = max(1, f1 - f0)
     lpf = (m1.get("LayoutCount", 0) - m0.get("LayoutCount", 0)) / frames
@@ -222,7 +277,7 @@ def test_app(br, origin, app, table):
     row = {"app": app, "three": s.get("three"), "calls": s.get("calls"), "triangles": s.get("triangles"), "points": s.get("points"),
            "geometries": s.get("geometries"), "textures": s.get("textures"), "programs": s.get("programs"),
            "pixelRatio": s.get("pixelRatio"), "heap_mb": round(heap, 1), "layouts_per_frame": round(lpf, 2), "styles_per_frame": round(spf, 2),
-           "fps_headless": round(frames / 2, 1)}
+           "frames_measured": frames}
     table.append(row)
     calls, tris = BUDGET[app]
     within = (not s.get("three") or (s["calls"] <= calls and s["triangles"] <= tris)) and heap <= HEAP_MB and lpf <= LAYOUTS_PER_FRAME
@@ -287,6 +342,93 @@ def test_app(br, origin, app, table):
     ctx.close()
 
 
+def test_power(br, origin):
+    """the kit's power layer on a live page (Mind): the owner's touch = full rate, idle = 30 fps on high / 15 on low, battery saver caps, covered = no draw"""
+    ctx, p, errs = page(br, origin, fx="high")
+    p.goto(f"{origin}/mind/")
+    wait_ready(p)
+    p.evaluate("() => window.dispatchEvent(new Event('pointermove'))")                      # a touch (dispatched: emulated touch pages do not always deliver a mouse move)
+    p.evaluate("() => { window.__p = (k) => OLYMPUS.frameGap(); }")
+    gap_active = p.evaluate("() => { window.dispatchEvent(new Event('pointermove')); return OLYMPUS.frameGap(); }")   # touch and read in one go (the machine can be slow between calls)
+    p.wait_for_timeout(4400)
+    gap_idle = p.evaluate("() => OLYMPUS.frameGap()")
+    p.evaluate("() => window.dispatchEvent(new Event('pointermove'))")
+    gap_back = p.evaluate("() => { window.dispatchEvent(new Event('pointermove')); return OLYMPUS.frameGap(); }")
+    check("g. power: touching = every frame (gap 0), idle 4 s on high = 30 fps (33 ms), a touch brings the full rate back", (gap_active, gap_idle, gap_back) == (0, 33, 0), (gap_active, gap_idle, gap_back))
+    sv = p.evaluate("() => { window.dispatchEvent(new Event('pointermove')); OLYMPUS.setSaver('on'); return [OLYMPUS.saver(), OLYMPUS.frameGap(), document.documentElement.dataset.olySaver, OLYMPUS.stats().power]; }")
+    check("g. power: battery saver (the owner's switch) = 30 fps even while touching, html[data-oly-saver=1], reported in stats()", sv[0] is True and sv[1] == 33 and sv[2] == "1" and sv[3]["saver"] is True, sv)
+    p.evaluate("() => OLYMPUS.setSaver('off')")
+    check("g. power: the owner's 'off' beats a low battery; 'auto' goes back to the battery / Save-Data reading",
+          p.evaluate("() => [OLYMPUS.saver(), (OLYMPUS.setSaver('auto'), OLYMPUS.saver())]") == [False, False])
+    p.evaluate("() => OLYMPUS.covered(true)")
+    p.wait_for_timeout(600)
+    p.evaluate("window.__draws = 0")
+    p.wait_for_timeout(1500)
+    cov = p.evaluate("() => [window.__draws, OLYMPUS.hidden(), document.documentElement.dataset.olyCovered]")
+    p.evaluate("() => OLYMPUS.covered(false)")
+    p.wait_for_timeout(2500)
+    after = p.evaluate("window.__draws")
+    check("g. power: covered (a sheet over the scene) = hidden(): no draw call; uncovered = drawing again", cov[0] == 0 and cov[1] is True and cov[2] == "1" and after > 0, (cov, after))
+    p.evaluate("() => window.postMessage({ olympus: 'covered', on: true }, location.origin)")
+    p.wait_for_timeout(300)
+    check("g. power: a same-origin postMessage { olympus: 'covered' } from the parent covers the scene", p.evaluate("() => OLYMPUS.covered()") is True)
+    p.evaluate("() => OLYMPUS.covered(false)")
+    # ambience: Mind's bed ('space') is wanted from the start, plays after the first touch, steps aside in saver / when the owner turns it off
+    st0 = None
+    try:
+        p.wait_for_function("() => window.OLYMPUS_SFX && OLYMPUS_SFX.ambientState", polling=200, timeout=15000)
+        st0 = p.evaluate("() => OLYMPUS_SFX.ambientState()")
+        p.mouse.click(150, 400)
+        p.wait_for_function("() => OLYMPUS_SFX.ambientState().playing === 'space'", polling=200, timeout=8000)
+        st1 = p.evaluate("() => OLYMPUS_SFX.ambientState()")
+        p.evaluate("() => OLYMPUS.setSaver('on')")
+        sv = p.evaluate("() => OLYMPUS_SFX.ambientState().playing")
+        p.evaluate("() => OLYMPUS.setSaver('auto')")
+        back = p.evaluate("() => OLYMPUS_SFX.ambientState().playing")
+        p.evaluate("() => OLYMPUS.ambience(false)")
+        off = p.evaluate("() => OLYMPUS_SFX.ambientState().playing")
+        p.evaluate("() => { window.OLYMPUS_QUIET = () => true; }")
+        p.evaluate("() => OLYMPUS.ambience(true)")
+        ok = st0["want"] == "space" and st0["playing"] == "" and st1["playing"] == "space" and sv == "" and back == "space" and off == ""
+        check("g. ambience: Mind wants 'space' at load, nothing plays before a touch, it plays after one, battery saver silences it, 'auto' brings it back, the owner's switch stops it", ok, (st0, st1, sv, back, off))
+    except Exception as e:
+        check("g. ambience: Mind's bed starts after the first touch", False, (st0, e))
+    ctx.close()
+    ctx, p, errs = page(br, origin, fx="low")
+    p.goto(f"{origin}/mind/")
+    wait_ready(p)
+    p.wait_for_timeout(4400)
+    check("g. power: idle on low = 15 fps (66 ms)", p.evaluate("() => OLYMPUS.frameGap()") == 66)
+    ctx.close()
+    ctx, p, errs = page(br, origin, fx="off")
+    p.goto(f"{origin}/mind/")
+    wait_ready(p)
+    p.evaluate("() => window.dispatchEvent(new Event('pointermove'))")
+    g0 = p.evaluate("() => OLYMPUS.frameGap()")
+    p.wait_for_timeout(4400)
+    check("g. power: 3D effects Off = static: idle redraws at most twice a second (500 ms), a touch gives full rate", g0 == 0 and p.evaluate("() => OLYMPUS.frameGap()") == 500, g0)
+    check("g. power: no console error", not [e for e in errs if "Failed to load resource" not in e], errs[:3])
+    ctx.close()
+
+
+def test_more(br, origin, app):
+    q, calls, tris = MORE[app]
+    ctx, p, errs = page(br, origin, fx="high")
+    p.goto(f"{origin}/{app}/{hd(q)}")
+    ok = wait_ready(p, 120000)
+    p.wait_for_timeout(2500)
+    cdp = ctx.new_cdp_session(p)
+    cdp.send("Performance.enable")
+    heap = metrics(cdp).get("JSHeapUsedSize", 0) / 1e6
+    s = p.evaluate("() => (window.OLYMPUS ? OLYMPUS.stats() : {})")
+    three = bool(s.get("three")) and calls > 0
+    good = (not three or (s["calls"] <= calls and s["triangles"] <= tris)) and heap <= HEAP_MB
+    check(f"e. {app}: within the perf budget ({s.get('calls')} calls / {calls}, {s.get('triangles')} tris / {tris}, {round(heap, 1)} MB heap)", good, (ok, s, heap))
+    real = [e for e in errs if "net::ERR_FAILED" not in e and "Failed to load resource" not in e]
+    check(f"e. {app}: no console error", not real, real[:3])
+    ctx.close()
+
+
 def test_mind_labels(br, origin):
     """Mind: no galaxy name ever sits under the top HUD (or the bottom stats)."""
     ctx, p, errs = page(br, origin, fx="high")
@@ -310,6 +452,33 @@ def test_mind_labels(br, origin):
     ctx.close()
 
 
+def test_datacity_tiers(br, origin):
+    """the Data City's budget per tier: phone-high (the phone-safe preset: <= 95 calls / 250k tris, heap <= 40 MB) and ultra (the full city)"""
+    for name, (q, calls, tris, far_calls) in DATACITY_TIERS.items():
+        ctx, p, errs = page(br, origin, fx="high")
+        p.goto(f"{origin}/datacity/{q}&nolite=1")
+        p.wait_for_function("window.__city && window.__city.ready", timeout=180000)
+        cdp = ctx.new_cdp_session(p)
+        cdp.send("Performance.enable")
+        worst = {"calls": 0, "triangles": 0}
+        for focus in (None, "(() => { const d = window.__app.L.districts.slice().sort((a, b) => b.n - a.n)[0]; window.__app.orbit.focus(d.cx, 0, d.cz, 45, 1.2); })()"):
+            if focus:
+                p.evaluate(focus)
+            f0 = p.evaluate("window.__city.frames")
+            p.wait_for_function(f"window.__city.frames >= {f0 + 8}", timeout=180000)
+            s = p.evaluate("window.__city.stats()")
+            worst = {"calls": max(worst["calls"], s["calls"]), "triangles": max(worst["triangles"], s["triangles"])}
+        p.evaluate("window.__app.orbit.focus(0, 0, 0, 380, 0.9)")
+        f0 = p.evaluate("window.__city.frames")
+        p.wait_for_function(f"window.__city.frames >= {f0 + 12}", timeout=180000)
+        far = p.evaluate("window.__city.stats()")
+        heap = metrics(cdp).get("JSHeapUsedSize", 0) / 1e6
+        prof = p.evaluate("window.__app.city.profile")
+        ok = worst["calls"] <= calls and worst["triangles"] <= tris and far["calls"] <= far_calls and (name != "phone-high" or heap <= HEAP_MB)
+        check(f"e. datacity {name} ({prof}): worst {worst['calls']} calls / {calls}, {worst['triangles']} tris / {tris}, far overview {far['calls']} calls / {far_calls}, {round(heap, 1)} MB heap (budget {HEAP_MB} on phone-high)", ok, (worst, far, heap, errs[:2]))
+        ctx.close()
+
+
 def main():
     table: list = []
     test_static()
@@ -321,11 +490,18 @@ def main():
     srv, origin = serve()
     with sync_playwright() as pw:
         br = launch(pw)
-        only = [a for a in sys.argv[1:] if a in APPS] or list(APPS)
+        args = [a for a in sys.argv[1:] if not a.startswith("--")]
+        only = [a for a in args if a in APPS] or ([] if any(a in MORE or a in ("power", "more", "tiers") for a in args) else list(APPS))
         for app in only:
             test_app(br, origin, app, table)
         if "mind" in only:
             test_mind_labels(br, origin)
+        if not args or "power" in args:
+            test_power(br, origin)
+        if not args or "tiers" in args:
+            test_datacity_tiers(br, origin)
+        for app in [a for a in args if a in MORE] or (list(MORE) if not args or "more" in args else []):
+            test_more(br, origin, app)
         br.close()
     srv.shutdown()
     return table
@@ -335,12 +511,12 @@ if __name__ == "__main__":
     t0 = time.time()
     tab = main()
     if "--table" in sys.argv and tab:
-        print("\n| app | three.js | draw calls | triangles | geometries | textures | programs | pixel ratio | JS heap MB | layouts/frame | fps (headless) |")
+        print("\n| app | three.js | draw calls | triangles | geometries | textures | programs | pixel ratio | JS heap MB | layouts/frame | frames measured |")
         print("|---|---|---|---|---|---|---|---|---|---|---|")
         for r in tab:
             print(f"| {r['app']} | {'yes' if r['three'] else 'no'} | {r['calls'] if r['three'] else '-'} | {r['triangles'] if r['three'] else '-'} | "
                   f"{r['geometries'] if r['three'] else '-'} | {r['textures'] if r['three'] else '-'} | {r['programs'] if r['three'] else '-'} | "
-                  f"{r['pixelRatio'] if r['three'] else '-'} | {r['heap_mb']} | {r['layouts_per_frame']} | {r['fps_headless']} |")
+                  f"{r['pixelRatio'] if r['three'] else '-'} | {r['heap_mb']} | {r['layouts_per_frame']} | {r['frames_measured']} |")
     if "--json" in sys.argv and tab:
         print(json.dumps(tab))
     n = sum(RES)

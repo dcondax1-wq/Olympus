@@ -16,6 +16,13 @@ Lines (each green / amber / red with a plain text; a line this PC cannot measure
             (a state file may have been replaced by an older copy), amber elsewhere; amber when the folder is in OneDrive
   clock     clock drift vs internet time: the bot's own probe (engine/guards._CLOCK, every 15 min; never probed here)
   poll      the bot's poll time: 15-minute median and its trend vs the hour before (bot.health["poll_ms"])
+  storage   (2026-11-04, display only) free GB on the bot's drive + the bot folder's and NinjaTrader 8 folder's size, a
+            capped folder walk at most every 6 h and never in the first 5 min; amber < 15 GB, red < 2 GB, the fix is
+            "Run CLEAN_STORAGE.bat" (scripts/clean_storage.ps1). The block also carries it as `storage`
+            {free_gb, bot_gb, nt_gb}. On the phone (live_publish.pc_health_summary) it replaces the plain Disk line.
+  pc_care   (2026-11-04, display only) the last PC_CARE.bat run (scripts/pc_care.ps1 writes logs/pc_care.json: role, level, the
+            one-line "BOT PC HEALTHY: YES ..."); green when ok, amber when it found something or the check is over 45 days
+            old; never red (no push); no line when PC_CARE was never run.
 A red line (two samples in a row) pushes once per issue per ET day (kind pc_health: on / silent / off in the app).
 
 Watcher (a daemon thread in server.py, LE_PC_WATCH=0 = off): every SAMPLE_S seconds it samples (a few ms; the OneDrive scan
@@ -51,7 +58,10 @@ ORDER = {GREEN: 0, AMBER: 1, RED: 2}
 T = {"cpu_amber": 85.0, "cpu_red": 95.0, "ram_amber": 88.0, "ram_red": 95.0, "disk_amber_gb": 10.0, "disk_red_gb": 2.0,
      "nt_amber_mb": 2500.0, "nt_red_mb": 4000.0, "bot_amber_mb": 2000.0, "bot_red_mb": 3500.0, "grow_amber_mb": 600.0,
      "grow_red_mb": 1500.0, "grow_rate_amber_mbh": 200.0, "clock_amber_s": 2.0, "poll_amber_ms": 5000.0, "poll_red_ms": 20000.0,
-     "poll_rise_x": 2.0, "poll_rise_min_ms": 2000.0}
+     "poll_rise_x": 2.0, "poll_rise_min_ms": 2000.0, "storage_amber_gb": 15.0, "care_stale_days": 45.0}
+STORAGE_EVERY_S = 6 * 3600.0                              # the folder-size walk: at most this often
+STORAGE_WARM_S = 300.0                                    # ... and not in the first minutes after a server start
+STORAGE_BUDGET_S = 3.0                                    # time budget of one folder walk (a capped walk reports a lower bound)
 SUNDAY_TEST = (15 * 60 + 30, 17 * 60 + 45)                # Sunday 15:30 ET (until 17:45 if the PC was asleep at 15:30)
 SUNDAY_READY = (17 * 60 + 30, 18 * 60 + 30)               # Sunday 17:30 ET readiness push (until 18:30)
 BASELINE_AFTER_S = 300.0                                  # a baseline self-test no sooner than 5 min after the server start
@@ -59,7 +69,7 @@ SCAN_DIRS = (("", 0), ("data", 2), ("engine", 1), ("tools", 1), ("scripts", 1), 
 SCAN_SKIP = {"nt_bars", "clean", "tv_exports", "ltf", "__pycache__", "node_modules", "_cache", ".git", "brain"}
 SCAN_MAX = 6000
 LABELS = {"cpu": "CPU", "ram": "Memory (RAM)", "disk": "Disk space", "nt": "NinjaTrader", "bot_mem": "Bot memory",
-          "onedrive": "OneDrive sync", "clock": "PC clock", "poll": "Bot poll time"}
+          "onedrive": "OneDrive sync", "clock": "PC clock", "poll": "Bot poll time", "storage": "Storage"}
 
 
 def _et(t) -> dt.datetime:
@@ -147,6 +157,49 @@ def in_onedrive(root: str = ROOT) -> bool:
     return "onedrive" in os.path.abspath(root).lower()
 
 
+# ---------------------------------------------------------------------------------------------- storage (display only)
+def dir_gb(path: str, budget_s: float = STORAGE_BUDGET_S, max_entries: int = 400000):
+    """(GB, capped) of a folder tree: an iterative scandir walk that does not follow links and stops at the time or entry
+    budget (capped = the size is a lower bound). (None, False) when the folder is missing. Never raises."""
+    try:
+        if not path or not os.path.isdir(path):
+            return None, False
+        t_end, total, seen, stack = time.time() + budget_s, 0, 0, [path]
+        while stack:
+            cur = stack.pop()
+            try:
+                with os.scandir(cur) as it:
+                    for e in it:
+                        seen += 1
+                        if seen > max_entries or (seen % 500 == 0 and time.time() > t_end):
+                            return total / 1e9, True
+                        try:
+                            if e.is_symlink():
+                                continue
+                            if e.is_dir(follow_symlinks=False):
+                                stack.append(e.path)
+                            else:
+                                total += e.stat(follow_symlinks=False).st_size
+                        except OSError:
+                            continue
+            except OSError:
+                continue
+        return total / 1e9, False
+    except Exception:
+        return None, False
+
+
+def nt_folder() -> str | None:
+    """NinjaTrader 8's user folder (NINJATRADER_FOLDER, Documents, OneDrive\\Documents); None when there is none."""
+    home = os.path.expanduser("~")
+    od = os.environ.get("OneDrive") or os.environ.get("OneDriveConsumer")
+    for c in (os.environ.get("NINJATRADER_FOLDER"), os.path.join(home, "Documents", "NinjaTrader 8"),
+              os.path.join(od, "Documents", "NinjaTrader 8") if od else None):
+        if c and os.path.isdir(c):
+            return c
+    return None
+
+
 # ---------------------------------------------------------------------------------------------- the lines (pure)
 def lines(f: dict) -> list:
     """facts -> the health lines. f keys (any may be missing = that line is skipped): cpu_pct, ram_pct, ram_used_gb,
@@ -166,6 +219,24 @@ def lines(f: dict) -> list:
     if d is not None:
         lv = RED if d < T["disk_red_gb"] else AMBER if d < T["disk_amber_gb"] else GREEN
         out.append(_line("disk", lv, f"{d:.1f} GB free" + (": Settings > System > Storage > Cleanup" if lv != GREEN else ""), round(d, 1)))
+    st = f.get("storage")
+    if isinstance(st, dict) and (st.get("free_gb") is not None or d is not None):
+        fr = float(st["free_gb"]) if st.get("free_gb") is not None else float(d)
+        lv = RED if fr < T["disk_red_gb"] else AMBER if fr < T["storage_amber_gb"] else GREEN
+        parts = []
+        for k, label in (("bot_gb", "bot"), ("nt_gb", "NinjaTrader")):
+            if st.get(k) is not None:
+                parts.append(f"{label} {float(st[k]):.1f}{'+' if st.get(k + '_capped') else ''} GB")
+        out.append(_line("storage", lv, f"{fr:.1f} GB free" + (f" (folders: {', '.join(parts)})" if parts else "")
+                         + (": Run CLEAN_STORAGE.bat" if lv != GREEN else ""), round(fr, 1)))
+    pc = f.get("pc_care")                       # 2026-11-04, display only: the last PC_CARE.bat run (scripts/pc_care.ps1 writes logs/pc_care.json)
+    if isinstance(pc, dict) and pc.get("text"):
+        age = pc.get("age_days")
+        stale = isinstance(age, (int, float)) and age > T["care_stale_days"]
+        ln = _line("pc_care", GREEN if pc.get("level") == "ok" and not stale else AMBER,
+                   str(pc["text"])[:110] + (f" (checked {age:.0f} days ago: run PC_CARE.bat)" if stale else ""))
+        ln["label"] = "PC care"                 # amber at most, never red: no push comes from this line
+        out.append(ln)
     nt = f.get("nt")
     if isinstance(nt, dict):
         if not nt.get("running"):
@@ -245,6 +316,8 @@ class Sampler:
         self._od = {"t": 0.0, "files": []}
         self._nt_procs: list = []
         self._nt_scan_t = -1e18
+        self._st = {"t": -1e18, "bot_gb": None, "nt_gb": None, "bot_gb_capped": False, "nt_gb_capped": False}
+        self._care_c = (-1e18, {})               # (read at, logs/pc_care.json)
         self._proc = None
         try:
             if self.ps is not None:
@@ -300,6 +373,34 @@ class Sampler:
         routes = bool(getattr(self.bot, "running", False)) and cfg.get("adapter") == "ninjatrader"
         return {"running": running, "mb": None if mb is None else round(mb), "market_open": mo, "routes": routes}
 
+    def _storage(self, now, free_gb) -> dict | None:
+        """{free_gb, bot_gb, nt_gb}: the free space every sample (cheap); the two folder sizes from a capped walk at most every
+        STORAGE_EVERY_S, the first one STORAGE_WARM_S after the server start. Never raises."""
+        try:
+            if free_gb is None:
+                return None
+            if now - self.t0 >= STORAGE_WARM_S and now - self._st["t"] >= STORAGE_EVERY_S:
+                bot, bc = dir_gb(self.root)
+                nt_dir = nt_folder()
+                nt, nc = dir_gb(nt_dir) if nt_dir else (None, False)
+                self._st = {"t": now, "bot_gb": bot, "nt_gb": nt, "bot_gb_capped": bc, "nt_gb_capped": nc}
+            return {"free_gb": round(free_gb, 1), **{k: (round(v, 2) if isinstance(v, float) else v) for k, v in self._st.items() if k != "t"}}
+        except Exception:
+            return None
+
+    def _care(self, now) -> dict | None:
+        """{level, text, age_days}: the last PC_CARE.bat run (logs/pc_care.json, a few hundred bytes), re-read at most every 10 min.
+        None when it was never run (no line). Never raises."""
+        try:
+            if now - self._care_c[0] >= 600:
+                self._care_c = (now, _read_json(os.path.join(self.root, "logs", "pc_care.json")))
+            c = self._care_c[1]
+            if not c.get("text") or not c.get("t"):
+                return None
+            return {"level": str(c.get("level") or "warn"), "text": str(c["text"]), "age_days": max(0.0, (now - float(c["t"])) / 86400.0)}
+        except Exception:
+            return None
+
     def facts(self, now=None) -> dict:
         now = time.time() if now is None else now
         f: dict = {}
@@ -334,6 +435,12 @@ class Sampler:
             f["disk_free_gb"] = shutil.disk_usage(self.root).free / 1e9
         except Exception:
             pass
+        st = self._storage(now, f.get("disk_free_gb"))
+        if st is not None:
+            f["storage"] = st
+        care = self._care(now)
+        if care is not None:
+            f["pc_care"] = care
         nt = self._nt(now)
         if nt is not None:
             f["nt"] = nt
@@ -359,13 +466,19 @@ class Sampler:
 
     def block(self, now=None) -> dict:
         now = time.time() if now is None else now
+        sto = None
         try:
-            ls = lines(self.facts(now))
+            fa = self.facts(now)
+            sto = fa.get("storage")
+            ls = lines(fa)
         except Exception as e:
             ls = [_line("error", AMBER, f"health check failed: {e.__class__.__name__}")]
         have = {ln["key"] for ln in ls}
-        return {"t": int(now), "level": level_of(ls), "lines": ls, "skipped": [k for k in LABELS if k not in have],
-                "psutil": self.ps is not None}
+        out = {"t": int(now), "level": level_of(ls), "lines": ls, "skipped": [k for k in LABELS if k not in have],
+               "psutil": self.ps is not None}
+        if isinstance(sto, dict):
+            out["storage"] = sto
+        return out
 
 
 # ---------------------------------------------------------------------------------------------- pushes
@@ -390,8 +503,11 @@ def red_notices(block: dict, prev: dict | None, state: dict, now) -> list:
     day = _et(now).date().isoformat()
     out = []
     from . import push
+    disk_red = any(ln.get("key") == "disk" and ln.get("level") == RED for ln in block.get("lines") or [])
     for ln in block.get("lines") or []:
         if ln["level"] != RED or was.get(ln["key"]) != RED:
+            continue
+        if ln["key"] == "storage" and disk_red:               # the same low disk: one push, not two
             continue
         key = f"pchealth:{ln['key']}:{day}"
         if key in state.setdefault("sent", {}):
@@ -566,7 +682,7 @@ def hb_block(path: str | None = None) -> dict | None:
             return None
         return {"t": b.get("t"), "level": b.get("level"),
                 "lines": [{k: ln.get(k) for k in ("key", "level", "text")} for ln in b.get("lines") or []],
-                "skipped": b.get("skipped")}
+                "skipped": b.get("skipped"), **({"storage": b["storage"]} if isinstance(b.get("storage"), dict) else {})}
     except Exception:
         return None
 

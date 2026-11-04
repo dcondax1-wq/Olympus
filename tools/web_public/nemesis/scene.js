@@ -11,6 +11,8 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
 import * as M from '../olympus/materials.js';
+import * as SC from '../olympus/scenery.js';
+import { dress } from './dress.js';
 
 const TONES = { plan: '#ff9a3c', soft: '#ffd34a', break: '#ff2e63' };
 const GOLD = '#ffd34a';
@@ -25,9 +27,9 @@ export function createUnderworld(canvas, { O = null } = {}) {
   scene.background = new THREE.Color('#05030a');
   scene.fog = new THREE.FogExp2(0x0b0412, 0.021);
   const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 300);
-  let embers = null, lite = false, dirty = true, qcb = null, pickcb = null, drawn = 0, frames = 0, stopped = false, raf = 0;
+  let embers = null, dr = null, lite = false, dirty = true, qcb = null, pickcb = null, drawn = 0, frames = 0, stopped = false, raf = 0;
   const rc = createRenderer({ canvas, scene, camera, env: 'night', tint: '#ff7a3d', exposure: 0.95, maxDpr: 1.75, bloom: { strength: 0.8, radius: 0.6, threshold: 0.9 },
-    onQuality: (l) => { lite = l === 'low' || l === 'off'; if (embers) embers.geometry.setDrawRange(0, lite ? 110 : 280); dirty = true; if (qcb) qcb(l); } });
+    onQuality: (l) => { lite = l === 'low' || l === 'off'; if (embers) embers.geometry.setDrawRange(0, lite ? 110 : 280); if (dr) dr.setLite(lite); dirty = true; if (qcb) qcb(l); } });
   lite = rc.quality() === 'low' || rc.quality() === 'off';
 
   // ---- light: a cold violet sky and warm embers from below
@@ -43,6 +45,7 @@ export function createUnderworld(canvas, { O = null } = {}) {
   const neb = M.nebula({ colors: ['#ff4a2a', '#6a2cff', '#2a0a3a'], count: 6, radius: 90, size: 100, opacity: 0.16 }); neb.position.y = 12; scene.add(neb);
   const floor = new THREE.Mesh(new THREE.CircleGeometry(15, 64), M.metal({ kind: 'gunmetal', color: '#14101c', roughness: 0.32, clearcoat: 1, envMapIntensity: 0.55 }));
   floor.rotation.x = -Math.PI / 2; scene.add(floor);
+  try { floor.material = SC.basalt({ color: '#1a1520', glow: '#ff4a1a', repeat: [1.5, 1.5], intensity: 0.85, veins: 4 }); } catch (e) { /* the plain obsidian stays */ }
   const outer = new THREE.Mesh(new THREE.RingGeometry(15, 90, 64), new THREE.MeshStandardMaterial({ color: '#07050c', roughness: 0.9, metalness: 0.1 }));
   outer.rotation.x = -Math.PI / 2; outer.position.y = -0.02; scene.add(outer);
   for (const [r, k, c] of [[4.5, 1.4, '#ff6a2a'], [9, 1.6, '#ff2e63'], [14.7, 2.4, '#8a6bff']]) {
@@ -55,6 +58,7 @@ export function createUnderworld(canvas, { O = null } = {}) {
   // broken columns around the rim, an ember seam on each
   const colN = 16, colMesh = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.7, 0.9, 1, 8), M.metal({ kind: 'gunmetal', color: '#2a2234', roughness: 0.55 }), colN);
   const seam = new THREE.InstancedMesh(new THREE.TorusGeometry(0.78, 0.035, 6, 20), M.neon({ color: '#ff6a2a', intensity: 2.2, fog: true }), colN);
+  try { colMesh.material = SC.stone({ color: '#4a3f48', tint: '#8a2e22', repeat: [3, 2], blocks: 4, bump: 2.2 }); } catch (e) { /* the plain columns stay */ }
   const rr = rnd(17), dm = new THREE.Object3D();
   for (let i = 0; i < colN; i++) {
     const a = (i / colN) * Math.PI * 2 + 0.1, h = 2.2 + rr() * 4.8;
@@ -91,6 +95,11 @@ export function createUnderworld(canvas, { O = null } = {}) {
     r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.45, 'rgba(255,255,255,.4)'); r.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = r; g.fillRect(0, 0, 64, 64);
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })() });
   const pool = new THREE.InstancedMesh(poolGeo, poolMat, MAXF);
+  try {                                                  // real armour: aged bronze, a steel shield, an ember rim on the bronze (they glow where they lie)
+    body.material = SC.bronze({ color: '#8a5a38', patina: 0.25, rough: 0.5 }); head.material = SC.bronze({ color: '#b08a58', patina: 0.1, rough: 0.34 });
+    shield.material = SC.bronze({ color: '#8a8f9c', patina: 0, kind: 'steel', rough: 0.3 });
+    M.fresnelRim(body.material, { color: '#ff6a2a', power: 2.4, strength: 1.5 }); M.fresnelRim(shield.material, { color: '#ff4a2a', power: 3, strength: 1 });
+  } catch (e) { /* the plain metal stays */ }
   const parts = [body, head, shield, spear, pool];
   for (const m of parts) { m.count = 0; m.frustumCulled = false; scene.add(m); }
   const selRing = new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.045, 8, 48), new THREE.MeshBasicMaterial({ color: hdr(GOLD, 3.4) })); selRing.rotation.x = Math.PI / 2; selRing.visible = false; scene.add(selRing);
@@ -187,9 +196,13 @@ export function createUnderworld(canvas, { O = null } = {}) {
     return { x: r.left + ((v.x + 1) / 2) * r.width, y: r.top + ((1 - v.y) / 2) * r.height, on: v.z < 1 };
   }
 
+  let gapAt = 0;
   function frame(now) {
     raf = requestAnimationFrame(frame);
-    if (stopped) return;
+    if (stopped || (O && O.hidden())) return;                            // hidden / covered: no JS, no frame (docs/OLYMPUS_PERF.md)
+    const gap = O && O.frameGap ? O.frameGap() : 0;                       // idle 30 / 15 fps, battery saver, 3D Off 2 fps; a touch = full rate
+    if (gap && now - gapAt < gap - 3) return;
+    gapAt = now;
     const still = reduced(), t = now / 1000;
     const a = canvas.clientWidth / Math.max(1, canvas.clientHeight);
     const nd = a < 0.6 ? 29 : a < 1 ? 25 : 20, nf = a < 0.6 ? 62 : a < 1 ? 56 : 48;
@@ -202,16 +215,18 @@ export function createUnderworld(canvas, { O = null } = {}) {
     const k = still ? 0 : Math.sin(t * 2.4);
     e1.intensity = 55 + k * 8; e2.intensity = 30 + Math.sin(t * 1.7) * (still ? 0 : 6);
     if (selIdx >= 0) { selRing.scale.setScalar(layout[selIdx].s * (0.95 + (still ? 0 : 0.08 * Math.sin(t * 3))));  beam.material.opacity = 0.42 + (still ? 0 : 0.12 * Math.sin(t * 2)); }
+    if (dr) { try { dr.update(t, still); } catch (e) { dr = null; } }
     placeCamera(t);
     if (rc.render()) drawn++;
     frames++; dirty = false;
   }
+  try { dr = dress({ scene, camera, lite }); } catch (e) { dr = null; /* the plain underworld */ }
   placeCamera(0);
   raf = requestAnimationFrame(frame);
   return {
     setFigures, select, onPick(cb) { pickcb = typeof cb === 'function' ? cb : null; }, screenOf, pickAt,
     onQuality(cb) { qcb = typeof cb === 'function' ? cb : null; }, lite: () => lite, quality: () => rc.quality(),
-    stats: () => ({ frames, drawn, quality: rc.quality(), passes: rc.passes().length, figures: figs.length, selected: sel, columns: colN, embers: embers.geometry.drawRange.count, bright: figs.filter((f) => f.week !== false).length }),
-    dispose() { stopped = true; cancelAnimationFrame(raf); rc.dispose(); },
+    stats: () => ({ dress: dr ? dr.stats() : null, frames, drawn, quality: rc.quality(), passes: rc.passes().length, figures: figs.length, selected: sel, columns: colN, embers: embers.geometry.drawRange.count, bright: figs.filter((f) => f.week !== false).length }),
+    dispose() { stopped = true; cancelAnimationFrame(raf); if (dr) dr.dispose(); rc.dispose(); },
   };
 }

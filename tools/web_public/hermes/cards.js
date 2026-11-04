@@ -5,6 +5,7 @@
 // Order: money, best, worst, eval, discipline, learned, Data City (if any), Kalshi (or a teaser), Planner (if any),
 // the all-time hall, next. A card's parts carry data-z (how far they float off the card in the 3D tilt).
 import { esc, usd, tone, plural, dayLabel, span, num, kalshiPeriod, plannerPeriod } from './data.js';
+import { extraCards } from './cards2.js';
 
 const NBSP = ' ';
 const kt = (text, cls = 'title') => `<h1 class="${cls} kt">${String(text).split(' ').map((w, i) => `<span class="w"><span style="--i:${i}">${esc(w)}</span></span>`).join(' ')}</h1>`;
@@ -222,7 +223,7 @@ function reportCard(w, p) {
   const won = Math.abs(num(p.won_usd) || 0), lost = Math.abs(num(p.lost_usd) || 0);
   const pf = lost > 0 ? won / lost : null, aw = p.wins ? won / p.wins : null, al = p.losses ? lost / p.losses : null;
   const payoff = aw != null && al ? aw / al : null, exp = p.net / p.trades, wp = p.win_pct != null ? p.win_pct : (p.wins / (p.wins + p.losses)) * 100;
-  const plaque = (label, value, sub, cls = '') => `<div class="plaque ${cls}"><small>${esc(label)}</small><b>${esc(value)}</b><i>${esc(sub)}</i></div>`;
+  const plaque = (label, value, sub, cls = '') => `<div class="plaque ${cls}" data-oly-fx="shimmer"><small>${esc(label)}</small><b>${esc(value)}</b><i>${esc(sub)}</i></div>`;
   const grade = pf == null ? 'A+' : pf >= 3 ? 'A+' : pf >= 2 ? 'A' : pf >= 1.5 ? 'B' : pf >= 1 ? 'C' : 'D';
   return {
     id: 'report', name: 'Report card', colors: ['#0a0716', '#3a1d86', '#59d0ff'], mode: 6, ms: 8000,
@@ -264,6 +265,86 @@ function streakCard(w, p) {
   };
 }
 
+// ------------------------------------------------------------------------------------------------ new cards (2026-11-04): best day, best week, accounts
+// They use the OLYMPUS effects library (../olympus/fx-*.js) when the page has it: confetti / sparkles from the hero number, a shimmer on the
+// plaques. Without it (or on still / LITE) the cards read the same and the story's own particles play instead.
+const OFX = () => window.OLYMPUS_FX || null;
+const lib = (name, el, opts, fallback, fx) => {
+  const L = OFX(), host = el && el.querySelector('.hero');
+  if (L && L[name] && host) L[name](host, opts); else if (fallback) fx.burst(fallback[0], fallback[1], fallback[2]);
+};
+/** Monday of the week of an ISO day (UTC arithmetic on the calendar day, no time zones involved) */
+function mondayOf(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ''));
+  if (!m) return '';
+  const t = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], 12)), dow = (t.getUTCDay() + 6) % 7;
+  t.setUTCDate(t.getUTCDate() - dow);
+  return t.toISOString().slice(0, 10);
+}
+/** weekly sums of the all-time days: [[monday, net, tradingDays]] oldest first */
+export function weekSums(days) {
+  const m = new Map();
+  for (const d of days || []) if (Array.isArray(d) && num(d[1]) != null && mondayOf(d[0])) { const k = mondayOf(d[0]), c = m.get(k) || [0, 0]; m.set(k, [c[0] + num(d[1]), c[1] + 1]); }
+  return [...m.entries()].map(([k, [v, n]]) => [k, Math.round(v * 100) / 100, n]).sort((a, b) => (a[0] < b[0] ? -1 : 1));
+}
+
+/** Best day of the period: the biggest green day, its share of the period's profit, the days around it. */
+function bestDayCard(w, p) {
+  const days = (p.days || []).filter((d) => Array.isArray(d) && num(d[1]) != null);
+  const top = days.reduce((a, d) => (!a || d[1] > a[1] ? d : a), null);
+  if (!top || top[1] <= 0) return null;
+  const share = p.net > 0 ? Math.min(100, Math.round((top[1] / p.net) * 100)) : null, green = days.filter(([, v]) => v > 0).length;
+  return {
+    id: 'bestday', name: 'Best day', colors: ['#03140e', '#0f6b4f', '#f7c948'], mode: 4, ms: 7500,
+    html: `${kick(p)}${kt('The best day')}<div class="hero" data-z="3">${counter(top[1], 'xl gold')}<p class="sub">${esc(dayLabel(top[0], { weekday: 'long', month: 'short', day: 'numeric' }))}</p></div>
+      ${dayBars(days)}<div class="split"><div><small>Share of the profit</small><b class="up">${share != null ? share + '%' : '—'}</b></div><div><small>Green days</small><b>${green}/${days.length}</b></div></div>
+      <p class="note">One day out of ${esc(plural(days.length, 'trading day'))}. Paper and eval accounts, losses included.</p>`,
+    enter(el, fx) { lib('sparkleBurst', el, { count: 30 }, ['sparks', 50, { y: 0.45, colors: ['#f7c948', '#ffffff'] }], fx); },
+    share: () => ({ kicker: `${p.label} · best day`, title: dayLabel(top[0], { weekday: 'long', month: 'short', day: 'numeric' }), big: usd(top[1]), tone: 'up',
+      lines: [share != null ? `${share}% of the period's profit in one day` : '', `${green} of ${days.length} trading days green`].filter(Boolean) }),
+  };
+}
+
+/** Best week ever: weekly sums of every day on record, the best one on top, the last eight weeks as bars. */
+function bestWeekCard(w, p) {
+  const W = weekSums((w.periods.all && w.periods.all.days) || []);
+  if (W.length < 2) return null;
+  const top = W.reduce((a, x) => (!a || x[1] > a[1] ? x : a), null);
+  if (!top || top[1] <= 0) return null;
+  const last = W.slice(-8), m = Math.max(...last.map((x) => Math.abs(x[1]))) || 1, green = W.filter((x) => x[1] > 0).length, avg = W.reduce((a, x) => a + x[1], 0) / W.length;
+  const bars = `<div class="bars" aria-label="P&amp;L per week">${last.map(([d, v], i) => `<div class="dbar ${tone(v)}" style="--h:${Math.max(4, Math.abs(v) / m * 100).toFixed(1)}%;--i:${i}"><i></i><b>${esc(dayLabel(d, { month: 'numeric', day: 'numeric' }))}</b></div>`).join('')}</div>`;
+  return {
+    id: 'bestweek', name: 'Best week', colors: ['#0b0702', '#6b4a0f', '#ffd76a'], mode: 2, ms: 7500,
+    html: `<p class="kicker">All time · ${esc(plural(W.length, 'week'))} on record</p>${kt('The best week ever')}<div class="hero" data-z="3">${counter(top[1], 'xl gold')}<p class="sub">Week of ${esc(dayLabel(top[0], { month: 'short', day: 'numeric' }))} · ${esc(plural(top[2], 'trading day'))}</p></div>
+      ${bars}<div class="split"><div><small>Green weeks</small><b class="up">${green}/${W.length}</b></div><div><small>Average week</small><b class="${tone(avg)}">${esc(usd(avg, { cents: false }))}</b></div></div>`,
+    enter(el, fx) { lib('confetti', el, { count: 90 }, ['confetti', 80, { colors: ['#ffd76a', '#fff3c4', '#5ef2a8', '#ffffff'] }], fx); },
+    share: () => ({ kicker: 'All time · best week', title: `Week of ${dayLabel(top[0])}`, big: usd(top[1]), tone: 'up', lines: [`${green} of ${W.length} weeks green`, `${plural(top[2], 'trading day')} that week`] }),
+  };
+}
+
+/** Accounts: the period's money by account (eval, funded, paper), each with its bot and its share of the move. */
+function accountsCard(w, p) {
+  const by = new Map();
+  for (const b of p.bots || []) {
+    const k = b.account || b.name, c = by.get(k) || { name: k, net: 0, trades: 0, bots: [] };
+    c.net += num(b.net) || 0; c.trades += num(b.trades) || 0; c.bots.push(b.name);
+    by.set(k, c);
+  }
+  const rows = [...by.values()].filter((r) => r.trades || r.net).sort((a, b) => b.net - a.net);
+  if (!rows.length) return null;
+  const top = Math.max(...rows.map((r) => Math.abs(r.net)), 1), sum = rows.reduce((a, r) => a + r.net, 0), ev = (w.eval || []).length;
+  const bar = (r) => `<div class="pbar ${r.net < 0 ? 'avg' : 'now'}"><span>${esc(r.name)}</span><b class="${tone(r.net)}">${esc(usd(r.net, { cents: false }))}</b><i style="--w:${(Math.abs(r.net) / top * 100).toFixed(1)}%"></i></div>`;
+  return {
+    id: 'accounts', name: 'Accounts', colors: ['#040a1a', '#1a3f8f', '#f7c948'], mode: 6, ms: 7500,
+    html: `${kick(p)}${kt('Where the money sits')}<div class="hero" data-z="3">${counter(sum, 'lg gold')}<p class="sub">${esc(plural(rows.length, 'account'))} · ${esc(plural(rows.reduce((a, r) => a + r.trades, 0), 'trade'))}</p></div>
+      <div class="pbars" data-z="2">${rows.slice(0, 4).map(bar).join('')}</div>
+      <ul class="bots">${rows.slice(0, 4).map((r) => `<li><span>${esc(r.bots.join(', '))}<small>${esc(plural(r.trades, 'trade'))}</small></span><span class="${tone(r.net)}">${sum ? Math.round((r.net / Math.abs(sum)) * 100) : 0}%</span></li>`).join('')}</ul>
+      <p class="note">${ev ? `${esc(plural(ev, 'eval account'))} on the road to funded (see the Evals card). ` : ''}Paper twins are not counted twice.</p>`,
+    enter(el, fx) { lib('sparkleBurst', el, { count: 24 }, ['sparks', 36, { y: 0.45, colors: ['#f7c948', '#59d0ff'] }], fx); },
+    share: () => ({ kicker: `${p.label} · accounts`, title: 'Where the money sits', big: usd(sum, { cents: false }), tone: tone(sum), lines: rows.slice(0, 4).map((r) => `${r.name} ${usd(r.net, { cents: false })} (${plural(r.trades, 'trade')})`) }),
+  };
+}
+
 /** The all-time hall: the lifetime numbers and the records (best trade, best day, longest green run, win rate). */
 function hallStats(all) {
   if (!all || !all.trades) return null;
@@ -281,7 +362,7 @@ function hallStats(all) {
 function hallCard(w) {
   const H = hallStats(w.periods.all);
   if (!H) return null;
-  const plaque = (label, value, sub, cls = '') => `<div class="plaque ${cls}"><small>${esc(label)}</small><b>${esc(value)}</b><i>${esc(sub)}</i></div>`;
+  const plaque = (label, value, sub, cls = '') => `<div class="plaque ${cls}" data-oly-fx="shimmer"><small>${esc(label)}</small><b>${esc(value)}</b><i>${esc(sub)}</i></div>`;
   const b = H.best;
   return {
     id: 'hall', name: 'Hall of fame', colors: ['#0b0702', '#5c3d07', '#ffd76a'], mode: 5, ms: 8500,
@@ -314,7 +395,7 @@ function nextCard(w, p) {
 
 export function deck(w, key, peers = {}) {
   const p = w.periods[key] || w.periods.week;
-  return [money, best, worst, evalCard, disciplineCard, learnedCard, discoveryCard, kalshiCard, plannerCard, paceCard, reportCard, streakCard, hallCard, nextCard]
+  return [money, best, worst, evalCard, disciplineCard, learnedCard, discoveryCard, kalshiCard, plannerCard, paceCard, reportCard, streakCard, bestDayCard, bestWeekCard, accountsCard, hallCard, ...extraCards, nextCard]
     .map((f) => f(w, p, peers)).filter(Boolean);
 }
 

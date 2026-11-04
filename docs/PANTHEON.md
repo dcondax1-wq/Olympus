@@ -114,3 +114,17 @@ futures data, keep them out of any strategy test).
 - `python -X utf8 -m tools.pantheon --fixture-json`: also refreshes the page's demo copy.
 - `python -X utf8 -m tools.pantheon.record`: trims the last downloads into the test fixtures.
 - `python -X utf8 -m tools.cronos --task pantheon --out <dir>`: the nightly task, run by hand.
+
+## 2026-11-04: history charts, "what if", the verdict timeline, flip alerts, the daily note
+
+`pantheonplus.js` (pure functions + small DOM parts; read-only context, nothing here changes a strategy):
+
+| Part | What it does |
+|---|---|
+| God card, History | a chart of the god's last 64 readings (low / high marked, drag a finger along it for "Reading k of N, x% vs now", the 5-year percentile) |
+| Council panel, What would the Council say if... | one slider per voting god (-1 .. +1) and a sit-out button; the verdict uses the build's own rule (mean of the votes, at least 3 voices, risk-on from +0.20, risk-off from -0.20, gauge = (score + 1) x 50), checked against `tools/pantheon/council.py` in `tests/test_pantheon.py`; the 3D orb takes the pretend verdict's colour; closing the panel puts the real one back; nothing is saved |
+| Council panel, Verdict timeline | the last year as runs of one verdict (RISK-ON / MIXED / RISK-OFF), newest first, "about N weeks" (a reading is about 0.8 weeks apart) |
+| Flip alert | this phone remembers the last verdict (`localStorage` `pantheon.last`, `pantheon.flips`, nothing else); when it differs a banner says "The Council changed its mind: A to B" (gold laurel leaves for risk-on, embers for risk-off, nothing on reduced motion) and the flip is listed on the timeline |
+| Today's Council note | 3-4 lines of at most 120 characters (verdict, the sentence, the caution, the honest check): Copy, or Show on Jarvis (inside Jarvis the note and a flip line go on her Pantheon card) |
+| Effects | `fx-core.js` + the OLYMPUS effects: light shafts onto the Council orb, dust, fireflies (GPU tiers only; each one optional) |
+

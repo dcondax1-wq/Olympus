@@ -205,6 +205,14 @@ def page(br, url, name, ios, voices=True, device=None):
     ctx.add_init_script("try { sessionStorage.setItem('jarvis.booted', '1'); localStorage.setItem('jarvis.seen', JSON.stringify('j9'));"
                         " localStorage.setItem('jarvis.intro', 'off'); } catch (e) {}")
     ctx.add_init_script(f"window.__iosRule = {json.dumps(bool(ios))}; window.__voicesEmpty = {json.dumps(not voices)};")
+    # 2026-11-04: the natural-speech layer (prosody.js: numbers / tickers in words, contractions, comma breaths) changes the words on
+    # purpose and has its own tests (test_jarvis_engines.py); this test checks the base chunker on the original text, so it is off here
+    ctx.add_init_script("try { localStorage.setItem('jarvis.voiceEngine', JSON.stringify({ prosody: false })); } catch (e) {}")
+    if os.environ.get("JARVIS_TEST_LITE") == "1":          # a loaded machine: no 3D core, no effects (jfx=off), so the heavy page cannot starve the checks
+        ctx.add_init_script("try { localStorage.setItem('jfx', 'off'); localStorage.setItem('jarvis.no3d', '1'); } catch (e) {}")
+    # the scheduled bot cards (01:45 plan, 09:15 pre-market, 15:55 end, 16:05 recap) are spoken by the same voice when the test happens to run in their hour:
+    # they are switched off here so the checks do not depend on the time of day (their own tests: test_jarvis_bots.py)
+    ctx.add_init_script("try { localStorage.setItem('jarvis.bots.set', JSON.stringify({ on: true, plan: false, recap: false, rituals: false })); } catch (e) {}")
     ctx.add_init_script(MOCK)
     p = ctx.new_page()
     errs = []

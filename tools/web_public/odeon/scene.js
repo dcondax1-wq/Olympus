@@ -271,7 +271,7 @@ export class Theater {
     this.mirror.scale.y = -1;
     this.scene.add(this.stage, this.mirror);
     this._buildRoom();
-    this.arena = new Arena({ lite: this.lite });
+    this.arena = new Arena({ lite: this.lite, reduced: this.reduced });
     this.scene.add(this.arena.g);
     this.setLite(this.lite);
   }
@@ -341,7 +341,7 @@ export class Theater {
 
   setLite(on) {
     this.lite = !!on;
-    this.rc.setQuality(this.rc.forced || (this.rc.software ? 'low' : this.lite ? 'low' : ['ultra', 'high'].includes(this.rc.quality()) ? this.rc.quality() : 'high'));
+    this.rc.setQuality(this.rc.forced || (window.OLYMPUS && window.OLYMPUS.fx() === 'off' ? 'off' : this.rc.software ? 'low' : this.lite ? 'low' : ['ultra', 'high'].includes(this.rc.quality()) ? this.rc.quality() : 'high'));
     if (this.arena) this.arena.setLite(this.lite);
     this.mirror.visible = !this.lite;
     this.shafts.visible = !this.lite;

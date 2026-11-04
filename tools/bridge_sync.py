@@ -1,8 +1,9 @@
 """Refresh the AUTO block of handoff/SYNC.md: latest commits, inbox contents, open ChatGPT branches.
 Run from the repo root: python tools/bridge_sync.py   (writes only SYNC.md and tools/web_public/bridge/status.json)."""
-import pathlib, subprocess, datetime, json, re, time
+import pathlib, subprocess, datetime, json, re, sys, time
 
-ROOT = pathlib.Path(__file__).resolve().parent.parent
+HERE = pathlib.Path(__file__).resolve().parent
+ROOT = HERE.parent
 SYNC = ROOT / "handoff" / "SYNC.md"
 PAGE = ROOT / "tools" / "web_public" / "bridge"
 
@@ -30,12 +31,87 @@ def build():
     return "\n".join(lines)
 
 
-def job_ids():
-    """The job ids on the Bridge page (the cards)."""
+def _ingest():
+    """tools/bridge_ingest.py (works from `python tools/bridge_sync.py` and from `from tools import bridge_sync`)."""
     try:
-        return re.findall(r"\{ id: '([a-z0-9-]+)', t:", (PAGE / "index.html").read_text(encoding="utf-8"))
+        from tools import bridge_ingest as m
+    except ImportError:
+        sys.path.insert(0, str(HERE))
+        import bridge_ingest as m
+    return m
+
+
+def library():
+    """The ready ChatGPT jobs (bridge/jobs.json, built by tools/bridge_jobs_build.py): a list of dicts, [] if missing."""
+    try:
+        d = json.loads((PAGE / "jobs.json").read_text(encoding="utf-8"))
+        return [j for j in d.get("jobs", []) if isinstance(j, dict) and re.fullmatch(r"[a-z0-9-]+", str(j.get("id", "")))]
     except Exception:
         return []
+
+
+def job_ids():
+    """The job ids on the Bridge page: the cards plus the library."""
+    try:
+        cards = re.findall(r"\{ id: '([a-z0-9-]+)', t:", (PAGE / "index.html").read_text(encoding="utf-8"))
+    except Exception:
+        cards = []
+    return cards + [j["id"] for j in library() if j["id"] not in cards]
+
+
+def suggest(jobs, lib=None, today=None, cats=None, limit=5):
+    """'What to ask ChatGPT next': a short list from static rules (no model, no network). `jobs` = status()['jobs'] ({id: {state, files}}).
+    Rules, in order, each job once, at most `limit`:
+      1 question   ChatGPT is waiting for an answer: answer first
+      2 finish     a job ChatGPT started (in progress) and has not finished: nudge it
+      3 first      nothing delivered yet: the easiest 5-minute job (the first win)
+      4 week       the category of the week (rotates every ISO week): its two easiest jobs not yet asked
+      5 gap        a category with no delivery yet: its easiest job
+      6 quick      the shortest job not yet asked
+    -> [{id, title, cat, minutes, difficulty, rule, why}]"""
+    lib = library() if lib is None else lib
+    today = today or datetime.date.today()
+    if cats is None:
+        try:
+            cats = [c["id"] for c in json.loads((PAGE / "jobs.json").read_text(encoding="utf-8")).get("cats", [])]
+        except Exception:
+            cats = []
+    cats = cats or sorted({j.get("cat", "") for j in lib})
+    rank = {"easy": 0, "medium": 1, "hard": 2}
+    by_id = {j["id"]: j for j in lib}
+    state = lambda i: (jobs.get(i) or {}).get("state")  # noqa: E731
+    asked = {i for i in by_id if state(i)}
+    easy_first = lambda js: sorted(js, key=lambda j: (rank.get(j.get("difficulty"), 1), j.get("minutes", 99), j["id"]))  # noqa: E731
+    out, seen = [], set()
+
+    def add(j, rule, why):
+        if j["id"] not in seen and len(out) < limit:
+            seen.add(j["id"])
+            out.append({"id": j["id"], "title": j.get("title", j["id"]), "cat": j.get("cat", ""), "minutes": j.get("minutes", 10),
+                        "difficulty": j.get("difficulty", "medium"), "rule": rule, "why": why})
+
+    for i in sorted(by_id):
+        if state(i) == "question":
+            add(by_id[i], "question", "ChatGPT asked you something: answer it first")
+    for i in sorted(by_id):
+        if state(i) == "in progress":
+            add(by_id[i], "finish", "ChatGPT started this and has not sent DONE.md yet")
+    if lib and not any(state(i) == "done" for i in by_id):
+        add(easy_first([j for j in lib if j["id"] not in asked] or lib)[0], "first", "Nothing is delivered yet: start with the easiest win")
+    if cats:
+        wk = today.isocalendar()[1]
+        cat = cats[wk % len(cats)]
+        for j in easy_first([j for j in lib if j.get("cat") == cat and j["id"] not in asked])[:2]:
+            add(j, "week", f"This week's category is {cat} (it changes every week)")
+    for c in cats:
+        mine = [j for j in lib if j.get("cat") == c]
+        if mine and not any(state(j["id"]) == "done" for j in mine):
+            free = easy_first([j for j in mine if j["id"] not in asked])
+            if free:
+                add(free[0], "gap", f"Nothing delivered yet in {c}")
+    for j in sorted([j for j in lib if j["id"] not in asked], key=lambda j: (j.get("minutes", 99), j["id"])):
+        add(j, "quick", "A short one: about %d min" % j.get("minutes", 10))
+    return out
 
 
 def status():
@@ -59,12 +135,30 @@ def status():
         commits.append({"sha": h, "date": day, "subject": subj[:100]})
     ids = job_ids()
     done = sum(1 for j in jobs.values() if j["state"] == "done")
+    dl = brief(deliveries())
     return {"v": 1, "updated": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC"), "t": int(time.time()),
             "jobs": jobs, "counts": {"total": len(ids) or len(jobs), "done": done,
                                       "question": sum(1 for j in jobs.values() if j["state"] == "question"),
                                       "in_progress": sum(1 for j in jobs.values() if j["state"] == "in progress"),
                                       "files": sum(j["files"] for j in jobs.values())},
-            "commits": commits}
+            "commits": commits, "next": suggest(jobs), "deliveries": dl}
+
+
+def brief(dl):
+    """The small version of deliveries() that goes into status.json: counts, image names, text names, the DONE line (the text itself is in
+    deliveries.json, loaded only when the Deliveries tab opens)."""
+    return {i: {"approved": d.get("approved", 0), "rejected": d.get("rejected", 0), "images": [x["name"] for x in d.get("images", [])][:40],
+                "texts": [x["name"] for x in d.get("text", [])], "done": (d.get("done") or "")[:200]}
+            for i, d in (dl.get("jobs") or {}).items()}
+
+
+def deliveries(inbox=None):
+    """What ChatGPT delivered, checked by tools/bridge_ingest.py (read-only: nothing delivered is run): {v, jobs: {id: images, text, rejects ...}}.
+    Never raises."""
+    try:
+        return _ingest().deliveries(str(inbox or (ROOT / "handoff" / "inbox")))
+    except Exception:
+        return {"v": 1, "jobs": {}}
 
 
 def card(st):
@@ -85,12 +179,25 @@ def publish(out):
     d.mkdir(parents=True, exist_ok=True)
     (d / "status.json").write_text(json.dumps(st, separators=(",", ":")), encoding="utf-8")
     (d / "jarvis.json").write_text(json.dumps(card(st), separators=(",", ":")), encoding="utf-8")
-    return f"{st['counts']['done']}/{st['counts']['total']} jobs delivered"
+    dl = deliveries()
+    raw = json.dumps(dl, separators=(",", ":"))
+    if len(raw) > 400_000:      # keep the site small: drop the long previews, keep names and counts
+        for x in dl["jobs"].values():
+            x["text"] = [{"name": t["name"], "kind": t["kind"], "text": t["text"][:400], "truncated": True, "size": t["size"]} for t in x["text"]][:4]
+        raw = json.dumps(dl, separators=(",", ":"))
+    (d / "deliveries.json").write_text(raw, encoding="utf-8")
+    n = 0
+    try:   # the Deliveries tab: the approved images of finished jobs next to the page (thumbnails), copied as bytes only
+        n = _ingest().copy_for_site(str(d / "deliveries"), str(ROOT / "handoff" / "inbox"))
+    except Exception:
+        pass
+    return f"{st['counts']['done']}/{st['counts']['total']} jobs delivered" + (f", {n} delivered images" if n else "")
 
 
 def main():
     PAGE.mkdir(parents=True, exist_ok=True)
     (PAGE / "status.json").write_text(json.dumps(status(), indent=1) + "\n", encoding="utf-8")
+    (PAGE / "deliveries.json").write_text(json.dumps(deliveries(), indent=1) + "\n", encoding="utf-8")
     t = SYNC.read_text(encoding="utf-8")
     a, b = "<!-- AUTO:BEGIN -->", "<!-- AUTO:END -->"
     i, j = t.index(a) + len(a), t.index(b)

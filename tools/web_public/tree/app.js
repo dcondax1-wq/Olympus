@@ -6,7 +6,9 @@
 import * as C from './core.js?v=d3';
 import { paint, ancestry, bestPath, GROW_MS, IGNITE_MS, LENS_MS } from './paint.js?v=d3';
 import { startGlow } from './glow.js?v=d3';
-import { startTree3d } from './tree3d.js?v=d4';
+import { startTree3d, SEASON_NAMES } from './tree3d.js?v=d5';
+import { createBranchUI } from './branchui.js?v=d1';
+import * as G from './gate.js?v=g1';           // JOB 47: the owner's adoption checks, R beside $, the losing run against the max loss
 
 const O = window.OLYMPUS || null;   // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil, themes
 
@@ -27,6 +29,8 @@ const S = {
   quality: O && O.chosen() ? (O.fx() === 'off' ? 0 : O.lite() ? 1 : 2) : O && O.lite() ? 1 : (devicePixelRatio >= 2 && (navigator.hardwareConcurrency || 4) >= 4) ? 2 : 1,
   frameMs: 16, slowSince: 0, selected: null, hudAt: -1, lit: -1, tab: 'search',
   maxScore: 1, maxOos: 1, maxN: 1, minN: 60, positiveLeaves: [], leafCount: 0, theme: null,
+  topSort: 'rank', topHold: false,
+  season: 'auto', hold: null,       // the season of the tree (auto = by the search and the lens); hold = a scrubbed time in ms (null = playing)
 };
 
 // ------------------------------------------------------------------------------------------------ data
@@ -66,6 +70,7 @@ function selectRoot(id) {
   S.view = { s: 1, x: 0, y: 0 };
   S.lit = -1; S.hudAt = -1;
   S.t0 = performance.now() - (reduced ? GROW_MS + IGNITE_MS : 0);
+  S.hold = null; syncPlay();
   document.querySelectorAll('.seed').forEach((b) => b.setAttribute('aria-current', String(b.dataset.root === id)));
   document.querySelectorAll('#rules li').forEach((li) => li.classList.toggle('cur', li.dataset.root === id));
   const seed = document.querySelector(`.seed[data-root="${CSS.escape(id)}"]`);
@@ -96,7 +101,7 @@ function resize() {
   const ceiling = top.bottom + 4;
   const cx = (left + S.w) / 2, halfW = (S.w - left) / 2 - 10, spread = 1.2;
   S.geo = { cx, baseY, spread, ry: Math.max(80, baseY - ceiling), rx: Math.max(60, halfW / Math.sin(spread)) };
-  document.querySelector('.tools').style.top = `${Math.round(top.bottom - 4)}px`;
+  document.querySelectorAll('.tools').forEach((el) => { el.style.top = `${Math.round(top.bottom - 4)}px`; });
 }
 
 // ------------------------------------------------------------------------------------------------ HUD
@@ -189,14 +194,14 @@ function buildBest() {
 function buildRules() {
   const m = S.model;
   $('rules').innerHTML = m.top.map((r, i) => {
-    const te = r.test || {}, root = m.byId[r.root] || {};
+    const te = r.test || {}, root = m.byId[r.root] || {}, tb = G.atBot(te, +m.meta.bot_risk_usd || 282);
     return `<li data-root="${esc(r.root)}" class="${r.root === S.rootId ? 'cur' : ''}"><span class="rk">#${i + 1}</span>` +
-      `<span class="nm"><b>${esc(r.key)}</b> ${root.target_r ? C.variant(root) : ''}<small>${esc(r.steps.join(' · '))}</small></span>` +
-      `<span class="mo ${C.sign(te.mean)}">${C.usd(te.mean)}<small>TEST/TR</small></span>` +
+      `<span class="nm"><b>${esc(r.key)}</b> ${root.target_r ? C.variant(root) : ''}<small>${esc(r.steps.join(' · '))}</small><small class="gn ${G.gate(r, m.meta).verdict}">${esc(G.noteText(r, m.meta))}</small></span>` +
+      `<span class="mo ${C.sign(tb ? tb.usd : te.mean)}">${tb ? G.fmtUsd(tb.usd) : C.usd(te.mean)}<small>${tb ? G.fmtR(tb.r) + ' TEST/TR' : 'TEST/TR'}</small></span>` +
       `<span class="tag ${r.holds ? 'ok' : 'no'}">${r.holds ? 'HOLDS' : 'FAILS'}</span></li>`;
   }).join('');
   const held = m.top.filter((r) => r.holds).length;
-  $('rulesNote').textContent = `${held} OF THE TOP ${m.top.length} HOLD OUT OF SAMPLE · TAP ONE TO GROW ITS TREE · $ A TRADE A MICRO AFTER COSTS`;
+  $('rulesNote').textContent = `${held} OF THE TOP ${m.top.length} HOLD OUT OF SAMPLE · TAP ONE TO GROW ITS TREE · $ A TRADE AT BOT SIZE (1R = $${+m.meta.bot_risk_usd || 282}) AFTER COSTS`;
 }
 
 // ------------------------------------------------------------------------------------------------ seeds
@@ -260,20 +265,32 @@ function showTop() {
   $('topSub').textContent = `${C.int(h.nodes)} nodes searched on ${h.roots} roots. ${h.hold} of ${h.best_rules} best rules hold out of sample` +
     ((m.honesty.placebo || []).length ? `; with shuffled conditions ${(m.honesty.placebo || []).map((p) => p.hold_pct + '%').join(' / ')} do.` : '.') +
     ` $ per trade per micro after $1.90 costs; bot size = $${m.meta.bot_risk_usd} risk a trade.`;
+  buildTopBar();
+  buildTopList();
+  $('top').hidden = false;
+}
+const SORTS = [['rank', 'RANK'], ['mo2026', '2026 $/MO'], ['motest', 'TEST $/MO'], ['tpw', 'TRADES/WK']];
+function buildTopBar() {
+  const bar = $('topBar'); if (!bar) return;
+  bar.innerHTML = SORTS.map(([k, name]) => `<button type="button" data-sort="${k}" aria-pressed="${S.topSort === k}">${name}</button>`).join('')
+    + `<button type="button" data-hold aria-pressed="${S.topHold}">ONLY HOLDS</button>`;
+}
+function buildTopList() {
+  const m = S.model, rk = +m.meta.bot_risk_usd || 282;
   const cols = [['train', `TRAIN ≤${m.meta.train_end.slice(0, 4)}`], ['test', 'TEST 25-26'], ['y2026', '2026']];
-  $('toplist').innerHTML = m.top.map((r, i) => {
+  const list = G.sortRules(m.top, S.topSort, S.topHold, m.meta);
+  $('toplist').innerHTML = list.length ? list.map(({ r, i }) => {
     const rows = cols.map(([k, name]) => {
       const x = r[k] || {};
       return `<tr><td>${name}</td><td>${C.int(x.n || 0)}</td><td class="${C.sign(x.mean)}">${C.usd(x.mean)}</td><td>${x.win ?? '—'}${x.win !== undefined ? '%' : ''}</td>` +
-        `<td>${x.tpw ?? '—'}</td><td class="${C.sign(x.mo_bot)}">${C.money(x.mo_bot)}</td></tr>`;
+        `<td>${x.tpw ?? '—'}</td><td class="${C.sign(x.mo_bot)}">${C.money(x.mo_bot)}${x.mo_bot !== undefined && x.mo_bot !== null ? `<small class="rr">${G.fmtR(x.mo_bot / rk)}</small>` : ''}</td></tr>`;
     }).join('');
     const root = m.byId[r.root] || {};
     return `<li data-root="${esc(r.root)}"><div class="hd"><span class="rk">#${i + 1}</span><b>${esc(r.key)}</b><small>${root.target_r ? C.variant(root) : ''}</small>` +
       `<span class="tag ${r.holds ? 'ok' : 'no'}">${r.holds ? 'HOLDS' : 'FAILS'}</span></div>` +
       `<div class="chips">${r.steps.map((s) => `<span class="chip">${esc(s)}</span>`).join('')}</div>` +
-      `<table class="nums"><thead><tr><th></th><th>N</th><th>$/TR/µ</th><th>WIN</th><th>TR/WK</th><th>BOT $/MO</th></tr></thead><tbody>${rows}</tbody></table></li>`;
-  }).join('');
-  $('top').hidden = false;
+      `<table class="nums"><thead><tr><th></th><th>N</th><th>$/TR/µ</th><th>WIN</th><th>TR/WK</th><th>BOT $/MO · R</th></tr></thead><tbody>${rows}</tbody></table>${G.gateHtml(r, m.meta)}</li>`;
+  }).join('') : `<li class="none">NO RULE HOLDS OUT OF SAMPLE IN THIS SEARCH. TURN OFF ONLY HOLDS TO SEE ALL ${m.top.length}.</li>`;
 }
 
 function hideTop() { $('top').hidden = true; }
@@ -419,6 +436,11 @@ document.querySelectorAll('.lens button').forEach((b) => b.addEventListener('cli
 document.querySelectorAll('.sheet-tabs button').forEach((b) => b.addEventListener('click', () => setTab(b.dataset.tab)));
 $('replay').addEventListener('click', () => selectRoot(S.rootId));
 $('openTop').addEventListener('click', showTop);
+$('topBar').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b || !S.model) return;
+  if (b.dataset.sort) S.topSort = b.dataset.sort; else if (b.hasAttribute('data-hold')) S.topHold = !S.topHold; else return;
+  buildTopBar(); buildTopList(); $('toplist').scrollTop = 0;
+});
 document.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', () => { hideCard(); hideTop(); }));
 for (const id of ['toplist', 'rules']) {
   $(id).addEventListener('click', (e) => {
@@ -428,7 +450,7 @@ for (const id of ['toplist', 'rules']) {
     if (S.model.trees[li.dataset.root]) selectRoot(li.dataset.root);
   });
 }
-addEventListener('keydown', (e) => { if (e.key === 'Escape') { hideCard(); hideTop(); } });
+addEventListener('keydown', (e) => { if (e.key === 'Escape') { hideCard(); hideTop(); if (branchUI) branchUI.close(); } });
 addEventListener('resize', () => { if (S.model) resize(); });
 addEventListener('hashchange', route);
 
@@ -442,8 +464,10 @@ function route() {
 
 function loop(now) {
   if (!(O ? O.hidden() : document.hidden)) {                    // hidden tab: no frame (the battery)
-    const t0 = performance.now(), t = frozenAt !== null ? frozenAt : now - S.t0;
-    if (S.quality < 2 && frozenAt === null && now - lastFrame < 30) { requestAnimationFrame(loop); return; }   // LITE / low: 30 fps
+    const t0 = performance.now(), t = frozenAt !== null ? frozenAt : S.hold !== null ? S.hold : now - S.t0;
+    syncScrub(t);
+    const gap = Math.max(O && O.frameGap ? O.frameGap() : 0, S.quality < 2 ? 30 : 0);                     // LITE 30 fps; idle / battery saver / 3D Off: the kit's gap (docs/OLYMPUS_PERF.md)
+    if (gap && frozenAt === null && now - lastFrame < gap - 3) { requestAnimationFrame(loop); return; }
     lastFrame = now;
     if (is3d()) glow.frame(now, t);                                       // the 3D laurel replaces the 2D drawing while it is on
     else {
@@ -482,6 +506,38 @@ async function postJarvis() {
   try { window.parent.postMessage({ jarvis: 1, href: location.href, card }, JARVIS_ORIGIN); } catch (e) { /* not in Jarvis */ }
 }
 
+// ------------------------------------------------------------------------------------------------ timeline, seasons, branches
+const SPAN = GROW_MS + IGNITE_MS;
+let scrubAt = 0;
+function syncScrub(t) {                                         // the slider follows the clock while it plays (about 10 times a second)
+  const now = performance.now();
+  if (S.hold !== null || now - scrubAt < 100) return;
+  scrubAt = now;
+  $('scrub').value = String(Math.round(Math.min(1, t / SPAN) * 1000));
+}
+function syncPlay() {
+  const playing = S.hold === null;
+  $('play').setAttribute('aria-pressed', String(playing));
+  $('play').setAttribute('aria-label', playing ? 'Pause the growth' : 'Play the growth');
+  $('playIcon').setAttribute('d', playing ? 'M5 3v10M11 3v10' : 'M5 3l8 5-8 5z');
+}
+function nowT() { return S.hold !== null ? S.hold : performance.now() - S.t0; }
+$('play').addEventListener('click', () => {
+  if (S.hold === null) S.hold = Math.min(SPAN, Math.max(0, nowT()));
+  else { S.t0 = performance.now() - (S.hold >= SPAN ? 0 : S.hold); S.hold = null; }
+  syncPlay();
+});
+$('scrub').addEventListener('input', () => { S.hold = (Number($('scrub').value) / 1000) * SPAN; S.hudAt = -1; syncPlay(); });
+const SEASON_WORDS = { auto: 'AUTO', spring: 'SPRING', summer: 'SUMMER', autumn: 'AUTUMN', winter: 'WINTER' };
+$('season').addEventListener('click', () => {
+  S.season = SEASON_NAMES[(SEASON_NAMES.indexOf(S.season) + 1) % SEASON_NAMES.length];
+  $('seasonT').textContent = SEASON_WORDS[S.season]; $('season').setAttribute('aria-label', 'Season: ' + S.season);
+  app.dataset.season = S.season;
+});
+function toastD(text) { const t = $('toastD'); t.textContent = text; t.hidden = false; clearTimeout(toastD.timer); toastD.timer = setTimeout(() => { t.hidden = true; }, 2200); }
+let branchUI = null;
+$('openBranches').addEventListener('click', () => { if (branchUI) { hideCard(); hideTop(); branchUI.open(); } });
+
 // ------------------------------------------------------------------------------------------------ new tests arriving
 const POLL_MS = 180000;
 /** When the search is re-run (tree.json changes), the new nodes grow in: the model is swapped and the tree grows again. */
@@ -499,6 +555,7 @@ async function checkNewTests() {
     const next = C.readDoc(await res.json()), more = (next.meta.nodes || 0) - (S.model.meta.nodes || 0);
     if (!next.featured.length || more <= 0) return;
     S.model = next;
+    branchUI = createBranchUI({ model: next, open: (id) => selectRoot(id), toast: toastD });
     buildSeeds(); buildRules();
     selectRoot(next.trees[S.rootId] ? S.rootId : next.featured[0]);
     const t = document.createElement('div');
@@ -518,6 +575,7 @@ async function main() {
     return;
   }
   app.dataset.state = 'ready';
+  branchUI = createBranchUI({ model: S.model, open: (id) => selectRoot(id), toast: toastD });
   buildSeeds();
   buildRules();
   hookTheme();
@@ -530,7 +588,7 @@ async function main() {
   // the 3D laurel tree first; without the render core / WebGL2 the 2D tree with the glow overlay; without that, the plain 2D tree
   startTree3d(gl, S, { onState }).then((g) => g || startGlow(canvas, gl, { onState })).then((g) => { glow = g; }).catch(() => { glow = null; });
   if (!S.model.demo && frozenAt === null) setInterval(checkNewTests, POLL_MS);
-  window.__daphne = { ready: true, state: S, setLens, setTab, get glow() { return glow ? { on: glow.on, passes: glow.passes, quality: glow.quality(), mode: glow.mode || 'glow', stats: glow.stats ? glow.stats() : null } : null; }, checkNewTests };
+  window.__daphne = { ready: true, state: S, setLens, setTab, get branches() { return branchUI; }, get glow() { return glow ? { on: glow.on, passes: glow.passes, quality: glow.quality(), mode: glow.mode || 'glow', stats: glow.stats ? glow.stats() : null, season: glow.season || null, fx: glow.fx || [] } : null; }, checkNewTests };
   requestAnimationFrame(loop);
 }
 

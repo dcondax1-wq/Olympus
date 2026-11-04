@@ -1,7 +1,7 @@
 /* OLYMPUS kit (tools/web_public/olympus/, 2026-11-03; docs/OLYMPUS_DESIGN.md): the small shared layer that makes the nine 3D
  * apps one product. A classic script, loaded in <head> BEFORE the app's modules:
- *   <script src="../olympus/themes.js?v=o2"></script>  (the OLYMPUS themes: optional, just before)
- *   <script src="../olympus/olympus.js?v=o2" data-app="mind"></script>
+ *   <script src="../olympus/themes.js?v=o3"></script>  (the OLYMPUS themes: optional, just before)
+ *   <script src="../olympus/olympus.js?v=o3" data-app="mind"></script>
  * It never throws and every app still works when it is missing (each call site reads window.OLYMPUS defensively).
  *
  *   quality  ONE setting for every app and Jarvis: localStorage 'jfx' = ultra | high | low | off (Jarvis's own 3D-effects key,
@@ -14,6 +14,13 @@
  *   seat     opened alone (not framed by Jarvis) the seal sits in the orb's seat (bottom-right) and goes back to ../jarvis/.
  *   perf     track(renderer) keeps three.js's renderer for stats() (draw calls, triangles, geometries, textures, programs);
  *            hidden() is the tab-hidden test every frame loop uses (no frame while the tab is hidden: the iPhone's battery).
+ *   power    (2026-11-04, docs/OLYMPUS_PERF.md) saver() = battery saver (the owner's 'olympus.saver' on/off, else auto: battery <= 20% and
+ *            not charging, or the browser's Save-Data); setSaver('on'|'off'|'auto'); onPower(cb); idle() = no touch / key for 4 s;
+ *            frameGap() = the minimum ms between frames the render core (and any loop that asks) should keep: 0 while the owner touches,
+ *            33 (30 fps) when idle on high, 66 (15 fps) idle on low, 500 idle on off, 33 / 66 in battery saver; covered(true) = a sheet / overlay hides the
+ *            scene: hidden() answers true (a parent can post { olympus: 'covered', on: true }); every frame loop that honours hidden() sleeps.
+ *   ambient  (2026-11-04, docs/OLYMPUS_SFX.md) each app starts its own quiet sound bed after the first touch (the table AMBIENT below):
+ *            ambient(name | '') to override, ambience(on) the owner's switch. Silent when muted, over Jarvis' voice, hidden, or in saver.
  *   theme    the OLYMPUS theme (themes.js, loaded just before this script; key 'olympus.theme'): theme() = the token object,
  *            onTheme(cb) = told (tokens) on every change (Jarvis's Look sheet, cross-tab or the frame around the app),
  *            tint(base, kind) = an app colour blended toward the theme's fog / sky / emissive / bloom, and
@@ -34,7 +41,7 @@
     hermes: ['Hermes', 'Η', '#f7c948'], prometheus: ['Prometheus', 'Π', '#ff7a1a'], tyche: ['Tyche', 'Τ', '#e879f9'],
     pantheon: ['Pantheon', 'Σ', '#f2d68a'], arena: ['Arena', 'Α', '#ffb547'],
     ares: ['Ares', 'Λ', '#ff3b30'], plutus: ['Plutus', 'Ρ', '#9be84a'], athena: ['Athena', '🦉', '#5ea8ff'],
-    forum: ['Forum', 'Γ', '#b8e04a'], labyrinth: ['Labyrinth', 'Ξ', '#ff4d57'], argus: ['Argus', 'Α', '#3ad7ff'], nemesis: ['Nemesis', 'Ν', '#8a6bff'], chronos: ['Chronos', 'Χ', '#d4a574'], hephaestus: ['Hephaestus', '⚒', '#d96bff'],
+    cities: ['Cities', '◈', '#a68bff'], settings: ['Settings', '⚙', '#b79bff'], inbox: ['Inbox', '✉', '#7fd0ff'], ledger: ['Ledger', 'L', '#ffcf5a'], journal: ['Mnemosyne', 'Μ', '#f09bd8'], kalshicity: ['Kalshi City', 'K', '#2ef2d0'], forum: ['Forum', 'Γ', '#b8e04a'], labyrinth: ['Labyrinth', 'Ξ', '#ff4d57'], argus: ['Argus', 'Α', '#3ad7ff'], nemesis: ['Nemesis', 'Ν', '#8a6bff'], chronos: ['Chronos', 'Χ', '#d4a574'], hephaestus: ['Hephaestus', '⚒', '#d96bff'],
     bridge: ['Bridge', 'Β', '#34d399'],
   };
   // each app's own CSS tokens -> the theme token they take under any theme but the default (bg = the app's own page colour
@@ -113,6 +120,67 @@
     return paint;
   }
 
+  // ---------------------------------------------------------------- power: battery saver, idle frame cap, covered
+  var SAVER_KEY = 'olympus.saver', IDLE_MS = 4000;
+  var lastInput = performance.now(), covered = false, saverAuto = false, powerSubs = [];
+  function saverNow() { var v = get(SAVER_KEY); return v === 'on' ? true : v === 'off' ? false : saverAuto; }
+  function powerChanged() {
+    root.setAttribute('data-oly-saver', saverNow() ? '1' : '0');
+    for (var i = 0; i < powerSubs.length; i++) { try { powerSubs[i](saverNow()); } catch (e) { /* one listener never stops the rest */ } }
+    ambApply();
+  }
+  (function () {
+    var touch = function () { lastInput = performance.now(); };
+    ['pointerdown', 'pointermove', 'touchstart', 'keydown', 'wheel', 'scroll'].forEach(function (e) { window.addEventListener(e, touch, { passive: true, capture: true }); });
+    var conn = navigator.connection;
+    var read = function (b) { saverAuto = !!((b && !b.charging && b.level <= 0.2) || (conn && conn.saveData === true)); powerChanged(); };
+    try {
+      if (navigator.getBattery) navigator.getBattery().then(function (b) {
+        ['levelchange', 'chargingchange'].forEach(function (e) { b.addEventListener(e, function () { read(b); }); }); read(b);
+      }).catch(function () { read(null); });
+      else read(null);
+    } catch (e) { /* no battery API (Safari): Save-Data and the owner's switch only */ }
+    window.addEventListener('storage', function (e) { if (e && e.key === SAVER_KEY) powerChanged(); });   // Jarvis's Battery saver switch, from another frame
+    window.addEventListener('message', function (e) {          // a sheet / overlay in the parent (Jarvis) covers this scene
+      try { if (e.origin === location.origin && e.data && e.data.olympus === 'covered') O.covered(!!e.data.on); } catch (x) { /* nothing */ }
+    });
+  })();
+
+  // ---------------------------------------------------------------- ambience: each app's own quiet bed (olympus/sfx.js, synthesised)
+  var AMBIENT = { journal: 'scroll', datacity: 'city', cities: 'city', kalshicity: 'city', kalshi: 'city', oracle: 'space', mind: 'space', argus: 'space', chronos: 'chimes',
+    odeon: 'crowd', arena: 'crowd', forum: 'agora', ares: 'crowd', fates: 'lab', plutus: 'coins', ledger: 'coins', labyrinth: 'lab', pantheon: 'wind', athena: 'scroll',
+    hermes: 'breeze', nemesis: 'wind', bridge: 'wind', prometheus: 'smithy', hephaestus: 'smithy', tyche: 'sea', tree: 'forest', zenith: 'space', inbox: 'scroll',
+    settings: 'lab', planner: 'chimes' };       // 2026-11-04: every app has a bed of its own (forge hammer-and-hiss, scroll rustle, coin chime, forum murmur, lab hum)
+  var ambName = AMBIENT[id] || '', ambTimer = 0, ambLoading = false, ambStarted = false;
+  var quiet = function () { try { return !!(window.OLYMPUS_QUIET && window.OLYMPUS_QUIET()) || !!(framed && window.parent.OLYMPUS_QUIET && window.parent.OLYMPUS_QUIET()); } catch (e) { return false; } };
+  function ambKit(cb) {
+    var k = window.OLYMPUS_SFX;
+    if (k) { cb(k); return; }
+    if (ambLoading || !me || !me.src) return;
+    ambLoading = true;
+    var tries = 0, wait = function () { if (window.OLYMPUS_SFX) { cb(window.OLYMPUS_SFX); } else if (++tries < 12) setTimeout(wait, 500); };
+    if (!d.getElementById('olySfxJs')) {
+      var sc = d.createElement('script'); sc.id = 'olySfxJs'; sc.async = true; sc.src = me.src.replace(/olympus\.js.*$/, 'sfx.js?v=s2'); sc.onerror = function () { ambLoading = false; };
+      (d.head || root).appendChild(sc);
+    }
+    wait();
+  }
+  function ambApply() {
+    try {
+      if (!ambName || level === 'off') { if (window.OLYMPUS_SFX && window.OLYMPUS_SFX.ambientStop && ambStarted) window.OLYMPUS_SFX.ambientStop(); return; }
+      ambKit(function (k) {
+        if (!k.ambient) return;                                  // an older sfx.js: no beds
+        ambStarted = true;
+        k.ambient(quiet() ? '' : ambName);
+        if (!ambTimer) ambTimer = setInterval(function () {      // Jarvis talking or listening: the bed steps aside, then comes back
+          try { if (window.OLYMPUS_SFX) window.OLYMPUS_SFX.ambient(quiet() ? '' : ambName); } catch (e) { /* nothing */ }
+        }, 3000);
+      });
+    } catch (e) { /* the bed is never needed */ }
+  }
+  fxOnLoad(function () { setTimeout(ambApply, 400); });
+  function fxOnLoad(fn) { if (d.readyState === 'complete') fn(); else window.addEventListener('load', fn); }
+
   var O = {
     KEY: KEY, app: id, name: info[0], glyph: info[1], color: info[2], framed: framed,
     /** 'ultra' | 'high' | 'low' | 'off' */
@@ -136,7 +204,30 @@
     onFx: function (cb) { if (typeof cb === 'function') subs.push(cb); },
     /** the app's effective look (its auto-LITE included): marks <html data-oly-lite> for the tests and the CSS */
     mode: function (lite) { root.setAttribute('data-oly-lite', lite ? '1' : '0'); },
-    hidden: function () { return d.hidden === true || d.visibilityState === 'hidden'; },
+    hidden: function () { return d.hidden === true || d.visibilityState === 'hidden' || covered; },
+    saver: function () { return saverNow(); },
+    setSaver: function (v) { set(SAVER_KEY, v === 'on' || v === 'off' ? v : ''); powerChanged(); return saverNow(); },
+    onPower: function (cb) { if (typeof cb === 'function') powerSubs.push(cb); },
+    idle: function () { return performance.now() - lastInput > IDLE_MS; },
+    frameGap: function () {
+      var idle = performance.now() - lastInput > IDLE_MS;
+      if (level === 'off') return idle ? 500 : 0;           // 3D effects Off = static: an idle scene redraws twice a second at most (a touch = full rate)
+      if (saverNow()) return idle ? 66 : 33;
+      return idle ? (level === 'low' ? 66 : 33) : 0;
+    },
+    covered: function (on) {
+      if (on === undefined) return covered;
+      on = !!on; if (on === covered) return on;
+      covered = on; root.setAttribute('data-oly-covered', on ? '1' : '0');
+      try { d.dispatchEvent(new Event('visibilitychange')); } catch (e) { /* loops that wake on it */ }
+      return on;
+    },
+    ambient: function (name) { ambName = name === undefined ? AMBIENT[id] || '' : String(name || ''); ambApply(); return ambName; },
+    ambience: function (on) { var k = window.OLYMPUS_SFX; try { return k && k.ambience ? k.ambience(on) : false; } catch (e) { return false; } },
+    /** the kit's Sound switch: sound(true | false | null) (the owner's choice, null = automatic: silent in LITE / reduced motion / saver); sound() = may beds and UI cues sound now */
+    sound: function (on) { var k = window.OLYMPUS_SFX; try { return k && k.sound ? k.sound(on) : false; } catch (e) { return false; } },
+    /** a UI cue: cue('open' | 'close' | 'success' | 'warning' | 'tap'); silent before the first tap, when muted, and in LITE / reduced motion unless Sound is on */
+    cue: function (name) { var k = window.OLYMPUS_SFX; try { return k ? k.play(name) : false; } catch (e) { return false; } },
     track: function (r) {
       if (!r || typeof r.render !== 'function' || r.__oly) return r;
       renderer = r; r.__oly = true;
@@ -147,7 +238,7 @@
     stats: function () {
       var i = renderer && renderer.info;
       if (!i) return { frames: frames, three: false };
-      return { frames: frames, three: true, calls: i.render.calls, triangles: i.render.triangles, points: i.render.points,
+      return { frames: frames, three: true, power: { saver: saverNow(), idle: performance.now() - lastInput > IDLE_MS, covered: covered }, calls: i.render.calls, triangles: i.render.triangles, points: i.render.points,
         lines: i.render.lines, geometries: i.memory.geometries, textures: i.memory.textures, programs: (i.programs || []).length,
         pixelRatio: renderer.getPixelRatio ? renderer.getPixelRatio() : null };
     },
@@ -163,7 +254,7 @@
         var k = window.OLYMPUS_SFX;
         if (k) return !!k.play(name);
         if (me && me.src && !d.getElementById('olySfxJs')) {
-          var s = d.createElement('script'); s.id = 'olySfxJs'; s.async = true; s.src = me.src.replace(/olympus\.js.*$/, 'sfx.js?v=s1');
+          var s = d.createElement('script'); s.id = 'olySfxJs'; s.async = true; s.src = me.src.replace(/olympus\.js.*$/, 'sfx.js?v=s2');
           (d.head || root).appendChild(s);
         }
       } catch (e) { /* the sound is never needed */ }
@@ -176,6 +267,70 @@
     state: function () { return state; },
   };
   window.OLYMPUS = O;
+
+  // ---------------------------------------------------------------- effects wiring (docs/OLYMPUS_FX.md): data-oly-fx="shimmer|glow|ripple|tilt|odometer|..."
+  // Any element that carries data-oly-fx gets the effect with ZERO edits in the app: shimmer / glow / ripple are styled by olympus.css
+  // alone; the ones that need script (ripple's origin, tilt, odometer, ...) load olympus/fx-core.js + the file that holds them on the
+  // first use (never on a page that has no data-oly-fx), and follow the tier (OLYMPUS.fx()) and prefers-reduced-motion.
+  // Opt out: data-oly-fx-off on the element or any ancestor, <html data-oly-fx-ui="off">, or OLYMPUS.fxUI(false).
+  var FXMAP = { tilt: 'ui', magnetic: 'ui', ripple: 'ui', gradientBorder: 'ui', glassSpecular: 'ui', neonPulse: 'ui', skeleton: 'ui',
+    odometer: 'text', countUp: 'text', typewriter: 'text', glitch: 'text', progressRing: 'text' };
+  var fxBase = me && me.src ? me.src.replace(/olympus\.js.*$/, '') : '', fxFiles = {}, fxTimer = 0, fxObs = null;
+  function fxUiOff() { return root.getAttribute('data-oly-fx-ui') === 'off' || (d.querySelector && !!d.querySelector('meta[name="olympus-fx-ui"][content="off"]')); }
+  function fxFile(name, cb) {
+    var f = fxFiles[name];
+    if (f) { if (f.done) cb(); else f.cbs.push(cb); return; }
+    f = fxFiles[name] = { done: false, cbs: [cb] };
+    function end() { f.done = true; for (var i = 0; i < f.cbs.length; i++) { try { f.cbs[i](); } catch (e) { /* nothing */ } } f.cbs = []; }
+    if (name === 'core' && window.OLYMPUS_FX) { end(); return; }
+    if (name !== 'core' && window.OLYMPUS_FX && window.OLYMPUS_FX.has(name === 'ui' ? 'tilt' : 'odometer')) { end(); return; }
+    var s = d.createElement('script'); s.async = true; s.src = fxBase + 'fx-' + name + '.js?v=f1';
+    s.onload = end; s.onerror = end;
+    (d.head || root).appendChild(s);
+  }
+  function fxScan() {
+    fxTimer = 0;
+    if (!d.body || fxUiOff() || O.fx() === 'off' || O.reduced()) return;
+    var els = d.querySelectorAll('[data-oly-fx]'), need = {}, any = false, i, j, t;
+    for (i = 0; i < els.length; i++) {
+      if (els[i].closest && els[i].closest('[data-oly-fx-off]')) continue;
+      t = (els[i].getAttribute('data-oly-fx') || '').split(/\s+/);
+      for (j = 0; j < t.length; j++) if (FXMAP[t[j]]) { need[FXMAP[t[j]]] = 1; any = true; }
+    }
+    if (!any) { if (window.OLYMPUS_FX) window.OLYMPUS_FX.attach(); return; }
+    fxFile('core', function () {
+      var kinds = Object.keys(need), left = kinds.length;
+      for (var k = 0; k < kinds.length; k++) fxFile(kinds[k], function () { if (--left === 0 && window.OLYMPUS_FX) window.OLYMPUS_FX.attach(); });
+    });
+  }
+  function fxSoon() { if (!fxTimer) fxTimer = setTimeout(fxScan, 80); }
+  function fxWatch() {
+    if (fxObs || !window.MutationObserver || !d.body) return;
+    fxObs = new MutationObserver(function (list) {
+      for (var i = 0; i < list.length; i++) {
+        var r = list[i];
+        if (r.type === 'attributes') { fxSoon(); return; }
+        for (var j = 0; j < r.addedNodes.length; j++) {
+          var n = r.addedNodes[j];
+          if (n.nodeType === 1 && (n.hasAttribute('data-oly-fx') || n.querySelector('[data-oly-fx]'))) { fxSoon(); return; }
+        }
+        if (window.OLYMPUS_FX) for (j = 0; j < r.removedNodes.length; j++) {          // a wired element left the page: stop its effect
+          var x = r.removedNodes[j];
+          if (x.nodeType === 1 && (x.hasAttribute('data-oly-fx') || x.querySelector('[data-oly-fx]'))) { fxSoon(); return; }
+        }
+      }
+    });
+    fxObs.observe(d.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-oly-fx', 'data-oly-fx-off'] });
+  }
+  /** the page-wide switch for the data-oly-fx wiring (false = off for this page; the CSS-only effects follow <html data-oly-fx-ui>) */
+  O.fxUI = function (on) {
+    if (on === false) root.setAttribute('data-oly-fx-ui', 'off'); else root.removeAttribute('data-oly-fx-ui');
+    if (window.OLYMPUS_FX) window.OLYMPUS_FX.ui(on !== false); else if (on !== false) fxSoon();
+    return on !== false;
+  };
+  subs.push(function () { fxSoon(); });                      // the tier came back from off: wire what the page carries
+  function fxBoot() { fxScan(); fxWatch(); }
+  if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', fxBoot); else fxBoot();
 
   // ---------------------------------------------------------------- the veil
   function el(tag, cls, text) { var e = d.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; return e; }

@@ -7,6 +7,7 @@
 // One top bar (scenario + sample), one bottom bar (Spin / Next 10), one bottom sheet (a followed future or the next 10 sessions).
 import * as C from './fates-core.js';
 import { createScene, Y1 } from './fates-scene.js';
+import { createLab } from './fates-lab.js';
 
 const O = window.OLYMPUS || null;   // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil, themes
 const $ = (id) => document.getElementById(id);
@@ -22,7 +23,7 @@ const S = {
   frames: 0, live: null, liveAt: 0, odds: null, theme: null,
 };
 window.__fates = S;                                 // read by tests/test_fates.py
-let sc = null, MAP = null, clock0 = 0;
+let sc = null, MAP = null, clock0 = 0, lab = null;
 
 // ------------------------------------------------------------------------------------------------ data
 async function getJson(url) {
@@ -153,7 +154,8 @@ function go(patch, respin = true) {
   if (location.hash !== h) history.replaceState(null, '', h);
   renderHud();
   resize();                                         // the HUD's height changes with the scenario: re-centre the scene
-  if (respin) { closeSheet(); build(); spin(); }
+  if (respin) { closeSheet(); S.labThread = null; build(); spin(); }
+  if (lab) lab.refresh();
 }
 function wire() {
   const on = (id, fn) => $(id).addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) fn(b); });
@@ -164,7 +166,11 @@ function wire() {
   $('spin').addEventListener('click', () => { closeSheet(); sc?.reseed(); build(); spin(); });
   $('next10').addEventListener('click', () => (S.sheet === 'next10' ? closeSheet() : openNext10()));
   $('fClose').addEventListener('click', closeSheet);
-  addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
+  lab = createLab({ el: $('lab'), scen, route: () => S.route, go: (p) => go(p), selected: () => (S.follow ? S.follow.th : S.labThread || null) });
+  S.lab = lab;
+  $('labBtn').addEventListener('click', () => { if (lab.isOpen()) closeLab(); else { if (S.follow) S.labThread = S.follow.th; closeSheet(); lab.open(); $('labBtn').setAttribute('aria-expanded', 'true'); } });
+  $('labClose').addEventListener('click', closeLab);
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeSheet(); closeLab(); } });
   addEventListener('hashchange', () => { const r = C.parseRoute(location.hash); go({ scen: r.scen, period: r.period, accts: r.accts }); });
   RM.addEventListener && RM.addEventListener('change', (e) => { S.reduced = e.matches; spin(); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - S.liveAt > LIVE_EVERY) pollLive(); });
@@ -207,9 +213,14 @@ function spin() {
   S.spinning = true;
   S.perf = [];
 }
+let gapAt = 0;
 function frame(now) {
   requestAnimationFrame(frame);
-  if (!sc || (O ? O.hidden() : document.hidden)) return;     // hidden tab: no frame (the battery)
+  if (!sc || (O ? O.hidden() : document.hidden)) return;     // hidden / covered tab: no frame (the battery)
+  let gap = O && O.frameGap ? O.frameGap() : 0;              // idle 30 / 15 fps, battery saver, 3D Off 2 fps (docs/OLYMPUS_PERF.md)
+  if (S.reduced && O && O.idle && O.idle()) gap = Math.max(gap, 500);    // reduced / 3D Off: an idle scene redraws twice a second at most
+  if (gap) { if (now - gapAt < gap - 3) return; S.perf = []; }   // a deliberate cap is not a slow phone: no auto LITE from capped frames
+  gapAt = now;
   const sec = (now - clock0) / 1000;
   const k = S.reduced ? MAP.H + 1 : Math.min(MAP.H + 1, kAt(sec) + (sec >= DUR() ? 1 : 0));
   if (S.follow) stepFollow(now);
@@ -262,6 +273,7 @@ function openFollow(i) {
   if (!th) return;
   const s = scen();
   const f = s.kind === 'eval' ? C.followEval(S.data, s, th) : C.followMoney(S.data, s, th);
+  closeLab();
   S.sel = i;
   S.follow = { th, f, t0: performance.now(), row: -1 };
   fillRows(f.rows.map((r) => ({ ...r, room: r.room ? `room ${r.room}` : '' })));
@@ -271,7 +283,7 @@ function openFollow(i) {
 function openNext10() {
   const s = scen();
   if (!s || s.kind !== 'eval') return;
-  closeSheet();
+  closeLab(); closeSheet();
   const n = C.nextSessions(S.data, s, 10);
   fillRows(n.rows.map((r) => ({ k: r.k, text: r.text, bar: [r.pass, r.fail, r.open],
     move: `${C.fmtPct(r.pass)} pass · ${C.fmtPct(r.fail)} fail`, bal: r.p50 == null ? '—' : C.fmtUsd(r.p50, true),
@@ -295,6 +307,7 @@ function stepFollow(now) {
     if (r >= 0 && lis[r] && !S.reduced) lis[r].scrollIntoView({ block: 'nearest' });
   }
 }
+function closeLab() { if (lab) lab.close(); $('labBtn').setAttribute('aria-expanded', 'false'); }
 function closeSheet() {
   S.sel = -1; S.follow = null; S.sheet = null;
   $('follow').hidden = true;

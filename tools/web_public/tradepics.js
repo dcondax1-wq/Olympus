@@ -198,7 +198,7 @@ border:1px solid color-mix(in srgb,var(--c) 45%,transparent);border-radius:11px;
 .tp-lb-top{display:flex;align-items:center;gap:10px;padding:calc(8px + env(safe-area-inset-top,0px)) 12px 6px;font-size:13px}.tp-lb-t{flex:1;min-width:0;font-weight:650;line-height:1.35}
 .tp-lb-n{opacity:.7;font-size:12px}.tp-lb-x{width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:#fff;font-size:24px;line-height:1;cursor:pointer}
 .tp-lb-stage{position:relative;flex:1;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;touch-action:none;cursor:zoom-in}
-.tp-lb.zoom .tp-lb-stage{cursor:grab}.tp-lb-img{max-width:100%;max-height:100%;transform-origin:center;user-select:none;-webkit-user-drag:none;transition:opacity .2s;opacity:0}
+.tp-lb.zoom .tp-lb-stage{cursor:grab}.tp-lb-img{max-width:100%;max-height:100%;transform-origin:center;-webkit-user-select:none;user-select:none;-webkit-user-drag:none;transition:opacity .2s;opacity:0}
 .tp-lb.ok .tp-lb-img{opacity:1}.tp-lb-spin{position:absolute;width:30px;height:30px;border-radius:50%;border:3px solid rgba(255,255,255,.15);border-top-color:#6d7cff;animation:tp-rot 0.9s linear infinite}
 .tp-lb.ok .tp-lb-spin{display:none}@keyframes tp-rot{to{transform:rotate(360deg)}}
 .tp-lb-p,.tp-lb-q{position:absolute;top:50%;width:44px;height:64px;margin-top:-32px;border:0;border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font-size:34px;cursor:pointer}

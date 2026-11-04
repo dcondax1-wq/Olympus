@@ -462,6 +462,11 @@ def main_lit(lm):
     p26 = periods.get("2026 YTD", {})
     print(f"wrote {OUT} (LIT): {len(trades)} trades, {len(days)} sessions | 2026: {p26.get('trades')} trades, PF {p26.get('pf')}, "
           f"net {p26.get('net')}, max DD {p26.get('max_dd')} | {time.time() - t0:.0f}s")
+    try:                                    # keep Oracle's Prophecy odds (oracle/prophecy.json) in step with this replay
+        from tools import oracle_prophecy_stats
+        oracle_prophecy_stats.main([])
+    except Exception as e:                  # noqa: BLE001 - a side file must never fail the export
+        print(f"prophecy.json not refreshed ({e.__class__.__name__}: {e})")
 
 
 def main(procs=11):

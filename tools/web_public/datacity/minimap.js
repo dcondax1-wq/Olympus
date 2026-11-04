@@ -1,5 +1,5 @@
-// The minimap: every district as a square in its sign colour, the plaza, the harbor, the watched buildings, and the
-// camera with its view wedge. Redrawn a few times a second (never in the frame loop's hot path); a tap reports the world
+// The minimap: every district as a square in its sign colour, the plaza, the harbor, the river, the monorail loop with its stations,
+// the gold ideas (gold dots), the search matches (cyan dots), the watched buildings, and the camera with its view wedge. Redrawn a few times a second (never in the frame loop's hot path); a tap reports the world
 // point and the district under it.
 const SIZE = 112;            // CSS px
 
@@ -16,6 +16,9 @@ export class Minimap {
     this.span = Math.max(b.x1 - b.x0, b.z1 - b.z0) + pad * 2;
     this.cx = (b.x0 + b.x1) / 2; this.cz = (b.z0 + b.z1) / 2;
     this.pins = [];
+    this.gold = [];          // [x, z] of the gold ideas
+    this.hits = [];          // [x, z] of the search matches
+    this.R = null;           // routes(): the river and the monorail
     this.t = 0;
     canvas.addEventListener('click', (e) => {
       const r = canvas.getBoundingClientRect();
@@ -23,6 +26,14 @@ export class Minimap {
       const d = L.districts.find((q) => Math.abs(q.cx - x) <= (q.wide ? q.w / 2 : q.half) && Math.abs(q.cz - z) <= q.half) || null;
       onPick(x, z, d);
     });
+  }
+
+  /** the river and the monorail: draw them and widen the map to hold the river */
+  fit(R) {
+    this.R = R;
+    let r = 0;
+    for (const [x, z] of R.river.concat(R.rail)) r = Math.max(r, Math.abs(x - this.cx), Math.abs(z - this.cz));
+    this.span = Math.max(this.span, r * 2 + 14);
   }
 
   toMap(x, z) { return [((x - this.cx) / this.span + 0.5) * SIZE, ((z - this.cz) / this.span + 0.5) * SIZE]; }
@@ -45,9 +56,25 @@ export class Minimap {
       g.fillRect(x - hw, y - hh, hw * 2, hh * 2);
       g.strokeRect(x - hw, y - hh, hw * 2, hh * 2);
     }
+    if (this.R) {
+      g.strokeStyle = 'rgba(63,170,255,.75)'; g.lineWidth = 2.2; g.lineJoin = 'round';
+      g.beginPath();
+      this.R.river.forEach(([x, z], i) => { const [a, b] = this.toMap(x, z); if (i) g.lineTo(a, b); else g.moveTo(a, b); });
+      g.stroke();
+      g.strokeStyle = 'rgba(255,255,255,.55)'; g.lineWidth = 1; g.setLineDash([2, 2]);
+      g.beginPath();
+      this.R.rail.forEach(([x, z], i) => { const [a, b] = this.toMap(x, z); if (i) g.lineTo(a, b); else g.moveTo(a, b); });
+      g.closePath(); g.stroke(); g.setLineDash([]);
+      g.fillStyle = '#ffffff';
+      for (const st of this.R.stations) { const [a, b] = this.toMap(st.x, st.z); g.fillRect(a - 1.2, b - 1.2, 2.4, 2.4); }
+    }
     const [px, py] = this.toMap(0, 0);
     g.fillStyle = '#3fd8ff';
     g.beginPath(); g.arc(px, py, Math.max(2, this.L.plazaR * s * 0.5), 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#ffc94a';
+    for (const [x, z] of this.gold) { const [a, b] = this.toMap(x, z); g.beginPath(); g.arc(a, b, 2.2, 0, Math.PI * 2); g.fill(); }
+    g.fillStyle = '#3fd8ff';
+    for (const [x, z] of this.hits) { const [a, b] = this.toMap(x, z); g.fillRect(a - 1, b - 1, 2, 2); }
     g.fillStyle = '#ffd36b';
     for (const [x, z] of this.pins) { const [a, b] = this.toMap(x, z); g.fillRect(a - 1.5, b - 1.5, 3, 3); }
     const [cx, cy] = this.toMap(camera.position.x, camera.position.z), [tx, ty] = this.toMap(target.x, target.z);

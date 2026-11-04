@@ -101,7 +101,7 @@ def mksite(tmp, name, h, c, k):
 def part_a():
     html = rd("index.html")
     check("a. the OLYMPUS kit: olympus.css, themes.js, olympus.js (data-app=argus) all at ?v=o2",
-          all(s in html for s in ('../olympus/olympus.css?v=o2', '../olympus/themes.js?v=o2', '../olympus/olympus.js?v=o2" data-app="argus"')))
+          all(s in html for s in ('../olympus/olympus.css?v=o3', '../olympus/themes.js?v=o3', '../olympus/olympus.js?v=o3" data-app="argus"')))
     check("a. title Argus, a description, theme-color = the page colour, the Jarvis icon like the siblings",
           "<title>Argus</title>" in html and 'name="description"' in html and 'content="#050912"' in html and "../jarvis/icon-192.png" in html and "#050912" in rd("argus.css") + html)
     srcs = re.findall(r'(?:src|href)="([^"]+)"', html)
@@ -125,7 +125,7 @@ def part_a():
           and card["status"]["level"] in ("ok", "off", "warn", "bad") and 60 <= card["stale_after"] <= 14 * 86400 and len(card["status"]["label"]) <= 48
           and all(len(x) <= 120 for x in card["lines"]), card)
     css = rd("argus.css")
-    check("a. the dock and the sheet keep the bottom-right 80 x 160 px free (right padding 88, sheet ends 166 px up)", "padding: 8px calc(88px" in css and "bottom: calc(166px" in css)
+    check("a. the dock and the sheet keep the bottom-right 80 x 160 px free (right padding 88, sheet ends 166 px up)", "padding: 8px calc(88px" in css and ("bottom: calc(166px" in css or "bottom: calc(var(--dock-h) + 16px" in css))   # 2026-11-04: the Money tab made the tabs a 2 x 2 grid: the dock is taller and the sheet ends 16 px above it
     check("a. the app list names all 13 OLYMPUS apps that have a card", all(f"['{a}'," in rd("arguscore.js") for a in APPS))
 
 

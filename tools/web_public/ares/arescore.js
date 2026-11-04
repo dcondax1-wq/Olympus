@@ -159,6 +159,85 @@ export function accountFromSite(site) {
   return null;
 }
 
+// ------------------------------------------------------------------------------------------------ 2026-11-04: scenarios, the journal, the
+// "rules you broke" tracker, the live drawdown tie-in and the share card (pure; aresdesk.js is the screen)
+
+/** Scenario presets for the Account tab: what the account looks like at a moment of a Builder 50K / 25K life (numbers from the plan). */
+export const SCENARIOS = [
+  { id: 'e50', plan: '50k', label: 'Eval 50K · day one' }, { id: 'e25', plan: '25k', label: 'Eval 25K · day one' },
+  { id: 'e50m', plan: '50k', label: 'Eval 50K · 40% there' }, { id: 'e25m', plan: '25k', label: 'Eval 25K · 40% there' },
+  { id: 'd50', plan: '50k', label: 'Eval 50K · after a stop-out' }, { id: 'd25', plan: '25k', label: 'Eval 25K · after a stop-out' },
+  { id: 'f50', plan: '50k', label: 'Funded 50K · buffer built' }, { id: 'f25', plan: '25k', label: 'Funded 25K · buffer built' },
+];
+/** The state patch of a scenario (the page merges it into its own state; trades / stop-outs of the day reset). */
+export function scenarioPatch(rules, id) {
+  const sc = SCENARIOS.find((s) => s.id === id);
+  if (!sc) return null;
+  const p = planOf(rules, sc.plan), kind = id[0], base = { plan: sc.plan, stage: kind === 'f' ? 'funded' : 'eval', today: '', tradesToday: 0, lossesToday: 0, checks: {}, news: false, hedge: false, botBalance: false };
+  let bal = p.start, peak = p.start;
+  if (id.endsWith('m')) { bal = peak = p.start + Math.round(p.target * 0.4); }
+  if (kind === 'd') { const loss = Math.round(p.mll * 0.45); bal = p.start - loss; peak = p.start; base.today = String(-loss); base.tradesToday = 1; base.lossesToday = 1; }
+  if (kind === 'f') { bal = peak = p.start + p.buffer; }
+  return { ...base, balance: String(bal), peak: String(peak) };
+}
+
+const REASON_LABEL = { clock: 'Traded outside the market hours', dead: 'Traded a dead account', passed: 'Kept trading after the target', dll: 'Traded after the daily loss limit', count: 'Took more trades than my own cap',
+  losses: 'Traded after my own stop-out limit', hedge: 'Held both sides', input: 'Traded with no stop written', wide: 'Took a stop too wide for the room', list: 'Went before finishing the checklist' };
+const WARN_LABEL = { big: 'Risked more than 60% of the room', thin: 'Traded with two stop-outs left', news: 'Traded into the news', tight: 'Used a stop tighter than the bot\'s', far: 'Used a stop wider than the bot\'s', loss1: 'Made up for a loss' };
+
+/** One journal line from a verdict (what the war room said), whether you took the trade, and the ritual flag. */
+export function journalEntry(R, st, now = new Date(), taken = false, ritual = false) {
+  const z = R.size, halts = R.reasons.filter((x) => x.level === 'halt').map((x) => x.id), warns = R.reasons.filter((x) => x.level === 'warn').map((x) => x.id);
+  return { t: (now instanceof Date ? now : new Date(now)).toISOString(), level: R.level, plan: st.plan, stage: st.stage, inst: z.inst, side: z.side || st.side, pts: z.valid ? Math.round(z.pts * 100) / 100 : null,
+    n: z.valid ? z.n : 0, risk: z.valid ? Math.round(z.risk * 100) / 100 : null, room: Math.round(z.room), checks: R.checks.done, of: R.checks.total, halts, warns, taken: !!taken, ritual: !!ritual };
+}
+
+/** "Rules you broke": from the journal, the taken trades that the war room had stopped (HALT), sent to WAIT (list unfinished), or warned about.
+ *  Self-reported: nothing here sees a broker. Last `days` days. cleanDays = days since the last broken entry (null = none on record). */
+export function brokenRules(list, now = new Date(), days = 30) {
+  const from = +now - days * 864e5, rows = (Array.isArray(list) ? list : []).filter((e) => isObj(e) && Date.parse(e.t) >= from);
+  const broke = new Map(), warned = new Map();
+  let last = null, brokenEntries = 0;
+  for (const e of rows) {
+    if (!e.taken) continue;
+    const ids = e.level === 'halt' ? (e.halts || []) : e.level === 'wait' ? ['list'] : [];
+    if (ids.length) { brokenEntries++; last = Math.max(last ?? 0, Date.parse(e.t)); }
+    for (const id of ids) broke.set(id, (broke.get(id) || 0) + 1);
+    for (const id of e.warns || []) warned.set(id, (warned.get(id) || 0) + 1);
+  }
+  const by = (m, L) => [...m.entries()].map(([id, n]) => ({ id, n, label: L[id] || id })).sort((a, b) => b.n - a.n);
+  return { days, entries: rows.length, taken: rows.filter((e) => e.taken).length, brokenEntries, by: by(broke, REASON_LABEL), warned: by(warned, WARN_LABEL),
+    cleanDays: last == null ? null : Math.floor((+now - last) / 864e5), goClean: rows.filter((e) => e.taken && e.level === 'go').length,
+    ritualShare: rows.length ? rows.filter((e) => e.ritual).length / rows.length : null };
+}
+
+/** The live drawdown left: room to the floor against the plan's max loss, a 0..1 share, and a tone (calm / watch / storm). */
+export function drawdownLeft(rules, st, acct = null) {
+  const p = planOf(rules, st.plan), bal = acct ? acct.balance : num(st.balance) ?? p.start, floor = acct ? acct.floor : floorOf(p, st.peak), room = bal - floor;
+  const frac = Math.max(0, Math.min(1, p.mll > 0 ? room / p.mll : 0));
+  return { room, mll: p.mll, frac, tone: room <= 0 ? 'dead' : frac < 0.25 ? 'storm' : frac < 0.55 ? 'watch' : 'calm', live: !!acct, floor, bal };
+}
+
+/** The account the Forum-style home.json describes: the first account with an eval block (balance, floor). */
+export function accountFromHome(home) {
+  const list = Array.isArray(home && home.accounts) ? home.accounts : [];
+  for (const a of list) {
+    const e = a && a.eval;
+    if (isObj(e) && Number.isFinite(+e.balance) && Number.isFinite(+e.floor)) {
+      return { name: String(a.name || a.id || 'Eval').slice(0, 40), balance: +e.balance, floor: +e.floor, today: Number.isFinite(+e.today) ? +e.today : 0, start: Number.isFinite(+e.start_balance) ? +e.start_balance : null, mll: null, from: 'home' };
+    }
+  }
+  return null;
+}
+
+/** What the share card says: the verdict, the size and the money, in plain words (the page draws it). */
+export function shareSpec(R, st) {
+  const z = R.size, w = { go: 'GO', wait: 'WAIT', halt: 'HALT' }[R.level];
+  const lines = z.valid ? [`${z.n} ${z.inst} ${z.side || ''}, stop ${z.pts.toFixed(1)} pts`, `A stop-out costs ${usd(z.risk)}`, `Room after it: ${usd(z.room_after)}`, `Checklist ${R.checks.done}/${R.checks.total}`] : ['Enter an entry and a stop', `Checklist ${R.checks.done}/${R.checks.total}`];
+  const why = R.reasons.filter((x) => x.level === 'halt').slice(0, 2).map((x) => x.text);
+  return { word: w, level: R.level, title: `${st.plan === '25k' ? 'Builder 25K' : 'Builder 50K'} · ${st.stage}`, lines: lines.concat(why), note: 'A calculator for the human. Paper rules, not advice.' };
+}
+
 /** The bot's real stops (extras.trades rows: tcols names the columns): median / p25 / p75 of risk_pts. */
 export function botStops(site) {
   const ex = site && site.extras;
@@ -170,4 +249,79 @@ export function botStops(site) {
   const at = (p) => v[Math.min(v.length - 1, Math.floor(p * (v.length - 1)))];
   const qs = q >= 0 ? ex.trades.map((t) => +t[q]).filter((x) => Number.isFinite(x) && x > 0).sort((a, b) => a - b) : [];
   return { n: v.length, p25: at(0.25), med: at(0.5), p75: at(0.75), max: v[v.length - 1], qty_med: qs.length ? qs[Math.floor(qs.length / 2)] : null };
+}
+
+// ---------------------------------------------------------------------------------------------- JOB 4+5 follow-up (2026-11-04): money maths
+// Five more pure functions for the owner's decisions: what a win must be worth (R and $), which stop width buys which size, how a losing
+// streak eats the drawdown, how fast a pass has to go, the day's loss budget and a funded payout check. Every $ comes with its R.
+// A calculator for the human: nothing here talks to a broker or a bot.
+
+const pctTxt = (x) => `${Math.round(x * 100)}%`;
+/** drawdown left as the page says it: "Drawdown left $1,400 of $2,000 max loss" */
+export const ddText = (room, mll) => (room > mll ? `Drawdown left ${usd(room)} (floor locked, max loss ${usd(mll)})` : `Drawdown left ${usd(Math.max(0, room))} of ${usd(mll)} max loss`);
+
+/** the odds maths for the trade on screen: what each R is worth in dollars (costs in), and the win rate each R needs to break even */
+export function oddsPlan(rules, inp, rs = [1, 1.5, 2, 3, 5, 8]) {
+  const z = sizeTrade(rules, inp);
+  if (!z.valid) return { valid: false, why: z.why, rows: [] };
+  const win1 = z.pts * z.pv - z.comm, loss = z.loss1;           // per contract: a 1R win (after the commission) and a stop-out (slippage + commission)
+  const rows = rs.map((r) => {
+    const win = z.pts * r * z.pv - z.comm, need = loss / (win + loss);
+    return { r, pts: z.pts * r, usd: win * Math.max(1, z.n), perContract: win, need, needTxt: pctTxt(need), price: z.side === 'long' ? +(num(inp.entry) + z.pts * r).toFixed(2) : +(num(inp.entry) - z.pts * r).toFixed(2) };
+  });
+  const lossR = loss / Math.max(1e-9, z.pts * z.pv);              // the stop-out in R: slippage and commission make it a little over 1R
+  return { valid: true, n: z.n, inst: z.inst, loss, lossR, win1, rows, lossAll: loss * Math.max(1, z.n), ref: 'The bot wins about 56% of its trades (2026) and banks 8R when it wins big: at 8R it needs only ' + pctTxt(rows.length ? loss / (z.pts * 8 * z.pv - z.comm + loss) : 0) + '.' };
+}
+
+/** the stop ladder: for the same risk budget, how many contracts each stop width allows ("a wide stop means fewer micros") */
+export function stopLadder(rules, inp, stops = [8, 12, 16, 20, 30, 40, 60, 80]) {
+  const z = sizeTrade(rules, { ...inp, entry: 1000, stop: inp.side === 'short' ? 1010 : 990 });   // only for the plan's numbers, budget and the instrument
+  const budget = z.budget, out = [];
+  for (const pts of stops) {
+    const loss1 = (pts + z.slip) * z.pv + z.comm, by = Math.floor(budget / loss1), n = Math.max(0, Math.min(by, z.maxC));
+    out.push({ pts, loss1, n, risk: n * loss1, roomAfter: z.room - n * loss1, win2: n * (pts * 2 * z.pv - z.comm), capped: by > z.maxC, fits: n > 0 });
+  }
+  return { inst: z.inst, budget, room: z.room, mll: z.plan.mll, rows: out };
+}
+
+/** a losing streak at the size on screen: after k stop-outs in a row, the balance, the drawdown left and whether the floor is gone */
+export function streakTable(rules, inp, n = 5) {
+  const z = sizeTrade(rules, inp);
+  if (!z.valid || z.n < 1) return { valid: false, rows: [], why: z.valid ? 'No size fits this stop.' : z.why };
+  const rows = []; let bal = z.bal;
+  for (let k = 1; k <= n; k++) {
+    bal -= z.risk;
+    const room = bal - z.floor;                                    // the floor does not fall when you lose: it only trails the best end-of-day
+    rows.push({ k, bal, room, dead: room <= 0, text: ddText(room, z.plan.mll), R: -k * (z.risk / Math.max(1, z.risk)) });
+  }
+  const first = rows.find((r) => r.dead);
+  return { valid: true, risk: z.risk, mll: z.plan.mll, rows, bustAt: first ? first.k : null,
+    plain: first ? `${first.k} stop-outs in a row at this size end the account.` : `${n} stop-outs in a row would still leave ${usd(rows[rows.length - 1].room)} of room.` };
+}
+
+/** how fast a pass has to go: the dollars to the target, per session over N sessions, and the winners that takes at the size on screen */
+export function passPace(rules, inp, sessions = 10) {
+  const z = sizeTrade(rules, inp), toT = Math.max(0, z.to_target);
+  const win2 = z.valid && z.n ? z.n * (z.pts * 2 * z.pv - z.comm) : null;
+  return { toTarget: toT, sessions, perSession: toT / sessions, winners2R: win2 ? Math.ceil(toT / win2) : null, win2, tradesAWeek: '2-4',
+    plain: toT <= 0 ? 'The target is reached.' : `${usd(toT)} to go: about ${usd(toT / sessions)} a session to pass inside ${sessions} sessions (2 weeks).${win2 ? ` At this size a 2R winner pays ${usd(win2)}: ${Math.ceil(toT / win2)} of them.` : ''}` };
+}
+
+/** today's loss budget: the daily loss left and how many full stop-outs of this size fit inside it (the account's room is the other limit) */
+export function dayBudget(rules, inp) {
+  const z = sizeTrade(rules, inp), p = z.plan;
+  if (!(p.dll > 0)) return { has: false, plain: 'This plan has no daily loss limit.' };
+  const left = Math.max(0, z.dllLeft), outs = z.valid && z.risk > 0 ? Math.floor(left / z.risk) : null;
+  return { has: true, dll: p.dll, left, used: p.dll - left, frac: p.dll > 0 ? left / p.dll : 0, outs, text: `Daily loss left ${usd(left)} of ${usd(p.dll)}`,
+    plain: outs == null ? `Daily loss left ${usd(left)} of ${usd(p.dll)}.` : `${outs} full stop-out${outs === 1 ? '' : 's'} of this size fit in today's limit (${usd(left)} left).` };
+}
+
+/** a funded account's payout check: the profit above the buffer, what MFFU may pay and what reaches you after the split */
+export function payoutCheck(rules, inp) {
+  const p = planOf(rules, inp.plan), bal = num(inp.balance) ?? p.start, above = bal - (p.start + p.buffer);
+  if (inp.stage !== 'funded') return { funded: false, plain: 'Payouts start once the evaluation is passed and the account is funded.' };
+  const gross = above >= p.pay_min ? Math.min(p.pay_max, above) : 0, net = gross * p.split;
+  return { funded: true, above, buffer: p.buffer, min: p.pay_min, gross, net, ok: above >= p.pay_min,
+    plain: above >= p.pay_min ? `You may ask for ${usd(p.pay_min)} to ${usd(gross)} (the profit above the buffer, at most ${usd(p.pay_max)}); ${usd(net)} reaches you at ${usd(gross)} after the ${pctTxt(p.split)} split. Keep your best day under ${pctTxt(p.cons)} of the cycle's profit.`
+      : `Not yet: ${usd(Math.max(0, p.pay_min - above))} more profit above the ${usd(p.buffer)} buffer before the first ${usd(p.pay_min)} payout.` };
 }

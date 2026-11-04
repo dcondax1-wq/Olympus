@@ -1,0 +1,904 @@
+{
+ "sessions": 206,
+ "split": 128,
+ "prices": {
+  "L50": 91.8,
+  "L25": 63.0,
+  "A25": 43.0,
+  "B25": 63.0
+ },
+ "plans": {
+  "1 account: LIT 50K": {
+   "H1": {
+    "per_month": 718,
+    "net_6m": 4306,
+    "p10_net_6m": 1325,
+    "p90_net_6m": 7828,
+    "neg_6m_pct": 5.5,
+    "owner_payouts_6m": 4440,
+    "fees_6m": 134,
+    "evals_bought_6m": 1.46,
+    "fails_6m": 0.46,
+    "fails_per_month": 0.08,
+    "evals_per_month": 0.24,
+    "any_payout_pct": 94.5,
+    "first_payout_session_med": 48.0,
+    "first_payout_session_p90": 93.30000000000001,
+    "joint_breach_windows_per_path": 0.0,
+    "by_account": {
+     "L50#0": {
+      "owner_payouts_6m": 4440,
+      "fees_6m": 134,
+      "net_per_month": 718,
+      "fails_6m": 0.46,
+      "payouts_n": 2.79
+     }
+    }
+   },
+   "H2": {
+    "per_month": 477,
+    "net_6m": 2859,
+    "p10_net_6m": -184,
+    "p90_net_6m": 5502,
+    "neg_6m_pct": 13.5,
+    "owner_payouts_6m": 2988,
+    "fees_6m": 129,
+    "evals_bought_6m": 1.41,
+    "fails_6m": 0.41,
+    "fails_per_month": 0.07,
+    "evals_per_month": 0.23,
+    "any_payout_pct": 86.5,
+    "first_payout_session_med": 58.5,
+    "first_payout_session_p90": 106.0,
+    "joint_breach_windows_per_path": 0.0,
+    "by_account": {
+     "L50#0": {
+      "owner_payouts_6m": 2988,
+      "fees_6m": 129,
+      "net_per_month": 477,
+      "fails_6m": 0.41,
+      "payouts_n": 1.97
+     }
+    }
+   },
+   "2026": {
+    "per_month": 594,
+    "net_6m": 3564,
+    "p10_net_6m": 277,
+    "p90_net_6m": 6308,
+    "neg_6m_pct": 10.0,
+    "owner_payouts_6m": 3698,
+    "fees_6m": 134,
+    "evals_bought_6m": 1.46,
+    "fails_6m": 0.46,
+    "fails_per_month": 0.08,
+    "evals_per_month": 0.24,
+    "any_payout_pct": 90.0,
+    "first_payout_session_med": 55.0,
+    "first_payout_session_p90": 101.0,
+    "joint_breach_windows_per_path": 0.0,
+    "by_account": {
+     "L50#0": {
+      "owner_payouts_6m": 3698,
+      "fees_6m": 134,
+      "net_per_month": 594,
+      "fails_6m": 0.46,
+      "payouts_n": 2.33
+     }
+    }
+   }
+  },
+  "1 account: ATLAS 25K": {
+   "H1": {
+    "per_month": 623,
+    "net_6m": 3740,
+    "p10_net_6m": 3028,
+    "p90_net_6m": 3957,
+    "neg_6m_pct": 0.0,
+    "owner_payouts_6m": 3855,
+    "fees_6m": 115,
+    "evals_bought_6m": 2.68,
+    "fails_6m": 1.68,
+    "fails_per_month": 0.28,
+    "evals_per_month": 0.45,
+    "any_payout_pct": 100.0,
+    "first_payout_session_med": 21.0,
+    "first_payout_session_p90": 50.0,
+    "joint_breach_windows_per_path": 0.0,
+    "by_account": {
+     "A25#0": {
+      "owner_payouts_6m": 3855,
+      "fees_6m": 115,
+      "net_per_month": 623,
+      "fails_6m": 1.68,
+      "payouts_n": 4.6
+     }
+    }
+   },
+   "H2": {
+    "per_month": 519,
+    "net_6m": 3117,
+    "p10_net_6m": 1428,
+    "p90_net_6m": 3957,
+    "neg_6m_pct": 1.2,
+    "owner_payouts_6m": 3223,
+    "fees_6m": 106,
+    "evals_bought_6m": 2.46,
+    "fails_6m": 1.46,
+    "fails_per_month": 0.24,
+    "evals_per_month": 0.41,
+    "any_payout_pct": 98.8,
+    "first_payout_session_med": 32.0,
+    "first_payout_session_p90": 70.0,
+    "joint_breach_windows_per_path": 0.0,
+    "by_account": {
+     "A25#0": {
+      "owner_payouts_6m": 3223,
+      "fees_6m": 106,
+      "net_per_month": 519,
+      "fails_6m": 1.46,
+      "payouts_n": 3.88
+     }
+    }
+   },
+   "2026": {
+    "per_month": 585,
+    "net_6m": 3511,
+    "p10_net_6m": 2185,
+    "p90_net_6m": 3957,
+    "neg_6m_pct": 0.5,
+    "owner_payouts_6m": 3625,
+    "fees_6m": 114,
+    "evals_bought_6m": 2.65,
+    "fails_6m": 1.65,
+    "fails_per_month": 0.28,
+    "evals_per_month": 0.44,
+    "any_payout_pct": 99.5,
+    "first_payout_session_med": 24.0,
+    "first_payout_session_p90": 54.0,
+    "joint_breach_windows_per_path": 0.0,
+    "by_account": {
+     "A25#0": {
+      "owner_payouts_6m": 3625,
+      "fees_6m": 114,
+      "net_per_month": 585,
+      "fails_6m": 1.65,
+      "payouts_n": 4.29
+     }
+    }
+   }
+  },
+  "1 account: BLITZ 25K": {
+   "H1": {
+    "per_month": 191,
+    "net_6m": 1147,
+    "p10_net_6m": -126,
+    "p90_net_6m": 2674,
+    "neg_6m_pct": 15.2,
+    "owner_payouts_6m": 1251,
+    "fees_6m": 104,
+    "evals_bought_6m": 1.65,
+    "fails_6m": 0.65,
+    "fails_per_month": 0.11,
+    "evals_per_month": 0.27,
+    "any_payout_pct": 85.0,
+    "first_payout_session_med": 57.0,
+    "first_payout_session_p90": 100.0,
+    "joint_breach_windows_per_path": 0.0,
+    "by_account": {
+     "B25#0": {
+      "owner_payouts_6m": 1251,
+      "fees_6m": 104,
+      "net_per_month": 191,
+      "fails_6m": 0.65,
+      "payouts_n": 2.23
+     }
+    }
+   },
+   "H2": {
+    "per_month": 140,
+    "net_6m": 839,
+    "p10_net_6m": -126,
+    "p90_net_6m": 2269,
+    "neg_6m_pct": 24.5,
+    "owner_payouts_6m": 942,
+    "fees_6m": 103,
+    "evals_bought_6m": 1.63,
+    "fails_6m": 0.63,
+    "fails_per_month": 0.1,
+    "evals_per_month": 0.27,
+    "any_payout_pct": 76.2,
+    "first_payout_session_med": 67.0,
+    "first_payout_session_p90": 109.0,
+    "joint_breach_windows_per_path": 0.0,
+    "by_account": {
+     "B25#0": {
+      "owner_payouts_6m": 942,
+      "fees_6m": 103,
+      "net_per_month": 140,
+      "fails_6m": 0.63,
+      "payouts_n": 1.82
+     }
+    }
+   },
+   "2026": {
+    "per_month": 201,
+    "net_6m": 1206,
+    "p10_net_6m": -63,
+    "p90_net_6m": 2760,
+    "neg_6m_pct": 13.8,
+    "owner_payouts_6m": 1304,
+    "fees_6m": 99,
+    "evals_bought_6m": 1.56,
+    "fails_6m": 0.56,
+    "fails_per_month": 0.09,
+    "evals_per_month": 0.26,
+    "any_payout_pct": 86.8,
+    "first_payout_session_med": 58.0,
+    "first_payout_session_p90": 103.40000000000003,
+    "joint_breach_windows_per_path": 0.0,
+    "by_account": {
+     "B25#0": {
+      "owner_payouts_6m": 1304,
+      "fees_6m": 99,
+      "net_per_month": 201,
+      "fails_6m": 0.56,
+      "payouts_n": 2.37
+     }
+    }
+   }
+  },
+  "2 accounts: LIT 50K + ATLAS 25K": {
+   "H1": {
+    "per_month": 1341,
+    "net_6m": 8045,
+    "p10_net_6m": 5168,
+    "p90_net_6m": 11004,
+    "neg_6m_pct": 0.0,
+    "owner_payouts_6m": 8294,
+    "fees_6m": 249,
+    "evals_bought_6m": 4.14,
+    "fails_6m": 2.14,
+    "fails_per_month": 0.36,
+    "evals_per_month": 0.69,
+    "any_payout_pct": 100.0,
+    "first_payout_session_med": 20.0,
+    "first_payout_session_p90": 40.0,
+    "joint_breach_windows_per_path": 0.025,
+    "by_account": {
+     "L50#0": {
+      "owner_payouts_6m": 4440,
+      "fees_6m": 134,
+      "net_per_month": 718,
+      "fails_6m": 0.46,
+      "payouts_n": 2.79
+     },
+     "A25#1": {
+      "owner_payouts_6m": 3855,
+      "fees_6m": 115,
+      "net_per_month": 623,
+      "fails_6m": 1.68,
+      "payouts_n": 4.6
+     }
+    }
+   },
+   "H2": {
+    "per_month": 996,
+    "net_6m": 5976,
+    "p10_net_6m": 2930,
+    "p90_net_6m": 8665,
+    "neg_6m_pct": 0.2,
+    "owner_payouts_6m": 6211,
+    "fees_6m": 235,
+    "evals_bought_6m": 3.87,
+    "fails_6m": 1.86,
+    "fails_per_month": 0.31,
+    "evals_per_month": 0.64,
+    "any_payout_pct": 99.8,
+    "first_payout_session_med": 30.0,
+    "first_payout_session_p90": 62.0,
+    "joint_breach_windows_per_path": 0.02,
+    "by_account": {
+     "L50#0": {
+      "owner_payouts_6m": 2988,
+      "fees_6m": 129,
+      "net_per_month": 477,
+      "fails_6m": 0.41,
+      "payouts_n": 1.97
+     },
+     "A25#1": {
+      "owner_payouts_6m": 3223,
+      "fees_6m": 106,
+      "net_per_month": 519,
+      "fails_6m": 1.46,
+      "payouts_n": 3.88
+     }
+    }
+   },
+   "2026": {
+    "per_month": 1179,
+    "net_6m": 7075,
+    "p10_net_6m": 3722,
+    "p90_net_6m": 10222,
+    "neg_6m_pct": 0.0,
+    "owner_payouts_6m": 7324,
+    "fees_6m": 248,
+    "evals_bought_6m": 4.12,
+    "fails_6m": 2.12,
+    "fails_per_month": 0.35,
+    "evals_per_month": 0.69,
+    "any_payout_pct": 100.0,
+    "first_payout_session_med": 22.0,
+    "first_payout_session_p90": 48.10000000000002,
+    "joint_breach_windows_per_path": 0.04,
+    "by_account": {
+     "L50#0": {
+      "owner_payouts_6m": 3698,
+      "fees_6m": 134,
+      "net_per_month": 594,
+      "fails_6m": 0.46,
+      "payouts_n": 2.33
+     },
+     "A25#1": {
+      "owner_payouts_6m": 3625,
+      "fees_6m": 114,
+      "net_per_month": 585,
+      "fails_6m": 1.65,
+      "payouts_n": 4.29
+     }
+    }
+   }
+  },
+  "2 accounts: LIT 50K + BLITZ 25K": {
+   "H1": {
+    "per_month": 909,
+    "net_6m": 5452,
+    "p10_net_6m": 1598,
+    "p90_net_6m": 9031,
+    "neg_6m_pct": 3.0,
+    "owner_payouts_6m": 5690,
+    "fees_6m": 238,
+    "evals_bought_6m": 3.11,
+    "fails_6m": 1.11,
+    "fails_per_month": 0.18,
+    "evals_per_month": 0.52,
+    "any_payout_pct": 98.2,
+    "first_payout_session_med": 40.0,
+    "first_payout_session_p90": 73.80000000000001,
+    "joint_breach_windows_per_path": 0.035,
+    "by_account": {
+     "L50#0": {
+      "owner_payouts_6m": 4440,
+      "fees_6m": 134,
+      "net_per_month": 718,
+      "fails_6m": 0.46,
+      "payouts_n": 2.79
+     },
+     "B25#1": {
+      "owner_payouts_6m": 1251,
+      "fees_6m": 104,
+      "net_per_month": 191,
+      "fails_6m": 0.65,
+      "payouts_n": 2.23
+     }
+    }
+   },
+   "H2": {
+    "per_month": 616,
+    "net_6m": 3698,
+    "p10_net_6m": 1156,
+    "p90_net_6m": 6498,
+    "neg_6m_pct": 3.5,
+    "owner_payouts_6m": 3930,
+    "fees_6m": 232,
+    "evals_bought_6m": 3.03,
+    "fails_6m": 1.03,
+    "fails_per_month": 0.17,
+    "evals_per_month": 0.51,
+    "any_payout_pct": 97.8,
+    "first_payout_session_med": 50.0,
+    "first_payout_session_p90": 91.0,
+    "joint_breach_windows_per_path": 0.007,
+    "by_account": {
+     "L50#0": {
+      "owner_payouts_6m": 2988,
+      "fees_6m": 129,
+      "net_per_month": 477,
+      "fails_6m": 0.41,
+      "payouts_n": 1.97
+     },
+     "B25#1": {
+      "owner_payouts_6m": 942,
+      "fees_6m": 103,
+      "net_per_month": 140,
+      "fails_6m": 0.63,
+      "payouts_n": 1.82
+     }
+    }
+   },
+   "2026": {
+    "per_month": 795,
+    "net_6m": 4770,
+    "p10_net_6m": 1439,
+    "p90_net_6m": 8016,
+    "neg_6m_pct": 1.8,
+    "owner_payouts_6m": 5002,
+    "fees_6m": 233,
+    "evals_bought_6m": 3.03,
+    "fails_6m": 1.03,
+    "fails_per_month": 0.17,
+    "evals_per_month": 0.5,
+    "any_payout_pct": 98.8,
+    "first_payout_session_med": 44.0,
+    "first_payout_session_p90": 77.0,
+    "joint_breach_windows_per_path": 0.01,
+    "by_account": {
+     "L50#0": {
+      "owner_payouts_6m": 3698,
+      "fees_6m": 134,
+      "net_per_month": 594,
+      "fails_6m": 0.46,
+      "payouts_n": 2.33
+     },
+     "B25#1": {
+      "owner_payouts_6m": 1304,
+      "fees_6m": 99,
+      "net_per_month": 201,
+      "fails_6m": 0.56,
+      "payouts_n": 2.37
+     }
+    }
+   }
+  },
+  "3 accounts: LIT 50K + ATLAS 25K + BLITZ 25K": {
+   "H1": {
+    "per_month": 1532,
+    "net_6m": 9192,
+    "p10_net_6m": 5292,
+    "p90_net_6m": 12777,
+    "neg_6m_pct": 0.0,
+    "owner_payouts_6m": 9545,
+    "fees_6m": 353,
+    "evals_bought_6m": 5.79,
+    "fails_6m": 2.79,
+    "fails_per_month": 0.46,
+    "evals_per_month": 0.96,
+    "any_payout_pct": 100.0,
+    "first_payout_session_med": 19.0,
+    "first_payout_session_p90": 37.0,
+    "joint_breach_windows_per_path": 0.09,
+    "by_account": {
+     "L50#0": {
+      "owner_payouts_6m": 4440,
+      "fees_6m": 134,
+      "net_per_month": 718,
+      "fails_6m": 0.46,
+      "payouts_n": 2.79
+     },
+     "A25#1": {
+      "owner_payouts_6m": 3855,
+      "fees_6m": 115,
+      "net_per_month": 623,
+      "fails_6m": 1.68,
+      "payouts_n": 4.6
+     },
+     "B25#2": {
+      "owner_payouts_6m": 1251,
+      "fees_6m": 104,
+      "net_per_month": 191,
+      "fails_6m": 0.65,
+      "payouts_n": 2.23
+     }
+    }
+   },
+   "H2": {
+    "per_month": 1136,
+    "net_6m": 6815,
+    "p10_net_6m": 3549,
+    "p90_net_6m": 10141,
+    "neg_6m_pct": 0.5,
+    "owner_payouts_6m": 7152,
+    "fees_6m": 337,
+    "evals_bought_6m": 5.49,
+    "fails_6m": 2.49,
+    "fails_per_month": 0.42,
+    "evals_per_month": 0.92,
+    "any_payout_pct": 100.0,
+    "first_payout_session_med": 29.0,
+    "first_payout_session_p90": 56.0,
+    "joint_breach_windows_per_path": 0.07,
+    "by_account": {
+     "L50#0": {
+      "owner_payouts_6m": 2988,
+      "fees_6m": 129,
+      "net_per_month": 477,
+      "fails_6m": 0.41,
+      "payouts_n": 1.97
+     },
+     "A25#1": {
+      "owner_payouts_6m": 3223,
+      "fees_6m": 106,
+      "net_per_month": 519,
+      "fails_6m": 1.46,
+      "payouts_n": 3.88
+     },
+     "B25#2": {
+      "owner_payouts_6m": 942,
+      "fees_6m": 103,
+      "net_per_month": 140,
+      "fails_6m": 0.63,
+      "payouts_n": 1.82
+     }
+    }
+   },
+   "2026": {
+    "per_month": 1380,
+    "net_6m": 8281,
+    "p10_net_6m": 5001,
+    "p90_net_6m": 11766,
+    "neg_6m_pct": 0.0,
+    "owner_payouts_6m": 8628,
+    "fees_6m": 347,
+    "evals_bought_6m": 5.68,
+    "fails_6m": 2.68,
+    "fails_per_month": 0.45,
+    "evals_per_month": 0.95,
+    "any_payout_pct": 100.0,
+    "first_payout_session_med": 21.5,
+    "first_payout_session_p90": 43.0,
+    "joint_breach_windows_per_path": 0.06,
+    "by_account": {
+     "L50#0": {
+      "owner_payouts_6m": 3698,
+      "fees_6m": 134,
+      "net_per_month": 594,
+      "fails_6m": 0.46,
+      "payouts_n": 2.33
+     },
+     "A25#1": {
+      "owner_payouts_6m": 3625,
+      "fees_6m": 114,
+      "net_per_month": 585,
+      "fails_6m": 1.65,
+      "payouts_n": 4.29
+     },
+     "B25#2": {
+      "owner_payouts_6m": 1304,
+      "fees_6m": 99,
+      "net_per_month": 201,
+      "fails_6m": 0.56,
+      "payouts_n": 2.37
+     }
+    }
+   }
+  },
+  "4 accounts: + a LIT copy on a 25K": {
+   "H1": {
+    "per_month": 1635,
+    "net_6m": 9812,
+    "p10_net_6m": 5092,
+    "p90_net_6m": 14417,
+    "neg_6m_pct": 0.0,
+    "owner_payouts_6m": 10257,
+    "fees_6m": 445,
+    "evals_bought_6m": 7.17,
+    "fails_6m": 3.17,
+    "fails_per_month": 0.53,
+    "evals_per_month": 1.19,
+    "any_payout_pct": 100.0,
+    "first_payout_session_med": 19.0,
+    "first_payout_session_p90": 42.10000000000002,
+    "joint_breach_windows_per_path": 0.292,
+    "by_account": {
+     "L50#0": {
+      "owner_payouts_6m": 4440,
+      "fees_6m": 134,
+      "net_per_month": 718,
+      "fails_6m": 0.46,
+      "payouts_n": 2.79
+     },
+     "A25#1": {
+      "owner_payouts_6m": 2982,
+      "fees_6m": 104,
+      "net_per_month": 480,
+      "fails_6m": 1.42,
+      "payouts_n": 3.66
+     },
+     "B25#2": {
+      "owner_payouts_6m": 1104,
+      "fees_6m": 102,
+      "net_per_month": 167,
+      "fails_6m": 0.62,
+      "payouts_n": 2.0
+     },
+     "L25#3": {
+      "owner_payouts_6m": 1731,
+      "fees_6m": 105,
+      "net_per_month": 271,
+      "fails_6m": 0.67,
+      "payouts_n": 2.15
+     }
+    }
+   },
+   "H2": {
+    "per_month": 1175,
+    "net_6m": 7049,
+    "p10_net_6m": 3180,
+    "p90_net_6m": 10953,
+    "neg_6m_pct": 0.5,
+    "owner_payouts_6m": 7475,
+    "fees_6m": 426,
+    "evals_bought_6m": 6.84,
+    "fails_6m": 2.84,
+    "fails_per_month": 0.47,
+    "evals_per_month": 1.14,
+    "any_payout_pct": 100.0,
+    "first_payout_session_med": 29.0,
+    "first_payout_session_p90": 59.10000000000002,
+    "joint_breach_windows_per_path": 0.23,
+    "by_account": {
+     "L50#0": {
+      "owner_payouts_6m": 2988,
+      "fees_6m": 129,
+      "net_per_month": 477,
+      "fails_6m": 0.41,
+      "payouts_n": 1.97
+     },
+     "A25#1": {
+      "owner_payouts_6m": 2461,
+      "fees_6m": 98,
+      "net_per_month": 394,
+      "fails_6m": 1.27,
+      "payouts_n": 3.04
+     },
+     "B25#2": {
+      "owner_payouts_6m": 757,
+      "fees_6m": 100,
+      "net_per_month": 110,
+      "fails_6m": 0.59,
+      "payouts_n": 1.48
+     },
+     "L25#3": {
+      "owner_payouts_6m": 1268,
+      "fees_6m": 99,
+      "net_per_month": 195,
+      "fails_6m": 0.57,
+      "payouts_n": 1.61
+     }
+    }
+   },
+   "2026": {
+    "per_month": 1453,
+    "net_6m": 8716,
+    "p10_net_6m": 4425,
+    "p90_net_6m": 13620,
+    "neg_6m_pct": 0.0,
+    "owner_payouts_6m": 9150,
+    "fees_6m": 434,
+    "evals_bought_6m": 6.96,
+    "fails_6m": 2.96,
+    "fails_per_month": 0.49,
+    "evals_per_month": 1.16,
+    "any_payout_pct": 100.0,
+    "first_payout_session_med": 21.5,
+    "first_payout_session_p90": 46.0,
+    "joint_breach_windows_per_path": 0.305,
+    "by_account": {
+     "L50#0": {
+      "owner_payouts_6m": 3698,
+      "fees_6m": 134,
+      "net_per_month": 594,
+      "fails_6m": 0.46,
+      "payouts_n": 2.33
+     },
+     "A25#1": {
+      "owner_payouts_6m": 2890,
+      "fees_6m": 101,
+      "net_per_month": 465,
+      "fails_6m": 1.35,
+      "payouts_n": 3.49
+     },
+     "B25#2": {
+      "owner_payouts_6m": 1086,
+      "fees_6m": 97,
+      "net_per_month": 165,
+      "fails_6m": 0.54,
+      "payouts_n": 2.0
+     },
+     "L25#3": {
+      "owner_payouts_6m": 1476,
+      "fees_6m": 102,
+      "net_per_month": 229,
+      "fails_6m": 0.61,
+      "payouts_n": 1.86
+     }
+    }
+   }
+  },
+  "6 accounts: + a 2nd ATLAS 25K + a 2nd BLITZ 25K": {
+   "H1": {
+    "per_month": 1669,
+    "net_6m": 10015,
+    "p10_net_6m": 4596,
+    "p90_net_6m": 15130,
+    "neg_6m_pct": 0.5,
+    "owner_payouts_6m": 10601,
+    "fees_6m": 587,
+    "evals_bought_6m": 9.93,
+    "fails_6m": 3.93,
+    "fails_per_month": 0.65,
+    "evals_per_month": 1.65,
+    "any_payout_pct": 99.8,
+    "first_payout_session_med": 21.0,
+    "first_payout_session_p90": 53.0,
+    "joint_breach_windows_per_path": 1.415,
+    "by_account": {
+     "L50#0": {
+      "owner_payouts_6m": 4440,
+      "fees_6m": 134,
+      "net_per_month": 718,
+      "fails_6m": 0.46,
+      "payouts_n": 2.79
+     },
+     "A25#1": {
+      "owner_payouts_6m": 2099,
+      "fees_6m": 88,
+      "net_per_month": 335,
+      "fails_6m": 1.05,
+      "payouts_n": 2.62
+     },
+     "B25#2": {
+      "owner_payouts_6m": 791,
+      "fees_6m": 97,
+      "net_per_month": 116,
+      "fails_6m": 0.53,
+      "payouts_n": 1.51
+     },
+     "L25#3": {
+      "owner_payouts_6m": 663,
+      "fees_6m": 87,
+      "net_per_month": 96,
+      "fails_6m": 0.39,
+      "payouts_n": 0.83
+     },
+     "A25#4": {
+      "owner_payouts_6m": 1900,
+      "fees_6m": 85,
+      "net_per_month": 302,
+      "fails_6m": 0.98,
+      "payouts_n": 2.38
+     },
+     "B25#5": {
+      "owner_payouts_6m": 708,
+      "fees_6m": 95,
+      "net_per_month": 102,
+      "fails_6m": 0.51,
+      "payouts_n": 1.35
+     }
+    }
+   },
+   "H2": {
+    "per_month": 1203,
+    "net_6m": 7219,
+    "p10_net_6m": 2748,
+    "p90_net_6m": 11658,
+    "neg_6m_pct": 1.5,
+    "owner_payouts_6m": 7797,
+    "fees_6m": 578,
+    "evals_bought_6m": 9.77,
+    "fails_6m": 3.77,
+    "fails_per_month": 0.63,
+    "evals_per_month": 1.63,
+    "any_payout_pct": 99.0,
+    "first_payout_session_med": 30.0,
+    "first_payout_session_p90": 64.0,
+    "joint_breach_windows_per_path": 1.4,
+    "by_account": {
+     "L50#0": {
+      "owner_payouts_6m": 2988,
+      "fees_6m": 129,
+      "net_per_month": 477,
+      "fails_6m": 0.41,
+      "payouts_n": 1.97
+     },
+     "A25#1": {
+      "owner_payouts_6m": 1813,
+      "fees_6m": 87,
+      "net_per_month": 288,
+      "fails_6m": 1.01,
+      "payouts_n": 2.26
+     },
+     "B25#2": {
+      "owner_payouts_6m": 525,
+      "fees_6m": 98,
+      "net_per_month": 71,
+      "fails_6m": 0.55,
+      "payouts_n": 1.04
+     },
+     "L25#3": {
+      "owner_payouts_6m": 653,
+      "fees_6m": 88,
+      "net_per_month": 94,
+      "fails_6m": 0.39,
+      "payouts_n": 0.83
+     },
+     "A25#4": {
+      "owner_payouts_6m": 1431,
+      "fees_6m": 81,
+      "net_per_month": 225,
+      "fails_6m": 0.88,
+      "payouts_n": 1.78
+     },
+     "B25#5": {
+      "owner_payouts_6m": 387,
+      "fees_6m": 96,
+      "net_per_month": 48,
+      "fails_6m": 0.53,
+      "payouts_n": 0.78
+     }
+    }
+   },
+   "2026": {
+    "per_month": 1461,
+    "net_6m": 8767,
+    "p10_net_6m": 3872,
+    "p90_net_6m": 13844,
+    "neg_6m_pct": 0.8,
+    "owner_payouts_6m": 9352,
+    "fees_6m": 584,
+    "evals_bought_6m": 9.9,
+    "fails_6m": 3.9,
+    "fails_per_month": 0.65,
+    "evals_per_month": 1.65,
+    "any_payout_pct": 99.8,
+    "first_payout_session_med": 24.0,
+    "first_payout_session_p90": 61.0,
+    "joint_breach_windows_per_path": 1.475,
+    "by_account": {
+     "L50#0": {
+      "owner_payouts_6m": 3698,
+      "fees_6m": 134,
+      "net_per_month": 594,
+      "fails_6m": 0.46,
+      "payouts_n": 2.33
+     },
+     "A25#1": {
+      "owner_payouts_6m": 1975,
+      "fees_6m": 89,
+      "net_per_month": 314,
+      "fails_6m": 1.07,
+      "payouts_n": 2.45
+     },
+     "B25#2": {
+      "owner_payouts_6m": 772,
+      "fees_6m": 95,
+      "net_per_month": 113,
+      "fails_6m": 0.5,
+      "payouts_n": 1.48
+     },
+     "L25#3": {
+      "owner_payouts_6m": 625,
+      "fees_6m": 87,
+      "net_per_month": 90,
+      "fails_6m": 0.39,
+      "payouts_n": 0.8
+     },
+     "A25#4": {
+      "owner_payouts_6m": 1626,
+      "fees_6m": 86,
+      "net_per_month": 257,
+      "fails_6m": 1.0,
+      "payouts_n": 2.02
+     },
+     "B25#5": {
+      "owner_payouts_6m": 655,
+      "fees_6m": 93,
+      "net_per_month": 94,
+      "fails_6m": 0.47,
+      "payouts_n": 1.27
+     }
+    }
+   }
+  }
+ }
+}

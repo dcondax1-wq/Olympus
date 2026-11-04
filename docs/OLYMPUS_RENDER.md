@@ -121,9 +121,11 @@ Apps that switch tiers themselves (a LITE toggle) use `rc.forced || (rc.software
 |---|---|---|
 | The reactor | `jarvis/core-visual.js` | its own renderer through `createRenderer({ renderer, alpha: true, space: 'display', env: 'none' })`: real bloom tinted by the state's colour (violet idle, red listening), 4x MSAA, the film finish. Its tiers follow its own adapt (`setQuality`). If `../olympus/render.js` cannot load, it draws as before. |
 | The home backdrop | `jarvis/backdrop.js` | a full-screen 3D space behind the home screen: nebula, starfield, obsidian floor with a neon grid fading into fog, a light shaft and pool on the horizon under the core, halo rings, glass and chrome shards. 30 fps, pixel ratio ≤ 1.25, no frame while an app is open or the tab is hidden, one still frame on `off` / reduced motion. It replaces the flat 2D layers (stars canvas, SVG globe, CSS floor) once its first frame is drawn (`html[data-bg3d="on"]`); without WebGL2 they stay. Loads after the page is idle. |
+| The living home | `jarvis/home3d.js` + `home3d.css` | loaded by `backdrop.js` (a dynamic import; it adds objects to the backdrop's own scene and composer, never a renderer, composer or render target). A sky dome by the New York clock (night, pre-market dawn 4:00-9:30, the open, the close and dusk 15:30-18:00, the evening) with a sun and a moon crossing behind the temple; volumetric light shafts (7, 3 on LITE) and dust motes; the floor is glass over a mirrored temple, rings, shards and sun; weather from the VIX (`live.json` `lit.vix`: haze 18+, rain 22+, storm with lightning 28+, severe 35+; none = clear; LITE has no rain); the reactor (state, voice level and the mode's colour move the light, beams, rings and a shockwave); parallax (DeviceOrientation when Tilt is on, else the mouse); animated constellation lines from the core to its orbs with a live status badge on each. Tests: `tests/test_jarvis_home.py`. |
 | The portal jump | `jarvis/portal.js` | every time Jarvis opens an app (orb, tile, quick row, voice: they all go through `show()`): tunnel streaks in the app's colour, a ring portal opening, a flash, the app revealed through the ring. 820 ms, a tap or Esc skips, one raw-WebGL shader (no three.js, compiled at idle). Reduced motion or 3D off: a 0.2 s fade. It never delays the app: `show()` opens the frame first. |
+| Arena-to-arena transitions | `jarvis/transitions.js` | (2026-11-04) the portal jump hands every app change to this file: 26 of the 30 apps have their own signature (Oracle lightning, Tyche sea surge, Prometheus fire sweep, Pantheon marble columns, Mind constellation, Daphne laurel, Plutus coins, Athena glyph from particles ...), in the app's colour and glyph, 0.6-1.1 s, over the loading app, tap / Esc skips. The app -> transition table is data (`REGISTRY`: kind, ms, sound cues; an app with no line gets the warp). One reused 2D canvas (1 x 1 after), no WebGL / render target. LITE (3D Low / Off) = a 250 ms colour fade, reduced motion = a 200 ms flat fade. `show()` passes the app we leave (`from`). Test: `tests/test_jarvis_transitions.py`. |
 
-`jarvis/index.html` has one hook line in `show()` and the two `<script type="module">` lines before `</body>`.
+`jarvis/briefing.js` is not part of the render core (the 7 AM ET spoken briefing card and Settings → Jarvis alerts); `index.html` has one hook line in `show()` and the two `<script type="module">` lines before `</body>`.
 
 ## Shipping
 
@@ -132,7 +134,33 @@ folder's subfolders too; before, it copied only top-level files).
 
 ## The Jarvis service worker
 
-The new files are part of the Jarvis shell: `./backdrop.js?v=b1`, `./portal.js?v=p1`, and (outside `jarvis/`)
+The new files are part of the Jarvis shell: `./backdrop.js?v=b1`, `./home3d.js`, `./home3d.css`, `./briefing.js`, `./portal.js?v=p1`, `./transitions.js?v=t1`, and (outside `jarvis/`)
 `../olympus/render.js`, `../olympus/materials.js` and the nine files of `../olympus/three-addons/` (`EffectComposer.js`,
 `RenderPass.js`, `ShaderPass.js`, `MaskPass.js`, `Pass.js`, `CopyShader.js`, `UnrealBloomPass.js`,
 `LuminosityHighPassShader.js`, `RoomEnvironment.js`).
+
+## The atmosphere kit: `olympus/fx-atmos.js` (2026-11-04, JOB 4+5)
+
+The materials in `materials.js` make a surface; this file makes the room around it. All shader or tiny generated textures, no files.
+Each factory returns `{ object, update(t, pixelRatio), setQuality(level) }` and costs **one draw call**.
+
+| Factory | What it is |
+|---|---|
+| `dust({ count, box, color, size })` | motes drifting through a box, soft round, twinkling (Points) |
+| `embers({ count, origin, spread, rise, colors })` | sparks rising from a point or line, white-hot to dark (Points) |
+| `shafts({ count, from, to, width, color, strength })` | god rays: soft additive light shafts through the haze (one merged mesh) |
+| `contactAO({ radius, strength })` | a round contact shadow plane to lay under an object |
+| `polishedFloor({ size, color, y, roughness })` | a clear-coated, environment-reflecting stone floor with faint scuffs |
+| `bronze(o)`, `forgedIron(o)` | the metals the kit lacked (bronze with pitted roughness; iron whose `userData.heat(0..1)` glows) |
+| `threadGlow({ color })` | fibre-glow material for ribbons: fresnel + a travelling pulse |
+
+`QUALITY` says what each tier keeps: ultra 100% of the particles, high 80%, low 35% and no shafts, off none (contact shadows stay except off).
+`setQuality(list, level)` and `update(list, t, pr)` apply one tier / one frame to a list of effects. Reduced motion: call `update(list, 0)`.
+Used by Fates (shafts, dust, spindle sparks, contact shadows, bronze plinth), Labyrinth (polished floor, bronze walls, shafts, dust, gate
+embers, bust embers, contact shadows, the danger heat strip) and Hephaestus (polished floor, bevelled forged anvil / ingot / hammer, bronze hoops,
+shafts, dust, furnace embers, contact shadows). Draw budget: +6 to +9 calls per scene (Fates stays under 64). Offline: the Jarvis worker and each
+app's worker need `../olympus/fx-atmos.js` in their asset list (without it the scene import fails and the page shows its numbers only).
+
+Additive light and transparent canvases (2026-11-04): `fx-atmos.js` draws its additive layers with a custom blend (`SRC_ALPHA, ONE` for colour, `ZERO, ONE`
+for alpha), so a scene on a transparent canvas (Plutus, Ares, which set `alpha: true`) shows light and not dark halos where the particles' alpha builds up.
+Opaque canvases look the same as before.

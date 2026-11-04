@@ -39,12 +39,18 @@ export function dayLabel(iso, opts = { month: 'short', day: 'numeric' }) {
 }
 export const span = (p) => `${dayLabel(p.from)} – ${dayLabel(p.to)}`;
 
+// An optional file that answered 404 is not asked again for 6 hours: a browser logs every 404 as a console error, this keeps it to one per phone.
+const GONE_KEY = 'opt404.', GONE_MS = 6 * 3600e3;
+const wasGone = (u) => { try { const t = +localStorage.getItem(GONE_KEY + u); return !!t && Date.now() - t < GONE_MS; } catch (_) { return false; } };
+const markGone = (u) => { try { localStorage.setItem(GONE_KEY + u, String(Date.now())); } catch (_) { /* private mode */ } };
 async function getJSON(url, ms = 4000, opts = {}) {
+  const optional = !!opts.optional;
+  if (optional) { opts = { ...opts }; delete opts.optional; if (wasGone(url)) return null; }
   const ctl = typeof AbortController === 'function' ? new AbortController() : null;
   const timer = setTimeout(() => ctl && ctl.abort(), ms);
   try {
     const r = await fetch(url, { cache: 'no-cache', ...opts, signal: ctl ? ctl.signal : undefined });
-    if (!r.ok) return null;
+    if (!r.ok) { if (optional && r.status === 404) markGone(url); return null; }
     return await r.json();
   } catch (_) {
     return null;
@@ -143,6 +149,6 @@ export function plannerPeriod(p, S = LS('planner.v1') || LS('planner.hosted.v1')
 }
 
 export async function loadPeers() {
-  const [fates, dc, kalshi] = await Promise.all([getJSON('../fates/jarvis.json'), getJSON('../datacity/discoveries.json'), kalshiFeed()]);
+  const [fates, dc, kalshi] = await Promise.all([getJSON('../fates/jarvis.json'), getJSON('../datacity/discoveries.json', 4000, { optional: true }), kalshiFeed()]);
   return { fates: fatesOdds(fates), discovery: discovery(dc), kalshi };
 }

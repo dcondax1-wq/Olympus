@@ -16,6 +16,8 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
 import * as M from '../olympus/materials.js';
+import * as SC from '../olympus/scenery.js';
+import { dress } from './dress.js';
 
 const TAU = Math.PI * 2;
 const hdr = (c, k) => new THREE.Color(c).multiplyScalar(k);
@@ -49,7 +51,7 @@ export function createScene(canvas, { O = null } = {}) {
   scene.background = new THREE.Color('#06040c');
   scene.fog = new THREE.FogExp2(0x0b0818, 0.013);
   const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 400);
-  let lite = false, dirty = true, qcb = null;
+  let lite = false, dirty = true, qcb = null, dr = null;
   const rc = createRenderer({ canvas, scene, camera, env: 'night', tint: '#ffb547', exposure: 0.8, maxDpr: 1.75,
     bloom: { strength: 0.7, radius: 0.6, threshold: 1.0 },
     onQuality: (l) => { lite = l === 'low' || l === 'off'; applyLite(); dirty = true; if (qcb) qcb(l); } });
@@ -72,14 +74,15 @@ export function createScene(canvas, { O = null } = {}) {
   sand.rotation.x = -Math.PI / 2; scene.add(sand);
   const disc = new THREE.Mesh(new THREE.CircleGeometry(5.1, 64), M.marble({ color: '#b8b0a2', gold: true, scale: 0.9 }));
   disc.rotation.x = -Math.PI / 2; disc.position.y = 0.02; scene.add(disc);
-  const ringGold = new THREE.Mesh(new THREE.TorusGeometry(5.15, 0.05, 8, 128), M.neon({ color: '#ffb547', intensity: 2.2 }));
+  const ringGold = new THREE.Mesh(new THREE.TorusGeometry(5.15, 0.05, 6, 96), M.neon({ color: '#ffb547', intensity: 2.2 }));
   ringGold.rotation.x = Math.PI / 2; ringGold.position.y = 0.05; scene.add(ringGold);
-  const ringOuter = new THREE.Mesh(new THREE.TorusGeometry(15.4, 0.08, 8, 160), M.neon({ color: '#ffb547', intensity: 1.6, fog: true }));
+  const ringOuter = new THREE.Mesh(new THREE.TorusGeometry(15.4, 0.08, 6, 120), M.neon({ color: '#ffb547', intensity: 1.6, fog: true }));
   ringOuter.rotation.x = Math.PI / 2; ringOuter.position.y = 0.06; scene.add(ringOuter);
 
   // ---- the bowl: four seating tiers (riser + seat surface), marble
-  const riser = new THREE.MeshStandardMaterial({ color: '#8e8678', roughness: 0.55, metalness: 0.05 });     // the big surfaces are plain stone: the marble shader is for the hero pieces
-  const seats = new THREE.MeshStandardMaterial({ color: '#6e6759', roughness: 0.7, metalness: 0.05 });
+  let riser = new THREE.MeshStandardMaterial({ color: '#8e8678', roughness: 0.55, metalness: 0.05 });     // the big surfaces are plain stone: the marble shader is for the hero pieces
+  let seats = new THREE.MeshStandardMaterial({ color: '#6e6759', roughness: 0.7, metalness: 0.05 });
+  try { riser = SC.stone({ color: '#a39b8b', repeat: [36, 1], blocks: 4, bump: 2 }); seats = SC.stone({ color: '#857d6d', repeat: [9, 9], blocks: 8, cracks: false, bump: 1 }); } catch (e) { /* the plain stone stays */ }
   for (let k = 0; k < 4; k++) {
     const R = 16.2 + k * 2.2, h = 1.5, y0 = k * h;
     const wall = new THREE.Mesh(new THREE.CylinderGeometry(R, R, h, 72, 1, true), riser);
@@ -89,9 +92,10 @@ export function createScene(canvas, { O = null } = {}) {
   }
   // the arcade at the back: 56 piers with gold capitals, an arch between each pair, a gold cornice
   const NP = 56, RP = 25.4, PH = 8.5, pierMat = M.marble({ color: '#c7c0b3', gold: false, scale: 0.35, roughness: 0.38 });
-  const piers = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.42, 0.5, PH, 14), pierMat, NP);
+  // 2026-11-04 (docs/OLYMPUS_PERF.md): the arcade, cornice and rings carry fewer segments (the Arena was 64k triangles before the crowd; ~49k now)
+  const piers = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.42, 0.5, PH, 10), pierMat, NP);
   const caps = new THREE.InstancedMesh(new THREE.BoxGeometry(1.15, 0.42, 1.15), M.metal({ kind: 'gold' }), NP);
-  const arches = new THREE.InstancedMesh(new THREE.TorusGeometry(1.0, 0.2, 8, 16, Math.PI), pierMat, NP);
+  const arches = new THREE.InstancedMesh(new THREE.TorusGeometry(1.0, 0.2, 4, 8, Math.PI), pierMat, NP);
   for (let i = 0; i < NP; i++) {
     const a = (i / NP) * TAU, x = Math.cos(a) * RP, z = Math.sin(a) * RP;
     m4.makeTranslation(x, PH / 2, z); piers.setMatrixAt(i, m4);
@@ -100,15 +104,15 @@ export function createScene(canvas, { O = null } = {}) {
     q.setFromEuler(e3.set(0, -b + Math.PI / 2, 0)); p3.set(bx, PH - 1.2, bz); s3.set(1.28, 1, 1); m4.compose(p3, q, s3); arches.setMatrixAt(i, m4); s3.set(1, 1, 1);
   }
   scene.add(piers, caps, arches);
-  const cornice = new THREE.Mesh(new THREE.TorusGeometry(RP, 0.16, 8, 200), M.metal({ kind: 'gold' }));
+  const cornice = new THREE.Mesh(new THREE.TorusGeometry(RP, 0.16, 6, 120), M.metal({ kind: 'gold' }));
   cornice.rotation.x = Math.PI / 2; cornice.position.y = PH + 0.7; scene.add(cornice);
   const frieze = new THREE.Mesh(new THREE.CylinderGeometry(RP + 0.1, RP + 0.1, 1.1, 96, 1, true), pierMat);
   frieze.material.side = THREE.DoubleSide; frieze.position.y = PH + 0.2; scene.add(frieze);
-  const glowBand = new THREE.Mesh(new THREE.TorusGeometry(RP - 0.2, 0.05, 6, 200), M.neon({ color: '#ffb547', intensity: 2.4, fog: true }));
+  const glowBand = new THREE.Mesh(new THREE.TorusGeometry(RP - 0.2, 0.05, 4, 120), M.neon({ color: '#ffb547', intensity: 2.4, fog: true }));
   glowBand.rotation.x = Math.PI / 2; glowBand.position.y = PH + 1.15; scene.add(glowBand);
 
   // braziers on the plaza ring: a metal bowl and a flickering flame
-  const NB = 14, brazMat = M.metal({ kind: 'gunmetal', color: '#4a4658' });
+  const NB = 14, brazMat = (() => { try { return SC.bronze({ color: '#7f5a2c', patina: 0.55, rough: 0.5 }); } catch (e) { return M.metal({ kind: 'gunmetal', color: '#4a4658' }); } })();
   const braz = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.5, 0.22, 0.6, 12), brazMat, NB);
   const legs = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.08, 0.12, 1.5, 8), brazMat, NB);
   const flames = [];
@@ -127,7 +131,7 @@ export function createScene(canvas, { O = null } = {}) {
     const g = new THREE.Mesh(new THREE.CylinderGeometry(STEP_R[i], STEP_R[i] + 0.08, STEP_H, 48), stepMat);
     g.position.y = STEP_H * i + STEP_H / 2 + 0.02; scene.add(g);
     const nm = M.neon({ color: '#9aa4b2', intensity: 0.4 });
-    const edge = new THREE.Mesh(new THREE.TorusGeometry(STEP_R[i] + 0.04, 0.04, 8, 96), nm);
+    const edge = new THREE.Mesh(new THREE.TorusGeometry(STEP_R[i] + 0.04, 0.04, 4, 64), nm);
     edge.rotation.x = Math.PI / 2; edge.position.y = STEP_H * (i + 1) + 0.03; scene.add(edge);
     ladder.push({ nm, edge, top: STEP_H * (i + 1) + 0.03, r: STEP_R[i] + 0.04 });
   }
@@ -141,7 +145,7 @@ export function createScene(canvas, { O = null } = {}) {
   // ---- the crown above the ladder, the column of light
   const crown = new THREE.Group(); crown.position.set(0, TOP + 2.2, 0); crown.rotation.x = 0.55; scene.add(crown);
   const gold = M.metal({ kind: 'gold' });
-  const NL = 15, leafGeo = new THREE.SphereGeometry(1, 10, 6); leafGeo.scale(0.09, 0.03, 0.26);
+  const NL = 15, leafGeo = new THREE.SphereGeometry(1, 6, 4); leafGeo.scale(0.09, 0.03, 0.26);
   const leaves = new THREE.InstancedMesh(leafGeo, gold, NL * 4);
   let li = 0;
   for (const side of [-1, 1]) for (let i = 0; i < NL; i++) for (const row of [0, 1]) {
@@ -220,6 +224,7 @@ export function createScene(canvas, { O = null } = {}) {
     p.position.set(Math.cos(a) * 1.8, -1.9, Math.sin(a) * 1.8); boss.add(p); pips.push(p);
   }
   const shards = new THREE.Group(); scene.add(shards);
+  const bossLight = new THREE.PointLight('#ff5a6e', 0, 26, 1.6); bossLight.position.copy(boss.position); scene.add(bossLight);
 
   // ---- effects: lightning, the burst, shockwave rings, petals
   const fx = { bolts: [], burst: null, rings: [], petals: null, t0: 0, rank: false, hold: false, on: false };
@@ -248,7 +253,7 @@ export function createScene(canvas, { O = null } = {}) {
     return { pts, vel, age: 0, n };
   }
   function shockRing(delay, color) {
-    const m = new THREE.Mesh(new THREE.TorusGeometry(1, 0.07, 8, 96), new THREE.MeshBasicMaterial({ color: hdr(color, 2), transparent: true, opacity: 0, fog: false, depthWrite: false }));
+    const m = new THREE.Mesh(new THREE.TorusGeometry(1, 0.07, 4, 64), new THREE.MeshBasicMaterial({ color: hdr(color, 2), transparent: true, opacity: 0, fog: false, depthWrite: false }));
     m.rotation.x = Math.PI / 2; m.position.y = 0.3; m.visible = false; scene.add(m);
     return { m, delay };
   }
@@ -295,6 +300,7 @@ export function createScene(canvas, { O = null } = {}) {
       s.position.copy(boss.position); s.userData.v = new THREE.Vector3((Math.random() - 0.5) * 5, Math.random() * 4, (Math.random() - 0.5) * 5); s.userData.age = 0;
       shards.add(s);
     }
+    if (dr) dr.bossFight();
     dirty = true;
   }
   function setState(s) {
@@ -346,6 +352,7 @@ export function createScene(canvas, { O = null } = {}) {
     const nb = reduced() ? 1 : rank ? 6 : 3;
     for (let i = 0; i < nb; i++) { const a = Math.random() * TAU; fx.bolts.push(bolt(Math.cos(a) * 6, Math.sin(a) * 6)); }
     fx.burst = burst((lite ? 200 : 520) * (rank ? 1.6 : 1) | 0);
+    if (dr && rank) dr.cheer(4400);
     if (rank) {
       const c = '#' + st.color.getHexString();
       fx.rings = [shockRing(0.35, c), shockRing(0.85, '#ffcf5a'), shockRing(1.35, '#ffffff')];
@@ -396,14 +403,20 @@ export function createScene(canvas, { O = null } = {}) {
   function applyLite() {
     motes.geometry.setDrawRange(0, lite ? 50 : NM);
     flames.forEach((f, i) => { f.visible = !lite || i % 2 === 0; });
+    if (dr) dr.setLite(lite);
   }
   applyLite();
+  try { dr = dress({ scene, camera, rc, boss, bossLight, lite }); if (dr.sand) sand.material = dr.sand; } catch (e) { dr = null; /* the plain colosseum */ }
 
   // ---- the frame loop
   let last = performance.now(), frames = 0, raf = 0, stopped = false, drew = 0;
+  let gapAt = 0;
   function frame(now) {
     raf = requestAnimationFrame(frame);
-    if (stopped) return;
+    if (stopped || (O && O.hidden())) return;                            // hidden / covered: no JS, no frame (docs/OLYMPUS_PERF.md)
+    const gap = O && O.frameGap ? O.frameGap() : 0;                       // idle 30 / 15 fps, battery saver, 3D Off 2 fps; a touch = full rate
+    if (gap && now - gapAt < gap - 3) return;
+    gapAt = now;
     const dt = Math.min(0.1, (now - last) / 1000); last = now;
     const still = reduced();
     const aspect = canvas.clientWidth / Math.max(1, canvas.clientHeight);
@@ -475,6 +488,7 @@ export function createScene(canvas, { O = null } = {}) {
       if (!fx.hold && age > len) { clearFx(); crownLight.intensity = 40; cam.shake = 0; if (reduced()) st.marker = st.rank; }
       dirty = true;
     }
+    if (dr) { try { if (dr.update(t, dt, still)) dirty = true; } catch (e) { dr = null; } }
     placeCamera();
     if (rc.render()) drew++;
     frames++;
@@ -486,6 +500,7 @@ export function createScene(canvas, { O = null } = {}) {
 
   return {
     setState, levelUp,
+    bossFight() { if (dr) dr.bossFight(); dirty = true; },
     endHold() { clearFx(); crownLight.intensity = 40; cam.shake = 0; st.marker = st.rank; dirty = true; },
     onPick(cb) { pick = typeof cb === 'function' ? cb : null; },
     onQuality(cb) { qcb = typeof cb === 'function' ? cb : null; },
@@ -493,7 +508,7 @@ export function createScene(canvas, { O = null } = {}) {
     quality: () => rc.quality(),
     stats: () => ({ levelups, lite, quality: rc.quality(), passes: rc.passes().length, bolts: fx.bolts.length, burst: !!fx.burst, rings: fx.rings.length, ceremony: fx.on && fx.rank,
       frames, drawn: drew, statues: statues.filter((s) => s.earned).length, trophies: st.trophies.filter((t) => t.earned).length, steps: st.rank + 1,
-      boss: st.boss ? st.boss.state : null }),
-    dispose() { stopped = true; cancelAnimationFrame(raf); clearFx(); rc.dispose(); },
+      boss: st.boss ? st.boss.state : null, dress: dr ? dr.stats() : null }),
+    dispose() { stopped = true; cancelAnimationFrame(raf); clearFx(); if (dr) dr.dispose(); rc.dispose(); },
   };
 }

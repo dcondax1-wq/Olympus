@@ -358,9 +358,34 @@ def run_browser():
                 if cid == "kalshi":
                     teaser = p.inner_text(".card.on")
                 p.screenshot(path=os.path.join(SHOTS, f"demo_{i + 1:02d}_{cid}.jpg"), type="jpeg", quality=82)
-            check("e. the demo deck: money, best, worst, eval, discipline, learned, Kalshi teaser, pace, report card, streak, the hall, next",
-                  ids == ["money", "best", "worst", "eval", "discipline", "learned", "kalshi", "pace", "report", "streak", "hall", "next"], ids)
+            check("e. the demo deck: money, best, worst, eval, discipline, learned, Kalshi teaser, pace, report card, streak, best day, best week, accounts, the hall, next",
+                  ids == ["money", "best", "worst", "eval", "discipline", "learned", "kalshi", "pace", "report", "streak", "bestday", "bestweek", "accounts", "hall", "passclock", "cushion", "weekrank", "weekdays", "summary", "next"], ids)
             check("e. every card: inside the 16 px gutters, nothing in the orb's 80 x 160 corner, no sideways scroll", not overflow, overflow)
+            # ---- 2026-11-04: five more cards, money first (pass clock, cushion, week rank, weekdays, summary + Copy as text)
+            def card_text(cid):
+                p.evaluate(f"HERMES.go(HERMES.state().ids.indexOf('{cid}')); HERMES.pause(true)"); p.wait_for_timeout(2600)
+                return p.inner_text(".card.on")
+            t = card_text("passclock")
+            check("e. pass clock: 5 sessions left, $830 still to bank, $166 needed a session against a $434 pace (2 more at this pace), 'You are ahead', the backtest's median pass",
+                  "5 sessions left" in t and "$830" in t and "$166" in t and "$434" in t and "2 more" in t and "You are ahead: $434 a session so far against $166 needed." in t and "median pass takes 7 sessions" in t, t[:500])
+            t = card_text("cushion")
+            check("e. cushion: losers you can afford = the room above the floor ($2,071) over the average loser ($195) = 10; the worst loser; plain advice",
+                  "10" in t and "$2,071" in t and "−$195" in t and "−$240" in t and "10 of them in a row" in t and "Comfortable" in t, t[:500])
+            t = card_text("weekrank")
+            check("e. week rank: this week against every week so far (rank, better than N, the average week, the difference)",
+                  re.search(r"(Your best week yet|Week \d+ of \d+)", t) and "better than" in t and "average week" in t.lower() and "difference" in t.lower() and "$2,073" in t, t[:500])
+            t = card_text("weekdays")
+            check("e. weekdays: Tuesday pays (+$2,496 over 3 days), the bars Mon-Fri, best and worst, an honest 12-day sample note",
+                  "Tuesday pays" in t and "$2,496" in t and "best" in t.lower() and "worst" in t.lower() and "12 trading days is a small sample" in t and p.locator(".card.on .bars .dbar").count() == 5, t[:500])
+            t = card_text("summary")
+            line = p.get_attribute(".card.on [data-act=copy-text]", "data-text")
+            check("e. summary: the whole period in one plain line (money, a month, W/L, best, worst, eval, next goal) and a Copy as text button that holds the same line",
+                  line and line in t and line.startswith("This week: +$2,072.50 on 5 trades") and "a month at this pace" in line and "3 wins, 2 losses (60%)" in line and "to go" in line and "next: Bank $830" in line, (line, t[:300]))
+            bb = p.locator(".card.on [data-act=copy-text]").bounding_box()
+            check("e. Copy as text is at least 44 px tall", bb and bb["height"] >= 43.5, bb)
+            p.click(".card.on [data-act=copy-text]"); p.wait_for_timeout(400)
+            check("e. Copy as text: a toast says it copied (or says it could not, never silent)", re.search(r"Copied|Could not copy", p.inner_text("#toast")) is not None, p.inner_text("#toast"))
+            check("e. the progress bar's tap row is at least 44 px tall (a tap jumps to a story)", p.locator("#prog").bounding_box()["height"] >= 43.5, p.locator("#prog").bounding_box())
             # ---- the new cards (2026-11-03): money a month, the report card, the streak heat map; every number checked against the data
             dj = json.load(open(os.path.join(PAGE, "demo.json"), encoding="utf-8"))
             wk, al = dj["periods"]["week"], dj["periods"]["all"]
@@ -398,6 +423,41 @@ def run_browser():
             check("e. new card 'streak': the green run now and the record, a heat map cell per trading day (green cells = green days)",
                   p.inner_text(".card.on .count") == str(cur) and f"record is {rec} day" in t and cells == min(35, len(dd)) and greens == sum(1 for _, v in dd[-35:] if v > 0), (t[:200], cells, greens, cur, rec))
             p.screenshot(path=os.path.join(SHOTS, "demo_streak.jpg"), type="jpeg", quality=82)
+            # ---- the new cards (2026-11-04): best day, best week, accounts; numbers from the data, motion from the OLYMPUS effects library
+            import datetime as _dt
+            fmt2 = lambda v: ("−" if v < 0 else "+") + "$" + f"{abs(v):,.2f}"
+            bd = max(wk["days"], key=lambda d: d[1])
+            p.evaluate("HERMES.go(HERMES.state().ids.indexOf('bestday')); HERMES.pause(true)"); p.wait_for_timeout(2600)
+            t = p.inner_text(".card.on")
+            check("e. new card 'best day': the biggest green day of the week lands on the counter, its share of the profit, green days",
+                  p.inner_text(".card.on .count") == fmt2(bd[1]) and f"{min(100, round(bd[1] / wk['net'] * 100))}%" in t and "best day" in t.lower(), (t[:260], bd))
+            wsum = {}
+            for d, v in al["days"]:
+                m = _dt.date.fromisoformat(d)
+                m = (m - _dt.timedelta(days=m.weekday())).isoformat()
+                wsum[m] = wsum.get(m, 0) + v
+            bw = max(wsum.items(), key=lambda kv: kv[1])
+            p.evaluate("HERMES.go(HERMES.state().ids.indexOf('bestweek')); HERMES.pause(true)"); p.wait_for_timeout(2600)
+            t = p.inner_text(".card.on")
+            check("e. new card 'best week': the best week on record on the counter, the weekly bars (up to 8), green weeks of all",
+                  p.inner_text(".card.on .count") == fmt2(round(bw[1], 2)) and p.evaluate("document.querySelectorAll('.card.on .dbar').length") == min(8, len(wsum))
+                  and f"{sum(1 for v in wsum.values() if v > 0)}/{len(wsum)}" in t, (t[:260], bw, len(wsum)))
+            accts = {}
+            for b in wk["bots"]:
+                accts.setdefault(b.get("account") or b["name"], 0)
+                accts[b.get("account") or b["name"]] += b["net"]
+            p.evaluate("HERMES.go(HERMES.state().ids.indexOf('accounts')); HERMES.pause(true)"); p.wait_for_timeout(2600)
+            t = p.inner_text(".card.on")
+            check("e. new card 'accounts': one bar per account, the total on the counter, each account's money",
+                  p.inner_text(".card.on .count") == fmt2(round(sum(accts.values()), 2)) and p.evaluate("document.querySelectorAll('.card.on .pbar').length") == len(accts)
+                  and all(fmt0(v) in t for v in accts.values()), (t[:260], accts))
+            check("e. the new cards use the effects library: the page has OLYMPUS_FX with confetti / sparkleBurst, the plaques carry data-oly-fx=shimmer",
+                  p.evaluate("!!window.OLYMPUS_FX && OLYMPUS_FX.has('confetti') && OLYMPUS_FX.has('sparkleBurst')"))
+            for cid in ("bestday", "bestweek", "accounts"):
+                p.evaluate(f"HERMES.go(HERMES.state().ids.indexOf('{cid}')); HERMES.pause(true)"); p.wait_for_timeout(700)
+                p.evaluate("window.__shared = null")
+                p.click("#share"); p.wait_for_function("window.__shared", timeout=60000)
+                check(f"e. new card '{cid}': Share makes a PNG", p.evaluate("window.__shared.type") == "image/png" and p.evaluate("HERMES.lastShare.card") == cid, p.evaluate("window.__shared"))
             for cid in ("pace", "report", "streak"):
                 p.evaluate(f"HERMES.go(HERMES.state().ids.indexOf('{cid}')); HERMES.pause(true)"); p.wait_for_timeout(700)
                 p.evaluate("window.__shared = null")
@@ -450,7 +510,7 @@ def run_browser():
             p.wait_for_timeout(300)
             check("f. a tap on the progress bar jumps to that story", st(p)["i"] == 3 and st(p)["id"] == "eval", st(p))
             pos = p.inner_text("#pos")
-            check("f. the bottom sheet names the story (4/12 · Evals)", pos.replace("\n", " ").startswith("4/12") and "EVALS" in pos.upper(), pos)
+            check("f. the bottom sheet names the story (4/N · Evals)", pos.replace("\n", " ").startswith("4/" + str(p.evaluate("HERMES.state().n"))) and "EVALS" in pos.upper(), pos)
             p.evaluate(f"HERMES.go({deck_ids.index('next')}); HERMES.pause(true)")
             p.wait_for_timeout(1800)
             p.evaluate("window.__shared = null")
@@ -519,7 +579,7 @@ def run_browser():
                     check("e. real data: no DEMO badge; the money card lists Kalshi beside the bots",
                           not p.is_visible("#demo") and "Kalshi Edge v2" in txt and "+$7.25" in txt and "Paper twin" in txt, txt[:400])
             check("e. with every peer: Data City, the real Kalshi and the Planner join the deck",
-                  ids == ["money", "best", "worst", "eval", "discipline", "learned", "discovery", "kalshi", "planner", "pace", "report", "streak", "hall", "next"], ids)
+                  ids == ["money", "best", "worst", "eval", "discipline", "learned", "discovery", "kalshi", "planner", "pace", "report", "streak", "bestday", "bestweek", "accounts", "hall", "passclock", "cushion", "weekrank", "weekdays", "summary", "next"], ids)
             check("e. peers' cards stay inside the gutters and out of the orb's corner", not overflow, overflow)
             p.evaluate("HERMES.go(1)"); p.wait_for_timeout(300)
             p.evaluate("window.__shared = null"); p.click("#share"); p.wait_for_function("window.__shared", timeout=10000)

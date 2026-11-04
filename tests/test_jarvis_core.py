@@ -29,6 +29,8 @@ import os
 import re
 import shutil
 import sys
+
+from tests import browser_kit as BK  # noqa: E402  (shared launch, load-scaled timeouts)
 import tempfile
 import threading
 
@@ -210,7 +212,7 @@ def run_browser(url, shots):
         return p
 
     with sync_playwright() as pw:
-        br = pw.chromium.launch(**({"executable_path": exe} if exe else {}))
+        br = BK.launch(pw)
 
         def frames_pass(n, timeout=30000):          # wait for n more reactor frames (CI GPUs are software and slow)
             f0 = p.evaluate("core.stats().frames3")

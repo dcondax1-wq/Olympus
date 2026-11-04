@@ -95,8 +95,9 @@ window.addEventListener('error', function (e) {
 }, true);
 </script>
 <link rel="stylesheet" id="jcss" href="jarvis.css?v=j13">
-<script src="../olympus/themes.js?v=o2" id="olyThemesJs" async></script>
-<script src="../olympus/sfx.js?v=s1" id="olySfxJs" async></script>
+<link rel="stylesheet" id="jhome" href="home3d.css?v=h1">
+<script src="../olympus/themes.js?v=o3" id="olyThemesJs" async></script>
+<script src="../olympus/sfx.js?v=s2" id="olySfxJs" async></script>
 <style>.booted #bootfx{display:none}
 /* the start note works without jarvis.css (the stylesheet may be what did not arrive) */
 [hidden]{display:none!important}
@@ -129,10 +130,10 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
  * service worker's SHELL; if it has not arrived by the time it is needed a drawn stand-in takes its place).
  *
  * The 10 s (full), phases in the clock "tau" (seconds):
- *   0.0  heart   black, a heartbeat of light (lub-dub x2) from where the ring will be, thunder far away
- *   1.0  storm   the camera flies into storm clouds; lightning strikes light the ridge of Mount Olympus from below
- *   3.3  rise    the camera rises past marble columns and a field of gold sparks; a gold glow builds above
- *   5.5  eclipse the eclipse ring ignites (bloom flare), the scene falls dark, the gold peaks slide into place, the temple lights
+ *   0.0  heart   black, a heartbeat of light and bass (lub-dub x2) from where the ring will be, thunder far away
+ *   1.0  storm   the camera dollies and rolls into storm clouds with god-rays and embers; lightning lights the clouds and the ridge of Mount Olympus
+ *   3.3  rise    the camera rises past far temples and five layers of marble columns and a field of gold sparks; gold light shafts build above
+ *   5.5  eclipse the eclipse ring ignites (a lens flare runs round its edge), the scene falls dark, the gold peaks are forged into place (three hammer strikes), the temple lights
  *   7.05 word    the sparks fly into OLYMPUS (Orbitron, gold, a light sweep), JARVIS ONLINE beneath
  *   8.7  portal  the camera punches through the ring: the ring grows past the screen and its inside is a hole onto Jarvis
  *
@@ -148,6 +149,12 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
  * hides by itself (the start script's 0.7 s timer, then CSS by 0.95 s, when this script never gets going; its length + 0.6 s
  * once it runs); a timer, a hidden page, a lost WebGL context and the start watchdog's note end it too. 'jarvis.intro.run'
  * marks an intro in progress: if the phone closes Jarvis under it, the next start gets the fade.
+ * 2026-11-04 (JOB 33b, "more epic"): volumetric god-rays through the clouds (angular light shafts, occluded by the cloud density, violet in the
+ * storm and gold in the rise), a deeper parallax (5 layers of columns, two far colonnades with pediments, a camera dolly that eases back for the
+ * ring and a slow roll), lightning that lights the scene (clouds, ridge, columns and temples are lit by their distance to the bolt, a camera shake),
+ * rising embers, the gold peaks FORGED (three hammer strikes: white-hot flash, a shower of sparks, shake) and the eclipse ring igniting with a lens
+ * flare (a ghost chain, a chromatic halo and a hot core that follows the lit edge round the ring), a heartbeat bass (lub-dub synthesised, only after
+ * a gesture), rumbles after the strikes, an anvil clang per hit, and a subtle 24 fps film grain. All inside the same two shader programs.
  * Tap anywhere (or Esc / Enter / Space) to skip: instant (60 ms). window.__olyIntro is its state (tests); window.__olyIntroPlay(mode) replays it.
  * Sound: window.OLYMPUS_SFX (../olympus/sfx.js) when the page has it (tick / thunder / pad / rankup / portal, guarded); otherwise a
  * bass "whoom" through Web Audio at the portal, only after a gesture. Never on a cold open without the owner's sound file's own rules.
@@ -240,8 +247,54 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
       n.connect(f); f.connect(gn); gn.connect(a.destination); n.start(t); n.stop(t + 1.1);
     } catch (e) { /* no audio here */ }
   }
+  // a heartbeat bass (lub-dub): a sine falling 74 -> 38 Hz in 0.3 s with a soft click, the dub a little lighter
+  var beats = 0;
+  function thump(k) {
+    if (!canSound()) return;
+    try {
+      var A = W.AudioContext || W.webkitAudioContext; if (!A) return;
+      var a = audio || (audio = new A());
+      if (a.state === 'suspended' && a.resume) a.resume();
+      var t = a.currentTime + 0.01, o = a.createOscillator(), g = a.createGain();
+      o.type = 'sine'; o.frequency.setValueAtTime(74, t); o.frequency.exponentialRampToValueAtTime(38, t + 0.3);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.7 * k, t + 0.025); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.34);
+      o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + 0.36);
+    } catch (e) { /* no audio here */ }
+  }
+  function noiseBurst(dur, type, f0, f1, peak) {           // a filtered noise burst (the rumble, the clang's strike)
+    if (!canSound()) return;
+    try {
+      var A = W.AudioContext || W.webkitAudioContext; if (!A) return;
+      var a = audio || (audio = new A());
+      if (a.state === 'suspended' && a.resume) a.resume();
+      var t = a.currentTime + 0.01, len = Math.floor(a.sampleRate * dur), b = a.createBuffer(1, len, a.sampleRate), d = b.getChannelData(0);
+      for (var i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      var n = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+      n.buffer = b; f.type = type; f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(f1, t + dur);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + Math.min(0.06, dur * 0.2)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      n.connect(f); f.connect(g); g.connect(a.destination); n.start(t); n.stop(t + dur + 0.02);
+    } catch (e) { /* no audio here */ }
+  }
+  function clang() {                                       // a hammer on gold: a short strike, a bright ring that fades, a low body
+    if (!canSound()) return;
+    noiseBurst(0.07, 'highpass', 3200, 1800, 0.22);
+    try {
+      var a = audio, t = a.currentTime + 0.01;
+      [[1480, 0.5], [2210, 0.28], [3320, 0.16]].forEach(function (pr) {
+        var o = a.createOscillator(), g = a.createGain();
+        o.type = 'sine'; o.frequency.setValueAtTime(pr[0], t);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.1 * pr[1], t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+        o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + 0.55);
+      });
+    } catch (e) { /* no audio here */ }
+    thump(0.55);
+  }
   function cue(name) {
     st.cues.push(name);
+    if (name === 'beat') { thump(beats++ % 2 ? 0.62 : 1); return; }
+    if (name === 'rumble') { noiseBurst(1.5, 'lowpass', 240, 45, 0.3); return; }
+    if (name === 'hit') { clang(); return; }
+    if (name === 'ignite') { whoom(0.8); return; }
     if (!sfx(name) && name === 'portal') whoom(1);
   }
   function haptic() {
@@ -294,7 +347,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
   var VS_BG = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
   var FS_BG = [
     '#ifdef GL_FRAGMENT_PRECISION_HIGH', 'precision highp float;', '#else', 'precision mediump float;', '#endif',
-    'uniform vec2 uRes,uO,uPo,uShock;',
+    'uniform vec2 uRes,uO,uPo,uShock;uniform vec4 uX,uY,uZ;',
     'uniform float uT,uS,uZoom,uFly,uCam,uHeart,uStorm,uStrike,uFlash,uRidge,uCols,uBg,uGlow,uRing,uFlare,uAsm,uTemple,uForm,uShine,uSub,uPush,uRR,uHasLogo,uHasTxt;',
     'uniform vec4 uTxt;uniform vec2 uBolt[14];uniform vec2 uBr[6];uniform sampler2D uLogo,uTxtT;',
     'const vec2 RC=vec2(.4928,.597);const vec2 QC=vec2(.0075,.139);const float QS=1.04;const float RR0=.251;',
@@ -305,25 +358,33 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     'float tri(float x){return abs(fract(x)-.5)*2.;}',
     'void main(){',
     ' vec2 p=(gl_FragCoord.xy-.5*uRes)/uRes.x;',
-    ' vec2 q=uO+(p-uPo)/(uS*uZoom);',
+    ' vec2 pq=p-uPo;float cr=cos(uX.x),sr=sin(uX.x);pq=vec2(cr*pq.x-sr*pq.y,sr*pq.x+cr*pq.y)+uX.zw;',
+    ' vec2 q=uO+pq/(uS*uZoom*uX.y);',
     ' vec2 rc=q-uO;float rl=length(rc);',
     ' vec3 gold=vec3(1.,.74,.32),org=vec3(1.,.5,.12),vio=vec3(.55,.36,.95);',
     ' vec3 col=vec3(.004,.003,.012);',
     // 1. the heartbeat: a warm glow where the ring will be, and a shock ring each lub
     ' col+=org*uHeart*.0042/(rl+.008)+vec3(1.,.8,.6)*uHeart*exp(-rl*13.)*.5;',
     ' col+=org*exp(-abs(rl-uShock.x)*36.)*uShock.y*.8;',
-    // 2. the storm: a tunnel of cloud streaming past the camera, lit by the lightning
+    // 2. the storm: a tunnel of cloud streaming past the camera, lit by the lightning (the bolt lights what is near it)
+    ' float bd=1e3,bb=1e3;',
+    ' if(uStrike>.001){for(int i=0;i<13;i++)bd=min(bd,sg(q,uBolt[i],uBolt[i+1]));for(int i=0;i<5;i++)bb=min(bb,sg(q,uBr[i],uBr[i+1]));}',
+    ' float bl=uStrike*exp(-bd*2.4);float cld=0.;',
     ' if(uStorm>.001){vec2 vp=q-vec2(0.,.12);float vr=length(vp);vec2 dir=vp/max(vr,1e-4);float z=.2/(vr+.05)+uFly;',
-    '  float c1=fbm(dir*2.3+vec2(z*.9,z*.6));float dn=smoothstep(.34,.8,c1)*smoothstep(.0,.2,vr)*uStorm;',
-    '  vec3 cc=mix(vec3(.05,.05,.12),vec3(.22,.19,.36),c1)*(.3+uFlash*1.9);cc+=vio*smoothstep(.55,.85,c1)*.12*uStorm;',
+    '  float c1=fbm(dir*2.3+vec2(z*.9,z*.6));float dn=smoothstep(.34,.8,c1)*smoothstep(.0,.2,vr)*uStorm;cld=dn;',
+    '  vec3 cc=mix(vec3(.05,.05,.12),vec3(.22,.19,.36),c1)*(.3+uFlash*1.9+bl*4.5);cc+=vio*smoothstep(.55,.85,c1)*.12*uStorm;cc+=vec3(.78,.7,1.)*bl*smoothstep(.5,.8,c1)*1.1;',
     '  col+=cc*dn*1.6;',
     '  #ifdef HI', '  float c2=fbm(dir*3.4+vec2(z*1.7+4.,z*1.1));float d2=smoothstep(.42,.85,c2)*smoothstep(.1,.5,vr)*uStorm;',
-    '  col+=mix(vec3(.04,.04,.1),vec3(.3,.26,.46),c2)*(.25+uFlash*3.)*d2*1.2;', '  #endif',
+    '  col+=mix(vec3(.04,.04,.1),vec3(.3,.26,.46),c2)*(.25+uFlash*3.+bl*5.)*d2*1.2;cld=max(cld,d2*.8);', '  #endif',
     '  col+=vec3(.5,.42,.9)*exp(-vr*3.)*uFlash*.18;}',
+    // volumetric god-rays: shafts fan out from a light above the ridge, drifting, thinned by the cloud in front, violet in the storm and gold in the rise
+    ' if(uY.x>.001){vec2 lv=q-(uO+vec2(.06,.34));float la=atan(lv.x,lv.y),ld=length(lv);',
+    '  float rn=vn(vec2(la*6.+uT*.13,uT*.21))*.55+vn(vec2(la*17.-uT*.17,4.+uT*.1))*.45;',
+    '  float sh=smoothstep(.42,.86,rn)*smoothstep(.02,.18,ld)*exp(-ld*1.25)*(.35+.65*smoothstep(-.4,.5,q.y))*(1.-cld*.7);',
+    '  vec3 rcl=mix(vec3(.55,.5,1.),vec3(1.,.74,.36),uGlow);',
+    '  col+=rcl*sh*uY.x*.62+rcl*exp(-ld*4.)*uY.x*.2*(.5+uFlash);}',
     // the lightning
-    ' if(uStrike>.001){float d=1e3,db=1e3;',
-    '  for(int i=0;i<13;i++)d=min(d,sg(q,uBolt[i],uBolt[i+1]));',
-    '  for(int i=0;i<5;i++)db=min(db,sg(q,uBr[i],uBr[i+1]));',
+    ' if(uStrike>.001){float d=bd,db=bb;',
     '  float c=smoothstep(.0045,.0,d)*1.7+exp(-d*85.)*.75+exp(-d*16.)*.28,cb=smoothstep(.003,0.,db)*.9+exp(-db*100.)*.35;',
     '  col+=(vec3(.92,.88,1.)*c+vec3(.62,.42,1.)*cb)*uStrike;}',
     // the ridge of Mount Olympus seen from below: three layers, lit only by the flashes; the camera rises and it sinks away
@@ -332,18 +393,30 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     '  float hg=.2*tri(xs*1.3)+.1*tri(xs*3.1+1.3)+.05*tri(xs*7.3+.4)+(1.-step(.5,fi))*.24*exp(-q.x*q.x*7.);',
     '  float ry=-.6+fi*.15+hg*(1.-fi*.16)-uCam*(1.7-fi*.3);',
     '  float ins=step(q.y,ry);float ed=smoothstep(.011,0.,abs(q.y-ry));',
-    '  float rk=fbm(q*vec2(10.,16.)+fi*7.);float lit=uFlash*(1.7-fi*.35)+.05*uRidge;',
+    '  float rk=fbm(q*vec2(10.,16.)+fi*7.);float lit=uFlash*(1.7-fi*.35)+bl*3.+.05*uRidge;',
     '  vec3 rcol=mix(vec3(.1,.08,.2),vec3(.75,.74,.95),rk*rk)*lit*.6*(.25+.75*smoothstep(ry-.25,ry,q.y))*(1.+fi*.3);',
-    '  col=mix(col,rcol+vec3(.012,.01,.03),ins*uRidge);col+=ed*vec3(1.,.9,.85)*uFlash*(.9-fi*.2)*uRidge;}}',
-    // the rise: marble columns (fluted, banded, lit gold on the side facing the centre) streaming past, and a gold glow above
+    '  col=mix(col,rcol+vec3(.012,.01,.03),ins*uRidge);col+=ed*vec3(1.,.9,.85)*(uFlash+bl*1.6)*(.9-fi*.2)*uRidge;}}',
+    // the rise: two far temples (colonnade, entablature, pediment) sinking away, then marble columns in NCOL parallax layers (fluted, banded, lit gold on the side facing the centre)
     ' col+=(org*exp(-rl*2.4)*.5+gold*exp(-rl*7.)*.5)*uGlow;',
-    ' if(uCols>.001){for(int i=0;i<3;i++){float fi=float(i);',
-    '  float xc=.17+fi*.16+fi*fi*.02,w=.036+fi*.032,ax=abs(q.x);',
-    '  float yy=(q.y+uCam*2.2*(1.+fi*.9))*.62+fi*.37,f=fract(yy);',
+    ' if(uZ.x>.001){for(int j=0;j<NTEMP;j++){float fj=float(j);',
+    '  float sc=.5+fj*.34,tx=q.x-(fj*2.-1.)*.21,ty=q.y+.2+uCam*(.5+fj*.4)+fj*.04;',
+    '  float hc=.15*sc,hw=.36*sc,ph=.085*sc,e1=hc+.022*sc;',
+    '  float u=fract((tx+hw)/(2.*hw)*7.);float colm=step(abs(u-.5),.15)*step(abs(tx),hw)*step(.012*sc,ty)*step(ty,hc);',
+    '  float back=step(abs(tx),hw)*step(.012*sc,ty)*step(ty,hc)*.22;',
+    '  float ent=step(abs(tx),hw*1.05)*step(hc,ty)*step(ty,e1)+step(abs(tx),hw*1.1)*step(0.,ty)*step(ty,.012*sc);',
+    '  float ped=step(e1,ty)*step(ty,e1+ph)*step(abs(tx),hw*1.05*(1.-(ty-e1)/ph));',
+    '  float cov=max(max(colm,ent),max(ped,back));',
+    '  float lt=uFlash*1.4+bl*1.8+uGlow*.5+.07;vec3 tc=mix(vec3(.1,.09,.2),vec3(.85,.8,.96),clamp(.3+ty/(hc+ph)*.5,0.,1.))*lt*(1.-fj*.3);',
+    '  tc+=gold*uGlow*.35*(.4+ty*2.)*step(.5,cov)+vio*.05;',
+    '  tc=mix(tc,vec3(.12,.1,.24)*(.4+uFlash),.35-fj*.2);',
+    '  col=mix(col,tc,cov*uZ.x*(.88-fj*.12));}}',
+    ' if(uCols>.001){for(int i=0;i<NCOL;i++){float fz=float(i)*2./float(NCOL-1);',
+    '  float xc=.17+fz*.16+fz*fz*.02,w=.036+fz*.032,ax=abs(q.x);',
+    '  float yy=(q.y+uCam*2.2*(1.+fz*.9))*.62+fz*.37,f=fract(yy);',
     '  float band=smoothstep(.9,.96,f)+smoothstep(.1,.04,f)*.7,ww=w*(1.+.38*band),dx=ax-xc;',
     '  if(abs(dx)<ww){float u=dx/ww,cyl=sqrt(max(0.,1.-u*u));float fl=.8+.2*cos(u*14.);',
-    '   float lg=uGlow*smoothstep(-.6,.9,q.y)*1.4+uFlash*1.5+.12;',
-    '   vec3 m=vec3(.8,.76,.88)*cyl*fl*(.8+.4*fbm(vec2(u*3.,yy*3.)))*lg*(1.-fi*.16);',
+    '   float lg=uGlow*smoothstep(-.6,.9,q.y)*1.4+uFlash*1.5+bl*1.7+.12;',
+    '   vec3 m=vec3(.8,.76,.88)*cyl*fl*(.8+.38*vn(vec2(u*3.,yy*3.)))*lg*(1.-fz*.16);',
     '   m+=gold*smoothstep(.45,1.,-u)*.8*uGlow*cyl+vio*smoothstep(.6,1.,u)*.12*lg;m+=gold*band*.18*uGlow;',
     '   col=mix(col,m,uCols);}}}',
     ' col*=uBg;',
@@ -361,7 +434,8 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     '  float pin=step(0.,pu.x)*step(pu.x,1.)*step(0.,pu.y)*step(pu.y,1.);vec2 su=vec2(.5+pu.x*.5,pu.y);',
     '  float vis=smoothstep(0.,.3,uAsm),gk=clamp((uAsm-.8)*5.,0.,1.);',
     '  float gli=exp(-pow((lu.x+lu.y*.55-gk*2.3+.45)*8.,2.))*step(.001,gk)*step(gk,.999);',
-    '  lg+=(texture2D(uLogo,su).rgb*(1.+(1.-kk)*.9+gli*2.2)+texture2D(uLogo,su,3.).rgb*(.5+(1.-kk)*1.2))*pin*vis*fz;',
+    '  vec3 pkc=texture2D(uLogo,su).rgb*(1.+(1.-kk)*.9+gli*2.2)+texture2D(uLogo,su,3.).rgb*(.5+(1.-kk)*1.2);',
+    '  lg+=(pkc*(1.+uY.z*1.5)+vec3(1.,.5,.16)*dot(pkc,vec3(.33))*uY.z*2.4)*pin*vis*fz;',
     ' }else{',
     // the drawn stand-in (the logo file has not arrived): the ring and three peaks
     '  float ra=(1.-smoothstep(uRing*1.1,uRing*1.1+.1,min(fract(atan(rd.x,rd.y)/6.28318),1.-fract(atan(rd.x,rd.y)/6.28318))*2.))*step(.001,uRing);',
@@ -374,8 +448,18 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     ' vec2 td=(lu-vec2(.5,.526))*vec2(1.,1.1);float tl=length(td);',
     ' lg+=(vec3(1.,.82,.5)*exp(-tl*38.)*1.3+vec3(1.,.9,.7)*(exp(-abs(td.y)*160.)*exp(-abs(td.x)*14.)+exp(-abs(td.x)*160.)*exp(-abs(td.y)*14.))*.7)*uTemple*fz;',
     ' col+=lg;',
+    ' col+=vec3(1.,.62,.26)*uY.z*exp(-length(q-uZ.zw)*20.)*.95*fz;',
     // the ring's bloom flare: a glow, a hot core, an anamorphic streak
     ' col+=org*exp(-rr*4.)*uFlare*.8+vec3(1.,.8,.55)*exp(-rr*15.)*uFlare*.45+vec3(1.,.6,.25)*exp(-abs(rd.y)*65.)*exp(-abs(rd.x)*3.)*uFlare*.9;',
+    // the lens flare of the ring igniting: a hot core and a chromatic halo that follow the lit edge round the ring, and a chain of ghosts through the centre
+    ' if(uY.y>.001){float ang=clamp(uRing*1.12-.06,0.,1.)*3.14159;vec2 fl=mix(uPo+uRR*vec2(sin(ang),cos(ang)),uPo,clamp(smoothstep(.88,1.,uRing)+step(.001,uPush),0.,1.));',
+    '  float lr=length(p-fl),fa=uY.y;',
+    '  col+=vec3(1.,.82,.55)*exp(-lr*10.)*fa*.5+vec3(1.,.95,.85)*exp(-lr*38.)*fa*.7;',
+    '  col+=vec3(1.,.5,.22)*exp(-pow((lr-.2)/.028,2.))*fa*.16+vec3(.35,.55,1.)*exp(-pow((lr-.235)/.02,2.))*fa*.13;',
+    '  col+=vec3(.7,.8,1.)*exp(-abs(p.y-fl.y)*90.)*exp(-abs(p.x-fl.x)*2.2)*fa*.25;',
+    '  for(int g=0;g<4;g++){float gk=-.45+float(g)*.62;vec2 gc=-fl*gk*1.2;float gr=.035+float(g)*.024,gd=length(p-gc);',
+    '   col+=vec3(.95,.55+.12*float(g),.3+.22*float(g))*(smoothstep(gr,gr*.6,gd)*.1+exp(-pow((gd-gr)/.007,2.))*.34)*fa*.55;}}',
+    ' col+=vec3(1.,.82,.6)*uZ.y*exp(-rr*2.6)*.7;',
     // 5. OLYMPUS and JARVIS ONLINE: a lightning dissolve with an electric edge, a shine that sweeps across
     ' if(uHasTxt>.5){vec2 tu=(q-uTxt.xy)/uTxt.zw;',
     '  if(tu.x>0.&&tu.x<1.&&tu.y>0.&&tu.y<1.){vec3 t=texture2D(uTxtT,tu).rgb;float isS=step(tu.y,.3);',
@@ -395,25 +479,46 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     ' col=col/(1.+max(col-.85,0.)*.7);',
     ' float wd=.03*uS*uZoom;',
     ' float a=1.-(1.-smoothstep(.96*uRR-wd,.96*uRR,pr))*smoothstep(0.,.1,uPush);',
-    ' col+=(h21(gl_FragCoord.xy+fract(uT)*91.)-.5)*.012*a;',
+    ' col+=(h21(gl_FragCoord.xy*1.013+floor(uT*24.)*vec2(17.31,9.17))-.5)*uY.w*(1.-.55*clamp(dot(col,vec3(.33)),0.,1.))*a;',
     ' a=max(a,max(col.r,max(col.g,col.b)));',
     ' gl_FragColor=vec4(col,a);',
     '}'].join('\n');
   var VS_PT = [
     'attribute vec2 aT;attribute vec4 aS;',
-    'uniform vec2 uRes,uO,uPo;uniform float uT,uS,uZoom,uForm,uPush,uSpk,uPx;',
+    'uniform vec2 uRes,uO,uPo,uH1,uH2,uH3;uniform vec3 uHT;uniform float uT,uS,uZoom,uForm,uPush,uSpk,uPx,uMode,uEmb;',
     'varying vec4 vC;',
     'void main(){',
-    ' vec2 sp=vec2((aS.x-.5)*1.5+sin(uT*1.3+aS.w*30.)*.03,fract((aS.y*3.+uT*(.16+aS.w*.34))/3.)*3.-1.45);',
-    ' float k=clamp(uForm*1.4-aS.w*.4,0.,1.);k=k*k*(3.-2.*k);',
-    ' vec2 tg=aT+vec2(sin(uT*7.+aS.w*40.),cos(uT*6.+aS.x*30.))*.0016;',
-    ' vec2 pos=mix(sp,tg,k);',
+    ' vec2 pos;float ps,al;vec3 c;',
+    ' if(uMode<.5){',
+    // the letters' sparks: gold sparks rise, then fly into OLYMPUS
+    '  vec2 sp=vec2((aS.x-.5)*1.5+sin(uT*1.3+aS.w*30.)*.03,fract((aS.y*3.+uT*(.16+aS.w*.34))/3.)*3.-1.45);',
+    '  float k=clamp(uForm*1.4-aS.w*.4,0.,1.);k=k*k*(3.-2.*k);',
+    '  vec2 tg=aT+vec2(sin(uT*7.+aS.w*40.),cos(uT*6.+aS.x*30.))*.0016;',
+    '  pos=mix(sp,tg,k);',
+    '  float on=uSpk*(1.-k)+k*.35*step(.001,uForm);',
+    '  ps=uPx*(1.5+aS.y*2.6)*(1.+(uZoom-1.)*.12)*(1.-k*.35);',
+    '  c=mix(vec3(1.,.66,.26),vec3(1.,.92,.7),aS.y*aS.y);',
+    '  al=on*(.55+.45*sin(uT*9.+aS.w*50.))*(1.-smoothstep(.5,.95,uPush));',
+    ' }else if(uMode<1.5){',
+    // embers: orange sparks drifting up through the whole storm and rise
+    '  pos=vec2((aS.x-.5)*1.4+sin(uT*.9+aS.w*25.)*.05+sin(uT*2.3+aS.y*40.)*.012,fract(aS.y+uT*(.035+aS.z*.075))*1.7-.5);',
+    '  float fl=.5+.5*sin(uT*11.+aS.w*70.);',
+    '  ps=uPx*(.9+aS.z*1.9)*(.7+.5*fl);',
+    '  c=mix(vec3(1.,.38,.08),vec3(1.,.78,.4),aS.w*aS.w);',
+    '  al=uEmb*(.25+.75*fl)*smoothstep(-.5,-.2,pos.y)*(1.-smoothstep(.75,1.15,pos.y));',
+    ' }else{',
+    // forge sparks: a shower from each hammer strike on a peak, flung up and falling
+    '  float gi=floor(aS.x*2.999);vec2 hp=gi<.5?uH1:(gi<1.5?uH2:uH3);float ht=gi<.5?uHT.x:(gi<1.5?uHT.y:uHT.z);',
+    '  float ag=uT-ht;float an=(aS.y-.5)*3.5+1.5708;float sp2=.1+aS.z*.42;',
+    '  pos=hp+vec2(cos(an),sin(an))*sp2*ag*(1.-ag*.3)-vec2(0.,.62*ag*ag);',
+    '  ps=uPx*(1.1+aS.w*2.3)*(1.-ag*.45);',
+    '  c=mix(vec3(1.,.95,.75),vec3(1.,.38,.08),clamp(ag*1.7,0.,1.));',
+    '  al=step(0.,ag)*(1.-smoothstep(.2,.7+aS.w*.55,ag))*(.6+.4*sin(uT*30.+aS.w*80.))*1.5;',
+    ' }',
     ' vec2 sc=uPo+(pos-uO)*uS*uZoom;',
     ' gl_Position=vec4(sc.x*2.,sc.y*2.*uRes.x/uRes.y,0.,1.);',
-    ' float on=uSpk*(1.-k)+k*.35*step(.001,uForm);',
-    ' gl_PointSize=uPx*(1.5+aS.y*2.6)*(1.+(uZoom-1.)*.12)*(1.-k*.35);',
-    ' vec3 c=mix(vec3(1.,.66,.26),vec3(1.,.92,.7),aS.y*aS.y);',
-    ' vC=vec4(c,on*(.55+.45*sin(uT*9.+aS.w*50.))*(1.-smoothstep(.5,.95,uPush)));',
+    ' gl_PointSize=ps;',
+    ' vC=vec4(c,al);',
     '}'].join('\n');
   var FS_PT = 'precision mediump float;varying vec4 vC;void main(){float r=length(gl_PointCoord-.5);float a=smoothstep(.5,0.,r);gl_FragColor=vec4(vC.rgb*a*a*vC.a,1.);}';
 
@@ -438,7 +543,13 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
   var pulse = function (t, a, peak) { var d = t - a; return d < 0 ? 0 : peak * Math.exp(-d * 9); };
   var strike = function (t, a) { var d = t - a; return d < 0 || d > 0.5 ? 0 : d < 0.15 ? 1 : Math.exp(-(d - 0.15) * 12); };
   var PHASES = [[0, 'heart'], [1.0, 'storm'], [3.3, 'rise'], [5.5, 'eclipse'], [7.05, 'word'], [8.7, 'portal']];
-  var CUES = [[0.28, 'tick'], [0.9, 'thunder'], [0.98, 'tick'], [2.35, 'thunder'], [3.45, 'thunder'], [5.5, 'pad'], [7.1, 'rankup'], [8.68, 'portal']];
+  // the cues: 'tick' / 'thunder' / 'pad' / 'rankup' / 'portal' go to the owner's sound kit; 'beat' (the heartbeat bass), 'rumble' (a low roll after a strike),
+  // 'ignite' (the ring lighting) and 'hit' (a hammer on the gold peaks) are synthesised here (after a gesture only)
+  var CUES = [[0.28, 'tick'], [0.28, 'beat'], [0.58, 'beat'], [0.9, 'thunder'], [0.98, 'tick'], [0.98, 'beat'], [1.28, 'beat'], [1.82, 'rumble'], [2.35, 'thunder'],
+    [3.0, 'rumble'], [3.45, 'thunder'], [5.5, 'pad'], [5.56, 'ignite'], [6.8, 'hit'], [6.97, 'hit'], [7.1, 'rankup'], [7.14, 'hit'], [8.68, 'portal']];
+  // the three hammer strikes on the gold peaks: [time, x, y] in scene units (the left peak, the right peak, the summit under the temple)
+  var HITS = [[6.8, -0.211, 0.129], [6.97, 0.195, 0.118], [7.14, 0.0075, 0.285]];
+  var hp = function (t, a, peak) { var d = t - a; return d < 0 ? 0 : peak * Math.exp(-d * 6.5); };
   function envFull(t) {
     var lub = t < 0.98 ? 0.28 : 0.98, s = {};
     s.heart = pulse(t, 0.28, 0.9) + pulse(t, 0.58, 0.55) + pulse(t, 0.98, 1.1) + pulse(t, 1.28, 0.65);
@@ -464,6 +575,22 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     s.sub = ramp(t, 8.0, 8.65);
     s.push = ramp(t, 8.7, 9.95);
     s.reveal = 9.82; s.cues = CUES;
+    // JOB 33b: the camera (a slow roll, a dolly in through the storm that eases back for the ring), the god-rays, the far temples, the embers,
+    // the forge (heat + shake), the lens flare of the ring, the grain
+    var cam = sm(ramp(t, 0.8, 1.8)) * (1 - sm(ramp(t, 4.5, 5.5)));
+    s.roll = (0.05 * Math.sin(t * 0.85 + 0.6) + 0.026 * Math.sin(t * 2.3)) * cam;
+    s.dolly = 1 + 0.2 * sm(ramp(t, 0.9, 4.6)) - 0.2 * sm(ramp(t, 4.6, 5.6));
+    s.rays = sm(ramp(t, 1.3, 2.4)) * (0.3 + 0.22 * s.flash) + sm(ramp(t, 3.0, 4.5)) * 0.95;
+    s.rays *= 1 - sm(ramp(t, 5.3, 5.95));
+    s.temples = sm(ramp(t, 2.7, 3.5)) * (1 - sm(ramp(t, 4.6, 5.4)));
+    s.emb = sm(ramp(t, 1.0, 2.2)) * (1 - sm(ramp(t, 5.3, 6.0))) * 0.85;
+    s.hot = 0; s.hx = HITS[0][1]; s.hy = HITS[0][2];
+    for (var hi = 0; hi < HITS.length; hi++) if (t >= HITS[hi][0]) { s.hot = hp(t, HITS[hi][0], hi === 2 ? 1.25 : 1); s.hx = HITS[hi][1]; s.hy = HITS[hi][2]; }
+    s.sparks = t > 6.7 && t < 8.5 ? 1 : 0;
+    s.ignite = t < 5.55 ? 0 : 1.1 * Math.exp(-(t - 5.55) * 8);
+    s.lens = t < 5.55 ? 0 : (1 - Math.exp(-(t - 5.55) * 14)) * Math.exp(-(t - 5.55) * 2.1) * 1.5 + (t < 8.7 ? 0 : Math.exp(-(t - 8.7) * 4.5) * 0.9);
+    var shk = (t < 4.4 ? Math.min(1, s.flash * 0.7) : 0) + hp(t, 5.55, 0.8) + hp(t, HITS[0][0], 0.7) + hp(t, HITS[1][0], 0.7) + hp(t, HITS[2][0], 1);
+    s.shx = Math.sin(t * 61.7) * shk * 0.0055; s.shy = Math.cos(t * 77.3) * shk * 0.0055;
     return s;
   }
   function envShort(t) {                                   // a launch seen again: the finished logo, a flare, the portal
@@ -472,6 +599,8 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     s.bg = 0.08; s.ring = 1; s.asm = 1; s.temple = 0.14 + 0.5 * Math.exp(-t * 6); s.form = 1; s.shine = ramp(t, 0.05, 0.4); s.sub = 1;
     s.flare = (t < 0.02 ? 0 : Math.exp(-t * 5) * 0.9) + (t < 0.3 ? 0 : Math.exp(-(t - 0.3) * 5) * 1.0);
     s.push = ramp(t, 0.3, 0.9); s.reveal = 0.82; s.cues = [[0.02, 'rankup'], [0.3, 'portal']];
+    s.roll = 0; s.dolly = 1; s.rays = 0; s.temples = 0; s.emb = 0; s.hot = 0; s.hx = 0; s.hy = 0; s.sparks = 0; s.ignite = 0; s.shx = 0; s.shy = 0;
+    s.lens = (t < 0.3 ? 0 : Math.exp(-(t - 0.3) * 4.5) * 0.7);
     return s;
   }
 
@@ -528,11 +657,11 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
       gl.viewport(0, 0, w, h); st.scale = +scale.toFixed(2);
     };
     size();
-    var FS = FS_BG.replace(/OCT/g, lite ? '2' : '4').replace('#ifdef HI', lite ? '#if 0' : '#if 1');
+    var FS = FS_BG.replace(/OCT/g, lite ? '2' : '4').replace(/NCOL/g, lite ? '3' : '5').replace(/NTEMP/g, lite ? '1' : '2').replace(/#ifdef HI/g, lite ? '#if 0' : '#if 1');
     var pb = prog(VS_BG, FS), pp = prog(VS_PT, FS_PT);
     var ub = locs(pb, ['uRes', 'uT', 'uS', 'uZoom', 'uFly', 'uCam', 'uHeart', 'uStorm', 'uStrike', 'uFlash', 'uRidge', 'uCols', 'uBg', 'uGlow', 'uRing', 'uFlare', 'uAsm', 'uTemple', 'uForm', 'uShine', 'uSub', 'uPush', 'uRR', 'uHasLogo', 'uHasTxt',
-      'uO', 'uPo', 'uShock', 'uTxt', 'uBolt', 'uBr', 'uLogo', 'uTxtT']);
-    var up_ = locs(pp, ['uRes', 'uO', 'uPo', 'uT', 'uS', 'uZoom', 'uForm', 'uPush', 'uSpk', 'uPx']);
+      'uO', 'uPo', 'uShock', 'uTxt', 'uBolt', 'uBr', 'uLogo', 'uTxtT', 'uX', 'uY', 'uZ']);
+    var up_ = locs(pp, ['uRes', 'uO', 'uPo', 'uT', 'uS', 'uZoom', 'uForm', 'uPush', 'uSpk', 'uPx', 'uMode', 'uEmb', 'uHT', 'uH1', 'uH2', 'uH3']);
     var quad = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, quad);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
@@ -540,7 +669,13 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     var BOLTS = [1, 2, 3, 4].map(function (i) { return bolt(i * 7 + Math.floor(Math.random() * 1e6)); });
     var env = mode === 'short' ? envShort : envFull, len = LEN[mode], rate = RATE[mode] || 1;
     var TXT = [-0.43, -0.4247, 0.86, 0.26875];            // OLYMPUS + JARVIS ONLINE: x, y, w, h in scene units (OLYMPUS centred at y -0.25)
-    var tex = null, logoTex = null, pbuf = null, nPts = 0;
+    var tex = null, logoTex = null, pbuf = null, nPts = 0, ebuf = null, nEmb = 0;
+    try {                                                  // the embers and the forge's sparks share one small buffer (random only: it needs no letters)
+      nEmb = lite ? 150 : 330;
+      var ed = new Float32Array(nEmb * 6);
+      for (var ei = 0; ei < ed.length; ei++) ed[ei] = Math.random();
+      ebuf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, ebuf); gl.bufferData(gl.ARRAY_BUFFER, ed, gl.STATIC_DRAW);
+    } catch (e) { ebuf = null; nEmb = 0; /* the film plays without them */ }
     var halfH = 0.5 * innerHeight / innerWidth, S = Math.min(1, halfH / 0.58);
     var O = [0, 0.24];                                    // the ring's centre, in scene units
     var RR = 0.251 * 1.04;                                // the ring's radius, in scene units
@@ -636,6 +771,9 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
         f1('uBg', e.bg); f1('uGlow', e.glow); f1('uRing', e.ring); f1('uFlare', e.flare); f1('uAsm', e.asm); f1('uTemple', e.temple);
         f1('uForm', e.form); f1('uShine', e.shine); f1('uSub', e.sub); f1('uPush', e.push); f1('uRR', RR * S * zoom);
         f1('uHasLogo', logoTex ? 1 : 0); f1('uHasTxt', tex ? 1 : 0);
+        gl.uniform4f(ub.uX, e.roll || 0, e.dolly || 1, e.shx || 0, e.shy || 0);
+        gl.uniform4f(ub.uY, e.rays || 0, e.lens || 0, e.hot || 0, lite ? 0.022 : 0.034);
+        gl.uniform4f(ub.uZ, e.temples || 0, e.ignite || 0, e.hx || 0, e.hy || 0);
         gl.uniform2f(ub.uO, O[0], O[1]); gl.uniform2f(ub.uPo, po[0], po[1]); gl.uniform2f(ub.uShock, e.shockR || 0, e.shockA || 0);
         gl.uniform4f(ub.uTxt, TXT[0], TXT[1], TXT[2], TXT[3]);
         gl.uniform2fv(ub.uBolt, B.a); gl.uniform2fv(ub.uBr, B.b);
@@ -644,6 +782,21 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
         if (tex) texOn(1, tex);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
         gl.disableVertexAttribArray(aBg);
+        if (ebuf && (e.emb > 0.001 || e.sparks) && e.push < 0.95) {
+          gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
+          gl.useProgram(pp);
+          gl.bindBuffer(gl.ARRAY_BUFFER, ebuf);
+          gl.enableVertexAttribArray(aT); gl.vertexAttribPointer(aT, 2, gl.FLOAT, false, 24, 0);
+          gl.enableVertexAttribArray(aS); gl.vertexAttribPointer(aS, 4, gl.FLOAT, false, 24, 8);
+          gl.uniform2f(up_.uRes, cv.width, cv.height); gl.uniform2f(up_.uO, O[0], O[1]); gl.uniform2f(up_.uPo, po[0], po[1]);
+          gl.uniform1f(up_.uT, t); gl.uniform1f(up_.uS, S); gl.uniform1f(up_.uZoom, zoom); gl.uniform1f(up_.uForm, 0);
+          gl.uniform1f(up_.uPush, e.push); gl.uniform1f(up_.uSpk, 0); gl.uniform1f(up_.uPx, scale * 1.15);
+          gl.uniform3f(up_.uHT, HITS[0][0], HITS[1][0], HITS[2][0]);
+          gl.uniform2f(up_.uH1, HITS[0][1], HITS[0][2]); gl.uniform2f(up_.uH2, HITS[1][1], HITS[1][2]); gl.uniform2f(up_.uH3, HITS[2][1], HITS[2][2]);
+          if (e.emb > 0.001) { gl.uniform1f(up_.uMode, 1); gl.uniform1f(up_.uEmb, e.emb); gl.drawArrays(gl.POINTS, 0, nEmb); }
+          if (e.sparks) { gl.uniform1f(up_.uMode, 2); gl.uniform1f(up_.uEmb, 0); gl.drawArrays(gl.POINTS, 0, nEmb); }
+          gl.disableVertexAttribArray(aT); gl.disableVertexAttribArray(aS);
+        }
         if (nPts && (e.spk > 0.001 || e.form > 0.001) && e.push < 0.95) {
           gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
           gl.useProgram(pp);
@@ -653,6 +806,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
           gl.uniform2f(up_.uRes, cv.width, cv.height); gl.uniform2f(up_.uO, O[0], O[1]); gl.uniform2f(up_.uPo, po[0], po[1]);
           gl.uniform1f(up_.uT, t); gl.uniform1f(up_.uS, S); gl.uniform1f(up_.uZoom, zoom); gl.uniform1f(up_.uForm, e.form);
           gl.uniform1f(up_.uPush, e.push); gl.uniform1f(up_.uSpk, e.spk); gl.uniform1f(up_.uPx, scale * 1.15);
+          gl.uniform1f(up_.uMode, 0); gl.uniform1f(up_.uEmb, 0);
           gl.drawArrays(gl.POINTS, 0, nPts);
           gl.disableVertexAttribArray(aT); gl.disableVertexAttribArray(aS);
         }
@@ -815,6 +969,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
       <div id="brainp"></div>
       <div class="qa" id="qa" role="group" aria-label="Quick actions"></div>
       <p class="sec-t">OLYMPUS · apps</p>
+      <div class="og-find" id="ogFindBox" hidden><input id="ogFind" type="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Find an app" aria-label="Find an app" aria-controls="olyApps"></div>
       <div class="og" id="olyApps" role="group" aria-label="OLYMPUS: every app"></div>
       <p class="sec-t">Today · timeline</p>
       <section class="panel tl" id="p-today" aria-label="Today: the trading day and your plan"></section>
@@ -867,17 +1022,23 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
 
 <div class="sheet" id="settings" hidden role="dialog" aria-modal="true" aria-labelledby="setT">
   <form class="sheet-in" id="setF" autocomplete="off">
-    <h2 id="setT">AI key · settings</h2>
-    <h3>Smart mode</h3>
-    <label class="row-t"><span>Smart answers<small id="smartNote">Your own AI key, kept only on this phone</small></span><input type="checkbox" id="setSmart"></label>
+    <h2 id="setT">Settings</h2>
+    <div class="sheet-row"><button class="btn ghost" type="button" id="setMore">All settings: look, storage and the tour</button></div>
+    <!-- one Jarvis section (2026-11-04): her voice, spoken alerts, quiet hours, the morning briefing and the brain key, together -->
+    <h3>Jarvis</h3>
+    <label class="row-t"><span>Talk to Jarvis<small>The mic, hands-free and voice mode (her voice: the speaker button in the dock)</small></span><input type="checkbox" id="setVoice"></label>
+    <div class="sheet-row"><button class="btn ghost" type="button" id="setVoiceOpen">Choose her voice, speed and style</button></div>
+    <label class="row-t"><span>Speak alerts<small>Reminders, the morning briefing and “here's what I'd do” are read out loud (needs her voice on)</small></span><input type="checkbox" id="setSpeakAlerts"></label>
+    <label class="row-t"><span>Morning briefing<small>At 7 AM ET and on your first open each day: a card, and she reads it</small></span><input type="checkbox" id="setBriefOn"></label>
+    <label class="row-t"><span>Quiet hours<small id="setQuietNote">She stays silent between these times (ET); cards still show</small></span><input type="checkbox" id="setQuiet"></label>
+    <div class="fld" id="setQuietRow"><span>From / to (ET)</span><div class="qh"><input type="time" id="setQuietFrom" value="22:00" aria-label="Quiet hours start"><input type="time" id="setQuietTo" value="07:00" aria-label="Quiet hours end"></div></div>
+    <label class="row-t"><span>Smart answers (brain key)<small id="smartNote">Your own AI key, kept only on this phone</small></span><input type="checkbox" id="setSmart"></label>
     <label>Provider<select id="setProv"><option value="groq">Groq (free key, the old Jarvis)</option><option value="gemini">Gemini (free key)</option><option value="openrouter">OpenRouter (free models)</option><option value="anthropic">Anthropic</option></select></label>
     <div class="sheet-row"><button class="btn ghost" type="button" id="setGuide">Free key setup · Test (1 min)</button></div>
     <label>API key<input id="setKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste your key (kept on this phone only)"></label>
     <div class="fld"><span>Depth</span><div class="seg3" id="setDepth"><button type="button" data-depth="auto">Auto</button><button type="button" data-depth="quick">Quick</button><button type="button" data-depth="think">Think</button><button type="button" data-depth="deep">Deep</button></div></div>
     <label>Model<input id="setModel" type="text" autocapitalize="off" spellcheck="false" placeholder="Leave empty for the default"></label>
     <p class="note" id="smartState"></p>
-    <h3>Voice</h3>
-    <label class="row-t"><span>Talk to Jarvis<small>The mic, hands-free and voice mode (her voice: the speaker button in the dock)</small></span><input type="checkbox" id="setVoice"></label>
     <h3>Apps</h3>
     <div class="mine" id="setApps"></div>
     <div class="sheet-row"><button class="btn ghost" type="button" id="setAdd">Add a dashboard</button></div>
@@ -907,8 +1068,12 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     <label class="row-t"><span>OLYMPUS intro<small>The opening when Jarvis starts (full once a day, 1 s after that)</small></span><input type="checkbox" id="setIntro"></label>
     <label class="row-t"><span>OLYMPUS sounds<small>Ticks, a portal whoosh, thunder, rank-ups. Follows the silent switch; never while Jarvis talks or listens</small></span><input type="checkbox" id="setOlySfx"></label>
     <label>Sound volume<input id="setOlyVol" type="range" min="0" max="100" step="5" value="35"></label>
+    <label class="row-t"><span>App ambience<small>A quiet sound bed in each app (sea, forge, wind, city hum ...). Starts after your first touch, never while Jarvis talks, off in battery saver unless you turn it on</small></span><input type="checkbox" id="setOlyAmb"></label>
+    <div class="fld"><span>Sound (apps)</span><div class="seg3" id="setOlySound"><button type="button" data-snd="auto">Auto</button><button type="button" data-snd="on">On</button><button type="button" data-snd="off">Off</button></div><small id="setOlySoundNote">Auto: on, silent in LITE, reduced motion and battery saver</small></div>
+    <div class="sheet-row"><button class="btn ghost" type="button" id="setOlySoundTest" data-oly-cue="success">Play a test sound</button></div>
+    <label class="row-t"><span>Battery saver<small>Apps draw at 30 fps and a lighter pixel ratio. Off: Jarvis decides from the battery (20% and not charging) or Save-Data</small></span><input type="checkbox" id="setOlySaver"></label>
     <label class="row-t"><span>Haptics<small>A light tap you feel on buttons (iPhone: iOS 18 and later)</small></span><input type="checkbox" id="setHaptic"></label>
-    <label class="row-t"><span>Tilt<small>The core leans with the phone (asks for motion access)</small></span><input type="checkbox" id="setTilt"></label>
+    <label class="row-t"><span>Tilt<small>The core and the 3D world behind it lean with the phone (asks for motion access)</small></span><input type="checkbox" id="setTilt"></label>
     <div class="sheet-row"><button class="btn solid" type="button" id="lookX">Done</button></div>
   </div>
 </div>
@@ -924,7 +1089,27 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     <p class="note" id="vNote"></p>
     <!-- assistant (2026-11-03): her talk style, the optional free cloud voice, the one-time Ava tip (tts.js, assistant.js) -->
     <label>Talk style<select id="vStyle"><option value="short">Short: straight to the point</option><option value="chatty">Chatty: like a friend</option></select></label>
-    <label class="row-t"><span>Natural cloud voice<small id="vCloudNote">Groq's free voice on your own Groq key (⋯ → AI key); the phone's voice when it can't</small></span><input type="checkbox" id="vCloud"></label>
+    <label class="row-t"><span>Natural cloud voice<small id="vCloudNote">Uses your own free Gemini or Groq key (⋯ → AI key) when Auto or Natural cloud picks it. The text of a reply is sent to that service to be turned into sound; the on-device and phone voices keep it on this phone. The phone's voice takes over when the cloud can't</small></span><input type="checkbox" id="vCloud"></label>
+    <!-- voice engines (2026-11-04, voice-engines.js): Auto / Natural cloud / On-device neural / Phone voice -->
+    <div class="vengine" id="vEngBox" hidden style="display:grid;gap:10px">
+      <label>Voice engine<select id="vEngine"><option value="auto">Auto: the best one available</option><option value="cloud">Natural cloud (free key)</option><option value="device">On-device neural (download once)</option><option value="phone">Phone voice</option></select></label>
+      <p class="note" id="vEngNote"></p>
+      <label id="vBrandRow">Cloud voice from<select id="vBrand"><option value="">Automatic (Gemini first, then Groq)</option><option value="gemini">Gemini</option><option value="groq">Groq</option></select></label>
+      <label id="vCVoiceRow">Cloud voice name<select id="vCVoice"></select></label>
+      <div id="vDevBox" style="display:grid;gap:8px">
+        <label id="vDVoiceRow">On-device voice name<select id="vDVoice"></select></label>
+        <p class="note" id="vDevNote"></p>
+        <progress id="vDevProg" max="1" value="0" hidden style="width:100%"></progress>
+        <div class="sheet-row"><button class="btn ghost" type="button" id="vDevDl">Download (about 115 MB, on Wi-Fi)</button><button class="btn ghost" type="button" id="vDevRm" hidden>Remove</button></div>
+      </div>
+      <div class="sheet-row" id="vSamples"><button class="btn ghost" type="button" data-sample="0">Sample: money</button><button class="btn ghost" type="button" data-sample="1">Sample: trade</button><button class="btn ghost" type="button" data-sample="2">Sample: chat</button></div>
+      <p class="note" id="vUsed"></p>
+      <label class="row-t"><span>Natural speech<small>Numbers and tickers said in words, contractions, short pauses</small></span><input type="checkbox" id="vProsody"></label>
+      <details id="vPremium"><summary>Get the iPhone's most natural voice (free)</summary>
+        <ol class="note" style="margin:6px 0 0;padding-left:20px"><li>Open the iPhone's <b>Settings</b> app.</li><li><b>Accessibility → Spoken Content → Voices → English</b> (on iOS 26 it may be called <b>Read &amp; Speak</b>).</li><li>Tap <b>Ava</b> (or Zoe), then <b>Ava (Premium)</b> → download (about 400 MB, free).</li><li>Come back, tap the button below, and close and reopen Jarvis if it does not show.</li></ol>
+        <div class="sheet-row"><button class="btn ghost" type="button" id="vPremCheck">I did it: check again</button></div>
+        <p class="note" id="vPremNote"></p></details>
+    </div>
     <div class="note" id="vTip" hidden><b>Free upgrade: the iPhone's most natural voice.</b> Settings → Accessibility → Spoken Content → Voices → English → Ava → <b>Ava (Premium)</b> → download (about 400 MB, free). Then pick Ava here. <button class="btn ghost" type="button" id="vTipX">Got it</button></div>
     <div class="sheet-row"><button class="btn ghost" type="button" id="vTest">Test voice</button><button class="btn solid" type="button" id="vX">Done</button></div>
   </div>
@@ -1013,6 +1198,7 @@ const BUILTIN_IDS = ['zenith', 'planner', 'kalshi'];
 const raw = (k) => { try { return localStorage.getItem(k); } catch (_) { return null; } };
 const rawSet = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (_) { /* private mode */ } };
 const visible = () => document.visibilityState === 'visible';
+const FIRST_RUN = raw('jarvis.seen') == null;                  // the very first open on this phone (before the what's-new toast marks it): the tour is offered once
 const safe = (f, d = null) => { try { return f(); } catch (_) { return d; } };
 
 // ------------------------------------------------------------------ settings kept on this phone
@@ -1064,14 +1250,31 @@ const within = (p, ms) => Promise.race([p, new Promise((ok) => setTimeout(() => 
 // the owner's Obsidian vault and Jarvis's memory (obsidian.js + memory.js) and their screens (assist-ui.js): each optional
 let vault = null, assist = null, obsUI = null, proUI = null;
 ready.vault = Promise.all([load('obsidian', './obsidian.js', (m) => typeof m.createVault === 'function'), load('memory', './memory.js', (m) => typeof m.createMemory === 'function')])
-  .then(([ob, me]) => { if (ob && me) { vault = ob.createVault(); brainDeps.memory = me.createMemory({ vault }); } return vault; }).catch(() => null);
+  .then(([ob, me]) => { if (ob && me) { vault = ob.createVault(); brainDeps.memory = window.__jarvisMemory = me.createMemory({ vault,
+    addTodos: (list) => { let n = 0; for (const t of list || []) if (assistant && assistant.addTodo) { assistant.addTodo(t); n++; } return n; },       // "pull my tasks from Obsidian" (memory.js; asks first)
+    todos: () => (assistant ? assistant.todos() : []) }); } return vault; }).catch(() => null);
 ready.assist = load('assist', './assist-ui.js', (m) => typeof m.mountObsidianSheet === 'function').then((m) => { assist = m; return m; });
 // the voice (tts.js) and the personal assistant (assistant.js), 2026-11-03: each optional (absent = the old voice, the brain alone)
 let tts = null, assistant = null;
 ready.tts = load('tts', './tts.js', (m) => typeof m.createSpeaker === 'function').then((m) => { tts = m; return m; });
 // her voice on the Jarvis screen (voice-out.js, 2026-11-03 evening): loaded at the start, so the first tap unlocks the iPhone's voice
+// the voice engines (voice-engines.js, 2026-11-04): Auto / Natural cloud (Gemini, Groq) / On-device neural / Phone voice, the natural-speech
+// layer and the one unlocked audio element. Optional: absent = the phone's voice and the old Groq switch, exactly as before.
+let engines = null;
+ready.engines = load('engines', './voice-engines.js', (m) => typeof m.createVoiceEngines === 'function').then((m) => {
+  if (m) engines = safe(() => m.createVoiceEngines({ keys: smartKeys, phoneVoice: () => pickVoice() }), null);
+  return engines;
+});
+let lastVoiceToast = 0;
+function voiceFellBack(e, id) {                          // a cloud / on-device voice said no: one plain toast per 10 minutes
+  if (Date.now() - lastVoiceToast < 600000) return;
+  lastVoiceToast = Date.now();
+  toast(engines ? engines.explain(e, id) : 'The cloud voice is not answering. Using the phone voice.', 'VOICE');
+}
 ready.voiceout = load('voiceout', './voice-out.js', (m) => typeof m.createVoiceOut === 'function').then((m) => {
   if (m) vo = safe(() => m.createVoiceOut({ cfg: S.vcfg, cloud: cloudVoice, micBusy: () => !!rec || !!(vm && vm.isOpen()),
+    prosody: () => (engines ? engines.prosody : null), player: () => (engines ? engines.player : null), unlock: () => { if (engines) engines.player.unlock(); },
+    onFallback: voiceFellBack, onEngine: (id) => { if (engines) engines.noteUsed(id); safe(renderUsed); },
     onSpeaking: onVoice, onWord: () => { wordKick = 1; }, onPending: (t) => { root.dataset.vpending = t ? '1' : ''; } }), null);
   renderSpk();
   return vo;
@@ -1094,6 +1297,74 @@ ready.modes = load('modes', './modes.js', (m) => typeof m.createModes === 'funct
   if (modesI) brainDeps.modes = modesI;
   return modesI;
 });
+// Jarvis x the bots (bots.js + bots-ui.js, 2026-11-04): she knows Zlarior and ATLAS from the live feed (the asks, the spoken alerts, the
+// 01:45 plan and 16:05 recap, the Bots panel in Trading mode). Optional (absent = the brain as before). Read only: nothing arms or orders.
+// Spoken alerts go through speak() above, only while she is idle (never over the mic, voice mode or another answer).
+let botsI = null, botsUI = null;
+ready.bots = load('bots', './bots.js', (m) => typeof m.createBots === 'function').then((m) => {
+  if (m) botsI = safe(() => m.createBots({ speak: (t) => speak(t, false), hidden: () => S.hideMoney(),
+    busy: () => state !== 'idle' || listening || speaking || !!rec || !!(vm && vm.isOpen()),
+    onEvent: (e) => toast(e.text, e.kind === 'plan' || e.kind === 'recap' ? e.kind.toUpperCase() : 'BOT ALERT'),
+    onCard: (c) => toast(c.lines[0] || c.title, c.title.toUpperCase()) }), null);
+  if (botsI) brainDeps.bots = botsI;
+  return botsI;
+});
+ready.botsui = load('botsui', './bots-ui.js', (m) => typeof m.mountBots === 'function');
+// first open: one toast offers the Settings app's one-minute tour (once per phone: 'jarvis.tour.seen'; never when the tour was done there already)
+function tourHint(n = 0) {
+  if (!FIRST_RUN || raw('jarvis.tour.seen') || raw('olympus.tour.done') || active !== 'home' || !visible() || n > 8) return;
+  const t = document.getElementById('toast');
+  if (t && !t.hidden) { setTimeout(() => tourHint(n + 1), 4000); return; }        // the what's-new toast first
+  const a = byId('settings');
+  if (!a || notOnSite(a)) return;
+  rawSet('jarvis.tour.seen', '1');
+  toast('New here? A one-minute tour shows what everything does.', 'WELCOME', ['TAKE THE TOUR', () => show('settings', { url: '../settings/?tour=1' })]);
+}
+function botsTick() {
+  if (!botsI) return;
+  const f = safe(() => D.getFacts(), null);
+  if (f && f.live) safe(() => botsI.tick(f.live));
+  if (botsUI) safe(() => botsUI.render());
+  botsHeld();
+}
+// an alert held back (she was busy, or 30 s since the last one) is tried again every 7 s until it is said or too old (5 min)
+let botsRetry = 0;
+function botsHeld() {
+  if (botsRetry || !botsI || !safe(() => botsI.queued().length, 0)) return;
+  botsRetry = setTimeout(() => { botsRetry = 0; safe(() => botsI.flush()); botsHeld(); }, 7000);
+}
+// KALSHI-BRAIN (kalshi-brain.js, 2026-11-04): she knows the Kalshi bot AND what Kalshi City's engine learned about its edges (edges.json + learning_log.json
+// from ../kalshicity/, the research's learned.json): the asks (how is Kalshi, what to stop, the best edge, the risks, how much to bet, what it learned),
+// the spoken alerts (paused / resumed, the balance floor, a daily loss, a big loss, a new DO MORE / STOP lesson, the risk of ruin), Think for me items.
+// Optional (absent = the brain as before). Read only: nothing here orders, sizes or changes anything; every size is "suggestion, your call".
+let kbI = null, kbLoaded = 0;
+ready.kbrain = load('kbrain', './kalshi-brain.js', (m) => typeof m.createKalshiBrain === 'function').then((m) => {
+  if (m) kbI = safe(() => m.createKalshiBrain({ speak: (t) => speak(t, false), hidden: () => S.hideMoney(),
+    busy: () => state !== 'idle' || listening || speaking || !!rec || !!(vm && vm.isOpen()), onEvent: (e) => toast(e.text, 'KALSHI ALERT') }), null);
+  if (kbI) { brainDeps.kalshiBrain = kbI; kbLoad().then(() => setTimeout(kbTick, 2500)); }
+  return kbI;
+});
+async function kbLoad() {
+  if (!kbI) return;
+  const get = (u) => fetch(u, { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  const [edges, log, learned] = await Promise.all([get('../kalshicity/edges.json'), get('../kalshicity/learning_log.json'), get('../kalshicity/learned.json')]);
+  if (edges || log || learned) { safe(() => kbI.setData({ edges, log, learned })); kbLoaded = Date.now(); }
+}
+function kbTick() {
+  if (!kbI) return;
+  const f = safe(() => D.getFacts(), null);
+  safe(() => kbI.tick(f && f.kalshi));
+}
+D.onChange(({ source }) => { if (source === 'kalshi') kbTick(); });
+setInterval(kbTick, 60e3);
+setInterval(kbLoad, 10 * 60e3);
+// /KALSHI-BRAIN
+let botsMounting = false;
+function mountBotsUI() {
+  if (botsUI || botsMounting || !botsI || !modesI) return;
+  botsMounting = true;
+  ready.botsui.then((m) => { botsMounting = false; if (m && !botsUI) { botsUI = safe(() => m.mountBots({ bots: () => botsI, live: () => safe(() => D.getFacts().live, null), modes: () => modesI, anchor: $('#planBox') || $('#sugs'), onAsk: (t) => ask(t) }), null); if (botsUI) safe(() => botsUI.render()); } });
+}
 // a one-tap action from "Here's what I'd do": ask Jarvis, open an app, a mode, or a control (the key setup). Never a trade.
 function modeAction(a) {
   if (!a || typeof a !== 'object') return;
@@ -1119,7 +1390,7 @@ async function thinkSlot(quiet) {                      // quiet (at the start): 
   modesUI.show(r);
   if (quiet) return;
   toast(r.items[0].text, "HERE'S WHAT I'D DO");
-  if (S.speakOn() && state === 'idle' && !listening && !speaking) speak(r.speak || r.text, false);
+  if (S.speakOn() && state === 'idle' && !listening && !speaking && alertsMayTalk()) speak(r.speak || r.text, false);
 }
 let keyUI = null;
 function openKeySetup(provider) {
@@ -1127,8 +1398,10 @@ function openKeySetup(provider) {
   if (!keyUI && assist && typeof assist.mountKeySetup === 'function') keyUI = safe(() => assist.mountKeySetup({ brain: () => brain, toast, onSaved: () => { renderBrainPanel(); renderMore(); } }), null);
   if (keyUI) keyUI.open(provider); else openSettings();
 }
-const cloudVoice = () => {                              // Groq's free voice: on, and a Groq key from the AI key settings
-  const c = D.LS.get('jarvis.tts', {}) || {}, sm = D.LS.get('jarvis.smart', {}) || {}, k = sm && sm.keys && typeof sm.keys.groq === 'string' ? sm.keys.groq : '';
+const smartKeys = () => { const sm = D.LS.get('jarvis.smart', {}) || {}; return (sm && sm.keys && typeof sm.keys === 'object' ? sm.keys : {}); };
+const cloudVoice = (ctx) => {                           // the voice engines' pick (Auto / cloud / on-device), else Groq's free voice with the saved Groq key
+  if (engines) return safe(() => engines.pick(ctx), null);
+  const c = D.LS.get('jarvis.tts', {}) || {}, k = typeof smartKeys().groq === 'string' ? smartKeys().groq : '';
   return c.cloud && k ? { key: k, voice: c.voice || 'hannah' } : null;
 };
 // voice mode (voice-mode.js, 2026-11-03): the full-screen conversation. Loaded after the start (never part of it), or at first use.
@@ -1351,7 +1624,7 @@ function show(id, opts = {}) {
   else { stopListening(); closeMore(); if (a.id === 'zenith') showZenith(a, opts.route, seq); else frameView(a, opts.url); }
   renderBar();
   fx.restart();
-  if (was !== a.id && a.id !== 'home' && window.jarvisPortal) safe(() => { olySfx('portal'); window.jarvisPortal.jump({ id: a.id, name: a.name, color: a.accent, glyph: a.glyph }); });   // portal.js: the warp plays over the loading app
+  if (was !== a.id && a.id !== 'home' && window.jarvisPortal) safe(() => { const fr = was !== 'home' && byId(was); olySfx('portal'); window.jarvisPortal.jump({ id: a.id, name: a.name, color: a.accent, glyph: a.glyph }, { from: fr ? { id: fr.id, color: fr.accent } : null }); });   // portal.js -> transitions.js: the app's own transition plays over the loading app (from = the app we leave)
   if (was !== a.id) { sfx('open'); if (a.id !== 'home') logAct(`Opened ${a.name}`); if (nx) safe(() => nx.use(a.id)); }
   // The address stays the Jarvis screen (no #zenith): a reopen, or the iPhone reloading Jarvis in the background, always
   // starts on the Jarvis screen, never straight inside a dashboard.
@@ -1423,7 +1696,14 @@ function setCoreDesign(d) {
 function themeColors() { const cs = getComputedStyle(root), g = (k) => cs.getPropertyValue(k).trim(); return { c: g('--c'), c2: g('--c2'), c3: g('--c3'), tint: g('--tint') }; }
 // the core knows the old theme keys (eclipse, reactor, reactor-stark / -ice / -emerald); any other theme passes its colours
 const CORE_KEYS = ['eclipse', 'reactor', 'reactor-stark', 'reactor-ice', 'reactor-emerald'];
-const coreTheme = () => (CORE_KEYS.includes(root.dataset.theme) && !olyOn() ? root.dataset.theme : themeColors());
+// the mode's colour (home3d.js sets window.__jarvisModeTint: trading teal, research blue, business gold, life rose) tints the reactor a little
+const hexMix = (a, b, t) => { const p = (h) => { const m = /^#([0-9a-f]{6})$/i.exec(String(h || '').trim()); if (!m) return null; const n = parseInt(m[1], 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }, x = p(a), y = p(b); return x && y ? '#' + x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, '0')).join('') : a; };
+const coreTheme = () => {
+  const tint = window.__jarvisModeTint;
+  if (tint) { const t = themeColors(); return { ...t, c: hexMix(t.c, tint, 0.3), c3: hexMix(t.c3, tint, 0.55), tint: hexMix(t.tint, tint, 0.25) }; }
+  return CORE_KEYS.includes(root.dataset.theme) && !olyOn() ? root.dataset.theme : themeColors();
+};
+window.addEventListener('jarvis:mode', () => { if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme())); });
 let coreSize = 0;
 function mountCore3d() {
   const m = mods.core;
@@ -1544,10 +1824,12 @@ function kalshiCard() {
   const head = (lvl) => `<p class="ph"><span class="t">Kalshi</span><i class="sdot ${lvl || 'off'}"></i><span class="go">OPEN ›</span></p>`;
   if (!k) return `<button class="panel card" type="button" data-app="kalshi">${head('')}<p class="muted">${st === 'waiting' ? 'Waiting for the Kalshi bot: it is not publishing yet. It runs on its own server; open Kalshi for the one step that connects it from its own chat.' : st === 'error' ? 'Could not reach the Kalshi feed. Open Kalshi to try again.' : 'Loading Kalshi…'}</p></button>`;
   const [lvl, label] = D.kalshiRun(k), pos = Array.isArray(k.positions) ? k.positions : null;
+  const kbLine = safe(() => (kbI ? kbI.line(k, Date.now()) : ''), '');
   const rows = (pos || []).slice(0, 2).map((p) => `<li class="${sgn(+p.pnl)}"><b>${esc(String(p.side || '').toUpperCase())}</b><span>${esc(p.title || p.ticker || '')}</span><span class="r m">${D.usd2(p.pnl, true)}</span></li>`).join('');
   return `<button class="panel card" type="button" data-app="kalshi">${head(lvl)}<span class="pill ${lvl}">${esc(label)}${k.mode ? ' · ' + esc(String(k.mode).toUpperCase()) : ''}${k.t ? ' · ' + esc(D.ago(k.t)) : ''}</span>`
     + `<div class="kv"><div><span>Balance</span><strong class="m">${D.usd2(k.balance)}</strong></div><div><span>Today</span><strong class="m ${sgn(+k.today_pnl)}">${D.usd2(k.today_pnl, true)}</strong></div><div><span>Open</span><strong>${pos == null ? '—' : pos.length}</strong></div></div>`
-    + `${rows ? `<ul class="list">${rows}</ul>` : ''}</button>`;
+    + `${rows ? `<ul class="list">${rows}</ul>` : ''}`
+    + `${kbLine ? `<p class="muted" id="kbLine">${esc(kbLine)}</p>` : ''}</button>`;       // KALSHI-BRAIN: what the engine says (do more / stop / ruin risk)
 }
 function linkCard(a) {
   const head = (go) => `<p class="ph"><span class="t">${esc(a.name)}</span><i class="sdot ${a.url ? 'ok' : 'off'}"></i>${go ? '<span class="go">OPEN ›</span>' : ''}</p>`;
@@ -1558,7 +1840,18 @@ function linkCard(a) {
 // added apps' live cards (apps.js): the last good card first, then the app's jarvis.json, or a card the open app posted
 const statusCards = {};
 // an app's live card: the one that just arrived, else its last good one (apps.js keeps it on this phone)
-const cardOf = (id) => statusCards[id] || safe(() => (mods.apps && byId(id) ? mods.apps.cachedStatus(byId(id)) : null), null);
+// Inbox (inbox/): its own card is kept on this phone by the app itself ('inbox.card.v1', the jarvis.json contract: status 'N new' / 'All quiet'),
+// read before the static file; one that is not an object with a status label, or older than its stale_after (two weeks when it has none), is ignored
+function inboxCard(now) {
+  try {
+    const c = JSON.parse(localStorage.getItem('inbox.card.v1') || 'null');
+    if (!c || typeof c !== 'object' || !c.status || typeof c.status !== 'object' || typeof c.status.label !== 'string' || !c.status.label) return null;
+    const t = +c.t, lim = +c.stale_after > 0 ? +c.stale_after : 14 * 86400;
+    return Number.isFinite(t) && t > 0 && (now == null ? Date.now() : now) / 1000 - t > lim ? null : c;
+  } catch (_) { return null; }
+}
+window.addEventListener('storage', (e) => { if (e.key === 'inbox.card.v1') cardsSoon(); });
+const cardOf = (id) => (id === 'inbox' && inboxCard()) || statusCards[id] || safe(() => (mods.apps && byId(id) ? mods.apps.cachedStatus(byId(id)) : null), null);
 // a built-in whose folder is not on the site yet (apps.js: its jarvis.json answers 404, no card ever seen)
 const notOnSite = (a) => !!(a && a.id && mods.apps && typeof mods.apps.missing === 'function' && safe(() => mods.apps.missing(a.id), false));
 let cardsT = 0;
@@ -1788,6 +2081,19 @@ function nxCover() {
   const ae = document.activeElement, typing = !!ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName);
   safe(() => nx.setHidden(typing || NX_COVER.some((sel) => { const e = $(sel); return e && !e.hidden; })));
 }
+// ==== OLYMPUS covered (2026-11-04, docs/OLYMPUS_PERF.md): a sheet / the ⋯ keys over a framed app tell the app its scene is covered, and when it is not ====
+// The kit (olympus/olympus.js) answers hidden() = true while covered, so the app's frame loop sleeps (the iPhone's battery). Same origin only.
+let olyCov = false;
+function olyCovered() {
+  safe(() => {
+    const on = active !== 'home' && NX_COVER.some((sel) => { const e = $(sel); return e && !e.hidden; });
+    if (on === olyCov) return;
+    olyCov = on;
+    for (const k of Object.keys(frames)) { const f = frames[k] && frames[k].querySelector('iframe'); if (f && f.contentWindow) f.contentWindow.postMessage({ olympus: 'covered', on }, location.origin); }
+  });
+}
+new MutationObserver(olyCovered).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['hidden'] });
+// ==== end OLYMPUS covered ====
 function mountNexus(m) {
   try {
     nx = m.mountSwitcher({ apps: nxApps, sections: nxSections, active: () => active, status: (id) => safe(() => nxStatus(id), {}) || {},
@@ -1926,7 +2232,7 @@ function fallbackBrain({ getFacts }) {
 const brainDeps = { getFacts: D.getFacts, open: (id, route) => openSoon(route ? { id, route } : id), now: () => new Date(), autoOpen: false };
 const builtinBrain = fallbackBrain(brainDeps);
 let brain = builtinBrain;
-Promise.all([ready.brain, within(ready.vault, 4000), within(ready.assistant, 4000), within(ready.tools, 4000), within(ready.modes, 4000)]).then(([m]) => {      // the brain gets the memory when it loaded in time
+Promise.all([ready.brain, within(ready.vault, 4000), within(ready.assistant, 4000), within(ready.tools, 4000), within(ready.modes, 4000), within(ready.bots, 4000), within(ready.kbrain, 4000)]).then(([m]) => {      // the brain gets the memory when it loaded in time
   if (!m) return;
   try { const b = m.createBrain(brainDeps); if (!b || typeof b.ask !== 'function') throw new Error('no ask'); brain = b; root.dataset.brain = 'module'; }
   catch (_) { brain = builtinBrain; root.dataset.brain = 'fallback'; }
@@ -1934,10 +2240,13 @@ Promise.all([ready.brain, within(ready.vault, 4000), within(ready.assistant, 400
   if (idle && !$('#talk').children.length) $('#says').textContent = idle;        // the old Jarvis's line until the first question
   if (typeof brain.hidden === 'boolean' && brain.hidden !== S.hideMoney()) setHide(brain.hidden, false);
   renderSugs(); renderBrainPanel(); renderMore();
-  ready.assist.then(() => { mountModesUI(); setTimeout(() => thinkSlot(true), 4000); });
+  ready.assist.then(() => { mountModesUI(); mountBotsUI(); setTimeout(() => thinkSlot(true), 4000); });
+  ready.bots.then(() => { mountBotsUI(); setTimeout(botsTick, 3000); });
+  setTimeout(tourHint, 7000);
   ready.assist.then((a) => { if (a && !proUI) { proUI = safe(() => a.mountProactive({ brain: () => brain, anchor: $('#sugs'), onAsk: (t) => ask(t) }), null); if (proUI) safe(() => proUI.render()); } });
 });
-D.onChange(() => { if (proUI) safe(() => proUI.render()); if (modesUI) safe(() => modesUI.render()); });
+D.onChange(({ source }) => { if (proUI) safe(() => proUI.render()); if (modesUI) safe(() => modesUI.render()); if (source === 'live') botsTick(); });
+setInterval(botsTick, 60e3);                          // the bots' alerts follow the data (countdowns and silent-PC timers need the clock)
 setInterval(() => { safe(() => thinkSlot(false)); }, 60e3);                // the proactive line follows the data
 function renderSugs() {
   let s = safe(() => brain.suggestions());
@@ -2030,7 +2339,7 @@ async function answer(t, voice) {
   // nothing loaded yet for what is asked: fetch it first (an answer from data that is still loading would be wrong)
   const F = safe(() => D.getFacts(), {}) || {};
   if (/\bkalshi\b/i.test(t) && !F.kalshi) await D.refreshKalshi();
-  else if (/\b(bot|bots|room|target|p&l|pnl|profit|status|zlarior|atlas|blitz)\b/i.test(t) && !(F.live && !F.live.cached)) await within(D.refreshLive(), 9000);
+  else if (/\b(bot|bots|room|target|p&l|pnl|profit|status|zlarior|atlas|blitz|armed|recap|game ?plan|traded)\b/i.test(t) && !(F.live && !F.live.cached)) await within(D.refreshLive(), 9000);
   else if (/\b(bitcoin|btc|ethereum|eth|solana|crypto)\b/i.test(t) && !(F.extras && F.extras.crypto)) await within(D.refreshCrypto(), 6000);
   else await new Promise((ok) => setTimeout(ok, 220));
   const r = await think(t, voice);
@@ -2071,6 +2380,14 @@ function whatsNew() {
   D.LS.set('jarvis.seen', WN_VER);
 }
 async function briefing() {
+  // briefing.js (2026-11-04): the Briefing button / palette entry shows the morning briefing card (drawdown left, plan, Kalshi, to-dos, the
+  // one thing) and reads it while her voice is on; the text briefing below stays the fallback
+  const bc = window.__jarvisBrief;
+  if (bc && bc.state === 'ready' && typeof bc.run === 'function') {
+    D.LS.set('jarvis.briefDay', D.ymd(new Date())); logAct('Briefing');
+    const b = await bc.run({ speak: S.speakOn(), scroll: true });
+    if (b) return;
+  }
   setState('thinking');
   let r = null;
   try { r = await within(Promise.resolve().then(() => brain.briefing()), 20e3); } catch (_) { r = null; }
@@ -2233,6 +2550,7 @@ function vmDeps() {
     },
     verdict: vmVerdict, greeting: () => D.greeting(), fx: () => root.dataset.fx, reduced: reducedMotion,
     voiceCfg: () => D.LS.get('jarvis.voiceCfg', null), muted: S.muted, cloudVoice,
+    prosody: () => (engines ? engines.prosody : null), player: () => (engines ? engines.player : null),
     onOpen: () => {                                     // one core at a time on the phone: the Jarvis screen's waits behind
       stopListening(); if (handsFree) setHandsFree(false); hush(); setState('idle'); if (vo) vo.session('auto');
       vmHadCore = !!core;
@@ -2288,13 +2606,15 @@ async function moreKey(k) {
   if (['theme', 'aikey', 'apps', 'alerts', 'brief'].includes(k)) closeMore();
 }
 let toastT = 0;
+// speak alerts + quiet hours (⋯ → Settings → Jarvis; briefing.js keeps the choice in 'jarvis.alerts.v1'): proactive speech only
+const alertsMayTalk = () => { try { return window.__jarvisAlerts ? window.__jarvisAlerts.mayTalk() : true; } catch (_) { return true; } };
 function checkReminders() {
   if (!assistant || !visible()) return;
   const due = safe(() => assistant.due(), []) || [];
   for (const r of due) {
     const line = `Reminder: ${r.text}${r.late ? ` (it was due ${new Date(r.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })})` : ''}.`;
     say('j', '⏰ ' + line); toast(line, 'REMINDER'); sfx('listen');
-    if (S.speakOn() && !(vm && vm.isOpen())) speak(line, false);
+    if (S.speakOn() && !(vm && vm.isOpen()) && alertsMayTalk()) speak(line, false);
     safe(() => { if ('Notification' in window && Notification.permission === 'granted' && swReg && swReg.showNotification) swReg.showNotification('Jarvis', { body: line, tag: 'jarvis-' + r.id }); });
   }
 }
@@ -2444,6 +2764,8 @@ function openSettings(appsFirst) {
 $('#setX').addEventListener('click', () => { $('#settings').hidden = true; });
 $('#setGuide').addEventListener('click', () => openKeySetup($('#setProv').value));
 $('#setAdd').addEventListener('click', () => openSheet());
+$('#setMore').addEventListener('click', () => { $('#settings').hidden = true; show('settings'); });       // the Settings app has the rest (look, storage, the tour)
+$('#setVoiceOpen').addEventListener('click', () => { $('#settings').hidden = true; openVoice(); });
 $('#setForget').addEventListener('click', () => {
   safe(() => (typeof brain.forgetKey === 'function' ? brain.forgetKey() : brain.setSmart({ key: '', on: false })));
   $('#setSmart').checked = false; $('#smartState').textContent = 'Keys removed from this phone.'; renderBrainPanel(); renderMore();
@@ -2491,7 +2813,10 @@ function renderLook() {
   $('#hue').value = String(+(D.LS.get('jcustom', { h: 275 }) || {}).h || 275);
   $('#setSound').checked = S.sound(); $('#setTilt').checked = S.tilt(); $('#setCalm').checked = S.calm();
   $('#setIntro').checked = raw('jarvis.intro') !== 'off'; $('#setHaptic').checked = hapticOn();
-  safe(() => { const k = window.OLYMPUS_SFX, s = k && k.state(); $('#setOlySfx').checked = !!s && !s.muted; $('#setOlySfx').disabled = $('#setOlyVol').disabled = !k; if (s) $('#setOlyVol').value = String(Math.round(s.volume * 100)); });
+  safe(() => { const k = window.OLYMPUS_SFX, s = k && k.state(); $('#setOlySfx').checked = !!s && !s.muted; $('#setOlySfx').disabled = $('#setOlyVol').disabled = !k; if (s) $('#setOlyVol').value = String(Math.round(s.volume * 100));
+    const am = k && k.ambientState && k.ambientState(); $('#setOlyAmb').disabled = !am; $('#setOlyAmb').checked = !!am && (am.setting === null ? !am.saver : am.setting);
+    const sm = k && k.ambientState ? k.ambientState().sound : null; for (const b of $('#setOlySound').children) b.setAttribute('aria-pressed', String(b.dataset.snd === (sm === true ? 'on' : sm === false ? 'off' : 'auto'))); $('#setOlySound').dataset.off = k && k.sound ? '' : '1';
+    $('#setOlySaver').checked = (() => { try { return localStorage.getItem('olympus.saver') === 'on'; } catch (_) { return false; } })(); });
   $('#fxNote').textContent = root.dataset.fxAuto ? 'Jarvis lowered the effects to keep this phone smooth. Pick a level to override.' : 'High is the phone default. Low keeps the glass and stops the motion; Off is fully static.';
 }
 function openLook() { closeSheets(); closeMore(); $('#look').hidden = false; renderLook(); }
@@ -2503,6 +2828,10 @@ $('#fxSeg').addEventListener('click', (e) => { const b = e.target.closest('[data
 $('#coreSeg').addEventListener('click', (e) => { const b = e.target.closest('[data-core-k]'); if (b) setCoreDesign(b.dataset.coreK); });
 $('#hue').addEventListener('input', () => { D.LS.set('jcustom', { h: +$('#hue').value }); if (root.dataset.theme !== 'custom') setTheme('custom'); else { applyCustom(); readColors(); if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme())); } });
 $('#setOlySfx').addEventListener('change', () => { safe(() => { const k = window.OLYMPUS_SFX; if (!k) return; k.mute(!$('#setOlySfx').checked); if ($('#setOlySfx').checked) k.play('tap'); }); });
+$('#setOlyAmb').addEventListener('change', () => { safe(() => { const k = window.OLYMPUS_SFX; if (k && k.ambience) k.ambience($('#setOlyAmb').checked); }); });   // shared with every app (storage event)
+$('#setOlySound').addEventListener('click', (e) => { const b = e.target.closest('[data-snd]'); if (!b) return; safe(() => { const k = window.OLYMPUS_SFX; if (k && k.sound) k.sound(b.dataset.snd === 'auto' ? null : b.dataset.snd === 'on'); for (const x of $('#setOlySound').children) x.setAttribute('aria-pressed', String(x === b)); }); });   // OLYMPUS.sound: shared with every app
+$('#setOlySoundTest').addEventListener('click', () => { safe(() => { const k = window.OLYMPUS_SFX; if (!k) return; k.unlock(); $('#setOlySoundNote').textContent = !k.sound() ? 'Silent: Auto stays quiet in LITE, reduced motion and battery saver. Choose On to hear it' : k.play('success') ? 'Played the success cue' : 'Silent: muted or no sound in this browser'; }); });
+$('#setOlySaver').addEventListener('change', () => { safe(() => { try { if ($('#setOlySaver').checked) localStorage.setItem('olympus.saver', 'on'); else localStorage.removeItem('olympus.saver'); } catch (_) { /* private mode */ } }); });
 $('#setOlyVol').addEventListener('change', () => { safe(() => { const k = window.OLYMPUS_SFX; if (!k) return; k.setVolume(+$('#setOlyVol').value / 100); k.play('tap'); }); });
 $('#setSound').addEventListener('change', () => { D.LS.set('jarvis.sound', $('#setSound').checked); sfx('tap'); renderMore(); });
 $('#setTilt').addEventListener('change', async () => { await setTilt($('#setTilt').checked); renderLook(); });
@@ -2513,7 +2842,8 @@ function openVoice() {
   const lab = (v) => (tts ? tts.voiceLabel(v) : `${v.name} · ${v.lang}`);
   $('#vVoice').innerHTML = `<option value="">Automatic${cur ? ' (' + esc(lab(cur)) + ')' : ''}</option>` + en.map((v) => `<option value="${esc(v.name)}"${cfg.voice === v.name ? ' selected' : ''}>${esc(lab(v))}</option>`).join('');
   $('#vStyle').value = assistant ? assistant.settings().style : 'short';
-  $('#vCloud').checked = !!(D.LS.get('jarvis.tts', {}) || {}).cloud;
+  $('#vCloud').checked = engines ? (D.LS.get('jarvis.tts', {}) || {}).cloud !== false : !!(D.LS.get('jarvis.tts', {}) || {}).cloud;
+  renderEngine();
   $('#vTip').hidden = !!raw('jarvis.tip.ava') || (!!cur && /premium/i.test(cur.name + ' ' + (cur.voiceURI || '')));
   $('#vRate').value = String(cfg.rate); $('#vPitch').value = String(cfg.pitch);
   $('#vRateV').textContent = (+cfg.rate).toFixed(2); $('#vPitchV').textContent = (+cfg.pitch).toFixed(2);
@@ -2534,7 +2864,73 @@ $('#vStyle').addEventListener('change', () => { if (assistant) assistant.setSett
 $('#vCloud').addEventListener('change', () => {
   const on = $('#vCloud').checked, c = D.LS.get('jarvis.tts', {}) || {};
   D.LS.set('jarvis.tts', Object.assign({}, c, { cloud: on }));
-  if (on && !cloudVoice()) toast('The cloud voice needs your free Groq key: ⋯ → AI key. Until then she uses the phone\'s voice.', 'VOICE');
+  if (on && !cloudVoice()) toast('The cloud voice needs your free Gemini or Groq key: ⋯ → AI key. Until then she uses the phone\'s voice.', 'VOICE');
+  renderEngine();
+});
+// ---- the voice engine chooser (voice-engines.js): Auto / Natural cloud / On-device neural / Phone voice, samples, the Premium guide
+let devMsg = '';                                         // the last on-device download problem, kept until the next try
+function renderUsed() {
+  const el = $('#vUsed'); if (!el) return;
+  const u = engines ? engines.status().used : '';
+  el.textContent = u ? 'Last spoken with: ' + ({ gemini: 'Gemini voice', groq: 'Groq voice', kokoro: 'on-device voice', phone: 'the phone voice' }[u] || u) + '.' : '';
+}
+function renderEngine() {
+  const box = $('#vEngBox'); if (!box) return;
+  box.hidden = !engines; if (!engines) return;
+  const st = engines.settings(), s = engines.status(), d = engines.describe();
+  $('#vEngine').value = st.mode;
+  $('#vEngNote').textContent = d.note;
+  const effBrand = st.brand || (s.keys.gemini ? 'gemini' : 'groq');
+  const showCloud = (st.mode === 'auto' || st.mode === 'cloud') && (s.keys.gemini || s.keys.groq);
+  $('#vBrandRow').hidden = !showCloud || !(s.keys.gemini && s.keys.groq); $('#vBrand').value = st.brand;
+  $('#vCVoiceRow').hidden = !showCloud;
+  const G = effBrand === 'gemini' ? { Kore: 'Kore (firm)', Aoede: 'Aoede (breezy)', Leda: 'Leda (youthful)', Sulafat: 'Sulafat (warm)', Achernar: 'Achernar (soft)', Zephyr: 'Zephyr (bright)', Vindemiatrix: 'Vindemiatrix (gentle)' } : { hannah: 'Hannah (warm)', diana: 'Diana (clear)', autumn: 'Autumn (soft)' };
+  const cur = effBrand === 'gemini' ? st.gvoice : st.hvoice;
+  $('#vCVoice').innerHTML = Object.keys(G).map((k) => `<option value="${esc(k)}"${k === cur ? ' selected' : ''}>${esc(G[k])}</option>`).join('');
+  const dv = { af_heart: 'Heart (warm)', af_bella: 'Bella (expressive)', af_nicole: 'Nicole (soft)', bf_emma: 'Emma (British)' };
+  $('#vDVoice').innerHTML = Object.keys(dv).map((k) => `<option value="${k}"${k === st.kvoice ? ' selected' : ''}>${esc(dv[k])}</option>`).join('');
+  $('#vDVoiceRow').hidden = !s.device.ready;
+  $('#vDevNote').textContent = devMsg ? devMsg : !s.device.supported ? 'This browser cannot run the on-device voice (it needs an iPhone on iOS 16.4 or newer).'
+    : s.device.ready ? 'Downloaded (about ' + s.device.mb + ' MB on this phone). It runs offline with no key, but it is slower than the cloud: the first words take a few seconds.'
+    : 'Free, no key, works offline. A 115 MB one-time download, kept on this phone. Slower than the cloud voices.';
+  $('#vDevDl').hidden = !s.device.supported || s.device.ready; $('#vDevRm').hidden = !s.device.ready;
+  $('#vProsody').checked = !!st.prosody;
+  const ph = s.phone;
+  $('#vPremNote').textContent = ph.tier === 'premium' ? 'Found it: Jarvis is using ' + ph.label + '.' : ph.name ? 'Right now the phone voice is ' + ph.label + '.' : 'The phone has not shown its voice list yet.';
+  renderUsed();
+}
+$('#vEngine').addEventListener('change', () => { if (engines) { engines.setSettings({ mode: $('#vEngine').value }); renderEngine(); } });
+$('#vBrand').addEventListener('change', () => { if (engines) { engines.setSettings({ brand: $('#vBrand').value }); renderEngine(); } });
+$('#vCVoice').addEventListener('change', () => {
+  if (!engines) return;
+  const st = engines.settings(), k = engines.status().keys, eff = st.brand || (k.gemini ? 'gemini' : 'groq');
+  engines.setSettings(eff === 'gemini' ? { gvoice: $('#vCVoice').value } : { hvoice: $('#vCVoice').value });
+});
+$('#vDVoice').addEventListener('change', () => { if (engines) engines.setSettings({ kvoice: $('#vDVoice').value }); });
+$('#vProsody').addEventListener('change', () => { if (engines) engines.setSettings({ prosody: $('#vProsody').checked }); });
+$('#vDevDl').addEventListener('click', async () => {
+  if (!engines) return;
+  const b = $('#vDevDl'), pr = $('#vDevProg'), note = $('#vDevNote');
+  b.disabled = true; pr.hidden = false; pr.value = 0; devMsg = '';
+  try {
+    await engines.deviceDownload((p) => { pr.value = Math.min(1, p.done / p.total); note.textContent = 'Downloading ' + (p.label || '') + ' · ' + Math.round(100 * p.done / p.total) + '%. Keep Jarvis open.'; });
+    engines.setSettings({ mode: 'device' });
+    toast('The on-device voice is ready. Tap a sample to hear it.', 'VOICE');
+  } catch (e) {
+    devMsg = 'The download did not finish: ' + String((e && e.message) || e).slice(0, 140) + ' You can try again.';
+  }
+  b.disabled = false; pr.hidden = true; renderEngine();
+});
+$('#vDevRm').addEventListener('click', async () => { if (engines) { await safe(() => engines.deviceRemove()); engines.setSettings({ mode: 'auto' }); renderEngine(); } });
+$('#vSamples').addEventListener('click', (e) => {          // three sample lines, said with the chosen engine (inside the tap: the iPhone's unlock)
+  const b = e.target.closest('[data-sample]'); if (!b || !engines) return;
+  if (!S.speakOn()) { setVoiceOn(true); $('#vAll').checked = true; }
+  speak(engines.samples[+b.dataset.sample].text, false);
+});
+$('#vPremCheck').addEventListener('click', () => {
+  if (vo && typeof vo.reload === 'function') vo.reload();
+  safe(() => speechSynthesis.getVoices());
+  setTimeout(() => { openVoice(); $('#vPremium').open = true; }, 400);
 });
 $('#vTipX').addEventListener('click', () => { rawSet('jarvis.tip.ava', '1'); $('#vTip').hidden = true; });
 // Test voice: one natural sentence, inside the tap (testing her voice turns it on)
@@ -2753,9 +3149,15 @@ const ogIO = 'IntersectionObserver' in window ? new IntersectionObserver((es) =>
 }, { threshold: 0.12 }) : null;
 function renderGrid() {
   const box = $('#olyApps'); if (!box) return;
-  const list = nxApps().filter((a) => a.id !== 'home'), parts = nxSections(list) || [{ group: null, apps: list }];
+  const all = nxApps().filter((a) => a.id !== 'home');
+  // more than 20 apps: a small "Find an app" box above the grid (name, what it does, or its id); the groups that match keep their headings
+  const fb = $('#ogFindBox'), q = fb && all.length > 20 ? String($('#ogFind').value || '').trim().toLowerCase() : '';
+  if (fb) fb.hidden = all.length <= 20;
+  const list = q ? all.filter((a) => [a.name, a.label, a.sub, a.id].some((x) => String(x || '').toLowerCase().includes(q))) : all;
+  const parts = (list.length ? nxSections(list) : null) || [{ group: null, apps: list }];
   let i = 0;
-  box.innerHTML = parts.map((p) => (p.group && parts.length > 1 ? `<p class="og-g">${esc(p.group.name)}</p>` : '') + p.apps.map((a) => tileOf(a, i++)).join('')).join('')
+  box.innerHTML = (q && !list.length ? `<p class="og-g og-none">No app matches “${esc(q)}”.</p>` : '')
+    + parts.map((p) => (p.group && parts.length > 1 ? `<p class="og-g">${esc(p.group.name)}</p>` : '') + p.apps.map((a) => tileOf(a, i++)).join('')).join('')
     + `<button class="og-t og-add" type="button" data-og-add="1" style="--i:${i}" aria-label="Add a dashboard"><span class="og-ic" aria-hidden="true">+</span><b class="og-n">ADD</b><small class="og-s">Any app with a link</small></button>`;
   // the stagger plays once, when the grid first comes into view (only where the effects move)
   if (!ogStart) {
@@ -2765,6 +3167,7 @@ function renderGrid() {
   }
 }
 $('#olyApps').addEventListener('click', (e) => { if (e.target.closest('[data-og-add]')) openSheet(); });
+$('#ogFind').addEventListener('input', () => safe(renderGrid));
 $('#olyApps').addEventListener('error', (e) => { const t = e.target; if (t && t.tagName === 'IMG' && t.parentNode) t.parentNode.replaceChild(document.createTextNode(t.dataset.g || '?'), t); }, true);   // a broken icon: the app's letter
 
 // today's timeline: the trading day (ET) as the bots live it, with the Planner's events; the next one counts down
@@ -2898,7 +3301,9 @@ window.addEventListener('pagehide', swTakeOver);
 (() => {
   if (D.LS.get('jarvis.seen', '') !== WN_VER) { setTimeout(() => { D.LS.set('jarvis.seen', WN_VER); toast('Welcome to OLYMPUS. Every app is its own dashboard: tap the orb to switch.', "WHAT'S NEW", ['Show me', whatsNew]); }, 2200); return; }
   const h = D.etParts().h;
-  if (h >= 5 && h < 12 && D.LS.get('jarvis.briefDay', '') !== D.ymd(new Date())) setTimeout(() => toast('Your morning briefing is ready.', 'INFO', ['Open it', briefing]), 1600);
+  // briefing.js (2026-11-04) owns the morning briefing: the 7 AM ET card that is read out, and the first open of each day. This
+  // old toast stays only for a copy where that file did not load (it sets window.__jarvisBrief)
+  if (h >= 5 && h < 12 && D.LS.get('jarvis.briefDay', '') !== D.ymd(new Date())) setTimeout(() => { if (!window.__jarvisBrief) toast('Your morning briefing is ready.', 'INFO', ['Open it', briefing]); }, 4200);
 })();
 setInterval(() => { if (visible() && active === 'home') hudTick(); }, 1000);
 setInterval(() => { if (visible() && active === 'home') { greet(); renderNext(); D.refresh({ maxAge: 60e3 }); } }, 30e3);
@@ -2917,7 +3322,11 @@ if (window.visualViewport) {
 }
 window.__jarvis = { show, ask, facts: D.getFacts, active: () => active, setTheme, setOlyTheme, setFx, state: () => state, core: () => (core && typeof core.stats === 'function' ? safe(() => core.stats()) : null),
   voiceMode: (g) => voiceMode(!!g), vm: () => (vm ? vm.stats() : null), closeVoiceMode: () => { if (vm) vm.close('test'); },
-  voice: () => (vo ? vo.stats() : null), talk: (t) => speak(String(t || ''), false) };   // for tests and the console; read-only
+  voice: () => (vo ? vo.stats() : null), talk: (t) => speak(String(t || ''), false),   // for tests and the console; read-only
+  // for briefing.js (the morning briefing): what the rules think from, the one thing to do, and a quiet way to say a line
+  digest: () => safe(() => { if (typeof brain.headline === 'function') brain.headline(); return typeof brain.digest === 'function' ? brain.digest() : null; }, null),
+  think: () => Promise.resolve(safe(() => (typeof brain.think === 'function' ? brain.think('auto', { smart: false }) : null), null)).catch(() => null),
+  speakOn: () => S.speakOn(), busy: () => state !== 'idle' || listening || speaking || !!(vm && vm.isOpen()), hidden: () => S.hideMoney() };
 if ('serviceWorker' in navigator) {
   // a tapped Zenith notification while Jarvis runs (Zenith's sw.js v50: {type: 'open', app: 'zenith', hash}): Zenith mode at
   // that page, from the start (once Zenith mode is mounted it hears the message itself and calls onWantShow)
@@ -2930,7 +3339,9 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 <!-- the home backdrop and the portal jump on the OLYMPUS render core (docs/OLYMPUS_RENDER.md): each self-contained, each optional -->
-<script type="module" src="./backdrop.js?v=b1"></script>
-<script type="module" src="./portal.js?v=p1"></script>
+<script type="module" src="./backdrop.js?v=b2"></script>
+<script type="module" src="./portal.js?v=p2"></script>
+<script type="module" src="./transitions.js?v=t1"></script>
+<script type="module" src="./briefing.js?v=r1"></script>
 </body>
 </html>

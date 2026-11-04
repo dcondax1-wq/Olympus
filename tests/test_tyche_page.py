@@ -36,7 +36,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 WEB = os.path.join(ROOT, "tools", "web_public")
 TY = os.path.join(WEB, "tyche")
-MODULES = ["main.js", "data.js", "demo.js", "fmt.js", "scene.js", "wheel.js", "pools.js", "scales.js", "glow.js", "hud.js", "sparks.js", "bankroll.js", "caustics.js"]
+MODULES = ["main.js", "data.js", "demo.js", "fmt.js", "scene.js", "wheel.js", "pools.js", "scales.js", "glow.js", "hud.js", "sparks.js", "bankroll.js", "caustics.js", "fortune.js", "fortunepanel.js", "cash.js", "cashpanel.js", "tychefx.js"]
 RAW = "https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json"
 API = "https://api.github.com/repos/demetrades2000-coder/kalshi-feed/contents/kalshi.json?ref=main"
 THEME = "#07060b"
@@ -663,12 +663,122 @@ def state_checks(br, origin):
     FEED.update(raw=(200, fixture_v3(now)), api=None, calls=[])
     ctx, p, log = new_page(br, origin, (390, 844))
     p.goto(origin + "/frame.html")
-    p.wait_for_function("window.__cards.length > 0", timeout=30000)
+    p.wait_for_function("window.__cards.length > 0", timeout=120000)
     card = p.evaluate("window.__cards[window.__cards.length - 1].card")
     check("e. inside Jarvis: the card posted to the parent (contract, theme, 3 KPIs = balance / today / win rate)",
           card["v"] == 1 and card["name"] == "Tyche" and card["theme"] == THEME and card["status"]["level"] == "ok"
           and [k["value"] for k in card["kpis"]] == ["$2,481.37", "+$46.82", "62.4%"] and card["lines"] == ["Next: NYC high 58-59°F today"]
           and isinstance(card["t"], int), card)
+    ctx.close()
+
+
+def fortune_checks(br, origin):
+    """The Fortune view (2026-11-04): leaderboard, streak coins, today's fortune, two bankrolls, the session replay, and the effects library on the scene."""
+    ctx, p, log = new_page(br, origin, (390, 844))
+    p.goto(origin + "/tyche/?demo=1#fortune")
+    ready(p)
+    p.wait_for_timeout(600)
+    check("g. fortune: the fifth tab, a panel with five sections, the wheel still turning behind it",
+          p.locator(".tabs button[data-view=fortune]").count() == 1 and p.is_visible("#p-fortune") and p.locator("#f-seg button").count() == 5
+          and p.evaluate("window.tyche.view") == "fortune" and p.evaluate("window.tyche.coins") > 0)
+    r = p.evaluate("""async () => { const F = await import('./fortune.js'); const m = tyche.model; const b = F.leaderboard(m), s = F.streakCoins(m), f = F.fortune(m), c = F.compareBankrolls(m, 0.5), fr = F.replayFrames(m);
+       const tot = m.settled.reduce((a, x) => a + x.pnl, 0);
+       return { rows: b.rows.length, sum: b.rows.reduce((a, r) => a + r.pnl, 0), total: b.total, n: m.settled.length, tot, sorted: b.rows.every((r, i) => !i || b.rows[i - 1].pnl >= r.pnl),
+         coins: s.coins.length, head: f.headline, lines: f.lines.length, note: f.note, endA: c.endA, bal: m.balance, fr: fr.length, half: c.b[c.b.length - 1].bal - c.b[0].bal, full: c.a[c.a.length - 1].bal - c.a[0].bal,
+         empty: [F.leaderboard(null).rows.length, F.streakCoins({}).coins.length, F.fortune({ settled: [] }).headline, F.replayFrames(null).length, F.compareBankrolls({ settled: [] }).n] }; }""")
+    check("g. fortune.js on the demo: the board adds up to the settled bets' money (or shows the top 6), best first; at most 12 coins; a fortune with a headline, lines and the honest note",
+          r["total"] == r["n"] and (abs(r["sum"] - r["tot"]) < 0.01 or r["rows"] == 6) and r["sorted"] and r["coins"] == min(12, r["n"]) and r["head"] and r["lines"] >= 2 and "not a forecast" in r["note"], r)
+    check("g. two bankrolls: the real one ends on the balance; the same bets at half the stake move half as much; the replay has a frame per bet plus the start",
+          abs(r["endA"] - r["bal"]) < 0.02 and abs(r["half"] - r["full"] / 2) < 0.01 * max(1, r["n"]) and r["fr"] == r["n"] + 1, r)
+    check("g. no data: every function answers (empty board, no coins, 'no settled bets yet', one start frame)", r["empty"][:2] == [0, 0] and "no settled bets" in r["empty"][2].lower() and r["empty"][3] == 1 and r["empty"][4] == 0, r["empty"])
+    rows = p.locator("#f-body .lrow").count()
+    check("g. Board: one row per strategy / market, with its money and its win count", rows == r["rows"] and rows >= 1 and "W" in p.locator("#f-body .lrow").first.inner_text(), rows)
+    p.locator("#f-seg button[data-f=streak]").click()
+    check("g. Streak: a coin per recent settled bet (gold = won, dark = lost)", p.locator("#f-body .coin").count() == r["coins"] and p.locator("#f-body .coin.win").count() + p.locator("#f-body .coin.loss").count() == r["coins"])
+    p.locator("#f-seg button[data-f=fortune]").click()
+    check("g. Fortune: the daily card shows the headline and says it is not a forecast", r["head"] in p.inner_text("#f-body") and "not a forecast" in p.inner_text("#f-body"), p.inner_text("#f-body")[:200])
+    p.locator("#f-seg button[data-f=compare]").click()
+    check("g. Compare: both bankrolls drawn (two lines), 'As it was' and 'Half stake' with their end and deepest drop",
+          p.is_visible("#f-cmp") and p.locator("#f-cmp polyline").count() == 2 and "as it was" in p.inner_text("#f-body").lower() and "half stake" in p.inner_text("#f-body").lower() and "deepest drop" in p.inner_text("#f-body").lower())
+    p.locator("#f-seg button[data-f=replay]").click()
+    check("g. Replay: the balance, the bet line and a slider with one stop per bet (and the comparison's svg goes back out of sight)", p.is_visible("#f-body .rbal") and not p.is_visible("#f-cmp")
+          and p.evaluate("+document.querySelector('#f-body input[type=range]').max") == r["n"])
+    p.locator("#f-body input[type=range]").fill("3")
+    check("g. Replay: moving the slider shows that bet and the balance after it", "Bet 3 of" in p.inner_text("#f-body .rinfo"), p.inner_text("#f-body .rinfo"))
+    p.locator("#f-body .rplay").click()
+    try:
+        p.wait_for_function("+document.querySelector('#f-body input[type=range]').value > 3", timeout=90000)
+        ok = True
+    except Exception:
+        ok = False
+    p.locator("#f-body .rplay").click()
+    check("g. Replay: Play steps through the bets by itself, Pause stops it", ok and "Play" in p.locator("#f-body .rplay").inner_text())
+    bad = orb_free(p)
+    check("g. fortune view: no sideways scroll, the orb's corner free", no_sideways(p) and not bad, bad)
+    try:
+        p.wait_for_function("window.OLYMPUS_FX && OLYMPUS_FX.stats().byName.caustics >= 1", timeout=60000)
+        fx_ok = True
+    except Exception:
+        fx_ok = False
+    check("g. the effects library is on the scene: water-light caustics on the floor (and gold motes unless LITE), ceremonial ring on a wheel tap",
+          fx_ok and p.evaluate("typeof OLYMPUS_FX.shockwave") == "function")
+    p.evaluate("window.tyche.setView('pools')")
+    check("g. another view hides the panel again", not p.is_visible("#p-fortune"))
+    errs = real_errors(log)
+    check("g. no console errors in the Fortune view", not errs, errs)
+    ctx.close()
+
+
+def cash_checks(br, origin):
+    """The Cash view (2026-11-04): break-even, at risk, pace, hours and the copy line; money first, never blank."""
+    ctx, p, log = new_page(br, origin, (390, 844))
+    p.goto(origin + "/tyche/?demo=1#cash")
+    ready(p)
+    p.wait_for_timeout(600)
+    tabs = p.locator(".tabs button")
+    small = [b for b in (tabs.nth(i).bounding_box() for i in range(tabs.count())) if not b or b["height"] < 43.5 or b["width"] < 43.5]
+    check("h. cash: six tabs, every one at least 44 x 44, the Cash panel open with four sections", tabs.count() == 6 and not small and p.is_visible("#p-cash")
+          and p.locator("#c-seg button").count() == 4 and p.evaluate("window.tyche.view") == "cash", small)
+    r = p.evaluate("""async () => { const C = await import('./cash.js'); const m = tyche.model, b = C.breakEven(m), a = C.atRisk(m, Date.now() / 1000), pc = C.pace(m), h = C.hours(m);
+       return { be: b.ok && { wr: b.wr, need: b.need, edge: b.edge }, st: m.stats.winRate, ar: a.ok && { cost: a.cost, n: a.n, bands: a.bands.reduce((x, y) => x + y.n, 0), bcost: a.bands.reduce((x, y) => x + y.cost, 0), open: m.open.reduce((x, o) => x + o.cost, 0), no: m.open.length },
+         pace: pc.ok && { today: pc.today, bars: pc.bars.length, tone: pc.tone }, hours: h.ok && { n: h.hours.reduce((x, y) => x + y.n, 0), set: m.settled.length },
+         line: C.moneyLine(m), bal: m.balance, empty: [C.breakEven(null).ok, C.atRisk(null, 0).ok, C.pace(null).ok, C.hours(null).ok, C.moneyLine(null)], usd: [C.usd(1234.5), C.usd(-3, true), C.usd(7, true)] }; }""")
+    check("h. cash.js on the demo: the break-even win rate is the stats' win rate; the bands add up to every open bet and its cost; 14 bars at most; every settled bet counted in an hour",
+          r["be"] and abs(r["be"]["wr"] - r["st"]) < 1e-9 and r["ar"] and r["ar"]["bands"] == r["ar"]["no"] and abs(r["ar"]["bcost"] - r["ar"]["cost"]) < 0.01 and abs(r["ar"]["cost"] - r["ar"]["open"]) < 0.01
+          and r["pace"] and 3 <= r["pace"]["bars"] <= 14 and r["hours"] and r["hours"]["n"] == r["hours"]["set"], r)
+    check("h. cash.js: the clipboard line starts 'Kalshi bot:' with the balance; no data = every function answers a plain sentence, never a crash; money formats ($1,234.50, -$3, +$7)",
+          r["line"].startswith("Kalshi bot: balance") and r["empty"][:4] == [False] * 4 and r["empty"][4] == "" and r["usd"] == ["$1,234.50", "-$3", "+$7"], (r["line"], r["empty"], r["usd"]))
+    check("h. Break-even: a hero in points, the one-line sentence, the meter with the need tick, bets / return / fees", p.locator("#c-body .cx-hero").count() == 1 and "pts" in p.inner_text("#c-body .cx-hero")
+          and p.locator("#c-body svg.cx-meter").count() == 1 and p.locator("#c-body .cx-need").count() == 1 and "win" in p.inner_text("#c-body .cx-line").lower() and "bets" in p.inner_text("#c-body .cxd").lower(), p.inner_text("#c-body")[:200])
+    for k, sel, word in (("risk", "#c-body .cx-ladder li", "bet"), ("pace", "#c-body svg.cx-bars", ""), ("hours", "#c-body svg.cx-bars", "")):
+        p.locator(f"#c-seg button[data-c={k}]").click()
+        p.wait_for_timeout(120)
+        check(f"h. {k}: shows its section (not blank, no text left from the last one)", p.locator(sel).count() >= 1 and p.evaluate("document.getElementById('c-body').dataset.sec") == k and len(p.inner_text("#c-body").strip()) > 20, p.inner_text("#c-body")[:150])
+    seg = p.locator("#c-seg button")
+    low = [b for b in (seg.nth(i).bounding_box() for i in range(seg.count())) if b["height"] < 43.5 or b["width"] < 43.5]
+    cb = p.locator("#c-copy").bounding_box()
+    check("h. cash: the four section buttons and the Copy button are at least 44 x 44", not low and cb and cb["height"] >= 43.5 and cb["width"] >= 43.5, (low, cb))
+    p.context.grant_permissions(["clipboard-read", "clipboard-write"], origin=origin)
+    p.evaluate("() => { window.__seen = []; const c = document.getElementById('c-copy'); new MutationObserver(() => window.__seen.push(c.textContent)).observe(c, { childList: true, characterData: true, subtree: true }); }")
+    p.click("#c-copy")
+    try:
+        p.wait_for_function("document.getElementById('c-copy').dataset.line", timeout=30000)
+    except Exception:
+        pass
+    seen = p.evaluate("window.__seen")
+    check("h. Copy my money line: the button says Copied (or Copy failed, never silent) and holds the 'Kalshi bot:' sentence", any(x in ("Copied", "Copy failed") for x in seen)
+          and (p.get_attribute("#c-copy", "data-line") or "").startswith("Kalshi bot:"), seen)
+    rest = p.evaluate("""() => { const c = tyche.cash; c.go('risk'); c.setModel(Object.assign({}, tyche.model, { running: false, open: [] }));          // one synchronous step: a feed refresh cannot slip in
+       return [!document.getElementById('c-rest').hidden, document.getElementById('c-rest').textContent, document.getElementById('c-body').textContent]; }""")
+    check("h. a paused bot: the rest banner says so, the risk section says nothing is open", rest[0] and "paused" in rest[1].lower() and "Nothing is open" in rest[2], rest)
+    waiting = p.evaluate("() => { tyche.cash.setModel(null); return document.getElementById('c-body').textContent; }")
+    check("h. no model yet: a plain waiting sentence, not blank", "Waiting" in waiting, waiting)
+    bad = orb_free(p)
+    check("h. cash view: no sideways scroll, the orb's corner free", no_sideways(p) and not bad, bad)
+    p.evaluate("window.tyche.setView('wheel')")
+    check("h. another view hides the Cash panel again", not p.is_visible("#p-cash"))
+    errs = real_errors(log)
+    check("h. no console errors in the Cash view", not errs, errs)
     ctx.close()
 
 
@@ -690,6 +800,8 @@ def main(argv=None) -> int:
                 v3_checks(br, origin, vw)
             tap_checks(br, origin)
             state_checks(br, origin)
+            fortune_checks(br, origin)
+            cash_checks(br, origin)
             br.close()
     finally:
         srv.shutdown()

@@ -59,7 +59,7 @@ def part_a():
     html, css = rd(PAGE, "index.html"), rd(PAGE, "hephaestus.css")
     js = {n: rd(PAGE, n) for n in files if n.endswith(".js")}
     check("a. the kit first (olympus.css, themes.js, olympus.js ?v=o2 with data-app), viewport-fit=cover, theme-color, dark, manifest, icon, apple-touch-icon",
-          '<link rel="stylesheet" href="../olympus/olympus.css?v=o2">' in html and 'src="../olympus/themes.js?v=o2"' in html and 'src="../olympus/olympus.js?v=o2" data-app="hephaestus"' in html
+          '<link rel="stylesheet" href="../olympus/olympus.css?v=o3">' in html and 'src="../olympus/themes.js?v=o3"' in html and 'src="../olympus/olympus.js?v=o3" data-app="hephaestus"' in html
           and "viewport-fit=cover" in html and 'name="theme-color"' in html and 'content="dark"' in html and 'rel="manifest" href="manifest.webmanifest"' in html
           and 'rel="icon" href="icon.svg"' in html and 'rel="apple-touch-icon"' in html)
     check("a. no CDN, no outside script / font / image: every src and href is local", not re.search(r'(src|href)="https?://', html) and not any(re.search(r"import[^;]*['\"]https?://", s) for s in js.values()))
@@ -304,7 +304,7 @@ def run_browser(tmp):
             p.reload()
             p.wait_for_function("document.body.dataset.ready === '1' && HEPH.state().scene.drawn > 0", timeout=180000)
             check("d. the last dials stay on this phone only: a reload comes back on the no-cut setting (localStorage 'hephaestus.v1')", st(p)["scenario"] == "no_cut"
-                  and set(json.loads(p.evaluate("localStorage.getItem('hephaestus.v1')"))) == {"dials"})
+                  and "dials" in json.loads(p.evaluate("localStorage.getItem('hephaestus.v1')")) and set(json.loads(p.evaluate("localStorage.getItem('hephaestus.v1')"))) <= {"dials", "hist", "pin"})   # JOB 4+5: the dials, the history of dials tried and the pinned compare side, nothing else
             card = p.evaluate("HEPH.card()")
             check("d. the card for Jarvis: 3 kpis, <= 3 lines of <= 120 characters, name Hephaestus", card["name"] == "Hephaestus" and len(card["kpis"]) == 3 and len(card["lines"]) <= 3 and all(len(x) <= 120 for x in card["lines"]), card)
             ctx.close()

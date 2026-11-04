@@ -4,6 +4,9 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import * as CORE from './arescore.js';
 import { loadRules, planOf, floorOf, judge, CHECKS, usd, esc, num, accountFromSite, botStops } from './arescore.js';
+import { initDesk, renderDesk, loadHome, desk } from './aresdesk.js';
+import { dressRoom } from './aresfx.js';
+import { renderPlus } from './aresplus.js';
 
 const O = window.OLYMPUS || null;
 const Q = new URLSearchParams(location.search);
@@ -101,6 +104,8 @@ function update() {
   $('vs').textContent = R.level === 'halt' ? (!z.valid && halts.length === 1 && halts[0].id === 'input' ? 'enter entry + stop' : z.valid && z.n === 0 ? 'no size fits' : halts.length + (halts.length === 1 ? ' reason' : ' reasons')) : z.valid ? `${z.n} ${z.inst} · risk ${usd(z.risk)}` : 'enter entry + stop';
   $('vline').textContent = R.level === 'halt' ? halts[0].text : R.level === 'wait' ? (z.valid ? `Allowed. Size ${z.n} ${z.inst}. Finish the list (${R.checks.done}/${R.checks.total}) to go.` : 'Enter your entry and stop.') : `Size ${z.n} ${z.inst}, stop ${z.pts.toFixed(1)} pts. Place the stop first.`;
   syncFields(); renderOut(R); renderAcct(R); renderWhy(R); renderChecks(R); renderRules(); renderBot();
+  renderDesk(S, R);
+  try { renderPlus(S, R, S.rules); } catch (e) { S.errors.push('plus: ' + ((e && e.message) || e)); }
   S.hall?.set(R);
   O?.mode?.(!!(S.hall && S.hall.lite));
 }
@@ -165,6 +170,7 @@ class Room {
     this.col = new THREE.Color('#ff4d5e'); this.tint = new THREE.Color('#ff4d5e');
     this.glow = glowTex();
     this.build();
+    try { this.dress = dressRoom(this); } catch (e) { this.dress = null; }          // bronze, steel, banners, torches, the hologram table (aresfx.js)
     this.resize(); addEventListener('resize', () => this.resize());
     this.input(canvas);
   }
@@ -247,6 +253,7 @@ class Room {
       const pos = this.emberPos;
       for (let i = 0; i < this.emberN; i++) { const e = this.emberSeed[i]; e.y += e.s * dt; if (e.y > H + 0.5) e.y = 0; const a = e.a + this.t * 0.25; pos[i * 3] = Math.cos(a) * e.r; pos[i * 3 + 1] = e.y; pos[i * 3 + 2] = Math.sin(a) * e.r; }
       this.embers.geometry.attributes.position.needsUpdate = true;
+      if (this.dress) this.dress.update(dt, this.t);
     }
     this.camera.position.set(Math.sin(this.yaw) * Math.cos(this.pitch) * this.dist, H * 0.5 + Math.sin(this.pitch) * this.dist, Math.cos(this.yaw) * Math.cos(this.pitch) * this.dist);
     this.camera.lookAt(0, H * 0.5, 0);
@@ -255,8 +262,10 @@ class Room {
   fps() { const a = this.frames; return a.length ? Math.round(a.length / a.reduce((s, x) => s + x, 0)) : 0; }
 }
 
+let gapAt = 0;
 function tick(now) {
-  if (S.hall && !(O ? O.hidden() : document.hidden)) S.hall.frame(now);
+  const gap = O && O.frameGap ? O.frameGap() : 0;                         // idle 30 / 15 fps, battery saver, 3D Off (docs/OLYMPUS_PERF.md)
+  if (S.hall && !(O ? O.hidden() : document.hidden) && !(gap && now - gapAt < gap - 3)) { gapAt = now; S.hall.frame(now); }
   requestAnimationFrame(tick);
 }
 
@@ -274,13 +283,13 @@ async function main() {
   S.rules = await loadRules('rules.json?v=r1');
   loadState();
   $('demo').hidden = S.rules.src === 'file';
-  bind(); route(); update();
+  bind(); route(); update(); initDesk(S, update, save);
   try { S.hall = new Room($('room')); S.hall.set(S.last); tick(performance.now()); } catch (e) { S.hall = null; $('nogl').hidden = false; O?.ready(); }
   window.__ares = { ready: true, CORE, get state() { return S.st; }, get verdict() { return S.last; }, get lite() { return S.hall ? S.hall.lite : null; },
     get fps() { return S.hall ? S.hall.fps() : 0; }, get rulesSrc() { return S.rules.src; }, get live() { return !!S.acct; }, errors: S.errors,
-    get yaw() { return S.hall ? S.hall.yaw : 0; }, get tab() { return S.tab; }, get ready3d() { return !!S.hall; } };
+    get yaw() { return S.hall ? S.hall.yaw : 0; }, desk, get dressed() { return !!(S.hall && S.hall.dress); }, get tab() { return S.tab; }, get ready3d() { return !!S.hall; } };
   S.site = await loadSite();
-  S.acct = accountFromSite(S.site);
+  S.acct = accountFromSite(S.site) || await loadHome();
   if (S.acct && (S.st.balance === '' || S.st.botBalance)) { applyBot(); }
   if (S.acct) { $('fromBot').hidden = false; $('livetag').hidden = false; $('sub').textContent = `${S.acct.name}: ${usd(S.acct.balance)}, floor ${usd(S.acct.floor)}`; }
   update();

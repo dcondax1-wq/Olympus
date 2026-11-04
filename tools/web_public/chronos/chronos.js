@@ -2,11 +2,13 @@
 // The maths and the words live in chroncore.js. Text only through textContent (no data ever becomes HTML). window.CHR is the test hook.
 import { SPEEDS, BARS_PER_SEC, parseTrades, dayList, bestWorst, lastMonth, sameWeekday, layout, timeAt, steps, stepsBy, phase, dayVerdict, usd, sgn, clock, prettyDay } from './chroncore.js';
 
+import * as X from './extras.js';
+
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
 const KEY = 'chronos.v1';
 const S = { trades: [], days: [], bw: { best: null, worst: null }, demo: true, di: -1, ti: 0, trade: null, L: null, u: 0, playing: false, speed: 1, view: '', scene: null, ready: false, error: null,
-  ended: false, seen: 0, last: 0, jump: '', stepsN: -1 };
+  ended: false, seen: 0, last: 0, jump: '', stepsN: -1, queue: [] };
 
 const reduced = () => (O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches));
 function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; }
@@ -56,6 +58,7 @@ function onEnd() {
   S.playing = false;
   if (S.ended) return;
   S.ended = true;
+  if (S.queue.length) { const next = S.queue.shift(); setTimeout(() => { pickDay(next, { play: true }); updateNav(); }, 1100); return; }   // a reel in a row: the next day, no verdict sheet
   openSheet('verdict');
 }
 function advance(dt) {
@@ -68,9 +71,13 @@ function advance(dt) {
 let raf = 0;
 function tick(now) {
   raf = requestAnimationFrame(tick);
+  if (window.OLYMPUS ? window.OLYMPUS.hidden() : document.hidden) { S.last = now; return; }      // hidden / covered: nothing advances
+  const gap = window.OLYMPUS && window.OLYMPUS.frameGap ? window.OLYMPUS.frameGap() : 0;          // idle / saver / 3D Off (docs/OLYMPUS_PERF.md)
+  if (gap && now - (S.gapAt || 0) < gap - 3) return;
+  S.gapAt = now;
   const dt = Math.min(0.1, (now - (S.last || now)) / 1000);
   S.last = now;
-  if (!document.hidden) advance(dt);
+  advance(dt);
 }
 
 // ------------------------------------------------------------------------------------------------ the words
@@ -117,7 +124,12 @@ function updateNav() {
   document.querySelectorAll('#jumps button').forEach((b) => { const k = b.dataset.j; b.disabled = !j[k] || (d && j[k] === d.day); b.setAttribute('aria-pressed', String(!!d && j[k] === d.day && (k === 'best' || k === 'worst'))); });
 }
 
-const TITLES = { steps: 'The bot\'s steps', verdict: 'Verdict', about: 'What you are looking at' };
+const TITLES = { steps: 'The bot\'s steps', verdict: 'Verdict', lab: 'The lab', about: 'What you are looking at' };
+function labBody() {
+  try {
+    return X.labView({ days: S.days, trades: S.trades, day, demo: S.demo, close: closeSheet, pickDay: (d, o) => { pickDay(d, o); updateNav(); }, playReel: (list) => { S.queue = list.slice(1); pickDay(list[0], { play: true }); updateNav(); } });
+  } catch (e) { return h('p', '', 'The lab could not open: ' + ((e && e.message) || e)); }
+}
 function stepsView() {
   const t = S.trade, now = tt(), ul = h('ul', 'stepsl');
   for (const e of steps(t)) {
@@ -158,7 +170,7 @@ function aboutView() {
 function openSheet(view) {
   S.view = view;
   $('sheetTitle').textContent = TITLES[view];
-  kids($('sheetBody'), view === 'steps' ? stepsView() : view === 'verdict' ? verdictView() : aboutView());
+  kids($('sheetBody'), view === 'steps' ? stepsView() : view === 'verdict' ? verdictView() : view === 'lab' ? labBody() : aboutView());
   $('sheet').hidden = false;
   document.querySelectorAll('#pills button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === view)));
   history.replaceState(null, '', '#' + view);
@@ -236,10 +248,10 @@ async function main() {
   buildDays();
   wire();
   const hash = location.hash.slice(1), want = S.days.some((d) => d.day === hash) ? hash : S.days.length ? S.days[S.days.length - 1].day : null;
-  if (want) pickDay(want, { play: !/^(steps|verdict|about)$/.test(hash) });
+  if (want) pickDay(want, { play: !/^(steps|verdict|lab|about)$/.test(hash) });
   else { setText('step', 'No bot trades to replay yet.'); $('play').disabled = $('scrub').disabled = true; }
   updateNav();
-  if (/^(steps|about)$/.test(hash)) openSheet(hash);
+  if (/^(steps|about|lab)$/.test(hash)) openSheet(hash);
   S.ready = true;
   document.body.dataset.ready = '1';
   postCard();
@@ -255,6 +267,7 @@ window.CHR = {
   seek(u) { S.playing = false; seek(u); return window.CHR.state(); },
   day(d) { const ok = pickDay(d, { play: false }); updateNav(); return ok; },
   jump(k) { jump(k); return window.CHR.state(); },
+  lab: () => { openSheet('lab'); return window.CHR.state(); },
   card,
 };
 

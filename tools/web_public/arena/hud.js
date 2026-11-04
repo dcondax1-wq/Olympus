@@ -38,7 +38,7 @@ export function renderStreaks(sc) {
   kids($('streaks'), Object.values(sc.streaks).map((s) => {
     const c = h('span', 'oly-chip streak' + (s.cur ? ' on' : ''));
     c.title = `${s.name}: ${s.cur} ${s.unit} now, best ${s.best}`;
-    c.append(h('span', 'k', short[s.id] || s.name), h('b', '', s.cur), h('span', 'u', s.unit === 'trades' ? '' : s.unit === 'market days' ? 'md' : 'd'));
+    c.append(h('span', 'k', short[s.id] || s.name), h('b', '', s.cur), h('span', 'u', s.unit === 'trades' ? '' : s.unit === 'market days' ? 'weekdays' : 'days'));   // plain words: 'md' meant market days (Mon-Fri, holidays skipped)
     return c;
   }));
 }
@@ -168,10 +168,11 @@ export function renderLadder(sc, R) {
   return [h('p', 'sweep', 'The five steps in the middle of the colosseum. Every step you reach lights up in its colour.'), box];
 }
 
+function tbar(t) { const b = h('div', 'bar tbar'), i = document.createElement('i'); i.style.width = `${Math.round(Math.min(1, (t.value || 0) / Math.max(1, t.goal || 1)) * 100)}%`; b.append(i); return b; }
 export function showTrophy(t) {
   const pop = $('pop');
   kids(pop.querySelector('.pbody'), h('span', 'n', `${TIER_NAME[t.tier]} trophy`), h('h2', '', t.name), h('p', 'task', t.text),
-    h('p', 'st', t.earned ? 'Earned' : `${fmt(t.value)} of ${fmt(t.goal)}`), h('p', 'how', 'Honour, not XP. It comes from events a source shows, never from $, size or R.'));
+    h('p', 'st', t.earned ? 'Earned' : `${fmt(t.value)} of ${fmt(t.goal)}`), tbar(t), h('p', 'how', 'Honour, not XP. It comes from events a source shows, never from $, size or R.'));
   pop.classList.toggle('earned', !!t.earned);
   pop.hidden = false;
   pop.dataset.labour = ''; pop.dataset.trophy = t.id;

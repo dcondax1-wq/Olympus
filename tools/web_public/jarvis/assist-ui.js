@@ -32,12 +32,12 @@ function style() {
 .jx-steps code{font-size:12px;padding:1px 4px;border-radius:4px;background:rgba(255,255,255,.08);word-break:break-all}
 .jx-obs textarea{width:100%;min-height:90px;box-sizing:border-box;font:inherit;font-size:14px;border-radius:10px;padding:8px}
 .jx-obs .st{font-size:13px;opacity:.85;margin:4px 0 8px}
-.jx-modes{display:flex;gap:6px;margin:10px auto 0;max-width:560px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 2px 4px}
+.jx-modes{display:flex;width:100%;box-sizing:border-box;gap:6px;margin:10px auto 0;max-width:560px;flex-wrap:wrap;justify-content:center;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 2px 4px}
 .jx-modes::-webkit-scrollbar{display:none}
 .jx-modes button{flex:0 0 auto;min-height:34px;padding:4px 12px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;letter-spacing:.04em;color:inherit;
   background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.16);cursor:pointer}
 .jx-modes button[aria-pressed=true]{background:rgba(var(--cr,125,211,252),.28);border-color:rgba(var(--cr,125,211,252),.75)}
-.jx-modes .think{margin-left:auto;background:rgba(var(--cr,125,211,252),.16);border-color:rgba(var(--cr,125,211,252),.55)}
+.jx-modes .think{background:rgba(var(--cr,125,211,252),.16);border-color:rgba(var(--cr,125,211,252),.55)}
 .jx-plan{margin:8px auto 0;max-width:560px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);text-align:left}
 .jx-plan[hidden]{display:none}
 .jx-plan .h{display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.8}
@@ -52,7 +52,12 @@ function style() {
   background:rgba(var(--cr,125,211,252),.18);border:1px solid rgba(var(--cr,125,211,252),.5);cursor:pointer}
 .jx-plan .apps{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .jx-plan .apps button{font:inherit;font-size:12px;min-height:30px;padding:3px 10px;border-radius:10px;color:inherit;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);cursor:pointer}
-.jx-plan .apps i{font-style:normal;opacity:.7;margin-left:4px}`;
+.jx-plan .apps i{font-style:normal;opacity:.7;margin-left:4px}
+.og-find{margin:4px 0 8px}.og-find[hidden]{display:none}
+.og-find input{width:100%;box-sizing:border-box;height:44px;padding:0 14px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.4);color:inherit;font-family:inherit;font-weight:500;font-size:16px;outline:none}
+.og-find input:focus{border-color:rgba(var(--cr,125,211,252),.7)}
+.og .og-none{grid-column:1/-1;opacity:.8}
+@media (max-width:400px){.ask{gap:5px}.ask .key{padding:0 10px}.ask .key.ic{width:44px}}`;   /* the dock's input was 102 px on a 375 phone (four keys beside it): smaller keys leave it about 150 px (SEND still goes below 361 px: jarvis.css) */
   document.head.appendChild(s);
 }
 

@@ -63,8 +63,8 @@ def rjson(path):
 # ------------------------------------------------------------------------------------------------------------ a
 def test_registry():
     names = [t.name for t in registry.TASKS]
-    check("a. registry: unique names, the seven research apps", len(names) == len(set(names))
-          and set(names) == {"datacity", "fates", "odeon", "pantheon", "hermes", "tree", "prometheus"}, names)
+    check("a. registry: unique names, the eight research apps", len(names) == len(set(names))
+          and set(names) == {"datacity", "kalshicity", "fates", "odeon", "pantheon", "hermes", "tree", "prometheus"}, names)
     check("a. groups: nightly = fates + odeon + pantheon, weekly = tree + prometheus, all = both",
           registry.GROUPS["nightly"] == ("fates", "odeon", "pantheon") and registry.GROUPS["weekly"] == ("tree", "prometheus")
           and registry.GROUPS["all"] == ("fates", "odeon", "pantheon", "tree", "prometheus"), registry.GROUPS)
@@ -80,7 +80,7 @@ def test_registry():
             check(f"a. {t.name}: publishes jarvis.json last, timeout 1-30 min",
                   t.files and t.files[-1] == "jarvis.json" and 60 <= t.timeout_s <= 30 * 60, t)
         check(f"a. {t.name}: max age {t.max_age_h:g} weekday hours fits its cadence",
-              t.max_age_h == (36 if t.cadence in ("nightly", "publish") else 156), t.max_age_h)
+              t.max_age_h == (36 if t.cadence in ("nightly", "publish", "frequent") else 156), t.max_age_h)
     dc = registry.get("datacity")
     check("a. datacity runs in its own workflow and its branch files map into datacity/",
           dc.runner == "workflow" and os.path.exists(os.path.join(ROOT, dc.workflow)) and dc.branch == "datacity"
@@ -88,7 +88,12 @@ def test_registry():
     check("a. fates' files come from the cronos branch as fates/...",
           registry.site_files(registry.get("fates")) == [("fates/fates.json", "fates/fates.json"), ("fates/jarvis.json", "fates/jarvis.json")])
     check("a. hermes is stamped by itself (runs in the build), the others by CRONOS", "hermes" not in registry.STAMPED
-          and set(registry.STAMPED) == {"datacity", "fates", "odeon", "pantheon", "tree", "prometheus"})
+          and set(registry.STAMPED) == {"datacity", "kalshicity", "fates", "odeon", "pantheon", "tree", "prometheus"})
+    kc = registry.get("kalshicity")
+    check("a. kalshicity: every 6 hours in its own workflow, the three site files come from the kalshicity branch into kalshicity/ (ledger.json stays on the branch), not run by CRONOS",
+          kc.runner == "workflow" and kc.cadence == "frequent" and kc.every == "every 6 hours" and kc.branch == "kalshicity" and kc.max_age_h == 36 and os.path.exists(os.path.join(ROOT, kc.workflow))
+          and registry.site_files(kc) == [("edges.json", "kalshicity/edges.json"), ("learning_log.json", "kalshicity/learning_log.json"), ("hypotheses.json", "kalshicity/hypotheses.json"), ("jarvis.json", "kalshicity/jarvis.json")]
+          and "kalshicity" not in registry.GROUPS["all"] and "kalshicity" in site.BRANCHES, kc)
     try:
         registry.get("nope")
         check("a. an unknown task is refused", False)
@@ -278,6 +283,81 @@ def _branches(tmp, now, fates_t, status=None):
     return d
 
 
+def test_optional(tmp):
+    """kalshicity's optional files (whatif.json, forward.json): copied when the branch has them, skipped without a word when it does not,
+    never part of the all-or-nothing rule of the four required files; the committed seed copies keep serving without a branch."""
+    now = time.time()
+    kc = registry.get("kalshicity")
+    check("o. registry: kalshicity lists whatif.json, forward.json and scan.json as OPTIONAL files (forward_card.json is not published), the four required ones unchanged",
+          registry.optional_site_files(kc) == [("whatif.json", "kalshicity/whatif.json"), ("forward.json", "kalshicity/forward.json"), ("scan.json", "kalshicity/scan.json")]
+          and [d for _, d in registry.site_files(kc)] == ["kalshicity/edges.json", "kalshicity/learning_log.json", "kalshicity/hypotheses.json", "kalshicity/jarvis.json"]
+          and all(registry.optional_site_files(t) == [] for t in registry.TASKS if t.name != "kalshicity"))
+
+    def branch(name, required=True, optional=("whatif.json", "forward.json", "scan.json"), card_t=None, skip=()):
+        d = os.path.join(tmp, name)
+        shutil.rmtree(d, ignore_errors=True)
+        if required:
+            for f in ("edges.json", "learning_log.json", "hypotheses.json"):
+                if f not in skip:
+                    wjson(os.path.join(d, "kalshicity", f), {"f": f, "from": "branch"})
+            if "jarvis.json" not in skip:
+                wjson(os.path.join(d, "kalshicity", "jarvis.json"), card(card_t or now - 600, label="kalshicity from the branch"))
+        for f in optional:
+            wjson(os.path.join(d, "kalshicity", f), {"f": f, "from": "branch", "kind": "x"})
+        os.makedirs(os.path.join(d, "kalshicity"), exist_ok=True)
+        return {"kalshicity": site.dir_reader(os.path.join(d, "kalshicity"))}
+
+    def served(out, f):
+        return os.path.exists(os.path.join(out, "kalshicity", f))
+
+    # a required file missing: the whole app is skipped as before, optional files included
+    out = _site(tmp, "opt_a")
+    notes, _ = site.pull(out, branch("br_a", skip=("hypotheses.json",)), log=lambda *a: None)
+    check("o. a REQUIRED file missing on the branch: the whole app is skipped (nothing pulled, the optional files too), 'not on the branch'",
+          "not on the branch" in notes["kalshicity"] and not served(out, "edges.json") and not served(out, "whatif.json") and not served(out, "forward.json"), notes)
+    # optional files missing: the required four are published exactly as before
+    out = _site(tmp, "opt_b")
+    notes, _ = site.pull(out, branch("br_b", optional=()), log=lambda *a: None)
+    check("o. optional files missing on the branch: the required four are still published, no complaint in the note",
+          all(served(out, f) for f in ("edges.json", "learning_log.json", "hypotheses.json")) and rjson(os.path.join(out, "kalshicity", "jarvis.json"))["status"]["label"] == "kalshicity from the branch"
+          and not served(out, "forward.json") and notes["kalshicity"].startswith("pulled from kalshicity") and "+" not in notes["kalshicity"], notes)
+    # optional files present: published with the app
+    out = _site(tmp, "opt_c")
+    notes, _ = site.pull(out, branch("br_c"), log=lambda *a: None)
+    check("o. optional files present: whatif.json and forward.json are published beside the four required ones, named in the note",
+          rjson(os.path.join(out, "kalshicity", "whatif.json"))["from"] == "branch" and rjson(os.path.join(out, "kalshicity", "forward.json"))["f"] == "forward.json"
+          and served(out, "edges.json") and served(out, "scan.json") and "+whatif.json, forward.json, scan.json" in notes["kalshicity"], notes)
+    # only one optional file there
+    out = _site(tmp, "opt_d")
+    site.pull(out, branch("br_d", optional=("forward.json",)), log=lambda *a: None)
+    check("o. only forward.json on the branch: it is published, whatif.json is not invented", served(out, "forward.json") and not served(out, "whatif.json"))
+    # a broken optional file is skipped, the rest is published
+    out = _site(tmp, "opt_e")
+    rd = branch("br_e", optional=())
+    with open(os.path.join(tmp, "br_e", "kalshicity", "forward.json"), "w") as fh:
+        fh.write("<html>not json")
+    notes, _ = site.pull(out, rd, log=lambda *a: None)
+    check("o. an optional file that is not valid JSON is skipped silently, the required four are published", not served(out, "forward.json") and served(out, "edges.json"), notes)
+    # the page's copy of the required card is as new, but a new optional file still moves; an identical one is not rewritten
+    out = _site(tmp, "opt_f")
+    site.pull(out, branch("br_f1", card_t=now - 600), log=lambda *a: None)
+    wjson(os.path.join(out, "kalshicity", "forward.json"), {"f": "forward.json", "from": "older"})
+    notes, _ = site.pull(out, branch("br_f2", card_t=now - 600), log=lambda *a: None)
+    check("o. required card as new: the required files stay, a changed optional file still moves ('page copy is as new (+forward.json)'), an identical one is left alone",
+          notes["kalshicity"] == "page copy is as new (+forward.json)" and rjson(os.path.join(out, "kalshicity", "forward.json"))["from"] == "branch", notes)
+    notes, _ = site.pull(out, branch("br_f3", card_t=now - 600), log=lambda *a: None)
+    check("o. nothing changed at all: 'page copy is as new', no rewrite", notes["kalshicity"] == "page copy is as new", notes)
+    # no branch: the committed seed copies keep serving
+    out = _site(tmp, "opt_g")
+    wjson(os.path.join(out, "kalshicity", "whatif.json"), {"seed": True})
+    notes, _ = site.pull(out, {}, log=lambda *a: None)
+    check("o. no kalshicity branch: nothing is touched and the committed seed copy (whatif.json) keeps serving", notes["kalshicity"] == "no branch"
+          and rjson(os.path.join(out, "kalshicity", "whatif.json")) == {"seed": True} and not served(out, "forward.json"))
+    seed = os.path.join(WEB, "kalshicity", "whatif.json")
+    check("o. the repo carries the seed whatif.json (valid JSON, kind kalshi-whatif) and NO forward*.json seed (a seed would freeze a wrong start date)",
+          rjson(seed)["kind"] == "kalshi-whatif" and not any(os.path.exists(os.path.join(WEB, "kalshicity", f)) for f in ("forward.json", "forward_state.json", "forward_card.json")))
+
+
 def test_site(tmp):
     now = time.time()
     out = _site(tmp, "site_a")
@@ -365,7 +445,7 @@ def test_site(tmp):
               open(os.path.join(out, "fates", "fates.json"), "rb").read() == open(os.path.join(WEB, "fates", "fates.json"), "rb").read()
               and fj["cronos"]["data_t"] == page["t"]
               and all(not fresh.valid_card(rjson(os.path.join(out, a, "jarvis.json"))) and "cronos" in rjson(os.path.join(out, a, "jarvis.json"))
-                      for a in registry.STAMPED), fj)
+                      for a in registry.STAMPED if os.path.isdir(os.path.join(out, a))), fj)      # kalshicity joins once the build's app list names it (the lead wires that)
     finally:
         for k_, v_ in saved.items():
             if v_ is None:
@@ -423,6 +503,16 @@ def test_workflows():
     check("e. datacity.yml: still valid, nightly Tue-Sat, timeout 20, publishes the datacity branch",
           [c["cron"] for c in don["schedule"]] == ["37 3 * * 2-6"] and d["jobs"]["city"]["timeout-minutes"] == 20
           and "datacity" in dt_ and "secrets." not in dt_)
+    k, kt = _wf("kalshicity.yml")
+    kon = k.get("on", k.get(True))
+    kjob = k["jobs"]["learn"]
+    check("e. kalshicity.yml: valid, every 6 hours (minute 17) + manual run, timeout 5 min, one concurrency group, minimal permissions, GitHub's own checkout only",
+          [c["cron"] for c in kon["schedule"]] == ["17 */6 * * *"] and "workflow_dispatch" in kon and kjob["timeout-minutes"] == 5 and k["concurrency"]["group"] == "kalshicity"
+          and k["permissions"] == {"contents": "write"} and kjob["runs-on"] == "ubuntu-latest" and all(s["uses"].split("@")[0] == "actions/checkout" for s in kjob["steps"] if "uses" in s), kon)
+    check("e. kalshicity.yml: no secrets (GITHUB_TOKEN only), no pip, pushes only the kalshicity branch (never main), commits only when something changed, a failed feed read does not publish",
+          "secrets." not in kt and "pip " not in kt and kt.count("git push") == 1 and '.git" kalshicity' in kt and "nothing new: no commit" in kt
+          and next(s for s in kjob["steps"] if s.get("id") == "learn")["continue-on-error"] is True and "steps.learn.outcome == 'success'" in kt
+          and "kalshi_edges.py --out state" in kt and "kalshi.com" not in kt)
     m, _ = _wf("cloud-monitor.yml")
     check("e. cloud-monitor.yml still parses and sparse-checks out /tools/ (tools/cronos reaches the site build)",
           "/tools/" in next(s for s in m["jobs"]["monitor"]["steps"] if s.get("uses", "").startswith("actions/checkout"))["with"]["sparse-checkout"])
@@ -433,10 +523,11 @@ def test_workflows():
     weekly_full = setup + sum(registry.get(n).est_min for n in registry.GROUPS["weekly"])
     month = 22 * nightly + 4.35 * weekly_full
     datacity = 22 * registry.get("datacity").est_min
+    kalshi = 120 * registry.get("kalshicity").est_min                      # kalshicity.yml: 4 runs a day = 120 a month, ~1 billed minute each
     print(f"   budget: nightly {nightly:.1f} min x 22 + weekly {weekly_full:.1f} min x 4.35 = {month:.0f} min/month "
-          f"(+ datacity {datacity:.0f}) of 2,000")
+          f"(+ datacity {datacity:.0f}, kalshicity {kalshi:.0f}) of 2,000")
     check("e. CRONOS stays well under the free minutes: < 300 a month even when every weekly task reruns",
-          month < 300 and month + datacity < 400, month)
+          month < 300 and month + datacity < 400 and month + datacity + kalshi < 480, month)
     doc_md = os.path.join(ROOT, "docs", "CRONOS.md")
     check("e. docs/CRONOS.md exists with the schedule and the minutes budget", os.path.exists(doc_md)
           and "minutes" in open(doc_md, encoding="utf-8").read().lower())
@@ -450,6 +541,7 @@ def main():
         test_orchestrator(tmp)
         test_fresh()
         test_site(tmp)
+        test_optional(tmp)
         test_workflows()
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

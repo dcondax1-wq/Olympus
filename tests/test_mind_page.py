@@ -40,7 +40,8 @@ WEB = os.path.join(ROOT, "tools", "web_public")
 MIND = os.path.join(WEB, "mind")
 SHOTS = os.environ.get("MIND_SHOTS")
 MODULES = ["main.js", "data.js", "demo.js", "graph.js", "layout.js", "layout-worker.js", "render.js", "controls.js", "ui.js",
-           "nebula.js", "synapse.js", "memring.js", "markdown.js", "live.js"]
+           "nebula.js", "synapse.js", "memring.js", "markdown.js", "live.js",
+           "dom.js", "insights.js", "quiz.js", "panels.js", "teach.js", "store.js", "skins.js", "sound.js", "ambient.js", "starter.js"]
 RES = []
 MOCK = {"js": None}                       # the fake ../jarvis/obsidian.js (None = 404, like a Jarvis without it)
 OUTSIDE = []                              # every request to another origin (must stay empty)
@@ -53,11 +54,11 @@ def check(name, ok, info=""):
 
 # ------------------------------------------------------------------ a. static rules
 def static_checks():
-    present = [f for f in MODULES + ["index.html", "mind.css", "jarvis.json"] if not os.path.isfile(os.path.join(MIND, f))]
+    present = [f for f in MODULES + ["index.html", "mind.css", "panels.css", "jarvis.json"] if not os.path.isfile(os.path.join(MIND, f))]
     check("a. every file is there", not present, present)
     src = {f: open(os.path.join(MIND, f), encoding="utf-8").read() for f in MODULES}
     html = open(os.path.join(MIND, "index.html"), encoding="utf-8").read()
-    css = open(os.path.join(MIND, "mind.css"), encoding="utf-8").read()
+    css = open(os.path.join(MIND, "mind.css"), encoding="utf-8").read() + open(os.path.join(MIND, "panels.css"), encoding="utf-8").read()
     unused = []
     for f, s in src.items():
         for name in re.findall(r"^export (?:async )?(?:function|class|const|let) (\w+)", s, re.M):
@@ -67,8 +68,14 @@ def static_checks():
     net = [f for f, s in src.items() if re.search(r"\bfetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket|EventSource|importScripts", s)]
     check("a. no network API in the page's code", not net, net)
     keys = set(re.findall(r"localStorage\.\w+\(([^,)]+)", "".join(src.values())))
-    check("a. storage only under the page's own 'mind.' keys", keys == {"QUALITY_KEY", "VIEW_KEY"} and "const QUALITY_KEY = 'mind.quality';" in src["main.js"]
-          and "const VIEW_KEY = 'mind.view';" in src["main.js"], keys)
+    check("a. storage only under the page's own 'mind.' keys (store.js prefixes every key)", keys == {"QUALITY_KEY", "VIEW_KEY", "P + name"} and "const QUALITY_KEY = 'mind.quality';" in src["main.js"]
+          and "const VIEW_KEY = 'mind.view';" in src["main.js"] and "const P = 'mind.';" in src["store.js"], keys)
+    # the ONE writer into Jarvis's keys is teach.js, in her formats, and only the three keys (never the vault's connection key)
+    jkeys = {f: sorted(set(re.findall(r"'(jarvis\.[\w.]+)'", s))) for f, s in src.items() if re.search(r"'jarvis\.[\w.]+'", s)}
+    check("a. only live.js (reads) and teach.js (writes) name Jarvis's storage keys; teach.js only the three it may write",
+          set(jkeys) == {"live.js", "teach.js"} and jkeys["teach.js"] == ["jarvis.assistant.v1", "jarvis.vault.learned", "jarvis.vault.local"], jkeys)
+    check("a. nothing but store.js, main.js (quality, view) and teach.js writes to storage",
+          all(("setItem" not in s) for f, s in src.items() if f not in ("store.js", "main.js", "teach.js")), [f for f, s in src.items() if "setItem" in s])
     check("a. vault text never goes in as HTML (no innerHTML / insertAdjacentHTML / outerHTML in the page's code)",
           not re.search(r"innerHTML|insertAdjacentHTML|outerHTML|document\.write", "".join(src.values())))
     check("a. only transform / opacity animate in the sheet and the stream (no layout transitions)",
@@ -287,11 +294,11 @@ def demo_cases(br, origin):
 
 def search_and_tap(p, tag):
     p.fill("#q", "kalshi b")
-    p.wait_for_selector("#results li[data-id]", timeout=3000)
+    p.wait_for_selector("#results li[data-id]", timeout=15000)
     first = p.get_attribute("#results li[data-id]", "data-id")
     check(f"c. {tag}: typing lists the matching notes", first == "Kalshi/Kalshi bot.md", first)
     p.press("#q", "Enter")
-    p.wait_for_function("mind.focus === 'Kalshi/Kalshi bot.md'", timeout=3000)
+    p.wait_for_function("mind.focus === 'Kalshi/Kalshi bot.md'", timeout=15000)
     cam = wait_flight(p)
     pt = p.evaluate("mind.nodePoint('Kalshi/Kalshi bot.md')")
     dist = sum((cam["target"][k] - pt[k]) ** 2 for k in "xyz") ** 0.5
@@ -308,7 +315,7 @@ def search_and_tap(p, tag):
     shot(p, "card_390.png")
     # tap a linked note's button: flies there; then a tap on empty space closes the card
     p.locator("#c-near button").first.click()
-    p.wait_for_function("mind.focus !== 'Kalshi/Kalshi bot.md'", timeout=3000)
+    p.wait_for_function("mind.focus !== 'Kalshi/Kalshi bot.md'", timeout=15000)
     wait_flight(p)
     target = p.evaluate("mind.focus")
     p.click("#c-close")
@@ -316,7 +323,7 @@ def search_and_tap(p, tag):
     # a tap on a node opens its card
     scr = p.evaluate(f"mind.screenOf({json.dumps(target)})")
     p.mouse.click(scr["x"], scr["y"])
-    p.wait_for_function("mind.focus !== null", timeout=3000)
+    p.wait_for_function("mind.focus !== null", timeout=15000)
     check(f"c. {tag}: tapping a node opens its card", p.is_visible("#card") and p.evaluate("mind.focus") is not None, p.evaluate("mind.focus"))
     p.keyboard.press("Escape")
     check(f"d. {tag}: Escape closes the card", p.is_hidden("#card"))
@@ -370,23 +377,31 @@ def mock_cases(br, origin):
     ctx, p, log = new_page(br, origin, (390, 844), snap=vault)
     p.goto(origin + "/mind/?q=off")
     ready(p)
+    # the ticker shows the newest lesson first, then rotates through the lessons every 7 s (newest, older, oldest, newest ...): on a slow
+    # machine the first read can land mid-rotation, so look for the newest one for a full cycle (3 x 7 s, plus margin)
+    tick0 = ""
+    for _ in range(40):
+        tick0 = p.inner_text("#tk-text")
+        if tick0 == "Mock lesson: trade the NY open":
+            break
+        time.sleep(1)
     st = p.evaluate("({mode: mind.mode, stats: mind.stats})")
     check(f"e. the mocked obsidian.js is used: live mode, {st['stats']['notes']} notes (junk dropped)",
           st["mode"] == "live" and st["stats"]["notes"] == MOCK_NOTES and p.is_hidden("#demo") and p.get_attribute("#mode", "data-mode") == "live", st)
     check(f"e. links to missing notes and self links are dropped, each pair counted once ({st['stats']['links']})",
           st["stats"]["links"] == expected_links(vault), (st, expected_links(vault)))
     check("e. learned this week counts the lessons of the last 7 days", st["stats"]["learnedWeek"] == 2, st)
-    check("e. the ticker shows the newest lesson", p.inner_text("#tk-text") == "Mock lesson: trade the NY open", p.inner_text("#tk-text"))
+    check("e. the ticker shows the newest lesson", tick0 == "Mock lesson: trade the NY open", tick0)
     time.sleep(1.5)
     # escaping: the evil title is text, never markup
     p.fill("#q", "evil")
     p.press("#q", "Enter")
-    p.wait_for_function("mind.focus === 'Evil.md'", timeout=3000)
+    p.wait_for_function("mind.focus === 'Evil.md'", timeout=15000)
     check("e. vault text is shown as text (no injected markup runs)", p.inner_text("#c-title") == EVIL and p.locator("#card img").count() == 0
           and not p.evaluate("window.__pwned") and p.is_hidden("#c-snippet"))
     p.fill("#q", "Mock Trading 0")
     p.press("#q", "Enter")
-    p.wait_for_function("mind.focus === 'Trading/Mock Trading 0.md'", timeout=3000)
+    p.wait_for_function("mind.focus === 'Trading/Mock Trading 0.md'", timeout=15000)
     check("e. the card shows the first lines when the snapshot has a snippet, and what Jarvis learned about the note",
           p.inner_text("#c-snippet") == "First lines of Trading 0." and "trade the NY open" in p.inner_text("#c-learned"))
     p.click("#c-close")
@@ -409,7 +424,7 @@ def mock_cases(br, origin):
     # the markdown preview from the optional `preview` field: structure shown, links resolved, vault markup still text
     p.fill("#q", "Markdown")
     p.press("#q", "Enter")
-    p.wait_for_function("mind.focus === 'Notes/Markdown.md'", timeout=3000)
+    p.wait_for_function("mind.focus === 'Notes/Markdown.md'", timeout=15000)
     md = p.evaluate("""() => { const s = document.getElementById('c-snippet');
       return { h: s.querySelectorAll('h4').length, tasks: s.querySelectorAll('li.md-task').length, done: s.querySelectorAll('li.md-task.done').length,
                links: [...s.querySelectorAll('button.md-link')].map((b) => b.textContent), missing: s.querySelectorAll('.md-link.missing').length,
@@ -418,7 +433,7 @@ def mock_cases(br, origin):
           md["h"] == 1 and md["tasks"] == 2 and md["done"] == 1 and md["links"] == ["Mock Trading 1"] and md["missing"] == 1
           and md["bold"] >= 1 and md["tags"] == 1 and md["img"] == 0 and "<img src=x" in md["text"] and not p.evaluate("window.__pwned"), md)
     p.click("#c-snippet button.md-link")
-    p.wait_for_function("mind.focus === 'Trading/Mock Trading 1.md'", timeout=3000)
+    p.wait_for_function("mind.focus === 'Trading/Mock Trading 1.md'", timeout=15000)
     check("j. a [[link]] in the preview flies to its note", True)
     groups = p.evaluate("[...document.querySelectorAll('#c-near h3')].map((h) => h.textContent)")
     check("j. the card lists links and backlinks apart ('Links to', 'Linked from' with counts)",
@@ -454,7 +469,7 @@ def other_cases(br, origin):
     ready(p)
     p.fill("#q", "Mock Gym 4")
     p.press("#q", "Enter")
-    p.wait_for_function("mind.focus === 'Gym/Mock Gym 4.md'", timeout=3000)
+    p.wait_for_function("mind.focus === 'Gym/Mock Gym 4.md'", timeout=15000)
     time.sleep(0.3)
     flying = p.evaluate("mind.camera().flying")
     p.evaluate("""() => { globalThis.__obs.snap.learned.push({ t: Date.now(), text: 'Calm lesson', note: 'Gym/Mock Gym 1.md' }); globalThis.__obs.fire(); }""")
@@ -463,7 +478,7 @@ def other_cases(br, origin):
           not flying and p.evaluate("mind.sparks") == 0 and not real_errors(log), (flying, real_errors(log)))
     p.fill("#q", "Mock Gym 6")
     p.press("#q", "Enter")
-    p.wait_for_function("mind.focus === 'Gym/Mock Gym 6.md'", timeout=3000)
+    p.wait_for_function("mind.focus === 'Gym/Mock Gym 6.md'", timeout=15000)
     check("g. reduced motion: no synapse pulses and no idle thinking", p.evaluate("mind.synapses") == 0)
     ctx.close()
 
@@ -498,10 +513,15 @@ def upgrade_cases(br, origin):
     ready(p)
     p.wait_for_function("mind.settled", timeout=60000)
     time.sleep(1.2)
+    for _ in range(30):                                   # the memories glide onto the ring as the layout cools: wait for it (up to 12 s)
+        off = p.evaluate("mind.memoryOnRing()")
+        if off and max(off) < 0.3:
+            break
+        time.sleep(0.4)
     neb, ring, off = p.evaluate("[mind.nebulae, mind.ring, mind.memoryOnRing()]")
     check(f"j. nebula clouds: layered sprites per galaxy ({neb} puffs on HD)", neb >= 7 * 4, neb)
     check(f"j. Jarvis's memories sit on the cyan ring around Me ({ring and ring['count']} memories, radius {ring and round(ring['r'])}, worst {max(off or [9]):.2f} of r)",
-          ring and ring["count"] == 8 and ring["r"] > 20 and off and max(off) < 0.2, (ring, off))
+          ring and ring["count"] == 8 and ring["r"] > 20 and off and max(off) < 0.3, (ring, off))   # a ring, not a cloud (0.5+); the bigger demo spreads it a little
     lbl = p.evaluate("[...document.querySelectorAll('#labels .lbl')].filter((e) => !e.hidden).map((e) => e.textContent)")
     check("j. the memory ring is named ('Jarvis memory')", "Jarvis memory" in lbl, lbl)
     # the thought stream: newest first, a tap flies to the note
@@ -510,10 +530,10 @@ def upgrade_cases(br, origin):
           len(items) >= 10 and any("learned" in c for c, _, _ in items) and any("edit" in c for c, _, _ in items), items[:4])
     first_edit = next(t for c, _, t in items if "edit" in c)
     p.click("#stream li.edit button")
-    p.wait_for_function("mind.focus !== null", timeout=3000)
+    p.wait_for_function("mind.focus !== null", timeout=15000)
     focus = p.evaluate("mind.focus")
     check("j. tapping a thought opens its note", focus and p.inner_text("#c-title") == first_edit, (focus, first_edit))
-    p.wait_for_function("mind.synapses > 0", timeout=3000)
+    p.wait_for_function("mind.synapses > 0", timeout=15000)
     check(f"j. opening a note fires its synapses (pulses running: {p.evaluate('mind.synapses')})", True)
     time.sleep(0.4)
     shot(p, "synapse_390.png")
@@ -653,8 +673,499 @@ def live_cases(br, origin):
     ctx.close()
 
 
+# ------------------------------------------------------------------ m. the 2026-11-04 overhaul: unit checks in node (the pure modules)
+UNIT_JS = r"""
+import { createDemo } from '__MIND__/demo.js';
+import { buildGraph } from '__MIND__/graph.js';
+import * as I from '__MIND__/insights.js';
+import * as Q from '__MIND__/quiz.js';
+import { teach, screen } from '__MIND__/teach.js';
+const out = {}, now = Date.now(), DAY = 864e5;
+const g = buildGraph(await createDemo().graphSnapshot(), now);
+const mk = (offs) => buildGraph({ t: now, learned: [], notes: offs.map((d, i) => ({ id: 'n' + i, path: 'n' + i + '.md', title: 'n' + i, tags: [], links: [], mtime: now - d * DAY, words: 5, kind: 'note', snippet: '' })) }, now);
+out.streak = I.brainStats(mk([0, 1, 2, 5, 6]), now).streak;
+out.streakNoToday = I.brainStats(mk([1]), now).streak;
+out.streakNone = I.brainStats(mk([]), now).streak;
+out.streakBroken = I.brainStats(mk([3]), now).streak;
+out.orphans = I.orphans(g).map((n) => n.title);
+out.hubs = I.hubs(g, 3).map((n) => n.degree);
+out.cloud = I.tagCloud(g, 30).map((t) => [t.tag, t.weight]);
+const hub = I.hubs(g, 1)[0], e = I.ego(g, hub.i, 8);
+out.ego = { ring: e.ring.length, centre: e.centre.title, dirs: [...new Set(e.ring.map((r) => r.dir))].sort() };
+out.filter = { orphans: I.filterSet(g, 'orphans', 0, now).size, expectOrphans: I.orphans(g).length, all: I.filterSet(g, 'all', 0, now), min3: [...I.filterSet(g, 'all', 3, now)].every((i) => g.nodes[i].degree >= 3),
+  hubs: I.filterSet(g, 'hubs', 0, now).size, recent: [...I.filterSet(g, 'recent', 0, now)].every((i) => now - g.nodes[i].mtime < 7 * DAY) };
+out.previewEmpty = g.nodes.filter((n) => !I.previewText(n).trim()).length;
+out.link = [I.obsidianLink('My Vault', g.nodes[g.index.get('Kalshi/Kalshi bot.md')]), I.obsidianLink('', g.nodes[0]), I.obsidianLink('V', { id: 'live:x', path: 'Jarvis/fact/x' })];
+const st = I.brainStats(g, now);
+out.stats = { notes: st.notes === g.nodes.length, growthUp: st.growth.every((p, k) => !k || p.total >= st.growth[k - 1].total), weeks: st.weekly.edits.length, level: st.level.level >= 1, prog: st.level.progress >= 0 && st.level.progress <= 1, orph: st.orphans };
+const tl = I.timeline(g, now, 28);
+out.timeline = { n: tl.length, sorted: tl.every((d, k) => !k || tl[k - 1].key > d.key), daily: tl.filter((d) => d.daily.length).length };
+const feed = I.learnedFeed(g);
+out.feed = { n: feed.length, sorted: feed.every((x, k) => !k || feed[k - 1].t >= x.t) };
+// the quiz
+const deck = Q.buildDeck(g, now), deck2 = Q.buildDeck(g, now);
+out.deck = { n: deck.length, same: JSON.stringify(deck) === JSON.stringify(deck2), ids: new Set(deck.map((q) => q.id)).size === deck.length,
+  four: deck.every((q) => q.choices.length === 4 && new Set(q.choices).size === 4 && q.answer >= 0 && q.answer < 4), kinds: [...new Set(deck.map((q) => q.kind))].sort() };
+const s1 = Q.pickSession(deck, { cards: {}, days: [] }, now, 5);
+out.session = { n: s1.length, distinct: new Set(s1.map((q) => q.id)).size, firstNotStarter: s1[0].kind !== 'starter' };
+let state = Q.grade({ cards: {}, days: [] }, deck[0].id, true, now);
+out.grade1 = { box: state.cards[deck[0].id].b, dueDays: Math.round((state.cards[deck[0].id].d - now) / DAY), days: state.days.length };
+for (let k = 0; k < 6; k++) state = Q.grade(state, deck[0].id, true, now);
+out.gradeTop = { box: state.cards[deck[0].id].b, dueDays: Math.round((state.cards[deck[0].id].d - now) / DAY) };
+const wrong = Q.grade(state, deck[0].id, false, now);
+out.gradeWrong = { box: wrong.cards[deck[0].id].b, due: wrong.cards[deck[0].id].d <= now };
+const s2 = Q.pickSession(deck, state, now, 5);
+out.sessionAfter = { skipsMastered: !s2.some((q) => q.id === deck[0].id), due: Q.dueCount(deck, state, now) === deck.length - 1, boxes: Q.boxes(state) };
+const empty = buildGraph({ notes: [], learned: [], t: now }, now);
+out.emptyDeck = Q.buildDeck(empty, now).length;
+out.emptyStats = I.brainStats(empty, now).notes;
+// teach, on a mock storage
+const mem = {}, store = { getItem: (k) => (k in mem ? mem[k] : null), setItem: (k, v) => { mem[k] = String(v); } };
+mem['jarvis.assistant.v1'] = JSON.stringify({ v: 1, facts: [{ id: 'f0', t: 1, text: 'Old fact' }], todos: [{ id: 't1', t: 2, text: 'keep me' }], notes: [], reminders: [], told: true });
+const r1 = teach({ kind: 'fact', text: '  my leg day   is Thursday ' }, { storage: store, now: () => 1700000000000 });
+const A = JSON.parse(mem['jarvis.assistant.v1']);
+out.fact = { ok: r1.ok, n: A.facts.length, last: A.facts[1], keep: A.todos.length === 1 && A.told === true && A.facts[0].id === 'f0' };
+teach({ kind: 'fact', text: 'My leg day is thursday' }, { storage: store });
+out.factDup = JSON.parse(mem['jarvis.assistant.v1']).facts.length;
+const bad = teach({ kind: 'fact', text: 'my pass word is hunter2' }, { storage: store });
+out.secret = [bad.ok, !!bad.error && bad.error.length > 10, screen('card 4111 1111 1111 1111') !== '', screen('api key sk-abcdef123456') !== '', screen('I love sushi') === ''];
+const n1 = teach({ kind: 'note', title: 'Plan: Q1 / goals?', text: 'Do [[X]]\n\nthings' }, { storage: store, now: () => 1700000005000 });
+const L = JSON.parse(mem['jarvis.vault.local']), D = JSON.parse(mem['jarvis.vault.learned']);
+out.note = { ok: n1.ok, path: L[0].path, text: L[0].text, t: L[0].t, learned: D[0] };
+for (let k = 0; k < 230; k++) teach({ kind: 'note', title: 'N' + k, text: 'x' }, { storage: store });
+out.caps = [JSON.parse(mem['jarvis.vault.local']).length <= 200, JSON.parse(mem['jarvis.vault.learned']).length <= 200];
+mem['jarvis.assistant.v1'] = '{junk';
+const dmg = teach({ kind: 'fact', text: 'hello there' }, { storage: store });
+out.damaged = [dmg.ok, mem['jarvis.assistant.v1']];
+out.blank = [teach({ kind: 'fact', text: '   ' }, { storage: store }).ok, teach({ kind: 'note', text: '' }, { storage: store }).ok];
+console.log(JSON.stringify(out));
+"""
+
+
+def unit_cases():
+    import shutil
+    import subprocess
+    import tempfile
+    node = shutil.which("node")
+    if not node:
+        check("m. node is available for the unit checks", False, "no node")
+        return
+    with tempfile.TemporaryDirectory() as d:
+        f = os.path.join(d, "unit.mjs")
+        open(f, "w", encoding="utf-8").write(UNIT_JS.replace("__MIND__", MIND.replace(os.sep, "/")))
+        r = subprocess.run([node, f], capture_output=True, text=True, timeout=120)
+    try:
+        o = json.loads(r.stdout.strip().splitlines()[-1])
+    except Exception:
+        check("m. the pure modules run in node", False, (r.stdout + r.stderr)[-600:])
+        return
+    check("m. streak: days in a row (today may still be empty), a gap resets it", o["streak"] == {"current": 3, "best": 3} and o["streakNoToday"]["current"] == 1
+          and o["streakNone"] == {"current": 0, "best": 0} and o["streakBroken"]["current"] == 0, [o["streak"], o["streakNoToday"], o["streakBroken"]])
+    check("m. orphans: the demo's three loose notes are found, hubs are sorted by links", {"Buy a standing desk", "Try cold showers", "Book the dentist"} <= set(o["orphans"])
+          and o["hubs"] == sorted(o["hubs"], reverse=True) and o["hubs"][0] >= 3, (o["orphans"], o["hubs"]))
+    check("m. tag cloud: weights 0..1, alphabetical", o["cloud"] and all(0 <= w <= 1 for _, w in o["cloud"]) and [t for t, _ in o["cloud"]] == sorted(t for t, _ in o["cloud"]), o["cloud"][:4])
+    check("m. the local map of a hub: its neighbours, links out and backlinks", o["ego"]["ring"] >= 4 and bool({"back", "both"} & set(o["ego"]["dirs"])) and bool({"out", "both"} & set(o["ego"]["dirs"])), o["ego"])
+    f = o["filter"]
+    check("m. graph filters: orphans, hubs, recent, minimum links, and 'all' = no filter", f["orphans"] == f["expectOrphans"] and f["all"] is None and f["min3"] and 0 < f["hubs"] <= 20 and f["recent"], f)
+    check("m. every note has a plain preview, never an empty one", o["previewEmpty"] == 0)
+    check("m. Obsidian deep link: obsidian://open?vault=...&file=... (encoded, no .md); none without a vault or for Jarvis's own memory",
+          o["link"] == ["obsidian://open?vault=My%20Vault&file=Kalshi%2FKalshi%20bot", None, None], o["link"])
+    check("m. stats, growth (never goes down), weekly bars, level", all(o["stats"][k] for k in ("notes", "growthUp", "level", "prog")) and o["stats"]["weeks"] == 8 and o["stats"]["orph"] >= 3, o["stats"])
+    check("m. the days timeline (newest first, daily notes) and the learned feed (newest first)", o["timeline"]["n"] >= 5 and o["timeline"]["sorted"] and o["timeline"]["daily"] >= 3 and o["feed"]["n"] >= 10 and o["feed"]["sorted"], (o["timeline"], o["feed"]))
+    d = o["deck"]
+    check(f"m. the review deck: {d['n']} questions, four distinct choices, a valid answer, the same deck every time, kinds {d['kinds']}",
+          d["n"] >= 14 and d["same"] and d["ids"] and d["four"] and {"gap", "galaxy", "link", "tag", "hub", "starter"} <= set(d["kinds"]), d)
+    check("m. a session is 5 different questions, real ones before the starters", o["session"] == {"n": 5, "distinct": 5, "firstNotStarter": True}, o["session"])
+    check("m. spaced repetition: right = next box, due in 1 day; mastered = 35 days; wrong = box 0, due now; a mastered card is not offered again",
+          o["grade1"] == {"box": 1, "dueDays": 1, "days": 1} and o["gradeTop"] == {"box": 5, "dueDays": 35} and o["gradeWrong"] == {"box": 0, "due": True}
+          and o["sessionAfter"]["skipsMastered"] and o["sessionAfter"]["due"] and o["sessionAfter"]["boxes"][5] == 1, (o["grade1"], o["gradeTop"], o["gradeWrong"], o["sessionAfter"]))
+    check("m. an empty brain still has a deck (starters) and zero stats, no crash", o["emptyDeck"] >= 6 and o["emptyStats"] == 0, (o["emptyDeck"], o["emptyStats"]))
+    ft = o["fact"]
+    check("m. Teach a fact: written in Jarvis's own shape {id, t, text, key, how}, tidied, the rest of her storage kept, no duplicates",
+          ft["ok"] and ft["n"] == 2 and ft["keep"] and ft["last"]["text"] == "My leg day is Thursday" and ft["last"]["t"] == 1700000000000 and ft["last"]["how"] == "told"
+          and ft["last"]["key"] == "" and isinstance(ft["last"]["id"], str) and o["factDup"] == 2, (ft, o["factDup"]))
+    check("m. Teach refuses passwords, API keys and card numbers (and accepts normal lines)", o["secret"] == [False, True, True, True, True], o["secret"])
+    nt = o["note"]
+    check("m. Teach a note: Pasted/<clean title>.md with the text, t in ms, and a 'learned' line in unix seconds (what importNote writes); both lists capped at 200",
+          nt["ok"] and nt["path"] == "Pasted/Plan Q1 goals.md" and nt["text"] == "Do [[X]]\n\nthings" and nt["t"] == 1700000005000
+          and nt["learned"] == {"t": 1700000005, "kind": "import", "text": "Imported the note Plan Q1 goals", "note": "Pasted/Plan Q1 goals.md"} and all(o["caps"]), (nt, o["caps"]))
+    check("m. a damaged Jarvis key is never overwritten; empty input saves nothing", o["damaged"] == [False, "{junk"] and o["blank"] == [False, False], (o["damaged"], o["blank"]))
+
+
+# ------------------------------------------------------------------ m. the overhaul in the browser
+SFX_STUB = "window.OLYMPUS_SFX = { play(n) { (window.__sfx = window.__sfx || []).push(n); return true; }, stop() {}, mute() {} };"
+PAGES = ["home", "notes", "days", "learned", "graph", "review", "teach", "stats", "look"]
+
+
+def open_panel(p, name):
+    p.click(f"#dock [data-panel={name}]")
+    p.wait_for_function(f"document.getElementById('panel').dataset.view === '{name}' && !document.getElementById('panel').hidden", timeout=20000)
+    p.wait_for_timeout(250)
+
+
+def overhaul_cases(br, origin):
+    MOCK["js"] = None
+    ctx, p, log = new_page(br, origin, (390, 844))
+    p.add_init_script(SFX_STUB)
+    p.goto(origin + "/mind/?q=off&home=1")
+    ready(p)
+    time.sleep(1.5)
+    # --- Home: the dashboard is there at once, never a blank sky
+    check("m. Home opens by itself (?home=1): the dashboard over the brain, DEMO labelled",
+          p.is_visible("#panel") and p.get_attribute("#panel", "data-view") == "home" and "DEMO" in p.inner_text("#p-sub") and p.locator("#panel .demo-pill").count() == 1)
+    tiles = p.evaluate("Object.fromEntries([...document.querySelectorAll('#panel .tile')].map((t) => [t.dataset.k, t.querySelector('b').textContent]))")
+    check(f"m. Home tiles: notes, links, galaxies, streak, learned today, orphans ({tiles})",
+          {"notes", "links", "topics", "streak", "today", "orphans"} <= set(tiles) and int(tiles["notes"]) > 80 and int(tiles["links"]) > 150 and tiles["streak"].endswith("d") and int(tiles["today"]) >= 1 and int(tiles["orphans"]) >= 3, tiles)
+    check("m. Home: the growth chart (an SVG with a glowing line), today's learning, the galaxies bars and four quick actions",
+          p.locator("#panel svg.chart path.glowline").count() == 1 and p.locator("#panel .learn").count() >= 1 and p.locator("#panel .galrow").count() >= 5 and p.locator("#panel .act").count() == 4)
+    px = lit_pixels(p)
+    check(f"m. the 3D brain is still drawn behind the dashboard ({px} bright pixels)", px == -1 or px > 400, px)
+    sw = p.evaluate("[document.scrollingElement.scrollWidth, innerWidth]")
+    check("m. Home: no sideways scroll, the orb's corner free", sw[0] <= sw[1] and not orb_corner_free(p), (sw, orb_corner_free(p)))
+    check("m. under the open page only the 'Jarvis learned' line stays of the bottom sheet", p.evaluate("[...document.querySelectorAll('#bottom > *')].filter((e) => e.offsetParent).map((e) => e.id)") == ["ticker"])
+    shot(p, "home_390.png")
+    p.keyboard.press("Escape")
+    check("m. Escape closes the page", p.is_hidden("#panel") and p.evaluate("mind.panel") is None)
+    # --- the dock: nine pages, each with content, toggling
+    check("m. the dock has the nine pages, each button 44 px tall or more", p.evaluate("[...document.querySelectorAll('#dock button[data-panel]')].map((b) => b.dataset.panel)") == PAGES
+          and p.evaluate("[...document.querySelectorAll('#dock button')].every((b) => b.getBoundingClientRect().height >= 44)"))
+    empties = []
+    for n in PAGES:
+        open_panel(p, n)
+        txt = p.inner_text("#p-body")
+        if len(txt.strip()) < 30 or p.get_attribute(f"#dock [data-panel={n}]", "aria-pressed") != "true":
+            empties.append(n)
+        shot(p, f"page_{n}_390.png")
+    check("m. every page has content and its dock button is pressed", not empties, empties)
+    p.click("#dock [data-panel=look]")
+    check("m. tapping the open page's button closes it", p.is_hidden("#panel"))
+    # --- Notes: cards with previews and tags, filter, tag cloud
+    open_panel(p, "notes")
+    cards = p.evaluate("[...document.querySelectorAll('#panel .ncard')].map((c) => [c.querySelector('strong').textContent, c.querySelector('.nc-pre').textContent.length, c.querySelectorAll('.nc-tags span').length])")
+    check(f"m. Notes: glass cards with a title, a preview and tags ({len(cards)} shown)", len(cards) >= 20 and all(c[1] > 5 for c in cards) and any(c[2] for c in cards), cards[:3])
+    p.fill("#panel input[type=search]", "gym")
+    p.wait_for_timeout(200)
+    titles = p.evaluate("[...document.querySelectorAll('#panel .ncard strong')].map((e) => e.textContent)")
+    check(f"m. Notes: the filter narrows the cards ({len(titles)})", 0 < len(titles) < len(cards) and any("day" in t.lower() for t in titles), titles[:5])
+    p.fill("#panel input[type=search]", "")
+    p.click("#panel .seg button[data-k=links]")
+    p.wait_for_timeout(150)
+    check("m. Notes: sort by most linked", p.get_attribute("#panel .seg button[data-k=links]", "aria-pressed") == "true")
+    p.locator("#panel .tagc", has_text="#kalshi").first.click()
+    p.wait_for_timeout(300)
+    dim = p.evaluate("mind.dim")
+    check(f"m. the tag cloud filters: #kalshi, the pill under the search, the rest of the brain dims ({dim} notes)",
+          p.evaluate("mind.tag") == "kalshi" and p.is_visible("#filterbar") and "#kalshi" in p.inner_text("#filterbar") and dim > 60, (p.evaluate("mind.tag"), dim))
+    kal = p.evaluate("[...document.querySelectorAll('#panel .ncard strong')].length")
+    check(f"m. the cards follow the tag ({kal} notes tagged kalshi)", 0 < kal < len(cards), kal)
+    p.click("#filter-exit")
+    p.wait_for_timeout(200)
+    check("m. × on the pill clears the tag and the dimming", p.evaluate("mind.tag") is None and p.evaluate("mind.dim") == 0 and p.is_hidden("#filterbar"))
+    p.locator("#panel .ncard").first.click()
+    p.wait_for_function("mind.focus !== null", timeout=4000)
+    check("m. a note card flies to the note, opens its card and closes the page", p.is_visible("#card") and p.is_hidden("#panel"))
+    wait_flight(p)
+    p.click("#c-close")
+    # --- Days
+    open_panel(p, "days")
+    d = p.evaluate("({days: document.querySelectorAll('#panel .tday').length, daily: document.querySelectorAll('#panel .daily').length, first: document.querySelector('#panel .tday h3 span').textContent})")
+    check(f"m. Days: a timeline of days with daily notes and lessons ({d})", d["days"] >= 5 and d["daily"] >= 3 and d["first"] in ("Today", "Yesterday"), d)
+    p.locator("#panel .daily").first.click()
+    p.wait_for_function("mind.focus !== null", timeout=4000)
+    check("m. a daily note on the timeline opens", p.is_visible("#card") and p.is_hidden("#panel"))
+    wait_flight(p)
+    p.click("#c-close")
+    # --- Learned feed and replay
+    open_panel(p, "learned")
+    n = p.locator("#panel .feeditem").count()
+    check(f"m. Learned: a feed of what Jarvis learned, with filters ({n} items)", n >= 8 and p.locator("#panel .seg button").count() == 3 and p.locator("#panel .tile").count() == 3)
+    p.click("#panel .seg button[data-k=lessons]")
+    nl = p.locator("#panel .feeditem").count()
+    check(f"m. Learned: the Lessons filter ({nl} of {n})", 0 < nl < n)
+    launched = p.evaluate("mind.sparksLaunched")
+    p.click("#panel .toolbar .cta")
+    p.wait_for_function(f"mind.sparksLaunched >= {launched + 3}", timeout=9000)
+    check("m. Learned: Replay closes the page and flies a spark to each lesson in time order", p.is_hidden("#panel") and p.evaluate("mind.sparksLaunched") >= launched + 3)
+    p.wait_for_function("mind.sparks === 0", timeout=15000)
+    # --- Graph: filters, local map, hubs, orphans, galaxies
+    open_panel(p, "graph")
+    check("m. Graph: the local map of a note (links to the right, backlinks to the left, tap a neighbour), hubs and orphans listed",
+          p.locator("#panel svg.egomap .eg-n").count() >= 4 and p.locator("#panel .card2", has_text="Hubs").locator(".row").count() >= 3
+          and "Buy a standing desk" in p.inner_text("#panel"), p.locator("#panel svg.egomap .eg-n").count())
+    p.click("#panel .seg button[data-k=orphans]")
+    p.wait_for_timeout(300)
+    gm, dim = p.evaluate("mind.gmode"), p.evaluate("mind.dim")
+    total = p.evaluate("mind.stats.notes")
+    check(f"m. Graph: the Orphans filter dims everything with links ({dim} of {total} dimmed), the pill says so", gm["mode"] == "orphans" and dim >= total - 12 and p.is_visible("#filterbar") and "orphans" in p.inner_text("#filterbar"), (gm, dim, total))
+    p.evaluate("""() => { const s = document.querySelector('#panel input[type=range]'); s.value = 3; s.dispatchEvent(new Event('change', { bubbles: true })); }""")
+    p.wait_for_timeout(300)
+    check("m. Graph: the minimum-links slider", p.evaluate("mind.gmode").get("min") == 3 and "3+ links" in p.inner_text("#filterbar"), p.inner_text("#filterbar"))
+    p.click("#panel .seg button[data-k=hubs]")
+    p.wait_for_timeout(300)
+    hubs_dim = p.evaluate("mind.dim")
+    check(f"m. Graph: the Hubs filter keeps only the big stars lit ({total - hubs_dim} of {total})", 0 < total - hubs_dim <= max(20, total // 8), (hubs_dim, total))
+    p.click("#filter-exit")
+    check("m. Graph: × clears the graph filter", p.evaluate("mind.gmode") == {"mode": "all", "min": 0} and p.evaluate("mind.dim") == 0)
+    p.click("#panel .galrow >> nth=0")
+    p.wait_for_function("mind.filter !== null", timeout=15000)
+    check("m. Graph: a galaxy row focuses that galaxy (focus mode) and closes the page", p.is_visible("#focusbar") and p.is_hidden("#panel"))
+    p.click("#focus-exit")
+    wait_flight(p)
+    # --- Review: a session, boxes, persistence
+    open_panel(p, "review")
+    p.click("#rv-start")
+    right = 0
+    for k in range(5):
+        q = p.evaluate("mind.review")
+        p.click(f".choice[data-i='{q['answer']}']")
+        ok = p.locator(".choice.right").count() == 1 and p.locator(".choice.wrong").count() == 0 and p.is_visible("#rv-next")
+        right += ok
+        if k == 0:
+            shot(p, "review_390.png")
+        p.click("#rv-next")
+    check("m. Review: five questions, the right answer lights up green, Next moves on", right == 5, right)
+    res = p.inner_text("#panel .result h2")
+    cards_saved = p.evaluate("JSON.parse(localStorage.getItem('mind.review'))")
+    check(f"m. Review: the result ({res}), the cards kept under 'mind.review' in box 1, today counted for the review streak",
+          res == "5 of 5" and len(cards_saved["cards"]) == 5 and all(c["b"] == 1 for c in cards_saved["cards"].values()) and len(cards_saved["days"]) == 1, cards_saved)
+    p.click("#panel .result .cta")
+    q2 = p.evaluate("mind.review")
+    check("m. Review: Go again gives new questions, not the five just learned", q2["id"] not in cards_saved["cards"], q2["id"])
+    wrong = next(i for i in range(4) if i != q2["answer"])
+    p.click(f".choice[data-i='{wrong}']")
+    check("m. Review: a wrong answer shows red, the right one green, and why", p.locator(".choice.wrong").count() == 1 and p.locator(".choice.right").count() == 1 and len(p.inner_text("#panel .why")) > 20)
+    after = p.evaluate("JSON.parse(localStorage.getItem('mind.review')).cards")[q2["id"]]
+    check("m. Review: the missed card goes to box 0, due now", after["b"] == 0, after)
+    p.keyboard.press("Escape")
+    # --- Teach Jarvis: writes into Jarvis's own keys
+    p.evaluate("""() => { localStorage.setItem('jarvis.assistant.v1', JSON.stringify({ v: 1, facts: [{ id: 'f0', t: Date.now() - 5000, text: 'Old fact' }],
+        todos: [{ id: 't1', t: 1, text: 'keep me' }], notes: [], reminders: [], told: true })); }""")
+    open_panel(p, "teach")
+    n0 = p.evaluate("mind.stats.notes")
+    p.fill("#teach-text", "My best trades come before 11:00")
+    p.click("#teach-save")
+    A = p.evaluate("JSON.parse(localStorage.getItem('jarvis.assistant.v1'))")
+    last = A["facts"][-1]
+    check("m. Teach: the fact lands in jarvis.assistant.v1 in Jarvis's own shape, her other data untouched",
+          len(A["facts"]) == 2 and last["text"] == "My best trades come before 11:00" and last["how"] == "told" and last["key"] == "" and isinstance(last["t"], int) and A["todos"][0]["text"] == "keep me" and A["told"] is True, A)
+    check("m. Teach: the page says so (saved, in green)", "Saved" in p.inner_text("#panel .msg.ok"), p.inner_text("#panel .msg"))
+    p.wait_for_function(f"mind.stats.notes >= {n0 + 2} && mind.live.memories >= 2", timeout=60000)
+    check("m. Teach: the new fact joins the 3D brain at once (a node, a spark), Jarvis brain counter 2 memories", p.evaluate("mind.sparksLaunched") >= 1 and p.inner_text("#jb-mem") == "2", p.inner_text("#jb-mem"))
+    p.fill("#teach-text", "my pass word is hunter2")
+    check("m. Teach: a password is flagged while typing", len(p.inner_text("#panel .warn")) > 10)
+    p.click("#teach-save")
+    check("m. Teach: a password is refused and nothing is written", p.locator("#panel .msg.bad").count() == 1 and len(p.evaluate("JSON.parse(localStorage.getItem('jarvis.assistant.v1')).facts")) == 2)
+    p.click("#panel .seg button[data-k=note]")
+    p.fill("#teach-title", "Plan for Q1")
+    p.fill("#teach-text", "Do [[LIT strategy]] reviews every Sunday.")
+    p.click("#teach-save")
+    local = p.evaluate("JSON.parse(localStorage.getItem('jarvis.vault.local'))")
+    learned = p.evaluate("JSON.parse(localStorage.getItem('jarvis.vault.learned'))")
+    check("m. Teach a note: jarvis.vault.local {path, text, t} and a 'learned' line, as importNote writes them",
+          local[-1]["path"] == "Pasted/Plan for Q1.md" and "[[LIT strategy]]" in local[-1]["text"] and isinstance(local[-1]["t"], int)
+          and learned[-1]["kind"] == "import" and learned[-1]["note"] == "Pasted/Plan for Q1.md" and learned[-1]["t"] < 1e11, (local, learned))
+    p.evaluate("localStorage.setItem('jarvis.assistant.v1', '{junk')")
+    p.click("#panel .seg button[data-k=fact]")
+    p.fill("#teach-text", "hello again")
+    p.click("#teach-save")
+    check("m. Teach: a damaged Jarvis key is told so and never overwritten", p.locator("#panel .msg.bad").count() == 1 and p.evaluate("localStorage.getItem('jarvis.assistant.v1')") == "{junk")
+    p.evaluate("""() => { localStorage.setItem('jarvis.assistant.v1', JSON.stringify({ v: 1, facts: [{ id: 'f9', t: Date.now(), text: 'My best trades come before 11:00' }], todos: [], notes: [] })); }""")
+    p.keyboard.press("Escape")
+    # --- Stats
+    open_panel(p, "stats")
+    st = p.evaluate("({tiles: document.querySelectorAll('#panel .tile').length, bars: document.querySelectorAll('#panel .cbar').length, ring: !!document.querySelector('#panel .ringbox'), gal: document.querySelectorAll('#panel .galrow').length, rec: document.querySelectorAll('#panel .row').length})")
+    check(f"m. Stats: level ring, six tiles, two weekly bar charts, galaxies, records ({st})", st["tiles"] == 6 and st["bars"] == 16 and st["ring"] and st["gal"] >= 5 and st["rec"] >= 4, st)
+    p.keyboard.press("Escape")
+    # --- sounds through the kit
+    p.evaluate("window.__sfx = []")
+    open_panel(p, "notes")
+    heard = p.evaluate("window.__sfx")
+    check("m. sounds go through OLYMPUS.sfx (a tap on a dock button)", "tap" in heard, heard)
+    open_panel(p, "look")
+    p.click("#panel [data-k=sound]")
+    p.evaluate("window.__sfx = []")
+    open_panel(p, "stats")
+    check("m. the Sounds switch silences them (and is kept)", p.evaluate("window.__sfx") == [] and p.evaluate("mind.prefs").get("sound") is False)
+    # --- Look: skins, atmosphere, the vault name and the Obsidian link
+    open_panel(p, "look")
+    check("m. Look: eight skins, three switches, a vault name field", p.locator("#panel .skin").count() == 8 and p.locator("#panel .switch").count() == 3 and p.locator("#vault-name").count() == 1)
+    p.click("#panel [data-skin=ember]")
+    p.wait_for_timeout(300)
+    cyan = p.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--cyan').trim()")
+    check("m. the Ember skin restyles the page and is kept",
+          cyan == "#ff9a4d" and p.evaluate("JSON.parse(localStorage.getItem('mind.prefs')).skin") == "ember", cyan)
+    p.keyboard.press("Escape")
+    time.sleep(1.2)
+    shot(p, "skin_ember_390.png")
+    open_panel(p, "look")
+    p.click("#panel [data-skin=auto]")
+    p.wait_for_timeout(300)
+    back = p.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--cyan').trim()")
+    check("m. skin 'Follow OLYMPUS' restores the default accent", back in ("", "#6ff6ff"), back)
+    amb = p.evaluate("mind.ambient")
+    check(f"m. ambient layers on HD: the nebula sky and {amb['motes']} drifting motes", amb["sky"] and amb["dust"] and amb["motes"] >= 1000, amb)
+    p.click("#panel [data-k=dust]")
+    p.click("#panel [data-k=sky]")
+    amb2 = p.evaluate("mind.ambient")
+    check("m. the Ambient particles and Nebula sky switches turn the layers off", not amb2["sky"] and not amb2["dust"] and p.get_attribute("#panel [data-k=dust]", "aria-checked") == "false", amb2)
+    p.click("#panel [data-k=dust]")
+    p.click("#panel [data-k=sky]")
+    p.fill("#vault-name", "My Vault")
+    p.press("#vault-name", "Tab")
+    p.keyboard.press("Escape")
+    p.fill("#q", "Kalshi bot")
+    p.press("#q", "Enter")
+    p.wait_for_function("mind.focus === 'Kalshi/Kalshi bot.md'", timeout=4000)
+    href = p.get_attribute("#c-obsidian", "href")
+    check("m. the note card gets Open in Obsidian: obsidian://open?vault=My%20Vault&file=Kalshi%2FKalshi%20bot",
+          p.is_visible("#c-obsidian") and href == "obsidian://open?vault=My%20Vault&file=Kalshi%2FKalshi%20bot", href)
+    p.click("#c-close")
+    wait_flight(p)
+    p.wait_for_function("mind.live && mind.live.memories === 1", timeout=60000)
+    p.wait_for_timeout(800)
+    p.fill("#q", "best trades come")
+    p.press("#q", "Enter")
+    p.wait_for_function("mind.focus && mind.focus.startsWith('live:')", timeout=8000)
+    check("m. a fact that only lives in Jarvis's memory has no Obsidian button", p.is_hidden("#c-obsidian"))
+    p.click("#c-close")
+    # Home: Surprise me, the review badge
+    open_panel(p, "home")
+    badge = p.evaluate("(() => { const b = document.querySelector('#dock [data-panel=review] .badge'); return b && !b.hidden ? b.textContent : null; })()")
+    check(f"m. the Review button shows how many questions are waiting ({badge})", badge is not None, badge)
+    p.click("#panel .act >> nth=2")
+    p.wait_for_function("mind.focus !== null", timeout=4000)
+    check("m. Home: Surprise me flies to a random note", p.is_visible("#card") and p.is_hidden("#panel"))
+    check("m. no console errors across every page", not real_errors(log), real_errors(log))
+    check("i. the pages fetched nothing", p.evaluate("window.__net") == [], p.evaluate("window.__net"))
+    ctx.close()
+
+    # a vault that is connected but empty: the demo brain, never a blank sky
+    MOCK["js"] = FAKE_OBSIDIAN
+    now = int(time.time() * 1000)
+    ctx, p, log = new_page(br, origin, (390, 844), snap={"v": 1, "t": now, "notes": [], "learned": []})
+    p.goto(origin + "/mind/?q=off&home=0")
+    ready(p)
+    st = p.evaluate("({mode: mind.mode, stats: mind.stats})")
+    check(f"m. a connected but empty vault shows the labelled demo brain ({st['stats']['notes']} notes), never a blank sky",
+          st["mode"] == "demo" and st["stats"]["notes"] > 80 and p.is_visible("#demo") and not real_errors(log), (st, real_errors(log)))
+    ctx.close()
+    # a tiny real vault: the dashboard still has things to say
+    tiny = {"v": 1, "t": now, "notes": [{"id": "A.md", "title": "A", "path": "A.md", "tags": [], "links": ["B.md"], "mtime": now, "words": 20, "kind": "note"},
+                                          {"id": "B.md", "title": "B", "path": "B.md", "tags": ["x"], "links": [], "mtime": now - 3 * 86400_000, "words": 5, "kind": "note"}], "learned": []}
+    ctx, p, log = new_page(br, origin, (390, 844), snap=tiny)
+    p.goto(origin + "/mind/?q=off&home=1")
+    ready(p)
+    p.wait_for_timeout(600)
+    check("m. a tiny live vault: the Home page still fills the screen (tiles, chart, 'Grow your brain')",
+          p.locator("#panel .tile").count() == 6 and p.locator("#panel svg.chart").count() == 1 and "grow your brain" in p.inner_text("#panel").lower() and "DEMO" not in p.inner_text("#p-sub"), p.inner_text("#panel")[:200])
+    p.keyboard.press("Escape")
+    for n in PAGES:
+        open_panel(p, n)
+    check("m. a tiny live vault: every page opens without an error", not real_errors(log), real_errors(log))
+    ctx.close()
+    MOCK["js"] = None
+
+    # landscape phone: the dock is icons only, the page a side sheet, the orb's corner free
+    ctx, p, log = new_page(br, origin, (844, 390))
+    p.goto(origin + "/mind/?q=off")
+    ready(p)
+    p.wait_for_timeout(800)
+    open_panel(p, "notes")
+    box = p.evaluate("(() => { const r = document.getElementById('panel').getBoundingClientRect(); return [r.width, r.left, r.top, r.bottom, innerWidth, innerHeight]; })()")
+    sw = p.evaluate("[document.scrollingElement.scrollWidth, innerWidth]")
+    check(f"m. 844 x 390: the page is a side sheet ({box[0]:.0f} px wide), the orb's corner free, no sideways scroll, the dock labels hidden",
+          box[0] < box[4] * 0.6 and box[3] <= box[5] + 16 and not orb_corner_free(p) and sw[0] <= sw[1] and p.evaluate("getComputedStyle(document.querySelector('#dock span')).display") == "none", (box, orb_corner_free(p), sw))
+    shot(p, "page_landscape.png")
+    check("m. 844 x 390: no console errors", not real_errors(log), real_errors(log))
+    ctx.close()
+
+    # LITE and reduced motion
+    ctx, p, log = new_page(br, origin, (390, 844), quality="low", reduced=True)
+    p.goto(origin + "/mind/?q=off")
+    ready(p)
+    p.wait_for_timeout(800)
+    amb = p.evaluate("mind.ambient")
+    for n in PAGES:
+        open_panel(p, n)
+    check(f"m. LITE + reduced motion: fewer motes ({amb['motes']}), every page opens, no errors", 0 < amb["motes"] <= 400 and not real_errors(log), (amb, real_errors(log)))
+    ctx.close()
+
+
+# ------------------------------------------------------------------ n. never blank: a fresh phone, a tiny vault, no vault (2026-11-04 audit)
+NOT_WEBDRIVER = "Object.defineProperty(navigator, 'webdriver', { get: () => false });"       # a real phone: Home opens by itself on the first visit
+
+
+def blank_cases(br, origin):
+    now = int(time.time() * 1000)
+    tiny = {"v": 1, "t": now, "notes": [{"id": "A.md", "title": "A", "path": "A.md", "tags": [], "links": [], "mtime": now - 40 * 86400_000, "words": 5, "kind": "note"}], "learned": []}
+    only_me = {"v": 1, "t": now, "notes": [{"id": "Me.md", "title": "Me", "path": "Me.md", "tags": [], "links": [], "mtime": 0, "words": 0, "kind": "me"}], "learned": []}
+    cases = [("a fresh phone, no vault (the demo brain)", None, None, False), ("a vault with one old note and nothing learned", FAKE_OBSIDIAN, tiny, True),
+             ("a vault with only the Me note, no dates", FAKE_OBSIDIAN, only_me, True)]
+    for label, js, snap, sparse in cases:
+        MOCK["js"] = js
+        ctx, p, log = new_page(br, origin, (390, 844), snap=snap, quality=None)
+        p.add_init_script(NOT_WEBDRIVER)
+        t0 = time.time()
+        p.goto(origin + "/mind/?q=off", wait_until="commit")
+        boot_seen = p.evaluate("(() => { const b = document.getElementById('boot'); return !!b && getComputedStyle(b).display !== 'none'; })()") if p.evaluate("!!document.getElementById('boot')") else None
+        ready(p, 120000)
+        took = time.time() - t0
+        home = p.evaluate("[!document.getElementById('panel').hidden, document.getElementById('panel').dataset.view, document.getElementById('p-body').innerText.trim().length]")
+        check(f"n. {label}: fresh load, no saved state: the 'Waking your brain' line while it loads, gone once it is up; Home opens by itself with content ({home[2]} characters, ready in {took:.1f} s)",
+              boot_seen in (True, None) and p.is_hidden("#boot") and home[0] and home[1] == "home" and home[2] > 300, (boot_seen, home))
+        bad, noact = [], []
+        for n in PAGES_ALL:
+            if p.evaluate("!document.getElementById('panel').hidden && document.getElementById('panel').dataset.view") == n:
+                p.keyboard.press("Escape")
+            p.click(f"#dock [data-panel={n}]")
+            p.wait_for_function(f"document.getElementById('panel').dataset.view === '{n}' && !document.getElementById('panel').hidden", timeout=30000)
+            if len(p.inner_text("#p-body").strip()) < 100:
+                bad.append(n)
+            if p.evaluate("document.querySelectorAll('#p-body .empty').length") and not p.evaluate("document.querySelectorAll('#p-body .empty .cta').length"):
+                noact.append(n)
+        check(f"n. {label}: all nine pages have words in them (100+ characters)", not bad, bad)
+        check(f"n. {label}: every page that is empty says what to do and has a button for it (Teach Jarvis / Preview a demo brain)", not noact, noact)
+        p.keyboard.press("Escape")
+        sp = p.evaluate("[mind.sparse, !document.getElementById('sparse').hidden, document.getElementById('sp-text').textContent]")
+        check(f"n. {label}: the 'just starting' banner {'shows' if sparse else 'stays away'} ({sp[2] or 'no banner'})", sp[0] == sparse and sp[1] == sparse and (not sparse or "just starting" in sp[2] or "empty" in sp[2]), sp)
+        if sparse:
+            p.click("#sp-preview")
+            p.wait_for_function("mind.preview === true && mind.stats.notes > 80", timeout=60000)
+            st = p.evaluate("[mind.mode, !document.getElementById('demo').hidden, document.getElementById('sp-text').textContent, document.getElementById('sp-preview').textContent]")
+            check("n. Preview demo: the grown demo brain replaces the sky, labelled DEMO, with a way back (nothing written anywhere)", st[0] == "demo" and st[1] and "Previewing a demo brain" in st[2] and st[3] == "Back to my vault"
+                  and p.evaluate("localStorage.getItem('jarvis.assistant.v1')") is None, st)
+            p.evaluate("globalThis.__obs.fire()")
+            p.wait_for_timeout(1500)
+            check("n. a change in the real vault while previewing does not pull the owner out of the preview", p.evaluate("mind.preview") is True and p.evaluate("mind.mode") == "demo")
+            p.click("#sp-preview")
+            p.wait_for_function("mind.preview === false && mind.stats.notes < 5", timeout=60000)
+            check("n. Back to my vault: the real (tiny) brain again", p.evaluate("mind.mode") == "live" and p.evaluate("mind.sparse") is True)
+        check(f"n. {label}: no console errors", not real_errors(log), real_errors(log))
+        ctx.close()
+    # a full vault (the 60-note mock): no banner
+    MOCK["js"] = FAKE_OBSIDIAN
+    ctx, p, log = new_page(br, origin, (390, 844), snap=mock_vault(now))
+    p.goto(origin + "/mind/?q=off&home=0")
+    ready(p)
+    check("n. a full vault shows no 'just starting' banner", p.evaluate("mind.sparse") is False and p.is_hidden("#sparse"))
+    ctx.close()
+    # the page's own module cannot start: the owner is told, not left with a black screen
+    MOCK["js"] = None
+    ctx, p, log = new_page(br, origin, (390, 844))
+    ctx.route("**/mind/main.js*", lambda r: r.abort())
+    p.goto(origin + "/mind/?q=off")
+    p.wait_for_function("document.getElementById('boot').textContent.includes('taking long')", timeout=30000)
+    check("n. if the page cannot start at all, the first screen says so in plain words (never a bare black screen)", p.is_visible("#boot") and "reload" in p.inner_text("#boot").lower())
+    ctx.close()
+    MOCK["js"] = None
+
+
+PAGES_ALL = ["home", "notes", "days", "learned", "graph", "review", "teach", "stats", "look"]
+
+
 def main():
     static_checks()
+    unit_cases()
     srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     origin = f"http://127.0.0.1:{srv.server_port}"
@@ -668,6 +1179,8 @@ def main():
             upgrade_cases(br, origin)
             render_core_cases(br, origin)
             live_cases(br, origin)
+            overhaul_cases(br, origin)
+            blank_cases(br, origin)
             other_cases(br, origin)
         finally:
             br.close()

@@ -109,7 +109,7 @@ def stamp(card: dict, task, v: dict, now: float) -> dict:
         out["lines"] = [_cut(x, LINE_MAX) for x in ([why] + ([last] if last else []) + lines)[:LINES_MAX]]
     out["t"] = int(now)
     # how long Jarvis keeps the card current between site publishes (apps.js stale_after): nightly 3 days, weekly 8 days
-    out["stale_after"] = 3 * 86400 if task.cadence == "nightly" else 8 * 86400
+    out["stale_after"] = 3 * 86400 if task.cadence in ("nightly", "frequent") else 8 * 86400
     out["cronos"] = {"state": v["state"], "data_t": orig.get("t"), "checked_t": v["last_ok"], "age_h": v["age_h"],
                      "cadence": task.cadence, "max_age_h": task.max_age_h, "orig": orig}
     return out

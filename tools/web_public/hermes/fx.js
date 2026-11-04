@@ -144,7 +144,10 @@ export function createFx(bg, layer, { still = false, lite = false } = {}) {
   let last = performance.now();
   function frame(now) {
     S.raf = 0;
-    if (window.OLYMPUS ? window.OLYMPUS.hidden() : document.hidden) return;   // hidden tab: no frame (the battery)
+    if (window.OLYMPUS ? window.OLYMPUS.hidden() : document.hidden) return;   // hidden / covered tab: no frame (the battery)
+    const gap = (window.OLYMPUS && window.OLYMPUS.frameGap ? window.OLYMPUS.frameGap() : 0);                  // idle 30 / 15 fps, battery saver, 3D Off (docs/OLYMPUS_PERF.md)
+    if (gap && !S.kicked && now - last < gap - 3) { S.raf = requestAnimationFrame(frame); return; }
+    S.kicked = false;
     const dt = Math.min(0.05, (now - last) / 1000), t = (now - S.t0) / 1000;
     last = now;
     size();
@@ -157,7 +160,7 @@ export function createFx(bg, layer, { still = false, lite = false } = {}) {
       S.raf = requestAnimationFrame(frame);
     }
   }
-  const kick = () => { if (!S.raf) S.raf = requestAnimationFrame(frame); };
+  const kick = () => { S.kicked = true; if (!S.raf) S.raf = requestAnimationFrame(frame); };
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { last = performance.now(); kick(); } });
   addEventListener('resize', () => { S.lastW = 0; kick(); });
 

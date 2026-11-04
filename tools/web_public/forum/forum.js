@@ -1,11 +1,13 @@
 // FORUM page (ES module): loads the Council of the Gods and the live eval the site already publishes, builds the briefing
 // (forumcore.js), draws the forum (scene.js) and walks you through it. Text only through textContent. window.FORUM is the test hook.
-import { etParts, parseClock, clockText, minsText, nextEvent, phase, brief, oath, streak, evalOf } from './forumcore.js';
+import { etParts, parseClock, clockText, minsText, nextEvent, phase, brief, oath, streak, evalOf, desk } from './forumcore.js';
+import { readPlanner, renderDesk, renderShrine, ritual } from './forumdesk.js';
+import { renderMoney, renderDay } from './forumplus.js';
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
 const KEY = 'forum.v1';
-const S = { pan: null, home: null, demo: true, items: [], p: null, step: -1, read: new Set(), pledges: [false, false, false], sealed: {}, scene: null, ready: false, error: null, clockOverride: null };
+const S = { desk: [], pan: null, home: null, demo: true, items: [], p: null, step: -1, read: new Set(), pledges: [false, false, false], sealed: {}, scene: null, ready: false, error: null, clockOverride: null };
 
 function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; }
 const store = {
@@ -33,6 +35,8 @@ function tickClock() {
   $('ckNext').textContent = `${ne.name} in ${minsText(ne.mins)}${ne.tomorrow ? ' (next trading day)' : ''}`;
   const sk = streak(S.sealed, p.day);
   $('streakN').textContent = String(sk.cur); $('streak').classList.toggle('on', sk.cur > 0);
+  renderShrine($('shrine'), sk.cur, sk.best);
+  try { renderDay($('day'), p); } catch (e) { /* the day bar is optional */ }
   if (S.scene) S.scene.setClock({ h: p.h, tone: councilTone() });
 }
 
@@ -54,8 +58,11 @@ function show(step) {
   else card.style.setProperty('--tone', '#9fb4ff');
   if (S.scene) S.scene.focus(step === -1 ? -1 : step);
   const dots = $('dots');
+  document.documentElement.dataset.walk = step === -1 ? '' : '1';          // the tablet card rises above the two-row nav (dots, then the arrows)
   [...dots.children].forEach((b, i) => { if (i === step) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current'); b.classList.toggle('read', S.read.has(i) && i !== step); });
   $('prev').disabled = step <= 0; $('next').disabled = step >= S.items.length;
+  $('desk').hidden = !(step === -1 || step === S.items.length);
+  $('money').hidden = $('day').hidden = $('desk').hidden;                       // Money today and the trading day ride with the desk (the start and the oath screens)
   card.scrollTop = 0;
 }
 
@@ -74,7 +81,7 @@ function renderOath() {
     const b = h('button', 'pledge'); b.type = 'button'; b.dataset.pledge = o.id; b.setAttribute('aria-pressed', String(!!done[i]));
     const mark = h('span', 'box', done[i] ? '✓' : ''); mark.setAttribute('aria-hidden', 'true');
     b.append(mark, h('span', '', o.text)); b.disabled = sealed;
-    b.addEventListener('click', () => { S.pledges[i] = !S.pledges[i]; renderOath(); });
+    b.addEventListener('click', () => { S.pledges[i] = !S.pledges[i]; renderOath(); if (S.pledges[i]) ritual('pledge', b, S.scene); });
     box.append(b);
   });
   $('seal').disabled = sealed || !S.pledges.every(Boolean);
@@ -90,6 +97,7 @@ function seal() {
   const keep = Object.fromEntries(Object.entries(S.sealed).sort().slice(-120));          // the last 120 days are plenty
   S.sealed = keep; store.write({ sealed: keep });
   renderOath(); tickClock();
+  ritual('seal', $('sealed'), S.scene); ritual('candle', [...$('shrine').querySelectorAll('.candle.lit')].pop() || $('shrine'), S.scene);
   if (S.scene) S.scene.openGates(true);
   document.documentElement.dataset.sealed = '1';
   try { if (!(O && O.reduced()) && navigator.vibrate) navigator.vibrate([30, 40, 60]); } catch (_) { /* no haptics */ }
@@ -146,10 +154,12 @@ async function main() {
   const [pan, home] = await Promise.all([getJSON('../pantheon/pantheon.json'), getJSON('../home.json')]);
   S.pan = pan && pan.council ? pan : null; S.home = home;
   S.demo = !S.pan || !!S.pan.demo;
-  if (!S.pan) { const fx = await getJSON('fixture.json'); if (fx) { S.pan = fx.pantheon; if (!evalOf(S.home)) S.home = fx.home; } }
+  if (!S.pan || !evalOf(S.home)) { const fx = await getJSON('fixture.json'); if (fx) { if (!S.pan) S.pan = fx.pantheon; if (!evalOf(S.home)) { S.home = fx.home; S.demo = true; } } }      // never blank: the recorded eval fills the money card (DEMO tag)
   S.sealed = (store.read().sealed) || {};
   S.p = now();
   S.items = brief(S.pan, S.home, S.p);
+  S.desk = desk(S.home, readPlanner(), S.p); renderDesk($('desk'), S.desk);
+  try { renderMoney($('money'), S.home, S.pan); renderDay($('day'), S.p); } catch (e) { S.error = 'plus: ' + ((e && e.message) || e); }
   $('demo').hidden = !S.demo;
   if (S.scene) S.scene.setScrolls(S.items);
   const c = S.items[0];
@@ -166,7 +176,7 @@ async function main() {
 }
 
 window.FORUM = {
-  state: () => ({ ready: S.ready, demo: S.demo, step: S.step, items: S.items.map((i) => ({ id: i.id, tone: i.tone, stat: i.stat })), p: S.p, sealed: sealedToday(), streak: streak(S.sealed, (S.p || now()).day),
+  state: () => ({ desk: S.desk.map((d) => ({ id: d.id, tone: d.tone, stat: d.stat })), ready: S.ready, demo: S.demo, step: S.step, items: S.items.map((i) => ({ id: i.id, tone: i.tone, stat: i.stat })), p: S.p, sealed: sealedToday(), streak: streak(S.sealed, (S.p || now()).day),
     pledges: S.pledges.slice(), scene: S.scene ? S.scene.stats() : null, error: S.error, read: [...S.read] }),
   show, card, tick: tickClock,
 };

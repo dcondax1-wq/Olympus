@@ -1,0 +1,88 @@
+{
+ "H1": {
+  "sessions": 80,
+  "trades_with_adds": 35,
+  "gain": 10621,
+  "best3": [
+   2929,
+   2913,
+   2504
+  ],
+  "worst3": [
+   -802,
+   -1768,
+   -3301
+  ],
+  "without_best1": 7692,
+  "without_best2": 4779,
+  "without_best3": 2275,
+  "add_micros": 145,
+  "boot_session": {
+   "p5": -1335,
+   "p50": 10247,
+   "p95": 22661,
+   "share_positive": 0.93
+  },
+  "boot_week": {
+   "p5": 985,
+   "p50": 10168,
+   "p95": 21069,
+   "share_positive": 0.968
+  },
+  "boot_session_without_best1": {
+   "p5": -3131,
+   "p50": 8025,
+   "share_positive": 0.88
+  },
+  "extra_cost": {
+   "0": 72,
+   "4": 362,
+   "8": 652
+  },
+  "net_after_4_ticks_and_live_comm": 10259,
+  "net_without_best1_after_4_ticks": 7330
+ },
+ "H2": {
+  "sessions": 40,
+  "trades_with_adds": 18,
+  "gain": 5344,
+  "best3": [
+   1769,
+   1010,
+   912
+  ],
+  "worst3": [
+   -272,
+   -354,
+   -404
+  ],
+  "without_best1": 3576,
+  "without_best2": 2566,
+  "without_best3": 1653,
+  "add_micros": 45,
+  "boot_session": {
+   "p5": 1529,
+   "p50": 5174,
+   "p95": 9724,
+   "share_positive": 0.993
+  },
+  "boot_week": {
+   "p5": 2083,
+   "p50": 5259,
+   "p95": 8855,
+   "share_positive": 0.998
+  },
+  "boot_session_without_best1": {
+   "p5": 639,
+   "p50": 3591,
+   "share_positive": 0.98
+  },
+  "extra_cost": {
+   "0": 22,
+   "4": 112,
+   "8": 202
+  },
+  "net_after_4_ticks_and_live_comm": 5232,
+  "net_without_best1_after_4_ticks": 3464
+ }
+}

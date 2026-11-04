@@ -5,7 +5,11 @@ import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
 import { metal, glass, neon, starfield } from '../olympus/materials.js';
 import * as CORE from './arguscore.js';
-import { APPS, analyze, cardOf, histUpdate, histSummary } from './arguscore.js';
+import * as X from './extras.js';
+import { renderMoney } from './argusplus.js';
+import * as AT from '../olympus/fx-atmos.js';        // JOB 4+5 follow-up: scanner shafts, drifting data dust and rising sparks around the sphere
+import * as SC from '../olympus/scenery.js';
+import { APPS, analyze, cardOf, histUpdate, histSummary, demoData } from './arguscore.js';
 
 const O = window.OLYMPUS || null;
 const Q = new URLSearchParams(location.search);
@@ -22,10 +26,16 @@ const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&':
 const hm = (t) => new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: false, weekday: 'short' }).format(new Date(t * 1000)) + ' ET';
 
 // ------------------------------------------------------------------------------------------------ data (read only, with a copy for offline)
-async function getJson(url, ms = 6000) {
+// An optional file that answered 404 is not asked again for 6 hours: a browser logs every 404 as a console error, this keeps it to one per phone.
+const GONE_KEY = 'opt404.', GONE_MS = 6 * 3600e3;
+const wasGone = (u) => { try { const t = +localStorage.getItem(GONE_KEY + u); return !!t && Date.now() - t < GONE_MS; } catch (_) { return false; } };
+const markGone = (u) => { try { localStorage.setItem(GONE_KEY + u, String(Date.now())); } catch (_) { /* private mode */ } };
+async function getJson(url, ms = 6000, optional = false) {
+  if (optional && wasGone(url)) return null;
   try {
     const ac = typeof AbortController === 'function' ? new AbortController() : null; const tm = ac ? setTimeout(() => ac.abort(), ms) : 0;
     const r = await fetch(url, { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); clearTimeout(tm);
+    if (!r.ok && optional && r.status === 404) markGone(url);
     return r.ok ? await r.json() : null;
   } catch (_) { return null; }
 }
@@ -42,10 +52,13 @@ function save(snap) { try { localStorage.setItem(KEY, JSON.stringify(snap)); } c
 function load() { try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); return s && s.home ? s : null; } catch (_) { return null; } }
 
 async function fetchAll() {
+  if (Q.get('demo') === '1') { const d = demoData(nowS()); S.demo = true; S.demoNow = nowS(); return { saved: nowS(), home: d.home, cronos: d.cronos, cards: d.cards, hist: d.hist, offline: false }; }      // a recorded healthy day (never saved over the real copy)
   let home = await getJson('../home.json'); if (!home || !home.board) { const d = await getJson('../data.json'); home = d || home; }
-  const cronos = await getJson('../cronos/status.json');
   const got = await Promise.all(APPS.map(([id]) => getJson(`../${id}/jarvis.json`, 5000)));
   const cards = {}; APPS.forEach(([id], i) => { cards[id] = got[i]; });
+  // cronos/status.json is optional (not always published): the cards CRONOS stamps say the same, so it is only asked for when no card is stamped
+  const stamped = got.some((c) => c && typeof c === 'object' && c.cronos && c.cronos.state);
+  const cronos = stamped ? null : await getJson('../cronos/status.json', 6000, true);
   if (home && typeof home === 'object') {
     const snap = { saved: nowS(), home: slim(home), cronos: cronos, cards };
     save(snap);
@@ -90,6 +103,7 @@ function paintHist() {
     + `<div class="strip" id="strip" role="img" aria-label="Last 14 days">${H.strip.map((s) => `<i class="sq ${s.level}" title="${esc(s.day + ': ' + word[s.level])}"></i>`).join('')}</div>`
     + '<p class="hint">Last 14 days, oldest on the left. Grey = a day I did not look.</p><p class="grp">WHAT WENT RED AND FOR HOW LONG</p>'
     + (reds || '<p class="empty">Nothing went red in the days I saw.</p>') + '<p class="hint">Times are from when this page was open, so a short red can be missed.</p>';
+  try { X.decorate($('p-hist'), { R: S.R, H, now: nowS() }); } catch (_) { /* the plain history stays */ }
 }
 function paint() {
   const R = S.R; if (!R) return;
@@ -101,23 +115,25 @@ function paint() {
   $('fixN').textContent = String(R.fix.length);
   $('offtag').hidden = !S.offline;
   $('sub').textContent = !R.hasData ? 'No dashboard data yet.' : S.offline ? `Offline. Showing what I saw at ${hm(S.asOf)}.` : `${R.eyes.length} lights, ${N_EYES} eyes, checked ${hm(nowS())}.`;
-  $('p-fix').innerHTML = R.fix.length ? R.fix.map(row).join('') : `<p class="empty">${R.hasData ? 'Nothing to fix. Every light that matters is green.' : 'Waiting for data.'}</p>`;
+  $('p-fix').innerHTML = R.fix.length ? R.fix.map(row).join('') : `<p class="empty">${R.hasData ? 'Nothing to fix. Every light that matters is green.' : 'Waiting for data.'}</p>${R.hasData ? '' : '<a class="demobtn" role="button" href="?demo=1">See it with demo data</a>'}`;
   const groups = {}; for (const e of R.eyes) (groups[e.group] = groups[e.group] || []).push(e);
   $('p-all').innerHTML = Object.keys(GROUPS).filter((g) => groups[g]).map((g) => `<p class="grp">${GROUPS[g]}</p>${groups[g].map(lrow).join('')}`).join('');
   paintHist();
+  try { renderMoney($('p-money'), R, S.hist || EMPTY(), S.demo ? S.demoNow : nowS()); } catch (e) { S.errors.push('money: ' + ((e && e.message) || e)); }
+  $('demotag').hidden = !S.demo;
   document.documentElement.dataset.argus = v.level;
   if (S.room) S.room.set(R);
 }
 function setTab(t) {
-  S.tab = t === 'all' ? 'all' : t === 'hist' ? 'hist' : 'fix';
-  $('p-fix').hidden = S.tab !== 'fix'; $('p-all').hidden = S.tab !== 'all'; $('p-hist').hidden = S.tab !== 'hist';
+  S.tab = t === 'all' ? 'all' : t === 'hist' ? 'hist' : t === 'money' ? 'money' : 'fix';
+  $('p-fix').hidden = S.tab !== 'fix'; $('p-all').hidden = S.tab !== 'all'; $('p-hist').hidden = S.tab !== 'hist'; $('p-money').hidden = S.tab !== 'money';
   document.querySelectorAll('#tabs button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tab === S.tab)));
 }
 function select(id, fromEye) {
   const e = S.R && S.R.eyes.find((x) => x.id === id);
   S.sel = e ? id : null;
   const pick = $('pick');
-  if (e) { pick.hidden = false; pick.innerHTML = `<b>${esc(e.label)}</b> · ${esc(e.value)}`; if (fromEye) { S.open.add(id); setTab('all'); } } else pick.hidden = true;
+  if (e) { pick.hidden = false; pick.innerHTML = `<b>${esc(e.label)}</b> · ${esc(e.value)} <button type="button" class="detbtn" data-drawer="${esc(e.id)}">Details</button>`; if (fromEye) { S.open.add(id); setTab('all'); } } else pick.hidden = true;
   paint();
   if (e && fromEye) { const el = document.querySelector(`#p-all [data-light="${CSS.escape(id)}"]`); if (el) el.scrollIntoView({ block: 'nearest' }); }
   if (S.room) S.room.focus(S.sel);
@@ -139,8 +155,14 @@ function bind() {
     select(S.sel === id && b.classList.contains('fixrow') ? null : id, false);
   });
   addEventListener('hashchange', route);
+  const ctx = () => ({ R: S.R, H: histSummary(S.hist || EMPTY(), nowS()), now: nowS(), pick: (id) => { select(id, false); openDrawer(id); } });
+  const openDrawer = (id) => { const e = S.R && S.R.eyes.find((x) => x.id === id); if (e) { try { X.openDrawer(e, ctx()); } catch (_) { /* no drawer */ } } };
+  $('pick').addEventListener('click', (ev) => { const b = ev.target.closest('[data-drawer]'); if (b) openDrawer(b.dataset.drawer); });
+  const dc = $('drawerClose'); if (dc) dc.addEventListener('click', X.closeDrawer);
+  document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') X.closeDrawer(); });
+  window.__argusDrawer = openDrawer;
 }
-function route() { setTab({ all: 'all', lights: 'all', hist: 'hist', history: 'hist', fix: 'fix' }[location.hash.slice(1)] || 'fix'); }
+function route() { setTab({ all: 'all', lights: 'all', hist: 'hist', history: 'hist', money: 'money', fix: 'fix' }[location.hash.slice(1)] || 'fix'); }
 
 // ------------------------------------------------------------------------------------------------ the 3D sphere of eyes
 const R_SPHERE = 2.0;
@@ -177,11 +199,21 @@ class Room {
     this.ring.rotation.x = Math.PI / 2.3; S3.add(this.ring);
     // eyes: sclera (a glossy almond), iris (HDR so it blooms; the colour is per eye), pupil (a slit)
     const sc = new THREE.SphereGeometry(1, 20, 14), iris = new THREE.CircleGeometry(0.42, 28), pup = new THREE.CircleGeometry(0.16, 16);
-    const wm = new THREE.MeshPhysicalMaterial({ color: 0xf2f6ff, roughness: 0.22, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 1.1 });
+    let wm = new THREE.MeshPhysicalMaterial({ color: 0xf2f6ff, roughness: 0.22, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 1.1 }), irisMat = neon({ color: '#ffffff', intensity: 4 }), cornea = null;
+    try { const P = SC.eyeParts(); wm = P.sclMat; irisMat = P.irisMat; irisMat.color.setScalar(3.4); cornea = P.cornea; } catch (_) { cornea = null; /* the plain eyes stay */ }
     this.sclera = new THREE.InstancedMesh(sc, wm, N_EYES);
-    this.iris = new THREE.InstancedMesh(iris, neon({ color: '#ffffff', intensity: 4 }), N_EYES);
+    this.iris = new THREE.InstancedMesh(iris, irisMat, N_EYES);
     this.pupil = new THREE.InstancedMesh(pup, new THREE.MeshBasicMaterial({ color: 0x02040a }), N_EYES);
-    for (const m of [this.sclera, this.iris, this.pupil]) { m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); m.frustumCulled = false; this.orb.add(m); }
+    this.cornea = null;
+    if (cornea) { const cg = new THREE.SphereGeometry(0.46, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2.6); cg.rotateX(Math.PI / 2); this.cornea = new THREE.InstancedMesh(cg, cornea, N_EYES); }
+    for (const m of [this.sclera, this.iris, this.pupil, this.cornea]) { if (!m) continue; m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); m.frustumCulled = false; this.orb.add(m); }
+    // an armillary of aged bronze round the sphere: three tilted rings turning slowly (the watchtower's instrument)
+    this.arm = null;
+    try {
+      const bz = SC.bronze({ color: '#b58a46', patina: 0.45, rough: 0.4 }); this.arm = new THREE.Group();
+      [[R_SPHERE + 0.6, 0.04, 0.3, 0], [R_SPHERE + 0.82, 0.035, 1.2, 0.8], [R_SPHERE + 0.94, 0.03, 0.65, 2.1]].forEach(([r, t, rx, rz]) => { const m = new THREE.Mesh(new THREE.TorusGeometry(r, t, 10, 120), bz); m.rotation.set(rx, 0, rz); this.arm.add(m); });
+      S3.add(this.arm);
+    } catch (_) { this.arm = null; }
     this.iris.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(N_EYES * 3), 3);
     // a Fibonacci sphere: every eye the same distance from its neighbours; local +Z points out of the sphere
     this.pos = []; this.quat = [];
@@ -194,10 +226,19 @@ class Room {
     }
     this.openAt = this.pos.map((p, i) => 0.25 + (1 - (p.y + 1) / 2) * 1.1 + hash(i) * 0.5);     // opens from the top down
     this.blink = this.pos.map((p, i) => 2 + hash(i + 50) * 7);
+    // the watchtower's air (fx-atmos): a cyan scanner beam behind the sphere, motes drifting through the dark, sparks rising off the eyes
+    setTimeout(() => { try {         // 0.9 s after the first paint
+      this.at = [AT.shafts({ count: 3, from: [0, 7, -3], to: [0, -6, -2], width: 3.2, spread: [3, 0, 1], color: '#6fdcff', strength: 0.09, seed: 2 }),
+        AT.dust({ count: 200, box: [12, 8, 10], color: '#a9e7ff', size: 3.6, strength: 0.7, seed: 21 }),
+        AT.embers({ count: 90, origin: [0, -2.4, 0], spread: [2.6, 0, 2.6], rise: 5, colors: ['#e8fbff', '#3ad7ff', '#1a4f9c'], size: 4.5, wind: 0, seed: 17 })];
+      this.at[1].object.position.set(0, -3, -1);
+      this.at.forEach((f) => S3.add(f.object)); AT.setQuality(this.at, this.rc.quality()); this.dirty = true;
+    } catch (e) { this.at = []; } }, 900);
     this.applyTier();
   }
   applyTier() {
     const lite = this.fx === 'low' || this.fx === 'off';
+    if (this.at) AT.setQuality(this.at, this.rc.quality());
     this.stars.visible = !lite; this.shell.visible = !lite;
     this.dirty = true;
   }
@@ -262,7 +303,9 @@ class Room {
     } else if (!still && this.t > this.user) this.yaw += dt * 0.18;
     this.orb.rotation.set(this.pitch, this.yaw, 0);
     this.ring.rotation.z += still ? 0 : dt * 0.25;
+    if (this.arm) { this.arm.rotation.y += still ? 0 : dt * 0.08; this.arm.rotation.x = 0.2 + (still ? 0 : Math.sin(this.t * 0.2) * 0.06); }
     this.stars.update(this.t, this.rc.renderer.getPixelRatio());
+    if (this.at && this.at.length) AT.update(this.at, still ? 0 : this.t, this.rc.renderer.getPixelRatio());
     const M = new THREE.Matrix4(), sc = new THREE.Vector3(), p = new THREE.Vector3(), selK = S.sel ? this.lights.findIndex((e) => e.id === S.sel) : -1;
     for (let i = 0; i < N_EYES; i++) {
       const lv = this.levels[i], idle = lv === 'idle';
@@ -280,15 +323,18 @@ class Room {
       M.compose(p, q, sc.set(size * 1.0, size * Math.min(1, o * 1.45), 1)); this.iris.setMatrixAt(i, M);
       p.copy(base).multiplyScalar(R_SPHERE + size * 0.45 + 0.02);
       M.compose(p, q, sc.set(size * 0.5, size * 1.4 * Math.min(1, o * 1.45), 1)); this.pupil.setMatrixAt(i, M);
+      if (this.cornea) { p.copy(base).multiplyScalar(R_SPHERE + size * 0.45 + 0.03); M.compose(p, q, sc.set(size * 1.0, size * Math.min(1, o * 1.45), size * 0.9)); this.cornea.setMatrixAt(i, M); }
     }
-    for (const m of [this.sclera, this.iris, this.pupil]) m.instanceMatrix.needsUpdate = true;
+    for (const m of [this.sclera, this.iris, this.pupil, this.cornea]) if (m) m.instanceMatrix.needsUpdate = true;
     this.rc.render(); this.dirty = false;
   }
   fps() { const a = this.frames; return a.length ? Math.round(a.length / a.reduce((s, x) => s + x, 0)) : 0; }
 }
 
+let gapAt = 0;
 function tick(now) {
-  if (S.room && !(O ? O.hidden() : document.hidden)) S.room.frame(now);
+  const gap = O && O.frameGap ? O.frameGap() : 0;                           // idle 30 / 15 fps, battery saver, 3D Off (docs/OLYMPUS_PERF.md)
+  if (S.room && !(O ? O.hidden() : document.hidden) && !(gap && now - gapAt < gap - 3)) { gapAt = now; S.room.frame(now); }
   requestAnimationFrame(tick);
 }
 
@@ -298,8 +344,9 @@ async function refresh() {
   S.offline = !!d.offline;
   S.asOf = d.offline ? d.saved : null;
   S.R = analyze({ now: d.offline && d.saved ? d.saved : nowS(), home: d.home, cronos: d.cronos, cards: d.cards });
+  if (d.hist) S.hist = d.hist;
   if (!S.hist) S.hist = loadHist();
-  if (!d.offline && S.R.hasData) { S.hist = histUpdate(S.hist, S.R, nowS()); saveHist(); }
+  if (!d.offline && S.R.hasData && !S.demo) { S.hist = histUpdate(S.hist, S.R, nowS()); saveHist(); }
   paint();
   postCard();
 }

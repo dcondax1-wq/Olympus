@@ -69,7 +69,7 @@ export function evalOf(home) {
   if (!a) return null;
   const e = a.eval, bal = num(e.balance), floor = num(e.floor), tgt = num(e.target_balance);
   if (bal == null || floor == null || tgt == null) return null;
-  return { name: txt(a.name || a.plan, 30), balance: bal, floor, target: tgt, room: bal - floor, toTarget: tgt - bal, session: num(e.session), sessions: num(e.sessions), locked: !!e.locked, status: txt(e.status, 20) };
+  return { name: txt(a.name || a.plan, 30), balance: bal, floor, target: tgt, room: bal - floor, toTarget: tgt - bal, session: num(e.session), sessions: num(e.sessions), locked: !!e.locked, status: txt(e.status, 20), mll: num(e.mll) };
 }
 
 export function brief(pan, home, p) {
@@ -113,6 +113,36 @@ export function brief(pan, home, p) {
   return out;
 }
 
+/** The desk: four more tablets beside the avenue, from what the site already publishes (home.json accounts, an optional home.kalshi) and the
+ *  Planner on this phone (planner: { tasks: [{ title, date, done }], events: [{ title, date }] } or null). Always four, never blank, never a guess. */
+export function desk(home, planner, p) {
+  const out = [], day = p && p.day ? p.day : '1970-01-01', tomorrow = addDays(day, 1);
+  const signed = (v) => (v < 0 ? '-' : '+') + fmtUsd(Math.abs(v));
+  const accts = isObj(home) && Array.isArray(home.accounts) ? home.accounts.filter(isObj) : [];
+  if (accts.length) {
+    const ev = accts.filter((a) => isObj(a.eval)), parts = accts.slice(0, 3).map((a) => {
+      const e = isObj(a.eval) ? a.eval : null, b = e ? num(e.balance) : null, s0 = e ? num(e.start_balance) : null;
+      return `${txt(a.name || a.id, 22)}${b != null && s0 != null ? ' ' + signed(b - s0) : ''}`;
+    });
+    out.push({ id: 'bots', title: 'The bots', glyph: 'Ζ', tone: 'calm', stat: `${accts.length} account${accts.length === 1 ? '' : 's'}`, line: `${ev.length} on an eval. ${parts.join(' · ')}` });
+  } else out.push({ id: 'bots', title: 'The bots', glyph: 'Ζ', tone: 'info', stat: 'No accounts', line: 'The site publishes no account list right now.' });
+  const k = isObj(home) && isObj(home.kalshi) ? home.kalshi : null, kb = k ? num(k.balance) : null, kw = k ? num(k.week_pnl) : null;
+  if (k && (kb != null || kw != null)) out.push({ id: 'kalshi', title: 'Kalshi', glyph: 'Κ', tone: kw != null && kw < 0 ? 'watch' : 'calm', stat: kw != null ? `${signed(kw)} this week` : `${fmtUsd(kb)} balance`,
+    line: `${kb != null ? 'Balance ' + fmtUsd(kb) + '. ' : ''}${k.running === false ? 'The bot reports it is stopped.' : 'Real money, the prediction bot.'}` });
+  else out.push({ id: 'kalshi', title: 'Kalshi', glyph: 'Κ', tone: 'info', stat: 'No feed here', line: 'The Kalshi bot is not in this site\'s data yet. The Kalshi app has its own feed.' });
+  const dateOf = (v) => { const s = txt(v, 30); return /^\d{4}-\d{2}-\d{2}/.test(s) ? s.slice(0, 10) : ''; };
+  const evs = isObj(planner) && Array.isArray(planner.events) ? planner.events.filter(isObj) : [], tasks = isObj(planner) && Array.isArray(planner.tasks) ? planner.tasks.filter(isObj) : [];
+  const today = evs.filter((e) => dateOf(e.date) === day), next = evs.filter((e) => dateOf(e.date) === tomorrow);
+  if (isObj(planner)) out.push({ id: 'events', title: 'Calendar', glyph: 'Ε', tone: today.length ? 'watch' : 'calm', stat: today.length ? `${today.length} today` : 'Clear today',
+    line: today.length ? today.slice(0, 2).map((e) => txt(e.title || e.name, 40)).join(' · ') : next.length ? `Tomorrow: ${txt(next[0].title || next[0].name, 40)}` : 'Nothing on your calendar until later.' });
+  else out.push({ id: 'events', title: 'Calendar', glyph: 'Ε', tone: 'info', stat: 'No planner', line: 'Open the Planner on this phone and its events show here.' });
+  const open = tasks.filter((t) => !t.done && dateOf(t.date) && dateOf(t.date) <= day), done = tasks.filter((t) => t.done && dateOf(t.date) === day);
+  if (isObj(planner)) out.push({ id: 'todos', title: 'To-dos', glyph: 'Τ', tone: open.length > 3 ? 'watch' : 'calm', stat: open.length ? `${open.length} open` : 'All clear',
+    line: open.length ? open.slice(0, 2).map((t) => txt(t.title || t.name, 40)).join(' · ') : `${done.length} done today. Nothing is waiting.` });
+  else out.push({ id: 'todos', title: 'To-dos', glyph: 'Τ', tone: 'info', stat: 'No planner', line: 'Your tasks show here once the Planner has some.' });
+  return out;
+}
+
 export const oath = () => [
   { id: 'plan', text: 'I follow the plan: no manual orders' },
   { id: 'revenge', text: 'No revenge trade, whatever happens' },
@@ -139,4 +169,54 @@ export function streak(sealed, today) {
   while (!isMarket(d)) d = addDays(d, -1);
   while (s[d] && isMarket(d)) { cur++; d = addDays(d, -1); while (!isMarket(d)) d = addDays(d, -1); }
   return { cur, best: Math.max(best, cur) };
+}
+
+// ------------------------------------------------------------------------------------------------ JOB 4+5 follow-up (2026-11-04): money today
+// moneyToday (the drawdown left as "$X of $max loss", the room, the pace), riskPlan (what size the room allows at four stop widths),
+// tradingDay (the bot's day as a timeline with a countdown), newsGate (the next release and what to do about it). Pure, never a signal.
+
+const MICRO = { pv: 2, comm: 1.9, slip: 0.5 };       // MNQ: $2 a point, $1.90 round turn, 2 ticks of slip (research/lit/mffu_rules.json)
+
+/** the eval in money words: drawdown left of the max loss, the room, the pace to pass inside the 10 sessions of 2 weeks */
+export function moneyToday(ev) {
+  if (!ev) return { has: false };
+  const mll = ev.mll || 2000, room = Math.max(0, ev.room), frac = Math.max(0, Math.min(1, room / mll));
+  const total = ev.sessions || 10, done = ev.session != null ? ev.session : null, left = done != null ? Math.max(1, total - done) : null;
+  const tone = room <= 0 ? 'storm' : frac < 0.25 ? 'storm' : frac < 0.55 ? 'watch' : 'calm';
+  return { has: true, room, mll, frac, tone, balance: ev.balance, floor: ev.floor, locked: ev.locked, toTarget: Math.max(0, ev.toTarget), session: done, sessions: total, left,
+    perSession: left ? Math.max(0, ev.toTarget) / left : null,
+    ddText: room > mll ? `Drawdown left ${fmtUsd(room)} (floor locked, max loss ${fmtUsd(mll)})` : `Drawdown left ${fmtUsd(room)} of ${fmtUsd(mll)} max loss`,
+    paceText: left != null ? (ev.toTarget <= 0 ? 'The target is reached.' : `${fmtUsd(ev.toTarget)} to the target: about ${fmtUsd(Math.max(0, ev.toTarget) / left)} a session over the ${left} session${left === 1 ? '' : 's'} left in the 2 weeks.`) : `${fmtUsd(ev.toTarget)} to the target.` };
+}
+
+/** what the room allows: one stop-out may cost `frac` of the room (the bot uses 0.8 in an eval; a person should keep it lower), at four stop widths */
+export function riskPlan(ev, frac = 0.4) {
+  if (!ev) return { has: false, rows: [] };
+  const budget = Math.max(0, ev.room) * frac, rows = [10, 20, 30, 40].map((pts) => {
+    const loss1 = (pts + MICRO.slip) * MICRO.pv + MICRO.comm, n = Math.floor(budget / loss1);
+    return { pts, n, risk: n * loss1, win2: n * (pts * 2 * MICRO.pv - MICRO.comm), roomAfter: ev.room - n * loss1 };
+  });
+  return { has: true, frac, budget, rows, text: `One stop-out may cost ${fmtUsd(budget)} (${Math.round(frac * 100)}% of the ${fmtUsd(ev.room)} room). The wider the stop, the fewer micros: size follows the stop.` };
+}
+
+const seg = (id, name, a, b, kind) => ({ id, name, a, b, kind });
+/** the bot's day, ET: segments for a 24 h bar, where "now" is, and one plain line with the countdown (weekends: closed) */
+export function tradingDay(p) {
+  const segs = [seg('asia', 'Asia', 0, 2, 'rest'), seg('window', 'Bot entry window', 2, 15.5, 'go'), seg('manage', 'Manage / flat 15:55', 15.5, 15 + 55 / 60, 'warn'), seg('after', 'After the close', 15 + 55 / 60, 17, 'rest'), seg('break', 'Break', 17, 18, 'rest'), seg('globex', 'Globex', 18, 24, 'rest')];
+  const wk = p.dow >= 1 && p.dow <= 5, h = p.h;
+  let line, state;
+  if (!wk && !(p.dow === 0 && h >= 18)) { state = 'closed'; line = 'The market is closed for the weekend. The bot waits for Sunday 18:00 ET.'; }
+  else if (h >= 2 && h < 15.5 && wk) { state = 'open'; line = `The bot may enter now. The window closes at 15:30 ET, in ${minsText((15.5 - h) * 60)}. One trade a day at most.`; }
+  else if (h >= 15.5 && h < 15 + 55 / 60 && wk) { state = 'manage'; line = `No new entries. Any open trade is closed by 15:55 ET, in ${minsText((15 + 55 / 60 - h) * 60)}.`; }
+  else if (h < 2 && wk) { state = 'before'; line = `The entry window opens at 02:00 ET, in ${minsText((2 - h) * 60)}. Check the drawdown and the news first.`; }
+  else { state = 'after'; line = h < 18 ? 'The day is over. Flat. The next window opens at 02:00 ET.' : 'Futures are open but the bot takes no entries until 02:00 ET.'; }
+  return { segs, now: h, state, line };
+}
+
+/** the next release from the Council: what it says and the one rule for it (half size or flat, never a guess at direction) */
+export function newsGate(pan) {
+  const ath = godOf(pan, 'athena'), when = readingOf(ath), caution = isObj(pan) && isObj(pan.council) ? txt(pan.council.caution, 200) : '';
+  if (!when && !caution) return { has: false, tone: 'info', line: 'No calendar reading right now. Check the news before you trade.' };
+  const today = /today/i.test(when), tomorrow = /tomorrow/i.test(when);
+  return { has: true, tone: today ? 'storm' : tomorrow ? 'watch' : 'calm', when, line: `${caution || 'Next high-impact release: ' + when + '.'} ${today ? 'It is today: be flat or half size for 15 minutes either side.' : 'Spreads jump and stops slip around releases: half size or wait 15 minutes.'}` };
 }

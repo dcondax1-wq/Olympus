@@ -82,6 +82,16 @@ there, not here.
 | Infrastructure | PC bot, cloud monitor, NinjaTrader, phone feed, TradingView, PC-off options |
 | Open work | Dashboard, Pine port, the Dec 2026 roll |
 | One chat | **Any change**: where each project lives, how it ships, its tests (start here) |
+| OLYMPUS apps and tools | Any OLYMPUS app (folder, data it reads, test), effects, transitions, intros, Cities, Kalshi City, Jarvis bots / voice, Bridge, PC care / storage / fresh start |
+
+## OLYMPUS and the PCs (2026-11-04; the map is in CLAUDE_REFERENCE "OLYMPUS apps and tools")
+- Apps are `tools/web_public/<id>/`: 30 in the list (18 Trading, 6 Money, 6 Life), all wired in `jarvis/apps.js`; recount with `python tools/apps_list_build.py --check`;
+  after any edit of `apps.js` / `olympus.js` run `python tools/apps_list_build.py` (rebuilds `olympus/apps-list.js`). Each reads only published JSON; test `tests.test_<app>_page` (+ `tests.test_olympus_kit`).
+- Shared: effects `olympus/fx-*.js` (`test_olympus_fx`), sound beds + `OLYMPUS.sound/cue`, a11y `olympus/a11y.js`, `jarvis/transitions.js`, `olympus/intro-app.js`, Bridge `tools/bridge_*.py` (`test_bridge_page`, `test_bridge_ingest`).
+- Obsidian starter vault: `python tools/obsidian_pack.py` (`mind/starter/`; `test_obsidian_pack`).
+- Before a release: `python -X utf8 tests/run_gate.py` (GO / NO-GO; `--fast`, `--only`); one area: `tests/run_area.py <area>`. New app: the "Wiring checklist for a new app" in the reference.
+- PC (Windows, scripts tested with pwsh on Linux): `PC_CARE.bat` (power plan per role + health line), `STATUS.bat` (six-line health card), `CLEAN_STORAGE.bat`, `FRESH_START.bat`; undo `UNDO_PC_TUNE.bat`; tests `test_pc_care`, `test_clean_storage`, `test_win_scripts`.
+- **Agents never edit `sw.js`, `tools/build_web_dashboard.py`, `jarvis/apps.js` or the `olympus.js` APPS table: the lead wires them (the agent's report lists the "wiring needed") and bumps the workers.**
 
 ## Most-used commands (run from the repo root)
 - `python -X utf8 -m tests.test_lit_live`: replays every 2026 session through the live loop (must stay identical).

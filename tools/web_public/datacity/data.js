@@ -111,6 +111,8 @@ export function decode(city, plugins = [], synth = 0) {
       byId.set(b.id, b);
       buildings.push(b);
     });
+    // the compact rows are decoded: let the raw arrays go (about 30k small arrays, several MB of heap on a phone)
+    city.skyline = { cols: city.skyline.cols, rows: [], decoded: rows.length };
   }
   const sections = [];
   const meta = city.sections || Object.entries(DEFAULT_SECTIONS).map(([key, [name, color]]) => ({ key, name, color, kind: 'combos' }));

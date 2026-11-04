@@ -22,7 +22,7 @@
 :root {
   color-scheme: dark;
   --page: #07080c; --surface: #10131a; --surface-2: #161a23; --surface-3: #1e2330;
-  --ink: #eef1f8; --ink-2: #a9b1c3; --muted: #6f788b;
+  --ink: #eef1f8; --ink-2: #a9b1c3; --muted: #8590a7;
   --line: rgba(160, 170, 220, .10); --hover: rgba(238, 241, 248, .06);
   --accent: #6d7cff; --accent-2: #3ee0c8; --good: #2ee59d; --good-ink: #4ff0ae; --bad: #ff5a7a; --warn: #f7b955; --gold: #f2c35b;
   --bsl: #ff9b5c; --ssl: #6d9bff;
@@ -145,7 +145,7 @@ button { cursor: pointer; }
 .toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 18px 0 12px; }
 
 /* controls */
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 15px; border-radius: 12px; font-weight: 600; font-size: 13px; white-space: nowrap; user-select: none;
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 15px; border-radius: 12px; font-weight: 600; font-size: 13px; white-space: nowrap; -webkit-user-select: none; user-select: none;
   background: linear-gradient(180deg, #232837, var(--surface-2)); border: 1px solid rgba(238,241,248,.1); box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 1px 2px rgba(0,0,0,.3);
   transition: transform .12s var(--ease), border-color .18s, box-shadow .22s; }
 .btn:hover { border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
@@ -203,7 +203,7 @@ table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
 th { text-align: left; font: 600 11px var(--sans); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); padding: 9px 10px; border-bottom: 1px solid var(--line); background: rgba(16,19,26,.95); position: sticky; top: 0; white-space: nowrap; }
 td { padding: 9px 10px; border-bottom: 1px solid rgba(238,241,248,.05); white-space: nowrap; }
 tr:hover td { background: color-mix(in srgb, var(--accent) 6%, transparent); }
-th.sort { cursor: pointer; user-select: none; } th.sort.on { color: var(--ink); }
+th.sort { cursor: pointer; -webkit-user-select: none; user-select: none; } th.sort.on { color: var(--ink); }
 .sticky { position: sticky; left: 0; z-index: 1; background: rgba(16,19,26,.97); max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
 th.sticky { z-index: 2; }
 
@@ -994,7 +994,7 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
   .acc-grid i { height: 36px; }
 }
 </style>
-<link rel="stylesheet" href="space.css?v=1"><link rel="stylesheet" href="mission.css?v=1"><link rel="stylesheet" href="polish.css?v=1"><link rel="stylesheet" href="zenith.css?v=5">
+<link rel="stylesheet" href="space.css?v=1"><link rel="stylesheet" href="mission.css?v=1"><link rel="stylesheet" href="polish.css?v=1"><link rel="stylesheet" href="zenith.css?v=6">
 <!-- OLYMPUS theme (olympus/themes.js; the owner picks it in Jarvis: Look, OLYMPUS theme; key 'olympus.theme'): the shared --oly-*
      tokens, and on Zenith's own dark look its page and surfaces in the theme's colours (its accent stays Zenith's own). Loaded
      async, never waited on; the default theme changes nothing. -->
@@ -1006,7 +1006,7 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
       if (document.documentElement.getAttribute('data-theme') === 'light') return {};      /* Zenith's own light look stays its own */
       var o = { '--line': t.line, '--ink': t.text }; for (var k in Z) o[k] = T.mix(Z[k], k === '--page' ? t.bg : t.bg2, t.mix); return o; } });
   }
-  var s = document.createElement('script'); s.src = 'olympus/themes.js?v=o2'; s.async = true; s.onload = go; document.head.appendChild(s);
+  var s = document.createElement('script'); s.src = 'olympus/themes.js?v=o3'; s.async = true; s.onload = go; document.head.appendChild(s);
 })();</script>
 <script>
 /* Inside Jarvis (2026-11-01, owner: "on Jarvis I can switch between that mode [Jarvis], zenith mode with all of the
@@ -1814,7 +1814,7 @@ const STEP_L = ['Sweep', 'IFVG', 'Order', 'Trade', 'Done'];
 
 // ===================================================================== 3D layer (fx.js: three.js views, particle field, card auras, tap sparks)
 let FX = null, FXP = null;
-const FXV = 'a7bf6810';
+const FXV = '1401cb03';
 // Deep space by default (owner 2026-10-29: "make it look cooler ... almost like 3D space"; before: calm, OFF since 2026-10-25).
 // One-time: an 'off' saved under the calm default is cleared once so the phone opens on the space scene; a choice made after
 // this version is kept. Settings > 3D effects: Max / Lite / Off (Off = the static CSS sky). Automated browsers (tests) start
@@ -4621,10 +4621,10 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.se
 </script>
 <script src="extras.js?v=2" defer></script>
 <script src="hub.js?v=9" defer></script>
-<script src="more.js?v=4" defer></script>
+<script src="more.js?v=5" defer></script>
 <script src="live.js?v=2" defer></script>
 <script src="intel.js?v=1" defer></script>
-<script src="tradepics.js?v=2" defer></script>
+<script src="tradepics.js?v=3" defer></script>
 <script src="brain.js?v=6" defer></script>
 <script src="alerts.js?v=6" defer></script><script src="ai.js?v=2" defer></script>
 <script src="perfcore.js?v=1" defer></script>
@@ -4634,18 +4634,18 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.se
 <script src="scalecore.js?v=1" defer></script>
 <script src="scale.js?v=1" defer></script>
 <script src="moneycore.js?v=1" defer></script>
-<script src="goals.js?v=3" defer></script>
+<script src="goals.js?v=4" defer></script>
 <script src="launch.js?v=1" defer></script>
 <script src="features.js?v=2" defer></script>
 <script src="learning.js?v=1" defer></script>
 <script src="clean.js?v=3" defer></script>
 <script src="board.js?v=2" defer></script>
 <script src="real.js?v=2" defer></script>
-<script src="liveview.js?v=2" defer></script>
+<script src="liveview.js?v=3" defer></script>
 <script src="missioncore.js?v=2" defer></script>
 <script src="mission.js?v=1" defer></script>
 <script src="holo.js?v=6e1b6af9" defer></script>
-<script src="blitzcore.js?v=1" defer></script>
+<script src="blitzcore.js?v=2" defer></script>
 <script src="mindcore.js?v=1" defer></script>
 <script src="deckcore.js?v=1" defer></script>
 <script src="blitz.js?v=1" defer></script>
@@ -4657,7 +4657,14 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.se
 <script src="zenithcore.js?v=1" defer></script>
 <script src="zenith.js?v=1" defer></script>
 <script src="zenith_hero.js?v=2" defer></script>
-<script src="zenith_money.js?v=1" defer></script>
+<script src="launcher.js?v=l1" defer></script>
+<script src="zenith_money.js?v=2" defer></script>
+<script src="moneynowcore.js?v=1" defer></script>
+<script src="moneynow.js?v=1" defer></script>
+<script src="sessioncore.js?v=1" defer></script>
+<script src="sessionday.js?v=1" defer></script>
+<script src="zenpagescore.js?v=1" defer></script>
+<script src="zenith_pages.js?v=1" defer></script>
 <script src="embed.js?v=1" defer></script>
 </body>
 </html>

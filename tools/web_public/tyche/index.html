@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#07060b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tyche">
+<link rel="manifest" href="manifest.webmanifest">
 <meta name="color-scheme" content="dark">
 <meta name="description" content="OLYMPUS Tyche: the Kalshi bot's bets as a 3D wheel of fortune. Open bets orbit as coins, settled ones fall into the gold fountain or the dark sand, the bankroll rises as a column of light. Read-only.">
 <title>OLYMPUS Tyche</title>
@@ -12,11 +17,14 @@
 <!-- TYCHE (owner 2026-11-03): the Kalshi bot's kalshi.json (docs/KALSHI_PUBLISH.md) as a 3D fortune view. Modules: data.js (the
      feed and the Model), demo.js (the demo feed), scene.js + wheel.js / pools.js / scales.js / glow.js (three.js), hud.js (the
      DOM), main.js (boot, polling, the frame loop). Read-only: it never talks to Kalshi and places nothing. -->
-<link rel="stylesheet" href="../olympus/olympus.css?v=o2">
-<script src="../olympus/themes.js?v=o2"></script>
-<script src="../olympus/olympus.js?v=o2" data-app="tyche"></script>
-<link rel="stylesheet" href="tyche.css?v=t4">
-<script type="module" src="main.js?v=t4"></script>
+<link rel="stylesheet" href="../olympus/olympus.css?v=o3">
+<script src="../olympus/themes.js?v=o3"></script>
+<script src="../olympus/olympus.js?v=o3" data-app="tyche"></script>
+<script src="../olympus/a11y.js" defer></script>
+<script src="../olympus/intro-app.js?v=i1" defer></script>
+<script src="../olympus/fx-core.js?v=f1"></script><script src="../olympus/fx-ui.js?v=f1"></script><script src="../olympus/fx-text.js?v=f1"></script><script src="../olympus/fx-burst.js?v=f1"></script>
+<link rel="stylesheet" href="tyche.css?v=t6">
+<script type="module" src="main.js?v=t6"></script>
 </head>
 <body>
 <canvas id="gl" aria-label="The Kalshi bot's bets in 3D: open bets orbit a golden wheel as coins, settled bets fall into a gold fountain (wins) or dark sand (losses), the bankroll is a column of light. Drag to turn, double tap to reset, tap a coin for its numbers."></canvas>
@@ -56,7 +64,7 @@
   </div>
   <div id="p-wheel" class="glass panel" data-view="wheel">
     <div class="kelly">
-      <label for="kelly"><span class="lbl">Kelly</span><b id="k-frac">¼</b></label>
+      <label for="kelly" title="Kelly: how much of the money to bet each time. A quarter is the careful choice; full is the most aggressive."><span class="lbl">Kelly</span><b id="k-frac">¼</b></label>
       <input id="kelly" type="range" min="0" max="2" step="1" value="0" aria-label="Kelly fraction: a quarter, a half or full" aria-valuetext="a quarter Kelly">
       <div class="ticks" aria-hidden="true"><span>¼</span><span>½</span><span>Full</span></div>
     </div>
@@ -68,21 +76,34 @@
     <p class="small">Wins fall into the gold fountain, losses dissolve into the sand. The column is the bankroll, its equity curve wound round it<span id="pl-src"></span>.</p>
   </div>
   <div id="p-scales" class="glass panel" data-view="scales" hidden>
-    <p class="duo"><span><i class="lbl">Said</i><b id="sc-said">–</b></span><span><i class="lbl">Won</i><b id="sc-won">–</b></span><span><i class="lbl">Gap</i><b id="sc-gap">–</b></span></p>
+    <p class="duo"><span><i class="lbl" title="what the bot said its chance was">Said</i><b id="sc-said">–</b></span><span><i class="lbl" title="how often it actually won">Won</i><b id="sc-won">–</b></span><span><i class="lbl" title="the difference: the closer to zero, the more honest the bot's chances are">Gap</i><b id="sc-gap">–</b></span></p>
     <p id="sc-text" class="small"></p>
     <p id="sc-best" class="small"></p>
   </div>
   <div id="p-bank" class="glass panel" data-view="bank" hidden>
     <svg id="bk-svg" class="bk" viewBox="0 0 320 118" role="img" aria-label="The bankroll so far (gold), and the range of where the bot's own settled bets could take it next (mint)" preserveAspectRatio="none"></svg>
-    <p class="duo"><span><i class="lbl">Risk of ruin</i><b id="bk-ruin" data-sign="flat">–</b></span><span><i class="lbl">Lose half</i><b id="bk-half" data-sign="flat">–</b></span><span><i class="lbl">Median next 60</i><b id="bk-med" data-sign="flat">–</b></span></p>
+    <p class="duo"><span><i class="lbl" title="the chance of losing the whole bankroll, from many simulated futures">Risk of ruin</i><b id="bk-ruin" data-sign="flat">–</b></span><span><i class="lbl" title="the chance of losing half the bankroll along the way">Lose half</i><b id="bk-half" data-sign="flat">–</b></span><span><i class="lbl" title="the middle result of many simulated futures of the next 60 bets">Median next 60</i><b id="bk-med" data-sign="flat">–</b></span></p>
     <p id="bk-text" class="small"></p>
     <p id="bk-size" class="small"></p>
+  </div>
+  <div id="p-fortune" class="glass panel" data-view="fortune" hidden>
+    <div id="f-seg" class="seg" role="group" aria-label="Fortune sections"></div>
+    <div id="f-body" class="fbody" aria-live="polite"></div>
+    <svg id="f-cmp" class="cmp" viewBox="0 0 320 86" role="img" aria-label="The real bankroll (gold) and the same bets at half the stake (mint)" preserveAspectRatio="none" hidden></svg>
+  </div>
+  <div id="p-cash" class="glass panel" data-view="cash" hidden>
+    <p id="c-rest" class="cx-rest" hidden></p>
+    <div id="c-seg" class="seg" role="group" aria-label="Cash sections"></div>
+    <div id="c-body" class="fbody" aria-live="polite"></div>
+    <button id="c-copy" class="cx-copy" type="button">Copy my money line</button>
   </div>
   <nav class="tabs" role="tablist" aria-label="Views">
     <button type="button" role="tab" data-view="wheel" aria-selected="true">Wheel</button>
     <button type="button" role="tab" data-view="pools" aria-selected="false">Pools</button>
     <button type="button" role="tab" data-view="scales" aria-selected="false">Scales</button>
     <button type="button" role="tab" data-view="bank" aria-selected="false">Bank</button>
+    <button type="button" role="tab" data-view="fortune" aria-selected="false">Fortune</button>
+    <button type="button" role="tab" data-view="cash" aria-selected="false">Cash</button>
   </nav>
 </section>
 

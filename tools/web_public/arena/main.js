@@ -6,6 +6,8 @@ import { openLedger } from './ledger.js';
 import * as HUD from './hud.js';
 import { evaluateWeek, history as bossHistory, bossEvents, bossStats, weekStart, featured } from './bosses.js';
 import { trophies as makeTrophies } from './trophies.js';
+import * as X from './extras.js';
+import { desk } from './rhythm.js';
 
 const O = window.OLYMPUS || null;
 const JARVIS_ORIGIN = 'https://demetrades2000-coder.github.io';
@@ -85,13 +87,17 @@ function render() {
   postCard();
 }
 
+// the record: sections that read the ledger (extras.js), appended under each sheet's own content; a failure there never hides the sheet
+function more(fn) { try { return fn(); } catch (_) { return null; } }
+const flat = (...a) => a.flat(3).filter(Boolean);
 function build(tab) {
-  if (tab === 'quests') return HUD.renderQuests(S.quests, S.results, S.R);
+  if (tab === 'quests') return flat(HUD.renderQuests(S.quests, S.results, S.R), more(() => X.weekBoard(S.bosses, S.R)));
   if (tab === 'labours') return HUD.renderLabours(S.sc, openLabour);
-  if (tab === 'bosses') return HUD.renderBosses(S.bosses, S.R, openBoss);
-  if (tab === 'trophies') return HUD.renderTrophies(S.trophies, openTrophy);
+  if (tab === 'bosses') return flat(HUD.renderBosses(S.bosses, S.R, openBoss), more(() => desk(S.ledger.events(), S.R, S.today)));
+  if (tab === 'trophies') return flat(more(() => X.shelf(S.trophies)), HUD.renderTrophies(S.trophies, openTrophy));
   if (tab === 'ranks') return HUD.renderLadder(S.sc, S.R);
-  return HUD.renderLog(S.sc, { sources: sourcesInfo() }, S.R, exportFile);
+  const ev = S.ledger.events();
+  return flat(HUD.renderLog(S.sc, { sources: sourcesInfo() }, S.R, exportFile), more(() => X.xpHistory(ev, S.R, S.today)), more(() => X.calendar(ev, S.R, S.today)), more(() => X.versusYou(ev, S.R, S.today)));
 }
 function openLabour(id) { const l = S.sc.labours.find((x) => x.id === id); if (l) HUD.showLabour(l, S.R); }
 function openTrophy(id) { const t = S.trophies.find((x) => x.id === id); if (t) HUD.showTrophy(t); }
@@ -219,6 +225,8 @@ window.ARENA = {
     streaks: S.sc && Object.fromEntries(Object.values(S.sc.streaks).map((s) => [s.id, s.cur])), levelups: S.levelups,
     scene: S.scene ? S.scene.stats() : null, linked: S.linked, error: S.error, exported: S.exported || 0, banner: S.banner || '', bySrc: S.sc && S.sc.bySrc }),
   exportText: () => exportText(),
+  /** the boss fight timeline (strikes, flash, shake, the crowd up), as played when a boss is settled */
+  bossFight: () => { if (S.scene) S.scene.bossFight(); },
   card: () => card(),
   /** the rank-up frozen at its peak (lightning + burst + banner) for screenshots; hold(false) ends it */
   hold: (on = true) => {
