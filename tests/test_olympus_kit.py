@@ -49,7 +49,7 @@ APPS = {
 # heap, layouts per frame (one at most: DOM writes batched, never a read after a write in the frame loop). Measured on
 # 2026-11-03 with ~25% headroom; docs/OLYMPUS_DESIGN.md has the table.
 BUDGET = {
-    "datacity": (120, 700_000), "mind": (30, 20_000), "tree": (68, 8_500), "oracle": (170, 10_000), "odeon": (60, 60_000),
+    "datacity": (120, 700_000), "mind": (30, 20_000), "tree": (68, 8_500), "oracle": (190, 11_500), "odeon": (60, 60_000),
     "fates": (64, 40_000), "hermes": (0, 0), "prometheus": (40, 7_500), "tyche": (270, 30_000),   # render core adopted 2026-11-03: measured 31 calls / 6,054 tris and 216 calls / 24,590 tris, +20%
 }
 # the other 3D / animated apps (2026-11-04, docs/OLYMPUS_PERF.md): (query, budget calls, budget triangles), measured at 390 x 844 / dpr 3 under

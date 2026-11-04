@@ -6,13 +6,16 @@
 // switched on once by itself when frames run slow; prefers-reduced-motion stops the motion. applyTheme(tokens) takes an
 // OLYMPUS theme (window.OLYMPUS.theme() / onTheme, when the kit has them).
 import * as THREE from '../jarvis/three.module.min.js';
-import { fetchLive, fetchSite, normalize, FRESH_S } from './data.js';
+import { fetchLive, fetchSite, normalize, loadProphecy, FRESH_S } from './data.js';
 import { loadDemo, docAt, span, todayFx } from './demo.js';
 import { Scene } from './scene.js';
 import { Hud, usd } from './hud.js';
 import { Ladder } from './ladder.js';
 import { Ribbon, ribbonOf } from './events.js';
 import { heatRows, waitingOf } from './heat.js';
+import { OracleSheet } from './sheet.js';
+import { prophecyRows } from './prophecy.js';
+import { sweepCount, dayTypeOf, heatHistory, alertsOf } from './insights.js';
 
 const O = window.OLYMPUS || null;          // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
 const QUALITY_KEY = 'oracle.quality';      // the old per-app key: read only when the kit is missing
@@ -35,6 +38,9 @@ const hud = new Hud();
 hud.quality(state.quality);
 const ladder = new Ladder(document.getElementById('ladder'));
 const ribbon = new Ribbon(document.getElementById('events'), document.getElementById('ev-empty'));
+let prophecy = null;                                   // prophecy.json (tools/oracle_prophecy_stats.py): the bot's own stats per level family
+const sheet = new OracleSheet(() => startToday());
+loadProphecy().then((s) => { prophecy = s; if (state.world) sheet.render(state.world, prophecy); });
 let scene = null;
 try {
   scene = new Scene(THREE, document.getElementById('gl'), { quality: state.quality, reduced });
@@ -88,6 +94,7 @@ function show(w, mode) {
   state.mode = mode;
   if (scene) scene.setWorld(w, { strikes: !first });
   hud.render(w);
+  sheet.render(w, prophecy);
   ribbon.render(ribbonOf(w.log, w.t));
   chip();
   hud.tick(nowS());
@@ -101,6 +108,7 @@ function chip() {
   hud.mode(state.mode, state.mode === 'demo' ? w : { ...w, age_s: Math.max(0, Math.round(Date.now() / 1000 - w.t)) },
     { day: state.demo && (state.demo.today ? 'TODAY' : state.demo.day), canLeave: !!(state.live || state.site) });
   document.getElementById('today').hidden = state.mode === 'demo' || !state.canToday;
+  sheet.setCanReplay(state.mode !== 'demo' && state.canToday);
 }
 
 /** The freshest real world, or the demo when there is none (or the owner asked for the replay). */
@@ -171,8 +179,27 @@ function play(fx) {
   if (state.demo !== fx) { state.demo = fx; state.span = span(fx); state.demoT = state.span.from; }
   state.mode = 'demo';
   state.world = null;
+  drawTicks();
   setPlaying(true);
   demoStep();
+}
+
+/** the session's moments on the scrubber: a tick for every sweep taken, the entry and the exit (the replay slider reads like a timeline) */
+function drawTicks() {
+  const box = document.getElementById('scrub-ticks'), sp = state.span, fx = state.demo;
+  if (!box) return;
+  box.replaceChildren();
+  if (!sp || !fx) return;
+  for (const r of fx.log || []) {
+    if (!(r.t >= sp.from && r.t <= sp.to)) continue;
+    const k = r.kind === 'sweep' && /✓/.test(r.text) ? 'sweep' : r.kind === 'entry' || r.kind === 'exit' ? r.kind : null;
+    if (!k) continue;
+    const i = document.createElement('i');
+    i.className = 'k-' + k;
+    i.style.left = (((r.t - sp.from) / (sp.to - sp.from)) * 100).toFixed(2) + '%';
+    i.title = `${r.hm} ${k}`;
+    box.append(i);
+  }
 }
 
 function setPlaying(on) {
@@ -299,8 +326,16 @@ window.oracle = {
     if (scene) scene.scene.traverse((o) => { if (o.isLight) out.push('light'); if (o.isInstancedMesh) out.push('instanced'); if (o.material && o.material.isMeshPhysicalMaterial) out.push('physical'); });
     return out;
   },
+  /** the temple's atmosphere (tests, screenshots): is it in the scene, and the camera (az, el in radians, zoom) */
+  get temple() { return scene && scene.temple ? { on: scene.temple.g.visible, lite: scene.temple.lite, flames: scene.temple.flames.geometry.drawRange.count, smoke: scene.temple.smoke.geometry.drawRange.count, dust: scene.temple.dust.geometry.drawRange.count, shafts: scene.temple.shafts.filter((m) => m.visible).length, fog: scene.temple.fog.filter((m) => m.visible).length } : null; },
+  setTemple(on) { if (scene && scene.temple) scene.temple.g.visible = !!on; },
+  camera(az, el, zoom) { if (scene) Object.assign(scene.rig, { az, el, zoom, idle: 0, vaz: 0 }); },
   get heat3d() { return scene ? scene.market.heat() : []; },
   get waiting() { return waitingOf(state.world, null); },
+  /** the Prophecy sheet's numbers (tests): the odds per open level, the day type, the sweep counter, the heat history, the alerts */
+  get prophecy() { return prophecyRows(state.world, prophecy); },
+  get ticks() { return [...document.querySelectorAll('#scrub-ticks i')].map((e) => e.className); },
+  get insights() { const w = state.world; return { day: dayTypeOf(w), sweeps: sweepCount(w), heat: heatHistory(w), alerts: alertsOf(w), stats: !!prophecy }; },
   get arena() { return scene ? { blips: scene.arena.blips, passes: scene.rc.passes(), quality: scene.rc.quality(), stats: scene.rc.stats() } : null; },
   refresh: () => refresh(true),
   applyTheme,

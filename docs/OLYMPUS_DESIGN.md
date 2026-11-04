@@ -242,3 +242,34 @@ and on the `storage` event, so an app framed in Jarvis changes live and the othe
   composited layer of fine scanlines + SVG film grain, no animation, never a tap, so the perf budgets hold.
 - **Adding a theme**: one entry in `THEMES` with every token (+ `jarvis`, + `stage` if light). The test lists any token
   missing and checks WCAG AA (4.5:1) for the text of every theme on its page and glass (the light one everywhere it is read).
+
+## Oracle and Odeon overhaul (2026-11-04, owner: "apps look Play-Doh / blank, a ton of features and effects")
+
+Both apps already ran on the render core (ACES, environment light, bloom, MSAA) with marble, gold and neon from `materials.js`. This pass adds
+the atmosphere that was missing (fire, smoke, mist, shafts, contact shadows) and a layer of real features on each. The kit's own
+effects library (`olympus/fx-*.js`) had not landed when this started, so the effects live in two app-local modules that can be swapped
+for it later. Nothing here trades, writes or calls out: no new address, no `innerHTML`, texts only through `textContent`.
+
+| App | New module | What it adds |
+|---|---|---|
+| Oracle | `temple.js` | Four bronze braziers (brushed bronze, instanced) with real flames (rising, flickering HDR particles that bloom) and a soft halo each; two bronze censers with incense smoke; dust drifting in the light; two additive light shafts from a high window; two scrolling ground-fog layers; baked contact shadows under every column, brazier and the stone (one instanced draw of alpha-map discs); a moon with its halo; one flickering warm point light |
+| Oracle | `prophecy.js` + `prophecy.json` | The **Prophecy** sheet (button in the top bar): odds per open level = how near price is x how often that level family has started one of the bot's 631 replayed trades (`tools/oracle_prophecy_stats.py` builds the file from `research/lab/backtest_live.json`; `--check` in the test). Relative odds that add up to 100, never a price forecast; a family with fewer than 30 trades is greyed |
+| Oracle | `insights.js` | Day type (sweep and reverse / trend up or down / range / quiet / forming), sweep counter (highs, lows, still open), level heat history (the three hottest levels over the last prices), alerts timeline (the Brain's log plus what is hot now). All pure functions of the World, so a replay at any second reads the same as live |
+| Oracle | `sheet.js`, `sheet.css` | The four tabs (Odds, Heat, Alerts, Day), the two chips on the weather row, a "Replay today's session" button; the replay scrubber now shows a tick for every sweep, the entry and the exit |
+| Odeon | `stage_fx.js` | The same family of effects inside the arena group (it follows the camera): flames with halos on the four skene torches (now bronze), two censers with incense, a low mist over the stone, contact shadows under the colonnade |
+| Odeon | `library.js` | The trade library: filters (Wins / Losses / LIT / ATLAS, setup, session Asia / London / NY AM / NY PM, month, R bin), a histogram of R multiples (tap a bar to keep that range), a stats line (win %, avg R, best, worst, PF), Play all (the reels shown), Best 5 (Highlights), Worst 5 |
+| Odeon | `compare.js` | Compare two trades: tap two reels, see both as R over minutes since the entry on one canvas, with a table where the better number of each row is lit |
+| Odeon | `share.js` | Share card: a 1080 x 1350 PNG of the trade (tape, entry / stop / target, result, MFE / MAE, time held) through the phone's share sheet, else a download |
+| Odeon | `ui.js` (`StageStats`) | The trade's numbers on the stage while it plays: R now, MFE, MAE, minutes held (4 times a second, text only) |
+
+**Tiers and fallbacks.** HD: every particle, both shafts, both fog layers, bloom on the flames. LITE (`?lite=1`, the HD/LITE button, the kit's
+`low`/`off`): half the flames and smoke, 90 dust motes, no shafts, one fog layer (Oracle); half the flames and smoke, no mist (Odeon). Reduced
+motion freezes the fire and smoke at one phase. A missing `prophecy.json` leaves the bars ranked by distance with a note; `temple.js` and
+`stage_fx.js` are wrapped in try / catch (the arena stands without them); no WebGL keeps Odeon's 2D stage and the library, the compare sheet
+and the share card (they are 2D); Odeon's demo fixture and Oracle's demo day keep both apps from ever being blank.
+
+**Draw-call budget** (per frame, kit measure, HD, 390 x 700): Oracle +13 calls and about +0.8k triangles for the atmosphere (kit test on software GL, A/B against the
+untouched tree: 133 -> 146 calls, 12,733 -> 13,493 triangles); Odeon +7 calls and +0.6k triangles (22 -> 29, 27,389 -> 27,975). `tests/test_olympus_kit.py` BUDGET was moved with it (Oracle 170 / 10,000 -> 190 / 11,500; Odeon 60 / 60,000 unchanged). On this software-GL machine the veil, pixel-ratio and Oracle triangle checks of the kit test fail with or without this change (same numbers on the untouched tree); on a GPU the Oracle frame measures about 90 calls / 10.7k triangles.
+
+**Tests**: `python -X utf8 -m tests.test_oracle_odeon_fx` (about 4 minutes on software GL; `--only=oracle|odeon`, `--no-browser`) covers
+everything added (43 checks). `test_oracle_page` passes 100/100 and `test_odeon_page`'s static parts pass 18/18 (the first lists the four new modules in `MODULES`); on a box with a load of 50 on 4 cores the browser parts need raised timeouts (every page 3 min, the film waits x5): Oracle's ran green that way, Odeon's film waits (0.17 frames a second, same on the untouched tree) did not finish, so rerun `tests.test_odeon_page` on a quiet machine.
