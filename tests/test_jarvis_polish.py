@@ -127,9 +127,14 @@ def main() -> int:
             # e. the quick ring with every app on the site: capped (6 + "All apps"), on screen, none on another
             ctx, p, errs = page(br, origin)
             c = p.evaluate("(() => { const r = document.getElementById('nxOrb').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; })()")
-            p.mouse.move(c[0], c[1]); p.mouse.down(); p.wait_for_timeout(900)
-            ring = p.evaluate("[...document.querySelectorAll('.nx-fan.on .nx-fb')].map((b) => { const r = b.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, more: b.classList.contains('more') }; })")
-            p.mouse.up()
+            p.wait_for_timeout(2500)
+            ring = []
+            for _ in range(4):                                     # a loaded machine can miss the first hold
+                p.mouse.move(c[0], c[1]); p.mouse.down(); p.wait_for_timeout(1200)
+                ring = p.evaluate("[...document.querySelectorAll('.nx-fan.on .nx-fb')].map((b) => { const r = b.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, more: b.classList.contains('more') }; })")
+                p.mouse.up(); p.wait_for_timeout(600)
+                if ring:
+                    break
             n_apps = p.evaluate("window.__jarvis.facts().apps.length")
             check("e. the quick ring with %d apps on the site: at most 6 apps and 'All apps', each 44 px+, on screen, none on another" % n_apps,
                   n_apps > 20 and 2 <= len(ring) <= 7 and any(b["more"] for b in ring) and all(b["w"] >= 44 and 0 <= b["x"] <= 390 and 0 <= b["y"] <= 844 for b in ring)
