@@ -50,13 +50,14 @@ APPS = {
 # to 'high' (jfx) and generous waits (a busy shared box needs a minute to load a page). Draw calls and triangles per frame (three.js renderer.info) are portable;
 # fps is not and is never judged. The budget is the measure + 25%, from `python tools/...`-free scratch runs of the same code path (docs/OLYMPUS_DESIGN.md has the
 # table with the measures). The JS heap (HEAP_MB) and layouts per frame (LAYOUTS_PER_FRAME: DOM writes batched, never a read after a write in the frame loop) hold for all.
+# arena: 2026-11-04 crowd LOD (olympus/scenery.js detail 'low' = 40 tris a spectator, 60% of the seats on a phone, a lighter arcade): HD phone scene ~258k -> 60k triangles.
 #   app: (page query, budget calls, budget triangles)     calls 0 = no three.js scene (the heap only)
 PERF = {
     "mind": ("", 44, 1_500), "tree": ("", 35, 60_000), "oracle": ("?demo=1", 200, 17_000), "odeon": ("?demo=1&autoplay=1", 53, 35_000), "fates": ("", 69, 26_500),
     "hermes": ("#week,demo", 0, 0), "prometheus": ("?demo=1", 66, 9_000), "tyche": ("?demo=1", 275, 30_700),
     "nemesis": ("?demo=1", 68, 30_000), "athena": ("?demo=1", 77, 7_900), "argus": ("?demo=1", 32, 118_500), "chronos": ("?demo=1", 84, 22_900),
     "cities": ("?demo=1", 27, 163_600), "kalshicity": ("?demo=1", 102, 52_200), "labyrinth": ("?demo=1", 60, 8_800), "hephaestus": ("?demo=1", 49, 5_500),
-    "pantheon": ("?demo=1", 108, 31_600), "arena": ("?demo=1", 180, 322_000), "forum": ("?demo=1", 140, 9_000), "plutus": ("?demo=1", 24, 6_000),
+    "pantheon": ("?demo=1", 108, 31_600), "arena": ("?demo=1", 150, 75_000), "forum": ("?demo=1", 140, 9_000), "plutus": ("?demo=1", 24, 6_000),
     "ares": ("?demo=1", 50, 7_800), "kalshi": ("?demo=1", 0, 0),
     "datacity": ("", 120, 700_000),                                 # its own tiers are held by DATACITY_TIERS below
 }
@@ -128,10 +129,15 @@ def test_static():
           all(f"{a}:" in js.split("var AMBIENT = {")[1].split("};")[0] for a in list(APPS) + list(MORE) + ["bridge"]) and "OLYMPUS_QUIET" in js
           and all(f"{b}: function" in read(os.path.join(KIT, "sfx.js")) for b in ("wind", "forge", "sea", "city", "forest", "crowd", "chimes", "space")))
     own = ["tree/app.js", "hermes/fx.js", "hermes/app.js", "tyche/main.js", "ares/ares.js", "plutus/plutus.js", "pantheon/pantheon.js", "forum/scene.js",
-           "kalshicity/cityscene.js", "mind/main.js", "athena/athena.js",
+           "kalshicity/cityscene.js", "mind/main.js", "athena/athena.js", "oracle/main.js", "odeon/app.js", "prometheus/forge.js", "argus/argus.js", "datacity/city.js",
            "fates/fates.js", "labyrinth/scene.js", "hephaestus/scene.js", "arena/scene.js", "nemesis/scene.js", "chronos/scene.js", "chronos/chronos.js"]
     miss = [f for f in own if "frameGap" not in read(os.path.join(WEB, *f.split("/")))]
     check("a. every own frame loop (tree, hermes x2, tyche, ares, plutus, pantheon, forum, kalshicity, mind, athena, fates, labyrinth, hephaestus, arena, nemesis, chronos x2) keeps the kit's frame gap (idle / saver / Off) and sleeps hidden or covered", not miss, miss)
+    scen = read(os.path.join(KIT, "scenery.js"))
+    check("a. the shared crowd is low-poly by default (detail 'low' = 40 triangles a spectator, 'full' keeps the capsules) and thins evenly (density); the Arena asks for 60% on a phone",
+          all(x in scen for x in ("detail = 'low'", "density = 1", "low ? new THREE.CylinderGeometry", "SphereGeometry(0.115, 4, 2)")) and "density: Math.min(innerWidth, innerHeight) < 600 ? 0.6 : 1" in read(os.path.join(WEB, "arena", "dress.js")))
+    off_tier = [f for f in ("oracle/scene.js", "odeon/scene.js", "fates/fates-scene.js") if "=== 'off' ? 'off'" not in read(os.path.join(WEB, *f.split("/")))]
+    check("a. oracle, odeon and fates: 3D Off is the core's 'off' tier (not forced to low by the software cap)", not off_tier, off_tier)
     ath = read(os.path.join(WEB, "athena", "athena.js"))
     check("a. athena's shelves are instanced (books, strips, scrolls, caps: InstancedMesh), tyche's 3D Off is the core's 'off' tier",
           ath.count("InstancedMesh(") == 1 and "instanceColor" in ath and "O.fx() === 'off' ? 'off'" in read(os.path.join(WEB, "tyche", "scene.js")))

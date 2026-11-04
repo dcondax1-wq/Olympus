@@ -262,7 +262,8 @@ function frame(ts) {
   last = ts;
   if (state.mode === 'demo' && state.demo) demoAdvance(dt);
   if (ts - lastTick > 1000) { lastTick = ts; hud.tick(nowS()); if (state.mode !== 'demo') chip(); }
-  if (!scene || (reduced && ts - lastDraw < 100)) return;
+  const gap = O && O.frameGap ? O.frameGap() : 0;                           // idle 30 / 15 fps, battery saver, 3D Off 2 fps (docs/OLYMPUS_PERF.md)
+  if (!scene || (reduced && ts - lastDraw < 100) || (gap && ts - lastDraw < gap - 3)) return;
   scene.frame(nowS(), (ts - lastDraw) / 1000);
   ladder.frame((p) => scene.screenY(p), ...scene.range(), state.world);
   lastDraw = ts;

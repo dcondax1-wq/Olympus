@@ -283,7 +283,9 @@ function showReels(on) {
 let last = 0;
 function frame(now) {
   requestAnimationFrame(frame);
-  if (O ? O.hidden() : document.hidden) { last = now; return; }     // hidden tab: no frame (the battery)
+  if (O ? O.hidden() : document.hidden) { last = now; return; }     // hidden / covered tab: no frame (the battery)
+  const gap = O && O.frameGap ? O.frameGap() : 0;                    // idle 30 / 15 fps, battery saver, 3D Off 2 fps (docs/OLYMPUS_PERF.md)
+  if (gap && last && now - last < gap - 3) return;
   const rawDt = last ? (now - last) / 1000 : 1 / 60;
   const dt = Math.min(0.1, rawDt);
   last = now;
