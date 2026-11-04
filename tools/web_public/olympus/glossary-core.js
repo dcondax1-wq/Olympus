@@ -4,7 +4,7 @@
 //   <script type="module" src="glossary.js"></script>          // glossary.js:  import { watch, pick } from '../olympus/glossary-core.js';
 //                                                              //               watch(pick(['IFVG', 'sweep', 'PF']));
 //
-// watch(terms) underlines the words it knows (a dotted line, <abbr class="gl" title="...">) and a tap on one shows the plain meaning in a
+// watch(terms) underlines the words it knows (a dotted line, <abbr class="oly-gl" title="...">) and a tap on one shows the plain meaning in a
 // small bubble (a title alone never shows on a phone). Safari 16 safe: no lookbehind. It only touches visible text, never an input, a script, a canvas or a word that
 // already has a title; at most 6 underlines per word on a page; it follows the page when the app redraws; it never changes what the page
 // says and never throws. Reduced motion: the bubble has no animation.
@@ -61,7 +61,7 @@ export function watch(terms, opts = {}) {
       frag = frag || document.createDocumentFragment();
       frag.append(document.createTextNode(text.slice(last, m.index)));
       const a = document.createElement('abbr');
-      a.className = 'gl'; a.title = terms[key]; a.setAttribute('data-gl', key); a.textContent = m[0];
+      a.className = 'oly-gl'; a.title = terms[key]; a.setAttribute('data-gl', key); a.textContent = m[0];
       frag.append(a);
       last = m.index + m[0].length;
     }
@@ -84,7 +84,7 @@ export function watch(terms, opts = {}) {
       const list = [];
       for (let n = walker.nextNode(); n; n = walker.nextNode()) list.push(n);
       // a word already underlined on the page counts toward the cap (a redraw replaces the nodes: recount from the DOM)
-      for (const k of names) count[k] = root.querySelectorAll(`abbr.gl[data-gl="${k}"]`).length;
+      for (const k of names) count[k] = root.querySelectorAll(`abbr.oly-gl[data-gl="${k}"]`).length;
       for (const n of list) wrapNode(n);
     } catch (e) { dbg.err = String(e && e.message || e); /* plain words are optional */ }
   }
@@ -93,7 +93,7 @@ export function watch(terms, opts = {}) {
   if (!document.getElementById('olyGlossaryCss')) {
     const st = document.createElement('style');
     st.id = 'olyGlossaryCss';
-    st.textContent = 'abbr.gl{text-decoration:underline dotted rgba(255,255,255,.55);text-underline-offset:3px;cursor:help}'
+    st.textContent = 'abbr.oly-gl{text-decoration:underline dotted rgba(255,255,255,.55);text-underline-offset:3px;cursor:help}'
       + '.oly-gl-tip{position:fixed;z-index:90;max-width:min(280px,calc(100vw - 24px));padding:9px 12px;border-radius:12px;pointer-events:none;'
       + 'background:rgba(9,11,22,.96);border:1px solid rgba(255,255,255,.22);color:#f3f5fb;font:600 13px/1.35 var(--oly-ui,system-ui,sans-serif);box-shadow:0 8px 28px rgba(0,0,0,.5)}'
       + '.oly-gl-tip b{display:block;margin-bottom:2px;font:800 11px/1 var(--oly-display,system-ui,sans-serif);letter-spacing:.1em;text-transform:uppercase;color:var(--oly-accent,#c084fc)}';
@@ -112,7 +112,7 @@ export function watch(terms, opts = {}) {
     clearTimeout(hideT); hideT = setTimeout(hide, 4500);
   }
   function hide() { if (bubble) { bubble.remove(); bubble = null; } }
-  const onTap = (e) => { const a = e.target && e.target.closest ? e.target.closest('abbr.gl') : null; if (a) show(a); else hide(); };
+  const onTap = (e) => { const a = e.target && e.target.closest ? e.target.closest('abbr.oly-gl') : null; if (a) show(a); else hide(); };
   document.addEventListener('click', onTap, true);        // capture + no preventDefault: the app still gets every tap
   const mo = typeof MutationObserver === 'function' ? new MutationObserver(later) : null;
   if (mo) mo.observe(root, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['hidden', 'aria-hidden'] });   // a panel un-hidden is a change too

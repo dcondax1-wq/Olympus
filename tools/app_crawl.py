@@ -110,7 +110,7 @@ PROBE = r"""(jargon) => {
   const text = (document.body.innerText || '');
   const bad = (text.match(/undefined|NaN|\[object|Infinity|null\b/g) || []).slice(0, 4);
   const loading = /^\s*(loading|building the|waking|please wait|connecting)/i.test(text.trim().slice(0, 40));          // the page's first words are still a loading message
-  const jg = jargon.filter((w) => new RegExp('(^|[^A-Za-z])' + w + '([^A-Za-z]|$)').test(text) && !document.querySelector('abbr.gl[data-gl="' + w + '"], abbr[title*="' + w + '" i], [title*="' + w + '" i]')).slice(0, 8);
+  const jg = jargon.filter((w) => new RegExp('(^|[^A-Za-z])' + w + '([^A-Za-z]|$)').test(text) && !document.querySelector('abbr.oly-gl[data-gl="' + w + '"], abbr[title*="' + w + '" i], [title*="' + w + '" i]')).slice(0, 8);
   const emptyLists = [...document.querySelectorAll('ul, ol, table tbody, [role=list], .list')].filter((e) => vis(e) && !e.children.length && !(e.textContent || '').trim()).slice(0, 4).map(key);
   const imgs = [...document.querySelectorAll('img')].filter((i) => vis(i) && !i.hasAttribute('alt')).length;
   return { cut, overflow: document.scrollingElement.scrollWidth > W + 1 || document.body.scrollWidth > W + 1, sw: document.scrollingElement.scrollWidth, small, clipped, overlaps, off, unnamed, low, bad, loading, jargon: jg, emptyLists, imgs,
