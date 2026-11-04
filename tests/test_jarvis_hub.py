@@ -1110,8 +1110,8 @@ def run_look(br, url):
 
 
 # the switch order: Jarvis, TRADING, LIFE, MONEY (apps.js BUILT_INS); the test site has Data City's folder, not the others'
-ORDER = ["home", "zenith", "oracle", "odeon", "fates", "datacity", "tree", "prometheus", "pantheon", "ares", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "bridge", "planner", "mind", "arena", "athena", "kalshicity", "kalshi", "tyche", "hermes", "plutus"]
-NOT_ON_SITE = ["oracle", "odeon", "fates", "tree", "prometheus", "pantheon", "ares", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "kalshicity", "bridge", "mind", "arena", "athena", "tyche", "hermes", "plutus"]
+ORDER = ["home", "zenith", "oracle", "odeon", "fates", "datacity", "tree", "prometheus", "pantheon", "ares", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "bridge", "inbox", "settings", "planner", "mind", "arena", "athena", "kalshicity", "kalshi", "tyche", "hermes", "plutus"]
+NOT_ON_SITE = ["oracle", "odeon", "fates", "tree", "prometheus", "pantheon", "ares", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "kalshicity", "bridge", "inbox", "settings", "mind", "arena", "athena", "tyche", "hermes", "plutus"]
 
 
 def run_olympus(br, url):
@@ -1345,10 +1345,10 @@ def run_switcher(br, url):
       name: (c.querySelector('.nx-nm b') || {}).textContent, val: (c.querySelector('.nx-val') || {}).textContent || '', now: c.classList.contains('now'),
       lines: [...c.querySelectorAll('.nx-ln')].map((l) => l.textContent) }))""")
     names = [c["name"] for c in cards]
-    check("n. tap: the switcher opens with JARVIS, then TRADING (NQ BOT, ORACLE, ODEON, FATES, DATA CITY, DAPHNE, PROMETHEUS, PANTHEON, ARES, FORUM, LABYRINTH, ARGUS, NEMESIS, CHRONOS, HEPHAESTUS, CITIES, BRIDGE), LIFE (CALENDAR, MIND, ARENA, ATHENA), "
+    check("n. tap: the switcher opens with JARVIS, then TRADING (NQ BOT, ORACLE, ODEON, FATES, DATA CITY, DAPHNE, PROMETHEUS, PANTHEON, ARES, FORUM, LABYRINTH, ARGUS, NEMESIS, CHRONOS, HEPHAESTUS, CITIES, BRIDGE), LIFE (INBOX, SETTINGS, CALENDAR, MIND, ARENA, ATHENA), "
           "MONEY (KALSHI CITY, KALSHI, TYCHE, HERMES, PLUTUS) and + ADD, "
           "Jarvis's card marked NOW",
-          names == ["JARVIS", "NQ BOT", "ORACLE", "ODEON", "FATES", "DATA CITY", "DAPHNE", "PROMETHEUS", "PANTHEON", "ARES", "FORUM", "LABYRINTH", "ARGUS", "NEMESIS", "CHRONOS", "HEPHAESTUS", "CITIES", "BRIDGE", "CALENDAR", "MIND", "ARENA", "ATHENA", "KALSHI CITY", "KALSHI", "TYCHE", "HERMES", "PLUTUS", "ADD"]
+          names == ["JARVIS", "NQ BOT", "ORACLE", "ODEON", "FATES", "DATA CITY", "DAPHNE", "PROMETHEUS", "PANTHEON", "ARES", "FORUM", "LABYRINTH", "ARGUS", "NEMESIS", "CHRONOS", "HEPHAESTUS", "CITIES", "BRIDGE", "INBOX", "SETTINGS", "CALENDAR", "MIND", "ARENA", "ATHENA", "KALSHI CITY", "KALSHI", "TYCHE", "HERMES", "PLUTUS", "ADD"]
           and cards[0]["now"] and not any(c["now"] for c in cards[1:]), cards)
     nq = next((c for c in cards if c["id"] == "zenith"), {})
     cal = next((c for c in cards if c["id"] == "planner"), {})
@@ -1364,6 +1364,9 @@ def run_switcher(br, url):
       cur: (document.querySelector('#modes [aria-current="page"]') || {}).dataset ? document.querySelector('#modes [aria-current="page"]').dataset.app : null,
       orb: getComputedStyle(document.getElementById('nxOrb')).visibility })""")
     check("n. a card opens its app (CALENDAR -> the Planner) and the switcher closes; the orb is back", not st["open"] and st["cur"] == "planner" and st["orb"] == "visible", st)
+    # a swipe skips the apps that are not on the site: wait until the shell has heard that of each (a loaded machine probes them late; an
+    # unprobed one is tried, says so and stays put)
+    p.wait_for_function("(ids) => import('./apps.js').then((A) => ids.every((id) => A.missing(id)))", arg=NOT_ON_SITE, timeout=120000)
     # swipe: the next app (Planner -> Kalshi), then back the other way
     def swipe(dx):
         p.mouse.move(cx, cy); p.mouse.down()
