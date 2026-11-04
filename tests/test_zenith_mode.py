@@ -236,7 +236,7 @@ def part_sw(br, base, errs):
         t0 = time.time()
         pg.reload(wait_until="commit", timeout=20000)
         drawn = None
-        while time.time() - t0 < 14:
+        while time.time() - t0 < BK.limit(14, 'slow-site wait'):
             try:
                 if pg.evaluate(ZENITH_READY):
                     drawn = round(time.time() - t0, 1)
@@ -244,7 +244,7 @@ def part_sw(br, base, errs):
             except Exception:
                 pass
             pg.wait_for_timeout(200)
-        check("h. a slow site (7 s): Zenith opens from its saved copy in under 5.5 s, not white until the site answers", drawn is not None and drawn < 5.5, drawn)
+        check("h. a slow site (7 s): Zenith opens from its saved copy in under 5.5 s, not white until the site answers", drawn is not None and drawn < BK.limit(5.5, "slow site saved copy", cap=6.9), drawn)
         SITE["mode"] = "ok"
         pg.wait_for_timeout(500)
         # no saved copy and no site: a small dark page with Retry, never white

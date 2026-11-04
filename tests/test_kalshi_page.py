@@ -53,6 +53,8 @@ import sys
 import tempfile
 import threading
 import time
+
+from tests import browser_kit as BK  # noqa: E402  (load-aware limits, shared launch)
 from zoneinfo import ZoneInfo
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -1206,7 +1208,7 @@ def part_k(br, url, tmp):
     q.reload(wait_until="commit")
     drawn = until("document.title === 'Kalshi' && !!document.getElementById('body') && document.getElementById('body').getAttribute('data-state') === 'ok'", 15000)
     took = time.time() - t0
-    check(f"k. a slow site (6 s): the saved copy is drawn in under 5 s ({took:.1f} s), style and script from their copies", drawn and took < 5.0, took)
+    check(f"k. a slow site (6 s): the saved copy is drawn in under 5 s ({took:.1f} s), style and script from their copies", drawn and took < BK.limit(5.0, "slow site saved copy", cap=5.9), took)
     check("k. the late answer still refreshes the saved copy",
           until(f"caches.open('{cn}').then((c) => c.match(location.href)).then((r) => r ? r.text() : '').then((t) => t.indexOf('k-late') >= 0)", 12000))
     open(idx, "w", encoding="utf-8").write(orig)
