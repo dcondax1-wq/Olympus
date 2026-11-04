@@ -1219,6 +1219,18 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
                 elif os.path.isdir(os.path.join(src_dir, name)) and not name.startswith((".", "__")):
                     # a folder of the app's own files (olympus/three-addons/: the render core's vendored three.js addons)
                     shutil.copytree(os.path.join(src_dir, name), os.path.join(out, app, name), dirs_exist_ok=True)
+    # PC fresh start (owner 2026-11-04, docs/MOVE_TO_MAIN_PC.md): <site>/pc/ holds plain files, not an app: FRESH_START.ps1 (the
+    # one-line launcher, tools/web_public/pc/) and move_bot.ps1 (a copy of scripts/move_bot.ps1 it downloads and runs with -Fresh)
+    try:
+        os.makedirs(os.path.join(out, "pc"), exist_ok=True)
+        pc_src = os.path.join(WEB, "pc")
+        if os.path.isdir(pc_src):
+            for name in os.listdir(pc_src):
+                if os.path.isfile(os.path.join(pc_src, name)):
+                    shutil.copy(os.path.join(pc_src, name), os.path.join(out, "pc", name))
+        shutil.copy(os.path.join(ROOT, "scripts", "move_bot.ps1"), os.path.join(out, "pc", "move_bot.ps1"))
+    except OSError as e:
+        print("  pc/ fresh-start files not copied:", e.__class__.__name__, e)
     # CRONOS (tools/cronos/, docs/CRONOS.md, 2026-11-03): the nightly / weekly research data from the `cronos` and `datacity`
     # branches over the page copies when newer, then every research app's jarvis.json stamped with this publish and its
     # honest freshness (amber "not updated since ..." when a job failed or its data is too old); never stops the publish

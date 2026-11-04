@@ -1,6 +1,6 @@
 @echo off
 rem Liquidity Engine: MOVE THE BOT to another PC (double-click). 1 = pack and retire this PC (the old one, after 4:05 PM ET);
-rem 2 = set this PC up (the new one, from the BOT_MOVE folder in OneDrive). Two PCs never trade the same accounts.
+rem 2 = set this PC up (the new one, from the BOT_MOVE folder in OneDrive); 3 = no old PC: start fresh here (no pack). Two PCs never trade the same accounts.
 rem What it does: scripts\move_bot.ps1 (top of the file).
 setlocal EnableExtensions
 title Liquidity Engine - MOVE THE BOT
