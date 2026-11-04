@@ -10,6 +10,7 @@ const GOLD = '#ffcf5a', MINT = '#5ef2c0', ROSE = '#ff6b7f';
 const BASIN_R = 1.7, COL_MAX = 5.2, TURNS = 2.2, HELIX_PTS = 72;
 const FALL_S = 1.55, GAP_S = 1.1, PAUSE_S = 3.5, REPLAY = 14;
 
+import { Sparks } from './sparks.js';
 export class Pools {
   constructor(THREE, glow, opts = {}) {
     this.T = THREE;
@@ -58,6 +59,8 @@ export class Pools {
     const c = this.jet.geometry.attributes.color.array, gold = new this.T.Color(GOLD), white = new this.T.Color('#fff6dc'), mint = new this.T.Color(MINT), amber = new this.T.Color('#ffa53d');
     for (let i = 0; i < n; i++) { const k = i % 13 === 0 ? mint : i % 4 === 0 ? white : i % 7 === 0 ? amber : gold; c.set([k.r, k.g, k.b], i * 3); this.spawnDrop(i, Math.random()); }
     this.group.add(this.jet);
+    this.sparks = new Sparks(this.T, this.glow, this.lite ? 60 : 140, 0.11);      // coin-drop sparks
+    this.group.add(this.sparks.pts);
     // the mist: fewer, bigger, softer drops thrown wider and lower round the jet (the fountain's glow)
     const m = this.lite ? 50 : 150;
     this.mist = this.glow.points(m, this.lite ? 0.36 : 0.3, 0.32);
@@ -228,8 +231,8 @@ export class Pools {
     const b = f.bet, txt = (b.pnl >= 0 ? '+$' : '−$') + Math.abs(b.pnl).toFixed(2);
     this.pops.push({ id: 'p:' + b.key + ':' + Math.random().toString(36).slice(2, 6), pos: f.to.clone(), text: txt, win: b.win, age: 0 });
     if (this.pops.length > 4) this.pops.shift();
-    if (b.win) this.burst = 1;
-    else this.puffAt(f.to);
+    if (b.win) { this.burst = 1; this.sparks.burst(f.to, this.lite ? 12 : 26, '#ffd76a', 3.4, 1.0); this.sparks.burst(f.to, 6, '#fff6dc', 2.2, 0.7); }
+    else { this.puffAt(f.to); this.sparks.burst(f.to, 8, '#ff7a5a', 1.6, 0.6, 0.6); }
   }
 
   puffAt(p) {
@@ -327,6 +330,7 @@ export class Pools {
       return false;
     });
     this.pops.forEach((x) => { x.age += dt; x.pos.y += dt * 0.5; });
+    if (motion) this.sparks.update(dt);
     this.pops = this.pops.filter((x) => x.age < 2.4);
   }
 

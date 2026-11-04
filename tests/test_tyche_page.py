@@ -36,7 +36,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 WEB = os.path.join(ROOT, "tools", "web_public")
 TY = os.path.join(WEB, "tyche")
-MODULES = ["main.js", "data.js", "demo.js", "fmt.js", "scene.js", "wheel.js", "pools.js", "scales.js", "glow.js", "hud.js", "bankroll.js", "caustics.js"]
+MODULES = ["main.js", "data.js", "demo.js", "fmt.js", "scene.js", "wheel.js", "pools.js", "scales.js", "glow.js", "hud.js", "sparks.js", "bankroll.js", "caustics.js"]
 RAW = "https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json"
 API = "https://api.github.com/repos/demetrades2000-coder/kalshi-feed/contents/kalshi.json?ref=main"
 THEME = "#07060b"
@@ -492,6 +492,14 @@ def _bank_checks(p, tag, j):
     if tag == "390x844":
         p.locator(".tabs button[data-view=wheel]").click()
         p.wait_for_timeout(2500)
+        wp = p.evaluate("window.tyche.wheelAt()")
+        p.mouse.click(wp["x"], wp["y"])
+        p.wait_for_timeout(300)
+        w1 = p.evaluate("window.tyche.spin")
+        p.wait_for_timeout(2500)
+        w2 = p.evaluate("window.tyche.spin")
+        check(f"g. {tag}: a tap on the wheel spins it and it eases out (visual only): {w1:.1f} -> {w2:.1f} rad/s, no coin selected",
+              w1 > 3 and 0 <= w2 < w1 and p.evaluate("document.getElementById('sheet').hidden"), (w1, w2))
         lit = _lit_share(p.screenshot(), (0, 400, 780, 1180))
         check(f"g. {tag}: the wheel is really drawn: {lit * 100:.0f}% of the middle of the screen is lit (not black)", lit > 0.08, lit)
         p.locator(".tabs button[data-view=scales]").click()

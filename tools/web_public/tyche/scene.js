@@ -138,6 +138,14 @@ export class FortuneScene {
   setKelly(f) { this.wheel.setKelly(f); }
   select(key) { this.wheel.select(key); }
 
+  /** Is the tap at client (x, y) on the wheel's face (not a coin)? Then main.js spins it: pure visual. */
+  onWheel(x, y) {
+    const T = this.T, r = this.canvas.getBoundingClientRect(), ray = new T.Raycaster();
+    ray.setFromCamera(new T.Vector2(((x - r.left) / r.width) * 2 - 1, -((y - r.top) / r.height) * 2 + 1), this.camera);
+    const hit = ray.ray.intersectPlane(new T.Plane(new T.Vector3(0, 1, 0), 0), new T.Vector3());
+    return !!hit && Math.hypot(hit.x, hit.z) < 4.1;
+  }
+
   setView(v, instant) {
     if (!VIEWS[v]) return;
     this.view = v;

@@ -146,8 +146,8 @@ changed HUD text, never a forced one in the loop.
 | odeon | yes | 12 | 22382 | 10 | 1 | 8 | 2 | 5.0 | 1.0 | 9.0 |
 | fates | yes | 15 | 16232 | 11 | 4 | 8 | 2 | 7.1 | 0.0 | 7.5 |
 | hermes | no | - | - | - | - | - | - | 2.0 | 0.0 | 60.0 |
-| prometheus | yes | 84 | 784 | 8 | 4 | 8 | 2 | 7.1 | 0.05 | 9.5 |
-| tyche | yes | 158 | 22338 | 42 | 6 | 15 | 2 | 7.6 | 0.67 | 4.5 |
+| prometheus | yes | 31 | 6054 | 17 | 17 | 20 | 1.75 | 5.1 | 0.5 | 1 |  <!-- render core, measured 2026-11-03, budget 40 calls / 7,500 tris -->
+| tyche | yes | 216 | 24590 | 76 | 21 | 31 | 2 | 7.9 | 1.0 | - |  <!-- render core, glass coins, caustics; budget 270 calls / 30,000 tris -->
 
 Budgets (`tests/test_olympus_kit.py` `BUDGET`): draw calls / triangles per frame per app at about 1.25 × the measured
 value, the JS heap ≤ 40 MB, layouts per frame ≤ 1.1. Headless fps is SwiftShader (software GL) and only shows relative
