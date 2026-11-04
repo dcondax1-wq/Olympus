@@ -211,7 +211,7 @@ def build(hb_payload: dict, now=None, lm: dict | None = None, hb_last: dict | No
 
 PC_HEALTH_LEVEL = {"green": "ok", "amber": "warn", "red": "bad"}
 PC_HEALTH_LABELS = {"cpu": "CPU", "ram": "Memory (RAM)", "disk": "Disk space", "nt": "NinjaTrader", "bot_mem": "Bot memory",
-                    "onedrive": "OneDrive sync", "clock": "PC clock", "poll": "Bot poll time", "storage": "Storage"}
+                    "onedrive": "OneDrive sync", "clock": "PC clock", "poll": "Bot poll time", "storage": "Storage", "pc_care": "PC care"}
 
 
 def pc_health_summary(block, now=None) -> dict | None:
@@ -228,6 +228,7 @@ def pc_health_summary(block, now=None) -> dict | None:
         src = [x for x in block["lines"] if isinstance(x, dict)]
         if any(x.get("key") == "storage" for x in src):          # 2026-11-04: Storage (free GB + folder sizes + the fix) replaces the plain Disk line
             src = [x for x in src if x.get("key") != "disk"]
+        src.sort(key=lambda x: 0 if (x.get("key") == "pc_care" and x.get("level") != "green") else 1)   # PC care shows first when it found something
         for ln in src[:8]:
             if not ln.get("key"):
                 continue

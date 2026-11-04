@@ -20,6 +20,9 @@ Lines (each green / amber / red with a plain text; a line this PC cannot measure
             capped folder walk at most every 6 h and never in the first 5 min; amber < 15 GB, red < 2 GB, the fix is
             "Run CLEAN_STORAGE.bat" (scripts/clean_storage.ps1). The block also carries it as `storage`
             {free_gb, bot_gb, nt_gb}. On the phone (live_publish.pc_health_summary) it replaces the plain Disk line.
+  pc_care   (2026-11-04, display only) the last PC_CARE.bat run (scripts/pc_care.ps1 writes logs/pc_care.json: role, level, the
+            one-line "BOT PC HEALTHY: YES ..."); green when ok, amber when it found something or the check is over 45 days
+            old; never red (no push); no line when PC_CARE was never run.
 A red line (two samples in a row) pushes once per issue per ET day (kind pc_health: on / silent / off in the app).
 
 Watcher (a daemon thread in server.py, LE_PC_WATCH=0 = off): every SAMPLE_S seconds it samples (a few ms; the OneDrive scan
@@ -55,7 +58,7 @@ ORDER = {GREEN: 0, AMBER: 1, RED: 2}
 T = {"cpu_amber": 85.0, "cpu_red": 95.0, "ram_amber": 88.0, "ram_red": 95.0, "disk_amber_gb": 10.0, "disk_red_gb": 2.0,
      "nt_amber_mb": 2500.0, "nt_red_mb": 4000.0, "bot_amber_mb": 2000.0, "bot_red_mb": 3500.0, "grow_amber_mb": 600.0,
      "grow_red_mb": 1500.0, "grow_rate_amber_mbh": 200.0, "clock_amber_s": 2.0, "poll_amber_ms": 5000.0, "poll_red_ms": 20000.0,
-     "poll_rise_x": 2.0, "poll_rise_min_ms": 2000.0, "storage_amber_gb": 15.0}
+     "poll_rise_x": 2.0, "poll_rise_min_ms": 2000.0, "storage_amber_gb": 15.0, "care_stale_days": 45.0}
 STORAGE_EVERY_S = 6 * 3600.0                              # the folder-size walk: at most this often
 STORAGE_WARM_S = 300.0                                    # ... and not in the first minutes after a server start
 STORAGE_BUDGET_S = 3.0                                    # time budget of one folder walk (a capped walk reports a lower bound)
@@ -226,6 +229,14 @@ def lines(f: dict) -> list:
                 parts.append(f"{label} {float(st[k]):.1f}{'+' if st.get(k + '_capped') else ''} GB")
         out.append(_line("storage", lv, f"{fr:.1f} GB free" + (f" (folders: {', '.join(parts)})" if parts else "")
                          + (": Run CLEAN_STORAGE.bat" if lv != GREEN else ""), round(fr, 1)))
+    pc = f.get("pc_care")                       # 2026-11-04, display only: the last PC_CARE.bat run (scripts/pc_care.ps1 writes logs/pc_care.json)
+    if isinstance(pc, dict) and pc.get("text"):
+        age = pc.get("age_days")
+        stale = isinstance(age, (int, float)) and age > T["care_stale_days"]
+        ln = _line("pc_care", GREEN if pc.get("level") == "ok" and not stale else AMBER,
+                   str(pc["text"])[:110] + (f" (checked {age:.0f} days ago: run PC_CARE.bat)" if stale else ""))
+        ln["label"] = "PC care"                 # amber at most, never red: no push comes from this line
+        out.append(ln)
     nt = f.get("nt")
     if isinstance(nt, dict):
         if not nt.get("running"):
@@ -306,6 +317,7 @@ class Sampler:
         self._nt_procs: list = []
         self._nt_scan_t = -1e18
         self._st = {"t": -1e18, "bot_gb": None, "nt_gb": None, "bot_gb_capped": False, "nt_gb_capped": False}
+        self._care_c = (-1e18, {})               # (read at, logs/pc_care.json)
         self._proc = None
         try:
             if self.ps is not None:
@@ -376,6 +388,19 @@ class Sampler:
         except Exception:
             return None
 
+    def _care(self, now) -> dict | None:
+        """{level, text, age_days}: the last PC_CARE.bat run (logs/pc_care.json, a few hundred bytes), re-read at most every 10 min.
+        None when it was never run (no line). Never raises."""
+        try:
+            if now - self._care_c[0] >= 600:
+                self._care_c = (now, _read_json(os.path.join(self.root, "logs", "pc_care.json")))
+            c = self._care_c[1]
+            if not c.get("text") or not c.get("t"):
+                return None
+            return {"level": str(c.get("level") or "warn"), "text": str(c["text"]), "age_days": max(0.0, (now - float(c["t"])) / 86400.0)}
+        except Exception:
+            return None
+
     def facts(self, now=None) -> dict:
         now = time.time() if now is None else now
         f: dict = {}
@@ -413,6 +438,9 @@ class Sampler:
         st = self._storage(now, f.get("disk_free_gb"))
         if st is not None:
             f["storage"] = st
+        care = self._care(now)
+        if care is not None:
+            f["pc_care"] = care
         nt = self._nt(now)
         if nt is not None:
             f["nt"] = nt

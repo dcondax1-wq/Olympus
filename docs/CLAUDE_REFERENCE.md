@@ -33,6 +33,11 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
 | CRONOS (nightly refresh of the OLYMPUS research apps) | `tools/cronos/`, `.github/workflows/cronos.yml` (+ `datacity.yml`), branches `cronos` / `datacity`, `docs/CRONOS.md` | main -> runs on its own schedule; the next cloud-monitor publish pulls the branches and stamps the cards | `tests.test_cronos` (`--quick` without the site builds) |
 | PC speed (Surface + main PC) | `CLEAN_PC.bat`, `scripts/clean_pc.ps1`, `docs/PC_PERFORMANCE.md` | main -> the PC's auto-update; the main PC gets the `PC_KIT` copy (OneDrive or Desktop) | `tests.test_clean_pc` |
 | PC storage clean (both PCs) | `CLEAN_STORAGE.bat`, `scripts/clean_storage.ps1`, site copies `tools/web_public/pc/CLEAN_STORAGE.bat` + `clean_storage.ps1` (kept identical), `engine/pc_health.py` (`storage` line) | main -> the PC's auto-update; the site `pc/` page has the download; the PC_KIT copy | `tests.test_clean_storage`, `tests.test_win_scripts`, `tests.test_pc_health` |
+| PC care (both PCs) | `PC_CARE.bat`, `scripts/pc_care.ps1`, site copies `tools/web_public/pc/PC_CARE.bat` + `pc_care.ps1` (kept identical), `UNDO_PC_TUNE.bat` (undoes it too), `engine/pc_health.py` (`pc_care` line), `docs/PC_PERFORMANCE.md` | main -> the PC's auto-update; the site `pc/` page has the download | `tests.test_pc_care`, `tests.test_win_scripts`, `tests.test_pc_health` |
+| OLYMPUS apps (24 wired + Cities, Kalshi City) | `tools/web_public/<app>/`; the list, data sources and tests: section "OLYMPUS apps and tools" below | the lead wires new ones (`jarvis/apps.js`, `olympus/olympus.js`, the build tuple); published with every build | the app's own `tests.test_<app>_page` (+ `tests.test_olympus_kit`) |
+| Effects library / transitions / app intros | `olympus/fx-*.js` + `docs/OLYMPUS_FX.md`; `jarvis/transitions.js`; `olympus/intro-app.js` | same as Zenith | `tests.test_olympus_fx`, `tests.test_jarvis_transitions`, `tests.test_app_intro` |
+| Bridge (Claude x ChatGPT) | `tools/web_public/bridge/`, `tools/bridge_sync.py`, `tools/bridge_ingest.py`, `tools/bridge_jobs_build.py`, `handoff/` | the build runs `bridge_sync.publish` | `tests.test_bridge_page`, `tests.test_bridge_ingest` |
+| Kalshi City + edges engine | `tools/web_public/kalshicity/`, `tools/kalshi_edges.py`, `docs/KALSHICITY.md` | the lead wires it (see the doc); CRONOS-style 6-hourly refresh | `tests.test_kalshi_edges`, `tests.test_kalshicity_page` |
 | LITE mode (bot on low memory) + PC-off plan | `engine/lite.py`, `BOT_LITE.bat`, `scripts/bot_lite.ps1`, `docs/PC_OFF_PLAN.md` | main -> the PC's auto-update; the owner double-clicks BOT_LITE once | `tests.test_lite` (`--quick` = unit only), `tests.test_win_scripts` |
 
 - **Phone changes:** check in WebKit (the iPhone's engine) before shipping: `PLAYWRIGHT_BROWSERS_PATH=<dir> python -m playwright
@@ -1721,6 +1726,108 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   (c) > $50 apart for 5 min -> one "balance differs" push a day; (d) missing / stale -> identical to before. Switch
   `"broker_balance"` (start cfg or lit_sizing): unset = on for the real bot only. Bot Brain step "Real balance", launch
   checklist line "Real balance from NinjaTrader" (green when fresh, else info). `python -m engine.broker_balance`.
+
+## OLYMPUS apps and tools (map written 2026-11-04, checked against the code)
+
+**Who wires what.** An app is a folder `tools/web_public/<id>/` with `index.html` + `jarvis.json` (the status card, `docs/JARVIS_APPS.md`). It is
+"wired" when the LEAD has added: its row in `jarvis/apps.js` `BUILT_INS`, its entry in `olympus/olympus.js` `APPS` (name, glyph, colour: the veil and
+the intro read it), its id in the app tuple of `tools/build_web_dashboard.py` (~line 1212: what the build publishes), and a line in
+`jarvis/transitions.js` `REGISTRY` and `olympus/intro-app.js` `FLAVOUR`. **Agents (and sub-agents) never edit `sw.js`, `tools/build_web_dashboard.py`
+or `jarvis/apps.js`**: their report lists the "wiring needed" and the lead does it (and bumps the workers). Every app is read-only and paper only; the
+3D ones run on the OLYMPUS render core (`olympus/render.js`, `docs/OLYMPUS_RENDER.md`) with the tiers `ultra / high / low / off` of `OLYMPUS.fx()`
+(Jarvis key `jfx`), and show a DEMO fixture instead of going blank when their data is missing.
+
+### The apps (group = Jarvis switcher group; wired = in `apps.js` today)
+| App (id) | Group | Folder | What it is | Reads (data it shows) | Test |
+|---|---|---|---|---|---|
+| Zenith | Trading | `tools/web_public/` (root `index.html` + js) | the phone dashboard of the NQ bots | `data.json`, `live.json` (branch `live`) | `test_zenith_pages`, `test_zenith_shell`, `test_phone_e2e` |
+| Oracle | Trading | `oracle/` | the market radar: NQ in 3D, LIT levels, sweeps, the bot's stage and position | `live.json`, `home.json`, `demo_day.json` | `test_oracle_page` |
+| Odeon | Trading | `odeon/` | every trade replayed in 3D | `trades.json` (CRONOS nightly) | `test_odeon_page` |
+| Fates | Trading | `fates/` | pass odds per eval | `fates.json` (`python -X utf8 -m tools.fates.build`, CRONOS nightly) | `test_fates` |
+| Data City (`datacity`) | Trading | `datacity/` | every combo tested, as a city | `city.json`, `plugins.json`, `discoveries.json` (the `datacity` workflow / branch) | `test_datacity` |
+| Daphne (`tree`) | Trading | `tree/` | the strategy-tree search as a growing tree | `tree.json` (`python -X utf8 -m tools.strategytree`, CRONOS weekly), `demo.json` | `test_strategytree` |
+| Prometheus | Trading | `prometheus/` | the strategy-evolution forge (research only) | `forge.json` (`tools/prometheus/forge.py`, CRONOS weekly) | `test_prometheus` |
+| Pantheon | Trading | `pantheon/` | the data gods (liquidity, rates, vol, calendar, ...) and the council verdict | `pantheon.json`, `states.json` (`tools/pantheon/build.py`, CRONOS nightly) | `test_pantheon` |
+| Ares | Trading | `ares/` | the war room: GO / WAIT / HALT, size follows the stop, pre-trade ritual, rules you broke | `rules.json` (`tools/ares_plutus_build.py` from `research/lit/mffu_rules.json`), `../data.json`, `../home.json` | `test_ares_page` |
+| Forum | Trading | `forum/` | the morning briefing and oath at the real NY hour | `../pantheon/pantheon.json`, `../home.json` | `test_forum_page` |
+| Labyrinth | Trading | `labyrinth/` | the risk maze: size your eval (what-if) | `../odeon/trades.json`, `../home.json` | `test_labyrinth_page` |
+| Argus | Trading | `argus/` | the watchtower: every health light, what to fix first | `../home.json` (else `data.json`), `../cronos/status.json`, each app's `jarvis.json` | `test_argus_page` |
+| Nemesis | Trading | `nemesis/` | the fallen trades: autopsy of each loss | `../odeon/trades.json`, `../home.json`, Zenith journal tags (phone) | `test_nemesis_page` |
+| Chronos | Trading | `chronos/` | replay any trade day: the 1-minute path and its steps | `../odeon/trades.json` | `test_chronos_page` |
+| Hephaestus | Trading | `hephaestus/` | turn a dial, see the STORED backtest run (nothing computed in the page) | `data.json` (`tools/hephaestus_build.py` from `research/runs/`) | `test_hephaestus_page` |
+| Bridge | Trading | `bridge/` | Claude x ChatGPT link: 3-step wizard, 11 cards + 58-job library, Deliveries, Ask next | `status.json`, `jobs.json`, `deliveries.json` (`tools/bridge_sync.py`) | `test_bridge_page`, `test_bridge_ingest` |
+| Planner | Life | nq-dashboard `planner/` | calendar, tasks, projects (+ our patches) | its own store; `tools/planner_patches/*.patch` | `test_planner_addons` |
+| Mind | Life | `mind/` | the Obsidian vault as a living 3D brain (DEMO brain when not connected) | `jarvis/obsidian.js` `graphSnapshot()` only | `test_mind`, `test_mind_page` |
+| Arena | Life | `arena/` | Olympian ranks: XP for discipline | `events.json` (`tools/arena/build.py`), the phone adds Planner / Obsidian / Kalshi | `test_arena` |
+| Athena | Life | `athena/` | the library: Ask / Today / Cards / Rules / Saved | `library.json` (`tools/athena_build.py` from `STRATEGY.md`, the MFFU rules, the rejected list) | `test_athena_page` |
+| Kalshi | Money | `kalshi/` | the Kalshi bot's numbers | `kalshi.json` from the public `kalshi-feed` repo (`engine/kalshi_publish.py`) | `test_kalshi_page`, `test_kalshi_publish` |
+| Tyche | Money | `tyche/` | the Kalshi bets as a 3D fortune wheel (coins, fortune card, compare, replay) | the same `kalshi.json` | `test_tyche_page` |
+| Hermes | Money | `hermes/` | OLYMPUS Wrapped: story cards of your money, share PNG | `wrapped.json` (CRONOS `hermes` build task), `../datacity/discoveries.json`, `../fates/jarvis.json` | `test_hermes` |
+| Plutus | Money | `plutus/` | the money plan: accounts, fees, payouts, goal tracker | `plans.json` (`tools/ares_plutus_build.py` from `research/lit/funded_firms.json`), `../data.json` | `test_plutus_page` |
+| Cities (`cities`) | not wired yet | `cities/` | the world map of floating city islands (one per dataset) | `cities.json` + the other apps' published JSON (odeon, fates, datacity, tree, prometheus, pantheon, hephaestus, arena, athena, plutus) | `test_cities_page` |
+| Kalshi City (`kalshicity`) | not wired yet | `kalshicity/` | the Kalshi bot's edges as a night city | `edges.json`, `learning_log.json` (`tools/kalshi_edges.py`), live `kalshi-feed` | `test_kalshi_edges`, `test_kalshicity_page` |
+| pc/ (not an app) | - | `pc/` | static downloads for the owner's PCs (FRESH_START, CLEAN_STORAGE, PC_CARE) | - | `test_fresh_start`, `test_clean_storage`, `test_pc_care` |
+
+Jarvis (`jarvis/`) is the shell, not a row: the hub, the orb switcher, the assistant. **Wiring not done yet (for the lead):** `cities` and `kalshicity` have
+no row in `apps.js` / `olympus.js` / the build tuple (steps in `docs/KALSHICITY.md`). Tests are run as `python -X utf8 -m tests.test_<name>`.
+
+### Shared kit and the new engines
+- **Kit** (`olympus/`): `olympus.js` + `olympus.css` (veil, tiers, per-app name / glyph / colour, `data-oly-fx` wiring), `render.js` + `materials.js` (real
+  materials, bloom), `themes.js`, `sfx.js` (`docs/OLYMPUS_SFX.md`). Rules and budgets: `docs/OLYMPUS_DESIGN.md`; tests `test_olympus_kit`,
+  `test_olympus_render`, `test_olympus_themes`, `test_olympus_sfx`.
+- **Effects library** (`olympus/fx-*.js`, `docs/OLYMPUS_FX.md`, lab `olympus/fx-lab.html`, `test_olympus_fx`): 42 effects as `OLYMPUS_FX.<name>(el | scene, opts)
+  -> { stop() }`: UI (`fx-ui.js`), text / numbers (`fx-text.js`), bursts (`fx-burst.js`), and three.js scene effects (`fx-sky.js`, `fx-weather.js`,
+  `fx-surface.js`, helpers `fx-three.js`). One shared frame loop, particle and canvas caps, tier-aware (`OLYMPUS.fx()`), off under reduced motion,
+  paused when the tab is hidden. **Zero-edit wiring:** any element with `data-oly-fx="shimmer|glow|ripple|tilt|odometer ..."` gets the effect; opt out
+  with `data-oly-fx-off` (element or ancestor), `<html data-oly-fx-ui="off">` or `OLYMPUS.fxUI(false)`. Several apps use it directly
+  (Tyche, Plutus, Hermes, Forum, Ares: `*fx.js` / `*desk.js`).
+- **Transitions** (`jarvis/transitions.js`, test `test_jarvis_transitions`): every jump from one app to another plays that app's signature (Oracle lightning,
+  Pantheon columns, Tyche waves ...) on ONE reused 2D canvas over the loading app, 600-1100 ms, skipped by a tap / Esc / Enter. The app -> kind table is
+  data (`REGISTRY`; an app without a line gets the warp `DEFAULT`). LITE tier (3D Low / Off) = a 250 ms colour fade; reduced motion = a 200 ms flat fade.
+  `portal.js` hands each jump to it (the old WebGL warp is the fallback). A new app = one `REGISTRY` line (the test fails without it).
+- **App intros** (`olympus/intro-app.js`, test `test_app_intro`): a 2.6 s cinematic entrance (the app's flavour scene, glyph from particles, name and
+  tagline) loaded by ONE line in each app's `index.html` after `olympus.js` (`<script src="../olympus/intro-app.js?v=i1" defer>`; 20 apps have it
+  today). Once per app per launch (`sessionStorage oly.intro.<app>`), then a 400 ms version; LITE = a 0.7 s fade; never under reduced motion, 3D Off,
+  `?q=off`, `?intro=0`, `localStorage oly.intro=off` or an automated browser (unless `?intro=1`). A tap skips it. State in `window.__olyAppIntro`.
+- **Cities engine** (`cities/`, `test_cities_page`): data-driven. `cities.json` = the list of city specs (adding a city = one entry), `datasets.js` =
+  adapters that read the other apps' published JSON, `generator.js` = the generic builder (spec -> buildings; `procedural.js` = random cities from a
+  seed, "Surprise me"), `scene.js` / `rig.js` = the three.js world and cameras (ORBIT / SKIM / DRONE / GRAND, minimap, Find, Top 10, tour), `insight.js` =
+  one plain sentence per city (strongest / weakest district) and the report table. Groups: Trading, Research, Money, Kalshi, Life, Obsidian. Favourites / visited stay on the phone. Read-only.
+- **Kalshi City + edges engine** (`docs/KALSHICITY.md`): `tools/kalshi_edges.py` reads `kalshi.json`, keeps every bet it has seen (`ledger.json`,
+  the feed holds only ~40), re-measures every edge (slices of strategy / market / ET hour block / price band / side: n, win rate vs the implied
+  probability, EV per $1 with fees, Wilson range, z-test, 7 / 30-day decay, Kelly, status NEW / GROWING / HOLDING / DECAYING / DEAD, advice DO MORE /
+  KEEP / WATCH / STOP / COLLECT) and appends dated lessons to `learning_log.json`; run it at least every 6 h or bets are missed. `tools/kalshi_demo.py`
+  writes the DEMO fixture. The page is district = market, height = EV, glow = recent win rate; it never calls Kalshi and holds no key.
+- **Jarvis bots, modes, voice** (`jarvis/`): `bots.js` = Jarvis knows Zlarior (LIT, 50K) and ATLAS (25K) from `live.json` / `home.json`: spoken alerts
+  (never over the mic, >= 30 s apart, <= 8 an hour, one event once ever, optional quiet hours), the 01:45 / 16:05 ET plan and recap cards, the Bots
+  panel, "Think for me" items; read only, `test_jarvis_bots`. `modes.js` = `auto / trading / research / business / life` ("switch to research mode"),
+  `think(D)` rule list and set ET slots when Jarvis thinks unasked, `test_jarvis_modes`. `brain.js` (answers from the hub's own facts, optional smart
+  mode with the owner's own key kept on the phone), `assistant.js` (personal notes / reminders, offline), `memory.js` + `obsidian.js` (the vault through a
+  fine-grained token on this phone only; writes are append-only / new-file after a spoken "yes"), `tools.js`. Voice: `tts.js` (best natural female
+  voice), `voice-out.js` (answers read aloud, switch `jarvis.speak`, default on, the iPhone first-tap unlock), `voice-mode.js` (full-screen conversation,
+  the core reacts to the voice; type-to-talk where speech recognition is missing), `test_jarvis_voice`, `test_jarvis_talk`.
+- **Bridge** (Claude x ChatGPT, `tools/web_public/bridge/`, `handoff/`): the page has the 3-step Connect wizard (its sync prompt must equal
+  `handoff/ONBOARD.md`), the 11 job cards, and (2026-11-04) tabs Library (`jobs.json`, 58 ready jobs in 13 categories, built by
+  `tools/bridge_jobs_build.py`: edit the generator, not the json), Deliveries and Ask next. ChatGPT delivers into `handoff/inbox/<id>/` with a `DONE.md`.
+  `tools/bridge_ingest.py` (also run inside `bridge_sync.publish`, `--apply` copies approved images to `olympus/assets/<id>/` with a manifest)
+  checks each file read-only: png / webp / svg / json / md / txt / small js only; caps 5 MB images, 200 KB svg / md / txt, 1 MB json, 100 KB js, 80 files
+  and 40 MB a job; real images; no secret patterns; no script that fetches, evals or imports; no symlinks. Nothing delivered is ever run. The tab's
+  "Claude: build this in" copies `Bridge: <id> done`; `status.json` also carries `next` (weekly static rules) and `deliveries`.
+
+### PC tools (Windows; the scripts are tested on Linux with pwsh 7 and a fake Windows, never on a real PC)
+- **Storage clean** (`CLEAN_STORAGE.bat` -> `scripts/clean_storage.ps1`; table, Y, then only an allow-list: temp, browser caches, Windows update
+  cache, crash dumps, NinjaTrader / bot old logs and caches; never state, accounts, `nt_bars`, NinjaTrader workspaces / db / orders; skipped folders
+  while the bot or NinjaTrader runs; `engine/pc_health.py` `storage` line). Details: `docs/PC_PERFORMANCE.md`; `test_clean_storage`.
+- **Fresh start** (no old PC: `FRESH_START.bat`, the one-line `irm .../pc/FRESH_START.ps1 | iex`, or `move_bot.ps1 -Fresh`): refuses while another PC's
+  heartbeat is fresh, then Git / Python / clone / anchor the eval from the site / `no_chart_mode` / `ONE_TIME_SETUP` (Sim101, never live);
+  `test_fresh_start`. See "One chat" above.
+- **PC care** (`PC_CARE.bat` -> `scripts/pc_care.ps1`; the site `pc/` page has the download button): role auto-detect (bot folder = main PC, Surface /
+  small laptop = Surface, `-Role` forces), a plain Now / After table, Y, then: a power plan "PC Care" per role (main: never sleeps, high performance,
+  USB suspend off, screen off 10 min; Surface: CPU 75%, fan first, adaptive brightness off, battery saver does not dim), startup apps (Y/N each, the
+  Task Manager switch), background apps, visual effects, search indexing paused 01:15-16:05 ET weekdays, and a read-only health check ending in
+  `BOT PC HEALTHY: YES` (temperature only when Windows shows it, and it says so when not). `-DryRun`, `-CheckOnly`, `-Undo` (`UNDO_PC_TUNE.bat` runs it
+  before the deep-tune undo). Writes `logs/pc_care.json`, which `engine/pc_health.py` shows as the display-only `pc_care` line (amber at most).
+  `test_pc_care`.
 
 ## Open work
 1. **Dashboard revamp: shipped 2026-10-17** (`web_next/`, served by default; `LE_UI=classic` serves the old `web/`).
