@@ -445,8 +445,8 @@ def run_browser(url, tmp):
     with sync_playwright() as pw:
         exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
         br = pw.chromium.launch(**({"executable_path": exe} if exe else {}))
-        if "--only=guard" in sys.argv:                  # just the guard card (2026-11-04), for a quick run
-            part_guard(br, url, tmp)
+        if "--only=guard" in sys.argv or "--only=whatif" in sys.argv:        # just the guard / the what-if cards (2026-11-04), for a quick run
+            (part_guard if "--only=guard" in sys.argv else part_whatif)(br, url, tmp)
             br.close()
             return
         ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2)
@@ -1137,6 +1137,7 @@ def run_browser(url, tmp):
         part_kit(br, url, tmp)
         part_v4(br, url, tmp)
         part_guard(br, url, tmp)
+        part_whatif(br, url, tmp)
         br.close()
 
 
@@ -1392,7 +1393,7 @@ def part_v4(br, url, tmp):
           p.locator("#pill.warn").inner_text().upper() == "PAUSED" and "LIVE" in p.inner_text("#mode").upper())
     vd = p.inner_text("#sec-verdict")
     check("v4. verdict banner first in Today, plain words: wins 94% but loses money, here is why",
-          p.evaluate("[...document.querySelectorAll('#g-today > .card')].slice(0, 2).map((c) => c.id)") == ["sec-guard", "sec-verdict"] and "You win 94% of bets but lose money: here is why" in vd
+          p.evaluate("[...document.querySelectorAll('#g-today > .card')].slice(0, 3).map((c) => c.id)") == ["sec-why", "sec-guard", "sec-verdict"] and "You win 94% of bets but lose money: here is why" in vd
           and "−$81.77" in vd and "1,735W 101L" in vd and "paused: nothing is at risk right now." in vd.lower(), vd[:300])
     check("v4. verdict reasons from the numbers: one loss wipes out ~15 wins (6¢ on 94¢), break-even 93.9% vs 94.5%, fee drag, the 90–95¢ leak −$248.30, strategy vs strategy",
           "One loss wipes out about 15 wins" in vd and "6¢" in vd and "93.9%" in vd and "94.5%" in vd and "0.6 points above" in vd and "Fees and slips cost about" in vd
@@ -1627,8 +1628,8 @@ def part_guard(br, url, tmp):
     open_(guard_bot(now))
     g = p.inner_text("#sec-guard")
     rows = p.eval_on_selector_all("#sec-guard > .gd-b", "els => els.map(e => [e.className, e.querySelector('.gd-v').textContent, e.innerText])")
-    first = p.evaluate("[...document.querySelectorAll('#g-today > .card')].slice(0, 2).map((c) => c.id)")
-    check("g1. the guard is the top card of Today (the verdict follows it)", first == ["sec-guard", "sec-verdict"], first)
+    first = p.evaluate("[...document.querySelectorAll('#g-today > .card')].slice(0, 3).map((c) => c.id)")
+    check("g1. the guard follows the 'why am I losing' line at the top of Today (the verdict follows it)", first == ["sec-why", "sec-guard", "sec-verdict"], first)
     check("g1. red headline in plain words with the dollars at risk: 'Do not take 1 of these 3 bets' and the $ in the red one, suggestions only",
           p.get_attribute("#sec-guard", "class").split()[-1] == "red" and "Do not take 1 of these 3 bets" in g and "$15.81 is at risk" in g and "never places, changes or cancels a bet" in g, g[:300])
     check("g1. the XRP bet is red (sorted first) with the three dollar reasons: the 90–95¢ band −$248.30 on 581 bets, needs 93.3% wins vs the band's 92.2%, and 28% of the balance",
@@ -1699,6 +1700,130 @@ def part_guard(br, url, tmp):
     ctx2.close()
     check("g7. no page errors and no failed section on the guard", not errs and "could not be shown" not in p.inner_text("#body"), errs[:3])
     ctx.close()
+
+
+def part_whatif_py():
+    """tools/kalshi_whatif.py (the city feed's copy of the maths): the rule sets, the 100-bet floor, the sentence, the file."""
+    sys.path.insert(0, ROOT)
+    from tools import kalshi_whatif as KW
+    snap = json.load(open(os.path.join(ROOT, "research", "kalshi", "feed_snapshot_2026-11-04.json"), encoding="utf-8"))
+    b = KW.build(snap)
+    w, y = b["what_if"], b["why"]
+    sets = {x["id"]: x for x in w["sets"]}
+    bk = {(r["lo"], r["hi"]): r for r in KW.rows_of(snap)}
+    check("w0. kalshi_whatif: the rule sets replay the past bets exactly: the bot as it is = the feed's settled-buy P&L, A = that minus the 90-95c band",
+          abs(sets["asis"]["net"] - snap["stats"]["pnl"]) < 0.01 and abs(sets["A"]["net"] - (snap["stats"]["pnl"] - bk[(0.9, 0.95)]["pnl"])) < 0.01 and sets["A"]["bets"] == snap["stats"]["trades"] - 581,
+          [(k, v["net"], v["bets"]) for k, v in sets.items()])
+    check("w0. kalshi_whatif: B and C shrink the past bets to 2% of the balance (cap $1.12), so their net is small and their ruin chance 0%",
+          abs(w["cap_dollars"] - round(0.02 * snap["balance"], 2)) < 0.011 and 0 < sets["B"]["net"] < 30 and sets["B"]["ruin"] == 0 and sets["C"]["ruin"] == 0 and sets["asis"]["ruin"] > 0.05, w)
+    check("w0. kalshi_whatif: the one-line recommendation names the set the data supports (net up, ruin under 5%), with the paper-first warning",
+          w["pick"] == "A" and "The data supports A" in w["recommend"] and "try it on paper first" in w["recommend"] and "−−" not in w["recommend"], w["recommend"])
+    check("w0. kalshi_whatif: why = the top two leaks of different kinds in dollars (the 90-95c band, XRP), no double minus",
+          [x["kind"] for x in y["leaks"]] == ["band", "coin"] and "$248.30" in y["text"] and "$106.63" in y["text"] and "−−" not in y["text"] and "mostly because" in y["text"], y["text"])
+    few = dict(snap)
+    few["buckets"] = [{"lo": 0.9, "hi": 0.95, "trades": 60, "wins": 55, "losses": 5, "pnl": -20.0, "staked": 400.0}, {"lo": 0.95, "hi": 0.99, "trades": 39, "wins": 38, "losses": 1, "pnl": 5.0, "staked": 300.0}]
+    fb = KW.build(few)
+    check("w0. kalshi_whatif: under 100 bets (99): 'not enough bets', no numbers, in both the what-if and the why",
+          not fb["what_if"]["enough"] and fb["what_if"]["sets"] == [] and "Not enough bets yet (99 of 100)" in fb["what_if"]["recommend"] and not fb["why"]["enough"], fb["what_if"])
+    check("w0. kalshi_whatif: deterministic (the same feed gives the same file)", json.dumps(KW.build(snap), sort_keys=True) == json.dumps(KW.build(snap), sort_keys=True))
+    return b
+
+
+def part_whatif(br, url, tmp):
+    """'Why am I losing' (top of Today) and 'If you change the bot' (Edge): the page's numbers equal tools/kalshi_whatif.py's, a backtest
+    labelled as such, not enough bets under 100, never blank, taps >= 44 px, escaping, small phones."""
+    page_url = url + "kalshi/"
+    b = part_whatif_py()
+    snap = json.load(open(os.path.join(ROOT, "research", "kalshi", "feed_snapshot_2026-11-04.json"), encoding="utf-8"))
+    ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2)
+    ctx.route("https://raw.githubusercontent.com/**", feed)
+    ctx.route("https://api.github.com/**", feed)
+    p = ctx.new_page()
+    p.set_default_timeout(120000)
+    errs, posts = [], []
+    p.on("pageerror", lambda e: errs.append(str(e)))
+    p.on("console", lambda m: errs.append(m.text) if m.type == "error" and not re.search(r"Failed to load resource|net::ERR", m.text) else None)
+    p.on("request", lambda r: posts.append(r.method) if r.method not in ("GET", "HEAD") else None)
+
+    def open_(j):
+        FEED["mode"], FEED["j"] = "ok", j
+        p.goto(page_url)
+        p.evaluate("localStorage.clear()")
+        p.goto(page_url)
+        ready(p, 20000)
+        p.wait_for_selector("#sec-why")
+
+    j = dict(snap)
+    j["running"], j["t"], j["pub_t"] = False, int(time.time()) - 20, int(time.time()) - 18
+    open_(j)
+    order = p.evaluate("[...document.querySelectorAll('#g-today > .card')].slice(0, 3).map((c) => c.id)")
+    why = p.inner_text("#sec-why .why-t")
+    check("w1. 'Why am I losing' is the first card of the app and says it in one sentence with the two biggest dollar leaks (the page's words = the city feed's words)",
+          order[0] == "sec-why" and why == b["why"]["text"] and "$248.30" in why and "$106.63" in why, (order, why))
+    check("w1. the sentence's button (What to change) is >= 44 px tall and glides to the what-if card",
+          p.evaluate("document.querySelector('#sec-why .why-b').getBoundingClientRect().height") >= 44 and p.get_attribute("#sec-why .why-b", "data-v") == "sec-whatif")
+    edge_first = p.evaluate("document.querySelector('#g-edge > .card').id")
+    wi = p.inner_text("#sec-whatif")
+    check("w2. 'If you change the bot' opens the Edge group, labelled a backtest of past bets, suggestions only, nothing places a bet",
+          edge_first == "sec-whatif" and "if you change the bot" in wi.lower() and "a backtest of past bets" in wi.lower() and "suggestions only" in wi.lower() and "places or changes a bet" in wi.lower() and not posts
+          and p.locator("#sec-whatif form, #sec-whatif a").count() == 0, (edge_first, wi[:200]))
+    check("w2. the one-line recommendation is the city feed's (set A: +$185.48 after fees, 0% ruin against -$62.82 and 13% as the bot is)",
+          p.inner_text("#sec-whatif .wi-rec") == b["what_if"]["recommend"] and "+$185.48" in wi and "−$62.82" in wi, p.inner_text("#sec-whatif .wi-rec"))
+    got = p.eval_on_selector_all("#sec-whatif .wi-set", """els => els.map(e => [e.querySelector('.wi-n').textContent.replace(/the data favours this/i, '').trim(),
+      ...[...e.querySelectorAll('dd')].map(d => d.textContent)])""")
+    ok = len(got) == 4
+    for g_, x in zip(got, b["what_if"]["sets"]):
+        net = KW_usd(x["net"])
+        ruin = round(x["ruin"] * 100)
+        pr = g_[3].replace("<", "").replace("%", "")
+        ok = ok and g_[1] == net and abs(int(pr) - ruin) <= 1 and abs(float(g_[2].replace("$", "").replace(",", "")) - x["dip"]) <= max(0.5, 0.05 * x["dip"])
+    check("w2. four sets (as it is, A, B, C) with net $ after fees, typical worst dip $ and ruin % equal to tools/kalshi_whatif.py (net exact, dip within 5%, ruin within 1 point)", ok, got)
+    heights = p.evaluate("[...document.querySelectorAll('#sec-whatif .wi-h')].map((b) => Math.round(b.getBoundingClientRect().height))")
+    p.click("#sec-whatif .wi-h >> nth=1")
+    ex = p.inner_text("#sec-whatif .wi-set >> nth=1")
+    check("w3. every set header is a >= 44 px tap that opens its rule in words (A: skips 90–95¢, 1,255 of the past 1,836 bets stay in)",
+          len(heights) == 4 and min(heights) >= 44 and "Skips every bet priced 90–95¢" in ex and "1,255 of the past 1,836 bets" in ex, (heights, ex))
+    check("w3. the footnote says what net, dip and ruin are, and that a past replay is not a promise", "not a promise" in p.inner_text("#sec-whatif .wi-f") and "400 seeded runs" in p.inner_text("#sec-whatif .wi-f"))
+    # ---- under 100 bets: not enough, never blank
+    open_(sample(time.time()))
+    check("w4. under 100 bets (the publisher's sample): both cards still show and say 'not enough bets', no sets, no numbers",
+          "Not enough settled bets yet" in p.inner_text("#sec-why .why-t") and "Not enough bets yet" in p.inner_text("#sec-whatif .muted") and p.locator("#sec-whatif .wi-set").count() == 0
+          and p.locator("#sec-why .why-b").count() == 0, p.inner_text("#sec-whatif")[:200])
+    # ---- the sample preview and escaping
+    FEED["mode"], FEED["j"] = "404", None
+    p.goto(page_url)
+    p.evaluate("localStorage.clear()")
+    p.goto(page_url)
+    p.wait_for_selector("[data-act=preview]")
+    p.click("[data-act=preview]")
+    p.wait_for_selector("#sec-why")
+    check("w5. the sample preview carries both cards (never blank)", p.locator("#sec-why .why-t").inner_text() != "" and p.locator("#sec-whatif").count() == 1)
+    evil = dict(j)
+    evil["categories"] = [dict(c, name="<img src=x onerror=window.__pwned=1>") if c["name"] == "XRP" else c for c in evil["categories"]]
+    evil["strategies"] = [dict(x, name="<b onmouseover=window.__pwned=1>x</b>") for x in evil["strategies"]]
+    open_(evil)
+    check("w5. hostile names are text, never markup", p.evaluate("!window.__pwned") and p.locator("#sec-why img, #sec-why b, #sec-whatif img").count() == 0)
+    ctx2 = br.new_context(viewport={"width": 375, "height": 667}, device_scale_factor=1)
+    ctx2.route("https://raw.githubusercontent.com/**", feed)
+    ctx2.route("https://api.github.com/**", feed)
+    q = ctx2.new_page()
+    q.set_default_timeout(120000)
+    FEED["mode"], FEED["j"] = "ok", j
+    q.goto(page_url)
+    q.evaluate("localStorage.clear()")
+    q.goto(page_url)
+    ready(q, 20000)
+    q.wait_for_selector("#sec-whatif")
+    sw = q.evaluate("[document.documentElement.scrollWidth, innerWidth, Math.max(...[...document.querySelectorAll('#sec-why *, #sec-whatif *')].map((e) => e.getBoundingClientRect().right))]")
+    check("w6. 375 x 667: both cards fit (no sideways scroll, nothing past the right edge)", sw[0] <= sw[1] and sw[2] <= sw[1] + 0.5, sw)
+    ctx2.close()
+    check("w7. no page errors and no failed section", not errs and "could not be shown" not in p.inner_text("#body"), errs[:3])
+    ctx.close()
+
+
+def KW_usd(x):
+    v = round(abs(x) + 1e-9, 2)
+    return ("−" if x < 0 and v else "+" if v else "") + f"${v:,.2f}"
 
 
 def main():

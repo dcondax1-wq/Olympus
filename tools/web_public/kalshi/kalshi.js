@@ -178,7 +178,7 @@
       side: SIDES.indexOf(u.side) >= 0 ? u.side : 'all',
     },
     preview: false, jf: 'all', jn: '', q: '', kf: 0, calc: { p: '', c: '' }, trShown: TR_PAGE, cal: '', calSel: '', calGr: '', open: new Set(), scrub: false, pend: false, chart: null, series: null, v: null, pos: [], fresh: false, alerts: null,
-    gpx: '', city: false, eqv: '', raceOff: new Set(), heatSel: '', bm: 'wr', bs: 1,
+    gpx: '', wi: '', city: false, eqv: '', raceOff: new Set(), heatSel: '', bm: 'wr', bs: 1,
   };
   const saveUi = () => LS.set('kalshi.ui', S.ui);
   const cached = LS.get('kalshi.last', null);
@@ -1180,6 +1180,126 @@
       + `<div class="gd-h"><span class="lab">The guard · ${n ? n + ' open bet' + (n === 1 ? '' : 's') : 'no open bets'}</span><h3>${esc(head || 'Check a bet')}</h3></div></div><p class="gd-s">${sub}</p>${rows}${more}${chk}</section>`;
   }
 
+  // ================================================================== 2026-11-04 "If you change the bot" and "Why am I losing"
+  // The research turned into the owner's money decision, from the numbers the bot publishes (the price bands carry every settled bet in
+  // totals). Same maths as tools/kalshi_whatif.py (a test holds the two equal). A BACKTEST of past bets, suggestions only: it never
+  // places or changes a bet. Under 100 settled bets it says "not enough bets" instead of numbers.
+  const WI_MIN = 100, WI_PATHS = 400, WI_BETS = 200, WI_SEED = 20261104, WI_MINBAL = 6, WI_CAP = 0.02, TAKER = 0.07;
+  const WI_NAMES = { asis: 'The bot as it is', A: 'A · skip the 90–95¢ band', B: 'B · only 95¢ and up, 2% bets', C: 'C · skip 90–95¢, 2% bets' };
+  const WI_RULES = { asis: 'Every bet as it was placed.', A: 'Skips every bet priced 90–95¢; the rest as they were.',
+    B: 'Only bets at 95¢ and up, each shrunk to 2% of today\'s balance.', C: 'Skips 90–95¢ and shrinks every other bet to 2% of today\'s balance.' };
+  const wiInLeak = (r) => r.lo >= 0.9 - 1e-9 && r.hi <= 0.95 + 1e-9;
+  const usdA = (x, sign) => (x < -0.004 ? '−' : sign && x > 0.004 ? '+' : '') + usd(Math.abs(x));
+
+  function wiRows(k, v) {
+    const cal = new Map();
+    arr(k.calibration).filter(isObj).forEach((c) => { if (num(c.n) != null && num(c.p) != null) cal.set(Math.round(num(c.n)), num(c.p)); });
+    return bucketRows(k, v).rows.filter((r) => r.n > 0 && r.w != null && r.l != null && r.pnl != null && r.st != null && r.st > 0).map((r) => {
+      const hi = Math.min(1, r.hi), mid = (r.lo + hi) / 2, p = cal.has(r.n) ? cal.get(r.n) : mid;
+      return { lo: r.lo, hi, n: r.n, w: r.w, l: r.l, pnl: r.pnl, st: r.st, p: Math.min(0.98, Math.max(0.02, p)) };
+    });
+  }
+  function wiSize(r) {
+    const f = TAKER * (1 - r.p), win = 1 / r.p - 1 - f;
+    if (r.w > 0 && r.l > 0 && r.st > 0) {
+      const sl = (r.st * win - r.pnl) / (r.l * (win + 1 + f)), sw = (r.st - sl * r.l) / r.w;
+      if (sl > 0 && sw > 0) return [sw, sl, win, f];
+    }
+    const e = r.st / r.n;
+    return [e, e, win, f];
+  }
+  function wiKeep(rows, rule, cap) {
+    const keep = rows.filter((r) => rule === 'asis' || ((rule === 'A' || rule === 'C') && !wiInLeak(r)) || (rule === 'B' && r.lo >= 0.95 - 1e-9));
+    const capped = rule === 'B' || rule === 'C';
+    return keep.map((r) => [r, capped ? Math.min(1, cap / (r.st / r.n)) : 1]);
+  }
+  function wiSim(rows, rule, bal, t0, cap) {
+    const kept = wiKeep(rows, rule, cap);
+    if (!kept.length || !(bal > 0)) return { ruin: null, half: null, dip: null };
+    const sAll = sum(rows.map((r) => r.st)) / Math.max(1, sum(rows.map((r) => r.n))), g = sAll > 0 ? t0 / sAll : 1, capped = rule === 'B' || rule === 'C';
+    const tot = sum(kept.map((x) => x[0].n));
+    const pre = kept.map(([r]) => {
+      const [sw, sl, win, f] = wiSize(r), u = g * (capped ? Math.min(1, cap / ((r.st / r.n) * g)) : 1);
+      return [r.n / tot, r.w / r.n, sw * win * u, sl * (1 + f) * u];
+    });
+    let seed = WI_SEED;
+    const rnd = () => { seed = (seed * 48271) % 2147483647; return seed / 2147483647; };
+    let ruined = 0, half = 0;
+    const dips = [];
+    for (let i = 0; i < WI_PATHS; i++) {
+      let b = bal, peak = bal, dd = 0, low = bal, dead = false;
+      for (let j = 0; j < WI_BETS; j++) {
+        const x = rnd();
+        let q = 0, acc = pre[0][0];
+        while (x > acc && q < pre.length - 1) { q++; acc += pre[q][0]; }
+        b += rnd() < pre[q][1] ? pre[q][2] : -pre[q][3];
+        if (b > peak) peak = b;
+        if (b < low) low = b;
+        if (peak - b > dd) dd = peak - b;
+        if (b < WI_MINBAL) { dead = true; break; }
+      }
+      if (dead) ruined++;
+      if (low < bal / 2) half++;
+      dips.push(dd);
+    }
+    dips.sort((a, b) => a - b);
+    return { ruin: ruined / WI_PATHS, half: half / WI_PATHS, dip: dips[Math.floor(WI_PATHS / 2)] };
+  }
+  function whatifModel(k, v) {
+    const rows = wiRows(k, v), bal = num(k.balance), n = sum(rows.map((r) => r.n));
+    const out = { n, enough: n >= WI_MIN && bal != null && bal > 0, balance: bal, sets: [] };
+    if (!out.enough) { out.recommend = `Not enough bets yet (${fmtN(n)} of ${WI_MIN}) to say what a change would do.`; return out; }
+    const cap = WI_CAP * bal;
+    const costs = v.tr.filter((t) => t.action !== 'sell' && num(t.contracts) != null && dol(t.price) != null && dol(t.price) > 0 && dol(t.price) <= 1.0001).map((t) => num(t.contracts) * dol(t.price)).sort((a, b) => a - b);
+    const t0 = costs.length ? costs[Math.floor(costs.length / 2)] : 6 * 0.96;
+    out.cap = cap; out.t0 = t0;
+    ['asis', 'A', 'B', 'C'].forEach((id) => {
+      const kept = wiKeep(rows, id, cap), sim = wiSim(rows, id, bal, t0, cap);
+      out.sets.push({ id, name: WI_NAMES[id], bets: sum(kept.map((x) => x[0].n)), net: sum(kept.map(([r, m]) => r.pnl * m)), dip: sim.dip, ruin: sim.ruin, half: sim.half });
+    });
+    const base = out.sets[0], ok = out.sets.slice(1).filter((x) => x.net > base.net && x.ruin != null && x.ruin <= 0.05);
+    const pick = ok.length ? ok.reduce((a, b) => (b.net > a.net ? b : a)) : null, rp = (x) => (!x.ruin ? '0%' : Math.round(x.ruin * 100) + '%');
+    out.pick = pick ? pick.id : null;
+    out.recommend = pick ? `The data supports ${pick.name.split(' · ')[0]}: ${usdA(pick.net, true)} after fees on the past bets and a ${rp(pick)} chance of ruin, against ${usdA(base.net, true)} and ${rp(base)} as the bot is. The band was picked after looking at these bets: try it on paper first.`
+      : 'Keep the bot as it is: none of the three rule sets beats it on the past bets with a ruin chance under 5%.';
+    return out;
+  }
+  function whyModel(k, v) {
+    const rows = wiRows(k, v), n = sum(rows.map((r) => r.n)), st = isObj(k.stats) ? k.stats : null;
+    const total = num(k.total_pnl) != null ? num(k.total_pnl) : st ? num(st.pnl) : null;
+    if (n < WI_MIN || total == null) return { enough: false, n, text: `Not enough settled bets yet (${fmtN(n)} of ${WI_MIN}) to say why.` };
+    const leaks = [];
+    rows.forEach((r) => { if (r.pnl < -0.5) leaks.push({ kind: 'band', usd: r.pnl, label: `${cRange(r.lo, r.hi)} bets`, n: r.n, to: 'sec-bk' }); });
+    arr(k.categories).filter(isObj).forEach((c) => { if (num(c.pnl) != null && num(c.pnl) < -0.5 && (num(c.trades) || 0) >= 30) leaks.push({ kind: 'coin', usd: num(c.pnl), label: `${c.name} bets`, n: num(c.trades), to: 'sec-cat' }); });
+    v.strat.forEach((x) => { if (num(x.total_pnl) != null && num(x.total_pnl) < -0.5 && (num(x.trades) || 0) >= 30) leaks.push({ kind: 'strategy', usd: num(x.total_pnl), label: `the ${x.name} strategy`, n: num(x.trades), to: 'sec-strat' }); });
+    const fees = sum(rows.map((r) => TAKER * r.st * (1 - r.p)));
+    if (fees >= 5) leaks.push({ kind: 'fees', usd: -fees, label: 'Kalshi\'s fees', n: null, to: 'sec-cb' });
+    leaks.sort((a, b) => a.usd - b.usd);
+    const top = [], seen = new Set();
+    leaks.forEach((x) => { if (top.length < 2 && !seen.has(x.kind)) { seen.add(x.kind); top.push(x); } });
+    const say = (x) => (x.kind === 'fees' ? `Kalshi's fees cost about ${usdA(Math.abs(x.usd))}` : `${x.label} lost ${usdA(Math.abs(x.usd))}${x.n ? ` on ${fmtN(x.n)} bets` : ''}`);
+    const text = !top.length ? (total < 0 ? `You are down ${usdA(Math.abs(total))} but no single price band, coin or strategy stands out.` : `You are up ${usdA(total, true)} and no single leak is bigger than $0.50.`)
+      : (total < 0 ? `You are down ${usdA(Math.abs(total))} mostly because ` : `You are up ${usdA(total, true)}, but the two biggest leaks are `) + top.map(say).join(' and ') + '. These overlap, so do not add them up.';
+    return { enough: true, n, total, leaks: top, text };
+  }
+  function whyHtml(k, v) {
+    const m = whyModel(k, v), loss = m.enough && m.total < 0;
+    return `<section class="card why ${m.enough ? (loss ? 'neg' : 'pos') : 'idle'}" id="sec-why" aria-label="${loss ? 'Why am I losing' : 'Where the money goes'}"><span class="lab">${loss || !m.enough ? 'Why am I losing' : 'Where the money goes'}</span>`
+      + `<p class="why-t">${esc(m.text)}</p>${m.enough ? '<button type="button" class="why-b" data-act="jump" data-v="sec-whatif">What to change <em aria-hidden="true">›</em></button>' : ''}</section>`;
+  }
+  function whatifHtml(k, v) {
+    const m = whatifModel(k, v), head = '<div class="card-h"><h2>If you change the bot</h2></div><p class="wi-lab">A backtest of past bets · suggestions only · nothing here places or changes a bet</p>';
+    if (!m.enough) return `<section class="card whatif" id="sec-whatif">${head}<p class="muted">${esc(m.recommend)}</p></section>`;
+    const pc = (x) => (x == null ? '–' : x === 0 ? '0%' : x < 0.01 ? '<1%' : Math.round(x * 100) + '%');
+    const sets = m.sets.map((x) => `<div class="wi-set${x.id === m.pick ? ' pick' : ''}${x.id === 'asis' ? ' base' : ''}"><button type="button" class="wi-h" data-act="wi" data-v="${x.id}" aria-expanded="${S.wi === x.id}">`
+      + `<span class="wi-n">${esc(x.name)}${x.id === m.pick ? ' <i>the data favours this</i>' : ''}</span><em aria-hidden="true">${S.wi === x.id ? '−' : '+'}</em></button>`
+      + `<dl><div><dt>Net after fees</dt><dd class="${cls(x.net)}">${esc(usdA(x.net, true))}</dd></div><div><dt>Typical worst dip</dt><dd>${x.dip == null ? '–' : esc(usdA(x.dip))}</dd></div>`
+      + `<div><dt>Chance of ruin</dt><dd class="${x.ruin > 0.05 ? 'down' : ''}">${pc(x.ruin)}</dd></div><div><dt>Lose half</dt><dd>${pc(x.half)}</dd></div></dl>`
+      + (S.wi === x.id ? `<p class="wi-r">${esc(WI_RULES[x.id])} ${esc(fmtN(x.bets))} of the past ${esc(fmtN(m.n))} bets stay in.</p>` : '') + '</div>').join('');
+    return `<section class="card whatif" id="sec-whatif">${head}<p class="wi-rec">${esc(m.recommend)}</p><div class="wi-l">${sets}</div>`
+      + `<p class="muted wi-f">Net = the past bets replayed (B and C shrunk to 2% of today's ${esc(usdA(m.balance))} = ${esc(usdA(m.cap))} a bet). Worst dip and ruin (balance under $6) come from 400 seeded runs of the next ${WI_BETS} bets drawn from the same price bands at the bot's usual ${esc(usdA(m.t0))} bet. A past replay is not a promise.</p></section>`;
+  }
+
   // ---- when nothing is open (a paused bot, a quiet hour): never a blank card, the history stays and the page says what comes back
   function restHtml(k, v) {
     if (v.pos.length) return '';
@@ -1611,8 +1731,8 @@
       // one clean hierarchy (owner 2026-11-03 "more organized"): Today -> Edge -> Performance -> Alerts
       const eq = safe('equity', () => eqHtml(v));              // first: the stats read its series (max drawdown)
       html = (pv ? previewBar() : notesHtml(k))
-        + groupHtml('today', 'Today', todaySum(k), [safe('guard', () => guardHtml(k, v)), safe('verdict', () => verdictHtml(k, v)), safe('balance', () => heroHtml(k, v)), safe('open bets', () => posHtml(v)), safe('rest', () => restHtml(k, v))])
-        + groupHtml('edge', 'Edge', edgeSum(v), [safe('edge wait', () => edgeWaitHtml(k, v)), safe('live edge', () => edgeHtml(k, v)), safe('edge map', () => edgeMapHtml(k, v)), safe('sizing', () => kellyHtml(k, v)), safe('risk of ruin', () => ruinHtml(k, v))])
+        + groupHtml('today', 'Today', todaySum(k), [safe('why', () => whyHtml(k, v)), safe('guard', () => guardHtml(k, v)), safe('verdict', () => verdictHtml(k, v)), safe('balance', () => heroHtml(k, v)), safe('open bets', () => posHtml(v)), safe('rest', () => restHtml(k, v))])
+        + groupHtml('edge', 'Edge', edgeSum(v), [safe('what-if', () => whatifHtml(k, v)), safe('edge wait', () => edgeWaitHtml(k, v)), safe('live edge', () => edgeHtml(k, v)), safe('edge map', () => edgeMapHtml(k, v)), safe('sizing', () => kellyHtml(k, v)), safe('risk of ruin', () => ruinHtml(k, v))])
         + groupHtml('perf', 'Performance', perfSum(k), [eq, safe('race', () => raceHtml(v)), safe('heat map', () => heatHtml(v)), safe('calendar', () => calHtml(v)), safe('daily P&L', () => barsHtml(v)), safe('stats', () => statsHtml(v, k)),
           safe('battle', () => battleHtml(k, v)), safe('strategies', () => stratHtml(v)), safe('prices', () => bucketHtml(k, v)), safe('calibration', () => calibHtml(k, v)), safe('markets', () => catHtml(k, v)), safe('journal', () => journalHtml(v))])
         + groupHtml('alerts', 'Alerts', alertSum(k, v), [safe('alerts', () => alertsHtml(k, v)), safe('timeline', () => timelineHtml(k, v)), safe('trades', () => tradesHtml(v))]);
@@ -1707,6 +1827,7 @@
     } else if (a === 'jf') { S.jf = ['all', 'win', 'loss'].indexOf(val) >= 0 ? val : 'all'; if (S.v) swap('sec-journal', journalHtml(S.v)); }
     else if (a === 'jnote') { S.jn = S.jn === val ? '' : val; if (S.v) swap('sec-journal', journalHtml(S.v)); const ta = $('#jnote'); if (ta) ta.focus({ preventScroll: true }); }
     else if (a === 'gpx') { S.gpx = S.gpx === val ? '' : val; const k = previewing() ? sample() : S.k; if (S.v && k) { swap('sec-guard', guardHtml(k, S.v)); const nb = Array.prototype.filter.call(document.querySelectorAll('#sec-guard [data-act="gpx"]'), (x) => x.getAttribute('data-v') === val)[0]; if (nb) nb.focus({ preventScroll: true }); } }
+    else if (a === 'wi') { S.wi = S.wi === val ? '' : val; const k = previewing() ? sample() : S.k; if (S.v && k) { swap('sec-whatif', whatifHtml(k, S.v)); const nb = Array.prototype.filter.call(document.querySelectorAll('#sec-whatif [data-act="wi"]'), (x) => x.getAttribute('data-v') === val)[0]; if (nb) nb.focus({ preventScroll: true }); } }
     else if (a === 'jump') jump(val);
     else if (a === 'race') { if (S.raceOff.has(val)) S.raceOff.delete(val); else S.raceOff.add(val); if (S.v) { swap('sec-race', raceHtml(S.v)); const nb = Array.prototype.filter.call(document.querySelectorAll('#sec-race .rchip'), (x) => x.getAttribute('data-v') === val)[0]; if (nb) nb.focus({ preventScroll: true }); } }
     else if (a === 'bm') { S.bm = val; if (S.v && S.k) { swap('sec-battle', battleHtml(S.k, S.v)); const nb = Array.prototype.filter.call(document.querySelectorAll('#sec-battle [data-act="bm"]'), (x) => x.getAttribute('data-v') === val)[0]; if (nb) nb.focus({ preventScroll: true }); } }
