@@ -142,7 +142,7 @@ def test_static(data):
               [t["id"] for t in light] == ["athena"] and light[0].get("stage") and data["stage"][4]["scheme"] == "dark", [t["id"] for t in light])
     for app in APPS:
         html = read(WEB, app, "index.html")
-        i_th, i_js = html.find('<script src="../olympus/themes.js?v=o2"></script>'), html.find(f'../olympus/olympus.js?v=o2" data-app="{app}"')
+        i_th, i_js = html.find('<script src="../olympus/themes.js?v=o3"></script>'), html.find(f'../olympus/olympus.js?v=o3" data-app="{app}"')
         check(f"a. {app}: loads the theme engine just before the kit", 0 < i_th < i_js, (i_th, i_js))
     for app in THREE_APPS:
         code = "".join(read(p) for p in glob.glob(os.path.join(WEB, app, "*.js")))
@@ -151,10 +151,10 @@ def test_static(data):
               or ("onTheme(" in code and ("applyTheme" in code or "setAccent" in code)))   # 2026-11-03 day: the apps' own hooks
     jv = read(WEB, "jarvis", "index.html")
     check("a. Jarvis: the engine loads async (never part of the start), the <head> paints its copy, the Look sheet has the tiles",
-          '<script src="../olympus/themes.js?v=o2" id="olyThemesJs" async></script>' in jv and "g('olympus.theme.paint')" in jv
+          '<script src="../olympus/themes.js?v=o3" id="olyThemesJs" async></script>' in jv and "g('olympus.theme.paint')" in jv
           and 'id="olyThemes"' in jv and "function setOlyTheme(" in jv and "t.apply('page', { jarvis: true, cache: true })" in jv)
     check("a. Zenith and Kalshi load the engine (async) and apply the tokens on their own surfaces",
-          "s.src = 'olympus/themes.js?v=o2'" in read(WEB, "index.html") and "s.src = '../olympus/themes.js?v=o2'" in read(WEB, "kalshi", "index.html"))
+          "s.src = 'olympus/themes.js?v=o3'" in read(WEB, "index.html") and "s.src = '../olympus/themes.js?v=o3'" in read(WEB, "kalshi", "index.html"))
 
 
 # ------------------------------------------------------------------ b. contrast

@@ -116,7 +116,7 @@ def test_static():
     js, css = read(os.path.join(KIT, "olympus.js")), read(os.path.join(KIT, "olympus.css"))
     arena = read(os.path.join(os.path.dirname(KIT), "arena", "main.js"))
     check("a. OLYMPUS.sfx(name): loads olympus/sfx.js lazily, never throws, no-op when missing or when the host says it is quiet (OLYMPUS_QUIET); Arena plays rankup through it, guarded",
-          all(x in js for x in ("sfx: function (name)", "window.OLYMPUS_QUIET", "'sfx.js?v=s1'", "k.play(name)")) and "O.sfx('rankup')" in arena and "O && O.sfx" in arena)
+          all(x in js for x in ("sfx: function (name)", "window.OLYMPUS_QUIET", "'sfx.js?v=s2'", "k.play(name)")) and "O.sfx('rankup')" in arena and "O && O.sfx" in arena)
     check("a. the kit: olympus.js reads and writes 'jfx' (Jarvis's key), caps the pixel ratio, pauses on a hidden tab",
           "KEY = 'jfx'" in js and "level === 'off' ? 1 : l ? 1.5 : 2" in js and "visibilityState" in js)
     render = read(os.path.join(KIT, "render.js"))
@@ -156,7 +156,7 @@ def test_static():
     check("a. the veil never takes a tap", re.search(r"\.oly-veil \{[^}]*pointer-events: none", css))
     for app, (_, entry, _) in APPS.items():
         html = read(os.path.join(WEB, app, "index.html"))
-        i_css, i_js = html.find("../olympus/olympus.css"), html.find(f'../olympus/olympus.js?v=o2" data-app="{app}"')
+        i_css, i_js = html.find("../olympus/olympus.css"), html.find(f'../olympus/olympus.js?v=o3" data-app="{app}"')
         own = [m.start() for m in re.finditer(r'<link rel="stylesheet" href="(?!\.\./olympus)', html)] + [html.find("<style>")]
         mods = [m.start() for m in re.finditer(r'<script type="module"', html)]
         code = "".join(read(p) for p in glob.glob(os.path.join(WEB, app, "*.js")))

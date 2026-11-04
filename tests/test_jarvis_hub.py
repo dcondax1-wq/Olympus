@@ -1487,9 +1487,9 @@ def part_intro_files():
     sfxw = open(os.path.join(JV, "switcher.js"), encoding="utf-8").read()
     check("o. the OLYMPUS sound layer in Jarvis: sfx.js loaded async and in SHELL, ticks on taps (dock / cards / orb), the portal sound on an app open, a tap in the switcher, "
           "quiet while speaking / listening / over the intro, a toggle + volume in the settings sheet",
-          all(x in page for x in ('src="../olympus/sfx.js?v=s1" id="olySfxJs" async', "function olyQuiet()", "root.hasAttribute('data-intro') || listening || speaking", "window.OLYMPUS_QUIET = olyQuiet",
+          all(x in page for x in ('src="../olympus/sfx.js?v=s2" id="olySfxJs" async', "function olyQuiet()", "root.hasAttribute('data-intro') || listening || speaking", "window.OLYMPUS_QUIET = olyQuiet",
                                   "olySfx('portal'); window.jarvisPortal.jump", "{ haptic(); olySfx('tick'); }", "#nxOrb", 'id="setOlySfx"', 'id="setOlyVol"', "k.mute(!$('#setOlySfx').checked)", "k.setVolume("))
-          and "'../olympus/sfx.js?v=s1'" in open(os.path.join(JV, "sw.js"), encoding="utf-8").read() and "win.jarvisSfx('tap')" in sfxw)
+          and "'../olympus/sfx.js?v=s2'" in open(os.path.join(JV, "sw.js"), encoding="utf-8").read() and "win.jarvisSfx('tap')" in sfxw)
     logo = os.path.join(JV, "intro-logo.webp")
     sw = open(os.path.join(JV, "sw.js"), encoding="utf-8").read()
     head = open(logo, "rb").read(12) if os.path.exists(logo) else b""

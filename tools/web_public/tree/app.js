@@ -6,7 +6,7 @@
 import * as C from './core.js?v=d3';
 import { paint, ancestry, bestPath, GROW_MS, IGNITE_MS, LENS_MS } from './paint.js?v=d3';
 import { startGlow } from './glow.js?v=d3';
-import { startTree3d, SEASON_NAMES } from './tree3d.js?v=d4';
+import { startTree3d, SEASON_NAMES } from './tree3d.js?v=d5';
 import { createBranchUI } from './branchui.js?v=d1';
 import * as G from './gate.js?v=g1';           // JOB 47: the owner's adoption checks, R beside $, the losing run against the max loss
 

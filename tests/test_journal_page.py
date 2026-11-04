@@ -68,10 +68,10 @@ def test_static():
     check("a. the files: " + ", ".join(names), all(os.path.isfile(os.path.join(PAGE, n)) for n in names))
     html, js, core, css = (read(os.path.join(PAGE, n)) for n in ("index.html", "journal.js", "journalcore.js", "journal.css"))
     lines = html.splitlines()
-    i = next((n for n, ln in enumerate(lines) if "../olympus/olympus.js?v=o2" in ln), -1)
-    check("a. the kit: olympus.css?v=o2 before the app's sheet, themes.js, olympus.js?v=o2 data-app=\"journal\" and the intro tag on the very next line",
-          html.index("../olympus/olympus.css?v=o2") < html.index("journal.css") and "../olympus/themes.js?v=o2" in html and 'data-app="journal"' in lines[i] and lines[i + 1].strip() == INCLUDE and html.count("intro-app.js") == 1, lines[i:i + 2])
-    check("a. the accessibility layer and the sound kit are on the page (a11y.js, sfx.js), the page is an ES module", "../olympus/a11y.js" in html and "../olympus/sfx.js?v=s1" in html and '<script type="module" src="journal.js' in html)
+    i = next((n for n, ln in enumerate(lines) if "../olympus/olympus.js?v=o3" in ln), -1)
+    check("a. the kit: olympus.css?v=o3 before the app's sheet, themes.js, olympus.js?v=o3 data-app=\"journal\" and the intro tag on the very next line",
+          html.index("../olympus/olympus.css?v=o3") < html.index("journal.css") and "../olympus/themes.js?v=o3" in html and 'data-app="journal"' in lines[i] and lines[i + 1].strip() == INCLUDE and html.count("intro-app.js") == 1, lines[i:i + 2])
+    check("a. the accessibility layer and the sound kit are on the page (a11y.js, sfx.js), the page is an ES module", "../olympus/a11y.js" in html and "../olympus/sfx.js?v=s2" in html and '<script type="module" src="journal.js' in html)
     check("a. viewport-fit=cover, theme-color, manifest, icon, apple-touch-icon, lang, one h1 named MNEMOSYNE, a live status line", all(x in html for x in ("viewport-fit=cover", 'name="theme-color"', 'rel="manifest"', 'rel="icon"', "apple-touch-icon", '<html lang="en">'))
           and html.count("<h1>") == 1 and "<h1>MNEMOSYNE</h1>" in html and 'role="status"' in html and 'aria-live="polite"' in html)
     bad = [p for p in (r"\.innerHTML", r"outerHTML", r"insertAdjacentHTML", r"document\.write", r"\beval\s*\(", r"new Function", r"\bimport\s*\(") if re.search(p, js) or re.search(p, core)]

@@ -282,7 +282,7 @@ async function loadSite() {
 
 async function main() {
   addEventListener('error', (e) => S.errors.push(String(e.message || e)));
-  S.doc = await loadPlans('plans.json?v=m1');
+  S.doc = await loadPlans('plans.json?v=m2');
   loadState();
   $('demo').hidden = S.doc.src === 'file';
   bind(); route(); update();

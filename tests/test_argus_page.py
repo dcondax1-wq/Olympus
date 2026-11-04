@@ -101,7 +101,7 @@ def mksite(tmp, name, h, c, k):
 def part_a():
     html = rd("index.html")
     check("a. the OLYMPUS kit: olympus.css, themes.js, olympus.js (data-app=argus) all at ?v=o2",
-          all(s in html for s in ('../olympus/olympus.css?v=o2', '../olympus/themes.js?v=o2', '../olympus/olympus.js?v=o2" data-app="argus"')))
+          all(s in html for s in ('../olympus/olympus.css?v=o3', '../olympus/themes.js?v=o3', '../olympus/olympus.js?v=o3" data-app="argus"')))
     check("a. title Argus, a description, theme-color = the page colour, the Jarvis icon like the siblings",
           "<title>Argus</title>" in html and 'name="description"' in html and 'content="#050912"' in html and "../jarvis/icon-192.png" in html and "#050912" in rd("argus.css") + html)
     srcs = re.findall(r'(?:src|href)="([^"]+)"', html)

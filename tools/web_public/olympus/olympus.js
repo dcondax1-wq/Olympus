@@ -1,7 +1,7 @@
 /* OLYMPUS kit (tools/web_public/olympus/, 2026-11-03; docs/OLYMPUS_DESIGN.md): the small shared layer that makes the nine 3D
  * apps one product. A classic script, loaded in <head> BEFORE the app's modules:
- *   <script src="../olympus/themes.js?v=o2"></script>  (the OLYMPUS themes: optional, just before)
- *   <script src="../olympus/olympus.js?v=o2" data-app="mind"></script>
+ *   <script src="../olympus/themes.js?v=o3"></script>  (the OLYMPUS themes: optional, just before)
+ *   <script src="../olympus/olympus.js?v=o3" data-app="mind"></script>
  * It never throws and every app still works when it is missing (each call site reads window.OLYMPUS defensively).
  *
  *   quality  ONE setting for every app and Jarvis: localStorage 'jfx' = ultra | high | low | off (Jarvis's own 3D-effects key,
@@ -160,7 +160,7 @@
     ambLoading = true;
     var tries = 0, wait = function () { if (window.OLYMPUS_SFX) { cb(window.OLYMPUS_SFX); } else if (++tries < 12) setTimeout(wait, 500); };
     if (!d.getElementById('olySfxJs')) {
-      var sc = d.createElement('script'); sc.id = 'olySfxJs'; sc.async = true; sc.src = me.src.replace(/olympus\.js.*$/, 'sfx.js?v=s1'); sc.onerror = function () { ambLoading = false; };
+      var sc = d.createElement('script'); sc.id = 'olySfxJs'; sc.async = true; sc.src = me.src.replace(/olympus\.js.*$/, 'sfx.js?v=s2'); sc.onerror = function () { ambLoading = false; };
       (d.head || root).appendChild(sc);
     }
     wait();
@@ -254,7 +254,7 @@
         var k = window.OLYMPUS_SFX;
         if (k) return !!k.play(name);
         if (me && me.src && !d.getElementById('olySfxJs')) {
-          var s = d.createElement('script'); s.id = 'olySfxJs'; s.async = true; s.src = me.src.replace(/olympus\.js.*$/, 'sfx.js?v=s1');
+          var s = d.createElement('script'); s.id = 'olySfxJs'; s.async = true; s.src = me.src.replace(/olympus\.js.*$/, 'sfx.js?v=s2');
           (d.head || root).appendChild(s);
         }
       } catch (e) { /* the sound is never needed */ }
