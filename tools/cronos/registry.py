@@ -51,7 +51,7 @@ TASKS: tuple = (
          files=("edges.json", "learning_log.json", "hypotheses.json", "jarvis.json"), branch="kalshicity",
          branch_files=(("edges.json", "kalshicity/edges.json"), ("learning_log.json", "kalshicity/learning_log.json"),
                        ("hypotheses.json", "kalshicity/hypotheses.json"), ("jarvis.json", "kalshicity/jarvis.json")),
-         optional_files=(("whatif.json", "kalshicity/whatif.json"), ("forward.json", "kalshicity/forward.json")),
+         optional_files=(("whatif.json", "kalshicity/whatif.json"), ("forward.json", "kalshicity/forward.json"), ("scan.json", "kalshicity/scan.json")),
          est_min=1.0, workflow=".github/workflows/kalshicity.yml",
          what="Kalshi City: the public kalshi-feed re-read, every edge re-measured, the learning log extended (ledger.json stays on the branch)"),
     Task("fates", "fates", "nightly", "cronos", 15 * 60, NIGHTLY_MAX_H,

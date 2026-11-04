@@ -778,3 +778,13 @@ textarea.jn { width: 100%; margin: 8px 0 0; padding: 8px; font-size: 16px; line-
 .wi-fwd { margin: 2px 0 0; padding: 9px 12px; border: 1px dashed var(--dim2); border-radius: 2px; background: rgba(var(--pr), .5); color: var(--mut); font: 500 14px/1.4 var(--fb); }
 .wi-fwd b { color: var(--c); font: 700 13px var(--fh); letter-spacing: .06em; text-transform: uppercase; }
 .wi-fn { display: block; margin-top: 2px; color: var(--txt); font: 700 15px/1.3 var(--fb); }
+
+/* "Where the money is" (2026-11-04) */
+.sc-l { margin: 0; color: var(--mut); font: 500 14px/1.4 var(--fb); }
+.sc-g { margin: 6px 0 0; font: 700 13px var(--fh); letter-spacing: .08em; text-transform: uppercase; color: var(--c); }
+.scan .sc-i { border: 1px solid var(--dim2); border-left-width: 4px; border-radius: 2px; background: rgba(var(--pr), .6); margin-top: 6px; }
+.sc-i.test { border-left-color: var(--ok); } .sc-i.avoid { border-left-color: var(--bad); }
+.sc-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 46px; padding: 8px 12px; text-align: left; color: var(--txt); background: none; border: 0; font: 700 15px/1.25 var(--fb); }
+.sc-h b { flex: none; font: 700 16px var(--fh); }
+.sc-n i { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 3px; font: 800 10px/1.4 var(--fh); letter-spacing: .08em; font-style: normal; text-transform: uppercase; color: #1a1200; background: var(--warn); }
+.sc-d { margin: 0; padding: 0 12px 10px; color: var(--txt); font: 500 14.5px/1.4 var(--fb); overflow-wrap: anywhere; }
