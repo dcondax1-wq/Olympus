@@ -309,6 +309,8 @@ def make_plan(repo, changed=None):
                 pins[f"{tests_dir}/{fn}"] = repo.text(f"{tests_dir}/{fn}") or ""
     all_by_key: dict[tuple[str, str], set[str]] = {}
     for r in refs:
+        if r.file == r.target:                                       # a file naming itself (a doc comment, a stray copy of the kit) is not a second owner of the pin
+            continue
         all_by_key.setdefault((posixpath.basename(r.literal), r.tag), set()).add(r.target)
     new_pins = dict(pins)
     for tgt, (old, new) in sorted(bumped.items()):
