@@ -243,3 +243,12 @@ textarea.field { resize: none; line-height: 1.35; font-family: inherit; }
 }
 @media (max-width: 360px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .skins { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (prefers-reduced-motion: reduce) { .pulse { animation: none; } }
+
+/* the first seconds and a tiny vault: never a bare screen (2026-11-04) */
+.boot { position: fixed; z-index: 3; left: 0; right: 0; top: 46%; margin: 0; text-align: center; font: 700 14px/1 var(--display); letter-spacing: 0.22em; text-transform: uppercase; color: var(--cyan); text-shadow: 0 0 16px rgba(var(--cyan-rgb), 0.7); animation: beat 1.6s ease-in-out infinite; pointer-events: none; }
+.boot[hidden] { display: none; }
+.sparse { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; border-radius: 18px; padding: 6px 6px 6px 12px; }
+.sparse span { flex: 1 1 160px; min-width: 0; }
+.sparse button { min-height: 44px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--line-hi); background: rgba(var(--cyan-rgb), 0.1); color: var(--cyan); font: 700 12px/1 var(--ui); letter-spacing: 0.08em; text-transform: uppercase; }
+.sparse button[hidden] { display: none; }
+@media (prefers-reduced-motion: reduce) { .boot { animation: none; } }

@@ -87,6 +87,17 @@ export function createUI(h) {
       b.dataset.mode = m;
       b.lastElementChild.textContent = MODES[m] || m;
       $('demo').hidden = m !== 'demo';
+      $('boot').hidden = m !== 'loading';                    // the first seconds are never a bare black screen
+    },
+
+    /** The little banner under the top bar when the vault is tiny (or a demo preview is on): what to do, and a way to see a grown brain. */
+    sparse(info) {
+      const b = $('sparse');
+      b.hidden = !info;
+      if (!info) return;
+      $('sp-text').textContent = info.text;
+      $('sp-preview').textContent = info.preview ? 'Back to my vault' : 'Preview demo';
+      $('sp-teach').hidden = !!info.preview;
     },
 
     /** The Jarvis brain counter: memories she keeps, notes she wrote to the vault, topics (galaxies) the brain spans. */

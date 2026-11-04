@@ -10,7 +10,7 @@
   d. Chromium 390 x 844: no errors, no sideways scroll, ticks and the ring persist over a reload, the sync button puts the ONBOARD
      prompt on the clipboard, 'Send first job' copies the icons job and opens Codex, live cards show 'ChatGPT delivered 3 files' /
      'ChatGPT has a question' with a 'Tell Claude' button that copies 'Bridge: <id> done'
-  JOB 24 (2026-11-04): tabs Jobs / Library / Deliveries / Ask next. The Library lists the 58 ready jobs (bridge/jobs.json) with category
+  JOB 24 (2026-11-04): tabs Jobs / Library / Deliveries / Ask next. The Library lists the ready jobs (bridge/jobs.json) with category
      chips and a Copy prompt; Deliveries shows thumbnails + rendered text of what bridge_ingest approved and a 'Claude: build this in' button
      ('Bridge: <id> done'); hostile text / names never become markup; Ask next shows status.json 'next'. status() has next + deliveries.
     python -X utf8 -m tests.test_bridge_page          (static only: add --no-browser)
@@ -81,7 +81,7 @@ def part_status():
           and all(j["state"] in ("done", "question", "in progress") and isinstance(j["files"], int) for j in st["jobs"].values()))
     check("b. status(): v 1, jobs {state, files}, counts, updated, at most 5 handoff commits", ok, st)
     lib = json.load(open(os.path.join(WEB, "bridge", "jobs.json"), encoding="utf-8"))["jobs"]
-    check("b. the job total is the cards on the page plus the library (58 ready jobs)", st["counts"]["total"] == len(re.findall(r"\{ id: '[a-z0-9-]+', t:", PAGE)) + len(lib) > 0 and len(lib) >= 40, st["counts"])
+    check("b. the job total is the cards on the page plus the library (all the ready jobs)", st["counts"]["total"] == len(re.findall(r"\{ id: '[a-z0-9-]+', t:", PAGE)) + len(lib) > 0 and len(lib) >= 40, st["counts"])
     check("b. status() also carries 'next' (at most 5 suggestions) and 'deliveries' (a dict); the old keys are unchanged",
           isinstance(st["next"], list) and len(st["next"]) <= 5 and isinstance(st["deliveries"], dict) and {"v", "updated", "t", "jobs", "counts", "commits"} <= set(st))
     dsaved = json.load(open(os.path.join(WEB, "bridge", "deliveries.json"), encoding="utf-8"))
@@ -202,10 +202,15 @@ def part_browser():
             byid = {j["id"]: j for j in lib["jobs"]}
             p2.click("#tab-lib")
             p2.wait_for_function("document.querySelectorAll('#libList .card').length > 0")
-            check("d. Library tab: all %d ready jobs as cards, 14 chips (All + 13 categories), the Jobs cards are hidden, no sideways scroll" % len(lib["jobs"]),
-                  p2.evaluate("document.querySelectorAll('#libList .card').length") == len(lib["jobs"]) and p2.evaluate("document.querySelectorAll('#libCats button').length") == 14
+            check("d. Library tab: all %d ready jobs as cards, %d chips (All + %d categories), the Jobs cards are hidden, no sideways scroll" % (len(lib["jobs"]), len(lib["cats"]) + 1, len(lib["cats"])),
+                  p2.evaluate("document.querySelectorAll('#libList .card').length") == len(lib["jobs"]) and p2.evaluate("document.querySelectorAll('#libCats button').length") == len(lib["cats"]) + 1
                   and p2.evaluate("document.getElementById('p-jobs').hidden") and p2.evaluate("document.documentElement.scrollWidth <= innerWidth") and "Library %d" % len(lib["jobs"]) in p2.inner_text("#tab-lib"),
                   p2.evaluate("document.querySelectorAll('#libList .card').length"))
+            p2.click('#libCats button[data-cat="money"]')
+            n_money = sum(1 for j in lib["jobs"] if j["cat"] == "money")
+            check("d. the Money chip filters the library (%d money jobs) and each card says how Claude ingests it (tools/bridge_ingest.py), where it lands and which files" % n_money,
+                  p2.evaluate("document.querySelectorAll('#libList .card').length") == n_money and n_money >= 20 and "Then Claude" in p2.inner_text("#lib-money-prop-compare")
+                  and "tools/bridge_ingest.py" in p2.inner_text("#lib-money-prop-compare") and "handoff/inbox/money-prop-compare/" in p2.inner_text("#lib-money-prop-compare") and "prop-firms.md" in p2.inner_text("#lib-money-prop-compare"))
             p2.click('#libCats button[data-cat="textures"]')
             n_tex = sum(1 for j in lib["jobs"] if j["cat"] == "textures")
             check("d. a category chip filters the library (textures)", p2.evaluate("document.querySelectorAll('#libList .card').length") == n_tex and p2.get_attribute('#libCats button[data-cat="textures"]', "aria-pressed") == "true")

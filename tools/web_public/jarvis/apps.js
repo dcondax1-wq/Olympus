@@ -87,6 +87,7 @@ export const BUILT_INS = Object.freeze([
   app('hephaestus', 'Hephaestus', 'trading', '#d96bff', 'The forge: tune the dials', { glyph: '\u2692' }),
   app('cities', 'Cities', 'trading', '#a68bff', 'A world of city islands', { glyph: '\u25C8' }),
   app('kalshicity', 'Kalshi City', 'money', '#2ef2d0', "The Kalshi bot's edges as a night city", { glyph: 'K' }),
+  app('journal', 'Mnemosyne', 'trading', '#f09bd8', 'A 10-second trade journal: what your habits cost, in dollars', { glyph: '\u039C' }),
   app('ledger', 'Ledger', 'money', '#ffcf5a', 'Your real money: fees, payouts, net profit', { glyph: 'L' }),
   app('inbox', 'Inbox', 'life', '#7fd0ff', 'Everything that needs a look, in one place', { glyph: '\u2709' }),
   app('settings', 'Settings', 'life', '#b79bff', 'Look, voice, storage and the tour', { glyph: '\u2699' }),

@@ -140,6 +140,16 @@ export const KEYS = { fx: 'jfx', theme: 'olympus.theme', grain: 'olympus.grain',
 export const FX_LEVELS = [['ultra', 'Ultra', 'Everything: glow, reflections, the most particles (a PC or a new iPhone)'], ['high', 'High', 'The full look (the usual choice)'],
   ['low', 'LITE', 'Lighter: fewer effects, easier on the battery'], ['off', 'Still', 'Nothing moves']];
 export const fxGet = (st) => { try { const v = st.getItem(KEYS.fx); return FX_LEVELS.some((l) => l[0] === v) ? v : null; } catch (_) { return null; } };
+/** the Sound switch (OLYMPUS.sound): 'auto' (the stored key 's' absent: on, silent in LITE / reduced motion / saver), 'on' (true) or 'off' (false) */
+export const SOUND_MODES = [['auto', 'Auto', 'On, but silent in LITE, reduced motion and battery saver'], ['on', 'On', 'Always, even in LITE'], ['off', 'Off', 'No beds and no UI cues']];
+export const soundGet = (st) => { const o = jget(st, KEYS.sfx, {}); return o && o.s === true ? 'on' : o && o.s === false ? 'off' : 'auto'; };
+export function soundSet(st, mode) {
+  const o = Object.assign({}, jget(st, KEYS.sfx, {}));
+  if (mode === 'on') o.s = true; else if (mode === 'off') o.s = false; else delete o.s;
+  try { st.setItem(KEYS.sfx, JSON.stringify(o)); } catch (_) { /* private mode */ }
+  return soundGet(st);
+}
+
 /** battery saver = LITE quality + no intro films + sounds muted; the old values are kept in 'olympus.saver' and come back when it goes off */
 export function saverOn(st) { return !!jget(st, KEYS.saver, null); }
 export function saverSet(st, on) {

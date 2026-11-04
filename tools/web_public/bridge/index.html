@@ -122,10 +122,15 @@ pre { border: 1px solid rgba(192, 132, 252, .12); }
 .num { font: 800 14px Orbitron, sans-serif; color: #06040d; background: linear-gradient(145deg, #ffe29a, var(--gold)); border-radius: 50%; width: 28px; height: 28px; display: grid; place-items: center; flex: none; }
 .nx { display: flex; gap: 10px; align-items: center; }
 .tag.easy { color: var(--ok); } .tag.hard { color: #fca5a5; }
+.home { justify-self: start; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: rgba(124, 58, 237, .18);
+  color: var(--ink); text-decoration: none; font: 700 13px Orbitron, sans-serif; letter-spacing: .12em; }
+.framed .home { display: none; }
 </style>
+<script>(function () { try { if (window.top !== window) document.documentElement.classList.add('framed'); } catch (e) { document.documentElement.classList.add('framed'); } })();</script>
 </head>
 <body>
 <div class="w">
+  <a class="home" href="../jarvis/" id="homeLink">&#927; Back to Olympus</a>
   <div><div class="e">OLYMPUS · CLAUDE × CHATGPT</div><h1>BRIDGE</h1></div>
   <section class="how">
     <b>How it works</b>
@@ -148,12 +153,12 @@ pre { border: 1px solid rgba(192, 132, 252, .12); }
     <div class="step" id="s2">
       <label class="tk"><input type="checkbox" data-step="2"><span class="n">2</span><span class="st">Teach ChatGPT the rules</span></label>
       <p>Tap the big button, then paste it into a new ChatGPT chat and send it. Once only.</p>
-      <div class="row"><button id="copySync" class="big-btn" type="button">Copy the sync prompt</button></div>
+      <div class="row"><button id="copySync" class="big-btn" type="button" data-oly-cue="success">Copy the sync prompt</button></div>
     </div>
     <div class="step" id="s3">
       <label class="tk"><input type="checkbox" data-step="3"><span class="n">3</span><span class="st">Send the first job</span></label>
       <p>This copies the icons job and opens ChatGPT Codex. Paste it there and send.</p>
-      <div class="row"><button id="firstJob" class="big-btn" type="button">Send first job</button></div>
+      <div class="row"><button id="firstJob" class="big-btn" type="button" data-oly-cue="open">Send first job</button></div>
     </div>
   </section>
   <script type="text/plain" id="onboardText">You are my build partner for OLYMPUS, my trading dashboards and Jarvis assistant. Claude (in Claude Code) does the
@@ -180,7 +185,7 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
     <button type="button" role="tab" id="tab-next" data-tab="next" aria-selected="false">Ask next</button>
   </nav>
   <div id="p-jobs" role="tabpanel">
-    <div class="bar"><span class="prog" id="prog"></span><button id="reset" type="button">Reset ticks</button></div>
+    <div class="bar"><span class="prog" id="prog"></span><button id="reset" type="button" data-oly-cue="warning">Reset ticks</button></div>
     <div id="list"></div>
   </div>
   <div id="p-lib" role="tabpanel" hidden>
@@ -197,6 +202,7 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
     <div id="nextList" class="stack"></div>
   </div>
 </div>
+<script src="../olympus/sfx.js?v=s1" defer></script>
 <script>
 (function () {
   var REPO = 'demetrades2000-coder/nq-liquidity-engine';
@@ -262,7 +268,7 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
       c.appendChild(lv);
       var d = el('details'); d.appendChild(el('summary', '', 'Show prompt')); d.appendChild(el('pre', '', j.p)); c.appendChild(d);
       var row = el('div', 'row');
-      var cp = el('button', '', 'Copy prompt'); cp.type = 'button';
+      var cp = el('button', '', 'Copy prompt'); cp.type = 'button'; cp.setAttribute('data-oly-cue', 'success');
       cp.onclick = function () {
         var ok = function () { cp.textContent = 'Copied ✓'; cp.classList.add('copied'); setTimeout(function () { cp.textContent = 'Copy prompt'; cp.classList.remove('copied'); }, 1600); };
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(j.p).then(ok, function () { d.open = true; });
@@ -394,7 +400,7 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
       CATS = (d.cats || []).filter(function (c) { return c && ID_RE.test(c.id || ''); }).map(function (c) { return { id: c.id, name: str(c.name, 60) }; });
       LIB = d.jobs.filter(function (j) { return j && ID_RE.test(j.id || '') && typeof j.prompt === 'string'; }).map(function (j) {
         return { id: j.id, cat: str(j.cat, 40), title: str(j.title, 90), makes: str(j.makes, 300), prompt: j.prompt.slice(0, 6000),
-                 files: (j.files || []).filter(function (f) { return FILE_RE.test(f); }).slice(0, 30), minutes: +j.minutes || 10, difficulty: str(j.difficulty, 10) };
+                 files: (j.files || []).filter(function (f) { return FILE_RE.test(f); }).slice(0, 30), minutes: +j.minutes || 10, difficulty: str(j.difficulty, 10), ingest: str(j.ingest || '', 400) };
       });
       window.BRIDGE_LIB = LIB;
       document.getElementById('tab-lib').textContent = 'Library ' + LIB.length;
@@ -409,9 +415,10 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
     var m = el('div', 'meta'); m.appendChild(el('span', '', catName(j.cat))); var mb = el('span'); mb.appendChild(el('b', '', '~' + j.minutes + ' min')); m.appendChild(mb); c.appendChild(m);
     var to = el('div', 'to'); to.appendChild(document.createTextNode('Result → ')); to.appendChild(el('code', '', 'handoff/inbox/' + j.id + '/')); c.appendChild(to);
     var fl = el('div', 'files'); fl.appendChild(document.createTextNode('Files: ')); fl.appendChild(el('code', '', j.files.join(', '))); c.appendChild(fl);
+    if (j.ingest) c.appendChild(el('div', 'why ingest', 'Then Claude: ' + j.ingest));
     c.appendChild(liveLine(j.id));
     c.appendChild(promptBlock(j));
-    var row = el('div', 'row'), cp = el('button', '', 'Copy prompt'); cp.type = 'button'; cp.onclick = function () { copyText(j.prompt, cp, 'Copy prompt'); };
+    var row = el('div', 'row'), cp = el('button', '', 'Copy prompt'); cp.type = 'button'; cp.setAttribute('data-oly-cue', 'success'); cp.onclick = function () { copyText(j.prompt, cp, 'Copy prompt'); };
     row.appendChild(cp);
     var st = stateOf(j.id);
     if (st && (st.state === 'done' || st.state === 'question')) row.appendChild(tellBtn(j.id, 'Tell Claude', 'Bridge: ' + j.id + (st.state === 'done' ? ' done' : ' question')));
@@ -513,7 +520,7 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
       c.appendChild(el('div', 'why', str(n.why, 160)));
       c.appendChild(el('div', 'meta', '~' + (+n.minutes || 10) + ' min · ' + str(n.difficulty, 10)));
       var row = el('div', 'row'), p = promptOf(n.id);
-      if (p) { var cp = el('button', '', 'Copy prompt'); cp.type = 'button'; cp.onclick = function () { copyText(p, cp, 'Copy prompt'); }; row.appendChild(cp); }
+      if (p) { var cp = el('button', '', 'Copy prompt'); cp.type = 'button'; cp.setAttribute('data-oly-cue', 'success'); cp.onclick = function () { copyText(p, cp, 'Copy prompt'); }; row.appendChild(cp); }
       var lb = el('button', '', 'Open in Library'); lb.type = 'button';
       lb.onclick = function () { catSel = 'all'; show('lib'); setTimeout(function () { var t = document.getElementById('lib-' + n.id); if (t) { t.scrollIntoView({ block: 'center' }); var dd = t.querySelector('details'); if (dd) dd.open = true; } }, 60); };
       row.appendChild(lb);

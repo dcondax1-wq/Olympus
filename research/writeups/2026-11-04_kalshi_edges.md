@@ -151,3 +151,11 @@ Control (not a trade): fade the extremes, i.e. buy the 1-3c side. The feed says 
 - Bet size per strategy and per loss is inferred from totals, not observed.
 - Fee schedule is from secondary sources; the bot's own P&L supports the 0.07 rate.
 - Everything was looked at in-sample; the positive 95c+ pocket especially needs forward proof.
+
+## In the app: the guard (2026-11-04)
+The top card of the Kalshi page is now "Do not take this bet" (`tools/web_public/kalshi/kalshi.js`, `guardHtml`). For every open bet it checks the
+rules above against the numbers the bot publishes: the price band that loses (a band is only called a leak on 100+ bets; with no published bands the
+90-95c leak of -$248.30 stands in), the fee against the win rate that band / strategy has had (needs p + 0.07 p (1-p)), the size (10% of the balance =
+careful, 25% = do not take), a coin that has lost (3%+ of what was bet, 30+ bets) and bets that settle together. Green / amber / red, each with its dollar
+reason. With nothing open it still shows, and four price chips (91 / 94 / 96 / 98c) check a bet of the bot's usual size before it exists. Suggestions only:
+the page has no form, no link to Kalshi and sends nothing. Test: `python -X utf8 -m tests.test_kalshi_page` (checks g1 to g7; `--only=guard` for just those).

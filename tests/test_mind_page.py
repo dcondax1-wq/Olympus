@@ -1091,6 +1091,78 @@ def overhaul_cases(br, origin):
     ctx.close()
 
 
+# ------------------------------------------------------------------ n. never blank: a fresh phone, a tiny vault, no vault (2026-11-04 audit)
+NOT_WEBDRIVER = "Object.defineProperty(navigator, 'webdriver', { get: () => false });"       # a real phone: Home opens by itself on the first visit
+
+
+def blank_cases(br, origin):
+    now = int(time.time() * 1000)
+    tiny = {"v": 1, "t": now, "notes": [{"id": "A.md", "title": "A", "path": "A.md", "tags": [], "links": [], "mtime": now - 40 * 86400_000, "words": 5, "kind": "note"}], "learned": []}
+    only_me = {"v": 1, "t": now, "notes": [{"id": "Me.md", "title": "Me", "path": "Me.md", "tags": [], "links": [], "mtime": 0, "words": 0, "kind": "me"}], "learned": []}
+    cases = [("a fresh phone, no vault (the demo brain)", None, None, False), ("a vault with one old note and nothing learned", FAKE_OBSIDIAN, tiny, True),
+             ("a vault with only the Me note, no dates", FAKE_OBSIDIAN, only_me, True)]
+    for label, js, snap, sparse in cases:
+        MOCK["js"] = js
+        ctx, p, log = new_page(br, origin, (390, 844), snap=snap, quality=None)
+        p.add_init_script(NOT_WEBDRIVER)
+        t0 = time.time()
+        p.goto(origin + "/mind/?q=off", wait_until="commit")
+        boot_seen = p.evaluate("(() => { const b = document.getElementById('boot'); return !!b && getComputedStyle(b).display !== 'none'; })()") if p.evaluate("!!document.getElementById('boot')") else None
+        ready(p, 120000)
+        took = time.time() - t0
+        home = p.evaluate("[!document.getElementById('panel').hidden, document.getElementById('panel').dataset.view, document.getElementById('p-body').innerText.trim().length]")
+        check(f"n. {label}: fresh load, no saved state: the 'Waking your brain' line while it loads, gone once it is up; Home opens by itself with content ({home[2]} characters, ready in {took:.1f} s)",
+              boot_seen in (True, None) and p.is_hidden("#boot") and home[0] and home[1] == "home" and home[2] > 300, (boot_seen, home))
+        bad, noact = [], []
+        for n in PAGES_ALL:
+            if p.evaluate("!document.getElementById('panel').hidden && document.getElementById('panel').dataset.view") == n:
+                p.keyboard.press("Escape")
+            p.click(f"#dock [data-panel={n}]")
+            p.wait_for_function(f"document.getElementById('panel').dataset.view === '{n}' && !document.getElementById('panel').hidden", timeout=30000)
+            if len(p.inner_text("#p-body").strip()) < 100:
+                bad.append(n)
+            if p.evaluate("document.querySelectorAll('#p-body .empty').length") and not p.evaluate("document.querySelectorAll('#p-body .empty .cta').length"):
+                noact.append(n)
+        check(f"n. {label}: all nine pages have words in them (100+ characters)", not bad, bad)
+        check(f"n. {label}: every page that is empty says what to do and has a button for it (Teach Jarvis / Preview a demo brain)", not noact, noact)
+        p.keyboard.press("Escape")
+        sp = p.evaluate("[mind.sparse, !document.getElementById('sparse').hidden, document.getElementById('sp-text').textContent]")
+        check(f"n. {label}: the 'just starting' banner {'shows' if sparse else 'stays away'} ({sp[2] or 'no banner'})", sp[0] == sparse and sp[1] == sparse and (not sparse or "just starting" in sp[2] or "empty" in sp[2]), sp)
+        if sparse:
+            p.click("#sp-preview")
+            p.wait_for_function("mind.preview === true && mind.stats.notes > 80", timeout=60000)
+            st = p.evaluate("[mind.mode, !document.getElementById('demo').hidden, document.getElementById('sp-text').textContent, document.getElementById('sp-preview').textContent]")
+            check("n. Preview demo: the grown demo brain replaces the sky, labelled DEMO, with a way back (nothing written anywhere)", st[0] == "demo" and st[1] and "Previewing a demo brain" in st[2] and st[3] == "Back to my vault"
+                  and p.evaluate("localStorage.getItem('jarvis.assistant.v1')") is None, st)
+            p.evaluate("globalThis.__obs.fire()")
+            p.wait_for_timeout(1500)
+            check("n. a change in the real vault while previewing does not pull the owner out of the preview", p.evaluate("mind.preview") is True and p.evaluate("mind.mode") == "demo")
+            p.click("#sp-preview")
+            p.wait_for_function("mind.preview === false && mind.stats.notes < 5", timeout=60000)
+            check("n. Back to my vault: the real (tiny) brain again", p.evaluate("mind.mode") == "live" and p.evaluate("mind.sparse") is True)
+        check(f"n. {label}: no console errors", not real_errors(log), real_errors(log))
+        ctx.close()
+    # a full vault (the 60-note mock): no banner
+    MOCK["js"] = FAKE_OBSIDIAN
+    ctx, p, log = new_page(br, origin, (390, 844), snap=mock_vault(now))
+    p.goto(origin + "/mind/?q=off&home=0")
+    ready(p)
+    check("n. a full vault shows no 'just starting' banner", p.evaluate("mind.sparse") is False and p.is_hidden("#sparse"))
+    ctx.close()
+    # the page's own module cannot start: the owner is told, not left with a black screen
+    MOCK["js"] = None
+    ctx, p, log = new_page(br, origin, (390, 844))
+    ctx.route("**/mind/main.js*", lambda r: r.abort())
+    p.goto(origin + "/mind/?q=off")
+    p.wait_for_function("document.getElementById('boot').textContent.includes('taking long')", timeout=30000)
+    check("n. if the page cannot start at all, the first screen says so in plain words (never a bare black screen)", p.is_visible("#boot") and "reload" in p.inner_text("#boot").lower())
+    ctx.close()
+    MOCK["js"] = None
+
+
+PAGES_ALL = ["home", "notes", "days", "learned", "graph", "review", "teach", "stats", "look"]
+
+
 def main():
     static_checks()
     unit_cases()
@@ -1108,6 +1180,7 @@ def main():
             render_core_cases(br, origin)
             live_cases(br, origin)
             overhaul_cases(br, origin)
+            blank_cases(br, origin)
             other_cases(br, origin)
         finally:
             br.close()
