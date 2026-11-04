@@ -40,7 +40,7 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 55%, #2a0a1
 .verdict .live[hidden] { display: none; }
 
 .pills { display: flex; gap: 6px; }
-.pills button { min-height: 36px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--oly-line); background: var(--oly-glass); font: 700 12px/1 var(--oly-ui); letter-spacing: .04em;
+.pills button { min-height: 44px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--oly-line); background: var(--oly-glass); font: 700 12px/1 var(--oly-ui); letter-spacing: .04em;
   -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
 .pills button[aria-pressed="true"] { border-color: rgba(var(--l-red-rgb), .75); box-shadow: 0 0 14px rgba(var(--l-red-rgb), .25) inset; color: var(--l-red); }
 
@@ -50,13 +50,13 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 55%, #2a0a1
 .dock .row { display: flex; align-items: center; gap: 8px; }
 .dock .size label { flex: none; font-size: 13px; color: var(--oly-dim); }
 .dock .size label b { color: var(--l-red); font: 800 15px/1 var(--oly-display, sans-serif); margin-left: 4px; }
-.dock input[type=range] { flex: 1; min-width: 0; height: 32px; accent-color: var(--l-red); background: transparent; }
+.dock input[type=range] { flex: 1; min-width: 0; height: 44px; accent-color: var(--l-red); background: transparent; }
 .dock .chips { flex-wrap: wrap; }
-.dock .chips button { flex: 1 1 0; min-width: 0; min-height: 36px; padding: 4px 6px; border-radius: 10px; border: 1px solid var(--oly-line); background: rgba(255, 255, 255, .04); font: 700 12px/1 var(--oly-ui); white-space: nowrap; }
+.dock .chips button { flex: 1 1 0; min-width: 0; min-height: 44px; padding: 4px 6px; border-radius: 10px; border: 1px solid var(--oly-line); background: rgba(255, 255, 255, .04); font: 700 12px/1 var(--oly-ui); white-space: nowrap; }
 .dock .chips button[aria-pressed="true"] { border-color: rgba(var(--l-red-rgb), .8); color: var(--l-red); }
 .dock .sel { gap: 8px; }
 .dock .sel label { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--oly-dim); }
-.dock select { width: 100%; min-height: 36px; padding: 4px 6px; border-radius: 10px; border: 1px solid var(--oly-line); background: rgba(255, 255, 255, .06); font-size: 16px; text-transform: none; letter-spacing: 0; }
+.dock select { width: 100%; min-height: 44px; padding: 4px 6px; border-radius: 10px; border: 1px solid var(--oly-line); background: rgba(255, 255, 255, .06); font-size: 16px; text-transform: none; letter-spacing: 0; }
 .dock .help { margin: 0; font-size: 11px; color: var(--oly-dim); }
 
 .sheet { position: fixed; z-index: 6; left: calc(var(--sl) + 16px); right: calc(var(--sr) + 16px); bottom: calc(var(--sb) + var(--dock-h) + 22px);
@@ -89,4 +89,4 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 55%, #2a0a1
 .march li.end.bust .n, .march li.end.bust b { color: var(--l-red); }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
-@media (max-height: 740px) { .dock .help { display: none; } :root { --dock-h: 196px; } .odd b { font-size: 19px; } }
+@media (max-height: 740px) { .dock .help { display: none; } :root { --dock-h: 232px; } .odd b { font-size: 19px; } }
