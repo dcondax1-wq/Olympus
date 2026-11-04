@@ -339,7 +339,7 @@ def run_browser():
             check("c. 'Make it my vow' opens the Vow sheet with the vow in plain words, a tick box and the week note button", "I kept this vow" in vtxt and p.locator(".vowbox p").inner_text().strip() != "" and p.is_visible("#copyWeek") and not p.is_checked("#vowTick"), vtxt[:300])
             vow_text = p.locator(".vowbox p").inner_text()
             tap(p, "#vowTick")
-            wk = st(p)["week"]
+            wk = p.evaluate("Object.keys(NEM.state().vows)[0]")          # in All mode the vow belongs to the newest week
             stored = p.evaluate("JSON.parse(localStorage.getItem('nemesis.v1'))")
             check("c. ticking the vow is kept in the page's localStorage only (nemesis.v1: week, leak, text, done)", stored["vows"][wk]["done"] is True and stored["vows"][wk]["text"] == vow_text and stored["vows"][wk]["leak"], stored)
             tap(p, "#copyWeek")
