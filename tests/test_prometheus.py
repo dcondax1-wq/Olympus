@@ -609,7 +609,7 @@ def _plus_checks(br, url):
     p.wait_for_function("window.__forge.works && window.__forge.works.fx.length >= 3", timeout=240000)
     w = p.evaluate("window.__forge.works")
     check(f"i. on HD the smithy has the OLYMPUS effects (embers, heat haze, smoke, light shafts): {w['fx']}", {"embers", "heatShimmer", "volumetricFog", "godRays"} <= set(w["fx"]), w)
-    p.wait_for_function("window.__forge.works.strikes >= 1", timeout=60000)
+    p.wait_for_function("window.__forge.works.strikes >= 1", timeout=420000)     # the beat runs on the frame clock (capped per frame): a 1 fps software GL needs minutes
     check("i. the hammer strikes (the ingot flares, sparks fly)", p.evaluate("window.__forge.works.strikes") >= 1)
     calls = p.evaluate("window.__forge.calls")
     check(f"i. the forge scene stays inside its draw-call budget on HD ({calls} <= 90)", 0 < calls <= 90, calls)
