@@ -1111,6 +1111,7 @@ def run_look(br, url):
 
 # the switch order: Jarvis, TRADING, LIFE, MONEY (apps.js BUILT_INS); the test site has Data City's folder, not the others'
 ORDER = ["home", "zenith", "oracle", "odeon", "fates", "datacity", "tree", "prometheus", "pantheon", "ares", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "journal", "bridge", "inbox", "settings", "planner", "mind", "arena", "athena", "kalshicity", "ledger", "kalshi", "tyche", "hermes", "plutus"]
+MONEY_FIRST = "kalshicity"          # the first MONEY app in apps.js: the group chip glides its card to the middle
 NOT_ON_SITE = ["oracle", "odeon", "fates", "tree", "prometheus", "pantheon", "ares", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "journal", "bridge", "inbox", "settings", "mind", "arena", "athena", "kalshicity", "ledger", "tyche", "hermes", "plutus"]
 
 
@@ -1183,12 +1184,12 @@ def run_olympus(br, url):
           and o["scroll"][2] == "auto" and o["sw"] <= 390, o)
     p.click('#nxGroups [data-nx-jump="money"]')
     try:
-        p.wait_for_function("""(() => { const t = document.getElementById('nxTrack'), c = t.querySelector('.nx-card[data-nx="kalshi"]');
-            return Math.abs(c.offsetLeft + c.offsetWidth / 2 - (t.scrollLeft + t.clientWidth / 2)) < 45; })()""", timeout=5000, polling=50)
+        p.wait_for_function("""(id) => { const t = document.getElementById('nxTrack'), c = t.querySelector('.nx-card[data-nx="' + id + '"]');
+            return Math.abs(c.offsetLeft + c.offsetWidth / 2 - (t.scrollLeft + t.clientWidth / 2)) < 45; }""", arg=MONEY_FIRST, timeout=5000, polling=50)
         jumped = True
     except Exception:                                   # noqa: BLE001 - reported below
         jumped = False
-    check("p. a group chip glides the cards to that group (MONEY: Kalshi in the middle), the switcher stays open",
+    check("p. a group chip glides the cards to that group (MONEY: its first app in the middle), the switcher stays open",
           jumped and p.evaluate("document.getElementById('nxRoot').classList.contains('on')"))
     p.click('#nxRow .nx-qb[data-nx="home"]')
     p.wait_for_function("window.__jarvis.active() === 'home'", timeout=5000)
