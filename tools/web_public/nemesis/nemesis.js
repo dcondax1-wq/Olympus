@@ -3,10 +3,12 @@
 // Kept on this phone only: the vows, in localStorage 'nemesis.v1'. Read (never written): the Zenith journal tags 'le.jtags'.
 import { parseTrades, fallen, weeks, leaks, weekText, dayText, usd, vowText, LEAKS, LEAK_IDS, readTags, obsidianLesson, obsidianWeek, plainWeek, isLoss } from './nemcore.js';
 
+import * as X from './extras.js';
+
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
 const KEY = 'nemesis.v1';
-const S = { trades: [], fallen: [], weeks: [], wk: '', all: false, sel: null, view: '', vows: {}, demo: true, scene: null, ready: false, error: null, home: null, tagCount: 0, copied: '' };
+const S = { trades: [], fallen: [], weeks: [], wk: '', all: false, sel: null, view: '', vows: {}, demo: true, scene: null, raw: null, ready: false, error: null, home: null, tagCount: 0, copied: '' };
 
 const reduced = () => (O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches));
 function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; }
@@ -75,6 +77,9 @@ function fallenView() {
   return [h('p', 'strong', `${list.length} fallen. Tap one, or a figure in the arena, for its autopsy.`), ul];
 }
 
+// the deeper reads (extras.js) never hide the sheet they sit in
+function more(fn) { try { return fn(); } catch (_) { return null; } }
+
 function autopsyView(f) {
   const a = f.a, t = f.t;
   const head = h('p', 'strong'); head.append(h('span', `badge ${a.tone}`, a.verdict), h('span', 'who', a.who));
@@ -95,7 +100,7 @@ function autopsyView(f) {
   bo.addEventListener('click', () => older && pick(older.id)); bn.addEventListener('click', () => newer && pick(newer.id));
   const back = h('button', 'btn ghost', 'List'); back.type = 'button'; back.id = 'toList'; back.addEventListener('click', () => { S.sel = null; syncScene(); openSheet('fallen'); });
   row.append(copy, bo, bn, back);
-  return [head, ol, lesson, row, box, h('p', 'note', 'Copy only puts text on your clipboard. Nothing is sent anywhere.')];
+  return [head, ol, more(() => X.replayChart(f, S.raw)), lesson, row, box, h('p', 'note', 'Copy only puts text on your clipboard. Nothing is sent anywhere.')];
 }
 
 function leaksView() {
@@ -115,6 +120,7 @@ function leaksView() {
     out.push(ol);
   } else out.push(h('p', '', list.length ? 'None of the checks found a leak in these losses.' : 'Nothing to rank.'));
   if (rk.plan.n) out.push(h('p', '', `Plan losses: ${rk.plan.n} ${rk.plan.n === 1 ? 'trade' : 'trades'}, ${usd(-rk.plan.cost)}. The plan was followed; this is the price of the edge, not a leak.`));
+  out.push(more(() => X.leakTimeline(S.weeks, S.fallen)), more(() => X.patterns(S.trades)));
   out.push(h('p', 'note', 'Cost = the loss of the trades that carry the leak (for heavy size, only the part above a third of the room or above the bot\'s size). A trade with two leaks counts under each, so the leaks can add up to more than the total.'));
   return out;
 }
@@ -134,7 +140,7 @@ function vowView() {
   const lab = h('label', 'tick'), cb = h('input'); cb.type = 'checkbox'; cb.id = 'vowTick'; cb.checked = !!(v && v.done);
   lab.append(cb, h('span', '', 'I kept this vow'));
   cb.addEventListener('change', () => { if (!S.vows[wk]) S.vows[wk] = { leak: id, text, done: false }; S.vows[wk].done = cb.checked; persist(); openSheet('vow'); });
-  out.push(lab);
+  out.push(lab, more(() => X.vowStreak(S.vows)));
   const others = rk.rank.filter((r) => r.id !== id).slice(0, 3);
   if (others.length) {
     const row = h('div', 'btnrow');
@@ -144,7 +150,9 @@ function vowView() {
   const copy = h('button', 'btn', 'Copy week note for Obsidian'), area = h('textarea', 'copybox'); copy.type = 'button'; copy.id = 'copyWeek';
   area.hidden = true; area.readOnly = true; area.id = 'copyBox'; area.setAttribute('aria-label', 'The note to copy');
   copy.addEventListener('click', () => copyText(obsidianWeek(wk, list, rk, { text, done: cb.checked }), copy, area));
-  const r2 = h('div', 'btnrow'); r2.append(copy);
+  const copyAll = h('button', 'btn ghost', 'Copy full review for Obsidian'); copyAll.type = 'button'; copyAll.id = 'copyAll';
+  copyAll.addEventListener('click', () => { let t = ''; try { t = X.obsidianAll({ wk, list, rk, vows: S.vows, trades: S.trades, weeks: S.weeks, all: S.fallen }); } catch (_) { t = obsidianWeek(wk, list, rk, { text, done: cb.checked }); } copyText(t, copyAll, area); });
+  const r2 = h('div', 'btnrow'); r2.append(copy, copyAll);
   out.push(r2, area);
   const done = Object.entries(S.vows).sort((a, b) => (a[0] < b[0] ? 1 : -1)).slice(0, 8);
   if (done.length) {
@@ -272,11 +280,11 @@ function wire() {
 async function main() {
   const scene = startScene();
   const [tr, home] = await Promise.all([getJSON('../odeon/trades.json'), getJSON('../home.json')]);
-  let trades = parseTrades(tr), hm = home;
+  let trades = parseTrades(tr), hm = home; S.raw = tr;
   S.demo = trades.length < 8;
   if (S.demo) {                                                          // the site data is not there: the recorded copy (DEMO)
     const fx = await getJSON('fixture.json');
-    if (fx) { trades = parseTrades(fx); hm = fx.home; }
+    if (fx) { trades = parseTrades(fx); hm = fx.home; S.raw = fx; }
   }
   S.trades = trades;
   S.home = hm && Array.isArray(hm.accounts) ? hm.accounts.find((a) => a && a.eval && /50k/i.test(String(a.plan || a.id || '')) && a.kind !== 'paper') || null : null;

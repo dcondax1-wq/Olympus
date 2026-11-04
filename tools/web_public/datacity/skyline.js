@@ -5,17 +5,68 @@
 // attributes, written only when it changes, never per frame.
 import * as THREE from '../jarvis/three.module.min.js';
 import * as SH from './shaders.js';
+import { ARCH } from './kinds.js';
 
-export const LOD = { hq: 200, lq: 125 };        // a tile nearer than this (to its edge) draws every building
-const MIRROR_NEAR = { hq: 120, lq: 0 };        // and its reflection when nearer than this (HQ only)
+export const LOD = { hq: 170, lq: 125 };        // a tile nearer than this (to its edge) draws every building
+export const RICH = { hq: 70, lq: 0 };          // and nearer than this it draws the 8-sided towers (round glass, real drums); further, 4-sided ones
+const MIRROR_NEAR = { hq: 100, lq: 0 };
+const MAX_FULL = { hq: 22, lq: 12 };           // at most this many tiles drawn in full (the nearest)
+const MIRRORS = 4;                             // at most this many reflected tiles (each is a draw call)
 const golden = (i) => (i * 0.6180339) % 1;
 
-function shared(geo) {
+/** A building: three stacked prisms (tier 0, 1, 2) of `sides` sides. The vertex shader reshapes them per building type (steps, taper, a spire,
+ *  round or square), so one geometry makes every type. position = the square outline in unit space, aRad = the vertex's direction (the round
+ *  version), aTier = which prism. 4 sides = 30 triangles, 8 sides = 66. */
+export function towerGeo(sides) {
+  const pos = [], nor = [], uv = [], tier = [], rad = [], idx = [];
+  const ang = (k) => (sides === 4 ? Math.PI / 4 + (k * Math.PI) / 2 : (k * Math.PI * 2) / sides);
+  const sq = (a) => { const c = Math.cos(a), s = Math.sin(a), m = Math.max(Math.abs(c), Math.abs(s)); return [(c / m) * 0.5, (s / m) * 0.5]; };
+  const vert = (a, y, n, t, centre) => {
+    const [x, z] = centre ? [0, 0] : sq(a);
+    pos.push(x, y, z); nor.push(...n); uv.push(0, y); tier.push(t); rad.push(centre ? 0 : Math.cos(a), centre ? 0 : Math.sin(a));
+    return pos.length / 3 - 1;
+  };
+  for (let t = 0; t < 3; t++) {
+    for (let k = 0; k < sides; k++) {
+      const a0 = ang(k), a1 = ang(k + 1), am = (a0 + a1) / 2;
+      const n = Math.abs(Math.cos(am)) > Math.abs(Math.sin(am)) ? [Math.sign(Math.cos(am)), 0, 0] : [0, 0, Math.sign(Math.sin(am))];
+      const bl = vert(a0, 0, n, t), br = vert(a1, 0, n, t), tr = vert(a1, 1, n, t), tl = vert(a0, 1, n, t);
+      idx.push(bl, tr, br, bl, tl, tr);
+    }
+    if (sides === 4) {                                           // the plain version: a roof of two triangles
+      const r = [0, 1, 2, 3].map((k) => vert(ang(k), 1, [0, 1, 0], t));
+      idx.push(r[0], r[2], r[1], r[0], r[3], r[2]);
+      continue;
+    }
+    const c = vert(0, 1, [0, 1, 0], t, true), ring = [];
+    for (let k = 0; k < sides; k++) ring.push(vert(ang(k), 1, [0, 1, 0], t));
+    for (let k = 0; k < sides; k++) idx.push(c, ring[(k + 1) % sides], ring[k]);
+  }
   const g = new THREE.BufferGeometry();
-  g.setIndex(geo.index);
-  for (const k of ['position', 'normal', 'uv']) g.setAttribute(k, geo.getAttribute(k));
-  g.boundingBox = geo.boundingBox; g.boundingSphere = geo.boundingSphere;
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  g.setAttribute('aTier', new THREE.Float32BufferAttribute(tier, 1));
+  g.setAttribute('aRad', new THREE.Float32BufferAttribute(rad, 2));
+  g.setIndex(idx);
+  g.boundingBox = new THREE.Box3(new THREE.Vector3(-0.5, 0, -0.5), new THREE.Vector3(0.5, 1.5, 0.5));
+  g.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0.7, 0), 1.0);
   return g;
+}
+
+/** the building-type tables as uniforms (kinds.js ARCH: y1 y2 crown round | scales | scales glass rough) */
+export function archUniforms() {
+  const a = [], b = [], c = [];
+  for (let i = 0; i < 16; i++) {                                 // the shader's tables hold 16: pad with the plain block
+    const r = ARCH[Math.min(i, ARCH.length - 1)];
+    a.push(new THREE.Vector4(r[0], r[1], r[2], r[3])); b.push(new THREE.Vector4(r[4], r[5], r[6], r[7])); c.push(new THREE.Vector4(r[8], r[9], r[10], r[11]));
+  }
+  return { uArchA: { value: a }, uArchB: { value: b }, uArchC: { value: c } };
+}
+
+/** share the instanced attributes of one geometry with another (the near, 8-sided version of a tile) */
+function shareInstanced(from, to) {
+  for (const k of ['aColor', 'aData', 'aState', 'aSeed', 'aLook']) to.setAttribute(k, from.getAttribute(k));
 }
 
 /** Nine thin boxes in a unit square, each vertex tagged with its box (aSub): the impostor of one block. */
@@ -45,12 +96,12 @@ export class Skyline {
   constructor(L, U, quality) {
     this.L = L; this.U = U; this.quality = quality;
     this.group = new THREE.Group();
-    const box = new THREE.BoxGeometry(1, 1, 1);
-    box.translate(0, 0.5, 0);
-    box.computeBoundingBox(); box.computeBoundingSphere();
-    this.box = box;
+    this.box = towerGeo(4);                 // far / mid: 4-sided prisms; near: 8-sided (round towers round)
+    this.rich = towerGeo(8);
+    const arch = archUniforms();
     const mat = (mirror) => new THREE.ShaderMaterial({ vertexShader: SH.BUILD_VS, fragmentShader: SH.BUILD_FS,
-      uniforms: { ...pick(U, 'uTime', 'uFog', 'uFogD', 'uHaze', 'uDay', 'uToday', 'uWet', 'uGrow'), uMirror: { value: mirror ? 1 : 0 } },
+      uniforms: { ...pick(U, 'uTime', 'uFog', 'uFogD', 'uHaze', 'uDay', 'uToday', 'uWet', 'uGrow', 'uDusk', 'uCloud', 'uSun', 'uAccent', 'uFlash'), ...arch,
+                  uMirror: { value: mirror ? 1 : 0 } },
       ...(mirror ? { transparent: true, depthWrite: false, side: THREE.DoubleSide } : {}) });
     this.mat = mat(false); this.mirrorMat = mat(true);
     this.where = new Int32Array(L.items.length * 2).fill(-1);       // item -> [mesh index, local index]
@@ -64,8 +115,9 @@ export class Skyline {
   }
 
   _mesh(list, tile) {
-    const L = this.L, n = list.length, g = shared(this.box);
-    const aColor = new Float32Array(n * 3), aData = new Float32Array(n * 4), aState = new Float32Array(n * 4), aSeed = new Float32Array(n);
+    const L = this.L, n = list.length, g = this.box.clone();
+    g.boundingBox = this.box.boundingBox; g.boundingSphere = this.box.boundingSphere;
+    const aColor = new Float32Array(n * 3), aData = new Float32Array(n * 4), aState = new Float32Array(n * 4), aSeed = new Float32Array(n), aLook = new Float32Array(n * 4);
     const m4 = new THREE.Matrix4(), col = new THREE.Color();
     const mesh = new THREE.InstancedMesh(g, this.mat, n);
     list.forEach((i, k) => {
@@ -75,6 +127,8 @@ export class Skyline {
       col.setHex(it.color);
       aColor.set([col.r, col.g, col.b], k * 3);
       aData.set([it.h, it.lit, it.pulse, 0], k * 4);
+      aState[k * 4 + 2] = 1;                                   // the height scale of the timeline (1 = the idea as it stands now)
+      aLook.set([it.arch ?? 11, it.steady ?? 0.5, 0, 0], k * 4);
       aSeed[k] = golden(i);
       this.where[i * 2] = this.meshes.length; this.where[i * 2 + 1] = k;
     });
@@ -82,17 +136,26 @@ export class Skyline {
     g.setAttribute('aData', new THREE.InstancedBufferAttribute(aData, 4));
     g.setAttribute('aState', new THREE.InstancedBufferAttribute(aState, 4));
     g.setAttribute('aSeed', new THREE.InstancedBufferAttribute(aSeed, 1));
+    g.setAttribute('aLook', new THREE.InstancedBufferAttribute(aLook, 4));
+    const gr = this.rich.clone();
+    gr.boundingBox = this.rich.boundingBox; gr.boundingSphere = this.rich.boundingSphere;
+    shareInstanced(g, gr);
+    const near = new THREE.InstancedMesh(gr, this.mat, n);
+    near.instanceMatrix = mesh.instanceMatrix;
+    near.visible = false; near.renderOrder = 2;
     mesh.computeBoundingSphere();
+    near.boundingSphere = mesh.boundingSphere;
     mesh.renderOrder = 2;
     const mirror = new THREE.InstancedMesh(g, this.mirrorMat, n);
     mirror.instanceMatrix = mesh.instanceMatrix;
     mirror.frustumCulled = false;
     mirror.visible = false;
     mirror.renderOrder = 1;
-    const rec = { mesh, mirror, list, tile, detail: true, near: false };
+    const rec = { mesh, mirror, near, list, tile, detail: true, nearOn: false };
     mesh.userData.rec = this.meshes.length;
+    near.userData.rec = this.meshes.length;
     this.meshes.push(rec);
-    this.group.add(mesh, mirror);
+    this.group.add(mesh, near, mirror);
     return rec;
   }
 
@@ -139,18 +202,27 @@ export class Skyline {
   update(camera) {
     const p = camera.position, lod = LOD[this.quality], near = MIRROR_NEAR[this.quality];
     let changed = this.lodDirty;
-    for (const rec of this.tiles) {
-      const t = rec.tile, dist = Math.hypot(p.x - t.cx, p.y - t.hmax * 0.4, p.z - t.cz) - t.r;
-      const detail = dist < lod;
+    const mir = [], dists = this._d || (this._d = new Float32Array(this.tiles.length));
+    this.tiles.forEach((rec, k) => { const t = rec.tile; dists[k] = Math.hypot(p.x - t.cx, p.y - t.hmax * 0.4, p.z - t.cz) - t.r; });
+    // never more than MAX_FULL tiles in full (the nearest ones): a hard ceiling on draw calls and triangles whatever the camera does
+    const order = this._o || (this._o = this.tiles.map((_, k) => k));
+    order.sort((a, b) => dists[a] - dists[b]);
+    const full = new Set(order.slice(0, MAX_FULL[this.quality]).filter((k) => dists[k] < lod));
+    this.tiles.forEach((rec, k) => {
+      const t = rec.tile, dist = dists[k], detail = full.has(k), rich = detail && dist < RICH[this.quality];
       if (detail !== rec.detail || this.lodDirty) {
         rec.detail = detail;
-        rec.mesh.visible = detail;
         for (const b of t.blocks) this.impMeta[b * 4 + 3] = detail ? 0 : 1;
         changed = true;
       }
-      rec.mirror.visible = detail && dist < near;
-    }
-    if (this.landmarks) this.landmarks.mirror.visible = near > 0;
+      rec.mesh.visible = detail && !rich;
+      rec.near.visible = rich;
+      rec.mirror.visible = false;
+      if (detail && dist < near) mir.push([dist, rec]);
+    });
+    mir.sort((a, b) => a[0] - b[0]);
+    for (let k = 0; k < Math.min(MIRRORS, mir.length); k++) mir[k][1].mirror.visible = true;
+    if (this.landmarks) { this.landmarks.near.visible = this.quality === 'hq'; this.landmarks.mesh.visible = !this.landmarks.near.visible; this.landmarks.mirror.visible = near > 0; }
     if (changed && this.imp) this.impAttr.needsUpdate = true;
     this.lodDirty = false;
   }
@@ -180,7 +252,7 @@ export class Skyline {
 
   /** The building (or far block) under a ray: { item } / { block } / null. */
   pick(ray) {
-    const vis = this.meshes.filter((r) => r.mesh.visible).map((r) => r.mesh);
+    const vis = this.meshes.flatMap((r) => [r.mesh, r.near]).filter((m) => m.visible);
     const hit = ray.intersectObjects(vis, false)[0];
     let best = hit ? { item: this.meshes[hit.object.userData.rec].list[hit.instanceId], distance: hit.distance } : null;
     if (this.imp) {
@@ -191,6 +263,36 @@ export class Skyline {
       }
     }
     return best;
+  }
+
+  /** The timeline: scale(i) -> 0..1 height of item i (1 = as it stands now); written when it changes, never per frame. */
+  setScales(scale) {
+    for (const rec of this.meshes) {
+      const st = rec.mesh.geometry.getAttribute('aState');
+      rec.list.forEach((i, k) => { st.array[k * 4 + 2] = scale ? scale(i) : 1; });
+      st.needsUpdate = true;
+    }
+  }
+
+  /** The timeline for some buildings only: entries [[item, scale]]; only the tiles they live in are re-sent. */
+  scaleItems(entries) {
+    const dirty = new Set();
+    for (const [i, v] of entries) {
+      const w = this.where[i * 2], k = this.where[i * 2 + 1];
+      if (w < 0) continue;
+      this.meshes[w].mesh.geometry.getAttribute('aState').array[k * 4 + 2] = v;
+      dirty.add(w);
+    }
+    for (const w of dirty) this.meshes[w].mesh.geometry.getAttribute('aState').needsUpdate = true;
+  }
+
+  /** A celebration glow on one building (fireworks over a gold idea), 0..1. */
+  flash(i, v) {
+    const w = this.where[i * 2], k = this.where[i * 2 + 1];
+    if (w < 0) return;
+    const st = this.meshes[w].mesh.geometry.getAttribute('aState');
+    st.array[k * 4 + 3] = v;
+    st.needsUpdate = true;
   }
 
   /** What the camera sees now: tiles in full, impostor blocks shown (for the HUD and the tests). */

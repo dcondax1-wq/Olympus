@@ -29,6 +29,7 @@
 
   // ------------------------------------------------------------------ helpers
   const $ = (s) => document.querySelector(s);
+  const EVT = '<abbr title="expected value: what this bet is worth on average">EV</abbr>';   // plain words on hover / long-press
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const num = (v) => {
     if (typeof v === 'number') return Number.isFinite(v) ? v : null;
@@ -322,7 +323,7 @@
     const roiTile = `<div class="kpi" data-k="roi"><span class="lab">ROI</span><strong class="fit ${roi ? cls(roi.x) : ''}" data-odo="roi">${roi ? esc(pct(roi.x, true)) : '—'}</strong>`
       + `<em>${esc(roi ? roi.sub : 'no settled bets yet')}</em></div>`;
     const openTile = `<div class="kpi" data-k="open"><span class="lab">Open bets</span><strong class="fit" data-odo="open">${esc(usd(pv.length ? pVal : 0))}</strong>`
-      + `<em>${pv.length ? `${pv.length} ${pv.length === 1 ? 'bet' : 'bets'}${evs.length ? ' · EV ' + esc(usd(sum(evs.map((m) => m.ev)), true)) : ''}` : 'none open'}</em></div>`;
+      + `<em>${pv.length ? `${pv.length} ${pv.length === 1 ? 'bet' : 'bets'}${evs.length ? ' · ' + EVT + ' ' + esc(usd(sum(evs.map((m) => m.ev)), true)) : ''}` : 'none open'}</em></div>`;
     const balSp = fx && eqVals.length > 2 ? fx.spark(eqVals, { cls: cls(eqVals[eqVals.length - 1] - eqVals[0]), live: true }) : '';
     return `<section class="card hero" id="sec-kpi" data-tilt><div class="bal"><div><span class="lab">${esc(k.name ? String(k.name).slice(0, 40) : 'Balance')}${k.name ? ' · balance' : ''}</span>`
       + `<strong class="fit" data-odo="bal">${esc(usd(bal))}</strong></div>${balSp ? `<div class="bal-sp">${balSp}</div>` : ''}</div>`
@@ -639,7 +640,7 @@
     const evs = ps.filter((m) => m.ev != null), evT = sum(evs.map((m) => m.ev)), soon = ps.filter((m) => m.closes != null && m.closes > nowS()).sort(by((m) => m.closes))[0];
     const head = `<div class="card-h"><h2>Open bets · ${n}</h2>${n ? `<span class="r">${hv ? `<span class="muted">${esc(usd(tv))}</span>` : ''}${hv && hp ? ' · ' : ''}${hp ? `<span class="${cls(tp)}">${esc(usd(tp, true))}</span>` : ''}</span>` : ''}</div>`;
     if (!n) return `<section class="card" id="sec-pos">${head}<p class="empty">No open bets right now.</p></section>`;
-    const live = evs.length || soon ? `<div class="pos-live">${evs.length ? `<span>Live edge <b class="${cls(evT)}">${esc(usd(evT, true))}</b> EV</span>` : ''}${soon ? `<span>Next settles <b class="cdn${cdnCls(soon.closes)}" data-c="${soon.closes}">${esc(closesTxt(soon.closes))}</b></span>` : ''}</div>` : '';
+    const live = evs.length || soon ? `<div class="pos-live">${evs.length ? `<span>Live edge <b class="${cls(evT)}">${esc(usd(evT, true))}</b> ${EVT}</span>` : ''}${soon ? `<span>Next settles <b class="cdn${cdnCls(soon.closes)}" data-c="${soon.closes}">${esc(closesTxt(soon.closes))}</b></span>` : ''}</div>` : '';
     const updown = ps.every((m) => m.side === 'up' || m.side === 'down');
     const cnt = { all: n, yes: ps.filter((m) => m.sk === 'yes').length, no: ps.filter((m) => m.sk === 'no').length };
     const lab = { all: 'All', yes: updown ? 'UP' : 'YES', no: updown ? 'DOWN' : 'NO' };
@@ -670,7 +671,7 @@
       m.px != null || num(p.value) != null ? dd('Value now', `${esc(usd(m.value))}${m.px != null ? ' · ' + esc(cents(p.price)) + ' each' : ''}`) : '',
       m.n != null && m.cost != null ? dd('If it wins', `pays ${esc(usd(m.n))} · <span class="up">${esc(usd(m.n - m.cost, true))}</span>`) : '',
       m.closes != null ? dd('Closes', esc(ff(F.full, m.closes)) + ' ET') : '',
-      m.prob != null ? dd('Live edge', `<span class="${cls(m.edge)}">${esc(edgeC(m.edge))}</span> · chance ${esc(pct(m.prob))}${m.ev != null ? ' · EV ' + esc(usd(m.ev, true)) : ''}`) : '',
+      m.prob != null ? dd('Live edge', `<span class="${cls(m.edge)}">${esc(edgeC(m.edge))}</span> · chance ${esc(pct(m.prob))}${m.ev != null ? ' · ' + EVT + ' ' + esc(usd(m.ev, true)) : ''}`) : '',
       p.category ? dd('Market', esc(String(p.category).slice(0, 40))) : '',
     ].join('');
     const price = num(p.price) != null ? ' → ' + esc(cents(p.price)) : '';
@@ -778,7 +779,7 @@
       const w = Math.max(1.5, (Math.abs(m.edge) / mx) * 50), under = me != null && m.edge < me;
       return `<li><div class="bk-t"><b>${sideTag(m.side)}${esc(m.title)}</b><span class="v ${cls(m.edge)}">${esc(edgeC(m.edge))}</span></div>`
         + `<div class="dv" aria-hidden="true">${meX != null ? `<u style="left:${(50 + meX).toFixed(1)}%"></u>` : ''}<i class="${m.edge < 0 ? 'neg' : 'pos'}" style="width:${w.toFixed(1)}%"></i></div>`
-        + `<small>chance ${esc(pct(m.prob))} vs ${esc(cents(m.px != null ? m.px : m.avg))}${m.ev != null ? ' · EV ' + esc(usd(m.ev, true)) : ''}${under ? ' · <span class="down">under the bot\'s min edge</span>' : ''}</small></li>`;
+        + `<small>chance ${esc(pct(m.prob))} vs ${esc(cents(m.px != null ? m.px : m.avg))}${m.ev != null ? ' · ' + EVT + ' ' + esc(usd(m.ev, true)) : ''}${under ? ' · <span class="down">under the bot\'s min edge</span>' : ''}</small></li>`;
     }).join('');
     return `<section class="card" id="sec-edge"><div class="card-h"><h2>Live edge</h2><span class="r ${cls(evT)}">${esc(usd(evT, true))} EV</span></div>`
       + `<div class="edge-k"><div><span class="lab">Avg edge</span><b class="${cls(avg)}">${esc(edgeC(avg))}</b></div><div><span class="lab">EV / risk</span><b class="${cls(evT)}">${risk > 0 ? esc(pct(evT / risk, true)) : '—'}</b></div>`

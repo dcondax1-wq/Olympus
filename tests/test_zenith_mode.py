@@ -63,7 +63,7 @@ def part_a():
                                  "targetOrigin", "event.origin", "event.source")))
     check(f"a. sw.js: {ZCACHE} (v50+), OTHER_APPS (every OLYMPUS app folder) / live.json bypass / own-cache cleanup kept as they were",
           f"const CACHE = '{ZCACHE}';" in sw and int(ZCACHE.rsplit("v", 1)[1]) >= 50
-          and "const OTHER_APPS = ['jarvis/', 'planner/', 'kalshi/', 'datacity/', 'mind/', 'tree/', 'oracle/', 'odeon/', 'fates/', 'hermes/', 'prometheus/', 'tyche/', 'pantheon/', 'olympus/', 'arena/', 'bridge/', 'ares/', 'plutus/', 'athena/', 'forum/', 'labyrinth/', 'argus/', 'nemesis/', 'chronos/', 'hephaestus/', 'cities/', 'kalshicity/'];" in sw and "url.pathname.endsWith('live.json')) return;" in sw
+          and "const OTHER_APPS = ['jarvis/', 'planner/', 'kalshi/', 'datacity/', 'mind/', 'tree/', 'oracle/', 'odeon/', 'fates/', 'hermes/', 'prometheus/', 'tyche/', 'pantheon/', 'olympus/', 'arena/', 'bridge/', 'ares/', 'plutus/', 'athena/', 'forum/', 'labyrinth/', 'argus/', 'nemesis/', 'chronos/', 'hephaestus/', 'cities/', 'kalshicity/', 'settings/'];" in sw and "url.pathname.endsWith('live.json')) return;" in sw
           and "k.startsWith('le-public-') && k !== CACHE" in sw)
     head = idx[:idx.index("</head>")]
     check("a. index.html: the inside-Jarvis check in the head (frame + same site), embed.js loaded last, no intro inside Jarvis",
@@ -259,9 +259,11 @@ def part_sw(br, base, errs):
         ctx.close()
 
 
+from tests import browser_kit as BK  # noqa: E402  (shared launch: one reused browser, load-scaled timeouts, one retry of a flaky wait)
+
+
 def launch(p):
-    exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
-    return p.chromium.launch(**({"executable_path": exe} if exe else {}))
+    return BK.launch(p)
 
 
 def new_page(br, w, h, errs, tag, origin=None):

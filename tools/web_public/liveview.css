@@ -38,7 +38,7 @@
 .lv-dot.live { text-shadow: 0 0 calc(10px * var(--lv-glow)) currentColor; animation: lvBlink 1.6s ease-in-out infinite; }
 @keyframes lvBlink { 50% { opacity: .35; } }
 .lv-ctrls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.lv-btn, .lv-seg button, .lv-sw { appearance: none; border: 1px solid var(--lv-line2); background: var(--lv-btn); color: var(--lv-ink2); border-radius: 10px;
+.lv-btn, .lv-seg button, .lv-sw { -webkit-appearance: none; appearance: none; border: 1px solid var(--lv-line2); background: var(--lv-btn); color: var(--lv-ink2); border-radius: 10px;
   padding: 6px 11px; font: 600 13px/1.1 inherit; font-family: inherit; cursor: pointer; display: inline-flex; gap: 6px; align-items: center;
   box-shadow: 0 4px 12px -6px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.07); transition: transform .12s, background .15s, box-shadow .15s, border-color .15s; }
 .lv-btn:hover, .lv-seg button:hover, .lv-sw:hover { background: var(--lv-btn-h); border-color: var(--lv-acc); transform: translateY(-1px); }

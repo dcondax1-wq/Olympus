@@ -1066,6 +1066,8 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     <label class="row-t"><span>OLYMPUS intro<small>The opening when Jarvis starts (full once a day, 1 s after that)</small></span><input type="checkbox" id="setIntro"></label>
     <label class="row-t"><span>OLYMPUS sounds<small>Ticks, a portal whoosh, thunder, rank-ups. Follows the silent switch; never while Jarvis talks or listens</small></span><input type="checkbox" id="setOlySfx"></label>
     <label>Sound volume<input id="setOlyVol" type="range" min="0" max="100" step="5" value="35"></label>
+    <label class="row-t"><span>App ambience<small>A quiet sound bed in each app (sea, forge, wind, city hum ...). Starts after your first touch, never while Jarvis talks, off in battery saver unless you turn it on</small></span><input type="checkbox" id="setOlyAmb"></label>
+    <label class="row-t"><span>Battery saver<small>Apps draw at 30 fps and a lighter pixel ratio. Off: Jarvis decides from the battery (20% and not charging) or Save-Data</small></span><input type="checkbox" id="setOlySaver"></label>
     <label class="row-t"><span>Haptics<small>A light tap you feel on buttons (iPhone: iOS 18 and later)</small></span><input type="checkbox" id="setHaptic"></label>
     <label class="row-t"><span>Tilt<small>The core and the 3D world behind it lean with the phone (asks for motion access)</small></span><input type="checkbox" id="setTilt"></label>
     <div class="sheet-row"><button class="btn solid" type="button" id="lookX">Done</button></div>
@@ -1316,6 +1318,32 @@ function botsHeld() {
   if (botsRetry || !botsI || !safe(() => botsI.queued().length, 0)) return;
   botsRetry = setTimeout(() => { botsRetry = 0; safe(() => botsI.flush()); botsHeld(); }, 7000);
 }
+// KALSHI-BRAIN (kalshi-brain.js, 2026-11-04): she knows the Kalshi bot AND what Kalshi City's engine learned about its edges (edges.json + learning_log.json
+// from ../kalshicity/, the research's learned.json): the asks (how is Kalshi, what to stop, the best edge, the risks, how much to bet, what it learned),
+// the spoken alerts (paused / resumed, the balance floor, a daily loss, a big loss, a new DO MORE / STOP lesson, the risk of ruin), Think for me items.
+// Optional (absent = the brain as before). Read only: nothing here orders, sizes or changes anything; every size is "suggestion, your call".
+let kbI = null, kbLoaded = 0;
+ready.kbrain = load('kbrain', './kalshi-brain.js', (m) => typeof m.createKalshiBrain === 'function').then((m) => {
+  if (m) kbI = safe(() => m.createKalshiBrain({ speak: (t) => speak(t, false), hidden: () => S.hideMoney(),
+    busy: () => state !== 'idle' || listening || speaking || !!rec || !!(vm && vm.isOpen()), onEvent: (e) => toast(e.text, 'KALSHI ALERT') }), null);
+  if (kbI) { brainDeps.kalshiBrain = kbI; kbLoad().then(() => setTimeout(kbTick, 2500)); }
+  return kbI;
+});
+async function kbLoad() {
+  if (!kbI) return;
+  const get = (u) => fetch(u, { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  const [edges, log, learned] = await Promise.all([get('../kalshicity/edges.json'), get('../kalshicity/learning_log.json'), get('../kalshicity/learned.json')]);
+  if (edges || log || learned) { safe(() => kbI.setData({ edges, log, learned })); kbLoaded = Date.now(); }
+}
+function kbTick() {
+  if (!kbI) return;
+  const f = safe(() => D.getFacts(), null);
+  safe(() => kbI.tick(f && f.kalshi));
+}
+D.onChange(({ source }) => { if (source === 'kalshi') kbTick(); });
+setInterval(kbTick, 60e3);
+setInterval(kbLoad, 10 * 60e3);
+// /KALSHI-BRAIN
 let botsMounting = false;
 function mountBotsUI() {
   if (botsUI || botsMounting || !botsI || !modesI) return;
@@ -1781,10 +1809,12 @@ function kalshiCard() {
   const head = (lvl) => `<p class="ph"><span class="t">Kalshi</span><i class="sdot ${lvl || 'off'}"></i><span class="go">OPEN ›</span></p>`;
   if (!k) return `<button class="panel card" type="button" data-app="kalshi">${head('')}<p class="muted">${st === 'waiting' ? 'Waiting for the Kalshi bot: it is not publishing yet. It runs on its own server; open Kalshi for the one step that connects it from its own chat.' : st === 'error' ? 'Could not reach the Kalshi feed. Open Kalshi to try again.' : 'Loading Kalshi…'}</p></button>`;
   const [lvl, label] = D.kalshiRun(k), pos = Array.isArray(k.positions) ? k.positions : null;
+  const kbLine = safe(() => (kbI ? kbI.line(k, Date.now()) : ''), '');
   const rows = (pos || []).slice(0, 2).map((p) => `<li class="${sgn(+p.pnl)}"><b>${esc(String(p.side || '').toUpperCase())}</b><span>${esc(p.title || p.ticker || '')}</span><span class="r m">${D.usd2(p.pnl, true)}</span></li>`).join('');
   return `<button class="panel card" type="button" data-app="kalshi">${head(lvl)}<span class="pill ${lvl}">${esc(label)}${k.mode ? ' · ' + esc(String(k.mode).toUpperCase()) : ''}${k.t ? ' · ' + esc(D.ago(k.t)) : ''}</span>`
     + `<div class="kv"><div><span>Balance</span><strong class="m">${D.usd2(k.balance)}</strong></div><div><span>Today</span><strong class="m ${sgn(+k.today_pnl)}">${D.usd2(k.today_pnl, true)}</strong></div><div><span>Open</span><strong>${pos == null ? '—' : pos.length}</strong></div></div>`
-    + `${rows ? `<ul class="list">${rows}</ul>` : ''}</button>`;
+    + `${rows ? `<ul class="list">${rows}</ul>` : ''}`
+    + `${kbLine ? `<p class="muted" id="kbLine">${esc(kbLine)}</p>` : ''}</button>`;       // KALSHI-BRAIN: what the engine says (do more / stop / ruin risk)
 }
 function linkCard(a) {
   const head = (go) => `<p class="ph"><span class="t">${esc(a.name)}</span><i class="sdot ${a.url ? 'ok' : 'off'}"></i>${go ? '<span class="go">OPEN ›</span>' : ''}</p>`;
@@ -2163,7 +2193,7 @@ function fallbackBrain({ getFacts }) {
 const brainDeps = { getFacts: D.getFacts, open: (id, route) => openSoon(route ? { id, route } : id), now: () => new Date(), autoOpen: false };
 const builtinBrain = fallbackBrain(brainDeps);
 let brain = builtinBrain;
-Promise.all([ready.brain, within(ready.vault, 4000), within(ready.assistant, 4000), within(ready.tools, 4000), within(ready.modes, 4000), within(ready.bots, 4000)]).then(([m]) => {      // the brain gets the memory when it loaded in time
+Promise.all([ready.brain, within(ready.vault, 4000), within(ready.assistant, 4000), within(ready.tools, 4000), within(ready.modes, 4000), within(ready.bots, 4000), within(ready.kbrain, 4000)]).then(([m]) => {      // the brain gets the memory when it loaded in time
   if (!m) return;
   try { const b = m.createBrain(brainDeps); if (!b || typeof b.ask !== 'function') throw new Error('no ask'); brain = b; root.dataset.brain = 'module'; }
   catch (_) { brain = builtinBrain; root.dataset.brain = 'fallback'; }
@@ -2742,7 +2772,9 @@ function renderLook() {
   $('#hue').value = String(+(D.LS.get('jcustom', { h: 275 }) || {}).h || 275);
   $('#setSound').checked = S.sound(); $('#setTilt').checked = S.tilt(); $('#setCalm').checked = S.calm();
   $('#setIntro').checked = raw('jarvis.intro') !== 'off'; $('#setHaptic').checked = hapticOn();
-  safe(() => { const k = window.OLYMPUS_SFX, s = k && k.state(); $('#setOlySfx').checked = !!s && !s.muted; $('#setOlySfx').disabled = $('#setOlyVol').disabled = !k; if (s) $('#setOlyVol').value = String(Math.round(s.volume * 100)); });
+  safe(() => { const k = window.OLYMPUS_SFX, s = k && k.state(); $('#setOlySfx').checked = !!s && !s.muted; $('#setOlySfx').disabled = $('#setOlyVol').disabled = !k; if (s) $('#setOlyVol').value = String(Math.round(s.volume * 100));
+    const am = k && k.ambientState && k.ambientState(); $('#setOlyAmb').disabled = !am; $('#setOlyAmb').checked = !!am && (am.setting === null ? !am.saver : am.setting);
+    $('#setOlySaver').checked = (() => { try { return localStorage.getItem('olympus.saver') === 'on'; } catch (_) { return false; } })(); });
   $('#fxNote').textContent = root.dataset.fxAuto ? 'Jarvis lowered the effects to keep this phone smooth. Pick a level to override.' : 'High is the phone default. Low keeps the glass and stops the motion; Off is fully static.';
 }
 function openLook() { closeSheets(); closeMore(); $('#look').hidden = false; renderLook(); }
@@ -2754,6 +2786,8 @@ $('#fxSeg').addEventListener('click', (e) => { const b = e.target.closest('[data
 $('#coreSeg').addEventListener('click', (e) => { const b = e.target.closest('[data-core-k]'); if (b) setCoreDesign(b.dataset.coreK); });
 $('#hue').addEventListener('input', () => { D.LS.set('jcustom', { h: +$('#hue').value }); if (root.dataset.theme !== 'custom') setTheme('custom'); else { applyCustom(); readColors(); if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme())); } });
 $('#setOlySfx').addEventListener('change', () => { safe(() => { const k = window.OLYMPUS_SFX; if (!k) return; k.mute(!$('#setOlySfx').checked); if ($('#setOlySfx').checked) k.play('tap'); }); });
+$('#setOlyAmb').addEventListener('change', () => { safe(() => { const k = window.OLYMPUS_SFX; if (k && k.ambience) k.ambience($('#setOlyAmb').checked); }); });   // shared with every app (storage event)
+$('#setOlySaver').addEventListener('change', () => { safe(() => { try { if ($('#setOlySaver').checked) localStorage.setItem('olympus.saver', 'on'); else localStorage.removeItem('olympus.saver'); } catch (_) { /* private mode */ } }); });
 $('#setOlyVol').addEventListener('change', () => { safe(() => { const k = window.OLYMPUS_SFX; if (!k) return; k.setVolume(+$('#setOlyVol').value / 100); k.play('tap'); }); });
 $('#setSound').addEventListener('change', () => { D.LS.set('jarvis.sound', $('#setSound').checked); sfx('tap'); renderMore(); });
 $('#setTilt').addEventListener('change', async () => { await setTilt($('#setTilt').checked); renderLook(); });

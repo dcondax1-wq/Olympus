@@ -513,7 +513,7 @@
 .bl-meta{font-size:12px;color:var(--bl-mut)}
 .bl-line{margin:6px 0;font-size:14px;line-height:1.5}.bl-line.wn{color:var(--bl-warn)}.bl-line.dn{color:var(--bl-bad)}
 .bl-mut{margin:6px 0;font-size:13px;line-height:1.5;color:var(--bl-mut)}
-.bl-mut code,.bl-wrap code{font:12px/1.4 var(--mono,ui-monospace,monospace);padding:2px 6px;border-radius:6px;background:rgba(179,136,255,.12);word-break:break-all;user-select:all}
+.bl-mut code,.bl-wrap code{font:12px/1.4 var(--mono,ui-monospace,monospace);padding:2px 6px;border-radius:6px;background:rgba(179,136,255,.12);word-break:break-all;-webkit-user-select:all;user-select:all}
 .bl-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:10px 0}
 .bl-tiles.sm{grid-template-columns:repeat(auto-fit,minmax(92px,1fr))}.bl-tiles.sm b{font-size:15px}
 .bl-kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}

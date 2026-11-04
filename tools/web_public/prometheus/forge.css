@@ -126,7 +126,7 @@ tr.chg td:first-child::before { content: '◆ '; color: var(--fire); }
 
 /* ---------------- half-year filter chips + the "would this change live?" box (2026-11-03 upgrade) */
 .chips { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; margin-top: 6px; }
-.chips button { min-height: 40px; padding: 0 2px; font: 700 12.5px/1.1 'Rajdhani', sans-serif; color: var(--dim); display: flex; flex-direction: column;
+.chips button { min-height: 44px; padding: 0 2px; font: 700 12.5px/1.1 'Rajdhani', sans-serif; color: var(--dim); display: flex; flex-direction: column;
   align-items: center; justify-content: center; border-radius: 10px; }
 .chips button small { font: 600 10px/1 'Rajdhani', sans-serif; color: var(--ice); }
 .chips button[aria-pressed="true"] { color: #1a0a04; background: linear-gradient(180deg, #ffe08a, var(--gold)); border-color: var(--gold); box-shadow: 0 0 14px rgba(255, 170, 60, .4); }

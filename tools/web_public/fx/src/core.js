@@ -142,7 +142,7 @@ export class View {
     const o = opts.orbit || {};
     this.orbit = { yaw: o.yaw || 0, pitch: o.pitch || 0.25, vyaw: 0, vpitch: 0, auto: o.auto ?? 0.12, dragging: false, last: 0,
       min: o.min ?? -Infinity, max: o.max ?? Infinity, pitchMin: o.pitchMin ?? -0.2, pitchMax: o.pitchMax ?? 0.9, idle: 99 };
-    this._io = new IntersectionObserver((es) => { for (const e of es) this.visible = e.isIntersecting; if (this.visible) wake(); }, { rootMargin: '80px' });
+    this._io = new IntersectionObserver((es) => { for (const e of es) this.visible = e.isIntersecting; if (this.visible) wake(); this.ambient?.sync(); }, { rootMargin: '80px' });
     this._ro = new ResizeObserver(() => this.resize());
     if (opts.orbit || opts.onPick) this._bindPointer();
     views.add(this);
@@ -152,10 +152,12 @@ export class View {
     this.detach();
     this.el = el; el.appendChild(this.canvas); this.attached = true;
     this._io.observe(el); this._ro.observe(el); this.resize(); wake();
+    this.ambient?.sync();
   }
   detach() {
     if (!this.attached) return;
     this._io.disconnect(); this._ro.disconnect(); this.canvas.remove(); this.attached = false; this.visible = false;
+    this.ambient?.sync();
   }
   running() { return this.attached && this.visible && !this.broken && !document.hidden && Q.level !== 'off'; }
   resize() {
@@ -166,6 +168,7 @@ export class View {
     this.canvas.style.width = w + 'px'; this.canvas.style.height = h + 'px';
     this.camera.aspect = w / h; this.camera.updateProjectionMatrix();
     this.onResize?.(w, h);
+    this.ambient?.sync();             // a tier change (the owner's jfx, a slow phone) rebuilds the ambient effects at the new tier
   }
   // orbit state -> applied by the subclass in update() via orbitStep(dt)
   orbitStep(dt) {
@@ -203,7 +206,7 @@ export class View {
   }
   frame(t, dt) { this.update?.(t, dt); this.rc.render(); }
   dispose() {
-    this.detach(); views.delete(this);
+    this.detach(); views.delete(this); this.ambient?.stop();
     this.scene.traverse((o) => { o.geometry?.dispose?.(); const m = o.material; (Array.isArray(m) ? m : m ? [m] : []).forEach(x => x.dispose?.()); });
     this.rc.dispose(); this.renderer.dispose(); try { this.renderer.forceContextLoss(); } catch { }
   }

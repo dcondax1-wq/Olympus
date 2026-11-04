@@ -483,6 +483,14 @@ fx.pulse();   // another ring; opts.every repeats; one-shot otherwise
 fx.stop();
 ```
 
+### Used by the main dashboard's 3D scenes (2026-11-04)
+`tools/web_public/fx/src/ambient.js` bundles `fx-core.js`, `fx-three.js` and `fx-sky.js` into `fx.js` (the build's `one-three` alias
+points their three import at the bundle's own three) and gives the **Trade Galaxy, Month City and Eval Reactor** dust motes,
+fireflies, light shafts and a faint aurora (`FX.sceneAmbient` = the motes, `FX.godRays`, `FX.aurora`, each pinned to the view's own
+tier). They exist only while the view is on screen: ultra = motes + fireflies + 3 shafts + 4 aurora curtains (+8 draw calls), high =
+motes + fireflies + 3 curtains (+5), low = a few motes (+1); reduced motion = none. The Holodeck (capped at low) and the space
+background do not use it.
+
 ### `lightTrails`
 Streaks of light sliding past like traffic or data (GPU quads, themed colours). (3D scene)
 

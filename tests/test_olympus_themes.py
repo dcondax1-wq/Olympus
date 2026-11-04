@@ -201,9 +201,11 @@ def serve():
     return srv, f"http://127.0.0.1:{srv.server_address[1]}"
 
 
+from tests import browser_kit as BK  # noqa: E402  (shared launch: one reused browser, load-scaled timeouts, one retry of a flaky wait)
+
+
 def launch(pw):
-    exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
-    return pw.chromium.launch(args=["--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"], **({"executable_path": exe} if exe else {}))
+    return BK.launch(pw, args=["--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
 
 
 # the scene hook, stubbed: every themeScene / onTheme call is kept, so the test reads the colours the app handed over

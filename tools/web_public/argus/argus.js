@@ -5,6 +5,8 @@ import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
 import { metal, glass, neon, starfield } from '../olympus/materials.js';
 import * as CORE from './arguscore.js';
+import * as X from './extras.js';
+import * as SC from '../olympus/scenery.js';
 import { APPS, analyze, cardOf, histUpdate, histSummary } from './arguscore.js';
 
 const O = window.OLYMPUS || null;
@@ -90,6 +92,7 @@ function paintHist() {
     + `<div class="strip" id="strip" role="img" aria-label="Last 14 days">${H.strip.map((s) => `<i class="sq ${s.level}" title="${esc(s.day + ': ' + word[s.level])}"></i>`).join('')}</div>`
     + '<p class="hint">Last 14 days, oldest on the left. Grey = a day I did not look.</p><p class="grp">WHAT WENT RED AND FOR HOW LONG</p>'
     + (reds || '<p class="empty">Nothing went red in the days I saw.</p>') + '<p class="hint">Times are from when this page was open, so a short red can be missed.</p>';
+  try { X.decorate($('p-hist'), { R: S.R, H, now: nowS() }); } catch (_) { /* the plain history stays */ }
 }
 function paint() {
   const R = S.R; if (!R) return;
@@ -117,7 +120,7 @@ function select(id, fromEye) {
   const e = S.R && S.R.eyes.find((x) => x.id === id);
   S.sel = e ? id : null;
   const pick = $('pick');
-  if (e) { pick.hidden = false; pick.innerHTML = `<b>${esc(e.label)}</b> · ${esc(e.value)}`; if (fromEye) { S.open.add(id); setTab('all'); } } else pick.hidden = true;
+  if (e) { pick.hidden = false; pick.innerHTML = `<b>${esc(e.label)}</b> · ${esc(e.value)} <button type="button" class="detbtn" data-drawer="${esc(e.id)}">Details</button>`; if (fromEye) { S.open.add(id); setTab('all'); } } else pick.hidden = true;
   paint();
   if (e && fromEye) { const el = document.querySelector(`#p-all [data-light="${CSS.escape(id)}"]`); if (el) el.scrollIntoView({ block: 'nearest' }); }
   if (S.room) S.room.focus(S.sel);
@@ -139,6 +142,12 @@ function bind() {
     select(S.sel === id && b.classList.contains('fixrow') ? null : id, false);
   });
   addEventListener('hashchange', route);
+  const ctx = () => ({ R: S.R, H: histSummary(S.hist || EMPTY(), nowS()), now: nowS(), pick: (id) => { select(id, false); openDrawer(id); } });
+  const openDrawer = (id) => { const e = S.R && S.R.eyes.find((x) => x.id === id); if (e) { try { X.openDrawer(e, ctx()); } catch (_) { /* no drawer */ } } };
+  $('pick').addEventListener('click', (ev) => { const b = ev.target.closest('[data-drawer]'); if (b) openDrawer(b.dataset.drawer); });
+  const dc = $('drawerClose'); if (dc) dc.addEventListener('click', X.closeDrawer);
+  document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') X.closeDrawer(); });
+  window.__argusDrawer = openDrawer;
 }
 function route() { setTab({ all: 'all', lights: 'all', hist: 'hist', history: 'hist', fix: 'fix' }[location.hash.slice(1)] || 'fix'); }
 
@@ -177,11 +186,21 @@ class Room {
     this.ring.rotation.x = Math.PI / 2.3; S3.add(this.ring);
     // eyes: sclera (a glossy almond), iris (HDR so it blooms; the colour is per eye), pupil (a slit)
     const sc = new THREE.SphereGeometry(1, 20, 14), iris = new THREE.CircleGeometry(0.42, 28), pup = new THREE.CircleGeometry(0.16, 16);
-    const wm = new THREE.MeshPhysicalMaterial({ color: 0xf2f6ff, roughness: 0.22, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 1.1 });
+    let wm = new THREE.MeshPhysicalMaterial({ color: 0xf2f6ff, roughness: 0.22, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 1.1 }), irisMat = neon({ color: '#ffffff', intensity: 4 }), cornea = null;
+    try { const P = SC.eyeParts(); wm = P.sclMat; irisMat = P.irisMat; irisMat.color.setScalar(3.4); cornea = P.cornea; } catch (_) { cornea = null; /* the plain eyes stay */ }
     this.sclera = new THREE.InstancedMesh(sc, wm, N_EYES);
-    this.iris = new THREE.InstancedMesh(iris, neon({ color: '#ffffff', intensity: 4 }), N_EYES);
+    this.iris = new THREE.InstancedMesh(iris, irisMat, N_EYES);
     this.pupil = new THREE.InstancedMesh(pup, new THREE.MeshBasicMaterial({ color: 0x02040a }), N_EYES);
-    for (const m of [this.sclera, this.iris, this.pupil]) { m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); m.frustumCulled = false; this.orb.add(m); }
+    this.cornea = null;
+    if (cornea) { const cg = new THREE.SphereGeometry(0.46, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2.6); cg.rotateX(Math.PI / 2); this.cornea = new THREE.InstancedMesh(cg, cornea, N_EYES); }
+    for (const m of [this.sclera, this.iris, this.pupil, this.cornea]) { if (!m) continue; m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); m.frustumCulled = false; this.orb.add(m); }
+    // an armillary of aged bronze round the sphere: three tilted rings turning slowly (the watchtower's instrument)
+    this.arm = null;
+    try {
+      const bz = SC.bronze({ color: '#b58a46', patina: 0.45, rough: 0.4 }); this.arm = new THREE.Group();
+      [[R_SPHERE + 0.6, 0.04, 0.3, 0], [R_SPHERE + 0.82, 0.035, 1.2, 0.8], [R_SPHERE + 0.94, 0.03, 0.65, 2.1]].forEach(([r, t, rx, rz]) => { const m = new THREE.Mesh(new THREE.TorusGeometry(r, t, 10, 120), bz); m.rotation.set(rx, 0, rz); this.arm.add(m); });
+      S3.add(this.arm);
+    } catch (_) { this.arm = null; }
     this.iris.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(N_EYES * 3), 3);
     // a Fibonacci sphere: every eye the same distance from its neighbours; local +Z points out of the sphere
     this.pos = []; this.quat = [];
@@ -262,6 +281,7 @@ class Room {
     } else if (!still && this.t > this.user) this.yaw += dt * 0.18;
     this.orb.rotation.set(this.pitch, this.yaw, 0);
     this.ring.rotation.z += still ? 0 : dt * 0.25;
+    if (this.arm) { this.arm.rotation.y += still ? 0 : dt * 0.08; this.arm.rotation.x = 0.2 + (still ? 0 : Math.sin(this.t * 0.2) * 0.06); }
     this.stars.update(this.t, this.rc.renderer.getPixelRatio());
     const M = new THREE.Matrix4(), sc = new THREE.Vector3(), p = new THREE.Vector3(), selK = S.sel ? this.lights.findIndex((e) => e.id === S.sel) : -1;
     for (let i = 0; i < N_EYES; i++) {
@@ -280,8 +300,9 @@ class Room {
       M.compose(p, q, sc.set(size * 1.0, size * Math.min(1, o * 1.45), 1)); this.iris.setMatrixAt(i, M);
       p.copy(base).multiplyScalar(R_SPHERE + size * 0.45 + 0.02);
       M.compose(p, q, sc.set(size * 0.5, size * 1.4 * Math.min(1, o * 1.45), 1)); this.pupil.setMatrixAt(i, M);
+      if (this.cornea) { p.copy(base).multiplyScalar(R_SPHERE + size * 0.45 + 0.03); M.compose(p, q, sc.set(size * 1.0, size * Math.min(1, o * 1.45), size * 0.9)); this.cornea.setMatrixAt(i, M); }
     }
-    for (const m of [this.sclera, this.iris, this.pupil]) m.instanceMatrix.needsUpdate = true;
+    for (const m of [this.sclera, this.iris, this.pupil, this.cornea]) if (m) m.instanceMatrix.needsUpdate = true;
     this.rc.render(); this.dirty = false;
   }
   fps() { const a = this.frames; return a.length ? Math.round(a.length / a.reduce((s, x) => s + x, 0)) : 0; }

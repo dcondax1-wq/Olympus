@@ -54,7 +54,7 @@ export const MODES = {
   business: { id: 'business', name: 'Business', glyph: '$', blurb: 'Money goals, more accounts, Kalshi edge, deadlines',
     prompt: 'MODE: BUSINESS. Think like a self-made operator: his money goals (FACTS.money / the Road to $10K), the plan for more funded accounts (MFFU Builder 50K $91.80 and Builder 25K $63, one-time, his real prices), the Kalshi bot\'s edge by strategy, and his to-dos with deadlines. One clear recommendation with the real numbers, then the next step and its deadline. Check the maths with calc. Treat every edge as unproven; never promise returns.',
     tools: ['calc', 'get_money', 'list_tasks', 'add_task', 'set_reminder', 'obsidian_create_note', 'web_search'],
-    quick: ['How close am I to my money goal?', 'Plan for more accounts', 'How is the Kalshi edge?', 'My to-dos with deadlines', 'Deals on evals', 'Connect ChatGPT'],
+    quick: ['How close am I to my money goal?', 'How is Kalshi?', "What's my best Kalshi edge?", 'What should I stop on Kalshi?', 'Kalshi risks', 'How much should I bet?', 'What did Kalshi learn today?', 'Plan for more accounts', 'My to-dos with deadlines', 'Deals on evals', 'Connect ChatGPT'],     // KALSHI-BRAIN quick asks
     apps: ['plutus', 'hermes', 'kalshi', 'tyche', 'bridge'],
     words: /\b(business|money goal|goals?|10 ?k|income|revenue|profit|payouts?|accounts? plan|more accounts|scale|scaling|buy (an? )?evals?|kalshi|edge|deadlines?|due|invest\w*|budget|savings|costs?|price|pricing|deal|deals|discount|side hustle|sell|clients?)\b/ },
   life: { id: 'life', name: 'Life', glyph: '☼', blurb: 'Planner, reminders, Ascend, your day',
@@ -191,6 +191,10 @@ export function thinkAll(D) {
   // 7b. the bots right now (bots.js, via the brain's digest): a setup armed, a trade open, the window about to open, the daily loss close
   for (const x of arr(D.bots && D.bots.items).filter((y) => isObj(y) && num(y.p) != null && str(y.text, 300)))
     add(x.p, 'trading', str(x.key, 60) || 'bot', str(x.text, 300), str(x.label, 30), isObj(x.action) ? x.action : null, x.say);
+  // 7c. KALSHI-BRAIN (kalshi-brain.js, via the brain's digest): the bot paused, a bet size too big for the bankroll, what to stop, the best edge, what the engine learned today
+  for (const x of arr(D.kalshiBrain && D.kalshiBrain.items).filter((y) => isObj(y) && num(y.p) != null && str(y.text, 300)))
+    add(x.p, 'business', str(x.key, 60) || 'kalshi', str(x.text, 300), str(x.label, 30), isObj(x.action) ? x.action : null, x.say);
+  // /KALSHI-BRAIN
   // 8. business: the money goal, Kalshi's edge, more accounts
   if (D.money && str(D.money.next, 200)) add(7, 'business', 'goal', `Money goal, next step: ${str(D.money.next, 200)}`, 'Money goal', ask('How close am I to my money goal?'));
   const k = D.kalshi;

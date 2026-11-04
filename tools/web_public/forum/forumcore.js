@@ -133,9 +133,9 @@ export function desk(home, planner, p) {
   const dateOf = (v) => { const s = txt(v, 30); return /^\d{4}-\d{2}-\d{2}/.test(s) ? s.slice(0, 10) : ''; };
   const evs = isObj(planner) && Array.isArray(planner.events) ? planner.events.filter(isObj) : [], tasks = isObj(planner) && Array.isArray(planner.tasks) ? planner.tasks.filter(isObj) : [];
   const today = evs.filter((e) => dateOf(e.date) === day), next = evs.filter((e) => dateOf(e.date) === tomorrow);
-  if (isObj(planner)) out.push({ id: 'events', title: 'Your calendar', glyph: 'Ε', tone: today.length ? 'watch' : 'calm', stat: today.length ? `${today.length} today` : 'Clear today',
+  if (isObj(planner)) out.push({ id: 'events', title: 'Calendar', glyph: 'Ε', tone: today.length ? 'watch' : 'calm', stat: today.length ? `${today.length} today` : 'Clear today',
     line: today.length ? today.slice(0, 2).map((e) => txt(e.title || e.name, 40)).join(' · ') : next.length ? `Tomorrow: ${txt(next[0].title || next[0].name, 40)}` : 'Nothing on your calendar until later.' });
-  else out.push({ id: 'events', title: 'Your calendar', glyph: 'Ε', tone: 'info', stat: 'No planner', line: 'Open the Planner on this phone and its events show here.' });
+  else out.push({ id: 'events', title: 'Calendar', glyph: 'Ε', tone: 'info', stat: 'No planner', line: 'Open the Planner on this phone and its events show here.' });
   const open = tasks.filter((t) => !t.done && dateOf(t.date) && dateOf(t.date) <= day), done = tasks.filter((t) => t.done && dateOf(t.date) === day);
   if (isObj(planner)) out.push({ id: 'todos', title: 'To-dos', glyph: 'Τ', tone: open.length > 3 ? 'watch' : 'calm', stat: open.length ? `${open.length} open` : 'All clear',
     line: open.length ? open.slice(0, 2).map((t) => txt(t.title || t.name, 40)).join(' · ') : `${done.length} done today. Nothing is waiting.` });
