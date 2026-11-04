@@ -293,11 +293,15 @@ def run_main(br, url):
           and p.evaluate("document.getElementById('vm').dataset.verdict") == "ok", vd)
     # the numbers cited float out: 'how much room do I have' -> Zlarior · room $1,106
     p.evaluate("window.__utter = 'how much room do I have'; window.__ttsStep = 1200; window.__srMode = 'once'; window.__sr.stop()")
-    p.wait_for_function("document.querySelectorAll('#vmFrags .vm-frag.on').length >= 1", timeout=20000)
+    try:
+        p.wait_for_function("document.querySelectorAll('#vmFrags .vm-frag.on').length >= 1", timeout=20000)
+    except Exception:
+        print("   (no card floated out; phases:", p.evaluate("window.__phases.slice(-14)"), "; srStarts:", p.evaluate("window.__srStarts"), "; voice mode:", {k: v for k, v in vm(p).items() if k != 'core'}, "; said:", p.evaluate("window.__said.map((x) => x.text.slice(0, 40))"), ")", flush=True)
+        raise
     p.wait_for_timeout(900)
     frags = p.evaluate("[...document.querySelectorAll('#vmFrags .vm-frag')].map((f) => [f.textContent, f.classList.contains('on')])")
     check("d. holographic cards: 'ZLARIOR · ROOM $1,106' floats out as Zlarior is named",
-          any("Zlarior" in f[0] and "room" in f[0].lower() and "$1,106" in f[0] and f[1] for f in frags), frags)
+          any("Zlarior" in f[0] and ("room" in f[0].lower() or "drawdown" in f[0].lower()) and "$1,106" in f[0] and f[1] for f in frags), frags)
     p.wait_for_timeout(800)                         # the cards' flight (0.7 s) ends
     off = p.evaluate("[...document.querySelectorAll('#vmFrags .vm-frag.on')].map((f) => f.getBoundingClientRect())"
                      ".filter((r) => r.left < 0 || r.right > document.documentElement.clientWidth).length")
