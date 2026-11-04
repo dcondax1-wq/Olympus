@@ -122,6 +122,7 @@ Apps that switch tiers themselves (a LITE toggle) use `rc.forced || (rc.software
 | The reactor | `jarvis/core-visual.js` | its own renderer through `createRenderer({ renderer, alpha: true, space: 'display', env: 'none' })`: real bloom tinted by the state's colour (violet idle, red listening), 4x MSAA, the film finish. Its tiers follow its own adapt (`setQuality`). If `../olympus/render.js` cannot load, it draws as before. |
 | The home backdrop | `jarvis/backdrop.js` | a full-screen 3D space behind the home screen: nebula, starfield, obsidian floor with a neon grid fading into fog, a light shaft and pool on the horizon under the core, halo rings, glass and chrome shards. 30 fps, pixel ratio ≤ 1.25, no frame while an app is open or the tab is hidden, one still frame on `off` / reduced motion. It replaces the flat 2D layers (stars canvas, SVG globe, CSS floor) once its first frame is drawn (`html[data-bg3d="on"]`); without WebGL2 they stay. Loads after the page is idle. |
 | The portal jump | `jarvis/portal.js` | every time Jarvis opens an app (orb, tile, quick row, voice: they all go through `show()`): tunnel streaks in the app's colour, a ring portal opening, a flash, the app revealed through the ring. 820 ms, a tap or Esc skips, one raw-WebGL shader (no three.js, compiled at idle). Reduced motion or 3D off: a 0.2 s fade. It never delays the app: `show()` opens the frame first. |
+| Arena-to-arena transitions | `jarvis/transitions.js` | (2026-11-04) the portal jump hands every app change to this file: each of the 24 apps has its own signature (Oracle lightning, Tyche sea surge, Prometheus fire sweep, Pantheon marble columns, Mind constellation, Daphne laurel, Plutus coins, Athena glyph from particles ...), in the app's colour and glyph, 0.6-1.1 s, over the loading app, tap / Esc skips. The app -> transition table is data (`REGISTRY`: kind, ms, sound cues; an app with no line gets the warp). One reused 2D canvas (1 x 1 after), no WebGL / render target. LITE (3D Low / Off) = a 250 ms colour fade, reduced motion = a 200 ms flat fade. `show()` passes the app we leave (`from`). Test: `tests/test_jarvis_transitions.py`. |
 
 `jarvis/index.html` has one hook line in `show()` and the two `<script type="module">` lines before `</body>`.
 
@@ -132,7 +133,7 @@ folder's subfolders too; before, it copied only top-level files).
 
 ## The Jarvis service worker
 
-The new files are part of the Jarvis shell: `./backdrop.js?v=b1`, `./portal.js?v=p1`, and (outside `jarvis/`)
+The new files are part of the Jarvis shell: `./backdrop.js?v=b1`, `./portal.js?v=p1`, `./transitions.js?v=t1`, and (outside `jarvis/`)
 `../olympus/render.js`, `../olympus/materials.js` and the nine files of `../olympus/three-addons/` (`EffectComposer.js`,
 `RenderPass.js`, `ShaderPass.js`, `MaskPass.js`, `Pass.js`, `CopyShader.js`, `UnrealBloomPass.js`,
 `LuminosityHighPassShader.js`, `RoomEnvironment.js`).
