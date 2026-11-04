@@ -1870,6 +1870,12 @@ The Kalshi app (`kalshi/`, k18) has three top cards in Today: "Why am I losing" 
   `StatusUI.items` (the same one the status bar reads). Only published fields (`MissionUI.accounts`): a missing one says "not published yet", never a blank; with no
   board at all the card is still there. Read-only. Tests: `test_ui_polish` (a static, b node: rows / edges / missing fields / garbage, c phone, d PC) and
   `test_zenith_shell` (Home order).
+  **PC status strip** (same core, `MoneyNow.line`; mount `strip()` in `polish.js`, `#nxLine` under the top bar of EVERY PC page, sticky, >= 44 px, links Home):
+  "Bot running · last check-in X · Armed: Zlarior, ATLAS" (red when stopped, amber when quiet, "not published yet" when missing).
+- **Release safety net** (`python tools/release_manifest.py [--base origin/main] [--json]`, `test_release_manifest`): run it before the 5 AM publish. It lists (a) every
+  `?v=` asset tag in an app `index.html` whose file changed since the base but whose tag did not, and (b) every service worker (`tools/web_public/sw.js`,
+  `web_next/sw.js`, `jarvis/sw.js`, `kalshi/sw.js`) whose cache name did not change although a file in its SHELL / ASSETS list (or the list) changed. Exit 0 =
+  nothing stale, 1 = at least one finding (plain words), 2 = no such base. Read-only; the lead bumps the tags / cache names it names.
 - **Obsidian starter pack** (`tools/obsidian_pack.py`, `test_obsidian_pack`): builds a ready-to-drop Obsidian vault (~225 markdown notes, ~1,100 `[[links]]`,
   frontmatter tags on every note) from files that already exist: `athena/library.json` (strategy steps, glossary one note per term, MFFU rules, playbooks,
   what we learned, rejected ideas, Kalshi, app guides), `research/lit/mffu_rules.json`, `plutus/plans.json`, `research/writeups/*.md`, and Jarvis's own

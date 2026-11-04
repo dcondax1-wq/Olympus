@@ -122,8 +122,10 @@ out.mnMissHtml = MN.html(mk((b) => { delete b.lit.room; delete b.lit.today_pnl; 
 out.mnStop = MN.model(Object.assign(mk(() => {}), { board: Object.assign(cp(F.b3), { running: false }) })).bot;
 out.mnOld = MN.model({ now: F.now, where: 'phone', board: Object.assign(cp(F.b3), { data_t: F.now - 7200 }) }).bot;
 out.mnEvil = MN.html(mk((b) => { b.lit.name = '<img src=x onerror=1>'; b.lit.waiting = '"><script>1</script>'; b.lit.position = null; }), { where: 'phone' });
+out.lnPc = MN.line(M3, { where: 'pc' }); out.lnStop = MN.line(Object.assign(mk(() => {}), { board: Object.assign(cp(F.b3), { running: false }) }), { where: 'pc' });
+out.lnNone = MN.line({}, { where: 'pc' }); out.lnEvil = MN.line(mk((b) => { b.lit.name = '<img src=x onerror=1>'; }), { where: 'pc' }); out.lnArmed = MN.model(M3).rows.filter((r) => /^(Armed|In a trade)/.test(r.status.text)).map((r) => r.name);
 for (const g of [null, {}, { board: 5 }, { board: { lit: 'x', health: { items: 3 } } }, { board: { lit: { room: 'x', mll: {}, today_pnl: [], position: 5 } }, now: 'n' }]) {
-  try { MN.model(g); MN.html(g); MN.html(g, { where: 'pc' }); } catch (e) { out.bad++; out.err = String(e.stack).slice(0, 300); }
+  try { MN.model(g); MN.html(g); MN.html(g, { where: 'pc' }); MN.line(g); MN.line(g, { where: 'phone' }); } catch (e) { out.bad++; out.err = String(e.stack).slice(0, 300); }
 }
 process.stdout.write(JSON.stringify(out) + '\n');
 """
@@ -195,6 +197,13 @@ def part_b(tmp):
           len(o["mnNone"]["rows"]) == 2 and nh.count("mn-row") == 2 and nh.count("not published yet") >= 6 and "mn-card a" in nh and o["mnNone"]["edge"] == "warn", nh[:200])
     check("b. Money now: the PC variant links with data-goto (zlarior / atlas / blitz), the phone with data-go (lit / atlas / blitz); text from the board never becomes markup",
           'data-goto="zlarior"' in o["mnPc"] and 'data-go="lit"' in h3 and "<img" not in o["mnEvil"] and "<script" not in o["mnEvil"] and "&lt;img" in o["mnEvil"])
+    ltxt = lambda h: re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", h)).strip()
+    check("b. status strip (MoneyNow.line): one line with the bot's state + last check-in age and which bots are armed, a data-goto link, a red/amber/green dot",
+          o["lnPc"].count('<a class="mn-line') == 1 and 'data-goto="cc"' in o["lnPc"] and ltxt(o["lnPc"]).startswith("Bot running") and "Armed:" in o["lnPc"]
+          and all(n in o["lnPc"] for n in o["lnArmed"]) and 'class="mn-line g"' in o["lnPc"], ltxt(o["lnPc"]))
+    check("b. status strip: a stopped bot is red, no board at all still says something plain ('not published yet'), never blank / undefined / NaN",
+          'class="mn-line r"' in o["lnStop"] and "Bot stopped" in o["lnStop"] and "not published yet" in ltxt(o["lnNone"]) and not re.search(r"undefined|NaN|null", o["lnNone"] + o["lnStop"]), (ltxt(o["lnStop"]), ltxt(o["lnNone"])))
+    check("b. status strip: text from the board never becomes markup", "<img" not in o["lnEvil"])
 
 
 # ------------------------------------------------------------------------------------------------ c. phone
@@ -486,6 +495,25 @@ def part_d(F, shots):
         check(f"d. PC Home: the Money now card is the first thing in the status box ({MND and MND['n']} rows), the status bar right below it, 'Drawdown left $.. of $.. max loss' per account, rows link to the bots",
               MND and MND["first"] == "mnCard" and MND["bar"] and MND["keys"][:2] == ["lit", "atlas"] and MND["goto"][:2] == ["zlarior", "atlas"] and all(h >= 44 for h in MND["taps"])
               and MND["txt"].count("Drawdown left") == MND["n"] and "max loss" in MND["txt"] and "10 days" not in MND["txt"] and "next" in MND["txt"].lower() and MND["x"] <= 1, MND)
+        # --- the one-line sticky status strip on EVERY page (dynamic: the first pages of the sidebar, then a long one scrolled)
+        pages = pg.eval_on_selector_all("#nav a[data-page]", "els => els.map(e => e.dataset.page)")
+        pages = [x for x in dict.fromkeys(["cc"] + pages) if pg.evaluate("(id) => !!document.getElementById('page-' + id)", x)][:8]
+        bad = []
+        for pid in pages:
+            TB.pc_go(pg, pid)
+            pg.wait_for_timeout(700)
+            pg.evaluate("() => window.scrollTo(0, 400)")
+            pg.wait_for_timeout(200)
+            L = pg.evaluate("""() => { const w = document.getElementById('nxLine'); if (!w) return null; const a = w.querySelector('a.mn-line'); const r = (a || w).getBoundingClientRect();
+              return { n: document.querySelectorAll('#nxLine').length, after: w.previousElementSibling && w.previousElementSibling.className, pos: getComputedStyle(w).position, h: Math.round(r.height), top: Math.round(w.getBoundingClientRect().top),
+                scroll: document.documentElement.scrollHeight > innerHeight + 500, txt: w.innerText.replace(/\\s+/g, ' '), goto: a && a.getAttribute('data-goto'), x: document.documentElement.scrollWidth - innerWidth }; }""")
+            if not (L and L["n"] == 1 and "topbar" in (L["after"] or "") and L["pos"] == "sticky" and L["h"] >= 44 and L["goto"] == "cc" and "bot" in L["txt"].lower() and "undefined" not in L["txt"] and L["x"] <= 1
+                    and (not L["scroll"] or 0 <= L["top"] <= 4)):
+                bad.append((pid, L))
+        check(f"d. PC status strip: on all {len(pages)} pages checked ({', '.join(pages[:4])} ...) exactly one sticky line under the top bar with 'Bot ...' + Armed, 44 px or taller, stays at the top when scrolled, links Home", pages and not bad, bad[:2])
+        TB.pc_go(pg, "cc")
+        pg.wait_for_selector("#page-cc.active > #nxStatusHome .su-bar", timeout=30000)
+        pg.evaluate("() => window.scrollTo(0, 0)")
         check("d. PC Home: the status bar on top", ok and pg.evaluate("() => document.querySelector('#page-cc').firstElementChild.id") == "nxStatusHome")
         subs = pg.eval_on_selector_all("#nav .nx-main-sub", "els => els.map(e => e.textContent.trim())")
         side = pg.eval_on_selector_all("#nav > a.nx-gl[data-g='Main']", "els => els.map(e => e.dataset.page)")

@@ -70,6 +70,19 @@ function place() {
   if (box.__h !== html) { box.innerHTML = html; box.__h = html; SU.tick(box); box.querySelectorAll('a[data-goto]:not([href])').forEach((a) => { a.tabIndex = 0; a.setAttribute('role', 'link'); }); }
   SU.wire(box);
 }
+// the one-line sticky status strip under the top bar of EVERY page (bot running / armed + last check-in age; MoneyNow.line, the same core as the Home card)
+function strip() {
+  const main = document.querySelector('main.main'); if (!main) return;
+  let w = document.getElementById('nxLine');
+  if (!w) {
+    w = document.createElement('div'); w.id = 'nxLine'; w.className = 'nx-line'; w.setAttribute('role', 'status'); w.setAttribute('aria-label', 'Bot status');
+    const top = main.querySelector(':scope > .topbar'); if (top) top.after(w); else main.prepend(w);
+  }
+  let h = '';
+  try { if (LAST && window.MoneyNow) { window.MoneyNow.css(); h = window.MoneyNow.line(LAST, { where: 'pc' }); } } catch (e) { h = ''; }
+  if (!h) h = `<a class="mn-line a" data-goto="cc" role="link" tabindex="0" data-mnline="1"><i class="mn-dot" aria-hidden="true"></i><b>Bot: ${LAST ? 'not published yet' : 'checking...'}</b></a>`;
+  if (w.__h !== h) { w.innerHTML = h; w.__h = h; }
+}
 // the sidebar: a light next to each bot (green = in a trade, amber = armed, red = blocked; nothing while it waits)
 function navDots() {
   let As = [];
@@ -90,6 +103,7 @@ async function refresh() {
   LAST = await model();
   window.StatusUI.css();
   if (active('cc')) place();
+  try { strip(); } catch (e) { /* optional */ }
   try { navDots(); } catch (e) { /* optional */ }
 }
 // Ctrl K: each bot's five sections and the status verdict, next to the pages the palette already lists
@@ -114,7 +128,7 @@ export function initPolish() {
   try { addPaletteItems(paletteItems); } catch (e) { /* the palette keeps its own list */ }
   addEventListener('keydown', (e) => {          // Enter / Space on a status-bar link (an <a data-goto> without href)
     if (e.key !== 'Enter' && e.key !== ' ') return;
-    const a = e.target && e.target.closest && e.target.closest('#nxStatusHome a[data-goto]:not([href])');
+    const a = e.target && e.target.closest && e.target.closest('#nxStatusHome a[data-goto]:not([href]), #nxLine a[data-goto]:not([href])');
     if (a) { e.preventDefault(); a.click(); }
   });
   const el = document.getElementById('page-cc');
@@ -122,6 +136,7 @@ export function initPolish() {
     el.__stObs = new MutationObserver(() => { if (LAST && active('cc') && el.firstElementChild?.id !== 'nxStatusHome') place(); });
     el.__stObs.observe(el, { childList: true });
   }
+  try { strip(); } catch (e) { /* optional */ }          // at once, so no page is ever without the line (it fills in on the first refresh)
   refresh();
   setInterval(() => { if (!document.hidden) refresh(); }, 15000);
   addEventListener('hashchange', () => setTimeout(() => { if (active('cc')) place(); }, 300));
