@@ -288,12 +288,12 @@ def test_optional(tmp):
     never part of the all-or-nothing rule of the four required files; the committed seed copies keep serving without a branch."""
     now = time.time()
     kc = registry.get("kalshicity")
-    check("o. registry: kalshicity lists whatif.json and forward.json as OPTIONAL files (forward_card.json is not published), the four required ones unchanged",
-          registry.optional_site_files(kc) == [("whatif.json", "kalshicity/whatif.json"), ("forward.json", "kalshicity/forward.json")]
+    check("o. registry: kalshicity lists whatif.json, forward.json and scan.json as OPTIONAL files (forward_card.json is not published), the four required ones unchanged",
+          registry.optional_site_files(kc) == [("whatif.json", "kalshicity/whatif.json"), ("forward.json", "kalshicity/forward.json"), ("scan.json", "kalshicity/scan.json")]
           and [d for _, d in registry.site_files(kc)] == ["kalshicity/edges.json", "kalshicity/learning_log.json", "kalshicity/hypotheses.json", "kalshicity/jarvis.json"]
           and all(registry.optional_site_files(t) == [] for t in registry.TASKS if t.name != "kalshicity"))
 
-    def branch(name, required=True, optional=("whatif.json", "forward.json"), card_t=None, skip=()):
+    def branch(name, required=True, optional=("whatif.json", "forward.json", "scan.json"), card_t=None, skip=()):
         d = os.path.join(tmp, name)
         shutil.rmtree(d, ignore_errors=True)
         if required:
@@ -326,7 +326,7 @@ def test_optional(tmp):
     notes, _ = site.pull(out, branch("br_c"), log=lambda *a: None)
     check("o. optional files present: whatif.json and forward.json are published beside the four required ones, named in the note",
           rjson(os.path.join(out, "kalshicity", "whatif.json"))["from"] == "branch" and rjson(os.path.join(out, "kalshicity", "forward.json"))["f"] == "forward.json"
-          and served(out, "edges.json") and "+whatif.json, forward.json" in notes["kalshicity"], notes)
+          and served(out, "edges.json") and served(out, "scan.json") and "+whatif.json, forward.json, scan.json" in notes["kalshicity"], notes)
     # only one optional file there
     out = _site(tmp, "opt_d")
     site.pull(out, branch("br_d", optional=("forward.json",)), log=lambda *a: None)

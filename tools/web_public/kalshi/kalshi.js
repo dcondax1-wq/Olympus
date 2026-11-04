@@ -178,7 +178,7 @@
       side: SIDES.indexOf(u.side) >= 0 ? u.side : 'all',
     },
     preview: false, jf: 'all', jn: '', q: '', kf: 0, calc: { p: '', c: '' }, trShown: TR_PAGE, cal: '', calSel: '', calGr: '', open: new Set(), scrub: false, pend: false, chart: null, series: null, v: null, pos: [], fresh: false, alerts: null,
-    gpx: '', wi: '', city: false, eqv: '', raceOff: new Set(), heatSel: '', bm: 'wr', bs: 1,
+    gpx: '', wi: '', sc: '', city: false, eqv: '', raceOff: new Set(), heatSel: '', bm: 'wr', bs: 1,
   };
   const saveUi = () => LS.set('kalshi.ui', S.ui);
   const cached = LS.get('kalshi.last', null);
@@ -1325,6 +1325,61 @@
       + `<p class="muted wi-f">Net = the past bets replayed (B and C shrunk to 2% of today's ${esc(usdA(m.balance))} = ${esc(usdA(m.cap))} a bet). Worst dip and ruin (balance under $6) come from 400 seeded runs of the next ${WI_BETS} bets drawn from the same price bands at the bot's usual ${esc(usdA(m.t0))} bet. A past replay is not a promise.</p>${fwdStrip()}</section>`;
   }
 
+  // ================================================================== "Where the money is" (2026-11-04): tools/kalshi_scan.py -> ../kalshicity/scan.json
+  // The top 5 slices of the bot's bets worth a paper test and the top 5 to avoid, each with the fee-adjusted EV per $1 risked and its 95% range. LOOKING
+  // BACK, NOT PROVEN. Reads scan.json when the site has it; else the same maths on this feed's own price bands (30+ bets each); else a dated sample from
+  // the research, labelled as such. Never blank.
+  const SC_FIXTURE = { label: 'Sample from the 2026-11-04 research, not your live numbers', test: [
+    { name: '95–97¢ bets', ev: 0.015, n: 715, fragile: false, text: '95–97¢ bets: won 97.8% of 715 bets against 96.1% priced. After Kalshi\'s fee that is +1.5¢ on every $1 risked. It made $137 on $9,182 bet.' },
+    { name: '97–99¢ bets', ev: 0.008, n: 360, fragile: true, text: '97–99¢ bets: won 98.6% of 360 bets against 97.7% priced. After the fee +0.8¢ on every $1 risked, but the range includes zero: a hint, not a result.' }], avoid: [
+    { name: '90–95¢ bets', ev: -0.011, n: 581, fragile: false, text: '90–95¢ bets: won 92.2% of 581 bets against 92.8% priced. After the fee −1.1¢ on every $1 risked. It lost $248 on $5,343 bet.' },
+    { name: 'XRP bets', ev: -0.037, n: 192, fragile: false, text: 'XRP bets: won 92.7% of 192 bets against 96.0% priced. After the fee −3.7¢ on every $1 risked. It lost $107 on $1,739 bet.' }] };
+  const cents1 = (x) => (x < 0 ? '−' : '+') + Math.abs(x * 100).toFixed(1) + '¢';
+  function scanFromBands(k, v) {
+    const cells = wiRows(k, v).filter((r) => r.n >= 30).map((r) => {
+      const w = r.w / r.n, p = r.p, f = TAKER * p * (1 - p), ev = (x) => (x - p - f) / p, [lo, hi] = wilson(r.w, r.n), e = ev(w), e0 = ev(lo), e1 = ev(hi);
+      const fragile = e > 0 && (r.n < 100 || e0 <= 0), name = `${cRange(r.lo, r.hi)} bets`;
+      const text = `${name}: won ${(w * 100).toFixed(1)}% of ${fmtN(r.n)} bets against ${(p * 100).toFixed(1)}% priced. After Kalshi's fee that is ${cents1(e)} on every $1 risked (95% range ${cents1(e0)} to ${cents1(e1)}). It ${r.pnl >= 0 ? 'made' : 'lost'} ${usdA(Math.abs(r.pnl))} on ${usdA(r.st)} bet.`
+        + (e > 0 && fragile ? ' Positive but fragile (a small sample or the range includes zero): a hint, not a result.' : e < 0 && e1 >= 0 ? ' Negative, but the range includes zero: not proven.' : '');
+      return { name, ev: e, ev_lo: e0, n: r.n, pnl: r.pnl, fragile, text };
+    });
+    const pos = cells.filter((c) => c.ev > 0).sort((a, b) => (a.fragile - b.fragile) || (a.fragile ? b.ev - a.ev : b.ev_lo - a.ev_lo)), neg = cells.filter((c) => c.ev < 0).sort((a, b) => a.pnl - b.pnl);
+    return { label: 'From this feed\'s price bands only (the full scan, with coins and times of day, arrives with the next engine run)', test: pos.slice(0, 5), avoid: neg.slice(0, 5), n: cells.length };
+  }
+  function scanModel(k, v) {
+    const j = S.scan;
+    if (isObj(j) && j.kind === 'kalshi-scan' && Array.isArray(j.test) && Array.isArray(j.avoid)) {
+      const ok = (c) => isObj(c) && typeof c.name === 'string' && num(c.ev) != null && typeof c.text === 'string';
+      return { src: 'scan', label: String(j.label || '').slice(0, 300), head: String(j.headline || '').slice(0, 300), n: num(j.cells_scanned) || 0, test: j.test.filter(ok).slice(0, 5), avoid: j.avoid.filter(ok).slice(0, 5) };
+    }
+    const b = scanFromBands(k, v);
+    if (b.test.length || b.avoid.length) return { src: 'bands', label: b.label, head: '', n: b.n, test: b.test, avoid: b.avoid };
+    return { src: 'fixture', label: SC_FIXTURE.label, head: '', n: 0, test: SC_FIXTURE.test, avoid: SC_FIXTURE.avoid };
+  }
+  function scanHtml(k, v) {
+    const m = scanModel(k, v);
+    const item = (c, kind, i) => {
+      const id = kind + i, open = S.sc === id;
+      return `<div class="sc-i ${kind}${open ? ' open' : ''}"><button type="button" class="sc-h" data-act="sc" data-v="${id}" aria-expanded="${open}"><span class="sc-n">${esc(String(c.name).slice(0, 80))}${c.fragile ? ' <i>small sample</i>' : ''}</span>`
+        + `<b class="${c.ev >= 0 ? 'up' : 'down'}">${esc(cents1(c.ev))}</b></button>${open ? `<p class="sc-d">${esc(String(c.text).slice(0, 700))}</p>` : ''}</div>`;
+    };
+    return `<section class="card scan" id="sec-scan"><div class="card-h"><h2>Where the money is</h2></div><p class="wi-lab">Looking back at past bets · not proven · suggestions only</p>`
+      + `<p class="sc-l">${esc(m.label)}${m.head ? '. ' + esc(m.head) : ''}</p><h3 class="sc-g">Worth a paper test</h3>${m.test.length ? m.test.map((c, i) => item(c, 'test', i)).join('') : '<p class="muted">No slice with 30+ bets is clearly positive.</p>'}`
+      + `<h3 class="sc-g">Avoid</h3>${m.avoid.length ? m.avoid.map((c, i) => item(c, 'avoid', i)).join('') : '<p class="muted">No slice with 30+ bets is clearly negative.</p>'}`
+      + '<p class="muted wi-f">EV per $1 = (win rate − price − Kalshi\'s fee) ÷ price, at equal size. The slices overlap and were picked from many, so the best-looking ones are partly luck: paper-test, never bet on one.</p></section>';
+  }
+  async function scanLoad() {
+    if (S.scanAsk) return;
+    S.scanAsk = true;
+    let ac = null, tm = 0, r = null, j = null;
+    try { ac = new AbortController(); tm = setTimeout(() => ac.abort(), 4000); } catch (_) { ac = null; }
+    try { r = await fetch('../kalshicity/scan.json', { cache: 'no-cache', signal: ac ? ac.signal : undefined }); if (r && r.ok) j = await r.json(); } catch (_) { j = null; } finally { clearTimeout(tm); }
+    if (!isObj(j) || j.kind !== 'kalshi-scan') return;
+    S.scan = j;
+    const k = previewing() ? sample() : S.k;
+    if (S.v && k && !S.scrub) swap('sec-scan', scanHtml(k, S.v));
+  }
+
   // ---- when nothing is open (a paused bot, a quiet hour): never a blank card, the history stays and the page says what comes back
   function restHtml(k, v) {
     if (v.pos.length) return '';
@@ -1757,7 +1812,7 @@
       const eq = safe('equity', () => eqHtml(v));              // first: the stats read its series (max drawdown)
       html = (pv ? previewBar() : notesHtml(k))
         + groupHtml('today', 'Today', todaySum(k), [safe('why', () => whyHtml(k, v)), safe('guard', () => guardHtml(k, v)), safe('verdict', () => verdictHtml(k, v)), safe('balance', () => heroHtml(k, v)), safe('open bets', () => posHtml(v)), safe('rest', () => restHtml(k, v))])
-        + groupHtml('edge', 'Edge', edgeSum(v), [safe('what-if', () => whatifHtml(k, v)), safe('edge wait', () => edgeWaitHtml(k, v)), safe('live edge', () => edgeHtml(k, v)), safe('edge map', () => edgeMapHtml(k, v)), safe('sizing', () => kellyHtml(k, v)), safe('risk of ruin', () => ruinHtml(k, v))])
+        + groupHtml('edge', 'Edge', edgeSum(v), [safe('what-if', () => whatifHtml(k, v)), safe('where the money is', () => scanHtml(k, v)), safe('edge wait', () => edgeWaitHtml(k, v)), safe('live edge', () => edgeHtml(k, v)), safe('edge map', () => edgeMapHtml(k, v)), safe('sizing', () => kellyHtml(k, v)), safe('risk of ruin', () => ruinHtml(k, v))])
         + groupHtml('perf', 'Performance', perfSum(k), [eq, safe('race', () => raceHtml(v)), safe('heat map', () => heatHtml(v)), safe('calendar', () => calHtml(v)), safe('daily P&L', () => barsHtml(v)), safe('stats', () => statsHtml(v, k)),
           safe('battle', () => battleHtml(k, v)), safe('strategies', () => stratHtml(v)), safe('prices', () => bucketHtml(k, v)), safe('calibration', () => calibHtml(k, v)), safe('markets', () => catHtml(k, v)), safe('journal', () => journalHtml(v))])
         + groupHtml('alerts', 'Alerts', alertSum(k, v), [safe('alerts', () => alertsHtml(k, v)), safe('timeline', () => timelineHtml(k, v)), safe('trades', () => tradesHtml(v))]);
@@ -1853,6 +1908,7 @@
     else if (a === 'jnote') { S.jn = S.jn === val ? '' : val; if (S.v) swap('sec-journal', journalHtml(S.v)); const ta = $('#jnote'); if (ta) ta.focus({ preventScroll: true }); }
     else if (a === 'gpx') { S.gpx = S.gpx === val ? '' : val; const k = previewing() ? sample() : S.k; if (S.v && k) { swap('sec-guard', guardHtml(k, S.v)); const nb = Array.prototype.filter.call(document.querySelectorAll('#sec-guard [data-act="gpx"]'), (x) => x.getAttribute('data-v') === val)[0]; if (nb) nb.focus({ preventScroll: true }); } }
     else if (a === 'wi') { S.wi = S.wi === val ? '' : val; const k = previewing() ? sample() : S.k; if (S.v && k) { swap('sec-whatif', whatifHtml(k, S.v)); const nb = Array.prototype.filter.call(document.querySelectorAll('#sec-whatif [data-act="wi"]'), (x) => x.getAttribute('data-v') === val)[0]; if (nb) nb.focus({ preventScroll: true }); } }
+    else if (a === 'sc') { S.sc = S.sc === val ? '' : val; const k = previewing() ? sample() : S.k; if (S.v && k) { swap('sec-scan', scanHtml(k, S.v)); const nb = Array.prototype.filter.call(document.querySelectorAll('#sec-scan [data-act="sc"]'), (x) => x.getAttribute('data-v') === val)[0]; if (nb) nb.focus({ preventScroll: true }); } }
     else if (a === 'jump') jump(val);
     else if (a === 'race') { if (S.raceOff.has(val)) S.raceOff.delete(val); else S.raceOff.add(val); if (S.v) { swap('sec-race', raceHtml(S.v)); const nb = Array.prototype.filter.call(document.querySelectorAll('#sec-race .rchip'), (x) => x.getAttribute('data-v') === val)[0]; if (nb) nb.focus({ preventScroll: true }); } }
     else if (a === 'bm') { S.bm = val; if (S.v && S.k) { swap('sec-battle', battleHtml(S.k, S.v)); const nb = Array.prototype.filter.call(document.querySelectorAll('#sec-battle [data-act="bm"]'), (x) => x.getAttribute('data-v') === val)[0]; if (nb) nb.focus({ preventScroll: true }); } }
@@ -2001,5 +2057,6 @@
   kit();
   city();
   fwd();
+  scanLoad();
   offline();
 })();
