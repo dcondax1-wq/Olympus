@@ -209,6 +209,13 @@ def overlay(src, base):
                     put(os.path.join(d, name), os.path.join(base, app, name))
                     pages.add(os.path.join(app, name))
                     n += 1
+                elif os.path.isdir(os.path.join(d, name)) and not name.startswith((".", "__")):
+                    # an app's own subfolder (olympus/three-addons/: the render core's vendored addons), as the real build copies it
+                    for root, _dirs, files in os.walk(os.path.join(d, name)):
+                        for f in files:
+                            rel = os.path.relpath(os.path.join(root, f), d)
+                            put(os.path.join(root, f), os.path.join(base, app, rel))
+                            n += 1
     kit = os.path.join(src, "tools", "kalshi_kit", "public")        # the Kalshi kit's public files, never over a page file
     if os.path.isdir(kit) and os.path.isdir(os.path.join(base, "kalshi")):
         for name in os.listdir(kit):
