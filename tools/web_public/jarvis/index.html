@@ -2055,6 +2055,19 @@ function nxCover() {
   const ae = document.activeElement, typing = !!ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName);
   safe(() => nx.setHidden(typing || NX_COVER.some((sel) => { const e = $(sel); return e && !e.hidden; })));
 }
+// ==== OLYMPUS covered (2026-11-04, docs/OLYMPUS_PERF.md): a sheet / the ⋯ keys over a framed app tell the app its scene is covered, and when it is not ====
+// The kit (olympus/olympus.js) answers hidden() = true while covered, so the app's frame loop sleeps (the iPhone's battery). Same origin only.
+let olyCov = false;
+function olyCovered() {
+  safe(() => {
+    const on = active !== 'home' && NX_COVER.some((sel) => { const e = $(sel); return e && !e.hidden; });
+    if (on === olyCov) return;
+    olyCov = on;
+    for (const k of Object.keys(frames)) { const f = frames[k] && frames[k].querySelector('iframe'); if (f && f.contentWindow) f.contentWindow.postMessage({ olympus: 'covered', on }, location.origin); }
+  });
+}
+new MutationObserver(olyCovered).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['hidden'] });
+// ==== end OLYMPUS covered ====
 function mountNexus(m) {
   try {
     nx = m.mountSwitcher({ apps: nxApps, sections: nxSections, active: () => active, status: (id) => safe(() => nxStatus(id), {}) || {},

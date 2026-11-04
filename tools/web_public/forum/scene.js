@@ -235,9 +235,13 @@ export function createForum(canvas, { O = null } = {}) {
     if (pick) pick(hit ? hit.object.userData.scroll : null);
   });
 
+  let gapAt = 0;
   function frame(now) {
     raf = requestAnimationFrame(frame);
-    if (stopped) return;
+    if (stopped || (window.OLYMPUS && window.OLYMPUS.hidden())) return;                       // hidden / covered: no JS, no frame
+    const gap = (window.OLYMPUS && window.OLYMPUS.frameGap ? window.OLYMPUS.frameGap() : 0);                   // idle 30 / 15 fps, battery saver, 3D Off (docs/OLYMPUS_PERF.md)
+    if (gap && now - gapAt < gap - 3) return;
+    gapAt = now;
     const live = frameLive(), t = now / 1000;
     const a = canvas.clientWidth / Math.max(1, canvas.clientHeight);
     camera.fov = a < 0.75 ? 62 : a < 1.2 ? 52 : 42; camera.updateProjectionMatrix();

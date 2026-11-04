@@ -53,13 +53,14 @@ BUDGET = {
     "fates": (64, 40_000), "hermes": (0, 0), "prometheus": (40, 7_500), "tyche": (270, 30_000),   # render core adopted 2026-11-03: measured 31 calls / 6,054 tris and 216 calls / 24,590 tris, +20%
 }
 # the other 3D / animated apps (2026-11-04, docs/OLYMPUS_PERF.md): (query, budget calls, budget triangles), measured at 390 x 844 / dpr 3 under
-# SwiftShader (where the render core steps every app down to LITE, so these are the LITE scenes) + ~25% headroom. Calls and triangles are the
+# SwiftShader (where the render core steps every app down to LITE, so these are the LITE scenes) + ~25% headroom. Re-measured 2026-11-04 after the
+# own-loop pass: athena 80 -> 48 calls (instanced shelves; its triangle count rises because culling is now per shelf, not per book). Calls and triangles are the
 # portable numbers; fps is relative only. ares / hermes / bridge / kalshi are 2D or DOM (no three.js): their budget is the heap only.
 MORE = {
-    "nemesis": ("?demo=1", 28, 30_000), "athena": ("?demo=1", 100, 2_800), "argus": ("?demo=1", 10, 80_000), "chronos": ("?demo=1", 44, 6_000),
-    "cities": ("?demo=1", 9, 48_000), "kalshicity": ("?demo=1", 75, 24_000), "labyrinth": ("?demo=1", 35, 7_500), "hephaestus": ("?demo=1", 28, 3_100),
+    "nemesis": ("?demo=1", 28, 30_000), "athena": ("?demo=1", 62, 8_000), "argus": ("?demo=1", 10, 80_000), "chronos": ("?demo=1", 44, 6_000),
+    "cities": ("?demo=1", 10, 80_000), "kalshicity": ("?demo=1", 90, 24_000), "labyrinth": ("?demo=1", 35, 7_500), "hephaestus": ("?demo=1", 28, 3_100),
     "pantheon": ("?demo=1", 135, 31_500), "arena": ("?demo=1", 127, 80_000), "forum": ("?demo=1", 118, 9_000), "plutus": ("?demo=1", 24, 6_000),
-    "tree": ("?demo=1", 68, 8_500), "ares": ("?demo=1", 17, 3_700), "hermes": ("?demo=1", 0, 0), "kalshi": ("?demo=1", 0, 0),
+    "tree": ("?demo=1", 68, 8_500), "ares": ("?demo=1", 50, 7_800), "hermes": ("?demo=1", 0, 0), "kalshi": ("?demo=1", 0, 0),
 }
 HEAP_MB, LAYOUTS_PER_FRAME = 40, 1.25   # 1.25: room for the day-sprint HUDs (Odeon 1.11 under load)
 
@@ -113,6 +114,16 @@ def test_static():
     check("a. ambience: every app of the kit has a bed in the AMBIENT table, each bed exists in sfx.js, none starts before a gesture or when muted / saver / Jarvis talks",
           all(f"{a}:" in js.split("var AMBIENT = {")[1].split("};")[0] for a in list(APPS) + list(MORE) + ["bridge"]) and "OLYMPUS_QUIET" in js
           and all(f"{b}: function" in read(os.path.join(KIT, "sfx.js")) for b in ("wind", "forge", "sea", "city", "forest", "crowd", "chimes", "space")))
+    own = ["tree/app.js", "hermes/fx.js", "hermes/app.js", "tyche/main.js", "ares/ares.js", "plutus/plutus.js", "pantheon/pantheon.js", "forum/scene.js",
+           "kalshicity/cityscene.js", "mind/main.js", "athena/athena.js"]
+    miss = [f for f in own if "frameGap" not in read(os.path.join(WEB, *f.split("/")))]
+    check("a. every own frame loop (tree, hermes x2, tyche, ares, plutus, pantheon, forum, kalshicity, mind, athena) keeps the kit's frame gap (idle / saver / Off) and sleeps hidden or covered", not miss, miss)
+    ath = read(os.path.join(WEB, "athena", "athena.js"))
+    check("a. athena's shelves are instanced (books, strips, scrolls, caps: InstancedMesh), tyche's 3D Off is the core's 'off' tier",
+          ath.count("InstancedMesh(") == 1 and "instanceColor" in ath and "O.fx() === 'off' ? 'off'" in read(os.path.join(WEB, "tyche", "scene.js")))
+    jv = read(os.path.join(WEB, "jarvis", "index.html"))
+    check("a. Jarvis tells a framed app when a sheet covers it: { olympus: 'covered', on } on open and close (delimited block in index.html)",
+          "==== OLYMPUS covered" in jv and "==== end OLYMPUS covered" in jv and "{ olympus: 'covered', on }, location.origin" in jv)
     jarvis = read(os.path.join(WEB, "jarvis", "index.html"))
     check("a. Jarvis keeps its 3D level in the same 'jfx' key with the same four levels",
           "g('jfx')" in jarvis and "rawSet('jfx', level)" in jarvis and "['ultra', 'high', 'low', 'off']" in jarvis)
@@ -311,12 +322,12 @@ def test_power(br, origin):
     ctx, p, errs = page(br, origin, fx="high")
     p.goto(f"{origin}/mind/")
     wait_ready(p)
-    p.mouse.move(100, 300)
+    p.evaluate("() => window.dispatchEvent(new Event('pointermove'))")                      # a touch (dispatched: emulated touch pages do not always deliver a mouse move)
     p.evaluate("() => { window.__p = (k) => OLYMPUS.frameGap(); }")
     gap_active = p.evaluate("() => OLYMPUS.frameGap()")
     p.wait_for_timeout(4400)
     gap_idle = p.evaluate("() => OLYMPUS.frameGap()")
-    p.mouse.move(120, 320)
+    p.evaluate("() => window.dispatchEvent(new Event('pointermove'))")
     gap_back = p.evaluate("() => OLYMPUS.frameGap()")
     check("g. power: touching = every frame (gap 0), idle 4 s on high = 30 fps (33 ms), a touch brings the full rate back", (gap_active, gap_idle, gap_back) == (0, 33, 0), (gap_active, gap_idle, gap_back))
     sv = p.evaluate("() => { OLYMPUS.setSaver('on'); return [OLYMPUS.saver(), OLYMPUS.frameGap(), document.documentElement.dataset.olySaver, OLYMPUS.stats().power]; }")
@@ -367,6 +378,7 @@ def test_power(br, origin):
     ctx, p, errs = page(br, origin, fx="off")
     p.goto(f"{origin}/mind/")
     wait_ready(p)
+    p.evaluate("() => window.dispatchEvent(new Event('pointermove'))")
     g0 = p.evaluate("() => OLYMPUS.frameGap()")
     p.wait_for_timeout(4400)
     check("g. power: 3D effects Off = static: idle redraws at most twice a second (500 ms), a touch gives full rate", g0 == 0 and p.evaluate("() => OLYMPUS.frameGap()") == 500, g0)

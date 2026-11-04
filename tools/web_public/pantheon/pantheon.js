@@ -604,8 +604,10 @@ function flipBanner(f) {
   STATE.hall?.celebrate(f.to);
 }
 
+let gapAt = 0;
 function tick(now) {
-  if (STATE.hall && !(O ? O.hidden() : document.hidden)) STATE.hall.frame(now);   // hidden tab: no frame (the battery)
+  const gap = O && O.frameGap ? O.frameGap() : 0;                         // idle 30 / 15 fps, battery saver, 3D Off (docs/OLYMPUS_PERF.md)
+  if (STATE.hall && !(O ? O.hidden() : document.hidden) && !(gap && now - gapAt < gap - 3)) { gapAt = now; STATE.hall.frame(now); }   // hidden tab: no frame (the battery)
   requestAnimationFrame(tick);
 }
 

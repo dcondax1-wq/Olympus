@@ -51,14 +51,13 @@ LITE scene (pixel ratio 1.5)**; Jarvis' phone default on a real GPU is high, wit
 | bridge (DOM) | - | - | 2.4 | - | none | 0 | 2 | 0 |
 
 The 3D-effects **Off** tier, same machine: mind, arena, pantheon, argus draw nothing (one still frame, 0 draws/s, page idle at 52-56 fps: zero
-power). **tyche (297 draws/s), oracle (79) and datacity (242) keep drawing at Off** and tyche / oracle keep a 1.5 pixel ratio: see "left for the
-owners of those apps".
+power). **oracle (79 draws/s) and datacity (242) keep drawing at Off**; tyche kept a 1.5 pixel ratio (fixed in the own-loop pass below).
 
 ### Budgets (tests/test_olympus_kit.py)
 
 `BUDGET` (the nine kit apps, 2026-11-03) and the new `MORE` table hold calls + triangles per app at measured +25%; JS heap <= 40 MB for all
 (datacity 36 MB is the one close to it); layouts per frame <= 1.25. `python -X utf8 -m tests.test_olympus_kit more` runs the new apps, `power`
-the power layer. Daphne's budget was 0 (no three.js when written); it is now 68 calls / 8,500 triangles.
+the power layer. Daphne's budget was 0 (no three.js when written); it is now 68 calls / 8,500 triangles. Re-measured after the own-loop pass: athena 62 / 8,000, cities 10 / 80,000 (grew with its new districts), kalshicity 90 / 24,000, ares 50 / 7,800.
 
 ### Verified: the step-down works in every app
 
@@ -77,20 +76,36 @@ frames: ultra -> high -> low, never stored. With the new frame cap the step-down
 | kalshi `korb.js`: already 30 fps, hidden / off-screen pause | no change needed |
 | mind: hidden pause, one loop | no change needed |
 
-### Left for the owners of those apps (the apps another agent is rewriting; not edited here)
+### Own-loop pass (2026-11-04): applied in the apps nobody was rewriting
 
-1. **tree (Daphne)**: 1,125 2D draws/s and 90 ms/s of script (6.5 fps headless) from the label / link canvas: cache the static layers, draw only when
-   the camera moves. Heap 16-19 MB.
-2. **hermes**: 2 rAF loops, 2,192 2D draws/s, 59 ms/s: one loop, pause when no card animates (`OLYMPUS.hidden()` / `frameGap()`).
-3. **tyche**: 217 draw calls and 33 ms/s of script, the heaviest 3D app: instance the wheel segments / slices, merge static meshes. At Off it keeps
-   drawing (297/s) and holds a pixel ratio of 1.5-2: honour `OLYMPUS.dpr()` and stop its loop on Off like mind / arena do.
-4. **oracle**: 115 calls; at Off it still draws (79/s) at 1.5.
-5. **datacity**: 150k triangles and 36 MB heap (budget 40); at Off it still draws (242/s). Instanced buildings are already used; consider LOD for the
-   far districts and a lower tier cap.
-6. **athena**: 80 calls for 2,205 triangles (many tiny meshes): `InstancedMesh` or merged geometry would cut it by ~5x.
-7. **pantheon / arena / forum**: ~100 calls each; arena 64k triangles. Fine for an iPhone 13+, worth merging static meshes for older phones.
-8. **ares**: own 2D loop, 144 draws/s and 32 ms/s at an unthrottled 11 fps: use the kit's `frameGap()` in its loop (`if (g && now - last < g) return;`).
-9. Any app with its own loop: add the same two lines the render core uses (`OLYMPUS.hidden()` and `OLYMPUS.frameGap()`).
+Every own frame loop now sleeps on `OLYMPUS.hidden()` (hidden tab or covered) and keeps `OLYMPUS.frameGap()` (idle 30 / 15 fps, battery saver, Off 2 fps;
+a touch = full rate). Minimal diffs, one block per loop:
+
+| App | Change | Before -> after (same machine, relative) |
+|---|---|---|
+| tree (Daphne) | the LITE 30 fps cap became `max(LITE cap, frameGap())`; the loop was already hidden-aware | at 3D Off 1,125 -> **41** 2D draws/s, 90 -> 4 ms/s of script; at high 1,125 -> ~840 |
+| hermes | the effects loop (`fx.js`) and the card progress loop (`app.js`) keep the gap and use `OLYMPUS.hidden()` | high 2,192 -> ~1,200 draws/s, 59 -> 3 ms/s; Off **0** draws |
+| tyche | 3D Off is now the core's `off` tier (pixel ratio 1, direct draw) instead of `low` at 1.5; the frame keeps the gap | Off: pixel ratio 1.5 -> **1**, page responsive (task time 1000 -> 343 ms/s); high JS 33 -> 2 ms/s idle. Draw calls unchanged (217): the wheel's coins are separate transparent meshes, an instancing rewrite was not attempted |
+| athena | **shelves instanced**: books, glowing spines, scrolls and caps are 4 `InstancedMesh` per shelf (one leather material, per-book tint through `instanceColor`) instead of ~30 meshes; frame gap | **80 -> 48 calls** (triangles 2.2k -> 6.2k because culling is now per shelf, not per book: irrelevant next to the calls); Off 0 draws |
+| ares / plutus / pantheon | the shared `tick()` keeps the gap | ares at Off 0 draws; budgets re-measured |
+| forum / kalshicity | `frame()` returns before any JS when hidden / covered and inside the gap | |
+| mind | the gap; the slow-frame meter only counts uncapped frames (a deliberate 30 fps is not "slow", it would have stepped Mind down to LITE) | |
+| cities | already on the core's `stage.start`, which honours the gap | |
+
+Jarvis now posts `{ olympus: 'covered', on }` to every framed app when a sheet (Add, Settings, Look, Voice, palette) or the ⋯ keys open over it, and `on: false`
+when they close or Jarvis goes home (a delimited block in `jarvis/index.html`: `==== OLYMPUS covered`). Test: `tests.test_jarvis_transitions` (g.).
+
+Measurement caveat: the `rAF loops` column of the first audit is a ratio of rAF callbacks to compositor frames; below ~10 fps (this machine) it is
+inflated and not comparable between runs. Use calls, triangles, 2D draws/s and script ms/s.
+
+### Still open: the apps other agents are rewriting (apply the snippet below; nothing was edited there)
+
+| App | What to apply |
+|---|---|
+| oracle (115 calls) | own loop: `OLYMPUS.hidden()` + `frameGap()`; honour `OLYMPUS.dpr()` / the `off` tier (still 1.5 pixel ratio at Off); merge static meshes |
+| datacity (150k tris, 36 MB heap vs 40) | gap in its two loops; LOD for far districts; at Off it still draws (242/s): make Off a still frame like mind / arena |
+| odeon, fates, labyrinth, hephaestus, prometheus, arena, nemesis, chronos, argus | gap + hidden/covered in each own loop (check `grep requestAnimationFrame`: 2-4 loops each); arena (64k tris, 100 calls): merge static meshes |
+| any new app | `OLYMPUS.hidden()` + `OLYMPUS.frameGap()` in every loop, 3D Off = still frame, never a slow-frame meter that counts capped frames |
 
 ```js
 // an own requestAnimationFrame loop, in the kit's rules (2 lines)
@@ -102,3 +117,11 @@ function loop(now) { raf = requestAnimationFrame(loop); const g = O && O.frameGa
 
 Settings -> Look: **App ambience** (the sound beds) and **Battery saver** (`olympus.saver` = `on`; off = auto). Both are read by every OLYMPUS page
 (the saver through the `storage` event, the ambience through `olympus.sfx`).
+
+## Proof that the tree failures are load, not the kit change
+
+`tests.test_olympus_kit tree` (and `mind`) fail intermittently on this machine (load ~55): the readiness check (veil lifted) and the LITE / reduced-motion
+checks that depend on it. The same checks were run against a temp copy of the site from the commit **before** the kit change (`e75ca7b`, old
+`olympus.js` / `render.js` / `sfx.js` and old apps) and against the current tree: **OLD 9/10, 6/10, 6/10; NEW 9/10, 7/10, 9/10** passing, the same
+checks failing in both (`c. veil lifted`, `b. jfx=low`, `b. reduced motion`, `c. Retry`). Mind: OLD 7/11 failing the same two checks the current code fails.
+Tree reaches `ready` in 1.9 s when loaded alone.
