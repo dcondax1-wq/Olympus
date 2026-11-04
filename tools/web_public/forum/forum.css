@@ -72,5 +72,24 @@ html[data-noscene] body { background: linear-gradient(#1b2342, #3a2a5e 60%, #0a0
 .dots button[aria-current="step"] i { background: var(--f-acc); box-shadow: 0 0 10px var(--f-acc); transform: scale(1.3); }
 .dots button.read i { background: rgba(var(--f-acc-rgb), .55); }
 
+/* 2026-11-04: the desk tablets, the streak shrine */
+.shrine { grid-column: 1 / -1; display: flex; gap: 9px; align-items: flex-end; height: 26px; padding: 0 2px; }
+.candle { position: relative; display: block; width: 8px; height: 16px; border-radius: 2px; background: linear-gradient(#e8dcc0, #9c8f70); opacity: .45; }
+.candle .flame { position: absolute; left: 50%; bottom: 100%; width: 8px; height: 11px; margin-left: -4px; border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%; background: radial-gradient(#fff6c8, #ffb02e 60%, rgba(255, 120, 20, 0)); opacity: 0; transform-origin: 50% 100%; }
+.candle.lit { opacity: 1; box-shadow: 0 0 10px rgba(255, 207, 90, .45); }
+.candle.lit .flame { opacity: 1; animation: flick 1.1s ease-in-out infinite alternate; filter: drop-shadow(0 0 5px rgba(255, 176, 46, .8)); }
+.candle:nth-child(2n) .flame { animation-delay: -.4s; } .candle:nth-child(3n) .flame { animation-delay: -.7s; }
+@keyframes flick { from { transform: scale(1, .9) rotate(-3deg); } to { transform: scale(.92, 1.12) rotate(3deg); } }
+html[data-fx="low"] .candle.lit .flame, html[data-fx="off"] .candle.lit .flame { animation: none; filter: none; }
+.desk { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--oly-line); }
+.desk .dhead { margin: 0 0 6px; font: 700 10.5px/1 var(--oly-display, sans-serif); letter-spacing: .16em; text-transform: uppercase; color: var(--oly-dim); }
+.dgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.dtab { position: relative; display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 7px 8px; border-radius: 10px; border: 1px solid color-mix(in srgb, var(--dtone) 55%, transparent); background: rgba(255, 255, 255, .04); }
+.dtop { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.dglyph { flex: none; width: 20px; height: 20px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--dtone); color: var(--dtone); font: 800 11px/1 var(--oly-display, sans-serif); }
+.dtop b { font: 700 10.5px/1.2 var(--oly-display, sans-serif); letter-spacing: .08em; text-transform: uppercase; color: var(--oly-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dstat { font: 800 14px/1.15 var(--oly-ui); color: var(--dtone); overflow-wrap: anywhere; }
+.dline { font-size: 11.5px; line-height: 1.25; color: var(--oly-dim); overflow-wrap: anywhere; }
+
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 @media (max-height: 700px) { .clock { padding: 6px 10px; } .ck b { font-size: 20px; } }

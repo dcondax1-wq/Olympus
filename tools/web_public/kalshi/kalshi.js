@@ -111,7 +111,7 @@
     const s = Math.round(t - nowS());
     if (s <= 0) return '';
     const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
-    return d >= 1 ? `${d}d ${h}h` : h >= 1 ? `${h}h ${m}m` : m >= 1 ? `${m}m` : 'under 1m';
+    return d >= 1 ? `${d}d ${h}h` : h >= 1 ? `${h}h ${m}m` : m >= 1 ? `${m}m ${String(s % 60).padStart(2, '0')}s` : `${s}s`;      // under an hour it counts the seconds
   };
   const closesTxt = (t) => { const l = left(t); return l ? 'closes in ' + l : 'closed · settling'; };
   const cdnCls = (t) => { const s = t - nowS(); return s <= 0 ? ' past' : s < 3600 ? ' soon' : ''; };
@@ -128,6 +128,35 @@
     if (a) return a;
     const m = /^KX([A-Z]+)/.exec(String(r.ticker || ''));
     return m ? ASSETS.filter((x) => m[1].indexOf(x) === 0)[0] || '' : '';
+  };
+
+  // ---- asset badges (2026-11-04): each coin drawn as its own little SVG, no image files; an unknown asset gets a letter badge
+  const ICONS = {
+    BTC: ['#f7931a', '<path d="M9 7.5h4a2 2 0 0 1 0 4H9m0 0h4.4a2.1 2.1 0 0 1 0 4.2H9M9 7.5v8.2M11 6v1.5M13.4 6v1.5M11 15.8v1.7M13.4 15.8v1.7" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>'],
+    ETH: ['#627eea', '<path d="M12 4.6 7.2 12.2l4.8 2.8 4.8-2.8zM7.2 13.7 12 20.4l4.8-6.7-4.8 2.8z" fill="#fff" fill-opacity=".92"/>'],
+    DOGE: ['#c9a227', '<path d="M8.4 7h3.3a5 5 0 0 1 0 10H8.4zM6.9 12h7" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'],
+    XRP: ['#2b3a4a', '<path d="m6.8 7.4 5.2 4.6 5.2-4.6M6.8 16.6l5.2-4.6 5.2 4.6" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'],
+    SOL: ['#8247e5', '<path d="M8.4 8h9.2M6.4 12h9.2M8.4 16h9.2" fill="none" stroke="#6ff2c4" stroke-width="2" stroke-linecap="round"/>'],
+    HYPE: ['#0f6f66', '<path d="M8.2 7.5v9M15.8 7.5v9M8.2 12h7.6" fill="none" stroke="#9ffff0" stroke-width="2" stroke-linecap="round"/>'],
+    BNB: ['#d8a516', '<path d="m12 6.2 1.9 1.9L12 10 10.1 8.1zM7.6 10.6l1.9 1.9-1.9 1.9-1.9-1.9zM16.4 10.6l1.9 1.9-1.9 1.9-1.9-1.9zM12 15l1.9 1.9L12 18.8l-1.9-1.9z" fill="#fff"/>'],
+    GOLD: ['#b8891a', '<path d="M6.2 16.4h11.6l-1.5-4.2H7.7zM9.4 12.2l.9-3.2h3.4l.9 3.2" fill="none" stroke="#fff3c4" stroke-width="1.6" stroke-linejoin="round"/>'],
+    SILVER: ['#7d8794', '<path d="M6.2 16.4h11.6l-1.5-4.2H7.7zM9.4 12.2l.9-3.2h3.4l.9 3.2" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>'],
+  };
+  const CAT_ASSET = { Bitcoin: 'BTC', Ethereum: 'ETH', Dogecoin: 'DOGE', Solana: 'SOL', Gold: 'GOLD', Silver: 'SILVER' };
+  const assetIcon = (a) => {
+    a = String(a == null ? '' : a).trim().toUpperCase().slice(0, 6);
+    if (!a) return '';
+    const ic = ICONS[a] || ['#1b6a55', `<text x="12" y="15.6" text-anchor="middle" font-size="10" font-weight="700" font-family="Orbitron,sans-serif" fill="#fff">${esc(a.charAt(0))}</text>`];
+    return `<svg class="ai" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11.2" fill="${ic[0]}"/><circle cx="12" cy="12" r="11.2" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1"/>${ic[1]}</svg>`;
+  };
+  const assetTag = (a) => (a ? `<span class="asset">${assetIcon(a)}${esc(a)}</span>` : '');
+  // a seeded random stream (the Monte Carlo fan below): the same numbers always draw the same fan, so it never jitters between refreshes
+  const rng32 = (a) => () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  // the 95% range a measured win rate really covers (Wilson): few bets = a wide range
+  const wilson = (w, n) => {
+    if (!(n > 0)) return [0, 1];
+    const z = 1.96, p = w / n, d = 1 + z * z / n, c = p + z * z / (2 * n), m = z * Math.sqrt(p * (1 - p) / n + z * z / (4 * n * n));
+    return [Math.max(0, (c - m) / d), Math.min(1, (c + m) / d)];
   };
 
   const LS = {
@@ -148,6 +177,7 @@
       side: SIDES.indexOf(u.side) >= 0 ? u.side : 'all',
     },
     preview: false, jf: 'all', jn: '', q: '', kf: 0, calc: { p: '', c: '' }, trShown: TR_PAGE, cal: '', calSel: '', calGr: '', open: new Set(), scrub: false, pend: false, chart: null, series: null, v: null, pos: [], fresh: false, alerts: null,
+    city: false, eqv: '', raceOff: new Set(), heatSel: '', bm: 'wr', bs: 1,
   };
   const saveUi = () => LS.set('kalshi.ui', S.ui);
   const cached = LS.get('kalshi.last', null);
@@ -211,7 +241,7 @@
 
   const stateOf = (k) => {
     const t = parseT(k.t), fresh = t && nowS() - t < STALE_S;
-    return k.running === false ? ['bad', 'Stopped'] : fresh ? ['ok', 'Running'] : ['warn', 'Not updating'];
+    return k.running === false ? (/\bpaus/i.test(String(k.status == null ? '' : k.status)) ? ['warn', 'Paused'] : ['bad', 'Stopped']) : fresh ? ['ok', 'Running'] : ['warn', 'Not updating'];
   };
   const safe = (name, fn) => {
     try { return fn(); } catch (e) {
@@ -293,25 +323,48 @@
       + `<em>${esc(roi ? roi.sub : 'no settled bets yet')}</em></div>`;
     const openTile = `<div class="kpi" data-k="open"><span class="lab">Open bets</span><strong class="fit" data-odo="open">${esc(usd(pv.length ? pVal : 0))}</strong>`
       + `<em>${pv.length ? `${pv.length} ${pv.length === 1 ? 'bet' : 'bets'}${evs.length ? ' · EV ' + esc(usd(sum(evs.map((m) => m.ev)), true)) : ''}` : 'none open'}</em></div>`;
-    const balSp = sp(eqVals);
+    const balSp = fx && eqVals.length > 2 ? fx.spark(eqVals, { cls: cls(eqVals[eqVals.length - 1] - eqVals[0]), live: true }) : '';
     return `<section class="card hero" id="sec-kpi" data-tilt><div class="bal"><div><span class="lab">${esc(k.name ? String(k.name).slice(0, 40) : 'Balance')}${k.name ? ' · balance' : ''}</span>`
       + `<strong class="fit" data-odo="bal">${esc(usd(bal))}</strong></div>${balSp ? `<div class="bal-sp">${balSp}</div>` : ''}</div>`
       + `<div class="kpis">${kp('today', 'Today', k.today_pnl, whole && tw + tl ? `${tw}W ${tl}L` : '', true, sp(cumul(pnlToday)))}`
       + `${kp('week', 'Week', k.week_pnl, '', true, sp(cumul(wk)))}${kp('month', 'Month', month, '', true, sp(cumul(mo)))}`
       + `${kp('all', 'All time', k.total_pnl, ok && aw + al ? `${fmtN(aw)}W ${fmtN(al)}L` : '', false, '')}${roiTile}${openTile}</div>`
+      + chipsHtml(v)
       + (k.status ? `<p class="status">${esc(k.status)}</p>` : '') + (k.note ? `<p class="muted">${esc(k.note)}</p>` : '')
-      + '<a class="lnk3d" href="../tyche/#wheel"><i aria-hidden="true"></i><span>See it in 3D</span><b>Tyche ›</b></a></section>';
+      + '<div class="l3d"><a class="lnk3d" href="../tyche/#wheel"><i aria-hidden="true"></i><span>See it in 3D</span><b>Tyche ›</b></a>'
+      + (S.city ? '<a class="lnk3d city" href="../kalshicity/"><i aria-hidden="true"></i><span>See it in 3D</span><b>Kalshi City ›</b></a>' : '') + '</div></section>';
+  }
+  // streak chips: the run of wins or losses now, the best run, the green days (from the recent list and the daily P&L)
+  function chipsHtml(v) {
+    const chip = (c, a, b) => `<span class="chip ${c}"><b>${esc(a)}</b>${esc(b)}</span>`, out = [];
+    const pn = settled(v).map((t) => num(t.pnl));              // newest first
+    let cur = 0, cs = 0;
+    for (let i = 0; i < pn.length; i++) { const x = pn[i] > 0.005 ? 1 : pn[i] < -0.005 ? -1 : 0; if (!x) continue; if (!cs) cs = x; if (x !== cs) break; cur++; }
+    if (cur) out.push(chip(cs > 0 ? 'up' : 'down', (cs > 0 ? 'W' : 'L') + cur, cs > 0 ? 'win streak' : 'loss streak'));
+    let run = 0, best = 0;
+    for (let i = pn.length - 1; i >= 0; i--) { if (pn[i] > 0.005) { run++; best = Math.max(best, run); } else if (pn[i] < -0.005) run = 0; }
+    if (best > 1) out.push(chip('', 'W' + best, `best run of ${pn.length}`));
+    if (v.days.length) {
+      const dv = v.days.map((d) => d[1]), g = dv.filter((x) => x > 0.005).length;
+      let ds = 0, dS = 0;
+      for (let i = dv.length - 1; i >= 0; i--) { const x = dv[i] > 0.005 ? 1 : dv[i] < -0.005 ? -1 : 0; if (!x) continue; if (!dS) dS = x; if (x !== dS) break; ds++; }
+      out.push(chip('', `${g}/${dv.length}`, 'green days'));
+      if (ds) out.push(chip(dS > 0 ? 'up' : 'down', `${ds} ${dS > 0 ? 'green' : 'red'}`, ds === 1 ? 'day running' : 'days running'));
+    }
+    return out.length ? `<div class="chips" aria-label="Streaks">${out.join('')}</div>` : '';
   }
 
   // ---- equity curve: `equity` when published, else the running sum of the daily P&L
+  const flatEq = (v) => v.eq.length >= 2 && Math.max.apply(null, v.eq.map((p) => p[1])) - Math.min.apply(null, v.eq.map((p) => p[1])) < 0.005;
   function series(v) {
-    if (v.eq.length >= 2) return { kind: 'eq', pts: v.eq };
+    const both = v.eq.length >= 2 && v.days.length >= 3, want = S.eqv || (both && flatEq(v) ? 'days' : 'eq');     // a paused bot's flat 24 h: show the days
+    if (v.eq.length >= 2 && !(both && want === 'days')) return { kind: 'eq', pts: v.eq, both };
     if (!v.days.length) return null;
     const f = pd(v.days[0][0]);
     const pts = [[Date.UTC(f.y, f.m - 1, f.d - 1, 12) / 1000, 0, null, '']];
     let c = 0;
     v.days.forEach((d) => { c = Math.round((c + d[1]) * 1e4) / 1e4; pts.push([dayT(d[0]), c, d[1], d[0]]); });
-    return { kind: 'days', pts };
+    return { kind: 'days', pts, both };
   }
   const spanOf = (s) => s.pts[s.pts.length - 1][0] - s.pts[0][0];
   const rangesOf = (s) => RANGES.filter((r) => !r[1] || r[1] * 86400 < spanOf(s) - 86400);
@@ -346,25 +399,33 @@
     const flat = hi === lo, pad = flat ? Math.max(0.5, Math.abs(hi) * 0.02) : (hi - lo) * 0.04;
     const ylo = lo - pad, yhi = hi + pad;
     const X = (t) => ((t - t0) / dt) * W, Y = (x) => PT + (1 - (x - ylo) / (yhi - ylo)) * (H - PT - PB);
-    const d = thin(pts, 700).map((p, i) => (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1)).join('');
+    const tp = thin(pts, 700), d = tp.map((p, i) => (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1)).join('');
+    // drawdown shading (2026-11-04): the red band between the running high and the curve = how far under its best the money was
+    let pk = -Infinity, ddMax = 0;
+    const peaks = tp.map((p) => { if (p[1] > pk) pk = p[1]; if (p[1] - pk < ddMax) ddMax = p[1] - pk; return pk; });
+    const ddPath = ddMax < -0.005 ? 'M' + tp.map((p, i) => X(p[0]).toFixed(1) + ',' + Y(peaks[i]).toFixed(1)).join('L') + 'L' + tp.slice().reverse().map((p) => X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1)).join('L') + 'Z' : '';
+    const pkPath = ddPath ? 'M' + tp.map((p, i) => X(p[0]).toFixed(1) + ',' + Y(peaks[i]).toFixed(1)).join('L') : '';
     const first = pts[0][1], last = pts[pts.length - 1][1];
     const range = rl[2] || (dt <= 2 * 86400 ? `last ${Math.max(1, Math.round(dt / 3600))} h` : 'since ' + (s.kind === 'eq' ? ff(F.md, t0) : ff(F.mdU, t0)));
     const c = { kind: s.kind, pts, t0, dt, first, i: -1, range, xp: (t) => (X(t) / W) * 100, yp: (x) => (Y(x) / H) * 100 };
     S.chart = c;
     const chips = avail.length > 1 ? `<div class="seg" role="group" aria-label="Range">${avail.map((r) => `<button type="button" data-act="range" data-v="${r[0]}" aria-pressed="${r[0] === key}">${r[0]}</button>`).join('')}</div>` : '';
     const lab = s.kind === 'eq' ? 'Equity' : 'Cumulative P&amp;L', sg = s.kind === 'days';
+    const sw = s.both ? `<div class="sw" role="group" aria-label="Curve">${[['eq', 'Live'], ['days', 'Daily']].map((r) => `<button type="button" data-act="eqv" data-v="${r[0]}" aria-pressed="${r[0] === s.kind}">${r[1]}</button>`).join('')}</div>` : '';
     const axes = flat ? `<span class="ax" style="top:${Y(hi) / H * 100}%">${esc(usd(hi, sg))}</span>`
       : `<span class="ax" style="top:${Y(hi) / H * 100}%">${esc(usd(hi, sg))}</span><span class="ax" style="top:${Y(lo) / H * 100}%">${esc(usd(lo, sg))}</span>`;
-    return `<section class="card" id="sec-eq"><div class="card-h"><h2>${lab}</h2>${chips}</div>`
+    return `<section class="card" id="sec-eq"><div class="card-h"><h2>${lab}</h2>${chips}${sw}</div>`
       + `<div class="eq-read" id="eqRead">${readHtml(-1)}</div>`
       + `<div class="chart" id="chart" tabindex="0" role="img" aria-label="${esc((s.kind === 'eq' ? 'Equity' : 'Cumulative P&L') + ', ' + range + ': from ' + usd(first) + ' to ' + usd(last) + '. Drag or use the arrow keys to read a point.')}">`
       + `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true" focusable="false"><defs><linearGradient id="eqFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="currentColor" stop-opacity=".34"/><stop offset="1" stop-color="currentColor" stop-opacity="0"/></linearGradient></defs>`
       + (flat ? '' : `<line class="grid" x1="0" x2="${W}" y1="${Y(hi).toFixed(1)}" y2="${Y(hi).toFixed(1)}"/><line class="grid" x1="0" x2="${W}" y1="${Y(lo).toFixed(1)}" y2="${Y(lo).toFixed(1)}"/>`)
       + `<line class="base" x1="0" x2="${W}" y1="${Y(first).toFixed(1)}" y2="${Y(first).toFixed(1)}"/>`
+      + (ddPath ? `<path class="dd" d="${ddPath}"/><path class="pk" d="${pkPath}"/>` : '')
       + `<path class="area" d="${d}L${W},${H}L0,${H}Z" fill="url(#eqFill)"/><path class="ln" d="${d}"/></svg>`
       + `${axes}<i class="cross" hidden></i><i class="dot" hidden></i></div>`
       + `<div class="xs"><span>${esc(xLabel(c, t0))}</span><span>${esc(xLabel(c, pts[pts.length - 1][0]))}</span></div>`
-      + (s.kind === 'days' ? '<p class="muted small">From the daily P&amp;L: no equity points from the bot yet.</p>' : '')
+      + (s.kind === 'days' ? `<p class="muted small">${s.both ? 'The daily P&amp;L added up day by day (the bot\'s live 24 h curve is under Live).' : 'From the daily P&amp;L: no equity points from the bot yet.'}</p>` : '')
+      + (ddPath ? `<p class="muted small ddn"><i class="ddk" aria-hidden="true"></i>Red = under its previous high. Deepest dip ${esc(usd(ddMax, true))}.</p>` : '')
       + '</section>';
   }
 
@@ -594,6 +655,9 @@
     if (!list.length) return `<li class="none"><p class="muted">No ${S.ui.side === 'all' ? 'open bets' : 'bets on this side'}${q ? ' match “' + esc(S.q.trim()) + '”' : ''}.</p></li>`;
     return list.map(posRow).join('');
   }
+  // the settle clock as a ring: full = the whole window (15 min, an hour, a day, a week: whichever the time left fits), empty = settled
+  const ringFrac = (c) => { const r = c - nowS(), sc = r <= 900 ? 900 : r <= 3600 ? 3600 : r <= 86400 ? 86400 : 604800; return r <= 0 ? 0 : Math.min(1, r / sc); };
+  const ring = (c) => `<svg class="ring${cdnCls(c)}" data-c="${c}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle class="rg-b" cx="12" cy="12" r="9"/><circle class="rg-v" cx="12" cy="12" r="9" pathLength="100" stroke-dasharray="${(ringFrac(c) * 100).toFixed(1)} 100" transform="rotate(-90 12 12)"/></svg>`;
   function posRow(m) {
     const p = m.p;
     const cdn = m.closes != null ? `<span class="cdn${cdnCls(m.closes)}" data-c="${m.closes}">${esc(closesTxt(m.closes))}</span>` : p.closes ? 'closes ' + esc(String(p.closes).slice(0, 16)) : '';
@@ -611,9 +675,9 @@
     ].join('');
     const price = num(p.price) != null ? ' → ' + esc(cents(p.price)) : '';
     return `<li class="pos" data-side="${esc(m.sk)}"><details data-k="${esc(m.key)}"${S.open.has(m.key) ? ' open' : ''}><summary><div class="pr">`
-      + `<b class="t">${sideTag(m.side)}${m.asset ? `<span class="asset">${esc(m.asset)}</span>` : ''}${esc(m.title)}</b><span class="v ${cls(m.pnl)}">${m.pnl == null ? '<span class="open">OPEN</span>' : esc(usd(m.pnl, true))}</span>`
+      + `<b class="t">${sideTag(m.side)}${assetTag(m.asset)}${esc(m.title)}</b><span class="v ${cls(m.pnl)}">${m.pnl == null ? '<span class="open">OPEN</span>' : esc(usd(m.pnl, true))}</span>`
       + `<small>${esc(m.n == null ? '?' : fmtN(m.n))} × ${esc(cents(p.avg_price))}${price}${m.edge != null ? ` <span class="edge ${cls(m.edge)}">edge ${esc(edgeC(m.edge))}</span>` : ''}</small>`
-      + `<span class="v2">${m.value == null ? '' : esc(usd(m.value))}${ret ? ' · ' + esc(ret) : ''}</span>${cdn ? `<small class="cdl">${cdn}</small>` : ''}</div></summary><dl class="dl">${det}</dl></details></li>`;
+      + `<span class="v2">${m.value == null ? '' : esc(usd(m.value))}${ret ? ' · ' + esc(ret) : ''}</span>${cdn ? `<small class="cdl">${m.closes != null ? ring(m.closes) : ''}${cdn}</small>` : ''}</div></summary><dl class="dl">${det}</dl></details></li>`;
   }
 
   // ================================================================== contract v3 (2026-11-03): what Kalshi's own app, Polymarket
@@ -681,11 +745,13 @@
     }).join('');
     const seg = `<div class="seg" role="group" aria-label="Kelly fraction">${[[0.25, '¼'], [0.5, '½'], [1, 'Full']].map((x) => `<button type="button" data-act="kf" data-v="${x[0]}" aria-pressed="${fr === x[0]}">${x[1]}</button>`).join('')}</div>`;
     const c0 = S.calc;
+    const pre = (f, lab, vals) => `<div class="pre"><span class="lab">${lab}</span><div class="seg" role="group" aria-label="${lab} presets">${vals.map((x) => `<button type="button" data-act="kcp" data-f="${f}" data-v="${x}" aria-pressed="${S.calc[f === 'p' ? 'p' : 'c'] === String(x)}">${x}</button>`).join('')}</div></div>`;
     return `<section class="card" id="sec-kelly"><div class="card-h"><h2>Edge &amp; sizing</h2>${seg}</div>`
       + `<p class="muted small">Kelly = the share of the bankroll a bet is worth: (chance − price) ÷ (1 − price). ${cfg.own ? `The bot sizes at ${esc(pct(cfg.f))} Kelly` : 'Most pros bet a quarter of it'}${bank ? ` · bankroll ${esc(usd(bank))}` : ''}${cfg.max ? ` · max bet ${esc(usd(cfg.max))}` : ''}${cfg.minEdge != null ? ` · min edge ${esc((cfg.minEdge * 100).toFixed(1))}¢` : ''}.</p>`
-      + (rows ? `<ul class="rows kel">${rows}</ul>` : '<p class="empty">No open bet carries the bot\'s own chance yet (the <code>prob</code> field): try the calculator.</p>')
+      + (rows ? `<ul class="rows kel">${rows}</ul>` : '<p class="muted">No open bet carries the bot\'s own chance yet (the <code>prob</code> field): try the calculator.</p>')
       + `<div class="calc" role="group" aria-label="Kelly calculator"><label><span class="lab">Your chance %</span><input id="kcP" class="q" type="text" inputmode="decimal" autocomplete="off" value="${esc(c0.p)}" aria-label="Your chance in percent"></label>`
       + `<label><span class="lab">Price ¢</span><input id="kcC" class="q" type="text" inputmode="decimal" autocomplete="off" value="${esc(c0.c)}" aria-label="Price in cents"></label>`
+      + `<div class="pres">${pre('p', 'Chance %', [90, 94, 97])}${pre('c', 'Price ¢', [90, 94, 97])}</div>`
       + `<output id="kcOut" class="calc-o" aria-live="polite">${calcOut(cfg, fr)}</output></div>`
       + `<div id="kcCurve" class="kcurve">${kellyCurve(k, fr)}</div></section>`;
   }
@@ -845,7 +911,7 @@
     return `<section class="card" id="sec-cat"><div class="card-h"><h2>By market · ${rows.length}</h2><span class="r muted">${esc(fmtN(n))} trades</span></div>`
       + `<ul class="brk">${rows.map((r) => {
         const wr = r.w != null && r.l != null && r.w + r.l > 0 ? r.w / (r.w + r.l) : null, w = Math.max(2, (Math.abs(r.pnl || 0) / mx) * 50);
-        return `<li><div class="bk-t"><b>${esc(r.name)}</b>${r.group ? `<small>${esc(r.group)}</small>` : ''}<span class="v ${cls(r.pnl)}">${esc(usd(r.pnl, true))}</span></div>`
+        return `<li><div class="bk-t"><b>${assetIcon(CAT_ASSET[r.name] || (ICONS[String(r.name).toUpperCase()] ? String(r.name).toUpperCase() : ''))}${esc(r.name)}</b>${r.group ? `<small>${esc(r.group)}</small>` : ''}<span class="v ${cls(r.pnl)}">${esc(usd(r.pnl, true))}</span></div>`
           + `<div class="dv" aria-hidden="true"><i class="${(r.pnl || 0) < 0 ? 'neg' : 'pos'}" style="width:${w.toFixed(1)}%"></i></div>`
           + `<small>${esc(fmtN(r.n || 0))} ${r.n === 1 ? 'trade' : 'trades'}${wr == null ? '' : ' · win ' + esc(pct(wr))}${r.st ? ' · ROI ' + esc(roiTxt(r.pnl, r.st)) : ''}</small></li>`;
       }).join('')}</ul>${d.own ? '' : fromNote(n)}</section>`;
@@ -915,16 +981,363 @@
     const X = (x) => P + ((x - lo) / span) * (W - 2 * P), Y = (y) => W - P - ((y - lo) / span) * (W - 2 * P);
     const gap = sum(rows.map((r) => r.n * (r.hit - r.p))) / n, big = rows.slice().sort(by((r) => r.n, true))[0];
     const ticks = []; for (let t = lo; t <= 1.0001; t += span > 0.5 ? 0.25 : 0.05) ticks.push(+t.toFixed(2));
+    // the 95% range each win rate could really be (Wilson): a shaded band through the groups and a bar on each, so a dot far from the
+    // diagonal with a long bar is read as 'too few bets to tell', not as a miss
+    const bd = rows.map((r) => { const w = wilson(r.hit * r.n, r.n); return { x: X(r.p), lo: Y(w[0]), hi: Y(w[1]), n: r.n }; });
+    const bb = bd.filter((b) => b.n >= 10);                               // groups of 10+ bets make the band; thinner ones only get a faint bar
+    const band = bb.length >= 2 ? 'M' + bb.map((b) => b.x.toFixed(1) + ',' + b.hi.toFixed(1)).join('L') + 'L' + bb.slice().reverse().map((b) => b.x.toFixed(1) + ',' + b.lo.toFixed(1)).join('L') + 'Z' : '';
+    const curve = rows.length >= 2 ? 'M' + rows.map((r) => X(r.p).toFixed(1) + ',' + Y(r.hit).toFixed(1)).join('L') : '';
+    const bars = bd.map((b) => `<line class="cb-eb${b.n < 10 ? ' thin' : ''}" x1="${b.x.toFixed(1)}" x2="${b.x.toFixed(1)}" y1="${b.hi.toFixed(1)}" y2="${b.lo.toFixed(1)}"/>`).join('');
+    const inside = rows.filter((r) => { const w = wilson(r.hit * r.n, r.n); return r.p >= w[0] - 1e-9 && r.p <= w[1] + 1e-9; }).length;
     const dots = rows.map((r) => `<circle cx="${X(r.p).toFixed(1)}" cy="${Y(r.hit).toFixed(1)}" r="${Math.min(12, 4 + Math.sqrt(r.n) * 0.9).toFixed(1)}" class="${r.hit + 0.0001 < r.p ? 'cb-n' : 'cb-p'}"><title>${esc(pct(r.p))} said, ${esc(pct(r.hit))} won (${r.n})</title></circle>`).join('');
     const what = d.basis === 'model' ? "the bot's own chance" : 'the price paid (the market\'s chance)';
     return `<section class="card" id="sec-cb"><div class="card-h"><h2>Calibration</h2><span class="r ${gap < -0.005 ? 'down' : gap > 0.005 ? 'up' : 'muted'}">${esc(sgn(gap, true) + Math.abs(gap * 100).toFixed(1))} pts</span></div>`
       + `<div class="cb"><svg viewBox="0 0 ${W} ${W}" role="img" aria-label="${esc(`Calibration, ${n} settled bets: ${rows.map((r) => pct(r.p) + ' said, ' + pct(r.hit) + ' won').join('; ')}`)}">`
       + ticks.map((t) => `<line class="cb-g" x1="${X(t).toFixed(1)}" x2="${X(t).toFixed(1)}" y1="${P}" y2="${W - P}"/><line class="cb-g" y1="${Y(t).toFixed(1)}" y2="${Y(t).toFixed(1)}" x1="${P}" x2="${W - P}"/>`).join('')
-      + `<line class="cb-d" x1="${X(lo)}" y1="${Y(lo)}" x2="${X(1)}" y2="${Y(1)}"/>${dots}</svg>`
+      + `<defs><clipPath id="cbClip"><rect x="${P}" y="${P}" width="${W - 2 * P}" height="${W - 2 * P}"/></clipPath></defs><g clip-path="url(#cbClip)">${band ? `<path class="cb-band" d="${band}"/>` : ''}${bars}</g>`
+      + `<line class="cb-d" x1="${X(lo)}" y1="${Y(lo)}" x2="${X(1)}" y2="${Y(1)}"/>${curve ? `<path class="cb-curve" d="${curve}"/>` : ''}${dots}</svg>`
       + ticks.map((t, i) => `<span class="cb-t${i === 0 ? ' a0' : i === ticks.length - 1 ? ' a1' : ''}" style="left:${(X(t) / W * 100).toFixed(1)}%">${Math.round(t * 100)}%</span>`).join('')
       + '<span class="cb-ax cb-y">↑ won · said →</span></div>'
       + `<p class="muted small">Predicted = ${esc(what)}. On the line = honest odds; above it = the bets win more than they cost (green), below = less (red). `
-      + `Biggest group: ${esc(pct(big.p))} said, ${esc(pct(big.hit))} won, ${esc(fmtN(big.n))} ${big.n === 1 ? 'bet' : 'bets'}.</p>${d.own ? '' : fromNote(n)}</section>`;
+      + `Biggest group: ${esc(pct(big.p))} said, ${esc(pct(big.hit))} won, ${esc(fmtN(big.n))} ${big.n === 1 ? 'bet' : 'bets'}. `
+      + `The shaded band is the 95% range each win rate could really be: the diagonal runs inside it for ${inside} of ${rows.length} ${rows.length === 1 ? 'group' : 'groups'}, so ${inside === rows.length ? 'every group is as good as honest odds can tell' : 'the others are off by more than luck'}.</p>${d.own ? '' : fromNote(n)}</section>`;
+  }
+
+  // ================================================================== 2026-11-04 "every view looks sick": the verdict, the heat map,
+  // the strategy race and battle, the risk-of-ruin gauge with its Monte Carlo fan, the timeline, the rest-state explainer. Everything is
+  // worked out from the numbers the bot sends (never invented), drawn as SVG / HTML, and drawn once per update (no per-frame work).
+  const PALETTE = ['#1fe5a6', '#38e1ff', '#fbbf24', '#e879f9', '#a78bfa', '#fb7185'];
+  const stratName = (t) => (t.strategy != null && String(t.strategy) ? String(t.strategy) : t.book != null ? String(t.book) : '');
+
+  // ---- the verdict: one plain sentence at the top, then the reasons, each linked to the numbers behind it
+  function verdictModel(k, v) {
+    const at = isObj(k.stats) ? k.stats : null;
+    let w = at ? num(at.wins) : null, l = at ? num(at.losses) : null, st = at ? num(at.staked) : null, pnl = at ? num(at.pnl) : null, px = at ? dol(at.avg_price) : null, basis = 'all time';
+    if (!(w != null && l != null && w + l >= 5)) {
+      const ss = settled(v);
+      w = ss.filter((t) => num(t.pnl) > 0.005).length; l = ss.filter((t) => num(t.pnl) < -0.005).length;
+      let cn = 0, pxs = 0;
+      st = 0; pnl = 0;
+      ss.forEach((t) => { const c = num(t.contracts), p2 = dol(t.price); pnl += num(t.pnl); if (c != null && p2 != null) { st += Math.abs(c) * p2; pxs += p2 * Math.abs(c); cn += Math.abs(c); } });
+      px = cn ? pxs / cn : null; st = st || null;
+      basis = `last ${ss.length} bets`;
+    }
+    if (w + l < 5) return null;
+    const total = num(k.total_pnl) != null && basis === 'all time' ? num(k.total_pnl) : pnl;
+    if (total == null) return null;
+    return { w, l, wr: w / (w + l), st, pnl, px, total, basis };
+  }
+  function verdictHtml(k, v) {
+    const m = verdictModel(k, v);
+    if (!m) return '';
+    const win = m.wr >= 0.5, plus = m.total >= 0, wr = pct(m.wr);
+    const head = win && !plus ? `You win ${wr} of bets but lose money: here is why` : win ? `You win ${wr} of bets and make money: here is how`
+      : plus ? `You win only ${wr} of bets and still make money: here is how` : `You win ${wr} of bets and lose money: here is why`;
+    const items = [];
+    const px = m.px, c = (x) => Math.round(x * 100);
+    if (px != null && px > 0.02 && px < 0.98) {
+      const r = px / (1 - px);
+      items.push(['sec-bk', r >= 1.5 ? `A win pays only about <b>${c(1 - px)}¢</b> on the <b>${c(px)}¢</b> you put in, but a loss takes all of it. One loss wipes out about <b>${Math.round(r)} wins</b>.`
+        : r <= 0.67 ? `A win pays <b>${c(1 - px)}¢</b> on <b>${c(px)}¢</b> in, a loss costs <b>${c(px)}¢</b>: one win pays back about <b>${(1 / r).toFixed(1)} losses</b>.`
+          : `Wins and losses are about the same size here (<b>${c(1 - px)}¢</b> won against <b>${c(px)}¢</b> lost per contract).`]);
+      const edge = (m.wr - px) * 100;
+      let fee = '';
+      if (m.st) {
+        const drag = (m.wr / px - 1) - m.pnl / m.st;
+        if (drag > 0.0005) fee = ` Fees and slips cost about <b>${esc(usd(drag * m.st))}</b> (${(drag * 100).toFixed(1)}% of what was bet).`;
+      }
+      const p1 = (x) => (x * 100).toFixed(1) + '%';
+      items.push(['sec-cb', `To break even at ${c(px)}¢ you must win about <b>${esc(p1(px))}</b>. You win <b>${esc(p1(m.wr))}</b>: <b class="${edge >= 0 ? 'up' : 'down'}">${Math.abs(edge).toFixed(1)} points ${edge >= 0 ? 'above' : 'below'}</b> the line.${fee}`]);
+    }
+    const bk = bucketRows(k, v).rows.filter((r) => r.pnl != null && r.lo != null);
+    if (bk.length >= 2) {
+      const worst = bk.slice().sort(by((r) => r.pnl))[0], rest = sum(bk.filter((r) => r !== worst).map((r) => r.pnl));
+      const wrb = worst.w != null && worst.l != null && worst.w + worst.l > 0 ? worst.w / (worst.w + worst.l) : null;
+      if (worst.pnl < -0.5) {
+        items.push(['sec-bk', `The <b>${esc(cRange(worst.lo, worst.hi))}</b> price band is the leak: <b class="down">${esc(usd(worst.pnl, true))}</b> on ${esc(fmtN(worst.n || 0))} bets${wrb != null ? ` (wins ${esc(pct(wrb))}, needs about ${esc(pct((worst.lo + worst.hi) / 2))})` : ''}. All the other bands together: <b class="${cls(rest)}">${esc(usd(rest, true))}</b>.`]);
+      }
+    }
+    const sp = v.strat.filter((s) => num(s.total_pnl) != null);
+    if (sp.length >= 2) {
+      const a = sp.slice().sort(by((s) => num(s.total_pnl)));
+      const lo = a[0], hi = a[a.length - 1];
+      if (num(lo.total_pnl) < -0.5 || num(hi.total_pnl) > 0.5) items.push(['sec-battle', `<b>${esc(String(hi.name || 'Strategy'))}</b>${String(hi.mode || '').toLowerCase() === 'paper' ? ' (paper)' : ''} <span class="${cls(hi.total_pnl)}">${esc(usd(hi.total_pnl, true))}</span> against <b>${esc(String(lo.name || 'Strategy'))}</b>${String(lo.mode || '').toLowerCase() === 'paper' ? ' (paper)' : ''} <span class="${cls(lo.total_pnl)}">${esc(usd(lo.total_pnl, true))}</span>.`]);
+    }
+    const ring = (() => {
+      const r = 26, cf = 2 * Math.PI * r, a = Math.max(0, Math.min(1, m.wr)) * cf;
+      return `<svg class="vd-ring" viewBox="0 0 64 64" aria-hidden="true" focusable="false"><circle cx="32" cy="32" r="${r}" class="vr-b"/><circle cx="32" cy="32" r="${r}" class="vr-w" stroke-dasharray="${a.toFixed(1)} ${cf.toFixed(1)}" transform="rotate(-90 32 32)"/>`
+        + `<text x="32" y="36.5" text-anchor="middle">${esc(pct(m.wr))}</text></svg>`;
+    })();
+    const roi = m.st ? ` · ROI <b class="${cls(m.pnl)}">${esc(pct(m.pnl / m.st, true))}</b> on ${esc(usd(m.st))} bet` : '';
+    const paused = k.running === false ? '<span class="vd-p">Paused: nothing is at risk right now.</span>' : '';
+    return `<section class="card verdict ${plus ? 'pos' : 'neg'}" id="sec-verdict" aria-label="The verdict"><div class="vd-top">${ring}<div class="vd-t"><span class="lab">The verdict · ${esc(m.basis)}</span><h3>${esc(head)}</h3></div></div>`
+      + `<p class="vd-m"><b class="${cls(m.total)}">${esc(usd(m.total, true))}</b> ${m.basis === 'all time' ? 'all time' : 'on these bets'} · <b>${esc(fmtN(m.w))}W ${esc(fmtN(m.l))}L</b>${roi}</p>${paused}`
+      + (items.length ? `<div class="vd-l">${items.map((x, i) => `<button type="button" class="vd-i" data-act="jump" data-v="${x[0]}"><i>${i + 1}</i><span>${x[1]}</span><em aria-hidden="true">›</em></button>`).join('')}</div>` : '')
+      + '</section>';
+  }
+
+  // ---- when nothing is open (a paused bot, a quiet hour): never a blank card, the history stays and the page says what comes back
+  function restHtml(k, v) {
+    if (v.pos.length) return '';
+    const off = k.running === false, last = v.tr.length ? parseT(v.tr[0].t) : null;
+    const on = v.strat.filter((s) => s.running === true).length, names = v.strat.filter((s) => String(s.mode || '').toLowerCase() === 'live').map((s) => String(s.name || '').slice(0, 40)).filter(Boolean);
+    const steps = [['A bet opens', 'it shows up here as a card with a clock counting down to when it settles.'],
+      ['The edge fills in', 'Live edge, the Edge map and Kelly sizing light up for that bet.'],
+      ['It settles', 'the win or loss lands in Alerts and the journal, the balance moves, the streaks update.'],
+      ['Every minute', 'the bot sends fresh numbers and this page redraws itself.']];
+    return `<section class="card rest" id="sec-rest"><div class="card-h"><h2>${off ? 'Paused · what happens when it resumes' : 'Quiet · what shows up when a bet opens'}</h2></div>`
+      + `<p class="muted">${off ? 'The bot is not betting right now, so nothing is at risk.' : 'No bet is open at the moment.'} Everything below is the history, and it stays exactly as it was.</p>`
+      + `<ol class="steps">${steps.map((s, i) => `<li><i aria-hidden="true">${i + 1}</i><span><b>${s[0]}</b> ${s[1]}</span></li>`).join('')}</ol>`
+      + `<div class="chips">${last ? `<span class="chip"><b>${esc(ago(last))}</b>last bet</span>` : ''}${v.strat.length ? `<span class="chip"><b>${v.strat.length}</b>${v.strat.length === 1 ? 'strategy' : 'strategies'}${on ? ` · ${on} on` : ''}</span>` : ''}`
+      + `${names.length ? `<span class="chip"><b>${esc(names[0])}</b>${names.length > 1 ? `+${names.length - 1} live` : 'live'}</span>` : ''}</div></section>`;
+  }
+  function edgeWaitHtml(k, v) {
+    if (v.pos.map(posModel).some((m) => m.edge != null)) return '';
+    return '<section class="card rest" id="sec-ew"><div class="card-h"><h2>Edge · waiting for a bet</h2></div>'
+      + '<p class="muted">The live edge (the bot\'s own chance against the price) and the edge map appear as soon as a bet that carries its chance is open. The calculator below works any time.</p></section>';
+  }
+
+  // ---- the heat map: every day with its P&L in one grid (weeks across, Monday to Sunday down); tap a day to read it
+  function heatModel(v) {
+    if (!v.days.length) return null;
+    const map = new Map(v.days), f = pd(v.days[0][0]), l = pd(v.days[v.days.length - 1][0]);
+    const d0 = Date.UTC(f.y, f.m - 1, f.d), d1 = Date.UTC(l.y, l.m - 1, l.d), dow0 = (new Date(d0).getUTCDay() + 6) % 7;
+    const n = Math.round((d1 - d0) / 864e5) + 1, cols = Math.ceil((n + dow0) / 7);
+    const vals = v.days.map((d) => d[1]), mx = Math.max.apply(null, vals.map((x) => Math.abs(x))) || 1;
+    return { map, d0, dow0, n, cols, mx };
+  }
+  function heatHtml(v) {
+    const m = heatModel(v);
+    if (!m) return '';
+    const cell = Math.max(9, Math.min(20, Math.floor(300 / m.cols) - 3)), gp = 3, LW = 14, TH = 13, width = LW + m.cols * (cell + gp), height = TH + 7 * (cell + gp);
+    let rects = '', mons = '', lastM = '';
+    const wl = ['M', '', 'W', '', 'F', '', 'S'].map((c, i) => (c ? `<text x="0" y="${TH + i * (cell + gp) + cell * 0.72}" class="hm-l">${c}</text>` : '')).join('');
+    for (let i = 0; i < m.n; i++) {
+      const dt = new Date(m.d0 + i * 864e5), key = dt.toISOString().slice(0, 10), pos = i + m.dow0, col = Math.floor(pos / 7), row = pos % 7;
+      const x = m.map.get(key), lv = x == null ? 'e' : Math.abs(x) < 0.005 ? 'z' : (x > 0 ? 'p' : 'n') + Math.max(1, Math.min(4, Math.ceil(Math.sqrt(Math.abs(x) / m.mx) * 4)));
+      rects += `<rect class="hc ${lv}${S.heatSel === key ? ' sel' : ''}" x="${LW + col * (cell + gp)}" y="${TH + row * (cell + gp)}" width="${cell}" height="${cell}" rx="3" data-d="${key}"/>`;
+      const mk = key.slice(0, 7);
+      if (mk !== lastM && row < 6) { lastM = mk; mons += `<text x="${LW + col * (cell + gp)}" y="9" class="hm-l">${esc(ff(F.mdU, dayT(key)).split(' ')[0].toUpperCase())}</text>`; }
+    }
+    return `<section class="card" id="sec-heat"><div class="card-h"><h2>Every day · ${m.map.size} days</h2><span class="r muted">tap a day</span></div>`
+      + `<div class="heat-w"><svg class="heat" id="heat" viewBox="0 0 ${width} ${height}" width="${width}" style="max-width:100%;height:auto" tabindex="0" role="group" aria-label="Daily P&amp;L heat map, ${m.map.size} days. Tap a day, or use the arrow keys, to read it.">${mons}${wl}${rects}</svg>`
+      + `<div class="heat-r" id="heatRead" aria-live="polite">${heatRead(v)}</div></div></section>`;
+  }
+  function heatRead(v) {
+    const k = S.heatSel, vals = v.days.map((d) => d[1]);
+    if (!k) {
+      const g = vals.filter((x) => x > 0.005).length, mean = sum(vals) / vals.length, bi = vals.indexOf(Math.max.apply(null, vals)), wi = vals.indexOf(Math.min.apply(null, vals));
+      return `<span class="lab">All ${vals.length} days</span><b class="${cls(sum(vals))}">${esc(usd(sum(vals), true))}</b><small>${g} green · ${vals.length - g} red</small>`
+        + `<small>average <span class="${cls(mean)}">${esc(usd(mean, true))}</span> a day</small><small>best <span class="up">${esc(usd(vals[bi], true))}</span> ${esc(ff(F.mdU, dayT(v.days[bi][0])))}</small><small>worst <span class="down">${esc(usd(vals[wi], true))}</span> ${esc(ff(F.mdU, dayT(v.days[wi][0])))}</small>`;
+    }
+    const map = new Map(v.days), x = map.get(k), sorted = vals.slice().sort((a, b) => b - a);
+    const rank = x == null ? 0 : sorted.indexOf(x) + 1;
+    let cum = 0;
+    v.days.forEach((d) => { if (d[0] <= k) cum += d[1]; });
+    const tr = v.tr.filter((t) => { const tt = parseT(t.t); return tt && dayKey(tt) === k; }).length;
+    return `<span class="lab">${esc(dayLabel(k))}</span>` + (x == null ? '<b class="muted">no P&amp;L</b>' : `<b class="${cls(x)}">${esc(usd(x, true))}</b><small>${rank === 1 ? 'the best day' : rank === vals.length ? 'the worst day' : `#${rank} of ${vals.length}, best first`}</small>`)
+      + `<small>running total <span class="${cls(cum)}">${esc(usd(cum, true))}</span></small>${tr ? `<small>${tr} ${tr === 1 ? 'bet' : 'bets'} in the recent list</small>` : ''}`;
+  }
+  function heatPick(key) {
+    if (!key) return;
+    S.heatSel = S.heatSel === key ? '' : key;
+    document.querySelectorAll('#heat .hc').forEach((r) => r.classList.toggle('sel', r.getAttribute('data-d') === S.heatSel));
+    const r = $('#heatRead');
+    if (r && S.v) r.innerHTML = heatRead(S.v);
+    if (S.heatSel && S.v && S.v.days.some((d) => d[0] === S.heatSel)) {          // the calendar below follows: same day, same month
+      S.cal = S.heatSel.slice(0, 7); S.calSel = S.heatSel;
+      if ($('#sec-cal')) swap('sec-cal', calHtml(S.v));
+    }
+  }
+
+  // ---- the strategy race: one line per strategy (running P&L over the recent bets), and the finish line (P&L since the start)
+  function sampleBy(v) {
+    const m = new Map();
+    settled(v).slice().reverse().forEach((t) => {                    // oldest first
+      const nm = stratName(t);
+      if (!nm) return;
+      const r = m.get(nm) || { name: nm, n: 0, w: 0, l: 0, sw: 0, sl: 0, st: 0, pnl: 0, fee: 0, pts: [] };
+      const x = num(t.pnl), c = num(t.contracts), px = dol(t.price), tt = parseT(t.t);
+      r.n++; r.pnl += x;
+      if (x > 0.005) { r.w++; r.sw += x; } else if (x < -0.005) { r.l++; r.sl += -x; }
+      if (c != null && px != null) {
+        const stake = Math.abs(c) * px;
+        r.st += stake;
+        if (x > 0.005) r.fee += Math.abs(c) * (1 - px) - x; else if (x < -0.005) r.fee += -stake - x;
+      }
+      if (tt != null) r.pts.push([tt, r.pnl]);
+      m.set(nm, r);
+    });
+    return m;
+  }
+  function raceHtml(v) {
+    const sm = sampleBy(v), lines = Array.from(sm.values()).filter((r) => r.pts.length >= 2 && r.pts[0][0] != null);
+    const strat = v.strat.filter((s) => num(s.total_pnl) != null).sort(by((s) => num(s.total_pnl), true));
+    if (!lines.length && !strat.length) return '';
+    let svg = '', legend = '';
+    if (lines.length) {
+      const W = 300, H = 130, PX = 4, PY = 8, all = lines.reduce((a, r) => a.concat(r.pts), []);
+      const t0 = Math.min.apply(null, all.map((p) => p[0])), t1 = Math.max.apply(null, all.map((p) => p[0])), dt = Math.max(1, t1 - t0);
+      const lo = Math.min(0, Math.min.apply(null, all.map((p) => p[1]))), hi = Math.max(0, Math.max.apply(null, all.map((p) => p[1]))), sp = (hi - lo) || 1;
+      const X = (t) => PX + ((t - t0) / dt) * (W - 2 * PX), Y = (x) => PY + (1 - (x - lo) / sp) * (H - 2 * PY);
+      const paths = lines.map((r, i) => {
+        if (S.raceOff.has(r.name)) return '';
+        const d = r.pts.map((p, j) => (j ? 'L' : 'M') + X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1)).join(''), e = r.pts[r.pts.length - 1];
+        return `<path class="rc-l" style="stroke:${PALETTE[i % PALETTE.length]}" d="${d}"/><circle class="rc-e" style="fill:${PALETTE[i % PALETTE.length]}" cx="${X(e[0]).toFixed(1)}" cy="${Y(e[1]).toFixed(1)}" r="3.2"/>`;
+      }).join('');
+      svg = `<svg class="race" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc('Running P&L of each strategy over the last ' + all.length + ' bets: ' + lines.map((r) => r.name + ' ' + usd(r.pnl, true)).join(', '))}">`
+        + `<line class="rc-z" x1="${PX}" x2="${W - PX}" y1="${Y(0).toFixed(1)}" y2="${Y(0).toFixed(1)}"/>${paths}</svg>`;
+      legend = `<div class="rleg" role="group" aria-label="Strategies">${lines.map((r, i) => `<button type="button" class="rchip" data-act="race" data-v="${esc(r.name)}" aria-pressed="${!S.raceOff.has(r.name)}" style="--rc:${PALETTE[i % PALETTE.length]}"><i aria-hidden="true"></i><span>${esc(r.name)}</span><b class="${cls(r.pnl)}">${esc(usd(r.pnl, true))}</b></button>`).join('')}</div>`;
+    }
+    const mx = Math.max.apply(null, strat.map((s) => Math.abs(num(s.total_pnl)))) || 1;
+    const fin = strat.length ? `<p class="lab fin">Finish line · P&amp;L since the start</p><ul class="brk">${strat.map((s, i) => {
+      const x = num(s.total_pnl), w = Math.max(2, (Math.abs(x) / mx) * 50), mode = String(s.mode == null ? '' : s.mode).trim().toLowerCase().slice(0, 12);
+      return `<li><div class="bk-t"><b><i class="sdot ${s.running === true ? 'on' : s.running === false ? 'off' : ''}" aria-hidden="true"></i>${i === 0 && x > 0 ? '<span class="lead">1st</span>' : ''}${esc(String(s.name || 'Strategy'))}</b>${mode ? `<small>${esc(mode)}</small>` : ''}<span class="v ${cls(x)}">${esc(usd(x, true))}</span></div>`
+        + `<div class="dv" aria-hidden="true"><i class="${x < 0 ? 'neg' : 'pos'}" style="width:${w.toFixed(1)}%"></i></div></li>`;
+    }).join('')}</ul>` : '';
+    return `<section class="card" id="sec-race"><div class="card-h"><h2>Strategy race</h2>${lines.length ? `<span class="r muted">last ${sum(lines.map((r) => r.n))} bets</span>` : ''}</div>${svg}${legend}${fin}</section>`;
+  }
+
+  // ---- the strategy battle: the same strategies on one measure at a time
+  const BM = [['wr', 'Win %', 'Win rate'], ['pb', 'Per bet', 'P&L per bet'], ['aw', 'Win/loss', 'Average win against average loss'], ['ev', 'EV/$', 'Expected value per dollar bet'], ['fee', 'Fees', 'Fee drag']];
+  function battleHtml(k, v) {
+    const sm = sampleBy(v), mm = verdictModel(k, v);
+    const bot = mm && mm.st && mm.px ? mm : null;
+    const sg = v.strat.filter((s) => num(s.trades) > 0 || (num(s.wins) || 0) + (num(s.losses) || 0) > 0);
+    if (!sg.length && !sm.size && !bot) return '';
+    const key = BM.some((b) => b[0] === S.bm) ? S.bm : 'wr';
+    const nm = (s) => String(s.name || 'Strategy');
+    let list = [], foot = '', fmt = () => '';
+    if (key === 'wr' || key === 'pb') {
+      list = sg.map((s) => {
+        const w = num(s.wins), l = num(s.losses), n = num(s.trades);
+        const x = key === 'wr' ? (w != null && l != null && w + l > 0 ? w / (w + l) : null) : (num(s.total_pnl) != null && n ? num(s.total_pnl) / n : null);
+        return { name: nm(s), x, sub: key === 'wr' ? (w != null && l != null ? `${fmtN(w)}W ${fmtN(l)}L` : '') : `${fmtN(n || 0)} bets · ${usd(s.total_pnl, true)} total` };
+      }).filter((r) => r.x != null);
+      fmt = key === 'wr' ? (x) => pct(x) : (x) => usd(x, true);
+      foot = key === 'wr' ? 'Win rate alone says little: a 94% winner can still lose money when each loss costs 15 wins. Read it with Per bet and EV per $.' : 'What one bet earns on average: total P&L divided by the bets placed.';
+    } else {
+      const own = [];
+      if (bot) {
+        const stake = bot.st / (bot.w + bot.l), aw = bot.w > 0 ? (bot.pnl + bot.l * stake) / bot.w : null, drag = (bot.wr / bot.px - 1) - bot.pnl / bot.st;
+        own.push({ name: 'All bets · ' + bot.basis, aw, al: stake, ev: bot.pnl / bot.st, fee: bot.basis === 'all time' ? drag : null, feeD: bot.basis === 'all time' ? drag * bot.st : null, n: bot.w + bot.l });
+      }
+      Array.from(sm.values()).forEach((r) => own.push({ name: r.name, aw: r.w ? r.sw / r.w : null, al: r.l ? r.sl / r.l : null, ev: r.st ? r.pnl / r.st : null, fee: r.st ? r.fee / r.st : null, feeD: r.st ? r.fee : null, n: r.n }));
+      list = own.map((r) => ({ name: r.name, x: key === 'aw' ? r.aw : key === 'ev' ? r.ev : r.fee, r,
+        sub: key === 'aw' ? (r.al != null ? 'a loss costs ' + usd(r.al) : 'no loss in the list') : key === 'ev' ? `${fmtN(r.n)} bets` : r.feeD != null ? `${usd(r.feeD)} in fees and slips over ${fmtN(r.n)} bets` : '' })).filter((r) => r.x != null);
+      fmt = key === 'aw' ? (x) => usd(x, true) : key === 'ev' ? (x) => pct(x, true) : (x) => (x * 100).toFixed(2) + '%';
+      foot = key === 'aw' ? 'The average winning bet (green bar) against the average losing bet (red bar). The first row is all bets; the others come from the recent list, so a strategy with no bet there is missing.'
+        : key === 'ev' ? 'Profit per $1 put into bets (P&L ÷ money staked). Above zero = the strategy pays for its risk.'
+          : 'What fees and slippage take from each $1 bet: the gross result minus the real result. Smaller is better.';
+    }
+    const mx = Math.max.apply(null, list.map((r) => Math.abs(r.x))) || 1;
+    const body = list.map((r) => {
+      let bar;
+      if (key === 'aw') {
+        const m2 = Math.max.apply(null, list.map((q) => Math.max(q.r.aw || 0, q.r.al || 0))) || 1;
+        bar = `<div class="b1" aria-hidden="true"><i class="pos" style="width:${(((r.r.aw || 0) / m2) * 100).toFixed(1)}%"></i></div><div class="b1" aria-hidden="true"><i class="neg" style="width:${(((r.r.al || 0) / m2) * 100).toFixed(1)}%"></i></div>`;
+      } else if (key === 'wr' || key === 'fee') {
+        const lo = key === 'wr' ? Math.max(0, Math.min.apply(null, list.map((q) => q.x)) - 0.08) : 0, hi = key === 'wr' ? 1 : mx;
+        bar = `<div class="b1" aria-hidden="true"><i class="${key === 'fee' ? 'neg' : 'pos'}" style="width:${(Math.max(2, ((r.x - lo) / Math.max(1e-9, hi - lo)) * 100)).toFixed(1)}%"></i></div>`;
+      } else bar = `<div class="dv" aria-hidden="true"><i class="${r.x < 0 ? 'neg' : 'pos'}" style="width:${Math.max(2, (Math.abs(r.x) / mx) * 50).toFixed(1)}%"></i></div>`;
+      const val = key === 'aw' ? `<span class="v up">${esc(usd(r.r.aw, true))}</span>` : `<span class="v ${key === 'fee' ? 'down' : cls(r.x)}">${esc(fmt(r.x))}</span>`;
+      return `<li><div class="bk-t"><b>${esc(r.name)}</b>${val}</div>${bar}<small>${esc(r.sub)}</small></li>`;
+    }).join('');
+    const tabs = `<div class="seg bm" role="group" aria-label="Measure">${BM.map((b) => `<button type="button" data-act="bm" data-v="${b[0]}" aria-pressed="${b[0] === key}" aria-label="${esc(b[2])}" title="${esc(b[2])}">${b[1]}</button>`).join('')}</div>`;
+    return `<section class="card" id="sec-battle"><div class="card-h"><h2>Strategy battle</h2></div>${tabs}`
+      + (body ? `<ul class="brk">${body}</ul>` : '<p class="empty">No numbers for this measure yet: it needs settled bets with a price.</p>') + `<p class="muted small">${esc(foot)}</p></section>`;
+  }
+
+  // ---- risk of ruin: 400 simulated runs of the next 100 bets, drawn from this bot's own win rate and bet sizes (seeded: the same
+  // numbers always draw the same fan). Ruin = the balance cannot buy one more contract (under $1).
+  const SIM_N = 400, SIM_STEPS = 100;
+  function ruinModel(k, v) {
+    const bal = num(k.balance);
+    if (!(bal > 0)) return null;
+    const at = isObj(k.stats) ? k.stats : null;
+    let w = at ? num(at.wins) : null, l = at ? num(at.losses) : null, st = at ? num(at.staked) : null, pnl = at ? num(at.pnl) : null, aw, al, src = 'all-time';
+    if (w != null && l != null && w + l >= 10 && st > 0 && pnl != null && w > 0) {
+      al = st / (w + l); aw = (pnl + l * al) / w;
+    } else {
+      const ss = settled(v), ws = ss.filter((t) => num(t.pnl) > 0.005), ls = ss.filter((t) => num(t.pnl) < -0.005);
+      if (ss.length < 10 || !ws.length || !ls.length) return null;
+      w = ws.length; l = ls.length; aw = sum(ws.map((t) => num(t.pnl))) / w; al = -sum(ls.map((t) => num(t.pnl))) / l; src = 'last ' + ss.length;
+    }
+    if (!(aw > 0) || !(al > 0)) return null;
+    return { bal, p: w / (w + l), aw, al, n: w + l, src };
+  }
+  function simulate(m, mult) {
+    const R = rng32((Math.round(m.bal * 100) * 31 + m.n * 7 + Math.round(m.p * 1e4)) | 0), cols = [], ends = [];
+    for (let s = 0; s <= SIM_STEPS; s++) cols.push(new Float64Array(SIM_N));
+    let ruined = 0;
+    const ratio = m.aw / m.al;
+    for (let i = 0; i < SIM_N; i++) {
+      let b = m.bal, dead = false;
+      cols[0][i] = b;
+      for (let s = 1; s <= SIM_STEPS; s++) {
+        if (!dead) {
+          if (b < 1) dead = true;
+          else { const stake = Math.min(m.al * mult, b); if (R() < m.p) b += stake * ratio; else b -= stake; if (b < 1) { b = Math.max(0, b); dead = true; } }
+        }
+        cols[s][i] = b;
+      }
+      if (dead) ruined++;
+      ends.push(b);
+    }
+    const q = (a, f) => a[Math.min(SIM_N - 1, Math.floor(f * SIM_N))];
+    const fan = cols.map((c) => { const a = Float64Array.from(c).sort(); return [q(a, 0.1), q(a, 0.25), q(a, 0.5), q(a, 0.75), q(a, 0.9)]; });
+    return { ruin: ruined / SIM_N, fan, med: fan[SIM_STEPS][2], up: ends.filter((x) => x > m.bal).length / SIM_N };
+  }
+  function ruinHtml(k, v) {
+    const m = ruinModel(k, v);
+    if (!m) return '';
+    const mult = [0.5, 1, 2].indexOf(S.bs) >= 0 ? S.bs : 1, r = simulate(m, mult), alt = [0.5, 1, 2].map((x) => [x, x === mult ? r : simulate(m, x)]);
+    // the drawn fan is smoothed over 7 bets (the raw percentiles step with every loss); the numbers in the chips are the raw ones
+    const F = r.fan.map((_, s) => [0, 1, 2, 3, 4].map((k) => { let a = 0, n = 0; for (let j = Math.max(0, s - 3); j <= Math.min(SIM_STEPS, s + 3); j++) { a += r.fan[j][k]; n++; } return a / n; }));
+    F[0] = r.fan[0].slice();                                  // the fan starts at today's balance exactly
+    const W = 300, H = 140, PX = 4, PY = 8, hi = Math.max(m.bal * 1.1, Math.max.apply(null, F.map((f) => f[4]))) || 1;
+    const X = (s) => PX + (s / SIM_STEPS) * (W - 2 * PX), Y = (x) => PY + (1 - x / hi) * (H - 2 * PY);
+    const band = (a, b) => 'M' + F.map((f, s) => X(s).toFixed(1) + ',' + Y(f[b]).toFixed(1)).join('L') + 'L' + F.map((f, s) => X(SIM_STEPS - s).toFixed(1) + ',' + Y(F[SIM_STEPS - s][a]).toFixed(1)).join('L') + 'Z';
+    const med = 'M' + F.map((f, s) => X(s).toFixed(1) + ',' + Y(f[2]).toFixed(1)).join('L');
+    const gc = r.ruin < 0.15 ? 'ok' : r.ruin < 0.4 ? 'warn' : 'bad', gv = Math.round(r.ruin * 100);
+    const gauge = `<svg class="gauge ${gc}" viewBox="0 0 200 118" role="img" aria-label="Risk of ruin ${gv} in 100"><path class="g-t" pathLength="100" d="M20,102A80,80 0 0 1 180,102"/>`
+      + `<path class="g-v" pathLength="100" stroke-dasharray="${Math.max(0.6, r.ruin * 100).toFixed(1)} 100" d="M20,102A80,80 0 0 1 180,102"/>`
+      + `<g transform="rotate(${(-90 + r.ruin * 180).toFixed(1)} 100 102)"><line class="g-n" x1="100" y1="102" x2="100" y2="34"/></g><circle class="g-c" cx="100" cy="102" r="6"/>`
+      + `<text class="g-x" x="100" y="86" text-anchor="middle">${gv}%</text><text class="g-s" x="24" y="116">0</text><text class="g-s" x="176" y="116" text-anchor="end">100</text></svg>`;
+    const seg = `<div class="seg" role="group" aria-label="Bet size">${[[0.5, '½ size'], [1, 'Same'], [2, '2× size']].map((x) => `<button type="button" data-act="bs" data-v="${x[0]}" aria-pressed="${x[0] === mult}">${x[1]}</button>`).join('')}</div>`;
+    const plain = gv >= 50 ? 'More than half the runs hit zero.' : gv >= 15 ? `About ${gv} runs in 100 hit zero.` : 'Few runs hit zero.';
+    return `<section class="card" id="sec-ruin"><div class="card-h"><h2>Risk of ruin</h2>${seg}</div>`
+      + `<div class="ruin-w">${gauge}<div class="ruin-t"><b>${gv} in 100</b><span>runs of the next ${SIM_STEPS} bets end with no money left (under $1).</span><small>${esc(plain)}</small></div></div>`
+      + `<svg class="fan" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(`${SIM_N} simulated runs of ${SIM_STEPS} bets from ${usd(m.bal)}: the middle run ends at ${usd(r.med)}`)}">`
+      + `<line class="fn-z" x1="${PX}" x2="${W - PX}" y1="${Y(0).toFixed(1)}" y2="${Y(0).toFixed(1)}"/><line class="fn-s" x1="${PX}" x2="${W - PX}" y1="${Y(m.bal).toFixed(1)}" y2="${Y(m.bal).toFixed(1)}"/>`
+      + `<path class="fn-o" d="${band(0, 4)}"/><path class="fn-i" d="${band(1, 3)}"/><path class="fn-m" d="${med}"/><circle class="fn-d" cx="${X(0).toFixed(1)}" cy="${Y(m.bal).toFixed(1)}" r="3.5"/>`
+      + `<text class="fn-t" x="${W - PX}" y="${(Y(F[SIM_STEPS][2]) - 5).toFixed(1)}" text-anchor="end">${esc(usd(r.med))}</text></svg>`
+      + `<div class="xs"><span>now ${esc(usd(m.bal))}</span><span>${SIM_STEPS} bets later</span></div>`
+      + `<div class="chips"><span class="chip"><b>${esc(usd(r.med))}</b>middle run</span><span class="chip"><b>${esc(pct(r.up))}</b>end above today</span>`
+      + alt.map((a) => `<span class="chip ${a[0] === mult ? 'on' : ''}"><b>${esc(pct(a[1].ruin))}</b>ruin at ${a[0] === 0.5 ? '½' : a[0] === 2 ? '2×' : '1×'}</span>`).join('') + '</div>'
+      + `<p class="muted small">Built from ${esc(fmtN(m.n))} settled bets (${esc(m.src)}): it wins ${esc(pct(m.p))}, a win adds about ${esc(usd(m.aw))}, a loss costs about ${esc(usd(m.al))}, so a bet is ${esc(pct(m.al / m.bal))} of today's balance. `
+      + `${SIM_N} runs, the same every time you open the page. Light band = 80% of runs, dark = the middle half. A guide, not a promise: the real bot sizes its bets by its own rules.</p></section>`;
+  }
+
+  // ---- the timeline: the bot's alerts and every loss and big win, newest first, grouped by day
+  function timelineHtml(k, v) {
+    const ev = [], seen = new Set();
+    const add = (t, lv, tx, c) => { const key = lv + tx; if (seen.has(key)) return; seen.add(key); ev.push({ t, lv, tx, c }); };
+    alertsList(k, v).forEach((a) => add(a.t || parseT(k.t), a.lv, a.tx, a.c));
+    const st = settled(v), wins = st.filter((t) => num(t.pnl) > 0.005).sort(by((t) => num(t.pnl), true)).slice(0, 2);
+    st.filter((t) => num(t.pnl) < -0.005).forEach((t) => add(parseT(t.t), 'bad', `Lost ${usd(-num(t.pnl))} · ${String(t.title || t.ticker || 'a bet').slice(0, 90)}`));
+    wins.forEach((t) => add(parseT(t.t), 'ok', `Won ${usd(num(t.pnl), true)} · ${String(t.title || t.ticker || 'a bet').slice(0, 90)}`));
+    const list = ev.filter((e) => e.t).sort((a, b) => b.t - a.t).slice(0, 14);
+    const head = `<div class="card-h"><h2>Timeline${list.length ? ' · ' + list.length : ''}</h2></div>`;
+    if (!list.length) return `<section class="card" id="sec-tl">${head}<p class="empty">No events yet: alerts, losses and big wins collect here.</p></section>`;
+    let last = '', out = '';
+    const today = dayKey(nowS()), yday = dayKey(nowS() - 86400);
+    list.forEach((e) => {
+      const d = dayKey(e.t);
+      if (d !== last) { last = d; out += `<li class="tl-d">${esc(d === today ? 'Today' : d === yday ? 'Yesterday' : dayLabel(d))}</li>`; }
+      out += `<li class="tl-e ${e.lv}"><i aria-hidden="true"></i><div><span>${esc(e.tx)}</span><small${e.c ? ` class="cdn soon" data-c="${e.c}"` : ''}>${e.c ? esc(closesTxt(e.c)) : esc(ff(F.time, e.t) + ' · ' + ago(e.t))}</small></div></li>`;
+    });
+    return `<section class="card" id="sec-tl">${head}<ul class="tl">${out}</ul></section>`;
   }
 
   // ---- the ticker tape under the header: open bets and the latest results, scrolling (still with reduced motion)
@@ -955,7 +1368,7 @@
       const side = sideOf(t), c = num(t.contracts), pnl = num(t.pnl), act = String(t.action == null ? '' : t.action).trim().toLowerCase(), a = assetOf(t);
       const what = [cap(act), c == null ? '' : fmtN(c)].filter(Boolean).join(' ') + (num(t.price) == null ? '' : ' @ ' + cents(t.price));
       const strat = t.strategy != null ? String(t.strategy) : t.book != null ? String(t.book) : '';
-      out.push(`<li class="row"><b class="t">${sideTag(side)}${a ? `<span class="asset">${esc(a)}</span>` : ''}${esc(t.title || t.ticker || '')}</b>`
+      out.push(`<li class="row"><b class="t">${sideTag(side)}${assetTag(a)}${esc(t.title || t.ticker || '')}</b>`
         + `<span class="v ${cls(pnl)}">${pnl != null ? esc(usd(pnl, true)) : act === 'sell' ? '' : '<span class="open">OPEN</span>'}</span>`
         + `<small>${esc(what)}${tt ? ' · ' + esc(ff(F.time, tt)) : ''}${strat ? ' · ' + esc(strat.slice(0, 40)) : ''}</small></li>`);
     });
@@ -1094,11 +1507,11 @@
       // one clean hierarchy (owner 2026-11-03 "more organized"): Today -> Edge -> Performance -> Alerts
       const eq = safe('equity', () => eqHtml(v));              // first: the stats read its series (max drawdown)
       html = (pv ? previewBar() : notesHtml(k))
-        + groupHtml('today', 'Today', todaySum(k), [safe('balance', () => heroHtml(k, v)), safe('open bets', () => posHtml(v))])
-        + groupHtml('edge', 'Edge', edgeSum(v), [safe('live edge', () => edgeHtml(k, v)), safe('edge map', () => edgeMapHtml(k, v)), safe('sizing', () => kellyHtml(k, v))])
-        + groupHtml('perf', 'Performance', perfSum(k), [eq, safe('calendar', () => calHtml(v)), safe('daily P&L', () => barsHtml(v)), safe('stats', () => statsHtml(v, k)),
-          safe('prices', () => bucketHtml(k, v)), safe('calibration', () => calibHtml(k, v)), safe('markets', () => catHtml(k, v)), safe('strategies', () => stratHtml(v)), safe('journal', () => journalHtml(v))])
-        + groupHtml('alerts', 'Alerts', alertSum(k, v), [safe('alerts', () => alertsHtml(k, v)), safe('trades', () => tradesHtml(v))]);
+        + groupHtml('today', 'Today', todaySum(k), [safe('verdict', () => verdictHtml(k, v)), safe('balance', () => heroHtml(k, v)), safe('open bets', () => posHtml(v)), safe('rest', () => restHtml(k, v))])
+        + groupHtml('edge', 'Edge', edgeSum(v), [safe('edge wait', () => edgeWaitHtml(k, v)), safe('live edge', () => edgeHtml(k, v)), safe('edge map', () => edgeMapHtml(k, v)), safe('sizing', () => kellyHtml(k, v)), safe('risk of ruin', () => ruinHtml(k, v))])
+        + groupHtml('perf', 'Performance', perfSum(k), [eq, safe('race', () => raceHtml(v)), safe('heat map', () => heatHtml(v)), safe('calendar', () => calHtml(v)), safe('daily P&L', () => barsHtml(v)), safe('stats', () => statsHtml(v, k)),
+          safe('battle', () => battleHtml(k, v)), safe('strategies', () => stratHtml(v)), safe('prices', () => bucketHtml(k, v)), safe('calibration', () => calibHtml(k, v)), safe('markets', () => catHtml(k, v)), safe('journal', () => journalHtml(v))])
+        + groupHtml('alerts', 'Alerts', alertSum(k, v), [safe('alerts', () => alertsHtml(k, v)), safe('timeline', () => timelineHtml(k, v)), safe('trades', () => tradesHtml(v))]);
     }
     S.label = S.k && S.state !== 'waiting' ? stateOf(S.k)[1] : '';
     const data = !!S.k && S.state !== 'waiting';
@@ -1144,7 +1557,15 @@
   function tick() {
     document.querySelectorAll('[data-ago]').forEach((n) => { n.textContent = 'updated ' + ago(+n.getAttribute('data-ago')); });
     document.querySelectorAll('.cdn[data-c]').forEach((n) => { const c = +n.getAttribute('data-c'); n.textContent = closesTxt(c); n.className = 'cdn' + cdnCls(c); });
+    document.querySelectorAll('svg.ring[data-c]').forEach((n) => { const c = +n.getAttribute('data-c'), v = n.querySelector('.rg-v'); n.setAttribute('class', 'ring' + cdnCls(c)); if (v) v.setAttribute('stroke-dasharray', (ringFrac(c) * 100).toFixed(1) + ' 100'); });
     if (S.k && S.state !== 'waiting' && stateOf(S.k)[1] !== S.label) render();       // e.g. 15 min without an update: the stale note
+  }
+
+  // under an hour to a bet's close the countdown (and its ring) moves every second; one timer, only while such a bet is on screen
+  function tickFast() {
+    const t = nowS();
+    document.querySelectorAll('.cdn[data-c]').forEach((n) => { const c = +n.getAttribute('data-c'); if (c - t < 3600 && c - t > -2) { n.textContent = closesTxt(c); n.className = 'cdn' + cdnCls(c); } });
+    document.querySelectorAll('svg.ring[data-c]').forEach((n) => { const c = +n.getAttribute('data-c'); if (c - t < 3600 && c - t > -2) { const v = n.querySelector('.rg-v'); n.setAttribute('class', 'ring' + cdnCls(c)); if (v) v.setAttribute('stroke-dasharray', (ringFrac(c) * 100).toFixed(1) + ' 100'); } });
   }
 
   // ------------------------------------------------------------------ interactions (delegated: the sections are re-rendered)
@@ -1154,6 +1575,7 @@
     const a = b.getAttribute('data-act'), val = b.getAttribute('data-v') || '';
     if (a === 'kf') { const f = +val; S.kf = [0.25, 0.5, 1].indexOf(f) >= 0 ? f : 0; if (S.v) swap('sec-kelly', kellyHtml(previewing() ? sample() : S.k, S.v)); }
     else if (a === 'range') { S.ui.range = val; saveUi(); if (S.v) { swap('sec-eq', eqHtml(S.v)); bindChart(); } }
+    else if (a === 'eqv') { S.eqv = val === 'days' ? 'days' : 'eq'; render(); const nb = document.querySelector('#sec-eq [data-act="eqv"][aria-pressed="true"]'); if (nb) nb.focus({ preventScroll: true }); }
     else if (a === 'side') {
       S.ui.side = SIDES.indexOf(val) >= 0 ? val : 'all';
       saveUi();
@@ -1180,6 +1602,11 @@
       if (r && S.v) r.innerHTML = calRead(new Map(S.v.days));
     } else if (a === 'jf') { S.jf = ['all', 'win', 'loss'].indexOf(val) >= 0 ? val : 'all'; if (S.v) swap('sec-journal', journalHtml(S.v)); }
     else if (a === 'jnote') { S.jn = S.jn === val ? '' : val; if (S.v) swap('sec-journal', journalHtml(S.v)); const ta = $('#jnote'); if (ta) ta.focus({ preventScroll: true }); }
+    else if (a === 'jump') jump(val);
+    else if (a === 'race') { if (S.raceOff.has(val)) S.raceOff.delete(val); else S.raceOff.add(val); if (S.v) { swap('sec-race', raceHtml(S.v)); const nb = Array.prototype.filter.call(document.querySelectorAll('#sec-race .rchip'), (x) => x.getAttribute('data-v') === val)[0]; if (nb) nb.focus({ preventScroll: true }); } }
+    else if (a === 'bm') { S.bm = val; if (S.v && S.k) { swap('sec-battle', battleHtml(S.k, S.v)); const nb = Array.prototype.filter.call(document.querySelectorAll('#sec-battle [data-act="bm"]'), (x) => x.getAttribute('data-v') === val)[0]; if (nb) nb.focus({ preventScroll: true }); } }
+    else if (a === 'bs') { S.bs = +val; const k = previewing() ? sample() : S.k; if (S.v && k) { swap('sec-ruin', ruinHtml(k, S.v)); const nb = Array.prototype.filter.call(document.querySelectorAll('#sec-ruin [data-act="bs"]'), (x) => x.getAttribute('data-v') === val)[0]; if (nb) nb.focus({ preventScroll: true }); } }
+    else if (a === 'kcp') { S.calc[b.getAttribute('data-f') === 'p' ? 'p' : 'c'] = val; kcSync(); }
     else if (a === 'retry') load();
     else if (a === 'copy') copyStep();
     else if (a === 'preview' || a === 'exit-preview') {
@@ -1191,16 +1618,37 @@
       if (f) f.focus({ preventScroll: true });
     }
   });
+  // the heat map is one SVG: a tap finds its day from where it landed (so no 40 tiny buttons), the arrow keys walk the days
+  const heatAt = (e) => {
+    const el = e.target && e.target.closest ? e.target.closest('#heat') : null;
+    if (!el) return null;
+    const r = e.target.closest('.hc');
+    if (r) return r.getAttribute('data-d');
+    const bb = el.getBoundingClientRect(), vb = el.viewBox.baseVal, m = S.v ? heatModel(S.v) : null;
+    if (!m || !bb.width) return null;
+    const cell = Math.max(9, Math.min(20, Math.floor(300 / m.cols) - 3)) + 3, x = (e.clientX - bb.left) / bb.width * vb.width - 14, y = (e.clientY - bb.top) / bb.height * vb.height - 13;
+    const col = Math.floor(x / cell), row = Math.floor(y / cell), i = col * 7 + row - m.dow0;
+    if (x < 0 || y < 0 || row > 6 || i < 0 || i >= m.n) return null;
+    return new Date(m.d0 + i * 864e5).toISOString().slice(0, 10);
+  };
+  document.addEventListener('click', (e) => { const k = heatAt(e); if (k) heatPick(k); });
+  document.addEventListener('keydown', (e) => {
+    if (!e.target || e.target.id !== 'heat' || !S.v) return;
+    const m = heatModel(S.v), d = { ArrowLeft: -7, ArrowRight: 7, ArrowUp: -1, ArrowDown: 1 }[e.key];
+    if (!m || d == null) return;
+    e.preventDefault();
+    const cur = S.heatSel ? Math.round((Date.parse(S.heatSel + 'T00:00:00Z') - m.d0) / 864e5) : m.n - 1 - d;
+    const i = Math.max(0, Math.min(m.n - 1, cur + d));
+    S.heatSel = '';
+    heatPick(new Date(m.d0 + i * 864e5).toISOString().slice(0, 10));
+  });
   document.addEventListener('change', (e) => {
     if (e.target && e.target.id === 'posSort') { S.ui.sort = SORTS.some((s) => s[0] === e.target.value) ? e.target.value : 'closes'; saveUi(); const l = $('#posList'); if (l) l.innerHTML = posRows(); }
   });
   document.addEventListener('input', (e) => {
     if (e.target && (e.target.id === 'kcP' || e.target.id === 'kcC')) {
       S.calc[e.target.id === 'kcP' ? 'p' : 'c'] = String(e.target.value || '').replace(/[^\d.]/g, '').slice(0, 6);
-      const o = $('#kcOut'), k = previewing() ? sample() : S.k;
-      if (o && k) o.innerHTML = calcOut(kellyCfg(k), S.kf || kellyCfg(k).f);
-      const kcv = $('#kcCurve');
-      if (kcv && k) kcv.innerHTML = kellyCurve(k, S.kf || kellyCfg(k).f);
+      kcSync();
       return;
     }
     if (e.target && e.target.id === 'jnote') {
@@ -1218,6 +1666,30 @@
     if (d && d.matches && d.matches('details[data-k]')) { const k = d.getAttribute('data-k'); if (d.open) S.open.add(k); else S.open.delete(k); }
   }, true);
 
+  // a verdict line (or any link inside the page) glides to the card behind it and flashes it once
+  function jump(id) {
+    const t = document.getElementById(id);
+    if (!t) return;
+    const bar = $('#secnav'), sm = $('#previewBar'), fx = FX();
+    const y = t.getBoundingClientRect().top + window.pageYOffset - (bar && !bar.hidden ? bar.offsetHeight : 0) - (sm ? sm.offsetHeight + 6 : 0) - 14;
+    try { window.scrollTo({ top: Math.max(0, y), behavior: fx && fx.motion() ? 'smooth' : 'auto' }); } catch (_) { window.scrollTo(0, Math.max(0, y)); }
+    t.classList.remove('flash'); void t.offsetWidth; t.classList.add('flash');
+    setTimeout(() => t.classList.remove('flash'), 1800);
+  }
+  // the calculator's two boxes and its readout, redrawn from S.calc (typing and the preset chips both end here)
+  function kcSync() {
+    const k = previewing() ? sample() : S.k;
+    const p = $('#kcP'), c = $('#kcC');
+    if (p && p !== document.activeElement) p.value = S.calc.p;
+    if (c && c !== document.activeElement) c.value = S.calc.c;
+    document.querySelectorAll('[data-act="kcp"]').forEach((x) => x.setAttribute('aria-pressed', String(S.calc[x.getAttribute('data-f') === 'p' ? 'p' : 'c'] === x.getAttribute('data-v'))));
+    const o = $('#kcOut'), kcv = $('#kcCurve');
+    if (k) {
+      const fr = S.kf || kellyCfg(k).f;
+      if (o) o.innerHTML = calcOut(kellyCfg(k), fr);
+      if (kcv) kcv.innerHTML = kellyCurve(k, fr);
+    }
+  }
   function copyStep() {
     const done = (ok) => { const n = $('#copied'); if (n) n.textContent = ok ? 'Copied' : 'Selected: copy it from the menu'; };
     const pick = () => {
@@ -1240,6 +1712,16 @@
     if (el) el.textContent = STEP;
   }
 
+  // ------------------------------------------------------------------ the upcoming Kalshi City (../kalshicity/): linked only once it exists on the site
+  async function city() {
+    let ac = null, tm = 0, r = null;
+    try { ac = new AbortController(); tm = setTimeout(() => ac.abort(), 3000); } catch (_) { ac = null; }
+    try { r = await fetch('../kalshicity/', { method: 'HEAD', cache: 'no-cache', signal: ac ? ac.signal : undefined }); } catch (_) { r = null; } finally { clearTimeout(tm); }
+    if (!r || !r.ok || !/html/i.test(r.headers.get('content-type') || '')) return;
+    S.city = true;
+    if (S.v && S.state !== 'waiting' && !S.scrub) render();
+  }
+
   // ------------------------------------------------------------------ offline
   function offline() {                // sw.js: the page opens without a connection, never on a browser error page
     try {
@@ -1255,6 +1737,7 @@
   load();
   setInterval(() => { if (document.visibilityState === 'visible') load(); }, POLL_MS);
   setInterval(() => { if (document.visibilityState === 'visible') tick(); }, TICK_MS);
+  setInterval(() => { if (document.visibilityState === 'visible') tickFast(); }, 1000);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && Date.now() - S.at > 15e3) load(); });
   window.addEventListener('pageshow', (e) => { if (e.persisted) load(); });
   window.addEventListener('online', () => load());
@@ -1265,5 +1748,6 @@
     if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', () => fit());
   } catch (_) { /* no font loading API */ }
   kit();
+  city();
   offline();
 })();

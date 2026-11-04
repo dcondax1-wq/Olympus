@@ -7,6 +7,7 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import { loadPantheon, godCard, councilHtml, chipValue, esc, LEAN, VERDICT, verdictHistory } from './pantheoncore.js';
 import { drawGlyph } from './glyphs.js';
+import * as PLUS from './pantheonplus.js';
 
 // the OLYMPUS render core (../olympus/render.js + materials.js): tone mapping, a night environment for real marble and gold
 // reflections, bloom on the live-data glow, MSAA, a film finish. Without it the hall draws with the plain renderer as before.
@@ -144,7 +145,9 @@ class Hall {
     this.tex = { glow: glowTex(), marble: marbleTex(this.lite ? 128 : 256), floor: floorTex(this.lite ? 512 : 1024) };
     this.gods = d.gods;
     this.anchors = [];
+    this.fx = []; this.fxNames = []; this.previewing = null;
     this.build();
+    this.fxStart();
     this.resize();
     addEventListener('resize', () => this.resize());
     this.input(canvas);
@@ -285,6 +288,39 @@ class Hall {
 
   /** The Council chamber: a gold-edged dais, a column of verdict light over the orb and a ring of blocks, one per past council
    *  reading (council.spark, the last year, oldest first, ending in front): colour = that day's verdict, height = how strong. */
+  /** the OLYMPUS effects (olympus/fx-*.js): light shafts onto the Council orb, dust and fireflies in the night air; each one optional */
+  async fxStart() {
+    const FX = window.OLYMPUS_FX;
+    if (!FX) return;
+    try { await FX.load('3d'); } catch (_) { return; }
+    this.fxAdd('godRays', this.scene, { position: [0, 13, 0], intensity: 0.5 });
+    this.fxAdd('dust', this.scene, {});
+    this.fxAdd('fireflies', this.scene, { count: 40 });
+    this.dirty = true;
+  }
+
+  fxAdd(name, target, opts) {
+    const FX = window.OLYMPUS_FX;
+    try { if (FX && typeof FX[name] === 'function') { const e = FX[name](target, opts); this.fx.push(e); this.fxNames.push(name); return e; } } catch (_) { /* an effect failing never stops the hall */ }
+    return null;
+  }
+
+  /** the verdict flipped: gold laurel leaves for risk-on, embers for risk-off, for a few seconds (nothing on reduced motion) */
+  celebrate(label) {
+    const FX = window.OLYMPUS_FX;
+    if (!FX || RM || (label !== 'RISK-ON' && label !== 'RISK-OFF')) return;
+    FX.load('3d').then(() => { const e = this.fxAdd(label === 'RISK-ON' ? 'laurelFall' : 'embers', this.scene, label === 'RISK-ON' ? {} : { center: [0, 3, 0] }); if (e) setTimeout(() => { try { e.stop(); } catch (_) { /* gone */ } }, 6500); }).catch(() => {});
+  }
+
+  /** the "what if" sliders: tint the Council orb (and its light, ring and column) with a pretend verdict; null puts the real one back */
+  preview(r) {
+    const label = r ? r.label : this.d.council.label, col = new THREE.Color(VERDICT[label] || VERDICT.SILENT);
+    this.previewing = r ? label : null;
+    this.orbLight.color.copy(col); this.orbMat.uniforms.uColor.value.copy(col); this.orbGlow.material.color.copy(col);
+    this.ring.material.color.copy(col); this.column.material.color.copy(col);
+    this.dirty = true;
+  }
+
   verdictRing(vc) {
     const S = this.scene, hist = verdictHistory(this.d), N = hist.cells.length;
     const dais = new THREE.Mesh(new THREE.CylinderGeometry(HIST_R + 0.35, HIST_R + 0.5, 0.12, 72), CORE ? CORE.marble({ scale: 0.7, gold: '#e9b75a', color: '#5b5870', clearcoat: 0.4 }) : new THREE.MeshStandardMaterial({ color: 0x3a3650, roughness: 0.6 }));
@@ -489,6 +525,7 @@ class Hall {
 
 // ------------------------------------------------------------------------------------------------ the UI
 function closeAll() {
+  STATE.hall?.preview(null);
   $('card').hidden = true; $('council').hidden = true; $('councilBtn').setAttribute('aria-expanded', 'false');
   STATE.sel = null; STATE.hall?.select(null); markChips();
   if (location.hash) history.replaceState(null, '', location.pathname + location.search);
@@ -504,7 +541,10 @@ function openGod(key) {
   $('council').hidden = true; $('councilBtn').setAttribute('aria-expanded', 'false');
   const c = godCard(g);
   $('card').style.setProperty('--c', g.color);
-  $('card-h').textContent = c.title; $('card-m').textContent = c.meta; $('card-b').innerHTML = c.body;
+  const chart = g.ok ? PLUS.godChartHtml(g) : '';
+  $('card-h').textContent = c.title; $('card-m').textContent = c.meta;
+  $('card-b').innerHTML = c.body.includes('<h3>Against NQ futures') ? c.body.replace('<h3>Against NQ futures', chart + '<h3>Against NQ futures') : c.body + chart;
+  PLUS.wireChart($('card-b'));
   $('card').hidden = false; $('card').scrollTop = 0;
   STATE.sel = key; STATE.hall?.select(key); markChips();
   if (location.hash !== '#god/' + key) history.replaceState(null, '', '#god/' + key);
@@ -513,6 +553,7 @@ function openGod(key) {
 function openCouncil() {
   $('card').hidden = true;
   $('council-b').innerHTML = councilHtml(STATE.d);
+  PLUS.enhanceCouncil($('council-b'), STATE.d, { flips: STATE.flips, preview: (r) => STATE.hall?.preview(r), jarvis: postNote });
   $('council').hidden = false; $('council').scrollTop = 0; $('councilBtn').setAttribute('aria-expanded', 'true');
   STATE.sel = null; STATE.hall?.select(null); markChips();
   if (location.hash !== '#council') history.replaceState(null, '', '#council');
@@ -544,11 +585,23 @@ function route() {
   else if (h.startsWith('#god/')) openGod(h.slice(5));
 }
 
-function postJarvisCard() {
+function postJarvisCard(note) {
   if (window.parent === window) return;
   fetch('jarvis.json', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).then((card) => {
-    if (card) window.parent.postMessage({ jarvis: 1, href: location.href, card: { ...card, t: Math.floor(Date.now() / 1000) } }, 'https://demetrades2000-coder.github.io');
+    if (!card) return;
+    const n = note || PLUS.councilNote(STATE.d), lines = [...(STATE.flip && STATE.flip.flipped ? [`The Council flipped: ${STATE.flip.from} to ${STATE.flip.to}.`] : []), ...n.lines].slice(0, 4);
+    window.parent.postMessage({ jarvis: 1, href: location.href, card: { ...card, lines: lines.length ? lines : card.lines, t: Math.floor(Date.now() / 1000) } }, 'https://demetrades2000-coder.github.io');
   }).catch(() => {});
+}
+const postNote = (note) => postJarvisCard(note);
+
+/** the banner when the Council changed its mind since this phone last looked */
+function flipBanner(f) {
+  if (!f.flipped) return;
+  $('flip-t').textContent = `The Council changed its mind: ${f.from} to ${f.to}`;
+  $('flip').style.setProperty('--c', VERDICT[f.to] || '#fff'); $('flip').hidden = false;
+  $('flip-x').addEventListener('click', () => { $('flip').hidden = true; });
+  STATE.hall?.celebrate(f.to);
 }
 
 function tick(now) {
@@ -560,6 +613,8 @@ async function main() {
   addEventListener('error', (e) => STATE.errors.push(String(e.message || e)));
   const d = await loadPantheon('pantheon.json', Q.get('demo') === '1' ? 'demo' : undefined);
   STATE.d = d;
+  const mem = PLUS.remember(d);
+  STATE.flip = mem.flip; STATE.flips = mem.flips;
   hud(d);
   $('cardX').addEventListener('click', closeAll);
   $('councilX').addEventListener('click', closeAll);
@@ -579,9 +634,11 @@ async function main() {
     screenOf(key) { return STATE.hall ? STATE.hall.anchorOf(key) : null; }, open: openGod, council: openCouncil,
     get core() { return STATE.hall && STATE.hall.rc ? STATE.hall.rc.passes() : null; }, get history() { return STATE.hall ? STATE.hall.history : null; },
     get sel() { return STATE.sel; }, get yaw() { return STATE.hall ? STATE.hall.yaw : null; },
+    PLUS, get flip() { return STATE.flip; }, get fx() { return STATE.hall ? STATE.hall.fxNames : []; }, get preview() { return STATE.hall ? STATE.hall.previewing : null; },
   };
   requestAnimationFrame(tick);
   route();
+  flipBanner(mem.flip);
   postJarvisCard();
 }
 

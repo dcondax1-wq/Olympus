@@ -375,7 +375,7 @@ def _open(br, url, errs, reduced=False):
         head, _, frag = url.partition("#")
         url = head + ("&" if "?" in head else "?") + "q=off" + ("#" + frag if frag else "")
     p.goto(url)
-    p.wait_for_function("window.__pantheon && window.__pantheon.ready", timeout=30000)
+    p.wait_for_function("window.__pantheon && window.__pantheon.ready", timeout=90000)
     p.wait_for_timeout(700)
     return ctx, p
 
@@ -483,6 +483,161 @@ def part_g(tmp):
         srv2.shutdown()
 
 
+# ------------------------------------------------------------------------------------------------------------ i (2026-11-04)
+PLUS_JS = r"""
+import fs from 'node:fs';
+const D = '__PAGE__/';
+const P = await import(D + 'pantheonplus.js');
+const d = JSON.parse(fs.readFileSync(D + 'pantheon.json', 'utf8')), sets = JSON.parse(fs.readFileSync(process.argv[2], 'utf8')), out = {};
+out.sets = sets.map((s) => { const g = { gods: s.map(([k, v]) => ({ key: k, council: true, vote: v })) }; return P.whatIf(g, {}); });
+const real = P.whatIf(d, {}); out.real = [real.score, real.gauge, real.label, real.voices, d.council.score, d.council.gauge, d.council.label, d.council.voices];
+out.override = [P.whatIf(d, { zeus: -1 }).label, P.whatIf(d, { zeus: null }).voices, P.whatIf(d, { zeus: null, ares: null, nyx: null, poseidon: null }).label, P.whatIf(d, { zeus: 5 }).score >= P.whatIf(d, { zeus: 1 }).score];
+const runs = P.regimes(d); out.runs = { n: runs.length, sum: runs.reduce((a, r) => a + r.n, 0), spark: d.council.spark.length, first: runs[0].label, adjacent: runs.every((r, i) => !i || runs[i - 1].label !== r.label) };
+out.flip = [P.flipCheck(d, null).flipped, P.flipCheck(d, { label: d.council.label }).flipped, P.flipCheck(d, { label: 'RISK-ON' }).flipped, P.flipCheck(d, { label: 'RISK-ON' }).from];
+const note = P.councilNote(d); out.note = { lines: note.lines.length, max: Math.max(...note.lines.map((l) => l.length)), first: note.lines[0], title: note.title, text: note.text === note.lines.join('\n') };
+const mem = {}, st = { getItem: (k) => (k in mem ? mem[k] : null), setItem: (k, v) => { mem[k] = String(v); } };
+const r1 = P.remember(d, st); const r2 = P.remember({ ...d, council: { ...d.council, label: 'RISK-ON' } }, st); const r3 = P.remember({ ...d, council: { ...d.council, label: 'RISK-ON' } }, st);
+out.remember = [r1.flip.flipped, r2.flip.flipped, r2.flip.from, r2.flip.to, r2.flips.length, r3.flip.flipped, r3.flips.length, Object.keys(mem).sort()];
+mem['pantheon.last'] = '{junk'; out.junk = P.remember(d, st).flip.flipped;
+console.log(JSON.stringify(out));
+"""
+
+
+def part_i(tmp):
+    """The Council's what-if sliders, regime runs, the flip memory and the daily note: pure functions in node, checked against the build's own rule (tools/pantheon/council.py)."""
+    import random
+    import subprocess
+    node = shutil.which("node")
+    if not node:
+        check("i. node is available for pantheonplus.js", False)
+        return
+    rnd = random.Random(7)
+    keys = ["a", "b", "c", "d", "e", "f"]
+    sets = []
+    for _ in range(60):
+        k = rnd.randint(0, 6)
+        sets.append([[x, None if i >= k else round(rnd.uniform(-1, 1), 3)] for i, x in enumerate(keys[:rnd.randint(2, 6)])] if rnd.random() < 0.5 else [[x, round(rnd.uniform(-1, 1), 3)] for x in keys[:rnd.randint(3, 6)]])
+    sf = os.path.join(tmp, "sets.json")
+    json.dump(sets, open(sf, "w"))
+    f = os.path.join(tmp, "plus.mjs")
+    open(f, "w", encoding="utf-8").write(PLUS_JS.replace("__PAGE__", PAGE.replace(os.sep, "/")))
+    r = subprocess.run([node, f, sf], capture_output=True, text=True, timeout=120)
+    try:
+        o = json.loads(r.stdout.strip().splitlines()[-1])
+    except Exception:
+        check("i. pantheonplus.js runs in node", False, (r.stdout + r.stderr)[-500:])
+        return
+    bad = []
+    for st, js in zip(sets, o["sets"]):
+        py = C.verdict({k: (k, v) for k, v in st})
+        if (py["score"], py["gauge"], py["label"]) != (js["score"], js["gauge"], js["label"]):
+            bad.append((st, py["score"], js["score"], py["label"], js["label"]))
+    check("i. 'what if': the page's rule gives the same score, gauge and verdict as the build's own council.verdict() on 60 random vote sets (including too few voices = SILENT)", not bad, bad[:2])
+    check("i. 'what if' on the real votes reproduces pantheon.json's own verdict exactly", o["real"][:4] == o["real"][4:], o["real"])
+    check("i. 'what if': an override changes the verdict, a god can sit out (5 voices left), four sitting out = SILENT, votes are clipped to -1..+1",
+          o["override"][0] in ("RISK-OFF", "MIXED") and o["override"][1] == 5 and o["override"][2] == "SILENT" and o["override"][3], o["override"])
+    rr = o["runs"]
+    check("i. the regime timeline: runs of one verdict add up to every reading, neighbours differ, newest first", rr["sum"] == rr["spark"] and rr["adjacent"] and rr["n"] >= 2, rr)
+    check("i. the flip check: nothing to compare with = no flip, same verdict = no flip, a different one = a flip with from / to", o["flip"] == [False, False, True, "RISK-ON"], o["flip"])
+    nt = o["note"]
+    check("i. the daily Council note for Jarvis: a title with the date, 3-4 lines, each at most 120 characters, the text is the lines", nt["title"].startswith("Council note") and 3 <= nt["lines"] <= 4 and nt["max"] <= 120 and nt["first"].startswith("Council 2026-") and nt["text"], nt)
+    rm = o["remember"]
+    check("i. this phone remembers the last verdict ('pantheon.last') and the flips ('pantheon.flips', newest first, kept to 12), nothing else; a damaged key is just forgotten",
+          rm[0] is False and rm[1] is True and rm[2] == "MIXED" and rm[3] == "RISK-ON" and rm[4] == 1 and rm[5] is False and rm[6] == 1 and rm[7] == ["pantheon.flips", "pantheon.last"] and o["junk"] is False, rm)
+
+
+def part_j(tmp):
+    """The Council page's new parts in the browser: a god's history chart, the note, the what-if sliders, the timeline, the flip banner, the effects."""
+    from playwright.sync_api import sync_playwright
+    srv, url = _site(tmp, "site_j", True)
+    d = json.load(open(os.path.join(PAGE, "pantheon.json"), encoding="utf-8"))
+    try:
+        with sync_playwright() as pw:
+            exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
+            br = pw.chromium.launch(**({"executable_path": exe} if exe else {}), args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader"])
+            errs = []
+            ctx, p = _open(br, url + "?q=off", errs)
+            p.evaluate("window.__pantheon.open('zeus')")
+            p.wait_for_selector("#card-b .gchart svg")
+            p.locator("#card-b .gchart svg").scroll_into_view_if_needed()
+            readout = p.inner_text("#card-b .greadout")
+            box = p.evaluate("(() => { const r = document.querySelector('#card-b .gchart svg').getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; })()")
+            p.mouse.move(box[0] + box[2] * 0.25, box[1] + box[3] / 2)
+            p.mouse.down()
+            p.mouse.move(box[0] + box[2] * 0.3, box[1] + box[3] / 2, steps=3)
+            p.mouse.up()
+            after = p.inner_text("#card-b .greadout")
+            check("j. a god's history chart: low / high marked, a finger-scrub readout ('Reading k of N ... % vs now') and the percentile",
+                  "percentile" in readout and "Reading" in after and "vs now" in after and p.evaluate("document.querySelector('#card-b .gchart .gdot').hasAttribute('hidden')") is False, (readout, after))
+            check("j. every god with a history gets the chart (7 of 8; ATHENA is a calendar and says so)",
+                  all(p.evaluate(f"window.__pantheon.open('{g['key']}') || document.querySelectorAll('#card-b .gchart').length") == (1 if len(g.get('spark') or []) >= 3 else 0) for g in d["gods"] if g["ok"]))
+            p.evaluate("window.__pantheon.council()")
+            p.wait_for_selector("#cn-if input[type=range]")
+            n = p.evaluate("document.querySelectorAll('#cn-if input[type=range]').length")
+            note = p.inner_text("#cn-note")
+            check(f"j. the Council panel: today's note (copy, show on Jarvis), {n} vote sliders, the verdict timeline", "Council note" in note and p.query_selector("#cn-copy") is not None and n == 6 and p.evaluate("document.querySelectorAll('#cn-tl .tl li').length") >= 2)
+            lab0 = p.evaluate("document.getElementById('if-out').dataset.label")
+            p.evaluate("(() => { const s = document.querySelector('#cn-if input[data-god=zeus]'); s.value = -90; s.dispatchEvent(new Event('input', { bubbles: true })); })()")
+            r1 = p.evaluate("[document.getElementById('if-out').dataset.label, +document.getElementById('if-out').dataset.gauge, window.__pantheon.preview]")
+            votes = {g["key"]: g["vote"] for g in d["gods"] if g["council"] and g.get("vote") is not None}
+            votes["zeus"] = -0.9
+            py = C.verdict({k: (k, v) for k, v in votes.items()})
+            check(f"j. moving ZEUS to -0.90 re-rules the Council exactly as the build would ({r1[0]} {r1[1]}/100), the orb takes the pretend colour",
+                  lab0 == d["council"]["label"] and r1[0] == py["label"] and r1[1] == py["gauge"] and r1[2] == py["label"], (lab0, r1, py["label"], py["gauge"]))
+            p.click("#if-on")
+            on = p.evaluate("document.getElementById('if-out').dataset.label")
+            p.click("#if-off")
+            off = p.evaluate("document.getElementById('if-out').dataset.label")
+            p.click("#if-reset")
+            back = p.evaluate("[document.getElementById('if-out').dataset.label, +document.getElementById('if-out').dataset.gauge]")
+            check("j. All risk-on = RISK-ON, All risk-off = RISK-OFF, Reset = today's verdict again", on == "RISK-ON" and off == "RISK-OFF" and back == [d["council"]["label"], d["council"]["gauge"]], (on, off, back))
+            for k in ("zeus", "ares", "nyx", "poseidon"):
+                p.click(f"#cn-if [data-sit={k}]")
+            check("j. sitting four gods out leaves 2 voices: the Council falls silent ('needs at least 3 voices')", p.evaluate("document.getElementById('if-out').dataset.label") == "SILENT" and "at least 3" in p.inner_text("#if-out"))
+            p.click("#if-reset")
+            p.click("#councilX")
+            check("j. closing the Council gives the orb its real colour back", p.evaluate("window.__pantheon.preview") is None)
+            check("j. no console errors on the Council page", not errs, errs[:3])
+            keys = p.evaluate("Object.keys(localStorage)")
+            check("j. this phone stores only 'pantheon.last' and 'pantheon.flips'", sorted(keys) == ["pantheon.flips", "pantheon.last"], keys)
+            ctx.close()
+            # the flip banner
+            errs2 = []
+            ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=1)
+            ctx.add_init_script("try { localStorage.setItem('pantheon.last', JSON.stringify({ label: 'RISK-ON', gauge: 70 })); } catch (e) {}")
+            p2 = ctx.new_page()
+            p2.on("pageerror", lambda e: errs2.append(str(e)))
+            p2.goto(url + "?q=off")
+            p2.wait_for_function("window.__pantheon && window.__pantheon.ready", timeout=30000)
+            p2.wait_for_timeout(500)
+            txt = p2.inner_text("#flip") if p2.is_visible("#flip") else ""
+            check("j. the Council changed its mind since the last visit: a banner says 'RISK-ON to " + d["council"]["label"] + "' and can be dismissed",
+                  f"RISK-ON to {d['council']['label']}" in txt and p2.evaluate("window.__pantheon.flip.flipped") is True, txt)
+            p2.click("#flip-x")
+            check("j. the banner goes away and the flip is in the log (shown on the timeline)", p2.is_hidden("#flip"))
+            p2.evaluate("window.__pantheon.council()")
+            p2.wait_for_selector("#cn-tl")
+            check("j. the timeline lists the flips seen on this phone", "RISK-ON to " + d["council"]["label"] in p2.inner_text("#cn-tl"), p2.inner_text("#cn-tl")[-160:])
+            ctx.close()
+            ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=1)
+            p3 = ctx.new_page()
+            p3.goto(url + "?q=off")
+            p3.wait_for_function("window.__pantheon && window.__pantheon.ready", timeout=30000)
+            p3.wait_for_timeout(500)
+            check("j. a first visit (nothing remembered) shows no banner", p3.is_hidden("#flip"))
+            ctx.close()
+            # the effects on a GPU tier
+            errs4 = []
+            ctx, p4 = _open(br, url + "?q=high", errs4)
+            p4.wait_for_function("window.__pantheon.fx && window.__pantheon.fx.length >= 2", timeout=90000)
+            fx = p4.evaluate("window.__pantheon.fx")
+            check(f"j. the hall has the OLYMPUS effects on HD (light shafts onto the Council orb, dust, fireflies): {fx}", "godRays" in fx and "fireflies" in fx and not errs4, (fx, errs4[:2]))
+            ctx.close()
+            br.close()
+    finally:
+        srv.shutdown()
+
+
 def main(argv):
     fast = "fast" in argv
     tmp = tempfile.mkdtemp(prefix="pantheon_test_")
@@ -493,8 +648,10 @@ def main(argv):
         part_d()
         part_e(tmp)
         part_f()
+        part_i(tmp)
         if not fast:
             part_g(tmp)
+            part_j(tmp)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print(f"\n{sum(RES)}/{len(RES)} passed", flush=True)

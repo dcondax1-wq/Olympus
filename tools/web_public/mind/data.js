@@ -6,7 +6,7 @@
 // This page never reads a token, never fetches and never sends anything: it only calls those two functions.
 //   openFeed(onUpdate, {demo})                            onUpdate({mode: 'live'|'demo'|'offline', snap}) now and on every change
 // Every snapshot goes through normalize(): each field checked, times in ms (seconds accepted), text capped, junk dropped.
-// 'demo' = the module is missing, failed or says "not connected" (a built-in fake brain from demo.js); 'offline' = it was
+// 'demo' = the module is missing, failed, says "not connected" or holds nothing yet (a built-in fake brain from demo.js, labelled DEMO); 'offline' = it was
 // connected this session and now answers null (the last real brain stays on screen).
 import { createDemo } from './demo.js';
 
@@ -79,6 +79,7 @@ export async function openFeed(onUpdate, { demo = createDemo() } = {}) {
         again = false;
         let snap = null;
         if (real) { try { snap = normalize(await real.graphSnapshot()); } catch (_) { snap = null; } }
+        if (snap && !snap.notes.length && !snap.learned.length) snap = null;          // connected but empty: the demo brain, never a blank sky
         if (snap) { mode = 'live'; last = snap; }
         else if (mode === 'live' || mode === 'offline') mode = 'offline';
         else { mode = 'demo'; last = normalize(await demo.graphSnapshot()); }

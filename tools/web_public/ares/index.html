@@ -17,6 +17,8 @@
 <link rel="stylesheet" href="../olympus/olympus.css?v=o2">
 <script src="../olympus/themes.js?v=o2"></script>
 <script src="../olympus/olympus.js?v=o2" data-app="ares"></script>
+<script src="../olympus/fx-core.js?v=f1"></script><script src="../olympus/fx-ui.js?v=f1"></script><script src="../olympus/fx-text.js?v=f1"></script><script src="../olympus/fx-burst.js?v=f1"></script>
+<script src="../olympus/intro-app.js?v=i1" defer></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#ff3b30'); r.setProperty('--oly-accent-rgb', '255, 59, 48'); })();</script>
 <link rel="stylesheet" href="ares.css?v=r1">
 </head>
@@ -26,6 +28,7 @@
 <header class="hud">
   <div class="title"><h1>ARES</h1><span class="tag" id="demo" hidden>OFFLINE RULES</span><span class="tag live" id="livetag" hidden>LIVE ACCOUNT</span></div>
   <p class="sub" id="sub">The war room. Size follows the stop.</p>
+  <div class="dd" id="dd" role="img" data-tone="calm"><span class="ddk">DRAWDOWN LEFT</span><b class="ddv"></b><span class="ddb"><i></i></span></div>
 </header>
 <section class="sheet" id="sheet" aria-live="polite">
   <div class="pane" id="p-trade" role="tabpanel" aria-label="Trade">
@@ -40,8 +43,11 @@
     <label class="slide">Risk this much of the room left: <b id="riskPctV">40%</b>
       <input id="riskPct" type="range" min="10" max="90" step="5" value="40"></label>
     <div class="out" id="out"></div>
+    <button type="button" class="wide" id="shareBtn">Share this check as a card</button>
   </div>
   <div class="pane" id="p-account" role="tabpanel" aria-label="Account" hidden>
+    <p class="hint">Scenarios: set the account to a moment of its life.</p>
+    <div class="scen" id="scen"></div>
     <div class="row seg" role="group" aria-label="Plan and stage">
       <button type="button" data-set="plan" data-v="50k">Builder 50K</button><button type="button" data-set="plan" data-v="25k">Builder 25K</button>
       <button type="button" data-set="stage" data-v="eval">Eval</button><button type="button" data-set="stage" data-v="funded">Funded</button>
@@ -68,6 +74,12 @@
     <p class="hint"><b id="chkN">0/8</b> ticked. GO needs all eight.</p>
     <div id="checks"></div>
     <button type="button" class="wide" id="resetChecks">New trade: clear the list</button>
+    <section class="xbox" aria-label="Pre-trade ritual"><h3>Pre-trade ritual</h3><div class="ritual"><div class="ringhost" id="ritualRing" role="img" aria-label="Ritual timer"><b id="ritualN">60</b></div><p class="line" id="ritualTxt"></p></div><button type="button" class="wide" id="ritualBtn">Start the ritual</button></section>
+    <section class="xbox" aria-label="Journal of checks"><h3>Journal of past checks</h3>
+      <button type="button" class="wide" id="logCheck" disabled>Log this check</button>
+      <div class="ask" id="logAsk" hidden><span>Did you take this trade?</span><button type="button" id="logTook">I took it</button><button type="button" id="logPassed">I passed</button></div>
+      <div id="journal"></div><button type="button" class="wide ghost" id="clearJournal">Clear the journal</button></section>
+    <section class="xbox" aria-label="Rules you broke"><h3>Rules you broke</h3><div id="broken"></div></section>
   </div>
   <div class="pane" id="p-rules" role="tabpanel" aria-label="Rules" hidden>
     <div id="rules"></div>

@@ -163,3 +163,28 @@ h1 { margin: 0; font: 700 16px Orbitron, sans-serif; letter-spacing: .26em; colo
 .bk-now { stroke: rgba(255, 255, 255, .25); stroke-width: 1; }
 .bk-dot { fill: #fff3cf; filter: drop-shadow(0 0 5px var(--gold)); }
 #bk-ruin[data-sign="up"], #bk-med[data-sign="up"] { color: var(--mint); } #bk-ruin[data-sign="down"], #bk-half[data-sign="down"], #bk-med[data-sign="down"] { color: #ff6b7f; }
+
+/* 2026-11-04: the Fortune view (fortunepanel.js): leaderboard, streak coins, the fortune card, two bankrolls, the replay */
+#p-fortune { max-height: 36vh; max-height: 36dvh; display: flex; flex-direction: column; gap: 6px; }
+.seg { display: flex; gap: 4px; flex: none; } .seg button { flex: 1 1 0; min-width: 0; height: 32px; padding: 0 2px; border-radius: 9px; border: 1px solid var(--line); background: rgba(18, 13, 8, .55); color: var(--dim); font: 700 11.5px Rajdhani, sans-serif; letter-spacing: .06em; cursor: pointer; }
+.seg button[aria-pressed="true"] { color: var(--gold); border-color: rgba(255, 207, 90, .7); box-shadow: 0 0 10px rgba(255, 207, 90, .3); }
+.fbody { overflow-y: auto; min-height: 0; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+.fbody p { margin: 0 0 6px; }
+.lboard { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; }
+.lrow { position: relative; display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 0 8px; align-items: baseline; padding: 4px 6px 7px; border-radius: 9px; background: rgba(255, 255, 255, .04); font-size: 13px; }
+.lrow .rk { color: var(--gold); font: 700 12px Orbitron, sans-serif; } .lrow .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .lrow b { font: 700 13px Orbitron, sans-serif; font-variant-numeric: tabular-nums; }
+.lrow small { grid-column: 2 / -1; color: var(--dim); font-size: 11.5px; } .lrow .bar { position: absolute; left: 6px; bottom: 2px; height: 3px; border-radius: 2px; max-width: calc(100% - 12px); background: var(--mint); opacity: .8; } .lrow .bar.down { background: var(--rose); }
+.coins { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0 6px; }
+.coin { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid rgba(255, 255, 255, .25); }
+.coin.win { background: radial-gradient(circle at 35% 30%, #fff3c4, #ffcf5a 55%, #b8861a); box-shadow: 0 0 8px rgba(255, 207, 90, .55); }
+.coin.loss { background: radial-gradient(circle at 35% 30%, #6b5a52, #2a211d 70%); opacity: .8; }
+.coin:last-child { animation: coinpulse 1.6s ease-in-out infinite; } @keyframes coinpulse { 50% { transform: scale(1.18); } }
+.fcard { position: relative; padding: 9px 10px; border-radius: 12px; background: rgba(255, 255, 255, .05); }
+.fcard .fh { display: block; font: 700 15px Orbitron, sans-serif; margin-bottom: 6px; } .fcard.up .fh { color: var(--gold); } .fcard.down .fh { color: var(--rose); }
+.fcard .fl { font-size: 13px; line-height: 1.35; } .fcard .fn { color: var(--dim); font-size: 11.5px; }
+.cmp { display: block; width: 100%; height: 86px; margin-bottom: 6px; } .duo b.gold { color: var(--gold); } .duo b.mint { color: var(--mint); } .duo b { white-space: normal; font-size: 12.5px; }
+.rbal { display: block; font: 800 22px Orbitron, sans-serif; color: var(--gold); font-variant-numeric: tabular-nums; } .rinfo { font-size: 12.5px; color: var(--dim); } .rinfo[data-sign="up"] { color: var(--mint); } .rinfo[data-sign="down"] { color: var(--rose); }
+.rrow { display: flex; gap: 8px; align-items: center; } .rplay { flex: none; min-width: 64px; height: 40px; border-radius: 10px; border: 1px solid rgba(255, 207, 90, .6); background: rgba(255, 207, 90, .12); color: var(--gold); font: 700 13px Rajdhani, sans-serif; cursor: pointer; }
+.rrow input { flex: 1; min-width: 0; height: 40px; accent-color: var(--gold); background: transparent; touch-action: pan-x; }
+@media (prefers-reduced-motion: reduce) { .coin:last-child { animation: none; } }
+.cmp[hidden] { display: none; }

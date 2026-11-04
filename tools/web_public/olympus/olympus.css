@@ -113,3 +113,41 @@ html.framed .oly-home { display: none; }
   .oly-seal, .oly-veil-bar::after { animation: none; }
 }
 html[data-fx="off"] .oly-seal, html[data-fx="off"] .oly-veil-bar::after { animation: none; }
+
+/* ---------------------------------------------------------------- effects wiring (2026-11-04, docs/OLYMPUS_FX.md)
+   data-oly-fx="shimmer | glow | ripple | tilt | odometer ..." on any element: shimmer, glow and ripple are styled here (no script);
+   the rest load olympus/fx-*.js on first use. The quality tier (html[data-fx]) and prefers-reduced-motion switch them: ultra / high
+   animate, low shows a still version, off shows nothing. Opt out: data-oly-fx-off on the element or an ancestor, or
+   <html data-oly-fx-ui="off">. Zero specificity (:where) everywhere, so an app's own rule always wins. shimmer draws on ::after and
+   ripple on ::before: leave those tokens off an element whose pseudo-elements the app already uses. */
+:where([data-oly-fx~="shimmer"], .oly-fx-shimmer, [data-oly-fx~="ripple"], .oly-fx-ripple) { position: relative; }
+:where([data-oly-fx~="ripple"], .oly-fx-ripple) { overflow: hidden; }
+:where([data-oly-fx~="shimmer"], .oly-fx-shimmer)::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(105deg, rgba(255, 255, 255, 0) 38%, rgba(255, 255, 255, .22) 50%, rgba(255, 255, 255, 0) 62%) no-repeat;
+  background-size: 250% 100%; background-position: 150% 0; animation: oly-fx-sweep 3.4s var(--oly-ease-in-out) infinite; }
+@keyframes oly-fx-sweep { 0%, 30% { background-position: 150% 0; } 100% { background-position: -50% 0; } }
+:where([data-oly-fx~="glow"], .oly-fx-glow) { animation: oly-fx-glow 2.8s ease-in-out infinite; }
+@keyframes oly-fx-glow {
+  0%, 100% { filter: drop-shadow(0 0 3px rgba(var(--oly-accent-rgb), .30)); }
+  50% { filter: drop-shadow(0 0 10px rgba(var(--oly-accent-rgb), .75)); } }
+:where([data-oly-fx~="ripple"], .oly-fx-ripple):where(:not(.oly-card):not(.oly-glass))::before { content: ""; position: absolute; inset: 0;
+  border-radius: inherit; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle at var(--oly-ox, 50%) var(--oly-oy, 50%), rgba(var(--oly-accent-rgb), .42) 0, rgba(var(--oly-accent-rgb), .2) 38%, rgba(var(--oly-accent-rgb), 0) 70%);
+  clip-path: circle(0% at var(--oly-ox, 50%) var(--oly-oy, 50%)); }
+:where(.oly-fx-rip-go):where(:not(.oly-card):not(.oly-glass))::before { animation: oly-fx-rip .6s var(--oly-ease) both; }
+@keyframes oly-fx-rip {
+  0% { opacity: 1; clip-path: circle(0% at var(--oly-ox, 50%) var(--oly-oy, 50%)); }
+  100% { opacity: 0; clip-path: circle(150% at var(--oly-ox, 50%) var(--oly-oy, 50%)); } }
+/* low: a still version; off: nothing */
+html[data-fx="low"] :where([data-oly-fx~="shimmer"], .oly-fx-shimmer)::after { animation: none; background-position: 60% 0; opacity: .5; }
+html[data-fx="low"] :where([data-oly-fx~="glow"], .oly-fx-glow) { animation: none; filter: drop-shadow(0 0 6px rgba(var(--oly-accent-rgb), .5)); }
+html[data-fx="off"] :where([data-oly-fx~="shimmer"], .oly-fx-shimmer)::after, html[data-fx="off"] :where([data-oly-fx~="ripple"], .oly-fx-ripple)::before { content: none; }
+html[data-fx="off"] :where([data-oly-fx~="glow"], .oly-fx-glow) { animation: none; filter: none; }
+/* the opt-out */
+[data-oly-fx-off] [data-oly-fx~="shimmer"]::after, [data-oly-fx-off][data-oly-fx~="shimmer"]::after, html[data-oly-fx-ui="off"] [data-oly-fx~="shimmer"]::after,
+[data-oly-fx-off] [data-oly-fx~="ripple"]::before, [data-oly-fx-off][data-oly-fx~="ripple"]::before, html[data-oly-fx-ui="off"] [data-oly-fx~="ripple"]::before { content: none; }
+[data-oly-fx-off] [data-oly-fx~="glow"], [data-oly-fx-off][data-oly-fx~="glow"], html[data-oly-fx-ui="off"] [data-oly-fx~="glow"] { animation: none; filter: none; }
+@media (prefers-reduced-motion: reduce) {
+  :where([data-oly-fx~="shimmer"], .oly-fx-shimmer)::after, :where([data-oly-fx~="ripple"], .oly-fx-ripple)::before { content: none; }
+  :where([data-oly-fx~="glow"], .oly-fx-glow) { animation: none; filter: none; }
+}

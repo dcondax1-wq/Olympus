@@ -1,0 +1,107 @@
+
+/* ======================================================================================================================
+   JOB 28 (2026-11-04), PC copy of the phone pass (tools/web_public/zenith.css): every tab looks finished. No blank-looking page (zenpagescore.js: a "what you will see here" card with a
+   marked sample and a loading skeleton), a drifting aurora behind the glass, a specular top edge on every card, gradient bars,
+   an icon on every empty state, a calmer type scale, a press feel. CSS + transform / opacity only; still on Low / Off / reduced motion.
+   ====================================================================================================================== */
+
+/* ---------- ambient: a slow aurora drifting behind the cards (one fixed layer, transform only, High / Ultra only) ---------- */
+.space-css::after { content: ""; position: absolute; inset: -25% -10%; pointer-events: none; opacity: 0;
+  background: radial-gradient(40% 34% at 22% 30%, rgba(var(--zn-accent-rgb), .20), transparent 70%), radial-gradient(34% 30% at 78% 62%, rgba(46, 229, 157, .12), transparent 70%), radial-gradient(30% 26% at 55% 12%, rgba(150, 120, 255, .12), transparent 70%); }
+:root[data-zq="high"] .space-css::after, :root[data-zq="ultra"] .space-css::after { opacity: .9; animation: zp-drift 46s ease-in-out infinite alternate; will-change: transform; }
+@keyframes zp-drift { from { transform: translate3d(-3%, -2%, 0) scale(1); } to { transform: translate3d(4%, 3%, 0) scale(1.08); } }
+:root.zn-still .space-css::after { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .space-css::after { animation: none !important; } }
+
+/* ---------- glass: a specular line across the top edge of every card ---------- */
+:root:not([data-theme="light"]) .nx .page .card { position: relative; }
+:root:not([data-theme="light"]) .nx .page .card::before { content: ""; position: absolute; left: 10%; right: 10%; top: 0; height: 1px; pointer-events: none; z-index: 1;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .38) 35%, rgba(var(--zn-accent-rgb), .55) 65%, transparent); opacity: .8; }
+:root[data-theme="light"] .nx .page .card { box-shadow: 0 1px 0 rgba(255, 255, 255, .9) inset, 0 10px 26px -20px rgba(20, 30, 60, .45); }
+
+/* ---------- type scale: one hero, one card title, one big number, one label ---------- */
+.nx .page .hero h2 { font-size: clamp(23px, 6.4vw, 30px); letter-spacing: -.028em; }
+.nx .page .card-h h3.zp-off { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; }
+.nx .page .card-h h3.zp-off::before { content: ""; flex: none; width: 5px; height: 14px; border-radius: 3px; background: linear-gradient(180deg, var(--accent), var(--good, #3dffb0)); box-shadow: 0 0 10px rgba(var(--zn-accent-rgb), .55); }
+
+/* ---------- bars: a gradient shine with a soft glow over the bar's own colour ---------- */
+:is(.meter, .bar, .cl-bar, .ft-bar, .sc-bar, .mc-bar, .tc-bar, .gl-bar, .rbar, .pf-bar, .mn-winbar, .lv-bar, .sp-bar, .mg-bar, .minibar) > i {
+  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, .26)), linear-gradient(180deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, 0) 55%);
+  box-shadow: 0 0 12px -2px currentColor; transition: width .8s var(--zn-out, ease-out); }
+:root.zn-still :is(.meter, .bar, .cl-bar, .ft-bar, .sc-bar, .mc-bar, .tc-bar, .gl-bar, .rbar, .pf-bar, .mn-winbar, .lv-bar, .sp-bar, .mg-bar, .minibar) > i { transition: none; }
+
+/* ---------- an icon on every empty state (a glowing ring) ---------- */
+:is(.empty, .su-empty, .pr-empty, .bl-empty, .sc-empty, .rc-empty, .mn-empty, .cl-empty)::before {
+  content: ""; display: block; width: 30px; height: 30px; margin: 0 auto var(--zn-s2); border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(var(--zn-accent-rgb), .30), transparent 72%), conic-gradient(from 200deg, rgba(255, 255, 255, .32), rgba(var(--zn-accent-rgb), .10) 40%, rgba(255, 255, 255, .26) 70%, rgba(255, 255, 255, .32));
+  -webkit-mask: radial-gradient(farthest-side, transparent 60%, #000 62%); mask: radial-gradient(farthest-side, transparent 60%, #000 62%); opacity: .8; }
+
+/* ---------- press feel: buttons and chips dip a little under the finger ---------- */
+:root:not(.zn-still) :is(.pl-btn, .chipbtn, .su-go, .zl-chips button, .zl-seg button, .zp-go, .btn):active { transform: scale(.96); }
+:is(.pl-btn, .chipbtn, .su-go, .zl-chips button, .zl-seg button, .zp-go, .btn) { transition: transform .12s, background .18s, border-color .18s; }
+
+/* ---------- "what you will see here" (zenpagescore.js): the sample card on a page with nothing to show yet ---------- */
+.zp-peek { position: relative; margin: var(--zn-s3, 12px) 0; padding: var(--zn-s4, 16px); border-radius: calc(var(--zn-r, 16px) + 2px); isolation: isolate; overflow: hidden;
+  background: radial-gradient(110% 80% at 0% 0%, rgba(var(--zn-accent-rgb), .13), transparent 60%), linear-gradient(180deg, rgba(255, 255, 255, .055), rgba(255, 255, 255, .012) 45%), color-mix(in srgb, var(--surface, #10131d) 88%, #000);
+  border: 1px solid rgba(170, 182, 235, .13); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .10), 0 16px 34px -26px rgba(0, 0, 0, .95); animation: zp-in .5s var(--zn-out, ease-out) both; }
+.zp-peek::before { content: ""; position: absolute; left: 10%; right: 10%; top: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .4) 35%, rgba(var(--zn-accent-rgb), .6) 65%, transparent); }
+@keyframes zp-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.zp-h { display: flex; gap: var(--zn-s3, 12px); align-items: flex-start; }
+.zp-ic { flex: none; width: 34px; height: 34px; border-radius: 11px; margin-top: 1px; position: relative;
+  background: linear-gradient(145deg, rgba(var(--zn-accent-rgb), .55), rgba(46, 229, 157, .30)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), 0 6px 16px -6px rgba(var(--zn-accent-rgb), .8); }
+.zp-ic::after { content: ""; position: absolute; inset: 9px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .85); border-right-color: transparent; }
+.zp-h h3 { margin: 0 0 3px; font: 720 15.5px/1.25 var(--sans); letter-spacing: -.01em; color: var(--ink); }
+.zp-h p { margin: 0; font: 400 13px/1.5 var(--sans); color: var(--ink-2); }
+.zp-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--zn-s2, 8px); margin: var(--zn-s4, 16px) 0 var(--zn-s3, 12px); }
+@media (min-width: 700px) { .zp-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.zp-tiles span { display: flex; flex-direction: column; min-width: 0; padding: 10px 12px; border-radius: 14px; background: rgba(255, 255, 255, .035); border: 1px dashed rgba(170, 182, 235, .16); }
+.zp-tiles em { font: 650 10.5px/1.3 var(--sans); font-style: normal; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.zp-tiles b { font: 780 19px/1.2 var(--sans); letter-spacing: -.02em; font-variant-numeric: tabular-nums; color: color-mix(in srgb, var(--ink) 62%, transparent); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.zp-vis { position: relative; padding: var(--zn-s3, 12px); border-radius: 14px; background: linear-gradient(180deg, rgba(0, 0, 0, .20), rgba(0, 0, 0, .05)); border: 1px solid rgba(170, 182, 235, .09); }
+.zp-cap { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: var(--zn-s2, 8px); font: 650 10.5px var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.zp-cap u { text-decoration: none; padding: 3px 8px; border-radius: 999px; background: rgba(255, 200, 87, .12); color: #ffc857; letter-spacing: .05em; white-space: nowrap; }
+.zp-chart { position: relative; height: 128px; }
+.zp-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: visible; opacity: .78; }
+.zp-line { fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; stroke-dasharray: 1; stroke-dashoffset: 0; filter: drop-shadow(0 0 5px rgba(var(--zn-accent-rgb), .6)); }
+.zp-floor { stroke: rgba(255, 90, 122, .75); stroke-width: 1.2; stroke-dasharray: 5 5; vector-effect: non-scaling-stroke; }
+.zp-dot { position: absolute; right: 0; width: 10px; height: 10px; margin: -5px -5px 0 0; border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px rgba(255, 255, 255, .18), 0 0 14px rgba(61, 255, 176, .9); }
+.zp-fl { position: absolute; right: 2px; bottom: 4px; font: 650 10px var(--sans); letter-spacing: .06em; text-transform: uppercase; color: rgba(255, 120, 140, .85); }
+:root[data-zq="high"] .zp-line, :root[data-zq="ultra"] .zp-line { animation: zp-draw 1.6s var(--zn-out, ease-out) both; }
+@keyframes zp-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.zp-bars { display: flex; align-items: flex-end; gap: 7px; height: 118px; }
+.zp-bars i { flex: 1; height: var(--h); border-radius: 7px 7px 3px 3px; background: linear-gradient(180deg, rgba(var(--zn-accent-rgb), .85), rgba(46, 229, 157, .35)); opacity: .62; transform-origin: bottom; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35); }
+:root[data-zq="high"] .zp-bars i, :root[data-zq="ultra"] .zp-bars i { animation: zp-grow .8s var(--zn-out, ease-out) var(--d) both; }
+@keyframes zp-grow { from { transform: scaleY(.05); } to { transform: none; } }
+.zp-rows { display: flex; flex-direction: column; gap: 10px; }
+.zp-rows > div { display: flex; align-items: center; gap: 10px; }
+.zp-rows s { flex: none; width: 9px; height: 9px; border-radius: 50%; background: rgba(var(--zn-accent-rgb), .7); box-shadow: 0 0 10px rgba(var(--zn-accent-rgb), .6); }
+.zp-rows span { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.zp-rows span i { display: block; height: 8px; border-radius: 4px; background: rgba(255, 255, 255, .10); }
+.zp-rows span i + i { height: 6px; background: rgba(255, 255, 255, .06); }
+.zp-rows em { flex: none; width: 44px; height: 18px; border-radius: 9px; background: rgba(46, 229, 157, .22); }
+.zp-rows > div:nth-child(even) em { background: rgba(255, 90, 122, .20); }
+.zp-cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; }
+.zp-cal i { aspect-ratio: 1.25; border-radius: 6px; background: rgba(255, 255, 255, .05); }
+.zp-cal i.g1 { background: rgba(46, 229, 157, .24); } .zp-cal i.g2 { background: rgba(46, 229, 157, .42); } .zp-cal i.g3 { background: rgba(46, 229, 157, .62); box-shadow: 0 0 10px rgba(46, 229, 157, .35); }
+.zp-cal i.r1 { background: rgba(255, 90, 122, .30); } .zp-cal i.r2 { background: rgba(255, 90, 122, .5); }
+:root[data-zq="high"] .zp-cal i, :root[data-zq="ultra"] .zp-cal i { animation: zp-pop .5s var(--zn-out, ease-out) var(--d) both; }
+@keyframes zp-pop { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: none; } }
+.zp-fills { margin: var(--zn-s3, 12px) 0 0; font: 400 12.5px/1.5 var(--sans); color: var(--ink-2); } .zp-fills b { color: var(--ink); font-weight: 650; }
+.zp-links { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: var(--zn-s3, 12px); padding-top: var(--zn-s3, 12px); border-top: 1px solid rgba(170, 182, 235, .10); }
+.zp-links > span { flex: 1 0 100%; font: 650 10.5px var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.zp-go { position: relative; min-height: 32px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(var(--zn-accent-rgb), .35); background: rgba(var(--zn-accent-rgb), .12); color: var(--ink); font: 650 12.5px var(--sans); cursor: pointer; }
+.zp-go::after { content: ""; position: absolute; left: 0; right: 0; top: -6px; bottom: -6px; }
+.zp-go:hover { background: rgba(var(--zn-accent-rgb), .22); }
+:root.zn-still .zp-peek, :root.zn-still .zp-line, :root.zn-still .zp-bars i, :root.zn-still .zp-cal i { animation: none !important; }
+:root[data-theme="light"] .zp-peek { background: linear-gradient(180deg, #fff, #f2f4fb); border-color: rgba(20, 30, 60, .12); }
+:root[data-theme="light"] .zp-tiles span, :root[data-theme="light"] .zp-vis { background: rgba(20, 30, 60, .04); }
+
+/* ---------- loading: ghost cards with one slow shimmer (transform only) ---------- */
+.zp-skel { position: relative; display: flex; flex-direction: column; gap: var(--zn-s3, 12px); overflow: hidden; border-radius: var(--zn-r, 16px); }
+.zp-skel i { display: block; border-radius: 10px; background: rgba(255, 255, 255, .06); }
+.zp-sk-h { display: flex; flex-direction: column; gap: 8px; } .zp-sk-h i:first-child { height: 26px; width: 58%; } .zp-sk-h i:last-child { height: 12px; width: 82%; }
+.zp-sk-t { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--zn-s2, 8px); } .zp-sk-t i { height: 70px; border-radius: 14px; }
+.zp-sk-c i { height: 150px; border-radius: var(--zn-r, 16px); } .zp-sk-c.short i { height: 90px; }
+.zp-skel::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); pointer-events: none; background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, .06) 50%, transparent 70%); }
+:root[data-zq="high"] .zp-skel::after, :root[data-zq="ultra"] .zp-skel::after { animation: zh-sweep 1.6s ease-in-out infinite; }
+:root.zn-still .zp-skel::after { animation: none !important; }

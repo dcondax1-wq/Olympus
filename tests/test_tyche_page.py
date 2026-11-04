@@ -36,7 +36,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 WEB = os.path.join(ROOT, "tools", "web_public")
 TY = os.path.join(WEB, "tyche")
-MODULES = ["main.js", "data.js", "demo.js", "fmt.js", "scene.js", "wheel.js", "pools.js", "scales.js", "glow.js", "hud.js", "sparks.js", "bankroll.js", "caustics.js"]
+MODULES = ["main.js", "data.js", "demo.js", "fmt.js", "scene.js", "wheel.js", "pools.js", "scales.js", "glow.js", "hud.js", "sparks.js", "bankroll.js", "caustics.js", "fortune.js", "fortunepanel.js", "tychefx.js"]
 RAW = "https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json"
 API = "https://api.github.com/repos/demetrades2000-coder/kalshi-feed/contents/kalshi.json?ref=main"
 THEME = "#07060b"
@@ -672,6 +672,63 @@ def state_checks(br, origin):
     ctx.close()
 
 
+def fortune_checks(br, origin):
+    """The Fortune view (2026-11-04): leaderboard, streak coins, today's fortune, two bankrolls, the session replay, and the effects library on the scene."""
+    ctx, p, log = new_page(br, origin, (390, 844))
+    p.goto(origin + "/tyche/?demo=1#fortune")
+    ready(p)
+    p.wait_for_timeout(600)
+    check("g. fortune: the fifth tab, a panel with five sections, the wheel still turning behind it",
+          p.locator(".tabs button[data-view=fortune]").count() == 1 and p.is_visible("#p-fortune") and p.locator("#f-seg button").count() == 5
+          and p.evaluate("window.tyche.view") == "fortune" and p.evaluate("window.tyche.coins") > 0)
+    r = p.evaluate("""async () => { const F = await import('./fortune.js'); const m = tyche.model; const b = F.leaderboard(m), s = F.streakCoins(m), f = F.fortune(m), c = F.compareBankrolls(m, 0.5), fr = F.replayFrames(m);
+       const tot = m.settled.reduce((a, x) => a + x.pnl, 0);
+       return { rows: b.rows.length, sum: b.rows.reduce((a, r) => a + r.pnl, 0), total: b.total, n: m.settled.length, tot, sorted: b.rows.every((r, i) => !i || b.rows[i - 1].pnl >= r.pnl),
+         coins: s.coins.length, head: f.headline, lines: f.lines.length, note: f.note, endA: c.endA, bal: m.balance, fr: fr.length, half: c.b[c.b.length - 1].bal - c.b[0].bal, full: c.a[c.a.length - 1].bal - c.a[0].bal,
+         empty: [F.leaderboard(null).rows.length, F.streakCoins({}).coins.length, F.fortune({ settled: [] }).headline, F.replayFrames(null).length, F.compareBankrolls({ settled: [] }).n] }; }""")
+    check("g. fortune.js on the demo: the board adds up to the settled bets' money (or shows the top 6), best first; at most 12 coins; a fortune with a headline, lines and the honest note",
+          r["total"] == r["n"] and (abs(r["sum"] - r["tot"]) < 0.01 or r["rows"] == 6) and r["sorted"] and r["coins"] == min(12, r["n"]) and r["head"] and r["lines"] >= 2 and "not a forecast" in r["note"], r)
+    check("g. two bankrolls: the real one ends on the balance; the same bets at half the stake move half as much; the replay has a frame per bet plus the start",
+          abs(r["endA"] - r["bal"]) < 0.02 and abs(r["half"] - r["full"] / 2) < 0.01 * max(1, r["n"]) and r["fr"] == r["n"] + 1, r)
+    check("g. no data: every function answers (empty board, no coins, 'no settled bets yet', one start frame)", r["empty"][:2] == [0, 0] and "no settled bets" in r["empty"][2].lower() and r["empty"][3] == 1 and r["empty"][4] == 0, r["empty"])
+    rows = p.locator("#f-body .lrow").count()
+    check("g. Board: one row per strategy / market, with its money and its win count", rows == r["rows"] and rows >= 1 and "W" in p.locator("#f-body .lrow").first.inner_text(), rows)
+    p.locator("#f-seg button[data-f=streak]").click()
+    check("g. Streak: a coin per recent settled bet (gold = won, dark = lost)", p.locator("#f-body .coin").count() == r["coins"] and p.locator("#f-body .coin.win").count() + p.locator("#f-body .coin.loss").count() == r["coins"])
+    p.locator("#f-seg button[data-f=fortune]").click()
+    check("g. Fortune: the daily card shows the headline and says it is not a forecast", r["head"] in p.inner_text("#f-body") and "not a forecast" in p.inner_text("#f-body"), p.inner_text("#f-body")[:200])
+    p.locator("#f-seg button[data-f=compare]").click()
+    check("g. Compare: both bankrolls drawn (two lines), 'As it was' and 'Half stake' with their end and deepest drop",
+          p.is_visible("#f-cmp") and p.locator("#f-cmp polyline").count() == 2 and "As it was" in p.inner_text("#f-body") and "Half stake" in p.inner_text("#f-body") and "deepest drop" in p.inner_text("#f-body"))
+    p.locator("#f-seg button[data-f=replay]").click()
+    check("g. Replay: the balance, the bet line and a slider with one stop per bet (and the comparison's svg goes back out of sight)", p.is_visible("#f-body .rbal") and not p.is_visible("#f-cmp")
+          and p.evaluate("+document.querySelector('#f-body input[type=range]').max") == r["n"])
+    p.locator("#f-body input[type=range]").fill("3")
+    check("g. Replay: moving the slider shows that bet and the balance after it", "Bet 3 of" in p.inner_text("#f-body .rinfo"), p.inner_text("#f-body .rinfo"))
+    p.locator("#f-body .rplay").click()
+    try:
+        p.wait_for_function("+document.querySelector('#f-body input[type=range]').value > 3", timeout=30000)
+        ok = True
+    except Exception:
+        ok = False
+    p.locator("#f-body .rplay").click()
+    check("g. Replay: Play steps through the bets by itself, Pause stops it", ok and "Play" in p.locator("#f-body .rplay").inner_text())
+    bad = orb_free(p)
+    check("g. fortune view: no sideways scroll, the orb's corner free", no_sideways(p) and not bad, bad)
+    try:
+        p.wait_for_function("window.OLYMPUS_FX && OLYMPUS_FX.stats().byName.caustics >= 1", timeout=60000)
+        fx_ok = True
+    except Exception:
+        fx_ok = False
+    check("g. the effects library is on the scene: water-light caustics on the floor (and gold motes unless LITE), ceremonial ring on a wheel tap",
+          fx_ok and p.evaluate("typeof OLYMPUS_FX.shockwave") == "function")
+    p.evaluate("window.tyche.setView('pools')")
+    check("g. another view hides the panel again", not p.is_visible("#p-fortune"))
+    errs = real_errors(log)
+    check("g. no console errors in the Fortune view", not errs, errs)
+    ctx.close()
+
+
 def main(argv=None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     global SHOTS
@@ -690,6 +747,7 @@ def main(argv=None) -> int:
                 v3_checks(br, origin, vw)
             tap_checks(br, origin)
             state_checks(br, origin)
+            fortune_checks(br, origin)
             br.close()
     finally:
         srv.shutdown()

@@ -33,6 +33,7 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
 | PANTHEON (free data gods: liquidity, rates, vol, calendar, COT, dollar, credit, crypto; council verdict; `states.json` for Data City) | `tools/pantheon/` (fetchers + builder), `research/pantheon/`, `tools/web_public/pantheon/`, `docs/PANTHEON.md` | the CRONOS nightly task `pantheon`; published with every build | `tests.test_pantheon` (`fast` without the browser) |
 | CRONOS (nightly refresh of the OLYMPUS research apps) | `tools/cronos/`, `.github/workflows/cronos.yml` (+ `datacity.yml`), branches `cronos` / `datacity`, `docs/CRONOS.md` | main -> runs on its own schedule; the next cloud-monitor publish pulls the branches and stamps the cards | `tests.test_cronos` (`--quick` without the site builds) |
 | PC speed (Surface + main PC) | `CLEAN_PC.bat`, `scripts/clean_pc.ps1`, `docs/PC_PERFORMANCE.md` | main -> the PC's auto-update; the main PC gets the `PC_KIT` copy (OneDrive or Desktop) | `tests.test_clean_pc` |
+| PC storage clean (both PCs) | `CLEAN_STORAGE.bat`, `scripts/clean_storage.ps1`, site copies `tools/web_public/pc/CLEAN_STORAGE.bat` + `clean_storage.ps1` (kept identical), `engine/pc_health.py` (`storage` line) | main -> the PC's auto-update; the site `pc/` page has the download; the PC_KIT copy | `tests.test_clean_storage`, `tests.test_win_scripts`, `tests.test_pc_health` |
 | LITE mode (bot on low memory) + PC-off plan | `engine/lite.py`, `BOT_LITE.bat`, `scripts/bot_lite.ps1`, `docs/PC_OFF_PLAN.md` | main -> the PC's auto-update; the owner double-clicks BOT_LITE once | `tests.test_lite` (`--quick` = unit only), `tests.test_win_scripts` |
 
 - **Phone changes:** check in WebKit (the iPhone's engine) before shipping: `PLAYWRIGHT_BROWSERS_PATH=<dir> python -m playwright
@@ -775,6 +776,21 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   (gitignored). `-Report` = report + NinjaTrader check only. The bot-PC run copies the kit to `OneDrive\PC_KIT` (else the
   Desktop). Test `python -X utf8 -m tests.test_clean_pc` (pwsh: 5.1 lint, AST-loaded rules, sandbox dry runs with
   `tests/win_harness/clean_pc_stubs.ps1`, and again under StrictMode 2).
+- **CLEAN_STORAGE (2026-11-04, owner: "an easy way to clear storage through both of my computers"):** `CLEAN_STORAGE.bat` ->
+  `scripts/clean_storage.ps1` (also `clean_pc.ps1 -Storage`; the PC_KIT gets both files; alone, the .bat fetches
+  `pc/clean_storage.ps1` from the site, so the build only needs the two files in `tools/web_public/pc/`, which
+  `tools/build_web_dashboard.py` already copies; a test keeps them identical to the repo files). Flow: table of sizes per
+  category -> Y -> the user part (no admin) -> one UAC prompt for the Windows part (`-SystemPart`, result handed back via a
+  temp file) -> "Freed X, C: now Y free". Recycle Bin and Windows.old asked separately (`-Extras` answers Y). Safety: every
+  delete goes through `Remove-SafeFile` / `Remove-SafeEmptyDir` / `Remove-SafeTree`, which refuse anything not under an
+  allow-listed root (roots equal to the profile, bot folder, NinjaTrader folder, drive, Windows dir or ProgramData are refused),
+  anything named like state / secrets / journals / accounts, and anything in `nt_bars`, `workspaces`, `templates`, `le_feed`,
+  `incoming`, `outgoing`, NinjaTrader `db` (except `db\cache`), or the bot's `data\` (only `*.corrupt-<n>` directly inside).
+  Bot or NinjaTrader running (process, port 8766, supervisor.pid) -> the `nt` and `bot` categories and Windows.old are skipped.
+  Test hooks (env, tests only): `LE_T_ELEVATED`, `LE_T_ANSWER`, `LE_T_BIN_BYTES`. Health: `engine/pc_health.py` adds the
+  `storage` line + `storage` block ({free_gb, bot_gb, nt_gb}; capped folder walk every 6 h, never in the first 5 min);
+  `live_publish.pc_health_summary` shows it as "Storage" instead of the Disk line (Jarvis System view). Tests:
+  `python -X utf8 -m tests.test_clean_storage` (sandbox tree, real process named NinjaTrader, bot port, hostile TEMP).
 - **Jarvis hub (2026-10-31, owner: "Jarvis is the brain, switch right to the other dashboards"):** `tools/web_public/jarvis/`
   (index.html, manifest, sw.js, icons; published at `<site>/jarvis/` by `tools/build_web_dashboard.py` with every build).
   Its own Home Screen app: the Jarvis screen first (greeting, NQ market line, Zenith card from live.json `board` /
@@ -1085,6 +1101,19 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
     the base). test_holo_ui's "replay advances" failed on the base and here while the shared machine was at load 40-60
     (4 cores) and passes 62/62 at a lower load: a timing flake, the Holodeck code is unchanged.
   - Test `python -X utf8 -m tests.test_zenith_shell` (23).
+- **Zenith pages / every-tab visual pass (2026-11-04, overnight JOB 28; owner: "every dashboard page top quality, no blank-looking pages"):**
+  `tools/web_public/zenpagescore.js` = `web_next/js/next/zenpagescore.js` (byte-identical, `window.ZenithPages`): a page with nothing to
+  show yet gets one glass card "what you will see here" (the page's own description, four sample tiles, a sample equity curve with the
+  drawdown floor / gradient bars / ghost rows / calendar, always marked "Sample, not your data", when it fills in, links to Home /
+  Zlarior today / Money now), a loading page gets ghost cards, key figures roll up once per page (`ZenithFX.count`, nothing when motion
+  is off). Glue: phone `zenith_pages.js` (loaded after zenith_money.js; sample card only after the page was quiet and thin for 1.3 s),
+  PC `web_next/js/next/zenith_pages_pc.js`. Look: `zenith.css` (v6; end of file) = aurora drifting behind the glass (High / Ultra only),
+  specular top edge on cards, gradient bars, ring icon on every empty state, press feel, hero chip text wraps (a countdown was cut), PC
+  copy `web_next/css/zenith_pc.css` (same rules under `.nx .page`). Bridge (`bridge/index.html`) and `pc/index.html` got the glass /
+  aurora / shine pass (content unchanged). goals.js: no more "goal undefined-undefined" / "Built 1/1/1970". Test `python -X utf8 -m
+  tests.test_zenith_pages` (27). Wiring still needed (files that were off limits): bump the phone worker (`sw.js` le-public-v57+, add
+  `zenpagescore.js`, `zenith_pages.js` to ASSETS) and the PC worker (`web_next/sw.js` le-shell-next-v33+, ASSETS `/css/zenith_pc.css?v=1`,
+  `/js/next/zenpagescore.js?v=1`, `/js/next/zenith_pages_pc.js?v=1`).
 - **Zenith Scorecard (2026-11-03, night quest "the best trading dashboard there is"; `docs/ZENITH_COMPARISON.md`):** one renderer
   `tools/web_public/procore.js` = `web_next/js/next/procore.js` (byte-identical, `window.ProUI`), phone glue `pro.js` (`#/pro/<part>`:
   Zlarior > Results first chip, More > Insight, a Home card under the quick tiles), PC glue `web_next/js/next/pro.js` (sidebar

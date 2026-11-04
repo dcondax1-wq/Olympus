@@ -62,6 +62,13 @@ def part_a():
           card["v"] == 1 and card["name"] == "Ares" and card["open"] == "#size" and card["theme"] == "#0b0608" and len(card["kpis"]) >= 2
           and card["status"]["level"] in ("ok", "off", "warn", "bad") and card["stale_after"] > 0, card)
     css = rd("ares.css")
+    desk, fxm = rd("aresdesk.js"), rd("aresfx.js")
+    check("a. the OLYMPUS effects library (fx-core, ui, text, burst ?v=f1) is linked after olympus.js; aresdesk.js is the screen of the journal / ritual / scenarios / share card, aresfx.js dresses the room",
+          all(f"../olympus/fx-{n}.js?v=f1" in html for n in ("core", "ui", "text", "burst")) and html.find("fx-core.js") > html.find("olympus.js?v=o2")
+          and "from './aresdesk.js'" in rd("ares.js") and "from './aresfx.js'" in rd("ares.js") and "ares.journal.v1" in desk and "fetch('../home.json'" in desk
+          and "RoomEnvironment" in fxm and "ACESFilmicToneMapping" in fxm and not re.search(r"ninjatrader|place_?order|websocket", desk + fxm, re.I))
+    check("a. static containers for the scenarios, drawdown bar, ritual ring, journal and the rules-you-broke tracker; the journal never touches the other keys",
+          all(f'id="{i}"' in html for i in ("scen", "dd", "ritualRing", "journal", "broken", "logCheck", "shareBtn")) and set(re.findall(r"localStorage\.\w+Item\(([A-Za-z'\"\.]+)", desk)) <= {"JKEY"})
     check("a. the dock and the sheet keep the bottom-right 80 x 160 px free (right padding 88, sheet ends 166 px up)",
           "padding: 8px calc(88px" in css and "bottom: calc(166px" in css)
 
@@ -295,8 +302,55 @@ def part_d(tmp, rules):
             p.fill("#entry", "21500"); p.fill("#stop", "21470"); tab(p, "account"); p.fill("#balance", "50000"); tab(p, "trade")
             check("d. ... and it sizes the same (12 MNQ on a fresh 50K at 40%)", "12 MNQ" in p.inner_text("#out"), p.inner_text("#out")[:80])
             ctx.close()
-            bad = tidy_errors(errs2, allow=("rules.json", "data.json", "jarvis.json"))
+            bad = tidy_errors(errs2, allow=("rules.json", "data.json", "jarvis.json", "home.json"))
             check("d. offline: only the missing files' 404s, nothing else", not bad, bad[:5])
+
+            # ---- 2026-11-04: scenarios, drawdown left, the journal, the rules-you-broke tracker, the ritual, the share card, the dressed room
+            errs5 = []
+            ctx, p = open_page(br, url + WED, errs5, "__ares")
+            m = p.evaluate("""async () => { const C = __ares.CORE, rules = await (await fetch('rules.json')).json(), now = new Date('2026-11-04T15:00:00Z'), day = 864e5;
+              const e = (o) => Object.assign({ t: new Date(+now - 3600e3).toISOString(), level: 'go', halts: [], warns: [], taken: false, ritual: false }, o);
+              const list = [e({ level: 'halt', halts: ['dll', 'count'], warns: ['big'], taken: true }), e({ level: 'wait', taken: true }), e({ level: 'go', taken: true, ritual: true }), e({ level: 'halt', halts: ['wide'], taken: false }),
+                e({ level: 'halt', halts: ['clock'], taken: true, t: new Date(+now - 40 * day).toISOString() })];
+              const B = C.brokenRules(list, now, 30), sc = Object.fromEntries(C.SCENARIOS.map((s) => [s.id, C.scenarioPatch(rules, s.id)]));
+              const dd = [C.drawdownLeft(rules, { plan: '50k', balance: '50500', peak: '50500' }), C.drawdownLeft(rules, { plan: '50k', balance: '48700', peak: '50000' }), C.drawdownLeft(rules, { plan: '50k' }, { balance: 48100, floor: 48000 })];
+              const R = __ares.verdict, je = C.journalEntry(R, __ares.state, now, true, true), sp = C.shareSpec(R, __ares.state);
+              return { B: { entries: B.entries, broken: B.brokenEntries, taken: B.taken, by: B.by.map((x) => [x.id, x.n]), warned: B.warned.map((x) => [x.id, x.n]), clean: B.cleanDays, goClean: B.goClean, ritual: B.ritualShare },
+                sc: Object.keys(sc).length, e50: sc.e50.balance, e50m: sc.e50m.balance, e25m: sc.e25m.balance, f50: sc.f50.balance, f50stage: sc.f50.stage, d50: [sc.d50.balance, sc.d50.today, sc.d50.lossesToday], d25: sc.d25.balance, none: C.scenarioPatch(rules, 'x'),
+                dd: dd.map((x) => [Math.round(x.room), Math.round(x.frac * 100), x.tone, x.live]), home: [C.accountFromHome({ accounts: [{ name: 'X', eval: { balance: 51000, floor: 49000 } }] }).balance, C.accountFromHome(null), C.accountFromHome({ accounts: [{ eval: {} }] })],
+                je: [je.level, je.taken, je.ritual, Array.isArray(je.halts), je.plan], sp: [sp.word, sp.level, sp.lines.length > 0] }; }""")
+            check("d. rules you broke: 30 days only; HALT taken counts its reasons (dll, count), WAIT taken counts 'list', passed trades and old ones do not; warnings taken anyway are listed; clean days; the ritual share",
+                  m["B"]["entries"] == 4 and m["B"]["broken"] == 2 and m["B"]["taken"] == 3 and sorted(m["B"]["by"]) == [["count", 1], ["dll", 1], ["list", 1]] and m["B"]["warned"] == [["big", 1]]
+                  and m["B"]["clean"] == 0 and m["B"]["goClean"] == 1 and abs(m["B"]["ritual"] - 0.25) < 1e-9, m["B"])
+            check("d. scenarios: eight presets for 50K / 25K (fresh, 40% there, after a stop-out, funded with the buffer) from the plan's own numbers; an unknown id gives nothing",
+                  m["sc"] == 8 and m["e50"] == "50000" and m["e50m"] == "51200" and m["e25m"] == "25600" and m["f50"] == "52100" and m["f50stage"] == "funded" and m["d50"] == ["49100", "-900", 1] and m["d25"] == "24550" and m["none"] is None, m)
+            check("d. drawdown left: full room on a fresh peak (calm), 35% (watch), $100 of live account (storm, live)", m["dd"] == [[2000, 100, "calm", False], [700, 35, "watch", False], [100, 5, "storm", True]], m["dd"])
+            check("d. the home.json account is read (balance + floor), junk gives null; a journal line and the share card spec carry the verdict", m["home"] == [51000, None, None] and m["je"][:4] == ["halt", True, True, True] and m["sp"][0] in ("GO", "WAIT", "HALT") and m["sp"][2], (m["home"], m["je"], m["sp"]))
+            check("d. the drawdown bar is on the page: a figure, a bar, a tone", "left of $2,000" in p.inner_text("#dd") and p.get_attribute("#dd", "data-tone") in ("calm", "watch", "storm", "dead"), p.inner_text("#dd"))
+            tab(p, "account")
+            p.click("[data-scen=d50]")
+            check("d. a scenario fills the account: Eval 50K after a stop-out = $49,100, one stop-out today, the drawdown bar follows", p.input_value("#balance") == "49100" and p.input_value("#lossesToday") == "1" and "left of" in p.inner_text("#dd"), p.input_value("#balance"))
+            p.click("[data-scen=e50]")
+            tab(p, "trade")
+            p.fill("#entry", "21500"); p.fill("#stop", "21470")
+            tab(p, "list")
+            check("d. the journal starts empty and says so; 'Log this check' is on once the trade has an entry and a stop", p.locator("#journal .jrow").count() == 0 and p.is_enabled("#logCheck") and "No checks logged" in p.inner_text("#journal"))
+            p.click("#logCheck")
+            p.click("#logTook")
+            led = p.evaluate("JSON.parse(localStorage.getItem('ares.journal.v1'))")
+            check("d. 'I took it' logs the check: one journal row, kept on this phone only (ares.journal.v1), and the tracker counts it",
+                  len(led) == 1 and led[0]["taken"] is True and p.locator("#journal .jrow").count() == 1 and led[0]["level"] in ("wait", "halt", "go") and "checks, 30 days" in p.inner_text("#broken"), led)
+            p.click("#ritualBtn")
+            check("d. the ritual starts: the button says Stop, the ring is a canvas, a step is read out", p.inner_text("#ritualBtn") == "Stop" and p.locator("#ritualRing canvas").count() == 1 and len(p.inner_text("#ritualTxt")) > 10)
+            p.click("#ritualBtn")
+            check("d. ... and Stop puts it back", p.inner_text("#ritualBtn") == "Start the ritual")
+            p.evaluate("() => { navigator.canShare = () => true; window.__sh = null; navigator.share = async (d) => { window.__sh = d.files[0].type + ':' + d.files[0].size; }; }")
+            tab(p, "trade")
+            p.click("#shareBtn")
+            p.wait_for_function("window.__sh", timeout=30000)
+            check("d. the share card is a PNG image", p.evaluate("window.__sh").startswith("image/png:") and int(p.evaluate("window.__sh").split(":")[1]) > 2000, p.evaluate("window.__sh"))
+            check("d. the room is dressed (bronze / steel / banners / torches) and still up; no errors", p.evaluate("window.__ares.dressed") and p.evaluate("window.__ares.ready3d") and not errs5, errs5[:3])
+            ctx.close()
 
             errs3 = []
             ctx, p = open_page(br, url + "?lite=1", errs3, "__ares")

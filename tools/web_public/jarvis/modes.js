@@ -188,6 +188,9 @@ export function thinkAll(D) {
   if (late && D.window) add(7.8, 'trading', 'tomorrow', `Tomorrow: ${str(D.window.text, 120)}. The Mind posts its game plan at 1:45 AM ET; have the PC and NinjaTrader on before then.`, "Tomorrow's plan", ask("What's on tomorrow?"));
   else if (D.window && D.window.open) add(8.5, 'trading', 'window', `${str(D.window.text, 120)}. Let the bot work; check back after the close.`, 'Status', ask('How are the bots?'));
   if (D.mind && str(D.mind.plan, 200)) add(8, 'trading', 'gameplan', `Game plan: ${str(D.mind.plan, 200)}`, 'What did it learn?', ask('What did the bots learn?'));
+  // 7b. the bots right now (bots.js, via the brain's digest): a setup armed, a trade open, the window about to open, the daily loss close
+  for (const x of arr(D.bots && D.bots.items).filter((y) => isObj(y) && num(y.p) != null && str(y.text, 300)))
+    add(x.p, 'trading', str(x.key, 60) || 'bot', str(x.text, 300), str(x.label, 30), isObj(x.action) ? x.action : null, x.say);
   // 8. business: the money goal, Kalshi's edge, more accounts
   if (D.money && str(D.money.next, 200)) add(7, 'business', 'goal', `Money goal, next step: ${str(D.money.next, 200)}`, 'Money goal', ask('How close am I to my money goal?'));
   const k = D.kalshi;

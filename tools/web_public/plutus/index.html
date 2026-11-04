@@ -17,6 +17,8 @@
 <link rel="stylesheet" href="../olympus/olympus.css?v=o2">
 <script src="../olympus/themes.js?v=o2"></script>
 <script src="../olympus/olympus.js?v=o2" data-app="plutus"></script>
+<script src="../olympus/intro-app.js?v=i1" defer></script>
+<script src="../olympus/fx-core.js?v=f1"></script><script src="../olympus/fx-ui.js?v=f1"></script><script src="../olympus/fx-text.js?v=f1"></script><script src="../olympus/fx-burst.js?v=f1"></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#9be84a'); r.setProperty('--oly-accent-rgb', '155, 232, 74'); })();</script>
 <link rel="stylesheet" href="plutus.css?v=m1">
 </head>
@@ -35,14 +37,19 @@
     <label class="slide">If the bot does worse than the study: <b id="hairV">0%</b><input id="haircut" type="range" min="0" max="60" step="5" value="0"></label>
     <label class="slide">Keep aside for tax: <b id="taxV">0%</b><input id="tax" type="range" min="0" max="40" step="5" value="0"></label>
     <label>My goal ($ a month)<input id="goal" inputmode="decimal" autocomplete="off" placeholder="3000"></label>
+    <section class="xbox" aria-label="What if I add an account"><h3>What if I add an account</h3><div id="whatif"></div></section>
   </div>
-  <div class="pane" id="p-money" role="tabpanel" aria-label="Money" hidden><div id="money"></div></div>
+  <div class="pane" id="p-money" role="tabpanel" aria-label="Money" hidden><div id="money"></div>
+    <section class="xbox" aria-label="Goal tracker"><h3>Goal tracker</h3><div class="goalrow"><div class="ringhost" id="goalring" role="img"><b id="goalpct">-</b></div><p class="line" id="goaltxt"></p></div><ol class="miles" id="miles"></ol></section>
+    <section class="xbox" aria-label="Payout calendar"><h3>Payout calendar</h3><div class="cal" id="cal"></div></section>
+    <section class="xbox" aria-label="Monthly income waterfall"><h3>Monthly income waterfall</h3><div class="fall" id="fall"></div><p class="src">Green: payouts that month (after the tax set-aside). Red: fees due. Right: the change and the running total.</p></section>
+  </div>
   <div class="pane" id="p-risk" role="tabpanel" aria-label="Risk" hidden><div id="risk"></div></div>
   <div class="pane" id="p-notes" role="tabpanel" aria-label="Notes" hidden><div id="notes"></div></div>
 </section>
 <footer class="dock">
-  <button type="button" class="headline" id="headline" aria-label="Open the money table">
-    <span class="hk" id="hk">$0</span><span class="hs" id="hs">per month, first 6 months</span>
+  <button type="button" class="headline" id="headline" aria-label="Open the money table" data-oly-fx="shimmer">
+    <span class="hk" id="hk" data-oly-fx="odometer">$0</span><span class="hs" id="hs">per month, first 6 months</span>
   </button>
   <p class="vline" id="vline"></p>
   <nav class="tabs" id="tabs" aria-label="Plutus">

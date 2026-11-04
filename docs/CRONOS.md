@@ -9,6 +9,7 @@ fresh it is. Research and paper only: it never touches trading logic, `live_mode
 | App | What runs | When (ET) | Skips when | Timeout | Card goes amber after |
 |---|---|---|---|---|---|
 | Data City | PC's new 5m bars appended, ~67k combinations re-scored (`datacity.yml`) | Mon-Fri nights, 22:37 (winter) / 23:37 (summer) | never | 20 min | 36 weekday hours |
+| Kalshi City | the public kalshi-feed re-read, every edge re-measured, the learning log extended (`kalshicity.yml`, `docs/KALSHICITY.md`) | every 6 hours, any day | the feed is unreachable (the branch stays as it was) | 5 min | 36 weekday hours |
 | FATES | 1,000 futures of today's evals from the latest `live.json` state | Mon-Fri nights, 23:07 / 00:07 | Actions saver mode | 15 min | 36 weekday hours |
 | ODEON | the replay reels, with the PC's NinjaTrader bars (heartbeat branch) + the paper ledger | Mon-Fri nights, with FATES | no new PC bars since the last run | 5 min | 36 weekday hours |
 | PANTHEON | the eight free data gods re-read (FRED, CBOE, CFTC, SqueezeMetrics, US Treasury, the calendar: key-less public files), the council verdict, `states.json` for Data City (`docs/PANTHEON.md`) | Mon-Fri nights, with FATES | never (light: also in saver mode) | 8 min | 36 weekday hours |
@@ -49,6 +50,7 @@ Estimated on a 2-core GitHub runner, each job rounded up to the minute; ~22 week
 | CRONOS weekly, data changed (setup + DAPHNE 11 + PROMETHEUS 9) | ~21.5 | at most 4.35 | at most ~94 |
 | **CRONOS total** | | | **~196, at most ~281** |
 | Data City (`datacity.yml`) | ~3 | 22 | ~66 |
+| Kalshi City (`kalshicity.yml`, stdlib Python, a commit only when something changed) | ~1 | 120 | ~120 |
 | Cloud monitor + watcher (measured Oct 27-31: 219 min in 5 weekdays) | | | ~960 (cap ~1,850) |
 | **All workflows** | | | **~1,200-1,300 of 2,000** |
 

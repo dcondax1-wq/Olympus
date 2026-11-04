@@ -1,0 +1,13 @@
+{
+  "name": "Kalshi City",
+  "short_name": "Kalshi City",
+  "description": "KALSHI CITY: the Kalshi bot's edges as a night city, with a learning engine (do more, stop, how much to stake).",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#050b0d",
+  "theme_color": "#050b0d",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

@@ -34,7 +34,7 @@
     hermes: ['Hermes', 'Η', '#f7c948'], prometheus: ['Prometheus', 'Π', '#ff7a1a'], tyche: ['Tyche', 'Τ', '#e879f9'],
     pantheon: ['Pantheon', 'Σ', '#f2d68a'], arena: ['Arena', 'Α', '#ffb547'],
     ares: ['Ares', 'Λ', '#ff3b30'], plutus: ['Plutus', 'Ρ', '#9be84a'], athena: ['Athena', '🦉', '#5ea8ff'],
-    forum: ['Forum', 'Γ', '#b8e04a'], labyrinth: ['Labyrinth', 'Ξ', '#ff4d57'], argus: ['Argus', 'Α', '#3ad7ff'], nemesis: ['Nemesis', 'Ν', '#8a6bff'], chronos: ['Chronos', 'Χ', '#d4a574'], hephaestus: ['Hephaestus', '⚒', '#d96bff'],
+    cities: ['Cities', '◈', '#a68bff'], kalshicity: ['Kalshi City', 'K', '#2ef2d0'], forum: ['Forum', 'Γ', '#b8e04a'], labyrinth: ['Labyrinth', 'Ξ', '#ff4d57'], argus: ['Argus', 'Α', '#3ad7ff'], nemesis: ['Nemesis', 'Ν', '#8a6bff'], chronos: ['Chronos', 'Χ', '#d4a574'], hephaestus: ['Hephaestus', '⚒', '#d96bff'],
     bridge: ['Bridge', 'Β', '#34d399'],
   };
   // each app's own CSS tokens -> the theme token they take under any theme but the default (bg = the app's own page colour
@@ -176,6 +176,70 @@
     state: function () { return state; },
   };
   window.OLYMPUS = O;
+
+  // ---------------------------------------------------------------- effects wiring (docs/OLYMPUS_FX.md): data-oly-fx="shimmer|glow|ripple|tilt|odometer|..."
+  // Any element that carries data-oly-fx gets the effect with ZERO edits in the app: shimmer / glow / ripple are styled by olympus.css
+  // alone; the ones that need script (ripple's origin, tilt, odometer, ...) load olympus/fx-core.js + the file that holds them on the
+  // first use (never on a page that has no data-oly-fx), and follow the tier (OLYMPUS.fx()) and prefers-reduced-motion.
+  // Opt out: data-oly-fx-off on the element or any ancestor, <html data-oly-fx-ui="off">, or OLYMPUS.fxUI(false).
+  var FXMAP = { tilt: 'ui', magnetic: 'ui', ripple: 'ui', gradientBorder: 'ui', glassSpecular: 'ui', neonPulse: 'ui', skeleton: 'ui',
+    odometer: 'text', countUp: 'text', typewriter: 'text', glitch: 'text', progressRing: 'text' };
+  var fxBase = me && me.src ? me.src.replace(/olympus\.js.*$/, '') : '', fxFiles = {}, fxTimer = 0, fxObs = null;
+  function fxUiOff() { return root.getAttribute('data-oly-fx-ui') === 'off' || (d.querySelector && !!d.querySelector('meta[name="olympus-fx-ui"][content="off"]')); }
+  function fxFile(name, cb) {
+    var f = fxFiles[name];
+    if (f) { if (f.done) cb(); else f.cbs.push(cb); return; }
+    f = fxFiles[name] = { done: false, cbs: [cb] };
+    function end() { f.done = true; for (var i = 0; i < f.cbs.length; i++) { try { f.cbs[i](); } catch (e) { /* nothing */ } } f.cbs = []; }
+    if (name === 'core' && window.OLYMPUS_FX) { end(); return; }
+    if (name !== 'core' && window.OLYMPUS_FX && window.OLYMPUS_FX.has(name === 'ui' ? 'tilt' : 'odometer')) { end(); return; }
+    var s = d.createElement('script'); s.async = true; s.src = fxBase + 'fx-' + name + '.js?v=f1';
+    s.onload = end; s.onerror = end;
+    (d.head || root).appendChild(s);
+  }
+  function fxScan() {
+    fxTimer = 0;
+    if (!d.body || fxUiOff() || O.fx() === 'off' || O.reduced()) return;
+    var els = d.querySelectorAll('[data-oly-fx]'), need = {}, any = false, i, j, t;
+    for (i = 0; i < els.length; i++) {
+      if (els[i].closest && els[i].closest('[data-oly-fx-off]')) continue;
+      t = (els[i].getAttribute('data-oly-fx') || '').split(/\s+/);
+      for (j = 0; j < t.length; j++) if (FXMAP[t[j]]) { need[FXMAP[t[j]]] = 1; any = true; }
+    }
+    if (!any) { if (window.OLYMPUS_FX) window.OLYMPUS_FX.attach(); return; }
+    fxFile('core', function () {
+      var kinds = Object.keys(need), left = kinds.length;
+      for (var k = 0; k < kinds.length; k++) fxFile(kinds[k], function () { if (--left === 0 && window.OLYMPUS_FX) window.OLYMPUS_FX.attach(); });
+    });
+  }
+  function fxSoon() { if (!fxTimer) fxTimer = setTimeout(fxScan, 80); }
+  function fxWatch() {
+    if (fxObs || !window.MutationObserver || !d.body) return;
+    fxObs = new MutationObserver(function (list) {
+      for (var i = 0; i < list.length; i++) {
+        var r = list[i];
+        if (r.type === 'attributes') { fxSoon(); return; }
+        for (var j = 0; j < r.addedNodes.length; j++) {
+          var n = r.addedNodes[j];
+          if (n.nodeType === 1 && (n.hasAttribute('data-oly-fx') || n.querySelector('[data-oly-fx]'))) { fxSoon(); return; }
+        }
+        if (window.OLYMPUS_FX) for (j = 0; j < r.removedNodes.length; j++) {          // a wired element left the page: stop its effect
+          var x = r.removedNodes[j];
+          if (x.nodeType === 1 && (x.hasAttribute('data-oly-fx') || x.querySelector('[data-oly-fx]'))) { fxSoon(); return; }
+        }
+      }
+    });
+    fxObs.observe(d.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-oly-fx', 'data-oly-fx-off'] });
+  }
+  /** the page-wide switch for the data-oly-fx wiring (false = off for this page; the CSS-only effects follow <html data-oly-fx-ui>) */
+  O.fxUI = function (on) {
+    if (on === false) root.setAttribute('data-oly-fx-ui', 'off'); else root.removeAttribute('data-oly-fx-ui');
+    if (window.OLYMPUS_FX) window.OLYMPUS_FX.ui(on !== false); else if (on !== false) fxSoon();
+    return on !== false;
+  };
+  subs.push(function () { fxSoon(); });                      // the tier came back from off: wire what the page carries
+  function fxBoot() { fxScan(); fxWatch(); }
+  if (d.readyState === 'loading') d.addEventListener('DOMContentLoaded', fxBoot); else fxBoot();
 
   // ---------------------------------------------------------------- the veil
   function el(tag, cls, text) { var e = d.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; return e; }

@@ -58,6 +58,70 @@ a { color: var(--vio); }
 .live { color: var(--ok); font-weight: 700; }
 .live.q { color: var(--gold); }
 .live.w { color: var(--mut); font-weight: 500; }
+
+/* JOB 28 (2026-11-04): visual pass. A slow aurora, glass cards with a specular top edge, a glowing ring, gradient buttons with a
+   shine, a lit title. CSS only; transform / opacity animation; still for reduced motion. */
+body::before { content: ""; position: fixed; inset: -20% -10%; pointer-events: none; z-index: 0; opacity: .9;
+  background: radial-gradient(38% 30% at 18% 22%, rgba(168, 85, 247, .22), transparent 70%), radial-gradient(32% 28% at 84% 58%, rgba(245, 201, 106, .10), transparent 70%), radial-gradient(30% 26% at 50% 100%, rgba(52, 211, 153, .08), transparent 70%);
+  animation: br-drift 46s ease-in-out infinite alternate; }
+@keyframes br-drift { from { transform: translate3d(-3%, -2%, 0); } to { transform: translate3d(4%, 3%, 0) scale(1.08); } }
+.w { position: relative; z-index: 1; }
+h1 { background: linear-gradient(180deg, #fff, #d9b8ff 55%, var(--vio)); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: none; filter: drop-shadow(0 0 16px rgba(168, 85, 247, .55)); }
+.e { display: inline-flex; align-items: center; gap: 8px; }
+.e::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 10px var(--gold); }
+.how, .card, .wiz { background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .012) 45%), var(--card); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .10), 0 16px 34px -26px rgba(0, 0, 0, .95); animation: br-rise .5s cubic-bezier(.16, 1, .3, 1) both; }
+.how::before, .card::before, .wiz::before { content: ""; position: absolute; left: 10%; right: 10%; top: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .4) 35%, rgba(192, 132, 252, .65) 65%, transparent); }
+.how, .wiz { position: relative; }
+.wiz { border-color: rgba(52, 211, 153, .4); background: radial-gradient(90% 70% at 0% 0%, rgba(52, 211, 153, .12), transparent 60%), linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .012) 45%), var(--card); }
+@keyframes br-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.card:hover { border-color: rgba(192, 132, 252, .45); }
+.card.done { opacity: .6; filter: saturate(.7); }
+.ring { filter: drop-shadow(0 0 10px rgba(52, 211, 153, .55)); }
+.ring circle#ringArc { stroke-linecap: round; }
+.tag { background: rgba(192, 132, 252, .08); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08); }
+.tag.codex { background: rgba(245, 201, 106, .08); }
+.n { background: linear-gradient(145deg, #ffe29a, var(--gold) 55%, #c98f1f); box-shadow: 0 0 0 3px rgba(245, 201, 106, .15), 0 6px 14px -4px rgba(245, 201, 106, .6); }
+button { position: relative; overflow: hidden; background: linear-gradient(180deg, rgba(168, 85, 247, .38), rgba(124, 58, 237, .22)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22); transition: transform .12s, border-color .18s, background .18s; }
+button:hover { border-color: rgba(192, 132, 252, .55); } button:active { transform: scale(.97); }
+.big-btn, .btn { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 12px 28px -14px rgba(168, 85, 247, .85); }
+.big-btn::after, .btn::after { content: ""; position: absolute; inset: 0; transform: translateX(-120%); pointer-events: none; background: linear-gradient(100deg, transparent 35%, rgba(255, 255, 255, .28) 50%, transparent 65%); animation: br-shine 5s ease-in-out infinite; }
+@keyframes br-shine { 0%, 60% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+.btn { position: relative; overflow: hidden; }
+button.copied { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 0 18px -4px rgba(74, 222, 128, .6); }
+.live:not(.q):not(.w)::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 10px var(--ok); vertical-align: 1px; animation: br-pulse 2s ease-in-out infinite; }
+@keyframes br-pulse { 50% { opacity: .45; } }
+pre { border: 1px solid rgba(192, 132, 252, .12); }
+@media (prefers-reduced-motion: reduce) { body::before, .how, .card, .wiz, .big-btn::after, .btn::after, .live::before { animation: none !important; } }
+
+/* JOB 24 (2026-11-04): tabs (Jobs / Library / Deliveries / Ask next), the ready-job library, delivered files, the weekly suggestions. */
+.tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; position: sticky; top: 0; z-index: 5; padding: 6px 0; background: linear-gradient(var(--bg) 70%, transparent); }
+.tabs button { padding: 0 2px; font-size: 13px; min-height: 44px; }
+.tabs button[aria-selected="true"] { background: linear-gradient(180deg, #a855f7, #7c3aed); border-color: rgba(255, 255, 255, .5); }
+[hidden] { display: none !important; }
+.stack { display: grid; gap: 12px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 10px; }
+.chips button { min-height: 36px; padding: 0 12px; font-size: 13px; border-radius: 999px; }
+.chips button[aria-pressed="true"] { background: var(--gold); color: #06040d; border-color: var(--gold); }
+.meta { display: flex; gap: 8px; flex-wrap: wrap; color: var(--mut); font-size: 14px; }
+.meta b { color: var(--gold); font-weight: 700; }
+.files { font-size: 13px; color: var(--mut); word-break: break-word; }
+.files code, .to code { color: var(--gold); }
+.thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.thumbs figure { margin: 0; display: grid; gap: 4px; }
+.thumbs img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; border: 1px solid var(--line);
+  background: repeating-conic-gradient(#1b1330 0 25%, #120c22 0 50%) 0 0 / 14px 14px; cursor: zoom-in; }
+.thumbs figure.big { grid-column: 1 / -1; }
+.thumbs figure.big img { aspect-ratio: auto; max-height: 70vh; object-fit: contain; cursor: zoom-out; }
+.thumbs figcaption { font-size: 12px; color: var(--mut); word-break: break-all; }
+.md { display: grid; gap: 6px; margin-top: 6px; padding: 10px 12px; border-radius: 10px; background: rgba(0, 0, 0, .3); font-size: 15px; }
+.md .mh { font: 700 14px Orbitron, sans-serif; color: var(--gold); letter-spacing: .04em; margin-top: 4px; }
+.md .ml { padding-left: 4px; }
+.rej { color: #fca5a5; font-size: 14px; }
+.okmsg { color: var(--ok); font-weight: 700; }
+.empty { text-align: center; padding: 22px 12px; color: var(--mut); border: 1px dashed var(--line); border-radius: 16px; }
+.num { font: 800 14px Orbitron, sans-serif; color: #06040d; background: linear-gradient(145deg, #ffe29a, var(--gold)); border-radius: 50%; width: 28px; height: 28px; display: grid; place-items: center; flex: none; }
+.nx { display: flex; gap: 10px; align-items: center; }
+.tag.easy { color: var(--ok); } .tag.hard { color: #fca5a5; }
 </style>
 </head>
 <body>
@@ -109,8 +173,29 @@ Rules:
 - If blocked, write `handoff/inbox/<task-id>/QUESTION.md` instead of guessing.
 
 Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble + gold + violet neon), plain words.</script>
-  <div class="bar"><span class="prog" id="prog"></span><button id="reset" type="button">Reset ticks</button></div>
-  <div id="list"></div>
+  <nav class="tabs" role="tablist" aria-label="Bridge">
+    <button type="button" role="tab" id="tab-jobs" data-tab="jobs" aria-selected="true">Jobs</button>
+    <button type="button" role="tab" id="tab-lib" data-tab="lib" aria-selected="false">Library</button>
+    <button type="button" role="tab" id="tab-del" data-tab="del" aria-selected="false">Deliveries</button>
+    <button type="button" role="tab" id="tab-next" data-tab="next" aria-selected="false">Ask next</button>
+  </nav>
+  <div id="p-jobs" role="tabpanel">
+    <div class="bar"><span class="prog" id="prog"></span><button id="reset" type="button">Reset ticks</button></div>
+    <div id="list"></div>
+  </div>
+  <div id="p-lib" role="tabpanel" hidden>
+    <p class="why" id="libNote">Ready-made jobs for ChatGPT. Tap one, copy the prompt, paste it into ChatGPT. The result lands in <code>handoff/inbox/&lt;id&gt;/</code>.</p>
+    <div class="chips" id="libCats"></div>
+    <div id="libList" class="stack"></div>
+  </div>
+  <div id="p-del" role="tabpanel" hidden>
+    <p class="why">What ChatGPT delivered. Files are checked first (type, size, no secrets, no scripts that call out) and are never run. Then tell Claude to build one in.</p>
+    <div id="delList" class="stack"></div>
+  </div>
+  <div id="p-next" role="tabpanel" hidden>
+    <p class="why" id="nextNote">What to ask ChatGPT next. The list changes every week.</p>
+    <div id="nextList" class="stack"></div>
+  </div>
 </div>
 <script>
 (function () {
@@ -203,7 +288,7 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
   document.getElementById('reset').onclick = function () { done = {}; save(); render(); };
   render();
   try { fetch('status.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; })
-    .then(function (j) { if (j && j.jobs) { STATUS = j; render(); } }, function () {}); } catch (e) { /* offline: no live state */ }
+    .then(function (j) { if (j && j.jobs) { STATUS = j; window.BRIDGE_STATUS = j; render(); document.dispatchEvent(new Event('bridge-status')); } }, function () {}); } catch (e) { /* offline: no live state */ }
 })();
 </script>
 
@@ -240,6 +325,209 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
     copy(job ? job.p : '', fj, 'Send first job', function () { setStep(3, true); window.open('https://chatgpt.com/codex', '_blank', 'noopener'); });
   });
   paint();
+})();
+</script>
+
+<script>
+/* JOB 24: tabs, the job library (jobs.json), Deliveries (deliveries.json, checked by tools/bridge_ingest.py), Ask next (status.json "next").
+   Everything delivered is shown as text (textContent) or as an <img>; ids and file names are validated; nothing delivered is ever run. */
+(function () {
+  var ID_RE = /^[a-z0-9][a-z0-9-]{0,60}$/, FILE_RE = /^[A-Za-z0-9][A-Za-z0-9._ +()-]{0,79}$/;
+  var LIB = [], CATS = [], catSel = 'all', libP = null, DEL = null, delP = null, CUR = 'jobs';
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function str(v, n) { return typeof v === 'string' ? v.slice(0, n) : ''; }
+  function copyText(text, btn, label) {
+    var ok = function () { btn.textContent = 'Copied ✓'; btn.classList.add('copied'); setTimeout(function () { btn.textContent = label; btn.classList.remove('copied'); }, 1600); };
+    try { navigator.clipboard.writeText(text).then(ok, function () { prompt('Copy this:', text); }); } catch (e) { prompt('Copy this:', text); }
+  }
+  function stateOf(id) { var s = window.BRIDGE_STATUS; return s && s.jobs && s.jobs[id] ? s.jobs[id] : null; }
+  function liveLine(id) {
+    var st = stateOf(id), lv = el('div', 'live w', 'Waiting for ChatGPT');
+    if (st) {
+      if (st.state === 'done') { lv.className = 'live'; lv.textContent = 'ChatGPT delivered ' + st.files + ' file' + (st.files === 1 ? '' : 's'); }
+      else if (st.state === 'question') { lv.className = 'live q'; lv.textContent = 'ChatGPT has a question'; }
+      else { lv.className = 'live w'; lv.textContent = 'ChatGPT is working (' + st.files + ' file' + (st.files === 1 ? '' : 's') + ')'; }
+    }
+    return lv;
+  }
+  function tellBtn(id, label, msg) {
+    var b = el('button', '', label); b.type = 'button'; b.setAttribute('data-say', msg);
+    b.onclick = function () { copyText(msg, b, label); };
+    return b;
+  }
+  function title(id) {
+    for (var i = 0; i < LIB.length; i++) if (LIB[i].id === id) return LIB[i].title;
+    var J = window.BRIDGE_JOBS || [];
+    for (var k = 0; k < J.length; k++) if (J[k].id === id) return J[k].t;
+    return id;
+  }
+  function promptOf(id) {
+    for (var i = 0; i < LIB.length; i++) if (LIB[i].id === id) return LIB[i].prompt;
+    return '';
+  }
+  function promptBlock(j) {          // the prompt is put in the page only when its details opens
+    var d = el('details'); d.appendChild(el('summary', '', 'Show prompt'));
+    d.addEventListener('toggle', function () { if (d.open && !d.querySelector('pre')) d.appendChild(el('pre', '', j.prompt)); });
+    return d;
+  }
+
+  /* ---- tabs ---- */
+  var TABS = ['jobs', 'lib', 'del', 'next'], HASH = { library: 'lib', deliveries: 'del', next: 'next', jobs: 'jobs' };
+  function show(name) {
+    if (TABS.indexOf(name) < 0) name = 'jobs';
+    CUR = name;
+    TABS.forEach(function (t) {
+      document.getElementById('p-' + t).hidden = t !== name;
+      document.getElementById('tab-' + t).setAttribute('aria-selected', t === name ? 'true' : 'false');
+    });
+    if (name === 'lib') loadLib().then(renderLib);
+    if (name === 'del') { renderDel(); loadDel().then(renderDel); }
+    if (name === 'next') loadLib().then(renderNext);
+  }
+  TABS.forEach(function (t) { document.getElementById('tab-' + t).addEventListener('click', function () { show(t); }); });
+
+  /* ---- library ---- */
+  function loadLib() {
+    if (libP) return libP;
+    libP = fetch('jobs.json', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+      if (!d || !d.jobs) return;
+      CATS = (d.cats || []).filter(function (c) { return c && ID_RE.test(c.id || ''); }).map(function (c) { return { id: c.id, name: str(c.name, 60) }; });
+      LIB = d.jobs.filter(function (j) { return j && ID_RE.test(j.id || '') && typeof j.prompt === 'string'; }).map(function (j) {
+        return { id: j.id, cat: str(j.cat, 40), title: str(j.title, 90), makes: str(j.makes, 300), prompt: j.prompt.slice(0, 6000),
+                 files: (j.files || []).filter(function (f) { return FILE_RE.test(f); }).slice(0, 30), minutes: +j.minutes || 10, difficulty: str(j.difficulty, 10) };
+      });
+      window.BRIDGE_LIB = LIB;
+      document.getElementById('tab-lib').textContent = 'Library ' + LIB.length;
+    }).catch(function () { libP = null; });
+    return libP;
+  }
+  function catName(id) { for (var i = 0; i < CATS.length; i++) if (CATS[i].id === id) return CATS[i].name; return id; }
+  function libCard(j) {
+    var c = el('article', 'card'); c.id = 'lib-' + j.id;
+    var top = el('div', 'top'); top.appendChild(el('span', 't', j.title)); top.appendChild(el('span', 'tag ' + j.difficulty, j.difficulty.toUpperCase())); c.appendChild(top);
+    c.appendChild(el('div', 'why', j.makes));
+    var m = el('div', 'meta'); m.appendChild(el('span', '', catName(j.cat))); var mb = el('span'); mb.appendChild(el('b', '', '~' + j.minutes + ' min')); m.appendChild(mb); c.appendChild(m);
+    var to = el('div', 'to'); to.appendChild(document.createTextNode('Result → ')); to.appendChild(el('code', '', 'handoff/inbox/' + j.id + '/')); c.appendChild(to);
+    var fl = el('div', 'files'); fl.appendChild(document.createTextNode('Files: ')); fl.appendChild(el('code', '', j.files.join(', '))); c.appendChild(fl);
+    c.appendChild(liveLine(j.id));
+    c.appendChild(promptBlock(j));
+    var row = el('div', 'row'), cp = el('button', '', 'Copy prompt'); cp.type = 'button'; cp.onclick = function () { copyText(j.prompt, cp, 'Copy prompt'); };
+    row.appendChild(cp);
+    var st = stateOf(j.id);
+    if (st && (st.state === 'done' || st.state === 'question')) row.appendChild(tellBtn(j.id, 'Tell Claude', 'Bridge: ' + j.id + (st.state === 'done' ? ' done' : ' question')));
+    c.appendChild(row);
+    return c;
+  }
+  function renderLib() {
+    var chips = document.getElementById('libCats'), list = document.getElementById('libList');
+    chips.textContent = ''; list.textContent = '';
+    if (!LIB.length) { list.appendChild(el('div', 'empty', 'The job library could not load. Check your connection and reopen this tab.')); return; }
+    var all = [{ id: 'all', name: 'All ' + LIB.length }].concat(CATS.map(function (c) {
+      return { id: c.id, name: c.name + ' ' + LIB.filter(function (j) { return j.cat === c.id; }).length };
+    }));
+    all.forEach(function (c) {
+      var b = el('button', '', c.name); b.type = 'button'; b.setAttribute('data-cat', c.id); b.setAttribute('aria-pressed', c.id === catSel ? 'true' : 'false');
+      b.onclick = function () { catSel = c.id; renderLib(); };
+      chips.appendChild(b);
+    });
+    LIB.filter(function (j) { return catSel === 'all' || j.cat === catSel; }).forEach(function (j) { list.appendChild(libCard(j)); });
+  }
+
+  /* ---- deliveries ---- */
+  function loadDel() {
+    if (delP) return delP;
+    delP = fetch('deliveries.json', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { if (d && d.jobs) DEL = d; })
+      .catch(function () {}).then(function () { delP = null; });
+    return delP;
+  }
+  function fromBrief() {          // status.json carries a small version (names and counts) if deliveries.json is not there
+    var s = window.BRIDGE_STATUS, out = {};
+    if (!s || !s.deliveries) return null;
+    Object.keys(s.deliveries).forEach(function (id) {
+      var b = s.deliveries[id];
+      out[id] = { approved: b.approved || 0, rejected: b.rejected || 0, images: (b.images || []).map(function (n) { return { name: n }; }),
+                  text: (b.texts || []).map(function (n) { return { name: n, text: '' }; }), done: b.done || '', rejects: [], issues: [] };
+    });
+    return { jobs: out };
+  }
+  function md(text) {             // a few lines of markdown as plain DOM text: # headings, - bullets, paragraphs
+    var box = el('div', 'md');
+    String(text).split('\n').slice(0, 120).forEach(function (line) {
+      if (!line.trim()) return;
+      var clean = line.replace(/\*\*|__|`/g, ''), h = /^#{1,4}\s+(.*)$/.exec(clean);
+      if (h) box.appendChild(el('div', 'mh', h[1]));
+      else if (/^\s*[-*]\s+/.test(clean)) box.appendChild(el('div', 'ml', clean.replace(/^\s*[-*]\s+/, '• ')));
+      else box.appendChild(el('div', 'mp', clean));
+    });
+    return box;
+  }
+  function delCard(id, d) {
+    var c = el('article', 'card'); c.id = 'del-' + id;
+    var top = el('div', 'top'); top.appendChild(el('span', 't', title(id))); top.appendChild(el('span', 'tag', id)); c.appendChild(top);
+    var ok = el('div', 'okmsg', d.approved + ' file' + (d.approved === 1 ? '' : 's') + ' checked and safe' + (d.rejected ? ', ' + d.rejected + ' not used' : '')); c.appendChild(ok);
+    if (d.done) c.appendChild(el('div', 'why', d.done));
+    if (d.images && d.images.length) {
+      var th = el('div', 'thumbs');
+      d.images.forEach(function (im) {
+        if (!FILE_RE.test(im.name || '')) return;
+        var f = el('figure'), img = document.createElement('img');
+        img.loading = 'lazy'; img.alt = im.name; img.src = 'deliveries/' + id + '/' + encodeURIComponent(im.name);
+        img.onerror = function () { img.style.display = 'none'; };
+        img.onclick = function () { f.classList.toggle('big'); };
+        f.appendChild(img); f.appendChild(el('figcaption', '', im.name + (im.w ? ' · ' + im.w + 'x' + im.h : '')));
+        th.appendChild(f);
+      });
+      c.appendChild(th);
+    }
+    (d.text || []).forEach(function (t) {
+      var det = el('details'); det.appendChild(el('summary', '', t.name + (t.truncated ? ' (first part)' : '')));
+      if (t.text) det.appendChild(t.kind === 'md' || t.kind === 'txt' ? md(t.text) : el('pre', '', t.text));
+      c.appendChild(det);
+    });
+    (d.rejects || []).forEach(function (r) { c.appendChild(el('div', 'rej', 'Not used: ' + str(r.name, 80) + ' — ' + str(r.reason, 120))); });
+    var row = el('div', 'row');
+    row.appendChild(tellBtn(id, 'Claude: build this in', 'Bridge: ' + id + ' done'));
+    c.appendChild(row);
+    return c;
+  }
+  function renderDel() {
+    var list = document.getElementById('delList'), d = DEL || fromBrief(), ids = d ? Object.keys(d.jobs).filter(function (i) { return ID_RE.test(i); }).sort() : [];
+    list.textContent = '';
+    var tabBtn = document.getElementById('tab-del'); tabBtn.textContent = ids.length ? 'Deliveries ' + ids.length : 'Deliveries';
+    if (!ids.length) { list.appendChild(el('div', 'empty', 'Nothing delivered yet. Pick a job in the Library, paste it into ChatGPT, and when it finishes it shows up here.')); return; }
+    ids.forEach(function (i) { list.appendChild(delCard(i, d.jobs[i])); });
+  }
+
+  /* ---- ask next ---- */
+  function renderNext() {
+    var list = document.getElementById('nextList'), s = window.BRIDGE_STATUS, items = s && Array.isArray(s.next) ? s.next.slice(0, 5) : [];
+    list.textContent = '';
+    if (!items.length) {            // no status yet (offline / first publish): the five shortest jobs
+      items = LIB.slice().sort(function (a, b) { return a.minutes - b.minutes; }).slice(0, 5).map(function (j) { return { id: j.id, title: j.title, minutes: j.minutes, difficulty: j.difficulty, why: 'A quick one to start with' }; });
+    }
+    if (!items.length) { list.appendChild(el('div', 'empty', 'The suggestions could not load. Open the Library tab.')); return; }
+    items.forEach(function (n, k) {
+      if (!ID_RE.test(n.id || '')) return;
+      var c = el('article', 'card'); c.id = 'next-' + n.id;
+      var top = el('div', 'nx'); top.appendChild(el('span', 'num', String(k + 1))); top.appendChild(el('span', 't', str(n.title, 90) || title(n.id))); c.appendChild(top);
+      c.appendChild(el('div', 'why', str(n.why, 160)));
+      c.appendChild(el('div', 'meta', '~' + (+n.minutes || 10) + ' min · ' + str(n.difficulty, 10)));
+      var row = el('div', 'row'), p = promptOf(n.id);
+      if (p) { var cp = el('button', '', 'Copy prompt'); cp.type = 'button'; cp.onclick = function () { copyText(p, cp, 'Copy prompt'); }; row.appendChild(cp); }
+      var lb = el('button', '', 'Open in Library'); lb.type = 'button';
+      lb.onclick = function () { catSel = 'all'; show('lib'); setTimeout(function () { var t = document.getElementById('lib-' + n.id); if (t) { t.scrollIntoView({ block: 'center' }); var dd = t.querySelector('details'); if (dd) dd.open = true; } }, 60); };
+      row.appendChild(lb);
+      c.appendChild(row); list.appendChild(c);
+    });
+  }
+
+  document.addEventListener('bridge-status', function () {
+    renderDel();
+    if (CUR === 'lib') renderLib();
+    if (CUR === 'next') renderNext();
+  });
+  loadLib().then(function () { if (CUR === 'lib') renderLib(); });     // the Library count on the tab
+  show(HASH[(location.hash || '').slice(1)] || 'jobs');
 })();
 </script>
 </body>
