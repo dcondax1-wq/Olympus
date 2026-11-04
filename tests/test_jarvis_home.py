@@ -490,9 +490,9 @@ def test_chromium():
 
         # ---- D: the briefing at 7:30 ET (cached live feed: Zlarior's room), spoken, saved to Obsidian
         ctx, p, errs4 = opened(br, ORIGIN, "low", (7, 30))
-        p.wait_for_function("() => document.querySelector('.msg.brief')", timeout=120000)
+        p.wait_for_function("() => document.querySelector('.jbrief')", timeout=120000)
         p.wait_for_function("() => window.__said && window.__said.length > 0", timeout=60000)
-        b = p.evaluate("() => ({ card: document.querySelector('.msg.brief').innerText, said: window.__said, says: document.querySelector('#says').textContent, y: scrollY })")
+        b = p.evaluate("() => ({ card: document.querySelector('.jbrief').innerText, said: window.__said, says: document.querySelector('#says').textContent, y: scrollY })")
         check("j. 7:30 AM ET first open: the briefing card (title, bots, drawdown left with Zlarior's $1,106, plan, Kalshi, to-dos, ONE THING) and it is READ out loud",
               "Good morning" in b["card"] and "DRAWDOWN LEFT" in b["card"].upper() and "$1,106" in b["card"] and "ONE THING" in b["card"].upper() and len(b["said"]) == 1 and b["said"][0].startswith("Good morning.") and "1106 dollars" in b["said"][0].replace(",", ""), b)
         check("j. on its own it does not scroll the home away (the core stays on screen) and says where the card is", b["y"] < 50 and "your briefing is below" in b["says"], b["y"])
@@ -501,9 +501,9 @@ def test_chromium():
               st == {"day": "2026-11-04", "shown": True, "spoken": True}, st)
         p.evaluate("() => window.__jarvisBrief.tick()")
         p.wait_for_timeout(800)
-        n = p.evaluate("() => [document.querySelectorAll('.msg.brief').length, window.__said.length]")
+        n = p.evaluate("() => [document.querySelectorAll('.jbrief').length, window.__said.length]")
         check("j. once a day: still one card and one voice after another tick", n == [1, 1], n)
-        p.evaluate("() => document.querySelector(\".msg.brief [data-bf='save']\").click()")
+        p.evaluate("() => document.querySelector(\".jbrief [data-bf='save']\").click()")
         p.wait_for_selector(".bf-q [data-yn='yes']", timeout=150000)
         q = p.inner_text(".bf-q")
         before = p.evaluate("() => localStorage.getItem('jarvis.vault.outbox')")
@@ -515,12 +515,13 @@ def test_chromium():
         p.reload()
         p.wait_for_function("() => window.__jarvisBrief && window.__jarvisBrief.state === 'ready'", timeout=120000)
         p.wait_for_timeout(7000)
-        again = p.evaluate("() => [document.querySelectorAll('.msg.brief').length, window.__said.length]")
+        again = p.evaluate("() => [document.querySelectorAll('.jbrief').length, window.__said.length]")
         check("j. a reload the same day: no new briefing", again == [0, 0], again)
         # the settings sheet: one Jarvis section
+        p.wait_for_selector("#more [data-key='aikey']", state="attached", timeout=120000)
         p.evaluate("() => document.querySelector('#moreB').click()")
         p.evaluate("() => document.querySelector(\"[data-key='aikey']\").click()")
-        p.wait_for_selector("#settings:not([hidden])", timeout=30000)
+        p.wait_for_selector("#settings:not([hidden])", timeout=120000)
         sec = p.evaluate("""() => { const f = document.querySelector('#setF'); const order = ['setVoice', 'setSpeakAlerts', 'setBriefOn', 'setQuiet', 'setSmart', 'setKey'].map((id) => { const e = document.getElementById(id); return e ? [id, [...f.querySelectorAll('input,select,button,h3')].indexOf(e)] : [id, -1]; });
           return { h3: [...f.querySelectorAll('h3')].map((h) => h.textContent), title: document.getElementById('setT').textContent, order, vals: { speak: setSpeakAlerts.checked, brief: setBriefOn.checked, quiet: setQuiet.checked, from: setQuietFrom.value, to: setQuietTo.value }, rowHidden: document.getElementById('setQuietRow').hidden }; }""")
         idxs = [i for _, i in sec["order"]]
@@ -537,13 +538,13 @@ def test_chromium():
 
         # ---- E: 5 AM ET = the card, no voice (quiet hours); the voice at 7:10 on the next tick
         ctx, p, errs5 = opened(br, ORIGIN, "low", (5, 0))
-        p.wait_for_function("() => document.querySelector('.msg.brief')", timeout=120000)
+        p.wait_for_function("() => document.querySelector('.jbrief')", timeout=120000)
         p.wait_for_timeout(1500)
         early = p.evaluate("() => [window.__said.length, JSON.parse(localStorage.getItem('jarvis.brief.v1'))]")
         p.evaluate("(ms) => { window.__dateOff = ms - (Date.now() - window.__dateOff); }", utc_ms(2026, 11, 4, 12, 10))
         p.evaluate("() => window.__jarvisBrief.tick()")
         p.wait_for_function("() => window.__said.length > 0", timeout=60000)
-        late = p.evaluate("() => [window.__said.length, document.querySelectorAll('.msg.brief').length, JSON.parse(localStorage.getItem('jarvis.brief.v1'))]")
+        late = p.evaluate("() => [window.__said.length, document.querySelectorAll('.jbrief').length, JSON.parse(localStorage.getItem('jarvis.brief.v1'))]")
         check("j. 5 AM ET (quiet hours): the card, no voice; at 7:10 the voice reads it once, with no second card",
               early[0] == 0 and early[1] == {"day": "2026-11-04", "shown": True, "spoken": False} and late[0] == 1 and late[1] == 1 and late[2]["spoken"] is True and not errs5, (early, late, errs5[:2]))
         ctx.close()

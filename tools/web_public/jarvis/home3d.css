@@ -49,9 +49,9 @@ html[data-oly-scheme="light"] .dock::after { opacity: .3; }
 #setQuietRow[hidden] { display: none; }
 
 /* ---------------------------------------------------------------- the morning briefing card (briefing.js) */
-.msg.brief { max-width: 100%; justify-self: stretch; padding: 12px 14px 12px; white-space: normal; border-color: rgba(var(--cr), .45);
-  background: linear-gradient(180deg, rgba(var(--cr2), .16), rgba(var(--pr), .6)); box-shadow: 0 0 22px rgba(var(--cr), .18), inset 0 1px 0 rgba(255, 255, 255, .1); }
-.msg.brief::before { content: "MORNING BRIEFING"; }
+.jbrief { position: relative; width: 100%; box-sizing: border-box; margin: 6px 0; padding: 12px 14px 12px; white-space: normal; border: 1px solid rgba(var(--cr), .45); border-radius: 14px;
+  background: linear-gradient(180deg, rgba(var(--cr2), .16), rgba(var(--pr), .6)); box-shadow: 0 0 22px rgba(var(--cr), .18), inset 0 1px 0 rgba(255, 255, 255, .1); color: #f4f2f8; }
+.jbrief::before { content: "MORNING BRIEFING"; display: block; margin-bottom: 3px; font: 600 10px var(--fh); letter-spacing: .3em; color: var(--c); }
 .bf-h { margin: 0 0 6px; display: flex; flex-direction: column; gap: 2px; }
 .bf-h b { font: 600 17px var(--fh); letter-spacing: .06em; color: #fff; }
 .bf-h small { display: none; }

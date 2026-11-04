@@ -179,9 +179,9 @@ function mount() {
   function cardEl(b, scroll) {
     const talk = document.getElementById('talk');
     if (!talk) return null;
-    const m = document.createElement('div'); m.className = 'msg j brief'; m.innerHTML = briefHTML(b);
-    talk.appendChild(m);
-    while (talk.children.length > 8) talk.removeChild(talk.firstChild);
+    for (const old of document.querySelectorAll('.jbrief')) old.remove();                  // one card at a time, above the chat (not a chat message)
+    const m = document.createElement('div'); m.className = 'jbrief'; m.innerHTML = briefHTML(b);
+    talk.parentNode.insertBefore(m, talk);
     const says = document.getElementById('says'); if (says) says.textContent = b.title + (scroll ? '' : ': your briefing is below');
     const calm = root.dataset.fx === 'off' || root.dataset.fx === 'low';
     // asked for ("brief me", Read it): it comes into view. On its own (7 AM, the first open) the home stays where it is
