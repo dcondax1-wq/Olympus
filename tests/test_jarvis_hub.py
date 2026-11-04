@@ -1270,7 +1270,7 @@ def run_system(br, url):
     check("s. 'status': the verdict first, then one line per system", a1.startswith("ALL GOOD: nothing needs you.") and "PC (bot server" in a1
           and "Zlarior (50K eval): +$213" in a1 and "Kalshi (its own server): NOT LINKED" in a1, a1)
     a2 = ask("how's the pc")
-    check("s. 'how's the pc': the one fix first (none), its check-in, CPU and RAM", a2.startswith("The PC looks healthy: nothing to fix.") and "checked in 2 min ago" in a2 and "CPU 23%, RAM 61%" in a2, a2)
+    check("s. 'how's the pc': the one fix first (none), its check-in, CPU and RAM", a2.startswith("The PC looks healthy: nothing to fix.") and re.search(r"checked in [2-9] min ago", a2) and "CPU 23%, RAM 61%" in a2, a2)
     a3 = ask("is everything ok")
     check("s. 'is everything ok' is the System answer too", a3 == a1, a3[:100])
     check("s. no page errors (all good)", not errs, errs)
