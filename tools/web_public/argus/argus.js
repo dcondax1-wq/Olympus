@@ -308,8 +308,10 @@ class Room {
   fps() { const a = this.frames; return a.length ? Math.round(a.length / a.reduce((s, x) => s + x, 0)) : 0; }
 }
 
+let gapAt = 0;
 function tick(now) {
-  if (S.room && !(O ? O.hidden() : document.hidden)) S.room.frame(now);
+  const gap = O && O.frameGap ? O.frameGap() : 0;                           // idle 30 / 15 fps, battery saver, 3D Off (docs/OLYMPUS_PERF.md)
+  if (S.room && !(O ? O.hidden() : document.hidden) && !(gap && now - gapAt < gap - 3)) { gapAt = now; S.room.frame(now); }
   requestAnimationFrame(tick);
 }
 

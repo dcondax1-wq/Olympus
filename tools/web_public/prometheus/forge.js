@@ -615,12 +615,14 @@ function setPlaying(on) {
   STATE.lastStep = performance.now();
 }
 
+let gapAt = 0;
 function tick(now) {
   if (STATE.playing && now - STATE.lastStep >= STEP_MS) {
     STATE.lastStep = now;
     if (STATE.gen < STATE.forge.nGens - 1) setGen(STATE.gen + 1, true); else setPlaying(false);
   }
-  if (STATE.arena && !(O ? O.hidden() : document.hidden)) STATE.arena.frame(now);   // hidden tab: no frame (the battery)
+  const gap = O && O.frameGap ? O.frameGap() : 0;                           // idle 30 / 15 fps, battery saver, 3D Off (docs/OLYMPUS_PERF.md)
+  if (STATE.arena && !(O ? O.hidden() : document.hidden) && !(gap && now - gapAt < gap - 3)) { gapAt = now; STATE.arena.frame(now); }   // hidden tab: no frame (the battery)
   requestAnimationFrame(tick);
 }
 

@@ -341,7 +341,7 @@ export class Theater {
 
   setLite(on) {
     this.lite = !!on;
-    this.rc.setQuality(this.rc.forced || (this.rc.software ? 'low' : this.lite ? 'low' : ['ultra', 'high'].includes(this.rc.quality()) ? this.rc.quality() : 'high'));
+    this.rc.setQuality(this.rc.forced || (window.OLYMPUS && window.OLYMPUS.fx() === 'off' ? 'off' : this.rc.software ? 'low' : this.lite ? 'low' : ['ultra', 'high'].includes(this.rc.quality()) ? this.rc.quality() : 'high'));
     if (this.arena) this.arena.setLite(this.lite);
     this.mirror.visible = !this.lite;
     this.shafts.visible = !this.lite;

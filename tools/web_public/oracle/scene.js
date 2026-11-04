@@ -60,7 +60,7 @@ export class Scene {
 
   setQuality(q) {
     this.quality = q;
-    this.rc.setQuality(this.rc.forced || (this.rc.software ? 'low' : q === 'low' ? 'low' : ['ultra', 'high'].includes(this.rc.quality()) ? this.rc.quality() : 'high'));
+    this.rc.setQuality(this.rc.forced || (window.OLYMPUS && window.OLYMPUS.fx() === 'off' ? 'off' : this.rc.software ? 'low' : q === 'low' ? 'low' : ['ultra', 'high'].includes(this.rc.quality()) ? this.rc.quality() : 'high'));
     this.arena.setQuality(q);
     if (this.temple) this.temple.setQuality(q);
     if (this.sky.lite !== (q === 'low')) { this.sky.setQuality(q); this.market.setQuality(q); }

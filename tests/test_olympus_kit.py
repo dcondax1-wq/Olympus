@@ -54,13 +54,15 @@ BUDGET = {
 }
 # the other 3D / animated apps (2026-11-04, docs/OLYMPUS_PERF.md): (query, budget calls, budget triangles), measured at 390 x 844 / dpr 3 under
 # SwiftShader (where the render core steps every app down to LITE, so these are the LITE scenes) + ~25% headroom. Re-measured 2026-11-04 after the
+# arena (2026-11-04, crowd LOD): phone HIGH (?gpu=1 lifts the software cap) was ~258k triangles with the capsule crowd, 142k LITE; now 60k high (low-poly crowd
+# 40 tris a spectator, 60% of the seats on a phone, a lighter arcade): the budget below is the HIGH scene.
 # own-loop pass 2 (fates, labyrinth, hephaestus, arena, nemesis, chronos): arena's crowd + dress (another agent, JOB 10+11) took it from 101 / 64k to 127 / 142k.
 # own-loop pass: athena 80 -> 48 calls (instanced shelves; its triangle count rises because culling is now per shelf, not per book). Calls and triangles are the
 # portable numbers; fps is relative only. ares / hermes / bridge / kalshi are 2D or DOM (no three.js): their budget is the heap only.
 MORE = {
-    "nemesis": ("?demo=1", 49, 30_000), "athena": ("?demo=1", 62, 8_000), "argus": ("?demo=1", 10, 80_000), "chronos": ("?demo=1", 59, 19_500),
+    "nemesis": ("?demo=1", 49, 30_000), "athena": ("?demo=1", 62, 8_000), "argus": ("?demo=1", 15, 118_000), "chronos": ("?demo=1", 59, 19_500),
     "cities": ("?demo=1", 10, 80_000), "kalshicity": ("?demo=1", 90, 24_000), "labyrinth": ("?demo=1", 43, 8_700), "hephaestus": ("?demo=1", 32, 5_500),
-    "pantheon": ("?demo=1", 135, 31_500), "arena": ("?demo=1", 160, 178_000), "forum": ("?demo=1", 118, 9_000), "plutus": ("?demo=1", 24, 6_000),
+    "pantheon": ("?demo=1", 135, 31_500), "arena": ("?demo=1&gpu=1", 150, 70_000), "forum": ("?demo=1", 118, 9_000), "plutus": ("?demo=1", 24, 6_000),
     "tree": ("?demo=1", 68, 8_500), "ares": ("?demo=1", 50, 7_800), "hermes": ("?demo=1", 0, 0), "kalshi": ("?demo=1", 0, 0),
 }
 # Data City by tier (2026-11-04, datacity/caps.js, docs/OLYMPUS_PERF.md): the page forces the tier with ?q= and the device hint with ?phone=; (calls, triangles) at the far
@@ -122,10 +124,15 @@ def test_static():
           all(f"{a}:" in js.split("var AMBIENT = {")[1].split("};")[0] for a in list(APPS) + list(MORE) + ["bridge"]) and "OLYMPUS_QUIET" in js
           and all(f"{b}: function" in read(os.path.join(KIT, "sfx.js")) for b in ("wind", "forge", "sea", "city", "forest", "crowd", "chimes", "space")))
     own = ["tree/app.js", "hermes/fx.js", "hermes/app.js", "tyche/main.js", "ares/ares.js", "plutus/plutus.js", "pantheon/pantheon.js", "forum/scene.js",
-           "kalshicity/cityscene.js", "mind/main.js", "athena/athena.js",
+           "kalshicity/cityscene.js", "mind/main.js", "athena/athena.js", "oracle/main.js", "odeon/app.js", "prometheus/forge.js", "argus/argus.js", "datacity/city.js",
            "fates/fates.js", "labyrinth/scene.js", "hephaestus/scene.js", "arena/scene.js", "nemesis/scene.js", "chronos/scene.js", "chronos/chronos.js"]
     miss = [f for f in own if "frameGap" not in read(os.path.join(WEB, *f.split("/")))]
     check("a. every own frame loop (tree, hermes x2, tyche, ares, plutus, pantheon, forum, kalshicity, mind, athena, fates, labyrinth, hephaestus, arena, nemesis, chronos x2) keeps the kit's frame gap (idle / saver / Off) and sleeps hidden or covered", not miss, miss)
+    scen = read(os.path.join(KIT, "scenery.js"))
+    check("a. the shared crowd is low-poly by default (detail 'low' = 40 triangles a spectator, 'full' keeps the capsules) and thins evenly (density); the Arena asks for 60% on a phone",
+          all(x in scen for x in ("detail = 'low'", "density = 1", "low ? new THREE.CylinderGeometry", "SphereGeometry(0.115, 4, 2)")) and "density: Math.min(innerWidth, innerHeight) < 600 ? 0.6 : 1" in read(os.path.join(WEB, "arena", "dress.js")))
+    off_tier = [f for f in ("oracle/scene.js", "odeon/scene.js", "fates/fates-scene.js") if "=== 'off' ? 'off'" not in read(os.path.join(WEB, *f.split("/")))]
+    check("a. oracle, odeon and fates: 3D Off is the core's 'off' tier (not forced to low by the software cap)", not off_tier, off_tier)
     ath = read(os.path.join(WEB, "athena", "athena.js"))
     check("a. athena's shelves are instanced (books, strips, scrolls, caps: InstancedMesh), tyche's 3D Off is the core's 'off' tier",
           ath.count("InstancedMesh(") == 1 and "instanceColor" in ath and "O.fx() === 'off' ? 'off'" in read(os.path.join(WEB, "tyche", "scene.js")))
