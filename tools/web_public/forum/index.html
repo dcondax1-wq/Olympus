@@ -20,6 +20,7 @@
 <script src="../olympus/themes.js?v=o2"></script>
 <script src="../olympus/olympus.js?v=o2" data-app="forum"></script>
 <script src="../olympus/intro-app.js?v=i1" defer></script>
+<script src="../olympus/fx-core.js?v=f1"></script><script src="../olympus/fx-ui.js?v=f1"></script><script src="../olympus/fx-text.js?v=f1"></script><script src="../olympus/fx-burst.js?v=f1"></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#b8e04a'); r.setProperty('--oly-accent-rgb', '184, 224, 74'); })();</script>
 <link rel="stylesheet" href="forum.css?v=f1">
 </head>
@@ -33,7 +34,8 @@
   <section class="clock" id="clock" aria-live="polite">
     <div class="ck"><b id="ckTime">--:--</b><span id="ckPhase">ET</span></div>
     <p class="nx" id="ckNext">&nbsp;</p>
-    <span class="oly-chip streak" id="streak" title="Market days in a row with the oath sealed"><span class="k">Forum streak</span> <b id="streakN">0</b> <span class="u">d</span></span>
+    <span class="oly-chip streak" id="streak" title="Market days in a row with the oath sealed"><span class="k">Forum streak</span> <b id="streakN" data-oly-fx="odometer">0</b> <span class="u">d</span></span>
+    <div class="shrine" id="shrine" role="img" aria-label="Streak shrine"></div>
   </section>
 </main>
 <section class="card" id="card" aria-live="polite">
@@ -52,6 +54,7 @@
     <button type="button" class="go" id="seal" disabled>Seal the day</button>
     <p class="done" id="sealed" hidden></p>
   </div>
+  <div class="desk" id="desk" aria-label="On the desk"></div>
 </section>
 <nav class="steps" id="steps" aria-label="The briefing" hidden>
   <button type="button" id="prev" aria-label="Previous tablet">‹</button>

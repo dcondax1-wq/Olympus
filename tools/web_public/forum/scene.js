@@ -271,7 +271,7 @@ export function createForum(canvas, { O = null } = {}) {
   raf = requestAnimationFrame(frame);
   return {
     setScrolls, setClock, focus, openGates, onPick(cb) { pick = typeof cb === 'function' ? cb : null; }, onQuality(cb) { qcb = typeof cb === 'function' ? cb : null; },
-    lite: () => lite, quality: () => rc.quality(),
+    lite: () => lite, quality: () => rc.quality(), fxTarget: () => ({ scene, camera, renderer: rc.renderer, rc }),
     stats: () => ({ frames, drawn, quality: rc.quality(), passes: rc.passes().length, focus: st.focus, gates: Math.round(st.gates * 100) / 100, gatesOpen: st.gatesTarget === 1, h: st.h,
       tablets: pillars.filter((p) => p.item).length, night: stars.visible }),
     dispose() { stopped = true; cancelAnimationFrame(raf); rc.dispose(); },

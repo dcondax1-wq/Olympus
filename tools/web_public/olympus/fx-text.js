@@ -100,16 +100,22 @@
     },
   });
 
+  // the number an element shows (or opts.to) with its prefix / suffix / decimals / grouping
+  function numParts(el, o) {
+    var q = parts(el.textContent), p;
+    if (typeof o.to === 'number') {
+      p = { pre: o.prefix !== undefined ? o.prefix : q ? q.pre : '', num: o.to, post: o.suffix !== undefined ? o.suffix : q ? q.post : '',
+        dec: o.decimals !== undefined ? o.decimals : q ? q.dec : (String(o.to).split('.')[1] || '').length,
+        group: o.group !== undefined ? !!o.group : !!(q && q.group) || Math.abs(o.to) >= 10000 };
+    } else p = (o.to !== undefined ? parts(String(o.to)) : q) || { pre: '', num: 0, dec: 0, group: false, post: '' };
+    return p;
+  }
+
   // ---------------------------------------------------------------- countUp
   FX.define('countUp', {
     group: 'numbers', desc: 'the number counts up from 0 (or opts.from) to its value with an ease-out; set(v) counts on to a new value', demo: { to: 12840 },
     make: function (el, o, ctx) {
-      var q = parts(el.textContent), p;
-      if (typeof o.to === 'number') {
-        p = { pre: q ? q.pre : (o.prefix || ''), num: o.to, post: q ? q.post : (o.suffix || ''),
-          dec: o.decimals !== undefined ? o.decimals : q ? q.dec : (String(o.to).split('.')[1] || '').length,
-          group: o.group !== undefined ? !!o.group : !!(q && q.group) || Math.abs(o.to) >= 10000 };
-      } else p = (o.to !== undefined ? parts(String(o.to)) : q) || { pre: '', num: 0, dec: 0, group: false, post: '' };
+      var p = numParts(el, o);
       var from = o.from || 0, to = p.num, v = from, dur = o.duration || 1.2, t = 0;
       var write = function (x) { el.textContent = fmt(p, x); };
       var finalText = fmt(p, to);
@@ -128,7 +134,7 @@
       };
     },
     still: function (el, o, ctx) {
-      var p = parts(o.to !== undefined ? String(o.to) : el.textContent);
+      var p = numParts(el, o);
       if (p && o.to !== undefined) el.textContent = fmt(p, p.num);
       return { set: function (x) { if (p) el.textContent = fmt(p, +x); } };
     },

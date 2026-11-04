@@ -91,7 +91,7 @@ export function normalize(k, now = Date.now() / 1000) {
     .filter((r) => num(r.pnl) != null && str(r.action, 10).toLowerCase() !== 'sell')
     .map((r, i) => {
       const n = num(r.contracts), price = dol(r.price), pnl = num(r.pnl);
-      return { key: str(r.ticker, 64) + '@' + (parseT(r.t) || i) + '#' + i, t: parseT(r.t), title: str(r.title, 120) || str(r.ticker, 64) || 'Bet',
+      return { key: str(r.ticker, 64) + '@' + (parseT(r.t) || i) + '#' + i, t: parseT(r.t), title: str(r.title, 120) || str(r.ticker, 64) || 'Bet', strategy: str(r.strategy, 40),
         side: sideOf(r), category: categoryOf(r), contracts: n, price, prob: unit(r.prob), pnl, win: pnl > 0.005, loss: pnl < -0.005,
         staked: n != null && price != null ? Math.abs(n) * price : null };
     })

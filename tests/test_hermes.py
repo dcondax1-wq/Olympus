@@ -358,8 +358,8 @@ def run_browser():
                 if cid == "kalshi":
                     teaser = p.inner_text(".card.on")
                 p.screenshot(path=os.path.join(SHOTS, f"demo_{i + 1:02d}_{cid}.jpg"), type="jpeg", quality=82)
-            check("e. the demo deck: money, best, worst, eval, discipline, learned, Kalshi teaser, pace, report card, streak, the hall, next",
-                  ids == ["money", "best", "worst", "eval", "discipline", "learned", "kalshi", "pace", "report", "streak", "hall", "next"], ids)
+            check("e. the demo deck: money, best, worst, eval, discipline, learned, Kalshi teaser, pace, report card, streak, best day, best week, accounts, the hall, next",
+                  ids == ["money", "best", "worst", "eval", "discipline", "learned", "kalshi", "pace", "report", "streak", "bestday", "bestweek", "accounts", "hall", "next"], ids)
             check("e. every card: inside the 16 px gutters, nothing in the orb's 80 x 160 corner, no sideways scroll", not overflow, overflow)
             # ---- the new cards (2026-11-03): money a month, the report card, the streak heat map; every number checked against the data
             dj = json.load(open(os.path.join(PAGE, "demo.json"), encoding="utf-8"))
@@ -398,6 +398,41 @@ def run_browser():
             check("e. new card 'streak': the green run now and the record, a heat map cell per trading day (green cells = green days)",
                   p.inner_text(".card.on .count") == str(cur) and f"record is {rec} day" in t and cells == min(35, len(dd)) and greens == sum(1 for _, v in dd[-35:] if v > 0), (t[:200], cells, greens, cur, rec))
             p.screenshot(path=os.path.join(SHOTS, "demo_streak.jpg"), type="jpeg", quality=82)
+            # ---- the new cards (2026-11-04): best day, best week, accounts; numbers from the data, motion from the OLYMPUS effects library
+            import datetime as _dt
+            fmt2 = lambda v: ("−" if v < 0 else "+") + "$" + f"{abs(v):,.2f}"
+            bd = max(wk["days"], key=lambda d: d[1])
+            p.evaluate("HERMES.go(HERMES.state().ids.indexOf('bestday')); HERMES.pause(true)"); p.wait_for_timeout(2600)
+            t = p.inner_text(".card.on")
+            check("e. new card 'best day': the biggest green day of the week lands on the counter, its share of the profit, green days",
+                  p.inner_text(".card.on .count") == fmt2(bd[1]) and f"{min(100, round(bd[1] / wk['net'] * 100))}%" in t and "best day" in t.lower(), (t[:260], bd))
+            wsum = {}
+            for d, v in al["days"]:
+                m = _dt.date.fromisoformat(d)
+                m = (m - _dt.timedelta(days=m.weekday())).isoformat()
+                wsum[m] = wsum.get(m, 0) + v
+            bw = max(wsum.items(), key=lambda kv: kv[1])
+            p.evaluate("HERMES.go(HERMES.state().ids.indexOf('bestweek')); HERMES.pause(true)"); p.wait_for_timeout(2600)
+            t = p.inner_text(".card.on")
+            check("e. new card 'best week': the best week on record on the counter, the weekly bars (up to 8), green weeks of all",
+                  p.inner_text(".card.on .count") == fmt2(round(bw[1], 2)) and p.evaluate("document.querySelectorAll('.card.on .dbar').length") == min(8, len(wsum))
+                  and f"{sum(1 for v in wsum.values() if v > 0)}/{len(wsum)}" in t, (t[:260], bw, len(wsum)))
+            accts = {}
+            for b in wk["bots"]:
+                accts.setdefault(b.get("account") or b["name"], 0)
+                accts[b.get("account") or b["name"]] += b["net"]
+            p.evaluate("HERMES.go(HERMES.state().ids.indexOf('accounts')); HERMES.pause(true)"); p.wait_for_timeout(2600)
+            t = p.inner_text(".card.on")
+            check("e. new card 'accounts': one bar per account, the total on the counter, each account's money",
+                  p.inner_text(".card.on .count") == fmt2(round(sum(accts.values()), 2)) and p.evaluate("document.querySelectorAll('.card.on .pbar').length") == len(accts)
+                  and all(fmt0(v) in t for v in accts.values()), (t[:260], accts))
+            check("e. the new cards use the effects library: the page has OLYMPUS_FX with confetti / sparkleBurst, the plaques carry data-oly-fx=shimmer",
+                  p.evaluate("!!window.OLYMPUS_FX && OLYMPUS_FX.has('confetti') && OLYMPUS_FX.has('sparkleBurst')"))
+            for cid in ("bestday", "bestweek", "accounts"):
+                p.evaluate(f"HERMES.go(HERMES.state().ids.indexOf('{cid}')); HERMES.pause(true)"); p.wait_for_timeout(700)
+                p.evaluate("window.__shared = null")
+                p.click("#share"); p.wait_for_function("window.__shared", timeout=60000)
+                check(f"e. new card '{cid}': Share makes a PNG", p.evaluate("window.__shared.type") == "image/png" and p.evaluate("HERMES.lastShare.card") == cid, p.evaluate("window.__shared"))
             for cid in ("pace", "report", "streak"):
                 p.evaluate(f"HERMES.go(HERMES.state().ids.indexOf('{cid}')); HERMES.pause(true)"); p.wait_for_timeout(700)
                 p.evaluate("window.__shared = null")
@@ -450,7 +485,7 @@ def run_browser():
             p.wait_for_timeout(300)
             check("f. a tap on the progress bar jumps to that story", st(p)["i"] == 3 and st(p)["id"] == "eval", st(p))
             pos = p.inner_text("#pos")
-            check("f. the bottom sheet names the story (4/12 · Evals)", pos.replace("\n", " ").startswith("4/12") and "EVALS" in pos.upper(), pos)
+            check("f. the bottom sheet names the story (4/N · Evals)", pos.replace("\n", " ").startswith("4/" + str(p.evaluate("HERMES.state().n"))) and "EVALS" in pos.upper(), pos)
             p.evaluate(f"HERMES.go({deck_ids.index('next')}); HERMES.pause(true)")
             p.wait_for_timeout(1800)
             p.evaluate("window.__shared = null")
@@ -519,7 +554,7 @@ def run_browser():
                     check("e. real data: no DEMO badge; the money card lists Kalshi beside the bots",
                           not p.is_visible("#demo") and "Kalshi Edge v2" in txt and "+$7.25" in txt and "Paper twin" in txt, txt[:400])
             check("e. with every peer: Data City, the real Kalshi and the Planner join the deck",
-                  ids == ["money", "best", "worst", "eval", "discipline", "learned", "discovery", "kalshi", "planner", "pace", "report", "streak", "hall", "next"], ids)
+                  ids == ["money", "best", "worst", "eval", "discipline", "learned", "discovery", "kalshi", "planner", "pace", "report", "streak", "bestday", "bestweek", "accounts", "hall", "next"], ids)
             check("e. peers' cards stay inside the gutters and out of the orb's corner", not overflow, overflow)
             p.evaluate("HERMES.go(1)"); p.wait_for_timeout(300)
             p.evaluate("window.__shared = null"); p.click("#share"); p.wait_for_function("window.__shared", timeout=10000)
