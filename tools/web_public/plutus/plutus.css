@@ -26,6 +26,7 @@ h1 { margin: 0; font: 800 22px/1.1 var(--oly-display, 'Orbitron', sans-serif); l
 .sheet { position: fixed; left: calc(10px + var(--sl)); right: calc(10px + var(--sr)); top: clamp(238px, 35vh, 330px); bottom: calc(166px + var(--sb));
   overflow-y: auto; overscroll-behavior: contain; padding: 12px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line);
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+@media (max-height: 700px) and (orientation: portrait) { .sheet { top: 196px; bottom: calc(152px + var(--sb)); } }   /* SE: the plan rows get ~60 px more room, the hero keeps its top */
 .pane[hidden] { display: none; }
 .row { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
 .seg button { flex: 1 1 28%; }

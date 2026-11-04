@@ -266,10 +266,16 @@ function tick(now) {
   requestAnimationFrame(tick);
 }
 
+// An optional file that answered 404 is not asked again for 6 hours: a browser logs every 404 as a console error, this keeps it to one per phone.
+const GONE_KEY = 'opt404.', GONE_MS = 6 * 3600e3;
+const wasGone = (u) => { try { const t = +localStorage.getItem(GONE_KEY + u); return !!t && Date.now() - t < GONE_MS; } catch (_) { return false; } };
+const markGone = (u) => { try { localStorage.setItem(GONE_KEY + u, String(Date.now())); } catch (_) { /* private mode */ } };
 async function loadSite() {
+  if (wasGone('../data.json')) return null;           // opened on its own (no site around it): not asked again for 6 hours
   try {
     const ac = typeof AbortController === 'function' ? new AbortController() : null; const tm = ac ? setTimeout(() => ac.abort(), 6000) : 0;
     const r = await fetch('../data.json', { cache: 'no-cache', ...(ac ? { signal: ac.signal } : {}) }); clearTimeout(tm);
+    if (!r.ok && r.status === 404) markGone('../data.json');
     return r.ok ? await r.json() : null;
   } catch (_) { return null; }
 }
