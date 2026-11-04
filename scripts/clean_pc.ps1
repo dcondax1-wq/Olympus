@@ -45,6 +45,12 @@ MAIN PC (no bot folder): copy the PC_KIT folder (CLEAN_PC.bat + scripts\clean_pc
   powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\clean_pc.ps1 -DryRun    (shows the plan, changes nothing)
   powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\clean_pc.ps1 -Report    (only the PC report + NinjaTrader check)
   powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\clean_pc.ps1 -Undo      (undo the deep tune; UNDO_PC_TUNE.bat)
+  powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\clean_pc.ps1 -Storage   (hands over to scripts\clean_storage.ps1:
+                                                                                        the disk-space cleaner, CLEAN_STORAGE.bat)
+
+STORAGE (2026-11-04): the disk-space cleaner is its own script (CLEAN_STORAGE.bat -> scripts\clean_storage.ps1: a table of what
+  it would free, asks Y, temp / browser caches / Windows Update cache / old logs ...). This script only points to it (the last
+  line of a run) and copies both files into the PC_KIT.
 #>
 param(
     [switch]$DryRun,
@@ -52,6 +58,7 @@ param(
     [switch]$Standalone,    # main PC: no bot folder (auto when server.py / engine\ninjatrader.py are missing)
     [switch]$Report,        # only the PC report and the NinjaTrader check; changes nothing
     [switch]$Undo,          # undo the v2 deep tune (scripts\pc_tune.ps1 -Undo)
+    [switch]$Storage,       # hand over to scripts\clean_storage.ps1 (the disk-space cleaner); -DryRun is passed on
     [switch]$AdminPart,     # internal: the elevated deep part, started by this script with a UAC prompt
     [string]$Log = ""       # internal: the same log file for both parts
 )
@@ -434,8 +441,18 @@ function Copy-PcKit {
         Copy-Item -LiteralPath $PSCommandPath -Destination $ks -Force
         foreach ($x in @('pc_tune.ps1', 'pc_keeper.ps1')) { $src = Join-Path $PSScriptRoot $x; if (Test-Path -LiteralPath $src) { Copy-Item -LiteralPath $src -Destination $ks -Force } }
         $ub = Join-Path $Root 'UNDO_PC_TUNE.bat'; if (Test-Path -LiteralPath $ub) { Copy-Item -LiteralPath $ub -Destination $kit -Force }
+        $sb = Join-Path $Root 'CLEAN_STORAGE.bat'; if (Test-Path -LiteralPath $sb) { Copy-Item -LiteralPath $sb -Destination $kit -Force }
+        $ss = Join-Path $PSScriptRoot 'clean_storage.ps1'; if (Test-Path -LiteralPath $ss) { Copy-Item -LiteralPath $ss -Destination $ks -Force }
         Say 'OK' "Cleaner for your main PC: $kit (on the main PC double-click CLEAN_PC.bat in it)"
     } catch { Say 'SKIP' "PC_KIT not copied: $($_.Exception.Message)" }
+}
+
+# ================================================================== storage: the disk-space cleaner is its own script
+if ($Storage) {
+    $stor = Join-Path $PSScriptRoot 'clean_storage.ps1'
+    if (-not (Test-Path -LiteralPath $stor)) { Say 'FIX' 'scripts\clean_storage.ps1 is missing: double-click CLEAN_STORAGE.bat (it fetches it) or run UPDATE.bat'; exit 1 }
+    & $stor -DryRun:$DryRun
+    exit $LASTEXITCODE
 }
 
 # ================================================================== undo the deep tune
@@ -606,6 +623,11 @@ if ($before.FreeGB -ne $null -and $after.FreeGB -ne $null) { Say 'OK' ("Memory f
 Write-PcReport
 Copy-PcKit
 Say '..' "Full log: $Log"
+try {
+    $sd = $env:SystemDrive; if (-not $sd) { $sd = 'C:' }
+    $dfree = [math]::Round((New-Object System.IO.DriveInfo $sd).AvailableFreeSpace / 1GB, 1)
+    Say '..' "Disk: $dfree GB free on $sd. To free more space double-click CLEAN_STORAGE.bat (shows what it would clear, asks Y)."
+} catch { Say '..' 'To free disk space double-click CLEAN_STORAGE.bat (shows what it would clear, asks Y).' }
 if ($Standalone) { Say '..' 'NinjaTrader was not touched. A restart finishes the Windows changes.' }
 else { Say '..' 'NinjaTrader and the bot were not touched. A restart finishes the Windows changes: do it after 4 PM ET (the bot comes back by itself; open the MNQ chart with LE_BarFeed again if it does not reopen).' }
 exit 0

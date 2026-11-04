@@ -28,12 +28,18 @@ p{margin:6px 0;color:var(--mut)}b{color:var(--ink)}
 @media (prefers-reduced-motion:reduce){body::before,.s,a.b::after{animation:none}}
 </style></head><body><div class="w">
 <h1>Start the bot on this PC</h1>
-<p>Open this page ON YOUR MAIN PC. Three steps, nothing to type.</p>
+<p>Open this page ON YOUR MAIN PC. Three steps, nothing to type. Disk full? <a href="#storage" style="color:var(--gold)">Clean storage</a> is further down (works on both PCs).</p>
 <div class="s"><span class="n">1</span><b>Make sure the Surface is off.</b><p>Start, Power, Shut down. Then NinjaTrader here: log in, connect MFFU, tick AT Interface.</p></div>
 <div class="s"><span class="n">2</span><b>Download and double-click this.</b>
 <a class="b" href="FRESH_START.bat" download>Download FRESH_START.bat</a>
 <p>When it opens: if Windows says "protected your PC", click <b>More info</b> then <b>Run anyway</b>. Press <b>Y</b> to every question. It does everything by itself and never turns on real trading.</p></div>
 <div class="s"><span class="n">3</span><b>In NinjaTrader press F5 once.</b><p>NinjaScript Editor, F5. Then LE START, Start trading. Text Claude "moved".</p></div>
+<div class="s" id="storage"><b>Clean storage (Surface and main PC)</b>
+<p>Frees disk space: temp files, browser caches, Windows update leftovers, old logs. It first shows a table of what it would free and asks <b>Y</b>. It never touches the bot's data, your accounts, or NinjaTrader's charts and settings.</p>
+<a class="b" href="CLEAN_STORAGE.bat" download>Download CLEAN_STORAGE.bat</a>
+<p>Double-click it. If Windows says "protected your PC", click <b>More info</b> then <b>Run anyway</b>. Press <b>Y</b>. Windows asks once to make changes: click <b>Yes</b>. It takes a few minutes and ends with "Freed ... GB, C: now ... GB free".</p>
+<p>If NinjaTrader or the bot is running it leaves their folders alone and only clears temp files, caches and Windows leftovers. The Recycle Bin and the old Windows copy (big) are asked about separately. Do it on both PCs.</p>
+<p>Already have the bot folder? It is the same file: double-click <b>CLEAN_STORAGE.bat</b> there.</p></div>
 <div class="s"><b>Still stuck?</b><p>Take a photo of the window and send it to Claude. Or use the PowerShell line:</p>
 <code>powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://demetrades2000-coder.github.io/nq-dashboard/pc/FRESH_START.ps1 | iex"</code></div>
 </div></body></html>
