@@ -1,7 +1,7 @@
 {
  "v": 1,
  "kind": "olympus-starter-manifest",
- "sha": "e78acf71a887",
+ "sha": "2959f7453edb",
  "sources": [
   "STRATEGY.md",
   "research/lit/mffu_rules.json",
@@ -19,7 +19,7 @@
  "counts": {
   "notes": 225,
   "links": 1116,
-  "words": 35929,
+  "words": 35938,
   "folders": {
    "(top)": 2,
    "Daily": 1,
@@ -1153,7 +1153,7 @@
     "research",
     "learned"
    ],
-   "words": 222,
+   "words": 231,
    "links": 2
   },
   {
