@@ -27,6 +27,8 @@ export const dayT = (day) => Date.parse(day + 'T12:00:00Z') / 1000;
 const wdOf = (day) => (new Date(dayT(day) * 1000).getUTCDay() + 6) % 7;
 export const weekOf = (day) => new Date((dayT(day) - wdOf(day) * DAY) * 1000).toISOString().slice(0, 10);
 const monthOf = (day) => day.slice(0, 7);
+/** ET hour and weekday of an epoch second (fixed UTC-5: a chart label, not a clock) */
+const clockOf = (t) => ({ hour: Math.floor((((t - 18000) % DAY) + DAY) % DAY / 3600), weekday: (new Date((t - 18000) * 1000).getUTCDay() + 6) % 7 });
 const nth = (n) => `${n}${[, 'st', 'nd', 'rd'][n % 100 > 10 && n % 100 < 14 ? 0 : n % 10] || 'th'}`;
 
 /** cumulative P&L, the drawdown from the running peak and the win / loss streak, in time order (adds f.cum, f.dd, f.streak) */
@@ -373,12 +375,12 @@ export const DATASETS = {
   kalshi: {
     title: 'Kalshi bets', source: 'kalshi-feed/kalshi.json', url: 'https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json', remote: true,
     fields: [F('asset', 'Asset', 'txt'), F('side', 'Side', 'txt'), F('state', 'State', 'txt'), F('contracts', 'Contracts', 'int'), F('price', 'Price', 'num'), F('pnl', 'Result', 'usd'),
-      F('value', 'Value', 'usd'), F('strategy', 'Strategy', 'txt'), F('t', 'Time', 'int')],
+      F('value', 'Value', 'usd'), F('strategy', 'Strategy', 'txt'), F('t', 'Time', 'int'), F('hour', 'Hour (ET)', 'int', { values: HOURS }), F('weekday', 'Weekday', 'int', { values: WD })],
     build(raw) {
       if (!raw || (!Array.isArray(raw.trades) && !Array.isArray(raw.positions))) return [];
       const asset = (r) => str(r.asset || (/^KX([A-Z]+)/.exec(str(r.ticker)) || [])[1], 'OTHER');
       const row = (r, i, state) => ({ id: `${state}${i}:${str(r.ticker)}`, label: str(r.title || r.ticker, 'bet'), f: { asset: asset(r), side: str(r.side).toLowerCase().replace('up', 'yes').replace('down', 'no') || 'yes',
-        state, contracts: num(r.contracts), price: num(r.price ?? r.avg_price), pnl: num(r.pnl), value: num(r.value), strategy: str(r.strategy, 'bot'), t: num(r.t) || num(raw.t) } });
+        state, contracts: num(r.contracts), price: num(r.price ?? r.avg_price), pnl: num(r.pnl), value: num(r.value), strategy: str(r.strategy, 'bot'), t: num(r.t) || num(raw.t), ...clockOf(num(r.t) || num(raw.t)) } });
       return [...(raw.trades || []).slice(0, 80).map((r, i) => row(r, i, 'settled')), ...(raw.positions || []).slice(0, 60).map((r, i) => row(r, i, 'open'))];
     },
   },
@@ -399,6 +401,12 @@ export const DATASETS = {
 DATASETS.vix.fields = DATASETS.combos.fields;
 
 export const DATASET_IDS = Object.keys(DATASETS);
+/** each dataset's continent and region on the world map (the catalogue script and the random cities use the same table) */
+export const DATASET_GROUP = Object.fromEntries(Object.entries({
+  trades: ['trading', 'Odeon reels'], harbor: ['trading', 'LIT replay'], sessions: ['trading', 'Trading days'], months: ['trading', 'Calendar'], streaks: ['trading', 'Streaks'], levels: ['trading', 'Liquidity levels'],
+  combos: ['research', 'Tested ideas'], vix: ['research', 'Volatility'], tree: ['research', 'Daphne'], forge: ['research', 'Forge'], workshop: ['research', 'Workshop'], gods: ['research', 'Pantheon'], feeds: ['research', 'Data feeds'],
+  evals: ['money', 'Simulated evals'], evalspeed: ['money', 'Simulated evals'], plans: ['money', 'Prop firms'], kalshi: ['kalshi', 'Kalshi bot'], arena: ['life', 'Arena'], library: ['life', 'Library'], notes: ['obsidian', 'The vault'],
+}).map(([k, [group, region]]) => [k, { group, region }]));
 /** the datasets that share one downloaded file (so one fetch feeds many) */
 export const shares = (id) => { const d = DATASETS[id]; return d.from ? shares(d.from) : id; };
 

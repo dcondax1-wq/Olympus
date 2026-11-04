@@ -5,6 +5,7 @@
   python tools/kalshi_edges.py --feed kalshi.json   # a local copy (tests, offline)
   python tools/kalshi_edges.py --history DIR|FILE   # older snapshots of kalshi.json: their trade windows join the ledger
   python tools/kalshi_edges.py --history-git REPO   # every commit of kalshi.json in a clone of kalshi-feed joins the ledger
+  python tools/kalshi_edges.py --orders FILE.csv    # the one-off export of the bot's order table (time, ticker, side, book, contracts, price, pnl)
 
 READ ONLY. It reads kalshi.json (contract: docs/KALSHI_PUBLISH.md) and nothing else: no Kalshi call, no key, no order.
 
@@ -33,6 +34,7 @@ comes from the ledger ("src": "ledger"). Small samples are honest: n < 30 is fla
 from __future__ import annotations
 
 import argparse
+import csv
 import glob
 import itertools
 import json
@@ -410,6 +412,42 @@ def snap_window(ledger, family, name, now, days):
     return d if d["n"] >= 0 else None
 
 
+ORDER_COLS = {"t": ("time", "ts", "timestamp", "t", "created", "created_time", "created_at", "filled_at", "settled_at"), "ticker": ("ticker", "market", "market_ticker"),
+              "side": ("side",), "strategy": ("book", "strategy", "strat"), "contracts": ("contracts", "filled", "count", "qty", "quantity", "filled_count"),
+              "price": ("price", "avg_price", "fill_price", "avg_fill_price", "entry_price"), "pnl": ("pnl", "realized_pnl", "realised_pnl", "profit", "net_pnl")}
+
+
+def asset_of_ticker(ticker):
+    """KXBTCD-26NOV0211-T77399.99 -> Bitcoin (the longest known coin the letters after KX start with), else Other."""
+    letters = ""
+    for ch in str(ticker).upper().removeprefix("KX"):
+        if not ch.isalpha():
+            break
+        letters += ch
+    hit = [a for a in ASSET_NAMES if letters.startswith(a)]
+    return ASSET_NAMES[max(hit, key=len)] if hit else "Other"
+
+
+def orders_trades(path):
+    """The owner's one-off export of the bot's order table (a CSV with time, ticker, side, book, contracts, price, pnl) -> ledger records.
+    Column names are matched loosely (see ORDER_COLS); a row without a pnl (still open) is skipped; prices in cents are fine."""
+    out = []
+    with open(path, encoding="utf-8-sig", newline="") as fh:
+        rd = csv.DictReader(fh)
+        low = {(c or "").strip().lower(): c for c in (rd.fieldnames or [])}
+        col = {k: next((low[a] for a in names if a in low), None) for k, names in ORDER_COLS.items()}
+        if not all(col[k] for k in ("t", "ticker", "contracts", "price", "pnl")):
+            raise ValueError("the CSV needs time, ticker, contracts, price and pnl columns")
+        for row in rd:
+            tk = clean(row.get(col["ticker"]), 64)
+            r = {"t": row.get(col["t"]), "ticker": tk, "side": row.get(col["side"]) if col["side"] else "", "strategy": row.get(col["strategy"]) if col["strategy"] else "",
+                 "contracts": row.get(col["contracts"]), "price": row.get(col["price"]), "pnl": row.get(col["pnl"]), "asset": "", "category": asset_of_ticker(tk), "action": "buy"}
+            t = norm_trade(r)
+            if t:
+                out.append(t)
+    return out
+
+
 def history_files(paths):
     files = []
     for p in paths or []:
@@ -710,7 +748,7 @@ def jarvis_card(doc):
 
 
 # ------------------------------------------------------------------------------------------------ the run
-def run(feed, out, now=None, history=(), history_git=None):
+def run(feed, out, now=None, history=(), history_git=None, orders=()):
     """One refresh. Returns (edges_doc, new_log_entries, new_bets). Writes ledger.json, edges.json, learning_log.json, jarvis.json into `out`."""
     ledger = read_json(os.path.join(out, "ledger.json"), None)
     if not isinstance(ledger, dict) or not isinstance(ledger.get("trades"), list):
@@ -735,6 +773,8 @@ def run(feed, out, now=None, history=(), history_git=None):
             hist_new += merge_trades(ledger, feed_trades(h))
             if parse_t(h.get("t")):
                 add_snapshot(ledger, h, parse_t(h["t"]))
+    for f in orders or []:                                    # the one-off export of the order table: every bet, hour-of-day and all
+        hist_new += merge_trades(ledger, orders_trades(f))
     new_bets = merge_trades(ledger, feed_trades(feed)) + hist_new
     ft = parse_t(feed.get("t"))
     last_trade = max((t["t"] for t in ledger["trades"]), default=0)
@@ -773,6 +813,7 @@ def main(argv=None):
     ap.add_argument("--out", default=OUT_DEFAULT, help="folder for edges.json, learning_log.json, ledger.json, jarvis.json")
     ap.add_argument("--now", type=float, default=None, help="unix seconds to use as 'now' (default: the feed's own time)")
     ap.add_argument("--history", nargs="*", default=[], help="older kalshi.json snapshots (files or folders)")
+    ap.add_argument("--orders", nargs="*", default=[], help="the one-off CSV export of the bot's order table (time, ticker, side, book, contracts, price, pnl)")
     ap.add_argument("--history-git", default=None, help="a clone of kalshi-feed: every commit of kalshi.json joins the ledger")
     a = ap.parse_args(argv)
     try:
@@ -783,7 +824,7 @@ def main(argv=None):
     if not isinstance(feed, dict) or feed.get("kind") != "kalshi":
         print("kalshi_edges: that is not a kalshi.json feed; nothing changed", file=sys.stderr)
         return 2
-    doc, entries, new_bets = run(feed, a.out, now=a.now, history=a.history, history_git=a.history_git)
+    doc, entries, new_bets = run(feed, a.out, now=a.now, history=a.history, history_git=a.history_git, orders=a.orders)
     c = doc["counts"]
     print(f"kalshi_edges: {doc['ledger']['n']} bets in the ledger (+{new_bets}), {c['edges']} edges ({c['proven']} with 30+ bets), "
           f"do more {c['do_more']}, stop {c['stop']}, watch {c['watch']}; weather {doc['regime']['state']}; +{len(entries)} log lines")

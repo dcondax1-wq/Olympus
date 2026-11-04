@@ -430,7 +430,7 @@ def test_page():
                   and pg.evaluate("document.getElementById('app').dataset.gl") == "on" and pg.evaluate("getComputedStyle(document.getElementById('gl')).pointerEvents") == "none", gl)
             check("page: the 3D laurel tree is what draws on HD (tubes, instanced leaves), a tap picks nothing out of range",
                   gl["mode"] == "3d" and gl["stats"]["leaves"] > 0 and gl["stats"]["edges"] > 20, gl)
-            check("page: the 3D tree stays in the draw-call budget (<= 30 calls with bloom and the finish)", 0 < gl["stats"]["calls"] <= 30, gl["stats"]["calls"])
+            check("page: the 3D tree stays in the draw-call budget (<= 40 calls with bloom, the finish, the light shafts and the weather)", 0 < gl["stats"]["calls"] <= 40, gl["stats"]["calls"])
             pt = pg.evaluate("() => { const n = window.__daphne.state.tree.nodes.find((x) => !x.kids.length && x.status !== 2); return n ? n.id : null; }")
             pg.mouse.move(195, 600)
             pg.mouse.down(); pg.mouse.move(235, 610, steps=4); pg.mouse.up()
@@ -451,6 +451,198 @@ def test_page():
         srv.shutdown()
 
 
+# ------------------------------------------------------------------------------------------------ 2026-11-04: the branch library, seasons, the timeline
+BRANCH_JS = r"""
+import fs from 'node:fs';
+const D = '__TREE__/';
+const B = await import(D + 'branches.js');
+const C = await import(D + 'core.js');
+const doc = JSON.parse(fs.readFileSync(D + 'tree.json', 'utf8')), model = C.readDoc(doc), all = B.branchesOf(model), out = {};
+out.n = all.length; out.allPos = all.filter((b) => b.allPos).length; out.holds = all.filter((b) => b.holds).length;
+out.filterAll = B.filterBranches(all, { holds: 'all' }).length; out.long = B.filterBranches(all, { dir: 'long' }).length; out.short = B.filterBranches(all, { dir: 'short' }).length;
+out.search = B.filterBranches(all, { q: 'asia low' }).every((b) => (b.key + ' ' + b.text).toLowerCase().includes('asia')) && B.filterBranches(all, { q: 'asia low' }).length > 0;
+out.minMean = B.filterBranches(all, { minMean: 20 }).every((b) => b.periods.test.mean >= 20);
+const byTest = B.sortBranches(all, 'test'); out.sortTest = byTest.every((b, i) => !i || byTest[i - 1].periods.test.mean >= b.periods.test.mean);
+const hof = B.hallOfFame(all, 10); out.hof = { n: hof.length, allHold: hof.every((h) => h.b.allPos), sorted: hof.every((h, i) => !i || hof[i - 1].b.worst >= h.b.worst), medals: hof.slice(0, 3).map((h) => h.medal), reason: hof[0].reason };
+const c = B.compare(all[0], all[1]); out.cmp = { rows: c.rows.length, text: c.text.length > 10, same: B.compare(all[0], all[0]).text };
+out.words = B.plainWords(all[0]).length; out.wordsText = B.plainWords(all[0]).join(' ').length > 120;
+const st = B.statsOf(model, all); out.stats = { nodes: st.nodes, histSum: st.hist.reduce((a, b) => a + b, 0), cutPct: st.cutPct, placebo: st.placebo.length, holdPct: st.holdPct };
+out.share = B.shareLines(all[0]); out.metaNodes = doc.meta.nodes;
+const demo = C.readDoc(JSON.parse(fs.readFileSync(D + 'demo.json', 'utf8'))), db = B.branchesOf(demo); out.demo = [db.length, B.hallOfFame(db, 10).length >= 0, B.statsOf(demo, db).branches === db.length];
+out.empty = [B.branchesOf({ roots: [] }).length, B.hallOfFame([], 5).length, B.statsOf({ roots: [], meta: {}, honesty: {} }, []).branches];
+console.log(JSON.stringify(out));
+"""
+
+
+def test_branches_node():
+    import shutil
+    import subprocess
+    node = shutil.which("node")
+    if not node:
+        check("branches.js (node not installed: skipped)", True)
+        return
+    tree = os.path.join(ROOT, "tools", "web_public", "tree")
+    f = os.path.join(tempfile.mkdtemp(prefix="daphne_branches_"), "b.mjs")
+    open(f, "w", encoding="utf-8").write(BRANCH_JS.replace("__TREE__", tree.replace(os.sep, "/")))
+    res = subprocess.run([node, f], capture_output=True, text=True, timeout=120)
+    try:
+        o = json.loads(res.stdout.strip().splitlines()[-1])
+    except Exception:
+        check("branches.js runs in node", False, (res.stdout + res.stderr)[-400:])
+        return
+    doc = json.load(open(os.path.join(tree, "tree.json"), encoding="utf-8"))
+    best = [r for r in doc["roots"] if r.get("best") and r["best"].get("train") and r["best"].get("test")]
+    want = sum(1 for r in best if r["best"].get("y2026") and r["best"]["train"]["mean"] > 0 and r["best"]["test"]["mean"] > 0 and r["best"]["y2026"]["mean"] > 0
+               and r["best"]["test"]["n"] >= 10 and r["best"]["y2026"]["n"] >= 10)
+    check(f"branches: one branch per root with a best rule ({o['n']}), 'holds in every period' = positive $ per trade in train, test and 2026 on 10+ trades ({o['allPos']}, the same as an independent count)",
+          o["n"] == len(best) and o["allPos"] == want and o["filterAll"] == want and o["holds"] == sum(1 for r in best if r["best"]["holds"]), (o["n"], len(best), o["allPos"], want))
+    check("branches: filters (long + short = all, a text search, a minimum $ per trade) and the sorts are right", o["long"] + o["short"] == o["n"] and o["search"] and o["minMean"] and o["sortTest"], o)
+    h = o["hof"]
+    check("branches: the Hall of Fame holds only branches that hold in every period, ranked by their worst period, gold / silver / bronze, with a reason in dollars",
+          h["allHold"] and h["sorted"] and h["n"] == min(10, want) and h["medals"] == ["gold", "silver", "bronze"][:min(3, want)] and "Worst period still" in h["reason"], h)
+    check("branches: compare gives ten rows and a plain verdict (a branch against itself is a tie); plain words are four sentences", o["cmp"]["rows"] == 10 and o["cmp"]["text"] and "tie" in o["cmp"]["same"].lower() and o["words"] == 4 and o["wordsText"], o["cmp"])
+    st = o["stats"]
+    check(f"branches: the stats are the run's own numbers ({st['nodes']:,} nodes, {st['cutPct']}% cut, the histogram adds up to every branch, {st['placebo']} shuffled runs)",
+          st["nodes"] == o["metaNodes"] == doc["meta"]["nodes"] and st["histSum"] == o["n"] and st["placebo"] == len(doc["honesty"].get("placebo", [])) and st["cutPct"] == doc["meta"]["cut_pct"], st)
+    check("branches: the share picture has a title, a verdict, three bars and a sentence", o["share"]["title"] and o["share"]["verdict"] in ("HOLDS IN EVERY PERIOD", "HOLDS OUT OF SAMPLE", "DOES NOT HOLD") and len(o["share"]["bars"]) == 3 and len(o["share"]["text"]) > 20, o["share"])
+    check("branches: the demo data and an empty search never crash (empty lists, zero counts)", o["demo"][1] and o["demo"][2] and o["empty"] == [0, 0, 0], (o["demo"], o["empty"]))
+
+
+def test_page_plus():
+    """The 2026-11-04 page: BRANCHES (list, filters, plain words, compare, hall of fame, stats, share picture), the timeline, the seasons."""
+    import functools
+    import http.server
+    import threading
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        check("page plus: Playwright is installed (skipped)", True)
+        return
+    site = os.path.join(ROOT, "tools", "web_public")
+    doc = json.load(open(os.path.join(site, "tree", "tree.json"), encoding="utf-8"))
+    best = [r for r in doc["roots"] if r.get("best") and r["best"].get("train") and r["best"].get("test")]
+    want = sum(1 for r in best if r["best"].get("y2026") and r["best"]["train"]["mean"] > 0 and r["best"]["test"]["mean"] > 0 and r["best"]["y2026"]["mean"] > 0
+               and r["best"]["test"]["n"] >= 10 and r["best"]["y2026"]["n"] >= 10)
+
+    class Quiet(http.server.SimpleHTTPRequestHandler):
+        def log_message(self, *a):
+            pass
+    srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(Quiet, directory=site))
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    base = f"http://127.0.0.1:{srv.server_address[1]}/tree/index.html"
+    os.makedirs(PAGE_SHOTS, exist_ok=True)
+    exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
+    try:
+        with sync_playwright() as pw:
+            br = pw.chromium.launch(**({"executable_path": exe} if exe else {}))
+            ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=1)
+            ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith("http://127.0.0.1") else r.abort())
+            pg = ctx.new_page()
+            errs = []
+            pg.on("pageerror", lambda e: errs.append(str(e)))
+            pg.on("console", lambda m: errs.append(m.text) if m.type == "error" else None)
+            pg.set_default_timeout(60000)
+            pg.goto(base + "?q=off")
+            pg.wait_for_function("() => window.__daphne && window.__daphne.ready", timeout=60000)
+            pg.wait_for_timeout(500)
+            tools = pg.evaluate("[...document.querySelectorAll('.tools button, .timeline button')].map(b => Math.round(b.getBoundingClientRect().height))")
+            check("page plus: BRANCHES, SEASON, play / pause and the scrubber are on the page, every button 44 px tall", len(tools) >= 6 and all(h >= 44 for h in tools) and pg.is_visible("#scrub"), tools)
+            pg.click("#openBranches")
+            pg.wait_for_selector("#branches .br")
+            n0 = pg.evaluate("document.querySelectorAll('#branches .br').length")
+            check(f"page plus: BRANCHES opens the library: '{len(best)} of {len(best)} branches', the first 30 shown, each with its bars and a verdict", pg.inner_text("#brcount").startswith(f"{len(best)} of {len(best)}") and n0 == min(30, len(best))
+                  and pg.evaluate("document.querySelectorAll('#branches .br .mb').length") == n0 and pg.evaluate("document.querySelectorAll('#branches .br .bg').length") == n0, (n0, pg.inner_text("#brcount")))
+            pg.click('#branches [data-f="holds"][data-v="all"]')
+            check(f"page plus: 'holds in every period' leaves exactly the {want} branches that do", pg.inner_text("#brcount").startswith(f"{want} of"), pg.inner_text("#brcount"))
+            pg.click('#branches [data-f="holds"][data-v="any"]')
+            pg.fill("#brq", "asia low")
+            pg.wait_for_timeout(200)
+            m = pg.evaluate("[...document.querySelectorAll('#branches .br .k')].map(e => e.textContent)")
+            check("page plus: searching 'asia low' lists only Asia branches (the Asia-low ones among them) and typing keeps the cursor in the box", m and all(k.startswith("A") for k in m) and any(k.startswith("AL") for k in m) and len(m) < n0 and pg.evaluate("document.activeElement.id") == "brq", m[:4])
+            pg.fill("#brq", "")
+            pg.click('#branches [data-f="dir"][data-v="long"]')
+            lng = pg.evaluate("document.querySelectorAll('#branches .br').length")
+            check("page plus: LONG / SHORT filter", 0 < lng <= n0, lng)
+            pg.click('#branches [data-f="dir"][data-v="any"]')
+            pg.click("#branches [data-words] >> nth=0")
+            wd = pg.inner_text("#branches .words")
+            check("page plus: WORDS opens the branch in plain words (what it does, how it fared in each stretch, a verdict, how often it trades)", wd.count("\n") >= 3 and "trades" in wd and "$" in wd and "Numbers are $ per trade" in wd, wd[:160])
+            pg.click("#branches [data-cmp=a] >> nth=0")
+            pg.click("#branches [data-cmp=b] >> nth=1")
+            pg.wait_for_selector("#branches table.cmp")
+            rows = pg.evaluate("document.querySelectorAll('#branches table.cmp tbody tr').length")
+            saved = pg.evaluate("JSON.parse(localStorage.getItem('daphne.branches'))")
+            check("page plus: A and B put two branches side by side: ten rows, the winner of each marked, a plain verdict, kept under 'daphne.branches'",
+                  rows == 10 and pg.evaluate("document.querySelectorAll('#branches td.w').length") >= 1 and len(pg.inner_text("#cmpv")) > 15 and saved["a"] and saved["b"] and saved["a"] != saved["b"], (rows, saved))
+            pg.screenshot(path=os.path.join(PAGE_SHOTS, "plus_compare.png"))
+            pg.click('#branches [data-btab="fame"]')
+            medals = pg.evaluate("[...document.querySelectorAll('#branches .fame li')].map(li => li.className)")
+            check(f"page plus: the Hall of Fame: {len(medals)} branches that hold everywhere, gold / silver / bronze first", len(medals) == min(10, want) and medals[:3] == ["gold", "silver", "bronze"][:min(3, want)], medals)
+            pg.click('#branches [data-btab="stats"]')
+            tiles = pg.evaluate("[...document.querySelectorAll('#branches .tiles b')].map(b => b.textContent)")
+            check("page plus: STATS: nodes tested, % cut, branches, the survival rates, a histogram of 8 columns and the shuffled check",
+                  f"{doc['meta']['nodes']:,}" in tiles and f"{doc['meta']['cut_pct']}%" in tiles and pg.evaluate("document.querySelectorAll('#branches .hist > div').length") == 8
+                  and pg.evaluate("document.querySelectorAll('#branches table.cmp tbody tr').length") == 1 + len(doc["honesty"].get("placebo", [])), tiles)
+            pg.click('#branches [data-btab="fame"]')
+            pg.click("#branches [data-share] >> nth=0")
+            pg.wait_for_selector("#shareView:not([hidden])", timeout=60000)
+            pg.wait_for_function("() => { const i = document.querySelector('#shareView img'); return i && i.complete && i.naturalWidth > 0; }", timeout=30000)
+            size = pg.evaluate("(() => { const i = document.querySelector('#shareView img'); return [i.naturalWidth, i.naturalHeight, i.src.slice(0, 5)]; })()")
+            check("page plus: SHARE makes a 1080 x 1350 picture on the phone (a blob, nothing uploaded) and shows it to press and hold", size == [1080, 1350, "blob:"], size)
+            pg.screenshot(path=os.path.join(PAGE_SHOTS, "plus_share.png"))
+            pg.click("#shareClose")
+            pg.keyboard.press("Escape")
+            check("page plus: the picture closes, Escape closes the library", pg.evaluate("document.getElementById('shareView').hidden && document.getElementById('branches').hidden"))
+            # the timeline
+            pg.click('.sheet-tabs [data-tab="search"]')
+            pg.click("#play")
+            held = pg.evaluate("window.__daphne.state.hold")
+            check("page plus: pause freezes the growth clock; the button turns into play", held is not None and pg.get_attribute("#play", "aria-pressed") == "false", held)
+            pg.evaluate("() => { const s = document.getElementById('scrub'); s.value = 0; s.dispatchEvent(new Event('input', { bubbles: true })); }")
+            a = pg.evaluate("[window.__daphne.state.hold, window.__daphne.state.tree.nodes.filter(n => n.appear <= window.__daphne.state.hold).length]")
+            pg.evaluate("() => { const s = document.getElementById('scrub'); s.value = 500; s.dispatchEvent(new Event('input', { bubbles: true })); }")
+            b = pg.evaluate("[window.__daphne.state.hold, window.__daphne.state.tree.nodes.filter(n => n.appear <= window.__daphne.state.hold).length]")
+            check("page plus: the scrubber walks the tree back and forth through its growth (at the start only the root, at half many nodes)", a[0] == 0 and a[1] <= 2 and b[1] > a[1] + 20, (a, b))
+            pg.click("#play")
+            check("page plus: play lets it grow on from where it stopped", pg.evaluate("window.__daphne.state.hold") is None)
+            pg.click("#season")
+            s1 = pg.evaluate("[window.__daphne.state.season, document.getElementById('seasonT').textContent, document.getElementById('app').dataset.season]")
+            for _ in range(3):
+                pg.click("#season")
+            s2 = pg.evaluate("window.__daphne.state.season")
+            pg.click("#season")
+            check("page plus: SEASON cycles auto, spring, summer, autumn, winter and back", s1 == ["spring", "SPRING", "spring"] and s2 == "winter" and pg.evaluate("window.__daphne.state.season") == "auto", (s1, s2))
+            check("page plus: no page or console errors", not errs, errs[:3])
+            ctx.close()
+            # 3D: the seasons on the render core, the wind, the light shafts, the draw-call budget
+            ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=1)
+            ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith("http://127.0.0.1") else r.abort())
+            pg = ctx.new_page()
+            pg.set_default_timeout(120000)
+            errs3 = []
+            pg.on("pageerror", lambda e: errs3.append(str(e)))
+            pg.on("console", lambda m: errs3.append(m.text) if m.type == "error" else None)
+            pg.goto(base + "?at=9300&q=high")
+            pg.wait_for_function("() => window.__daphne && window.__daphne.ready", timeout=60000)
+            pg.wait_for_function("() => window.__daphne.glow && window.__daphne.glow.on", timeout=120000)
+            pg.wait_for_function("() => window.__daphne.glow.fx.includes('godRays') && window.__daphne.glow.season", timeout=90000)
+            g = pg.evaluate("window.__daphne.glow")
+            check(f"page plus: the 3D tree on HD: summer on the TRAIN lens by itself, light shafts from the OLYMPUS effects ({g['fx']}), within the draw-call budget ({g['stats']['calls']} <= 40)",
+                  g["season"] == "summer" and "godRays" in g["fx"] and 0 < g["stats"]["calls"] <= 40, g)
+            pg.click('.lens [data-lens="test"]')
+            pg.wait_for_function("() => window.__daphne.glow.season === 'autumn'", timeout=60000)
+            pg.evaluate("window.__daphne.state.season = 'winter'")
+            pg.wait_for_function("() => window.__daphne.glow.season === 'winter'", timeout=60000)
+            g2 = pg.evaluate("window.__daphne.glow")
+            check("page plus: the TEST lens turns the tree to autumn by itself, a chosen season (winter) wins; the weather follows (snow)", "snow" in g2["fx"] and g2["stats"]["calls"] <= 40, g2["fx"])
+            pg.screenshot(path=os.path.join(PAGE_SHOTS, "plus_winter.png"))
+            check("page plus: the 3D seasons raise no console error", not errs3, errs3[:3])
+            ctx.close()
+            br.close()
+    finally:
+        srv.shutdown()
+
+
 def test_paper_only():
     src = "".join(open(p, encoding="utf-8").read() for p in glob.glob(os.path.join(ROOT, "tools", "strategytree", "*.py")))
     check("tools/strategytree never names live_model*.json or imports engine trading code",
@@ -458,6 +650,11 @@ def test_paper_only():
 
 
 def main():
+    if "plus" in sys.argv[1:]:                        # `... plus`: the branch library (node) and its page checks only
+        test_branches_node()
+        test_page_plus()
+        print(f"strategytree plus: {sum(R)}/{len(R)} {'ALL PASS' if all(R) else 'FAIL'}")
+        return 0 if all(R) else 1
     if "page" in sys.argv[1:]:                        # `python -X utf8 -m tests.test_strategytree page`: the page only
         test_page()
         print(f"strategytree page: {sum(R)}/{len(R)} {'ALL PASS' if all(R) else 'FAIL'}")
@@ -470,7 +667,9 @@ def main():
     test_build_and_json()
     test_demo_fixture()
     test_paper_only()
+    test_branches_node()
     test_page()
+    test_page_plus()
     print(f"strategytree: {sum(R)}/{len(R)} {'ALL PASS' if all(R) else 'FAIL'}")
     return 0 if all(R) else 1
 

@@ -16,26 +16,26 @@ float noise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f);
 export const BUILD_VS = `
 attribute vec4 aPosSize; attribute vec4 aHY; attribute vec3 aColor; attribute vec2 aState; attribute float aSeed; attribute float aBob;
 uniform float uGrow; uniform float uTime; uniform float uBobAmp;
-varying vec3 vColor; varying vec4 vHY; varying vec2 vState; varying vec3 vLocal; varying vec3 vN; varying float vFD; varying float vSeed; varying float vWy;
+varying vec3 vColor; varying vec4 vHY; varying vec2 vState; varying vec3 vLocal; varying vec3 vN; varying float vFD; varying float vSeed; varying float vWy; varying vec3 vW;
 void main(){
   vColor = aColor; vHY = aHY; vState = aState; vLocal = position; vSeed = aSeed;
   float gr = clamp(uGrow * 1.8 - length(aPosSize.xy) / 700.0 - aSeed * 0.2, 0.0, 1.0); gr = gr*gr*(3.0-2.0*gr);
   float hh = aHY.x * max(gr, 0.001);
   vec3 wp = vec3(aPosSize.x + position.x * aPosSize.z, aHY.y + position.y * hh, aPosSize.y + position.z * aPosSize.w);
   wp.y += uBobAmp * sin(uTime * 0.5 + aBob * 40.0);
-  vWy = wp.y;
+  vWy = wp.y; vW = wp;
   vN = normal;
   vec4 mv = viewMatrix * vec4(wp, 1.0);
   vFD = -mv.z;
   gl_Position = projectionMatrix * mv;
 }`;
 export const BUILD_FS = `
-uniform float uTime; uniform float uDay; uniform vec3 uWinTint; uniform float uSel;
-varying vec3 vColor; varying vec4 vHY; varying vec2 vState; varying vec3 vLocal; varying vec3 vN; varying float vFD; varying float vSeed; varying float vWy;
+uniform float uTime; uniform float uDay; uniform vec3 uWinTint; uniform float uSel; uniform vec3 uCam; uniform vec3 uTop; uniform vec3 uLow; uniform vec3 uSun; uniform float uPbr;
+varying vec3 vColor; varying vec4 vHY; varying vec2 vState; varying vec3 vLocal; varying vec3 vN; varying float vFD; varying float vSeed; varying float vWy; varying vec3 vW;
 ${FOG}
 float h2(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)) + vSeed*17.0)*43758.5453); }
 void main(){
-  vec3 n = abs(vN);
+  vec3 N = normalize(vN), n = abs(N);
   float side = 1.0 - step(0.5, n.y);
   vec2 uv = n.x > 0.5 ? vec2(vLocal.z, vLocal.y) : vec2(vLocal.x, vLocal.y);
   float H = vHY.x;
@@ -43,12 +43,24 @@ void main(){
   vec2 cell = floor(g); vec2 f = fract(g);
   float win = step(0.2,f.x)*step(f.x,0.8)*step(0.28,f.y)*step(f.y,0.74);
   float rnd = h2(cell + n.xz*3.1);
-  float flick = step(0.99, h2(cell + floor(uTime*0.5 + vSeed*9.0)));
+  // the windows blink with the data: a busy building (high glow_by) flickers fast, a quiet one barely
+  float rate = 0.25 + vHY.z * 2.2;
+  float flick = step(0.985 - 0.04 * vHY.z, h2(cell + floor(uTime * rate + vSeed * 9.0)));
   float lit = abs(step(rnd, vHY.w) - flick);
-  float diff = 0.30 + 0.55*max(dot(normalize(vN), normalize(vec3(0.45,0.8,0.25))), 0.0);
-  vec3 body = mix(vColor*0.14, vColor*0.55 + 0.05, uDay) * diff * (0.7 + 0.45*vLocal.y);
+  vec3 V = normalize(uCam - vW), L = normalize(uSun.y > -0.5 ? uSun : vec3(0.45,0.8,0.25));
+  float ndv = max(dot(N, V), 0.0), fres = pow(1.0 - ndv, 3.0);
+  vec3 R = reflect(-V, N);
+  vec3 env = mix(uLow, uTop, clamp(R.y * 0.7 + 0.35, 0.0, 1.0));
+  float diff = 0.30 + 0.55*max(dot(N, L), 0.0);
+  // facade: panel grooves + a metal / concrete sheen that picks up the sky and the sun
+  float groove = 1.0 - 0.18 * (smoothstep(0.0, 0.07, f.x) * smoothstep(1.0, 0.93, f.x) < 0.5 ? 1.0 : 0.0) * side;
+  vec3 body = mix(vColor*0.14, vColor*0.55 + 0.05, uDay) * diff * (0.7 + 0.45*vLocal.y) * groove;
+  float spec = pow(max(dot(R, L), 0.0), 38.0) * (0.25 + 0.75 * (1.0 - win));
+  body += (env * (0.10 + 0.5 * fres) + vec3(1.0, 0.95, 0.85) * spec * 0.55) * uPbr * (0.4 + 0.6 * side);
   vec3 warm = mix(uWinTint, vColor, 0.35 + 0.3*step(0.5, h2(cell*1.7)));
   vec3 col = body + side*win*lit*warm*mix(1.4, 0.45, uDay);
+  // glass: dark panes reflect the sky at a grazing angle, sparkle in the sun
+  col += side * win * (1.0 - lit) * (env * (0.18 + 0.9 * fres) + vec3(1.0) * spec * 0.9) * uPbr;
   float tall = smoothstep(2.0, 18.0, H);
   float edge = smoothstep(0.44, 0.5, abs(uv.x)) * side;
   float crown = smoothstep(0.93, 1.0, vLocal.y) * side;
@@ -213,3 +225,40 @@ void main(){
   else a = smoothstep(0.5, 0.05, length(q)) * (vK == 4.0 || vK == 3.0 ? vTw : 0.85);
   gl_FragColor = vec4(uTint * (vK == 4.0 || vK == 3.0 ? 2.0 : 1.0), a * vA);
 }`;
+
+export const WATER_VS = `varying vec3 vW; uniform float uTime; uniform float uBend;
+void main(){ vec3 p = position; p.x += sin(p.y * 0.012 + 1.0) * uBend; vec4 w = modelMatrix * vec4(p, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`;
+export const WATER_FS = `
+uniform vec3 uCam; uniform vec3 uTop; uniform vec3 uLow; uniform vec3 uAccent; uniform vec3 uFog; uniform float uFogD; uniform float uTime; uniform vec3 uSun;
+varying vec3 vW;
+${HASH}
+void main(){
+  vec2 p = vW.xz * 0.06;
+  float w = noise(p + vec2(uTime * 0.25, uTime * 0.1)) + noise(p * 2.3 - vec2(uTime * 0.2, 0.0)) * 0.5;
+  vec3 N = normalize(vec3((w - 0.75) * 0.5, 1.0, (noise(p * 1.7 + 4.0) - 0.5) * 0.5));
+  vec3 V = normalize(uCam - vW), R = reflect(-V, N);
+  float fres = pow(1.0 - max(dot(N, V), 0.0), 2.5);
+  vec3 sky = mix(uLow, uTop, clamp(R.y, 0.0, 1.0));
+  vec3 col = mix(uAccent * 0.08 + uLow * 0.25, sky, 0.25 + 0.75 * fres) + vec3(1.0) * pow(max(dot(R, normalize(uSun)), 0.0), 120.0) * 0.8 + uAccent * 0.05 * w;
+  float d = length(vW - uCam);
+  col = mix(col, uFog, clamp(1.0 - exp(-uFogD*uFogD*d*d), 0.0, 1.0));
+  gl_FragColor = vec4(col, 0.93);
+}`;
+
+export const FW_VS = `
+attribute vec3 aOrigin; attribute vec4 aDir; attribute vec3 aColor; attribute float aT0;
+uniform float uTime; uniform float uPR;
+varying vec3 vColor; varying float vA;
+void main(){
+  float age = uTime - aT0;
+  float life = 2.4;
+  vec3 p = aOrigin + aDir.xyz * aDir.w * (1.0 - exp(-age * 1.6)) * 2.2;
+  p.y -= 9.0 * age * age * 0.5;
+  vA = (age > 0.0 && age < life) ? (1.0 - age / life) * (0.6 + 0.4 * sin(age * 40.0 + aDir.w)) : 0.0;
+  vColor = aColor;
+  vec4 mv = viewMatrix * vec4(p, 1.0);
+  gl_PointSize = clamp(5.0 * uPR * 220.0 / max(1.0, -mv.z), 1.0, 22.0 * uPR) * step(0.001, vA);
+  gl_Position = projectionMatrix * mv;
+}`;
+export const FW_FS = `varying vec3 vColor; varying float vA;
+void main(){ vec2 q = gl_PointCoord - 0.5; float a = pow(max(1.0 - length(q) * 2.0, 0.0), 1.8) * vA; gl_FragColor = vec4(vColor * a * 2.2, a); }`;

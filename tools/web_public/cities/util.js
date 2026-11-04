@@ -39,6 +39,13 @@ export function cityOfDay(dateStr, ids) {
   if (!ids || !ids.length) return null;
   return ids[hash32('cities:' + dateStr) % ids.length];
 }
+/** The random city of the day: a 6-letter seed from the date (same in Python: tools/cities_card.py). */
+export function seedOfDay(dateStr) {
+  const A = 'abcdefghjkmnpqrstuvwxyz23456789';
+  let h = hash32('seed:' + dateStr), s = '';
+  for (let i = 0; i < 6; i++) { s += A[h % A.length]; h = Math.floor(h / A.length) + hash32(s + dateStr) % 7; }
+  return s;
+}
 export const todayStr = (d = new Date()) => {
   const p = (x) => String(x).padStart(2, '0');
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;

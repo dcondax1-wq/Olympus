@@ -3,10 +3,16 @@
 // textContent (no data ever becomes HTML). Read only: nothing here writes anywhere. window.KC is the test hook.
 import { RAW, shape, cardOf, headlineOf, usd, pct, evf, pts, STATUS_COLOR, STATUS_WORD, ADVICE, etHour, clockLabel, phaseWord, MIN_N } from './cityfeed.js';
 import { layout } from './citylayout.js';
+import { lessonsView, historyView, ASK_MESSAGE } from './lessons.js';
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
-const S = { model: null, L: null, demo: true, scene: null, view: '', ready: false, error: null, sel: null, logMore: 40, liveFailed: false, preview: null };
+const KEY = 'kalshicity.v1';
+const store = {
+  read() { try { const v = JSON.parse(localStorage.getItem(KEY) || 'null'); return v && typeof v === 'object' ? v : {}; } catch (_) { return {}; } },
+  write(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (_) { /* private mode */ } },
+};
+const S = { learned: null, sound: false, copied: false, model: null, L: null, demo: true, scene: null, view: '', ready: false, error: null, sel: null, logMore: 40, liveFailed: false, preview: null };
 const reduced = () => (O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches));
 function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; }
 const kids = (el, ...c) => { el.replaceChildren(...c.flat().filter(Boolean)); return el; };
@@ -33,19 +39,20 @@ function renderTop() {
   $('bot').textContent = `${bot}${seen}${age}`;
   $('bot').hidden = false;
   const wx = $('wx'), r = m.regime;
-  wx.textContent = `${{ clear: 'Clear', overcast: 'Overcast', rain: 'Rain', storm: 'Storm' }[r.state]}${r.paused ? ' · bot paused (fog)' : ''}`;
-  wx.dataset.wx = r.state; wx.title = r.why;
+  wx.textContent = `${{ clear: 'Clear', overcast: 'Overcast', rain: 'Rain', storm: 'Storm' }[r.state]}${r.paused ? ' · fog' : ''}`;
+  wx.dataset.wx = r.state; wx.title = r.why + (r.paused ? '. Fog: the bot is paused.' : '');
   $('demo').hidden = !S.demo;
 }
 function renderClock() {
   const hr = S.scene ? S.scene.hour() : (S.preview != null ? S.preview : etHour());
   const c = $('clock');
-  c.textContent = `${clockLabel(hr)} ET · ${phaseWord(hr)}${S.preview != null ? ' (preview)' : ''}`;
+  c.textContent = `${clockLabel(hr)} · ${phaseWord(hr)}`;
+  c.title = `New York time${S.preview != null ? ' (a preview: tap for the next hour)' : ''}`;
   c.classList.toggle('preview', S.preview != null);
 }
 
 // ------------------------------------------------------------------------------------------------ sheets
-const TITLES = { learn: 'What the city learned', board: 'Leaderboard: the best edges', moves: 'Do more · Stop doing', risk: 'Risk and sizing', guide: 'How to read the city', card: '' };
+const TITLES = { learn: 'What the city learned', board: 'Leaderboard: the best edges', moves: 'Do more · Stop doing', risk: 'Risk and sizing', guide: 'How to read the city', lessons: 'What we learned', history: 'Ask for the full history', card: '' };
 
 function edgeRow(e, i, extra) {
   const b = h('button', `row-btn${e.small ? ' grey' : ''}`); b.type = 'button'; b.dataset.id = e.id;
@@ -121,6 +128,8 @@ function guideView() {
     lg('#8f9bff', 'Going up with a crane: a new edge. Crumbling with embers: one that just died.'),
     lg('#2ef2d0', 'Roads: capital out (cool cars), bets that came back (gold won, red lost). Pink cars are the bot\'s open orders.'),
     lg('#ff9a3c', 'Weather is the last 7 days: clear, overcast, rain, storm. Fog means the bot is paused. Day and night follow New York time.'),
+    lg('#2ef2d0', 'The scanner (the round button) sweeps the city when the engine learns something new, and the buildings it learned light up. Fireworks mark a new DO MORE edge.'),
+    lg('#ff4d57', 'Neon signs name the tallest edges (flickering = fading, STOP = dead). Lightning means a storm or a high risk of ruin; in rain every glowing building reflects on the street. The note button turns the ambience on.'),
     lg('#ffe08a', 'The gold beam marks the best proven edge. The red/green lighthouse shows the risk of ruin.'),
     h('p', 'warnbox', 'The dark towers far away are scenery: they carry no data. Only buildings inside a district are real edges.'),
     S.startedDemo ? null : demoButton(),
@@ -155,7 +164,7 @@ function openSheet(view) {
   S.view = view;
   const e = view === 'card' ? S.model.byId.get(S.sel) : null;
   $('sheetTitle').textContent = view === 'card' ? (e ? e.label : '') : TITLES[view];
-  kids($('sheetBody'), view === 'learn' ? learnView() : view === 'board' ? boardView() : view === 'moves' ? movesView() : view === 'risk' ? riskView() : view === 'guide' ? guideView() : cardView());
+  kids($('sheetBody'), view === 'learn' ? learnView() : view === 'board' ? boardView() : view === 'moves' ? movesView() : view === 'risk' ? riskView() : view === 'guide' ? guideView() : view === 'lessons' ? lessonsView(S.learned, () => openSheet('history')) : view === 'history' ? historyView(S) : cardView());
   $('sheet').hidden = false;
   $('sheetBody').scrollTop = 0;
   document.querySelectorAll('#pills button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === view)));
@@ -169,7 +178,7 @@ function closeSheet() {
 }
 function selectEdge(id, fly) {
   if (!id || !S.model.byId.has(id)) { if (S.view === 'card') closeSheet(); return; }
-  S.sel = id;
+  S.sel = id; sfx('tick');
   if (S.scene) { S.scene.select(id); if (fly) S.scene.focus(id); }
   openSheet('card');
 }
@@ -187,11 +196,42 @@ function postCard() {
   try { window.parent.postMessage({ jarvis: 1, href: location.href, card: card() }, 'https://demetrades2000-coder.github.io'); } catch (_) { /* not inside Jarvis */ }
 }
 
+// ------------------------------------------------------------------------------------------------ sound, the edge scanner, fireworks, refresh
+function sfx(name) { try { if (S.sound && O && O.sfx) O.sfx(name); } catch (_) { /* the sound is never needed */ } }
+function renderSound() { const b = $('sound'); b.setAttribute('aria-pressed', String(S.sound)); b.setAttribute('aria-label', `Sound: ${S.sound ? 'on' : 'off'}`); b.title = `Sound ${S.sound ? 'on' : 'off'}: ambience, thunder, ticks`; }
+function toast(text) { const FXL = window.OLYMPUS_FX; if (!FXL || !FXL.load) return; FXL.load('burst').then(() => { try { FXL.toast(document.body, { text, kind: 'ok', seconds: 3.6 }); } catch (_) { /* skip */ } }); }
+/** what the engine learned today (the log lines of the model's day that name a building) */
+function newLessons() { const m = S.model; return m.log.filter((x) => x.d === m.day && (x.kind === 'learned' || x.kind === 'changed') && x.id && m.byId.has(x.id)); }
+function runScan(announce) {
+  const L = newLessons(), ids = [...new Set(L.map((x) => x.id))].slice(0, 12), more = [...new Set(L.filter((x) => x.advice === 'do_more').map((x) => x.id))].slice(0, 3);
+  S.fw = more; S.fwLeft = 3;
+  if (S.scene) { S.scene.scan(ids); if (more.length) S.scene.fireworks(more); }
+  if (announce) toast(more.length ? `New DO MORE edge: ${S.model.byId.get(more[0]).label}` : ids.length ? `The engine learned ${ids.length} thing${ids.length === 1 ? '' : 's'} today` : 'Scan: nothing new today');
+  if (more.length) sfx('rankup');
+  return { ids, more };
+}
+function greetNew() {                                                    // once per new batch of lessons: the scanner sweeps and fireworks mark the new DO MORE edges
+  const st = store.read(), newest = S.model.log.reduce((m, x) => Math.max(m, x.t || 0), 0);
+  if (newest && newest > (st.seen || 0) && newLessons().length) setTimeout(() => runScan(true), 1800);
+  store.write({ ...st, seen: Math.max(st.seen || 0, newest) });
+}
+async function refresh() {                                               // every 5 minutes: the engine's files and the bot's numbers again; something new = scan
+  if (document.hidden || S.startedDemo || S.showingDemo || !S.scene) return;
+  const [edges, log, live] = await Promise.all([getJSON('edges.json'), getJSON('learning_log.json'), getJSON(RAW, 8000)]);
+  const m = shape(edges, log, live);
+  if (!m || m.edges.length < 3) return;
+  const newer = m.log.length > S.model.log.length, changed = m.t !== S.model.t;
+  S.model = m;
+  if (changed) { S.L = layout(m); S.scene.rebuild(m, S.L); } else S.scene.setBook(m);
+  renderTop();
+  if (newer) runScan(true);
+}
+
 // ------------------------------------------------------------------------------------------------ start
 async function startScene() {
   try {
     const { createCity } = await import('./cityscene.js');
-    S.scene = createCity($('city'), { O, model: S.model, layout: S.L });
+    S.scene = createCity($('city'), { O, model: S.model, layout: S.L, sound: () => S.sound });
     $('lite').hidden = !S.scene.lite();
     S.scene.onQuality(() => { $('lite').hidden = !S.scene.lite(); });
     S.scene.onPick((id) => { if (id) selectEdge(id, false); else if (S.view === 'card') closeSheet(); });
@@ -205,9 +245,15 @@ async function startScene() {
 
 function wire() {
   document.querySelectorAll('#pills button').forEach((b) => b.addEventListener('click', () => (S.view === b.dataset.view ? closeSheet() : openSheet(b.dataset.view))));
-  document.querySelectorAll('#cams button').forEach((b) => b.addEventListener('click', () => { if (S.scene) S.scene.setMode(b.dataset.cam); document.querySelectorAll('#cams button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); }));
+  document.querySelectorAll('#cams button').forEach((b) => b.addEventListener('click', () => { if (S.scene) S.scene.setMode(b.dataset.cam); sfx('portal'); document.querySelectorAll('#cams button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); }));
   $('guideBtn').addEventListener('click', () => (S.view === 'guide' ? closeSheet() : openSheet('guide')));
   $('close').addEventListener('click', closeSheet);
+  $('sound').addEventListener('click', () => {
+    S.sound = !S.sound; store.write({ ...store.read(), sound: S.sound }); renderSound();
+    if (S.sound && O && O.sfx) { O.sfx('tap'); setTimeout(() => O.sfx('pad'), 700); } else if (window.OLYMPUS_SFX) { try { window.OLYMPUS_SFX.stop('pad'); } catch (_) { /* nothing playing */ } }
+  });
+  document.addEventListener('pointerdown', () => { if (S.sound && !S.padOn && O && O.sfx) { S.padOn = true; O.sfx('pad'); } }, { once: true });
+  $('scan').addEventListener('click', () => { runScan(true); });
   $('clock').addEventListener('click', () => {                          // live -> 06:00 -> 12:00 -> 18:00 -> 00:00 -> live
     const seq = [null, 6, 12, 18, 0], i = seq.indexOf(S.preview);
     S.preview = seq[(i + 1) % seq.length];
@@ -223,8 +269,10 @@ function wire() {
 }
 
 async function main() {
-  const [edges, log, live] = await Promise.all([getJSON('edges.json'), getJSON('learning_log.json'), getJSON(RAW, 8000)]);
+  const [edges, log, live, learned] = await Promise.all([getJSON('edges.json'), getJSON('learning_log.json'), getJSON(RAW, 8000), getJSON('learned.json')]);
   S.liveFailed = !live;
+  S.learned = learned && Array.isArray(learned.buckets) ? learned : null;
+  S.sound = !!store.read().sound;
   let model = shape(edges, log, live);
   S.demo = !model || model.edges.length < 3;
   if (S.demo) {                                                          // the engine's files are not there: the recorded copy (DEMO)
@@ -233,12 +281,13 @@ async function main() {
   }
   if (!model) { S.error = 'no data'; if (O) O.fail ? O.fail('The city has no data yet.') : O && O.ready(); return; }
   S.model = model; S.L = layout(model); S.startedDemo = S.demo;
-  renderTop(); renderClock(); wire();
+  renderTop(); renderClock(); renderSound(); wire();
   await startScene();
   document.body.dataset.ready = '1';
   setInterval(renderClock, 15000);
   if (S.scene) setInterval(() => { if (S.preview == null) renderClock(); }, 5000);
   postCard();
+  if (S.scene && !S.startedDemo) { greetNew(); setInterval(refresh, 5 * 60 * 1000); setInterval(() => { if (!document.hidden && S.fw && S.fw.length && S.fwLeft-- > 0 && S.scene) S.scene.fireworks(S.fw); }, 22000); }
   if (O && S.scene) O.ready();
   S.ready = true;
 }
@@ -248,6 +297,7 @@ window.KC = {
     regime: S.model && S.model.regime, districts: S.L ? S.L.districts.map((d) => d.key) : [], buildings: S.L ? S.L.buildings.length : 0, scene: S.scene ? S.scene.stats() : null, preview: S.preview }),
   model: () => S.model, layout: () => S.L, scene: () => S.scene,
   open: openSheet, close: closeSheet, select: (id) => selectEdge(id, true), where: (id) => (S.scene ? S.scene.where(id) : null), pick: (x, y) => (S.scene ? S.scene.pick(x, y) : null),
+  scan: runScan, sound: (on) => { S.sound = !!on; renderSound(); }, fx: () => (S.scene ? S.scene.fxStats() : null), ask: ASK_MESSAGE, learned: () => S.learned, refresh,
   hour: (v) => { S.preview = v; if (S.scene) S.scene.setHour(v); renderClock(); }, mode: (k) => { if (S.scene) S.scene.setMode(k); }, card,
 };
 main();

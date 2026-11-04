@@ -16,6 +16,7 @@ import * as M from '../olympus/materials.js';
 import { scenery, rng } from './citylayout.js';
 import { STATUS_COLOR, dayFactor, etHour } from './cityfeed.js';
 import { Rig } from './cityrig.js';
+import { createCityFx } from './cityfx.js';
 
 const TIERS = {
   ultra: { scn: 4200, cars: 420, rain: 3400, embers: 40, labels: true },
@@ -92,7 +93,7 @@ function labelSprite(text, color) {
   return sp;
 }
 
-export function createCity(canvas, { O = null, model, layout }) {
+export function createCity(canvas, { O = null, model, layout, sound = () => false }) {
   const reduced = () => (O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches));
   const scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2(0x10204a, 0.0034);
@@ -102,6 +103,8 @@ export function createCity(canvas, { O = null, model, layout }) {
   const rc = createRenderer({ canvas, scene, camera, env: 'night', tint: '#2ef2d0', exposure: 0.92, maxDpr: 1.75, bloom: { strength: 0.5, radius: 0.35, threshold: 1.15 },
     onQuality: (l) => { lite = l === 'low' || l === 'off'; applyTier(); dirty = true; if (qcb) qcb(l); } });
   lite = rc.quality() === 'low' || rc.quality() === 'off';
+  const fxl = createCityFx({ scene, camera, rc, O, sound });
+  let skySt = { tw: 0, day: 0, sun: [0, 100, 0], hour: 21 }, hl = [];
 
   // ---- lights, sky
   const hemi = new THREE.HemisphereLight('#7a8cff', '#0a0e18', 0.6); scene.add(hemi);
@@ -190,6 +193,7 @@ export function createCity(canvas, { O = null, model, layout }) {
     buildSkyway();
     buildWeatherFx();
     applyTier();
+    fxl.rebuild(world, L, M0, bIndex);
     dirty = true;
   }
 
@@ -394,6 +398,8 @@ export function createCity(canvas, { O = null, model, layout }) {
     // the sun by day, the moon by night, on a fixed arc over the city
     const ph = ((h >= 6 && h <= 18) ? (h - 6) / 12 : (((h + 6) % 24) / 12)) * Math.PI, el = Math.sin(ph);
     const dir = new THREE.Vector3(Math.cos(ph) * 0.9, el * 0.8 + 0.1, -0.45).normalize();
+    skySt = { tw, day, sun: [dir.x * 300, dir.y * 300, dir.z * 300], hour: h };
+    ground.material.roughness = 0.42 - 0.32 * Math.min(1, W.rain); ground.material.clearcoat = 0.6 + 0.4 * Math.min(1, W.rain);   // wet streets shine
     sun.position.copy(dir).multiplyScalar(300); sun.color.copy(day > 0.3 ? C('#ffe2c0') : C('#9fb4ff')); sun.intensity = (day > 0.2 ? 0.7 + 1.3 * day : 0.45) * (1 - grey * 0.5) * (0.4 + 0.6 * el);
     orb.position.copy(dir).multiplyScalar(1250); orb.material.color.copy(day > 0.3 ? hdr('#ffe9b0', 3) : hdr('#cfd9ff', 1.7)); orb.scale.setScalar(day > 0.3 ? 1.0 : 0.7); orb.visible = grey < 0.7;
     stars.material.uniforms.uColor.value.setScalar(Math.max(0, 1 - day * 1.6) * (1 - grey * 0.7) * 0.9);
@@ -438,6 +444,12 @@ export function createCity(canvas, { O = null, model, layout }) {
     bMesh.geometry.attributes.aAnim.needsUpdate = true; dirty = true;
   }
 
+  function highlight(ids, secs) {
+    const now = performance.now() / 1000;
+    for (const id of ids) { const i = bIndex.get(id); if (i == null) continue; bMesh.geometry.attributes.aAnim.setZ(i, 2); hl.push({ id, until: now + secs }); }
+    bMesh.geometry.attributes.aAnim.needsUpdate = true; dirty = true;
+  }
+
   // ---- the camera rig
   let modeCb = null;
   const rig = new Rig(camera, canvas, { calm: reduced(), extent: L.extent, onChange: () => { dirty = true; }, onMode: (k) => { mode = k; if (modeCb) modeCb(k); },
@@ -457,7 +469,8 @@ export function createCity(canvas, { O = null, model, layout }) {
     if (camera.fov !== fov) { camera.fov = fov; camera.updateProjectionMatrix(); }
     const W = weatherOf();
     U.uTime.value = t - t0; U.uAnimT.value = still ? 1e3 : t - t0 - 1.2;
-    if (!still && M0.regime.state === 'storm') {
+    const fxStorm = fxl.stats().live.includes('lightning');
+    if (!still && M0.regime.state === 'storm' && !fxStorm) {
       nextFlash -= dt; if (nextFlash < 0) { flash = 1; nextFlash = 3 + Math.random() * 7; }
     }
     flash = Math.max(0, flash - dt * 2.5);
@@ -472,6 +485,9 @@ export function createCity(canvas, { O = null, model, layout }) {
     if (lighthouse && lighthouse.userData.sweep) { const sw = lighthouse.userData.sweep; sw.rotation.y = still ? 0 : t * 1.4; }
     for (const b of [tower && tower.userData.beam, fame, obs && obs.userData.beam, marker && marker.userData.beam, lighthouse && lighthouse.userData.sweep]) if (b && b.update) b.update(t);
     if (marker && marker.visible) marker.userData.ring.scale.multiplyScalar(1 + (still ? 0 : Math.sin(t * 4) * 0.0015));
+    const ruinHigh = M0.book.ruinNow != null && M0.book.ruinNow >= 0.9;
+    fxl.update({ t: t - t0, tier: rc.quality(), reduced: still, tw: skySt.tw, night: 1 - skySt.day, hour: skySt.hour, sun: skySt.sun, weather: M0.regime.state, wet: Math.min(1, W.rain), stormy: M0.regime.state === 'storm' || (ruinHigh && W.rain > 0) });
+    for (let i = hl.length - 1; i >= 0; i--) if (t > hl[i].until) { if (hl[i].id !== selected && bIndex.has(hl[i].id)) { bMesh.geometry.attributes.aAnim.setZ(bIndex.get(hl[i].id), 1); bMesh.geometry.attributes.aAnim.needsUpdate = true; } hl.splice(i, 1); }
     if (rc.render()) drawn++;
     frames++; dirty = false;
   }
@@ -486,11 +502,12 @@ export function createCity(canvas, { O = null, model, layout }) {
     hour: () => (hourOverride != null ? hourOverride : hour), live: () => hourOverride == null,
     select: setSel, selected: () => selected, setMode(k) { rig.setMode(k, L); }, mode: () => rig.mode, onMode(cb) { modeCb = typeof cb === 'function' ? cb : null; },
     focus(id) { const i = bIndex.get(id); if (i == null) return; const b = L.buildings[i]; rig.focus(b.x, Math.min(b.fullH, 30) * 0.5, b.z, 34 + b.fullH * 0.9, 0.95); },
+    fireworks: (ids) => fxl.fireworks(ids), scan: (ids) => { const ok = fxl.scan(ids, { highlight }); dirty = true; return ok; }, strike: () => fxl.strike(), fxStats: () => fxl.stats(),
     pick, where, onPick(cb) { pickCb = typeof cb === 'function' ? cb : null; }, onQuality(cb) { qcb = typeof cb === 'function' ? cb : null; },
     lite: () => lite, quality: () => rc.quality(), render: () => { dirty = true; },
     stats: () => ({ frames, drawn, quality: rc.quality(), passes: rc.passes().length, real: realN, scenery: bMesh ? bMesh.count - realN : 0, cars: cars ? cars.count : 0, orders, buildingsTotal: bMesh ? bMesh.count : 0,
       rain: rain ? rain.visible : false, weather: M0.regime.state, paused: M0.regime.paused, hour: hourOverride != null ? hourOverride : hour, mode: rig.mode, selected, roads: L.roads.length, districts: L.districts.length,
-      constructing: L.buildings.filter((b) => b.mode === 1).length, crumbling: L.buildings.filter((b) => b.mode === 2).length, draw: rc.stats ? rc.stats() : null }),
-    dispose() { stopped = true; cancelAnimationFrame(raf); disposeWorld(); rc.dispose(); },
+      fx: fxl.stats(), constructing: L.buildings.filter((b) => b.mode === 1).length, crumbling: L.buildings.filter((b) => b.mode === 2).length, draw: rc.stats ? rc.stats() : null }),
+    dispose() { stopped = true; cancelAnimationFrame(raf); fxl.dispose(); disposeWorld(); rc.dispose(); },
   };
 }

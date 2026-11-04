@@ -85,6 +85,8 @@ export const BUILT_INS = Object.freeze([
   app('nemesis', 'Nemesis', 'trading', '#8a6bff', 'The fallen trades: what went wrong', { glyph: '\u039d' }),
   app('chronos', 'Chronos', 'trading', '#d4a574', 'Time and the session clock', { glyph: '\u03a7' }),
   app('hephaestus', 'Hephaestus', 'trading', '#d96bff', 'The forge: tune the dials', { glyph: '\u2692' }),
+  app('cities', 'Cities', 'trading', '#a68bff', 'A world of city islands', { glyph: '\u25C8' }),
+  app('kalshicity', 'Kalshi City', 'money', '#2ef2d0', "The Kalshi bot's edges as a night city", { glyph: 'K' }),
   app('bridge', 'Bridge', 'trading', '#34d399', 'Link ChatGPT: 3 steps, live job status', { glyph: '\u0392' }),
   app('planner', 'Planner', 'life', '#60a5fa', 'Calendar, tasks and projects', { icon: '../planner/icon-192.png', live: false }),
   app('mind', 'Mind', 'life', '#5eead4', 'Your vault as a living 3D brain', { glyph: '\u03a9' }),

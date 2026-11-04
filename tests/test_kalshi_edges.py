@@ -6,6 +6,7 @@
   c. the feed-total edges (strategy / market / price band) against the feed's own numbers, and the 7 / 30 day windows of the totals from snapshots
   d. the learning log: append-only (old lines byte-identical), idempotent (a rerun adds nothing), a new verdict, a status change (HOLDING -> DEAD), honest small samples
   e. robustness: junk rows, duplicates, an unreachable feed leaves every file as it was, history from a folder and from a git clone
+  e2. the one-off order export (CSV: time, ticker, side, book, contracts, price, pnl) joins the ledger and unlocks hour-of-day edges
   f. the shipped files: edges.json / ledger.json / learning_log.json / jarvis.json agree with each other and the fixture is exactly what tools/kalshi_demo.py makes
     python -X utf8 -m tests.test_kalshi_edges
 """
@@ -26,6 +27,7 @@ from zoneinfo import ZoneInfo
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 from tools import kalshi_demo as kd  # noqa: E402
+from tools import kalshicity_learned as kl  # noqa: E402
 from tools import kalshi_edges as ke  # noqa: E402
 
 RES = []
@@ -410,6 +412,43 @@ def part_e():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def part_e2():
+    tmp = tempfile.mkdtemp(prefix="kc_csv_")
+    try:
+        t0 = int(datetime(2026, 11, 2, 21, 0, tzinfo=NY).timestamp())
+        rows = ["Time,Ticker,Side,Book,Contracts,Price,PnL"]
+        for i in range(60):                                               # 60 bets in two ET hour blocks: the 08-12 block wins, the 20-24 block loses
+            day_t = datetime(2026, 10, 20 + i % 10, 9 if i < 30 else 21, 15, tzinfo=NY).astimezone(ZoneInfo("UTC"))
+            win = (i % 10 != 0) if i < 30 else (i % 3 == 0)
+            rows.append(f"{day_t:%Y-%m-%dT%H:%M:%SZ},KXETHD-26OCT2009-T{i},{'yes' if i % 2 else 'no'},Late favourite (BTC hourly),5,{97 if i % 2 else 0.97},{0.15 if win else -4.85}")
+        rows.append(f"2026-10-30T12:00:00Z,KXBTCD-OPEN,yes,Late favourite (BTC hourly),5,0.97,")       # still open: skipped
+        rows.append("junk,,,,,,")
+        path = os.path.join(tmp, "orders.csv")
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write("\n".join(rows) + "\n")
+        got = ke.orders_trades(path)
+        check("e. the order CSV: 60 filled rows parsed (column names matched loosely, prices in cents or dollars, the open order and the junk row skipped), the coin read from the ticker (KXETHD is Ethereum)",
+              len(got) == 60 and all(t["m"] == "Ethereum" and abs(t["p"] - 0.97) < 1e-9 and t["c"] == 5.0 for t in got) and ke.asset_of_ticker("KXBTCD-26NOV0211") == "Bitcoin"
+              and ke.asset_of_ticker("KXDOGE15M-X") == "Dogecoin" and ke.asset_of_ticker("KXWEIRD-1") == "Other", (len(got), got[:1]))
+        feed = mini_feed(t0)
+        doc, _, new = ke.run(feed, tmp, now=t0, orders=[path])
+        hours = {e["dims"][2]: e for e in doc["edges"] if e["kind"] == "hour"}
+        m_day = m_group(ke.read_json(os.path.join(tmp, "ledger.json"), {})["trades"], ["*", "*", "08-12 ET", "*", "*"])
+        check("e. with the export in the ledger the hour-of-day edges exist (08-12 ET and 20-24 ET) and equal a brute-force recount; a rerun adds nothing",
+              new == 100 and "08-12 ET" in hours and hours["08-12 ET"]["n"] == m_day["n"] and close(hours["08-12 ET"]["ev"], m_day["ev"], 1e-4)
+              and ke.run(feed, tmp, now=t0, orders=[path])[2] == 0, (new, sorted(hours)))
+        bad = os.path.join(tmp, "bad.csv")
+        with open(bad, "w", encoding="utf-8") as fh:
+            fh.write("a,b\n1,2\n")
+        try:
+            ke.orders_trades(bad)
+            check("e. a CSV without the needed columns is refused", False)
+        except ValueError:
+            check("e. a CSV without the needed columns is refused", True)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 # ------------------------------------------------------------------------------------------------ f. the shipped files
 def part_f():
     edges = ke.read_json(os.path.join(PAGE, "edges.json"), None)
@@ -428,6 +467,11 @@ def part_f():
     check("f. the Jarvis card keeps the contract (name, status, 3 kpis, <= 3 lines of <= 120, t, open, theme, < 8 KB, plain text)",
           card["v"] == 1 and card["name"] == "Kalshi City" and card["status"]["level"] in ("ok", "warn", "bad", "off") and len(card["kpis"]) == 3 and len(card["lines"]) <= 3
           and all(len(x) <= 120 for x in card["lines"]) and isinstance(card["t"], int) and os.path.getsize(os.path.join(PAGE, "jarvis.json")) < 8192 and not any(c in json.dumps(card) for c in "<>"))
+    with open(os.path.join(ROOT, "research", "kalshi", "edge_tables.json"), encoding="utf-8") as fh:
+        tables = json.load(fh)
+    learned = ke.read_json(os.path.join(PAGE, "learned.json"), None)
+    check("f. learned.json is exactly what tools/kalshicity_learned.py makes from research/kalshi/edge_tables.json (headline, fees, bands, ruin sims, ideas)", learned == kl.build(tables) and learned["headline"] == tables["verdict"]["headline"]
+          and learned["fees"]["total"] == tables["fees"]["drag"]["fees_est_total"] and learned["ruin"]["rows"][0]["p_ruin"] == tables["risk"]["sims"]["late_favourite"][0]["p_ruin"] and len(learned["ideas"]) == len(tables["ideas"]))
     fx = ke.read_json(os.path.join(PAGE, "fixture.json"), None)
     mine = kd.build(36)
     check("f. fixture.json is exactly what tools/kalshi_demo.py makes (deterministic, seed 36), marked demo", fx == mine and fx["demo"] is True and fx["edges"]["counts"]["edges"] > 400)
@@ -454,6 +498,7 @@ def main():
     part_bc()
     part_d()
     part_e()
+    part_e2()
     part_f()
     print(f"\n{sum(RES)}/{len(RES)} passed")
     return 0 if all(RES) else 1

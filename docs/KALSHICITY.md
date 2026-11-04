@@ -5,10 +5,12 @@ A night city built from the Kalshi bot's bets, plus the engine that keeps learni
 
 | Piece | File | What it does |
 |---|---|---|
-| The engine | `tools/kalshi_edges.py` | reads `kalshi.json`, keeps every bet it has ever seen (`ledger.json`), re-measures every edge, writes `edges.json`, appends dated lessons to `learning_log.json`, writes `jarvis.json` |
+| The engine | `tools/kalshi_edges.py` | reads `kalshi.json`, keeps every bet it has ever seen (`ledger.json`), re-measures every edge, writes `edges.json`, appends dated lessons to `learning_log.json`, writes `jarvis.json`. `--orders FILE.csv` adds the one-off order export (hour-of-day edges) |
+| The refresh | `.github/workflows/kalshicity.yml`, `tools/cronos/registry.py` | every 6 hours, state on the `kalshicity` branch, the three site files pulled into `kalshicity/` at every publish (CRONOS, `docs/CRONOS.md`) |
 | The demo | `tools/kalshi_demo.py` | 1,500 invented bets with planted edges -> `fixture.json` (the DEMO city, offline) |
-| The page | `tools/web_public/kalshicity/` | `cityfeed.js` data, `citylayout.js` where everything stands, `cityscene.js` the 3D city on the OLYMPUS render core, `cityrig.js` cameras, `kalshicity.js` the page |
-| Tests | `tests/test_kalshi_edges.py`, `tests/test_kalshicity_page.py` | engine maths vs an independent mirror (46 checks); modules in node + the page at 390 x 844 |
+| The lessons | `tools/kalshicity_learned.py` | `research/kalshi/edge_tables.json` -> `learned.json` (the "What we learned" sheet; the page writes the words from the numbers) |
+| The page | `tools/web_public/kalshicity/` | `cityfeed.js` data, `citylayout.js` where everything stands, `cityscene.js` the 3D city on the OLYMPUS render core, `cityfx.js` the effects, `cityrig.js` cameras, `lessons.js` lessons + ask card, `kalshicity.js` the page |
+| Tests | `tests/test_kalshi_edges.py`, `tests/test_kalshicity_page.py`, `tests/test_cronos.py` | engine maths vs an independent mirror (50); modules in node + the page at 390 x 844 incl. effects, sound, lessons (60+); CRONOS wiring |
 
 ## What an edge is
 Any 1 to 3 of five dimensions fixed (the rest `*`): strategy, market, hour (ET, 4 h block), price band (the bot's own edges), side. Per edge: n, win rate vs the
@@ -28,40 +30,27 @@ District = market (ring round Downtown, which holds strategies, bands, hours, si
 (gold won, red lost); pink cars = open orders. Weather = last 7 days (clear / overcast / rain / storm; fog = bot paused). Day / night = New York time. Dark far towers are scenery
 (no data; the guide says so). Tiers via OLYMPUS: low 700 towers, high 2,600, ultra 4,200 + bloom; reduced motion = a still scene.
 
+## Effects (`cityfx.js`, the OLYMPUS fx library + the city's own)
+| Effect | When | From |
+|---|---|---|
+| god rays | dusk and dawn | `OLYMPUS_FX.godRays` |
+| lightning storm | weather storm, or rain with a risk of ruin >= 90%; thunder when sound is on | `OLYMPUS_FX.lightning` |
+| aurora over the Vault, spire lens flare | night, no storm | `OLYMPUS_FX.aurora`, `lensFlare` |
+| sun / moon lens flare | follows the hour | `OLYMPUS_FX.lensFlare` |
+| neon signs | the tallest edges named in neon (flicker = fading, STOP = dead) | own sprites |
+| wet streets | rain: every glowing building leaves a neon reflection streak, the ground turns glossy | own instanced quads + ground roughness |
+| fireworks | a new DO MORE edge in today's log | own GPU points |
+| edge scanner | the engine learned something new (once per new batch, every 5 min refresh, the round button): ring + sweep from Downtown, the new edges' buildings pulse | own |
+| sound | the note button (off by default): ambience pad, thunder, tick on a building, portal on a camera change, rank-up on fireworks | `OLYMPUS.sfx` |
+Budgets: the library effects follow `OLYMPUS_FX.tier()` (low: 3 god-ray cones, 2 aurora sheets, <= 400 particles); reduced motion or `off` = no moving effect (the signs and the streaks stay as stills).
+
 ## Wiring the lead does (this folder only adds files)
 1. `olympus/olympus.js` APPS: `kalshicity: ['Kalshi City', 'K', '#2ef2d0']`
 2. `jarvis/apps.js`: `app('kalshicity', 'Kalshi City', 'money', '#2ef2d0', "The Kalshi bot's edges as a night city", { glyph: 'K' })`
-3. `tools/build_web_dashboard.py` app tuple (line ~1212): add `"kalshicity"`; `jarvis/sw.js` bump if it lists apps.
-4. CRONOS refresh (state must persist, so a branch like `datacity`): a workflow every 6 h that checks out `kalshicity` (edges / ledger / log), runs
-   `python tools/kalshi_edges.py --out <state dir>` and force-pushes the four files; the registry task is
-   `Task("kalshicity", "kalshicity", "nightly", "workflow", 5 * 60, NIGHTLY_MAX_H, files=("edges.json", "learning_log.json", "jarvis.json"), branch="kalshicity",
-   branch_files=(("edges.json", "kalshicity/edges.json"), ("learning_log.json", "kalshicity/learning_log.json"), ("jarvis.json", "kalshicity/jarvis.json")), workflow=".github/workflows/kalshicity.yml", est_min=0.3)`.
-   `ledger.json` stays on the branch (not copied to the site). First run seeds from the repo copies in `tools/web_public/kalshicity/`.
+3. `tools/build_web_dashboard.py` app tuple (line ~1212): add `"kalshicity"` (without it the folder is not published and the CRONOS pull has nowhere to land); `jarvis/sw.js` bump if it lists apps.
+4. Done in the repo (CRONOS): `.github/workflows/kalshicity.yml`, the registry task, `tools/cronos/site.py` BRANCHES, `docs/CRONOS.md`. The first workflow run seeds the `kalshicity` branch from the
+   committed files in `tools/web_public/kalshicity/`; run it once by hand (Actions, kalshicity, Run workflow).
 
-```yaml
-name: kalshicity
-on: { schedule: [{ cron: "17 */6 * * *" }], workflow_dispatch: {} }
-permissions: { contents: write }
-concurrency: { group: kalshicity, cancel-in-progress: false }
-jobs:
-  learn:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 1, sparse-checkout: "/tools/kalshi_edges.py\n/tools/__init__.py\n/tools/web_public/kalshicity" }
-      - uses: actions/setup-python@v5
-        with: { python-version: "3.12" }
-      - name: State (previous run, else the repo seed)
-        run: |
-          mkdir -p state
-          if git fetch -q --depth 1 origin kalshicity 2>/dev/null; then
-            for f in edges.json ledger.json learning_log.json jarvis.json; do git show "FETCH_HEAD:$f" > "state/$f" 2>/dev/null || rm -f "state/$f"; done
-          else cp tools/web_public/kalshicity/{edges,ledger,learning_log,jarvis}.json state/; fi
-      - run: python tools/kalshi_edges.py --out state
-      - name: Publish
-        run: |
-          cd state && git init -q && git checkout -q -b kalshicity && git add -A
-          git -c user.name=cronos -c user.email=cronos@users.noreply.github.com commit -qm "kalshicity $(date -u +%FT%TZ)"
-          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" kalshicity
-```
+## Refreshing the lessons
+`python tools/kalshi_research.py` (the research agent's script) then `python tools/kalshicity_learned.py`. After the owner's CSV export:
+`python tools/kalshi_edges.py --feed <kalshi.json or the live address> --orders orders.csv`.

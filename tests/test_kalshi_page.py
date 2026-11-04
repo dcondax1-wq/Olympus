@@ -21,6 +21,11 @@ connection / later, and checks:
      calculator), by market, by price (win vs break-even, ROI), calibration; a v2 feed works them out from the trades list
      and says so; junk v3 values never break a section
   i. 375 / 390 / 430 px: no sideways scroll, nothing past the 16 px gutter, numbers not cut off
+  v4. the 2026-11-04 upgrade, on a paused-bot fixture shaped like the real feed (94% wins, negative total, flat 24 h equity, 41 days,
+     0 open bets): the verdict banner (plain words, every line linked), the Paused pill, the living sparkline, streak chips, drawdown
+     shading and the Live / Daily switch, the rest-state explainer, the heat map (tap / keys), calibration bands, the strategy race and
+     battle, the risk-of-ruin gauge with its seeded Monte Carlo fan, the timeline, SVG asset badges, settle rings on open bets, Kelly
+     presets, the Kalshi City link (HEAD check), the skeleton, reduced motion, 375 / 390 / 430 widths
   j. no page errors (uncaught exceptions or a section that failed), no failed same-site request, no font asked by the page
   kit. the server script's pin (kit.json from the site build): a valid sha256 = the pinned step and Copy, anything else
      (invalid, missing, slower than 3 s) = today's text exactly
@@ -321,7 +326,7 @@ def text(p, sel="#body"):
     return p.locator(sel).inner_text()
 
 
-def ready(p, timeout=8000):
+def ready(p, timeout=30000):
     p.wait_for_function("document.querySelector('#refresh').getAttribute('aria-busy') === 'false'", timeout=timeout)
 
 
@@ -444,7 +449,7 @@ def run_browser(url, tmp):
         p = ctx.new_page()
         p.set_default_timeout(120000)                   # a busy box: software GL + many pages
         errs, cons, dialogs, bad, fontres = [], [], [], [], []
-        p.on("response", lambda r: bad.append((r.status, r.url)) if r.status >= 400 and r.url.startswith(url.split("/nq-dashboard/")[0]) else None)
+        p.on("response", lambda r: bad.append((r.status, r.url)) if r.status >= 400 and r.url.startswith(url.split("/nq-dashboard/")[0]) and "/kalshicity/" not in r.url else None)
         p.on("response", lambda r: fontres.append((r.status, r.url.rsplit("/", 1)[1])) if ".woff2" in r.url else None)
         p.on("pageerror", lambda e: errs.append(str(e)))
         p.on("console", lambda m: cons.append(m.text) if m.type == "error" and not re.search(r"Failed to load resource|net::ERR", m.text) else None)
@@ -1124,6 +1129,7 @@ def run_browser(url, tmp):
         check("j. kalshi.json only ever asked from kalshi-feed (raw, then the API)", not FEED["wrong"], FEED["wrong"][:3])
         part_k(br, url, tmp)
         part_kit(br, url, tmp)
+        part_v4(br, url, tmp)
         br.close()
 
 
@@ -1140,8 +1146,8 @@ def part_k(br, url, tmp):
     q.on("pageerror", lambda e: errs.append(str(e)))
     nofont = lambda u: FONTS or ".woff2" not in u                    # noqa: E731  (a checkout without Jarvis's fonts: their 404s only)
     q.on("console", lambda m: errs.append((m.text, (m.location or {}).get("url", ""))) if m.type == "error" and SITE["mode"] == "ok" and not SITE["slow"]
-         and nofont((m.location or {}).get("url", "")) and "kalshi.json" not in (m.location or {}).get("url", "") else None)   # the feed's 404 = waiting
-    q.on("response", lambda r: bad.append((r.status, r.url)) if r.status >= 400 and "127.0.0.1" in r.url and SITE["mode"] == "ok" and nofont(r.url) else None)
+         and nofont((m.location or {}).get("url", "")) and "kalshi.json" not in (m.location or {}).get("url", "") and "/kalshicity/" not in (m.location or {}).get("url", "") else None)   # the feed's 404 = waiting; Kalshi City's HEAD = 404 until that page exists
+    q.on("response", lambda r: bad.append((r.status, r.url)) if r.status >= 400 and "127.0.0.1" in r.url and SITE["mode"] == "ok" and nofont(r.url) and "/kalshicity/" not in r.url else None)
     pg = lambda: q.evaluate("document.title === 'Kalshi' && !!document.getElementById('body')")  # noqa: E731
 
     def until(js, timeout=10000):
@@ -1304,6 +1310,269 @@ def part_kit(br, url, tmp):
     with open(kj, "w", encoding="utf-8") as f:
         f.write(KIT_JSON)
     check("kit. no page errors", not errs, errs[:3])
+    ctx.close()
+
+
+# ------------------------------------------------------------------ v4. "every view looks sick" (2026-11-04)
+def paused_bot(now):
+    """The owner's bot as it was on 2026-11-04, rebuilt with made-up numbers in the same shape: Paused, 0 open bets, a flat 24 h
+    equity, 41 days of P&L, 1,735 wins and 101 losses (94.5%) but a negative total, ten strategies, buckets, calibration, categories."""
+    now = int(now)
+    rng = random.Random(4)
+    today = dt.datetime.now(NY).date()
+    days = [[(today - dt.timedelta(days=i)).isoformat(), round(rng.uniform(-14, 18), 2)] for i in range(41, 0, -1)]
+    days[3][1], days[22][1], days[30][1] = -101.64, 81.18, -47.11
+    days.append([today.isoformat(), 0.0])
+    names = [("15-min favourites", "KXDOGE15M", "DOGE"), ("Late favourite (BTC hourly)", "KXBTCD", "BTC"), ("15-min favourites", "KXXRP15M", "XRP"), ("15-min favourites", "KXETH15M", "ETH")]
+    trades, t = [], now - 4000
+    pn = {0: -5.89, 7: -18.33, 15: -4.4, 22: 0.76, 30: 0.64}
+    for i in range(40):
+        nm, tk, asset = [names[1], names[0], names[2], names[3]][i % 4]
+        c, px = 6 + i % 7, 0.98 if asset == "BTC" else 0.967
+        trades.append({"t": t, "ticker": f"{tk}-26NOV02{i:02d}", "title": f"{asset} up or down · {i}" if asset != "BTC" else f"Bitcoin above ${77000 + i * 100:,} at {i % 12 + 1} AM ET Nov 2",
+                       "side": "yes" if i % 2 else "no", "action": "buy", "contracts": c, "price": px, "pnl": pn.get(i, round(c * (1 - px) - 0.02, 2)),
+                       "asset": asset, "strategy": nm, "category": {"BTC": "Bitcoin", "DOGE": "Dogecoin", "XRP": "XRP", "ETH": "Ethereum"}[asset]})
+        t -= 3300 + (i % 5) * 400
+    strategies = [
+        {"name": "15-min favourites", "mode": "off", "running": False, "today_pnl": 0.0, "total_pnl": -88.77, "trades": 1131, "wins": 1074, "losses": 57},
+        {"name": "Late favourite (BTC hourly)", "mode": "live", "running": False, "today_pnl": 0.0, "total_pnl": 16.26, "trades": 182, "wins": 179, "losses": 3},
+        {"name": "Gold 5 PM", "mode": "live", "running": False, "today_pnl": 0.0, "total_pnl": 7.13, "trades": 3, "wins": 3, "losses": 0},
+        {"name": "Hourly BTC", "mode": "paper", "running": False, "today_pnl": 0.0, "total_pnl": 30.32, "trades": 291, "wins": 277, "losses": 14},
+    ]
+    buckets = [{"lo": 0.0, "hi": 0.2, "trades": 1, "wins": 0, "losses": 1, "pnl": -0.16, "staked": 0.76}, {"lo": 0.2, "hi": 0.4, "trades": 5, "wins": 0, "losses": 5, "pnl": -2.03, "staked": 6.84},
+               {"lo": 0.6, "hi": 0.8, "trades": 35, "wins": 27, "losses": 8, "pnl": -29.44, "staked": 123.89}, {"lo": 0.8, "hi": 0.9, "trades": 135, "wins": 117, "losses": 18, "pnl": 16.18, "staked": 842.96},
+               {"lo": 0.9, "hi": 0.95, "trades": 581, "wins": 536, "losses": 45, "pnl": -248.3, "staked": 5343.43}, {"lo": 0.95, "hi": 0.97, "trades": 715, "wins": 699, "losses": 16, "pnl": 136.98, "staked": 9181.72},
+               {"lo": 0.97, "hi": 0.99, "trades": 360, "wins": 355, "losses": 5, "pnl": 68.96, "staked": 6093.35}]
+    calib = [{"p": 0.19, "n": 1, "hit": 0.0}, {"p": 0.342, "n": 5, "hit": 0.0}, {"p": 0.7349, "n": 35, "hit": 0.7714}, {"p": 0.8617, "n": 135, "hit": 0.8667},
+             {"p": 0.9277, "n": 581, "hit": 0.9225}, {"p": 0.961, "n": 715, "hit": 0.9776}, {"p": 0.9771, "n": 360, "hit": 0.9861}]
+    cats = [{"name": "Bitcoin", "group": "Crypto", "trades": 623, "wins": 592, "losses": 31, "pnl": 51.82, "staked": 7546.64},
+            {"name": "XRP", "group": "Crypto", "trades": 192, "wins": 178, "losses": 14, "pnl": -106.63, "staked": 1739.04},
+            {"name": "Dogecoin", "group": "Crypto", "trades": 165, "wins": 158, "losses": 7, "pnl": -0.65, "staked": 2091.94},
+            {"name": "NEAR", "group": "Crypto", "trades": 20, "wins": 19, "losses": 1, "pnl": -0.5, "staked": 200.0}]
+    raw = {"v": 3, "kind": "kalshi", "name": "Kalshi Edge v2", "mode": "live", "status": "Paused", "running": False, "t": now - 20, "balance": 55.81,
+           "today_pnl": 0.0, "week_pnl": -3.3, "total_pnl": -81.77, "note": "Real money · main account", "positions": [], "trades": trades, "days": days,
+           "strategies": strategies, "equity": [[now - i * 900, 55.81] for i in range(97, -1, -1)], "categories": cats, "buckets": buckets, "calibration": calib,
+           "alerts": [{"t": now - 20, "level": "warn", "text": "Paused"}], "kelly": {"bankroll": 55.81, "min_edge": 0.0},
+           "stats": {"trades": 1836, "wins": 1735, "losses": 101, "staked": 21601.62, "pnl": -62.82, "avg_price": 0.9387}, "calib_basis": "price", "pub_t": now - 18}
+    return raw
+
+
+def part_v4(br, url, tmp):
+    """The Kalshi page's 2026-11-04 upgrade: verdict, hero, heat map, race, battle, ruin, timeline, badges, rings, 3D links, skeleton."""
+    page_url = url + "kalshi/"
+    ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2)
+    ctx.route("https://raw.githubusercontent.com/**", feed)
+    ctx.route("https://api.github.com/**", feed)
+    p = ctx.new_page()
+    p.set_default_timeout(120000)
+    errs = []
+    p.on("pageerror", lambda e: errs.append(str(e)))
+    p.on("console", lambda m: errs.append(m.text) if m.type == "error" and not re.search(r"Failed to load resource|net::ERR", m.text) else None)
+
+    def open_(j, clear=True):
+        FEED["mode"], FEED["j"] = "ok", j
+        if clear:
+            p.goto(page_url)
+            p.evaluate("localStorage.clear()")
+        p.goto(page_url)
+        ready(p, 20000)
+        p.wait_for_selector("#sec-kpi")
+
+    # ---------------------------------------------------------------- the paused bot, as the owner sees it today
+    now = time.time()
+    open_(paused_bot(now))
+    check("v4. paused bot: amber Paused pill (not the red Stopped), LIVE · real money kept",
+          p.locator("#pill.warn").inner_text().upper() == "PAUSED" and "LIVE" in p.inner_text("#mode").upper())
+    vd = p.inner_text("#sec-verdict")
+    check("v4. verdict banner first in Today, plain words: wins 94% but loses money, here is why",
+          p.evaluate("document.querySelector('#g-today > .card').id") == "sec-verdict" and "You win 94% of bets but lose money: here is why" in vd
+          and "−$81.77" in vd and "1,735W 101L" in vd and "paused: nothing is at risk right now." in vd.lower(), vd[:300])
+    check("v4. verdict reasons from the numbers: one loss wipes out ~15 wins (6¢ on 94¢), break-even 93.9% vs 94.5%, fee drag, the 90–95¢ leak −$248.30, strategy vs strategy",
+          "One loss wipes out about 15 wins" in vd and "6¢" in vd and "93.9%" in vd and "94.5%" in vd and "0.6 points above" in vd and "Fees and slips cost about" in vd
+          and "90–95¢" in vd and "−$248.30" in vd and "Hourly BTC" in vd and "(paper)" in vd and p.locator("#sec-verdict .vd-i").count() == 4, vd)
+    tg = p.evaluate("[...document.querySelectorAll('#sec-verdict .vd-i')].map((b) => [b.getAttribute('data-v'), !!document.getElementById(b.getAttribute('data-v'))])")
+    check("v4. every verdict line links to the card with its numbers (they all exist)", tg and all(ok for _, ok in tg) and [t[0] for t in tg] == ["sec-bk", "sec-cb", "sec-bk", "sec-battle"], tg)
+    p.evaluate("window.scrollTo(0, 0)")
+    p.click("#sec-verdict .vd-i >> nth=1")
+    flashed = p.evaluate("document.getElementById('sec-cb').classList.contains('flash')")
+    try:
+        p.wait_for_function("window.scrollY > 300", timeout=8000)
+    except Exception:
+        pass
+    check("v4. tapping a verdict line glides to its card and flashes it", p.evaluate("window.scrollY") > 300 and flashed, (flashed, p.evaluate("window.scrollY")))
+    p.evaluate("window.scrollTo(0, 0)")
+    check("v4. verdict ring shows the win rate", p.locator("#sec-verdict .vd-ring .vr-w").count() == 1 and "94" in p.locator("#sec-verdict .vd-ring").text_content())
+    # hero
+    check("v4. hero: the balance sparkline is alive (travelling light + ring on the last point), over the daily curve of a paused bot",
+          p.locator("#sec-kpi .bal-sp svg .sp-g").count() == 1 and p.locator("#sec-kpi .bal-sp svg .sp-r").count() == 1 and p.locator("#sec-kpi .bal-sp .spark").count() == 1)
+    ch = p.locator("#sec-kpi .chips").text_content()
+    check("v4. streak chips: loss/win streak now, best run of the list, green days of the 41, days running", p.locator("#sec-kpi .chip").count() >= 3
+          and "streak" in ch and "best run of 40" in ch and re.search(r"\d+/42green days", ch) is not None, ch)
+    cv = p.locator("#sec-eq").text_content()
+    check("v4. a paused bot's flat 24 h curve shows the days instead (Cumulative P&L), with a Live / Daily switch",
+          "Cumulative P&L" in cv and p.locator("#sec-eq [data-act=eqv]").count() == 2 and p.get_attribute("#sec-eq [data-v=days]", "aria-pressed") == "true", cv[:200])
+    check("v4. equity chart: drawdown shaded under the previous high, with its deepest dip", p.locator("#sec-eq .chart svg .dd").count() == 1 and p.locator("#sec-eq .chart svg .pk").count() == 1
+          and "Deepest dip −$" in cv, cv[-160:])
+    p.click("#sec-eq [data-v=eq]")
+    check("v4. Live shows the flat 24 h equity ($55.81, no shading); Daily brings the curve back",
+          p.get_attribute("#sec-eq [data-v=eq]", "aria-pressed") == "true" and "$55.81" in p.inner_text("#eqRead") and p.locator("#sec-eq .chart .dd").count() == 0)
+    p.click("#sec-eq [data-v=days]")
+    # rest state
+    rs = p.locator("#sec-rest").text_content()
+    check("v4. no open bets: never blank, 'what happens when it resumes' with 4 steps and the history intact",
+          "Paused · what happens when it resumes" in rs and p.locator("#sec-rest .steps li").count() == 4 and "A bet opens" in rs and "stays exactly as it was" in rs
+          and "No open bets right now." in p.inner_text("#sec-pos") and p.locator("#sec-ew").count() == 1, rs[:200])
+    # heat map
+    check("v4. heat map: one cell per day (42), green / red by size, month labels, a reading panel",
+          p.locator("#heat .hc:not(.e)").count() == 42 and p.locator("#heat .hc.p4").count() >= 1 and p.locator("#heat .hc.n4").count() >= 1 and "All 42 days" in p.locator("#heatRead").text_content())
+    day = paused_bot(now)["days"][22][0]
+    p.locator(f"#heat .hc[data-d='{day}']").scroll_into_view_if_needed()
+    p.locator(f"#heat .hc[data-d='{day}']").click()
+    hr = p.inner_text("#heatRead")
+    check("v4. tap a day: its P&L, its rank, the running total; the cell is outlined; the month calendar jumps to the same day",
+          "+$81.18" in hr and "the best day" in hr and "running total" in hr
+          and p.locator(f"#heat .hc.sel[data-d='{day}']").count() == 1 and p.get_attribute(f"#sec-cal .cd[data-v='{day}']", "aria-pressed") == "true", hr)
+    p.locator(f"#heat .hc[data-d='{day}']").click()
+    check("v4. tap it again: back to the overview", "All 42 days" in p.locator("#heatRead").text_content() and p.locator("#heat .hc.sel").count() == 0)
+    p.focus("#heat")
+    p.keyboard.press("ArrowUp")
+    check("v4. heat map by keyboard: the arrow keys walk the days", p.locator("#heat .hc.sel").count() == 1 and "running total" in p.inner_text("#heatRead"))
+    # calibration
+    cb = p.inner_text("#sec-cb")
+    check("v4. calibration: the diagonal, a curve, the 95% band and a range bar per group; thin groups only get a faint bar",
+          p.locator("#sec-cb .cb-d").count() == 1 and p.locator("#sec-cb .cb-curve").count() == 1 and p.locator("#sec-cb .cb-band").count() == 1
+          and p.locator("#sec-cb .cb-eb").count() == 7 and p.locator("#sec-cb .cb-eb.thin").count() == 2 and p.locator("#sec-cb circle").count() == 7 and "95% range" in cb, cb[-300:])
+    # race
+    rc = p.inner_text("#sec-race")
+    check("v4. strategy race: a running-P&L line per strategy from the recent bets, tap-to-hide chips, and the finish line from the totals",
+          p.locator("#sec-race .rc-l").count() == 2 and p.locator("#sec-race .rchip").count() == 2 and p.locator("#sec-race .brk li").count() == 4
+          and "1st" in rc and "Hourly BTC" in rc and "+$30.32" in rc and "−$88.77" in rc, rc[:300])
+    p.click("#sec-race .rchip >> nth=0")
+    check("v4. race: a chip hides its line (and says so), tap again to bring it back",
+          p.locator("#sec-race .rc-l").count() == 1 and p.get_attribute("#sec-race .rchip >> nth=0", "aria-pressed") == "false")
+    p.click("#sec-race .rchip >> nth=0")
+    check("v4. race: back to two lines", p.locator("#sec-race .rc-l").count() == 2)
+    # battle
+    check("v4. strategy battle: 5 measures, win rate first with a bar per strategy",
+          p.locator("#sec-battle [data-act=bm]").count() == 5 and p.locator("#sec-battle .brk li").count() == 4 and "95%" in p.inner_text("#sec-battle"))
+    p.click("#sec-battle [data-v=aw]")
+    aw = p.inner_text("#sec-battle")
+    check("v4. battle · win / loss: all bets first (a win about $0.65, a loss $11.77), then the strategies from the list, two bars each",
+          "All bets · all time" in aw and "$0.65" in aw and "$11.77" in aw and p.locator("#sec-battle .b1").count() >= 4 and p.get_attribute("#sec-battle [data-v=aw]", "aria-pressed") == "true", aw[:300])
+    p.click("#sec-battle [data-v=ev]")
+    ev = p.inner_text("#sec-battle")
+    check("v4. battle · EV per $: all bets −0.3% ($62.82 lost on $21,601.62 bet)", "−0.3%" in ev and "All bets · all time" in ev, ev[:200])
+    p.click("#sec-battle [data-v=fee]")
+    fee = p.inner_text("#sec-battle")
+    check("v4. battle · fee drag: all bets 0.96% of what was bet, $207.55 in fees and slips", "0.96%" in fee and "$207.5" in fee, fee[:240])
+    p.click("#sec-battle [data-v=pb]")
+    check("v4. battle · per bet: total P&L over bets (15-min favourites −$0.08 a bet)", "−$0.08" in p.inner_text("#sec-battle"), p.inner_text("#sec-battle")[:200])
+    # ruin
+    ru = p.inner_text("#sec-ruin")
+    m1 = re.search(r"(\d+) in 100", ru)
+    r1 = int(m1.group(1)) if m1 else -1
+    check("v4. risk of ruin: a gauge, N in 100 runs, the Monte Carlo fan (light 80% + dark middle half + median), chips for ½ / same / 2×",
+          0 <= r1 <= 100 and p.locator("#sec-ruin svg.gauge .g-v").count() == 1 and p.locator("#sec-ruin svg.fan .fn-o").count() == 1 and p.locator("#sec-ruin svg.fan .fn-i").count() == 1
+          and p.locator("#sec-ruin svg.fan .fn-m").count() == 1 and "ruin at ½" in ru and "ruin at 2×" in ru and "1,836 settled bets" in ru and "400 runs" in ru, ru[:300])
+    p.reload()
+    ready(p, 20000)
+    p.wait_for_selector("#sec-ruin")
+    check("v4. the fan is seeded: the same numbers, the same fan after a reload", re.search(r"(\d+) in 100", p.inner_text("#sec-ruin")).group(1) == str(r1))
+    p.click("#sec-ruin [data-act=bs][data-v='0.5']")
+    r_half = int(re.search(r"(\d+) in 100", p.inner_text("#sec-ruin")).group(1))
+    p.click("#sec-ruin [data-act=bs][data-v='2']")
+    r_dbl = int(re.search(r"(\d+) in 100", p.inner_text("#sec-ruin")).group(1))
+    check("v4. ruin: smaller bets = less ruin, bigger = more (½ <= same <= 2×)", r_half <= r1 <= r_dbl and r_dbl > r_half, (r_half, r1, r_dbl))
+    p.click("#sec-ruin [data-act=bs][data-v='1']")
+    # timeline
+    tl = p.inner_text("#sec-tl")
+    check("v4. alerts timeline: Paused (the bot's own alert), every loss, the biggest wins, grouped by day, newest first",
+          p.locator("#sec-tl .tl-e").count() >= 6 and p.locator("#sec-tl .tl-e.bad").count() == 3 and p.locator("#sec-tl .tl-e.warn").count() == 1 and p.locator("#sec-tl .tl-d").count() >= 1
+          and "Lost $18.33" in tl and "Lost $5.89" in tl and "Won +$0.76" in tl and tl.index("Paused") < tl.index("Lost"), tl[:300])
+    # badges
+    ai = p.evaluate("[...document.querySelectorAll('#sec-tr .asset')].map((a) => [a.textContent.trim(), a.querySelectorAll('svg.ai path, svg.ai text, svg.ai circle').length])")
+    check("v4. asset badges: BTC, DOGE, XRP and ETH each drawn as their own SVG (no image files), name kept as text",
+          {a for a, _ in ai} >= {"BTC", "DOGE", "XRP", "ETH"} and all(n >= 3 for _, n in ai) and p.locator("#sec-tr img").count() == 0 and p.locator("#sec-cat .ai").count() >= 3, ai[:6])
+    # kelly presets
+    p.evaluate("document.getElementById('sec-kelly').scrollIntoView()")
+    p.click("#sec-kelly [data-f=p][data-v='94']")
+    p.click("#sec-kelly [data-f=c][data-v='94']")
+    k94 = p.inner_text("#kcOut")
+    check("v4. Kelly calculator presets: 94% at 94¢ = no bet; the boxes follow the chips",
+          "No bet" in k94 and p.input_value("#kcP") == "94" and p.input_value("#kcC") == "94" and p.get_attribute("#sec-kelly [data-f=p][data-v='94']", "aria-pressed") == "true", k94)
+    p.click("#sec-kelly [data-f=c][data-v='90']")
+    check("v4. Kelly presets: 94% at 90¢ = a bet, edge +4.0¢", "of the bankroll" in p.inner_text("#kcOut") and "+4.0¢" in p.inner_text("#kcOut"), p.inner_text("#kcOut"))
+    # 3D links
+    check("v4. 3D links: Tyche always, Kalshi City only when ../kalshicity/ exists on the site (not here)",
+          p.locator("#sec-kpi .lnk3d").count() == 1 and p.get_attribute("#sec-kpi .lnk3d", "href") == "../tyche/#wheel")
+    os.makedirs(os.path.join(tmp, "nq-dashboard", "kalshicity"), exist_ok=True)
+    with open(os.path.join(tmp, "nq-dashboard", "kalshicity", "index.html"), "w", encoding="utf-8") as f:
+        f.write("<!doctype html><title>Kalshi City</title>")
+    p.reload()
+    ready(p, 20000)
+    p.wait_for_selector("#sec-kpi .lnk3d.city", timeout=10000)
+    check("v4. Kalshi City exists (a HEAD check answers 200 html): its 'See it in 3D' link appears next to Tyche",
+          p.get_attribute("#sec-kpi .lnk3d.city", "href") == "../kalshicity/" and p.locator("#sec-kpi .lnk3d").count() == 2 and "Kalshi City" in p.locator("#sec-kpi .l3d").text_content())
+    shutil.rmtree(os.path.join(tmp, "nq-dashboard", "kalshicity"), ignore_errors=True)
+    shot(p, "10_v4_paused")
+    # phone widths: the new views never overflow or clip, every control 44 px
+    for wdt, hgt in ((390, 844), (375, 667), (430, 932)):
+        p.set_viewport_size({"width": wdt, "height": hgt})
+        open_(paused_bot(time.time()), clear=False)
+        m = p.evaluate("""() => {
+            const W = window.innerWidth, de = document.documentElement;
+            const els = [...document.querySelectorAll('#sec-verdict, #sec-verdict *, #sec-heat, #sec-heat > *, #sec-race, #sec-race > *, #sec-battle, #sec-battle > *, #sec-ruin, #sec-ruin > *, #sec-tl, #sec-rest, #sec-rest > *, #sec-cb, #sec-kelly .pres, .chips, .rleg')];
+            const out = els.filter((e) => { const r = e.getBoundingClientRect(); return r.width > 0 && (r.right > W - 15.5 || r.left < 15.5); }).map((e) => (e.id || e.className.baseVal || e.className || e.tagName) + ' ' + Math.round(e.getBoundingClientRect().left) + '-' + Math.round(e.getBoundingClientRect().right));
+            const cut = [...document.querySelectorAll('#sec-verdict *, #sec-race *, #sec-battle *, #sec-ruin *, #sec-tl *, #sec-rest *, #sec-heat *, .chip, .rchip')].filter((e) => { const c = getComputedStyle(e);
+              return e.getClientRects().length && !(e instanceof SVGElement) && (c.overflowX === 'hidden' || c.textOverflow === 'ellipsis') && e.scrollWidth > e.clientWidth + 1; }).map((e) => e.className + ':' + e.textContent.slice(0, 30));
+            return [de.scrollWidth, de.clientWidth, out, cut];
+        }""")
+        check(f"v4. {wdt}x{hgt}: no sideways scroll, every new card inside the 16 px gutters, no text cut off", m[0] <= m[1] and not m[2] and not m[3], m)
+        small = p.evaluate(TARGETS)
+        check(f"v4. {wdt}x{hgt}: every control (verdict lines, race chips, measures, bet sizes, presets) at least 44 x 44", not small, small[:6])
+        shot(p, f"10_v4_{wdt}")
+    # open bets as cards: asset badge, settle ring
+    p.set_viewport_size({"width": 390, "height": 844})
+    open_(wide(time.time()))
+    check("v4. open bets as cards: a settle ring on every bet (6), the asset badge SVG for BTC / ETH / GOLD, the live countdown text kept",
+          p.locator("#posList .ring").count() == 6 and p.locator("#posList .asset .ai").count() >= 3 and p.locator("#posList .cdn").count() >= 5
+          and p.locator("#posList .ring.soon").count() >= 1, p.locator("#posList .ring").count())
+    r0 = p.evaluate("[...document.querySelectorAll('#posList svg.ring')].map((s) => [s.getAttribute('data-c'), s.querySelector('.rg-v').getAttribute('stroke-dasharray')])")
+    check("v4. the ring fills with the time left in its window (45 min of an hour = 75%; settled = empty)",
+          any(abs(float(d.split()[0]) - 75) < 8 for _, d in r0) and any(d.startswith("0.0") for _, d in r0), r0)
+    c0 = p.inner_text("#posList .cdn.soon >> nth=0")
+    try:
+        p.wait_for_function("(c0) => document.querySelector('#posList .cdn.soon').textContent !== c0", arg=c0, timeout=10000)
+    except Exception:
+        pass
+    c1 = p.inner_text("#posList .cdn.soon >> nth=0")
+    check("v4. live countdown: under an hour it counts the seconds (closes in 44m 12s) and moves every second",
+          re.fullmatch(r"closes in (4[0-5]|3\d)m \d\ds", c0) and c0 != c1 and re.fullmatch(r"closes in \d+m \d\ds", c1), (c0, c1))
+    # skeleton (loading) and reduced motion
+    FEED["mode"] = "hold"
+    p.evaluate("localStorage.clear()")
+    p.goto(page_url)
+    p.wait_for_selector("#body .sk")
+    sk = p.evaluate("[...document.querySelectorAll('#body .sk')].map((e) => [getComputedStyle(e).backgroundImage.split('linear-gradient').length - 1, getComputedStyle(e, '::after').content, e.getBoundingClientRect().height])")
+    check("v4. skeleton while loading: three cards drawn like the page (hero tiles, chart, rows), with a sweep, never blank", len(sk) == 3 and sk[0][0] >= 6 and all(c == '""' for _, c, _ in sk) and sk[0][2] > 250, sk)
+    release()
+    ready(p, 20000)
+    FEED["mode"] = "ok"
+    p.emulate_media(reduced_motion="reduce")
+    open_(paused_bot(time.time()), clear=False)
+    an = p.evaluate("[...document.querySelectorAll('.sp-g, .sp-r, .vr-w, .gauge .g-v')].map((e) => getComputedStyle(e).animationName)")
+    check("v4. reduced motion: the sparkline light, ring and gauge do not animate", len(an) >= 3 and all(a_ == "none" for a_ in an), an)
+    p.emulate_media(reduced_motion="no-preference")
+    # the preview sample also shows the new views
+    FEED["mode"] = "404"
+    p.goto(page_url)
+    p.evaluate("localStorage.clear()")
+    p.goto(page_url)
+    ready(p, 20000)
+    p.click("[data-act=preview]")
+    ids = {s_: p.locator(s_).count() for s_ in ("#sec-verdict", "#sec-heat", "#sec-race", "#sec-battle", "#sec-tl", "#sec-ruin")}
+    check("v4. the sample preview carries the new views too (verdict, heat map, race, battle, timeline)", all(ids[k_] == 1 for k_ in ("#sec-verdict", "#sec-heat", "#sec-battle", "#sec-tl")), ids)
+    check("v4. no page errors in any of it", not errs, errs[:3])
     ctx.close()
 
 
