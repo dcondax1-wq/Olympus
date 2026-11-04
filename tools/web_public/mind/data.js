@@ -9,6 +9,7 @@
 // 'demo' = the module is missing, failed, says "not connected" or holds nothing yet (a built-in fake brain from demo.js, labelled DEMO); 'offline' = it was
 // connected this session and now answers null (the last real brain stays on screen).
 import { createDemo } from './demo.js';
+import { loadPack } from './starter.js';
 
 const KINDS = new Set(['note', 'daily', 'memory', 'inbox', 'me']);
 const MAX_NOTES = 5000;
@@ -59,6 +60,7 @@ async function loadJarvis() {
 }
 
 export async function openFeed(onUpdate, { demo = createDemo() } = {}) {
+  let packed = false;                               // the starter vault joins the demo brain once, the first time the demo is shown
   const real = await loadJarvis();
   let mode = null, last = null, busy = false, again = false, demoOff = null;
 
@@ -82,7 +84,11 @@ export async function openFeed(onUpdate, { demo = createDemo() } = {}) {
         if (snap && !snap.notes.length && !snap.learned.length) snap = null;          // connected but empty: the demo brain, never a blank sky
         if (snap) { mode = 'live'; last = snap; }
         else if (mode === 'live' || mode === 'offline') mode = 'offline';
-        else { mode = 'demo'; last = normalize(await demo.graphSnapshot()); }
+        else {
+          mode = 'demo';
+          if (!packed) { packed = true; const pk = await loadPack(); if (pk && typeof demo.addPack === 'function') demo.addPack(pk); }
+          last = normalize(await demo.graphSnapshot());
+        }
         if (mode === 'demo' && !demoOff) demoOff = watch(demo);              // the demo only "learns" while it is shown
         if (mode !== 'demo' && demoOff) { demoOff(); demoOff = null; }
         onUpdate({ mode, snap: last });
