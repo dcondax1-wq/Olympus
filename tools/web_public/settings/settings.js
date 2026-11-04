@@ -104,7 +104,7 @@ function renderLook() {
   radios($('fxSeg'), [['auto', 'Auto']].concat(C.FX_LEVELS.map((l) => [l[0], l[1], l[2]])), cur || 'auto', setFx);
   const d = C.FX_LEVELS.find((l) => l[0] === level);
   $('fxNote').textContent = (cur ? '' : 'Auto picks High (LITE if your phone asks for less motion). ') + (d ? d[2] + '.' : '');
-  paintLite(); preview.sync();
+  paintLite(); preview.sync(); renderWhy(level, cur); renderRead();
   // themes
   const list = T && T.list ? T.list() : [], now = T && T.id ? (T.id() || 'olympus') : 'olympus', host = $('themes');
   clear(host);
@@ -133,10 +133,36 @@ function renderLook() {
   const s = sget(C.KEYS.sfx), vol = typeof s.v === 'number' ? s.v : 0.35;
   $('sfxOn').checked = s.m !== true; $('vol').value = String(Math.round(vol * 100));
   $('ambient').checked = LS.getItem(C.KEYS.ambient) === '1';
+  radios($('soundSeg'), C.SOUND_MODES, C.soundGet(LS), (v) => setSound(v));
+  $('soundNote').textContent = C.SOUND_MODES.find((m) => m[0] === C.soundGet(LS))[0] === 'auto' ? 'Auto: ' + C.SOUND_MODES[0][2].toLowerCase() : C.SOUND_MODES.find((m) => m[0] === C.soundGet(LS))[2];
   $('haptics').checked = !C.flagOff(LS, C.KEYS.haptics);
   const canVib = typeof navigator.vibrate === 'function';
   $('hapNote').textContent = canVib ? 'A tiny buzz on taps' : 'The iPhone has no vibration for web pages: this works on Android';
 }
+/** the quality explainer: why this level now, and what each level means (plain words, settingscore.js has the text) */
+function renderWhy(level, cur) {
+  $('fxWhy').textContent = C.fxWhy({ saver: C.saverOn(LS), reduced: mq('(prefers-reduced-motion: reduce)'), chosen: cur, level });
+  const ul = $('fxLevels'); clear(ul);
+  for (const l of C.FX_EXPLAIN) {
+    const li = h('li', l[0] === level ? 'now' : null), b = h('b', null, l[1]);
+    if (l[0] === level) b.appendChild(h('em', null, 'NOW'));
+    li.appendChild(b); li.appendChild(h('span', null, l[2])); li.appendChild(h('small', null, 'Costs: ' + l[3] + '. Best for: ' + l[4] + '.'));
+    ul.appendChild(li);
+  }
+}
+/** Reading: Big text and Stronger contrast are the kit's own toggles (olympus/a11y.js reads data-oly-a11y and keeps aria-pressed); this only words them */
+const A11Y = () => window.OLYMPUS_A11Y || null;
+function renderRead() {
+  const a = A11Y();
+  if (!a) { $('bigNote').textContent = 'Not available in this copy of the page'; $('conNote').textContent = ''; $('bigText').disabled = true; $('moreContrast').disabled = true; return; }
+  const g = a.get(), s = a.scale(), more = g.contrast === 'more' || mq('(prefers-contrast: more)');
+  $('bigText').textContent = 'Big text: ' + (g.text === 'big' ? 'on' : 'off'); $('bigText').setAttribute('aria-pressed', String(g.text === 'big'));
+  $('bigNote').textContent = 'Text is ' + Math.round(s * 100) + '% of normal' + (g.text === 'big' ? ' (big text adds 25%)' : '') + '. Your iPhone text size counts too.';
+  $('moreContrast').textContent = 'Contrast: ' + (more ? 'stronger' : 'normal'); $('moreContrast').setAttribute('aria-pressed', String(g.contrast === 'more'));
+  $('conNote').textContent = more ? (g.contrast === 'more' ? 'Brighter lines and text' : 'Your phone asks for stronger contrast: Olympus follows it') : 'Normal lines and ink';
+}
+if (A11Y() && A11Y().on) A11Y().on(renderRead);
+window.addEventListener('load', () => { if (A11Y() && A11Y().on && !renderRead.wired) { renderRead.wired = true; A11Y().on(renderRead); } renderRead(); });
 $('fxSeg').addEventListener('keydown', radioKeys);
 function radioKeys(e) {
   const bs = [...e.currentTarget.querySelectorAll('[role=radio]')], i = bs.indexOf(document.activeElement);
@@ -165,6 +191,22 @@ $('sfxOn').addEventListener('change', (e) => {
 });
 $('vol').addEventListener('input', (e) => { const v = +e.target.value / 100; sfxSave({ v }); const s = SFX(); try { if (s && s.setVolume) s.setVolume(v); } catch (_) { /* nothing */ } });
 $('vol').addEventListener('change', () => playTry());
+/** the Sound switch: the kit applies it (OLYMPUS_SFX.sound(null | true | false)) and stores it; without the kit the stored key is enough */
+function setSound(mode) {
+  C.soundSet(LS, mode);
+  const s = SFX(); try { if (s && s.sound) s.sound(mode === 'auto' ? null : mode === 'on'); } catch (_) { /* nothing */ }
+  renderLook();
+}
+/** a test sound: a success cue; says why when the switch keeps it silent */
+function soundTest() {
+  const s = SFX(); let said = 'Played the success cue';
+  try {
+    if (!s) said = 'The sound kit did not load';
+    else { if (s.unlock) s.unlock(); if (s.state && s.state().muted) said = 'Sounds are switched off above'; else if (s.sound && !s.sound()) said = 'Silent: Auto stays quiet in LITE, reduced motion and battery saver. Choose On to hear it'; else if (!s.play('success')) said = 'Silent: this browser has no sound yet'; }
+  } catch (_) { said = 'Silent: this browser has no sound'; }
+  $('soundTestNote').textContent = said;
+}
+$('soundTest').addEventListener('click', soundTest);
 function playTry() { const s = SFX(); try { if (s) { if (s.unlock) s.unlock(); if (s.play) s.play('tap'); } } catch (_) { /* nothing */ } }
 $('sfxTry').addEventListener('click', playTry);
 $('ambient').addEventListener('change', (e) => {
@@ -221,10 +263,12 @@ async function renderData() {
   $('stBar').firstElementChild.style.width = quota ? Math.max(1, Math.min(100, (shown / quota) * 100)).toFixed(1) + '%' : '0%';
   $('stNote').textContent = sum.total.keys + ' saved settings (' + C.fmtBytes(sum.total.bytes) + ' of text)' + (sum.total.kept ? ' · ' + sum.total.kept + ' secret' + (sum.total.kept === 1 ? '' : 's') + ' kept out of every list' : '') + '.';
   const ul = $('appList'); clear(ul);
+  $('clearAll').disabled = sum.total.keys === 0;
   if (!sum.groups.length) ul.appendChild(h('li', null, 'Nothing saved yet.'));
   for (const g of sum.groups) {
     const li = h('li'); li.setAttribute('data-app', g.id);
     li.appendChild(h('b', null, g.name));
+    li.appendChild(h('small', 'about', C.aboutOf(g.id)));
     const b = h('button', 'mini', 'Clear'); b.type = 'button'; b.disabled = g.count === 0; b.setAttribute('aria-label', 'Clear ' + g.name + ' saved data');
     b.addEventListener('click', () => askSheet('Clear ' + g.name + '?', 'This removes ' + g.count + ' saved setting' + (g.count === 1 ? '' : 's') + ' (' + C.fmtBytes(g.bytes) + ') of ' + g.name + ' from this phone. The app starts fresh.', g.kept, () => { const r = C.clearApp(LS, g.id); $('ioNote').textContent = 'Cleared ' + r.removed.length + ' for ' + g.name + (r.kept.length ? ', kept ' + r.kept.length + ' secret' : '') + '.'; renderAll(); }));
     li.appendChild(b);
@@ -234,6 +278,16 @@ async function renderData() {
   }
   await renderCaches();
 }
+$('clearAll').addEventListener('click', () => {
+  const sum = C.summarize(LS);
+  askSheet('Clear everything saved on this phone?', 'This removes ' + sum.total.keys + ' saved settings (' + C.fmtBytes(sum.total.bytes) + ') from every app: your look, choices, drafts and last-seen markers. Export first if you want a copy.',
+    sum.groups.flatMap((g) => g.kept), () => {
+      const r = C.clearAll(LS);
+      $('ioNote').textContent = 'Cleared ' + r.removed.length + ' saved setting' + (r.removed.length === 1 ? '' : 's') + (r.kept.length ? ', kept ' + r.kept.length + ' secret' + (r.kept.length === 1 ? '' : 's') : '') + '.';
+      try { window.dispatchEvent(new StorageEvent('storage', { key: 'jfx' })); } catch (_) { /* old browser */ }
+      renderAll();
+    }, 'Clear all');
+});
 async function cacheNames() { try { return typeof caches !== 'undefined' && caches.keys ? await caches.keys() : []; } catch (_) { return []; } }
 async function renderCaches() {
   const names = await cacheNames(), ul = $('cacheList'); clear(ul);

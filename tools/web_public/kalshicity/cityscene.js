@@ -14,7 +14,7 @@ import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
 import * as M from '../olympus/materials.js';
 import { scenery, rng } from './citylayout.js';
-import { STATUS_COLOR, dayFactor, etHour } from './cityfeed.js';
+import { STATUS_COLOR, dayFactor, etHour, pairOf } from './cityfeed.js';
 import { Rig } from './cityrig.js';
 import { createCityFx } from './cityfx.js';
 
@@ -47,8 +47,9 @@ function buildingMaterial() {
         vec3 sc = vec3(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz), length(instanceMatrix[2].xyz));
         float prog = 1.0;
         if (aAnim.x > 0.5 && aAnim.x < 1.5) { float q = clamp((uAnimT - aAnim.y) / 3.4, 0.0, 1.0); prog = q * q * (3.0 - 2.0 * q); }
-        else if (aAnim.x > 1.5) { float q = clamp((uAnimT - aAnim.y) / 2.6, 0.0, 1.0); prog = 1.0 - 0.82 * q * q * (3.0 - 2.0 * q);
+        else if (aAnim.x > 1.5 && aAnim.x < 2.5) { float q = clamp((uAnimT - aAnim.y) / 2.6, 0.0, 1.0); prog = 1.0 - 0.82 * q * q * (3.0 - 2.0 * q);
           transformed.xz += vec2(sin(uAnimT * 37.0 + position.y * 11.0), cos(uAnimT * 29.0 + position.y * 7.0)) * 0.06 * sin(q * 3.14159); }
+        else if (aAnim.x > 2.5) { float q = clamp((uAnimT - aAnim.y) / 2.4, 0.0, 1.0); prog = mix(aAnim.w, 1.0, q * q * (3.0 - 2.0 * q)); }      // an idea whose dollars moved since the last visit: grows or shrinks from where it stood
         transformed.y *= max(prog, 0.02);
         float hh = sc.y * max(prog, 0.02);
         vInfo = aInfo; vStat = aStat; vKind = aAnim.z; vHgt = hh; vRoof = position.y; vTop = step(0.5, abs(normal.y));
@@ -122,14 +123,15 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
 
   // ---- the world (rebuilt when the layout changes)
   const world = new THREE.Group(); scene.add(world);
+  let labObjs = [];
   let bMesh = null, bIndex = new Map(), realN = 0, cars = null, carState = [], orders = 0, roadsMesh = null, lanes = null, rain = null, embers = null, scaffold = null, skyway = null,
-    marker = null, fame = null, lighthouse = null, obs = null, vault = null, tower = null, ring1 = null, geoB = null, matB = null, labels = [];
+    marker = null, fame = null, leak = null, lighthouse = null, obs = null, vault = null, tower = null, ring1 = null, geoB = null, matB = null, labels = [];
   const m4 = new THREE.Matrix4(), q4 = new THREE.Quaternion(), p3 = new THREE.Vector3(), s3 = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), col = new THREE.Color();
 
   function disposeWorld() {
     world.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => { if (m.map) m.map.dispose(); m.dispose(); }); });
     world.clear();
-    bMesh = cars = roadsMesh = lanes = rain = embers = scaffold = skyway = marker = fame = lighthouse = obs = vault = tower = ring1 = null; labels = [];
+    bMesh = cars = roadsMesh = lanes = rain = embers = scaffold = skyway = marker = fame = leak = lighthouse = obs = vault = tower = ring1 = null; labels = []; labObjs = [];
   }
 
   function buildWorld() {
@@ -144,13 +146,13 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
     const r = rng(7), tint = new THREE.Color();
     real.forEach((b, i) => {
       q4.setFromAxisAngle(up, b.yaw); p3.set(b.x, 0, b.z); s3.set(b.w, b.mode ? b.fullH : b.h, b.d); m4.compose(p3, q4, s3); bMesh.setMatrixAt(i, m4);
-      const dc = L.districts.find((d) => d.key === b.district), dead = b.e.status === 'DEAD';
+      const dc = b.lab ? L.labs.find((d) => d.key === b.lab) : L.districts.find((d) => d.key === b.district), dead = b.e.status === 'DEAD';
       tint.set(b.e.small ? '#343b4b' : dead ? '#3a1d20' : '#1b2233').lerp(col.set(dc ? dc.color : '#ffffff'), b.e.small ? 0.05 : 0.22);
       bMesh.setColorAt(i, tint);
       const st = b.e.small ? '#8b93a7' : STATUS_COLOR[b.e.status];
       col.set(st); aStat.set([col.r, col.g, col.b], i * 3);
       aInfo.set([b.glow, b.lit, b.loss, r()], i * 4);
-      aAnim.set([b.mode, 1.0 + r() * 1.4, 1, 0], i * 4);
+      aAnim.set([b.mode, 1.0 + r() * 1.4, 1, b.from || 0], i * 4);
       bIndex.set(b.id, i);
     });
     realN = real.length;
@@ -174,6 +176,8 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
       lab.scale.set(lw, lw / 4, 1); lab.position.set(d.cx, Math.max(12, top + 5) + (d.key === 'Downtown' ? 34 : 0), d.cz); lab.userData.district = d.key; world.add(lab); labels.push(lab);
     }
 
+    buildLab();
+
     // roads and lane lines
     const asphalt = M.metal({ kind: 'gunmetal', color: '#0e1118', roughness: 0.5, clearcoat: 0.3, envMapIntensity: 0.3 });
     roadsMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), asphalt, L.roads.length);
@@ -195,6 +199,46 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
     applyTier();
     fxl.rebuild(world, L, M0, bIndex);
     dirty = true;
+  }
+
+  // ---- the Lab: one pad per research idea. ALL pads are one instanced mesh, ALL outlines one line mesh, ALL names one billboard mesh with a text atlas: 3 draw calls for any number of ideas
+  function buildLab() {
+    const ls = L.labs || [], n = ls.length;
+    if (!n) return;
+    const pads = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 0.3, 1), M.metal({ kind: 'gunmetal', color: '#ffffff', roughness: 0.3, clearcoat: 1, envMapIntensity: 0.5 }), n);
+    pads.frustumCulled = false;
+    const lp = [], lc = [];
+    ls.forEach((d, i) => {
+      q4.setFromAxisAngle(up, d.yaw); p3.set(d.cx, 0.12, d.cz); s3.set(d.half * 2, 1, d.half * 2); m4.compose(p3, q4, s3); pads.setMatrixAt(i, m4);
+      pads.setColorAt(i, col.set(d.color).multiplyScalar(0.07));
+      const c = Math.cos(d.yaw), s = Math.sin(d.yaw), h = d.half, hc = hdr(d.color, 1.5);
+      const P = (lx, y, lz) => [d.cx + lx * c + lz * s, y, d.cz - lx * s + lz * c];
+      const k = [[-h, -h], [h, -h], [h, h], [-h, h]];
+      [0.28, -0.02].forEach((y) => { for (let j = 0; j < 4; j++) { const a = k[j], b = k[(j + 1) % 4]; lp.push(...P(a[0], y, a[1]), ...P(b[0], y, b[1])); lc.push(hc.r, hc.g, hc.b, hc.r, hc.g, hc.b); } });
+    });
+    pads.instanceMatrix.needsUpdate = true; pads.instanceColor.needsUpdate = true;
+    const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.Float32BufferAttribute(lp, 3)); lg.setAttribute('color', new THREE.Float32BufferAttribute(lc, 3));
+    const outline = new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ vertexColors: true, fog: true })); outline.frustumCulled = false;
+    // the names: a text atlas (one row per idea) drawn by one instanced billboard
+    const cv = document.createElement('canvas'); cv.width = 512; cv.height = 128 * n;
+    const g = cv.getContext('2d'); g.font = '800 50px -apple-system, system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    ls.forEach((d, i) => { g.shadowColor = d.color; g.shadowBlur = 20; g.fillStyle = d.color; g.fillText(d.name, 256, i * 128 + 66); g.shadowBlur = 0; g.fillStyle = '#ffffff'; g.globalAlpha = 0.85; g.fillText(d.name, 256, i * 128 + 66); g.globalAlpha = 1; });
+    const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
+    const geo = new THREE.PlaneGeometry(1, 1), slot = new Float32Array(n);
+    ls.forEach((d, i) => { slot[i] = i; });
+    geo.setAttribute('aSlot', new THREE.InstancedBufferAttribute(slot, 1));
+    const names = new THREE.InstancedMesh(geo, new THREE.ShaderMaterial({ transparent: true, depthWrite: false, fog: false, uniforms: { uMap: { value: tex }, uN: { value: n } },
+      vertexShader: `attribute float aSlot; uniform float uN; varying vec2 vUv;
+        void main() { vUv = vec2(uv.x, 1.0 - (aSlot + 1.0) / uN + uv.y / uN); vec4 c = viewMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+          c.xy += position.xy * vec2(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz)); gl_Position = projectionMatrix * c; }`,
+      fragmentShader: 'uniform sampler2D uMap; varying vec2 vUv; void main() { vec4 t = texture2D(uMap, vUv); gl_FragColor = vec4(t.rgb, t.a * 0.95); }' }), n);
+    names.frustumCulled = false; names.renderOrder = 5;
+    ls.forEach((d, i) => {
+      const top = L.buildings.filter((b) => b.lab === d.key).reduce((mx, b) => Math.max(mx, b.fullH), 0);
+      p3.set(d.cx, Math.max(10, top + 5), d.cz); q4.identity(); s3.set(24, 6, 1); m4.compose(p3, q4, s3); names.setMatrixAt(i, m4);
+    });
+    names.instanceMatrix.needsUpdate = true;
+    world.add(pads, outline, names); labels.push(names); labObjs = [pads, outline, names];
   }
 
   // ---- traffic
@@ -293,10 +337,14 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
     lighthouse.position.set(10, 0.3, 11); world.add(lighthouse);
 
     // the Hall of Fame: a golden beam over the best proven edge
-    const best = M0.lists.doMore[0] || M0.lists.board[0];
+    const pr = pairOf(M0), best = (pr.best && bIndex.has(pr.best.id) ? pr.best.id : null) || M0.lists.doMore[0] || M0.lists.board[0];      // the HUD's Best edge so far
     if (best && bIndex.has(best)) {
       const b = L.buildings[bIndex.get(best)];
       fame = M.energyBeam({ length: 60, radius: 0.26, color: '#ffe08a', intensity: 1.4 }); fame.position.set(b.x, b.fullH + 1, b.z); world.add(fame);
+    }
+    if (pr.worst && bIndex.has(pr.worst.id)) {                           // a red beam over the Worst leak
+      const b = L.buildings[bIndex.get(pr.worst.id)];
+      leak = M.energyBeam({ length: 60, radius: 0.26, color: '#ff4d57', intensity: 1.4 }); leak.position.set(b.x, b.h + 1, b.z); world.add(leak); labObjs.push(leak);
     }
     // the selection marker
     marker = new THREE.Group();
@@ -369,7 +417,7 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
     const q = rc.quality();
     tier = TIERS[q] || TIERS.low;
     const bloomy = q === 'ultra' || q === 'high';                       // bloom lifts anything over ~1: keep the windows under it, or the city is one haze
-    for (const b of [tower && tower.userData.beam, fame, obs && obs.userData.beam, marker && marker.userData.beam, lighthouse && lighthouse.userData.sweep]) {   // a beam is HDR: on a bloom tier it would smear into blobs
+    for (const b of [tower && tower.userData.beam, fame, leak, obs && obs.userData.beam, marker && marker.userData.beam, lighthouse && lighthouse.userData.sweep]) {   // a beam is HDR: on a bloom tier it would smear into blobs
       if (!b) continue;
       const u = b.material.uniforms.uPower; if (b.userData.p0 == null) b.userData.p0 = u.value; u.value = b.userData.p0 * (bloomy ? 0.15 : 1);
     }
@@ -485,7 +533,7 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
     if (ring1) ring1.rotation.y = t * 0.3;
     if (obs && obs.userData.tele) obs.userData.tele.rotation.y = still ? 0 : t * 0.7;
     if (lighthouse && lighthouse.userData.sweep) { const sw = lighthouse.userData.sweep; sw.rotation.y = still ? 0 : t * 1.4; }
-    for (const b of [tower && tower.userData.beam, fame, obs && obs.userData.beam, marker && marker.userData.beam, lighthouse && lighthouse.userData.sweep]) if (b && b.update) b.update(t);
+    for (const b of [tower && tower.userData.beam, fame, leak, obs && obs.userData.beam, marker && marker.userData.beam, lighthouse && lighthouse.userData.sweep]) if (b && b.update) b.update(t);
     if (marker && marker.visible) marker.userData.ring.scale.multiplyScalar(1 + (still ? 0 : Math.sin(t * 4) * 0.0015));
     const ruinHigh = M0.book.ruinNow != null && M0.book.ruinNow >= 0.9;
     fxl.update({ t: t - t0, tier: rc.quality(), reduced: still, tw: skySt.tw, night: 1 - skySt.day, hour: skySt.hour, sun: skySt.sun, weather: M0.regime.state, wet: Math.min(1, W.rain), stormy: M0.regime.state === 'storm' || (ruinHigh && W.rain > 0) });
@@ -505,11 +553,12 @@ export function createCity(canvas, { O = null, model, layout, sound = () => fals
     select: setSel, selected: () => selected, setMode(k) { rig.setMode(k, L); }, mode: () => rig.mode, onMode(cb) { modeCb = typeof cb === 'function' ? cb : null; },
     focus(id) { const i = bIndex.get(id); if (i == null) return; const b = L.buildings[i]; rig.focus(b.x, Math.min(b.fullH, 30) * 0.5, b.z, 34 + b.fullH * 0.9, 0.95); },
     fireworks: (ids) => fxl.fireworks(ids), scan: (ids) => { const ok = fxl.scan(ids, { highlight }); dirty = true; return ok; }, strike: () => fxl.strike(), fxStats: () => fxl.stats(),
+    labVisible(on) { labObjs.forEach((o) => { if (o) o.visible = !!on; }); dirty = true; },       // the budget breakdown: the Lab's own draws (pads, outlines, names, the leak beam)
     pick, where, onPick(cb) { pickCb = typeof cb === 'function' ? cb : null; }, onQuality(cb) { qcb = typeof cb === 'function' ? cb : null; },
     lite: () => lite, quality: () => rc.quality(), render: () => { dirty = true; },
-    stats: () => ({ frames, drawn, quality: rc.quality(), passes: rc.passes().length, real: realN, scenery: bMesh ? bMesh.count - realN : 0, cars: cars ? cars.count : 0, orders, buildingsTotal: bMesh ? bMesh.count : 0,
+    stats: () => ({ frames, drawn, quality: rc.quality(), passes: rc.passes().length, real: realN, edges: L.edgeCount, lab: (L.labs || []).length, scenery: bMesh ? bMesh.count - realN : 0, cars: cars ? cars.count : 0, orders, buildingsTotal: bMesh ? bMesh.count : 0,
       rain: rain ? rain.visible : false, weather: M0.regime.state, paused: M0.regime.paused, hour: hourOverride != null ? hourOverride : hour, mode: rig.mode, selected, roads: L.roads.length, districts: L.districts.length,
-      fx: fxl.stats(), constructing: L.buildings.filter((b) => b.mode === 1).length, crumbling: L.buildings.filter((b) => b.mode === 2).length, draw: rc.stats ? rc.stats() : null }),
+      fx: fxl.stats(), resizing: L.buildings.filter((b) => b.mode === 3).length, constructing: L.buildings.filter((b) => b.mode === 1).length, crumbling: L.buildings.filter((b) => b.mode === 2).length, draw: rc.stats ? rc.stats() : null }),
     dispose() { stopped = true; cancelAnimationFrame(raf); fxl.dispose(); disposeWorld(); rc.dispose(); },
   };
 }

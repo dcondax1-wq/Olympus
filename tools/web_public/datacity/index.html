@@ -13,8 +13,8 @@
 <link rel="stylesheet" href="../olympus/olympus.css?v=o2">
 <script src="../olympus/themes.js?v=o2"></script>
 <script src="../olympus/olympus.js?v=o2" data-app="datacity"></script>
-<script src="../olympus/fx-core.js?v=f1"></script>
 <script src="../olympus/intro-app.js?v=i1" defer></script>
+<script src="../olympus/fx-core.js?v=f1"></script>
 <style>
 /* one top bar, one bottom sheet, one dock; the bottom-right 80 x 160 px is Jarvis's orb (docs/OLYMPUS_DESIGN.md) */
 :root{--bg:#05060f;--panel:rgba(12,15,32,.86);--line:rgba(255,255,255,.10);--text:#f4f4f6;--sub:#aeb3c6;--gold:#ffc94a;--green:#39e59a;
@@ -56,7 +56,7 @@ max-height:calc(100% - var(--sheet-bottom) - var(--top-h) - 26px - var(--st) - v
 background:var(--panel);border:1px solid var(--line);border-radius:var(--oly-r-card,16px);padding:0 14px 12px;backdrop-filter:blur(14px);
 -webkit-backdrop-filter:blur(14px);box-shadow:0 10px 40px rgba(0,0,0,.45)}
 .sheet.on{display:block;animation:rise .2s ease-out}
-.sheet[data-view=district],.sheet[data-view=today],.sheet[data-view=watch],.sheet[data-view=find]{max-height:min(calc(100% - var(--sheet-bottom) - var(--top-h) - 26px - var(--st) - var(--sb)),44vh)}
+.sheet[data-view=now],.sheet[data-view=district],.sheet[data-view=today],.sheet[data-view=watch],.sheet[data-view=find]{max-height:min(calc(100% - var(--sheet-bottom) - var(--top-h) - 26px - var(--st) - var(--sb)),44vh)}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .sheet header{position:sticky;top:0;display:flex;align-items:center;gap:8px;padding:10px 0 6px;background:linear-gradient(var(--panel) 80%,transparent);z-index:1}
 .sheet h2{margin:0;flex:1;min-width:0;font:700 17px/1.25 var(--oly-ui,inherit);letter-spacing:.01em}
@@ -153,6 +153,8 @@ body.cine .top,body.cine .mini,body.cine .dock .tab:not(#tourB){opacity:.18;tran
 .mi{min-height:64px;text-align:left;padding:9px 11px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text);cursor:pointer;display:flex;flex-direction:column;gap:2px}
 .mi b{font:700 13px/1.2 var(--oly-display,inherit);letter-spacing:.04em}.mi small{font-size:11.5px;color:var(--sub);line-height:1.3}
 .mi:active{border-color:var(--gold)}
+.list.now li small{display:block;white-space:normal;line-height:1.3}.list.now li small.usd{color:var(--text);font-weight:700}.list.now li small.lit.yes{color:var(--green)}.list.now li small.lit.no{color:var(--amber)}
+.list.now li{align-items:flex-start;min-height:56px}
 table.rep td,table.cou td:first-child{white-space:normal}table.rep td:last-child,table.cou td{text-align:right}
 @media (max-width:430px){.top h1{font-size:13px;letter-spacing:.12em}.top .icons{gap:2px}}table.rep td:first-child,table.cou td:first-child{text-align:left}
 table.cou tr[data-family]{cursor:pointer}

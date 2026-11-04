@@ -6,6 +6,7 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import * as SH from './shaders.js';
 import { ARCH } from './kinds.js';
+import { PROFILES } from './caps.js';
 
 export const LOD = { hq: 170, lq: 125 };        // a tile nearer than this (to its edge) draws every building
 export const RICH = { hq: 70, lq: 0 };          // and nearer than this it draws the 8-sided towers (round glass, real drums); further, 4-sided ones
@@ -93,8 +94,9 @@ function clusterGeo() {
 
 export class Skyline {
   /** L: layout(); U: the scene's shared uniforms; quality 'hq' | 'lq' */
-  constructor(L, U, quality) {
+  constructor(L, U, quality, caps) {
     this.L = L; this.U = U; this.quality = quality;
+    this.caps = caps || PROFILES[quality === 'lq' ? 'lite' : 'full'];
     this.group = new THREE.Group();
     this.box = towerGeo(4);                 // far / mid: 4-sided prisms; near: 8-sided (round towers round)
     this.rich = towerGeo(8);
@@ -196,20 +198,20 @@ export class Skyline {
     this.group.add(this.imp);
   }
 
-  setQuality(q) { this.quality = q; this.lodDirty = true; }
+  setQuality(q, caps) { this.quality = q; if (caps) this.caps = caps; this.lodDirty = true; }
 
   /** LOD: each tile in full near the camera, as impostor blocks far away. Cheap: ~100 distance tests a frame. */
   update(camera) {
-    const p = camera.position, lod = LOD[this.quality], near = MIRROR_NEAR[this.quality];
+    const C = this.caps, p = camera.position, lod = C.lod, near = C.mirrorNear;
     let changed = this.lodDirty;
     const mir = [], dists = this._d || (this._d = new Float32Array(this.tiles.length));
     this.tiles.forEach((rec, k) => { const t = rec.tile; dists[k] = Math.hypot(p.x - t.cx, p.y - t.hmax * 0.4, p.z - t.cz) - t.r; });
     // never more than MAX_FULL tiles in full (the nearest ones): a hard ceiling on draw calls and triangles whatever the camera does
     const order = this._o || (this._o = this.tiles.map((_, k) => k));
     order.sort((a, b) => dists[a] - dists[b]);
-    const full = new Set(order.slice(0, MAX_FULL[this.quality]).filter((k) => dists[k] < lod));
+    const full = new Set(order.slice(0, C.maxFull).filter((k) => dists[k] < lod));
     this.tiles.forEach((rec, k) => {
-      const t = rec.tile, dist = dists[k], detail = full.has(k), rich = detail && dist < RICH[this.quality];
+      const t = rec.tile, dist = dists[k], detail = full.has(k), rich = detail && dist < C.rich;
       if (detail !== rec.detail || this.lodDirty) {
         rec.detail = detail;
         for (const b of t.blocks) this.impMeta[b * 4 + 3] = detail ? 0 : 1;
@@ -221,8 +223,8 @@ export class Skyline {
       if (detail && dist < near) mir.push([dist, rec]);
     });
     mir.sort((a, b) => a[0] - b[0]);
-    for (let k = 0; k < Math.min(MIRRORS, mir.length); k++) mir[k][1].mirror.visible = true;
-    if (this.landmarks) { this.landmarks.near.visible = this.quality === 'hq'; this.landmarks.mesh.visible = !this.landmarks.near.visible; this.landmarks.mirror.visible = near > 0; }
+    for (let k = 0; k < Math.min(C.mirrors, mir.length); k++) mir[k][1].mirror.visible = true;
+    if (this.landmarks) { this.landmarks.near.visible = this.quality === 'hq' && C.rich > 0; this.landmarks.mesh.visible = !this.landmarks.near.visible; this.landmarks.mirror.visible = near > 0 && C.mirrors >= 4; }
     if (changed && this.imp) this.impAttr.needsUpdate = true;
     this.lodDirty = false;
   }

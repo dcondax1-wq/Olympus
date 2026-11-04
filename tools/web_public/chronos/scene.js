@@ -235,9 +235,13 @@ export function createChronos(canvas, { O = null } = {}) {
   const end = () => { cam.drag = null; };
   canvas.addEventListener('pointerup', end); canvas.addEventListener('pointercancel', end);
 
+  let gapAt = 0;
   function frame(now) {
     raf = requestAnimationFrame(frame);
-    if (stopped) return;
+    if (stopped || (O && O.hidden())) return;                            // hidden / covered: no JS, no frame (docs/OLYMPUS_PERF.md)
+    const gap = O && O.frameGap ? O.frameGap() : 0;                       // idle 30 / 15 fps, battery saver, 3D Off 2 fps; a touch = full rate
+    if (gap && now - gapAt < gap - 3) return;
+    gapAt = now;
     const still = reduced(), t = now / 1000;
     const a = canvas.clientWidth / Math.max(1, canvas.clientHeight);
     cam.dist = a < 0.6 ? 25 : a < 1 ? 20 : 15;

@@ -2,6 +2,7 @@
 // (forumcore.js), draws the forum (scene.js) and walks you through it. Text only through textContent. window.FORUM is the test hook.
 import { etParts, parseClock, clockText, minsText, nextEvent, phase, brief, oath, streak, evalOf, desk } from './forumcore.js';
 import { readPlanner, renderDesk, renderShrine, ritual } from './forumdesk.js';
+import { renderMoney, renderDay } from './forumplus.js';
 
 const O = window.OLYMPUS || null;
 const $ = (id) => document.getElementById(id);
@@ -35,6 +36,7 @@ function tickClock() {
   const sk = streak(S.sealed, p.day);
   $('streakN').textContent = String(sk.cur); $('streak').classList.toggle('on', sk.cur > 0);
   renderShrine($('shrine'), sk.cur, sk.best);
+  try { renderDay($('day'), p); } catch (e) { /* the day bar is optional */ }
   if (S.scene) S.scene.setClock({ h: p.h, tone: councilTone() });
 }
 
@@ -56,9 +58,11 @@ function show(step) {
   else card.style.setProperty('--tone', '#9fb4ff');
   if (S.scene) S.scene.focus(step === -1 ? -1 : step);
   const dots = $('dots');
+  document.documentElement.dataset.walk = step === -1 ? '' : '1';          // the tablet card rises above the two-row nav (dots, then the arrows)
   [...dots.children].forEach((b, i) => { if (i === step) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current'); b.classList.toggle('read', S.read.has(i) && i !== step); });
   $('prev').disabled = step <= 0; $('next').disabled = step >= S.items.length;
   $('desk').hidden = !(step === -1 || step === S.items.length);
+  $('money').hidden = $('day').hidden = $('desk').hidden;                       // Money today and the trading day ride with the desk (the start and the oath screens)
   card.scrollTop = 0;
 }
 
@@ -150,11 +154,12 @@ async function main() {
   const [pan, home] = await Promise.all([getJSON('../pantheon/pantheon.json'), getJSON('../home.json')]);
   S.pan = pan && pan.council ? pan : null; S.home = home;
   S.demo = !S.pan || !!S.pan.demo;
-  if (!S.pan) { const fx = await getJSON('fixture.json'); if (fx) { S.pan = fx.pantheon; if (!evalOf(S.home)) S.home = fx.home; } }
+  if (!S.pan || !evalOf(S.home)) { const fx = await getJSON('fixture.json'); if (fx) { if (!S.pan) S.pan = fx.pantheon; if (!evalOf(S.home)) { S.home = fx.home; S.demo = true; } } }      // never blank: the recorded eval fills the money card (DEMO tag)
   S.sealed = (store.read().sealed) || {};
   S.p = now();
   S.items = brief(S.pan, S.home, S.p);
   S.desk = desk(S.home, readPlanner(), S.p); renderDesk($('desk'), S.desk);
+  try { renderMoney($('money'), S.home, S.pan); renderDay($('day'), S.p); } catch (e) { S.error = 'plus: ' + ((e && e.message) || e); }
   $('demo').hidden = !S.demo;
   if (S.scene) S.scene.setScrolls(S.items);
   const c = S.items[0];

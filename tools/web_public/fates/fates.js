@@ -213,9 +213,14 @@ function spin() {
   S.spinning = true;
   S.perf = [];
 }
+let gapAt = 0;
 function frame(now) {
   requestAnimationFrame(frame);
-  if (!sc || (O ? O.hidden() : document.hidden)) return;     // hidden tab: no frame (the battery)
+  if (!sc || (O ? O.hidden() : document.hidden)) return;     // hidden / covered tab: no frame (the battery)
+  let gap = O && O.frameGap ? O.frameGap() : 0;              // idle 30 / 15 fps, battery saver, 3D Off 2 fps (docs/OLYMPUS_PERF.md)
+  if (S.reduced && O && O.idle && O.idle()) gap = Math.max(gap, 500);    // reduced / 3D Off: an idle scene redraws twice a second at most
+  if (gap) { if (now - gapAt < gap - 3) return; S.perf = []; }   // a deliberate cap is not a slow phone: no auto LITE from capped frames
+  gapAt = now;
   const sec = (now - clock0) / 1000;
   const k = S.reduced ? MAP.H + 1 : Math.min(MAP.H + 1, kAt(sec) + (sec >= DUR() ? 1 : 0));
   if (S.follow) stepFollow(now);

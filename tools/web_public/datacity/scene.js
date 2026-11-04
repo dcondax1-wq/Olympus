@@ -16,6 +16,7 @@ import { River, Ships } from './water.js';
 import { Signs } from './signs.js';
 import { Fireworks } from './fireworks.js';
 import { KitFx } from './kitfx.js';
+import { PROFILES, phoneHint, profileOf } from './caps.js';
 import { Link } from './links.js';
 
 const FOG = { night: 0x070a1c, day: 0x9fbbe2, dusk: 0x4a2a4a, storm: 0x2a3140 };
@@ -64,11 +65,14 @@ export class CityScene {
     this.camera = new THREE.PerspectiveCamera(52, 1, 0.5, 3200);
     // the render core in 'display' space: this city's shaders write screen colours (windows, neon, glows), so bloom reads the
     // 0..1 screen value; the PBR landmarks tone-map themselves. Tier from OLYMPUS.fx() (followed live); the app steps down itself.
-    this.rc = createRenderer({ canvas, scene: this.scene, camera: this.camera, space: 'display', env: 'night', adapt: false, maxDpr: 1.75,
+    this.phone = phoneHint();                                  // v3: a phone gets the phone-safe caps (caps.js) and a pixel ratio of at most 1.5
+    this.rc = createRenderer({ canvas, scene: this.scene, camera: this.camera, space: 'display', env: 'night', adapt: false, maxDpr: this.phone ? PROFILES.phone.dpr : PROFILES.full.dpr,
       bloom: { strength: 0.62, radius: 0.5, threshold: 0.8 }, grade: { grain: 0.035, vignette: 0.26, aberration: 0.002, saturation: 1.04 },
       onQuality: (lv) => this._tier(lv) });
     this.renderer = this.rc.renderer;
     this.quality = this.rc.quality() === 'low' || this.rc.quality() === 'off' ? 'lq' : 'hq';
+    this.profile = profileOf(this.rc.quality(), this.phone, !!window.OLYMPUS?.saver?.());
+    this.caps = PROFILES[this.profile];
     const v3 = () => new THREE.Vector3();
     this.U = { uTime: { value: 0 }, uFog: { value: new THREE.Color(FOG.night) }, uFogD: { value: DENSITY.night }, uHaze: { value: 0.2 },
                uDay: { value: 0 }, uDusk: { value: 0 }, uToday: { value: 0 }, uWet: { value: 0.6 }, uRain: { value: 0 }, uPR: { value: 1 },
@@ -79,7 +83,7 @@ export class CityScene {
     this.bloomK = -1;
     this._sky();
     this._ground();
-    this.skyline = new Skyline(L, this.U, this.quality);
+    this.skyline = new Skyline(L, this.U, this.quality, this.caps);
     this.scene.add(this.skyline.group);
     this._glow();
     this._streets(opts.winRate);
@@ -92,7 +96,7 @@ export class CityScene {
     const clear = [{ x: this.lm.site.x, z: this.lm.site.z, r: 110 }];
     for (let i = 0; i < this.R.river.length; i += 2) clear.push({ x: this.R.river[i][0], z: this.R.river[i][1], r: this.R.riverW + 4 });
     for (let i = 0; i < this.R.rail.length; i += 3) clear.push({ x: this.R.rail[i][0], z: this.R.rail[i][1], r: 7 });
-    this.outskirts = new Outskirts(L, this.U, this.quality, clear); this.scene.add(this.outskirts.group);
+    this.outskirts = new Outskirts(L, this.U, this.quality, clear, this.caps); this.scene.add(this.outskirts.group);
     this.streams = new Streams(L, this.lm, this.U, this.quality); this.scene.add(this.streams.group);
     this.rays = new Rays(L, this.U); this.scene.add(this.rays.mesh);
     this.sunRays = new SunRays(this.U); this.scene.add(this.sunRays.mesh);
@@ -100,7 +104,7 @@ export class CityScene {
     this.rain = new Rain(this.U, this.quality); this.scene.add(this.rain.lines);
     this.traffic = new Traffic(L, this.U, this.quality); this.scene.add(this.traffic.points);
     this.beam = new Beam(this.U); this.scene.add(this.beam.mesh, this.beam.ring);
-    this.boards = new Billboards(this.U, opts.billboards || []); this.scene.add(this.boards.group);
+    this.boards = new Billboards(this.U, opts.billboards || [], this.caps.boards); this.scene.add(this.boards.group);
     // v3: the river, the sailing ships and cranes, the monorail, the cars and flying taxis, the airships, the neon signs, the fireworks
     this.river = new River(this.R, this.U); if (this.river.mesh) this.scene.add(this.river.mesh);
     this.ships = new Ships(L, this.U, this.quality); this.scene.add(this.ships.group);
@@ -108,11 +112,11 @@ export class CityScene {
     this.cars = new Cars(L, this.U, this.quality); this.scene.add(this.cars.mesh);
     this.flyers = new Flyers(L, this.R, this.U, this.quality); this.scene.add(this.flyers.mesh);
     this.airships = new Airships(this.R, this.U); this.scene.add(this.airships.mesh);
-    this.signs = new Signs(L, this.U); this.scene.add(this.signs.group);
+    this.signs = new Signs(L, this.U, this.caps); this.scene.add(this.signs.group);
     this.fireworks = new Fireworks(); this.scene.add(this.fireworks.points);
     this.link = new Link(); this.scene.add(this.link.line);
     this.kit = new KitFx(this.scene, this.camera, this.lm.spots, L, this.R);
-    this.kitReady = this.kit.load().then((ok) => { if (ok && this._sun) this.kit.set(this._sun, this._wx, this.U); return ok; }).catch(() => false);
+    this.kitReady = this.kit.load().then((ok) => { if (ok && this._sun) this.kit.set(this._sun, this._wx, this.U, this.caps); return ok; }).catch(() => false);
     this.calm = !!opts.calm;
     this._tier(this.rc.quality());
   }
@@ -226,12 +230,12 @@ export class CityScene {
   }
 
   _names() {
-    this.signs = [];
+    this.nameSprites = [];
     for (const d of this.L.districts) {
       const s = textSprite(d.name, d.css || '#e9ecf6', Math.max(0.9, Math.min(2.4, d.half / 34)));
       s.position.set(d.cx, d.kind === 'harbor' ? 8 : 16 + Math.min(30, d.half * 0.3), d.cz);
       this.scene.add(s);
-      this.signs.push(s);
+      this.nameSprites.push(s);
     }
     const disc = textSprite('DISCOVERIES', '#ffe08a', 0.8);
     disc.position.set(0, 6, -22);
@@ -300,7 +304,7 @@ export class CityScene {
     this.storm = !!w.storm;
     this.lm.setSun(sun, w, U);
     this._sun = sun; this._wx = w;
-    this.kit?.set(sun, w, U);
+    this.kit?.set(sun, w, U, this.caps);
     U.uFlow.value = (sun.open ? 1 : 0.4) * (0.75 + Math.min(1.2, (w.vix || 16) / 22));            // the market drives the data streams
     const bk = +(0.55 + 0.5 * (1 - sun.day) + 0.12 * U.uCloud.value).toFixed(2);                  // more glow at night, less by day
     if (bk !== this.bloomK) { this.bloomK = bk; this.rc.setBloom({ strength: bk }); }
@@ -331,18 +335,22 @@ export class CityScene {
   _tier(level) {
     const q = level === 'low' || level === 'off' ? 'lq' : 'hq', changed = q !== this.quality || !this.skyline;
     this.quality = q;
+    this.profile = profileOf(level, this.phone, !!window.OLYMPUS?.saver?.());
+    const C = this.caps = PROFILES[this.profile];
     if (!this.skyline) return;
     this.U.uPR.value = this.renderer.getPixelRatio();
-    this.flow.geometry.setDrawRange(0, FLOW[q]);
-    this.stars.geometry.setDrawRange(0, STARS[q]);
-    this.skyline.setQuality(q);
-    this.fog.setQuality(q);
-    this.rain.setQuality(q);
-    this.traffic.setQuality(q);
-    this.streams.setQuality(q);
-    this.outskirts.setQuality(q);
+    this.flow.geometry.setDrawRange(0, C.flow);
+    this.stars.geometry.setDrawRange(0, C.stars);
+    this.skyline.setQuality(q, C);
+    this.fog.setQuality(q, C);
+    this.rain.setQuality(q, C);
+    this.traffic.setQuality(q, C);
+    this.streams.setQuality(q, C);
+    this.outskirts.setQuality(q, C);
     this.lm.setQuality(q);
-    this.cars.setQuality(q); this.flyers.setQuality(q); this.rail.setQuality(q); this.ships.setQuality(q);
+    this.cars.setQuality(q, C); this.flyers.setQuality(q, C); this.rail.setQuality(q, C); this.ships.setQuality(q, C);
+    this.airships.setQuality(q, C); this.fireworks.setQuality(q, C);
+    if (this._sun) this.kit.set(this._sun, this._wx, this.U, C);
     this.bloomK = -1;
     if (changed) this.onTier(q, level);
   }
@@ -370,7 +378,7 @@ export class CityScene {
 
   /** Redraw every canvas text once the HUD fonts (Orbitron / Rajdhani) are in: the first draw used a fallback. */
   refreshText() {
-    for (const s of this.signs) s.userData.redraw?.();
+    for (const s of this.nameSprites) s.userData.redraw?.();
     this.towerName?.userData.redraw?.();
     this.signs.refresh();
     this.boards.redrawAll();
@@ -392,6 +400,13 @@ export class CityScene {
       U.uFlash.value = this.flash > 0 ? this.flash * (0.6 + 0.4 * Math.sin(U.uTime.value * 60)) : 0;
     } else U.uFlash.value = 0;
     this.lm.update(U.uTime.value);
+    this.lm.lod(this.camera.position, this.caps);
+    if (this.caps.farAlt > 0) {                                  // phone: from the overview height the small details are not drawn (each is a draw call)
+      const hi = this.camera.position.y > this.caps.farAlt;
+      for (const o of [this.boards.group, this.rail.furn, this.signs.poles, this.ships.cranes]) if (o) o.visible = !hi;
+    } else for (const o of [this.boards.group, this.rail.furn, this.signs.poles, this.ships.cranes]) if (o && !o.visible) o.visible = true;
+    if (this.caps.lmLod > 0) { const cp = this.camera.position; for (const sp of this.nameSprites) sp.visible = Math.hypot(cp.x - sp.position.x, cp.z - sp.position.z) < this.caps.lmLod * 0.8; }       // phone: the name sprites only near (the neon boards say the names too)
+    else if (this.nameSprites[0] && !this.nameSprites[0].visible) for (const sp of this.nameSprites) sp.visible = true;
     if (!this.calm) {
       this.airships.update(U.uTime.value);
       this.rail.update(U.uTime.value, U.uFlow.value);

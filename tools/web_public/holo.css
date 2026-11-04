@@ -184,7 +184,7 @@
 .hd-root:fullscreen .hd-pane, .hd-root.hd-max .hd-pane { max-height: none; }
 html.hd-lock, html.hd-lock body { overflow: hidden; }
 /* PC page */
-.hd-pc { height: calc(100vh - 120px); min-height: 640px; }
+.hd-pc { height: calc(100vh - 120px); height: calc(100dvh - 120px); min-height: 640px; }
 .hd-pc .hd-stage { min-height: 0; }
 /* phone */
 .hd-phone { border-radius: 18px; margin: 0 0 12px; }

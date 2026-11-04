@@ -13,7 +13,7 @@ part yourself or fold it into a script.**
 ## One chat: where each thing lives and how it ships (owner 2026-11-01)
 
 **The system's name is OLYMPUS (owner 2026-11-03; NEXUS was dropped).** Shown on Jarvis's header (`.hpanel::after`),
-the orb switcher's title (switcher.js) and the System section; worker jarvis-v11, jarvis.css?v=j7, What's new j6.
+the orb switcher's title (switcher.js) and the System section (current workers: `jarvis/sw.js` jarvis-v24, `kalshi/sw.js` kalshi-k18, root `sw.js` le-public-v59).
 The owner: "I want this chat to be the one I make all changes to, for anything. It's gonna save me time and usage." Every
 project is changed from this repo; this map saves the search. Ship = PR on the session branch, squash-merge to main.
 
@@ -29,15 +29,22 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
 | The PC (Windows) | NinjaTrader, the bot server | git auto-update; NinjaTrader login and live arming are the owner's | — |
 | DAPHNE (strategy-tree search page) | `tools/strategytree/` (engine), `tools/web_public/tree/` (page, tree.json, demo.json, jarvis.json) | rerun `python -X utf8 -m tools.strategytree` (~3 CPU-min) for new data, then same as Zenith | `tests.test_strategytree`, `tests.shots_strategytree` |
 | OLYMPUS kit (shared look, veil, one 3D quality `jfx`, perf rules of the nine 3D apps) | `tools/web_public/olympus/`, `docs/OLYMPUS_DESIGN.md` | same as Zenith (published with every build) | `tests.test_olympus_kit` (+ the app's own test) |
+| ORACLE (market radar, Delphi temple) / ODEON (trade replay theater) | `tools/web_public/oracle/`, `tools/web_public/odeon/`; Oracle's Prophecy odds = `oracle/prophecy.json`, rebuilt by `python tools/oracle_prophecy_stats.py` from `research/lab/backtest_live.json`; Odeon's reels = `odeon/trades.json` (`tools/odeon_export.py`); design + budgets in `docs/OLYMPUS_DESIGN.md` (Oracle and Odeon overhaul) | same as Zenith (folders are copied whole) | `tests.test_oracle_odeon_fx` (+ `tests.test_oracle_page`, `tests.test_odeon_page`, `tests.test_olympus_kit oracle odeon`) |
 | PANTHEON (free data gods: liquidity, rates, vol, calendar, COT, dollar, credit, crypto; council verdict; `states.json` for Data City) | `tools/pantheon/` (fetchers + builder), `research/pantheon/`, `tools/web_public/pantheon/`, `docs/PANTHEON.md` | the CRONOS nightly task `pantheon`; published with every build | `tests.test_pantheon` (`fast` without the browser) |
 | CRONOS (nightly refresh of the OLYMPUS research apps) | `tools/cronos/`, `.github/workflows/cronos.yml` (+ `datacity.yml`), branches `cronos` / `datacity`, `docs/CRONOS.md` | main -> runs on its own schedule; the next cloud-monitor publish pulls the branches and stamps the cards | `tests.test_cronos` (`--quick` without the site builds) |
 | PC speed (Surface + main PC) | `CLEAN_PC.bat`, `scripts/clean_pc.ps1`, `docs/PC_PERFORMANCE.md` | main -> the PC's auto-update; the main PC gets the `PC_KIT` copy (OneDrive or Desktop) | `tests.test_clean_pc` |
 | PC storage clean (both PCs) | `CLEAN_STORAGE.bat`, `scripts/clean_storage.ps1`, site copies `tools/web_public/pc/CLEAN_STORAGE.bat` + `clean_storage.ps1` (kept identical), `engine/pc_health.py` (`storage` line) | main -> the PC's auto-update; the site `pc/` page has the download; the PC_KIT copy | `tests.test_clean_storage`, `tests.test_win_scripts`, `tests.test_pc_health` |
 | PC care (both PCs) | `PC_CARE.bat`, `scripts/pc_care.ps1`, site copies `tools/web_public/pc/PC_CARE.bat` + `pc_care.ps1` (kept identical), `UNDO_PC_TUNE.bat` (undoes it too), `engine/pc_health.py` (`pc_care` line), `docs/PC_PERFORMANCE.md` | main -> the PC's auto-update; the site `pc/` page has the download | `tests.test_pc_care`, `tests.test_win_scripts`, `tests.test_pc_health` |
-| OLYMPUS apps (24 wired + Cities, Kalshi City) | `tools/web_public/<app>/`; the list, data sources and tests: section "OLYMPUS apps and tools" below | the lead wires new ones (`jarvis/apps.js`, `olympus/olympus.js`, the build tuple); published with every build | the app's own `tests.test_<app>_page` (+ `tests.test_olympus_kit`) |
+| OLYMPUS apps (30 in the apps list, all wired 2026-11-04) | `tools/web_public/<app>/`; the list, data sources and tests: section "OLYMPUS apps and tools" below; **a new app: the "Wiring checklist for a new app" there** | the lead wires new ones (`jarvis/apps.js`, `olympus/olympus.js`, the build tuple, root `sw.js`, then `python tools/apps_list_build.py`); published with every build | the app's own `tests.test_<app>_page` (+ `tests.test_olympus_kit`, `tests.test_apps_list`) |
+| New 2026-11-04 apps: Ledger (real money), Inbox, Mnemosyne (`journal/`, trade journal), Settings | `ledger/` (`docs/LEDGER.md`), `inbox/`, `journal/`, `settings/` | same as every app | `test_ledger_page`, `test_ledger_freeze`, `test_inbox_page`, `test_journal_page`, `test_settings_page` |
+| Apps list + Zenith launcher (the ONE list of apps) | `olympus/apps-list.js` + `web_next/js/next/apps-list.js` (GENERATED by `python tools/apps_list_build.py` from `jarvis/apps.js` BUILT_INS + `olympus/olympus.js` APPS; `--check` fails when stale), `launcher.js` (+ the byte-identical `web_next/js/next/launcher.js`: the Olympus button, tiles by group, search, recent, status dots from each `<app>/jarvis.json`) | rerun the generator after ANY edit of `apps.js` / `olympus.js`, commit both outputs; then same as Zenith | `tests.test_apps_list` (`--static` = no browser) |
+| Accessibility + readability (Dynamic Type / big text, ink guard, focus ring, auto aria-labels, live toasts, reduced motion / contrast) | `olympus/a11y.js` + `a11y.css` (ES5), `olympus/a11y-demo.html`, `docs/OLYMPUS_A11Y.md` (rules, contrast audit, which apps need the tags) | the lead inserts the two tags (`a11y.css` in `<head>`, `a11y.js` after `olympus.js`) page by page: done so far in `journal/` and `settings/` only | `tests.test_olympus_a11y` |
+| Test tools: browser kit, area runner, release gate, site self-check | `tests/browser_kit.py` (shared launch, load-scaled waits, `BK.limit`), `tests/run_area.py`, `tests/run_gate.py` (+ `tests/hub_parts.py`, `tests/gate_static.py`), `tools/site_selfcheck.py` (read-only workflow step) | main | `tests.test_run_gate`, `tests.test_site_selfcheck`; the gate itself: `python -X utf8 tests/run_gate.py` (see "Test tools" below) |
+| PC status card (both PCs) | `STATUS.bat`, `scripts/pc_status.ps1`, site copies `tools/web_public/pc/STATUS.bat` + `pc_status.ps1` (kept identical), `docs/PC_PERFORMANCE.md` ("STATUS.bat and the safety review") | main -> the PC's auto-update; the site `pc/` page has the download | `tests.test_pc_care` (STATUS part), `tests.test_win_scripts` |
 | Effects library / transitions / app intros | `olympus/fx-*.js` + `docs/OLYMPUS_FX.md`; `jarvis/transitions.js`; `olympus/intro-app.js` | same as Zenith | `tests.test_olympus_fx`, `tests.test_jarvis_transitions`, `tests.test_app_intro` |
 | Bridge (Claude x ChatGPT) | `tools/web_public/bridge/`, `tools/bridge_sync.py`, `tools/bridge_ingest.py`, `tools/bridge_jobs_build.py`, `handoff/` | the build runs `bridge_sync.publish` | `tests.test_bridge_page`, `tests.test_bridge_ingest` |
-| Kalshi City + edges engine | `tools/web_public/kalshicity/`, `tools/kalshi_edges.py`, `docs/KALSHICITY.md` | the lead wires it (see the doc); CRONOS-style 6-hourly refresh | `tests.test_kalshi_edges`, `tests.test_kalshicity_page` |
+| Obsidian starter vault (Mind Teach page + demo brain; `python tools/obsidian_pack.py`, `--check` for stale) | `tools/obsidian_pack.py`, `tools/web_public/mind/starter.js`, `mind/starter/` (generated) | rerun the script when `athena/library.json`, `STRATEGY.md`, `mffu_rules.json`, `plans.json` or the writeups change; published with every build | `tests.test_obsidian_pack`, `tests.test_mind_page` |
+| Kalshi City + edges engine (edges, Lab, what-if, learned) | `tools/web_public/kalshicity/`, `tools/kalshi_edges.py`, `tools/kalshi_hypotheses.py` (Lab), `tools/kalshi_whatif.py`, `tools/kalshicity_learned.py`, workflow `.github/workflows/kalshicity.yml` (every 6 h, branch `kalshicity`), `docs/KALSHICITY.md` | wired 2026-11-04; the workflow refreshes it, the next cloud-monitor publish copies it | `tests.test_kalshi_edges`, `tests.test_kalshicity_page` |
 | LITE mode (bot on low memory) + PC-off plan | `engine/lite.py`, `BOT_LITE.bat`, `scripts/bot_lite.ps1`, `docs/PC_OFF_PLAN.md` | main -> the PC's auto-update; the owner double-clicks BOT_LITE once | `tests.test_lite` (`--quick` = unit only), `tests.test_win_scripts` |
 
 - **Phone changes:** check in WebKit (the iPhone's engine) before shipping: `PLAYWRIGHT_BROWSERS_PATH=<dir> python -m playwright
@@ -1105,6 +1112,17 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
     the base). test_holo_ui's "replay advances" failed on the base and here while the shared machine was at load 40-60
     (4 cores) and passes 62/62 at a lower load: a timing flake, the Holodeck code is unchanged.
   - Test `python -X utf8 -m tests.test_zenith_shell` (23).
+- **ARES + PLUTUS + FORUM + ARGUS quality pass (2026-11-04, overnight; same kit, `olympus/fx-atmos.js`):** every scene gets shafts / dust / embers / contact
+  shadows (Ares: polished floor + torch embers; Plutus: studio environment, vault shadow, gold embers; Forum: sun shafts, torch embers, column shadows; Argus:
+  scanner beam, data dust); the atmosphere joins 0.9 s after the first paint (cheap first frame; `?noatmos=1` on Ares is a perf probe). fx-atmos additive
+  light now keeps the alpha channel (no dark halos on a transparent canvas). New money features, each from a pure core function (tests call them):
+  Ares `aresplus.js` (`oddsPlan` what a win is worth in $ and R and the win rate it needs, `stopLadder` wide stop = fewer micros, `streakTable` "Drawdown left $X
+  of $2,000 max loss" after each stop-out, `passPace`, `dayBudget`, `payoutCheck`); Plutus `plutusplus.js` (`rankPlans` best plan per $ of fees, `buyPlan` evals to
+  buy for a funded account, `payoutRace`, `cashCushion`); Forum `forumplus.js` ("Money today": drawdown left, pace per session, size at four stop widths, the
+  news rule; "The trading day" bar with a countdown; a recorded eval fills it when the site has none); Argus `argusplus.js` (Money tab: can the bot trade
+  today = six gates + countdown to 02:00 ET, both evals in money words and the 7-day clock, what red lights cost; `?demo=1` / "See it with demo data" fills an
+  empty page, never saved over the real copy; the tabs are a 2 x 2 grid). All taps >= 44 px (Forum's dots wrap to two rows above the arrows). Test
+  `python -X utf8 -m tests.test_oly_job46`. The apps' tests wait up to 150 s for the page (`tests/olympus_money_kit.py`): SwiftShader on a loaded machine.
 - **FATES + LABYRINTH + HEPHAESTUS overhaul (2026-11-04, overnight JOB 4+5; owner: the apps look Play-Doh):** shared kit `tools/web_public/olympus/fx-atmos.js`
   (dust, embers, light shafts, contact shadows, polished floor, bronze, forged iron, thread glow; one draw call each, tiers in `QUALITY`; doc
   section in `docs/OLYMPUS_RENDER.md`). Fates (`fates-lab.js`, bottom bar **Lab**): fan chart with percentiles, pass odds by day, size what-if (1 / 1.25 /
@@ -1742,14 +1760,16 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
 ## OLYMPUS apps and tools (map written 2026-11-04, checked against the code)
 
 **Who wires what.** An app is a folder `tools/web_public/<id>/` with `index.html` + `jarvis.json` (the status card, `docs/JARVIS_APPS.md`). It is
-"wired" when the LEAD has added: its row in `jarvis/apps.js` `BUILT_INS`, its entry in `olympus/olympus.js` `APPS` (name, glyph, colour: the veil and
-the intro read it), its id in the app tuple of `tools/build_web_dashboard.py` (~line 1212: what the build publishes), and a line in
-`jarvis/transitions.js` `REGISTRY` and `olympus/intro-app.js` `FLAVOUR`. **Agents (and sub-agents) never edit `sw.js`, `tools/build_web_dashboard.py`
-or `jarvis/apps.js`**: their report lists the "wiring needed" and the lead does it (and bumps the workers). Every app is read-only and paper only; the
-3D ones run on the OLYMPUS render core (`olympus/render.js`, `docs/OLYMPUS_RENDER.md`) with the tiers `ultra / high / low / off` of `OLYMPUS.fx()`
-(Jarvis key `jfx`), and show a DEMO fixture instead of going blank when their data is missing.
+"wired" when the LEAD has done the wiring checklist at the end of this section (apps.js, olympus.js, the build tuple, root `sw.js`, then the apps-list
+generator; transitions and intro lines are in the shared files). **Agents (and sub-agents) never edit `sw.js`, `tools/build_web_dashboard.py`,
+`jarvis/apps.js` or the `APPS` table of `olympus.js`**: their report lists the "wiring needed" and the lead does it (and bumps the workers). Every app is
+read-only and paper only; the 3D ones run on the OLYMPUS render core (`olympus/render.js`, `docs/OLYMPUS_RENDER.md`) with the tiers `ultra / high / low /
+off` of `OLYMPUS.fx()` (Jarvis key `jfx`), and show a DEMO fixture instead of going blank when their data is missing.
+**State on 2026-11-04 (read from the code): 30 apps in the list = 18 Trading + 6 Money + 6 Life (Zenith included), all wired; 25 app pages carry the
+intro tag; 42 library effects + `fx-atmos.js`; 14 sound beds; 78 Bridge jobs in 14 categories; 23 apps in the kit test's PERF table.** Recount with
+`python tools/apps_list_build.py --check` and `python tests/run_gate.py --list` instead of trusting this line.
 
-### The apps (group = Jarvis switcher group; wired = in `apps.js` today)
+### The apps (group = Jarvis switcher group; every row below is in `apps.js` today)
 | App (id) | Group | Folder | What it is | Reads (data it shows) | Test |
 |---|---|---|---|---|---|
 | Zenith | Trading | `tools/web_public/` (root `index.html` + js) | the phone dashboard of the NQ bots | `data.json`, `live.json` (branch `live`) | `test_zenith_pages`, `test_zenith_shell`, `test_phone_e2e` |
@@ -1767,26 +1787,50 @@ or `jarvis/apps.js`**: their report lists the "wiring needed" and the lead does 
 | Nemesis | Trading | `nemesis/` | the fallen trades: autopsy of each loss | `../odeon/trades.json`, `../home.json`, Zenith journal tags (phone) | `test_nemesis_page` |
 | Chronos | Trading | `chronos/` | replay any trade day: the 1-minute path and its steps | `../odeon/trades.json` | `test_chronos_page` |
 | Hephaestus | Trading | `hephaestus/` | turn a dial, see the STORED backtest run (nothing computed in the page) | `data.json` (`tools/hephaestus_build.py` from `research/runs/`) | `test_hephaestus_page` |
-| Bridge | Trading | `bridge/` | Claude x ChatGPT link: 3-step wizard, 11 cards + 58-job library, Deliveries, Ask next | `status.json`, `jobs.json`, `deliveries.json` (`tools/bridge_sync.py`) | `test_bridge_page`, `test_bridge_ingest` |
+| Bridge | Trading | `bridge/` | Claude x ChatGPT link: 3-step wizard, 11 cards + 78-job library (14 categories), Deliveries, Ask next | `status.json`, `jobs.json`, `deliveries.json` (`tools/bridge_sync.py`) | `test_bridge_page`, `test_bridge_ingest` |
 | Planner | Life | nq-dashboard `planner/` | calendar, tasks, projects (+ our patches) | its own store; `tools/planner_patches/*.patch` | `test_planner_addons` |
 | Mind | Life | `mind/` | the Obsidian vault as a living 3D brain (DEMO brain when not connected) | `jarvis/obsidian.js` `graphSnapshot()` only | `test_mind`, `test_mind_page` |
 | Arena | Life | `arena/` | Olympian ranks: XP for discipline | `events.json` (`tools/arena/build.py`), the phone adds Planner / Obsidian / Kalshi | `test_arena` |
-| Athena | Life | `athena/` | the library: Ask / Today / Cards / Rules / Saved | `library.json` (`tools/athena_build.py` from `STRATEGY.md`, the MFFU rules, the rejected list) | `test_athena_page` |
+| Athena | Life | `athena/` | the library: Ask / Today / Cards / Rules / Saved / **Train** (2026-11-04: 8-question daily quiz from the library only, Leitner boxes in `localStorage['athena.train.v1']`; "Read the chart" = 10 real replayed setups, would the bot take it + where is the stop; streak; weakest topic + ONE thing to study; code `athenatraincore.js` pure + `athenatrain.js` screens) | `library.json` (`tools/athena_build.py` from `STRATEGY.md`, the MFFU rules, the rejected list); `drills.json` (`tools/athena_drills.py` from `research/lab/backtest_live.json` + `data/NQ_5m.csv`; rerun after the replay is re-exported, `--check`) | `test_athena_page` |
 | Kalshi | Money | `kalshi/` | the Kalshi bot's numbers | `kalshi.json` from the public `kalshi-feed` repo (`engine/kalshi_publish.py`) | `test_kalshi_page`, `test_kalshi_publish` |
 | Tyche | Money | `tyche/` | the Kalshi bets as a 3D fortune wheel (coins, fortune card, compare, replay) | the same `kalshi.json` | `test_tyche_page` |
 | Hermes | Money | `hermes/` | OLYMPUS Wrapped: story cards of your money, share PNG | `wrapped.json` (CRONOS `hermes` build task), `../datacity/discoveries.json`, `../fates/jarvis.json` | `test_hermes` |
 | Plutus | Money | `plutus/` | the money plan: accounts, fees, payouts, goal tracker | `plans.json` (`tools/ares_plutus_build.py` from `research/lit/funded_firms.json`), `../data.json` | `test_plutus_page` |
-| Cities (`cities`) | not wired yet | `cities/` | the world map of floating city islands (one per dataset) | `cities.json` + the other apps' published JSON (odeon, fates, datacity, tree, prometheus, pantheon, hephaestus, arena, athena, plutus) | `test_cities_page` |
-| Kalshi City (`kalshicity`) | not wired yet | `kalshicity/` | the Kalshi bot's edges as a night city | `edges.json`, `learning_log.json` (`tools/kalshi_edges.py`), live `kalshi-feed` | `test_kalshi_edges`, `test_kalshicity_page` |
+| Cities (`cities`) | Trading | `cities/` | the world map of floating city islands (one per dataset; 170 cities in `cities.json`, city of the day, Surprise me) | `cities.json` + the other apps' published JSON (odeon, fates, datacity, tree, prometheus, pantheon, hephaestus, arena, athena, plutus) | `test_cities_page` |
+| Kalshi City (`kalshicity`) | Money | `kalshicity/` | the Kalshi bot's edges as a night city: edges, the Lab ring (ideas tested on the bot's own bets), "If you change the bot" what-if, "What we learned" | `edges.json`, `learning_log.json`, `hypotheses.json`, `whatif.json`, `learned.json` (`tools/kalshi_edges.py`, `kalshi_hypotheses.py`, `kalshi_whatif.py`, `kalshicity_learned.py`), live `kalshi-feed` | `test_kalshi_edges`, `test_kalshicity_page` |
+| Ledger (`ledger`) | Money | `ledger/` | the owner's REAL money: fees, payouts, net profit, taxes, a coin vault that grows (`docs/LEDGER.md`); entries only on the phone (`localStorage ledger.v1`), JSON / CSV export | `rules.json` (`tools/ledger_rules.py`), `../home.json`, public Kalshi feed, `fixture.json` (DEMO) | `test_ledger_page`, `test_ledger_freeze` |
+| Inbox (`inbox`) | Life | `inbox/` | everything that needs a look in one list: bot events, Argus, Kalshi, Bridge, Jarvis | `../bridge/status.json`, `../kalshicity/learning_log.json`, `../live.json`, the public Kalshi feed and every app's `jarvis.json` | `test_inbox_page` |
+| Mnemosyne (`journal`) | Trading | `journal/` | a 10-second trade journal: rate the trade, did you interfere, what the habit cost in dollars, next week's one rule | `../odeon/trades.json` (`fixture.json` = DEMO); entries on the phone (`journal.card.v1` card read by Jarvis) | `test_journal_page` |
+| Settings (`settings`) | Life | `settings/` | quality, look, Sound (Auto / On / Off), Jarvis, saved data and the tour in one place; keys and tokens never shown | this phone's own keys only (`jfx`, `olympus.sfx`, ...) | `test_settings_page` |
 | pc/ (not an app) | - | `pc/` | static downloads for the owner's PCs (FRESH_START, CLEAN_STORAGE, PC_CARE) | - | `test_fresh_start`, `test_clean_storage`, `test_pc_care` |
 
-Jarvis (`jarvis/`) is the shell, not a row: the hub, the orb switcher, the assistant. **Wiring not done yet (for the lead):** `cities` and `kalshicity` have
-no row in `apps.js` / `olympus.js` / the build tuple (steps in `docs/KALSHICITY.md`). Tests are run as `python -X utf8 -m tests.test_<name>`.
+Jarvis (`jarvis/`) is the shell, not a row: the hub (3D home: `home3d.js|css`, 7 AM ET spoken briefing `briefing.js`), the orb switcher, the assistant. **Wiring
+not done yet:** none in the list; what is still open is the a11y tags (only `journal/` and `settings/` have them, see `docs/OLYMPUS_A11Y.md`).
+The Kalshi app (`kalshi/`, k18) has three top cards in Today: "Why am I losing" (top two dollar leaks), "Do not take this bet" (guard: green/amber/red per open bet with the dollar reason, suggestions only, never places orders), and the verdict; the Edge group opens with "If you change the bot" (rule sets A/B/C replayed on past bets; same maths as `tools/kalshi_whatif.py` -> `kalshicity/whatif.json`). Tests: `test_kalshi_page --only=guard|whatif`.
+`tools/release_manifest.py` did not land (there is no such file); the release check is `tests/run_gate.py`. Tests are run as `python -X utf8 -m tests.test_<name>`.
 
 ### Shared kit and the new engines
 - **Kit** (`olympus/`): `olympus.js` + `olympus.css` (veil, tiers, per-app name / glyph / colour, `data-oly-fx` wiring), `render.js` + `materials.js` (real
-  materials, bloom), `themes.js`, `sfx.js` (`docs/OLYMPUS_SFX.md`). Rules and budgets: `docs/OLYMPUS_DESIGN.md`; tests `test_olympus_kit`,
-  `test_olympus_render`, `test_olympus_themes`, `test_olympus_sfx`.
+  materials, bloom), `themes.js`, `sfx.js` (`docs/OLYMPUS_SFX.md`), `a11y.js` + `a11y.css`, `apps-list.js` (generated), `intro-app.js`, `scenery.js`. Rules and budgets:
+  `docs/OLYMPUS_DESIGN.md`; tests `test_olympus_kit`, `test_olympus_render`, `test_olympus_themes`, `test_olympus_sfx`, `test_olympus_a11y`, `test_apps_list`.
+  **Kit test PERF table** (`tests/test_olympus_kit.py` `PERF = {...}`, 23 apps today): per app `(page query, draw-call budget, triangle budget)`, the budget
+  = the measure + 25% (three.js `renderer.info`, portable; fps is never judged); calls 0 = no scene (heap only). **A new 3D app adds a row** (measure
+  it on the test box first); an app without a scene (ledger, inbox, journal, settings, bridge) has none.
+- **Sound** (`olympus/sfx.js`, `docs/OLYMPUS_SFX.md`): 14 synthesised ambient beds (WebAudio, no files); the app -> bed table is `AMBIENT` in `olympus.js`
+  (`test_olympus_sfx` needs an entry for every app: **a new app = one `AMBIENT` entry**). `OLYMPUS.sound(true | false | null)` is the Sound switch (null =
+  automatic: silent in LITE / reduced motion / battery saver; Settings and Jarvis Settings have it), `OLYMPUS.cue('open' | 'close' | 'success' | 'warning' |
+  'tap')` plays a UI cue (silent before the first tap, when muted, and in LITE unless Sound is on); an element with `data-oly-cue` gets one on tap (Ledger,
+  Inbox, Bridge use it). Nothing sounds before the first touch.
+- **Atmosphere kit** (`olympus/fx-atmos.js`, ES module on the render core's three): dust, embers, god-ray shafts, contact AO, polished floor, bronze /
+  forged iron, thread glow; each one draw call, `.object` / `.update(t)` / `.setQuality()`. Separate from the 42 `OLYMPUS_FX` effects below.
+- **Accessibility layer** (`olympus/a11y.js` + `a11y.css`, ES5, `docs/OLYMPUS_A11Y.md`, `test_olympus_a11y`): Dynamic Type / big text, the ink guard (muted
+  text kept readable on every theme: 122 theme pairs audited), focus ring, automatic aria-labels, live toasts, reduced motion / contrast. Loaded by two tags
+  per page; the lead inserts them (report lists the apps that need them).
+- **Zenith launcher** (`launcher.js`, byte-identical in `web_next/js/next/`; test `test_apps_list`): the Olympus button on the phone and PC dashboards opens a sheet
+  of tiles by group (Trading / Money / Life), search, recent, and a status dot per app read lazily from `<app>/jarvis.json`. It reads `olympus/apps-list.js`.
+- **Apps-list generator** (`tools/apps_list_build.py`): builds `olympus/apps-list.js` (`window.OLYMPUS_APPS_LIST`: id, name, glyph, colour, group, purpose,
+  path, live) and its copy `web_next/js/next/apps-list.js` from `jarvis/apps.js` BUILT_INS + the `olympus.js` APPS table. **Run it after every edit of
+  `apps.js` or `olympus.js`** and commit both outputs; `--check` prints "in step with its sources" or fails (and `test_apps_list` fails when stale).
 - **Effects library** (`olympus/fx-*.js`, `docs/OLYMPUS_FX.md`, lab `olympus/fx-lab.html`, `test_olympus_fx`): 42 effects as `OLYMPUS_FX.<name>(el | scene, opts)
   -> { stop() }`: UI (`fx-ui.js`), text / numbers (`fx-text.js`), bursts (`fx-burst.js`), and three.js scene effects (`fx-sky.js`, `fx-weather.js`,
   `fx-surface.js`, helpers `fx-three.js`). One shared frame loop, particle and canvas caps, tier-aware (`OLYMPUS.fx()`), off under reduced motion,
@@ -1798,8 +1842,8 @@ no row in `apps.js` / `olympus.js` / the build tuple (steps in `docs/KALSHICITY.
   data (`REGISTRY`; an app without a line gets the warp `DEFAULT`). LITE tier (3D Low / Off) = a 250 ms colour fade; reduced motion = a 200 ms flat fade.
   `portal.js` hands each jump to it (the old WebGL warp is the fallback). A new app = one `REGISTRY` line (the test fails without it).
 - **App intros** (`olympus/intro-app.js`, test `test_app_intro`): a 2.6 s cinematic entrance (the app's flavour scene, glyph from particles, name and
-  tagline) loaded by ONE line in each app's `index.html` after `olympus.js` (`<script src="../olympus/intro-app.js?v=i1" defer>`; 20 apps have it
-  today). Once per app per launch (`sessionStorage oly.intro.<app>`), then a 400 ms version; LITE = a 0.7 s fade; never under reduced motion, 3D Off,
+  tagline) loaded by ONE line in each app's `index.html` after `olympus.js` (`<script src="../olympus/intro-app.js?v=i1" defer>`; 25 pages have it
+  today, 2026-11-04). Once per app per launch (`sessionStorage oly.intro.<app>`), then a 400 ms version; LITE = a 0.7 s fade; never under reduced motion, 3D Off,
   `?q=off`, `?intro=0`, `localStorage oly.intro=off` or an automated browser (unless `?intro=1`). A tap skips it. State in `window.__olyAppIntro`.
 - **Cities engine** (`cities/`, `test_cities_page`): data-driven. `cities.json` = the list of city specs (adding a city = one entry), `datasets.js` =
   adapters that read the other apps' published JSON, `generator.js` = the generic builder (spec -> buildings; `procedural.js` = random cities from a
@@ -1818,18 +1862,52 @@ no row in `apps.js` / `olympus.js` / the build tuple (steps in `docs/KALSHICITY.
   fine-grained token on this phone only; writes are append-only / new-file after a spoken "yes"), `tools.js`. Voice: `tts.js` (best natural female
   voice), `voice-out.js` (answers read aloud, switch `jarvis.speak`, default on, the iPhone first-tap unlock), `voice-mode.js` (full-screen conversation,
   the core reacts to the voice; type-to-talk where speech recognition is missing), `test_jarvis_voice`, `test_jarvis_talk`.
+- **Money now** (2026-11-04, `tools/web_public/moneynowcore.js` = `web_next/js/next/moneynowcore.js`, byte-identical; phone mount `moneynow.js`, PC mount in
+  `web_next/js/next/polish.js` `place()`): the top card of Zenith Home (inside the greeting box, ahead of the Today hero) and of the PC Home (first thing in
+  `#nxStatusHome`). Per account (Zlarior 50K, ATLAS 25K, BLITZ 25K only when it has its own account): **Drawdown left $X of $max loss** (never "X of 10 days"),
+  today's $, the next thing the bot waits for (open trade: its target / stop; else the board's own line), its status in plain words, and a red / amber / green edge
+  (red: a block, a failed eval or under 25% of the drawdown left; amber: under 50%, a missing field or a quiet PC); the bot's check-in line comes from
+  `StatusUI.items` (the same one the status bar reads). Only published fields (`MissionUI.accounts`): a missing one says "not published yet", never a blank; with no
+  board at all the card is still there. Read-only. Tests: `test_ui_polish` (a static, b node: rows / edges / missing fields / garbage, c phone, d PC) and
+  `test_zenith_shell` (Home order).
+  **PC status strip** (same core, `MoneyNow.line`; mount `strip()` in `polish.js`, `#nxLine` under the top bar of EVERY PC page, sticky, >= 44 px, links Home):
+  "Bot running · last check-in X · Armed: Zlarior, ATLAS" (red when stopped, amber when quiet, "not published yet" when missing).
+- **Release safety net** (`python tools/release_manifest.py [--base origin/main] [--json]`, `test_release_manifest`): run it before the 5 AM publish. It lists (a) every
+  `?v=` asset tag in an app `index.html` whose file changed since the base but whose tag did not, and (b) every service worker (`tools/web_public/sw.js`,
+  `web_next/sw.js`, `jarvis/sw.js`, `kalshi/sw.js`) whose cache name did not change although a file in its SHELL / ASSETS list (or the list) changed. Exit 0 =
+  nothing stale, 1 = at least one finding (plain words), 2 = no such base. Read-only; the lead bumps the tags / cache names it names.
+- **Obsidian starter pack** (`tools/obsidian_pack.py`, `test_obsidian_pack`): builds a ready-to-drop Obsidian vault (~225 markdown notes, ~1,100 `[[links]]`,
+  frontmatter tags on every note) from files that already exist: `athena/library.json` (strategy steps, glossary one note per term, MFFU rules, playbooks,
+  what we learned, rejected ideas, Kalshi, app guides), `research/lit/mffu_rules.json`, `plutus/plans.json`, `research/writeups/*.md`, and Jarvis's own
+  `ME_TEMPLATE` (`jarvis/obsidian.js`). Layout: `00 Home`, `Trading/`, `Playbooks/`, `Research/`, `Money/`, `Templates/` (Daily note, Trade journal entry with
+  setup / size / plan followed / emotion / lesson, Weekly review, Kalshi bet review, Idea note), `Daily/`, `Journal/`, `Goals`, `OLYMPUS/Apps/`, and
+  `OLYMPUS/Jarvis/Me.md` + `Memory.md` (the exact paths Jarvis reads). No open `- [ ]` lines and no date-named files (Jarvis would list them as his tasks /
+  daily notes); account ids are scrubbed (the library still carries one in two entries: fix at the source, `tools/athena_build.py`). Run
+  `python tools/obsidian_pack.py` after a source changes (`--check` fails when the committed `mind/starter/{starter_pack.json, starter_pack.js, manifest.json}`
+  are stale; `--zip F.zip` and `publish(out_dir)` write a real `obsidian_pack.zip`: one line for the site build). The Mind page's Teach screen has the
+  Starter pack card (`mind/starter.js`): Download as .zip (a ~60-line store-only ZIP writer with CRC-32), Copy as one markdown file, 3 plain steps
+  (Files app -> Obsidian Open folder as vault -> connect the vault in Jarvis), the notes by folder with previews. It never writes into a vault. The same notes
+  join the Mind demo brain (`demo.js addPack`, `data.js`) when no vault is connected or the vault is empty.
 - **Bridge** (Claude x ChatGPT, `tools/web_public/bridge/`, `handoff/`): the page has the 3-step Connect wizard (its sync prompt must equal
-  `handoff/ONBOARD.md`), the 11 job cards, and (2026-11-04) tabs Library (`jobs.json`, 58 ready jobs in 13 categories, built by
+  `handoff/ONBOARD.md`), the 11 job cards, and (2026-11-04) tabs Library (`jobs.json`, 78 ready jobs in 14 categories (art, copy, docs, fixtures, logo, lore, mockup, money, names, obsidian, research, sound, strategy, textures; each with an `ingest` line), built by
   `tools/bridge_jobs_build.py`: edit the generator, not the json), Deliveries and Ask next. ChatGPT delivers into `handoff/inbox/<id>/` with a `DONE.md`.
   `tools/bridge_ingest.py` (also run inside `bridge_sync.publish`, `--apply` copies approved images to `olympus/assets/<id>/` with a manifest)
   checks each file read-only: png / webp / svg / json / md / txt / small js only; caps 5 MB images, 200 KB svg / md / txt, 1 MB json, 100 KB js, 80 files
   and 40 MB a job; real images; no secret patterns; no script that fetches, evals or imports; no symlinks. Nothing delivered is ever run. The tab's
-  "Claude: build this in" copies `Bridge: <id> done`; `status.json` also carries `next` (weekly static rules) and `deliveries`.
+  "Tell Claude to use this" copies `Bridge: <id> done`; `status.json` also carries `next` (weekly static rules) and `deliveries`.
+  **JOB 13 (2026-11-04, end-to-end rehearsal with a fake ChatGPT, `test_bridge_ingest` part g, in a temp copy of the repo):** the page's top is three stages of
+  three steps (Connect / Test / Use), plain words only (test scans for pull request / prompt / JSON / repo ...), `Tell Claude` is on every card. **Test the link**:
+  the owner pastes ChatGPT's one-line `LINK OK <word>`; the word is the `LINK WORD:` line of `handoff/SYNC.md` (change both together; the test compares them);
+  client-side only. A rejected file gets ONE plain sentence (`bridge_ingest.plain_reason`, shown as "Not used: name. ..."). Claude's side: `python tools/bridge_ingest.py
+  --handback "Bridge: <id> done"` reads the job back in one plain paragraph; the report also says when a folder / file is skipped (capital letters, outside a job folder)
+  or a job has no `DONE.md`.
 
 ### PC tools (Windows; the scripts are tested on Linux with pwsh 7 and a fake Windows, never on a real PC)
 - **Storage clean** (`CLEAN_STORAGE.bat` -> `scripts/clean_storage.ps1`; table, Y, then only an allow-list: temp, browser caches, Windows update
   cache, crash dumps, NinjaTrader / bot old logs and caches; never state, accounts, `nt_bars`, NinjaTrader workspaces / db / orders; skipped folders
   while the bot or NinjaTrader runs; `engine/pc_health.py` `storage` line). Details: `docs/PC_PERFORMANCE.md`; `test_clean_storage`.
+- **Status card** (`STATUS.bat` -> `scripts/pc_status.ps1`; the site `pc/` page has the download): six read-only lines (DISK, RAM, BOT, NINJA, BARS, POWER) and ONE
+  `NEXT:` sentence; no Administrator. Details and the failure-sentence rule for every script: `docs/PC_PERFORMANCE.md` ("STATUS.bat and the safety review"); tests `test_pc_care`, `test_win_scripts`.
 - **Fresh start** (no old PC: `FRESH_START.bat`, the one-line `irm .../pc/FRESH_START.ps1 | iex`, or `move_bot.ps1 -Fresh`): refuses while another PC's
   heartbeat is fresh, then Git / Python / clone / anchor the eval from the site / `no_chart_mode` / `ONE_TIME_SETUP` (Sim101, never live);
   `test_fresh_start`. See "One chat" above.
@@ -1840,6 +1918,38 @@ no row in `apps.js` / `olympus.js` / the build tuple (steps in `docs/KALSHICITY.
   `BOT PC HEALTHY: YES` (temperature only when Windows shows it, and it says so when not). `-DryRun`, `-CheckOnly`, `-Undo` (`UNDO_PC_TUNE.bat` runs it
   before the deep-tune undo). Writes `logs/pc_care.json`, which `engine/pc_health.py` shows as the display-only `pc_care` line (amber at most).
   `test_pc_care`.
+
+### Test tools (2026-11-04)
+- **Run only the area you touched:** `python -X utf8 tests/run_area.py jarvis|olympus|zenith|kalshi|cities|nq|pc|all` (one suite at a time, a load gate, `--only`, `--fast`, `--list`;
+  writes `scratch/results/<area>-<time>.md`).
+- **Release gate:** `python -X utf8 tests/run_gate.py` runs every suite (68 listed today) and ends GO or NO-GO; `--fast` (no browsers), `--only a,b`, `--resume`
+  (skip what already passed), `--list` (names + the exact command + the fast form). Writes `research/handoff/2026-11-04/gate.md` + `gate.json`. Test of the
+  gate: `test_run_gate`. A NO-GO line names the failing suite; rerun just that one before anything else.
+- **Shared browser helper** (`tests/browser_kit.py`): one launch routine, waits and Locator timeouts scaled to the machine's load, `BK.limit(ms)` for timing
+  asserts; use it in any new browser test instead of raw Playwright timeouts (busy shared boxes caused page crashes / 30 s timeouts before). `tests/hub_parts.py`
+  and `tests/gate_static.py` are the parts the gate and the Jarvis hub test share.
+- **Site self-check** (`tools/site_selfcheck.py`, a read-only workflow step, `test_site_selfcheck`): after `build_web_dashboard.py` it checks the built `site/` folder (every app folder's files, read from the build's own list) and says LOUDLY when one is missing; the step is `continue-on-error`, it never changes what is published.
+- Safari: `docs/OLYMPUS_SAFARI.md`; `python -X utf8 -m tests.test_safari_smoke --lint` is the fast lint (ES5 rules, no lookbehind / `?.` / `??` in shared files).
+
+### Wiring checklist for a new app (the lead; an agent only lists these in its report)
+The app folder `tools/web_public/<id>/` (index.html, jarvis.json, manifest, icon.svg, optional `<id>core.js`) is the agent's. The lead then does, in this order:
+1. `jarvis/apps.js` `BUILT_INS`: `app('<id>', 'Name', 'trading|money|life', '#accent', 'one-line purpose (5-79 characters)', { glyph: 'X' })`.
+2. `olympus/olympus.js` `APPS`: `<id>: ['Name', 'glyph', '#accent']` (name, glyph, colour must equal the `apps.js` row: `test_apps_list` checks) and
+   `AMBIENT`: `<id>: '<bed>'` (one of the 14 beds; `test_olympus_sfx`).
+3. `tools/build_web_dashboard.py` app tuple (~line 1212, `for app in ("jarvis", "kalshi", ...)`): add `"<id>"`, or the folder is not published.
+4. Root `tools/web_public/sw.js`: add `'<id>/'` to `OTHER_APPS` and bump `CACHE` (`le-public-v59` today). Pinned in tests, so update them in the same change:
+   `tests/test_zenith_mode.py` (~line 66 holds the full OTHER_APPS string), `tests/test_jarvis_hub.py` (~273 prefix; the Jarvis worker name `jarvis-v24`
+   and its OLD list at ~248 / ~816 only when `jarvis/sw.js` is bumped too: bump it when `apps.js` changes the shell files), `tests/test_zenith_shell.py`
+   (OTHER_APPS subset, version >= 52), `tests/test_phone_e2e.py` (~1090: every app folder must be in OTHER_APPS), `tests/test_kalshi_page.py` (Kalshi
+   worker `kalshi-k18` and kit / step pins, only if `kalshi/` files change).
+5. `python tools/apps_list_build.py`, then `--check`; commit `olympus/apps-list.js` and `web_next/js/next/apps-list.js` (the launcher tile and its status dot
+   appear on their own; the launcher tile count is read from the list, not typed in a test).
+6. Shared lines: `jarvis/transitions.js` `REGISTRY` (`test_jarvis_transitions` fails without it), `olympus/intro-app.js` `FLAVOUR` + the intro script tag in the
+   app's `index.html` (`test_app_intro`), the a11y tags (`a11y.css` in `<head>`, `a11y.js` after `olympus.js`; `test_olympus_a11y`), the PERF row of
+   `test_olympus_kit` if the app draws a 3D scene.
+7. Tests to run: `tests.test_<id>_page`, `tests.test_apps_list`, `tests.test_olympus_kit`, `tests.test_olympus_sfx`, `tests.test_jarvis_transitions`,
+   `tests.test_app_intro`, `tests.test_zenith_mode`, `tests.test_jarvis_hub`, then `python -X utf8 tests/run_gate.py --fast`.
+8. Update this section (the table row, the counts line) and CLAUDE.md's one OLYMPUS paragraph.
 
 ## Open work
 1. **Dashboard revamp: shipped 2026-10-17** (`web_next/`, served by default; `LE_UI=classic` serves the old `web/`).

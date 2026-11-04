@@ -41,7 +41,8 @@ export function dress(ctx) {
   crowd = guard('crowd', () => {
     const rings = [];
     for (let k = 0; k < 4; k++) { const R = 16.2 + k * 2.2, y = (k + 1) * 1.5; rings.push({ r: R + 0.65, y, n: Math.round(R * 5.6) }, { r: R + 1.55, y, n: Math.round((R + 1) * 5.6) }); }
-    const c = S.crowd(scene, { rings, seed: 11 }); c.setLite(lite); return c;
+    // a phone gets 60% of the seats, spread evenly (docs/OLYMPUS_PERF.md)
+    const c = S.crowd(scene, { rings, seed: 11, density: Math.min(innerWidth, innerHeight) < 600 ? 0.6 : 1 }); c.setLite(lite); return c;
   });
   // banners hang between the arcade piers, red and gold, one per 7th pier
   banners = guard('banners', () => {

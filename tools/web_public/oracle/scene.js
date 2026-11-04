@@ -4,6 +4,7 @@
 import { createRenderer } from '../olympus/render.js';
 import { Market, Y_MAX } from './layers.js';
 import { Arena } from './arena.js';
+import { Temple } from './temple.js';
 import { Sky, weatherOf, fitPoints } from './sky.js';
 import { newSweeps } from './data.js';
 
@@ -44,6 +45,7 @@ export class Scene {
     this.map = { center: null, half: 60, y: (p) => ((p - this.map.center) / this.map.half) * Y_MAX };
     this.sky = new Sky(THREE, this.scene, { quality, reduced });
     this.arena = new Arena(THREE, this.scene, { quality, reduced });
+    try { this.temple = new Temple(THREE, this.scene, { quality, reduced }); } catch (e) { this.temple = null; }   // braziers, incense, fog, shafts: optional
     this.market = new Market(THREE, this.scene, { quality, reduced });
     this.fitPts = fitPoints(THREE);
     this.probe = new THREE.PerspectiveCamera();
@@ -58,8 +60,9 @@ export class Scene {
 
   setQuality(q) {
     this.quality = q;
-    this.rc.setQuality(this.rc.forced || (this.rc.software ? 'low' : q === 'low' ? 'low' : ['ultra', 'high'].includes(this.rc.quality()) ? this.rc.quality() : 'high'));
+    this.rc.setQuality(this.rc.forced || (window.OLYMPUS && window.OLYMPUS.fx() === 'off' ? 'off' : this.rc.software ? 'low' : q === 'low' ? 'low' : ['ultra', 'high'].includes(this.rc.quality()) ? this.rc.quality() : 'high'));
     this.arena.setQuality(q);
+    if (this.temple) this.temple.setQuality(q);
     if (this.sky.lite !== (q === 'low')) { this.sky.setQuality(q); this.market.setQuality(q); }
     this.resize();
   }
@@ -129,7 +132,7 @@ export class Scene {
   /** A theme's colours (OLYMPUS themes): the column and the comet take the accent, the sky the background. */
   applyTheme(accent, bg) {
     const T = this.renderer && this.market.T;
-    if (accent) { this.market.colMats[0].uniforms.uC.value.set(accent); this.market.comet.children[0].material.color.set(accent); this.arena.applyTheme(accent); }
+    if (accent) { this.market.colMats[0].uniforms.uC.value.set(accent); this.market.comet.children[0].material.color.set(accent); this.arena.applyTheme(accent); if (this.temple) this.temple.applyTheme(accent); }
     if (bg && T) { this.renderer.setClearColor(new T.Color(bg), 1); this.scene.fog.color.set(bg); }
   }
 
@@ -194,6 +197,7 @@ export class Scene {
     if (this.map.center != null) this.market.frame(this.t, dt, this.map, this.cam);
     this.sky.frame(this.t, dt, nowT, this.cam);
     this.arena.frame(this.t, this.market.cometWorld(), this.renderer.getPixelRatio());
+    if (this.temple) this.temple.frame(this.t, dt, this.renderer.getPixelRatio());
     this.rc.render();
   }
 }

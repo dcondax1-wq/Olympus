@@ -2,6 +2,7 @@
 // stats card.
 // DOM only; no three.js. Every text goes in with textContent (no HTML from the data).
 import { fmtUsd, fmtR, fmtPx, dayLabel, hhmm, heldLabel, exitLabel, outcomeOf, spark } from './data.js';
+import { applyFilters, statsOf, histogram, hourOf, setupOf, monthOf, runStats } from './library.js';
 
 export const SPEEDS = [1, 2, 5, 10, 20, 60];
 
@@ -60,6 +61,13 @@ export class Reels {
     this.filter = 'all';
     this.sort = 'usd';
     this.trades = [];
+    this.more = { setup: 'all', hour: 'all', month: 'all', r: null };   // the library's second row: setup, session, month, R bin
+    this.compare = false;                                              // compare mode: tap two reels to put them side by side
+    this.picks = [];
+    this.shown = [];
+    this.stats = root.querySelector('#reelStats');
+    this.hist = root.querySelector('#reelHist');
+    this.moreBox = root.querySelector('#reelMore');
     const group = (sel, key) => root.querySelectorAll(sel).forEach((b) => b.addEventListener('click', () => {
       this[key] = b.dataset[key === 'filter' ? 'f' : 's'];
       root.querySelectorAll(sel).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
@@ -72,7 +80,69 @@ export class Reels {
   set(trades, demo) {
     this.trades = trades;
     this.demo = demo;
+    this.buildMore();
     this.render();
+  }
+
+  /** the library's chips for what this file holds: the ATLAS setups, the four sessions, the months (a group appears only with 2+ choices) */
+  buildMore() {
+    if (!this.moreBox) return;
+    const uniq = (f, order) => { const v = [...new Set(this.trades.map(f))]; return order ? order.filter((x) => v.includes(x)) : v.sort(); };
+    const groups = [['setup', 'Setup', uniq(setupOf)], ['hour', 'Session', uniq(hourOf, ['Asia', 'London', 'NY AM', 'NY PM'])],
+      ['month', 'Month', uniq(monthOf).reverse()]];
+    this.moreBox.replaceChildren(...groups.filter(([, , v]) => v.length > 1).map(([key, label, vals]) => {
+      const row = el('div', 'chips mini');
+      row.setAttribute('role', 'group');
+      row.setAttribute('aria-label', label);
+      row.append(el('span', 'chip-k', label));
+      for (const v of ['all', ...vals]) {
+        const b = el('button', 'chip sm', v === 'all' ? 'All' : key === 'month' ? v.slice(2).replace('-', '/') : v);
+        b.type = 'button';
+        b.dataset.g = key;
+        b.dataset.v = v;
+        b.setAttribute('aria-pressed', String(this.more[key] === v));
+        b.addEventListener('click', () => {
+          this.more[key] = v;
+          row.querySelectorAll('.chip.sm').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+          this.render();
+        });
+        row.append(b);
+      }
+      return row;
+    }));
+  }
+
+  /** the R-multiple histogram of what the other filters leave: tap a bar to keep only that R range, tap it again to release */
+  drawHist(trades) {
+    if (!this.hist) return;
+    const bins = histogram(trades), top = Math.max(1, ...bins.map((b) => b.n));
+    this.hist.replaceChildren(...bins.map((b) => {
+      const on = this.more.r && this.more.r[0] === b.lo && this.more.r[1] === b.hi;
+      const col = el('button', 'hb t-' + b.tone);
+      col.type = 'button';
+      col.dataset.i = String(b.i);
+      col.setAttribute('aria-pressed', String(!!on));
+      col.setAttribute('aria-label', `${b.label}: ${b.n} trade${b.n === 1 ? '' : 's'}, ${fmtUsd(b.net)}`);
+      const bar = el('i');
+      bar.style.height = Math.max(b.n ? 6 : 2, (b.n / top) * 100) + '%';
+      col.append(el('b', null, b.n ? String(b.n) : ''), bar, el('span', null, b.label.replace(' to ', '/').replace(' +', '+')));
+      col.addEventListener('click', () => {
+        this.more.r = on ? null : [b.lo, b.hi];
+        this.render();
+      });
+      return col;
+    }));
+  }
+
+  /** the reels the gallery shows right now, in order (the play-all queue) */
+  current() { return this.shown.slice(); }
+
+  /** compare mode: reels are picked instead of played; the second pick calls onCompare(a, b) */
+  setCompare(on) {
+    this.compare = !!on;
+    this.picks = [];
+    this.root.classList.toggle('comparing', this.compare);
+    this.list.querySelectorAll('.reel').forEach((b) => b.removeAttribute('data-pick'));
   }
 
   /** a line above the posters (e.g. the trade Oracle asked for has no film yet); '' hides it */
@@ -82,10 +152,15 @@ export class Reels {
   }
 
   render() {
-    const f = this.filter;
-    const T = sortReels(this.trades.filter((t) => f === 'all' || (f === 'lit' && t.bot === 'LIT') || (f === 'atlas' && t.bot === 'ATLAS')
-      || (f === 'win' && outcomeOf(t) === 'win') || (f === 'loss' && outcomeOf(t) === 'loss')), this.sort);
+    const base = { f: this.filter, setup: this.more.setup, hour: this.more.hour, month: this.more.month };
+    this.drawHist(applyFilters(this.trades, base));
+    const T = sortReels(applyFilters(this.trades, { ...base, r: this.more.r }), this.sort);
+    this.shown = T;
     this.list.textContent = '';
+    if (this.stats) {
+      const st = statsOf(T);
+      this.stats.textContent = T.length ? `${st.winPct}% won · avg ${fmtR(st.avgR)} · best ${fmtR(st.bestR)} · worst ${fmtR(st.worstR)}` + (isFinite(st.pf) ? ` · PF ${st.pf.toFixed(2)}` : '') : 'No trade matches these filters';
+    }
     const net = T.reduce((a, t) => a + t.usd, 0);
     const days = this.trades.map((t) => t.day).sort();
     this.sum.textContent = this.demo ? 'Demo reel (no trades file yet)'
@@ -109,7 +184,14 @@ export class Reels {
       info.append(el('span', 'r-date', `${dayLabel(t.day)} · ${hhmm(t.entry.t, t.off)} ET`),
         el('span', 'r-side ' + (t.side === 'LONG' ? 'long' : 'short'), `${t.side} · ${t.qty} micro${t.qty === 1 ? '' : 's'} · ${exitLabel(t.exit.kind).toLowerCase()}`));
       b.append(poster, top, info);
-      b.addEventListener('click', () => this.onPick(t.id));
+      b.addEventListener('click', () => {
+        if (!this.compare) return this.onPick(t.id);
+        const at = this.picks.indexOf(t.id);
+        if (at >= 0) this.picks.splice(at, 1); else this.picks.push(t.id);
+        this.picks = this.picks.slice(-2);
+        this.list.querySelectorAll('.reel').forEach((x) => { const k = this.picks.indexOf(x.dataset.id); if (k < 0) x.removeAttribute('data-pick'); else x.dataset.pick = 'AB'[k]; });
+        if (this.picks.length === 2 && this.onCompare) this.onCompare(this.trades.find((x) => x.id === this.picks[0]), this.trades.find((x) => x.id === this.picks[1]));
+      });
       li.append(b);
       this.list.append(li);
     });
@@ -207,4 +289,36 @@ export function fillStats(card, tr) {
     twin = 'No backtest twin for this trade.';
   }
   set('stTwin', twin);
+}
+
+/** The trade's numbers on the stage while it plays: R now, MFE, MAE, minutes held (updated a few times a second, text only) */
+export class StageStats {
+  constructor(root) {
+    this.root = root;
+    this.cells = {};
+    for (const [k, label] of [['r', 'R now'], ['mfe', 'MFE'], ['mae', 'MAE'], ['held', 'Held']]) {
+      const c = el('span', 'os-c');
+      const v = el('b', null, '–');
+      c.append(el('i', null, label), v);
+      this.cells[k] = v;
+      root.append(c);
+    }
+    this.at = 0;
+  }
+
+  /** wall = seconds of the frame loop (rate limit), forced = at once (a seek, a new reel) */
+  set(tr, T, wall, forced) {
+    if (!forced && wall - this.at < 0.25) return;
+    this.at = wall;
+    const s = runStats(tr, T);
+    this.root.hidden = !s.started;
+    if (!s.started) return;
+    const c = this.cells;
+    c.r.textContent = fmtR(s.r);
+    c.mfe.textContent = fmtR(s.mfeR);
+    c.mae.textContent = fmtR(-s.maeR);
+    c.held.textContent = heldLabel(s.heldMin);
+    this.root.dataset.sign = s.r > 0 ? 'up' : s.r < 0 ? 'down' : '';
+    this.root.dataset.live = String(!!s.live);
+  }
 }

@@ -92,7 +92,7 @@ def test_registry():
     kc = registry.get("kalshicity")
     check("a. kalshicity: every 6 hours in its own workflow, the three site files come from the kalshicity branch into kalshicity/ (ledger.json stays on the branch), not run by CRONOS",
           kc.runner == "workflow" and kc.cadence == "frequent" and kc.every == "every 6 hours" and kc.branch == "kalshicity" and kc.max_age_h == 36 and os.path.exists(os.path.join(ROOT, kc.workflow))
-          and registry.site_files(kc) == [("edges.json", "kalshicity/edges.json"), ("learning_log.json", "kalshicity/learning_log.json"), ("jarvis.json", "kalshicity/jarvis.json")]
+          and registry.site_files(kc) == [("edges.json", "kalshicity/edges.json"), ("learning_log.json", "kalshicity/learning_log.json"), ("hypotheses.json", "kalshicity/hypotheses.json"), ("jarvis.json", "kalshicity/jarvis.json")]
           and "kalshicity" not in registry.GROUPS["all"] and "kalshicity" in site.BRANCHES, kc)
     try:
         registry.get("nope")
@@ -283,6 +283,81 @@ def _branches(tmp, now, fates_t, status=None):
     return d
 
 
+def test_optional(tmp):
+    """kalshicity's optional files (whatif.json, forward.json): copied when the branch has them, skipped without a word when it does not,
+    never part of the all-or-nothing rule of the four required files; the committed seed copies keep serving without a branch."""
+    now = time.time()
+    kc = registry.get("kalshicity")
+    check("o. registry: kalshicity lists whatif.json and forward.json as OPTIONAL files (forward_card.json is not published), the four required ones unchanged",
+          registry.optional_site_files(kc) == [("whatif.json", "kalshicity/whatif.json"), ("forward.json", "kalshicity/forward.json")]
+          and [d for _, d in registry.site_files(kc)] == ["kalshicity/edges.json", "kalshicity/learning_log.json", "kalshicity/hypotheses.json", "kalshicity/jarvis.json"]
+          and all(registry.optional_site_files(t) == [] for t in registry.TASKS if t.name != "kalshicity"))
+
+    def branch(name, required=True, optional=("whatif.json", "forward.json"), card_t=None, skip=()):
+        d = os.path.join(tmp, name)
+        shutil.rmtree(d, ignore_errors=True)
+        if required:
+            for f in ("edges.json", "learning_log.json", "hypotheses.json"):
+                if f not in skip:
+                    wjson(os.path.join(d, "kalshicity", f), {"f": f, "from": "branch"})
+            if "jarvis.json" not in skip:
+                wjson(os.path.join(d, "kalshicity", "jarvis.json"), card(card_t or now - 600, label="kalshicity from the branch"))
+        for f in optional:
+            wjson(os.path.join(d, "kalshicity", f), {"f": f, "from": "branch", "kind": "x"})
+        os.makedirs(os.path.join(d, "kalshicity"), exist_ok=True)
+        return {"kalshicity": site.dir_reader(os.path.join(d, "kalshicity"))}
+
+    def served(out, f):
+        return os.path.exists(os.path.join(out, "kalshicity", f))
+
+    # a required file missing: the whole app is skipped as before, optional files included
+    out = _site(tmp, "opt_a")
+    notes, _ = site.pull(out, branch("br_a", skip=("hypotheses.json",)), log=lambda *a: None)
+    check("o. a REQUIRED file missing on the branch: the whole app is skipped (nothing pulled, the optional files too), 'not on the branch'",
+          "not on the branch" in notes["kalshicity"] and not served(out, "edges.json") and not served(out, "whatif.json") and not served(out, "forward.json"), notes)
+    # optional files missing: the required four are published exactly as before
+    out = _site(tmp, "opt_b")
+    notes, _ = site.pull(out, branch("br_b", optional=()), log=lambda *a: None)
+    check("o. optional files missing on the branch: the required four are still published, no complaint in the note",
+          all(served(out, f) for f in ("edges.json", "learning_log.json", "hypotheses.json")) and rjson(os.path.join(out, "kalshicity", "jarvis.json"))["status"]["label"] == "kalshicity from the branch"
+          and not served(out, "forward.json") and notes["kalshicity"].startswith("pulled from kalshicity") and "+" not in notes["kalshicity"], notes)
+    # optional files present: published with the app
+    out = _site(tmp, "opt_c")
+    notes, _ = site.pull(out, branch("br_c"), log=lambda *a: None)
+    check("o. optional files present: whatif.json and forward.json are published beside the four required ones, named in the note",
+          rjson(os.path.join(out, "kalshicity", "whatif.json"))["from"] == "branch" and rjson(os.path.join(out, "kalshicity", "forward.json"))["f"] == "forward.json"
+          and served(out, "edges.json") and "+whatif.json, forward.json" in notes["kalshicity"], notes)
+    # only one optional file there
+    out = _site(tmp, "opt_d")
+    site.pull(out, branch("br_d", optional=("forward.json",)), log=lambda *a: None)
+    check("o. only forward.json on the branch: it is published, whatif.json is not invented", served(out, "forward.json") and not served(out, "whatif.json"))
+    # a broken optional file is skipped, the rest is published
+    out = _site(tmp, "opt_e")
+    rd = branch("br_e", optional=())
+    with open(os.path.join(tmp, "br_e", "kalshicity", "forward.json"), "w") as fh:
+        fh.write("<html>not json")
+    notes, _ = site.pull(out, rd, log=lambda *a: None)
+    check("o. an optional file that is not valid JSON is skipped silently, the required four are published", not served(out, "forward.json") and served(out, "edges.json"), notes)
+    # the page's copy of the required card is as new, but a new optional file still moves; an identical one is not rewritten
+    out = _site(tmp, "opt_f")
+    site.pull(out, branch("br_f1", card_t=now - 600), log=lambda *a: None)
+    wjson(os.path.join(out, "kalshicity", "forward.json"), {"f": "forward.json", "from": "older"})
+    notes, _ = site.pull(out, branch("br_f2", card_t=now - 600), log=lambda *a: None)
+    check("o. required card as new: the required files stay, a changed optional file still moves ('page copy is as new (+forward.json)'), an identical one is left alone",
+          notes["kalshicity"] == "page copy is as new (+forward.json)" and rjson(os.path.join(out, "kalshicity", "forward.json"))["from"] == "branch", notes)
+    notes, _ = site.pull(out, branch("br_f3", card_t=now - 600), log=lambda *a: None)
+    check("o. nothing changed at all: 'page copy is as new', no rewrite", notes["kalshicity"] == "page copy is as new", notes)
+    # no branch: the committed seed copies keep serving
+    out = _site(tmp, "opt_g")
+    wjson(os.path.join(out, "kalshicity", "whatif.json"), {"seed": True})
+    notes, _ = site.pull(out, {}, log=lambda *a: None)
+    check("o. no kalshicity branch: nothing is touched and the committed seed copy (whatif.json) keeps serving", notes["kalshicity"] == "no branch"
+          and rjson(os.path.join(out, "kalshicity", "whatif.json")) == {"seed": True} and not served(out, "forward.json"))
+    seed = os.path.join(WEB, "kalshicity", "whatif.json")
+    check("o. the repo carries the seed whatif.json (valid JSON, kind kalshi-whatif) and NO forward*.json seed (a seed would freeze a wrong start date)",
+          rjson(seed)["kind"] == "kalshi-whatif" and not any(os.path.exists(os.path.join(WEB, "kalshicity", f)) for f in ("forward.json", "forward_state.json", "forward_card.json")))
+
+
 def test_site(tmp):
     now = time.time()
     out = _site(tmp, "site_a")
@@ -466,6 +541,7 @@ def main():
         test_orchestrator(tmp)
         test_fresh()
         test_site(tmp)
+        test_optional(tmp)
         test_workflows()
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

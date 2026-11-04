@@ -66,8 +66,11 @@ html[data-noscene] body { background: linear-gradient(#1b2342, #3a2a5e 60%, #0a0
 .steps > button { flex: none; width: var(--oly-tap, 44px); height: var(--oly-tap, 44px); border-radius: 12px; border: 1px solid var(--oly-line); background: var(--oly-glass); font: 800 22px/1 var(--oly-ui);
   -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
 .steps > button:disabled { opacity: .35; }
-.dots { flex: 1; display: flex; justify-content: center; gap: 2px; min-width: 0; }
-.dots button { width: 22px; height: 44px; padding: 0; background: none; border: 0; display: grid; place-items: center; }
+.steps { flex-wrap: wrap; }
+.dots { order: -1; flex: 1 0 100%; display: flex; flex-wrap: wrap; justify-content: center; gap: 0; min-width: 0; }                 /* the dots wrap to their own row above the arrows: 44 px taps, all inside the gutters */
+.steps > button { flex: none; } #prev { margin-right: auto; } #next { margin-left: auto; }
+:root[data-walk="1"] .card { bottom: calc(var(--sb) + 156px); max-height: calc(100vh - var(--st) - 400px); max-height: calc(100dvh - var(--st) - 400px); }
+.dots button { flex: none; width: 44px; height: 44px; padding: 0; background: none; border: 0; display: grid; place-items: center; }
 .dots button i { width: 9px; height: 9px; border-radius: 50%; background: rgba(255, 255, 255, .22); display: block; }
 .dots button[aria-current="step"] i { background: var(--f-acc); box-shadow: 0 0 10px var(--f-acc); transform: scale(1.3); }
 .dots button.read i { background: rgba(var(--f-acc-rgb), .55); }
@@ -93,3 +96,20 @@ html[data-fx="low"] .candle.lit .flame, html[data-fx="off"] .candle.lit .flame {
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 @media (max-height: 700px) { .clock { padding: 6px 10px; } .ck b { font-size: 20px; } }
+
+/* ---- Money today + the trading day (forumplus.js) ---- */
+.desk.plus .mcard { --dtone: #9fb4ff; padding: 10px 12px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--dtone) 45%, var(--oly-line)); background: linear-gradient(160deg, color-mix(in srgb, var(--dtone) 12%, transparent), rgba(255, 255, 255, .02)); }
+.mcard .mdd { display: block; font: 800 15px/1.25 var(--oly-ui, sans-serif); color: var(--dtone); font-variant-numeric: tabular-nums; }
+.mcard .mbar { display: block; height: 10px; margin: 8px 0; border-radius: 6px; background: rgba(255, 255, 255, .09); overflow: hidden; }
+.mcard .mbar i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #ff5a6e, #ffcf5a 45%, #7ef0b5); transition: width .6s cubic-bezier(.16, 1, .3, 1); }
+.mcard .mline, .mcard .mnote { margin: 4px 0; font-size: 12.5px; line-height: 1.4; color: var(--oly-dim); } .mcard .mnote { font-size: 11.5px; }
+.mcard .mnews { margin: 8px 0 0; padding: 8px 10px; border-radius: 10px; border-left: 3px solid var(--ntone, #9fb4ff); background: rgba(255, 255, 255, .04); font-size: 12.5px; line-height: 1.4; color: var(--oly-text, #f3f5fb); }
+.mtab { width: 100%; border-collapse: collapse; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.mtab th { padding: 3px 4px; text-align: right; font: 600 10px/1.2 var(--oly-ui, sans-serif); letter-spacing: .08em; text-transform: uppercase; color: var(--oly-dim); }
+.mtab th:first-child, .mtab td.k { text-align: left; } .mtab td { padding: 6px 4px; text-align: right; font-size: 13px; border-top: 1px solid var(--oly-line); } .mtab td.k { font-weight: 700; } .mtab td.good { color: #7ef0b5; }
+.dbar { position: relative; display: flex; height: 16px; border-radius: 8px; overflow: hidden; background: rgba(255, 255, 255, .06); }
+.dbar .ds { display: block; height: 100%; } .dbar .ds.go { background: linear-gradient(90deg, rgba(126, 240, 181, .55), rgba(184, 224, 74, .75)); } .dbar .ds.warn { background: rgba(255, 207, 90, .7); } .dbar .ds.rest { background: rgba(159, 180, 255, .16); }
+.dbar .dnow { position: absolute; top: -3px; bottom: -3px; width: 3px; margin-left: -1.5px; border-radius: 2px; background: #fff; box-shadow: 0 0 10px #fff, 0 0 18px rgba(184, 224, 74, .9); }
+.dticks { display: flex; justify-content: space-between; margin-top: 3px; font-size: 10px; color: var(--oly-dim); }
+.dline { margin: 6px 0 0; font-size: 12.5px; line-height: 1.4; color: var(--oly-text, #f3f5fb); }
+@media (prefers-reduced-motion: reduce) { .mcard .mbar i { transition: none; } }

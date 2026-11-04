@@ -150,34 +150,39 @@ export class Ships {
     this.geo = inst; this.total = n;
     this.group.add(this.mesh);
     // the cranes on the north quay: a tall gantry, a boom, a blinking light
-    const nc = 8, crane = new THREE.InstancedMesh(craneGeo(), new THREE.MeshBasicMaterial({ color: 0x232a45 }), nc);
-    const lights = new THREE.InstancedMesh(new THREE.SphereGeometry(0.5, 6, 4), new THREE.MeshBasicMaterial({ color: 0xff3344, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }), nc);
+    const nc = 8, crane = new THREE.InstancedMesh(craneGeo(), new THREE.MeshBasicMaterial({ vertexColors: true }), nc);      // the red lights are vertex colours: one draw
     const m4 = new THREE.Matrix4();
     for (let i = 0; i < nc; i++) {
       const x = h.x0 + 20 + (i / (nc - 1)) * (h.x1 - h.x0 - 40);
       m4.makeScale(1, 1, 1).setPosition(x, 0, h.z0 + 2.5); crane.setMatrixAt(i, m4);
-      m4.makeScale(1, 1, 1).setPosition(x + 6, 15.5, h.z0 + 2.5); lights.setMatrixAt(i, m4);
     }
-    crane.frustumCulled = lights.frustumCulled = false; crane.renderOrder = 2; lights.renderOrder = 4;
-    this.cranes = crane; this.craneLights = lights;
-    this.group.add(crane, lights);
+    crane.frustumCulled = false; crane.renderOrder = 2;
+    this.cranes = crane;
+    this.group.add(crane);
     this.setQuality(quality);
   }
 
-  setQuality(q) { if (this.geo) { this.geo.instanceCount = Math.min(this.total, SHIPS[q] ?? SHIPS.hq); this.count = this.geo.instanceCount; } }
+  setQuality(q, caps) {
+    if (this.geo) { this.geo.instanceCount = Math.min(this.total, caps?.ships ?? SHIPS[q] ?? SHIPS.hq); this.count = this.geo.instanceCount; }
+    if (this.cranes) this.cranes.count = caps?.cranes ?? 8;
+  }
   update(flow) { if (this.lane) this.lane.w = flow; }
 }
 
 function craneGeo() {
-  const boxes = [[0.5, 14, 0.5, -1.5, 7, 0.9], [0.5, 14, 0.5, 1.5, 7, 0.9], [0.5, 14, 0.5, -1.5, 7, -0.9], [0.5, 14, 0.5, 1.5, 7, -0.9], [16, 0.7, 1.6, 4.5, 14.5, 0], [3.4, 0.6, 2.2, 0, 12, 0]];
-  const pos = [], nor = [], idx = [];
-  for (const [sx, sy, sz, ox, oy, oz] of boxes) {
+  const boxes = [[0.5, 14, 0.5, -1.5, 7, 0.9, 0x232a45], [0.5, 14, 0.5, 1.5, 7, 0.9, 0x232a45], [0.5, 14, 0.5, -1.5, 7, -0.9, 0x232a45], [0.5, 14, 0.5, 1.5, 7, -0.9, 0x232a45],
+                 [16, 0.7, 1.6, 4.5, 14.5, 0, 0x232a45], [3.4, 0.6, 2.2, 0, 12, 0, 0x232a45], [0.9, 0.9, 0.9, 6, 15.5, 0, 0xff3344]];
+  const pos = [], nor = [], col = [], idx = [], c = new THREE.Color();
+  for (const [sx, sy, sz, ox, oy, oz, hex] of boxes) {
     const b = new THREE.BoxGeometry(sx, sy, sz), base = pos.length / 3;
     b.translate(ox, oy, oz);
     pos.push(...b.attributes.position.array); nor.push(...b.attributes.normal.array);
+    c.setHex(hex);
+    for (let i = 0; i < b.attributes.position.count; i++) col.push(c.r, c.g, c.b);
     for (const i of b.index.array) idx.push(base + i);
   }
   const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); g.setIndex(idx);
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g.setIndex(idx);
   return g;
 }

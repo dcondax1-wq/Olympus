@@ -477,8 +477,171 @@ def _upgrade_checks(p):
     ctx.close()
 
 
+# ------------------------------------------------------------------------------------------------------------ h (2026-11-04: forgeplus.js)
+PLUS_JS = r"""
+import fs from 'node:fs';
+const D = '__PAGE__/';
+const Core = await import(D + 'forgecore.js'), P = await import(D + 'forgeplus.js');
+const real = JSON.parse(fs.readFileSync(D + 'forge.json', 'utf8')), out = {};
+const F = new Core.Forge(real), L = F.live, champ = real.champion;
+const o = P.overfit(F, champ.k); out.over = { lost: o.lost, meter: o.meter, label: o.label, g1: o.gainH1, g2: o.gainH2, h1: o.h1, h2: o.h2, live: o.isLive };
+out.liveOver = P.overfit(F, real.live.k).label;
+const pop = P.populationOverfit(F); out.pop = pop;
+const br = P.breeding(F); out.breed = { n: br.length, sizes: br.map((r) => r.size), up: br.every((r, i) => !i || r.best >= br[i - 1].best - 1e-9 || true), newBest: br.filter((r) => r.newBest).length,
+  mut: br.reduce((a, r) => a + r.mutations, 0), line: br.reduce((a, r) => a + r.line, 0), champLine: real.champion.line.length, elites: br[1].elites, kinds: br[1].elites + br[1].children + br[1].random + br[1].sparks + br[1].live };
+const vh = P.verdictHistory(F); out.vh = { n: vh.rows.length, same: vh.rows.every((r) => F.wouldChange(r.id).level === r.level), sum: vh.yes + vh.maybe + vh.no };
+const sv = P.survivors(F, 50); out.surv = { n: sv.length, both: sv.every((r) => F.halfPass(r.k).h1 && F.halfPass(r.k).h2), sorted: sv.every((r, i) => !i || sv[i - 1].worst >= r.worst), ranks: sv.map((r) => r.rank).join(',') === sv.map((_, i) => i + 1).join(',') };
+let want = 0; const seen = new Set(); for (const G of real.gens) for (const c of G) { if (seen.has(c.k) || c.k === real.live.k) continue; seen.add(c.k); const p = F.halfPass(c.k); if (p.h1 && p.h2) want++; } out.survWant = want;
+out.search = { id: P.search(F, '#' + champ.id)[0].id, champ: P.search(F, 'champion')[0].id, live: P.search(F, 'live')[0].id, gen: P.search(F, 'gen 3').every((h) => h.gen === 2) && P.search(F, 'gen 3').length > 0,
+  knob: P.search(F, 'be_r').length > 0, h2: P.search(F, 'pass h2').every((h) => F.halfPass(h.k).h2), nothing: P.search(F, 'zzqxv').length, blank: P.search(F, '  ').length, cap: P.search(F, 'child').length <= 25 };
+const c = P.compare(F, champ.id, 'live'); out.cmp = { rows: c.rows.length, text: c.text.length > 10, same: P.compare(F, 'live', 'live').aWins, bad: P.compare(F, 99999, 'live'), h2: c.h2Winner };
+const sl = P.shareLines(F, champ.id); out.share = { title: sl.title, level: sl.level, bars: sl.bars.length, foot: sl.foot, demo: sl.demo };
+const demo = new Core.Forge(Core.demoData(7)); const dd = P.overfit(demo, demo.d.champion.k); out.demo = [dd.meter >= 0, P.breeding(demo).length, P.verdictHistory(demo).rows.length, P.survivors(demo, 5).length >= 0, P.shareLines(demo, demo.d.champion.id).demo, P.shareLines(demo, demo.d.champion.id).foot.includes('DEMO')];
+console.log(JSON.stringify(out));
+"""
+
+
+def part_h():
+    """The 2026-11-04 tools: the overfitting meter, the breeding table, the verdict history, the survivors, search, compare and the share card lines.
+    All pure functions over forge.json (node), checked against the numbers in the file."""
+    import shutil
+    import subprocess
+    node = shutil.which("node")
+    if not node:
+        check("h. node is available for forgeplus.js", False)
+        return
+    f = os.path.join(tempfile.mkdtemp(prefix="forge_plus_"), "p.mjs")
+    open(f, "w", encoding="utf-8").write(PLUS_JS.replace("__PAGE__", PAGE.replace(os.sep, "/")))
+    r = subprocess.run([node, f], capture_output=True, text=True, timeout=120)
+    try:
+        o = json.loads(r.stdout.strip().splitlines()[-1])
+    except Exception:
+        check("h. forgeplus.js runs in node", False, (r.stdout + r.stderr)[-500:])
+        return
+    d = json.load(open(os.path.join(PAGE, "forge.json"), encoding="utf-8"))
+    G, L = d["genomes"][d["champion"]["k"]], d["genomes"][d["live"]["k"]]
+    g1, g2 = G["h1"]["pm"] - L["h1"]["pm"], G["h2"]["pm"] - L["h2"]["pm"]
+    lost = max(0, min(150, round(100 * (g1 - g2) / g1))) if g1 > 0 else (0 if g2 >= 0 else 100)
+    ov = o["over"]
+    check(f"h. the overfitting meter is the champion's own numbers: H1 gain {g1:+.0f} $/mo over live, H2 gain {g2:+.0f}, {lost}% of the H1 gain lost -> {ov['label']}",
+          ov["g1"] == g1 and ov["g2"] == g2 and ov["lost"] == lost and ov["meter"] == min(100, lost) and ov["h1"] == G["h1"]["pm"] and ov["h2"] == G["h2"]["pm"] and ov["label"] in ("HEALTHY", "WARM", "OVERFIT", "BURNT", "NO GAIN")
+          and (ov["label"] != "HEALTHY" if lost >= 20 else True) and o["liveOver"] == "NO GAIN", ov)
+    P = o["pop"]
+    live_k = d["live"]["k"]
+    keys = [k for k in d["genomes"] if k != live_k]
+    b1 = [k for k in keys if d["genomes"][k]["h1"]["pm"] > L["h1"]["pm"]]
+    bb = [k for k in b1 if d["genomes"][k]["h2"]["pm"] > L["h2"]["pm"]]
+    check(f"h. the whole-run overfitting: {len(b1)} variants beat live on H1 and {len(bb)} of them on H2 (counted again from forge.json), the Spearman rank number is the file's",
+          P["variants"] == len(keys) and P["beatH1"] == len(b1) and P["beatBoth"] == len(bb) and P["spearman"] == d["honesty"]["spearman_h1_h2_pm"], P)
+    b = o["breed"]
+    check("h. breeding: one row per generation of 24, elites are copied, the champion's line is counted, new-best generations marked",
+          b["n"] == d["gens_n"] and set(b["sizes"]) == {d["pop"]} and b["line"] == b["champLine"] and b["kinds"] == d["pop"] and b["elites"] == 2 and b["newBest"] >= 1, b)
+    check("h. the verdict history: one verdict per generation's best, each exactly what the card's 'would this change live?' says, and the counts add up",
+          o["vh"]["n"] == d["gens_n"] and o["vh"]["same"] and o["vh"]["sum"] == d["gens_n"], o["vh"])
+    sv = o["surv"]
+    check(f"h. survivors: only creatures that beat live on BOTH halves ({sv['n']}, the same count as an independent pass), best worst-half first, ranked 1..n", sv["both"] and sv["sorted"] and sv["ranks"] and sv["n"] == min(50, o["survWant"]), (sv, o["survWant"]))
+    se = o["search"]
+    check("h. search: '#id', 'champion', 'live', 'gen 3', a knob name, 'pass h2' all find the right creatures; nonsense and blanks find nothing; at most 25 hits",
+          se["id"] == d["champion"]["id"] and se["champ"] == d["champion"]["id"] and se["live"] == "live" and se["gen"] and se["knob"] and se["h2"] and se["nothing"] == 0 and se["blank"] == 0 and se["cap"], se)
+    c = o["cmp"]
+    check("h. compare: nine rows with a winner each, a plain verdict, a creature against itself is a tie, an unknown id is null", c["rows"] == 9 and c["text"] and c["same"] == 0 and c["bad"] is None, c)
+    sh = o["share"]
+    check("h. the share card says what it is: the title, the verdict, three bars (creature against live) and the 'not advice' footer", sh["title"].startswith("CHAMPION #") and sh["level"] in ("yes", "maybe", "no") and sh["bars"] == 3 and "not advice" in sh["foot"] and sh["demo"] is False, sh)
+    check("h. the demo fixture works everywhere (never blank) and the share card says DEMO", all(x for x in o["demo"][:1]) and o["demo"][1] == 20 and o["demo"][2] == 20 and o["demo"][4] is True and o["demo"][5] is True, o["demo"])
+
+
+def _plus_checks(br, url):
+    """The Tools panel and the smithy in the browser (390 x 844)."""
+    d = json.load(open(os.path.join(PAGE, "forge.json"), encoding="utf-8"))
+    errs = []
+    ctx, p = _new(br, url + "?autoplay=0", errs)
+    tabs = p.evaluate("[...document.querySelectorAll('.tabs button')].map(b => [b.id, Math.round(b.getBoundingClientRect().height)])")
+    check("i. the dock has four buttons: Verdict, Lineage, Hall, Tools (each 44 px tall or more), the orb corner free", [t[0] for t in tabs] == ["truthBtn", "linBtn", "hallBtn", "plusBtn"] and all(t[1] >= 44 for t in tabs) and not _orb_free(p), (tabs, _orb_free(p)))
+    p.click("#plusBtn")
+    p.wait_for_function("!document.getElementById('plus').hidden && document.getElementById('plus-b').innerText.length > 100")
+    t = p.inner_text("#plus-b")
+    check("i. Tools opens on the overfitting METER: the champion, a dial, the in-sample / new-data numbers, the whole run, a share button", "Champion #" in t and "H1: the data the forge trained on" in t and "THE WHOLE RUN" in t and p.query_selector("#plus-b .dial") is not None and p.query_selector("[data-share]") is not None, t[:120])
+    check("i. the Tools panel keeps the orb corner free and does not scroll the page sideways", not _orb_free(p) and p.evaluate("document.documentElement.scrollWidth <= innerWidth"), _orb_free(p))
+    p.click('[data-ptab="breed"]')
+    rows = p.evaluate("document.querySelectorAll('#plus-b .gens li').length")
+    p.click("#plus-b .gens li:nth-child(7) button")
+    p.wait_for_timeout(200)
+    check("i. BREEDING: a row per generation (20); tapping one puts the arena on that generation", rows == d["gens_n"] and p.evaluate("window.__forge.gen") == 6, (rows, p.evaluate("window.__forge.gen")))
+    p.click('[data-ptab="verdicts"]')
+    cells = p.evaluate("document.querySelectorAll('#plus-b .vgrid button').length")
+    check("i. VERDICTS: one dot per generation and a list, 'No, live stays' for this run", cells == d["gens_n"] and "NO, LIVE STAYS" in p.inner_text("#plus-b"), cells)
+    p.click("#plus-b .vlist li:first-child button")
+    p.wait_for_selector("#card:not([hidden])")
+    check("i. a verdict row opens that creature's card: with the overfitting strip (a meter, its word, SHARE, COMPARE)", p.query_selector("#ofit .om") is not None and p.inner_text("#ofit b") in ("HEALTHY", "WARM", "OVERFIT", "BURNT", "NO GAIN") and p.query_selector("#cardShare") is not None and p.is_hidden("#plus"))
+    p.click("#cardX")
+    p.click("#plusBtn")
+    p.click('[data-ptab="search"]')
+    p.fill("#fq", "champion")
+    p.wait_for_timeout(150)
+    hit = p.evaluate("[...document.querySelectorAll('#fqr [data-open]')].map(b => b.dataset.open)")
+    check("i. SEARCH: 'champion' finds the champion; the chips fill the box; no match says so in the count", str(d["champion"]["id"]) in hit and p.evaluate("document.activeElement.id") == "fq", hit[:4])
+    p.fill("#fq", "zzqxv")
+    check("i. ... nothing found: '0 found'", "0 found" in p.inner_text("#fqn"))
+    p.fill("#fq", "#" + str(d["champion"]["id"]))
+    p.click('#fqr [data-cmp="a"]')
+    p.click('[data-ptab="search"]') if p.evaluate("__forge.plus.state.tab") != "compare" else None
+    p.fill("#fq", "live") if p.evaluate("__forge.plus.state.tab") == "search" else None
+    p.click('#fqr [data-cmp="b"]') if p.evaluate("__forge.plus.state.tab") == "search" else p.click('[data-id="live"]')
+    p.wait_for_selector("#plus-b table.cmp")
+    st = p.evaluate("[__forge.plus.state, JSON.parse(localStorage.getItem('forge.compare'))]")
+    check("i. COMPARE: A = the champion, B = live: nine rows, winners marked, the overfitting row, a verdict sentence; kept under 'forge.compare'",
+          p.evaluate("document.querySelectorAll('#plus-b table.cmp')[0].querySelectorAll('tbody tr').length") >= 10 and p.evaluate("document.querySelectorAll('#plus-b td.w').length") >= 1 and len(p.inner_text("#cmpv")) > 10 and st[0]["a"] == d["champion"]["id"] and st[0]["b"] == "live" and st[1]["a"] == d["champion"]["id"], st)
+    p.click('[data-ptab="meter"]')
+    p.click("[data-share]")
+    p.wait_for_selector("#fshare:not([hidden])")
+    p.wait_for_function("() => { const i = document.querySelector('#fshare img'); return i && i.complete && i.naturalWidth > 0; }")
+    size = p.evaluate("(() => { const i = document.querySelector('#fshare img'); return [i.naturalWidth, i.naturalHeight, i.src.slice(0, 5)]; })()")
+    check("i. the share card is a 1080 x 1350 picture drawn on the phone (a blob, nothing uploaded)", size == [1080, 1350, "blob:"], size)
+    p.click("#fshareX")
+    keys = sorted(p.evaluate("Object.keys(localStorage)"))
+    check("i. this phone keeps only its quality choice and 'forge.compare'", set(keys) <= {"forge.compare", "jfx"}, keys)
+    w = p.evaluate("window.__forge.works")
+    check("i. the smithy is in the scene (anvil, hammer, hearth) and the hammer is working", w is not None and len(w["pos"]) == 2, w)
+    check("i. no console errors in the Tools", not errs, errs[:3])
+    ctx.close()
+    errs2 = []
+    ctx, p = _new(br, url + "?autoplay=0&q=high", errs2)
+    p.wait_for_function("window.__forge.works && window.__forge.works.fx.length >= 3", timeout=240000)
+    w = p.evaluate("window.__forge.works")
+    check(f"i. on HD the smithy has the OLYMPUS effects (embers, heat haze, smoke, light shafts): {w['fx']}", {"embers", "heatShimmer", "volumetricFog", "godRays"} <= set(w["fx"]), w)
+    p.wait_for_function("window.__forge.works.strikes >= 1", timeout=420000)     # the beat runs on the frame clock (capped per frame): a 1 fps software GL needs minutes
+    check("i. the hammer strikes (the ingot flares, sparks fly)", p.evaluate("window.__forge.works.strikes") >= 1)
+    calls = p.evaluate("window.__forge.calls")
+    check(f"i. the forge scene stays inside its draw-call budget on HD ({calls} <= 90)", 0 < calls <= 90, calls)
+    check("i. no console errors on HD", not errs2, errs2[:3])
+    ctx.close()
+
+
+def part_i():
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        check("i. Playwright is installed", False)
+        return
+    base, srv, url = _site(True)
+    try:
+        with sync_playwright() as pw:
+            exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
+            br = pw.chromium.launch(**({"executable_path": exe} if exe else {}), args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader"])
+            _plus_checks(br, url)
+            br.close()
+    finally:
+        srv.shutdown()
+        shutil.rmtree(base, ignore_errors=True)
+
+
 def main(argv):
     fast, page = "fast" in argv, "page" in argv           # page: d + e only (the page, ~1 min)
+    if "plus" in argv:                                    # plus: the 2026-11-04 tools (node) and their page checks
+        part_h()
+        part_i()
+        print(f"\n{sum(RES)}/{len(RES)} passed", flush=True)
+        return 0 if all(RES) else 1
     h0 = model_hashes()
     if not page:
         part_a(real=not fast)
@@ -486,8 +649,11 @@ def main(argv):
     if not fast and not page:
         part_c()
     part_d()
+    if not page:
+        part_h()
     if not fast:
         part_e()
+        part_i()
     check("live_model*.json unchanged by the whole test", model_hashes() == h0)
     print(f"\n{sum(RES)}/{len(RES)} passed", flush=True)
     return 0 if all(RES) else 1

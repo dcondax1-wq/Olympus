@@ -145,6 +145,16 @@ function logOf(brain) {
 /** Minutes since the 18:00 ET session open ('00:10' comes after '23:50': the futures day starts the evening before). */
 const sessionMin = (hm) => { const [h, m] = String(hm).split(':').map(Number); return ((h * 60 + m) - 1080 + 1440) % 1440; };
 
+/** prophecy.json (tools/oracle_prophecy_stats.py: how often each level family started a LIT trade); null when missing (never throws) */
+export async function loadProphecy(url = 'prophecy.json') {
+  try {
+    const r = await fetch(url, { cache: 'no-cache' });
+    if (!r.ok) return null;
+    const j = await r.json();
+    return j && j.kind === 'oracle-prophecy' && j.families && typeof j.families === 'object' ? j : null;
+  } catch (_) { return null; }
+}
+
 /** A live.json-shaped doc -> the World, or null when it has no market in it. */
 export function normalize(doc, now = Date.now() / 1000) {
   if (!doc || typeof doc !== 'object') return null;

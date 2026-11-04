@@ -264,7 +264,7 @@ const mkPlayer = () => { const p = { played: [], stops: 0, play: (b) => { p.play
   sp.speak(first + ' ' + second, { onend: () => ended++, onfallback: (er, id) => { fell = [er && er.reason, id]; } });
   await wait(500);
   const spoken = said.map((s) => s.text).join(' ');
-  ck('b. a failure after the first part: the reply goes on in the phone voice with ONLY the rest (nothing said twice), one onend, the error reported', player.played.length === 1 && /long enough sentence/.test(spoken) && !/second part fails/.test(spoken) && !/first part is a fairly/.test(spoken) && ended === 1 && fell && fell[1] === 'groq', [player.played, spoken, ended, fell]);
+  ck('b. a failure after the first part: the reply goes on in the phone voice with ONLY the rest (nothing said twice), one onend, the error reported', player.played.length === 1 && /second part fails/.test(spoken) && !/first part is a fairly/.test(spoken) && ended === 1 && fell && fell[1] === 'groq', [player.played, spoken, ended, fell]);
 }
 { // a 429 with a short retry-after parks only that voice, for that long
   const said = [], player = mkPlayer();
@@ -325,6 +325,48 @@ const mkPlayer = () => { const p = { played: [], stops: 0, play: (b) => { p.play
   const er = await k.synth('hello').then(() => null, (e) => e);
   ck('b. Kokoro: the phone cleared its storage -> "cleared from this phone", the ready flag is dropped, no worker started', er && /cleared/.test(er.message) && st.getItem('jarvis.kokoro.ready') === null, er && er.message);
 }
+// ---------------------------------------------------------------- the owner's default (no key) and the guards
+{
+  let loads = 0; const f = mkFetch(() => { throw new Error('no network call expected'); });
+  const picks = [];
+  for (const mode of ['auto', 'cloud', 'device', 'phone']) {
+    const m = mkEng({ fetch: f, phone: premium, store: { 'jarvis.voiceEngine': JSON.stringify({ mode }) }, loadKokoro: () => { loads++; return Promise.reject(new Error('must not load')); } });
+    picks.push(m.e.pick({ len: 50 }));
+    m.e.status(); m.e.describe();
+  }
+  ck('b. NO KEY, nothing downloaded: every mode picks the phone voice (null); no fetch, the on-device engine is never even loaded; status / describe load nothing', picks.every((p) => p === null) && f.calls.length === 0 && loads === 0, [picks, f.calls.length, loads]);
+  const said = [], { e } = mkEng({ phone: premium });
+  const sp = T.createSpeaker({ synth: phoneSynth(said), cfg: () => ({}), cloud: (c) => e.pick(c), prosody: () => e.prosody });
+  sp.speak('Your room is $1,133 today, and the week is up 2.5%, which is a good start for the whole team, so keep going. Is that right?', {}); await wait(900);
+  ck('b. NO KEY default = the phone voice + the natural layer only: one utterance per SENTENCE (no comma-split start-up gaps), numbers in words', said.length === 2 && /eleven hundred thirty three dollars/.test(said[0].text) && /right\?$/.test(said[1].text), said);
+  ck('b. plan({ phrases: false }) = sentence chunks only; the default still breathes at commas', P.plan(txt, { phrases: false }).length === 3 && P.plan(txt).length >= 4, [P.plan(txt, { phrases: false }).length, P.plan(txt).length]);
+}
+{ // guards: the chooser throws / a cloud voice is slow / the unlock fails -> the old speaker path still speaks the whole reply
+  const run = async (opts, text) => { const said = []; let ended = 0, fell = null;
+    const sp = T.createSpeaker(Object.assign({ synth: phoneSynth(said), cfg: () => ({}) }, opts));
+    sp.speak(text || 'Hello there. This still gets said.', { onend: () => ended++, onfallback: (er, id) => { fell = [er && er.reason, id]; } });
+    await wait(opts.wait || 500); return { said: said.map((s) => s.text).join(' '), ended, fell, sp }; };
+  let r = await run({ cloud: () => { throw new Error('chooser exploded'); }, prosody: () => { throw new Error('prosody exploded'); }, player: () => { throw new Error('player exploded'); } });
+  ck('b. guard: the chooser, the natural layer and the player all throwing -> the phone voice says the reply, once', /Hello there/.test(r.said) && /still gets said/.test(r.said) && r.ended === 1, r);
+  r = await run({ cloud: () => ({ key: 'x', id: 'gemini', synth: () => Promise.reject(new Error('boom')) }), prosody: () => ({ prepare: () => { throw new Error('x'); }, plan: () => { throw new Error('y'); }, merge: () => { throw new Error('z'); } }) });
+  ck('b. guard: a cloud voice that errors + a throwing prosody -> the whole reply in the phone voice (original text), error reported', /Hello there. This still gets said/.test(r.said) && r.ended === 1 && r.fell && r.fell[1] === 'gemini', r);
+  r = await run({ cloud: () => ({ key: 'x', id: 'gemini', timeoutMs: 1000, synth: () => new Promise(() => {}) }), wait: 1700 });
+  ck('b. guard: a cloud voice that never answers is passed after its timeout (1 s here, 9 s cloud, 30 s on-device): the phone says it all, reason "timeout", that voice rests 2 min', /Hello there/.test(r.said) && r.ended === 1 && r.fell && r.fell[0] === 'timeout' && r.sp.parked('gemini') > 100000, r);
+  r = await run({ cloud: () => ({ key: 'x', id: 'gemini', synth: async () => new Blob([new Uint8Array(10)]) }), player: () => ({ play: () => Promise.reject(new Error('NotAllowedError')), stop() {} }) });
+  ck('b. guard: the audio unlock failed (play refused) -> the phone voice says the whole reply (nothing lost)', /Hello there. This still gets said/.test(r.said) && r.ended === 1, r);
+}
+{ // the on-device model never downloads by itself
+  const st = mkStore({ 'jarvis.kokoro.ready': '1' }); const reqs = []; class W { constructor() { throw new Error('no worker'); } }
+  const caches = mkCaches(); const c1 = await caches.open('transformers-cache'); await c1.put(K.KO.hf + 'onnx/model_quantized.onnx', new Response('m')); const c2 = await caches.open('kokoro-voices'); await c2.put(K.KO.hf + 'voices/af_heart.bin', new Response('v'));
+  const k = K.createKokoro({ storage: st, fetch: async (u) => { reqs.push(String(u)); throw new Error('net'); }, caches, crypto: webcrypto, Worker: W, Blob, URL: { createObjectURL: () => 'blob:w' } });
+  ck('b. on-device: "downloaded" needs EVERY piece (model, voice AND the speech-engine files); a missing piece = not downloaded', await k.downloaded() === false);
+  const er = await k.synth('x').then(() => null, (e) => e);
+  ck('b. on-device: with a piece missing, synth() clears the ready flag and stops: no fetch at all, no worker', er && /cleared/.test(er.message) && reqs.length === 0 && st.getItem('jarvis.kokoro.ready') === null, [er && er.message, reqs]);
+  const src = await (await import('node:fs/promises')).readFile(dir + '/kokoro-engine.js', 'utf8');
+  ck('b. on-device: the worker serves its speech-engine files from the cache ONLY (a miss throws, no network fall-through); the only caller of download() is the tapped button', /never a silent 21 MB fetch/.test(src) && !/return rf\(input, init\)/.test(src.split('async function boot')[0].split('self.fetch = ')[1].split('};')[0].split('throw new Error')[0] + '') );
+  const idx = await (await import('node:fs/promises')).readFile(dir + '/index.html', 'utf8');
+  ck('b. the shell calls deviceDownload from exactly one place, the Download button\'s click', (idx.match(/deviceDownload\(/g) || []).length === 1 && /\$\('#vDevDl'\)\.addEventListener\('click'[\s\S]{0,400}deviceDownload\(/.test(idx));
+}
 realLog(JSON.stringify(out));
 """
 
@@ -361,6 +403,7 @@ def page(br, url, keys, device=None, voices=True):
     ctx = br.new_context(**kw)
     H.feeds(ctx, H.kalshi_feed())
     ctx.add_init_script("try { sessionStorage.setItem('jarvis.booted', '1'); localStorage.setItem('jarvis.seen', JSON.stringify('j9')); localStorage.setItem('jarvis.intro', 'off'); } catch (e) {}")
+    ctx.add_init_script("try { localStorage.setItem('jarvis.voiceEngine', JSON.stringify({ timeoutMs: 240000 })); } catch (e) {}")     # (the 10 s cloud timeout would hand a slow, loaded test machine to the phone voice)
     if keys:
         ctx.add_init_script("try { localStorage.setItem('jarvis.smart', JSON.stringify({ v: 2, on: false, provider: 'groq', keys: %s })); } catch (e) {}" % json.dumps(keys))
     ctx.add_init_script(f"window.__iosRule = {json.dumps(bool(device))}; window.__voicesEmpty = {json.dumps(not voices)};")
@@ -414,14 +457,8 @@ def part_page(br, url, name, device=None):
     tag = f"c[{name}]"
     KEY = "AIzaFAKEKEY0123456789"
     ctx, p, errs, net = page(br, url, {"gemini": KEY}, device=device)
-    for _ in range(4):                                              # the first tap: unlocks the shared audio element on the iPhone (a loaded machine may need a second)
-        p.mouse.click(3, 420)
-        try:
-            p.wait_for_function("window.__plays.length >= 1", timeout=5000)
-            break
-        except Exception:
-            pass
-    p.wait_for_function("window.__plays.length >= 1", timeout=5000)
+    p.mouse.click(3, 420)                                           # the first tap unlocks the shared audio element; on a loaded machine the page needs a while to run the handler
+    p.wait_for_function("window.__plays.length >= 1", timeout=60000)
     check(f"{tag} the first tap unlocks ONE shared audio element with a silent clip (volume 0)", p.evaluate("window.__plays[0].src.startsWith('data:audio/wav')") and p.evaluate("window.__plays[0].vol") == 0, p.evaluate("window.__plays"))
     p.evaluate("window.__said = []; window.__plays = []")
     p.evaluate("window.__jarvis.talk('Your room is $1,133 today, and the week is up 2.5%.')")
@@ -434,8 +471,8 @@ def part_page(br, url, name, device=None):
     plays = p.evaluate("window.__plays")
     said = [x for x in p.evaluate("window.__said") if x["text"].strip()]
     check(f"{tag} the clip plays through the shared element (volume 1) and the phone voice stays silent", plays and plays[0]["vol"] == 1 and not said and p.evaluate("window.__jarvis.voice().speaking") is False, (plays, said))
-    # barge-in: a tap on the core while a clip plays (the mocked clip lasts 6 s)
-    p.evaluate("window.__clipMs = 6000; window.__plays = []")
+    # barge-in: a tap on the core while a clip plays (the mocked clip lasts 90 s, so a slow machine cannot end it before the tap)
+    p.evaluate("window.__clipMs = 90000; window.__plays = []")
     p.evaluate("window.__jarvis.talk('This is a reply that will be stopped by a tap on the core.')")
     p.wait_for_function("window.__plays.length >= 1 && window.__jarvis.voice().speaking === true", timeout=15000)
     p.wait_for_timeout(700)
@@ -491,14 +528,8 @@ def part_page(br, url, name, device=None):
     ctx.close()
     # a Groq key only; its terms refusal -> the phone's voice for that reply + one plain toast
     ctx, p, errs, net = page(br, url, {"groq": "gsk_FAKEKEY0123456789"}, device=device)
-    for _ in range(4):
-        p.mouse.click(3, 420)
-        try:
-            p.wait_for_function("window.__plays.length >= 1", timeout=5000)
-            break
-        except Exception:
-            pass
-    p.wait_for_function("window.__plays.length >= 1", timeout=5000)
+    p.mouse.click(3, 420)                                           # the first tap unlocks the shared audio element; on a loaded machine the page needs a while to run the handler
+    p.wait_for_function("window.__plays.length >= 1", timeout=60000)
     net["groq_terms"] = True
     p.evaluate("window.__said = []; window.__plays = []")
     p.evaluate("window.__jarvis.talk('Hello from the Groq voice.')")

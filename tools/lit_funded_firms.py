@@ -23,6 +23,7 @@ Per plan, end to end:
 Samples: exact (a fresh eval on every session of the half, played on that half's sessions); MC = 5-session blocks from the half.
 2021-25 = reference only (5m entries, LIT PF 1.01 there).
 
+  python tools/lit_funded_firms.py units   # rebuild the unit caches from today's live trades first
   python tools/lit_funded_firms.py all     # grids + finals + combos -> research/lit/funded_firms.json (1 process, ~10 min)
   python tools/lit_funded_firms.py save    # rl.save the runs lit_ff_*
 Paper only; nothing live changes.
@@ -49,7 +50,7 @@ PV, COMM, SLIP = 2.0, 1.90, 0.25
 SPAN = {"2026": ("2026-01-01", "2026-12-31"), "H1": ("2026-01-01", "2026-06-30"), "H2": ("2026-07-01", "2026-12-31"),
         "2021-25": ("2021-01-01", "2025-12-31")}
 H_EVAL, H6, H3 = 60, 126, 63
-SEARCHED = "2026-10-19"
+SEARCHED = "2026-10-19"          # the firms' rules (unchanged); the sizing is the live 2026-10-25 preset, the trades are today's
 BIG = 1e12
 
 
@@ -159,12 +160,18 @@ def plans():
         bot="API bots allowed on Combine / XFA (TopstepX), banned on Live; no VPS; NinjaTrader not offered to new sign-ups",
         ok=False, why="the bot's NinjaTrader route is not available to new Topstep accounts (TopstepX API only)", news="allowed",
         accounts="5 XFA", src=S_TOP, unconf=["50% vs 55% eval best day", "XFA payout rules"])
-    LIVE_EVAL = {"base": "need", "until": 10, "room_f": 0.6, "max_usd": None, "margin": 0.95}   # live two_week -> safe_eval
-    FUNDED_MODE = {"pct": 0.4, "pct_min_usd": 100, "pct_max_usd": 800, "ref": 20, "wk": True, "room_f": None, "max_win": 1500,
-                   "slip_ticks": 2, "skip_breach": True}                                    # lit-funded-sizing.md, mode funded
+    # LIVE presets since 2026-10-25 (research/writeups/uprisk.md; live_model.json lit_sizing): eval two_week room_f 0.8, no weekly eval stop,
+    # then safe_eval; funded 60% of the room, <= $1,500 a trade, a winner <= $2,000, skip_breach. The 25K runs the same rules at half the $
+    # (the caps below are in 50K units; the plan scale 0.5 makes them <= $750 and a winner <= $1,000). Earlier versions of this file had the 2026-10-19 values (room_f 0.6; 40% / $800 / $1,500).
+    LIVE_EVAL = {"base": "need", "until": 10, "room_f": 0.8, "max_usd": None, "margin": 0.95}   # live two_week -> safe_eval
+    FUNDED_MODE = {"pct": 0.6, "pct_min_usd": 100, "pct_max_usd": 1500, "ref": 20, "wk": True, "room_f": None, "max_win": 2000,
+                   "slip_ticks": 2, "skip_breach": True}                                    # uprisk.md, mode funded (live)
+    FUNDED_25K = FUNDED_MODE        # $ caps are in 50K units: funded_qty multiplies them by the plan scale (0.5), so the 25K gets <= $750 / winner <= $1,000
     for p in P:
         if p["id"] == "mffu_builder_50k":
             p["fixed_eval"], p["fixed_funded"] = LIVE_EVAL, FUNDED_MODE
+        elif p["id"] == "mffu_builder_25k":
+            p["fixed_eval"], p["fixed_funded"] = LIVE_EVAL, FUNDED_25K
     for pid in ("mffu_rapid_50k", "mffu_rapid_eod_50k"):
         b = next(p for p in P if p["id"] == pid)
         P.append({**b, "id": pid + "_news", "plan": b["plan"] + " (news worst case)", "funded": {**b["funded"], "news_skip": True},
@@ -202,6 +209,26 @@ def NEWS_IDS():
                 _NEWS.add(t["entry_t"])
         _NEWS.add(-1)
     return _NEWS
+
+
+def units():
+    """Rebuild the two unit caches from TODAY's live LIT trades (tools/lit_edge.trades({}) == run lit_live: be_off 1.25 + the 15-minute check; the
+    2026-10-18 caches were the older rule set). -> research/runs/_cache/lit_2wk_unit_live.json + lit_prop_unit.json (gitignored)."""
+    from tools import lit_edge as E
+    from tools import runlib as rl
+    U = E.trades({})
+    W = E.wk_mult(U)
+    sess = [d[0] for d in rl.load("lit_live")["days"]]
+    os.makedirs(CACHE, exist_ok=True)
+    tr, pr = [], []
+    for u in sorted(U, key=lambda u: u["entry_t"]):
+        tr.append({"day": u["day"], "entry_t": int(u["entry_t"]), "exit_t": int(u["exit_t"]), "dir": int(u["dir"]), "risk": float(u["risk"]),
+                   "tgt": float(u["tgt"]), "pts": float(u["pts"]), "w1": float(u["w1"]), "exit": u["exit"], "wk_m": float(W[u["entry_t"]]), "tf": int(u["tf"])})
+        pr.append({"day": u["day"], "entry_t": int(u["entry_t"]), "mfe": float(u["mfe"]), "risk_pts": float(u["risk"])})
+    json.dump({"sess": sess, "variant": "live (today's rules, rebuilt by lit_funded_firms.py units)", "trades": tr},
+              open(os.path.join(CACHE, "lit_2wk_unit_live.json"), "w", encoding="utf-8"))
+    json.dump({"sess": sess, "span": "all", "trades": pr}, open(os.path.join(CACHE, "lit_prop_unit.json"), "w", encoding="utf-8"))
+    print("units", len(tr), "trades;", sum(1 for t in tr if t["day"] >= "2026"), "in 2026")
 
 
 def data():
@@ -648,6 +675,47 @@ def combo(Ps, R, span, n=1500):
             "corr_net": [[round(float(x), 2) for x in row] for row in np.atleast_2d(cor)]}
 
 
+def overlay_engine_eval(out=None):
+    """The live eval is engine/sizing.lit_qty two_week (room 0.8, no weekly eval stop), measured by tools/uprisk.py on 1,000 Monte Carlo paths
+    (research/lit/uprisk_eval.json, rf80_nowk). This study's own eval model is an approximation of it: same 2-week pass (53 / 54 vs 53 / 59) but
+    fewer fails (f10 11 / 5 vs 18 / 21). For the owner's Builder 50K the engine-faithful 2-week pass / fail / median / slow-pass replace the
+    study's in `eval` and `eval_mc` (H1, H2) so every page shows the same figure; the study's own are kept as `eval_study` / `eval_mc_study`.
+    Funded and life stay the study's (they agree with uprisk to 2%: $907 / $914 vs $929 / $915 a month)."""
+    own = out is None
+    if own:
+        out = json.load(open(OUT, encoding="utf-8"))
+    ue = json.load(open(os.path.join(ROOT, "research", "lit", "uprisk_eval.json"), encoding="utf-8"))["eval"]["rf80_nowk"]
+    for row in out["plans"]:
+        if row["id"] != "mffu_builder_50k":
+            continue
+        R = row["results"]
+        R.setdefault("eval_study", json.loads(json.dumps(R["eval"])))
+        R.setdefault("eval_mc_study", json.loads(json.dumps(R["eval_mc"])))
+        for k in ("eval", "eval_mc"):
+            for sp in ("H1", "H2"):
+                u = ue[sp]
+                R[k][sp] = {**R[k][sp], "p10": u["p10"], "f10": u["f10"], "pass_med": u["pass_med"], "slow_pass": u["slow_pass"]}
+        R["eval_overlay"] = "2-week pass / fail / median / slow-pass = research/lit/uprisk_eval.json rf80_nowk (the engine's two_week sizing, 1,000 MC paths)"
+    if own:
+        json.dump(out, open(OUT, "w", encoding="utf-8"), separators=(",", ":"), default=float)
+        print("overlay written", OUT)
+    return out
+
+
+def add_trio_reference():
+    """Add the Builder 50K + LucidPro + FundedNext trio's 2021-25 line to an existing funded_firms.json (when the top-4 of the run left it out)."""
+    out = json.load(open(OUT, encoding="utf-8"))
+    ids = ["mffu_builder_50k", "lucid_pro_50k", "fn_rapid_daily_50k"]
+    if any(sorted(c["plans"]) == sorted(ids) and c["span"] == "2021-25" for c in out["combos"]):
+        print("trio 2021-25 already there")
+        return
+    PL = {P["id"]: P for P in plans()}
+    R = {r["id"]: r["results"] for r in out["plans"]}
+    out["combos"].append(combo([PL[i] for i in ids], {i: R[i] for i in ids}, "2021-25"))
+    json.dump(out, open(OUT, "w", encoding="utf-8"), separators=(",", ":"), default=float)
+    print("trio 2021-25 added:", out["combos"][-1]["net_per_month"])
+
+
 def run_all():
     PL = plans()
     R = {}
@@ -664,6 +732,9 @@ def run_all():
                 C.append(combo([base, *grp], R, span))
             print("combo", [base["id"], *ids], C[-2]["net_per_month"], C[-1]["net_per_month"], flush=True)
     best = sorted({tuple(c["plans"]) for c in C}, key=lambda p: -min(c["net_per_month"] for c in C if tuple(c["plans"]) == p))[:4]
+    TRIO = ("mffu_builder_50k", "lucid_pro_50k", "fn_rapid_daily_50k")           # the trio the Plutus page and the hub publish: always carry its 2021-25 line
+    if tuple(sorted(TRIO)) not in {tuple(sorted(p)) for p in best}:
+        best = list(best) + [TRIO]
     for p in best:
         C.append(combo([next(P for P in PL if P["id"] == i) for i in p], R, "2021-25"))
     out = {"built": dt.datetime.now().strftime("%Y-%m-%d %H:%M"), "study": "lit_funded_firms", "rules_searched": SEARCHED,
@@ -677,6 +748,7 @@ def run_all():
                       "combo": "the plans on the same 1,500 paths as life (same trades)",
                       "cost_per_funded": "price / eventual pass (MC, 60 sessions) + activation; monthly plans x months to the median pass"},
            "excluded": EXCLUDED, "plans": [{**P, "results": R[P["id"]]} for P in PL], "combos": C}
+    overlay_engine_eval(out)
     json.dump(out, open(OUT, "w", encoding="utf-8"), separators=(",", ":"), default=float)
     print("wrote", OUT, os.path.getsize(OUT) // 1024, "KB")
 
@@ -742,7 +814,13 @@ def save():
 
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "all"
-    if cmd == "all":
+    if cmd == "units":
+        units()
+    elif cmd == "trio2125":
+        add_trio_reference()
+    elif cmd == "overlay":
+        overlay_engine_eval()
+    elif cmd == "all":
         run_all()
     elif cmd == "save":
         save()

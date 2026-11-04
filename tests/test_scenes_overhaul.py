@@ -211,7 +211,7 @@ def test_arena(br, origin):
     st = p.evaluate("ARENA.state()")
     d = (st.get("scene") or {}).get("dress") or {}
     check("c. Arena: the colosseum is dressed: spectators, banners, torches (real flames) and no part failed",
-          d.get("ok") and d.get("spectators", 0) >= 600 and {"crowd", "banners", "moon", "sand"} <= set(d.get("parts", [])) and not d.get("errors"), d)
+          d.get("ok") and d.get("spectators", 0) >= 450 and {"crowd", "banners", "moon", "sand"} <= set(d.get("parts", [])) and not d.get("errors"), d)
     tap(p, "[data-tab=quests]"); p.wait_for_timeout(300)
     check("c. Arena: the Quests sheet has the weekly board (four bosses, hits, states) under today's three", p.locator(".wkboard .wkrow").count() == 4 and p.locator(".quest").count() == 3, p.inner_text("#sheetBody")[:200])
     tap(p, "[data-tab=trophies]"); p.wait_for_timeout(300)

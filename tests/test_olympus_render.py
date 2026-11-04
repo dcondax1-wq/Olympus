@@ -25,6 +25,8 @@ import re
 import sys
 import time
 
+from tests import browser_kit as BK  # noqa: E402  (load-aware limits, shared launch)
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 from tests.test_olympus_kit import COUNT_DRAWS, HIDE, launch, serve  # noqa: E402  (the kit's server and browser)
@@ -207,7 +209,7 @@ def test_jarvis(br, origin):
     f0 = p.evaluate("() => window.__jarvisBackdrop.frames")
     p.wait_for_timeout(2200)
     s1 = p.evaluate("() => Object.assign({}, window.__jarvisPortal, { overlay: !!document.querySelector('.jportal') })")
-    check("h. the warp ends by itself (~0.8 s) and leaves nothing behind", not s1["active"] and not s1["overlay"] and 0 < s1["ms"] < 2500, s1)
+    check("h. the warp ends by itself (~0.8 s) and leaves nothing behind", not s1["active"] and not s1["overlay"] and 0 < s1["ms"] < BK.limit_ms(2500, "warp ends"), s1)
     f1 = p.evaluate("() => window.__jarvisBackdrop.frames")
     check("g. the backdrop draws nothing while an app is open", f1 - f0 <= 1, (f0, f1))
     p.evaluate("() => window.jarvisPortal.jump({ id: 'mind', name: 'Mind', color: '#5eead4' })")
@@ -248,7 +250,7 @@ def jarvis_gpu(br, origin, fx):
     p.on("pageerror", lambda e: errs.append(str(e)))
     p.goto(origin + "/jarvis/")
     p.wait_for_function("() => window.__jarvisBackdrop && __jarvisBackdrop.frames > 3", timeout=240000)
-    p.wait_for_timeout(2500)
+    p.wait_for_timeout(int(BK.limit_ms(2500, "gpu settle")))
     return ctx, p, errs
 
 
@@ -258,7 +260,7 @@ def settle(p, msaa):
         p.wait_for_function("(n) => window.__gpu().msaa >= n", arg=msaa, timeout=60000)
     except Exception:
         pass
-    p.wait_for_timeout(1500)
+    p.wait_for_timeout(int(BK.limit_ms(1500, "gpu settle")))
 
 
 def test_gpu(br, origin):
@@ -270,29 +272,29 @@ def test_gpu(br, origin):
     check("i. home at high: ONE multisampled composer (the core's: 2 MSAA buffers), the backdrop has none (FXAA instead)",
           bd["samples"] == 0 and bd["fxaa"] and home["msaa"] == 2, (bd, home))
     p.evaluate(CLICK, "oracle")
-    p.wait_for_timeout(2500)
+    p.wait_for_timeout(int(BK.limit_ms(2500, "gpu settle")))
     app = p.evaluate(GPU)
     asleep = p.evaluate("() => __jarvisBackdrop.asleep")
     check("i. app open: the home's backdrop and core release their buffers (0 MSAA, fewer framebuffers and textures than at home)",
           asleep is True and app["msaa"] == 0 and app["fb"] < home["fb"] and app["tex"] < home["tex"], (home, app, asleep))
     f0 = p.evaluate("() => __jarvisBackdrop.frames")
-    p.wait_for_timeout(800)
+    p.wait_for_timeout(int(BK.limit_ms(800, "gpu settle")))
     check("i. app open: no home frame is drawn", p.evaluate("() => __jarvisBackdrop.frames") == f0)
     p.evaluate(CLICK, "home")
     settle(p, home["msaa"])
     back = p.evaluate(GPU)
     f1 = p.evaluate("() => __jarvisBackdrop.frames")
-    p.wait_for_timeout(800)
+    p.wait_for_timeout(int(BK.limit_ms(800, "gpu settle")))
     f2 = p.evaluate("() => __jarvisBackdrop.frames")
     check("i. back home: the same buffers are restored (framebuffers, MSAA, textures as before) and it draws again",
           back["msaa"] == home["msaa"] and back["fb"] == home["fb"] and abs(back["tex"] - home["tex"]) <= 2 and f2 > f1
           and p.evaluate("() => __jarvisBackdrop.asleep") is False, (home, back, f1, f2))
     for _ in range(3):                                 # three more round trips: still no growth
         p.evaluate(CLICK, "oracle")
-        p.wait_for_timeout(1200)
+        p.wait_for_timeout(int(BK.limit_ms(1200, "gpu settle")))
         p.evaluate(CLICK, "home")
         settle(p, home["msaa"])
-    p.wait_for_timeout(1500)
+    p.wait_for_timeout(int(BK.limit_ms(1500, "gpu settle")))
     again = p.evaluate(GPU)
     print("   live GPU buffers (framebuffers / MSAA renderbuffers / textures): home", home, "| app open", app, "| back", back,
           "| after 4 trips", again, flush=True)

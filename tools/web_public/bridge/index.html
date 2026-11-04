@@ -58,6 +58,19 @@ a { color: var(--vio); }
 .live { color: var(--ok); font-weight: 700; }
 .live.q { color: var(--gold); }
 .live.w { color: var(--mut); font-weight: 500; }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.stages { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.stages button { min-height: 48px; font-size: 14px; padding: 0 4px; white-space: nowrap; }
+.stages button b { display: inline-grid; place-items: center; width: 22px; height: 22px; margin-right: 5px; border-radius: 50%; background: var(--gold); color: #06040d; font: 800 12px Orbitron, sans-serif; }
+.stages button[aria-pressed="true"] { background: linear-gradient(180deg, #a855f7, #7c3aed); border-color: rgba(255, 255, 255, .5); }
+.tstep { border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 8px; }
+.tstep p { margin: 0; }
+.n2 { font: 800 14px Orbitron, sans-serif; color: #06040d; background: linear-gradient(145deg, #ffe29a, var(--gold) 55%, #c98f1f); border-radius: 50%; width: 28px; height: 28px; display: grid; place-items: center; flex: none; }
+#linkIn { width: 100%; min-height: 52px; padding: 8px 14px; border-radius: 12px; border: 1px solid var(--line); background: rgba(0, 0, 0, .4); color: var(--ink); font: 700 17px Rajdhani, sans-serif; letter-spacing: .04em; }
+.res { min-height: 24px; font-size: 18px; font-weight: 700; }
+.res.ok { color: var(--ok); } .res.bad { color: #fca5a5; } .res.warn { color: var(--gold); }
+details.fc summary { color: var(--mut); font-size: 14px; }
+details.fc .to, details.fc .files, details.fc .ingest { margin-top: 6px; }
 
 /* JOB 28 (2026-11-04): visual pass. A slow aurora, glass cards with a specular top edge, a glowing ring, gradient buttons with a
    shine, a lit title. CSS only; transform / opacity animation; still for reduced motion. */
@@ -122,39 +135,72 @@ pre { border: 1px solid rgba(192, 132, 252, .12); }
 .num { font: 800 14px Orbitron, sans-serif; color: #06040d; background: linear-gradient(145deg, #ffe29a, var(--gold)); border-radius: 50%; width: 28px; height: 28px; display: grid; place-items: center; flex: none; }
 .nx { display: flex; gap: 10px; align-items: center; }
 .tag.easy { color: var(--ok); } .tag.hard { color: #fca5a5; }
+.home { justify-self: start; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: rgba(124, 58, 237, .18);
+  color: var(--ink); text-decoration: none; font: 700 13px Orbitron, sans-serif; letter-spacing: .12em; }
+.framed .home { display: none; }
 </style>
+<script>(function () { try { if (window.top !== window) document.documentElement.classList.add('framed'); } catch (e) { document.documentElement.classList.add('framed'); } })();</script>
 </head>
 <body>
 <div class="w">
+  <a class="home" href="../jarvis/" id="homeLink">&#927; Back to Olympus</a>
   <div><div class="e">OLYMPUS · CLAUDE × CHATGPT</div><h1>BRIDGE</h1></div>
-  <section class="how">
-    <b>How it works</b>
-    <ol>
-      <li>Tap <b>Copy prompt</b> on a card and paste it into ChatGPT.</li>
-      <li>Send the result back: <b>image cards</b> → upload the files in GitHub to <code>handoff/inbox/&lt;id&gt;/</code> (or attach them in the Claude chat). <b>Codex cards</b> → ChatGPT Codex opens a pull request on the repo.</li>
-      <li>Tell Claude "<b>Bridge: &lt;id&gt; done</b>". Claude checks it and builds it in.</li>
-    </ol>
-  </section>
-  <section class="wiz" id="wiz" aria-label="Connect ChatGPT">
+  <nav class="stages" id="stages" aria-label="Where you are">
+    <button type="button" data-stage="connect" aria-pressed="true"><b>1</b> Connect</button>
+    <button type="button" data-stage="test" aria-pressed="false"><b>2</b> Test</button>
+    <button type="button" data-stage="use" aria-pressed="false"><b>3</b> Use</button>
+  </nav>
+  <section class="wiz" id="wiz" data-stage="connect" aria-label="Connect ChatGPT">
     <div class="wh">
       <svg class="ring" viewBox="0 0 44 44" width="64" height="64" aria-hidden="true"><circle cx="22" cy="22" r="18" fill="none" stroke="rgba(192,132,252,.2)" stroke-width="5"/><circle id="ringArc" cx="22" cy="22" r="18" fill="none" stroke="#34d399" stroke-width="5" stroke-linecap="round" stroke-dasharray="113.1" stroke-dashoffset="113.1" transform="rotate(-90 22 22)"/></svg>
-      <div><div class="e">CONNECT CHATGPT</div><div class="big" id="ringTxt">Connected 0/3</div></div>
+      <div><div class="e">CONNECT CHATGPT (ONCE)</div><div class="big" id="ringTxt">Connected 0/3</div></div>
     </div>
     <div class="step" id="s1">
       <label class="tk"><input type="checkbox" data-step="1"><span class="n">1</span><span class="st">Let ChatGPT see your GitHub</span></label>
-      <p>Open ChatGPT, go to <b>chatgpt.com/codex</b> and tap <b>Connect to GitHub</b>. Sign in to GitHub there and allow it for <code>nq-liquidity-engine</code>. (Or: ChatGPT <b>Settings</b> &rarr; <b>Apps</b> (older name: Connectors) &rarr; <b>GitHub</b> &rarr; <b>Connect</b>.) ChatGPT does the GitHub login itself: never give anyone a token.</p>
-      <div class="row"><a class="btn" id="open1" href="https://chatgpt.com/codex" target="_blank" rel="noopener">Open ChatGPT Codex</a></div>
+      <p>Tap the button. In ChatGPT tap <b>Connect to GitHub</b>, sign in, and say yes to the folder named <code>nq-liquidity-engine</code>. ChatGPT signs in by itself: never give anyone a password or a key. Cannot find it? In ChatGPT tap <b>Settings</b>, then <b>Apps</b> (also called Connectors), then <b>GitHub</b>.</p>
+      <div class="row"><a class="btn" id="open1" href="https://chatgpt.com/codex" target="_blank" rel="noopener">Open ChatGPT</a></div>
     </div>
     <div class="step" id="s2">
-      <label class="tk"><input type="checkbox" data-step="2"><span class="n">2</span><span class="st">Teach ChatGPT the rules</span></label>
-      <p>Tap the big button, then paste it into a new ChatGPT chat and send it. Once only.</p>
-      <div class="row"><button id="copySync" class="big-btn" type="button">Copy the sync prompt</button></div>
+      <label class="tk"><input type="checkbox" data-step="2"><span class="n">2</span><span class="st">Give ChatGPT the rules</span></label>
+      <p>Tap the big button. Then paste it into a new ChatGPT chat and send it. You only do this once.</p>
+      <div class="row"><button id="copySync" class="big-btn" type="button" data-oly-cue="success">Copy the rules for ChatGPT</button></div>
     </div>
     <div class="step" id="s3">
-      <label class="tk"><input type="checkbox" data-step="3"><span class="n">3</span><span class="st">Send the first job</span></label>
-      <p>This copies the icons job and opens ChatGPT Codex. Paste it there and send.</p>
-      <div class="row"><button id="firstJob" class="big-btn" type="button">Send first job</button></div>
+      <label class="tk"><input type="checkbox" data-step="3"><span class="n">3</span><span class="st">Send your first job</span></label>
+      <p>Tap the button. It copies your first job and opens ChatGPT. Paste it there and send.</p>
+      <div class="row"><button id="firstJob" class="big-btn" type="button" data-oly-cue="open">Send first job</button></div>
     </div>
+    <button id="toTest" class="big-btn" type="button">Next: test the link</button>
+  </section>
+  <section class="wiz" id="testlink" data-stage="test" aria-label="Test the link" hidden>
+    <div class="wh"><div><div class="e">TEST THE LINK</div><div class="big" id="linkTxt">Not tested yet</div></div></div>
+    <div class="tstep" id="t1">
+      <div class="tk"><span class="n2">1</span><span class="st">Copy the test message</span></div>
+      <p>It asks ChatGPT to read one line in your GitHub and answer with one short line.</p>
+      <div class="row"><button id="copyTest" class="big-btn" type="button" data-oly-cue="success">Copy the test message</button></div>
+    </div>
+    <div class="tstep" id="t2">
+      <div class="tk"><span class="n2">2</span><span class="st">Paste it into ChatGPT</span></div>
+      <p>Send it. ChatGPT should answer with one line that starts with <b>LINK OK</b>.</p>
+      <div class="row"><a class="btn" id="open2" href="https://chatgpt.com/codex" target="_blank" rel="noopener">Open ChatGPT</a></div>
+    </div>
+    <div class="tstep" id="t3">
+      <div class="tk"><span class="n2">3</span><span class="st">Paste its answer here</span></div>
+      <label class="vh" for="linkIn">ChatGPT's one-line answer</label>
+      <input id="linkIn" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="300" placeholder="LINK OK ...">
+      <div class="row"><button id="checkLink" class="big-btn" type="button" data-oly-cue="open">Check the link</button></div>
+      <p id="linkRes" class="res" role="status" aria-live="polite"></p>
+    </div>
+    <button id="toUse" class="big-btn" type="button" hidden>Next: use the Bridge</button>
+  </section>
+  <section class="how" id="how" data-stage="use" aria-label="How to use the Bridge" hidden>
+    <b>Every time you want something made</b>
+    <ol>
+      <li><b>Pick a job</b> and tap <b>Copy for ChatGPT</b>.</li>
+      <li><b>Paste it into ChatGPT</b> and send. ChatGPT saves its answer in your GitHub by itself.</li>
+      <li>When ChatGPT says it is finished, tap <b>Tell Claude</b> and paste that into your Claude chat.</li>
+    </ol>
+    <button id="pickJob" class="big-btn" type="button">Pick a job</button>
   </section>
   <script type="text/plain" id="onboardText">You are my build partner for OLYMPUS, my trading dashboards and Jarvis assistant. Claude (in Claude Code) does the
 engine, tests and publishing. You do creative and bulk work. We stay synced through one GitHub repo:
@@ -177,19 +223,19 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
     <button type="button" role="tab" id="tab-jobs" data-tab="jobs" aria-selected="true">Jobs</button>
     <button type="button" role="tab" id="tab-lib" data-tab="lib" aria-selected="false">Library</button>
     <button type="button" role="tab" id="tab-del" data-tab="del" aria-selected="false">Deliveries</button>
-    <button type="button" role="tab" id="tab-next" data-tab="next" aria-selected="false">Ask next</button>
+    <button type="button" role="tab" id="tab-next" data-tab="next" aria-selected="false">What next</button>
   </nav>
   <div id="p-jobs" role="tabpanel">
-    <div class="bar"><span class="prog" id="prog"></span><button id="reset" type="button">Reset ticks</button></div>
+    <div class="bar"><span class="prog" id="prog"></span><button id="reset" type="button" data-oly-cue="warning">Clear my ticks</button></div>
     <div id="list"></div>
   </div>
   <div id="p-lib" role="tabpanel" hidden>
-    <p class="why" id="libNote">Ready-made jobs for ChatGPT. Tap one, copy the prompt, paste it into ChatGPT. The result lands in <code>handoff/inbox/&lt;id&gt;/</code>.</p>
+    <p class="why" id="libNote">Ready-made jobs. Tap one, tap <b>Copy for ChatGPT</b>, and paste it into ChatGPT. ChatGPT saves its answer for Claude.</p>
     <div class="chips" id="libCats"></div>
     <div id="libList" class="stack"></div>
   </div>
   <div id="p-del" role="tabpanel" hidden>
-    <p class="why">What ChatGPT delivered. Files are checked first (type, size, no secrets, no scripts that call out) and are never run. Then tell Claude to build one in.</p>
+    <p class="why">What ChatGPT sent back. Every file is checked first, and nothing is ever opened as a program. Tap the green button to tell Claude to use it.</p>
     <div id="delList" class="stack"></div>
   </div>
   <div id="p-next" role="tabpanel" hidden>
@@ -197,6 +243,7 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
     <div id="nextList" class="stack"></div>
   </div>
 </div>
+<script src="../olympus/sfx.js?v=s1" defer></script>
 <script>
 (function () {
   var REPO = 'demetrades2000-coder/nq-liquidity-engine';
@@ -233,7 +280,7 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
     { id: 'ascend', t: 'Finish Ascend', tool: 'chatgpt', why: 'Your looksmaxing dashboard, inside Jarvis.',
       to: 'send the live link to Claude',
       p: 'Finish my Ascend (looksmaxing / self-improvement) dashboard and host it free (Netlify or Vercel). Follow this spec for it to plug into my hub app: https://github.com/' + REPO + '/blob/main/docs/JARVIS_APPS.md . Dark futuristic look, phone first, a jarvis.json live card with a theme colour.' },
-    { id: 'codex-portal', t: 'Codex: polish one app on the new 3D engine', tool: 'codex', why: 'More apps upgraded without spending Claude usage.',
+    { id: 'codex-portal', t: 'Polish one app with ChatGPT', tool: 'codex', why: 'More apps upgraded without spending Claude usage.',
       to: 'a pull request on ' + REPO + ' (branch chatgpt/<app>)',
       p: 'Repo ' + REPO + '. Read docs/OLYMPUS_RENDER.md and docs/OLYMPUS_DESIGN.md. Pick ONE app folder under tools/web_public/ (start with tyche/, then oracle/, fates/, mind/, arena/) and move its three.js scene onto the shared render core in tools/web_public/olympus/render.js and materials.js (tone mapping, environment light, bloom, real materials). Keep the app working on iPhone at 60 fps, keep its tests passing (tests/test_<app>*.py), touch only that app folder and its test, and open a pull request on a branch chatgpt/<app>. Do not touch engine/, live_model*.json or anything trading-related.' },
   ];
@@ -249,10 +296,9 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
     JOBS.forEach(function (j) {
       if (done[j.id]) n++;
       var c = el('article', 'card' + (done[j.id] ? ' done' : '')); c.id = 'job-' + j.id;
-      var top = el('div', 'top'); top.appendChild(el('span', 't', j.t)); top.appendChild(el('span', 'tag' + (j.tool === 'codex' ? ' codex' : ''), j.tool === 'codex' ? 'CODEX · PR' : 'CHATGPT'));
+      var top = el('div', 'top'); top.appendChild(el('span', 't', j.t)); top.appendChild(el('span', 'tag' + (j.tool === 'codex' ? ' codex' : ''), j.tool === 'codex' ? 'CHATGPT + GITHUB' : 'CHATGPT'));
       c.appendChild(top);
       c.appendChild(el('div', 'why', j.why));
-      var to = el('div', 'to'); to.appendChild(document.createTextNode('Result → ')); to.appendChild(el('code', '', j.to)); c.appendChild(to);
       var st = STATUS && STATUS.jobs && STATUS.jobs[j.id], lv = el('div', 'live w', 'Waiting for ChatGPT');
       if (st) {
         if (st.state === 'done') { lv.className = 'live'; lv.textContent = 'ChatGPT delivered ' + st.files + ' file' + (st.files === 1 ? '' : 's'); }
@@ -260,19 +306,21 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
         else { lv.className = 'live w'; lv.textContent = 'ChatGPT is working (' + st.files + ' file' + (st.files === 1 ? '' : 's') + ')'; }
       }
       c.appendChild(lv);
-      var d = el('details'); d.appendChild(el('summary', '', 'Show prompt')); d.appendChild(el('pre', '', j.p)); c.appendChild(d);
+      var d = el('details'); d.appendChild(el('summary', '', 'Show the words I paste')); d.appendChild(el('pre', '', j.p)); c.appendChild(d);
+      var fc = el('details', 'fc'); fc.appendChild(el('summary', '', 'For Claude'));
+      var to = el('div', 'to'); to.appendChild(document.createTextNode('Result goes to: ')); to.appendChild(el('code', '', j.to)); fc.appendChild(to); c.appendChild(fc);
       var row = el('div', 'row');
-      var cp = el('button', '', 'Copy prompt'); cp.type = 'button';
+      var cp = el('button', '', 'Copy for ChatGPT'); cp.type = 'button'; cp.setAttribute('data-oly-cue', 'success');
       cp.onclick = function () {
-        var ok = function () { cp.textContent = 'Copied ✓'; cp.classList.add('copied'); setTimeout(function () { cp.textContent = 'Copy prompt'; cp.classList.remove('copied'); }, 1600); };
+        var ok = function () { cp.textContent = 'Copied ✓'; cp.classList.add('copied'); setTimeout(function () { cp.textContent = 'Copy for ChatGPT'; cp.classList.remove('copied'); }, 1600); };
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(j.p).then(ok, function () { d.open = true; });
         else d.open = true;
       };
       var tick = el('button', '', done[j.id] ? 'Done ✓' : 'Mark done'); tick.type = 'button';
       tick.onclick = function () { done[j.id] = !done[j.id]; save(); render(); };
       row.appendChild(cp); row.appendChild(tick);
-      if (st && (st.state === 'done' || st.state === 'question')) {
-        var msg = 'Bridge: ' + j.id + (st.state === 'done' ? ' done' : ' question');
+      {                                          // always there: when ChatGPT says it is finished, the owner does not have to wait for the page to refresh
+        var msg = 'Bridge: ' + j.id + (st && st.state === 'question' ? ' question' : ' done');
         var tc = el('button', '', 'Tell Claude'); tc.type = 'button'; tc.setAttribute('data-say', msg);
         tc.onclick = function () {
           var ok = function () { tc.textContent = 'Copied \u2713'; setTimeout(function () { tc.textContent = 'Tell Claude'; }, 1600); };
@@ -318,13 +366,70 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
   [].forEach.call(document.querySelectorAll('input[data-step]'), function (b) { b.addEventListener('change', function () { setStep(b.getAttribute('data-step'), b.checked); }); });
   document.getElementById('open1').addEventListener('click', function () { setStep(1, true); });
   var sync = document.getElementById('copySync');
-  sync.addEventListener('click', function () { copy(PROMPT, sync, 'Copy the sync prompt', function () { setStep(2, true); }); });
+  sync.addEventListener('click', function () { copy(PROMPT, sync, 'Copy the rules for ChatGPT', function () { setStep(2, true); }); });
   var fj = document.getElementById('firstJob');
   fj.addEventListener('click', function () {
     var job = (window.BRIDGE_JOBS || []).filter(function (j) { return j.id === 'icons'; })[0];
     copy(job ? job.p : '', fj, 'Send first job', function () { setStep(3, true); window.open('https://chatgpt.com/codex', '_blank', 'noopener'); });
   });
   paint();
+
+  /* ---- the three stages (Connect / Test / Use): one screen shows at most three steps ---- */
+  var STAGES = ['connect', 'test', 'use'], SEC = { connect: 'wiz', test: 'testlink', use: 'how' };
+  function stage(name) {
+    if (STAGES.indexOf(name) < 0) name = 'connect';
+    STAGES.forEach(function (k) {
+      document.getElementById(SEC[k]).hidden = k !== name;
+      document.querySelector('#stages [data-stage="' + k + '"]').setAttribute('aria-pressed', k === name ? 'true' : 'false');
+    });
+    window.BRIDGE_STAGE = name;
+  }
+  [].forEach.call(document.querySelectorAll('#stages [data-stage]'), function (b) { b.addEventListener('click', function () { stage(b.getAttribute('data-stage')); }); });
+  document.getElementById('toTest').addEventListener('click', function () { stage('test'); });
+  document.getElementById('toUse').addEventListener('click', function () { stage('use'); });
+  document.getElementById('pickJob').addEventListener('click', function () { var t = document.getElementById('tab-lib'); if (t) { t.click(); t.scrollIntoView({ block: 'start' }); } });
+
+  /* ---- Test the link: everything here stays on the phone. ChatGPT is asked to read the LINK WORD line of handoff/SYNC.md in the repo and answer
+     "LINK OK <word>"; only a ChatGPT that can really see the repo knows the word. The check is a pure function (no request, nothing sent). ---- */
+  var WORD = 'KESTREL';                           // must be the LINK WORD line of handoff/SYNC.md (tests/test_bridge_page.py checks it)
+  var TEST_MSG = 'Link test. Please open my GitHub repo demetrades2000-coder/nq-liquidity-engine, read the file handoff/SYNC.md, and find the line that starts with LINK WORD. ' +
+    'Then answer with ONE line only, exactly: LINK OK followed by that word. Nothing else, no other words.';
+  var SECRET = /gh[pousr]_[A-Za-z0-9]{20,}|github_pat_|\bsk-[A-Za-z0-9_-]{16,}|-----BEGIN|AKIA[0-9A-Z]{12,}|password\s*[:=]|\btoken\s*[:=]/i;
+  function checkLink(raw) {
+    var t = String(raw == null ? '' : raw).trim();
+    if (!t) return { ok: false, kind: 'warn', title: 'Not yet', msg: 'Paste ChatGPT\'s answer into the box first.' };
+    if (SECRET.test(t)) return { ok: false, kind: 'bad', title: 'Stop', msg: 'That looks like a key or a password. Never paste those here. Clear the box and paste only the one-line answer.', clear: true };
+    if (t.length > 200) return { ok: false, kind: 'warn', title: 'Not yet', msg: 'That is too long. Paste only the one short line ChatGPT sent back.' };
+    var clean = t.replace(/[*_`"'\u201c\u201d\u2018\u2019]/g, ' ').replace(/\s+/g, ' ').toUpperCase();
+    var m = /LINK\s*OK\s*[:\-\u2013\u2014]?\s*([A-Z0-9]+)/.exec(clean);
+    if (m) {
+      if (m[1] === WORD) return { ok: true, kind: 'ok', title: 'Pass', msg: 'It works! ChatGPT read your GitHub and gave the right word. The link is ready.' };
+      return { ok: false, kind: 'bad', title: 'Try again', msg: 'ChatGPT answered, but with the wrong word. It may not be able to see your GitHub. Go back to Connect, check step 1, then run the test again.' };
+    }
+    if (/CAN\s*NOT|CAN\s*T\b|UNABLE|NOT ABLE|NO ACCESS|DON\s*T HAVE ACCESS|DO NOT HAVE ACCESS|SORRY/.test(clean)) {
+      return { ok: false, kind: 'bad', title: 'Try again', msg: 'ChatGPT says it cannot see your GitHub. Go back to Connect, tap Connect to GitHub, allow the folder, then run the test again.' };
+    }
+    return { ok: false, kind: 'warn', title: 'Try again', msg: 'That is not the answer I was waiting for. It should start with LINK OK and one word. Copy the test message again and send it to ChatGPT.' };
+  }
+  window.BRIDGE_CHECK_LINK = checkLink;
+  var linkTxt = document.getElementById('linkTxt'), linkRes = document.getElementById('linkRes'), linkIn = document.getElementById('linkIn'), toUse = document.getElementById('toUse');
+  function linkPaint() {
+    linkTxt.textContent = W.link ? 'Link works \u2713' : 'Not tested yet';
+    toUse.hidden = !W.link;
+  }
+  var ct = document.getElementById('copyTest');
+  ct.addEventListener('click', function () { copy(TEST_MSG, ct, 'Copy the test message'); });
+  document.getElementById('checkLink').addEventListener('click', function () {
+    var r = checkLink(linkIn.value);
+    linkRes.className = 'res ' + r.kind;
+    linkRes.textContent = r.title + ': ' + r.msg;
+    try { linkRes.scrollIntoView({ block: 'nearest' }); } catch (e) { /* older browser: the text is still there */ }
+    if (r.clear) linkIn.value = '';
+    if (r.ok) { W.link = 1; wsave(); }
+    linkPaint();
+  });
+  linkPaint();
+  stage(W.link ? 'use' : W.n >= 3 ? 'test' : 'connect');
 })();
 </script>
 
@@ -366,7 +471,7 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
     return '';
   }
   function promptBlock(j) {          // the prompt is put in the page only when its details opens
-    var d = el('details'); d.appendChild(el('summary', '', 'Show prompt'));
+    var d = el('details'); d.appendChild(el('summary', '', 'Show the words I paste'));
     d.addEventListener('toggle', function () { if (d.open && !d.querySelector('pre')) d.appendChild(el('pre', '', j.prompt)); });
     return d;
   }
@@ -394,7 +499,7 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
       CATS = (d.cats || []).filter(function (c) { return c && ID_RE.test(c.id || ''); }).map(function (c) { return { id: c.id, name: str(c.name, 60) }; });
       LIB = d.jobs.filter(function (j) { return j && ID_RE.test(j.id || '') && typeof j.prompt === 'string'; }).map(function (j) {
         return { id: j.id, cat: str(j.cat, 40), title: str(j.title, 90), makes: str(j.makes, 300), prompt: j.prompt.slice(0, 6000),
-                 files: (j.files || []).filter(function (f) { return FILE_RE.test(f); }).slice(0, 30), minutes: +j.minutes || 10, difficulty: str(j.difficulty, 10) };
+                 files: (j.files || []).filter(function (f) { return FILE_RE.test(f); }).slice(0, 30), minutes: +j.minutes || 10, difficulty: str(j.difficulty, 10), ingest: str(j.ingest || '', 400) };
       });
       window.BRIDGE_LIB = LIB;
       document.getElementById('tab-lib').textContent = 'Library ' + LIB.length;
@@ -407,14 +512,17 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
     var top = el('div', 'top'); top.appendChild(el('span', 't', j.title)); top.appendChild(el('span', 'tag ' + j.difficulty, j.difficulty.toUpperCase())); c.appendChild(top);
     c.appendChild(el('div', 'why', j.makes));
     var m = el('div', 'meta'); m.appendChild(el('span', '', catName(j.cat))); var mb = el('span'); mb.appendChild(el('b', '', '~' + j.minutes + ' min')); m.appendChild(mb); c.appendChild(m);
-    var to = el('div', 'to'); to.appendChild(document.createTextNode('Result → ')); to.appendChild(el('code', '', 'handoff/inbox/' + j.id + '/')); c.appendChild(to);
-    var fl = el('div', 'files'); fl.appendChild(document.createTextNode('Files: ')); fl.appendChild(el('code', '', j.files.join(', '))); c.appendChild(fl);
     c.appendChild(liveLine(j.id));
     c.appendChild(promptBlock(j));
-    var row = el('div', 'row'), cp = el('button', '', 'Copy prompt'); cp.type = 'button'; cp.onclick = function () { copyText(j.prompt, cp, 'Copy prompt'); };
+    var fc = el('details', 'fc'); fc.appendChild(el('summary', '', 'For Claude'));
+    var to = el('div', 'to'); to.appendChild(document.createTextNode('Result goes to: ')); to.appendChild(el('code', '', 'handoff/inbox/' + j.id + '/')); fc.appendChild(to);
+    var fl = el('div', 'files'); fl.appendChild(document.createTextNode('Files: ')); fl.appendChild(el('code', '', j.files.join(', '))); fc.appendChild(fl);
+    if (j.ingest) fc.appendChild(el('div', 'why ingest', 'Then Claude: ' + j.ingest));
+    c.appendChild(fc);
+    var row = el('div', 'row'), cp = el('button', '', 'Copy for ChatGPT'); cp.type = 'button'; cp.setAttribute('data-oly-cue', 'success'); cp.onclick = function () { copyText(j.prompt, cp, 'Copy for ChatGPT'); };
     row.appendChild(cp);
     var st = stateOf(j.id);
-    if (st && (st.state === 'done' || st.state === 'question')) row.appendChild(tellBtn(j.id, 'Tell Claude', 'Bridge: ' + j.id + (st.state === 'done' ? ' done' : ' question')));
+    row.appendChild(tellBtn(j.id, 'Tell Claude', 'Bridge: ' + j.id + (st && st.state === 'question' ? ' question' : ' done')));
     c.appendChild(row);
     return c;
   }
@@ -484,9 +592,9 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
       if (t.text) det.appendChild(t.kind === 'md' || t.kind === 'txt' ? md(t.text) : el('pre', '', t.text));
       c.appendChild(det);
     });
-    (d.rejects || []).forEach(function (r) { c.appendChild(el('div', 'rej', 'Not used: ' + str(r.name, 80) + ' — ' + str(r.reason, 120))); });
+    (d.rejects || []).forEach(function (r) { c.appendChild(el('div', 'rej', 'Not used: ' + str(r.name, 80) + '. ' + (str(r.plain, 160) || 'It did not pass the safety check, so I did not use it.'))); });
     var row = el('div', 'row');
-    row.appendChild(tellBtn(id, 'Claude: build this in', 'Bridge: ' + id + ' done'));
+    var ub = tellBtn(id, 'Tell Claude to use this', 'Bridge: ' + id + ' done'); ub.className = 'big-btn'; row.appendChild(ub);
     c.appendChild(row);
     return c;
   }
@@ -513,8 +621,8 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
       c.appendChild(el('div', 'why', str(n.why, 160)));
       c.appendChild(el('div', 'meta', '~' + (+n.minutes || 10) + ' min · ' + str(n.difficulty, 10)));
       var row = el('div', 'row'), p = promptOf(n.id);
-      if (p) { var cp = el('button', '', 'Copy prompt'); cp.type = 'button'; cp.onclick = function () { copyText(p, cp, 'Copy prompt'); }; row.appendChild(cp); }
-      var lb = el('button', '', 'Open in Library'); lb.type = 'button';
+      if (p) { var cp = el('button', '', 'Copy for ChatGPT'); cp.type = 'button'; cp.setAttribute('data-oly-cue', 'success'); cp.onclick = function () { copyText(p, cp, 'Copy for ChatGPT'); }; row.appendChild(cp); }
+      var lb = el('button', '', 'See this job'); lb.type = 'button';
       lb.onclick = function () { catSel = 'all'; show('lib'); setTimeout(function () { var t = document.getElementById('lib-' + n.id); if (t) { t.scrollIntoView({ block: 'center' }); var dd = t.querySelector('details'); if (dd) dd.open = true; } }, 60); };
       row.appendChild(lb);
       c.appendChild(row); list.appendChild(c);

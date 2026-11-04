@@ -98,20 +98,118 @@ when they close or Jarvis goes home (a delimited block in `jarvis/index.html`: `
 Measurement caveat: the `rAF loops` column of the first audit is a ratio of rAF callbacks to compositor frames; below ~10 fps (this machine) it is
 inflated and not comparable between runs. Use calls, triangles, 2D draws/s and script ms/s.
 
-### Still open: the apps other agents are rewriting (apply the snippet below; nothing was edited there)
+### Own-loop pass 2 (2026-11-04, later): fates, labyrinth, hephaestus, arena, nemesis, chronos
+
+Same block in each loop (`if (stopped || (O && O.hidden())) return;` + the `frameGap()` gate, `gapAt`); these scenes already use the render core without a forced
+quality, so 3D Off is the core's `off` tier (pixel ratio 1, direct draw) and `reduced()` makes them still frames. Fates is the exception and got more: its
+software / LITE tier choice no longer overrides Off (`baseTier()` returns `off`), and an idle reduced / Off scene redraws at most twice a second; its auto-LITE
+spin meter ignores capped frames. Chronos' progress loop (`chronos.js tick`) sleeps hidden / covered and keeps the gap.
+
+| App | Off, same machine (draws/s) | pixel ratio at Off | calls / tris (LITE under SwiftShader) |
+|---|---|---|---|
+| fates | 19 -> 49 at 16 fps page (was starved), **1.4 renders/s**, no longer a continuous spin | 1.5 -> **1** | 41 / 21,007 |
+| labyrinth | 0 | 1 | 34 / 6,939 |
+| hephaestus | 0 | 1 | 25 / 4,363 |
+| nemesis | 0 | 1 | 22-39 / 23,7xx |
+| chronos | 0 | 1 | 47-54 / 15.6-15.9k |
+| arena | 0 | 1 | 108-127 / **141,9xx** |
+
+Arena grew from 101 calls / 64k triangles to 108-127 / 142k with the new crowd (`olympus/scenery.js` instanced spectators, ~900 x 3 meshes, 4 tiers) and its
+dress; the calls are fine, the triangles are 3 instanced meshes of capsules / spheres (a lower-poly body, `CapsuleGeometry(...,2,6)` -> `(...,1,4)`, would cut
+the crowd to about a third: a change in the shared `scenery.js`, not made here). Budgets: nemesis 49 / 30,000, chronos 59 / 19,500, labyrinth 43 / 8,700,
+hephaestus 32 / 5,500, arena 160 / 178,000.
+
+### Own-loop pass 3 (2026-11-04): oracle, odeon, prometheus, argus (datacity already had it) + the crowd LOD
+
+Same gate in each loop (`OLYMPUS.hidden()` + `frameGap()`; oracle and odeon gate the draw / the dt, prometheus and argus the shared `tick()`). Oracle and odeon had the
+fates problem (`rc.software ? 'low'` overriding Off): 3D Off is now the core's `off` tier (pixel ratio 1.5 -> **1**). Off, same machine: argus 0 draws (still),
+oracle < 1 render/s (idle cap 2 fps), odeon / prometheus / datacity capped at 2 fps idle.
+
+**Arena crowd (shared `olympus/scenery.js` `crowd()`)**: `detail: 'low'` is the new default (tapered 5-sided torso, 4 x 2 head, 3-sided arms = **40 triangles a
+spectator, was 216**; `detail: 'full'` keeps the capsules) and `density` thins the seats evenly (the Arena asks for 60% on a phone). A spectator is a few pixels
+tall at the bowl's camera distances; checked in a 390 x 844 screenshot. The arcade, cornice, rings, steps and laurel leaves lost segments too (arches 256 -> 64
+triangles each ...). Arena, phone HD (`?gpu=1`, jfx high), same code path as the budget table:
+
+| | calls | triangles |
+|---|---|---|
+| before (capsule crowd, 896 spectators) | 127 | ~258,000 (142,000 LITE) |
+| after (541 spectators, low-poly, trimmed arcade) | 123 | **60,064** (crowd 21k + scene 39k) |
+
+Only the Arena builds a `crowd()`; no other app uses it. Budget in `PERF`: arena 150 calls / 75,000 triangles. `tests.test_scenes_overhaul` (Arena dressed, >= 450 spectators
+on a phone): 52/52.
+
+### Still open: datacity (the gap is in; Off still a 2 fps redraw, not a still frame) (apply the snippet below; nothing was edited there)
 
 | App | What to apply |
 |---|---|
 | oracle (115 calls) | own loop: `OLYMPUS.hidden()` + `frameGap()`; honour `OLYMPUS.dpr()` / the `off` tier (still 1.5 pixel ratio at Off); merge static meshes |
 | datacity (150k tris, 36 MB heap vs 40) | gap in its two loops; LOD for far districts; at Off it still draws (242/s): make Off a still frame like mind / arena |
-| odeon, fates, labyrinth, hephaestus, prometheus, arena, nemesis, chronos, argus | gap + hidden/covered in each own loop (check `grep requestAnimationFrame`: 2-4 loops each); arena (64k tris, 100 calls): merge static meshes |
+| odeon, prometheus, argus | gap + hidden/covered in each own loop (check `grep requestAnimationFrame`: 2-4 loops each) |
 | any new app | `OLYMPUS.hidden()` + `OLYMPUS.frameGap()` in every loop, 3D Off = still frame, never a slow-frame meter that counts capped frames |
+
+1. **tree (Daphne)**: 1,125 2D draws/s and 90 ms/s of script (6.5 fps headless) from the label / link canvas: cache the static layers, draw only when
+   the camera moves. Heap 16-19 MB.
+2. **hermes**: 2 rAF loops, 2,192 2D draws/s, 59 ms/s: one loop, pause when no card animates (`OLYMPUS.hidden()` / `frameGap()`).
+3. **tyche**: 217 draw calls and 33 ms/s of script, the heaviest 3D app: instance the wheel segments / slices, merge static meshes. At Off it keeps
+   drawing (297/s) and holds a pixel ratio of 1.5-2: honour `OLYMPUS.dpr()` and stop its loop on Off like mind / arena do.
+4. **oracle**: 115 calls; at Off it still draws (79/s) at 1.5.
+5. **datacity**: see "Data City v3: the phone-safe preset" below (caps table, 25 MB heap); at Off it still draws (242/s) at the kit's 2 fps idle cap.
+6. **athena**: 80 calls for 2,205 triangles (many tiny meshes): `InstancedMesh` or merged geometry would cut it by ~5x.
+7. **pantheon / arena / forum**: ~100 calls each; arena 64k triangles. Fine for an iPhone 13+, worth merging static meshes for older phones.
+8. **ares**: own 2D loop, 144 draws/s and 32 ms/s at an unthrottled 11 fps: use the kit's `frameGap()` in its loop (`if (g && now - last < g) return;`).
+9. Any app with its own loop: add the same two lines the render core uses (`OLYMPUS.hidden()` and `OLYMPUS.frameGap()`).
 
 ```js
 // an own requestAnimationFrame loop, in the kit's rules (2 lines)
 function loop(now) { raf = requestAnimationFrame(loop); const g = O && O.frameGap ? O.frameGap() : 0;
   if ((O ? O.hidden() : document.hidden) || (g && now - last < g - 3)) return; last = now; draw(now); }
 ```
+
+## Data City v3: the phone-safe preset (2026-11-04, job 2 follow-up)
+
+Data City v3 (traffic, monorail, river, ships, neon signs, fireworks, the kit's effects) measured 100-110 calls / 350-480k triangles at the high tier:
+too much for an iPhone. `tools/web_public/datacity/caps.js` is now **the one table** of the city's density caps, three profiles chosen by
+`profileOf(level, phone, saver)`: `lite` (OLYMPUS low / off, unchanged), `phone` (a phone, i.e. a viewport of 520 px or less, a coarse pointer or iOS, at
+**high**; or the kit's battery saver at high) and `full` (ultra, or a PC at high). `?phone=1` / `?phone=0` force the hint (tests), `?q=` forces the tier.
+The render core's pixel ratio cap is 1.5 on a phone (1.75 otherwise).
+
+| Cap | full (PC) | phone-high | lite |
+|---|---|---|---|
+| cars / flying taxis | 520 / 90 | 160 / 28 | 160 / 28 |
+| airships | 3 | 0 | 3 |
+| monorail trains x cars | 3 x 6 | 2 x 4 | 1 x 6 |
+| sailing ships / cranes | 9 / 8 | 5 / 4 | 4 / 8 |
+| neon boards | 2 per district | 1 per district | 2 |
+| tiles in full / near-tower tiles / reflected tiles | 22 / 70 units / 4 | 7 / none / 1 | 12 / none / 0 |
+| scenery towers | 2,600 | 800 | 900 |
+| fireworks shells x sparks | 8 x all | 3 x half | 8 x all |
+| lens flare, aurora, fireflies | on | off | on |
+| temple + Pharos detail | always | hidden beyond 330 units | always |
+| rain drops / data pulses / street trades | 7,000 / 34 / 1,600 | 3,000 / 12 / 600 | 1,800 / 11 / 420 |
+| pixel ratio cap | 1.75 | 1.5 | 1.5 |
+
+Measured (390 x 844, dpr 3, SwiftShader, `?q=` forced; `python -X utf8 -m tests.test_olympus_kit tiers`, `tests.test_datacity --only v3`):
+
+| | calls | triangles | JS heap |
+|---|---|---|---|
+| before the preset, high (v3 as first landed) | 106-108 overview, 100-110 close-up | 352k / 477k | 58 MB (42.7 MB on v2) |
+| **phone-high**, far overview | 84 first, **59** after the landmark merge | 167k / 165k | 25 MB |
+| **phone-high**, close-up of the densest district | 62 | 202k | 25 MB |
+| ultra, worst of overview / close-up | 113 | 509k | 25 MB |
+
+Budgets (`DATACITY_TIERS` in `tests/test_olympus_kit.py`, `PHONE_BUDGET` in `tests/test_datacity.py`): phone-high worst 80 calls / 250k triangles, **far overview <= 60 calls**,
+heap <= 40 MB; ultra worst 110 calls / 700k, far overview 100.
+
+Follow-up (same day): the landmark meshes are statically merged (`landmarks.js` `_mergeStatic`: 52 meshes baked into 15, per material and per container so the temple and
+the Pharos can still be hidden; the oracle, turning rings, sweeping beams, bobbing lamps, the per-instance gate bars and the tap proxies are left alone; `?nomerge=1` shows the
+unmerged version for an A/B look, the pictures were identical), the monorail pylons and platforms are one mesh, the crane lights are vertex colours, and on a phone the small
+details nobody can see from the overview (heralds, billboards, rail pylons, sign poles, cranes, the old light-point traffic) are not drawn above a camera height of 150.
+Phone-high far overview with all motion on: **78 -> 59 calls** (triangles unchanged, 165k); worst of load view and close-up 71 calls / 222k; ultra 93 calls / 504k.
+
+Heap: the compact skyline rows (about 30,000 small arrays) are dropped as soon as they are decoded (`data.js`), which took 58 MB to 25 MB (the neon-sign
+atlas is 640 x 100 px per row). The city loop honours `OLYMPUS.frameGap()` (the kit's idle cap and battery saver) and `OLYMPUS.hidden()`; the `city` ambient bed
+comes from the kit's table (`AMBIENT.datacity`) and starts after the first touch (checked in `test_datacity` section k). `?demo=1` reads only `fixture.json`
+(nothing off-origin, no `city.json`).
 
 ## Jarvis settings
 

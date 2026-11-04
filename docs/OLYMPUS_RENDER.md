@@ -160,3 +160,7 @@ Used by Fates (shafts, dust, spindle sparks, contact shadows, bronze plinth), La
 embers, bust embers, contact shadows, the danger heat strip) and Hephaestus (polished floor, bevelled forged anvil / ingot / hammer, bronze hoops,
 shafts, dust, furnace embers, contact shadows). Draw budget: +6 to +9 calls per scene (Fates stays under 64). Offline: the Jarvis worker and each
 app's worker need `../olympus/fx-atmos.js` in their asset list (without it the scene import fails and the page shows its numbers only).
+
+Additive light and transparent canvases (2026-11-04): `fx-atmos.js` draws its additive layers with a custom blend (`SRC_ALPHA, ONE` for colour, `ZERO, ONE`
+for alpha), so a scene on a transparent canvas (Plutus, Ares, which set `alpha: true`) shows light and not dark halos where the particles' alpha builds up.
+Opaque canvases look the same as before.
