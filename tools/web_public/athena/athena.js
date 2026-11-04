@@ -4,17 +4,19 @@ import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
 import { marble, metal, neon, starfield } from '../olympus/materials.js';
 import * as CORE from './athenacore.js';
-import { loadLibrary, indexOf, search, counts, linkify, esc, makeQuiz } from './athenacore.js';
+import { loadLibrary, loadJson, indexOf, search, counts, linkify, esc, makeQuiz } from './athenacore.js';
 import * as BRAIN from './athenabrain.js';
 import { createPlus } from './athenaplus.js';
+import * as TRAIN from './athenatraincore.js';
+import { createTrain } from './athenatrain.js';
 
 const O = window.OLYMPUS || null;
 const Q = new URLSearchParams(location.search);
 const RM = O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
 const $ = (id) => document.getElementById(id);
-const S = { lib: null, ix: null, byId: {}, tag: null, q: '', view: 'lib', entry: null, back: 'lib', quiz: null, errors: [], hall: null, plus: null };
-const PANES = ['lib', 'entry', 'quiz', 'ask', 'today', 'cards', 'rules', 'saved'];
-const TABS = ['lib', 'ask', 'today', 'cards', 'rules', 'saved', 'quiz'];            // the Saved page opens from the star at the top right
+const S = { lib: null, ix: null, byId: {}, tag: null, q: '', view: 'lib', entry: null, back: 'lib', quiz: null, errors: [], hall: null, plus: null, train: null };
+const PANES = ['lib', 'entry', 'quiz', 'ask', 'today', 'cards', 'rules', 'saved', 'train'];
+const TABS = ['lib', 'ask', 'today', 'cards', 'rules', 'saved', 'train', 'quiz'];            // the Saved page opens from the star at the top right
 
 const tagOf = (id) => S.lib.tags.find((t) => t.id === id);
 const colorOf = (e) => (tagOf(e.kind) || S.lib.tags[0]).color;
@@ -71,9 +73,9 @@ function renderQuiz() {
 function show(view, hash = true) {
   S.view = view;
   for (const p of PANES) $('p-' + p).hidden = view !== p;
-  document.querySelectorAll('#tabs button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tab === (view === 'entry' ? S.back : view))));
+  document.querySelectorAll('#tabs button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tab === (view === 'entry' ? (S.back === 'quiz' ? 'train' : S.back) : view === 'quiz' ? 'train' : view))));
   $('sheet').scrollTop = 0;
-  if (view === 'quiz') renderQuiz(); else if (view === 'entry') { S.plus.visit(S.entry); renderEntry(); badges(); } else if (view === 'lib') { renderChips(); renderList(); } else S.plus.render(view);
+  if (view === 'quiz') renderQuiz(); else if (view === 'train') S.train.render(); else if (view === 'entry') { S.plus.visit(S.entry); renderEntry(); badges(); } else if (view === 'lib') { renderChips(); renderList(); } else S.plus.render(view);
   const sb = document.querySelector('.search'); if (sb) sb.style.display = view === 'lib' ? '' : 'none';          // the library's search only makes sense on the library
   if (hash && history.replaceState) history.replaceState(null, '', view === 'lib' ? (S.tag ? '#t/' + S.tag : '#library') : view === 'entry' ? '#e/' + S.entry : '#' + view);
 }
@@ -83,6 +85,7 @@ function route() {
   const h = decodeURIComponent(location.hash.slice(1));
   if (h === 'quiz') { if (!S.quiz) startQuiz(); show('quiz', false); }
   else if (['ask', 'today', 'cards', 'rules', 'saved'].includes(h)) show(h, false);
+  else if (h === 'train') { S.train.go('home'); show('train', false); }
   else if (h.startsWith('e/') && S.byId[h.slice(2)]) { S.entry = h.slice(2); S.back = 'lib'; show('entry', false); }
   else { S.tag = h.startsWith('t/') && tagOf(h.slice(2)) ? h.slice(2) : null; S.hall?.focusTag(S.tag); show('lib', false); }
 }
@@ -116,6 +119,7 @@ function badges() {
   $('bd-saved').textContent = String(c.marks); $('bd-saved').hidden = !c.marks;
   const read = S.plus.state.days.includes(BRAIN.dayKey());
   t.textContent = '1'; t.hidden = read;
+  if (S.train) { const n = S.train.counts().left, b = $('bd-train'); b.textContent = String(n); b.hidden = !n; }
 }
 
 // ------------------------------------------------------------------------------------------------ the 3D library
@@ -305,10 +309,12 @@ async function main() {
   $('demo').hidden = S.lib.src === 'file';
   $('sub').textContent = `${S.lib.entries.length} entries in plain words. Works offline.`;
   S.plus = createPlus({ lib: S.lib, ix: S.ix, byId: S.byId, colorOf, tagOf, toast, sfx, badges });
+  const dr = await loadJson('drills.json?v=a1');
+  S.train = createTrain({ root: $('train'), lib: S.lib, byId: S.byId, colorOf, tagOf, toast, sfx, badges: () => badges(), quick: () => { startQuiz(); show('quiz'); }, drills: TRAIN.validDrills(dr) ? dr : TRAIN.sampleDrills() });
   bind(); badges(); route();
   try { S.hall = new Hall($('stage')); S.hall.focusTag(S.tag); loop(performance.now()); } catch (e) { S.hall = null; $('nogl').hidden = false; S.errors.push('3d: ' + e); O?.ready(); }
   O?.mode?.(!!(S.hall && S.hall.lite));
-  window.__athena = { ready: true, CORE, BRAIN, get plus() { return S.plus; }, get fx() { return S.hall ? S.hall.fxNames : []; }, get lib() { return S.lib; }, get state() { return { tag: S.tag, q: S.q, view: S.view, entry: S.entry, quiz: S.quiz }; }, get ready3d() { return !!S.hall; },
+  window.__athena = { ready: true, CORE, BRAIN, TRAIN, get plus() { return S.plus; }, get train() { return S.train; }, get fx() { return S.hall ? S.hall.fxNames : []; }, get lib() { return S.lib; }, get state() { return { tag: S.tag, q: S.q, view: S.view, entry: S.entry, quiz: S.quiz }; }, get ready3d() { return !!S.hall; },
     get lite() { return S.hall ? S.hall.lite : null; }, get yaw() { return S.hall ? S.hall.yaw : 0; }, get settled() { return S.hall ? S.hall.settled : true; }, get facing() { return S.hall ? S.hall.facing : null; },
     get passes() { return S.hall ? S.hall.rc.passes() : []; }, get quality() { return S.hall ? S.hall.rc.quality() : null; }, get shelves() { return S.hall ? S.hall.shelves.length : 0; },
     shelfPoint(tag) {                         // screen point of a shelf's middle, for the tests

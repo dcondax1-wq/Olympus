@@ -16,6 +16,11 @@ export async function loadLibrary(url) {
   } catch (_) { return { ...FALLBACK, src: 'embedded' }; }
 }
 
+/** a small JSON file next to the page (drills.json), or null when it is missing or broken */
+export async function loadJson(url) {
+  try { const r = await fetch(url, { cache: 'no-cache' }); return r.ok ? await r.json() : null; } catch (_) { return null; }
+}
+
 // edit distance, stops early above `max`
 export function lev(a, b, max = 2) {
   if (a === b) return 0;
