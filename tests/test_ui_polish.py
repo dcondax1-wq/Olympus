@@ -15,6 +15,11 @@ dashboards (read-only UI).
               reduced motion = no intro and no animation; frame time while scrolling Home; the light theme
   d. PC       Playwright 1440x900 on server.py: the status bar on Home, the sidebar sections, five sections on BLITZ
 
+  "Money now" (2026-11-04, moneynowcore.js on both apps): the top card of Home that answers in 5 seconds: per account "Drawdown left $X of $max loss"
+  (never "X of 10 days"), today's $, the next thing the bot waits for, its status in plain words, a red / amber / green edge, "not published yet"
+  for a missing field; static (a), node (b: the model from the boards, edges, missing fields, garbage), phone (c: top of Home, 44 px taps, a tap opens
+  the bot), PC (d: first thing in the status box on Home)
+
   python -X utf8 -m tests.test_ui_polish [--shots <dir>]
 """
 from __future__ import annotations
@@ -53,6 +58,11 @@ def part_a():
     order = [idx.find(f'src="{n}?v=') for n in ("blitz.js", "statuscore.js", "polish.js")]
     check("a. phone index: statuscore.js then polish.js after blitz.js (last), polish.css in the head", all(i > 0 for i in order) and order == sorted(order)
           and idx.find('polish.css?v=') < idx.find('</head>') and idx.find('polish.css?v=') > 0, order)
+    check("a. moneynowcore.js byte-identical on both apps; the phone loads it and moneynow.js after zenith_money.js; the PC polish.js loads it; read-only (no fetch / POST / innerHTML)",
+          rd("tools", "web_public", "moneynowcore.js") == rd("web_next", "js", "next", "moneynowcore.js")
+          and [idx.find(f'src="{n}?v=') for n in ("zenith_money.js", "moneynowcore.js", "moneynow.js")] == sorted(idx.find(f'src="{n}?v=') for n in ("zenith_money.js", "moneynowcore.js", "moneynow.js"))
+          and idx.find('src="moneynow.js?v=') > 0 and "moneynowcore.js" in rd("web_next", "js", "next", "polish.js")
+          and not re.search(r"fetch\(|POST|innerHTML|/api/|arm_c", rd("tools", "web_public", "moneynowcore.js")) and "fetch(" not in rd("tools", "web_public", "moneynow.js"))
     check("a. caches: phone le-public-v46+, PC le-shell-next-v28+; clean.js?v=3 kept", int(re.search(r"le-public-v(\d+)", psw).group(1)) >= 46
           and int(re.search(r"le-shell-next-v(\d+)", sw).group(1)) >= 28 and 'clean.js?v=3"' in idx and "/css/polish.css" in sw)
     for n in ("statuscore.js", "polish.js"):
@@ -84,7 +94,7 @@ def part_a():
 NODE_JS = r"""
 global.window = {}; global.document = undefined;
 const dir = process.argv[2], fs = require('fs');
-for (const n of ['missioncore.js', 'deckcore.js', 'statuscore.js']) require(dir + '/' + n);
+for (const n of ['missioncore.js', 'deckcore.js', 'statuscore.js', 'moneynowcore.js']) require(dir + '/' + n);
 const F = JSON.parse(fs.readFileSync(process.argv[3], 'utf8')), S = window.StatusUI, out = { bad: 0 };
 const thu = Date.parse('2026-10-30T01:15:00Z') / 1000, tue = Date.parse('2026-10-27T15:00:00Z') / 1000;
 const M2 = { now: F.now, where: 'phone', board: F.b2 }, M3 = { now: F.now, where: 'phone', board: F.b3 };
@@ -99,6 +109,21 @@ out.pcTue = S.items({ now: tue, board: Object.assign({}, F.b2, { data_t: tue - 7
 out.mkt = S.market(M2); out.mktNone = S.market({ board: {} }); out.hasMap = !!(F.b2.map && F.b2.map.price != null);
 for (const g of [null, {}, { board: 5 }, { board: { lit: 'x', health: { items: 3 } } }, { board: { lit: { position: 5, window: 'y', days: 7 } }, news: 'n' }, { board: { map: { price: 'x', nearest_above: 3 } } }, { board: { map: { price: 5, nearest_above: { price: 1 }, nearest_below: { price: 9 } } } }]) {
   try { S.items(g); S.bar(g); S.accounts(g); S.sunday(g || {}); S.empty('trades', g); S.market(g); S.week(g); } catch (e) { out.bad++; out.err = String(e.stack).slice(0, 300); }
+}
+const MN = window.MoneyNow, cp = (o) => JSON.parse(JSON.stringify(o));
+const mk = (mut) => { const b = cp(F.b3); mut(b); return { now: F.now, where: 'phone', board: b }; };
+out.mn2 = MN.model(M2); out.mn3 = MN.model(M3); out.mnNone = MN.model({}); out.mnNoneHtml = MN.html({}, { where: 'phone' });
+out.mnHtml3 = MN.html(M3, { where: 'phone' }); out.mnPc = MN.html(M3, { where: 'pc' });
+out.mnRaw = window.MissionUI.accounts(M3).map((a) => [a.key, a.placeholder, a.room, a.mll, a.today]);
+out.mnRed = MN.model(mk((b) => { b.lit.room = 300; b.lit.room_frac = 0.15; })).rows[0].edge;
+out.mnAmb = MN.model(mk((b) => { b.lit.room = 800; b.lit.room_frac = 0.4; })).rows[0].edge;
+out.mnMiss = MN.model(mk((b) => { delete b.lit.room; delete b.lit.today_pnl; delete b.lit.mll; delete b.lit.room_frac; }));
+out.mnMissHtml = MN.html(mk((b) => { delete b.lit.room; delete b.lit.today_pnl; delete b.lit.mll; delete b.lit.room_frac; }), { where: 'phone' });
+out.mnStop = MN.model(Object.assign(mk(() => {}), { board: Object.assign(cp(F.b3), { running: false }) })).bot;
+out.mnOld = MN.model({ now: F.now, where: 'phone', board: Object.assign(cp(F.b3), { data_t: F.now - 7200 }) }).bot;
+out.mnEvil = MN.html(mk((b) => { b.lit.name = '<img src=x onerror=1>'; b.lit.waiting = '"><script>1</script>'; b.lit.position = null; }), { where: 'phone' });
+for (const g of [null, {}, { board: 5 }, { board: { lit: 'x', health: { items: 3 } } }, { board: { lit: { room: 'x', mll: {}, today_pnl: [], position: 5 } }, now: 'n' }]) {
+  try { MN.model(g); MN.html(g); MN.html(g, { where: 'pc' }); } catch (e) { out.bad++; out.err = String(e.stack).slice(0, 300); }
 }
 process.stdout.write(JSON.stringify(out) + '\n');
 """
@@ -144,6 +169,32 @@ def part_b(tmp):
     check("b. NQ now: the price between the nearest levels above / below (a ladder), nothing without a price", o["mktNone"] == ""
           and (not o["hasMap"] or ("su-mkt" in o["mkt"] and "NQ" in o["mkt"])), o["mkt"][:300])
     check("b. garbage in: no exception", o["bad"] == 0, o.get("err"))
+    # --- Money now: dynamic counts (the rows follow the accounts the board really has)
+    n_real = sum(1 for a in o["mnRaw"] if not a[1])
+    r2, r3 = o["mn2"]["rows"], o["mn3"]["rows"]
+    check(f"b. Money now: one row per real account, Zlarior and ATLAS always, BLITZ only when it has its own account ({len(r2)} rows on 2 accounts, {len(r3)} on {n_real})",
+          [r["key"] for r in r2] == ["lit", "atlas"] and [r["key"] for r in r3] == ["lit", "atlas", "blitz"][:max(2, n_real)] and len(r3) == max(2, n_real), (o["mn2"]["rows"][0]["key"], o["mnRaw"]))
+    h3 = o["mnHtml3"]
+    txt = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", h3))
+    ok = True
+    for r, raw in zip(r3, o["mnRaw"]):
+        room, mll, today = raw[2], raw[3], raw[4]
+        ok &= (f"${round(room):,}" in txt and f"of ${round(mll):,} max loss" in txt and r["room"] == room and r["mll"] == mll and r["today"] == today)
+    check("b. Money now: 'Drawdown left $X of $max loss' with the board's own room and max loss for every account, today's $ next to it, never 'of 10 days'",
+          ok and h3.count("Drawdown left") == len(r3) and h3.count("max loss") == len(r3) and "10 days" not in txt and "session" not in txt.lower() and h3.count('class="mn-r"') == len(r3), txt[:400])
+    check("b. Money now: each row says what the bot waits for (an open trade: its target / stop) and its status in plain words (In a trade / Running / Armed ...)",
+          all(r["next"] and r["status"]["text"] for r in r3) and "target" in r3[0]["next"] and r3[0]["status"]["text"].startswith("In a trade") and h3.count('class="mn-nx"') == len(r3), [r["next"] for r in r3])
+    check("b. Money now: edge colours: a healthy board is green, 15% of the drawdown left is red, 40% is amber", o["mn3"]["edge"] == "good" and o["mnRed"] == "bad" and o["mnAmb"] == "warn", (o["mn3"]["edge"], o["mnRed"], o["mnAmb"]))
+    check("b. Money now: the PC bot in plain words: running, stopped (red), quiet for 2 hours (amber / red) - from the same check-in the status bar reads",
+          o["mn3"]["bot"]["text"].startswith("Bot running") and o["mnStop"]["text"] == "Bot stopped" and o["mnStop"]["edge"] == "bad" and o["mnOld"]["text"].startswith("Bot quiet") and o["mnOld"]["edge"] in ("warn", "bad"), (o["mnStop"], o["mnOld"]))
+    miss = o["mnMissHtml"]
+    check("b. Money now: a field the board does not carry says 'not published yet' (never a blank): room, max loss, today", o["mnMiss"]["rows"][0]["room"] is None and o["mnMiss"]["rows"][0]["edge"] in ("warn", "bad")
+          and miss.count("not published yet") >= 2 and ">$<" not in miss and "undefined" not in miss and "NaN" not in miss and "null" not in miss, re.sub(r"<[^>]+>", " ", miss)[:300])
+    nh = o["mnNoneHtml"]
+    check("b. Money now: no board at all (nothing published yet): the card is still there, Zlarior and ATLAS rows, every field 'not published yet', amber",
+          len(o["mnNone"]["rows"]) == 2 and nh.count("mn-row") == 2 and nh.count("not published yet") >= 6 and "mn-card a" in nh and o["mnNone"]["edge"] == "warn", nh[:200])
+    check("b. Money now: the PC variant links with data-goto (zlarior / atlas / blitz), the phone with data-go (lit / atlas / blitz); text from the board never becomes markup",
+          'data-goto="zlarior"' in o["mnPc"] and 'data-go="lit"' in h3 and "<img" not in o["mnEvil"] and "<script" not in o["mnEvil"] and "&lt;img" in o["mnEvil"])
 
 
 # ------------------------------------------------------------------------------------------------ c. phone
@@ -196,8 +247,24 @@ def part_c(F, tmp, shots):
         H = pg.evaluate("() => { const h = document.querySelector('#page > .pl-home'); return { kids: [...h.children].map(c => c.className.split(' ')[0]), accts: [...h.querySelectorAll('.su-acct')].map(a => a.dataset.bot), height: document.documentElement.scrollHeight }; }")
         check("c. Home: the greeting, status bar, the three account cards (Zlarior · ATLAS · BLITZ), what matters now, quick tiles", H["kids"][:4] == ["pl-hi", "su-bar", "su-accts", "pl-now"] and "pl-quick" in H["kids"]
               and H["accts"] == ["lit", "atlas", "blitz"], H)
+        MNP = pg.evaluate("""() => { const c = document.querySelector('.pl-home > .pl-hi > #mnCard'); if (!c) return null; const rows = [...c.querySelectorAll('.mn-row')];
+          return { n: rows.length, top: Math.round(c.getBoundingClientRect().top), after: [...c.parentNode.children].indexOf(c), kids: [...c.parentNode.children].slice(0, 4).map(e => e.id || e.className.split(' ')[0]),
+            taps: rows.map(r => Math.round(r.getBoundingClientRect().height)), w: rows.map(r => Math.round(r.getBoundingClientRect().width)), keys: rows.map(r => r.dataset.mn), txt: c.innerText.replace(/\\s+/g, ' '),
+            edge: c.className, x: document.documentElement.scrollWidth - innerWidth }; }""")
+        exp = pg.evaluate("() => Math.max(2, window.MissionUI.accounts(window.POLISH.model()).filter((a) => a && !a.placeholder).length)")      # the accounts the board really has
+        check(f"c. Money now: the top card of Home, inside the greeting box right after the date line ({MNP and MNP['n']} rows), the Home order kept, no sideways scroll",
+              MNP and MNP["after"] == 2 and MNP["kids"][2] == "mnCard" and MNP["n"] >= 2 and MNP["x"] <= 1 and H["kids"][:4] == ["pl-hi", "su-bar", "su-accts", "pl-now"], MNP)
+        check("c. Money now: one row per account the board has (Zlarior, ATLAS, BLITZ when it exists), every row is a 44 px tap, 'Drawdown left $... of $... max loss' and a status word, no 'X of 10 days'",
+              MNP and MNP["keys"][:2] == ["lit", "atlas"] and MNP["n"] == exp and all(h >= 44 for h in MNP["taps"]) and all(w >= 300 for w in MNP["w"])
+              and MNP["txt"].count("Drawdown left") == MNP["n"] and MNP["txt"].count("max loss") >= MNP["n"] and "10 days" not in MNP["txt"] and "next" in MNP["txt"].lower() and "Bot " in MNP["txt"] and "NaN" not in MNP["txt"], MNP)
+        pg.click("#mnCard .mn-row[data-mn='atlas']")
+        pg.wait_for_timeout(700)
+        check("c. Money now: tapping a row opens that bot (ATLAS)", pg.evaluate("() => location.hash") == "#/atlas", pg.evaluate("() => location.hash"))
+        pg.evaluate("() => { location.hash = '#/today'; }")
+        pg.wait_for_selector(".pl-home > .pl-hi > #mnCard", timeout=20000)
+        sh(pg, "money_now_phone.png")
         PERF["home_height_px"] = H["height"]
-        check("c. Home is short and calm (under 2,600 px at 390 wide with everything else folded)", H["height"] < 2600, H["height"])
+        check("c. Home is short and calm (under 3,000 px at 390 wide with everything else folded; the Money now card is about 330 px of it)", H["height"] < 3000, H["height"])
         wk = pg.evaluate("() => { const w = document.querySelector('.pl-home .su-week'); return w ? [...w.querySelectorAll('li > b')].map(b => b.textContent) : null; }")
         prog = (F["board"].get("progress") or {})
         check("c. Home: this week's real trades vs each bot's goal (Mon-Fri dots), when the board has its progress", (wk is None and not prog) or (wk and "Zlarior" in wk), (wk, list(prog)))
@@ -412,6 +479,13 @@ def part_d(F, shots):
                 break
             except Exception:
                 pass
+        pg.wait_for_selector("#nxStatusHome #mnCard", timeout=30000)
+        MND = pg.evaluate("""() => { const c = document.querySelector('#nxStatusHome > #mnCard'); if (!c) return null; const rows = [...c.querySelectorAll('.mn-row')];
+          return { n: rows.length, first: document.querySelector('#nxStatusHome').firstElementChild.id, keys: rows.map(r => r.dataset.mn), goto: rows.map(r => r.getAttribute('data-goto')), taps: rows.map(r => Math.round(r.getBoundingClientRect().height)),
+            txt: c.innerText.replace(/\\s+/g, ' '), x: document.documentElement.scrollWidth - innerWidth, bar: !!document.querySelector('#nxStatusHome .su-bar') }; }""")
+        check(f"d. PC Home: the Money now card is the first thing in the status box ({MND and MND['n']} rows), the status bar right below it, 'Drawdown left $.. of $.. max loss' per account, rows link to the bots",
+              MND and MND["first"] == "mnCard" and MND["bar"] and MND["keys"][:2] == ["lit", "atlas"] and MND["goto"][:2] == ["zlarior", "atlas"] and all(h >= 44 for h in MND["taps"])
+              and MND["txt"].count("Drawdown left") == MND["n"] and "max loss" in MND["txt"] and "10 days" not in MND["txt"] and "next" in MND["txt"].lower() and MND["x"] <= 1, MND)
         check("d. PC Home: the status bar on top", ok and pg.evaluate("() => document.querySelector('#page-cc').firstElementChild.id") == "nxStatusHome")
         subs = pg.eval_on_selector_all("#nav .nx-main-sub", "els => els.map(e => e.textContent.trim())")
         side = pg.eval_on_selector_all("#nav > a.nx-gl[data-g='Main']", "els => els.map(e => e.dataset.page)")

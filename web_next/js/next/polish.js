@@ -25,6 +25,19 @@ function loadStatusCore() {
   });
   return SP;
 }
+// "Money now" (moneynowcore.js = tools/web_public/moneynowcore.js, byte-identical): drawdown left, today's $, what the bot waits for, its status
+let MP = null;
+function loadMoneyCore() {
+  if (window.MoneyNow) return Promise.resolve();
+  if (MP) return MP;
+  MP = new Promise((ok) => {
+    const s = document.createElement('script');
+    s.src = new URL(`./moneynowcore.js?v=${V}`, import.meta.url).href;
+    s.onload = () => ok(); s.onerror = () => { MP = null; ok(); };       // a missing file only leaves the card out
+    document.head.appendChild(s);
+  });
+  return MP;
+}
 (function css() {
   if (!document.querySelector('link[href^="/css/polish.css"]')) { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = `/css/polish.css?v=${V}`; document.head.appendChild(l); }
 })();
@@ -51,7 +64,9 @@ function place() {
   else if (el.firstElementChild !== box) el.prepend(box);
   const more = `<a class="pl-btn" ${go('mission')}>Mission Control</a><a class="pl-btn" ${go('board')}>Live board</a><a class="pl-btn" ${go('start')}>Start page</a>`;
   const row = (SU.market ? SU.market(LAST) : '') + (SU.week ? SU.week(LAST) : '') + SU.sunday(LAST, { where: 'pc' });
-  const html = SU.bar(LAST, { open: SU.isOpen(), more, where: 'pc', go }) + (row ? `<div class="nx-st-row">${row}</div>` : '');
+  let mn = '';
+  try { if (window.MoneyNow) { window.MoneyNow.css(); mn = window.MoneyNow.html(LAST, { where: 'pc' }); } } catch (e) { mn = ''; }   // the top card: money now, per account
+  const html = mn + SU.bar(LAST, { open: SU.isOpen(), more, where: 'pc', go }) + (row ? `<div class="nx-st-row">${row}</div>` : '');
   if (box.__h !== html) { box.innerHTML = html; box.__h = html; SU.tick(box); box.querySelectorAll('a[data-goto]:not([href])').forEach((a) => { a.tabIndex = 0; a.setAttribute('role', 'link'); }); }
   SU.wire(box);
 }
@@ -71,7 +86,7 @@ function navDots() {
   }
 }
 async function refresh() {
-  try { await Promise.all([loadStatusCore(), loadMissionCore()]); } catch (e) { return; }
+  try { await Promise.all([loadStatusCore(), loadMissionCore(), loadMoneyCore()]); } catch (e) { return; }
   LAST = await model();
   window.StatusUI.css();
   if (active('cc')) place();

@@ -1820,6 +1820,14 @@ no row in `apps.js` / `olympus.js` / the build tuple (steps in `docs/KALSHICITY.
   fine-grained token on this phone only; writes are append-only / new-file after a spoken "yes"), `tools.js`. Voice: `tts.js` (best natural female
   voice), `voice-out.js` (answers read aloud, switch `jarvis.speak`, default on, the iPhone first-tap unlock), `voice-mode.js` (full-screen conversation,
   the core reacts to the voice; type-to-talk where speech recognition is missing), `test_jarvis_voice`, `test_jarvis_talk`.
+- **Money now** (2026-11-04, `tools/web_public/moneynowcore.js` = `web_next/js/next/moneynowcore.js`, byte-identical; phone mount `moneynow.js`, PC mount in
+  `web_next/js/next/polish.js` `place()`): the top card of Zenith Home (inside the greeting box, ahead of the Today hero) and of the PC Home (first thing in
+  `#nxStatusHome`). Per account (Zlarior 50K, ATLAS 25K, BLITZ 25K only when it has its own account): **Drawdown left $X of $max loss** (never "X of 10 days"),
+  today's $, the next thing the bot waits for (open trade: its target / stop; else the board's own line), its status in plain words, and a red / amber / green edge
+  (red: a block, a failed eval or under 25% of the drawdown left; amber: under 50%, a missing field or a quiet PC); the bot's check-in line comes from
+  `StatusUI.items` (the same one the status bar reads). Only published fields (`MissionUI.accounts`): a missing one says "not published yet", never a blank; with no
+  board at all the card is still there. Read-only. Tests: `test_ui_polish` (a static, b node: rows / edges / missing fields / garbage, c phone, d PC) and
+  `test_zenith_shell` (Home order).
 - **Obsidian starter pack** (`tools/obsidian_pack.py`, `test_obsidian_pack`): builds a ready-to-drop Obsidian vault (~225 markdown notes, ~1,100 `[[links]]`,
   frontmatter tags on every note) from files that already exist: `athena/library.json` (strategy steps, glossary one note per term, MFFU rules, playbooks,
   what we learned, rejected ideas, Kalshi, app guides), `research/lit/mffu_rules.json`, `plutus/plans.json`, `research/writeups/*.md`, and Jarvis's own
