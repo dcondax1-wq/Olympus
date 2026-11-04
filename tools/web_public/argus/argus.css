@@ -87,3 +87,31 @@ code { display: block; padding: 8px 10px; border-radius: 8px; background: rgba(0
 .tabs button { font-size: 12px; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* ---- 2026-11-04 (JOB 10+11): uptime streak, incident history, status card, the per-system drawer */
+.xcard { margin-top: 12px; padding: 12px; border-radius: 14px; border: 1px solid var(--line); background: rgba(255, 255, 255, .03); }
+.xh { margin: 0 0 8px; font: 700 11.5px/1.2 var(--oly-display, sans-serif); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+.xrow { display: flex; align-items: baseline; gap: 8px; }
+.xbig { font: 800 34px/1 var(--oly-display, sans-serif); color: var(--ok); text-shadow: 0 0 16px rgba(70, 215, 154, .45); }
+.xstats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-bottom: 8px; }
+.xstat { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px; border-radius: 10px; border: 1px solid var(--line); text-align: center; }
+.xstat b { font: 700 13px/1.1 var(--oly-display, sans-serif); } .xstat span { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
+.xday { margin-top: 8px; } .xday > b { font: 700 11px var(--oly-display, sans-serif); color: var(--dim); letter-spacing: .1em; }
+.xinc { display: flex; justify-content: space-between; gap: 8px; padding: 5px 0; font-size: 12.5px; border-top: 1px solid rgba(255, 255, 255, .06); }
+.xinc .xd { color: var(--dim); text-align: right; } .xinc.now .xd { color: var(--bad); font-weight: 700; }
+.xbtns { display: flex; flex-wrap: wrap; gap: 8px; }
+.xbtn { min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(58, 215, 255, .7); background: rgba(58, 215, 255, .14); color: var(--text); font: 700 13px var(--oly-ui, sans-serif); }
+.xbtn.ghost { background: transparent; }
+.detbtn { margin-left: 6px; min-height: 28px; padding: 0 10px; border-radius: 999px; border: 1px solid rgba(58, 215, 255, .7); background: rgba(58, 215, 255, .14); color: var(--text); font: 700 11px var(--oly-ui, sans-serif); pointer-events: auto; }
+.drawer { position: fixed; z-index: 30; left: calc(10px + var(--sl)); right: calc(10px + var(--sr)); top: var(--sheet-top); bottom: calc(166px + var(--sb)); overflow-y: auto; padding: 14px; border-radius: 16px;
+  border: 1px solid rgba(58, 215, 255, .55); background: rgba(5, 9, 18, .97); box-shadow: 0 0 30px rgba(58, 215, 255, .18); }
+.drawer[hidden] { display: none; }
+.drawer .oly-close { position: absolute; top: 6px; right: 6px; }
+.dhead { display: flex; align-items: center; gap: 8px; padding-right: 48px; } .dhead b { font: 700 15px var(--oly-ui, sans-serif); flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.dhead .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--idle); } .dhead.ok .dot { background: var(--ok); box-shadow: 0 0 10px var(--ok); } .dhead.warn .dot { background: var(--warn); box-shadow: 0 0 10px var(--warn); } .dhead.bad .dot { background: var(--bad); box-shadow: 0 0 10px var(--bad); }
+.dhead .dv { font: 700 12px var(--oly-display, sans-serif); color: var(--dim); }
+.dsub { margin: 2px 0 6px; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); } .dd { margin: 0 0 8px; font-size: 13px; overflow-wrap: anywhere; }
+.dfix { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 10px; background: rgba(245, 184, 74, .1); border: 1px solid rgba(245, 184, 74, .4); margin-bottom: 8px; font-size: 13px; }
+.drawer code { display: block; margin: 6px 0; padding: 8px; border-radius: 8px; background: rgba(0, 0, 0, .4); font: 12px/1.4 ui-monospace, monospace; overflow-wrap: anywhere; }
+.dnear { display: flex; flex-wrap: wrap; gap: 6px; } .dnear .nb { min-height: 36px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--text); font-size: 12px; }
+.dnear .nb.ok { border-color: rgba(70, 215, 154, .6); } .dnear .nb.warn { border-color: rgba(245, 184, 74, .7); } .dnear .nb.bad { border-color: rgba(255, 77, 94, .8); }
