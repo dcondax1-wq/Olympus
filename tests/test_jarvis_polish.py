@@ -35,8 +35,13 @@ class Quiet(http.server.SimpleHTTPRequestHandler):
         pass
 
 
+class Srv(http.server.ThreadingHTTPServer):
+    def handle_error(self, request, client_address):      # a page that closed a connection mid-answer: not worth a traceback
+        pass
+
+
 def serve():
-    srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(Quiet, directory=WEB))
+    srv = Srv(("127.0.0.1", 0), functools.partial(Quiet, directory=WEB))
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     return srv, f"http://127.0.0.1:{srv.server_address[1]}"
 
@@ -95,8 +100,7 @@ def main() -> int:
             p.fill("#ogFind", "kal")
             p.wait_for_timeout(300)
             ids = p.evaluate("[...document.querySelectorAll('#olyApps .og-t[data-app]')].map((t) => t.dataset.app)")
-            check("b. typing 'kal' keeps Kalshi and Kalshi City (and the group heading of what matches), the rest is gone", set(ids) >= {"kalshi", "kalshicity"} and len(ids) <= 4
-                  and all(re.search(r"kal", i) or True for i in ids) and p.evaluate("document.querySelectorAll('#olyApps .og-g').length") >= 1, ids)
+            check("b. typing 'kal' keeps Kalshi, Kalshi City and the apps that mention it (and the group heading of what matches), the rest is gone", set(ids) >= {"kalshi", "kalshicity"} and "oracle" not in ids and len(ids) <= 6 and p.evaluate("document.querySelectorAll('#olyApps .og-g').length") >= 1, ids)
             p.fill("#ogFind", "needs a look")
             p.wait_for_timeout(300)
             ids2 = p.evaluate("[...document.querySelectorAll('#olyApps .og-t[data-app]')].map((t) => t.dataset.app)")
