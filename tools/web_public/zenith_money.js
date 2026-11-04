@@ -97,7 +97,9 @@
     const chips = GOALS.map((g) => `<button type="button" role="radio" aria-checked="${g === ST.goal}" class="${g === ST.goal ? 'on' : ''}" data-zm-goal="${g}">$${(+g / 1000)}K</button>`).join('');
     const row = (n) => {
       const gross = n * rate, net = steady != null ? n * steady : null;
-      const meas = n === 3 && trio ? ` · the study measured ${usd(trio.net_per_month)} (first 6 months)` : '';
+      const sa3 = ST.plans && ST.plans.strategy && ST.plans.strategy.three_accounts;
+      const meas = n === 3 && sa3 && sa3.range ? ` · your 3 strategies (LIT + ATLAS + BLITZ) measured $${sa3.range.low.toLocaleString('en-US')}-${sa3.range.high.toLocaleString('en-US')} (first 6 months)`
+        : n === 3 && trio ? ` · the study measured ${usd(trio.net_per_month)} (first 6 months)` : '';
       return `<div class="zm-r ${gross >= X ? 'hit' : ''}"><span class="zm-n">${n} accounts</span><span class="zm-g"><b data-zn-num="zm-g${n}">${usd(gross)}</b><small>the bot's trading</small></span>
         <span class="zm-g"><b>${net != null ? usd(net) : '—'}</b><small>after payout rules${esc(meas)}</small></span></div>`;
     };
@@ -105,7 +107,7 @@
       <div class="zm-tiles two"><div class="zm-t"><em>The bot, one 50K account</em><b class="up" data-zn-num="zm-rate">${usd(rate)}</b><small>a month, Jul-Oct check half, costs in</small></div>
         <div class="zm-t"><em>Accounts for $${(X / 1000)}K</em><b>${need}</b><small>at that trading rate</small></div></div>
       <div class="zm-rows">${row(2)}${row(3)}${row(6)}</div>
-      <p class="zm-p small">Trading = accounts × ${usd(rate)}. After payout rules = accounts × ${steady != null ? usd(steady) : '—'} (the funded study's steady rate for the Builder 50K: the 80% split, caps, the buffer and eval fees are in it). They all take the same trades, so they rise and fall together${ST.plans && ST.plans.corr ? ' (correlation ' + ST.plans.corr + ')' : ''}. MFFU allows one Builder 50K per person, so more accounts means other firms. Backtest rates, not promises.</p></section>`;
+      <p class="zm-p small">Trading = accounts × ${usd(rate)}. After payout rules = accounts × ${steady != null ? usd(steady) : '—'} (the funded study's steady rate for the Builder 50K: the 80% split, caps, the buffer and eval fees are in it). Copies of one strategy take the same trades, so they rise and fall together${ST.plans && ST.plans.corr ? ' (correlation ' + ST.plans.corr + ')' : ''}; LIT, ATLAS and BLITZ barely move together (+0.14, -0.06, 0.00). MFFU allows 1 funded Builder 50K + 2 funded Builder 25K, so 3 accounts is the cap and more must be another firm. Backtest rates, not promises.</p></section>`;
   }
 
   function cards() { return moneyNow() + payouts() + path(); }

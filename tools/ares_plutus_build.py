@@ -86,6 +86,96 @@ def ares_rules() -> dict:
     }
 
 
+SECOND = os.path.join(ROOT, "research", "second")
+SCALP = os.path.join(ROOT, "research", "scalp")
+KEY = {"H1": "H1", "H2": "H2", "2021-25": "REF"}
+
+
+def _live_mffu(by_id):
+    """The MFFU rows rebuilt from the live LIT settings (2026-10-25 uprisk: eval room 0.8, no weekly eval stop; funded 60% of the room,
+    <= $1,500, a winner <= $2,000) instead of funded_firms.json (built 2026-10-19, older sizing). Only the MFFU rows: Lucid and
+    FundedNext stay the 10-19 study."""
+    ev = _load(os.path.join(LIT, "uprisk_eval.json"))["eval"]["rf80_nowk"]
+    life50 = _load(os.path.join(LIT, "uprisk_life.json"))["life"]["rf80_nowk__cap1500_p60_mw"]
+    wc = _load(os.path.join(LIT, "uprisk_wincap.json"))["wincap"]
+    fund50 = wc["builder50k"]["cap1500_p60_mw2000"]
+    life25 = _load(os.path.join(LIT, "uprisk_life25.json"))["life25"]["rf80_nowk__c25_cap750_p60"]
+    w25 = wc["builder25k"]["cap1500_p60_mw2000"]
+    out = {}
+    for pid, lf_all, fd_all, ev_all in (("mffu_builder_50k", life50, fund50, ev), ("mffu_builder_25k", life25, w25, None)):
+        sp = {}
+        for s_ in SPANS:
+            k = KEY[s_]
+            lf, fd = lf_all[k], fd_all[k]
+            old = by_id[pid]["results"]
+            e = (ev_all or {}).get(k) or (old["eval_mc"].get(s_) or old["eval"].get(s_) or {})
+            sp[s_] = {"net_6m": lf["net_6m"], "net_med_6m": lf["net_p50"], "net_p10_6m": lf["net_p10"], "per_month": lf["net_m"],
+                      "steady": fd["per_month"], "fees_6m": round(lf["cost_m"] * 6), "evals": lf["evals"], "neg_6m": lf["p_neg"],
+                      "first_pay_sessions": lf["first_pay_med"], "first_pay_funded": fd["first_med"],
+                      "any_pay": round(100.0 - lf["p_zero_pay"], 1), "lost": lf["lost"], "funded_per_month": fd["per_month"],
+                      "p10": e.get("p10"), "f10": e.get("f10"), "p60": e.get("p60", e.get("p_ever")), "pass_med": e.get("pass_med")}
+        out[pid] = sp
+    return out
+
+
+def strategy_accounts():
+    """The three strategies you run (LIT 50K, ATLAS 25K, BLITZ 25K): what each makes, how they move together, the MFFU cap and the
+    3-account result with its honest range. Sources: uprisk_*.json (LIT), second/atlas_funded.json (ATLAS), scalp/ab_blitz_final.json (BLITZ),
+    second/sn_plan.json + sn_corr.json (the job-27 model: the same 2026 sessions drive every account)."""
+    ev = _load(os.path.join(LIT, "uprisk_eval.json"))["eval"]["rf80_nowk"]
+    life50 = _load(os.path.join(LIT, "uprisk_life.json"))["life"]["rf80_nowk__cap1500_p60_mw"]
+    fund50 = _load(os.path.join(LIT, "uprisk_wincap.json"))["wincap"]["builder50k"]["cap1500_p60_mw2000"]
+    af = _load(os.path.join(SECOND, "atlas_funded.json"))
+    bz = _load(os.path.join(SCALP, "ab_blitz_final.json"))["pick"]
+    plan = _load(os.path.join(SECOND, "sn_plan.json"))["plans"]
+    corr = _load(os.path.join(SECOND, "sn_corr.json"))["corr"]
+    k3 = "3 accounts: LIT 50K + ATLAS 25K + BLITZ 25K"
+    one = {"LIT": plan["1 account: LIT 50K"], "ATLAS": plan["1 account: ATLAS 25K"], "BLITZ": plan["1 account: BLITZ 25K"]}
+
+    def sp(f):
+        return {s_: f(KEY[s_], s_) for s_ in ("H1", "H2")}
+    accounts = [
+        {"id": "lit_50k", "name": "LIT on the Builder 50K", "price": 91.8, "funded_per_month": sp(lambda k, s_: fund50[k]["per_month"]),
+         "first_pay_from_funded": sp(lambda k, s_: fund50[k]["first_med"]), "first_pay_from_purchase": sp(lambda k, s_: life50[k]["first_pay_med"]),
+         "eval_2w_pass": sp(lambda k, s_: ev[k]["p10"]), "eval_2w_fail": sp(lambda k, s_: ev[k]["f10"]),
+         "net_per_month_from_purchase": sp(lambda k, s_: life50[k]["net_m"]), "model_per_month": sp(lambda k, s_: one["LIT"][s_]["per_month"]),
+         "source": "research/lit/uprisk_wincap.json, uprisk_life.json, uprisk_eval.json (2026-10-25 live settings)"},
+        {"id": "atlas_25k", "name": "ATLAS on a Builder 25K", "price": af["price_now"], "funded_per_month": sp(lambda k, s_: af["configs"]["live"][s_]["per_month"]),
+         "first_pay_from_funded": sp(lambda k, s_: af["configs"]["live"][s_]["first_med"]),
+         "first_pay_from_purchase": sp(lambda k, s_: one["ATLAS"][s_]["first_payout_session_med"]),
+         "eval_2w_pass": sp(lambda k, s_: af["eval"][s_]["p10"]), "eval_2w_fail": sp(lambda k, s_: af["eval"][s_]["f10"]),
+         "net_per_month_from_purchase": sp(lambda k, s_: one["ATLAS"][s_]["per_month"]), "model_per_month": sp(lambda k, s_: one["ATLAS"][s_]["per_month"]),
+         "source": "research/second/atlas_funded.json (funded stage, price now $43), sn_plan.json (from purchase)"},
+        {"id": "blitz_25k", "name": "BLITZ on a Builder 25K", "price": 63.0, "funded_per_month": None,
+         "first_pay_from_funded": None, "first_pay_from_purchase": sp(lambda k, s_: one["BLITZ"][s_]["first_payout_session_med"]),
+         "eval_2w_pass": sp(lambda k, s_: bz[k]["ev"]["p10"]), "eval_2w_fail": sp(lambda k, s_: bz[k]["ev"]["f10"]),
+         "net_per_month_from_purchase": sp(lambda k, s_: bz[k]["slot"]["life_pm"]), "model_per_month": sp(lambda k, s_: one["BLITZ"][s_]["per_month"]),
+         "source": "research/scalp/ab_blitz_final.json (pick = later-break size, slot a month after eval fees), sn_plan.json"}]
+    pairs = [{"a": "LIT", "b": "ATLAS", "rho": corr["2026"]["LIT ($, LIT size) x ATLAS ($500 risk)"]},
+             {"a": "LIT", "b": "BLITZ", "rho": corr["2026"]["LIT ($, LIT size) x BLITZ ($150 risk)"]},
+             {"a": "ATLAS", "b": "BLITZ", "rho": corr["2026"]["ATLAS ($500 risk) x BLITZ ($150 risk)"]},
+             {"a": "copies of one strategy", "b": "the same strategy", "rho": 0.85}]
+    keys3 = ("per_month", "p10_net_6m", "neg_6m_pct", "evals_per_month", "fails_per_month", "first_payout_session_med", "fees_6m", "joint_breach_windows_per_path")
+    three = {s_: {k_: plan[k3][s_][k_] for k_ in keys3} for s_ in ("H1", "H2")}
+    stored_h1 = fund50["H1"]["per_month"] + af["configs"]["live"]["H1"]["per_month"] + bz["H1"]["slot"]["life_pm"]
+    rng_lo = int(round(three["H2"]["per_month"], -2))
+    rng_hi = int(round(stored_h1, -2))
+    kc = ("per_month", "p10_net_6m", "evals_per_month", "fails_per_month", "first_payout_session_med", "fees_6m", "joint_breach_windows_per_path")
+    counts = {k: {s_: {kk: v[s_][kk] for kk in kc} for s_ in ("H1", "H2")} for k, v in plan.items()}
+    return {
+        "accounts": accounts, "corr_pairs": pairs,
+        "mffu_caps": {"funded_50k": 1, "funded_25k": 2, "funded_total": 3, "source": "research/lit/mffu_rules.json",
+                      "text": "MFFU lets one person hold 1 funded Builder 50K and 2 funded Builder 25K: 3 accounts is the cap. Extra accounts must be another firm."},
+        "three_accounts": {**three, "range": {"low": rng_lo, "high": rng_hi, "text": f"${rng_lo:,}-{rng_hi:,} a month after eval fees: the model's Jul-Oct result "
+                                              f"up to the sum of the three single-account figures for Jan-Jun"}},
+        "by_count": counts,
+        "first_payout_note": "From the funded start (the repo's own figure) and from the purchase (adds the eval, about 5-6 sessions, and 2 sessions of paperwork); "
+                             "the model's from-purchase medians are shown for ATLAS and BLITZ.",
+        "model_note": "Model: the same sampled 2026 sessions drive every account (research/second/sn_plan.json), daily steps, 2026 only: LIT is under-modelled "
+                      "(model $718 / $477 against the funded-stage $929 / $915), ATLAS matches, BLITZ is in the research's range.",
+    }
+
+
 def plutus_plans() -> dict:
     ff = _load(os.path.join(LIT, "funded_firms.json"))
     by = {p["id"]: p for p in ff["plans"]}
@@ -94,6 +184,7 @@ def plutus_plans() -> dict:
             ("lucid_pro_50k", 1, "Lucid", "LucidPro 50K", "Bots and copiers allowed. The cap of 1 is this app's assumption."),
             ("fn_rapid_daily_50k", 1, "FundedNext", "Rapid Daily 50K", "Own accounts only. The cap of 1 is this app's assumption."))
     plans = []
+    live = _live_mffu(by)
     for pid, cap, firm, name, note in want:
         p = by[pid]
         r = p["results"]
@@ -105,20 +196,33 @@ def plutus_plans() -> dict:
                      "first_pay_sessions": lf["first_pay_med"], "any_pay": lf["any_pay"], "lost": lf["funded_lost_mean"],
                      "funded_per_month": fd["net_per_month"], "p10": ev.get("p10"), "f10": ev.get("f10"), "p60": ev.get("p60"),
                      "pass_med": ev.get("pass_med")}
+        if pid in live:
+            sp = live[pid]
         plans.append({"id": pid, "firm": firm, "name": name, "cap": cap, "price": p["price"], "list_price": p.get("list_price"),
                       "target": p["target"], "mll": p["mll"], "split": (p.get("funded") or {}).get("split"), "note": note, "spans": sp})
     trio = {}
     for c in ff["combos"]:
         if sorted(c["plans"]) == sorted(["mffu_builder_50k", "lucid_pro_50k", "fn_rapid_daily_50k"]):
-            trio[c["span"]] = {"net_per_month": c["net_per_month"], "months4_6_per_month": c["months4_6_per_month"], "neg_6m": c["neg_6m"]}
+            ids = ("mffu_builder_50k", "lucid_pro_50k", "fn_rapid_daily_50k")
+            rows = {p["id"]: p for p in plans}
+            trio[c["span"]] = {"net_per_month": round(sum(rows[i]["spans"][c["span"]]["net_6m"] for i in ids) / 6.0),
+                               "months4_6_per_month": sum(rows[i]["spans"][c["span"]]["steady"] for i in ids), "neg_6m": c["neg_6m"]}
+    sa = strategy_accounts()
     return {"v": 1, "kind": "olympus-plutus-plans", "built": ff.get("built"),
-            "source": "research/lit/funded_firms.json (" + str(ff.get("writeup")) + "): 1,500 paths x 126 sessions from the purchase: "
-                      "eval -> funded -> payouts; net = payouts - fees; the bot's real LIT trades, costs in",
+            "source": "MFFU rows: research/lit/uprisk_*.json (2026-10-25 live settings, 1,000 paths x 126 sessions from the purchase); Lucid / FundedNext rows: "
+                      "research/lit/funded_firms.json (" + str(ff.get("writeup")) + ", 2026-10-19 sizing, not re-run); strategies: research/second/ + research/scalp/; "
+                      "net = payouts - fees; the bot's real LIT trades, costs in",
             "spans": {"H1": "Jan-Jun 2026", "H2": "Jul-Oct 2026 (the honest check)", "2021-25": "2021-25 (reference only)"},
             "plans": plans, "trio": trio, "sessions_per_month": 21, "corr": 0.85,
-            "notes": ["Every account takes the same trades (MFFU forbids long and short at once across your accounts), so the accounts rise and fall "
-                      "together: the study measured a 0.85 correlation between two of them.",
-                      "The study covers 6 months from the purchase. Later months continue at the months 4-6 rate: an extension, not a measurement."]}
+            "strategy": sa,
+            "notes": ["Copies of one strategy take the same trades (MFFU forbids long and short at once across your accounts), so those accounts rise and fall "
+                      "together: the study measured a 0.85 correlation between two of them. LIT, ATLAS and BLITZ are different strategies: their daily correlation "
+                      "in 2026 is LIT x ATLAS +0.14, LIT x BLITZ -0.06, ATLAS x BLITZ 0.00.",
+                      "The study covers 6 months from the purchase. Later months continue at the months 4-6 rate: an extension, not a measurement.",
+                      "MFFU allows 1 funded Builder 50K and 2 funded Builder 25K per person: 3 accounts is the cap; more accounts must be another firm.",
+                      "First payout is shown from the purchase (the plan rows) and from the funded start (the strategy rows): the funded start is about 5-6 eval sessions "
+                      "and 2 paperwork sessions later than the purchase.",
+                      "Lucid and FundedNext rows are still the 2026-10-19 study (older LIT sizing), not re-run; so is the 3-firm trio's Lucid / FundedNext part."]}
 
 
 def cards(rules, plans) -> dict:

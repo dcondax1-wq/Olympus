@@ -23,12 +23,12 @@ export const EMBEDDED = {
   v: 1, kind: 'olympus-plutus-plans', built: 'embedded', source: 'embedded copy of research/lit/funded_firms.json (2026-10-19), Jul-Oct only',
   spans: { H2: 'Jul-Oct 2026 (the honest check)' }, sessions_per_month: 21, corr: 0.85,
   plans: [
-    mk('mffu_builder_50k', 'MFFU', 'Builder 50K', 1, 91.8, { net_6m: 3370, net_med_6m: 3624, net_p10_6m: -92, per_month: 562, steady: 781, fees_6m: 134, evals: 1.46, neg_6m: 10.8, first_pay_sessions: 47, any_pay: 89.2, lost: 0.02 }),
-    mk('mffu_builder_25k', 'MFFU', 'Builder 25K', 2, 63, { net_6m: 1313, net_med_6m: 1167, net_p10_6m: -63, per_month: 219, steady: 305, fees_6m: 96, evals: 1.52, neg_6m: 12.6, first_pay_sessions: 48, any_pay: 87.6, lost: 0.06 }),
+    mk('mffu_builder_50k', 'MFFU', 'Builder 50K', 1, 91.8, { net_6m: 4644, net_med_6m: 4708, net_p10_6m: 1219, per_month: 774, steady: 915, fees_6m: 153, evals: 1.66, neg_6m: 7.2, first_pay_sessions: 44.0, any_pay: 92.8, lost: 0.0 }),
+    mk('mffu_builder_25k', 'MFFU', 'Builder 25K', 2, 63, { net_6m: 1961, net_med_6m: 2201, net_p10_6m: -63, per_month: 327, steady: 405, fees_6m: 97, evals: 1.54, neg_6m: 15.1, first_pay_sessions: 48.0, any_pay: 84.9, lost: 0.0 }),
     mk('lucid_pro_50k', 'Lucid', 'LucidPro 50K', 1, 115.4, { net_6m: 3789, net_med_6m: 3768, net_p10_6m: -115, per_month: 631, steady: 889, fees_6m: 140, evals: 1.21, neg_6m: 15.7, first_pay_sessions: 53, any_pay: 84.3, lost: 0.01 }),
     mk('fn_rapid_daily_50k', 'FundedNext', 'Rapid Daily 50K', 1, 169.99, { net_6m: 3364, net_med_6m: 3587, net_p10_6m: -170, per_month: 561, steady: 703, fees_6m: 312, evals: 1.83, neg_6m: 17.6, first_pay_sessions: 48, any_pay: 82.6, lost: 0.03 }),
   ],
-  trio: { H2: { net_per_month: 1754, months4_6_per_month: 2373, neg_6m: 7.8 } },
+  trio: { H2: { net_per_month: 1966, months4_6_per_month: 2507, neg_6m: 7.8 } },
 };
 
 export async function loadPlans(url = 'plans.json') {

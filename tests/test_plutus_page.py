@@ -4,9 +4,9 @@
   b. the data: plans.json = a fresh build of research/lit/funded_firms.json; prices and caps; the published trio is reproduced by the sum
      of the three plans; the embedded copy inside plutuscore.js = plans.json (Jul-Oct), so the offline page cannot drift
   c. the maths in the page against an independent Python mirror: the first-6-month average per month equals the study's own number (the
-     published trio $1,754 / $2,315 / -$92), up-front fees, the steady months-4-6 rate, month-0 = minus the fees, the extension after
+     published trio $1,966 / $2,460 / -$87), up-front fees, the steady months-4-6 rate, month-0 = minus the fees, the extension after
      month 6, the haircut, the tax set-aside, the caps, correlated accounts do not average out, the bad case sits under the middle
-  d. the page in Playwright Chromium at 390 x 844: the default plan reads $1,754 a month and says it matches the published trio, the steppers
+  d. the page in Playwright Chromium at 390 x 844: the default plan reads $1,966 a month and says it matches the published trio, the steppers
      and their caps, the periods, the sliders, the goal, the 25K-next-to-50K warning, the saved plan, the published record from
      data.json, the offline study, no sideways scroll, the orb corner free, LITE, reduced motion, no errors
 
@@ -78,16 +78,29 @@ def part_b():
     check("b. caps: 1 funded Builder 50K, 2 Builder 25K (MFFU's rule), 1 each at the others", [p["cap"] for p in doc["plans"]] == [1, 2, 1, 1])
     ff = json.load(open(os.path.join(ROOT, "research", "lit", "funded_firms.json"), encoding="utf-8"))
     ok = True
+    live = B._live_mffu({p["id"]: p for p in ff["plans"]})
     for p in ff["plans"]:
         if p["id"] in by:
             for s in ("H1", "H2", "2021-25"):
-                if by[p["id"]]["spans"][s]["net_6m"] != p["results"]["life"][s]["net_6m"] or by[p["id"]]["spans"][s]["steady"] != p["results"]["life"][s]["months4_6_per_month"]:
+                if p["id"] in live:      # the MFFU rows: the live 2026-10-25 settings (research/lit/uprisk_*.json)
+                    if by[p["id"]]["spans"][s] != live[p["id"]][s]:
+                        ok = False
+                elif by[p["id"]]["spans"][s]["net_6m"] != p["results"]["life"][s]["net_6m"] or by[p["id"]]["spans"][s]["steady"] != p["results"]["life"][s]["months4_6_per_month"]:
                     ok = False
-    check("b. every plan's net, months-4-6 rate come straight from the study's 'life' rows (H1, H2, 2021-25)", ok)
+    check("b. the MFFU rows = the live-settings study (uprisk_*.json: funded $929 / $915 a month, eval 2-week fail 17.8 / 20.9); Lucid / FundedNext = the 'life' rows of funded_firms.json", ok)
+    m50 = by["mffu_builder_50k"]["spans"]
+    check("b. the Builder 50K row: funded stage $929 / $915 a month, 2-week pass / fail 52.9 / 17.8 and 58.6 / 20.9, first payout 26 / 23.5 sessions from the funded start and 49 / 44 from the purchase",
+          (m50["H1"]["funded_per_month"], m50["H2"]["funded_per_month"]) == (929, 915) and (m50["H1"]["p10"], m50["H1"]["f10"], m50["H2"]["p10"], m50["H2"]["f10"]) == (52.9, 17.8, 58.6, 20.9)
+          and (m50["H1"]["first_pay_funded"], m50["H2"]["first_pay_funded"], m50["H1"]["first_pay_sessions"], m50["H2"]["first_pay_sessions"]) == (26.0, 23.5, 49.0, 44.0), m50["H2"])
+    sa = doc["strategy"]
+    check("b. strategy block: ATLAS 25K at $43 and BLITZ 25K at $63, the MFFU cap 1 + 2 = 3 funded accounts, correlation per pair (LIT x ATLAS +0.14, LIT x BLITZ -0.06, ATLAS x BLITZ 0.00; 0.85 only for copies), the 3-account $1,532 / $1,136 with the range $1,100-1,800",
+          [a["price"] for a in sa["accounts"]] == [91.8, 43.0, 63.0] and (sa["mffu_caps"]["funded_50k"], sa["mffu_caps"]["funded_25k"], sa["mffu_caps"]["funded_total"]) == (1, 2, 3)
+          and [round(x["rho"], 2) for x in sa["corr_pairs"]] == [0.14, -0.06, -0.0, 0.85] and (sa["three_accounts"]["H1"]["per_month"], sa["three_accounts"]["H2"]["per_month"]) == (1532, 1136)
+          and (sa["three_accounts"]["range"]["low"], sa["three_accounts"]["range"]["high"]) == (1100, 1800), sa["three_accounts"])
     spans = ("H1", "H2", "2021-25")
     sums = {s: sum(by[i]["spans"][s]["net_6m"] for i in ("mffu_builder_50k", "lucid_pro_50k", "fn_rapid_daily_50k")) / 6 for s in spans}
-    check("b. the three plans' 6-month nets / 6 = the published trio's net a month (H1 2,315, H2 1,754, 2021-25 -92)",
-          all(abs(sums[s] - doc["trio"][s]["net_per_month"]) < 1.0 for s in spans) and (doc["trio"]["H2"]["net_per_month"], doc["trio"]["H1"]["net_per_month"]) == (1754, 2315), (sums, doc["trio"]))
+    check("b. the three plans' 6-month nets / 6 = the published trio's net a month (H1 2,460, H2 1,966, 2021-25 -87)",
+          all(abs(sums[s] - doc["trio"][s]["net_per_month"]) < 1.0 for s in spans) and (doc["trio"]["H2"]["net_per_month"], doc["trio"]["H1"]["net_per_month"]) == (1966, 2460), (sums, doc["trio"]))
     check("b. the 2021-25 line is negative and labelled a reference", doc["trio"]["2021-25"]["net_per_month"] < 0 and "reference" in doc["spans"]["2021-25"])
     check("b. the notes say the accounts are correlated and that months after 6 are an extension",
           any("same trades" in n for n in doc["notes"]) and any("extension" in n for n in doc["notes"]) and doc["corr"] == 0.85)
@@ -149,13 +162,13 @@ def part_c(p, doc):
             bad.append((o, six, g["avg6"]))
     check("c. project() = the independent Python mirror on 6 cases (3 periods, 12 months, haircut, tax), curve + average + up-front", not bad, bad[:2])
     h2, h1, ref = got[0], got[1], got[2]
-    check("c. the three plans over the first 6 months reproduce the published trio a month: H2 $1,754, H1 $2,315, 2021-25 -$92",
+    check("c. the three plans over the first 6 months reproduce the published trio a month: H2 $1,966, H1 $2,460, 2021-25 -$87",
           abs(h2["avg6"] - doc["trio"]["H2"]["net_per_month"]) <= 0.5 and abs(h1["avg6"] - doc["trio"]["H1"]["net_per_month"]) <= 0.5
           and abs(ref["avg6"] - doc["trio"]["2021-25"]["net_per_month"]) < 1.0, (h2["avg6"], h1["avg6"], ref["avg6"]))
-    check("c. months 4-6 rate = the study's: H2 $2,373 a month for the trio (before any haircut or tax)", round(h2["steady"]) == doc["trio"]["H2"]["months4_6_per_month"], h2["steady"])
+    check("c. months 4-6 rate = the study's: H2 $2,507 a month for the trio (before any haircut or tax)", round(h2["steady"]) == doc["trio"]["H2"]["months4_6_per_month"], h2["steady"])
     check("c. month 0 is minus the up-front fees ($91.80 + $115.40 + $169.99 = $377.19)", abs(h2["upfront"] - 377.19) < 1e-6 and abs(h2["mean"][0] + 377.19) < 1e-6, h2["mean"][0])
     h12 = got[3]
-    check("c. after month 6 the curve continues at the months-4-6 rate (month 12 = month 6 + 6 x $2,373)", abs(h12["mean"][12] - (h12["mean"][6] + 6 * h12["steady"])) < 1e-6, (h12["mean"][6], h12["mean"][12]))
+    check("c. after month 6 the curve continues at the months-4-6 rate (month 12 = month 6 + 6 x $2,507)", abs(h12["mean"][12] - (h12["mean"][6] + 6 * h12["steady"])) < 1e-6, (h12["mean"][6], h12["mean"][12]))
     check("c. a worse bot pays less, never more; tax only touches money made, never a loss", got[4]["avg6"] < h2["avg6"] and got[4]["steady"] < h2["steady"]
           and abs(got[5]["mean"][6] - 0.8 * h2["mean"][6]) < 1e-6 and got[5]["mean"][0] == h2["mean"][0])
     check("c. the caps hold: 5 Builder 50K and 9 Builder 25K ask for 1 + 2 accounts", sorted(got[6]["rows"]) == [["mffu_builder_25k", 2], ["mffu_builder_50k", 1]] and got[6]["accounts"] == 3, got[6]["rows"])
@@ -203,35 +216,35 @@ def part_d(tmp, doc):
                 tab(p, t)
                 check(f"d. tab '{t}': the bottom-right 80 x 160 px stays free for Jarvis's orb", not orb_hits(p), orb_hits(p))
             tab(p, "plan")
-            check("d. the default plan is the published trio (50K + Lucid + FundedNext): the headline reads $1,754 a month, first 6 months",
-                  p.inner_text("#hk") == "$1,754" and "first 6 months" in p.inner_text("#hs"), p.inner_text("#hk"))
+            check("d. the default plan is the published trio (50K + Lucid + FundedNext): the headline reads $1,966 a month, first 6 months",
+                  p.inner_text("#hk") == "$1,966" and "first 6 months" in p.inner_text("#hs"), p.inner_text("#hk"))
             check("d. the dock line: 3 accounts, $377 up front, back in profit in about 2 months, a bad case", "3 accounts" in p.inner_text("#vline") and "$377" in p.inner_text("#vline") and "Back in profit" in p.inner_text("#vline"), p.inner_text("#vline"))
             check("d. four account rows with price, 2-week pass chance and the cap; three period buttons", p.evaluate("document.querySelectorAll('.acct').length") == 4
                   and p.evaluate("document.querySelectorAll('#spans button').length") == 3 and "$91.80" in p.inner_text("#accts"))
             check("d. + is disabled at the cap (Builder 50K max 1), - at zero (Builder 25K)", p.is_disabled("[data-inc='mffu_builder_50k']") and p.is_disabled("[data-dec='mffu_builder_25k']"))
             p.click("[data-inc='mffu_builder_25k']")
             check("d. one Builder 25K more: the headline grows, 4 accounts, and the warning about MFFU's rule shows",
-                  p.evaluate("window.__plutus.project.accounts") == 4 and p.inner_text("#hk") != "$1,754" and "has not said" in p.inner_text("#accts"), p.inner_text("#hk"))
+                  p.evaluate("window.__plutus.project.accounts") == 4 and p.inner_text("#hk") != "$1,966" and "has not said" in p.inner_text("#accts"), p.inner_text("#hk"))
             p.click("[data-dec='mffu_builder_25k']")
             p.click("[data-dec='mffu_builder_50k']")
-            check("d. one fewer Builder 50K: 2 accounts, the headline drops; the money tab lists 2 plans", p.evaluate("window.__plutus.project.accounts") == 2 and p.inner_text("#hk") != "$1,754")
+            check("d. one fewer Builder 50K: 2 accounts, the headline drops; the money tab lists 2 plans", p.evaluate("window.__plutus.project.accounts") == 2 and p.inner_text("#hk") != "$1,966")
             p.click("[data-inc='mffu_builder_50k']")
             p.click("#spans button[data-span='H1']")
-            check("d. the Jan-Jun period: $2,315 a month", p.inner_text("#hk") == "$2,315", p.inner_text("#hk"))
+            check("d. the Jan-Jun period: $2,460 a month", p.inner_text("#hk") == "$2,460", p.inner_text("#hk"))
             p.click("#spans button[data-span='2021-25']")
-            check("d. the 2021-25 reference: -$92 a month, the headline turns red", p.inner_text("#hk") == "-$92" and p.get_attribute("#headline", "data-neg") == "1", p.inner_text("#hk"))
+            check("d. the 2021-25 reference: -$87 a month, the headline turns red", p.inner_text("#hk") == "-$87" and p.get_attribute("#headline", "data-neg") == "1", p.inner_text("#hk"))
             p.click("#spans button[data-span='H2']")
             p.evaluate("(() => { const e = document.getElementById('haircut'); e.value = 30; e.dispatchEvent(new Event('input')); })()")
-            check("d. the 'bot does worse' slider at 30%: the headline falls below $1,754 and the label says 30%", int(p.inner_text("#hk").replace("$", "").replace(",", "")) < 1754 and p.inner_text("#hairV") == "30%")
+            check("d. the 'bot does worse' slider at 30%: the headline falls below $1,966 and the label says 30%", int(p.inner_text("#hk").replace("$", "").replace(",", "")) < 1966 and p.inner_text("#hairV") == "30%")
             p.evaluate("(() => { const e = document.getElementById('haircut'); e.value = 0; e.dispatchEvent(new Event('input')); const m = document.getElementById('months'); m.value = 12; m.dispatchEvent(new Event('input')); })()")
             check("d. 12 months: the headline is the 12-month average, higher than the 6-month one (the extension runs at the steady rate)",
-                  int(p.inner_text("#hk").replace("$", "").replace(",", "")) > 1754 and "first 12 months" in p.inner_text("#hs"), p.inner_text("#hk"))
+                  int(p.inner_text("#hk").replace("$", "").replace(",", "")) > 1966 and "first 12 months" in p.inner_text("#hs"), p.inner_text("#hk"))
             p.evaluate("(() => { const m = document.getElementById('months'); m.value = 6; m.dispatchEvent(new Event('input')); })()")
             p.fill("#goal", "5000")
             tab(p, "money")
             body = p.inner_text("#money")
-            check("d. money tab: up front, back in profit, a month (first 6 / months 4-6), 'Matches the trio on the published site: $1,754', the month table, the goal line",
-                  all(s in body for s in ("up front", "back in profit", "$2,373", "Matches the trio on the published site: $1,754", "Bad case", "$5,000 a month once running you would need")), body[:300])
+            check("d. money tab: up front, back in profit, a month (first 6 / months 4-6), 'Differs from the trio on the published site: $1,754', the month table, the goal line",
+                  all(s in body for s in ("up front", "back in profit", "$2,507", "Differs from the trio on the published site: $1,754", "Bad case", "$5,000 a month once running you would need")), body[:300])
             check("d. the month table starts at Buy = -$377 and ends at month 6", "-$377" in body and p.evaluate("document.querySelectorAll('#money tbody tr').length") >= 7)
             # 2026-11-04: goal tracker, payout calendar, income waterfall, what-if (plutusfx.js) built on the OLYMPUS effects library
             m = p.evaluate("""() => { const C = window.__plutus.CORE, d = window.__plutus.doc, st = window.__plutus.state, P = window.__plutus.project;
@@ -291,7 +304,7 @@ def part_d(tmp, doc):
             ctx, p = open_page(br, url_off, errs2, "__plutus")
             check("d. no plans.json, no data.json: the embedded Jul-Oct study runs, OFFLINE STUDY shows, no PUBLISHED tag, one period button",
                   p.evaluate("window.__plutus.src") == "embedded" and p.is_visible("#demo") and p.is_hidden("#livetag") and p.evaluate("document.querySelectorAll('#spans button').length") == 1)
-            check("d. ... and the default plan still reads $1,754 a month (the same numbers as the file)", p.inner_text("#hk") == "$1,754", p.inner_text("#hk"))
+            check("d. ... and the default plan still reads $1,966 a month (the same numbers as the file)", p.inner_text("#hk") == "$1,966", p.inner_text("#hk"))
             tab(p, "notes")
             check("d. ... the notes say the published data was not found", "was not found" in p.inner_text("#notes"))
             ctx.close()
