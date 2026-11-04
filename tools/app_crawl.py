@@ -6,6 +6,7 @@
     python tools/app_crawl.py --offline                         # block every non-local request: the fixture / demo fallback must kick in
     python tools/app_crawl.py --reduced --intro                 # reduced motion; --intro plays the app intro (?intro=1) and checks it lets go
     python tools/app_crawl.py --out research/crawl --shots /tmp/shots   # table.md + table.json (+ a screenshot per run)
+    python tools/app_crawl.py --iphone --click-all --apps athena,bridge,kalshi   # the iPhone profile (dpr 3, touch) and every visible control clicked (folds opened)
 
 Per app and viewport it records: console errors, page errors, failed requests / HTTP 4xx-5xx, sideways overflow, tap targets under 44 px,
 text clipped without an ellipsis, overlapping controls, blank or near-blank screens (a pixel check on the screenshot), WebGL context
@@ -154,9 +155,107 @@ def _settle(row, base, args, local_host):
         row["failed"] = [u for u in row["failed"] if local_host in u]
 
 
+# ------------------------------------------------------------------ the "click every visible control" mode (--click-all)
+CLICK_SEL = "button, a[href], summary, [role=button], [role=tab], [role=switch], [role=radio], [role=checkbox], input[type=checkbox], input[type=radio], select"
+CLICK_PREP = r"""(sel) => {
+  for (const d of document.querySelectorAll('details:not([open])')) { try { d.open = true; } catch (e) { /* */ } }     // expand the folded sections: their controls count too
+  const list = [...document.querySelectorAll(sel)];
+  return list.length;
+}"""
+CLICK_ONE = r"""([sel, i]) => {
+  const e = [...document.querySelectorAll(sel)][i]; if (!e) return null;
+  try { e.scrollIntoView({ block: 'center', inline: 'center' }); } catch (x) { /* */ }
+  const r = e.getBoundingClientRect(), s = getComputedStyle(e);
+  if (!(r.width > 0 && r.height > 0 && s.display !== 'none' && s.visibility !== 'hidden' && +s.opacity > 0.02) || e.disabled || e.closest('[hidden],[inert]')) return { skip: 'hidden' };
+  const href = e.tagName === 'A' ? (e.getAttribute('href') || '') : '';
+  if (e.tagName === 'A' && (/^(https?:|mailto:|tel:|blob:|data:)/.test(href) || e.target === '_blank' || e.hasAttribute('download'))) return { skip: 'external' };
+  const label = (e.getAttribute('aria-label') || e.title || e.textContent || e.id || e.className || e.tagName).toString().replace(/\s+/g, ' ').trim().slice(0, 32);
+  window.__cm = 0; if (window.__cmo) window.__cmo.disconnect();
+  window.__cmo = new MutationObserver((l) => { window.__cm += l.length; }); window.__cmo.observe(document.documentElement, { subtree: true, childList: true, attributes: true, characterData: true });
+  window.__ch = location.href; window.__cf = document.activeElement; window.__cs = [scrollX, scrollY, document.scrollingElement ? document.scrollingElement.scrollTop : 0].join();
+  const key = e.tagName.toLowerCase() + (e.id ? '#' + e.id : '') + '|' + label + '|' + (e.getAttribute('data-tab') || e.getAttribute('data-view') || e.getAttribute('data-go') || e.getAttribute('href') || '');
+  return { label, key, link: e.tagName === 'A' && !href.startsWith('#') && href !== '' };
+}"""
+CLICK_AFTER = "() => ({ m: window.__cm || 0, h: location.href !== window.__ch, f: document.activeElement !== window.__cf, s: [scrollX, scrollY, document.scrollingElement ? document.scrollingElement.scrollTop : 0].join() !== window.__cs, open: !!document.querySelector('dialog[open], [aria-modal=true]:not([hidden])') })"
+
+
+VISCOUNT = "() => [...document.querySelectorAll('button, a[href], summary, [role=button], [role=tab], select, input')].filter((e) => { const r = e.getBoundingClientRect(), s = getComputedStyle(e); return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && !e.closest('[hidden]'); }).length"
+
+
+def click_all(p, row, args):
+    """Scroll to, and click, every visible control (folded <details> opened first); a control after which nothing changes at all (no DOM mutation, no
+    URL, no focus, no scroll, no dialog) is 'dead' (a 3D-only toggle can be a false alarm). When a click swaps the page's controls (a tab, a screen)
+    the new screen is swept too, then the page is reloaded and the walk goes on where it was (what was clicked is remembered). Pages that navigate
+    away are reloaded the same way. Records row['clicked'], row['dead'], row['nav'], row['click_errors']."""
+    url0 = p.url
+    errs0 = len(row["errors"])
+    st = {"clicked": 0, "dead": [], "nav": [], "seen": set(), "reloads": 0}
+    cap_total = int(args.click_cap) * 2
+
+    def reload():
+        st["reloads"] += 1
+        p.goto(url0, wait_until="commit", timeout=60000)
+        time.sleep(3.0)
+
+    def sweep(depth):
+        """one pass over the visible controls; 'reload' when the page changed under us and was restored to its start"""
+        n = p.evaluate(CLICK_PREP, CLICK_SEL)
+        i = 0
+        while i < n and st["clicked"] < cap_total:
+            try:
+                info = p.evaluate(CLICK_ONE, [CLICK_SEL, i])
+                before = p.evaluate(VISCOUNT)
+            except Exception:
+                info, before = None, 0
+            i += 1
+            if not info or info.get("skip") or info["key"] in st["seen"]:
+                continue
+            st["seen"].add(info["key"])
+            try:
+                p.locator(CLICK_SEL).nth(i - 1).dispatch_event("click")
+                time.sleep(0.3)
+                ch = p.evaluate(CLICK_AFTER)
+                after = p.evaluate(VISCOUNT)
+            except Exception as e:
+                if "context" in str(e).lower() or "navigat" in str(e).lower():
+                    ch, after = {"m": 1, "h": True}, before
+                else:
+                    continue
+            st["clicked"] += 1
+            if ch.get("h") and p.url.split("#")[0] != url0.split("#")[0]:
+                st["nav"].append(info["label"])
+                try:
+                    reload()
+                except Exception:
+                    return "stop"
+                return "reload"
+            if not (ch["m"] or ch["h"] or ch["f"] or ch["s"] or ch["open"]):
+                st["dead"].append(info["label"])
+            try:
+                p.keyboard.press("Escape")
+            except Exception:
+                pass
+            if before and abs(after - before) > 0.3 * before:              # a new screen: sweep it, then start over from the page's start
+                if depth < 2:
+                    sweep(depth + 1)
+                try:
+                    reload()
+                except Exception:
+                    return "stop"
+                return "reload"
+        return "done"
+
+    while st["reloads"] < 16 and st["clicked"] < cap_total:
+        if sweep(0) != "reload":
+            break
+    row["clicked"], row["dead"], row["nav"] = st["clicked"], st["dead"][:12], st["nav"][:12]
+    row["click_errors"] = [e for e in row["errors"][errs0:] if "Failed to load resource" not in e][:5]
+
+
 def crawl_one(br, base, app, vp, args, shots):
     w, h = (int(x) for x in vp.split("x"))
-    ctx = br.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, has_touch=True, **({"reduced_motion": "reduce"} if args.reduced else {}))
+    ctx = br.new_context(viewport={"width": w, "height": h}, device_scale_factor=args.dpr, has_touch=True, is_mobile=bool(args.iphone),
+                         **({"reduced_motion": "reduce"} if args.reduced else {}))
     ctx.add_init_script(INIT)
     p = ctx.new_page()
     row = {"app": app, "vp": vp, "errors": [], "failed": [], "http": [], "notes": []}
@@ -204,6 +303,11 @@ def crawl_one(br, base, app, vp, args, shots):
         row["hist_after"] = p.evaluate("history.length")          # clicks may legitimately add history (tabs, hashes): only the count at load is flagged
     except Exception as e:
         row["notes"].append("interact: " + str(e)[:80])
+    if args.click_all:
+        try:
+            click_all(p, row, args)
+        except Exception as e:
+            row["notes"].append("click-all: " + str(e)[:80])
     if args.intro:
         try:
             st = p.evaluate("window.__olyAppIntro ? { s: window.__olyAppIntro.state, m: window.__olyAppIntro.mode, why: window.__olyAppIntro.why } : null")
@@ -248,6 +352,12 @@ def flags(r):
         f.append("WebGL context lost")
     if r.get("listener_growth", 0) > 40:
         f.append(f"listeners +{r['listener_growth']}")
+    if r.get("dead"):
+        f.append(f"{len(r['dead'])} dead controls of {r.get('clicked')} clicked ({', '.join(r['dead'][:3])})")
+    if r.get("click_errors"):
+        f.append(f"{len(r['click_errors'])} errors while clicking")
+    if r.get("clicked") is not None and not r.get("dead") and not r.get("click_errors"):
+        f.append(f"{r['clicked']} controls clicked, all alive")
     if r.get("unnamed"):
         f.append(f"{len(r['unnamed'])} controls without a name")
     if r.get("low"):
@@ -285,10 +395,16 @@ def main(argv=None):
     ap.add_argument("--reduced", action="store_true", help="prefers-reduced-motion")
     ap.add_argument("--intro", action="store_true", help="play the app intro (?intro=1) and check it lets go")
     ap.add_argument("--q", default="low", help="render tier forced with ?q= (default low: software GL; '' to leave it alone)")
+    ap.add_argument("--dpr", type=float, default=1.0, help="device pixel ratio (the iPhone is 3)")
+    ap.add_argument("--iphone", action="store_true", help="the iPhone profile: device pixel ratio 3, touch, mobile viewport")
+    ap.add_argument("--click-all", action="store_true", help="scroll to and click every visible control (folded sections opened), report the dead ones")
+    ap.add_argument("--click-cap", type=int, default=300, help="most controls looked at per round (default 300)")
     ap.add_argument("--wait", type=float, default=6.0, help="seconds to let each app settle")
     ap.add_argument("--out", help="folder for table.md and table.json")
     ap.add_argument("--shots", help="folder for one JPEG per run")
     args = ap.parse_args(argv)
+    if args.iphone:
+        args.dpr = 3.0
     from playwright.sync_api import sync_playwright
 
     apps = args.apps.split(",") if args.apps else apps_on_disk()
