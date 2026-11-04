@@ -5,7 +5,7 @@
   b. the maths in node (journalcore.js): the trades from the Odeon JSON, the entries' validation (rating / mood / a 140-character note), dollars by rating and by mood,
      what interfering cost, the worst mood, the streak, the weekly review and its ONE rule (every branch), Markdown with escaping, import (hostile input) and merge
   c. Chromium 390 x 844 (and 375 x 667): the real trades, the DEMO fixture (labelled), never blank even with no file at all, the 10-second flow (rating, mood, note, saved
-     in localStorage['journal.v1'] only, survives a reload), the insights in dollars, the weekly rule, export / import / Markdown / erase, every tap >= 44 px, no sideways
+     in localStorage['journal.v1'] only (and the Jarvis card 'journal.card.v1'), survives a reload), the insights in dollars, the weekly rule, export / import / Markdown / erase, every tap >= 44 px, no sideways
      scroll, Jarvis's corner free, LITE and reduced motion, no console error, no request off the page's origin
     python -X utf8 -m tests.test_journal_page            (--static: parts a and b only)
 """
@@ -81,6 +81,10 @@ def test_static():
           set(fetches) == {"../odeon/trades.json", "./fixture.json"} and not re.search(r"XMLHttpRequest|WebSocket|sendBeacon|method:\s*['\"]POST|https?://(?!www\.w3\.org)", js + core), fetches)
     check("a. everything it types is kept only in localStorage['journal.v1'] (one key; the probe key is removed at once); no cookies / sessionStorage / indexedDB",
           "export const KEY = 'journal.v1'" in core and len(re.findall(r"localStorage\.setItem\(", js)) == 1 and "K.KEY + '.probe'" in js and "localStorage.removeItem(K.KEY + '.probe')" in js and not re.search(r"document\.cookie|sessionStorage|indexedDB", js + core))
+    check("a. the Jarvis card is kept in 'journal.card.v1' (same pattern as the Inbox's), never for the forced ?demo=1 preview; window.JOURNAL_STATS exists; the check opens from #check / ?check=1",
+          "'journal.card.v1'" in js and "!S.forced" in js and "window.JOURNAL_STATS" in js and "#check$" in js and "?check=1" in js.replace("[?&]check=1", "?check=1"))
+    check("a. Jarvis reads it: appStatus gets a 'journal' overlay of at most 10 lines in apps.js, checked like any card (validateStatus), newer card only",
+          "journal.card.v1" in read(os.path.join(WEB, "jarvis", "apps.js")) and "validateStatus(c, { base: a.url })" in read(os.path.join(WEB, "jarvis", "apps.js")) and "r.card.t >= card.t" in read(os.path.join(WEB, "jarvis", "apps.js")))
     check("a. journalcore.js is pure (no document / window / fetch / localStorage of its own), Safari 16 safe (no lookbehind, no .at())", not re.search(r"\bdocument\.|\bwindow\.|\bfetch\(|\blocalStorage\b|\(\?<[=!]|\.at\(", re.sub(r"//[^\n]*", "", core)))
     check("a. text only through textContent / createElementNS / a value", "textContent" in js and "createElementNS" in js and not re.search(r"\.(?:src|href)\s*=\s*[^;]*(?:note|entry|store)", js))
     check("a. every tap target is at least 44 px in the CSS (buttons, chips, inputs), safe areas, 176 px clear of Jarvis's corner, reduced motion, LITE",
@@ -155,6 +159,24 @@ import(f).then((K) => {
   K.writeStore(ls, s2); o.persist = [Object.keys(ls.v), K.readStore(ls).entries.t1.rating, K.readStore({ getItem() { return '{broken'; } }).entries && Object.keys(K.readStore({ getItem() { return '{broken'; } }).entries).length];
   const c = K.card(trades, s2, false, 1000); o.card = { name: c.name, kpis: c.kpis.length, lines: c.lines.map((x) => x.length), t: c.t, level: c.status.level };
   o.money = [K.money(1234.4), K.money(-437), K.money(0), K.money(null), K.plainMoney(-1999.6)];
+  // the last 9 trades, in one sentence
+  const rc = K.recent(trades, s2, 9); o.recent = [rc.n, rc.interfered, rc.interferedUsd, rc.line, K.recent(trades, K.emptyStore()).line, K.recent(trades, allPlan).line, K.recent([], K.emptyStore()).line, K.recent(trades.slice(0, 4), s2, 2).n];
+  o.cardLine = K.card(trades, s2, false, 1000).lines[0];
+  // the pre-trade check: 5 questions from his own journal, a plain verdict with the cost of interfering, kept locally
+  const qs = K.checkQuestions(trades, s2); o.qs = qs.map((q) => [q.id, q.good, q.hint]); o.qtext = qs.map((q) => q.text);
+  const newest = trades.slice().sort((x, y) => y.t - x.t); const qn = K.checkQuestions(newest, s2); o.qNewest = qn[1].hint;
+  const okAns = { calm: 'yes', plan2: 'yes', loss: 'no', touch: 'no', mood: 'no' };
+  const V = (a) => { const v = K.checkVerdict(newest, s2, a); return [v.level, v.red, v.answered, v.headline, v.why, v.cost]; };
+  o.vFine = V(okAns); o.vOpen = V({ calm: 'yes' }); o.vNone = V({}); o.vWait1 = V({ ...okAns, loss: 'yes' }); o.vWait3 = V({ calm: 'no', plan2: 'no', loss: 'yes', touch: 'no', mood: 'no' });
+  o.vJunk = V({ calm: 'maybe', plan2: 1, loss: null, touch: '__proto__', mood: 'yes' });
+  o.vCostNone = K.checkVerdict(newest, K.emptyStore(), okAns).cost; o.vSame = JSON.stringify(V(okAns)) === JSON.stringify(V(okAns));
+  const sc = K.emptyStore(); const r1 = K.addCheck(sc, qs, okAns, 'fine', 1000.4), r2 = K.addCheck(sc, qs, { ...okAns, loss: 'yes' }, 'wait', 1000.4), r3 = K.addCheck(sc, qs, okAns, 'fine', 2000);
+  o.checks = [r1.a, r2.v, sc.checks.length, K.addCheck(sc, qs, okAns, 'open', 2000), sc.checks.length, K.checkStats(sc).n, K.checkStats(sc).wait, K.checkStats(sc).last.at];
+  const many = K.emptyStore(); for (let i = 0; i < 45; i++) K.addCheck(many, qs, okAns, i % 2 ? 'wait' : 'fine', 100 + i); o.checksCap = [many.checks.length, many.checks[0].at];
+  const back2 = K.parseImport(K.exportJSON(sc)); o.checksRt = [back2.ok, JSON.stringify(back2.store.checks) === JSON.stringify(sc.checks)];
+  const hostile = K.parseImport(JSON.stringify({ entries: {}, checks: [{ at: 5, a: 'yynny', v: 'fine' }, { at: 'x', a: 'yynny', v: 'fine' }, { at: 6, a: '<script>', v: 'fine' }, { at: 7, a: 'yynny', v: 'evil' }, null, 5, { at: 8, a: 'yy-ny', v: 'wait' }] }));
+  o.checksEvil = hostile.store.checks.map((c) => c.at);
+  const ma = K.emptyStore(); K.addCheck(ma, qs, okAns, 'fine', 10); const mb = K.emptyStore(); K.addCheck(mb, qs, okAns, 'fine', 10); K.addCheck(mb, qs, okAns, 'wait', 20); o.checksMerge = K.mergeStores(ma, mb).checks.map((c) => c.at);
   console.log(JSON.stringify(o)); fs.rmSync(tmp, { recursive: true, force: true });
 });
 """
@@ -200,6 +222,24 @@ def test_maths():
     check("b. the store: one key 'journal.v1', read back, and a broken value reads as an empty journal", o["persist"][0] == ["journal.v1"] and o["persist"][1] == "plan" and o["persist"][2] == 0, o["persist"])
     c = o["card"]
     check("b. the Jarvis card from the journal: name, 3 kpis, 2 lines of <= 120, t, a level", c["name"] == "MNEMOSYNE" and c["kpis"] == 3 and all(x <= 120 for x in c["lines"]) and c["t"] == 1000 and c["level"] in ("ok", "warn"), c)
+    check("b. the last 9 trades in one sentence (the Jarvis card's first line): 'You interfered on 2 of your last 9 trades, it cost $N', or nothing rated, or none interfered, or no trades",
+          o["recent"][:3] == [7, 2, -350] and o["recent"][3] == "You interfered on 2 of your last 7 trades, it cost $350." and o["recent"][4].startswith("Rate your last trades") and o["recent"][5] == "You did not interfere on any of your last 7 trades."
+          and o["recent"][6].startswith("Rate your last trades") and o["recent"][7] == 2 and o["cardLine"] == o["recent"][3], o["recent"])
+    q = o["qs"]
+    check("b. the pre-trade check has 5 yes / no questions in this order: calm, last 2 trades, the last loss, am I changing the bot, my worst mood (from the journal); the good answer is yes, yes, no, no, no",
+          [x[0] for x in q] == ["calm", "plan2", "loss", "touch", "mood"] and [x[1] for x in q] == ["yes", "yes", "no", "no", "no"] and o["qtext"][0] == "Am I calm right now?" and o["qtext"][2] == "Is this because of the last loss?"
+          and o["qtext"][4] == "Am I feeling FOMO right now?", (q, o["qtext"]))
+    check("b. the hints are his own dollars: calm trades, the last 2 rated, the last loss, what touching it cost, what the worst mood cost", "Your calm trades: +$450 on 3." == q[0][2] and "Touching it has cost you $350 on 2 trades." == q[3][2] and "FOMO trades cost you $350 on 2." == q[4][2]
+          and q[1][2] == "Your journal says: no (followed plan, interfered)." and q[2][2] == "" and o["qNewest"] == "Your journal says: yes, you followed it.", (q, o["qNewest"]))
+    check("b. the verdict: all good answers = 'Fine, the bot is running the plan.'; 1 bad answer = 'Wait 10 minutes.'; 3 bad answers say so and send him away from the screen; fewer than 5 answers = still open (junk answers count as none)",
+          o["vFine"][:4] == ["fine", 0, 5, "Fine, the bot is running the plan."] and o["vWait1"][:4] == ["wait", 1, 5, "Wait 10 minutes."] and o["vWait3"][:3] == ["wait", 3, 5] and "3 answers" in o["vWait3"][4] and "Step away" in o["vWait3"][4]
+          and o["vOpen"][:3] == ["open", 0, 1] and o["vOpen"][3] == "4 questions to go" and o["vNone"][2] == 0 and o["vJunk"][2] == 1 and o["vJunk"][0] == "open" and o["vSame"], (o["vFine"], o["vWait1"], o["vWait3"], o["vOpen"], o["vJunk"]))
+    check("b. every verdict carries the dollar cost of his own interfering: 'Interfering has cost you $350 on 2 trades; following the plan made +$510 on 4.'; no interfering rated = it says so",
+          o["vFine"][5] == "Interfering has cost you $350 on 2 trades; following the plan made +$510 on 4." and o["vWait1"][5] == o["vFine"][5] and o["vCostNone"].startswith("No interfering is rated yet"), (o["vFine"][5], o["vCostNone"]))
+    check("b. a check is kept as 5 letters + fine / wait (one record per sheet opening, the last 30 only), dropped while incomplete, counted; hostile checks in an import are dropped; a merge adds the other phone's checks",
+          o["checks"] == ["yynnn", "wait", 2, None, 1, 1, 1, 1000], o["checks"])
+    check("b. the checks: at most 30 (the newest), survive export then import, bad ones (bad time / letters / verdict) are dropped, a merge keeps both phones' checks once each",
+          o["checksCap"] == [30, 115] and o["checksRt"] == [True, True] and o["checksEvil"] == [5, 8] and o["checksMerge"] == [10, 20], (o["checksCap"], o["checksRt"], o["checksEvil"], o["checksMerge"]))
     check("b. money words: +$1,234, -$437, $0, -$2,000 (plain)", o["money"] == ["+$1,234", "-$437", "$0", "$0", "$2,000"], o["money"])
 
 
@@ -305,7 +345,7 @@ def test_page():
               cnt: document.querySelector('#tlist .trade:nth-child(1) .cnt').textContent, val: document.querySelector('#tlist .trade:nth-child(1) input').value.length }) """)
             e = list(s["ls"]["entries"].values())[0]
             check("c. the 10-second flow: tap a rating, tap a mood, write a line: saved by itself in localStorage['journal.v1'] only, the note cut to 140 characters",
-                  len(s["ls"]["entries"]) == 1 and e["rating"] == "interfered" and e["mood"] == "fomo" and len(e["note"]) == 140 and e["note"].startswith("Moved my stop") and s["keys"] == ["journal.v1"] and s["pressed"] == ["interfered", "fomo"] and "Saved" in s["status"], s)
+                  len(s["ls"]["entries"]) == 1 and e["rating"] == "interfered" and e["mood"] == "fomo" and len(e["note"]) == 140 and e["note"].startswith("Moved my stop") and sorted(s["keys"]) == ["journal.card.v1", "journal.v1"] and s["pressed"] == ["interfered", "fomo"] and "Saved" in s["status"], s)
             check("c. the dollars update at once: 'Interfered -$437 (1 trade)', the sentence says what interfering cost, the worst mood is FOMO", s["tInt"] == "-$437" and s["tIntN"] == "1 trade" and "interfered: -$437 (1)" in s["lead"] and "FOMO" in s["lead"], s)
             p.reload()
             p.wait_for_function("window.JOURNAL && window.JOURNAL.ready()", timeout=120000, polling=300)
@@ -353,7 +393,7 @@ def test_page():
             p.wait_for_timeout(500)
             check("c. hostile text is only ever text: an imported <img onerror> / <script> note and an id with markup do nothing (no element made, no script run, the bad id is dropped)",
                   p.evaluate("window.__pwned") is None and p.evaluate("document.querySelectorAll('#app img, #app script').length") == 0 and p.evaluate("Object.keys(JSON.parse(localStorage.getItem('journal.v1')).entries).includes('<b>bad</b>')") is False)
-            check("c. no console error, nothing off the page's origin, the only storage key is 'journal.v1'", not errs and not off and p.evaluate("Object.keys(localStorage).filter((k) => /journal/i.test(k))") == ["journal.v1"], (errs[:3], off[:3]))
+            check("c. no console error, nothing off the page's origin, the only storage keys are 'journal.v1' and the Jarvis card 'journal.card.v1'", not errs and not off and sorted(p.evaluate("Object.keys(localStorage).filter((k) => /journal/i.test(k))")) == ["journal.card.v1", "journal.v1"], (errs[:3], off[:3]))
             tb = p.evaluate(TAPS)
             check("c. every tap target is at least 44 px with 24 real trades on the page", not tb, tb[:5])
             ctx.close()
@@ -362,6 +402,88 @@ def test_page():
             open_(p, origin)
             d = p.evaluate("""() => ({ demo: !document.querySelector('#demo').hidden, n: document.querySelectorAll('#tlist .trade').length, hero: document.querySelector('#hero').innerText, rule: document.querySelector('#ruleText').textContent.length })""")
             check("c. never blank: with the Odeon file and the fixture both unreachable the page still shows 6 built-in DEMO trades, the dollars and a rule", d["demo"] and d["n"] == 6 and "$" in d["hero"] and d["rule"] > 20 and not errs, d)
+            ctx.close()
+            # ---- the Jarvis card and the pre-trade check
+            ctx, p, errs, seen, off = page(br, origin)
+            open_(p, origin)
+            card0 = p.evaluate("JSON.parse(localStorage.getItem('journal.card.v1'))")
+            check("c. the Jarvis card is kept in 'journal.card.v1' as soon as the page is up (a fresh journal says to rate the last trades)", card0 and card0["v"] == 1 and card0["name"] == "MNEMOSYNE" and card0["lines"][0].startswith("Rate your last trades"), card0)
+            p.click("#tlist .trade:nth-child(1) button[data-v=interfered]")
+            p.click("#tlist .trade:nth-child(1) button[data-v=fomo]")
+            p.wait_for_timeout(500)
+            card1 = p.evaluate("JSON.parse(localStorage.getItem('journal.card.v1'))")
+            ok_card = (card1["v"] == 1 and 1 <= len(card1["kpis"]) <= 3 and 1 <= len(card1["lines"]) <= 3 and all(len(x) <= 120 and "<" not in x and ">" not in x for x in card1["lines"])
+                       and isinstance(card1["t"], int) and card1["status"]["level"] in ("ok", "warn", "bad", "off") and re.fullmatch(r"#[0-9a-f]{6}", card1["theme"]) and len(json.dumps(card1)) < 8192)
+            check("c. rating a trade updates the card: 'You interfered on 1 of your last 9 trades, it cost $437.' (the card contract: <= 3 kpis, lines <= 120, no markup, int t, < 8 KB)", ok_card and card1["lines"][0] == "You interfered on 1 of your last 9 trades, it cost $437.", card1)
+            st = p.evaluate("window.JOURNAL_STATS()")
+            check("c. window.JOURNAL_STATS(): the same numbers for Jarvis (9 trades looked at, 1 interfered, -$437)", st["n"] == 9 and st["interfered"] == 1 and st["interferedUsd"] == -437 and st["line"] == card1["lines"][0], st)
+            jv = p.evaluate("""async () => { const A = await import('../jarvis/apps.js'); const c = await A.appStatus('journal'); return c ? c.lines : null; }""")
+            check("c. Jarvis's appStatus('journal') shows the newer card from this phone instead of the demo file (the weekly recap line, in dollars)", jv and jv[0] == "You interfered on 1 of your last 9 trades, it cost $437.", jv)
+            p.evaluate("localStorage.setItem('journal.card.v1', JSON.stringify({v: 1, name: 'x', status: {level: 'ok', label: '<b>'}, kpis: [], lines: ['<img src=x>'], t: 1, open: '#'}))")
+            jv2 = p.evaluate("""async () => { const A = await import('../jarvis/apps.js'); const c = await A.appStatus('journal'); return c ? c.lines : null; }""")
+            check("c. a bad or older 'journal.card.v1' is ignored by Jarvis (it keeps the file's card)", jv2 and all("img" not in x for x in jv2), jv2)
+            p.evaluate("localStorage.removeItem('journal.card.v1')")
+            # open the sheet
+            p.click("#checkBtn")
+            sh = p.evaluate("""() => ({ open: !document.querySelector('#sheet').hidden, qs: [...document.querySelectorAll('#qs .qt')].map((e) => e.textContent), level: document.querySelector('#verdict').dataset.level, head: document.querySelector('#vHead').textContent,
+              focusIn: document.querySelector('#panel').contains(document.activeElement), inert: document.querySelector('#app').inert === true, locked: document.documentElement.classList.contains('sheeted'),
+              hints: [...document.querySelectorAll('#qs .qh')].map((e) => e.textContent), dlg: document.querySelector('#panel').getAttribute('role') + ' ' + document.querySelector('#panel').getAttribute('aria-modal') })""")
+            check("c. the Pre-trade check opens in one tap: a dialog with 5 numbered questions, the verdict says '5 questions to go', focus is inside, the page behind it is inert", sh["open"] and len(sh["qs"]) == 5 and sh["qs"][0] == "1. Am I calm right now?" and sh["level"] == "open" and sh["head"] == "5 questions to go"
+                  and sh["focusIn"] and sh["inert"] and sh["locked"] and sh["dlg"] == "dialog true", sh)
+            check("c. the questions show what his own journal says in dollars (the last loss, what touching it cost, FOMO)", any("Your last trade was -$437" in x for x in sh["hints"]) and any("Touching it has cost you $437 on 1 trade" in x for x in sh["hints"]) and any("FOMO trades cost you $437" in x for x in sh["hints"]), sh["hints"])
+            tb = p.evaluate(TAPS)
+            check("c. every tap in the sheet is at least 44 px, and its bottom edge leaves Jarvis's corner free (176 px) even scrolled to the end", not tb and not p.evaluate("""() => { const P = document.querySelector('#panel'); P.scrollTop = P.scrollHeight; const r = P.getBoundingClientRect(); return r.bottom > innerHeight - 170 || P.scrollWidth > P.clientWidth; }"""), tb[:4])
+            ans = lambda q, v: p.click(f"#qs li[data-q={q}] button[data-v={v}]")
+            for q, v in (("calm", "yes"), ("plan2", "yes"), ("loss", "no"), ("touch", "no")):
+                ans(q, v)
+            mid = p.evaluate("[document.querySelector('#verdict').dataset.level, document.querySelector('#vHead').textContent, JSON.parse(localStorage.getItem('journal.v1')).checks.length]")
+            ans("mood", "no")
+            fine = p.evaluate("""() => ({ level: document.querySelector('#verdict').dataset.level, head: document.querySelector('#vHead').textContent, cost: document.querySelector('#vCost').textContent, checks: JSON.parse(localStorage.getItem('journal.v1')).checks,
+              green: document.querySelectorAll('#qs li.ok').length, hint: document.querySelector('#chkHint').textContent })""")
+            check("c. four answers = still open and nothing kept; the fifth gives the verdict 'Fine, the bot is running the plan.' with the dollar cost of his interfering, and the check is kept locally", mid == ["open", "1 question to go", 0]
+                  and fine["level"] == "fine" and fine["head"] == "Fine, the bot is running the plan." and "Interfering has cost you $437 on 1 trade" in fine["cost"] and len(fine["checks"]) == 1 and fine["checks"][0]["a"] == "yynnn" and fine["checks"][0]["v"] == "fine" and fine["green"] == 5
+                  and "1 check so far, 0 said wait" in fine["hint"], (mid, fine))
+            ans("loss", "yes")
+            wait = p.evaluate("""() => ({ level: document.querySelector('#verdict').dataset.level, head: document.querySelector('#vHead').textContent, why: document.querySelector('#vWhy').textContent, checks: JSON.parse(localStorage.getItem('journal.v1')).checks, red: document.querySelectorAll('#qs li.red').length, hint: document.querySelector('#chkHint').textContent })""")
+            check("c. changing one answer to the bad side flips it to 'Wait 10 minutes.' (the same check is updated, not added twice)", wait["level"] == "wait" and wait["head"] == "Wait 10 minutes." and "10-minute timer" in wait["why"] and len(wait["checks"]) == 1 and wait["checks"][0]["v"] == "wait" and wait["red"] == 1 and "1 said wait" in wait["hint"], wait)
+            ans("loss", "yes")
+            gone = p.evaluate("[document.querySelector('#verdict').dataset.level, JSON.parse(localStorage.getItem('journal.v1')).checks.length]")
+            check("c. tapping the chosen answer again clears it: the verdict is open again and the unfinished check is not kept", gone == ["open", 0], gone)
+            ans("loss", "no")
+            p.click("#shReset")
+            rs = p.evaluate("[document.querySelector('#verdict').dataset.level, document.querySelectorAll('#qs [aria-checked=true]').length, JSON.parse(localStorage.getItem('journal.v1')).checks.length]")
+            check("c. Start again clears the answers (the finished check stays in the count)", rs == ["open", 0, 1], rs)
+            p.keyboard.press("Escape")
+            cl = p.evaluate("""() => ({ hidden: document.querySelector('#sheet').hidden, inert: document.querySelector('#app').inert, locked: document.documentElement.classList.contains('sheeted'), focus: document.activeElement && document.activeElement.id })""")
+            check("c. Escape closes the sheet, the page is live again and the focus goes back to the button that opened it", cl == {"hidden": True, "inert": False, "locked": False, "focus": "checkBtn"}, cl)
+            p.click("#checkBtn")
+            p.click("#scrim", position={"x": 3, "y": 400})
+            check("c. a tap outside the sheet closes it too", p.evaluate("document.querySelector('#sheet').hidden"))
+            p.click("#checkBtn")
+            p.click("#shClose")
+            check("c. the Close button closes it", p.evaluate("document.querySelector('#sheet').hidden"))
+            p.click("#checkBtn")
+            for i in range(14):
+                p.keyboard.press("Tab")
+            check("c. Tab never leaves the sheet (a focus trap) while it is open", p.evaluate("document.querySelector('#panel').contains(document.activeElement)"))
+            p.keyboard.press("Escape")
+            p.goto(f"{origin}/journal/?check=1")
+            p.wait_for_function("window.JOURNAL && window.JOURNAL.ready()", timeout=120000, polling=300)
+            p.wait_for_timeout(300)
+            check("c. ?check=1 (a shortcut, or Jarvis) opens the sheet at once; the last check is remembered across a reload", not p.evaluate("document.querySelector('#sheet').hidden") and "Last check:" in p.evaluate("document.querySelector('#chkHint').textContent"))
+            p.goto(f"{origin}/journal/#check")
+            p.reload()
+            p.wait_for_function("window.JOURNAL && window.JOURNAL.ready()", timeout=120000, polling=300)
+            p.wait_for_timeout(300)
+            check("c. #check opens it too", not p.evaluate("document.querySelector('#sheet').hidden"))
+            check("c. the check: no console error, nothing off the page's origin, only the journal's two keys", not errs and not off and sorted(p.evaluate("Object.keys(localStorage).filter((k) => /journal/i.test(k))")) == ["journal.card.v1", "journal.v1"], (errs[:3], off[:3]))
+            ctx.close()
+            ctx, p, errs, seen, off = page(br, origin, w=375, h=667)
+            open_(p, origin, "?demo=1")
+            p.click("#checkBtn")
+            small = p.evaluate("""() => { const P = document.querySelector('#panel'), r = P.getBoundingClientRect(); return { fits: r.left >= 0 && r.right <= innerWidth && r.top >= 0 && r.bottom <= innerHeight - 170, side: P.scrollWidth <= P.clientWidth, tall: Math.round(r.height) }; }""")
+            check("c. 375 x 667: the sheet fits (scrolls inside itself), no sideways scroll, taps >= 44 px, the demo preview never overwrites the real Jarvis card",
+                  small["fits"] and small["side"] and not p.evaluate(TAPS) and p.evaluate("localStorage.getItem('journal.card.v1')") is None, small)
             ctx.close()
             # ---- other sizes, LITE, reduced motion
             ctx, p, errs, seen, off = page(br, origin, w=375, h=667)
