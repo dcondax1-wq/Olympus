@@ -344,7 +344,7 @@ def part_d(tmp, rules):
             check("d. the ritual starts: the button says Stop, the ring is a canvas, a step is read out", p.inner_text("#ritualBtn") == "Stop" and p.locator("#ritualRing canvas").count() == 1 and len(p.inner_text("#ritualTxt")) > 10)
             p.click("#ritualBtn")
             check("d. ... and Stop puts it back", p.inner_text("#ritualBtn") == "Start the ritual")
-            p.evaluate("navigator.canShare = () => true; window.__sh = null; navigator.share = async (d) => { window.__sh = d.files[0].type + ':' + d.files[0].size; }")
+            p.evaluate("() => { navigator.canShare = () => true; window.__sh = null; navigator.share = async (d) => { window.__sh = d.files[0].type + ':' + d.files[0].size; }; }")
             tab(p, "trade")
             p.click("#shareBtn")
             p.wait_for_function("window.__sh", timeout=30000)
