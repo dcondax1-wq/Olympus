@@ -238,6 +238,7 @@ def run_browser():
                   b["bust"] > c["bust"] and p.inner_text("#multV") == "0.50x" and p.input_value("#mult") == "0.5" and c["scene"]["steps"] >= 2, (a["bust"], b["bust"], c["bust"]))
             p.evaluate("(() => { const e = document.getElementById('mult'); e.value = '1.5'; e.dispatchEvent(new Event('input', { bubbles: true })); })()")
             p.wait_for_function("LAB.state().mult === 1.5")
+            p.wait_for_function("document.getElementById('multV').textContent === '1.50x'")
             check("c. dragging the real range input works (1.50x) and the 1.5x preset is pressed", p.inner_text("#multV") == "1.50x" and p.get_attribute("[data-m='1.5']", "aria-pressed") == "true")
             p.click("#sweetBtn")
             p.wait_for_function("LAB.state().mult === LAB.state().sweet.m")
