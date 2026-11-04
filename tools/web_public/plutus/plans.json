@@ -390,8 +390,8 @@
     "name": "BLITZ on a Builder 25K",
     "price": 63.0,
     "funded_per_month": {
-     "H1": 108,
-     "H2": 0
+     "H1": 322,
+     "H2": 82
     },
     "first_pay_from_funded": null,
     "first_pay_from_purchase": {
@@ -414,10 +414,10 @@
      "H1": 191,
      "H2": 140
     },
-    "funded_label": "funded estimate (3-month funded accounts, $150 size; stuck 45% / 100% of starts)",
+    "funded_label": "funded estimate (6-month Monte Carlo at the $150 size; many accounts get stuck with too little room)",
     "funded_stuck_pct": {
-     "H1": 45.5,
-     "H2": 100.0
+     "H1": 24.0,
+     "H2": 58.9
     },
     "source": "research/scalp/blitz_funded_study.json (funded stage only), ab_blitz_final.json (slot, later-break size), sn_plan.json"
    }

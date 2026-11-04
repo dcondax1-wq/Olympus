@@ -5,6 +5,8 @@ $ a month to the owner (80%) over 3-month funded accounts started every 3rd sess
 slot (eval -> funded -> payouts, net of every eval, 6-month Monte Carlo) for comparison. Pick Jan-Jun, check Jul-Oct, 2021-25 reference.
 
     python -X utf8 tools/blitz_funded_study.py     # -> research/scalp/blitz_funded_study.json
+`funded_only` = 3-month funded accounts started every 3rd session (22 starts in Jan-Jun, only 6 in Jul-Oct: too few); `funded_mc` = 1,000 six-month
+Monte Carlo paths (5-session blocks of the span), the figure the pages show.
 Research only; nothing live.
 """
 from __future__ import annotations
@@ -16,6 +18,7 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 from tools import ab_edge as AB  # noqa: E402
+from tools import blitz_funded_fix as FX  # noqa: E402
 
 OUT = os.path.join(ROOT, "research", "scalp", "blitz_funded_study.json")
 
@@ -30,8 +33,9 @@ def main():
         key = {"H1": "H1", "H2": "H2", "R": "2021-25"}[sp]
         f = BS.funded_score(T, S, AB.PICK_FZ)
         slot = AB.slot25(T, S, n=1000)
-        out["spans"][key] = {"funded_only": f, "slot": slot, "trades": len(T), "sessions": len(S)}
-        print(key, f, slot, flush=True)
+        mc = FX.funded_mc(N, BS, T, S, dict(AB.PICK_FZ)) if sp != "R" else None       # 1,000 paths x 126 sessions: the figure the pages show
+        out["spans"][key] = {"funded_only": f, "funded_mc": mc, "slot": slot, "trades": len(T), "sessions": len(S)}
+        print(key, f, mc, slot, flush=True)
     json.dump(out, open(OUT, "w"), indent=1)
 
 

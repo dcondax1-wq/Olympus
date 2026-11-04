@@ -24,6 +24,16 @@
     "fund_stuck": 45.5,
     "fund_starts": 22
    },
+   "funded_mc": {
+    "per_month": 322,
+    "p10_per_month": 0,
+    "any_pay_pct": 84.4,
+    "first_med": 30.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 24.0,
+    "maxed_pct": 25.3,
+    "trades_per_week": 8.52
+   },
    "slot": {
     "life_pm": 270,
     "life_p10": 10,
@@ -42,6 +52,16 @@
     "fund_lost": 0.0,
     "fund_stuck": 100.0,
     "fund_starts": 6
+   },
+   "funded_mc": {
+    "per_month": 82,
+    "p10_per_month": 0,
+    "any_pay_pct": 48.6,
+    "first_med": 53.0,
+    "lost_pct": 0.0,
+    "stuck_pct": 58.9,
+    "maxed_pct": 2.0,
+    "trades_per_week": 6.53
    },
    "slot": {
     "life_pm": 37,
@@ -62,6 +82,7 @@
     "fund_stuck": 28.9,
     "fund_starts": 339
    },
+   "funded_mc": null,
    "slot": {
     "life_pm": -40,
     "life_p10": -94,

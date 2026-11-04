@@ -98,7 +98,7 @@ def part_b():
     check("b. strategy block: ATLAS 25K at $43 and BLITZ 25K at $63, the MFFU cap 1 + 2 = 3 funded accounts, correlation per pair (LIT x ATLAS +0.14, LIT x BLITZ -0.06, ATLAS x BLITZ 0.00; 0.85 only for copies), the 3-account $1,532 / $1,136 with the range $1,100-1,800",
           [a["price"] for a in sa["accounts"]] == [91.8, 43.0, 63.0] and (sa["mffu_caps"]["funded_50k"], sa["mffu_caps"]["funded_25k"], sa["mffu_caps"]["funded_total"]) == (1, 2, 3)
           and [round(x["rho"], 2) for x in sa["corr_pairs"]] == [0.14, -0.06, -0.0, 0.85] and (sa["three_accounts"]["H1"]["per_month"], sa["three_accounts"]["H2"]["per_month"]) == (1532, 1136)
-          and sa["accounts"][2]["funded_per_month"] == {"H1": 108, "H2": 0}
+          and sa["accounts"][2]["funded_per_month"] == {"H1": 322, "H2": 82}
           and (sa["three_accounts"]["range"]["low"], sa["three_accounts"]["range"]["high"]) == (1100, 1800), sa["three_accounts"])
     spans = ("H1", "H2", "2021-25")
     sums = {s: sum(by[i]["spans"][s]["net_6m"] for i in ("mffu_builder_50k", "lucid_pro_50k", "fn_rapid_daily_50k")) / 6 for s in spans}

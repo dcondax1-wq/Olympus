@@ -1,0 +1,320 @@
+{
+ "_eval_today": {
+  "H1": {
+   "p10": 65.5,
+   "f10": 0.0,
+   "dead10": 0.8,
+   "dec10": 66.3,
+   "p15": 73.7,
+   "f15": 0.0,
+   "pass_med": 5.0,
+   "slow_pass": 4.3,
+   "p60": 92.2,
+   "tpw": 2.11,
+   "net": 6485,
+   "per_month": 1064,
+   "pf": 2.3
+  },
+  "H2": {
+   "p10": 43.5,
+   "f10": 0.0,
+   "dead10": 0.0,
+   "dec10": 43.5,
+   "p15": 54.7,
+   "f15": 0.0,
+   "pass_med": 6.0,
+   "slow_pass": 13.3,
+   "p60": 100.0,
+   "tpw": 1.6,
+   "net": 4434,
+   "per_month": 1194,
+   "pf": 3.18
+  }
+ },
+ "combo:hunt_trend_x0.5|max_day=3": {
+  "K": {
+   "max_day": 3
+  },
+  "info": {
+   "V": "hunt_trend_x0.5"
+  },
+  "eval": {
+   "H1": {
+    "p10": 66.4,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 66.4,
+    "pass_med": 5.0
+   },
+   "H2": {
+    "p10": 55.1,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 55.1,
+    "pass_med": 4.5
+   }
+  },
+  "same_eval": false,
+  "H1": {
+   "paid_per_month": 584,
+   "paid_p10_per_month": 253,
+   "lost_pct": 0.0,
+   "stuck_pct": 10.0,
+   "grad_pct": 81.4,
+   "payouts_6m": 4.4,
+   "first_med": 16.0,
+   "any_pay_pct": 91.8,
+   "made_per_month": 1927,
+   "trades_per_week": 4.92,
+   "pf": 2.94,
+   "cons_block_days": 42.8,
+   "cycling": {
+    "paid_per_account": 3751,
+    "sessions_per_account": 84.3,
+    "end_mix": {
+     "grad": 235,
+     "stuck": 15
+    },
+    "net_per_month_cycling": 852
+   }
+  },
+  "H2": {
+   "paid_per_month": 542,
+   "paid_p10_per_month": 0,
+   "lost_pct": 0.0,
+   "stuck_pct": 16.6,
+   "grad_pct": 75.0,
+   "payouts_6m": 4.09,
+   "first_med": 17.0,
+   "any_pay_pct": 86.4,
+   "made_per_month": 1723,
+   "trades_per_week": 4.38,
+   "pf": 3.51,
+   "cons_block_days": 38.1,
+   "cycling": {
+    "paid_per_account": 3465,
+    "sessions_per_account": 80.9,
+    "end_mix": {
+     "stuck": 33,
+     "grad": 217
+    },
+    "net_per_month_cycling": 817
+   }
+  }
+ },
+ "combo:hunts_x0.5|max_day=3": {
+  "K": {
+   "max_day": 3
+  },
+  "info": {
+   "V": "hunts_x0.5"
+  },
+  "eval": {
+   "H1": {
+    "p10": 67.2,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 67.2,
+    "pass_med": 6.0
+   },
+   "H2": {
+    "p10": 55.1,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 55.1,
+    "pass_med": 7.0
+   }
+  },
+  "same_eval": false,
+  "H1": {
+   "paid_per_month": 646,
+   "paid_p10_per_month": 647,
+   "lost_pct": 0.0,
+   "stuck_pct": 2.4,
+   "grad_pct": 97.0,
+   "payouts_6m": 4.87,
+   "first_med": 13.0,
+   "any_pay_pct": 97.6,
+   "made_per_month": 1994,
+   "trades_per_week": 5.91,
+   "pf": 3.2,
+   "cons_block_days": 36.0,
+   "cycling": {
+    "paid_per_account": 3946,
+    "sessions_per_account": 67.4,
+    "end_mix": {
+     "grad": 248,
+     "stuck": 2
+    },
+    "net_per_month_cycling": 1100
+   }
+  },
+  "H2": {
+   "paid_per_month": 480,
+   "paid_p10_per_month": 0,
+   "lost_pct": 0.0,
+   "stuck_pct": 27.0,
+   "grad_pct": 65.2,
+   "payouts_6m": 3.61,
+   "first_med": 14.0,
+   "any_pay_pct": 79.2,
+   "made_per_month": 1594,
+   "trades_per_week": 6.64,
+   "pf": 2.53,
+   "cons_block_days": 35.8,
+   "cycling": {
+    "paid_per_account": 3064,
+    "sessions_per_account": 73.0,
+    "end_mix": {
+     "grad": 190,
+     "stuck": 60
+    },
+    "net_per_month_cycling": 791
+   }
+  }
+ },
+ "combo:hunt_trend_x0.5|cfg={'pct_max_usd':1000.0}": {
+  "K": {
+   "cfg": {
+    "pct_max_usd": 1000.0
+   }
+  },
+  "info": {
+   "V": "hunt_trend_x0.5"
+  },
+  "eval": {
+   "H1": {
+    "p10": 66.4,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 66.4,
+    "pass_med": 5.0
+   },
+   "H2": {
+    "p10": 55.1,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 55.1,
+    "pass_med": 4.5
+   }
+  },
+  "same_eval": false,
+  "H1": {
+   "paid_per_month": 574,
+   "paid_p10_per_month": 128,
+   "lost_pct": 0.0,
+   "stuck_pct": 10.8,
+   "grad_pct": 79.8,
+   "payouts_6m": 4.33,
+   "first_med": 16.0,
+   "any_pay_pct": 90.6,
+   "made_per_month": 1976,
+   "trades_per_week": 4.72,
+   "pf": 2.83,
+   "cons_block_days": 42.6,
+   "cycling": {
+    "paid_per_account": 3720,
+    "sessions_per_account": 88.9,
+    "end_mix": {
+     "grad": 233,
+     "stuck": 17
+    },
+    "net_per_month_cycling": 804
+   }
+  },
+  "H2": {
+   "paid_per_month": 597,
+   "paid_p10_per_month": 400,
+   "lost_pct": 0.0,
+   "stuck_pct": 8.0,
+   "grad_pct": 84.2,
+   "payouts_6m": 4.5,
+   "first_med": 18.0,
+   "any_pay_pct": 93.2,
+   "made_per_month": 2028,
+   "trades_per_week": 4.21,
+   "pf": 3.78,
+   "cons_block_days": 41.9,
+   "cycling": {
+    "paid_per_account": 3656,
+    "sessions_per_account": 82.1,
+    "end_mix": {
+     "stuck": 21,
+     "grad": 229
+    },
+    "net_per_month_cycling": 852
+   }
+  }
+ },
+ "combo:hunt_trend_x0.5|day_tp=500.0": {
+  "K": {
+   "day_tp": 500.0
+  },
+  "info": {
+   "V": "hunt_trend_x0.5"
+  },
+  "eval": {
+   "H1": {
+    "p10": 66.4,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 66.4,
+    "pass_med": 5.0
+   },
+   "H2": {
+    "p10": 55.1,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 55.1,
+    "pass_med": 4.5
+   }
+  },
+  "same_eval": false,
+  "H1": {
+   "paid_per_month": 571,
+   "paid_p10_per_month": 107,
+   "lost_pct": 0.0,
+   "stuck_pct": 12.2,
+   "grad_pct": 80.6,
+   "payouts_6m": 4.31,
+   "first_med": 15.0,
+   "any_pay_pct": 90.0,
+   "made_per_month": 1564,
+   "trades_per_week": 4.52,
+   "pf": 2.79,
+   "cons_block_days": 38.0,
+   "cycling": {
+    "paid_per_account": 3737,
+    "sessions_per_account": 85.3,
+    "end_mix": {
+     "grad": 234,
+     "stuck": 16
+    },
+    "net_per_month_cycling": 840
+   }
+  },
+  "H2": {
+   "paid_per_month": 597,
+   "paid_p10_per_month": 400,
+   "lost_pct": 0.0,
+   "stuck_pct": 8.6,
+   "grad_pct": 85.6,
+   "payouts_6m": 4.51,
+   "first_med": 17.0,
+   "any_pay_pct": 93.2,
+   "made_per_month": 1665,
+   "trades_per_week": 3.99,
+   "pf": 3.67,
+   "cons_block_days": 38.2,
+   "cycling": {
+    "paid_per_account": 3649,
+    "sessions_per_account": 78.9,
+    "end_mix": {
+     "stuck": 21,
+     "grad": 229
+    },
+    "net_per_month_cycling": 882
+   }
+  }
+ }
+}
