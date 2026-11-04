@@ -409,9 +409,13 @@ export function createScene(canvas, { O = null } = {}) {
 
   // ---- the frame loop
   let last = performance.now(), frames = 0, raf = 0, stopped = false, drew = 0;
+  let gapAt = 0;
   function frame(now) {
     raf = requestAnimationFrame(frame);
-    if (stopped) return;
+    if (stopped || (O && O.hidden())) return;                            // hidden / covered: no JS, no frame (docs/OLYMPUS_PERF.md)
+    const gap = O && O.frameGap ? O.frameGap() : 0;                       // idle 30 / 15 fps, battery saver, 3D Off 2 fps; a touch = full rate
+    if (gap && now - gapAt < gap - 3) return;
+    gapAt = now;
     const dt = Math.min(0.1, (now - last) / 1000); last = now;
     const still = reduced();
     const aspect = canvas.clientWidth / Math.max(1, canvas.clientHeight);
