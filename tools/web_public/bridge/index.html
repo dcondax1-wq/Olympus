@@ -122,10 +122,15 @@ pre { border: 1px solid rgba(192, 132, 252, .12); }
 .num { font: 800 14px Orbitron, sans-serif; color: #06040d; background: linear-gradient(145deg, #ffe29a, var(--gold)); border-radius: 50%; width: 28px; height: 28px; display: grid; place-items: center; flex: none; }
 .nx { display: flex; gap: 10px; align-items: center; }
 .tag.easy { color: var(--ok); } .tag.hard { color: #fca5a5; }
+.home { justify-self: start; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: rgba(124, 58, 237, .18);
+  color: var(--ink); text-decoration: none; font: 700 13px Orbitron, sans-serif; letter-spacing: .12em; }
+.framed .home { display: none; }
 </style>
+<script>(function () { try { if (window.top !== window) document.documentElement.classList.add('framed'); } catch (e) { document.documentElement.classList.add('framed'); } })();</script>
 </head>
 <body>
 <div class="w">
+  <a class="home" href="../jarvis/" id="homeLink">&#927; Back to Olympus</a>
   <div><div class="e">OLYMPUS · CLAUDE × CHATGPT</div><h1>BRIDGE</h1></div>
   <section class="how">
     <b>How it works</b>
