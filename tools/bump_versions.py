@@ -207,6 +207,12 @@ def make_plan(repo, changed=None):
         if c.endswith("/sw.js") or c not in by_target:
             continue
         rs = by_target[c]
+        if repo.base_text(c) is None:                                  # created since the base: no phone has a copy, nothing can be stale
+            plan.warnings.append(f"{c}: new since {repo.base} (no tag bump needed)")
+            continue
+        if all(repo.base_text(r.file) is None for r in rs):             # only pages created since the base point at it: no evidence of the old tag
+            plan.warnings.append(f"{c}: referenced only by files new since {repo.base} (not bumped: bump by hand if its tag was already used)")
+            continue
         if already_bumped(repo, rs):
             plan.warnings.append(f"{c}: already bumped since {repo.base} (left alone)")
             continue

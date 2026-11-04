@@ -89,6 +89,7 @@ def read(root, rel):
 
 
 def write(root, rel, text):
+    os.makedirs(os.path.dirname(os.path.join(root, *rel.split("/"))), exist_ok=True)
     with open(os.path.join(root, *rel.split("/")), "w", encoding="utf-8", newline="") as fh:
         fh.write(text)
 
@@ -230,6 +231,18 @@ class BumpVersions(unittest.TestCase):
         write(self.root, "tools/web_public/newfile.js", "//new\n")                                   # an untracked file nobody references: no ?v= added, no rows
         code, out = run(self.root, "--dry-run")
         self.assertNotIn("newfile", out)
+
+    def test_j_files_new_since_the_base_are_never_bumped_and_reruns_are_stable(self):
+        # a file created after the base has no stale copy anywhere; a page created after the base is no evidence of an old tag
+        write(self.root, "tools/web_public/fresh/index.html", '<script src="fresh.js?v=n1"></script><script src="../app.js?v=a1"></script>\n')
+        write(self.root, "tools/web_public/fresh/fresh.js", "//fresh\n")
+        write(self.root, "tools/web_public/fresh2/index.html", '<script src="../olympus/sfx.js?v=s1"></script>\n')
+        for _ in range(2):                                                                         # twice: the second run must change nothing more
+            code, out = run(self.root, "--apply", changed=["tools/web_public/fresh/fresh.js", "tools/web_public/fresh2/index.html", "tools/web_public/olympus/sfx.js"])
+        self.assertIn("fresh.js?v=n1", read(self.root, "tools/web_public/fresh/index.html"))        # new file: untouched
+        self.assertIn("new since", out)
+        self.assertIn("sfx.js?v=s2", read(self.root, "tools/web_public/jarvis/index.html"))         # an old page still carries it: bumped once
+        self.assertNotIn("sfx.js?v=s3", read(self.root, "tools/web_public/jarvis/index.html"))
 
     def test_i_the_real_tree_is_not_what_the_tests_touch(self):
         self.assertNotEqual(os.path.abspath(self.root), ROOT)
