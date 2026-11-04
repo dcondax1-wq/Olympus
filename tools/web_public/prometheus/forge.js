@@ -12,7 +12,9 @@ import { FlameField } from './flames.js';
 import { lineageSvg, pickAt, heatRgb } from './lineage.js';
 import { createRenderer } from '../olympus/render.js';     // the OLYMPUS render core: ACES, PMREM sky, bloom, MSAA, film finish
 import { metal } from '../olympus/materials.js';
-import { buildForgeSet } from './forgeset.js';             // the set: obsidian floor, lava cracks, molten gold ring, braziers
+import { buildForgeSet } from './forgeset.js';
+import { buildWorks } from './forgeworks.js';           // the smithy: bronze anvil, hammer, molten ingot, soot-stone hearth, sparks and smoke
+import { createPlus, overfit } from './forgeplus.js';     // the tools panel: overfitting meter, breeding, verdicts, survivors, compare, search, share card             // the set: obsidian floor, lava cracks, molten gold ring, braziers
 
 const O = window.OLYMPUS || null;   // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
 const Q = new URLSearchParams(location.search);
@@ -186,6 +188,8 @@ class Arena {
     this.rand = (() => { let s = 12345; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; })();
     this.set = buildForgeSet(THREE, this.scene, { metal, ARENA_R, lite: this.lite });
     this.rim = this.set.ring;
+    this.works = buildWorks(THREE, this.scene, { R: ARENA_R, lite: this.lite });
+    this.works.attachFx(window.OLYMPUS_FX);
     this.buildSky();
     this.embers = new Embers(this.scene, this.tex.glow, 700);
     this.embers.setCap(this.lite ? 260 : 700);
@@ -409,6 +413,7 @@ class Arena {
     }
     this.embers.update(dt);
     this.set.update(this.t, RM, this.rc.renderer.getPixelRatio());
+    this.works.update(this.t, RM);
     this.rc.render();                                // tone mapping, bloom, MSAA and the film finish
   }
 
@@ -468,6 +473,13 @@ function openCard(id) {
     <table aria-label="Parameters against live"><thead><tr><th>Knob</th><th>Live</th><th>This</th></tr></thead><tbody>
     ${rows.map((r) => `<tr class="${r.changed ? 'chg' : ''}"><td>${esc(r.knob.label)}</td><td>${esc(FMT.knob(r.knob, r.live))}</td><td>${esc(FMT.knob(r.knob, r.val))}</td></tr>`).join('')}
     </tbody></table><p class="note">${nchg ? `${nchg} knob${nchg > 1 ? 's' : ''} differ from live (◆).` : 'Same knobs as live.'} Research only: nothing here changes the bot.</p>`;
+  $('card-b').insertAdjacentHTML('afterbegin', `<div class="ofit" id="ofit"></div>`);
+  const m = overfit(F, k);
+  $('ofit').innerHTML = `<span class="ol">OVERFITTING</span><span class="om" role="img" aria-label="Overfitting meter ${m.meter} of 100, ${m.label}"><i style="width:${100 - Math.max(2, m.meter)}%"></i></span><b style="color:${m.colour}">${esc(m.label)}</b>`
+    + `<button type="button" class="mini" id="cardShare">SHARE</button><button type="button" class="mini" id="cardCmp">COMPARE</button>`;
+  $('cardShare').addEventListener('click', () => plus && plus.share(id));
+  $('cardCmp').addEventListener('click', () => { plus.select(id); plus.open('meter', id); closeCard(); showPlus(true); });
+  plus && plus.select(id);
   $('card').hidden = false;
   $('card').scrollTop = 0;
 }
@@ -533,7 +545,7 @@ function openTruth() {
 const PANELS = { verdict: ['truthBtn', 'truth-b', 'Does the fire survive H2?'], lineage: ['linBtn', 'lin-b', 'Lineage · the champion\'s ancestry'],
   hall: ['hallBtn', 'hall-b', 'Hall of Champions'] };
 function showPanel(kind) {
-  closeCard();
+  closeCard(); showPlus(false);
   STATE.panel = kind;
   for (const [k, [btn, body]] of Object.entries(PANELS)) { $(body).hidden = k !== kind; $(btn).setAttribute('aria-expanded', String(k === kind)); }
   $('truth-h').textContent = PANELS[kind][2];
@@ -541,7 +553,7 @@ function showPanel(kind) {
   $('truth').hidden = false;
 }
 function closeTruth() {
-  $('truth').hidden = true; STATE.panel = null;
+  $('truth').hidden = true; STATE.panel = null; showPlus(false);
   for (const [btn] of Object.values(PANELS)) $(btn).setAttribute('aria-expanded', 'false');
 }
 function togglePanel(kind, open) { if (STATE.panel === kind && !$('truth').hidden) closeTruth(); else open(); }
@@ -584,6 +596,15 @@ function setGen(g, step = false) {
   else renderNoGl(g);
   renderChips();
   if (STATE.panel === 'lineage' && !$('truth').hidden) openLineage();
+}
+
+let plus = null;
+function ftoast(text) { const t = $('ftoast'); t.textContent = text; t.hidden = false; clearTimeout(ftoast.timer); ftoast.timer = setTimeout(() => { t.hidden = true; }, 2200); }
+function showPlus(on) {
+  if (!plus) return;
+  if (on) { closeCard(); STATE.panel = null; $('truth').hidden = true; for (const [btn] of Object.values(PANELS)) $(btn).setAttribute('aria-expanded', 'false'); plus.open(); }
+  else plus.close();
+  $('plusBtn').setAttribute('aria-expanded', String(!!on));
 }
 
 function setPlaying(on) {
@@ -687,13 +708,16 @@ async function main() {
   $('truthBtn').addEventListener('click', () => togglePanel('verdict', openTruth));
   $('linBtn').addEventListener('click', () => togglePanel('lineage', openLineage));
   $('hallBtn').addEventListener('click', () => togglePanel('hall', openHall));
+  plus = createPlus({ F, open: (id) => { showPlus(false); openCard(id); }, setGen: (g) => { setPlaying(false); setGen(g); }, toast: ftoast, getGen: () => STATE.gen });
+  $('plusBtn').addEventListener('click', () => showPlus($('plus').hidden));
+  $('plusX').addEventListener('click', () => showPlus(false));
   $('banner').addEventListener('click', openTruth);
   $('lin-b').addEventListener('click', (e) => { const svg = $('lin-b').querySelector('svg'); const id = svg && pickAt(svg, F, e.clientX, e.clientY); if (id != null) openCard(id); });
   $('hall-b').addEventListener('click', (e) => { const tr = e.target.closest('tr[data-id]'); if (tr) openCard(tr.dataset.id === 'live' ? 'live' : Number(tr.dataset.id)); });
   addEventListener('resize', measureBars);
   measureBars();
   addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { closeCard(); closeTruth(); }
+    if (e.key === 'Escape') { closeCard(); closeTruth(); showPlus(false); }
     if (e.target === sl) return;
     if (e.key === 'ArrowRight') { setPlaying(false); setGen(STATE.gen + 1, true); }
     if (e.key === 'ArrowLeft') { setPlaying(false); setGen(STATE.gen - 1); }
@@ -713,6 +737,7 @@ async function main() {
     get fps() { return STATE.arena ? STATE.arena.fps() : 0; }, get demo() { return F.demo; }, errors: STATE.errors,
     screenOf(id) { const a = STATE.arena; if (!a) return null; const f = id === 'live' ? a.liveFlame : a.byCreature.get(id); return f ? a.screenOf(f) : null; },
     ids() { return F.gen(STATE.gen).map((c) => c.id); }, champion: F.d.champion.id, ready: true,
+    get plus() { return plus; }, setAz(v, e) { const a = STATE.arena; if (a) { a.az = v; if (e != null) a.el = e; a.placeCamera(); } }, get works() { const w = STATE.arena && STATE.arena.works; return w ? { strikes: w.strikes, fx: w.fxNames, pos: w.pos } : null; },
     get calls() { return STATE.arena ? STATE.arena.rc.stats().calls : 0; }, get passes() { return STATE.arena ? STATE.arena.rc.passes() : []; }, get quality() { return STATE.arena ? STATE.arena.rc.quality() : ''; }, get panel() { return STATE.panel; }, heatRgb,
     lineageDot(id) { const c = document.querySelector(`#lin-b circle[data-id="${id}"]`); if (!c) return null; const r = c.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; },
   };
