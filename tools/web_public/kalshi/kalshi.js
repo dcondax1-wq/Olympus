@@ -147,7 +147,7 @@
       sort: SORTS.some((r) => r[0] === u.sort) ? u.sort : 'closes',
       side: SIDES.indexOf(u.side) >= 0 ? u.side : 'all',
     },
-    preview: false, q: '', kf: 0, calc: { p: '', c: '' }, trShown: TR_PAGE, cal: '', calSel: '', calGr: '', open: new Set(), scrub: false, pend: false, chart: null, series: null, v: null, pos: [], fresh: false, alerts: null,
+    preview: false, jf: 'all', jn: '', q: '', kf: 0, calc: { p: '', c: '' }, trShown: TR_PAGE, cal: '', calSel: '', calGr: '', open: new Set(), scrub: false, pend: false, chart: null, series: null, v: null, pos: [], fresh: false, alerts: null,
   };
   const saveUi = () => LS.set('kalshi.ui', S.ui);
   const cached = LS.get('kalshi.last', null);
@@ -686,7 +686,8 @@
       + (rows ? `<ul class="rows kel">${rows}</ul>` : '<p class="empty">No open bet carries the bot\'s own chance yet (the <code>prob</code> field): try the calculator.</p>')
       + `<div class="calc" role="group" aria-label="Kelly calculator"><label><span class="lab">Your chance %</span><input id="kcP" class="q" type="text" inputmode="decimal" autocomplete="off" value="${esc(c0.p)}" aria-label="Your chance in percent"></label>`
       + `<label><span class="lab">Price ¢</span><input id="kcC" class="q" type="text" inputmode="decimal" autocomplete="off" value="${esc(c0.c)}" aria-label="Price in cents"></label>`
-      + `<output id="kcOut" class="calc-o" aria-live="polite">${calcOut(cfg, fr)}</output></div></section>`;
+      + `<output id="kcOut" class="calc-o" aria-live="polite">${calcOut(cfg, fr)}</output></div>`
+      + `<div id="kcCurve" class="kcurve">${kellyCurve(k, fr)}</div></section>`;
   }
   function calcOut(cfg, fr) {
     const p = num(S.calc.p), c = num(S.calc.c);
@@ -717,6 +718,109 @@
       + `<div class="edge-k"><div><span class="lab">Avg edge</span><b class="${cls(avg)}">${esc(edgeC(avg))}</b></div><div><span class="lab">EV / risk</span><b class="${cls(evT)}">${risk > 0 ? esc(pct(evT / risk, true)) : '—'}</b></div>`
       + `<div><span class="lab">Bets</span><b>${ps.length}<small> of ${v.pos.length}</small></b></div></div>`
       + `<ul class="brk edge-l">${rows}</ul><p class="muted small">Edge = the bot's own chance − the price now, per contract; EV = edge × contracts${me != null ? `; the line = its min edge ${esc((me * 100).toFixed(1))}¢` : ''}.</p></section>`;
+  }
+
+
+  // ---- Edge map (2026-11-03): every open bet as a bubble. Across = the price paid now, up = the bot's own chance; the diagonal is
+  // fair (chance = price), so a bubble ABOVE it has an edge and the further up the bigger. Size = what is staked; green = at or
+  // over the bot's min edge, amber = some edge but under it, red = no edge. Pure SVG, no library.
+  function edgeMapHtml(k, v) {
+    const ps = v.pos.map(posModel).filter((m) => m.prob != null && (m.px != null || m.avg != null));
+    if (!ps.length) return '';
+    const cfg = kellyCfg(k), me = cfg.minEdge != null ? cfg.minEdge : 0.03;
+    const xy = ps.map((m) => ({ m, x: m.px != null ? m.px : m.avg, y: m.prob }));
+    const lo = Math.max(0, Math.min.apply(null, xy.map((d) => Math.min(d.x, d.y))) - 0.08), hi = Math.min(1, Math.max.apply(null, xy.map((d) => Math.max(d.x, d.y))) + 0.08);
+    const W = 300, H = 210, PL = 30, PB = 22, PT = 8, PR = 8, sc = (t, a, b) => a + ((t - lo) / Math.max(0.05, hi - lo)) * (b - a);
+    const X = (t) => sc(t, PL, W - PR), Y = (t) => sc(t, H - PB, PT), mx = Math.max.apply(null, xy.map((d) => d.m.cost || 0)) || 1;
+    const stp = hi - lo > 0.5 ? 0.25 : hi - lo > 0.2 ? 0.1 : 0.05, ticks = [];
+    for (let t = Math.ceil((lo - 1e-9) / stp) * stp; t <= hi + 1e-9; t += stp) ticks.push(Math.round(t * 100) / 100);
+    const grid = ticks.map((t) => `<line class="gx" x1="${X(t).toFixed(1)}" x2="${X(t).toFixed(1)}" y1="${PT}" y2="${H - PB}"/><line class="gx" x1="${PL}" x2="${W - PR}" y1="${Y(t).toFixed(1)}" y2="${Y(t).toFixed(1)}"/>`
+      + `<text class="ax" x="${X(t).toFixed(1)}" y="${H - 6}" text-anchor="middle">${Math.round(t * 100)}¢</text><text class="ax" x="${PL - 4}" y="${(Y(t) + 3).toFixed(1)}" text-anchor="end">${Math.round(t * 100)}%</text>`).join('');
+    const dots = xy.map((d, i) => {
+      const e = d.y - d.x, c = e >= me ? 'ok' : e > 0 ? 'warn' : 'bad', r = 5 + 9 * Math.sqrt((d.m.cost || 0) / mx);
+      return `<circle class="em-d ${c}" cx="${X(d.x).toFixed(1)}" cy="${Y(d.y).toFixed(1)}" r="${r.toFixed(1)}" style="--i:${i}"><title>${esc(d.m.title)}: chance ${esc(pct(d.y))} vs ${esc(cents(d.x))}, edge ${esc(edgeC(e))}${d.m.cost != null ? ', staked ' + esc(usd(d.m.cost)) : ''}</title></circle>`;
+    }).join('');
+    const ok = xy.filter((d) => d.y - d.x >= me).length;
+    return `<section class="card" id="sec-emap"><div class="card-h"><h2>Edge map</h2><span class="r muted">${ok} of ${ps.length} clear the min edge</span></div>`
+      + `<svg class="emap" viewBox="0 0 ${W} ${H}" role="img" aria-label="Open bets: the price paid across, the bot's own chance up; the diagonal is fair, bubbles above it have an edge">${grid}`
+      + `<path class="em-up" d="M${X(lo).toFixed(1)},${Y(lo).toFixed(1)}L${X(lo).toFixed(1)},${Y(hi).toFixed(1)}L${X(hi).toFixed(1)},${Y(hi).toFixed(1)}Z"/><line class="em-fair" x1="${X(lo).toFixed(1)}" y1="${Y(lo).toFixed(1)}" x2="${X(hi).toFixed(1)}" y2="${Y(hi).toFixed(1)}"/>${dots}</svg>`
+      + `<p class="muted small">Across: the price now. Up: the bot's own chance. Above the diagonal = an edge; bigger bubble = more staked; green = over the bot's min edge (${esc((me * 100).toFixed(1))}¢), amber = under it, red = none.</p></section>`;
+  }
+
+  // ---- Kelly growth curve (2026-11-03): how fast the bankroll grows at each bet size, for the calculator's chance and price (else
+  // the open bets' own average). The top is full Kelly; past about twice that the curve goes under zero: betting that much loses.
+  function kellyCurve(k, fr) {
+    let p = num(S.calc.p), c = num(S.calc.c), src = 'your numbers';
+    p = p != null && p > 0 && p < 100 ? p / 100 : null; c = c != null && c > 0 && c < 100 ? c / 100 : null;
+    if (p == null || c == null) {
+      const ps = (S.v ? S.v.pos : []).map(posModel).filter((m) => m.prob != null && (m.px != null || m.avg != null) && (m.n || 0) > 0);
+      const n = sum(ps.map((m) => m.n || 0));
+      if (ps.length && n) { p = sum(ps.map((m) => m.prob * (m.n || 0))) / n; c = sum(ps.map((m) => (m.px != null ? m.px : m.avg) * (m.n || 0))) / n; src = 'the open bets, averaged'; }
+      else { p = 0.58; c = 0.5; src = 'an example: 58% chance at 50¢'; }
+    }
+    const fs = kellyF(p, c);
+    if (fs == null || fs <= 0) return `<p class="muted small">No edge at ${esc(pct(p))} for ${esc(cents(c))} (${esc(src)}): every bet size loses, so the curve is under zero everywhere. Bet nothing.</p>`;
+    const b = (1 - c) / c, g = (f) => p * Math.log(1 + f * b) + (1 - p) * Math.log(Math.max(1e-9, 1 - f));
+    const fmax = Math.min(0.98, fs * 2.4), N = 60, W = 300, H = 120, PX = 6, PY = 10;
+    const pts = [];
+    for (let i = 0; i <= N; i++) { const f = (i / N) * fmax; pts.push([f, g(f)]); }
+    const gtop = g(fs), gmin = Math.min(-gtop * 0.6, Math.min.apply(null, pts.map((q) => q[1])));
+    const X = (f) => PX + (f / fmax) * (W - 2 * PX), Y = (y) => PY + ((gtop - y) / (gtop - gmin)) * (H - 2 * PY), y0 = Y(0);
+    const d = pts.map((q, i) => `${i ? 'L' : 'M'}${X(q[0]).toFixed(1)},${Y(q[1]).toFixed(1)}`).join('');
+    const mk = (f, lab, cls) => (f <= fmax ? `<line class="kc-m ${cls}" x1="${X(f).toFixed(1)}" x2="${X(f).toFixed(1)}" y1="${PY}" y2="${H - PY}"/><text class="kc-t ${cls}" x="${X(f).toFixed(1)}" y="${(H - 1).toFixed(1)}" text-anchor="middle">${lab}</text>` : '');
+    const cur = S.kf || fr;
+    const rel = (f) => (g(f) / gtop * 100);
+    return `<svg class="kcurve-s" viewBox="0 0 ${W} ${H + 8}" role="img" aria-label="Growth rate of the bankroll against the bet size: best at full Kelly, negative past about double">`
+      + `<line class="kc-z" x1="${PX}" x2="${W - PX}" y1="${y0.toFixed(1)}" y2="${y0.toFixed(1)}"/><path class="kc-a" d="${d}L${X(fmax).toFixed(1)},${y0.toFixed(1)}L${X(0).toFixed(1)},${y0.toFixed(1)}Z"/><path class="kc-l" d="${d}"/>`
+      + `${mk(fs * 0.25, '¼', 'q')}${mk(fs * 0.5, '½', 'h')}${mk(fs, 'Full', 'f')}${mk(fs * 2, '2×', 'x')}<circle class="kc-p" cx="${X(fs * cur).toFixed(1)}" cy="${Y(g(fs * cur)).toFixed(1)}" r="4.5"/></svg>`
+      + `<p class="muted small">Growth by bet size for ${esc(pct(p))} at ${esc(cents(c))} (${esc(src)}). Full Kelly is ${esc(pct(fs))} of the bankroll. ${esc(cur === 1 ? 'Full' : cur === 0.5 ? '½' : cur === 0.25 ? '¼' : Math.round(cur * 100) + '%')} Kelly keeps `
+      + `<b>${esc(rel(fs * cur).toFixed(0))}%</b> of the best growth with far smaller swings; <b class="down">2× Kelly</b> grows <b class="down">${esc(rel(Math.min(fs * 2, 0.98)).toFixed(0))}%</b>: past that, a bigger bet only loses.</p>`;
+  }
+
+  // ---- Bet journal (2026-11-03): every settled bet by day, with the process behind it. A bet with an edge when it was taken that
+  // lost is variance; one with no edge that won was luck: the journal marks both, so a red day is read for what it was. Optional
+  // notes per day are kept on this phone only. Filter: all / wins / losses.
+  const JF = [['all', 'All'], ['win', 'Wins'], ['loss', 'Losses']], JN_MAX = 280, JDAYS = 7;
+  function journalModel(v) {
+    const days = new Map();
+    v.tr.forEach((t) => {
+      const pnl = num(t.pnl), tt = parseT(t.t), act = String(t.action == null ? '' : t.action).trim().toLowerCase();
+      if (pnl == null || act === 'sell' || !tt) return;
+      const day = dayKey(tt), price = dol(t.price), prob = unit(t.prob), edge = prob != null && price != null ? prob - price : null, n = num(t.contracts);
+      const win = pnl > 0.004, loss = pnl < -0.004;
+      const tag = edge == null ? '' : win && edge <= 0 ? 'luck' : loss && edge > 0 ? 'variance' : loss ? 'no edge' : win ? 'earned' : '';
+      let d = days.get(day);
+      if (!d) { d = { day, net: 0, w: 0, l: 0, rows: [] }; days.set(day, d); }
+      d.net += pnl; if (win) d.w++; else if (loss) d.l++;
+      d.rows.push({ t: tt, pnl, win, loss, side: sideOf(t), title: String(t.title || t.ticker || ''), price, prob, edge, n, tag, strat: t.strategy != null ? String(t.strategy) : '' });
+    });
+    return Array.from(days.values()).sort((a, b) => (a.day < b.day ? 1 : -1));
+  }
+  function journalHtml(v) {
+    const all = journalModel(v);
+    if (!all.length) return '';
+    const notes = LS.get('kalshi.journal', {}) || {};
+    const f = S.jf, days = all.slice(0, JDAYS);
+    const rated = all.reduce((a, d) => a.concat(d.rows.filter((r) => r.tag)), []);
+    const proc = rated.length ? rated.filter((r) => r.tag === 'earned' || r.tag === 'variance').length / rated.length : null;
+    const seg = `<div class="seg" role="group" aria-label="Journal filter">${JF.map((x) => `<button type="button" data-act="jf" data-v="${x[0]}" aria-pressed="${f === x[0]}">${x[1]}</button>`).join('')}</div>`;
+    const body = days.map((d) => {
+      const rows = d.rows.filter((r) => f === 'all' || (f === 'win' ? r.win : r.loss)).sort((a, b) => b.t - a.t);
+      if (!rows.length) return '';
+      const note = typeof notes[d.day] === 'string' ? notes[d.day] : '', open = S.jn === d.day;
+      const li = rows.map((r) => `<li class="jr ${r.win ? 'w' : r.loss ? 'l' : ''}"><b class="t">${sideTag(r.side)}${esc(r.title)}</b><span class="v ${cls(r.pnl)}">${esc(usd(r.pnl, true))}</span>`
+        + `<small>${r.n != null ? esc(fmtN(r.n)) + ' ' : ''}${r.price != null ? '@ ' + esc(cents(r.price)) : ''}${r.prob != null ? ' · chance ' + esc(pct(r.prob)) + ' (edge ' + esc(edgeC(r.edge)) + ')' : ''}${ff(F.time, r.t) ? ' · ' + esc(ff(F.time, r.t)) : ''}`
+        + `${r.tag ? ` <span class="kt ${r.tag === 'luck' || r.tag === 'no edge' ? 'warn' : r.tag === 'earned' ? 'ok' : ''}">${esc(r.tag)}</span>` : ''}</small></li>`).join('');
+      return `<li class="jd"><div class="jd-h"><b>${esc(dayLabel(d.day))}</b><span class="${cls(d.net)}">${esc(usd(d.net, true))}</span><small>${d.w}W ${d.l}L</small>`
+        + `<button type="button" class="jn-b" data-act="jnote" data-v="${esc(d.day)}" aria-expanded="${open}">${note ? 'Note' : 'Add note'}</button></div>`
+        + (open ? `<textarea id="jnote" class="jn q" rows="3" maxlength="${JN_MAX}" data-day="${esc(d.day)}" aria-label="Your note for ${esc(dayLabel(d.day))}" placeholder="What happened, what you would do again…">${esc(note)}</textarea>`
+          : note ? `<p class="jn-t">${esc(note)}</p>` : '')
+        + `<ul class="jl">${li}</ul></li>`;
+    }).join('');
+    return `<section class="card" id="sec-journal"><div class="card-h"><h2>Bet journal</h2>${seg}</div>`
+      + `<p class="muted small">${all.reduce((a, d) => a + d.rows.length, 0)} settled bets over ${all.length} day${all.length === 1 ? '' : 's'}${proc != null ? ` · <b>${Math.round(proc * 100)}%</b> were good bets when taken (had an edge, or won with one)` : ''}. Notes stay on this phone.</p>`
+      + (body ? `<ul class="journal">${body}</ul>` : '<p class="empty">No bet matches this filter.</p>')
+      + (all.length > days.length ? `<p class="muted small">The last ${JDAYS} trading days of ${all.length}.</p>` : '') + '</section>';
   }
 
   // ---- P&L by market category
@@ -991,9 +1095,9 @@
       const eq = safe('equity', () => eqHtml(v));              // first: the stats read its series (max drawdown)
       html = (pv ? previewBar() : notesHtml(k))
         + groupHtml('today', 'Today', todaySum(k), [safe('balance', () => heroHtml(k, v)), safe('open bets', () => posHtml(v))])
-        + groupHtml('edge', 'Edge', edgeSum(v), [safe('live edge', () => edgeHtml(k, v)), safe('sizing', () => kellyHtml(k, v))])
+        + groupHtml('edge', 'Edge', edgeSum(v), [safe('live edge', () => edgeHtml(k, v)), safe('edge map', () => edgeMapHtml(k, v)), safe('sizing', () => kellyHtml(k, v))])
         + groupHtml('perf', 'Performance', perfSum(k), [eq, safe('calendar', () => calHtml(v)), safe('daily P&L', () => barsHtml(v)), safe('stats', () => statsHtml(v, k)),
-          safe('prices', () => bucketHtml(k, v)), safe('calibration', () => calibHtml(k, v)), safe('markets', () => catHtml(k, v)), safe('strategies', () => stratHtml(v))])
+          safe('prices', () => bucketHtml(k, v)), safe('calibration', () => calibHtml(k, v)), safe('markets', () => catHtml(k, v)), safe('strategies', () => stratHtml(v)), safe('journal', () => journalHtml(v))])
         + groupHtml('alerts', 'Alerts', alertSum(k, v), [safe('alerts', () => alertsHtml(k, v)), safe('trades', () => tradesHtml(v))]);
     }
     S.label = S.k && S.state !== 'waiting' ? stateOf(S.k)[1] : '';
@@ -1074,7 +1178,9 @@
       document.querySelectorAll('#sec-cal .cd[data-v]').forEach((x) => x.setAttribute('aria-pressed', String(x.getAttribute('data-v') === S.calSel)));
       const r = $('#calRead');
       if (r && S.v) r.innerHTML = calRead(new Map(S.v.days));
-    } else if (a === 'retry') load();
+    } else if (a === 'jf') { S.jf = ['all', 'win', 'loss'].indexOf(val) >= 0 ? val : 'all'; if (S.v) swap('sec-journal', journalHtml(S.v)); }
+    else if (a === 'jnote') { S.jn = S.jn === val ? '' : val; if (S.v) swap('sec-journal', journalHtml(S.v)); const ta = $('#jnote'); if (ta) ta.focus({ preventScroll: true }); }
+    else if (a === 'retry') load();
     else if (a === 'copy') copyStep();
     else if (a === 'preview' || a === 'exit-preview') {
       S.preview = a === 'preview' && !S.k;
@@ -1093,6 +1199,13 @@
       S.calc[e.target.id === 'kcP' ? 'p' : 'c'] = String(e.target.value || '').replace(/[^\d.]/g, '').slice(0, 6);
       const o = $('#kcOut'), k = previewing() ? sample() : S.k;
       if (o && k) o.innerHTML = calcOut(kellyCfg(k), S.kf || kellyCfg(k).f);
+      const kcv = $('#kcCurve');
+      if (kcv && k) kcv.innerHTML = kellyCurve(k, S.kf || kellyCfg(k).f);
+      return;
+    }
+    if (e.target && e.target.id === 'jnote') {
+      const day = e.target.getAttribute('data-day') || '', all = LS.get('kalshi.journal', {}) || {}, txt = String(e.target.value || '').slice(0, JN_MAX);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(day)) { if (txt) all[day] = txt; else delete all[day]; LS.set('kalshi.journal', all); }
       return;
     }
     if (e.target && e.target.id === 'posQ') { S.q = String(e.target.value || '').slice(0, 80); const l = $('#posList'); if (l) l.innerHTML = posRows(); }

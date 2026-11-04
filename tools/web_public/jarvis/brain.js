@@ -1571,6 +1571,39 @@ export function createBrain(opts) {
     if (/\b(look at my screen|screenshot|wake word|double clap|clap)\b/.test(q)) return { text: 'That one needed the PC: on the phone I only see the published data.', speak: 'That one needs the PC.', intent: 'cant' };
     return null;
   }
+  // what his own words mean, answered locally (no key, no Wikipedia: "sweep" there is a different thing), and the few open questions the rules own
+  const ASK_WORD = /^(?:what(?:'s| is| are| does| do)|whats|explain|define|tell me about|describe|how does|what does)\b/;
+  const GLOSSARY = [
+    [/\b(ifvg|inverse fair value gap|inversion fair value gap)\b/, 'An IFVG, an inverse fair value gap, is a gap that price closes straight back through, which says the move has flipped. The bot reads it after a sweep as part of its entry.'],
+    [/\b(fvg|fair value gaps?)\b/, 'A fair value gap is a three-candle gap where the first and third candle do not overlap: price moved too fast and left a hole it often comes back to.'],
+    [/\bcisd\b|change in state of delivery/, 'CISD, change in state of delivery, is price closing back through the open of the last run of candles against the move. It is the bot\'s confirmation after a sweep: first on the 5-minute chart, then on the 1-minute for the entry.'],
+    [/\b(sweeps?|liquidity sweeps?|stop hunt)\b/, 'A sweep is price poking past a key high or low to grab the stops sitting there, then snapping back. It starts every setup your bot takes, and its stop goes 1 tick beyond the sweep extreme.'],
+    [/\b(stop rules?|the stop|stop loss|where does the stop)\b/, 'The stop sits 1 tick beyond the sweep extreme, the high or low made before the entry, never a fixed distance. A wider stop means fewer micros, so the dollars at risk stay the same.'],
+    [/\b(drawdown|max loss|mll|floor)\b/, 'Drawdown left is how many dollars an account can still lose before it touches its floor, the max loss line. The board shows it per account, and it is the number to protect first.'],
+    [/\b(8r|banked at 8r|r multiple)\b/, 'R is the amount risked on a trade. The bot banks the target at 8R, eight times the risk, and moves the stop to break even at 1R.'],
+    [/\b(break ?even|be at 1r)\b/, 'Break even means the stop moves to the entry price once the trade is 1R in profit, so a winner cannot turn into a loser.'],
+  ];
+  function knowAnswer(q, V) {
+    const rest = q.replace(ASK_WORD, '').trim();
+    if (ASK_WORD.test(q) && rest.split(' ').length <= 5 && !/\d|\b(my|am i|are we|is the bot|is it|left|now|today|this week|room|balance|on the)\b/.test(rest)) {
+      const g = GLOSSARY.find((x) => x[0].test(q));
+      if (g) return { text: g[1], speak: toSpeech(g[1], 300), intent: 'know' };
+    }
+    if (/\b(chat ?gpt|openai|gpt|claude|gemini|groq|openrouter)\b/.test(q) && /\b(connect|use|hook|link|plug|add|set ?up|get|integrate)\b/.test(q)) {
+      const t = smartOn() ? `Smart mode is already on (${PROVIDERS[S.provider].name}). To switch or test a key say "set up smart mode".`
+        : 'ChatGPT has no login a phone page can use, so I use a free key instead: Groq, Gemini or OpenRouter, no card, one minute. Say "set up smart mode" and I open the three steps.';
+      return { text: t, speak: toSpeech(t, 300), intent: 'know' };
+    }
+    if (/^(should i|do you think i should|would you) (take|enter|short|go long|go short|place|close|exit) (the |this |that |a |my )?(trade|setup|entry|position|nq|mnq|long|short)\b/.test(q)) {
+      const t = 'That is the bot\'s call and yours, not mine: I only read the data and never place or advise a trade. Ask "what is it waiting for" or "how much room do I have" and I will give you the numbers.';
+      return { text: t, speak: toSpeech(t, 300), intent: 'know' };
+    }
+    if (!smartOn() && /\b(ideas?|ways?|how (can|do|could) i|how to)\b.*\b(make|earn|get)\b.*\b(more )?(money|cash|income)\b|\bmake more money\b/.test(q)) {
+      const t = 'From your own numbers: 1) pass the evals you hold, since funded accounts are where the payouts are; 2) keep size following the stop, never bigger to catch up; 3) let Kalshi prove its edge on paper before it gets more money. I will not invent returns. For a real brainstorm, say "set up smart mode".';
+      return { text: t, speak: toSpeech(t, 330), intent: 'know' };
+    }
+    return null;
+  }
   const FALLBACK = 'I can switch dashboards and tell you how the bots and your day look. Try "how are the bots", "what\'s on today" or "open planner".';
 
   // ---------------------------------------------------------------------------------------------- routing
@@ -1602,6 +1635,8 @@ export function createBrain(opts) {
     if (/^(?:(?:exit|end|leave|close|quit|stop|turn off) )(?:voice|conversation|talk) mode$|^(?:voice|conversation|talk) mode off$/.test(q)) return { text: 'Standing by.', speak: '', control: 'voice_mode_off', intent: 'control' };
     const oj = oldJarvis(q, V);
     if (oj) return oj;
+    const kn = knowAnswer(q, V);
+    if (kn) return kn;
     const st = smalltalk(q, V, false);
     if (st) return st;
     if (SYS_RX.test(q)) return systemAnswer(V);
@@ -1940,8 +1975,9 @@ export function createBrain(opts) {
     return { text, speak: `Noted. Your trade on ${who} today resets the seven day count.`, control: 'manual_trade', intent: 'manual_trade' };
   }
   // the rule answers that stay even when the words sound personal: greetings ("hey", short), thanks, jokes, refusals, help
-  const KEEP_RULE = /^(hello|smalltalk|control|repeat|refuse_trade|help|empty|error|manual_trade)$/;
-  const keepRule = (r, q) => KEEP_RULE.test(str(r.intent, 30)) && (r.intent !== 'hello' || q.split(' ').length <= 4);
+  const KEEP_RULE = /^(hello|smalltalk|control|repeat|refuse_trade|help|empty|error|manual_trade|know)$/;
+  const PLAN_Q = /\b(my (plan|schedule|agenda|calendar|day)|on my plate|what's on|planner|tasks?|events?|meetings?|appointments?)\b/;
+  const keepRule = (r, q) => (KEEP_RULE.test(str(r.intent, 30)) && (r.intent !== 'hello' || q.split(' ').length <= 4)) || (r.intent === 'plan' && PLAN_Q.test(q));
   // the assistant kept something on the phone: with the vault connected, the same words are offered to Obsidian (confirmed)
   async function offerVault(ar) {
     const r = { ...ar }, v = r.vault;
@@ -2087,7 +2123,7 @@ export function createBrain(opts) {
         r = { text: FALLBACK, speak: 'Pardon me, I did not catch that. Try asking how the bots are doing, or what is on today.', intent: 'fallback' };
         if (S.on && S.keys[S.provider]) r = await smartAnswer(raw, V, r, voice);
         else if (tools || assistant) r = offerOnce(r);
-      } else if (/^(should i|should we|is it worth|would it be wise|do you think|what do you think|would you)\b/.test(q) && !r.control && !r.open && r.intent !== 'refuse_trade' && !r.smart && !/^(chat|assistant_)/.test(r.intent || '')) {
+      } else if (/^(should i|should we|is it worth|would it be wise|do you think|what do you think|would you)\b/.test(q) && !r.control && !r.open && r.intent !== 'refuse_trade' && !r.smart && !/^(chat|assistant_|know)/.test(r.intent || '')) {
         if (S.on && S.keys[S.provider]) r = await smartAnswer(raw, V, r, voice);           // a decision: the model, with these numbers as its fallback
         else r = { ...r, text: 'Your call, sir. The numbers I have:\n' + r.text, speak: 'Your call, sir. ' + (r.speak || '') };
       }

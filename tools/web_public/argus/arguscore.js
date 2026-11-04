@@ -18,7 +18,7 @@ export const CRONOS_JOBS = { datacity: 36, fates: 36, odeon: 36, pantheon: 36, t
 export const INACTIVITY_DAYS = 7;       // MFFU can close an eval after 7 calendar days with no trade
 export const CLOUD_OK_S = 35 * 60, CLOUD_BAD_S = 2 * 3600;       // the cloud monitor runs every 15 min
 export const PUBLISH_OK_S = 40 * 60, PUBLISH_BAD_S = 3 * 3600;
-export const DEFAULT_APP_LIMIT_S = 86400;                          // an app card that states no stale_after may be a day old
+export const DEFAULT_APP_LIMIT_S = 7 * 86400;                      // an app card that states no stale_after (CRONOS does not refresh it) may be a week old
 
 const ET = 'America/New_York';
 const FMT = new Intl.DateTimeFormat('en-US', { timeZone: ET, weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false });
@@ -108,7 +108,7 @@ function feedEyes(B, now, open) {
   return out;
 }
 
-function pipeEyes(home, cronos, now) {
+function pipeEyes(home, cronos, now, cards) {
   const out = [], live = obj(home.live);
   const lr = num(live.last_run);
   if (lr == null) out.push(eye('cloud', 'pipes', 'Cloud monitor', 'idle', 'no data', 'No cloud monitor run time on the dashboard.', '', 60));
@@ -126,7 +126,14 @@ function pipeEyes(home, cronos, now) {
       `The dashboard was last published ${ageText(a)} ago.`, lv === 'ok' ? '' : 'Ask Claude to check why the dashboard stopped publishing.', 50));
   }
   const tasks = obj(obj(cronos).tasks);
-  if (!isObj(cronos) || !Object.keys(tasks).length) out.push(eye('cronos', 'pipes', 'CRONOS nightly', 'idle', 'no data', 'No CRONOS status on the site yet.', '', 40));
+  if (!isObj(cronos) || !Object.keys(tasks).length) {
+    // cronos/status.json is not published on the site: the cards CRONOS stamps (card.cronos.state) say the same thing
+    const st = Object.entries(obj(cards)).filter(([, c]) => isObj(c) && isObj(c.cronos) && c.cronos.state);
+    const late = st.filter(([, c]) => c.cronos.state !== 'fresh').map(([id]) => id);
+    if (!st.length) out.push(eye('cronos', 'pipes', 'CRONOS nightly', 'idle', 'no data', 'No CRONOS status on the site yet.', '', 40));
+    else if (late.length) out.push(eye('cronos', 'pipes', 'CRONOS nightly', 'warn', `${late[0]} late`, `Not refreshed on time: ${late.join(', ')}.`, 'Ask Claude to check the CRONOS nightly workflow.', 40));
+    else out.push(eye('cronos', 'pipes', 'CRONOS nightly', 'ok', 'refreshed', `All ${st.length} nightly cards say fresh (newest check ${ageText(now - Math.max(...st.map(([, c]) => num(c.cronos.checked_t) || 0)))} ago).`, '', 40));
+  }
   else {
     let worst = null;
     for (const [name, max] of Object.entries(CRONOS_JOBS)) {
@@ -172,11 +179,22 @@ function appEyes(cards, now) {
   });
 }
 
+/** days since the last trade: the board's own count, else the last real trade of that account, else the eval's start (calendar days, New York) */
+function quietDays(a, key, B, now) {
+  const q = num(a.quiet_days);
+  if (q != null) return q;
+  const days = arr(obj(B.real).trades).filter((t) => t && t.acct === key && typeof t.day === 'string').map((t) => t.day).sort();
+  const ref = days.length ? days[days.length - 1] : (typeof a.eval_start === 'string' ? a.eval_start : null);
+  if (!ref || !/^\d{4}-\d\d-\d\d/.test(ref)) return null;
+  const nd = new Intl.DateTimeFormat('en-CA', { timeZone: ET }).format(new Date(now * 1000));
+  return Math.max(0, Math.round((Date.parse(nd) - Date.parse(ref.slice(0, 10))) / 86400000));
+}
+
 function ruleEyes(B, now) {
   const out = [];
   for (const [key, label, A] of [['lit', 'Zlarior 50K', B.lit], ['atlas', 'ATLAS 25K', B.atlas]]) {
     const a = obj(A), over = /passed|failed|lost|not set up/i.test(String(a.status || ''));
-    const q = num(a.quiet_days);
+    const q = quietDays(a, key, B, now);
     if (!Object.keys(a).length || a.error || over || q == null) {
       out.push(eye('quiet_' + key, 'rules', `${label} inactivity`, 'idle', over ? 'n/a' : 'no data', over ? 'The clock does not run on an account that is over or not set up.' : 'No last-trade date yet.', '', 90));
     } else {
@@ -213,7 +231,7 @@ export function analyze(inp) {
   } else {
     const pc = pcEye(B0, now, open);
     eyes.push(botEye('bot_lit', 'Zlarior 50K', B0.lit, pc.level, B, now, open, true), botEye('bot_atlas', 'ATLAS 25K', B0.atlas, pc.level, B, now, open, false), pc,
-      ...feedEyes(B0, now, open), ...pipeEyes(home, inp && inp.cronos, now), ...ruleEyes(B0, now), ...appEyes(inp && inp.cards, now));
+      ...feedEyes(B0, now, open), ...pipeEyes(home, inp && inp.cronos, now, inp && inp.cards), ...ruleEyes(B0, now), ...appEyes(inp && inp.cards, now));
   }
   const rank = { bad: 2, warn: 1, ok: 0, idle: 0 };
   const fix = eyes.filter((e) => e.level === 'warn' || e.level === 'bad').sort((a, b) => rank[b.level] - rank[a.level] || b.w - a.w || a.label.localeCompare(b.label));

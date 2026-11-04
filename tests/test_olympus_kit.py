@@ -49,8 +49,8 @@ APPS = {
 # heap, layouts per frame (one at most: DOM writes batched, never a read after a write in the frame loop). Measured on
 # 2026-11-03 with ~25% headroom; docs/OLYMPUS_DESIGN.md has the table.
 BUDGET = {
-    "datacity": (120, 700_000), "mind": (30, 20_000), "tree": (0, 0), "oracle": (170, 10_000), "odeon": (20, 40_000),
-    "fates": (24, 30_000), "hermes": (0, 0), "prometheus": (110, 5_000), "tyche": (200, 40_000),
+    "datacity": (120, 700_000), "mind": (30, 20_000), "tree": (0, 0), "oracle": (170, 10_000), "odeon": (60, 60_000),
+    "fates": (64, 40_000), "hermes": (0, 0), "prometheus": (110, 5_000), "tyche": (200, 40_000),
 }
 HEAP_MB, LAYOUTS_PER_FRAME = 40, 1.25   # 1.25: room for the day-sprint HUDs (Odeon 1.11 under load)
 

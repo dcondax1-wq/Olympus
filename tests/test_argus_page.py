@@ -229,9 +229,9 @@ def part_b(p):
         k = cards()
         upd(k[name])
         return an(k=k)["eyes"]["app_" + name]
-    check("b. app cards: fresh green; past its stale_after amber; 4x past (and a day) red; no stale_after = a day of slack; a missing card is grey",
+    check("b. app cards: fresh green; past its stale_after amber; 4x past (and a day) red; no stale_after = a week of slack; a missing card is grey",
           app(lambda c: None)["level"] == "ok" and app(lambda c: c.update(t=NOW - 300000))["level"] == "warn" and app(lambda c: c.update(t=NOW - 2000000))["level"] == "bad"
-          and app(lambda c: (c.pop("stale_after"), c.update(t=NOW - 100000)))["level"] == "warn" and app(lambda c: (c.pop("stale_after"), c.update(t=NOW - 20000)))["level"] == "ok"
+          and app(lambda c: (c.pop("stale_after"), c.update(t=NOW - 700000)))["level"] == "warn" and app(lambda c: (c.pop("stale_after"), c.update(t=NOW - 20000)))["level"] == "ok"
           and an(k={**cards(), "mind": None})["eyes"]["app_mind"]["level"] == "idle")
     st = app(lambda c: c.update(cronos={"state": "stale"}), "odeon")
     check("b. CRONOS-stamped cards: state fresh green; stale / failed amber (never red); the app is named in the fix",
@@ -280,6 +280,54 @@ def part_b(p):
           c["name"] == "Argus" and c["status"] == {"level": "ok", "label": "All clear"} and [k["value"] for k in c["kpis"]] == ["0", "0", "25"] and len(c["lines"]) == 1 and len(c["lines"][0]) <= 120 and c["open"] == "#fix", c)
 
 
+# ------------------------------------------------------------------------------------------------------------ real
+FIXD = os.path.join(ROOT, "tests", "fixtures", "argus")
+
+
+def jl(name):
+    with open(os.path.join(FIXD, name), encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+def part_real(p):
+    """the REAL published home.json (a copy of the public site's file, 2026-11-03 21:31 UTC = Tuesday 16:31 ET, market open)"""
+    h = jl("home_real.json")
+    kards = {"mind": jl("card_mind.json"), "fates": jl("card_fates.json")}
+    b = h["board"]
+    paths = [h.get("built"), h["live"].get("last_run"), h["live"]["pc"]["health"]["account"].get("armed") is not None, b.get("data_t"), b.get("running") is not None,
+             [i["key"] for i in b["health"]["items"] if i["key"] in ("age_1m_s", "nt")], b["lit"].get("room"), b["lit"].get("mll"), b["lit"].get("floor"), b["lit"].get("status"),
+             "blocks" in b["lit"], "quiet_days" in b["lit"], b["atlas"].get("room"), b["atlas"].get("floor"), b["real"]["trades"]]
+    check("real. every field path the lights read exists in the published home.json", all(x not in (None, [], False) for x in paths), paths)
+    now = b["t"]
+
+    def run(**kw):
+        return p.evaluate("([h, k, now]) => { const R = window.__argus.CORE.analyze({ now, home: h, cronos: null, cards: k }); return { v: R.verdict, counts: R.counts, fix: R.fix.map(e => e.id), eyes: Object.fromEntries(R.eyes.map(e => [e.id, e])) }; }",
+                          [kw.get("h", h), kw.get("k", kards), kw.get("now", now)])
+    r = run()
+    e = r["eyes"]
+    check("real. the real lights: Zlarior 'running, armed', ATLAS 'running', feed fresh, NinjaTrader connected, cloud + publish green",
+          e["bot_lit"]["value"] == "running, armed" and e["bot_atlas"]["value"] == "running" and e["feed"]["level"] == "ok" and e["nt"]["value"] == "connected"
+          and e["cloud"]["level"] == "ok" and e["publish"]["level"] == "ok" and e["pc"]["level"] == "ok", {k: (v["level"], v["value"]) for k, v in e.items() if v["level"] != "ok"})
+    check("real. drawdown left = balance minus floor for both real accounts (Zlarior and ATLAS)",
+          abs(b["lit"]["room"] - (b["lit"]["balance"] - b["lit"]["floor"])) < 1 and abs(b["atlas"]["room"] - (b["atlas"]["balance"] - b["atlas"]["floor"])) < 1
+          and e["room_lit"]["value"] == "$1,133 left" and e["room_atlas"]["value"] == "$1,351 left" and e["room_lit"]["level"] == "ok" and e["room_atlas"]["level"] == "ok", e["room_lit"])
+    check("real. the 7-day clock: ATLAS day 0 (the board's own count); Zlarior has none, so it comes from the last real trade (2026-11-03: day 0), not from nothing",
+          e["quiet_atlas"]["value"] == "day 0 of 7" and e["quiet_lit"]["value"] == "day 0 of 7" and e["quiet_lit"]["level"] == "ok", e["quiet_lit"])
+    check("real. 13 apps: the two real cards (Mind, Fates) green, the others grey 'no card'; CRONOS comes from the stamped Fates card (fresh); verdict ALL CLEAR, nothing to fix",
+          e["app_mind"]["level"] == "ok" and e["app_fates"]["level"] == "ok" and e["app_ares"]["level"] == "idle" and e["cronos"]["level"] == "ok" and r["v"]["word"] == "All clear" and not r["fix"], (r["v"], r["fix"]))
+    sat = ts_of("2026-11-07T11:00:00-05:00")
+    r = run(now=sat)
+    e = r["eyes"]
+    check("real. a Saturday later, with the same file: the feed and NinjaTrader are grey 'market closed' (not red), the quiet PC grey; the cloud monitor / publish ages are amber or red (the file is days old: honest)",
+          e["feed"]["level"] == "idle" and e["pc"]["level"] == "idle" and e["cloud"]["level"] == "bad" and e["publish"]["level"] == "bad", {k: (v["level"], v["value"]) for k, v in e.items() if v["level"] != "ok"})
+    h2 = json.loads(json.dumps(h))
+    h2["board"]["lit"]["room"] = 250.0
+    h2["board"]["health"]["items"][[i["key"] for i in h2["board"]["health"]["items"]].index("nt")].update(ok=False, value="not connected")
+    r = run(h=h2)
+    check("real. the real file with the drawdown cut to $250 and NinjaTrader off: LOOK AT THIS, fix list = drawdown first then NinjaTrader",
+          r["v"]["word"] == "Look at this" and r["fix"][:2] == ["room_lit", "nt"], r["fix"])
+
+
 # ------------------------------------------------------------------------------------------------------------ c
 def tab(p, t):
     p.click(f"#tabs button[data-tab='{t}']")
@@ -305,6 +353,7 @@ def part_c(tmp):
             errs = []
             ctx, p = open_page(br, ok_url + Q, errs, "__argus")
             part_b(p)
+            part_real(p)
             ctx.close()
 
             errs = []

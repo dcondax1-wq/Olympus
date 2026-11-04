@@ -116,6 +116,32 @@ function spreadMap(genomes) {
 }
 
 
+const spd = (x) => (x.p10 == null || x.f10 == null ? 0 : x.p10 - x.f10);
+export function halfPass(G, L) {
+  const one = (a, b) => ({ pm: a.pm > b.pm, speed: spd(a) >= spd(b) - 0.05, freq: a.tpw >= 2 });
+  const h1 = one(G.h1, L.h1), h2 = one(G.h2, L.h2);
+  return { h1: h1.pm && h1.speed && h1.freq, h2: h2.pm && h2.speed && h2.freq, d1: h1, d2: h2 };
+}
+
+/** The answer to "would this change live?": YES only when the 2026 H2 check beats live by a real margin (+10% $/mo) with
+ *  eval speed not worse and 2+ trades a week (the LIT rule: pick on H1, check on H2; 2021-25 is a reference line, never a gate)
+ *  and, for the run's champion, the weekly-block bootstrap agrees. Returns { level: 'yes'|'maybe'|'no', title, why: [..] }. */
+export function wouldChange(G, L, isChamp, d) {
+  const why = [], dm2 = G.h2.pm - L.h2.pm, dm1 = G.h1.pm - L.h1.pm, margin = L.h2.pm ? dm2 / L.h2.pm : 0;
+  const p = halfPass(G, L), boot = isChamp && d && d.verdict && d.verdict.boot;
+  if (G === L) return { level: 'no', title: 'IT IS LIVE', why: ['This is the live strategy: nothing to change.'], margin: 0 };
+  why.push(`${dm1 >= 0 ? 'Better' : 'Worse'} than live on H1 by ${Math.abs(Math.round(dm1)).toLocaleString('en-US')} $/mo.`);
+  why.push(`${dm2 >= 0 ? 'Better' : 'Worse'} than live on the H2 check by ${Math.abs(Math.round(dm2)).toLocaleString('en-US')} $/mo (${(margin * 100).toFixed(0)}%).`);
+  if (!p.d2.speed) why.push('The eval gets slower on H2.');
+  if (!p.d2.freq) why.push('Under 2 trades a week on H2.');
+  if (G.y && L.y && G.y.pm < L.y.pm - 50) why.push('Worse on 2021-25 (a reference line, not a gate).');
+  if (boot) why.push(boot.p_le0 > 0.05 ? `The bootstrap says ${(boot.p_le0 * 100).toFixed(0)}% odds the H2 gain is zero or less: too noisy.` : 'The bootstrap agrees the H2 gain is real.');
+  const solid = p.d2.pm && margin >= 0.1 && p.d2.speed && p.d2.freq && (!boot || boot.p_le0 <= 0.05);
+  if (solid && p.h1) return { level: 'yes', title: 'YES, TAKE IT TO THE OWNER', why, margin };
+  if (p.d2.pm && p.d2.speed && p.d2.freq) return { level: 'maybe', title: 'NOT YET: TOO CLOSE TO CALL', why, margin };
+  return { level: 'no', title: 'NO, LIVE STAYS', why, margin };
+}
+
 export class Forge {
   constructor(data) {
     this.d = data;
@@ -202,6 +228,23 @@ export class Forge {
       return { rank: i + 1, id: c.id, gen: c.gen, k: c.k, fit: c.f, h1: G.h1.pm, h2: G.h2.pm, y: G.y.pm, h2Beats: G.h2.pm > L.h2.pm,
         changed: this.diffRows(c.k).filter((r) => r.changed).length, champ: c.id === this.d.champion.id };
     });
+  }
+
+  /** half-year pass / fail of a genome against live. "Pass" = more $/month than live in that half AND eval speed
+   *  (p10 - f10) not worse AND 2+ trades a week. Pure numbers from forge.json. */
+  halfPass(k) { return halfPass(this.genome(k), this.live); }
+
+  /** "would this change live?" for a creature (the forge never changes anything: this only answers the question) */
+  wouldChange(id) {
+    const c = id === 'live' ? null : this.byId.get(id);
+    return wouldChange(this.genome(id === 'live' ? this.d.live.k : c.k), this.live, !!c && c.id === this.d.champion.id, this.d);
+  }
+
+  /** which creatures of generation g match a filter ('all' | 'h1' | 'h2' | 'both' | 'fail2') */
+  matches(c, filter) {
+    if (!filter || filter === 'all') return true;
+    const p = this.halfPass(c.k);
+    return filter === 'h1' ? p.h1 : filter === 'h2' ? p.h2 : filter === 'both' ? p.h1 && p.h2 : !p.h2;
   }
 
   /** the verdict banner: one honest line, the numbers behind it */

@@ -4,6 +4,7 @@
 import { litWindow, fmtDur, hm, dayLabel, sessionAt, killzoneAt, etParts } from './time.js';
 import { kindOf, hex } from './glow.js';
 import { filmLink } from './events.js';
+import { heatOf, waitingOf } from './heat.js';
 
 const $ = (id) => document.getElementById(id);
 const px = (p) => (p == null ? '–' : p.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
@@ -12,6 +13,7 @@ export function usd(v, sign = false) {
   const r = Math.round(Math.abs(v)), s = '$' + r.toLocaleString('en-US');
   return r === 0 ? '$0' : v < 0 ? '−' + s : sign ? '+' + s : s;
 }
+const nowT0 = () => Date.now() / 1000;
 const pts = (d) => (d > 0 ? '+' : d < 0 ? '−' : '') + Math.abs(d).toFixed(2);
 
 function el(tag, cls, text) {
@@ -58,6 +60,7 @@ export class Hud {
     $('stage-n').textContent = w.stage.n ? `${w.stage.n}/${w.stage.of}` : '–';
     $('stage-label').textContent = w.stage.label + (w.stage.dir ? (w.stage.dir > 0 ? ' · long' : ' · short') : '');
     $('waiting').textContent = w.stage.waiting || '';
+    this.renderWait(w, this.nowT ?? nowT0());
     // the weather
     const wx = $('wx');
     wx.replaceChildren(
@@ -69,6 +72,22 @@ export class Hud {
     this.renderPosition(w);
   }
 
+  /** The ribbon of the ten stages and the one thing the bot needs next (heat.js waitingOf). Rewritten only when it changes. */
+  renderWait(w, nowT) {
+    const box = $('wait');
+    if (!box || !w) return;
+    const r = waitingOf(w, litWindow(nowT, w.src !== 'demo' ? w.windows : null));
+    const key = r.pips.map((p) => p.state[0]).join('') + '|' + r.next + '|' + r.detail + '|' + r.tone;
+    if (key === this.waitKey) return;
+    this.waitKey = key;
+    box.dataset.tone = r.tone;
+    const pips = box.querySelector('.pips');
+    if (pips.children.length !== r.pips.length) pips.replaceChildren(...r.pips.map(() => el('li')));
+    r.pips.forEach((p, i) => { const li = pips.children[i]; li.dataset.state = p.state; li.title = p.label; li.setAttribute('aria-label', `${p.label}: ${p.state}`); });
+    box.querySelector('.nx').textContent = r.next;
+    box.querySelector('.dt').textContent = r.detail;
+  }
+
   renderLevels(w) {
     const up = w.levels.filter((l) => !l.taken && l.dist != null && l.dist > 0).sort((a, b) => a.dist - b.dist).slice(0, 3).reverse();
     const dn = w.levels.filter((l) => !l.taken && l.dist != null && l.dist < 0).sort((a, b) => b.dist - a.dist).slice(0, 3);
@@ -77,6 +96,9 @@ export class Hud {
       li.dataset.id = l.id;
       li.dataset.dist = String(l.dist);
       li.dataset.usd = String(l.usd);
+      const h = heatOf(l.dist, w.atr);
+      li.dataset.heat = h.toFixed(2);
+      li.style.setProperty('--heat', h.toFixed(2));
       const dot = el('i');
       dot.style.background = hex(kindOf(l.kind).color);
       li.append(dot, el('span', 'lv-name', l.label), el('span', 'lv-px', px(l.price)), el('span', 'lv-d', pts(l.dist)), el('span', 'lv-usd', usd(l.usd)));
@@ -115,6 +137,8 @@ export class Hud {
     box.dataset.open = String(lw.open);
     $('win-text').textContent = lw.open_t == null ? 'No LIT window in the next days'
       : lw.open ? `LIT window open · closes in ${fmtDur(lw.in_s)}` : `Next LIT window in ${fmtDur(lw.in_s)} · ${dayLabel(lw.open_t)} ${hm(lw.open_t)} ET`;
+    this.nowT = nowT;
+    if (w) this.renderWait(w, nowT);
     $('session').textContent = `${s.label}${killzoneAt(nowT) ? ' killzone' : ''} · ${hm(nowT)} ET`;
   }
 

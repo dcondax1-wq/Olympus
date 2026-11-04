@@ -9,6 +9,7 @@
 // Themes: applyTheme(theme) restyles the page; it follows olympus.js's theme (OLYMPUS.theme() / onTheme) when the kit has one.
 import * as THREE from '../jarvis/three.module.min.js';
 import { openFeed } from './data.js';
+import { watchLive, withLive } from './live.js';
 import { createDemo } from './demo.js';
 import { buildGraph, diffGraphs, search, resolve, thoughts, dayLog } from './graph.js';
 import { anchorsFor, createLayoutHost, ringRadius, ringSpot } from './layout.js';
@@ -442,6 +443,7 @@ window.mind = {
   get ring() { return brain && brain.ringInfo ? { ...brain.ringInfo } : null; },
   get day() { return state.graph ? dayLog(state.graph, Date.now()) : null; },
   get core() { return brain && brain.rc ? brain.rc.passes() : null; },
+  get live() { return live ? { ...live.counts, items: live.items.length } : null; },
   get thoughts() { return document.querySelectorAll('#stream li').length; },
   memoryOnRing: () => {                                  // how far each memory sits from the ring (share of its radius)
     const r = brain && brain.ringInfo, g = state.graph;
@@ -459,7 +461,21 @@ window.mind = {
   nodePoint: (id) => (brain && state.graph.index.has(id) ? brain.nodePoint(state.graph.index.get(id)) : null),
   screenOf: (id) => (brain && state.graph.index.has(id) ? brain.screenOf(brain.nodePoint(state.graph.index.get(id))) : null),
 };
-openFeed(onUpdate, { demo: createDemo({ size: demoSize }) });
+// Jarvis learning, live: what she saves on this phone (live.js reads her localStorage keys, read-only) joins the brain the moment
+// it lands: a storage event from another tab, plus a 4 s poll for this one. New items glow in their constellation with a ripple.
+let rawUpdate = null, live = null;
+const showBrain = (l) => ui.brain(l.counts, state.graph ? state.graph.clusters.filter((c) => c.count && c.key !== 'me' && c.key !== 'memory').length : 0);
+openFeed((u) => { rawUpdate = u; onUpdate({ ...u, snap: withLive(u.snap, live) }); showBrain(live || { counts: { memories: 0, written: 0 } }); }, { demo: createDemo({ size: demoSize }) });
+watchLive((l, first) => {
+  const had = new Set(live ? live.items.map((x) => x.id) : []);
+  live = l;
+  if (!rawUpdate) return;                                         // the first feed merges it
+  const fresh = first ? [] : l.items.filter((x) => !had.has(x.id));
+  onUpdate({ ...rawUpdate, snap: withLive(rawUpdate.snap, l) });
+  showBrain(l);
+  if (fresh.length) ui.toast('Jarvis learned: ' + fresh[fresh.length - 1].text.slice(0, 90) + (fresh.length > 1 ? ` (+${fresh.length - 1} more)` : ''));
+  needsDraw = true;
+});
 
 // ------------------------------------------------------------------ themes (olympus.js: OLYMPUS.theme() / onTheme, when present)
 /** Restyle the page from a theme: {accent, bg, glass, text, ...} or CSS custom properties ('--x': value), flat or one level

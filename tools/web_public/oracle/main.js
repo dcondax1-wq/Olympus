@@ -12,6 +12,7 @@ import { Scene } from './scene.js';
 import { Hud, usd } from './hud.js';
 import { Ladder } from './ladder.js';
 import { Ribbon, ribbonOf } from './events.js';
+import { heatRows, waitingOf } from './heat.js';
 
 const O = window.OLYMPUS || null;          // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
 const QUALITY_KEY = 'oracle.quality';      // the old per-app key: read only when the kit is missing
@@ -291,6 +292,16 @@ window.oracle = {
   get events() { return ribbonOf(state.world && state.world.log, state.world && state.world.t); },
   get ladder() { return [...document.querySelectorAll('#ladder > div')].filter((e) => e.style.visibility === 'visible').map((e) => e.textContent); },
   get canToday() { return state.canToday; },
+  get heat() { return heatRows(state.world); },
+  /** what the scene holds, by kind (tests): physical-material meshes, instanced meshes, lights */
+  sceneObjects() {
+    const out = [];
+    if (scene) scene.scene.traverse((o) => { if (o.isLight) out.push('light'); if (o.isInstancedMesh) out.push('instanced'); if (o.material && o.material.isMeshPhysicalMaterial) out.push('physical'); });
+    return out;
+  },
+  get heat3d() { return scene ? scene.market.heat() : []; },
+  get waiting() { return waitingOf(state.world, null); },
+  get arena() { return scene ? { blips: scene.arena.blips, passes: scene.rc.passes(), quality: scene.rc.quality(), stats: scene.rc.stats() } : null; },
   refresh: () => refresh(true),
   applyTheme,
   today: () => startToday(),

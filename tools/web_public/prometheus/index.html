@@ -16,7 +16,7 @@
 <link rel="stylesheet" href="../olympus/olympus.css?v=o2">
 <script src="../olympus/themes.js?v=o2"></script>
 <script src="../olympus/olympus.js?v=o2" data-app="prometheus"></script>
-<link rel="stylesheet" href="forge.css?v=f3">
+<link rel="stylesheet" href="forge.css?v=f4">
 </head>
 <body>
 <canvas id="arena" aria-label="The forge arena: each flame is one strategy variant" role="img"></canvas>
@@ -46,6 +46,14 @@
       <input type="range" id="gen" min="0" max="0" step="1" value="0" aria-label="Generation">
     </label>
   </div>
+  <div class="chips" id="chips" role="group" aria-label="Filter the creatures by half-year pass or fail">
+    <button type="button" data-f="all" aria-pressed="true">All <small></small></button>
+    <button type="button" data-f="h1" aria-pressed="false">H1 ✓ <small></small></button>
+    <button type="button" data-f="h2" aria-pressed="false">H2 ✓ <small></small></button>
+    <button type="button" data-f="both" aria-pressed="false">Both ✓ <small></small></button>
+    <button type="button" data-f="fail2" aria-pressed="false">H2 ✗ <small></small></button>
+  </div>
+  <p class="chipn" id="chipn" aria-live="polite"></p>
   <nav class="tabs" aria-label="Panels">
     <button type="button" class="truth" id="truthBtn" aria-controls="truth" aria-expanded="false">Verdict</button>
     <button type="button" class="truth" id="linBtn" aria-controls="truth" aria-expanded="false">Lineage</button>
@@ -65,6 +73,6 @@
   <div id="lin-b" hidden></div>
   <div id="hall-b" hidden></div>
 </section>
-<script type="module" src="forge.js?v=f3"></script>
+<script type="module" src="forge.js?v=f4"></script>
 </body>
 </html>

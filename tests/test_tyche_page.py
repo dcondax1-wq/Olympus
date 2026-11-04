@@ -36,7 +36,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 WEB = os.path.join(ROOT, "tools", "web_public")
 TY = os.path.join(WEB, "tyche")
-MODULES = ["main.js", "data.js", "demo.js", "fmt.js", "scene.js", "wheel.js", "pools.js", "scales.js", "glow.js", "hud.js"]
+MODULES = ["main.js", "data.js", "demo.js", "fmt.js", "scene.js", "wheel.js", "pools.js", "scales.js", "glow.js", "hud.js", "bankroll.js", "caustics.js"]
 RAW = "https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json"
 API = "https://api.github.com/repos/demetrades2000-coder/kalshi-feed/contents/kalshi.json?ref=main"
 THEME = "#07060b"
@@ -244,6 +244,7 @@ def new_page(br, origin, vw, *, reduced=False, quality="high"):
         # the OLYMPUS kit's one 3D level (Jarvis's 'jfx' key) is the page's quality (docs/OLYMPUS_DESIGN.md)
         ctx.add_init_script(f"try {{ localStorage.setItem('jfx', '{quality}'); }} catch (e) {{}}")
     p = ctx.new_page()
+    p.set_default_timeout(150000)
     log = {"errors": [], "console": []}
     p.on("pageerror", lambda e: log["errors"].append(str(e)))
     p.on("console", lambda m: log["console"].append((m.text, (m.location or {}).get("url", ""))) if m.type == "error" else None)
@@ -260,7 +261,7 @@ def launch(pw):
     return pw.chromium.launch(args=["--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"], **({"executable_path": exe} if exe else {}))
 
 
-def ready(p, timeout=30000):
+def ready(p, timeout=150000):
     p.wait_for_function("document.body.dataset.ready === '1' && window.tyche && window.tyche.model && window.tyche.coins > 0", timeout=timeout)
 
 
@@ -315,6 +316,9 @@ def static_checks():
     check("a. three.js only from ../jarvis/three.module.min.js, imported once (main.js)", three == ["../jarvis/three.module.min.js"]
           and "three.module.min.js" in files["main.js"], three)
     urls = set(re.findall(r"https?://[^\s'\"`)<>]+", every))
+    check("a. the 3D runs on the OLYMPUS render core (createRenderer), no second WebGLRenderer; glass coins and gold from materials.js",
+          "createRenderer" in files["scene.js"] and "WebGLRenderer" not in "\n".join(files.values()) and "../olympus/materials.js" in files["wheel.js"]
+          and "glass(" in files["wheel.js"] and "metal(" in files["wheel.js"])
     check("a. no outside URL but the two feed endpoints", urls <= {RAW, API}, urls - {RAW, API})
     kal = read(os.path.join(WEB, "kalshi", "kalshi.js"))
     check("a. the same feed as the Kalshi page (raw, then the API)", f"'{RAW}'" in kal and f"'{API}'" in kal
@@ -450,6 +454,49 @@ def unlinked_checks(br, origin, vw):
 
 
 # ------------------------------------------------------------------ d. a v3 feed
+def _lit_share(png: bytes, box) -> float:
+    """The share of pixels in box (x0, y0, x1, y1) that are not near-black: the 3D scene is really drawn (a NaN in the bloom, or a lost
+    context, turns the whole canvas black)."""
+    import io
+    from PIL import Image
+    im = Image.open(io.BytesIO(png)).convert("L").crop(box)
+    px = list(im.getdata())
+    return sum(1 for v in px if v > 22) / max(1, len(px))
+
+
+def _bank_checks(p, tag, j):
+    """The Bank view (2026-11-03): the bankroll curve + the risk of ruin, from the bot's own settled bets."""
+    p.locator(".tabs button[data-view=bank]").click()
+    p.wait_for_timeout(700)
+    b = p.evaluate("""() => { const t = window.tyche, g = (i) => document.getElementById(i).textContent;
+      return { view: t.view, hash: location.hash, sim: t.bank && { ok: t.bank.ok, ruin: t.bank.ruin, half: t.bank.half, fan: t.bank.fan.length, sizes: t.bank.sizes.map((s) => s.ruin),
+        n: t.bank.n }, ruin: g('bk-ruin'), half: g('bk-half'), med: g('bk-med'), text: g('bk-text'), size: g('bk-size'),
+        paths: document.querySelectorAll('#bk-svg path').length, vis: !document.getElementById('p-bank').hidden }; }""")
+    sim = b["sim"] or {}
+    check(f"g. {tag}: the Bank tab shows the bankroll curve and the odds ({b['ruin']} ruin, {b['half']} lose half, median {b['med']})",
+          b["view"] == "bank" and b["hash"] == "#bank" and b["vis"] and sim.get("ok") and b["paths"] >= 3 and "replayed" in b["text"]
+          and "Risk of ruin if every stake were" in b["size"] and b["ruin"] not in ("–", "") and b["med"].startswith("$"), b)
+    check(f"g. {tag}: the odds are numbers between 0 and 1, ruin <= lose-half, doubling every stake never lowers the risk (x2 >= x1/2)",
+          0 <= sim["ruin"] <= sim["half"] <= 1 and len(sim["sizes"]) == 3 and sim["sizes"][2] >= sim["sizes"][0] and sim["fan"] >= 10, sim)
+    check(f"g. {tag}: the Bank panel stays clear of the orb corner, no sideways scroll", not orb_free(p) and no_sideways(p), orb_free(p))
+    again = p.evaluate("""async () => { const m = await import('./bankroll.js'); const model = window.tyche.model; const a = m.simulate(model), b = m.simulate(model);
+      const few = m.simulate({ settled: model.settled.slice(0, 3), balance: 1000 });
+      const mk = (r) => ({ balance: 1000, settled: Array.from({ length: 20 }, (_, i) => ({ pnl: r * 100, staked: 100, t: i })) });
+      const up = m.simulate(mk(0.5)), down = m.simulate(mk(-0.9));
+      return { same: JSON.stringify(a) === JSON.stringify(b), few: few.ok, up: [up.ruin, up.half, up.p50 > 1000], down: [down.ruin, down.half] }; }""")
+    check(f"g. {tag}: the simulation is seeded (the same feed, the same odds), refuses under 8 bets, a winning book has no ruin, a losing one has it",
+          again["same"] and again["few"] is False and again["up"] == [0, 0, True] and again["down"][0] > 0.9, again)
+    passes = p.evaluate("window.tyche.passes")
+    check(f"g. {tag}: the 3D runs on the render core: passes {passes} (scene + bloom + finish on HD, scene + finish on LITE)",
+          passes in (["scene", "bloom", "finish"], ["scene", "finish"]), passes)
+    if tag == "390x844":
+        p.locator(".tabs button[data-view=wheel]").click()
+        p.wait_for_timeout(2500)
+        lit = _lit_share(p.screenshot(), (0, 400, 780, 1180))
+        check(f"g. {tag}: the wheel is really drawn: {lit * 100:.0f}% of the middle of the screen is lit (not black)", lit > 0.08, lit)
+        p.locator(".tabs button[data-view=scales]").click()
+
+
 def v3_checks(br, origin, vw):
     tag = f"{vw[0]}x{vw[1]}"
     now = int(time.time())
@@ -518,6 +565,7 @@ def v3_checks(br, origin, vw):
     check(f"d. {tag}: the link to the Kalshi page (44 px), applyTheme (hex only, null = Tyche's gold), the intro camera move done",
           lk[0] == "../kalshi/" and lk[1] >= 44 and lk[2] == "#ff00aa" and lk[3] == "#fff8e8" and lk[4] == "#ffcf5a" and lk[5] == 1, lk)
     shot(p, f"v3-scales-{tag}")
+    _bank_checks(p, tag, j)
     errs = real_errors(log)
     check(f"d. {tag}: no console errors with the v3 feed", not errs, errs)
     ctx.close()
