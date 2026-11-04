@@ -272,10 +272,10 @@ export function createVoiceEngines(opts) {
       const key = typeof k[id] === 'string' ? k[id].trim() : '';
       if (!key || parked(id)) continue;
       if (id === 'gemini') {
-        return { id, key: 'x', voice: st.gvoice, maxChars: GEMINI.max, label: 'Gemini voice',
+        return { id, key: 'x', voice: st.gvoice, maxChars: GEMINI.max, label: 'Gemini voice', timeoutMs: 9000,
           synth: wrap('gemini', st.gvoice, (t, so) => geminiSynth(t, { fetch: F, key, voice: st.gvoice, signal: so.signal, model: safe(() => store.getItem('jarvis.tts.gmodel'), '') || '', onModel: (m) => safe(() => store.setItem('jarvis.tts.gmodel', m)) })) };
       }
-      return { id, key: 'x', voice: st.hvoice, maxChars: GROQ.max, label: 'Groq voice', synth: wrap('groq', st.hvoice, (t, so) => groqSynth(t, { fetch: F, key, voice: st.hvoice, signal: so.signal })) };
+      return { id, key: 'x', voice: st.hvoice, maxChars: GROQ.max, label: 'Groq voice', timeoutMs: 9000, synth: wrap('groq', st.hvoice, (t, so) => groqSynth(t, { fetch: F, key, voice: st.hvoice, signal: so.signal })) };
     }
     return null;
   }
@@ -294,7 +294,7 @@ export function createVoiceEngines(opts) {
   }
   function buildDevice(st) {
     if (!deviceReady() || !deviceSupported() || parked('kokoro')) return null;
-    return { id: 'kokoro', key: 'x', voice: st.kvoice, maxChars: 220, label: 'On-device voice',
+    return { id: 'kokoro', key: 'x', voice: st.kvoice, maxChars: 220, label: 'On-device voice', timeoutMs: 30000,
       synth: wrap('kokoro', st.kvoice, async (t, so) => { const k = await loadKokoro(); return k.synth(t, { voice: st.kvoice, speed: 1, signal: so.signal }); }) };
   }
   // the tts.js `cloud()` hook: a descriptor, or null = the phone's voice

@@ -34,7 +34,7 @@
 // synth(text, { signal, voice }) -> Promise<Blob> } (voice-engines.js: Gemini, Groq, the on-device Kokoro) instead of the plain Groq
 // call below; `player` ({ play(blob) -> Promise, stop(), unlock() }) is the one audio element the iPhone unlocks with the first tap.
 // A tap (cancel) also aborts the request in flight. A failure parks only that voice (429: its retry-after, else until tomorrow;
-// bad key 10 min) and the rest of the reply, never what was already said again, goes on in the phone's voice.
+// bad key 10 min, no answer in cc.timeoutMs (9 s) 2 min) and the rest of the reply, never what was already said again, goes on in the phone's voice.
 // iPhone Safari 16: plain ES2020, no regex lookbehind.
 
 export const CFG_KEY = 'jarvis.voiceCfg';           // { voice, rate, pitch } (the shell's Voice sheet)
@@ -292,11 +292,13 @@ export function createSpeaker(opts) {
         return r.blob();
       });
     const one = (t) => (typeof cc.synth === 'function' ? Promise.resolve(cc.synth(t, { signal: h.signal || undefined, voice: cc.voice })) : fetchOne(t));
+    const tmo = Math.max(1000, +cc.timeoutMs || 9000);                        // a voice that has not answered by then is passed: the phone says it
+    const timed = (p) => { let t = 0; return Promise.race([p, h.cancelP, new Promise((ok, bad) => { t = setTimeout(() => { const e = new Error('timeout'); e.reason = 'timeout'; e.parkMs = 120000; bad(e); }, tmo); })]).finally(() => clearTimeout(t)); };
     const guard = (p) => { p.catch(() => null); return p; };                 // an abandoned request never becomes an unhandled rejection
     h.parts = parts; h.played = 0;
     let next = guard(one(parts[0].text)), at = 0;
     for (let i = 0; i < parts.length; i++) {
-      const blob = await Promise.race([next, h.cancelP]);
+      const blob = await timed(next);
       if (h.done) return;
       if (i + 1 < parts.length) next = guard(one(parts[i + 1].text));       // the next piece downloads while this one plays
       const off = text.indexOf(parts[i].text.slice(0, 12), at);
@@ -322,7 +324,7 @@ export function createSpeaker(opts) {
     let text = cleanSpeech(input);
     if (pr && typeof pr.prepare === 'function') text = safe(() => pr.prepare(text), text) || text;
     if (text && !/[.!?]$/.test(text)) text += '.';
-    let items = pr && typeof pr.plan === 'function' ? safe(() => pr.plan(text, { max: 180 }), null) : null;
+    let items = pr && typeof pr.plan === 'function' ? safe(() => pr.plan(text, { max: 180, phrases: false }), null) : null;
     if (!items || !items.length) items = speechChunks(text).map((x) => ({ text: x }));
     const h = { done: false, onstart: c.onstart, onboundary: c.onboundary, onstall: c.onstall, onengine: c.onengine, audio: null, ctl: null, signal: null, parts: null, played: 0,
       finish() { if (h.done) return; h.done = true; clearTimeout(h.timer); clearTimeout(h.wd); if (cur === h) cur = null; if (!h.stalled && typeof c.onend === 'function') c.onend(); } };
@@ -346,6 +348,7 @@ export function createSpeaker(opts) {
         const ms = parkMs(e);
         if (ms) parked[id] = Date.now() + ms;
         if (!h.done) {
+          if (h.ctl) safe(() => h.ctl.abort());                              // (a late answer is not wanted any more)
           if (typeof c.onfallback === 'function') c.onfallback(e, id);
           const rest = h.parts && h.played > 0 && h.played < h.parts.length ? h.parts.slice(h.played) : null;   // what the cloud already said is not said again
           usePhone(rest);
