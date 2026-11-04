@@ -1,0 +1,92 @@
+{
+ "at": "2026-11-04 08:45",
+ "mode": "FULL",
+ "rows": [
+  {
+   "state": "PASS",
+   "passed": 3,
+   "total": 3,
+   "seconds": 0.1,
+   "note": "",
+   "fails": [],
+   "argv": [
+    "-m",
+    "tests.test_jarvis_shell"
+   ],
+   "name": "jarvis_shell",
+   "mode": "FULL"
+  },
+  {
+   "state": "PASS",
+   "passed": 33,
+   "total": 33,
+   "seconds": 16.5,
+   "note": "",
+   "fails": [],
+   "argv": [
+    "-m",
+    "tests.test_apps_list"
+   ],
+   "name": "apps_list",
+   "mode": "FULL"
+  },
+  {
+   "state": "PASS",
+   "passed": 18,
+   "total": 18,
+   "seconds": 26.9,
+   "note": "",
+   "fails": [],
+   "argv": [
+    "-m",
+    "tests.test_safari_smoke",
+    "--lint"
+   ],
+   "name": "safari_lint",
+   "mode": "FULL"
+  },
+  {
+   "state": "SKIP",
+   "passed": 0,
+   "total": 0,
+   "seconds": 0.6,
+   "note": "",
+   "fails": [],
+   "argv": [
+    "-m",
+    "tests.test_safari_smoke",
+    "--webkit"
+   ],
+   "name": "safari_webkit",
+   "mode": "FULL"
+  },
+  {
+   "state": "PASS",
+   "passed": 20,
+   "total": 20,
+   "seconds": 3.0,
+   "note": "",
+   "fails": [],
+   "argv": [
+    "-m",
+    "tests.test_olympus_a11y"
+   ],
+   "name": "olympus_a11y",
+   "mode": "FULL"
+  },
+  {
+   "state": "PASS",
+   "passed": 13,
+   "total": 13,
+   "seconds": 0.2,
+   "note": "",
+   "fails": [],
+   "argv": [
+    "-m",
+    "tests.test_olympus_sfx"
+   ],
+   "name": "olympus_sfx",
+   "mode": "FULL"
+  }
+ ]
+}
