@@ -4,7 +4,9 @@
 // the app's frame first and the warp plays over it while it loads. Reduced motion or 3D effects off: a 0.2 s fade instead.
 // One fragment shader on raw WebGL (no three.js, nothing to load: the program is compiled at idle after the boot), its glow
 // analytic (exp falloffs), one draw per frame. No WebGL: the fade.
-//   window.jarvisPortal.jump({ id, name, color, glyph }, { at })   -> the mode played: 'warp' | 'fade' | 'none'
+// Since 2026-11-04 (job 32) every jump goes to jarvis/transitions.js when it is loaded (each app has its own signature transition;
+// opts.from = the app we leave); this file's warp is the fallback when that file is missing or fails, and it keeps the state below.
+//   window.jarvisPortal.jump({ id, name, color, glyph }, { at, from })   -> the mode played: 'warp' | 'fade' | 'none'
 //     at = 0..1: hold that one frame of the warp until skip() (screenshots, tests)
 //   window.__jarvisPortal = { runs, mode, app, ms, active }  (the tests)
 
@@ -128,6 +130,16 @@ export function jump(app, opts) {
   state.runs++; state.app = a.id || ''; state.ms = 0;
   if (!document.body) return (state.mode = 'none');
   finish();                                         // a second jump replaces the first
+  const T = window.jarvisTransitions;               // transitions.js (2026-11-04): this app's own signature transition, played over the loading app
+  if (T) {
+    let m = '';
+    try {
+      m = T.play(a, { from: opts && opts.from, at, done: (ms) => { state.active = false; state.ms = ms; } });
+      const ts = window.__jarvisTransitions || {};
+      state.active = m === 'warp' && !!ts.active; if (m === 'fade') state.ms = ts.ms;
+    } catch (e) { m = ''; }
+    if (m) return (state.mode = m);
+  }
   if (reduced() || !setup()) { fade(color); return (state.mode = 'fade'); }
   css();
   rgb = toLinear(color);
@@ -151,9 +163,9 @@ export function jump(app, opts) {
 }
 
 /** compile the shader before the first jump (at idle), so the first portal starts on the next frame */
-export function warm() { if (!reduced()) setup(); }
+export function warm() { if (!reduced() && !window.jarvisTransitions) setup(); }   // transitions.js draws on a 2D canvas: no GL context kept for the old warp
 
 document.addEventListener('keydown', (e) => { if (state.active && (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ')) skip(e); });
 document.addEventListener('visibilitychange', () => { if (document.hidden) finish(); });
-window.jarvisPortal = { jump, warm, skip: () => skip() };
+window.jarvisPortal = { jump, warm, skip: () => { skip(); try { if (window.jarvisTransitions) window.jarvisTransitions.skip(); } catch (e) { /* optional */ } } };
 (window.requestIdleCallback || ((cb) => setTimeout(cb, 1200)))(() => warm());
