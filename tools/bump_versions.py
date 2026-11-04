@@ -48,6 +48,8 @@ WORKERS = [
     {"path": "tools/web_public/kalshi/sw.js", "re": r"(const CACHE = ')(kalshi-)([A-Za-z]+\d+)(';)", "style": "tag", "old_list": False, "label": "Kalshi"},
 ]
 ROOT_WORKER = "tools/web_public/sw.js"
+# tests whose "pins" are synthetic fixtures of a release tool (a mini-site inside the test): never rewritten
+SKIP_PIN_FILES = {"tests/test_bump_versions.py", "tests/test_add_kit_tags.py", "tests/test_release_manifest.py"}
 
 
 def bump_tag(tag: str) -> str | None:
@@ -305,7 +307,7 @@ def make_plan(repo, changed=None):
     pins = {}
     if os.path.isdir(repo.p(tests_dir)):
         for fn in sorted(os.listdir(repo.p(tests_dir))):
-            if fn.endswith(".py"):
+            if fn.endswith(".py") and f"{tests_dir}/{fn}" not in SKIP_PIN_FILES:
                 pins[f"{tests_dir}/{fn}"] = repo.text(f"{tests_dir}/{fn}") or ""
     all_by_key: dict[tuple[str, str], set[str]] = {}
     for r in refs:
