@@ -37,6 +37,10 @@ const WARM_FRAMES = 45, WINDOW = 60;
 const kit = () => (typeof window !== 'undefined' && window.OLYMPUS) || null;
 const prefersReduced = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
 const pageHidden = () => { const O = kit(); return O ? O.hidden() : document.hidden === true; };
+/** ?q=ultra|high|low|off in the page address forces a tier (tests, screenshots, perf probes); null without it */
+export const forcedTier = () => { try { const q = new URLSearchParams(location.search).get('q'); return LEVELS.indexOf(q) >= 0 ? q : null; } catch (e) { return null; } };
+/** true on a software GL renderer (SwiftShader, llvmpipe: no GPU): 4x MSAA + bloom would be a slideshow there */
+export const softwareGL = (gl) => { try { const e = gl.getExtension('WEBGL_debug_renderer_info'); return !!e && /swiftshader|llvmpipe|software/i.test(String(gl.getParameter(e.UNMASKED_RENDERER_WEBGL))); } catch (e) { return false; } };
 const levelOf = (q) => (LEVELS.indexOf(q) >= 0 ? q : null);
 
 // ------------------------------------------------------------------ the finishing pass (one draw)
@@ -210,7 +214,9 @@ export function createRenderer(opts) {
   const floatOK = gl2 && (renderer.extensions.has('EXT_color_buffer_float') || renderer.extensions.has('EXT_color_buffer_half_float'));
   const bufferType = floatOK ? THREE.HalfFloatType : THREE.UnsignedByteType;
 
-  let level = levelOf(o.quality) || (O ? O.fx() : prefersReduced() ? 'low' : 'high');
+  const forced = levelOf(o.quality) || forcedTier(), software = !forced && softwareGL(renderer.getContext()) && !/[?&]gpu=1/.test(location.search);
+  const capSoft = (l) => (software && (l === 'ultra' || l === 'high') ? 'low' : l);     // software GL is held to LITE unless a tier is forced
+  let level = levelOf(o.quality) || forced || capSoft(O ? O.fx() : prefersReduced() ? 'low' : 'high');
   let theme = o.theme !== undefined ? o.theme : O ? O.theme() : null;
   let composer = null, bloom = null, finish = null, envTex = null, dead = false, extra = [];
   let width = 0, height = 0, dpr = 1, raf = 0, loop = null, tPrev = 0, firstFrame = true;
@@ -342,14 +348,14 @@ export function createRenderer(opts) {
   const onVisible = () => { if (!pageHidden() && loop && !raf && !dead) { tPrev = 0; perf.last = 0; raf = requestAnimationFrame(tick); } };
   document.addEventListener('visibilitychange', onVisible);
 
-  const followFx = (l) => { if (!dead && levelOf(l) && l !== level) apply(l); };
+  const followFx = (l) => { if (!forced && !dead && levelOf(l) && capSoft(l) !== level) apply(capSoft(l)); };
   const followTheme = (t) => { if (!dead) api.setTheme(t); };
   const backToDefault = () => followTheme(null);
   if (O && !levelOf(o.quality)) O.onFx(followFx);
   if (O && o.theme === undefined) { O.onTheme(followTheme); window.addEventListener('olympus:theme-default', backToDefault); }
 
   const api = {
-    renderer, scene, camera,
+    renderer, scene, camera, forced, software,
     get composer() { return composer; },
     render,
     /** re-measure (or set a fixed size when autoSize is false) */
