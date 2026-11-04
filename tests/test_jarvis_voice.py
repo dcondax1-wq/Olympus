@@ -127,6 +127,12 @@ def new_page(br, no_sr=False, reduced=False, fx=None, width=390, height=844):
         ctx.add_init_script("window.__noSR = true;")
     if os.environ.get("JARVIS_TEST_LITE") == "1":          # a loaded machine: no 3D core, no effects (jfx=off), so the heavy page cannot starve the checks
         ctx.add_init_script("try { localStorage.setItem('jfx', 'off'); localStorage.setItem('jarvis.no3d', '1'); } catch (e) {}")
+    # the scheduled bot cards (01:45 plan, 09:15 pre-market, 15:55 end, 16:05 recap) are spoken by the same voice when the test happens to run in their hour:
+    # they are switched off here so the checks do not depend on the time of day (their own tests: test_jarvis_bots.py)
+    ctx.add_init_script("try { localStorage.setItem('jarvis.bots.set', JSON.stringify({ on: true, plan: false, recap: false, rituals: false })); } catch (e) {}")
+    # 2026-11-04: the natural-speech layer says "5 PM" as "five P M", so the spoken words differ from the caption on purpose (the caption follows the
+    # cleaned text, the highlight is mapped back: test_jarvis_engines.py); the word-for-word caption checks here are about the base speaker
+    ctx.add_init_script("try { localStorage.setItem('jarvis.voiceEngine', JSON.stringify({ prosody: false })); } catch (e) {}")
     ctx.add_init_script(MOCKS)
     p = ctx.new_page()
     errs = []
@@ -271,7 +277,8 @@ def run_main(br, url):
     shot(p, "voice_listening.png")
     # d. one turn: mocked recognition -> the brain's answer in the captions, said word by word
     p.wait_for_function("window.__said.length >= 2", timeout=15000)
-    wait_phase(p, "listening", 15000)
+    # back to listening after her answer: seen in the phase history (on a loaded machine the 'once' recognizer's listening phase can be over before a poll sees it)
+    p.wait_for_function("(() => { const a = window.__phases; const i = a.lastIndexOf('speaking'); return i >= 0 && a.slice(i).includes('listening'); })()", timeout=15000)
     said = p.evaluate("({ text: window.__said.slice(1).map((x) => x.text).join(' '), n: window.__said.length - 1 })")
     caps = p.evaluate("[document.getElementById('vmYou').textContent, document.getElementById('vmJar').textContent, "
                       "[...document.querySelectorAll('#vmJar .w')].every((w) => w.classList.contains('on')), "
@@ -279,7 +286,8 @@ def run_main(br, url):
     check("d. a turn: you said 'is the market open' (caption), the brain's spoken answer is the caption, word for word, all lit",
           caps[0] == "is the market open" and flat(caps[1]) == flat(said["text"]) and "market" in said["text"].lower() and caps[2], (caps, said))
     check("d. the reply is also kept in the Jarvis chat (the shell's answer(), the same brain)", "market" in caps[3].lower(), caps[3])
-    check("d. turn-taking: listening again after the answer", vm(p)["phase"] == "listening" and p.evaluate("window.__srStarts") >= 2, vm(p))
+    check("d. turn-taking: listening again after the answer (seen in the phase history: the 'once' recognizer's listening phase can end before a poll on a loaded machine)",
+          p.evaluate("(() => { const a = window.__phases; const i = a.lastIndexOf('speaking'); return i >= 0 && a.slice(i).includes('listening'); })()") and p.evaluate("window.__srStarts") >= 2, vm(p))
     vd = p.evaluate("document.getElementById('vmVerdict').textContent")
     check("d. the HUD arc shows the system verdict (the bots' RUNNING), in its colour", vd.startswith("SYSTEM · RUNNING")
           and p.evaluate("document.getElementById('vm').dataset.verdict") == "ok", vd)
