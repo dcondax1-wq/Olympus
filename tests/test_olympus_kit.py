@@ -65,7 +65,9 @@ MORE = {
 # Data City by tier (2026-11-04, datacity/caps.js, docs/OLYMPUS_PERF.md): the page forces the tier with ?q= and the device hint with ?phone=; (calls, triangles) at the far
 # overview and at the close-up of the densest district, measured at 390 x 844 / dpr 3 under SwiftShader + ~20% headroom. "phone-high" = a phone at the high tier (the
 # phone-safe preset), "ultra" = a PC at ultra (the full city). The heap budget is HEAP_MB for phone-high.
-DATACITY_TIERS = {"phone-high": ("?q=high&phone=1", 95, 250_000), "ultra": ("?q=ultra&phone=0", 130, 700_000)}
+# (query, calls, triangles at the worst of the load view and the close-up, calls at the FAR overview: camera 380 units out, the view a phone opens on).
+# 2026-11-04 after the landmark meshes were merged (52 -> 15 draws) and the overview-only details hidden on phones: phone-high far overview 59 calls (was 78), worst 71.
+DATACITY_TIERS = {"phone-high": ("?q=high&phone=1", 80, 250_000, 60), "ultra": ("?q=ultra&phone=0", 110, 700_000, 100)}
 HEAP_MB, LAYOUTS_PER_FRAME = 40, 1.25   # 1.25: room for the day-sprint HUDs (Odeon 1.11 under load)
 
 COUNT_DRAWS = """
@@ -433,7 +435,7 @@ def test_mind_labels(br, origin):
 
 def test_datacity_tiers(br, origin):
     """the Data City's budget per tier: phone-high (the phone-safe preset: <= 95 calls / 250k tris, heap <= 40 MB) and ultra (the full city)"""
-    for name, (q, calls, tris) in DATACITY_TIERS.items():
+    for name, (q, calls, tris, far_calls) in DATACITY_TIERS.items():
         ctx, p, errs = page(br, origin, fx="high")
         p.goto(f"{origin}/datacity/{q}&nolite=1")
         p.wait_for_function("window.__city && window.__city.ready", timeout=180000)
@@ -447,10 +449,14 @@ def test_datacity_tiers(br, origin):
             p.wait_for_function(f"window.__city.frames >= {f0 + 8}", timeout=180000)
             s = p.evaluate("window.__city.stats()")
             worst = {"calls": max(worst["calls"], s["calls"]), "triangles": max(worst["triangles"], s["triangles"])}
+        p.evaluate("window.__app.orbit.focus(0, 0, 0, 380, 0.9)")
+        f0 = p.evaluate("window.__city.frames")
+        p.wait_for_function(f"window.__city.frames >= {f0 + 12}", timeout=180000)
+        far = p.evaluate("window.__city.stats()")
         heap = metrics(cdp).get("JSHeapUsedSize", 0) / 1e6
         prof = p.evaluate("window.__app.city.profile")
-        ok = worst["calls"] <= calls and worst["triangles"] <= tris and (name != "phone-high" or heap <= HEAP_MB)
-        check(f"e. datacity {name} ({prof}): {worst['calls']} calls / {calls}, {worst['triangles']} tris / {tris}, {round(heap, 1)} MB heap (budget {HEAP_MB} on phone-high)", ok, (worst, heap, errs[:2]))
+        ok = worst["calls"] <= calls and worst["triangles"] <= tris and far["calls"] <= far_calls and (name != "phone-high" or heap <= HEAP_MB)
+        check(f"e. datacity {name} ({prof}): worst {worst['calls']} calls / {calls}, {worst['triangles']} tris / {tris}, far overview {far['calls']} calls / {far_calls}, {round(heap, 1)} MB heap (budget {HEAP_MB} on phone-high)", ok, (worst, far, heap, errs[:2]))
         ctx.close()
 
 

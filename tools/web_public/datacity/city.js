@@ -34,6 +34,7 @@ import { etClock, sunOf, weatherOf } from './sky.js';
 import { applyTheme, watchTheme } from './theme.js';
 import * as UI from './ui.js';
 import * as PN from './panels.js';
+import { marketNow, parseLit } from './market.js';
 import { parseQuery, filterTest, council, yearsOf, standing, holdOf } from './kinds.js';
 
 const O = window.OLYMPUS || null;   // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
@@ -109,6 +110,7 @@ class App {
                     contrast: settings.get('dc.hc', '0') === '1' };
     this.calm = this.access.calm;
     this.photoUrl = null; this.photoBlob = null;
+    this.lit = null; this.demo = demo;
     Object.assign(state, { mode: demo ? 'demo' : 'live', buildings: this.L.items.filter((it) => it.kind === 'b').length, items: this.L.items.length,
                            quality: this.quality, districts: this.L.districts.map((d) => d.key), tiles: this.L.tiles.length, blocks: this.L.blocks.length });
     state.stats = () => this.stats();
@@ -663,6 +665,16 @@ class App {
       setTimeout(() => this.findUI?.q.focus({ preventScroll: true }), 50);
     } else if (name === 'read') UI.sheet.open('read', 'How to read the city', (b) => UI.viewRead(b, m));
     else if (name === 'menu') UI.sheet.open('menu', 'The city', (b) => PN.viewMenu(b, this.menuItems()));
+    else if (name === 'now') {
+      const card = this.nowCard();
+      UI.sheet.open('now', 'What is moving the market now', (b) => PN.viewNow(b, card, {
+        district: (r) => { const d = this.L.districts.find((q) => q.key === r.key); if (d) this.openDistrict(d); },
+        idea: (r) => { if (r?.id) this.openId(r.id); else UI.toast('The demo sample has no building to open'); },
+        today: () => { this.setToday(true); UI.toast('Today layer: the ideas that fired are lit'); },
+        report: () => this.showView('report') }));
+      this.loadLit();
+      this.announce(card.text);
+    }
     else if (name === 'report') {
       UI.sheet.open('report', 'City report', (b) => PN.viewReport(b, m, this.cou, {
         family: (k) => { this.showView('find'); this.findUI.state.family = k; this.findUI.q.value = ''; this.find('', this.findUI.state); this.findUI.state.family = k; document.querySelectorAll('#fseg button').forEach((x) => x.classList.toggle('on', x.dataset.v === k)); this.flyToMatches(); },
@@ -681,6 +693,20 @@ class App {
     else if (name === 'compare') { if (this.cmp) this.openCompare(this.cmp.a, this.cmp.b); else UI.toast('Open an idea, tap Compare, then tap a second building'); }
   }
 
+  /** today's LIT levels from the dashboard's published data.json (read-only, optional: a missing file leaves the card on the city's own numbers) */
+  loadLit() {
+    if (this.demo || this._litP) return this._litP;
+    this._litP = fetch('../data.json', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).then((j) => { this.lit = parseLit(j); if (UI.sheet.isOpen('now')) this.showView('now'); return this.lit; }).catch(() => null);
+    return this._litP;
+  }
+
+  /** "what is moving the market right now": the first thing the city says */
+  nowCard() {
+    const card = marketNow(this.model, this.lit, { demo: this.demo, label: (b) => labelOf(b, this.model.D) });
+    if (state.v3) state.v3.now = { rows: card.rows.map((r) => ({ key: r.key, name: r.name, fired: r.fired, mnq: r.mnq, nq: r.nq, lit: r.lit.ok, litText: r.lit.text })), demo: card.demo, fallback: card.fallback, sample: card.sample, litLive: card.litLive };
+    return card;
+  }
+
   /** the Council of the Gods (Pantheon) next door, when the site has it: the market mood, context only */
   gods() {
     this._gods ||= fetch('../pantheon/pantheon.json', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
@@ -690,6 +716,7 @@ class App {
   menuItems() {
     const go = (fn) => () => fn();
     return [
+      { key: 'now', title: 'Market now', sub: 'What is moving the market, in dollars, and what matches LIT', fn: go(() => this.showView('now')) },
       { key: 'report', title: 'City report', sub: 'What was tested, who survives, what the Council of ideas says', fn: go(() => this.showView('report')) },
       { key: 'compare', title: 'Compare two ideas', sub: 'Open an idea, tap Compare, tap a second building', fn: go(() => { UI.sheet.close(); UI.toast('Tap a building, then Compare, then a second building'); }) },
       { key: 'timeline', title: 'How it grew', sub: 'Watch the city rise year by year', fn: go(() => this.showView('timeline')) },
@@ -703,7 +730,7 @@ class App {
 
   route() {
     const h = decodeURIComponent(location.hash || '');
-    if (['#top', '#today', '#watch', '#find', '#read', '#menu', '#report', '#timeline', '#access', '#compare'].includes(h)) this.showView(h.slice(1));
+    if (['#top', '#today', '#watch', '#find', '#read', '#menu', '#report', '#timeline', '#access', '#compare', '#now'].includes(h)) this.showView(h.slice(1));
     else if (h === '#photo') this.enterPhoto();
     else if (h === '#fireworks') this.celebrateGold();
     else if (h === '#discoveries') this.showView('today');
@@ -867,6 +894,7 @@ class App {
     };
     requestAnimationFrame(frame);
     this.route();
+    if (!location.hash && !P.has('nonow')) this.showView('now');           // first open: the money question first (?nonow=1 skips it)
     this.checkGold();
   }
 }

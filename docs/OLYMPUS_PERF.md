@@ -153,13 +153,18 @@ Measured (390 x 844, dpr 3, SwiftShader, `?q=` forced; `python -X utf8 -m tests.
 | | calls | triangles | JS heap |
 |---|---|---|---|
 | before the preset, high (v3 as first landed) | 106-108 overview, 100-110 close-up | 352k / 477k | 58 MB (42.7 MB on v2) |
-| **phone-high**, far overview | 84 | 167k | 25 MB |
+| **phone-high**, far overview | 84 first, **59** after the landmark merge | 167k / 165k | 25 MB |
 | **phone-high**, close-up of the densest district | 62 | 202k | 25 MB |
 | ultra, worst of overview / close-up | 113 | 509k | 25 MB |
 
-Budgets (`DATACITY_TIERS` in `tests/test_olympus_kit.py`, `PHONE_BUDGET` in `tests/test_datacity.py`): phone-high 95 calls / 250k triangles and heap <= 40 MB;
-ultra 130 calls / 700k. The far overview of a phone is 84 calls, not the 60 asked for: about 70 of them are the fixed scene (sky, ground, the forum
-and its 11 gates, the streams, fog, billboards, the post passes add about 15); merging the landmark meshes is the next cut.
+Budgets (`DATACITY_TIERS` in `tests/test_olympus_kit.py`, `PHONE_BUDGET` in `tests/test_datacity.py`): phone-high worst 80 calls / 250k triangles, **far overview <= 60 calls**,
+heap <= 40 MB; ultra worst 110 calls / 700k, far overview 100.
+
+Follow-up (same day): the landmark meshes are statically merged (`landmarks.js` `_mergeStatic`: 52 meshes baked into 15, per material and per container so the temple and
+the Pharos can still be hidden; the oracle, turning rings, sweeping beams, bobbing lamps, the per-instance gate bars and the tap proxies are left alone; `?nomerge=1` shows the
+unmerged version for an A/B look, the pictures were identical), the monorail pylons and platforms are one mesh, the crane lights are vertex colours, and on a phone the small
+details nobody can see from the overview (heralds, billboards, rail pylons, sign poles, cranes, the old light-point traffic) are not drawn above a camera height of 150.
+Phone-high far overview with all motion on: **78 -> 59 calls** (triangles unchanged, 165k); worst of load view and close-up 71 calls / 222k; ultra 93 calls / 504k.
 
 Heap: the compact skyline rows (about 30,000 small arrays) are dropped as soon as they are decoded (`data.js`), which took 58 MB to 25 MB (the neon-sign
 atlas is 640 x 100 px per row). The city loop honours `OLYMPUS.frameGap()` (the kit's idle cap and battery saver) and `OLYMPUS.hidden()`; the `city` ambient bed

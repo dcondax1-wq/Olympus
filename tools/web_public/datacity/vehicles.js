@@ -259,28 +259,40 @@ export class Monorail {
     const fogU = pick(U, 'uTime', 'uFog', 'uFogD', 'uHaze', 'uDay');
     const track = new THREE.Mesh(g, new THREE.ShaderMaterial({ vertexShader: TRACK_VS, fragmentShader: TRACK_FS, uniforms: fogU, side: THREE.DoubleSide }));
     track.frustumCulled = false; track.renderOrder = 3;
-    // pylons every ~26 units, a station platform at each district
-    const nPyl = Math.max(8, Math.round(this.length / 26)), pyl = new THREE.InstancedMesh(new THREE.BoxGeometry(0.7, 1, 0.7).translate(0, 0.5, 0),
-      new THREE.MeshBasicMaterial({ color: 0x1a2038 }), nPyl);
-    const m4 = new THREE.Matrix4();
-    for (let i = 0; i < nPyl; i++) { const p = this.curve.getPointAt(i / nPyl); m4.makeScale(1, RAIL_Y - 0.4, 1).setPosition(p.x, 0, p.z); pyl.setMatrixAt(i, m4); }
-    pyl.frustumCulled = false; pyl.renderOrder = 2;
-    const st = R.stations, plat = new THREE.InstancedMesh(new THREE.BoxGeometry(9, 0.5, 3.4), new THREE.MeshBasicMaterial({ color: 0x3fd8ff, transparent: true, opacity: 0.55,
-      blending: THREE.AdditiveBlending, depthWrite: false }), Math.max(1, st.length));
+    // pylons every ~26 units and a platform at each district: ONE static mesh with vertex colours (one draw call)
+    const nPyl = Math.max(8, Math.round(this.length / 26)), st = R.stations, m4 = new THREE.Matrix4();
+    const fpos = [], fnor = [], fcol = [], fidx = [], fc = new THREE.Color();
+    const bake = (geom, matrix, color) => {
+      const g = geom.clone();
+      g.applyMatrix4(matrix);
+      const base = fpos.length / 3;
+      fpos.push(...g.attributes.position.array); fnor.push(...g.attributes.normal.array);
+      fc.setHex(color);
+      for (let i = 0; i < g.attributes.position.count; i++) fcol.push(fc.r, fc.g, fc.b);
+      for (const i of g.index.array) fidx.push(base + i);
+      g.dispose();
+    };
+    const pylG = new THREE.BoxGeometry(0.7, 1, 0.7).translate(0, 0.5, 0), platG = new THREE.BoxGeometry(9, 0.5, 3.4);
+    for (let i = 0; i < nPyl; i++) { const p = this.curve.getPointAt(i / nPyl); m4.makeScale(1, RAIL_Y - 0.4, 1).setPosition(p.x, 0, p.z); bake(pylG, m4, 0x1a2038); }
     this.stationU = st.map((s) => this._nearest(s.x, s.z));
     st.forEach((s, i) => {
       const u = this.stationU[i], p = this.curve.getPointAt(u), t = this.curve.getTangentAt(u);
       m4.compose(new THREE.Vector3(p.x, RAIL_Y - 0.9, p.z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.atan2(t.z, t.x)), new THREE.Vector3(1, 1, 1));
-      plat.setMatrixAt(i, m4);
+      bake(platG, m4, 0x2a8fb0);
     });
-    plat.frustumCulled = false; plat.renderOrder = 3;
+    const fg = new THREE.BufferGeometry();
+    fg.setAttribute('position', new THREE.Float32BufferAttribute(fpos, 3)); fg.setAttribute('normal', new THREE.Float32BufferAttribute(fnor, 3));
+    fg.setAttribute('color', new THREE.Float32BufferAttribute(fcol, 3)); fg.setIndex(fidx);
+    const furn = new THREE.Mesh(fg, new THREE.MeshBasicMaterial({ vertexColors: true }));
+    furn.frustumCulled = false; furn.renderOrder = 2;
+    this.furn = furn;
     // trains: 3 x 6 cars, placed on the curve every frame (18 instances)
     const car = new THREE.BoxGeometry(2.6, 0.9, 1.2);
     this.trains = new THREE.InstancedMesh(car, new THREE.ShaderMaterial({ vertexShader: TRAIN_VS, fragmentShader: TRAIN_FS, uniforms: fogU }), 18);
     this.trains.frustumCulled = false; this.trains.renderOrder = 4;
     this.m4 = m4; this.q = new THREE.Quaternion(); this.v = new THREE.Vector3(); this.s = new THREE.Vector3(1, 1, 1); this.up = new THREE.Vector3(0, 1, 0);
     this.group = new THREE.Group();
-    this.group.add(track, pyl, plat, this.trains);
+    this.group.add(track, furn, this.trains);
     this.pylons = nPyl; this.state = [];
     this.setQuality(quality);
     this.update(0, 1);

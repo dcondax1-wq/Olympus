@@ -104,7 +104,7 @@ export class CityScene {
     this.rain = new Rain(this.U, this.quality); this.scene.add(this.rain.lines);
     this.traffic = new Traffic(L, this.U, this.quality); this.scene.add(this.traffic.points);
     this.beam = new Beam(this.U); this.scene.add(this.beam.mesh, this.beam.ring);
-    this.boards = new Billboards(this.U, opts.billboards || []); this.scene.add(this.boards.group);
+    this.boards = new Billboards(this.U, opts.billboards || [], this.caps.boards); this.scene.add(this.boards.group);
     // v3: the river, the sailing ships and cranes, the monorail, the cars and flying taxis, the airships, the neon signs, the fireworks
     this.river = new River(this.R, this.U); if (this.river.mesh) this.scene.add(this.river.mesh);
     this.ships = new Ships(L, this.U, this.quality); this.scene.add(this.ships.group);
@@ -116,7 +116,7 @@ export class CityScene {
     this.fireworks = new Fireworks(); this.scene.add(this.fireworks.points);
     this.link = new Link(); this.scene.add(this.link.line);
     this.kit = new KitFx(this.scene, this.camera, this.lm.spots, L, this.R);
-    this.kitReady = this.kit.load().then((ok) => { if (ok && this._sun) this.kit.set(this._sun, this._wx, this.U); return ok; }).catch(() => false);
+    this.kitReady = this.kit.load().then((ok) => { if (ok && this._sun) this.kit.set(this._sun, this._wx, this.U, this.caps); return ok; }).catch(() => false);
     this.calm = !!opts.calm;
     this._tier(this.rc.quality());
   }
@@ -230,12 +230,12 @@ export class CityScene {
   }
 
   _names() {
-    this.signs = [];
+    this.nameSprites = [];
     for (const d of this.L.districts) {
       const s = textSprite(d.name, d.css || '#e9ecf6', Math.max(0.9, Math.min(2.4, d.half / 34)));
       s.position.set(d.cx, d.kind === 'harbor' ? 8 : 16 + Math.min(30, d.half * 0.3), d.cz);
       this.scene.add(s);
-      this.signs.push(s);
+      this.nameSprites.push(s);
     }
     const disc = textSprite('DISCOVERIES', '#ffe08a', 0.8);
     disc.position.set(0, 6, -22);
@@ -378,7 +378,7 @@ export class CityScene {
 
   /** Redraw every canvas text once the HUD fonts (Orbitron / Rajdhani) are in: the first draw used a fallback. */
   refreshText() {
-    for (const s of this.signs) s.userData.redraw?.();
+    for (const s of this.nameSprites) s.userData.redraw?.();
     this.towerName?.userData.redraw?.();
     this.signs.refresh();
     this.boards.redrawAll();
@@ -401,6 +401,12 @@ export class CityScene {
     } else U.uFlash.value = 0;
     this.lm.update(U.uTime.value);
     this.lm.lod(this.camera.position, this.caps);
+    if (this.caps.farAlt > 0) {                                  // phone: from the overview height the small details are not drawn (each is a draw call)
+      const hi = this.camera.position.y > this.caps.farAlt;
+      for (const o of [this.boards.group, this.rail.furn, this.signs.poles, this.ships.cranes]) if (o) o.visible = !hi;
+    } else for (const o of [this.boards.group, this.rail.furn, this.signs.poles, this.ships.cranes]) if (o && !o.visible) o.visible = true;
+    if (this.caps.lmLod > 0) { const cp = this.camera.position; for (const sp of this.nameSprites) sp.visible = Math.hypot(cp.x - sp.position.x, cp.z - sp.position.z) < this.caps.lmLod * 0.8; }       // phone: the name sprites only near (the neon boards say the names too)
+    else if (this.nameSprites[0] && !this.nameSprites[0].visible) for (const sp of this.nameSprites) sp.visible = true;
     if (!this.calm) {
       this.airships.update(U.uTime.value);
       this.rail.update(U.uTime.value, U.uFlow.value);

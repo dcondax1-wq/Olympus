@@ -96,6 +96,7 @@ export class Signs {
     poles.frustumCulled = false; poles.renderOrder = 2;
     this.group = new THREE.Group();
     this.group.add(poles, this.mesh);
+    this.poles = poles;
     this.boards = boards;
   }
 
