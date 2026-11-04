@@ -1028,8 +1028,8 @@ def run_look(br, url):
     p.wait_for_function("window.__said.length > 0", timeout=6000)
     p.wait_for_function("document.documentElement.dataset.state === 'idle'", timeout=4000)
     said, states = p.evaluate("[window.__said, window.__states]")
-    check("l. voice: tap the mic -> LISTENING -> THINKING -> SPEAKING -> STANDBY; the answer is read at the voice's own rate 1.0, pitch 1.0",
-          "market" in said[0][0].lower() and abs(said[0][1] - 1.0) < 1e-6 and abs(said[0][2] - 1.0) < 1e-6
+    check("l. voice: tap the mic -> LISTENING -> THINKING -> SPEAKING -> STANDBY; the answer is read at the voice's own pace (rate and pitch 1.0 within the prosody's +-12%: voice-engines.js 2026-11-04)",
+          "market" in said[0][0].lower() and abs(said[0][1] - 1.0) < 0.12 and abs(said[0][2] - 1.0) < 0.12
           and [s for s in states if s in ("listening", "thinking", "speaking", "idle")][:4] == ["listening", "thinking", "speaking", "idle"], (said, states))
     p.click("#hf")
     p.wait_for_function("window.__srStarts >= 3", timeout=8000)
