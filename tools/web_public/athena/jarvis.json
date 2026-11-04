@@ -3,12 +3,12 @@
  "name": "Athena",
  "status": {
   "level": "ok",
-  "label": "113 entries, offline"
+  "label": "184 entries, offline"
  },
  "kpis": [
   {
    "label": "Entries",
-   "value": "113"
+   "value": "184"
   },
   {
    "label": "Words",
@@ -20,8 +20,8 @@
   }
  ],
  "lines": [
-  "Your library: the strategy, the MFFU rules, what failed and what to do when.",
-  "Search it, or tap a shelf. Quiz me gives 5 questions."
+  "Your library: the strategy, the MFFU rules, Kalshi, what failed, what we learned and what to do when.",
+  "Ask it, bookmark it, flip the cards. A new lesson every day."
  ],
  "t": 1793700000,
  "open": "#library",

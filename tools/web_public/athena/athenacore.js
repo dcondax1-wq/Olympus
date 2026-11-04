@@ -39,7 +39,7 @@ export function indexOf(lib) {
 }
 
 // score one token against one entry: title > words > text; a typo of one or two letters still matches a word of 4+ letters
-function tokenScore(t, x) {
+export function tokenScore(t, x) {
   let s = 0;
   if (x.title.startsWith(t)) s = 100; else if (x.title.split(' ').some((w) => w.startsWith(t))) s = 85; else if (x.title.includes(t)) s = 70;
   else if (x.id.includes(t) || x.tags.includes(t)) s = 55;
@@ -82,7 +82,7 @@ export function rng(seed) {
   let a = (seed >>> 0) || 1;
   return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 }
-const shuffle = (arr, r) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+export const shuffle = (arr, r) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const clip = (s, n = 120) => { s = String(s); if (s.length <= n) return s; const cut = s.slice(0, n); return cut.slice(0, cut.lastIndexOf(' ') > 40 ? cut.lastIndexOf(' ') : n) + '...'; };
 
 // n questions drawn from the library: word meanings (`ask`) and the entries with a written question (`quiz`). Each: {id, q, options[4], answer (index), from}

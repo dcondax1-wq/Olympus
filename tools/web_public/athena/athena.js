@@ -5,12 +5,16 @@ import { createRenderer } from '../olympus/render.js';
 import { marble, metal, neon, starfield } from '../olympus/materials.js';
 import * as CORE from './athenacore.js';
 import { loadLibrary, indexOf, search, counts, linkify, esc, makeQuiz } from './athenacore.js';
+import * as BRAIN from './athenabrain.js';
+import { createPlus } from './athenaplus.js';
 
 const O = window.OLYMPUS || null;
 const Q = new URLSearchParams(location.search);
 const RM = O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
 const $ = (id) => document.getElementById(id);
-const S = { lib: null, ix: null, byId: {}, tag: null, q: '', view: 'lib', entry: null, back: 'lib', quiz: null, errors: [], hall: null };
+const S = { lib: null, ix: null, byId: {}, tag: null, q: '', view: 'lib', entry: null, back: 'lib', quiz: null, errors: [], hall: null, plus: null };
+const PANES = ['lib', 'entry', 'quiz', 'ask', 'today', 'cards', 'rules', 'saved'];
+const TABS = ['lib', 'ask', 'today', 'cards', 'rules', 'saved', 'quiz'];            // the Saved page opens from the star at the top right
 
 const tagOf = (id) => S.lib.tags.find((t) => t.id === id);
 const colorOf = (e) => (tagOf(e.kind) || S.lib.tags[0]).color;
@@ -35,7 +39,7 @@ function renderEntry() {
   const tg = tagOf(e.kind) || S.lib.tags[0];
   const others = e.tags.filter((t) => t !== e.kind).map((t) => tagOf(t)).filter(Boolean);
   $('entry').style.setProperty('--c', tg.color);
-  $('entry').innerHTML = `<span class="kind">${esc(tg.name.toUpperCase())}</span>${others.map((t) => `<span class="kind" style="--c:${esc(t.color)}">${esc(t.name.toUpperCase())}</span>`).join('')}<h2>${esc(e.title)}</h2>`
+  $('entry').innerHTML = `<button type="button" class="mark" id="mark" aria-pressed="${S.plus.isMarked(e.id)}" aria-label="Bookmark this entry" title="Bookmark">${S.plus.isMarked(e.id) ? '&#9733;' : '&#9734;'}</button><span class="kind">${esc(tg.name.toUpperCase())}</span>${others.map((t) => `<span class="kind" style="--c:${esc(t.color)}">${esc(t.name.toUpperCase())}</span>`).join('')}<h2>${esc(e.title)}</h2>`
     + `<p class="lead">${linkify(e.short, S.byId)}</p>` + e.body.map((b) => `<p>${linkify(b, S.byId)}</p>`).join('')
     + (e.src.length ? `<p class="src">Where this comes from: ${e.src.map(esc).join(', ')}</p>` : '');
 }
@@ -66,17 +70,19 @@ function renderQuiz() {
 // ------------------------------------------------------------------------------------------------ views and routes
 function show(view, hash = true) {
   S.view = view;
-  $('p-lib').hidden = view !== 'lib'; $('p-entry').hidden = view !== 'entry'; $('p-quiz').hidden = view !== 'quiz';
-  document.querySelectorAll('#tabs button').forEach((b) => b.setAttribute('aria-pressed', String((view === 'quiz') === (b.dataset.tab === 'quiz'))));
+  for (const p of PANES) $('p-' + p).hidden = view !== p;
+  document.querySelectorAll('#tabs button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tab === (view === 'entry' ? S.back : view))));
   $('sheet').scrollTop = 0;
-  if (view === 'quiz') renderQuiz(); else if (view === 'entry') renderEntry(); else { renderChips(); renderList(); }
-  if (hash && history.replaceState) history.replaceState(null, '', view === 'quiz' ? '#quiz' : view === 'entry' ? '#e/' + S.entry : S.tag ? '#t/' + S.tag : '#library');
+  if (view === 'quiz') renderQuiz(); else if (view === 'entry') { S.plus.visit(S.entry); renderEntry(); badges(); } else if (view === 'lib') { renderChips(); renderList(); } else S.plus.render(view);
+  const sb = document.querySelector('.search'); if (sb) sb.style.display = view === 'lib' ? '' : 'none';          // the library's search only makes sense on the library
+  if (hash && history.replaceState) history.replaceState(null, '', view === 'lib' ? (S.tag ? '#t/' + S.tag : '#library') : view === 'entry' ? '#e/' + S.entry : '#' + view);
 }
-function openEntry(id, from) { if (!S.byId[id]) return; S.entry = id; S.back = from === 'quiz' ? 'quiz' : S.view === 'entry' ? S.back : 'lib'; show('entry'); }
+function openEntry(id, from) { if (!S.byId[id]) return; S.entry = id; S.back = from === 'quiz' ? 'quiz' : S.view === 'entry' ? S.back : TABS.includes(S.view) ? S.view : 'lib'; show('entry'); }
 function setTag(t) { S.tag = S.tag === t ? null : t; S.hall?.focusTag(S.tag); if (S.view !== 'lib') show('lib'); else { renderChips(); renderList(); if (history.replaceState) history.replaceState(null, '', S.tag ? '#t/' + S.tag : '#library'); } }
 function route() {
   const h = decodeURIComponent(location.hash.slice(1));
   if (h === 'quiz') { if (!S.quiz) startQuiz(); show('quiz', false); }
+  else if (['ask', 'today', 'cards', 'rules', 'saved'].includes(h)) show(h, false);
   else if (h.startsWith('e/') && S.byId[h.slice(2)]) { S.entry = h.slice(2); S.back = 'lib'; show('entry', false); }
   else { S.tag = h.startsWith('t/') && tagOf(h.slice(2)) ? h.slice(2) : null; S.hall?.focusTag(S.tag); show('lib', false); }
 }
@@ -91,14 +97,53 @@ function bind() {
     if (e.target.closest('#again')) { startQuiz(); renderQuiz(); $('sheet').scrollTop = 0; return; }
     if (e.target.closest('#toLib')) { show('lib'); }
   });
-  $('back').addEventListener('click', () => show(S.back === 'quiz' ? 'quiz' : 'lib'));
+  $('savedBtn').addEventListener('click', () => { sfx('tap'); show(S.view === 'saved' ? 'lib' : 'saved'); });
+  $('back').addEventListener('click', () => show(TABS.includes(S.back) ? S.back : 'lib'));
+  $('entry').addEventListener('click', (e) => { if (e.target.closest('#mark')) { S.plus.toggle(S.entry); sfx('tick'); renderEntry(); badges(); } });
   $('q').addEventListener('input', (e) => { S.q = e.target.value; if (S.view !== 'lib') show('lib'); else renderList(); });
-  $('tabs').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (!b) return; if (b.dataset.tab === 'quiz') { if (!S.quiz) startQuiz(); show('quiz'); } else show('lib'); });
+  $('tabs').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (!b) return; sfx('tap'); if (b.dataset.tab === 'quiz') { if (!S.quiz) startQuiz(); show('quiz'); } else show(b.dataset.tab); });
   addEventListener('hashchange', route);
+}
+
+// ------------------------------------------------------------------------------------------------ small helpers: sounds, toast, tab badges
+const sfx = (name) => { try { O?.sfx?.(name); } catch (_) { /* the sound is never needed */ } };
+let toastTimer = 0;
+function toast(text) { const t = $('toast'); t.textContent = text; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2200); }
+function badges() {
+  if (!S.plus) return;
+  const c = S.plus.counts(), d = $('bd-cards'), t = $('bd-today');
+  d.textContent = c.due > 99 ? '99+' : String(c.due); d.hidden = !c.due;
+  $('bd-saved').textContent = String(c.marks); $('bd-saved').hidden = !c.marks;
+  const read = S.plus.state.days.includes(BRAIN.dayKey());
+  t.textContent = '1'; t.hidden = read;
 }
 
 // ------------------------------------------------------------------------------------------------ the 3D library
 const R = 8.2;
+// procedural surfaces (canvas textures, drawn once): walnut wood with grain, leather with gold bands, aged parchment with ink lines
+function tex(w, h, draw, repeat) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  if (repeat) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(repeat[0], repeat[1]); }
+  return t;
+}
+const mulberry = (a) => () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+const woodTex = (base, seed, size) => tex(size, size, (x, w, h) => {
+  const r = mulberry(seed); x.fillStyle = base; x.fillRect(0, 0, w, h);
+  for (let i = 0; i < h; i += 2) { const k = r(); x.fillStyle = `rgba(${k > 0.5 ? '255,214,160' : '0,0,0'},${(0.03 + r() * 0.07).toFixed(3)})`; x.fillRect(0, i, w, 1 + r() * 2); }
+  for (let i = 0; i < 9; i++) { const y = r() * h; x.strokeStyle = 'rgba(0,0,0,.22)'; x.lineWidth = 1 + r() * 1.5; x.beginPath(); x.moveTo(0, y); for (let k = 0; k <= w; k += 16) x.lineTo(k, y + Math.sin(k * 0.03 + i) * 3); x.stroke(); }
+}, [1, 1]);
+const leatherTex = (hex, seed) => tex(128, 256, (x, w, h) => {
+  const r = mulberry(seed); x.fillStyle = hex; x.fillRect(0, 0, w, h);
+  for (let i = 0; i < 700; i++) { x.fillStyle = `rgba(${r() > 0.5 ? '255,255,255' : '0,0,0'},${(0.02 + r() * 0.05).toFixed(3)})`; x.fillRect(r() * w, r() * h, 1 + r() * 2, 1 + r() * 2); }
+  x.fillStyle = '#e6c15a'; for (const y of [0.1, 0.16, 0.84, 0.9]) x.fillRect(0, h * y, w, 4);
+  x.strokeStyle = '#e6c15a'; x.lineWidth = 2; x.strokeRect(w * 0.22, h * 0.3, w * 0.56, h * 0.4);
+});
+const parchmentTex = () => tex(128, 128, (x, w, h) => {
+  const g = x.createLinearGradient(0, 0, w, 0); g.addColorStop(0, '#d9c89a'); g.addColorStop(0.5, '#f1e4bd'); g.addColorStop(1, '#cdb985'); x.fillStyle = g; x.fillRect(0, 0, w, h);
+  const r = mulberry(7); x.fillStyle = 'rgba(70,45,20,.55)'; for (let y = 10; y < h - 8; y += 9) x.fillRect(10, y, 40 + r() * (w - 60), 2);
+  for (let i = 0; i < 90; i++) { x.fillStyle = `rgba(120,80,30,${(0.04 + r() * 0.08).toFixed(2)})`; x.fillRect(r() * w, r() * h, 3, 3); }
+});
 class Hall {
   constructor(canvas) {
     this.canvas = canvas; this.yaw = 0; this.target = null; this.dirty = true; this.auto = !RM; this.shelves = [];
@@ -113,15 +158,24 @@ class Hall {
   }
   build() {
     const sc = this.scene;
-    sc.add(new THREE.HemisphereLight(0x9bbcff, 0x0a1020, 0.9));
+    sc.add(new THREE.HemisphereLight(0xb5cdff, 0x1a1428, 1.5));
     this.stars = starfield({ count: 700 }); sc.add(this.stars);
+    const wood = new THREE.MeshStandardMaterial({ map: woodTex('#4a2d18', 3, 256), roughness: 0.6, metalness: 0.05 });
+    const woodLight = new THREE.MeshStandardMaterial({ map: woodTex('#7a4e2c', 9, 256), roughness: 0.55, metalness: 0.05 });
+    const parch = new THREE.MeshStandardMaterial({ map: parchmentTex(), roughness: 0.85, emissive: new THREE.Color('#ffcf7a'), emissiveIntensity: 0.1 });
+    this.warm = new THREE.PointLight(0xffc27a, this.lite ? 0 : 45, 28, 1.3); this.warm.position.set(0, 4.2, 0); sc.add(this.warm);       // a warm chandelier
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(26, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: '#0c1226', side: THREE.BackSide, roughness: 0.9 }));
+    dome.position.y = 4; sc.add(dome);
+    const oculus = new THREE.Mesh(new THREE.RingGeometry(2.4, 2.6, 64), neon({ color: '#ffd27a', intensity: 1.6 })); oculus.rotation.x = Math.PI / 2; oculus.position.y = 29.6; sc.add(oculus);
     const floor = new THREE.Mesh(new THREE.CircleGeometry(30, 64), marble({ color: '#0e1530', vein: '#2b3b6e', roughness: 0.35, clearcoat: 0.3 }));
     floor.rotation.x = -Math.PI / 2; floor.position.y = -0.02; sc.add(floor);
     const ring = new THREE.Mesh(new THREE.RingGeometry(3.1, 3.2, 96), neon({ color: '#5ea8ff', intensity: 2.2 }));
     ring.rotation.x = -Math.PI / 2; ring.position.y = 0.01; sc.add(ring);
-    const gold = metal({ kind: 'gold' }), slab = marble({ color: '#e9e6df', vein: '#5a6a96', gold: '#e9b75a', roughness: 0.28 }), dark = metal({ kind: 'gunmetal' });
+    const gold = metal({ kind: 'gold' }), slab = wood, dark = woodLight;
     const geo = { back: new THREE.BoxGeometry(4.5, 3.4, 0.18), plank: new THREE.BoxGeometry(4.5, 0.1, 0.62), post: new THREE.BoxGeometry(0.14, 3.5, 0.66), book: new THREE.BoxGeometry(1, 1, 1), scroll: new THREE.CylinderGeometry(0.11, 0.11, 0.5, 14), cap: new THREE.CylinderGeometry(0.125, 0.125, 0.04, 14), strip: new THREE.BoxGeometry(1, 1, 1) };
     const c = counts(S.lib);
+    const leathers = ['#5b1f1f', '#1f3a5b', '#24543a', '#5b3d1f', '#3b2457', '#1f4a52'].map((h, n) => leatherTex(h, 40 + n));
+    const bookMats = leathers.map((map, n) => (col) => { const m = new THREE.MeshPhysicalMaterial({ map, color: new THREE.Color(col).lerp(new THREE.Color('#ffffff'), 0.55), roughness: 0.5, metalness: 0.1, clearcoat: 0.4 }); return m; });
     S.lib.tags.forEach((t, i) => {
       const g = new THREE.Group(), a = i * (Math.PI * 2) / S.lib.tags.length;
       g.position.set(Math.sin(a) * R, 0, -Math.cos(a) * R); g.userData = { tag: t.id, a }; g.lookAt(0, 0, 0);
@@ -138,12 +192,12 @@ class Hall {
       for (let k = 0; k < n; k++) {
         const row = Math.floor(k / 6), col = k % 6, y0 = planks[row] + 0.05, x = -1.85 + col * 0.74 + (rnd() - 0.5) * 0.05;
         if (k % 3 === 2) {                                            // a scroll lying down, glowing caps
-          const s = new THREE.Mesh(geo.scroll, new THREE.MeshStandardMaterial({ color: '#efe3c0', roughness: 0.6, emissive: new THREE.Color(t.color), emissiveIntensity: 0.12 }));
+          const s = new THREE.Mesh(geo.scroll, parch);
           s.rotation.z = Math.PI / 2; s.position.set(x, y0 + 0.13, 0.05); s.scale.set(1, 1.35, 1); g.add(s);
           for (const sx of [-1, 1]) { const cp = new THREE.Mesh(geo.cap, mat); cp.rotation.z = Math.PI / 2; cp.position.set(x + sx * 0.35, y0 + 0.13, 0.05); g.add(cp); }
         } else {                                                       // a book standing up, a glowing spine strip
           const h = 0.62 + rnd() * 0.3, w = 0.17 + rnd() * 0.07;
-          const b = new THREE.Mesh(geo.book, new THREE.MeshPhysicalMaterial({ color: cols[k % 3], roughness: 0.4, metalness: 0.2, clearcoat: 0.6 }));
+          const b = new THREE.Mesh(geo.book, bookMats[(k + i) % bookMats.length](cols[k % 3]));
           b.scale.set(w, h, 0.38); b.position.set(x, y0 + h / 2, 0.04); b.rotation.z = (k % 5 === 4) ? 0.12 : 0; g.add(b);
           const st = new THREE.Mesh(geo.strip, mat); st.scale.set(w * 1.04, 0.05, 0.4); st.position.set(x, y0 + h * 0.7, 0.04); st.rotation.z = b.rotation.z; g.add(st);
         }
@@ -154,6 +208,19 @@ class Hall {
       this.scene.add(g); this.shelves.push(g);
     });
     this.ray = new THREE.Raycaster(); this.refresh();
+    this.fx = []; this.fxNames = [];
+    this.fxStart();
+  }
+  /** the OLYMPUS effects (olympus/fx-*.js): light shafts from the oculus, dust and fireflies in the air. Each one is optional. */
+  async fxStart() {
+    const FX = window.OLYMPUS_FX;
+    if (!FX) return;
+    try { await FX.load('3d'); } catch (_) { return; }
+    const add = (name, target, opts) => { try { if (typeof FX[name] === 'function') { this.fx.push(FX[name](target, opts)); this.fxNames.push(name); } } catch (_) { /* an effect failing never stops the library */ } };
+    add('godRays', this.scene, { position: [0, 16, 0], intensity: 0.55 });
+    add('dust', this.scene, {});
+    add('fireflies', this.scene, { count: 50 });
+    this.dirty = true;
   }
   refresh() {
     for (const g of this.shelves) {
@@ -226,10 +293,11 @@ async function main() {
   S.ix = indexOf(S.lib); S.byId = Object.fromEntries(S.lib.entries.map((e) => [e.id, e]));
   $('demo').hidden = S.lib.src === 'file';
   $('sub').textContent = `${S.lib.entries.length} entries in plain words. Works offline.`;
-  bind(); route();
+  S.plus = createPlus({ lib: S.lib, ix: S.ix, byId: S.byId, colorOf, tagOf, toast, sfx, badges });
+  bind(); badges(); route();
   try { S.hall = new Hall($('stage')); S.hall.focusTag(S.tag); loop(performance.now()); } catch (e) { S.hall = null; $('nogl').hidden = false; S.errors.push('3d: ' + e); O?.ready(); }
   O?.mode?.(!!(S.hall && S.hall.lite));
-  window.__athena = { ready: true, CORE, get lib() { return S.lib; }, get state() { return { tag: S.tag, q: S.q, view: S.view, entry: S.entry, quiz: S.quiz }; }, get ready3d() { return !!S.hall; },
+  window.__athena = { ready: true, CORE, BRAIN, get plus() { return S.plus; }, get fx() { return S.hall ? S.hall.fxNames : []; }, get lib() { return S.lib; }, get state() { return { tag: S.tag, q: S.q, view: S.view, entry: S.entry, quiz: S.quiz }; }, get ready3d() { return !!S.hall; },
     get lite() { return S.hall ? S.hall.lite : null; }, get yaw() { return S.hall ? S.hall.yaw : 0; }, get settled() { return S.hall ? S.hall.settled : true; }, get facing() { return S.hall ? S.hall.facing : null; },
     get passes() { return S.hall ? S.hall.rc.passes() : []; }, get quality() { return S.hall ? S.hall.rc.quality() : null; }, get shelves() { return S.hall ? S.hall.shelves.length : 0; },
     shelfPoint(tag) {                         // screen point of a shelf's middle, for the tests

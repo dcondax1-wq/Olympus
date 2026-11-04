@@ -7,6 +7,10 @@
 // grey = dead end), one Points (fireflies; new tests are the bright tips of the growing branches), a ground and a trunk flare.
 // The search grows by drawRange / instance count (nodes are stored in playback order), so growing costs no rebuild.
 // On low / off tiers and under reduced motion it stands down (the 2D tree draws). Reads the layout of core.js, changes no data.
+// 2026-11-04: real bark (a grain texture with relief on the tubes), veined leaves, WIND (branches sway in the vertex shader, the leaves
+// follow on the CPU with a gusting breeze), SEASONS (S.season = auto | spring | summer | autumn | winter: the leaves, the light and the
+// weather change; auto = spring while the search sprouts, summer on the TRAIN lens, autumn on the TEST lens), light shafts from above and
+// weather from the OLYMPUS effects (olympus/fx-*.js: godRays, petals, laurelFall, snow), each one optional.
 import * as THREE from '../jarvis/three.module.min.js';
 import * as C from './core.js?v=d3';
 
@@ -22,22 +26,60 @@ export function place3(n) {
 }
 
 function leafTexture() {
-  const c = document.createElement('canvas'); c.width = c.height = 64;
+  const c = document.createElement('canvas'); c.width = c.height = 128;
   const g = c.getContext('2d');
-  g.translate(32, 32);
-  const grad = g.createRadialGradient(0, 0, 2, 0, 0, 30);
-  grad.addColorStop(0, 'rgba(255,255,255,1)'); grad.addColorStop(0.6, 'rgba(255,255,255,.9)'); grad.addColorStop(1, 'rgba(255,255,255,0)');
-  g.fillStyle = grad; g.beginPath(); g.moveTo(0, -30); g.quadraticCurveTo(17, -6, 0, 30); g.quadraticCurveTo(-17, -6, 0, -30); g.fill();
-  g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(0, -26); g.lineTo(0, 26); g.stroke();
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  g.translate(64, 64);
+  const grad = g.createLinearGradient(-30, 0, 30, 0);                    // a laurel leaf: lighter in the middle, darker at the rim, side veins, a midrib
+  grad.addColorStop(0, 'rgba(190,190,190,1)'); grad.addColorStop(0.5, 'rgba(255,255,255,1)'); grad.addColorStop(1, 'rgba(190,190,190,1)');
+  g.fillStyle = grad; g.beginPath(); g.moveTo(0, -60); g.quadraticCurveTo(36, -14, 0, 60); g.quadraticCurveTo(-36, -14, 0, -60); g.fill();
+  g.strokeStyle = 'rgba(0,0,0,.28)'; g.lineWidth = 1.6;
+  for (let k = -44; k <= 40; k += 14) { g.beginPath(); g.moveTo(0, k); g.quadraticCurveTo(14, k - 8, 25 - Math.abs(k) * 0.2, k - 22); g.moveTo(0, k); g.quadraticCurveTo(-14, k - 8, -25 + Math.abs(k) * 0.2, k - 22); g.stroke(); }
+  g.lineWidth = 2.4; g.strokeStyle = 'rgba(0,0,0,.4)'; g.beginPath(); g.moveTo(0, -54); g.lineTo(0, 56); g.stroke();
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
   return t;
 }
 
+function barkTexture() {
+  const c = document.createElement('canvas'); c.width = 128; c.height = 256;
+  const g = c.getContext('2d');
+  g.fillStyle = '#6b4a2a'; g.fillRect(0, 0, 128, 256);
+  for (let i = 0; i < 70; i++) {                                         // long vertical furrows and flecks, a seeded scatter
+    const x = hash(i, 71) * 128, w = 1 + hash(i, 72) * 4, y = hash(i, 73) * 256, h = 30 + hash(i, 74) * 140;
+    g.fillStyle = `rgba(${hash(i, 75) > 0.5 ? '20,10,4' : '170,125,75'},${(0.18 + hash(i, 76) * 0.3).toFixed(2)})`; g.fillRect(x, y, w, h);
+    g.fillRect(x - 128, y, w, h); g.fillRect(x + 128, y, w, h);          // wrap around the seam
+  }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4;
+  return t;
+}
+
+// the breeze: one formula for the shader (branches) and the CPU (leaves), so a leaf stays on its twig
+const gustAt = (secs) => Math.max(0.15, 0.7 + 0.35 * Math.sin(secs * 0.23) + 0.25 * Math.sin(secs * 0.61 + 1.3));
+const WIND_GLSL = `float hh = clamp(position.y / ${H}.0, 0.0, 1.0); float kk = hh * hh * uGust;
+  transformed.x += sin(uTime * 0.9 + position.y * 0.7 + position.z * 0.4) * 0.07 * kk; transformed.z += cos(uTime * 0.7 + position.y * 0.6 + position.x * 0.4) * 0.05 * kk;`;
+function windy(mat, wind) {                                              // add the sway to a stock material's vertex shader
+  mat.onBeforeCompile = (sh) => {
+    sh.uniforms.uTime = wind.uTime; sh.uniforms.uGust = wind.uGust;
+    sh.vertexShader = 'uniform float uTime; uniform float uGust;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n' + WIND_GLSL);
+  };
+  return mat;
+}
+
+// seasons: how the leaves, the light and the ground look; `frac` = the share of leaves still on the tree
+const SEASONS = {
+  spring: { tint: [0.9, 1.25, 0.9], both: [0.62, 1.0, 0.42], one: [1.0, 0.62, 0.82], dead: [0.2, 0.22, 0.18], k: 2.3, hemi: 0xc8f0d0, key: 0xffe8c0, ground: 0x0a1a10, ring: [0.6, 1.2, 0.6], frac: 1 },
+  summer: { tint: [1, 1, 1], both: [0.2, 1.0, 0.5], one: [1.0, 0.62, 0.12], dead: [0.16, 0.17, 0.16], k: 2.4, hemi: 0x9fd8c0, key: 0xffd9a0, ground: 0x07140d, ring: [1.2, 0.8, 0.3], frac: 1 },
+  autumn: { tint: [3.5, 0.5, 0.1], both: [1.0, 0.55, 0.1], one: [0.9, 0.18, 0.08], dead: [0.2, 0.13, 0.08], k: 2.3, hemi: 0xffd9a0, key: 0xffb870, ground: 0x180f07, ring: [1.3, 0.6, 0.15], frac: 0.85 },
+  winter: { tint: [1.2, 1.5, 3.5], both: [0.72, 0.88, 1.0], one: [0.5, 0.62, 0.85], dead: [0.2, 0.22, 0.26], k: 1.8, hemi: 0xa8c8ff, key: 0xc8e0ff, ground: 0x0d1420, ring: [0.5, 0.8, 1.3], frac: 0.45 },
+};
+export const SEASON_NAMES = ['auto', 'spring', 'summer', 'autumn', 'winter'];
+
 class Builder {
-  constructor() { this.pos = []; this.nor = []; this.col = []; this.idx = []; this.v = 0; }
+  constructor() { this.pos = []; this.nor = []; this.col = []; this.uv = []; this.idx = []; this.v = 0; this.len = 0; }
   tube(pts, radii, color, sides = SIDES) {
     const n = pts.length, t = new THREE.Vector3(), n1 = new THREE.Vector3(), n2 = new THREE.Vector3(), ref = new THREE.Vector3(0, 0, 1);
+    let along = this.len;
     for (let i = 0; i < n; i++) {
+      if (i) along += pts[i].distanceTo(pts[i - 1]);
       t.subVectors(pts[Math.min(n - 1, i + 1)], pts[Math.max(0, i - 1)]).normalize();
       n1.crossVectors(t, Math.abs(t.z) > 0.9 ? ref.set(1, 0, 0) : ref.set(0, 0, 1)).normalize(); ref.set(0, 0, 1);
       n2.crossVectors(t, n1).normalize();
@@ -45,7 +87,7 @@ class Builder {
         const a = (s / sides) * Math.PI * 2, cx = Math.cos(a), sx = Math.sin(a);
         const nx = n1.x * cx + n2.x * sx, ny = n1.y * cx + n2.y * sx, nz = n1.z * cx + n2.z * sx;
         this.pos.push(pts[i].x + nx * radii[i], pts[i].y + ny * radii[i], pts[i].z + nz * radii[i]);
-        this.nor.push(nx, ny, nz); this.col.push(color[0], color[1], color[2]);
+        this.nor.push(nx, ny, nz); this.col.push(color[0], color[1], color[2]); this.uv.push((s / sides) * 2, along * 1.6);
       }
     }
     for (let i = 0; i < n - 1; i++) {
@@ -54,12 +96,12 @@ class Builder {
         this.idx.push(a, c, b, b, c, d);
       }
     }
-    this.v += n * sides;
+    this.v += n * sides; this.len = along;
   }
   geometry() {
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(this.pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(this.nor, 3));
-    g.setAttribute('color', new THREE.Float32BufferAttribute(this.col, 3)); g.setIndex(this.idx);
+    g.setAttribute('color', new THREE.Float32BufferAttribute(this.col, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(this.uv, 2)); g.setIndex(this.idx);
     return g;
   }
 }
@@ -74,20 +116,23 @@ export async function startTree3d(glCanvas, S, { onState } = {}) {
   const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(48, 1, 0.1, 100);
   const cam = { yaw: 0.6, pitch: 0.3, dist: 15, auto: !reduced, idle: 0 };
   const target = new THREE.Vector3(0, H * 0.36, 0);
-  let bark = null, glow = null, leaves = null, flies = null, ground = null, trunk = null;
+  let bark = null, glow = null, leaves = null, flies = null, ground = null, trunk = null, hemi = null, keyLight = null, ringMesh = null;
+  const wind = { uTime: { value: 0 }, uGust: { value: 1 } };
+  let leafKind = [], leafBase = [], leafQuat = [], curSeason = '', fx = [], fxNames = [], weather = null, FX = null;
   let edgeAppear = [], edgeIdx = [], glowAppear = [], glowIdx = [], leafAppear = [], nodePos = new Map(), leafNodes = [], tipNodes = [];
   try {
     rc = mod.createRenderer({ canvas: glCanvas, scene, camera, env: 'night', exposure: 1.1, maxDpr: 2, fitCamera: false,
       quality: ['ultra', 'high', 'low', 'off'].includes(forced) ? forced : undefined,
       bloom: { strength: 0.85, radius: 0.6, threshold: 0.9 }, grade: { grain: 0.03, vignette: 0.3, aberration: 0.0015, saturation: 1.08 },
       onQuality: (l) => set(l === 'ultra' || l === 'high') });
-    scene.add(new THREE.HemisphereLight(0x9fd8c0, 0x120c06, 0.55));
-    const key = new THREE.PointLight(0xffd9a0, 40, 24, 1.6); key.position.set(2, 2.2, 3); scene.add(key);
+    hemi = new THREE.HemisphereLight(0x9fd8c0, 0x120c06, 0.55); scene.add(hemi);
+    keyLight = new THREE.PointLight(0xffd9a0, 40, 24, 1.6); keyLight.position.set(2, 2.2, 3); scene.add(keyLight);
     ground = new THREE.Mesh(new THREE.CircleGeometry(7, 64), new THREE.MeshStandardMaterial({ color: 0x07140d, roughness: 0.55, metalness: 0.4 }));
     ground.rotation.x = -Math.PI / 2; scene.add(ground);
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(2.1, 0.02, 6, 96), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.2, 0.8, 0.3) }));
-    ring.rotation.x = Math.PI / 2; ring.position.y = 0.01; scene.add(ring);
-    trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.24, 0.9, 10), new THREE.MeshStandardMaterial({ color: 0x7a5420, roughness: 0.45, metalness: 0.65 }));
+    ringMesh = new THREE.Mesh(new THREE.TorusGeometry(2.1, 0.02, 6, 96), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.2, 0.8, 0.3) }));
+    ringMesh.rotation.x = Math.PI / 2; ringMesh.position.y = 0.01; scene.add(ringMesh);
+    const bk = barkTexture(); bk.repeat.set(1, 1);
+    trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.24, 0.9, 12), new THREE.MeshStandardMaterial({ color: 0xc8a070, map: bk, bumpMap: bk, bumpScale: 1.5, roughness: 0.7, metalness: 0.1 }));
     trunk.position.y = 0.4; scene.add(trunk);
   } catch (_) { try { rc && rc.dispose(); } catch (e) { /* nothing to free */ } return null; }
 
@@ -126,7 +171,7 @@ export async function startTree3d(glCanvas, S, { onState } = {}) {
         pts.push(new THREE.Vector3(u * u * a.x + 2 * u * t * ctl.x + t * t * b.x, u * u * a.y + 2 * u * t * ctl.y + t * t * b.y, u * u * a.z + 2 * u * t * ctl.z + t * t * b.z));
         rad.push(Math.max(0.008, w0 + (w1 - w0) * t));
       }
-      const cut = n.status === C.CUT, tone = cut ? [0.2, 0.2, 0.19] : n.best ? [0.95, 0.72, 0.3] : [0.5, 0.33, 0.13];
+      const cut = n.status === C.CUT, tone = cut ? [0.3, 0.28, 0.26] : n.best ? [1.15, 0.88, 0.42] : [0.9, 0.62, 0.36];
       B.tube(pts, rad, tone); edgeAppear.push(n.appear); edgeIdx.push(B.idx.length);
       if (!cut) {
         const k = n.best ? 2 : 1;
@@ -135,22 +180,25 @@ export async function startTree3d(glCanvas, S, { onState } = {}) {
       }
       if (!n.kids.length) leafNodes.push(n);
     }
-    bark = new THREE.Mesh(B.geometry(), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.42, metalness: 0.7 }));
-    glow = new THREE.Mesh(G.geometry(), new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
+    const bt = barkTexture();
+    bark = new THREE.Mesh(B.geometry(), windy(new THREE.MeshStandardMaterial({ vertexColors: true, map: bt, bumpMap: bt, bumpScale: 1.2, roughness: 0.66, metalness: 0.2 }), wind));
+    glow = new THREE.Mesh(G.geometry(), windy(new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }), wind));
     bark.frustumCulled = glow.frustumCulled = false; scene.add(bark, glow);
     // leaves: the surviving tips and the dead ends, strongest first when there are too many, kept in playback order
     if (leafNodes.length > MAX_LEAVES) leafNodes = leafNodes.sort((x, y) => (y.score || 0) - (x.score || 0)).slice(0, MAX_LEAVES).sort((x, y) => x.id - y.id);
     leaves = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.55, 0.55), new THREE.MeshBasicMaterial({ map: leafTexture(), transparent: true, alphaTest: 0.25, side: THREE.DoubleSide, depthWrite: false }), Math.max(1, leafNodes.length));
     const M = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), sc = new THREE.Vector3(), col = new THREE.Color();
+    leafKind = []; leafBase = []; leafQuat = [];
     leafNodes.forEach((n, i) => {
       const alive = n.status !== C.CUT && ((n.score || 0) > 0 || (n.oos || 0) > 0), both = (n.score || 0) > 0 && (n.oos || 0) > 0;
       e.set(hash(n.id, 21) * 6.28, hash(n.id, 22) * 6.28, hash(n.id, 23) * 6.28); q.setFromEuler(e);
       const s = alive ? 0.85 + 0.6 * Math.min(1, (n.score || 0) / (S.maxScore || 1)) : 0.6;
       M.compose(nodePos.get(n.id), q, sc.set(s, s, s)); leaves.setMatrixAt(i, M);
-      if (!alive) col.setRGB(0.16, 0.17, 0.16); else if (both) col.setRGB(0.2 * 2.4, 1.0 * 2.4, 0.5 * 2.4); else col.setRGB(1.0 * 2.2, 0.62 * 2.2, 0.12 * 2.2);
-      leaves.setColorAt(i, col); leafAppear.push(n.appear);
+      leafKind.push(!alive ? 0 : both ? 2 : 1); leafBase.push(s); leafQuat.push(q.clone()); leafAppear.push(n.appear);
+      leaves.setColorAt(i, col.setRGB(0.2, 1, 0.5));
     });
     leaves.instanceColor.needsUpdate = true; leaves.frustumCulled = false; scene.add(leaves);
+    curSeason = '';                                                      // the next frame paints the leaves for the season
     const fg = new THREE.BufferGeometry();
     fg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(FLIES * 3), 3));
     fg.setAttribute('aA', new THREE.BufferAttribute(new Float32Array(FLIES), 1));
@@ -161,8 +209,36 @@ export async function startTree3d(glCanvas, S, { onState } = {}) {
     built = tree;
   }
 
+  /** recolour the leaves and relight the scene for a season; swap the weather (petals, falling gold, snow) */
+  function applySeason(name) {
+    const P = SEASONS[name] || SEASONS.summer, col = new THREE.Color();
+    curSeason = name;
+    for (let i = 0; i < leafKind.length; i++) {
+      const c = leafKind[i] === 2 ? P.both : leafKind[i] === 1 ? P.one : P.dead, k = leafKind[i] ? P.k : 1;
+      leaves.setColorAt(i, col.setRGB(c[0] * k, c[1] * k, c[2] * k));
+    }
+    if (leaves.instanceColor) leaves.instanceColor.needsUpdate = true;
+    glow.material.color.setRGB(P.tint[0], P.tint[1], P.tint[2]); hemi.color.setHex(P.hemi); keyLight.color.setHex(P.key); ground.material.color.setHex(P.ground); ringMesh.material.color.setRGB(P.ring[0], P.ring[1], P.ring[2]);
+    setWeather(name);
+  }
+  function setWeather(name) {
+    if (weather) { try { weather.stop(); } catch (_) { /* already gone */ } weather = null; }
+    if (!FX || reduced) return;
+    const kind = { spring: 'petals', autumn: 'laurelFall', winter: 'snow' }[name];
+    if (kind && typeof FX[kind] === 'function') { try { weather = FX[kind](scene, kind === 'snow' ? { count: 500 } : {}); fxNames.push(kind); } catch (_) { weather = null; } }
+  }
+  async function fxStart() {
+    FX = window.OLYMPUS_FX;
+    if (!FX || reduced) return;
+    try { await FX.load('3d'); } catch (_) { return; }
+    try { if (typeof FX.godRays === 'function') { fx.push(FX.godRays(scene, { position: [3, 11, -3], intensity: 0.5 })); fxNames.push('godRays'); } } catch (_) { /* optional */ }
+    setWeather(curSeason || 'summer');
+  }
+  fxStart();
+
   const count = (arr, t) => { let lo = 0, hi = arr.length; while (lo < hi) { const m = (lo + hi) >> 1; if (arr[m] <= t) lo = m + 1; else hi = m; } return lo; };
-  const tmp = new THREE.Vector3();
+  const tmp = new THREE.Vector3(), wPos = new THREE.Vector3(), wS = new THREE.Vector3(), wQ = new THREE.Quaternion(), wEul = new THREE.Euler(), wM = new THREE.Matrix4();
+  let frameNo = 0;
 
   function fit() {
     const w = glCanvas.clientWidth || 390, h = glCanvas.clientHeight || 844, asp = w / h, tf = Math.tan((camera.fov * Math.PI) / 360);
@@ -174,6 +250,8 @@ export async function startTree3d(glCanvas, S, { onState } = {}) {
     get on() { return on; },
     get mode() { return '3d'; },
     get passes() { return rc.passes(); },
+    get season() { return curSeason; },
+    get fx() { return fxNames.slice(); },
     quality: () => rc.quality(),
     stats() { return { ...rc.stats(), leaves: leafNodes.length, edges: edgeAppear.length }; },
     orbit(dx, dy) { cam.yaw -= dx * 0.008; cam.pitch = Math.max(-0.1, Math.min(0.95, cam.pitch + dy * 0.006)); cam.idle = performance.now(); },
@@ -198,7 +276,21 @@ export async function startTree3d(glCanvas, S, { onState } = {}) {
       const tt = reduced ? 1e9 : t;
       bark.geometry.setDrawRange(0, edgeIdx[count(edgeAppear, tt) - 1] || 0);
       glow.geometry.setDrawRange(0, glowIdx[count(glowAppear, tt) - 1] || 0);
-      leaves.count = count(leafAppear, tt);
+      const want = S.season && S.season !== 'auto' ? S.season : (tt < 2200 ? 'spring' : S.lens === 'test' ? 'autumn' : 'summer');
+      if (want !== curSeason) applySeason(want);
+      leaves.count = Math.floor(count(leafAppear, tt) * SEASONS[curSeason].frac);
+      // wind: a gusting breeze sways the branches in the shader; the leaves follow on the CPU (every other frame)
+      const secs0 = now / 1000, gust = reduced ? 0 : gustAt(secs0);
+      wind.uTime.value = secs0; wind.uGust.value = gust;
+      if (!reduced && (frameNo++ & 1) === 0 && leaves.count) {
+        for (let i = 0; i < leaves.count; i++) {
+          const b = nodePos.get(leafNodes[i].id), hh = Math.min(1, Math.max(0, b.y / H)), kk = hh * hh * gust;
+          wPos.set(b.x + Math.sin(secs0 * 0.9 + b.y * 0.7 + b.z * 0.4) * 0.07 * kk, b.y, b.z + Math.cos(secs0 * 0.7 + b.y * 0.6 + b.x * 0.4) * 0.05 * kk);
+          wEul.set(Math.sin(secs0 * 1.7 + i) * 0.25 * kk, 0, Math.cos(secs0 * 1.3 + i * 2) * 0.25 * kk); wQ.setFromEuler(wEul).premultiply(leafQuat[i]);
+          wM.compose(wPos, wQ, wS.setScalar(leafBase[i])); leaves.setMatrixAt(i, wM);
+        }
+        leaves.instanceMatrix.needsUpdate = true;
+      }
       if (cam.auto && now - cam.idle > 2500) cam.yaw += 0.0016;
       fit();
       const d = (cam.fit || 15) * (cam.zoom || 1);
@@ -221,6 +313,6 @@ export async function startTree3d(glCanvas, S, { onState } = {}) {
       flies.material.uniforms.uPx.value = rc.renderer.getPixelRatio();
       return rc.render();
     },
-    dispose() { dead = true; on = false; glCanvas.hidden = true; disposeMeshes(); rc.dispose(); },
+    dispose() { dead = true; on = false; glCanvas.hidden = true; for (const e of [weather, ...fx]) { try { e && e.stop(); } catch (_) { /* gone */ } } disposeMeshes(); rc.dispose(); },
   };
 }

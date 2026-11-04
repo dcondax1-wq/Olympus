@@ -104,3 +104,42 @@ h3 { font: 700 12px var(--oly-display, 'Orbitron', sans-serif); letter-spacing: 
 .vh i { flex: 1 1 0; min-width: 2px; border-radius: 1px; opacity: .9; }
 .vh i:last-child { box-shadow: 0 0 8px currentColor; opacity: 1; outline: 1px solid rgba(255, 255, 255, .6); }
 .vh-sum { line-height: 1.5; }
+
+/* 2026-11-04: the flip banner, a god's history chart, the Council note, "what if" sliders and the regime timeline */
+.flip { position: fixed; z-index: 7; left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top, 0px) + 96px); display: flex; align-items: center; gap: 8px; max-width: calc(100% - 24px);
+  padding: 4px 4px 4px 14px; border-radius: 999px; background: rgba(12, 10, 24, .92); border: 1px solid var(--c, #fff); box-shadow: 0 0 26px -6px var(--c, #fff); animation: flipIn .5s ease-out; }
+.flip[hidden] { display: none; }
+.flip b { font: 700 13.5px/1.2 var(--oly-ui, 'Rajdhani', sans-serif); color: var(--c, #fff); letter-spacing: .03em; }
+.flip button { min-width: 44px; min-height: 44px; border: 0; background: none; color: var(--c, #fff); font-size: 16px; }
+@keyframes flipIn { from { opacity: 0; transform: translate(-50%, -10px); } }
+.hs { font: 600 11px var(--oly-ui, 'Rajdhani', sans-serif); letter-spacing: .04em; color: #a9a4c4; text-transform: none; margin-left: 6px; }
+.gchart svg { display: block; width: 100%; height: auto; touch-action: pan-y; }
+.gchart .gl-grid { stroke: rgba(255, 255, 255, .1); stroke-width: 1; stroke-dasharray: 3 4; }
+.gchart .gl-t { fill: #a9a4c4; font: 600 9px var(--oly-ui, 'Rajdhani', sans-serif); }
+.gchart .gx { stroke: rgba(255, 255, 255, .5); stroke-width: 1; }
+.greadout { margin: 4px 0 8px; font-size: 13px; color: #c9c5e0; min-height: 1.3em; }
+.plus { margin: 0 0 6px; }
+.note-card { padding: 10px 12px; border-radius: 14px; border: 1px solid rgba(233, 183, 90, .35); background: rgba(233, 183, 90, .07); }
+.note-card b { display: block; margin-bottom: 4px; color: #f3d28a; font-size: 14px; }
+.note-card p { margin: 0 0 4px; font-size: 14px; }
+.plus .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.act { min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, .22); background: rgba(255, 255, 255, .06); color: inherit; font: 700 13px var(--oly-ui, 'Rajdhani', sans-serif); letter-spacing: .04em; }
+.ifout { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; align-items: center; padding: 10px 12px; margin: 6px 0 8px; border-radius: 14px; background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .14); }
+.ifl { font: 800 20px var(--oly-display, 'Orbitron', sans-serif); letter-spacing: .08em; }
+.ifg { font-size: 13px; color: #c9c5e0; text-align: right; }
+.ifb { grid-column: 1 / -1; position: relative; height: 6px; border-radius: 6px; background: rgba(255, 255, 255, .1); }
+.ifb em { position: absolute; top: 0; bottom: 0; border-radius: 6px; }
+.ifrow { display: grid; grid-template-columns: 74px 1fr 46px 44px; align-items: center; gap: 6px; min-height: 48px; font-size: 13px; }
+.ifrow > span { color: var(--c); font-weight: 700; letter-spacing: .04em; }
+.ifrow input[type=range] { width: 100%; min-height: 44px; accent-color: var(--c); }
+.ifrow b { text-align: right; font-variant-numeric: tabular-nums; }
+.ifrow .sit { min-height: 36px; min-width: 40px; padding: 0 6px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .2); background: transparent; color: #c9c5e0; font-size: 11px; }
+.ifrow .sit[aria-pressed="true"] { background: rgba(255, 255, 255, .18); color: #fff; }
+.ifrow.out { opacity: .45; }
+.tlbar { display: flex; height: 14px; border-radius: 8px; overflow: hidden; gap: 2px; margin: 6px 0 10px; }
+.tlbar i { display: block; min-width: 4px; opacity: .85; }
+.tl { list-style: none; margin: 0 0 6px; padding: 0; }
+.tl li { display: grid; grid-template-columns: 92px 1fr auto; gap: 8px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid rgba(255, 255, 255, .07); border-left: 3px solid var(--c); padding-left: 10px; font-size: 13.5px; }
+.tl b { color: var(--c); letter-spacing: .05em; }
+.tl em { font-style: normal; font-size: 11.5px; color: #a9a4c4; }
+@media (prefers-reduced-motion: reduce) { .flip { animation: none; } }
