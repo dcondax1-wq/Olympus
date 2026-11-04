@@ -82,6 +82,8 @@ def plan() -> list:
     add("jarvis_shell", "test_jarvis_shell", budget=120, kind="static")
     add("apps_list", "test_apps_list", fast=["--static"], budget=600)
     add("safari_lint", "test_safari_smoke", ["--lint"], budget=600, kind="static")
+    # optional: the whole iPhone walk in WebKit (every app). Exit 77 = WebKit not installed here = SKIP (never a FAIL); not run by --fast
+    add("safari_webkit", "test_safari_smoke", ["--webkit"], fast=None, budget=2400)
     add("olympus_a11y", "test_olympus_a11y", fast=["--static"], budget=600)
     add("olympus_sfx", "test_olympus_sfx", budget=300, kind="static")
     add("olympus_kit", "test_olympus_kit", ["power", "tiers"], fast="static", budget=1200)

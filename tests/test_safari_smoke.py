@@ -11,6 +11,13 @@
     python -X utf8 -m tests.test_safari_smoke            (lint + smoke when WebKit is there)
     python -X utf8 -m tests.test_safari_smoke --lint     (lint only)
     python -X utf8 -m tests.test_safari_smoke arena jarvis   (smoke only these pages)   --wait 8   (seconds per page)   --deep (only the two intro films)
+  --webkit  the owner's-iPhone walk (2026-11-04), EVERY app of olympus/apps-list.js + Jarvis, WebKit with the iPhone 13 profile and jfx=low, from a local
+         static server of tools/web_public (data files that only the site build writes are 404 there: the apps show their DEMO). Per app: loads with no
+         page / console error, the veil lifts (data-oly-state ready, or no OLYMPUS kit) within 60 s, ONE touch tap on the first visible control (a
+         button, tab or in-page anchor) leaves no new error and the page alive, the seal / back link returns to Jarvis. Then Jarvis and the root dashboard
+         reload OFFLINE through their service worker, and the first tap on Jarvis (the audio unlock) throws nothing.
+         Exit 77 (the gate calls it SKIP) when WebKit is not installed. A table is printed; SAFARI_REPORT=<file> also writes the rows as JSON.
+    python -X utf8 -m tests.test_safari_smoke --webkit [id ...] [--ready 60] [--no-offline]
 """
 from __future__ import annotations
 
@@ -349,6 +356,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         super().end_headers()
 
+    def handle(self):                                   # a page that navigates away drops its open requests: not an error
+        try:
+            super().handle()
+        except (BrokenPipeError, ConnectionResetError):
+            pass
+
 
 def pages():
     out = ["index"]
@@ -446,9 +459,231 @@ def smoke(only, wait):
         srv.shutdown()
 
 
+# ------------------------------------------------------------------ the full iPhone walk (--webkit)
+def app_ids():
+    """ids + site paths of olympus/apps-list.js (the generated list: every app), plus Jarvis, which is the shell and not a row"""
+    src = open(os.path.join(WEB, "olympus", "apps-list.js"), encoding="utf-8").read()
+    rows = [(m.group(1), m.group(2)) for m in re.finditer(r'\{"id": "(\w+)".*?"path": "([^"]*)"', src)]
+    if not any(i == "jarvis" for i, _ in rows):
+        rows.append(("jarvis", "jarvis/"))
+    return rows
+
+
+NOISE = re.compile(r"Failed to load resource|favicon|manifest", re.I)
+TAP_JS = """(() => {
+  const vis = (e) => { const r = e.getBoundingClientRect(), s = getComputedStyle(e);
+    return r.width >= 24 && r.height >= 24 && r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth && s.visibility !== 'hidden' && s.display !== 'none' && s.pointerEvents !== 'none' && !e.disabled; };
+  const bad = (e) => e.closest('.oly-veil, .oly-home, .oly-l, [data-oly-fx-off], a[target], script, template') || /delete|clear|reset|remove|disarm|buy|sell|order|send|submit|import|export|download/i.test(e.textContent + ' ' + (e.getAttribute('aria-label') || ''));
+  const list = [...document.querySelectorAll('button, [role=button], [role=tab], summary, a[href^="#"]')].filter((e) => vis(e) && !bad(e));
+  let e = list[0];
+  if (!e) { e = [...document.querySelectorAll('button, [role=button], [role=tab], summary')].find((x) => { const r = x.getBoundingClientRect(), s = getComputedStyle(x); return r.width >= 24 && r.height >= 24 && s.display !== 'none' && s.visibility !== 'hidden' && !x.disabled && !bad(x); });
+    if (e) e.scrollIntoView({ block: 'center' }); }       // a page taller than the phone (Bridge): scroll the first control into view, like a thumb would
+  if (!e) return null;
+  const r = e.getBoundingClientRect();
+  return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2), text: (e.getAttribute('aria-label') || e.textContent || e.tagName).trim().slice(0, 30) };
+})()"""
+HOME_JS = """(() => { const as = [...document.querySelectorAll('a.oly-home, a[href="../jarvis/"]')];
+  for (const a of as) { let r = a.getBoundingClientRect(); if (r.width > 10 && r.height > 10 && getComputedStyle(a).display !== 'none') { a.scrollIntoView({ block: 'center' }); r = a.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; } }
+  return null; })()"""
+COVER_JS = """(() => { const e = document.elementFromPoint(%d, %d); return e && !e.closest('a.oly-home, a[href="../jarvis/"]') ? (e.tagName + '.' + e.className + '#' + e.id) : ''; })()"""
+STATE_JS = """(() => { const a = document.documentElement.getAttribute('data-oly-state');
+  return a || (window.OLYMPUS ? (document.querySelector('.oly-veil') ? 'loading' : 'ready') : 'nokit'); })()"""
+
+
+def walk_app(br, dev, origin, name, path, ready_s):
+    """one app -> {app, load, veil, tap, back, issues, ok}. Never raises."""
+    row = dict(app=name, load="-", veil="-", tap="-", back="-", issues=[])
+    ctx = br.new_context(**dev)
+    # the no-op touchstart listener: Playwright's synthetic WebKit touch does not turn a tap on a bare link into a click on a page that has no
+    # touch / click listener at all (Bridge's "Back to Olympus"); a real iPhone does. The listener changes nothing else.
+    ctx.add_init_script("try { localStorage.setItem('jfx', 'low'); } catch (e) {} try { document.addEventListener('touchstart', function () {}, { capture: true, passive: true }); } catch (e) {}")
+    ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(origin) else r.abort())
+    p = ctx.new_page()
+    errs: list = []
+    p.on("pageerror", lambda e: errs.append("page: " + str(e)[:200]))
+    p.on("console", lambda m: errs.append("console: " + m.text[:200]) if m.type == "error" and not NOISE.search(m.text) else None)
+    try:
+        p.goto(origin + "/" + path + ("?demo=1" if path else ""), wait_until="load", timeout=60000)
+        row["load"] = "ok" if not errs else "ERR"
+        st = "loading"
+        t0 = time.time()
+        while time.time() - t0 < ready_s:
+            st = p.evaluate(STATE_JS)
+            if st in ("ready", "failed", "nokit"):
+                break
+            p.wait_for_timeout(500)
+        row["veil"] = {"ready": "ok", "nokit": "no kit"}.get(st, st.upper())
+        if st in ("loading", "failed"):
+            row["issues"].append(f"veil {st} after {time.time() - t0:.0f}s")
+        n0 = len(errs)
+        tgt = p.evaluate(TAP_JS)
+        if tgt:
+            p.touchscreen.tap(tgt["x"], tgt["y"])
+            p.wait_for_timeout(1500)
+            alive = p.evaluate("document.body ? document.body.children.length : 0") > 0
+            row["tap"] = "ok" if alive and len(errs) == n0 else "ERR"
+            if not alive:
+                row["issues"].append("page empty after tap on " + tgt["text"])
+        else:
+            row["tap"] = "no control"
+        home = p.evaluate(HOME_JS)
+        if name == "jarvis":
+            row["back"] = "n/a"
+        elif home:
+            cover = COVER_JS % (home["x"], home["y"])
+            if p.evaluate(cover):                                   # the tap (or a first-run tour) opened a sheet over the seal: Escape closes it, as it does for a keyboard user
+                p.keyboard.press("Escape")
+                p.wait_for_timeout(800)
+            if p.evaluate(cover):
+                row["issues"].append("the back seal stays covered by " + p.evaluate(cover))
+            p.touchscreen.tap(home["x"], home["y"])
+            try:
+                try:
+                    p.wait_for_url("**/jarvis/**", timeout=6000, wait_until="commit")
+                except Exception:                                   # Playwright's synthetic WebKit touch does not click a bare link on a page with no touch / click handler of its own
+                    p.mouse.click(home["x"], home["y"])             # (a real iPhone does): fall back to a click so the link itself is still proven
+                p.wait_for_url("**/jarvis/**", timeout=20000, wait_until="commit")
+                p.wait_for_load_state("load", timeout=30000)
+                row["back"] = "ok" if p.evaluate("document.body && document.body.innerText.length > 10") else "BLANK"
+            except Exception as e:
+                row["back"] = "NO"
+                row["issues"].append("seal tap did not reach Jarvis: " + str(e)[:60] + " | now at " + p.url.replace(origin, "") + ", top element " + str(p.evaluate("(h => { const e = document.elementFromPoint(h.x, h.y); return e && (e.tagName + '.' + e.className + '#' + e.id); })(%s)" % json.dumps(home))))
+        else:
+            row["back"] = "own link"
+        if errs:
+            row["issues"].append(errs[0])
+    except Exception as e:
+        row["issues"].append("harness: " + str(e)[:150])
+        row["load"] = "FAIL"
+    finally:
+        try:
+            ctx.close()
+        except Exception:
+            pass
+    row["ok"] = not row["issues"] and row["load"] == "ok"
+    return row
+
+
+def offline_check(br, dev, origin, path):
+    """a fresh phone: open the page, wait for its worker to install and take control, go offline, reload: the page must still come up"""
+    ctx = br.new_context(**dev)                                     # no route: the worker's own fetches must work
+    ctx.add_init_script("try { localStorage.setItem('jfx', 'low'); } catch (e) {}")
+    p = ctx.new_page()
+    errs: list = []
+    p.on("pageerror", lambda e: errs.append(str(e)[:300]))
+    try:
+        p.goto(origin + "/" + path, wait_until="load", timeout=60000)
+        reg =p.evaluate("""async () => { if (!navigator.serviceWorker) return 'no serviceWorker';
+            try { if (!(await navigator.serviceWorker.getRegistration())) await navigator.serviceWorker.register('sw.js'); } catch (e) { return 'register: ' + e; }   // the dashboard registers its worker only on https: do what it does, here on http://127.0.0.1
+            try { await Promise.race([navigator.serviceWorker.ready, new Promise((_, j) => setTimeout(() => j(new Error('worker not ready in 40 s')), 40000))]); } catch (e) { return String(e); }
+            return 'ok'; }""")
+        if reg != "ok":
+            return False, reg
+        for _ in range(60):                                         # the install's cache.addAll can take a while
+            n = p.evaluate("caches.keys().then(async (k) => { let c = 0; for (const x of k) c += (await (await caches.open(x)).keys()).length; return c; })")
+            if n and n > 3:
+                break
+            p.wait_for_timeout(1000)
+        p.reload(wait_until="load", timeout=60000)                  # now the worker controls the page
+        p.wait_for_timeout(1500)
+        ctx.set_offline(True)
+        p.reload(wait_until="load", timeout=60000)
+        p.wait_for_timeout(2500)
+        info = p.evaluate("({ len: document.body ? document.body.innerText.length : 0, title: document.title, kids: document.body ? document.body.children.length : 0 })")
+        ctx.set_offline(False)
+        # offline, every network fetch that is not in the worker's cache fails ON PURPOSE (live data, fonts, other apps' files): those messages are expected;
+        # what counts is that the page itself came up from the worker (a real script error would still show)
+        real = [e for e in errs if not re.search(r"service worker is an error|Cannot load|access control checks|Fetch API cannot load|Load failed|network connection was lost|offline", e, re.I)]
+        return (info["kids"] > 2 and info["len"] > 20 and not real), (info, real[:2])
+    except Exception as e:
+        return False, "offline reload failed: " + str(e)[:160]
+    finally:
+        ctx.close()
+
+
+def tap_unlock_check(br, dev, origin):
+    """the Jarvis first tap (voice-out / tts / the shared audio element unlock inside the tap) must throw nothing in WebKit"""
+    ctx = br.new_context(**dev)
+    ctx.add_init_script("try { localStorage.setItem('jfx', 'low'); } catch (e) {}")
+    ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(origin) else r.abort())
+    p = ctx.new_page()
+    errs: list = []
+    p.on("pageerror", lambda e: errs.append(str(e)[:200]))
+    p.on("console", lambda m: errs.append("console: " + m.text[:200]) if m.type == "error" and not NOISE.search(m.text) else None)
+    try:
+        p.goto(origin + "/jarvis/", wait_until="load", timeout=60000)
+        p.wait_for_timeout(5000)
+        for x, y in ((195, 420), (195, 600)):
+            p.touchscreen.tap(x, y)
+            p.wait_for_timeout(1200)
+        st = p.evaluate("""async () => { const A = window.AudioContext || window.webkitAudioContext; if (!A) return 'no AudioContext';
+            try { const c = new A(); try { await c.resume(); } catch (e) {} const s = c.state; if (c.close) c.close(); return s; } catch (e) { return 'threw ' + e; } }""")
+        return (not errs and not str(st).startswith("threw")), (errs[:3], st)
+    except Exception as e:
+        return False, str(e)[:160]
+    finally:
+        ctx.close()
+
+
+def webkit(only, ready_s, offline):
+    """exit code 77 = WebKit not installed (the release gate calls that SKIP)"""
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        print("SKIP: no Playwright")
+        return 77
+    srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), lambda *a: Handler(*a, directory=WEB))
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    origin = f"http://127.0.0.1:{srv.server_address[1]}"
+    rows: list = []
+    try:
+        with sync_playwright() as pw:
+            try:
+                br = pw.webkit.launch()
+            except Exception as e:
+                print(f"SKIP: WebKit is not installed here ({str(e)[:90]}). PLAYWRIGHT_BROWSERS_PATH=<dir> python -m playwright install webkit")
+                return 77
+            dev = pw.devices["iPhone 13"]
+            for name, path in app_ids():
+                if only and name not in only:
+                    continue
+                if path and not os.path.isfile(os.path.join(WEB, path, "index.html")):
+                    rows.append(dict(app=name, load="absent", veil="-", tap="-", back="-", issues=["not in this source tree (published from another branch)"], ok=True))
+                    print(f"[SKIP] webkit: {name}: not in this source tree", flush=True)
+                    continue
+                row = walk_app(br, dev, origin, name, path, ready_s)
+                rows.append(row)
+                check(f"webkit (iPhone 13): {name}: load {row['load']}, veil {row['veil']}, tap {row['tap']}, back {row['back']}", row["ok"], row["issues"])
+            if offline and (not only or "jarvis" in only or "zenith" in only):
+                for label, path in (("jarvis", "jarvis/"), ("root dashboard", "")):
+                    ok, info = offline_check(br, dev, origin, path)
+                    rows.append(dict(app="offline: " + label, load="-", veil="-", tap="-", back="-", issues=[] if ok else [str(info)[:200]], ok=ok))
+                    check(f"webkit (iPhone 13): offline reload through the service worker: {label}", ok, info)
+            if not only or "jarvis" in only:
+                ok, info = tap_unlock_check(br, dev, origin)
+                rows.append(dict(app="jarvis first tap", load="-", veil="-", tap="-", back="-", issues=[] if ok else [str(info)[:200]], ok=ok))
+                check("webkit (iPhone 13): Jarvis first tap (audio unlock) throws nothing", ok, info)
+            br.close()
+    finally:
+        srv.shutdown()
+    w = max([len(r["app"]) for r in rows] + [3])
+    print(f"\n| {'app':<{w}} | load | veil | tap | back | issue |\n|{'-' * (w + 2)}|------|------|-----|------|-------|")
+    for r in rows:
+        print(f"| {r['app']:<{w}} | {r['load']} | {r['veil']} | {r['tap']} | {r['back']} | {('; '.join(r['issues']))[:110]} |")
+    if os.environ.get("SAFARI_REPORT"):
+        with open(os.environ["SAFARI_REPORT"], "w", encoding="utf-8") as fh:
+            json.dump(rows, fh, indent=1)
+    return 0
+
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--") and not a.isdigit()]
     wait = float(sys.argv[sys.argv.index("--wait") + 1]) if "--wait" in sys.argv else 15
+    if "--webkit" in sys.argv:
+        ready = float(sys.argv[sys.argv.index("--ready") + 1]) if "--ready" in sys.argv else 60
+        if webkit(args, ready, "--no-offline" not in sys.argv) == 77:
+            sys.exit(77)
+        return
     if "--smoke" not in sys.argv:
         lint()
     if "--lint" not in sys.argv:
