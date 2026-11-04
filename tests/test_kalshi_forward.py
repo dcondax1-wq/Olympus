@@ -38,7 +38,7 @@ def bet(i, t, price, n, pnl, side="yes", action="buy", ticker=None):
 
 def feed(trades, t, balance=100.0):
     """newest first, like the real feed; at most 40"""
-    tr = sorted(trades, key=lambda x: -x["t"])[:40]
+    tr = sorted(trades, key=lambda x: -(x["t"] if isinstance(x["t"], (int, float)) else 0))[:40]
     return {"v": 3, "kind": "kalshi", "name": "Synthetic", "t": t, "balance": balance, "total_pnl": 0.0, "trades": tr}
 
 
@@ -176,6 +176,90 @@ def main():
         check("f. the script reads and writes only: no key, no Kalshi address, no network call but the feed's own repo (a source check)",
               not re.search(r"kalshi\.com|trading-api|elections|api_key|KALSHI_|\.env", open(os.path.join(ROOT, "tools", "kalshi_forward.py"), encoding="utf-8").read())
               and KF.FEED_URL == "https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json")
+        # ---- g. the adversary: bad rows, empty feeds, clocks, duplicate bets
+        g = os.path.join(tmp, "adv")
+        os.makedirs(g)
+        run(g, feed([], T0))
+        twin = bet(1, T0 + 100, 0.96, 10, 0.31, ticker="KXSAME")
+        split = bet(2, T0 + 100, 0.96, 5, 0.15, ticker="KXSAME")               # same market, same second, same side, different size: another bet
+        run(g, feed([twin, dict(twin), split], T0 + 200))
+        n_first = load(g)["bets"]
+        run(g, feed([twin, dict(twin), split], T0 + 300))
+        check("g. duplicate ids: two identical rows are two bets, a same-second row of another size is a third (3 counted), none twice on a rerun",
+              n_first == 3 and load(g)["bets"] == 3, (n_first, load(g)["bets"]))
+        run(g, feed([twin, dict(twin), dict(twin), split], T0 + 400))
+        check("g. a third identical row appearing later is one more bet (4), still never recounting the first two", load(g)["bets"] == 4, load(g)["bets"])
+        nan = float("nan")
+        rows = [bet(10, T0 + 500, 0.96, 10, nan), bet(11, T0 + 510, 0.96, 10, float("inf")), bet(12, T0 + 520, nan, 10, 0.1), bet(13, T0 + 530, 0.96, nan, 0.1),
+                bet(14, T0 + 540, True, 10, 0.1), bet(15, T0 + 550, 0.96, True, 0.1), bet(16, (T0 + 560) * 1000, 0.96, 10, 0.1), bet(17, T0 + 570, -0.5, 10, 0.1),
+                bet(18, T0 + 580, 0, 10, 0.1), bet(19, T0 + 590, 0.96, -3, 0.1), bet(20, str(T0 + 600), 0.96, 10, 0.1), bet(21, T0 + 610, 0.96, 10, 0.1)]
+        src = os.path.join(g, "nan.json")
+        with open(src, "w") as fh:
+            json.dump(feed(rows, T0 + 700), fh)                              # Python writes NaN / Infinity as bare tokens, and reads them back
+        rc = KF.main(["--feed", src, "--out", os.path.join(g, "state", "forward.json")])
+        f = load(g)
+        check("g. NaN / Infinity P&L or price, boolean price or size, millisecond or text times, negative or zero prices, negative sizes: all ignored, only the one clean bet is counted (5 total)",
+              rc == 0 and f["bets"] == 5 and all(s_["net"] == s_["net"] and abs(s_["net"]) < 1e6 for s_ in f["sets"]), [(s_["id"], s_["net"]) for s_ in f["sets"]])
+        g2 = os.path.join(tmp, "adv2")
+        os.makedirs(g2)
+        run(g2, feed([], T0))
+        pending = [bet(30, T0 + 100, 0.96, 10, 0.31)]
+        for bal in (None, 0, -5.0, float("nan"), True, "100"):
+            fd = feed(pending, T0 + 200)
+            fd["balance"] = bal
+            run(g2, fd)
+        check("g. no usable balance (missing, 0, negative, NaN, boolean, text): nothing counted and the bet is NOT marked seen", load(g2)["bets"] == 0 and not load(g2, "forward_state.json")["seen"])
+        run(g2, feed(pending, T0 + 300))
+        check("g. the next run with a real balance counts that bet (once)", load(g2)["bets"] == 1)
+        for nm, tr in (("a dict", {"x": 1}), ("a string", "oops"), ("None", None), ("a number", 7), ("missing", "MISSING")):
+            fd = feed([], T0 + 400)
+            if tr == "MISSING":
+                fd.pop("trades")
+            else:
+                fd["trades"] = tr
+            rc = run(g2, fd)
+            check(f"g. trades is {nm}: no crash, nothing changes", rc == 0 and load(g2)["bets"] == 1, rc)
+        check("g. an empty feed ({} with its kind only) on a fresh folder starts a tally at the clock with 0 bets",
+              KF.main(["--feed", put(tmp, "empty.json", {"kind": "kalshi"}), "--out", os.path.join(tmp, "e1", "forward.json")], now=T0 + 5) == 0
+              and json.load(open(os.path.join(tmp, "e1", "forward.json")))["start_t"] == T0 + 5)
+        # clocks: a feed time in the future must not hide every real bet; the start day is the UTC date of the start
+        g3 = os.path.join(tmp, "adv3")
+        os.makedirs(g3)
+        KF.main(["--feed", put(g3, "k.json", feed([], T0 + 10 ** 8)), "--out", os.path.join(g3, "forward.json")], now=T0 + 50)
+        check("g. a feed time in the far future: the start is the clock (T0+50), never the feed's", json.load(open(os.path.join(g3, "forward.json")))["start_t"] == T0 + 50)
+        late = 1_793_068_200                                                  # 2026-10-27 03:30 UTC = 2026-10-26 23:30 New York
+        KF.main(["--feed", put(g3, "k2.json", feed([], late)), "--out", os.path.join(g3, "z", "forward.json")], now=late + 5)
+        check("g. time zones: the start day is the UTC date (2026-10-27 for 23:30 New York on the 26th), written once and never recomputed",
+              json.load(open(os.path.join(g3, "z", "forward.json")))["start_day"] == "2026-10-27")
+        # a forward.json that cannot be read is rewritten from the state; the files are replaced whole (no .tmp left behind)
+        with open(os.path.join(g2, "state", "forward.json"), "w") as fh:
+            fh.write("{broken")
+        run(g2, feed(pending, T0 + 500))
+        check("g. an unreadable forward.json is rewritten from the state on the next run; no half-written .tmp file is ever left", load(g2)["bets"] == 1
+              and not [f_ for f_ in os.listdir(os.path.join(g2, "state")) if f_.endswith(".tmp")])
+        # kalshi_whatif: the same adversary
+        from tools import kalshi_whatif as KW
+        snap = json.load(open(os.path.join(ROOT, "research", "kalshi", "feed_snapshot_2026-11-04.json"), encoding="utf-8"))
+        junk = json.loads(json.dumps(snap))
+        junk["buckets"] += [{"lo": nan, "hi": 0.5, "trades": 10, "wins": 5, "losses": 5, "pnl": 1, "staked": 10}, {"lo": 0.9, "hi": 0.95, "trades": 581, "wins": 536, "losses": 45, "pnl": -248.3, "staked": 5343.43},
+                            {"lo": 0.1, "hi": 0.2, "trades": "9", "wins": 1, "losses": 1, "pnl": 0, "staked": 5}, {"lo": 0.3, "hi": 0.4, "trades": 10, "wins": 9, "losses": 9, "pnl": 0, "staked": 5},
+                            {"lo": 0.4, "hi": 0.5, "trades": 10, "wins": 5, "losses": 5, "pnl": 0, "staked": -5}, "junk", None, {"lo": 0.5, "hi": 0.6}]
+        junk["calibration"] = [{"p": "x", "n": "y"}, None, {"p": nan, "n": 5}] + junk["calibration"]
+        junk["categories"] += [{"name": "Z", "pnl": -50, "trades": "999"}, {"name": "Y", "pnl": nan, "trades": 99}]
+        junk["strategies"] += [{"name": "S", "total_pnl": -50, "trades": "999"}]
+        base, bj = KW.build(snap), KW.build(junk)
+        check("g. whatif: junk bands (NaN, text, wins+losses > bets, negative stake, a duplicated 90-95c band, strings, None), junk calibration / categories / strategies: ignored, the answer is the clean feed's",
+              bj["what_if"]["sets"] == base["what_if"]["sets"] and bj["why"]["text"] == base["why"]["text"], (bj["what_if"]["recommend"], bj["why"]["text"]))
+        bad_bal = []
+        for bal in (True, -5, 0, nan, "55", None):
+            q = dict(snap, balance=bal)
+            bad_bal.append((KW.build(q)["what_if"]["enough"], KW.build(q)["what_if"]["sets"]))
+        check("g. whatif: a balance that is boolean, negative, 0, NaN, text or missing: 'not enough', no sets, no crash", all(e is False and st_ == [] for e, st_ in bad_bal), bad_bal)
+        check("g. whatif: empty feed, None, a list, junk buckets / total_pnl: 'not enough bets', no crash",
+              all(not KW.build(x)["what_if"]["enough"] and not KW.build(x)["why"]["enough"] for x in ({}, None, [], {"buckets": "x", "trades": 5}, dict(snap, buckets=None, calibration=None)))
+              and not KW.build(dict(snap, total_pnl=nan, stats={"pnl": "x"}))["why"]["enough"])
+        tr = KW.typical_stake({"trades": [{"contracts": -5, "price": 0.9}, {"contracts": nan, "price": 0.9}, {"contracts": 10, "price": -1}, {"contracts": 10, "price": 0.5}, "x"]})
+        check("g. whatif: the usual bet size ignores negative / NaN / bad rows (a $5.00 bet here)", abs(tr - 5.0) < 1e-9, tr)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     n = sum(RES)

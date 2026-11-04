@@ -28,8 +28,10 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import math
 import os
 import sys
+import time
 import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -73,32 +75,48 @@ def new_state(start_t):
 
 
 def key_of(t):
-    return f"{t.get('ticker')}|{t.get('t')}|{t.get('side')}"
+    """a bet's identity, stable while it is open and after it settles (no P&L in it); identical rows get #0, #1 ... in settled_buys"""
+    return f"{t.get('ticker')}|{t.get('t')}|{t.get('side')}|{t.get('contracts')}|{t.get('price')}|{t.get('strategy')}"
+
+
+def num(x):
+    return isinstance(x, (int, float)) and not isinstance(x, bool) and math.isfinite(x)
 
 
 def settled_buys(feed):
+    """the feed's settled buys, oldest first, each with a unique `_key` (two identical rows are two bets: #0, #1)"""
+    rows = feed.get("trades") if isinstance(feed, dict) else None
     out = []
-    for t in feed.get("trades") or []:
+    for t in rows if isinstance(rows, list) else []:
         if not isinstance(t, dict) or t.get("action") == "sell":
             continue
         p, n, pnl, ts = t.get("price"), t.get("contracts"), t.get("pnl"), t.get("t")
-        if not all(isinstance(x, (int, float)) for x in (p, n, pnl, ts)) or isinstance(pnl, bool) or not 0 < p <= 1.0001 or n <= 0:
+        if not all(num(x) for x in (p, n, pnl, ts)) or not 0 < p <= 1.0001 or n <= 0 or not 1e9 < ts < 4e9:      # epoch seconds, nothing else
             continue
         out.append(t)
-    return sorted(out, key=lambda t: (t["t"], key_of(t)))
+    out.sort(key=lambda t: (t["t"], key_of(t)))
+    count, res = {}, []
+    for t in out:
+        k = key_of(t)
+        res.append(dict(t, _key=f"{k}#{count.get(k, 0)}"))
+        count[k] = count.get(k, 0) + 1
+    return res
 
 
 def update(state, feed):
     """Fold the feed's new settled bets into the state. Returns the number of NEW bets counted (0 = nothing changed)."""
-    all_t = [t["t"] for t in feed.get("trades") or [] if isinstance(t, dict) and isinstance(t.get("t"), (int, float))]
+    rows = feed.get("trades") if isinstance(feed.get("trades"), list) else []
+    all_t = [t["t"] for t in rows if isinstance(t, dict) and num(t.get("t")) and 1e9 < t["t"] < 4e9]
     # a full window of bets that are all newer than the newest one we have ever seen: some bets were never in a feed we read
     if state["last_t"] is not None and len(all_t) >= FEED_TRADES and min(all_t) > state["last_t"]:
         state["gaps"] += 1
     bal = feed.get("balance")
-    cap = CAP * bal if isinstance(bal, (int, float)) and bal > 0 else None
+    cap = CAP * bal if num(bal) and bal > 0 else None
     seen, added = set(state["seen"]), 0
+    if cap is None:                                   # no balance to size against: nothing is counted or marked seen (the next run with a balance counts it)
+        return 0
     for t in settled_buys(feed):
-        k = key_of(t)
+        k = t["_key"]
         if k in seen:
             continue
         seen.add(k)
@@ -178,9 +196,11 @@ def load(src):
 
 
 def dump(path, obj):
-    with open(path, "w", encoding="utf-8", newline="\n") as fh:
+    tmp = path + ".tmp"                               # a crash never leaves half a file
+    with open(tmp, "w", encoding="utf-8", newline="\n") as fh:
         json.dump(obj, fh, indent=1, ensure_ascii=False, sort_keys=True)
         fh.write("\n")
+    os.replace(tmp, path)
 
 
 def main(argv=None, now=None):
@@ -201,7 +221,8 @@ def main(argv=None, now=None):
     if os.path.isfile(spath):
         try:
             state = json.load(open(spath, encoding="utf-8"))
-            assert state["v"] == 1 and set(state["sets"]) == set(NAMES)
+            assert state["v"] == 1 and set(state["sets"]) == set(NAMES) and isinstance(state["seen"], list) and num(state["start_t"])
+            assert all(set(blank_set()) <= set(v) and all(num(v[f]) for f in blank_set()) for v in state["sets"].values())
         except Exception:                                              # noqa: BLE001 - a broken state is never guessed at
             print("forward_state.json is not readable: nothing changed (delete it to start a new tally)")
             return 2
@@ -209,17 +230,23 @@ def main(argv=None, now=None):
         print("forward.json exists but forward_state.json is missing: nothing changed (restore the state, or delete both to start over)")
         return 2
     if state is None:
-        start = feed.get("t") if isinstance(feed.get("t"), (int, float)) else (now if now is not None else dt.datetime.now(dt.timezone.utc).timestamp())
+        clock = now if now is not None else time.time()
+        ft = feed.get("t")
+        start = min(ft, clock) if num(ft) and ft > 1e9 else clock          # never later than the clock: a feed time in the future would hide every real bet
         state, first = new_state(int(start)), True
     added = update(state, feed)
-    if not first and added == 0 and os.path.isfile(a.out) and state["gaps"] == json.load(open(a.out, encoding="utf-8")).get("gaps"):
+    try:
+        same_gaps = os.path.isfile(a.out) and state["gaps"] == json.load(open(a.out, encoding="utf-8")).get("gaps")
+    except Exception:                                                  # noqa: BLE001 - an unreadable forward.json is rewritten from the state
+        same_gaps = False
+    if not first and added == 0 and same_gaps:
         print("no new bets: nothing changed")
         return 0
     rep = report(state, feed)
     os.makedirs(folder, exist_ok=True)
-    dump(spath, state)
-    dump(a.out, rep)
+    dump(a.out, rep)                                                   # the state last: a crash in between recounts, it never loses a bet
     dump(cpath, card(rep))
+    dump(spath, state)
     print(("started " + state["start_day"] + ": " if first else "") + rep["text"])
     return 0
 

@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import sys
 import urllib.request
@@ -39,18 +40,23 @@ def usd(x, sign=False):
     return f"{s}${v:,.2f}"
 
 
+def fin(x):
+    """a real finite number (not a bool, NaN, infinity or text)"""
+    return isinstance(x, (int, float)) and not isinstance(x, bool) and math.isfinite(x)
+
+
 def rows_of(feed):
     """price bands with their stats: [{lo, hi, n, w, l, pnl, st, p}] (p = the band's mean entry price: the calibration's, else the middle)"""
-    cal = {int(c["n"]): c["p"] for c in feed.get("calibration") or [] if isinstance(c, dict) and c.get("n") is not None and c.get("p") is not None}
-    out = []
+    cal = {int(c["n"]): c["p"] for c in feed.get("calibration") or [] if isinstance(c, dict) and fin(c.get("n")) and fin(c.get("p"))}
+    out, seen = [], set()
     for b in feed.get("buckets") or []:
-        try:
-            n, w, l = int(b["trades"]), int(b["wins"]), int(b["losses"])
-            lo, hi, pnl, st = float(b["lo"]), float(b["hi"]), float(b["pnl"]), float(b["staked"])
-        except (KeyError, TypeError, ValueError):
+        if not isinstance(b, dict) or not all(fin(b.get(k)) for k in ("trades", "wins", "losses", "lo", "hi", "pnl", "staked")):
             continue
-        if n <= 0 or not 0 <= lo < hi <= 1.0001:
+        n, w, l = int(b["trades"]), int(b["wins"]), int(b["losses"])
+        lo, hi, pnl, st = float(b["lo"]), float(b["hi"]), float(b["pnl"]), float(b["staked"])
+        if n <= 0 or w < 0 or l < 0 or w + l > n or st <= 0 or not 0 <= lo < hi <= 1.0001 or (lo, hi) in seen:      # junk, nonsense counts, a duplicated band
             continue
+        seen.add((lo, hi))
         p = cal.get(n, (lo + min(hi, 1.0)) / 2)
         out.append({"lo": lo, "hi": min(1.0, hi), "n": n, "w": w, "l": l, "pnl": pnl, "st": st, "p": min(0.98, max(0.02, p))})
     return sorted(out, key=lambda r: r["lo"])
@@ -128,14 +134,15 @@ def simulate(rows, rule, bal, t0, cap_d):
 
 def typical_stake(feed):
     cs = sorted(t["contracts"] * t["price"] for t in feed.get("trades") or [] if isinstance(t, dict) and t.get("action") != "sell"
-                and isinstance(t.get("contracts"), (int, float)) and isinstance(t.get("price"), (int, float)) and 0 < t["price"] < 1.0001)
+                and fin(t.get("contracts")) and fin(t.get("price")) and t["contracts"] > 0 and 0 < t["price"] < 1.0001)
     return cs[len(cs) // 2] if cs else 6 * 0.96
 
 
 def what_if(feed):
     rows, bal = rows_of(feed), feed.get("balance")
+    bal = bal if fin(bal) else None
     n = sum(r["n"] for r in rows)
-    out = {"n": n, "min": MIN_BETS, "enough": n >= MIN_BETS and isinstance(bal, (int, float)) and bal > 0, "balance": bal, "sets": []}
+    out = {"n": n, "min": MIN_BETS, "enough": n >= MIN_BETS and bal is not None and bal > 0, "balance": bal, "sets": []}
     if not out["enough"]:
         out["recommend"] = f"Not enough bets yet ({n} of {MIN_BETS}) to say what a change would do."
         return out
@@ -164,18 +171,19 @@ def what_if(feed):
 def why(feed):
     rows = rows_of(feed)
     n = sum(r["n"] for r in rows)
-    total = feed.get("total_pnl") if isinstance(feed.get("total_pnl"), (int, float)) else (feed.get("stats") or {}).get("pnl")
-    if n < MIN_BETS or total is None:
+    st_ = feed.get("stats") if isinstance(feed.get("stats"), dict) else {}
+    total = feed.get("total_pnl") if fin(feed.get("total_pnl")) else st_.get("pnl")
+    if n < MIN_BETS or not fin(total):
         return {"n": n, "enough": False, "text": f"Not enough settled bets yet ({n} of {MIN_BETS}) to say why."}
     leaks = []
     for r in rows:
         if r["pnl"] < -0.5:
             leaks.append({"kind": "band", "usd": r["pnl"], "label": f"{round(r['lo'] * 100)}–{round(r['hi'] * 100)}¢ bets", "n": r["n"]})
     for c in feed.get("categories") or []:
-        if isinstance(c, dict) and isinstance(c.get("pnl"), (int, float)) and c["pnl"] < -0.5 and (c.get("trades") or 0) >= 30:
+        if isinstance(c, dict) and fin(c.get("pnl")) and c["pnl"] < -0.5 and fin(c.get("trades")) and c["trades"] >= 30:
             leaks.append({"kind": "coin", "usd": c["pnl"], "label": f"{c.get('name')} bets", "n": c.get("trades")})
     for s in feed.get("strategies") or []:
-        if isinstance(s, dict) and isinstance(s.get("total_pnl"), (int, float)) and s["total_pnl"] < -0.5 and (s.get("trades") or 0) >= 30:
+        if isinstance(s, dict) and fin(s.get("total_pnl")) and s["total_pnl"] < -0.5 and fin(s.get("trades")) and s["trades"] >= 30:
             leaks.append({"kind": "strategy", "usd": s["total_pnl"], "label": f"the {s.get('name')} strategy", "n": s.get("trades")})
     fees = sum(TAKER * r["st"] * (1 - r["p"]) for r in rows)
     if fees >= 5:
@@ -198,6 +206,7 @@ def why(feed):
 
 
 def build(feed):
+    feed = feed if isinstance(feed, dict) else {}
     return {"v": 1, "kind": "kalshi-whatif", "t": feed.get("t"), "label": "A backtest of past bets, suggestions only: nothing here places or changes a bet",
             "what_if": what_if(feed), "why": why(feed)}
 
