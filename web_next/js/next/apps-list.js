@@ -23,6 +23,7 @@
   {"id": "hephaestus", "name": "Hephaestus", "glyph": "\u2692", "colour": "#d96bff", "group": "trading", "groupName": "Trading", "purpose": "The forge: tune the dials", "path": "hephaestus/", "live": true},
   {"id": "cities", "name": "Cities", "glyph": "\u25c8", "colour": "#a68bff", "group": "trading", "groupName": "Trading", "purpose": "A world of city islands", "path": "cities/", "live": true},
   {"id": "kalshicity", "name": "Kalshi City", "glyph": "K", "colour": "#2ef2d0", "group": "money", "groupName": "Money", "purpose": "The Kalshi bot's edges as a night city", "path": "kalshicity/", "live": true},
+  {"id": "ledger", "name": "Ledger", "glyph": "L", "colour": "#ffcf5a", "group": "money", "groupName": "Money", "purpose": "Your real money: fees, payouts, net profit", "path": "ledger/", "live": true},
   {"id": "inbox", "name": "Inbox", "glyph": "\u2709", "colour": "#7fd0ff", "group": "life", "groupName": "Life", "purpose": "Everything that needs a look, in one place", "path": "inbox/", "live": true},
   {"id": "settings", "name": "Settings", "glyph": "\u2699", "colour": "#b79bff", "group": "life", "groupName": "Life", "purpose": "Look, voice, storage and the tour", "path": "settings/", "live": true},
   {"id": "bridge", "name": "Bridge", "glyph": "\u0392", "colour": "#34d399", "group": "trading", "groupName": "Trading", "purpose": "Link ChatGPT: 3 steps, live job status", "path": "bridge/", "live": true},
