@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>OLYMPUS Cities</title>
+<meta name="description" content="A world of floating city islands, one per dataset: fly between them and walk into any city built from the site's own numbers.">
+<meta name="theme-color" content="#07050f">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../jarvis/apple-touch-icon.png">
+<link rel="stylesheet" href="../olympus/olympus.css?v=o2">
+<script src="../olympus/themes.js?v=o2"></script>
+<script src="../olympus/olympus.js?v=o2" data-app="cities"></script>
+<script src="../olympus/sfx.js?v=s1" async></script>
+<style>
+:root{--bg:#07050f;--panel:rgba(12,10,28,.88);--line:rgba(255,255,255,.11);--text:#f4f4f8;--sub:#b0b3c8;--gold:#ffc94a;--green:#39e59a;--red:#ff6b7f;--cyan:#3fd8ff;
+--accent:var(--oly-accent,#a68bff);--st:env(safe-area-inset-top,0px);--sr:env(safe-area-inset-right,0px);--sb:env(safe-area-inset-bottom,0px);--sl:env(safe-area-inset-left,0px);
+--top-h:92px;--dock-h:44px;--sheet-bottom:168px;-webkit-text-size-adjust:100%}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:500 15px/1.35 var(--oly-ui,-apple-system,system-ui,"Segoe UI",Roboto,sans-serif);
+overflow:hidden;overscroll-behavior:none;touch-action:none;color-scheme:dark}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+button{font-family:inherit;color:inherit}
+/* --- the one top bar */
+.top{position:fixed;left:calc(10px + var(--sl));right:calc(10px + var(--sr));top:calc(8px + var(--st));z-index:4;pointer-events:none;padding:6px 8px 6px 10px;
+border-radius:var(--oly-r-card,16px);background:linear-gradient(180deg,rgba(10,8,26,.8),rgba(10,8,26,.54));border:1px solid var(--line);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.top .row{display:flex;align-items:center;gap:6px;min-height:44px}
+.top h1{margin:0;flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:800 14px/1.2 var(--oly-display,sans-serif);
+letter-spacing:.1em;text-transform:uppercase;background:linear-gradient(90deg,#fff,#d9c9ff 45%,#7fe9ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ic{width:44px;height:44px;border-radius:12px;border:1px solid transparent;background:transparent;color:var(--text);display:grid;place-items:center;cursor:pointer;
+font:700 11px/1 var(--oly-ui,inherit);padding:0;pointer-events:auto;flex:0 0 auto}
+.ic svg{width:20px;height:20px}
+.ic.on{color:var(--gold);border-color:rgba(255,201,74,.35);background:rgba(255,201,74,.08)}
+#backB[hidden]{display:none}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;pointer-events:auto;touch-action:pan-x;padding-top:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;font-size:12px;padding:5px 9px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--sub);white-space:nowrap}
+.chip b{color:var(--text);font-weight:700}
+.chip.demo{color:#111;background:#ff9f43;border-color:transparent;font-weight:700}
+.chip.live{color:#02210f;background:var(--green);border-color:transparent;font-weight:700}
+button.chip{cursor:pointer;min-height:30px}
+/* --- the minimap (a city only) */
+.mini{position:fixed;right:calc(12px + var(--sr));top:calc(var(--top-h) + 14px + var(--st));z-index:3;width:108px;height:108px;border-radius:14px;border:1px solid var(--line);
+background:rgba(8,6,18,.6);box-shadow:0 6px 24px rgba(0,0,0,.4);cursor:pointer;touch-action:manipulation;display:none}
+body[data-mode=city] .mini{display:block}
+/* --- the one bottom sheet */
+.sheet{position:fixed;left:calc(10px + var(--sl));right:calc(10px + var(--sr));bottom:calc(var(--sheet-bottom) + var(--sb));z-index:5;display:none;
+max-height:min(calc(100% - var(--sheet-bottom) - var(--top-h) - 26px - var(--st) - var(--sb)),46vh);overflow:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;
+background:var(--panel);border:1px solid var(--line);border-radius:var(--oly-r-card,16px);padding:0 14px 12px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 10px 40px rgba(0,0,0,.45)}
+.sheet.on{display:block;animation:rise .2s ease-out}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.sheet header{position:sticky;top:0;display:flex;align-items:center;gap:8px;padding:10px 0 6px;background:linear-gradient(var(--panel) 80%,transparent);z-index:1}
+.sheet h2{margin:0;flex:1;min-width:0;font:700 var(--oly-t-title,16px)/1.3 var(--oly-display,inherit);letter-spacing:.04em;overflow-wrap:anywhere}
+.sheet h3{margin:14px 0 4px;font:700 13px/1.3 var(--oly-display,inherit);letter-spacing:.06em;color:#e3d6ff;text-transform:uppercase}
+.x{flex:0 0 44px;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--text);font-size:18px;line-height:1;cursor:pointer}
+@media (orientation:landscape) and (max-height:520px){
+  :root{--top-h:58px}
+  .chips{display:none}
+  .sheet{right:auto;width:min(420px,48vw);top:calc(var(--top-h) + 16px + var(--st));bottom:calc(66px + var(--sb));max-height:none}
+}
+/* --- the dock (never under the orb: it keeps the bottom-right 104 px free) */
+.dock{position:fixed;left:calc(10px + var(--sl));bottom:calc(10px + var(--sb));right:calc(104px + var(--sr));display:flex;gap:8px;z-index:4;flex-wrap:nowrap}
+.tab{width:48px;height:var(--dock-h);border-radius:var(--oly-r-btn,12px);border:1px solid var(--line);background:var(--panel);color:var(--text);font:700 10.5px/1 var(--oly-ui,inherit);
+display:grid;place-items:center;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:2px 0 0;letter-spacing:.02em;flex:0 0 auto}
+.tab svg{width:19px;height:19px;display:block;margin:0 auto 1px}
+.tab.on{border-color:var(--gold);color:var(--gold);box-shadow:0 0 14px rgba(255,201,74,.25)}
+/* --- sheet content */
+.badge{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:6px;margin:0 6px 4px 0;background:#3b4057;color:#e6e8f0}
+.badge.live{background:var(--green);color:#00210f}.badge.demo{background:#ff9f43;color:#2a1300}
+.big{display:flex;gap:14px;align-items:baseline;margin:8px 0 6px;flex-wrap:wrap}
+.big .v{font:800 var(--oly-t-num,26px)/1.1 var(--oly-display,inherit);font-variant-numeric:tabular-nums}
+.big .u{font-size:12px;color:var(--sub)}
+.pos{color:var(--green)}.neg{color:var(--red)}
+.grid4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0}
+.grid4 div{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:10px;padding:6px 8px;min-width:0}
+.grid4 small{display:block;font-size:11px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.grid4 b{font-size:15px;overflow-wrap:anywhere}
+.note{font-size:12.5px;color:var(--sub);margin:8px 0 0}
+.list{list-style:none;margin:4px 0 0;padding:0}
+.list li{display:flex;gap:10px;align-items:center;padding:8px 2px;border-bottom:1px solid var(--line);cursor:pointer;min-height:44px}
+.list li.count{cursor:default;color:var(--sub);font-size:12px;min-height:0}
+.list li .k{flex:0 0 auto;width:22px;height:22px;border-radius:6px;font-size:11px;font-weight:800;display:grid;place-items:center;color:#111}
+.list li .t{flex:1;min-width:0;font-size:13px;overflow:hidden;text-overflow:ellipsis}
+.list li .t small{display:block;color:var(--sub);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list li .m{flex:0 0 auto;font-size:13px;font-weight:700;text-align:right}
+.actions{display:flex;gap:8px;margin:10px 0 2px;flex-wrap:wrap}
+.pill{min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text);font-weight:700;cursor:pointer}
+.pill.go{background:var(--gold);color:#241a00;border-color:transparent}
+.pill.on{border-color:var(--gold);color:var(--gold);background:rgba(255,201,74,.08)}
+input[type=search]{width:100%;font-size:16px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.35);color:var(--text);outline:none;margin-top:2px}
+.seg{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:8px 0;touch-action:pan-x}
+.seg::-webkit-scrollbar{display:none}
+.seg button{flex:0 0 auto;font-size:12px;padding:7px 11px;min-height:44px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--sub);cursor:pointer}
+.seg button.on{color:#111;background:var(--gold);border-color:transparent;font-weight:700}
+/* --- cameras (a city), labels, tag, caption, toast, veil */
+.cams{position:fixed;left:calc(10px + var(--sl));top:calc(var(--top-h) + 20px + var(--st));z-index:3;display:none;flex-direction:column;gap:6px}
+body[data-mode=city] .cams{display:flex}
+.cams button{width:56px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--sub);font:700 10px/1 var(--oly-display,inherit);letter-spacing:.12em;cursor:pointer;touch-action:manipulation}
+.cams button.on{color:var(--gold);border-color:rgba(255,201,74,.45);background:rgba(255,201,74,.10)}
+#labels{position:fixed;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+#labels i{position:absolute;left:0;top:0;font:700 11.5px/1.2 var(--oly-display,inherit);letter-spacing:.1em;text-transform:uppercase;padding:4px 8px;border-radius:8px;background:rgba(7,5,15,.62);
+border:1px solid rgba(255,255,255,.18);color:#fff;white-space:nowrap;display:none;text-shadow:0 1px 6px #000;font-style:normal;will-change:transform}
+#labels i.sel{border-color:var(--gold);color:var(--gold)}
+.tag{position:fixed;left:0;top:0;z-index:3;pointer-events:none;display:none;padding:5px 9px;border-radius:10px;background:rgba(8,6,20,.84);border:1px solid rgba(255,201,74,.45);
+font:600 12px/1.25 var(--oly-ui,inherit);color:var(--text);white-space:nowrap;max-width:220px;box-shadow:0 4px 18px rgba(0,0,0,.5)}
+.tag b{display:block;font-weight:700;overflow:hidden;text-overflow:ellipsis}
+.caption{position:fixed;left:50%;bottom:calc(var(--sheet-bottom) + 10px + var(--sb));transform:translateX(-50%);width:min(560px,calc(100% - 28px));z-index:4;pointer-events:none;opacity:0;
+text-align:center;font:600 15px/1.35 var(--oly-ui,inherit);color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.9);transition:opacity .4s}
+.caption small{display:block;font:700 10px/1 var(--oly-display,inherit);letter-spacing:.2em;color:var(--gold);margin-bottom:6px}
+.caption.on{opacity:1}
+.toast{position:fixed;left:50%;top:calc(var(--top-h) + 18px + var(--st));transform:translateX(-50%);background:var(--panel);border:1px solid var(--line);padding:8px 12px;
+border-radius:12px;font-size:12.5px;color:var(--sub);z-index:6;display:none;max-width:calc(100% - 140px);text-align:center}
+.toast.on{display:block}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;background:radial-gradient(120% 90% at 50% 45%,transparent 55%,rgba(0,0,0,.5))}
+.veil{position:fixed;inset:0;z-index:7;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:24px;pointer-events:none;opacity:0;
+background:radial-gradient(90% 70% at 50% 45%,rgba(24,14,52,.94),#05030c);transition:opacity .38s ease}
+.veil.on{opacity:1}
+.veil b{font:800 20px/1.2 var(--oly-display,inherit);letter-spacing:.14em;text-transform:uppercase;color:#fff}
+.veil small{font-size:13px;color:var(--sub);max-width:320px}
+.loading{position:fixed;inset:0;display:grid;place-items:center;color:var(--sub);font:600 13px var(--oly-display,inherit);letter-spacing:.2em;z-index:2;pointer-events:none}
+.err{position:fixed;left:16px;right:16px;top:30%;z-index:9;text-align:center;color:var(--sub)}
+.fallback{position:fixed;inset:calc(var(--top-h) + 20px + var(--st)) 12px calc(110px + var(--sb)) 12px;overflow:auto;z-index:3;touch-action:pan-y}
+@media (prefers-reduced-motion:reduce){.sheet.on{animation:none}.veil,.caption{transition:none}}
+</style>
+</head>
+<body data-mode="hub" data-ready="false">
+<canvas id="c" aria-label="Olympus Cities: a world of floating city islands, one per dataset. Drag to look, pinch to zoom, tap an island."></canvas>
+<div id="labels" aria-hidden="true"></div>
+<div class="loading" id="loading">BUILDING THE WORLD…</div>
+<header class="top" id="top">
+  <div class="row">
+    <button class="ic" id="backB" aria-label="Back to the world map" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <h1 id="title">Cities</h1>
+    <button class="ic" id="qB" aria-label="Quality">HD</button>
+    <button class="ic" id="readB" aria-label="How to read this"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></button>
+  </div>
+  <div class="chips" id="chips"></div>
+</header>
+<canvas class="mini" id="mini" width="216" height="216" aria-label="Minimap: tap to fly there"></canvas>
+<section class="sheet" id="sheet" role="dialog" aria-labelledby="sheetTitle">
+  <header><h2 id="sheetTitle"></h2><button class="x" id="sheetX" aria-label="Close">×</button></header>
+  <div id="sheetBody"></div>
+</section>
+<div class="cams" id="cams" role="group" aria-label="Camera mode">
+  <button data-cam="orbit" class="on" aria-label="Orbit camera">ORBIT</button>
+  <button data-cam="skim" aria-label="Fly low through the districts">SKIM</button>
+  <button data-cam="drone" aria-label="Drone loop over the city">DRONE</button>
+  <button data-cam="grand" aria-label="Grand tour of the landmarks">GRAND</button>
+</div>
+<div class="tag" id="tag" aria-hidden="true"></div>
+<nav class="dock" id="dock" aria-label="Views"></nav>
+<div class="caption" id="caption" aria-live="polite"></div>
+<div class="toast" id="toast" role="status"></div>
+<div class="veil" id="veil" aria-hidden="true"><b id="veilName"></b><small id="veilSub"></small></div>
+<script type="module" src="./app.js?v=o2"></script>
+</body>
+</html>

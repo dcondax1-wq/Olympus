@@ -1,0 +1,1665 @@
+{
+ "v": 1,
+ "note": "City specs of the Cities hub. Add a city = add one entry; the generator (generator.js) and the tests need nothing else.",
+ "cities": [
+  {
+   "id": "trades-city",
+   "name": "Trades City",
+   "motto": "Every trade is a tower, month by month.",
+   "group": "trading",
+   "dataset": "trades",
+   "layout": "districts",
+   "district_by": "month",
+   "height_by": "abs:usd",
+   "glow_by": "pos:usd",
+   "window_by": "rank:r",
+   "color_by": "sign:usd",
+   "sort_by": "t",
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#178279",
+    "mid": "#1d96ed",
+    "high": "#7478fb",
+    "accent": "#45bcf7",
+    "ground": "#070f12",
+    "fog": "#09151b",
+    "districts": [
+     "#40b0e7",
+     "#7248ef",
+     "#e551f6",
+     "#ec6981",
+     "#ee8e3a",
+     "#b0f542",
+     "#5ceb60",
+     "#64f2ea"
+    ]
+   },
+   "landmark": {
+    "kind": "obelisk",
+    "at": "front",
+    "label": "The Bell"
+   },
+   "sky": {
+    "kind": "night",
+    "top": "#03090c",
+    "mid": "#0b1e28",
+    "low": "#183762",
+    "stars": 0.9
+   },
+   "weather": "rain",
+   "sound": "tick",
+   "card": [
+    "usd",
+    "r",
+    "qty",
+    "exit",
+    "day"
+   ]
+  },
+  {
+   "id": "sessions-city",
+   "name": "Sessions City",
+   "motto": "One tower for every trading day, a street for every week.",
+   "group": "trading",
+   "dataset": "sessions",
+   "layout": "districts",
+   "district_by": "week",
+   "height_by": "abs:usd",
+   "glow_by": "pos:usd",
+   "window_by": "n",
+   "color_by": "sign:usd",
+   "sort_by": "t",
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#178244",
+    "mid": "#1deddb",
+    "high": "#74bcfb",
+    "accent": "#45f7da",
+    "ground": "#071211",
+    "fog": "#091b18",
+    "districts": [
+     "#40e7cc",
+     "#4872ef",
+     "#9351f6",
+     "#ec69c3",
+     "#ee3a40",
+     "#f5e042",
+     "#9eeb5c",
+     "#64f2a4"
+    ]
+   },
+   "landmark": {
+    "kind": "beacon",
+    "at": "front",
+    "label": "Opening Bell Tower"
+   },
+   "sky": {
+    "kind": "dawn",
+    "top": "#341e14",
+    "mid": "#2d9db4",
+    "low": "#81d1f8",
+    "stars": 0.2
+   },
+   "weather": "fog",
+   "sound": "portal",
+   "card": [
+    "usd",
+    "n",
+    "best",
+    "worst",
+    "cum"
+   ]
+  },
+  {
+   "id": "levels-city",
+   "name": "Levels City",
+   "motto": "Every swept high and low gets its own district.",
+   "group": "trading",
+   "dataset": "levels",
+   "layout": "districts",
+   "district_by": "level",
+   "height_by": "abs:usd",
+   "glow_by": "win",
+   "window_by": "n",
+   "color_by": "cat:session",
+   "district_order": "size",
+   "arrange": "peak",
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#791782",
+    "mid": "#ed1d96",
+    "high": "#fb7478",
+    "accent": "#f745bc",
+    "ground": "#12070f",
+    "fog": "#1b0915",
+    "districts": [
+     "#e740b0",
+     "#ef7248",
+     "#f6e551",
+     "#81ec69",
+     "#3aee8e",
+     "#42b0f5",
+     "#605ceb",
+     "#ea64f2"
+    ]
+   },
+   "landmark": {
+    "kind": "crown",
+    "at": "front",
+    "label": "The Sweep Crown"
+   },
+   "sky": {
+    "kind": "dusk",
+    "top": "#0e201a",
+    "mid": "#62206f",
+    "low": "#f43484",
+    "stars": 0.35
+   },
+   "weather": "embers",
+   "sound": "rankup",
+   "card": [
+    "level",
+    "session",
+    "usd",
+    "r",
+    "day"
+   ]
+  },
+  {
+   "id": "hours-city",
+   "name": "Hours City",
+   "motto": "A clock of districts: see which hours pay.",
+   "group": "trading",
+   "dataset": "trades",
+   "layout": "clock",
+   "district_by": "hour",
+   "height_by": "abs:usd",
+   "glow_by": "pos:r",
+   "window_by": "win",
+   "color_by": "sign:usd",
+   "arrange": "peak",
+   "sort_by": "t",
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#823b17",
+    "mid": "#edca1d",
+    "high": "#c7fb74",
+    "accent": "#f7cb45",
+    "ground": "#121007",
+    "fog": "#1b1609",
+    "districts": [
+     "#e7be40",
+     "#80ef48",
+     "#51f685",
+     "#69ceec",
+     "#3a4fee",
+     "#d142f5",
+     "#eb5caa",
+     "#f29864"
+    ]
+   },
+   "landmark": {
+    "kind": "wheel",
+    "at": "center",
+    "label": "The Clock Wheel"
+   },
+   "sky": {
+    "kind": "day",
+    "top": "#2b67b6",
+    "mid": "#6fb4e2",
+    "low": "#ede1c0",
+    "stars": 0
+   },
+   "weather": "clear",
+   "sound": "tick",
+   "card": [
+    "hour",
+    "usd",
+    "r",
+    "held_min",
+    "day"
+   ]
+  },
+  {
+   "id": "weekdays-city",
+   "name": "Weekdays City",
+   "motto": "Five avenues, one per weekday, 631 trades deep.",
+   "group": "trading",
+   "dataset": "harbor",
+   "layout": "districts",
+   "district_by": "weekday",
+   "height_by": "abs:usd",
+   "glow_by": "pos:r",
+   "window_by": "rank:r",
+   "color_by": "sign:usd",
+   "sort_by": "t",
+   "pitch": 4.4,
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#821c17",
+    "mid": "#ed8f1d",
+    "high": "#eefb74",
+    "accent": "#f79845",
+    "ground": "#120c07",
+    "fog": "#1b1109",
+    "districts": [
+     "#e78e40",
+     "#afef48",
+     "#51f656",
+     "#69ece6",
+     "#3a82ee",
+     "#9f42f5",
+     "#eb5cd3",
+     "#f27064"
+    ]
+   },
+   "landmark": {
+    "kind": "gate",
+    "at": "front",
+    "label": "Gate of the Week"
+   },
+   "sky": {
+    "kind": "dusk",
+    "top": "#0e1120",
+    "mid": "#6f2023",
+    "low": "#f4be34",
+    "stars": 0.35
+   },
+   "weather": "dust",
+   "sound": "tap",
+   "card": [
+    "weekday",
+    "usd",
+    "r",
+    "exit",
+    "day"
+   ]
+  },
+  {
+   "id": "months-city",
+   "name": "Months City",
+   "motto": "A calendar you can fly over: a tower per month.",
+   "group": "trading",
+   "dataset": "months",
+   "layout": "calendar",
+   "district_by": "year",
+   "height_by": "abs:usd",
+   "glow_by": "pos:usd",
+   "window_by": "winrate",
+   "color_by": "sign:usd",
+   "grid": {
+    "x": "mon",
+    "z": "year"
+   },
+   "height_range": [
+    4,
+    80
+   ],
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#171c82",
+    "mid": "#7a1ded",
+    "high": "#fb74fb",
+    "accent": "#8645f7",
+    "ground": "#0b0712",
+    "fog": "#0f091b",
+    "districts": [
+     "#7e40e7",
+     "#ef48c0",
+     "#f6515c",
+     "#ecd969",
+     "#94ee3a",
+     "#42f58d",
+     "#5ce1eb",
+     "#6467f2"
+    ]
+   },
+   "landmark": {
+    "kind": "dome",
+    "at": "front",
+    "label": "The Calendar Dome"
+   },
+   "sky": {
+    "kind": "aurora",
+    "top": "#040b07",
+    "mid": "#12240a",
+    "low": "#505214",
+    "stars": 0.85
+   },
+   "weather": "snow",
+   "sound": "pad",
+   "card": [
+    "month",
+    "usd",
+    "n",
+    "winrate",
+    "best"
+   ]
+  },
+  {
+   "id": "risk-city",
+   "name": "Risk City",
+   "motto": "The wider the stop, the taller the tower: size follows risk.",
+   "group": "trading",
+   "dataset": "trades",
+   "layout": "districts",
+   "district_by": "stopb",
+   "height_by": "sqrt:risk_pts",
+   "glow_by": "pos:mfe_r",
+   "window_by": "rank:risk_usd",
+   "color_by": "ramp:risk_pts",
+   "arrange": "peak",
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#821735",
+    "mid": "#ed4a1d",
+    "high": "#fbdc74",
+    "accent": "#f75d45",
+    "ground": "#120907",
+    "fog": "#1b0b09",
+    "districts": [
+     "#e75740",
+     "#e7ef48",
+     "#82f651",
+     "#69ecba",
+     "#3abeee",
+     "#6342f5",
+     "#d35ceb",
+     "#f26488"
+    ]
+   },
+   "landmark": {
+    "kind": "monolith",
+    "at": "front",
+    "label": "The Stop Monolith"
+   },
+   "sky": {
+    "kind": "storm",
+    "top": "#0f0b0a",
+    "mid": "#2c1e1c",
+    "low": "#533632",
+    "stars": 0.1
+   },
+   "weather": "storm",
+   "sound": "thunder",
+   "card": [
+    "risk_pts",
+    "risk_usd",
+    "qty",
+    "mae_r",
+    "usd"
+   ]
+  },
+  {
+   "id": "setups-city",
+   "name": "Setups City",
+   "motto": "Districts by how the trade ended: target, stop, break-even.",
+   "group": "trading",
+   "dataset": "trades",
+   "layout": "districts",
+   "district_by": "exit",
+   "height_by": "abs:usd",
+   "glow_by": "win",
+   "window_by": "rank:held_min",
+   "color_by": "district",
+   "arrange": "peak",
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#3b1782",
+    "mid": "#ca1ded",
+    "high": "#fb74c7",
+    "accent": "#cb45f7",
+    "ground": "#100712",
+    "fog": "#16091b",
+    "districts": [
+     "#be40e7",
+     "#ef4880",
+     "#f68551",
+     "#ceec69",
+     "#4fee3a",
+     "#42f5d1",
+     "#5caaeb",
+     "#9864f2"
+    ]
+   },
+   "landmark": {
+    "kind": "crystal",
+    "at": "front",
+    "label": "The Exit Crystal"
+   },
+   "sky": {
+    "kind": "void",
+    "top": "#090208",
+    "mid": "#1c0623",
+    "low": "#1f0a5c",
+    "stars": 1
+   },
+   "weather": "stars",
+   "sound": "portal",
+   "card": [
+    "exit",
+    "usd",
+    "r",
+    "held_min",
+    "mfe_r"
+   ]
+  },
+  {
+   "id": "accounts-city",
+   "name": "Accounts City",
+   "motto": "Real, paper and backtest accounts side by side.",
+   "group": "money",
+   "dataset": "trades",
+   "layout": "districts",
+   "district_by": "acct",
+   "height_by": "abs:risk_usd",
+   "glow_by": "pos:usd",
+   "window_by": "rank:qty",
+   "color_by": "sign:usd",
+   "arrange": "peak",
+   "district_order": "size",
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#178264",
+    "mid": "#1dc0ed",
+    "high": "#7493fb",
+    "accent": "#45dff7",
+    "ground": "#071112",
+    "fog": "#09181b",
+    "districts": [
+     "#40d1e7",
+     "#5048ef",
+     "#c451f6",
+     "#ec699c",
+     "#ee6a3a",
+     "#d4f542",
+     "#73eb5c",
+     "#64f2ce"
+    ]
+   },
+   "landmark": {
+    "kind": "ring",
+    "at": "front",
+    "label": "The Account Ring"
+   },
+   "sky": {
+    "kind": "dawn",
+    "top": "#342814",
+    "mid": "#2d75b4",
+    "low": "#81adf8",
+    "stars": 0.2
+   },
+   "weather": "fog",
+   "sound": "tap",
+   "card": [
+    "acct",
+    "usd",
+    "risk_usd",
+    "qty",
+    "day"
+   ]
+  },
+  {
+   "id": "sizing-city",
+   "name": "Sizing City",
+   "motto": "More micros, taller towers: how big each trade was.",
+   "group": "trading",
+   "dataset": "trades",
+   "layout": "districts",
+   "district_by": "qtyb",
+   "height_by": "sqrt:qty",
+   "glow_by": "pos:usd",
+   "window_by": "rank:risk_usd",
+   "color_by": "ramp:qty",
+   "arrange": "peak",
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#82172b",
+    "mid": "#ed5e1d",
+    "high": "#fbe974",
+    "accent": "#f76f45",
+    "ground": "#120a07",
+    "fog": "#1b0d09",
+    "districts": [
+     "#e76740",
+     "#d6ef48",
+     "#72f651",
+     "#69ecc7",
+     "#3aacee",
+     "#7542f5",
+     "#e15ceb",
+     "#f26479"
+    ]
+   },
+   "landmark": {
+    "kind": "pyramid",
+    "at": "front",
+    "label": "The Size Pyramid"
+   },
+   "sky": {
+    "kind": "ember",
+    "top": "#0f0705",
+    "mid": "#451d0c",
+    "low": "#c2540a",
+    "stars": 0.3
+   },
+   "weather": "embers",
+   "sound": "rankup",
+   "card": [
+    "qty",
+    "risk_pts",
+    "usd",
+    "r",
+    "acct"
+   ]
+  },
+  {
+   "id": "streaks-city",
+   "name": "Streaks City",
+   "motto": "Winning and losing runs spiral out from the centre.",
+   "group": "trading",
+   "dataset": "streaks",
+   "layout": "spiral",
+   "district_by": "kind",
+   "height_by": "sqrt:len",
+   "glow_by": "win",
+   "window_by": "len",
+   "color_by": "sign:usd",
+   "sort_by": "t",
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#358217",
+    "mid": "#1ded4a",
+    "high": "#74fbdc",
+    "accent": "#45f75d",
+    "ground": "#071209",
+    "fog": "#091b0b",
+    "districts": [
+     "#40e757",
+     "#48e7ef",
+     "#5182f6",
+     "#ba69ec",
+     "#ee3abe",
+     "#f56342",
+     "#ebd35c",
+     "#88f264"
+    ]
+   },
+   "landmark": {
+    "kind": "helix",
+    "at": "center",
+    "label": "The Streak Helix"
+   },
+   "sky": {
+    "kind": "night",
+    "top": "#030c05",
+    "mid": "#0b280f",
+    "low": "#186235",
+    "stars": 0.9
+   },
+   "weather": "stars",
+   "sound": "pad",
+   "card": [
+    "kind",
+    "len",
+    "usd",
+    "from",
+    "to"
+   ]
+  },
+  {
+   "id": "canyon",
+   "name": "Drawdown Canyon",
+   "motto": "Plateaus at the peaks, a canyon wherever the account fell.",
+   "group": "trading",
+   "dataset": "harbor",
+   "layout": "terrain",
+   "district_by": "year",
+   "height_by": "inv:dd",
+   "glow_by": "pos:usd",
+   "window_by": "win",
+   "color_by": "ramp:dd",
+   "sort_by": "t",
+   "smooth": 2,
+   "height_range": [
+    3,
+    110
+   ],
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#821719",
+    "mid": "#ed811d",
+    "high": "#f7fb74",
+    "accent": "#f78c45",
+    "ground": "#120c07",
+    "fog": "#1b1009",
+    "districts": [
+     "#e78340",
+     "#baef48",
+     "#56f651",
+     "#69ecdd",
+     "#3a8eee",
+     "#9342f5",
+     "#eb5cdc",
+     "#f26764"
+    ]
+   },
+   "landmark": {
+    "kind": "gate",
+    "at": "front",
+    "label": "The Canyon Gate"
+   },
+   "sky": {
+    "kind": "ember",
+    "top": "#0f0905",
+    "mid": "#451d0c",
+    "low": "#c2540a",
+    "stars": 0.3
+   },
+   "weather": "dust",
+   "sound": "thunder",
+   "card": [
+    "dd",
+    "cum",
+    "usd",
+    "day",
+    "streak"
+   ]
+  },
+  {
+   "id": "equity-mountains",
+   "name": "Equity Mountains",
+   "motto": "The account curve as a mountain range, 2021 to now.",
+   "group": "money",
+   "dataset": "harbor",
+   "layout": "terrain",
+   "district_by": "year",
+   "height_by": "cum",
+   "glow_by": "pos:usd",
+   "window_by": "win",
+   "color_by": "ramp:cum",
+   "sort_by": "t",
+   "smooth": 3,
+   "height_range": [
+    3,
+    140
+   ],
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#174782",
+    "mid": "#271ded",
+    "high": "#c574fb",
+    "accent": "#454bf7",
+    "ground": "#070712",
+    "fog": "#090a1b",
+    "districts": [
+     "#4046e7",
+     "#dc48ef",
+     "#f6519e",
+     "#eca469",
+     "#dcee3a",
+     "#42f545",
+     "#5cebbb",
+     "#649ff2"
+    ]
+   },
+   "landmark": {
+    "kind": "crown",
+    "at": "front",
+    "label": "Summit Crown"
+   },
+   "sky": {
+    "kind": "aurora",
+    "top": "#040b04",
+    "mid": "#1c240a",
+    "low": "#523b14",
+    "stars": 0.85
+   },
+   "weather": "snow",
+   "sound": "pad",
+   "card": [
+    "cum",
+    "usd",
+    "dd",
+    "day",
+    "idx"
+   ]
+  },
+  {
+   "id": "ideas-city",
+   "name": "Ideas City",
+   "motto": "Thirty thousand tested ideas, each a building.",
+   "group": "research",
+   "dataset": "combos",
+   "layout": "districts",
+   "district_by": "district",
+   "height_by": "abs:e",
+   "glow_by": "fdr",
+   "window_by": "log:n",
+   "color_by": "district",
+   "district_order": "size",
+   "arrange": "peak",
+   "height_range": [
+    2,
+    62
+   ],
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#177082",
+    "mid": "#1d62ed",
+    "high": "#9174fb",
+    "accent": "#458ff7",
+    "ground": "#070c12",
+    "fog": "#09101b",
+    "districts": [
+     "#4086e7",
+     "#9c48ef",
+     "#f651dd",
+     "#ec7269",
+     "#eebb3a",
+     "#84f542",
+     "#5ceb84",
+     "#64d5f2"
+    ]
+   },
+   "landmark": {
+    "kind": "ring",
+    "at": "front",
+    "label": "The Idea Halo"
+   },
+   "sky": {
+    "kind": "night",
+    "top": "#03070c",
+    "mid": "#0b1728",
+    "low": "#182562",
+    "stars": 0.9
+   },
+   "weather": "stars",
+   "sound": "portal",
+   "card": [
+    "e",
+    "n",
+    "wr",
+    "cls",
+    "window"
+   ]
+  },
+  {
+   "id": "honesty-city",
+   "name": "Honesty City",
+   "motto": "Gold, green, amber, grey: how honest each idea is.",
+   "group": "research",
+   "dataset": "combos",
+   "layout": "districts",
+   "district_by": "cls",
+   "height_by": "abs:e26",
+   "glow_by": "fdr",
+   "window_by": "log:n26",
+   "color_by": "district",
+   "arrange": "peak",
+   "height_range": [
+    2,
+    66
+   ],
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#824017",
+    "mid": "#edd41d",
+    "high": "#c1fb74",
+    "accent": "#f7d445",
+    "ground": "#121007",
+    "fog": "#1b1709",
+    "districts": [
+     "#e7c640",
+     "#77ef48",
+     "#51f68d",
+     "#69c7ec",
+     "#3a46ee",
+     "#da42f5",
+     "#eb5ca3",
+     "#f29f64"
+    ]
+   },
+   "landmark": {
+    "kind": "pyramid",
+    "at": "front",
+    "label": "The Gold Pyramid"
+   },
+   "sky": {
+    "kind": "dusk",
+    "top": "#100e20",
+    "mid": "#6f3820",
+    "low": "#ebf434",
+    "stars": 0.35
+   },
+   "weather": "dust",
+   "sound": "rankup",
+   "card": [
+    "cls",
+    "e26",
+    "eo",
+    "n26",
+    "fdr"
+   ]
+  },
+  {
+   "id": "triggers-city",
+   "name": "Triggers City",
+   "motto": "A district for every trigger: sweeps, breaks, gaps, displacements.",
+   "group": "research",
+   "dataset": "combos",
+   "layout": "districts",
+   "district_by": "trig",
+   "height_by": "abs:e",
+   "glow_by": "fdr",
+   "window_by": "rank:wr",
+   "color_by": "cat:dir",
+   "district_order": "size",
+   "arrange": "peak",
+   "height_range": [
+    2,
+    58
+   ],
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#82176b",
+    "mid": "#ed1d58",
+    "high": "#fb9874",
+    "accent": "#f74586",
+    "ground": "#12070b",
+    "fog": "#1b090f",
+    "districts": [
+     "#e7407e",
+     "#efa448",
+     "#d5f651",
+     "#69ec79",
+     "#3aeec4",
+     "#427bf5",
+     "#8b5ceb",
+     "#f264ce"
+    ]
+   },
+   "landmark": {
+    "kind": "lighthouse",
+    "at": "front",
+    "label": "Trigger Lighthouse"
+   },
+   "sky": {
+    "kind": "dawn",
+    "top": "#142f34",
+    "mid": "#b42d31",
+    "low": "#f89181",
+    "stars": 0.2
+   },
+   "weather": "rain",
+   "sound": "tick",
+   "card": [
+    "trig",
+    "dir",
+    "e",
+    "n",
+    "window"
+   ]
+  },
+  {
+   "id": "vix-city",
+   "name": "VIX City",
+   "motto": "The same ideas, sorted by how scared the market was.",
+   "group": "markets",
+   "dataset": "vix",
+   "layout": "districts",
+   "district_by": "vix",
+   "height_by": "abs:e",
+   "glow_by": "fdr",
+   "window_by": "log:n",
+   "color_by": "sign:e",
+   "arrange": "peak",
+   "height_range": [
+    2,
+    60
+   ],
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#82175e",
+    "mid": "#ed1d3f",
+    "high": "#fba874",
+    "accent": "#f74572",
+    "ground": "#12070a",
+    "fog": "#1b090d",
+    "districts": [
+     "#e7406a",
+     "#efb748",
+     "#c1f651",
+     "#69ec88",
+     "#3aeed9",
+     "#4266f5",
+     "#9c5ceb",
+     "#f264be"
+    ]
+   },
+   "landmark": {
+    "kind": "lighthouse",
+    "at": "front",
+    "label": "Fear Gauge Light"
+   },
+   "sky": {
+    "kind": "storm",
+    "top": "#0f0a0b",
+    "mid": "#2c1c20",
+    "low": "#53323a",
+    "stars": 0.1
+   },
+   "weather": "storm",
+   "sound": "thunder",
+   "card": [
+    "vix",
+    "e",
+    "n",
+    "cls",
+    "window"
+   ]
+  },
+  {
+   "id": "daphne-city",
+   "name": "Daphne City",
+   "motto": "The idea trees grown into forests of towers.",
+   "group": "research",
+   "dataset": "tree",
+   "layout": "districts",
+   "district_by": "root",
+   "height_by": "log:n",
+   "glow_by": "best",
+   "window_by": "good",
+   "color_by": "ramp:excess",
+   "arrange": "peak",
+   "district_order": "size",
+   "height_range": [
+    2,
+    56
+   ],
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#238217",
+    "mid": "#1ded6c",
+    "high": "#74fbf2",
+    "accent": "#45f77a",
+    "ground": "#07120a",
+    "fog": "#091b0e",
+    "districts": [
+     "#40e772",
+     "#48cbef",
+     "#5167f6",
+     "#d069ec",
+     "#ee3aa0",
+     "#f58142",
+     "#ebeb5c",
+     "#70f264"
+    ]
+   },
+   "landmark": {
+    "kind": "tree",
+    "at": "front",
+    "label": "The Great Tree"
+   },
+   "sky": {
+    "kind": "day",
+    "top": "#2b67b6",
+    "mid": "#6fb4e2",
+    "low": "#c0edcd",
+    "stars": 0
+   },
+   "weather": "fireflies",
+   "sound": "pad",
+   "card": [
+    "root",
+    "depth",
+    "n",
+    "excess",
+    "status"
+   ]
+  },
+  {
+   "id": "forge-city",
+   "name": "Forge City",
+   "motto": "Every bred strategy version stands where it was born.",
+   "group": "research",
+   "dataset": "forge",
+   "layout": "districts",
+   "district_by": "gen",
+   "height_by": "pos:pm_h2",
+   "glow_by": "champion",
+   "window_by": "rank:fit",
+   "color_by": "ramp:pm_h2",
+   "arrange": "grid",
+   "sort_by": "-fit",
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#82171c",
+    "mid": "#ed7a1d",
+    "high": "#fbfb74",
+    "accent": "#f78645",
+    "ground": "#120b07",
+    "fog": "#1b0f09",
+    "districts": [
+     "#e77e40",
+     "#c0ef48",
+     "#5cf651",
+     "#69ecd9",
+     "#3a94ee",
+     "#8d42f5",
+     "#eb5ce1",
+     "#f26467"
+    ]
+   },
+   "landmark": {
+    "kind": "anvil",
+    "at": "front",
+    "label": "The Forge Anvil"
+   },
+   "sky": {
+    "kind": "ember",
+    "top": "#0f0905",
+    "mid": "#451d0c",
+    "low": "#c2540a",
+    "stars": 0.3
+   },
+   "weather": "embers",
+   "sound": "thunder",
+   "card": [
+    "gen",
+    "origin",
+    "pm_h2",
+    "pf_h2",
+    "p10_h2"
+   ]
+  },
+  {
+   "id": "gods-city",
+   "name": "Gods City",
+   "motto": "Eight gods, thirty-four world states, one ring of temples.",
+   "group": "markets",
+   "dataset": "gods",
+   "layout": "clock",
+   "district_by": "god",
+   "height_by": "days_on",
+   "glow_by": "now",
+   "window_by": "pct",
+   "color_by": "district",
+   "arrange": "peak",
+   "height_range": [
+    4,
+    72
+   ],
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#824717",
+    "mid": "#ede21d",
+    "high": "#b8fb74",
+    "accent": "#f7df45",
+    "ground": "#121107",
+    "fog": "#1b1809",
+    "districts": [
+     "#e7d140",
+     "#6cef48",
+     "#51f698",
+     "#69bfec",
+     "#3a3aee",
+     "#e642f5",
+     "#eb5c9a",
+     "#f2a864"
+    ]
+   },
+   "landmark": {
+    "kind": "dome",
+    "at": "center",
+    "label": "The Pantheon"
+   },
+   "sky": {
+    "kind": "aurora",
+    "top": "#0a040b",
+    "mid": "#0f0a24",
+    "low": "#143152",
+    "stars": 0.85
+   },
+   "weather": "clear",
+   "sound": "pad",
+   "card": [
+    "god",
+    "days_on",
+    "pct",
+    "runs",
+    "longest"
+   ]
+  },
+  {
+   "id": "feeds-city",
+   "name": "Feeds City",
+   "motto": "Every data feed a tower: fresh ones glow.",
+   "group": "markets",
+   "dataset": "feeds",
+   "layout": "districts",
+   "district_by": "kind",
+   "height_by": "log:rows",
+   "glow_by": "-age",
+   "window_by": "ok",
+   "color_by": "ramp:age",
+   "arrange": "peak",
+   "district_order": "size",
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#178252",
+    "mid": "#1de2ed",
+    "high": "#74aafb",
+    "accent": "#45f7f1",
+    "ground": "#071212",
+    "fog": "#091b1a",
+    "districts": [
+     "#40e7e2",
+     "#485cef",
+     "#a951f6",
+     "#ec69b1",
+     "#ee4c3a",
+     "#f2f542",
+     "#8beb5c",
+     "#64f2b7"
+    ]
+   },
+   "landmark": {
+    "kind": "beacon",
+    "at": "front",
+    "label": "The Signal Mast"
+   },
+   "sky": {
+    "kind": "night",
+    "top": "#030c0c",
+    "mid": "#0b2827",
+    "low": "#185262",
+    "stars": 0.9
+   },
+   "weather": "rain",
+   "sound": "tick",
+   "card": [
+    "kind",
+    "rows",
+    "age",
+    "newest",
+    "ok"
+   ]
+  },
+  {
+   "id": "evals-city",
+   "name": "Evals City",
+   "motto": "Four hundred simulated evals: the passes light up.",
+   "group": "money",
+   "dataset": "evals",
+   "layout": "districts",
+   "district_by": "outcome",
+   "height_by": "abs:final",
+   "glow_by": "pass",
+   "window_by": "rank:days",
+   "color_by": "district",
+   "arrange": "peak",
+   "height_range": [
+    2,
+    60
+   ],
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#328217",
+    "mid": "#1ded51",
+    "high": "#74fbe0",
+    "accent": "#45f763",
+    "ground": "#071209",
+    "fog": "#091b0c",
+    "districts": [
+     "#40e75c",
+     "#48e1ef",
+     "#517df6",
+     "#bf69ec",
+     "#ee3ab8",
+     "#f56942",
+     "#ebd85c",
+     "#83f264"
+    ]
+   },
+   "landmark": {
+    "kind": "gate",
+    "at": "front",
+    "label": "The Pass Gate"
+   },
+   "sky": {
+    "kind": "night",
+    "top": "#030c05",
+    "mid": "#0b2810",
+    "low": "#186237",
+    "stars": 0.9
+   },
+   "weather": "snow",
+   "sound": "rankup",
+   "card": [
+    "outcome",
+    "days",
+    "final",
+    "low",
+    "high"
+   ]
+  },
+  {
+   "id": "speed-city",
+   "name": "Speed City",
+   "motto": "How many sessions an eval needs to pass, bot by bot.",
+   "group": "money",
+   "dataset": "evalspeed",
+   "layout": "districts",
+   "district_by": "scenario",
+   "height_by": "count",
+   "glow_by": "fast",
+   "window_by": "cum",
+   "color_by": "ramp:session",
+   "sort_by": "session",
+   "district_order": "first",
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#551782",
+    "mid": "#ed1ddb",
+    "high": "#fb74a6",
+    "accent": "#f745f7",
+    "ground": "#120712",
+    "fog": "#1b091b",
+    "districts": [
+     "#e740e7",
+     "#ef4856",
+     "#f6ae51",
+     "#adec69",
+     "#3aee52",
+     "#42ecf5",
+     "#5c87eb",
+     "#bb64f2"
+    ]
+   },
+   "landmark": {
+    "kind": "helix",
+    "at": "front",
+    "label": "The Speed Spire"
+   },
+   "sky": {
+    "kind": "dawn",
+    "top": "#143424",
+    "mid": "#b42d87",
+    "low": "#f881bd",
+    "stars": 0.2
+   },
+   "weather": "dust",
+   "sound": "portal",
+   "card": [
+    "scenario",
+    "session",
+    "count",
+    "cum",
+    "fast"
+   ]
+  },
+  {
+   "id": "arena-city",
+   "name": "Arena City",
+   "motto": "Every XP event of the Arena, grouped by kind.",
+   "group": "life",
+   "dataset": "arena",
+   "layout": "districts",
+   "district_by": "kind",
+   "height_by": "sqrt:xp",
+   "glow_by": "xp",
+   "window_by": "rank:xp",
+   "color_by": "district",
+   "arrange": "peak",
+   "district_order": "size",
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#822e17",
+    "mid": "#edb21d",
+    "high": "#d7fb74",
+    "accent": "#f7b645",
+    "ground": "#120e07",
+    "fog": "#1b1409",
+    "districts": [
+     "#e7aa40",
+     "#93ef48",
+     "#51f672",
+     "#69ddec",
+     "#3a64ee",
+     "#bc42f5",
+     "#eb5cbb",
+     "#f28864"
+    ]
+   },
+   "landmark": {
+    "kind": "crown",
+    "at": "front",
+    "label": "The Champion Crown"
+   },
+   "sky": {
+    "kind": "ember",
+    "top": "#0f0c05",
+    "mid": "#451d0c",
+    "low": "#c2540a",
+    "stars": 0.3
+   },
+   "weather": "fireflies",
+   "sound": "rankup",
+   "card": [
+    "kind",
+    "xp",
+    "day",
+    "src",
+    "note"
+   ]
+  },
+  {
+   "id": "library-city",
+   "name": "Library City",
+   "motto": "Athena's entries on shelves: the taller, the longer.",
+   "group": "life",
+   "dataset": "library",
+   "layout": "districts",
+   "district_by": "kind",
+   "height_by": "sqrt:words",
+   "glow_by": "links",
+   "window_by": "tags",
+   "color_by": "district",
+   "arrange": "peak",
+   "district_order": "size",
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#173282",
+    "mid": "#511ded",
+    "high": "#e074fb",
+    "accent": "#6345f7",
+    "ground": "#090712",
+    "fog": "#0c091b",
+    "districts": [
+     "#5c40e7",
+     "#ef48e1",
+     "#f6517d",
+     "#ecbf69",
+     "#b8ee3a",
+     "#42f569",
+     "#5cebd8",
+     "#6483f2"
+    ]
+   },
+   "landmark": {
+    "kind": "dome",
+    "at": "front",
+    "label": "The Reading Dome"
+   },
+   "sky": {
+    "kind": "dusk",
+    "top": "#17200e",
+    "mid": "#203a6f",
+    "low": "#8434f4",
+    "stars": 0.35
+   },
+   "weather": "dust",
+   "sound": "pad",
+   "card": [
+    "kind",
+    "words",
+    "links",
+    "tags",
+    "shortw"
+   ]
+  },
+  {
+   "id": "workshop-city",
+   "name": "Workshop City",
+   "motto": "Tested settings stand tall, rejected ideas lie as ruins.",
+   "group": "research",
+   "dataset": "workshop",
+   "layout": "districts",
+   "district_by": "kind",
+   "height_by": "abs:net_h2",
+   "glow_by": "p10_h2",
+   "window_by": "win_h2",
+   "color_by": "ramp:pf_h2",
+   "arrange": "peak",
+   "district_order": "size",
+   "height_range": [
+    1.2,
+    70
+   ],
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#822517",
+    "mid": "#eda01d",
+    "high": "#e3fb74",
+    "accent": "#f7a745",
+    "ground": "#120d07",
+    "fog": "#1b1309",
+    "districts": [
+     "#e79c40",
+     "#a1ef48",
+     "#51f664",
+     "#69e8ec",
+     "#3a73ee",
+     "#ad42f5",
+     "#eb5cc7",
+     "#f27c64"
+    ]
+   },
+   "landmark": {
+    "kind": "anvil",
+    "at": "front",
+    "label": "Hephaestus Anvil"
+   },
+   "sky": {
+    "kind": "storm",
+    "top": "#0f0d0a",
+    "mid": "#2c241c",
+    "low": "#534432",
+    "stars": 0.1
+   },
+   "weather": "embers",
+   "sound": "thunder",
+   "card": [
+    "kind",
+    "net_h2",
+    "pf_h2",
+    "pm_h2",
+    "p10_h2"
+   ]
+  },
+  {
+   "id": "plans-city",
+   "name": "Plans City",
+   "motto": "Prop-firm plans by period: what each would pay a month.",
+   "group": "money",
+   "dataset": "plans",
+   "layout": "districts",
+   "district_by": "plan",
+   "height_by": "abs:per_month",
+   "glow_by": "p10",
+   "window_by": "evals",
+   "color_by": "sign:per_month",
+   "arrange": "peak",
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#6e8217",
+    "mid": "#5eed1d",
+    "high": "#74fb93",
+    "accent": "#8cf745",
+    "ground": "#0c1207",
+    "fog": "#101b09",
+    "districts": [
+     "#83e740",
+     "#48ef9e",
+     "#51daf6",
+     "#7469ec",
+     "#be3aee",
+     "#f54281",
+     "#eb875c",
+     "#d3f264"
+    ]
+   },
+   "landmark": {
+    "kind": "monolith",
+    "at": "front",
+    "label": "The Payout Monolith"
+   },
+   "sky": {
+    "kind": "day",
+    "top": "#2b67b6",
+    "mid": "#6fb4e2",
+    "low": "#d2edc0",
+    "stars": 0
+   },
+   "weather": "clear",
+   "sound": "tap",
+   "card": [
+    "plan",
+    "span",
+    "per_month",
+    "p10",
+    "price"
+   ]
+  },
+  {
+   "id": "kalshi-city",
+   "name": "Kalshi Bets City",
+   "motto": "Each bet the bot made, by asset: wins glow, losses burn.",
+   "group": "money",
+   "dataset": "kalshi",
+   "layout": "districts",
+   "district_by": "asset",
+   "height_by": "abs:pnl",
+   "glow_by": "pos:pnl",
+   "window_by": "rank:contracts",
+   "color_by": "sign:pnl",
+   "arrange": "peak",
+   "district_order": "size",
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#821779",
+    "mid": "#ed1d73",
+    "high": "#fb8674",
+    "accent": "#f7459e",
+    "ground": "#12070d",
+    "fog": "#1b0912",
+    "districts": [
+     "#e74094",
+     "#ef8e48",
+     "#ebf651",
+     "#6bec69",
+     "#3aeeac",
+     "#4293f5",
+     "#785ceb",
+     "#f264e1"
+    ]
+   },
+   "landmark": {
+    "kind": "crystal",
+    "at": "front",
+    "label": "The Bet Crystal"
+   },
+   "sky": {
+    "kind": "dusk",
+    "top": "#0e201d",
+    "mid": "#6f206f",
+    "low": "#f43464",
+    "stars": 0.35
+   },
+   "weather": "rain",
+   "sound": "portal",
+   "card": [
+    "asset",
+    "side",
+    "pnl",
+    "contracts",
+    "state"
+   ]
+  },
+  {
+   "id": "obsidian-city",
+   "name": "Obsidian City",
+   "motto": "Your notes as a city: folders are districts, links make them glow.",
+   "group": "life",
+   "dataset": "notes",
+   "layout": "districts",
+   "district_by": "folder",
+   "height_by": "sqrt:words",
+   "glow_by": "links",
+   "window_by": "-age",
+   "color_by": "district",
+   "arrange": "peak",
+   "district_order": "size",
+   "palette": {
+    "up": "#35e98f",
+    "down": "#f04c62",
+    "low": "#2b1782",
+    "mid": "#ab1ded",
+    "high": "#fb74dc",
+    "accent": "#b045f7",
+    "ground": "#0e0712",
+    "fog": "#14091b",
+    "districts": [
+     "#a540e7",
+     "#ef4899",
+     "#f66c51",
+     "#e2ec69",
+     "#6aee3a",
+     "#42f5b6",
+     "#5cc0eb",
+     "#8364f2"
+    ]
+   },
+   "landmark": {
+    "kind": "obelisk",
+    "at": "front",
+    "label": "The Black Obelisk"
+   },
+   "sky": {
+    "kind": "aurora",
+    "top": "#040b08",
+    "mid": "#0c240a",
+    "low": "#415214",
+    "stars": 0.85
+   },
+   "weather": "fireflies",
+   "sound": "pad",
+   "card": [
+    "kind",
+    "folder",
+    "words",
+    "links",
+    "age"
+   ]
+  }
+ ]
+}
