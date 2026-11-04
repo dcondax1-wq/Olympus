@@ -51,3 +51,10 @@
   .nx .page.active, .nx .page.active > *, .su-ring .v { animation: none !important; }
   .space-css > * { transform: none !important; transition: none !important; }
 }
+
+/* the one-line sticky status strip under the top bar of every page (js/next/polish.js strip(); styles come with moneynowcore.js) */
+.nx-line { position: sticky; top: 0; z-index: 28; padding: 6px var(--nx-gutter, 16px) 4px; }
+.nx-line .mn-line { width: 100%; }
+@media (max-width: 760px) { .nx-line { top: calc(56px + env(safe-area-inset-top)); } }
+@media print { .nx-line { display: none; } }
+.nx-line .mn-line { display: flex; align-items: center; min-height: 44px; box-sizing: border-box; }

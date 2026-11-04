@@ -11,6 +11,7 @@
 // BLITZ only when it exists.
 //   MoneyNow.model(M)          -> { rows: [{ key, name, size, color, edge, room, mll, today, status, next, page }], bot: { text, edge }, edge, age }
 //   MoneyNow.html(M, { where: 'phone' | 'pc', go: (page) => attribute text })   the card (a string; every number goes through esc())
+//   MoneyNow.line(M, { where, go })   the one-line status strip for every page: "<dot> Bot running · last check-in 2m ago · Armed: Zlarior, ATLAS" (a >= 44 px tap target)
 //   MoneyNow.css()             adds the style once
 (function () {
   'use strict';
@@ -125,6 +126,19 @@
       <footer class="mn-f">Room before MFFU closes the account = balance minus the max-loss floor. Updated ${esc(mo.age != null ? ago(mo.age, M && M.now) : NP)}.</footer></section>`;
   }
 
+  // the one-line strip (sticky on the PC dashboard): bot state, last check-in age, which bots are armed. Never blank: a missing field says so.
+  function line(M, o) {
+    o = o || {};
+    const where = o.where === 'phone' ? 'phone' : 'pc';
+    const mo = model(M);
+    const go = typeof o.go === 'function' ? o.go : (p) => (where === 'pc' ? `data-goto="${p}"` : `data-go="${p}"`);
+    let txt = mo.bot.text;
+    if (mo.age != null && !/check-in|weekend|stopped|quiet/.test(txt) && mo.bot.edge === 'good') txt += ` · checked in ${ago(mo.age, M && M.now)}`;
+    const on = mo.rows.filter((r) => r.have && (/^Armed/.test(r.status.text) || /^In a trade/.test(r.status.text))).map((r) => r.name);
+    const arm = on.length ? `Armed: ${on.join(', ')}` : (mo.rows.some((r) => r.have) ? 'Nothing armed' : `Armed: ${NP}`);
+    return `<a class="mn-line ${cls(mo.bot.edge)}" ${go(where === 'pc' ? 'cc' : 'lit')} role="link" tabindex="0" data-mnline="1"><i class="mn-dot" aria-hidden="true"></i><b>${esc(txt)}</b><span>${esc(arm)}</span></a>`;
+  }
+
   const CSS = `
 .mn-card{position:relative;border-radius:20px;padding:12px 12px 10px;margin:0 0 12px;background:linear-gradient(180deg,rgba(22,26,38,.88),rgba(11,13,21,.84));border:1px solid rgba(160,170,220,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.07)}
 .mn-card::before{content:"";position:absolute;left:14px;right:14px;top:0;height:3px;border-radius:0 0 3px 3px;background:var(--mn,#2ee59d);box-shadow:0 0 14px var(--mn,#2ee59d)}
@@ -148,12 +162,18 @@
 .mn-st{grid-area:st;justify-self:end;font-size:12px}.mn-st em{font-style:normal;font-weight:700;color:var(--e)}
 .mn-nx{grid-area:nx;font-size:12.5px;line-height:1.3;color:var(--ink-2,#a9b1c3);overflow-wrap:anywhere}.mn-nx em{font-style:normal;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted,#8b94a8)}
 .mn-f{margin:4px 4px 0;font-size:11px;line-height:1.35;color:var(--muted,#8b94a8)}
+.mn-line{display:flex;align-items:center;gap:10px;min-height:44px;padding:6px 14px;box-sizing:border-box;border-radius:12px;text-decoration:none;cursor:pointer;color:var(--ink,#eef1f8);font:600 13px/1.25 var(--sans,system-ui);background:rgba(14,17,27,.9);border:1px solid rgba(160,170,220,.16);-webkit-tap-highlight-color:transparent}
+.mn-line b{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mn-line span{margin-left:auto;font-weight:600;font-size:12.5px;color:var(--ink-2,#a9b1c3);white-space:nowrap}
+.mn-dot{flex:0 0 auto;width:10px;height:10px;border-radius:50%;background:var(--e,#2ee59d);box-shadow:0 0 10px var(--e,#2ee59d)}
+.mn-line.g{--e:var(--good,#2ee59d)}.mn-line.a{--e:var(--warn,#f7b955)}.mn-line.r{--e:var(--bad,#ff5a7a)}.mn-line.r b{color:var(--bad,#ff5a7a)}
+@media (max-width:560px){.mn-line span{display:none}}
 @media (min-width:900px){.mn-dd em{flex:0 0 auto}.mn-row{grid-template-columns:minmax(110px,.6fr) minmax(0,1.5fr) auto minmax(0,.9fr);grid-template-areas:"n dd r st" "nx nx nx nx"}}
 :root[data-theme="light"] .mn-card{background:linear-gradient(180deg,#fff,#f6f8fc);border-color:rgba(20,30,60,.1)}
 :root[data-theme="light"] .mn-row{background:rgba(20,30,60,.03);border-color:rgba(20,30,60,.08)}
+:root[data-theme="light"] .mn-line{background:#fff;border-color:rgba(20,30,60,.1);color:#1a2233}
 :root[data-theme="light"] .mn-h h3,:root[data-theme="light"] .mn-dd strong{color:#1a2233}
 `;
   function css() { if (typeof document === 'undefined' || document.getElementById('mn-css')) return; const s = document.createElement('style'); s.id = 'mn-css'; s.textContent = CSS; document.head.appendChild(s); }
 
-  window.MoneyNow = { version: V, model, html, css, NP };
+  window.MoneyNow = { version: V, model, html, line, css, NP };
 })();
