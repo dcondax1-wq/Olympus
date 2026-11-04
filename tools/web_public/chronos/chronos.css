@@ -50,7 +50,7 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 55%, #1b124
 .pills button[aria-pressed="true"] { border-color: rgba(var(--c-acc-rgb), .75); box-shadow: 0 0 14px rgba(var(--c-acc-rgb), .25) inset; color: var(--c-acc); }
 
 .dock { position: fixed; z-index: 5; left: calc(var(--sl) + 16px); right: calc(var(--sr) + var(--oly-orb-clear, 96px)); bottom: calc(var(--sb) + 12px);
-  display: flex; flex-direction: column; gap: 6px; padding: 8px 12px 10px; border-radius: var(--oly-r-card, 16px); border: 1px solid var(--oly-line); background: rgba(10, 7, 20, .82);
+  display: flex; flex-direction: column; gap: 6px; padding: 8px 8px 10px; border-radius: var(--oly-r-card, 16px); border: 1px solid var(--oly-line); background: rgba(10, 7, 20, .82);
   -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
 .dock .row { display: flex; align-items: center; gap: 8px; }
 .dock .trades { flex-wrap: wrap; gap: 6px; }
@@ -58,9 +58,9 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 55%, #1b124
 .dock .trades button { flex: 1 1 0; min-width: 0; min-height: 44px; padding: 4px 6px; border-radius: 10px; border: 1px solid var(--oly-line); background: rgba(255, 255, 255, .04); font: 700 11.5px/1.1 var(--oly-ui); }
 .dock .trades button[aria-pressed="true"] { border-color: rgba(var(--c-acc-rgb), .8); color: var(--c-acc); }
 .dock input[type=range] { flex: 1; min-width: 0; height: 44px; accent-color: var(--c-acc); background: transparent; touch-action: none; }
-.ctl { gap: 8px; }
-.play { flex: none; min-width: 74px; min-height: 44px; padding: 4px 12px; border-radius: 12px; border: 1px solid rgba(var(--c-acc-rgb), .8); background: rgba(var(--c-acc-rgb), .16); font: 800 13px/1 var(--oly-display, sans-serif); letter-spacing: .08em; text-transform: uppercase; color: var(--c-acc); }
-.speeds { display: flex; flex: 1 1 0; min-width: 0; gap: 6px; }
+.ctl { gap: 4px; }
+.play { flex: none; min-width: 52px; min-height: 44px; padding: 4px 4px; border-radius: 12px; border: 1px solid rgba(var(--c-acc-rgb), .8); background: rgba(var(--c-acc-rgb), .16); font: 800 12px/1 var(--oly-display, sans-serif); letter-spacing: .03em; text-transform: uppercase; color: var(--c-acc); }
+.speeds { display: flex; flex: 1 1 0; min-width: 0; gap: 4px; }
 .speeds button { flex: 1 1 0; min-width: 44px; min-height: 44px; padding: 4px 2px; border-radius: 10px; border: 1px solid var(--oly-line); background: rgba(255, 255, 255, .04); font: 700 12px/1 var(--oly-ui); }
 .speeds button[aria-pressed="true"] { border-color: rgba(var(--c-acc-rgb), .8); color: var(--c-acc); }
 .dock .help { margin: 0; font-size: 11px; color: var(--oly-dim); }
