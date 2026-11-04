@@ -18,3 +18,12 @@ packs its state. Do it **after 4:05 PM ET** on a weekday (or any time on a weeke
    chart with **LE_BarFeed**, save the workspace. Then **LE START > Start trading**.
 
 Script: `scripts/move_bot.ps1` (`-Pack` / `-NewPC`, `-DryRun` shows the plan; refuses to pack weekdays 01:15-16:05 ET).
+
+## Surface is cooking: fresh start (no old PC state needed)
+1. Switch the Surface **off** and wait 3 minutes (two PCs on the same accounts would double every order; the script checks and refuses).
+2. On the main PC install **NinjaTrader 8**, log in, connect **MFFU**, tick **AT Interface**. Open PowerShell and paste:
+   `powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://demetrades2000-coder.github.io/nq-dashboard/pc/FRESH_START.ps1 | iex"`
+   (or double-click **FRESH_START.bat** from the OneDrive PC_KIT folder). It shows its plan and asks Y first.
+3. It installs Git and Python, gets the bot, shows your eval balance and floor from the published board (compare with MFFU, press Y), copies the NinjaTrader add-ons and starts ONE_TIME_SETUP (asks your eval account name; Enter = Sim101 practice).
+4. In NinjaTrader: Control Center > New > NinjaScript Editor > press **F5** (no chart needed). Then **LE START > Start trading**.
+5. Live trading is never turned on by this: you arm it yourself when you are at the PC.

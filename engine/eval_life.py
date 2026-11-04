@@ -22,6 +22,7 @@ What the bot does (engine/sizing.eval_lock + lit_qty, engine/live.py LiveBot._ev
   python -X utf8 -m engine.funded_life                     the sim funded payout tracker (engine/funded_life.py, read-only)
   python -X utf8 -m engine.eval_life --payout 2026-12-01=2000 [--id mffu50k_funded]   record a funded payout
   python -X utf8 -m engine.eval_life --funded-status [--id mffu50k_funded]            payout check of the funded account
+  python -m engine.eval_life --anchor-from-site     (fresh start on a new PC: from the published board, asks Y/N)
   python -m engine.eval_life --anchor --balance 49710.80 --floor 48168.20 --as-of 2026-10-23 [--account "<Name>"]
         eval ANCHOR (2026-10-24): the MFFU dashboard's balance + minimum-balance floor after a session's close, written to
         data/eval_anchor.json (gitignored). The bot then books balance = that balance + its routed P&L after as_of and the
@@ -482,6 +483,80 @@ def set_anchor(balance, floor, as_of, account: str | None = None, path: str | No
     return 0
 
 
+SITE_HOME = "https://demetrades2000-coder.github.io/nq-dashboard/home.json"
+
+
+def anchors_from_board(home: dict) -> list:
+    """Fresh start with no state pack (2026-11-04): the anchors the published board implies, as a list of
+    {"label", "account" (None = the main LIT account), "broker", "balance", "floor", "as_of", "room", "mll", "note"}.
+    The board's balance includes today's P&L, so it is taken back to the close of the previous weekday (the bot adds its
+    own P&L after as_of). Pure: no network, no files."""
+    import datetime as dt
+    b = (home or {}).get("board") if isinstance((home or {}).get("board"), dict) else {}
+    try:
+        d0 = dt.date.fromisoformat(str(b.get("today") or "")[:10])
+    except ValueError:
+        return []
+    out = []
+    for key, label, main in (("lit", "Zlarior (LIT)", True), ("atlas", "ATLAS", False)):
+        r = b.get(key)
+        if not isinstance(r, dict) or r.get("balance") is None or r.get("floor") is None:
+            continue
+        pnl = float(r.get("today_pnl") or 0.0)
+        d = d0 - dt.timedelta(days=1)
+        while d.weekday() >= 5:
+            d -= dt.timedelta(days=1)
+        bal, fl = round(float(r["balance"]) - pnl, 2), round(float(r["floor"]), 2)
+        if fl > bal:
+            fl = bal
+        out.append({"label": label, "account": None if main else (r.get("broker") or None), "broker": r.get("broker"),
+                    "balance": bal, "floor": fl, "as_of": d.isoformat(), "room": round(bal - fl, 2), "mll": r.get("mll"),
+                    "note": f"board balance ${float(r['balance']):,.2f}" + (f" less today's ${pnl:,.2f}" if pnl else "")})
+    return out
+
+
+def anchor_from_site(site_file: str | None = None, yes: bool = False, path: str | None = None) -> int:
+    """`--anchor-from-site`: read the published board (home.json), show the balance + floor it will set for the 50K and the
+    25K, ask Y/N (compare with the MFFU dashboard), then store them through save_anchor. Nothing is set without a Y."""
+    try:
+        if site_file:
+            with open(site_file, encoding="utf-8") as fh:
+                home = json.load(fh)
+        else:
+            import urllib.request
+            with urllib.request.urlopen(urllib.request.Request(SITE_HOME, headers={"User-Agent": "le-anchor"}), timeout=30) as r:
+                home = json.loads(r.read().decode("utf-8"))
+    except Exception as e:
+        print(f"could not read the published board ({e.__class__.__name__}). Set it by hand from the MFFU dashboard: "
+              "python -m engine.eval_life --anchor --balance <balance> --floor <floor> --as-of <yyyy-mm-dd>")
+        return 1
+    rows = anchors_from_board(home)
+    if not rows:
+        print("the published board has no account numbers yet: set it by hand (python -m engine.eval_life --anchor ...)")
+        return 1
+    print("From the published board (compare with your MFFU dashboard):")
+    for r in rows:
+        print(f"  {r['label']:<14} {r['broker'] or '':<22} balance ${r['balance']:>10,.2f}   floor ${r['floor']:>10,.2f}   "
+              f"room ${r['room']:>8,.2f}   as of {r['as_of']} ({r['note']})")
+    if not yes:
+        try:
+            ans = input("Same as MFFU? Set these numbers (Y/N): ").strip().lower()
+        except EOFError:
+            ans = ""
+        if ans not in ("y", "yes"):
+            print("Nothing set. Type the MFFU numbers yourself: python -m engine.eval_life --anchor --balance <b> --floor <f> --as-of <yyyy-mm-dd>")
+            return 1
+    rc = 0
+    for r in rows:
+        try:
+            save_anchor({"as_of": r["as_of"], "balance": r["balance"], "floor": r["floor"]}, r["account"], path)
+            print(f"Set {r['label']}: balance ${r['balance']:,.2f}, floor ${r['floor']:,.2f}, as of {r['as_of']}")
+        except ValueError as e:
+            print(f"not saved for {r['label']}: {e}")
+            rc = 1
+    return rc
+
+
 def main(argv=None) -> int:
     import argparse
     ap = argparse.ArgumentParser(prog="python -m engine.eval_life", description="eval pass / fail, funded switch, payouts")
@@ -499,7 +574,12 @@ def main(argv=None) -> int:
     ap.add_argument("--floor", type=float, help="--anchor: MFFU minimum-balance floor / max-loss level ($)")
     ap.add_argument("--as-of", dest="as_of", help="--anchor: the session those numbers are after (yyyy-mm-dd)")
     ap.add_argument("--anchor-file", default=None, help=argparse.SUPPRESS)
+    ap.add_argument("--anchor-from-site", action="store_true", help="fresh start: set the anchors from the published board, after a Y/N")
+    ap.add_argument("--site-file", default=None, help=argparse.SUPPRESS)
+    ap.add_argument("--yes", action="store_true", help=argparse.SUPPRESS)
     a = ap.parse_args(argv)
+    if a.anchor_from_site:
+        return anchor_from_site(a.site_file, a.yes, a.anchor_file)
     if a.anchor:
         return set_anchor(a.balance, a.floor, a.as_of, a.account, a.anchor_file)
     if a.to_funded:

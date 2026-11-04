@@ -39,6 +39,14 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
 - **Moving the bot to another PC:** `MOVE_BOT.bat` / `scripts/move_bot.ps1` (`docs/MOVE_TO_MAIN_PC.md`): 1 = pack + retire the
   old PC (stop, auto-resume off, logon tasks removed, untracked `data/` + `.env.local.ps1` zipped to OneDrive\BOT_MOVE),
   2 = set up the new PC (winget Git/Python, clone, restore, ONE_TIME_SETUP). Never two PCs on the same accounts.
+  **Fresh start, no old PC (2026-11-04, Surface overheating):** `-Fresh` / menu 3 / `FRESH_START.bat` / the one line
+  `powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://demetrades2000-coder.github.io/nq-dashboard/pc/FRESH_START.ps1 | iex"`
+  (site `pc/`: `tools/web_public/pc/FRESH_START.ps1` + a build copy of `scripts/move_bot.ps1`; plain files, no worker bump).
+  Refuses (exit 1) when a DIFFERENT host's heartbeat (published `home.json` live.pc.t/host) is under 6 min old, or the site
+  copy is under 20 min old and showed it alive (`-Force` overrides; unreadable = asks for SHUT DOWN). Then Git/Python, clone,
+  pip, `python -m engine.eval_life --anchor-from-site` (board.lit -> main anchor, board.atlas -> its account; balance less
+  today's P&L, as_of = previous weekday; shows numbers, asks Y/N), `scripts/no_chart_mode.ps1` (LE_Feed), `ONE_TIME_SETUP.bat`
+  (Sim101 default, never arms live). Tests: `tests/test_fresh_start.py` (`LE_HEARTBEAT_FILE`, `LE_FAKE_HOST`), `test_win_scripts`.
 - **Merges:** each merge restarts the PC's bot server once (when flat) and runs ~5 min of self-tests on a 3.6 GB PC: batch
   changes into one merge when possible.
 - **Verify live** after a publish: the file on `https://demetrades2000-coder.github.io/nq-dashboard/...` (e.g. the worker's
