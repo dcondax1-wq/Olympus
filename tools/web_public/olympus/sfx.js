@@ -269,6 +269,7 @@
     function haptic(name) {
       try {
         if (muted || reduced() || !HAPTIC[name]) return false;
+        if (ls() && ls().getItem('olympus.haptics') === 'off') return false;      // Settings: haptics switched off
         var n = env.navigator;
         if (!n || typeof n.vibrate !== 'function') return false; // iOS Safari: absent -> no-op
         return !!n.vibrate(HAPTIC[name]);
