@@ -223,3 +223,13 @@ header.top .iconbtn::after { content: ""; position: absolute; inset: -4px; borde
 .zm-r.hit { border-color: rgba(46, 229, 157, .4); background: rgba(46, 229, 157, .06); }
 .zm-n { font: 700 13px var(--sans); color: var(--ink); padding-top: 3px; } .zm-g { display: flex; flex-direction: column; min-width: 0; }
 .zm-g b { font: 760 17px/1.15 var(--sans); font-variant-numeric: tabular-nums; color: var(--ink); } .zm-g small { font: 500 11px/1.3 var(--sans); color: var(--muted); }
+
+/* ---------- bug-hunt fixes (iPhone 13 / SE): "Drawdown left $1,54…" and "in 28 …" were cut off by an ellipsis: the account card's
+   sub line and its status line wrap now (a number is never clipped); the hero's hours never split; inline text links get a 44 px hit area ---------- */
+.su-acct .su-sub { white-space: normal; overflow: visible; align-items: flex-start; flex-wrap: wrap; row-gap: 0; }
+.su-acct .su-sub .su-tx { white-space: normal; overflow: visible; text-overflow: clip; }
+.su-acct .su-room { margin-top: 5px; }
+.su-acct .su-line { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.4; }
+.zh-next small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#page :is(p, li, .note, .small) a:not(.chipbtn):not(.pl-btn) { position: relative; }
+#page :is(p, li, .note, .small) a:not(.chipbtn):not(.pl-btn)::after { content: ""; position: absolute; left: -4px; right: -4px; top: -14px; bottom: -14px; }
