@@ -215,6 +215,66 @@ function ruleEyes(B, now) {
   return out;
 }
 
+// ------------------------------------------------------------------------------------------------ the fix buttons
+// A light's one-line step is e.fix. Where there is something to run on the PC (the double-click files in the bot folder) or
+// something to ask Claude, e.cmd = { kind: 'pc' | 'chat', text } and the page offers a Copy button. Nothing is ever run from here.
+export const PC_FILES = { start: 'START_BOT.bat', health: 'HEALTH_CHECK.bat', update: 'UPDATE.bat', stop: 'STOP_BOT.bat', clean: 'CLEAN_PC.bat' };
+const pcCmd = (text) => ({ kind: 'pc', text });
+const chatCmd = (text) => ({ kind: 'chat', text });
+export function cmdFor(e) {
+  const id = e.id;
+  if (id === 'pc') return pcCmd(PC_FILES.start);
+  if (id === 'bot_lit' || id === 'bot_atlas') {
+    if (e.value === 'stopped' || e.value === 'not running') return pcCmd(PC_FILES.start);
+    if (e.value === 'blocked' || e.value === 'unsure') return pcCmd(PC_FILES.health);
+    if (e.value === 'eval ended') return chatCmd(`${e.label}: the eval ended. Help me set up the next account.`);
+    return null;                                    // running, not armed: arming is the owner's own decision, never a command here
+  }
+  if (id === 'feed' || id === 'nt') return pcCmd(PC_FILES.health);
+  if (id === 'cloud' || id === 'publish' || id === 'cronos') return chatCmd(`Argus says ${e.label} is ${e.value}. Check why on GitHub Actions and fix it.`);
+  if (id.startsWith('app_')) return chatCmd(`Argus says ${e.label} is ${e.value}. Refresh it.`);
+  if (id.startsWith('room_')) return chatCmd(`${e.label}: ${e.value}. What should I do?`);
+  return null;                                      // the inactivity clock: a manual 1 MNQ trade, nothing to copy
+}
+
+// ------------------------------------------------------------------------------------------------ since yesterday (14 days)
+export const HIST_DAYS = 14;
+const dayOf = (t) => new Intl.DateTimeFormat('en-CA', { timeZone: ET }).format(new Date(t * 1000));
+const dayShift = (d, n) => new Date(Date.parse(d) + n * 86400000).toISOString().slice(0, 10);
+const WORSE = { ok: 0, warn: 1, bad: 2 };
+/** hist = { days: { 'YYYY-MM-DD': 'ok' | 'warn' | 'bad' }, open: { lightId: { label, since } }, reds: [{ id, label, from, to }] }; returns a new hist.
+ *  Only a live reading counts (verdict ok / warn / bad); "no data" and offline copies never write. */
+export function histUpdate(hist, R, now) {
+  const h = { days: { ...obj(obj(hist).days) }, open: { ...obj(obj(hist).open) }, reds: arr(obj(hist).reds).slice() };
+  const lv = R && R.verdict && R.verdict.level;
+  if (!R || !R.hasData || !(lv in WORSE)) return h;
+  const d = dayOf(now);
+  if (!(d in h.days) || WORSE[lv] > WORSE[h.days[d]]) h.days[d] = lv;
+  const red = new Set(R.eyes.filter((e) => e.level === 'bad').map((e) => e.id));
+  for (const e of R.eyes) if (red.has(e.id) && !h.open[e.id]) h.open[e.id] = { label: e.label, since: Math.floor(now) };
+  for (const id of Object.keys(h.open)) if (!red.has(id)) { h.reds.push({ id, label: h.open[id].label, from: h.open[id].since, to: Math.floor(now) }); delete h.open[id]; }
+  const keepFrom = dayShift(d, -(HIST_DAYS - 1));
+  for (const k of Object.keys(h.days)) if (k < keepFrom) delete h.days[k];
+  h.reds = h.reds.filter((r) => dayOf(r.to) >= keepFrom).slice(-40);
+  return h;
+}
+/** the strip (oldest to newest, 14 squares, 'idle' = a day I did not see), the streak and the red incidents, in plain words */
+export function histSummary(hist, now) {
+  const h = obj(hist), days = obj(h.days), today = dayOf(now), strip = [];
+  for (let i = HIST_DAYS - 1; i >= 0; i--) { const d = dayShift(today, -i); strip.push({ day: d, level: days[d] || 'idle' }); }
+  let streak = 0;
+  for (let i = strip.length - 1; i >= 0; i--) { const s = strip[i]; if (s.level === 'idle') { if (s.day === today) continue; continue; } if (s.level === 'ok') streak++; else break; }
+  const seen = strip.filter((s) => s.level !== 'idle').length;
+  const line = !seen ? 'No history yet. I start counting the first time I see the dashboard.'
+    : streak === 0 ? (days[today] && days[today] !== 'ok' ? 'Not clear today.' : 'No clear day in a row yet.')
+      : `${streak} clear day${streak === 1 ? '' : 's'} in a row (days I saw).`;
+  const reds = [];
+  for (const r of arr(h.reds)) reds.push({ id: r.id, label: r.label, from: r.from, to: r.to, secs: Math.max(0, r.to - r.from), open: false });
+  for (const [id, o] of Object.entries(obj(h.open))) reds.push({ id, label: o.label, from: o.since, to: null, secs: Math.max(0, Math.floor(now) - o.since), open: true });
+  reds.sort((a, b) => b.from - a.from);
+  return { strip, streak, seen, line, reds };
+}
+
 // ------------------------------------------------------------------------------------------------ everything
 export function analyze(inp) {
   const now = num(inp && inp.now) || Date.now() / 1000;
@@ -233,6 +293,7 @@ export function analyze(inp) {
     eyes.push(botEye('bot_lit', 'Zlarior 50K', B0.lit, pc.level, B, now, open, true), botEye('bot_atlas', 'ATLAS 25K', B0.atlas, pc.level, B, now, open, false), pc,
       ...feedEyes(B0, now, open), ...pipeEyes(home, inp && inp.cronos, now, inp && inp.cards), ...ruleEyes(B0, now), ...appEyes(inp && inp.cards, now));
   }
+  for (const e of eyes) { e.cmd = e.level === 'warn' || e.level === 'bad' ? cmdFor(e) : null; e.step = e.fix || e.detail; }
   const rank = { bad: 2, warn: 1, ok: 0, idle: 0 };
   const fix = eyes.filter((e) => e.level === 'warn' || e.level === 'bad').sort((a, b) => rank[b.level] - rank[a.level] || b.w - a.w || a.label.localeCompare(b.label));
   const counts = { ok: 0, warn: 0, bad: 0, idle: 0 };
@@ -247,9 +308,12 @@ export function analyze(inp) {
 
 /** the Jarvis card for what the page sees now (the page posts it to Jarvis; the static jarvis.json is the default) */
 export function cardOf(R, now) {
-  const v = R.verdict, c = R.counts;
-  return { v: 1, name: 'Argus', status: { level: v.level === 'idle' ? 'off' : v.level, label: v.word },
+  const v = R.verdict, c = R.counts, top = R.fix[0];
+  // red or amber: the card leads with the problem (status bad / warn, the first light in the label) so Jarvis shows it first;
+  // stale_after 1800 (the Jarvis default) so a red card that nobody refreshes greys out instead of standing there for days
+  const label = v.level === 'bad' || v.level === 'warn' ? `${c.bad || c.warn} ${c.bad ? 'red' : 'amber'}: ${top.label}`.slice(0, 48) : v.word;
+  return { v: 1, name: 'Argus', status: { level: v.level === 'idle' ? 'off' : v.level, label },
     kpis: [{ label: 'Red', value: String(c.bad) }, { label: 'Amber', value: String(c.warn) }, { label: 'Green', value: String(c.ok) }],
-    lines: [R.fix[0] ? `${R.fix[0].label}: ${R.fix[0].fix || R.fix[0].detail}`.slice(0, 118) : 'Every light that matters is green.'],
+    lines: R.fix.slice(0, 3).map((e) => `${e.label}: ${e.step || e.detail}`.slice(0, 118)).concat(R.fix.length ? [] : ['Every light that matters is green.']),
     t: Math.floor(now), open: '#fix', theme: '#050912', stale_after: 1800 };
 }

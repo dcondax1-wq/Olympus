@@ -5,7 +5,7 @@ import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
 import { metal, glass, neon, starfield } from '../olympus/materials.js';
 import * as CORE from './arguscore.js';
-import { APPS, analyze, cardOf } from './arguscore.js';
+import { APPS, analyze, cardOf, histUpdate, histSummary } from './arguscore.js';
 
 const O = window.OLYMPUS || null;
 const Q = new URLSearchParams(location.search);
@@ -14,7 +14,7 @@ const KEY = 'argus.v1';
 const N_EYES = 100;
 const COLOR = { ok: '#46d79a', warn: '#f5b84a', bad: '#ff4d5e', idle: '#6b7690' };
 const GROUPS = { bots: 'THE BOTS', pc: 'THE PC', feed: 'PRICES AND NINJATRADER', pipes: 'THE CLOUD', rules: 'MFFU RULES AND MONEY', apps: 'OLYMPUS APPS' };
-const S = { R: null, tab: 'fix', sel: null, offline: false, asOf: null, errors: [], room: null, loaded: false, open: new Set() };
+const S = { fixOpen: new Set(), hist: null, copied: null, R: null, tab: 'fix', sel: null, offline: false, asOf: null, errors: [], room: null, loaded: false, open: new Set() };
 
 const T0 = Date.now(), BASE = (() => { const q = Q.get('now'); const d = q ? new Date(q) : null; return d && !Number.isNaN(+d) ? +d : T0; })();
 const nowS = () => (BASE + (Date.now() - T0)) / 1000;
@@ -57,13 +57,39 @@ async function fetchAll() {
 }
 
 // ------------------------------------------------------------------------------------------------ the screen
+function fixit(e) {
+  if (e.level !== 'warn' && e.level !== 'bad') return '';
+  const on = S.fixOpen.has(e.id), c = e.cmd;
+  const copy = c ? `<code>${esc(c.text)}</code><button type="button" class="copy" data-copy="${esc(c.text)}">${c.kind === 'pc' ? 'Copy file name' : 'Copy message for Claude'}</button>` : '';
+  const where = c ? (c.kind === 'pc' ? '<span class="hint">On the PC, double-click this file in the bot folder. Argus never runs it.</span>' : '<span class="hint">Paste this into your Claude chat.</span>') : '';
+  return `<div class="fixit"><button type="button" class="fixbtn" data-fixit="${esc(e.id)}" aria-expanded="${on}">Fix it</button>`
+    + `<div class="fixpanel"${on ? '' : ' hidden'}><b>${esc(e.step)}</b>${where}${copy}</div></div>`;
+}
 function row(e, i) {
-  return `<button type="button" class="fixrow ${e.level}${S.sel === e.id ? ' sel' : ''}" data-light="${esc(e.id)}"><span class="num">${i + 1}</span><span class="t"><b>${esc(e.label)}: ${esc(e.value)}</b>`
-    + `<span class="w">${esc(e.fix || e.detail)}</span><span class="d">${esc(e.detail)}</span></span></button>`;
+  return `<div class="fixwrap"><button type="button" class="fixrow ${e.level}${S.sel === e.id ? ' sel' : ''}" data-light="${esc(e.id)}"><span class="num">${i + 1}</span><span class="t"><b>${esc(e.label)}: ${esc(e.value)}</b>`
+    + `<span class="w">${esc(e.fix || e.detail)}</span><span class="d">${esc(e.detail)}</span></span></button>${fixit(e)}</div>`;
 }
 function lrow(e) {
   return `<button type="button" class="lrow ${e.level}${S.sel === e.id ? ' sel' : ''}${S.open.has(e.id) ? ' open' : ''}" data-light="${esc(e.id)}" aria-expanded="${S.open.has(e.id)}"><i class="dot"></i>`
-    + `<span class="t"><b>${esc(e.label)}</b><span class="more">${esc(e.detail)}${e.fix ? ' <br>Do this: ' + esc(e.fix) : ''}</span></span><span class="v">${esc(e.value)}</span></button>`;
+    + `<span class="t"><b>${esc(e.label)}</b><span class="more">${esc(e.detail)}${e.fix ? ' <br>Do this: ' + esc(e.fix) : ''}</span></span><span class="v">${esc(e.value)}</span></button>${fixit(e)}`;
+}
+async function copyText(t) {
+  try { await navigator.clipboard.writeText(t); S.copied = t; return true; } catch (_) { /* fall through */ }
+  try { const a = document.createElement('textarea'); a.value = t; a.style.position = 'fixed'; a.style.opacity = '0'; document.body.appendChild(a); a.select(); const ok = document.execCommand('copy'); a.remove(); if (ok) S.copied = t; return ok; } catch (_) { return false; }
+}
+const HK = 'argus.hist.v1';
+const EMPTY = () => ({ days: {}, open: {}, reds: [] });
+function loadHist() { try { return JSON.parse(localStorage.getItem(HK) || 'null') || EMPTY(); } catch (_) { return EMPTY(); } }
+function saveHist() { try { localStorage.setItem(HK, JSON.stringify(S.hist)); } catch (_) { /* private mode */ } }
+const dur = (s) => (s < 90 ? `${s} sec` : s < 5400 ? `${Math.round(s / 60)} min` : s < 172800 ? `${(s / 3600).toFixed(1).replace(/\.0$/, '')} hours` : `${Math.round(s / 86400)} days`);
+function paintHist() {
+  const H = histSummary(S.hist || EMPTY(), nowS());
+  const word = { ok: 'clear', warn: 'amber', bad: 'red', idle: 'not seen' };
+  const reds = H.reds.slice(0, 8).map((r) => `<div class="lrow bad"><i class="dot"></i><span class="t"><b>${esc(r.label)}</b><span class="d">${r.open ? 'red now, since ' + hm(r.from) : 'went red ' + hm(r.from)}</span></span><span class="v">${r.open ? 'still red · ' : ''}${dur(r.secs)}</span></div>`).join('');
+  $('p-hist').innerHTML = `<p class="streak" id="streak">${esc(H.line)}</p>`
+    + `<div class="strip" id="strip" role="img" aria-label="Last 14 days">${H.strip.map((s) => `<i class="sq ${s.level}" title="${esc(s.day + ': ' + word[s.level])}"></i>`).join('')}</div>`
+    + '<p class="hint">Last 14 days, oldest on the left. Grey = a day I did not look.</p><p class="grp">WHAT WENT RED AND FOR HOW LONG</p>'
+    + (reds || '<p class="empty">Nothing went red in the days I saw.</p>') + '<p class="hint">Times are from when this page was open, so a short red can be missed.</p>';
 }
 function paint() {
   const R = S.R; if (!R) return;
@@ -78,12 +104,13 @@ function paint() {
   $('p-fix').innerHTML = R.fix.length ? R.fix.map(row).join('') : `<p class="empty">${R.hasData ? 'Nothing to fix. Every light that matters is green.' : 'Waiting for data.'}</p>`;
   const groups = {}; for (const e of R.eyes) (groups[e.group] = groups[e.group] || []).push(e);
   $('p-all').innerHTML = Object.keys(GROUPS).filter((g) => groups[g]).map((g) => `<p class="grp">${GROUPS[g]}</p>${groups[g].map(lrow).join('')}`).join('');
+  paintHist();
   document.documentElement.dataset.argus = v.level;
   if (S.room) S.room.set(R);
 }
 function setTab(t) {
-  S.tab = t === 'all' ? 'all' : 'fix';
-  $('p-fix').hidden = S.tab !== 'fix'; $('p-all').hidden = S.tab !== 'all';
+  S.tab = t === 'all' ? 'all' : t === 'hist' ? 'hist' : 'fix';
+  $('p-fix').hidden = S.tab !== 'fix'; $('p-all').hidden = S.tab !== 'all'; $('p-hist').hidden = S.tab !== 'hist';
   document.querySelectorAll('#tabs button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tab === S.tab)));
 }
 function select(id, fromEye) {
@@ -96,8 +123,16 @@ function select(id, fromEye) {
   if (S.room) S.room.focus(S.sel);
 }
 function bind() {
-  document.querySelectorAll('#tabs button').forEach((b) => b.addEventListener('click', () => { setTab(b.dataset.tab); location.hash = b.dataset.tab === 'all' ? '#all' : '#fix'; }));
+  document.querySelectorAll('#tabs button').forEach((b) => b.addEventListener('click', () => { setTab(b.dataset.tab); location.hash = '#' + b.dataset.tab; }));
   $('sheet').addEventListener('click', (ev) => {
+    const cp = ev.target.closest('[data-copy]');
+    if (cp) { copyText(cp.dataset.copy).then((ok) => { cp.textContent = ok ? 'Copied' : 'Press and hold to copy'; }); return; }
+    const fb = ev.target.closest('[data-fixit]');
+    if (fb) {
+      const id = fb.dataset.fixit; if (S.fixOpen.has(id)) S.fixOpen.delete(id); else S.fixOpen.add(id);
+      fb.setAttribute('aria-expanded', String(S.fixOpen.has(id))); const pn = fb.nextElementSibling; if (pn) pn.hidden = !S.fixOpen.has(id);
+      return;
+    }
     const b = ev.target.closest('[data-light]'); if (!b) return;
     const id = b.dataset.light;
     if (b.classList.contains('lrow')) { if (S.open.has(id)) S.open.delete(id); else S.open.add(id); }
@@ -105,7 +140,7 @@ function bind() {
   });
   addEventListener('hashchange', route);
 }
-function route() { setTab({ all: 'all', lights: 'all', fix: 'fix' }[location.hash.slice(1)] || 'fix'); }
+function route() { setTab({ all: 'all', lights: 'all', hist: 'hist', history: 'hist', fix: 'fix' }[location.hash.slice(1)] || 'fix'); }
 
 // ------------------------------------------------------------------------------------------------ the 3D sphere of eyes
 const R_SPHERE = 2.0;
@@ -263,17 +298,24 @@ async function refresh() {
   S.offline = !!d.offline;
   S.asOf = d.offline ? d.saved : null;
   S.R = analyze({ now: d.offline && d.saved ? d.saved : nowS(), home: d.home, cronos: d.cronos, cards: d.cards });
+  if (!S.hist) S.hist = loadHist();
+  if (!d.offline && S.R.hasData) { S.hist = histUpdate(S.hist, S.R, nowS()); saveHist(); }
   paint();
-  if (window.parent !== window) {
-    try { window.parent.postMessage({ jarvis: 1, href: location.href, card: cardOf(S.R, nowS()) }, 'https://demetrades2000-coder.github.io'); } catch (_) { /* no parent */ }
-  }
+  postCard();
+}
+/** the live card to Jarvis (like Ares): fresh t every refresh; red or amber leads with the problem (cardOf) */
+function postCard() {
+  if (!S.R || window.parent === window) return;
+  const card = cardOf(S.R, nowS());
+  S.card = card;
+  try { window.parent.postMessage({ jarvis: 1, href: location.href, card }, 'https://demetrades2000-coder.github.io'); } catch (_) { /* no parent */ }
 }
 
 async function main() {
   addEventListener('error', (e) => S.errors.push(String(e.message || e)));
   bind(); route();
   try { S.room = new Room($('eyes')); tick(performance.now()); } catch (e) { S.room = null; $('nogl').hidden = false; O?.ready(); }
-  window.__argus = { ready: true, CORE, get R() { return S.R; }, get tab() { return S.tab; }, get sel() { return S.sel; }, get offline() { return S.offline; }, errors: S.errors,
+  window.__argus = { ready: true, CORE, get R() { return S.R; }, get tab() { return S.tab; }, get hist() { return S.hist; }, get copied() { return S.copied; }, get card() { return S.card || (S.R ? cardOf(S.R, nowS()) : null); }, get sel() { return S.sel; }, get offline() { return S.offline; }, errors: S.errors,
     get ready3d() { return !!S.room; }, get fx() { return S.room ? S.room.fx : null; }, get passes() { return S.room ? S.room.rc.passes() : []; }, get yaw() { return S.room ? S.room.yaw : 0; },
     get fps() { return S.room ? S.room.fps() : 0; }, get levels() { return S.room ? S.room.levels.slice() : []; }, get eyes() { return N_EYES; },
     get openness() { return S.room ? Array.from(S.room.sclera.instanceMatrix.array).filter((_, i) => i % 16 === 5) : []; },

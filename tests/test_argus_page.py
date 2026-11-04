@@ -328,6 +328,57 @@ def part_real(p):
           r["v"]["word"] == "Look at this" and r["fix"][:2] == ["room_lit", "nt"], r["fix"])
 
 
+# ------------------------------------------------------------------------------------------------------------ actions
+def part_actions(p):
+    def an(h):
+        return p.evaluate("""([h, c, k, now]) => { const R = window.__argus.CORE.analyze({ now, home: h, cronos: c, cards: k }); return { v: R.verdict, fix: R.fix.map(e => e.id),
+          eyes: Object.fromEntries(R.eyes.map(e => [e.id, { level: e.level, cmd: e.cmd, step: e.step }])), card: window.__argus.CORE.cardOf(R, now) }; }""", [h, cronos(), cards(), NOW])
+    h = home()
+    h["board"]["running"] = False
+    h["board"]["health"]["items"][0].update(ok=False, value="9 min")
+    h["board"]["health"]["items"][1].update(ok=False, value="not connected")
+    h["live"].update(last_run=NOW - 3 * 3600)
+    h["board"]["lit"].update(quiet_days=4, room=300)
+    h["live"]["pc"]["health"]["account"]["armed"] = False
+    r = an(h)
+    e = r["eyes"]
+    check("fix. the PC and bots stopped: the exact file to double-click is START_BOT.bat (a PC command, copyable)", e["pc"]["cmd"] == {"kind": "pc", "text": "START_BOT.bat"} and e["bot_atlas"]["cmd"] == {"kind": "pc", "text": "START_BOT.bat"}, e["pc"])
+    check("fix. a stale feed and NinjaTrader down: HEALTH_CHECK.bat (it shows each red line with its fix); every file named exists in the bot folder",
+          e["feed"]["cmd"]["text"] == "HEALTH_CHECK.bat" and e["nt"]["cmd"]["text"] == "HEALTH_CHECK.bat"
+          and all(os.path.exists(os.path.join(ROOT, c["cmd"]["text"])) for c in e.values() if c["cmd"] and c["cmd"]["kind"] == "pc"))
+    check("fix. cloud / drawdown lights: a message to paste into the Claude chat (kind 'chat'), not a PC command", e["cloud"]["cmd"]["kind"] == "chat" and e["room_lit"]["cmd"]["kind"] == "chat" and "Zlarior" in e["room_lit"]["cmd"]["text"])
+    check("fix. the 7-day clock (a manual trade) and 'not armed' (the owner's own decision) have a step but nothing to copy: Argus never offers to arm or trade",
+          e["quiet_lit"]["cmd"] is None and e["quiet_lit"]["step"] and not any(re.search(r"arm|trade|order", c["cmd"]["text"], re.I) for c in e.values() if c["cmd"]))
+    check("fix. a green light has no fix button data", all(c["cmd"] is None for c in an(home())["eyes"].values()))
+    card = r["card"]
+    check("fix. the live Jarvis card with reds leads with the problem: status bad, '<n> red: <first light>' (48 chars max), up to 3 lines of fixes, fresh t, a 30-minute stale_after, open #fix",
+          card["status"]["level"] == "bad" and re.match(r"^\d+ red: ", card["status"]["label"]) and len(card["status"]["label"]) <= 48 and 1 <= len(card["lines"]) <= 3
+          and all(len(x) <= 120 for x in card["lines"]) and card["t"] == NOW and card["stale_after"] == 1800 and card["open"] == "#fix", card)
+
+    # the 14-day history, as functions
+    def hu(seq):
+        return p.evaluate("""(seq) => { let h = null; const C = window.__argus.CORE;
+          for (const [t, lv, ids] of seq) h = C.histUpdate(h, { hasData: true, verdict: { level: lv }, eyes: ids.map(([id, l]) => ({ id, label: id, level: l })) }, t);
+          return { h, s: C.histSummary(h, seq[seq.length - 1][0]) }; }""", seq)
+    day = 86400
+    seq = [[NOW - i * day, "ok", [["a", "ok"]]] for i in range(13, 0, -1)] + [[NOW, "ok", [["a", "ok"]]]]
+    r = hu(seq)
+    check("hist. 14 clear days in a row: the strip has 14 green squares and says '14 clear days in a row'", r["s"]["streak"] == 14 and [x["level"] for x in r["s"]["strip"]] == ["ok"] * 14 and "14 clear days in a row" in r["s"]["line"], r["s"]["line"])
+    seq2 = [[NOW - 3 * day, "ok", []], [NOW - 2 * day, "warn", [["a", "warn"]]], [NOW - day, "ok", []], [NOW, "ok", []]]
+    r = hu(seq2)
+    check("hist. an amber day breaks the streak: 2 clear days since it; a day I did not open the page stays grey and never counts", r["s"]["streak"] == 2 and r["s"]["strip"][-3]["level"] == "warn" and r["s"]["strip"][0]["level"] == "idle", r["s"]["strip"][-4:])
+    seq3 = [[NOW - 7200, "ok", [["feed", "ok"]]], [NOW - 3600, "bad", [["feed", "bad"]]], [NOW - 1800, "bad", [["feed", "bad"]]], [NOW, "ok", [["feed", "ok"]]]]
+    r = hu(seq3)
+    check("hist. what went red and for how long: the feed went red at -60 min and was fine again at 0: one incident of exactly 3600 s, none still open",
+          len(r["s"]["reds"]) == 1 and r["s"]["reds"][0]["secs"] == 3600 and not r["s"]["reds"][0]["open"] and r["s"]["reds"][0]["label"] == "feed", r["s"]["reds"])
+    r = hu(seq3[:3])
+    check("hist. a light still red is listed 'open' with its running time; today counts as not clear", r["s"]["reds"][0]["open"] and r["s"]["reds"][0]["secs"] == 1800 and r["s"]["streak"] == 0 and "Not clear today" in r["s"]["line"], r["s"])
+    r = hu([[NOW - 20 * day, "bad", [["x", "bad"]]], [NOW - 19 * day, "ok", []], [NOW, "ok", []]])
+    check("hist. only 14 days are kept (a day 20 days back and its incident are dropped); 'no data' readings never write",
+          list(r["h"]["days"].keys()).__len__() == 1 and not r["h"]["reds"]
+          and p.evaluate("() => Object.keys(window.__argus.CORE.histUpdate(null, { hasData: false, verdict: { level: 'idle' }, eyes: [] }, %d).days).length" % NOW) == 0, r["h"])
+
+
 # ------------------------------------------------------------------------------------------------------------ c
 def tab(p, t):
     p.click(f"#tabs button[data-tab='{t}']")
@@ -354,6 +405,7 @@ def part_c(tmp):
             ctx, p = open_page(br, ok_url + Q, errs, "__argus")
             part_b(p)
             part_real(p)
+            part_actions(p)
             ctx.close()
 
             errs = []
@@ -412,6 +464,77 @@ def part_c(tmp):
             check("c. #all opens the lights tab and #fix the fix list (the Jarvis card's link)", ok1 and p.evaluate("window.__argus.tab") == "fix")
             ctx.close()
             check("c. no errors on the problem page", not errs, errs[:5])
+
+            # fix buttons, copy, history, the live card (a framed page)
+            errs = []
+            ctx, p = open_page(br, bad_url + Q, errs, "__argus")
+            p.evaluate("() => { window.__clip = null; Object.defineProperty(navigator, 'clipboard', { value: { writeText: async (t) => { window.__clip = t; } }, configurable: true }); }")
+            check("ui. every red light has a 'Fix it' button (44 px+), its panel is closed until tapped", p.evaluate("document.querySelectorAll('#p-fix .fixbtn').length") == 3
+                  and p.evaluate("[...document.querySelectorAll('#p-fix .fixbtn')].every(b => b.getBoundingClientRect().height >= 44)") and p.is_hidden("#p-fix .fixpanel >> nth=0"))
+            p.click("#p-fix .fixbtn >> nth=0")
+            check("ui. 'Fix it' on the drawdown opens the exact step in plain words and a message to paste into Claude (no PC file)",
+                  p.is_visible("#p-fix .fixpanel >> nth=0") and "protect what is left" in p.inner_text("#p-fix .fixpanel >> nth=0") and "Paste this into your Claude chat" in p.inner_text("#p-fix .fixpanel >> nth=0"))
+            p.click("#p-fix .fixbtn >> nth=2")
+            panel = p.inner_text("#p-fix .fixpanel >> nth=2")
+            check("ui. 'Fix it' on the stale feed: the step (Reload NinjaScript), HEALTH_CHECK.bat in a box, 'double-click' and 'Argus never runs it'", "Reload NinjaScript" in panel and "HEALTH_CHECK.bat" in panel and "never runs it" in panel, panel)
+            p.click("#p-fix .copy >> nth=1")
+            p.wait_for_timeout(150)
+            check("ui. the copy button copies exactly the file name and says 'Copied'; nothing else happens (no request, no order)", p.evaluate("window.__clip") == "HEALTH_CHECK.bat" and "Copied" in p.inner_text("#p-fix .copy >> nth=1"))
+            p.click("#p-fix .fixbtn >> nth=1")
+            check("ui. the 7-day clock's fix has the step but no copy box", "1 MNQ by hand" in p.inner_text("#p-fix .fixpanel >> nth=1") and p.evaluate("document.querySelectorAll('#p-fix .fixpanel')[1].querySelectorAll('code, .copy').length") == 0)
+            tab(p, "all")
+            check("ui. the same buttons are on the red / amber rows of 'All lights' (green rows have none)", p.evaluate("document.querySelectorAll('#p-all .fixbtn').length") == 3)
+            check("ui. the bottom-right 80 x 160 px stays free with the panels open", not orb_hits(p), orb_hits(p))
+            ctx.close()
+            check("ui. no errors with the fix buttons", not errs, errs[:5])
+
+            errs = []
+            ctx, p = open_page(br, bad_url + Q, errs, "__argus")
+            seed = {"days": {}, "open": {}, "reds": []}
+            for i in range(1, 4):
+                seed["days"][(dt.date.fromisoformat("2026-11-04") - dt.timedelta(days=i)).isoformat()] = "ok"
+            p.evaluate("(s) => localStorage.setItem('argus.hist.v1', JSON.stringify(s))", seed)
+            p.goto(bad_url + Q + "&r=1#history")
+            p.wait_for_function("window.__argus && window.__argus.siteLoaded === true")
+            p.wait_for_timeout(400)
+            check("hist. #history opens the 'Since yesterday' tab; 14 squares; the last three clear days are green, today red; 'Not clear today.'",
+                  p.evaluate("window.__argus.tab") == "hist" and p.evaluate("document.querySelectorAll('#strip .sq').length") == 14 and p.evaluate("document.querySelectorAll('#strip .sq.ok').length") == 3
+                  and p.evaluate("document.querySelectorAll('#strip .sq.bad').length") == 1 and "Not clear today" in p.inner_text("#streak"), p.inner_text("#streak"))
+            body = p.inner_text("#p-hist")
+            check("hist. 'what went red and for how long' lists the lights red right now with 'still red'", "Zlarior 50K drawdown" in body and "still red" in body and "Price feed" in body, body[:300])
+            check("hist. the tab keeps the bottom-right free and nothing scrolls sideways", not orb_hits(p) and p.evaluate("document.documentElement.scrollWidth <= innerWidth"))
+            saved = p.evaluate("JSON.parse(localStorage.getItem('argus.hist.v1'))")
+            check("hist. it is remembered on this phone (localStorage): today = red, 3 clear days before, 3 open incidents", saved["days"]["2026-11-04"] == "bad" and len(saved["days"]) == 4 and len(saved["open"]) == 3, saved)
+            ctx.close()
+            check("hist. no errors", not errs, errs[:5])
+            errs = []
+            ctx, p = open_page(br, ok_url + Q, errs, "__argus")
+            seed = {"days": {}, "open": {}, "reds": []}
+            for i in range(1, 14):
+                seed["days"][(dt.date.fromisoformat("2026-11-04") - dt.timedelta(days=i)).isoformat()] = "ok"
+            p.evaluate("(s) => localStorage.setItem('argus.hist.v1', JSON.stringify(s))", seed)
+            p.goto(ok_url + Q + "&r=1#history")
+            p.wait_for_function("window.__argus && window.__argus.siteLoaded === true")
+            p.wait_for_timeout(400)
+            check("hist. 13 clear days remembered + a clear today: '14 clear days in a row', every square green, nothing went red",
+                  "14 clear days in a row" in p.inner_text("#streak") and p.evaluate("document.querySelectorAll('#strip .sq.ok').length") == 14 and "Nothing went red" in p.inner_text("#p-hist"))
+            ctx.close()
+
+            # the live card to Jarvis: the page inside a frame
+            ctx = br.new_context(viewport={"width": 390, "height": 844})
+            p = ctx.new_page()
+            p.route("**/host.html", lambda r: r.fulfill(content_type="text/html", body=f'<iframe id="f" src="{bad_url + Q}" style="width:390px;height:800px"></iframe>'))
+            p.goto(bad_url.replace("/argus/", "/host.html"))
+            fr = None
+            for _ in range(60):
+                fr = next((f for f in p.frames if "/argus/" in f.url), None)
+                if fr and fr.evaluate("!!(window.__argus && window.__argus.siteLoaded)"):
+                    break
+                p.wait_for_timeout(300)
+            card = fr.evaluate("window.__argus.card")
+            check("jarvis. framed in Jarvis with reds, the page builds the live card: status bad, leads with the problem, fresh, 3 fixes",
+                  card["status"]["level"] == "bad" and card["status"]["label"].startswith("3 red: ") and card["t"] >= NOW and len(card["lines"]) == 3 and card["stale_after"] == 1800, card)
+            ctx.close()
 
             # a tap on an eye (reduced motion: the sphere holds still)
             errs = []
