@@ -121,3 +121,70 @@ export function plain(row, R, horizon) {
 }
 
 export const usd = (x) => { const v = Math.round(+x || 0), s = '$' + Math.abs(v).toLocaleString('en-US'); return v < 0 ? '-' + s : s; };
+
+// ---------------------------------------------------------------------------------------------- JOB 4+5 (2026-11-04): more mazes,
+// danger zones, a risk-of-ruin gauge, the best size in plain words, a walkthrough. Same pure functions: no DOM, no clock, no network.
+
+/** the mazes: each is an eval and the share of the bot's size its trades are walked at (the 25K runs half the 50K's size) */
+export const MAZES = Object.freeze([
+  { id: 'b50', name: 'Builder 50K', short: '50K', rules: { ...DEFAULT_RULES }, scale: 1, blurb: 'Zlarior\'s eval: +$3,000 to pass, $2,000 trailing max loss.' },
+  { id: 'b25', name: 'Builder 25K', short: '25K', rules: { name: 'MFFU Builder 25K', start: 25000, target: 1500, mll: 1000, lock: 100, dll: 500 }, scale: 0.5, blurb: 'ATLAS\'s eval: +$1,500 to pass, $1,000 trailing max loss, half the size.' },
+  { id: 'tight', name: '50K, tight floor', short: '50K tight', rules: { name: 'MFFU Builder 50K (tight)', start: 50000, target: 3000, mll: 1500, lock: 100, dll: 750 }, scale: 1, blurb: 'The 50K with a $1,500 floor: what a harder rule set would do.' },
+]);
+
+/** the pool of trades at a maze's size (usd and risk scaled together, the order kept) */
+export function scalePool(pool, k) {
+  if (!(k > 0) || Math.abs(k - 1) < 1e-9) return pool;
+  return pool.map((t) => ({ ...t, usd: Math.round(t.usd * k * 100) / 100, risk: Math.max(1, Math.round(t.risk * k * 100) / 100) }));
+}
+
+/** where the runs end: for each trade number the share of runs that bust there, pass there, and are still alive after it.
+ *  heat = the bust share scaled 0..1 against the worst trade number (the danger zones the scene lights up) */
+export function hazard(pool, mult, cap, R, o = {}) {
+  const n = o.n || 500, len = o.len || 15, rnd = mulberry32(o.seed || 7);
+  const bust = new Array(len + 1).fill(0), pass = new Array(len + 1).fill(0);
+  if (!pool.length) return Array.from({ length: len + 1 }, (_, i) => ({ i, bust: 0, pass: 0, alive: 1, heat: 0 }));
+  for (let s = 0; s < n; s++) {
+    const w = walk(draw(pool, len, rnd), mult, cap, R);
+    if (w.outcome === 'bust') bust[w.at]++; else if (w.outcome === 'pass') pass[w.at]++;
+  }
+  let dead = 0;
+  const peak = Math.max(1, ...bust) / n;
+  return bust.map((b, i) => { dead += (b + pass[i]) / n; return { i, bust: b / n, pass: pass[i] / n, alive: Math.max(0, 1 - dead), heat: b / n / peak }; });
+}
+
+/** the risk-of-ruin gauge: the share of runs that hit the floor, as a level and a sentence */
+export function ruin(bust) {
+  const p = Math.max(0, Math.min(1, +bust || 0)), pc = Math.round(p * 100);
+  const level = p < 0.1 ? 'low' : p < 0.25 ? 'moderate' : p < 0.4 ? 'high' : 'extreme';
+  const text = { low: 'The floor rarely catches you at this size.', moderate: 'About one run in four or five ends at the floor.', high: 'Roughly one run in three ends at the floor: a coin you would not want to flip every eval.', extreme: 'The floor is the likeliest ending: this size loses the account more often than it passes.' }[level];
+  return { p, pct: pc, level, label: level.toUpperCase(), text };
+}
+
+/** the best size in plain words: the sweet spot, what one step up costs, what one step down gives away */
+export function bestSize(rows, R, horizon, maxBust = 0.3) {
+  if (!rows.length) return { m: 1, pass: 0, bust: 0, safe: false, text: 'No trades to size yet.', why: '' };
+  const sw = sweetSpot(rows, maxBust);
+  const i = rows.findIndex((r) => r.m === sw.m), up = rows[i + 1] || null, dn = rows[i - 1] || null;
+  const pc = (x) => `${Math.round(x * 100)}%`, f = (m) => `${(+m).toFixed(2).replace(/\.?0+$/, '')}x`;
+  let why = '';
+  if (up) {
+    const dp = Math.round((up.pass - sw.pass) * 100), db = Math.round((up.bust - sw.bust) * 100);
+    why += `One step up (${f(up.m)}) ${dp >= 0 ? 'adds' : 'loses'} ${Math.abs(dp)} points of passes and ${db >= 0 ? 'adds' : 'removes'} ${Math.abs(db)} points of floor hits${db > dp ? ': the floor grows faster than the passes' : ''}. `;
+  }
+  if (dn) {
+    const dp = Math.round((sw.pass - dn.pass) * 100), db = Math.round((sw.bust - dn.bust) * 100);
+    why += `One step down (${f(dn.m)}) gives up ${Math.max(0, dp)} points of passes to cut ${Math.max(0, db)} points of floor hits.`;
+  }
+  const clock = horizon <= 8 ? 'about 2 weeks' : horizon <= 15 ? 'about 4 weeks' : 'about 8 weeks';
+  const text = sw.safe ? `Best size: ${f(sw.m)}. ${pc(sw.pass)} reach the target and ${pc(sw.bust)} hit the floor within ${horizon} trades (${clock}).`
+    : `No size keeps the floor under ${pc(maxBust)} here. The least bad is ${f(sw.m)}: ${pc(sw.pass)} pass, ${pc(sw.bust)} bust within ${horizon} trades.`;
+  return { m: sw.m, pass: sw.pass, bust: sw.bust, safe: sw.safe, text, why: why.trim() };
+}
+
+/** the walkthrough: the keyframes of one run for the scene and the page */
+export function frames(w, R) {
+  return w.steps.map((s, k) => ({ i: s.i, day: s.day, usd: s.usd, bal: s.bal, floor: s.floor, room: Math.round(s.bal - s.floor), toTarget: Math.round(R.start + R.target - s.bal),
+    note: k === 0 ? `Start: ${usd(s.bal)}, floor ${usd(s.floor)}.` : `${s.usd >= 0 ? 'Won' : 'Lost'} ${usd(Math.abs(s.usd))}: balance ${usd(s.bal)}, room ${usd(Math.round(s.bal - s.floor))} to the floor.`
+      + (s.bal <= s.floor ? ' The floor wall catches the runner.' : s.bal >= R.start + R.target ? ' The target gate opens.' : '') }));
+}
