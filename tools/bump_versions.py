@@ -203,7 +203,9 @@ def make_plan(repo, changed=None):
     # ---- 1. the ?v= queries
     edits: dict[str, list[tuple[int, int, str]]] = {}
     bumped: dict[str, tuple[str, str]] = {}                       # target -> (old, new)
-    for c in in_site:
+    queue, seen_q = list(in_site), set(in_site)                      # a script this tool edits (a ?v= inside it) has changed too: it is bumped as well (a fixed point)
+    while queue:
+        c = queue.pop(0)
         if c.endswith("/sw.js") or c not in by_target:
             continue
         rs = by_target[c]
@@ -225,6 +227,9 @@ def make_plan(repo, changed=None):
         for r in rs:
             edits.setdefault(r.file, []).append((r.start, r.end, new))
             plan.add("query", r.file, f"{r.literal}?v={r.tag} -> ?v={new}")
+            if r.file not in seen_q and r.file in by_target and repo.base_text(r.file) is not None:
+                seen_q.add(r.file)
+                queue.append(r.file)
     edited_files = set(edits)
 
     # ---- 2. the workers

@@ -144,7 +144,7 @@ class BumpVersions(unittest.TestCase):
         # files that did not change keep their tags; files with no ?v= get none
         self.assertIn("./style.css?v=s3", read(self.root, "tools/web_public/index.html"))
         self.assertIn("./icons/i.png?v=p10", read(self.root, "tools/web_public/index.html"))
-        self.assertIn("../olympus/olympus.js?v=o2", read(self.root, "tools/web_public/tyche/index.html"))
+        self.assertIn("../olympus/olympus.js?v=o3", read(self.root, "tools/web_public/tyche/index.html"))        # cascade: the tool edited olympus.js (its sfx.js string), so olympus.js is bumped too
         self.assertIn("'../olympus/render.js'", read(self.root, "tools/web_public/jarvis/sw.js"))
         self.assertNotIn("render.js?v=", read(self.root, "tools/web_public/jarvis/sw.js"))
         self.assertIn('src="./plain.js"', read(self.root, "tools/web_public/index.html"))
