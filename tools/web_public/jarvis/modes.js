@@ -155,7 +155,7 @@ export function thinkAll(D) {
     if (str(a.status, 20).toLowerCase() === 'passed') add(5, 'business', 'passed:' + a.key, `${a.name} passed. Next: the funded step and the next eval; I can lay out the plan.`, 'Plan it', ask('Plan for more accounts'));
   }
   // 4. stale data: the bots' feed (when the market is closed: the brain's list keeps it as context) and the research apps' cards
-  if (D.live && D.live.missing) add(7, 'trading', 'live-missing', 'I cannot see the bots\' live feed from this phone. Check the signal, then the PC.', 'Open Zenith', open('zenith'));
+  if (D.live && D.live.missing && !arr(D.priorities).some((x) => isObj(x) && x.key === 'nolive')) add(7, 'trading', 'live-missing', 'I cannot see the bots\' live feed from this phone. Check the signal, then the PC.', 'Open Zenith', open('zenith'));
   else if (D.live && D.live.stale && !arr(D.priorities).some((x) => isObj(x) && x.key === 'silent')) add(7, 'trading', 'live-stale', `The bots' numbers are from ${str(D.live.ago, 40) || 'a while ago'}: the PC may be off. Have it on before the next window.`, 'Open Zenith', open('zenith'));
   const cards = isObj(D.cards) ? D.cards : {};
   const staleApps = Object.keys(cards).filter((id) => isObj(cards[id]) && cards[id].stale && num(cards[id].age) != null && cards[id].age > 36 * 3600 && MODE_OF_APP[id] === 'research');

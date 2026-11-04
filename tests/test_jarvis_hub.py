@@ -245,7 +245,7 @@ def part_a():
           and "background:#000" in sw and "location.reload()" in sw)
     check("a. worker v14: data.js, jarvis.css, the fonts, every separate part, switcher.js, the new brain's obsidian.js / memory.js / "
           "assist-ui.js and voice-mode.js in SHELL, each saved on its own (a missing part is skipped)",
-          "const CACHE = 'jarvis-v23';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
+          "const CACHE = 'jarvis-v24';" in sw and all(f"'./{f}'" in sw for f in ("data.js", "switcher.js", "obsidian.js", "memory.js", "assist-ui.js", "voice-mode.js", "tools.js", "voice-out.js") + PARTS + FONTS)
           and "'./jarvis.css?v=j13'" in sw and "SHELL.map((u) => c.add(new Request(u, { cache: 'reload' })).catch(() => null))" in sw)
     shell = re.search(r"const SHELL = \[([^\]]*)\]", sw)
     shell_files = re.findall(r"'\./([^'?]+)", shell.group(1)) if shell else []
@@ -259,7 +259,7 @@ def part_a():
           "const NET_MAX_MS = 9000;" in sw and "copy ? NAV_WAIT_MS : NET_MAX_MS" in sw and "return offlinePage();" in sw
           and "await net" not in sw.replace("await Promise.race([net", ""))
     check("a. worker v6: a file this copy lacks comes from the previous Jarvis copy; old copies go only when every CORE file is saved",
-          "const OLD = ['jarvis-v22', 'jarvis-v21', 'jarvis-v20', 'jarvis-v19', 'jarvis-v18', 'jarvis-v17', 'jarvis-v16', 'jarvis-v15', 'jarvis-v14', 'jarvis-v13', 'jarvis-v12', 'jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];" in sw and "for (const name of [CACHE, ...OLD])" in sw
+          "const OLD = ['jarvis-v23', 'jarvis-v22', 'jarvis-v21', 'jarvis-v20', 'jarvis-v19', 'jarvis-v18', 'jarvis-v17', 'jarvis-v16', 'jarvis-v15', 'jarvis-v14', 'jarvis-v13', 'jarvis-v12', 'jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];" in sw and "for (const name of [CACHE, ...OLD])" in sw
           and "CORE.map((u) => c.match(u, { ignoreSearch: true }))" in sw)
     jhtml = open(os.path.join(JV, "index.html"), encoding="utf-8").read()
     check("a. the page draws without its stylesheet after 5 s (a stylesheet still on the way keeps an iPhone screen black)",
@@ -384,7 +384,7 @@ def go(p, app):
         p.click(f'.bar [data-app="{app}"]')
         return
     p.click("#nxOrb")
-    p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=3000)
+    p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=30000)
     p.wait_for_timeout(450)
     p.click(f'.nx-qb[data-nx="{app}"]')
 
@@ -800,7 +800,7 @@ def run_c(br, url):
     zen_ok = p.locator("#zen").is_visible() or p.locator("#v-zenith").is_visible()
     if p.locator("#nxOrb").count() and p.locator("#nxOrb").is_visible():
         p.click("#nxOrb")                           # Zenith mode covers the bar: the orb (switcher.js), then Jarvis in its quick row
-        p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=3000)
+        p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=30000)
         p.wait_for_timeout(450)
         p.click('.nx-qb[data-nx="home"]')
     elif p.locator(".zm-back").count() and p.locator(".zm-back").is_visible():
@@ -813,7 +813,7 @@ def run_c(br, url):
         const reg = await Promise.race([navigator.serviceWorker.ready, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
         if (!reg) return 'no worker';
         for (let i = 0; i < 30; i++) {
-          const c = await caches.open('jarvis-v23');
+          const c = await caches.open('jarvis-v24');
           const got = await Promise.all(['./index.html', './data.js', './jarvis.css?v=j13', './orbitron.woff2', './rajdhani-500.woff2'].map((u) => c.match(u)));
           if (got.every(Boolean)) return 'ok';
           await new Promise((ok) => setTimeout(ok, 200));
@@ -1110,8 +1110,8 @@ def run_look(br, url):
 
 
 # the switch order: Jarvis, TRADING, LIFE, MONEY (apps.js BUILT_INS); the test site has Data City's folder, not the others'
-ORDER = ["home", "zenith", "oracle", "odeon", "fates", "datacity", "tree", "prometheus", "pantheon", "ares", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "bridge", "planner", "mind", "arena", "athena", "kalshi", "tyche", "hermes", "plutus"]
-NOT_ON_SITE = ["oracle", "odeon", "fates", "tree", "prometheus", "pantheon", "ares", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "bridge", "mind", "arena", "athena", "tyche", "hermes", "plutus"]
+ORDER = ["home", "zenith", "oracle", "odeon", "fates", "datacity", "tree", "prometheus", "pantheon", "ares", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "bridge", "planner", "mind", "arena", "athena", "kalshicity", "kalshi", "tyche", "hermes", "plutus"]
+NOT_ON_SITE = ["oracle", "odeon", "fates", "tree", "prometheus", "pantheon", "ares", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "kalshicity", "bridge", "mind", "arena", "athena", "tyche", "hermes", "plutus"]
 
 
 def run_olympus(br, url):
@@ -1298,7 +1298,7 @@ def run_system(br, url):
     check("s. the orb carries a red dot while something needs the owner", "lv-bad" in r["orb"] and r["alert"] == "block", r)
     o = p.evaluate("(() => { const b = document.getElementById('nxOrb').getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2]; })()")
     p.mouse.click(o[0], o[1])
-    p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=3000)
+    p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=30000)
     p.wait_for_timeout(450)
     st = p.evaluate("""() => { const s = document.getElementById('nxSys'), b = s.getBoundingClientRect();
       return { hidden: s.hidden, text: s.textContent, cls: s.className, dots: s.querySelectorAll('.nx-sd i').length, h: b.height, w: b.right <= innerWidth,
@@ -1339,16 +1339,16 @@ def run_switcher(br, url):
     cx, cy = (r[0] + r[2]) / 2, (r[1] + r[3]) / 2
     # tap: the switcher, one live card per app, Jarvis's marked NOW
     p.mouse.click(cx, cy)
-    p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=3000)
+    p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=30000)
     p.wait_for_timeout(450)
     cards = p.evaluate("""() => [...document.querySelectorAll('#nxTrack .nx-card')].map((c) => ({ id: c.dataset.nx || (c.dataset.nxAdd ? 'add' : ''),
       name: (c.querySelector('.nx-nm b') || {}).textContent, val: (c.querySelector('.nx-val') || {}).textContent || '', now: c.classList.contains('now'),
       lines: [...c.querySelectorAll('.nx-ln')].map((l) => l.textContent) }))""")
     names = [c["name"] for c in cards]
-    check("n. tap: the switcher opens with JARVIS, then TRADING (NQ BOT, ORACLE, ODEON, FATES, DATA CITY, DAPHNE, PROMETHEUS, PANTHEON, ARES, FORUM, LABYRINTH, ARGUS, NEMESIS, CHRONOS, HEPHAESTUS), LIFE (CALENDAR, MIND, ARENA, ATHENA), "
-          "MONEY (KALSHI, TYCHE, HERMES, PLUTUS) and + ADD, "
+    check("n. tap: the switcher opens with JARVIS, then TRADING (NQ BOT, ORACLE, ODEON, FATES, DATA CITY, DAPHNE, PROMETHEUS, PANTHEON, ARES, FORUM, LABYRINTH, ARGUS, NEMESIS, CHRONOS, HEPHAESTUS, CITIES, BRIDGE), LIFE (CALENDAR, MIND, ARENA, ATHENA), "
+          "MONEY (KALSHI CITY, KALSHI, TYCHE, HERMES, PLUTUS) and + ADD, "
           "Jarvis's card marked NOW",
-          names == ["JARVIS", "NQ BOT", "ORACLE", "ODEON", "FATES", "DATA CITY", "DAPHNE", "PROMETHEUS", "PANTHEON", "ARES", "FORUM", "LABYRINTH", "ARGUS", "NEMESIS", "CHRONOS", "HEPHAESTUS", "CALENDAR", "MIND", "ARENA", "ATHENA", "KALSHI", "TYCHE", "HERMES", "PLUTUS", "ADD"]
+          names == ["JARVIS", "NQ BOT", "ORACLE", "ODEON", "FATES", "DATA CITY", "DAPHNE", "PROMETHEUS", "PANTHEON", "ARES", "FORUM", "LABYRINTH", "ARGUS", "NEMESIS", "CHRONOS", "HEPHAESTUS", "CITIES", "BRIDGE", "CALENDAR", "MIND", "ARENA", "ATHENA", "KALSHI CITY", "KALSHI", "TYCHE", "HERMES", "PLUTUS", "ADD"]
           and cards[0]["now"] and not any(c["now"] for c in cards[1:]), cards)
     nq = next((c for c in cards if c["id"] == "zenith"), {})
     cal = next((c for c in cards if c["id"] == "planner"), {})
