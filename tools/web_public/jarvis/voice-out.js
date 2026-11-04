@@ -4,7 +4,7 @@
 // beyond the window's taps and the page's visibility; the dock button, the waveform and the state word are the shell's.
 //
 //   import { createVoiceOut } from './voice-out.js';
-//   const vo = createVoiceOut({ cfg(), cloud(), onSpeaking(on), onWord(charIndex), onPending(text | ''), micBusy() });
+//   const vo = createVoiceOut({ cfg(), cloud(ctx), prosody(), player(), unlock(), onFallback(err, id), onEngine(id), onSpeaking(on), onWord(charIndex), onPending(text | ''), micBusy() });
 //   vo.speak(text, { onend }) -> 'spoken' | 'pending' (said at the next tap) | 'off' | 'hidden' | 'none'
 //   vo.stop() · vo.on() · vo.setOn(bool) · vo.toggle() · vo.speaking · vo.since() · vo.voices() · vo.voice() · vo.test() · vo.stats()
 //   vo.session('auto' | 'playback')   the iPhone's audio session (iOS 17+): 'auto' before the mic listens
@@ -56,7 +56,8 @@ export function createVoiceOut(opts) {
   if (synth) { safe(() => synth.addEventListener('voiceschanged', () => { polls = 0; load(); })); load(); }
   const voices = () => (list.length ? list : load());
   const voice = () => bestVoice(voices(), (call('cfg') || {}).voice || savedVoiceName(store));
-  const speaker = synth ? createSpeaker({ synth, voices, cfg: () => call('cfg') || {}, cloud: () => call('cloud'), storage: store }) : null;
+  const speaker = synth ? createSpeaker({ synth, voices, cfg: () => call('cfg') || {}, cloud: (c) => call('cloud', c), storage: store,
+    prosody: () => call('prosody'), player: () => call('player') }) : null;     // 2026-11-04: voice-engines.js hands over the voice, the natural-speech layer and the shared player
 
   // ---------------------------------------------------------------- the unlock: the first tap anywhere
   const unlocked = () => primed || (!primer && (!nav.userActivation || nav.userActivation.hasBeenActive));
@@ -75,6 +76,7 @@ export function createVoiceOut(opts) {
   function session(type) { safe(() => { if (nav.audioSession && nav.audioSession.type !== type) nav.audioSession.type = type; }); }
   function onGesture(e) {
     if (e && e.isTrusted === false) return;
+    call('unlock');                                  // the shared audio element of the cloud / on-device voices: unlocked inside this tap (cheap, once)
     if (primed && !pending && actx && actx.state === 'running') return;          // unlocked already: nothing to do on this tap
     audio();
     if (!primed) {
@@ -110,6 +112,8 @@ export function createVoiceOut(opts) {
     try {
       my.h = speaker.speak(t, {
         onend: done,
+        onfallback: (e, id) => { call('onFallback', e, id); },         // a cloud voice said no: the reply goes on in the phone's voice
+        onengine: (id) => { call('onEngine', id); },
         onboundary: (ci) => { if (cur === my) call('onWord', ci); },
         onstall: (rest) => {                          // never started: on the iPhone it needs a tap again; elsewhere it cannot speak
           if (cur !== my) return;
@@ -128,6 +132,7 @@ export function createVoiceOut(opts) {
   }
   return {
     speak, stop, on, setOn, toggle: () => setOn(!on()), voices, voice, audio: () => actx, session,
+    reload: () => { polls = 0; return load(); },                  // the Voice sheet's "I installed a Premium voice: check again"
     test: (cb) => speak(TEST_LINE, cb),
     get speaking() { return !!cur; },
     since: () => (cur ? Date.now() - startT : Infinity),          // ms since she began (a tap that just started her is not a stop)
