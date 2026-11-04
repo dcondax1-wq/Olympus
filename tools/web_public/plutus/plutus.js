@@ -65,16 +65,37 @@ function renderRisk(P) {
     `<div class="line">Bad case (1 in 10) at month ${P.months}: <b>${usd(P.p10M)}</b>. Good case (1 in 10): ${usd(P.p90[P.months])}.</div>`,
     `<div class="line">If the bot does 50% worse than the study: <b>${usd(worse.avg6)}</b> a month.</div>`,
     ...ref.map((r) => `<div class="line ${r.P.avg6 < 0 ? 'bad' : ''}">Same plan on ${esc(S.doc.spans[r.k])}: <b>${usd(r.P.avg6)}</b> a month${r.k === '2021-25' ? ' (the bot is tuned and judged on 2026; this is a reference line)' : ''}.</div>`),
-    `<div class="line">Accounts rise and fall together (${(S.doc.corr ?? 0.85).toFixed(2)} correlation). More accounts means more money and a bigger bad week, not a safer one.</div>`,
+    `<div class="line">Copies of one strategy rise and fall together (${(S.doc.corr ?? 0.85).toFixed(2)} correlation); LIT, ATLAS and BLITZ barely move together (${pairsText()}). More accounts of the same strategy means more money and a bigger bad week, not a safer one.</div>`,
     `<div class="line">Expected funded accounts lost in 6 months: ${lost.toFixed(2)}. Eval passed in 2 weeks: ${P.rows.map((r) => `${esc(r.name)} ${r.p10 != null ? Math.round(r.p10) + '%' : '-'}`).join(', ')}.</div>`,
   ];
   $('risk').innerHTML = lines.join('');
+}
+
+const pairsText = () => ((S.doc.strategy && S.doc.strategy.corr_pairs) || [{ a: 'LIT', b: 'ATLAS', rho: 0.14 }, { a: 'LIT', b: 'BLITZ', rho: -0.06 }, { a: 'ATLAS', b: 'BLITZ', rho: 0 }])
+  .filter((x) => x.a !== 'copies of one strategy').map((x) => `${x.a} x ${x.b} ${x.rho > 0 ? '+' : ''}${x.rho.toFixed(2)}`).join(', ');
+
+/** The three strategies you run (published strategy block of plans.json): money by period, both first-payout counts, the MFFU cap, the 3-account result. */
+function strategyBlock() {
+  const sa = S.doc.strategy;
+  if (!sa) return '';
+  const two = (o, d = 0) => (o && o.H1 != null ? `${usd(o.H1, d)} / ${usd(o.H2, d)}` : '-');
+  const pair = (o) => (o && o.H1 != null ? `${o.H1} / ${o.H2}` : '-');
+  const rows = sa.accounts.map((a) => `<tr><td>${esc(a.name)}<br><small>${usd(a.price, a.price % 1 ? 2 : 0)} each</small></td><td>${two(a.funded_per_month)}</td><td>${two(a.net_per_month_from_purchase)}</td>`
+    + `<td>${pair(a.first_pay_from_funded)} / ${pair(a.first_pay_from_purchase)}</td><td>${pair(a.eval_2w_pass)} / ${pair(a.eval_2w_fail)}</td></tr>`).join('');
+  const t = sa.three_accounts, cap = sa.mffu_caps;
+  return '<div class="line"><b>Your three strategies</b> (Jan-Jun / Jul-Oct 2026)</div>'
+    + `<table class="strat"><thead><tr><th>Account</th><th>Funded $ a month</th><th>$ a month from purchase, after eval fees</th><th>First payout, sessions: from funded start / from purchase</th><th>Eval in 2 weeks: pass / fail %</th></tr></thead><tbody>${rows}</tbody></table>`
+    + `<div class="line">Funded $ a month is the payout stage only (80% to you); the next column starts at the purchase and pays every eval. BLITZ has no funded-only study: its slot figure is the research's, the model is lower.</div>`
+    + `<div class="line"><b>${esc(cap.text)}</b></div>`
+    + `<div class="line"><b>All three</b> (LIT 50K + ATLAS 25K + BLITZ 25K): <b>${two(t.H1 && { H1: t.H1.per_month, H2: t.H2.per_month })}</b> a month after eval fees in the model (first payout around session ${t.H1.first_payout_session_med} / ${t.H2.first_payout_session_med} from purchase, `
+    + `${t.H1.evals_per_month} evals bought a month, ${t.H1.fails_per_month} fails). Honest range: <b>${esc(t.range.text)}</b>. It is a bet on the 2026 market continuing; in 2021-25-type markets every account loses.</div>`;
 }
 
 function renderNotes() {
   const f = S.facts || {}, t = f.trades;
   $('notes').innerHTML = `<div class="line">Model: ${esc(S.doc.source)}${S.doc.src === 'embedded' ? ' (plans.json not found, using the copy inside the app: Jul-Oct only)' : ''}.</div>`
     + (S.doc.notes || []).map((n) => `<div class="line">${esc(n)}</div>`).join('')
+    + strategyBlock()
     + (t ? `<div class="line"><b>The bot's published record</b> (${esc(t.from)} to ${esc(t.to)}, normal sizing): ${t.n} trades${t.tpw ? `, ${t.tpw.toFixed(1)} a week` : ''}, ${usd(t.net)}${t.pf ? ', profit factor ' + t.pf.toFixed(2) : ''}. The accounts above are sized for each plan, so their dollars differ.</div>` : '<div class="line">The published site data (data.json) was not found, so the bot\'s own record is not shown here.</div>')
     + `<div class="line">Prices are the owner's real one-time prices (Builder 50K $91.80, Builder 25K $63). Other firms' prices are list or discounted prices found in the repo's research, check before buying.</div>`
     + '<div class="line">Paper results from a study. Not a promise, not advice. MFFU wants you present for live trading.</div>';
