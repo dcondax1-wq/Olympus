@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="../olympus/olympus.css?v=o2">
 <script src="../olympus/themes.js?v=o2"></script>
 <script src="../olympus/olympus.js?v=o2" data-app="ledger"></script>
+<script src="../olympus/intro-app.js?v=i1" defer></script>
 <script src="../olympus/sfx.js?v=s1" defer></script>
 <script src="../olympus/fx-core.js?v=f1"></script><script src="../olympus/fx-ui.js?v=f1"></script><script src="../olympus/fx-text.js?v=f1"></script><script src="../olympus/fx-burst.js?v=f1"></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#ffcf5a'); r.setProperty('--oly-accent-rgb', '255, 207, 90'); })();</script>
@@ -53,10 +54,10 @@
   <section class="panel" id="p-list" role="tabpanel" aria-labelledby="t-list" hidden></section>
   <p class="foot" id="foot">What you enter stays on this phone. Ledger reads the site's accounts file and the public Kalshi feed; it never sends anything.</p>
 </main>
-<button type="button" class="fab" id="add" aria-label="Add an entry" data-oly-fx="ripple">+</button>
-<div class="toast" id="toast" role="status" aria-live="polite" hidden><span id="toastText"></span><button type="button" id="toastUndo">Undo</button></div>
+<button type="button" class="fab" id="add" aria-label="Add an entry" data-oly-fx="ripple" data-oly-cue="open">+</button>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden><span id="toastText"></span><button type="button" id="toastUndo" data-oly-cue="tap">Undo</button></div>
 <section class="sheet" id="sheet" hidden aria-labelledby="sheetTitle" role="dialog" aria-modal="true">
-  <header><h2 id="sheetTitle">Add</h2><button type="button" class="oly-close" id="sheetClose" aria-label="Close">×</button></header>
+  <header><h2 id="sheetTitle">Add</h2><button type="button" class="oly-close" id="sheetClose" aria-label="Close" data-oly-cue="close">×</button></header>
   <form id="form" autocomplete="off" novalidate>
     <label class="f amt"><span>Amount ($)</span><input id="fAmount" type="text" inputmode="decimal" autocomplete="off" placeholder="0.00" aria-describedby="fErr"></label>
     <label class="f"><span>What</span><select id="fKind"></select></label>
@@ -69,7 +70,7 @@
         <label class="f"><span>Until</span><input id="fUntil" type="date"></label></div>
     </details>
     <p class="err" id="fErr" role="alert" hidden></p>
-    <div class="row-b"><button type="submit" class="go" id="fSave">Save</button><button type="button" class="del" id="fDelete" hidden>Delete</button></div>
+    <div class="row-b"><button type="submit" class="go" id="fSave" data-oly-cue="success">Save</button><button type="button" class="del" id="fDelete" data-oly-cue="warning" hidden>Delete</button></div>
   </form>
 </section>
 <script type="module" src="ledger.js?v=g1"></script>

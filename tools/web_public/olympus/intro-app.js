@@ -1,4 +1,4 @@
-/* OLYMPUS app intro (tools/web_public/olympus/intro-app.js, 2026-11-04, JOB 33a): the 2.6 s cinematic entrance every app plays when it opens.
+/* OLYMPUS app intro (tools/web_public/olympus/intro-app.js, 2026-11-04, JOB 33a): the 2.4 s cinematic entrance every app plays when it opens.
  * One classic deferred script, loaded by ONE line in each app's index.html, right after olympus.js:
  *   <script src="../olympus/intro-app.js?v=i1" defer></script>
  * It reads the kit (window.OLYMPUS: the app's name, glyph and colour, the same table the loading veil uses), paints one full-screen
@@ -7,15 +7,16 @@
  *   film     0.0  the app's own flavour scene starts (Oracle smoke + light shafts, Tyche coins + water, Prometheus embers igniting, Mind neurons
  *                 lighting, Data City skyline rising, Arena torches + crowd roar, ... see FLAVOUR) and the app's glyph forms from particles
  *            0.95 the name appears letter by letter in Orbitron with a light sweep across it, then a one-line tagline
- *            2.1  the whole overlay fades out onto the app (2.6 s in all)
+ *            2.1  the whole overlay fades out onto the app (2.4 s in all: the same film, played 8% faster)
  *   once     the full film plays at most once per app per launch (sessionStorage 'oly.intro.<app>'); after that a 400 ms version (the
- *            formed glyph + name, a quick fade). LITE (3D Low) = a 0.7 s fade of the glyph and the name, no particles.
- *   never    under prefers-reduced-motion, 3D effects Off, ?q=off, ?intro=0, localStorage 'oly.intro' = 'off', or an automated browser
+ *            formed glyph + name, a quick fade). LITE (3D Low) = no intro at all (2026-11-04: LITE and reduced motion play nothing).
+ *   never    under LITE (3D Low), prefers-reduced-motion, 3D effects Off, ?q=off, ?intro=0, localStorage 'oly.intro' = 'off', or an automated browser
  *            (navigator.webdriver) unless the page asks (?intro=1): so no app test ever waits for it or loses a tap to it.
  *   skip     a tap, Esc, Enter or Space: gone in 70 ms (the overlay stays, invisible, until the finger is up so the tap never lands on the
  *            app). It never blocks the app: the app loads underneath, a timer ends the film whatever happens, a hidden tab ends it, any
  *            error removes it.
- *   sound    OLYMPUS.sfx (the kit's sfx.js: nothing before a first gesture, quiet while Jarvis talks).
+ *   sound    OLYMPUS.sfx (the kit's sfx.js: nothing before a first gesture, quiet while Jarvis talks) and only while the kit's Sound switch allows
+ *            it (OLYMPUS.sound(): Auto / On; Off, mute, battery saver silence the film).
  *   state    window.__olyAppIntro = { app, mode: full | short | lite | none, state: playing | done | skipped | off | failed, frames, ms, err, why }
  * ES5 only (Safari 16). It never throws.
  */
@@ -33,7 +34,9 @@
     pantheon: ['columns', 'All the gods, one place', 'portal'], arena: ['torches', 'Earn your glory', 'thunder'], ares: ['embers', 'Strike with discipline', 'thunder'],
     plutus: ['coins', 'Where the wealth is', 'tap'], athena: ['smoke', 'Wisdom on demand', 'portal'], forum: ['columns', 'Speak. Decide.', 'portal'],
     labyrinth: ['maze', 'Find the way through', 'tick'], argus: ['neurons', 'A hundred eyes', 'tick'], nemesis: ['shards', 'Every move has a price', 'thunder'],
-    chronos: ['rings', 'Time, measured', 'tick'], hephaestus: ['embers', 'Built in the forge', 'portal'], bridge: ['streaks', 'Cross over', 'portal']
+    chronos: ['rings', 'Time, measured', 'tick'], hephaestus: ['embers', 'Built in the forge', 'portal'], bridge: ['streaks', 'Cross over', 'portal'],
+    cities: ['skyline', 'Every number, a city', 'portal'], kalshicity: ['skyline', 'Odds, rising', 'portal'], settings: ['rings', 'Make it yours', 'tick'],
+    inbox: ['streaks', 'Everything that arrived', 'tick'], ledger: ['coins', 'Every dollar, counted', 'tap']
   };
   var FL = FLAVOUR[O.app] || ['stars', 'Welcome to Olympus', 'portal'];
   st.scene = FL[0];
@@ -50,16 +53,17 @@
   if (/[?&]q=off(&|$)/.test(search)) why = 'q=off';
   else if (/[?&]intro=0(&|$)/.test(search) || ls('oly.intro') === 'off') why = 'switched off';
   else if (O.reduced()) why = 'reduced motion';
+  else if (O.lite()) why = 'LITE';
   else if (navigator.webdriver && !forced) why = 'automation';
   if (why) { st.state = 'off'; st.why = why; return; }
   var seenKey = 'oly.intro.' + (O.app || 'app');
   var seen = ss(seenKey) === '1';
-  var mode = seen ? 'short' : (O.lite() ? 'lite' : 'full');
-  var LEN = { full: 2.6, short: 0.4, lite: 0.7 };
+  var mode = seen ? 'short' : 'full';
+  var LEN = { full: 2.4, short: 0.4, lite: 0.7 };      // (lite is kept for old callers: LITE now plays nothing)
   var LEN_S = LEN[mode];
   st.mode = mode; st.len = LEN_S;
   // film clock tt: the full film runs 0 -> 2.6; the short ones play its last part faster (the glyph and the name already formed)
-  var tt0 = mode === 'full' ? 0 : mode === 'short' ? 1.55 : 1.75, ttK = mode === 'full' ? 1 : (2.6 - tt0) / LEN_S;
+  var tt0 = mode === 'full' ? 0 : mode === 'short' ? 1.55 : 1.75, ttK = (2.6 - tt0) / LEN_S;                      // the film's own clock runs to 2.6; full plays it in 2.4 s
 
   // ------------------------------------------------------------------ small helpers
   var cl = function (x) { return x < 0 ? 0 : x > 1 ? 1 : x; };
@@ -86,7 +90,7 @@
       '@media (prefers-reduced-motion:reduce){.oly-intro{display:none}}';
     (d.head || root).appendChild(s);
   }
-  function sfx(n) { try { if (O.sfx) O.sfx(n); } catch (e) { /* the sound is never needed */ } }
+  function sfx(n) { try { var k = W.OLYMPUS_SFX; if (k && k.sound && !k.sound()) return; if (O.sfx) O.sfx(n); } catch (e) { /* the sound is never needed */ } }       // silent when the Sound switch says so
   function cue(key, name) { if (!soundsAt[key]) { soundsAt[key] = 1; sfx(name); } }
 
   function finish(how) {                                       // removes everything; safe to call any number of times

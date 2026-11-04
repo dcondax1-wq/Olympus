@@ -133,6 +133,8 @@ function renderLook() {
   const s = sget(C.KEYS.sfx), vol = typeof s.v === 'number' ? s.v : 0.35;
   $('sfxOn').checked = s.m !== true; $('vol').value = String(Math.round(vol * 100));
   $('ambient').checked = LS.getItem(C.KEYS.ambient) === '1';
+  radios($('soundSeg'), C.SOUND_MODES, C.soundGet(LS), (v) => setSound(v));
+  $('soundNote').textContent = C.SOUND_MODES.find((m) => m[0] === C.soundGet(LS))[0] === 'auto' ? 'Auto: ' + C.SOUND_MODES[0][2].toLowerCase() : C.SOUND_MODES.find((m) => m[0] === C.soundGet(LS))[2];
   $('haptics').checked = !C.flagOff(LS, C.KEYS.haptics);
   const canVib = typeof navigator.vibrate === 'function';
   $('hapNote').textContent = canVib ? 'A tiny buzz on taps' : 'The iPhone has no vibration for web pages: this works on Android';
@@ -165,6 +167,22 @@ $('sfxOn').addEventListener('change', (e) => {
 });
 $('vol').addEventListener('input', (e) => { const v = +e.target.value / 100; sfxSave({ v }); const s = SFX(); try { if (s && s.setVolume) s.setVolume(v); } catch (_) { /* nothing */ } });
 $('vol').addEventListener('change', () => playTry());
+/** the Sound switch: the kit applies it (OLYMPUS_SFX.sound(null | true | false)) and stores it; without the kit the stored key is enough */
+function setSound(mode) {
+  C.soundSet(LS, mode);
+  const s = SFX(); try { if (s && s.sound) s.sound(mode === 'auto' ? null : mode === 'on'); } catch (_) { /* nothing */ }
+  renderLook();
+}
+/** a test sound: a success cue; says why when the switch keeps it silent */
+function soundTest() {
+  const s = SFX(); let said = 'Played the success cue';
+  try {
+    if (!s) said = 'The sound kit did not load';
+    else { if (s.unlock) s.unlock(); if (s.state && s.state().muted) said = 'Sounds are switched off above'; else if (s.sound && !s.sound()) said = 'Silent: Auto stays quiet in LITE, reduced motion and battery saver. Choose On to hear it'; else if (!s.play('success')) said = 'Silent: this browser has no sound yet'; }
+  } catch (_) { said = 'Silent: this browser has no sound'; }
+  $('soundTestNote').textContent = said;
+}
+$('soundTest').addEventListener('click', soundTest);
 function playTry() { const s = SFX(); try { if (s) { if (s.unlock) s.unlock(); if (s.play) s.play('tap'); } } catch (_) { /* nothing */ } }
 $('sfxTry').addEventListener('click', playTry);
 $('ambient').addEventListener('change', (e) => {
