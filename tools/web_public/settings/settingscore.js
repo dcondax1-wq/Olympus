@@ -14,6 +14,16 @@ export const APP_NAMES = {
   kalshi: 'Kalshi', zenith: 'Zenith', argus: 'Argus', pantheon: 'Pantheon', hermes: 'Hermes', tyche: 'Tyche', fates: 'Fates', odeon: 'Odeon', oracle: 'Oracle',
   prometheus: 'Prometheus', datacity: 'Data City', tree: 'Daphne', plutus: 'Plutus', athena: 'Athena', ares: 'Ares', cities: 'Cities', bridge: 'Bridge', nemesis: 'Nemesis', settings: 'Settings',
 };
+APP_NAMES.kalshicity = 'Kalshi City'; APP_NAMES.ledger = 'Ledger'; APP_NAMES.cronos = 'Cronos'; APP_NAMES.themes = 'Olympus (look, sounds, tour)';
+/** what an app keeps on the phone, in plain words (what the owner sees under the app's name in the storage list) */
+export const APP_ABOUT = {
+  olympus: 'Your look, text size, sound, quality and tour choices', jarvis: 'Your voice, mode, alerts and chat choices (keys are never listed)', mind: 'Your notes and what you last looked at',
+  arena: 'Your saved choices in the Arena', forum: 'Your forum choices and drafts', labyrinth: 'Where you were in the maze', kalshi: 'Your view choices for the Kalshi bot', kalshicity: 'Your sound choice and the dollars you last saw, so the city can show what grew',
+  zenith: 'Your tab and view choices', argus: 'Your health-check view choices', pantheon: 'Your view choices', hermes: 'Your week view choices', tyche: 'Your view choices', fates: 'Your view choices', odeon: 'Your replay choices',
+  oracle: 'Your view choices', prometheus: 'Your view choices', datacity: 'Your camera and view choices', tree: 'Your view choices', plutus: 'Your view choices', athena: 'Your view choices', ares: 'Your view choices',
+  cities: 'Your city choices', bridge: 'Your connection choices', nemesis: 'Your view choices', settings: 'Your last tab', ledger: 'Every entry you typed: your money record lives only here, so export it before you clear it',
+};
+export const aboutOf = (id) => APP_ABOUT[id] || 'Choices this app saved on this phone';
 const MERGE = { oly: 'olympus', jfx: 'olympus' };            // 'jfx', 'oly.intro', 'olympus.theme' ... are one group
 export function groupOf(key) {
   const k = String(key), m = /^[A-Za-z0-9]+/.exec(k), p = (m ? m[0] : 'other').toLowerCase();
@@ -49,6 +59,16 @@ export function clearApp(st, id) {
   const removed = [], kept = [];
   for (const k of listKeys(st)) {
     if (groupOf(k).id !== id) continue;
+    if (isSecret(k)) { kept.push(k); continue; }
+    try { st.removeItem(k); removed.push(k); } catch (_) { /* not removable */ }
+  }
+  return { removed, kept };
+}
+
+/** clear everything this site saved on the phone except the secrets (the keys stay) -> { removed: [names], kept: [names] } */
+export function clearAll(st) {
+  const removed = [], kept = [];
+  for (const k of listKeys(st)) {
     if (isSecret(k)) { kept.push(k); continue; }
     try { st.removeItem(k); removed.push(k); } catch (_) { /* not removable */ }
   }
@@ -139,6 +159,21 @@ export const KEYS = { fx: 'jfx', theme: 'olympus.theme', grain: 'olympus.grain',
   haptics: 'olympus.haptics', ambient: 'olympus.ambient', saver: 'olympus.saver', tour: 'olympus.tour.done' };
 export const FX_LEVELS = [['ultra', 'Ultra', 'Everything: glow, reflections, the most particles (a PC or a new iPhone)'], ['high', 'High', 'The full look (the usual choice)'],
   ['low', 'LITE', 'Lighter: fewer effects, easier on the battery'], ['off', 'Still', 'Nothing moves']];
+/** the quality levels explained: [id, name, what you see, what it costs, who it is for] */
+export const FX_EXPLAIN = [
+  ['ultra', 'Ultra', 'Glow and bloom, reflections, rain, the most particles and the thickest skyline', 'Uses the most battery and warms the phone; can stutter on older iPhones', 'A PC or a new iPhone plugged in'],
+  ['high', 'High', 'The full look: glow, reflections and effects, a lighter skyline', 'Normal battery use for a 3D app', 'The usual choice'],
+  ['low', 'LITE', 'The same scenes with fewer effects: no glow pass, fewer particles and cars, a thinner skyline', 'Light on the battery; stays smooth on older phones', 'Old phones, battery saver, hot days'],
+  ['off', 'Still', 'Nothing moves: every scene is drawn once and redrawn only when you touch it', 'Almost no battery use', 'Motion sickness, or when you only want to read the numbers'],
+];
+/** why the phone is on the level it is on now, in one plain sentence. flags: { saver, reduced, chosen (the saved level or null), level (the level in use) } */
+export function fxWhy(flags) {
+  const f = flags || {}, d = FX_EXPLAIN.find((l) => l[0] === f.level) || FX_EXPLAIN[1], name = d[1];
+  if (f.saver) return 'You are on ' + name + ' because Battery saver is on. Turn it off to get your old choice back.';
+  if (f.reduced && f.level !== 'ultra' && f.level !== 'high') return 'You are on ' + name + ' because your phone asks for less motion, and Olympus follows it.';
+  if (f.chosen) return 'You are on ' + name + ' because you chose it. Pick Auto and Olympus decides for you.';
+  return 'You are on ' + name + ' because Auto picked it. A phone that draws 3D slowly is held to LITE so the apps stay smooth.';
+}
 export const fxGet = (st) => { try { const v = st.getItem(KEYS.fx); return FX_LEVELS.some((l) => l[0] === v) ? v : null; } catch (_) { return null; } };
 /** battery saver = LITE quality + no intro films + sounds muted; the old values are kept in 'olympus.saver' and come back when it goes off */
 export function saverOn(st) { return !!jget(st, KEYS.saver, null); }

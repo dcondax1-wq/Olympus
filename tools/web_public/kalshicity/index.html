@@ -20,7 +20,7 @@
 <script src="../olympus/olympus.js?v=o2" data-app="kalshicity"></script>
 <script src="../olympus/fx-core.js?v=f1"></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#2ef2d0'); r.setProperty('--oly-accent-rgb', '46, 242, 208'); })();</script>
-<link rel="stylesheet" href="kalshicity.css?v=k1">
+<link rel="stylesheet" href="kalshicity.css?v=k2">
 </head>
 <body>
 <canvas id="city" aria-label="A night city: one district per market, one building per edge of the Kalshi bot, roads with traffic, weather for the market mood" role="img"></canvas>
@@ -36,6 +36,11 @@
       <div class="odd bad"><span class="k">Stop</span><b id="oStop">-</b></div>
       <div class="odd warn"><span class="k">Ruin risk</span><b id="oRuin">-</b></div>
     </div>
+    <div class="pair" id="pair" role="group" aria-label="Best edge so far and worst leak, in dollars">
+      <button type="button" class="pcard good" id="pBest"><span class="k">Best edge so far</span><b id="pBestV">-</b><small id="pBestS">Reading...</small></button>
+      <button type="button" class="pcard bad" id="pWorst"><span class="k">Worst leak</span><b id="pWorstV">-</b><small id="pWorstS">Reading...</small></button>
+    </div>
+    <button type="button" class="ticker" id="ticker" aria-label="Open the Lab: the ideas the city is testing"><span class="tk-tag">LAB</span><span class="tk-text" id="tkText">Reading what the city is testing...</span><span class="tk-go" aria-hidden="true">&rsaquo;</span></button>
     <p class="live" id="bot" hidden></p>
   </section>
   <div class="chips" id="weather">
@@ -64,6 +69,6 @@
     <button type="button" data-view="lessons" aria-pressed="false">Lessons</button>
   </nav>
 </section>
-<script type="module" src="kalshicity.js?v=k1"></script>
+<script type="module" src="kalshicity.js?v=k2"></script>
 </body>
 </html>

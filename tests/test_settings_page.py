@@ -73,6 +73,9 @@ def part_a():
     check("a. jarvis.json keeps the Jarvis card contract (name, status, 3 kpis, <= 3 lines, t, open, theme, < 8 KB, plain text)",
           j["v"] == 1 and j["name"] == "Settings" and j["status"]["level"] in ("ok", "warn", "bad", "off") and len(j["kpis"]) == 3 and len(j["lines"]) <= 3 and isinstance(j["t"], int)
           and re.fullmatch(r"#[0-9a-f]{6}", j["theme"]) and os.path.getsize(os.path.join(PAGE, "jarvis.json")) < 8192 and not re.search(r"[<>]", json.dumps(j)), j)
+    check("a. Reading and quality: the kit's a11y layer is loaded (a11y.js defer + a11y.css), Big text is a data-oly-a11y='big-text' toggle, the quality levels are explained, the storage list has a Clear-all button",
+          'src="../olympus/a11y.js?v=a1" defer' in html and 'href="../olympus/a11y.css?v=a1"' in html and 'data-oly-a11y="big-text"' in html and 'data-oly-a11y="more-contrast"' in html
+          and 'id="fxLevels"' in html and 'id="fxWhy"' in html and 'id="clearAll"' in html and 'id="stWhat"' in html and os.path.isfile(os.path.join(WEB, "olympus", "a11y.js")))
     check("a. haptics: olympus/sfx.js honours the 'olympus.haptics' = off switch", "olympus.haptics" in rd(WEB, "olympus", "sfx.js"))
 
 
@@ -122,6 +125,30 @@ def part_b():
           r["on"] == ["low", "off", True, True] and r["off"] == ["ultra", None, False, 0.8, False], (r["on"], r["off"]))
     check("b. the tour: six cards (what, jarvis, apps, cities, connect, home), each with a title and real text", [c[0] for c in r["tour"]] == ["what", "jarvis", "apps", "cities", "connect", "home"]
           and all(c[1] and c[2] for c in r["tour"]) and r["fmt"] == ["500 B", "2.0 KB", "5.0 MB"], r["tour"])
+
+
+def part_b2():
+    r = node("""const C = await import(url + '/settingscore.js');
+      const st = new Mem();
+      ['jarvis.smart', 'jarvis.vault', 'mind.x', 'arena.save', 'oly.intro', 'kalshicity.v1', 'olympus.a11y', 'jarvis.mode', 'apiToken.y'].forEach((k) => st.setItem(k, 'v-' + k));
+      const ra = C.clearAll(st);
+      out({ why: [C.fxWhy({ saver: true, level: 'low', chosen: 'low' }), C.fxWhy({ reduced: true, level: 'off' }), C.fxWhy({ chosen: 'ultra', level: 'ultra' }), C.fxWhy({ level: 'low' }), C.fxWhy({}), C.fxWhy({ reduced: true, level: 'ultra', chosen: 'ultra' })],
+        levels: C.FX_EXPLAIN.map((l) => [l[0], l.length, l.slice(1).every((x) => typeof x === 'string' && x.length > 3)]), keep: C.FX_LEVELS.map((l) => l[0]),
+        clear: [ra.removed.sort(), ra.kept.sort(), st.length, st.getItem('jarvis.smart'), st.getItem('jarvis.vault'), st.getItem('mind.x'), st.getItem('apiToken.y')],
+        group: [C.groupOf('kalshicity.v1').name, C.groupOf('olympus.a11y').id, C.groupOf('ledger.v1').name], about: [C.aboutOf('kalshicity'), C.aboutOf('zzz'), C.aboutOf('olympus')] });""")
+    if r.get("error"):
+        check("b. node runs the quality explainer and clear-all (settingscore.js)", False, r["error"])
+        return
+    w = r["why"]
+    check("b. the quality explainer: four levels (Ultra, High, LITE, Still) in the same order as the picker, each with what you see, what it costs and who it is for",
+          [l[0] for l in r["levels"]] == r["keep"] == ["ultra", "high", "low", "off"] and all(l[1] == 5 and l[2] for l in r["levels"]), r["levels"])
+    check("b. 'why this level now' in one plain sentence: battery saver first, then the phone's less-motion setting, then your own choice, else Auto (and Auto explains the slow-phone hold to LITE)",
+          "Battery saver" in w[0] and "less motion" in w[1] and "you chose it" in w[2] and "Auto picked it" in w[3] and "LITE" in w[3] and "Auto picked it" in w[4] and "you chose it" in w[5], w)
+    removed, kept, left, smart, vault, mind, tok = r["clear"]
+    check("b. clear everything: every non-secret key goes (6 here, the token-named one counts as a secret), the secrets stay untouched with their values",
+          removed == ["arena.save", "jarvis.mode", "kalshicity.v1", "mind.x", "oly.intro", "olympus.a11y"] and kept == ["apiToken.y", "jarvis.smart", "jarvis.vault"] and left == 3 and smart == "v-jarvis.smart" and vault == "v-jarvis.vault" and mind is None and tok == "v-apiToken.y", r["clear"])
+    check("b. the storage list speaks plain words: Kalshi City and Ledger have names and a one-line 'what it keeps', unknown apps get a safe line, olympus.a11y belongs to Olympus",
+          r["group"] == ["Kalshi City", "olympus", "Ledger"] and "dollars" in r["about"][0] and r["about"][1].startswith("Choices this app saved") and "text size" in r["about"][2], (r["group"], r["about"]))
 
 
 class Quiet(http.server.SimpleHTTPRequestHandler):
@@ -174,7 +201,7 @@ def part_c():
             check("c. Escape closes the tour", p.is_hidden("#tour"))
             # ---- Look
             check("c. four tabs, Look first, each panel never blank", p.locator("#tabs [role=tab]").count() == 4 and p.get_attribute("#t-look", "aria-selected") == "true"
-                  and p.locator("#p-look .card").count() == 4)
+                  and p.locator("#p-look .card").count() == 5)
             check("c. 3D quality: Auto / Ultra / High / LITE / Still; picking LITE writes jfx=low (the one key) and shows LITE",
                   p.locator("#fxSeg [role=radio]").count() == 5 and (p.click("#fxSeg [data-v=low]") or True) and p.evaluate("localStorage.getItem('jfx')") == "low"
                   and p.get_attribute("#fxSeg [data-v=low]", "aria-checked") == "true" and not p.is_hidden("#lite") and "LITE" in p.inner_text("#fxTag").upper())
@@ -184,6 +211,31 @@ def part_c():
             check("c. Still: nothing moves (0 motes, page marked LITE / STILL)", "0 motes" in p.inner_text("#fxTag") and p.inner_text("#lite").upper() == "STILL")
             p.click("#fxSeg [data-v=auto]")
             check("c. Auto removes the key", p.evaluate("localStorage.getItem('jfx')") is None)
+            why = p.inner_text("#fxWhy")
+            lv = p.evaluate("[...document.querySelectorAll('#fxLevels li')].map((l) => l.textContent)")
+            check("c. the quality explainer: one plain sentence says why this level (Auto picked it), four cards say what each level shows, costs and is for, and the current one is marked NOW",
+                  "because Auto picked it" in why and len(lv) == 4 and p.locator("#fxLevels li.now").count() == 1 and all("Costs:" in t and "Best for:" in t for t in lv) and "Still" in lv[3], (why, lv))
+            p.click("#fxSeg [data-v=low]")
+            check("c. ...it follows the choice: LITE 'because you chose it', and the NOW mark moves to LITE", "you chose it" in p.inner_text("#fxWhy") and "LITE" in p.inner_text("#fxLevels li.now b").upper())
+            p.click("#fxSeg [data-v=auto]")
+            # ---- Reading: the kit's Big text toggle
+            bt0 = p.evaluate("[document.getElementById('bigText').getAttribute('aria-pressed'), document.getElementById('bigText').getAttribute('data-oly-a11y'), document.documentElement.getAttribute('data-oly-text')]")
+            check("c. Reading: Big text is the kit's own toggle (data-oly-a11y='big-text'), a 44 px button, off to start, and the page says the text is 100%",
+                  bt0 == ["false", "big-text", "normal"] and "off" in p.text_content("#bigText") and "100%" in p.inner_text("#bigNote") and p.locator("#bigText").bounding_box()["height"] >= 44)
+            p.click("#bigText")
+            p.wait_for_function("document.documentElement.getAttribute('data-oly-text') === 'big'")
+            check("c. Big text on: html is marked big, the button is pressed and says on, the choice is saved on this phone (olympus.a11y), the note says 125%, nothing is wider than the phone",
+                  p.get_attribute("#bigText", "aria-pressed") == "true" and "on" in p.text_content("#bigText") and json.loads(p.evaluate("localStorage.getItem('olympus.a11y')"))["text"] == "big"
+                  and "125%" in p.inner_text("#bigNote") and p.evaluate("document.documentElement.scrollWidth <= document.documentElement.clientWidth"))
+            split = p.evaluate("[...document.querySelectorAll('.tabs button, #fxSeg button')].filter((b) => { const r = document.createRange(); r.selectNodeContents(b); return new Set([...r.getClientRects()].map((x) => Math.round(x.top))).size > 1; }).map((b) => b.textContent)")
+            check("c. Big text on: the tabs and the quality picker keep whole words (no word broken across two lines)", not split, split)
+            p.click("#moreContrast")
+            check("c. Stronger contrast on: html is marked, the button says so; both toggles off again with a second tap",
+                  p.evaluate("document.documentElement.getAttribute('data-oly-contrast')") == "more" and "stronger" in p.text_content("#moreContrast") and p.get_attribute("#moreContrast", "aria-pressed") == "true")
+            p.click("#moreContrast")
+            p.click("#bigText")
+            p.wait_for_function("document.documentElement.getAttribute('data-oly-text') === 'normal'")
+            check("c. ...off again: normal text, normal contrast, 'off' on the buttons", p.evaluate("document.documentElement.getAttribute('data-oly-contrast')") is None and "off" in p.text_content("#bigText") and "100%" in p.inner_text("#bigNote"))
             n = p.locator("#themes .theme").count()
             p.click("#themes .theme[data-id=zeus]")
             check("c. themes: every OLYMPUS theme as a swatch card; tapping one saves olympus.theme and repaints the page now",
@@ -220,6 +272,9 @@ def part_c():
             apps = p.evaluate("[...document.querySelectorAll('#appList li')].map((l) => l.getAttribute('data-app'))")
             check("c. storage: this phone's use, a row per app with its count and size, the secrets named as kept", {"arena", "mind", "jarvis"} <= set(apps) and "Kept (secret): jarvis.smart, jarvis.vault" in p.inner_text("#appList")
                   and p.inner_text("#stUse") != "" and "secret" in p.inner_text("#stNote"))
+            check("c. the list says in plain words what each app keeps and what the page stores (never a key, never money numbers); Clear-all is a 44 px button",
+                  p.evaluate("[...document.querySelectorAll('#appList li')].every((l) => l.querySelector('small.about') && l.querySelector('small.about').textContent.length > 8)")
+                  and "Never a key" in p.inner_text("#stWhat") and p.locator("#clearAll").bounding_box()["height"] >= 44 and not p.is_disabled("#clearAll"))
             p.click("#appList li[data-app=arena] .mini")
             check("c. clearing asks first and names what stays", not p.is_hidden("#sheet") and "Clear Arena" in p.text_content("#shT"))
             p.click("#shNo")
@@ -255,6 +310,18 @@ def part_c():
                 os.remove(imp)
             except OSError:
                 pass
+            # ---- clear everything (last, it empties the seeds the tests above used)
+            p.click("#clearAll")
+            check("c. 'Clear everything' asks first, counts what it removes and names the secrets that stay", not p.is_hidden("#sheet") and "Clear everything" in p.text_content("#shT") and "saved settings" in p.text_content("#shP")
+                  and "jarvis.smart" in p.text_content("#shL") and p.text_content("#shYes") == "Clear all")
+            p.click("#shNo")
+            check("c. Cancel keeps everything", p.evaluate("localStorage.getItem('mind.x')") == "1")
+            p.click("#clearAll")
+            p.click("#shYes")
+            keys = p.evaluate("Object.keys(localStorage).sort()")
+            check("c. Clear all: Mind's, Jarvis's and Olympus' saved choices are gone, the two secrets stay untouched (and are never shown)",
+                  "mind.x" not in keys and "mind.imported" not in keys and "jarvis.mode" not in keys and "olympus.theme" not in keys and p.evaluate("localStorage.getItem('jarvis.smart')") is not None
+                  and p.evaluate("localStorage.getItem('jarvis.vault')") is not None and "Cleared" in p.inner_text("#ioNote") and "SECRET" not in p.content(), keys)
             # ---- System
             p.click("#t-system")
             hrefs = p.evaluate("[...document.querySelectorAll('#p-system a')].map((a) => a.getAttribute('href'))")
@@ -296,6 +363,7 @@ def main():
         part_a()
     if which in ("", "b"):
         part_b()
+        part_b2()
     if which in ("", "c") and not os.environ.get("SET_NO_BROWSER"):
         part_c()
     n = sum(RES)

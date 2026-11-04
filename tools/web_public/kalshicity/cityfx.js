@@ -54,8 +54,8 @@ export function createCityFx({ scene, camera, rc, O = null, sound = () => false 
     if (!world || !L) return;
     const n = SIGNS[tierName] || 0;
     if (n) {
-      const picks = L.buildings.filter((b) => !b.e.small && b.e.status !== 'DEAD').sort((a, b) => b.fullH - a.fullH).slice(0, n);
-      L.buildings.filter((b) => b.e.status === 'DEAD' && !b.e.small).sort((a, b) => b.e.n - a.e.n).slice(0, 3).forEach((b) => picks.push(b));
+      const picks = L.buildings.filter((b) => !b.lab && !b.e.small && b.e.status !== 'DEAD').sort((a, b) => b.fullH - a.fullH).slice(0, n);
+      L.buildings.filter((b) => !b.lab && b.e.status === 'DEAD' && !b.e.small).sort((a, b) => b.e.n - a.e.n).slice(0, 3).forEach((b) => picks.push(b));
       picks.forEach((b, i) => {
         const dead = b.e.status === 'DEAD', col = dead ? '#ff4d57' : STATUS_COLOR[b.e.status];
         const map = signTexture(dead ? 'STOP' : short(b.e), col, dead || b.e.status === 'DECAYING');
@@ -66,7 +66,7 @@ export function createCityFx({ scene, camera, rc, O = null, sound = () => false 
         world.add(sp); signs.push(sp);
       });
     }
-    const real = L.buildings.filter((b) => b.glow > 0.2 && !b.e.small).slice(0, 420);
+    const real = L.buildings.filter((b) => !b.lab && b.glow > 0.2 && !b.e.small).slice(0, 420);
     if (real.length && tierName !== 'off') {
       const geo = new THREE.PlaneGeometry(1, 1); geo.rotateX(-Math.PI / 2);
       const mat = new THREE.ShaderMaterial(Object.assign({ fog: false, uniforms: wetU,

@@ -52,7 +52,7 @@ def node(body):
 def part_a():
     files = os.listdir(PAGE)
     need = {"index.html", "kalshicity.css", "kalshicity.js", "cityfeed.js", "citylayout.js", "cityscene.js", "cityrig.js", "cityfx.js", "lessons.js", "fixture.json", "learned.json", "edges.json", "learning_log.json",
-            "ledger.json", "jarvis.json", "manifest.webmanifest", "icon.svg"}
+            "ledger.json", "hypotheses.json", "jarvis.json", "manifest.webmanifest", "icon.svg"}
     check("a. the folder has every file (page, css, data layer, layout, scene, camera rig, fixture, the engine's four files, Jarvis card, manifest, icon)", need <= set(files), need - set(files))
     html, css = rd(PAGE, "index.html"), rd(PAGE, "kalshicity.css")
     js = {n: rd(PAGE, n) for n in files if n.endswith(".js")}
@@ -70,8 +70,8 @@ def part_a():
           all(n in fxs for n in ("godRays", "lightning", "aurora", "lensFlare", "OLYMPUS_FX")) and '<script src="../olympus/fx-core.js?v=f1"></script>' in html and "O.sfx(" in fxs and "AudioContext" not in " ".join(js.values()))
     check("a. no innerHTML / insertAdjacentHTML / document.write (the data only ever goes in as text)", not any(re.search(r"innerHTML|insertAdjacentHTML|document\.write", s) for s in js.values()))
     fetched = set(re.findall(r"getJSON\(([^,)]+)", js["kalshicity.js"]))
-    check("a. the page fetches only edges.json, learning_log.json, the public kalshi-feed (RAW), the research lessons (learned.json) and its fixture; no WebSocket / beacon / XHR / EventSource",
-          {x.strip() for x in fetched} - {"url"} == {"'edges.json'", "'learning_log.json'", "RAW", "'learned.json'", "'fixture.json'"} and not any(re.search(r"WebSocket|sendBeacon|XMLHttpRequest|EventSource", s) for s in js.values()), fetched)
+    check("a. the page fetches only edges.json, learning_log.json, hypotheses.json (the ideas' paper scores), the public kalshi-feed (RAW), the research lessons (learned.json) and its fixture; no WebSocket / beacon / XHR / EventSource",
+          {x.strip() for x in fetched} - {"url"} == {"'edges.json'", "'learning_log.json'", "RAW", "'learned.json'", "'hypotheses.json'", "'fixture.json'"} and not any(re.search(r"WebSocket|sendBeacon|XMLHttpRequest|EventSource", s) for s in js.values()), fetched)
     check("a. RAW is the public kalshi-feed's kalshi.json (read only: GET, no key, no header), and nothing of Kalshi's own is called",
           "raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json" in js["cityfeed.js"] and not re.search(r"kalshi\.com|trading-api|api\.elections", " ".join(js.values()))
           and "method:" not in js["kalshicity.js"].replace(" ", "").lower() and "'POST'" not in js["kalshicity.js"] and "headers" not in js["kalshicity.js"])
@@ -85,7 +85,7 @@ def part_a():
           j["v"] == 1 and j["name"] == "Kalshi City" and j["status"]["level"] in ("ok", "warn", "bad", "off") and len(j["kpis"]) == 3 and len(j["lines"]) <= 3 and isinstance(j["t"], int)
           and re.fullmatch(r"#[0-9a-f]{6}", j["theme"]) and os.path.getsize(os.path.join(PAGE, "jarvis.json")) < 8192 and not re.search(r"[<>]", json.dumps(j)), j)
     fx = json.loads(rd(PAGE, "fixture.json"))
-    check("a. the demo fixture is marked demo, holds a feed, the engine's edges (400+) and a log", fx["demo"] is True and fx["kalshi"]["kind"] == "kalshi" and len(fx["edges"]["edges"]) > 400 and len(fx["log"]) > 5)
+    check("a. the demo fixture is marked demo, holds a feed, the engine's edges (400+) and a log", fx["demo"] is True and fx["kalshi"]["kind"] == "kalshi" and len(fx["edges"]["edges"]) > 400 and len(fx["log"]) > 5 and len(fx["hyps"]["hyps"]) >= 6 and fx["hyps"]["pair"]["best"] and fx["hyps"]["pair"]["worst"])
     check("a. the render core wiring a new app needs is not edited here (olympus.js APPS, apps.js, sw.js and the build are the lead's): this folder only adds files",
           all(os.path.isfile(os.path.join(PAGE, f)) for f in ("manifest.webmanifest", "icon.svg")))
 
@@ -151,6 +151,74 @@ def part_b():
           and js["fmt"] == ["$1,234.50", "-$5.00", "98.8%", "-$0.000", "+$0.05", "+$0.004", "-6.1 pts", "+0.5 pts"] and js["age"] == [3, 999, 0], (js["dayf"], js["phase"], js["et"], js["fmt"], js["age"]))
 
 
+# ------------------------------------------------------------------------------------------------ b2. the Lab (research ideas): data, layout, ticker, pair
+def part_b2():
+    js = node("""const F = await import(url + '/cityfeed.js'), L = await import(url + '/citylayout.js');
+      const rd = (f) => JSON.parse(fs.readFileSync(dir + '/' + f, 'utf8'));
+      const edges = rd('edges.json'), log = rd('learning_log.json'), hyp = rd('hypotheses.json'), fx = rd('fixture.json');
+      const m = F.shape(edges, log, null, edges.t, hyp, false), d = F.shape(fx.edges, { entries: fx.log }, null, fx.edges.t, fx.hyps, true), m0 = F.shape(edges, log, null, edges.t);
+      const lay = L.layout(m), lay2 = L.layout(m), lay0 = L.layout(m0), dl = L.layout(d);
+      const labB = lay.buildings.filter((b) => b.lab), H = m.hyp.hyps, by = (id) => H.find((h) => h.id === id);
+      const hOf = (id) => lay.buildings.find((b) => b.id === id);
+      const marketR = Math.max(...lay.districts.slice(1).map((x) => Math.hypot(x.cx, x.cz) + x.half));
+      const labMinR = Math.min(...lay.labs.map((x) => Math.hypot(x.cx, x.cz) - x.half));
+      let ovl = 0; for (let i = 0; i < labB.length; i++) for (let j = i + 1; j < labB.length; j++) if (Math.hypot(labB[i].x - labB[j].x, labB[i].z - labB[j].z) < (labB[i].w + labB[j].w) / 2 * 0.9) ovl++;
+      const inPad = labB.every((b) => { const x = lay.labs.find((l) => l.key === b.lab); return Math.hypot(b.x - x.cx, b.z - x.cz) < x.half - b.w / 2; });
+      const prev = {}; H.forEach((h) => { prev[h.id + ':back'] = h.back.gain + 30; prev[h.id + ':live'] = h.live.gain; prev[h.id + ':prog'] = h.nLive; });
+      const lp = L.layout(m, prev), moved = lp.buildings.filter((b) => b.mode === 3);
+      const js2 = JSON.parse(JSON.stringify(hyp)); const fl = js2.hyps.find((h) => h.id === 'floor95');
+      fl.word = 'WORKS'; fl.judged_live = true; fl.live.n_skip = 60; fl.live.n_all = 90; fl.live.gain = 12.5; fl.live.judge = 'WORKS'; fl.live.pnl_skip = -12.5; fl.back.judge = 'WORKS';
+      const mw = F.shape(edges, log, null, edges.t, js2, false), hw = mw.hyp.hyps.find((h) => h.id === 'floor95'), lw = L.layout(mw);
+      const hb = (lay2, id) => lay2.buildings.find((b) => b.id === id);
+      const noPair = F.shape({ ...edges, edges: edges.edges.filter((e) => e.size > 1 || e.src !== 'feed') }, log, null, edges.t, null);
+      out({ n: H.length, ids: new Set(H.map((h) => h.id)).size, words: [...new Set(H.map((h) => h.word))].sort(), pair: [m.hyp.pair.best && m.hyp.pair.best.pnl, m.hyp.pair.worst && m.hyp.pair.worst.pnl, m.hyp.pair.worst.fix],
+        backNeverWorks: H.every((h) => h.back.status !== 'GROWING' || h.kind === 'size'), dBack: d.hyp.hyps.every((h) => h.back.status !== 'GROWING' || h.kind === 'size'),
+        placed: lay.buildings.length, edgeCount: lay.edgeCount, nEdges: m.edges.length, labs: lay.labs.length, labB: labB.length, noLab: lay0.labs.length, noLabB: lay0.buildings.length, same: JSON.stringify(lay.buildings.map((b) => [b.id, b.x, b.z, b.h])) === JSON.stringify(lay2.buildings.map((b) => [b.id, b.x, b.z, b.h])),
+        uniq: new Set(lay.buildings.map((b) => b.id)).size === lay.buildings.length, marketR, labMinR, extent: lay.extent, labRing: lay.labRing, ovl, inPad,
+        h: { back95: hOf('hyp:floor95:back').h, live95: hOf('hyp:floor95:live').h, backXrp: hOf('hyp:xrp:back').h, min: Math.min(...labB.map((b) => b.h)), max: Math.max(...labB.map((b) => b.h)) },
+        order: hOf('hyp:floor95:back').h >= hOf('hyp:leak9095:back').h && hOf('hyp:leak9095:back').h > hOf('hyp:xrp:back').h && hOf('hyp:xrp:back').h > hOf('hyp:small:back').h,
+        crane: labB.filter((b) => b.part === 'prog' && b.mode === 1).length, grey: labB.filter((b) => b.part === 'prog').every((b) => b.e.small), kinds: labB.every((b) => b.e.lab && b.e.dims.length === 5),
+        roads: [lay.roads.filter((r) => r.kind === 'labring').length, lay.roads.filter((r) => r.kind === 'labspur').length, lay0.roads.filter((r) => r.kind === 'labring').length],
+        junk: [F.shapeHyps(null), F.shapeHyps({}), F.shapeHyps({ hyps: [] }), F.shapeHyps({ hyps: [{ id: 3 }, null] }), F.shapeHyps({ hyps: [{ id: 'a', word: 'WAT', kind: 'wat', back: 5 }] }).hyps[0].word],
+        tick: F.tickerLines(m, []), tickDemo: F.tickerLines(d, [])[0], tickNone: F.tickerLines(m0, []),
+        changes: [F.changesOf(m, { 'floor95:live': -4 }).length, F.changesOf(m, { 'floor95:live': 0 }).length, F.changesOf(m, null).length],
+        pairs: [F.pairOf(m).best.pnl, F.pairOf(m0).best.pnl, F.pairOf(m0).worst.pnl, F.pairOf(noPair).worst && F.pairOf(noPair).worst.pnl, F.pairOf(m0).best.pnl === F.pairOf(m).best.pnl],
+        resize: [moved.length, moved.every((b) => b.from >= 0.05 && b.from <= 4 && b.e.lab), lp.buildings.filter((b) => b.mode === 3 && !b.lab).length, lp.buildings.filter((b) => b.mode === 1 && b.lab).length, L.layout(m, null).buildings.filter((b) => b.mode === 3).length],
+        works: [hw.live.status, hw.back.status, hw.judgedLive, hb(lw, 'hyp:floor95:live').e.status, hb(lw, 'hyp:floor95:live').e.small, hb(lw, 'hyp:floor95:prog').mode],
+        cardBack: F.hypCardOf(by('floor95'), 'back'), cardLive: F.hypCardOf(by('floor95'), 'live'), cardProg: F.hypCardOf(by('maker'), 'prog'), cardWorks: F.hypCardOf(hw, 'live'), cardSize: F.hypCardOf(by('small'), 'back'),
+        hypOf: [F.hypOf(m, 'hyp:floor95:live').part, F.hypOf(m, 'hyp:nope:live'), F.hypOf(m, 'hyp:floor95:zzz'), F.hypOf(m, '*~XRP~*~*~*'), F.hypOf(m0, 'hyp:floor95:back')],
+        demo: [d.hyp.demo, dl.labs.length, dl.edgeCount, d.edges.length, dl.buildings.length - dl.edgeCount, d.hyp.hyps.filter((h) => h.judgedLive).length] });""")
+    if js.get("error"):
+        check("b2. node runs the Lab (cityfeed.js + citylayout.js)", False, js["error"])
+        return
+    hyp = json.loads(rd(PAGE, "hypotheses.json"))
+    check("b2. hypotheses.json shapes: 8 ideas, unique ids, plain verdict words, the pair in dollars with the idea that plugs the leak (Stop buying at 90-95c); looking back never reads WORKS (real data and the demo)",
+          js["n"] == 8 == js["ids"] and set(js["words"]) <= {"COLLECTING", "NEEDS DATA", "PROMISING", "WORKS", "NO HELP", "SAFER"} and "WORKS" not in js["words"] and js["backNeverWorks"] and js["dBack"]
+          and js["pair"][0] > 0 and js["pair"][1] < 0 and js["pair"][2] == "leak9095" and js["pair"][0] == hyp["pair"]["best"]["pnl"] and js["pair"][1] == hyp["pair"]["worst"]["pnl"], js["pair"])
+    check("b2. the Lab layout: 8 districts x 3 towers placed beyond the market ring, inside their pads, nothing overlaps, deterministic, unique ids; the edge buildings are untouched; no ideas file = no Lab",
+          js["labs"] == 8 and js["labB"] == 24 and js["placed"] == js["nEdges"] + 24 and js["edgeCount"] == js["nEdges"] and js["labMinR"] > js["marketR"] and js["extent"] > js["labRing"] + 20 and js["ovl"] == 0 and js["inPad"] and js["same"] and js["uniq"]
+          and js["noLab"] == 0 and js["noLabB"] == js["nEdges"] and js["roads"][0] == 72 and js["roads"][1] == 8 and js["roads"][2] == 0, js)
+    check("b2. heights follow the paper dollars: bigger gain, taller tower (95c floor > 90-95c leak > drop XRP > small bets), no gain is a low slab and never invisible, a loss is a stub, nothing taller than a market tower",
+          js["order"] and js["h"]["back95"] > 15 and 1.2 <= js["h"]["min"] and js["h"]["live95"] < 3 and js["h"]["max"] <= 28, js["h"])
+    check("b2. every live-bets tower has a crane (under 30 live bets) and is grey; every lab building is a full pseudo-edge (5 dims) so the scene, picking and the card work on it", js["crane"] == 8 and js["grey"] and js["kinds"], (js["crane"], js["grey"]))
+    check("b2. junk in, safe out: null / {} / empty lists give null, rows without a string id are dropped, an unknown word becomes COLLECTING", js["junk"][:4] == [None, None, None, None] and js["junk"][4] == "COLLECTING", js["junk"])
+    tk = js["tick"]
+    check("b2. the learning ticker speaks plain words ('Tested ..., N paper bets, +$X, looking good / fees ate it'); no jargon (no z, EV, Kelly); demo lines are labelled; with no ideas it still says something",
+          len(tk) >= 6 and all("paper bets" in t or "fees ate" in t or "needs data" in t or "live bets" in t for t in tk) and not any(re.search(r"\bEV\b|Kelly|\bz \d|Wilson", t) for t in tk) and js["tickDemo"].startswith("Demo: ") and len(js["tickNone"]) == 1 and "Nothing tested" in js["tickNone"][0], (tk[:2], js["tickNone"]))
+    check("b2. what moved since the last visit: a changed live result is reported in dollars, an unchanged one and a first visit are not", js["changes"] == [1, 0, 0], js["changes"])
+    check("b2. Best edge so far / Worst leak is never blank: the engine's pair, else the model's own proven slices (same numbers), else nothing proven (the page prints $0.00)",
+          js["pairs"][0] == js["pairs"][1] == js["pair"][0] and js["pairs"][2] == js["pair"][1] and js["pairs"][3] is None, js["pairs"])
+    check("b2. a tower that moved since the last visit resizes in front of the viewer (mode 3, from 0.05x to 4x of its new height); an unchanged one and a first visit do not; the cranes stay", js["resize"][0] == 8 and js["resize"][1] and js["resize"][2] == 0 and js["resize"][3] == 8 and js["resize"][4] == 0, js["resize"])
+    check("b2. proof needs live bets: 60 live skipped bets that lose read WORKS (green live tower, not grey), looking back stays capped at PROMISING, and 30+ live bets take the crane away",
+          js["works"][0] == "GROWING" and js["works"][1] == "HOLDING" and js["works"][2] is True and js["works"][3] == "GROWING" and js["works"][4] is False and js["works"][5] == 0, js["works"])
+    cb, cl, cp, cw, cs = js["cardBack"], js["cardLive"], js["cardProg"], js["cardWorks"], js["cardSize"]
+    check("b2. the tower cards in plain words: looking back carries the 'picked after seeing the bets, proves nothing' banner, live shows the sample needed, a proven idea has no banner, fee and size ideas say what they assume",
+          "Looking back only" in cb["banner"] and any(r[0] == "Bets it would skip" for r in cb["rows"]) and any(r[0] == "Live bets needed" and "of 600" in r[1] for r in cl["rows"]) and cw["banner"] == ""
+          and any(r[0] == "Could be saved" and "if every resting order filled" in r[1] for r in cp["rows"]) and any(r[0] == "Worst day" for r in cs["rows"]) and all(len(r) == 3 for r in cb["rows"] + cl["rows"] + cp["rows"]), (cb["banner"], cp["rows"][:3]))
+    check("b2. lab building ids: hyp:<idea>:<part> resolve, anything else does not", js["hypOf"][0] == "live" and js["hypOf"][1:] == [None, None, None, None], js["hypOf"])
+    check("b2. the demo's ideas (registered 20 days ago) have live results: 5+ ideas judged on live bets, 8 districts beside the 652 demo edges", js["demo"][0] is True and js["demo"][1] == 8 and js["demo"][2] == js["demo"][3] and js["demo"][4] == 24 and js["demo"][5] >= 5, js["demo"])
+
+
 # ------------------------------------------------------------------------------------------------ c. the browser
 class Quiet(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a):
@@ -174,7 +242,7 @@ def make_site(tmp, with_engine=True):
     for d in ("jarvis", "olympus"):
         shutil.copytree(os.path.join(WEB, d), os.path.join(site, d))
     if not with_engine:
-        for f in ("edges.json", "learning_log.json"):
+        for f in ("edges.json", "learning_log.json", "hypotheses.json"):
             os.remove(os.path.join(site, "kalshicity", f))
     return site
 
@@ -254,7 +322,7 @@ def run_browser():
             check("c. loads on the chosen LITE tier at 390 x 844: real mode (no DEMO), the engine's edges, the live feed over them, 2 passes, no errors",
                   not s["demo"] and s["n"] == edges["counts"]["edges"] and s["liveUsed"] and sc["quality"] == "low" and sc["passes"] == 2 and not p.errs and p.is_visible("#lite") and not p.is_visible("#demo"), (s["demo"], s["n"], s["liveUsed"], sc, p.errs))
             check("c. one district per market plus Downtown, a building for every edge, the skyline (LITE: 700 towers), cars on the roads, orders for the 2 open positions, the weather and the clock",
-                  s["districts"][0] == "Downtown" and "Bitcoin" in s["districts"] and s["buildings"] == s["n"] and sc["real"] == s["n"] and sc["scenery"] == 700 and sc["cars"] > 60 and sc["orders"] == 2
+                  s["districts"][0] == "Downtown" and "Bitcoin" in s["districts"] and s["edgeBuildings"] == s["n"] and sc["edges"] == s["n"] and sc["scenery"] == 700 and sc["cars"] > 60 and sc["orders"] == 2
                   and sc["weather"] == edges["regime"]["state"] and re.search(r"\d\d:\d\d · (Night|Dawn|Day|Dusk)", p.inner_text("#clock")), (s["districts"], sc))
             t = p.inner_text("#verdict")
             check("c. the top card in plain words: the headline, Do more / Stop / Ruin risk, the bot line with the live bankroll ($77.77) and how many bets were read one by one; the weather chip",
@@ -290,6 +358,42 @@ def run_browser():
             check("c. a grey building says so: 'too few' bets, no stake, COLLECT (honest about small samples)", "too few" in card.lower() and "COLLECT" in card and "None: needs 30 bets" in card, card[:200])
             p.keyboard.press("Escape")
             check("c. Escape closes the card and clears the selection", not p.is_visible("#sheet") and st(p)["sel"] is None)
+            # ---- the Lab: Best edge so far / Worst leak, the learning ticker, the idea districts
+            pb, pw = p.inner_text("#pBestV"), p.inner_text("#pWorstV")
+            boxes = [p.locator(i).bounding_box() for i in ("#pBest", "#pWorst", "#ticker")]
+            tk0 = p.inner_text("#tkText")
+            check("c. Best edge so far / Worst leak in dollars (never blank) and the learning ticker in plain words; all three are 44 px+ tap targets at 390 x 844",
+                  re.fullmatch(r"\+\$\d[\d,]*\.\d\d", pb) and re.fullmatch(r"-\$\d[\d,]*\.\d\d", pw) and all(b and b["height"] >= 44 and b["width"] >= 44 for b in boxes) and re.search(r"Tested|Started|Since", tk0), (pb, pw, boxes, tk0))
+            p.evaluate("KC.tickNext()")
+            check("c. the ticker moves on to the next lesson (and says 'Demo:' only for demo ideas)", p.inner_text("#tkText") != tk0 and not p.inner_text("#tkText").startswith("Demo:") and st(p)["ticker"] >= 6, (tk0, p.inner_text("#tkText")))
+            check("c. the Lab is in the city: 8 idea districts x 3 towers beside the edge buildings, one instanced mesh (no extra draw call per tower), the real ideas (not demo)",
+                  len(s["labs"]) == 8 and s["buildings"] == s["n"] + 24 and sc["lab"] == 8 and sc["real"] == s["buildings"] and not s["hypDemo"], (s["labs"], s["buildings"], sc["lab"]))
+            p.evaluate("KC.select('hyp:floor95:back')")
+            p.wait_for_function("KC.state().view === 'card'")
+            card = p.inner_text("#sheet")
+            check("c. a tap on an idea's tower opens its card: the rule, the bets it would skip and what they made, a plain verdict, and the 'looking back only' warning; inside the gutters",
+                  "only buy 95c and up" in card.lower() and "bets it would skip" in card.lower() and "looking back only" in card.lower() and "PROMISING" in card.upper() and not p.evaluate(GEOM), card[:160])
+            p.keyboard.press("Escape")
+            p.click("#ticker")
+            p.wait_for_function("KC.state().view === 'lab'")
+            lab = p.inner_text("#sheet")
+            rows = p.locator("#sheet .ideas .row-btn")
+            rb = [rows.nth(i).bounding_box()["height"] for i in range(rows.count())]
+            check("c. tapping the ticker opens the Lab: the pair, 8 ideas (44 px+ rows) each with its verdict word, what the lab learned; inside the gutters; URL #lab",
+                  all(x.lower() in lab.lower() for x in ("Best edge so far", "Worst leak", "Ideas (8)", "What the lab learned", "Only LIVE bets")) and rows.count() == 8 and min(rb) >= 44 and p.evaluate("location.hash") == "#lab" and not p.evaluate(GEOM), (rb, lab[:120]))
+            if shots:
+                p.screenshot(path=os.path.join(shots, "kalshicity-lab.png"))
+            rows.nth(0).click()
+            p.wait_for_function("KC.state().view === 'card' && KC.state().sel.startsWith('hyp:')")
+            p.keyboard.press("Escape")
+            p.click("#pWorst")
+            p.wait_for_function("KC.state().sel === 'hyp:leak9095:back'")
+            check("c. the Worst leak button flies to the idea that plugs it (Stop buying at 90-95c); the Best edge button to the winning building", "stop buying at 90-95c" in p.inner_text("#sheet").lower() and not p.errs, p.errs)
+            p.keyboard.press("Escape")
+            p.click("#pBest")
+            p.wait_for_function("KC.state().sel === '*~*~*~95-97c~*'")
+            check("c. ...the Best edge button opens the 95-97c building's card", "95-97c" in p.inner_text("#sheet").lower() and not p.errs, p.errs)
+            p.keyboard.press("Escape")
             for v, words in (("learn", ("Every time the engine re-measures",)), ("board", ("biggest proven lead",)), ("moves", ("Do more", "Stop doing", "Watch")), ("risk", ("Kelly", "Chance of losing half")), ("guide", ("scenery", "Gold windows won"))):
                 p.click(f"[data-view={v}]") if v != "guide" else p.click("#guideBtn")
                 p.wait_for_function(f"KC.state().view === '{v}'")
@@ -329,7 +433,7 @@ def run_browser():
             p.wait_for_function("KC.state().demo === true")
             s2 = st(p)
             check("c. 'Preview the demo city' swaps in the 650-edge demo (DEMO badge, going-up and crumbling buildings, the demo's districts) and 'Back to the real city' returns",
-                  s2["n"] > 400 and p.is_visible("#demo") and s2["scene"]["constructing"] >= 1 and s2["scene"]["crumbling"] >= 1 and s2["scene"]["real"] == s2["n"] and not p.errs, (s2["n"], s2["scene"], p.errs))
+                  s2["n"] > 400 and p.is_visible("#demo") and s2["scene"]["constructing"] >= 1 and s2["scene"]["crumbling"] >= 1 and s2["scene"]["edges"] == s2["n"] and not p.errs, (s2["n"], s2["scene"], p.errs))
             p.click("#sheet .more")
             p.wait_for_function("KC.state().demo === false")
             check("c. ...back to the real city", st(p)["n"] == edges["counts"]["edges"] and not p.is_visible("#demo") and not p.errs, p.errs)
@@ -418,6 +522,28 @@ def run_browser():
             check("c. ...and a camera change still redraws it", st(p)["scene"]["drawn"] > after)
             ctx.close()
 
+            # ---- the next visit: an idea's dollars moved since the viewer last looked, so its towers resize in front of them and the ticker says so
+            ctx, p = page(reduced=True)
+            p.add_init_script("try { if (!localStorage.getItem('kalshicity.v1')) localStorage.setItem('kalshicity.v1', JSON.stringify({ hh: { 'floor95:live': -4.5, 'floor95:back': 120, 'xrp:prog': 9 } })); } catch (e) {}")
+            ready(p)
+            ch = p.evaluate("KC.changes()")
+            hh = json.loads(p.evaluate("localStorage.getItem('kalshicity.v1')"))["hh"]
+            check("c. a second visit: what moved is said in plain dollars ('Only buy 95c and up grew from -$4.50 ...'), its towers resize (3 moved), the ticker leads with it, and this visit's dollars are stored for the next",
+                  len(ch) == 1 and "Only buy 95c and up" in ch[0] and "-$4.50" in ch[0] and st(p)["scene"]["resizing"] == 3 and p.evaluate("KC.ticker()[0]") == ch[0] and hh["floor95:live"] == 0 and len(hh) == 24 and not p.errs, (ch, hh, p.errs))
+            ctx.close()
+
+            # ---- the ideas file is missing (the engine has not run it yet): the recorded demo ideas, labelled, never a blank Lab
+            os.remove(os.path.join(tmp, "nq-dashboard", "kalshicity", "hypotheses.json"))
+            ctx, p = page(reduced=True)
+            ready(p)
+            s = st(p)
+            p.click("#ticker")
+            p.wait_for_function("KC.state().view === 'lab'")
+            check("c. no ideas file yet: the real city stays real (no DEMO badge) and the Lab shows the recorded demo ideas, labelled DEMO in the ticker and the sheet, still 8 districts, Best / Worst filled",
+                  not s["demo"] and s["hypDemo"] and len(s["labs"]) == 8 and p.inner_text("#tkText").startswith("Demo: ") and "DEMO ideas" in p.inner_text("#sheet") and p.inner_text("#pWorstV").startswith("-$") and not p.errs, (s["hypDemo"], p.inner_text("#tkText"), p.errs))
+            ctx.close()
+            make_site(tmp)
+
             # ---- the feed is unreachable: the engine's copy alone (offline), still real
             live["mode"] = "down"
             ctx, p = page()
@@ -431,7 +557,7 @@ def run_browser():
             ctx, p = page()
             ready(p)
             s = st(p)
-            check("c. no engine files and no feed: the fixture's recorded demo (DEMO badge, 400+ edges, the going-up and crumbling buildings), still no errors", s["demo"] and p.is_visible("#demo") and s["n"] > 400 and s["scene"]["constructing"] >= 1 and not p.errs, (s["demo"], s["n"], p.errs))
+            check("c. no engine files and no feed: the fixture's recorded demo (DEMO badge, 400+ edges, the going-up and crumbling buildings), still no errors", s["demo"] and p.is_visible("#demo") and s["n"] > 400 and s["scene"]["constructing"] >= 1 and s["hypDemo"] and len(s["labs"]) == 8 and p.inner_text("#tkText").startswith("Demo: ") and not p.errs, (s["demo"], s["n"], p.errs))
             ctx.close()
             live["mode"] = "ok"
             make_site(tmp)
@@ -454,6 +580,7 @@ def run_browser():
 def main():
     part_a()
     part_b()
+    part_b2()
     if os.environ.get("KC_NO_BROWSER") != "1":
         run_browser()
     print(f"\n{sum(RES)}/{len(RES)} passed")

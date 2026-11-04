@@ -14,6 +14,7 @@ Files (all in --out, default tools/web_public/kalshicity/):
                       deduplicated, plus one snapshot per day of the feed's own totals (for 7 / 30 day windows of the totals)
   edges.json          what the page reads: one row per edge, the book, the weather, the do-more / stop lists
   learning_log.json   append-only: dated lessons ("Learned: ... EV -$0.04 per $1 over 112 bets: STOP"); never rewritten
+  hypotheses.json     the paper score of every research idea (tools/kalshi_hypotheses.py, run at the end of each refresh): looking back + live, verdict, plain-words log
   jarvis.json         the Jarvis card
 
 An EDGE is a slice of the bot's bets: any 1 to 3 of five dimensions fixed, the rest "*":
@@ -804,6 +805,14 @@ def run(feed, out, now=None, history=(), history_git=None, orders=()):
     write_json(os.path.join(out, "edges.json"), doc)
     write_json(os.path.join(out, "learning_log.json"), {"v": VERSION, "about": "Append-only. Every lesson the engine learned, dated; old lines are never rewritten.", "entries": log})
     write_json(os.path.join(out, "jarvis.json"), jarvis_card(doc))
+    try:                                                      # the paper score of every research idea (tools/kalshi_hypotheses.py); it never breaks the engine
+        try:
+            from tools import kalshi_hypotheses as KH
+        except ImportError:
+            import kalshi_hypotheses as KH
+        write_json(os.path.join(out, "hypotheses.json"), KH.track(ledger, edges, book, now, read_json(os.path.join(out, "hypotheses.json"), None)))
+    except Exception as ex:                                   # pragma: no cover
+        print(f"kalshi_edges: hypotheses not updated ({ex})", file=sys.stderr)
     return doc, entries, new_bets
 
 

@@ -56,8 +56,102 @@ function cleanEdge(e) {
   };
 }
 
-/** edges.json (+ the learning log, + the live feed) -> the Model. */
-export function shape(edgesDoc, logDoc, live, now = Date.now() / 1000) {
+// ------------------------------------------------------------------ the research ideas (hypotheses.json: tools/kalshi_hypotheses.py, a paper score for each idea)
+export const HYP_WORD = {
+  COLLECTING: 'Collecting', 'NEEDS DATA': 'Needs data', PROMISING: 'Promising', WORKS: 'Works', 'NO HELP': 'No help', SAFER: 'Safer',
+};
+export const HYP_COLOR = { COLLECTING: '#8f9bff', 'NEEDS DATA': '#8f9bff', PROMISING: '#ffd86a', WORKS: '#35f0b0', 'NO HELP': '#ff4d57', SAFER: '#35f0b0' };
+const HYP_STATUS = { COLLECTING: 'NEW', 'NEEDS DATA': 'NEW', PROMISING: 'HOLDING', WORKS: 'GROWING', 'NO HELP': 'DEAD', SAFER: 'GROWING' };
+export const HYP_PARTS = { back: 'Looking back', live: 'Live since the start', prog: 'Live bets collected' };
+const cleanWin = (x) => {
+  const o = isObj(x) ? x : {};
+  return { nAll: num(o.n_all) || 0, nSkip: num(o.n_skip) || 0, gain: num(o.gain) || 0, pnlSkip: num(o.pnl_skip) || 0, w: num(o.w), p: num(o.p), ev: num(o.ev), z: num(o.z), sig: str(o.sig, 1),
+    fees: num(o.fees), saved: num(o.saved), feesSkip: num(o.fees_skip), judge: str(o.judge, 12), scale: num(o.scale), total: num(o.total), after: num(o.after), ruinNow: num(o.ruin_now), ruinAfter: num(o.ruin_after),
+    worstDay: num(o.worst_day), worstDayAfter: num(o.worst_day_after) };
+};
+function cleanHyp(h) {
+  if (!isObj(h) || typeof h.id !== 'string') return null;
+  const word = HYP_WORD[h.word] ? h.word : 'COLLECTING', back = cleanWin(h.back), live = cleanWin(h.live), kind = ['filter', 'fee', 'size', 'data'].indexOf(h.kind) >= 0 ? h.kind : 'filter';
+  const judgeStatus = (w) => (HYP_STATUS[w.judge] ? HYP_STATUS[w.judge] : 'NEW');
+  const needed = num(h.needed) || 0, nLive = kind === 'filter' ? live.nSkip : live.nAll;
+  back.status = kind === 'filter' && back.judge ? (back.judge === 'WORKS' ? 'HOLDING' : judgeStatus(back)) : HYP_STATUS[word];       // looking back never reads WORKS
+  live.status = kind === 'filter' && live.nSkip >= MIN_N ? judgeStatus(live) : 'NEW';
+  return { id: h.id.slice(0, 24), name: str(h.name, 80) || h.id, short: str(h.short, 20) || str(h.name, 14).toUpperCase(), kind, src: str(h.src, 8), rule: str(h.rule, 260), word, status: HYP_STATUS[word],
+    judgedLive: h.judged_live === true, verdict: str(h.verdict, 420), line: str(h.line, 220), needed, nLive, back, live, regDay: str(isObj(h.reg) ? h.reg.day : '', 10),
+    hist: arr(h.hist).filter((x) => Array.isArray(x) && x.length >= 4).map((x) => [str(x[0], 10), num(x[1]) || 0, num(x[2]) || 0, num(x[3]) || 0]).slice(-90), covers: arr(h.covers).map((c) => str(c, 80)) };
+}
+/** hypotheses.json -> { hyps, pair, log, t, day, demo } or null. Junk in -> null / safe defaults. */
+export function shapeHyps(doc, demo = false) {
+  if (!isObj(doc) || !Array.isArray(doc.hyps)) return null;
+  const hyps = doc.hyps.map(cleanHyp).filter(Boolean).slice(0, 12);
+  if (!hyps.length) return null;
+  const pk = (p) => (isObj(p) && num(p.pnl) != null ? { id: str(p.id, 80), label: str(p.label, 80), pnl: p.pnl, n: num(p.n) || 0, fix: typeof p.fix === 'string' && hyps.some((h) => h.id === p.fix) ? p.fix : null } : null);
+  const P = isObj(doc.pair) ? doc.pair : {};
+  const log = arr(doc.log).filter(isObj).map((x) => ({ d: str(x.d, 10), t: num(x.t) || 0, kind: str(x.kind, 10), id: str(x.id, 24), text: str(x.text, 240) })).filter((x) => x.text);
+  return { hyps, byId: new Map(hyps.map((h) => [h.id, h])), pair: { best: pk(P.best), worst: pk(P.worst) }, log, t: num(doc.t) || 0, day: str(doc.day, 10), demo: !!demo };
+}
+/** Best edge so far / Worst leak in dollars. The engine's pair wins; without it the model's own proven single-slice edges make one, so it is never blank. */
+export function pairOf(m) {
+  const P = m.hyp && m.hyp.pair;
+  if (P && (P.best || P.worst)) return P;
+  const real = m.edges.filter((e) => e.size === 1 && !e.small && e.pnl != null);
+  const pick = (e) => (e ? { id: e.id, label: e.label, pnl: e.pnl, n: e.n, fix: null } : null);
+  return { best: pick(real.filter((e) => e.pnl > 0).sort((a, b) => b.pnl - a.pnl)[0]), worst: pick(real.filter((e) => e.pnl < 0).sort((a, b) => a.pnl - b.pnl)[0]) };
+}
+/** the learning ticker: plain-words lines, newest lessons first. `changes` are what moved since the viewer's last visit. */
+export function tickerLines(m, changes = []) {
+  const out = [...changes], H = m.hyp;
+  if (H) {
+    H.log.filter((x) => x.kind === 'live').slice(-2).reverse().forEach((x) => out.push(x.text));
+    [...H.hyps].sort((a, b) => Math.abs(b.back.gain) - Math.abs(a.back.gain)).forEach((h) => { if (h.line) out.push(h.line); });
+  }
+  const seen = new Set();
+  const lines = out.filter((t) => t && !seen.has(t) && seen.add(t)).map((t) => (H && H.demo ? `Demo: ${t}` : t));
+  return lines.length ? lines : ['Nothing tested yet. The first ideas are registered on the next run.'];
+}
+/** What moved since last time: compares each idea's dollars with the ones the page stored on the previous visit. */
+export function changesOf(m, prev) {
+  const out = [];
+  if (!m.hyp || !prev) return out;
+  for (const h of m.hyp.hyps) {
+    const a = prev[`${h.id}:live`], b = h.live.gain;
+    if (a != null && Math.abs(b - a) >= 0.5) out.push(`Since you were last here, '${h.name}' ${b >= a ? 'grew' : 'shrank'} from ${money(a)} to ${money(b)} on live bets`);
+  }
+  return out.slice(0, 3);
+}
+const money = (x) => (x == null ? '-' : `${x < 0 ? '-' : '+'}$${Math.abs(x).toFixed(2)}`);
+/** the tap card of one lab building: part = back | live | prog */
+export function hypCardOf(h, part) {
+  const rows = [], b = h.back, l = h.live, tone = (x) => (x > 0 ? 'ok' : x < 0 ? 'bad' : 'dim');
+  rows.push(['The idea', h.rule, '']);
+  if (part === 'back' || part === 'prog') {
+    if (h.kind === 'filter') {
+      rows.push(['Bets it would skip', `${b.nSkip} of ${b.nAll} seen${b.nSkip < MIN_N ? ' (too few to trust)' : ''}`, b.nSkip < MIN_N ? 'dim' : '']);
+      rows.push(['They made', `${money(b.pnlSkip)} after fees${b.feesSkip ? ` (fees on them about $${b.feesSkip.toFixed(2)})` : ''}`, tone(-b.pnlSkip)]);
+      rows.push(['Looking back, the rule adds', money(b.gain), tone(b.gain)]);
+      if (b.z != null) rows.push(['Is it luck?', b.sig === '-' ? `No: the skipped bets really lose (z ${sgn(b.z)})` : `Could be luck (z ${sgn(b.z)})`, b.sig === '-' ? 'ok' : '']);
+    } else if (h.kind === 'fee') {
+      rows.push(['Fees paid so far', b.fees == null ? '-' : `about $${b.fees.toFixed(2)}`, 'bad']);
+      rows.push(['Could be saved', b.saved == null ? '-' : `up to $${b.saved.toFixed(2)} if every resting order filled`, 'dim']);
+    } else if (h.kind === 'size') {
+      rows.push(['Same bets, smaller size', `${money(b.after)} instead of ${money(b.total)}`, tone(b.gain)]);
+      if (b.worstDayAfter != null) rows.push(['Worst day', `${usd(b.worstDayAfter)} instead of ${usd(b.worstDay)}`, 'ok']);
+      if (b.ruinAfter != null) rows.push(['Chance of losing half', `${pct(b.ruinAfter, 0)} instead of ${pct(b.ruinNow, 0)}`, b.ruinAfter < 0.3 ? 'ok' : 'bad']);
+    } else rows.push(['Why nothing yet', 'It needs free public spot candles joined to the bets; the feed does not carry them.', 'dim']);
+  }
+  if (part === 'live' || part === 'prog') {
+    const n = h.kind === 'filter' ? l.nSkip : l.nAll;
+    rows.push([`Live since ${h.regDay || 'the start'}`, h.kind === 'filter' ? `${l.nSkip} skipped bets of ${l.nAll} new` : `${l.nAll} new bets`, n < MIN_N ? 'dim' : '']);
+    rows.push(['Live paper result', h.kind === 'filter' || h.kind === 'fee' || h.kind === 'size' ? `${money(l.gain)}${n < MIN_N && h.kind === 'filter' ? ' (too few to judge)' : ''}` : '-', tone(l.gain)]);
+    if (h.needed) rows.push(['Live bets needed', `${n} of ${h.needed}${n >= h.needed ? ': enough' : ''}`, n >= h.needed ? 'ok' : 'dim']);
+  }
+  rows.push(['Where it comes from', h.src === 'feed' ? "the bot's own totals (looking back); live = what the totals grew by since the idea was registered" : h.src === 'ledger' ? 'the bets the engine read one by one' : 'no data yet', 'dim']);
+  return { title: `${h.name}: ${HYP_PARTS[part].toLowerCase()}`, word: HYP_WORD[h.word], color: HYP_COLOR[h.word], rows, verdict: h.verdict,
+    banner: h.judgedLive ? '' : 'Looking back only: the rule was picked after seeing these bets, so this alone proves nothing. Only live bets can.' };
+}
+
+/** edges.json (+ the learning log, + the live feed, + hypotheses.json) -> the Model. */
+export function shape(edgesDoc, logDoc, live, now = Date.now() / 1000, hypDoc = null, hypDemo = false) {
   if (!isObj(edgesDoc) || !Array.isArray(edgesDoc.edges)) return null;
   const edges = edgesDoc.edges.map(cleanEdge).filter(Boolean);
   const byId = new Map(edges.map((e) => [e.id, e]));
@@ -102,8 +196,15 @@ export function shape(edgesDoc, logDoc, live, now = Date.now() / 1000) {
     lists: { doMore: ids('do_more'), stop: ids('stop'), watch: ids('watch'), board: ids('board') },
     counts: { doMore: counts.do_more || 0, stop: counts.stop || 0, watch: counts.watch || 0, proven: counts.proven || proven.length, edges: edges.length },
     ledger: isObj(edgesDoc.ledger) ? edgesDoc.ledger : {}, headline: str(edgesDoc.headline, 200) || (log.length ? log[log.length - 1].text : ''), evMax,
-    age: Math.max(0, now - (num(edgesDoc.t) || now)),
+    age: Math.max(0, now - (num(edgesDoc.t) || now)), hyp: shapeHyps(hypDoc, hypDemo),
   };
+}
+
+/** a lab building id: 'hyp:<idea>:<back|live|prog>' -> { h, part } or null */
+export function hypOf(m, id) {
+  const p = typeof id === 'string' ? id.split(':') : [];
+  const h = p.length === 3 && p[0] === 'hyp' && m && m.hyp ? m.hyp.byId.get(p[1]) : null;
+  return h && HYP_PARTS[p[2]] ? { h, part: p[2] } : null;
 }
 
 /** Days between an ISO date (YYYY-MM-DD) and the model's day (>= 0), or 999 when unknown. */

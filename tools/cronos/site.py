@@ -1,7 +1,7 @@
 """CRONOS in the site build (tools/build_web_dashboard.py, every publish): fresh research data in, honest cards out.
 
   1. pull   the `cronos` branch (fates/, odeon/, tree/, prometheus/, cronos/status.json), the `datacity` branch (city.json,
-            jarvis.json) and the `kalshicity` branch (edges.json, learning_log.json, jarvis.json; its ledger.json stays there) into the site, app by app, all of an app's files or none, and only when the branch's card is newer
+            jarvis.json) and the `kalshicity` branch (edges.json, learning_log.json, hypotheses.json, jarvis.json; its ledger.json stays there) into the site, app by app, all of an app's files or none, and only when the branch's card is newer
             than the page's own copy (tools/web_public/<app>/). Branches are read with git (fetch --depth 1 + show); in
             GitHub Actions the build fetches them (the checkout's GITHUB_TOKEN, contents: read is enough), elsewhere only
             with CRONOS_FETCH=1. CRONOS_DIR=<folder> reads a local copy laid out like the branches (<dir>/cronos/...,
