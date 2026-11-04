@@ -140,6 +140,15 @@ const mk = (vault) => {
   out.c_outbox_after = JSON.parse(vst.getItem('jarvis.vault.outbox') || 'null');
 }
 
+// ------------------------------------------------------------------ b2. the plan question is the Planner's, not open chat
+{
+  const st = mkStore();
+  const brain = B.createBrain({ getFacts: () => ({ now: NOW, planner: { day: '2026-11-03', ev: [{ id: 'e', title: 'Gym', allDay: false, start: '07:30' }], tasks: [{ id: 't', title: 'Buy BLITZ 25K', date: '2026-11-03', done: false }], projects: [] } }),
+    now, assistant: A.createAssistant({ storage: st, now }), tools: T.createTools({ fetch: fetchAll, storage: st, now }), storage: st, fetch: fetchAll, zenithRoutes: false, autoOpen: false });
+  const r = await brain.ask("what's on my plan");
+  out.b2 = { intent: r.intent, text: r.text };
+}
+
 // ------------------------------------------------------------------ d. reminders
 {
   const J = mk(null);
@@ -263,6 +272,7 @@ def checks(O):
     check("b. no generic wall: junk gets the offline line with the key hint; bots, maths and the market stay the rule answers; nothing went to a model",
           "AI key" in t("blorp zzz qqq") and b["how are the bots"]["intent"] not in ("fallback", "assistant_offline") and t("what's 15% of 2300") == "15% of 2,300 is 345."
           and b["is the market open"]["intent"] == "market" and "weather" not in t("what can you not do") and O["b_calls_llm"] == 0, {k: v["intent"] for k, v in b.items()})
+    check("b. 'what's on my plan' is answered from the Planner (not the open-chat key wall)", O["b2"]["intent"] == "plan" and "Gym" in O["b2"]["text"], O["b2"])
     c = O["c"]
     ct = lambda k: (c.get(k) or {}).get("text", "")  # noqa: E731
     check("c. notes without a key: 'write down', 'note that', 'make a note called X: ...', 'add ... to my gym note', 'log today: ...' all kept, said plainly",
@@ -354,6 +364,7 @@ def part_browser():
             br = pw.chromium.launch(**({"executable_path": exe} if exe else {}))
             ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, service_workers="block")
             H.feeds(ctx, H.kalshi_feed())
+            ctx.route(re.compile(r".*/core-visual\.js.*"), lambda r: r.abort())      # no software-drawn 3D core: it stalls the page on a busy machine
             seen = []
             ctx.route("https://api.groq.com/**", lambda r: (seen.append(r.request.url), r.fulfill(status=200, content_type="application/json",
                       headers={"access-control-allow-origin": "*"}, body=json.dumps({"choices": [{"message": {"content": "OK"}, "finish_reason": "stop"}]}))))
@@ -371,7 +382,11 @@ def part_browser():
             p.wait_for_function("document.documentElement.dataset.tools === 'module' && document.documentElement.dataset.brain === 'module'", timeout=20000)
             p.fill("#q", "what's the weather in Boston")
             p.press("#q", "Enter")
-            p.wait_for_function("[...document.querySelectorAll('#talk .msg')].some((m) => /Boston right now: 52°F/.test(m.textContent))", timeout=15000)
+            try:
+                p.wait_for_function("[...document.querySelectorAll('#talk .msg')].some((m) => /Boston right now: 52°F/.test(m.textContent))", timeout=15000)
+            except Exception:
+                print("DEBUG", p.evaluate("[...document.querySelectorAll('#talk .msg')].map((m) => m.textContent).join(' | ').slice(0, 600)"))
+                raise
             check("k. Chromium: tools.js loads in the shell; the weather without a key (open-meteo)", True)
             p.fill("#q", "set up smart mode")
             p.press("#q", "Enter")

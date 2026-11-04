@@ -280,6 +280,8 @@ def scenarios():
                             "open blitz", "news", "good day") + [{"idle": True}], now=T_MON8, f=facts(T_MON8, kalshi=kalshi(T_MON8), kalshiState="ok")),
         S("phrasings", ask("how close are we to passing", "where's nq", "is the bot trading my eval", "who made you", "flatten everything", "stop the bot",
                            "take me home", "anything overdue", "what's up", "should i buy another eval", "good evening"), now=T_MON8, f=facts(T_MON8)),
+        S("know_rules", ask("what is a sweep", "what is an ifvg", "what is cisd", "explain the stop rule", "how do I connect chatgpt", "should I take the trade",
+                            "any ideas to make more money", "what is the drawdown on the 50K", "what's the target on the 50K"), now=T_MON10, f=facts(T_MON10)),
         S("smart_decision", [{"setSmart": {"key": "gsk_FAKE", "on": True}}] + ask("should i buy another eval"), fetch=groq_ok),
         S("zroutes", ask("atlas trades", "holodeck", "open zenith", "open settings", "blitz rules", "open the deck", "how many atlas trades")),
         S("zroutes_local", ask("atlas trades", "holodeck", "open blitz", "open the deck", "zlarior brain"), opts={"zenithRoutes": False}),
@@ -587,6 +589,13 @@ def part_node(O):
           and ["zenith", "#/blitz"] in O["old_jarvis"]["opened"], oj[17])
     check("g. 'news': no feed here, points to Zenith's News", "no news feed" in ot[18] or "Opening News" in ot[18], ot[18])
     check("g. the old greeting: 'Good day. Tap the core ...'", ot[19] == "Good day. Tap the core or type below to speak with me." and oj[20].get("text") == ot[19], (ot[19], oj[20]))
+    kr = [r.get("text", "") for r in O["know_rules"]["res"]]
+    check("know. trading words answered locally in his own terms (sweep, IFVG, CISD, the stop rule), never a Wikipedia lookup",
+          "poking past a key high or low" in kr[0] and "inverse fair value gap" in kr[1] and "change in state of delivery" in kr[2] and "1 tick beyond the sweep extreme" in kr[3]
+          and O["know_rules"]["calls"] == [], kr[:4])
+    check("know. 'connect chatgpt' points to the free key; 'should I take the trade' is refused plainly (no 'Your call, sir' wrapper); money ideas answered without a key",
+          "Say \"set up smart mode\"" in kr[4] and kr[5].startswith("That is the bot's call") and "I will not invent returns" in kr[6], kr[4:7])
+    check("know. the drawdown and target questions keep their numbers: 'Drawdown left $1,106', '$3,726 to the target'", "drawdown left $1,106" in kr[7] and "$3,726 to the target" in kr[8], kr[7:9])
     # h. smart mode
     so = O["smart_off"]
     check("h. smart mode off by default: the rule answer, no network", so["calls"] == [] and so["res"][0].get("intent") == "fallback"
