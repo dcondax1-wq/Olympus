@@ -42,7 +42,7 @@ async function mount() {
   camera.position.set(0, 1.5, 10); camera.lookAt(0, 1.6, 0);
   const fog = new T.FogExp2(0x0b0a24, 0.03); scene.fog = fog;      // a deep violet haze: far things fade into colour, not black
   const K = colours();
-  const rc = RC.createRenderer({ canvas: probe, scene, camera, quality: level(), env: 'night', tint: K.c, maxDpr: 1.25, adapt: false, exposure: 0.8,
+  const rc = RC.createRenderer({ canvas: probe, scene, camera, quality: level(), env: 'night', tint: K.c, maxDpr: 1.25, msaa: false, adapt: false, exposure: 0.8,
     theme: null, bloom: { strength: 0.75, radius: 0.7, threshold: 0.82 }, grade: { vignette: 0.42, grain: 0.035, aberration: 0.003 } });
 
   // sky: nebula + stars (both added light, no fog)
@@ -144,7 +144,10 @@ async function mount() {
     step(dt); draw();
   }
   const live = () => onHome() && !document.hidden && !still();
+  // an app open over Jarvis (the home is hidden): release the composer's buffers and the environment, not just the loop
   function kick() {
+    if (!onHome()) { if (raf) cancelAnimationFrame(raf); raf = 0; rc.suspend(); state.asleep = true; return; }
+    if (rc.asleep()) { rc.resume(); state.asleep = false; themeKey = ''; theme(); }
     if (live()) { if (!raf) { last = 0; raf = requestAnimationFrame(frame); } return; }
     if (raf) { cancelAnimationFrame(raf); raf = 0; }
     if (onHome() && !document.hidden && still()) { step(0); draw(); }      // off / reduced motion: one still frame

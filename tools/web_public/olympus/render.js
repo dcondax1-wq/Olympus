@@ -186,6 +186,8 @@ export function makeEnvironment(renderer, kind, pal) {
  *   bloom     { strength, radius, threshold } overrides of the tier's values; grade { grain, vignette, aberration, saturation }
  *             likewise (they tune a tier, never switch bloom or the grade on for low / off)
  *   adapt     step down on slow frames: true (default: only when the owner has not chosen a level) | 'always' | false
+ *   msaa      false: no multisampled buffer (a soft full-screen backdrop): FXAA does the edges, and a second composer
+ *             on the same screen never holds a second MSAA buffer
  *   maxDpr    a lower pixel-ratio cap than the tier's; autoSize (default true) sizes from the canvas's CSS box
  *   onQuality(level)   told after every tier change (the owner's choice or the automatic step down)
  * -> { renderer, composer, scene, camera, render(), resize(w?, h?), setQuality(level), quality(), passes(), setTheme(t),
@@ -213,7 +215,7 @@ export function createRenderer(opts) {
   let level = levelOf(o.quality) || (O ? O.fx() : prefersReduced() ? 'low' : 'high');
   let theme = o.theme !== undefined ? o.theme : O ? O.theme() : null;
   let composer = null, bloom = null, finish = null, envTex = null, dead = false, extra = [];
-  let width = 0, height = 0, dpr = 1, raf = 0, loop = null, tPrev = 0, firstFrame = true;
+  let width = 0, height = 0, dpr = 1, raf = 0, loop = null, tPrev = 0, firstFrame = true, asleep = false;
   const bloomTint = new THREE.Color(1, 1, 1);
   const perf = { last: 0, n: 0, sum: 0, warm: 0, fps: 0, steps: 0 };
   const reduced = prefersReduced();
@@ -221,7 +223,8 @@ export function createRenderer(opts) {
 
   function tierOf(l) {
     const base = TIERS[l];
-    return { dpr: base.dpr, samples: gl2 ? base.samples : 0, fxaa: base.fxaa,
+    const msaa = gl2 && o.msaa !== false;              // msaa:false (a soft backdrop): no multisampled buffer, FXAA instead
+    return { dpr: base.dpr, samples: msaa ? base.samples : 0, fxaa: base.fxaa || (!msaa && l !== 'off'),
       // an app's overrides tune the tier's bloom and grade, never switch them on for low / off
       bloom: base.bloom && Object.assign({}, base.bloom, o.bloom), grade: base.grade && Object.assign({}, base.grade, o.grade) };
   }
@@ -313,7 +316,7 @@ export function createRenderer(opts) {
 
   /** draw one frame (nothing while the tab is hidden); returns true when it drew */
   function render() {
-    if (dead || pageHidden()) return false;
+    if (dead || asleep || pageHidden()) return false;
     const now = performance.now();
     adapt(now);
     if (o.autoSize) size(false);
@@ -332,14 +335,14 @@ export function createRenderer(opts) {
 
   function tick(now) {
     raf = 0;
-    if (dead || !loop || pageHidden()) return;          // hidden: no new frame is asked for until the tab is back
+    if (dead || asleep || !loop || pageHidden()) return;          // hidden: no new frame is asked for until the tab is back
     const dt = tPrev ? Math.min(0.1, (now - tPrev) / 1000) : 1 / 60;
     tPrev = now;
     loop(dt, (now - t0) / 1000);
     render();
     raf = requestAnimationFrame(tick);
   }
-  const onVisible = () => { if (!pageHidden() && loop && !raf && !dead) { tPrev = 0; perf.last = 0; raf = requestAnimationFrame(tick); } };
+  const onVisible = () => { if (!pageHidden() && loop && !raf && !dead && !asleep) { tPrev = 0; perf.last = 0; raf = requestAnimationFrame(tick); } };
   document.addEventListener('visibilitychange', onVisible);
 
   const followFx = (l) => { if (!dead && levelOf(l) && l !== level) apply(l); };
@@ -361,6 +364,21 @@ export function createRenderer(opts) {
     passes: () => (composer ? composer.passes.map((p) => (p === bloom ? 'bloom' : p === finish ? 'finish' : p instanceof RenderPass ? 'scene' : 'app'))
       : ['direct']),
     setTheme(t) { theme = t || null; environment(); },
+    /** release every GPU buffer (the composer's targets and the environment) while the view is not on screen; render() draws
+     *  nothing until resume(). iPhone memory: a covered scene must not keep its multisampled buffer. */
+    suspend() {
+      if (dead || asleep) return;
+      asleep = true; if (raf) cancelAnimationFrame(raf); raf = 0;     // the loop callback stays for resume()
+      freeComposer();
+      if (envTex) { if (scene.environment === envTex) scene.environment = null; if (scene.background === envTex) scene.background = null; envTex.dispose(); envTex = null; }
+    },
+    /** rebuild what suspend() released (the start() loop, if there was one, runs again) */
+    resume() {
+      if (dead || !asleep) return;
+      asleep = false; perf.warm = 0; perf.last = 0;
+      environment(); build(); size(true); onVisible();
+    },
+    asleep: () => asleep,
     /** live bloom changes, kept across tier changes: { strength, radius, threshold, tint (a THREE.Color, '#hex' or 0xhex) } */
     setBloom(b) {
       if (!b) return;
@@ -379,7 +397,7 @@ export function createRenderer(opts) {
       const i = renderer.info;
       return { quality: level, passes: api.passes().length, names: api.passes(), dpr, samples: composer ? tier.samples : 0,
         bloom: !!bloom, fxaa: !!(composer && tier.fxaa), hdr: bufferType === THREE.HalfFloatType, fps: perf.fps, steps: perf.steps,
-        calls: i.render.calls, triangles: i.render.triangles, programs: (i.programs || []).length, env: envTex ? o.env : 'none' };
+        targets: composer ? 2 : 0, calls: i.render.calls, triangles: i.render.triangles, programs: (i.programs || []).length, env: envTex ? o.env : 'none' };
     },
     dispose() {
       if (dead) return;
