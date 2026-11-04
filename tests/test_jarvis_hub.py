@@ -227,7 +227,7 @@ def part_a():
           and m["theme_color"] == "#000000" and all(i["src"].endswith("?v=j4") for i in m["icons"]), m)
     b = open(os.path.join(ROOT, "tools", "build_web_dashboard.py"), encoding="utf-8").read()
     check("a. the site build publishes jarvis/ and kalshi/ with every build (every top-level file: fonts and parts too)",
-          'for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "pantheon", "olympus", "arena", "bridge", "ares", "plutus", "athena", "forum", "labyrinth", "argus", "nemesis", "chronos"):' in b and 'os.path.join(out, app, name)' in b)
+          'for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "pantheon", "olympus", "arena", "bridge", "ares", "plutus", "athena", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus"):' in b and 'os.path.join(out, app, name)' in b)
     check("a. kalshi/index.html exists", os.path.exists(os.path.join(KS, "index.html")))
     sw = open(os.path.join(JV, "sw.js"), encoding="utf-8").read()
     check("a. the hub's service worker only handles its own folder", "u.pathname.startsWith(scope.pathname)" in sw)
@@ -1108,8 +1108,8 @@ def run_look(br, url):
 
 
 # the switch order: Jarvis, TRADING, LIFE, MONEY (apps.js BUILT_INS); the test site has Data City's folder, not the others'
-ORDER = ["home", "zenith", "oracle", "odeon", "fates", "datacity", "tree", "prometheus", "pantheon", "ares", "forum", "labyrinth", "argus", "nemesis", "chronos", "planner", "mind", "arena", "athena", "kalshi", "tyche", "hermes", "plutus"]
-NOT_ON_SITE = ["oracle", "odeon", "fates", "tree", "prometheus", "pantheon", "ares", "forum", "labyrinth", "argus", "nemesis", "chronos", "mind", "arena", "athena", "tyche", "hermes", "plutus"]
+ORDER = ["home", "zenith", "oracle", "odeon", "fates", "datacity", "tree", "prometheus", "pantheon", "ares", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "planner", "mind", "arena", "athena", "kalshi", "tyche", "hermes", "plutus"]
+NOT_ON_SITE = ["oracle", "odeon", "fates", "tree", "prometheus", "pantheon", "ares", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "mind", "arena", "athena", "tyche", "hermes", "plutus"]
 
 
 def run_olympus(br, url):
@@ -1343,10 +1343,10 @@ def run_switcher(br, url):
       name: (c.querySelector('.nx-nm b') || {}).textContent, val: (c.querySelector('.nx-val') || {}).textContent || '', now: c.classList.contains('now'),
       lines: [...c.querySelectorAll('.nx-ln')].map((l) => l.textContent) }))""")
     names = [c["name"] for c in cards]
-    check("n. tap: the switcher opens with JARVIS, then TRADING (NQ BOT, ORACLE, ODEON, FATES, DATA CITY, DAPHNE, PROMETHEUS, PANTHEON, ARES, FORUM, LABYRINTH, ARGUS, NEMESIS, CHRONOS), LIFE (CALENDAR, MIND, ARENA, ATHENA), "
+    check("n. tap: the switcher opens with JARVIS, then TRADING (NQ BOT, ORACLE, ODEON, FATES, DATA CITY, DAPHNE, PROMETHEUS, PANTHEON, ARES, FORUM, LABYRINTH, ARGUS, NEMESIS, CHRONOS, HEPHAESTUS), LIFE (CALENDAR, MIND, ARENA, ATHENA), "
           "MONEY (KALSHI, TYCHE, HERMES, PLUTUS) and + ADD, "
           "Jarvis's card marked NOW",
-          names == ["JARVIS", "NQ BOT", "ORACLE", "ODEON", "FATES", "DATA CITY", "DAPHNE", "PROMETHEUS", "PANTHEON", "ARES", "FORUM", "LABYRINTH", "ARGUS", "NEMESIS", "CHRONOS", "CALENDAR", "MIND", "ARENA", "ATHENA", "KALSHI", "TYCHE", "HERMES", "PLUTUS", "ADD"]
+          names == ["JARVIS", "NQ BOT", "ORACLE", "ODEON", "FATES", "DATA CITY", "DAPHNE", "PROMETHEUS", "PANTHEON", "ARES", "FORUM", "LABYRINTH", "ARGUS", "NEMESIS", "CHRONOS", "HEPHAESTUS", "CALENDAR", "MIND", "ARENA", "ATHENA", "KALSHI", "TYCHE", "HERMES", "PLUTUS", "ADD"]
           and cards[0]["now"] and not any(c["now"] for c in cards[1:]), cards)
     nq = next((c for c in cards if c["id"] == "zenith"), {})
     cal = next((c for c in cards if c["id"] == "planner"), {})
