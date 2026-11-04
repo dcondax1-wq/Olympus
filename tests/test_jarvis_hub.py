@@ -306,9 +306,11 @@ def part_a():
           len(keys) == 13 and "obsidian" in keys and not set(keys) & {"wake", "clap", "screen", "kill"}, keys)
 
 
+from tests import browser_kit as BK  # noqa: E402  (shared launch: one reused browser, load-scaled timeouts, one retry of a flaky wait)
+
+
 def launch(pw):
-    exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
-    return pw.chromium.launch(**({"executable_path": exe} if exe else {}))
+    return BK.launch(pw)
 
 
 def feeds(ctx, kal):

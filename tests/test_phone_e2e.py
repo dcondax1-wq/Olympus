@@ -595,6 +595,9 @@ def make_lazy(S):
 
 
 # --------------------------------------------------------------------------------------------------------- the browser
+from tests import browser_kit as BK  # noqa: E402  (shared launch: one reused browser, load-scaled timeouts, one retry of a flaky wait)
+
+
 def chrome_exe():
     return next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
 
@@ -1882,8 +1885,7 @@ def run_local(S):
     only = set((ARGS.only or "a,b,c,d,e,f,g,h,i,j").split(","))
     t0 = time.time()
     with sync_playwright() as pw:
-        br = pw.chromium.launch(executable_path=chrome_exe(), args=["--ignore-certificate-errors", "--no-proxy-server",
-                                                                    f"--host-resolver-rules={rules}"])
+        br = BK.launch(pw, args=["--ignore-certificate-errors", "--no-proxy-server", f"--host-resolver-rules={rules}"])
         try:
             guard("a", part_a, S)                        # always: it also lists the missing Jarvis modules
             MISSING[:] = S.get("jarvis_missing") or []
@@ -1928,8 +1930,8 @@ def run_live():
     proxy = os.environ.get("HTTPS_PROXY") or os.environ.get("https_proxy")
     base = LIVE_SITE
     with sync_playwright() as pw:
-        br = pw.chromium.launch(executable_path=chrome_exe(), args=["--ignore-certificate-errors"],
-                                **({"proxy": {"server": proxy, "bypass": "127.0.0.1,localhost"}} if proxy else {}))
+        br = BK.launch(pw, args=["--ignore-certificate-errors"],
+                         **({"proxy": {"server": proxy, "bypass": "127.0.0.1,localhost"}} if proxy else {}))
         ph = Phone(br, "iPhone 13")
         try:
             m = ph.mark()

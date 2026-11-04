@@ -153,3 +153,6 @@ data/live_state_fleet*.json.tmp
 # CLEAN_PC.bat writes what the PC is (local only)
 PC_REPORT-*.txt
 data/pantheon_cache/
+
+# run_area.py results (tests/run_area.py)
+scratch/
