@@ -1287,9 +1287,34 @@
     return `<section class="card why ${m.enough ? (loss ? 'neg' : 'pos') : 'idle'}" id="sec-why" aria-label="${loss ? 'Why am I losing' : 'Where the money goes'}"><span class="lab">${loss || !m.enough ? 'Why am I losing' : 'Where the money goes'}</span>`
       + `<p class="why-t">${esc(m.text)}</p>${m.enough ? '<button type="button" class="why-b" data-act="jump" data-v="sec-whatif">What to change <em aria-hidden="true">›</em></button>' : ''}</section>`;
   }
+
+  // ---- the forward test strip (bottom of the what-if card): reads ../kalshicity/forward.json (tools/kalshi_forward.py) when it exists
+  function fwdStrip() {
+    const f = S.fwd, ok = isObj(f) && f.kind === 'kalshi-forward' && Array.isArray(f.sets) && num(f.bets) != null;
+    const tail = ' The 90–95¢ band was picked after the fact, so this is the real test.';
+    if (!ok) return '<div class="wi-fwd" id="wi-fwd"><b>Forward test</b> · collecting: 0 bets so far. Rules A, B and C will be counted on new bets only, from the day it starts.' + esc(tail) + '</div>';
+    const by = {};
+    f.sets.filter(isObj).forEach((x) => { by[x.id] = x; });
+    const n = num(f.bets), nets = ['A', 'B', 'C', 'asis'].filter((id) => by[id] && num(by[id].net) != null)
+      .map((id) => `${id === 'asis' ? 'bot' : id} <span class="${cls(by[id].net)}">${esc(usdA(num(by[id].net), true))}</span>`).join(' · ');
+    const head = f.collecting || n < 30 ? `collecting: ${esc(fmtN(n))} bet${n === 1 ? '' : 's'} so far${f.start_day ? ` (since ${esc(String(f.start_day).slice(0, 10))}, 30 needed to judge)` : ''}` : esc(String(f.text || '').slice(0, 200));
+    return `<div class="wi-fwd" id="wi-fwd"><b>Forward test</b> · ${head}${n > 0 && nets ? `<span class="wi-fn">${nets}</span>` : ''}${isObj(f.flags) && f.flags.may_be_incomplete ? ' May be incomplete: more than 40 bets happened between two checks.' : ''}${esc(tail)}</div>`;
+  }
+  async function fwd() {
+    if (S.fwdAsk) return;
+    S.fwdAsk = true;
+    let ac = null, tm = 0, r = null, j = null;
+    try { ac = new AbortController(); tm = setTimeout(() => ac.abort(), 4000); } catch (_) { ac = null; }
+    try { r = await fetch('../kalshicity/forward.json', { cache: 'no-cache', signal: ac ? ac.signal : undefined }); if (r && r.ok) j = await r.json(); } catch (_) { j = null; } finally { clearTimeout(tm); }
+    if (!isObj(j) || j.kind !== 'kalshi-forward') return;
+    S.fwd = j;
+    const el = $('#wi-fwd');
+    if (el) { const t = document.createElement('div'); t.innerHTML = fwdStrip(); if (t.firstElementChild) el.replaceWith(t.firstElementChild); }
+  }
+
   function whatifHtml(k, v) {
     const m = whatifModel(k, v), head = '<div class="card-h"><h2>If you change the bot</h2></div><p class="wi-lab">A backtest of past bets · suggestions only · nothing here places or changes a bet</p>';
-    if (!m.enough) return `<section class="card whatif" id="sec-whatif">${head}<p class="muted">${esc(m.recommend)}</p></section>`;
+    if (!m.enough) return `<section class="card whatif" id="sec-whatif">${head}<p class="muted">${esc(m.recommend)}</p>${fwdStrip()}</section>`;
     const pc = (x) => (x == null ? '–' : x === 0 ? '0%' : x < 0.01 ? '<1%' : Math.round(x * 100) + '%');
     const sets = m.sets.map((x) => `<div class="wi-set${x.id === m.pick ? ' pick' : ''}${x.id === 'asis' ? ' base' : ''}"><button type="button" class="wi-h" data-act="wi" data-v="${x.id}" aria-expanded="${S.wi === x.id}">`
       + `<span class="wi-n">${esc(x.name)}${x.id === m.pick ? ' <i>the data favours this</i>' : ''}</span><em aria-hidden="true">${S.wi === x.id ? '−' : '+'}</em></button>`
@@ -1297,7 +1322,7 @@
       + `<div><dt>Chance of ruin</dt><dd class="${x.ruin > 0.05 ? 'down' : ''}">${pc(x.ruin)}</dd></div><div><dt>Lose half</dt><dd>${pc(x.half)}</dd></div></dl>`
       + (S.wi === x.id ? `<p class="wi-r">${esc(WI_RULES[x.id])} ${esc(fmtN(x.bets))} of the past ${esc(fmtN(m.n))} bets stay in.</p>` : '') + '</div>').join('');
     return `<section class="card whatif" id="sec-whatif">${head}<p class="wi-rec">${esc(m.recommend)}</p><div class="wi-l">${sets}</div>`
-      + `<p class="muted wi-f">Net = the past bets replayed (B and C shrunk to 2% of today's ${esc(usdA(m.balance))} = ${esc(usdA(m.cap))} a bet). Worst dip and ruin (balance under $6) come from 400 seeded runs of the next ${WI_BETS} bets drawn from the same price bands at the bot's usual ${esc(usdA(m.t0))} bet. A past replay is not a promise.</p></section>`;
+      + `<p class="muted wi-f">Net = the past bets replayed (B and C shrunk to 2% of today's ${esc(usdA(m.balance))} = ${esc(usdA(m.cap))} a bet). Worst dip and ruin (balance under $6) come from 400 seeded runs of the next ${WI_BETS} bets drawn from the same price bands at the bot's usual ${esc(usdA(m.t0))} bet. A past replay is not a promise.</p>${fwdStrip()}</section>`;
   }
 
   // ---- when nothing is open (a paused bot, a quiet hour): never a blank card, the history stays and the page says what comes back
@@ -1975,5 +2000,6 @@
   } catch (_) { /* no font loading API */ }
   kit();
   city();
+  fwd();
   offline();
 })();

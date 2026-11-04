@@ -1,0 +1,187 @@
+"""tools/kalshi_forward.py: the forward paper tally for the Kalshi rule sets A / B / C. Offline and deterministic: a synthetic feed (a made-up bot at
+$100, bets at 93c / 96c / 98c / 85c), no network, no browser, nothing outside a temp folder.
+  a. the first run freezes the start (the feed's own time) and counts nothing: bets placed before it are never counted (no look-ahead)
+  b. new settled bets are folded in once, each rule set keeps / skips / shrinks them by its rule, net $ and max drawdown exact to the cent
+  c. the same feed again: 'no new bets', every file byte-identical; an open bet counts only once it settles, once
+  d. the feed unreachable (missing file, junk, not a kalshi.json, a dead address): exit 2, nothing written, an earlier tally untouched
+  e. 'collecting' under 30 bets (no leader), a leader from 30 on; the gap flag when a whole window of bets is newer than anything seen
+  f. the card keeps the Jarvis contract; sell rows and junk values are ignored; the output is deterministic
+    python -X utf8 -m tests.test_kalshi_forward
+"""
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import re
+import shutil
+import sys
+import tempfile
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
+from tools import kalshi_forward as KF  # noqa: E402
+
+RES: list = []
+T0 = 1_793_000_000
+
+
+def check(name, ok, info=""):
+    RES.append(bool(ok))
+    print(("[PASS] " if ok else "[FAIL] ") + name + ("" if ok else f"  -> {str(info)[:400]}"), flush=True)
+
+
+def bet(i, t, price, n, pnl, side="yes", action="buy", ticker=None):
+    return {"t": t, "ticker": ticker or f"KXTEST-{i}", "title": f"test {i}", "side": side, "action": action, "contracts": n, "price": price, "pnl": pnl,
+            "asset": "BTC", "strategy": "Late favourite (BTC hourly)", "category": "Bitcoin"}
+
+
+def feed(trades, t, balance=100.0):
+    """newest first, like the real feed; at most 40"""
+    tr = sorted(trades, key=lambda x: -x["t"])[:40]
+    return {"v": 3, "kind": "kalshi", "name": "Synthetic", "t": t, "balance": balance, "total_pnl": 0.0, "trades": tr}
+
+
+def put(folder, name, obj):
+    path = os.path.join(folder, name)
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump(obj, fh)
+    return path
+
+
+def run(folder, fd, name="kalshi.json"):
+    src = put(folder, name, fd)
+    return KF.main(["--feed", src, "--out", os.path.join(folder, "state", "forward.json")])
+
+
+def files(folder):
+    d = os.path.join(folder, "state")
+    return {f: open(os.path.join(d, f), "rb").read() for f in sorted(os.listdir(d))} if os.path.isdir(d) else {}
+
+
+def load(folder, name="forward.json"):
+    return json.load(open(os.path.join(folder, "state", name), encoding="utf-8"))
+
+
+def sha(d):
+    return hashlib.sha256(json.dumps({k: v.decode() for k, v in d.items()}, sort_keys=True).encode()).hexdigest()
+
+
+def main():
+    tmp = tempfile.mkdtemp(prefix="le_kalshi_forward_")
+    try:
+        # ---- a. the first run: the frozen start, nothing counted
+        old = [bet(1, T0 - 9000, 0.93, 10, -9.5), bet(2, T0 - 8000, 0.96, 10, 0.3)]            # placed before the start: never counted
+        r = run(tmp, feed(old, T0))
+        f, st = load(tmp), load(tmp, "forward_state.json")
+        check("a. first run: exit 0, the start is the feed's own time and date, no bet counted (the two older bets are ignored)",
+              r == 0 and f["start_t"] == T0 and st["start_t"] == T0 and f["bets"] == 0 and all(s["bets"] == 0 for s in f["sets"]) and f["start_day"] == st["start_day"], f)
+        check("a. nothing yet: 'Collecting: 0 bets so far', collecting flag, no leader, the after-the-fact flag is there",
+              f["collecting"] and f["leader"] is None and f["text"].startswith("Collecting: 0 bets so far") and f["flags"]["band_picked_after_the_fact"] and f["flags"]["no_look_ahead"], f["text"])
+        check("a. the three files are written beside each other: forward.json, forward_state.json, forward_card.json", sorted(files(tmp)) == ["forward.json", "forward_card.json", "forward_state.json"])
+        # ---- b. new settled bets
+        # cap = 2% of $100 = $2.00. A 93c x10 bet costs $9.30 (in the 90-95c leak); 96c x10 = $9.60; 98c x5 = $4.90; 85c x4 = $3.40 (under 90c)
+        new = [bet(3, T0 + 100, 0.93, 10, -9.31), bet(4, T0 + 200, 0.96, 10, 0.31), bet(5, T0 + 300, 0.98, 5, 0.09), bet(6, T0 + 400, 0.85, 4, 0.58),
+               bet(7, T0 + 500, 0.93, 10, 0.6), bet(8, T0 + 600, 0.96, 10, -9.62)]
+        r = run(tmp, feed(old + new, T0 + 700))
+        f = load(tmp)
+        S = {s["id"]: s for s in f["sets"]}
+        cap = 2.0
+        exp = {
+            "asis": sum(b["pnl"] for b in new),
+            "A": sum(b["pnl"] for b in new if not (0.9 <= b["price"] < 0.95)),
+            "B": sum(b["pnl"] * min(1, cap / (b["contracts"] * b["price"])) for b in new if b["price"] >= 0.95),
+            "C": sum(b["pnl"] * min(1, cap / (b["contracts"] * b["price"])) for b in new if not (0.9 <= b["price"] < 0.95)),
+        }
+        check("b. six new bets, each folded in once: the bot as it is = the sum of the real P&L, A skips the two 93c bets, B keeps 95c+ at 2% size, C skips 93c and shrinks the rest",
+              r == 0 and f["bets"] == 6 and all(abs(S[k]["net"] - round(v, 2)) < 0.006 for k, v in exp.items()) and [S[k]["bets"] for k in ("asis", "A", "B", "C")] == [6, 4, 3, 4],
+              ({k: S[k]["net"] for k in S}, {k: round(v, 2) for k, v in exp.items()}))
+        check("b. net vs the bot as it is (vs_asis) and wins / losses per set", abs(S["A"]["vs_asis"] - round(S["A"]["net"] - S["asis"]["net"], 2)) < 0.006 and S["asis"]["wins"] == 4 and S["asis"]["losses"] == 2, S["asis"])
+        # max drawdown on the bot as it is: equity -9.31, -9.00, -8.91, -8.33, -7.73, -17.35 -> peak 0, trough -17.35
+        check("b. max drawdown exact: -9.31 -> ... -> -17.35 on the bot as it is ($17.35); smaller under B", abs(S["asis"]["max_dd"] - 17.35) < 0.006 and S["B"]["max_dd"] < S["asis"]["max_dd"], (S["asis"]["max_dd"], S["B"]["max_dd"]))
+        check("b. still collecting (6 of 30): no leader named, the words say so", f["collecting"] and f["leader"] is None and "Collecting: 6 bets so far" in f["text"], f["text"])
+        # ---- c. the same feed: nothing changes; an open bet counts once, when it settles
+        before = files(tmp)
+        r = run(tmp, feed(old + new, T0 + 700))
+        check("c. the same feed again: exit 0, 'no new bets', every file byte-identical", r == 0 and files(tmp) == before)
+        opened = bet(9, T0 + 800, 0.98, 5, None)
+        r = run(tmp, feed(old + new + [opened], T0 + 900))
+        check("c. an open bet (no P&L yet) is not counted and rewrites nothing", r == 0 and files(tmp) == before)
+        settled = dict(opened, pnl=0.09)
+        r = run(tmp, feed(old + new + [settled], T0 + 1000))
+        f2 = load(tmp)
+        check("c. once it settles it is counted, once (7 bets, the bot +$0.09 more)", f2["bets"] == 7 and abs(f2["sets"][0]["net"] - (S["asis"]["net"] + 0.09)) < 0.006, f2["sets"][0])
+        r = run(tmp, feed(old + new + [settled], T0 + 1100))
+        check("c. and not again on the next run", load(tmp)["bets"] == 7)
+        # ---- d. unreachable: nothing written, an earlier tally untouched
+        before = files(tmp)
+        bad = [("a missing file", os.path.join(tmp, "nope.json")), ("junk", put(tmp, "junk.json", {"x": 1})), ("not json", None), ("a dead address", "http://127.0.0.1:9/kalshi.json")]
+        rc = []
+        for nm, src in bad:
+            if src is None:
+                src = os.path.join(tmp, "junk.txt")
+                open(src, "w").write("<html>nope")
+            rc.append(KF.main(["--feed", src, "--out", os.path.join(tmp, "state", "forward.json")]))
+        check("d. feed unreachable (missing, junk, not json, a dead address): exit 2 each time and the earlier tally is byte-identical", rc == [2, 2, 2, 2] and files(tmp) == before, rc)
+        empty = os.path.join(tmp, "fresh", "forward.json")
+        rc = KF.main(["--feed", os.path.join(tmp, "nope.json"), "--out", empty])
+        check("d. no earlier tally and no feed: exit 2 and no file is invented", rc == 2 and not os.path.exists(empty) and not os.path.exists(os.path.join(tmp, "fresh")))
+        with open(os.path.join(tmp, "state", "forward_state.json"), "w") as fh:
+            fh.write("{broken")
+        check("d. a broken state file is never guessed at: exit 2 and forward.json untouched", KF.main(["--feed", os.path.join(tmp, "kalshi.json"), "--out", os.path.join(tmp, "state", "forward.json")]) == 2
+              and files(tmp)["forward.json"] == before["forward.json"])
+        os.remove(os.path.join(tmp, "state", "forward_state.json"))
+        check("d. forward.json without its state file is never restarted silently (the frozen start would be lost): exit 2, nothing written",
+              KF.main(["--feed", os.path.join(tmp, "kalshi.json"), "--out", os.path.join(tmp, "state", "forward.json")]) == 2 and "forward_state.json" not in files(tmp))
+        # ---- e. 30+ bets: a leader; the gap flag
+        t2 = os.path.join(tmp, "big")
+        os.makedirs(t2)
+        run(t2, feed([], T0))
+        bets, k = [], 100
+        for i in range(31):                                           # 31 new bets: the 93c ones lose, the 96c ones win a little
+            px = 0.93 if i % 2 == 0 else 0.96
+            bets.append(bet(k + i, T0 + 100 + i * 10, px, 10, -9.31 if px == 0.93 else 0.31))
+        run(t2, feed(bets[:25], T0 + 500))
+        mid = load(t2)
+        run(t2, feed(bets, T0 + 900))
+        big = load(t2)
+        check("e. under 30 bets: collecting, no leader (25 bets)", mid["bets"] == 25 and mid["collecting"] and mid["leader"] is None)
+        check("e. 31 bets: judged (not collecting) and the leader is the set with the best net that beats the bot (A: it skips the losing 93c bets)",
+              big["bets"] == 31 and not big["collecting"] and big["leader"] == "A" and "A is " in big["text"] and "ahead of the bot" in big["text"], big["text"])
+        check("e. no gap when the windows overlap", big["gaps"] == 0 and not big["flags"]["may_be_incomplete"])
+        wave = [bet(500 + i, T0 + 2000 + i, 0.96, 5, 0.1) for i in range(40)]            # a whole window newer than anything seen: some bets were missed
+        run(t2, feed(wave, T0 + 3000))
+        gap = load(t2)
+        check("e. a whole window of 40 newer bets with no overlap: counted, and flagged as maybe incomplete (gaps 1)", gap["gaps"] == 1 and gap["flags"]["may_be_incomplete"] and gap["bets"] == 31 + 40, (gap["gaps"], gap["bets"]))
+        # ---- f. the card, sells, junk, determinism
+        c = load(t2, "forward_card.json")
+        raw = open(os.path.join(t2, "state", "forward_card.json"), "rb").read()
+        check("f. forward_card.json follows the Jarvis card contract (v 1, status, <= 3 kpis, <= 3 lines of plain text <= 120, t, open, theme, < 8 KB)",
+              c["v"] == 1 and c["status"]["level"] in ("ok", "warn", "bad", "off") and len(c["status"]["label"]) <= 48 and len(c["kpis"]) <= 3 and len(c["lines"]) <= 3
+              and all(len(x) <= 120 and not re.search(r"[<>&\n]", x) for x in c["lines"]) and isinstance(c["t"], int) and re.fullmatch(r"#[0-9a-f]{6}", c["theme"]) and len(raw) < 8192
+              and all(len(k["label"]) <= 20 and len(str(k["value"])) <= 24 for k in c["kpis"]), c)
+        t3 = os.path.join(tmp, "junk")
+        os.makedirs(t3)
+        run(t3, feed([], T0))
+        mess = [bet(1, T0 + 10, 0.96, 10, 0.31), bet(2, T0 + 20, 0.96, 10, 0.5, action="sell"), bet(3, T0 + 30, 1.5, 10, 0.3), bet(4, T0 + 40, 0.96, 0, 0.3),
+                bet(5, T0 + 50, 0.96, 10, "x"), bet(6, T0 + 60, 0.96, 10, True), {"t": T0 + 70, "ticker": "X"}, "junk", None]
+        run(t3, feed([m for m in mess if isinstance(m, dict)], T0 + 100))
+        check("f. sell rows and junk values (bad price, 0 contracts, text / bool P&L, missing fields) are ignored: one real bet counted", load(t3)["bets"] == 1, load(t3)["bets"])
+        a1, a2 = os.path.join(tmp, "d1"), os.path.join(tmp, "d2")
+        for d in (a1, a2):
+            os.makedirs(d)
+            run(d, feed(old, T0))
+            run(d, feed(old + new, T0 + 700))
+        check("f. deterministic: two runs of the same feeds give the same bytes", files(a1) == files(a2) and sha(files(a1)) == sha(files(a2)))
+        check("f. the script reads and writes only: no key, no Kalshi address, no network call but the feed's own repo (a source check)",
+              not re.search(r"kalshi\.com|trading-api|elections|api_key|KALSHI_|\.env", open(os.path.join(ROOT, "tools", "kalshi_forward.py"), encoding="utf-8").read())
+              and KF.FEED_URL == "https://raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json")
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    n = sum(RES)
+    print(f"\nkalshi forward: {n}/{len(RES)} " + ("ALL PASS" if n == len(RES) else "FAILED"))
+    return 0 if n == len(RES) else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

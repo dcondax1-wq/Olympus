@@ -1784,10 +1784,57 @@ def part_whatif(br, url, tmp):
     check("w3. every set header is a >= 44 px tap that opens its rule in words (A: skips 90–95¢, 1,255 of the past 1,836 bets stay in)",
           len(heights) == 4 and min(heights) >= 44 and "Skips every bet priced 90–95¢" in ex and "1,255 of the past 1,836 bets" in ex, (heights, ex))
     check("w3. the footnote says what net, dip and ruin are, and that a past replay is not a promise", "not a promise" in p.inner_text("#sec-whatif .wi-f") and "400 seeded runs" in p.inner_text("#sec-whatif .wi-f"))
+    # ---- the forward test strip at the bottom of the card (tools/kalshi_forward.py -> kalshicity/forward.json)
+    strip0 = p.inner_text("#sec-whatif #wi-fwd")
+    check("w3. forward strip, no forward.json on the site: 'Forward test · collecting: 0 bets so far', says the band was picked after the fact (never blank)",
+          "forward test" in strip0.lower() and "collecting: 0 bets so far" in strip0 and "picked after the fact" in strip0 and p.locator("#sec-whatif > .wi-fwd:last-child").count() == 1, strip0)
+    sys.path.insert(0, ROOT)
+    from tools import kalshi_forward as KF
+    kdir = os.path.join(tmp, "nq-dashboard", "kalshicity")
+    os.makedirs(kdir, exist_ok=True)
+    fpath = os.path.join(kdir, "forward.json")
+
+    def fwd_json(n_bets):
+        T0 = 1_793_000_000
+        mk = lambda i, t, px, c, pnl: {"t": t, "ticker": f"KXF-{i}", "side": "yes", "action": "buy", "contracts": c, "price": px, "pnl": pnl}   # noqa: E731
+        st = {"v": 1, "start_t": T0, "start_day": "2026-10-26", "seen": [], "last_t": None, "gaps": 0, "sets": {k: KF.blank_set() for k in KF.NAMES}}
+        bets = [mk(i, T0 + 10 * i, 0.93 if i % 2 == 0 else 0.96, 10, -9.31 if i % 2 == 0 else 0.31) for i in range(n_bets)]
+        KF.update(st, {"balance": 100.0, "trades": bets, "t": T0 + 10000})
+        return KF.report(st, {"t": T0 + 10000})
+    try:
+        for n_b, want in ((6, ["collecting: 6 bets so far", "since 2026-10-26", "30 needed to judge", "bot −$"]), (31, ["A is +", "ahead of the bot", "A +$"])):
+            rep_ = fwd_json(n_b)
+            with open(fpath, "w", encoding="utf-8") as fh:
+                json.dump(rep_, fh)
+            p.goto(page_url)
+            p.wait_for_selector("#sec-whatif #wi-fwd")
+            p.wait_for_function("document.querySelector('#wi-fwd').textContent.indexOf('collecting: 0 bets') < 0", timeout=60000)
+            txt = p.inner_text("#wi-fwd")
+            check(f"w3. forward strip with forward.json ({n_b} bets): " + ", ".join(want[:2]) + ", the nets per rule (A, B, C, bot) and the after-the-fact note",
+                  all(w_ in txt for w_ in want) and all(k_ in txt for k_ in ("A ", "B ", "C ", "bot ")) and "picked after the fact" in txt, txt)
+        rep_ = fwd_json(41)
+        rep_["flags"]["may_be_incomplete"], rep_["gaps"] = True, 1
+        with open(fpath, "w", encoding="utf-8") as fh:
+            json.dump(rep_, fh)
+        p.goto(page_url)
+        p.wait_for_function("document.querySelector('#wi-fwd') && document.querySelector('#wi-fwd').textContent.indexOf('collecting: 0 bets') < 0", timeout=60000)
+        check("w3. a tally that may have missed bets says so", "May be incomplete" in p.inner_text("#wi-fwd"))
+        with open(fpath, "w", encoding="utf-8") as fh:
+            fh.write("<html>not json")
+        p.goto(page_url)
+        p.wait_for_selector("#sec-whatif #wi-fwd")
+        time.sleep(1.5)
+        check("w3. a broken forward.json is ignored: the strip stays 'collecting: 0 bets so far'", "collecting: 0 bets so far" in p.inner_text("#wi-fwd"))
+    finally:
+        if os.path.exists(fpath):
+            os.remove(fpath)
+        if not os.listdir(kdir):
+            os.rmdir(kdir)
+    open_(j)
     # ---- under 100 bets: not enough, never blank
     open_(sample(time.time()))
     check("w4. under 100 bets (the publisher's sample): both cards still show and say 'not enough bets', no sets, no numbers",
-          "Not enough settled bets yet" in p.inner_text("#sec-why .why-t") and "Not enough bets yet" in p.inner_text("#sec-whatif .muted") and p.locator("#sec-whatif .wi-set").count() == 0
+          "Not enough settled bets yet" in p.inner_text("#sec-why .why-t") and "Not enough bets yet" in p.inner_text("#sec-whatif .muted") and p.locator("#sec-whatif .wi-set").count() == 0 and "forward test" in p.inner_text("#sec-whatif").lower()
           and p.locator("#sec-why .why-b").count() == 0, p.inner_text("#sec-whatif")[:200])
     # ---- the sample preview and escaping
     FEED["mode"], FEED["j"] = "404", None
