@@ -133,7 +133,7 @@ export function moneyEvents(flat, accts) {
 }
 export function moneyThreads(s, accts) {
   const H = s.horizon, goal = s.goal;
-  return s.threads.ev.map((flat, i) => {
+  return ((s && s.threads && s.threads.ev) || []).map((flat, i) => {      // a scenario with no money threads (or one mid-switch) draws none, never throws
     const ev = moneyEvents(flat, accts);
     const pts = [[0, 0]];
     let v = 0;
@@ -153,6 +153,7 @@ export function moneyThreads(s, accts) {
 
 // ------------------------------------------------------------------------------------------------ follow one future
 export function followEval(data, s, th) {
+  if (!th || !Array.isArray(th.hist)) return { title: 'Future', end: 'No detail for this thread', tone: '', rows: [] };       // a tap from the other kind of scenario
   const cal = data.calendar || [], R = s.rules, rows = [];
   let prev = s.start.profit;
   th.hist.forEach((b, k) => {
@@ -170,6 +171,7 @@ export function followEval(data, s, th) {
 export function followMoney(data, s, th) {
   const cal = data.calendar || [], slots = s.slots || [];
   let v = 0;
+  if (!th || !Array.isArray(th.ev)) return { title: 'Future', end: 'No detail for this thread', tone: '', rows: [] };       // a tap from the other kind of scenario
   const rows = th.ev.map((e) => {
     v += e.usd;
     const what = e.code === EV.PAY ? `payout ${fmtUsd(e.usd, true)} to you` : EV_TEXT[e.code] + (e.usd ? ` (${fmtUsd(e.usd, true)})` : '');
