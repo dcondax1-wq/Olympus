@@ -271,7 +271,7 @@ export class Theater {
     this.mirror.scale.y = -1;
     this.scene.add(this.stage, this.mirror);
     this._buildRoom();
-    this.arena = new Arena({ lite: this.lite });
+    this.arena = new Arena({ lite: this.lite, reduced: this.reduced });
     this.scene.add(this.arena.g);
     this.setLite(this.lite);
   }

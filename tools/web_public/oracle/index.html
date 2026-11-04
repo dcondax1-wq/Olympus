@@ -13,6 +13,7 @@
 <script src="../olympus/themes.js?v=o2"></script>
 <script src="../olympus/olympus.js?v=o2" data-app="oracle"></script>
 <link rel="stylesheet" href="oracle.css">
+<link rel="stylesheet" href="sheet.css">
 <script type="module" src="main.js"></script>
 </head>
 <body>
@@ -32,6 +33,9 @@
     <span id="mode" class="mode" data-mode="loading" role="status"><i></i><span>CONNECTING</span></span>
     <span class="grow"></span>
     <button id="replay" class="ghost" type="button" hidden>Replay a day</button>
+    <button id="oracle-btn" class="ghost pr-btn" type="button" aria-controls="oracle" aria-expanded="false" title="What the bot needs next, level by level">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6zM18.5 14l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg><span>Prophecy</span>
+    </button>
     <button id="quality" class="ghost q" type="button" aria-pressed="true" title="Quality: HD or LITE">HD</button>
   </div>
   <div class="row">
@@ -57,7 +61,7 @@
   <div id="demo-bar" class="demo-bar" hidden>
     <button id="demo-play" class="ghost play" type="button" aria-label="Pause the replay" data-playing="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-pause" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/><path class="i-play" d="M8 5.5v13l11-6.5z"/></svg></button>
     <span id="demo-tag" class="tag">REPLAY</span>
-    <input id="scrub" type="range" min="0" max="1000" step="1" value="0" aria-label="Scrub through the session">
+    <span class="scrub-wrap"><input id="scrub" type="range" min="0" max="1000" step="1" value="0" aria-label="Scrub through the session"><span id="scrub-ticks" class="scrub-ticks" aria-hidden="true"></span></span>
     <span id="demo-time"></span>
   </div>
   <div id="pos" class="pos" hidden>
@@ -71,12 +75,51 @@
     <p id="window" data-open="false"><i></i><span id="win-text"></span></p>
     <p id="session"></p>
     <div id="wx" class="wx"></div>
+    <div id="wx2" class="wx wx2" aria-label="Day type and sweeps today"></div>
   </div>
   <div id="levels" class="levels closed">
     <button id="lv-toggle" type="button" aria-expanded="false"><span>Levels</span><span id="lv-meta"></span></button>
     <ul id="lv-list"></ul>
   </div>
 </section>
+
+<aside id="oracle" class="osheet" hidden aria-label="Prophecy: what the bot needs next">
+  <div class="os-head">
+    <h2>Prophecy</h2>
+    <div class="os-tabs" role="tablist" aria-label="Prophecy sections">
+      <button role="tab" type="button" data-tab="prophecy" aria-selected="true">Odds</button>
+      <button role="tab" type="button" data-tab="heat" aria-selected="false">Heat</button>
+      <button role="tab" type="button" data-tab="alerts" aria-selected="false">Alerts</button>
+      <button role="tab" type="button" data-tab="day" aria-selected="false">Day</button>
+    </div>
+    <button id="oracle-close" class="oly-close" type="button" aria-label="Close the prophecy">×</button>
+  </div>
+  <div class="os-body">
+    <section role="tabpanel" data-tab="prophecy">
+      <p class="pr-need"><b>NEXT</b><span id="pr-next"></span></p>
+      <ol id="pr-list" class="pr-list"></ol>
+      <p id="pr-empty" class="os-empty" hidden>No open level to read right now.</p>
+      <p id="pr-src" class="os-src"></p>
+    </section>
+    <section role="tabpanel" data-tab="heat" hidden>
+      <p class="os-note">How near price was to each level, over the last prices. 100% = price on the level.</p>
+      <ul id="ht-list" class="ht-list"></ul>
+      <p id="ht-empty" class="os-empty" hidden>Not enough price history yet.</p>
+    </section>
+    <section role="tabpanel" data-tab="alerts" hidden>
+      <ol id="al-list" class="al-list"></ol>
+      <p id="al-empty" class="os-empty" hidden>Nothing to report yet.</p>
+    </section>
+    <section role="tabpanel" data-tab="day" hidden>
+      <p class="day-k">Day type</p>
+      <p id="day-type" class="day-type">–</p>
+      <p id="day-why" class="os-note"></p>
+      <p class="day-k">Levels swept</p>
+      <p class="sw"><b id="sw-n">0</b><span id="sw-detail"></span></p>
+      <button id="day-replay" class="ghost day-rp" type="button" hidden>Replay today's session</button>
+    </section>
+  </div>
+</aside>
 
 <div id="nogl" class="nogl" hidden><p>This device can't draw the 3D radar.</p><p>The numbers still update.</p></div>
 </body>

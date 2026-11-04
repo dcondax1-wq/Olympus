@@ -10,12 +10,16 @@
 // bokeh depth of field (scene.js) and a focus falloff around the free band, a lens flare on the entry, grain and vignette
 // (off on LITE / reduced motion). Highlights: the five best trades by $, back to back. Routes: #reels (the gallery), #reel=<id> (play that reel),
 // #trade=<day>_<HHMM>_<side> (Oracle's link: the reel of that trade, any source), #highlights. ?demo=1 the fixture,
-// ?lite=1|0. applyTheme(tokens) takes an OLYMPUS theme (window.OLYMPUS.theme() / onTheme, when the kit has them).
+// The library (2026-11-04): filters (win / loss, setup, session, month, R bin), a histogram of R, Play all / Best 5 / Worst 5 queues, compare two
+// trades, the trade's numbers on the stage, a share card (PNG). ?lite=1|0. applyTheme(tokens) takes an OLYMPUS theme (window.OLYMPUS.theme() / onTheme, when the kit has them).
 import { loadReels, demoBundle, fmtUsd, fmtR, fmtPx, dayLabel, hhmm } from './data.js';
 import { phase, openPnl, stopAt } from './timeline.js';
 import { Captions, Callouts } from './captions.js';
-import { Reels, Transport, SPEEDS, fillStats, sortReels } from './ui.js';
+import { Reels, Transport, SPEEDS, fillStats, sortReels, StageStats } from './ui.js';
 import { TradeStrip } from './strip.js';
+import { Compare } from './compare.js';
+import { drawCard, shareTrade } from './share.js';
+import { queueOf, applyFilters, statsOf, histogram, runStats } from './library.js';
 
 const O = window.OLYMPUS || null;   // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
 const $ = (s) => document.querySelector(s);
@@ -37,6 +41,9 @@ const canvas = $('#stage');
 const cc = new Captions({ line: $('#cc'), transcript: $('#transcript'), reduced });
 const callouts = new Callouts($('#callouts'));
 const reels = new Reels($('#reels'), (id) => { S.hl = null; openReel(id, true); showReels(false); });
+const onstage = new StageStats($('#onstage'));
+const compare = new Compare($('#compare'), { play: (id) => { S.hl = null; openReel(id, true); showReels(false); }, closed: () => setCompareMode(false) });
+reels.onCompare = (a, b) => compare.show(a, b);
 const strip = new TradeStrip($('#strip'), (id) => { S.hl = null; openReel(id, true); });
 const transport = new Transport($('#transport'), {
   toggle: () => (S.ended ? restart() : setPlaying(!S.playing)),
@@ -131,6 +138,7 @@ function seek(T) {
   cc.sync(S.T, false);
   callouts.clear();
   transport.setPlaying(S.playing, S.ended);
+  onstage.set(S.tr, S.T, 0, true);
 }
 
 function restart() {
@@ -156,6 +164,7 @@ function openReel(id, play) {
   callouts.clear();
   transport.load(tr);
   fillStats($('#stats'), tr);
+  onstage.set(tr, S.T, 0, true);
   reels.mark(tr.id);
   strip.mark(tr.id);
   $('#title').textContent = `${tr.bot === 'ATLAS' ? 'ATLAS · ' + tr.strat : 'LIT'} · ${tr.side}`;
@@ -175,12 +184,22 @@ function openReel(id, play) {
 }
 
 // ---------------------------------------------------------------- highlights: the five best trades by $, back to back
-function startHighlights() {
-  const ids = sortReels(S.trades.filter((t) => t.usd > 0), 'usd').slice(0, HL_N).map((t) => t.id);
-  if (!ids.length) return;
-  S.hl = { ids, i: 0, at: null };
+function startHighlights() { startQueue('best'); }
+
+/** back to back: 'best' = the five best trades by $ (Highlights), 'worst' = the five worst, 'all' = every reel the library shows now */
+function startQueue(kind) {
+  const ids = (kind === 'all' ? sortReels(reels.current(), reels.sort) : queueOf(S.trades, kind)).map((t) => t.id);
+  if (!ids.length) { reels.say(kind === 'worst' ? 'No losing trade to show.' : 'No reel to play.'); return; }
+  reels.say('');
+  S.hl = { ids, i: 0, at: null, kind };
   showReels(false);
   openReel(ids[0], true);
+}
+
+function setCompareMode(on) {
+  reels.setCompare(on);
+  $('#cmpBtn').setAttribute('aria-pressed', String(!!on));
+  $('#cmpHint').hidden = !on;
 }
 
 function nextHighlight() {
@@ -194,8 +213,8 @@ function nextHighlight() {
 function hlBadge() {
   const b = $('#hlBadge');
   b.hidden = !S.hl;
-  if (S.hl) b.textContent = `HIGHLIGHT ${S.hl.i + 1}/${S.hl.ids.length}`;
-  $('#stNext').textContent = S.hl ? (S.hl.i + 1 < S.hl.ids.length ? 'Next highlight' : 'All reels') : 'Next reel';
+  if (S.hl) b.textContent = `${({ best: 'HIGHLIGHT', worst: 'WORST', all: 'REEL' })[S.hl.kind] || 'REEL'} ${S.hl.i + 1}/${S.hl.ids.length}`;
+  $('#stNext').textContent = S.hl ? (S.hl.i + 1 < S.hl.ids.length ? (S.hl.kind === 'best' ? 'Next highlight' : 'Next in the queue') : 'All reels') : 'Next reel';
 }
 
 /** Oracle's link (#trade=<day>_<HHMM>_<side>): the reel of that trade from any source, else the closest one that day. */
@@ -303,6 +322,7 @@ function frame(now) {
   S.stage.render(S.camera);
   callouts.update(wall, S.project, S.w, S.h, S.band.top, S.band.bottom);
   transport.sync(S.T, openPnl(S.tr, S.T));
+  onstage.set(S.tr, S.T, wall);
   edgeMarks();
   watchFps(rawDt);
 }
@@ -484,6 +504,14 @@ async function start() {
     openReel((S.trades[(i + 1) % S.trades.length] || S.tr).id, true);
   });
   $('#hlBtn').addEventListener('click', () => startHighlights());
+  $('#worstBtn').addEventListener('click', () => startQueue('worst'));
+  $('#allBtn').addEventListener('click', () => startQueue('all'));
+  $('#cmpBtn').addEventListener('click', () => setCompareMode(!reels.compare));
+  $('#stShare').addEventListener('click', async () => {
+    const b = $('#stShare'), r = await shareTrade(S.tr);
+    b.textContent = r === 'failed' ? 'Could not share' : r === 'saved' ? 'Saved' : 'Shared';
+    setTimeout(() => { b.textContent = 'Share'; }, 2200);
+  });
   $('#stReels').addEventListener('click', () => { showStats(false); showReels(true); });
   setSpeed(S.speed);
   if (reduced) document.body.dataset.reduced = 'true';
@@ -515,7 +543,7 @@ async function start() {
 window.__odeon = {
   state: () => ({ T: S.T, playing: S.playing, ended: S.ended, speed: S.speed, id: S.tr && S.tr.id, demo: S.demo, lite: S.lite,
     stats: S.statsShown, captions: cc.texts(), crossed: S.crossed.slice(), tStart: S.tr && S.tr.tStart, tEnd: S.tr && S.tr.tEnd,
-    gl: document.body.dataset.gl, n: S.trades.length, slow: S.slow, hl: S.hl && { i: S.hl.i, ids: S.hl.ids.slice() } }),
+    gl: document.body.dataset.gl, n: S.trades.length, slow: S.slow, hl: S.hl && { i: S.hl.i, ids: S.hl.ids.slice(), kind: S.hl.kind } }),
   trade: () => S.tr,
   debug: () => {
     const b = S.stage && S.stage.bounds ? S.stage.bounds(S.T) : {};
@@ -533,7 +561,13 @@ window.__odeon = {
       rungs: (th.rungs || []).map((r) => ({ n: r.n, on: r.s.visible })), tag: th.pnlTag ? { on: th.pnlTag.visible, text: th.pnlTag.userData.text || '' } : null };
   },
   seek, play: () => setPlaying(true), pause: () => setPlaying(false), speed: setSpeed, open: (id, play) => openReel(id, play !== false),
-  highlights: () => startHighlights(), applyTheme, find: (key) => { const t = findTrade(key); return t ? t.id : null; },
+  highlights: () => startHighlights(), queue: startQueue, applyTheme,
+  /** the 2026-11-04 library, for the tests: what is shown, the filters, the histogram, the stage numbers, the share card, compare */
+  library: () => ({ shown: reels.current().map((t) => t.id), more: reels.more, filter: reels.filter, stats: statsOf(reels.current()),
+    hist: histogram(applyFilters(S.trades, { f: reels.filter, setup: reels.more.setup, hour: reels.more.hour, month: reels.more.month })).map((b) => b.n),
+    onstage: S.tr ? runStats(S.tr, S.T) : null, compare: !$('#compare').hidden }),
+  card: () => { const c = document.createElement('canvas'); drawCard(c, S.tr); return { w: c.width, h: c.height, bytes: c.toDataURL('image/png').length }; },
+  compare: (a, b) => { const x = S.trades.find((t) => t.id === a), y = S.trades.find((t) => t.id === b); if (x && y) compare.show(x, y); }, find: (key) => { const t = findTrade(key); return t ? t.id : null; },
 };
 
 start().catch((e) => {
