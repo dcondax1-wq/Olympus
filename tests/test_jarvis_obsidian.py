@@ -31,6 +31,8 @@ import threading
 import shutil
 import subprocess
 import sys
+
+from tests import browser_kit as BK  # noqa: E402  (shared launch, load-scaled timeouts)
 import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -287,7 +289,7 @@ def part_browser():
     try:
         with sync_playwright() as pw:
             exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
-            br = pw.chromium.launch(**({"executable_path": exe} if exe else {}))
+            br = BK.launch(pw)
             p = br.new_page()
             errs, reqs = [], []
             p.on("pageerror", lambda e: errs.append(str(e)))

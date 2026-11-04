@@ -33,6 +33,8 @@ import re
 import shutil
 import subprocess
 import sys
+
+from tests import browser_kit as BK  # noqa: E402  (shared launch, load-scaled timeouts)
 import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -330,7 +332,7 @@ def part_browser():
         from playwright.sync_api import sync_playwright
         with sync_playwright() as pw:
             exe = next(iter(sorted(__import__("glob").glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
-            br = pw.chromium.launch(**({"executable_path": exe} if exe else {}))
+            br = BK.launch(pw)
             ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, service_workers="block")
             H.feeds(ctx, H.kalshi_feed())
             due = json.dumps({"v": 1, "facts": [], "todos": [], "notes": [], "told": True,
