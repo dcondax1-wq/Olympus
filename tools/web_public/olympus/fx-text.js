@@ -50,7 +50,7 @@
     demo: { to: ['1,284', '1,291', '2,006', '987'] },
     make: function (el, o, ctx) {
       var cur = el.textContent, anim = null, mo = null, lh = 0;
-      var plain = function (txt) { if (el.textContent !== txt) { el.textContent = txt; if (mo) mo.takeRecords(); } cur = txt; };
+      var plain = function (txt) { if (el.textContent !== txt || el.querySelector('.oly-odo')) { el.textContent = txt; if (mo) mo.takeRecords(); } cur = txt; };
       var done = function () { if (!anim) return; var a = anim; anim = null; plain(a.next); };
       ctx.add(function () { var n = anim ? anim.next : cur; anim = null; if (el.querySelector('.oly-odo')) el.textContent = n; });
       var roll = function (next) {

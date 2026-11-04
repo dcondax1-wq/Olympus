@@ -209,6 +209,8 @@ def test_every_effect(br, origin):
     ctx, p, errs, off, _ = new_page(br, origin, "?stage=still&small=1")
     names = p.evaluate("() => OLYMPUS_FX.names()")
     check("b. the lab loaded every effect (%d)" % len(names), len(names) >= 30, names)
+    only = [n for n in os.environ.get("OLY_FX_ONLY", "").split(",") if n]        # OLY_FX_ONLY=glassPanel,progressRing: re-check a few quickly
+    names = [n for n in names if not only or n in only]
     for tier in ("ultra", "high", "low", "off"):
         p.evaluate("(t) => __fxLab.setTier(t)", tier)
         for n in names:
@@ -332,18 +334,26 @@ def test_visible(br, origin):
     off_f = p.evaluate("() => LT.call('flash')")
     check("f. lightning: a strike flashes the scene (flash %.2f, %d px lit) and it dies away (%.2f)" % (on or 0, lit, off_f or 0), (on or 0) > 0.05 and lit > noise + 100 and off_f < 0.05, (on, lit, off_f))
     p.evaluate("() => __fxLab.stopAll()")
-    # the marble floor really mirrors the scene on high, and not on low
-    p.evaluate("() => { __fxLab.run('marbleFloor'); }")
-    p.evaluate(FRAMES, 4)
-    rt = p.evaluate("() => __fxLab.rc.renderer.info.memory.textures")
-    p.evaluate("() => __fxLab.stopAll()")
-    p.evaluate("(t) => __fxLab.setTier(t)", "low")
-    p.evaluate("() => { __fxLab.run('marbleFloor'); }")
-    p.evaluate(FRAMES, 3)
-    rt_low = p.evaluate("() => __fxLab.rc.renderer.info.memory.textures")
-    p.evaluate("() => __fxLab.stopAll()")
-    check("f. marbleFloor: a reflection buffer on high, none on low", rt > rt_low, (rt, rt_low))
     check("f. no error", not errs, errs[:3])
+    ctx.close()
+
+
+def test_marble(br, origin):
+    """The marble floor really mirrors the scene on high / ultra (a reflection buffer), and not on low."""
+    ctx, p, errs, off, _ = new_page(br, origin, "?stage=still&small=1")
+    counts = {}
+    for tier in ("high", "low"):
+        p.evaluate("(t) => __fxLab.setTier(t)", tier)
+        p.evaluate("() => { __fxLab.stopAll(); __fxLab.rc.render(); }")
+        t0 = p.evaluate("() => __fxLab.rc.renderer.info.memory.textures")
+        p.evaluate("() => { __fxLab.run('marbleFloor'); }")
+        p.evaluate(FRAMES, 3)
+        p.evaluate("() => __fxLab.rc.render()")             # the stage draws no loop here: one frame runs the mirror's pre-render
+        p.evaluate("() => __fxLab.rc.render()")
+        counts[tier] = p.evaluate("() => __fxLab.rc.renderer.info.memory.textures") - t0
+        p.evaluate("() => __fxLab.stopAll()")
+    check("f. marbleFloor: a reflection buffer on high, none on low (extra textures %s)" % counts, counts["high"] > counts["low"], counts)
+    check("f. no error (marbleFloor)", not errs, errs[:3])
     ctx.close()
 
 
@@ -366,7 +376,7 @@ def test_elements(br, origin):
           mid["cols"] >= 3 and mid["text"] == "1,291.7" and end["cols"] == 0 and end["text"] == "1,291.7" and "<" not in end["html"], (mid, end))
     p.evaluate("() => __fxLab.stopAll()")
     # countUp ends on the exact text; typewriter ends on the full text and gives it back on stop
-    p.evaluate("() => { __fxLab.run('countUp'); }")
+    p.evaluate("() => { __fxLab.hosts.countUp.scrollIntoView({ block: 'center' }); __fxLab.run('countUp'); }")   # an element effect sleeps while its element is off screen
     try:
         p.wait_for_function("() => __fxLab.hosts.countUp.textContent === '12,840'", timeout=40000)
     except Exception:
@@ -374,7 +384,7 @@ def test_elements(br, origin):
     cu = p.evaluate("() => __fxLab.hosts.countUp.textContent")
     p.evaluate("() => __fxLab.stopAll()")
     check("e. countUp: counts to 12,840", cu == "12,840", cu)
-    p.evaluate("() => { __fxLab.run('typewriter'); }")
+    p.evaluate("() => { __fxLab.hosts.typewriter.scrollIntoView({ block: 'center' }); __fxLab.run('typewriter'); }")
     try:
         p.wait_for_function("() => __fxLab.hosts.typewriter.textContent.replace('\\u258d', '').length > 3", timeout=40000)
     except Exception:
@@ -501,9 +511,9 @@ def main():
     srv, origin = serve()
     with sync_playwright() as pw:
         br = launch(pw)
-        # python -X utf8 -m tests.test_olympus_fx [every reduced hidden live visible elements wiring]: run some sections only
+        # python -X utf8 -m tests.test_olympus_fx [every reduced hidden live visible marble elements wiring]: run some sections only
         want = [a for a in sys.argv[1:] if not a.startswith("-")]
-        for fn in (test_every_effect, test_reduced, test_hidden, test_live_tiers, test_visible, test_elements, test_wiring):
+        for fn in (test_every_effect, test_reduced, test_hidden, test_live_tiers, test_visible, test_marble, test_elements, test_wiring):
             if want and fn.__name__.replace("test_", "").split("_")[0] not in want:
                 continue
             try:
