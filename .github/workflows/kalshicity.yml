@@ -34,6 +34,7 @@ jobs:
             /tools/__init__.py
             /tools/kalshi_edges.py
             /tools/kalshi_whatif.py
+            /tools/kalshi_forward.py
             /tools/kalshi_hypotheses.py
             /tools/web_public/kalshicity/edges.json
             /tools/web_public/kalshicity/ledger.json
@@ -46,7 +47,7 @@ jobs:
         run: |
           mkdir -p state prev
           if git fetch -q --depth 1 origin kalshicity 2>/dev/null; then
-            for f in edges.json ledger.json learning_log.json hypotheses.json jarvis.json whatif.json; do
+            for f in edges.json ledger.json learning_log.json hypotheses.json jarvis.json whatif.json forward.json forward_state.json forward_card.json; do
               git show "FETCH_HEAD:$f" > "state/$f" 2>/dev/null || rm -f "state/$f"
             done
             cp -f state/*.json prev/ 2>/dev/null || true
@@ -62,6 +63,10 @@ jobs:
       - name: What-if (the owner's past bets under three simple rules, suggestions only)
         continue-on-error: true
         run: python3 -X utf8 tools/kalshi_whatif.py --out state/whatif.json
+
+      - name: Forward test (rule sets A / B / C on new settled bets only)
+        continue-on-error: true
+        run: python3 -X utf8 tools/kalshi_forward.py --out state/forward.json
 
       - name: Publish the kalshicity branch (one commit, only when something changed)
         if: steps.learn.outcome == 'success'
