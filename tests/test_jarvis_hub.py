@@ -1110,8 +1110,8 @@ def run_look(br, url):
 
 
 # the switch order: Jarvis, TRADING, LIFE, MONEY (apps.js BUILT_INS); the test site has Data City's folder, not the others'
-ORDER = ["home", "zenith", "oracle", "odeon", "fates", "datacity", "tree", "prometheus", "pantheon", "ares", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "bridge", "inbox", "settings", "planner", "mind", "arena", "athena", "kalshicity", "kalshi", "tyche", "hermes", "plutus"]
-NOT_ON_SITE = ["oracle", "odeon", "fates", "tree", "prometheus", "pantheon", "ares", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "kalshicity", "bridge", "inbox", "settings", "mind", "arena", "athena", "tyche", "hermes", "plutus"]
+ORDER = ["home", "zenith", "oracle", "odeon", "fates", "datacity", "tree", "prometheus", "pantheon", "ares", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "journal", "bridge", "inbox", "settings", "planner", "mind", "arena", "athena", "kalshicity", "ledger", "kalshi", "tyche", "hermes", "plutus"]
+NOT_ON_SITE = ["oracle", "odeon", "fates", "tree", "prometheus", "pantheon", "ares", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus", "cities", "journal", "bridge", "inbox", "settings", "mind", "arena", "athena", "kalshicity", "ledger", "tyche", "hermes", "plutus"]
 
 
 def run_olympus(br, url):
@@ -1348,7 +1348,7 @@ def run_switcher(br, url):
     check("n. tap: the switcher opens with JARVIS, then TRADING (NQ BOT, ORACLE, ODEON, FATES, DATA CITY, DAPHNE, PROMETHEUS, PANTHEON, ARES, FORUM, LABYRINTH, ARGUS, NEMESIS, CHRONOS, HEPHAESTUS, CITIES, BRIDGE), LIFE (INBOX, SETTINGS, CALENDAR, MIND, ARENA, ATHENA), "
           "MONEY (KALSHI CITY, KALSHI, TYCHE, HERMES, PLUTUS) and + ADD, "
           "Jarvis's card marked NOW",
-          names == ["JARVIS", "NQ BOT", "ORACLE", "ODEON", "FATES", "DATA CITY", "DAPHNE", "PROMETHEUS", "PANTHEON", "ARES", "FORUM", "LABYRINTH", "ARGUS", "NEMESIS", "CHRONOS", "HEPHAESTUS", "CITIES", "BRIDGE", "INBOX", "SETTINGS", "CALENDAR", "MIND", "ARENA", "ATHENA", "KALSHI CITY", "KALSHI", "TYCHE", "HERMES", "PLUTUS", "ADD"]
+          names == ["JARVIS", "NQ BOT", "ORACLE", "ODEON", "FATES", "DATA CITY", "DAPHNE", "PROMETHEUS", "PANTHEON", "ARES", "FORUM", "LABYRINTH", "ARGUS", "NEMESIS", "CHRONOS", "HEPHAESTUS", "CITIES", "MNEMOSYNE", "BRIDGE", "INBOX", "SETTINGS", "CALENDAR", "MIND", "ARENA", "ATHENA", "KALSHI CITY", "LEDGER", "KALSHI", "TYCHE", "HERMES", "PLUTUS", "ADD"]
           and cards[0]["now"] and not any(c["now"] for c in cards[1:]), cards)
     nq = next((c for c in cards if c["id"] == "zenith"), {})
     cal = next((c for c in cards if c["id"] == "planner"), {})
