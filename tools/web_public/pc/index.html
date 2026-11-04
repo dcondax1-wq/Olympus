@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Start the bot on this PC</title>
+<style>
+:root{--bg:#05030b;--ink:#ece9f2;--mut:#9d95b3;--gold:#f5c96a;--line:#2a1d46;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:500 20px/1.5 system-ui,sans-serif}
+.w{max-width:640px;margin:0 auto;padding:24px 16px 48px;display:grid;gap:16px}
+h1{font-size:26px;margin:0;color:var(--gold)}.s{background:#120c22;border:1px solid var(--line);border-radius:14px;padding:16px}
+.n{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--gold);color:#000;font-weight:800;margin-right:8px}
+a.b{display:block;text-align:center;background:var(--gold);color:#000;font-weight:800;padding:18px;border-radius:12px;text-decoration:none;font-size:22px;margin-top:10px}
+code{display:block;background:#000;border:1px solid var(--line);border-radius:8px;padding:10px;word-break:break-all;font-size:15px;margin-top:8px}
+p{margin:6px 0;color:var(--mut)}b{color:var(--ink)}
+</style></head><body><div class="w">
+<h1>Start the bot on this PC</h1>
+<p>Open this page ON YOUR MAIN PC. Three steps, nothing to type.</p>
+<div class="s"><span class="n">1</span><b>Make sure the Surface is off.</b><p>Start, Power, Shut down. Then NinjaTrader here: log in, connect MFFU, tick AT Interface.</p></div>
+<div class="s"><span class="n">2</span><b>Download and double-click this.</b>
+<a class="b" href="FRESH_START.bat" download>Download FRESH_START.bat</a>
+<p>When it opens: if Windows says "protected your PC", click <b>More info</b> then <b>Run anyway</b>. Press <b>Y</b> to every question. It does everything by itself and never turns on real trading.</p></div>
+<div class="s"><span class="n">3</span><b>In NinjaTrader press F5 once.</b><p>NinjaScript Editor, F5. Then LE START, Start trading. Text Claude "moved".</p></div>
+<div class="s"><b>Still stuck?</b><p>Take a photo of the window and send it to Claude. Or use the PowerShell line:</p>
+<code>powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://demetrades2000-coder.github.io/nq-dashboard/pc/FRESH_START.ps1 | iex"</code></div>
+</div></body></html>
