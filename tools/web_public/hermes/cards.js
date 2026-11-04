@@ -187,6 +187,83 @@ function plannerCard(w, p, peers) {
   };
 }
 
+
+// ------------------------------------------------------------------------------------------------ new cards (2026-11-03)
+const EVAL_FEE = 91.8;                      // the owner's real Builder 50K price, one-time (CLAUDE.md), so "a month pays the fee N times" is his number
+
+/** Money a month: the pace of this period against the all-time average, what it is a week / a trading day / a year, and what a
+ *  month of it covers (the eval fee). A pace, not a promise: said on the card. */
+function paceCard(w, p) {
+  const all = w.periods.all;
+  if (!p.trades || num(p.per_month) == null) return null;
+  const pm = p.per_month, avg = num(all.per_month), top = Math.max(Math.abs(pm), Math.abs(avg || 0), 1);
+  const bar = (label, v, cls) => `<div class="pbar ${cls}"><span>${esc(label)}</span><i style="--w:${(Math.abs(v) / top * 100).toFixed(1)}%"></i><b class="${tone(v)}">${esc(usd(v, { cents: false }))}</b></div>`;
+  const cell = (k, v) => `<div><small>${esc(k)}</small><b class="${tone(v)}">${esc(usd(v, { cents: false }))}</b></div>`;
+  const fees = pm > 0 ? Math.floor(pm / EVAL_FEE) : 0;
+  const rel = avg ? pm / avg : null;
+  return {
+    id: 'pace', name: 'Per month', colors: pm >= 0 ? ['#06130f', '#136b4e', '#ffd76a'] : ['#14060a', '#5a1330', '#ff9aa8'], mode: 2, ms: 8000,
+    html: `${kick(p)}${kt(pm >= 0 ? 'At this pace, a month is' : 'At this pace, a month costs')}
+      <div class="hero" data-z="3">${counter(pm, 'xl gold').replace('class="count', 'data-fmt="usd0" class="count')}<p class="sub">a month, if every month looked like ${esc(p.label.toLowerCase())}</p></div>
+      <div class="pbars" data-z="2">${bar(p.label, pm, 'now')}${avg != null && p.key !== 'all' ? bar('All-time average', avg, 'avg') : ''}</div>
+      <div class="split">${cell('A week', pm * 12 / 52)}${cell('A trading day', pm / 21)}${cell('A year', pm * 12)}</div>
+      ${pm > 0 ? `<p class="fact">One month covers the $${EVAL_FEE.toFixed(2)} Builder 50K eval fee <b class="up">${fees}×</b>${rel != null && p.key !== 'all' ? ` · ${rel >= 1 ? `${rel.toFixed(1)}× your all-time pace` : `${Math.round(rel * 100)}% of your all-time pace`}` : ''}.</p>` : ''}
+      <p class="note">A pace, not a promise: ${esc(plural(p.trades, 'trade'))} is a small sample. Paper and eval accounts, losses included.</p>`,
+    enter(el, fx) { if (pm > 0) fx.burst('coins', 40, { colors: ['#ffd76a', '#fff3c4'] }); },
+    share: () => ({ kicker: `${p.label} · money a month`, title: pm >= 0 ? 'At this pace, a month is' : 'At this pace, a month costs', big: usd(pm, { cents: false }), tone: tone(pm),
+      lines: [`${usd(pm * 12 / 52, { cents: false })} a week · ${usd(pm / 21, { cents: false })} a trading day`, avg != null ? `All-time average ${usd(avg, { cents: false })} a month` : '',
+        `${plural(p.trades, 'trade')} · a pace, not a promise`].filter(Boolean) }),
+  };
+}
+
+/** The report card: profit factor, the average win against the average loss, what a trade is worth, and the win bar. */
+function reportCard(w, p) {
+  if (!p.trades || !(p.wins + p.losses)) return null;
+  const won = Math.abs(num(p.won_usd) || 0), lost = Math.abs(num(p.lost_usd) || 0);
+  const pf = lost > 0 ? won / lost : null, aw = p.wins ? won / p.wins : null, al = p.losses ? lost / p.losses : null;
+  const payoff = aw != null && al ? aw / al : null, exp = p.net / p.trades, wp = p.win_pct != null ? p.win_pct : (p.wins / (p.wins + p.losses)) * 100;
+  const plaque = (label, value, sub, cls = '') => `<div class="plaque ${cls}"><small>${esc(label)}</small><b>${esc(value)}</b><i>${esc(sub)}</i></div>`;
+  const grade = pf == null ? 'A+' : pf >= 3 ? 'A+' : pf >= 2 ? 'A' : pf >= 1.5 ? 'B' : pf >= 1 ? 'C' : 'D';
+  return {
+    id: 'report', name: 'Report card', colors: ['#0a0716', '#3a1d86', '#59d0ff'], mode: 6, ms: 8000,
+    html: `${kick(p)}${kt('The report card')}
+      <div class="hero grade" data-z="3"><span class="count lg ${pf != null && pf < 1 ? 'down' : 'up'}" data-fmt="grade">${esc(grade)}</span><p class="sub">${pf == null ? 'No losing trade' : `Profit factor ${pf.toFixed(2)}: every $1 lost brought $${pf.toFixed(2)}`}</p></div>
+      <div class="wl" data-z="2" aria-label="${esc(p.wins)} wins, ${esc(p.losses)} losses"><i class="w" style="--w:${wp.toFixed(1)}%"></i><i class="l"></i><b>${esc(Math.round(wp))}% won</b></div>
+      <div class="plaques" data-z="2">
+        ${plaque('Average win', aw != null ? usd(aw, { cents: false }) : '—', plural(p.wins, 'winner'), 'up')}
+        ${plaque('Average loss', al != null ? usd(-al, { cents: false }) : '—', plural(p.losses, 'loser'))}
+        ${plaque('Win / loss size', payoff != null ? `${payoff.toFixed(1)} : 1` : '—', 'the average win against the average loss')}
+        ${plaque('A trade is worth', usd(exp, { cents: false }), 'average, losses included', exp >= 0 ? 'up' : '')}
+      </div>`,
+    enter(el, fx) { if (pf == null || pf >= 2) fx.burst('glitter', 50, { colors: ['#59d0ff', '#ffffff', '#c08bff'] }); },
+    share: () => ({ kicker: `${p.label} · report card`, title: 'The report card', big: grade, tone: pf != null && pf < 1 ? 'down' : 'up',
+      lines: [pf != null ? `Profit factor ${pf.toFixed(2)}` : 'No losing trade', `${Math.round(wp)}% won · ${plural(p.trades, 'trade')}`,
+        aw != null && al != null ? `Average win ${usd(aw, { cents: false })} · average loss ${usd(-al, { cents: false })}` : '', `A trade is worth ${usd(exp, { cents: false })} on average`].filter(Boolean) }),
+  };
+}
+
+/** The green streak: this month at a glance as a calendar heat map (the last 5 weeks of trading days), the run you are on and the record. */
+function streakCard(w, p) {
+  const days = ((w.periods.all && w.periods.all.days) || []).filter((d) => Array.isArray(d) && num(d[1]) != null).slice().sort((a, b) => (a[0] < b[0] ? -1 : 1));
+  if (days.length < 3) return null;
+  let cur = 0, rec = 0, run = 0;
+  days.forEach(([, v]) => { run = v > 0 ? run + 1 : 0; rec = Math.max(rec, run); });
+  for (let i = days.length - 1; i >= 0 && days[i][1] > 0; i--) cur++;
+  const m = Math.max(...days.map(([, v]) => Math.abs(v))) || 1, last = days.slice(-35);
+  const cells = last.map(([d, v], i) => `<i class="hc ${tone(v)}" style="--a:${(0.25 + 0.75 * Math.min(1, Math.abs(v) / m)).toFixed(2)};--i:${i}" title="${esc(dayLabel(d))} ${esc(usd(v, { cents: false }))}"></i>`).join('');
+  const green = last.filter(([, v]) => v > 0).length;
+  return {
+    id: 'streak', name: 'Streak', colors: ['#10060a', '#8f2a0e', '#ffb347'], mode: 3, ms: 7500,
+    html: `<p class="kicker">Streak · the last ${esc(plural(last.length, 'trading day'))}</p>${kt(cur >= 2 ? `${cur} green days in a row` : cur === 1 ? 'A green day on the board' : 'The streak starts again')}
+      <div class="hero" data-z="3"><span class="count xl gold" data-to="${cur}" data-fmt="int">0</span><p class="sub">${cur === 1 ? 'green day' : 'green days'} in a row now · the record is ${esc(plural(rec, 'day'))}</p></div>
+      <div class="heat" data-z="2" role="img" aria-label="${green} green days of ${last.length}">${cells}</div>
+      <p class="note">${green} green of the last ${last.length} trading days. Brighter = a bigger day. Paper and eval accounts, losses included.</p>`,
+    enter(el, fx) { if (cur >= 3) fx.burst('embers', 40, { colors: ['#ffb347', '#ff7a1a', '#fff3c4'] }); },
+    share: () => ({ kicker: 'Streak', title: cur >= 2 ? `${cur} green days in a row` : 'The streak', big: `${cur}`, tone: cur ? 'up' : 'flat',
+      lines: [`Record: ${plural(rec, 'day')} in a row`, `${green} of the last ${last.length} trading days green`] }),
+  };
+}
+
 /** The all-time hall: the lifetime numbers and the records (best trade, best day, longest green run, win rate). */
 function hallStats(all) {
   if (!all || !all.trades) return null;
@@ -237,7 +314,7 @@ function nextCard(w, p) {
 
 export function deck(w, key, peers = {}) {
   const p = w.periods[key] || w.periods.week;
-  return [money, best, worst, evalCard, disciplineCard, learnedCard, discoveryCard, kalshiCard, plannerCard, hallCard, nextCard]
+  return [money, best, worst, evalCard, disciplineCard, learnedCard, discoveryCard, kalshiCard, plannerCard, paceCard, reportCard, streakCard, hallCard, nextCard]
     .map((f) => f(w, p, peers)).filter(Boolean);
 }
 
@@ -245,7 +322,7 @@ export function deck(w, key, peers = {}) {
 const easeOut = (x) => 1 - Math.pow(1 - x, 4);
 export function animateCounts(el, still) {
   const C = [...el.querySelectorAll('.count[data-to]')];
-  const fmt = (c, v) => (c.dataset.fmt === 'int' ? String(Math.round(v)) : usd(v));
+  const fmt = (c, v) => (c.dataset.fmt === 'int' ? String(Math.round(v)) : c.dataset.fmt === 'usd0' ? usd(v, { cents: false }) : usd(v));
   if (still) { C.forEach((c) => { c.textContent = fmt(c, +c.dataset.to); }); return () => {}; }
   const t0 = performance.now(), dur = 1500;
   let raf = 0;

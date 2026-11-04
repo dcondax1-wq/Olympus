@@ -6,6 +6,9 @@ import { Wheel } from './wheel.js';
 import { Pools, FLOOR_Y } from './pools.js';
 import { Scales, SCALES_X } from './scales.js';
 import { Glow } from './glow.js';
+import { createRenderer } from '../olympus/render.js';   // the OLYMPUS render core: ACES, bloom, MSAA / FXAA, the film finish
+
+const O = (typeof window !== 'undefined' && window.OLYMPUS) || null;
 
 export const BG = '#07060b';
 const INTRO_S = 2.6;                 // the intro camera move, seconds
@@ -14,6 +17,7 @@ export const VIEWS = {
   wheel: { target: [0, 0.1, 0.3], r: 5.8, elev: 0.48, yaw: 0 },
   pools: { target: [0, -3.7, 0.5], r: 5.5, elev: 0.3, yaw: 0 },
   scales: { target: [SCALES_X, -0.9, 0.9], r: 5.0, elev: 0.36, yaw: 0 },
+  bank: { target: [0, -3.7, 0.5], r: 5.5, elev: 0.3, yaw: 0 },       // the bankroll panel: the column of light, the pools beside it
 };
 
 export class FortuneScene {
@@ -22,11 +26,12 @@ export class FortuneScene {
     this.canvas = canvas;
     this.quality = opts.quality === 'low' ? 'low' : 'high';
     this.reduced = !!opts.reduced;
-    this.renderer = this.makeRenderer();
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(BG);
     this.scene.fog = new THREE.FogExp2(BG, 0.026);
     this.camera = new THREE.PerspectiveCamera(46, 1, 0.1, 140);
+    this.rc = this.makeRenderer();
+    this.renderer = this.rc.renderer;
     this.glow = new Glow(THREE);
     this.view = 'wheel';
     this.userYaw = 0;
@@ -42,14 +47,16 @@ export class FortuneScene {
     this.intro = this.reduced ? 1 : 0;
   }
 
+  /** The render core owns the renderer and the frame passes. Tyche keeps its own HD / LITE switch: HD follows the OLYMPUS level
+   *  (high, or ultra when the owner chose it), LITE is the core's 'low' tier (FXAA, no bloom). The core's own step-down is off:
+   *  main.js's auto-LITE does that job. Tyche sizes the canvas itself (setBand's view offset), so the core only draws. */
   makeRenderer() {
-    const T = this.T, hd = this.quality === 'high';
-    const r = new T.WebGLRenderer({ canvas: this.canvas, antialias: hd, alpha: false, powerPreference: 'high-performance' });
-    r.setPixelRatio(Math.min(window.devicePixelRatio || 1, hd ? 2 : 1.25));
-    r.toneMapping = T.ACESFilmicToneMapping;
-    r.toneMappingExposure = 1.1;
-    return r;
+    return createRenderer({ canvas: this.canvas, scene: this.scene, camera: this.camera, env: 'none', quality: this.tier(this.quality), adapt: false,
+      autoSize: false, fitCamera: false, space: 'display', exposure: 1.1, maxDpr: 2, bloom: { strength: 0.5, radius: 0.5, threshold: 0.84 },
+      grade: { vignette: 0.36, grain: 0.035, aberration: 0.002 } });
   }
+
+  tier(q) { return q === 'low' ? 'low' : O && !O.lite() && O.fx() === 'ultra' ? 'ultra' : 'high'; }
 
   lights() {
     const T = this.T;
@@ -115,7 +122,7 @@ export class FortuneScene {
   setQuality(q) {
     if (q === this.quality) return;
     this.quality = q;
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, q === 'high' ? 2 : 1.25));
+    this.rc.setQuality(this.tier(q));
     this.dust.geometry.setDrawRange(0, q === 'high' ? Infinity : 380);
     this.pools.jet.geometry.setDrawRange(0, q === 'high' ? Infinity : 260);
     this.resize();
@@ -145,7 +152,7 @@ export class FortuneScene {
 
   resize() {
     const w = Math.max(1, this.canvas.clientWidth || window.innerWidth), h = Math.max(1, this.canvas.clientHeight || window.innerHeight);
-    this.renderer.setSize(w, h, false);
+    this.rc.resize(w, h);
     this.camera.aspect = w / h;
     const b = this.band, dy = (b.top - b.bottom) / 2, dx = (b.left - b.right) / 2;   // the free band's centre off the screen's
     this.camera.setViewOffset(w, h, -dx, -dy, w, h);
@@ -211,7 +218,7 @@ export class FortuneScene {
     if (this.intro < 1) this.introMove(g, t);
     this.camera.position.copy(this.eye);
     this.camera.lookAt(this.look);
-    this.renderer.render(this.scene, this.camera);
+    this.rc.render();
   }
 
   /** The labels for the HUD: every anchor of the parts, projected to client px; those behind the camera are dropped. */

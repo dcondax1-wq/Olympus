@@ -4,6 +4,8 @@
 //   wheel's plane, dimmed; size = the stake (cost); colour = the market category; spin = time to settlement (faster as it
 //   nears); the halo ring = the Kelly stake at the chosen fraction (bigger than the coin = the bot bets under Kelly).
 import { kellyStake } from './data.js';
+import { glass, metal, neon } from '../olympus/materials.js';   // the OLYMPUS render core's surfaces: brushed gold, holographic glass, glowing cores
+import { Caustics } from './caustics.js';
 
 export const HEIGHT_PER_EDGE = 22;
 const WHEEL_R = 3;
@@ -26,7 +28,10 @@ export class Wheel {
     this.halos = true;
     this.selected = null;
     this.buildWheel(opts.lite);
+    this.caustics = new Caustics(THREE, WHEEL_R + 0.3, !!opts.lite);       // the light the glass coins throw on the wheel's face
+    this.group.add(this.caustics.mesh);
     this.coinGeo = new THREE.CylinderGeometry(1, 1, 0.14, 40, 1);
+    this.coreGeo = new THREE.CylinderGeometry(0.62, 0.62, 0.1, 28, 1);
     this.hitGeo = new THREE.SphereGeometry(1, 8, 6);
     this.hitMat = new THREE.MeshBasicMaterial({ visible: false });
     // the stems: one segment per coin from the wheel's plane to the coin (reads its edge as a height)
@@ -49,7 +54,7 @@ export class Wheel {
 
   buildWheel(lite) {
     const T = this.T, g = this.glow, w = this.wheel;
-    const gold = g.coin(GOLD, { emissiveIntensity: 0.34, roughness: 0.26 });   // polished gold: the environment shines in it
+    const gold = metal({ kind: 'gold', roughness: 0.2, clearcoat: 0.8, envMapIntensity: 1.5 });   // brushed, clear-coated gold: the room shines in it
     const rim = new T.Mesh(new T.TorusGeometry(WHEEL_R, 0.085, 14, lite ? 64 : 128), gold);
     rim.rotation.x = Math.PI / 2;
     w.add(rim);
@@ -103,13 +108,19 @@ export class Wheel {
       let c = this.coins.get(o.key);
       const color = colors.get(o.category) || GOLD;
       if (!c) {
-        const side = g.coin(color, { bumpMap: g.reeds, bumpScale: 2.5 }), face = g.coin(color, { map: g.face, bumpMap: g.face, bumpScale: 1.6, roughness: 0.26 });   // minted: reeded edge, embossed face
+        // a glass coin: a milled gold edge, two glass faces (embossed, tinted, iridescent, a glowing rim) and a lit core inside
+        const side = metal({ kind: 'gold', color, roughness: 0.24, clearcoat: 1 });
+        side.bumpMap = g.reeds; side.bumpScale = 2.5;
+        const face = glass({ color, rim: color, rimStrength: 1.5, opacity: 0.5, roughness: 0.05, envMapIntensity: 2 });
+        face.bumpMap = g.face; face.bumpScale = 1.6; face.side = T.DoubleSide;
+        const core = new T.Mesh(this.coreGeo, neon({ color, intensity: 1.7, opacity: 0.9 }));
         const mesh = new T.Mesh(this.coinGeo, [side, face, face]);
+        mesh.add(core);
         const aura = g.sprite(color, 1, 0.5);
         const halo = g.sprite('#fff4d6', 1, 0.75, g.ring);
         const hit = new T.Mesh(this.hitGeo, this.hitMat);
         hit.userData.key = o.key;
-        c = { key: o.key, mesh, aura, halo, hit, phase: i * 2.39996, angle: 0, spin: Math.random() * 6, y: 0 };
+        c = { key: o.key, core, mesh, aura, halo, hit, phase: i * 2.39996, angle: 0, spin: Math.random() * 6, y: 0 };
         this.group.add(mesh, aura, halo, hit);
         this.hits.push(hit);
         this.coins.set(o.key, c);
@@ -119,7 +130,9 @@ export class Wheel {
       c.r = 0.17 + 0.33 * Math.sqrt(Math.max(0, o.cost || 0) / maxCost);
       c.y = o.edge == null ? 0 : Math.max(-2.2, Math.min(3.3, o.edge * HEIGHT_PER_EDGE));
       c.color = color;
-      c.mesh.material.forEach((m) => { m.color.set(color); m.emissive.set(color); m.opacity = o.edge == null ? 0.65 : 1; m.transparent = o.edge == null; });
+      const dim = o.edge == null;                                   // no chance from the bot: the coin sits on the plane, dimmed
+      c.mesh.material.forEach((m, i) => { m.color.set(color); if (i) { m.opacity = dim ? 0.3 : 0.5; m.transparent = true; } else { m.opacity = dim ? 0.65 : 1; m.transparent = dim; } });
+      c.core.material.color.set(color).multiplyScalar(dim ? 0.6 : 1.7);
       c.aura.material.color.set(color);
       c.mesh.scale.set(c.r, 1, c.r);
       c.hit.scale.setScalar(Math.max(0.5, c.r * 1.8));
@@ -131,6 +144,7 @@ export class Wheel {
   removeCoin(c) {
     this.group.remove(c.mesh, c.aura, c.halo, c.hit);
     c.mesh.material.forEach((m) => m.dispose());
+    c.core.material.dispose();
     c.aura.material.dispose();
     c.halo.material.dispose();
     this.hits = this.hits.filter((h) => h !== c.hit);
@@ -167,6 +181,7 @@ export class Wheel {
   /** Move the coins: orbit, spin, the stems. `motion` false = still (reduced motion), placed where they are. */
   update(t, dt, now, motion) {
     if (motion) this.wheel.rotation.y += dt * 0.07;
+    this.caustics.update(this.coins, t, !motion);
     const pos = this.stems.geometry.attributes.position.array, col = this.stems.geometry.attributes.color.array;
     const tmp = new this.T.Color();
     let i = 0;

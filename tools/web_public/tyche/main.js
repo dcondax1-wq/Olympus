@@ -18,7 +18,7 @@ const THEME = '#07060b';
 const reduced = O ? O.reduced() : matchMedia('(prefers-reduced-motion: reduce)').matches;
 const params = new URLSearchParams(location.search);
 const forced = params.has('demo');
-const VIEWS = ['wheel', 'pools', 'scales'];
+const VIEWS = ['wheel', 'pools', 'scales', 'bank'];
 
 const store = {
   get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } },
@@ -254,6 +254,9 @@ window.tyche = {
   get fps() { return state.fps; },
   get requests() { return state.feed.requests; },
   get view() { return state.view; },
+  get bank() { return hud.sim || null; },                   // the bankroll panel's simulation (risk of ruin ...)
+  get passes() { return scene ? scene.rc.passes() : []; },    // the render core's passes this frame
+  get tier() { return scene ? scene.rc.quality() : ''; },
   get intro() { return scene ? scene.intro : 1; },          // the intro camera move: 0 -> 1 (1 = done or skipped)
   get coins() { return scene ? scene.wheel.coins.size : 0; },
   get falling() { return scene ? scene.pools.falling.length + scene.pools.queue.length : 0; },
