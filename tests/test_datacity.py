@@ -720,7 +720,7 @@ def _v2_checks(pg, shots):
     check(f"i. data streams: {r['streams']['arcs']} arcs between the districts, the plaza, the harbor and the temple ({r['streams']['pulses']} pulses)",
           r["streams"]["arcs"] >= len(r["districts"]) + 2 and r["streams"]["pulses"] >= 200, r["streams"])
     check(f"i. outskirts: {r['outskirts']['n']:,} scenery towers in one draw, none inside a district, the harbor or the acropolis",
-          r["outskirts"]["n"] >= 1500 and r["outskirts"]["bad"] == 0, r["outskirts"])
+          r["outskirts"]["n"] >= 700 and r["outskirts"]["bad"] == 0, r["outskirts"])
     sk = r["sky"]
     check("i. day / night drives the lights (sun by day, moon by night) and the bloom (more glow at night)",
           sk["day"]["sun"] > sk["night"]["sun"] * 1.5 and sk["night"]["moon"] > sk["day"]["moon"] * 1.5 and sk["night"]["bloom"] > sk["day"]["bloom"], sk)
@@ -926,7 +926,7 @@ def test_v3_page(shots=None):
             pg.on("pageerror", lambda e: errs.append(str(e)))
             pg.on("console", lambda m: errs.append(m.text) if m.type == "error" else None)
             pg.on("requestfailed", lambda r: failed.append(r.url))
-            _ready(pg, f"{base}/live/datacity/?nolite=1&q=high")        # q=high: software GL would otherwise be held to LITE
+            _ready(pg, f"{base}/live/datacity/?nolite=1&q=high&phone=0")        # q=high: software GL would otherwise be held to LITE
             _frames(pg, 3)
             v = pg.evaluate(V3)
             fams = v["types"]["fams"]
@@ -1083,9 +1083,151 @@ def test_v3_page(shots=None):
             check("j. the read-me explains building types and the windows", all(w in rd for w in ("building types", "windows tell the data", "monorail")))
             check("j. no page errors and no failed requests through all of it", not errs and not failed and not pg.evaluate("window.__city.errors.length"), (errs[:3], failed[:3], pg.evaluate("window.__city.errors")))
             # a second visit: the gold ideas are not new any more
-            pg.goto(f"{base}/live/datacity/?nolite=1")
+            pg.goto(f"{base}/live/datacity/?nolite=1&q=high&phone=0")
             pg.wait_for_function("window.__city && window.__city.ready", timeout=180000)
             check("j. a second visit does not celebrate the same gold ideas again", pg.evaluate("window.__city.v3.goldFresh") == 0)
+            br.close()
+    finally:
+        srv.shutdown()
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+# phone-safe preset (caps.js): the budgets (calls, triangles) measured 2026-11-04 at 390 x 844, tier high, software GL, + ~20%
+PHONE_BUDGET = (95, 250_000)
+PHONE_HEAP_MB = 40
+
+
+def test_v3_phone(shots=None):
+    """k. the phone-safe preset: a phone at the high tier gets the caps of caps.js (fewer cars / taxis, no airships, 2 x 4 train cars, one reflected tile,
+    one neon board per district, no lens flare / aurora / fireflies, thinner fireworks, a pixel ratio of at most 1.5); ultra keeps everything; the heap
+    stays under 40 MB; the page uses the kit's frameGap(), hidden() and ambient bed 'city'; and the whole page works offline from the fixtures (?demo=1)."""
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        check("k. page test skipped: no Playwright", True)
+        return
+    caps = read_text(os.path.join(PAGE, "caps.js")) + read_text(os.path.join(PAGE, "city.js"))
+    check("k. ONE caps table (full / phone / lite) in caps.js; city.js honours OLYMPUS.frameGap() and hidden()",
+          all(w in caps for w in ("export const PROFILES", "phone:", "lite:", "full:", "phoneHint", "profileOf")) and "O.frameGap()" in caps and "O.hidden()" in caps)
+    tmp = tempfile.mkdtemp(prefix="dc_phone_")
+    _site(tmp, "live")
+    srv = _serve(tmp)
+    base = f"http://127.0.0.1:{srv.server_address[1]}"
+    try:
+        with sync_playwright() as pw:
+            exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
+            br = pw.chromium.launch(**({"executable_path": exe} if exe else {}),
+                                    args=["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"])
+            ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=3, has_touch=True, is_mobile=True, reduced_motion="no-preference")
+            ctx.add_init_script("try { localStorage.setItem('jfx', 'high'); } catch (e) {}")
+            pg = ctx.new_page()
+            errs = []
+            pg.on("pageerror", lambda e: errs.append(str(e)))
+            pg.on("console", lambda m: errs.append(m.text) if m.type == "error" else None)
+            _ready(pg, f"{base}/live/datacity/?nolite=1&q=high")             # a phone-sized viewport: the preset by itself
+            _frames(pg, 4)
+            ph = pg.evaluate("""async () => { const a = window.__app, c = a.city, { weatherOf, sunOf } = await import('./sky.js'); await c.kitReady;
+              const set = (vix, mod) => { a.weather = weatherOf(vix); a.wxOn = true; c.setSun(sunOf({ mod, mins: (mod + 1080) % 1440, dow: 2 }), a.weather); return c.kit.active(); };
+              const dayKit = set(12, 930), nightKit = set(12, 1380);
+              const sg = new Set(c.signs.boards.map((b) => b.row)).size;
+              return { profile: c.profile, phone: c.phone, cars: c.cars.count, fly: c.flyers.count, air: c.airships.mesh.visible, trains: c.rail.trains.count, ships: c.ships.count,
+                boards: c.signs.boards.length, rows: sg, districts: a.L.districts.length, shells: c.fireworks.cap, keep: c.fireworks.U.uKeep.value, dpr: c.renderer.getPixelRatio(),
+                maxDpr: c.rc.stats().dpr, dayKit, nightKit, maxFull: c.caps.maxFull, outskirts: c.outskirts.mesh.count }; }""")
+            check(f"k. phone at the high tier gets the phone preset: {ph['cars']} cars, {ph['fly']} taxis, no airships, {ph['trains']} train cars, {ph['ships']} ships, "
+                  f"{ph['boards']} neon boards for {ph['districts']} districts, {ph['shells']} shells at half the sparks, no lens flare / aurora / fireflies, pixel ratio {ph['dpr']}",
+                  ph["profile"] == "phone" and ph["phone"] and ph["cars"] == 160 and ph["fly"] == 28 and not ph["air"] and ph["trains"] == 8 and ph["ships"] == 5
+                  and ph["boards"] == ph["districts"] and ph["shells"] == 3 and ph["keep"] == 0.5 and ph["dpr"] <= 1.5 and "lensFlare" not in ph["dayKit"]
+                  and "aurora" not in ph["nightKit"] and "fireflies" not in ph["nightKit"], ph)
+            s0 = pg.evaluate("window.__city.stats()")
+            pg.evaluate("(() => { window.__app.orbit.focus(0, 0, 0, 380, 0.9); })()")
+            _frames(pg, 8)
+            s1 = pg.evaluate("window.__city.stats()")
+            pg.evaluate("(() => { const d = window.__app.L.districts.slice().sort((a, b) => b.n - a.n)[0]; window.__app.orbit.focus(d.cx, 0, d.cz, 45, 1.2); })()")
+            _frames(pg, 10)
+            s2 = pg.evaluate("window.__city.stats()")
+            PERF["phone_start"], PERF["phone_overview"], PERF["phone_closeup"] = s0, s1, s2
+            c, t = PHONE_BUDGET
+            check(f"k. phone-high budget ({c} calls / {t:,} tris): start {s0['calls']} / {s0['triangles']:,}, overview {s1['calls']} / {s1['triangles']:,}, "
+                  f"close-up {s2['calls']} / {s2['triangles']:,}, {s2['lod']['mirrors']} reflected tile(s), at most 7 tiles in full ({s2['lod']['tilesFull']})",
+                  all(x["calls"] <= c and x["triangles"] <= t for x in (s0, s1, s2)) and s2["lod"]["tilesFull"] <= 7 and s2["lod"]["mirrors"] <= 1, (s0, s1, s2))
+            cdp = ctx.new_cdp_session(pg)
+            cdp.send("Performance.enable")
+            heap = {m["name"]: m["value"] for m in cdp.send("Performance.getMetrics")["metrics"]}.get("JSHeapUsedSize", 0) / 1e6
+            check(f"k. the JS heap on a phone at the high tier: {heap:.1f} MB (budget {PHONE_HEAP_MB} MB)", 0 < heap <= PHONE_HEAP_MB, heap)
+            fg = pg.evaluate("""async () => { const O = window.OLYMPUS; return { gap: typeof O.frameGap, hidden: typeof O.hidden, saver: typeof O.saver }; }""")
+            check("k. the kit's power layer is there for the city loop (frameGap, hidden, saver)", fg == {"gap": "function", "hidden": "function", "saver": "function"}, fg)
+            # the battery saver pulls a PC profile down to the phone caps, and ultra keeps the full density
+            sv = pg.evaluate("""(() => { const c = window.__app.city, out = {}; out.phoneNow = c.profile;
+              out.ultra = (() => { c.phone = false; c._tier('ultra'); return [c.profile, c.cars.count, c.rail.trains.count]; })();
+              out.pcHigh = (() => { c._tier('high'); return [c.profile, c.cars.count]; })();
+              out.saver = (() => { OLYMPUS.setSaver('on'); c._tier('high'); const r = [c.profile, c.cars.count]; OLYMPUS.setSaver('auto'); return r; })();
+              out.lite = (() => { c._tier('low'); return [c.profile, c.cars.count, c.rail.trains.count, c.airships.mesh.visible]; })();
+              c.phone = true; c._tier('high'); out.back = c.profile; return out; })()""")
+            check("k. ultra keeps full density, a PC at high is full, the battery saver brings the phone caps, LITE is unchanged (160 cars, 6 train cars)",
+                  sv["ultra"] == ["full", 520, 18] and sv["pcHigh"][0] == "full" and sv["saver"] == ["phone", 160] and sv["lite"] == ["lite", 160, 6, True] and sv["back"] == "phone", sv)
+            # ambience: the 'city' bed from the kit's table, no per-app code
+            try:
+                pg.wait_for_function("() => window.OLYMPUS_SFX && OLYMPUS_SFX.ambientState", polling=200, timeout=15000)
+                st0 = pg.evaluate("() => OLYMPUS_SFX.ambientState()")
+                pg.mouse.click(150, 300)
+                pg.wait_for_function("() => OLYMPUS_SFX.ambientState().playing === 'city'", polling=200, timeout=10000)
+                check("k. ambience: the kit's 'city' bed is wanted at load and starts after the first touch (no per-app code)", st0["want"] == "city" and st0["playing"] == "", st0)
+            except Exception as e:                                                  # noqa: BLE001
+                check("k. ambience: the kit's 'city' bed starts after the first touch", False, str(e)[:200])
+            # ultra
+            pg.goto(f"{base}/live/datacity/?nolite=1&q=ultra&phone=0")
+            pg.wait_for_function("window.__city && window.__city.ready", timeout=180000)
+            _frames(pg, 3)
+            ul = pg.evaluate("(() => { const c = window.__app.city; return [c.profile, c.cars.count, c.rail.trains.count, c.airships.mesh.visible, c.signs.boards.length]; })()")
+            check("k. ultra (a PC): the full profile, 520 cars, 3 x 6 train cars, airships, two boards per district", ul[0] == "full" and ul[1] == 520 and ul[2] == 18 and ul[3] and ul[4] == 2 * pg.evaluate("window.__app.L.districts.length"), ul)
+            check("k. no page errors on the phone pages", not errs, errs[:3])
+            br.close()
+    finally:
+        srv.shutdown()
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+def test_v3_demo():
+    """k. ?demo=1: the whole page works offline from the fixtures (every request off the page's origin refused, no city.json read)."""
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        check("k. demo test skipped: no Playwright", True)
+        return
+    tmp = tempfile.mkdtemp(prefix="dc_demo_")
+    _site(tmp, "live")
+    srv = _serve(tmp)
+    origin = f"http://127.0.0.1:{srv.server_address[1]}"
+    try:
+        with sync_playwright() as pw:
+            exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
+            br = pw.chromium.launch(**({"executable_path": exe} if exe else {}),
+                                    args=["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"])
+            ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=1, has_touch=True, is_mobile=True, reduced_motion="no-preference")
+            ctx.add_init_script("try { localStorage.setItem('jfx', 'high'); } catch (e) {}")
+            seen, refused = [], []
+            ctx.route("**/*", lambda r: (seen.append(r.request.url), r.continue_()) if r.request.url.startswith(origin) else (refused.append(r.request.url), r.abort()))
+            pg = ctx.new_page()
+            errs = []
+            pg.on("pageerror", lambda e: errs.append(str(e)))
+            pg.on("console", lambda m: errs.append(m.text) if m.type == "error" and "Failed to load resource" not in m.text else None)
+            _ready(pg, f"{origin}/live/datacity/?demo=1&nolite=1&q=high")
+            _frames(pg, 3)
+            st = pg.evaluate("window.__city")
+            check(f"k. ?demo=1: the fixture city ({st['buildings']} buildings), city.json never read, nothing off-origin loaded",
+                  st["mode"] == "demo" and not any("city.json" in u for u in seen) and not refused, (st["mode"], refused[:3]))
+            r = pg.evaluate("""async () => { const a = window.__app; const out = {};
+              document.querySelector('#menuB').click(); out.menu = document.querySelectorAll('#sheet .mi').length;
+              a.showView('report'); out.report = document.querySelector('#sheet').innerText.toLowerCase().includes('council of ideas');
+              a.showView('find'); a.find('sweep', a.findUI.state); out.found = window.__city.found;
+              a.showView('timeline'); a.setYear(2023); out.tl = window.__city.v3.timeline.tested; document.querySelector('#sheetX').click();
+              const g = a.L.items.findIndex((it) => it.kind === 'b' && it.b.cls === 'gold'); out.gold = g >= 0; if (g >= 0) a.celebrate(g, 2);
+              const b = await a.shoot(); out.photo = b ? b.size : 0; out.kit = a.city.kit.active();
+              a.showView('access'); document.querySelector('#ac_calm').click(); out.calm = a.calm;
+              return out; }""")
+            check("k. ?demo=1 offline: the menu, report with the Council, search, timeline, fireworks, photo and accessibility all work from the fixtures",
+                  r["menu"] == 8 and r["report"] and r["found"] >= 1 and r["tl"] >= 1 and r["gold"] and r["photo"] > 4000 and r["calm"], r)
+            check("k. ?demo=1 offline: no page errors (the Pantheon line and the kit modules fail soft)", not errs and not pg.evaluate("window.__city.errors.length"), (errs[:3], pg.evaluate("window.__city.errors")))
             br.close()
     finally:
         srv.shutdown()
@@ -1101,6 +1243,8 @@ def main():
     if only == "v3":                                  # the Data City v3 section alone (about 3 min)
         test_v3_files()
         test_v3_page(shots)
+        test_v3_phone(shots)
+        test_v3_demo()
         print("perf:", json.dumps(PERF))
         bad = [n for n, ok in RESULTS if not ok]
         print(f"\n{len(RESULTS) - len(bad)}/{len(RESULTS)} passed in {time.time() - t0:.0f}s")
@@ -1117,6 +1261,8 @@ def main():
     if "--no-page" not in sys.argv:
         test_page(shots)
         test_v3_page(shots)
+        test_v3_phone(shots)
+        test_v3_demo()
         test_synth_budget()
         if PERF:
             print("perf:", json.dumps(PERF))

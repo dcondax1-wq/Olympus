@@ -156,6 +156,7 @@ export class Landmarks {
     const beam = new THREE.Mesh(beamG, this.beamMat); beam.position.y = Yb + CH + 10; g.add(beam);
     this.oracle = holo;
     this.lights.hearth.position.set(x, Yb + 7, z);
+    this.templeG = g;
     this.group.add(g);
     this.temple = g;
     this.spots.temple = { x, z, r: 78, h: Yb + CH + 22, name: 'Temple of the Gold' };
@@ -230,6 +231,7 @@ export class Landmarks {
       blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false });
     const sg = geo('sweep', () => { const c = new THREE.ConeGeometry(7, 190, 14, 1, true); c.rotateZ(-Math.PI / 2); c.translate(95, 0, 0); return c; });
     for (const a of [0, Math.PI]) { const b = new THREE.Mesh(sg, this.sweepMat); b.rotation.y = a; this.sweep.add(b); }
+    this.pharosG = g;
     this.group.add(g);
     this.lights.pharos = new THREE.PointLight(0xffd98a, 30, 70, 1.6);
     this.lights.pharos.position.set(px, 54.6, pz);
@@ -316,6 +318,13 @@ export class Landmarks {
     // the weather gate: the VIX's colour and pulse rate
     const vix = w.vix ?? 16, c = vix < 15 ? [0.3, 0.85, 1] : vix < 20 ? [1, 0.75, 0.3] : vix < 25 ? [0.35, 0.5, 1] : [1, 0.25, 0.3];
     this.vixBase = c; this.vixRate = 0.8 + Math.max(0, vix - 12) * 0.12;
+  }
+
+  /** the phone profile hides the temple and the Pharos (about 30 draw calls each) when the camera is further than C.lmLod */
+  lod(p, C) {
+    const far = (S) => S && C.lmLod > 0 && Math.hypot(p.x - S.x, p.z - S.z) > C.lmLod;
+    if (this.templeG) this.templeG.visible = !far(this.spots.temple);
+    if (this.pharosG) this.pharosG.visible = !far(this.spots.pharos);
   }
 
   update(t) {
