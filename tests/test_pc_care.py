@@ -503,12 +503,106 @@ def runs(pwsh, strict: bool):
         b.cleanup()
 
 
+# ============================================================================================== STATUS.bat + the one-sentence failure rule (job 2026-11-04)
+STATUS_PS1 = os.path.join(ROOT, "scripts", "pc_status.ps1")
+STATUS_BAT = os.path.join(ROOT, "STATUS.bat")
+TRAP_SENTENCE = "Something unexpected stopped this: take a photo of this window and send it to Claude"
+TRACE_RX = re.compile(r"CategoryInfo|FullyQualifiedErrorId|ScriptStackTrace|StackTrace|\bAt line:|\bAt /|PositionMessage")
+
+
+def status_static():
+    bat = rb(STATUS_BAT)
+    check("STATUS.bat: CRLF, ASCII, local scripts\\pc_status.ps1 first (pauses on the same line), alone it fetches pc/pc_status.ps1",
+          b"\n" not in bat.replace(b"\r\n", b"") and all(c < 128 for c in bat) and re.search(rb'if exist "%~dp0scripts\\pc_status\.ps1" goto :local', bat)
+          and re.search(rb'-File "%~dp0scripts\\pc_status\.ps1" %\* & echo\. & pause & exit /b', bat) and b"nq-dashboard/pc/pc_status.ps1" in bat and b"-UseBasicParsing" in bat)
+    check("STATUS: the site copies (pc/STATUS.bat, pc/pc_status.ps1) are identical to the repo files", rb(os.path.join(WEB, "STATUS.bat")) == bat and rb(os.path.join(WEB, "pc_status.ps1")) == rb(STATUS_PS1))
+    src = rb(STATUS_PS1).decode("ascii", "replace")
+    code = re.sub(r"(?s)<#.*?#>", "", src)
+    code = re.sub(r"(?m)#[^\n]*$", "", code)
+    bad = re.findall(r"Remove-Item|\.Delete\(|Stop-Process|Stop-Service|taskkill|Set-ItemProperty|New-ItemProperty|reg\.exe|reg add|powercfg\s+/(?:setactive|change|duplicatescheme|delete)|-Verb\s+RunAs|"
+                     r"Start-Process|winget|Set-Content|Out-File|Add-Content|New-Item|Clear-RecycleBin", code)
+    check("pc_status.ps1: ASCII, only looks (no delete, no stop / kill, no registry or power-plan write, no elevation, no installer, no file written)", all(c < 128 for c in rb(STATUS_PS1)) and not bad, bad)
+    page = open(os.path.join(WEB, "index.html"), encoding="utf-8").read()
+    i_which, i_first = page.find('id="which"'), page.find('<div class="s"')
+    line = page[i_which:page.find("</p>", i_which)] if i_which >= 0 else ""
+    check("the PC page says in ONE line, above the steps, which PC gets which script (main PC: STATUS, PC care, Clean storage, Fresh start once; Surface: Clean storage and PC care only)",
+          0 < i_which < i_first and all(w in line for w in ("Main PC", "Surface", "STATUS", "PC care", "Clean storage", "Fresh start")) and 'href="STATUS.bat"' in page, line[:300])
+    for rel in ("scripts/pc_care.ps1", "scripts/clean_storage.ps1", "scripts/move_bot.ps1", "scripts/pc_status.ps1"):
+        t = rb(os.path.join(ROOT, rel)).decode("utf-8", "replace")
+        check(f"{rel}: an unexpected failure ends with ONE plain sentence (a trap; the detail only in the log), never a stack trace", "\ntrap {" in t and TRAP_SENTENCE in t and "exit 1" in t and "LE_T_BOOM" in t)
+    fs = rb(os.path.join(WEB, "FRESH_START.ps1")).decode("utf-8", "replace")
+    check("FRESH_START.ps1: the whole flow is inside try / catch ending with the one plain sentence", "try {" in fs and "} catch {" in fs and TRAP_SENTENCE in fs)
+    cs = rb(os.path.join(ROOT, "scripts", "clean_storage.ps1")).decode("utf-8", "replace")
+    check("clean_storage.ps1: a person's own folders (Downloads, Desktop, Documents, Pictures, .ssh ...) are never a root; keys, wallets and sign-ins are never deleted by name",
+          "Test-InPersonal" in cs and "'Downloads'" in cs and ".ssh" in cs and "pem|key|ppk|kdbx" in cs and "^id_(rsa" in cs)
+
+
+def status_runs(pwsh):
+    d = tempfile.mkdtemp(prefix="le_status_")
+    try:
+        now = 1793000000
+
+        def home(host="MAINPC", running=True, armed=True, age=60, bar=20, mopen=True, label="SIM", acct="Sim101"):
+            h = {"live": {"pc": {"t": now - age, "host": host, "running": running,
+                                 "health": {"account": {"armed": armed, "label": label, "name": acct}, "feed": {"age_1m_s": bar, "market_open": mopen}}},
+                          "pc_verdict": {"level": "good", "label": "RUNNING"}}}
+            p = os.path.join(d, f"home_{len(os.listdir(d))}.json")
+            with open(p, "w", encoding="utf-8") as fh:
+                json.dump(h, fh)
+            return p
+
+        def run(script, env_extra):
+            env = dict(os.environ, LE_T_NOW=str(now), LE_T_ET="2026-11-04 10:00")
+            env.update(env_extra)
+            return subprocess.run([pwsh, "-NoProfile", "-NoLogo", "-NonInteractive", "-File", script], capture_output=True, text=True, timeout=120, env=env, cwd=d)
+
+        def kinds(out):
+            return dict((lab, kind) for kind, lab in re.findall(r"\[(OK|SKIP|FIX|\.\.)\] (DISK|RAM|BOT|NINJA|BARS|POWER)\b", out))
+
+        good = dict(LE_T_HOST="MAINPC", LE_T_FREE_GB="80", LE_T_TOTAL_GB="238", LE_T_RAM="3.1,8", LE_T_NT="1", LE_T_PLAN="PC Care", LE_T_BOT_DIR="1")
+        r = run(STATUS_PS1, dict(good, LE_STATUS_HOME_FILE=home()))
+        check("STATUS on a healthy main PC: exactly six lines (DISK RAM BOT NINJA BARS POWER), all [OK], 'nothing to do', exit 0, no error text",
+              r.returncode == 0 and sorted(kinds(r.stdout)) == sorted(["DISK", "RAM", "BOT", "NINJA", "BARS", "POWER"]) and set(kinds(r.stdout).values()) == {"OK"}
+              and "nothing to do" in r.stdout and not TRACE_RX.search(r.stdout + r.stderr) and "bot PC" in r.stdout, r.stdout + r.stderr)
+        check("STATUS: the BOT line says running + armed + SIM account + heartbeat age; BARS the bar age; POWER the plan",
+              "running, armed on SIM (Sim101), heartbeat 1 min ago" in r.stdout and "last 1-minute bar 1 min old" in r.stdout or ("last 1-minute bar 80 s old" in r.stdout and "plan: PC Care" in r.stdout), r.stdout)
+        r = run(STATUS_PS1, dict(good, LE_T_FREE_GB="6", LE_T_RAM="0.4,8", LE_T_NT="0", LE_T_PLAN="Balanced", LE_STATUS_HOME_FILE=home(running=False, bar=700)))
+        k = kinds(r.stdout)
+        check("STATUS with everything wrong: DISK, RAM, BOT, NINJA, BARS red [FIX], POWER [SKIP]; ONE 'NEXT:' sentence, the first red one (the disk: CLEAN_STORAGE.bat)",
+              [k.get(x) for x in ("DISK", "RAM", "BOT", "NINJA", "BARS", "POWER")] == ["FIX"] * 5 + ["SKIP"] and r.stdout.count("NEXT:") == 1
+              and "CLEAN_STORAGE.bat" in r.stdout.split("NEXT:")[1] and r.returncode == 0, r.stdout)
+        r = run(STATUS_PS1, dict(good, LE_T_NT="0", LE_STATUS_HOME_FILE=home(age=3000)))
+        check("STATUS: no heartbeat for 50 minutes in market hours is [FIX] with what to check; the bars are 'unknown', not guessed",
+              re.search(r"\[FIX\] BOT\s+no heartbeat for 50 min", r.stdout) and re.search(r"\[\.\.\] BARS\s+unknown", r.stdout) and "bot PC (MAINPC)" in r.stdout, r.stdout)
+        r = run(STATUS_PS1, dict(good, LE_T_ET="2026-11-07 10:00", LE_T_NT="0", LE_STATUS_HOME_FILE=home(age=7200, running=False)))
+        check("STATUS on a Saturday (market closed): a stopped bot / closed NinjaTrader / old heartbeat is [..], never [FIX]",
+              "[FIX] BOT" not in r.stdout and "[FIX] NINJA" not in r.stdout and "[FIX] BARS" not in r.stdout, r.stdout)
+        r = run(STATUS_PS1, dict(LE_T_HOST="SURFACE", LE_T_BOT_DIR="0", LE_T_FREE_GB="60", LE_T_RAM="1.5,4", LE_T_NT="0", LE_T_PLAN="Balanced", LE_STATUS_HOME_FILE=home()))
+        check("STATUS on the Surface (not the bot PC): six lines, the bot 'runs on MAINPC, not on this PC', NinjaTrader 'not needed on this PC', no [FIX] for them",
+              len(kinds(r.stdout)) == 6 and "not the bot PC" in r.stdout and "runs on MAINPC, not on this PC" in r.stdout and "not needed on this PC" in r.stdout and "[FIX]" not in r.stdout, r.stdout)
+        r = run(STATUS_PS1, dict(good, LE_STATUS_HOME_FILE=os.path.join(d, "missing.json")))
+        check("STATUS with no readable heartbeat: still six lines, BOT says it could not read it (no stack trace), disk / RAM / power still shown, exit 0",
+              len(kinds(r.stdout)) == 6 and re.search(r"\[\.\.\] BOT\s+heartbeat: could not read it", r.stdout) and r.returncode == 0 and not TRACE_RX.search(r.stdout + r.stderr), r.stdout + r.stderr)
+        check("STATUS only looks: nothing but the test's own input files exists in its folder afterwards", all(f.startswith("home_") for f in os.listdir(d)), os.listdir(d))
+        lint51 = subprocess.run([pwsh, "-NoProfile", "-NoLogo", "-File", os.path.join(HARN, "lint51.ps1"), STATUS_PS1], capture_output=True, text=True, timeout=300)
+        check("pc_status.ps1: 5.1 lint (no PowerShell-7-only syntax)", lint51.returncode == 0 and not [ln for ln in lint51.stdout.splitlines() if ln.strip()], lint51.stdout + lint51.stderr)
+        for rel in ("scripts/pc_care.ps1", "scripts/clean_storage.ps1", "scripts/move_bot.ps1", "scripts/pc_status.ps1"):
+            r = run(os.path.join(ROOT, rel), dict(LE_T_BOOM="1"))
+            out = r.stdout + r.stderr
+            check(f"{rel} hit by an unexpected failure: ONE plain sentence of what to do, no stack trace, exit code 1",
+                  r.returncode == 1 and out.count("[FIX]") == 1 and TRAP_SENTENCE in out and not TRACE_RX.search(out) and "test: unexpected failure" not in out, out)
+    finally:
+        shutil.rmtree(d, ignore_errors=True)
+
+
 def main() -> int:
     static()
+    status_static()
     health()
     pwsh = find_pwsh()
     if pwsh:
         lint(pwsh)
+        status_runs(pwsh)
         runs(pwsh, strict=False)
         runs(pwsh, strict=True)
     else:

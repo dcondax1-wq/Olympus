@@ -289,6 +289,11 @@ class World:
         # --- decoys: old files of the owner that no category may ever touch (also under a hostile TEMP)
         self.f("decoy", self.home, "Documents/precious.docx", 400, must_go=False)
         self.f("decoy", self.home, "Desktop/notes.txt", 400, must_go=False)
+        self.f("decoy", self.home, "Downloads/statement.pdf", 400, must_go=False)          # job 2026-11-04: a person's Downloads, keys and sign-ins
+        self.f("decoy", self.home, "Downloads/setup.exe", 400, must_go=False)
+        self.f("decoy", self.home, ".ssh/id_ed25519", 400, must_go=False)
+        self.f("decoy", self.home, "Documents/keys/wallet.key", 400, must_go=False)
+        self.f("decoy", self.temp, "server.pem", 400, must_go=False)                      # a key file lying in TEMP is never deleted by name
         self.f("decoy", self.dir, "Users/owner/Pictures/photo.jpg", 400, must_go=False)
         self.f("decoy", os.path.join(self.dir, "OneDrive"), "Documents/taxes.xlsx", 400, must_go=False)
         self.f("decoy", os.path.join(self.dir, "OneDrive", "Documents"), "Other/keep.txt", 400, must_go=False)
@@ -570,6 +575,8 @@ def run_world(pwsh, strict: bool):
     # ---------------------------------------------------------------- 7. hostile TEMP: the allow-list cannot be widened
     for label, tmp_rel, expect_forbidden in (
             ("the user profile", "home", True), ("the bot folder", "home/nq-liquidity-engine", True),
+            ("the Downloads folder", "home/Downloads", True), ("the Desktop folder", "home/Desktop", True), ("the .ssh key folder", "home/.ssh", True),
+            ("a folder inside Documents", "home/Documents/keys", True), ("a folder inside OneDrive\\Documents", "OneDrive/Documents/Other", True),
             ("the NinjaTrader folder", "OneDrive/Documents/NinjaTrader 8", True), ("the system drive root", "", True),
             ("the bot's data folder", "home/nq-liquidity-engine/data", False), ("the bot's data\\nt_bars", "home/nq-liquidity-engine/data/nt_bars", False),
             ("NinjaTrader's workspaces", "OneDrive/Documents/NinjaTrader 8/workspaces", False),
