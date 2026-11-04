@@ -63,8 +63,8 @@
   {
    "id": "tex-marble-white",
    "cat": "textures",
-   "title": "White marble PBR set",
-   "makes": "Four tileable 1024 px maps of white Greek marble (colour, normal, roughness, ambient occlusion)",
+   "title": "White marble look",
+   "makes": "Four 1024 px pictures that make white Greek marble look real on a 3D surface",
    "tool": "chatgpt",
    "prompt": "Job tex-marble-white. Context: I am building OLYMPUS, a set of phone web apps (three.js, dark futuristic Greek-god theme: marble, gold #f5c96a and violet #a855f7 on near-black). I am 18 and use an iPhone. Use plain words.\n\nMake a seamless tileable PBR texture set of polished white Greek marble with soft grey veins, 1024x1024 each: albedo (colour), normal (tangent space, the usual blue-purple look, gentle), roughness (greyscale, polished = dark), ambient occlusion (greyscale, subtle). No text, no logo, evenly lit, no baked shadows.\n\nFiles to deliver (exact names): marble-white-albedo.png, marble-white-normal.png, marble-white-roughness.png, marble-white-ao.png.\n\nHow to deliver (the OLYMPUS sync rules): only add files under handoff/inbox/tex-marble-white/ (open a pull request on branch chatgpt/tex-marble-white); never edit the bots, live_model*.json, engine/, .github/ or any existing app; no secrets, keys, tokens or logins anywhere; plain files only (PNG / WebP, SVG, JSON, Markdown, text; no scripts); paper trading only, nothing that places or arms real orders. When finished, add one line to handoff/inbox/tex-marble-white/DONE.md: what you made, the file list, and anything Claude must wire. If you are blocked, write handoff/inbox/tex-marble-white/QUESTION.md instead of guessing. File limits: PNG / WebP up to 5 MB each, SVG up to 200 KB, JSON up to 1 MB, Markdown / text up to 200 KB, JS up to 100 KB.",
    "files": [
@@ -82,7 +82,7 @@
    "id": "tex-marble-black-gold",
    "cat": "textures",
    "title": "Black marble with gold veins",
-   "makes": "Four tileable maps of black marble with thin gold veins",
+   "makes": "Four pictures that make black marble with thin gold veins look real",
    "tool": "chatgpt",
    "prompt": "Job tex-marble-black-gold. Context: I am building OLYMPUS, a set of phone web apps (three.js, dark futuristic Greek-god theme: marble, gold #f5c96a and violet #a855f7 on near-black). I am 18 and use an iPhone. Use plain words.\n\nMake a seamless tileable PBR set of black marble with thin branching gold veins, 1024x1024: albedo, normal, roughness (veins slightly rougher), ambient occlusion. Evenly lit, no text, no baked shadows.\n\nFiles to deliver (exact names): marble-black-albedo.png, marble-black-normal.png, marble-black-roughness.png, marble-black-ao.png.\n\nHow to deliver (the OLYMPUS sync rules): only add files under handoff/inbox/tex-marble-black-gold/ (open a pull request on branch chatgpt/tex-marble-black-gold); never edit the bots, live_model*.json, engine/, .github/ or any existing app; no secrets, keys, tokens or logins anywhere; plain files only (PNG / WebP, SVG, JSON, Markdown, text; no scripts); paper trading only, nothing that places or arms real orders. When finished, add one line to handoff/inbox/tex-marble-black-gold/DONE.md: what you made, the file list, and anything Claude must wire. If you are blocked, write handoff/inbox/tex-marble-black-gold/QUESTION.md instead of guessing. File limits: PNG / WebP up to 5 MB each, SVG up to 200 KB, JSON up to 1 MB, Markdown / text up to 200 KB, JS up to 100 KB.",
    "files": [
@@ -134,7 +134,7 @@
    "id": "tex-parchment",
    "cat": "textures",
    "title": "Parchment and scroll paper",
-   "makes": "Tileable parchment plus a scroll edge strip",
+   "makes": "Parchment paper that repeats smoothly, plus a scroll edge strip",
    "tool": "chatgpt",
    "prompt": "Job tex-parchment. Context: I am building OLYMPUS, a set of phone web apps (three.js, dark futuristic Greek-god theme: marble, gold #f5c96a and violet #a855f7 on near-black). I am 18 and use an iPhone. Use plain words.\n\nMake a seamless tileable parchment paper texture 1024x1024 (warm cream, faint fibres, a few tiny stains, no writing), and a 1024x256 strip of burnt, torn parchment edge on a transparent background (PNG with alpha).\n\nFiles to deliver (exact names): parchment-albedo.png, parchment-edge.png.\n\nHow to deliver (the OLYMPUS sync rules): only add files under handoff/inbox/tex-parchment/ (open a pull request on branch chatgpt/tex-parchment); never edit the bots, live_model*.json, engine/, .github/ or any existing app; no secrets, keys, tokens or logins anywhere; plain files only (PNG / WebP, SVG, JSON, Markdown, text; no scripts); paper trading only, nothing that places or arms real orders. When finished, add one line to handoff/inbox/tex-parchment/DONE.md: what you made, the file list, and anything Claude must wire. If you are blocked, write handoff/inbox/tex-parchment/QUESTION.md instead of guessing. File limits: PNG / WebP up to 5 MB each, SVG up to 200 KB, JSON up to 1 MB, Markdown / text up to 200 KB, JS up to 100 KB.",
    "files": [
@@ -149,8 +149,8 @@
   {
    "id": "tex-fire-sheet",
    "cat": "textures",
-   "title": "Fire sprite sheet",
-   "makes": "A 4 x 4 sprite sheet of flame frames on transparent background",
+   "title": "Flame animation sheet",
+   "makes": "A 4 x 4 grid of flame pictures on a see-through background",
    "tool": "chatgpt",
    "prompt": "Job tex-fire-sheet. Context: I am building OLYMPUS, a set of phone web apps (three.js, dark futuristic Greek-god theme: marble, gold #f5c96a and violet #a855f7 on near-black). I am 18 and use an iPhone. Use plain words.\n\nMake one PNG sprite sheet 2048x2048, a 4 x 4 grid of 512x512 frames of a single torch flame burning (loops from the last frame back to the first), orange-yellow core fading to deep red at the tips, transparent background (alpha), no smoke, no torch, no text. Add the frame order (left to right, top to bottom) to DONE.md.\n\nFiles to deliver (exact names): fire-sheet-4x4.png.\n\nHow to deliver (the OLYMPUS sync rules): only add files under handoff/inbox/tex-fire-sheet/ (open a pull request on branch chatgpt/tex-fire-sheet); never edit the bots, live_model*.json, engine/, .github/ or any existing app; no secrets, keys, tokens or logins anywhere; plain files only (PNG / WebP, SVG, JSON, Markdown, text; no scripts); paper trading only, nothing that places or arms real orders. When finished, add one line to handoff/inbox/tex-fire-sheet/DONE.md: what you made, the file list, and anything Claude must wire. If you are blocked, write handoff/inbox/tex-fire-sheet/QUESTION.md instead of guessing. File limits: PNG / WebP up to 5 MB each, SVG up to 200 KB, JSON up to 1 MB, Markdown / text up to 200 KB, JS up to 100 KB.",
    "files": [
@@ -165,7 +165,7 @@
    "id": "tex-water-caustics",
    "cat": "textures",
    "title": "Water caustics and ripples",
-   "makes": "A tileable caustics light pattern and a water normal map",
+   "makes": "A repeating pattern of light under water, and a ripple picture for water",
    "tool": "chatgpt",
    "prompt": "Job tex-water-caustics. Context: I am building OLYMPUS, a set of phone web apps (three.js, dark futuristic Greek-god theme: marble, gold #f5c96a and violet #a855f7 on near-black). I am 18 and use an iPhone. Use plain words.\n\nMake two seamless tileable 1024x1024 textures: (1) underwater caustics, bright light net on pure black, (2) a gentle water ripple normal map (tangent space). No text.\n\nFiles to deliver (exact names): caustics.png, water-normal.png.\n\nHow to deliver (the OLYMPUS sync rules): only add files under handoff/inbox/tex-water-caustics/ (open a pull request on branch chatgpt/tex-water-caustics); never edit the bots, live_model*.json, engine/, .github/ or any existing app; no secrets, keys, tokens or logins anywhere; plain files only (PNG / WebP, SVG, JSON, Markdown, text; no scripts); paper trading only, nothing that places or arms real orders. When finished, add one line to handoff/inbox/tex-water-caustics/DONE.md: what you made, the file list, and anything Claude must wire. If you are blocked, write handoff/inbox/tex-water-caustics/QUESTION.md instead of guessing. File limits: PNG / WebP up to 5 MB each, SVG up to 200 KB, JSON up to 1 MB, Markdown / text up to 200 KB, JS up to 100 KB.",
    "files": [
@@ -197,7 +197,7 @@
    "id": "sky-time-of-day",
    "cat": "textures",
    "title": "Four times of day skies",
-   "makes": "Four ultra-wide seamless sky panoramas: dawn, noon, dusk, storm",
+   "makes": "Four ultra-wide sky pictures with no visible seam: dawn, noon, dusk, storm",
    "tool": "chatgpt",
    "prompt": "Job sky-time-of-day. Context: I am building OLYMPUS, a set of phone web apps (three.js, dark futuristic Greek-god theme: marble, gold #f5c96a and violet #a855f7 on near-black). I am 18 and use an iPhone. Use plain words.\n\nMake four seamless equirectangular-style sky panoramas, 4096x2048 if you can (otherwise as wide as possible, 2:1): dawn (gold and pink over layered clouds), noon (clear deep blue with few thin clouds), dusk (violet and orange with a first star), storm (dark green-grey cloud wall with a distant lightning). No ground, no sun disc detail, no text.\n\nFiles to deliver (exact names): sky-dawn.png, sky-noon.png, sky-dusk.png, sky-storm.png.\n\nHow to deliver (the OLYMPUS sync rules): only add files under handoff/inbox/sky-time-of-day/ (open a pull request on branch chatgpt/sky-time-of-day); never edit the bots, live_model*.json, engine/, .github/ or any existing app; no secrets, keys, tokens or logins anywhere; plain files only (PNG / WebP, SVG, JSON, Markdown, text; no scripts); paper trading only, nothing that places or arms real orders. When finished, add one line to handoff/inbox/sky-time-of-day/DONE.md: what you made, the file list, and anything Claude must wire. If you are blocked, write handoff/inbox/sky-time-of-day/QUESTION.md instead of guessing. File limits: PNG / WebP up to 5 MB each, SVG up to 200 KB, JSON up to 1 MB, Markdown / text up to 200 KB, JS up to 100 KB.",
    "files": [
@@ -214,7 +214,7 @@
   {
    "id": "sky-olympus-cube",
    "cat": "textures",
-   "title": "Mount Olympus cube-map faces",
+   "title": "Mount Olympus sky box",
    "makes": "Six square faces for a skybox of Mount Olympus above the clouds at night",
    "tool": "chatgpt",
    "prompt": "Job sky-olympus-cube. Context: I am building OLYMPUS, a set of phone web apps (three.js, dark futuristic Greek-god theme: marble, gold #f5c96a and violet #a855f7 on near-black). I am 18 and use an iPhone. Use plain words.\n\nMake six 1024x1024 images that form a seamless skybox (faces px, nx, py, ny, pz, nz) of a night sky above a sea of clouds with the peak of Mount Olympus glowing faintly gold and violet on one horizon. The edges of neighbouring faces must match. No text.\n\nFiles to deliver (exact names): px.png, nx.png, py.png, ny.png, pz.png, nz.png.\n\nHow to deliver (the OLYMPUS sync rules): only add files under handoff/inbox/sky-olympus-cube/ (open a pull request on branch chatgpt/sky-olympus-cube); never edit the bots, live_model*.json, engine/, .github/ or any existing app; no secrets, keys, tokens or logins anywhere; plain files only (PNG / WebP, SVG, JSON, Markdown, text; no scripts); paper trading only, nothing that places or arms real orders. When finished, add one line to handoff/inbox/sky-olympus-cube/DONE.md: what you made, the file list, and anything Claude must wire. If you are blocked, write handoff/inbox/sky-olympus-cube/QUESTION.md instead of guessing. File limits: PNG / WebP up to 5 MB each, SVG up to 200 KB, JSON up to 1 MB, Markdown / text up to 200 KB, JS up to 100 KB.",
@@ -395,7 +395,7 @@
   {
    "id": "glyph-greek-letters",
    "cat": "logo",
-   "title": "Greek letter glyph set",
+   "title": "Greek letter set",
    "makes": "Twenty-four gold Greek letters as SVG",
    "tool": "chatgpt",
    "prompt": "Job glyph-greek-letters. Context: I am building OLYMPUS, a set of phone web apps (three.js, dark futuristic Greek-god theme: marble, gold #f5c96a and violet #a855f7 on near-black). I am 18 and use an iPhone. Use plain words.\n\nDesign the 24 Greek capital letters (Alpha to Omega) as ONE SVG sprite with a <symbol id=\"alpha\"> ... <symbol id=\"omega\"> each, 64x64 viewBox, bold geometric futuristic style, filled with currentColor, no text elements (draw the shapes as paths), no scripts. README.md lists the ids.\n\nFiles to deliver (exact names): greek-glyphs.svg, README.md.\n\nHow to deliver (the OLYMPUS sync rules): only add files under handoff/inbox/glyph-greek-letters/ (open a pull request on branch chatgpt/glyph-greek-letters); never edit the bots, live_model*.json, engine/, .github/ or any existing app; no secrets, keys, tokens or logins anywhere; plain files only (PNG / WebP, SVG, JSON, Markdown, text; no scripts); paper trading only, nothing that places or arms real orders. When finished, add one line to handoff/inbox/glyph-greek-letters/DONE.md: what you made, the file list, and anything Claude must wire. If you are blocked, write handoff/inbox/glyph-greek-letters/QUESTION.md instead of guessing. File limits: PNG / WebP up to 5 MB each, SVG up to 200 KB, JSON up to 1 MB, Markdown / text up to 200 KB, JS up to 100 KB.",
@@ -411,7 +411,7 @@
   {
    "id": "logo-wordmarks",
    "cat": "logo",
-   "title": "OLYMPUS wordmarks",
+   "title": "OLYMPUS name logos",
    "makes": "Six wordmark styles in SVG",
    "tool": "chatgpt",
    "prompt": "Job logo-wordmarks. Context: I am building OLYMPUS, a set of phone web apps (three.js, dark futuristic Greek-god theme: marble, gold #f5c96a and violet #a855f7 on near-black). I am 18 and use an iPhone. Use plain words.\n\nDesign 6 wordmarks of the word OLYMPUS as SVG outlines (letters drawn as paths, not text elements, no fonts needed), viewBox 0 0 640 128: wide futuristic caps, carved marble caps, thin gold line caps, neon tube caps, laurel-decorated caps, minimal monoline. No scripts, no raster images.\n\nFiles to deliver (exact names): wordmark-01.svg, wordmark-02.svg, wordmark-03.svg, wordmark-04.svg, wordmark-05.svg, wordmark-06.svg.\n\nHow to deliver (the OLYMPUS sync rules): only add files under handoff/inbox/logo-wordmarks/ (open a pull request on branch chatgpt/logo-wordmarks); never edit the bots, live_model*.json, engine/, .github/ or any existing app; no secrets, keys, tokens or logins anywhere; plain files only (PNG / WebP, SVG, JSON, Markdown, text; no scripts); paper trading only, nothing that places or arms real orders. When finished, add one line to handoff/inbox/logo-wordmarks/DONE.md: what you made, the file list, and anything Claude must wire. If you are blocked, write handoff/inbox/logo-wordmarks/QUESTION.md instead of guessing. File limits: PNG / WebP up to 5 MB each, SVG up to 200 KB, JSON up to 1 MB, Markdown / text up to 200 KB, JS up to 100 KB.",
@@ -450,8 +450,8 @@
   {
    "id": "sound-ui-sfx",
    "cat": "sound",
-   "title": "UI sound briefs",
-   "makes": "Synth-parameter descriptions for the six UI sounds",
+   "title": "Button and screen sound ideas",
+   "makes": "Short written recipes for the six button and screen sounds",
    "tool": "chatgpt",
    "prompt": "Job sound-ui-sfx. Context: I am building OLYMPUS, a set of phone web apps (three.js, dark futuristic Greek-god theme: marble, gold #f5c96a and violet #a855f7 on near-black). I am 18 and use an iPhone. Use plain words.\n\nWrite sound-design briefs (TEXT ONLY, do not make audio) for these UI sounds of a futuristic Greek-god app: tick, tap, portal, thunder, rankup, pad. In ui-sounds.json give for each sound an object with: feel (one plain sentence), oscillators (type, frequency in Hz, detune), envelope (attack, decay, sustain, release in seconds), filter (type, cutoff Hz, resonance, any sweep), noise (type, level), reverb (size, mix), lfo (target, rate, depth), length in ms, and a note on how it must stay quiet and soft on a phone. README.md explains the file in plain words.\n\nFiles to deliver (exact names): ui-sounds.json, README.md.\n\nHow to deliver (the OLYMPUS sync rules): only add files under handoff/inbox/sound-ui-sfx/ (open a pull request on branch chatgpt/sound-ui-sfx); never edit the bots, live_model*.json, engine/, .github/ or any existing app; no secrets, keys, tokens or logins anywhere; plain files only (PNG / WebP, SVG, JSON, Markdown, text; no scripts); paper trading only, nothing that places or arms real orders. When finished, add one line to handoff/inbox/sound-ui-sfx/DONE.md: what you made, the file list, and anything Claude must wire. If you are blocked, write handoff/inbox/sound-ui-sfx/QUESTION.md instead of guessing. File limits: PNG / WebP up to 5 MB each, SVG up to 200 KB, JSON up to 1 MB, Markdown / text up to 200 KB, JS up to 100 KB.",
    "files": [
@@ -496,7 +496,7 @@
   {
    "id": "sound-win-loss",
    "cat": "sound",
-   "title": "Win and loss stingers",
+   "title": "Win and loss jingles",
    "makes": "Briefs for celebration and calm 'bad day' sounds",
    "tool": "chatgpt",
    "prompt": "Job sound-win-loss. Context: I am building OLYMPUS, a set of phone web apps (three.js, dark futuristic Greek-god theme: marble, gold #f5c96a and violet #a855f7 on near-black). I am 18 and use an iPhone. Use plain words.\n\nWrite synth briefs (TEXT ONLY) for 6 short stingers: green day, red day (calm, never mocking), eval passed, payout received, streak extended, rank up. In stingers.json give for each: length ms, the notes (MIDI numbers) and rhythm, waveform per layer, envelope, filter, reverb, and loudness. Reward process, never risk.\n\nFiles to deliver (exact names): stingers.json.\n\nHow to deliver (the OLYMPUS sync rules): only add files under handoff/inbox/sound-win-loss/ (open a pull request on branch chatgpt/sound-win-loss); never edit the bots, live_model*.json, engine/, .github/ or any existing app; no secrets, keys, tokens or logins anywhere; plain files only (PNG / WebP, SVG, JSON, Markdown, text; no scripts); paper trading only, nothing that places or arms real orders. When finished, add one line to handoff/inbox/sound-win-loss/DONE.md: what you made, the file list, and anything Claude must wire. If you are blocked, write handoff/inbox/sound-win-loss/QUESTION.md instead of guessing. File limits: PNG / WebP up to 5 MB each, SVG up to 200 KB, JSON up to 1 MB, Markdown / text up to 200 KB, JS up to 100 KB.",
@@ -812,8 +812,8 @@
   {
    "id": "fx-demo-trades",
    "cat": "fixtures",
-   "title": "Synthetic trade history",
-   "makes": "200 made-up trades in the apps' JSON shape",
+   "title": "Practice trade history",
+   "makes": "200 made-up trades the apps can read",
    "tool": "chatgpt",
    "prompt": "Job fx-demo-trades. Context: I am building OLYMPUS, a set of phone web apps (three.js, dark futuristic Greek-god theme: marble, gold #f5c96a and violet #a855f7 on near-black). I am 18 and use an iPhone. Use plain words.\n\nGenerate a SYNTHETIC (clearly fake) list of 200 NQ/MNQ trades over the last 120 weekdays as trades.json: an array of {id, day (YYYY-MM-DD), time (HH:MM, between 02:00 and 15:30 ET), side (long/short), qty, entry, stop, target, exit, risk_pts, pnl (dollars after 1.25 points of costs), r (R multiple), exit_reason (target/stop/breakeven/time)}. Make it realistic: about 1 trade a day, a win rate near 45 percent, a few 8R winners, stop 8-60 points. README.md says it is fake test data.\n\nFiles to deliver (exact names): trades.json, README.md.\n\nHow to deliver (the OLYMPUS sync rules): only add files under handoff/inbox/fx-demo-trades/ (open a pull request on branch chatgpt/fx-demo-trades); never edit the bots, live_model*.json, engine/, .github/ or any existing app; no secrets, keys, tokens or logins anywhere; plain files only (PNG / WebP, SVG, JSON, Markdown, text; no scripts); paper trading only, nothing that places or arms real orders. When finished, add one line to handoff/inbox/fx-demo-trades/DONE.md: what you made, the file list, and anything Claude must wire. If you are blocked, write handoff/inbox/fx-demo-trades/QUESTION.md instead of guessing. File limits: PNG / WebP up to 5 MB each, SVG up to 200 KB, JSON up to 1 MB, Markdown / text up to 200 KB, JS up to 100 KB.",
    "files": [
@@ -828,8 +828,8 @@
   {
    "id": "fx-demo-kalshi",
    "cat": "fixtures",
-   "title": "Synthetic Kalshi feed",
-   "makes": "A fake kalshi.json in the feed contract's shape",
+   "title": "Practice Kalshi feed",
+   "makes": "A fake Kalshi data file the apps can read",
    "tool": "chatgpt",
    "prompt": "Job fx-demo-kalshi. Context: I am building OLYMPUS, a set of phone web apps (three.js, dark futuristic Greek-god theme: marble, gold #f5c96a and violet #a855f7 on near-black). I am 18 and use an iPhone. Use plain words.\n\nGenerate a SYNTHETIC kalshi.json for testing an app: {v: 3, t (unix), name, running, balance, today_pnl, week_pnl, total_pnl, positions: [...6 open bets...], trades: [...80 settled bets with ticker, title, side, contracts, price, pnl, t, category, strategy...], days: [[YYYY-MM-DD, pnl]...30], strategies: [{name, wins, losses, total_pnl}...3]}. Crypto 15-minute markets, gold, S&P. Realistic numbers, balance near 2,400 dollars. README.md says it is fake.\n\nFiles to deliver (exact names): kalshi.json, README.md.\n\nHow to deliver (the OLYMPUS sync rules): only add files under handoff/inbox/fx-demo-kalshi/ (open a pull request on branch chatgpt/fx-demo-kalshi); never edit the bots, live_model*.json, engine/, .github/ or any existing app; no secrets, keys, tokens or logins anywhere; plain files only (PNG / WebP, SVG, JSON, Markdown, text; no scripts); paper trading only, nothing that places or arms real orders. When finished, add one line to handoff/inbox/fx-demo-kalshi/DONE.md: what you made, the file list, and anything Claude must wire. If you are blocked, write handoff/inbox/fx-demo-kalshi/QUESTION.md instead of guessing. File limits: PNG / WebP up to 5 MB each, SVG up to 200 KB, JSON up to 1 MB, Markdown / text up to 200 KB, JS up to 100 KB.",
    "files": [
@@ -844,7 +844,7 @@
   {
    "id": "fx-demo-weeks",
    "cat": "fixtures",
-   "title": "Synthetic weekly recaps",
+   "title": "Practice weekly recaps",
    "makes": "Eight weeks of fake wrapped data",
    "tool": "chatgpt",
    "prompt": "Job fx-demo-weeks. Context: I am building OLYMPUS, a set of phone web apps (three.js, dark futuristic Greek-god theme: marble, gold #f5c96a and violet #a855f7 on near-black). I am 18 and use an iPhone. Use plain words.\n\nGenerate SYNTHETIC weekly recap data for 8 weeks as weeks.json: [{from, to, net, trades, wins, losses, best_trade: {day, pnl, r}, worst_trade: {...}, discipline: score 0-100, rules_broken: [..]}]. Include one red week and one 8R week. Fake numbers only.\n\nFiles to deliver (exact names): weeks.json.\n\nHow to deliver (the OLYMPUS sync rules): only add files under handoff/inbox/fx-demo-weeks/ (open a pull request on branch chatgpt/fx-demo-weeks); never edit the bots, live_model*.json, engine/, .github/ or any existing app; no secrets, keys, tokens or logins anywhere; plain files only (PNG / WebP, SVG, JSON, Markdown, text; no scripts); paper trading only, nothing that places or arms real orders. When finished, add one line to handoff/inbox/fx-demo-weeks/DONE.md: what you made, the file list, and anything Claude must wire. If you are blocked, write handoff/inbox/fx-demo-weeks/QUESTION.md instead of guessing. File limits: PNG / WebP up to 5 MB each, SVG up to 200 KB, JSON up to 1 MB, Markdown / text up to 200 KB, JS up to 100 KB.",
@@ -859,7 +859,7 @@
   {
    "id": "fx-demo-planner",
    "cat": "fixtures",
-   "title": "Synthetic planner data",
+   "title": "Practice planner data",
    "makes": "Fake tasks, events and habits for tests",
    "tool": "chatgpt",
    "prompt": "Job fx-demo-planner. Context: I am building OLYMPUS, a set of phone web apps (three.js, dark futuristic Greek-god theme: marble, gold #f5c96a and violet #a855f7 on near-black). I am 18 and use an iPhone. Use plain words.\n\nGenerate SYNTHETIC planner data as planner-demo.json: {tasks: 30 [{id, title, date, done, p (0-3), est (minutes), proj}], events: 20 [{id, title, date, start, end}], habits: 5 [{id, name, color, done: [dates over 90 days]}]}. Dates within 2026-09-01 to 2026-11-30. Normal student/trader life, nothing private.\n\nFiles to deliver (exact names): planner-demo.json.\n\nHow to deliver (the OLYMPUS sync rules): only add files under handoff/inbox/fx-demo-planner/ (open a pull request on branch chatgpt/fx-demo-planner); never edit the bots, live_model*.json, engine/, .github/ or any existing app; no secrets, keys, tokens or logins anywhere; plain files only (PNG / WebP, SVG, JSON, Markdown, text; no scripts); paper trading only, nothing that places or arms real orders. When finished, add one line to handoff/inbox/fx-demo-planner/DONE.md: what you made, the file list, and anything Claude must wire. If you are blocked, write handoff/inbox/fx-demo-planner/QUESTION.md instead of guessing. File limits: PNG / WebP up to 5 MB each, SVG up to 200 KB, JSON up to 1 MB, Markdown / text up to 200 KB, JS up to 100 KB.",
@@ -875,7 +875,7 @@
    "id": "docs-readme-plain",
    "cat": "docs",
    "title": "A plain-words README",
-   "makes": "A friendly README for the repo front page",
+   "makes": "A friendly intro page for the front of the project",
    "tool": "chatgpt",
    "prompt": "Job docs-readme-plain. Context: I am building OLYMPUS, a set of phone web apps (three.js, dark futuristic Greek-god theme: marble, gold #f5c96a and violet #a855f7 on near-black). I am 18 and use an iPhone. Use plain words.\n\nRead README.md and STRATEGY.md in the repo. Write README-plain.md: what this project is in 5 plain sentences, the three things the owner looks at every day, a picture-free map of the apps (one line each), and how to ask for changes. No jargon, no secrets, do not change the existing README.\n\nFiles to deliver (exact names): README-plain.md.\n\nHow to deliver (the OLYMPUS sync rules): only add files under handoff/inbox/docs-readme-plain/ (open a pull request on branch chatgpt/docs-readme-plain); never edit the bots, live_model*.json, engine/, .github/ or any existing app; no secrets, keys, tokens or logins anywhere; plain files only (PNG / WebP, SVG, JSON, Markdown, text; no scripts); paper trading only, nothing that places or arms real orders. When finished, add one line to handoff/inbox/docs-readme-plain/DONE.md: what you made, the file list, and anything Claude must wire. If you are blocked, write handoff/inbox/docs-readme-plain/QUESTION.md instead of guessing. File limits: PNG / WebP up to 5 MB each, SVG up to 200 KB, JSON up to 1 MB, Markdown / text up to 200 KB, JS up to 100 KB.",
    "files": [

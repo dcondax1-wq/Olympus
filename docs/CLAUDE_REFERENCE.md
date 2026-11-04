@@ -1894,7 +1894,13 @@ The Kalshi app (`kalshi/`, k18) has three top cards in Today: "Why am I losing" 
   `tools/bridge_ingest.py` (also run inside `bridge_sync.publish`, `--apply` copies approved images to `olympus/assets/<id>/` with a manifest)
   checks each file read-only: png / webp / svg / json / md / txt / small js only; caps 5 MB images, 200 KB svg / md / txt, 1 MB json, 100 KB js, 80 files
   and 40 MB a job; real images; no secret patterns; no script that fetches, evals or imports; no symlinks. Nothing delivered is ever run. The tab's
-  "Claude: build this in" copies `Bridge: <id> done`; `status.json` also carries `next` (weekly static rules) and `deliveries`.
+  "Tell Claude to use this" copies `Bridge: <id> done`; `status.json` also carries `next` (weekly static rules) and `deliveries`.
+  **JOB 13 (2026-11-04, end-to-end rehearsal with a fake ChatGPT, `test_bridge_ingest` part g, in a temp copy of the repo):** the page's top is three stages of
+  three steps (Connect / Test / Use), plain words only (test scans for pull request / prompt / JSON / repo ...), `Tell Claude` is on every card. **Test the link**:
+  the owner pastes ChatGPT's one-line `LINK OK <word>`; the word is the `LINK WORD:` line of `handoff/SYNC.md` (change both together; the test compares them);
+  client-side only. A rejected file gets ONE plain sentence (`bridge_ingest.plain_reason`, shown as "Not used: name. ..."). Claude's side: `python tools/bridge_ingest.py
+  --handback "Bridge: <id> done"` reads the job back in one plain paragraph; the report also says when a folder / file is skipped (capital letters, outside a job folder)
+  or a job has no `DONE.md`.
 
 ### PC tools (Windows; the scripts are tested on Linux with pwsh 7 and a fake Windows, never on a real PC)
 - **Storage clean** (`CLEAN_STORAGE.bat` -> `scripts/clean_storage.ps1`; table, Y, then only an allow-list: temp, browser caches, Windows update
