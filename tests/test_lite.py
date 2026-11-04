@@ -1,14 +1,15 @@
 """LITE mode (engine/lite.py) check: the switch, the env defaults, the history trim, and that LITE trades exactly like the
 full bot.
 
-    python -X utf8 -m tests.test_lite            # unit checks + LiveBot replay full vs LITE on 3 October sessions (~2-4 min)
+    python -X utf8 -m tests.test_lite            # unit checks + LiveBot replay full vs LITE on 2026-10-14 (~20 min)
     python -X utf8 -m tests.test_lite --quick    # unit checks only
     python -X utf8 -m tests.test_lite --bot-sessions=2026-10-06,2026-10-07,2026-10-08
 
 The replay is tests/test_lit_live.bot_replay (engine/live.py LiveBot + PaperAdapter, frozen clock, bars revealed as they
 close) run twice: once plain, once with engine/lite.install on the bot. Every ledger row (entries, stop moves, exits, $,
 times), the final state (position, LIT model state, eval clock) and the log lines about routing must be identical, and
-both runs must match the backtest. Prints the peak memory of each run (psutil, when installed).
+both runs must match the backtest. The RSS printed is the one test process after each run (cumulative, not a
+full vs LITE comparison: that one is in docs/CLAUDE_REFERENCE.md "LITE mode", 687 -> 180 MB).
 """
 from __future__ import annotations
 
@@ -141,7 +142,7 @@ def main():
     unit()
     if "--quick" not in sys.argv:
         bs = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--bot-sessions=")), None)
-        sessions = bs or ["2026-10-13", "2026-10-14", "2026-10-15"]
+        sessions = bs or ["2026-10-14"]                  # one trade day: ~20 min (3 days ~1 h on a 4-core box)
         print(f"LiveBot replay full vs LITE on {sessions}", flush=True)
         replay(sessions)
     print("OK" if not FAILS else f"FAILED: {FAILS}")
