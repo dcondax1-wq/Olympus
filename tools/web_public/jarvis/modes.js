@@ -54,8 +54,8 @@ export const MODES = {
   business: { id: 'business', name: 'Business', glyph: '$', blurb: 'Money goals, more accounts, Kalshi edge, deadlines',
     prompt: 'MODE: BUSINESS. Think like a self-made operator: his money goals (FACTS.money / the Road to $10K), the plan for more funded accounts (MFFU Builder 50K $91.80 and Builder 25K $63, one-time, his real prices), the Kalshi bot\'s edge by strategy, and his to-dos with deadlines. One clear recommendation with the real numbers, then the next step and its deadline. Check the maths with calc. Treat every edge as unproven; never promise returns.',
     tools: ['calc', 'get_money', 'list_tasks', 'add_task', 'set_reminder', 'obsidian_create_note', 'web_search'],
-    quick: ['How close am I to my money goal?', 'Plan for more accounts', 'How is the Kalshi edge?', 'My to-dos with deadlines', 'Deals on evals'],
-    apps: ['plutus', 'hermes', 'kalshi', 'tyche'],
+    quick: ['How close am I to my money goal?', 'Plan for more accounts', 'How is the Kalshi edge?', 'My to-dos with deadlines', 'Deals on evals', 'Connect ChatGPT'],
+    apps: ['plutus', 'hermes', 'kalshi', 'tyche', 'bridge'],
     words: /\b(business|money goal|goals?|10 ?k|income|revenue|profit|payouts?|accounts? plan|more accounts|scale|scaling|buy (an? )?evals?|kalshi|edge|deadlines?|due|invest\w*|budget|savings|costs?|price|pricing|deal|deals|discount|side hustle|sell|clients?)\b/ },
   life: { id: 'life', name: 'Life', glyph: '☼', blurb: 'Planner, reminders, Ascend, your day',
     prompt: 'MODE: LIFE. He wants his day sorted: the Planner (events, tasks), his reminders and to-dos, gym and looks (his Ascend app), school, sleep and people. Warm and short, like a sharp friend who keeps him on schedule. Use set_reminder / add_task when he asks, never invent his schedule.',
@@ -125,7 +125,7 @@ const dayWord = (dn, et) => (dn === et.dn ? 'today' : dn === et.dn + 1 ? 'tomorr
 const ask = (value) => ({ type: 'ask', value });
 const open = (value, route) => (route ? { type: 'open', value, route } : { type: 'open', value });
 const MODE_OF_APP = { zenith: 'trading', fates: 'trading', oracle: 'trading', odeon: 'trading', planner: 'life', ascend: 'life', arena: 'life', kalshi: 'business', tyche: 'business', hermes: 'business',
-  ares: 'trading', forum: 'trading', argus: 'trading', nemesis: 'trading', chronos: 'trading', hephaestus: 'trading', labyrinth: 'trading', plutus: 'business', athena: 'research', datacity: 'research', prometheus: 'research', tree: 'research', mind: 'research', pantheon: 'research' };
+  ares: 'trading', forum: 'trading', argus: 'trading', nemesis: 'trading', chronos: 'trading', hephaestus: 'trading', bridge: 'business', labyrinth: 'trading', plutus: 'business', athena: 'research', datacity: 'research', prometheus: 'research', tree: 'research', mind: 'research', pantheon: 'research' };
 const APP_NAME = { datacity: 'Data City', prometheus: 'Prometheus', tree: 'DAPHNE', mind: 'the Mind', pantheon: 'Pantheon', fates: 'Fates', oracle: 'Oracle', odeon: 'Odeon', hermes: 'Hermes', tyche: 'Tyche', arena: 'Arena' };
 
 /** The rule items for every mode, most urgent first. No key, no network: only what D holds. */
@@ -205,6 +205,9 @@ export function thinkAll(D) {
   const ascend = arr(D.apps).find((a) => isObj(a) && a.id === 'ascend');
   if (ascend) add(et && et.h >= 19 ? 6.9 : 8.6, 'life', 'ascend', et && et.h >= 19 ? 'Before bed: log today in Ascend (routine, sleep, gym). Two minutes.' : 'Ascend: do today\'s routine and log it.', 'Open Ascend', open('ascend'));
   else add(9.4, 'life', 'ascend-add', 'Add your Ascend app to Jarvis (the + under the apps) and I will remind you to log it.', 'Add apps', ask('what apps do I have'));
+  // 9b. the ChatGPT link (Bridge wizard): until it is 3/3 and he has never opened it, one gentle nudge
+  if (isObj(D.bridge) && num(D.bridge.done) != null && D.bridge.done < 3 && !D.bridge.seen)
+    add(8.4, 'business', 'bridge-setup', 'Connect ChatGPT to Olympus: 3 quick steps in the Bridge, about two minutes. Then ChatGPT can build icons and skies for you.', 'Open Bridge', open('bridge'), 'Connect ChatGPT to Olympus. It is three quick steps in the Bridge.');
   // 10. a key makes this smarter (only when nothing urgent is on)
   if (!D.smart) add(9.8, 'research', 'key', 'Give me a free AI key (one minute, no card) and these suggestions get smarter.', 'Set up', { type: 'control', value: 'ai_setup' });
   return out.sort((a, b) => a.p - b.p);
