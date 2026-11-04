@@ -428,7 +428,23 @@ def test_page():
             gl = pg.evaluate("window.__daphne.glow")
             check("page: on HD the render core draws the tree: scene + bloom + finish, the stage still carries the touch", gl["passes"] == ["scene", "bloom", "finish"]
                   and pg.evaluate("document.getElementById('app').dataset.gl") == "on" and pg.evaluate("getComputedStyle(document.getElementById('gl')).pointerEvents") == "none", gl)
+            check("page: the 3D laurel tree is what draws on HD (tubes, instanced leaves), a tap picks nothing out of range",
+                  gl["mode"] == "3d" and gl["stats"]["leaves"] > 0 and gl["stats"]["edges"] > 20, gl)
+            check("page: the 3D tree stays in the draw-call budget (<= 30 calls with bloom and the finish)", 0 < gl["stats"]["calls"] <= 30, gl["stats"]["calls"])
+            pt = pg.evaluate("() => { const n = window.__daphne.state.tree.nodes.find((x) => !x.kids.length && x.status !== 2); return n ? n.id : null; }")
+            pg.mouse.move(195, 600)
+            pg.mouse.down(); pg.mouse.move(235, 610, steps=4); pg.mouse.up()
+            check("page: a drag orbits the camera (no pan of the hidden 2D view)", pg.evaluate("window.__daphne.state.view.x") == 0, pg.evaluate("window.__daphne.state.view"))
             check("page: the render-core overlay raises no console error", not errs4, errs4[:3])
+            ctx.close()
+            ctx = br.new_context(viewport={"width": 390, "height": 844}, reduced_motion="reduce")
+            ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith("http://127.0.0.1") else r.abort())
+            pg = ctx.new_page()
+            pg.goto(base + "?at=9300&q=high")
+            pg.wait_for_function("() => window.__daphne && window.__daphne.ready", timeout=30000)
+            pg.wait_for_timeout(2500)
+            g3 = pg.evaluate("window.__daphne.glow")
+            check("page: reduced motion: the 3D tree stands down, the 2D tree is the fallback", g3 is None or g3["on"] is False, g3)
             ctx.close()
             br.close()
     finally:
