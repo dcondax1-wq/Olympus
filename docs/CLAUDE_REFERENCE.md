@@ -13,7 +13,7 @@ part yourself or fold it into a script.**
 ## One chat: where each thing lives and how it ships (owner 2026-11-01)
 
 **The system's name is OLYMPUS (owner 2026-11-03; NEXUS was dropped).** Shown on Jarvis's header (`.hpanel::after`),
-the orb switcher's title (switcher.js) and the System section (current workers: `jarvis/sw.js` jarvis-v24, `kalshi/sw.js` kalshi-k18, root `sw.js` le-public-v59).
+the orb switcher's title (switcher.js) and the System section (current workers: `jarvis/sw.js` jarvis-v24, `kalshi/sw.js` kalshi-k19, root `sw.js` le-public-v59).
 The owner: "I want this chat to be the one I make all changes to, for anything. It's gonna save me time and usage." Every
 project is changed from this repo; this map saves the search. Ship = PR on the session branch, squash-merge to main.
 
@@ -1954,7 +1954,7 @@ The app folder `tools/web_public/<id>/` (index.html, jarvis.json, manifest, icon
    `tests/test_zenith_mode.py` (~line 66 holds the full OTHER_APPS string), `tests/test_jarvis_hub.py` (~273 prefix; the Jarvis worker name `jarvis-v24`
    and its OLD list at ~248 / ~816 only when `jarvis/sw.js` is bumped too: bump it when `apps.js` changes the shell files), `tests/test_zenith_shell.py`
    (OTHER_APPS subset, version >= 52), `tests/test_phone_e2e.py` (~1090: every app folder must be in OTHER_APPS), `tests/test_kalshi_page.py` (Kalshi
-   worker `kalshi-k18` and kit / step pins, only if `kalshi/` files change).
+   worker `kalshi-k19` and kit / step pins, only if `kalshi/` files change).
 5. `python tools/apps_list_build.py`, then `--check`; commit `olympus/apps-list.js` and `web_next/js/next/apps-list.js` (the launcher tile and its status dot
    appear on their own; the launcher tile count is read from the list, not typed in a test).
 6. Shared lines: `jarvis/transitions.js` `REGISTRY` (`test_jarvis_transitions` fails without it), `olympus/intro-app.js` `FLAVOUR` + the intro script tag in the
