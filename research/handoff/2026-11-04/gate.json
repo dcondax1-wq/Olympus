@@ -87,6 +87,42 @@
    ],
    "name": "olympus_sfx",
    "mode": "FULL"
+  },
+  {
+   "state": "PASS",
+   "passed": 35,
+   "total": 35,
+   "seconds": 67.4,
+   "note": "",
+   "fails": [],
+   "argv": [
+    "-m",
+    "tests.test_olympus_kit",
+    "power",
+    "tiers"
+   ],
+   "name": "olympus_kit",
+   "mode": "FULL"
+  },
+  {
+   "state": "FAIL",
+   "passed": 106,
+   "total": 111,
+   "seconds": 255.2,
+   "note": "",
+   "fails": [
+    "[FAIL] c. tree: no key -> every computed CSS variable as before the themes (51)  -> {'--dim': ('rgba(150, 230, 185, .52)', 'rgba(150, 230, 185, .66)'), '--faint': ('rgba(150, 230, 185, .3)', 'rgba(150, 230, 185, .58)')}",
+    "[FAIL] c. tree: olympus.theme = olympus -> every computed CSS variable as before the themes (51)  -> {'--dim': ('rgba(150, 230, 185, .52)', 'rgba(150, 230, 185, .66)'), '--faint': ('rgba(150, 230, 185, .3)', 'rgba(150, 230, 185, .58)')}",
+    "[FAIL] c. zenith: no key -> every computed CSS variable as before the themes (90)  -> {'--muted': ('#6f788b', '#8590a7')}",
+    "[FAIL] c. zenith: olympus.theme = olympus -> every computed CSS variable as before the themes (90)  -> {'--muted': ('#6f788b', '#8590a7')}",
+    "[FAIL] e. tree: back on the default, every CSS variable is today's again  -> {'--dim': ('rgba(150, 230, 185, .52)', 'rgba(150, 230, 185, .66)'), '--faint': ('rgba(150, 230, 185, .3)', 'rgba(150, 230, 185, .58)')}"
+   ],
+   "argv": [
+    "-m",
+    "tests.test_olympus_themes"
+   ],
+   "name": "olympus_themes",
+   "mode": "FULL"
   }
  ]
 }
