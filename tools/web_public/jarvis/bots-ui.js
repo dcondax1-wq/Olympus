@@ -69,7 +69,7 @@ export function mountBots(o) {
   let timer = 0, shown = false;
   function card(b) {
     const c = b.cards ? safe(() => b.cards(), null) : null;
-    const k = c ? [c.recap, c.plan].filter(Boolean).sort((p, q) => (q.t || 0) - (p.t || 0))[0] : null;
+    const k = c ? [c.recap, c.plan, c.pre, c.end].filter(Boolean).sort((p, q) => (q.t || 0) - (p.t || 0))[0] : null;
     return k && ls.get(DISMISS_KEY) !== k.id ? k : null;
   }
   function render() {

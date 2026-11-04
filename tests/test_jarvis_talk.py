@@ -208,6 +208,8 @@ def page(br, url, name, ios, voices=True, device=None):
     # 2026-11-04: the natural-speech layer (prosody.js: numbers / tickers in words, contractions, comma breaths) changes the words on
     # purpose and has its own tests (test_jarvis_engines.py); this test checks the base chunker on the original text, so it is off here
     ctx.add_init_script("try { localStorage.setItem('jarvis.voiceEngine', JSON.stringify({ prosody: false })); } catch (e) {}")
+    if os.environ.get("JARVIS_TEST_LITE") == "1":          # a loaded machine: no 3D core, no effects (jfx=off), so the heavy page cannot starve the checks
+        ctx.add_init_script("try { localStorage.setItem('jfx', 'off'); localStorage.setItem('jarvis.no3d', '1'); } catch (e) {}")
     ctx.add_init_script(MOCK)
     p = ctx.new_page()
     errs = []

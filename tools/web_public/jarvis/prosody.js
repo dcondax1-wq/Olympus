@@ -220,7 +220,7 @@ export function plan(input, opts) {
   const out = [];
   for (const it of items) {
     const prev = out[out.length - 1];
-    if (prev && words(prev.text) <= 2 && prev.text.length + it.text.length + 1 <= max) { prev.text += ' ' + it.text; prev.type = it.type; prev.pause = it.pause; prev.rate = it.rate; prev.pitch = it.pitch; }
+    if (prev && prev.type !== 'q' && (words(prev.text) <= 2 || prev.text.length < 24) && prev.text.length + it.text.length + 1 <= max) { prev.text += ' ' + it.text; prev.type = it.type; prev.pause = it.pause; prev.rate = it.rate; prev.pitch = it.pitch; }
     else out.push(Object.assign({}, it));
   }
   return out;

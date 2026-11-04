@@ -125,6 +125,8 @@ def new_page(br, no_sr=False, reduced=False, fx=None, width=390, height=844):
         ctx.add_init_script(f"try {{ localStorage.setItem('jfx', '{fx}'); }} catch (e) {{}}")
     if no_sr:
         ctx.add_init_script("window.__noSR = true;")
+    if os.environ.get("JARVIS_TEST_LITE") == "1":          # a loaded machine: no 3D core, no effects (jfx=off), so the heavy page cannot starve the checks
+        ctx.add_init_script("try { localStorage.setItem('jfx', 'off'); localStorage.setItem('jarvis.no3d', '1'); } catch (e) {}")
     ctx.add_init_script(MOCKS)
     p = ctx.new_page()
     errs = []
@@ -252,8 +254,8 @@ def run_main(br, url):
     check("c. the tile opens voice mode full screen, greeting first", s.get("open") and box[0] == box[2] and box[1] == box[3], (s, box))
     p.wait_for_function("window.__said.length >= 1", timeout=5000)
     g = p.evaluate("window.__said[0]")
-    check("c. the greeting in her voice: Ava (Premium), at the voice's own pace and pitch", g["voice"] == "Ava (Premium)" and "listening" in g["text"].lower()
-          and g["rate"] == 1 and g["pitch"] == 1, g)
+    check("c. the greeting in her voice: Ava (Premium), at the voice's own pace and pitch (within the natural-speech nudge)", g["voice"] == "Ava (Premium)" and "listening" in g["text"].lower()
+          and abs(g["rate"] - 1) <= 0.05 and abs(g["pitch"] - 1) <= 0.05, g)       # (2026-11-04: the natural-speech layer nudges rate / pitch by up to 2.5% per phrase)
     check("c. the 3D core goes full screen (mounted in voice mode, the Jarvis screen's core let go: one core at a time)",
           s.get("core") is not None and p.evaluate("document.getElementById('coreSlot').children.length") == 0, (s.get("core"), home_core))
     check("c. the button labels the voice", p.inner_text("#vmVoice").startswith("VOICE · AVA"), p.inner_text("#vmVoice"))
