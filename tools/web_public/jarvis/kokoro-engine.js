@@ -65,17 +65,15 @@ const WORKER_SRC = `
 let tts = null, booting = null;
 const cfg = { lib: '', wasmBase: '', cacheWasm: '', modelId: '' };
 const rf = self.fetch.bind(self);
-// the ONNX runtime's files come from Cache Storage first (put there by the download), else the network (and are kept)
+// the ONNX runtime's files come from Cache Storage only (put there by the tapped download); a miss is an error, never a download
 self.fetch = async function (input, init) {
   const url = typeof input === 'string' ? input : (input && input.url) || '';
   if (cfg.wasmBase && url.indexOf(cfg.wasmBase) === 0) {
     try {
       const c = await caches.open(cfg.cacheWasm), hit = await c.match(url);
       if (hit) return hit;
-      const r = await rf(input, init);
-      if (r && r.ok) { try { await c.put(url, r.clone()); } catch (_) { /* full */ } }
-      return r;
-    } catch (_) { /* fall through to the plain fetch */ }
+    } catch (_) { /* below */ }
+    throw new Error('The speech engine is not in this phone\'s storage (download it again in the Voice sheet).');     // never a silent 21 MB fetch
   }
   return rf(input, init);
 };
@@ -136,7 +134,10 @@ export function createKokoro(opts) {
   async function downloaded() {
     try {
       const c = await CS().open(KO.cacheModel);
-      return !!(await c.match(KO.hf + 'onnx/model_quantized.onnx')) && !!(await (await CS().open(KO.cacheVoices)).match(KO.hf + 'voices/af_heart.bin'));
+      if (!(await c.match(KO.hf + 'onnx/model_quantized.onnx')) || !(await (await CS().open(KO.cacheVoices)).match(KO.hf + 'voices/af_heart.bin'))) return false;
+      const w = await CS().open(KO.cacheWasm);
+      for (const f of KO.wasmFiles) if (!(await w.match(KO.wasmBase + f))) return false;
+      return true;
     } catch (_) { return false; }
   }
 
