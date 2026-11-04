@@ -39,11 +39,13 @@ import { HeatCube } from './heat.js';
 import { LiquidityMap } from './liqmap.js';
 import { WeekRing } from './weekring.js';
 import { DayClock } from './dayclock.js';
+import { ambient } from './ambient.js';
 import { Holo, fillText, etHMS, fmtPx, fmtUsd, BOTC, BOTN, tagOf } from './holo.js';
 
 export const version = 1;
 const KINDS = { orb: Orb, galaxy: Galaxy, city: City, candles: Candles, constellation: Constellation, ribbon: Ribbon, reactor: Reactor, pipeline: Pipeline, losses: Losses, jarvis: Jarvis,
   newsradar: NewsRadar, montecarlo: MonteCarlo, heat: HeatCube, liqmap: LiquidityMap, weekring: WeekRing, dayclock: DayClock };
+const AMBIENT = { galaxy: 'galaxy', city: 'city', reactor: 'reactor' };     // the views that get the kit's ambient effects (not the Holodeck, not the space background)
 const reg = new Map();
 let field = null, bg = null, inited = false, sceneName = 'today', bgKind = 'space', lastBots = null, lastPnl = null;
 
@@ -95,6 +97,7 @@ export function mount(key, el, kind, data, opts = {}) {
   if (!v) {
     try { v = new KINDS[kind](opts); } catch (e) { console.warn('fx mount', kind, e); return null; }
     v.kind = kind; reg.set(key, v);
+    if (AMBIENT[kind]) { try { ambient(v, AMBIENT[kind]); } catch (e) { console.warn('fx ambient', kind, e); } }   // dust, fireflies, light shafts, aurora (ambient.js)
   }
   v.opts = { ...v.opts, ...opts };
   v.attach(el);
