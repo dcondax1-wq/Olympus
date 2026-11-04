@@ -228,7 +228,7 @@ const _v = new THREE.Vector3();
 export class Hud extends View {
   // def: { name, fov, orbit, empty }
   constructor(opts = {}, def = {}) {
-    super({ fov: def.fov || 38, dprMax: 2, ...opts, orbit: { ...(def.orbit || {}), ...(opts.orbit || {}) } });
+    super({ fov: def.fov || 38, dprMax: 2, env: def.env, ...opts, orbit: { ...(def.orbit || {}), ...(opts.orbit || {}) } });
     this.userRange = !!(opts.orbit && (opts.orbit.min != null || opts.orbit.max != null));
     this.canvas.classList.add('fx-' + (def.name || 'hud')); this.canvas.style.display = 'block'; // inline canvases leave a baseline gap
     this.canvas.style.cursor = 'grab';

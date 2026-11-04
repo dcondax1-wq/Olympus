@@ -8,7 +8,7 @@ import { S } from '../state.js';
 
 let FX = null;
 // the bundle's URL: fx/build.mjs stamps the bundle's content hash into the next line (the first fx.js URL of this file)
-const FX_URL = '/js/fx.js?v=3b39194c';
+const FX_URL = '/js/fx.js?v=a7bf6810';
 const pend = new Map();
 const root = document.documentElement;
 // Deep space by default (owner 2026-10-29: "make it look cooler ... almost like 3D space"; it was off since 2026-10-25, calm).
