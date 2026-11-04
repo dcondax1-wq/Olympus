@@ -65,6 +65,67 @@ export class Landmarks {
     this._gates();
     this.envMats = [];
     this.group.traverse((o) => { if (o.material && o.material.envMapIntensity !== undefined) this.envMats.push(o.material); });
+    this.merged = /[?&]nomerge/.test(location.search) ? { before: 0, after: 0 } : this._mergeStatic();        // ?nomerge=1: the unmerged landmarks (A/B checks)
+  }
+
+  /** Static merge (v3 perf): every landmark mesh that never moves is baked into ONE mesh per material (and per container: the temple, the Pharos
+   *  and the rest, so the phone profile can still hide the first two). Instanced columns are baked instance by instance. Kept as they are: the
+   *  animated parts (oracle, turning rings, sweeping beams, bobbing lamps), per-instance colours (the gate bars), hidden meshes and the invisible
+   *  tap proxies. Returns { before, after } draw-call counts for the tests. */
+  _mergeStatic() {
+    const keep = new Set([this.oracle, ...(this.rings || []), ...(this.lamps || []), this.gateBars].filter(Boolean));
+    const frozen = (o) => { for (let v = o; v; v = v.parent) if (keep.has(v) || v === this.sweep || v.userData?.landmark || v.isLight) return true; return false; };
+    const roots = [this.templeG, this.pharosG].filter(Boolean), done = new Set(roots);
+    const inv = new THREE.Matrix4(), rel = new THREE.Matrix4(), m = new THREE.Matrix4();
+    this.group.updateMatrixWorld(true);
+    let before = 0, after = 0;
+    const run = (root, skipRoots) => {
+      const buckets = new Map();
+      root.traverse((o) => {
+        if (!(o.isMesh) || o.parent === null || frozen(o) || !o.visible) return;
+        for (let v = o; v && v !== root; v = v.parent) if (skipRoots.has(v)) return;
+        const mat = o.material, g = o.geometry;
+        if (Array.isArray(mat) || !g.attributes.position || !g.attributes.normal || !g.attributes.uv || o.isSkinnedMesh) return;
+        const key = mat.uuid + '|' + o.renderOrder;
+        if (!buckets.has(key)) buckets.set(key, { mat, order: o.renderOrder, list: [] });
+        buckets.get(key).list.push(o);
+      });
+      inv.copy(root.matrixWorld).invert();
+      for (const { mat, order, list } of buckets.values()) {
+        const pos = [], nor = [], uv = [], idx = [];
+        let n = 0;
+        const add = (geom, matrix) => {
+          const g = geom.clone();
+          g.applyMatrix4(matrix);
+          const base = pos.length / 3, count = g.attributes.position.count;
+          pos.push(...g.attributes.position.array); nor.push(...g.attributes.normal.array); uv.push(...g.attributes.uv.array);
+          if (g.index) for (const i of g.index.array) idx.push(base + i); else for (let i = 0; i < count; i++) idx.push(base + i);
+          g.dispose();
+          n++;
+        };
+        for (const o of list) {
+          rel.multiplyMatrices(inv, o.matrixWorld);
+          if (o.isInstancedMesh) {
+            if (o.instanceColor) { n = -1; break; }
+            for (let k = 0; k < o.count; k++) { o.getMatrixAt(k, m); add(o.geometry, new THREE.Matrix4().multiplyMatrices(rel, m)); }
+          } else add(o.geometry, rel);
+        }
+        if (n < 0 || list.length < 2 && !list[0].isInstancedMesh) continue;
+        const out = new THREE.BufferGeometry();
+        out.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+        out.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+        out.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+        out.setIndex(idx);
+        const mesh = new THREE.Mesh(out, mat);
+        mesh.renderOrder = order; mesh.userData.merged = list.length;
+        before += list.length; after++;
+        root.add(mesh);
+        for (const o of list) o.parent.remove(o);
+      }
+    };
+    for (const r of roots) run(r, new Set());
+    run(this.group, done);
+    return { before, after };
   }
 
   _lights() {
@@ -322,6 +383,9 @@ export class Landmarks {
 
   /** the phone profile hides the temple and the Pharos (about 30 draw calls each) when the camera is further than C.lmLod */
   lod(p, C) {
+    this.heralds ||= this.group.children.filter((o) => o.isMesh && o.geometry?.type === 'OctahedronGeometry' && o !== this.oracle);
+    const hi = C.farAlt > 0 && p.y > C.farAlt;
+    for (const h of this.heralds) h.visible = !hi;
     const far = (S) => S && C.lmLod > 0 && Math.hypot(p.x - S.x, p.z - S.z) > C.lmLod;
     if (this.templeG) this.templeG.visible = !far(this.spots.temple);
     if (this.pharosG) this.pharosG.visible = !far(this.spots.pharos);
