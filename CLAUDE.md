@@ -82,6 +82,14 @@ there, not here.
 | Infrastructure | PC bot, cloud monitor, NinjaTrader, phone feed, TradingView, PC-off options |
 | Open work | Dashboard, Pine port, the Dec 2026 roll |
 | One chat | **Any change**: where each project lives, how it ships, its tests (start here) |
+| OLYMPUS apps and tools | Any OLYMPUS app (folder, data it reads, test), effects, transitions, intros, Cities, Kalshi City, Jarvis bots / voice, Bridge, PC care / storage / fresh start |
+
+## OLYMPUS and the PCs (2026-11-04; the map is in CLAUDE_REFERENCE "OLYMPUS apps and tools")
+- Apps are `tools/web_public/<id>/` (24 wired in `jarvis/apps.js`; `cities/` and `kalshicity/` built, not wired yet). Tonight's: Ares, Plutus, Forum,
+  Labyrinth, Argus, Nemesis, Chronos, Hephaestus, Athena, Hermes, Tyche, Bridge. Each reads only published JSON; test `tests.test_<app>_page` (+ `tests.test_olympus_kit`).
+- Shared: effects `olympus/fx-*.js` (`test_olympus_fx`), `jarvis/transitions.js`, `olympus/intro-app.js`, Bridge `tools/bridge_*.py` (`test_bridge_page`, `test_bridge_ingest`).
+- PC (Windows, scripts tested with pwsh on Linux): `PC_CARE.bat` (power plan per role + health line), `CLEAN_STORAGE.bat`, `FRESH_START.bat`; undo `UNDO_PC_TUNE.bat`; tests `test_pc_care`, `test_clean_storage`, `test_win_scripts`.
+- **Agents never edit `sw.js`, `tools/build_web_dashboard.py` or `jarvis/apps.js`: the lead wires them (the agent's report lists the "wiring needed") and bumps the workers.**
 
 ## Most-used commands (run from the repo root)
 - `python -X utf8 -m tests.test_lit_live`: replays every 2026 session through the live loop (must stay identical).

@@ -31,10 +31,10 @@ HARN = os.path.join(ROOT, "tests", "win_harness")
 RES = []
 
 BATS = ["ONE_TIME_SETUP.bat", "UPDATE.bat", "HEALTH_CHECK.bat", "START_DASHBOARD.bat", "STOP_BOT.bat", "SETUP_SHORTCUTS.bat", "NO_CHART_MODE.bat",
-        "CLEAN_PC.bat", "UNDO_PC_TUNE.bat", "BOT_LITE.bat", "MOVE_BOT.bat", "FRESH_START.bat", "CLEAN_STORAGE.bat"]
+        "CLEAN_PC.bat", "UNDO_PC_TUNE.bat", "BOT_LITE.bat", "MOVE_BOT.bat", "FRESH_START.bat", "CLEAN_STORAGE.bat", "PC_CARE.bat"]
 PS1 = ["one_time_setup.ps1", "run_bot.ps1", "stop_bot.ps1", "make_shortcuts.ps1", "install_ops_task.ps1",
        "install_autostart.ps1", "setup_dedicated_pc.ps1", "uninstall_autostart.ps1", "status.ps1", "schedule_pc.ps1",
-       "schedule_pc_run.ps1", "clean_pc.ps1", "clean_storage.ps1", "pc_tune.ps1", "pc_keeper.ps1", "bot_lite.ps1", "move_bot.ps1"]
+       "schedule_pc_run.ps1", "clean_pc.ps1", "clean_storage.ps1", "pc_care.ps1", "pc_tune.ps1", "pc_keeper.ps1", "bot_lite.ps1", "move_bot.ps1"]
 ADMIN_EXPR = ("([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole("
               "[Security.Principal.WindowsBuiltInRole]::Administrator)")
 DUMMY_PHRASE ="dummy words for the harness"          # not the live phrase; the fake python never forwards it anywhere
