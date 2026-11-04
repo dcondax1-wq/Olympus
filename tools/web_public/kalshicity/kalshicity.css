@@ -46,6 +46,8 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 60%, #0b2a2
 .chip { min-height: 44px; padding: 4px 14px; display: inline-flex; align-items: center; border-radius: 999px; border: 1px solid var(--oly-line); background: var(--oly-glass); font: 700 12px/1 var(--oly-ui); letter-spacing: .04em;
   -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
 .chip.static { cursor: default; }
+.chip.ico { width: 44px; padding: 4px 0; justify-content: center; font-size: 17px; }
+.chip.ico[aria-pressed="true"] { border-color: rgba(var(--k-mint-rgb), .8); color: var(--k-mint); box-shadow: 0 0 12px rgba(var(--k-mint-rgb), .25) inset; }
 .chip[data-wx="clear"] { color: var(--k-gold); } .chip[data-wx="rain"] { color: #8fb8ff; } .chip[data-wx="storm"] { color: var(--k-bad); } .chip[data-wx="overcast"] { color: #b8c2d8; }
 .chip.preview { border-color: rgba(var(--k-mint-rgb), .8); color: var(--k-mint); }
 
@@ -53,7 +55,8 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 60%, #0b2a2
   display: flex; flex-direction: column; gap: 6px; padding: 8px; border-radius: var(--oly-r-card, 16px); border: 1px solid var(--oly-line); background: rgba(6, 16, 15, .78);
   -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
 .dock .row { display: flex; align-items: center; gap: 6px; }
-.dock button { flex: 1 1 0; min-width: 0; min-height: 44px; padding: 4px 4px; border-radius: 10px; border: 1px solid var(--oly-line); background: rgba(255, 255, 255, .04); font: 700 12px/1 var(--oly-ui); white-space: nowrap; }
+.dock button { flex: 1 1 0; min-width: 0; min-height: 44px; padding: 4px 2px; border-radius: 10px; border: 1px solid var(--oly-line); background: rgba(255, 255, 255, .04); font: 700 12px/1 var(--oly-ui); white-space: nowrap; }
+.dock .pills button { font-size: 11px; letter-spacing: 0; }
 .dock .cams button { min-height: 40px; font-weight: 600; font-size: 11.5px; }
 .dock button[aria-pressed="true"] { border-color: rgba(var(--k-mint-rgb), .8); color: var(--k-mint); box-shadow: 0 0 12px rgba(var(--k-mint-rgb), .2) inset; }
 
@@ -96,3 +99,11 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 60%, #0b2a2
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 @media (max-height: 740px) { :root { --dock-h: 116px; } .odd b { font-size: 19px; } .verdict .v { -webkit-line-clamp: 2; } }
+
+.ask { margin: 8px 0; padding: 10px; border-radius: 12px; border: 1px solid rgba(var(--k-mint-rgb), .45); background: rgba(var(--k-mint-rgb), .07); }
+.ask pre { margin: 6px 0 0; padding: 8px; border-radius: 8px; background: rgba(0, 0, 0, .35); font: 500 11.5px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--oly-text); user-select: all; -webkit-user-select: all; }
+.steps { margin: 6px 0; padding-left: 20px; font-size: 12.5px; color: var(--oly-dim); } .steps li { margin: 4px 0; }
+.find { margin: 8px 0; padding: 9px 10px; border-radius: 12px; border: 1px solid var(--oly-line); background: rgba(255, 255, 255, .04); }
+.find b { display: block; font: 700 12.5px/1.3 var(--oly-ui); color: var(--oly-text); margin-bottom: 3px; }
+.find.good { border-color: rgba(53, 240, 176, .4); } .find.bad { border-color: rgba(255, 77, 87, .4); } .find.warn { border-color: rgba(255, 154, 60, .4); }
+.find p { margin: 3px 0; }

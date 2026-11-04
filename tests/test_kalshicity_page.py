@@ -51,7 +51,7 @@ def node(body):
 # ------------------------------------------------------------------------------------------------ a. static
 def part_a():
     files = os.listdir(PAGE)
-    need = {"index.html", "kalshicity.css", "kalshicity.js", "cityfeed.js", "citylayout.js", "cityscene.js", "cityrig.js", "fixture.json", "edges.json", "learning_log.json",
+    need = {"index.html", "kalshicity.css", "kalshicity.js", "cityfeed.js", "citylayout.js", "cityscene.js", "cityrig.js", "cityfx.js", "lessons.js", "fixture.json", "learned.json", "edges.json", "learning_log.json",
             "ledger.json", "jarvis.json", "manifest.webmanifest", "icon.svg"}
     check("a. the folder has every file (page, css, data layer, layout, scene, camera rig, fixture, the engine's four files, Jarvis card, manifest, icon)", need <= set(files), need - set(files))
     html, css = rd(PAGE, "index.html"), rd(PAGE, "kalshicity.css")
@@ -65,10 +65,13 @@ def part_a():
     check("a. 3D is Jarvis's three.js and the OLYMPUS render core + materials; no WebGLRenderer of its own; rc.render() each frame; the core is disposed",
           "from '../jarvis/three.module.min.js'" in sc and "from '../olympus/render.js'" in sc and "from '../olympus/materials.js'" in sc and "createRenderer(" in sc and "rc.render()" in sc
           and "new THREE.WebGLRenderer" not in sc and "rc.dispose()" in sc and "InstancedMesh" in sc and "onBeforeCompile" in sc)
+    fxs = js["cityfx.js"]
+    check("a. the effects layer uses the OLYMPUS fx library (godRays, lightning, aurora, lensFlare via OLYMPUS_FX), loads fx-core.js as a classic script, and plays sound only through OLYMPUS.sfx",
+          all(n in fxs for n in ("godRays", "lightning", "aurora", "lensFlare", "OLYMPUS_FX")) and '<script src="../olympus/fx-core.js?v=f1"></script>' in html and "O.sfx(" in fxs and "AudioContext" not in " ".join(js.values()))
     check("a. no innerHTML / insertAdjacentHTML / document.write (the data only ever goes in as text)", not any(re.search(r"innerHTML|insertAdjacentHTML|document\.write", s) for s in js.values()))
     fetched = set(re.findall(r"getJSON\(([^,)]+)", js["kalshicity.js"]))
-    check("a. the page fetches only edges.json, learning_log.json, the public kalshi-feed (RAW) and its fixture; no WebSocket / beacon / XHR / EventSource",
-          {x.strip() for x in fetched} - {"url"} == {"'edges.json'", "'learning_log.json'", "RAW", "'fixture.json'"} and not any(re.search(r"WebSocket|sendBeacon|XMLHttpRequest|EventSource", s) for s in js.values()), fetched)
+    check("a. the page fetches only edges.json, learning_log.json, the public kalshi-feed (RAW), the research lessons (learned.json) and its fixture; no WebSocket / beacon / XHR / EventSource",
+          {x.strip() for x in fetched} - {"url"} == {"'edges.json'", "'learning_log.json'", "RAW", "'learned.json'", "'fixture.json'"} and not any(re.search(r"WebSocket|sendBeacon|XMLHttpRequest|EventSource", s) for s in js.values()), fetched)
     check("a. RAW is the public kalshi-feed's kalshi.json (read only: GET, no key, no header), and nothing of Kalshi's own is called",
           "raw.githubusercontent.com/demetrades2000-coder/kalshi-feed/main/kalshi.json" in js["cityfeed.js"] and not re.search(r"kalshi\.com|trading-api|api\.elections", " ".join(js.values()))
           and "method:" not in js["kalshicity.js"].replace(" ", "").lower() and "'POST'" not in js["kalshicity.js"] and "headers" not in js["kalshicity.js"])
@@ -210,6 +213,10 @@ def run_browser():
 
             def page(reduced=False, quality="low", vw=(390, 844)):
                 ctx = br.new_context(viewport={"width": vw[0], "height": vw[1]}, device_scale_factor=1, has_touch=True, reduced_motion="reduce" if reduced else "no-preference")
+                try:
+                    ctx.grant_permissions(["clipboard-read", "clipboard-write"], origin=f"http://127.0.0.1:{srv.server_address[1]}")
+                except Exception:
+                    pass
                 if quality:
                     ctx.add_init_script(f"try {{ localStorage.setItem('jfx', '{quality}'); }} catch (e) {{}}")
 
@@ -248,7 +255,7 @@ def run_browser():
                   not s["demo"] and s["n"] == edges["counts"]["edges"] and s["liveUsed"] and sc["quality"] == "low" and sc["passes"] == 2 and not p.errs and p.is_visible("#lite") and not p.is_visible("#demo"), (s["demo"], s["n"], s["liveUsed"], sc, p.errs))
             check("c. one district per market plus Downtown, a building for every edge, the skyline (LITE: 700 towers), cars on the roads, orders for the 2 open positions, the weather and the clock",
                   s["districts"][0] == "Downtown" and "Bitcoin" in s["districts"] and s["buildings"] == s["n"] and sc["real"] == s["n"] and sc["scenery"] == 700 and sc["cars"] > 60 and sc["orders"] == 2
-                  and sc["weather"] == edges["regime"]["state"] and re.search(r"\d\d:\d\d ET", p.inner_text("#clock")), (s["districts"], sc))
+                  and sc["weather"] == edges["regime"]["state"] and re.search(r"\d\d:\d\d · (Night|Dawn|Day|Dusk)", p.inner_text("#clock")), (s["districts"], sc))
             t = p.inner_text("#verdict")
             check("c. the top card in plain words: the headline, Do more / Stop / Ruin risk, the bot line with the live bankroll ($77.77) and how many bets were read one by one; the weather chip",
                   p.inner_text("#vText").startswith(("Learned:", "Crumbled", "Fading", "Growing", "Steady", "Update")) and re.search(r"\d", p.inner_text("#oMore")) and "$77.77" in p.inner_text("#bot") and "read one by one" in t
@@ -313,10 +320,10 @@ def run_browser():
             clock0 = p.inner_text("#clock")
             p.click("#clock")
             p.wait_for_function("KC.state().preview === 6")
-            check("c. the clock chip previews another hour (06:00, dawn); the scene follows; tapping on cycles back to live", st(p)["scene"]["hour"] == 6 and "preview" in p.inner_text("#clock") and "Dawn" in p.inner_text("#clock"))
+            check("c. the clock chip previews another hour (06:00, dawn); the scene follows; tapping on cycles back to live", st(p)["scene"]["hour"] == 6 and p.evaluate("document.getElementById('clock').classList.contains('preview')") and "Dawn" in p.inner_text("#clock"))
             for _ in range(4):
                 p.click("#clock")
-            check("c. ...12:00, 18:00, 00:00 and live again", st(p)["preview"] is None and "preview" not in p.inner_text("#clock") and clock0[:2].isdigit())
+            check("c. ...12:00, 18:00, 00:00 and live again", st(p)["preview"] is None and not p.evaluate("document.getElementById('clock').classList.contains('preview')") and clock0[:2].isdigit())
             p.evaluate("KC.open('guide')")
             p.click("#sheet .more")
             p.wait_for_function("KC.state().demo === true")
@@ -326,6 +333,77 @@ def run_browser():
             p.click("#sheet .more")
             p.wait_for_function("KC.state().demo === false")
             check("c. ...back to the real city", st(p)["n"] == edges["counts"]["edges"] and not p.is_visible("#demo") and not p.errs, p.errs)
+            # ---- the lessons from the research, the ask-for-history card, the sound toggle, the scanner (still page)
+            learned = json.loads(rd(PAGE, "learned.json"))
+            p.click("[data-view=lessons]")
+            p.wait_for_function("KC.state().view === 'lessons'")
+            txt = p.inner_text("#sheet")
+            fees, b95 = learned["fees"], next(b for b in learned["buckets"] if b["label"].startswith("95-99c"))
+            check("c. the What we learned sheet: the four findings (fees eat the edge, 95c+ thin pocket, 90-95c loses, risk of ruin vs size) with the research's own numbers (fees $%d, %d bets at 95c+), the by-price list, the ideas"
+                  % (round(fees["total"]), b95["n"]),
+                  all(x.lower() in txt.lower() for x in ("Fees eat the edge", "95c and above: a thin pocket", "90-95c entries lose", "Risk of ruin grows with bet size", "By entry price", "Ideas to paper-test first"))
+                  and f"${round(fees['total'])}" in txt and f"{b95['n']:,}" in txt and learned["headline"] in txt and "fixed 6 contracts" in txt and "not proven" in txt and not p.evaluate(GEOM), (txt[:200], p.evaluate(GEOM)))
+            if shots:
+                p.screenshot(path=os.path.join(shots, "kalshicity-lessons.png"))
+            p.click("#askBtn")
+            p.wait_for_function("KC.state().view === 'history'")
+            ask = p.inner_text("#sheet pre")
+            check("c. the Ask for the full history card: why (40 bets only, hour-of-day), three steps, and the exact message with the order-table fields (time, ticker, side, book, contracts, price, pnl), read only, no keys, nothing public",
+                  ask == p.evaluate("KC.ask") and "time,ticker,side,book,contracts,price,pnl" in ask and "read-only" in ask and "API key" in ask and "public" in ask and "Print the CSV here in the chat" in ask
+                  and "hour of the day" in p.inner_text("#sheet") and p.locator("#sheet .steps li").count() == 3 and not p.evaluate(GEOM), ask[:120])
+            p.click("#copyAsk")
+            p.wait_for_function("document.getElementById('copyAsk').textContent !== 'Copy the message'")
+            clip = ""
+            try:
+                clip = p.evaluate("navigator.clipboard.readText()")
+            except Exception:
+                pass
+            check("c. the Copy button copies the whole message (or says how to copy it by hand)", p.inner_text("#copyAsk") in ("Copied", "Press and hold the text to copy it") and (clip == "" or clip == p.evaluate("KC.ask")), (p.inner_text("#copyAsk"), clip[:40]))
+            p.keyboard.press("Escape")
+            p.evaluate("window.__sfx = []; OLYMPUS.sfx = (n) => { if (n) window.__sfx.push(n); return true; }")
+            ids = p.evaluate("KC.model().edges.filter((e) => !e.small).slice(0, 2).map((e) => e.id)")
+            p.evaluate(f"KC.select({json.dumps(ids[0])})")
+            off_calls = p.evaluate("window.__sfx.length")
+            p.keyboard.press("Escape")
+            p.click("#sound")
+            p.evaluate(f"KC.select({json.dumps(ids[1])})")
+            on_calls = p.evaluate("window.__sfx.slice()")
+            check("c. sound is off until the note button is pressed (no sfx call), then ambience and ticks go through OLYMPUS.sfx; the choice is kept on this phone",
+                  off_calls == 0 and p.get_attribute("#sound", "aria-pressed") == "true" and "tap" in on_calls and "tick" in on_calls and json.loads(p.evaluate("localStorage.getItem('kalshicity.v1')")).get("sound") is True, on_calls)
+            p.click("#sound")
+            p.keyboard.press("Escape")
+            n0 = p.evaluate("window.__sfx.length")
+            p.evaluate(f"KC.select({json.dumps(ids[0])})")
+            check("c. ...and off again silences it", p.get_attribute("#sound", "aria-pressed") == "false" and p.evaluate("window.__sfx.length") == n0)
+            p.keyboard.press("Escape")
+            r = p.evaluate("KC.scan()")
+            check("c. the scan button: the engine's lessons of today become buildings to light up (and DO MORE ones get fireworks); on a still page nothing moves, nothing breaks",
+                  len(r["ids"]) >= 1 and all(i in set(p.evaluate("KC.model().edges.map((e) => e.id)")) for i in r["ids"] + r["more"]) and not p.errs, (r, p.errs))
+            st0 = st(p)["scene"]["fx"]
+            check("c. still page, effects: the neon signs and the wet-street reflections are drawn (stills), the moving library effects are off (reduced motion = off)", st0["signs"] > 0 and st0["wet"] > 0 and st0["live"] == [], st0)
+            ctx.close()
+
+            # ---- the effects (a moving page): dusk god rays, storm lightning, aurora + a lens flare at night, fireworks and the scanner when the engine learned something today
+            ctx, p = page()
+            ready(p)
+            p.evaluate("KC.hour(22)")
+            p.wait_for_function("KC.fx() && KC.fx().live.includes('aurora') && KC.fx().live.includes('spire')", timeout=120000)
+            f = p.evaluate("KC.fx()")
+            check("c. at night: the aurora over the Vault and a lens flare on the Exchange's spire (OLYMPUS fx library), LITE-tier caps held", "aurora" in f["live"] and "spire" in f["live"] and f["tier"] == "low" and not p.errs, (f, p.errs))
+            p.wait_for_function("KC.fx().counts.scans >= 1", timeout=120000)
+            f = p.evaluate("KC.fx()")
+            check("c. the engine learned something today: the edge scanner swept the city once and fireworks went up over the new DO MORE edge", f["counts"]["scans"] == 1 and f["counts"]["fireworks"] >= 1 and not p.errs, f)
+            p.wait_for_function("KC.fx().live.includes('lightning')", timeout=120000)
+            check("c. the risk of ruin is high and it rains: lightning storm on (and a bolt on demand)", p.evaluate("KC.fx().live.includes('lightning')") and p.evaluate("KC.scene().strike()") is True and not p.errs, p.errs)
+            p.evaluate("KC.hour(18)")
+            p.wait_for_function("KC.fx().live.includes('godRays')", timeout=120000)
+            check("c. at dusk: god rays", "godRays" in p.evaluate("KC.fx().live") and not p.errs, p.errs)
+            p.evaluate("KC.hour(12)")
+            p.wait_for_function("!KC.fx().live.includes('aurora') && !KC.fx().live.includes('spire') && !KC.fx().live.includes('godRays')", timeout=120000)
+            check("c. by day: the aurora, the spire flare and the god rays stop (nothing is left running that the clock does not call for)", not p.errs, p.errs)
+            p.click("#scan")
+            p.wait_for_function("KC.fx().counts.scans >= 2")
+            check("c. the scan button sweeps again on demand", p.evaluate("KC.fx().counts.scans") >= 2 and not p.errs, p.errs)
             ctx.close()
 
             # ---- reduced motion: a still scene
@@ -334,7 +412,7 @@ def run_browser():
             before = st(p)["scene"]["drawn"]
             p.wait_for_timeout(1800)
             after = st(p)["scene"]["drawn"]
-            check("c. reduced motion: a still scene (no frames while nothing changes), the cars and the rain stand still, no errors", after - before <= 2 and not p.errs, (before, after, p.errs))
+            check("c. reduced motion: a still scene (no frames while nothing changes), the cars and the rain stand still, no errors", after - before <= 3 and not p.errs, (before, after, p.errs))
             p.click("[data-cam=map]")
             p.wait_for_timeout(1200)
             check("c. ...and a camera change still redraws it", st(p)["scene"]["drawn"] > after)

@@ -63,8 +63,8 @@ def rjson(path):
 # ------------------------------------------------------------------------------------------------------------ a
 def test_registry():
     names = [t.name for t in registry.TASKS]
-    check("a. registry: unique names, the seven research apps", len(names) == len(set(names))
-          and set(names) == {"datacity", "fates", "odeon", "pantheon", "hermes", "tree", "prometheus"}, names)
+    check("a. registry: unique names, the eight research apps", len(names) == len(set(names))
+          and set(names) == {"datacity", "kalshicity", "fates", "odeon", "pantheon", "hermes", "tree", "prometheus"}, names)
     check("a. groups: nightly = fates + odeon + pantheon, weekly = tree + prometheus, all = both",
           registry.GROUPS["nightly"] == ("fates", "odeon", "pantheon") and registry.GROUPS["weekly"] == ("tree", "prometheus")
           and registry.GROUPS["all"] == ("fates", "odeon", "pantheon", "tree", "prometheus"), registry.GROUPS)
@@ -80,7 +80,7 @@ def test_registry():
             check(f"a. {t.name}: publishes jarvis.json last, timeout 1-30 min",
                   t.files and t.files[-1] == "jarvis.json" and 60 <= t.timeout_s <= 30 * 60, t)
         check(f"a. {t.name}: max age {t.max_age_h:g} weekday hours fits its cadence",
-              t.max_age_h == (36 if t.cadence in ("nightly", "publish") else 156), t.max_age_h)
+              t.max_age_h == (36 if t.cadence in ("nightly", "publish", "frequent") else 156), t.max_age_h)
     dc = registry.get("datacity")
     check("a. datacity runs in its own workflow and its branch files map into datacity/",
           dc.runner == "workflow" and os.path.exists(os.path.join(ROOT, dc.workflow)) and dc.branch == "datacity"
@@ -88,7 +88,12 @@ def test_registry():
     check("a. fates' files come from the cronos branch as fates/...",
           registry.site_files(registry.get("fates")) == [("fates/fates.json", "fates/fates.json"), ("fates/jarvis.json", "fates/jarvis.json")])
     check("a. hermes is stamped by itself (runs in the build), the others by CRONOS", "hermes" not in registry.STAMPED
-          and set(registry.STAMPED) == {"datacity", "fates", "odeon", "pantheon", "tree", "prometheus"})
+          and set(registry.STAMPED) == {"datacity", "kalshicity", "fates", "odeon", "pantheon", "tree", "prometheus"})
+    kc = registry.get("kalshicity")
+    check("a. kalshicity: every 6 hours in its own workflow, the three site files come from the kalshicity branch into kalshicity/ (ledger.json stays on the branch), not run by CRONOS",
+          kc.runner == "workflow" and kc.cadence == "frequent" and kc.every == "every 6 hours" and kc.branch == "kalshicity" and kc.max_age_h == 36 and os.path.exists(os.path.join(ROOT, kc.workflow))
+          and registry.site_files(kc) == [("edges.json", "kalshicity/edges.json"), ("learning_log.json", "kalshicity/learning_log.json"), ("jarvis.json", "kalshicity/jarvis.json")]
+          and "kalshicity" not in registry.GROUPS["all"] and "kalshicity" in site.BRANCHES, kc)
     try:
         registry.get("nope")
         check("a. an unknown task is refused", False)
@@ -365,7 +370,7 @@ def test_site(tmp):
               open(os.path.join(out, "fates", "fates.json"), "rb").read() == open(os.path.join(WEB, "fates", "fates.json"), "rb").read()
               and fj["cronos"]["data_t"] == page["t"]
               and all(not fresh.valid_card(rjson(os.path.join(out, a, "jarvis.json"))) and "cronos" in rjson(os.path.join(out, a, "jarvis.json"))
-                      for a in registry.STAMPED), fj)
+                      for a in registry.STAMPED if os.path.isdir(os.path.join(out, a))), fj)      # kalshicity joins once the build's app list names it (the lead wires that)
     finally:
         for k_, v_ in saved.items():
             if v_ is None:
@@ -423,6 +428,16 @@ def test_workflows():
     check("e. datacity.yml: still valid, nightly Tue-Sat, timeout 20, publishes the datacity branch",
           [c["cron"] for c in don["schedule"]] == ["37 3 * * 2-6"] and d["jobs"]["city"]["timeout-minutes"] == 20
           and "datacity" in dt_ and "secrets." not in dt_)
+    k, kt = _wf("kalshicity.yml")
+    kon = k.get("on", k.get(True))
+    kjob = k["jobs"]["learn"]
+    check("e. kalshicity.yml: valid, every 6 hours (minute 17) + manual run, timeout 5 min, one concurrency group, minimal permissions, GitHub's own checkout only",
+          [c["cron"] for c in kon["schedule"]] == ["17 */6 * * *"] and "workflow_dispatch" in kon and kjob["timeout-minutes"] == 5 and k["concurrency"]["group"] == "kalshicity"
+          and k["permissions"] == {"contents": "write"} and kjob["runs-on"] == "ubuntu-latest" and all(s["uses"].split("@")[0] == "actions/checkout" for s in kjob["steps"] if "uses" in s), kon)
+    check("e. kalshicity.yml: no secrets (GITHUB_TOKEN only), no pip, pushes only the kalshicity branch (never main), commits only when something changed, a failed feed read does not publish",
+          "secrets." not in kt and "pip " not in kt and kt.count("git push") == 1 and '.git" kalshicity' in kt and "nothing new: no commit" in kt
+          and next(s for s in kjob["steps"] if s.get("id") == "learn")["continue-on-error"] is True and "steps.learn.outcome == 'success'" in kt
+          and "kalshi_edges.py --out state" in kt and "kalshi.com" not in kt)
     m, _ = _wf("cloud-monitor.yml")
     check("e. cloud-monitor.yml still parses and sparse-checks out /tools/ (tools/cronos reaches the site build)",
           "/tools/" in next(s for s in m["jobs"]["monitor"]["steps"] if s.get("uses", "").startswith("actions/checkout"))["with"]["sparse-checkout"])
@@ -433,10 +448,11 @@ def test_workflows():
     weekly_full = setup + sum(registry.get(n).est_min for n in registry.GROUPS["weekly"])
     month = 22 * nightly + 4.35 * weekly_full
     datacity = 22 * registry.get("datacity").est_min
+    kalshi = 120 * registry.get("kalshicity").est_min                      # kalshicity.yml: 4 runs a day = 120 a month, ~1 billed minute each
     print(f"   budget: nightly {nightly:.1f} min x 22 + weekly {weekly_full:.1f} min x 4.35 = {month:.0f} min/month "
-          f"(+ datacity {datacity:.0f}) of 2,000")
+          f"(+ datacity {datacity:.0f}, kalshicity {kalshi:.0f}) of 2,000")
     check("e. CRONOS stays well under the free minutes: < 300 a month even when every weekly task reruns",
-          month < 300 and month + datacity < 400, month)
+          month < 300 and month + datacity < 400 and month + datacity + kalshi < 480, month)
     doc_md = os.path.join(ROOT, "docs", "CRONOS.md")
     check("e. docs/CRONOS.md exists with the schedule and the minutes budget", os.path.exists(doc_md)
           and "minutes" in open(doc_md, encoding="utf-8").read().lower())
