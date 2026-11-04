@@ -12,6 +12,18 @@ When a task is done, change `[ ]` to `[x]` here in the same PR and add one line 
 - Never blank: every view has demo data and an empty-state sentence. Taps >= 44 px at 390x844. Plain words, no jargon.
 - Say honestly what you could not check (no real iPhone here).
 
+## P0: FOUND BY THE FULL SCAN (2026-11-04, live site, iPhone profile): do these BEFORE everything else
+- [ ] **cities-blank**: `cities/` renders almost nothing after 30 s (only 160 characters of text, a few dots, no labels, no cards). It is the worst app. Find why (console, fetches, fixture, tier) and make the first screen a rich, labelled city map.
+- [ ] **inbox-noise**: `inbox/` shows "Delivered: Merge pull request #118..." cards from the Bridge for every merge. Only show real ChatGPT deliveries; also 3 console errors and 3 failed requests on load.
+- [ ] **forum-errors**: `forum/` 1 console error and 2 failed requests on load: find and fix (optional files must not error).
+- [ ] **hermes-errors**: `hermes/` 1 console error and 1 failed request on load.
+- [ ] **pc-page-error**: `pc/index.html` has a console error.
+- [ ] **journal-overlap**: `journal/` two controls overlap at 390 px. **odeon-overlap**: `odeon/` same. Fix spacing.
+- [ ] **clipped-text**: `labyrinth/` and `oracle/` have clipped text at 390 px; `kalshi/` has text cut at the screen edge (ticker excluded); `cities/` has low-contrast text.
+- [ ] **jargon**: `bridge/` says "liquidity", `kalshi/` and `inbox/` say "EV": explain in plain words or replace.
+- [ ] **ledger-headline**: `ledger/` shows "-$216.57 net profit" in big red before any payout (it only counts the auto-filled eval fees). Label it "so far: fees paid, no payouts yet" and use a calmer colour until the first payout.
+- [ ] **hermes-readability**: `hermes/` first screen is very dark with confetti over the text: make the headline and numbers clearly readable.
+
 ## SCHEDULE: Wednesday to Friday night (work through the queue in this order; stop at every CHECKPOINT)
 A CHECKPOINT is a short break: (1) `git fetch` and merge the latest `main` into your branch, (2) make sure every open PR is green or fixed,
 (3) add one line per finished task to the "Done log" at the bottom of this file and one short status note to `handoff/SYNC.md` ("what is done, what is next, what is blocked"),
