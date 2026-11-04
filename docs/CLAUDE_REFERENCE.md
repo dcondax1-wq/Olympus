@@ -1954,6 +1954,7 @@ The Kalshi app (`kalshi/`, k18) has three top cards in Today: "Why am I losing" 
   and `tests/gate_static.py` are the parts the gate and the Jarvis hub test share.
 - **Site self-check** (`tools/site_selfcheck.py`, a read-only workflow step, `test_site_selfcheck`): after `build_web_dashboard.py` it checks the built `site/` folder (every app folder's files, read from the build's own list) and says LOUDLY when one is missing; the step is `continue-on-error`, it never changes what is published.
 - Safari: `docs/OLYMPUS_SAFARI.md`; `python -X utf8 -m tests.test_safari_smoke --lint` is the fast lint (ES5 rules, no lookbehind / `?.` / `??` in shared files).
+  The real-WebKit walk of every app (iPhone 13, offline reload, back-to-Olympus, first-tap audio) is `python -X utf8 -m tests.test_safari_smoke --webkit` (needs `playwright install webkit` in a scratch dir; gate suite `safari_webkit`, SKIP when WebKit is absent).
 
 ### Wiring checklist for a new app (the lead; an agent only lists these in its report)
 The app folder `tools/web_public/<id>/` (index.html, jarvis.json, manifest, icon.svg, optional `<id>core.js`) is the agent's. The lead then does, in this order:
