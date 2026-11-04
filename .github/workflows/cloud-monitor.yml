@@ -234,6 +234,14 @@ jobs:
           GIT_SSH_COMMAND="ssh -i ~/.ssh/dash_key -o IdentitiesOnly=yes" git push -q -f git@github.com:demetrades2000-coder/nq-dashboard.git main
           rm -f ~/.ssh/dash_key
 
+      # Site self-check (2026-11-04): read-only. A file that is missing from the built site (a sparse-checkout gap, a copy that failed
+      # inside the build's try/except) is printed as a table and as ::error:: lines in this run's log; it never changes what was
+      # built or published, and continue-on-error keeps the job (and the fast-entry watcher below) going.
+      - name: Site self-check (table + errors in the log; does not stop anything)
+        if: steps.guard.outputs.go == '1'
+        continue-on-error: true
+        run: python tools/site_selfcheck.py --site site
+
       # Fast entries (owner 2026-10-18: "when there's a signal, it needs to send an entry"): when this run found a LIT setup
       # armed (limit working / tapped) or forming, keep reading the PC's NinjaTrader bars from the heartbeat branch every 30 s
       # (no Yahoo, engine/pcbars.py; Yahoo NQ=F only with live_model.json "no_yahoo": false) until it fills or goes away (max 55 min),

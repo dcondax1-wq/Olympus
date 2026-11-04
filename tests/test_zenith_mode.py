@@ -259,9 +259,11 @@ def part_sw(br, base, errs):
         ctx.close()
 
 
+from tests import browser_kit as BK  # noqa: E402  (shared launch: one reused browser, load-scaled timeouts, one retry of a flaky wait)
+
+
 def launch(p):
-    exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
-    return p.chromium.launch(**({"executable_path": exe} if exe else {}))
+    return BK.launch(p)
 
 
 def new_page(br, w, h, errs, tag, origin=None):

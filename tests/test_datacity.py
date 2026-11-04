@@ -41,6 +41,8 @@ import tempfile
 import threading
 import time
 
+from tests import browser_kit as BK  # noqa: E402  (shared launch: one reused browser, load-scaled timeouts, one retry of a flaky wait)
+
 import numpy as np
 import pandas as pd
 
@@ -489,9 +491,7 @@ def test_page(shots=None):
     base = f"http://127.0.0.1:{srv.server_address[1]}"
     try:
         with sync_playwright() as pw:
-            exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
-            br = pw.chromium.launch(**({"executable_path": exe} if exe else {}),
-                                    args=["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"])
+            br = BK.launch(pw, args=["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"])
 
             def page(w=390, h=844, reduced=True):
                 ctx = br.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, has_touch=True, is_mobile=True,
@@ -793,9 +793,7 @@ def test_synth_budget():
     srv = _serve(tmp)
     try:
         with sync_playwright() as pw:
-            exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
-            br = pw.chromium.launch(**({"executable_path": exe} if exe else {}),
-                                    args=["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"])
+            br = BK.launch(pw, args=["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"])
             ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=1, reduced_motion="reduce")
             ctx.add_init_script("try { localStorage.setItem('jfx', 'high'); } catch (e) {}")
             pg = ctx.new_page()

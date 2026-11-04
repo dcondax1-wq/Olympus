@@ -28,6 +28,8 @@ import sys
 import tempfile
 import time
 
+from tests import browser_kit as BK  # noqa: E402  (shared launch: one reused browser, load-scaled timeouts, one retry of a flaky wait)
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 RES = []
@@ -181,7 +183,7 @@ def part_c(F, tmp, shots):
 
     no_x = lambda pg: pg.evaluate("() => document.documentElement.scrollWidth - innerWidth")
     with sync_playwright() as p:
-        br = TB.launch(p)
+        br = BK.launch(p)
         errs = []
         ctx, pg = page(br, errs)
         pg.goto(base + "?fxoff#/today")
@@ -392,7 +394,7 @@ def part_d(F, shots):
             time.sleep(0.1)
     base = f"http://127.0.0.1:{port}"
     with sync_playwright() as p:
-        br = TB.launch(p)
+        br = BK.launch(p)
         ctx = br.new_context(viewport={"width": 1440, "height": 900}, device_scale_factor=1)
         ctx.clock.install(time=F["T"])
         pg = ctx.new_page()
