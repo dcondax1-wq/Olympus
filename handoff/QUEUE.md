@@ -12,6 +12,20 @@ When a task is done, change `[ ]` to `[x]` here in the same PR and add one line 
 - Never blank: every view has demo data and an empty-state sentence. Taps >= 44 px at 390x844. Plain words, no jargon.
 - Say honestly what you could not check (no real iPhone here).
 
+## SCHEDULE: Wednesday to Friday night (work through the queue in this order; stop at every CHECKPOINT)
+A CHECKPOINT is a short break: (1) `git fetch` and merge the latest `main` into your branch, (2) make sure every open PR is green or fixed,
+(3) add one line per finished task to the "Done log" at the bottom of this file and one short status note to `handoff/SYNC.md` ("what is done, what is next, what is blocked"),
+(4) open ONE small PR with only those two doc changes, (5) wait for the owner to merge, then continue. If the owner has not merged yet, keep working on the next task in a new branch from `main`.
+- **Wed (today)**: P1 (cities-layout, datacity-look-check, kalshicity-look), then P5 in order (gate-full-run first). CHECKPOINT 1 when P1 and the first 4 P5 tasks are done.
+- **Wed night**: the rest of P5. CHECKPOINT 2.
+- **Thu morning**: P6 graphics, in this order: cities, datacity, kalshicity, arena, oracle, odeon, fates, labyrinth. CHECKPOINT 3 after every 4 apps.
+- **Thu afternoon**: P6: hephaestus, prometheus, pantheon, tree, tyche, hermes, athena, ares. CHECKPOINT 4.
+- **Thu night**: P6: plutus, forum, argus, nemesis, chronos, mind, ledger, inbox, journal, settings. CHECKPOINT 5.
+- **Fri morning**: P6: zenith, launcher, intro-films, transitions, fx-library. CHECKPOINT 6.
+- **Fri afternoon**: P7 money features, then P2 (look-and-feel second pass on every app, the 3 worst things each) and P3.
+- **Fri night**: P4 Bridge money jobs, then a FINAL CHECKPOINT: re-run the full gate (`tests/run_gate.py`), write the result into `handoff/SYNC.md`, and list everything that is still open.
+Each app's work is one PR; do not batch several apps. Never stop and wait: when blocked on one task, write `handoff/inbox/<task-id>/QUESTION.md` and start the next.
+
 ## P1: fix what the owner said looks bad (do these first)
 - [ ] **cities-layout**: `tools/web_public/cities/`. Hub shows tiny dim clusters in a huge empty void and clipped group labels
       ("BSIDIAN", "RE", "MONE"). Make the first screen look like a lively night map of cities: bigger clusters, labels fully on screen,
