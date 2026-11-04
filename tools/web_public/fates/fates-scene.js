@@ -306,8 +306,9 @@ export function createScene(canvas, opt = {}) {
   function makeSparks(list, secAt) {
     const per = lite ? 5 : 14, ring = lite ? 6 : 16, ev = [];
     for (const th of list) {
+      if (!th) continue;
       if (MAP.money) {
-        for (const e of th.ev) {
+        for (const e of th.ev || []) {
           if (e.code !== 4 && e.code !== 3 && e.code !== 2) continue;      // payout, funded lost, eval lost
           if (rnd(th.id, e.k) > (lite ? 0.25 : 0.6)) continue;
           const k = e.k + 1, i = th.ks.findIndex((x) => x >= k);

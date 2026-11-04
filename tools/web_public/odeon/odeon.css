@@ -322,10 +322,10 @@ body[data-reduced] .flare, body[data-lite] .f-ring { display: none; }
 /* ---------------------------------------------------------------- the trade strip (strip.js): every trade, drag to scrub */
 .strip { display: flex; align-items: center; gap: 2px; padding: 2px 4px; border-radius: 14px; background: rgba(8, 7, 16, 0.66); }
 .strip[hidden] { display: none; }
-.strip button { flex: none; width: 36px; height: 44px; border: 0; background: none; color: var(--blue); font: 700 24px/1 var(--display); touch-action: manipulation; }
+.strip button { flex: none; width: 44px; height: 44px; border: 0; background: none; color: var(--blue); font: 700 24px/1 var(--display); touch-action: manipulation; }
 .strip button:active { background: rgba(127, 180, 255, 0.12); border-radius: 10px; }
 .st-mid { flex: 1; min-width: 0; }
-.st-bars { position: relative; display: flex; align-items: center; gap: 1px; height: 40px; touch-action: none; cursor: ew-resize; }
+.st-bars { position: relative; display: flex; align-items: center; gap: 1px; height: 44px; touch-action: none; cursor: ew-resize; }
 .st-bars:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 6px; }
 .st-bars .b { position: relative; flex: 1 1 0; min-width: 1px; height: 100%; }
 .st-bars .b::before { content: ""; position: absolute; left: 0; right: 0; height: calc(var(--h, 10%) * 0.46); min-height: 2px; border-radius: 1px; background: #46d79a; opacity: .75; bottom: 50%; }
