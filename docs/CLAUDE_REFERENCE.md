@@ -1890,6 +1890,12 @@ The Kalshi app (`kalshi/`, k18) has three top cards in Today: "Why am I losing" 
   `test_zenith_shell` (Home order).
   **PC status strip** (same core, `MoneyNow.line`; mount `strip()` in `polish.js`, `#nxLine` under the top bar of EVERY PC page, sticky, >= 44 px, links Home):
   "Bot running · last check-in X · Armed: Zlarior, ATLAS" (red when stopped, amber when quiet, "not published yet" when missing).
+- **Today's session** (2026-11-04, `tools/web_public/sessioncore.js` = `window.SessionDay`; phone mount `sessionday.js`, loaded after `moneynow.js`): the card of Zenith
+  Home right under Money now. The day's windows in ET with the bot's rule in plain words (01:45 game plan, 02:00-15:30 entry window, 15:55 flat, 16:05 recap), what the bot
+  is doing now (from `MissionUI.accounts` + the PC check-in), flags (high-impact news from `M.news`, the calendar the page already carries; US/CME holidays from rules in
+  the core, no early-close times claimed), ONE sentence "what to do now" ("Nothing: the bot is waiting for a sweep", "You are flat, session over, review in Mnemosyne.")
+  and the exact H:MM:SS to the next window (ticks every second). Over a weekend it shows Monday. Read-only; wiring: add the two files to the root `sw.js` SHELL.
+  Tests: `test_ui_polish` (a static, b node: modes, DST, countdowns, sentences, news, holidays, c phone: order, 44 px taps, ticking, tap opens Zlarior).
 - **Release safety net** (`python tools/release_manifest.py [--base origin/main] [--json]`, `test_release_manifest`): run it before the 5 AM publish. It lists (a) every
   `?v=` asset tag in an app `index.html` whose file changed since the base but whose tag did not, and (b) every service worker (`tools/web_public/sw.js`,
   `web_next/sw.js`, `jarvis/sw.js`, `kalshi/sw.js`) whose cache name did not change although a file in its SHELL / ASSETS list (or the list) changed. Exit 0 =
