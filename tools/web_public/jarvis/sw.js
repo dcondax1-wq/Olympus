@@ -39,8 +39,8 @@
 // v16 (2026-11-03 day sprint): themes (jarvis.css?v=j13), the assistant (assistant.js, tts.js), Pantheon + Arena built in.
 // v18: the 3D home backdrop + portal jump on the OLYMPUS render core (backdrop.js, portal.js).
 // v17 (2026-11-03 evening): smart-mode tools (tools.js), Jarvis talks by default (voice-out.js, jarvis.css?v=j13).
-const CACHE = 'jarvis-v21';
-const OLD = ['jarvis-v20', 'jarvis-v19', 'jarvis-v18', 'jarvis-v17', 'jarvis-v16', 'jarvis-v15', 'jarvis-v14', 'jarvis-v13', 'jarvis-v12', 'jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];
+const CACHE = 'jarvis-v22';
+const OLD = ['jarvis-v21', 'jarvis-v20', 'jarvis-v19', 'jarvis-v18', 'jarvis-v17', 'jarvis-v16', 'jarvis-v15', 'jarvis-v14', 'jarvis-v13', 'jarvis-v12', 'jarvis-v11', 'jarvis-v10', 'jarvis-v9', 'jarvis-v8', 'jarvis-v7', 'jarvis-v6', 'jarvis-v5', 'jarvis-v4'];
 const NAV_WAIT_MS = 3500;
 const NET_MAX_MS = 9000;
 const SHELL = ['./', './index.html', './manifest.webmanifest?v=j4', './apple-touch-icon.png?v=j4', './icon-192.png?v=j4', './icon-512.png?v=j4',
