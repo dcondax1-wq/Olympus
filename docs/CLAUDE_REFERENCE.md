@@ -1806,7 +1806,7 @@ intro tag; 42 library effects + `fx-atmos.js`; 14 sound beds; 78 Bridge jobs in 
 
 Jarvis (`jarvis/`) is the shell, not a row: the hub (3D home: `home3d.js|css`, 7 AM ET spoken briefing `briefing.js`), the orb switcher, the assistant. **Wiring
 not done yet:** none in the list; what is still open is the a11y tags (only `journal/` and `settings/` have them, see `docs/OLYMPUS_A11Y.md`).
-There is NO separate "Kalshi guard" feature in the code (checked 2026-11-04); the bot-protection ideas live in Kalshi City's what-if card and Lab.
+The Kalshi app (`kalshi/`, k17) has three top cards in Today: "Why am I losing" (top two dollar leaks), "Do not take this bet" (guard: green/amber/red per open bet with the dollar reason, suggestions only, never places orders), and the verdict; the Edge group opens with "If you change the bot" (rule sets A/B/C replayed on past bets; same maths as `tools/kalshi_whatif.py` -> `kalshicity/whatif.json`). Tests: `test_kalshi_page --only=guard|whatif`.
 `tools/release_manifest.py` did not land (there is no such file); the release check is `tests/run_gate.py`. Tests are run as `python -X utf8 -m tests.test_<name>`.
 
 ### Shared kit and the new engines
