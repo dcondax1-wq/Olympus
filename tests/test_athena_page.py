@@ -46,11 +46,15 @@ def part_a():
     check("a. every local file the page links exists",
           all(os.path.exists(os.path.normpath(os.path.join(PAGE, s.split("?")[0]))) for s in srcs if not s.startswith("#")), srcs)
     js = rd("athena.js") + rd("athenacore.js")
-    imps = re.findall(r"from '(\.[^']+)'", js)
+    imps = re.findall(r"from '(\.[^']+)'", js + rd("athenaplus.js") + rd("athenabrain.js"))
     check("a. every module import resolves (three.js from ../jarvis/, the render core + materials from ../olympus/)",
           all(os.path.exists(os.path.normpath(os.path.join(PAGE, i))) for i in imps) and "../olympus/render.js" in imps and "../olympus/materials.js" in imps, imps)
     check("a. the 3D library is built on the render core (createRenderer) and not a bare WebGLRenderer", "createRenderer(" in js and "new THREE.WebGLRenderer" not in js)
-    check("a. no network but its own library.json / jarvis.json; nothing stored (no localStorage / cookies), nothing sent",
+    store = rd("athenastore.js") + rd("athenaplus.js") + rd("athenabrain.js")
+    check("a. the reader's memory lives in athenastore.js only, every key under 'athena.' (nothing else is written, no cookies, no network in the new modules)",
+          "const P = 'athena.';" in store and len(re.findall(r"localStorage\.setItem", store)) == 1 and not re.search(r"sessionStorage|indexedDB|document\.cookie|sendBeacon|XMLHttpRequest|fetch\(", store)
+          and not re.search(r"localStorage|sessionStorage|indexedDB|document\.cookie", rd("athenabrain.js") + rd("athenaplus.js")))
+    check("a. no network but its own library.json / jarvis.json; nothing stored by the page code itself (the memory is athenastore.js), nothing sent",
           sorted(set(re.findall(r"fetch\('([^'?]+)", js))) == ["jarvis.json"] and "loadLibrary('library.json" in js and "fetch(url" in js
           and not re.search(r"localStorage|sessionStorage|indexedDB|document\.cookie|sendBeacon|XMLHttpRequest|yahoo", js, re.I), re.findall(r"fetch\(([^,)]+)", js))
     card = json.loads(rd("jarvis.json"))
@@ -144,7 +148,7 @@ def part_c(tmp, lib):
             reqs = []
             ctx, p = open_page(br, url + "?seed=7", errs, "__athena", reduced=True, wait_site=False)
             p.on("request", lambda r: reqs.append(r.url))
-            check("c. the page opens; the library has its entries; the 3D room is up with one shelf per topic (7)",
+            check("c. the page opens; the library has its entries; the 3D room is up with one shelf per topic (9)",
                   p.evaluate("window.__athena.lib.entries.length") == len(lib["entries"]) and p.evaluate("window.__athena.ready3d") is True and p.evaluate("window.__athena.shelves") == len(lib["tags"]))
             q = p.evaluate("window.__athena.quality")
             ps = p.evaluate("window.__athena.passes")
@@ -152,7 +156,7 @@ def part_c(tmp, lib):
             check("c. no sideways scroll at 390 x 844", p.evaluate("document.documentElement.scrollWidth <= innerWidth && document.body.scrollWidth <= innerWidth"))
             check("c. the orb corner (bottom-right 80 x 160) is free of buttons and inputs", orb_hits(p) == [], orb_hits(p))
             n0 = len(p.query_selector_all("#list .item"))
-            check("c. the list starts with every entry; a shelf chip for each topic, with its count", n0 == len(lib["entries"]) and len(p.query_selector_all("#chips .chip")) == len(lib["tags"]) == 7, n0)
+            check("c. the list starts with every entry; a shelf chip for each topic, with its count", n0 == len(lib["entries"]) and len(p.query_selector_all("#chips .chip")) == len(lib["tags"]) == 9, n0)
 
             def top(term):
                 p.fill("#q", term); p.wait_for_timeout(80)
@@ -234,9 +238,9 @@ def part_c(tmp, lib):
             seeds = p.evaluate("""() => { const C = window.__athena.CORE, l = window.__athena.lib; const a = C.makeQuiz(l, 5, 3).map(q => q.id).join(), b = C.makeQuiz(l, 5, 3).map(q => q.id).join(), c = C.makeQuiz(l, 5, 4).map(q => q.id).join();
               return [a === b, a !== c, C.makeQuiz(l, 5, 9).every(q => q.options.length === 4 && q.answer >= 0 && new Set(q.options).size === 4)]; }""")
             check("c. the quiz is drawn from the library with a seed (same seed, same 5; other seed, other 5; 4 different options each)", all(seeds), seeds)
-            ls = p.evaluate("localStorage.length + sessionStorage.length")
+            ls = p.evaluate("[...Object.keys(localStorage).filter(k => !k.startsWith('athena.')), ...Object.keys(sessionStorage)].length")
             ext = [u for u in reqs if not u.startswith(url.rsplit("/", 2)[0] + "/")]
-            check("c. nothing leaves the page and nothing is stored (no storage, no outside request, no POST)", ls == 0 and not ext, (ls, ext[:3]))
+            check("c. nothing leaves the page and only this phone's own 'athena.*' keys are stored (no outside request, no POST)", ls == 0 and not ext, (ls, ext[:3]))
             y0 = p.evaluate("window.__athena.yaw")
             p.wait_for_timeout(1200)
             check("c. reduced motion: the library does not turn by itself", abs(p.evaluate("window.__athena.yaw") - y0) < 1e-9)
@@ -267,14 +271,163 @@ def part_c(tmp, lib):
         srv2.shutdown()
 
 
+# ------------------------------------------------------------------------------------------------------------ b2: the 2026-11-04 shelves, rules and the offline brain
+def part_b2(lib):
+    E = lib["entries"]
+    byid = {e["id"]: e for e in E}
+    kal = [e for e in E if e["kind"] == "kalshi"]
+    src = open(os.path.join(ROOT, B.KALSHI_SRC), encoding="utf-8").read()
+    check("b. the Kalshi shelf is built from research/writeups/*kalshi_edges*.md: 8 entries with its numbers (95c and above, -$248, XRP, $0.71 / $12.89, 18 wins), sources cited",
+          len(kal) >= 8 and all(e["src"] == [B.KALSHI_SRC] for e in kal) and "95c" in " ".join([byid["k-pocket"]["short"], *byid["k-pocket"]["body"]])
+          and "$248" in " ".join([byid["k-loses"]["short"], *byid["k-loses"]["body"]]) and "$12.89" in byid["k-win-rate"]["short"] and "XRP" in " ".join([byid["k-loses"]["short"], *byid["k-loses"]["body"]])
+          and all(n in src for n in ("$248", "$12.89", "XRP")), [e["id"] for e in kal])
+    learned = [e for e in E if e["kind"] == "learned"]
+    files = [e["src"][0] for e in learned]
+    check(f"b. the 'What we learned' shelf has one entry per write-up that found something ({len(learned)}), each with its status line, a date and its file",
+          len(learned) >= 40 and all(os.path.exists(os.path.join(ROOT, *f.split("/"))) for f in files) and len(set(files)) == len(files)
+          and all(any(e["body"][0].startswith(w) for w in B.STATUS_WORDS.values()) for e in learned), len(learned))
+    check("b. every write-up that is an adopt-candidate, adopted, promising or a finding is on the shelf (none left out)",
+          {os.path.basename(f) for f in files} == {os.path.basename(f) for f in __import__("glob").glob(os.path.join(ROOT, "research", "writeups", "*.md"))
+                                                    if re.match(r"---\n.*?\nstatus: (adopt-candidate|adopted|promising|finding)", open(f, encoding="utf-8").read(), re.S)
+                                                    and re.search(r"^summary: ", open(f, encoding="utf-8").read(), re.M)})
+    R = lib["rules"]
+    check("b. 'My rules': 18 checklist lines in 5 groups, each pointing at a real entry, with the rule file's numbers ($48,000, $1,000, 40 micros, $3,000, 7 days)",
+          len(R) >= 15 and {r["group"] for r in R} == {"before", "during", "after", "money", "never"} and all(r["from"] in byid for r in R)
+          and all(n in " ".join(r["text"] for r in R) for n in ("$48,000", "$1,000", "40 micros", "$3,000", "7 days")), len(R))
+
+
+UNIT_JS = r"""
+import fs from 'node:fs';
+const A = '__ATHENA__/';
+const C = await import(A + 'athenacore.js'), B = await import(A + 'athenabrain.js');
+const lib = JSON.parse(fs.readFileSync(A + 'library.json', 'utf8')), ix = C.indexOf(lib), out = {};
+const top = (q) => B.ask(ix, q, 3).map((x) => x.e.id);
+out.ask = { kalshi: top('why does the kalshi bot lose'), dll: top('what is the daily loss limit'), payout: top('how do I get a payout'), typo: B.ask(ix, 'swep', 8).map((x) => x.e.id), blank: B.ask(ix, 'the of a', 3).length, none: B.ask(ix, 'zzqxv', 3).length };
+const r0 = B.ask(ix, 'why does the kalshi bot lose', 3)[0];
+out.askShape = [r0.conf, typeof r0.excerpt === 'string' && r0.excerpt.length > 10, r0.matched.length >= 2, r0.score > 0];
+const day = (n) => new Date(2026, 10, 4 + n, 12).getTime();
+const seen = new Set(); for (let n = 0; n < lib.entries.filter((e) => e.body.length && e.kind !== 'olympus').length; n++) seen.add(B.dailyLesson(lib, day(n)).id);
+out.daily = { same: B.dailyLesson(lib, day(0)).id === B.dailyLesson(lib, day(0) + 3600e3).id, differs: B.dailyLesson(lib, day(0)).id !== B.dailyLesson(lib, day(1)).id,
+  noRepeat: seen.size === lib.entries.filter((e) => e.body.length && e.kind !== 'olympus').length };
+const deck = B.flashDeck(lib);
+out.deck = { n: deck.length === lib.entries.length, kalshi: deck.some((c) => c.from === 'k-win-rate'), learned: deck.some((c) => c.front.startsWith('What did we learn')), ids: new Set(deck.map((c) => c.id)).size === deck.length };
+const now = Date.now();
+let st = B.rateCard({}, deck[0].id, 1, now); const d1 = Math.round((st[deck[0].id].d - now) / 864e5);
+st = B.rateCard(st, deck[0].id, 2, now); const d2 = Math.round((st[deck[0].id].d - now) / 864e5);
+const again = B.rateCard(st, deck[0].id, 0, now);
+out.cards = { d1, d2, box2: st[deck[0].id].b, againBox: again[deck[0].id].b, againSoon: again[deck[0].id].d - now <= 11 * 60e3, stats: B.cardStats(deck, st, now),
+  first: B.dueCards(deck, st, now, 1)[0].id !== deck[0].id };
+out.rules = B.ruleGroups(lib).map((g) => [g.key, g.rules.length]);
+const k = (t) => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+out.streak = [B.streakOf([k(now), k(now - 864e5), k(now - 2 * 864e5)], now), B.streakOf([k(now - 864e5)], now), B.streakOf([k(now - 3 * 864e5)], now), B.streakOf([], now)];
+console.log(JSON.stringify(out));
+"""
+
+
+def part_b3(lib):
+    import subprocess
+    node = shutil.which("node")
+    if not node:
+        check("b. node is available for the brain checks", False)
+        return
+    f = os.path.join(tempfile.mkdtemp(prefix="athena_unit_"), "unit.mjs")
+    open(f, "w", encoding="utf-8").write(UNIT_JS.replace("__ATHENA__", PAGE.replace(os.sep, "/")))
+    r = subprocess.run([node, f], capture_output=True, text=True, timeout=120)
+    try:
+        o = json.loads(r.stdout.strip().splitlines()[-1])
+    except Exception:
+        check("b. the offline brain runs in node", False, (r.stdout + r.stderr)[-500:])
+        return
+    a = o["ask"]
+    check("b. Ask Athena ranks offline: the Kalshi question finds the Kalshi entries, the loss limit its entries, a payout its entries, a typo still finds Sweep, nonsense finds nothing",
+          a["kalshi"][0] == "k-negative" and ("k-win-rate" in a["kalshi"] or "o-kalshi" in a["kalshi"]) and a["dll"][0] in ("m-dll", "dll") and "m-pay" in a["payout"] and "sweep" in a["typo"]
+          and a["blank"] == 0 and a["none"] == 0, a)
+    check("b. each answer has a plain confidence (Best match / maybe / weak), a best sentence and the words that matched", o["askShape"][0] in ("strong", "maybe") and all(o["askShape"][1:]), o["askShape"])
+    d = o["daily"]
+    check("b. the lesson of the day: the same all day, a different one tomorrow, no repeat until the whole library has had a turn", d["same"] and d["differs"] and d["noRepeat"], d)
+    k = o["deck"]
+    check("b. flashcards cover every entry (a word, a question, or what it is about), including the Kalshi and 'what we learned' shelves", all(k.values()), k)
+    c = o["cards"]
+    check("b. card boxes: good = next box (1 day), easy = two boxes (4 days), again = box 0 and back in 10 minutes; learned cards leave the due pile",
+          c["d1"] == 1 and c["d2"] == 4 and c["box2"] == 3 and c["againBox"] == 0 and c["againSoon"] and c["first"] and c["stats"]["learned"] == 1, c)
+    check("b. the rules page groups: before, during, after, money, never", [g for g, _ in o["rules"]] == ["before", "during", "after", "money", "never"] and sum(n for _, n in o["rules"]) == len(lib["rules"]), o["rules"])
+    check("b. the lesson streak counts days in a row (today may still be empty) and resets on a gap", o["streak"] == [3, 1, 0, 0], o["streak"])
+
+
+def part_d(tmp, lib):
+    """the new panes in the browser (390 x 844): Ask, Today, Cards, Rules, Saved, bookmarks, history, storage under 'athena.' only"""
+    from playwright.sync_api import sync_playwright
+    srv, url = site(tmp, "athena", "d", data=False)
+    try:
+        with sync_playwright() as pw:
+            br = browser(pw)
+            errs = []
+            ctx, p = open_page(br, url, errs, "__athena", wait_site=False)
+            tabs = p.evaluate("[...document.querySelectorAll('#tabs button')].map(b => b.dataset.tab)")
+            check("d. the dock has six tabs: Library, Ask, Today, Cards, Rules, Quiz (each 44 px tall or more, the orb corner free), and a star at the top right for Saved",
+                  tabs == ["lib", "ask", "today", "cards", "rules", "quiz"] and p.is_visible("#savedBtn") and p.evaluate("[...document.querySelectorAll('#tabs button')].every(b => b.getBoundingClientRect().height >= 44)") and orb_hits(p) == [], tabs)
+            p.click('#tabs [data-tab="ask"]'); p.wait_for_timeout(150)
+            check("d. Ask opens with example questions to tap", p.query_selector_all("#ask [data-ask]") and len(p.query_selector_all("#ask [data-ask]")) >= 5 and not p.is_visible("#q"))
+            p.fill("#askq", "why does the kalshi bot lose"); p.wait_for_timeout(150)
+            ans = p.evaluate("[...document.querySelectorAll('#askout .ans')].map(a => [a.querySelector('.atitle').dataset.open, a.className, a.querySelector('.why').innerText.length > 5])")
+            check("d. 'why does the kalshi bot lose' answers from the Kalshi shelf first, best match first, with the matched words", ans and ans[0][0] == "k-negative" and "strong" in ans[0][1] and all(a[2] for a in ans), ans[:3])
+            p.click("#askout .atitle >> nth=0"); p.wait_for_timeout(150)
+            check("d. an answer opens its entry; Back returns to Ask", p.evaluate("__athena.state.view") == "entry" and "Kalshi" in p.inner_text("#entry"))
+            p.click("#mark"); p.wait_for_timeout(100)
+            check("d. the star bookmarks the entry (kept under 'athena.marks')", p.evaluate("__athena.plus.state.marks") == ["k-negative"] and p.get_attribute("#mark", "aria-pressed") == "true"
+                  and p.evaluate("JSON.parse(localStorage.getItem('athena.marks'))") == ["k-negative"])
+            p.click("#back"); p.wait_for_timeout(100)
+            check("d. Back goes to the tab it came from (Ask)", p.evaluate("__athena.state.view") == "ask")
+            p.click("#savedBtn"); p.wait_for_timeout(150)
+            check("d. Saved lists the bookmark and the reading history (newest first)", len(p.query_selector_all("#saved .item")) >= 2 and "Why the Kalshi bot loses" in p.inner_text("#saved"), p.inner_text("#saved")[:100])
+            p.click('#tabs [data-tab="today"]'); p.wait_for_timeout(150)
+            lesson = p.evaluate("__athena.BRAIN.dailyLesson(__athena.lib).id")
+            check("d. Today shows the lesson of the day, with a check-yourself question when it has one", p.query_selector(f'#today [data-open="{lesson}"]') is not None and "Today's lesson" in p.inner_text("#today"))
+            p.click("#markRead"); p.wait_for_timeout(100)
+            check("d. 'I read it' counts the day: the streak is 1, the Today badge clears, kept under 'athena.days'", "Streak: 1 day" in p.inner_text("#today") and p.is_hidden("#bd-today") and len(p.evaluate("JSON.parse(localStorage.getItem('athena.days'))")) == 1)
+            p.click('#tabs [data-tab="cards"]'); p.wait_for_timeout(150)
+            front = p.inner_text("#flash")
+            p.click("#flash"); p.wait_for_timeout(80)
+            check("d. Cards: tap to flip to the answer, then Again / Good / Easy", "ANSWER" in p.inner_text("#flash") and len(p.query_selector_all("#cards .grade button")) == 3 and front != p.inner_text("#flash"))
+            p.click('#cards [data-g="1"]'); p.wait_for_timeout(100)
+            cards = p.evaluate("JSON.parse(localStorage.getItem('athena.cards'))")
+            check("d. 'Good' files the card in box 1 (due tomorrow) and shows the next one", len(cards) == 1 and list(cards.values())[0]["b"] == 1 and "ANSWER" not in p.inner_text("#flash"), cards)
+            p.click('#tabs [data-tab="rules"]'); p.wait_for_timeout(150)
+            n = len(p.query_selector_all("#rules .rule"))
+            p.click("#rules .tick >> nth=0"); p.click("#rules .tick >> nth=1"); p.wait_for_timeout(100)
+            check(f"d. My rules: {n} lines in 5 groups, tick two: '2 of {n} checked today', kept under 'athena.rules', a 'why' link opens the entry",
+                  n == len(lib["rules"]) and f"2 of {n} checked" in p.inner_text("#rules") and len(p.evaluate("JSON.parse(localStorage.getItem('athena.rules')).done")) == 2 and p.query_selector("#rules [data-open]") is not None)
+            p.reload(); p.wait_for_function("window.__athena && window.__athena.ready", timeout=30000)
+            p.evaluate("location.hash = '#rules'"); p.wait_for_timeout(200)
+            check("d. after a reload the bookmarks, the ticks and the card boxes are still there (this phone only)", p.evaluate("__athena.plus.state.marks.length") == 1 and p.evaluate("__athena.plus.counts().rulesDone") == 2 and "2 of" in p.inner_text("#rules"))
+            keys = p.evaluate("Object.keys(localStorage)")
+            check("d. every key it stores starts with 'athena.' and nothing goes to sessionStorage", all(k.startswith("athena.") for k in keys) and p.evaluate("sessionStorage.length") == 0, keys)
+            fx = p.evaluate("__athena.fx")
+            check(f"d. the library has the OLYMPUS effects (light shafts, dust, fireflies) on a GPU tier: {fx}", p.evaluate("__athena.quality") in ("low", "off") or {"godRays", "dust", "fireflies"} <= set(fx), fx)
+            sw = p.evaluate("document.documentElement.scrollWidth <= innerWidth")
+            check("d. no sideways scroll, the orb corner free on every pane", sw and all((p.click(f'#tabs [data-tab="{t}"]') or True) and orb_hits(p) == [] for t in ("ask", "today", "cards", "rules")))
+            ctx.close()
+            check("d. no page errors", not errs, errs[:5])
+            errs = []
+            ctx, p = open_page(br, url + "#today", errs, "__athena", reduced=True, wait_site=False)
+            check("d. reduced motion: #today opens straight on the lesson, no errors", p.evaluate("__athena.state.view") == "today" and not errs, errs[:3])
+            ctx.close()
+            br.close()
+    finally:
+        srv.shutdown()
+
+
 def main(argv):
     fast = "fast" in argv
     tmp = tempfile.mkdtemp(prefix="athena_test_")
     try:
         part_a()
         lib = part_b()
+        part_b2(lib)
+        part_b3(lib)
         if not fast:
             part_c(tmp, lib)
+            part_d(tmp, lib)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print(f"\n{sum(RES)}/{len(RES)} passed", flush=True)

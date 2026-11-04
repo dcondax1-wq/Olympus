@@ -16,7 +16,8 @@
 <link rel="stylesheet" href="../olympus/olympus.css?v=o2">
 <script src="../olympus/themes.js?v=o2"></script>
 <script src="../olympus/olympus.js?v=o2" data-app="tree"></script>
-<link rel="stylesheet" href="tree.css?v=d4">
+<link rel="stylesheet" href="tree.css?v=d5">
+<script src="../olympus/fx-core.js?v=f1"></script>
 </head>
 <body>
 <div id="app" data-state="loading">
@@ -41,6 +42,17 @@
       <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 8A5.5 5.5 0 1 1 11.9 4.1M13.5 2.5v3h-3"/></svg><span>REPLAY</span></button>
     <button type="button" class="tool" id="openTop" title="The top 10 rules">
       <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 4h10M3 8h10M3 12h6"/></svg><span>TOP 10</span></button>
+  </div>
+
+  <div class="tools tools-l" role="toolbar" aria-label="Branches, seasons and time">
+    <button type="button" class="tool" id="openBranches" title="Search, compare and rank every best branch">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 14V8M8 8 4 4M8 8l4-4M4 4V2M12 4V2"/></svg><span>BRANCHES</span></button>
+    <button type="button" class="tool" id="season" title="Season of the tree" aria-label="Season: auto">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2"/></svg><span id="seasonT">AUTO</span></button>
+    <div class="timeline" id="timeline">
+      <button type="button" class="tool" id="play" aria-pressed="true" aria-label="Pause the growth"><svg viewBox="0 0 16 16" aria-hidden="true"><path id="playIcon" d="M5 3v10M11 3v10"/></svg></button>
+      <input type="range" id="scrub" min="0" max="1000" value="1000" step="1" aria-label="Growth of the tree, scrub through time">
+    </div>
   </div>
 
   <section class="hud hud-foot" id="foot" aria-label="The search">
@@ -81,6 +93,17 @@
     <div id="cardBody"></div>
   </aside>
 
+  <aside class="sheet branches" id="branches" role="dialog" aria-modal="true" aria-labelledby="brTitle" hidden>
+    <div class="sheet-head"><h2 id="brTitle">BRANCHES · THE BEST OF EVERY ROOT</h2><button type="button" class="close" data-bclose aria-label="Close">×</button></div>
+    <nav class="btabs" role="tablist" aria-label="Branch pages">
+      <button type="button" role="tab" data-btab="list" aria-selected="true">LIST</button><button type="button" role="tab" data-btab="fame" aria-selected="false">HALL OF FAME</button>
+      <button type="button" role="tab" data-btab="compare" aria-selected="false">COMPARE</button><button type="button" role="tab" data-btab="stats" aria-selected="false">STATS</button></nav>
+    <div class="br-body" id="br-body"></div>
+  </aside>
+
+  <div class="shareview" id="shareView" hidden role="dialog" aria-label="Share picture"><img alt=""><p>Press and hold the picture to save or share it.</p><button type="button" id="shareClose" class="go">CLOSE</button></div>
+  <div class="toast-d" id="toastD" role="status" hidden></div>
+
   <aside class="sheet" id="top" role="dialog" aria-modal="true" aria-labelledby="topTitle" hidden>
     <div class="sheet-head"><h2 id="topTitle">TOP 10 RULES · BEST TRAIN SCORE, ONE PER SETUP</h2>
       <button type="button" class="close" data-close aria-label="Close">×</button></div>
@@ -90,6 +113,6 @@
 
   <p class="loading" id="loading" aria-live="polite">GROWING THE TREE…</p>
 </div>
-<script type="module" src="app.js?v=d5"></script>
+<script type="module" src="app.js?v=d6"></script>
 </body>
 </html>

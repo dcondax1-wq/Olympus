@@ -33,6 +33,8 @@ TAGS = [
     {"id": "playbook", "name": "When...", "color": "#d49bff", "blurb": "What to do when something happens"},
     {"id": "numbers", "name": "Numbers", "color": "#ff9f5a", "blurb": "The results and the money"},
     {"id": "olympus", "name": "OLYMPUS", "color": "#9d8cff", "blurb": "How to use each app, and your daily routine"},
+    {"id": "kalshi", "name": "Kalshi", "color": "#3fd6c4", "blurb": "Why the Kalshi bot loses, and the one pocket that might work"},
+    {"id": "learned", "name": "What we learned", "color": "#f2a6ff", "blurb": "Every research night in two lines: what held up, what did not"},
 ]
 
 # sentences the library relies on: the build fails when one of these is no longer in its source file
@@ -50,7 +52,16 @@ MUST = [
     ("CLAUDE.md", "PF 4.19, +$43,820"),
     ("CLAUDE.md", "Paper only"),
     ("docs/CLAUDE_REFERENCE.md", "## Tested and rejected"),
+    ("research/writeups/2026-11-04_kalshi_edges.md", "| Why is it negative? |"),
+    ("research/writeups/2026-11-04_kalshi_edges.md", "one loss erases 18 wins"),
 ]
+
+# words that must link to their glossary entry (tests/test_athena_page.py checks the same list)
+JARGON = {"cisd": "cisd", "ifvg": "ifvg", "inducement": "inducement", "displacement": "displacement", "atr": "atr", "vix band": "vix-band", "breakeven": "breakeven",
+          "consistency": "consistency", "eod-trailing": "eod-trailing", "pf": "pf", "micro": "micro", "micros": "micro", "sweep": "sweep"}
+KALSHI_SRC = "research/writeups/2026-11-04_kalshi_edges.md"
+KALSHI_TITLES = {"k-negative": "Why the Kalshi bot loses money", "k-pocket": "Is there a positive pocket on Kalshi?", "k-loses": "What loses on Kalshi", "k-win-rate": "Why a 94% win rate still loses",
+                 "k-size": "The hidden cause: bet size", "k-ruin": "Risk of ruin at today's size", "k-todo": "What to do on Kalshi"}
 
 
 def limits():
@@ -494,11 +505,163 @@ def entries():
     return E
 
 
+# ------------------------------------------------------------------------------------------------ writeups: the Kalshi and "what we learned" shelves
+def plain(t):
+    """markdown -> plain words: no bold / code marks, links as their text, one line"""
+    t = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", t)
+    t = re.sub(r"[*`_]{1,3}", "", t)
+    t = t.replace("|", ",").replace("→", "to").replace("—", " - ").replace("–", "-")
+    return re.sub(r"\s+", " ", t).strip()
+
+
+def sentences(t):
+    return [x.strip() for x in re.split(r"(?<=[.!?])\s+(?=[A-Z$(\"0-9])", plain(t)) if x.strip()]
+
+
+def clip(t, n):
+    if len(t) <= n:
+        return t
+    cut = t[:n - 3]
+    return (cut[:cut.rfind(" ")] if cut.rfind(" ") > n * 0.6 else cut).rstrip(" ,;:-") + "..."
+
+
+def pack(sents, n=320, lines=4):
+    """sentences -> at most `lines` body lines of at most n characters"""
+    out, cur = [], ""
+    for x in sents:
+        if len(x) > n:
+            x = clip(x, n)
+        if cur and len(cur) + 1 + len(x) > n:
+            out.append(cur)
+            cur = x
+            if len(out) >= lines:
+                return out[:lines]
+        else:
+            cur = (cur + " " + x).strip()
+    if cur and len(out) < lines:
+        out.append(cur)
+    return out[:lines]
+
+
+def lead(ss, n=255, want=70):
+    """the first sentences (at least `want` characters when there are more) -> (short, the rest)"""
+    k, out = 0, ""
+    while k < len(ss) and (not out or len(out) < want) and len(out) + len(ss[k]) + 1 <= n:
+        out = (out + " " + ss[k]).strip()
+        k += 1
+    if not out:
+        return clip(ss[0], n), ss[1:]
+    return out, ss[k:]
+
+
+def with_words(e):
+    """append a 'Words used' line linking every glossary term the entry mentions (no jargon without its link)"""
+    text = " ".join([e["title"], e["short"], *e["body"]])
+    low = re.sub(r"\[\[[a-z0-9-]+\]\]", " ", text).lower()
+    linked = set(re.findall(r"\[\[([a-z0-9-]+)\]\]", text))
+    need = []
+    for term, gid in JARGON.items():
+        if re.search(r"(?<![a-z-])" + re.escape(term) + r"(?![a-z])", low) and gid not in linked and gid not in need:
+            need.append(gid)
+    if need:
+        if len(e["body"]) >= 7:
+            e["body"] = e["body"][:6]
+        e["body"].append("Words used here: " + ", ".join("[[%s]]" % g for g in need) + ".")
+    return e
+
+
+def kalshi_entries():
+    """one entry per row of 'The answer in one table' in the Kalshi writeup, plus 'How sure'"""
+    t = rd(*KALSHI_SRC.split("/"))
+    i = t.index("## The answer in one table")
+    j = t.index("\n## ", i + 5)
+    rows = [r for r in t[i:j].splitlines() if r.startswith("|") and not r.startswith("|---") and not r.startswith("| Question")]
+    ids = ["k-negative", "k-pocket", "k-loses", "k-win-rate", "k-size", "k-ruin", "k-todo"]
+    out = []
+    for rid, r in zip(ids, rows):
+        cells = [c.strip() for c in r.strip("|").split("|", 1)]
+        q, a = plain(cells[0]).rstrip("?"), cells[1]
+        short, rest = lead(sentences(a))
+        out.append({"id": rid, "kind": "kalshi", "tags": ["kalshi", "numbers"], "title": KALSHI_TITLES.get(rid, clip(q, 80)),
+                    "short": short, "body": pack(rest, 320, 6), "src": [KALSHI_SRC]})
+    k = t.index("**How sure.**")
+    para = sentences(t[k:t.index("\n\n", k)].replace("**How sure.**", ""))
+    out.append({"id": "k-how-sure", "kind": "kalshi", "tags": ["kalshi"], "title": "How sure is the Kalshi result?", "short": clip(para[0], 255),
+                "body": pack(para[1:], 320, 4), "src": [KALSHI_SRC]})
+    quiz = {"k-win-rate": {"q": "Why does a 94% win rate still lose money on the Kalshi bot?", "a": "A win pays about $0.71 but a loss costs about $12.89, so one loss erases about 18 wins",
+                           "wrong": ["Kalshi cancels half the winning trades", "The bot trades too rarely", "The wins are paid late"]},
+            "k-pocket": {"q": "Which entry price is the one possibly positive pocket?", "a": "95 cents and above", "wrong": ["Under 60 cents", "90 to 95 cents", "60 to 80 cents"]}}
+    for e in out:
+        if e["id"] in quiz:
+            e["quiz"] = quiz[e["id"]]
+        with_words(e)
+    return out
+
+
+STATUS_WORDS = {"adopt-candidate": "Worth adopting (the owner decides)", "adopted": "Adopted", "promising": "A promising lead, paper first", "finding": "A finding, nothing changed"}
+
+
+def learned_entries():
+    """one entry per research write-up that found something (adopt-candidate, adopted, promising, finding), from its front matter"""
+    import glob
+    out = []
+    for f in sorted(glob.glob(os.path.join(ROOT, "research", "writeups", "*.md"))):
+        name = os.path.basename(f)
+        txt = open(f, encoding="utf-8").read()
+        m = re.match(r"---\n(.*?)\n---\n", txt, re.S)
+        if not m:
+            continue
+        fm = dict(re.findall(r"^(\w+): (.*)$", m.group(1), re.M))
+        st = re.match(r"[a-z-]+", fm.get("status", ""))
+        if not st or st.group(0) not in STATUS_WORDS or not fm.get("summary"):
+            continue
+        ss = [x for x in sentences(fm["summary"]) if not x.startswith("Owner")] or sentences(fm["summary"])
+        if not ss:
+            continue
+        slug = re.sub(r"[^a-z0-9]+", "-", name[:-3].lower()).strip("-")
+        raw = plain(fm.get("title", name))
+        head = re.split(r"\s+-\s+|:\s", raw)[0]
+        title = clip(head if len(head) >= 18 else raw, 80)
+        short, rest = lead(ss)
+        e = {"id": "l-" + slug, "kind": "learned", "tags": ["learned"], "title": title, "short": short,
+             "body": [STATUS_WORDS[st.group(0)] + (", " + fm["date"] if fm.get("date") else "") + "."] + pack(rest, 320, 4), "src": ["research/writeups/" + name]}
+        out.append(with_words(e))
+    return out
+
+
+def rules():
+    """'My rules': the checklist page. Every line is one rule from the library, with the entry that explains it and the numbers from the rule file."""
+    L, _, _, _ = limits()
+    floor0 = 50000 - L["mll"]
+    R = [
+        ("before", "Open Jarvis and read the first item on its list.", "p-daily"),
+        ("before", "Check the bot is on and its feed is not stale.", "o-zenith"),
+        ("before", "Check the days since the last trade (the account must trade every %d days)." % L["inactivity_days"], "m-idle"),
+        ("before", "Check the room left to the drawdown floor ($%s)." % "{:,.0f}".format(floor0), "m-floor"),
+        ("during", "Let the bot trade. New entries start only from 02:00 to 15:30 New York time.", "p-daily"),
+        ("during", "Change nothing while a trade is open. The stop sits 1 tick beyond the sweep extreme and never moves further away.", "step-3"),
+        ("during", "At most 1 trade a day. No long and short at the same time.", "m-hedge"),
+        ("during", "Do not trade by hand unless Ares says GO.", "o-ares"),
+        ("after", "Everything is flat by 15:55. Look at the result.", "p-daily"),
+        ("after", "Write one line in your notes (say \"note: ...\" to Jarvis).", "p-daily"),
+        ("after", "After a loss, do the loss playbook: no revenge trade, no change to the rules.", "p-loss"),
+        ("money", "Daily loss limit: $%s. Hit it and the day is over." % "{:,.0f}".format(L["dll"]), "m-dll"),
+        ("money", "Never more than %d micros at once." % L["max_micros"], "m-size"),
+        ("money", "Profit target for the eval: $%s." % "{:,.0f}".format(L["target"]), "m-target"),
+        ("money", "Ask for a payout only when the buffer is there (see the payout entry).", "m-pay"),
+        ("never", "Never arm live trading for the owner. Paper and Sim only; the owner goes live himself.", "p-live"),
+        ("never", "Never put a password, key or card number in a note or in chat.", "p-live"),
+        ("never", "Never add a new rule from one good week. A new idea must hold in 2026 and in 2021-25.", "p-new"),
+    ]
+    return [{"id": "r%02d" % (i + 1), "group": g, "text": t, "from": f} for i, (g, t, f) in enumerate(R)]
+
+
+
 def build():
     for f, s in MUST:
         if s not in rd(*f.split("/")):
             raise SystemExit("athena_build: source sentence missing in " + f + ": " + s)
-    E = entries()
+    E = entries() + kalshi_entries() + learned_entries()
     ids = [e["id"] for e in E]
     if len(set(ids)) != len(ids):
         raise SystemExit("athena_build: duplicate ids")
@@ -512,12 +675,16 @@ def build():
             if t not in tagids:
                 raise SystemExit(f"athena_build: {e['id']} has an unknown tag {t}")
         e["tags"] = list(dict.fromkeys(e["tags"]))
-    lib = {"v": 1, "kind": "olympus-athena-library", "sources": sorted({s for e in E for s in e["src"]}), "tags": TAGS, "entries": E}
+    R = rules()
+    for r in R:
+        if r["from"] not in ids:
+            raise SystemExit(f"athena_build: rule {r['id']} points at a missing entry {r['from']}")
+    lib = {"v": 1, "kind": "olympus-athena-library", "sources": sorted({s for e in E for s in e["src"]}), "tags": TAGS, "entries": E, "rules": R}
     n = {t["id"]: sum(1 for e in E if t["id"] in e["tags"]) for t in TAGS}
     card = {"v": 1, "name": "Athena",
             "status": {"level": "ok", "label": f"{len(E)} entries, offline"},
             "kpis": [{"label": "Entries", "value": str(len(E))}, {"label": "Words", "value": str(n["words"])}, {"label": "Playbooks", "value": str(n["playbook"])}],
-            "lines": ["Your library: the strategy, the MFFU rules, what failed and what to do when.", "Search it, or tap a shelf. Quiz me gives 5 questions."],
+            "lines": ["Your library: the strategy, the MFFU rules, Kalshi, what failed, what we learned and what to do when.", "Ask it, bookmark it, flip the cards. A new lesson every day."],
             "t": 1793700000, "open": "#library", "theme": "#070b14", "stale_after": 2592000}
     return {"library.json": lib, "jarvis.json": card}
 
