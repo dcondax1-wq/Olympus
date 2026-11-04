@@ -66,7 +66,7 @@ def build(tmp, now=WED):
         if a["id"] == "gamma":                                           # an app that has no manifest and no touch icon link at all (a home-screen gap)
             pg = pg.replace('<link rel="manifest" href="manifest.webmanifest">', "").replace('<link rel="apple-touch-icon" href="touch.png">', "")
         w(os.path.join(wp, a["path"], "index.html"), pg)
-    w(os.path.join(wp, "sw.js"), "const CACHE = 'le-public-v59';\n")
+    w(os.path.join(wp, "sw.js"), "const CACHE = 'le-public-v60';\n")
     w(os.path.join(wp, "jarvis", "sw.js"), "const CACHE = 'jarvis-v24';\n")
     w(os.path.join(wp, "kalshi", "sw.js"), "const CACHE = 'kalshi-k18';\n")
     shutil.copytree(wp, site)

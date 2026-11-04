@@ -33,5 +33,8 @@ export function phoneHint() {
 
 export function profileOf(level, phone, saver) {
   if (level === 'low' || level === 'off') return 'lite';
-  return (phone || saver) && level !== 'ultra' ? 'phone' : 'full';
+  // 2026-11-04: phones keep the FULL look (owner: the phone cuts made it look worse); the thin 'phone' profile is only for the battery saver
+  // or an explicit ?phone=1 (phoneHint() still answers true for ?phone=1, so a test or the owner can ask for it)
+  const forced = (() => { try { return new URLSearchParams(location.search).get('phone') === '1'; } catch (e) { return false; } })();
+  return (saver || forced) && level !== 'ultra' ? 'phone' : 'full';
 }
