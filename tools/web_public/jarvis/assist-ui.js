@@ -52,7 +52,9 @@ function style() {
   background:rgba(var(--cr,125,211,252),.18);border:1px solid rgba(var(--cr,125,211,252),.5);cursor:pointer}
 .jx-plan .apps{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .jx-plan .apps button{font:inherit;font-size:12px;min-height:30px;padding:3px 10px;border-radius:10px;color:inherit;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);cursor:pointer}
-.jx-plan .apps i{font-style:normal;opacity:.7;margin-left:4px}`;
+.jx-plan .apps i{font-style:normal;opacity:.7;margin-left:4px}
+@media (max-width:400px){.ask{gap:5px}.ask .key{padding:0 10px}.ask .key.ic{width:44px}}
+@media (max-width:389px){.ask .key.send{display:none}}`;   /* the dock's input was 102 px on a 375 phone (4 buttons beside it): smaller keys, and the keyboard's Send key sends */
   document.head.appendChild(s);
 }
 

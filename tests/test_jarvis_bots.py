@@ -277,6 +277,8 @@ const Q7 = ['how are my bots', 'is Zlarior armed', 'what is ATLAS waiting for', 
   const D = t.brain.digest();
   out.think = { armed: th.items.map((x) => [x.key, x.text, x.say]), trade: th2.items.map((x) => x.key), calm: th3.items.map((x) => x.key), digestBots: D && D.bots && D.bots.items.map((x) => x.key), all: MO.thinkAll(D).filter((x) => x.key.startsWith('bot:')).map((x) => x.mode + ':' + x.key) };
 }
+out.dup = [MO.thinkAll({ priorities: [{ p: 3, key: 'nolive', text: 'I cannot reach the bots live feed from this phone: check the signal, then the PC.' }], live: { missing: true }, quiet: [], accounts: [], apps: [] }).filter((x) => /cannot (reach|see) the bots/.test(x.text)).length,
+  MO.thinkAll({ priorities: [], live: { missing: true }, quiet: [], accounts: [], apps: [] }).filter((x) => /cannot (reach|see) the bots/.test(x.text)).length];
 out.fetches = fetches.length;
 
 // ---------------------------------------------------------------- h. the panel
@@ -444,6 +446,7 @@ def checks(O):
     check("g. Think for me carries the bot items: a setup armed (let it work, no manual trades), a trade open (let it run); a calm board has none; the digest and modes.thinkAll agree",
           any(k == "bot:armed:lit" and "setup armed" in t and "no manual trades" in t for k, t, sy in T["armed"]) and "bot:pos:lit" in T["trade"] and not any(k.startswith("bot:") for k in T["calm"]) and "bot:armed:lit" in T["digestBots"] and "trading:bot:armed:lit" in T["all"], T)
 
+    check("g. a missing live feed is said once in Think for me (the brain's own line, not twice with modes.js's), and still once when the brain has none", O["dup"] == [1, 1], O["dup"])
     P = O["panel"]
     check("h. panel: lights PC / prices / Zlarior / ATLAS, the next window counts down (Zlarior in 9 h 29 min: the board's Wednesday window, moved to 11:02), the P&L line has today and each bot",
           [l["id"] for l in P["base"]["lights"]] == ["pc", "feed", "lit", "atlas"] and P["base"]["windowText"] == "Next window: Zlarior in 9 h 29 min" and P["base"]["pnl"]["line"] == "Today +$636 · Zlarior +$27 · ATLAS +$608" and P["base"]["state"] == "ok", P["base"])
@@ -515,6 +518,8 @@ def part_browser():
             info = p.evaluate("(() => { const e = document.getElementById('botsPanel'); return { lights: [...e.querySelectorAll('ul.lights li')].map((l) => l.dataset.id + ':' + l.dataset.level), win: e.querySelector('.win').textContent, pnl: e.querySelector('.pnl').textContent, w: e.getBoundingClientRect().width, sw: document.documentElement.scrollWidth }; })()")
             check("i. Chromium: Trading mode shows the Bots panel from the live feed: 4 lights (PC, prices, Zlarior, ATLAS), the window countdown, the P&L line; it fits the phone width",
                   info["lights"] == ["pc:ok", "feed:ok", "lit:ok", "atlas:ok"] and info["win"].startswith("Next window: Zlarior in") and "Zlarior" in info["pnl"] and info["w"] <= 390 and info["sw"] <= 390, info)
+            qw = p.evaluate("document.getElementById('q').getBoundingClientRect().width")
+            check("i. the dock's input is wide enough to type in on a 390 phone (it was 117 px beside four keys; smaller keys now)", qw >= 135, qw)
             p.evaluate("document.getElementById('botsPanel').scrollIntoView({ block: 'center' })")
             p.wait_for_timeout(400)
             p.evaluate("document.querySelector('#botsPanel [data-act=alerts]').click()")
