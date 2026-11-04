@@ -42,6 +42,22 @@ button.copied { background: rgba(74, 222, 128, .22); border-color: rgba(74, 222,
 details summary { cursor: pointer; color: var(--vio); min-height: 32px; }
 pre { white-space: pre-wrap; word-break: break-word; margin: 6px 0 0; padding: 10px 12px; border-radius: 10px; background: rgba(0, 0, 0, .35); font: 14px/1.45 ui-monospace, Menlo, monospace; }
 a { color: var(--vio); }
+.wiz { background: var(--card); border: 1px solid rgba(52, 211, 153, .35); border-radius: 18px; padding: 16px; display: grid; gap: 14px; }
+.wh { display: flex; gap: 14px; align-items: center; }
+.big { font: 800 22px Orbitron, sans-serif; letter-spacing: .06em; }
+.ring circle { transition: stroke-dashoffset .4s; }
+.step { border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 8px; }
+.step p { margin: 0; }
+.tk { display: flex; gap: 12px; align-items: center; min-height: 48px; cursor: pointer; }
+.tk input { width: 28px; height: 28px; accent-color: #34d399; flex: none; }
+.n { font: 800 14px Orbitron, sans-serif; color: #06040d; background: var(--gold); border-radius: 50%; width: 28px; height: 28px; display: grid; place-items: center; flex: none; }
+.st { font: 700 18px Rajdhani, sans-serif; }
+.step.ok .st { color: var(--ok); }
+.big-btn, .btn { min-height: 56px; width: 100%; font-size: 18px; background: linear-gradient(135deg, #7c3aed, #a855f7); border-radius: 14px; }
+.btn { display: grid; place-items: center; color: #fff; text-decoration: none; font: 700 18px Rajdhani, sans-serif; border: 1px solid var(--line); }
+.live { color: var(--ok); font-weight: 700; }
+.live.q { color: var(--gold); }
+.live.w { color: var(--mut); font-weight: 500; }
 </style>
 </head>
 <body>
@@ -55,13 +71,44 @@ a { color: var(--vio); }
       <li>Tell Claude "<b>Bridge: &lt;id&gt; done</b>". Claude checks it and builds it in.</li>
     </ol>
   </section>
-  <section class="how" id="sync">
-    <b>Sync ChatGPT (do this once)</b>
-    <ol>
-      <li>In ChatGPT: Settings → Connectors → GitHub → connect, and pick <code>nq-liquidity-engine</code>.</li>
-      <li><button id="copySync" type="button">Copy the sync prompt</button> and paste it into a new ChatGPT chat. From then on it reads <code>handoff/SYNC.md</code> before every job, so you never re-explain.</li>
-    </ol>
+  <section class="wiz" id="wiz" aria-label="Connect ChatGPT">
+    <div class="wh">
+      <svg class="ring" viewBox="0 0 44 44" width="64" height="64" aria-hidden="true"><circle cx="22" cy="22" r="18" fill="none" stroke="rgba(192,132,252,.2)" stroke-width="5"/><circle id="ringArc" cx="22" cy="22" r="18" fill="none" stroke="#34d399" stroke-width="5" stroke-linecap="round" stroke-dasharray="113.1" stroke-dashoffset="113.1" transform="rotate(-90 22 22)"/></svg>
+      <div><div class="e">CONNECT CHATGPT</div><div class="big" id="ringTxt">Connected 0/3</div></div>
+    </div>
+    <div class="step" id="s1">
+      <label class="tk"><input type="checkbox" data-step="1"><span class="n">1</span><span class="st">Let ChatGPT see your GitHub</span></label>
+      <p>Open ChatGPT, go to <b>chatgpt.com/codex</b> and tap <b>Connect to GitHub</b>. Sign in to GitHub there and allow it for <code>nq-liquidity-engine</code>. (Or: ChatGPT <b>Settings</b> &rarr; <b>Apps</b> (older name: Connectors) &rarr; <b>GitHub</b> &rarr; <b>Connect</b>.) ChatGPT does the GitHub login itself: never give anyone a token.</p>
+      <div class="row"><a class="btn" id="open1" href="https://chatgpt.com/codex" target="_blank" rel="noopener">Open ChatGPT Codex</a></div>
+    </div>
+    <div class="step" id="s2">
+      <label class="tk"><input type="checkbox" data-step="2"><span class="n">2</span><span class="st">Teach ChatGPT the rules</span></label>
+      <p>Tap the big button, then paste it into a new ChatGPT chat and send it. Once only.</p>
+      <div class="row"><button id="copySync" class="big-btn" type="button">Copy the sync prompt</button></div>
+    </div>
+    <div class="step" id="s3">
+      <label class="tk"><input type="checkbox" data-step="3"><span class="n">3</span><span class="st">Send the first job</span></label>
+      <p>This copies the icons job and opens ChatGPT Codex. Paste it there and send.</p>
+      <div class="row"><button id="firstJob" class="big-btn" type="button">Send first job</button></div>
+    </div>
   </section>
+  <script type="text/plain" id="onboardText">You are my build partner for OLYMPUS, my trading dashboards and Jarvis assistant. Claude (in Claude Code) does the
+engine, tests and publishing. You do creative and bulk work. We stay synced through one GitHub repo:
+demetrades2000-coder/nq-liquidity-engine (connect GitHub in ChatGPT / use Codex).
+
+Every time before you start:
+1. Read `handoff/SYNC.md` (the shared board: what is done, what is yours, what is Claude's, what is blocked).
+2. Read `handoff/inbox/README.md` and the newest job on https://demetrades2000-coder.github.io/nq-dashboard/bridge/ .
+
+Rules:
+- Only add files under `handoff/inbox/<task-id>/` (open a pull request on branch `chatgpt/<task-id>`). Never edit the bots,
+  `live_model*.json`, `engine/`, `.github/`, or any existing app.
+- No secrets, keys or logins anywhere. Plain files only: images (png/webp), JSON, SVG, text, small JS modules.
+- Paper trading only. Never anything that places or arms real orders.
+- When you finish, add one line to `handoff/inbox/<task-id>/DONE.md`: what you made, file list, anything Claude must wire.
+- If blocked, write `handoff/inbox/<task-id>/QUESTION.md` instead of guessing.
+
+Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble + gold + violet neon), plain words.</script>
   <div class="bar"><span class="prog" id="prog"></span><button id="reset" type="button">Reset ticks</button></div>
   <div id="list"></div>
 </div>
@@ -105,6 +152,8 @@ a { color: var(--vio); }
       to: 'a pull request on ' + REPO + ' (branch chatgpt/<app>)',
       p: 'Repo ' + REPO + '. Read docs/OLYMPUS_RENDER.md and docs/OLYMPUS_DESIGN.md. Pick ONE app folder under tools/web_public/ (start with tyche/, then oracle/, fates/, mind/, arena/) and move its three.js scene onto the shared render core in tools/web_public/olympus/render.js and materials.js (tone mapping, environment light, bloom, real materials). Keep the app working on iPhone at 60 fps, keep its tests passing (tests/test_<app>*.py), touch only that app folder and its test, and open a pull request on a branch chatgpt/<app>. Do not touch engine/, live_model*.json or anything trading-related.' },
   ];
+  window.BRIDGE_JOBS = JOBS;
+  var STATUS = null;
   var KEY = 'bridge.done', done = {};
   try { done = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { done = {}; }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) { /* private mode */ } }
@@ -119,6 +168,13 @@ a { color: var(--vio); }
       c.appendChild(top);
       c.appendChild(el('div', 'why', j.why));
       var to = el('div', 'to'); to.appendChild(document.createTextNode('Result → ')); to.appendChild(el('code', '', j.to)); c.appendChild(to);
+      var st = STATUS && STATUS.jobs && STATUS.jobs[j.id], lv = el('div', 'live w', 'Waiting for ChatGPT');
+      if (st) {
+        if (st.state === 'done') { lv.className = 'live'; lv.textContent = 'ChatGPT delivered ' + st.files + ' file' + (st.files === 1 ? '' : 's'); }
+        else if (st.state === 'question') { lv.className = 'live q'; lv.textContent = 'ChatGPT has a question'; }
+        else { lv.className = 'live w'; lv.textContent = 'ChatGPT is working (' + st.files + ' file' + (st.files === 1 ? '' : 's') + ')'; }
+      }
+      c.appendChild(lv);
       var d = el('details'); d.appendChild(el('summary', '', 'Show prompt')); d.appendChild(el('pre', '', j.p)); c.appendChild(d);
       var row = el('div', 'row');
       var cp = el('button', '', 'Copy prompt'); cp.type = 'button';
@@ -129,20 +185,62 @@ a { color: var(--vio); }
       };
       var tick = el('button', '', done[j.id] ? 'Done ✓' : 'Mark done'); tick.type = 'button';
       tick.onclick = function () { done[j.id] = !done[j.id]; save(); render(); };
-      row.appendChild(cp); row.appendChild(tick); c.appendChild(row);
+      row.appendChild(cp); row.appendChild(tick);
+      if (st && (st.state === 'done' || st.state === 'question')) {
+        var msg = 'Bridge: ' + j.id + (st.state === 'done' ? ' done' : ' question');
+        var tc = el('button', '', 'Tell Claude'); tc.type = 'button'; tc.setAttribute('data-say', msg);
+        tc.onclick = function () {
+          var ok = function () { tc.textContent = 'Copied \u2713'; setTimeout(function () { tc.textContent = 'Tell Claude'; }, 1600); };
+          try { navigator.clipboard.writeText(msg).then(ok, function () { prompt('Send this to Claude:', msg); }); } catch (e) { prompt('Send this to Claude:', msg); }
+        };
+        row.appendChild(tc);
+      }
+      c.appendChild(row);
       list.appendChild(c);
     });
     document.getElementById('prog').textContent = n + ' / ' + JOBS.length + ' DONE';
   }
   document.getElementById('reset').onclick = function () { done = {}; save(); render(); };
   render();
+  try { fetch('status.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (j) { if (j && j.jobs) { STATUS = j; render(); } }, function () {}); } catch (e) { /* offline: no live state */ }
 })();
 </script>
+
 <script>
-(function(){var b=document.getElementById('copySync');if(!b)return;
-var T="You are my build partner for OLYMPUS (my trading dashboards + Jarvis). Claude (Claude Code) does the engine, tests and publishing; you do creative and bulk work. We stay synced through the GitHub repo demetrades2000-coder/nq-liquidity-engine. Before every job read handoff/ONBOARD.md and handoff/SYNC.md, then the job card on https://demetrades2000-coder.github.io/nq-dashboard/bridge/ . Only add files under handoff/inbox/<task-id>/ via a pull request on branch chatgpt/<task-id>; never edit bots, engine, live_model*.json, .github or existing apps; no secrets; paper trading only. When done add handoff/inbox/<task-id>/DONE.md (what you made + file list); if blocked add QUESTION.md. Style: Greek gods, futuristic, marble + gold + violet neon, plain words.";
-b.addEventListener('click',function(){var d=function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy the sync prompt'},1500)};
-try{navigator.clipboard.writeText(T).then(d,function(){prompt('Copy this:',T)})}catch(e){prompt('Copy this:',T)}})})();
+(function () {
+  var WK = 'bridge.wizard', W = {};
+  try { W = JSON.parse(localStorage.getItem(WK) || '{}') || {}; } catch (e) { W = {}; }
+  function wsave() { try { localStorage.setItem(WK, JSON.stringify(W)); } catch (e) { /* private mode */ } }
+  W.seen = 1; wsave();                       // Jarvis reads this: the owner has opened the wizard
+  var PROMPT = document.getElementById('onboardText').textContent.trim();
+  function copy(text, btn, label, after) {
+    var ok = function () { btn.textContent = 'Copied \u2713'; btn.classList.add('copied'); setTimeout(function () { btn.textContent = label; btn.classList.remove('copied'); }, 1600); if (after) after(); };
+    try { navigator.clipboard.writeText(text).then(ok, function () { prompt('Copy this:', text); if (after) after(); }); }
+    catch (e) { prompt('Copy this:', text); if (after) after(); }
+  }
+  function paint() {
+    var n = 0;
+    ['1', '2', '3'].forEach(function (k) {
+      var on = !!W['s' + k], box = document.querySelector('input[data-step="' + k + '"]');
+      box.checked = on; document.getElementById('s' + k).classList.toggle('ok', on); if (on) n++;
+    });
+    document.getElementById('ringTxt').textContent = 'Connected ' + n + '/3';
+    document.getElementById('ringArc').setAttribute('stroke-dashoffset', String(113.1 * (1 - n / 3)));
+    W.n = n; wsave();
+  }
+  function setStep(k, v) { W['s' + k] = v ? 1 : 0; wsave(); paint(); }
+  [].forEach.call(document.querySelectorAll('input[data-step]'), function (b) { b.addEventListener('change', function () { setStep(b.getAttribute('data-step'), b.checked); }); });
+  document.getElementById('open1').addEventListener('click', function () { setStep(1, true); });
+  var sync = document.getElementById('copySync');
+  sync.addEventListener('click', function () { copy(PROMPT, sync, 'Copy the sync prompt', function () { setStep(2, true); }); });
+  var fj = document.getElementById('firstJob');
+  fj.addEventListener('click', function () {
+    var job = (window.BRIDGE_JOBS || []).filter(function (j) { return j.id === 'icons'; })[0];
+    copy(job ? job.p : '', fj, 'Send first job', function () { setStep(3, true); window.open('https://chatgpt.com/codex', '_blank', 'noopener'); });
+  });
+  paint();
+})();
 </script>
 </body>
 </html>

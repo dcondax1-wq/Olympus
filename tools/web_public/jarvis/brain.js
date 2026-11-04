@@ -381,7 +381,7 @@ const evLine = (e) => `${e.allDay ? 'All day' : hm(e.start) || 'No time'}: ${e.t
 const taskList = (ts, n) => ts.slice(0, n).map((t) => t.title + (t.overdue ? ' (overdue)' : '')).join(', ') + (ts.length > n ? '…' : '');
 
 // ------------------------------------------------------------------------------------------------ apps
-const BUILT_IN = [{ id: 'home', name: 'Jarvis', url: '' }, { id: 'zenith', name: 'Zenith', url: '../' }, { id: 'planner', name: 'Planner', url: '../planner/' }, { id: 'kalshi', name: 'Kalshi', url: '../kalshi/' }];
+const BUILT_IN = [{ id: 'home', name: 'Jarvis', url: '' }, { id: 'zenith', name: 'Zenith', url: '../' }, { id: 'planner', name: 'Planner', url: '../planner/' }, { id: 'kalshi', name: 'Kalshi', url: '../kalshi/' }, { id: 'bridge', name: 'Bridge', url: '../bridge/' }];
 function appList(apps) {
   const list = arr(apps).filter((a) => isObj(a) && str(a.id, 40) && str(a.name, 40)).map((a) => ({ id: str(a.id, 40), name: str(a.name, 40), url: str(a.url, 400) }));
   return list.length ? list : BUILT_IN.slice();
@@ -1378,12 +1378,23 @@ export function createBrain(opts) {
     const text = id === 'home' ? 'Here.' : label ? `Opening ${label} in ${a.name}.` : `Opening ${a.name}.`;
     return { text, speak: text, open: id, route: route || undefined, intent: 'open' };
   }
+  // the ChatGPT link (Bridge wizard, 2026-11-04): "connect chatgpt", "chatgpt", "bridge" open it with a one-line answer; checked before
+  // the glossary so the exact command opens the wizard ("how do I connect chatgpt" still explains smart mode)
+  function bridgeOpen(q) {
+    if (/^(?:(?:please )?(?:open|show|go to|take me to|launch)( me)?( the| my)? )?(?:(?:connect|link|sync|set ?up|hook up)( to)?( up)? (?:chat ?gpt|open ?ai|gpt)|chat ?gpt(?: (?:bridge|link|sync|setup|connect))?|(?:the )?bridge(?: (?:wizard|page|app))?|(?:chat ?gpt|claude) (?:and|\+|&) (?:chat ?gpt|claude)(?: bridge)?)$/.test(q)) {
+      const t = 'Opening the Bridge. Three taps and ChatGPT is connected.';
+      return { text: t, speak: t, open: 'bridge', intent: 'open' };
+    }
+    return null;
+  }
   function navigate(q, V) {
     const words = q.split(' ').length, short = words <= 2 && !ASK_RX.test(q);
     // "atlas trades", "blitz rules", "zlarior brain": a bot's page, not a question
     const page = words <= 3 && botsIn(q).length === 1 && /\b(brain|trades|results|rules|setups|go ?live)\b/.test(q) && !/\b(today|week|how|what|any|many)\b/.test(q);
     const wants = OPEN_RX.test(q) || page;
     if (/^(take me home|go home|go back|back|home|back to jarvis|main screen|jarvis home)$/.test(q)) return opening(V, 'home');
+    const br = bridgeOpen(q);
+    if (br) return br;
     if (!wants && !short) return null;
     if (/^(open|show|go to)( me)?( the| my)? settings$/.test(q)) return { text: 'Jarvis\'s settings are behind the gear button. For Zenith\'s, say "open Zenith settings".', speak: 'Jarvis\'s settings are behind the gear button.', intent: 'open' };
     if (wants && DATA_RX.test(q)) return null;                      // "show me the room": an answer, not a switch
@@ -1633,6 +1644,8 @@ export function createBrain(opts) {
     // voice mode (2026-11-03, voice-mode.js): the full-screen conversation; the shell opens and closes it
     if (/^(?:(?:start|enter|open|go to|switch to|turn on) )?(?:voice|conversation|talk) mode(?: on)?$/.test(q)) return { text: 'Voice mode.', speak: '', control: 'voice_mode', intent: 'control' };
     if (/^(?:(?:exit|end|leave|close|quit|stop|turn off) )(?:voice|conversation|talk) mode$|^(?:voice|conversation|talk) mode off$/.test(q)) return { text: 'Standing by.', speak: '', control: 'voice_mode_off', intent: 'control' };
+    const brg = bridgeOpen(q);
+    if (brg) return brg;
     const oj = oldJarvis(q, V);
     if (oj) return oj;
     const kn = knowAnswer(q, V);
@@ -2019,6 +2032,10 @@ export function createBrain(opts) {
   }
   // ---------------------------------------------------------------------------------------------- modes + "think for me"
   // the digest modes.js thinks from (every number from the facts; nothing invented): see modes.js for the shape
+  // the Bridge wizard's own key (bridge/index.html: {s1, s2, s3, seen, n}); same origin as Jarvis, read only. null = unreadable
+  function bridgeState() {
+    try { const st = store(), w = st ? JSON.parse(st.getItem('bridge.wizard') || 'null') : null; return { done: isObj(w) ? [1, 2, 3].filter((i) => w['s' + i]).length : 0, seen: isObj(w) && !!w.seen }; } catch (_) { return null; }
+  }
   function digest(V) {
     const accounts = liveBots(V).map((key) => { const c = card(V, key); return { key, name: BOT[key].name, status: str(c.status, 20), room: num(c.room), room_frac: num(c.room_frac), to_target: num(c.to_target), today_pnl: num(c.today_pnl) }; });
     const m = V.nq && V.nq.mind, plan = m && isObj(m.plans) ? Object.values(m.plans).find((x) => isObj(x) && str(x.headline, 200)) : null;
@@ -2032,6 +2049,7 @@ export function createBrain(opts) {
       reminders: assistant && typeof assistant.upcoming === 'function' ? arr(safeCall(() => assistant.upcoming())) : [],
       mind: m ? { regime: isObj(m.regime) ? str(m.regime.label, 80) : '', proposals: arr(m.proposals).filter(isObj).slice(0, 4).map((x) => ({ idea: str(x.idea, 160), status: str(x.status, 20) })), plan: plan ? str(plan.headline, 200) : '' } : null,
       money: V.nq && isObj(V.nq.money) ? { next: isObj(V.nq.money.next) ? str(V.nq.money.next.text, 200) : '', goals: arr(V.nq.money.goals).filter(isObj).slice(0, 3).map((g) => str(g.sentence || g.title, 160)) } : null,
+      bridge: bridgeState(),
       apps: V.apps.map((a) => ({ id: a.id, name: a.name })), smart: smartOn(), vault: !!(memory && memory.connected),
     };
   }

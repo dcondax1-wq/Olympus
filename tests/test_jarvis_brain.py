@@ -331,6 +331,8 @@ def scenarios():
           now=T_MON1958, f=tonight(T_MON1958), withShell=True),
         S("manual_atlas", ask("I placed my keep-alive trade on ATLAS") + [{"shellFacts": True}, {"headline": True}], now=T_MON1958, f=tonight(T_MON1958), withShell=True),
         S("manual_plain", ask("I traded") + [{"shellFacts": True}, {"headline": True}], now=T_MON1958, f=tonight(T_MON1958, q_lit=6, q_atlas=2), withShell=True),
+        S("bridge", ask("connect chatgpt", "chatgpt", "bridge", "Connect ChatGPT", "open the bridge", "link chatgpt", "sync chatgpt", "what is chatgpt", "open planner"),
+          now=T_MON1958, f=tonight(T_MON1958), withShell=True),
         S("smart_timeout", [{"setSmart": {"key": "gsk_FAKE", "on": True}}, {"timed": "blorp zzz what is the meaning of it all"}], now=T_MON1958, f=tonight(T_MON1958),
           withShell=True, fetch={"hang": True}),
         S("smart_offline", [{"setSmart": {"key": "gsk_FAKE", "on": True}}, {"timed": "blorp zzz what is the meaning of it all"}], now=T_MON1958, f=tonight(T_MON1958),
@@ -815,6 +817,27 @@ def part_tonight(O):
           bool(m) and (int(m[1]), int(m[2]), int(m[3])) == (int(e50["profit_target"]["value"]), int(e50["max_loss"]["value"]["amount"]), int(e50["daily_loss_limit"]["value"]["amount"])), m and m.groups())
 
 
+def part_bridge(O):
+    """n. the ChatGPT link (Bridge wizard, 2026-11-04): 'connect chatgpt' / 'chatgpt' / 'bridge' open the Bridge with a one-line
+    spoken answer; a question about ChatGPT does not; the proactive nudge fires only while the wizard is not 3/3 and never opened."""
+    r = O["bridge"]["res"]
+    ok = all(r[i].get("open") == "bridge" and r[i].get("speak") == "Opening the Bridge. Three taps and ChatGPT is connected." and r[i].get("say") != "" for i in range(7))
+    check("n. 'connect chatgpt', 'chatgpt', 'bridge', 'open the bridge', 'link/sync chatgpt' open the Bridge with one spoken line (reply.open + r.say)", ok, [(x.get("open"), x.get("speak")) for x in r[:7]])
+    check("n. the business chip 'Connect ChatGPT' opens the Bridge", r[3].get("open") == "bridge" and ["bridge", None] in O["bridge"]["opened"], O["bridge"]["opened"])
+    check("n. 'what is chatgpt' is a question (does not open the Bridge); 'open planner' still works",
+          r[7].get("open") != "bridge" and r[8].get("open") == "planner", (r[7].get("open"), r[8].get("open")))
+    node = shutil.which("node")
+    if not node:
+        check("n. nudge (node missing)", False)
+        return
+    js = ("import {thinkAll} from %s; const D=(b)=>({et:{y:2026,mo:11,d:4,h:10,min:600,wd:3,dn:20400},bridge:b,apps:[],accounts:[],priorities:[],quiet:[]});"
+          "const f=(b)=>thinkAll(D(b)).filter(x=>x.key==='bridge-setup').length;"
+          "console.log(JSON.stringify([f({done:0,seen:false}),f({done:2,seen:false}),f({done:3,seen:false}),f({done:0,seen:true}),f(null),f(undefined)]));") % json.dumps("file://" + os.path.join(ROOT, "tools", "web_public", "jarvis", "modes.js"))
+    o = subprocess.run([node, "--input-type=module", "-e", js], capture_output=True, text=True, timeout=60)
+    check("n. 'what should I do next' lists the Bridge only while the wizard is not 3/3 and never opened (0/3 yes, 2/3 yes, 3/3 no, opened no, unreadable no)",
+          o.stdout.strip() == "[1,1,0,0,0,0]", (o.stdout, o.stderr[-300:]))
+
+
 def part_manual(O):
     """m. the owner's manual keep-alive trades (2026-11-03): "I traded on both" marks today per account; the warning goes."""
     r, st = O["manual"]["res"], O["manual"]["storage"]
@@ -846,6 +869,7 @@ def main():
             part_system(O)
             part_tonight(O)
             part_manual(O)
+            part_bridge(O)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     if "--no-browser" not in sys.argv:

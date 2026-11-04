@@ -1219,6 +1219,13 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
                 elif os.path.isdir(os.path.join(src_dir, name)) and not name.startswith((".", "__")):
                     # a folder of the app's own files (olympus/three-addons/: the render core's vendored three.js addons)
                     shutil.copytree(os.path.join(src_dir, name), os.path.join(out, app, name), dirs_exist_ok=True)
+    # BRIDGE (tools/bridge_sync.py, 2026-11-04): live ChatGPT-link state (bridge/status.json) + the Jarvis card, from handoff/inbox;
+    # a failure keeps the static copies and never stops the publish
+    try:
+        from tools import bridge_sync as _bridge
+        print("  bridge:", _bridge.publish(out))
+    except Exception as e:
+        print("  bridge unavailable:", e.__class__.__name__, e)
     # CRONOS (tools/cronos/, docs/CRONOS.md, 2026-11-03): the nightly / weekly research data from the `cronos` and `datacity`
     # branches over the page copies when newer, then every research app's jarvis.json stamped with this publish and its
     # honest freshness (amber "not updated since ..." when a job failed or its data is too old); never stops the publish
