@@ -11,6 +11,8 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
 import * as M from '../olympus/materials.js';
+import * as SC from '../olympus/scenery.js';
+import { dress } from './dress.js';
 
 const W = 9.6, H = 6.6, X0 = -W / 2, Y0 = 0.2, ZC = 0;
 const ACC = '#9d8cff', CYAN = '#7fe9ff', GREEN = '#46d79a', RED = '#ff5a66', GOLD = '#ffcf5a', VIOLET = '#b08cff';
@@ -24,9 +26,9 @@ export function createChronos(canvas, { O = null } = {}) {
   scene.background = new THREE.Color('#05040c');
   scene.fog = new THREE.FogExp2(0x0a0716, 0.018);
   const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 300);
-  let lite = false, dirty = true, qcb = null, drawn = 0, frames = 0, stopped = false, raf = 0;
+  let lite = false, dirty = true, qcb = null, dr = null, drawn = 0, frames = 0, stopped = false, raf = 0;
   const rc = createRenderer({ canvas, scene, camera, env: 'night', tint: ACC, exposure: 0.9, maxDpr: 1.75, bloom: { strength: 0.8, radius: 0.55, threshold: 0.95 },
-    onQuality: (l) => { lite = l === 'low' || l === 'off'; dirty = true; if (qcb) qcb(l); } });
+    onQuality: (l) => { lite = l === 'low' || l === 'off'; if (dr) dr.setLite(lite); dirty = true; if (qcb) qcb(l); } });
   lite = rc.quality() === 'low' || rc.quality() === 'off';
 
   scene.add(new THREE.HemisphereLight('#8a7cff', '#120a1a', 0.55));
@@ -213,6 +215,7 @@ export function createChronos(canvas, { O = null } = {}) {
     hourH.rotation.z = -(hrs / 12) * Math.PI * 2; minH.rotation.z = -((sec % 3600) / 3600) * Math.PI * 2;
     ring.rotation.z = (tt / 1800) * 0.5; ring2.rotation.z = -(tt / 1800) * 0.8;
     faceLight.color.set(done ? T.exitCol : GOLD);
+    if (dr) dr.setTime(tt);
     dirty = true;
   }
 
@@ -241,18 +244,20 @@ export function createChronos(canvas, { O = null } = {}) {
     const fov = a < 0.6 ? 62 : a < 1 ? 54 : 46; if (camera.fov !== fov) { camera.fov = fov; camera.updateProjectionMatrix(); }
     if (still && !dirty) return;
     stars.update(t, rc.renderer.getPixelRatio()); neb.update(t);
+    if (dr) { try { dr.update(t, still); } catch (e) { dr = null; } }
     const k = 1 + (still ? 0 : Math.sin(t * 4) * 0.14); head.scale.setScalar(k);
     placeCamera(t);
     if (rc.render()) drawn++;
     frames++; dirty = false;
   }
+  try { dr = dress({ scene, camera, tower, face, rim, spire, FZ, FY, TZ, lite, marble }); } catch (e) { dr = null; /* the plain tower */ }
   placeCamera(0);
   raf = requestAnimationFrame(frame);
   return {
     setTrade, setU, onQuality(cb) { qcb = typeof cb === 'function' ? cb : null; }, lite: () => lite, quality: () => rc.quality(),
-    stats: () => ({ frames, drawn, quality: rc.quality(), passes: rc.passes().length, marks: T.marks.length, marksShown: T.shown, lines: T.lines.length, linesShown: T.lines.filter((l) => l.mesh.visible).length,
+    stats: () => ({ dress: dr ? dr.stats() : null, frames, drawn, quality: rc.quality(), passes: rc.passes().length, marks: T.marks.length, marksShown: T.shown, lines: T.lines.length, linesShown: T.lines.filter((l) => l.mesh.visible).length,
       dust: dust.count, ribbonSegs: T.ribbon ? T.ribbon.geometry.drawRange.count / (T.radial * 6) : 0, tubSeg: T.tubSeg, exitShown: !!(T.exitRing && T.exitRing.visible),
       hands: [hourH.rotation.z, minH.rotation.z], head: [head.position.x, head.position.y] }),
-    dispose() { stopped = true; cancelAnimationFrame(raf); rc.dispose(); },
+    dispose() { stopped = true; cancelAnimationFrame(raf); if (dr) dr.dispose(); rc.dispose(); },
   };
 }

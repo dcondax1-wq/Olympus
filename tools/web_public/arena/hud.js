@@ -168,10 +168,11 @@ export function renderLadder(sc, R) {
   return [h('p', 'sweep', 'The five steps in the middle of the colosseum. Every step you reach lights up in its colour.'), box];
 }
 
+function tbar(t) { const b = h('div', 'bar tbar'), i = document.createElement('i'); i.style.width = `${Math.round(Math.min(1, (t.value || 0) / Math.max(1, t.goal || 1)) * 100)}%`; b.append(i); return b; }
 export function showTrophy(t) {
   const pop = $('pop');
   kids(pop.querySelector('.pbody'), h('span', 'n', `${TIER_NAME[t.tier]} trophy`), h('h2', '', t.name), h('p', 'task', t.text),
-    h('p', 'st', t.earned ? 'Earned' : `${fmt(t.value)} of ${fmt(t.goal)}`), h('p', 'how', 'Honour, not XP. It comes from events a source shows, never from $, size or R.'));
+    h('p', 'st', t.earned ? 'Earned' : `${fmt(t.value)} of ${fmt(t.goal)}`), tbar(t), h('p', 'how', 'Honour, not XP. It comes from events a source shows, never from $, size or R.'));
   pop.classList.toggle('earned', !!t.earned);
   pop.hidden = false;
   pop.dataset.labour = ''; pop.dataset.trophy = t.id;
