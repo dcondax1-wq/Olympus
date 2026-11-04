@@ -10,6 +10,9 @@
   d. Chromium 390 x 844: no errors, no sideways scroll, ticks and the ring persist over a reload, the sync button puts the ONBOARD
      prompt on the clipboard, 'Send first job' copies the icons job and opens Codex, live cards show 'ChatGPT delivered 3 files' /
      'ChatGPT has a question' with a 'Tell Claude' button that copies 'Bridge: <id> done'
+  JOB 24 (2026-11-04): tabs Jobs / Library / Deliveries / Ask next. The Library lists the 58 ready jobs (bridge/jobs.json) with category
+     chips and a Copy prompt; Deliveries shows thumbnails + rendered text of what bridge_ingest approved and a 'Claude: build this in' button
+     ('Bridge: <id> done'); hostile text / names never become markup; Ask next shows status.json 'next'. status() has next + deliveries.
     python -X utf8 -m tests.test_bridge_page          (static only: add --no-browser)
 """
 from __future__ import annotations
@@ -58,6 +61,16 @@ def part_static():
     check("a. the page reads status.json and shows 'ChatGPT delivered', 'ChatGPT has a question' and a Tell Claude button ('Bridge: <id> done')",
           "status.json" in PAGE and "ChatGPT delivered" in PAGE and "ChatGPT has a question" in PAGE and "Tell Claude" in PAGE and "'Bridge: ' + j.id" in PAGE)
     check("a. the job cards are still there (icons ... codex-portal)", all(f"id: '{i}'" in PAGE for i in ("icons", "skies", "textures", "me", "persona", "labours", "lore", "deals", "obsidian", "ascend", "codex-portal")))
+    # JOB 24: library, deliveries, ask next
+    check("a. four tabs (Jobs, Library, Deliveries, Ask next) as buttons; the wizard is still above them and still exactly 3 steps",
+          all(f'data-tab="{t}"' in PAGE for t in ("jobs", "lib", "del", "next")) and 'role="tablist"' in PAGE and PAGE.index('id="wiz"') < PAGE.index('role="tablist"') and PAGE.count('<div class="step"') == 3)
+    check("a. the Library reads bridge/jobs.json, filters by category chips (buttons) and copies the exact prompt; the prompt is put in the page only when its details opens",
+          "fetch('jobs.json'" in PAGE and "data-cat" in PAGE and "'Copy prompt'" in PAGE and "if (d.open && !d.querySelector('pre'))" in PAGE)
+    check("a. the Deliveries tab reads deliveries.json (status.json brief as a fallback), shows <img> thumbnails from deliveries/<id>/, renders text as plain DOM text, and has the 'Claude: build this in' button copying 'Bridge: <id> done'",
+          "fetch('deliveries.json'" in PAGE and "fromBrief" in PAGE and "'deliveries/' + id + '/'" in PAGE and "'Claude: build this in'" in PAGE and "'Bridge: ' + id + ' done'" in PAGE and "function md(" in PAGE)
+    check("a. nothing delivered is ever run or parsed as markup: no innerHTML / insertAdjacentHTML / eval / new Function / document.write, ids and file names are validated by a regex",
+          not re.search(r"innerHTML|insertAdjacentHTML|outerHTML|\beval\(|new Function|document\.write|srcdoc", PAGE) and "FILE_RE" in PAGE and "ID_RE" in PAGE)
+    check("a. 'Ask next' shows status.json 'next' (5 at most) with a Copy prompt and Open in Library, and falls back to the five shortest jobs", "s.next" in PAGE and "'Open in Library'" in PAGE and "slice(0, 5)" in PAGE and "A quick one to start with" in PAGE)
 
 
 def part_status():
@@ -67,7 +80,12 @@ def part_status():
           and isinstance(st["commits"], list) and len(st["commits"]) <= 5 and all(set(c) == {"sha", "date", "subject"} for c in st["commits"])
           and all(j["state"] in ("done", "question", "in progress") and isinstance(j["files"], int) for j in st["jobs"].values()))
     check("b. status(): v 1, jobs {state, files}, counts, updated, at most 5 handoff commits", ok, st)
-    check("b. the job total is the number of cards on the page", st["counts"]["total"] == len(re.findall(r"\{ id: '[a-z0-9-]+', t:", PAGE)) > 0, st["counts"])
+    lib = json.load(open(os.path.join(WEB, "bridge", "jobs.json"), encoding="utf-8"))["jobs"]
+    check("b. the job total is the cards on the page plus the library (58 ready jobs)", st["counts"]["total"] == len(re.findall(r"\{ id: '[a-z0-9-]+', t:", PAGE)) + len(lib) > 0 and len(lib) >= 40, st["counts"])
+    check("b. status() also carries 'next' (at most 5 suggestions) and 'deliveries' (a dict); the old keys are unchanged",
+          isinstance(st["next"], list) and len(st["next"]) <= 5 and isinstance(st["deliveries"], dict) and {"v", "updated", "t", "jobs", "counts", "commits"} <= set(st))
+    dsaved = json.load(open(os.path.join(WEB, "bridge", "deliveries.json"), encoding="utf-8"))
+    check("b. the committed bridge/deliveries.json exists (the Deliveries tab works before the first publish)", dsaved.get("v") == 1 and isinstance(dsaved["jobs"], dict), dsaved)
     saved = json.load(open(os.path.join(WEB, "bridge", "status.json"), encoding="utf-8"))
     check("b. the committed bridge/status.json has the same shape (the page works before the first publish)", saved.get("v") == 1 and set(saved["counts"]) == set(st["counts"]) and isinstance(saved["jobs"], dict), saved)
     # a fake inbox: done (3 files + DONE.md), question, in progress
@@ -108,8 +126,11 @@ def part_olympus():
     i = bd.index("_bridge_sync") if "_bridge_sync" in bd else bd.index("_bridge")
     check("c. build_web_dashboard.py publishes status.json inside try/except (a failure never stops the publish)",
           "from tools import bridge_sync as _bridge" in bd and "_bridge.publish(out)" in bd and bd.rfind("try:", 0, i) > bd.rfind("\n    for app in", 0, i) and "except Exception" in bd[i:i + 400])
-    check("c. workers: root le-public-v56, Jarvis jarvis-v22 (v21 kept in OLD); 'bridge/' is cached", "const CACHE = 'le-public-v56'" in sw and "'bridge/'" in sw
-          and "const CACHE = 'jarvis-v22'" in jsw and "'jarvis-v21'" in jsw.split("const OLD")[1].split("\n")[0])
+    # (other jobs bump the workers too: the Bridge needs "at least" the versions it shipped with, and the old ones kept in OLD)
+    root_v = re.search(r"const CACHE = 'le-public-v(\d+)'", sw)
+    jar_v = re.search(r"const CACHE = 'jarvis-v(\d+)'", jsw)
+    check("c. workers: root le-public-v56 or newer, Jarvis jarvis-v22 or newer (v21 kept in OLD); 'bridge/' is cached", root_v and int(root_v.group(1)) >= 56 and "'bridge/'" in sw
+          and jar_v and int(jar_v.group(1)) >= 22 and "'jarvis-v21'" in jsw.split("const OLD")[1].split("\n")[0])
 
 
 class Quiet(http.server.SimpleHTTPRequestHandler):
@@ -147,7 +168,10 @@ def part_browser():
                   and p.is_checked('input[data-step="2"]'), clip[:60])
             p.click("#firstJob")
             clip = p.evaluate("navigator.clipboard.readText()")
-            p.wait_for_timeout(400)
+            for _ in range(40):          # the new tab can take a while on a slow machine
+                if opened:
+                    break
+                p.wait_for_timeout(250)
             check("d. 'Send first job' copies the icons job prompt, ticks step 3 and opens chatgpt.com/codex",
                   "14 square app icons" in clip and p.is_checked('input[data-step="3"]') and (any("chatgpt.com" in u or u == "about:blank" for u in opened)), (clip[:50], opened))
             p.check('input[data-step="1"]')
@@ -173,6 +197,93 @@ def part_browser():
                   p2.evaluate("navigator.clipboard.readText()") == "Bridge: icons done" and p2.get_attribute("#job-skies button[data-say]", "data-say") == "Bridge: skies question"
                   and p2.query_selector("#job-me button[data-say]") is None)
             check("d. no errors on the way", not errs, errs)
+            # ---- JOB 24: tabs, library, deliveries, ask next
+            lib = json.load(open(os.path.join(WEB, "bridge", "jobs.json"), encoding="utf-8"))
+            byid = {j["id"]: j for j in lib["jobs"]}
+            p2.click("#tab-lib")
+            p2.wait_for_function("document.querySelectorAll('#libList .card').length > 0")
+            check("d. Library tab: all %d ready jobs as cards, 14 chips (All + 13 categories), the Jobs cards are hidden, no sideways scroll" % len(lib["jobs"]),
+                  p2.evaluate("document.querySelectorAll('#libList .card').length") == len(lib["jobs"]) and p2.evaluate("document.querySelectorAll('#libCats button').length") == 14
+                  and p2.evaluate("document.getElementById('p-jobs').hidden") and p2.evaluate("document.documentElement.scrollWidth <= innerWidth") and "Library %d" % len(lib["jobs"]) in p2.inner_text("#tab-lib"),
+                  p2.evaluate("document.querySelectorAll('#libList .card').length"))
+            p2.click('#libCats button[data-cat="textures"]')
+            n_tex = sum(1 for j in lib["jobs"] if j["cat"] == "textures")
+            check("d. a category chip filters the library (textures)", p2.evaluate("document.querySelectorAll('#libList .card').length") == n_tex and p2.get_attribute('#libCats button[data-cat="textures"]', "aria-pressed") == "true")
+            check("d. a library card shows what it makes, ~minutes, where it lands (handoff/inbox/<id>/), the files, and no prompt text until opened",
+                  "handoff/inbox/tex-marble-white/" in p2.inner_text("#lib-tex-marble-white") and "marble-white-albedo.png" in p2.inner_text("#lib-tex-marble-white") and "min" in p2.inner_text("#lib-tex-marble-white")
+                  and p2.evaluate("document.querySelector('#lib-tex-marble-white pre')") is None)
+            p2.click("#lib-tex-marble-white summary")
+            p2.wait_for_selector("#lib-tex-marble-white pre")
+            check("d. opening 'Show prompt' puts the exact prompt in the card", p2.inner_text("#lib-tex-marble-white pre").strip() == byid["tex-marble-white"]["prompt"].strip())
+            p2.click("#lib-tex-marble-white .row button")
+            clip = p2.evaluate("navigator.clipboard.readText()")
+            check("d. 'Copy prompt' on a library card copies the exact prompt (with the ONBOARD rules)", clip == byid["tex-marble-white"]["prompt"] and "handoff/inbox/tex-marble-white/" in clip and "DONE.md" in clip, clip[:80])
+            p2.click('#libCats button[data-cat="all"]')
+            p2.click("#tab-next")
+            p2.wait_for_function("document.querySelectorAll('#nextList .card').length > 0")
+            check("d. Ask next without a 'next' list in status: the five shortest jobs, each with Copy prompt", p2.evaluate("document.querySelectorAll('#nextList .card').length") == 5
+                  and p2.evaluate("document.querySelectorAll('#nextList .card .row button').length") == 10)
+            p2.click("#tab-del")
+            check("d. Deliveries tab with nothing delivered: a friendly empty state, no error", "Nothing delivered yet" in p2.inner_text("#delList") and p2.evaluate("document.querySelectorAll('#delList .card').length") == 0)
+            check("d. the wizard is untouched by the tabs: Connected n/3 still shows, 3 tick boxes only", "Connected" in p2.inner_text("#ringTxt") and p2.evaluate("document.querySelectorAll('input').length") == 3)
+            # a page with deliveries (fake status + deliveries.json + one image), including hostile text
+            import base64
+            tiny = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==")
+            dl = {"v": 1, "jobs": {
+                "tex-marble-white": {"state": "done", "approved": 3, "rejected": 1, "issues": [], "done": "Made 4 maps. Wire as the marble material.",
+                                     "images": [{"name": "marble-white-albedo.png", "kind": "png", "w": 1, "h": 1, "size": 70}, {"name": "<img src=x onerror=window.PWNED=1>.png", "kind": "png", "size": 70}],
+                                     "text": [{"name": "notes.md", "kind": "md", "text": "# Notes\n- **bold** line one\n<img src=x onerror=window.PWNED=1>\nplain", "truncated": False, "size": 60},
+                                              {"name": "data.json", "kind": "json", "text": '{"a": "<script>window.PWNED=1</script>"}', "truncated": False, "size": 40}],
+                                     "rejects": [{"name": "evil.js", "reason": "script uses fetch()"}]},
+                "bad id/../x": {"state": "done", "approved": 0, "rejected": 0, "images": [], "text": [], "rejects": [], "done": ""}}}
+            st3 = dict(live, next=[{"id": "names-bots", "title": "Bot and strategy names", "minutes": 5, "difficulty": "easy", "rule": "first", "why": "Nothing is delivered yet: start with the easiest win"},
+                                   {"id": "obs-daily-template", "title": "Daily note template", "minutes": 6, "difficulty": "easy", "rule": "week", "why": "This week's category is obsidian"},
+                                   {"id": "../evil", "title": "bad", "minutes": 1, "difficulty": "easy", "rule": "quick", "why": "x"}],
+                       deliveries={"tex-marble-white": {"approved": 3, "rejected": 1, "images": ["marble-white-albedo.png"], "texts": ["notes.md"], "done": "Made 4 maps."}})
+            p3 = ctx.new_page()
+            p3.on("pageerror", lambda e: errs.append("pageerror3: " + str(e)))
+            p3.on("console", lambda m: errs.append("console3: " + m.text) if m.type == "error" and "Failed to load resource" not in m.text else None)
+            p3.route("**/bridge/status.json*", lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(st3)))
+            p3.route("**/bridge/deliveries.json*", lambda r: r.fulfill(status=200, content_type="application/json", body=json.dumps(dl)))
+            p3.route("**/bridge/deliveries/**", lambda r: r.fulfill(status=200, content_type="image/png", body=tiny))
+            p3.goto(url + "#deliveries")
+            p3.wait_for_function("document.querySelectorAll('#delList .card').length > 0")
+            check("d. #deliveries opens that tab; one delivery card per valid id (a hostile id is dropped), the tab says 'Deliveries 1'", p3.evaluate("document.querySelectorAll('#delList .card').length") == 1
+                  and p3.inner_text("#tab-del") == "Deliveries 1" and p3.evaluate("document.getElementById('p-del').hidden") is False)
+            p3.wait_for_function("document.querySelector('#delList img') && document.querySelector('#delList img').complete")
+            check("d. image thumbnails load from deliveries/<id>/<name>; a hostile file name is not made into an image", p3.evaluate("document.querySelectorAll('#delList img').length") == 1
+                  and "deliveries/tex-marble-white/marble-white-albedo.png" in p3.get_attribute("#delList img", "src") and p3.evaluate("document.querySelector('#delList img').naturalWidth") == 1)
+            p3.click("#delList figure img")
+            check("d. tapping a thumbnail enlarges it (and again shrinks it)", p3.evaluate("document.querySelector('#delList figure').classList.contains('big')"))
+            p3.click("#delList details:nth-of-type(1) summary")
+            p3.click("#delList details:nth-of-type(2) summary")
+            md_ = p3.inner_text("#delList details:nth-of-type(1)")
+            check("d. text is rendered as plain words: the markdown heading and bullet show, a pasted <img onerror> tag is shown as text and never runs, JSON shows as text, window.PWNED never set",
+                  "Notes" in md_ and "• bold line one" in md_ and "<img src=x onerror" in md_ and "<script>window.PWNED=1</script>" in p3.inner_text("#delList details:nth-of-type(2)")
+                  and p3.evaluate("window.PWNED") is None and p3.evaluate("document.querySelectorAll('#delList .md img, #delList pre img, #delList script').length") == 0)
+            check("d. the DONE line, '3 files checked and safe, 1 not used' and the rejected file with its reason are shown", "Wire as the marble material" in p3.inner_text("#delList") and "3 files checked and safe, 1 not used" in p3.inner_text("#delList")
+                  and "Not used: evil.js" in p3.inner_text("#delList") and "script uses fetch()" in p3.inner_text("#delList"))
+            p3.bring_to_front()
+            label3 = p3.inner_text("#delList button[data-say]")
+            p3.click("#delList button[data-say]")
+            try:
+                p3.wait_for_function("navigator.clipboard.readText().then(t => t === 'Bridge: tex-marble-white done')", timeout=8000)
+            except Exception:
+                pass
+            clip3 = p3.evaluate("navigator.clipboard.readText()")
+            check("d. 'Claude: build this in' copies 'Bridge: tex-marble-white done'", clip3 == "Bridge: tex-marble-white done" and label3 == "Claude: build this in", (clip3, label3))
+            p3.click("#tab-next")
+            p3.wait_for_function("document.querySelectorAll('#nextList .card').length > 0")
+            check("d. Ask next shows the server's list in order (numbered), skips a hostile id, with the reason; Copy prompt copies the library prompt",
+                  p3.evaluate("document.querySelectorAll('#nextList .card').length") == 2 and "Bot and strategy names" in p3.inner_text("#nextList .card") and "start with the easiest win" in p3.inner_text("#nextList .card")
+                  and p3.inner_text("#nextList .num") == "1")
+            p3.click("#next-names-bots .row button")
+            check("d. Copy prompt on a suggestion copies that job's prompt", p3.evaluate("navigator.clipboard.readText()") == byid["names-bots"]["prompt"])
+            p3.click("#next-obs-daily-template .row button:nth-of-type(2)")
+            p3.wait_for_function("!document.getElementById('p-lib').hidden && document.querySelector('#lib-obs-daily-template details').open")
+            check("d. 'Open in Library' jumps to that job with its prompt open", p3.evaluate("document.getElementById('lib-obs-daily-template') !== null") and p3.evaluate("window.PWNED") is None)
+            check("d. no sideways scroll on the Library tab with a prompt open", p3.evaluate("document.documentElement.scrollWidth <= innerWidth"))
+            check("d. no page errors on the new tabs", not errs, errs)
             br.close()
     finally:
         srv.shutdown()

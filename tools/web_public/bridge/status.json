@@ -1,10 +1,10 @@
 {
  "v": 1,
- "updated": "2026-11-04 01:12 UTC",
- "t": 1793754778,
+ "updated": "2026-11-04 04:16 UTC",
+ "t": 1793765802,
  "jobs": {},
  "counts": {
-  "total": 11,
+  "total": 69,
   "done": 0,
   "question": 0,
   "in_progress": 0,
@@ -21,5 +21,53 @@
    "date": "2026-11-03",
    "subject": "Bridge: an Olympus page of ready ChatGPT jobs (copy prompt, where the result goes) + handoff/inbox f"
   }
- ]
+ ],
+ "next": [
+  {
+   "id": "names-bots",
+   "title": "Bot and strategy names",
+   "cat": "names",
+   "minutes": 5,
+   "difficulty": "easy",
+   "rule": "first",
+   "why": "Nothing is delivered yet: start with the easiest win"
+  },
+  {
+   "id": "obs-daily-template",
+   "title": "Daily note template",
+   "cat": "obsidian",
+   "minutes": 6,
+   "difficulty": "easy",
+   "rule": "week",
+   "why": "This week's category is obsidian (it changes every week)"
+  },
+  {
+   "id": "obs-weekly-review",
+   "title": "Life weekly review",
+   "cat": "obsidian",
+   "minutes": 6,
+   "difficulty": "easy",
+   "rule": "week",
+   "why": "This week's category is obsidian (it changes every week)"
+  },
+  {
+   "id": "tex-parchment",
+   "title": "Parchment and scroll paper",
+   "cat": "textures",
+   "minutes": 6,
+   "difficulty": "easy",
+   "rule": "gap",
+   "why": "Nothing delivered yet in textures"
+  },
+  {
+   "id": "art-hero-banners",
+   "title": "Hero banners per area",
+   "cat": "art",
+   "minutes": 9,
+   "difficulty": "easy",
+   "rule": "gap",
+   "why": "Nothing delivered yet in art"
+  }
+ ],
+ "deliveries": {}
 }
