@@ -62,6 +62,7 @@ PROBE = r"""(jargon) => {
   for (const e of ctl) {
     const r = e.getBoundingClientRect();
     if (e.tagName === 'A' && e.closest('p, li, .note, .small') && r.height > 14) continue;      // an inline text link
+    if (e.tagName === 'INPUT' && e.closest('label')) { const lr = e.closest('label').getBoundingClientRect(); if (lr.width >= 43.5 && lr.height >= 43.5) continue; }      // the whole label is the target
     if (r.width < 43.5 || r.height < 43.5) { const k = key(e) + Math.round(r.width) + 'x' + Math.round(r.height); if (!seen.has(k)) { seen.add(k); small.push(key(e) + ' ' + Math.round(r.width) + 'x' + Math.round(r.height) + ' "' + label(e).slice(0, 18) + '"'); } }
   }
   const clipped = [];
@@ -108,7 +109,7 @@ PROBE = r"""(jargon) => {
   }
   const text = (document.body.innerText || '');
   const bad = (text.match(/undefined|NaN|\[object|Infinity|null\b/g) || []).slice(0, 4);
-  const loading = /loading|building|waking|please wait|…$/im.test(text.slice(0, 600)) && /^\s*(loading|building the|waking)/im.test(text);
+  const loading = /^\s*(loading|building the|waking|please wait|connecting)/i.test(text.trim().slice(0, 40));          // the page's first words are still a loading message
   const jg = jargon.filter((w) => new RegExp('(^|[^A-Za-z])' + w + '([^A-Za-z]|$)').test(text) && !document.querySelector('abbr[title*="' + w + '" i], [title*="' + w + '" i]')).slice(0, 8);
   const emptyLists = [...document.querySelectorAll('ul, ol, table tbody, [role=list], .list')].filter((e) => vis(e) && !e.children.length && !(e.textContent || '').trim()).slice(0, 4).map(key);
   const imgs = [...document.querySelectorAll('img')].filter((i) => vis(i) && !i.hasAttribute('alt')).length;
@@ -210,7 +211,7 @@ def crawl_one(br, base, app, vp, args, shots):
             st2 = p.evaluate("window.__olyAppIntro ? window.__olyAppIntro.state : null")
             top = p.evaluate("(() => { const e = document.elementFromPoint(innerWidth / 2, innerHeight / 2); return e ? e.tagName + (e.id ? '#' + e.id : '') + '.' + (e.className || '') : ''; })()")
             row["intro"] = {"first": st, "after": st2, "top": str(top)[:60]}
-            if st2 not in ("done", "skipped", "off"):
+            if st2 is not None and st2 not in ("done", "skipped", "off"):
                 row["notes"].append(f"intro still {st2} after 6 s")
         except Exception as e:
             row["notes"].append("intro: " + str(e)[:80])
