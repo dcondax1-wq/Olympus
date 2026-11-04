@@ -1,0 +1,13 @@
+{
+  "name": "Settings",
+  "short_name": "Settings",
+  "description": "OLYMPUS SETTINGS: quality, look, sounds, Jarvis, saved data and the first-run tour, in one place.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#06050d",
+  "theme_color": "#06050d",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
