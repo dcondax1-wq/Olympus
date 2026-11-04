@@ -1,7 +1,7 @@
 {
  "v": 1,
  "kind": "olympus-starter-manifest",
- "sha": "f2c259e0d45a",
+ "sha": "e78acf71a887",
  "sources": [
   "STRATEGY.md",
   "research/lit/mffu_rules.json",
@@ -19,7 +19,7 @@
  "counts": {
   "notes": 225,
   "links": 1116,
-  "words": 35896,
+  "words": 35929,
   "folders": {
    "(top)": 2,
    "Daily": 1,
@@ -85,7 +85,7 @@
     "money",
     "accounts"
    ],
-   "words": 425,
+   "words": 450,
    "links": 5
   },
   {
@@ -155,7 +155,7 @@
     "money",
     "plutus"
    ],
-   "words": 204,
+   "words": 212,
    "links": 4
   },
   {
