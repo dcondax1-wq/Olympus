@@ -102,6 +102,7 @@ jobs:
             /scripts/cloud_publish.sh
             /scripts/add_planner.sh
             /scripts/move_bot.ps1
+            /research/lit/funded_path.json
             /research/lab/backtest_live.json
             /research/lab/replays.json
             /research/lab/variant_results.json
