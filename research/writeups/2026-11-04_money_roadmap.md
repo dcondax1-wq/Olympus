@@ -109,4 +109,7 @@ A re-buy only pays if the new account can finish inside the year: ATLAS (first p
 
 1. Run LIT, ATLAS and BLITZ together now; nothing to buy until an account has been paid 5 times.
 2. When an account is paid its 5th payout, buy the next ATLAS 25K eval ($43) first.
+
+Where it shows: Plutus, Plan tab, 'Money plan' card (`tools/web_public/plutus/roadmap.json`, made by `report`); Ledger, Break-even tracker, 'Expected vs actual cash so far this year'.
+
 3. Re-run `python -X utf8 tools/money_roadmap.py` after the 2026 data grows; check with `python -X utf8 -m tests.test_money_roadmap`.

@@ -206,7 +206,7 @@ def tab(p, t):
 def part_d(tmp, doc):
     from playwright.sync_api import sync_playwright
     srv1, url = site(tmp, "plutus", "s1", True)
-    srv2, url_off = site(tmp, "plutus", "s2", False, drop=("plans.json", "jarvis.json"))
+    srv2, url_off = site(tmp, "plutus", "s2", False, drop=("plans.json", "jarvis.json", "roadmap.json"))
     try:
         with sync_playwright() as pw:
             br = browser(pw)
@@ -311,7 +311,7 @@ def part_d(tmp, doc):
             tab(p, "notes")
             check("d. ... the notes say the published data was not found", "was not found" in p.inner_text("#notes"))
             ctx.close()
-            bad = tidy_errors(errs2, allow=("plans.json", "data.json", "jarvis.json"))
+            bad = tidy_errors(errs2, allow=("plans.json", "data.json", "jarvis.json", "roadmap.json"))
             check("d. offline: only the missing files' 404s, nothing else", not bad, bad[:5])
 
             errs3 = []
@@ -332,12 +332,101 @@ def part_d(tmp, doc):
         srv2.shutdown()
 
 
+# ------------------------------------------------------------------------------------------------------------ e: the Money plan card (2026-11-04)
+def part_e_static():
+    from tools import money_roadmap as MR
+    raw = rd("roadmap.json")
+    doc = json.loads(raw)
+    check("e. roadmap.json (the Money plan) is small: under 25 KB", len(raw.encode("utf-8")) < 25_000, len(raw))
+    full = json.load(open(MR.OUT_P, encoding="utf-8"))
+    check("e. roadmap.json is a fresh build of research/props/roadmap.json (python tools/money_roadmap.py report)", doc == MR.compact(full))
+    fb = rd("roadmapfallback.js")
+    m = re.search(r"export const FALLBACK = (\{.*\});\s*$", fb, re.S)
+    check("e. the offline copy roadmapfallback.js equals roadmap.json exactly", bool(m) and json.loads(m.group(1)) == doc)
+    n = len(doc["versions"]["H2"]["months"])
+    check("e. 12 monthly rows for the conservative Jul-Oct and for Jan-Jun, in that order (conservative first)",
+          n == 12 == len(doc["versions"]["H1"]["months"]) and list(doc["versions"])[:2] == ["H2", "H1"] and doc["conservative"] == "H2")
+    check("e. the rows reconcile: cash in - fees = net each month; the last total = the year's average net",
+          all(abs(r["in"] - r["out"] - r["net"]) <= 1 for v in doc["versions"].values() for r in v["months"]))
+    check("e. per account: a first-payout range (3 dates) and a payback month, both versions; an order of buying; a sentence for every month",
+          len(doc["accounts"]) >= 3 and all(len(a[k]["first"]) == 3 and a[k]["payback"] for a in doc["accounts"] for k in ("H2", "H1"))
+          and len(doc["todo"]) == n and doc["order"]["best"] and doc["order"]["wait_cost"]["H2"])
+    check("e. the caveats are plain sentences and include 'check the MFFU rules before copying a strategy to a second account'",
+          len(doc["caveats"]) >= 5 and any("Check the MFFU rules before copying a strategy to a second account" in c for c in doc["caveats"]))
+    js = rd("plutusroadmap.js")
+    check("e. plutusroadmap.js reads only its own roadmap.json (GET), no Yahoo, no innerHTML, imports only the generated fallback",
+          sorted(set(re.findall(r"url = '([^']+)'", js))) == ["roadmap.json"] and "yahoo" not in js.lower() and "innerHTML" not in js
+          and re.findall(r"from '([^']+)'", js) == ["./roadmapfallback.js"] and "method" not in js)
+    check("e. the card is linked into the page (index.html section + plutus.js import), cache bump v=m3",
+          'id="mplanBody"' in rd("index.html") and "plutusroadmap.js" in rd("plutus.js") and "plutus.js?v=m3" in rd("index.html"))
+    return doc
+
+
+def part_e_browser(tmp, doc):
+    from playwright.sync_api import sync_playwright
+    n = len(doc["versions"]["H2"]["months"])
+    srv1, url = site(tmp, "plutus", "e1", True)
+    srv2, url_off = site(tmp, "plutus", "e2", False, drop=("roadmap.json",))
+    try:
+        with sync_playwright() as pw:
+            br = browser(pw)
+            errs = []
+            ctx, p = open_page(br, url + "?today=2026-12-10", errs, "__plutus")
+            p.wait_for_function("document.getElementById('mplanBody').dataset.src")
+            check("e. the Money plan card is the first thing on the Plan tab, the file was read (no OFFLINE COPY tag)",
+                  p.is_visible("#mplan") and p.get_attribute("#mplanBody", "data-src") == "file" and p.is_hidden("#mplanTag")
+                  and p.evaluate("document.querySelector('#p-plan').firstElementChild.id") == "mplan")
+            check("e. the plain verdict sentence is the file's headline", p.inner_text("#mplanBody .mp-head") == doc["headline"])
+            cells = p.evaluate("[...document.querySelectorAll('#mplanBody .mp-cell')].map(c => c.innerText)")
+            v2, v1 = doc["versions"]["H2"], doc["versions"]["H1"]
+            usd = lambda x: ("-$" if x < 0 else "$") + f"{abs(x):,.0f}"
+            check("e. the conservative number is first (Jul-Oct), Jan-Jun second, each with its worst and best case",
+                  len(cells) == 2 and "Conservative" in cells[0] and usd(v2["mid"]) in cells[0] and usd(v2["lo"]) in cells[0] and usd(v2["hi"]) in cells[0]
+                  and "Jan-Jun" in cells[1] and usd(v1["mid"]) in cells[1], cells)
+            now = p.inner_text("#mplanBody .mp-now")
+            check("e. a plain 'what to do this month' sentence: today 2026-12-10 is month 2 with its own sentence and expected cash",
+                  now.startswith("This month (month 2,") and doc["todo"][1] in now and usd(v2["months"][1]["net"]) in now and usd(v1["months"][1]["net"]) in now, now[:300])
+            rows = p.evaluate("document.querySelectorAll('#mplanBody table.mp-months tr').length")
+            check("e. the month table has a header and one row for each month in the file", rows == n + 1, rows)
+            check("e. the running month (2) is marked", p.evaluate("[...document.querySelectorAll('#mplanBody table.mp-months tr')].findIndex(r => r.classList.contains('me'))") == 2)
+            small = p.evaluate("""() => [...document.querySelectorAll('#mplan button, #mplan summary')].filter(e => e.offsetParent !== null).map(e => { const r = e.getBoundingClientRect(); return [e.textContent.trim().slice(0, 24), Math.round(r.width), Math.round(r.height)]; }).filter(x => x[1] < 44 || x[2] < 44)""")
+            check("e. every button and fold-out title in the card is at least 44 x 44 px", not small and p.evaluate("document.querySelectorAll('#mplan button').length") == 2, small)
+            p.click("#mplan [data-mp='H1']")
+            p.wait_for_timeout(100)
+            first_row = p.evaluate("[...document.querySelectorAll('#mplanBody table.mp-months tr')][1].innerText")
+            check("e. Jan-Jun button: pressed, the table switches to Jan-Jun, still " + str(n) + " rows",
+                  p.get_attribute("#mplan [data-mp='H1']", "aria-pressed") == "true" and p.get_attribute("#mplan [data-mp='H2']", "aria-pressed") == "false"
+                  and usd(v1["months"][0]["net"]) in first_row and p.evaluate("document.querySelectorAll('#mplanBody table.mp-months tr').length") == n + 1, first_row)
+            for d in ("Who pays first", "Order of buying", "Read this first"):
+                p.click(f"#mplan summary:has-text('{d}')")
+            txt = p.inner_text("#mplanBody")
+            check("e. who pays first (a range for each account), the order of buying and the MFFU-rules warning are all readable",
+                  all(a["H2"]["first"][1] in txt for a in doc["accounts"]) and doc["order"]["best"] in txt and "Check the MFFU rules before copying a strategy to a second account" in txt)
+            check("e. no sideways scroll with the card open, the orb corner stays free", p.evaluate("document.documentElement.scrollWidth <= innerWidth") and not orb_hits(p), orb_hits(p))
+            ctx.close()
+            check("e. no errors on the page with the card", not errs, errs[:5])
+            errs2 = []
+            ctx, p = open_page(br, url_off, errs2, "__plutus")
+            p.wait_for_function("document.getElementById('mplanBody').dataset.src")
+            check("e. roadmap.json missing: the card is never blank, shows the OFFLINE COPY tag and the same headline and numbers",
+                  p.get_attribute("#mplanBody", "data-src") == "offline" and p.is_visible("#mplanTag") and p.inner_text("#mplanBody .mp-head") == doc["headline"]
+                  and p.evaluate("document.querySelectorAll('#mplanBody table.mp-months tr').length") == n + 1)
+            ctx.close()
+            bad = tidy_errors(errs2, allow=("roadmap.json",))
+            check("e. offline: only the missing file's 404, nothing else", not bad, bad[:5])
+            br.close()
+    finally:
+        srv1.shutdown()
+        srv2.shutdown()
+
+
 def main(argv):
     fast = "fast" in argv
     tmp = tempfile.mkdtemp(prefix="plutus_test_")
     try:
         part_a()
         doc = part_b()
+        rm = part_e_static()
         if not fast:
             from playwright.sync_api import sync_playwright
             srv, url = site(tmp, "plutus", "c", True)
@@ -352,6 +441,7 @@ def main(argv):
             finally:
                 srv.shutdown()
             part_d(tmp, doc)
+            part_e_browser(tmp, rm)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print(f"\n{sum(RES)}/{len(RES)} passed", flush=True)

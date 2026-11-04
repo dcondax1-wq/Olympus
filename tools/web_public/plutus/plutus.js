@@ -6,6 +6,7 @@ import * as CORE from './plutuscore.js';
 import { loadPlans, project, siteFacts, SPANS, usd, esc, num } from './plutuscore.js';
 import { renderExtras, vaultFx } from './plutusfx.js';
 import { renderPlus } from './plutusplus.js';
+import { startRoadmap } from './plutusroadmap.js';             // the Money plan card (roadmap.json, 12 months)
 import * as AT from '../olympus/fx-atmos.js';                       // JOB 4+5 follow-up: light shafts, gold embers, contact shadow, a studio environment for the metals
 import { RoomEnvironment } from '../olympus/three-addons/RoomEnvironment.js';
 
@@ -282,7 +283,8 @@ async function main() {
   try { S.hall = new Vault($('vault')); S.hall.set(S.P); tick(performance.now()); vaultFx(S.hall).then((h) => { S.fx = h; }); } catch (e) { S.hall = null; $('nogl').hidden = false; O?.ready(); }
   window.__plutus = { ready: true, CORE, get state() { return S.st; }, get project() { return S.P; }, get doc() { return S.doc; }, get lite() { return S.hall ? S.hall.lite : null; },
     get fps() { return S.hall ? S.hall.fps() : 0; }, get src() { return S.doc.src; }, get live() { return !!(S.facts && (S.facts.trades || S.facts.trio)); }, errors: S.errors,
-    get yaw() { return S.hall ? S.hall.yaw : 0; }, get fx() { return S.fx || null; }, get tab() { return S.tab; }, get ready3d() { return !!S.hall; } };
+    get yaw() { return S.hall ? S.hall.yaw : 0; }, get roadmap() { return S.roadmap || null; }, get fx() { return S.fx || null; }, get tab() { return S.tab; }, get ready3d() { return !!S.hall; } };
+  startRoadmap().then((r) => { S.roadmap = r; }).catch((e) => S.errors.push('roadmap: ' + ((e && e.message) || e)));
   S.site = await loadSite(); S.facts = siteFacts(S.site);
   if (S.facts.trades || S.facts.trio) $('livetag').hidden = false;
   update();
