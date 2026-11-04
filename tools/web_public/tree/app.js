@@ -6,6 +6,7 @@
 import * as C from './core.js?v=d3';
 import { paint, ancestry, bestPath, GROW_MS, IGNITE_MS, LENS_MS } from './paint.js?v=d3';
 import { startGlow } from './glow.js?v=d3';
+import { startTree3d } from './tree3d.js?v=d4';
 
 const O = window.OLYMPUS || null;   // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil, themes
 
@@ -367,12 +368,15 @@ canvas.addEventListener('pointermove', (e) => {
   pointers.set(e.pointerId, [e.offsetX, e.offsetY]);
   gesture.moved += Math.hypot(e.offsetX - prev[0], e.offsetY - prev[1]);
   const pts = [...pointers.values()];
-  if (pts.length === 1) {
+  if (pts.length === 1 && is3d()) {
+    glow.orbit(e.offsetX - prev[0], e.offsetY - prev[1]);
+  } else if (pts.length === 1) {
     S.view.x += e.offsetX - prev[0]; S.view.y += e.offsetY - prev[1];
   } else if (pts.length >= 2) {
     const [a, b] = pts, d = Math.hypot(a[0] - b[0], a[1] - b[1]);
     const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
     if (!gesture.pinch) gesture.pinch = { d, mx, my };
+    if (is3d()) { glow.zoom(d / Math.max(1, gesture.pinch.d)); gesture.pinch = { d, mx, my }; return; }
     zoomAt(mx, my, d / Math.max(1, gesture.pinch.d));
     S.view.x += mx - gesture.pinch.mx; S.view.y += my - gesture.pinch.my;
     gesture.pinch = { d, mx, my };
@@ -391,9 +395,14 @@ function endPointer(e) {
 }
 canvas.addEventListener('pointerup', endPointer);
 canvas.addEventListener('pointercancel', endPointer);
-canvas.addEventListener('wheel', (e) => { e.preventDefault(); zoomAt(e.offsetX, e.offsetY, Math.exp(-e.deltaY * 0.0015)); }, { passive: false });
+canvas.addEventListener('wheel', (e) => { e.preventDefault(); if (is3d()) { glow.zoom(Math.exp(-e.deltaY * 0.0015)); return; } zoomAt(e.offsetX, e.offsetY, Math.exp(-e.deltaY * 0.0015)); }, { passive: false });
 
 function tap(sx, sy) {
+  if (is3d()) {
+    const n3 = glow.pick(sx, sy, frozenAt !== null ? frozenAt : performance.now() - S.t0);
+    if (n3) showNode(n3); else hideCard();
+    return;
+  }
   const [wx, wy] = toWorld(sx, sy);
   const t = frozenAt !== null ? frozenAt : performance.now() - S.t0;
   let best = null, bd = (24 / S.view.s) ** 2;
@@ -434,8 +443,13 @@ function route() {
 function loop(now) {
   if (!(O ? O.hidden() : document.hidden)) {                    // hidden tab: no frame (the battery)
     const t0 = performance.now(), t = frozenAt !== null ? frozenAt : now - S.t0;
-    paint(ctx, S, { t, now: performance.now(), reduced, sway: S.quality >= 2 && !reduced && frozenAt === null, onLit: lightSteps });
-    if (glow && glow.on) glow.frame(now);
+    if (S.quality < 2 && frozenAt === null && now - lastFrame < 30) { requestAnimationFrame(loop); return; }   // LITE / low: 30 fps
+    lastFrame = now;
+    if (is3d()) glow.frame(now, t);                                       // the 3D laurel replaces the 2D drawing while it is on
+    else {
+      paint(ctx, S, { t, now: performance.now(), reduced, sway: S.quality >= 2 && !reduced && frozenAt === null, onLit: lightSteps });
+      if (glow && glow.on) glow.frame(now);
+    }
     updateHud(t);
     stepFx(performance.now());
     adapt(performance.now() - t0, now);
@@ -445,6 +459,8 @@ function loop(now) {
 }
 
 let glow = null;
+let lastFrame = 0;
+function is3d() { return !!(glow && glow.mode === '3d' && glow.on); }
 
 function adapt(ms, now) {
   // a frame that takes more than ~22 ms of drawing on a weak phone steps the quality down (no leaves / taper, lower dpr)
@@ -510,9 +526,11 @@ async function main() {
   if (h === 'top') showTop();
   if (h === 'rules') setTab('rules');
   postJarvis();
-  startGlow(canvas, $('gl'), { onState: (on) => { app.dataset.gl = on ? 'on' : 'off'; } }).then((g) => { glow = g; }).catch(() => { glow = null; });
+  const gl = $('gl'), onState = (on) => { app.dataset.gl = on ? 'on' : 'off'; };
+  // the 3D laurel tree first; without the render core / WebGL2 the 2D tree with the glow overlay; without that, the plain 2D tree
+  startTree3d(gl, S, { onState }).then((g) => g || startGlow(canvas, gl, { onState })).then((g) => { glow = g; }).catch(() => { glow = null; });
   if (!S.model.demo && frozenAt === null) setInterval(checkNewTests, POLL_MS);
-  window.__daphne = { ready: true, state: S, setLens, setTab, get glow() { return glow ? { on: glow.on, passes: glow.passes, quality: glow.quality() } : null; }, checkNewTests };
+  window.__daphne = { ready: true, state: S, setLens, setTab, get glow() { return glow ? { on: glow.on, passes: glow.passes, quality: glow.quality(), mode: glow.mode || 'glow', stats: glow.stats ? glow.stats() : null } : null; }, checkNewTests };
   requestAnimationFrame(loop);
 }
 
