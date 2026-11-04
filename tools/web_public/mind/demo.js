@@ -106,6 +106,9 @@ function build(size, now) {
   }
   MEMORIES.forEach(([text, note], k) => add({ id: `Jarvis/Memory/${k + 1}.md`, title: text, path: `Jarvis/Memory/${k + 1}.md`,
     tags: ['jarvis', 'memory'], kind: 'memory', words: 20 + k * 3, mtime: now - (k * 2 + 1) * D, links: note ? [note, me.id] : [me.id], snippet: text }));
+  // loose ends nobody has linked yet: the Graph page finds them as orphans
+  [['Buy a standing desk', 6], ['Try cold showers', 20], ['Book the dentist', 31]].forEach(([title, hrs]) => add({ id: `Inbox/${title}.md`, title, path: `Inbox/${title}.md`, tags: ['inbox'],
+    kind: 'inbox', words: 9, mtime: now - hrs * H, links: [], snippet: '' }));
   add({ id: 'Inbox/Call the accountant.md', title: 'Call the accountant', path: 'Inbox/Call the accountant.md', tags: ['inbox'],
     kind: 'inbox', words: 12, mtime: now - 5 * H, links: [byTopic.business[0].id], snippet: '' });
   // padding for big demos (?demo=2000, the performance check): more notes in each topic, same shape
@@ -117,7 +120,7 @@ function build(size, now) {
     if (r() < 0.5) n.links.push(pick(notes).id);
     hub.push(n);
   }
-  const learned = LEARNING.slice(0, 5).map(([text, note], k) => ({ t: now - (k * 30 + 9) * H, text, note }));
+  const learned = LEARNING.slice(0, 5).map(([text, note], k) => ({ t: now - (k ? (k * 30 + 9) * H : 0.4 * H), text, note }));   // the first one landed 24 minutes ago
   return { notes, learned };
 }
 

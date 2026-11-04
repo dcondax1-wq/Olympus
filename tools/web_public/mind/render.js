@@ -1,4 +1,5 @@
 // OLYMPUS Mind: the renderer (three.js r160, from ../jarvis/). One draw call per layer (the haze: one per galaxy):
+//   sky         a nebula sky behind everything, in the skin's colours (ambient.js); dust: drifting motes around the brain
 //   stars       a twinkling shell far away
 //   nebulae     layered cloud sprites per galaxy (nebula.js; light mode: two per galaxy)
 //   haze        per galaxy a faint spiral disc in the cluster's plane (high quality only)
@@ -17,6 +18,7 @@
 import { Nebulae } from './nebula.js';
 import { Synapses, SYNAPSE_VS } from './synapse.js';
 import { MemoryRing, RING_COLOUR } from './memring.js';
+import { Ambient } from './ambient.js';
 
 const GLSL_FOG = `
 uniform float uFogNear, uFogFar;
@@ -33,7 +35,8 @@ void main() {
   float age = uTime - aFx.x;
   float flash = (age >= 0.0 && age < 3.5) ? exp(-age * 1.5) : 0.0;
   float pulse = aFx.y * (0.5 + 0.5 * sin(uTime * 2.6 * uMotion + position.x * 0.05 + position.z * 0.03));
-  float size = aSize * (0.8 + 0.2 * min(aFx.z, 1.6) + 0.5 * pulse + 2.0 * flash) * aFx.w * (1.0 + 0.35 * uStar);
+  float breathe = 1.0 + 0.07 * uMotion * sin(uTime * 1.25 + position.x * 0.11 + position.y * 0.07 + position.z * 0.05);   // a neuron at rest
+  float size = aSize * (0.8 + 0.2 * min(aFx.z, 1.6) + 0.5 * pulse + 2.0 * flash) * aFx.w * (1.0 + 0.35 * uStar) * breathe;
   gl_PointSize = clamp(size * uScale / dist, 0.0, 420.0);
   vAlpha = fogOf(dist) * clamp(aFx.z, 0.0, 1.0) * aFx.w;
   vFlash = flash + 0.4 * pulse;
@@ -169,6 +172,7 @@ export class Brain {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance' });
     this.renderer.setClearColor(0x03040a, 1);
     this.view = 'galaxy';
+    this.skyColours = ['#1d2f7a', '#4a1f86', '#0c5a7a'];
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(52, 1, 1, 12000);
     this.u = {
@@ -184,6 +188,8 @@ export class Brain {
     this._v = new THREE.Vector3();
     this._buildSparks();
     this._swap('nebulae', this.nebulae.quad, 1);
+    this.ambient = new Ambient(THREE, this.u, { quality, reduced });
+    this._swap('sky', this.ambient.sky, -2);
     this.synapses = new Synapses(THREE, this._material(SYNAPSE_VS, GLOW_FS));
     this._swap('synapses', this.synapses.points, 7);
     this.rc = null;                                  // the OLYMPUS render core (bloom, MSAA, film finish), when it loaded
@@ -243,6 +249,7 @@ export class Brain {
     if (this.rc && !window.OLYMPUS) this.rc.setQuality(q === 'high' ? 'high' : 'low');
     if (!this.rc) this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, q === 'high' ? 2 : 1));
     this._buildStars(q === 'high' ? 2200 : 700);
+    this._swap('dust', this.ambient.rebuild(q), 2);
     this.ring = new MemoryRing(this.T, this.u, q);
     this._swap('memory', this.ring.group, 2);
     if (this.graph) this._buildGraphLayers();
@@ -390,6 +397,7 @@ export class Brain {
       r2 = Math.max(r2, dx * dx + dy * dy + dz * dz);
     }
     this.extent = Math.max(80, Math.sqrt(r2));
+    this.ambient.fit(this.centre, this.extent);
   }
 
   /** Where node i is heading (its settled place): the point to fly to. */
@@ -511,7 +519,15 @@ export class Brain {
   /** 'galaxy' (spheres, nebulae, flow) or 'stars' (the constellation view); eased over VIEW_SECONDS. */
   setView(v) { this.view = v === 'stars' ? 'stars' : 'galaxy'; }
 
-  setBackground(colour) { try { this.renderer.setClearColor(new this.T.Color(colour), 1); } catch (_) { /* a bad colour: keep the last */ } }
+  setBackground(colour) {
+    try { this.renderer.setClearColor(new this.T.Color(colour), 1); this.ambient.colours(this.skyColours, colour); } catch (_) { /* a bad colour: keep the last */ }
+  }
+
+  /** The skin's three sky colours (and the page colour under them). */
+  setSky(colours, base) { this.skyColours = colours; this.ambient.colours(colours, base); }
+
+  /** Switch the ambient layers: {sky: bool, dust: bool}. */
+  setAmbient(o) { this.ambient.show(o); }
 
   /** A synapse burst from note i (opened, or learned something): pulses run out along its links. */
   synapse(i, colour = null) {
@@ -601,6 +617,7 @@ export class Brain {
       }
     }
     rig.update(dt);
+    this.ambient.follow(this.camera);
     this._easeShift(dt);
     const near = rig.radius - this.extent * 0.15, far = rig.radius + this.extent * 1.25;
     this.u.uFogNear.value = Math.max(1, near); this.u.uFogFar.value = Math.max(near + 50, far);
