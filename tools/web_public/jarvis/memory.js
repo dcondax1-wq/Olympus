@@ -17,6 +17,12 @@
 //   memory.queue(kind, text, title)                        not connected: a note he dictated waits in the vault's outbox
 //   memory.vault                                           the vault (tools.js searches and reads through it)
 //
+// Added 2026-11-04 (Jarvis deepening): "what do I know about X" answers in plain words and CITES the note titles (cited: [...]);
+// "pull my tasks from Obsidian" copies the open `- [ ]` items of the vault into the Jarvis to-do list (opts.addTodos, opts.todos);
+// "draft my weekly review" writes a review note from the week's daily notes (OLYMPUS/Notes/Weekly review <day>.md); "save today's
+// brief" files the morning briefing as OLYMPUS/Notes/Daily brief.md (memory.setBrief(text) from briefing.js); "read my notes" reads
+// the newest notes aloud. Every one of them asks first and writes only on "yes".
+//
 // Writes are append-only and always confirmed: "note: ..." / "remember ..." / "add task ..." / a stated preference / "write
 // the OLYMPUS log" -> "Save ...? Say yes." -> "yes" -> vault.write(). Not connected: kept on this phone and sent on connect.
 
@@ -67,6 +73,10 @@ const READ_RX = [
   ['search', /^(?:what did i (?:write|say|note|jot)(?: down)? (?:about|on|regarding)|what do my notes say (?:about|on)|what have i written (?:about|on)|(?:search|find|look up) (?:my )?(?:notes|vault|obsidian) (?:for|about|on)?|anything in my notes (?:about|on)|notes (?:about|on)|what do i know about|my notes on|find in my notes)\s+(.{2,80})$/, 1],
   ['daily', /\b(today'?s daily( note)?|my daily note|daily note( for today)?|what did i write today|today'?s note)\b/, 0],
   ['yesterday', /\b(yesterday'?s (daily )?note|what did i write yesterday)\b/, 0],
+  ['importTasks', /^(?:pull|import|bring|get|sync|extract|copy|grab|collect)(?: in)?(?: all)?(?: my)?(?: open)?(?: obsidian| vault)? ?(?:tasks|to ?-?dos|checkboxes|action items)(?: (?:from|in|out of))?(?: my| the)?(?: obsidian| vault| notes)?(?: (?:to|into|onto|on) (?:my |the )?(?:jarvis )?(?:to ?-?do(?: list)?|list|tasks))?$|^(?:add|put) (?:my )?(?:obsidian|vault) (?:tasks|to ?-?dos) (?:to|on|into) (?:my )?(?:jarvis )?(?:to ?-?do(?: list)?|list)$/, 0],
+  ['weekly', /^(?:(?:draft|write|make|create|start|prepare|do|give me|build)(?: me)?(?: up)? (?:a |my |the |this week'?s |last week'?s )?weekly review(?: note)?(?: draft)?|weekly review(?: draft| note)?|draft (?:a |my |the )?review of (?:the |my |this )?week)$/, 0],
+  ['saveBrief', /^(?:save|write|file|log|put|add|keep)(?: (?:it|this))?(?: (?:today'?s|the|my|this))? ?(?:daily |morning )?brief(?:ing)?(?: (?:to|in|into) (?:obsidian|my vault|my notes|the vault))?$|^(?:save|write|file) (?:it|this) (?:to|in|into) (?:obsidian|my vault)$/, 0],
+  ['readNotes', /^(?:read|read me|read out|read back)(?: me)? (?:my )?(?:recent |latest |newest |last )?(?:obsidian |vault )?notes(?: to me| out loud| aloud)?$|^(?:what'?s|what is) in my (?:latest |newest |recent )?notes$/, 0],
   ['tasks', /\b(open tasks|my tasks|obsidian tasks|vault tasks|tasks in my (notes|vault)|unchecked tasks|my to ?do list|what'?s on my (to ?do|task) list)\b/, 0],
   ['mind', /\b(on my mind|been thinking about|thinking about lately|my themes|recurring themes|what have i been (writing|thinking) about)\b/, 0],
   ['week', /\b(summari[sz]e|recap|sum up|review)\b.*\b(week|weekly|notes)\b|\bthis week in my notes\b|\bweekly notes\b|\bweek'?s notes\b/, 0],
@@ -95,7 +105,9 @@ export function createMemory(opts) {
   const o = isObj(opts) ? opts : {};
   const vault = o.vault && typeof o.vault.search === 'function' ? o.vault : null;
   const nowMs = () => { try { const t = o.now ? o.now() : Date.now(); return t instanceof Date ? t.getTime() : +t || Date.now(); } catch (_) { return Date.now(); } };
-  let pending = null;
+  let pending = null, lastBrief = '';
+  const addTodos = typeof o.addTodos === 'function' ? o.addTodos : null;          // (texts[]) -> number added (assistant.js's to-do list)
+  const haveTodos = typeof o.todos === 'function' ? o.todos : () => [];            // () -> [{text}] already on the Jarvis list
   const status = () => { try { return vault ? vault.status() : { connected: false, notes: 0, local: 0 }; } catch (_) { return { connected: false, notes: 0, local: 0 }; } };
   const where = (kind, path) => {
     const st = status(), day = ymd(nowMs());
@@ -117,6 +129,10 @@ export function createMemory(opts) {
   }
   async function commit() {
     const req = pending; pending = null;
+    if (req.kind === 'import_tasks') {
+      const n = addTodos ? +addTodos(arr(req.list)) || 0 : 0;
+      return { text: n ? `Added ${plural(n, 'task')} from your notes to your Jarvis to-do list.` : 'Nothing was added (they are already on your list).', speak: n ? `Added ${plural(n, 'task')}.` : 'Nothing new to add.', intent: 'memory_import_tasks' };
+    }
     if (!vault) return { text: 'I have nowhere to save it on this phone. Nothing was written.', intent: 'memory_save' };
     const r = await vault.write(req.kind, req.text, undefined, req.title ? { title: req.title } : undefined);
     if (!r || !r.ok) return { text: `Not saved: ${str(r && r.error, 200) || 'the vault did not answer'}. Nothing was changed.`, speak: 'Not saved.', intent: 'memory_save' };
@@ -135,9 +151,12 @@ export function createMemory(opts) {
   async function search(topic) {
     const hits = await vault.search(topic, 5);
     if (!hits.length) return { text: `Nothing in your notes about “${topic}”.`, speak: `Nothing in your notes about ${topic}.`, intent: 'memory_search' };
-    return { text: lines(`Your notes on “${topic}” (${plural(hits.length, 'match')}):`, ...hits.slice(0, 3).map((h, i) => `${i + 1}. ${cite(h)}`)),
-      speak: `${plural(hits.length, 'note')} on ${topic}. Top: ${hits[0].title}.`, intent: 'memory_search', smart: true };
+    const top = hits.slice(0, 3), cited = top.map((h) => h.title);
+    const said = cited.length > 1 ? cited.slice(0, -1).join(', ') + ' and ' + cited[cited.length - 1] : cited[0];
+    return { text: lines(`Your notes on “${topic}” (${hits.length === 1 ? '1 match' : hits.length + ' matches'}):`, ...top.map((h, i) => `${i + 1}. ${cite(h)}`), `Sources: ${cited.map((t) => `[[${t}]]`).join(', ')}`),
+      speak: `${topic} comes up in ${said}. ${spokenSnip(top[0].snippet)}`.trim(), intent: 'memory_search', smart: true, cited };
   }
+  const spokenSnip = (t) => str(plain(t), 200).replace(/^…\s*/, '').replace(/\s*…$/, '');
   async function dailyNote(day, label) {
     const n = await vault.daily(day);
     if (!n) return { text: `No daily note for ${label} (${day}) in your vault yet.`, speak: `No daily note for ${label}.`, intent: 'memory_daily' };
@@ -187,9 +206,48 @@ export function createMemory(opts) {
     const ago = st.at ? Math.max(0, Math.round((nowMs() - st.at) / 60000)) : null;
     return { text: `Obsidian connected (${st.repo}): ${plural(st.notes, 'note')}${ago != null ? `, synced ${ago < 1 ? 'just now' : ago + ' min ago'}` : ''}${st.error ? ` (${st.error})` : ''}.`, intent: 'memory_status' };
   }
-  async function read(req) {
+  // pull the open `- [ ]` tasks of the vault into the Jarvis to-do list (asks first; Jarvis's own inbox pages are skipped: those came from this list)
+  const OWN_RX = /^OLYMPUS\/(Inbox|Logs|Jarvis)\//;
+  async function importTasks() {
+    if (!addTodos) return { text: 'I have no to-do list on this phone to add them to.', intent: 'memory_import_tasks' };
+    const ts = (await vault.tasks()).filter((t) => !OWN_RX.test(t.path || ''));
+    const have = new Set(arr(haveTodos()).map((x) => str(x && x.text, 200).toLowerCase()));
+    const seen = new Set(), fresh = [];
+    for (const t of ts) { const k = str(t.text, 200).toLowerCase(); if (!k || have.has(k) || seen.has(k)) continue; seen.add(k); fresh.push(t); }
+    if (!fresh.length) return { text: ts.length ? `All ${plural(ts.length, 'open task')} in your notes are already on your Jarvis list.` : 'No open tasks in your notes.', speak: ts.length ? 'Your list already has them.' : 'No open tasks in your notes.', intent: 'memory_import_tasks' };
+    const list = fresh.slice(0, 20).map((t) => str(t.text, 200));
+    pending = { kind: 'import_tasks', list, text: list.join('; '), t: nowMs() };
+    return { text: lines(`Add ${plural(list.length, 'open task')} from your notes to your Jarvis to-do list?`, ...fresh.slice(0, 8).map((t) => `• ${str(t.text, 100)} (${t.note})`), fresh.length > 8 ? `…and ${fresh.length - 8} more.` : '', 'Say yes to add them, or no.'),
+      speak: `Add ${plural(list.length, 'task')} from your notes to your list? Say yes.`, intent: 'memory_confirm', pending: true };
+  }
+  // a weekly review note from the week's daily notes, open tasks and the numbers on screen; asks first, then OLYMPUS/Notes/Weekly review <day>.md
+  async function weeklyReview(facts) {
+    const day = ymd(nowMs()), r = await vault.recent(7, day), open = (await vault.tasks()).filter((t) => !OWN_RX.test(t.path || ''));
+    const notes = r.notes.slice().reverse();
+    const done = []; for (const n of notes) for (const t of arr(n.tasks)) if (t.done) done.push(t.text);
+    const sys = isObj(facts) && isObj(facts.system) ? facts.system : null;
+    const body = lines(`## Week ${r.start} to ${r.end}`, '',
+      '### What I wrote', ...(notes.length ? notes.map((n) => `- ${n.daily}: ${str(plain(n.text), 160) || '(empty)'} ([[${n.title}]])`) : ['- No daily notes this week.']), '',
+      '### Themes', r.themes.length ? r.themes.slice(0, 6).map((t) => '#' + t).join(' ') : '- none yet', '',
+      '### Done', ...(done.length ? done.slice(0, 8).map((t) => `- [x] ${str(t, 120)}`) : ['- Nothing ticked this week.']), '',
+      '### Still open', ...(open.length ? open.slice(0, 8).map((t) => `- [ ] ${str(t.text, 120)} ([[${t.note}]])`) : ['- Nothing open.']), '',
+      sys ? `### Numbers\n- Systems: ${str(sys.verdict, 20) || 'unknown'}${str(sys.todo, 200) ? ' · to do: ' + str(sys.todo, 200) : ''}\n` : '',
+      '### Next week', '- [ ] ', '- [ ] ', '- [ ] ');
+    const r2 = await confirmWrite({ kind: 'create', title: `Weekly review ${day}`, text: body });
+    return r2 ? { ...r2, text: `Here is your weekly review draft (${plural(notes.length, 'daily note')}, ${plural(open.length, 'open task')}).\n${r2.text}` } : null;
+  }
+  // the newest notes, read aloud in plain words (the daily notes of the last week)
+  async function readNotes() {
+    const r = await vault.recent(7, ymd(nowMs()));
+    const list = r.notes.slice(0, 3);
+    if (!list.length) return { text: 'No daily notes from the last week to read. Say "read my X note" for a named one.', speak: 'No recent daily notes to read.', intent: 'memory_read_notes' };
+    return { text: lines(`Your latest notes (${plural(list.length, 'note')}):`, ...list.map((n) => `• ${n.title}: ${str(plain(n.text), 260) || '(empty)'}`)),
+      speak: list.map((n) => `${n.title}. ${str(plain(n.text), 200) || 'Empty.'}`).join(' '), intent: 'memory_read_notes', smart: true, cited: list.map((n) => n.title) };
+  }
+  async function read(req, facts) {
     if (req.name === 'connect') return { text: 'Opening the Obsidian setup: three steps, free, about five minutes.', speak: 'Opening the Obsidian setup.', intent: 'memory_connect', control: 'obsidian' };
     if (req.name === 'status') return statusLine();
+    if (req.name === 'saveBrief') return lastBrief ? confirmWrite({ kind: 'create', title: 'Daily brief', text: lastBrief }) : { text: 'There is no briefing to save yet. Say "brief me" first.', speak: 'There is no briefing to save yet.', intent: 'memory_missing' };
     const nc = notConnected();
     if (nc) return req.name === 'goals' ? null : nc;
     if (req.name === 'sync') { const st = await vault.sync({ force: false }); return { text: `Synced: ${plural(st.notes, 'note')}${st.error ? ` (${st.error})` : ''}.`, intent: 'memory_sync' }; }
@@ -197,6 +255,9 @@ export function createMemory(opts) {
     if (req.name === 'daily') return dailyNote(ymd(nowMs()), 'today');
     if (req.name === 'yesterday') return dailyNote(ymd(nowMs() - 864e5), 'yesterday');
     if (req.name === 'tasks') return tasks();
+    if (req.name === 'importTasks') return importTasks();
+    if (req.name === 'weekly') return weeklyReview(facts);
+    if (req.name === 'readNotes') return readNotes();
     if (req.name === 'mind') return recent(10, 'memory_mind');
     if (req.name === 'week') return recent(7, 'memory_week');
     if (req.name === 'links') return links(req.topic);
@@ -233,7 +294,7 @@ export function createMemory(opts) {
       if (w) return confirm(w);
       if (LOG_RX.test(q)) return confirm({ kind: 'log', text: logText(ctx && ctx.facts) });
       const rq = parseRead(q);
-      if (rq && vault) return await read(rq);
+      if (rq && vault) return await read(rq, ctx && ctx.facts);
       const p = parsePreference(raw, q);
       if (p) { const r = confirm(p); return { ...r, text: `Noted. ${r.text}` }; }
       return null;
@@ -271,7 +332,8 @@ export function createMemory(opts) {
     if (!vault || status().connected || !WRITE_KINDS.includes(kind)) return null;
     try { const r = await vault.write(kind, text, undefined, title ? { title } : undefined); return r && r.ok ? { local: true } : null; } catch (_) { return null; }
   }
-  return { handle, context, offer, confirmWrite, queue, get vault() { return vault; }, get connected() { return !!status().connected; }, get pending() { return pending ? { kind: pending.kind, text: pending.text, title: pending.title } : null; } };
+  const setBrief = (t) => { lastBrief = String(t == null ? '' : t).slice(0, 6000); };
+  return { handle, context, offer, confirmWrite, queue, setBrief, get vault() { return vault; }, get connected() { return !!status().connected; }, get pending() { return pending ? { kind: pending.kind, text: pending.text, title: pending.title } : null; } };
 }
 function ymd(ms) {
   try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(ms)); }

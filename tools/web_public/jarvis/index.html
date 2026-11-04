@@ -95,6 +95,7 @@ window.addEventListener('error', function (e) {
 }, true);
 </script>
 <link rel="stylesheet" id="jcss" href="jarvis.css?v=j13">
+<link rel="stylesheet" id="jhome" href="home3d.css?v=h1">
 <script src="../olympus/themes.js?v=o2" id="olyThemesJs" async></script>
 <script src="../olympus/sfx.js?v=s1" id="olySfxJs" async></script>
 <style>.booted #bootfx{display:none}
@@ -867,17 +868,22 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
 
 <div class="sheet" id="settings" hidden role="dialog" aria-modal="true" aria-labelledby="setT">
   <form class="sheet-in" id="setF" autocomplete="off">
-    <h2 id="setT">AI key · settings</h2>
-    <h3>Smart mode</h3>
-    <label class="row-t"><span>Smart answers<small id="smartNote">Your own AI key, kept only on this phone</small></span><input type="checkbox" id="setSmart"></label>
+    <h2 id="setT">Settings</h2>
+    <!-- one Jarvis section (2026-11-04): her voice, spoken alerts, quiet hours, the morning briefing and the brain key, together -->
+    <h3>Jarvis</h3>
+    <label class="row-t"><span>Talk to Jarvis<small>The mic, hands-free and voice mode (her voice: the speaker button in the dock)</small></span><input type="checkbox" id="setVoice"></label>
+    <div class="sheet-row"><button class="btn ghost" type="button" id="setVoiceOpen">Choose her voice, speed and style</button></div>
+    <label class="row-t"><span>Speak alerts<small>Reminders, the morning briefing and “here's what I'd do” are read out loud (needs her voice on)</small></span><input type="checkbox" id="setSpeakAlerts"></label>
+    <label class="row-t"><span>Morning briefing<small>At 7 AM ET and on your first open each day: a card, and she reads it</small></span><input type="checkbox" id="setBriefOn"></label>
+    <label class="row-t"><span>Quiet hours<small id="setQuietNote">She stays silent between these times (ET); cards still show</small></span><input type="checkbox" id="setQuiet"></label>
+    <div class="fld" id="setQuietRow"><span>From / to (ET)</span><div class="qh"><input type="time" id="setQuietFrom" value="22:00" aria-label="Quiet hours start"><input type="time" id="setQuietTo" value="07:00" aria-label="Quiet hours end"></div></div>
+    <label class="row-t"><span>Smart answers (brain key)<small id="smartNote">Your own AI key, kept only on this phone</small></span><input type="checkbox" id="setSmart"></label>
     <label>Provider<select id="setProv"><option value="groq">Groq (free key, the old Jarvis)</option><option value="gemini">Gemini (free key)</option><option value="openrouter">OpenRouter (free models)</option><option value="anthropic">Anthropic</option></select></label>
     <div class="sheet-row"><button class="btn ghost" type="button" id="setGuide">Free key setup · Test (1 min)</button></div>
     <label>API key<input id="setKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste your key (kept on this phone only)"></label>
     <div class="fld"><span>Depth</span><div class="seg3" id="setDepth"><button type="button" data-depth="auto">Auto</button><button type="button" data-depth="quick">Quick</button><button type="button" data-depth="think">Think</button><button type="button" data-depth="deep">Deep</button></div></div>
     <label>Model<input id="setModel" type="text" autocapitalize="off" spellcheck="false" placeholder="Leave empty for the default"></label>
     <p class="note" id="smartState"></p>
-    <h3>Voice</h3>
-    <label class="row-t"><span>Talk to Jarvis<small>The mic, hands-free and voice mode (her voice: the speaker button in the dock)</small></span><input type="checkbox" id="setVoice"></label>
     <h3>Apps</h3>
     <div class="mine" id="setApps"></div>
     <div class="sheet-row"><button class="btn ghost" type="button" id="setAdd">Add a dashboard</button></div>
@@ -908,7 +914,7 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     <label class="row-t"><span>OLYMPUS sounds<small>Ticks, a portal whoosh, thunder, rank-ups. Follows the silent switch; never while Jarvis talks or listens</small></span><input type="checkbox" id="setOlySfx"></label>
     <label>Sound volume<input id="setOlyVol" type="range" min="0" max="100" step="5" value="35"></label>
     <label class="row-t"><span>Haptics<small>A light tap you feel on buttons (iPhone: iOS 18 and later)</small></span><input type="checkbox" id="setHaptic"></label>
-    <label class="row-t"><span>Tilt<small>The core leans with the phone (asks for motion access)</small></span><input type="checkbox" id="setTilt"></label>
+    <label class="row-t"><span>Tilt<small>The core and the 3D world behind it lean with the phone (asks for motion access)</small></span><input type="checkbox" id="setTilt"></label>
     <div class="sheet-row"><button class="btn solid" type="button" id="lookX">Done</button></div>
   </div>
 </div>
@@ -1064,7 +1070,9 @@ const within = (p, ms) => Promise.race([p, new Promise((ok) => setTimeout(() => 
 // the owner's Obsidian vault and Jarvis's memory (obsidian.js + memory.js) and their screens (assist-ui.js): each optional
 let vault = null, assist = null, obsUI = null, proUI = null;
 ready.vault = Promise.all([load('obsidian', './obsidian.js', (m) => typeof m.createVault === 'function'), load('memory', './memory.js', (m) => typeof m.createMemory === 'function')])
-  .then(([ob, me]) => { if (ob && me) { vault = ob.createVault(); brainDeps.memory = me.createMemory({ vault }); } return vault; }).catch(() => null);
+  .then(([ob, me]) => { if (ob && me) { vault = ob.createVault(); brainDeps.memory = window.__jarvisMemory = me.createMemory({ vault,
+    addTodos: (list) => { let n = 0; for (const t of list || []) if (assistant && assistant.addTodo) { assistant.addTodo(t); n++; } return n; },       // "pull my tasks from Obsidian" (memory.js; asks first)
+    todos: () => (assistant ? assistant.todos() : []) }); } return vault; }).catch(() => null);
 ready.assist = load('assist', './assist-ui.js', (m) => typeof m.mountObsidianSheet === 'function').then((m) => { assist = m; return m; });
 // the voice (tts.js) and the personal assistant (assistant.js), 2026-11-03: each optional (absent = the old voice, the brain alone)
 let tts = null, assistant = null;
@@ -1119,7 +1127,7 @@ async function thinkSlot(quiet) {                      // quiet (at the start): 
   modesUI.show(r);
   if (quiet) return;
   toast(r.items[0].text, "HERE'S WHAT I'D DO");
-  if (S.speakOn() && state === 'idle' && !listening && !speaking) speak(r.speak || r.text, false);
+  if (S.speakOn() && state === 'idle' && !listening && !speaking && alertsMayTalk()) speak(r.speak || r.text, false);
 }
 let keyUI = null;
 function openKeySetup(provider) {
@@ -1423,7 +1431,14 @@ function setCoreDesign(d) {
 function themeColors() { const cs = getComputedStyle(root), g = (k) => cs.getPropertyValue(k).trim(); return { c: g('--c'), c2: g('--c2'), c3: g('--c3'), tint: g('--tint') }; }
 // the core knows the old theme keys (eclipse, reactor, reactor-stark / -ice / -emerald); any other theme passes its colours
 const CORE_KEYS = ['eclipse', 'reactor', 'reactor-stark', 'reactor-ice', 'reactor-emerald'];
-const coreTheme = () => (CORE_KEYS.includes(root.dataset.theme) && !olyOn() ? root.dataset.theme : themeColors());
+// the mode's colour (home3d.js sets window.__jarvisModeTint: trading teal, research blue, business gold, life rose) tints the reactor a little
+const hexMix = (a, b, t) => { const p = (h) => { const m = /^#([0-9a-f]{6})$/i.exec(String(h || '').trim()); if (!m) return null; const n = parseInt(m[1], 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }, x = p(a), y = p(b); return x && y ? '#' + x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, '0')).join('') : a; };
+const coreTheme = () => {
+  const tint = window.__jarvisModeTint;
+  if (tint) { const t = themeColors(); return { ...t, c: hexMix(t.c, tint, 0.3), c3: hexMix(t.c3, tint, 0.55), tint: hexMix(t.tint, tint, 0.25) }; }
+  return CORE_KEYS.includes(root.dataset.theme) && !olyOn() ? root.dataset.theme : themeColors();
+};
+window.addEventListener('jarvis:mode', () => { if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme())); });
 let coreSize = 0;
 function mountCore3d() {
   const m = mods.core;
@@ -2071,6 +2086,14 @@ function whatsNew() {
   D.LS.set('jarvis.seen', WN_VER);
 }
 async function briefing() {
+  // briefing.js (2026-11-04): the Briefing button / palette entry shows the morning briefing card (drawdown left, plan, Kalshi, to-dos, the
+  // one thing) and reads it while her voice is on; the text briefing below stays the fallback
+  const bc = window.__jarvisBrief;
+  if (bc && bc.state === 'ready' && typeof bc.run === 'function') {
+    D.LS.set('jarvis.briefDay', D.ymd(new Date())); logAct('Briefing');
+    const b = await bc.run({ speak: S.speakOn(), scroll: true });
+    if (b) return;
+  }
   setState('thinking');
   let r = null;
   try { r = await within(Promise.resolve().then(() => brain.briefing()), 20e3); } catch (_) { r = null; }
@@ -2288,13 +2311,15 @@ async function moreKey(k) {
   if (['theme', 'aikey', 'apps', 'alerts', 'brief'].includes(k)) closeMore();
 }
 let toastT = 0;
+// speak alerts + quiet hours (⋯ → Settings → Jarvis; briefing.js keeps the choice in 'jarvis.alerts.v1'): proactive speech only
+const alertsMayTalk = () => { try { return window.__jarvisAlerts ? window.__jarvisAlerts.mayTalk() : true; } catch (_) { return true; } };
 function checkReminders() {
   if (!assistant || !visible()) return;
   const due = safe(() => assistant.due(), []) || [];
   for (const r of due) {
     const line = `Reminder: ${r.text}${r.late ? ` (it was due ${new Date(r.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })})` : ''}.`;
     say('j', '⏰ ' + line); toast(line, 'REMINDER'); sfx('listen');
-    if (S.speakOn() && !(vm && vm.isOpen())) speak(line, false);
+    if (S.speakOn() && !(vm && vm.isOpen()) && alertsMayTalk()) speak(line, false);
     safe(() => { if ('Notification' in window && Notification.permission === 'granted' && swReg && swReg.showNotification) swReg.showNotification('Jarvis', { body: line, tag: 'jarvis-' + r.id }); });
   }
 }
@@ -2444,6 +2469,7 @@ function openSettings(appsFirst) {
 $('#setX').addEventListener('click', () => { $('#settings').hidden = true; });
 $('#setGuide').addEventListener('click', () => openKeySetup($('#setProv').value));
 $('#setAdd').addEventListener('click', () => openSheet());
+$('#setVoiceOpen').addEventListener('click', () => { $('#settings').hidden = true; openVoice(); });
 $('#setForget').addEventListener('click', () => {
   safe(() => (typeof brain.forgetKey === 'function' ? brain.forgetKey() : brain.setSmart({ key: '', on: false })));
   $('#setSmart').checked = false; $('#smartState').textContent = 'Keys removed from this phone.'; renderBrainPanel(); renderMore();
@@ -2898,7 +2924,9 @@ window.addEventListener('pagehide', swTakeOver);
 (() => {
   if (D.LS.get('jarvis.seen', '') !== WN_VER) { setTimeout(() => { D.LS.set('jarvis.seen', WN_VER); toast('Welcome to OLYMPUS. Every app is its own dashboard: tap the orb to switch.', "WHAT'S NEW", ['Show me', whatsNew]); }, 2200); return; }
   const h = D.etParts().h;
-  if (h >= 5 && h < 12 && D.LS.get('jarvis.briefDay', '') !== D.ymd(new Date())) setTimeout(() => toast('Your morning briefing is ready.', 'INFO', ['Open it', briefing]), 1600);
+  // briefing.js (2026-11-04) owns the morning briefing: the 7 AM ET card that is read out, and the first open of each day. This
+  // old toast stays only for a copy where that file did not load (it sets window.__jarvisBrief)
+  if (h >= 5 && h < 12 && D.LS.get('jarvis.briefDay', '') !== D.ymd(new Date())) setTimeout(() => { if (!window.__jarvisBrief) toast('Your morning briefing is ready.', 'INFO', ['Open it', briefing]); }, 4200);
 })();
 setInterval(() => { if (visible() && active === 'home') hudTick(); }, 1000);
 setInterval(() => { if (visible() && active === 'home') { greet(); renderNext(); D.refresh({ maxAge: 60e3 }); } }, 30e3);
@@ -2917,7 +2945,11 @@ if (window.visualViewport) {
 }
 window.__jarvis = { show, ask, facts: D.getFacts, active: () => active, setTheme, setOlyTheme, setFx, state: () => state, core: () => (core && typeof core.stats === 'function' ? safe(() => core.stats()) : null),
   voiceMode: (g) => voiceMode(!!g), vm: () => (vm ? vm.stats() : null), closeVoiceMode: () => { if (vm) vm.close('test'); },
-  voice: () => (vo ? vo.stats() : null), talk: (t) => speak(String(t || ''), false) };   // for tests and the console; read-only
+  voice: () => (vo ? vo.stats() : null), talk: (t) => speak(String(t || ''), false),   // for tests and the console; read-only
+  // for briefing.js (the morning briefing): what the rules think from, the one thing to do, and a quiet way to say a line
+  digest: () => safe(() => { if (typeof brain.headline === 'function') brain.headline(); return typeof brain.digest === 'function' ? brain.digest() : null; }, null),
+  think: () => Promise.resolve(safe(() => (typeof brain.think === 'function' ? brain.think('auto', { smart: false }) : null), null)).catch(() => null),
+  speakOn: () => S.speakOn(), busy: () => state !== 'idle' || listening || speaking || !!(vm && vm.isOpen()), hidden: () => S.hideMoney() };
 if ('serviceWorker' in navigator) {
   // a tapped Zenith notification while Jarvis runs (Zenith's sw.js v50: {type: 'open', app: 'zenith', hash}): Zenith mode at
   // that page, from the start (once Zenith mode is mounted it hears the message itself and calls onWantShow)
@@ -2932,5 +2964,6 @@ if ('serviceWorker' in navigator) {
 <!-- the home backdrop and the portal jump on the OLYMPUS render core (docs/OLYMPUS_RENDER.md): each self-contained, each optional -->
 <script type="module" src="./backdrop.js?v=b1"></script>
 <script type="module" src="./portal.js?v=p1"></script>
+<script type="module" src="./briefing.js?v=r1"></script>
 </body>
 </html>

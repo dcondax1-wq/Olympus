@@ -35,6 +35,12 @@ to the vault once you connect.
 | "I don't like …", "always …", "from now on …" | offers to save it to `OLYMPUS/Jarvis/Me.md` |
 | "write the OLYMPUS log" | asks first, then writes today's systems table to `OLYMPUS/Logs/<day>.md` |
 | "is Obsidian connected", "sync my vault" | the status, a refresh |
+| "what do I know about X" | a plain answer from your notes that names them ("Sources: [[Trailing drawdown]], [[MFFU notes]]"); ranked by title match, every word, the exact phrase, recent daily notes first, Jarvis's own inbox pages last |
+| "pull my tasks from Obsidian" | asks first, then adds the open `- [ ]` tasks of your notes (not the ones Jarvis wrote itself, no duplicates) to the Jarvis to-do list |
+| "draft my weekly review" | builds a note from the week's daily notes, themes, ticked and open tasks; asks "Save ... ? yes or no" and writes `OLYMPUS/Notes/Weekly review <day>.md` only on yes |
+| "save today's brief" (or the briefing card's **Save to Obsidian**) | asks, then files the morning briefing in the note `Daily brief` (a dated section per day) |
+| "read my notes" | reads your newest daily notes aloud |
+| "log: felt calm after the gym" | one line in today's daily note (asks first) |
 
 Not connected yet: what you dictate is kept on the phone and waits in the outbox; it goes to the vault the moment you connect.
 
