@@ -716,7 +716,7 @@ SCORE = {
     "lit-market-context": ["rejected", "2,520 market-context tilts (gamma, vanna, VIX term, OPEX): none held. The textbook gamma target idea loses $16.9k (Jan-Jun) / $5.3k (Jul-Oct)."],
     "lit-new-entries": ["rejected", "362 new entry types (MSNR, IDM into OB, stacked confluence): none adds money next to LIT. MSNR as a 2nd trade: -$1.6k Jan-Jun, 2-week fails 2.9% -> 10.1%."],
     "lit-money-batch2": ["candidate", "7 money ideas. One keeper, a habit: ask for a funded payout only once $1,500+ is above the buffer: +$29 / +$32 a month per account. Minis +$36 / +$12 a month (tiny)."],
-    "lit-funded-firms": ["candidate", "MFFU Builder 50K + LucidPro 50K + FundedNext Rapid Daily 50K: ~$1,754 a month on Jul-Oct trades ($2,373 once all three are funded), ~$377 up front."],
+    "lit-funded-firms": ["candidate", "MFFU Builder 50K + LucidPro 50K + FundedNext Rapid Daily 50K: ~$2,147 a month on Jul-Oct trades ($2,792 once all three are funded), ~$377 up front."],
     "lit-big-ideas": ["candidate", "Scale-in after breakeven: +$12.5k Jan-Jun / +$16.3k Jul-Oct, pass rate about flat. Needs the NinjaTrader add-order route before it can go live."],
     "lit-builder-25k": ["candidate", "Builder 25K ($63) on the same LIT signals: passes 54% / 48% in 2 weeks (Jan-Jun / Jul-Oct) at 50% of the room, ~79% / 77% in the end; 12-16% of evals can get stuck when the room falls under $100."],
     "lit-more-setups": ["rejected", "95 more setups (ES/MES, 15m/30m/1h, missed fills, looser filters): none beats LIT in both halves."],
