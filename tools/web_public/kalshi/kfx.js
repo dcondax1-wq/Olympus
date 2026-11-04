@@ -50,7 +50,7 @@
   }
 
   // ------------------------------------------------------------------ sparkline
-  /** vals: numbers oldest first. o.cls: 'up' | 'down' | '' (the colour); o.label: the aria-label. A 100 x 28 viewBox. */
+  /** vals: numbers oldest first. o.cls: 'up' | 'down' | '' (the colour); o.live: a light that travels along the line and a ring around the last point (the hero's, 2026-11-04); o.label: the aria-label. A 100 x 28 viewBox. */
   function spark(vals, o) {
     o = o || {};
     var v = [];
@@ -62,6 +62,7 @@
     var last = pts[pts.length - 1];
     return '<svg class="spark ' + (o.cls || '') + '" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true" focusable="false">'
       + '<path class="sp-a" d="' + line + 'L' + W + ',' + H + 'L0,' + H + 'Z"/><path class="sp-l" pathLength="100" d="' + line + '"/>'
+      + (o.live ? '<path class="sp-g" pathLength="100" d="' + line + '"/><circle class="sp-r" cx="' + last[0].toFixed(1) + '" cy="' + last[1].toFixed(1) + '" r="2.2"/>' : '')
       + '<circle class="sp-d" cx="' + last[0].toFixed(1) + '" cy="' + last[1].toFixed(1) + '" r="2.2"/></svg>';
   }
 
