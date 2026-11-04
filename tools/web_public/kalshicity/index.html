@@ -18,6 +18,7 @@
 <link rel="stylesheet" href="../olympus/olympus.css?v=o2">
 <script src="../olympus/themes.js?v=o2"></script>
 <script src="../olympus/olympus.js?v=o2" data-app="kalshicity"></script>
+<script src="../olympus/fx-core.js?v=f1"></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#2ef2d0'); r.setProperty('--oly-accent-rgb', '46, 242, 208'); })();</script>
 <link rel="stylesheet" href="kalshicity.css?v=k1">
 </head>
@@ -40,6 +41,8 @@
   <div class="chips" id="weather">
     <button type="button" id="clock" class="chip" aria-label="New York time: tap to preview another hour">--:--</button>
     <span id="wx" class="chip static">Weather</span>
+    <button type="button" id="sound" class="chip ico" aria-pressed="false" aria-label="Sound: off">&#9834;</button>
+    <button type="button" id="scan" class="chip ico" aria-label="Scan the city for what the engine learned">&#9678;</button>
   </div>
 </main>
 <section class="sheet" id="sheet" hidden aria-labelledby="sheetTitle">
@@ -54,10 +57,11 @@
     <button type="button" data-cam="map" aria-pressed="false">Map</button>
   </div>
   <nav class="row pills" id="pills" aria-label="Views">
-    <button type="button" data-view="learn" aria-pressed="false">Learned</button>
+    <button type="button" data-view="learn" aria-pressed="false">Log</button>
     <button type="button" data-view="board" aria-pressed="false">Board</button>
     <button type="button" data-view="moves" aria-pressed="false">Moves</button>
     <button type="button" data-view="risk" aria-pressed="false">Risk</button>
+    <button type="button" data-view="lessons" aria-pressed="false">Lessons</button>
   </nav>
 </section>
 <script type="module" src="kalshicity.js?v=k1"></script>

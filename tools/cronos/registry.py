@@ -1,6 +1,7 @@
 """CRONOS task registry: what refreshes, when, how long it may take and how old its data may get before its card goes amber.
 
 cadence  nightly   Mon-Fri nights after the CME close (.github/workflows/cronos.yml, datacity.yml)
+         frequent  every 6 hours, any day (.github/workflows/kalshicity.yml: the Kalshi feed never sleeps)
          weekly    Sunday (cronos.yml), before the Sunday evening site publish
          publish   inside every site build (tools/build_web_dashboard.py): nothing for CRONOS to run
 runner   cronos    run by tools/cronos/run.py
@@ -36,7 +37,7 @@ class Task:
 
     @property
     def every(self) -> str:
-        return {"nightly": "nightly", "weekly": "weekly", "publish": "at every publish"}[self.cadence]
+        return {"nightly": "nightly", "weekly": "weekly", "publish": "at every publish", "frequent": "every 6 hours"}[self.cadence]
 
 
 TASKS: tuple = (
@@ -45,6 +46,12 @@ TASKS: tuple = (
          branch_files=(("city.json", "datacity/city.json"), ("jarvis.json", "datacity/jarvis.json")),
          est_min=3.0, workflow=".github/workflows/datacity.yml",
          what="Data City: the PC's new 5m bars appended, the event table extended, ~67k combinations re-scored"),
+    Task("kalshicity", "kalshicity", "frequent", "workflow", 5 * 60, NIGHTLY_MAX_H,
+         files=("edges.json", "learning_log.json", "jarvis.json"), branch="kalshicity",
+         branch_files=(("edges.json", "kalshicity/edges.json"), ("learning_log.json", "kalshicity/learning_log.json"),
+                       ("jarvis.json", "kalshicity/jarvis.json")),
+         est_min=1.0, workflow=".github/workflows/kalshicity.yml",
+         what="Kalshi City: the public kalshi-feed re-read, every edge re-measured, the learning log extended (ledger.json stays on the branch)"),
     Task("fates", "fates", "nightly", "cronos", 15 * 60, NIGHTLY_MAX_H,
          files=("fates.json", "jarvis.json"), heavy=True, est_min=5.5,
          what="FATES: 1,000 futures of today's evals from the latest live.json state"),
