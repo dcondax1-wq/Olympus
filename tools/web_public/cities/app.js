@@ -5,21 +5,28 @@
 //   hub    drag to look, pinch to zoom, two fingers to move, tap an island for its card, Enter to land. Tour flies past them all.
 //   city   tap a building for its card, Find (search), Top 10, Surprise me, ORBIT / SKIM / DRONE / GRAND cameras, the minimap.
 // Read-only: every number is data the site already publishes; nothing here writes, trades or sends anything.
-import { $, el, store, clamp, lerp, hash32, rng, cityOfDay, todayStr, fmtField, plain } from './util.js';
+import { $, el, store, clamp, lerp, hash32, rng, cityOfDay, todayStr, seedOfDay, fmtField, plain } from './util.js';
 import { DATASETS, loadDataset, fieldMap } from './datasets.js';
 import { generate, validateSpec, Picker, evalExpr, parseExpr } from './generator.js';
 import { Stage, TIERS, BUDGETS } from './scene.js';
 import { Rig, makePath } from './rig.js';
+import { insight } from './insight.js';
+import { randomSpec, seedDataset, newSeed, cleanSeed } from './procedural.js';
 
-const GROUPS = { trading: ['Trading', '#4f8cff'], research: ['Research', '#a68bff'], markets: ['Markets', '#ffc94a'], money: ['Money', '#ff9f43'], life: ['Life', '#39e59a'] };
+const GROUPS = { trading: ['Trading', '#4f8cff'], research: ['Research', '#a68bff'], money: ['Money', '#ff9f43'], kalshi: ['Kalshi', '#ff6b9a'], life: ['Life', '#39e59a'], obsidian: ['Obsidian', '#9d8cff'] };
 const GROUP_ORDER = Object.keys(GROUPS);
 const ICON = {
   tour: 'M7 4l13 8-13 8z', find: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-4.5-4.5', surprise: 'M12 2l2.6 6.3L21 9l-5 4.4L17.5 20 12 16.7 6.5 20 8 13.4 3 9l6.4-.7z',
   today: 'M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z', top: 'M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3',
-  hub: 'M12 3l9 5v8l-9 5-9-5V8zM12 12l9-4M12 12v9M12 12L3 8',
+  hub: 'M12 3l9 5v8l-9 5-9-5V8zM12 12l9-4M12 12v9M12 12L3 8', dice: 'M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM8 8h.01M16 8h.01M12 12h.01M8 16h.01M16 16h.01',
+  report: 'M6 3h9l4 4v14H6zM9 12h7M9 16h7M9 8h3',
 };
 const S = { specs: [], byId: new Map(), fixture: {}, islands: [], hubSel: -1, mode: 'hub', cur: null, busy: false, live: [], real: new Map(), fxDs: new Map(), sumCache: new WeakMap(),
-  sheet: null, tour: false, cam: 'orbit', hubPose: null, demo: false, ready: false, errors: [] };
+  sheet: null, tour: false, cam: 'orbit', hubPose: null, demo: false, ready: false, errors: [], randoms: new Map(), conts: [], photo: false, insights: new Map(), hubR: 600 };
+const loadSet = (k) => { try { return new Set(JSON.parse(store.get(k, '[]'))); } catch (e) { return new Set(); } };
+S.favs = loadSet('cities.fav'); S.visited = loadSet('cities.visited');
+const saveSet = (k, set) => store.set(k, JSON.stringify([...set].slice(-400)));
+const specOf = (id) => S.byId.get(id) || S.randoms.get(id);
 const q = new URLSearchParams(location.search);
 S.demo = q.get('demo') === '1';
 
@@ -70,7 +77,7 @@ let toastT = 0, capT = 0;
 const toast = (msg, ms = 3200) => { toastEl.textContent = msg; toastEl.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('on'), ms); };
 const caption = (small, text, ms = 4200) => { capEl.replaceChildren(el('small', null, small), document.createTextNode(text)); capEl.classList.add('on'); clearTimeout(capT); capT = setTimeout(() => capEl.classList.remove('on'), ms); };
 const svg = (path) => { const n = 'http://www.w3.org/2000/svg', s = document.createElementNS(n, 'svg'), p = document.createElementNS(n, 'path'); s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('fill', 'none'); s.setAttribute('stroke', 'currentColor'); s.setAttribute('stroke-width', '2'); p.setAttribute('d', path); s.appendChild(p); return s; };
-const SHORT = { 'Surprise me': 'Wow', 'World map': 'World' };
+const SHORT = { 'Surprise me': 'Wow', 'World map': 'World', 'Random city': 'Dice' };
 const tab = (id, label, icon, fn) => { const b = el('button', 'tab'); b.id = id; b.setAttribute('aria-label', label); b.append(svg(icon), document.createTextNode(SHORT[label] || label)); b.addEventListener('click', fn); return b; };
 const grid = (rows) => { const g = el('div', 'grid4'); for (const [k, v] of rows) { const d = el('div'); d.append(el('small', null, k), el('b', null, v)); g.append(d); } return g; };
 const closeSheet = () => { sheet.classList.remove('on'); const was = S.sheet; S.sheet = null; document.querySelectorAll('.tab').forEach((t) => t.classList.remove('on')); if (S.mode === 'city' && was === 'building') { S.stage.setSelected(-1); tagEl.style.display = 'none'; S.cur.sel = -1; } if (S.mode === 'hub' && was === 'find') hubFilter(null);
@@ -93,20 +100,38 @@ const setChips = (list) => {
 // ------------------------------------------------------------------ the hub
 const hubSlots = () => clamp(Math.floor(S.stage.caps().mini / Math.max(1, S.specs.length)), 24, 260);
 
+/** The world map: one continent per group (Trading, Research, Money, Kalshi, Life, Obsidian) on a ring; inside a continent the
+ *  islands spiral out from its centre ordered by region, so a region is a band. Any number of cities fits: the spacing is fixed. */
 function layoutIslands() {
-  return S.specs.map((s, i) => {
-    const a = i * 2.399963, r = 78 * Math.sqrt(i + 1.6), seed = (hash32(s.id) % 1000) / 1000;
-    return { spec: s, i, x: Math.cos(a) * r, z: Math.sin(a) * r, y: Math.sin(i * 1.7) * 16 + (i % 3) * 5, R: 32 + seed * 7, seed, top: s.palette.ground, rim: s.palette.accent };
+  const C = 48, by = new Map(GROUP_ORDER.map((g) => [g, []]));
+  S.specs.forEach((sp, i) => { (by.get(sp.group) || by.set(sp.group, []).get(sp.group)).push(i); });
+  const K = [...by.entries()].filter((e) => e[1].length);
+  for (const [, idx] of K) idx.sort((a, b) => (S.specs[a].region || '') < (S.specs[b].region || '') ? -1 : (S.specs[a].region || '') > (S.specs[b].region || '') ? 1 : a - b);
+  const radii = K.map(([, idx]) => C * Math.sqrt(idx.length + 1.5) + 70);
+  let ring = 0;
+  if (K.length > 1) for (let i = 0; i < K.length; i++) ring = Math.max(ring, (radii[i] + radii[(i + 1) % K.length] + 90) / (2 * Math.sin(Math.PI / K.length)));
+  const out = new Array(S.specs.length);
+  S.conts = [];
+  K.forEach(([g, idx], ci) => {
+    const ang = (ci / K.length) * Math.PI * 2 - Math.PI / 2, cx = Math.cos(ang) * ring, cz = Math.sin(ang) * ring, gp = GROUPS[g] || [g, '#a68bff'];
+    idx.forEach((si, j) => {
+      const a = j * 2.399963, r = C * Math.sqrt(j + 1.5), sp = S.specs[si], seed = (hash32(sp.id) % 1000) / 1000;
+      out[si] = { spec: sp, i: si, cont: g, x: cx + Math.cos(a) * r, z: cz + Math.sin(a) * r, y: Math.sin(j * 1.7) * 14 + (j % 3) * 4, R: 22 + seed * 6, seed, top: sp.palette.ground, rim: sp.palette.accent };
+    });
+    S.conts.push({ key: g, name: gp[0], color: gp[1], x: cx, z: cz, r: radii[ci], count: idx.length, regions: [...new Set(idx.map((si) => S.specs[si].region).filter(Boolean))] });
   });
+  return out;
 }
 
 function buildHub() {
   const st = S.stage, slots = hubSlots();
   S.islands = layoutIslands();
-  st.buildHub(S.islands.map((s) => ({ x: s.x, y: s.y, z: s.z, R: s.R, top: s.top, rim: s.rim, seed: s.seed })), slots);
+  const links = [];
+  for (const c of S.conts) { const mine = S.islands.filter((is) => is.cont === c.key); mine.forEach((is, j) => { if (j) links.push([mine[j - 1].i, is.i]); if (j > 2 && j % 3 === 0) links.push([mine[j - 3].i, is.i]); }); }
+  st.buildHub(S.islands.map((s) => ({ x: s.x, y: s.y, z: s.z, R: s.R, top: s.top, rim: s.rim, seed: s.seed })), slots, links);
   S.slots = slots;
   S.islands.forEach((isl) => miniOf(isl));
-  S.hubR = Math.max(...S.islands.map((i) => Math.hypot(i.x, i.z))) + 60;
+  S.hubR = Math.max(...S.islands.map((i) => Math.hypot(i.x, i.z))) + 90;
 }
 function miniOf(isl) {
   const ds = dsNow(isl.spec.dataset);
@@ -153,6 +178,33 @@ function pickIsland(x, y) {
 
 function dataTag(ds) { return ds.demo ? ['SAMPLE', 'demo'] : ['LIVE DATA', 'live']; }
 
+const insightOf = (spec, ds) => {
+  const key = spec.id + '|' + (ds.demo ? 's' : 'l') + ds.items.length;
+  let v = S.insights.get(key);
+  if (!v) { const c = generate(spec, ds, { cap: 4000 }); v = insight(spec, ds, c); S.insights.set(key, v); }
+  return v;
+};
+const isFav = (id) => S.favs.has(id), isSeen = (id) => S.visited.has(id);
+function toggleFav(id) {
+  if (S.favs.has(id)) S.favs.delete(id); else S.favs.add(id);
+  saveSet('cities.fav', S.favs);
+  if (S.mode === 'hub') refreshChips();
+  return S.favs.has(id);
+}
+function markVisited(id) { if (!S.visited.has(id)) { S.visited.add(id); saveSet('cities.visited', S.visited); } }
+
+function cityActions(spec, extra) {
+  const a = el('div', 'actions');
+  const fav = el('button', 'pill' + (isFav(spec.id) ? ' on' : ''), isFav(spec.id) ? '\u2605 Saved' : '\u2606 Save');
+  fav.addEventListener('click', () => { const on = toggleFav(spec.id); fav.classList.toggle('on', on); fav.textContent = on ? '\u2605 Saved' : '\u2606 Save'; });
+  const cmp = el('button', 'pill', 'Compare');
+  cmp.addEventListener('click', () => openCompare(spec.id));
+  const sh = el('button', 'pill', 'Share');
+  sh.addEventListener('click', () => shareCity(spec));
+  a.append(...(extra || []), fav, cmp, sh);
+  return a;
+}
+
 function showIsland(i) {
   const isl = S.islands[i], spec = isl.spec, ds = dsNow(spec.dataset);
   if (!ds) return;
@@ -160,15 +212,18 @@ function showIsland(i) {
   openSheet('island', spec.name, (b) => {
     const gp = GROUPS[spec.group];
     const tags = el('div');
-    tags.append(el('span', 'badge ' + cls, tag), el('span', 'badge', gp ? gp[0] : spec.group), el('span', 'badge', spec.landmark.label));
+    tags.append(el('span', 'badge ' + cls, tag), el('span', 'badge', gp ? gp[0] : spec.group), el('span', 'badge', spec.region || ''));
+    if (isSeen(spec.id)) tags.append(el('span', 'badge seen', '\u2713 visited'));
     b.append(tags, el('p', 'note', spec.motto));
+    const say = el('p', 'say', '');
+    try { say.textContent = insightOf(spec, ds).sentence; } catch (e) { say.textContent = ''; }
+    b.append(say);
     b.append(grid([['Buildings', plain(sm.n)], ['Districts', plain(sm.districts)], ['Tallest', sm.top.slice(0, 34)], ['Its height', sm.topVal]]));
     if (ds.demo) b.append(el('p', 'note', ds.note || 'A small sample stands in until the live file answers.'));
-    b.append(el('p', 'note', `Data: ${ds.title} (${ds.source}).`));
-    const a = el('div', 'actions'), go = el('button', 'pill go', 'Enter ' + spec.name);
+    b.append(el('p', 'note', `Data: ${ds.title} (${ds.source}). Landmark: ${spec.landmark.label}.`));
+    const go = el('button', 'pill go', 'Enter ' + spec.name);
     go.addEventListener('click', () => enterCity(spec.id));
-    a.append(go);
-    b.append(a);
+    b.append(cityActions(spec, [go]));
   });
 }
 
@@ -194,30 +249,48 @@ function hubFilter(match) {          // match(spec) -> bool; null clears
 
 function openFind() {
   openSheet('find', 'Find a city', (b) => {
-    const inp = el('input'); inp.type = 'search'; inp.placeholder = 'Search cities, data, landmarks'; inp.setAttribute('aria-label', 'Search cities');
-    const seg = el('div', 'seg'), list = el('ul', 'list');
-    let grp = '';
+    const inp = el('input'); inp.type = 'search'; inp.placeholder = `Search ${S.specs.length} cities, data, landmarks`; inp.setAttribute('aria-label', 'Search cities');
+    const seg = el('div', 'seg'), seg2 = el('div', 'seg'), list = el('ul', 'list');
+    let grp = '', reg = '', only = '';
+    const drawRegions = () => {
+      seg2.replaceChildren();
+      const regs = [...new Set(S.specs.filter((s) => !grp || s.group === grp).map((s) => s.region).filter(Boolean))];
+      seg2.style.display = grp && regs.length > 1 ? '' : 'none';
+      for (const r of ['', ...regs]) {
+        const bt = el('button', r === reg ? 'on' : '', r || 'All regions');
+        bt.addEventListener('click', () => { reg = r; draw(); drawRegions(); });
+        seg2.append(bt);
+      }
+    };
     const draw = () => {
       const t = inp.value.trim().toLowerCase();
-      const hit = S.specs.filter((s) => (!grp || s.group === grp) && (!t || `${s.name} ${s.motto} ${s.dataset} ${s.landmark.label} ${s.group}`.toLowerCase().includes(t)));
+      const hit = S.specs.filter((s) => (!grp || s.group === grp) && (!reg || s.region === reg) && (only !== 'fav' || isFav(s.id)) && (only !== 'seen' || isSeen(s.id)) && (only !== 'new' || !isSeen(s.id))
+        && (!t || `${s.name} ${s.motto} ${s.dataset} ${s.landmark.label} ${s.group} ${s.region || ''}`.toLowerCase().includes(t)));
       list.replaceChildren();
       list.append(el('li', 'count', `${hit.length} of ${S.specs.length} cities`));
       for (const s of hit.slice(0, 60)) {
         const li = el('li'), k = el('span', 'k'), t2 = el('span', 't'), isl = S.islands[S.specs.indexOf(s)], ds = dsNow(s.dataset);
-        k.style.background = s.palette.accent; t2.append(document.createTextNode(s.name), el('small', null, s.motto));
+        k.style.background = s.palette.accent;
+        t2.append(document.createTextNode((isFav(s.id) ? '\u2605 ' : '') + s.name + (isSeen(s.id) ? ' \u2713' : '')), el('small', null, `${s.region || ''} \u00b7 ${s.motto}`));
         li.append(k, t2, el('span', 'm', ds ? plain(ds.items.length) : ''));
         li.addEventListener('click', () => selectIsland(isl.i));
         list.append(li);
       }
-      hubFilter(t || grp ? (s) => hit.includes(s) : null);
+      hubFilter(t || grp || reg || only ? (s) => hit.includes(s) : null);
     };
     for (const [id, label] of [['', 'All'], ...GROUP_ORDER.map((g) => [g, GROUPS[g][0]])]) {
       const bt = el('button', id === '' ? 'on' : '', label);
-      bt.addEventListener('click', () => { grp = id; seg.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === bt)); draw(); });
+      bt.addEventListener('click', () => { grp = id; reg = ''; seg.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === bt)); draw(); drawRegions(); });
       seg.append(bt);
     }
+    const seg3 = el('div', 'seg');
+    for (const [id, label] of [['', 'Everything'], ['fav', '\u2605 Saved'], ['seen', '\u2713 Visited'], ['new', 'Not visited']]) {
+      const bt = el('button', id === '' ? 'on' : '', label);
+      bt.addEventListener('click', () => { only = id; seg3.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === bt)); draw(); });
+      seg3.append(bt);
+    }
     inp.addEventListener('input', draw);
-    b.append(inp, seg, list); draw();
+    b.append(inp, seg, seg2, seg3, list); draw(); drawRegions();
     if (!matchMedia('(pointer:coarse)').matches) inp.focus();
   });
 }
@@ -225,14 +298,17 @@ function openFind() {
 function openToday() {
   const id = cityOfDay(todayStr(), S.specs.map((s) => s.id)), spec = S.byId.get(id);
   if (!spec) return;
-  const ds = dsNow(spec.dataset), sm = ds ? summary(spec, ds) : null;
+  const ds = dsNow(spec.dataset), sm = ds ? summary(spec, ds) : null, seed = seedOfDay(todayStr());
   openSheet('today', 'City of the day', (b) => {
     b.append(el('h3', null, spec.name), el('p', 'note', spec.motto));
+    try { b.append(el('p', 'say', insightOf(spec, ds).sentence)); } catch (e) { /* no sentence */ }
     if (sm) b.append(grid([['Buildings', plain(sm.n)], ['Tallest', sm.top.slice(0, 34)], ['Its height', sm.topVal], ['Landmark', spec.landmark.label]]));
-    const a = el('div', 'actions'), go = el('button', 'pill go', 'Enter ' + spec.name), see = el('button', 'pill', 'Show on the map');
+    const go = el('button', 'pill go', 'Enter ' + spec.name), see = el('button', 'pill', 'Show on the map'), rnd = el('button', 'pill', 'Random city of the day');
     go.addEventListener('click', () => enterCity(spec.id));
     see.addEventListener('click', () => selectIsland(S.specs.indexOf(spec)));
-    a.append(go, see); b.append(a, el('p', 'note', 'A new city every day, the same for everyone.'));
+    rnd.addEventListener('click', () => enterRandom(seed));
+    const a = el('div', 'actions'); a.append(go, see, rnd);
+    b.append(a, el('p', 'note', `A new city every day, the same for everyone. Today's random seed: ${seed}.`));
   });
 }
 
@@ -243,21 +319,27 @@ function surpriseHub() {
   enterCity(S.specs[i].id);
 }
 
-// ------------------------------------------------------------------ the hub tour
+// ------------------------------------------------------------------ the hub tour (across the continents)
 function startTour() {
   closeSheet();
-  const n = S.islands.length, pos = [], look = [];
-  S.islands.forEach((is, j) => {
+  const stops = [];
+  for (const c of S.conts) {                                             // a continent at a time: its first islands by region, then on
+    const mine = S.islands.filter((is) => is.cont === c.key), step = Math.max(1, Math.ceil(mine.length / 5));
+    stops.push({ cont: c, is: null });
+    mine.forEach((is, k) => { if (k % step === 0) stops.push({ cont: c, is }); });
+  }
+  const pos = [], look = [];
+  stops.forEach((st, j) => {
     const a = j * 0.9 + 0.6;
-    pos.push([is.x + Math.cos(a) * is.R * 3.2, is.y + is.R * 1.5, is.z + Math.sin(a) * is.R * 3.2]);
-    look.push([is.x, is.y + is.R * 0.5, is.z]);
+    if (st.is) { const is = st.is; pos.push([is.x + Math.cos(a) * is.R * 3.2, is.y + is.R * 1.5, is.z + Math.sin(a) * is.R * 3.2]); look.push([is.x, is.y + is.R * 0.5, is.z]); }
+    else { const c = st.cont; pos.push([c.x + Math.cos(a) * (c.r * 0.8 + 140), 150 + c.r * 0.25, c.z + Math.sin(a) * (c.r * 0.8 + 140)]); look.push([c.x, 0, c.z]); }
   });
-  if (n < 3) return;
-  S.tour = true;
-  S.rig.follow(makePath(pos, look, true), 62, true, 'tour');
+  if (stops.length < 3) return;
+  S.tour = true; S.tourStops = stops;
+  S.rig.follow(makePath(pos, look, true), 78, true, 'tour');
   $('#tourB') && $('#tourB').classList.add('on');
   S.tourT = 0; S.tourLast = -1;
-  caption('TOUR', 'Flying past every city. Touch to take over.', 3600);
+  caption('TOUR', `Flying over ${S.conts.length} continents and ${S.islands.length} cities. Touch to take over.`, 3600);
 }
 function stopTour() { S.tour = false; S.rig.stopPath(); $('#tourB') && $('#tourB').classList.remove('on'); }
 function tourTick(dt) {
@@ -266,7 +348,7 @@ function tourTick(dt) {
   S.tourT = 0;
   let best = -1, bd = Infinity;
   for (const is of S.islands) { const d = Math.hypot(is.x - S.rig.t.x, is.z - S.rig.t.z) + Math.abs(is.y - S.rig.t.y) * 0.5; if (d < bd) { bd = d; best = is.i; } }
-  if (best !== S.tourLast && bd < 60) { S.tourLast = best; S.stage.selectIsland(best); caption('CITY', S.islands[best].spec.name + ': ' + S.islands[best].spec.motto, 3000); }
+  if (best >= 0 && best !== S.tourLast && bd < 70) { S.tourLast = best; const is = S.islands[best]; S.stage.selectIsland(best); caption(`${(GROUPS[is.cont] || [''])[0].toUpperCase()} \u00b7 ${is.spec.region || ''}`, is.spec.name + ': ' + is.spec.motto, 3000); }
 }
 
 // ------------------------------------------------------------------ entering and leaving a city
@@ -277,13 +359,14 @@ function showVeil(on, name, sub) {
 }
 
 async function enterCity(id) {
-  const spec = S.byId.get(id);
+  const spec = specOf(id);
   if (!spec || S.busy) return;
   S.busy = true;
   try {
     if (S.tour) stopTour();
     closeSheet();
     const isl = S.islands.find((i) => i.spec === spec);
+    if (S.photo) setPhoto(false);
     if (S.mode === 'hub') {
       S.hubPose = { x: S.rig.t.x, y: S.rig.t.y, z: S.rig.t.z, dist: S.rig.dist, pitch: S.rig.pitch, yaw: S.rig.yaw };
       if (isl && !reduced()) await Promise.race([S.rig.flyTo({ x: isl.x, y: isl.y + 6, z: isl.z, dist: isl.R * 1.6, pitch: 0.28 }, 0.8), sleep(1400)]);
@@ -294,6 +377,8 @@ async function enterCity(id) {
     const ds = await realDs(spec.dataset);
     S.fxDs.set(spec.dataset, S.fxDs.get(spec.dataset) || ds);
     buildCityView(spec, ds);
+    markVisited(spec.id);
+    ambient(spec);
     showVeil(false);
     S.busy = false;
     if (ds.demo) toast(ds.note || 'Showing a small sample.', 4500);
@@ -314,7 +399,7 @@ function buildCityView(spec, ds) {
   const picker = new Picker(city);
   S.cur = { spec, ds, city, picker, f: fieldMap(ds), sel: -1, match: null, base: null };
   S.mode = 'city'; document.body.dataset.mode = 'city';
-  $('#title').textContent = spec.name; $('#backB').hidden = false;
+  $('#title').textContent = spec.name; $('#backB').hidden = false; $('#readB').hidden = true;
   S.rig.limits = { min: 10, max: city.bounds.r * 4 + 260, pmin: 0.05, pmax: 1.52 };
   S.rig.auto = 0.05;
   const far = city.bounds.r * 1.7 + 70;
@@ -329,6 +414,8 @@ function buildCityView(spec, ds) {
   location.hash = spec.id;
   dock.querySelectorAll('.tab').forEach((t) => t.classList.remove('on'));
   caption(spec.landmark.label.toUpperCase(), spec.motto, 4200);
+  const keep = city.best;
+  setTimeout(() => { if (S.cur && S.cur.city === city) celebrate(keep, true); }, reduced() ? 400 : 2600);
 }
 
 async function leaveCity() {
@@ -337,16 +424,16 @@ async function leaveCity() {
   closeSheet(); tagEl.style.display = 'none';
   showVeil(true, S.cur.spec.name, '');
   await sleep(reduced() ? 20 : 300);
-  S.stage.clearCity(); S.stage.look(null); S.stage.setFogRadius(S.hubR); S.stage.show('hub');
+  stopAmbient(); S.stage.clearCity(); S.stage.look(null); S.stage.setFogRadius(S.hubR * 2.8); S.stage.show('hub');
   S.mode = 'hub'; document.body.dataset.mode = 'hub'; S.cur = null;
-  $('#title').textContent = 'Cities'; $('#backB').hidden = true;
-  S.rig.limits = { min: 50, max: S.hubR * 3, pmin: 0.08, pmax: 1.5 };
+  $('#title').textContent = 'Cities'; $('#backB').hidden = true; $('#readB').hidden = false;
+  S.rig.limits = { min: 50, max: S.hubR * 3.4, pmin: 0.08, pmax: 1.5 };
   S.rig.stopPath();
-  const p = S.hubPose || { x: 0, y: 0, z: 0, dist: S.hubR * 1.15 + 140, pitch: 0.86, yaw: 0.3 };
+  const p = S.hubPose || { x: 0, y: 0, z: 0, dist: S.hubR * 1.9 + 200, pitch: 0.95, yaw: 0.3 };
   Object.assign(S.rig, { dist: p.dist, pitch: p.pitch, yaw: p.yaw }); S.rig.t.set(p.x, p.y, p.z); S.rig.apply();
   S.cam = 'orbit';
   setDock(); refreshChips();
-  history.replaceState(null, '', location.pathname + location.search);
+  history.replaceState(null, '', cleanUrl());
   showVeil(false);
   S.busy = false;
   if (S.hubSel >= 0) { S.stage.selectIsland(S.hubSel); showIsland(S.hubSel); }
@@ -361,6 +448,7 @@ function selectBuilding(k, fly = true) {
   C.sel = k; S.stage.setSelected(k);
   if (fly) S.rig.flyTo({ x: city.x[k], y: city.h[k] * 0.55, z: city.z[k], dist: Math.max(30, city.w[k] * 6 + city.h[k] * 0.9), pitch: 0.46 }, 0.9);
   sfx('tick');
+  if (k === city.best) celebrate(k, false);
   const dst = city.districts[city.dist[k]], hf = heightField(), lessCount = (() => { let c = 0; for (let j = 0; j < city.n; j++) if (city.h[j] < city.h[k]) c++; return c; })();
   openSheet('building', C.ds.label(it), (b) => {
     const bd = el('span', 'badge', dst.label);
@@ -439,25 +527,187 @@ function surpriseCity() {
   caption('SURPRISE', String(S.cur.ds.label(itemOf(k))).slice(0, 80), 2800);
 }
 
+function readLines(b) {
+  const C = S.cur, spec = C.spec;
+  const f = C.f, name = (e) => { const p = parseExpr(String(e).replace(/^-/, '')); return (f[p.field] && f[p.field].label) || p.field; };
+  const L = [`Each building is one row of "${C.ds.title}" (${C.ds.source}).`, `Height: ${name(spec.height_by)}.`, `Districts: ${name(spec.district_by)}.`,
+    `Glowing roof: ${name(spec.glow_by)}. Windows blink faster on busier buildings.`, `Lit windows: ${name(spec.window_by)}.`,
+    { sign: 'Colour: green above zero, red below.', district: 'Colour: one colour per district.', ramp: `Colour: from calm to hot by ${name(spec.color_by.split(':').slice(1).join(':'))}.`, cat: `Colour: by ${name(spec.color_by.split(':').slice(1).join(':'))}.` }[spec.color_by.split(':')[0]]];
+  L.push(`Landmark: ${spec.landmark.label}. Scenery: a ${spec.scenery || 'river'}.`);
+  if (C.city.capped) L.push(`Showing ${plain(C.city.n)} of ${plain(C.city.total)} buildings (this device's cap): the tallest all stay.`);
+  L.forEach((t) => b.append(el('p', 'note', t)));
+  b.append(el('p', 'note', 'Tap a building for its card. ORBIT, SKIM, DRONE and GRAND fly the camera for you. The little map flies you anywhere.'));
+}
+
 function openRead() {
-  const C = S.cur, spec = C ? C.spec : null;
-  openSheet('read', spec ? 'How to read ' + spec.name : 'How to read the world', (b) => {
-    if (!spec) {
-      b.append(el('p', 'note', 'Every island is a miniature of one city. Each city is built from numbers this site already publishes: trades, tested ideas, simulations, notes, bets.'));
-      b.append(el('p', 'note', 'Drag to look around, pinch to zoom, use two fingers to move. Tap an island to see its card, then Enter to land. Tour flies past every island. Find searches; Surprise picks one for you; Today is the city of the day.'));
-      b.append(el('p', 'note', `${S.specs.length} cities. Adding a city is one entry in cities.json: the generator, the search, the minimap and the cameras come with it.`));
-      return;
-    }
-    const f = C.f, name = (e) => { const p = parseExpr(String(e).replace(/^-/, '')); return (f[p.field] && f[p.field].label) || p.field; };
-    const L = [`Each building is one row of "${C.ds.title}" (${C.ds.source}).`, `Height: ${name(spec.height_by)}.`, `Districts: ${name(spec.district_by)}.`,
-      `Glowing roof: ${name(spec.glow_by)}.`, `Lit windows: ${name(spec.window_by)}.`,
-      { sign: 'Colour: green above zero, red below.', district: 'Colour: one colour per district.', ramp: `Colour: from calm to hot by ${name(spec.color_by.split(':').slice(1).join(':'))}.`, cat: `Colour: by ${name(spec.color_by.split(':').slice(1).join(':'))}.` }[spec.color_by.split(':')[0]]];
-    L.push(`Landmark: ${spec.landmark.label}.`);
-    if (C.city.capped) L.push(`Showing ${plain(C.city.n)} of ${plain(C.city.total)} buildings (this device's cap): the tallest all stay.`);
-    L.forEach((t) => b.append(el('p', 'note', t)));
-    b.append(el('p', 'note', 'Tap a building for its card. ORBIT, SKIM, DRONE and GRAND fly the camera for you. The little map flies you anywhere.'));
+  if (S.cur) return openReport();
+  openSheet('read', 'How to read the world', (b) => {
+    b.append(el('p', 'note', 'Every island is a miniature of one city. Each city is built from numbers this site already publishes: trades, tested ideas, simulations, notes, bets.'));
+    b.append(el('p', 'note', `${S.conts.length} continents (${S.conts.map((c) => c.name).join(', ')}), ${S.specs.length} cities. Drag to look around, pinch to zoom, use two fingers to move. Tap a continent label to fly there, an island for its card, then Enter to land.`));
+    b.append(el('p', 'note', 'Tour flies over every continent. Find searches by name, continent, region, saved and visited. Wow picks a city for you; the dice build a brand new random city from a seed you can share. Today is the city of the day.'));
+    b.append(el('p', 'note', 'Adding a city is one entry in cities.json: the generator, the search, the minimap, the report and the cameras come with it.'));
   });
 }
+
+function openReport() {
+  const C = S.cur; if (!C) return openRead();
+  const spec = C.spec;
+  if (!C.ins) C.ins = insight(spec, C.ds, C.city);
+  const ins = C.ins, city = C.city, hf = heightField(), fd = C.f[hf] || { fmt: 'num', label: hf };
+  openSheet('report', 'City report', (b) => {
+    const gp = GROUPS[spec.group];
+    const tg = el('div');
+    tg.append(el('span', 'badge ' + dataTag(C.ds)[1], dataTag(C.ds)[0]), el('span', 'badge', gp ? gp[0] : spec.group), el('span', 'badge', spec.region || ''));
+    if (spec.seed) tg.append(el('span', 'badge', 'seed ' + spec.seed));
+    b.append(el('h3', null, spec.name), tg, el('p', 'say', ins.sentence));
+    b.append(grid([['Buildings', plain(city.n) + (city.capped ? ' of ' + plain(city.total) : '')], ['Districts', String(city.districts.length)],
+      ['Above zero', ins.numeric ? Math.round(ins.positive * 100) + '%' : '\u2013'], ['Peak', ins.numeric && ins.best >= 0 ? fmtField(fd, ins.bestV) : '\u2013']]));
+    if (ins.rows.length) {
+      b.append(el('h3', null, `${ins.field} by ${(C.f[parseExpr(spec.district_by).field] || { label: 'district' }).label.toLowerCase()}`));
+      const mx = Math.max(1e-9, ...ins.rows.map((r) => Math.abs(r.mean))), tbl = el('div', 'bars');
+      for (const r of ins.rows.slice(0, 8)) {
+        const row = el('div', 'barrow'), bar = el('i'), v = el('b', r.mean < 0 ? 'neg' : '', fmtField(fd, Math.abs(r.mean) >= 100 ? Math.round(r.mean) : +r.mean.toFixed(2)));
+        bar.style.width = Math.max(3, Math.round((Math.abs(r.mean) / mx) * 100)) + '%'; bar.style.background = r.color;
+        row.append(el('span', null, r.label), el('div', 'track', ''), v);
+        row.children[1].append(bar);
+        tbl.append(row);
+      }
+      b.append(tbl);
+      if (ins.rows.length > 8) b.append(el('p', 'note', `+ ${ins.rows.length - 8} more districts.`));
+    }
+    const ph = el('button', 'pill', 'Photo mode');
+    ph.addEventListener('click', () => { closeSheet(); setPhoto(true); });
+    b.append(cityActions(spec, [ph]));
+    b.append(el('h3', null, 'How to read this city'));
+    readLines(b);
+  });
+}
+
+// ------------------------------------------------------------------ pick a city (for Compare), Compare, Random, Share, Photo, records
+function openPicker(title, onPick, skipId) {
+  openSheet('pick', title, (b) => {
+    const inp = el('input'); inp.type = 'search'; inp.placeholder = 'Search cities'; inp.setAttribute('aria-label', 'Search cities');
+    const list = el('ul', 'list');
+    const draw = () => {
+      const t = inp.value.trim().toLowerCase();
+      const hit = S.specs.filter((s) => s.id !== skipId && (!t || `${s.name} ${s.motto} ${s.region || ''} ${s.group}`.toLowerCase().includes(t)));
+      list.replaceChildren(el('li', 'count', `${hit.length} cities`));
+      for (const s of hit.slice(0, 50)) {
+        const li = el('li'), k = el('span', 'k'), t2 = el('span', 't');
+        k.style.background = s.palette.accent; t2.append(document.createTextNode(s.name), el('small', null, `${(GROUPS[s.group] || [''])[0]} \u00b7 ${s.region || ''}`));
+        li.append(k, t2); li.addEventListener('click', () => onPick(s.id)); list.append(li);
+      }
+    };
+    inp.addEventListener('input', draw); b.append(inp, list); draw();
+  });
+}
+
+function drawThumb(cv, city) {
+  const g = cv.getContext('2d'), W = cv.width, half = Math.max(Math.abs(city.bounds.minx), Math.abs(city.bounds.maxx), Math.abs(city.bounds.minz), Math.abs(city.bounds.maxz)) * 1.08 + 6, sc = W / (half * 2);
+  g.fillStyle = '#080612'; g.fillRect(0, 0, W, W);
+  const step = Math.max(1, Math.floor(city.n / 2500));
+  for (let k = 0; k < city.n; k += step) {
+    const t = 0.3 + 0.7 * Math.min(1, city.h[k] / Math.max(1, city.maxH)), r = Math.max(1.2, city.w[k] * sc * 0.85);
+    g.fillStyle = `rgb(${Math.round(city.col[k * 3] * 255 * t)},${Math.round(city.col[k * 3 + 1] * 255 * t)},${Math.round(city.col[k * 3 + 2] * 255 * t)})`;
+    g.fillRect((city.x[k] + half) * sc - r / 2, (city.z[k] + half) * sc - r / 2, r, r);
+  }
+}
+
+/** two cities side by side: their sentences, numbers and top-down pictures */
+async function openCompare(aId, bId) {
+  if (!bId) { openPicker(`Compare ${specOf(aId).name} with\u2026`, (id) => openCompare(aId, id), aId); return; }
+  const A = specOf(aId), B = specOf(bId);
+  const [dA, dB] = await Promise.all([realDs(A.dataset), realDs(B.dataset)]);
+  const cA = generate(A, dA, { cap: 2500 }), cB = generate(B, dB, { cap: 2500 }), iA = insight(A, dA, cA), iB = insight(B, dB, cB);
+  S.compare = { a: aId, b: bId, hashA: cA.hash, hashB: cB.hash };
+  openSheet('compare', 'Compare', (b) => {
+    const cols = el('div', 'cmp');
+    for (const [sp, ds, c, ins] of [[A, dA, cA, iA], [B, dB, cB, iB]]) {
+      const col = el('div', 'cmpcol'), cv = el('canvas'); cv.width = cv.height = 220;
+      drawThumb(cv, c);
+      const hf = parseExpr(sp.height_by.replace(/^-/, '')).field, fd = fieldMap(ds)[hf] || { fmt: 'num' };
+      col.append(el('h3', null, sp.name), cv, el('p', 'say', ins.sentence));
+      col.append(grid([['Buildings', plain(c.total)], ['Districts', String(c.districts.length)], ['Data', ds.demo ? 'SAMPLE' : 'LIVE'], ['Peak', ins.numeric && ins.best >= 0 ? fmtField(fd, ins.bestV) : '\u2013']]));
+      const go = el('button', 'pill', 'Enter'); go.addEventListener('click', () => enterCity(sp.id)); col.append(go);
+      cols.append(col);
+    }
+    b.append(cols);
+    const a = el('div', 'actions'), sw = el('button', 'pill', 'Swap'), other = el('button', 'pill', 'Another city');
+    sw.addEventListener('click', () => openCompare(bId, aId)); other.addEventListener('click', () => openCompare(aId));
+    a.append(sw, other); b.append(a);
+  });
+}
+
+async function enterRandom(seed) {
+  seed = cleanSeed(seed) || newSeed(rng(hash32(String(Date.now()) + Math.random())));
+  if (S.busy) return;
+  try {
+    const ds = await realDs(seedDataset(seed)), spec = randomSpec(seed, ds);
+    S.randoms.set(spec.id, spec);
+    caption('RANDOM CITY', `${spec.name} \u00b7 seed ${seed}`, 3200);
+    await enterCity(spec.id);
+  } catch (e) { S.errors.push(String(e && e.stack || e)); toast('Could not build that seed.', 3000); }
+}
+
+const cleanUrl = () => { const u = new URL(location.href); u.hash = ''; u.searchParams.delete('seed'); u.searchParams.delete('city'); return u.pathname + u.search; };
+const shareLink = (spec) => { const u = new URL(location.href); u.hash = ''; u.search = ''; u.searchParams.set(spec.seed ? 'seed' : 'city', spec.seed || spec.id); return u.toString(); };
+async function shareCity(spec) {
+  const url = shareLink(spec), title = spec.name + ' \u00b7 OLYMPUS Cities';
+  try { if (navigator.share) { await navigator.share({ title, text: spec.motto, url }); return url; } } catch (e) { if (e && e.name === 'AbortError') return url; }
+  try { await navigator.clipboard.writeText(url); toast('Link copied: ' + url, 3600); } catch (e) { toast(url, 6000); }
+  return url;
+}
+
+function setPhoto(on) {
+  S.photo = on; document.body.classList.toggle('photo', on);
+  if (on) { closeSheet(); caption('PHOTO MODE', 'Frame it, then tap Take photo.', 2600); }
+}
+async function takePhoto(noShare) {
+  S.stage.frame();
+  const blob = await new Promise((res) => canvas.toBlob(res, 'image/jpeg', 0.92));
+  if (!blob) { toast('Could not take the photo.', 3000); return 0; }
+  const name = ((S.cur && S.cur.spec.id) || 'cities-world') + '.jpg';
+  if (!noShare) {
+    try {
+      const file = new File([blob], name, { type: 'image/jpeg' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: S.cur ? S.cur.spec.name : 'OLYMPUS Cities' }); return blob.size; }
+    } catch (e) { if (e && e.name === 'AbortError') return blob.size; }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    toast('Photo saved.', 2400);
+  }
+  return blob.size;
+}
+$('#photoB').addEventListener('click', () => setPhoto(!S.photo));
+$('#photoTake').addEventListener('click', () => takePhoto());
+$('#photoDone').addEventListener('click', () => setPhoto(false));
+
+// a record building (the tallest): sparks in the scene, the kit's sparkle burst and a toast
+function celebrate(k, auto) {
+  const C = S.cur; if (!C || k === undefined || k < 0 || k >= C.city.n) return;
+  const c = C.city, x = c.x[k], y = c.h[k] + 6, z = c.z[k];
+  S.stage.fireworks(x, y, z, C.spec.palette.accent);
+  S.records = (S.records || 0) + 1;
+  try {
+    const F = window.OLYMPUS_FX, p = S.stage.project(x, y, z, canvas.clientWidth, canvas.clientHeight);
+    if (F && !reduced()) {
+      if (F.sparkleBurst && p.on) F.sparkleBurst(canvas, { x: p.x, y: p.y });
+      if (auto && F.toast) F.toast(document.body, { text: `Record: ${String(C.ds.label(C.ds.items[c.item[k]])).slice(0, 40)}`, kind: 'ok', seconds: 2.6 });
+    }
+  } catch (e) { /* the kit's effects are optional */ }
+  if (!auto) sfx('rankup');
+}
+
+// ambient sound per city (OLYMPUS_SFX: a soft pad for calm skies and weather, thunder with the storm's lightning)
+function ambient(spec) {
+  stopAmbient();
+  try {
+    const A = window.OLYMPUS_SFX;
+    if (!A || reduced()) return;
+    if (spec.sound === 'pad' || ['snow', 'fog', 'fireflies', 'dust'].includes(spec.weather)) { A.play('pad'); S.ambient = 'pad'; }
+  } catch (e) { /* silent */ }
+}
+function stopAmbient() { try { if (S.ambient && window.OLYMPUS_SFX) window.OLYMPUS_SFX.stop('pad'); } catch (e) { /* silent */ } S.ambient = null; }
 
 // ------------------------------------------------------------------ cameras
 function setCam(mode, quiet) {
@@ -497,12 +747,12 @@ function setCam(mode, quiet) {
 function refreshChips() {
   if (S.mode === 'hub') {
     const live = S.live.filter(Boolean).length, tid = cityOfDay(todayStr(), S.specs.map((s) => s.id)), t = S.byId.get(tid);
-    setChips([{ label: 'cities', b: String(S.specs.length) }, { label: live ? 'live' : 'loading', b: live ? `${live}/${S.specs.length}` : '…', cls: live ? 'live' : '' },
+    setChips([{ label: 'cities', b: String(S.specs.length) }, { label: 'saved', b: String(S.favs.size) }, { label: 'visited', b: String(S.visited.size) }, { label: live ? 'live' : 'loading', b: live ? `${live}/${S.specs.length}` : '…', cls: live ? 'live' : '' },
       ...(t ? [{ label: 'Today:', b: t.name }] : [])]);
   } else if (S.cur) {
     const C = S.cur, [tag, cls] = dataTag(C.ds);
     setChips([{ label: tag, cls }, { label: 'buildings', b: plain(C.city.n) + (C.city.capped ? ' of ' + plain(C.city.total) : '') }, { label: 'districts', b: String(C.city.districts.length) },
-      { label: GROUPS[C.spec.group] ? GROUPS[C.spec.group][0] : C.spec.group }]);
+      { label: GROUPS[C.spec.group] ? GROUPS[C.spec.group][0] : C.spec.group }, ...(C.spec.region ? [{ label: C.spec.region }] : [])]);
   }
 }
 function setDock() {
@@ -512,13 +762,14 @@ function setDock() {
     T('tourB', 'Tour', ICON.tour, () => (S.tour ? stopTour() : startTour()));
     T('findB', 'Find', ICON.find, openFind, 'find');
     T('surpriseB', 'Surprise me', ICON.surprise, surpriseHub);
+    T('diceB', 'Random city', ICON.dice, () => enterRandom());
     T('todayB', 'Today', ICON.today, openToday, 'today');
   } else {
     T('hubB', 'World map', ICON.hub, leaveCity);
     T('topB', 'Top 10', ICON.top, openTop, 'top');
     T('cfindB', 'Find', ICON.find, openCityFind, 'cfind');
     T('csurpriseB', 'Surprise me', ICON.surprise, surpriseCity);
-    T('creadB', 'Read', 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 11v6M12 7.5v.5', openRead, 'read');
+    T('creadB', 'Report', ICON.report, openReport, 'report');
   }
 }
 function qLabel() { const fx = O() ? O().fx() : 'high'; return fx === 'low' || fx === 'off' ? 'LITE' : 'HD'; }
@@ -533,6 +784,7 @@ document.querySelectorAll('#cams button').forEach((b) => b.addEventListener('cli
 window.addEventListener('hashchange', () => {
   const id = location.hash.slice(1);
   if (S.mode === 'city' && !id) leaveCity();
+  else if (/^r-[a-z0-9]{3,12}$/.test(id) && S.ready && (!S.cur || S.cur.spec.id !== id)) enterRandom(id.slice(2));
   else if (id && S.byId.has(id) && (!S.cur || S.cur.spec.id !== id) && S.ready) enterCity(id);
 });
 
@@ -579,15 +831,27 @@ mini.addEventListener('click', (e) => {
 
 // ------------------------------------------------------------------ labels
 const labelEls = Array.from({ length: 8 }, () => { const i = el('i'); $('#labels').append(i); return i; });
+const contEls = Array.from({ length: 8 }, () => { const i = el('i'); i.className = 'cont'; $('#labels').append(i); return i; });
+const farHub = () => S.mode === 'hub' && S.rig.dist > S.hubR * 0.7;
 function updateLabels(frame) {
   if (frame % 3) return;
   const w = canvas.clientWidth, h = canvas.clientHeight, st = S.stage, cand = [];
+  const far = farHub();
+  contEls.forEach((e, i) => {
+    const c = far ? S.conts[i] : null;
+    if (!c) { e.style.display = 'none'; return; }
+    const p = st.project(c.x, 40, c.z, w, h);
+    if (!p.on || p.x < -60 || p.x > w + 60 || p.y < 80 || p.y > h - 110) { e.style.display = 'none'; return; }
+    e.style.display = 'block'; e.textContent = `${c.name} \u00b7 ${c.count}`; e.style.color = c.color; e.style.borderColor = c.color;
+    e.style.transform = `translate(${Math.round(p.x)}px,${Math.round(p.y)}px) translate(-50%,-50%)`;
+  });
   if (S.mode === 'hub') {
     for (const is of S.islands) {
+      if (far && is.i !== S.hubSel) continue;
       const p = st.project(is.x, is.y + is.R * 1.5, is.z, w, h);
       if (!p.on || p.x < -20 || p.x > w + 20 || p.y < 90 || p.y > h - 120) continue;
       const dist = Math.hypot(p.x - w / 2, (p.y - h / 2) * 1.2) + (is.i === S.hubSel ? -9999 : 0);
-      cand.push({ p, text: is.spec.name, sel: is.i === S.hubSel, dist });
+      cand.push({ p, text: is.spec.name + (isSeen(is.spec.id) ? ' \u2713' : ''), sel: is.i === S.hubSel, dist });
     }
   } else if (S.cur && S.cur.city.districts.length > 1 && ['districts', 'clock', 'calendar'].includes(S.cur.city.layout)) {
     for (const d of S.cur.city.districts) {
@@ -612,11 +876,29 @@ function updateTag() {
 }
 
 // ------------------------------------------------------------------ input
+function pickContinent(x, y) {
+  const ray = S.stage.ray(x, y, canvas.clientWidth, canvas.clientHeight);
+  if (ray.d.y > -0.02) return null;
+  const t = -ray.o.y / ray.d.y, px = ray.o.x + ray.d.x * t, pz = ray.o.z + ray.d.z * t;
+  let best = null, bd = Infinity;
+  for (const c of S.conts) { const d = Math.hypot(px - c.x, pz - c.z); if (d < c.r * 1.05 && d < bd) { bd = d; best = c; } }
+  return best;
+}
+function flyToContinent(c) {
+  if (S.tour) stopTour();
+  closeSheet();
+  S.rig.flyTo({ x: c.x, y: 0, z: c.z, dist: c.r * 2.2 + 140, pitch: 0.8 }, 1.3);
+  caption(c.name.toUpperCase(), `${c.count} cities: ${c.regions.slice(0, 5).join(', ')}${c.regions.length > 5 ? '\u2026' : ''}`, 3400);
+  sfx('tick');
+}
 function onTap(x, y) {
   if (S.busy) return;
   if (S.mode === 'hub') {
     const i = pickIsland(x, y);
-    if (i >= 0) selectIsland(i); else { closeSheet(); S.hubSel = -1; S.stage.selectIsland(-1); refreshChips(); }
+    if (i >= 0) { selectIsland(i); return; }
+    const c = farHub() ? pickContinent(x, y) : null;
+    if (c) { flyToContinent(c); return; }
+    closeSheet(); S.hubSel = -1; S.stage.selectIsland(-1); refreshChips();
     return;
   }
   const C = S.cur; if (!C) return;
@@ -673,20 +955,22 @@ async function boot() {
   S.live = S.specs.map(() => false);
   stage.look(null);
   buildHub();
-  stage.setFogRadius(S.hubR);
+  stage.setFogRadius(S.hubR * 2.8);
   stage.show('hub');
-  S.rig.limits = { min: 50, max: S.hubR * 3, pmin: 0.08, pmax: 1.5 };
-  S.rig.t.set(0, 0, 0); S.rig.dist = S.hubR * 1.15 + 140; S.rig.pitch = 0.86; S.rig.yaw = 0.3; S.rig.auto = 0.03; S.rig.apply();
+  S.rig.limits = { min: 50, max: S.hubR * 3.4, pmin: 0.08, pmax: 1.5 };
+  S.rig.t.set(0, 0, 0); S.rig.dist = S.hubR * 1.9 + 200; S.rig.pitch = 0.95; S.rig.yaw = 0.3; S.rig.auto = 0.03; S.rig.apply();
   setDock(); refreshChips(); $('#qB').textContent = qLabel();
   stage.start(loop);
   $('#loading').remove();
   document.body.dataset.ready = 'true';
   S.ready = true;
   window.addEventListener('olympus:theme', () => stage.look(S.cur ? S.cur.spec : null));
+  stage.onFlash = () => sfx('thunder');
+  const seedQ = cleanSeed(q.get('seed') || (/^r-/.test(location.hash.slice(1)) ? location.hash.slice(3) : ''));
   const want = q.get('city') || location.hash.slice(1);
-  if (want && S.byId.has(want)) enterCity(want);
+  if (seedQ) { enterRandom(seedQ); setTimeout(prefetch, 3000); }
+  else if (want && S.byId.has(want)) { enterCity(want); setTimeout(prefetch, 2500); }
   else prefetch();
-  if (want && S.byId.has(want)) setTimeout(prefetch, 2500);
 }
 
 let retierT = 0;
@@ -729,6 +1013,15 @@ window.__cities = {
   pickScreen: (x, y) => { onTap(x, y); },
   pickBuilding: (k) => selectBuilding(k),
   tallest: () => { const c = S.cur.city; let b = 0; for (let k = 1; k < c.n; k++) if (c.h[k] > c.h[b]) b = k; return b; },
+  conts: () => S.conts.map((c) => ({ key: c.key, name: c.name, count: c.count, regions: c.regions, x: c.x, z: c.z, r: c.r })),
+  rig: () => ({ t: [S.rig.t.x, S.rig.t.y, S.rig.t.z], dist: S.rig.dist, pitch: S.rig.pitch, yaw: S.rig.yaw, hubR: S.hubR, far: farHub() }),
+  fav: (id) => toggleFav(id), favs: () => [...S.favs], visited: () => [...S.visited],
+  random: (seed) => enterRandom(seed), shareLink: (id) => shareLink(specOf(id)), share: (id) => shareCity(specOf(id)),
+  report: () => openReport(), compare: (a, b) => openCompare(a, b), photoMode: (on) => setPhoto(on), photo: () => takePhoto(true),
+  celebrate: () => { const c = S.cur; if (c) celebrate(c.city.best, false); return S.records || 0; },
+  contTap: (key) => { const c = S.conts.find((k) => k.key === key); if (c) flyToContinent(c); },
+  sentence: () => (S.cur ? (S.cur.ins || (S.cur.ins = insight(S.cur.spec, S.cur.ds, S.cur.city))).sentence : ''),
+  scenery: () => (S.stage.cityRec && S.stage.cityRec.scenery ? { kind: S.stage.cityRec.scenery.kind, props: S.stage.cityRec.scenery.props } : null),
   nearestToCenter: () => {
     const c = S.cur.city, w = canvas.clientWidth, h = canvas.clientHeight; let best = -1, bd = Infinity;
     for (let k = 0; k < c.n; k++) { const p = S.stage.project(c.x[k], c.h[k] * 0.5, c.z[k], w, h); if (!p.on) continue; const d = Math.hypot(p.x - w / 2, p.y - h * 0.5); if (d < bd) { bd = d; best = k; } }

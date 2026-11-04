@@ -17,7 +17,7 @@ Read-only: nothing here touches trading logic, orders or secrets.
      no WebGL -> the plain list
 Screenshots: CITIES_SHOTS=<dir> (default: a temp folder, nothing is written into the repo).
 
-    python -X utf8 -m tests.test_cities_page            (~6-9 min on a quiet machine; --no-browser: a and b only, ~2 s; --quick: skips e and f)
+    python -X utf8 -m tests.test_cities_page            (~15 min on a quiet machine; --no-browser: a and b only, ~3 s; --only=c|d|e|f|g runs one browser section)
 """
 from __future__ import annotations
 
@@ -27,6 +27,8 @@ import http.server
 import json
 import os
 import re
+import shutil
+import subprocess
 import sys
 import tempfile
 import threading
@@ -40,7 +42,8 @@ WEB = os.path.join(ROOT, "tools", "web_public")
 PAGE = os.path.join(WEB, "cities")
 SHOTS = os.environ.get("CITIES_SHOTS") or os.path.join(tempfile.gettempdir(), "cities_shots")
 RES = []
-QUICK = "--quick" in sys.argv                 # c and d only (the engine and the page at 390 x 844), skipping the tier budgets and the fallbacks
+ONLY = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--only=")), None)   # e.g. --only=c  or  --only=a,b,g: one section at a time (the machine is slow)
+want = lambda k: ONLY is None or k in ONLY  # noqa: E731
 BAD_ORIGINS = ("githubusercontent",)          # the Kalshi feed: blocked on purpose in the offline runs
 
 
@@ -57,7 +60,7 @@ def read(path):
 # ------------------------------------------------------------------ a. files
 def part_a():
     need = ["index.html", "cities.json", "fixture.json", "jarvis.json", "manifest.webmanifest", "icon.svg", "app.js", "datasets.js", "generator.js",
-            "scene.js", "shaders.js", "landmarks.js", "rig.js", "util.js"]
+            "scene.js", "shaders.js", "landmarks.js", "rig.js", "util.js", "insight.js", "procedural.js"]
     check("a. every file of the page is there", all(os.path.isfile(os.path.join(PAGE, n)) for n in need), [n for n in need if not os.path.isfile(os.path.join(PAGE, n))])
     html = read(os.path.join(PAGE, "index.html"))
     check("a. the OLYMPUS kit ?v=o2 (css, themes, olympus.js with data-app=cities), module app, manifest, icon",
@@ -84,17 +87,32 @@ def part_a():
     cfg = json.loads(read(os.path.join(PAGE, "cities.json")))
     C = cfg["cities"]
     sig = lambda c: (c["dataset"], c["district_by"], c["height_by"], c["layout"])  # noqa: E731
-    check("a. 24+ city specs (the owner asked for at least 24; this ships %d)" % len(C), len(C) >= 24, len(C))
+    check("a. 120+ city specs (the owner asked for hundreds; this ships %d, one JSON entry each)" % len(C), len(C) >= 120, len(C))
+    conts = {c["group"] for c in C}
+    check("a. six continents (Trading, Research, Money, Kalshi, Life, Obsidian), each with regions; every city has a region and scenery (river / harbor / rail)",
+          conts == {"trading", "research", "money", "kalshi", "life", "obsidian"} and all(c.get("region") and c.get("scenery") in ("river", "harbor", "rail") for c in C)
+          and len({c["region"] for c in C}) >= 18 and {c["scenery"] for c in C} == {"river", "harbor", "rail"}, (conts, len({c["region"] for c in C})))
+    check("a. every continent has cities and the big ones have many regions", all(sum(1 for c in C if c["group"] == g) >= 5 for g in conts) and len({c["region"] for c in C if c["group"] == "trading"}) >= 5)
     check("a. unique id, name, motto, landmark label and accent colour", all(len({c[k] if k != "lm" else c["landmark"]["label"] for c in C}) == len(C) for k in ("id", "name", "motto", "lm"))
           and len({c["palette"]["accent"] for c in C}) == len(C))
     check("a. every city is a different TYPE: (dataset, district, height, layout) is unique", len({sig(c) for c in C}) == len(C))
-    check("a. variety: 14 landmarks, 8 skies, 8 weathers, 5 layouts, 5 groups, 18+ datasets in use",
+    check("a. variety: 14 landmarks, 8 skies, 8 weathers, 5 layouts, 6 groups, 20 datasets in use",
           len({c["landmark"]["kind"] for c in C}) >= 14 and len({c["sky"]["kind"] for c in C}) >= 8 and len({c["weather"] for c in C}) >= 8
-          and len({c["layout"] for c in C}) >= 5 and len({c["group"] for c in C}) >= 5 and len({c["dataset"] for c in C}) >= 18,
+          and len({c["layout"] for c in C}) >= 5 and len({c["group"] for c in C}) >= 6 and len({c["dataset"] for c in C}) >= 20,
           (len({c["landmark"]["kind"] for c in C}), len({c["sky"]["kind"] for c in C}), len({c["weather"] for c in C}), len({c["layout"] for c in C}), len({c["dataset"] for c in C})))
     fx = json.loads(read(os.path.join(PAGE, "fixture.json")))
     check("a. fixture.json: a sample for every dataset the cities use, each with rows, <= 250 KB",
           all(c["dataset"] in fx and len(fx[c["dataset"]]["items"]) >= 8 for c in C) and os.path.getsize(os.path.join(PAGE, "fixture.json")) <= 250_000)
+    node = shutil.which("node")
+    if node:
+        before = {n: open(os.path.join(PAGE, n), "rb").read() for n in ("cities.json", "fixture.json")}
+        for tool in ("cities_catalogue.mjs", "cities_fixture.mjs"):
+            subprocess.run([node, os.path.join(ROOT, "tools", tool)], check=True, capture_output=True, timeout=180)
+        after = {n: open(os.path.join(PAGE, n), "rb").read() for n in before}
+        check("a. the catalogue and the fixture are reproducible: tools/cities_catalogue.mjs and tools/cities_fixture.mjs rewrite cities.json / fixture.json byte for byte", before == after,
+              [n for n in before if before[n] != after[n]])
+    else:
+        print("[SKIP] node missing: the catalogue reproducibility check was skipped")
     card = json.loads(read(os.path.join(PAGE, "jarvis.json")))
     raw = read(os.path.join(PAGE, "jarvis.json"))
     ids = [c["id"] for c in C]
@@ -102,7 +120,13 @@ def part_a():
           and len(card["kpis"]) <= 3 and all(len(k["label"]) <= 20 and len(str(k["value"])) <= 24 for k in card["kpis"])
           and len(card["lines"]) <= 3 and all(len(x) <= 120 for x in card["lines"]) and isinstance(card["t"], int) and re.fullmatch(r"#[0-9a-f]{6}", card["theme"])
           and 60 <= card["stale_after"] <= 1_209_600 and card["open"][1:] in ids and len(raw.encode()) <= 8192 and not re.search(r"[<>&]", raw.replace("&amp;", "")))
-    check("a. jarvis.json: the Jarvis card contract (docs/JARVIS_APPS.md), the card opens a real city, 'City of the day' in it", ok and "City of the day" in raw, card)
+    check("a. jarvis.json: the Jarvis card contract (docs/JARVIS_APPS.md), the card opens a real city, 'City of the day', the random seed and tomorrow's city in it",
+          ok and "City of the day" in raw and "Random seed" in raw and "Tomorrow:" in raw, card)
+    check("a. the kit's effects and sound are wired: fx-core.js + fx-burst.js in the page, OLYMPUS_SFX ambient + thunder, photo mode, share, favourites in localStorage",
+          "fx-core.js" in html and "fx-burst.js" in html and "sfx.js" in html and 'id="photoB"' in html and "sparkleBurst" in srcs["app.js"] and "OLYMPUS_SFX" in srcs["app.js"] and "'thunder'" in srcs["app.js"]
+          and "cities.fav" in srcs["app.js"] and "cities.visited" in srcs["app.js"] and "navigator.share" in srcs["app.js"] and "toBlob" in srcs["app.js"])
+    check("a. the new engine files are deterministic by construction: no Math.random call in procedural / insight",
+          all(not re.search(r"Math\.random\s*\(", srcs[n]) for n in ("procedural.js", "insight.js")))
     return C
 
 
@@ -113,15 +137,20 @@ def part_b(C):
     check("b. cities_card.build is deterministic (same date + time -> same bytes)", CC.dumps(a) == CC.dumps(b))
     days = [f"2026-{m:02d}-{d:02d}" for m in range(1, 13) for d in range(1, 29)]
     picks = [CC.city_of_day(d, ids) for d in days]
-    check("b. the city of the day spreads over the list (336 days hit 24+ different cities, none more than 6% of days)",
-          len(set(picks)) >= 24 and max(picks.count(i) for i in set(picks)) <= 0.06 * len(days), (len(set(picks)), max(picks.count(i) for i in set(picks))))
+    check("b. the city of the day spreads over the list (336 days hit 100+ different cities, none more than 6 days)",
+          len(set(picks)) >= 100 and max(picks.count(i) for i in set(picks)) <= 6, (len(set(picks)), max(picks.count(i) for i in set(picks))))
+    seeds = [CC.seed_of_day(d) for d in days]
+    check("b. the random seed of the day: 6 letters from the alphabet, deterministic, 300+ different seeds in 336 days", all(re.fullmatch(r"[a-hj-km-np-z2-9]{6}", x) for x in seeds) and len(set(seeds)) > 300
+          and seeds == [CC.seed_of_day(d) for d in days], len(set(seeds)))
+    card = CC.build("2026-11-04", 1793700000, C)
+    check("b. the card names the continent and region, tomorrow's city and the seed", "Tomorrow:" in card["lines"][1] and any(k["label"] == "Random seed" and k["value"] == CC.seed_of_day("2026-11-04") for k in card["kpis"]), card)
     check("b. a card is valid for every city (open route, name, kpis)", all(CC.build("2026-11-04", 1, [c for c in C if c["id"] == i])["open"] == "#" + i for i in ids[:5]))
     tmp = tempfile.mkdtemp(prefix="cities_card_")
     os.makedirs(os.path.join(tmp, "cities"))
     msg = CC.publish(tmp)
     check("b. publish(out) writes <out>/cities/jarvis.json and skips a build without the page", os.path.isfile(os.path.join(tmp, "cities", "jarvis.json")) and "city of the day" in msg
           and "skipped" in CC.publish(os.path.join(tmp, "nowhere")), msg)
-    return days, picks
+    return days, picks, seeds
 
 
 # ------------------------------------------------------------------ c. the engine, as modules in Chromium
@@ -236,6 +265,30 @@ UNIT_D = """async () => {
 }"""
 
 
+UNIT_E = """async (days) => {
+  const [D, G, P, I, U] = await Promise.all([import('/cities/datasets.js'), import('/cities/generator.js'), import('/cities/procedural.js'), import('/cities/insight.js'), import('/cities/util.js')]);
+  const cfg = await (await fetch('/cities/cities.json')).json();
+  const env = { get: async (u) => { if (/^https?:/.test(u)) throw new Error('remote'); const r = await fetch(u); if (!r.ok) throw new Error(u); return r.json(); }, fixture: await (await fetch('/cities/fixture.json')).json() };
+  const cache = new Map(), r = U.rng(11), bad = [], hashes = new Set(), dsu = new Set();
+  let same = 0;
+  for (let i = 0; i < 150; i++) {
+    const seed = P.newSeed(r), id = P.seedDataset(seed), ds = await D.loadDataset(id, env, cache);
+    const spec = P.randomSpec(seed, ds), spec2 = P.randomSpec(seed, ds), errs = G.validateSpec(spec, D.DATASETS);
+    if (errs.length) bad.push([seed, id, errs]);
+    const c = G.generate(spec, ds, { cap: 3000 }), c2 = G.generate(spec, ds, { cap: 3000 });
+    if (JSON.stringify(spec) === JSON.stringify(spec2) && c.hash === c2.hash && c.n > 0) same++;
+    hashes.add(c.hash); dsu.add(id);
+  }
+  const sent = [];
+  for (const s of cfg.cities) {
+    const ds = await D.loadDataset(s.dataset, env, cache), c = G.generate(s, ds, { cap: 3000 }), ins = I.insight(s, ds, c);
+    sent.push([s.id, ins.sentence.startsWith(s.name + ':'), ins.sentence.length, ins.numeric]);
+  }
+  const a = P.randomSpec('abc123', await D.loadDataset(P.seedDataset('abc123'), env, cache)), b = P.randomSpec('abc124', await D.loadDataset(P.seedDataset('abc124'), env, cache));
+  return { bad, same, distinct: hashes.size, datasets: dsu.size, sent, seeds: days.map(U.seedOfDay), cleaned: P.cleanSeed(' Ab-C1!23_x '), differs: a.name !== b.name || a.palette.accent !== b.palette.accent };
+}"""
+
+
 def run_unit(p, days, picks):
     a = p.evaluate(UNIT_A)
     check("c. spec validation: every city spec is valid against the dataset registry", not a["errs"] and a["n"] >= 24, a["errs"][:3])
@@ -267,6 +320,12 @@ def run_unit(p, days, picks):
     sy = d["synth"]
     check("c. 40,000 buildings: generated in under 3 s, one instanced draw of 10 triangles each = 400k, inside the ultra budget (560k)", sy["n"] == 40000 and sy["ms"] < 3000 and sy["tris"] <= 560_000, sy)
     check("c. city of the day: the page (JS) and tools/cities_card.py (Python) pick the same city on 336 days", d["todays"] == picks, [(x, a, b) for x, a, b in zip(days, d["todays"], picks) if a != b][:3])
+    e = p.evaluate(UNIT_E, days)
+    check("c. random cities: 150 seeds -> 150 valid specs, the same seed gives the same spec and the same city (hash), 148+ different cities, 15+ datasets reached",
+          not e["bad"] and e["same"] == 150 and e["distinct"] >= 148 and e["datasets"] >= 15 and e["differs"] and e["cleaned"] == "abc123x", {k: e[k] for k in ("bad", "same", "distinct", "datasets", "cleaned")})
+    check("c. the score card: every one of the %d cities says one plain sentence that starts with its name (20-200 characters)" % len(e["sent"]), all(x[1] and 20 <= x[2] <= 200 for x in e["sent"]),
+          [x for x in e["sent"] if not (x[1] and 20 <= x[2] <= 200)][:3])
+    check("c. the random seed of the day: the page (JS) and tools/cities_card.py (Python) agree on 336 days", e["seeds"] == [CC.seed_of_day(x) for x in days], e["seeds"][:3])
     nc = d["newCity"]
     check("c. a NEW city is one JSON entry: valid, generates, different from its sibling, no engine change", not nc["errs"] and nc["n"] == 60 and nc["differs"] and nc["districts"] >= 3, nc)
 
@@ -346,6 +405,195 @@ class Page:
         self.ctx.close()
 
 
+
+def sec_c(br, base, C, days, picks, ids):
+    # ---- c. the engine as modules
+    ctx = br.new_context()
+    p = ctx.new_page()
+    p.goto(base + "jarvis.json")
+    run_unit(p, days, picks)
+    ctx.close()
+
+
+
+def sec_d(br, base, C, days, picks, ids):
+    # ---- d. the hub and three cities, 390 x 844, touch
+    pg = Page(br, base, q="low").open()
+    p = pg.p
+    time.sleep(4)
+    info = pg.info()
+    check("d. the hub opens: one island per city, a miniature of each, no 3D error", info["mode"] == "hub" and info["islands"] == len(C) and info["slots"] >= 24 and not info["errors"], info)
+    p.wait_for_function(f"window.__cities.info().live >= {len(C) - 3}", timeout=120000)
+    check("d. the islands turn LIVE as the real files arrive (all but the two private feeds + the vault)", pg.info()["live"] >= len(C) - 3, pg.info()["live"])
+    lay = p.evaluate(LAYOUT_JS)
+    check("d. hub layout: no sideways scroll, the orb's corner free, one top bar / one sheet / one dock, 44 px targets, nothing off screen",
+          not lay["sideways"] and not lay["inOrb"] and lay["counts"] == {"top": 1, "sheet": 1, "dock": 1} and not lay["small"] and not lay["off"], lay)
+    check("d. island labels are drawn (the nearest names)", p.evaluate("[...document.querySelectorAll('#labels i')].filter(e => e.style.display !== 'none' && e.textContent.length > 2).length") >= 3)
+    shot(p, "hub.png")
+    pr = p.evaluate("window.__cities.projectIsland(3)")
+    p.touchscreen.tap(pr["x"], pr["y"])
+    p.wait_for_function("window.__cities.info().sheet === 'island'", timeout=30000)
+    time.sleep(1.5)
+    card = p.evaluate("({ t: document.querySelector('#sheetTitle').textContent, go: !!document.querySelector('.sheet .pill.go'), live: document.querySelector('.sheet .badge.live, .sheet .badge.demo').textContent })")
+    check("d. tap an island: its card (name, LIVE DATA, Enter button) opens above the dock", card["t"] and card["go"] and pg.info()["hubSel"] == 3, card)
+    lay = p.evaluate(LAYOUT_JS)
+    check("d. with the card open: still no overlap with the dock / top bar, the orb's corner free", not lay["overlaps"] and not lay["inOrb"] and not lay["small"] and not lay["off"], lay)
+    shot(p, "hub_card.png")
+    p.evaluate("document.querySelector('#sheetX').click()")
+    p.evaluate("document.querySelector('#findB').click()")
+    p.evaluate("window.__cities.find('canyon')")
+    hits = p.evaluate("[...document.querySelectorAll('.sheet .list li:not(.count)')].map(e => e.textContent)")
+    check("d. hub Find: 'canyon' finds Drawdown Canyon and only it", len(hits) == 1 and "Drawdown Canyon" in hits[0], hits)
+    p.evaluate("document.querySelector('#sheetX').click()")
+    p.evaluate("document.querySelector('#todayB').click()")
+    today = p.evaluate("({ id: window.__cities.today(), t: document.querySelector('#sheetTitle').textContent, h: document.querySelector('.sheet h3').textContent })")
+    name_of = {c["id"]: c["name"] for c in C}
+    check("d. Today: the card of the day names the city that tools/cities_card.py picks for today's date", today["t"] == "City of the day" and today["h"] == name_of[today["id"]], today)
+    p.evaluate("document.querySelector('#sheetX').click()")
+    p.evaluate("document.querySelector('#tourB').click()")
+    c0 = pg.info()["camPos"]
+    time.sleep(4)
+    i2 = pg.info()
+    check("d. Tour: the camera flies past the islands by itself (position changes, tour on)", i2["tour"] and sum(abs(a - b) for a, b in zip(c0, i2["camPos"])) > 30, (c0, i2["camPos"]))
+    shot(p, "hub_tour.png")
+    p.evaluate("window.__cities.tour()")
+    check("d. hub: no console errors, no failed requests", not pg.errs, pg.errs[:5])
+
+    seen = []
+    for cid, tag in (("trades-city", "trades"), ("equity-mountains", "equity"), ("honesty-city", "honesty")):
+        inf = pg.enter(cid, settle=3.2)
+        k = p.evaluate("window.__cities.nearestToCenter()")
+        pt = p.evaluate(f"window.__cities.project({k})")
+        p.touchscreen.tap(pt["x"], pt["y"])
+        try:
+            p.wait_for_function("window.__cities.info().sheet === 'building'", timeout=20000)
+            tapped = True
+        except Exception:
+            tapped = False
+        time.sleep(1.4)
+        card = p.evaluate("({ t: document.querySelector('#sheetTitle').textContent, rows: document.querySelectorAll('.sheet .grid4 div').length, big: (document.querySelector('.sheet .big .v') || {}).textContent })")
+        lay = p.evaluate(LAYOUT_JS)
+        seen.append(inf["hash"])
+        check(f"d. {cid}: entered ({inf['n']} of {inf['total']} buildings, {inf['districts']} districts, live data), tap a building -> its card with numbers",
+              inf["mode"] == "city" and inf["n"] > 0 and not inf["demo"] and tapped and card["t"] and card["rows"] >= 3 and card["big"], (inf, tapped, card))
+        check(f"d. {cid}: layout (card open): no overlap, the orb's corner free, no sideways scroll, targets >= 44 px, one top bar / sheet / dock",
+              not lay["overlaps"] and not lay["inOrb"] and not lay["sideways"] and not lay["small"] and not lay["off"] and lay["counts"] == {"top": 1, "sheet": 1, "dock": 1}, lay)
+        shot(p, f"{tag}_card.png")
+        p.evaluate("document.querySelector('#sheetX').click()")
+        p.evaluate("document.querySelector('#topB').click()")
+        top = p.evaluate("document.querySelectorAll('.sheet .list li').length")
+        p.evaluate("window.__cities.find('a')")
+        m = p.evaluate("(() => { const c = document.querySelector('.sheet .list li.count'); return c ? c.textContent : ''; })()")
+        p.evaluate("document.querySelector('#sheetX').click()")
+        p.evaluate("window.__cities.find('')")
+        p.evaluate("document.querySelector('#sheetX').click()")
+        check(f"d. {cid}: Top 10 lists 10 buildings, Find lights up matches", top == 10 and re.search(r"\d", m) is not None, (top, m))
+        pos0 = pg.info()["camPos"]
+        moved = {}
+        for cam in ("skim", "drone", "grand"):
+            p.evaluate(f"window.__cities.cam('{cam}')")
+            time.sleep(2.2)
+            cp = pg.info()["camPos"]
+            moved[cam] = (round(sum(abs(a - b) for a, b in zip(pos0, cp)), 1), pg.info()["cam"])
+            pos0 = cp
+        check(f"d. {cid}: the SKIM / DRONE / GRAND cameras fly (the camera moves each time)", all(v[0] > 5 and v[1] == c for c, v in moved.items()), moved)
+        if tag == "trades":
+            shot(p, "trades_grand.png")
+        p.evaluate("window.__cities.cam('orbit')")
+        before = pg.info()["camPos"]
+        bx = p.evaluate("(() => { const r = document.querySelector('#mini').getBoundingClientRect(); return [r.left + r.width * 0.2, r.top + r.height * 0.25]; })()")
+        p.touchscreen.tap(bx[0], bx[1])
+        time.sleep(2.2)
+        after = pg.info()["camPos"]
+        check(f"d. {cid}: the minimap flies the camera where you tap", sum(abs(a - b) for a, b in zip(before, after)) > 5, (before, after))
+        pg.back()
+        check(f"d. {cid}: back to the world map", pg.info()["mode"] == "hub")
+    check("d. three DIFFERENT cities were built (3 different hashes)", len(set(seen)) == 3, seen)
+    p.evaluate("window.__cities.surprise()")
+    p.wait_for_function("window.__cities.info().mode === 'city'", timeout=120000)
+    time.sleep(1.5)
+    surprised = pg.info()["id"]
+    p.evaluate("window.__cities.surprise()")
+    p.wait_for_function("window.__cities.info().sel >= 0", timeout=30000)
+    check("d. Surprise me: in the hub it enters a random city, inside a city it flies to a random building", surprised in ids and pg.info()["sel"] >= 0, (surprised, pg.info()["sel"]))
+    check("d. no console errors, no failed requests on the whole run (hub + 3 cities + surprise)", not pg.errs, pg.errs[:5])
+    pg.close()
+
+
+
+def sec_e(br, base, C, days, picks, ids):
+    # ---- e. budgets per tier
+    for q in ("off", "low", "high", "ultra"):
+        pg = Page(br, base, q=q).open()
+        time.sleep(2)
+        hub = pg.p.evaluate("window.__cities.stats()")
+        inf = pg.enter("ideas-city", settle=1.0)
+        st = pg.p.evaluate("window.__cities.stats()")
+        B = st["budget"]
+        want = st["caps"]["cap"]
+        passes = {"off": 1, "low": 2, "high": 3, "ultra": 3}[q]
+        check(f"e. tier {q}: hub {hub['calls']} draw calls / {hub['triangles']:,} triangles, 31k-idea city {st['calls']} calls / {st['triangles']:,} triangles ({inf['n']:,} of {inf['total']:,} buildings), both inside the budget ({B['calls']} / {B['tris']:,})",
+              hub["tier"] == q and st["tier"] == q and hub["calls"] <= B["calls"] and hub["triangles"] <= B["tris"] and st["calls"] <= B["calls"] and st["triangles"] <= B["tris"]
+              and inf["n"] == min(inf["total"], want) and st["passes"] == passes and st["calls"] > 0, (hub, st, inf))
+        if q in ("low", "ultra"):
+            shot(pg.p, f"ideas_{q}.png")
+        check(f"e. tier {q}: no console errors", not pg.errs, pg.errs[:4])
+        pg.close()
+
+
+
+def sec_f(br, base, C, days, picks, ids):
+    # ---- f. fallbacks
+    pg = Page(br, base, q="low", kalshi="abort").open()
+    inf = pg.enter("kalshi-city", settle=1.5)
+    toast = pg.p.evaluate("document.querySelector('#toast').textContent")
+    chip = pg.p.evaluate("[...document.querySelectorAll('.chip')].map(e => e.textContent).join('|')")
+    check("f. Kalshi feed offline: the city shows the marked sample (SAMPLE chip, a toast), no error", inf["demo"] and inf["n"] > 5 and "SAMPLE" in chip and "sample" in toast.lower(), (inf, chip, toast))
+    pg.back()
+    inf = pg.enter("obsidian-city", settle=1.0)
+    check("f. no vault connected on this browser: Obsidian City shows the marked sample, nothing is fetched or sent", inf["demo"] and inf["n"] > 5, inf)
+    check("f. fallbacks: no console errors", not pg.errs, pg.errs[:4])
+    pg.close()
+    feed = {"v": 3, "kind": "kalshi", "t": 1793760000, "trades": [{"t": 1793700000 + i * 60, "ticker": f"KXBTCD-26NOV0{i % 9}", "title": f"Bitcoin above ${70000 + i} bet {i}", "side": "yes" if i % 2 else "no",
+                                                                   "contracts": 3 + i, "price": 0.9, "pnl": (-1) ** i * (i + 1) * 0.7, "asset": "BTC" if i % 3 else "ETH", "strategy": "Late favourite"} for i in range(12)],
+            "positions": [{"ticker": "KXETHD-26NOV05", "title": "Ether open bet", "side": "yes", "contracts": 4, "avg_price": 0.8, "value": 3.2, "pnl": 0, "asset": "ETH"}]}
+    pg = Page(br, base, q="low", kalshi=feed).open()
+    inf = pg.enter("kalshi-city", settle=1.0)
+    check("f. a live Kalshi feed (stubbed): the city shows its 13 real rows (12 trades + 1 open bet), LIVE, not the sample", not inf["demo"] and inf["n"] == 13, inf)
+    pg.close()
+    pg = Page(br, base, q="low", extra="&demo=1").open()
+    time.sleep(1)
+    inf = pg.enter("trades-city", settle=1.0)
+    check("f. ?demo=1: nothing is fetched, every city is built from the shipped sample (marked SAMPLE)", inf["demo"] and inf["n"] > 5 and pg.info()["live"] == 0, inf)
+    check("f. ?demo=1: no console errors", not pg.errs, pg.errs[:4])
+    pg.close()
+    pg = Page(br, base, q="low", reduced=True).open()
+    inf = pg.enter("sessions-city", settle=1.0)
+    check("f. reduced motion: the city opens without the fly-in, no auto-orbit drift, no errors", inf["mode"] == "city" and not pg.errs, (inf, pg.errs[:3]))
+    pg.close()
+    pg = Page(br, base, vw={"width": 844, "height": 390}, q="low").open()
+    time.sleep(2)
+    inf = pg.enter("levels-city", settle=2.0)
+    k = pg.p.evaluate("window.__cities.nearestToCenter()")
+    pg.p.evaluate(f"window.__cities.pickBuilding({k})")
+    time.sleep(1.2)
+    lay = pg.p.evaluate(LAYOUT_JS)
+    check("f. landscape 844 x 390: a city opens, a card opens at the side, no sideways scroll, nothing off screen, the orb's corner free", inf["mode"] == "city" and not lay["sideways"]
+          and not lay["off"] and not lay["inOrb"], (inf, lay))
+    shot(pg.p, "landscape.png")
+    check("f. landscape: no console errors", not pg.errs, pg.errs[:4])
+    pg.close()
+    ctx = br.new_context(viewport={"width": 390, "height": 844})
+    ctx.add_init_script(SPEC_NO_GL)
+    p = ctx.new_page()
+    p.goto(base + "?q=low")
+    p.wait_for_function("document.body.dataset.ready === 'fallback'", timeout=60000)
+    txt = p.evaluate("document.querySelector('.fallback').textContent")
+    check("f. no WebGL: the page lists every city in plain text instead of a blank screen", all(c["name"] in txt for c in C), txt[:200])
+    ctx.close()
+
+SECTIONS = {"c": sec_c, "d": sec_d, "e": sec_e, "f": sec_f}
+
 def run_browser(C, days, picks):
     from playwright.sync_api import sync_playwright
 
@@ -367,184 +615,10 @@ def run_browser(C, days, picks):
             exe = next(iter(sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"))), None)
             br = pw.chromium.launch(**({"executable_path": exe} if exe else {}), args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
 
-            # ---- c. the engine as modules
-            ctx = br.new_context()
-            p = ctx.new_page()
-            p.goto(base + "jarvis.json")
-            run_unit(p, days, picks)
-            ctx.close()
-
-            # ---- d. the hub and three cities, 390 x 844, touch
-            pg = Page(br, base, q="low").open()
-            p = pg.p
-            time.sleep(4)
-            info = pg.info()
-            check("d. the hub opens: one island per city, a miniature of each, no 3D error", info["mode"] == "hub" and info["islands"] == len(C) and info["slots"] >= 24 and not info["errors"], info)
-            p.wait_for_function(f"window.__cities.info().live >= {len(C) - 3}", timeout=120000)
-            check("d. the islands turn LIVE as the real files arrive (all but the two private feeds + the vault)", pg.info()["live"] >= len(C) - 3, pg.info()["live"])
-            lay = p.evaluate(LAYOUT_JS)
-            check("d. hub layout: no sideways scroll, the orb's corner free, one top bar / one sheet / one dock, 44 px targets, nothing off screen",
-                  not lay["sideways"] and not lay["inOrb"] and lay["counts"] == {"top": 1, "sheet": 1, "dock": 1} and not lay["small"] and not lay["off"], lay)
-            check("d. island labels are drawn (the nearest names)", p.evaluate("[...document.querySelectorAll('#labels i')].filter(e => e.style.display !== 'none' && e.textContent.length > 2).length") >= 3)
-            shot(p, "hub.png")
-            pr = p.evaluate("window.__cities.projectIsland(3)")
-            p.touchscreen.tap(pr["x"], pr["y"])
-            p.wait_for_function("window.__cities.info().sheet === 'island'", timeout=30000)
-            time.sleep(1.5)
-            card = p.evaluate("({ t: document.querySelector('#sheetTitle').textContent, go: !!document.querySelector('.sheet .pill.go'), live: document.querySelector('.sheet .badge.live, .sheet .badge.demo').textContent })")
-            check("d. tap an island: its card (name, LIVE DATA, Enter button) opens above the dock", card["t"] and card["go"] and pg.info()["hubSel"] == 3, card)
-            lay = p.evaluate(LAYOUT_JS)
-            check("d. with the card open: still no overlap with the dock / top bar, the orb's corner free", not lay["overlaps"] and not lay["inOrb"] and not lay["small"] and not lay["off"], lay)
-            shot(p, "hub_card.png")
-            p.evaluate("document.querySelector('#sheetX').click()")
-            p.evaluate("document.querySelector('#findB').click()")
-            p.evaluate("window.__cities.find('canyon')")
-            hits = p.evaluate("[...document.querySelectorAll('.sheet .list li:not(.count)')].map(e => e.textContent)")
-            check("d. hub Find: 'canyon' finds Drawdown Canyon and only it", len(hits) == 1 and "Drawdown Canyon" in hits[0], hits)
-            p.evaluate("document.querySelector('#sheetX').click()")
-            p.evaluate("document.querySelector('#todayB').click()")
-            today = p.evaluate("({ id: window.__cities.today(), t: document.querySelector('#sheetTitle').textContent, h: document.querySelector('.sheet h3').textContent })")
-            name_of = {c["id"]: c["name"] for c in C}
-            check("d. Today: the card of the day names the city that tools/cities_card.py picks for today's date", today["t"] == "City of the day" and today["h"] == name_of[today["id"]], today)
-            p.evaluate("document.querySelector('#sheetX').click()")
-            p.evaluate("document.querySelector('#tourB').click()")
-            c0 = pg.info()["camPos"]
-            time.sleep(4)
-            i2 = pg.info()
-            check("d. Tour: the camera flies past the islands by itself (position changes, tour on)", i2["tour"] and sum(abs(a - b) for a, b in zip(c0, i2["camPos"])) > 30, (c0, i2["camPos"]))
-            shot(p, "hub_tour.png")
-            p.evaluate("window.__cities.tour()")
-            check("d. hub: no console errors, no failed requests", not pg.errs, pg.errs[:5])
-
-            seen = []
-            for cid, tag in (("trades-city", "trades"), ("equity-mountains", "equity"), ("honesty-city", "honesty")):
-                inf = pg.enter(cid, settle=3.2)
-                k = p.evaluate("window.__cities.nearestToCenter()")
-                pt = p.evaluate(f"window.__cities.project({k})")
-                p.touchscreen.tap(pt["x"], pt["y"])
-                try:
-                    p.wait_for_function("window.__cities.info().sheet === 'building'", timeout=20000)
-                    tapped = True
-                except Exception:
-                    tapped = False
-                time.sleep(1.4)
-                card = p.evaluate("({ t: document.querySelector('#sheetTitle').textContent, rows: document.querySelectorAll('.sheet .grid4 div').length, big: (document.querySelector('.sheet .big .v') || {}).textContent })")
-                lay = p.evaluate(LAYOUT_JS)
-                seen.append(inf["hash"])
-                check(f"d. {cid}: entered ({inf['n']} of {inf['total']} buildings, {inf['districts']} districts, live data), tap a building -> its card with numbers",
-                      inf["mode"] == "city" and inf["n"] > 0 and not inf["demo"] and tapped and card["t"] and card["rows"] >= 3 and card["big"], (inf, tapped, card))
-                check(f"d. {cid}: layout (card open): no overlap, the orb's corner free, no sideways scroll, targets >= 44 px, one top bar / sheet / dock",
-                      not lay["overlaps"] and not lay["inOrb"] and not lay["sideways"] and not lay["small"] and not lay["off"] and lay["counts"] == {"top": 1, "sheet": 1, "dock": 1}, lay)
-                shot(p, f"{tag}_card.png")
-                p.evaluate("document.querySelector('#sheetX').click()")
-                p.evaluate("document.querySelector('#topB').click()")
-                top = p.evaluate("document.querySelectorAll('.sheet .list li').length")
-                p.evaluate("window.__cities.find('a')")
-                m = p.evaluate("(() => { const c = document.querySelector('.sheet .list li.count'); return c ? c.textContent : ''; })()")
-                p.evaluate("document.querySelector('#sheetX').click()")
-                p.evaluate("window.__cities.find('')")
-                p.evaluate("document.querySelector('#sheetX').click()")
-                check(f"d. {cid}: Top 10 lists 10 buildings, Find lights up matches", top == 10 and re.search(r"\d", m) is not None, (top, m))
-                pos0 = pg.info()["camPos"]
-                moved = {}
-                for cam in ("skim", "drone", "grand"):
-                    p.evaluate(f"window.__cities.cam('{cam}')")
-                    time.sleep(2.2)
-                    cp = pg.info()["camPos"]
-                    moved[cam] = (round(sum(abs(a - b) for a, b in zip(pos0, cp)), 1), pg.info()["cam"])
-                    pos0 = cp
-                check(f"d. {cid}: the SKIM / DRONE / GRAND cameras fly (the camera moves each time)", all(v[0] > 5 and v[1] == c for c, v in moved.items()), moved)
-                if tag == "trades":
-                    shot(p, "trades_grand.png")
-                p.evaluate("window.__cities.cam('orbit')")
-                before = pg.info()["camPos"]
-                bx = p.evaluate("(() => { const r = document.querySelector('#mini').getBoundingClientRect(); return [r.left + r.width * 0.2, r.top + r.height * 0.25]; })()")
-                p.touchscreen.tap(bx[0], bx[1])
-                time.sleep(2.2)
-                after = pg.info()["camPos"]
-                check(f"d. {cid}: the minimap flies the camera where you tap", sum(abs(a - b) for a, b in zip(before, after)) > 5, (before, after))
-                pg.back()
-                check(f"d. {cid}: back to the world map", pg.info()["mode"] == "hub")
-            check("d. three DIFFERENT cities were built (3 different hashes)", len(set(seen)) == 3, seen)
-            p.evaluate("window.__cities.surprise()")
-            p.wait_for_function("window.__cities.info().mode === 'city'", timeout=120000)
-            time.sleep(1.5)
-            surprised = pg.info()["id"]
-            p.evaluate("window.__cities.surprise()")
-            p.wait_for_function("window.__cities.info().sel >= 0", timeout=30000)
-            check("d. Surprise me: in the hub it enters a random city, inside a city it flies to a random building", surprised in ids and pg.info()["sel"] >= 0, (surprised, pg.info()["sel"]))
-            check("d. no console errors, no failed requests on the whole run (hub + 3 cities + surprise)", not pg.errs, pg.errs[:5])
-            pg.close()
-
-            if QUICK:
-                br.close()
-                return
-            # ---- e. budgets per tier
-            for q in ("off", "low", "high", "ultra"):
-                pg = Page(br, base, q=q).open()
-                time.sleep(2)
-                hub = pg.p.evaluate("window.__cities.stats()")
-                inf = pg.enter("ideas-city", settle=1.0)
-                st = pg.p.evaluate("window.__cities.stats()")
-                B = st["budget"]
-                want = st["caps"]["cap"]
-                passes = {"off": 1, "low": 2, "high": 3, "ultra": 3}[q]
-                check(f"e. tier {q}: hub {hub['calls']} draw calls / {hub['triangles']:,} triangles, 31k-idea city {st['calls']} calls / {st['triangles']:,} triangles ({inf['n']:,} of {inf['total']:,} buildings), both inside the budget ({B['calls']} / {B['tris']:,})",
-                      hub["tier"] == q and st["tier"] == q and hub["calls"] <= B["calls"] and hub["triangles"] <= B["tris"] and st["calls"] <= B["calls"] and st["triangles"] <= B["tris"]
-                      and inf["n"] == min(inf["total"], want) and st["passes"] == passes and st["calls"] > 0, (hub, st, inf))
-                if q in ("low", "ultra"):
-                    shot(pg.p, f"ideas_{q}.png")
-                check(f"e. tier {q}: no console errors", not pg.errs, pg.errs[:4])
-                pg.close()
-
-            # ---- f. fallbacks
-            pg = Page(br, base, q="low", kalshi="abort").open()
-            inf = pg.enter("kalshi-city", settle=1.5)
-            toast = pg.p.evaluate("document.querySelector('#toast').textContent")
-            chip = pg.p.evaluate("[...document.querySelectorAll('.chip')].map(e => e.textContent).join('|')")
-            check("f. Kalshi feed offline: the city shows the marked sample (SAMPLE chip, a toast), no error", inf["demo"] and inf["n"] > 5 and "SAMPLE" in chip and "sample" in toast.lower(), (inf, chip, toast))
-            pg.back()
-            inf = pg.enter("obsidian-city", settle=1.0)
-            check("f. no vault connected on this browser: Obsidian City shows the marked sample, nothing is fetched or sent", inf["demo"] and inf["n"] > 5, inf)
-            check("f. fallbacks: no console errors", not pg.errs, pg.errs[:4])
-            pg.close()
-            feed = {"v": 3, "kind": "kalshi", "t": 1793760000, "trades": [{"t": 1793700000 + i * 60, "ticker": f"KXBTCD-26NOV0{i % 9}", "title": f"Bitcoin above ${70000 + i} bet {i}", "side": "yes" if i % 2 else "no",
-                                                                           "contracts": 3 + i, "price": 0.9, "pnl": (-1) ** i * (i + 1) * 0.7, "asset": "BTC" if i % 3 else "ETH", "strategy": "Late favourite"} for i in range(12)],
-                    "positions": [{"ticker": "KXETHD-26NOV05", "title": "Ether open bet", "side": "yes", "contracts": 4, "avg_price": 0.8, "value": 3.2, "pnl": 0, "asset": "ETH"}]}
-            pg = Page(br, base, q="low", kalshi=feed).open()
-            inf = pg.enter("kalshi-city", settle=1.0)
-            check("f. a live Kalshi feed (stubbed): the city shows its 13 real rows (12 trades + 1 open bet), LIVE, not the sample", not inf["demo"] and inf["n"] == 13, inf)
-            pg.close()
-            pg = Page(br, base, q="low", extra="&demo=1").open()
-            time.sleep(1)
-            inf = pg.enter("trades-city", settle=1.0)
-            check("f. ?demo=1: nothing is fetched, every city is built from the shipped sample (marked SAMPLE)", inf["demo"] and inf["n"] > 5 and pg.info()["live"] == 0, inf)
-            check("f. ?demo=1: no console errors", not pg.errs, pg.errs[:4])
-            pg.close()
-            pg = Page(br, base, q="low", reduced=True).open()
-            inf = pg.enter("sessions-city", settle=1.0)
-            check("f. reduced motion: the city opens without the fly-in, no auto-orbit drift, no errors", inf["mode"] == "city" and not pg.errs, (inf, pg.errs[:3]))
-            pg.close()
-            pg = Page(br, base, vw={"width": 844, "height": 390}, q="low").open()
-            time.sleep(2)
-            inf = pg.enter("levels-city", settle=2.0)
-            k = pg.p.evaluate("window.__cities.nearestToCenter()")
-            pg.p.evaluate(f"window.__cities.pickBuilding({k})")
-            time.sleep(1.2)
-            lay = pg.p.evaluate(LAYOUT_JS)
-            check("f. landscape 844 x 390: a city opens, a card opens at the side, no sideways scroll, nothing off screen, the orb's corner free", inf["mode"] == "city" and not lay["sideways"]
-                  and not lay["off"] and not lay["inOrb"], (inf, lay))
-            shot(pg.p, "landscape.png")
-            check("f. landscape: no console errors", not pg.errs, pg.errs[:4])
-            pg.close()
-            ctx = br.new_context(viewport={"width": 390, "height": 844})
-            ctx.add_init_script(SPEC_NO_GL)
-            p = ctx.new_page()
-            p.goto(base + "?q=low")
-            p.wait_for_function("document.body.dataset.ready === 'fallback'", timeout=60000)
-            txt = p.evaluate("document.querySelector('.fallback').textContent")
-            check("f. no WebGL: the page lists every city in plain text instead of a blank screen", all(c["name"] in txt for c in C), txt[:200])
-            ctx.close()
+            for key, fnc in SECTIONS.items():
+                if want(key):
+                    print(f"--- section {key}", flush=True)
+                    fnc(br, base, C, days, picks, ids)
             br.close()
     finally:
         srv.shutdown()
@@ -553,7 +627,7 @@ def run_browser(C, days, picks):
 def main():
     no_browser = "--no-browser" in sys.argv
     C = part_a()
-    days, picks = part_b(C)
+    days, picks, seeds = part_b(C)
     if not no_browser:
         try:
             import playwright  # noqa: F401

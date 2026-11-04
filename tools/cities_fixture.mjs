@@ -35,7 +35,8 @@ for (let i = 0; i < 40; i++) {
   const asset = pick(['BTC', 'BTC', 'BTC', 'ETH', 'ETH', 'SOL', 'XRP', 'GOLD']), win = r() < 0.64, c = 1 + Math.floor(r() * 18), price = 0.55 + r() * 0.4;
   const pnl = win ? +(c * (1 - price)).toFixed(2) : -+(c * price).toFixed(2);
   kal.push({ id: `sample${i}`, label: `${asset} 15-minute market ${i + 1}`, f: { asset, side: r() < 0.55 ? 'yes' : 'no', state: i > 32 ? 'open' : 'settled', contracts: c, price: +price.toFixed(2),
-    pnl, value: +(c * price).toFixed(2), strategy: pick(['15-min favourites', 'Late favourite', 'Gold 5 PM']), t: 1793000000 + i * 3600 } });
+    pnl, value: +(c * price).toFixed(2), strategy: pick(['15-min favourites', 'Late favourite', 'Gold 5 PM']), t: 1793000000 + i * 3600,
+    hour: Math.floor((((1793000000 + i * 3600 - 18000) % 86400) + 86400) % 86400 / 3600), weekday: (new Date((1793000000 + i * 3600 - 18000) * 1000).getUTCDay() + 6) % 7 } });
 }
 out.kalshi = { note: 'A made-up sample: the Kalshi feed did not answer, so these bets are not real.', items: kal };
 const notes = [];
