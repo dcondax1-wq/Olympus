@@ -6,6 +6,7 @@
 import { kellyStake } from './data.js';
 import { glass, metal, neon } from '../olympus/materials.js';   // the OLYMPUS render core's surfaces: brushed gold, holographic glass, glowing cores
 import { Caustics } from './caustics.js';
+import { Sparks } from './sparks.js';
 
 export const HEIGHT_PER_EDGE = 22;
 const WHEEL_R = 3;
@@ -41,6 +42,9 @@ export class Wheel {
     this.stems = new THREE.LineSegments(sg, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false }));
     this.stems.frustumCulled = false;
     this.group.add(this.stems);
+    this.spinV = 0;                                // rad/s from a tap on the wheel: a pure visual, it picks nothing
+    this.sparks = new Sparks(THREE, glow, opts.lite ? 70 : 150, 0.1);
+    this.group.add(this.sparks.pts);
     // the edge rings: +5¢ and +10¢ above the plane
     this.levels = [0.05, 0.1].map((e) => {
       const pts = [];
@@ -172,6 +176,10 @@ export class Wheel {
 
   select(key) { this.selected = key; }
 
+  /** A tap on the wheel: a kick of spin that eases out like a real wheel (viscous drag plus a little rim friction), the rim throws
+   *  sparks while it turns. Visual only: nothing is picked, nothing is bet. Kicks add up (tap again to spin it faster). */
+  kick() { this.spinV = Math.min(16, Math.abs(this.spinV) + 7 + Math.random() * 3); }
+
   /** The Kelly halos belong to the Wheel view: hidden while the camera looks at the pools or the scales. */
   showHalos(on) {
     this.halos = on;
@@ -180,7 +188,20 @@ export class Wheel {
 
   /** Move the coins: orbit, spin, the stems. `motion` false = still (reduced motion), placed where they are. */
   update(t, dt, now, motion) {
-    if (motion) this.wheel.rotation.y += dt * 0.07;
+    if (motion) {
+      const w = this.spinV;
+      this.wheel.rotation.y += dt * (0.07 + w);
+      if (w > 0) {                                                // physical ease-out: dw/dt = -k1 w - k2 (drag, then friction)
+        this.spinV = Math.max(0, w - dt * (0.55 * w + 0.3));
+        let n = w * dt * 9;
+        while (n > 0 && (n >= 1 || Math.random() < n)) {
+          n -= 1;
+          const a = Math.random() * Math.PI * 2, R = WHEEL_R + 0.24;
+          this.sparks.fling({ x: Math.cos(a) * R, y: 0.06, z: Math.sin(a) * R }, -Math.sin(a), Math.cos(a), Math.random() < 0.3 ? '#fff1c4' : GOLD, 0.5 + w * 0.35, 0.7);
+        }
+      }
+      this.sparks.update(dt);
+    }
     this.caustics.update(this.coins, t, !motion);
     const pos = this.stems.geometry.attributes.position.array, col = this.stems.geometry.attributes.color.array;
     const tmp = new this.T.Color();

@@ -418,8 +418,8 @@ def part_a():
           kfx and korb and html.index('src="kfx.js?v=') < html.index('src="kalshi.js?v=') < html.index('type="module" src="korb.js?v=')
           and f"'./kfx.js?v={ver}'" in sw and f"'./korb.js?v={ver}'" in sw and "'../jarvis/three.module.min.js'" in sw)
     kcode = re.sub(r"//[^\n]*", "", korb)
-    check("x. the orb: three.js only from ../jarvis/ (the site's one copy), no other address; paused when hidden or off screen; 30 fps at most; jfx 'off' = no WebGL",
-          re.findall(r"import\(['\"]([^'\"]+)", kcode) == ["../jarvis/three.module.min.js"] and not re.findall(r"https?://", kcode)
+    check("x. the orb: three.js only from ../jarvis/ (the site's one copy), drawn by the OLYMPUS render core, no other address; paused when hidden or off screen; 30 fps at most; jfx 'off' = no WebGL",
+          re.findall(r"import\(['\"]([^'\"]+)", kcode) == ["../jarvis/three.module.min.js", "../olympus/render.js"] and not re.findall(r"https?://", kcode)
           and "document.hidden" in kcode and "IntersectionObserver" in kcode and "now - last < 33" in kcode and "fx() === 'off'" in kcode)
     check("x. themes: one applyTheme(tokens), hex colours only, hooked to Olympus.theme() / onTheme and the 'olympus.theme' key",
           "window.applyTheme = applyTheme" in kfx and "HEX.test" in kfx and "O.onTheme" in kfx and "O.theme()" in kfx and "'olympus.theme'" in kfx)
