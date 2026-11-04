@@ -1,0 +1,2504 @@
+{
+ "v": 1,
+ "kind": "olympus-starter-manifest",
+ "sha": "f2c259e0d45a",
+ "sources": [
+  "STRATEGY.md",
+  "research/lit/mffu_rules.json",
+  "research/writeups/2026-11-03-money-plan.md",
+  "research/writeups/2026-11-04_kalshi_edges.md",
+  "research/writeups/2026-11-04_lit_ideas_night.md",
+  "research/writeups/2026-11-04_lit_ideas_round2.md",
+  "research/writeups/2026-11-04_second_strategies_night.md",
+  "research/writeups/atlas.md",
+  "research/writeups/blitz-25k.md",
+  "tools/web_public/athena/library.json",
+  "tools/web_public/jarvis/obsidian.js",
+  "tools/web_public/plutus/plans.json"
+ ],
+ "counts": {
+  "notes": 225,
+  "links": 1116,
+  "words": 35896,
+  "folders": {
+   "(top)": 2,
+   "Daily": 1,
+   "Journal": 1,
+   "Money": 7,
+   "OLYMPUS": 30,
+   "Playbooks": 11,
+   "Research": 94,
+   "Templates": 6,
+   "Trading": 73
+  }
+ },
+ "notes": [
+  {
+   "path": "00 Home.md",
+   "title": "00 Home",
+   "type": "moc",
+   "tags": [
+    "home",
+    "moc"
+   ],
+   "words": 454,
+   "links": 22
+  },
+  {
+   "path": "Daily/Daily notes.md",
+   "title": "Daily notes",
+   "type": "moc",
+   "tags": [
+    "daily",
+    "moc"
+   ],
+   "words": 51,
+   "links": 4
+  },
+  {
+   "path": "Goals.md",
+   "title": "Goals",
+   "type": "goals",
+   "tags": [
+    "goals",
+    "trading"
+   ],
+   "words": 111,
+   "links": 4
+  },
+  {
+   "path": "Journal/Trade journal.md",
+   "title": "Trade journal",
+   "type": "moc",
+   "tags": [
+    "journal",
+    "moc"
+   ],
+   "words": 54,
+   "links": 5
+  },
+  {
+   "path": "Money/Accounts plan.md",
+   "title": "Accounts plan",
+   "type": "money",
+   "tags": [
+    "money",
+    "accounts"
+   ],
+   "words": 425,
+   "links": 5
+  },
+  {
+   "path": "Money/Money hub.md",
+   "title": "Money hub",
+   "type": "moc",
+   "tags": [
+    "money",
+    "moc"
+   ],
+   "words": 161,
+   "links": 8
+  },
+  {
+   "path": "Money/Numbers/Eval speed - 2 weeks.md",
+   "title": "Eval speed - 2 weeks",
+   "type": "numbers",
+   "tags": [
+    "money",
+    "numbers",
+    "mffu"
+   ],
+   "words": 83,
+   "links": 2
+  },
+  {
+   "path": "Money/Numbers/How good is it The headline.md",
+   "title": "How good is it The headline",
+   "type": "numbers",
+   "tags": [
+    "money",
+    "numbers",
+    "strategy"
+   ],
+   "words": 121,
+   "links": 3
+  },
+  {
+   "path": "Money/Numbers/Money, not only R.md",
+   "title": "Money, not only R",
+   "type": "numbers",
+   "tags": [
+    "money",
+    "numbers",
+    "mffu"
+   ],
+   "words": 76,
+   "links": 4
+  },
+  {
+   "path": "Money/Numbers/Two halves rule.md",
+   "title": "Two halves rule",
+   "type": "numbers",
+   "tags": [
+    "money",
+    "numbers",
+    "strategy"
+   ],
+   "words": 68,
+   "links": 2
+  },
+  {
+   "path": "Money/Plutus numbers.md",
+   "title": "Plutus numbers",
+   "type": "money",
+   "tags": [
+    "money",
+    "plutus"
+   ],
+   "words": 204,
+   "links": 4
+  },
+  {
+   "path": "OLYMPUS/Apps/Arena - ranks and labours.md",
+   "title": "Arena - ranks and labours",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 75,
+   "links": 2
+  },
+  {
+   "path": "OLYMPUS/Apps/Ares - the war room.md",
+   "title": "Ares - the war room",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 81,
+   "links": 2
+  },
+  {
+   "path": "OLYMPUS/Apps/Athena - this library.md",
+   "title": "Athena - this library",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 78,
+   "links": 2
+  },
+  {
+   "path": "OLYMPUS/Apps/Bridge - the ChatGPT sync steps.md",
+   "title": "Bridge - the ChatGPT sync steps",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 141,
+   "links": 2
+  },
+  {
+   "path": "OLYMPUS/Apps/Bridge - working with ChatGPT.md",
+   "title": "Bridge - working with ChatGPT",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 84,
+   "links": 2
+  },
+  {
+   "path": "OLYMPUS/Apps/DAPHNE - the strategy tree.md",
+   "title": "DAPHNE - the strategy tree",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 105,
+   "links": 2
+  },
+  {
+   "path": "OLYMPUS/Apps/Data City - tested ideas.md",
+   "title": "Data City - tested ideas",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 109,
+   "links": 3
+  },
+  {
+   "path": "OLYMPUS/Apps/Fates - your odds.md",
+   "title": "Fates - your odds",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 96,
+   "links": 2
+  },
+  {
+   "path": "OLYMPUS/Apps/Hermes - your week.md",
+   "title": "Hermes - your week",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 68,
+   "links": 2
+  },
+  {
+   "path": "OLYMPUS/Apps/Jarvis - Think for me.md",
+   "title": "Jarvis - Think for me",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 132,
+   "links": 2
+  },
+  {
+   "path": "OLYMPUS/Apps/Jarvis - smart mode (free key).md",
+   "title": "Jarvis - smart mode (free key)",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 160,
+   "links": 2
+  },
+  {
+   "path": "OLYMPUS/Apps/Jarvis - talking.md",
+   "title": "Jarvis - talking",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 118,
+   "links": 3
+  },
+  {
+   "path": "OLYMPUS/Apps/Jarvis - the home app.md",
+   "title": "Jarvis - the home app",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 127,
+   "links": 2
+  },
+  {
+   "path": "OLYMPUS/Apps/Jarvis and Obsidian notes.md",
+   "title": "Jarvis and Obsidian notes",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 135,
+   "links": 2
+  },
+  {
+   "path": "OLYMPUS/Apps/Jarvis modes.md",
+   "title": "Jarvis modes",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 127,
+   "links": 2
+  },
+  {
+   "path": "OLYMPUS/Apps/Kalshi - the other bot.md",
+   "title": "Kalshi - the other bot",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 92,
+   "links": 2
+  },
+  {
+   "path": "OLYMPUS/Apps/Mind - your notes as a brain.md",
+   "title": "Mind - your notes as a brain",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 66,
+   "links": 2
+  },
+  {
+   "path": "OLYMPUS/Apps/OLYMPUS apps.md",
+   "title": "OLYMPUS apps",
+   "type": "moc",
+   "tags": [
+    "olympus",
+    "moc"
+   ],
+   "words": 819,
+   "links": 28
+  },
+  {
+   "path": "OLYMPUS/Apps/Odeon - trade replays.md",
+   "title": "Odeon - trade replays",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 91,
+   "links": 3
+  },
+  {
+   "path": "OLYMPUS/Apps/Oracle - the live radar.md",
+   "title": "Oracle - the live radar",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 105,
+   "links": 3
+  },
+  {
+   "path": "OLYMPUS/Apps/Pantheon - the market mood.md",
+   "title": "Pantheon - the market mood",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 86,
+   "links": 2
+  },
+  {
+   "path": "OLYMPUS/Apps/Phone setup.md",
+   "title": "Phone setup",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 175,
+   "links": 2
+  },
+  {
+   "path": "OLYMPUS/Apps/Planner - your calendar.md",
+   "title": "Planner - your calendar",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 74,
+   "links": 2
+  },
+  {
+   "path": "OLYMPUS/Apps/Plutus - the money plan.md",
+   "title": "Plutus - the money plan",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 85,
+   "links": 2
+  },
+  {
+   "path": "OLYMPUS/Apps/Prometheus - evolving the bot.md",
+   "title": "Prometheus - evolving the bot",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 85,
+   "links": 2
+  },
+  {
+   "path": "OLYMPUS/Apps/Tyche - Kalshi as a wheel.md",
+   "title": "Tyche - Kalshi as a wheel",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 72,
+   "links": 2
+  },
+  {
+   "path": "OLYMPUS/Apps/Zenith - the phone dashboard.md",
+   "title": "Zenith - the phone dashboard",
+   "type": "app-guide",
+   "tags": [
+    "olympus"
+   ],
+   "words": 118,
+   "links": 3
+  },
+  {
+   "path": "OLYMPUS/Jarvis/How Jarvis reads this vault.md",
+   "title": "How Jarvis reads this vault",
+   "type": "guide",
+   "tags": [
+    "jarvis"
+   ],
+   "words": 197,
+   "links": 5
+  },
+  {
+   "path": "OLYMPUS/Jarvis/Me.md",
+   "title": "Me",
+   "type": "me",
+   "tags": [
+    "me",
+    "jarvis"
+   ],
+   "words": 233,
+   "links": 8
+  },
+  {
+   "path": "OLYMPUS/Jarvis/Memory.md",
+   "title": "Memory",
+   "type": "memory",
+   "tags": [
+    "jarvis",
+    "memory"
+   ],
+   "words": 34,
+   "links": 2
+  },
+  {
+   "path": "Playbooks/Daily routine.md",
+   "title": "Daily routine",
+   "type": "playbook",
+   "tags": [
+    "playbook",
+    "olympus"
+   ],
+   "words": 215,
+   "links": 8
+  },
+  {
+   "path": "Playbooks/Playbooks.md",
+   "title": "Playbooks",
+   "type": "moc",
+   "tags": [
+    "playbook",
+    "moc"
+   ],
+   "words": 285,
+   "links": 13
+  },
+  {
+   "path": "Playbooks/When 7 days with no trade.md",
+   "title": "When 7 days with no trade",
+   "type": "playbook",
+   "tags": [
+    "playbook",
+    "mffu"
+   ],
+   "words": 110,
+   "links": 2
+  },
+  {
+   "path": "Playbooks/When I have a loss.md",
+   "title": "When I have a loss",
+   "type": "playbook",
+   "tags": [
+    "playbook",
+    "strategy"
+   ],
+   "words": 141,
+   "links": 4
+  },
+  {
+   "path": "Playbooks/When I hit the daily loss limit.md",
+   "title": "When I hit the daily loss limit",
+   "type": "playbook",
+   "tags": [
+    "playbook",
+    "mffu"
+   ],
+   "words": 65,
+   "links": 2
+  },
+  {
+   "path": "Playbooks/When I want a payout.md",
+   "title": "When I want a payout",
+   "type": "playbook",
+   "tags": [
+    "playbook",
+    "mffu"
+   ],
+   "words": 99,
+   "links": 3
+  },
+  {
+   "path": "Playbooks/When I want to go live.md",
+   "title": "When I want to go live",
+   "type": "playbook",
+   "tags": [
+    "playbook",
+    "strategy",
+    "mffu"
+   ],
+   "words": 70,
+   "links": 2
+  },
+  {
+   "path": "Playbooks/When I want to try a new idea.md",
+   "title": "When I want to try a new idea",
+   "type": "playbook",
+   "tags": [
+    "playbook",
+    "rejected"
+   ],
+   "words": 72,
+   "links": 2
+  },
+  {
+   "path": "Playbooks/When an eval fails.md",
+   "title": "When an eval fails",
+   "type": "playbook",
+   "tags": [
+    "playbook",
+    "numbers",
+    "mffu"
+   ],
+   "words": 111,
+   "links": 2
+  },
+  {
+   "path": "Playbooks/When an eval passes.md",
+   "title": "When an eval passes",
+   "type": "playbook",
+   "tags": [
+    "playbook",
+    "mffu"
+   ],
+   "words": 74,
+   "links": 2
+  },
+  {
+   "path": "Playbooks/When two losses in a row.md",
+   "title": "When two losses in a row",
+   "type": "playbook",
+   "tags": [
+    "playbook"
+   ],
+   "words": 70,
+   "links": 2
+  },
+  {
+   "path": "Research/Kalshi bot research.md",
+   "title": "Kalshi bot research",
+   "type": "moc",
+   "tags": [
+    "research",
+    "kalshi",
+    "moc"
+   ],
+   "words": 308,
+   "links": 12
+  },
+  {
+   "path": "Research/Kalshi/How sure is the Kalshi result.md",
+   "title": "How sure is the Kalshi result",
+   "type": "kalshi",
+   "tags": [
+    "kalshi"
+   ],
+   "words": 105,
+   "links": 2
+  },
+  {
+   "path": "Research/Kalshi/Is there a positive pocket on Kalshi.md",
+   "title": "Is there a positive pocket on Kalshi",
+   "type": "kalshi",
+   "tags": [
+    "kalshi",
+    "numbers"
+   ],
+   "words": 87,
+   "links": 2
+  },
+  {
+   "path": "Research/Kalshi/Risk of ruin at today's size.md",
+   "title": "Risk of ruin at today's size",
+   "type": "kalshi",
+   "tags": [
+    "kalshi",
+    "numbers"
+   ],
+   "words": 73,
+   "links": 2
+  },
+  {
+   "path": "Research/Kalshi/The hidden cause - bet size.md",
+   "title": "The hidden cause - bet size",
+   "type": "kalshi",
+   "tags": [
+    "kalshi",
+    "numbers"
+   ],
+   "words": 77,
+   "links": 2
+  },
+  {
+   "path": "Research/Kalshi/What loses on Kalshi.md",
+   "title": "What loses on Kalshi",
+   "type": "kalshi",
+   "tags": [
+    "kalshi",
+    "numbers"
+   ],
+   "words": 53,
+   "links": 2
+  },
+  {
+   "path": "Research/Kalshi/What to do on Kalshi.md",
+   "title": "What to do on Kalshi",
+   "type": "kalshi",
+   "tags": [
+    "kalshi",
+    "numbers"
+   ],
+   "words": 53,
+   "links": 2
+  },
+  {
+   "path": "Research/Kalshi/Why a 94% win rate still loses.md",
+   "title": "Why a 94% win rate still loses",
+   "type": "kalshi",
+   "tags": [
+    "kalshi",
+    "numbers"
+   ],
+   "words": 92,
+   "links": 2
+  },
+  {
+   "path": "Research/Kalshi/Why the Kalshi bot loses money.md",
+   "title": "Why the Kalshi bot loses money",
+   "type": "kalshi",
+   "tags": [
+    "kalshi",
+    "numbers"
+   ],
+   "words": 58,
+   "links": 2
+  },
+  {
+   "path": "Research/Rejected ideas.md",
+   "title": "Rejected ideas",
+   "type": "moc",
+   "tags": [
+    "research",
+    "moc"
+   ],
+   "words": 365,
+   "links": 14
+  },
+  {
+   "path": "Research/Rejected ideas/A scalper like a person.md",
+   "title": "A scalper like a person",
+   "type": "rejected",
+   "tags": [
+    "research",
+    "rejected"
+   ],
+   "words": 57,
+   "links": 2
+  },
+  {
+   "path": "Research/Rejected ideas/A second strategy alone.md",
+   "title": "A second strategy alone",
+   "type": "rejected",
+   "tags": [
+    "research",
+    "rejected"
+   ],
+   "words": 56,
+   "links": 2
+  },
+  {
+   "path": "Research/Rejected ideas/Famous models as taught.md",
+   "title": "Famous models as taught",
+   "type": "rejected",
+   "tags": [
+    "research",
+    "rejected"
+   ],
+   "words": 86,
+   "links": 4
+  },
+  {
+   "path": "Research/Rejected ideas/Fancier exits.md",
+   "title": "Fancier exits",
+   "type": "rejected",
+   "tags": [
+    "research",
+    "rejected"
+   ],
+   "words": 51,
+   "links": 3
+  },
+  {
+   "path": "Research/Rejected ideas/Fixed small stops.md",
+   "title": "Fixed small stops",
+   "type": "rejected",
+   "tags": [
+    "research",
+    "rejected"
+   ],
+   "words": 58,
+   "links": 2
+  },
+  {
+   "path": "Research/Rejected ideas/More confluences (92 tried).md",
+   "title": "More confluences (92 tried)",
+   "type": "rejected",
+   "tags": [
+    "research",
+    "rejected"
+   ],
+   "words": 57,
+   "links": 2
+  },
+  {
+   "path": "Research/Rejected ideas/Other targets.md",
+   "title": "Other targets",
+   "type": "rejected",
+   "tags": [
+    "research",
+    "rejected"
+   ],
+   "words": 48,
+   "links": 2
+  },
+  {
+   "path": "Research/Rejected ideas/Skip after a cold streak.md",
+   "title": "Skip after a cold streak",
+   "type": "rejected",
+   "tags": [
+    "research",
+    "rejected"
+   ],
+   "words": 55,
+   "links": 2
+  },
+  {
+   "path": "Research/Rejected ideas/Skipping LIT to protect a second account.md",
+   "title": "Skipping LIT to protect a second account",
+   "type": "rejected",
+   "tags": [
+    "research",
+    "rejected"
+   ],
+   "words": 55,
+   "links": 2
+  },
+  {
+   "path": "Research/Rejected ideas/Structure-based management.md",
+   "title": "Structure-based management",
+   "type": "rejected",
+   "tags": [
+    "research",
+    "rejected"
+   ],
+   "words": 61,
+   "links": 2
+  },
+  {
+   "path": "Research/Rejected ideas/The LIT extras (none adopted).md",
+   "title": "The LIT extras (none adopted)",
+   "type": "rejected",
+   "tags": [
+    "research",
+    "rejected",
+    "strategy"
+   ],
+   "words": 75,
+   "links": 3
+  },
+  {
+   "path": "Research/Rejected ideas/The graveyard - 19 lists of dead ends.md",
+   "title": "The graveyard - 19 lists of dead ends",
+   "type": "rejected",
+   "tags": [
+    "research",
+    "rejected"
+   ],
+   "words": 77,
+   "links": 2
+  },
+  {
+   "path": "Research/Research hub.md",
+   "title": "Research hub",
+   "type": "moc",
+   "tags": [
+    "research",
+    "moc"
+   ],
+   "words": 156,
+   "links": 11
+  },
+  {
+   "path": "Research/What we learned.md",
+   "title": "What we learned",
+   "type": "moc",
+   "tags": [
+    "research",
+    "moc"
+   ],
+   "words": 2099,
+   "links": 65
+  },
+  {
+   "path": "Research/What we learned/A second strategy next to LIT.md",
+   "title": "A second strategy next to LIT",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 198,
+   "links": 7
+  },
+  {
+   "path": "Research/What we learned/A strategy uncorrelated with LIT.md",
+   "title": "A strategy uncorrelated with LIT",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 230,
+   "links": 3
+  },
+  {
+   "path": "Research/What we learned/ATLAS + BLITZ edge night.md",
+   "title": "ATLAS + BLITZ edge night",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 251,
+   "links": 2
+  },
+  {
+   "path": "Research/What we learned/ATLAS - account B (EMA + MACD + S-R) tuned as a whole for the Builder.md",
+   "title": "ATLAS - account B (EMA + MACD + S-R) tuned as a whole for the Builder",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 266,
+   "links": 2
+  },
+  {
+   "path": "Research/What we learned/ATLAS edge, day session (b).md",
+   "title": "ATLAS edge, day session (b)",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 283,
+   "links": 2
+  },
+  {
+   "path": "Research/What we learned/ATLAS v2 - making ATLAS (account B, Builder 25K) hold up outside 2026.md",
+   "title": "ATLAS v2 - making ATLAS (account B, Builder 25K) hold up outside 2026",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 222,
+   "links": 2
+  },
+  {
+   "path": "Research/What we learned/ATLAS's funded account.md",
+   "title": "ATLAS's funded account",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 150,
+   "links": 2
+  },
+  {
+   "path": "Research/What we learned/Account B - the second strategies on their own MFFU account, Builder.md",
+   "title": "Account B - the second strategies on their own MFFU account, Builder",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 253,
+   "links": 2
+  },
+  {
+   "path": "Research/What we learned/BLITZ (the noise-area scalp) on MFFU.md",
+   "title": "BLITZ (the noise-area scalp) on MFFU",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 225,
+   "links": 4
+  },
+  {
+   "path": "Research/What we learned/Bias, filters and timing.md",
+   "title": "Bias, filters and timing",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 109,
+   "links": 3
+  },
+  {
+   "path": "Research/What we learned/Calendar and seasonality.md",
+   "title": "Calendar and seasonality",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 109,
+   "links": 2
+  },
+  {
+   "path": "Research/What we learned/Cheaper evals - which eval sizing buys a funded account cheapest.md",
+   "title": "Cheaper evals - which eval sizing buys a funded account cheapest",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 247,
+   "links": 2
+  },
+  {
+   "path": "Research/What we learned/Cross-market and regime context.md",
+   "title": "Cross-market and regime context",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 179,
+   "links": 3
+  },
+  {
+   "path": "Research/What we learned/Cutting losses to pass more MFFU evals.md",
+   "title": "Cutting losses to pass more MFFU evals",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 200,
+   "links": 3
+  },
+  {
+   "path": "Research/What we learned/Funded-phase money from the payout rules.md",
+   "title": "Funded-phase money from the payout rules",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 203,
+   "links": 2
+  },
+  {
+   "path": "Research/What we learned/HQ LIT - can LIT win more often without losing its payoff Exits, A+.md",
+   "title": "HQ LIT - can LIT win more often without losing its payoff Exits, A+",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 244,
+   "links": 4
+  },
+  {
+   "path": "Research/What we learned/Intraday anatomy - when, how and where the bot's trades make or lose.md",
+   "title": "Intraday anatomy - when, how and where the bot's trades make or lose",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 151,
+   "links": 5
+  },
+  {
+   "path": "Research/What we learned/LIT (Liquidity Inducement Theorem) built as its own strategy, head.md",
+   "title": "LIT (Liquidity Inducement Theorem) built as its own strategy, head",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 168,
+   "links": 6
+  },
+  {
+   "path": "Research/What we learned/LIT + the second strategies.md",
+   "title": "LIT + the second strategies",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 206,
+   "links": 2
+  },
+  {
+   "path": "Research/What we learned/LIT ablation - what each rule earns, what can go, which knobs sit.md",
+   "title": "LIT ablation - what each rule earns, what can go, which knobs sit",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 255,
+   "links": 5
+  },
+  {
+   "path": "Research/What we learned/LIT experiments - sizing like a prop trader, a New York session, other.md",
+   "title": "LIT experiments - sizing like a prop trader, a New York session, other",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 211,
+   "links": 3
+  },
+  {
+   "path": "Research/What we learned/LIT final - one LIT strategy built from the four 2026 studies.md",
+   "title": "LIT final - one LIT strategy built from the four 2026 studies",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 191,
+   "links": 4
+  },
+  {
+   "path": "Research/What we learned/LIT funded accounts on the new live LIT (tcheck + scale-in + BE+1.25).md",
+   "title": "LIT funded accounts on the new live LIT (tcheck + scale-in + BE+1.25)",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 241,
+   "links": 3
+  },
+  {
+   "path": "Research/What we learned/LIT funded sizing - how big to trade once the MFFU eval is passed.md",
+   "title": "LIT funded sizing - how big to trade once the MFFU eval is passed",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 241,
+   "links": 3
+  },
+  {
+   "path": "Research/What we learned/LIT higher-time-frame confluences.md",
+   "title": "LIT higher-time-frame confluences",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 274,
+   "links": 2
+  },
+  {
+   "path": "Research/What we learned/LIT loss learning - the 15-minute check, and what the losses can't tell.md",
+   "title": "LIT loss learning - the 15-minute check, and what the losses can't tell",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 242,
+   "links": 2
+  },
+  {
+   "path": "Research/What we learned/LIT losses - where and why LIT loses in 2026, and the rules worth adding.md",
+   "title": "LIT losses - where and why LIT loses in 2026, and the rules worth adding",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 202,
+   "links": 5
+  },
+  {
+   "path": "Research/What we learned/LIT on 3 funded accounts.md",
+   "title": "LIT on 3 funded accounts",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 222,
+   "links": 2
+  },
+  {
+   "path": "Research/What we learned/LIT on the 1-minute chart.md",
+   "title": "LIT on the 1-minute chart",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 241,
+   "links": 6
+  },
+  {
+   "path": "Research/What we learned/LIT tight stops and bigger size.md",
+   "title": "LIT tight stops and bigger size",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 235,
+   "links": 4
+  },
+  {
+   "path": "Research/What we learned/LIT trade selection.md",
+   "title": "LIT trade selection",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 241,
+   "links": 3
+  },
+  {
+   "path": "Research/What we learned/LIT two-week eval - how to pass the MFFU 50K in 10 sessions or less.md",
+   "title": "LIT two-week eval - how to pass the MFFU 50K in 10 sessions or less",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 267,
+   "links": 3
+  },
+  {
+   "path": "Research/What we learned/LIT untested entry ideas.md",
+   "title": "LIT untested entry ideas",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 224,
+   "links": 5
+  },
+  {
+   "path": "Research/What we learned/Leakage check - does the backtest peek at the future.md",
+   "title": "Leakage check - does the backtest peek at the future",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 68,
+   "links": 2
+  },
+  {
+   "path": "Research/What we learned/Loss anatomy - where the money leaks.md",
+   "title": "Loss anatomy - where the money leaks",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 82,
+   "links": 2
+  },
+  {
+   "path": "Research/What we learned/MFFU Builder 25K next to the 50K.md",
+   "title": "MFFU Builder 25K next to the 50K",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 270,
+   "links": 4
+  },
+  {
+   "path": "Research/What we learned/MNQ feed vs NQ backtest.md",
+   "title": "MNQ feed vs NQ backtest",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 162,
+   "links": 2
+  },
+  {
+   "path": "Research/What we learned/Managing the trade.md",
+   "title": "Managing the trade",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 113,
+   "links": 4
+  },
+  {
+   "path": "Research/What we learned/Mind - a thinking layer for Zlarior, ATLAS and BLITZ (similar-setup.md",
+   "title": "Mind - a thinking layer for Zlarior, ATLAS and BLITZ (similar-setup",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 274,
+   "links": 2
+  },
+  {
+   "path": "Research/What we learned/Momentum scalps for a third account.md",
+   "title": "Momentum scalps for a third account",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 220,
+   "links": 6
+  },
+  {
+   "path": "Research/What we learned/Monte Carlo of the MFFU 50K eval.md",
+   "title": "Monte Carlo of the MFFU 50K eval",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 124,
+   "links": 2
+  },
+  {
+   "path": "Research/What we learned/Moving averages as confluence.md",
+   "title": "Moving averages as confluence",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 109,
+   "links": 3
+  },
+  {
+   "path": "Research/What we learned/Night R&D (money + eval agent).md",
+   "title": "Night R&D (money + eval agent)",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 209,
+   "links": 2
+  },
+  {
+   "path": "Research/What we learned/Parameter robustness.md",
+   "title": "Parameter robustness",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 147,
+   "links": 3
+  },
+  {
+   "path": "Research/What we learned/Retail strategies on their own (EMA, MACD, support-resistance incl. ORB.md",
+   "title": "Retail strategies on their own (EMA, MACD, support-resistance incl. ORB",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 255,
+   "links": 4
+  },
+  {
+   "path": "Research/What we learned/Risk and sizing - every sizing idea tested on both periods.md",
+   "title": "Risk and sizing - every sizing idea tested on both periods",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 97,
+   "links": 2
+  },
+  {
+   "path": "Research/What we learned/Risk summary - size down the two kinds of trades that lose.md",
+   "title": "Risk summary - size down the two kinds of trades that lose",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 124,
+   "links": 3
+  },
+  {
+   "path": "Research/What we learned/STOP-HUNT audit - trying to break the Asia resweep hunt and the trend.md",
+   "title": "STOP-HUNT audit - trying to break the Asia resweep hunt and the trend",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 280,
+   "links": 3
+  },
+  {
+   "path": "Research/What we learned/STOP-HUNT family - retail stop pools, the hunt, a resweep or inducement.md",
+   "title": "STOP-HUNT family - retail stop pools, the hunt, a resweep or inducement",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 251,
+   "links": 6
+  },
+  {
+   "path": "Research/What we learned/Second strategies on LIT's account.md",
+   "title": "Second strategies on LIT's account",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 214,
+   "links": 4
+  },
+  {
+   "path": "Research/What we learned/Second strategy next to LIT (learned).md",
+   "title": "Second strategy next to LIT (learned)",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 231,
+   "links": 6
+  },
+  {
+   "path": "Research/What we learned/Second strategy next to LIT.md",
+   "title": "Second strategy next to LIT",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 255,
+   "links": 7
+  },
+  {
+   "path": "Research/What we learned/Sizing cap invariant.md",
+   "title": "Sizing cap invariant",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 239,
+   "links": 3
+  },
+  {
+   "path": "Research/What we learned/The eval game - which plan, when to start, two accounts, after a fail.md",
+   "title": "The eval game - which plan, when to start, two accounts, after a fail",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 145,
+   "links": 2
+  },
+  {
+   "path": "Research/What we learned/The funded path - from a passed eval to money in the bank.md",
+   "title": "The funded path - from a passed eval to money in the bank",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 221,
+   "links": 4
+  },
+  {
+   "path": "Research/What we learned/The money plan on today's settings (night).md",
+   "title": "The money plan on today's settings (night)",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 234,
+   "links": 3
+  },
+  {
+   "path": "Research/What we learned/The scaling plan - from 2 accounts (LIT 50K + ATLAS 25K) to 10, when.md",
+   "title": "The scaling plan - from 2 accounts (LIT 50K + ATLAS 25K) to 10, when",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 237,
+   "links": 2
+  },
+  {
+   "path": "Research/What we learned/Trade construction.md",
+   "title": "Trade construction",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 112,
+   "links": 4
+  },
+  {
+   "path": "Research/What we learned/Uprisk - where the funded money is capped, and what really pays more.md",
+   "title": "Uprisk - where the funded money is capped, and what really pays more",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 262,
+   "links": 2
+  },
+  {
+   "path": "Research/What we learned/VWAP and volume profile as confluence.md",
+   "title": "VWAP and volume profile as confluence",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 107,
+   "links": 3
+  },
+  {
+   "path": "Research/What we learned/What to expect - streaks, drawdowns, flat months and the odds inside.md",
+   "title": "What to expect - streaks, drawdowns, flat months and the odds inside",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 173,
+   "links": 2
+  },
+  {
+   "path": "Research/What we learned/Win rate and more trades.md",
+   "title": "Win rate and more trades",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 133,
+   "links": 5
+  },
+  {
+   "path": "Research/What we learned/Zlarior eval size worked out state by state (dynamic programming,.md",
+   "title": "Zlarior eval size worked out state by state (dynamic programming,",
+   "type": "research",
+   "tags": [
+    "research",
+    "learned"
+   ],
+   "words": 236,
+   "links": 3
+  },
+  {
+   "path": "Research/Writeups/ATLAS research - account B on the Builder 25K.md",
+   "title": "ATLAS research - account B on the Builder 25K",
+   "type": "research",
+   "tags": [
+    "research",
+    "second-strategies"
+   ],
+   "words": 358,
+   "links": 4
+  },
+  {
+   "path": "Research/Writeups/BLITZ research - its own Builder 25K.md",
+   "title": "BLITZ research - its own Builder 25K",
+   "type": "research",
+   "tags": [
+    "research",
+    "second-strategies"
+   ],
+   "words": 467,
+   "links": 4
+  },
+  {
+   "path": "Research/Writeups/Kalshi edges - why it loses and what might work.md",
+   "title": "Kalshi edges - why it loses and what might work",
+   "type": "research",
+   "tags": [
+    "research",
+    "kalshi"
+   ],
+   "words": 309,
+   "links": 4
+  },
+  {
+   "path": "Research/Writeups/LIT ideas night - 16 new ideas tested.md",
+   "title": "LIT ideas night - 16 new ideas tested",
+   "type": "research",
+   "tags": [
+    "research",
+    "lit"
+   ],
+   "words": 367,
+   "links": 4
+  },
+  {
+   "path": "Research/Writeups/LIT ideas round 2 - scale-in and six more ideas.md",
+   "title": "LIT ideas round 2 - scale-in and six more ideas",
+   "type": "research",
+   "tags": [
+    "research",
+    "lit"
+   ],
+   "words": 357,
+   "links": 4
+  },
+  {
+   "path": "Research/Writeups/Second strategies night - ATLAS and BLITZ on the 25K.md",
+   "title": "Second strategies night - ATLAS and BLITZ on the 25K",
+   "type": "research",
+   "tags": [
+    "research",
+    "second-strategies"
+   ],
+   "words": 464,
+   "links": 4
+  },
+  {
+   "path": "Research/Writeups/The money plan research.md",
+   "title": "The money plan research",
+   "type": "research",
+   "tags": [
+    "research",
+    "money"
+   ],
+   "words": 467,
+   "links": 4
+  },
+  {
+   "path": "Templates/Daily note.md",
+   "title": "Daily note",
+   "type": "template",
+   "tags": [
+    "templates",
+    "daily"
+   ],
+   "words": 96,
+   "links": 3
+  },
+  {
+   "path": "Templates/Idea note.md",
+   "title": "Idea note",
+   "type": "template",
+   "tags": [
+    "templates",
+    "idea"
+   ],
+   "words": 89,
+   "links": 3
+  },
+  {
+   "path": "Templates/Kalshi bet review.md",
+   "title": "Kalshi bet review",
+   "type": "template",
+   "tags": [
+    "templates",
+    "kalshi"
+   ],
+   "words": 63,
+   "links": 1
+  },
+  {
+   "path": "Templates/Templates.md",
+   "title": "Templates",
+   "type": "moc",
+   "tags": [
+    "templates",
+    "moc"
+   ],
+   "words": 58,
+   "links": 6
+  },
+  {
+   "path": "Templates/Trade journal entry.md",
+   "title": "Trade journal entry",
+   "type": "template",
+   "tags": [
+    "templates",
+    "journal"
+   ],
+   "words": 90,
+   "links": 3
+  },
+  {
+   "path": "Templates/Weekly review.md",
+   "title": "Weekly review",
+   "type": "template",
+   "tags": [
+    "templates",
+    "weekly"
+   ],
+   "words": 76,
+   "links": 4
+  },
+  {
+   "path": "Trading/Checklists/After the session checklist.md",
+   "title": "After the session checklist",
+   "type": "checklist",
+   "tags": [
+    "trading",
+    "checklist"
+   ],
+   "words": 96,
+   "links": 4
+  },
+  {
+   "path": "Trading/Checklists/Before the session checklist.md",
+   "title": "Before the session checklist",
+   "type": "checklist",
+   "tags": [
+    "trading",
+    "checklist"
+   ],
+   "words": 110,
+   "links": 6
+  },
+  {
+   "path": "Trading/Checklists/During the session checklist.md",
+   "title": "During the session checklist",
+   "type": "checklist",
+   "tags": [
+    "trading",
+    "checklist"
+   ],
+   "words": 131,
+   "links": 6
+  },
+  {
+   "path": "Trading/Checklists/Money checklist.md",
+   "title": "Money checklist",
+   "type": "checklist",
+   "tags": [
+    "trading",
+    "checklist"
+   ],
+   "words": 98,
+   "links": 7
+  },
+  {
+   "path": "Trading/Checklists/Never checklist.md",
+   "title": "Never checklist",
+   "type": "checklist",
+   "tags": [
+    "trading",
+    "checklist"
+   ],
+   "words": 117,
+   "links": 5
+  },
+  {
+   "path": "Trading/Checklists/Trading checklists.md",
+   "title": "Trading checklists",
+   "type": "moc",
+   "tags": [
+    "trading",
+    "checklist",
+    "moc"
+   ],
+   "words": 55,
+   "links": 9
+  },
+  {
+   "path": "Trading/Glossary.md",
+   "title": "Glossary",
+   "type": "moc",
+   "tags": [
+    "trading",
+    "glossary",
+    "moc"
+   ],
+   "words": 753,
+   "links": 38
+  },
+  {
+   "path": "Trading/Glossary/1m and 5m candles.md",
+   "title": "1m and 5m candles",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 41,
+   "links": 2
+  },
+  {
+   "path": "Trading/Glossary/ATR.md",
+   "title": "ATR",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 102,
+   "links": 11
+  },
+  {
+   "path": "Trading/Glossary/Breakeven.md",
+   "title": "Breakeven",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 110,
+   "links": 12
+  },
+  {
+   "path": "Trading/Glossary/Buffer.md",
+   "title": "Buffer",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 40,
+   "links": 3
+  },
+  {
+   "path": "Trading/Glossary/CISD.md",
+   "title": "CISD",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 124,
+   "links": 12
+  },
+  {
+   "path": "Trading/Glossary/Commission.md",
+   "title": "Commission",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 28,
+   "links": 2
+  },
+  {
+   "path": "Trading/Glossary/Consistency rule.md",
+   "title": "Consistency rule",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 78,
+   "links": 7
+  },
+  {
+   "path": "Trading/Glossary/Daily loss limit.md",
+   "title": "Daily loss limit",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 34,
+   "links": 2
+  },
+  {
+   "path": "Trading/Glossary/Displacement.md",
+   "title": "Displacement",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 77,
+   "links": 7
+  },
+  {
+   "path": "Trading/Glossary/Drawdown floor.md",
+   "title": "Drawdown floor",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 56,
+   "links": 6
+  },
+  {
+   "path": "Trading/Glossary/Drawdown.md",
+   "title": "Drawdown",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 44,
+   "links": 3
+  },
+  {
+   "path": "Trading/Glossary/EOD trailing drawdown.md",
+   "title": "EOD trailing drawdown",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 52,
+   "links": 5
+  },
+  {
+   "path": "Trading/Glossary/Eval.md",
+   "title": "Eval",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 33,
+   "links": 2
+  },
+  {
+   "path": "Trading/Glossary/FVG.md",
+   "title": "FVG",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 37,
+   "links": 3
+  },
+  {
+   "path": "Trading/Glossary/Funded account.md",
+   "title": "Funded account",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 32,
+   "links": 2
+  },
+  {
+   "path": "Trading/Glossary/IFVG.md",
+   "title": "IFVG",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 69,
+   "links": 6
+  },
+  {
+   "path": "Trading/Glossary/Inducement (the trap).md",
+   "title": "Inducement (the trap)",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 123,
+   "links": 11
+  },
+  {
+   "path": "Trading/Glossary/Limit order.md",
+   "title": "Limit order",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 44,
+   "links": 3
+  },
+  {
+   "path": "Trading/Glossary/Liquidity.md",
+   "title": "Liquidity",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 45,
+   "links": 3
+  },
+  {
+   "path": "Trading/Glossary/MNQ and NQ.md",
+   "title": "MNQ and NQ",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 48,
+   "links": 3
+  },
+  {
+   "path": "Trading/Glossary/Micro.md",
+   "title": "Micro",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 120,
+   "links": 12
+  },
+  {
+   "path": "Trading/Glossary/NinjaTrader.md",
+   "title": "NinjaTrader",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 30,
+   "links": 2
+  },
+  {
+   "path": "Trading/Glossary/PDH - PDL.md",
+   "title": "PDH - PDL",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 44,
+   "links": 3
+  },
+  {
+   "path": "Trading/Glossary/PF (profit factor).md",
+   "title": "PF (profit factor)",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 120,
+   "links": 12
+  },
+  {
+   "path": "Trading/Glossary/Paper trading.md",
+   "title": "Paper trading",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 31,
+   "links": 2
+  },
+  {
+   "path": "Trading/Glossary/Payout.md",
+   "title": "Payout",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 29,
+   "links": 2
+  },
+  {
+   "path": "Trading/Glossary/Point.md",
+   "title": "Point",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 31,
+   "links": 2
+  },
+  {
+   "path": "Trading/Glossary/R.md",
+   "title": "R",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 70,
+   "links": 5
+  },
+  {
+   "path": "Trading/Glossary/Scale-in.md",
+   "title": "Scale-in",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 45,
+   "links": 3
+  },
+  {
+   "path": "Trading/Glossary/Session.md",
+   "title": "Session",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 48,
+   "links": 3
+  },
+  {
+   "path": "Trading/Glossary/Slippage.md",
+   "title": "Slippage",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 30,
+   "links": 2
+  },
+  {
+   "path": "Trading/Glossary/Stop.md",
+   "title": "Stop",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 45,
+   "links": 3
+  },
+  {
+   "path": "Trading/Glossary/Sweep.md",
+   "title": "Sweep",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 125,
+   "links": 13
+  },
+  {
+   "path": "Trading/Glossary/Tick.md",
+   "title": "Tick",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 39,
+   "links": 3
+  },
+  {
+   "path": "Trading/Glossary/Trades a week.md",
+   "title": "Trades a week",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 31,
+   "links": 2
+  },
+  {
+   "path": "Trading/Glossary/VIX band.md",
+   "title": "VIX band",
+   "type": "term",
+   "tags": [
+    "trading",
+    "words"
+   ],
+   "words": 59,
+   "links": 4
+  },
+  {
+   "path": "Trading/MFFU rules that matter.md",
+   "title": "MFFU rules that matter",
+   "type": "moc",
+   "tags": [
+    "trading",
+    "mffu",
+    "moc"
+   ],
+   "words": 688,
+   "links": 16
+  },
+  {
+   "path": "Trading/MFFU rules/Bots are allowed.md",
+   "title": "Bots are allowed",
+   "type": "rule",
+   "tags": [
+    "trading",
+    "mffu"
+   ],
+   "words": 50,
+   "links": 2
+  },
+  {
+   "path": "Trading/MFFU rules/Flat by 16 -10.md",
+   "title": "Flat by 16 -10",
+   "type": "rule",
+   "tags": [
+    "trading",
+    "mffu"
+   ],
+   "words": 83,
+   "links": 3
+  },
+  {
+   "path": "Trading/MFFU rules/How many contracts.md",
+   "title": "How many contracts",
+   "type": "rule",
+   "tags": [
+    "trading",
+    "mffu"
+   ],
+   "words": 65,
+   "links": 5
+  },
+  {
+   "path": "Trading/MFFU rules/News.md",
+   "title": "News",
+   "type": "rule",
+   "tags": [
+    "trading",
+    "mffu"
+   ],
+   "words": 41,
+   "links": 2
+  },
+  {
+   "path": "Trading/MFFU rules/No long and short at once.md",
+   "title": "No long and short at once",
+   "type": "rule",
+   "tags": [
+    "trading",
+    "mffu"
+   ],
+   "words": 71,
+   "links": 4
+  },
+  {
+   "path": "Trading/MFFU rules/Payouts.md",
+   "title": "Payouts",
+   "type": "rule",
+   "tags": [
+    "trading",
+    "mffu"
+   ],
+   "words": 109,
+   "links": 5
+  },
+  {
+   "path": "Trading/MFFU rules/The 7-day rule.md",
+   "title": "The 7-day rule",
+   "type": "rule",
+   "tags": [
+    "trading",
+    "mffu"
+   ],
+   "words": 92,
+   "links": 5
+  },
+  {
+   "path": "Trading/MFFU rules/The daily loss limit.md",
+   "title": "The daily loss limit",
+   "type": "rule",
+   "tags": [
+    "trading",
+    "mffu",
+    "words"
+   ],
+   "words": 75,
+   "links": 4
+  },
+  {
+   "path": "Trading/MFFU rules/The drawdown floor.md",
+   "title": "The drawdown floor",
+   "type": "rule",
+   "tags": [
+    "trading",
+    "mffu",
+    "words"
+   ],
+   "words": 132,
+   "links": 5
+  },
+  {
+   "path": "Trading/MFFU rules/The profit target.md",
+   "title": "The profit target",
+   "type": "rule",
+   "tags": [
+    "trading",
+    "mffu"
+   ],
+   "words": 65,
+   "links": 4
+  },
+  {
+   "path": "Trading/MFFU rules/What the evals cost you.md",
+   "title": "What the evals cost you",
+   "type": "rule",
+   "tags": [
+    "trading",
+    "mffu",
+    "numbers"
+   ],
+   "words": 58,
+   "links": 2
+  },
+  {
+   "path": "Trading/Risk rules.md",
+   "title": "Risk rules",
+   "type": "rule",
+   "tags": [
+    "trading",
+    "risk"
+   ],
+   "words": 431,
+   "links": 23
+  },
+  {
+   "path": "Trading/Second strategies.md",
+   "title": "Second strategies",
+   "type": "strategy",
+   "tags": [
+    "trading",
+    "strategy",
+    "atlas",
+    "blitz"
+   ],
+   "words": 402,
+   "links": 7
+  },
+  {
+   "path": "Trading/Strategy/Eval size - one winner passes.md",
+   "title": "Eval size - one winner passes",
+   "type": "strategy",
+   "tags": [
+    "trading",
+    "strategy",
+    "mffu"
+   ],
+   "words": 127,
+   "links": 4
+  },
+  {
+   "path": "Trading/Strategy/Funded size.md",
+   "title": "Funded size",
+   "type": "strategy",
+   "tags": [
+    "trading",
+    "strategy",
+    "mffu"
+   ],
+   "words": 74,
+   "links": 4
+  },
+  {
+   "path": "Trading/Strategy/One trade a day.md",
+   "title": "One trade a day",
+   "type": "strategy",
+   "tags": [
+    "trading",
+    "strategy"
+   ],
+   "words": 86,
+   "links": 3
+  },
+  {
+   "path": "Trading/Strategy/Paper only, you go live.md",
+   "title": "Paper only, you go live",
+   "type": "strategy",
+   "tags": [
+    "trading",
+    "strategy",
+    "mffu"
+   ],
+   "words": 80,
+   "links": 3
+  },
+  {
+   "path": "Trading/Strategy/Step 1 - mark the levels.md",
+   "title": "Step 1 - mark the levels",
+   "type": "strategy",
+   "tags": [
+    "trading",
+    "strategy"
+   ],
+   "words": 145,
+   "links": 7
+  },
+  {
+   "path": "Trading/Strategy/Step 2 - wait for a sweep.md",
+   "title": "Step 2 - wait for a sweep",
+   "type": "strategy",
+   "tags": [
+    "trading",
+    "strategy"
+   ],
+   "words": 116,
+   "links": 6
+  },
+  {
+   "path": "Trading/Strategy/Step 3 - the trap (inducement).md",
+   "title": "Step 3 - the trap (inducement)",
+   "type": "strategy",
+   "tags": [
+    "trading",
+    "strategy"
+   ],
+   "words": 128,
+   "links": 8
+  },
+  {
+   "path": "Trading/Strategy/Step 4 - the shift (5m CISD).md",
+   "title": "Step 4 - the shift (5m CISD)",
+   "type": "strategy",
+   "tags": [
+    "trading",
+    "strategy"
+   ],
+   "words": 152,
+   "links": 7
+  },
+  {
+   "path": "Trading/Strategy/Step 5 - the entry.md",
+   "title": "Step 5 - the entry",
+   "type": "strategy",
+   "tags": [
+    "trading",
+    "strategy"
+   ],
+   "words": 135,
+   "links": 7
+  },
+  {
+   "path": "Trading/Strategy/Step 6 - the stop.md",
+   "title": "Step 6 - the stop",
+   "type": "strategy",
+   "tags": [
+    "trading",
+    "strategy"
+   ],
+   "words": 142,
+   "links": 9
+  },
+  {
+   "path": "Trading/Strategy/Step 7 - the target.md",
+   "title": "Step 7 - the target",
+   "type": "strategy",
+   "tags": [
+    "trading",
+    "strategy"
+   ],
+   "words": 141,
+   "links": 7
+  },
+  {
+   "path": "Trading/Strategy/Step 8 - manage the trade.md",
+   "title": "Step 8 - manage the trade",
+   "type": "strategy",
+   "tags": [
+    "trading",
+    "strategy"
+   ],
+   "words": 172,
+   "links": 6
+  },
+  {
+   "path": "Trading/Strategy/Step 9 - the size.md",
+   "title": "Step 9 - the size",
+   "type": "strategy",
+   "tags": [
+    "trading",
+    "strategy"
+   ],
+   "words": 132,
+   "links": 4
+  },
+  {
+   "path": "Trading/Strategy/The bot in one minute.md",
+   "title": "The bot in one minute",
+   "type": "strategy",
+   "tags": [
+    "trading",
+    "strategy",
+    "numbers"
+   ],
+   "words": 170,
+   "links": 6
+  },
+  {
+   "path": "Trading/Trading hub.md",
+   "title": "Trading hub",
+   "type": "moc",
+   "tags": [
+    "trading",
+    "moc"
+   ],
+   "words": 115,
+   "links": 11
+  },
+  {
+   "path": "Trading/Zlarior LIT strategy.md",
+   "title": "Zlarior LIT strategy",
+   "type": "moc",
+   "tags": [
+    "trading",
+    "strategy",
+    "moc"
+   ],
+   "words": 769,
+   "links": 30
+  }
+ ]
+}

@@ -38,6 +38,7 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
 | OLYMPUS apps (24 wired + Cities, Kalshi City) | `tools/web_public/<app>/`; the list, data sources and tests: section "OLYMPUS apps and tools" below | the lead wires new ones (`jarvis/apps.js`, `olympus/olympus.js`, the build tuple); published with every build | the app's own `tests.test_<app>_page` (+ `tests.test_olympus_kit`) |
 | Effects library / transitions / app intros | `olympus/fx-*.js` + `docs/OLYMPUS_FX.md`; `jarvis/transitions.js`; `olympus/intro-app.js` | same as Zenith | `tests.test_olympus_fx`, `tests.test_jarvis_transitions`, `tests.test_app_intro` |
 | Bridge (Claude x ChatGPT) | `tools/web_public/bridge/`, `tools/bridge_sync.py`, `tools/bridge_ingest.py`, `tools/bridge_jobs_build.py`, `handoff/` | the build runs `bridge_sync.publish` | `tests.test_bridge_page`, `tests.test_bridge_ingest` |
+| Obsidian starter vault (Mind Teach page + demo brain) | `tools/obsidian_pack.py`, `tools/web_public/mind/starter.js`, `mind/starter/` (generated) | rerun the script when `athena/library.json`, `STRATEGY.md`, `mffu_rules.json`, `plans.json` or the writeups change; published with every build | `tests.test_obsidian_pack`, `tests.test_mind_page` |
 | Kalshi City + edges engine | `tools/web_public/kalshicity/`, `tools/kalshi_edges.py`, `docs/KALSHICITY.md` | the lead wires it (see the doc); CRONOS-style 6-hourly refresh | `tests.test_kalshi_edges`, `tests.test_kalshicity_page` |
 | LITE mode (bot on low memory) + PC-off plan | `engine/lite.py`, `BOT_LITE.bat`, `scripts/bot_lite.ps1`, `docs/PC_OFF_PLAN.md` | main -> the PC's auto-update; the owner double-clicks BOT_LITE once | `tests.test_lite` (`--quick` = unit only), `tests.test_win_scripts` |
 
@@ -1819,6 +1820,18 @@ no row in `apps.js` / `olympus.js` / the build tuple (steps in `docs/KALSHICITY.
   fine-grained token on this phone only; writes are append-only / new-file after a spoken "yes"), `tools.js`. Voice: `tts.js` (best natural female
   voice), `voice-out.js` (answers read aloud, switch `jarvis.speak`, default on, the iPhone first-tap unlock), `voice-mode.js` (full-screen conversation,
   the core reacts to the voice; type-to-talk where speech recognition is missing), `test_jarvis_voice`, `test_jarvis_talk`.
+- **Obsidian starter pack** (`tools/obsidian_pack.py`, `test_obsidian_pack`): builds a ready-to-drop Obsidian vault (~225 markdown notes, ~1,100 `[[links]]`,
+  frontmatter tags on every note) from files that already exist: `athena/library.json` (strategy steps, glossary one note per term, MFFU rules, playbooks,
+  what we learned, rejected ideas, Kalshi, app guides), `research/lit/mffu_rules.json`, `plutus/plans.json`, `research/writeups/*.md`, and Jarvis's own
+  `ME_TEMPLATE` (`jarvis/obsidian.js`). Layout: `00 Home`, `Trading/`, `Playbooks/`, `Research/`, `Money/`, `Templates/` (Daily note, Trade journal entry with
+  setup / size / plan followed / emotion / lesson, Weekly review, Kalshi bet review, Idea note), `Daily/`, `Journal/`, `Goals`, `OLYMPUS/Apps/`, and
+  `OLYMPUS/Jarvis/Me.md` + `Memory.md` (the exact paths Jarvis reads). No open `- [ ]` lines and no date-named files (Jarvis would list them as his tasks /
+  daily notes); account ids are scrubbed (the library still carries one in two entries: fix at the source, `tools/athena_build.py`). Run
+  `python tools/obsidian_pack.py` after a source changes (`--check` fails when the committed `mind/starter/{starter_pack.json, starter_pack.js, manifest.json}`
+  are stale; `--zip F.zip` and `publish(out_dir)` write a real `obsidian_pack.zip`: one line for the site build). The Mind page's Teach screen has the
+  Starter pack card (`mind/starter.js`): Download as .zip (a ~60-line store-only ZIP writer with CRC-32), Copy as one markdown file, 3 plain steps
+  (Files app -> Obsidian Open folder as vault -> connect the vault in Jarvis), the notes by folder with previews. It never writes into a vault. The same notes
+  join the Mind demo brain (`demo.js addPack`, `data.js`) when no vault is connected or the vault is empty.
 - **Bridge** (Claude x ChatGPT, `tools/web_public/bridge/`, `handoff/`): the page has the 3-step Connect wizard (its sync prompt must equal
   `handoff/ONBOARD.md`), the 11 job cards, and (2026-11-04) tabs Library (`jobs.json`, 58 ready jobs in 13 categories, built by
   `tools/bridge_jobs_build.py`: edit the generator, not the json), Deliveries and Ask next. ChatGPT delivers into `handoff/inbox/<id>/` with a `DONE.md`.

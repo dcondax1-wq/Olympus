@@ -5,7 +5,8 @@
 //   Learned   what Jarvis learned, as a feed with replay
 //   Graph     links and backlinks: filters (linked, hubs, orphans, recent, min links), the local map of a note, hubs, orphans, galaxies
 //   Review    spaced-repetition questions from your notes
-//   Teach     tell Jarvis a fact or save a note (written in Jarvis's own formats, teach.js)
+//   Teach     tell Jarvis a fact or save a note (written in Jarvis's own formats, teach.js); the Starter pack card (starter.js): the ready-made
+//             Obsidian vault as a .zip or one markdown text, a list of its notes with previews, 3 plain steps. It never writes into a vault.
 //   Stats     the numbers: level, galaxies, weekly bars, records
 //   Look      skins, the nebula sky, ambient particles, sounds, the Obsidian vault name
 //   createPanels(h) -> {open(name), close(), update(ctx), current}
@@ -17,6 +18,7 @@ import { brainStats, ego, greeting, hubs, learnedFeed, orphans, previewText, tag
 import { boxes, buildDeck, dueCount, grade, pickSession } from './quiz.js';
 import { screen } from './teach.js';
 import { SKINS } from './skins.js';
+import { loadPack, zipStore, bundleMarkdown, folderGroups, preview } from './starter.js';
 
 const TITLES = { home: 'Home', notes: 'Notes', days: 'Days', learned: 'Learned', graph: 'Graph', review: 'Review', teach: 'Teach Jarvis', stats: 'Stats', look: 'Look' };
 const PANELS = Object.keys(TITLES);
@@ -332,14 +334,87 @@ function reviewView(h) {
   };
 }
 
+// ------------------------------------------------------------------ the starter pack (a ready-made Obsidian vault)
+function starterCard() {
+  const sub = el('p', { class: 'sub', text: 'Loading the notes...' }), msg = el('p', { class: 'msg', role: 'status' }), listBox = el('div', { class: 'st-list' });
+  const zipBtn = el('button', { class: 'cta', type: 'button', id: 'st-zip', text: 'Download as .zip', disabled: true });
+  const mdBtn = el('button', { class: 'cta ghosty', type: 'button', id: 'st-md', text: 'Copy as one markdown file', disabled: true });
+  const steps = el('ol', { class: 'st-steps' }, [
+    el('li', { text: 'Tap Download as .zip, then open it in the Files app. It unzips to a folder called OLYMPUS Starter Vault.' }),
+    el('li', { text: 'In Obsidian choose Open folder as vault and pick that folder (or move it into your vault folder in iCloud).' }),
+    el('li', { text: 'Open 00 Home. In Jarvis, connect your vault: she reads Me, your daily notes and your tasks.' })]);
+  const root = el('div', { class: 'card2 starter', id: 'starter' }, [head('Starter pack'), sub, steps, el('div', { class: 'toolbar' }, [zipBtn, mdBtn]), msg, listBox]);
+  let pack = null, started = false;
+  const say = (text, ok) => { msg.textContent = text; msg.className = 'msg ' + (ok ? 'ok' : 'bad'); };
+  function rows(group, box, from) {
+    const notes = group.notes.slice(from, from + 40);
+    for (const n of notes) {
+      const body = el('p', { class: 'st-pv', hidden: true });
+      const row = el('button', { class: 'row st-row', type: 'button', 'aria-expanded': 'false', onclick: () => {
+        const open = body.hidden;
+        if (open && !body.textContent) body.textContent = preview(pack.notes.find((x) => x.path === n.path) || { text: '' });
+        body.hidden = !open; row.setAttribute('aria-expanded', String(open));
+      } }, [el('i', { class: 'dot' }), el('span', { class: 'r-t', text: n.title }), el('small', { text: `${n.links} links` })]);
+      box.append(row, body);
+    }
+    if (from + 40 < group.notes.length) {
+      const more = el('button', { class: 'mini', type: 'button', text: `Show ${Math.min(40, group.notes.length - from - 40)} more`, onclick: () => { more.remove(); rows(group, box, from + 40); } });
+      box.append(more);
+    }
+  }
+  function paintList() {
+    listBox.replaceChildren(...folderGroups(pack.notes).map((g) => {
+      const box = el('div', { class: 'st-rows' });
+      const det = el('details', { class: 'st-group' }, [el('summary', { text: `${g.folder} (${g.notes.length})` }), box]);
+      det.addEventListener('toggle', () => { if (det.open && !box.childElementCount) rows(g, box, 0); });
+      return det;
+    }));
+  }
+  zipBtn.addEventListener('click', () => {
+    if (!pack) return;
+    try {
+      const url = URL.createObjectURL(new Blob([zipStore(pack.notes)], { type: 'application/zip' }));
+      const a = el('a', { href: url, download: 'OLYMPUS Starter Vault.zip' });
+      document.body.append(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      say(`Downloaded ${pack.notes.length} notes. Open the .zip in the Files app next.`, true);
+    } catch (_) { say('This phone would not make the .zip. Use Copy as one markdown file instead.', false); }
+  });
+  mdBtn.addEventListener('click', async () => {
+    if (!pack) return;
+    const text = bundleMarkdown(pack.notes);
+    try { await navigator.clipboard.writeText(text); say(`Copied ${pack.notes.length} notes as one text. Paste it into a new Obsidian note.`, true); }
+    catch (_) {
+      const ta = el('textarea', { class: 'field big', rows: 6, readonly: true, 'aria-label': 'The starter vault as one text' });
+      ta.value = text; listBox.prepend(ta); ta.select();
+      say('This phone blocked copying. The text is selected below: hold it and choose Copy.', false);
+    }
+  });
+  return {
+    root,
+    async init() {                                  // loaded the first time the Teach page opens, never before
+      if (started) return;
+      started = true;
+      pack = await loadPack();
+      if (!pack) { sub.textContent = 'The starter pack is not on this site yet.'; return; }
+      const links = pack.notes.reduce((t, n) => t + (n.text.match(/\[\[/g) || []).length, 0);
+      sub.textContent = `${pack.notes.length} notes with ${fmt.format(links)} links: trading, playbooks, research, money, templates, and Jarvis's Me note. Saved nowhere: you choose what to import.`;
+      zipBtn.disabled = false; mdBtn.disabled = false;
+      paintList();
+    },
+  };
+}
+
 function teachView(h) {
   const st = { kind: 'fact', msg: '', ok: false };
   const text = el('textarea', { id: 'teach-text', class: 'field big', rows: 3, maxlength: 4000, spellcheck: 'true', 'aria-label': 'What should Jarvis know?', placeholder: 'e.g. My best trades come before 11:00' });
   const title = el('input', { id: 'teach-title', class: 'field', type: 'text', maxlength: 80, placeholder: 'Note title (optional)', 'aria-label': 'Note title' });
   const warn = el('p', { class: 'warn', role: 'status' }), msg = el('p', { class: 'msg', role: 'status' }), recent = el('div', { class: 'list' }), seg0 = el('div'), titleBox = el('div', { class: 'titlebox' }, [title]);
   const save = el('button', { class: 'cta', type: 'button', id: 'teach-save', text: 'Save to Jarvis' });
+  const starter = starterCard();
   const root = el('div', { class: 'view pg-teach' }, [
     el('div', { class: 'card2' }, [head('Teach Jarvis'), el('p', { class: 'sub', text: 'Saved on this phone, in the same place Jarvis reads. She knows it the next time she opens.' }), seg0, text, titleBox, warn, el('div', { class: 'toolbar' }, [save, el('a', { class: 'cta ghosty', href: '../jarvis/', target: '_top', text: 'Open Jarvis' })]), msg]),
+    starter.root,
     el('div', { class: 'card2' }, [head('Taught lately'), recent])]);
   let last = null;
   text.addEventListener('input', () => { warn.textContent = screen(text.value); });
@@ -353,6 +428,7 @@ function teachView(h) {
     root,
     render(ctx) {
       last = ctx;
+      starter.init();
       seg0.replaceChildren(seg([['fact', 'Remember'], ['note', 'Note']], st.kind, (k) => { st.kind = k; titleBox.hidden = k !== 'note'; text.rows = k === 'note' ? 6 : 3; text.placeholder = k === 'note' ? 'Write the note. Link others with [[double brackets]].' : 'e.g. My best trades come before 11:00'; this.render(last); }, 'What to save'));
       titleBox.hidden = st.kind !== 'note';
       const mine = ((ctx.live && ctx.live.items) || []).filter((x) => x.kind !== 'lesson').slice(-5).reverse();
