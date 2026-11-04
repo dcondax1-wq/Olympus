@@ -54,7 +54,7 @@ const LAYERS0 = { fills: true, trades: true, setup: true, thoughts: true, orders
 
 export class Holo extends View {
   constructor(opts = {}) {
-    super({ fov: 38, dprMax: opts.phone ? 1.5 : 2, env: 'night', tierCap: opts.lite || (opts.phone && !opts.bloom) ? 'low' : null, coreBloom: { strength: 0.62, radius: 0.42, threshold: 0.58 }, ...opts, alpha: false });
+    super({ fov: 38, dprMax: opts.phone ? 1.5 : 2, env: 'night', tierCap: 'low', coreBloom: { strength: 0.62, radius: 0.42, threshold: 0.58 }, ...opts, alpha: false });
     this.phone = !!opts.phone;
     this.lite = !!opts.lite || Q.level === 'lite';
     const R = this.renderer;
@@ -151,7 +151,7 @@ export class Holo extends View {
     const lite = q === 'lite';
     if (lite === this.lite) return;
     this.lite = lite;
-    this.rc.cap = lite || (this.phone && !this.opts.bloom) ? 'low' : null; this.rc.setQuality(tierFor(this.rc.cap));
+    this.rc.cap = 'low'; this.rc.setQuality(tierFor(this.rc.cap));
     this.G.mirror.visible = !lite; this.resize();
   }
   resize() {
@@ -816,7 +816,7 @@ export class Holo extends View {
   }
   stats() {
     const i = this.renderer.info.render, R = this.st.ring || [], q = (k, p) => { const a = R.map((x) => k < 0 ? x[0] + x[1] : x[k]).sort((m, n) => m - n); return a.length ? +a[Math.min(a.length - 1, Math.floor(a.length * p))].toFixed(2) : 0; };
-    return { frames: this.st.frames, ms: +this.st.ms.toFixed(2), msAvg: +this.st.msAvg.toFixed(2), p50: q(-1, 0.5), p95: q(-1, 0.95), update50: q(0, 0.5), render50: q(1, 0.5), fps: this.st.fps, calls: i.calls, tris: i.triangles, dpr: this.renderer.getPixelRatio(), lite: this.lite, bloom: !!this.rc.composer, passes: this.rc.passes().length, tier: this.rc.quality() }; }
+    return { frames: this.st.frames, ms: +this.st.ms.toFixed(2), msAvg: +this.st.msAvg.toFixed(2), p50: q(-1, 0.5), p95: q(-1, 0.95), update50: q(0, 0.5), render50: q(1, 0.5), fps: this.st.fps, calls: i.calls, tris: i.triangles, dpr: this.renderer.getPixelRatio(), lite: this.lite, bloom: this.rc.passes().includes('bloom'), passes: this.rc.passes().length, tier: this.rc.quality() }; }
   counts() {
     const T = this.T;
     return { bars: this.n, barsShown: this.wk ? this.wk.count : 0, fills: this.fills.length, fillsShown: this.fills.filter((F) => F.f.t <= T && F.g.visible).length, trades: this.trades.length,
