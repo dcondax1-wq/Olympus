@@ -10,6 +10,13 @@ import { createRenderer } from '../olympus/render.js';          // the OLYMPUS r
 import { Landmarks } from './landmarks.js';
 import { Outskirts } from './outskirts.js';
 import { Streams } from './streams.js';
+import { routes } from './routes.js';
+import { Cars, Flyers, Airships, Monorail } from './vehicles.js';
+import { River, Ships } from './water.js';
+import { Signs } from './signs.js';
+import { Fireworks } from './fireworks.js';
+import { KitFx } from './kitfx.js';
+import { Link } from './links.js';
 
 const FOG = { night: 0x070a1c, day: 0x9fbbe2, dusk: 0x4a2a4a, storm: 0x2a3140 };
 const DENSITY = { night: 0.0024, day: 0.0015 };
@@ -81,7 +88,11 @@ export class CityScene {
     this._harbor();
     this._pins();
     this.lm = new Landmarks(L, this.quality); this.scene.add(this.lm.group);
-    this.outskirts = new Outskirts(L, this.U, this.quality, [{ x: this.lm.site.x, z: this.lm.site.z, r: 110 }]); this.scene.add(this.outskirts.group);
+    this.R = routes(L);                                      // v3: the monorail loop and the river, clear of every district
+    const clear = [{ x: this.lm.site.x, z: this.lm.site.z, r: 110 }];
+    for (let i = 0; i < this.R.river.length; i += 2) clear.push({ x: this.R.river[i][0], z: this.R.river[i][1], r: this.R.riverW + 4 });
+    for (let i = 0; i < this.R.rail.length; i += 3) clear.push({ x: this.R.rail[i][0], z: this.R.rail[i][1], r: 7 });
+    this.outskirts = new Outskirts(L, this.U, this.quality, clear); this.scene.add(this.outskirts.group);
     this.streams = new Streams(L, this.lm, this.U, this.quality); this.scene.add(this.streams.group);
     this.rays = new Rays(L, this.U); this.scene.add(this.rays.mesh);
     this.sunRays = new SunRays(this.U); this.scene.add(this.sunRays.mesh);
@@ -90,6 +101,19 @@ export class CityScene {
     this.traffic = new Traffic(L, this.U, this.quality); this.scene.add(this.traffic.points);
     this.beam = new Beam(this.U); this.scene.add(this.beam.mesh, this.beam.ring);
     this.boards = new Billboards(this.U, opts.billboards || []); this.scene.add(this.boards.group);
+    // v3: the river, the sailing ships and cranes, the monorail, the cars and flying taxis, the airships, the neon signs, the fireworks
+    this.river = new River(this.R, this.U); if (this.river.mesh) this.scene.add(this.river.mesh);
+    this.ships = new Ships(L, this.U, this.quality); this.scene.add(this.ships.group);
+    this.rail = new Monorail(this.R, this.U, this.quality); this.scene.add(this.rail.group);
+    this.cars = new Cars(L, this.U, this.quality); this.scene.add(this.cars.mesh);
+    this.flyers = new Flyers(L, this.R, this.U, this.quality); this.scene.add(this.flyers.mesh);
+    this.airships = new Airships(this.R, this.U); this.scene.add(this.airships.mesh);
+    this.signs = new Signs(L, this.U); this.scene.add(this.signs.group);
+    this.fireworks = new Fireworks(); this.scene.add(this.fireworks.points);
+    this.link = new Link(); this.scene.add(this.link.line);
+    this.kit = new KitFx(this.scene, this.camera, this.lm.spots, L, this.R);
+    this.kitReady = this.kit.load().then((ok) => { if (ok && this._sun) this.kit.set(this._sun, this._wx, this.U); return ok; }).catch(() => false);
+    this.calm = !!opts.calm;
     this._tier(this.rc.quality());
   }
 
@@ -275,6 +299,8 @@ export class CityScene {
     this.fog.setHaze(w.haze);
     this.storm = !!w.storm;
     this.lm.setSun(sun, w, U);
+    this._sun = sun; this._wx = w;
+    this.kit?.set(sun, w, U);
     U.uFlow.value = (sun.open ? 1 : 0.4) * (0.75 + Math.min(1.2, (w.vix || 16) / 22));            // the market drives the data streams
     const bk = +(0.55 + 0.5 * (1 - sun.day) + 0.12 * U.uCloud.value).toFixed(2);                  // more glow at night, less by day
     if (bk !== this.bloomK) { this.bloomK = bk; this.rc.setBloom({ strength: bk }); }
@@ -283,6 +309,13 @@ export class CityScene {
   }
 
   setToday(on) { this.U.uToday.value = on ? 1 : 0; }
+
+  /** Calm motion (reduced motion, or the viewer's switch): the traffic, trains, ships and fireworks stand still; the kit follows OLYMPUS itself. */
+  setCalm(on) {
+    this.calm = !!on;
+    for (const m of [this.cars.mesh, this.flyers.mesh, this.streams.points, this.traffic.points, this.flow]) m.visible = !on;
+    this.rain.calm = !!on; this.rain.set(this.rain.rain);
+  }
 
   /** The theme's accent (olympus.theme or applyTheme): plaza glow, water and tower tint, the sky's city glow. */
   setAccent(hex) { try { this.U.uAccent.value.set(hex); } catch (e) { /* a bad token: keep the last */ } }
@@ -309,6 +342,7 @@ export class CityScene {
     this.streams.setQuality(q);
     this.outskirts.setQuality(q);
     this.lm.setQuality(q);
+    this.cars.setQuality(q); this.flyers.setQuality(q); this.rail.setQuality(q); this.ships.setQuality(q);
     this.bloomK = -1;
     if (changed) this.onTier(q, level);
   }
@@ -338,6 +372,7 @@ export class CityScene {
   refreshText() {
     for (const s of this.signs) s.userData.redraw?.();
     this.towerName?.userData.redraw?.();
+    this.signs.refresh();
     this.boards.redrawAll();
   }
 
@@ -352,11 +387,18 @@ export class CityScene {
     this.beam.update(dt);
     this.boards.update(dt);
     if (this.storm) {                                         // lightning: a flash now and then, decaying fast
-      if (this.flash <= 0 && Math.random() < dt * 0.18) this.flash = 1;
+      if (this.flash <= 0 && Math.random() < dt * 0.18) { this.flash = 1; this.kit?.strike(); }
       this.flash = Math.max(0, this.flash - dt * 3.2);
       U.uFlash.value = this.flash > 0 ? this.flash * (0.6 + 0.4 * Math.sin(U.uTime.value * 60)) : 0;
     } else U.uFlash.value = 0;
     this.lm.update(U.uTime.value);
+    if (!this.calm) {
+      this.airships.update(U.uTime.value);
+      this.rail.update(U.uTime.value, U.uFlow.value);
+      this.ships.update(U.uFlow.value);
+    }
+    this.fireworks.update(this.calm ? 0 : dt, this.renderer.getPixelRatio());
+    if (this.link.on) this.link.update(U.uTime.value);
     this.U.uPR.value = this.renderer.getPixelRatio();
     this.rc.render();
   }

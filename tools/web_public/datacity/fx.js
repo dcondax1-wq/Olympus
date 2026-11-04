@@ -141,7 +141,7 @@ export class Rain {
   set(rain) {
     this.rain = rain;
     this.U.uRain.value = rain;
-    this.lines.visible = rain > 0.01;
+    this.lines.visible = rain > 0.01 && !this.calm;
     this.lines.geometry.setDrawRange(0, DROPS[this.quality] * 2);
   }
 

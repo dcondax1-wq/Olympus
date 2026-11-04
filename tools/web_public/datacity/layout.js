@@ -8,6 +8,7 @@
 // A district is a square grid of lots with a street every BLOCK lots; its best buildings stand in the middle (gold, then
 // green, amber, grey: the noise is the outskirts) so every district has a skyline.
 import { COLORS, clsRank } from './util.js';
+import { archIndex, familyOf, litOf, steadiness } from './kinds.js';
 
 export const LOT = 2.2;              // one lot (world units)
 export const BLOCK = 6;              // lots a block side
@@ -62,10 +63,12 @@ function pack(halves) {
   return out;
 }
 
-function dressBuilding(b, color) {
+function dressBuilding(b, color, D) {
   const plugin = b.plugin && !['gold', 'green', 'amber', 'grey'].includes(b.cls);
-  return { h: heightOf(b.e || 0), w: BW, color: plugin ? color : COLORS[b.cls] ?? COLORS.grey, lit: plugin ? 0.6 : litShare(b.n),
-           pulse: b.tr === 'rising' ? 1 : 0 };
+  const fam = familyOf(b, D);
+  // v3: the building type comes from the idea family, the lit windows tell the data (lit = holds in both periods)
+  return { h: heightOf(b.e || 0), w: BW, color: plugin ? color : COLORS[b.cls] ?? COLORS.grey, lit: plugin ? 0.6 : litOf(b),
+           pulse: b.tr === 'rising' ? 1 : 0, fam, arch: archIndex(fam), steady: plugin ? 0.6 : steadiness(b) };
 }
 
 export function layout(model) {
@@ -93,8 +96,8 @@ export function layout(model) {
         blocks.push({ tile: t, d: districts.length - 1, items: [], x0: 1e9, z0: 1e9, x1: -1e9, z1: -1e9 });
       }
       const it = s.kind === 'towers'
-        ? { kind: 's', b, x: cx + x, z: cz + z, h: 3 + Math.sqrt(Math.max(0, b.spans?.['2026']?.per_month || 0)) * 0.32, w: 2.6, color: COLORS.strat, lit: 0.8, pulse: 0 }
-        : { kind: 'b', b, x: cx + x, z: cz + z, ...dressBuilding(b, color) };
+        ? { kind: 's', b, x: cx + x, z: cz + z, h: 3 + Math.sqrt(Math.max(0, b.spans?.['2026']?.per_month || 0)) * 0.32, w: 2.6, color: COLORS.strat, lit: 0.8, pulse: 0, fam: 'other', arch: archIndex('break'), steady: 0.8 }
+        : { kind: 'b', b, x: cx + x, z: cz + z, ...dressBuilding(b, color, model.D) };
       it.tile = tileIx.get(tk);
       it.block = blockIx.get(bk);
       it.d = districts.length - 1;
@@ -127,7 +130,8 @@ export function layout(model) {
   monuments.forEach((b, i) => {
     const a = (i / monuments.length) * Math.PI * 2 + 0.3;
     items.push({ kind: 'd', b, x: Math.cos(a) * MONUMENT_RING, z: Math.sin(a) * MONUMENT_RING, h: 7 + Math.max(0, b.e || 0) * 0.12, w: 1.9,
-                 color: b.cls === 'gold' ? COLORS.gold : COLORS.monument, lit: 0.95, pulse: b.tr === 'rising' ? 1 : 0, tile: -1, block: -1, d: -1 });
+                 color: b.cls === 'gold' ? COLORS.gold : COLORS.monument, lit: 0.95, pulse: b.tr === 'rising' ? 1 : 0, tile: -1, block: -1, d: -1,
+                 fam: 'sweep', arch: archIndex('sweep'), steady: 1 });
   });
   let x0 = -PLAZA_R, z0 = -PLAZA_R, x1 = PLAZA_R, z1 = PLAZA_R;
   for (const d of districts) { x0 = Math.min(x0, d.cx - d.half); x1 = Math.max(x1, d.cx + d.half); z0 = Math.min(z0, d.cz - d.half); z1 = Math.max(z1, d.cz + d.half); }
@@ -152,7 +156,7 @@ function harborOf(h, x0, x1, zEdge) {
     const pnl = r[ix.pnl] || 0, pier = Math.floor(i / per), k = i % per;
     return { kind: 'ship', b: { id: `trade:${i}`, day: r[ix.day], dir: r[ix.dir], R: r[ix.r], pnl, exit: r[ix.exit], lab: `LIT trade ${r[ix.day]}` },
              x: x0 + 14 + k * 3.4, z: z0 + 7 + pier * 7, h: 0.5, w: 0.9 + 2.4 * Math.sqrt(Math.abs(pnl) / top),
-             color: pnl >= 0 ? COLORS.win : COLORS.loss, lit: 0.6, pulse: 0, tile: -1, block: -1, d: -2 };
+             color: pnl >= 0 ? COLORS.win : COLORS.loss, lit: 0.6, pulse: 0, tile: -1, block: -1, d: -2, fam: 'ship', arch: archIndex('ship'), steady: 0.5 };
   });
   return { ships, x0: x0 - 10, x1: x1 + 10, z0, z1: z0 + depth, cz: z0 + depth / 2, depth, piers, per };
 }
