@@ -50,9 +50,10 @@ def part_a():
     check("a. fates core: replayThread, resize, sizeTable, cutWorst, cutOne, fanChart, passTimeline, costPerPass, scenarioTable", all(f"export function {n}(" in rd("tools", "web_public", "fates", "fates-core.js") for n in ("replayThread", "resize", "sizeTable", "cutWorst", "cutOne", "fanChart", "passTimeline", "costPerPass", "scenarioTable")))
     check("a. fates-lab.js is DOM + SVG only (no fetch, no WebGL, no storage)", all(w not in rd("tools", "web_public", "fates", "fates-lab.js") for w in ("fetch(", "THREE", "localStorage", "XMLHttpRequest")))
     lab, he, fa = rd("tools", "web_public", "labyrinth", "index.html"), rd("tools", "web_public", "hephaestus", "index.html"), rd("tools", "web_public", "fates", "index.html")
-    check("a. labyrinth page: maze picker, ruin gauge, best size, Danger pill, Walk it", all(w in lab for w in ('id="mazes"', 'id="ruin"', 'id="bestUse"', 'data-view="danger"', 'id="walkBtn"')) and "l2" in lab)
-    check("a. hephaestus page: recipes, compare, history, report card", all(w in he for w in ('id="recipes"', 'id="pin"', 'id="cmp"', 'id="hist"', 'id="forge"', 'id="cardCv"')) and "h2" in he)
-    check("a. fates page: the Lab button and sheet", all(w in fa for w in ('id="labBtn"', 'id="lab"', "data-lab-tabs")) and "f6" in fa)
+    check("a. labyrinth page: maze picker, ruin gauge, best size, Danger pill, Walk it", all(w in lab for w in ('id="mazes"', 'id="ruin"', 'id="bestUse"', 'data-view="danger"', 'id="walkBtn"')) and "v=l3" in lab)
+    check("a. hephaestus page: recipes, compare, history, report card", all(w in he for w in ('id="recipes"', 'id="pin"', 'id="cmp"', 'id="hist"', 'id="forge"', 'id="cardCv"')) and "v=h3" in he)
+    check("a. fates page: the Lab button and sheet", all(w in fa for w in ('id="labBtn"', 'id="lab"', "data-lab-tabs")) and "v=f7" in fa)
+    check("a. tap targets: Hephaestus chips / buttons and Fates 6M / 12M are 44 px (bug-hunt)", "min-height: 36px" not in rd("tools", "web_public", "hephaestus", "hephaestus.css") and ".seg.tiny button { min-height: 44px; min-width: 44px" in rd("tools", "web_public", "fates", "fates.css"))
     check("a. no apps' sw.js / jarvis edits needed by this job (fx-atmos is a new kit file)", os.path.exists(os.path.join(WEB, "olympus", "fx-atmos.js")))
 
 
