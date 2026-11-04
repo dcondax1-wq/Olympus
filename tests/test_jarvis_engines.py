@@ -456,14 +456,8 @@ def part_page(br, url, name, device=None):
     tag = f"c[{name}]"
     KEY = "AIzaFAKEKEY0123456789"
     ctx, p, errs, net = page(br, url, {"gemini": KEY}, device=device)
-    for _ in range(4):                                              # the first tap: unlocks the shared audio element on the iPhone (a loaded machine may need a second)
-        p.mouse.click(3, 420)
-        try:
-            p.wait_for_function("window.__plays.length >= 1", timeout=5000)
-            break
-        except Exception:
-            pass
-    p.wait_for_function("window.__plays.length >= 1", timeout=5000)
+    p.mouse.click(3, 420)                                           # the first tap unlocks the shared audio element; on a loaded machine the page needs a while to run the handler
+    p.wait_for_function("window.__plays.length >= 1", timeout=60000)
     check(f"{tag} the first tap unlocks ONE shared audio element with a silent clip (volume 0)", p.evaluate("window.__plays[0].src.startsWith('data:audio/wav')") and p.evaluate("window.__plays[0].vol") == 0, p.evaluate("window.__plays"))
     p.evaluate("window.__said = []; window.__plays = []")
     p.evaluate("window.__jarvis.talk('Your room is $1,133 today, and the week is up 2.5%.')")
@@ -533,14 +527,8 @@ def part_page(br, url, name, device=None):
     ctx.close()
     # a Groq key only; its terms refusal -> the phone's voice for that reply + one plain toast
     ctx, p, errs, net = page(br, url, {"groq": "gsk_FAKEKEY0123456789"}, device=device)
-    for _ in range(4):
-        p.mouse.click(3, 420)
-        try:
-            p.wait_for_function("window.__plays.length >= 1", timeout=5000)
-            break
-        except Exception:
-            pass
-    p.wait_for_function("window.__plays.length >= 1", timeout=5000)
+    p.mouse.click(3, 420)                                           # the first tap unlocks the shared audio element; on a loaded machine the page needs a while to run the handler
+    p.wait_for_function("window.__plays.length >= 1", timeout=60000)
     net["groq_terms"] = True
     p.evaluate("window.__said = []; window.__plays = []")
     p.evaluate("window.__jarvis.talk('Hello from the Groq voice.')")
