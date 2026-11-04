@@ -77,7 +77,7 @@ def part_library():
     doc = json.load(open(os.path.join(ROOT, "tools", "web_public", "bridge", "jobs.json"), encoding="utf-8"))
     js = doc["jobs"]
     ids = [j["id"] for j in js]
-    check("a. the library has at least 40 ready jobs (58 built), unique plain ids", len(js) >= 40 and len(set(ids)) == len(ids) and all(re.fullmatch(r"[a-z0-9][a-z0-9-]{0,60}", i) for i in ids), len(js))
+    check("a. the library has at least 40 ready jobs, unique plain ids", len(js) >= 40 and len(set(ids)) == len(ids) and all(re.fullmatch(r"[a-z0-9][a-z0-9-]{0,60}", i) for i in ids), len(js))
     need = {"id", "cat", "title", "makes", "tool", "prompt", "files", "lands", "minutes", "difficulty"}
     check("a. every job has id, category, title, what it makes, the exact prompt, files, where it lands, minutes and difficulty",
           all(need <= set(j) and j["title"] and j["makes"] and len(j["prompt"]) > 300 and isinstance(j["minutes"], int) and 1 <= j["minutes"] <= 60
@@ -91,6 +91,18 @@ def part_library():
     want = {"textures", "art", "logo", "sound", "copy", "lore", "obsidian", "strategy", "research", "fixtures", "docs", "mockup", "names"}
     check("a. all 13 categories the owner listed exist and every category has at least 3 jobs", want <= cats and all(sum(1 for j in js if j["cat"] == c) >= 3 for c in want),
           {c: sum(1 for j in js if j["cat"] == c) for c in want})
+    money = [j for j in js if j["cat"] == "money"]
+    mids = {j["id"] for j in money}
+    check("a. money and prop-firm jobs (>= 20): their own category, ids money-*, only .md / .json files back, each says how Claude ingests it (tools/bridge_ingest.py), where it lands, and fits the page's 400-character cap",
+          "money" in cats and len(money) >= 20 and all(i.startswith("money-") for i in mids) and all(j["ingest"].count("tools/bridge_ingest.py") == 1 and 40 < len(j["ingest"]) <= 400 for j in money)
+          and all(f.endswith((".md", ".json")) for j in money for f in j["files"]) and all(j["lands"] == f"handoff/inbox/{j['id']}/" for j in money), [j["id"] for j in money if "ingest" not in j])
+    bad_m = [j["id"] for j in money if not all(w in j["prompt"] for w in ("not financial, tax or legal advice", "UNVERIFIED", "Never ask me for passwords", "source", "ask a CPA", "paper only"))]
+    check("a. every money prompt: not financial / tax / legal advice, 'ask a CPA' for anything personal, official sources with dates, UNVERIFIED when unsure, never asks for secrets or personal ids, paper only", not bad_m, bad_m[:5])
+    tax = [j for j in money if any(w in j["id"] for w in ("tax", "business"))]
+    check("a. the tax jobs (set-aside, dependent, records, business setup) are framed as questions for a CPA for a US 18-year-old, never as a tax percentage",
+          len(tax) >= 4 and all("CPA" in j["prompt"] and "US" in j["prompt"] for j in tax) and "Do NOT give me a tax percentage" in next(j for j in tax if j["id"] == "money-tax-setaside")["prompt"], [j["id"] for j in tax])
+    check("a. the money topics asked for are all there: prop-firm comparison, discount codes, payout rules, tax set-aside, NQ news / session calendar, Kalshi fees and scan, content ideas",
+          all(any(w in i for i in mids) for w in ("prop-compare", "discount", "payout", "tax", "nq-events", "cme-holidays", "kalshi-fees", "kalshi-scan", "content")), sorted(mids))
     text = " ".join(j["title"].lower() + " " + j["id"] for j in js)
     check("a. the named textures (marble, gold, bronze, parchment, fire, water) are all in", all(w in text for w in ("marble", "gold", "bronze", "parchment", "fire", "water")))
     check("a. research jobs ask for sources; fixtures jobs say synthetic; strategy jobs say text only / paper",

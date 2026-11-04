@@ -1820,7 +1820,7 @@ no row in `apps.js` / `olympus.js` / the build tuple (steps in `docs/KALSHICITY.
   voice), `voice-out.js` (answers read aloud, switch `jarvis.speak`, default on, the iPhone first-tap unlock), `voice-mode.js` (full-screen conversation,
   the core reacts to the voice; type-to-talk where speech recognition is missing), `test_jarvis_voice`, `test_jarvis_talk`.
 - **Bridge** (Claude x ChatGPT, `tools/web_public/bridge/`, `handoff/`): the page has the 3-step Connect wizard (its sync prompt must equal
-  `handoff/ONBOARD.md`), the 11 job cards, and (2026-11-04) tabs Library (`jobs.json`, 58 ready jobs in 13 categories, built by
+  `handoff/ONBOARD.md`), the 11 job cards, and (2026-11-04) tabs Library (`jobs.json`, ready jobs in 14 categories (13 + the 20 Money jobs of 2026-11-04, each with an `ingest` line), built by
   `tools/bridge_jobs_build.py`: edit the generator, not the json), Deliveries and Ask next. ChatGPT delivers into `handoff/inbox/<id>/` with a `DONE.md`.
   `tools/bridge_ingest.py` (also run inside `bridge_sync.publish`, `--apply` copies approved images to `olympus/assets/<id>/` with a manifest)
   checks each file read-only: png / webp / svg / json / md / txt / small js only; caps 5 MB images, 200 KB svg / md / txt, 1 MB json, 100 KB js, 80 files

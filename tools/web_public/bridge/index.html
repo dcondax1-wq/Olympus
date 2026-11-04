@@ -394,7 +394,7 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
       CATS = (d.cats || []).filter(function (c) { return c && ID_RE.test(c.id || ''); }).map(function (c) { return { id: c.id, name: str(c.name, 60) }; });
       LIB = d.jobs.filter(function (j) { return j && ID_RE.test(j.id || '') && typeof j.prompt === 'string'; }).map(function (j) {
         return { id: j.id, cat: str(j.cat, 40), title: str(j.title, 90), makes: str(j.makes, 300), prompt: j.prompt.slice(0, 6000),
-                 files: (j.files || []).filter(function (f) { return FILE_RE.test(f); }).slice(0, 30), minutes: +j.minutes || 10, difficulty: str(j.difficulty, 10) };
+                 files: (j.files || []).filter(function (f) { return FILE_RE.test(f); }).slice(0, 30), minutes: +j.minutes || 10, difficulty: str(j.difficulty, 10), ingest: str(j.ingest || '', 400) };
       });
       window.BRIDGE_LIB = LIB;
       document.getElementById('tab-lib').textContent = 'Library ' + LIB.length;
@@ -409,6 +409,7 @@ Style of the owner: 18, iPhone, wants it insane (Greek gods, futuristic, marble 
     var m = el('div', 'meta'); m.appendChild(el('span', '', catName(j.cat))); var mb = el('span'); mb.appendChild(el('b', '', '~' + j.minutes + ' min')); m.appendChild(mb); c.appendChild(m);
     var to = el('div', 'to'); to.appendChild(document.createTextNode('Result → ')); to.appendChild(el('code', '', 'handoff/inbox/' + j.id + '/')); c.appendChild(to);
     var fl = el('div', 'files'); fl.appendChild(document.createTextNode('Files: ')); fl.appendChild(el('code', '', j.files.join(', '))); c.appendChild(fl);
+    if (j.ingest) c.appendChild(el('div', 'why ingest', 'Then Claude: ' + j.ingest));
     c.appendChild(liveLine(j.id));
     c.appendChild(promptBlock(j));
     var row = el('div', 'row'), cp = el('button', '', 'Copy prompt'); cp.type = 'button'; cp.onclick = function () { copyText(j.prompt, cp, 'Copy prompt'); };
