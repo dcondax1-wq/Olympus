@@ -7,7 +7,8 @@ A night city built from the Kalshi bot's bets, plus the engine that keeps learni
 |---|---|---|
 | The engine | `tools/kalshi_edges.py` | reads `kalshi.json`, keeps every bet it has ever seen (`ledger.json`), re-measures every edge, writes `edges.json`, appends dated lessons to `learning_log.json`, writes `jarvis.json`. `--orders FILE.csv` adds the one-off order export (hour-of-day edges) |
 | The refresh | `.github/workflows/kalshicity.yml`, `tools/cronos/registry.py` | every 6 hours, state on the `kalshicity` branch, the three site files pulled into `kalshicity/` at every publish (CRONOS, `docs/CRONOS.md`) |
-| The demo | `tools/kalshi_demo.py` | 1,500 invented bets with planted edges -> `fixture.json` (the DEMO city, offline) |
+| The ideas | `tools/kalshi_hypotheses.py` | paper score of each research idea (looking back + live), verdicts, plain-words log -> `hypotheses.json` (run by the engine) |
+| The demo | `tools/kalshi_demo.py` | 1,500 invented bets with planted edges and ideas registered 20 days ago -> `fixture.json` (the DEMO city, offline) |
 | The lessons | `tools/kalshicity_learned.py` | `research/kalshi/edge_tables.json` -> `learned.json` (the "What we learned" sheet; the page writes the words from the numbers) |
 | The page | `tools/web_public/kalshicity/` | `cityfeed.js` data, `citylayout.js` where everything stands, `cityscene.js` the 3D city on the OLYMPUS render core, `cityfx.js` the effects, `cityrig.js` cameras, `lessons.js` lessons + ask card, `kalshicity.js` the page |
 | Tests | `tests/test_kalshi_edges.py`, `tests/test_kalshicity_page.py`, `tests/test_cronos.py` | engine maths vs an independent mirror (50); modules in node + the page at 390 x 844 incl. effects, sound, lessons (60+); CRONOS wiring |
@@ -29,6 +30,20 @@ District = market (ring round Downtown, which holds strategies, bands, hours, si
 = bets (gold won, red lost), grey and low = n < 30, going up with a crane = a new edge, crumbling with embers = one that just died. Roads: capital out (cool cars) and back
 (gold won, red lost); pink cars = open orders. Weather = last 7 days (clear / overcast / rain / storm; fog = bot paused). Day / night = New York time. Dark far towers are scenery
 (no data; the guide says so). Tiers via OLYMPUS: low 700 towers, high 2,600, ultra 4,200 + bloom; reduced motion = a still scene.
+
+## The Lab: the city learns (round 2, `tools/kalshi_hypotheses.py` -> `hypotheses.json`)
+The research (`research/kalshi/edge_tables.json`) names ideas that might turn the bot's loss into a profit. The engine keeps a **paper score** for each, on every run (no order, no
+Kalshi call): the price floor (only 95c and up), stop 90-95c, drop XRP, one bet per 15-minute window, skip the thin night hours, maker orders (the fee saving), skip bets near the
+strike (needs spot candles: NEEDS DATA), smaller bets. A filter rule's gain is minus what the bets it removes made; the fee idea prices the saving; the size idea scales every bet and
+re-solves the risk of ruin. Each record has two windows: **looking back** (all the bets seen; the rule was picked after seeing them, so it can never read WORKS) and **live** (only what
+came after the idea was registered: the feed's totals minus the registration snapshot, or the ledger bets after the registration time). Verdicts use the engine's own tests with n >= 30:
+COLLECTING, PROMISING, WORKS (live only), NO HELP, NEEDS DATA, SAFER. The log (`hypotheses.json` `log`) is append-only, plain words ("Tested 'Drop XRP': 192 paper bets, +$106.63, looks good, not proven").
+
+In the city: the **Lab ring** outside the market districts, one small district per idea, three towers: looking back (dollars), live (dollars), live bets collected (a crane until 30).
+Height = dollars (a loss is a low stub, nothing is invisible); a tower whose dollars moved since the viewer's last visit (stored on the phone, `kalshicity.v1.hh`) grows or shrinks in front of
+them. The HUD has **Best edge so far / Worst leak** in dollars (the biggest winner and loser among the 30+ bet single slices; a gold and a red beam in the city; the leak button flies to the
+idea that plugs it) and the **LAB ticker** (plain-words lessons, tap for the Lab sheet). No `hypotheses.json` yet = the recorded demo ideas, labelled DEMO. Draw calls: the whole Lab is 3 meshes
+(instanced pads, one outline mesh, one billboard name atlas) + the leak beam; the towers live in the building InstancedMesh.
 
 ## Effects (`cityfx.js`, the OLYMPUS fx library + the city's own)
 | Effect | When | From |

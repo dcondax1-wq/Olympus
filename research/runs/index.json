@@ -1,7 +1,7 @@
 {
  "built": "2026-11-03 16:31",
  "baseline": "baseline",
- "count": 2262,
+ "count": 2273,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -327912,6 +327912,993 @@
      "slow_pass": 65.1,
      "pass_med": 21.0,
      "b2b": "20/41"
+    }
+   }
+  },
+  {
+   "id": "ar3_combo_hunt_trend_x05_day_tp5000",
+   "title": "ATLAS round 3: combo:hunt_trend_x0.5|day_tp=500.0",
+   "family": "other",
+   "question": "Job 30 (2026-11-04): what raises the ATLAS funded 25K's $ a month?",
+   "status": "promising",
+   "verdict": "ATLAS funded 25K, combo:hunt_trend_x0.5|day_tp=500.0. MC 500 paths x 6 months. Jan-Jun: $571/mo to you (worst 10% $107), 80.6% reach 5 payouts, lost 0.0%, stuck 12.2%, 4.52 trades/wk, PF 2.79; Jul-Oct: $597/mo (p10 $400), 85.6% reach 5 payouts, lost 0.0%, stuck 8.6%, 3.99 trades/wk, PF 3.67. Eval 2-week pass/fail 66.4/0.0 and 55.1/0.0.",
+   "writeup": "2026-11-04_atlas_round3",
+   "tags": [
+    "atlas",
+    "funded",
+    "ar3"
+   ],
+   "params": {
+    "plan": "builder25k",
+    "K": {
+     "day_tp": 500.0
+    },
+    "info": {
+     "V": "hunt_trend_x0.5"
+    }
+   },
+   "sizing": {
+    "mode": "funded",
+    "pct": 0.6,
+    "pct_min_usd": 50,
+    "pct_max_usd": 750,
+    "ref": 20,
+    "wk": true,
+    "room_f": null,
+    "max_win": 1000,
+    "slip_ticks": 2,
+    "skip_breach": true
+   },
+   "built": "2026-11-04 07:19",
+   "spans": {
+    "2026": {
+     "n": 174,
+     "tpw": 4.22,
+     "wk2": 98,
+     "win": 56.3,
+     "pf": 3.0,
+     "net": 23978,
+     "dd": -1286,
+     "avg_r": 0.665,
+     "stop": 44.9,
+     "worst_day": -574,
+     "risk": 139.0,
+     "half": 0,
+     "per_month": 2444,
+     "p10": 4.4,
+     "f10": 0.0,
+     "p15": 21.8,
+     "f15": 0.0,
+     "p20": 35.4,
+     "f20": 0.0,
+     "dec10": 4.4,
+     "slow_pass": 75.1,
+     "pass_med": 23.0,
+     "b2b": "7/0"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 174,
+     "tpw": 0.68,
+     "wk2": 16,
+     "win": 56.3,
+     "pf": 3.0,
+     "net": 23978,
+     "dd": -1286,
+     "avg_r": 0.665,
+     "stop": 44.9,
+     "worst_day": -574,
+     "risk": 139.0,
+     "half": 0,
+     "per_month": 394,
+     "p10": 0.7,
+     "f10": 0.0,
+     "p15": 3.5,
+     "f15": 0.0,
+     "p20": 5.7,
+     "f20": 0.0,
+     "dec10": 0.7,
+     "slow_pass": 77.9,
+     "pass_med": 25.0,
+     "b2b": "7/0"
+    }
+   }
+  },
+  {
+   "id": "ar3_units_hunt_trend_x05",
+   "title": "ATLAS round 3: units:hunt_trend_x0.5",
+   "family": "other",
+   "question": "Job 30 (2026-11-04): what raises the ATLAS funded 25K's $ a month?",
+   "status": "promising",
+   "verdict": "ATLAS funded 25K, units:hunt_trend_x0.5. MC 500 paths x 6 months. Jan-Jun: $570/mo to you (worst 10% $127), 77.6% reach 5 payouts, lost 0.0%, stuck 11.0%, 4.72 trades/wk, PF 2.99; Jul-Oct: $593/mo (p10 $400), 83.0% reach 5 payouts, lost 0.0%, stuck 8.4%, 4.2 trades/wk, PF 3.82. Eval 2-week pass/fail 66.4/0.0 and 55.1/0.0.",
+   "writeup": "2026-11-04_atlas_round3",
+   "tags": [
+    "atlas",
+    "funded",
+    "ar3"
+   ],
+   "params": {
+    "plan": "builder25k",
+    "K": {},
+    "info": {
+     "V": "hunt_trend_x0.5"
+    }
+   },
+   "sizing": {
+    "mode": "funded",
+    "pct": 0.6,
+    "pct_min_usd": 50,
+    "pct_max_usd": 750,
+    "ref": 20,
+    "wk": true,
+    "room_f": null,
+    "max_win": 1000,
+    "slip_ticks": 2,
+    "skip_breach": true
+   },
+   "built": "2026-11-04 07:16",
+   "spans": {
+    "2026": {
+     "n": 182,
+     "tpw": 4.42,
+     "wk2": 98,
+     "win": 57.1,
+     "pf": 3.3,
+     "net": 27734,
+     "dd": -1286,
+     "avg_r": 0.738,
+     "stop": 44.6,
+     "worst_day": -574,
+     "risk": 139.0,
+     "half": 0,
+     "per_month": 2827,
+     "p10": 13.1,
+     "f10": 0.0,
+     "p15": 30.6,
+     "f15": 0.0,
+     "p20": 46.6,
+     "f20": 0.0,
+     "dec10": 13.1,
+     "slow_pass": 65.2,
+     "pass_med": 20.0,
+     "b2b": "8/0"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 182,
+     "tpw": 0.71,
+     "wk2": 16,
+     "win": 57.1,
+     "pf": 3.3,
+     "net": 27734,
+     "dd": -1286,
+     "avg_r": 0.738,
+     "stop": 44.6,
+     "worst_day": -574,
+     "risk": 139.0,
+     "half": 0,
+     "per_month": 456,
+     "p10": 2.1,
+     "f10": 0.0,
+     "p15": 4.9,
+     "f15": 0.0,
+     "p20": 7.5,
+     "f20": 0.0,
+     "dec10": 2.1,
+     "slow_pass": 69.1,
+     "pass_med": 21.0,
+     "b2b": "8/0"
+    }
+   }
+  },
+  {
+   "id": "ar3_units_hunts_x05",
+   "title": "ATLAS round 3: units:hunts_x0.5",
+   "family": "other",
+   "question": "Job 30 (2026-11-04): what raises the ATLAS funded 25K's $ a month?",
+   "status": "promising",
+   "verdict": "ATLAS funded 25K, units:hunts_x0.5. MC 500 paths x 6 months. Jan-Jun: $620/mo to you (worst 10% $640), 91.6% reach 5 payouts, lost 0.0%, stuck 6.4%, 5.5 trades/wk, PF 3.03; Jul-Oct: $524/mo (p10 $0), 72.2% reach 5 payouts, lost 0.0%, stuck 19.2%, 6.11 trades/wk, PF 2.63. Eval 2-week pass/fail 67.2/0.0 and 55.1/0.0.",
+   "writeup": "2026-11-04_atlas_round3",
+   "tags": [
+    "atlas",
+    "funded",
+    "ar3"
+   ],
+   "params": {
+    "plan": "builder25k",
+    "K": {},
+    "info": {
+     "V": "hunts_x0.5"
+    }
+   },
+   "sizing": {
+    "mode": "funded",
+    "pct": 0.6,
+    "pct_min_usd": 50,
+    "pct_max_usd": 750,
+    "ref": 20,
+    "wk": true,
+    "room_f": null,
+    "max_win": 1000,
+    "slip_ticks": 2,
+    "skip_breach": true
+   },
+   "built": "2026-11-04 07:16",
+   "spans": {
+    "2026": {
+     "n": 229,
+     "tpw": 5.56,
+     "wk2": 98,
+     "win": 60.3,
+     "pf": 2.81,
+     "net": 29012,
+     "dd": -1364,
+     "avg_r": 0.598,
+     "stop": 46.5,
+     "worst_day": -598,
+     "risk": 146.0,
+     "half": 0,
+     "per_month": 2958,
+     "p10": 13.6,
+     "f10": 0.0,
+     "p15": 35.0,
+     "f15": 0.0,
+     "p20": 51.9,
+     "f20": 0.0,
+     "dec10": 13.6,
+     "slow_pass": 62.5,
+     "pass_med": 18.0,
+     "b2b": "8/0"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 229,
+     "tpw": 0.9,
+     "wk2": 16,
+     "win": 60.3,
+     "pf": 2.81,
+     "net": 29012,
+     "dd": -1364,
+     "avg_r": 0.598,
+     "stop": 46.5,
+     "worst_day": -598,
+     "risk": 146.0,
+     "half": 0,
+     "per_month": 477,
+     "p10": 2.2,
+     "f10": 0.0,
+     "p15": 5.6,
+     "f15": 0.0,
+     "p20": 8.4,
+     "f20": 0.0,
+     "dec10": 2.2,
+     "slow_pass": 66.7,
+     "pass_med": 21.0,
+     "b2b": "8/0"
+    }
+   }
+  },
+  {
+   "id": "ar3_funded_half_off_at_10R",
+   "title": "ATLAS round 3: funded:half_off_at_1.0R",
+   "family": "other",
+   "question": "Job 30 (2026-11-04): what raises the ATLAS funded 25K's $ a month?",
+   "status": "rejected",
+   "verdict": "ATLAS funded 25K, funded:half_off_at_1.0R. MC 500 paths x 6 months. Jan-Jun: $495/mo to you (worst 10% $101), 52.4% reach 5 payouts, lost 0.0%, stuck 15.4%, 3.99 trades/wk, PF 2.19; Jul-Oct: $537/mo (p10 $267), 51.2% reach 5 payouts, lost 0.0%, stuck 2.6%, 3.12 trades/wk, PF 2.86. Eval 2-week pass/fail 65.5/0.0 and 43.5/0.0.",
+   "writeup": "2026-11-04_atlas_round3",
+   "tags": [
+    "atlas",
+    "funded",
+    "ar3"
+   ],
+   "params": {
+    "plan": "builder25k",
+    "K": {
+     "part": {
+      "f": 0.5,
+      "r": 1.0
+     }
+    },
+    "info": {}
+   },
+   "sizing": {
+    "mode": "funded",
+    "pct": 0.6,
+    "pct_min_usd": 50,
+    "pct_max_usd": 750,
+    "ref": 20,
+    "wk": true,
+    "room_f": null,
+    "max_win": 1000,
+    "slip_ticks": 2,
+    "skip_breach": true
+   },
+   "built": "2026-11-04 07:15",
+   "spans": {
+    "2026": {
+     "n": 147,
+     "tpw": 3.57,
+     "wk2": 93,
+     "win": 55.1,
+     "pf": 2.22,
+     "net": 10804,
+     "dd": -1032,
+     "avg_r": 0.463,
+     "stop": 45.2,
+     "worst_day": -330,
+     "risk": 124.0,
+     "half": 0,
+     "per_month": 1101,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.0,
+     "f15": 0.0,
+     "p20": 0.0,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": 100.0,
+     "pass_med": 49.0,
+     "b2b": "3/0"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 147,
+     "tpw": 0.58,
+     "wk2": 15,
+     "win": 55.1,
+     "pf": 2.22,
+     "net": 10804,
+     "dd": -1032,
+     "avg_r": 0.463,
+     "stop": 45.2,
+     "worst_day": -330,
+     "risk": 124.0,
+     "half": 0,
+     "per_month": 178,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.0,
+     "f15": 0.0,
+     "p20": 0.0,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": 100.0,
+     "pass_med": 49.0,
+     "b2b": "3/0"
+    }
+   }
+  },
+  {
+   "id": "ar3_funded_max_trades_day_3",
+   "title": "ATLAS round 3: funded:max_trades_day_3",
+   "family": "other",
+   "question": "Job 30 (2026-11-04): what raises the ATLAS funded 25K's $ a month?",
+   "status": "rejected",
+   "verdict": "ATLAS funded 25K, funded:max_trades_day_3. MC 500 paths x 6 months. Jan-Jun: $609/mo to you (worst 10% $532), 86.2% reach 5 payouts, lost 0.0%, stuck 6.0%, 4.08 trades/wk, PF 3.15; Jul-Oct: $519/mo (p10 $256), 51.2% reach 5 payouts, lost 0.0%, stuck 7.8%, 3.05 trades/wk, PF 3.06. Eval 2-week pass/fail 65.5/0.0 and 43.5/0.0.",
+   "writeup": "2026-11-04_atlas_round3",
+   "tags": [
+    "atlas",
+    "funded",
+    "ar3"
+   ],
+   "params": {
+    "plan": "builder25k",
+    "K": {
+     "max_day": 3
+    },
+    "info": {}
+   },
+   "sizing": {
+    "mode": "funded",
+    "pct": 0.6,
+    "pct_min_usd": 50,
+    "pct_max_usd": 750,
+    "ref": 20,
+    "wk": true,
+    "room_f": null,
+    "max_win": 1000,
+    "slip_ticks": 2,
+    "skip_breach": true
+   },
+   "built": "2026-11-04 07:14",
+   "spans": {
+    "2026": {
+     "n": 148,
+     "tpw": 3.59,
+     "wk2": 90,
+     "win": 54.7,
+     "pf": 3.16,
+     "net": 20249,
+     "dd": -1268,
+     "avg_r": 0.822,
+     "stop": 45.0,
+     "worst_day": -527,
+     "risk": 124.0,
+     "half": 0,
+     "per_month": 2064,
+     "p10": 2.9,
+     "f10": 0.0,
+     "p15": 13.1,
+     "f15": 0.0,
+     "p20": 30.1,
+     "f20": 0.0,
+     "dec10": 2.9,
+     "slow_pass": 83.2,
+     "pass_med": 24.0,
+     "b2b": "6/0"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 148,
+     "tpw": 0.58,
+     "wk2": 15,
+     "win": 54.7,
+     "pf": 3.16,
+     "net": 20249,
+     "dd": -1268,
+     "avg_r": 0.822,
+     "stop": 45.0,
+     "worst_day": -527,
+     "risk": 124.0,
+     "half": 0,
+     "per_month": 333,
+     "p10": 0.5,
+     "f10": 0.0,
+     "p15": 2.1,
+     "f15": 0.0,
+     "p20": 4.9,
+     "f20": 0.0,
+     "dec10": 0.5,
+     "slow_pass": 84.9,
+     "pass_med": 25.0,
+     "b2b": "6/0"
+    }
+   }
+  },
+  {
+   "id": "ar3_funded_size_60pct_max1000",
+   "title": "ATLAS round 3: funded:size_60pct_max1000",
+   "family": "other",
+   "question": "Job 30 (2026-11-04): what raises the ATLAS funded 25K's $ a month?",
+   "status": "rejected",
+   "verdict": "ATLAS funded 25K, funded:size_60pct_max1000. MC 500 paths x 6 months. Jan-Jun: $592/mo to you (worst 10% $400), 81.6% reach 5 payouts, lost 0.0%, stuck 8.2%, 3.99 trades/wk, PF 2.91; Jul-Oct: $518/mo (p10 $253), 51.0% reach 5 payouts, lost 0.0%, stuck 7.6%, 3.05 trades/wk, PF 2.94. Eval 2-week pass/fail 65.5/0.0 and 43.5/0.0.",
+   "writeup": "2026-11-04_atlas_round3",
+   "tags": [
+    "atlas",
+    "funded",
+    "ar3"
+   ],
+   "params": {
+    "plan": "builder25k",
+    "K": {
+     "cfg": {
+      "pct": 0.6,
+      "pct_max_usd": 1000.0
+     }
+    },
+    "info": {}
+   },
+   "sizing": {
+    "mode": "funded",
+    "pct": 0.6,
+    "pct_min_usd": 50,
+    "pct_max_usd": 750,
+    "ref": 20,
+    "wk": true,
+    "room_f": null,
+    "max_win": 1000,
+    "slip_ticks": 2,
+    "skip_breach": true
+   },
+   "built": "2026-11-04 07:15",
+   "spans": {
+    "2026": {
+     "n": 146,
+     "tpw": 3.54,
+     "wk2": 90,
+     "win": 54.1,
+     "pf": 2.82,
+     "net": 19196,
+     "dd": -1370,
+     "avg_r": 0.806,
+     "stop": 45.0,
+     "worst_day": -527,
+     "risk": 130.0,
+     "half": 0,
+     "per_month": 1957,
+     "p10": 2.4,
+     "f10": 0.0,
+     "p15": 7.3,
+     "f15": 0.0,
+     "p20": 22.8,
+     "f20": 0.0,
+     "dec10": 2.4,
+     "slow_pass": 90.4,
+     "pass_med": 25.0,
+     "b2b": "5/0"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 146,
+     "tpw": 0.57,
+     "wk2": 15,
+     "win": 54.1,
+     "pf": 2.82,
+     "net": 19196,
+     "dd": -1370,
+     "avg_r": 0.806,
+     "stop": 45.0,
+     "worst_day": -527,
+     "risk": 130.0,
+     "half": 0,
+     "per_month": 315,
+     "p10": 0.4,
+     "f10": 0.0,
+     "p15": 1.2,
+     "f15": 0.0,
+     "p20": 3.7,
+     "f20": 0.0,
+     "dec10": 0.4,
+     "slow_pass": 91.4,
+     "pass_med": 26.0,
+     "b2b": "5/0"
+    }
+   }
+  },
+  {
+   "id": "ar3_funded_winner_cap_600",
+   "title": "ATLAS round 3: funded:winner_cap_600",
+   "family": "other",
+   "question": "Job 30 (2026-11-04): what raises the ATLAS funded 25K's $ a month?",
+   "status": "rejected",
+   "verdict": "ATLAS funded 25K, funded:winner_cap_600. MC 500 paths x 6 months. Jan-Jun: $572/mo to you (worst 10% $387), 69.0% reach 5 payouts, lost 0.0%, stuck 4.6%, 3.4 trades/wk, PF 2.74; Jul-Oct: $380/mo (p10 $0), 23.0% reach 5 payouts, lost 0.0%, stuck 18.8%, 2.55 trades/wk, PF 2.4. Eval 2-week pass/fail 65.5/0.0 and 43.5/0.0.",
+   "writeup": "2026-11-04_atlas_round3",
+   "tags": [
+    "atlas",
+    "funded",
+    "ar3"
+   ],
+   "params": {
+    "plan": "builder25k",
+    "K": {
+     "cfg": {
+      "max_win": 600.0
+     }
+    },
+    "info": {}
+   },
+   "sizing": {
+    "mode": "funded",
+    "pct": 0.6,
+    "pct_min_usd": 50,
+    "pct_max_usd": 750,
+    "ref": 20,
+    "wk": true,
+    "room_f": null,
+    "max_win": 1000,
+    "slip_ticks": 2,
+    "skip_breach": true
+   },
+   "built": "2026-11-04 07:15",
+   "spans": {
+    "2026": {
+     "n": 125,
+     "tpw": 3.03,
+     "wk2": 83,
+     "win": 51.2,
+     "pf": 2.56,
+     "net": 10000,
+     "dd": -766,
+     "avg_r": 0.719,
+     "stop": 39.5,
+     "worst_day": -287,
+     "risk": 103.0,
+     "half": 0,
+     "per_month": 1019,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.0,
+     "f15": 0.0,
+     "p20": 0.5,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": 100.0,
+     "pass_med": 43.0,
+     "b2b": "3/0"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 125,
+     "tpw": 0.49,
+     "wk2": 14,
+     "win": 51.2,
+     "pf": 2.56,
+     "net": 10000,
+     "dd": -766,
+     "avg_r": 0.719,
+     "stop": 39.5,
+     "worst_day": -287,
+     "risk": 103.0,
+     "half": 0,
+     "per_month": 164,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.0,
+     "f15": 0.0,
+     "p20": 0.1,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": 100.0,
+     "pass_med": 43.0,
+     "b2b": "3/0"
+    }
+   }
+  },
+  {
+   "id": "ar3_units_ema_3R",
+   "title": "ATLAS round 3: units:ema_3R",
+   "family": "other",
+   "question": "Job 30 (2026-11-04): what raises the ATLAS funded 25K's $ a month?",
+   "status": "rejected",
+   "verdict": "ATLAS funded 25K, units:ema_3R. MC 500 paths x 6 months. Jan-Jun: $521/mo to you (worst 10% $0), 73.8% reach 5 payouts, lost 0.0%, stuck 20.8%, 4.17 trades/wk, PF 2.66; Jul-Oct: $399/mo (p10 $0), 38.2% reach 5 payouts, lost 0.0%, stuck 30.4%, 3.31 trades/wk, PF 2.37. Eval 2-week pass/fail 69.7/0.0 and 44.9/0.0.",
+   "writeup": "2026-11-04_atlas_round3",
+   "tags": [
+    "atlas",
+    "funded",
+    "ar3"
+   ],
+   "params": {
+    "plan": "builder25k",
+    "K": {},
+    "info": {
+     "V": "ema_3R"
+    }
+   },
+   "sizing": {
+    "mode": "funded",
+    "pct": 0.6,
+    "pct_min_usd": 50,
+    "pct_max_usd": 750,
+    "ref": 20,
+    "wk": true,
+    "room_f": null,
+    "max_win": 1000,
+    "slip_ticks": 2,
+    "skip_breach": true
+   },
+   "built": "2026-11-04 07:17",
+   "spans": {
+    "2026": {
+     "n": 156,
+     "tpw": 3.79,
+     "wk2": 95,
+     "win": 53.8,
+     "pf": 2.49,
+     "net": 20772,
+     "dd": -1320,
+     "avg_r": 0.653,
+     "stop": 45.0,
+     "worst_day": -533,
+     "risk": 222.0,
+     "half": 0,
+     "per_month": 2118,
+     "p10": 3.4,
+     "f10": 0.0,
+     "p15": 17.0,
+     "f15": 0.0,
+     "p20": 29.1,
+     "f20": 0.0,
+     "dec10": 3.4,
+     "slow_pass": 77.4,
+     "pass_med": 23.0,
+     "b2b": "6/0"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 156,
+     "tpw": 0.61,
+     "wk2": 16,
+     "win": 53.8,
+     "pf": 2.49,
+     "net": 20772,
+     "dd": -1320,
+     "avg_r": 0.653,
+     "stop": 45.0,
+     "worst_day": -533,
+     "risk": 222.0,
+     "half": 0,
+     "per_month": 341,
+     "p10": 0.5,
+     "f10": 0.0,
+     "p15": 2.7,
+     "f15": 0.0,
+     "p20": 4.7,
+     "f20": 0.0,
+     "dec10": 0.5,
+     "slow_pass": 79.9,
+     "pass_med": 24.0,
+     "b2b": "6/0"
+    }
+   }
+  },
+  {
+   "id": "ar3_units_hunt_asia_x05",
+   "title": "ATLAS round 3: units:hunt_asia_x0.5",
+   "family": "other",
+   "question": "Job 30 (2026-11-04): what raises the ATLAS funded 25K's $ a month?",
+   "status": "rejected",
+   "verdict": "ATLAS funded 25K, units:hunt_asia_x0.5. MC 500 paths x 6 months. Jan-Jun: $646/mo to you (worst 10% $641), 97.0% reach 5 payouts, lost 0.0%, stuck 2.0%, 4.92 trades/wk, PF 3.42; Jul-Oct: $408/mo (p10 $0), 43.4% reach 5 payouts, lost 0.0%, stuck 33.6%, 5.43 trades/wk, PF 2.11. Eval 2-week pass/fail 73.9/0.0 and 44.9/0.0.",
+   "writeup": "2026-11-04_atlas_round3",
+   "tags": [
+    "atlas",
+    "funded",
+    "ar3"
+   ],
+   "params": {
+    "plan": "builder25k",
+    "K": {},
+    "info": {
+     "V": "hunt_asia_x0.5"
+    }
+   },
+   "sizing": {
+    "mode": "funded",
+    "pct": 0.6,
+    "pct_min_usd": 50,
+    "pct_max_usd": 750,
+    "ref": 20,
+    "wk": true,
+    "room_f": null,
+    "max_win": 1000,
+    "slip_ticks": 2,
+    "skip_breach": true
+   },
+   "built": "2026-11-04 07:16",
+   "spans": {
+    "2026": {
+     "n": 203,
+     "tpw": 4.93,
+     "wk2": 95,
+     "win": 59.1,
+     "pf": 2.84,
+     "net": 25085,
+     "dd": -1782,
+     "avg_r": 0.659,
+     "stop": 48.0,
+     "worst_day": -598,
+     "risk": 142.0,
+     "half": 0,
+     "per_month": 2557,
+     "p10": 3.9,
+     "f10": 0.0,
+     "p15": 18.4,
+     "f15": 0.0,
+     "p20": 42.2,
+     "f20": 0.0,
+     "dec10": 3.9,
+     "slow_pass": 80.0,
+     "pass_med": 21.0,
+     "b2b": "7/0"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 203,
+     "tpw": 0.79,
+     "wk2": 16,
+     "win": 59.1,
+     "pf": 2.84,
+     "net": 25085,
+     "dd": -1782,
+     "avg_r": 0.659,
+     "stop": 48.0,
+     "worst_day": -598,
+     "risk": 142.0,
+     "half": 0,
+     "per_month": 412,
+     "p10": 0.6,
+     "f10": 0.0,
+     "p15": 3.0,
+     "f15": 0.0,
+     "p20": 6.8,
+     "f20": 0.0,
+     "dec10": 0.6,
+     "slow_pass": 82.7,
+     "pass_med": 23.0,
+     "b2b": "7/0"
+    }
+   }
+  },
+  {
+   "id": "ar3_units_sr_vix_bank5",
+   "title": "ATLAS round 3: units:sr_vix_bank5",
+   "family": "other",
+   "question": "Job 30 (2026-11-04): what raises the ATLAS funded 25K's $ a month?",
+   "status": "rejected",
+   "verdict": "ATLAS funded 25K, units:sr_vix_bank5. MC 500 paths x 6 months. Jan-Jun: $372/mo to you (worst 10% $0), 32.4% reach 5 payouts, lost 0.0%, stuck 34.6%, 3.93 trades/wk, PF 2.27; Jul-Oct: $341/mo (p10 $0), 11.6% reach 5 payouts, lost 0.0%, stuck 15.8%, 2.88 trades/wk, PF 2.44. Eval 2-week pass/fail 51.3/0.0 and 31.9/0.0.",
+   "writeup": "2026-11-04_atlas_round3",
+   "tags": [
+    "atlas",
+    "funded",
+    "ar3"
+   ],
+   "params": {
+    "plan": "builder25k",
+    "K": {},
+    "info": {
+     "V": "sr_vix_bank5"
+    }
+   },
+   "sizing": {
+    "mode": "funded",
+    "pct": 0.6,
+    "pct_min_usd": 50,
+    "pct_max_usd": 750,
+    "ref": 20,
+    "wk": true,
+    "room_f": null,
+    "max_win": 1000,
+    "slip_ticks": 2,
+    "skip_breach": true
+   },
+   "built": "2026-11-04 07:17",
+   "spans": {
+    "2026": {
+     "n": 142,
+     "tpw": 3.45,
+     "wk2": 93,
+     "win": 46.5,
+     "pf": 2.35,
+     "net": 13413,
+     "dd": -1395,
+     "avg_r": 0.702,
+     "stop": 43.9,
+     "worst_day": -311,
+     "risk": 122.0,
+     "half": 0,
+     "per_month": 1367,
+     "p10": 1.5,
+     "f10": 0.0,
+     "p15": 6.3,
+     "f15": 0.0,
+     "p20": 12.6,
+     "f20": 0.0,
+     "dec10": 1.5,
+     "slow_pass": 91.5,
+     "pass_med": 36.0,
+     "b2b": "4/0"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 142,
+     "tpw": 0.56,
+     "wk2": 15,
+     "win": 46.5,
+     "pf": 2.35,
+     "net": 13413,
+     "dd": -1395,
+     "avg_r": 0.702,
+     "stop": 43.9,
+     "worst_day": -311,
+     "risk": 122.0,
+     "half": 0,
+     "per_month": 220,
+     "p10": 0.2,
+     "f10": 0.0,
+     "p15": 1.0,
+     "f15": 0.0,
+     "p20": 2.0,
+     "f20": 0.0,
+     "dec10": 0.2,
+     "slow_pass": 92.4,
+     "pass_med": 38.0,
+     "b2b": "4/0"
+    }
+   }
+  },
+  {
+   "id": "ar3_funded_today",
+   "title": "ATLAS round 3: funded:today",
+   "family": "other",
+   "question": "Job 30 (2026-11-04): what raises the ATLAS funded 25K's $ a month?",
+   "status": "info",
+   "verdict": "ATLAS funded 25K, funded:today. MC 500 paths x 6 months. Jan-Jun: $586/mo to you (worst 10% $400), 77.6% reach 5 payouts, lost 0.0%, stuck 7.8%, 3.98 trades/wk, PF 2.98; Jul-Oct: $519/mo (p10 $256), 51.2% reach 5 payouts, lost 0.0%, stuck 7.8%, 3.05 trades/wk, PF 3.06. Eval 2-week pass/fail 65.5/0.0 and 43.5/0.0.",
+   "writeup": "2026-11-04_atlas_round3",
+   "tags": [
+    "atlas",
+    "funded",
+    "ar3"
+   ],
+   "params": {
+    "plan": "builder25k",
+    "K": {},
+    "info": {}
+   },
+   "sizing": {
+    "mode": "funded",
+    "pct": 0.6,
+    "pct_min_usd": 50,
+    "pct_max_usd": 750,
+    "ref": 20,
+    "wk": true,
+    "room_f": null,
+    "max_win": 1000,
+    "slip_ticks": 2,
+    "skip_breach": true
+   },
+   "built": "2026-11-04 07:14",
+   "spans": {
+    "2026": {
+     "n": 146,
+     "tpw": 3.54,
+     "wk2": 90,
+     "win": 54.1,
+     "pf": 3.0,
+     "net": 19133,
+     "dd": -1268,
+     "avg_r": 0.806,
+     "stop": 45.0,
+     "worst_day": -527,
+     "risk": 125.0,
+     "half": 0,
+     "per_month": 1950,
+     "p10": 2.9,
+     "f10": 0.0,
+     "p15": 10.7,
+     "f15": 0.0,
+     "p20": 21.8,
+     "f20": 0.0,
+     "dec10": 2.9,
+     "slow_pass": 86.3,
+     "pass_med": 26.0,
+     "b2b": "5/0"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 146,
+     "tpw": 0.57,
+     "wk2": 15,
+     "win": 54.1,
+     "pf": 3.0,
+     "net": 19133,
+     "dd": -1268,
+     "avg_r": 0.806,
+     "stop": 45.0,
+     "worst_day": -527,
+     "risk": 125.0,
+     "half": 0,
+     "per_month": 314,
+     "p10": 0.5,
+     "f10": 0.0,
+     "p15": 1.7,
+     "f15": 0.0,
+     "p20": 3.5,
+     "f20": 0.0,
+     "dec10": 0.5,
+     "slow_pass": 87.7,
+     "pass_med": 27.0,
+     "b2b": "5/0"
     }
    }
   }

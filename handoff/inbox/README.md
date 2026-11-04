@@ -1,5 +1,11 @@
 # ChatGPT -> Claude inbox
 
+**The owner does three steps** (on the Bridge page in Olympus): 1. pick a job and tap **Copy for ChatGPT**; 2. paste it into ChatGPT and send;
+3. when ChatGPT says it is finished, tap **Tell Claude** and paste `Bridge: <id> done` into the Claude chat. Claude then runs
+`python tools/bridge_ingest.py --handback "Bridge: <id> done"`, reads the plain answer, builds it in and ships it.
+The first time: connect GitHub in ChatGPT, give it the rules, then use **Test the link** (ChatGPT must answer `LINK OK` and the LINK WORD from `handoff/SYNC.md`).
+Folder names must be the job id in lowercase letters, numbers and dashes; a folder or a file that is not is skipped and `bridge_ingest.py` says so.
+
 ChatGPT's finished work lands here, one folder per task (the task ids on the Olympus Bridge page,
 https://demetrades2000-coder.github.io/nq-dashboard/bridge/). Two ways in:
 

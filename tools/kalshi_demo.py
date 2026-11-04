@@ -138,6 +138,22 @@ def feed_of(now, trades):
     }
 
 
+HYP_DAYS = 20                                            # the demo's ideas were registered this many days ago; the engine ran every second day since
+
+
+def hypotheses_of(now, trades):
+    """Replay the engine every second day for the last 12 days in a scratch folder, so the demo's ideas have a registration day, a live window and a history."""
+    doc = None
+    with tempfile.TemporaryDirectory() as tmp:
+        for back in range(HYP_DAYS, -1, -2):
+            at = now - timedelta(days=back)
+            tr = [r for r in trades if r["t"] <= at.timestamp()]
+            if tr:
+                ke.run(dict(feed_of(at, tr), trades=list(reversed(tr))), tmp, now=at.timestamp())
+        doc = ke.read_json(os.path.join(tmp, "hypotheses.json"), None)
+    return doc
+
+
 def build(seed=36):
     now, trades = make(seed)
     full = feed_of(now, trades)
@@ -153,7 +169,7 @@ def build(seed=36):
             e["since"] = yday
     feed = dict(full)                                     # what the bot publishes: only the last 40 trades
     return {"v": 1, "demo": True, "app": "kalshicity", "about": "SYNTHETIC demo: about 1,500 invented bets from six invented rules with planted edges. Not the real bot.",
-            "kalshi": feed, "edges": doc, "log": log}
+            "kalshi": feed, "edges": doc, "log": log, "hyps": hypotheses_of(now, trades)}
 
 
 def main():

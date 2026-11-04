@@ -107,8 +107,8 @@ export function basalt({ color = '#1b1620', glow = '#ff5a1e', repeat = [3, 3], i
 }
 
 // ------------------------------------------------------------------ the crowd
-/** rings: [{ r, y, n, tilt? }]  spectators on circles facing the centre. Returns { group, update(t, dt), cheer(k), setLite(b), count, dispose() } */
-export function crowd(scene, { rings = [], palette = ['#a33a3a', '#2f5d8a', '#c9a24a', '#5a3d7a', '#3a7a55', '#d8d2c4', '#8a4a2a'], seed = 7, center = [0, 0, 0] } = {}) {
+/** rings: [{ r, y, n, tilt? }]  spectators on circles facing the centre. Returns { group, update(t, dt), cheer(k), setLite(b), count, tris(), dispose() }; detail: 'low' (default, 40 tris a spectator) | 'full' (216) */
+export function crowd(scene, { rings = [], palette = ['#a33a3a', '#2f5d8a', '#c9a24a', '#5a3d7a', '#3a7a55', '#d8d2c4', '#8a4a2a'], seed = 7, center = [0, 0, 0], detail = 'low', density = 1 } = {}) {
   const r = rng(seed), uni = { uTime: { value: 0 }, uCheer: { value: 0 } };
   const patch = (mat, arms) => {
     mat.onBeforeCompile = (sh) => {
@@ -123,9 +123,13 @@ export function crowd(scene, { rings = [], palette = ['#a33a3a', '#2f5d8a', '#c9
     return mat;
   };
   let total = 0; for (const rg of rings) total += rg.n;
-  const bodyG = new THREE.CapsuleGeometry(0.17, 0.34, 2, 6); bodyG.translate(0, 0.34, 0);
-  const headG = new THREE.SphereGeometry(0.115, 6, 5); headG.translate(0, 0.78, 0);
-  const armG = new THREE.CapsuleGeometry(0.04, 0.2, 1, 3); armG.translate(0, 0.55, 0);
+  // detail 'low' (the default, 2026-11-04, docs/OLYMPUS_PERF.md): a tapered 5-sided torso, a 4 x 2 head, a 3-sided arm = 40 triangles a spectator
+  // instead of 216 ('full': capsules and a 6 x 5 head): ~36k instead of ~194k for the Arena's 896 spectators. A spectator is a few pixels tall at
+  // the camera distances of the bowl, so the silhouette and the colours read the same.
+  const low = detail !== 'full';
+  const bodyG = low ? new THREE.CylinderGeometry(0.13, 0.17, 0.68, 5, 1) : new THREE.CapsuleGeometry(0.17, 0.34, 2, 6); bodyG.translate(0, 0.34, 0);
+  const headG = low ? new THREE.SphereGeometry(0.115, 4, 2) : new THREE.SphereGeometry(0.115, 6, 5); headG.translate(0, 0.78, 0);
+  const armG = low ? new THREE.CylinderGeometry(0.04, 0.04, 0.3, 3, 1, true) : new THREE.CapsuleGeometry(0.04, 0.2, 1, 3); armG.translate(0, 0.55, 0);
   const body = new THREE.InstancedMesh(bodyG, patch(new THREE.MeshStandardMaterial({ roughness: 0.85, metalness: 0 }), false), total);
   const head = new THREE.InstancedMesh(headG, patch(new THREE.MeshStandardMaterial({ roughness: 0.7, metalness: 0 }), false), total);
   const arms = new THREE.InstancedMesh(armG, patch(new THREE.MeshStandardMaterial({ roughness: 0.75, metalness: 0 }), true), total * 2);
@@ -134,7 +138,8 @@ export function crowd(scene, { rings = [], palette = ['#a33a3a', '#2f5d8a', '#c9
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), p = new THREE.Vector3(), s = new THREE.Vector3(1, 1, 1), up = new THREE.Vector3(0, 1, 0), col = new THREE.Color();
   let i = 0;
   for (const rg of rings) {
-    for (let k = 0; k < rg.n; k++, i++) {
+    for (let k = 0; k < rg.n; k++) {
+      if (density < 1 && r() > density) continue;                  // thinned evenly over every tier (a phone: ~60%), the empty seats are the same everywhere
       const a = (k / rg.n) * Math.PI * 2 + (r() - 0.5) * 0.05, rad = rg.r + (r() - 0.5) * 0.35;
       p.set(center[0] + Math.cos(a) * rad, center[1] + rg.y, center[2] + Math.sin(a) * rad);
       q.setFromAxisAngle(up, -a - Math.PI / 2); const sc = 0.85 + r() * 0.3; s.set(sc, sc, sc);
@@ -145,8 +150,11 @@ export function crowd(scene, { rings = [], palette = ['#a33a3a', '#2f5d8a', '#c9
         const off = new THREE.Vector3((sd ? 1 : -1) * 0.22 * sc, 0, 0).applyQuaternion(q); p.set(center[0] + Math.cos(a) * rad + off.x, center[1] + rg.y, center[2] + Math.sin(a) * rad + off.z);
         m4.compose(p, q, s); arms.setMatrixAt(i * 2 + sd, m4); arms.setColorAt(i * 2 + sd, skin[(r() * skin.length) | 0]); ph2[i * 2 + sd] = ph[i];
       }
+      i++;
     }
   }
+  const placed = i;
+  body.count = head.count = placed; arms.count = placed * 2;
   body.geometry.setAttribute('aPh', new THREE.InstancedBufferAttribute(ph, 1)); head.geometry.setAttribute('aPh', new THREE.InstancedBufferAttribute(ph, 1));
   arms.geometry.setAttribute('aPh', new THREE.InstancedBufferAttribute(ph2, 1));
   const group = new THREE.Group(); group.add(body, head, arms);
@@ -154,14 +162,15 @@ export function crowd(scene, { rings = [], palette = ['#a33a3a', '#2f5d8a', '#c9
   scene.add(group);
   let cheer = 0, cheerGoal = 0;
   const api = {
-    group, count: total,
+    group, count: placed, detail: low ? 'low' : 'full',
+    tris() { const g = (m) => (m.geometry.index ? m.geometry.index.count : m.geometry.attributes.position.count) / 3; return Math.round(g(body) * body.count + g(head) * head.count + g(arms) * arms.count); },
     update(t, dt = 0.016, still = false) {
       uni.uTime.value = still ? 0.4 : t; cheer += (cheerGoal - cheer) * Math.min(1, dt * 3); uni.uCheer.value = cheer;
       return cheer > 0.01 || cheerGoal > 0;
     },
     cheer(k) { cheerGoal = k; if (k === 0) cheerGoal = 0; },
     pulse(ms = 3200) { cheerGoal = 1; clearTimeout(api._t); api._t = setTimeout(() => { cheerGoal = 0; }, ms); },
-    setLite(b) { const n = b ? Math.floor(total * 0.4) : total; body.count = head.count = n; arms.count = n * 2; },
+    setLite(b) { const n = b ? Math.floor(placed * 0.4) : placed; body.count = head.count = n; arms.count = n * 2; },
     dispose() { scene.remove(group); for (const m of [body, head, arms]) { m.geometry.dispose(); m.material.dispose(); m.dispose && m.dispose(); } clearTimeout(api._t); },
   };
   return api;

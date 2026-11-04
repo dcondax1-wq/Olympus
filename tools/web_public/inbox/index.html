@@ -19,6 +19,8 @@
 <link rel="stylesheet" href="../olympus/olympus.css?v=o2">
 <script src="../olympus/themes.js?v=o2"></script>
 <script src="../olympus/olympus.js?v=o2" data-app="inbox"></script>
+<script src="../olympus/intro-app.js?v=i1" defer></script>
+<script src="../olympus/sfx.js?v=s1" defer></script>
 <script src="../olympus/fx-core.js?v=f1"></script><script src="../olympus/fx-ui.js?v=f1"></script><script src="../olympus/fx-text.js?v=f1"></script><script src="../olympus/fx-burst.js?v=f1"></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#7fd0ff'); r.setProperty('--oly-accent-rgb', '127, 208, 255'); })();</script>
 <link rel="stylesheet" href="inbox.css?v=i1">
@@ -28,12 +30,12 @@
 <main id="app">
   <header class="top">
     <div class="brand"><h1>INBOX</h1><p class="sub" id="sub">Everything that matters, newest first</p></div>
-    <div class="tags"><span id="lite" class="tag" hidden>LITE</span><span id="off" class="tag" hidden>OFFLINE COPY</span><button type="button" class="refresh" id="refresh" aria-label="Refresh" aria-busy="false">Refresh</button></div>
+    <div class="tags"><span id="lite" class="tag" hidden>LITE</span><span id="off" class="tag" hidden>OFFLINE COPY</span><button type="button" class="refresh" id="refresh" data-oly-cue="tap" aria-label="Refresh" aria-busy="false">Refresh</button></div>
   </header>
   <section class="hero card" id="hero" data-oly-fx="glassSpecular">
     <div class="count"><b id="unread" data-oly-fx="odometer">0</b><span id="unreadLbl">new</span></div>
     <p class="lead" id="lead">Loading what is new</p>
-    <div class="acts"><button type="button" class="go" id="markAll">Mark all read</button></div>
+    <div class="acts"><button type="button" class="go" id="markAll" data-oly-cue="success">Mark all read</button></div>
   </section>
   <nav class="filters" id="filters" role="tablist" aria-label="Filter"></nav>
   <ul class="list" id="list" aria-live="polite"></ul>

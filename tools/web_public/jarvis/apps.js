@@ -87,6 +87,8 @@ export const BUILT_INS = Object.freeze([
   app('hephaestus', 'Hephaestus', 'trading', '#d96bff', 'The forge: tune the dials', { glyph: '\u2692' }),
   app('cities', 'Cities', 'trading', '#a68bff', 'A world of city islands', { glyph: '\u25C8' }),
   app('kalshicity', 'Kalshi City', 'money', '#2ef2d0', "The Kalshi bot's edges as a night city", { glyph: 'K' }),
+  app('journal', 'Mnemosyne', 'trading', '#f09bd8', 'A 10-second trade journal: what your habits cost, in dollars', { glyph: '\u039C' }),
+  app('ledger', 'Ledger', 'money', '#ffcf5a', 'Your real money: fees, payouts, net profit', { glyph: 'L' }),
   app('inbox', 'Inbox', 'life', '#7fd0ff', 'Everything that needs a look, in one place', { glyph: '\u2709' }),
   app('settings', 'Settings', 'life', '#b79bff', 'Look, voice, storage and the tour', { glyph: '\u2699' }),
   app('bridge', 'Bridge', 'trading', '#34d399', 'Link ChatGPT: 3 steps, live job status', { glyph: '\u0392' }),
@@ -678,6 +680,10 @@ function adoptName(a, card) {
   delete x.autoName;
   save(st);
 }
+// Mnemosyne keeps a newer card of its own on this phone ('journal.card.v1', same site, like the Inbox's): "you interfered on 3 of your last 9 trades". Checked like any card.
+function ownCard(a, card) {
+  try { const c = read('journal.card.v1'), r = isObj(c) ? validateStatus(c, { base: a.url }) : null; return r && r.ok && r.card.t >= card.t ? r.card : card; } catch (_) { return card; }
+}
 /** The app's live card: fetches its status link (opts: timeoutMs, fetch, now). Never throws. On any failure (timeout,
  *  no answer, not allowed by CORS, over 8 KB, not the contract) it returns the last good card (cached: true) or null. */
 export function appStatus(app, opts) {
@@ -691,6 +697,7 @@ export function appStatus(app, opts) {
       const r = validateStatus(await getText(bust(url), opts), { now: nowMs(opts), base: a.url });
       if (r.ok) {
         lastErr.delete(a.id);
+        if (a.id === 'journal') r.card = ownCard(a, r.card);
         if (remember(a, url, r.card)) { adoptName(a, r.card); return finish(r.card, a, nowMs(opts), false); }
         return cachedStatus(a, opts);                         // a newer card was pushed meanwhile
       }

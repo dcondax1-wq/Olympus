@@ -26,7 +26,7 @@ h1 { margin: 0; font: 800 22px/1.1 var(--oly-display, 'Orbitron', sans-serif); l
 .pick b { color: var(--accent); }
 
 /* the sheet: between the 3D sphere and the dock; the bottom-right 80 x 160 px stays free for Jarvis's orb */
-.sheet { position: fixed; left: calc(10px + var(--sl)); right: calc(10px + var(--sr)); top: var(--sheet-top); bottom: calc(166px + var(--sb));
+.sheet { position: fixed; left: calc(10px + var(--sl)); right: calc(10px + var(--sr)); top: var(--sheet-top); bottom: calc(var(--dock-h) + 16px + var(--sb));
   overflow-y: auto; overscroll-behavior: contain; padding: 10px 12px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line);
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
 .pane[hidden] { display: none; }
@@ -103,7 +103,7 @@ code { display: block; padding: 8px 10px; border-radius: 8px; background: rgba(0
 .xbtn { min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid rgba(58, 215, 255, .7); background: rgba(58, 215, 255, .14); color: var(--text); font: 700 13px var(--oly-ui, sans-serif); }
 .xbtn.ghost { background: transparent; }
 .detbtn { margin-left: 6px; min-height: 28px; padding: 0 10px; border-radius: 999px; border: 1px solid rgba(58, 215, 255, .7); background: rgba(58, 215, 255, .14); color: var(--text); font: 700 11px var(--oly-ui, sans-serif); pointer-events: auto; }
-.drawer { position: fixed; z-index: 30; left: calc(10px + var(--sl)); right: calc(10px + var(--sr)); top: var(--sheet-top); bottom: calc(166px + var(--sb)); overflow-y: auto; padding: 14px; border-radius: 16px;
+.drawer { position: fixed; z-index: 30; left: calc(10px + var(--sl)); right: calc(10px + var(--sr)); top: var(--sheet-top); bottom: calc(var(--dock-h) + 16px + var(--sb)); overflow-y: auto; padding: 14px; border-radius: 16px;
   border: 1px solid rgba(58, 215, 255, .55); background: rgba(5, 9, 18, .97); box-shadow: 0 0 30px rgba(58, 215, 255, .18); }
 .drawer[hidden] { display: none; }
 .drawer .oly-close { position: absolute; top: 6px; right: 6px; }
@@ -115,3 +115,22 @@ code { display: block; padding: 8px 10px; border-radius: 8px; background: rgba(0
 .drawer code { display: block; margin: 6px 0; padding: 8px; border-radius: 8px; background: rgba(0, 0, 0, .4); font: 12px/1.4 ui-monospace, monospace; overflow-wrap: anywhere; }
 .dnear { display: flex; flex-wrap: wrap; gap: 6px; } .dnear .nb { min-height: 36px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--text); font-size: 12px; }
 .dnear .nb.ok { border-color: rgba(70, 215, 154, .6); } .dnear .nb.warn { border-color: rgba(245, 184, 74, .7); } .dnear .nb.bad { border-color: rgba(255, 77, 94, .8); }
+
+/* ---- the Money tab (argusplus.js): four tabs in a 2 x 2 grid (none under the orb's corner), the gates, the eval rows, the demo button. Taps >= 44 px. ---- */
+:root { --dock-h: 214px; }
+.tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.tabs button { flex: none; padding: 0 6px; min-height: 44px; white-space: nowrap; }
+.tag.demo { color: #ffd88a; border-color: rgba(255, 216, 138, .5); }
+.demobtn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; margin: 8px 0; border-radius: 12px; border: 1px solid rgba(58, 215, 255, .6); background: rgba(58, 215, 255, .12); color: #bff1ff; font-weight: 700; text-decoration: none; }
+.rdy { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--rc, #46d79a); background: color-mix(in srgb, var(--rc, #46d79a) 10%, transparent); }
+.rdy.ok { --rc: #46d79a; } .rdy.warn { --rc: #f5b84a; } .rdy.bad { --rc: #ff4d5e; }
+.rdy b { font: 800 20px/1.1 var(--oly-display, sans-serif); letter-spacing: .06em; color: var(--rc); } .rdy span { font-size: 13px; line-height: 1.4; color: var(--text, #eaf6ff); }
+#p-money .note { margin: 6px 0 8px; font-size: 12px; color: var(--dim, #9fb2c8); } #p-money .plainp { margin: 4px 0; font-size: 13px; line-height: 1.45; }
+.gates { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+.gate { display: grid; grid-template-columns: 24px 1fr auto; gap: 8px; align-items: center; min-height: 44px; padding: 4px 10px; border-radius: 10px; background: rgba(255, 255, 255, .04); font-size: 13px; }
+.gate i { font-style: normal; font-weight: 800; text-align: center; color: var(--gc, #6b7690); } .gate.ok { --gc: #46d79a; } .gate.warn { --gc: #f5b84a; } .gate.bad { --gc: #ff4d5e; }
+.gate .gv { color: var(--gc, #9fb2c8); font-size: 12px; text-align: right; }
+.mrow { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; margin-top: 6px; border-radius: 14px; border: 1px solid rgba(58, 215, 255, .22); background: rgba(58, 215, 255, .05); }
+.mrow b { font-size: 14px; } .mrow .dd { font-size: 13px; font-variant-numeric: tabular-nums; color: var(--text, #eaf6ff); }
+.mrow .mbar { display: block; height: 10px; border-radius: 6px; background: rgba(255, 255, 255, .09); overflow: hidden; } .mrow .mbar i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #ff4d5e, #f5b84a 45%, #46d79a); }
+.mrow .q { font-size: 12px; color: var(--dim, #9fb2c8); } .mrow .q.warn { color: #f5b84a; } .mrow .q.bad { color: #ff4d5e; }

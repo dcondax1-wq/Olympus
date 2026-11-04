@@ -44,7 +44,7 @@ function slots(count, reserve) {
 }
 
 /** model (cityfeed.shape) -> the whole city's geometry */
-export function layout(model) {
+export function layout(model, prev = null) {
   const groups = new Map();
   for (const e of model.edges) {
     const key = e.dims[1] !== '*' ? e.dims[1] : 'Downtown';
@@ -92,8 +92,59 @@ export function layout(model) {
     const a0 = (i / seg) * Math.PI * 2, a1 = ((i + 1) / seg) * Math.PI * 2;
     roads.push({ kind: 'ring', district: 'Downtown', x0: Math.cos(a0) * rr, z0: Math.sin(a0) * rr, x1: Math.cos(a1) * rr, z1: Math.sin(a1) * rr, w: 2.6 });
   }
-  const extent = ring + maxHalf + 30;
-  return { districts, buildings, roads, ring, extent, ringRoad: rr, downHalf: down.half, reserve: RESERVE };
+  // the Lab: one small district per research idea on an outer ring, three towers each (looking back, live, live bets collected)
+  const labs = [];
+  let labR = 0;
+  const H = model.hyp;
+  if (H && H.hyps.length) {
+    const n = H.hyps.length, R = (m ? ring + maxHalf : 30) + LAB_HALF + 18, parts = ['back', 'live', 'prog'];
+    const maxG = Math.max(5, ...H.hyps.flatMap((h) => [Math.abs(h.back.gain), Math.abs(h.live.gain)]));
+    labR = R;
+    H.hyps.forEach((h, i) => {
+      const ang = -Math.PI / 2 + Math.PI / n + (i / n) * Math.PI * 2, cx = Math.cos(ang) * R, cz = Math.sin(ang) * R;
+      const ez = [-cx / R, -cz / R], ex = [-ez[1], ez[0]], yaw = Math.atan2(-ex[1], ex[0]);
+      parts.forEach((part, k) => {
+        const off = (k - 1) * LAB_GAP;
+        buildings.push({ id: `hyp:${h.id}:${part}`, district: 'Lab', lab: h.id, part, x: cx + off * ex[0], z: cz + off * ex[1], yaw, ...hypBuilding(h, part, maxG, prev) });
+      });
+      labs.push({ key: h.id, name: h.short, cx, cz, ez, ex, half: LAB_HALF, color: LAB_COLORS[i % LAB_COLORS.length], count: 3, ang, yaw });
+    });
+    const Rr = R + LAB_HALF + 4, seg = 72;
+    for (let i = 0; i < seg; i++) {
+      const a0 = (i / seg) * Math.PI * 2, a1 = ((i + 1) / seg) * Math.PI * 2;
+      roads.push({ kind: 'labring', district: 'Lab', x0: Math.cos(a0) * Rr, z0: Math.sin(a0) * Rr, x1: Math.cos(a1) * Rr, z1: Math.sin(a1) * Rr, w: 2.4 });
+    }
+    labs.forEach((d) => roads.push({ kind: 'labspur', district: 'Lab', x0: d.cx - d.ez[0] * (LAB_HALF - 1), z0: d.cz - d.ez[1] * (LAB_HALF - 1), x1: -d.ez[0] * Rr, z1: -d.ez[1] * Rr, w: 2.0 }));
+  }
+  const extent = (labs.length ? labR + LAB_HALF + 4 : ring + maxHalf) + 30;
+  return { districts, buildings, roads, ring, extent, ringRoad: rr, downHalf: down.half, reserve: RESERVE, labs, labRing: labR, edgeCount: buildings.length - labs.length * 3 };
+}
+
+// ------------------------------------------------------------------ the Lab (one district per research idea)
+export const LAB_HALF = 9.5, LAB_GAP = 5.8;
+export const LAB_COLORS = ['#7cf0ff', '#b3ff8a', '#ffb86b', '#ff8fd0', '#a9a0ff', '#ffe36b', '#7dffd1', '#ff8a8a', '#9fd0ff', '#d0ff7c'];
+const PART_WORD = { back: 'looking back', live: 'live', prog: 'live bets collected' };
+const gainH = (g, maxG) => (g > 0 ? 3 + 24 * Math.sqrt(clamp01(g / maxG)) : g < 0 ? 1.7 + 2.0 * clamp01(-g / maxG) : 1.3);       // a loss is a low stub, nothing is ever invisible
+/** One tower of an idea: back = what the rule would have added looking back, live = what it adds on bets since it was registered, prog = how many live bets are collected
+ *  (a crane over it until 30). `prev` = the dollars stored on the viewer's last visit: a tower that moved since then resizes in front of them (mode 3). */
+export function hypBuilding(h, part, maxG, prev) {
+  const win = part === 'live' ? h.live : h.back, filter = h.kind === 'filter';
+  const g = part === 'prog' ? 0 : win.gain;
+  const n = part === 'back' ? (filter ? h.back.nSkip : h.back.nAll) : h.nLive;
+  const key = `${h.id}:${part}`, nowV = part === 'prog' ? h.nLive : g;
+  const hh = part === 'prog' ? 1.4 + 11 * Math.sqrt(clamp01(h.needed ? h.nLive / h.needed : 0)) : gainH(g, maxG);
+  const status = part === 'back' ? h.back.status : part === 'live' ? h.live.status : 'NEW';
+  const small = part === 'prog' || (filter ? n < MIN_N : part === 'live' && n < MIN_N) || h.kind === 'data';
+  let mode = part === 'prog' && h.nLive < MIN_N ? 1 : 0, from = 0;
+  if (prev && prev[key] != null && Math.abs(prev[key] - nowV) >= (part === 'prog' ? 1 : 0.5)) {
+    const old = part === 'prog' ? 1.4 + 11 * Math.sqrt(clamp01(h.needed ? prev[key] / h.needed : 0)) : gainH(prev[key], maxG);
+    mode = 3; from = Math.min(4, Math.max(0.05, old / hh));
+  }
+  const w = win.w == null ? 0.9 : win.w, size = 1.6 + 0.9 * clamp01(Math.log10(1 + n) / 3);
+  const glow = part === 'back' ? 0.28 : part === 'live' ? 0.35 + 0.6 * clamp01(h.nLive / Math.max(MIN_N, h.needed)) : 0.3;
+  const e = { id: `hyp:${h.id}:${part}`, label: `${h.name}: ${PART_WORD[part]}`, dims: ['*', '*', '*', '*', '*'], kind: 'hyp', size: 1, n, wins: 0, w, p: null, ev: null, pnl: g, status, small, advice: 'collect',
+    lab: true, hyp: h.id, part, first: '', since: '', last: null, win: { d7: { n: 0 }, d30: { n: 0 }, led: { n: 0 } } };
+  return { e, w: size, d: size * 0.9, h: hh, fullH: hh, mode, from, glow, lit: clamp01(Math.log10(1 + n) / 3.3), loss: Math.min(0.6, Math.max(0.02, 1 - w)) };
 }
 
 /** The scenery: dark towers with no data (the far skyline), as many as the biggest tier needs, in a fixed random order. */

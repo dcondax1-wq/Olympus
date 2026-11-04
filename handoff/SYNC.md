@@ -3,6 +3,9 @@
 Both sides read this first and update only their own section. The owner only relays "Bridge: <id> done".
 Claude refreshes the AUTO block with `python tools/bridge_sync.py`.
 
+LINK WORD: KESTREL
+(The Bridge page's "Test the link" asks ChatGPT to read this line and answer "LINK OK KESTREL". Only a ChatGPT that can really see this repo knows the word. Do not change it without changing the page.)
+
 ## How a job moves
 Owner copies a job from the Bridge page -> ChatGPT builds it -> PR to `handoff/inbox/<id>/` (or upload) ->
 owner says "Bridge: <id> done" -> Claude reviews, wires it in, ticks it here, and ships.

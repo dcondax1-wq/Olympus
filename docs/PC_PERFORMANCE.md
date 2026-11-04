@@ -169,3 +169,21 @@ Beelink (ebay.com, camelcamelcamel.com B0C7726ZYB, slickdeals.net); 2026 memory 
 Surface out-of-warranty ~$450 (mspoweruser.com, onmsft.com, Microsoft's per-country price page on support.microsoft.com);
 third-party screen $299 (onehourdevicerepair.com); monitors (walmart.com, productchart.com); coolers (neweggbusiness.com,
 homedepot.com); heat and red-line glitches (Microsoft Q&A / Tech Community). Prices change: check the listing before buying.
+
+## STATUS.bat and the safety review (2026-11-04)
+
+- **STATUS.bat** (repo root, also `<site>/pc/STATUS.bat`; script `scripts/pc_status.ps1` / `pc/pc_status.ps1`): a six line health card
+  for THIS PC, read-only, no Administrator: DISK (free space), RAM, BOT (running / armed / heartbeat age from the published `home.json`
+  `live.pc`), NINJA (process), BARS (age of the last 1-minute bar from the same heartbeat), POWER (active plan). Ends with ONE
+  `NEXT:` sentence (the first red line, else the first yellow, else "nothing to do"). The Surface (not the bot PC) shows its own disk,
+  RAM and plan and where the bot runs; a stopped bot / closed NinjaTrader outside market hours is `[..]`, never red.
+- **Which PC gets which script** (the first line of the PC page): main PC = STATUS, PC care, Clean storage, Fresh start once;
+  Surface (retired, cooling) = Clean storage and PC care only.
+- **Failures**: every script (`pc_care`, `clean_storage`, `move_bot`, `pc_status`, `FRESH_START`) ends an unexpected failure with ONE
+  sentence ("Something unexpected stopped this: take a photo of this window and send it to Claude"), never a stack trace; the detail
+  goes to the log. Test hook `LE_T_BOOM=1`.
+- **Clean storage** also refuses any root inside a person's own folders (Downloads, Desktop, Documents, Pictures, Videos, Music,
+  OneDrive / Dropbox ones, `.ssh`, `.aws`, `.gnupg`; NinjaTrader's folder and the bot folder are the exceptions) and never deletes
+  keys / wallets / sign-ins by name (`*.pem *.key *.ppk *.kdbx id_rsa ...`).
+- Tests: `tests.test_pc_care` (STATUS, the failure sentence), `tests.test_clean_storage` (Downloads / .ssh / Desktop decoys and
+  hostile TEMP), `tests.test_win_scripts`.

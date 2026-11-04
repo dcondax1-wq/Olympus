@@ -11,7 +11,7 @@
 // Look); graph filters and a tag filter dim the brain (insights.js filterSet); Teach writes into Jarvis's own keys (teach.js, the one
 // writer); skins (skins.js) tint the UI and the nebula sky; ambient dust, sounds through OLYMPUS.sfx, Obsidian deep links on the card.
 import * as THREE from '../jarvis/three.module.min.js';
-import { openFeed } from './data.js';
+import { openFeed, demoSnapshot } from './data.js';
 import { watchLive, withLive } from './live.js';
 import { createDemo } from './demo.js';
 import { buildGraph, diffGraphs, search, resolve, thoughts, dayLog } from './graph.js';
@@ -40,7 +40,7 @@ const saved = savedQuality();
 const state = {
   graph: null, mode: 'loading', filter: null, query: '', matches: null, focus: -1, lapse: null, pending: null,
   quality: saved || (O && O.lite() ? 'low' : autoQuality()), chosen: !!saved, fps: 0, settled: false,
-  view: savedView(), streamKeys: new Set(), gmode: 'all', gmin: 0, tag: null,
+  view: savedView(), streamKeys: new Set(), gmode: 'all', gmin: 0, tag: null, preview: false,
 };
 // this phone's choices (skin, atmosphere, sound, the Obsidian vault name) and the review cards, under 'mind.' keys (store.js)
 const prefs = { skin: 'auto', sky: true, dust: true, sound: true, vault: '', ...load('prefs', {}) };
@@ -134,13 +134,48 @@ const panels = createPanels({
     sound.play('portal');
   },
   toast: (t) => ui.toast(t),
+  preview() { togglePreview(); },
   beforeOpen() { if (state.focus >= 0) unfocus(); },
 });
+
+document.getElementById('sp-teach').addEventListener('click', () => { sound.play('tap'); panels.open('teach'); });
+document.getElementById('sp-preview').addEventListener('click', () => { sound.play('tap'); togglePreview(); });
 
 function pushPanels() {
   if (!state.graph) return;
   panels.update({ g: state.graph, mode: state.mode, now: Date.now(), live, prefs, review, tag: state.tag, gmode: state.gmode, gmin: state.gmin,
-    filter: state.filter, focus: state.focus, soundOk: sound.available });
+    filter: state.filter, focus: state.focus, soundOk: sound.available, preview: state.preview, sparse: isSparse() });
+  paintSparse();
+}
+
+// ------------------------------------------------------------------ a tiny vault is never a blank sky: say what to do, and let the owner look at a grown brain
+const SPARSE_BELOW = 12;                                         // notes (not counting the Me note)
+let demoSnap = null;
+function isSparse() {
+  const g = state.graph;
+  return !!g && !state.preview && (state.mode === 'live' || state.mode === 'offline') && g.nodes.filter((n) => n.kind !== 'me').length < SPARSE_BELOW;
+}
+function paintSparse() {
+  const g = state.graph;
+  if (!g) return;
+  if (state.preview) ui.sparse({ preview: true, text: 'Previewing a demo brain, not your vault.' });
+  else if (isSparse()) {
+    const n = g.nodes.filter((x) => x.kind !== 'me').length;
+    ui.sparse({ preview: false, text: n ? `Your brain is just starting: ${n} note${n === 1 ? '' : 's'}.` : 'Your brain is empty so far.' });
+  } else ui.sparse(null);
+}
+/** Show the demo brain in place of the small real one (and back). Nothing is written anywhere. */
+async function togglePreview() {
+  if (!rawUpdate) return;
+  state.preview = !state.preview;
+  if (state.preview) {
+    if (!demoSnap) { try { demoSnap = await demoSnapshot(); } catch (_) { state.preview = false; ui.toast('The demo brain could not load'); return; } }
+    panels.close();
+    onUpdate({ mode: 'demo', snap: withLive(demoSnap, live) });
+    ui.toast('Demo brain. Tap Back to my vault any time.');
+  } else {
+    onUpdate({ ...rawUpdate, snap: withLive(rawUpdate.snap, live) });
+  }
 }
 
 const GMODE_NAMES = { linked: 'linked notes', hubs: 'hubs', orphans: 'orphans', recent: 'edited this week', all: 'every note' };
@@ -551,6 +586,8 @@ window.mind = {
   get review() { const q = panels.review; return q ? { id: q.id, prompt: q.prompt, choices: q.choices, answer: q.answer, kind: q.kind } : null; },
   get gmode() { return { mode: state.gmode, min: state.gmin }; },
   get tag() { return state.tag; },
+  get preview() { return state.preview; },
+  get sparse() { return isSparse(); },
   get prefs() { return { ...prefs }; },
   get ambient() { return brain ? { sky: brain.ambient.sky.visible, dust: brain.ambient.dust.visible, motes: brain.ambient.dust.geometry.attributes.aSeed.count } : null; },
   get dim() { return brain && brain.emph ? Array.from(brain.emph).filter((v) => v < 0.2).length : 0; },
@@ -574,13 +611,13 @@ window.mind = {
 // it lands: a storage event from another tab, plus a 4 s poll for this one. New items glow in their constellation with a ripple.
 let rawUpdate = null, live = null;
 const showBrain = (l) => ui.brain(l.counts, state.graph ? state.graph.clusters.filter((c) => c.count && c.key !== 'me' && c.key !== 'memory').length : 0);
-openFeed((u) => { rawUpdate = u; onUpdate({ ...u, snap: withLive(u.snap, live) }); showBrain(live || { counts: { memories: 0, written: 0 } }); }, { demo: createDemo({ size: demoSize }) });
+openFeed((u) => { rawUpdate = u; if (state.preview) return; onUpdate({ ...u, snap: withLive(u.snap, live) }); showBrain(live || { counts: { memories: 0, written: 0 } }); }, { demo: createDemo({ size: demoSize }) });
 watchLive((l, first) => {
   const had = new Set(live ? live.items.map((x) => x.id) : []);
   live = l;
   if (!rawUpdate) return;                                         // the first feed merges it
   const fresh = first ? [] : l.items.filter((x) => !had.has(x.id));
-  onUpdate({ ...rawUpdate, snap: withLive(rawUpdate.snap, l) });
+  if (!state.preview) onUpdate({ ...rawUpdate, snap: withLive(rawUpdate.snap, l) });
   showBrain(l);
   if (brain) for (const it of fresh) { const idx = state.graph.index.get('live:' + it.id); if (idx !== undefined) { brain.spark(idx); sound.play('portal'); } }
   if (fresh.length) ui.toast('Jarvis learned: ' + fresh[fresh.length - 1].text.slice(0, 90) + (fresh.length > 1 ? ` (+${fresh.length - 1} more)` : ''));

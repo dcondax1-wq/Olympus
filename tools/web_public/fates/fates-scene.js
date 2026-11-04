@@ -61,7 +61,7 @@ export function createScene(canvas, opt = {}) {
   } catch (e) { return null; }
   const R = rc.renderer;
   R.setClearColor(BG, 1);
-  const baseTier = () => rc.forced || (rc.software ? 'low' : null);
+  const baseTier = () => rc.forced || (window.OLYMPUS && window.OLYMPUS.fx() === 'off' ? 'off' : rc.software ? 'low' : null);   // 3D Off = the core's 'off' tier (pixel ratio 1, direct draw)
   const tierFor = (v) => baseTier() || (v ? 'low' : ['ultra', 'high'].indexOf(rc.quality()) >= 0 ? rc.quality() : 'high');
   if (opt.lite || baseTier()) rc.setQuality(tierFor(!!opt.lite));
   const G = {};

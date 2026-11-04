@@ -1,7 +1,8 @@
 // KALSHI CITY page (ES module): loads edges.json + learning_log.json (the learning engine, tools/kalshi_edges.py) and the bot's live numbers (the public
 // kalshi-feed), shapes them (cityfeed.js), lays the city out (citylayout.js), draws it (cityscene.js) and writes the words. Text only through
 // textContent (no data ever becomes HTML). Read only: nothing here writes anywhere. window.KC is the test hook.
-import { RAW, shape, cardOf, headlineOf, usd, pct, evf, pts, STATUS_COLOR, STATUS_WORD, ADVICE, etHour, clockLabel, phaseWord, MIN_N } from './cityfeed.js';
+import { RAW, shape, shapeHyps, cardOf, headlineOf, usd, pct, evf, pts, STATUS_COLOR, STATUS_WORD, ADVICE, etHour, clockLabel, phaseWord, MIN_N,
+  hypOf, hypCardOf, pairOf, tickerLines, changesOf, HYP_COLOR, HYP_WORD } from './cityfeed.js';
 import { layout } from './citylayout.js';
 import { lessonsView, historyView, ASK_MESSAGE } from './lessons.js';
 
@@ -12,7 +13,10 @@ const store = {
   read() { try { const v = JSON.parse(localStorage.getItem(KEY) || 'null'); return v && typeof v === 'object' ? v : {}; } catch (_) { return {}; } },
   write(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (_) { /* private mode */ } },
 };
-const S = { learned: null, sound: false, copied: false, model: null, L: null, demo: true, scene: null, view: '', ready: false, error: null, sel: null, logMore: 40, liveFailed: false, preview: null };
+const S = { learned: null, sound: false, copied: false, model: null, L: null, demo: true, scene: null, view: '', ready: false, error: null, sel: null, logMore: 40, liveFailed: false, preview: null,
+  prevHyp: null, changes: [], tk: { lines: [], i: 0 } };
+/** the dollars of every idea tower, stored on the phone so the next visit can show what grew or shrank in between */
+const hypSnap = (m) => { const o = {}; if (m.hyp && !m.hyp.demo) m.hyp.hyps.forEach((h) => { o[`${h.id}:back`] = h.back.gain; o[`${h.id}:live`] = h.live.gain; o[`${h.id}:prog`] = h.nLive; }); return o; };
 const reduced = () => (O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches));
 function h(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = String(text); return e; }
 const kids = (el, ...c) => { el.replaceChildren(...c.flat().filter(Boolean)); return el; };
@@ -42,6 +46,30 @@ function renderTop() {
   wx.textContent = `${{ clear: 'Clear', overcast: 'Overcast', rain: 'Rain', storm: 'Storm' }[r.state]}${r.paused ? ' · fog' : ''}`;
   wx.dataset.wx = r.state; wx.title = r.why + (r.paused ? '. Fog: the bot is paused.' : '');
   $('demo').hidden = !S.demo;
+  renderPair(); renderTicker(true);
+}
+// ---- Best edge so far / Worst leak (dollars, never blank) and the learning ticker
+const pairSub = (p, fixWord) => `${p.label} · ${p.n} bets${p.fix && S.model.hyp ? ` · ${fixWord}: ${S.model.hyp.byId.get(p.fix).name}` : ''}`;
+function renderPair() {
+  const P = pairOf(S.model);
+  const fill = (v, s, p, word, none) => { $(v).textContent = p ? smoney(p.pnl) : '$0.00'; $(s).textContent = p ? pairSub(p, word) : none; };
+  fill('pBestV', 'pBestS', P.best, 'made', 'No edge has 30 bets and a profit yet');
+  fill('pWorstV', 'pWorstS', P.worst, 'fix', 'No leak has 30 bets and a loss yet');
+}
+function renderTicker(reset) {
+  if (reset) { S.tk.lines = tickerLines(S.model, S.changes); S.tk.i = 0; }
+  $('tkText').textContent = S.tk.lines[S.tk.i % S.tk.lines.length];
+}
+function tickNext() {
+  if (document.hidden || S.view || S.tk.lines.length < 2) return;
+  S.tk.i = (S.tk.i + 1) % S.tk.lines.length;
+  const el = $('tkText'); el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; renderTicker(false);
+}
+function pairPick(which) {
+  const p = pairOf(S.model)[which];
+  if (!p) { openSheet('lab'); return; }
+  const idea = which === 'worst' && p.fix ? `hyp:${p.fix}:back` : null;
+  if (idea && S.model.hyp) selectEdge(idea, true); else if (S.model.byId.has(p.id)) selectEdge(p.id, true); else openSheet('lab');
 }
 function renderClock() {
   const hr = S.scene ? S.scene.hour() : (S.preview != null ? S.preview : etHour());
@@ -52,7 +80,7 @@ function renderClock() {
 }
 
 // ------------------------------------------------------------------------------------------------ sheets
-const TITLES = { learn: 'What the city learned', board: 'Leaderboard: the best edges', moves: 'Do more · Stop doing', risk: 'Risk and sizing', guide: 'How to read the city', lessons: 'What we learned', history: 'Ask for the full history', card: '' };
+const TITLES = { lab: 'The Lab: ideas being tested', learn: 'What the city learned', board: 'Leaderboard: the best edges', moves: 'Do more · Stop doing', risk: 'Risk and sizing', guide: 'How to read the city', lessons: 'What we learned', history: 'Ask for the full history', card: '' };
 
 function edgeRow(e, i, extra) {
   const b = h('button', `row-btn${e.small ? ' grey' : ''}`); b.type = 'button'; b.dataset.id = e.id;
@@ -69,6 +97,34 @@ function listOf(ids, make, empty) {
   return ul;
 }
 
+/** the Lab: every research idea with its paper score, the pair in dollars, and the plain-words learning log */
+function labView() {
+  const H = S.model.hyp, P = pairOf(S.model);
+  if (!H) return [h('p', 'strong', 'No ideas are being tested yet. The first ones are registered on the next run of the engine.')];
+  const box = h('div', 'pairbox');
+  [['Best edge so far', P.best, 'good'], ['Worst leak', P.worst, 'bad']].forEach(([k, p, tone]) => {
+    const b = h('button', `pcard ${tone}`); b.type = 'button'; b.append(h('span', 'k', k), h('b', '', p ? smoney(p.pnl) : '$0.00'), h('small', '', p ? pairSub(p, 'fix') : 'Nothing proven yet'));
+    b.addEventListener('click', () => pairPick(tone === 'good' ? 'best' : 'worst')); box.append(b);
+  });
+  const ul = h('ul', 'list ideas');
+  [...H.hyps].sort((a, b) => Math.abs(b.back.gain) - Math.abs(a.back.gain)).forEach((x) => {
+    const li = h('li'), b = h('button', 'row-btn'); b.type = 'button'; b.dataset.id = `hyp:${x.id}:back`;
+    const nm = h('span', 'nm'); nm.append(document.createTextNode(x.name));
+    const live = x.kind === 'filter' ? `${x.live.nSkip} live bets ${smoney(x.live.gain)}` : x.kind === 'data' ? 'needs data' : `${x.live.nAll} live bets`;
+    nm.append(h('small', '', `${x.kind === 'filter' ? `looking back ${smoney(x.back.gain)} on ${x.back.nSkip} bets` : x.kind === 'fee' ? `up to ${smoney(x.back.gain)} if filled` : x.kind === 'size' ? `${smoney(x.back.gain)} on the same bets` : 'not testable yet'} · ${live}`));
+    const w = h('span', 'ev', HYP_WORD[x.word]); w.style.color = HYP_COLOR[x.word];
+    b.append(nm, w); b.addEventListener('click', () => selectEdge(`hyp:${x.id}:back`, true)); li.append(b); ul.append(li);
+  });
+  const log = H.log.slice().reverse(), lul = h('ul', 'list log');
+  log.slice(0, 30).forEach((x) => {
+    const li = h('li'), bar = h('span', 'bar'); bar.style.background = x.kind === 'live' ? '#35f0b0' : x.kind === 'started' ? '#8f9bff' : '#ffd86a';
+    const body = h('div'); body.append(h('small', '', x.d), document.createTextNode(x.text)); li.append(bar, body); lul.append(li);
+  });
+  return [H.demo ? h('p', 'warnbox', 'DEMO ideas: invented bets, not the bot\'s numbers. The real ideas appear as soon as the engine has run once.') : null,
+    h('p', 'strong', 'Each idea is a rule that might turn the bot\'s loss into a profit. The engine keeps a paper score for it on every run: nothing here places an order.'), box,
+    h('p', '', 'Looking back, every rule looks good, because it was picked after seeing the bets. Only LIVE bets (after the idea was registered) can prove it, and it needs 30 before it says anything.'),
+    h('h3', '', `Ideas (${H.hyps.length})`), ul, h('h3', '', 'What the lab learned'), log.length ? lul : h('p', '', 'Nothing yet.')];
+}
 function learnView() {
   const m = S.model, log = m.log.slice().reverse();
   const ul = h('ul', 'list log');
@@ -131,6 +187,8 @@ function guideView() {
     lg('#2ef2d0', 'The scanner (the round button) sweeps the city when the engine learns something new, and the buildings it learned light up. Fireworks mark a new DO MORE edge.'),
     lg('#ff4d57', 'Neon signs name the tallest edges (flickering = fading, STOP = dead). Lightning means a storm or a high risk of ruin; in rain every glowing building reflects on the street. The note button turns the ambience on.'),
     lg('#ffe08a', 'The gold beam marks the best proven edge. The red/green lighthouse shows the risk of ruin.'),
+    lg('#7cf0ff', 'The Lab, on the outer ring: one small district per idea that might fix the bot, three towers each. Left: what the rule would have added looking back (it was picked after seeing the bets, so this proves nothing). Middle: what it adds on live bets since it was registered. Right, with a crane: how many live bets are collected. Taller means more dollars; a loss is a low stub. Tap the LAB strip for the list.'),
+    lg('#ffe08a', 'Best edge so far and Worst leak are the biggest winner and loser (30+ bets), in dollars after fees. A gold beam marks the winner, a red beam the leak. A tower that moved since your last visit grows or shrinks when you open the city.'),
     h('p', 'warnbox', 'The dark towers far away are scenery: they carry no data. Only buildings inside a district are real edges.'),
     S.startedDemo ? null : demoButton(),
     h('p', '', `The engine re-measures every edge each time it runs: win rate against the market's odds, profit per $1, a 95% range, a luck test (z), the last 7 and 30 days, and a Kelly stake. Anything under ${MIN_N} bets stays grey. Read only: it never places or changes an order.`)];
@@ -144,13 +202,22 @@ async function showDemo(on) {
   if (on) {
     S.fx = S.fx || await getJSON('fixture.json', 12000);
     if (!S.fx) return;
-    S.real = S.model; S.model = shape(S.fx.edges, { entries: S.fx.log }, null);
+    S.real = S.model; S.model = shape(S.fx.edges, { entries: S.fx.log }, null, Date.now() / 1000, S.fx.hyps, true);
   } else if (S.real) S.model = S.real;
-  S.showingDemo = !!on; S.demo = S.startedDemo || !!on; S.sel = null; S.L = layout(S.model);
+  S.showingDemo = !!on; S.demo = S.startedDemo || !!on; S.sel = null; S.L = layout(S.model, on || S.hypDemo ? null : S.prevHyp);
   if (S.scene) { S.scene.select(null); S.scene.rebuild(S.model, S.L); }
   renderTop(); openSheet('guide');
 }
+function hypCardView(x) {
+  const c = hypCardOf(x.h, x.part), rows = h('ul', 'kv');
+  c.rows.forEach(([k, v, tone]) => { const li = h('li', tone || ''); li.append(h('span', 'k', k), h('span', 'v', v)); rows.append(li); });
+  const st = h('span', 'badge', c.word); st.style.color = c.color;
+  const pr = h('div', 'pillrow'); pr.append(st);
+  if (x.h.judgedLive) { const lv = h('span', 'badge', 'LIVE-TESTED'); lv.style.color = '#35f0b0'; pr.append(lv); }
+  return [pr, c.banner ? h('p', 'warnbox', c.banner) : null, h('p', 'strong', c.verdict), rows];
+}
 function cardView() {
+  const hx = hypOf(S.model, S.sel); if (hx) return hypCardView(hx);
   const e = S.model.byId.get(S.sel); if (!e) return [h('p', '', 'Select a building.')];
   const c = cardOf(e, S.model.book), rows = h('ul', 'kv');
   c.rows.forEach(([k, v, tone]) => { const li = h('li', tone || ''); li.append(h('span', 'k', k), h('span', 'v', v)); rows.append(li); });
@@ -162,22 +229,22 @@ function cardView() {
 
 function openSheet(view) {
   S.view = view;
-  const e = view === 'card' ? S.model.byId.get(S.sel) : null;
-  $('sheetTitle').textContent = view === 'card' ? (e ? e.label : '') : TITLES[view];
-  kids($('sheetBody'), view === 'learn' ? learnView() : view === 'board' ? boardView() : view === 'moves' ? movesView() : view === 'risk' ? riskView() : view === 'guide' ? guideView() : view === 'lessons' ? lessonsView(S.learned, () => openSheet('history')) : view === 'history' ? historyView(S) : cardView());
-  $('sheet').hidden = false;
+  const hx = view === 'card' ? hypOf(S.model, S.sel) : null, e = view === 'card' && !hx ? S.model.byId.get(S.sel) : null;
+  $('sheetTitle').textContent = view === 'card' ? (hx ? hx.h.name : e ? e.label : '') : TITLES[view];
+  kids($('sheetBody'), view === 'lab' ? labView() : view === 'learn' ? learnView() : view === 'board' ? boardView() : view === 'moves' ? movesView() : view === 'risk' ? riskView() : view === 'guide' ? guideView() : view === 'lessons' ? lessonsView(S.learned, () => openSheet('history')) : view === 'history' ? historyView(S) : cardView());
+  $('sheet').hidden = false; document.body.classList.add('sheeted');      // a sheet open: the pair and the ticker step aside so the sheet never covers the chips
   $('sheetBody').scrollTop = 0;
   document.querySelectorAll('#pills button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === view)));
   try { history.replaceState(null, '', view === 'card' ? location.pathname + location.search : '#' + view); } catch (_) { /* framed */ }
 }
 function closeSheet() {
-  S.view = ''; $('sheet').hidden = true;
+  S.view = ''; $('sheet').hidden = true; document.body.classList.remove('sheeted');
   document.querySelectorAll('#pills button').forEach((b) => b.setAttribute('aria-pressed', 'false'));
   if (S.sel) { S.sel = null; if (S.scene) S.scene.select(null); }
   try { history.replaceState(null, '', location.pathname + location.search); } catch (_) { /* framed */ }
 }
 function selectEdge(id, fly) {
-  if (!id || !S.model.byId.has(id)) { if (S.view === 'card') closeSheet(); return; }
+  if (!id || !(S.model.byId.has(id) || hypOf(S.model, id))) { if (S.view === 'card') closeSheet(); return; }
   S.sel = id; sfx('tick');
   if (S.scene) { S.scene.select(id); if (fly) S.scene.focus(id); }
   openSheet('card');
@@ -188,7 +255,8 @@ function card() {
   const m = S.model, bk = m.book;
   return { v: 1, name: 'Kalshi City', status: { level: S.demo ? 'off' : (m.regime.state === 'rain' || m.regime.state === 'storm' ? 'warn' : 'ok'), label: S.demo ? 'Demo data' : `${m.counts.doMore} do more · ${m.counts.stop} stop` },
     kpis: [{ label: 'Do more', value: String(m.counts.doMore) }, { label: 'Stop', value: String(m.counts.stop) }, { label: 'Ruin risk', value: bk.ruinNow == null ? '-' : pct(bk.ruinNow, 0) }],
-    lines: [headlineOf(m).slice(0, 120), `Bot ${bk.status || bk.mode}: bankroll ${bk.balance == null ? '-' : dollars(bk.balance)}. Weather: ${m.regime.state}.`.slice(0, 120)],
+    lines: [headlineOf(m).slice(0, 120), `Bot ${bk.status || bk.mode}: bankroll ${bk.balance == null ? '-' : dollars(bk.balance)}. Weather: ${m.regime.state}.`.slice(0, 120),
+      (({ best, worst }) => `Best ${best ? `${smoney(best.pnl)} ${best.label}` : 'none yet'}; worst leak ${worst ? `${smoney(worst.pnl)} ${worst.label}` : 'none yet'}`.slice(0, 120))(pairOf(m))],
     t: Math.floor(Date.now() / 1000), open: '#learn', theme: '#06100f', stale_after: 259200 };
 }
 function postCard() {
@@ -217,13 +285,18 @@ function greetNew() {                                                    // once
 }
 async function refresh() {                                               // every 5 minutes: the engine's files and the bot's numbers again; something new = scan
   if (document.hidden || S.startedDemo || S.showingDemo || !S.scene) return;
-  const [edges, log, live] = await Promise.all([getJSON('edges.json'), getJSON('learning_log.json'), getJSON(RAW, 8000)]);
-  const m = shape(edges, log, live);
+  const [edges, log, live, hyp] = await Promise.all([getJSON('edges.json'), getJSON('learning_log.json'), getJSON(RAW, 8000), getJSON('hypotheses.json')]);
+  const m = shape(edges, log, live, Date.now() / 1000, hyp, false);
   if (!m || m.edges.length < 3) return;
-  const newer = m.log.length > S.model.log.length, changed = m.t !== S.model.t;
+  if (!m.hyp && S.model.hyp) m.hyp = S.model.hyp;                        // no fresh ideas file: keep the ones on screen
+  const old = S.model, before = hypSnap(old);
+  const newer = m.log.length > old.log.length, changed = m.t !== old.t || (m.hyp && old.hyp && m.hyp.t !== old.hyp.t);
   S.model = m;
-  if (changed) { S.L = layout(m); S.scene.rebuild(m, S.L); } else S.scene.setBook(m);
+  S.changes = changesOf(m, before);
+  if (changed) { S.L = layout(m, S.hypDemo ? null : before); S.scene.rebuild(m, S.L); } else S.scene.setBook(m);
+  if (!S.hypDemo) store.write({ ...store.read(), hh: hypSnap(m) });
   renderTop();
+  if (S.changes.length) toast(S.changes[0]);
   if (newer) runScan(true);
 }
 
@@ -246,6 +319,9 @@ async function startScene() {
 function wire() {
   document.querySelectorAll('#pills button').forEach((b) => b.addEventListener('click', () => (S.view === b.dataset.view ? closeSheet() : openSheet(b.dataset.view))));
   document.querySelectorAll('#cams button').forEach((b) => b.addEventListener('click', () => { if (S.scene) S.scene.setMode(b.dataset.cam); sfx('portal'); document.querySelectorAll('#cams button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); }));
+  $('ticker').addEventListener('click', () => (S.view === 'lab' ? closeSheet() : openSheet('lab')));
+  $('pBest').addEventListener('click', () => pairPick('best'));
+  $('pWorst').addEventListener('click', () => pairPick('worst'));
   $('guideBtn').addEventListener('click', () => (S.view === 'guide' ? closeSheet() : openSheet('guide')));
   $('close').addEventListener('click', closeSheet);
   $('sound').addEventListener('click', () => {
@@ -269,22 +345,30 @@ function wire() {
 }
 
 async function main() {
-  const [edges, log, live, learned] = await Promise.all([getJSON('edges.json'), getJSON('learning_log.json'), getJSON(RAW, 8000), getJSON('learned.json')]);
+  const [edges, log, live, learned, hyp] = await Promise.all([getJSON('edges.json'), getJSON('learning_log.json'), getJSON(RAW, 8000), getJSON('learned.json'), getJSON('hypotheses.json')]);
   S.liveFailed = !live;
   S.learned = learned && Array.isArray(learned.buckets) ? learned : null;
   S.sound = !!store.read().sound;
-  let model = shape(edges, log, live);
+  let model = shape(edges, log, live, Date.now() / 1000, hyp, false);
   S.demo = !model || model.edges.length < 3;
   if (S.demo) {                                                          // the engine's files are not there: the recorded copy (DEMO)
     const fx = await getJSON('fixture.json', 12000);
-    if (fx) model = shape(fx.edges, { entries: fx.log }, null);
+    if (fx) { model = shape(fx.edges, { entries: fx.log }, null, Date.now() / 1000, fx.hyps, true); S.hypDemo = true; }
+  } else if (!model.hyp) {                                               // real edges but no ideas file yet: the lab shows the recorded demo ideas, labelled DEMO, never blank
+    const fx = await getJSON('fixture.json', 12000);
+    if (fx && fx.hyps) { model.hyp = shapeHyps(fx.hyps, true); S.hypDemo = true; }
   }
   if (!model) { S.error = 'no data'; if (O) O.fail ? O.fail('The city has no data yet.') : O && O.ready(); return; }
-  S.model = model; S.L = layout(model); S.startedDemo = S.demo;
+  S.prevHyp = S.hypDemo ? null : (store.read().hh || null);
+  S.changes = changesOf(model, S.prevHyp);
+  S.model = model; S.L = layout(model, S.prevHyp); S.startedDemo = S.demo;
+  if (!S.hypDemo) store.write({ ...store.read(), hh: hypSnap(model) });
   renderTop(); renderClock(); renderSound(); wire();
   await startScene();
   document.body.dataset.ready = '1';
   setInterval(renderClock, 15000);
+  setInterval(tickNext, 7000);
+  if (S.changes.length) setTimeout(() => toast(S.changes[0]), 2500);
   if (S.scene) setInterval(() => { if (S.preview == null) renderClock(); }, 5000);
   postCard();
   if (S.scene && !S.startedDemo) { greetNew(); setInterval(refresh, 5 * 60 * 1000); setInterval(() => { if (!document.hidden && S.fw && S.fw.length && S.fwLeft-- > 0 && S.scene) S.scene.fireworks(S.fw); }, 22000); }
@@ -294,8 +378,9 @@ async function main() {
 
 window.KC = {
   state: () => ({ demo: S.demo, ready: S.ready, error: S.error, view: S.view, sel: S.sel, liveUsed: !!(S.model && S.model.liveUsed), n: S.model ? S.model.edges.length : 0, counts: S.model && S.model.counts,
-    regime: S.model && S.model.regime, districts: S.L ? S.L.districts.map((d) => d.key) : [], buildings: S.L ? S.L.buildings.length : 0, scene: S.scene ? S.scene.stats() : null, preview: S.preview }),
-  model: () => S.model, layout: () => S.L, scene: () => S.scene,
+    regime: S.model && S.model.regime, districts: S.L ? S.L.districts.map((d) => d.key) : [], buildings: S.L ? S.L.buildings.length : 0, edgeBuildings: S.L ? S.L.edgeCount : 0,
+    labs: S.L ? S.L.labs.map((d) => d.key) : [], hypDemo: !!S.hypDemo, ticker: S.tk.lines.length, scene: S.scene ? S.scene.stats() : null, preview: S.preview }),
+  model: () => S.model, layout: () => S.L, scene: () => S.scene, hyp: () => (S.model ? S.model.hyp : null), pair: () => (S.model ? pairOf(S.model) : null), ticker: () => S.tk.lines.slice(), tickNext, changes: () => S.changes.slice(),
   open: openSheet, close: closeSheet, select: (id) => selectEdge(id, true), where: (id) => (S.scene ? S.scene.where(id) : null), pick: (x, y) => (S.scene ? S.scene.pick(x, y) : null),
   scan: runScan, sound: (on) => { S.sound = !!on; renderSound(); }, fx: () => (S.scene ? S.scene.fxStats() : null), ask: ASK_MESSAGE, learned: () => S.learned, refresh,
   hour: (v) => { S.preview = v; if (S.scene) S.scene.setHour(v); renderClock(); }, mode: (k) => { if (S.scene) S.scene.setMode(k); }, card,

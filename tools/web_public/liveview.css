@@ -12,7 +12,7 @@
   background: var(--lv-bg); color: var(--lv-ink); color-scheme: dark;
   font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   border: 1px solid var(--lv-line); border-radius: 16px; overflow: hidden; position: relative;
-  display: flex; flex-direction: column; height: calc(100vh - 128px); min-height: 620px;
+  display: flex; flex-direction: column; height: calc(100vh - 128px); height: calc(100dvh - 128px); min-height: 620px;
   box-shadow: 0 30px 80px -30px rgba(2,6,23,.9);
 }
 .lv-root[data-theme="light"] {
@@ -21,7 +21,7 @@
   --lv-shadow: 0 10px 24px -14px rgba(15,23,42,.28), 0 1px 0 rgba(255,255,255,.9) inset; --lv-btn: #fff; --lv-btn-h: #f8fafc; --lv-chip: #f1f5f9; --lv-chip-on: #eff6ff;
   --lv-glow: 0; color-scheme: light; box-shadow: none;
 }
-.lv-root:fullscreen, .lv-root.lv-max { height: 100vh; min-height: 0; border-radius: 0; border: 0; width: 100vw; }
+.lv-root:fullscreen, .lv-root.lv-max { height: 100vh; height: 100dvh; min-height: 0; border-radius: 0; border: 0; width: 100vw; }
 .lv-root.lv-max { position: fixed; inset: 0; z-index: 9999; height: 100dvh; }
 .lv-root .mono, .lv-root time { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 .lv-root .lv-ok { color: var(--lv-ok); } .lv-root .lv-no { color: var(--lv-no); } .lv-root .lv-wait { color: var(--lv-wait); }

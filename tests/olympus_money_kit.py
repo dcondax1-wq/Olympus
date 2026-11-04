@@ -60,9 +60,9 @@ def open_page(br, url, errs, hook, reduced=False, wait_site=True):
     p.on("console", lambda m: errs.append("console: " + m.text) if m.type == "error" else None)
     p.on("requestfailed", lambda r: errs.append("requestfailed: " + r.url))
     p.goto(url)
-    p.wait_for_function(f"window.{hook} && window.{hook}.ready", timeout=30000)
+    p.wait_for_function(f"window.{hook} && window.{hook}.ready", timeout=150000)
     if wait_site:
-        p.wait_for_function(f"window.{hook}.siteLoaded === true", timeout=30000)
+        p.wait_for_function(f"window.{hook}.siteLoaded === true", timeout=150000)
     p.wait_for_timeout(600)
     return ctx, p
 

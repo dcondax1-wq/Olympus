@@ -66,3 +66,15 @@ toolbar resizing, real haptics, audio unlock on the first tap, the service worke
 `Array.fromAsync`, `Promise.withResolvers`, `AbortSignal.any`, Set algebra, iterator helpers, a float render target; a `backdrop-filter` or
 `user-select` without its `-webkit-` twin; a `new AudioContext` without the webkit fallback; an unguarded `vibrate` / `getBattery`; a
 `localStorage` call outside a try; a file missing from the Jarvis / Kalshi worker lists. The bundled `fx.js` and `three-addons` are skipped.
+
+## Sweep 2026-11-04 (iPhone Safari, minimum iOS 15)
+
+`tests/test_safari_smoke.py --lint` now also checks (all pass): a `100dvh` twin beside every `100vh` height, no form control under 16px
+(iOS zooms on focus), `Notification.*` and `requestIdleCallback` only behind a feature test, no OffscreenCanvas / AudioWorklet / WebGPU /
+file-system / USB / Bluetooth / orientation lock, touch / wheel listeners with `preventDefault` say `passive: false`, no `getContext('webgl2')`
+dereferenced straight away, autoplay media muted + `playsinline` and every `.play()` handles its rejection, every page has `width=device-width`
+and `viewport-fit=cover` where it uses the safe-area insets, and every script (334) parses as ES2021 (acorn; a classic script may not use
+top-level await). Fixed: `100vh` without `100dvh` in `holo.css` (.hd-pc), `liveview.css` (.lv-root, maximised), `kalshi/kalshi.css`,
+`pc/index.html`; the Chronos compare `<select>` was 12px (now 16px). Reviewed, fine on iOS 15.4+: `.at(`, `findLastIndex` (guarded),
+`||=` / `??=`, top-level await in modules, `color-mix` (iOS 16.2+; the kit says to avoid it: 291 uses in 13 files, each a single declaration that an
+older iOS just drops), `:has` (15.4), `inert` (15.5), `startViewTransition` (guarded), `roundRect` (guarded), canvas `filter` (ignored on iOS).

@@ -154,6 +154,191 @@ def lint():
                 ls_bad.append((rel, code[line_start:line_start + 110].strip()))
     check("lint: every localStorage / sessionStorage call sits in a try (it throws in a private window and with site data blocked)", not ls_bad, ls_bad[:8])
 
+    lint_more()
+
+
+# ------------------------------------------------------------------ the iPhone sweep rules (job 2026-11-04: layout, input zoom, missing APIs, syntax)
+def css_rules(txt):
+    """[(selector, body, offset)] for every flat rule of a stylesheet / <style> (good enough for these lints; @media bodies are walked too)"""
+    for m in re.finditer(r"([^{}@][^{}]*)\{([^{}]*)\}", txt):
+        yield m.group(1).strip(), m.group(2), m.start()
+
+
+def lint_more():
+    # 1. 100vh is the tallest the screen can be (toolbars hidden): a height / min-height / top-bottom made of it hides the bottom of the
+    #    page behind iOS's toolbar unless a dvh / svh / fill-available twin follows in the same rule (or the JS-set --oly-vh var)
+    vh = []
+    for rel, txt in sources((".css", ".html")):
+        for sel, body, off in css_rules(txt):
+            for m in re.finditer(r"(?<![\w-])(min-height|max-height|height|top|bottom)\s*:\s*([^;}]*\b100vh[^;}]*)", body):
+                if re.search(r"\b100(d|s|l)vh\b|-webkit-fill-available|--oly-vh|-vh\b", body) or "env(safe-area" in m.group(2):
+                    continue
+                vh.append((rel, sel[-50:], m.group(0)[:70]))
+    check("lint: every height made of 100vh has a 100dvh / 100svh twin in the same rule (iOS toolbars make 100vh taller than the screen)", not vh, vh[:8])
+
+    # 2. a focused form control under 16px makes iOS zoom the page in and leave it zoomed
+    small = []
+    for rel, txt in sources((".css", ".html")):
+        for sel, body, off in css_rules(txt):
+            if not re.search(r"(^|[\s,>+~])(input|select|textarea)\b", sel) or re.search(r"checkbox|radio|range|button|submit|color|file|::placeholder|\[type=.?(hidden|image)", sel):
+                continue
+            fs = [(m2.group(1) or m2.group(3), m2.group(2) or "px") for m2 in re.finditer(r"(?<![\w-])font-size\s*:\s*([\d.]+)(px|rem|em)|(?<![\w-])font\s*:[^;]*?\b([\d.]+)px\b", body)]
+            last = fs[-1] if fs else None                 # the last declaration wins
+            if last and float(last[0]) * (16 if last[1] in ("rem", "em") else 1) < 16:
+                small.append((rel, sel[-60:], last[0] + last[1]))
+    check("lint: no input / select / textarea is styled under 16px (iOS zooms the page on focus)", not small, small[:8])
+
+    # 3. Notification does not exist in an iPhone browser tab (only in the Home Screen app): a bare use is a ReferenceError
+    nb = []
+    for rel, txt in sources((".js", ".html")):
+        code = strip_comments(txt)
+        for m in re.finditer(r"(?<![\w.'\"])Notification\.(permission|requestPermission)", code):
+            before = code[:m.start()]                     # a guard earlier in the same file (the calls sit in functions that run after it)
+            if not re.search(r"'Notification'\s+in\s+(window|self|globalThis)|typeof\s+Notification|pushSupport\s*=|notifySupport|window\.Notification", before):
+                nb.append((rel, code[max(0, m.start() - 60):m.end() + 20].replace("\n", " ")))
+    check("lint: Notification.* is only used after a 'Notification' in window / typeof / pushSupport() guard (absent in an iPhone browser tab)", not nb, nb[:6])
+
+    # 4. requestIdleCallback does not exist in Safari (before 18-ish, behind a flag): call it only with a fallback
+    ric = []
+    for rel, txt in sources((".js", ".html")):
+        code = strip_comments(txt)
+        for m in re.finditer(r"(?<![\w.])requestIdleCallback\s*\(", code):
+            before = code[max(0, m.start() - 120):m.start()]
+            if not re.search(r"(window\.)?requestIdleCallback\s*(\?|&&|\|\||\)\s*\?|\))|typeof\s+requestIdleCallback|'requestIdleCallback'\s+in", before + "requestIdleCallback"):
+                ric.append((rel, code[max(0, m.start() - 70):m.end() + 20].replace("\n", " ")))
+    check("lint: requestIdleCallback is only called behind a feature test (Safari has none) with a setTimeout fallback", not ric, ric[:6])
+
+    # 5. APIs with no (or a late, partial) iOS implementation that nothing here should need
+    oc = []
+    for rel, txt in sources((".js", ".html")):
+        code = strip_comments(txt)
+        for m in re.finditer(r"\b(OffscreenCanvas|transferControlToOffscreen|audioWorklet|AudioWorkletNode|navigator\.gpu|requestPictureInPicture|webkitEnterFullscreen|showOpenFilePicker|showSaveFilePicker|BarcodeDetector|FileSystemHandle|navigator\.usb|navigator\.bluetooth|screen\.orientation\.lock)\b", code):
+            before = code[max(0, m.start() - 100):m.start()]
+            if not re.search(r"typeof\s+$|'\w+'\s+in\s+\w+\s*&&\s*$|\?\s*$|&&\s*$|if\s*\(\s*$", before):
+                oc.append((rel, code[max(0, m.start() - 40):m.end() + 30].replace("\n", " ")))
+    check("lint: no OffscreenCanvas / AudioWorklet / WebGPU / file-system / USB / Bluetooth / orientation lock without a feature test", not oc, oc[:6])
+
+    # 6. a touch listener that calls preventDefault must say passive: false (iOS treats window / document / body touch listeners as passive)
+    tp = []
+    for rel, txt in sources((".js", ".html")):
+        code = strip_comments(txt)
+        for m in re.finditer(r"addEventListener\(\s*['\"](touchstart|touchmove|wheel)['\"]", code):
+            seg = code[m.start():m.start() + 900]
+            end = re.search(r"\},\s*\{[^}]*\}\s*\)|\}\s*\)\s*;", seg)
+            body = seg[:end.end()] if end else seg[:400]
+            if "preventDefault" in body and not re.search(r"passive\s*:\s*false", body):
+                tp.append((rel, code[m.start():m.start() + 90].replace("\n", " ")))
+    check("lint: a touchstart / touchmove / wheel listener that calls preventDefault says { passive: false } (else Safari ignores it)", not tp, tp[:6])
+
+    # 7. WebGL2 context used straight off getContext (null on a phone without it)
+    gl = []
+    for rel, txt in sources((".js", ".html")):
+        code = strip_comments(txt)
+        for m in re.finditer(r"getContext\(\s*['\"]webgl2['\"][^)]*\)\s*\.\s*\w", code):
+            gl.append((rel, code[max(0, m.start() - 30):m.end() + 20].replace("\n", " ")))
+    check("lint: getContext('webgl2') is never dereferenced straight away (it is null without WebGL2: test it, fall back)", not gl, gl[:6])
+
+    # 8. audio / video: autoplay needs muted + playsinline (iOS), and every .play() handles the rejection a missing gesture gives
+    ap = []
+    for rel, txt in sources((".html", ".js")):
+        for m in re.finditer(r"<(video|audio)\b[^>]*\bautoplay\b[^>]*>", txt):
+            tag = m.group(0)
+            if "muted" not in tag or (m.group(1) == "video" and "playsinline" not in tag):
+                ap.append((rel, tag[:90]))
+        code = strip_comments(txt)
+        for m in re.finditer(r"(?<![\w$])(\w+(?:\.\w+)*)\.play\(\)", code):
+            if re.search(r"(speechSynthesis|player|game|anim|timeline|tl|gsap|clip|action|mixer|scrub|loop|ticker|sim|demo|film)", m.group(1), re.I) and not re.search(r"audio|video|\bel\b|\ba\b|snd|sound|media|voice|tone", m.group(1), re.I):
+                continue
+            after = code[m.end():m.end() + 160]
+            before = code[max(0, m.start() - 60):m.start()]
+            if not re.search(r"^\s*\.catch|^\s*\.then|;\s*if\s*\(\w+[^)]*\)\s*\w+\.catch|\w+\.catch", after) and not re.search(r"(const|let|var)\s+\w+\s*=\s*$|try\s*\{[^}]*$|await\s+$|return\s+$", before) \
+                    and not re.search(r"try\s*\{", code[max(0, m.start() - 200):m.start()]):
+                ap.append((rel, code[max(0, m.start() - 40):m.end() + 30].replace("\n", " ")))
+    check("lint: autoplay media is muted + playsinline, and every media .play() handles its rejection (no user gesture = NotAllowedError)", not ap, ap[:6])
+
+    # 9. every page: a viewport meta with device-width, viewport-fit=cover wherever the page (or its stylesheets) uses env(safe-area-inset-*)
+    vp = []
+    for root, _d, files in os.walk(WEB):
+        rel_root = os.path.relpath(root, WEB).replace(os.sep, "/")
+        if any(x in rel_root for x in ("icon_options", "three-addons", "node_modules", "/fx", "fx/")) or rel_root == "fx":
+            continue
+        for f in files:
+            if not f.endswith(".html"):
+                continue
+            p = os.path.join(root, f)
+            t = open(p, encoding="utf-8", errors="ignore").read()
+            if "<html" not in t.lower():
+                continue
+            m = re.search(r"<meta[^>]*name=[\"']viewport[\"'][^>]*>", t)
+            rel = os.path.relpath(p, WEB).replace(os.sep, "/")
+            if not m:
+                vp.append((rel, "no viewport meta"))
+                continue
+            css = t
+            for l in re.findall(r"<link[^>]*href=[\"']([^\"'?#]+\.css)", t):
+                q = os.path.normpath(os.path.join(root, l))
+                if os.path.exists(q):
+                    css += open(q, encoding="utf-8", errors="ignore").read()
+            if "device-width" not in m.group(0):
+                vp.append((rel, "no width=device-width"))
+            if "safe-area-inset" in css and "viewport-fit=cover" not in m.group(0):
+                vp.append((rel, "uses safe-area-inset without viewport-fit=cover (the insets would be 0)"))
+    check("lint: every page has width=device-width and viewport-fit=cover where it uses the safe-area insets", not vp, vp[:6])
+
+    # 10. syntax: every script parses as ES2021 (iOS 15+: optional chaining, ??, ||=, private fields; a module may use top-level await,
+    #     a classic script may not). Needs node + acorn (the repo's node-tools); skipped, said so, when they are not there.
+    syntax_gate()
+
+
+ACORN_JS = r"""
+const acorn = require(process.argv[2]); const fs = require('fs'), path = require('path');
+const files = JSON.parse(fs.readFileSync(process.argv[3], 'utf8')); const out = [];
+for (const f of files) {
+  try { acorn.parse(f.code, { ecmaVersion: 2021, sourceType: f.module ? 'module' : 'script', allowAwaitOutsideFunction: !!f.module }); }
+  catch (e) { out.push([f.name, e.message]); }
+}
+console.log(JSON.stringify(out));
+"""
+
+
+def syntax_gate():
+    import shutil
+    import subprocess
+    import tempfile
+    node = shutil.which("node")
+    acorn = next((c for c in (os.environ.get("ACORN_PATH", ""), "/opt/node-tools/node_modules/acorn", os.path.join(ROOT, "node_modules", "acorn")) if c and os.path.isdir(c)), "")
+    if not node or not acorn:
+        check("lint: script syntax gate (ES2021, top-level await only in modules) skipped: node or acorn not found (set ACORN_PATH)", True)
+        return
+    classic = set()                                  # files a classic <script src> loads: no top-level await there
+    inline = []
+    for rel, txt in sources((".html",)):
+        for m in re.finditer(r"<script([^>]*)>(.*?)</script>", txt, re.S):
+            attrs, body = m.group(1), m.group(2)
+            mod = bool(re.search(r"type=[\"']?module", attrs))
+            sm = re.search(r"src=[\"']([^\"'?#]+)", attrs)
+            if sm and not mod and not sm.group(1).startswith(("http", "//")):
+                classic.add(os.path.normpath(os.path.join(os.path.dirname(rel), sm.group(1))).replace(os.sep, "/"))
+            elif not sm and body.strip() and not re.search(r"type=[\"']?(application|text/(plain|template))", attrs):
+                inline.append({"name": rel + "#inline" + (" (module)" if mod else " (classic)"), "code": body, "module": mod})
+    files = list(inline)
+    for rel, txt in sources((".js", ".mjs")):
+        if rel.startswith("fx/") or rel.endswith("build.mjs"):
+            continue
+        files.append({"name": rel, "code": txt, "module": rel not in classic})
+    d = tempfile.mkdtemp(prefix="saf_")
+    try:
+        with open(os.path.join(d, "r.js"), "w", encoding="utf-8") as fh:
+            fh.write(ACORN_JS)
+        with open(os.path.join(d, "f.json"), "w", encoding="utf-8") as fh:
+            json.dump(files, fh)
+        r = subprocess.run([node, os.path.join(d, "r.js"), acorn, os.path.join(d, "f.json")], capture_output=True, text=True, timeout=240)
+        bad = json.loads(r.stdout.strip().splitlines()[-1]) if r.returncode == 0 and r.stdout.strip() else [("acorn", r.stderr[-300:])]
+    finally:
+        import shutil as _sh
+        _sh.rmtree(d, ignore_errors=True)
+    check(f"lint: all {len(files)} scripts parse as ES2021 (iOS 15+ syntax; no top-level await in a classic script)", not bad, bad[:6])
+
 
 # ------------------------------------------------------------------ the WebKit smoke
 class Handler(http.server.SimpleHTTPRequestHandler):

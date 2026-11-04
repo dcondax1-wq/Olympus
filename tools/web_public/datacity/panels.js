@@ -20,6 +20,39 @@ export function viewMenu(body, items) {
   body.appendChild(grid);
 }
 
+// ------------------------------------------------------------------------------------------------ what is moving the market now
+/** card = market.js marketNow(); cb: { district(row), idea(row), today(), report() }. Every tap target is at least 44 px (the .pill / .list li rules). */
+export function viewNow(body, card, cb) {
+  const head = el('div', 'nowhead');
+  head.id = 'nowHead';
+  const bits = [card.day ? `data to ${card.day}` : null, card.vix !== null && card.vix !== undefined ? `VIX ${num(card.vix, 1)}${card.sky ? ' ' + card.sky : ''}` : null,
+    card.demo ? 'DEMO sample' : card.fallback ? 'strongest ideas (none fired)' : `${card.firedTotal.toLocaleString()} ideas fired`].filter(Boolean);
+  head.appendChild(el('div', 'note council', card.text));
+  head.appendChild(el('div', 'note', bits.join(' · ')));
+  body.appendChild(head);
+  const ul = el('ul', 'list now');
+  ul.id = 'nowList';
+  card.rows.forEach((r, i) => {
+    const li = el('li'), k = el('span', 'k', String(i + 1)), t = el('span', 't');
+    k.style.background = r.color;
+    t.append(el('div', null, `${r.name} · ${r.fired} fired`),
+             el('small', null, `${r.best.label.length > 90 ? r.best.label.slice(0, 88) + '…' : r.best.label}`),
+             el('small', 'usd', `+$${r.mnq} per MNQ · +$${r.nq} per NQ contract, per trade, after costs`),
+             el('small', 'lit ' + (r.lit.ok === true ? 'yes' : r.lit.ok === false ? 'no' : 'na'), r.lit.text));
+    li.append(k, t, el('span', 'm ' + (r.lit.ok === true ? 'pos' : ''), r.lit.ok === true ? 'LIT ✓' : r.lit.ok === false ? 'LIT –' : 'LIT ?'));
+    li.dataset.key = r.key;
+    li.addEventListener('click', () => cb.district?.(r));
+    ul.appendChild(li);
+  });
+  body.appendChild(ul);
+  const act = el('div', 'actions');
+  for (const [label, fn, id] of [['Open the best idea', () => cb.idea?.(card.rows[0]), 'nowIdea'], ['Light up today', cb.today, 'nowToday'], ['City report', cb.report, 'nowReport']]) {
+    const b = el('button', 'pill', label); b.id = id; b.addEventListener('click', () => fn?.()); act.appendChild(b);
+  }
+  body.appendChild(act);
+  body.appendChild(el('div', 'note', 'Dollars are the backtested result of each idea per trade, after costs: $2 a point on an MNQ micro, $20 on an NQ contract. LIT levels come from the dashboard\'s paper bot. Paper only: a map of research, never an order.'));
+}
+
 // ------------------------------------------------------------------------------------------------ the City report
 /** model; cou = council(model); cb: { family(key), top(), share(), celebrate(), gods: Promise<json|null> } */
 export function viewReport(body, model, cou, cb) {
