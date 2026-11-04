@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="../olympus/olympus.css?v=o2">
 <script src="../olympus/themes.js?v=o2"></script>
 <script src="../olympus/olympus.js?v=o2" data-app="tyche"></script>
+<script src="../olympus/fx-core.js?v=f1"></script><script src="../olympus/fx-ui.js?v=f1"></script><script src="../olympus/fx-text.js?v=f1"></script><script src="../olympus/fx-burst.js?v=f1"></script>
 <link rel="stylesheet" href="tyche.css?v=t4">
 <script type="module" src="main.js?v=t4"></script>
 </head>
@@ -78,11 +79,17 @@
     <p id="bk-text" class="small"></p>
     <p id="bk-size" class="small"></p>
   </div>
+  <div id="p-fortune" class="glass panel" data-view="fortune" hidden>
+    <div id="f-seg" class="seg" role="group" aria-label="Fortune sections"></div>
+    <div id="f-body" class="fbody" aria-live="polite"></div>
+    <svg id="f-cmp" class="cmp" viewBox="0 0 320 86" role="img" aria-label="The real bankroll (gold) and the same bets at half the stake (mint)" preserveAspectRatio="none" hidden></svg>
+  </div>
   <nav class="tabs" role="tablist" aria-label="Views">
     <button type="button" role="tab" data-view="wheel" aria-selected="true">Wheel</button>
     <button type="button" role="tab" data-view="pools" aria-selected="false">Pools</button>
     <button type="button" role="tab" data-view="scales" aria-selected="false">Scales</button>
     <button type="button" role="tab" data-view="bank" aria-selected="false">Bank</button>
+    <button type="button" role="tab" data-view="fortune" aria-selected="false">Fortune</button>
   </nav>
 </section>
 

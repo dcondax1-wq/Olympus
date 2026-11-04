@@ -113,6 +113,36 @@ export function brief(pan, home, p) {
   return out;
 }
 
+/** The desk: four more tablets beside the avenue, from what the site already publishes (home.json accounts, an optional home.kalshi) and the
+ *  Planner on this phone (planner: { tasks: [{ title, date, done }], events: [{ title, date }] } or null). Always four, never blank, never a guess. */
+export function desk(home, planner, p) {
+  const out = [], day = p && p.day ? p.day : '1970-01-01', tomorrow = addDays(day, 1);
+  const signed = (v) => (v < 0 ? '-' : '+') + fmtUsd(Math.abs(v));
+  const accts = isObj(home) && Array.isArray(home.accounts) ? home.accounts.filter(isObj) : [];
+  if (accts.length) {
+    const ev = accts.filter((a) => isObj(a.eval)), parts = accts.slice(0, 3).map((a) => {
+      const e = isObj(a.eval) ? a.eval : null, b = e ? num(e.balance) : null, s0 = e ? num(e.start_balance) : null;
+      return `${txt(a.name || a.id, 22)}${b != null && s0 != null ? ' ' + signed(b - s0) : ''}`;
+    });
+    out.push({ id: 'bots', title: 'The bots', glyph: 'Ζ', tone: 'calm', stat: `${accts.length} account${accts.length === 1 ? '' : 's'}`, line: `${ev.length} on an eval. ${parts.join(' · ')}` });
+  } else out.push({ id: 'bots', title: 'The bots', glyph: 'Ζ', tone: 'info', stat: 'No accounts', line: 'The site publishes no account list right now.' });
+  const k = isObj(home) && isObj(home.kalshi) ? home.kalshi : null, kb = k ? num(k.balance) : null, kw = k ? num(k.week_pnl) : null;
+  if (k && (kb != null || kw != null)) out.push({ id: 'kalshi', title: 'Kalshi', glyph: 'Κ', tone: kw != null && kw < 0 ? 'watch' : 'calm', stat: kw != null ? `${signed(kw)} this week` : `${fmtUsd(kb)} balance`,
+    line: `${kb != null ? 'Balance ' + fmtUsd(kb) + '. ' : ''}${k.running === false ? 'The bot reports it is stopped.' : 'Real money, the prediction bot.'}` });
+  else out.push({ id: 'kalshi', title: 'Kalshi', glyph: 'Κ', tone: 'info', stat: 'No feed here', line: 'The Kalshi bot is not in this site\'s data yet. The Kalshi app has its own feed.' });
+  const dateOf = (v) => { const s = txt(v, 30); return /^\d{4}-\d{2}-\d{2}/.test(s) ? s.slice(0, 10) : ''; };
+  const evs = isObj(planner) && Array.isArray(planner.events) ? planner.events.filter(isObj) : [], tasks = isObj(planner) && Array.isArray(planner.tasks) ? planner.tasks.filter(isObj) : [];
+  const today = evs.filter((e) => dateOf(e.date) === day), next = evs.filter((e) => dateOf(e.date) === tomorrow);
+  if (isObj(planner)) out.push({ id: 'events', title: 'Your calendar', glyph: 'Ε', tone: today.length ? 'watch' : 'calm', stat: today.length ? `${today.length} today` : 'Clear today',
+    line: today.length ? today.slice(0, 2).map((e) => txt(e.title || e.name, 40)).join(' · ') : next.length ? `Tomorrow: ${txt(next[0].title || next[0].name, 40)}` : 'Nothing on your calendar until later.' });
+  else out.push({ id: 'events', title: 'Your calendar', glyph: 'Ε', tone: 'info', stat: 'No planner', line: 'Open the Planner on this phone and its events show here.' });
+  const open = tasks.filter((t) => !t.done && dateOf(t.date) && dateOf(t.date) <= day), done = tasks.filter((t) => t.done && dateOf(t.date) === day);
+  if (isObj(planner)) out.push({ id: 'todos', title: 'To-dos', glyph: 'Τ', tone: open.length > 3 ? 'watch' : 'calm', stat: open.length ? `${open.length} open` : 'All clear',
+    line: open.length ? open.slice(0, 2).map((t) => txt(t.title || t.name, 40)).join(' · ') : `${done.length} done today. Nothing is waiting.` });
+  else out.push({ id: 'todos', title: 'To-dos', glyph: 'Τ', tone: 'info', stat: 'No planner', line: 'Your tasks show here once the Planner has some.' });
+  return out;
+}
+
 export const oath = () => [
   { id: 'plan', text: 'I follow the plan: no manual orders' },
   { id: 'revenge', text: 'No revenge trade, whatever happens' },

@@ -11,6 +11,8 @@ import { demoFeed } from './demo.js';
 import { categoryColors, usd, pct, countdown } from './fmt.js';
 import { FortuneScene } from './scene.js';
 import { Hud, KELLY_STOPS } from './hud.js';
+import { FortunePanel } from './fortunepanel.js';
+import { startSceneFx, ceremony } from './tychefx.js';
 
 const O = window.OLYMPUS || null;   // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil
 const QUALITY_KEY = 'tyche.quality', VIEW_KEY = 'tyche.view';   // quality: the old per-app key, read only without the kit
@@ -18,7 +20,7 @@ const THEME = '#07060b';
 const reduced = O ? O.reduced() : matchMedia('(prefers-reduced-motion: reduce)').matches;
 const params = new URLSearchParams(location.search);
 const forced = params.has('demo');
-const VIEWS = ['wheel', 'pools', 'scales', 'bank'];
+const VIEWS = ['wheel', 'pools', 'scales', 'bank', 'fortune'];     // fortune: the leaderboard / streak / fortune / compare / replay panel (the wheel stays behind it)
 
 const store = {
   get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } },
@@ -40,11 +42,13 @@ const hud = new Hud({
   quality: () => setQuality(state.quality === 'high' ? 'low' : 'high', true),
 });
 hud.quality(state.quality);
+const fortune = new FortunePanel(document.getElementById('p-fortune'), { reduced });
 let scene = null;
 try {
   scene = new FortuneScene(THREE, document.getElementById('gl'), { quality: state.quality, reduced });
   O?.track(scene.renderer);
   O?.themeScene?.({ scene: scene.scene, renderer: scene.renderer });   // OLYMPUS theme: fog + sky follow it
+  startSceneFx(scene, { lite: state.quality === 'low' });                // caustics + gold motes from the effects library (never needed)
 } catch (e) {
   console.warn('tyche: 3D unavailable', e && e.message);
   document.getElementById('nogl').hidden = false;
@@ -66,7 +70,8 @@ function setView(v) {
   if (location.hash.slice(1) !== v) history.replaceState(null, '', '#' + v);
   if (v !== 'wheel') select(null);
   hud.setView(v);
-  if (scene) scene.setView(v);
+  if (v === 'fortune') fortune.draw();
+  if (scene) scene.setView(v === 'fortune' ? 'wheel' : v);
   fit();
 }
 function setKelly(i) {
@@ -103,6 +108,7 @@ function show(raw, mode) {
     state.colors = categoryColors(m.order);
     hud.render(m, state.colors);
     if (scene) scene.setModel(m, state.colors);
+    fortune.setModel(m);
   } else state.model.age = m.age;
   if (!same || was !== state.mode) hud.mode(state.mode, state.model);
   hud.tick(nowS());
@@ -185,7 +191,7 @@ const up = (e) => {
   touch.lastTap = t;
   const key = state.view === 'wheel' ? scene.pick(e.clientX, e.clientY) : null;
   select(key && key !== state.selected ? key : null);
-  if (!key && state.view === 'wheel' && scene.onWheel(e.clientX, e.clientY)) scene.wheel.kick();     // a tap on the wheel spins it (visual only)
+  if (!key && state.view === 'wheel' && scene.onWheel(e.clientX, e.clientY)) { scene.wheel.kick(); ceremony(); }     // a tap on the wheel spins it (visual only), with a ring of gold light
 };
 canvas.addEventListener('pointerup', up);
 canvas.addEventListener('pointercancel', (e) => { touch.pts.delete(e.pointerId); touch.start = null; });
@@ -256,6 +262,7 @@ window.tyche = {
   get fps() { return state.fps; },
   get requests() { return state.feed.requests; },
   get view() { return state.view; },
+  get fortune() { return fortune; },
   get bank() { return hud.sim || null; },                   // the bankroll panel's simulation (risk of ruin ...)
   get passes() { return scene ? scene.rc.passes() : []; },    // the render core's passes this frame
   get tier() { return scene ? scene.rc.quality() : ''; },

@@ -4,6 +4,7 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import * as CORE from './plutuscore.js';
 import { loadPlans, project, siteFacts, SPANS, usd, esc, num } from './plutuscore.js';
+import { renderExtras, vaultFx } from './plutusfx.js';
 
 const O = window.OLYMPUS || null;
 const Q = new URLSearchParams(location.search);
@@ -91,8 +92,15 @@ function update() {
   $('hs').textContent = P.accounts ? `a month, first ${P.months} months` : 'pick an account';
   $('vline').textContent = P.accounts ? `${P.accounts} account${P.accounts === 1 ? '' : 's'}, ${usd(P.upfront)} up front. ${P.payback == null ? 'Not back in profit inside ' + P.months + ' months.' : P.payback < 0.1 ? '' : 'Back in profit in about ' + P.payback.toFixed(1) + ' months.'} Bad case at month ${P.months}: ${usd(P.p10M)}.` : 'Add an account with + on the Plan tab.';
   renderPlan(); renderMoney(P); renderRisk(P); renderNotes();
+  renderExtras(S, P, addAccount);
   S.hall?.set(P);
   O?.mode?.(!!(S.hall && S.hall.lite));
+}
+
+function addAccount(id) {
+  const p = S.doc.plans.find((x) => x.id === id);
+  if (!p) return;
+  S.st.counts[id] = Math.max(0, Math.min(p.cap, (S.st.counts[id] || 0) + 1)); save(); update();
 }
 
 function setTab(t) {
@@ -234,10 +242,10 @@ async function main() {
   loadState();
   $('demo').hidden = S.doc.src === 'file';
   bind(); route(); update();
-  try { S.hall = new Vault($('vault')); S.hall.set(S.P); tick(performance.now()); } catch (e) { S.hall = null; $('nogl').hidden = false; O?.ready(); }
+  try { S.hall = new Vault($('vault')); S.hall.set(S.P); tick(performance.now()); vaultFx(S.hall).then((h) => { S.fx = h; }); } catch (e) { S.hall = null; $('nogl').hidden = false; O?.ready(); }
   window.__plutus = { ready: true, CORE, get state() { return S.st; }, get project() { return S.P; }, get doc() { return S.doc; }, get lite() { return S.hall ? S.hall.lite : null; },
     get fps() { return S.hall ? S.hall.fps() : 0; }, get src() { return S.doc.src; }, get live() { return !!(S.facts && (S.facts.trades || S.facts.trio)); }, errors: S.errors,
-    get yaw() { return S.hall ? S.hall.yaw : 0; }, get tab() { return S.tab; }, get ready3d() { return !!S.hall; } };
+    get yaw() { return S.hall ? S.hall.yaw : 0; }, get fx() { return S.fx || null; }, get tab() { return S.tab; }, get ready3d() { return !!S.hall; } };
   S.site = await loadSite(); S.facts = siteFacts(S.site);
   if (S.facts.trades || S.facts.trio) $('livetag').hidden = false;
   update();

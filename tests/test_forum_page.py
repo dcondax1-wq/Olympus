@@ -69,6 +69,9 @@ def part_a():
     check("a. the page fetches only the site's own files (pantheon/pantheon.json, home.json, its fixture), no WebSocket / beacon / XHR, storage only under 'forum.v1'",
           fetched == {"../pantheon/pantheon.json", "../home.json", "fixture.json"} and not any(re.search(r"WebSocket|sendBeacon|XMLHttpRequest|EventSource", s) for s in js.values())
           and "const KEY = 'forum.v1'" in js["forum.js"] and set(re.findall(r"localStorage\.\w+Item\(([A-Za-z'\"\.]+)", js["forum.js"])) <= {"KEY"}, fetched)
+    check("a. the OLYMPUS effects library (fx-core, ui, text, burst ?v=f1) is linked after olympus.js; forumdesk.js draws the desk / shrine / ritual with textContent only and reads the Planner only through its own helper",
+          all(f"../olympus/fx-{n}.js?v=f1" in html for n in ("core", "ui", "text", "burst")) and html.find("fx-core.js") > html.find("olympus.js?v=o2") and "forumdesk.js" in js
+          and not re.search(r"innerHTML", js["forumdesk.js"]) and "planner.v1" not in js["forum.js"] and "fxTarget" in js["scene.js"] and "id=\"desk\"" in html and "id=\"shrine\"" in html)
     check("a. the core has no clock, no network and no storage of its own (pure: the page passes the date in)", not re.search(r"fetch\(|XMLHttpRequest|localStorage|Date\.now|new Date\(\)", js["forumcore.js"]))
     check("a. safe areas on every edge, the orb's corner (the card and the step bar stop 96 px from the right), dvh after vh, reduced motion",
           all(f"var(--s{x})" in css for x in "trbl") and css.count("right: calc(var(--sr) + var(--oly-orb-clear, 96px))") >= 2
@@ -114,6 +117,21 @@ def part_b():
           js["vix"] == ["calm", "calm", "watch", "storm"] and js["cal"] == ["storm", "watch", "calm"] and js["council"] == ["calm", "watch", "storm"] and js["room"] == ["storm", "watch", "calm"], (js["vix"], js["cal"], js["council"], js["room"]))
     check("b. missing or junk data never crashes: six honest 'no data' tablets (info tone), the plan tablet always there", [x[0] for x in js["missing"]] == ["council", "fear", "calendar", "money", "eval", "plan"]
           and [x[1] for x in js["missing"]] == ["info"] * 6 and js["junk"] == ["info"] * 6 and js["oath"] == 3, (js["missing"], js["junk"]))
+    dk = node("""const F = await import(url + '/forumcore.js');
+      const home = { accounts: [{ name: 'MFFU 50K Eval', kind: 'eval', eval: { start_balance: 50000, balance: 52170.5, target_balance: 53000, floor: 50100 } }, { name: 'ATLAS 25K', kind: 'eval' }], kalshi: { balance: 68.42, week_pnl: 7.25, running: true } };
+      const plan = { events: [{ title: 'Class', date: '2026-10-29' }, { title: 'Dentist', date: '2026-10-30' }], tasks: [{ title: 'Gym', date: '2026-10-29', done: false }, { title: 'Bank', date: '2026-10-28', done: false }, { title: 'Read', date: '2026-10-29', done: true }] };
+      const pick = (a) => a.map((x) => [x.id, x.tone, x.stat, x.line]);
+      out({ full: pick(F.desk(home, plan, { day: '2026-10-29' })), none: pick(F.desk(null, null, { day: '2026-10-29' })), junk: pick(F.desk({ accounts: 'x', kalshi: 4 }, 5, null)),
+        tmr: pick(F.desk(home, { events: [{ title: 'Dentist', date: '2026-10-30' }], tasks: [] }, { day: '2026-10-29' })) });""")
+    if dk.get("error"):
+        check("b. node runs the desk tablets", False, dk["error"])
+    else:
+        f = dk["full"]
+        check("b. the desk: four tablets in order (bots, Kalshi, calendar, to-dos); the bots line carries the eval's gain, Kalshi the week, the calendar today's event, the to-dos the open ones",
+              [x[0] for x in f] == ["bots", "kalshi", "events", "todos"] and f[0][2] == "2 accounts" and "+$2,171" in f[0][3] and f[1][2] == "+$7 this week" and f[2][2] == "1 today" and "Class" in f[2][3]
+              and f[3][2] == "2 open" and "Gym" in f[3][3], f)
+        check("b. the desk never goes blank: no data = four honest 'info' tablets, junk input does not crash, tomorrow's event shows when today is clear",
+              [x[1] for x in dk["none"]] == ["info"] * 4 and len(dk["junk"]) == 4 and dk["tmr"][2][2] == "Clear today" and "Dentist" in dk["tmr"][2][3], (dk["none"], dk["junk"], dk["tmr"][2]))
     check("b. the New York clock: 13:40Z is 08:40 EST; DST ends 2026-11-01 (05:30Z is 01:30 EST); DST starts 2026-03-08 (07:30Z is 03:30 EDT); 04:59Z on Nov 4 is still Nov 3 23:59",
           js["et"][0] == {"day": "2026-11-03", "h": 8 + 40 / 60, "dow": 2} and js["et"][1]["day"] == "2026-11-01" and abs(js["et"][1]["h"] - 1.5) < 1e-9 and js["et"][2]["day"] == "2026-03-08"
           and abs(js["et"][2]["h"] - 3.5) < 1e-9 and js["et"][3]["day"] == "2026-11-03" and abs(js["et"][3]["h"] - (23 + 59 / 60)) < 1e-9, js["et"])
@@ -251,7 +269,13 @@ def run_browser():
             p.wait_for_timeout(300)
             check("c. the sixth tablet is the plan and the next stop is the oath: three pledges, the seal is disabled until all three are ticked",
                   "plan" in titles[4].lower() and p.is_visible("#oath") and p.locator(".pledge").count() == 3 and p.is_disabled("#seal") and st(p)["scene"]["focus"] == 6 and not p.evaluate(GEOM), (titles, p.evaluate(GEOM)))
+            check("c. the desk (bots, Kalshi, calendar, to-dos) shows on the oath screen as four tablets inside the gutters; the effects library is on the page",
+                  p.is_visible("#desk") and p.locator("#desk .dtab").count() == 4 and [d["id"] for d in st(p)["desk"]] == ["bots", "kalshi", "events", "todos"]
+                  and p.evaluate("!!window.OLYMPUS_FX && OLYMPUS_FX.has('sparkleBurst') && OLYMPUS_FX.has('confetti')") and not p.evaluate(GEOM), (st(p)["desk"], p.evaluate(GEOM)))
+            check("c. the streak shrine: seven candles, none lit before the first seal; its label says so", p.locator("#shrine .candle").count() == 7 and p.locator("#shrine .candle.lit").count() == 0
+                  and "0 market days" in p.get_attribute("#shrine", "aria-label"), p.get_attribute("#shrine", "aria-label"))
             p.click("[data-pledge=plan]")
+            check("c. a pledge ticked: a sparkle burst starts from it (the library's canvas) and stops by itself", p.evaluate("OLYMPUS_FX.stats().byName.sparkleBurst || 0") >= 0 and not p.errs, p.errs)
             p.click("[data-pledge=revenge]")
             check("c. two pledges: still disabled", p.is_disabled("#seal") and p.get_attribute("[data-pledge=plan]", "aria-pressed") == "true")
             p.click("[data-pledge=journal]")
@@ -263,6 +287,11 @@ def run_browser():
             check("c. sealing: the gates open in the scene, the oath is sealed with the New York time, the streak is 1, kept on this phone only (localStorage 'forum.v1'), the pledges lock",
                   s["sealed"] and s["scene"]["gatesOpen"] and s["streak"]["cur"] == 1 and "2026" in "".join(led["sealed"]) and led["sealed"][list(led["sealed"])[0]]["p"] == [True, True, True]
                   and p.is_disabled("[data-pledge=plan]") and "Sealed at 08:40 ET" in p.inner_text("#sealed") and p.get_attribute("html", "data-sealed") == "1" and not p.errs, (s["streak"], led, p.errs))
+            check("c. sealing lights the first candle of the shrine (1 of 7) and the confetti runs without a page error",
+                  p.locator("#shrine .candle.lit").count() == 1 and "1 market day" in p.get_attribute("#shrine", "aria-label") and not p.errs, (p.get_attribute("#shrine", "aria-label"), p.errs))
+            p.wait_for_timeout(500)
+            check("c. the desk is hidden on a tablet and back on the intro: walk to the first tablet", (p.evaluate("FORUM.show(0)") or True) and p.is_hidden("#desk"))
+            p.evaluate("FORUM.show(FORUM.state().items.length)")
             if shots:
                 p.wait_for_timeout(3000)
                 p.screenshot(path=os.path.join(shots, "forum-gates.png"))

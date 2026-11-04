@@ -56,6 +56,12 @@ def part_a():
     card = json.loads(rd("jarvis.json"))
     check("a. the Jarvis card: v 1, name, status, kpis, open #plan, the page theme, a stale_after",
           card["v"] == 1 and card["name"] == "Plutus" and card["open"] == "#plan" and card["theme"] == "#06100a" and len(card["kpis"]) >= 2 and card["stale_after"] > 0, card)
+    fxs = rd("plutusfx.js")
+    check("a. the OLYMPUS effects library (fx-core, ui, text, burst at ?v=f1) is linked after olympus.js; plutusfx.js is the screen of the extras and only imports the core + the library's own 3D files",
+          all(f'../olympus/fx-{n}.js?v=f1' in html for n in ("core", "ui", "text", "burst")) and html.find("fx-core.js") > html.find("olympus.js?v=o2")
+          and "from './plutuscore.js'" in fxs and set(re.findall(r"import\('([^']+)'", fxs)) == {"../olympus/"} and "fetch(" not in fxs and "plutusfx.js" in rd("plutus.js"))
+    check("a. every extras block has a static container (goal ring, milestones, calendar, waterfall, what-if) and a never-blank empty line",
+          all(f'id="{i}"' in html for i in ("goalring", "miles", "cal", "fall", "whatif")) and fxs.count("Pick at least one account") >= 2 and "Add one account first" in fxs)
     check("a. the dock and the sheet keep the bottom-right 80 x 160 px free", "padding: 8px calc(88px" in rd("plutus.css") and "bottom: calc(166px" in rd("plutus.css"))
 
 
@@ -227,6 +233,35 @@ def part_d(tmp, doc):
             check("d. money tab: up front, back in profit, a month (first 6 / months 4-6), 'Matches the trio on the published site: $1,754', the month table, the goal line",
                   all(s in body for s in ("up front", "back in profit", "$2,373", "Matches the trio on the published site: $1,754", "Bad case", "$5,000 a month once running you would need")), body[:300])
             check("d. the month table starts at Buy = -$377 and ends at month 6", "-$377" in body and p.evaluate("document.querySelectorAll('#money tbody tr').length") >= 7)
+            # 2026-11-04: goal tracker, payout calendar, income waterfall, what-if (plutusfx.js) built on the OLYMPUS effects library
+            m = p.evaluate("""() => { const C = window.__plutus.CORE, d = window.__plutus.doc, st = window.__plutus.state, P = window.__plutus.project;
+              const o = { span: st.span, months: st.months, haircut: 0, tax: 0 }, w = C.waterfall(d, st.counts, o), cal = C.payoutCalendar(d, st.counts, o), wi = C.whatIf(d, st.counts, o);
+              const ms = C.milestones(P, 5000), ms0 = C.milestones(P, ''), months = ms.items.map((i) => i.month).filter((x) => x != null);
+              return { wTot: w[w.length - 1].total, raw: P.raw[P.months], upfront: P.upfront, calNet: cal.reduce((a, r) => a + r.net, 0), n: w.length, months: P.months,
+                wi: wi.map((x) => [x.id, x.dUpfront, x.price, x.next.accounts - x.base.accounts]), ms: ms.items.length, ms0: ms0.items.map((i) => i.id), sorted: months.every((v, i) => !i || v >= months[i - 1]),
+                cross: [C.crossing([0, 10, 20], 15), C.crossing([0, 10], 99), C.crossing([5, 10], 3)], cov: ms.coverage, steady: P.steady }; }""")
+            check("d. waterfall: month 0 (the buy) + one row per month, the running total ends on the plan's month-6 balance; the calendar's net minus the buy adds to the same number",
+                  m["n"] == m["months"] + 1 and abs(m["wTot"] - m["raw"]) < 0.01 and abs(m["calNet"] - m["upfront"] - m["raw"]) < 0.01, m)
+            check("d. what-if: every plan with room (Builder 25K here), +1 account each, the up-front change = that plan's price",
+                  m["wi"] and all(w[3] == 1 and abs(w[1] - w[2]) < 0.001 for w in m["wi"]) and any(w[0] == "mffu_builder_25k" for w in m["wi"]), m["wi"])
+            check("d. milestones: 5 with a goal (profit + 4 goal multiples), the money ones without; months only ever go up; crossing() interpolates",
+                  m["ms"] == 5 and m["ms0"] == ["profit", "k1", "k5", "k10"] and m["sorted"] and m["cross"] == [1.5, None, 0] and abs(m["cov"] - m["steady"] / 5000) < 1e-9, m)
+            check("d. the money tab shows the goal tracker (ring + milestones), one calendar cell per month and a waterfall row per month plus the buy",
+                  p.evaluate("document.querySelectorAll('#miles li').length") == 5 and p.evaluate("document.querySelectorAll('#cal .cell').length") == 6
+                  and p.evaluate("document.querySelectorAll('#fall .wf').length") == 7 and p.inner_text("#goalpct").endswith("%") and p.get_attribute("#goalring", "aria-label").startswith("Goal coverage"))
+            check("d. the effects library is on the page: fx-core + ring on the goal host (a canvas), the headline carries data-oly-fx",
+                  p.evaluate("!!window.OLYMPUS_FX && OLYMPUS_FX.has('progressRing') && OLYMPUS_FX.has('countUp')") and p.evaluate("document.querySelectorAll('#goalring canvas').length") == 1
+                  and "shimmer" in (p.get_attribute("#headline", "data-oly-fx") or "") and p.get_attribute("#hk", "data-oly-fx") == "odometer")
+            tab(p, "plan")
+            check("d. plan tab: the what-if block previews the best next account with a before / after bar and an add button",
+                  p.evaluate("document.querySelectorAll('#whatif .wirow').length") >= 1 and p.is_visible("#addit") and p.evaluate("document.querySelectorAll('#whatif .wibar').length") == 2)
+            n0 = p.evaluate("window.__plutus.project.accounts")
+            added = p.get_attribute("#addit", "data-add")
+            p.click("#addit")
+            check("d. 'Add it to my plan' adds one account and the page recomputes", p.evaluate("window.__plutus.project.accounts") == n0 + 1, (n0, p.evaluate("window.__plutus.project.accounts")))
+            p.click(f"[data-dec='{added}']")                  # back to the plan the rest of the checks expect
+            check("d. ... and the minus button takes it off again", p.evaluate("window.__plutus.project.accounts") == n0)
+            tab(p, "money")
             tab(p, "risk")
             risk = p.inner_text("#risk")
             check("d. risk tab: under-water chance, the bad case, '50% worse', the other periods (2021-25 as a reference), the correlation, accounts lost",

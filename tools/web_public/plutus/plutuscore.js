@@ -121,3 +121,73 @@ export function siteFacts(site) {
   if (isObj(f) && isObj(f.trio)) { out.trio = f.trio; out.built = f.built || null; }
   return out;
 }
+
+// ------------------------------------------------------------------------------------------------ 2026-11-04: goal tracker, payout calendar,
+// monthly income waterfall, "what if I add an account" (pure, built on project() / accountCurve(); the screen is plutusfx.js)
+
+/** First month (a fraction, straight line between months) at which the series reaches `target`; null if it does not inside the horizon. */
+export function crossing(series, target) {
+  if (!Array.isArray(series) || !Number.isFinite(target)) return null;
+  if (series[0] >= target) return 0;
+  for (let k = 1; k < series.length; k++) if (series[k] >= target && series[k - 1] < target) return k - 1 + (target - series[k - 1]) / (series[k] - series[k - 1]);
+  return null;
+}
+
+/** The goal tracker: run-rate coverage of the $/month goal (months 4-6 rate, after tax) and the milestones on the way (month each is reached). */
+export function milestones(P, goal) {
+  const g = num(goal), out = { goal: g && g > 0 ? g : null, coverage: null, items: [], reached: 0 };
+  const items = [{ id: 'profit', label: 'Back in profit', target: 0, month: P.accounts ? (P.payback == null ? null : P.payback) : null }];
+  if (out.goal) {
+    out.coverage = P.accounts ? Math.max(0, P.steady / out.goal) : 0;
+    for (const [id, f, label] of [['q1', 0.25, '25% of a goal month banked'], ['m1', 1, 'One goal month banked'], ['m3', 3, 'A quarter of goal months banked'], ['m6', 6, 'Half a year of goal months banked']]) {
+      const t = out.goal * f;
+      items.push({ id, label, target: t, month: P.accounts ? crossing(P.mean, t) : null });
+    }
+  } else {
+    for (const [id, t, label] of [['k1', 1000, 'First $1,000 banked'], ['k5', 5000, '$5,000 banked'], ['k10', 10000, '$10,000 banked']]) items.push({ id, label, target: t, month: P.accounts ? crossing(P.mean, t) : null });
+  }
+  out.items = items; out.reached = items.filter((i) => i.month != null).length;
+  return out;
+}
+
+/** The payout calendar: for each month 1..M what the plan pays out (before fees), the fees due, the net, and which accounts pay for the first time. */
+export function payoutCalendar(doc, counts, opts = {}) {
+  const span = SPANS.includes(opts.span) ? opts.span : 'H2', M = clamp(Math.round(opts.months ?? 6), 1, 24), h = clamp(num(opts.haircut) ?? 0, 0, 0.9), spm = doc.sessions_per_month ?? 21;
+  const rows = Array.from({ length: M }, (_, i) => ({ k: i + 1, payout: 0, fees: 0, net: 0, first: [] }));
+  for (const p of doc.plans) {
+    const n = clamp(Math.round(num(counts[p.id]) ?? 0), 0, p.cap);
+    if (!n) continue;
+    const c = accountCurve(p, span, M, h, spm);
+    for (let k = 1; k <= M; k++) {
+      const fee = c.fees[k] - c.fees[k - 1], net = c.mean[k] - c.mean[k - 1];
+      rows[k - 1].fees += n * fee; rows[k - 1].net += n * net; rows[k - 1].payout += n * (net + fee);
+      if (c.t1 > k - 1 && c.t1 <= k) rows[k - 1].first.push(`${p.firm} ${p.name}`);
+    }
+  }
+  return rows;
+}
+
+/** The monthly income waterfall: month 0 (the evals bought), then month by month what moves the plan's balance (payouts up, fees down) and the running total. */
+export function waterfall(doc, counts, opts = {}) {
+  const cal = payoutCalendar(doc, counts, opts), tax = clamp(num(opts.tax) ?? 0, 0, 0.6), buy = project(doc, counts, opts).upfront;
+  let total = -buy;
+  const rows = [{ k: 0, payout: 0, fees: buy, delta: -buy, total, first: [] }];       // month 0: the evals are bought
+  return rows.concat(cal.map((r) => {
+    const pay = r.payout * (1 - tax), delta = pay - r.fees;
+    total += delta;
+    return { k: r.k, payout: pay, fees: r.fees, delta, total, first: r.first };
+  }));
+}
+
+/** "What if I add an account": every plan that still has room, with what one more changes (per month, up front, bad case, chance under water). */
+export function whatIf(doc, counts, opts = {}) {
+  const base = project(doc, counts, opts), out = [];
+  for (const p of doc.plans) {
+    const n = clamp(Math.round(num(counts[p.id]) ?? 0), 0, p.cap);
+    if (n >= p.cap) continue;
+    const next = project(doc, { ...counts, [p.id]: n + 1 }, opts);
+    out.push({ id: p.id, name: `${p.firm} ${p.name}`, price: p.price, dUpfront: next.upfront - base.upfront, dPerMonth: next.avg6 - base.avg6, dSteady: next.steady - base.steady,
+      dP10M: next.p10M - base.p10M, dUnder6: base.under6 == null || next.under6 == null ? null : next.under6 - base.under6, base, next });
+  }
+  return out.sort((a, b) => b.dPerMonth - a.dPerMonth);
+}
