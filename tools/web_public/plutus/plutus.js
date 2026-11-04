@@ -80,12 +80,12 @@ function strategyBlock() {
   if (!sa) return '';
   const two = (o, d = 0) => (o && o.H1 != null ? `${usd(o.H1, d)} / ${usd(o.H2, d)}` : '-');
   const pair = (o) => (o && o.H1 != null ? `${o.H1} / ${o.H2}` : '-');
-  const rows = sa.accounts.map((a) => `<tr><td>${esc(a.name)}<br><small>${usd(a.price, a.price % 1 ? 2 : 0)} each</small></td><td>${two(a.funded_per_month)}</td><td>${two(a.net_per_month_from_purchase)}</td>`
+  const rows = sa.accounts.map((a) => `<tr><td>${esc(a.name)}<br><small>${usd(a.price, a.price % 1 ? 2 : 0)} each</small></td><td>${two(a.funded_per_month)}${a.funded_label && a.funded_label !== 'funded study' ? `<br><small>${esc(a.funded_label)}</small>` : ''}</td><td>${two(a.net_per_month_from_purchase)}</td>`
     + `<td>${pair(a.first_pay_from_funded)} / ${pair(a.first_pay_from_purchase)}</td><td>${pair(a.eval_2w_pass)} / ${pair(a.eval_2w_fail)}</td></tr>`).join('');
   const t = sa.three_accounts, cap = sa.mffu_caps;
   return '<div class="line"><b>Your three strategies</b> (Jan-Jun / Jul-Oct 2026)</div>'
     + `<table class="strat"><thead><tr><th>Account</th><th>Funded $ a month</th><th>$ a month from purchase, after eval fees</th><th>First payout, sessions: from funded start / from purchase</th><th>Eval in 2 weeks: pass / fail %</th></tr></thead><tbody>${rows}</tbody></table>`
-    + `<div class="line">Funded $ a month is the payout stage only (80% to you); the next column starts at the purchase and pays every eval. BLITZ has no funded-only study: its slot figure is the research's, the model is lower.</div>`
+    + `<div class="line">Funded $ a month is the payout stage only (80% to you); the next column starts at the purchase and pays every eval. BLITZ's funded column is an estimate (3-month funded accounts at the $150 size; many starts get stuck with the room too small to pay out), its second column is the research slot.</div>`
     + `<div class="line"><b>${esc(cap.text)}</b></div>`
     + `<div class="line"><b>All three</b> (LIT 50K + ATLAS 25K + BLITZ 25K): <b>${two(t.H1 && { H1: t.H1.per_month, H2: t.H2.per_month })}</b> a month after eval fees in the model (first payout around session ${t.H1.first_payout_session_med} / ${t.H2.first_payout_session_med} from purchase, `
     + `${t.H1.evals_per_month} evals bought a month, ${t.H1.fails_per_month} fails). Honest range: <b>${esc(t.range.text)}</b>. It is a bet on the 2026 market continuing; in 2021-25-type markets every account loses.</div>`;
