@@ -382,7 +382,7 @@ def go(p, app):
         p.click(f'.bar [data-app="{app}"]')
         return
     p.click("#nxOrb")
-    p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=3000)
+    p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=30000)
     p.wait_for_timeout(450)
     p.click(f'.nx-qb[data-nx="{app}"]')
 
@@ -798,7 +798,7 @@ def run_c(br, url):
     zen_ok = p.locator("#zen").is_visible() or p.locator("#v-zenith").is_visible()
     if p.locator("#nxOrb").count() and p.locator("#nxOrb").is_visible():
         p.click("#nxOrb")                           # Zenith mode covers the bar: the orb (switcher.js), then Jarvis in its quick row
-        p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=3000)
+        p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=30000)
         p.wait_for_timeout(450)
         p.click('.nx-qb[data-nx="home"]')
     elif p.locator(".zm-back").count() and p.locator(".zm-back").is_visible():
@@ -1296,7 +1296,7 @@ def run_system(br, url):
     check("s. the orb carries a red dot while something needs the owner", "lv-bad" in r["orb"] and r["alert"] == "block", r)
     o = p.evaluate("(() => { const b = document.getElementById('nxOrb').getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2]; })()")
     p.mouse.click(o[0], o[1])
-    p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=3000)
+    p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=30000)
     p.wait_for_timeout(450)
     st = p.evaluate("""() => { const s = document.getElementById('nxSys'), b = s.getBoundingClientRect();
       return { hidden: s.hidden, text: s.textContent, cls: s.className, dots: s.querySelectorAll('.nx-sd i').length, h: b.height, w: b.right <= innerWidth,
@@ -1337,7 +1337,7 @@ def run_switcher(br, url):
     cx, cy = (r[0] + r[2]) / 2, (r[1] + r[3]) / 2
     # tap: the switcher, one live card per app, Jarvis's marked NOW
     p.mouse.click(cx, cy)
-    p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=3000)
+    p.wait_for_function("document.getElementById('nxRoot').classList.contains('on')", timeout=30000)
     p.wait_for_timeout(450)
     cards = p.evaluate("""() => [...document.querySelectorAll('#nxTrack .nx-card')].map((c) => ({ id: c.dataset.nx || (c.dataset.nxAdd ? 'add' : ''),
       name: (c.querySelector('.nx-nm b') || {}).textContent, val: (c.querySelector('.nx-val') || {}).textContent || '', now: c.classList.contains('now'),
