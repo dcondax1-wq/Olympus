@@ -4,7 +4,7 @@
 // is ONE draw call (the shafts and the sparks are single merged geometries), so a scene stays inside the OLYMPUS draw budget.
 //
 //   dust({ count, box, color, size, drift })            motes drifting through the room, soft round, twinkling (Points)
-//   embers({ count, origin, spread, rise, colors })     sparks / embers rising from a point or a line, hot to dark (Points)
+//   embers({ count, origin, points, spread, rise, colors })  sparks / embers rising from a point, a line or several points, hot to dark (Points)
 //   shafts({ count, from, to, width, color, strength }) god rays: a fan of soft additive light shafts through the haze (Mesh)
 //   contactAO({ radius, strength })                     a soft round contact shadow plane to lay under an object (Mesh)
 //   polishedFloor({ size, color, y, roughness })        a reflective stone floor: clear-coated, env-reflecting, faint scuffs (Mesh)
@@ -76,7 +76,8 @@ export function embers(o = {}) {
   const org = o.origin || [0, 0, 0], colors = (o.colors || ['#fff3c4', '#ffb347', '#ff5a1f']).map((c) => new THREE.Color(c));
   const pos = new Float32Array(n * 3), sd = new Float32Array(n * 4);
   for (let i = 0; i < n; i++) {
-    pos[i * 3] = org[0] + (r() - 0.5) * spread[0]; pos[i * 3 + 1] = org[1]; pos[i * 3 + 2] = org[2] + (r() - 0.5) * spread[2];
+    const pt = o.points && o.points.length ? o.points[Math.floor(r() * o.points.length) % o.points.length] : org;          // points: several sources (the braziers of a ring)
+    pos[i * 3] = pt[0] + (r() - 0.5) * spread[0]; pos[i * 3 + 1] = pt[1]; pos[i * 3 + 2] = pt[2] + (r() - 0.5) * spread[2];
     sd[i * 4] = r(); sd[i * 4 + 1] = 0.35 + r() * 0.9; sd[i * 4 + 2] = r() * 6.28; sd[i * 4 + 3] = 0.5 + r();
   }
   const g = new THREE.BufferGeometry();
