@@ -68,11 +68,11 @@ export function watch(terms, opts = {}) {
     if (frag) { frag.append(document.createTextNode(text.slice(last))); tn.replaceWith(frag); }
   }
 
-  const dbg = (window.__olyGlossary = window.__olyGlossary || { scans: 0, err: '', last: 0 });
+  const dbg = (window.__olyGlossary = window.__olyGlossary || { scans: 0, err: '', last: 0 });   // for the tests / the crawler: how many scans, the last error, when
   function scan() {
     timer = 0;
     if (stopped) return;
-    dbg.scans++; dbg.last = Date.now();
+    dbg.scans++; dbg.last = Date.now(); dbg.pending = false;
     try {
       const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
         acceptNode(n) {
@@ -88,7 +88,7 @@ export function watch(terms, opts = {}) {
       for (const n of list) wrapNode(n);
     } catch (e) { dbg.err = String(e && e.message || e); /* plain words are optional */ }
   }
-  const later = () => { if (!timer && !stopped) timer = setTimeout(scan, 450); };
+  const later = () => { if (!timer && !stopped) { dbg.pending = true; timer = setTimeout(scan, 450); } };
 
   if (!document.getElementById('olyGlossaryCss')) {
     const st = document.createElement('style');
@@ -116,7 +116,6 @@ export function watch(terms, opts = {}) {
   document.addEventListener('click', onTap, true);        // capture + no preventDefault: the app still gets every tap
   const mo = typeof MutationObserver === 'function' ? new MutationObserver(later) : null;
   if (mo) mo.observe(root, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['hidden', 'aria-hidden'] });   // a panel un-hidden is a change too
-  dbg.obs = !!mo; dbg.root = root.tagName; dbg.scan = scan;
   scan();
   return { stop() { stopped = true; if (mo) mo.disconnect(); document.removeEventListener('click', onTap, true); hide(); }, scan, count };
 }

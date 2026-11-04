@@ -113,7 +113,8 @@ PROBE = r"""(jargon) => {
   const jg = jargon.filter((w) => new RegExp('(^|[^A-Za-z])' + w + '([^A-Za-z]|$)').test(text) && !document.querySelector('abbr.oly-gl[data-gl="' + w + '"], abbr[title*="' + w + '" i], [title*="' + w + '" i]')).slice(0, 8);
   const emptyLists = [...document.querySelectorAll('ul, ol, table tbody, [role=list], .list')].filter((e) => vis(e) && !e.children.length && !(e.textContent || '').trim()).slice(0, 4).map(key);
   const imgs = [...document.querySelectorAll('img')].filter((i) => vis(i) && !i.hasAttribute('alt')).length;
-  return { cut, overflow: document.scrollingElement.scrollWidth > W + 1 || document.body.scrollWidth > W + 1, sw: document.scrollingElement.scrollWidth, small, clipped, overlaps, off, unnamed, low, bad, loading, jargon: jg, emptyLists, imgs,
+  const glc = {}; document.querySelectorAll('abbr.oly-gl').forEach((a) => { glc[a.dataset.gl] = (glc[a.dataset.gl] || 0) + 1; });
+  return { gl: glc, glx: window.__olyGlossary || null, cut, overflow: document.scrollingElement.scrollWidth > W + 1 || document.body.scrollWidth > W + 1, sw: document.scrollingElement.scrollWidth, small, clipped, overlaps, off, unnamed, low, bad, loading, jargon: jg, emptyLists, imgs,
     textLen: text.trim().length, ctl: ctl.length, title: document.title, lang: document.documentElement.lang || '', hist: history.length };
 }"""
 
@@ -174,6 +175,12 @@ def crawl_one(br, base, app, vp, args, shots):
     except Exception as e:                                                       # a slow page: record it and go on
         row["errors"].append("goto: " + str(e)[:120])
     time.sleep(args.wait)
+    try:                                                            # the plain-words layer (olympus/glossary-core.js) settles a moment after the app draws
+        for _ in range(5):                                          # a software-GL page can stall its main thread for seconds: let its timers run, then look again
+            if p.evaluate("new Promise((r) => setTimeout(() => r(!window.__olyGlossary || (!window.__olyGlossary.pending && Date.now() - window.__olyGlossary.last > 800)), 1500))"):
+                break
+    except Exception:
+        pass
     try:
         pr = p.evaluate(PROBE, JARGON)
     except Exception as e:
