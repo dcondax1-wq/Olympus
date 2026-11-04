@@ -24,6 +24,28 @@ back to exactly what it was (safe any time, also while the bot trades). Keep the
 3. Send Claude the **`PC_REPORT-<name>.txt`** it writes next to CLEAN_PC.bat (a photo is fine). It shows what the main PC
    is and whether it can run the bot.
 
+## Disk full? CLEAN_STORAGE (both computers, 2026-11-04)
+One double-click, same on the Surface and the main PC: **`CLEAN_STORAGE.bat`** (in the bot folder; or download it alone from
+the site page `.../nq-dashboard/pc/`, section "Clean storage": it then fetches `pc/clean_storage.ps1` itself).
+1. It prints a plain table of what it would free (a size per category) and asks **Y**.
+2. It clears only safe things: temp files (older than 1 day), browser caches (never passwords or sign-ins), thumbnail and
+   icon caches, crash dumps and error reports, npm / pip caches, NinjaTrader's old logs, traces and cache folders, the bot's
+   own old logs / backups (the 3 newest stay) / `data\*.corrupt-*` / `__pycache__`. Windows asks once (click **Yes**) for its
+   own part: Windows temp, the Windows Update download cache, the Delivery Optimization cache, Windows crash dumps and old
+   Windows logs. The **Recycle Bin** and **Windows.old** (big, no way back to the old Windows) are asked about separately.
+3. It ends with **"Freed X GB, C: now Y GB free"** and writes every removed file with its size to
+   `logs\clean_storage-DATE.txt` (no bot folder: `%LOCALAPPDATA%\LiquidityEngine\logs`).
+- **Never touched:** the bot's `data\` state files, `.env.local.ps1`, live_state / accounts / journals, the bar archive
+  `data\nt_bars`, NinjaTrader's workspaces, templates, `bin`, the database (`db`, except `db\cache`), `le_feed` (the bot's
+  bars), `incoming` / `outgoing` (orders), and anything outside its allow-list (a wrong `TEMP` variable cannot widen it).
+- **If the bot or NinjaTrader is running** it says so and skips their folders and Windows.old; only temp files (3 days old
+  then), caches and Windows junk are cleaned.
+- `CLEAN_STORAGE.bat -DryRun` (or `clean_pc.ps1 -Storage -DryRun`) only prints the table. `-KeepDays 30` keeps the bot's
+  logs longer. OneDrive: it prints the "Free up space" (Files On-Demand) hint and warns not to use it on the NinjaTrader 8 folder.
+- The PC health line **Storage** (free GB on the bot's drive + bot folder + NinjaTrader folder size; amber < 15 GB, red
+  < 2 GB, fix "Run CLEAN_STORAGE.bat") rides the normal heartbeat (`pc_health.storage`) and shows on Jarvis' System view.
+- Test: `python -X utf8 -m tests.test_clean_storage`.
+
 ## What CLEAN_PC does
 - **On both computers:** turns off apps that start with Windows but trading doesn't need (switch them back on in Task
   Manager > Startup apps). Also: a lighter Windows (no transparency or animations), old junk files deleted. The deep
