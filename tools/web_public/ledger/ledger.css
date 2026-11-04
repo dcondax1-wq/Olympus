@@ -7,7 +7,7 @@
 }
 * { box-sizing: border-box; }
 html { background: var(--g-bg); }
-body { margin: 0; min-height: 100vh; background: radial-gradient(ellipse at 50% 0%, #1e1608 0%, var(--g-bg) 60%); color: var(--oly-text, #f6f1e6); font: 500 var(--oly-t-body, 14px)/1.4 var(--oly-ui, -apple-system, system-ui, sans-serif); overflow-x: hidden; }
+body { margin: 0; min-height: 100vh; min-height: 100dvh; background: radial-gradient(ellipse at 50% 0%, #1e1608 0%, var(--g-bg) 60%); color: var(--oly-text, #f6f1e6); font: 500 var(--oly-t-body, 14px)/1.4 var(--oly-ui, -apple-system, system-ui, sans-serif); overflow-x: hidden; }
 button, select, input, summary { font: inherit; color: inherit; }
 button { cursor: pointer; }
 button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--g-gold); outline-offset: 2px; }
