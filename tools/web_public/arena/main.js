@@ -4,6 +4,8 @@ import { score, pickQuests, verifyQuest, questEvents, etDay, etHour } from './ru
 import { loadRules, loadSite, gather } from './sources.js';
 import { openLedger } from './ledger.js';
 import * as HUD from './hud.js';
+import { evaluateWeek, history as bossHistory, bossEvents, bossStats, weekStart, featured } from './bosses.js';
+import { trophies as makeTrophies } from './trophies.js';
 
 const O = window.OLYMPUS || null;
 const JARVIS_ORIGIN = 'https://demetrades2000-coder.github.io';
@@ -12,7 +14,7 @@ const REFRESH_MS = 60000;
 const DEMO_FACTS = { planner: true, habits: true, vault: true, kalshi: true, tasksToday: 4, doneToday: 3, habitToday: true, noteToday: false,
   tomorrowTasks: 2, kalshiToday: true, beatToday: true, hour: 17 };
 
-const S = { R: null, site: null, demo: true, ledger: null, sc: null, quests: [], results: [], facts: {}, linked: {}, today: '', levelups: 0, ready: false, scene: null, error: null };
+const S = { R: null, site: null, demo: true, ledger: null, sc: null, quests: [], results: [], bosses: null, trophies: [], facts: {}, linked: {}, today: '', levelups: 0, ready: false, scene: null, error: null };
 
 function reducedMotion() { return O ? O.reduced() : !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
 
@@ -54,7 +56,16 @@ function compute() {
   S.quests = pickQuests(S.today, f, R);
   S.results = S.quests.map((q) => verifyQuest(q, f));
   ledger.add(questEvents(S.today, S.quests, S.results));
+  // the weekly bosses: this week's fight and the last six finished weeks; a boss slain becomes one 'boss' event (once, by id)
+  const linked = S.demo ? { planner: true, vault: true } : S.linked;
+  const mon = weekStart(S.today), base = ledger.events();
+  const cur = evaluateWeek(base, mon, S.today, f.hour, linked, R), past = bossHistory(base, S.today, f.hour, linked, 6, R);
+  ledger.add(bossEvents(cur, mon));
+  past.forEach((w) => ledger.add(bossEvents(w.bosses, w.mon)));
+  S.bosses = { mon, featured: featured(mon), cur, past: past.slice(0, 4) };
   S.sc = score(ledger.events(), R, S.today);
+  S.bossStats = bossStats(ledger.events());
+  S.trophies = makeTrophies(S.sc, S.bossStats);
 }
 
 function render() {
@@ -63,17 +74,34 @@ function render() {
   HUD.renderStreaks(sc);
   HUD.renderQuests(S.quests, S.results, S.R);           // keeps the tab's count fresh
   HUD.renderLabours(sc, openLabour);
+  HUD.renderBosses(S.bosses, S.R, openBoss);
+  HUD.renderTrophies(S.trophies, openTrophy);
   if (HUD.sheetTab()) HUD.openSheet(HUD.sheetTab(), build);
-  if (S.scene) S.scene.setState({ progress: HUD.rankProgress(sc), color: sc.rank.color, labours: sc.labours });
+  if (S.scene) {
+    const fb = S.bosses.cur.find((b) => b.id === S.bosses.featured) || S.bosses.cur[0];
+    S.scene.setState({ progress: HUD.rankProgress(sc), color: sc.rank.color, labours: sc.labours, ranks: S.R.ranks, rankIndex: sc.rank.i,
+      trophies: S.trophies, boss: { id: fb.id, name: fb.name, color: fb.color, state: fb.state, hits: fb.hits, max: fb.max } });
+  }
   postCard();
 }
 
 function build(tab) {
   if (tab === 'quests') return HUD.renderQuests(S.quests, S.results, S.R);
   if (tab === 'labours') return HUD.renderLabours(S.sc, openLabour);
+  if (tab === 'bosses') return HUD.renderBosses(S.bosses, S.R, openBoss);
+  if (tab === 'trophies') return HUD.renderTrophies(S.trophies, openTrophy);
+  if (tab === 'ranks') return HUD.renderLadder(S.sc, S.R);
   return HUD.renderLog(S.sc, { sources: sourcesInfo() }, S.R, exportFile);
 }
 function openLabour(id) { const l = S.sc.labours.find((x) => x.id === id); if (l) HUD.showLabour(l, S.R); }
+function openTrophy(id) { const t = S.trophies.find((x) => x.id === id); if (t) HUD.showTrophy(t); }
+function openBoss() { HUD.hideLabour(); HUD.openSheet('bosses', build); history.replaceState(null, '', '#bosses'); }
+function picked(id) {
+  if (!id) return HUD.hideLabour();
+  if (id.startsWith('trophy:')) return openTrophy(id.slice(7));
+  if (id.startsWith('boss:')) return openBoss();
+  openLabour(id);
+}
 
 /** A level gained since the last visit plays the level-up once (a rank gained: the rank-up). The first visit only marks. */
 function checkLevelUp() {
@@ -84,9 +112,10 @@ function checkLevelUp() {
     S.levelups++;
     document.documentElement.dataset.levelup = String(S.levelups);
     if (S.scene) S.scene.levelUp({ rank: rankUp });
-    HUD.celebrate({ level: sc.level, rank: rankUp ? sc.rank.name : null, reduced: reducedMotion() });
+    HUD.celebrate({ level: sc.level, rank: rankUp ? sc.rank.name : null, reduced: reducedMotion(), ranks: S.R.ranks, rankIndex: sc.rank.i });
     S.banner = rankUp ? `Rank up ${sc.rank.name} Level ${sc.level}` : `Level up Level ${sc.level}`;
     const fresh = mark.earned.filter((id) => !(seen.earned || []).includes(id));
+    if (O && O.sfx && (rankUp || fresh.length)) O.sfx('rankup');   // olympus/olympus.js: the rank-up / Labour sound, guarded
     if (fresh.length) setTimeout(() => openLabour(fresh[0]), reducedMotion() ? 600 : 2400);
   }
   if (!seen || sc.xp !== seen.xp || sc.level !== seen.level) S.ledger.setSeen(mark);
@@ -99,7 +128,8 @@ function card() {
     kpis: [{ label: 'Rank', value: sc.rank.name }, { label: 'XP', value: sc.xp.toLocaleString('en-US'), ...(sc.next ? { delta: `${sc.next.need.toLocaleString('en-US')} to go` } : {}) },
       { label: 'Labours', value: `${sc.earned} of 12` }],
     lines: [('Today: ' + S.quests.map((q, i) => `${q.title} (${S.results[i].done ? 'done' : 'open'})`).join(', ')).slice(0, 120),
-      `Streaks: uptime ${sc.streaks.uptime.cur}, hands off ${sc.streaks.discipline.cur}, daily goal ${sc.streaks.planner.cur}`.slice(0, 120)],
+      `Streaks: uptime ${sc.streaks.uptime.cur}, hands off ${sc.streaks.discipline.cur}, daily goal ${sc.streaks.planner.cur}`.slice(0, 120),
+      (S.bosses ? `Boss: ${S.bosses.cur.filter((b) => b.state === 'slain').length} of 4 slain this week, ${S.trophies.filter((t) => t.earned).length} trophies` : '').slice(0, 120)].filter(Boolean),
     t: Math.floor(Date.now() / 1000), open: '#quests', theme: '#0a0710', stale_after: 86400 };
 }
 function postCard() {
@@ -131,9 +161,9 @@ async function startScene() {
   try {
     const { createScene } = await import('./scene.js');
     S.scene = createScene(document.getElementById('scene'), { O });
-    S.scene.onPick((id) => (id ? openLabour(id) : HUD.hideLabour()));
+    S.scene.onPick(picked);
     HUD.setTags({ demo: S.demo, lite: S.scene.lite() });
-    if (O && O.onFx) O.onFx(() => { S.scene.setLite(O.lite()); HUD.setTags({ demo: S.demo, lite: S.scene.lite() }); });
+    S.scene.onQuality(() => HUD.setTags({ demo: S.demo, lite: S.scene.lite() }));
   } catch (e) {                                              // no WebGL: the HUD still works
     S.error = 'scene: ' + ((e && e.message) || e);
     document.documentElement.dataset.noscene = '1';
@@ -147,10 +177,14 @@ function wire() {
     if (HUD.sheetTab() === b.dataset.tab) { HUD.closeSheet(); history.replaceState(null, '', location.pathname + location.search); }
     else { HUD.openSheet(b.dataset.tab, build); history.replaceState(null, '', '#' + b.dataset.tab); }
   }));
+  const rk = document.getElementById('rank');
+  const openLadder = () => { HUD.hideLabour(); HUD.openSheet('ranks', build); history.replaceState(null, '', '#ranks'); };
+  rk.addEventListener('click', openLadder);
+  rk.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLadder(); } });
   document.getElementById('close').addEventListener('click', () => { HUD.closeSheet(); history.replaceState(null, '', location.pathname + location.search); });
   document.getElementById('popClose').addEventListener('click', HUD.hideLabour);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { HUD.hideLabour(); HUD.closeSheet(); } });
-  const route = () => { const t = location.hash.slice(1); if (['quests', 'labours', 'log'].includes(t)) HUD.openSheet(t, build); };
+  const route = () => { const t = location.hash.slice(1); if (['quests', 'bosses', 'labours', 'trophies', 'ranks', 'log'].includes(t)) HUD.openSheet(t, build); };
   addEventListener('hashchange', route);
   route();
 }
@@ -180,7 +214,8 @@ async function main() {
 
 window.ARENA = {
   state: () => ({ ready: S.ready, demo: S.demo, today: S.today, xp: S.sc && S.sc.xp, level: S.sc && S.sc.level, rank: S.sc && S.sc.rank.name,
-    earned: S.sc && S.sc.earned, quests: S.quests.map((q, i) => ({ id: q.id, done: !!(S.results[i] && S.results[i].done) })),
+    earned: S.sc && S.sc.earned, bosses: S.bosses && S.bosses.cur.map((b) => ({ id: b.id, state: b.state, hits: b.hits, max: b.max })), featured: S.bosses && S.bosses.featured,
+    trophies: S.trophies.filter((t) => t.earned).length, trophyTotal: S.trophies.length, bossesSlain: S.bossStats && S.bossStats.slain, quests: S.quests.map((q, i) => ({ id: q.id, done: !!(S.results[i] && S.results[i].done) })),
     streaks: S.sc && Object.fromEntries(Object.values(S.sc.streaks).map((s) => [s.id, s.cur])), levelups: S.levelups,
     scene: S.scene ? S.scene.stats() : null, linked: S.linked, error: S.error, exported: S.exported || 0, banner: S.banner || '', bySrc: S.sc && S.sc.bySrc }),
   exportText: () => exportText(),
@@ -190,7 +225,7 @@ window.ARENA = {
     if (!on) { if (S.scene) S.scene.endHold(); document.getElementById('banner').hidden = true; return; }
     HUD.hideLabour();
     if (S.scene) S.scene.levelUp({ rank: true, hold: true });
-    HUD.celebrate({ level: S.sc.level, rank: S.sc.rank.name, reduced: true, hold: true });
+    HUD.celebrate({ level: S.sc.level, rank: S.sc.rank.name, reduced: true, hold: true, ranks: S.R.ranks, rankIndex: S.sc.rank.i });
   },
   refresh: async () => { await refreshPhone(); compute(); render(); checkLevelUp(); return window.ARENA.state(); },
 };

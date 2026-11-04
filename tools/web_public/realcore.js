@@ -44,7 +44,7 @@
   const chip = (t, k) => `<span class="rc-chip ${k || ''}">${esc(t)}</span>`;
   // plain-language glossary: every term gets a tap / hover explanation
   const GLOSS = {
-    'Room to floor': 'How much the account can still lose before MFFU closes the eval (the trailing max-loss floor). Below 25% the bot sizes down.',
+    'Drawdown left': 'What the account can still lose before MFFU closes it: balance minus the max-loss floor, the same number as MFFU\'s dashboard. Below 25% of the max loss the bot sizes down.',
     'To target': 'Profit still needed to pass the eval (50K: +$3,000, 25K: +$1,500).',
     'Daily loss': 'Today\'s losses against the daily loss limit (50K $1,000, 25K $600). At the limit no new trade today.',
     'Eval day': 'Trading sessions used on this eval. Goal: pass within 10 sessions (2 weeks), never more than 15.',
@@ -194,9 +194,9 @@
         ${ring(S, k + '-score')}</div>
       ${posLine(a.position, k)}
       ${R.filter((r) => !r.open).length ? `<ul class="rc-trs">${R.filter((r) => !r.open).map(tradeLine).join('')}</ul>` : a.position ? '' : `<p class="rc-why"><b>No trade yet today.</b> ${esc(whyNone(B, a))}</p>`}
-      <div class="rc-kv"><div><span>Balance</span><b${cn(k + '-bal')}>${usd(a.balance, 2)}</b></div><div><span>${tip('Eval day')}</span><b>${funded ? 'funded' : sess != null ? `${sess} of ${a.sessions || 10}` : '—'}</b>${E && !funded ? `<em class="${E.k}">${tip('Pass ETA', `pass ≈ day ${E.at}`)}</em>` : ''}</div>
+      <div class="rc-kv"><div><span>Balance</span><b${cn(k + '-bal')}>${usd(a.balance, 2)}</b></div><div><span>Profit</span><b class="${cl(prof)}">${funded ? 'funded' : susd(prof)}</b>${E && !funded ? `<em class="${E.k}">${tip('Pass ETA', `pass ≈ day ${E.at}`)}</em>` : ''}</div>
         <div><span>Next window</span>${win(a.window)}</div></div>
-      ${gauge(tip('Room to floor'), usd(room), rf, roomK, `floor ${usd(a.floor, 2)} · of ${usd(mll)}${rf != null && rf < 0.25 && !chk.length ? ' · thin: the bot sizes down' : ''}`, k + '-room')}${altRoom}
+      ${gauge(tip('Drawdown left'), usd(room), rf, roomK, `of ${usd(mll)} max loss${rf != null && rf < 0.25 && !chk.length ? ' · thin: the bot sizes down' : ''}`, k + '-room')}${altRoom}
       ${gauge(tip('To target'), ok(a.to_target) ? (a.to_target <= 0 ? 'reached' : usd(a.to_target)) : '—', prof != null && tgt ? prof / tgt : 0, 'acc', `${susd(prof)} of +${usd(tgt)}${E ? ` · ≈ ${E.n} more session${E.n > 1 ? 's' : ''} at the backtest pace (${usd(E.ps)} a session)` : ''}`, k + '-tgt')}
       ${gauge(tip('Daily loss'), `${usd(used)} of ${usd(dll)}`, used / dll, used / dll > 0.75 ? 'bad' : used / dll > 0.4 ? 'warn' : 'good', used >= dll ? 'limit reached: no new trade today' : `${usd(dll - used)} left today`, k + '-dll')}
       ${S.n < 100 ? `<p class="rc-scw">${esc(S.why.join(' · '))}</p>` : ''}

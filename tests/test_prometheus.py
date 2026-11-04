@@ -215,8 +215,8 @@ def part_d():
     runs = [os.path.join(ROOT, "research", "runs", f"prometheus_s{s}.json") for s in rr.get("seeds", [])]
     check("d. every seed's champion is stored as a runlib run (research/runs/prometheus_s*.json)", runs and all(os.path.exists(x) for x in runs))
     js = open(os.path.join(PAGE, "forge.js"), encoding="utf-8").read()
-    check("d. three.js from ../jarvis/ (no CDN), reduced motion and auto LITE in the page",
-          "from '../jarvis/three.module.min.js'" in js and "prefers-reduced-motion" in js and "this.lite = true" in js and "http" not in
+    check("d. three.js from ../jarvis/ (no CDN), reduced motion, and the auto LITE steps of the OLYMPUS render core (onQuality) in the page",
+          "from '../jarvis/three.module.min.js'" in js and "prefers-reduced-motion" in js and "../olympus/render.js" in js and "onQuality" in js and "http" not in
           js.replace("https://demetrades2000-coder.github.io", ""))
 
 
@@ -266,12 +266,14 @@ def part_e():
 def _new(br, url, errs, reduced=False):
     ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, has_touch=False,
                          reduced_motion="reduce" if reduced else "no-preference")
+    ctx.add_init_script("try { localStorage.setItem('jfx', 'low'); } catch (e) {}")   # software GL: LITE keeps frames and screenshots quick
     p = ctx.new_page()
+    p.set_default_timeout(150000)                       # software GL on a busy box: a screenshot can wait for a slow frame
     p.on("pageerror", lambda e: errs.append("pageerror: " + str(e)))
     p.on("console", lambda m: errs.append("console: " + m.text) if m.type == "error" else None)
     p.on("requestfailed", lambda r: errs.append("requestfailed: " + r.url))
     p.goto(url)
-    p.wait_for_function("window.__forge && window.__forge.ready", timeout=30000)
+    p.wait_for_function("window.__forge && window.__forge.ready", timeout=150000)
     p.wait_for_timeout(600)
     return ctx, p
 
@@ -320,6 +322,8 @@ def _page_checks(br, url, url_nodata):
         pc = p.evaluate("(id) => window.__forge.screenOf(id)", int(picked.group(1)))
         check("e. the card belongs to the flame under the tap (within 40 px)", abs(pc["x"] - pt["x"]) <= 40 and abs(pc["y"] - pt["y"]) <= 40)
     check("e. the card stays clear of the orb corner", not _orb_free(p), _orb_free(p))
+    check("g. the card answers 'Would this change live?' with the reasons and H1 / H2 pass marks",
+          "Would this change live?" in body and "H1" in body and "Only the owner changes live" in body, body[:200])
     p.screenshot(path=os.path.join(SHOTS, "03_creature_card.png"))
     p.click("#cardX")
     lp = p.evaluate("window.__forge.screenOf('live')")
@@ -335,7 +339,10 @@ def _page_checks(br, url, url_nodata):
     p.screenshot(path=os.path.join(SHOTS, "04_verdict.png"))
     p.click("#truthX")
     p.click("#play")
-    p.wait_for_timeout(4200)
+    try:
+        p.wait_for_function("window.__forge.gen >= 1", timeout=90000)     # software GL on a busy box: a step needs a few slow frames
+    except Exception:
+        pass
     g_after = p.evaluate("window.__forge.gen")
     check("e. Play runs the time-lapse (generations advance)", g_after >= 1, g_after)
     p.screenshot(path=os.path.join(SHOTS, "05_timelapse.png"))
@@ -378,13 +385,52 @@ THEME_STUB = """(() => { const scene = %s;
   if (scene) window.OLYMPUS.themeScene = (o) => { window.__themeScene = o; return () => {}; }; })()"""
 
 
+def _filter_checks(p, d):
+    """g. the half-year pass / fail filter + the 'would this change live?' verdict (2026-11-03 upgrade)."""
+    live = d["genomes"][d["live"]["k"]]
+
+    def passes(g, half):
+        a, b = g[half], live[half]
+        return a["pm"] > b["pm"] and (a["p10"] - a["f10"]) >= (b["p10"] - b["f10"]) - 0.05 and a["tpw"] >= 2
+    gl = p.evaluate("window.__forge.gen")
+    ids = p.evaluate("window.__forge.ids()")
+    by_id = {c["id"]: c for gen in d["gens"] for c in gen}
+    want = {f: [i for i in ids if cond(d["genomes"][by_id[i]["k"]])] for f, cond in (
+        ("h1", lambda g: passes(g, "h1")), ("h2", lambda g: passes(g, "h2")), ("both", lambda g: passes(g, "h1") and passes(g, "h2")),
+        ("fail2", lambda g: not passes(g, "h2")))}
+    p.evaluate("window.__forge.setFilter('h2')")
+    p.wait_for_timeout(200)
+    got = [i for i in ids if p.evaluate("(i) => window.__forge.flameVis(i)", i) == 1]
+    check(f"g. filter 'Pass H2' keeps exactly the creatures that pass H2 lit ({len(want['h2'])} of {len(ids)} in generation {gl + 1})", sorted(got) == sorted(want["h2"]), (got, want["h2"]))
+    p.evaluate("window.__forge.setFilter('fail2')")
+    got = [i for i in ids if p.evaluate("(i) => window.__forge.flameVis(i)", i) == 1]
+    check("g. filter 'H2 fail' lights the complement", sorted(got) == sorted(want["fail2"]), (got, want["fail2"]))
+    txt = p.inner_text("#chipn")
+    check("g. the filter line says how many match", f"{len(want['fail2'])} of {len(ids)}" in txt, txt)
+    p.evaluate("window.__forge.setFilter('all')")
+    check("g. 'All' lights every creature again", all(p.evaluate("(i) => window.__forge.flameVis(i)", i) == 1 for i in ids))
+    check("g. the chips stay clear of the orb corner", not _orb_free(p), _orb_free(p))
+    w = p.evaluate("(id) => { window.__forge.openCard(id); return document.getElementById('chg').className + '|' + document.getElementById('chg').innerText; }", d["champion"]["id"])
+    real = bool(d["verdict"]["real_margin"])
+    check("g. the champion's verdict follows forge.json (no real H2 margin -> 'NO, LIVE STAYS')",
+          ("chg-box no" in w and "LIVE STAYS" in w) == (not real), w[:160])
+    p.click("#cardX")
+
+
 def _upgrade_checks(p):
     d = json.load(open(os.path.join(PAGE, "forge.json"), encoding="utf-8"))
     live = d["genomes"][d["live"]["k"]]
     p.click("#play")                                     # pause the time-lapse
     p.wait_for_timeout(200)
     calls = p.evaluate("window.__forge.calls")
-    check(f"f. every flame in one draw call: {calls} draw calls a frame (was 84; <= 20)", 0 < calls <= 20, calls)
+    check(f"f. every flame in one draw call: {calls} draw calls a frame incl. the render core's bloom + finish (was 84; <= 60)", 0 < calls <= 60, calls)
+    tiers = {}
+    for lv in ("high", "low"):
+        p.evaluate("(l) => window.__forge.setQuality(l)", lv)
+        p.wait_for_timeout(700)
+        tiers[lv] = p.evaluate("window.__forge.passes")
+    check(f"g. the arena runs on the OLYMPUS render core: high = scene + bloom + finish, low = scene + finish ({tiers})",
+          tiers == {"high": ["scene", "bloom", "finish"], "low": ["scene", "finish"]}, tiers)
     bt, bs = p.inner_text("#bn-t"), p.inner_text("#bn-s")
     want = "LIVE LIT STILL BEST" if not d["proposal"] else "A CANDIDATE TO REVIEW"
     check("f. the verdict banner: the honest title with the H1 -> H2 numbers and live's H2 $/mo",
@@ -402,6 +448,7 @@ def _upgrade_checks(p):
     p.wait_for_timeout(300)
     check("f. Lineage: a tap on the champion's dot opens its card (one sheet: the panel closes)", p.is_visible("#card")
           and "Champion" in p.inner_text("#card-h") and not p.is_visible("#truth"), p.inner_text("#card-h") if p.is_visible("#card") else "")
+    _filter_checks(p, d)
     p.click("#hallBtn")
     p.wait_for_timeout(300)
     rows = p.evaluate("[...document.querySelectorAll('#hall-b tbody tr')].map((r) => r.dataset.id)")
@@ -421,8 +468,9 @@ def _upgrade_checks(p):
     ctx = p.context.browser.new_context(viewport={"width": 390, "height": 844})
     ctx.add_init_script(THEME_STUB % "true")
     q = ctx.new_page()
+    q.set_default_timeout(150000)
     q.goto(p.url)
-    q.wait_for_function("window.__forge && window.__forge.ready", timeout=30000)
+    q.wait_for_function("window.__forge && window.__forge.ready", timeout=150000)
     got = q.evaluate("() => ({ scene: !!(window.__themeScene && window.__themeScene.scene && window.__themeScene.scene.fog), "
                      "renderer: !!(window.__themeScene && window.__themeScene.renderer) })")
     check("f. OLYMPUS themes: with the kit's themeScene the arena (its fog) is handed to the kit", got == {"scene": True, "renderer": True}, got)

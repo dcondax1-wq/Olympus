@@ -30,7 +30,7 @@
     const stage = a.stage === 'live' ? 'LIVE account' : a.stage === 'funded' ? 'Funded' : 'Eval';
     const tiles = [
       typeof statBox === 'function' ? statBox('Balance', $u(a.bal)) : '',
-      typeof statBox === 'function' ? statBox(a.stage === 'live' ? 'Daily stop left' : 'Room to floor', $u(a.stage === 'live' ? a.dl : a.room), a.stage === 'live' ? '' : (a.dl !== undefined ? `daily loss left ${$u(a.dl)}` : '')) : '',
+      typeof statBox === 'function' ? statBox(a.stage === 'live' ? 'Daily stop left' : 'Drawdown left',$u(a.stage === 'live' ? a.dl : a.room), a.stage === 'live' ? '' : (a.dl !== undefined ? `daily loss left ${$u(a.dl)}` : '')) : '',
       typeof statBox === 'function' ? statBox('Today', $s(a.day), `week ${$s(a.wk)}`, K(a.day)) : '',
       a.stage === 'eval' && typeof statBox === 'function' ? statBox('To target', $u(a.tgt)) : '',
     ].join('');

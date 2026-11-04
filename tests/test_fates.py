@@ -17,7 +17,7 @@ threads of fate. Checks:
   f. the day-sprint upgrade (2026-11-03): the Jul-Oct sample in the switcher, the verdict banner (2026 / Jul-Oct /
      2021-25 side by side), "your next 10 sessions" (= the threads), the live odds from a live.json (in sync = the build's
      odds; moved on = re-weighted), the spinning spindle, the snap / gate rings and the gate motes, applyTheme(tokens),
-     at most 24 draw calls (the OLYMPUS budget)
+     at most 64 draw calls (the OLYMPUS budget: 24 scene + the render core's post passes + the loom)
     python -X utf8 -m tests.test_fates                 (~1-2 min; temp folders only)
 FATES_SHOTS=<dir> also saves screenshots of every scenario on the real tools/web_public/fates/fates.json.
 """
@@ -330,13 +330,16 @@ def test_page():
         with sync_playwright() as pw:
             br = pw.chromium.launch(**({"executable_path": exe} if exe else {}), args=args)
             ctx = br.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2)
+            # software GL (SwiftShader) cannot carry the HD pipeline (4x MSAA + bloom) at pixel ratio 2: these checks run on the LITE tier
+            # (the kit's own choice, jfx=low); the render core's HD tier gets its own page below (check g)
+            ctx.add_init_script("try { localStorage.setItem('jfx', 'low'); } catch (e) {}")
             ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith("http://127.0.0.1") else r.abort())  # no real live.json
             p = ctx.new_page()
             errs = []
             p.on("pageerror", lambda e: errs.append(str(e)))
             p.on("console", lambda m: errs.append("console: " + m.text) if m.type == "error" and "Failed to load resource" not in m.text else None)
             p.on("response", lambda r: errs.append(f"{r.status} {r.url}") if r.status >= 400 and not r.url.split("?")[0].endswith("/fates/fates.json") else None)
-            ready = lambda: p.wait_for_function("window.__fates && window.__fates.ready", timeout=30000)  # noqa: E731
+            ready = lambda: p.wait_for_function("window.__fates && window.__fates.ready", timeout=90000)  # noqa: E731
 
             # the demo: no fates.json -> fixture.json, DEMO badge, the HUD = the fixture's numbers
             p.goto(url + "?full=1")
@@ -475,7 +478,7 @@ def next10_expect(s, k=10):
 def test_upgrade(p, fx, url2, tmp2):
     ez = fx["scenarios"]["eval:zlarior:2026"]
     p.goto(url2 + "?full=1#zlarior/2026")
-    p.wait_for_function("window.__fates && window.__fates.ready", timeout=30000)
+    p.wait_for_function("window.__fates && window.__fates.ready", timeout=90000)
     p.click("#period button[data-period='H2']")
     check("f. Jul-Oct in the switcher: #zlarior/H2 and its own numbers", p.evaluate("location.hash") == "#zlarior/H2"
           and same(hud_text(p), expect_eval(fx["scenarios"]["eval:zlarior:H2"])), hud_text(p))
@@ -501,7 +504,7 @@ def test_upgrade(p, fx, url2, tmp2):
         if pr1["spin"] != pr0["spin"]:
             break
     check("f. the spindle spins; snaps and passes ring out; golden motes in the gate", pr1["spin"] != pr0["spin"] and pr1["rings"] > 0 and pr1["motes"] > 0, pr1)
-    check(f"f. at most 24 draw calls a frame ({pr1['calls']}: the OLYMPUS budget)", 0 < pr1["calls"] <= 24, pr1)
+    check(f"f. at most 64 draw calls a frame ({pr1['calls']}: scene + render-core passes + the loom)", 0 < pr1["calls"] <= 64, pr1)
     # live.json: in sync, then moved on one session and +$500
     st = ez["start"]
 
@@ -512,13 +515,13 @@ def test_upgrade(p, fx, url2, tmp2):
         with open(os.path.join(tmp2, "fates", name), "w", encoding="utf-8") as fh:
             json.dump({"t": int(time.time()) - 120, "board": {"lit": card(dp, ds), "atlas": None}}, fh)
     p.goto(url2 + "?full=1&live=live_same.json#zlarior/2026")
-    p.wait_for_function("window.__fates && window.__fates.ready && window.__fates.live", timeout=30000)
+    p.wait_for_function("window.__fates && window.__fates.ready && window.__fates.live", timeout=90000)
     p.wait_for_timeout(200)
     o = p.evaluate("__fates.odds")
     check("f. live.json in sync: LIVE, the build's own odds", "LIVE" in p.inner_text("#live") and o and o["sync"]
           and abs(o["pass"] - ez["summary"]["pass"]) < 1e-9, o)
     p.goto(url2 + "?full=1&live=live_moved.json#zlarior/2026")
-    p.wait_for_function("window.__fates && window.__fates.ready && window.__fates.live", timeout=30000)
+    p.wait_for_function("window.__fates && window.__fates.ready && window.__fates.live", timeout=90000)
     p.wait_for_timeout(200)
     o, txt = p.evaluate("__fates.odds"), p.inner_text("#live")
     check("f. live.json moved on (+1 session, +$500): the odds re-weighted to today, on the live strip",
@@ -527,12 +530,54 @@ def test_upgrade(p, fx, url2, tmp2):
     got = p.evaluate("""() => { applyTheme({ accent: '#00ff88', '--txt': '#fafafa' }); const cs = getComputedStyle(document.documentElement);
         return [cs.getPropertyValue('--gold').trim(), cs.getPropertyValue('--txt').trim()]; }""")
     check("f. applyTheme(tokens): the page's colours follow the theme", got == ["#00ff88", "#fafafa"], got)
+    # g. the eval gauge: the real MFFU numbers (live_moved: +$500 of room, $500 less to go) on the DOM strip and in the 3D loom
+    p.goto(url2 + "?full=1&live=live_moved.json#zlarior/2026")
+    p.wait_for_function("window.__fates && window.__fates.ready && window.__fates.live", timeout=90000)
+    p.wait_for_timeout(300)
+    room, togo = ez["start"]["room"] + 500, ez["start"]["to_target"] - 500
+    gv = p.evaluate("""() => Object.fromEntries([...document.querySelectorAll('#gauge .g')].map((g) => [g.dataset.id, [g.querySelector('.v').textContent, g.querySelector('.s').textContent]]))""")
+    rl = ez["rules"]
+    check("g. gauge: drawdown left = the live room, of the $2,000 trailing drawdown, max loss today capped by the $1,000 daily limit",
+          p.is_visible("#gauge") and gv["dd"][0] == usd(room) and f"of {usd(rl['mll'])}" in gv["dd"][1] and f"max loss today {usd(min(room, rl['dll']))}" in gv["dd"][1], gv)
+    check("g. gauge: to target = the live distance to the $3,000 target, profit shown", gv["tgt"][0] == usd(togo) and f"the {usd(rl['target'])} target" in gv["tgt"][1], gv)
+    o = p.evaluate("__fates.odds")
+    check("g. gauge: pass odds = the live odds, the $91.80 fee over them = the cost per pass",
+          o and gv["odds"][0] == pct(o["pass"]) and f"{usd(rl['price'])} fee" in gv["odds"][1] and usd(rl["price"] / (o["pass"] / 100)) in gv["odds"][1], (gv, o))
+    gs = p.evaluate("__fates.gaugeScene")
+    fl = ez["start"]["floor"]
+    want = (ez["start"]["profit"] + 500 - fl) / (rl["target"] - fl)
+    check("g. gauge in 3D: today's pearl stands at (profit - floor) / (target - floor) of the way to the gate, the wheel holds the pass odds",
+          gs and abs(gs["p0"] - want) < 0.02 and abs(gs["pass"] - o["pass"]) < 1e-6 and p.evaluate("__fates.sc.probe().gauge"), (gs, want))
+    p.click("#scen button[data-scen=money]")
+    check("g. gauge: no gauge on the Money scenario (no floor to fall to)", not p.is_visible("#gauge") and not p.evaluate("__fates.sc.probe().gauge"))
+    gm = p.evaluate("""async () => { const C = await import('./fates-core.js');
+        const s = { kind: 'eval', rules: { mll: 2000, lock: 100, dll: 1000, target: 3000, price: 91.8, name: 'x' } };
+        return [C.gaugeOf(s, { profit: 2500, room: 2400, toTarget: 500, floor: 100 }, { pass: 80, fail: 5 }), C.gaugeOf(s, { profit: -1900, room: 100, toTarget: 4900 }, { pass: 10, fail: 80 }),
+                C.gaugeOf(s, { profit: 3000, room: 1000, toTarget: 0 }, { done: 'passed' })]; }""")
+    a1, a2, a3 = gm
+    check("g. gaugeOf: floor locked at +$100, room above $2,000 stays a full bar, a nearly-dead eval warns, a passed one = 100%",
+          a1["locked"] and a1["ddPct"] == 1 and a1["dailyLeft"] == 1000 and abs(a1["costPerPass"] - 91.8 / 0.8) < 1e-6
+          and a2["ddWarn"] and a2["dailyLeft"] == 100 and a3["pass"] == 100 and a3["done"] == "passed", gm)
+    # g. the render core on HD: bloom + MSAA, the loom (marble posts, gold beams, warp, colonnade) and the gold spindle are in the scene
+    hx = p.context.browser.new_context(viewport={"width": 390, "height": 700}, device_scale_factor=1)
+    hx.route("**/*", lambda r: r.continue_() if r.request.url.startswith("http://127.0.0.1") else r.abort())
+    hp = hx.new_page()
+    herr = []
+    hp.on("pageerror", lambda e: herr.append(str(e)))
+    hp.goto(url2 + "?full=1&q=high&live=live_moved.json#zlarior/2026", wait_until="commit", timeout=120000)
+    hp.wait_for_function("window.__fates && window.__fates.ready && window.__fates.frames >= 1", timeout=150000)
+    pr = hp.evaluate("__fates.sc.probe()")
+    st = hp.evaluate("__fates.sc.rc.stats()")
+    mats = hp.evaluate("() => { const sc = __fates.sc.scene, out = new Set(); sc.traverse((o) => { if (o.material && o.material.isMeshPhysicalMaterial) out.add(o.material.type + (o.material.metalness === 1 ? ':metal' : '')); }); return [...out]; }")
+    check("g. HD render core: scene + bloom + finish, 4x MSAA, the loom and the gold spindle on physical materials, no page error",
+          pr["passes"] == ["scene", "bloom", "finish"] and st["samples"] == 4 and pr["loom"] >= 10 and "MeshPhysicalMaterial:metal" in mats and not herr, (pr, st, mats, herr))
+    hx.close()
     ctx = p.context.browser.new_context(viewport={"width": 390, "height": 844})
     ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith("http://127.0.0.1") else r.abort())
     ctx.add_init_script(THEME_STUB % "true")
     q = ctx.new_page()
     q.goto(url2 + "?full=1#zlarior/2026")
-    q.wait_for_function("window.__fates && window.__fates.ready", timeout=30000)
+    q.wait_for_function("window.__fates && window.__fates.ready", timeout=90000)
     got = q.evaluate("() => ({ hook: __fates.themeHook, scene: !!(window.__themeScene && window.__themeScene.scene && window.__themeScene.renderer), "
                      "emissive: window.__themeScene && window.__themeScene.emissive.length, isColor: !!(window.__themeScene && window.__themeScene.emissive[0].isColor) })")
     check("f. OLYMPUS themes: with the kit's themeScene the scene (fog, clear colour, the gate accent) is handed to the kit",
@@ -553,7 +598,7 @@ def shots(br, out):
                                  ("07_money_6_2021-25", "#money-6/2021-25", False), ("08_follow_zlarior", "#zlarior/2026", True),
                                  ("09_next10_zlarior", "#zlarior/2026", "next10"), ("10_zlarior_jul-oct", "#zlarior/H2", False)):
             p.goto(url + "?full=1" + route)
-            p.wait_for_function("window.__fates && window.__fates.ready", timeout=30000)
+            p.wait_for_function("window.__fates && window.__fates.ready", timeout=90000)
             time.sleep(7)
             if tap == "next10":
                 p.click("#next10")

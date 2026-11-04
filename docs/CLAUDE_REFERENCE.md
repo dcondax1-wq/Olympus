@@ -32,6 +32,7 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
 | PANTHEON (free data gods: liquidity, rates, vol, calendar, COT, dollar, credit, crypto; council verdict; `states.json` for Data City) | `tools/pantheon/` (fetchers + builder), `research/pantheon/`, `tools/web_public/pantheon/`, `docs/PANTHEON.md` | the CRONOS nightly task `pantheon`; published with every build | `tests.test_pantheon` (`fast` without the browser) |
 | CRONOS (nightly refresh of the OLYMPUS research apps) | `tools/cronos/`, `.github/workflows/cronos.yml` (+ `datacity.yml`), branches `cronos` / `datacity`, `docs/CRONOS.md` | main -> runs on its own schedule; the next cloud-monitor publish pulls the branches and stamps the cards | `tests.test_cronos` (`--quick` without the site builds) |
 | PC speed (Surface + main PC) | `CLEAN_PC.bat`, `scripts/clean_pc.ps1`, `docs/PC_PERFORMANCE.md` | main -> the PC's auto-update; the main PC gets the `PC_KIT` copy (OneDrive or Desktop) | `tests.test_clean_pc` |
+| LITE mode (bot on low memory) + PC-off plan | `engine/lite.py`, `BOT_LITE.bat`, `scripts/bot_lite.ps1`, `docs/PC_OFF_PLAN.md` | main -> the PC's auto-update; the owner double-clicks BOT_LITE once | `tests.test_lite` (`--quick` = unit only), `tests.test_win_scripts` |
 
 - **Phone changes:** check in WebKit (the iPhone's engine) before shipping: `PLAYWRIGHT_BROWSERS_PATH=<dir> python -m playwright
   install webkit` + `install-deps webkit`, iPhone 13 / SE profiles (see the Jarvis worker notes under Infrastructure).
@@ -42,6 +43,10 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   changes into one merge when possible.
 - **Verify live** after a publish: the file on `https://demetrades2000-coder.github.io/nq-dashboard/...` (e.g. the worker's
   `CACHE` name), then one WebKit open of the live page.
+- **Eval cards (owner 2026-11-03):** no "session X of 10" bars / dots / counters on any card (phone, PC copies, Jarvis);
+  the room is shown as **"Drawdown left $X of $max loss"** (= balance - the MFFU max-loss floor, the number MFFU shows).
+  Eval HQ / LIT kit / eval curve read the real PC account (`data.json` "accounts" source pc, anchored) before the cloud
+  paper ledger (`live.eval`: its own trail, floor $48,000 / room $389 on 11-03 while the real 50K had $1,133 left).
 
 ## Hard rules (never break)
 - **Futures data only:** TradingView CME `NQ1!` / `ES1!` exports in `data/` (5m 2021-11 → 2026-10-16; 1m for 2026). Never CFD,
@@ -920,6 +925,89 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
       voices best first with labels, talk style, the cloud switch, a one-time Ava (Premium) tip (`jarvis.tip.ava`).
     - Tests: `tests.test_jarvis_assistant` (node on a mocked ET clock + mocked Groq, then Chromium); test_jarvis_voice
       now expects Ava (Premium). New files for the worker's SHELL: `assistant.js`, `tts.js`.
+  - **Tools: "an answer to everything" (2026-11-03, owner: "it needs to be smart ... add to the Obsidian, write notes down, do
+    a ton of stuff"):** new `tools.js` (no imports; passed as `createBrain({ tools })`, the shell loads it as `ready.tools`).
+    - 18 tools in one schema (`DEFS`, `toolSchema('openai' | 'gemini' | 'anthropic')`): obsidian_append_note (inbox / daily /
+      a named note), obsidian_create_note (`OLYMPUS/Notes/<title>.md`), obsidian_search, obsidian_read, add_task,
+      list_tasks, set_reminder, remember_fact, recall, get_bots_status, get_money, open_app, get_weather (open-meteo),
+      wiki_summary (Wikipedia REST + search), web_search (DuckDuckGo instant answers + Wikipedia search: there is no free
+      key-less full web search a browser can call, and Jarvis says so), calc (units + the assistant's maths), define
+      (dictionaryapi.dev), time_in (a zone table, else open-meteo geocoding). Network only to those free CORS hosts
+      (`HOSTS`, checked 2026-11-03), no credentials ever.
+    - Smart mode with tools: brain.js `wire()` builds every provider's request (Groq / OpenRouter OpenAI-style `tools` +
+      `tool_choice auto`, Gemini `functionDeclarations` with upper-case types, Anthropic `input_schema`); `parseReply` ->
+      `{ text, calls, turn }`; up to 3 tool rounds in 18 s, results sent back in the provider's own format (Gemini's
+      thought signatures kept). A write tool never writes: `memory.confirmWrite()` names the file ("Save this to
+      OLYMPUS/Notes/Leg day.md? Say yes or no.") and only "yes" writes (append-only / new file only). A 400 retries once
+      without tools. Requests to make / write / explain something ("make me a leg day plan and save it") go to the model
+      before the rules (`WANTS_MODEL_RX`, never with a bots / money word).
+    - Providers: + OpenRouter (`sk-or-` keys, default `meta-llama/llama-3.3-70b-instruct:free`, `X-Title: Jarvis`).
+      `brain.testKey({ provider, key })`: one tiny request, `{ ok, ms, error }`. The setup screen: assist-ui.js
+      `mountKeySetup()` (Groq / Gemini / OpenRouter tabs, 3 steps each, the key page button, Test, Save only once it
+      answered); opened from ⋯ → AI key → "Free key setup", the "Connect my brain" panel, the palette, or by saying "set up
+      smart mode" (`control: 'ai_setup'`).
+    - No key: `tools.local()` answers the weather (city, last city, his "I live in ..." fact, else the phone's location),
+      "and tomorrow?" / "no, I meant Miami", time zones, units, definitions, "look up ..."; after the rules, "who / what is
+      ..." from Wikipedia. One time only (`jarvis.keyOffer`), after a useful answer: the free smart mode offer.
+    - Natural notes (assistant.js `parseNote`): "write down / note that / jot down …" (inbox), "make a note called X: …"
+      (new note), "add … to my gym note" / "add to my gym note: …" (his own note with that title, else a new one), "log
+      today: …" (today's daily note, else the inbox). Connected: offered to the vault (yes / no). Not connected: kept on the
+      phone and queued in the vault's outbox (`memory.queue`), sent on connect. obsidian.js: `write(kind, text, ymd,
+      { title })` with kinds daily / append / create, `resolve()`, `read()`, `safePath()` (never a hidden folder or `..`).
+    - Every reply carries `say` (plain words for the voice: no markdown, links, emojis or symbols). The model sees the last
+      10 turns (`HIST_MAX` 20 messages).
+    - Tests: `tests.test_jarvis_tools` (25 checks, one mocked fetch for every host). New file for the worker's SHELL:
+      `tools.js` (sw.js not bumped by this change).
+
+  - **Jarvis talks (2026-11-03 evening, owner: "the Jarvis isn't talking, I want you to fully make the bot talk"):**
+    - Root causes: (1) typed answers were never read (`jarvis.speakAll` "Read every answer" was off by default; only
+      answers to the mic were); (2) iOS WebKit plays speech only after a `speak()` made inside a tap, and every answer is
+      said after an await (the brain, the mic), so on a fresh launch it was dropped silently with no end event; (3) the
+      speaker spoke right after `cancel()` (WebKit swallows it), kept no utterance refs, had no watchdog for a missing
+      `onend`, and passed unchecked rate / pitch.
+    - `voice-out.js` `createVoiceOut({cfg, cloud, onSpeaking, onWord, onPending, micBusy})` (loaded at the start): the
+      switch `jarvis.speak` on/off (default on; first run clears an old `jarvis.mute`, kept in step for the intro), the
+      first-tap unlock (capture listeners on touchend / pointerup / click / keydown: a silent primer utterance on Apple
+      WebKit (`tts.needsPrimer`), an AudioContext resumed + one silent sample), an answer before any tap waits and is said
+      at the next one ("TAP TO HEAR"), the voice list re-polled while empty (+ `voiceschanged`; empty = the default voice,
+      en-US), iOS 17 `navigator.audioSession` 'playback' while she speaks / 'auto' before the mic, stop when hidden.
+    - `tts.js` speaker: utterances referenced until they end, a per-chunk end watchdog, a start watchdog (`onstall(rest)`:
+      on the iPhone the rest waits for a tap), 70 ms after a cancel before the next speak, `synth.resume()` when paused,
+      rate / pitch clamped 0.5-2. Voice mode uses the same speaker and primes on its taps.
+    - Shell: every answer said while the dock's speaker button (`#spk`, next to the mic) is on; "mute" / "unmute" and the
+      Voice sheet's "Read answers out loud" are the same switch; a waveform across the core + "TAP TO STOP" while she
+      speaks (tap the core or the mic to stop); Test voice says one sentence; the Voice sheet notes the Ring / Silent
+      switch. On a phone <= 360 px the SEND key hides (the keyboard sends).
+    - Test `PLAYWRIGHT_BROWSERS_PATH=<dir> python -X utf8 -m tests.test_jarvis_talk` (node speaker + Chromium + WebKit
+      iPhone 13 on a mocked voice that drops a speak() outside a tap like iOS). New SHELL file: `voice-out.js`.
+  - **Modes + "think for me" (2026-11-03 night, owner: "make modes for research, trading, business whatever so it is smart.
+    You should think about things, it shouldn't just be me"):** new `modes.js` (no imports, no network; passed as
+    `createBrain({ modes })`, the shell loads it as `ready.modes`; absent = the brain as before).
+    - Modes Auto (default) · Trading · Research · Business · Life, kept in localStorage `jarvis.mode`. Switch: the chip row above
+      the quick asks (`#modeRow`, assist-ui.js `mountModes`) or the words ("switch to research mode", "Research mode.", "money
+      mode" = Business, "personal mode" = Life, "auto mode"; `parseSwitch`). The reply: control `mode`, the mode's greeting
+      (said out loud) + its list. Auto picks the mode per question from its words (`pickMode`).
+    - Each mode changes: the smart prompt (a `MODE: ...` line in `systemFor`), the tools offered first (`orderTools`, every
+      provider's format), the quick asks (`brain.suggestions()`: the urgent chip first, then the mode's), the home cards (the
+      mode's apps with their live status in the list box), the greeting. Trading = bots, room, the plan, risk; Research = Data
+      City / Prometheus / DAPHNE / the Mind + Wikipedia / web + research notes to Obsidian (one tap = "make a note called
+      Research log: ...", confirmed by the vault); Business = money goal, more accounts (real prices), Kalshi edge, to-dos with
+      deadlines ("by friday", "due nov 5", `parseDeadline`); Life = Planner, reminders, Ascend.
+    - "Here's what I'd do" (`thinkAll` / `thinkFor`, rules, no key): from `brain.digest()` (the ranked priorities, quiet days,
+      accounts, window, Kalshi, Planner, his to-dos + reminders, the Mind, the money card, apps) + the research apps' last
+      cards: the 7-day rule (early at day 3-4, urgent from day 5), room under 40%, near a pass / passed, stale feed or research
+      data (> 36 h: CRONOS), overdue / due-soon to-dos, a reminder within 3 h, the Mind's idea, the newest finding, tomorrow's
+      plan (evening), the money goal, the Kalshi edge, Ascend. Urgent (p <= 2.5) first in every mode; 3 items. Every action is
+      ask / open / mode / control (key setup): never a trade.
+    - The modes' own quick asks answered by rules (`modes.answer`, no key): "Am I at risk?", "Today's trading plan", "Research
+      findings" / "A research idea worth testing" / "Data City findings", "Plan for more accounts", "My to-dos with deadlines";
+      with a key the idea and accounts questions go to the model (the rule answer is its fallback).
+    - "Think for me" (button, or "think for me" / "what would you do" / "any ideas"): with a key, one request (no tools) with
+      the MODE line + the rule list, the model's 3 suggestions as JSON with follow-up asks; any error = the rules.
+    - Proactive: on open the list shows unasked (quiet); at 7:30, 12:00, 4:15 PM and 9 PM ET (once per slot, `jarvis.mode.slots`)
+      while Jarvis is open: the list, a toast and her voice (never over the mic or a reply).
+    - Test `python -X utf8 -m tests.test_jarvis_modes` (31: node + Chromium; `JARVIS_MODES_NO_BROWSER=1` = node only). New SHELL
+      file: `modes.js` (worker not bumped).
   - **Icons:** the re-rendered old reactor icon (`?v=j2`).
   - **Workers:**
     - jarvis-v4: a 3.5 s navigation race; shell files stale-while-revalidate once a page came from the copy.
@@ -1439,6 +1527,17 @@ project is changed from this repo; this map saves the search. Ship = PR on the s
   passes once (guard 0 `startup_reconcile`). Unreadable `ninjatrader_state.json` -> `.corrupt-*`, entries blocked until
   the account is flat (orphan bot orders from the audit log cancelled) or `--confirm-reset`. Order files are published
   with no overwrite (`_publish`); stale `le_outbox` files are deleted at start. Runbook: `.../STARTUP_AND_RECOVERY_RUNBOOK.md`.
+- **LITE mode (2026-11-03, `engine/lite.py`, `tests/test_lite.py`):** switch `data/lite.json` {"on": true, "hist_days": 100}
+  (gitignored, written by `BOT_LITE.bat` / `python -m engine.lite on|off`) or env `LE_LITE=1` (`LE_LITE=0` forces off); read once
+  at server start (server.py `# ---- LITE MODE ----`). Off: Bot Brain, Trade pictures, paper second strategies / ATLAS + BLITZ
+  shadows (no bg_worker child), AI watch, Mind (LE_MIND=0, LE_MIND_RESEARCH=0), exec audit (LE_EXEC_AUDIT=0), dashboard prewarm
+  (LE_PREWARM=0); env set by the owner wins. Kept: LIT + routing, guards, account B/C/fleet, routed second route, setup-armed
+  pushes, narrator, heartbeat (bars for the cloud), live feed, autoupdate, PC watcher. History read cut to 100 days (floor 75; LIT's
+  window_start reaches <= 69 days). engine/live.py untouched (instance wrappers like poll_timing). Measured here (server import +
+  36 polls on data/ with add-ons on, incl. children): **full peak 687 MB -> LITE 180 MB**. Replay test: full vs LITE LiveBot on
+  2026-10-13..15, identical ledger / state / routing log. `BOT_LITE.bat`: lite.json on, starts NinjaTrader if closed, starts the
+  server or restarts it via /api/next/botctl/restart (refused when not flat), pc_keeper -Bot once, NinjaTrader memory checklist.
+  PC-off answer (Azure for Students costs, free tiers, mini PC, MFFU VPS question): `docs/PC_OFF_PLAN.md`.
 - **PC off, free:** `scripts/PC_OFF_OPTIONS.md` (A: TradingView brain + one tap on the phone; B: the PC wakes itself at 07:50 ET,
   trades through NinjaTrader, hibernates at 16:35: `scripts/schedule_pc.ps1`; E: a spare Surface on 24/7: `scripts/setup_dedicated_pc.ps1`;
   paid bridges / VPS only as options C-D). The always-on PC pushes a heartbeat (`engine/heartbeat.py`, branch `heartbeat`,

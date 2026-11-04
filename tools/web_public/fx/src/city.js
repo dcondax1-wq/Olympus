@@ -6,6 +6,7 @@
 //   Drag to orbit (slow ping-pong orbit when idle); tap a tower for its tooltip ("2026-09 · +$7,042 · 10 trades · 5 wins"),
 //   mouse hover does the same. Towers grow in time order on first data and morph when the data changes.
 // Draw calls ~14 (all towers are one InstancedMesh); particles: sparks 36 per best month (16 lite) + 700 dust (260 lite).
+import { metal } from '../../olympus/materials.js';
 import { THREE, View, Q, theme, glowTexture, POINT_FRAG, rng, count } from './core.js';
 
 const MONTH_LETTERS = 'JFMAMJJASOND';
@@ -206,7 +207,7 @@ function attrs(n, spec, geo = new THREE.BufferGeometry(), Attr = THREE.BufferAtt
 // ------------------------------------------------------------------ the view
 export class City extends View {
   constructor(opts = {}) {
-    super({ fov: 36, dprMax: 2, ...opts,
+    super({ fov: 36, dprMax: 2, env: 'night', ...opts,
       orbit: { yaw: -0.3, pitch: 0.6, auto: 0.045, min: -0.6, max: 0.6, pitchMin: 0.3, pitchMax: 1.0, ...(opts.orbit || {}) } });
     this.canvas.classList.add('fx-city'); this.canvas.style.display = 'block'; // inline canvases leave a baseline gap that can grow auto-height cards
     this.lt = 0; this.L = 18; this.sx = 0; this.sy = 0; this.Lset = false; this.T = new THREE.Vector3(0, 0.6, 0);
@@ -270,6 +271,10 @@ export class City extends View {
     this.floor = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ uniforms: this.fU, vertexShader: FLOOR_V, fragmentShader: FLOOR_F,
       transparent: true, depthWrite: false, side: THREE.DoubleSide, extensions: { derivatives: true } }));
     this.floor.rotation.x = -Math.PI / 2; this.floor.renderOrder = 1; S.add(this.floor);
+    // OLYMPUS materials: a chrome frame round the plot with gold corner posts (2 draws, env reflections)
+    this.frameBars = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), metal({ kind: 'chrome', envMapIntensity: 3 }), 4);
+    this.frameCorners = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.5, 0.5, 1, 20), metal({ kind: 'gold', brushed: false, roughness: 0.2, envMapIntensity: 3 }), 4);
+    this.frameBars.frustumCulled = this.frameCorners.frustumCulled = false; S.add(this.frameBars, this.frameCorners);
     // street traffic
     const NC = Q.reduced ? 0 : count(Q.phone ? 110 : 150, 50), cg = attrs(NC * 3, { position: [3], aLane: [4], aCol: [3], aK: [1] }), CA = cg.attributes;
     const cpal = ['#22d3ee', '#7df3ff', '#8b5cf6', '#ff2bd6', '#2ee59d'].map((h) => new THREE.Color(h));
@@ -497,6 +502,10 @@ export class City extends View {
   frameLayout() {
     const rows = Math.max(1, this.years.length), PX = this.PX, hx = 6 * PX, hz = rows * this.PZ / 2;
     this.fU.uHalf.value.set(hx + 7, hz + 7); this.fU.uCity.value.set(hx + 0.12, hz + 0.12); this.fU.uPitch.value.set(PX, this.PZ); this.floor.scale.set(hx + 7, hz + 7, 1);
+    { const o = this._fo || (this._fo = new THREE.Object3D()), X = hx + 0.34, Z = hz + 0.34, bars = [[0, -Z, 2 * X, 0.07, 0.07], [0, Z, 2 * X, 0.07, 0.07], [-X, 0, 0.07, 0.07, 2 * Z], [X, 0, 0.07, 0.07, 2 * Z]];
+      bars.forEach((b, i) => { o.position.set(b[0], 0.02, b[1]); o.scale.set(b[2], b[3], b[4]); o.updateMatrix(); this.frameBars.setMatrixAt(i, o.matrix); });
+      [[-X, -Z], [X, -Z], [-X, Z], [X, Z]].forEach((c, i) => { o.position.set(c[0], 0.17, c[1]); o.scale.set(0.24, 0.34, 0.24); o.updateMatrix(); this.frameCorners.setMatrixAt(i, o.matrix); });
+      this.frameBars.instanceMatrix.needsUpdate = this.frameCorners.instanceMatrix.needsUpdate = true; }
     this.dust.scale.set(PX / 0.86, 1, 1);
     const defs = [], latestYear = this.years[this.years.length - 1];
     this.years.forEach((y, r) => {

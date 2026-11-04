@@ -1,0 +1,142 @@
+// FORUM core (ES module, no DOM, no network, no clock of its own): the morning briefing as plain functions.
+//   etParts(date)                 -> { day 'YYYY-MM-DD', h (decimal hours), dow 0 Sunday .. 6 Saturday } in New York time
+//   parseClock('08:40')           -> 8.667 (or null)
+//   nextEvent(p)                  -> { id, name, at (decimal hours), mins (until it), tomorrow } the next point of the trading day
+//   phase(h)                      -> { id: 'night' | 'dawn' | 'morning' | 'open' | 'afternoon' | 'dusk', name }
+//   sky(h)                        -> { sun: -1..1 (height of the sun), az: 0..1 (east to west), day: 0..1 (how much daylight) }
+//   brief(pan, home, p)           -> the six scrolls of the avenue, each { id, title, glyph, tone, stat, line, body, color }
+//   oath()                        -> the three pledges
+//   streak(sealed, today)         -> { cur, best } market days in a row the oath was sealed (today counts once sealed)
+// Data it reads (all already published by the site): ../pantheon/pantheon.json (the Council of the Gods: gauge, VIX, rates,
+// calendar) and ../home.json accounts[].eval (balance, floor, target). Nothing here is a signal: the Forum only reads the
+// morning out loud, in plain words. The strategy text mirrors STRATEGY.md (LIT, paper / Sim only).
+
+const isObj = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
+const num = (x) => (typeof x === 'number' && Number.isFinite(x) ? x : typeof x === 'string' && x.trim() && Number.isFinite(+x) ? +x : null);
+const txt = (x, n = 140) => (typeof x === 'string' ? x : typeof x === 'number' ? String(x) : '').replace(/\s+/g, ' ').trim().slice(0, n);
+
+// ------------------------------------------------------------------------------------------------ the New York clock
+export function etParts(d) {
+  const f = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false, weekday: 'short' });
+  const p = Object.fromEntries(f.formatToParts(d).map((x) => [x.type, x.value]));
+  const dow = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(p.weekday);
+  return { day: `${p.year}-${p.month}-${p.day}`, h: (+p.hour % 24) + +p.minute / 60, dow };
+}
+export function parseClock(s) {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(String(s || '').trim());
+  return m && +m[1] < 24 && +m[2] < 60 ? +m[1] + +m[2] / 60 : null;
+}
+export const clockText = (h) => { const m = Math.round(h * 60) % 1440; return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`; };
+export const minsText = (m) => (m < 60 ? `${Math.max(0, Math.round(m))} min` : `${Math.floor(m / 60)} h ${String(Math.round(m % 60)).padStart(2, '0')} min`);
+
+const DAILY = [{ id: 'london', name: 'London session', at: 3 }, { id: 'ny', name: 'NY open', at: 9.5 }, { id: 'flat', name: 'Bot flat', at: 15 + 55 / 60 }, { id: 'close', name: 'Cash close', at: 16 },
+  { id: 'globex', name: 'Futures reopen', at: 18 }];
+
+export function nextEvent(p) {
+  const open = p.dow >= 1 && p.dow <= 5, sunday = p.dow === 0;
+  if (sunday) return p.h < 18 ? { id: 'globex', name: 'Futures reopen', at: 18, mins: (18 - p.h) * 60, tomorrow: false } : { id: 'london', name: 'London session', at: 3, mins: (24 - p.h + 3) * 60, tomorrow: true };
+  if (p.dow === 6) return { id: 'globex', name: 'Futures reopen (Sunday)', at: 18, mins: (24 - p.h + 18) * 60, tomorrow: true };
+  if (p.dow === 5 && p.h >= 16) return { id: 'globex', name: 'Futures reopen (Sunday)', at: 18, mins: (24 - p.h + 24 + 18) * 60, tomorrow: true };
+  for (const e of DAILY) if (open && e.at > p.h) return { ...e, mins: (e.at - p.h) * 60, tomorrow: false };
+  return { id: 'london', name: 'London session', at: 3, mins: (24 - p.h + 3) * 60, tomorrow: true };
+}
+
+export function phase(h) {
+  if (h < 3 || h >= 20) return { id: 'night', name: 'Night' };
+  if (h < 6.5) return { id: 'dawn', name: 'Before the dawn' };
+  if (h < 9.5) return { id: 'morning', name: 'Pre-market' };
+  if (h < 15.9) return { id: 'open', name: 'The market is open' };
+  if (h < 18) return { id: 'afternoon', name: 'After the close' };
+  return { id: 'dusk', name: 'Evening' };
+}
+
+/** the sun by the New York hour: up from 6 to 18, highest at noon; az runs east (0) to west (1) */
+export function sky(h) {
+  const t = (h - 6) / 12, up = t > 0 && t < 1;
+  const sun = up ? Math.sin(Math.PI * t) : -Math.min(1, Math.abs(Math.sin(Math.PI * ((h + 6) % 24) / 12)) * 0.6 + 0.2);
+  return { sun, az: Math.max(0, Math.min(1, t)), day: Math.max(0, Math.min(1, (sun + 0.15) / 0.5)) };
+}
+
+// ------------------------------------------------------------------------------------------------ the scrolls
+const fmtUsd = (x) => { const v = Math.round(+x || 0), s = '$' + Math.abs(v).toLocaleString('en-US'); return v < 0 ? '-' + s : s; };
+const godOf = (pan, key) => (isObj(pan) && Array.isArray(pan.gods) ? pan.gods.find((g) => isObj(g) && g.key === key) : null) || null;
+const readingOf = (g) => (g && isObj(g.reading) ? txt(g.reading.text, 24) : '');
+const changeOf = (g) => (g && isObj(g.change) ? [txt(g.change.text, 24), txt(g.change.window, 20)].filter(Boolean).join(' / ') : '');
+
+export function evalOf(home) {
+  const accts = isObj(home) && Array.isArray(home.accounts) ? home.accounts : [];
+  const a = accts.find((x) => isObj(x) && isObj(x.eval) && /50k/i.test(String(x.plan || x.id || '')) && x.kind !== 'paper');
+  if (!a) return null;
+  const e = a.eval, bal = num(e.balance), floor = num(e.floor), tgt = num(e.target_balance);
+  if (bal == null || floor == null || tgt == null) return null;
+  return { name: txt(a.name || a.plan, 30), balance: bal, floor, target: tgt, room: bal - floor, toTarget: tgt - bal, session: num(e.session), sessions: num(e.sessions), locked: !!e.locked, status: txt(e.status, 20) };
+}
+
+export function brief(pan, home, p) {
+  const out = [];
+  const C = isObj(pan) && isObj(pan.council) ? pan.council : null;
+  // 1. the Council
+  if (C && num(C.gauge) != null) {
+    const g = num(C.gauge), lean = g >= 62 ? 'lean risk-on' : g <= 38 ? 'lean risk-off' : 'are split';
+    out.push({ id: 'council', title: 'The Council', glyph: 'Σ', tone: g >= 62 ? 'calm' : g <= 38 ? 'storm' : 'watch', stat: `${txt(C.label, 12) || 'Mixed'} ${Math.round(g)}`,
+      line: `The gods ${lean}.`, body: `${txt(C.text, 220)} ${txt(C.honesty, 160)}`.trim(), color: '#f2d68a' });
+  } else out.push({ id: 'council', title: 'The Council', glyph: 'Σ', tone: 'info', stat: 'Silent', line: 'No verdict published yet.', body: 'The Pantheon has not published a council verdict. The Forum never guesses one.', color: '#f2d68a' });
+  // 2. fear (VIX)
+  const ares = godOf(pan, 'ares'), vix = ares && isObj(ares.reading) ? num(ares.reading.value) : null;
+  if (vix != null) {
+    const band = vix < 15 ? ['calm', 'Calm waters'] : vix < 20 ? ['calm', 'Normal'] : vix < 27 ? ['watch', 'Lively'] : ['storm', 'Stormy'];
+    out.push({ id: 'fear', title: 'Fear (VIX)', glyph: 'Ω', tone: band[0], stat: `VIX ${readingOf(ares)}`, line: `${band[1]}. ${changeOf(ares)}`.trim(),
+      body: `${band[1]}: the VIX is ${readingOf(ares)} (${changeOf(ares) || 'no change shown'}). The bot's target is a VIX-band move, so a livelier day means a wider target and a wider stop, never a bigger bet: size follows the stop.`, color: '#ff6b7f' });
+  } else out.push({ id: 'fear', title: 'Fear (VIX)', glyph: 'Ω', tone: 'info', stat: 'No VIX', line: 'The volatility reading is missing.', body: 'The Pantheon has no volatility reading right now.', color: '#ff6b7f' });
+  // 3. the calendar
+  const ath = godOf(pan, 'athena'), when = readingOf(ath);
+  if (when) {
+    const tone = /today/i.test(when) ? 'storm' : /tomorrow/i.test(when) ? 'watch' : 'calm';
+    out.push({ id: 'calendar', title: 'The calendar', glyph: 'Α', tone, stat: when, line: changeOf(ath) || 'The next high-impact release.', body: `${txt(C && C.caution, 200) || `Next high-impact release: ${when}.`} Big news can move NQ in seconds; the bot has no news filter, so know the time.`, color: '#7fe9ff' });
+  } else out.push({ id: 'calendar', title: 'The calendar', glyph: 'Α', tone: 'info', stat: 'No data', line: 'No calendar reading.', body: 'The macro calendar is not in the Pantheon feed right now.', color: '#7fe9ff' });
+  // 4. the money tide (rates + liquidity)
+  const zeus = godOf(pan, 'zeus'), pos = godOf(pan, 'poseidon');
+  if (zeus || pos) out.push({ id: 'money', title: 'The money tide', glyph: 'Π', tone: 'info', stat: readingOf(zeus) ? `10y ${readingOf(zeus)}` : readingOf(pos),
+    line: [readingOf(zeus) && `10y yield ${readingOf(zeus)} (${changeOf(zeus)})`, readingOf(pos) && `liquidity ${readingOf(pos)}`].filter(Boolean).join(', '),
+    body: `Rates and liquidity set the tide NQ floats on: ${readingOf(zeus) ? `the 10-year yield is ${readingOf(zeus)} (${changeOf(zeus)})` : 'no yield reading'}${readingOf(pos) ? `; liquidity ${readingOf(pos)} (${changeOf(pos)})` : ''}. Context only: it did not predict the next day in 2021-26.`, color: '#4f8cff' });
+  else out.push({ id: 'money', title: 'The money tide', glyph: 'Π', tone: 'info', stat: 'No data', line: 'No rates or liquidity reading.', body: 'Rates and liquidity are not in the Pantheon feed right now.', color: '#4f8cff' });
+  // 5. the eval
+  const ev = evalOf(home);
+  if (ev) {
+    const tone = ev.room < 600 ? 'storm' : ev.room < 1200 ? 'watch' : 'calm';
+    out.push({ id: 'eval', title: 'The eval', glyph: 'Φ', tone, stat: `${fmtUsd(ev.room)} room`, line: `${fmtUsd(ev.toTarget)} to the target${ev.session ? `, session ${ev.session}${ev.sessions ? ' of ' + ev.sessions : ''}` : ''}.`,
+      body: `${ev.name}: balance ${fmtUsd(ev.balance)}, floor ${fmtUsd(ev.floor)}${ev.locked ? ' (locked)' : ''}, target ${fmtUsd(ev.target)}. You are ${fmtUsd(ev.room)} above the floor and ${fmtUsd(ev.toTarget)} below the target. One full stop-out is about one trade; the Labyrinth shows what a size does to that.`, color: '#ffcf5a' });
+  } else out.push({ id: 'eval', title: 'The eval', glyph: 'Φ', tone: 'info', stat: 'No eval', line: 'No eval account is published.', body: 'The site does not show a Builder 50K eval right now.', color: '#ffcf5a' });
+  // 6. the plan
+  out.push({ id: 'plan', title: "Today's plan", glyph: 'Λ', tone: 'info', stat: 'LIT, hands off', line: 'One trade at most. The bot does the work.',
+    body: 'LIT: a sweep of a level, then a 5-minute CISD entry. One trade a day, entries 02:00-15:30 ET, the stop one tick beyond the sweep extreme, the target banked at 8R, breakeven at 1R, flat at 15:55. Paper and Sim only. Your job today: do not touch it.', color: '#b8e04a' });
+  return out;
+}
+
+export const oath = () => [
+  { id: 'plan', text: 'I follow the plan: no manual orders' },
+  { id: 'revenge', text: 'No revenge trade, whatever happens' },
+  { id: 'journal', text: 'I write the journal tonight' },
+];
+
+// ------------------------------------------------------------------------------------------------ the streak
+const utc = (day) => Date.UTC(+day.slice(0, 4), +day.slice(5, 7) - 1, +day.slice(8, 10));
+const addDays = (day, n) => new Date(utc(day) + n * 864e5).toISOString().slice(0, 10);
+const isMarket = (day) => { const w = new Date(utc(day)).getUTCDay(); return w >= 1 && w <= 5; };
+
+/** consecutive market days sealed. Today does not break the streak while it is still open; weekends are skipped. */
+export function streak(sealed, today) {
+  const s = isObj(sealed) ? sealed : {};
+  const days = Object.keys(s).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d) && isMarket(d)).sort();
+  let best = 0, run = 0, prev = null;
+  for (const d of days) {
+    let p = prev && addDays(d, -1);
+    while (p && !isMarket(p) && p > prev) p = addDays(p, -1);
+    run = prev && p === prev ? run + 1 : 1;
+    best = Math.max(best, run); prev = d;
+  }
+  let cur = 0, d = isMarket(today) && !s[today] ? addDays(today, -1) : today;
+  while (!isMarket(d)) d = addDays(d, -1);
+  while (s[d] && isMarket(d)) { cur++; d = addDays(d, -1); while (!isMarket(d)) d = addDays(d, -1); }
+  return { cur, best: Math.max(best, cur) };
+}

@@ -1,0 +1,13 @@
+{
+  "name": "Hephaestus",
+  "short_name": "Hephaestus",
+  "description": "HEPHAESTUS: the strategy workshop. Stored 2026 results of LIT settings, read-only.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0608",
+  "theme_color": "#0b0608",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

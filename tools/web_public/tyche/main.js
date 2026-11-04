@@ -18,7 +18,7 @@ const THEME = '#07060b';
 const reduced = O ? O.reduced() : matchMedia('(prefers-reduced-motion: reduce)').matches;
 const params = new URLSearchParams(location.search);
 const forced = params.has('demo');
-const VIEWS = ['wheel', 'pools', 'scales'];
+const VIEWS = ['wheel', 'pools', 'scales', 'bank'];
 
 const store = {
   get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } },
@@ -46,6 +46,7 @@ try {
   O?.track(scene.renderer);
   O?.themeScene?.({ scene: scene.scene, renderer: scene.renderer });   // OLYMPUS theme: fog + sky follow it
 } catch (e) {
+  console.warn('tyche: 3D unavailable', e && e.message);
   document.getElementById('nogl').hidden = false;
   O?.ready();                                  // the numbers above still update: the page is up
 }
@@ -184,6 +185,7 @@ const up = (e) => {
   touch.lastTap = t;
   const key = state.view === 'wheel' ? scene.pick(e.clientX, e.clientY) : null;
   select(key && key !== state.selected ? key : null);
+  if (!key && state.view === 'wheel' && scene.onWheel(e.clientX, e.clientY)) scene.wheel.kick();     // a tap on the wheel spins it (visual only)
 };
 canvas.addEventListener('pointerup', up);
 canvas.addEventListener('pointercancel', (e) => { touch.pts.delete(e.pointerId); touch.start = null; });
@@ -254,7 +256,12 @@ window.tyche = {
   get fps() { return state.fps; },
   get requests() { return state.feed.requests; },
   get view() { return state.view; },
+  get bank() { return hud.sim || null; },                   // the bankroll panel's simulation (risk of ruin ...)
+  get passes() { return scene ? scene.rc.passes() : []; },    // the render core's passes this frame
+  get tier() { return scene ? scene.rc.quality() : ''; },
   get intro() { return scene ? scene.intro : 1; },          // the intro camera move: 0 -> 1 (1 = done or skipped)
+  get spin() { return scene ? scene.wheel.spinV : 0; },
+  wheelAt() { if (!scene) return null; const v = new THREE.Vector3(0, 0.1, 0.6).project(scene.camera); return { x: ((v.x + 1) / 2) * scene.size.w, y: ((1 - v.y) / 2) * scene.size.h }; },
   get coins() { return scene ? scene.wheel.coins.size : 0; },
   get falling() { return scene ? scene.pools.falling.length + scene.pools.queue.length : 0; },
   kellyStake(key) { const c = scene && Array.from(scene.wheel.coins.values()).find((x) => x.key === key); return c && c.kelly ? c.kelly.stake : null; },

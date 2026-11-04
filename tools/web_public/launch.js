@@ -74,7 +74,7 @@
       <div class="card lc-card ${M.all ? 'done' : ''}"><div class="card-h"><h3>${icon(M.all ? 'check' : 'flag')}${M.all ? 'All green: ready' : 'Still to do'}</h3><span class="meta">${M.age != null ? 'PC ' + esc(fmtAge(M.age)) + ' ago' : 'PC not seen'}</span></div>
         ${meter(M)}<ul class="lc-list">${M.items.map((i) => row(i, true)).join('')}</ul></div>
       ${a.set ? `<div class="card"><div class="card-h"><h3>${icon('prop')}50K eval anchor</h3><span class="meta">as of ${esc(a.as_of || '—')}</span></div>
-        <div class="lc-kv"><span>Balance</span><b>${usd2(a.balance)}</b><span>Floor</span><b>${usd2(a.floor)}</b><span>Room</span><b>${usd2((+a.balance || 0) - (+a.floor || 0))}</b></div></div>` : ''}
+        <div class="lc-kv"><span>Balance</span><b>${usd2(a.balance)}</b><span>Floor</span><b>${usd2(a.floor)}</b><span>Drawdown left</span><b>${usd2((+a.balance || 0) - (+a.floor || 0))}</b></div></div>` : ''}
       <div class="card"><div class="card-h"><h3>${icon('today')}Tonight, after 18:00 ET</h3></div><ol class="lc-steps">${STEPS.map(([t, c], k) => [t, k === 0 && (f.b || {}).account ? c.replace('<25K Name>', f.b.account) : c]).map(([t, c], k) => `<li><b>${k + 1}. ${esc(t)}</b>${k < 2 ? fixBox(c) : `<span>${esc(c)}</span>`}</li>`).join('')}</ol>
         <p class="lc-note">Step 2 also has <code>--sim-roundtrip-add</code>. Then leave the bot running: it must be up from 01:55 ET.</p></div>
       <p class="small mut">${M.lc ? `Checked by the PC at ${esc(new Date((M.lc.t || 0) * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))}` : 'The PC has not sent its checklist yet'} · engine/launch_check.py</p>`);

@@ -418,8 +418,8 @@ def part_a():
           kfx and korb and html.index('src="kfx.js?v=') < html.index('src="kalshi.js?v=') < html.index('type="module" src="korb.js?v=')
           and f"'./kfx.js?v={ver}'" in sw and f"'./korb.js?v={ver}'" in sw and "'../jarvis/three.module.min.js'" in sw)
     kcode = re.sub(r"//[^\n]*", "", korb)
-    check("x. the orb: three.js only from ../jarvis/ (the site's one copy), no other address; paused when hidden or off screen; 30 fps at most; jfx 'off' = no WebGL",
-          re.findall(r"import\(['\"]([^'\"]+)", kcode) == ["../jarvis/three.module.min.js"] and not re.findall(r"https?://", kcode)
+    check("x. the orb: three.js only from ../jarvis/ (the site's one copy), drawn by the OLYMPUS render core, no other address; paused when hidden or off screen; 30 fps at most; jfx 'off' = no WebGL",
+          re.findall(r"import\(['\"]([^'\"]+)", kcode) == ["../jarvis/three.module.min.js", "../olympus/render.js"] and not re.findall(r"https?://", kcode)
           and "document.hidden" in kcode and "IntersectionObserver" in kcode and "now - last < 33" in kcode and "fx() === 'off'" in kcode)
     check("x. themes: one applyTheme(tokens), hex colours only, hooked to Olympus.theme() / onTheme and the 'olympus.theme' key",
           "window.applyTheme = applyTheme" in kfx and "HEX.test" in kfx and "O.onTheme" in kfx and "O.theme()" in kfx and "'olympus.theme'" in kfx)
@@ -428,7 +428,7 @@ def part_a():
           and 'id="secnav"' in html and all(f'data-go="{g}"' in html for g in ("today", "edge", "perf", "alerts")))
     b = open(os.path.join(ROOT, "tools", "build_web_dashboard.py"), encoding="utf-8").read()
     check("a. the site build publishes every file of kalshi/ (index.html, kalshi.js, kalshi.css, sw.js)",
-          'for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "pantheon", "olympus", "arena", "bridge"):' in b and "for name in os.listdir(src_dir):" in b)
+          'for app in ("jarvis", "kalshi", "datacity", "mind", "tree", "oracle", "odeon", "fates", "hermes", "prometheus", "tyche", "pantheon", "olympus", "arena", "bridge", "ares", "plutus", "athena", "forum", "labyrinth", "argus", "nemesis", "chronos", "hephaestus"):' in b and "for name in os.listdir(src_dir):" in b)
 
 
 # ------------------------------------------------------------------ the browser parts
@@ -442,6 +442,7 @@ def run_browser(url, tmp):
         ctx.route("https://raw.githubusercontent.com/**", feed)
         ctx.route("https://api.github.com/**", feed)
         p = ctx.new_page()
+        p.set_default_timeout(120000)                   # a busy box: software GL + many pages
         errs, cons, dialogs, bad, fontres = [], [], [], [], []
         p.on("response", lambda r: bad.append((r.status, r.url)) if r.status >= 400 and r.url.startswith(url.split("/nq-dashboard/")[0]) else None)
         p.on("response", lambda r: fontres.append((r.status, r.url.rsplit("/", 1)[1])) if ".woff2" in r.url else None)
@@ -940,6 +941,56 @@ def run_browser(url, tmp):
         check("v3. the ticker tape under the header (open bet and results), hidden from screen readers",
               p.is_visible("#tape") and "edge +5.0¢" in p.inner_text("#tape") and p.get_attribute("#tape", "aria-hidden") == "true")
         shot(p, "9_v3")
+        # ---- 2026-11-03: the edge map, the Kelly growth curve, the bet journal
+        em = p.evaluate("""() => ({ svg: document.querySelectorAll('#sec-emap svg.emap').length, dots: document.querySelectorAll('#sec-emap circle.em-d').length,
+            ok: document.querySelectorAll('#sec-emap circle.em-d.ok').length, fair: document.querySelectorAll('#sec-emap .em-fair').length,
+            txt: document.getElementById('sec-emap').innerText, title: (document.querySelector('#sec-emap circle title') || {}).textContent || '' })""")
+        check("x. Edge map: one bubble per open bet that carries the bot's chance (97% vs 92¢ = +5.0¢, over the min edge = green), the fair diagonal, a caption",
+              em["svg"] == 1 and em["dots"] == 1 and em["ok"] == 1 and em["fair"] == 1 and "1 of 1 clear the min edge" in em["txt"] and "edge +5.0¢" in em["title"]
+              and "ETH up or down" in em["title"], em)
+        p.fill("#kcP", "62")
+        p.fill("#kcC", "55")
+        kc = p.inner_text("#kcCurve")
+        check("x. Kelly growth curve: follows the calculator (62% at 55¢: full Kelly 16%, ¼ / ½ / Full / 2× marks, 2× Kelly past the zero line)",
+              p.locator("#kcCurve svg .kc-l").count() == 1 and p.locator("#kcCurve svg .kc-m").count() == 4 and "62% at 55¢" in kc and "Full Kelly is 16%" in kc
+              and "2× Kelly" in kc and "your numbers" in kc, kc)
+        p.fill("#kcP", "40")
+        check("x. Kelly growth curve: no edge = no curve, 'bet nothing'", p.locator("#kcCurve svg").count() == 0 and "Bet nothing" in p.inner_text("#kcCurve"))
+        p.fill("#kcP", "")
+        p.fill("#kcC", "")
+        kc = p.inner_text("#kcCurve")
+        check("x. Kelly growth curve: empty calculator = the open bets, averaged (97% at 92¢)", "97% at 92¢" in kc and "the open bets, averaged" in kc, kc)
+        day0 = et_day(n3 - 1200)
+        jt = [("Journal win with edge", 0.5, 0.6, 5.0, n3 - 1200), ("Journal loss with edge", 0.5, 0.6, -5.0, n3 - 1100),
+              ("Journal loss no edge", 0.7, 0.65, -7.0, n3 - 1000), ("Journal win no edge", 0.7, 0.65, 3.0, n3 - 900)]
+        raw_j = {**raw3, "trades": [{"t": t, "ticker": f"KXJ{i}", "title": ti, "side": "yes", "action": "settled", "contracts": 10, "price": pr, "prob": pb, "pnl": pn}
+                                     for i, (ti, pr, pb, pn, t) in enumerate(jt)]}
+        p.evaluate("localStorage.removeItem('kalshi.journal')")
+        open_("ok", raw_j)
+        jr = p.evaluate("""() => ({ rows: document.querySelectorAll('#sec-journal .jr').length, tags: [...document.querySelectorAll('#sec-journal .jr .kt')].map((e) => e.textContent.trim()),
+            txt: document.getElementById('sec-journal').innerText, days: document.querySelectorAll('#sec-journal .jd').length })""")
+        check("x. Bet journal: every settled bet by day with its process tag (earned / variance / no edge / luck), the day's W-L and net",
+              jr["rows"] == 4 and sorted(jr["tags"]) == ["earned", "luck", "no edge", "variance"] and jr["days"] == 1 and "1W 1L" not in jr["txt"] and "2W 2L" in jr["txt"]
+              and "−$4.00" in jr["txt"] and "50%" in jr["txt"] and "good bets when taken" in jr["txt"], jr)
+        p.click("#sec-journal [data-act=jf][data-v=win]")
+        w = p.locator("#sec-journal .jr").count()
+        p.click("#sec-journal [data-act=jf][data-v=loss]")
+        l = p.locator("#sec-journal .jr").count()
+        p.click("#sec-journal [data-act=jf][data-v=all]")
+        check("x. Bet journal: the Wins / Losses filter (2 and 2), All brings everything back", w == 2 and l == 2 and p.locator("#sec-journal .jr").count() == 4
+              and p.get_attribute("#sec-journal [data-v=all]", "aria-pressed") == "true")
+        p.click("#sec-journal .jn-b")
+        fs = p.evaluate("getComputedStyle(document.getElementById('jnote')).fontSize")
+        p.fill("#jnote", "Waited for the edge <b>today</b>")
+        saved = p.evaluate("JSON.parse(localStorage.getItem('kalshi.journal') || '{}')")
+        check("x. Bet journal: a note per day, kept on this phone only (localStorage), the editor is 16 px", fs == "16px" and saved.get(day0) == "Waited for the edge <b>today</b>", (fs, saved))
+        p.click("#sec-journal .jn-b")
+        shown = p.evaluate("(document.querySelector('#sec-journal .jn-t') || {}).textContent")
+        check("x. Bet journal: the note shows as text (escaped), the button reads Note; no page error",
+              shown == "Waited for the edge <b>today</b>" and p.locator("#sec-journal .jn-t b").count() == 0 and p.inner_text("#sec-journal .jn-b") == "Note", shown)
+        shot(p, "9b_journal")
+        p.evaluate("localStorage.removeItem('kalshi.journal')")
+        open_("ok", kp.clean(raw3))
         # ---- x. 2026-11-03: the four groups, money (month, ROI), the section bar, the odometer, applyTheme, the orb
         ids = p.evaluate("[...document.querySelectorAll('#body > .grp')].map((g) => g.id)")
         where = p.evaluate("""() => Object.fromEntries(['sec-kpi', 'sec-pos', 'sec-edge', 'sec-kelly', 'sec-eq', 'sec-cal', 'sec-bk', 'sec-cb', 'sec-al', 'sec-tr']
@@ -961,6 +1012,7 @@ def run_browser(url, tmp):
         check("x. the section bar: shown with data, 44 px taps, the alerts count (red when one needs you)",
               nav[0] is False and all(h >= 44 for h in nav[1]) and nav[2] == "3" and nav[3] == "bad", nav)
         p.click("#secnav [data-go=perf]")
+        p.wait_for_function("(() => { const t = document.getElementById('g-perf').getBoundingClientRect().top, b = document.getElementById('secnav').getBoundingClientRect().bottom; return t <= b + 40; })()", timeout=20000)
         p.wait_for_timeout(1200)
         top = p.evaluate("[document.getElementById('g-perf').getBoundingClientRect().top, document.getElementById('secnav').getBoundingClientRect().bottom]")
         check("x. tapping Performance glides there, its heading just under the bar", top[1] - 2 <= top[0] <= top[1] + 40, top)

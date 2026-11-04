@@ -12,6 +12,7 @@
 //   pass* (gold, shock waves), fail* / breach (dim red), stop* / halt / limit (daily limit hit: amber, low energy),
 //   open / active / live (cyan). Under 250 px tall the overlay is compact: rings, balance and status only.
 // Draw calls ~15; particles: 700 accretion sparks (260 lite) + 500 dust (200 lite).
+import { metal, glass } from '../../olympus/materials.js';
 import { THREE, Q, glowTexture, POINT_FRAG, count, rng, Hud, addBackdrop, addNebula, addDust, additive, attrs, paintBackdrop,
   clamp, lerp, outCubic, fract, num, esc, fmtUsd, pct, div, injectStyle } from './hud.js';
 
@@ -115,7 +116,7 @@ const CSS = `.fxr-c{position:absolute;left:0;top:0;text-align:center;white-space
 // ------------------------------------------------------------------ the view
 export class Reactor extends Hud {
   constructor(opts = {}) {
-    super(opts, { name: 'reactor', fov: 34, empty: 'No eval data yet', orbit: { yaw: 0, pitch: 0.06, auto: 0, min: -0.55, max: 0.55, pitchMin: -0.25, pitchMax: 0.45 } });
+    super(opts, { name: 'reactor', env: 'night', fov: 34, empty: 'No eval data yet', orbit: { yaw: 0, pitch: 0.06, auto: 0, min: -0.55, max: 0.55, pitchMin: -0.25, pitchMax: 0.45 } });
     injectStyle('fxh-rct-css', CSS);
     this.d = null; this.cur = { prog: 0, neg: 0, cush: 0, day: 0, dayWin: 0, health: 0.75, bal: 0, pass: 0, fail: 0 }; this.want = { ...this.cur };
     this.balFrom = 0; this.balTo = 0; this.balAt = -9; this.beatPh = 0; this.waveAt = -9; this.waveCol = new THREE.Color('#2ee59d'); this.nextWave = 0;
@@ -152,6 +153,12 @@ export class Reactor extends Hud {
     });
     this.bzU = { uCol: { value: new THREE.Color('#7c6cff') }, uTime: u.uTime, uMotion: u.uMotion };
     const bezel = new THREE.Mesh(new THREE.RingGeometry(1.76, 1.86, 240, 1), additive(RING_V, BEZEL_F, this.bzU, { side: THREE.DoubleSide })); bezel.renderOrder = 4; this.g.add(bezel);
+    // OLYMPUS materials (env reflections + bloom): a glass dome over the plasma, a chrome bezel with 24 gold studs
+    this.dome = new THREE.Mesh(new THREE.SphereGeometry(0.64, 40, 28), glass({ color: '#c9fff4', rim: '#2ee5c8', opacity: 0.13 })); this.dome.renderOrder = 6; this.g.add(this.dome);
+    const chrome = new THREE.Mesh(new THREE.TorusGeometry(1.81, 0.017, 12, 200), metal({ kind: 'chrome' })); this.g.add(chrome);
+    const studs = new THREE.InstancedMesh(new THREE.SphereGeometry(0.036, 14, 10), metal({ kind: 'gold', brushed: false, roughness: 0.2 }), 24), st = new THREE.Object3D();
+    for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2; st.position.set(Math.sin(a) * 1.81, Math.cos(a) * 1.81, 0); st.updateMatrix(); studs.setMatrixAt(i, st.matrix); }
+    this.g.add(studs);
     // spiral sparks + ring heads
     const N = count(Q.phone ? 560 : 700, 260), sg = attrs(N, { position: [3], aSeed: [1], aR: [1], aS: [1] }), rnd = rng(99);
     for (let i = 0; i < N; i++) { sg.attributes.aSeed.setX(i, rnd()); sg.attributes.aR.setX(i, rnd()); sg.attributes.aS.setX(i, 0.018 + rnd() * 0.03); }

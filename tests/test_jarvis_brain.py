@@ -2,7 +2,7 @@
 Drives the real module in node (it needs no DOM: one process runs every scenario, with a fixed clock, a fake localStorage,
 a mocked fetch and a recorded open()) and once in Chromium (a real page), and checks:
   a. the module: one ES module, no imports, Safari 16 syntax (no regex lookbehind), the only network addresses are the
-     three smart-mode APIs
+     four smart-mode APIs
   b. today's answers keep their key phrases (tests/test_jarvis_hub.py d and e): status, room, target, P&L, how's blitz,
      blitz room, today's plan, the market, open planner / kalshi, Kalshi not connected / published, kalshi balance
   c. the combined briefing ("Good evening. ..."): the bots, the market and the next session, the plan, Kalshi; and with
@@ -280,6 +280,8 @@ def scenarios():
                             "open blitz", "news", "good day") + [{"idle": True}], now=T_MON8, f=facts(T_MON8, kalshi=kalshi(T_MON8), kalshiState="ok")),
         S("phrasings", ask("how close are we to passing", "where's nq", "is the bot trading my eval", "who made you", "flatten everything", "stop the bot",
                            "take me home", "anything overdue", "what's up", "should i buy another eval", "good evening"), now=T_MON8, f=facts(T_MON8)),
+        S("know_rules", ask("what is a sweep", "what is an ifvg", "what is cisd", "explain the stop rule", "how do I connect chatgpt", "should I take the trade",
+                            "any ideas to make more money", "what is the drawdown on the 50K", "what's the target on the 50K"), now=T_MON10, f=facts(T_MON10)),
         S("smart_decision", [{"setSmart": {"key": "gsk_FAKE", "on": True}}] + ask("should i buy another eval"), fetch=groq_ok),
         S("zroutes", ask("atlas trades", "holodeck", "open zenith", "open settings", "blitz rules", "open the deck", "how many atlas trades")),
         S("zroutes_local", ask("atlas trades", "holodeck", "open blitz", "open the deck", "zlarior brain"), opts={"zenithRoutes": False}),
@@ -381,9 +383,9 @@ def part_a():
     check("a. no imports, no lookbehind regex (Safari 16), no class static blocks", not re.search(r"^\s*import\s", src, re.M) and "(?<=" not in src
           and "(?<!" not in src and "static {" not in src)
     urls = set(re.findall(r"https?://[^\s'\"`]+", src))
-    check("a. the only network addresses are the three smart-mode APIs",
+    check("a. the only network addresses are the four smart-mode APIs (Groq, Gemini, OpenRouter, Anthropic)",
           urls <= {"https://api.groq.com/openai/v1/chat/completions", "https://generativelanguage.googleapis.com/v1beta/models/",
-                   "https://api.anthropic.com/v1/messages"}, urls)
+                   "https://openrouter.ai/api/v1/chat/completions", "https://api.anthropic.com/v1/messages"}, urls)
     check("a. no control characters in the source", not any(ord(c) < 32 and c not in "\n\t" for c in src))
 
 
@@ -400,12 +402,12 @@ def part_node(O):
     check("b. today's plan from the Planner (done tasks left out)", "Gym" in a4 and "Buy BLITZ 25K" in a4 and "Old" not in a4 and "7:30 AM" in a4, a4)
     check("b. the market", "NQ market" in a5, a5)
     check("b. status / room / target carry BLITZ next to Zlarior and ATLAS",
-          "BLITZ 25K" in a1 and "$612" in a1 and "BLITZ 25K: $612 of room above the floor ($24,500)" in a2 and "BLITZ: $1,388 to the target" in a3, (a1, a2, a3))
+          "BLITZ 25K" in a1 and "$612" in a1 and "BLITZ 25K: drawdown left $612" in a2 and "BLITZ: $1,388 to the target" in a3, (a1, a2, a3))
     check("b. P&L: Zlarior, ATLAS and BLITZ (today and this week)", "Zlarior today +$213" in a8 and "ATLAS today" in a8 and "BLITZ today +$95, this week +$140" in a8, a8)
     r9 = g("today_waiting")[6]
     check("b. 'how's blitz' answers BLITZ alone (not 'Opening Zenith')", "BLITZ 25K: today +$95, room $612, $1,388 to target, 2 trades today" in a9
           and "Zlarior" not in a9 and "Opening" not in a9 and not r9.get("open"), a9)
-    check("b. 'blitz room' answers BLITZ's room alone", "BLITZ 25K: $612" in a10 and "Zlarior" not in a10, a10)
+    check("b. 'blitz room' answers BLITZ's room alone", "BLITZ 25K: drawdown left $612" in a10 and "Zlarior" not in a10, a10)
     r6 = g("today_waiting")[8]
     check("b. 'open planner' switches to the Planner (reply.open and the shell's open())", "Opening Planner" in a6 and r6.get("open") == "planner"
           and ["planner", None] in O["today_waiting"]["opened"], (a6, O["today_waiting"]["opened"]))
@@ -467,7 +469,7 @@ def part_node(O):
     f = [t("follow", i) for i in range(8)]
     check("e. follow-up 'and atlas?' after 'how's blitz': ATLAS alone", "ATLAS 25K: today $0, room $750, $1,750 to target" in f[1] and "BLITZ" not in f[1]
           and "Zlarior" not in f[1], f[1])
-    check("e. follow-up keeps the topic: 'blitz room' -> 'and atlas' = ATLAS's room", "ATLAS 25K: $750 of room" in f[3] and "BLITZ" not in f[3], f[3])
+    check("e. follow-up keeps the topic: 'blitz room' -> 'and atlas' = ATLAS's room", "ATLAS 25K: drawdown left $750" in f[3] and "BLITZ" not in f[3], f[3])
     check("e. 'what about kalshi' after the P&L: Kalshi's P&L", "Kalshi today +$18.50" in f[5] and "Zlarior" not in f[5], f[5])
     check("e. 'and the target?' after Zlarior's room: Zlarior's target alone", "Zlarior: $3,726 to the target" in f[7] and "ATLAS" not in f[7], f[7])
     ba = g("bare_atlas")[0]
@@ -476,8 +478,9 @@ def part_node(O):
     check("e. 'how are the bots doing today' is the status; 'how's today looking' is the plan", "Zlarior 50K: today +$213" in t("bare_atlas", 1)
           and "Gym" in t("bare_atlas", 2), (t("bare_atlas", 1)[:80], t("bare_atlas", 2)[:80]))
     e1, e2, e3, e4, e5 = (t("eval_pos", i) for i in range(5))
-    check("e. eval progress: profit, % of the way, to target, room, session X of 10", "Zlarior 50K eval: profit −$726" in e1 and "$3,726 to the target" in e1
-          and "session 3 of 10" in e1, e1)
+    # owner 2026-11-03: no "session X of 10" counter; the drawdown left (balance - the max-loss floor) instead
+    check("e. eval progress: profit, % of the way, to target, drawdown left, no session X of 10", "Zlarior 50K eval: profit −$726" in e1
+          and "$3,726 to the target" in e1 and "drawdown left $1,106" in e1 and "session 3 of 10" not in e1, e1)
     check("e. positions: the open trade (paper only, read-only)", "Zlarior: long 3 micros from 20,100.25, stop 20,080, target 20,160" in e2
           and "ATLAS: flat" in e2 and "Paper only" in e2, e2)
     check("e. what a bot waits for: its waiting text and entry window", "Waiting for a sweep of a LIT level" in e3 and "next entry window Mon 02:00-15:30 ET" in e3, e3)
@@ -505,7 +508,7 @@ def part_node(O):
           and oc[1]["list"] == [] and oc[2]["list"] == [], oc)
     mi = [t("more_intents", i) for i in range(6)]
     check("e. the NQ price from the bot's feed, with its age", mi[0].startswith("NQ 25,123.50 (the bot's last price, 2 min ago)"), mi[0])
-    check("e. the daily loss limit and what is used of it", "Zlarior: daily loss limit $1,000, used $212; $1,106 of room to the floor" in mi[1], mi[1])
+    check("e. the daily loss limit and what is used of it", "Zlarior: daily loss limit $1,000, used $212; drawdown left $1,106" in mi[1], mi[1])
     check("e. 'is the pc on': the one fix first (none), its last check-in and the verdict", mi[2].startswith("The PC looks healthy: nothing to fix.") and "checked in 2 min ago" in mi[2] and "RUNNING: bot trading" in mi[2], mi[2])
     check("e. 'is nq open' is a market question, not 'open Zenith'", mi[3].startswith("NQ market open · regular session") and not g("more_intents")[3].get("open"), mi[3])
     check("e. trades today per bot (with the daily maximum)", "Zlarior: 1 trade today (max 1 a day)" in mi[4] and "BLITZ: 2 trades today" in mi[4], mi[4])
@@ -586,6 +589,13 @@ def part_node(O):
           and ["zenith", "#/blitz"] in O["old_jarvis"]["opened"], oj[17])
     check("g. 'news': no feed here, points to Zenith's News", "no news feed" in ot[18] or "Opening News" in ot[18], ot[18])
     check("g. the old greeting: 'Good day. Tap the core ...'", ot[19] == "Good day. Tap the core or type below to speak with me." and oj[20].get("text") == ot[19], (ot[19], oj[20]))
+    kr = [r.get("text", "") for r in O["know_rules"]["res"]]
+    check("know. trading words answered locally in his own terms (sweep, IFVG, CISD, the stop rule), never a Wikipedia lookup",
+          "poking past a key high or low" in kr[0] and "inverse fair value gap" in kr[1] and "change in state of delivery" in kr[2] and "1 tick beyond the sweep extreme" in kr[3]
+          and O["know_rules"]["calls"] == [], kr[:4])
+    check("know. 'connect chatgpt' points to the free key; 'should I take the trade' is refused plainly (no 'Your call, sir' wrapper); money ideas answered without a key",
+          "Say \"set up smart mode\"" in kr[4] and kr[5].startswith("That is the bot's call") and "I will not invent returns" in kr[6], kr[4:7])
+    check("know. the drawdown and target questions keep their numbers: 'Drawdown left $1,106', '$3,726 to the target'", "drawdown left $1,106" in kr[7] and "$3,726 to the target" in kr[8], kr[7:9])
     # h. smart mode
     so = O["smart_off"]
     check("h. smart mode off by default: the rule answer, no network", so["calls"] == [] and so["res"][0].get("intent") == "fallback"
@@ -628,7 +638,7 @@ def part_node(O):
     sm = kk["res"][-1]["smart"]
     check("h. keys kept per provider, only in localStorage 'jarvis.smart'; brain.smart never shows a key",
           st.get("keys", {}).get("groq") == "gsk_FAKE_ONE" and st.get("keys", {}).get("gemini") == "AIza-FAKE-TWO" and list(kk["storage"]) == ["jarvis.smart"]
-          and sm["keys"] == {"groq": True, "gemini": True, "anthropic": False} and sm["provider"] == "groq" and "FAKE" not in json.dumps(sm), (st, sm))
+          and sm["keys"] == {"groq": True, "gemini": True, "openrouter": False, "anthropic": False} and sm["provider"] == "groq" and "FAKE" not in json.dumps(sm), (st, sm))
     k0 = kk["calls"][0] if kk["calls"] else {}
     check("h. a decision question goes deep: high reasoning and the expert persona", k0.get("body", {}).get("reasoning_effort") == "high"
           and "Expert mode" in k0["body"]["messages"][0]["content"] and "never promise returns" in k0["body"]["messages"][0]["content"], k0.get("body", {}).get("reasoning_effort"))
@@ -637,7 +647,7 @@ def part_node(O):
           sd["res"][0]["smart"]["provider"] == "anthropic" and sd["res"][0]["smart"]["model"] == "claude-sonnet-5-5"
           and sd["calls"][0]["url"] == "https://api.anthropic.com/v1/messages" and sd["calls"][0]["body"]["model"] == "claude-sonnet-5-5"
           and sd["res"][2]["smart"]["provider"] == "gemini" and sd["res"][3]["smart"]["provider"] == "groq" and sd["res"][3]["smart"]["model"] == "openai/gpt-oss-20b"
-          and sd["res"][4]["smart"]["keys"] == {"groq": False, "gemini": False, "anthropic": False} and sd["res"][4]["smart"]["on"] is False
+          and sd["res"][4]["smart"]["keys"] == {"groq": False, "gemini": False, "openrouter": False, "anthropic": False} and sd["res"][4]["smart"]["on"] is False
           and "FAKE" not in sd["storage"].get("jarvis.smart", ""), [r.get("smart") for r in sd["res"]])
     ss = O["smart_stored"]
     check("h. settings saved on the phone are read back (provider, depth, key)", ss["res"][0]["smart"]["active"] is True and ss["res"][0]["smart"]["depth"] == "quick"

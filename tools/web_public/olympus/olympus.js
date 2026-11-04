@@ -33,6 +33,8 @@
     oracle: ['Oracle', 'Θ', '#7fe9ff'], odeon: ['Odeon', 'Ξ', '#ff6b7f'], fates: ['Fates', 'Φ', '#ffcf5a'],
     hermes: ['Hermes', 'Η', '#f7c948'], prometheus: ['Prometheus', 'Π', '#ff7a1a'], tyche: ['Tyche', 'Τ', '#e879f9'],
     pantheon: ['Pantheon', 'Σ', '#f2d68a'], arena: ['Arena', 'Α', '#ffb547'],
+    ares: ['Ares', 'Λ', '#ff3b30'], plutus: ['Plutus', 'Ρ', '#9be84a'], athena: ['Athena', '🦉', '#5ea8ff'],
+    forum: ['Forum', 'Γ', '#b8e04a'], labyrinth: ['Labyrinth', 'Ξ', '#ff4d57'], argus: ['Argus', 'Α', '#3ad7ff'], nemesis: ['Nemesis', 'Ν', '#8a6bff'], chronos: ['Chronos', 'Χ', '#d4a574'], hephaestus: ['Hephaestus', '⚒', '#d96bff'],
   };
   // each app's own CSS tokens -> the theme token they take under any theme but the default (bg = the app's own page colour
   // blended toward the theme's by its 'mix', so every app keeps a trace of its own sky)
@@ -152,6 +154,20 @@
     theme: function () { return isDefault(theme) ? null : theme; },
     /** cb(tokens) after every theme change (not at start: read theme() for that); cb(null) when back on the default */
     onTheme: function (cb) { if (typeof cb === 'function') appSubs.push(cb); },
+    /** play a sound of the OLYMPUS kit (tick | tap | portal | thunder | rankup | pad): loads olympus/sfx.js on the first call, never throws,
+     *  does nothing when the file is missing or the host (Jarvis) says it is talking or listening (window.OLYMPUS_QUIET). Returns true if it sounded. */
+    sfx: function (name) {
+      try {
+        if (window.OLYMPUS_QUIET && window.OLYMPUS_QUIET()) return false;
+        var k = window.OLYMPUS_SFX;
+        if (k) return !!k.play(name);
+        if (me && me.src && !d.getElementById('olySfxJs')) {
+          var s = d.createElement('script'); s.id = 'olySfxJs'; s.async = true; s.src = me.src.replace(/olympus\.js.*$/, 'sfx.js?v=s1');
+          (d.head || root).appendChild(s);
+        }
+      } catch (e) { /* the sound is never needed */ }
+      return false;
+    },
     tint: tint,
     themeScene: function (o) { try { return sceneHook(o || {}); } catch (e) { return null; } },
     ready: function () { ready(); },

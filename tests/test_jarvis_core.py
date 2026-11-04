@@ -94,8 +94,8 @@ def part_a():
     check(f"a. own code stays lean: core-visual.js {size:,} bytes (< 60 KB; three itself is vendored apart)", size < 60 * 1024, size)
     check("a. an ES module that exports mountCore(el, opts)", re.search(r"export function mountCore\s*\(\s*el\s*,", src) is not None)
     imports = re.findall(r"import\s*\(\s*['\"]([^'\"]+)['\"]", src)
-    check("a. no libraries from a CDN, no network: the only import is the vendored three, relative",
-          imports == ["./three.module.min.js"] and not re.search(r"^\s*import\s", src, re.M) and "http://" not in src
+    check("a. no libraries from a CDN, no network: the only imports are the vendored three and the OLYMPUS render core, relative",
+          imports == ["./three.module.min.js", "../olympus/render.js"] and not re.search(r"^\s*import\s", src, re.M) and "http://" not in src
           and "https://" not in src and "fetch(" not in src and "XMLHttpRequest" not in src, imports)
     code = re.sub(r"/\*.*?\*/", "", re.sub(r"//[^\n]*", "", src), flags=re.S)     # comments may name what is avoided
     too_new = ["(?<=", "(?<!", "static {", "roundRect", "createConicGradient", "structuredClone", ".toSorted(", ".toReversed(",
@@ -223,6 +223,9 @@ def run_browser(url, shots):
         first = p.evaluate("[document.querySelectorAll('#el .jcore canvas').length, core.stats().three]")
         check("b. mounts at once: the HUD canvas is up while three loads", first[0] >= 1 and first[1] in ("loading", "on"), first)
         check("b. the WebGL reactor comes up (three r160 loaded on demand)", ready3d(p) == "on", p.evaluate("core.stats()"))
+        post = p.evaluate("core.stats().post")
+        check("b. on the OLYMPUS render core at high: scene + bloom + finish, 4x MSAA, display space",
+              bool(post) and post["names"] == ["scene", "bloom", "finish"] and post["samples"] == 4, post)
         info = p.evaluate("""(() => { const cs = document.querySelectorAll('#el .jcore canvas'), b = document.querySelector('#el .jcore').getBoundingClientRect();
             return { n: cs.length, w2: cs[cs.length - 1].width, w3: cs[0].width, css: b.width, h: b.height, keys: Object.keys(core).sort() }; })()""")
         check("b. two canvases: the WebGL reactor under the 2D HUD, square", info["n"] == 2 and abs(info["css"] - info["h"]) < 1, info)
@@ -455,11 +458,11 @@ def main():
         shots = os.path.abspath(sys.argv[sys.argv.index("--shots") + 1])
     part_a()
     tmp = tempfile.mkdtemp(prefix="le_jcore_")
-    site = os.path.join(tmp, "jarvis")
-    shutil.copytree(JV, site)
-    srv = serve(site)
+    shutil.copytree(JV, os.path.join(tmp, "jarvis"))
+    shutil.copytree(os.path.join(os.path.dirname(JV), "olympus"), os.path.join(tmp, "olympus"))   # the render core (../olympus/)
+    srv = serve(tmp)
     try:
-        run_browser(f"http://127.0.0.1:{srv.server_address[1]}/", shots)
+        run_browser(f"http://127.0.0.1:{srv.server_address[1]}/jarvis/", shots)
     finally:
         srv.shutdown()
         shutil.rmtree(tmp, ignore_errors=True)

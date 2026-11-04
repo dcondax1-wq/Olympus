@@ -54,6 +54,8 @@ export class FlameField {
           v += 0.065;
         #endif
           return v; }
+        // the render core adds light in linear HDR and tone-maps once: the fire is painted in screen colours, so square it (and push the hot core past 1 so it blooms)
+        vec3 lin(vec3 c) { return c * c * 1.6 + c * 0.1; }
         void main() {
           float heat = vMix.x, ph = vMix.z, ice = vMix.w;
           vec2 p = vP; float y = clamp(p.y, 0.0, 1.0);
@@ -61,7 +63,7 @@ export class FlameField {
           float halo = exp(-dot(hq, hq) * 2.2) * (0.18 + 0.32 * heat);
           // the quad's own edges fade to nothing: no visible card around a flame
           float win = (1.0 - smoothstep(1.2, 1.7, abs(p.x))) * smoothstep(-0.32, -0.12, p.y) * (1.0 - smoothstep(1.05, 1.3, p.y));
-          if (abs(p.x) > 1.25 || p.y < -0.16) { gl_FragColor = vec4(vCol * halo * vMix.y * win, 1.0); return; }   // halo only: no noise
+          if (abs(p.x) > 1.25 || p.y < -0.16) { gl_FragColor = vec4(lin(vCol * halo * vMix.y * win), 1.0); return; }   // halo only: no noise
           float n = fbm(vec2(p.x * 1.7 + ph, p.y * 2.6 - uT * (2.0 + heat) - ph));            // fire rises
           float w = mix(1.0, 0.1, pow(y, 0.85));                                             // the teardrop
           float xx = (p.x + (n - 0.5) * 0.7 * y) / max(0.06, w);
@@ -72,7 +74,7 @@ export class FlameField {
           vec3 white = mix(vec3(1.0, 0.95, 0.78), vec3(0.85, 0.97, 1.0), ice);
           vec3 c = mix(deep, vCol, smoothstep(0.05, 0.55, body * (1.1 - 0.5 * y))) * body
                  + white * core * (0.35 + 0.85 * heat) + vCol * halo;
-          gl_FragColor = vec4(max(c, vec3(0.0)) * vMix.y * win, 1.0);
+          gl_FragColor = vec4(lin(max(c, vec3(0.0)) * vMix.y * win), 1.0);
         }`,
       transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,   // above the floor, never clipped
     }));

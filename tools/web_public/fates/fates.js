@@ -101,13 +101,15 @@ function renderLive() {
     el.innerHTML = `<i class="dot"></i><span>From today's evals (${esc(L.source || 'build')}${L.t ? ', ' + esc(C.ago(L.t)) : ''}) → funded → payouts` +
       (slot ? ` · account ${S.route.accts}: ${esc(slot.label)}` : '') + '</span>';
     S.odds = null;
+    renderGauge(null);
     return;
   }
   const bot = S.route.scen, fromFeed = S.live ? C.liveBot(S.live, bot, s.rules) : null;
   const st = fromFeed || { profit: s.start.profit, room: s.start.room, toTarget: s.start.to_target, session: s.start.session,
-    quiet: s.start.quiet_days, status: 'open', t: (S.data.live || {}).t };
+    quiet: s.start.quiet_days, status: 'open', t: (S.data.live || {}).t, floor: s.start.floor };
   const odds = C.liveOdds(s, st);
   S.odds = odds;
+  renderGauge(C.gaugeOf(s, st, odds), st);
   const fresh = fromFeed ? 'live' : 'built';
   const state = `session ${(st.session || 0) + 1} next · room ${C.fmtUsd(st.room)} · ${C.fmtUsd(st.toTarget)} to go` +
     (st.quiet ? ` · ${st.quiet} quiet day${st.quiet > 1 ? 's' : ''}` : '');
@@ -119,6 +121,28 @@ function renderLive() {
   el.className = 'live ' + fresh + (odds && !odds.sync && !odds.done ? ' moved' : '');
   el.innerHTML = `<i class="dot"></i><span><b class="tag-live">${fromFeed ? 'LIVE' : 'TODAY'}</b> ${txt}` +
     `${st.t ? ` <em>${esc(C.ago(st.t))}</em>` : ''}</span>`;
+}
+// the eval gauge (2026-11-03): the real MFFU numbers (Builder 50K: $3,000 target, $2,000 trailing drawdown, $1,000 daily loss limit,
+// $91.80 fee) beside the odds: the DOM strip under the live line, and the same three numbers standing in the 3D loom (sc.gauge)
+function renderGauge(g, st) {
+  S.gauge = g;
+  const box = $('gauge');
+  if (!box) return;
+  box.hidden = !g;
+  if (!g) { S.gaugeScene = null; sc?.gauge(null); return; }
+  const f = C.fmtUsd, set = (id, v, sub, pct, warn) => {
+    const c = box.querySelector(`[data-id="${id}"]`);
+    c.querySelector('.v').textContent = v; c.querySelector('.s').textContent = sub;
+    c.querySelector('u').style.width = Math.round(pct * 100) + '%'; c.dataset.warn = warn ? '1' : '0';
+  };
+  set('dd', f(g.ddLeft), `of ${f(g.ddOf)} · max loss today ${f(g.dailyLeft)}${g.locked ? ' · floor locked' : ''}`, g.ddPct, g.ddWarn);
+  set('tgt', f(g.toTarget), `to the ${f(g.target)} target · profit ${f(g.profit, true)}`, g.tgtPct, false);
+  const odds = g.pass == null ? '—' : C.fmtPct(g.pass);
+  set('odds', odds, g.done ? `this eval is ${g.done.toUpperCase()}` : `fail ${C.fmtPct(g.fail)}` + (g.costPerPass ? ` · ${f(g.fee)} fee ≈ ${f(g.costPerPass)} per pass` : ''),
+    (g.pass || 0) / 100, g.pass != null && g.pass < 40);
+  const floor = st && st.floor != null ? +st.floor : g.profit - g.ddLeft;
+  S.gaugeScene = { p0: (g.profit - floor) / Math.max(1, g.target - floor), pass: g.pass, roomText: f(g.ddLeft), goText: f(g.toTarget), passText: odds };
+  sc?.gauge(S.gaugeScene);
 }
 const esc = (x) => String(x == null ? '' : x).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -169,6 +193,7 @@ function build() {
   MAP = mapping(scen());
   S.threads = all.slice(0, S.lite ? 160 : all.length);
   sc.build(S.threads, MAP, secAt);
+  if (S.gaugeScene) sc.gauge(S.gaugeScene);
 }
 function resize() {
   if (!sc) return;

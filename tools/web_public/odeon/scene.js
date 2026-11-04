@@ -6,6 +6,8 @@
 // Persistent visuals (bars, levels, planes) are a pure function of the market time T, so scrubbing is exact; one-off
 // effects (lightning, flare, bursts, flashes) only run when the director crosses an event while playing forward.
 import * as THREE from '../jarvis/three.module.min.js';
+import { createRenderer } from '../olympus/render.js';
+import { Arena } from './arena.js';
 import { barsAt, formingBar, priceAt, stopAt, eventsUpTo } from './timeline.js';
 
 const COL = {
@@ -14,6 +16,7 @@ const COL = {
   gold: new THREE.Color('#ffc65a'), entry: new THREE.Color('#e8f3ff'), limit: new THREE.Color('#5ee7ff'),
   win: new THREE.Color('#46d79a'), loss: new THREE.Color('#ff4d6d'), bev: new THREE.Color('#b18cff'), bolt: new THREE.Color('#cfe3ff'),
 };
+
 const LOCAL = 2.6;    // world height of a typical 30-bar stretch of tape (the pillars' vertical scale)
 const DEPTH = 5;      // depth of the light planes
 const FOG = new THREE.Color('#06050b');
@@ -197,6 +200,36 @@ function textSprite(text, color, sub) {
   return s;
 }
 
+/** a small P&L tag whose text is redrawn only when it changes: sprite.userData.set(text, color) */
+function tagSprite() {
+  const c = document.createElement('canvas');
+  c.width = 320; c.height = 72;
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: false, fog: false }));
+  s.scale.set(320 * 0.0075, 72 * 0.0075, 1);
+  s.center.set(0, 0.5);
+  s.renderOrder = 9;
+  let last = '';
+  s.userData.set = (text, color) => {
+    if (text === last) return;
+    last = text;
+    s.userData.text = text;
+    const g = c.getContext('2d');
+    g.clearRect(0, 0, 320, 72);
+    g.fillStyle = 'rgba(6,5,12,.72)';
+    g.beginPath();
+    if (g.roundRect) g.roundRect(4, 8, 312, 56, 14); else g.rect(4, 8, 312, 56);
+    g.fill();
+    g.strokeStyle = color; g.lineWidth = 2; g.globalAlpha = 0.8; g.stroke(); g.globalAlpha = 1;
+    g.font = '700 36px Rajdhani, -apple-system, system-ui, sans-serif';
+    g.textBaseline = 'middle'; g.fillStyle = color; g.shadowColor = color; g.shadowBlur = 10;
+    g.fillText(text, 18, 37);
+    tex.needsUpdate = true;
+  };
+  return s;
+}
+
 function planeMesh(mode, color) {
   const geo = new THREE.PlaneGeometry(1, DEPTH);
   geo.rotateX(-Math.PI / 2);
@@ -218,11 +251,15 @@ export class Theater {
     const o = opts || {};
     this.reduced = !!o.reduced;
     this.lite = !!o.lite;
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: !o.lite, alpha: false, powerPreference: 'high-performance' });
-    this.renderer.setClearColor(FOG, 1);
-    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.scene = new THREE.Scene();
     this.scene.fog = new THREE.FogExp2(FOG, 0.028);
+    // the OLYMPUS render core (docs/OLYMPUS_RENDER.md): ACES + sRGB, the environment light, bloom, 4x MSAA on HD, FXAA on LITE. 'display'
+    // space keeps the glass pillars' colours; the camera is the app's (it lives in app.js), the size comes from resize().
+    this.rc = createRenderer({ canvas, scene: this.scene, camera: o.camera || new THREE.PerspectiveCamera(42, 1, 0.1, 1500), space: 'display', env: 'night',
+      tint: '#7fb4ff', autoSize: false, fitCamera: false, adapt: false, maxDpr: 1.75, bloom: { strength: 0.7, radius: 0.6, threshold: 0.8 },
+      grade: { vignette: 0.3, grain: 0.03 } });
+    this.renderer = this.rc.renderer;
+    this.renderer.setClearColor(FOG, 1);
     this.glow = glowTexture();
     this.flash = 0;          // global flash 0..1 (decays)
     this.flashTint = new THREE.Color('#ffffff');
@@ -234,6 +271,8 @@ export class Theater {
     this.mirror.scale.y = -1;
     this.scene.add(this.stage, this.mirror);
     this._buildRoom();
+    this.arena = new Arena({ lite: this.lite });
+    this.scene.add(this.arena.g);
     this.setLite(this.lite);
   }
 
@@ -302,8 +341,8 @@ export class Theater {
 
   setLite(on) {
     this.lite = !!on;
-    const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
-    this.renderer.setPixelRatio(this.lite ? 1 : Math.min(dpr, 2));
+    this.rc.setQuality(this.rc.forced || (this.rc.software ? 'low' : this.lite ? 'low' : ['ultra', 'high'].includes(this.rc.quality()) ? this.rc.quality() : 'high'));
+    if (this.arena) this.arena.setLite(this.lite);
     this.mirror.visible = !this.lite;
     this.shafts.visible = !this.lite;
     this.dust.geometry.setDrawRange(0, this.lite ? 70 : this.dustN);
@@ -313,7 +352,7 @@ export class Theater {
 
   /** A theme's colours (OLYMPUS themes): the liquidity planes take the accent, the room the background. */
   applyTheme(accent, bg) {
-    if (accent) COL.level.set(accent);
+    if (accent) { COL.level.set(accent); if (this.arena) this.arena.applyTheme(accent); }
     if (bg) { this.renderer.setClearColor(bg, 1); this.scene.fog.color.set(bg); }
   }
 
@@ -322,7 +361,7 @@ export class Theater {
 
   resize(w, h) {
     this._w = w; this._h = h;
-    this.renderer.setSize(w, h, false);
+    this.rc.resize(w, h);
     this.dustMat.uniforms.uH.value = h * this.renderer.getPixelRatio();
   }
 
@@ -443,6 +482,27 @@ export class Theater {
     this.targetLabel = textSprite('TARGET ' + this._px(tr.target), '#ffd88a');
     this.entryLabel = textSprite((tr.side === 'SHORT' ? 'SHORT ' : 'LONG ') + this._px(tr.entry.px), '#e8f3ff');
     this.tg.add(this.stopLabel, this.targetLabel, this.entryLabel);
+    // the R ruler beside the entry: -1R (the stop) and every whole R up to the target, each with its $ for this size (risk_pts x $2 x micros)
+    this.rungs = [];
+    const risk = Number(tr.risk_pts) || 0, tR = risk ? Math.abs(tr.target - tr.entry.px) / risk : 0;
+    if (risk > 0) {
+      const ns = [-1];
+      for (let n = 1; n <= Math.min(10, Math.floor(tR + 1e-6)); n++) ns.push(n);
+      for (const n of ns) {
+        const usd = n * risk * 2 * (tr.qty || 1);
+        const s = textSprite(`${n > 0 ? '+' : '−'}${Math.abs(n)}R · ${n > 0 ? '+' : '−'}$${Math.round(Math.abs(usd)).toLocaleString('en-US')}`,
+          n < 0 ? '#ff8a9c' : n === Math.round(tR) && tR - n < 0.5 ? '#ffd88a' : '#8fe9c0');
+        s.center.set(1, 0.5);
+        s.position.set(this.xAt(tr.entry.t) - 0.5, this.Y(tr.entry.px + tr.d * n * risk), 0.25);
+        s.visible = false;
+        this.tg.add(s);
+        this.rungs.push({ n, s });
+      }
+    }
+    // the live P&L tag riding the head candle
+    this.pnlTag = tagSprite();
+    this.pnlTag.visible = false;
+    this.tg.add(this.pnlTag);
     // the gate: two counter-rotating gold rings and a halo at the target
     this.gate = new THREE.Group();
     const ringMat = new THREE.MeshBasicMaterial({ color: COL.gold, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false, fog: true });
@@ -593,6 +653,15 @@ export class Theater {
     gate.userData.r2.rotation.x = wall * 0.9 * red;
     gate.userData.halo.material.opacity = 0.35 + 0.2 * Math.sin(wall * 2);
     for (const mk of this.marks) mk.s.visible = T >= mk.t;
+    // the R ruler and the live P&L tag
+    for (const r of this.rungs) r.s.visible = inPlay;
+    const pnl = inPlay ? tr.d * (done ? tr.exit.px - tr.entry.px : price - tr.entry.px) : 0, rr = tr.risk_pts ? pnl / tr.risk_pts : 0;
+    this.pnlTag.visible = inPlay;
+    if (inPlay) {
+      const usd = pnl * 2 * (tr.qty || 1);
+      this.pnlTag.userData.set(`${rr >= 0 ? '+' : '−'}${Math.abs(rr).toFixed(1)}R · ${usd >= 0 ? '+' : '−'}$${Math.round(Math.abs(usd)).toLocaleString('en-US')}`, rr >= 0 ? '#46f0a0' : '#ff6b7f');
+      this.pnlTag.position.set(done ? xEnd + 0.25 : hx + 0.5, (done ? this.Y(tr.exit.px) : hy) + 0.55, 0.4);
+    }
     // the room follows the action
     this.floorMat.uniforms.uHeadX.value = hx;
     // the floor follows the action: just under the recent lows (and the stop / entry while in the trade), so the glass
@@ -618,6 +687,7 @@ export class Theater {
     this.dust.position.y = this.floorY;
     this.shafts.position.set(hx * 0.85, this.floorY, 0);
     this._effects(dt, wall);
+    if (this.arena) this.arena.update(this.cam ? this.cam.position.x * 0.92 : hx * 0.6, this.floorY, this.head, inPlay && !done ? (tr.d * (price - tr.entry.px) >= 0 ? COL.win : COL.loss) : COL.level, this.flash, wall);
   }
 
   _effects(dt, wall) {
@@ -801,7 +871,7 @@ export class Theater {
   }
 
   render(camera) {
-    this.renderer.render(this.scene, camera);
+    this.rc.render();
   }
 
   /** the trade's extents in world units (for the director's framing) */

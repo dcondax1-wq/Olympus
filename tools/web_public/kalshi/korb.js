@@ -16,16 +16,15 @@ async function boot() {
   const canvas = document.createElement('canvas');
   canvas.className = 'orb';
   canvas.setAttribute('aria-hidden', 'true');
-  let renderer;
-  try {
-    renderer = new T.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'low-power' });
-  } catch (_) { return; }
+  let RC;
+  try { RC = await import('../olympus/render.js'); } catch (_) { return; }     // the OLYMPUS render core: ACES, a studio environment, bloom, MSAA
   const css = getComputedStyle(document.documentElement);
   const col = (name, dflt) => { const v = css.getPropertyValue(name).trim(); return /^#[0-9a-f]{3,6}$/i.test(v) ? v : dflt; };
   const C = { a: new T.Color(col('--c', '#1fe5a6')), b: new T.Color(col('--cy', '#38e1ff')), yes: new T.Color('#4ade80'), no: new T.Color('#ff4d6d') };
 
   const scene = new T.Scene();
   const cam = new T.PerspectiveCamera(32, 1, 0.1, 20);
+  let rc, renderer;
   cam.position.set(0, 0.35, 5.2);
   cam.lookAt(0, 0, 0);
   const orb = new T.Group();
@@ -52,7 +51,7 @@ async function boot() {
 
   // the K: three bars, extruded, lit from the front
   const k = new T.Group();
-  const kMat = new T.MeshStandardMaterial({ color: '#ffffff', emissive: C.a, emissiveIntensity: 0.9, metalness: 0.4, roughness: 0.25 });
+  const kMat = new T.MeshPhysicalMaterial({ color: '#ffffff', emissive: C.a, emissiveIntensity: 0.9, metalness: 0.7, roughness: 0.18, clearcoat: 1, envMapIntensity: 1.2 });
   const bar = (w, h, x, y, rot) => {
     const m = new T.Mesh(new T.BoxGeometry(w, h, 0.22), kMat);
     m.position.set(x, y, 0);
@@ -92,11 +91,16 @@ async function boot() {
     ringGeo.attributes.color.needsUpdate = true;
   }
 
+  try {
+    const q = fx();
+    rc = RC.createRenderer({ canvas, scene, camera: cam, alpha: true, env: 'room', quality: ['ultra', 'high', 'low', 'off'].indexOf(q) >= 0 ? q : undefined,
+      adapt: false, autoSize: false, fitCamera: false, maxDpr: 2, exposure: 0.9, bloom: { strength: 0.55, radius: 0.5, threshold: 0.8 }, grade: { vignette: 0, grain: 0, aberration: 0 } });
+    renderer = rc.renderer;
+  } catch (_) { return; }
   // size: the canvas overflows the mark so the glow bleeds out; the buffer follows the CSS size (pixel ratio at most 2)
   const size = () => {
     const s = Math.max(40, Math.round(canvas.getBoundingClientRect().width || host.clientWidth * 1.7 || 80));
-    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
-    renderer.setSize(s, s, false);
+    rc.resize(s, s);
     cam.aspect = 1;
     cam.updateProjectionMatrix();
   };
@@ -117,7 +121,7 @@ async function boot() {
     shellMat.opacity = 0.5 + pulse * 0.45;
     const s = 1 + pulse * 0.12;
     orb.scale.set(s, s, s);
-    renderer.render(scene, cam);
+    rc.render();
   };
   const loop = (now) => {
     raf = 0;

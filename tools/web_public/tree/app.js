@@ -5,6 +5,8 @@
 // clock (screenshots).
 import * as C from './core.js?v=d3';
 import { paint, ancestry, bestPath, GROW_MS, IGNITE_MS, LENS_MS } from './paint.js?v=d3';
+import { startGlow } from './glow.js?v=d3';
+import { startTree3d } from './tree3d.js?v=d4';
 
 const O = window.OLYMPUS || null;   // the OLYMPUS kit (../olympus/olympus.js): one 3D quality for every app, the veil, themes
 
@@ -70,6 +72,7 @@ function selectRoot(id) {
   if (seed) seed.scrollIntoView({ block: 'nearest', inline: 'center', behavior: reduced ? 'auto' : 'smooth' });
   try { history.replaceState(null, '', location.search + '#root=' + encodeURIComponent(id)); } catch (e) { /* sandboxed frame */ }
   renderStatic();
+  buildBest();
   resize();
 }
 
@@ -161,6 +164,27 @@ function setTab(tab) {
   document.querySelectorAll('.sheet-tabs button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
   document.querySelectorAll('.pane').forEach((p) => { p.hidden = p.dataset.pane !== tab; });
   resize();
+}
+/** BEST: the best branch in plain words, from the top rule of the whole search and from the root on screen. */
+function buildBest() {
+  const m = S.model, r = S.root, top = m.top[0], cut = r.tree.cut_pct;
+  const words = (steps) => (steps && steps.length ? steps.map((x) => esc(x)).join(' <i>and</i> ') : 'no extra condition: the plain level trade');
+  const line = (rule, root, head) => {
+    const te = rule.test || {}, y = rule.y2026 || {}, holds = rule.holds;
+    return `<h3>${head}</h3><p class="big"><b>${esc(rule.key)}</b> ${root && root.target_r ? C.variant(root) : ''} · <b class="${holds ? 'pos' : 'neg'}">${holds ? 'HOLDS out of sample' : 'FAILS out of sample'}</b></p>`
+      + `<p>Take the level trade, but only when ${words(rule.steps)}.</p>`
+      + `<div class="stats"><div><b class="${C.sign(te.mean)}">${C.usd(te.mean)}</b><small>TEST $/TRADE</small></div>`
+      + `<div><b class="${C.sign(te.mo_bot)}">${C.money(te.mo_bot)}</b><small>BOT $/MO</small></div><div><b>${C.int(te.n || 0)}</b><small>TEST TRADES</small></div></div>`
+      + (y.mean !== undefined ? `<p>2026 alone: <b class="${C.sign(y.mean)}">${C.usd(y.mean)}</b> a trade.</p>` : '');
+  };
+  const here = { key: r.key, steps: bestPath(S).slice(1).map((n) => (m.conds[n.cond] ? m.conds[n.cond][3] : '?')), test: r.best.test, y2026: r.best.y2026, holds: r.best.holds };
+  const held = m.top.filter((x) => x.holds).length;
+  $('best').innerHTML = (top ? line(top, m.byId[top.root], 'BEST BRANCH OF THE WHOLE SEARCH') : '')
+    + (top && top.root === r.id ? '' : line(here, r, 'BEST BRANCH OF THIS TREE'))
+    + `<p>${held} of the top ${m.top.length} rules hold out of sample. This tree cut ${cut}% of its branches as dead ends (they fade).</p>`
+    + (top && top.root !== r.id ? `<button type="button" class="go" id="bestGo">GROW THE BEST TREE</button>` : '');
+  const go = $('bestGo');
+  if (go) go.addEventListener('click', () => selectRoot(top.root));
 }
 function buildRules() {
   const m = S.model;
@@ -344,12 +368,15 @@ canvas.addEventListener('pointermove', (e) => {
   pointers.set(e.pointerId, [e.offsetX, e.offsetY]);
   gesture.moved += Math.hypot(e.offsetX - prev[0], e.offsetY - prev[1]);
   const pts = [...pointers.values()];
-  if (pts.length === 1) {
+  if (pts.length === 1 && is3d()) {
+    glow.orbit(e.offsetX - prev[0], e.offsetY - prev[1]);
+  } else if (pts.length === 1) {
     S.view.x += e.offsetX - prev[0]; S.view.y += e.offsetY - prev[1];
   } else if (pts.length >= 2) {
     const [a, b] = pts, d = Math.hypot(a[0] - b[0], a[1] - b[1]);
     const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
     if (!gesture.pinch) gesture.pinch = { d, mx, my };
+    if (is3d()) { glow.zoom(d / Math.max(1, gesture.pinch.d)); gesture.pinch = { d, mx, my }; return; }
     zoomAt(mx, my, d / Math.max(1, gesture.pinch.d));
     S.view.x += mx - gesture.pinch.mx; S.view.y += my - gesture.pinch.my;
     gesture.pinch = { d, mx, my };
@@ -368,9 +395,14 @@ function endPointer(e) {
 }
 canvas.addEventListener('pointerup', endPointer);
 canvas.addEventListener('pointercancel', endPointer);
-canvas.addEventListener('wheel', (e) => { e.preventDefault(); zoomAt(e.offsetX, e.offsetY, Math.exp(-e.deltaY * 0.0015)); }, { passive: false });
+canvas.addEventListener('wheel', (e) => { e.preventDefault(); if (is3d()) { glow.zoom(Math.exp(-e.deltaY * 0.0015)); return; } zoomAt(e.offsetX, e.offsetY, Math.exp(-e.deltaY * 0.0015)); }, { passive: false });
 
 function tap(sx, sy) {
+  if (is3d()) {
+    const n3 = glow.pick(sx, sy, frozenAt !== null ? frozenAt : performance.now() - S.t0);
+    if (n3) showNode(n3); else hideCard();
+    return;
+  }
   const [wx, wy] = toWorld(sx, sy);
   const t = frozenAt !== null ? frozenAt : performance.now() - S.t0;
   let best = null, bd = (24 / S.view.s) ** 2;
@@ -411,7 +443,13 @@ function route() {
 function loop(now) {
   if (!(O ? O.hidden() : document.hidden)) {                    // hidden tab: no frame (the battery)
     const t0 = performance.now(), t = frozenAt !== null ? frozenAt : now - S.t0;
-    paint(ctx, S, { t, now: performance.now(), reduced, sway: S.quality >= 2 && !reduced && frozenAt === null, onLit: lightSteps });
+    if (S.quality < 2 && frozenAt === null && now - lastFrame < 30) { requestAnimationFrame(loop); return; }   // LITE / low: 30 fps
+    lastFrame = now;
+    if (is3d()) glow.frame(now, t);                                       // the 3D laurel replaces the 2D drawing while it is on
+    else {
+      paint(ctx, S, { t, now: performance.now(), reduced, sway: S.quality >= 2 && !reduced && frozenAt === null, onLit: lightSteps });
+      if (glow && glow.on) glow.frame(now);
+    }
     updateHud(t);
     stepFx(performance.now());
     adapt(performance.now() - t0, now);
@@ -419,6 +457,10 @@ function loop(now) {
   }
   requestAnimationFrame(loop);
 }
+
+let glow = null;
+let lastFrame = 0;
+function is3d() { return !!(glow && glow.mode === '3d' && glow.on); }
 
 function adapt(ms, now) {
   // a frame that takes more than ~22 ms of drawing on a weak phone steps the quality down (no leaves / taper, lower dpr)
@@ -440,6 +482,31 @@ async function postJarvis() {
   try { window.parent.postMessage({ jarvis: 1, href: location.href, card }, JARVIS_ORIGIN); } catch (e) { /* not in Jarvis */ }
 }
 
+// ------------------------------------------------------------------------------------------------ new tests arriving
+const POLL_MS = 180000;
+/** When the search is re-run (tree.json changes), the new nodes grow in: the model is swapped and the tree grows again. */
+async function checkNewTests() {
+  if (O ? O.hidden() : document.hidden) return;
+  try {
+    const head = await fetch('tree.json', { method: 'HEAD', cache: 'no-cache' });
+    const sig = head.ok ? (head.headers.get('etag') || head.headers.get('last-modified') || head.headers.get('content-length')) : null;
+    if (!sig || sig === S.sig) { if (sig) S.sig = sig; return; }
+    const first = S.sig == null;
+    S.sig = sig;
+    if (first) return;                                         // the first look only records what is on screen
+    const res = await fetch('tree.json', { cache: 'no-cache' });
+    if (!res.ok) return;
+    const next = C.readDoc(await res.json()), more = (next.meta.nodes || 0) - (S.model.meta.nodes || 0);
+    if (!next.featured.length || more <= 0) return;
+    S.model = next;
+    buildSeeds(); buildRules();
+    selectRoot(next.trees[S.rootId] ? S.rootId : next.featured[0]);
+    const t = document.createElement('div');
+    t.className = 'toast-new'; t.setAttribute('role', 'status'); t.textContent = `+${C.int(more)} NEW TESTS · THE BRANCHES GROW`;
+    document.body.append(t); setTimeout(() => t.remove(), 5000);
+  } catch (e) { /* offline: keep what is on screen */ }
+}
+
 async function main() {
   try {
     S.model = C.readDoc(await loadDoc());
@@ -459,7 +526,11 @@ async function main() {
   if (h === 'top') showTop();
   if (h === 'rules') setTab('rules');
   postJarvis();
-  window.__daphne = { ready: true, state: S, setLens, setTab };
+  const gl = $('gl'), onState = (on) => { app.dataset.gl = on ? 'on' : 'off'; };
+  // the 3D laurel tree first; without the render core / WebGL2 the 2D tree with the glow overlay; without that, the plain 2D tree
+  startTree3d(gl, S, { onState }).then((g) => g || startGlow(canvas, gl, { onState })).then((g) => { glow = g; }).catch(() => { glow = null; });
+  if (!S.model.demo && frozenAt === null) setInterval(checkNewTests, POLL_MS);
+  window.__daphne = { ready: true, state: S, setLens, setTab, get glow() { return glow ? { on: glow.on, passes: glow.passes, quality: glow.quality(), mode: glow.mode || 'glow', stats: glow.stats ? glow.stats() : null } : null; }, checkNewTests };
   requestAnimationFrame(loop);
 }
 

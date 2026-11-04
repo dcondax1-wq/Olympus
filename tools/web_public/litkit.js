@@ -69,13 +69,23 @@ const DEF_BOXES = [{ key: 'asia20', label: 'Asia 20-00', a: 1200, b: 1440, kind:
 const short = (l) => String(l).replace(/ \d\d-\d\d$/, '');
 
 // ------------------------------------------------------------------ the context
+// the real MFFU 50K (the PC bot's anchored eval in data.json "accounts": balance, floor, room = what MFFU shows) in the
+// cloud paper eval's keys; the paper ledger ("live.eval") has its own trail (e.g. floor $48,000 / room $389 while the real
+// account had $1,133 left, 2026-11-03), so it is only the fallback
+function realEval(D) {
+  const a = (D?.accounts || []).find((x) => x && x.source === 'pc' && x.eval && ok(x.eval.room) && ok(x.eval.balance));
+  if (!a) return null;
+  const e = a.eval;
+  return { balance: +e.balance, profit: ok(e.profit) ? +e.profit : +e.balance - 50000, to_target: e.to_target, trailing_mll: ok(e.floor) ? +e.floor : +e.balance - +e.room,
+    cushion: +e.room, start: e.start, real: true };
+}
 // D = data.json of the phone dashboard. Everything optional: missing parts leave their panel lines out.
 export function fromCloud(D, now = Date.now() / 1000) {
   const lv = D?.live || {}, X = D?.lit_extra || {}, S = D?.strategy || {}, news = D?.news && !D.news.error ? D.news : null;
   const ledger = (lv.ledger || []).map((v) => ({ ...v, t: v.entry_t || ledgerT(v), exit_t: v.exit_ts || null }));
   return mk({ src: 'cloud', now, model: lv.model || S.model, model_state: lv.model_state, price: lv.price, last_run: lv.last_run, bars: lv.bars || [],
     levels: X.levels || lv.levels || lv.pools || [], levelsFull: !!(X.levels || lv.levels), lit: { ...(X.lit || {}), ...(lv.lit || {}) }, session: lv.session || X.lit?.session || {},
-    setups: lv.setups || {}, position: lv.position || null, rules: lv.lit_rules || {}, eval: lv.eval || null, eval2wk: lv.eval_2wk || null, ledger, events: lv.events || [],
+    setups: lv.setups || {}, position: lv.position || null, rules: lv.lit_rules || {}, eval: realEval(D) || lv.eval || null, eval2wk: lv.eval_2wk || null, ledger, events: lv.events || [],
     news: news ? (news.events || []) : [], newsRules: news?.bot_now?.rules || null, newsDays: news?.days || [],
     sizing: { ...(X.sizing || {}), mode: lv.lit_sizing || X.sizing?.mode || S.lit_sizing?.mode || 'normal', risk_usd: X.sizing?.risk_usd ?? S.params?.risk_usd ?? 800,
       ref_stop: X.sizing?.ref_stop ?? S.params?.risk_ref_stop ?? 20, max_micros: X.sizing?.max_micros ?? S.params?.max_micros ?? 40,
@@ -350,9 +360,9 @@ export function cockpitHTML(C, sim = null) {
   const wk = K.wk, wkN = C.sizing.wk_stop?.[0] ?? 2, monTxt = K.mon?.text || (K.mon?.on ? 'Monday rule on (applies on Mondays)' : 'Monday rule off');
   const status = K.passed ? ['pass', 'PASSED'] : K.failed ? ['fail', 'FAILED'] : K.dllLeft != null && K.dllLeft <= 0 ? ['halt', 'DAY STOPPED'] : ['open', 'OPEN'];
   return `<div class="lk lk-ck">
-    <div class="lk-ckh"><div><span class="lk-k">Balance · ${esc(P.name)} (paper)</span><b class="lk-big">${usd(K.bal)}</b><em class="${cls(K.bal - P.start)}">${susd(K.bal - P.start)} vs start</em></div><span class="lk-st ${status[0]}">${status[1]}</span></div>
+    <div class="lk-ckh"><div><span class="lk-k">Balance · ${esc(P.name)}${C.eval?.real ? '' : ' (paper)'}</span><b class="lk-big">${usd(K.bal)}</b><em class="${cls(K.bal - P.start)}">${susd(K.bal - P.start)} vs start</em></div><span class="lk-st ${status[0]}">${status[1]}</span></div>
     ${gauge('good', K.progress, `To the ${usd(P.target)} target`, `${usd(K.toTarget)} to go`)}
-    ${gauge(K.room < 0.35 ? 'bad' : 'room', K.room, `Room above the floor ${usd(K.floor)}${K.locked ? ' (locked)' : ''}`, `${usd(K.cushion)} left`)}
+    ${gauge(K.room < 0.35 ? 'bad' : 'room', K.room, `Drawdown left${K.locked ? ' (floor locked)' : ''}`, `${usd(K.cushion)} of ${usd(C.plan.mll)}`)}
     ${P.dll ? gauge(K.dllLeft != null && K.dllLeft < P.dll * 0.4 ? 'bad' : 'day', Math.max(0, K.dllLeft) / P.dll, `Today’s soft limit ${usd(-P.dll)}`, `${susd(K.dayPnl)} today · ${usd(Math.max(0, K.dllLeft))} left`) : ''}
     <div class="lk-kv lk-3">
       <div><span>Size now</span><b>${K.z.m || 0} micros</b><em>${K.z.stop}-pt stop · ${usd(K.z.tw ? K.z.risk : K.z.usd)} risk${K.z.tw ? ` · ${esc(K.z.why)}` : ''}${K.z.mult < 1 ? ' · half (weekly stop)' : ''}</em></div>
@@ -453,7 +463,7 @@ export function ready(C) {
   add(pc.present ? (pc.silent ? 'bad' : pc.running === false ? 'warn' : 'ok') : 'warn', 'PC bot + NinjaTrader', pc.present ? (pc.silent ? `silent for ${cd(pc.age_s || 0)}` : `${pc.adapter || 'paper'} · ${pc.running === false ? 'stopped' : 'running'}`)
     : 'no heartbeat: start the PC by 01:55 ET (most LIT entries come 02:00-08:00)');
   add(C.lit?.one_min_day === false ? 'warn' : 'ok', '1-minute bars', C.lit?.one_min_day === false ? 'today runs on 5m bars only (fewer, worse fills)' : 'LIT enters on a 1m CISD');
-  add(ev.failed ? 'bad' : ev.passed ? 'ok' : ev.room < 0.35 ? 'warn' : 'ok', 'Eval room', ev.passed ? 'target reached' : `${usd(ev.cushion)} above the floor · ${usd(ev.toTarget)} to the target`);
+  add(ev.failed ? 'bad' : ev.passed ? 'ok' : ev.room < 0.35 ? 'warn' : 'ok', 'Drawdown left', ev.passed ? 'target reached' : `${usd(ev.cushion)} of the max loss left · ${usd(ev.toTarget)} to the target`);
   add(ev.dllLeft != null && ev.dllLeft <= 0 ? 'bad' : 'ok', 'Daily loss limit', ev.dllLeft == null ? 'none' : `${usd(Math.max(0, ev.dllLeft))} left today`);
   add(ev.wk && ev.wk.mult < 1 ? 'warn' : 'ok', 'Size', `${ev.z.m} micros on a ${ev.z.stop}-pt stop · mode ${modeLabel(ev.z.mode || C.sizing.mode)}${ev.wk && ev.wk.mult < 1 ? ' · weekly stop: half size' : ''}`);
   add(news.length ? 'warn' : 'ok', 'High-impact news', news.length ? news.map((e) => `${hm(et(e.t).min)} ${e.title}`).join(' · ') : 'none today');

@@ -86,12 +86,15 @@
 // zenith.css (the breadcrumb on every page, one card system / spacing scale / empty state, glass cards with an edge light and
 // a small 3D tilt, numbers that count to their new value, Home's money line + the 3D equity energy ribbon, View Transitions
 // between pages, the shared 3D quality key jfx, Olympus themes through one token function). OTHER_APPS unchanged.
-const CACHE = 'le-public-v53';
+// v54 (2026-11-03 night, owner: "room to floor should be directly what the drawdown is"): every eval card shows "Drawdown left
+// $X of $max loss" (the real MFFU account first, not the cloud paper ledger) and no "session X of 10" bars (boardcore, realcore,
+// missioncore, goals, hub, more, extras, litkit, second, statuscore, procore, blitzcore, fleet, launch, hermes/cards).
+const CACHE = 'le-public-v55';
 const NAV_WAIT_MS = 3500;
 let SLOW_UNTIL = 0;       // the site was just slow (the page waited NAV_WAIT_MS): data.json / home.json then wait 0.4 s, not 3.5 s
 const COPY_CLIENTS = new Map();   // a page (client id) answered from the saved copy -> until when its data.json / home.json are too
 const BADGE = 'le-badge', BADGE_URL = './__badge';
-const OTHER_APPS = ['jarvis/', 'planner/', 'kalshi/', 'datacity/', 'mind/', 'tree/', 'oracle/', 'odeon/', 'fates/', 'hermes/', 'prometheus/', 'tyche/', 'pantheon/', 'olympus/', 'arena/', 'bridge/']; // own folders (own workers or none): never handled or cached here
+const OTHER_APPS = ['jarvis/', 'planner/', 'kalshi/', 'datacity/', 'mind/', 'tree/', 'oracle/', 'odeon/', 'fates/', 'hermes/', 'prometheus/', 'tyche/', 'pantheon/', 'olympus/', 'arena/', 'bridge/', 'ares/', 'plutus/', 'athena/', 'forum/', 'labyrinth/', 'argus/', 'nemesis/', 'chronos/', 'hephaestus/']; // own folders (own workers or none): never handled or cached here
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=p111030', './icons/apple-touch-icon.png?v=p111030', './icons/icon-512.png?v=p111030'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });
 self.addEventListener('activate', (e) => {

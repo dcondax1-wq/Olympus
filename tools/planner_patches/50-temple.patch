@@ -1,0 +1,764 @@
+diff --git a/planner/docs/features-temple.md b/planner/docs/features-temple.md
+new file mode 100644
+--- /dev/null
++++ b/planner/docs/features-temple.md
+@@ -0,0 +1,38 @@
++# Temple layer: the day as a temple, voice add, rank and streak, weekly review
++
++Plain text for the Help sheet and README (merge by hand). Owner (2026-11-03): "sicker and more useful".
++
++## The Temple (button on Today, palette, All tools; link `#temple`)
++- **Your day as a temple.** A pediment with the date and a sun that follows the clock (a moon at night), the hours as the
++  architrave with a glowing NOW beam, today's events standing between the hour columns. Tap an event to open it.
++- **The steps ahead.** The next 14 days as steps, each as tall as that day's planned work against 60% of its free time:
++  green fits, amber is over the free time, red has a task that may miss its date (a flag on top). **Block time** opens
++  Deadline risk, which puts the task in the best free gap.
++- **Say it.** Tap the mic and say "call Sam tomorrow at 3 pm hashtag nq, high priority". The words are cleaned (word numbers,
++  "p.m.", "at", "hashtag", "every day"), read the way the quick add reads a line, and shown as a chip: **Add** (a time makes
++  it an event) or **Add and listen again**. No service: the phone's own speech recognition. No microphone or no permission:
++  type in the same box. Link `#voice-add`.
++- **Rank and streak.** Your Arena rank, XP and the XP to the next rank, Arena's Daily goal run, and the Planner's own run of
++  days with the daily goal met. Read only (see the notes below).
++- **Weekly review** (link `#weekly-review`). The last 7 days against the 7 before: tasks done, focus minutes, goal days, habit
++  check-ins, done on time, best day, up to 3 laurels (more done than before, goal met on 4+ days, 2h+ focused), and what
++  is dated in the next 7 days. **Copy the week** puts a one-line summary on the clipboard. The Temple button gets a red dot on
++  Saturday to Monday until you open it that day.
++- **Focus mode** gets 60 tick marks that light up as the minutes pass, a comet at the tip of the ring and one line with your
++  rank and streak.
++
++## Notes for the lead (not for the Help sheet)
++- Code: `planner/ext-temple.js`, loaded by one `<script src="ext-temple.js">` in `<head>` after ext-olympus.js. It waits for
++  `planner:ready`, needs `PlannerAPI` (`parseWhen`, `parseTag`, `commit`, `eventsOn`, `freeGaps`, `HB_TOOLS`, `PK_CMDS`) and uses
++  ext-olympus's `window.__ox.line` for the lane layout and ext-flow's `window.__fl.risk` for the flags; without ext-flow the
++  steps simply show no flags.
++- Arena: reads `localStorage['arena.v1']` only (`{ events: [{ id, day, kind }] }`), with Arena's own rules (ranks and XP per
++  kind with the per-day cap, copied from `arena/rules.json`; that file is read once when it is on the same site and replaces the
++  copy if it is valid). A missing or broken ledger = "Arena not opened yet". It never writes any `arena.*` key.
++- Data: none synced. Device key `planner.temple.seen` (the day the review dot was cleared). Tasks and events are added through
++  `snapshot()` + `commit()` exactly like the app's own quick add (Undo works).
++- Effects: follows the Olympus layer (`html.ox`, `html.ox-move`: device switch, `jfx` quality, reduced motion) and its theme
++  variables `--ox-a/--ox-b/--ox-glow`. The only endless animation is the listening pulse (transform / opacity); the Focus ring
++  paints once a second only while Focus mode is open. The Temple adds nothing to the Today page height (one button in the header row).
++- Pure helpers on `window.__tp`: `spoken`, `read`, `arena`, `arenaRules`, `review`, `reviewLine`, `steps`, `run`.
++- Tests: `planner/tests/temple.test.js` (PORT env, default 8789; 42 checks).
+diff --git a/planner/ext-temple.js b/planner/ext-temple.js
+new file mode 100644
+--- /dev/null
++++ b/planner/ext-temple.js
+@@ -0,0 +1,538 @@
++// ===== TEMPLE: the day as a temple, voice add, Arena rank + streak, weekly review, a glowing Focus ring (ext-temple.js; docs/features-temple.md; tests/temple.test.js) =====
++// (2026-11-03, owner: "sicker and more useful")
++//  - Temple sheet (#temple, header button, palette, All tools): the day as a temple. A pediment with the date and a sun that
++//    follows the clock, the hours as an architrave with a glowing NOW beam, events standing between hour columns, and under it the
++//    steps ahead (14 days, each step as tall as that day's load against the free time) with a flag on every day that has a task
++//    that may miss its date (Deadline risk, ext-flow).
++//  - Voice add: hold a button and say "call Sam tomorrow at 3 pm hashtag nq, high priority"; the speech is cleaned (word numbers,
++//    "at", "hashtag"), read by the app's own parseWhen / parseTag, shown as a chip, added with Add (a time makes it an event).
++//    Standalone: the browser's own speech recognition, no service; no microphone = type in the same box.
++//  - Rank + streak: reads Arena's ledger (localStorage 'arena.v1', READ ONLY) with Arena's published rules: rank, XP to the next
++//    rank, Arena's Daily goal run, plus the Planner's own Daily goal run. Nothing is ever written to Arena.
++//  - Weekly review card: the last 7 days against the 7 before (tasks done, focus minutes, goal days, habits, on time, best day),
++//    laurels, what is coming next week, Copy.
++//  - Focus mode (ext-olympus) gets 60 tick marks that light up, a comet at the tip of the ring, and the rank + streak line.
++// Loaded in <head>; waits for 'planner:ready'. Own data: none synced. Device key planner.temple.seen (the review dot). Follows the
++// Olympus layer's effects level (html.ox / html.ox-move: jfx, device switch, reduced motion) and its theme variables.
++(function () {
++  'use strict';
++  const SEEN_KEY = 'planner.temple.seen', ARENA_KEY = 'arena.v1', GOAL_KEY = 'planner.flow.goal';
++  const DAY_FROM = 7 * 60, DAY_TO = 22 * 60, SHARE = 0.6, HORIZON = 14, LANES = 3;
++  const root = document.documentElement;
++  let A = null, wanted = '';
++
++  const get = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
++  const set = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* this visit only */ } };
++  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
++  const p2 = (n) => String(n).padStart(2, '0');
++  const kOf = (d) => `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
++  const dOf = (k) => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); };
++  const plus = (k, n) => { const d = dOf(k); d.setDate(d.getDate() + n); return kOf(d); };
++  const today = () => kOf(new Date());
++  const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
++  const nowMin = () => { const n = new Date(); return n.getHours() * 60 + n.getMinutes(); };
++  const toMin = (hm) => { const m = /^(\d{1,2}):(\d{2})/.exec(hm || ''); return m ? +m[1] * 60 + +m[2] : null; };
++  const t12 = (m) => { let h = Math.floor(m / 60) % 24; const mm = m % 60, ap = h < 12 ? 'am' : 'pm'; h = h % 12 || 12; return (mm ? `${h}:${p2(mm)}` : `${h}`) + ap; };
++  const dur = (m) => { m = Math.max(0, Math.round(m)); return m >= 60 ? `${Math.floor(m / 60)}h${m % 60 ? ' ' + (m % 60) + 'm' : ''}` : `${m}m`; };
++  const buzz = (ms) => { try { if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.isActive)) navigator.vibrate(ms); } catch (e) { /* optional */ } };
++  const est = (x) => (+x.est > 0 ? +x.est : 30);
++  const isOpen = (x) => !!x && !x.done && x.tag !== 'idea' && !/^Idea:/.test(x.title || '');
++  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
++
++  // =====================================================================================================================
++  // Arena, read only. The rules are Arena's own (arena/rules.json); a copy is kept here so the Planner works without it, and the
++  // real file is read once when it is on the same site. Ranks come from the XP of the ledger the phone keeps ('arena.v1').
++  // =====================================================================================================================
++  let RULES = {
++    ranks: [{ id: 'mortal', name: 'Mortal', xp: 0, color: '#9aa4b2' }, { id: 'hero', name: 'Hero', xp: 1000, color: '#e0a060' }, { id: 'demigod', name: 'Demigod', xp: 3000, color: '#dfe7f5' },
++      { id: 'olympian', name: 'Olympian', xp: 7000, color: '#ffcf5a' }, { id: 'titan', name: 'Titan', xp: 15000, color: '#ff9d3a' }],
++    xp: { bot_day: [20, 1], clean_trade: [25, 2], plan_week: [60, 1], green_week: [40, 1], eval_passed: [500, 9], payout: [400, 9], task_done: [5, 6], goal_day: [20, 1], habit: [5, 3], journal: [15, 1], kalshi_day: [10, 1], quest: [15, 3], quest_sweep: [25, 1] },
++  };
++  function arenaRules(doc) {
++    // arena/rules.json: { ranks: [{id,name,xp,color}], xp: { kind: { xp, cap_day } } } -> the compact form above, or null if it is not that
++    if (!doc || !Array.isArray(doc.ranks) || !doc.xp || typeof doc.xp !== 'object') return null;
++    const ranks = doc.ranks.filter((r) => r && typeof r.name === 'string' && Number.isFinite(+r.xp)).map((r) => ({ id: String(r.id || r.name), name: r.name, xp: +r.xp, color: /^#[0-9a-f]{3,8}$/i.test(r.color || '') ? r.color : '#ffcf5a' })).sort((a, b) => a.xp - b.xp);
++    const xp = {}; Object.entries(doc.xp).forEach(([k, v]) => { if (v && Number.isFinite(+v.xp)) xp[k] = [+v.xp, Math.max(1, +v.cap_day || 1)]; });
++    return ranks.length && ranks[0].xp === 0 ? { ranks, xp } : null;
++  }
++  // arena(doc, today, R) with doc = the parsed 'arena.v1' ({ events: [{ id, day, kind }] }) -> { linked, xp, rank, next, need, pc, goalRun, xpToday }
++  // XP = each event's XP, a kind counting only cap_day times a day (Arena's rule). The Daily goal run = consecutive days with a goal_day
++  // event, alive through today.
++  function arena(doc, t, R) {
++    R = R || RULES;
++    const evs = doc && typeof doc === 'object' && Array.isArray(doc.events) ? doc.events.filter((e) => e && typeof e.kind === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(e.day || '') && R.xp[e.kind]) : null;
++    if (!evs) return { linked: false, xp: 0, rank: R.ranks[0], next: R.ranks[1] || null, need: R.ranks[1] ? R.ranks[1].xp : 0, pc: 0, goalRun: 0, xpToday: 0 };
++    const used = new Map(), goalDays = new Set(); let xp = 0, xpToday = 0;
++    evs.slice().sort((a, b) => a.day.localeCompare(b.day)).forEach((e) => {
++      const [pts, cap] = R.xp[e.kind], key = e.kind + '|' + e.day, n = used.get(key) || 0; used.set(key, n + 1);
++      if (n < cap) { xp += pts; if (e.day === t) xpToday += pts; }
++      if (e.kind === 'goal_day') goalDays.add(e.day);
++    });
++    let ri = 0; R.ranks.forEach((r, i) => { if (xp >= r.xp) ri = i; });
++    const rank = R.ranks[ri], next = R.ranks[ri + 1] || null;
++    let goalRun = 0, k = goalDays.has(t) ? t : plus(t, -1);
++    while (goalDays.has(k) && goalRun < 3660) { goalRun++; k = plus(k, -1); }
++    return { linked: true, xp, rank, next, need: next ? next.xp - xp : 0, pc: next ? clamp((xp - rank.xp) / (next.xp - rank.xp), 0, 1) : 1, goalRun, xpToday };
++  }
++  function readArena() { try { return JSON.parse(get(ARENA_KEY) || 'null'); } catch (e) { return null; } }
++  let fetched = false;
++  function fetchRules() {
++    if (fetched || typeof fetch !== 'function') return; fetched = true;
++    try { fetch('../arena/rules.json', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).then((j) => { const R = arenaRules(j); if (R) { RULES = R; refreshRank(); } }).catch(() => {}); } catch (e) { /* offline */ }
++  }
++
++  // =====================================================================================================================
++  // The Planner's own numbers (read from the app's state)
++  // =====================================================================================================================
++  function doneDays() { const out = {}; A.S.tasks.forEach((x) => { if (x && x.done && +x.doneAt > 0) { const k = kOf(new Date(+x.doneAt)); out[k] = (out[k] || 0) + 1; } }); return out; }
++  const goalGet = () => { const g = parseInt(get(GOAL_KEY), 10); return g >= 1 && g <= 10 ? g : 3; };
++  // run(doneDays, t, g): days in a row with at least g tasks done; today counts when met, else the run is kept alive from yesterday
++  function run(dd, t, g) { let n = 0, k = (dd[t] || 0) >= g ? t : plus(t, -1); while ((dd[k] || 0) >= g && n < 3660) { n++; k = plus(k, -1); } return n; }
++  const focusOn = (k) => A.S.tasks.reduce((a, t) => a + ((t && t.fl && +t.fl[k]) || 0), 0);
++
++  // review(S, t, g): the last 7 days (t and the 6 before) against the 7 before that -> { cur, prev, laurels, best, next }
++  function review(S, t, g) {
++    const dd = {}; S.tasks.forEach((x) => { if (x && x.done && +x.doneAt > 0) { const k = kOf(new Date(+x.doneAt)); dd[k] = (dd[k] || 0) + 1; } });
++    const span = (from) => { const days = []; for (let i = 0; i < 7; i++) days.push(plus(from, i)); return days; };
++    const week = (days) => {
++      const set = new Set(days);
++      const done = days.reduce((a, k) => a + (dd[k] || 0), 0), goalDays = days.filter((k) => (dd[k] || 0) >= g).length;
++      const focus = S.tasks.reduce((a, x) => a + (x && x.fl ? days.reduce((b, k) => b + (+x.fl[k] || 0), 0) : 0), 0);
++      const habits = (S.habits || []).reduce((a, h) => a + ((h && h.done) || []).filter((k) => set.has(k)).length, 0);
++      const dated = S.tasks.filter((x) => x && x.done && +x.doneAt > 0 && x.date && set.has(kOf(new Date(+x.doneAt))));
++      const onTime = dated.filter((x) => kOf(new Date(+x.doneAt)) <= x.date).length;
++      let bestK = '', bestN = 0; days.forEach((k) => { if ((dd[k] || 0) > bestN) { bestN = dd[k]; bestK = k; } });
++      return { days, done, goalDays, focus, habits, dated: dated.length, onTime, bestK, bestN };
++    };
++    const cur = week(span(plus(t, -6))), prev = week(span(plus(t, -13)));
++    const laurels = (cur.done > 0 && cur.done >= prev.done ? 1 : 0) + (cur.goalDays >= 4 ? 1 : 0) + (cur.focus >= 120 ? 1 : 0);
++    const nextWeek = S.tasks.filter((x) => isOpen(x) && x.date && x.date > t && x.date <= plus(t, 7)).length;
++    return { cur, prev, laurels, next: nextWeek };
++  }
++  function reviewLine(r) {
++    const d = r.cur.done - r.prev.done;
++    if (!r.cur.done && !r.cur.focus) return 'A quiet week. One small task today starts the next one.';
++    if (!r.prev.done) return `${r.cur.done} task${r.cur.done === 1 ? '' : 's'} done. A first week on the record.`;
++    if (d > 0) return `Up ${d} on the week before: ${r.cur.done} tasks done.`;
++    if (d < 0) return `${-d} fewer than the week before (${r.cur.done} against ${r.prev.done}). Tomorrow is a clean step.`;
++    return `Level with the week before: ${r.cur.done} tasks done.`;
++  }
++
++  // =====================================================================================================================
++  // Voice: clean up what was said, then let the app read it
++  // =====================================================================================================================
++  const NUM = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12 };
++  const NUMRE = Object.keys(NUM).join('|');
++  // spoken(text) -> { text, p }: "Call Sam tomorrow at seven thirty p.m. hashtag N Q high priority" -> text "call Sam tomorrow 7:30pm #nq", p 3
++  function spoken(raw) {
++    let s = ' ' + String(raw || '').replace(/[.,!?]+(?=\s|$)/g, ' ').replace(/\s+/g, ' ').trim() + ' ', p = 0;
++    s = s.replace(/\b([ap])\.?\s?m\.?(?=\s)/gi, '$1m');                       // p.m. / p m -> pm
++    s = s.replace(new RegExp(`\\b(${NUMRE})\\b(?=\\s+(?:${NUMRE}|oh|o'clock|fifteen|thirty|forty five|forty-five|[0-5]\\d)?\\s*[ap]m\\b|\\s+o'clock)`, 'gi'), (m) => NUM[m.toLowerCase()]);
++    s = s.replace(new RegExp(`\\b(${NUMRE})\\b(?=\\s+(?:days?)\\b)`, 'gi'), (m) => NUM[m.toLowerCase()]);
++    s = s.replace(/\b(\d{1,2})\s+(fifteen|thirty|forty[ -]?five)\s*(?=[ap]m\b)/gi, (m, h, w) => `${h}:${{ fifteen: '15', thirty: '30' }[w.toLowerCase()] || '45'}`);
++    s = s.replace(/\b(\d{1,2})\s+(\d{2})\s*(?=[ap]m\b)/gi, '$1:$2');           // "7 30 pm" -> "7:30pm"
++    s = s.replace(/\b(\d{1,2}(?::\d{2})?)\s+(?=[ap]m\b)/gi, '$1');             // "7 pm" -> "7pm"
++    s = s.replace(/\b(\d{1,2})\s+o'?clock\b/gi, '$1').replace(/\b(?:at|around|by|due|on)\s+(?=\d{1,2}(?::\d{2})?[ap]m\b)/gi, '');
++    s = s.replace(/\b(?:hash ?tag)\s+([a-z0-9-]+(?:\s[a-z](?=\s|$))*)/gi, (m, w) => '#' + w.replace(/\s+/g, '').toLowerCase());
++    s = s.replace(/\b(?:by|due|on|for)\s+(?=(?:today|tonight|tomorrow|mon|tue|wed|thu|fri|sat|sun)[a-z]*\b)/gi, '');
++    s = s.replace(/\b(?:every ?day)\b/gi, 'daily').replace(/\bevery (?:week ?day|work ?day)s?\b/gi, 'weekdays');
++    s = s.replace(/\b(?:(?:high|top)\s+priority|important|urgent|urgently|asap)\b/gi, () => { p = 3; return ' '; });
++    s = s.replace(/\b(?:remind me to|add (?:a )?(?:task|reminder)?(?: to)?|new task|please)\b/gi, ' ').replace(/\s+/g, ' ').trim();
++    return { text: s, p };
++  }
++  // read(text, A) -> { title, date, start, rep, proj, p, kind } the way the app's own quick add reads a line
++  function read(text) {
++    const sp = spoken(text), tag = A.parseTag(sp.text), w = A.parseWhen(tag.title);
++    const title = (w.title || tag.title || '').replace(/^./, (c) => c.toUpperCase());
++    return { title, date: w.date || '', start: w.start || '', rep: w.rep || '', proj: tag.proj || '', p: sp.p, kind: w.start ? 'event' : 'task' };
++  }
++  function addRead(x) {
++    if (!x || !x.title) return false;
++    const S = A.S, d = x.date || today();
++    A.snapshot();
++    if (x.kind === 'event') {
++      const s = toMin(x.start);
++      A.commit(() => { S.events.push({ id: A.uid(), title: x.title, cat: S.lastCat, date: d, allDay: false, start: x.start, end: A.fromMin(Math.min(s + 60, 1439)), endDate: '', repeat: x.rep || 'none', until: '', notes: '', ex: [], proj: x.proj, created: Date.now() }); });
++      A.render(); A.toast(`Event added: ${A.longDate(d)}, ${A.fmtTime(x.start)}`, true);
++    } else {
++      A.commit(() => { S.tasks.push({ id: A.uid(), title: x.title, date: x.date, done: false, p: x.p || 0, proj: x.proj, rep: x.rep, created: Date.now() }); });
++      A.refreshTasks(); A.toast(x.date ? `Task set for ${A.longDate(x.date)}` : 'Task added', true);
++    }
++    return true;
++  }
++  const chipText = (x) => !x || !x.title ? '' : `${x.kind === 'event' ? 'Event' : 'Task'}: ${x.title}${x.date ? ', ' + A.longDate(x.date) : ''}${x.start ? ' ' + A.fmtTime(x.start) : ''}${x.rep ? ', ' + x.rep : ''}${x.proj ? ' #' + x.proj : ''}${x.p === 3 ? ', high priority' : ''}`;
++
++  // =====================================================================================================================
++  // The temple: model + drawing
++  // =====================================================================================================================
++  function todayItems() {
++    const k = A.todayKey();
++    return A.eventsOn(k).filter((o) => o && o.ev && !o.ev.bot && !o.ev.allDay && o.ev.start).map((o) => {
++      const s = toMin(o.ev.start), e = toMin(o.ev.end);
++      return { id: o.ev.id, occ: o.occ, title: o.ev.title || 'Event', s, e: e != null && e > s ? e : Math.min(s + 60, 1440), c: A.colorOf(o.ev) };
++    });
++  }
++  const gapsOf = (k) => { try { const trv = (A.bfSpans(k) || []).map((x) => [x.s, x.e]); return A.freeGaps(k, DAY_FROM, DAY_TO, 15, trv); } catch (e) { return []; } };
++  // steps(tasks, days) with days [{ k, cap }]: per day { k, need, cap, load (need / cap), over, risk } for the Deadline risk
++  // picture: need = minutes of open tasks dated that day (the first day also takes what is overdue), risk = ids at risk (ext-flow)
++  function steps(tasks, days, riskFn) {
++    const first = days.length ? days[0].k : '';
++    const at = new Set((riskFn ? riskFn(tasks, days) : []).map((r) => r.t.id));
++    return days.map((d) => {
++      const own = tasks.filter((x) => x.date && (x.date === d.k || (d.k === first && x.date < first)));
++      const need = own.reduce((a, x) => a + est(x), 0);
++      return { k: d.k, need, cap: d.cap, load: d.cap > 0 ? need / d.cap : need > 0 ? 2 : 0, over: need > d.cap && need > 0, risk: own.filter((x) => at.has(x.id)).map((x) => x.id), n: own.length };
++    });
++  }
++  function horizon() {
++    const t = today(), days = [];
++    for (let i = 0; i < HORIZON; i++) { const k = plus(t, i); days.push({ k, cap: Math.round(gapsOf(k).reduce((a, [s, e]) => a + (e - s), 0) * SHARE) }); }
++    const planned = A.S.tasks.filter((x) => isOpen(x) && x.date && !A.S.events.some((e) => e && e.taskId === x.id && e.date >= t && e.date <= x.date));
++    const rf = window.__fl && typeof window.__fl.risk === 'function' ? window.__fl.risk : null;
++    return { t, days, list: planned, st: steps(planned, days, rf), at: rf ? rf(planned, days) : [] };
++  }
++
++  const W = 360, X0 = 22, X1 = 338;
++  function templeSvg(M, now) {
++    const span = M.to - M.from, x = (m) => X0 + (clamp(m, M.from, M.to) - M.from) / span * (X1 - X0);
++    const cellaTop = 96, laneH = 20, cellaH = M.lanes * laneH + 10, base = cellaTop + cellaH;
++    const inDay = now >= M.from && now <= M.to, nx = x(now);
++    const sunX = clamp(x(now), 150, 210), night = now < 6 * 60 || now >= 20 * 60;
++    let cols = '', hours = '';
++    for (let h = Math.ceil(M.from / 60); h * 60 <= M.to; h++) {
++      if (h % 3) continue;
++      const cx = x(h * 60);
++      cols += `<g class="tp-col"><rect x="${(cx - 5).toFixed(1)}" y="${cellaTop - 2}" width="10" height="${cellaH + 2}" fill="url(#tpMarble)"/><rect x="${(cx - 8).toFixed(1)}" y="${cellaTop - 4}" width="16" height="4" rx="1" fill="url(#tpStone)"/><rect x="${(cx - 8).toFixed(1)}" y="${base - 3}" width="16" height="3" rx="1" fill="url(#tpStone)"/><path d="M${(cx - 1.6).toFixed(1)} ${cellaTop}v${cellaH - 4}M${(cx + 1.6).toFixed(1)} ${cellaTop}v${cellaH - 4}" stroke="rgba(0,0,0,.28)" stroke-width=".6"/></g>`;
++      hours += `<text x="${cx.toFixed(1)}" y="85" text-anchor="middle" class="tp-hr">${t12(h * 60).replace(/(am|pm)$/, (s) => s[0])}</text>`;
++    }
++    const blocks = M.items.map((b) => {
++      const bx = x(b.s), bw = Math.max(18, x(b.e) - bx), by = cellaTop + 5 + b.lane * laneH, chars = Math.floor((bw - 8) / 5.4);
++      const label = b.title.length > chars ? b.title.slice(0, Math.max(0, chars - 1)) + (chars > 2 ? '…' : '') : b.title;
++      return `<g class="tp-ev${b.cur ? ' cur' : ''}${b.past ? ' past' : ''}" data-ev="${esc(b.id)}" data-occ="${esc(b.occ)}" role="button" tabindex="0" aria-label="${esc(`${b.title}, ${t12(b.s)} to ${t12(b.e)}`)}"><rect x="${bx.toFixed(1)}" y="${by}" width="${bw.toFixed(1)}" height="${laneH - 4}" rx="5" style="--c:${esc(b.c)}"/>${chars >= 3 ? `<text x="${(bx + 5).toFixed(1)}" y="${by + 11.5}">${esc(label)}</text>` : ''}</g>`;
++    }).join('');
++    const d = dOf(today()), title = `${WD[d.getDay()].toUpperCase()} · ${MON[d.getMonth()].toUpperCase()} ${d.getDate()}`;
++    const sun = night ? `<circle cx="${sunX}" cy="46" r="9" fill="#cfd8ff" opacity=".9"/><circle cx="${sunX + 4}" cy="43" r="8" fill="#0b0d1c"/>` : `<circle class="tp-sun" cx="${sunX.toFixed(1)}" cy="44" r="10" fill="url(#tpSun)"/>`;
++    return `<svg class="tp-svg" viewBox="0 0 ${W} ${base + 22}" role="img" aria-label="${esc('The day as a temple. ' + (M.cur ? 'Now: ' + M.cur.title : M.next ? 'Next: ' + M.next.title + ' at ' + t12(M.next.s) : 'Nothing else today'))}">
++      <defs>
++        <linearGradient id="tpStone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4efe4"/><stop offset="1" stop-color="#b9b19f"/></linearGradient>
++        <linearGradient id="tpMarble" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8f897b"/><stop offset=".35" stop-color="#f6f1e6"/><stop offset="1" stop-color="#8a8475"/></linearGradient>
++        <radialGradient id="tpSun"><stop offset="0" stop-color="#fff6c8"/><stop offset=".55" stop-color="#ffcf5a"/><stop offset="1" stop-color="#ff9d3a"/></radialGradient>
++        <linearGradient id="tpBeam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--ox-b)"/><stop offset="1" stop-color="var(--ox-a)" stop-opacity=".1"/></linearGradient>
++        <linearGradient id="tpPast" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="var(--ox-a)"/><stop offset="1" stop-color="var(--ox-b)"/></linearGradient>
++      </defs>
++      <polygon points="10,72 ${W / 2},12 ${W - 10},72" fill="url(#tpStone)" stroke="rgba(255,255,255,.55)" stroke-width="1"/>
++      <polygon points="30,68 ${W / 2},24 ${W - 30},68" fill="#10132a" opacity=".92"/>
++      ${sun}<text x="${W / 2}" y="64" text-anchor="middle" class="tp-date">${esc(title)}</text>
++      <rect x="${X0 - 8}" y="72" width="${X1 - X0 + 16}" height="16" rx="2" fill="url(#tpStone)"/>
++      ${inDay ? `<rect x="${X0 - 8}" y="72" width="${(nx - X0 + 8).toFixed(1)}" height="16" rx="2" fill="url(#tpPast)" opacity=".55"/>` : ''}
++      ${hours}
++      <rect x="${X0 - 8}" y="${cellaTop - 6}" width="${X1 - X0 + 16}" height="${cellaH + 6}" fill="#0b0d1e" opacity=".92"/>
++      ${cols}${blocks}
++      ${inDay ? `<g class="tp-now"><rect x="${(nx - 1).toFixed(1)}" y="72" width="2" height="${base - 72}" fill="url(#tpBeam)"/><polygon points="${(nx - 5).toFixed(1)},68 ${(nx + 5).toFixed(1)},68 ${nx.toFixed(1)},76" fill="var(--ox-b)"/><text x="${clamp(nx, 26, W - 26).toFixed(1)}" y="${base + 14}" text-anchor="middle" class="tp-nowt">${t12(now)}</text></g>` : ''}
++      <rect x="${X0 - 14}" y="${base}" width="${X1 - X0 + 28}" height="5" fill="url(#tpStone)"/><rect x="${X0 - 20}" y="${base + 5}" width="${X1 - X0 + 40}" height="5" fill="url(#tpStone)" opacity=".85"/><rect x="${X0 - 26}" y="${base + 10}" width="${X1 - X0 + 52}" height="5" fill="url(#tpStone)" opacity=".7"/>
++    </svg>`;
++  }
++  function stepsSvg(H) {
++    const n = H.st.length, bw = 18, gap = (W - 28 - n * bw) / (n - 1), top = 14, hmax = 46, y0 = top + hmax;
++    const bars = H.st.map((s, i) => {
++      const x = 14 + i * (bw + gap), h = Math.max(s.n ? 5 : 2, Math.round(Math.min(1.15, s.load) * hmax / 1.15 * 1.15)), c = s.risk.length ? 'risk' : s.over ? 'over' : s.n ? 'ok' : 'none';
++      const d = dOf(s.k), flag = s.risk.length ? `<g class="tp-flag"><path d="M${(x + 3).toFixed(1)} ${y0 - h - 14}v14" stroke="#fda4af" stroke-width="1.4"/><path d="M${(x + 3).toFixed(1)} ${y0 - h - 14}h9l-3 3.5 3 3.5h-9z" fill="#fb7185"/></g>` : '';
++      return `<g class="tp-step ${c}"><rect x="${x.toFixed(1)}" y="${y0 - h}" width="${bw}" height="${h}" rx="3"><title>${esc(`${WD[d.getDay()]} ${MON[d.getMonth()]} ${d.getDate()}: ${dur(s.need)} planned, ${dur(s.cap)} usable${s.risk.length ? ', ' + s.risk.length + ' may miss the date' : ''}`)}</title></rect>${flag}<text x="${(x + bw / 2).toFixed(1)}" y="${y0 + 12}" text-anchor="middle" class="tp-wd${i === 0 ? ' now' : ''}">${i === 0 ? 'Now' : WD[d.getDay()][0]}</text><text x="${(x + bw / 2).toFixed(1)}" y="${y0 + 23}" text-anchor="middle" class="tp-dn">${d.getDate()}</text></g>`;
++    }).join('');
++    return `<svg class="tp-svg tp-steps" viewBox="0 0 ${W} ${y0 + 30}" role="img" aria-label="The steps ahead: how full each of the next 14 days is">${bars}<line x1="8" x2="${W - 8}" y1="${y0 + 1}" y2="${y0 + 1}" stroke="rgba(255,255,255,.18)"/></svg>`;
++  }
++
++  // =====================================================================================================================
++  // The sheet
++  // =====================================================================================================================
++  let dlg = null, rec = null, tick = 0;
++  const RING_R = 22, RING_C = 2 * Math.PI * RING_R;
++  function rankRing(a, label) {
++    return `<svg class="tp-rr" viewBox="0 0 54 54" aria-hidden="true"><circle cx="27" cy="27" r="${RING_R}" class="bg"/><circle cx="27" cy="27" r="${RING_R}" class="fg" style="stroke:${esc(a.rank.color)}" stroke-dasharray="${(a.pc * RING_C).toFixed(1)} ${RING_C.toFixed(1)}" transform="rotate(-90 27 27)"/><text x="27" y="31" text-anchor="middle">${esc(label)}</text></svg>`;
++  }
++  function rankHtml() {
++    const a = arena(readArena(), today(), RULES), dd = doneDays(), g = goalGet(), own = run(dd, today(), g), done = dd[today()] || 0;
++    const tasksXp = Math.min(done, RULES.xp.task_done ? RULES.xp.task_done[1] : 6) * (RULES.xp.task_done ? RULES.xp.task_done[0] : 5);
++    const head = a.linked ? `<b>${esc(a.rank.name)}</b><span>${a.xp.toLocaleString('en-US')} XP${a.next ? ` · ${a.need.toLocaleString('en-US')} to ${esc(a.next.name)}` : ' · the top rank'}</span>` : '<b>Arena not opened yet</b><span>Open Arena once on this phone and your rank shows here.</span>';
++    return `<div class="tp-rank">${rankRing(a, (a.rank.name || 'M')[0])}<div class="tp-rt">${head}</div></div>
++      <div class="tp-chips"><span class="tp-pill${own ? ' hot' : ''}" title="Days in a row with ${g}+ tasks done"><i class="tp-fl" aria-hidden="true"></i>${own} day${own === 1 ? '' : 's'} in a row</span>
++      ${a.linked ? `<span class="tp-pill" title="Arena's Daily goal run">Arena run ${a.goalRun}</span>` : ''}<span class="tp-pill">${done} of ${g} done today</span><span class="tp-pill">${tasksXp} task XP today</span></div>
++      <p class="tp-note">Read only: ranks and runs are Arena's, counted from the same events. Arena adds today's tasks when you open it.</p>`;
++  }
++  function refreshRank() { const el = dlg && dlg.querySelector('#tpRank'); if (el) el.innerHTML = rankHtml(); updateFocusLine(); }
++
++  function dayHtml() {
++    const items = todayItems(), n = nowMin();
++    const ox = window.__ox;
++    if (!ox || typeof ox.line !== 'function') return '<p class="tp-note">The day timeline is not available.</p>';
++    const M = ox.line(items, n), openN = A.S.tasks.filter((x) => isOpen(x) && x.date && x.date <= today()).length;
++    const say = M.cur ? `Now: <b>${esc(M.cur.title)}</b> until ${t12(M.cur.e)}` : M.next ? `Next: <b>${esc(M.next.title)}</b> at ${t12(M.next.s)}, in ${dur(M.next.s - n)}` : 'Nothing else on the calendar today';
++    return `${templeSvg(M, n)}<p class="tp-say">${say}${openN ? ` · ${openN} task${openN === 1 ? '' : 's'} for today` : ''}</p>`;
++  }
++  function riskHtml() {
++    const H = horizon(), at = H.at;
++    const lines = at.slice(0, 3).map((r) => { const d = dOf(r.t.date); return `<li><b>${esc(r.t.title)}</b><small>due ${WD[d.getDay()]} ${MON[d.getMonth()]} ${d.getDate()} · ${dur(r.short)} short</small></li>`; }).join('');
++    return `${stepsSvg(H)}<div class="tp-key"><i class="ok"></i>planned <i class="over"></i>over the free time <i class="risk"></i>may miss its date</div>
++      ${at.length ? `<ul class="tp-ul">${lines}</ul><div class="tp-acts"><button type="button" class="tp-b go" data-flopen="deadlines">Block time for ${at.length === 1 ? 'it' : 'them'}</button></div>` : '<p class="tp-say">Every dated task has room before its date.</p>'}`;
++  }
++  function weekHtml() {
++    const r = review(A.S, today(), goalGet()), c = r.cur, p = r.prev;
++    const delta = (a, b) => (b == null || (!a && !b) ? '' : a === b ? '<em>same</em>' : `<em class="${a > b ? 'up' : 'dn'}">${a > b ? '+' : ''}${a - b}</em>`);
++    const best = c.bestK ? `${WD[dOf(c.bestK).getDay()]} (${c.bestN})` : '-';
++    const laurel = (i) => `<svg class="tp-lau${i < r.laurels ? ' on' : ''}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21c-5 0-8-4-8-9 3 0 5 1.2 6 3-1-5 0-9 2-12 2 3 3 7 2 12 1-1.8 3-3 6-3 0 5-3 9-8 9z"/></svg>`;
++    return `<div class="tp-lh"><div class="tp-lau-row" role="img" aria-label="${r.laurels} of 3 laurels">${[0, 1, 2].map(laurel).join('')}</div><p class="tp-say">${esc(reviewLine(r))}</p></div>
++      <div class="tp-grid"><div><b>${c.done}</b><span>tasks done ${delta(c.done, p.done)}</span></div><div><b>${dur(c.focus)}</b><span>focused ${delta(c.focus, p.focus)}</span></div>
++      <div><b>${c.goalDays}/7</b><span>goal days ${delta(c.goalDays, p.goalDays)}</span></div><div><b>${c.habits}</b><span>habit check-ins ${delta(c.habits, p.habits)}</span></div>
++      <div><b>${c.dated ? Math.round(c.onTime / c.dated * 100) + '%' : '-'}</b><span>done on time</span></div><div><b>${esc(best)}</b><span>best day</span></div></div>
++      <p class="tp-say">Next 7 days: ${r.next} task${r.next === 1 ? '' : 's'} dated${riskCount() ? `, ${riskCount()} may miss ${riskCount() === 1 ? 'its' : 'their'} date` : ', all with room'}.</p>
++      <div class="tp-acts"><button type="button" class="tp-b" data-tp="copy">Copy the week</button></div>`;
++  }
++  const riskCount = () => { try { return horizon().at.length; } catch (e) { return 0; } };
++  function weekText() {
++    const r = review(A.S, today(), goalGet()), c = r.cur, d = dOf(today());
++    return `My week to ${MON[d.getMonth()]} ${d.getDate()}: ${c.done} tasks done, ${dur(c.focus)} focused, goal met ${c.goalDays} of 7 days, ${c.habits} habit check-ins${c.dated ? `, ${Math.round(c.onTime / c.dated * 100)}% on time` : ''}. ${reviewLine(r)}`;
++  }
++
++  function voiceHtml() {
++    const sr = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
++    return `<div class="tp-voice"><button type="button" class="tp-mic" id="tpMic" aria-pressed="false" aria-label="${sr ? 'Hold to speak, or tap to start and stop' : 'Voice is not available in this browser'}" ${sr ? '' : 'disabled'}><span class="tp-mic-ring" aria-hidden="true"></span><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
++      <div class="tp-vin"><input id="tpIn" autocomplete="off" enterkeyhint="done" aria-label="Say or type a task" placeholder="${sr ? 'Tap the mic, or type: call Sam fri 3pm #nq' : 'Type: call Sam fri 3pm #nq'}"><div id="tpChip" class="tp-chip" aria-live="polite"></div></div></div>
++      <div class="tp-acts"><button type="button" class="tp-b go" id="tpAdd" disabled>Add</button><button type="button" class="tp-b" data-tp="again" id="tpAgain" hidden>Add and listen again</button></div>`;
++  }
++  function paintChip() {
++    const v = dlg.querySelector('#tpIn').value, x = v.trim() ? read(v) : null, chip = dlg.querySelector('#tpChip'), add = dlg.querySelector('#tpAdd');
++    chip.textContent = x && x.title ? chipText(x) : v.trim() ? 'I could not read that. Try a few more words.' : '';
++    chip.classList.toggle('on', !!(x && x.title)); add.disabled = !(x && x.title);
++    dlg.querySelector('#tpAgain').hidden = !(window.SpeechRecognition || window.webkitSpeechRecognition) || !(x && x.title);
++    return x;
++  }
++  function listen(again) {
++    const SR = window.SpeechRecognition || window.webkitSpeechRecognition, mic = dlg.querySelector('#tpMic'), inp = dlg.querySelector('#tpIn');
++    if (!SR) { inp.focus(); return; }
++    if (rec) { try { rec.stop(); } catch (e) { /* done */ } return; }
++    try {
++      const r = new SR(); rec = r; r.lang = navigator.language || 'en-US'; r.interimResults = true; r.maxAlternatives = 1; r.continuous = false;
++      mic.setAttribute('aria-pressed', 'true'); dlg.classList.add('listening'); inp.value = ''; paintChip(); buzz(10);
++      r.onresult = (ev) => { let s = ''; for (let i = 0; i < ev.results.length; i++) s += ev.results[i][0].transcript + ' '; inp.value = s.trim(); paintChip(); };
++      r.onerror = (ev) => { if (ev && /not-allowed|service-not-allowed/.test(ev.error)) A.toast('The microphone is blocked. Type it instead.'); };
++      r.onend = () => { rec = null; mic.setAttribute('aria-pressed', 'false'); dlg.classList.remove('listening'); paintChip(); };
++      r.start();
++    } catch (e) { rec = null; dlg.classList.remove('listening'); A.toast('The microphone is not available here'); }
++  }
++  function addNow(again) {
++    const x = read(dlg.querySelector('#tpIn').value);
++    if (!addRead(x)) return;
++    dlg.querySelector('#tpIn').value = ''; paintChip(); buzz(14); paintAll();
++    if (again) setTimeout(() => listen(), 150);
++  }
++
++  function paintAll() {
++    if (!dlg) return;
++    dlg.querySelector('#tpDay').innerHTML = dayHtml();
++    dlg.querySelector('#tpRisk').innerHTML = riskHtml();
++    dlg.querySelector('#tpRank').innerHTML = rankHtml();
++    dlg.querySelector('#tpWeek').innerHTML = weekHtml();
++    const dot = dlg.querySelector('#tpSub'); if (dot) dot.textContent = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
++  }
++  function open(where) {
++    if (!dlg) {
++      document.body.insertAdjacentHTML('beforeend', `<dialog id="tpTemple" class="tp" aria-label="The Temple"><div class="tp-bg" aria-hidden="true"><i></i><i></i></div>
++        <button type="button" class="tp-x" data-tp="close" aria-label="Close the Temple"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
++        <div class="tp-in" tabindex="-1"><header><h2>The Temple</h2><p id="tpSub"></p></header>
++        <section class="tp-card" id="tpDay" aria-label="Today"></section>
++        <section class="tp-card" aria-label="Say it"><h3>Say it</h3>${voiceHtml()}</section>
++        <section class="tp-card" id="tpRiskCard" aria-label="The steps ahead"><h3>The steps ahead</h3><div id="tpRisk"></div></section>
++        <section class="tp-card" aria-label="Rank and streak"><h3>Rank and streak</h3><div id="tpRank"></div></section>
++        <section class="tp-card" id="tpWeekCard" aria-label="Weekly review"><h3>Weekly review</h3><div id="tpWeek"></div></section>
++        <div class="tp-acts tp-end"><button type="button" class="tp-b go" data-tp="focus">Focus</button><button type="button" class="tp-b" data-tp="close">Close</button></div></div></dialog>`);
++      dlg = document.getElementById('tpTemple');
++      dlg.addEventListener('click', (e) => {
++        const ev = e.target.closest('[data-ev]');
++        if (ev) { dlg.close(); A.openEvent(ev.dataset.ev, ev.dataset.occ); return; }
++        const b = e.target.closest('[data-tp]'); if (b) act(b.dataset.tp);
++        else if (e.target.closest('#tpMic')) listen();
++        else if (e.target.closest('#tpAdd')) addNow(false);
++        else if (e.target.closest('[data-flopen]')) dlg.close();
++      });
++      dlg.addEventListener('input', (e) => { if (e.target.id === 'tpIn') paintChip(); });
++      dlg.addEventListener('keydown', (e) => {
++        if (e.key === 'Enter' && e.target.id === 'tpIn') { e.preventDefault(); addNow(false); }
++        else if ((e.key === 'Enter' || e.key === ' ') && e.target.closest && e.target.closest('g[data-ev]')) { e.preventDefault(); e.target.closest('g[data-ev]').dispatchEvent(new MouseEvent('click', { bubbles: true })); }
++      });
++      dlg.addEventListener('close', () => { clearInterval(tick); tick = 0; if (rec) { try { rec.abort(); } catch (e) { /* ok */ } rec = null; } dlg.classList.remove('listening'); });
++      fetchRules();
++    }
++    paintAll(); paintChip();
++    if (!dlg.open) { dlg.showModal(); dlg.querySelector('.tp-in').focus(); }
++    clearInterval(tick); tick = setInterval(() => { if (dlg.open && !rec) { dlg.querySelector('#tpDay').innerHTML = dayHtml(); } }, 30000);
++    set(SEEN_KEY, today()); markDot();
++    if (where === 'week') setTimeout(() => { const c = dlg.querySelector('#tpWeekCard'); if (c && c.scrollIntoView) c.scrollIntoView({ block: 'start' }); }, 60);
++    if (where === 'voice') setTimeout(() => dlg.querySelector('#tpIn').focus(), 60);
++  }
++  function act(a) {
++    if (a === 'close') dlg.close();
++    else if (a === 'focus') { dlg.close(); const b = document.querySelector('[data-oxfocus]'); if (b) b.click(); else if (A.PK_CMDS.some((c) => c.id === 'ox-focus')) A.PK_CMDS.find((c) => c.id === 'ox-focus').run(); }
++    else if (a === 'again') addNow(true);
++    else if (a === 'copy') {
++      const txt = weekText();
++      try { navigator.clipboard.writeText(txt).then(() => A.toast('Copied'), () => A.toast(txt)); } catch (e) { A.toast(txt); }
++    }
++  }
++
++  // =====================================================================================================================
++  // Today header button, the review dot, and the Focus ring's finishing touches
++  // =====================================================================================================================
++  // the review is "new" from Saturday to Monday until the Temple is opened that day
++  const reviewDue = () => { const d = new Date().getDay(); return (d === 6 || d === 0 || d === 1) && get(SEEN_KEY) !== today(); };
++  function markDot() { document.querySelectorAll('[data-tpopen]').forEach((b) => b.classList.toggle('tp-new', reviewDue())); }
++  function onMain() {
++    const bar = document.querySelector('#main > .tdy > .td-h > div:last-child');
++    if (!bar || bar.querySelector('[data-tpopen]')) return;
++    bar.insertAdjacentHTML('afterbegin', `<button type="button" class="btn sm" data-tpopen title="The Temple: your day, voice add, rank, weekly review">Temple</button>`);
++    markDot();
++  }
++
++  const TICKS = 60, FR = 108;
++  let fxEl = null, fxObs = null, fxTimer = 0;
++  function decorateFocus(el) {
++    if (!el || el.querySelector('.tp-ticks')) return;
++    const svg = el.querySelector('.ox-ring svg'); if (!svg) return;
++    let t = ''; for (let i = 0; i < TICKS; i++) { const major = i % 5 === 0, a = i * 360 / TICKS, r0 = FR + 12, r1 = r0 + (major ? 9 : 5); t += `<line class="${major ? 'M' : ''}" data-i="${i}" x1="120" y1="${120 - r0}" x2="120" y2="${120 - r1}" transform="rotate(${a} 120 120)"/>`; }
++    svg.insertAdjacentHTML('beforeend', `<g class="tp-ticks" aria-hidden="true">${t}</g><g class="tp-comet" aria-hidden="true"><circle cx="120" cy="${120 - FR}" r="7"/><circle cx="120" cy="${120 - FR}" r="3" fill="#fff"/></g>`);
++    el.querySelector('.ox-fx-in').insertAdjacentHTML('beforeend', '<div class="tp-fline" id="tpFLine"></div>');
++    updateFocusLine();
++  }
++  function paintRing() {
++    if (!fxEl || !fxEl.open) return;
++    const arc = fxEl.querySelector('.arc'); if (!arc) return;
++    const C = 2 * Math.PI * FR, off = parseFloat(arc.style.strokeDashoffset), pc = Number.isFinite(off) ? clamp(1 - off / C, 0, 1) : 0, lit = Math.round(pc * TICKS);
++    fxEl.querySelectorAll('.tp-ticks line').forEach((l) => l.classList.toggle('lit', +l.dataset.i < lit));
++    const c = fxEl.querySelector('.tp-comet'); if (c) { c.style.transform = `rotate(${(pc * 360).toFixed(1)}deg)`; c.style.opacity = pc > 0 && pc < 1 ? 1 : 0; }
++  }
++  function updateFocusLine() {
++    const el = document.getElementById('tpFLine'); if (!el || !A) return;
++    const a = arena(readArena(), today(), RULES), own = run(doneDays(), today(), goalGet()), rounds = A.S.tasks.reduce((n, t) => n + ((t && t.fl && +t.fl[today()]) ? 1 : 0), 0);
++    el.innerHTML = `${a.linked ? `<span>${esc(a.rank.name)}${a.next ? ` · ${a.need.toLocaleString('en-US')} XP to ${esc(a.next.name)}` : ''}</span>` : ''}<span>${own} day${own === 1 ? '' : 's'} in a row</span>${rounds ? `<span>${rounds} task${rounds === 1 ? '' : 's'} focused today</span>` : ''}`;
++  }
++  function watchFocus() {
++    const find = () => {
++      const el = document.getElementById('oxFocus'); if (!el || el === fxEl) return;
++      fxEl = el; decorateFocus(el);
++      fxObs && fxObs.disconnect();
++      fxObs = new MutationObserver(() => { clearInterval(fxTimer); fxTimer = 0; if (el.open) { updateFocusLine(); paintRing(); fxTimer = setInterval(paintRing, 1000); } });
++      fxObs.observe(el, { attributes: true, attributeFilter: ['open'] });
++      if (el.open) { paintRing(); fxTimer = setInterval(paintRing, 1000); }
++    };
++    new MutationObserver(find).observe(document.body, { childList: true }); find();
++  }
++
++  // =====================================================================================================================
++  // Wiring
++  // =====================================================================================================================
++  const HASHES = { temple: () => open(), 'weekly-review': () => open('week'), 'voice-add': () => open('voice') };
++  const readHash = () => { try { const h = decodeURIComponent(location.hash.replace(/^#\/?/, '')).trim(); return Object.prototype.hasOwnProperty.call(HASHES, h) ? h : ''; } catch (e) { return ''; } };
++  wanted = readHash();
++  addEventListener('hashchange', () => { const h = readHash(); if (!h) return; if (A) setTimeout(() => HASHES[h](), 0); else wanted = h; });
++  function register() {
++    if (!A.HB_TOOLS.some((x) => x.id === 'tptemple')) A.HB_TOOLS.push({ id: 'tptemple', g: 'Me', n: 'The Temple', d: 'Your day as a temple, voice add, rank and streak, weekly review', k: 'temple day timeline voice add speak weekly review streak rank arena', open: () => open(), st: () => `${run(doneDays(), today(), goalGet())} day streak` });
++    const cmd = (def) => { if (!A.PK_CMDS.some((x) => x.id === def.id)) A.PK_CMDS.push(def); };
++    cmd({ id: 'tp-temple', l: 'The Temple', k: 'temple day timeline pediment columns steps ahead', run: () => open() });
++    cmd({ id: 'tp-voice', l: 'Voice add', k: 'voice add speak say dictate microphone quick task', run: () => open('voice') });
++    cmd({ id: 'tp-week', l: 'Weekly review', k: 'weekly review week summary laurels', run: () => open('week') });
++  }
++  function wire() {
++    const main = document.getElementById('main');
++    if (main) new MutationObserver(onMain).observe(main, { childList: true });
++    document.addEventListener('click', (e) => { if (e.target && e.target.closest && e.target.closest('[data-tpopen]')) open(); });
++    addEventListener('storage', (e) => { if (e.key === ARENA_KEY || e.key === GOAL_KEY) { refreshRank(); } });
++    watchFocus();
++  }
++  function init(api) {
++    A = api;
++    try { document.head.insertAdjacentHTML('beforeend', `<style id="tpStyle">${CSS}</style>`); } catch (e) { /* no styles, the sheet still works */ }
++    register(); wire(); onMain();
++    if (wanted) { const h = wanted; wanted = ''; setTimeout(() => HASHES[h](), 0); }
++  }
++  function ready(api) {
++    if (A || !api || !Array.isArray(api.HB_TOOLS) || !Array.isArray(api.PK_CMDS) || typeof api.eventsOn !== 'function' || typeof api.parseWhen !== 'function' || typeof api.commit !== 'function') return;
++    try { init(api); } catch (e) { console.error('Planner Temple failed to start:', e); }
++  }
++
++  const CSS = `
++.tp-new{position:relative}.tp-new::after{content:"";position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;background:#fb7185;box-shadow:0 0 8px #fb7185}
++.tp{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;border:0;padding:0;background:#06070f;color:#eef0fb;overflow:hidden auto;-webkit-overflow-scrolling:touch}
++.tp::backdrop{background:#06070f}
++.tp-bg{position:fixed;inset:0;pointer-events:none;overflow:hidden}
++.tp-bg i{position:absolute;left:50%;top:-10%;width:130vmax;height:70vmax;margin-left:-65vmax;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--ox-a,#6366f1) 26%,transparent),transparent)}
++.tp-bg i+i{top:60%;width:90vmax;height:60vmax;margin-left:-45vmax;background:radial-gradient(closest-side,color-mix(in srgb,var(--ox-b,#06b6d4) 16%,transparent),transparent)}
++.tp-x{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:12px;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#cfd3e6;background:rgba(255,255,255,.08);z-index:3;border:1px solid rgba(255,255,255,.1)}
++.tp-in{position:relative;outline:none;max-width:560px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top,0px)) 16px calc(40px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
++.tp header h2{font-size:26px;font-weight:700;letter-spacing:-.02em;margin:0;background:linear-gradient(135deg,#fff,color-mix(in srgb,var(--ox-a,#6366f1) 40%,#fff));-webkit-background-clip:text;background-clip:text;color:transparent}
++.tp header p{margin:2px 0 0;font-size:13px;color:#a9b0cf}
++.tp-card{border-radius:20px;padding:14px;border:1px solid rgba(255,255,255,.09);background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.025));box-shadow:0 1px 0 rgba(255,255,255,.07) inset,0 24px 50px -28px rgba(0,0,0,.8)}
++.tp-card h3{margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#a9b0cf}
++#tpDay{padding:10px 8px 12px}
++.tp-svg{display:block;width:100%;height:auto;overflow:visible}
++.tp-date{font-size:9.5px;font-weight:700;letter-spacing:.3em;fill:#e9e4d2}
++.tp-hr{font-size:8px;font-weight:700;fill:#3a3652}
++.tp-nowt{font-size:9px;font-weight:700;fill:#fff}
++.tp-now rect{filter:drop-shadow(0 0 4px var(--ox-b,#06b6d4)) drop-shadow(0 0 10px var(--ox-a,#6366f1))}
++.tp-sun{filter:drop-shadow(0 0 8px #ffcf5a) drop-shadow(0 0 18px rgba(255,157,58,.7))}
++.tp-ev{cursor:pointer}.tp-ev rect{fill:color-mix(in srgb,var(--c) 38%,#12142b);stroke:color-mix(in srgb,var(--c) 75%,#fff);stroke-width:1}
++.tp-ev text{font-size:8.5px;font-weight:600;fill:#fff;pointer-events:none}
++.tp-ev.past{opacity:.5}.tp-ev.cur rect{fill:color-mix(in srgb,var(--c) 62%,#12142b);filter:drop-shadow(0 0 6px var(--c))}
++.tp-ev:focus-visible rect{stroke:#fff;stroke-width:2}.tp-ev:focus{outline:none}
++.tp-say{margin:8px 4px 0;font-size:13.5px;color:#cfd3e6;line-height:1.45}.tp-say b{color:#fff}
++.tp-steps .tp-step rect{fill:rgba(129,140,248,.55)}.tp-steps .tp-step.none rect{fill:rgba(255,255,255,.12)}
++.tp-steps .tp-step.ok rect{fill:#34d399;opacity:.85}.tp-steps .tp-step.over rect{fill:#fbbf24}.tp-steps .tp-step.risk rect{fill:#fb7185;filter:drop-shadow(0 0 6px rgba(251,113,133,.7))}
++.tp-wd{font-size:8px;font-weight:700;fill:#a9b0cf}.tp-wd.now{fill:#fff}.tp-dn{font-size:8px;fill:#7d84a6}
++.tp-key{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px;color:#a9b0cf;margin:4px 4px 0}
++.tp-key i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:-1px}.tp-key i.ok{background:#34d399}.tp-key i.over{background:#fbbf24}.tp-key i.risk{background:#fb7185}
++.tp-ul{list-style:none;margin:8px 0 0;padding:0}.tp-ul li{display:flex;flex-direction:column;padding:7px 4px;border-top:1px solid rgba(255,255,255,.08)}.tp-ul b{font-weight:600;font-size:14px;overflow-wrap:anywhere}.tp-ul small{font-size:11.5px;color:#a9b0cf}
++.tp-acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}.tp-end{justify-content:center}
++.tp-b{flex:none;min-height:46px;padding:0 20px;border-radius:14px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#eef0fb;font-size:15px;font-weight:600;white-space:nowrap}
++.tp-b.go{border-color:transparent;background:linear-gradient(135deg,var(--ox-a,#6366f1),var(--ox-b,#06b6d4));color:#fff;box-shadow:0 10px 30px -10px var(--ox-a,#6366f1)}
++.tp-b:disabled{opacity:.4}
++.tp-voice{display:flex;gap:12px;align-items:flex-start}
++.tp-mic{position:relative;flex:none;width:64px;height:64px;border-radius:50%;display:grid;place-items:center;color:#fff;border:0;background:linear-gradient(135deg,var(--ox-a,#6366f1),var(--ox-b,#06b6d4));box-shadow:0 0 0 1px rgba(255,255,255,.25) inset,0 12px 30px -10px var(--ox-a,#6366f1)}
++.tp-mic:disabled{opacity:.35;box-shadow:none}
++.tp-mic-ring{position:absolute;inset:-5px;border-radius:50%;border:2px solid var(--ox-b,#06b6d4);opacity:0}
++.tp.listening .tp-mic{background:linear-gradient(135deg,#fb7185,#f59e0b)}.tp.listening .tp-mic-ring{opacity:.8}
++html.ox-move .tp.listening .tp-mic-ring{animation:tp-pulse 1.1s ease-out infinite}
++@keyframes tp-pulse{from{transform:scale(.92);opacity:.9}to{transform:scale(1.35);opacity:0}}
++.tp-vin{flex:1;min-width:0}
++.tp-vin input{width:100%;height:46px;padding:0 14px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;font-size:16px}
++.tp-vin input::placeholder{color:#7d84a6}
++.tp-chip{display:none;margin-top:8px;padding:10px 12px;border-radius:12px;border:1px dashed rgba(255,255,255,.22);font-size:13.5px;color:#cfd3e6;line-height:1.4;overflow-wrap:anywhere}
++.tp-chip:not(:empty){display:block}.tp-chip.on{border-style:solid;border-color:color-mix(in srgb,var(--ox-b,#06b6d4) 60%,transparent);color:#fff}
++.tp-rank{display:flex;align-items:center;gap:14px}
++.tp-rr{width:64px;height:64px;flex:none}.tp-rr circle{fill:none;stroke-width:5}.tp-rr .bg{stroke:rgba(255,255,255,.1)}.tp-rr .fg{stroke-linecap:round;filter:drop-shadow(0 0 5px currentColor)}
++.tp-rr text{font-size:15px;font-weight:700;fill:#fff}
++.tp-rt{display:flex;flex-direction:column;min-width:0}.tp-rt b{font-size:20px;font-weight:700}.tp-rt span{font-size:13px;color:#a9b0cf}
++.tp-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
++.tp-pill{display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:0 12px;border-radius:999px;font-size:12.5px;font-weight:600;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:#dfe3f7}
++.tp-pill.hot{background:linear-gradient(135deg,rgba(251,146,60,.28),rgba(244,63,94,.22));border-color:rgba(251,146,60,.5);color:#fff}
++.tp-fl{width:9px;height:13px;border-radius:50% 50% 50% 50%/62% 62% 38% 38%;background:linear-gradient(#fde68a,#fb923c 60%,#ef4444);box-shadow:0 0 8px #fb923c}
++.tp-note{margin:10px 2px 0;font-size:11.5px;color:#7d84a6;line-height:1.4}
++.tp-lh{display:flex;flex-direction:column;gap:2px}.tp-lau-row{display:flex;gap:6px}.tp-lau{width:26px;height:26px;fill:rgba(255,255,255,.14)}.tp-lau.on{fill:#ffcf5a;filter:drop-shadow(0 0 6px rgba(255,207,90,.7))}
++.tp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
++.tp-grid>div{padding:10px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;gap:2px;min-width:0}
++.tp-grid b{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tp-grid span{font-size:11px;color:#a9b0cf}
++.tp-grid em{font-style:normal;font-weight:700;margin-left:2px;color:#a9b0cf}.tp-grid em.up{color:#34d399}.tp-grid em.dn{color:#fb7185}
++.tp :focus-visible{outline:2px solid #fff;outline-offset:2px}
++/* Focus mode: tick ring, comet, rank line */
++.tp-ticks line{stroke:rgba(255,255,255,.14);stroke-width:1.4;stroke-linecap:round}.tp-ticks line.M{stroke:rgba(255,255,255,.26);stroke-width:2}
++.tp-ticks line.lit{stroke:var(--ox-b,#06b6d4);filter:drop-shadow(0 0 3px var(--ox-b,#06b6d4))}
++.ox-focus[data-st="break"] .tp-ticks line.lit{stroke:#34d399}
++.tp-comet{transform-origin:120px 120px;transition:opacity .3s}.tp-comet circle:first-child{fill:var(--ox-a,#6366f1);filter:drop-shadow(0 0 7px var(--ox-a,#6366f1)) drop-shadow(0 0 14px var(--ox-glow,#8b5cf6))}
++html.ox-move .tp-comet{transition:transform 1s linear,opacity .3s}
++.ox-ring{filter:none}
++.tp-fline{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 8px;font-size:12px;color:#a9b0cf}.tp-fline span{padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
++@media (prefers-reduced-motion:reduce){.tp *,.tp-comet{animation:none!important;transition:none!important}}
++`;
++
++  addEventListener('planner:ready', (e) => ready(e.detail));
++  if (window.PlannerAPI) ready(window.PlannerAPI);
++  // Pure helpers for the tests and the console (same pattern as window.__ox / __fl)
++  window.__tp = { spoken, arena, arenaRules, review, reviewLine, steps, run, chipText: (x) => chipText(x), read: (t) => read(t), RULES: () => RULES };
++})();
+diff --git a/planner/index.html b/planner/index.html
+--- a/planner/index.html
++++ b/planner/index.html
+@@ -12,6 +12,7 @@
+ <script src="ext-power.js"></script>
+ <script src="ext-flow.js"></script>
+ <script src="ext-olympus.js"></script>
++<script src="ext-temple.js"></script>
+ <meta name="apple-mobile-web-app-capable" content="yes">
+ <meta name="apple-mobile-web-app-status-bar-style" content="default">
+ <meta name="apple-mobile-web-app-title" content="Planner">
+diff --git a/planner/tests/temple.test.js b/planner/tests/temple.test.js
+new file mode 100644
+--- /dev/null
++++ b/planner/tests/temple.test.js
+@@ -0,0 +1,162 @@
++// Temple layer (ext-temple.js): the Temple sheet, voice add, Arena rank + streak (read only), weekly review, Focus ring touches.
++// node planner/tests/temple.test.js   Serve the site first (see olympus.test.js); PORT env, default 8789. Clock: Fri 2026-09-04 12:30 NY.
++const { chromium } = require('playwright');
++const L = require('./lib-todayorg.js');
++const { wait, open, fullState, seedNq, TODAY } = L;
++(async () => {
++  let checks = 0;
++  const errs = [], ok = (c, m) => { checks++; if (!c) errs.push(m); };
++  const b = await chromium.launch();
++  const day = (n) => { const d = new Date(TODAY + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
++  const at = (n, h) => new Date(day(n) + 'T' + h + ':00-04:00').getTime();
++  const run = (name) => `PlannerAPI.PK_CMDS.find((c) => c.id === '${name}').run()`;
++
++  // ---------- 1. pure helpers ----------
++  let { ctx, p, errs: pe } = await open(b, { state: fullState(), seed: seedNq() });
++  const pure = await p.evaluate(() => {
++    const T = window.__tp, sp = (s) => T.spoken(s);
++    const ev = (id, day, kind) => ({ id, day, kind });
++    const doc = { events: [ev('1', '2026-09-03', 'goal_day'), ev('2', '2026-09-04', 'goal_day'), ev('3', '2026-09-02', 'goal_day'), ev('4', '2026-09-04', 'task_done'), ev('5', '2026-09-04', 'task_done'), ev('x', '2026-09-04', 'nonsense')] };
++    const big = { events: doc.events.slice() };
++    for (let i = 0; i < 9; i++) big.events.push(ev('t' + i, '2026-08-30', 'task_done'));      // 9 on one day: only 6 count
++    for (let i = 0; i < 12; i++) big.events.push(ev('p' + i, '2026-08-' + String(1 + i).padStart(2, '0'), 'eval_passed'));
++    return {
++      s: [sp('Call Sam tomorrow at seven thirty p.m. hashtag N Q high priority'), sp('dentist friday at 3 pm'), sp('pick up kids at five pm every day'), sp('buy milk in two days'), sp('remind me to renew the passport'), sp('read 7 30 pm tonight')],
++      a: [T.arena(null, '2026-09-04'), T.arena({ events: [] }, '2026-09-04'), T.arena(doc, '2026-09-04'), T.arena(big, '2026-09-04')],
++      rules: [T.arenaRules({ ranks: [{ name: 'B', xp: 10 }], xp: {} }), T.arenaRules({ ranks: [{ id: 'a', name: 'A', xp: 0, color: '#fff' }, { id: 'b', name: 'B', xp: 50 }], xp: { task_done: { xp: 2, cap_day: 3 } } }), T.arenaRules(null)],
++      run: [T.run({ '2026-09-04': 3, '2026-09-03': 3, '2026-09-02': 4 }, '2026-09-04', 3), T.run({ '2026-09-03': 3, '2026-09-02': 3 }, '2026-09-04', 3), T.run({ '2026-09-04': 1, '2026-09-03': 3 }, '2026-09-04', 3), T.run({}, '2026-09-04', 3)],
++      steps: T.steps([{ id: 'a', date: '2026-09-04', est: 60 }, { id: 'b', date: '2026-09-05', est: 30 }, { id: 'c', date: '2026-09-02', est: 30 }], [{ k: '2026-09-04', cap: 100 }, { k: '2026-09-05', cap: 20 }, { k: '2026-09-06', cap: 0 }], (t) => [{ t: t[1] }]).map((s) => [s.k, s.need, s.over, s.risk, s.n, +s.load.toFixed(2)]),
++    };
++  });
++  ok(pure.s[0].text === 'Call Sam tomorrow 7:30pm #nq' && pure.s[0].p === 3, 'spoken: word numbers, p.m., hashtag, high priority: ' + JSON.stringify(pure.s[0]));
++  ok(pure.s[1].text === 'dentist friday 3pm', 'spoken: "at 3 pm" -> "3pm": ' + pure.s[1].text);
++  ok(pure.s[2].text === 'pick up kids 5pm daily', 'spoken: five pm, every day: ' + pure.s[2].text);
++  ok(pure.s[3].text === 'buy milk in 2 days', 'spoken: in two days: ' + pure.s[3].text);
++  ok(pure.s[4].text === 'renew the passport', 'spoken: filler removed: ' + pure.s[4].text);
++  ok(pure.s[5].text === 'read 7:30pm tonight', 'spoken: "7 30 pm": ' + pure.s[5].text);
++  ok(!pure.a[0].linked && pure.a[0].rank.name === 'Mortal' && pure.a[0].xp === 0 && pure.a[0].need === 1000, 'arena: no ledger = not linked, Mortal, 1000 to Hero');
++  ok(pure.a[1].linked && pure.a[1].xp === 0, 'arena: empty ledger is linked with 0 XP');
++  ok(pure.a[2].xp === 20 + 20 + 20 + 10 && pure.a[2].goalRun === 3 && pure.a[2].xpToday === 30, 'arena: XP by rule, unknown kinds ignored, run of 3 goal days: ' + JSON.stringify(pure.a[2]));
++  ok(pure.a[3].xp === 70 + 30 + 12 * 500 && pure.a[3].rank.name === 'Demigod' && pure.a[3].pc > 0 && pure.a[3].pc < 1, 'arena: 9 tasks on a day count 6; a big ledger reaches Demigod: ' + JSON.stringify([pure.a[3].xp, pure.a[3].rank.name, pure.a[3].pc]));
++  ok(pure.rules[0] === null && pure.rules[2] === null && pure.rules[1] && pure.rules[1].xp.task_done[1] === 3, 'arenaRules: a file without a 0-XP first rank or without rules is refused, a good one is read');
++  ok(JSON.stringify(pure.run) === '[3,2,1,0]', 'run: kept alive from yesterday, today counts when met: ' + pure.run);
++  ok(JSON.stringify(pure.steps[0]) === '["2026-09-04",90,false,[],2,0.9]' && pure.steps[1][2] === true && JSON.stringify(pure.steps[1][3]) === '["b"]' && pure.steps[2][5] === 0, 'steps: overdue lands on the first day, over flag, risk ids: ' + JSON.stringify(pure.steps));
++
++  // ---------- 2. the Temple sheet ----------
++  await p.evaluate(() => { document.querySelector('[data-tpopen]').click(); }); await wait(300);
++  ok(await p.evaluate(() => document.getElementById('tpTemple').open), 'the Temple button on Today opens the sheet');
++  const sheet = await p.evaluate(() => ({
++    cols: document.querySelectorAll('#tpDay .tp-col').length, now: !!document.querySelector('#tpDay .tp-now'), evs: [...document.querySelectorAll('#tpDay .tp-ev')].map((e) => e.getAttribute('aria-label')),
++    steps: document.querySelectorAll('#tpRisk .tp-step').length, date: document.querySelector('#tpDay .tp-date').textContent, say: document.querySelector('#tpDay .tp-say').textContent,
++    rank: document.getElementById('tpRank').textContent.replace(/\s+/g, ' '), week: document.getElementById('tpWeek').textContent.replace(/\s+/g, ' '), bad: document.getElementById('tpTemple').innerHTML.includes('undefined') || document.getElementById('tpTemple').innerHTML.includes('NaN'),
++    scroll: document.documentElement.scrollWidth <= innerWidth && document.getElementById('tpTemple').scrollWidth <= innerWidth + 1,
++  }));
++  ok(sheet.cols >= 4 && sheet.now, 'temple: hour columns and the NOW beam: ' + sheet.cols);
++  ok(sheet.evs.some((x) => /Dentist/.test(x)) && sheet.evs.some((x) => /Gym/.test(x)), "temple: today's events stand between the columns: " + sheet.evs);
++  ok(sheet.steps === 14, 'steps ahead: 14 days');
++  ok(/FRI/.test(sheet.date) && /SEP 4/.test(sheet.date), 'pediment date: ' + sheet.date);
++  ok(/Now|Next/.test(sheet.say), 'now / next line: ' + sheet.say);
++  ok(/Arena not opened yet/.test(sheet.rank) && /day.* in a row/.test(sheet.rank), 'rank card without Arena: invitation and the Planner streak: ' + sheet.rank);
++  ok(/tasks done/.test(sheet.week) && /best day/.test(sheet.week) && !sheet.bad, 'weekly review card has its numbers, no undefined / NaN');
++  ok(sheet.scroll, 'no sideways scroll on a phone');
++  await p.evaluate(() => document.querySelector('#tpDay .tp-ev').dispatchEvent(new MouseEvent('click', { bubbles: true }))); await wait(300);
++  ok(await p.evaluate(() => !document.getElementById('tpTemple').open), 'tapping an event closes the Temple (and opens the event)');
++  errs.push(...pe); await ctx.close();
++
++  // ---------- 3. voice add (a stand-in recogniser) ----------
++  ({ ctx, p, errs: pe } = await open(b, { state: fullState(), seed: seedNq() }));
++  await p.addInitScript(() => { window.SpeechRecognition = window.webkitSpeechRecognition = function () { const r = this; r.start = () => { window.__rec = r; setTimeout(() => { r.onresult && r.onresult({ results: [[{ transcript: 'call Sam tomorrow at seven thirty p.m. hashtag nq high priority' }]] }); }, 20); }; r.stop = () => { r.onend && r.onend(); }; r.abort = r.stop; }; });
++  await p.reload(); await p.waitForSelector('.tdy'); await wait(600);
++  await p.evaluate(run('tp-voice')); await wait(300);
++  await p.evaluate(() => document.getElementById('tpMic').click());
++  await p.waitForFunction(() => document.getElementById('tpChip').textContent, null, { timeout: 5000 }).catch(() => {}); await wait(100);
++  const v = await p.evaluate(() => ({ val: document.getElementById('tpIn').value, chip: document.getElementById('tpChip').textContent, listening: document.getElementById('tpTemple').classList.contains('listening'), add: !document.getElementById('tpAdd').disabled }));
++  ok(v.listening && /7:30/.test(v.chip) && /Event/.test(v.chip) && v.add, 'voice: heard, read as an event with its time, Add ready: ' + v.chip);
++  await p.evaluate(() => window.__rec && window.__rec.stop()); await wait(100);
++  ok(await p.evaluate(() => !document.getElementById('tpTemple').classList.contains('listening')), 'voice: stops listening at the end of speech');
++  await p.evaluate(() => document.getElementById('tpAdd').click()); await wait(300);
++  const added = await p.evaluate(() => PlannerAPI.S.events.slice(-1)[0]);
++  ok(added && added.title === 'Call Sam' && added.start === '19:30' && added.date === '2026-09-05', 'voice: added the event Call Sam, Sat 19:30: ' + JSON.stringify(added));
++  await p.evaluate(() => { const i = document.getElementById('tpIn'); i.value = 'buy milk high priority hashtag nq'; i.dispatchEvent(new Event('input', { bubbles: true })); }); await wait(100);
++  await p.evaluate(() => document.getElementById('tpIn').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))); await wait(300);
++  const t = await p.evaluate(() => PlannerAPI.S.tasks.slice(-1)[0]);
++  ok(t && t.title === 'Buy milk' && t.p === 3, 'typed: Enter adds a task with high priority: ' + JSON.stringify(t));
++  errs.push(...pe); await ctx.close();
++
++  // ---------- 4. no speech support: type instead ----------
++  ({ ctx, p, errs: pe } = await open(b, { state: fullState(), seed: seedNq() }));
++  await p.addInitScript(() => { window.SpeechRecognition = window.webkitSpeechRecognition = undefined; });
++  await p.reload(); await p.waitForSelector('.tdy'); await wait(600);
++  await p.evaluate(run('tp-voice')); await wait(300);
++  const nosr = await p.evaluate(() => ({ dis: document.getElementById('tpMic').disabled, ph: document.getElementById('tpIn').placeholder, hidden: document.getElementById('tpAgain').hidden }));
++  ok(nosr.dis && /Type/.test(nosr.ph) && nosr.hidden, 'no speech recognition: mic disabled, the box says to type');
++  errs.push(...pe); await ctx.close();
++
++  // ---------- 5. Arena rank + streak, read only ----------
++  const arenaDoc = { v: 1, events: [], seen: null, since: 1 };
++  for (let i = 0; i < 60; i++) arenaDoc.events.push({ id: 'b' + i, day: day(-3 - i), kind: 'bot_day', src: 'site' });
++  for (let i = 0; i < 40; i++) arenaDoc.events.push({ id: 'g' + i, day: day(-i), kind: 'goal_day', src: 'planner' });
++  const raw = JSON.stringify(arenaDoc);
++  ({ ctx, p, errs: pe } = await open(b, { state: fullState(), seed: seedNq(), local: { 'arena.v1': raw } }));
++  await p.evaluate(run('tp-temple')); await wait(400);
++  const rk = await p.evaluate(() => document.getElementById('tpRank').textContent.replace(/\s+/g, ' '));
++  ok(/Hero|Mortal|Demigod/.test(rk) && /XP/.test(rk) && /Arena run 40/.test(rk), 'rank card: rank, XP and Arena run read from arena.v1: ' + rk);
++  ok(await p.evaluate((r) => localStorage.getItem('arena.v1') === r, raw), "Arena's ledger is untouched (read only)");
++  ok(await p.evaluate(() => !Object.keys(localStorage).some((k) => /^arena\./.test(k) && k !== 'arena.v1')), 'no other arena.* key is written');
++  errs.push(...pe); await ctx.close();
++  ({ ctx, p, errs: pe } = await open(b, { state: fullState(), seed: seedNq(), local: { 'arena.v1': '{broken' } }));
++  await p.evaluate(run('tp-temple')); await wait(300);
++  ok(await p.evaluate(() => /Arena not opened yet/.test(document.getElementById('tpRank').textContent)), 'a broken ledger is treated as not linked, no error');
++  errs.push(...pe); await ctx.close();
++
++  // ---------- 6. weekly review numbers ----------
++  const st = fullState(); st.tasks = [];
++  const mk = (i, d, h, extra = {}) => ({ id: 'w' + i, title: 'Done ' + i, date: day(d), done: true, doneAt: at(d, h), p: 0, created: i, ...extra });
++  for (let i = 0; i < 4; i++) st.tasks.push(mk(i, -1, '10:00', i === 0 ? { fl: { [day(-1)]: 90 } } : {}));   // 4 yesterday: goal day
++  for (let i = 4; i < 8; i++) st.tasks.push(mk(i, -2, '10:00', i === 4 ? { date: day(-5), fl: { [day(-2)]: 40 } } : {}));  // 4 two days ago (one late)
++  for (let i = 8; i < 10; i++) st.tasks.push(mk(i, -9, '10:00'));                                                // 2 in the week before
++  st.tasks.push({ id: 'o1', title: 'Open next week', date: day(3), done: false, p: 0, created: 99 });
++  ({ ctx, p, errs: pe } = await open(b, { state: st, seed: seedNq() }));
++  const rv = await p.evaluate(() => { const r = __tp.review(PlannerAPI.S, '2026-09-04', 3); return { c: [r.cur.done, r.cur.goalDays, r.cur.focus, r.cur.dated, r.cur.onTime, r.cur.bestN], p: [r.prev.done, r.prev.goalDays], laurels: r.laurels, next: r.next, line: __tp.reviewLine(r) }; });
++  ok(JSON.stringify(rv.c) === '[8,2,130,8,7,4]' && JSON.stringify(rv.p) === '[2,0]', 'review: this week against the one before: ' + JSON.stringify(rv));
++  ok(rv.laurels === 2 && rv.next === 1 && /Up 6/.test(rv.line), 'review: laurels, next-week count, headline: ' + rv.line + ' ' + rv.laurels);
++  await p.evaluate(run('tp-week')); await wait(500);
++  ok(await p.evaluate(() => /8\s*tasks done/.test(document.getElementById('tpWeek').textContent) && document.querySelectorAll('#tpWeek .tp-lau.on').length === 2), 'review card shows the numbers and 2 laurels (more done, 130 min focused; goal met on 2 of the 4 needed days)');
++  ok(await p.evaluate(() => { const l = []; Object.defineProperty(navigator, 'clipboard', { value: { writeText: (t) => { l.push(t); return Promise.resolve(); } }, configurable: true }); document.querySelector('[data-tp="copy"]').click(); return l.length === 1 && /8 tasks done/.test(l[0]); }), 'Copy the week hands the summary to the clipboard');
++  errs.push(...pe); await ctx.close();
++
++  // ---------- 7. deadline risk steps ----------
++  const rs = fullState(); rs.tasks = [];
++  for (let i = 0; i < 6; i++) rs.tasks.push({ id: 'r' + i, title: 'Big job ' + i, date: day(1), done: false, p: 0, est: 240, created: i });
++  ({ ctx, p, errs: pe } = await open(b, { state: rs, seed: seedNq() }));
++  await p.evaluate(run('tp-temple')); await wait(400);
++  const rr = await p.evaluate(() => ({ flags: document.querySelectorAll('#tpRisk .tp-step.risk').length, ul: document.querySelectorAll('#tpRisk .tp-ul li').length, btn: !!document.querySelector('#tpRisk [data-flopen="deadlines"]') }));
++  ok(rr.flags >= 1 && rr.ul >= 1 && rr.btn, 'a day with tasks that may miss their date gets a flag, the list and the Block time button: ' + JSON.stringify(rr));
++  await p.evaluate(() => document.querySelector('#tpRisk [data-flopen="deadlines"]').click()); await wait(400);
++  ok(await p.evaluate(() => !document.getElementById('tpTemple').open && !!document.getElementById('flDrDlg') && document.getElementById('flDrDlg').open), 'Block time closes the Temple and opens Deadline risk');
++  errs.push(...pe); await ctx.close();
++
++  // ---------- 8. Focus mode: tick ring, comet, rank line ----------
++  ({ ctx, p, errs: pe } = await open(b, { state: fullState(), seed: seedNq(), local: { 'arena.v1': raw } }));
++  await p.evaluate(run('ox-focus')); await wait(500);
++  const f0 = await p.evaluate(() => ({ ticks: document.querySelectorAll('#oxFocus .tp-ticks line').length, comet: !!document.querySelector('#oxFocus .tp-comet'), line: document.getElementById('tpFLine').textContent }));
++  ok(f0.ticks === 60 && f0.comet && /in a row/.test(f0.line) && /Hero|Mortal|Demigod/.test(f0.line), 'focus: 60 ticks, comet and the rank line: ' + JSON.stringify(f0));
++  await p.click('#oxFocus [data-oxf="start"]'); await wait(300);
++  await p.clock.fastForward(5 * 60000); await wait(1400);
++  const f1 = await p.evaluate(() => ({ lit: document.querySelectorAll('#oxFocus .tp-ticks line.lit').length, op: getComputedStyle(document.querySelector('#oxFocus .tp-comet')).opacity }));
++  ok(f1.lit >= 10 && f1.lit <= 14 && +f1.op === 1, 'focus: 5 of 25 minutes lights about 12 ticks and shows the comet: ' + JSON.stringify(f1));
++  errs.push(...pe); await ctx.close();
++
++  // ---------- 9. deep link, effects off ----------
++  ({ ctx, p, errs: pe } = await open(b, { state: fullState(), seed: seedNq(), hash: '#weekly-review' })); await wait(500);
++  ok(await p.evaluate(() => document.getElementById('tpTemple').open), 'deep link #weekly-review opens the Temple');
++  errs.push(...pe); await ctx.close();
++  ({ ctx, p, errs: pe } = await open(b, { state: fullState(), seed: seedNq(), local: { jfx: 'off' } }));
++  await p.evaluate(run('tp-temple')); await wait(300);
++  ok(await p.evaluate(() => document.getElementById('tpTemple').open && !document.documentElement.classList.contains('ox-move')), 'with effects off the Temple still works, no motion class');
++  errs.push(...pe); await ctx.close();
++
++  await b.close();
++  if (errs.length) { console.log('FAIL\n' + errs.join('\n')); process.exit(1); }
++  console.log(`TEMPLE OK (${checks} checks)`);
++})().catch((e) => { console.error(e); process.exit(1); });

@@ -1,6 +1,7 @@
 // ARENA HUD (ES module): everything you read. DOM only, text through textContent (no data ever becomes HTML).
 //   renderRank(sc) / renderStreaks(sc) / renderQuests(quests, results, R) / renderLabours(sc, onOpen) / renderLog(sc, info)
-//   openSheet(tab) / closeSheet() / showLabour(l, R) / celebrate({ level, rank }) / setTags({ demo, lite })
+//   renderBosses(bosses, R, onOpen) / renderTrophies(list, onOpen) / renderLadder(sc, R) / showTrophy(t)
+//   openSheet(tab) / closeSheet() / showLabour(l, R) / celebrate({ level, rank, ranks, rankIndex }) / setTags({ demo, lite })
 const $ = (id) => document.getElementById(id);
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
 const SRC = { site: 'Site data (bots, trades, evals)', planner: 'Planner (this phone)', obsidian: 'Obsidian (this phone)', kalshi: 'Kalshi feed', quest: 'Daily quests' };
@@ -99,7 +100,84 @@ export function renderLog(sc, info, R, onExport) {
   return [src, ex, h('h3', '', 'Latest events'), list];
 }
 
-const TITLES = { quests: 'Quest board · today', labours: 'The 12 Labours', log: 'XP log and sources' };
+const TIER_NAME = { bronze: 'Bronze', silver: 'Silver', gold: 'Gold', legend: 'Legend' };
+const STATE_TXT = { fighting: 'In the fight', slain: 'Slain', escaped: 'Escaped this week', locked: 'Locked' };
+
+export function renderBosses(B, R, onOpen) {
+  const slain = B.cur.filter((b) => b.state === 'slain').length;
+  $('bCount').textContent = `${slain}/4`;
+  const fx = B.cur.find((b) => b.id === B.featured) || B.cur[0];
+  const card = (b, big) => {
+    const c = h('article', `boss ${b.state}${big ? ' big' : ''}`);
+    c.dataset.boss = b.id; c.style.setProperty('--bc', b.color);
+    const head = h('div', 'bh');
+    head.append(h('span', 'glyph', b.glyph), h('div', 'bn'), h('span', 'bs', STATE_TXT[b.state]));
+    head.querySelector('.bn').append(h('b', '', b.name), h('span', 'bt', b.title));
+    const hp = h('div', 'hp'); hp.setAttribute('role', 'progressbar'); hp.setAttribute('aria-label', `${b.name}: ${b.hits} of ${b.max}`);
+    hp.setAttribute('aria-valuemin', '0'); hp.setAttribute('aria-valuemax', String(b.max)); hp.setAttribute('aria-valuenow', String(b.hits));
+    for (let i = 0; i < b.max; i++) hp.append(h('i', i < b.hits ? 'hit' : ''));
+    const parts = h('div', 'parts');
+    b.parts.forEach((p) => parts.append(h('span', `part ${p.state}`, p.label)));
+    c.append(head, h('p', 'bx', b.text), hp, parts, h('p', 'bnote', `${b.note} · ${b.src}`),
+      h('p', 'bxp', b.state === 'slain' ? `+${R.xp.boss.xp} XP earned` : `+${R.xp.boss.xp} XP when slain`));
+    return c;
+  };
+  const out = [h('p', 'sweep', 'Boss of the week, then the others. A boss falls to discipline only: no $, size or R is ever checked.'), card(fx, true)];
+  out.push(h('h3', '', 'The other bosses'));
+  B.cur.filter((b) => b !== fx).forEach((b) => out.push(card(b, false)));
+  out.push(h('h3', '', 'Last four weeks'));
+  const hist = h('div', 'weeks');
+  B.past.forEach((w) => {
+    const row = h('div', 'week');
+    row.append(h('b', '', `Week of ${w.mon.slice(5)}`));
+    w.bosses.forEach((b) => row.append(h('span', `wchip ${b.state}`, b.glyph)));
+    hist.append(row);
+  });
+  out.push(hist);
+  return out;
+}
+
+export function renderTrophies(list, onOpen) {
+  const n = list.filter((t) => t.earned).length;
+  $('tCount').textContent = `${n}/${list.length}`;
+  const grid = h('div', 'trophies');
+  list.forEach((t) => {
+    const b = h('button', `trophy ${t.tier}${t.earned ? ' earned' : ''}`);
+    b.type = 'button'; b.dataset.trophy = t.id;
+    b.setAttribute('aria-label', `${t.name}, ${TIER_NAME[t.tier]}: ${t.text}. ${t.earned ? 'Earned' : `${t.value} of ${t.goal}`}`);
+    b.append(h('span', 'cup', t.glyph), h('b', '', t.name), h('span', 'tt', TIER_NAME[t.tier]),
+      h('span', 'st', t.earned ? 'Earned' : `${fmt(t.value)} of ${fmt(t.goal)}`));
+    b.addEventListener('click', () => onOpen(t.id));
+    grid.append(b);
+  });
+  return [h('p', 'sweep', `${n} of ${list.length} trophies. They are honour, not XP: the XP comes from the events themselves.`), grid];
+}
+
+const RANK_TEXT = { mortal: 'Every trader starts here.', hero: 'Your habits are real now.', demigod: 'Discipline is your second nature.',
+  olympian: 'You live on the mountain.', titan: 'The top of the ladder.' };
+export function renderLadder(sc, R) {
+  const box = h('div', 'ladder');
+  [...R.ranks].reverse().forEach((r, k) => {
+    const i = R.ranks.length - 1 - k, here = i === sc.rank.i, got = i <= sc.rank.i;
+    const row = h('div', `rung${here ? ' here' : ''}${got ? ' got' : ''}`);
+    row.style.setProperty('--rc', r.color); row.dataset.rank = r.id;
+    row.append(h('span', 'rg', r.glyph), h('div', 'rt'), h('span', 'rx', `${fmt(r.xp)} XP`));
+    row.querySelector('.rt').append(h('b', '', r.name), h('span', '', here ? `You are here · ${fmt(sc.xp)} XP` : got ? 'Reached' : `${fmt(r.xp - sc.xp)} XP to go`), h('span', 'rd', RANK_TEXT[r.id] || ''));
+    box.append(row);
+  });
+  return [h('p', 'sweep', 'The five steps in the middle of the colosseum. Every step you reach lights up in its colour.'), box];
+}
+
+export function showTrophy(t) {
+  const pop = $('pop');
+  kids(pop.querySelector('.pbody'), h('span', 'n', `${TIER_NAME[t.tier]} trophy`), h('h2', '', t.name), h('p', 'task', t.text),
+    h('p', 'st', t.earned ? 'Earned' : `${fmt(t.value)} of ${fmt(t.goal)}`), h('p', 'how', 'Honour, not XP. It comes from events a source shows, never from $, size or R.'));
+  pop.classList.toggle('earned', !!t.earned);
+  pop.hidden = false;
+  pop.dataset.labour = ''; pop.dataset.trophy = t.id;
+}
+
+const TITLES = { quests: 'Quest board · today', bosses: 'Weekly bosses', labours: 'The 12 Labours', trophies: 'Trophy room', ranks: 'The rank ladder', log: 'XP log and sources' };
 let current = null;
 export function openSheet(tab, build) {
   current = tab;
@@ -123,14 +201,20 @@ export function showLabour(l, R) {
     h('p', 'st', l.earned ? `Earned on ${l.day}` : `${fmt(l.value)} of ${fmt(l.goal)}`), h('p', 'how', how));
   pop.classList.toggle('earned', !!l.earned);
   pop.hidden = false;
-  pop.dataset.labour = l.id;
+  pop.dataset.labour = l.id; delete pop.dataset.trophy;
 }
 export function hideLabour() { $('pop').hidden = true; }
 
 let bannerTimer = 0;
-export function celebrate({ level, rank, reduced, hold = false }) {
+export function celebrate({ level, rank, reduced, hold = false, ranks = null, rankIndex = 0 }) {
   const b = $('banner');
-  kids(b, h('span', 'k', rank ? 'Rank up' : 'Level up'), h('b', '', rank ? rank : `Level ${level}`), rank ? h('span', 's', `Level ${level}`) : null);
+  let pips = null;
+  if (rank && Array.isArray(ranks)) {
+    pips = h('span', 'pips');
+    ranks.forEach((r, i) => { const p = h('i', i <= rankIndex ? 'on' : ''); p.style.setProperty('--rc', r.color); pips.append(p); });
+  }
+  b.classList.toggle('rankup', !!rank);
+  kids(b, h('span', 'k', rank ? 'Rank up' : 'Level up'), h('b', '', rank ? rank : `Level ${level}`), rank ? h('span', 's', `Level ${level}`) : null, pips);
   b.hidden = false; b.classList.remove('go'); void b.offsetWidth; b.classList.add('go');
   if (!reduced) { const f = $('flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); }
   clearTimeout(bannerTimer);

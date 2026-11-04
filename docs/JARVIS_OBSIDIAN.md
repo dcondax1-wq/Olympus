@@ -26,9 +26,17 @@ to the vault once you connect.
 | "what links to MFFU notes" | links out and back |
 | "my goals" | your Goals note (else the Road to $10K card) |
 | "note: …", "remember …", "add task …" | asks first, then appends to `OLYMPUS/Inbox/<day>.md` (+ `OLYMPUS/Jarvis/Memory.md` for remember, + today's daily note) |
+| "write down …", "note that …", "jot down …" | the same inbox note (kept on the phone at once; asks before the vault) |
+| "make a note called Gym plan: …" | a new note `OLYMPUS/Notes/Gym plan.md` (asks first; if it exists, the text is appended) |
+| "add deadlift 3x5 to my gym note", "add to my gym note: …" | appended to your own note with that title (else a new one in `OLYMPUS/Notes/`) |
+| "log today: …" | appended to today's daily note (else the inbox) |
+| "read my gym note" | that note, in plain words |
+| smart mode: "make me a leg day plan and save it" | the model writes it and asks: "Save this to OLYMPUS/Notes/Leg day.md? Say yes or no." Nothing is written before yes |
 | "I don't like …", "always …", "from now on …" | offers to save it to `OLYMPUS/Jarvis/Me.md` |
 | "write the OLYMPUS log" | asks first, then writes today's systems table to `OLYMPUS/Logs/<day>.md` |
 | "is Obsidian connected", "sync my vault" | the status, a refresh |
+
+Not connected yet: what you dictate is kept on the phone and waits in the outbox; it goes to the vault the moment you connect.
 
 ## How it works
 

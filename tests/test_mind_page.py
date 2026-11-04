@@ -40,7 +40,7 @@ WEB = os.path.join(ROOT, "tools", "web_public")
 MIND = os.path.join(WEB, "mind")
 SHOTS = os.environ.get("MIND_SHOTS")
 MODULES = ["main.js", "data.js", "demo.js", "graph.js", "layout.js", "layout-worker.js", "render.js", "controls.js", "ui.js",
-           "nebula.js", "synapse.js", "memring.js", "markdown.js"]
+           "nebula.js", "synapse.js", "memring.js", "markdown.js", "live.js"]
 RES = []
 MOCK = {"js": None}                       # the fake ../jarvis/obsidian.js (None = 404, like a Jarvis without it)
 OUTSIDE = []                              # every request to another origin (must stay empty)
@@ -249,7 +249,7 @@ def orb_corner_free(p):
 
 # ------------------------------------------------------------------ b-d. demo mode
 def demo_cases(br, origin):
-    url = origin + "/mind/"
+    url = origin + "/mind/?q=off"
     MOCK["js"] = None
     for vw in [(390, 844), (844, 390)]:
         tag = f"{vw[0]}x{vw[1]}"
@@ -368,7 +368,7 @@ def mock_cases(br, origin):
     now = int(time.time() * 1000)
     vault = mock_vault(now)
     ctx, p, log = new_page(br, origin, (390, 844), snap=vault)
-    p.goto(origin + "/mind/")
+    p.goto(origin + "/mind/?q=off")
     ready(p)
     st = p.evaluate("({mode: mind.mode, stats: mind.stats})")
     check(f"e. the mocked obsidian.js is used: live mode, {st['stats']['notes']} notes (junk dropped)",
@@ -442,7 +442,7 @@ def other_cases(br, origin):
         ctx, p, log = new_page(br, origin, (390, 844))
         if init:
             p.add_init_script(init)
-        p.goto(origin + "/mind/")
+        p.goto(origin + "/mind/?q=off")
         ready(p)
         check(f"f. obsidian.js {name}: the demo brain, no page error", p.evaluate("mind.mode") == "demo" and not log["errors"], log["errors"])
         ctx.close()
@@ -450,7 +450,7 @@ def other_cases(br, origin):
     MOCK["js"] = FAKE_OBSIDIAN
     now = int(time.time() * 1000)
     ctx, p, log = new_page(br, origin, (390, 844), snap=mock_vault(now), reduced=True)
-    p.goto(origin + "/mind/")
+    p.goto(origin + "/mind/?q=off")
     ready(p)
     p.fill("#q", "Mock Gym 4")
     p.press("#q", "Enter")
@@ -469,7 +469,7 @@ def other_cases(br, origin):
 
     MOCK["js"] = None
     ctx, p, log = new_page(br, origin, (390, 844))
-    p.goto(origin + "/mind/?demo=2000")
+    p.goto(origin + "/mind/?demo=2000&q=off")
     ready(p, 60000)
     t0 = time.time()
     p.wait_for_function("mind.settled", timeout=120000)
@@ -494,7 +494,7 @@ THEMED = """(() => { const subs = []; window.__theme = { subs };
 def upgrade_cases(br, origin):
     MOCK["js"] = None
     ctx, p, log = new_page(br, origin, (390, 844))
-    p.goto(origin + "/mind/")
+    p.goto(origin + "/mind/?q=off")
     ready(p)
     p.wait_for_function("mind.settled", timeout=60000)
     time.sleep(1.2)
@@ -556,7 +556,7 @@ def upgrade_cases(br, origin):
     ctx.close()
     # LITE: fewer clouds; landscape: the sheet in two columns, the corner free
     ctx, p, log = new_page(br, origin, (844, 390), quality="low")
-    p.goto(origin + "/mind/")
+    p.goto(origin + "/mind/?q=off")
     ready(p)
     time.sleep(1.5)
     neb = p.evaluate("mind.nebulae")
@@ -571,12 +571,85 @@ def upgrade_cases(br, origin):
     #  applyTheme repaints on a change; the default theme leaves Mind's own cyan alone)
     ctx, p, log = new_page(br, origin, (390, 844))
     p.add_init_script("try { localStorage.setItem('olympus.theme', 'zeus'); } catch (e) {}")
-    p.goto(origin + "/mind/")
+    p.goto(origin + "/mind/?q=off")
     ready(p)
     a = p.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--cyan').trim()")
     p.evaluate("window.mind.applyTheme({ accent: '#33ff66' })")
     b = p.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--cyan').trim()")
     check("j. the OLYMPUS theme hook: a theme at load changes Mind's accent, applyTheme on a change", a not in ("", "#6ff6ff") and b == "#33ff66" and not real_errors(log), (a, b, real_errors(log)))
+    ctx.close()
+
+
+def render_core_cases(br, origin):
+    """2026-11-03: the OLYMPUS render core under the brain, and 'what did Jarvis learn today'."""
+    MOCK["js"] = None
+    for q, want in (("low", ["scene", "finish"]), ("high", ["scene", "bloom", "finish"])):
+        ctx, p, log = new_page(br, origin, (390, 844))
+        p.goto(origin + "/mind/?q=" + q)
+        ready(p)
+        p.wait_for_function("window.mind && window.mind.core", timeout=60000)
+        check(f"k. the brain draws on the render core ({q}): {'+'.join(want)}", p.evaluate("window.mind.core") == want and not real_errors(log), (p.evaluate("window.mind.core"), real_errors(log)))
+        ctx.close()
+    ctx, p, log = new_page(br, origin, (390, 844))
+    p.goto(origin + "/mind/?q=off")
+    ready(p)
+    day = p.evaluate("window.mind.day")
+    check("k. Today: the demo vault has lessons from today, oldest first, 24 hourly counts", len(day["items"]) >= 1 and len(day["hours"]) == 24
+          and sum(day["hours"]) == len(day["items"]) and day["items"] == sorted(day["items"], key=lambda x: x["t"]), day)
+    check("k. Today: the button shows the count, the panel is closed", p.inner_text("#today-n") == str(len(day["items"])) and p.is_hidden("#day"))
+    p.click("#today")
+    p.wait_for_timeout(200)
+    check("k. Today opens: a 24-hour strip, one row per lesson (newest first, with the time and the note), pressed state",
+          p.is_visible("#day") and p.evaluate("document.querySelectorAll('#day-strip i').length") == 24
+          and p.evaluate("document.querySelectorAll('#day-list button').length") == len(day["items"])
+          and p.get_attribute("#today", "aria-pressed") == "true" and "lesson" in p.inner_text("#day-sum"), p.inner_text("#day"))
+    before = p.evaluate("window.mind.sparksLaunched")
+    p.click("#day-replay")
+    p.wait_for_timeout(300 + 750 * len(day["items"]))
+    check("k. Replay flies a spark to every lesson of today", p.evaluate("window.mind.sparksLaunched") - before >= len(day["items"]), p.evaluate("window.mind.sparksLaunched") - before)
+    p.click("#day-list button")
+    p.wait_for_timeout(300)
+    check("k. a tap on a lesson flies to its note and opens the card", p.is_visible("#card") or p.evaluate("window.mind.focus") is not None)
+    p.click("#day-close")
+    check("k. the close button hides the panel", p.is_hidden("#day") and p.get_attribute("#today", "aria-pressed") == "false")
+    check("k. no console errors", not real_errors(log), real_errors(log))
+    ctx.close()
+
+
+def live_cases(br, origin):
+    """2026-11-03: Jarvis learning, live (live.js reads her localStorage keys, read-only)."""
+    src = open(os.path.join(MIND, "live.js"), encoding="utf-8").read()
+    code = re.sub(r"//.*", "", src)
+    check("l. live.js only reads: no setItem / removeItem / fetch / network, never names the vault's secret key",
+          not re.search(r"setItem|removeItem|fetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket|'jarvis\.vault'", code), code[:80])
+    html = open(os.path.join(MIND, "index.html"), encoding="utf-8").read()
+    check("l. the Jarvis brain counter and the Teach Jarvis button (opens ../jarvis/) are on the page",
+          all(i in html for i in ('id="jb-mem"', 'id="jb-notes"', 'id="jb-topics"', 'id="teach"', 'href="../jarvis/"')))
+    MOCK["js"] = None
+    ctx, p, log = new_page(br, origin, (390, 844))
+    p.goto(origin + "/mind/?q=off")
+    ready(p)
+    n0 = p.evaluate("window.mind.stats.notes")
+    check("l. before: the counter starts at zero memories", p.inner_text("#jb-mem") == "0" and p.evaluate("window.mind.live.memories") == 0)
+    p.evaluate("""() => { localStorage.setItem('jarvis.assistant.v1', JSON.stringify({ v: 1, facts: [
+        { id: 'f1', t: Date.now(), text: 'My NQ stop goes one tick beyond the sweep' }, { id: 'f2', t: Date.now(), text: 'I love sushi' }], todos: [], notes: [] }));
+      localStorage.setItem('jarvis.vault.learned', JSON.stringify([{ t: Math.floor(Date.now() / 1000), text: 'Size follows the stop', note: 'Trading/Rules.md' }])); }""")
+    p.wait_for_function("window.mind.live && window.mind.live.memories === 2", timeout=15000)
+    p.wait_for_timeout(600)
+    n1 = p.evaluate("window.mind.stats.notes")
+    check("l. a fact saved in Jarvis's storage becomes a node in the galaxy (poll fallback, no reload)", n1 >= n0 + 2, (n0, n1))
+    check("l. the 'Jarvis learned:' toast shows (or the spark flew)", "Jarvis learned" in p.inner_text("#toast") or p.evaluate("window.mind.sparksLaunched") > 0, p.inner_text("#toast"))
+    check("l. the Jarvis brain counter: 2 memories, 1 note written", p.inner_text("#jb-mem") == "2" and p.inner_text("#jb-notes") == "1", p.inner_text("#jbrain"))
+    chips = p.evaluate("[...document.querySelectorAll('#chips .chip')].map((c) => c.textContent)")
+    check("l. the trading fact joins the Trading constellation (the other lands in Jarvis memory)", any("Trading" in c for c in chips) and any("Jarvis memory" in c for c in chips), chips)
+    p.evaluate("""() => { const a = JSON.parse(localStorage.getItem('jarvis.assistant.v1')); a.facts.push({ id: 'f3', t: Date.now(), text: 'Leg day is Thursday' });
+      localStorage.setItem('jarvis.assistant.v1', JSON.stringify(a)); window.dispatchEvent(new StorageEvent('storage', { key: 'jarvis.assistant.v1' })); }""")
+    p.wait_for_function("window.mind.live.memories === 3", timeout=5000)
+    check("l. the storage event updates at once (no wait for the poll)", p.evaluate("window.mind.live.memories") == 3)
+    p.evaluate("localStorage.setItem('jarvis.assistant.v1', '{junk')")
+    p.wait_for_timeout(5000)
+    check("l. junk in the key is ignored: the brain stays, no errors", p.evaluate("window.mind.stats.notes") >= n1 and not real_errors(log), real_errors(log))
+    check("l. no console errors", not real_errors(log), real_errors(log))
     ctx.close()
 
 
@@ -593,6 +666,8 @@ def main():
             demo_cases(br, origin)
             mock_cases(br, origin)
             upgrade_cases(br, origin)
+            render_core_cases(br, origin)
+            live_cases(br, origin)
             other_cases(br, origin)
         finally:
             br.close()

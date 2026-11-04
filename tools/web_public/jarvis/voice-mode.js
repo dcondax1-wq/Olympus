@@ -29,7 +29,7 @@
 // for speech. The VOICE button steps through them; the pick is kept for both ('jarvis.voiceCfg' and 'jarvis.vmVoice').
 // iPhone Safari 16: plain ES2020, no regex lookbehind.
 
-import { voiceScore as ttsScore, bestVoice as ttsBest, voiceChoices as ttsChoices, cleanSpeech, createSpeaker, savedVoiceName, CFG_KEY, DEFAULTS } from './tts.js';
+import { voiceScore as ttsScore, bestVoice as ttsBest, voiceChoices as ttsChoices, cleanSpeech, createSpeaker, savedVoiceName, needsPrimer, CFG_KEY, DEFAULTS } from './tts.js';
 
 export const VOICE_KEY = 'jarvis.vmVoice';
 const SILENT_TURNS = 3;          // turns with nothing heard before voice mode waits for a tap (no endless listening)
@@ -431,9 +431,12 @@ export function createVoiceMode(deps) {
   }
   function stopTalk() {                       // barge-in: the voice stops at once
     if (speech) { speech.done = true; clearTimeout(speech.watch); speech = null; }
-    if (speaker) safe(() => speaker.cancel());
-    if (synth) safe(() => synth.cancel());
+    if (speaker) safe(() => speaker.cancel());          // the speaker's own cancel: its next speak() waits out WebKit's race
+    else if (synth) safe(() => synth.cancel());
   }
+  // the iPhone speaks only after a speak() inside a tap: a silent one at each tap until it has (voice-out.js does it too)
+  let primed = false;
+  function unlockVoice() { if (!primed && speaker && needsPrimer()) primed = !!safe(() => speaker.prime(), false); }
   // sayLine(line, reply?, after?): speak one line with its captions and the reply's cards; then after(), or the reply's app
   // opens, or the next turn: listening (typing when this phone has no voice input)
   function sayLine(line, reply, after) {
@@ -465,7 +468,7 @@ export function createVoiceMode(deps) {
   // ---------------------------------------------------------------- taps: talk, interrupt, pause
   function tapCore() {
     if (!open) return;
-    ensureMic();
+    ensureMic(); unlockVoice();
     if (phase === 'speaking' || phase === 'thinking') { stopTalk(); ++turn; silent = 0; listen(); return; }
     if (phase === 'listening') { stopRec(); ++turn; setPhase('idle', 'PAUSED · TAP THE CORE TO TALK · END TO STOP'); return; }
     silent = 0; listen();
@@ -484,7 +487,7 @@ export function createVoiceMode(deps) {
     capYou(''); $('#vmJar').textContent = ''; clearFrags(); showType(false);
     loadVoices(); renderVerdict(); mountCore(); setPhase('idle', '');
     document.addEventListener('visibilitychange', onHide);
-    if (o && o.gesture) ensureMic();
+    if (o && o.gesture) { ensureMic(); unlockVoice(); }
     else window.addEventListener('pointerup', ensureMic, { once: true, capture: true });   // a hold: the release is the tap
     safe(() => { if (navigator.wakeLock) navigator.wakeLock.request('screen').then((w) => { if (open) wake = w; else w.release(); }).catch(() => {}); });
     startLoop();

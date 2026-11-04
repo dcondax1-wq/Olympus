@@ -262,6 +262,23 @@ export function liveOdds(s, st) {
   return { sync: false, n, k: pick.length, pass: 100 * p / pick.length, fail: 100 * f / pick.length, open: 100 * (pick.length - p - f) / pick.length,
     pass_med: days.length ? days[Math.floor((days.length - 1) / 2)] : null, within: pick[pick.length - 1].d };
 }
+// The eval gauge: the real MFFU numbers behind the threads (rules from the build: Builder 50K = $3,000 target, $2,000 trailing
+// drawdown that locks at +$100, $1,000 daily loss limit, $91.80 fee) and the live state. Pure: the page only draws it.
+export function gaugeOf(s, st, odds) {
+  if (!s || s.kind !== 'eval' || !st || !s.rules) return null;
+  const R = s.rules, room = Math.max(0, +st.room || 0), profit = +st.profit || 0, toT = Math.max(0, +st.toTarget || 0);
+  const floor = st.floor != null ? +st.floor : profit - room, locked = floor >= R.lock - 1e-9;
+  const done = odds && odds.done ? odds.done : null;
+  const pass = done ? (done === 'passed' ? 100 : 0) : odds ? odds.pass : null, fail = done ? (done === 'failed' ? 100 : 0) : odds ? odds.fail : null;
+  const clamp01 = (x) => Math.max(0, Math.min(1, x));
+  return {
+    name: R.name, ddLeft: room, ddOf: R.mll, ddPct: clamp01(room / R.mll), ddWarn: room / R.mll < 0.35, locked,
+    dailyLeft: Math.min(room, R.dll), dll: R.dll,
+    profit, target: R.target, toTarget: toT, tgtPct: clamp01(profit / R.target),
+    pass, fail, passMed: odds && odds.pass_med != null ? odds.pass_med : null, fee: R.price,
+    costPerPass: pass != null && pass > 0 && R.price ? R.price / (pass / 100) : null, done,
+  };
+}
 export function ago(tSec, nowMs = Date.now()) {
   if (!tSec) return '';
   const m = Math.max(0, Math.round((nowMs / 1000 - tSec) / 60));

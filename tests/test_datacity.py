@@ -22,6 +22,10 @@ Checks, on a real slice of data/NQ_5m.csv (2025-03 -> 2025-07):
      triangles within budget at 32k buildings (overview and close-up) and at 40k (synthetic), LOD impostors far and full
      tiles near, LITE; the tour runs to its end; Today matches the fixture; Watch, search beam, minimap zoom, a plug-in
      district from plugins.json, the hidden-tab pause
+  i. OLYMPUS v2 (2026-11-03): the render core (bloom + MSAA + finish pass on HD, 2 passes on LITE, 30 fps cap), landmarks
+     (temple, forum, Pharos, Poseidon gate, a gate per district: taps open cards with the model's numbers), data streams,
+     the outskirts (scenery, clear of the districts), day / night + weather driving the lights, the bloom and the streams,
+     the fly-through cameras (skim, drone, grand) and the tag on a tapped building; the draw-call budget holds with all of it
 """
 from __future__ import annotations
 
@@ -390,6 +394,24 @@ def test_districts_today():
 TODAY_FIXTURE = {}
 
 
+def test_v2_files():
+    """i. the v2 files exist, ride the OLYMPUS render core and touch nothing shared."""
+    names = ["landmarks.js", "streams.js", "outskirts.js", "fly.js"]
+    check("i. v2 files exist: " + ", ".join(names), all(os.path.exists(os.path.join(PAGE, n)) for n in names))
+    scene = read_text(os.path.join(PAGE, "scene.js"))
+    check("i. scene.js draws through the OLYMPUS render core (createRenderer, display space, no own WebGLRenderer)",
+          "createRenderer" in scene and "../olympus/render.js" in scene and "space: 'display'" in scene
+          and "new THREE.WebGLRenderer" not in scene and "renderer.render(this.scene" not in scene)
+    check("i. landmarks use the core's PBR materials", "../olympus/materials.js" in read_text(os.path.join(PAGE, "landmarks.js")))
+    check("i. LITE caps the frame loop at 30 fps", "this.quality === 'lq' && now - last < 28" in read_text(os.path.join(PAGE, "city.js")))
+    html = read_text(os.path.join(PAGE, "index.html"))
+    check("i. the camera buttons and the tag are in the page",
+          all(f'data-cam="{k}"' in html for k in ("orbit", "skim", "drone", "grand")) and 'id="tag"' in html)
+    shared = os.path.join(os.path.dirname(PAGE), "olympus")
+    check("i. the render core sits next to the page (the site layout); none of it is copied into datacity",
+          os.path.exists(os.path.join(shared, "render.js")) and not os.path.exists(os.path.join(PAGE, "render.js")))
+
+
 # ------------------------------------------------------------------------------------------------ g. the page
 def _serve(root):
     class Quiet(http.server.SimpleHTTPRequestHandler):
@@ -625,6 +647,136 @@ def _live_checks(pg, shots):
     s = pg.evaluate("window.__city.stats()")
     check(f"g. live: LITE drops the reflections and the pixel ratio ({s['calls']} calls)", s["lod"]["mirrors"] == 0 and s["pixelRatio"] <= 1.5, s)
     pg.evaluate("window.__app.setQuality('hq')")
+    _v2_checks(pg, shots)
+
+
+V2 = """async () => {
+  const app = window.__app, city = app.city, lm = city.lm, rc = city.rc, out = {};
+  const { weatherOf, sunOf } = await import('./sky.js');
+  const fly = await import('./fly.js');
+  out.rc = { passes: rc.passes(), stats: rc.stats(), q: rc.quality() };
+  out.spots = Object.keys(lm.spots);
+  out.districts = app.L.districts.filter((d) => d.kind !== 'harbor').map((d) => d.key);
+  out.finite = Object.values(lm.spots).every((s) => [s.x, s.z, s.r, s.h].every(Number.isFinite));
+  out.proxies = lm.proxies.length;
+  out.streams = { arcs: city.streams.arcs.length, pulses: city.streams.pulses };
+  const m = city.outskirts.mesh.instanceMatrix.array, n = city.outskirts.total, bad = [];
+  const hb = app.L.harbor, ds = app.L.districts.filter((d) => d.kind !== 'harbor');
+  for (let i = 0; i < n; i++) {
+    const x = m[i * 16 + 12], z = m[i * 16 + 14];
+    if (ds.some((d) => Math.abs(x - d.cx) < d.half && Math.abs(z - d.cz) < d.half) || (hb && x > hb.x0 && x < hb.x1 && z > hb.z0 && z < hb.z1)
+        || Math.hypot(x - lm.site.x, z - lm.site.z) < 100) bad.push([x, z]);
+  }
+  out.outskirts = { n, bad: bad.length, ring: city.outskirts.radius };
+  const set = (vix, mod, open = true) => { app.weather = weatherOf(vix); app.wxOn = true;
+    const sun = sunOf({ mod, mins: (mod + 1080) % 1440, dow: 2 }); sun.open = open; city.setSun(sun, app.weather); };
+  set(12, 930); const day = { sun: lm.lights.sun.intensity, moon: lm.lights.moon.intensity, bloom: city.bloomK, flow: city.U.uFlow.value, gate: lm.vixBase.slice() };
+  set(12, 1380); const night = { sun: lm.lights.sun.intensity, moon: lm.lights.moon.intensity, bloom: city.bloomK, flow: city.U.uFlow.value, beam: lm.beamMat.opacity };
+  set(32, 1380); const storm = { flow: city.U.uFlow.value, gate: lm.vixBase.slice(), rate: lm.vixRate };
+  set(12, 1380, false); const closed = { flow: city.U.uFlow.value };
+  out.sky = { day, night, storm, closed };
+  app.weather = weatherOf(app.model.weather?.vix); app.applySky(true);
+  const from = { pos: city.camera.position.clone(), look: new (city.camera.position.constructor)(0, 0, 0) };
+  out.fly = {};
+  for (const mode of ['skim', 'drone', 'grand']) {
+    const f = fly.flight(mode, app.L, lm.spots, from);
+    let ok = true, lo = 1e9; const seen = new Set();
+    for (let i = 0; i < 1500; i++) {
+      const s = f.step(0.1), p = s.pos;
+      if (![p.x, p.y, p.z, s.look.x, s.look.y, s.look.z].every(Number.isFinite)) ok = false;
+      if (i > 20) lo = Math.min(lo, p.y);
+      seen.add(f.info().landmark);
+    }
+    out.fly[mode] = { ok, lo: +lo.toFixed(1), len: Math.round(f.length), seen: [...seen].filter(Boolean) };
+  }
+  return out;
+}"""
+
+
+def _tap(pg, sel):
+    """A DOM click (Playwright's click waits for stable frames, which a loaded SwiftShader page can starve for 30 s)."""
+    pg.evaluate("(s) => document.querySelector(s).click()", sel)
+
+
+def _v2_checks(pg, shots):
+    """i. the render core, landmarks, streams, outskirts, sky tie, cameras and the tag (live city, 390 x 844, HD)."""
+    r = pg.evaluate(V2)
+    check(f"i. HD runs the core's passes {r['rc']['passes']}: bloom + MSAA {r['rc']['stats']['samples']}x + the film finish",
+          r["rc"]["passes"] == ["scene", "bloom", "finish"] and r["rc"]["stats"]["samples"] == 4 and r["rc"]["stats"]["bloom"], r["rc"])
+    need = {"temple", "forum", "pharos", "poseidon"} | {"gate:" + k for k in r["districts"]}
+    check(f"i. landmarks: temple, forum, Pharos, Poseidon gate and a gate for each of the {len(r['districts'])} districts, all placed",
+          need <= set(r["spots"]) and r["finite"] and r["proxies"] >= len(need), (sorted(need - set(r["spots"])), r["finite"], r["proxies"]))
+    check(f"i. data streams: {r['streams']['arcs']} arcs between the districts, the plaza, the harbor and the temple ({r['streams']['pulses']} pulses)",
+          r["streams"]["arcs"] >= len(r["districts"]) + 2 and r["streams"]["pulses"] >= 200, r["streams"])
+    check(f"i. outskirts: {r['outskirts']['n']:,} scenery towers in one draw, none inside a district, the harbor or the acropolis",
+          r["outskirts"]["n"] >= 1500 and r["outskirts"]["bad"] == 0, r["outskirts"])
+    sk = r["sky"]
+    check("i. day / night drives the lights (sun by day, moon by night) and the bloom (more glow at night)",
+          sk["day"]["sun"] > sk["night"]["sun"] * 1.5 and sk["night"]["moon"] > sk["day"]["moon"] * 1.5 and sk["night"]["bloom"] > sk["day"]["bloom"], sk)
+    check("i. the VIX drives the weather gate (cyan calm, red in a storm); the streams run faster in a storm and slower when the market is closed",
+          sk["day"]["gate"][2] > sk["day"]["gate"][0] and sk["storm"]["gate"][0] > sk["storm"]["gate"][2]
+          and sk["storm"]["flow"] > sk["night"]["flow"] > sk["closed"]["flow"], sk)
+    f = r["fly"]
+    check(f"i. fly paths are finite and stay above the roofs (skim {f['skim']['len']}, drone {f['drone']['len']}, grand {f['grand']['len']} units); "
+          f"the grand tour visits {', '.join(f['grand']['seen'])}", all(f[m]["ok"] for m in f) and f["skim"]["lo"] >= 15 and f["drone"]["lo"] >= 60
+          and {"forum", "pharos", "poseidon", "temple"} <= set(f["grand"]["seen"]), f)
+    pg.evaluate("window.__app.openLandmark('forum')")
+    pg.wait_for_selector(".sheet.on[data-view=card]", timeout=8000)
+    card = pg.inner_text("#sheet")
+    check("i. tap the Forum: its card shows tried / tested / gold counts", "The Forum" in card and "tested" in card.lower() and "tried" in card.lower(), card[:140])
+    pg.evaluate("window.__app.openLandmark('poseidon')")
+    card = pg.inner_text("#sheet")
+    check("i. tap the Gate of Poseidon: the card shows the VIX, VXN and the sky", "VIX" in card and "VXN" in card and "sky" in card.lower(), card[:140])
+    pg.evaluate("window.__app.openLandmark('temple')")
+    check("i. tap the Temple: the card counts the gold buildings", "gold buildings" in pg.inner_text("#sheet"))
+    pg.evaluate("window.__app.openLandmark('pharos')")
+    check("i. tap the Pharos: the card counts LIT's ships", "ships" in pg.inner_text("#sheet"))
+    _tap(pg, "#sheetX")
+    hit = pg.evaluate("""() => { const a = window.__app, s = a.city.lm.spots.temple, o = a.orbit;
+      for (const v of [o.goal, o.view]) { v.target.set(s.x, 20, s.z); v.radius = 150; v.phi = 1.1; v.theta = 0.4; }
+      o.focusTo = null; o.update(0.016); a.city.camera.updateMatrixWorld(true);
+      return a.city.pick(innerWidth / 2, innerHeight / 2); }""")
+    check("i. a screen tap on the temple picks the landmark (not a building)", hit and hit.get("landmark") == "temple", hit)
+    pg.evaluate("window.__app.open(window.__app.L.items.findIndex((it) => it.kind === 'b' && it.b.cls === 'gold'))")
+    _frames(pg, 2)
+    tag = pg.evaluate("(() => { const t = document.querySelector('#tag'); return [getComputedStyle(t).display, t.textContent]; })()")
+    check("i. tap a building: a tag rides over it with its name and result", tag[0] == "block" and "/trade" in tag[1], tag)
+    _tap(pg, "#sheetX")
+    check("i. closing the card hides the tag", pg.evaluate("getComputedStyle(document.querySelector('#tag')).display") == "none")
+    for mode in ("skim", "drone", "grand"):
+        _tap(pg, f"[data-cam={mode}]")
+        p0 = pg.evaluate("window.__app.city.camera.position.toArray()")
+        _frames(pg, 6)
+        p1 = pg.evaluate("window.__app.city.camera.position.toArray()")
+        st = pg.evaluate("window.__city.cam")
+        moved = sum((a - b) ** 2 for a, b in zip(p0, p1)) ** 0.5
+        check(f"i. camera mode {mode.upper()}: flying ({moved:.0f} units in 6 frames), button lit, the orbit paused",
+              st["on"] and st["mode"] == mode and moved > 0.5 and pg.evaluate("window.__app.orbit.flying")
+              and pg.locator(f"[data-cam={mode}].on").count() == 1, (st, moved))
+        if shots:
+            pg.screenshot(path=os.path.join(shots, f"cam_{mode}_390x844.jpg"), type="jpeg", quality=82)
+    _tap(pg, "[data-cam=orbit]")
+    st = pg.evaluate("window.__city.cam")
+    check("i. ORBIT hands the camera back", not st["on"] and not pg.evaluate("window.__app.orbit.flying")
+          and pg.locator("[data-cam=orbit].on").count() == 1, st)
+    _tap(pg, "[data-cam=skim]")
+    pg.mouse.move(100, 400)
+    pg.mouse.down()
+    pg.mouse.move(180, 430, steps=4)
+    pg.mouse.up()
+    check("i. a drag during a fly-through takes the camera back", not pg.evaluate("window.__city.cam.on") and not pg.evaluate("window.__app.orbit.flying"))
+    pg.evaluate("window.__app.setQuality('lq')")
+    _frames(pg, 2)
+    names = pg.evaluate("window.__app.city.rc.passes()")
+    s = pg.evaluate("window.__city.stats()")
+    check(f"i. LITE: {names} (FXAA in the finish pass, no bloom), pixel ratio {s['pixelRatio']}, {s['calls']} calls",
+          names == ["scene", "finish"] and s["pixelRatio"] <= 1.5 and s["calls"] <= DRAW_BUDGET, (names, s))
+    pg.evaluate("window.__app.setQuality('hq')")
+    _frames(pg, 2)
+    s = pg.evaluate("window.__city.stats()")
+    PERF["v2"] = s
+    check(f"i. everything on, HD: {s['calls']} draw calls / {s['triangles']:,} triangles (budget {DRAW_BUDGET} / {TRI_BUDGET:,})",
+          s["calls"] <= DRAW_BUDGET and s["triangles"] <= TRI_BUDGET, s)
 
 
 PERF = {}
@@ -675,6 +827,7 @@ def main():
     test_incremental()
     test_outputs()
     test_districts_today()
+    test_v2_files()
     if "--no-page" not in sys.argv:
         test_page(shots)
         test_synth_budget()

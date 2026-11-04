@@ -179,16 +179,13 @@ def account_goal(key: str, ev: dict | None, stage: str, source: str, days_traded
         out["level"] = "idle"
     else:
         bits = [f"{_money(out['to_go'])} to go on the {out['name'].replace('MFFU Builder ', '')}"]
-        if left is not None:
-            bits.append(f"{_plural(left, 'session')} left of the 2-week goal")
+        # owner 2026-11-03: no session counter in the sentence; the drawdown left = balance - the MFFU max-loss floor
         if room is not None:
-            bits.append(f"{_money(room)} of room above the floor")
+            bits.append(f"drawdown left {_money(room)} of {_money(mll)}")
         out["sentence"] = ", ".join(bits) + "."
         late = used is not None and used > SESSIONS_GOAL
         out["level"] = "bad" if (room is not None and mll and room / mll < 0.25) or (used or 0) > SESSIONS_MAX else \
             "warn" if late or (room is not None and mll and room / mll < 0.5) else "good"
-        if late:
-            out["sentence"] += f" Past session {SESSIONS_GOAL}: the 3-week limit is session {SESSIONS_MAX}."
     if out["min_days"] and dtr is not None:
         out["days_text"] = f"{_plural(int(dtr), 'day')} traded of the {out['min_days']} minimum"
     return out

@@ -305,6 +305,8 @@ h1 b {
   #bottom { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; column-gap: 8px; row-gap: 4px; max-width: none; padding: 6px; }
   .ticker { grid-column: 1; grid-row: 1; min-height: 32px; }
   .tk-text { -webkit-line-clamp: 1; }
+  .ticker { flex-wrap: nowrap; }
+  .ticker .tk-text { flex: 1; order: 0; }
   .stats { grid-column: 2; grid-row: 1; justify-content: flex-end; }
   .stream { grid-column: 1; grid-row: 2; }
   .chips { grid-column: 2; grid-row: 2; }
@@ -320,3 +322,36 @@ h1 b {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 html[data-fx="off"] *, html[data-fx="off"] *::before, html[data-fx="off"] *::after { animation: none !important; }
+
+/* ------------------------------------------------------------------ Today: what Jarvis learned (2026-11-03) */
+.ticker { flex-wrap: wrap; row-gap: 4px; }
+.ticker .tk-text { flex: 1 1 100%; order: 3; }
+.today-btn { flex: none; margin-left: auto; padding: 4px 10px; min-height: 30px; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; }
+.today-btn b { color: var(--cyan); margin-left: 4px; font-variant-numeric: tabular-nums; }
+.day {
+  position: fixed; z-index: 22; left: calc(var(--gut) + var(--sl)); right: calc(var(--gut) + var(--sr)); top: calc(var(--st) + 116px);
+  max-width: 460px; max-height: 46vh; display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 18px;
+}
+.day[hidden] { display: none; }
+.day header { display: flex; align-items: center; gap: 8px; }
+.day h2 { margin: 0; font: 600 13px/1 Orbitron, sans-serif; letter-spacing: 0.14em; text-transform: uppercase; color: var(--cyan); }
+.day-sum { flex: 1; font-size: 13px; color: var(--mut); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.day .close { position: static; }
+.day-strip { display: grid; grid-template-columns: repeat(24, 1fr); gap: 2px; align-items: end; height: 34px; flex: none; }
+.day-strip i { display: block; height: calc(var(--h, 0.08) * 100%); border-radius: 2px; background: rgba(255, 255, 255, 0.12); }
+.day-strip i.on { background: var(--cyan); box-shadow: 0 0 10px rgba(var(--cyan-rgb), 0.7); }
+.day-strip i.now { outline: 1px solid rgba(255, 255, 255, 0.55); outline-offset: 1px; }
+.day-list { list-style: none; margin: 0; padding: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 4px; }
+.day-list button { display: grid; grid-template-columns: 62px 1fr; gap: 2px 10px; width: 100%; text-align: left; padding: 8px 10px; min-height: 44px; border-radius: 12px; border: 1px solid transparent; background: rgba(255, 255, 255, 0.04); color: var(--text); font: inherit; font-size: 14px; }
+.day-list button small { grid-row: span 2; color: var(--cyan); font-variant-numeric: tabular-nums; padding-top: 2px; }
+.day-list button em { font-style: normal; font-size: 12px; color: var(--dim); }
+.day-list button.replay { border-color: var(--line-hi); background: rgba(var(--cyan-rgb), 0.12); }
+.day-list .empty { color: var(--mut); font-size: 14px; padding: 8px 4px; }
+
+/* Jarvis brain counter + Teach Jarvis (2026-11-03) */
+.jbrain { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 2px 6px; font-size: 13px; color: var(--mut); }
+.jbrain .jb-t { font: 700 10.5px/1 var(--ui); letter-spacing: 0.16em; text-transform: uppercase; color: var(--cyan); }
+.jbrain b { color: var(--text); font-variant-numeric: tabular-nums; }
+.jbrain a { margin-left: auto; display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; border-radius: 999px; text-decoration: none; color: var(--cyan);
+  border: 1px solid var(--line-hi); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
+@media (orientation: landscape) and (max-height: 500px) { .jbrain { grid-column: 1 / -1; } }

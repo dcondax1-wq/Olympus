@@ -78,12 +78,21 @@ export const BUILT_INS = Object.freeze([
   app('tree', 'Daphne', 'trading', '#34f5a0', 'The strategy tree search', { glyph: '\u03a8' }),
   app('prometheus', 'Prometheus', 'trading', '#ff7a1a', 'The Forge: strategies tested', { glyph: '\u03a0' }),
   app('pantheon', 'Pantheon', 'trading', '#f2d68a', 'The data gods: rates, liquidity, fear', { glyph: '\u03a3' }),
+  app('ares', 'Ares', 'trading', '#ff3b30', 'The war room: GO, WAIT or HALT', { glyph: '\u039b' }),
+  app('forum', 'Forum', 'trading', '#b8e04a', 'Morning briefing at the real NY hour', { glyph: '\u0393' }),
+  app('labyrinth', 'Labyrinth', 'trading', '#ff4d57', 'The risk maze: size your eval', { glyph: '\u039e' }),
+  app('argus', 'Argus', 'trading', '#3ad7ff', 'The hundred eyes: what to fix', { glyph: '\u0391' }),
+  app('nemesis', 'Nemesis', 'trading', '#8a6bff', 'The fallen trades: what went wrong', { glyph: '\u039d' }),
+  app('chronos', 'Chronos', 'trading', '#d4a574', 'Time and the session clock', { glyph: '\u03a7' }),
+  app('hephaestus', 'Hephaestus', 'trading', '#d96bff', 'The forge: tune the dials', { glyph: '\u2692' }),
   app('planner', 'Planner', 'life', '#60a5fa', 'Calendar, tasks and projects', { icon: '../planner/icon-192.png', live: false }),
   app('mind', 'Mind', 'life', '#5eead4', 'Your vault as a living 3D brain', { glyph: '\u03a9' }),
   app('arena', 'Arena', 'life', '#ffb547', 'Olympian ranks: XP for discipline', { glyph: '\u0391' }),
+  app('athena', 'Athena', 'life', '#5ea8ff', 'The library: strategy, rules, quiz', { glyph: '\ud83e\udd89' }),
   app('kalshi', 'Kalshi', 'money', '#2ef2d0', 'Kalshi bot \u00b7 from your PC', { glyph: 'K', live: false }),
   app('tyche', 'Tyche', 'money', '#e879f9', 'The Kalshi bets as a 3D fortune wheel', { glyph: '\u03a4' }),
   app('hermes', 'Hermes', 'money', '#f7c948', 'OLYMPUS Wrapped: your money', { glyph: '\u0397' }),
+  app('plutus', 'Plutus', 'money', '#9be84a', 'The money plan: accounts and payouts', { glyph: '\u03a1' }),
 ]);
 const GROUP_IDS = GROUPS.map((g) => g.id);
 const groupRank = (g) => { const i = GROUP_IDS.indexOf(g); return i < 0 ? GROUP_IDS.length - 1 : i; };     // unknown: MORE

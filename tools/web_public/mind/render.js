@@ -186,7 +186,28 @@ export class Brain {
     this._swap('nebulae', this.nebulae.quad, 1);
     this.synapses = new Synapses(THREE, this._material(SYNAPSE_VS, GLOW_FS));
     this._swap('synapses', this.synapses.points, 7);
+    this.rc = null;                                  // the OLYMPUS render core (bloom, MSAA, film finish), when it loaded
     this.setQuality(quality);
+  }
+
+  /** Put the scene on the OLYMPUS render core (../olympus/render.js): real bloom on the glowing nodes and links, 4x MSAA on HD,
+   *  FXAA on LITE, a film finish. 'display' space: the shaders here are tuned in screen colours, so bloom takes 0..1 values.
+   *  Without the core (or on failure) the plain renderer keeps drawing as before. Returns true when the core took over. */
+  useCore(createRenderer, { followKit = true } = {}) {
+    if (this.rc || typeof createRenderer !== 'function') return !!this.rc;
+    try {
+      const o = {
+        renderer: this.renderer, scene: this.scene, camera: this.camera, space: 'display', env: 'none', autoSize: false, adapt: false,
+        maxDpr: this.quality === 'high' ? 2 : 1.25, onQuality: () => this.resize(),
+        bloom: { strength: 0.62, radius: 0.78, threshold: 0.42 }, grade: { grain: 0.03, vignette: 0.26, aberration: 0.0018, saturation: 1.06 },
+      };
+      const forced = new URLSearchParams(location.search).get('q');                 // ?q=ultra|high|low|off: pin a tier (tests, software GPUs)
+      if (['ultra', 'high', 'low', 'off'].includes(forced)) o.quality = forced;
+      else if (!followKit) o.quality = this.quality === 'high' ? 'high' : 'low';
+      this.rc = createRenderer(o);
+      this.resize();
+    } catch (_) { this.rc = null; }
+    return !!this.rc;
   }
 
   // ------------------------------------------------------------------ setup
@@ -219,7 +240,8 @@ export class Brain {
 
   setQuality(q) {
     this.quality = q;
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, q === 'high' ? 2 : 1));
+    if (this.rc && !window.OLYMPUS) this.rc.setQuality(q === 'high' ? 'high' : 'low');
+    if (!this.rc) this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, q === 'high' ? 2 : 1));
     this._buildStars(q === 'high' ? 2200 : 700);
     this.ring = new MemoryRing(this.T, this.u, q);
     this._swap('memory', this.ring.group, 2);
@@ -229,7 +251,7 @@ export class Brain {
 
   resize() {
     const w = this.canvas.clientWidth || window.innerWidth, h = this.canvas.clientHeight || window.innerHeight;
-    this.renderer.setSize(w, h, false);
+    if (this.rc) this.rc.resize(w, h); else this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
     const dpr = this.renderer.getPixelRatio();
@@ -583,7 +605,7 @@ export class Brain {
     const near = rig.radius - this.extent * 0.15, far = rig.radius + this.extent * 1.25;
     this.u.uFogNear.value = Math.max(1, near); this.u.uFogFar.value = Math.max(near + 50, far);
     this.nebulae.render(this.renderer, this.camera);
-    this.renderer.render(this.scene, this.camera);
+    if (this.rc) this.rc.render(); else this.renderer.render(this.scene, this.camera);
   }
 
   // ------------------------------------------------------------------ screen space

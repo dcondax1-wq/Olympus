@@ -49,8 +49,8 @@ APPS = {
 # heap, layouts per frame (one at most: DOM writes batched, never a read after a write in the frame loop). Measured on
 # 2026-11-03 with ~25% headroom; docs/OLYMPUS_DESIGN.md has the table.
 BUDGET = {
-    "datacity": (120, 700_000), "mind": (30, 20_000), "tree": (0, 0), "oracle": (170, 10_000), "odeon": (20, 40_000),
-    "fates": (24, 30_000), "hermes": (0, 0), "prometheus": (110, 5_000), "tyche": (200, 40_000),
+    "datacity": (120, 700_000), "mind": (30, 20_000), "tree": (0, 0), "oracle": (170, 10_000), "odeon": (60, 60_000),
+    "fates": (64, 40_000), "hermes": (0, 0), "prometheus": (40, 7_500), "tyche": (270, 30_000),   # render core adopted 2026-11-03: measured 31 calls / 6,054 tris and 216 calls / 24,590 tris, +20%
 }
 HEAP_MB, LAYOUTS_PER_FRAME = 40, 1.25   # 1.25: room for the day-sprint HUDs (Odeon 1.11 under load)
 
@@ -90,6 +90,9 @@ def read(p):
 # ------------------------------------------------------------------ a. static
 def test_static():
     js, css = read(os.path.join(KIT, "olympus.js")), read(os.path.join(KIT, "olympus.css"))
+    arena = read(os.path.join(os.path.dirname(KIT), "arena", "main.js"))
+    check("a. OLYMPUS.sfx(name): loads olympus/sfx.js lazily, never throws, no-op when missing or when the host says it is quiet (OLYMPUS_QUIET); Arena plays rankup through it, guarded",
+          all(x in js for x in ("sfx: function (name)", "window.OLYMPUS_QUIET", "'sfx.js?v=s1'", "k.play(name)")) and "O.sfx('rankup')" in arena and "O && O.sfx" in arena)
     check("a. the kit: olympus.js reads and writes 'jfx' (Jarvis's key), caps the pixel ratio, pauses on a hidden tab",
           "KEY = 'jfx'" in js and "level === 'off' ? 1 : l ? 1.5 : 2" in js and "visibilityState" in js)
     jarvis = read(os.path.join(WEB, "jarvis", "index.html"))
@@ -110,7 +113,8 @@ def test_static():
         code = "".join(read(p) for p in glob.glob(os.path.join(WEB, app, "*.js")))
         check(f"a. {app}: the kit's sheet first, its script before the app's modules, the app reads OLYMPUS (quality, hidden tab)",
               i_css > 0 and all(i_css < o for o in own if o >= 0) and 0 < i_js < min(mods)
-              and "window.OLYMPUS" in code and ".hidden()" in code and ("O?.track(" in code or "O.ready()" in code or "O?.ready()" in code),
+              and "window.OLYMPUS" in code and ".hidden()" in code and ("O?.track(" in code or "O.ready()" in code or "O?.ready()" in code
+                                                                    or "from '../olympus/render.js'" in code),   # the render core lifts the veil (ready / track) itself
               (i_css, own, i_js, mods))
     build = read(os.path.join(ROOT, "tools", "build_web_dashboard.py"))
     sw = read(os.path.join(WEB, "sw.js"))

@@ -11,10 +11,7 @@
 // renders only while on screen and the tab is visible; prefers-reduced-motion = no camera motion. HTML labels (prices,
 // times, fill cards, thought panels) follow their 3D anchors and are nudged apart so they never overlap.
 import { THREE, View, Q, glowTexture } from './core.js';
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
-import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { tierFor, sizeCore } from './rcore.js';
 
 const DX = 0.16;                 // world units per minute
 const HMS = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
@@ -57,7 +54,7 @@ const LAYERS0 = { fills: true, trades: true, setup: true, thoughts: true, orders
 
 export class Holo extends View {
   constructor(opts = {}) {
-    super({ fov: 38, dprMax: opts.phone ? 1.5 : 2, ...opts, alpha: false });
+    super({ fov: 38, dprMax: opts.phone ? 1.5 : 2, env: 'night', tierCap: 'low', coreBloom: { strength: 0.62, radius: 0.42, threshold: 0.58 }, ...opts, alpha: false });
     this.phone = !!opts.phone;
     this.lite = !!opts.lite || Q.level === 'lite';
     const R = this.renderer;
@@ -136,7 +133,7 @@ export class Holo extends View {
       catch (e) { console.warn('holo frame', e); if ((this._errs = (this._errs || 0) + 1) > 30) { this.broken = true; return; } }
       const ms = performance.now() - t0, S = this.st;
       S.frames++; S.ms = ms; S.msAvg = S.msAvg ? S.msAvg * 0.92 + ms * 0.08 : ms; S.acc += dt; S.n++;
-      if (S.acc > 1) { S.fps = Math.round(S.n / S.acc); S.acc = 0; S.n = 0; }
+      if (S.acc > 1) { S.fps = Math.round(S.n / S.acc); S.acc = 0; S.n = 0; if (S.frames > 90 && S.msAvg > 36 && !Q.fixed && this.rc.quality() !== 'low') { this.rc.cap = 'low'; this.rc.setQuality('low'); this.resize(); } }   // a slow GPU: drop bloom + MSAA
     }
     this._raf = requestAnimationFrame(this._loop);
   }
@@ -149,23 +146,12 @@ export class Holo extends View {
     el.appendChild(this.ov); this.dirty = true; this._wake();
   }
   detach() { this._io2?.disconnect(); this.ov.remove(); cancelAnimationFrame(this._raf); this._raf = 0; super.detach(); }
-  _initComposer() {
-    this.composer = null;
-    // bloom: PC Max only (a phone's Max keeps the mirrored floor; bloom there cost ~350 ms a frame in the software-GPU test)
-    if (this.lite || (this.phone && !this.opts.bloom)) return;
-    try {
-      const c = new EffectComposer(this.renderer);
-      c.addPass(new RenderPass(this.scene, this.camera));
-      this.bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.62, 0.42, 0.58);
-      c.addPass(this.bloom); c.addPass(new OutputPass());
-      this.composer = c;
-    } catch (e) { console.warn('holo bloom', e); this.composer = null; }
-  }
+  _initComposer() { /* the OLYMPUS render core (rcore.js) draws the bloom, MSAA and the film finish */ }
   setQuality(q) {
     const lite = q === 'lite';
     if (lite === this.lite) return;
     this.lite = lite;
-    if (lite) { this.composer?.dispose?.(); this.composer = null; } else this._initComposer();
+    this.rc.cap = 'low'; this.rc.setQuality(tierFor(this.rc.cap));
     this.G.mirror.visible = !lite; this.resize();
   }
   resize() {
@@ -173,17 +159,12 @@ export class Holo extends View {
     if (!this.el) return;
     const w = Math.max(10, this.el.clientWidth || 0), h = Math.max(10, this.el.clientHeight || 0);
     this.w = w; this.h = h;
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, this.opts.dprMax || 2) * Q.dprScale);
-    this.renderer.setSize(w, h, false);
+    sizeCore(this.rc, w, h);
     this.canvas.style.width = w + 'px'; this.canvas.style.height = h + 'px';
     this.camera.aspect = w / h; this.camera.updateProjectionMatrix();
-    if (this.composer) {
-      this.composer.setPixelRatio(this.renderer.getPixelRatio()); this.composer.setSize(this.w, this.h);
-      this.bloom?.resolution?.set(this.w / 2, this.h / 2);
-    }
     this.dirty = true;
   }
-  _render() { if (this.composer) this.composer.render(); else this.renderer.render(this.scene, this.camera); }
+  _render() { this.rc.render(); }
 
   // ------------------------------------------------------------------ helpers
   _el(cls, html) { const e = document.createElement('div'); e.className = cls; e.innerHTML = html; return e; }
@@ -835,12 +816,12 @@ export class Holo extends View {
   }
   stats() {
     const i = this.renderer.info.render, R = this.st.ring || [], q = (k, p) => { const a = R.map((x) => k < 0 ? x[0] + x[1] : x[k]).sort((m, n) => m - n); return a.length ? +a[Math.min(a.length - 1, Math.floor(a.length * p))].toFixed(2) : 0; };
-    return { frames: this.st.frames, ms: +this.st.ms.toFixed(2), msAvg: +this.st.msAvg.toFixed(2), p50: q(-1, 0.5), p95: q(-1, 0.95), update50: q(0, 0.5), render50: q(1, 0.5), fps: this.st.fps, calls: i.calls, tris: i.triangles, dpr: this.renderer.getPixelRatio(), lite: this.lite, bloom: !!this.composer }; }
+    return { frames: this.st.frames, ms: +this.st.ms.toFixed(2), msAvg: +this.st.msAvg.toFixed(2), p50: q(-1, 0.5), p95: q(-1, 0.95), update50: q(0, 0.5), render50: q(1, 0.5), fps: this.st.fps, calls: i.calls, tris: i.triangles, dpr: this.renderer.getPixelRatio(), lite: this.lite, bloom: this.rc.passes().includes('bloom'), passes: this.rc.passes().length, tier: this.rc.quality() }; }
   counts() {
     const T = this.T;
     return { bars: this.n, barsShown: this.wk ? this.wk.count : 0, fills: this.fills.length, fillsShown: this.fills.filter((F) => F.f.t <= T && F.g.visible).length, trades: this.trades.length,
       tradesShown: this.trades.filter((x) => x.g.visible).length, thoughts: this.thoughts.length, thoughtsShown: this.thoughts.filter((x) => x.th.t <= T).length, orders: this.orders.length,
       ordersWorking: this.orders.filter((o) => o.working).length, levels: this.levels.length, setups: this.trades.filter((x) => x.setup).length, T, mode: this.mode, preset: this.presetName };
   }
-  dispose() { document.removeEventListener('visibilitychange', this._vis); cancelAnimationFrame(this._raf); this._clear(); this.ov.remove(); this.composer?.dispose?.(); super.dispose(); }
+  dispose() { document.removeEventListener('visibilitychange', this._vis); cancelAnimationFrame(this._raf); this._clear(); this.ov.remove(); super.dispose(); }
 }

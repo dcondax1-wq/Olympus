@@ -28,11 +28,6 @@
       <b>${big}</b><em>${small}</em></div>`;
   }
   const bar = (f, col, mark) => `<div class="gl-bar" style="--c:${col}"><i style="width:${(Math.max(0, Math.min(1, +f || 0)) * 100).toFixed(1)}%"></i>${mark != null ? `<u style="left:${(Math.max(0, Math.min(1, mark)) * 100).toFixed(1)}%"></u>` : ''}</div>`;
-  function sessions(a) {
-    const used = a.sessions_used || 0, n = a.sessions_max || 15, goal = a.sessions_goal || 10;
-    return `<div class="gl-ses" role="img" aria-label="Session ${used} of ${goal}">${Array.from({ length: n }, (_, i) => {
-      const k = i + 1; return `<i class="${k < used ? 'done' : k === used ? 'now' : ''}${k > goal ? ' late' : ''}">${k}</i>`; }).join('')}</div>`;
-  }
   // weekdays from today: the date of the n-th session ahead (today = 1 if it is a weekday)
   function sessionDate(n) {
     if (!okN(n) || n < 1) return null;
@@ -53,11 +48,9 @@
     return `<div class="gl-acct">${head}
       <div class="gl-top">${ring(prog, `${Math.round(prog * 100)}%`, 'of target', col, compact ? 78 : 92)}
         <div class="gl-bars"><div class="gl-row"><span>Profit <b class="${cls(a.profit)}">${susd(Math.round(a.profit || 0))}</b> of +${money(a.profit_target)}</span><em>${money(a.to_go)} to go</em></div>${bar(prog, 'var(--good)')}
-          <div class="gl-row"><span>Room above the floor <b>${money(a.room)}</b></span><em>of ${money(a.mll)}</em></div>${bar(a.room_frac, (a.room_frac || 0) < 0.35 ? 'var(--bad)' : 'var(--accent-2)')}
-          <div class="gl-row"><span>Session <b>${a.sessions_used ?? '—'}</b> of ${a.sessions_goal}</span><em>${a.sessions_left != null ? plural(a.sessions_left, 'session') + ' left' : ''}</em></div></div></div>
-      ${compact ? '' : sessions(a)}
+          <div class="gl-row"><span>Drawdown left <b>${money(a.room)}</b></span><em>of ${money(a.mll)} max loss</em></div>${bar(a.room_frac, (a.room_frac || 0) < 0.35 ? 'var(--bad)' : 'var(--accent-2)')}</div></div>
       <p class="gl-s">${esc(a.sentence)}${ps != null && ps > 0 ? ` That is about <b>${money(ps)}</b> a session.` : ''}</p>
-      ${a.days_text ? `<div class="chips">${chip(esc(a.days_text), (a.days_traded || 0) >= (a.min_days || 0) ? 'good' : '')}${a.anchored ? chip('matches the MFFU dashboard (anchored)', 'good') : ''}${chip('source: ' + esc(a.source))}</div>` : ''}</div>`;
+      ${a.days_text ? `<div class="chips">${(a.days_traded || 0) < (a.min_days || 0) ? chip(esc(a.days_text)) : ''}${a.anchored ? chip('matches the MFFU dashboard (anchored)', 'good') : ''}${chip('source: ' + esc(a.source))}</div>` : ''}</div>`;
   }
   // "since you last looked": the 50K's $ to go against the value seen on an earlier visit (kept on this phone; the reference
   // moves on after 3 hours so the line means "since this morning / yesterday", not "since a second ago")

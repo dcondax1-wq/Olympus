@@ -2,6 +2,7 @@
 // ring's height, the live price pointer. Placed in screen space from the scene's own projection every frame, with
 // transforms only (no layout read in the frame loop); a tick's or a tag's text is rewritten only when it changes.
 import { kindOf, hex } from './glow.js';
+import { heatOf } from './heat.js';
 
 const STEPS = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500];
 const TICKS = 14, TAGS = 8, GAP = 17;
@@ -59,6 +60,8 @@ export class Ladder {
       text(o, `${r.l.label} ${fmt(r.l.price)}`);
       const c = hex(kindOf(r.l.kind).color);
       if (o.c !== c) { o.c = c; o.e.style.color = c; }
+      const h = Math.round(heatOf(r.l.dist, w.atr) * 10) / 10;         // the tag glows with the level's heat (steps of 0.1: a rare write)
+      if (o.h !== h) { o.h = h; o.e.style.setProperty('--heat', String(h)); }
       place(o, r.y);
       show(o, true);
     });

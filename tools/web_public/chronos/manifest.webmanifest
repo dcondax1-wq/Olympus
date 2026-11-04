@@ -1,0 +1,13 @@
+{
+  "name": "Chronos",
+  "short_name": "Chronos",
+  "description": "CHRONOS: the time machine. Replay any day the bot traded on a Greek clock tower.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#07050e",
+  "theme_color": "#07050e",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

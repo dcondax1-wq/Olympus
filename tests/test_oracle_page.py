@@ -47,7 +47,7 @@ ORC = os.path.join(WEB, "oracle")
 DEMO = os.path.join(ORC, "demo_day.json")
 ET = ZoneInfo("America/New_York")
 DAY = "2026-01-22"
-MODULES = ["main.js", "data.js", "demo.js", "time.js", "scene.js", "layers.js", "sky.js", "glow.js", "hud.js", "ladder.js", "events.js"]
+MODULES = ["main.js", "data.js", "demo.js", "time.js", "scene.js", "layers.js", "sky.js", "glow.js", "hud.js", "ladder.js", "events.js", "heat.js", "arena.js"]
 API = "https://api.github.com/repos/demetrades2000-coder/nq-dashboard/contents/live.json?ref=live"
 RAW = "https://raw.githubusercontent.com/demetrades2000-coder/nq-dashboard/live/live.json"
 RES: list = []
@@ -253,7 +253,7 @@ def real_errors(log):
     return log["errors"] + [t for t, u in log["console"] if "404" not in t and "Failed to load resource" not in t]
 
 
-def ready(p, mode=None, timeout=30000):
+def ready(p, mode=None, timeout=90000):
     p.wait_for_function("document.body.dataset.ready === '1' && window.oracle && window.oracle.world", timeout=timeout)
     if mode:
         p.wait_for_function(f"window.oracle.mode === '{mode}'", timeout=timeout)
@@ -272,7 +272,7 @@ def shot(p, name):
     if SHOTS:
         os.makedirs(SHOTS, exist_ok=True)
         p.wait_for_timeout(600)
-        p.screenshot(path=os.path.join(SHOTS, name + ".jpg"), type="jpeg", quality=82)
+        p.screenshot(path=os.path.join(SHOTS, name + ".jpg"), type="jpeg", quality=82, timeout=120000)
 
 
 # ------------------------------------------------------------------ formats (the page's own)
@@ -317,8 +317,9 @@ def static_checks():
                 unused.append(f"{f}:{name}")
     check("a. every export is imported by another module (no dead exports)", not unused, unused)
     imports = re.findall(r"^import .* from '([^']+)';", "".join(src.values()), re.M)
-    check("a. modules import only each other and ../jarvis/three.module.min.js (once, in main.js)",
-          all(re.fullmatch(r"\./\w+\.js", i) or i == "../jarvis/three.module.min.js" for i in imports)
+    check("a. modules import only each other, ../jarvis/three.module.min.js (once, in main.js) and the OLYMPUS render core (render.js in scene.js, materials.js in arena.js)",
+          all(re.fullmatch(r"\./\w+\.js", i) or i in ("../jarvis/three.module.min.js", "../olympus/render.js", "../olympus/materials.js") for i in imports)
+          and "../olympus/render.js" in src["scene.js"] and "../olympus/materials.js" in src["arena.js"]
           and "".join(src.values()).count("three.module.min.js") == 1 and "../jarvis/three.module.min.js" in src["main.js"], imports)
     urls = set(re.findall(r"https?://[^\s'\"`)]+", "".join(src.values()) + html + css))
     allowed = {"https://api.github.com/repos/${owner}/${repo}/contents/live.json?ref=live",
@@ -656,6 +657,72 @@ def today_checks(br, origin, j_now):
     ctx.close()
 
 
+def arena_checks(br, origin):
+    """h. the 2026-11-03 look pass: the OLYMPUS render core, the temple arena with the market radar, level heat, the waiting ribbon."""
+    # pure: heat.js in the browser
+    ctx, p, log = new_page(br, origin, (390, 844))
+    p.goto(origin + "/oracle/?demo=1")
+    ready(p, "demo")
+    got = p.evaluate("""async () => { const H = await import('./heat.js');
+        const w = { atr: 10, levels: [{ id: 'a', label: 'PDH', kind: 'pd', price: 100, dist: 0, usd: 0, taken: false }, { id: 'b', label: 'Asia low', kind: 'asia', price: 125, dist: 25, usd: 50, taken: false },
+          { id: 'c', label: 'PDL', kind: 'pd', price: 20, dist: -80, usd: 160, taken: false }, { id: 'd', label: 'Swept', kind: 'london', price: 101, dist: 1, usd: 2, taken: true }],
+          stages: ['levels', 'sweep', 'inducement', 'displacement', 'cisd5', 'limit', 'cisd1m', 'entry', 'trade', 'done'].map((k, i) => ({ key: k, label: k, state: i < 2 ? 'done' : i === 2 ? 'now' : 'todo' })),
+          stage: { key: 'inducement', label: 'Inducement', n: 3, dir: -1 }, position: null };
+        const lv = { ...w, stage: { key: 'levels', label: 'Levels', n: 1 } };
+        return { h0: H.heatOf(0, 10), h25: H.heatOf(25, 10), h80: H.heatOf(-80, 10), none: H.heatOf(null, 10), rows: H.heatRows(w).map((r) => r.label),
+                 wait: H.waitingOf(w, null), lv: H.waitingOf(lv, { open: false, open_t: 1 }), cl: H.waitingOf({ ...w, stage: { key: 'closed', label: 'Closed', n: null } }, null) }; }""")
+    check("h. heat: 1 on the price, ~0.37 at 2.5 ATR, ~0 far away; swept levels are cold (left out); hottest first",
+          got["h0"] == 1 and abs(got["h25"] - 0.368) < 0.01 and got["h80"] < 0.001 and got["none"] == 0 and got["rows"] == ["PDH", "Asia low", "PDL"], got)
+    check("h. waiting ribbon: the ten stages as pips (done / now / todo) and the next thing the bot needs, in words",
+          [x["state"] for x in got["wait"]["pips"]][:4] == ["done", "done", "now", "todo"] and len(got["wait"]["pips"]) == 10
+          and "displacement" in got["wait"]["next"].lower() and "sweep" in got["lv"]["next"].lower() and "Asia low" in got["lv"]["next"] and "PDL" in got["lv"]["next"] and "$50 per micro" in got["lv"]["next"]
+          and got["lv"]["tone"] == "closed" and got["cl"]["tone"] == "off", got)
+    ctx.close()
+    # live fixture: the DOM ribbon + heat on the HUD, the ladder and the rings
+    FEED.update(api=(200, fixture_live(int(time.time()))), raw=None, calls=[])
+    ctx, p, log = new_page(br, origin, (390, 844))
+    p.goto(origin + "/oracle/")
+    ready(p, "live")
+    p.wait_for_timeout(800)
+    w = p.evaluate("oracle.world")
+    pips = p.evaluate("[...document.querySelectorAll('#wait .pips li')].map((li) => li.dataset.state)")
+    nxt = p.inner_text("#wait .nx")
+    check("h. the ribbon on the page: ten pips = the Brain's stages, one NEXT line, and the bot's own sentence under it",
+          pips == [x["state"] for x in w["stages"]] and len(nxt) > 8 and p.is_visible("#wait") and p.inner_text("#waiting").strip() == (w["stage"]["waiting"] or "").strip(), [pips, nxt])
+    heat = p.evaluate("oracle.heat")
+    heat3 = p.evaluate("oracle.heat3d")
+    hot = heat[0] if heat else None
+    check("h. level heat: the hottest open level is the nearest one in ATR; the 3D rings carry the same order",
+          hot and all(heat[i]["heat"] >= heat[i + 1]["heat"] for i in range(len(heat) - 1)) and heat3 and heat3[0]["label"] in [r["label"] for r in heat[:3]]
+          and all(0 <= r["heat"] <= 1 for r in heat3), [heat[:3], heat3[:3]])
+    rows = p.evaluate("[...document.querySelectorAll('#lv-list li[data-heat]')].map((li) => +li.dataset.heat)")
+    check("h. the levels list and the ladder tags show the heat (a glow that follows it)", rows and max(rows) > 0 and p.evaluate(
+        "[...document.querySelectorAll('#ladder .tag')].some((t) => t.style.visibility === 'visible' && t.style.getPropertyValue('--heat') !== '')"), rows)
+    ar = p.evaluate("oracle.arena")
+    check("h. the arena: the radar has a blip per open level; the render core runs (LITE tier on software GL: scene + finish)",
+          ar and ar["blips"] == len([l for l in w["levels"] if not l["taken"] and l["dist"] is not None]) and ar["passes"][-1] == "finish", ar)
+    mats = p.evaluate("""() => { const out = {}; window.oracle.sceneObjects().forEach((m) => { out[m] = (out[m] || 0) + 1; }); return out; }""")
+    check("h. the temple: marble + gold on physical materials, the colonnade and the omphalos in the scene, a lamp on the comet",
+          mats.get("physical", 0) >= 5 and mats.get("instanced", 0) >= 2 and mats.get("light", 0) >= 2, mats)
+    check("h. no console errors with the arena", not real_errors(log), real_errors(log))
+    shot(p, "arena_low_390")
+    ctx.close()
+    # HD tier (?q=high), small canvas so software GL can draw it: bloom + MSAA, 3 passes
+    FEED.update(api=(200, fixture_live(int(time.time()))), raw=None, calls=[])
+    ctx = br.new_context(viewport={"width": 390, "height": 700}, device_scale_factor=1)
+    ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(origin) else r.fulfill(status=404, body="{}"))
+    q = ctx.new_page()
+    errs = []
+    q.on("pageerror", lambda e: errs.append(str(e)))
+    q.goto(origin + "/oracle/?q=high")
+    q.wait_for_function("document.body.dataset.ready === '1' && window.oracle && window.oracle.arena && window.oracle.arena.stats.calls > 0", timeout=120000)
+    st = q.evaluate("oracle.arena")
+    check("h. HD tier: scene + bloom + finish with 4x MSAA on a transparent-free HDR buffer, the arena in the same frame, no page error",
+          st["passes"] == ["scene", "bloom", "finish"] and st["stats"]["samples"] == 4 and st["stats"]["bloom"] and not errs, [st, errs])
+    q.screenshot(path=os.path.join(SHOTS or "/tmp", "arena_hd_390.jpg"), type="jpeg", quality=80) if SHOTS else None
+    ctx.close()
+
+
 def misc_checks(br, origin):
     FEED.update(api=None, raw=None, calls=[])
     ctx, p, log = new_page(br, origin, (390, 844), reduced=True)
@@ -679,7 +746,7 @@ def misc_checks(br, origin):
     ctx.close()
     ctx, p, log = new_page(br, origin, (420, 860))
     p.goto(origin + "/frame.html")
-    p.wait_for_function("window.__cards.length > 0", timeout=30000)
+    p.wait_for_function("window.__cards.length > 0", timeout=90000)
     card = p.evaluate("window.__cards[window.__cards.length - 1].card")
     check("f. inside Jarvis: the live card posted to the parent (contract, theme, 3 KPIs, plain text)",
           card["v"] == 1 and card["name"] == "Oracle" and card["theme"] == "#04050d" and card["status"]["level"] == "off"
@@ -712,6 +779,7 @@ def main(argv=None) -> int:
                 live_checks(br, origin, vw, fixture_live(int(time.time())))
             state_checks(br, origin, fixture_live(int(time.time())))
             today_checks(br, origin, fixture_live(int(time.time())))
+            arena_checks(br, origin)
             misc_checks(br, origin)
             br.close()
     finally:

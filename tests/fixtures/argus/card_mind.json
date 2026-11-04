@@ -1,0 +1,15 @@
+{
+  "v": 1,
+  "name": "Mind",
+  "status": {
+    "level": "ok",
+    "label": "Brain online"
+  },
+  "kpis": [],
+  "lines": [
+    "Your vault and Jarvis memory as a living 3D brain"
+  ],
+  "t": 1793671580,
+  "open": "#",
+  "theme": "#03040a"
+}
