@@ -33,7 +33,7 @@ export function demoData(seed = 7) {
     ['be_off', 'Breakeven stop above the entry', 'pts', 0, 3, 0.25, 1.25], ['t_at', 'Early check (cut a loser) after', 'min', 5, 40, 5, 15],
     ['max_rr', 'Target banked at', 'R', 4, 12, 0.5, 8], ['vix_k', 'Target = 18:00 open +/- VIX day move x', 'x', 0.6, 1.6, 0.05, 1],
     ['min_rr', 'Minimum target distance', 'R', 1, 2.5, 0.1, 1.5], ['disp', 'Displacement body at least', 'ATR', 0.5, 1.2, 0.05, 0.8],
-    ['win_end', 'Last entry (ET)', 'min', 600, 945, 15, 930], ['room_f', 'Eval size: share of the room to the floor', 'x', 0.4, 1, 0.05, 0.8],
+    ['win_end', 'Last entry (ET)', 'min', 600, 945, 15, 930], ['room_f', 'Eval size: share of the drawdown left', 'x', 0.4, 1, 0.05, 0.8],
   ].map(([key, label, unit, lo, hi, step, live]) => ({ key, label, unit, lo, hi, step, live, n: Math.round((hi - lo) / step) + 1 }));
   const liveV = knobs.map((k) => Math.round((k.live - k.lo) / k.step));
   const key = (v) => v.join('-');
