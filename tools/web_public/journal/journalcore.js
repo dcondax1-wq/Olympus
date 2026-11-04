@@ -57,7 +57,7 @@ export function normTrades(raw, n = 30) {
 export const srcLabel = (s) => SRC[s] || s;
 
 // ------------------------------------------------------------------------------------------------ the store (this phone only)
-export const emptyStore = () => ({ v: 1, entries: {}, rule: null, demoSeeded: false });
+export const emptyStore = () => ({ v: 1, entries: {}, rule: null, checks: [], demoSeeded: false });
 export function cleanNote(s) { return String(s ?? '').replace(/[\u0000-\u001f\u007f\u2028\u2029]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, NOTE_MAX); }
 function cleanEntry(e) {
   if (!e || typeof e !== 'object') return null;
@@ -70,11 +70,19 @@ function cleanEntry(e) {
   o.at = fin(e.at) ? Math.round(+e.at) : 0;
   return o;
 }
+export const CHECK_MAX = 30;
+/** the pre-trade checks kept: { at, a: 'ynn-y' (the 5 answers, - = none), v: fine | wait }; at most the last 30 */
+function cleanChecks(c) {
+  const out = [];
+  if (Array.isArray(c)) for (const x of c.slice(-CHECK_MAX)) if (x && typeof x === 'object' && fin(x.at) && /^[yn-]{5}$/.test(String(x.a)) && (x.v === 'fine' || x.v === 'wait')) out.push({ at: Math.round(+x.at), a: String(x.a), v: x.v });
+  return out;
+}
 export function cleanStore(s) {
   const out = emptyStore();
   if (!s || typeof s !== 'object' || typeof s.entries !== 'object' || s.entries === null) return out;
   for (const [id, e] of Object.entries(s.entries).slice(0, MAX_ENTRIES)) { const c = ID_RE.test(id) ? cleanEntry(e) : null; if (c) out.entries[id] = c; }
   if (s.rule && typeof s.rule === 'object' && /^\d{4}-\d{2}-\d{2}$/.test(s.rule.week || '') && /^[a-z_]{2,24}$/.test(s.rule.id || '')) out.rule = { week: s.rule.week, id: s.rule.id, on: !!s.rule.on };
+  out.checks = cleanChecks(s.checks);
   out.demoSeeded = !!s.demoSeeded;
   return out;
 }
@@ -181,7 +189,7 @@ export function weekly(trades, store) {
 }
 
 // ------------------------------------------------------------------------------------------------ export, import, Markdown
-export function exportJSON(store) { return JSON.stringify({ v: 1, app: 'mnemosyne', exported: new Date().toISOString().slice(0, 10), entries: store.entries, rule: store.rule }, null, 1); }
+export function exportJSON(store) { return JSON.stringify({ v: 1, app: 'mnemosyne', exported: new Date().toISOString().slice(0, 10), entries: store.entries, rule: store.rule, checks: store.checks || [] }, null, 1); }
 /** a pasted or loaded JSON text -> { ok, store, n, error }; nothing is trusted: ids, ratings, moods and notes are validated and capped */
 export function parseImport(text) {
   if (typeof text !== 'string' || !text.trim()) return { ok: false, error: 'Nothing to import' };
@@ -198,6 +206,8 @@ export function mergeStores(a, b) {
   const out = cleanStore(a);
   for (const [id, e] of Object.entries(b.entries)) { const cur = out.entries[id]; if (!cur || (e.at || 0) >= (cur.at || 0)) out.entries[id] = e; }
   if (b.rule && !out.rule) out.rule = b.rule;
+  const have = new Set(out.checks.map((c) => c.at));
+  out.checks = out.checks.concat((b.checks || []).filter((c) => !have.has(c.at))).sort((x, y) => x.at - y.at).slice(-CHECK_MAX);
   return out;
 }
 const esc = (s) => String(s).replace(/[\\`*_{}\[\]<>|#]/g, (c) => '\\' + c);
@@ -217,11 +227,66 @@ export function markdown(trades, store, opts = {}) {
   return L.join('\n') + '\n';
 }
 
+// ------------------------------------------------------------------------------------------------ the last 9 trades, in one sentence (the Jarvis card and the weekly recap)
+export function recent(trades, store, n = 9) {
+  const w = trades.slice(0, n), ins = insights(w, store), I = ins.byRating.interfered, P = ins.byRating.plan;
+  let line;
+  if (!w.length || !ins.rated) line = 'Rate your last trades to see what interfering costs you.';
+  else if (!I.n) line = `You did not interfere on any of your last ${w.length} trades.`;
+  else line = `You interfered on ${I.n} of your last ${w.length} trades, it ${I.usd < 0 ? 'cost' : 'made'} ${plainMoney(I.usd)}.`;
+  return { n: w.length, rated: ins.rated, interfered: I.n, interferedUsd: I.usd, plan: P.n, planUsd: P.usd, line };
+}
+
+// ------------------------------------------------------------------------------------------------ the pre-trade check: 5 yes / no questions from the owner's own journal
+/** the 5 questions (newest trades first in `trades`); `good` is the answer that means "the plan is fine"; `hint` is what his own journal says, in dollars */
+export function checkQuestions(trades, store) {
+  const ins = insights(trades, store), w = ins.worst, I = ins.byRating.interfered, calm = ins.byMood.calm;
+  const last2 = trades.slice(0, 2).map((t) => (store.entries[t.id] || {}).rating || null);
+  let h2 = '';
+  if (last2.length && last2.some((r) => !r)) h2 = 'Rate your last trades and your journal can answer this one.';
+  else if (last2.length && last2.every((r) => r === 'plan')) h2 = 'Your journal says: yes, you followed it.';
+  else if (last2.length) h2 = 'Your journal says: no (' + last2.map((r) => ratingLabel(r).toLowerCase()).join(', ') + ').';
+  const lastT = trades[0];
+  return [
+    { id: 'calm', text: 'Am I calm right now?', good: 'yes', hint: calm.n ? `Your calm trades: ${money(calm.usd)} on ${calm.n}.` : '' },
+    { id: 'plan2', text: 'Did I follow the plan on my last 2 trades?', good: 'yes', hint: h2 },
+    { id: 'loss', text: 'Is this because of the last loss?', good: 'no', hint: lastT && lastT.usd < 0 ? `Your last trade was ${money(lastT.usd)}.` : '' },
+    { id: 'touch', text: 'Am I about to change what the bot is doing: the stop, the target, the size or an extra trade?', good: 'no', hint: I.n && I.usd < 0 ? `Touching it has cost you ${plainMoney(I.usd)} on ${I.n} trade${I.n === 1 ? '' : 's'}.` : '' },
+    w ? { id: 'mood', text: `Am I feeling ${moodLabel(w.mood)} right now?`, good: 'no', hint: `${moodLabel(w.mood)} trades cost you ${plainMoney(w.usd)} on ${w.n}.` }
+      : { id: 'mood', text: 'Am I tired, bored or chasing a move I missed?', good: 'no', hint: '' },
+  ];
+}
+/** answers = { calm: 'yes' | 'no', ... } -> { level: open | fine | wait, red, answered, total, headline, why, cost }; the same answers always give the same verdict */
+export function checkVerdict(trades, store, answers) {
+  const qs = checkQuestions(trades, store), ins = insights(trades, store), I = ins.byRating.interfered, P = ins.byRating.plan, a = answers || {};
+  let answered = 0, red = 0;
+  for (const q of qs) if (a[q.id] === 'yes' || a[q.id] === 'no') { answered++; if (a[q.id] !== q.good) red++; }
+  const s = (n) => (n === 1 ? '' : 's');
+  const cost = I.n
+    ? `${I.usd < 0 ? `Interfering has cost you ${plainMoney(I.usd)}` : `Interfering made ${money(I.usd)}`} on ${I.n} trade${s(I.n)}${P.n ? `; following the plan made ${money(P.usd)} on ${P.n}.` : '.'}`
+    : 'No interfering is rated yet, so there is no cost to show. Rate your trades to see yours.';
+  const out = { red, answered, total: qs.length, cost };
+  if (answered < qs.length) return { ...out, level: 'open', headline: `${qs.length - answered} question${s(qs.length - answered)} to go`, why: 'Answer them all. It takes about 5 seconds.' };
+  if (!red) return { ...out, level: 'fine', headline: 'Fine, the bot is running the plan.', why: 'Looking is fine. Touching it is the habit that costs money, so leave it alone.' };
+  return { ...out, level: 'wait', headline: 'Wait 10 minutes.',
+           why: red === 1 ? 'One answer says this is not the plan. Put the phone down, set a 10-minute timer, then look again.' : `${red} answers say this is not the plan. Step away from the screen for 10 minutes. The bot keeps running the plan without you.` };
+}
+/** keep (or, while the answers are not complete, drop) the check made at `at`: one record per sheet opening */
+export function addCheck(store, qs, answers, level, at) {
+  const t = Math.round(at);
+  store.checks = (store.checks || []).filter((c) => c.at !== t);
+  if (level !== 'fine' && level !== 'wait') return null;
+  const rec = { at: t, a: qs.map((q) => (answers[q.id] === 'yes' ? 'y' : answers[q.id] === 'no' ? 'n' : '-')).join(''), v: level };
+  store.checks.push(rec); store.checks = store.checks.slice(-CHECK_MAX);
+  return rec;
+}
+export function checkStats(store) { const c = store.checks || []; return { n: c.length, wait: c.filter((x) => x.v === 'wait').length, last: c.length ? c[c.length - 1] : null }; }
+
 // ------------------------------------------------------------------------------------------------ the Jarvis card
 export function card(trades, store, demo, now = Date.now() / 1000) {
   const ins = insights(trades, store), wk = weekly(trades, store), I = ins.byRating.interfered;
   const short = (s, n) => String(s).replace(/[<>&]/g, '').slice(0, n);
   return { v: 1, name: 'MNEMOSYNE', status: { level: demo ? 'off' : ins.unrated > ins.n / 2 ? 'warn' : 'ok', label: demo ? 'Demo journal' : `${ins.rated} of ${ins.n} rated` },
            kpis: [{ label: 'Rated', value: `${ins.rated} of ${ins.n}` }, { label: 'Interfered', value: money(I.usd) }, { label: 'Plan streak', value: `${ins.streak} day${ins.streak === 1 ? '' : 's'}` }],
-           lines: [short(ins.lines[0], 118), short(wk ? 'Next week: ' + wk.rule.text.split('. ')[0].replace(/\.$/, '') : 'Rate your trades in 10 seconds.', 118)], t: Math.round(now), open: '#', theme: '#0b0710', stale_after: 604800 };
+           lines: [short(recent(trades, store).line, 118), short(wk ? 'Next week: ' + wk.rule.text.split('. ')[0].replace(/\.$/, '') : 'Rate your trades in 10 seconds.', 118)], t: Math.round(now), open: '#', theme: '#0b0710', stale_after: 604800 };
 }

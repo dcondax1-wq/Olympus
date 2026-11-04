@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" href="../jarvis/apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <!-- MNEMOSYNE (OLYMPUS, 2026-11-04): journalcore.js = the pure part (the trades from the site's own odeon/trades.json, the maths in dollars, the weekly review, export /
-     import / Markdown); journal.js = the page. Everything the owner types is kept ONLY in localStorage['journal.v1'] on this phone: it never goes on the network. The
+     import / Markdown); journal.js = the page. Everything the owner types is kept ONLY in localStorage['journal.v1'] on this phone (plus 'journal.card.v1', the Jarvis card, same pattern as the Inbox's): it never goes on the network. The
      page reads one published file (../odeon/trades.json, read-only) and falls back to fixture.json (DEMO, synthetic trades) when it is missing. Text only through textContent. -->
 <script>(function () { var d = document.documentElement; try { if (window.top !== window) d.classList.add('framed'); } catch (e) { d.classList.add('framed'); } })();</script>
 <link rel="stylesheet" href="../olympus/olympus.css?v=o2">
@@ -31,6 +31,12 @@
     <div class="brand"><h1>MNEMOSYNE</h1><p class="sub">A 10-second trade journal</p></div>
     <div class="tags"><span id="demo" class="tag demo" hidden>DEMO</span><span id="lite" class="tag" hidden>LITE</span></div>
   </header>
+
+  <section class="card" id="checkCard" aria-labelledby="chkH">
+    <h2 id="chkH">Before you touch the bot</h2>
+    <p class="hint" id="chkHint">5 yes or no questions, about 5 seconds.</p>
+    <button type="button" class="go" id="checkBtn" aria-haspopup="dialog" data-oly-cue="open">Pre-trade check</button>
+  </section>
 
   <section class="hero card" id="hero" aria-labelledby="heroH">
     <h2 id="heroH">What your habits cost</h2>
@@ -76,6 +82,16 @@
   </section>
   <p class="foot" id="foot">Paper research only. The journal never changes the bot and never leaves this phone.</p>
 </main>
+<div class="sheet" id="sheet" hidden>
+  <div class="scrim" id="scrim"></div>
+  <div class="panel card" id="panel" role="dialog" aria-modal="true" aria-labelledby="shH">
+    <div class="shead"><h2 id="shH">Pre-trade check</h2><button type="button" class="mini" id="shClose" data-oly-cue="close">Close</button></div>
+    <p class="hint">Looking at the bot is fine. Touching it is the habit that costs money. Answer all 5 first.</p>
+    <ol class="qs" id="qs"></ol>
+    <div class="verdict" id="verdict" data-level="open" role="status" aria-live="polite"><small id="vLevel">Your verdict</small><p class="vhead" id="vHead"></p><p class="why" id="vWhy"></p><p class="why" id="vCost"></p></div>
+    <button type="button" class="mini" id="shReset" data-oly-cue="tap">Start again</button>
+  </div>
+</div>
 <script type="module" src="journal.js?v=j1"></script>
 </body>
 </html>

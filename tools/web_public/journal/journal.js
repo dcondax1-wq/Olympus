@@ -1,5 +1,5 @@
 // MNEMOSYNE page (ES module): the bot's recent trades (read-only, the site's own odeon/trades.json; fixture.json = DEMO when it is missing), and under each trade a rating, a mood and
-// one short note, kept ONLY in localStorage['journal.v1'] on this phone. The maths (dollars, the streak, the weekly review and its ONE rule) is journalcore.js.
+// one short note, kept ONLY in localStorage['journal.v1'] on this phone (and 'journal.card.v1': the Jarvis card, like the Inbox's). The maths (dollars, the streak, the weekly review and its ONE rule) is journalcore.js.
 // Text only through textContent / createElementNS (no markup is ever built from data). It never sends anything anywhere. window.JOURNAL is the test hook.
 import * as K from './journalcore.js';
 
@@ -13,7 +13,7 @@ function sv(tag, attrs, text) { const e = document.createElementNS(NS, tag); for
 const clear = (el) => { while (el.firstChild) el.removeChild(el.firstChild); };
 const cls = (v) => (v > 0 ? 'pos' : v < 0 ? 'neg' : '');
 
-const S = { trades: [], demo: false, store: K.readStore(LS), cards: new Map(), ins: null, week: null, ready: false, saved: 0 };
+const S = { trades: [], demo: false, store: K.readStore(LS), cards: new Map(), ins: null, week: null, ready: false, saved: 0, ans: {}, checkAt: 0, forced: false };
 
 async function getJSON(url, ms = 6000) {
   const ac = typeof AbortController === 'function' ? new AbortController() : null, timer = ac ? setTimeout(() => ac.abort(), ms) : 0;
@@ -157,16 +157,78 @@ $('ruleBtn').addEventListener('click', () => {
   K.setRule(S.store, S.week.from, S.week.rule.id, on); save(); renderInsights(); say(on ? 'Rule saved: you will see it next week' : 'Rule removed');
 });
 
+// ------------------------------------------------------------------------------------------------ the pre-trade check (a sheet): 5 yes / no questions, a plain verdict, the cost of his own interfering
+function renderCheckCard() {
+  const st = K.checkStats(S.store);
+  $('chkHint').textContent = st.last ? `Last check: ${K.etLabel(st.last.at)}, ${st.last.v === 'wait' ? 'it said wait 10 minutes' : 'it said fine'}. ${st.n} check${st.n === 1 ? '' : 's'} so far, ${st.wait} said wait.` : '5 yes or no questions, about 5 seconds, before you touch anything.';
+}
+function renderQuestions() {
+  const qs = K.checkQuestions(S.trades, S.store), ol = $('qs'); clear(ol);
+  qs.forEach((q, i) => {
+    const li = h('li', 'q'); li.dataset.q = q.id;
+    li.appendChild(h('p', 'qt', `${i + 1}. ${q.text}`));
+    if (q.hint) li.appendChild(h('p', 'qh', q.hint));
+    const g = chipGroup(q.text, [['yes', 'Yes'], ['no', 'No']], S.ans[q.id], (v) => {
+      if (S.ans[q.id] === v) delete S.ans[q.id]; else S.ans[q.id] = v;
+      mark(g, S.ans[q.id]); li.className = 'q' + (S.ans[q.id] ? (S.ans[q.id] === q.good ? ' ok' : ' red') : '');
+      updateVerdict(qs);
+    }, 'seg');
+    li.appendChild(g); ol.appendChild(li);
+  });
+  return qs;
+}
+function updateVerdict(qs) {
+  qs = qs || K.checkQuestions(S.trades, S.store);
+  const v = K.checkVerdict(S.trades, S.store, S.ans), box = $('verdict');
+  box.dataset.level = v.level;
+  $('vLevel').textContent = v.level === 'open' ? `Your verdict (${v.answered} of ${v.total} answered)` : 'Your verdict';
+  $('vHead').textContent = v.headline; $('vWhy').textContent = v.why; $('vCost').textContent = v.cost;
+  if (v.level !== 'open' && !S.checkAt) S.checkAt = Math.round(Date.now() / 1000);
+  if (S.checkAt) { K.addCheck(S.store, qs, S.ans, v.level, S.checkAt); if (v.level === 'open') S.checkAt = 0; save(); renderCheckCard(); }
+  if (v.level !== 'open' && O && O.cue) { try { O.cue(v.level === 'wait' ? 'warning' : 'success'); } catch (_) { /* silent */ } }
+  return v;
+}
+let opener = null;
+function focusables() { return [...$('panel').querySelectorAll('button')].filter((b) => !b.disabled && !b.hidden); }
+function onKey(e) {
+  if (e.key === 'Escape') { e.preventDefault(); closeSheet(); return; }
+  if (e.key !== 'Tab') return;
+  const f = focusables(); if (!f.length) return;
+  const a = document.activeElement, i = f.indexOf(a);
+  if (e.shiftKey && (i <= 0)) { e.preventDefault(); f[f.length - 1].focus(); } else if (!e.shiftKey && (i === -1 || i === f.length - 1)) { e.preventDefault(); f[0].focus(); }
+}
+function openSheet() {
+  S.ans = {}; S.checkAt = 0; opener = document.activeElement;
+  const qs = renderQuestions(); updateVerdict(qs);
+  $('sheet').hidden = false; document.documentElement.classList.add('sheeted'); $('panel').scrollTop = 0;
+  try { $('app').inert = true; } catch (_) { /* older Safari: the focus trap below keeps Tab inside */ }
+  document.addEventListener('keydown', onKey);
+  const f = focusables(); if (f.length > 1) f[1].focus();
+}
+function closeSheet() {
+  $('sheet').hidden = true; document.documentElement.classList.remove('sheeted');
+  try { $('app').inert = false; } catch (_) { /* nothing */ }
+  document.removeEventListener('keydown', onKey);
+  if (opener && opener.focus) { try { opener.focus(); } catch (_) { /* gone */ } }
+}
+$('checkBtn').addEventListener('click', openSheet);
+$('shClose').addEventListener('click', closeSheet);
+$('scrim').addEventListener('click', closeSheet);
+$('shReset').addEventListener('click', () => { S.ans = {}; S.checkAt = 0; const qs = renderQuestions(); updateVerdict(qs); const f = focusables(); if (f.length > 1) f[1].focus(); });
+
 // ------------------------------------------------------------------------------------------------ the Jarvis card (when framed), start
 let cardT = 0;
 function postCard() {
+  const card = K.card(S.trades, S.store, S.demo);
+  if (!S.forced) { try { LS.setItem('journal.card.v1', JSON.stringify(card)); } catch (_) { /* not kept */ } }    // Jarvis reads this one (same site), like the Inbox's card
   if (window.parent === window) return;
   clearTimeout(cardT);
-  cardT = setTimeout(() => { try { window.parent.postMessage({ jarvis: 1, href: location.href, card: K.card(S.trades, S.store, S.demo) }, location.origin); } catch (_) { /* no card */ } }, 400);
+  cardT = setTimeout(() => { try { window.parent.postMessage({ jarvis: 1, href: location.href, card }, location.origin); } catch (_) { /* no card */ } }, 400);
 }
 
 async function main() {
-  const raw = /[?&]demo=1(&|$)/.test(location.search) ? null : await getJSON('../odeon/trades.json');       // ?demo=1: the fixture only (offline, tests)
+  S.forced = /[?&]demo=1(&|$)/.test(location.search);
+  const raw = S.forced ? null : await getJSON('../odeon/trades.json');       // ?demo=1: the fixture only (offline, tests)
   let trades = raw ? K.normTrades(raw, 30) : [];
   if (!trades.length) { trades = K.normTrades(await getJSON('./fixture.json'), 30); S.demo = true; }
   if (!trades.length) trades = K.normTrades(FALLBACK, 30);              // never blank: even with no file at all the demo trades below are shown (DEMO)
@@ -176,9 +238,12 @@ async function main() {
   try { const lite = !!(O && O.lite && O.lite()); if (O && O.mode) O.mode(lite); $('lite').hidden = !lite; } catch (_) { /* no tag */ }
   seedDemo();
   S.first = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  renderTrades(); renderInsights();
+  renderTrades(); renderInsights(); renderCheckCard();
   S.ready = true;
+  if (/[?&]check=1(&|$)|#check$/.test(location.search + location.hash)) openSheet();      // Jarvis (or a home-screen shortcut) can open the check straight away
   try { if (O && O.ready) O.ready(); } catch (_) { /* the veil lifts by itself */ }
 }
-window.JOURNAL = { S, K, ready: () => S.ready };
+const stats = () => ({ ...K.recent(S.trades, S.store), streak: S.ins ? S.ins.streak : 0, checks: K.checkStats(S.store).n, demo: S.demo });
+window.JOURNAL = { S, K, ready: () => S.ready, stats };
+window.JOURNAL_STATS = stats;       // the summary Jarvis's weekly recap says out loud (the same sentence is the first line of journal.card.v1)
 main().catch((e) => { say('Something went wrong: ' + (e && e.message ? e.message : e)); try { if (O && O.fail) O.fail('MNEMOSYNE could not start'); } catch (_) { /* nothing */ } });

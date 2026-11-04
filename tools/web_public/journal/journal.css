@@ -80,6 +80,23 @@ html.framed #app { padding-top: 12px; }
 .area textarea { width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--oly-line, rgba(255,255,255,.14)); background: rgba(0,0,0,.3); font: 13px/1.4 ui-monospace, Menlo, monospace; resize: vertical; min-height: 96px; }
 .status { margin: 0; min-height: 20px; font-size: 14px; color: var(--warn); }
 .foot { text-align: center; color: var(--oly-dim, #b7aec4); font-size: 13px; margin: 4px 0 0; }
+/* the pre-trade check: a sheet over the page; it ends 176 px above the bottom so Jarvis's orb stays free */
+html.sheeted, html.sheeted body { overflow: hidden; }
+.sheet { position: fixed; inset: 0; z-index: 50; }
+.scrim { position: absolute; inset: 0; background: rgba(5, 3, 10, .66); }
+.panel { position: absolute; left: calc(var(--sl) + 10px); right: calc(var(--sr) + 10px); top: calc(var(--st) + 10px); bottom: calc(176px + var(--sb)); max-width: 620px; margin: 0 auto; overflow-y: auto; overscroll-behavior: contain; align-content: start; background-color: rgba(14, 9, 22, .96); }
+.shead { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.qs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.q { display: grid; gap: 6px; padding: 10px 12px; border-radius: 14px; background: rgba(255,255,255,.04); border: 1px solid var(--oly-line, rgba(255,255,255,.14)); border-left: 3px solid var(--c, var(--j-acc)); }
+.q.ok { --c: var(--good); } .q.red { --c: var(--bad); }
+.qt { margin: 0; font-weight: 700; font-size: 15px; }
+.qh { margin: 0; font-size: 13px; color: var(--oly-dim, #b7aec4); }
+.verdict { padding: 12px; border-radius: 14px; display: grid; gap: 4px; background: rgba(255,255,255,.05); border: 1px solid var(--oly-line, rgba(255,255,255,.14)); }
+.verdict small { font: 700 10.5px/1 var(--oly-display, sans-serif); letter-spacing: .16em; text-transform: uppercase; color: var(--oly-dim, #b7aec4); }
+.verdict .vhead { margin: 0; font: 800 20px/1.25 var(--oly-display, sans-serif); }
+.verdict .why { margin: 0; font-size: 14px; color: var(--oly-dim, #cfc6dc); }
+.verdict[data-level="fine"] { background: rgba(74, 222, 128, .14); border-color: rgba(74, 222, 128, .6); } .verdict[data-level="fine"] .vhead { color: var(--good); }
+.verdict[data-level="wait"] { background: rgba(255, 216, 138, .14); border-color: rgba(255, 216, 138, .65); } .verdict[data-level="wait"] .vhead { color: var(--warn); }
 @media (prefers-reduced-motion: no-preference) {
   html:not([data-oly-lite="1"]) .aurora i:nth-child(1) { animation: d1 18s ease-in-out infinite alternate; } html:not([data-oly-lite="1"]) .aurora i:nth-child(2) { animation: d2 22s ease-in-out infinite alternate; }
   .trade.new { animation: rise .45s var(--oly-ease, ease-out) both; }
