@@ -6,8 +6,10 @@ import { createRenderer } from '../olympus/render.js';
 import { metal, glass, neon, starfield } from '../olympus/materials.js';
 import * as CORE from './arguscore.js';
 import * as X from './extras.js';
+import { renderMoney } from './argusplus.js';
+import * as AT from '../olympus/fx-atmos.js';        // JOB 4+5 follow-up: scanner shafts, drifting data dust and rising sparks around the sphere
 import * as SC from '../olympus/scenery.js';
-import { APPS, analyze, cardOf, histUpdate, histSummary } from './arguscore.js';
+import { APPS, analyze, cardOf, histUpdate, histSummary, demoData } from './arguscore.js';
 
 const O = window.OLYMPUS || null;
 const Q = new URLSearchParams(location.search);
@@ -44,6 +46,7 @@ function save(snap) { try { localStorage.setItem(KEY, JSON.stringify(snap)); } c
 function load() { try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); return s && s.home ? s : null; } catch (_) { return null; } }
 
 async function fetchAll() {
+  if (Q.get('demo') === '1') { const d = demoData(nowS()); S.demo = true; S.demoNow = nowS(); return { saved: nowS(), home: d.home, cronos: d.cronos, cards: d.cards, hist: d.hist, offline: false }; }      // a recorded healthy day (never saved over the real copy)
   let home = await getJson('../home.json'); if (!home || !home.board) { const d = await getJson('../data.json'); home = d || home; }
   const cronos = await getJson('../cronos/status.json');
   const got = await Promise.all(APPS.map(([id]) => getJson(`../${id}/jarvis.json`, 5000)));
@@ -104,16 +107,18 @@ function paint() {
   $('fixN').textContent = String(R.fix.length);
   $('offtag').hidden = !S.offline;
   $('sub').textContent = !R.hasData ? 'No dashboard data yet.' : S.offline ? `Offline. Showing what I saw at ${hm(S.asOf)}.` : `${R.eyes.length} lights, ${N_EYES} eyes, checked ${hm(nowS())}.`;
-  $('p-fix').innerHTML = R.fix.length ? R.fix.map(row).join('') : `<p class="empty">${R.hasData ? 'Nothing to fix. Every light that matters is green.' : 'Waiting for data.'}</p>`;
+  $('p-fix').innerHTML = R.fix.length ? R.fix.map(row).join('') : `<p class="empty">${R.hasData ? 'Nothing to fix. Every light that matters is green.' : 'Waiting for data.'}</p>${R.hasData ? '' : '<a class="demobtn" role="button" href="?demo=1">See it with demo data</a>'}`;
   const groups = {}; for (const e of R.eyes) (groups[e.group] = groups[e.group] || []).push(e);
   $('p-all').innerHTML = Object.keys(GROUPS).filter((g) => groups[g]).map((g) => `<p class="grp">${GROUPS[g]}</p>${groups[g].map(lrow).join('')}`).join('');
   paintHist();
+  try { renderMoney($('p-money'), R, S.hist || EMPTY(), S.demo ? S.demoNow : nowS()); } catch (e) { S.errors.push('money: ' + ((e && e.message) || e)); }
+  $('demotag').hidden = !S.demo;
   document.documentElement.dataset.argus = v.level;
   if (S.room) S.room.set(R);
 }
 function setTab(t) {
-  S.tab = t === 'all' ? 'all' : t === 'hist' ? 'hist' : 'fix';
-  $('p-fix').hidden = S.tab !== 'fix'; $('p-all').hidden = S.tab !== 'all'; $('p-hist').hidden = S.tab !== 'hist';
+  S.tab = t === 'all' ? 'all' : t === 'hist' ? 'hist' : t === 'money' ? 'money' : 'fix';
+  $('p-fix').hidden = S.tab !== 'fix'; $('p-all').hidden = S.tab !== 'all'; $('p-hist').hidden = S.tab !== 'hist'; $('p-money').hidden = S.tab !== 'money';
   document.querySelectorAll('#tabs button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tab === S.tab)));
 }
 function select(id, fromEye) {
@@ -149,7 +154,7 @@ function bind() {
   document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') X.closeDrawer(); });
   window.__argusDrawer = openDrawer;
 }
-function route() { setTab({ all: 'all', lights: 'all', hist: 'hist', history: 'hist', fix: 'fix' }[location.hash.slice(1)] || 'fix'); }
+function route() { setTab({ all: 'all', lights: 'all', hist: 'hist', history: 'hist', money: 'money', fix: 'fix' }[location.hash.slice(1)] || 'fix'); }
 
 // ------------------------------------------------------------------------------------------------ the 3D sphere of eyes
 const R_SPHERE = 2.0;
@@ -213,10 +218,19 @@ class Room {
     }
     this.openAt = this.pos.map((p, i) => 0.25 + (1 - (p.y + 1) / 2) * 1.1 + hash(i) * 0.5);     // opens from the top down
     this.blink = this.pos.map((p, i) => 2 + hash(i + 50) * 7);
+    // the watchtower's air (fx-atmos): a cyan scanner beam behind the sphere, motes drifting through the dark, sparks rising off the eyes
+    setTimeout(() => { try {         // 0.9 s after the first paint
+      this.at = [AT.shafts({ count: 3, from: [0, 7, -3], to: [0, -6, -2], width: 3.2, spread: [3, 0, 1], color: '#6fdcff', strength: 0.09, seed: 2 }),
+        AT.dust({ count: 200, box: [12, 8, 10], color: '#a9e7ff', size: 3.6, strength: 0.7, seed: 21 }),
+        AT.embers({ count: 90, origin: [0, -2.4, 0], spread: [2.6, 0, 2.6], rise: 5, colors: ['#e8fbff', '#3ad7ff', '#1a4f9c'], size: 4.5, wind: 0, seed: 17 })];
+      this.at[1].object.position.set(0, -3, -1);
+      this.at.forEach((f) => S3.add(f.object)); AT.setQuality(this.at, this.rc.quality()); this.dirty = true;
+    } catch (e) { this.at = []; } }, 900);
     this.applyTier();
   }
   applyTier() {
     const lite = this.fx === 'low' || this.fx === 'off';
+    if (this.at) AT.setQuality(this.at, this.rc.quality());
     this.stars.visible = !lite; this.shell.visible = !lite;
     this.dirty = true;
   }
@@ -283,6 +297,7 @@ class Room {
     this.ring.rotation.z += still ? 0 : dt * 0.25;
     if (this.arm) { this.arm.rotation.y += still ? 0 : dt * 0.08; this.arm.rotation.x = 0.2 + (still ? 0 : Math.sin(this.t * 0.2) * 0.06); }
     this.stars.update(this.t, this.rc.renderer.getPixelRatio());
+    if (this.at && this.at.length) AT.update(this.at, still ? 0 : this.t, this.rc.renderer.getPixelRatio());
     const M = new THREE.Matrix4(), sc = new THREE.Vector3(), p = new THREE.Vector3(), selK = S.sel ? this.lights.findIndex((e) => e.id === S.sel) : -1;
     for (let i = 0; i < N_EYES; i++) {
       const lv = this.levels[i], idle = lv === 'idle';
@@ -319,8 +334,9 @@ async function refresh() {
   S.offline = !!d.offline;
   S.asOf = d.offline ? d.saved : null;
   S.R = analyze({ now: d.offline && d.saved ? d.saved : nowS(), home: d.home, cronos: d.cronos, cards: d.cards });
+  if (d.hist) S.hist = d.hist;
   if (!S.hist) S.hist = loadHist();
-  if (!d.offline && S.R.hasData) { S.hist = histUpdate(S.hist, S.R, nowS()); saveHist(); }
+  if (!d.offline && S.R.hasData && !S.demo) { S.hist = histUpdate(S.hist, S.R, nowS()); saveHist(); }
   paint();
   postCard();
 }

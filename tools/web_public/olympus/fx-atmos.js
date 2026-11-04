@@ -22,6 +22,8 @@ export const QUALITY = Object.freeze({
   low: { particles: 0.35, shafts: false, ao: true },
   off: { particles: 0, shafts: false, ao: false },
 });
+// additive light that leaves the alpha channel alone: scenes on a transparent canvas (Plutus, Ares) otherwise show dark halos where the particles' alpha builds up
+const ADD = { blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.SrcAlphaFactor, blendDst: THREE.OneFactor, blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor };
 const tier = (l) => QUALITY[l] || QUALITY.high;
 const rng = (seed) => { let s = seed >>> 0 || 1; return () => (s = (s * 16807) % 2147483647) / 2147483647; };
 const col = (c, k = 1) => new THREE.Color(c).multiplyScalar(k);
@@ -42,7 +44,7 @@ export function dust(o = {}) {
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('ph', new THREE.BufferAttribute(ph, 2));
   const m = new THREE.ShaderMaterial({
-    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    transparent: true, depthWrite: false, ...ADD,
     uniforms: { uT: { value: 0 }, uPR: { value: 1 }, uBox: { value: new THREE.Vector3(...box) }, uColor: { value: col(o.color || '#ffd9a0', o.strength || 1) }, uSize: { value: o.size || 5 }, uDrift: { value: o.drift || 0.35 } },
     vertexShader: `uniform float uT, uPR, uSize, uDrift; uniform vec3 uBox; attribute vec2 ph; varying float vA;
       void main() {
@@ -80,7 +82,7 @@ export function embers(o = {}) {
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('sd', new THREE.BufferAttribute(sd, 4));
   const m = new THREE.ShaderMaterial({
-    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    transparent: true, depthWrite: false, ...ADD,
     uniforms: { uT: { value: 0 }, uPR: { value: 1 }, uRise: { value: rise }, uSize: { value: o.size || 7 }, uWind: { value: o.wind || 0.6 },
       uHot: { value: colors[0].clone().multiplyScalar(2.2) }, uMid: { value: colors[1 % colors.length].clone().multiplyScalar(1.6) }, uCool: { value: colors[2 % colors.length].clone() } },
     vertexShader: `uniform float uT, uPR, uRise, uSize, uWind; attribute vec4 sd; varying float vF;
@@ -124,7 +126,7 @@ export function shafts(o = {}) {
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setAttribute('ex', new THREE.Float32BufferAttribute(extra, 2)); g.setIndex(idx);
   const m = new THREE.ShaderMaterial({
-    transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending,
+    transparent: true, depthWrite: false, side: THREE.DoubleSide, ...ADD,
     uniforms: { uT: { value: 0 }, uColor: { value: col(o.color || '#ffd9a0', 1) }, uK: { value: o.strength == null ? 0.16 : o.strength } },
     vertexShader: `attribute vec2 ex; varying vec2 vUv; varying vec2 vEx; void main() { vUv = uv; vEx = ex; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
     fragmentShader: `uniform float uT, uK; uniform vec3 uColor; varying vec2 vUv; varying vec2 vEx;
@@ -202,7 +204,7 @@ export function forgedIron(o = {}) {
 // ------------------------------------------------------------------ thread glow (fibre light)
 export function threadGlow(o = {}) {
   const m = new THREE.ShaderMaterial({
-    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+    transparent: true, depthWrite: false, ...ADD, side: THREE.DoubleSide,
     uniforms: { uT: { value: 0 }, uColor: { value: col(o.color || '#ffc247', o.strength || 1.6) }, uSpeed: { value: o.speed || 0.6 } },
     vertexShader: `varying vec2 vUv; varying vec3 vN; varying vec3 vV; void main() { vUv = uv; vec4 mv = modelViewMatrix * vec4(position, 1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }`,
     fragmentShader: `uniform float uT, uSpeed; uniform vec3 uColor; varying vec2 vUv; varying vec3 vN; varying vec3 vV;

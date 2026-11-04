@@ -20,7 +20,7 @@
 <script src="../olympus/fx-core.js?v=f1"></script><script src="../olympus/fx-ui.js?v=f1"></script><script src="../olympus/fx-text.js?v=f1"></script><script src="../olympus/fx-burst.js?v=f1"></script>
 <script src="../olympus/intro-app.js?v=i1" defer></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#ff3b30'); r.setProperty('--oly-accent-rgb', '255, 59, 48'); })();</script>
-<link rel="stylesheet" href="ares.css?v=r1">
+<link rel="stylesheet" href="ares.css?v=r2">
 </head>
 <body>
 <canvas id="room" aria-label="The war room: the account as a tower from the max-loss floor up to the target, your balance as an orb and the stop-out you are about to risk as a red slab" role="img"></canvas>
@@ -43,6 +43,11 @@
     <label class="slide">Risk this much of the room left: <b id="riskPctV">40%</b>
       <input id="riskPct" type="range" min="10" max="90" step="5" value="40"></label>
     <div class="out" id="out"></div>
+    <section class="plus" aria-label="The money maths">
+      <details class="pd" open><summary><b>What a win must be worth</b><span id="plusOddsS"></span></summary><div id="plusOdds"></div></details>
+      <details class="pd"><summary><b>Stop ladder: wide stop, fewer micros</b><span id="plusLadderS"></span></summary><div id="plusLadder"></div></details>
+      <details class="pd"><summary><b>If I lose in a row</b><span id="plusStreakS"></span></summary><div id="plusStreak"></div></details>
+    </section>
     <button type="button" class="wide" id="shareBtn">Share this check as a card</button>
   </div>
   <div class="pane" id="p-account" role="tabpanel" aria-label="Account" hidden>
@@ -63,6 +68,11 @@
       <label>Stop-outs today<input id="lossesToday" inputmode="numeric" autocomplete="off"></label>
     </div>
     <div class="out" id="acct"></div>
+    <section class="plus" aria-label="Today and the pass">
+      <details class="pd" open><summary><b>Today's loss budget</b><span id="plusDayS"></span></summary><div id="plusDay"></div></details>
+      <details class="pd"><summary><b>Pace to pass</b><span id="plusPaceS"></span></summary><div id="plusPace"></div></details>
+      <details class="pd"><summary><b>Payout check</b><span id="plusPayS"></span></summary><div id="plusPay"></div></details>
+    </section>
     <button type="button" class="wide" id="fromBot" hidden>Use the bot's eval account</button>
   </div>
   <div class="pane" id="p-why" role="tabpanel" aria-label="Why" hidden>
@@ -97,6 +107,6 @@
     <button type="button" data-tab="rules" aria-pressed="false">Rules</button>
   </nav>
 </footer>
-<script type="module" src="ares.js?v=r1"></script>
+<script type="module" src="ares.js?v=r2"></script>
 </body>
 </html>

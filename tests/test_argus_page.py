@@ -125,7 +125,7 @@ def part_a():
           and card["status"]["level"] in ("ok", "off", "warn", "bad") and 60 <= card["stale_after"] <= 14 * 86400 and len(card["status"]["label"]) <= 48
           and all(len(x) <= 120 for x in card["lines"]), card)
     css = rd("argus.css")
-    check("a. the dock and the sheet keep the bottom-right 80 x 160 px free (right padding 88, sheet ends 166 px up)", "padding: 8px calc(88px" in css and "bottom: calc(166px" in css)
+    check("a. the dock and the sheet keep the bottom-right 80 x 160 px free (right padding 88, sheet ends 166 px up)", "padding: 8px calc(88px" in css and ("bottom: calc(166px" in css or "bottom: calc(var(--dock-h) + 16px" in css))   # 2026-11-04: the Money tab made the tabs a 2 x 2 grid: the dock is taller and the sheet ends 16 px above it
     check("a. the app list names all 13 OLYMPUS apps that have a card", all(f"['{a}'," in rd("arguscore.js") for a in APPS))
 
 

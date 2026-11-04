@@ -191,3 +191,55 @@ export function whatIf(doc, counts, opts = {}) {
   }
   return out.sort((a, b) => b.dPerMonth - a.dPerMonth);
 }
+
+// ---------------------------------------------------------------------------------------------- JOB 4+5 follow-up (2026-11-04): four decisions
+// rankPlans (which plan pays the most per dollar of fees), buyPlan (how many evals to buy for a funded account, in dollars and odds),
+// payoutRace (who pays first and when), cashCushion (the deepest dip of the bad case and when it turns). Study numbers, not promises.
+
+const WEEK_S = 5;                                  // trading sessions in a week
+
+/** the plans ranked by what 6 months pay back per $1 of fees (net over fees), with the speed and the bad-case risk beside it */
+export function rankPlans(doc, span = 'H2') {
+  const sp = SPANS.includes(span) ? span : 'H2';
+  const rows = (doc.plans || []).map((p) => {
+    const s = p.spans[sp] || p.spans.H2 || {}, fees = Math.max(p.price, s.fees_6m ?? p.price), net = s.net_6m ?? 0;
+    return { id: p.id, name: p.name, firm: p.firm, price: p.price, fees, net6: net, roi: fees > 0 ? net / fees : 0, perMonth: s.per_month ?? net / 6, firstPay: s.first_pay_sessions ?? null,
+      firstWeeks: s.first_pay_sessions != null ? s.first_pay_sessions / WEEK_S : null, anyPay: s.any_pay ?? null, negPct: s.neg_6m ?? null, steady: s.steady ?? null, cap: p.cap };
+  }).sort((a, b) => b.roi - a.roi);
+  const best = rows[0] || null;
+  return { span: sp, rows, best, plain: best ? `Per dollar of fees, ${best.name} (${best.firm}) pays back the most: ${usd(best.net6)} in 6 months on ${usd(best.fees)} of fees (${best.roi.toFixed(0)} dollars back for every dollar spent).` : 'No plan numbers.' };
+}
+
+/** buying evals one by one: the chance that at least one passes inside 60 sessions after n buys, and the fees spent (study: passing rate per eval) */
+export function buyPlan(plan, span = 'H2', maxBuys = 4) {
+  const s = plan.spans[span] || plan.spans.H2 || {}, p = Math.max(0, Math.min(1, (s.p60 ?? 0) / 100));
+  const rows = [];
+  for (let n = 1; n <= maxBuys; n++) rows.push({ n, fees: plan.price * n, atLeastOne: 1 - Math.pow(1 - p, n), expFees: plan.price * Math.min(n, 1 / Math.max(p, 0.05)) });
+  const eEvals = p > 0 ? 1 / p : null;
+  const need90 = p > 0 ? Math.ceil(Math.log(0.1) / Math.log(1 - Math.min(0.999, p))) : null;
+  return { id: plan.id, name: plan.name, price: plan.price, pass: p, rows, eEvals, eFees: eEvals ? eEvals * plan.price : null, need90, fund90: need90 ? need90 * plan.price : null,
+    plain: p > 0 ? `One ${plan.name} eval passes ${Math.round(p * 100)}% of the time inside 60 sessions: expect about ${eEvals.toFixed(1)} evals (${usd(eEvals * plan.price)} of fees) per funded account. Buy ${need90} (${usd(need90 * plan.price)}) to be 90% sure of at least one.` : `No pass rate for ${plan.name}.` };
+}
+
+/** who pays first: the plans ordered by the sessions to the first payout, in weeks and as a share of the 6 months */
+export function payoutRace(doc, span = 'H2') {
+  const sp = SPANS.includes(span) ? span : 'H2';
+  const rows = (doc.plans || []).map((p) => { const s = p.spans[sp] || p.spans.H2 || {}; return { id: p.id, name: p.name, sessions: s.first_pay_sessions ?? null, weeks: s.first_pay_sessions != null ? s.first_pay_sessions / WEEK_S : null, funded: s.first_pay_funded ?? null, anyPay: s.any_pay ?? null }; })
+    .filter((r) => r.sessions != null).sort((a, b) => a.sessions - b.sessions);
+  const slow = rows.length ? rows[rows.length - 1].sessions : 1;
+  rows.forEach((r) => { r.bar = slow > 0 ? r.sessions / slow : 0; });
+  return { span: sp, rows, first: rows[0] || null, plain: rows[0] ? `${rows[0].name} pays first: about ${Math.round(rows[0].weeks)} weeks (${Math.round(rows[0].sessions)} sessions) to the first payout in the study's middle case.` : 'No payout timing.' };
+}
+
+/** the bad case's deepest dip: the lowest point of the p10 curve (after fees), the month it happens and the month it turns up for good */
+export function cashCushion(P) {
+  if (!P || !P.accounts) return { has: false, plain: 'Pick an account: the page then shows how deep the bad case dips before the plan pays.' };
+  let low = Infinity, at = 0;
+  P.p10.forEach((v, k) => { if (v < low) { low = v; at = k; } });
+  let turn = null;
+  for (let k = at; k < P.p10.length && turn == null; k++) if (P.p10[k] >= 0 && k > at) turn = k;
+  const mid = P.mean[Math.min(P.mean.length - 1, at)];
+  return { has: true, dip: Math.min(0, low), month: at, turn, upfront: P.upfront, cushion: Math.max(P.upfront, -Math.min(0, low)),
+    plain: low >= 0 ? `Even the bad case (1 in 10) stays above zero after fees from month ${at || 1}. The fees you pay up front are ${usd(P.upfront)}.`
+      : `In the bad case (1 in 10) the plan is down ${usd(-low)} at month ${at}${turn != null ? ` and back above zero by month ${turn}` : ' and not back above zero inside the horizon'}. Keep at least ${usd(Math.max(P.upfront, -low))} you can afford to lose.${mid != null ? ` The middle case at that month is ${usd(mid)}.` : ''}` };
+}
