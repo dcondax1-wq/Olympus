@@ -33,6 +33,11 @@ const seg = (options, current, onPick, label) => el('div', { class: 'seg', role:
 
 const dot = (c) => el('i', { class: 'dot', style: { '--c': c } });
 const empty = (text, action) => el('div', { class: 'empty' }, [el('p', { text }), action || null]);
+const noun = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+/** what the owner can do when a page has nothing to show: teach Jarvis, look at a grown (demo) brain, or come back to the real one */
+const acts = (h, ctx) => el('div', { class: 'toolbar' }, [
+  el('button', { class: 'cta', type: 'button', text: 'Teach Jarvis', onclick: () => h.open('teach') }),
+  el('button', { class: 'cta ghosty', type: 'button', text: ctx && ctx.preview ? 'Back to my vault' : 'Preview a demo brain', onclick: () => h.preview() })]);
 const head = (text, aside) => el('h3', { class: 'sec' }, [el('span', { text }), aside || null]);
 
 function tile(k, label, value, hint, c) {
@@ -102,8 +107,8 @@ function homeView(h) {
         el('div', {}, [
           el('p', { class: 'hello', text: greeting(now) }),
           el('h2', { text: demo ? 'Your brain, in demo' : ctx.mode === 'offline' ? 'Your brain (vault offline)' : 'Your brain' }),
-          el('p', { class: 'sub', text: demo ? 'Showing a demo brain. Connect your vault in Jarvis ⋯ → Connect Obsidian.' : ctx.mode === 'offline' ? 'The vault is offline, so this is the last brain Jarvis saw.' : `${fmt.format(s.notes)} notes and ${fmt.format(s.links)} links, growing every day.` }),
-          demo ? el('span', { class: 'pill demo-pill', text: 'DEMO' }) : null]),
+          el('p', { class: 'sub', text: demo ? 'Showing a demo brain. Connect your vault in Jarvis ⋯ → Connect Obsidian.' : ctx.mode === 'offline' ? 'The vault is offline, so this is the last brain Jarvis saw.' : `${noun(s.notes, 'note')} and ${noun(s.links, 'link')}, growing every day.` }),
+          demo ? el('span', { class: 'pill demo-pill', text: ctx.preview ? 'DEMO PREVIEW' : 'DEMO' }) : null]),
         ring(lv.progress, 'Lv ' + lv.level, lv.name)]);
       const tiles = el('div', { class: 'tiles' }, [
         tile('notes', 'Notes', big(s.notes), `${s.tags} tags`), tile('links', 'Links', big(s.links), `${s.avgLinks} per note`),
@@ -129,8 +134,8 @@ function homeView(h) {
       [dot(c.colour), el('span', { text: c.label }), el('i'), el('small', { text: fmt.format(c.count) })])))]);
       const kids = [hero, tiles, actions, chart, learn, topic];
       if (s.notes < 15 && ctx.mode !== 'demo') {
-        kids.push(el('div', { class: 'card2 start' }, [head('Grow your brain'), el('ol', {}, [el('li', { text: 'Teach Jarvis a fact about you.' }), el('li', { text: 'Write a note and link it with [[double brackets]].' }), el('li', { text: 'Come back tomorrow to keep the streak.' })])]));
-      }
+        kids.push(el('div', { class: 'card2 start' }, [head('Grow your brain'), el('ol', {}, [el('li', { text: 'Teach Jarvis a fact about you.' }), el('li', { text: 'Write a note and link it with [[double brackets]].' }), el('li', { text: 'Come back tomorrow to keep the streak.' })]), acts(h, ctx)]));
+      } else if (ctx.preview) kids.push(el('div', { class: 'card2 start' }, [head('This is a demo brain'), el('p', { class: 'sub', text: 'Every galaxy, link and lesson here is made up so you can see what a grown brain feels like. Your own vault is untouched.' }), acts(h, ctx)]));
       root.replaceChildren(...kids);
     },
   };
@@ -151,7 +156,9 @@ function notesView(h) {
     if (ctx.tag) list = list.filter((n) => n.tags.includes(ctx.tag));
     if (st.q) list = list.filter((n) => n.title.toLowerCase().includes(st.q) || n.tags.some((t) => t.includes(st.q)) || (n.snippet || '').toLowerCase().includes(st.q));
     list.sort(SORTS[st.sort]);
-    grid.replaceChildren(...(list.length ? list.slice(0, st.more).map((n) => noteCard(n, g, ctx, h, now)) : [empty('No note matches. Clear the filter or pick another galaxy.')]));
+    const none = !g.nodes.some((n) => n.kind !== 'me');
+    grid.replaceChildren(...(list.length ? list.slice(0, st.more).map((n) => noteCard(n, g, ctx, h, now))
+      : [none ? empty('No notes in your vault yet. Write one in Obsidian, or save one right here with Teach.', acts(h, ctx)) : empty('No note matches. Clear the filter or pick another galaxy.')]));
     more.replaceChildren(...(list.length > st.more ? [el('button', { class: 'cta', type: 'button', text: `Show more (${list.length - st.more})`, onclick: () => { st.more += 24; paintGrid(ctx); } })] : []));
   }
   return {
@@ -178,7 +185,7 @@ function daysView(h) {
     root,
     render(ctx) {
       const { g, now } = ctx, days = timeline(g, now, 28);
-      if (!days.length) { root.replaceChildren(empty('No days yet. Daily notes, edits and lessons show up here as a timeline.', el('button', { class: 'cta', type: 'button', text: 'Teach Jarvis', onclick: () => h.open('teach') }))); return; }
+      if (!days.length) { root.replaceChildren(empty('No days yet. Daily notes, edits and lessons from the last four weeks show up here as a timeline. Write a daily note in Obsidian, or tell Jarvis something today.', acts(h, ctx))); return; }
       root.replaceChildren(el('ol', { class: 'tline' }, days.map((d) => {
         const total = d.daily.length + d.edits.length + d.editsMore + d.learned.length;
         return el('li', { class: 'tday', 'data-day': d.key }, [
@@ -213,7 +220,7 @@ function learnedView(h) {
             el('button', { class: 'row learn', type: 'button', onclick: () => (x.i >= 0 ? h.fly(g.nodes[x.i].id) : h.replay([x])) }, [dot(x.src === 'lesson' ? 'var(--cyan)' : 'var(--gold)'),
               el('span', { class: 'r-t', text: x.text }), el('small', { text: new Date(x.t).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) })]),
             el('button', { class: 'mini play', type: 'button', 'aria-label': 'Replay this', text: '▶', onclick: () => h.replay([x]) })]))]))
-          : [empty('Nothing learned yet. Tell Jarvis something and it lands here.', el('button', { class: 'cta', type: 'button', text: 'Teach Jarvis', onclick: () => h.open('teach') }))]));
+          : [empty('Nothing learned yet. Tell Jarvis something (or tap Teach) and it lands here as a feed you can replay.', acts(h, ctx))]));
     },
   };
 }
@@ -261,7 +268,7 @@ function graphView(h) {
         el('div', { class: 'card2' }, [head('Filter the brain', el('small', { text: ctx.gmode === 'all' && !ctx.gmin ? 'showing everything' : 'dimming the rest' })),
           seg(MODES, ctx.gmode, (k) => h.gmode(k, ctx.gmin), 'Which notes to light up'),
           el('label', { class: 'sl' }, [el('span', { text: 'Links' }), slider, lab])]),
-        centre >= 0 ? egoMap(g, centre, h) : null,
+        centre >= 0 && g.edges.length ? egoMap(g, centre, h) : el('div', { class: 'card2' }, [head('Local map'), empty('The map needs links. In Obsidian, write [[double brackets]] around another note\'s name and the two connect here.', acts(h, ctx))]),
         el('div', { class: 'card2' }, [head('Hubs', el('small', { text: 'most linked' })), top.length ? el('div', { class: 'list' }, top.map((n) => row(n, g, h, `${n.degree} links`, now))) : empty('No hubs yet. A hub is a note with 3 or more links.')]),
         el('div', { class: 'card2' }, [head('Orphans', el('small', { text: `${lonely.length} without links` })),
           lonely.length ? el('div', { class: 'list' }, lonely.slice(0, 8).map((n) => row(n, g, h, 'link me', now))) : empty('No orphans. Every note is connected.')]),

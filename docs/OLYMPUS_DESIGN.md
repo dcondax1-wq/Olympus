@@ -175,9 +175,16 @@ test's HD checks now pass the flag. The box was at load 50+, so only the counts 
 Pantheon and Prometheus were cut back before anything was raised; Daphne's and Mind's old numbers simply predated their 3D rework; the rest had no budget (new rows,
 measure +25%). Hermes needed nothing. Not run again here (not touched tonight): datacity, oracle, odeon, fates.
 
-Budgets (`tests/test_olympus_kit.py` `BUDGET`): draw calls / triangles per frame per app at about 1.25 × the measured
-value, the JS heap ≤ 40 MB, layouts per frame ≤ 1.1. Headless fps is SwiftShader (software GL) and only shows relative
-cost; an iPhone runs all nine at 60 fps on HD.
+**One table, one run mode (2026-11-04, job 11).** `tests/test_olympus_kit.py` had two budget tables (`BUDGET` for the apps with a full kit case, `MORE` for
+the others), measured two ways (one on LITE, one on HD). There is now one `PERF` dict: app -> (page query, draw calls, triangles), and `BUDGET` / `MORE` are
+derived from it. Every app is opened with `?gpu=1` (`hd(q)` adds it), the OLYMPUS level is forced to `high` (`jfx`), and the waits are long (`wait_ready` 120 s, page
+default timeout 150 s, the veil may take 30 s to fade): a busy shared box on software GL needs a minute or two to load a page. Where the HD numbers differ from the old
+LITE ones the HD number wins (e.g. arena is about 258k triangles at HD, 322k budget; its old LITE budget was 80k). Layouts per frame are judged over at least 8
+drawn frames (the test waits up to 40 s), because at 1 frame per second two layouts from a HUD text change look like 2.5 per frame; the table's last column is now
+"frames measured", not fps.
+
+Budgets (`PERF`): draw calls / triangles per frame per app at about 1.25 × the measured value, the JS heap ≤ 40 MB, layouts per frame ≤ 1.25. Headless fps is
+SwiftShader (software GL), is never judged and only shows relative cost; an iPhone runs all nine at 60 fps on HD.
 
 ## Fixed in this pass
 

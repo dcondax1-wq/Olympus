@@ -59,6 +59,11 @@ async function loadJarvis() {
   }
 }
 
+/** The demo brain as a normalized snapshot (for the "Preview a demo brain" button: a small real vault can look at what a grown one is like). */
+export async function demoSnapshot() {
+  return normalize(await createDemo().graphSnapshot());
+}
+
 export async function openFeed(onUpdate, { demo = createDemo() } = {}) {
   let packed = false;                               // the starter vault joins the demo brain once, the first time the demo is shown
   const real = await loadJarvis();

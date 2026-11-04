@@ -45,24 +45,30 @@ APPS = {
     "prometheus": ("?demo=1", "forge.js", None),
     "tyche": ("?demo=1", "main.js", "#quality"),
 }
-# the perf budget per app (390 x 844, HD, SwiftShader): draw calls and triangles per frame (three.js renderer.info), the JS
-# heap, layouts per frame (one at most: DOM writes batched, never a read after a write in the frame loop). Measured on
-# 2026-11-03 with ~25% headroom; docs/OLYMPUS_DESIGN.md has the table.
-BUDGET = {
-    "datacity": (120, 700_000), "mind": (44, 20_000), "tree": (68, 60_000), "oracle": (190, 16_000), "odeon": (60, 60_000),
-    "fates": (64, 40_000), "hermes": (0, 0), "prometheus": (66, 9_000), "tyche": (270, 30_000),   # render core adopted 2026-11-03: measured 31 calls / 6,054 tris and 216 calls / 24,590 tris, +20%
+# THE perf budget: one table, one run mode (2026-11-04). Every app is measured on the HD tier: the page is opened with ?gpu=1, which lifts the render core's
+# software-GL cap (SwiftShader would otherwise hold every app to LITE and hide the bloom / finish passes and the HD pixel ratio), with the OLYMPUS level forced
+# to 'high' (jfx) and generous waits (a busy shared box needs a minute to load a page). Draw calls and triangles per frame (three.js renderer.info) are portable;
+# fps is not and is never judged. The budget is the measure + 25%, from `python tools/...`-free scratch runs of the same code path (docs/OLYMPUS_DESIGN.md has the
+# table with the measures). The JS heap (HEAP_MB) and layouts per frame (LAYOUTS_PER_FRAME: DOM writes batched, never a read after a write in the frame loop) hold for all.
+#   app: (page query, budget calls, budget triangles)     calls 0 = no three.js scene (the heap only)
+PERF = {
+    "mind": ("", 44, 1_500), "tree": ("", 35, 60_000), "oracle": ("?demo=1", 200, 17_000), "odeon": ("?demo=1&autoplay=1", 53, 35_000), "fates": ("", 69, 26_500),
+    "hermes": ("#week,demo", 0, 0), "prometheus": ("?demo=1", 66, 9_000), "tyche": ("?demo=1", 275, 30_700),
+    "nemesis": ("?demo=1", 68, 30_000), "athena": ("?demo=1", 77, 7_900), "argus": ("?demo=1", 32, 118_500), "chronos": ("?demo=1", 84, 22_900),
+    "cities": ("?demo=1", 27, 163_600), "kalshicity": ("?demo=1", 102, 52_200), "labyrinth": ("?demo=1", 60, 8_800), "hephaestus": ("?demo=1", 49, 5_500),
+    "pantheon": ("?demo=1", 108, 31_600), "arena": ("?demo=1", 180, 322_000), "forum": ("?demo=1", 140, 9_000), "plutus": ("?demo=1", 24, 6_000),
+    "ares": ("?demo=1", 50, 7_800), "kalshi": ("?demo=1", 0, 0),
+    "datacity": ("", 120, 700_000),                                 # its own tiers are held by DATACITY_TIERS below
 }
-# the other 3D / animated apps (2026-11-04, docs/OLYMPUS_PERF.md): (query, budget calls, budget triangles), measured at 390 x 844 / dpr 3 under
-# SwiftShader (where the render core steps every app down to LITE, so these are the LITE scenes) + ~25% headroom. Re-measured 2026-11-04 after the
-# own-loop pass 2 (fates, labyrinth, hephaestus, arena, nemesis, chronos): arena's crowd + dress (another agent, JOB 10+11) took it from 101 / 64k to 127 / 142k.
-# own-loop pass: athena 80 -> 48 calls (instanced shelves; its triangle count rises because culling is now per shelf, not per book). Calls and triangles are the
-# portable numbers; fps is relative only. ares / hermes / bridge / kalshi are 2D or DOM (no three.js): their budget is the heap only.
-MORE = {
-    "nemesis": ("?demo=1", 49, 30_000), "athena": ("?demo=1", 62, 8_000), "argus": ("?demo=1", 10, 80_000), "chronos": ("?demo=1", 59, 19_500),
-    "cities": ("?demo=1", 10, 80_000), "kalshicity": ("?demo=1", 90, 24_000), "labyrinth": ("?demo=1", 43, 8_700), "hephaestus": ("?demo=1", 32, 5_500),
-    "pantheon": ("?demo=1", 135, 31_500), "arena": ("?demo=1", 160, 178_000), "forum": ("?demo=1", 118, 9_000), "plutus": ("?demo=1", 24, 6_000),
-    "tree": ("?demo=1", 68, 8_500), "ares": ("?demo=1", 50, 7_800), "hermes": ("?demo=1", 0, 0), "kalshi": ("?demo=1", 0, 0),
-}
+BUDGET = {a: (c, t) for a, (_, c, t) in PERF.items() if a in APPS}                      # the apps with a full kit case (test_app)
+MORE = {a: v for a, v in PERF.items() if a not in APPS}                                 # the others: the budget alone (test_more)
+
+
+def hd(q):
+    """the one run mode: the page query with ?gpu=1 added"""
+    return ("?gpu=1" + q) if q.startswith("#") else ("?gpu=1" if not q else q + "&gpu=1")
+
+
 # Data City by tier (2026-11-04, datacity/caps.js, docs/OLYMPUS_PERF.md): the page forces the tier with ?q= and the device hint with ?phone=; (calls, triangles) at the far
 # overview and at the close-up of the densest district, measured at 390 x 844 / dpr 3 under SwiftShader + ~20% headroom. "phone-high" = a phone at the high tier (the
 # phone-safe preset), "ultra" = a PC at ultra (the full city). The heap budget is HEAP_MB for phone-high.
@@ -209,16 +215,17 @@ def page(br, origin, fx=None, reduced=False):
     init += f"try {{ localStorage.setItem('jfx', {json.dumps(fx)}); }} catch (e) {{}}" if fx else "try { localStorage.removeItem('jfx'); } catch (e) {}"
     ctx.add_init_script(init)
     p = ctx.new_page()
+    p.set_default_timeout(150000)                  # a busy shared box (software GL) can take a minute or two to load a page
     errs: list = []
     p.on("pageerror", lambda e: errs.append(str(e)))
     p.on("console", lambda m: errs.append(m.text) if m.type == "error" else None)
     return ctx, p, errs
 
 
-def wait_ready(p, ms=40000):
+def wait_ready(p, ms=120000):
     try:
         p.wait_for_function("() => window.OLYMPUS && OLYMPUS.state() === 'ready'", timeout=ms)
-        p.wait_for_function("() => !document.querySelector('.oly-veil')", timeout=3000)
+        p.wait_for_function("() => !document.querySelector('.oly-veil')", timeout=30000)   # software GL: the fade runs on ~1 frame/s
         return True
     except Exception:
         return False
@@ -230,7 +237,7 @@ def metrics(cdp):
 
 def test_app(br, origin, app, table):
     q, entry, qbtn = APPS[app]
-    url = f"{origin}/{app}/{q}"
+    url = f"{origin}/{app}/{hd(q)}"
     # ---- b. high + the veil + e. perf
     ctx, p, errs = page(br, origin, fx="high")
     p.goto(url)
@@ -251,6 +258,10 @@ def test_app(br, origin, app, table):
     cdp.send("Performance.enable")
     m0, f0 = metrics(cdp), p.evaluate("window.__frames")
     p.wait_for_timeout(2000)
+    for _ in range(20):                                    # software GL on a busy box draws ~1 frame/s: measure over at least 8 frames (layouts per FRAME is the claim)
+        if p.evaluate("window.__frames") - f0 >= 8:
+            break
+        p.wait_for_timeout(2000)
     m1, f1 = metrics(cdp), p.evaluate("window.__frames")
     frames = max(1, f1 - f0)
     lpf = (m1.get("LayoutCount", 0) - m0.get("LayoutCount", 0)) / frames
@@ -260,7 +271,7 @@ def test_app(br, origin, app, table):
     row = {"app": app, "three": s.get("three"), "calls": s.get("calls"), "triangles": s.get("triangles"), "points": s.get("points"),
            "geometries": s.get("geometries"), "textures": s.get("textures"), "programs": s.get("programs"),
            "pixelRatio": s.get("pixelRatio"), "heap_mb": round(heap, 1), "layouts_per_frame": round(lpf, 2), "styles_per_frame": round(spf, 2),
-           "fps_headless": round(frames / 2, 1)}
+           "frames_measured": frames}
     table.append(row)
     calls, tris = BUDGET[app]
     within = (not s.get("three") or (s["calls"] <= calls and s["triangles"] <= tris)) and heap <= HEAP_MB and lpf <= LAYOUTS_PER_FRAME
@@ -397,8 +408,8 @@ def test_power(br, origin):
 def test_more(br, origin, app):
     q, calls, tris = MORE[app]
     ctx, p, errs = page(br, origin, fx="high")
-    p.goto(f"{origin}/{app}/{q}")
-    ok = wait_ready(p, 25000)
+    p.goto(f"{origin}/{app}/{hd(q)}")
+    ok = wait_ready(p, 120000)
     p.wait_for_timeout(2500)
     cdp = ctx.new_cdp_session(p)
     cdp.send("Performance.enable")
@@ -494,12 +505,12 @@ if __name__ == "__main__":
     t0 = time.time()
     tab = main()
     if "--table" in sys.argv and tab:
-        print("\n| app | three.js | draw calls | triangles | geometries | textures | programs | pixel ratio | JS heap MB | layouts/frame | fps (headless) |")
+        print("\n| app | three.js | draw calls | triangles | geometries | textures | programs | pixel ratio | JS heap MB | layouts/frame | frames measured |")
         print("|---|---|---|---|---|---|---|---|---|---|---|")
         for r in tab:
             print(f"| {r['app']} | {'yes' if r['three'] else 'no'} | {r['calls'] if r['three'] else '-'} | {r['triangles'] if r['three'] else '-'} | "
                   f"{r['geometries'] if r['three'] else '-'} | {r['textures'] if r['three'] else '-'} | {r['programs'] if r['three'] else '-'} | "
-                  f"{r['pixelRatio'] if r['three'] else '-'} | {r['heap_mb']} | {r['layouts_per_frame']} | {r['fps_headless']} |")
+                  f"{r['pixelRatio'] if r['three'] else '-'} | {r['heap_mb']} | {r['layouts_per_frame']} | {r['frames_measured']} |")
     if "--json" in sys.argv and tab:
         print(json.dumps(tab))
     n = sum(RES)
