@@ -40,7 +40,7 @@ WEB = os.path.join(ROOT, "tools", "web_public")
 MIND = os.path.join(WEB, "mind")
 SHOTS = os.environ.get("MIND_SHOTS")
 MODULES = ["main.js", "data.js", "demo.js", "graph.js", "layout.js", "layout-worker.js", "render.js", "controls.js", "ui.js",
-           "nebula.js", "synapse.js", "memring.js", "markdown.js"]
+           "nebula.js", "synapse.js", "memring.js", "markdown.js", "live.js"]
 RES = []
 MOCK = {"js": None}                       # the fake ../jarvis/obsidian.js (None = 404, like a Jarvis without it)
 OUTSIDE = []                              # every request to another origin (must stay empty)
@@ -616,6 +616,43 @@ def render_core_cases(br, origin):
     ctx.close()
 
 
+def live_cases(br, origin):
+    """2026-11-03: Jarvis learning, live (live.js reads her localStorage keys, read-only)."""
+    src = open(os.path.join(MIND, "live.js"), encoding="utf-8").read()
+    code = re.sub(r"//.*", "", src)
+    check("l. live.js only reads: no setItem / removeItem / fetch / network, never names the vault's secret key",
+          not re.search(r"setItem|removeItem|fetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket|'jarvis\.vault'", code), code[:80])
+    html = open(os.path.join(MIND, "index.html"), encoding="utf-8").read()
+    check("l. the Jarvis brain counter and the Teach Jarvis button (opens ../jarvis/) are on the page",
+          all(i in html for i in ('id="jb-mem"', 'id="jb-notes"', 'id="jb-topics"', 'id="teach"', 'href="../jarvis/"')))
+    MOCK["js"] = None
+    ctx, p, log = new_page(br, origin, (390, 844))
+    p.goto(origin + "/mind/?q=off")
+    ready(p)
+    n0 = p.evaluate("window.mind.stats.notes")
+    check("l. before: the counter starts at zero memories", p.inner_text("#jb-mem") == "0" and p.evaluate("window.mind.live.memories") == 0)
+    p.evaluate("""() => { localStorage.setItem('jarvis.assistant.v1', JSON.stringify({ v: 1, facts: [
+        { id: 'f1', t: Date.now(), text: 'My NQ stop goes one tick beyond the sweep' }, { id: 'f2', t: Date.now(), text: 'I love sushi' }], todos: [], notes: [] }));
+      localStorage.setItem('jarvis.vault.learned', JSON.stringify([{ t: Math.floor(Date.now() / 1000), text: 'Size follows the stop', note: 'Trading/Rules.md' }])); }""")
+    p.wait_for_function("window.mind.live && window.mind.live.memories === 2", timeout=15000)
+    p.wait_for_timeout(600)
+    n1 = p.evaluate("window.mind.stats.notes")
+    check("l. a fact saved in Jarvis's storage becomes a node in the galaxy (poll fallback, no reload)", n1 >= n0 + 2, (n0, n1))
+    check("l. the 'Jarvis learned:' toast shows (or the spark flew)", "Jarvis learned" in p.inner_text("#toast") or p.evaluate("window.mind.sparksLaunched") > 0, p.inner_text("#toast"))
+    check("l. the Jarvis brain counter: 2 memories, 1 note written", p.inner_text("#jb-mem") == "2" and p.inner_text("#jb-notes") == "1", p.inner_text("#jbrain"))
+    chips = p.evaluate("[...document.querySelectorAll('#chips .chip')].map((c) => c.textContent)")
+    check("l. the trading fact joins the Trading constellation (the other lands in Jarvis memory)", any("Trading" in c for c in chips) and any("Jarvis memory" in c for c in chips), chips)
+    p.evaluate("""() => { const a = JSON.parse(localStorage.getItem('jarvis.assistant.v1')); a.facts.push({ id: 'f3', t: Date.now(), text: 'Leg day is Thursday' });
+      localStorage.setItem('jarvis.assistant.v1', JSON.stringify(a)); window.dispatchEvent(new StorageEvent('storage', { key: 'jarvis.assistant.v1' })); }""")
+    p.wait_for_function("window.mind.live.memories === 3", timeout=5000)
+    check("l. the storage event updates at once (no wait for the poll)", p.evaluate("window.mind.live.memories") == 3)
+    p.evaluate("localStorage.setItem('jarvis.assistant.v1', '{junk')")
+    p.wait_for_timeout(5000)
+    check("l. junk in the key is ignored: the brain stays, no errors", p.evaluate("window.mind.stats.notes") >= n1 and not real_errors(log), real_errors(log))
+    check("l. no console errors", not real_errors(log), real_errors(log))
+    ctx.close()
+
+
 def main():
     static_checks()
     srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -630,6 +667,7 @@ def main():
             mock_cases(br, origin)
             upgrade_cases(br, origin)
             render_core_cases(br, origin)
+            live_cases(br, origin)
             other_cases(br, origin)
         finally:
             br.close()

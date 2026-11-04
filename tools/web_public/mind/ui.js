@@ -109,6 +109,13 @@ export function createUI(h) {
       $('demo').hidden = m !== 'demo';
     },
 
+    /** The Jarvis brain counter: memories she keeps, notes she wrote to the vault, topics (galaxies) the brain spans. */
+    brain(c, topics) {
+      $('jb-mem').textContent = big(c.memories || 0);
+      $('jb-notes').textContent = big(c.written || 0);
+      $('jb-topics').textContent = big(Math.max(topics || 0, c.topics || 0));
+    },
+
     stats(s) {
       $('s-notes').textContent = big(s.notes);
       $('s-links').textContent = big(s.links);

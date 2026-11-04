@@ -12,8 +12,8 @@
 <link rel="stylesheet" href="../olympus/olympus.css?v=o2">
 <script src="../olympus/themes.js?v=o2"></script>
 <script src="../olympus/olympus.js?v=o2" data-app="mind"></script>
-<link rel="stylesheet" href="mind.css?v=m3">
-<script type="module" src="main.js?v=m3"></script>
+<link rel="stylesheet" href="mind.css?v=m4">
+<script type="module" src="main.js?v=m4"></script>
 </head>
 <body>
 <canvas id="gl" aria-label="Your notes as a 3D brain. Drag to turn, pinch to zoom, tap a note to open it."></canvas>
@@ -91,6 +91,11 @@
   </div>
   <ol id="stream" class="stream" aria-label="Thought stream: what Jarvis learned and what changed, newest first"></ol>
   <div id="chips" class="chips" role="toolbar" aria-label="Focus on one galaxy"></div>
+  <div id="jbrain" class="jbrain" role="group" aria-label="Jarvis brain">
+    <span class="jb-t">Jarvis brain</span>
+    <span><b id="jb-mem">0</b> memories</span><span><b id="jb-notes">0</b> notes written</span><span><b id="jb-topics">0</b> topics</span>
+    <a id="teach" class="ghost" href="../jarvis/" target="_top">Teach Jarvis</a>
+  </div>
   <div id="stats" class="stats">
     <span><b id="s-notes">–</b>Notes</span>
     <span><b id="s-links">–</b>Links</span>
