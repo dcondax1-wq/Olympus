@@ -32,12 +32,12 @@ function style() {
 .jx-steps code{font-size:12px;padding:1px 4px;border-radius:4px;background:rgba(255,255,255,.08);word-break:break-all}
 .jx-obs textarea{width:100%;min-height:90px;box-sizing:border-box;font:inherit;font-size:14px;border-radius:10px;padding:8px}
 .jx-obs .st{font-size:13px;opacity:.85;margin:4px 0 8px}
-.jx-modes{display:flex;gap:6px;margin:10px auto 0;max-width:560px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 2px 4px}
+.jx-modes{display:flex;width:100%;box-sizing:border-box;gap:6px;margin:10px auto 0;max-width:560px;flex-wrap:wrap;justify-content:center;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 2px 4px}
 .jx-modes::-webkit-scrollbar{display:none}
 .jx-modes button{flex:0 0 auto;min-height:34px;padding:4px 12px;border-radius:999px;font:inherit;font-size:13px;font-weight:600;letter-spacing:.04em;color:inherit;
   background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.16);cursor:pointer}
 .jx-modes button[aria-pressed=true]{background:rgba(var(--cr,125,211,252),.28);border-color:rgba(var(--cr,125,211,252),.75)}
-.jx-modes .think{margin-left:auto;background:rgba(var(--cr,125,211,252),.16);border-color:rgba(var(--cr,125,211,252),.55)}
+.jx-modes .think{background:rgba(var(--cr,125,211,252),.16);border-color:rgba(var(--cr,125,211,252),.55)}
 .jx-plan{margin:8px auto 0;max-width:560px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);text-align:left}
 .jx-plan[hidden]{display:none}
 .jx-plan .h{display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.8}
