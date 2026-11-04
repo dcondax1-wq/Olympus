@@ -1,0 +1,978 @@
+{
+ "_eval_today": {
+  "H1": {
+   "p10": 65.5,
+   "f10": 0.0,
+   "dead10": 0.8,
+   "dec10": 66.3,
+   "p15": 73.7,
+   "f15": 0.0,
+   "pass_med": 5.0,
+   "slow_pass": 4.3,
+   "p60": 92.2,
+   "tpw": 2.11,
+   "net": 6485,
+   "per_month": 1064,
+   "pf": 2.3
+  },
+  "H2": {
+   "p10": 43.5,
+   "f10": 0.0,
+   "dead10": 0.0,
+   "dec10": 43.5,
+   "p15": 54.7,
+   "f15": 0.0,
+   "pass_med": 6.0,
+   "slow_pass": 13.3,
+   "p60": 100.0,
+   "tpw": 1.6,
+   "net": 4434,
+   "per_month": 1194,
+   "pf": 3.18
+  }
+ },
+ "funded:today": {
+  "K": {},
+  "info": {},
+  "eval": {
+   "H1": {
+    "p10": 65.5,
+    "f10": 0.0,
+    "dead10": 0.8,
+    "dec10": 66.3,
+    "pass_med": 5.0
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "pass_med": 6.0
+   }
+  },
+  "same_eval": true,
+  "H1": {
+   "paid_per_month": 586,
+   "paid_p10_per_month": 400,
+   "lost_pct": 0.0,
+   "stuck_pct": 7.8,
+   "grad_pct": 77.6,
+   "payouts_6m": 4.43,
+   "first_med": 18.0,
+   "any_pay_pct": 93.6,
+   "made_per_month": 1583,
+   "trades_per_week": 3.98,
+   "pf": 2.98,
+   "cons_block_days": 43.7,
+   "cycling": {
+    "paid_per_account": 3715,
+    "sessions_per_account": 93.4,
+    "end_mix": {
+     "grad": 233,
+     "stuck": 17
+    },
+    "net_per_month_cycling": 767
+   }
+  },
+  "H2": {
+   "paid_per_month": 519,
+   "paid_p10_per_month": 256,
+   "lost_pct": 0.0,
+   "stuck_pct": 7.8,
+   "grad_pct": 51.2,
+   "payouts_6m": 3.93,
+   "first_med": 24.0,
+   "any_pay_pct": 94.0,
+   "made_per_month": 1420,
+   "trades_per_week": 3.05,
+   "pf": 3.06,
+   "cons_block_days": 47.3,
+   "cycling": {
+    "paid_per_account": 3796,
+    "sessions_per_account": 121.5,
+    "end_mix": {
+     "grad": 238,
+     "stuck": 12
+    },
+    "net_per_month_cycling": 613
+   }
+  }
+ },
+ "funded:ask_1000": {
+  "K": {
+   "ask": 1000
+  },
+  "info": {},
+  "eval": {
+   "H1": {
+    "p10": 65.5,
+    "f10": 0.0,
+    "dead10": 0.8,
+    "dec10": 66.3,
+    "pass_med": 5.0
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "pass_med": 6.0
+   }
+  },
+  "same_eval": true,
+  "H1": {
+   "paid_per_month": 588,
+   "paid_p10_per_month": 400,
+   "lost_pct": 0.0,
+   "stuck_pct": 7.4,
+   "grad_pct": 76.6,
+   "payouts_6m": 4.41,
+   "first_med": 19.0,
+   "any_pay_pct": 93.6,
+   "made_per_month": 1613,
+   "trades_per_week": 3.98,
+   "pf": 2.97,
+   "cons_block_days": 43.2,
+   "cycling": {
+    "paid_per_account": 3734,
+    "sessions_per_account": 94.5,
+    "end_mix": {
+     "grad": 232,
+     "stuck": 18
+    },
+    "net_per_month_cycling": 763
+   }
+  },
+  "H2": {
+   "paid_per_month": 520,
+   "paid_p10_per_month": 267,
+   "lost_pct": 0.0,
+   "stuck_pct": 6.8,
+   "grad_pct": 49.4,
+   "payouts_6m": 3.9,
+   "first_med": 27.0,
+   "any_pay_pct": 93.6,
+   "made_per_month": 1450,
+   "trades_per_week": 3.06,
+   "pf": 3.08,
+   "cons_block_days": 45.8,
+   "cycling": {
+    "paid_per_account": 3859,
+    "sessions_per_account": 125.1,
+    "end_mix": {
+     "grad": 241,
+     "stuck": 9
+    },
+    "net_per_month_cycling": 606
+   }
+  }
+ },
+ "funded:winner_cap_1500": {
+  "K": {
+   "cfg": {
+    "max_win": 1500.0
+   }
+  },
+  "info": {},
+  "eval": {
+   "H1": {
+    "p10": 65.5,
+    "f10": 0.0,
+    "dead10": 0.8,
+    "dec10": 66.3,
+    "pass_med": 5.0
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "pass_med": 6.0
+   }
+  },
+  "same_eval": true,
+  "H1": {
+   "paid_per_month": 569,
+   "paid_p10_per_month": 109,
+   "lost_pct": 0.0,
+   "stuck_pct": 10.8,
+   "grad_pct": 74.8,
+   "payouts_6m": 4.27,
+   "first_med": 17.0,
+   "any_pay_pct": 90.4,
+   "made_per_month": 2226,
+   "trades_per_week": 4.13,
+   "pf": 3.04,
+   "cons_block_days": 50.9,
+   "cycling": {
+    "paid_per_account": 3541,
+    "sessions_per_account": 92.1,
+    "end_mix": {
+     "grad": 221,
+     "stuck": 29
+    },
+    "net_per_month_cycling": 740
+   }
+  },
+  "H2": {
+   "paid_per_month": 483,
+   "paid_p10_per_month": 133,
+   "lost_pct": 0.0,
+   "stuck_pct": 10.4,
+   "grad_pct": 40.6,
+   "payouts_6m": 3.64,
+   "first_med": 25.0,
+   "any_pay_pct": 91.6,
+   "made_per_month": 1608,
+   "trades_per_week": 3.05,
+   "pf": 3.04,
+   "cons_block_days": 53.5,
+   "cycling": {
+    "paid_per_account": 3668,
+    "sessions_per_account": 128.6,
+    "end_mix": {
+     "grad": 228,
+     "stuck": 20,
+     "open": 2
+    },
+    "net_per_month_cycling": 561
+   }
+  }
+ },
+ "funded:size_100pct_max750": {
+  "K": {
+   "cfg": {
+    "pct": 1.0,
+    "pct_max_usd": 750.0
+   }
+  },
+  "info": {},
+  "eval": {
+   "H1": {
+    "p10": 65.5,
+    "f10": 0.0,
+    "dead10": 0.8,
+    "dec10": 66.3,
+    "pass_med": 5.0
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "pass_med": 6.0
+   }
+  },
+  "same_eval": true,
+  "H1": {
+   "paid_per_month": 558,
+   "paid_p10_per_month": 0,
+   "lost_pct": 0.0,
+   "stuck_pct": 13.2,
+   "grad_pct": 76.4,
+   "payouts_6m": 4.23,
+   "first_med": 15.0,
+   "any_pay_pct": 89.2,
+   "made_per_month": 1506,
+   "trades_per_week": 4.02,
+   "pf": 2.98,
+   "cons_block_days": 42.1,
+   "cycling": {
+    "paid_per_account": 3456,
+    "sessions_per_account": 84.1,
+    "end_mix": {
+     "grad": 216,
+     "stuck": 34
+    },
+    "net_per_month_cycling": 786
+   }
+  },
+  "H2": {
+   "paid_per_month": 451,
+   "paid_p10_per_month": 0,
+   "lost_pct": 0.0,
+   "stuck_pct": 23.8,
+   "grad_pct": 47.8,
+   "payouts_6m": 3.42,
+   "first_med": 18.0,
+   "any_pay_pct": 79.6,
+   "made_per_month": 1217,
+   "trades_per_week": 3.09,
+   "pf": 3.02,
+   "cons_block_days": 41.7,
+   "cycling": {
+    "paid_per_account": 3292,
+    "sessions_per_account": 99.1,
+    "end_mix": {
+     "stuck": 46,
+     "grad": 204
+    },
+    "net_per_month_cycling": 643
+   }
+  }
+ },
+ "funded:size_60pct_max500": {
+  "K": {
+   "cfg": {
+    "pct": 0.6,
+    "pct_max_usd": 500.0
+   }
+  },
+  "info": {},
+  "eval": {
+   "H1": {
+    "p10": 65.5,
+    "f10": 0.0,
+    "dead10": 0.8,
+    "dec10": 66.3,
+    "pass_med": 5.0
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "pass_med": 6.0
+   }
+  },
+  "same_eval": true,
+  "H1": {
+   "paid_per_month": 571,
+   "paid_p10_per_month": 383,
+   "lost_pct": 0.0,
+   "stuck_pct": 7.2,
+   "grad_pct": 69.0,
+   "payouts_6m": 4.33,
+   "first_med": 18.0,
+   "any_pay_pct": 94.0,
+   "made_per_month": 1505,
+   "trades_per_week": 3.98,
+   "pf": 2.97,
+   "cons_block_days": 46.7,
+   "cycling": {
+    "paid_per_account": 3712,
+    "sessions_per_account": 102.0,
+    "end_mix": {
+     "grad": 234,
+     "stuck": 16
+    },
+    "net_per_month_cycling": 706
+   }
+  },
+  "H2": {
+   "paid_per_month": 517,
+   "paid_p10_per_month": 257,
+   "lost_pct": 0.0,
+   "stuck_pct": 5.8,
+   "grad_pct": 48.2,
+   "payouts_6m": 3.94,
+   "first_med": 26.0,
+   "any_pay_pct": 94.8,
+   "made_per_month": 1199,
+   "trades_per_week": 3.11,
+   "pf": 2.93,
+   "cons_block_days": 44.5,
+   "cycling": {
+    "paid_per_account": 3830,
+    "sessions_per_account": 126.1,
+    "end_mix": {
+     "grad": 242,
+     "stuck": 8
+    },
+    "net_per_month_cycling": 597
+   }
+  }
+ },
+ "funded:day_take_profit_800": {
+  "K": {
+   "day_tp": 800.0
+  },
+  "info": {},
+  "eval": {
+   "H1": {
+    "p10": 65.5,
+    "f10": 0.0,
+    "dead10": 0.8,
+    "dec10": 66.3,
+    "pass_med": 5.0
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "pass_med": 6.0
+   }
+  },
+  "same_eval": true,
+  "H1": {
+   "paid_per_month": 586,
+   "paid_p10_per_month": 400,
+   "lost_pct": 0.0,
+   "stuck_pct": 7.8,
+   "grad_pct": 78.0,
+   "payouts_6m": 4.44,
+   "first_med": 18.0,
+   "any_pay_pct": 93.6,
+   "made_per_month": 1555,
+   "trades_per_week": 3.95,
+   "pf": 2.95,
+   "cons_block_days": 43.0,
+   "cycling": {
+    "paid_per_account": 3712,
+    "sessions_per_account": 92.8,
+    "end_mix": {
+     "grad": 233,
+     "stuck": 17
+    },
+    "net_per_month_cycling": 771
+   }
+  },
+  "H2": {
+   "paid_per_month": 521,
+   "paid_p10_per_month": 256,
+   "lost_pct": 0.0,
+   "stuck_pct": 7.8,
+   "grad_pct": 51.8,
+   "payouts_6m": 3.95,
+   "first_med": 24.0,
+   "any_pay_pct": 94.0,
+   "made_per_month": 1437,
+   "trades_per_week": 3.01,
+   "pf": 3.16,
+   "cons_block_days": 47.3,
+   "cycling": {
+    "paid_per_account": 3796,
+    "sessions_per_account": 121.0,
+    "end_mix": {
+     "grad": 238,
+     "stuck": 12
+    },
+    "net_per_month_cycling": 616
+   }
+  }
+ },
+ "funded:cons_aware_floor300_k1.0": {
+  "K": {
+   "dyn": {
+    "floor": 300.0,
+    "k": 1.0
+   }
+  },
+  "info": {},
+  "eval": {
+   "H1": {
+    "p10": 65.5,
+    "f10": 0.0,
+    "dead10": 0.8,
+    "dec10": 66.3,
+    "pass_med": 5.0
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "pass_med": 6.0
+   }
+  },
+  "same_eval": true,
+  "H1": {
+   "paid_per_month": 583,
+   "paid_p10_per_month": 400,
+   "lost_pct": 0.0,
+   "stuck_pct": 4.8,
+   "grad_pct": 73.0,
+   "payouts_6m": 4.45,
+   "first_med": 25.0,
+   "any_pay_pct": 96.4,
+   "made_per_month": 1179,
+   "trades_per_week": 3.98,
+   "pf": 2.92,
+   "cons_block_days": 31.0,
+   "cycling": {
+    "paid_per_account": 3743,
+    "sessions_per_account": 103.4,
+    "end_mix": {
+     "grad": 237,
+     "stuck": 13
+    },
+    "net_per_month_cycling": 703
+   }
+  },
+  "H2": {
+   "paid_per_month": 511,
+   "paid_p10_per_month": 264,
+   "lost_pct": 0.0,
+   "stuck_pct": 4.4,
+   "grad_pct": 50.2,
+   "payouts_6m": 3.99,
+   "first_med": 31.0,
+   "any_pay_pct": 96.0,
+   "made_per_month": 1000,
+   "trades_per_week": 3.11,
+   "pf": 2.99,
+   "cons_block_days": 24.4,
+   "cycling": {
+    "paid_per_account": 3800,
+    "sessions_per_account": 127.7,
+    "end_mix": {
+     "grad": 243,
+     "stuck": 6,
+     "open": 1
+    },
+    "net_per_month_cycling": 586
+   }
+  }
+ },
+ "funded:half_off_at_1.0R": {
+  "K": {
+   "part": {
+    "f": 0.5,
+    "r": 1.0
+   }
+  },
+  "info": {},
+  "eval": {
+   "H1": {
+    "p10": 65.5,
+    "f10": 0.0,
+    "dead10": 0.8,
+    "dec10": 66.3,
+    "pass_med": 5.0
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "pass_med": 6.0
+   }
+  },
+  "same_eval": true,
+  "H1": {
+   "paid_per_month": 495,
+   "paid_p10_per_month": 101,
+   "lost_pct": 0.0,
+   "stuck_pct": 15.4,
+   "grad_pct": 52.4,
+   "payouts_6m": 3.8,
+   "first_med": 30.0,
+   "any_pay_pct": 90.2,
+   "made_per_month": 953,
+   "trades_per_week": 3.99,
+   "pf": 2.19,
+   "cons_block_days": 26.0,
+   "cycling": {
+    "paid_per_account": 3379,
+    "sessions_per_account": 108.4,
+    "end_mix": {
+     "grad": 211,
+     "stuck": 39
+    },
+    "net_per_month_cycling": 606
+   }
+  },
+  "H2": {
+   "paid_per_month": 537,
+   "paid_p10_per_month": 267,
+   "lost_pct": 0.0,
+   "stuck_pct": 2.6,
+   "grad_pct": 51.2,
+   "payouts_6m": 4.12,
+   "first_med": 33.0,
+   "any_pay_pct": 98.4,
+   "made_per_month": 1078,
+   "trades_per_week": 3.12,
+   "pf": 2.86,
+   "cons_block_days": 33.8,
+   "cycling": {
+    "paid_per_account": 3886,
+    "sessions_per_account": 121.9,
+    "end_mix": {
+     "grad": 248,
+     "stuck": 2
+    },
+    "net_per_month_cycling": 626
+   }
+  }
+ },
+ "funded:ask_1000_cons_aware": {
+  "K": {
+   "ask": 1000,
+   "dyn": {
+    "floor": 300.0,
+    "k": 1.0
+   }
+  },
+  "info": {},
+  "eval": {
+   "H1": {
+    "p10": 65.5,
+    "f10": 0.0,
+    "dead10": 0.8,
+    "dec10": 66.3,
+    "pass_med": 5.0
+   },
+   "H2": {
+    "p10": 43.5,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 43.5,
+    "pass_med": 6.0
+   }
+  },
+  "same_eval": true,
+  "H1": {
+   "paid_per_month": 588,
+   "paid_p10_per_month": 400,
+   "lost_pct": 0.0,
+   "stuck_pct": 4.0,
+   "grad_pct": 71.2,
+   "payouts_6m": 4.41,
+   "first_med": 27.0,
+   "any_pay_pct": 96.2,
+   "made_per_month": 1213,
+   "trades_per_week": 3.97,
+   "pf": 2.95,
+   "cons_block_days": 29.3,
+   "cycling": {
+    "paid_per_account": 3811,
+    "sessions_per_account": 106.0,
+    "end_mix": {
+     "grad": 237,
+     "stuck": 13
+    },
+    "net_per_month_cycling": 700
+   }
+  },
+  "H2": {
+   "paid_per_month": 515,
+   "paid_p10_per_month": 267,
+   "lost_pct": 0.0,
+   "stuck_pct": 4.0,
+   "grad_pct": 43.2,
+   "payouts_6m": 3.86,
+   "first_med": 33.0,
+   "any_pay_pct": 96.0,
+   "made_per_month": 1043,
+   "trades_per_week": 3.11,
+   "pf": 2.99,
+   "cons_block_days": 23.7,
+   "cycling": {
+    "paid_per_account": 3933,
+    "sessions_per_account": 131.7,
+    "end_mix": {
+     "grad": 245,
+     "stuck": 4,
+     "open": 1
+    },
+    "net_per_month_cycling": 589
+   }
+  }
+ },
+ "units:hunts_x0.5": {
+  "K": {},
+  "info": {
+   "V": "hunts_x0.5"
+  },
+  "eval": {
+   "H1": {
+    "p10": 67.2,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 67.2,
+    "pass_med": 6.0
+   },
+   "H2": {
+    "p10": 55.1,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 55.1,
+    "pass_med": 7.0
+   }
+  },
+  "same_eval": false,
+  "eval_full": {
+   "H1": {
+    "p10": 67.2,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 67.2,
+    "p15": 79.8,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 5.0,
+    "p60": 92.2,
+    "tpw": 5.0,
+    "net": 13143,
+    "per_month": 2156,
+    "pf": 2.54
+   },
+   "H2": {
+    "p10": 55.1,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 55.1,
+    "p15": 73.4,
+    "f15": 0.0,
+    "pass_med": 7.0,
+    "slow_pass": 3.8,
+    "p60": 84.2,
+    "tpw": 4.04,
+    "net": 78,
+    "per_month": 21,
+    "pf": 1.03
+   }
+  },
+  "H1": {
+   "paid_per_month": 620,
+   "paid_p10_per_month": 640,
+   "lost_pct": 0.0,
+   "stuck_pct": 6.4,
+   "grad_pct": 91.6,
+   "payouts_6m": 4.67,
+   "first_med": 14.0,
+   "any_pay_pct": 95.0,
+   "made_per_month": 1818,
+   "trades_per_week": 5.5,
+   "pf": 3.03,
+   "cons_block_days": 35.8,
+   "cycling": {
+    "paid_per_account": 3764,
+    "sessions_per_account": 70.3,
+    "end_mix": {
+     "grad": 236,
+     "stuck": 14
+    },
+    "net_per_month_cycling": 1009
+   }
+  },
+  "H2": {
+   "paid_per_month": 524,
+   "paid_p10_per_month": 0,
+   "lost_pct": 0.0,
+   "stuck_pct": 19.2,
+   "grad_pct": 72.2,
+   "payouts_6m": 3.96,
+   "first_med": 15.0,
+   "any_pay_pct": 85.4,
+   "made_per_month": 1682,
+   "trades_per_week": 6.11,
+   "pf": 2.63,
+   "cons_block_days": 38.1,
+   "cycling": {
+    "paid_per_account": 3196,
+    "sessions_per_account": 72.4,
+    "end_mix": {
+     "grad": 198,
+     "stuck": 52
+    },
+    "net_per_month_cycling": 831
+   }
+  }
+ },
+ "units:sr_vix_bank5": {
+  "K": {},
+  "info": {
+   "V": "sr_vix_bank5"
+  },
+  "eval": {
+   "H1": {
+    "p10": 51.3,
+    "f10": 0.0,
+    "dead10": 5.9,
+    "dec10": 57.2,
+    "pass_med": 5.0
+   },
+   "H2": {
+    "p10": 31.9,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 31.9,
+    "pass_med": 5.0
+   }
+  },
+  "same_eval": false,
+  "eval_full": {
+   "H1": {
+    "p10": 51.3,
+    "f10": 0.0,
+    "dead10": 5.9,
+    "dec10": 57.2,
+    "p15": 61.4,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 9.3,
+    "p60": 82.8,
+    "tpw": 2.11,
+    "net": 7088,
+    "per_month": 1163,
+    "pf": 2.39
+   },
+   "H2": {
+    "p10": 31.9,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 31.9,
+    "p15": 34.4,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 10.3,
+    "p60": 100.0,
+    "tpw": 1.6,
+    "net": 3198,
+    "per_month": 861,
+    "pf": 2.28
+   }
+  },
+  "H1": {
+   "paid_per_month": 372,
+   "paid_p10_per_month": 0,
+   "lost_pct": 0.0,
+   "stuck_pct": 34.6,
+   "grad_pct": 32.4,
+   "payouts_6m": 2.82,
+   "first_med": 20.0,
+   "any_pay_pct": 74.6,
+   "made_per_month": 985,
+   "trades_per_week": 3.93,
+   "pf": 2.27,
+   "cons_block_days": 33.5,
+   "cycling": {
+    "paid_per_account": 2861,
+    "sessions_per_account": 108.5,
+    "end_mix": {
+     "grad": 175,
+     "stuck": 75
+    },
+    "net_per_month_cycling": 511
+   }
+  },
+  "H2": {
+   "paid_per_month": 341,
+   "paid_p10_per_month": 0,
+   "lost_pct": 0.0,
+   "stuck_pct": 15.8,
+   "grad_pct": 11.6,
+   "payouts_6m": 2.58,
+   "first_med": 34.0,
+   "any_pay_pct": 87.2,
+   "made_per_month": 992,
+   "trades_per_week": 2.88,
+   "pf": 2.44,
+   "cons_block_days": 43.3,
+   "cycling": {
+    "paid_per_account": 3375,
+    "sessions_per_account": 161.5,
+    "end_mix": {
+     "grad": 207,
+     "stuck": 37,
+     "open": 6
+    },
+    "net_per_month_cycling": 415
+   }
+  }
+ },
+ "units:ema_3R": {
+  "K": {},
+  "info": {
+   "V": "ema_3R"
+  },
+  "eval": {
+   "H1": {
+    "p10": 69.7,
+    "f10": 0.0,
+    "dead10": 0.8,
+    "dec10": 70.5,
+    "pass_med": 5.0
+   },
+   "H2": {
+    "p10": 44.9,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 44.9,
+    "pass_med": 6.0
+   }
+  },
+  "same_eval": false,
+  "eval_full": {
+   "H1": {
+    "p10": 69.7,
+    "f10": 0.0,
+    "dead10": 0.8,
+    "dec10": 70.5,
+    "p15": 74.6,
+    "f15": 0.0,
+    "pass_med": 5.0,
+    "slow_pass": 3.1,
+    "p60": 91.4,
+    "tpw": 2.07,
+    "net": 5525,
+    "per_month": 906,
+    "pf": 2.11
+   },
+   "H2": {
+    "p10": 44.9,
+    "f10": 0.0,
+    "dead10": 0.0,
+    "dec10": 44.9,
+    "p15": 46.9,
+    "f15": 0.0,
+    "pass_med": 6.0,
+    "slow_pass": 0.0,
+    "p60": 94.7,
+    "tpw": 2.37,
+    "net": 397,
+    "per_month": 107,
+    "pf": 1.15
+   }
+  },
+  "H1": {
+   "paid_per_month": 521,
+   "paid_p10_per_month": 0,
+   "lost_pct": 0.0,
+   "stuck_pct": 20.8,
+   "grad_pct": 73.8,
+   "payouts_6m": 3.94,
+   "first_med": 14.0,
+   "any_pay_pct": 84.0,
+   "made_per_month": 1473,
+   "trades_per_week": 4.17,
+   "pf": 2.66,
+   "cons_block_days": 32.1,
+   "cycling": {
+    "paid_per_account": 3248,
+    "sessions_per_account": 72.7,
+    "end_mix": {
+     "grad": 201,
+     "stuck": 49
+    },
+    "net_per_month_cycling": 844
+   }
+  },
+  "H2": {
+   "paid_per_month": 399,
+   "paid_p10_per_month": 0,
+   "lost_pct": 0.0,
+   "stuck_pct": 30.4,
+   "grad_pct": 38.2,
+   "payouts_6m": 3.03,
+   "first_med": 22.0,
+   "any_pay_pct": 79.0,
+   "made_per_month": 1049,
+   "trades_per_week": 3.31,
+   "pf": 2.37,
+   "cons_block_days": 34.5,
+   "cycling": {
+    "paid_per_account": 3059,
+    "sessions_per_account": 102.7,
+    "end_mix": {
+     "grad": 189,
+     "stuck": 61
+    },
+    "net_per_month_cycling": 577
+   }
+  }
+ }
+}
