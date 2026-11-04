@@ -1067,6 +1067,8 @@ html[data-intro] .oly{display:block;animation:olyGo .25s linear .7s forwards}
     <label class="row-t"><span>OLYMPUS sounds<small>Ticks, a portal whoosh, thunder, rank-ups. Follows the silent switch; never while Jarvis talks or listens</small></span><input type="checkbox" id="setOlySfx"></label>
     <label>Sound volume<input id="setOlyVol" type="range" min="0" max="100" step="5" value="35"></label>
     <label class="row-t"><span>App ambience<small>A quiet sound bed in each app (sea, forge, wind, city hum ...). Starts after your first touch, never while Jarvis talks, off in battery saver unless you turn it on</small></span><input type="checkbox" id="setOlyAmb"></label>
+    <div class="fld"><span>Sound (apps)</span><div class="seg3" id="setOlySound"><button type="button" data-snd="auto">Auto</button><button type="button" data-snd="on">On</button><button type="button" data-snd="off">Off</button></div><small id="setOlySoundNote">Auto: on, silent in LITE, reduced motion and battery saver</small></div>
+    <div class="sheet-row"><button class="btn ghost" type="button" id="setOlySoundTest" data-oly-cue="success">Play a test sound</button></div>
     <label class="row-t"><span>Battery saver<small>Apps draw at 30 fps and a lighter pixel ratio. Off: Jarvis decides from the battery (20% and not charging) or Save-Data</small></span><input type="checkbox" id="setOlySaver"></label>
     <label class="row-t"><span>Haptics<small>A light tap you feel on buttons (iPhone: iOS 18 and later)</small></span><input type="checkbox" id="setHaptic"></label>
     <label class="row-t"><span>Tilt<small>The core and the 3D world behind it lean with the phone (asks for motion access)</small></span><input type="checkbox" id="setTilt"></label>
@@ -2055,6 +2057,19 @@ function nxCover() {
   const ae = document.activeElement, typing = !!ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName);
   safe(() => nx.setHidden(typing || NX_COVER.some((sel) => { const e = $(sel); return e && !e.hidden; })));
 }
+// ==== OLYMPUS covered (2026-11-04, docs/OLYMPUS_PERF.md): a sheet / the ⋯ keys over a framed app tell the app its scene is covered, and when it is not ====
+// The kit (olympus/olympus.js) answers hidden() = true while covered, so the app's frame loop sleeps (the iPhone's battery). Same origin only.
+let olyCov = false;
+function olyCovered() {
+  safe(() => {
+    const on = active !== 'home' && NX_COVER.some((sel) => { const e = $(sel); return e && !e.hidden; });
+    if (on === olyCov) return;
+    olyCov = on;
+    for (const k of Object.keys(frames)) { const f = frames[k] && frames[k].querySelector('iframe'); if (f && f.contentWindow) f.contentWindow.postMessage({ olympus: 'covered', on }, location.origin); }
+  });
+}
+new MutationObserver(olyCovered).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['hidden'] });
+// ==== end OLYMPUS covered ====
 function mountNexus(m) {
   try {
     nx = m.mountSwitcher({ apps: nxApps, sections: nxSections, active: () => active, status: (id) => safe(() => nxStatus(id), {}) || {},
@@ -2774,6 +2789,7 @@ function renderLook() {
   $('#setIntro').checked = raw('jarvis.intro') !== 'off'; $('#setHaptic').checked = hapticOn();
   safe(() => { const k = window.OLYMPUS_SFX, s = k && k.state(); $('#setOlySfx').checked = !!s && !s.muted; $('#setOlySfx').disabled = $('#setOlyVol').disabled = !k; if (s) $('#setOlyVol').value = String(Math.round(s.volume * 100));
     const am = k && k.ambientState && k.ambientState(); $('#setOlyAmb').disabled = !am; $('#setOlyAmb').checked = !!am && (am.setting === null ? !am.saver : am.setting);
+    const sm = k && k.ambientState ? k.ambientState().sound : null; for (const b of $('#setOlySound').children) b.setAttribute('aria-pressed', String(b.dataset.snd === (sm === true ? 'on' : sm === false ? 'off' : 'auto'))); $('#setOlySound').dataset.off = k && k.sound ? '' : '1';
     $('#setOlySaver').checked = (() => { try { return localStorage.getItem('olympus.saver') === 'on'; } catch (_) { return false; } })(); });
   $('#fxNote').textContent = root.dataset.fxAuto ? 'Jarvis lowered the effects to keep this phone smooth. Pick a level to override.' : 'High is the phone default. Low keeps the glass and stops the motion; Off is fully static.';
 }
@@ -2787,6 +2803,8 @@ $('#coreSeg').addEventListener('click', (e) => { const b = e.target.closest('[da
 $('#hue').addEventListener('input', () => { D.LS.set('jcustom', { h: +$('#hue').value }); if (root.dataset.theme !== 'custom') setTheme('custom'); else { applyCustom(); readColors(); if (core && typeof core.setTheme === 'function') safe(() => core.setTheme(coreTheme())); } });
 $('#setOlySfx').addEventListener('change', () => { safe(() => { const k = window.OLYMPUS_SFX; if (!k) return; k.mute(!$('#setOlySfx').checked); if ($('#setOlySfx').checked) k.play('tap'); }); });
 $('#setOlyAmb').addEventListener('change', () => { safe(() => { const k = window.OLYMPUS_SFX; if (k && k.ambience) k.ambience($('#setOlyAmb').checked); }); });   // shared with every app (storage event)
+$('#setOlySound').addEventListener('click', (e) => { const b = e.target.closest('[data-snd]'); if (!b) return; safe(() => { const k = window.OLYMPUS_SFX; if (k && k.sound) k.sound(b.dataset.snd === 'auto' ? null : b.dataset.snd === 'on'); for (const x of $('#setOlySound').children) x.setAttribute('aria-pressed', String(x === b)); }); });   // OLYMPUS.sound: shared with every app
+$('#setOlySoundTest').addEventListener('click', () => { safe(() => { const k = window.OLYMPUS_SFX; if (!k) return; k.unlock(); $('#setOlySoundNote').textContent = !k.sound() ? 'Silent: Auto stays quiet in LITE, reduced motion and battery saver. Choose On to hear it' : k.play('success') ? 'Played the success cue' : 'Silent: muted or no sound in this browser'; }); });
 $('#setOlySaver').addEventListener('change', () => { safe(() => { try { if ($('#setOlySaver').checked) localStorage.setItem('olympus.saver', 'on'); else localStorage.removeItem('olympus.saver'); } catch (_) { /* private mode */ } }); });
 $('#setOlyVol').addEventListener('change', () => { safe(() => { const k = window.OLYMPUS_SFX; if (!k) return; k.setVolume(+$('#setOlyVol').value / 100); k.play('tap'); }); });
 $('#setSound').addEventListener('change', () => { D.LS.set('jarvis.sound', $('#setSound').checked); sfx('tap'); renderMore(); });

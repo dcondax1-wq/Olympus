@@ -4,6 +4,7 @@
 import * as THREE from '../jarvis/three.module.min.js';
 import * as SH from './shaders.js';
 import { towerGeo, archUniforms } from './skyline.js';
+import { PROFILES } from './caps.js';
 
 const COUNT = { hq: 2600, lq: 900 };
 const PALETTE = [0x3a5fb5, 0x4f8cff, 0x7fe9ff, 0xa68bff, 0x6a7bd8, 0xc9b8ff, 0xffc94a];
@@ -11,11 +12,12 @@ const mulberry = (a) => () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.i
 
 export class Outskirts {
   /** L: layout(); U: the scene uniforms; avoid: [{ x, z, r }] places to keep clear (the acropolis); quality */
-  constructor(L, U, quality, avoid = []) {   // avoid: circles { x, z, r } to keep clear (the acropolis, the river)
+  constructor(L, U, quality, avoid = [], caps = PROFILES.full) {   // avoid: circles { x, z, r } to keep clear (the acropolis, the river)
     const rnd = mulberry(23), ds = L.districts.filter((d) => d.kind !== 'harbor');
     const R0 = Math.max(120, ...ds.map((d) => Math.hypot(Math.abs(d.cx) + d.half, Math.abs(d.cz) + d.half))) + 26, R1 = R0 + 210;
     const hb = L.harbor, cell = 3.6, seen = new Set(), list = [];
-    for (let tries = 0; tries < COUNT.hq * 4 && list.length < COUNT.hq; tries++) {
+    const want = Math.min(COUNT.hq, caps.outskirts);
+    for (let tries = 0; tries < want * 4 && list.length < want; tries++) {
       const a = rnd() * Math.PI * 2, r = R0 + (R1 - R0) * Math.pow(rnd(), 0.8);
       const x = Math.round((Math.cos(a) * r) / cell) * cell, z = Math.round((Math.sin(a) * r) / cell) * cell, key = x + ',' + z;
       if (seen.has(key)) continue;
@@ -59,5 +61,5 @@ export class Outskirts {
     this.setQuality(quality);
   }
 
-  setQuality(q) { this.mesh.count = Math.min(this.total, COUNT[q] ?? COUNT.hq); }
+  setQuality(q, caps) { this.mesh.count = Math.min(this.total, caps?.outskirts ?? COUNT[q] ?? COUNT.hq); }
 }

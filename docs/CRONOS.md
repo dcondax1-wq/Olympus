@@ -63,3 +63,9 @@ Guard: when the monitor's `budget.json` (dashboard branch) says "saver" this mon
 - `python -X utf8 -m tools.cronos --task fates --out <dir>`: one task (`--force` to rebuild even when nothing new came in).
 - `python -X utf8 -m tests.test_cronos` (`--quick` skips the two site builds and the real ODEON export).
 - Manual run on GitHub: Actions -> cronos -> Run workflow (group, tasks, force).
+
+## Optional files in the site pull (2026-11-04)
+`registry.Task.optional_files` lists `(branch path, site path)` pairs a task's site pull copies when the branch has them as valid JSON and silently skips when
+it does not. They never take part in the all-or-nothing rule of `files` / `branch_files` (a missing required file still skips the whole app) and are only copied when
+the required set is on the branch. Kalshi City uses it for `whatif.json` and `forward.json`; `forward_card.json` and `forward_state.json` stay on the branch. The
+committed seed copy of `whatif.json` keeps serving when there is no branch (there is deliberately no seed `forward.json`: the tally's start date must come from its first run).

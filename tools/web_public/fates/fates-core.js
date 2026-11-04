@@ -284,3 +284,125 @@ export function ago(tSec, nowMs = Date.now()) {
   const m = Math.max(0, Math.round((nowMs / 1000 - tSec) / 60));
   return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : m < 48 * 60 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} days ago`;
 }
+
+// ------------------------------------------------------------------------------------------------ JOB 4+5 (2026-11-04): the Lab
+// A scenario picker table, the pass-odds timeline by day, "cut a thread" (the worst day removed), a fan chart with percentiles, the size
+// what-if and the eval cost per pass. All of it is read from the drawn threads and the scenario's summary: nothing is fetched, nothing is
+// sent, nothing touches the bot. The threads stop when their eval is decided, so a what-if that would change a decided thread can only say
+// "open: the drawn days ran out" (never a made-up ending): the numbers are a lower bound on passes, an estimate, never a forecast.
+
+const clamp01 = (x) => Math.max(0, Math.min(1, x));
+const pctOf = (n, d) => (d ? (100 * n) / d : 0);
+const quant = (xs, f) => { if (!xs.length) return null; const s = xs.slice().sort((a, b) => a - b); return s[Math.min(s.length - 1, Math.floor(f * (s.length - 1) + 0.5))]; };
+
+/** replay one drawn thread at k x the size, optionally with one session removed ("cut a thread"): { o: 'p' | 'f' | 'o', day, bal } */
+export function replayThread(s, hist, k = 1, drop = -1, orig = 'o') {
+  const st = s.start, R = s.rules;
+  let prevOrig = st.profit, bal = st.profit, peak = +st.peak, floor = st.floor == null ? -R.mll : +st.floor, day = 0;
+  for (let j = 0; j < hist.length; j++) {
+    const d = hist[j] - prevOrig; prevOrig = hist[j];
+    if (j === drop) continue;
+    day++;
+    bal += k * d;
+    if (bal > floor + 1e-9) { peak = Math.max(peak, bal); floor = Math.min(Math.max(floor, peak - R.mll), R.lock); }
+    if (bal <= floor + 1e-9) return { o: 'f', day, bal, floor };
+    if (bal >= R.target) return { o: 'p', day, bal, floor };
+  }
+  // the drawn days ran out. A future that ENDED badly as drawn (the bot stopped for too little room, the eval closed) still ends badly at the same
+  // size or bigger; with a session cut or a smaller size we cannot know the ending, so it stays open
+  if (orig !== 'o' && orig !== 'p' && k >= 1 && drop < 0) return { o: 'f', day, bal, floor };
+  return { o: 'o', day, bal, floor };
+}
+
+/** the worst session of a thread (the biggest one-session loss) as an index, or -1 when it never lost */
+export function worstDay(s, hist) {
+  let prev = s.start.profit, w = -1, wd = 0;
+  for (let j = 0; j < hist.length; j++) { const d = hist[j] - prev; prev = hist[j]; if (d < wd) { wd = d; w = j; } }
+  return w;
+}
+
+function tally(s, results) {
+  const n = results.length, p = results.filter((r) => r.o === 'p'), f = results.filter((r) => r.o === 'f');
+  const days = p.map((r) => r.day).sort((a, b) => a - b);
+  const within = (arr, k) => pctOf(arr.filter((r) => r.day <= k).length, n);
+  return { n, pass: pctOf(p.length, n), fail: pctOf(f.length, n), open: pctOf(n - p.length - f.length, n), p10: within(p, 10), f10: within(f, 10),
+    passMed: days.length ? days[Math.floor((days.length - 1) / 2)] : null };
+}
+
+/** all drawn threads at k x the size (an estimate over the drawn futures: see the note at the top) */
+export function resize(s, k = 1) {
+  const t = (s && s.threads) || { b: [] };
+  return tally(s, t.b.map((h, i) => replayThread(s, h, k, -1, (t.o && t.o[i]) || 'o')));
+}
+/** the size what-if: rows for each multiplier and a plain verdict against the 1x row */
+export function sizeTable(s, ks = [1, 1.25, 1.5, 2]) {
+  const rows = ks.map((k) => ({ k, ...resize(s, k) })), base = rows[0];
+  const best = rows.reduce((a, b) => (b.pass - 1.5 * b.fail > a.pass - 1.5 * a.fail ? b : a), rows[0]);
+  const x = (k) => `${k}x`;
+  const plain = best.k === base.k ? `Bigger size does not pay here: every step up adds more floor hits than passes (${fmtPct(base.pass)} pass, ${fmtPct(base.fail)} fail at 1x).`
+    : `${x(best.k)} passes ${fmtPct(best.pass)} against ${fmtPct(base.pass)} at 1x, and fails ${fmtPct(best.fail)} against ${fmtPct(base.fail)}: more passes, ${best.fail > base.fail ? 'but more floor hits too' : 'and no more floor hits'}.`;
+  return { rows, plain, threads: base.n };
+}
+
+/** "cut a thread": every drawn future with its worst session removed. cut = the odds with it gone, base = as drawn */
+export function cutWorst(s) {
+  const t = (s && s.threads) || { b: [] };
+  const base = resize(s, 1), cut = tally(s, t.b.map((h, i) => replayThread(s, h, 1, worstDay(s, h), (t.o && t.o[i]) || 'o')));
+  const od = Math.round(cut.open - base.open);
+  const plain = `Cut each future's worst session: passes ${fmtPct(base.pass)} to ${fmtPct(cut.pass)}, fails ${fmtPct(base.fail)} to ${fmtPct(cut.fail)}.` +
+    (od > 0 ? ` ${od}% of the futures were decided by that one session: without it they end undecided inside the drawn days (they would need more days to show an ending, so none is guessed).` : ' No future was decided by one session alone.');
+  return { base, cut, plain };
+}
+/** one future with its worst session removed: the original ending, the new ending, which session went */
+export function cutOne(s, th) {
+  const w = worstDay(s, th.hist), r = replayThread(s, th.hist, 1, w, th.o), a = replayThread(s, th.hist, 1, -1, th.o);
+  return { drop: w, was: a.o, now: r.o, day: r.day, plain: w < 0 ? 'This future never lost a session.' : `Without session ${w + 1} (${fmtUsd(th.hist[w] - (w ? th.hist[w - 1] : s.start.profit), true)}) this future ${r.o === 'p' ? `passes on day ${r.day}` : r.o === 'f' ? `still fails on day ${r.day}` : 'is still open when the drawn days end'}.` };
+}
+
+/** the fan chart: percentiles of the profit across the drawn threads, per session (a decided thread holds its last value) */
+export function fanChart(s, n = 40) {
+  const t = (s && s.threads) || { b: [] }, QS = [10, 25, 50, 75, 90], R = s.rules, series = Object.fromEntries(QS.map((q) => [q, []]));
+  const floorMed = [];
+  const fl = t.b.map((h) => floorsOf(h, s.start, R));
+  for (let k = 0; k <= n; k++) {
+    const vals = t.b.map((h) => (k === 0 ? s.start.profit : h.length ? h[Math.min(k, h.length) - 1] : s.start.profit));
+    for (const q of QS) series[q].push(quant(vals, q / 100));
+    floorMed.push(quant(fl.map((f, i) => (k === 0 ? (s.start.floor == null ? -R.mll : s.start.floor) : f.length ? f[Math.min(k, f.length) - 1] : -R.mll)), 0.5));
+  }
+  return { n, q: QS, series, floorMed, target: R.target, floor0: s.start.floor == null ? -R.mll : s.start.floor, start: s.start.profit, threads: t.b.length };
+}
+
+/** the pass-odds timeline by day: the cumulative share that has passed by session k, from the build's histogram of all the futures */
+export function passTimeline(s, n = 40) {
+  const m = (s && s.summary) || {}, H = m.pass_hist, total = m.paths || 0, rows = [];
+  let cum = 0;
+  if (Array.isArray(H) && total) {
+    for (let k = 1; k <= Math.min(n, H.length); k++) { cum += H[k - 1]; rows.push({ k, day: pctOf(H[k - 1], total), cum: pctOf(cum, total) }); }   // the histogram's total is the build's pass count
+  } else {
+    const t = (s && s.threads) || { o: '', b: [] }, N = t.b.length;
+    for (let k = 1; k <= n; k++) { const c = t.b.filter((h, i) => (t.o[i] || 'o') === 'p' && h.length <= k).length; rows.push({ k, day: 0, cum: pctOf(c, N) }); }
+  }
+  const half = rows.find((r) => r.cum >= (m.pass || 0) / 2);
+  return { rows, pass: m.pass, half: half ? half.k : null, p10: m.p10, p15: m.p15, med: m.pass_med };
+}
+
+/** what a pass costs: the eval fee over the pass rate (a failed eval is bought again), and over the calendar */
+export function costPerPass(s, fresh = false) {
+  const m = fresh && s.summary.fresh ? s.summary.fresh : s.summary, price = s.rules && s.rules.price, p = (m.pass || 0) / 100;
+  if (!price || p <= 0) return { price: price || null, perPass: null, attempts: null, plain: 'No pass rate to price yet.' };
+  const attempts = 1 / p, perPass = price * attempts;
+  return { price, pass: m.pass, attempts, perPass, med: m.pass_med,
+    plain: `One eval costs ${fmtUsd(price)}. At ${fmtPct(m.pass)} pass, you buy about ${attempts.toFixed(1)} evals per pass: about ${fmtUsd(perPass)} for each pass${m.pass_med != null ? `, ${Math.round(m.pass_med)} trading days to pass at the median` : ''}.` };
+}
+
+/** the scenario picker: every eval scenario side by side (Zlarior / ATLAS x the three samples), for a one-tap switch */
+export function scenarioTable(data) {
+  const rows = [];
+  for (const bot of Object.keys(BOTS)) for (const per of PERIODS) {
+    const s = data && data.scenarios && data.scenarios[`eval:${bot}:${per}`];
+    if (!s || s.kind !== 'eval') continue;
+    const c = costPerPass(s);
+    rows.push({ key: `eval:${bot}:${per}`, bot, period: per, label: `${BOTS[bot]} · ${per === 'H2' ? 'Jul-Oct' : per}`, name: s.rules.name, pass: s.summary.pass, fail: s.summary.fail, med: s.summary.pass_med, p10: s.summary.p10, cost: c.perPass });
+  }
+  return rows;
+}

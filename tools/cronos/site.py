@@ -1,11 +1,12 @@
 """CRONOS in the site build (tools/build_web_dashboard.py, every publish): fresh research data in, honest cards out.
 
   1. pull   the `cronos` branch (fates/, odeon/, tree/, prometheus/, cronos/status.json), the `datacity` branch (city.json,
-            jarvis.json) and the `kalshicity` branch (edges.json, learning_log.json, jarvis.json; its ledger.json stays there) into the site, app by app, all of an app's files or none, and only when the branch's card is newer
+            jarvis.json) and the `kalshicity` branch (edges.json, learning_log.json, hypotheses.json, jarvis.json; its ledger.json stays there) into the site, app by app, all of an app's files or none, and only when the branch's card is newer
             than the page's own copy (tools/web_public/<app>/). Branches are read with git (fetch --depth 1 + show); in
             GitHub Actions the build fetches them (the checkout's GITHUB_TOKEN, contents: read is enough), elsewhere only
             with CRONOS_FETCH=1. CRONOS_DIR=<folder> reads a local copy laid out like the branches (<dir>/cronos/...,
-            <dir>/datacity/...). A missing branch or file is skipped.
+            <dir>/datacity/...). A missing branch or file is skipped. Optional files (registry optional_files: kalshicity's
+            whatif.json and forward.json) are copied when the branch has them as valid JSON and never decide whether the app is pulled.
   2. stamp  every research app's jarvis.json (registry.STAMPED) gets t = this publish and its freshness (tools/cronos/fresh.py).
 Never raises into the build (the caller wraps it too); returns a short summary per app.
 """
@@ -90,6 +91,14 @@ def _load(path):
         return None
 
 
+def _load_bytes(path):
+    try:
+        with open(path, "rb") as fh:
+            return fh.read()
+    except OSError:
+        return None
+
+
 def pull(out: str, readers: dict, log=print) -> tuple:
     """Copy each app's branch files into the site when newer. Returns ({app: note}, status or None)."""
     notes, status = {}, None
@@ -115,18 +124,28 @@ def pull(out: str, readers: dict, log=print) -> tuple:
         if not blobs:
             notes[task.name] = "not on the branch"
             continue
+        # optional files: copied when the branch has them as valid JSON and the site copy differs; absent or broken = skipped without a word.
+        # They never decide whether the app is pulled (that is the required files' all-or-nothing rule above), and they follow the app only
+        # when the required set is on the branch, so a branch without them (an older engine) publishes exactly as before.
+        extra = {}
+        for src, dst in registry.optional_site_files(task):
+            raw = rd(src)
+            if raw is None or _json(raw) is None:
+                continue
+            if _load_bytes(os.path.join(out, *dst.split("/"))) != raw:
+                extra[dst] = raw
         card_dst = next(dst for _, dst in pairs if dst.endswith("jarvis.json"))
         new_t = fresh.data_time(_json(blobs[card_dst])) or 0
         old_t = fresh.data_time(_load(os.path.join(out, *card_dst.split("/")))) or 0
         if new_t <= old_t:
-            notes[task.name] = "page copy is as new"
-            continue
-        for dst, raw in blobs.items():
+            blobs = {}                                   # the required copy is as new: only the optional ones may still move
+        for dst, raw in {**blobs, **extra}.items():
             path = os.path.join(out, *dst.split("/"))
             os.makedirs(os.path.dirname(path), exist_ok=True)
             with open(path, "wb") as fh:
                 fh.write(raw)
-        notes[task.name] = f"pulled from {task.branch} ({fresh.when(new_t)})"
+        more = f" (+{', '.join(os.path.basename(d) for d in extra)})" if extra else ""
+        notes[task.name] = (f"pulled from {task.branch} ({fresh.when(new_t)})" if blobs else "page copy is as new") + more
     if status is not None:
         os.makedirs(os.path.join(out, "cronos"), exist_ok=True)
         with open(os.path.join(out, "cronos", "status.json"), "w", encoding="utf-8") as fh:

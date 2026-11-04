@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#070b14">
 <meta name="color-scheme" content="dark">
 <link rel="icon" href="../jarvis/icon-192.png?v=j1">
-<!-- ATHENA (tools/web_public/athena/, 2026-11-03; 2026-11-04: Ask / Today / Cards / Rules / Saved = athenabrain.js (pure), athenaplus.js (panes), athenastore.js (this phone only, keys 'athena.*')): the library. The content is library.json, written at build time by
+<!-- ATHENA (tools/web_public/athena/, 2026-11-03; 2026-11-04: Ask / Today / Cards / Rules / Saved = athenabrain.js (pure), athenaplus.js (panes), athenastore.js (this phone only, keys 'athena.*'); 2026-11-04 Train = athenatraincore.js (pure) + athenatrain.js (screens), drills.json built by tools/athena_drills.py): the library. The content is library.json, written at build time by
      tools/athena_build.py from STRATEGY.md, research/lit/mffu_rules.json and the 'Tested and rejected' list (an embedded stub in
      athenacore.js when it is missing). Look: athena.css; search, quiz and glossary links: athenacore.js (pure functions); the 3D
      library + the UI: athena.js (render core ../olympus/render.js + materials.js, three.js from ../jarvis/). It fetches nothing but
@@ -19,7 +19,7 @@
 <script src="../olympus/olympus.js?v=o2" data-app="athena"></script>
 <script src="../olympus/intro-app.js?v=i1" defer></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#5ea8ff'); r.setProperty('--oly-accent-rgb', '94, 168, 255'); })();</script>
-<link rel="stylesheet" href="athena.css?v=a2">
+<link rel="stylesheet" href="athena.css?v=a3">
 <script src="../olympus/fx-core.js?v=f1"></script>
 </head>
 <body>
@@ -47,17 +47,18 @@
   <div class="pane" id="p-today" role="tabpanel" aria-label="Today's lesson" hidden><div id="today"></div></div>
   <div class="pane" id="p-cards" role="tabpanel" aria-label="Flashcards" hidden><div id="cards"></div></div>
   <div class="pane" id="p-rules" role="tabpanel" aria-label="My rules" hidden><div id="rules"></div></div>
+  <div class="pane" id="p-train" role="tabpanel" aria-label="Train" hidden><div id="train"></div></div>
   <div class="pane" id="p-saved" role="tabpanel" aria-label="Bookmarks and history" hidden><div id="saved"></div></div>
 </section>
 <footer class="dock">
   <label class="search"><span class="vh">Search the library</span>
     <input id="q" type="search" inputmode="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Search: sweep, floor, payout..."></label>
   <nav class="tabs" id="tabs" aria-label="Athena">
-    <button type="button" data-tab="lib" aria-pressed="true">Library</button><button type="button" data-tab="ask" aria-pressed="false">Ask</button><button type="button" data-tab="today" aria-pressed="false">Today<b class="bd" id="bd-today" hidden></b></button><button type="button" data-tab="cards" aria-pressed="false">Cards<b class="bd" id="bd-cards" hidden></b></button><button type="button" data-tab="rules" aria-pressed="false">Rules</button><button type="button" data-tab="quiz" aria-pressed="false">Quiz</button>
+    <button type="button" data-tab="lib" aria-pressed="true">Library</button><button type="button" data-tab="ask" aria-pressed="false">Ask</button><button type="button" data-tab="today" aria-pressed="false">Today<b class="bd" id="bd-today" hidden></b></button><button type="button" data-tab="cards" aria-pressed="false">Cards<b class="bd" id="bd-cards" hidden></b></button><button type="button" data-tab="rules" aria-pressed="false">Rules</button><button type="button" data-tab="train" aria-pressed="false">Train<b class="bd" id="bd-train" hidden></b></button>
   </nav>
 </footer>
 <div id="toast" class="toast" role="status" hidden></div>
-<script type="module" src="athena.js?v=a2"></script>
+<script type="module" src="athena.js?v=a3"></script>
 <script type="module" src="glossary.js"></script>
 </body>
 </html>

@@ -138,3 +138,29 @@ The new files are part of the Jarvis shell: `./backdrop.js?v=b1`, `./home3d.js`,
 `../olympus/render.js`, `../olympus/materials.js` and the nine files of `../olympus/three-addons/` (`EffectComposer.js`,
 `RenderPass.js`, `ShaderPass.js`, `MaskPass.js`, `Pass.js`, `CopyShader.js`, `UnrealBloomPass.js`,
 `LuminosityHighPassShader.js`, `RoomEnvironment.js`).
+
+## The atmosphere kit: `olympus/fx-atmos.js` (2026-11-04, JOB 4+5)
+
+The materials in `materials.js` make a surface; this file makes the room around it. All shader or tiny generated textures, no files.
+Each factory returns `{ object, update(t, pixelRatio), setQuality(level) }` and costs **one draw call**.
+
+| Factory | What it is |
+|---|---|
+| `dust({ count, box, color, size })` | motes drifting through a box, soft round, twinkling (Points) |
+| `embers({ count, origin, spread, rise, colors })` | sparks rising from a point or line, white-hot to dark (Points) |
+| `shafts({ count, from, to, width, color, strength })` | god rays: soft additive light shafts through the haze (one merged mesh) |
+| `contactAO({ radius, strength })` | a round contact shadow plane to lay under an object |
+| `polishedFloor({ size, color, y, roughness })` | a clear-coated, environment-reflecting stone floor with faint scuffs |
+| `bronze(o)`, `forgedIron(o)` | the metals the kit lacked (bronze with pitted roughness; iron whose `userData.heat(0..1)` glows) |
+| `threadGlow({ color })` | fibre-glow material for ribbons: fresnel + a travelling pulse |
+
+`QUALITY` says what each tier keeps: ultra 100% of the particles, high 80%, low 35% and no shafts, off none (contact shadows stay except off).
+`setQuality(list, level)` and `update(list, t, pr)` apply one tier / one frame to a list of effects. Reduced motion: call `update(list, 0)`.
+Used by Fates (shafts, dust, spindle sparks, contact shadows, bronze plinth), Labyrinth (polished floor, bronze walls, shafts, dust, gate
+embers, bust embers, contact shadows, the danger heat strip) and Hephaestus (polished floor, bevelled forged anvil / ingot / hammer, bronze hoops,
+shafts, dust, furnace embers, contact shadows). Draw budget: +6 to +9 calls per scene (Fates stays under 64). Offline: the Jarvis worker and each
+app's worker need `../olympus/fx-atmos.js` in their asset list (without it the scene import fails and the page shows its numbers only).
+
+Additive light and transparent canvases (2026-11-04): `fx-atmos.js` draws its additive layers with a custom blend (`SRC_ALPHA, ONE` for colour, `ZERO, ONE`
+for alpha), so a scene on a transparent canvas (Plutus, Ares, which set `alpha: true`) shows light and not dark halos where the particles' alpha builds up.
+Opaque canvases look the same as before.

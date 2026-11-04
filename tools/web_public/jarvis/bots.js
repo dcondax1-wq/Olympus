@@ -29,6 +29,7 @@ export const SNAP_KEY = 'jarvis.bots.snap';          // the last snapshot (the n
 export const SEEN_KEY = 'jarvis.bots.seen';          // { event key: seconds }: said once, ever (pruned after 3 days)
 export const SET_KEY = 'jarvis.bots.set';            // { on, quiet: { on, from, to }, plan, recap }
 export const LOG_KEY = 'jarvis.bots.log';            // the last 30 events (the panel and "what happened")
+export const LOG2_KEY = 'jarvis.bots.log.v1';        // the same events, 200 of them, text only (the Inbox app reads it; no secrets, no spoken text)
 export const CARD_KEY = 'jarvis.bots.cards';         // { day, plan, recap } the cards built today
 export const SPOKEN_KEY = 'jarvis.bots.spoken';      // { group: seconds, hours: [seconds] } the speech rate limits survive a reload
 export const INACTIVITY_DAYS = 7;
@@ -612,6 +613,9 @@ export function createBots(opts) {
     const log = lget(LOG_KEY, []), e = etOf(nowMs);
     log.unshift({ key: ev.key, kind: ev.kind, bot: ev.bot, level: ev.level, text: ev.text, say: ev.say, t: Math.floor(nowMs / 1000), hm: `${p2(e.h)}:${p2(e.m)}` });
     lset(LOG_KEY, log.slice(0, 30));
+    const long = lget(LOG2_KEY, []);
+    long.unshift({ key: str(ev.key, 60), kind: str(ev.kind, 24), bot: str(ev.bot, 20), level: str(ev.level, 10), text: str(ev.text, 200), t: Math.floor(nowMs / 1000) });
+    lset(LOG2_KEY, long.slice(0, 200));
   };
 
   /** speak what is queued, if now is a good time. Returns { spoken: [events], reason } */
@@ -709,7 +713,7 @@ export function createBots(opts) {
     plan: (live, now) => planCard(snapshot(live, num(now) != null ? num(now) : clock()), num(now) != null ? num(now) : clock()),
     recap: (live, now) => recapCard(snapshot(live, num(now) != null ? num(now) : clock()), num(now) != null ? num(now) : clock()),
     cards, log: () => lget(LOG_KEY, []), queued: () => queue.map((it) => it.ev), last: () => last,
-    reset() { for (const k of [SNAP_KEY, SEEN_KEY, LOG_KEY, CARD_KEY, SPOKEN_KEY]) { try { const st = store(); if (st) st.removeItem(k); } catch (_) { /* nothing kept */ } } queue.length = 0; },
+    reset() { for (const k of [SNAP_KEY, SEEN_KEY, LOG_KEY, LOG2_KEY, CARD_KEY, SPOKEN_KEY]) { try { const st = store(); if (st) st.removeItem(k); } catch (_) { /* nothing kept */ } } queue.length = 0; },
   };
 }
 export default createBots;

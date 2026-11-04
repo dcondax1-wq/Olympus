@@ -71,7 +71,7 @@ button[aria-pressed="true"] { background: rgba(94, 168, 255, .22); border-color:
 input[type="search"] { width: 100%; min-height: 46px; padding: 6px 12px; font: 600 16px var(--oly-ui, 'Rajdhani', sans-serif); color: var(--text); background: rgba(0, 0, 0, .4);
   border: 1px solid var(--line); border-radius: 12px; -webkit-appearance: none; appearance: none; }
 .tabs { display: flex; gap: 4px; }
-.tabs button { position: relative; flex: 1 1 0; min-width: 44px; padding: 0 1px; font-size: 12.5px; }
+.tabs button { position: relative; flex: 1 1 0; padding: 0 1px; font-size: 12px; min-width: 44px; }
 .saved-btn { position: absolute; top: calc(8px + var(--st)); right: calc(12px + var(--sr)); pointer-events: auto; width: 48px; height: 48px; font-size: 22px; color: var(--gold); border-color: rgba(255, 207, 90, .4); background: rgba(8, 12, 24, .7); }
 .saved-btn .bd { top: 0; right: 0; }
 
@@ -125,3 +125,28 @@ input[type="search"] { width: 100%; min-height: 46px; padding: 6px 12px; font: 6
 .tick[aria-checked="true"] i { background: var(--ok); border-color: var(--ok); box-shadow: 0 0 12px var(--ok); }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--dock-h) + var(--sb) + 8px); padding: 8px 16px; border-radius: 99px; background: rgba(12, 18, 32, .96); border: 1px solid var(--line); font-weight: 600; z-index: 20; }
 .toast[hidden] { display: none; }
+
+/* 2026-11-04: the Train tab (daily quiz, chart drills, streak, weakest topic). Taps are 44 px or more; nothing animates. */
+#train .study { padding: 12px 14px; margin-bottom: 10px; border-radius: 16px; border: 1px solid var(--line); border-left: 3px solid var(--gold); background: linear-gradient(160deg, rgba(255, 207, 90, .1), rgba(255, 255, 255, .02)); }
+#train .kick { margin: 0; font: 700 10px var(--oly-display, 'Orbitron', sans-serif); letter-spacing: .16em; color: var(--gold); }
+#train .study h2 { margin: 4px 0 2px; font: 700 18px/1.2 var(--oly-display, 'Orbitron', sans-serif); }
+#train .study .one { margin: 8px 0 4px; font-weight: 700; }
+#train .study .gl.big { width: 100%; }
+#train .why { margin: 4px 0 0; color: var(--dim); font-size: 13px; }
+#train .cta { display: grid; gap: 2px; width: 100%; min-height: 64px; margin-bottom: 8px; padding: 8px 14px; text-align: left; border-radius: 14px; border-color: rgba(94, 168, 255, .55); background: rgba(94, 168, 255, .12); }
+#train .cta strong { font-size: 16px; }
+#train .cta span { font-size: 12.5px; font-weight: 500; color: var(--dim); }
+#train .cta:disabled { opacity: .5; }
+#train .trow { display: grid; grid-template-columns: 96px 1fr 76px; align-items: center; gap: 8px; min-height: 36px; font-size: 13.5px; }
+#train .tp { color: var(--dim); font-size: 12px; text-align: right; }
+#train .src { margin: 6px 0; color: #dbe5fa; font-size: 13.5px; }
+#train .lead { margin: 8px 0 4px; font-size: 15.5px; font-weight: 700; color: var(--text); }
+#train canvas.chart { display: block; max-width: 100%; margin: 6px 0 8px; border-radius: 12px; border: 1px solid var(--line); background: rgba(0, 0, 0, .28); }
+#train .row2 .opt { text-align: center; margin-bottom: 0; }
+#train .verdict { display: inline-block; margin: 2px 0 4px; padding: 4px 12px; border-radius: 99px; font: 800 13px var(--oly-display, 'Orbitron', sans-serif); border: 1px solid var(--line); }
+#train .verdict.right { border-color: var(--ok); color: var(--ok); }
+#train .verdict.half { border-color: var(--gold); color: var(--gold); }
+#train .verdict.wrong { border-color: var(--bad); color: var(--bad); }
+#train .stopnote { margin: 0 0 4px; padding: 6px 10px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .08); font-size: 13px; color: var(--dim); }
+#train .stopnote.real { border-color: var(--ok); color: var(--text); }
+#train .stopnote.mine { border-left: 3px solid var(--gold); }

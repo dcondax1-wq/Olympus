@@ -91,7 +91,10 @@ function tick() {
   if (S.raf || still) return;
   const step = (now) => {
     S.raf = 0;
-    if (document.hidden || !S.cards.length) return;
+    if ((window.OLYMPUS ? window.OLYMPUS.hidden() : document.hidden) || !S.cards.length) return;
+    const gap = window.OLYMPUS && window.OLYMPUS.frameGap ? window.OLYMPUS.frameGap() : 0;     // idle / saver / Off: the progress bar waits too
+    if (gap && now - (S.tickAt || 0) < gap - 3) { S.raf = requestAnimationFrame(step); return; }
+    S.tickAt = now;
     const c = S.cards[S.i];
     if (S.paused) { S.t0 = now - S.held; } else S.held = now - S.t0;
     progress(Math.min(1, S.held / c.ms));

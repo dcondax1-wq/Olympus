@@ -9,6 +9,8 @@
 // Look: silk ribbons (a fibre core, a scattered-light halo, twisted sheen bands that run along the thread), a spindle that
 // spins (a lathe body with wound-thread spirals + a wobbling whorl), red snaps that splash a ring across the floor, gold
 // passes that ripple a ring through the gate, golden motes drifting through the gate.
+// JOB 4+5 (2026-11-04): light shafts falling through the loom, dust in them, gold sparks rising off the spindle, contact shadows under the posts and
+// the bronze plinth the spindle stands on (olympus/fx-atmos.js: one draw call each; +7 calls, budget 64).
 // Render (2026-11-03, docs/OLYMPUS_RENDER.md): the OLYMPUS render core in 'display' space (the silk keeps its colours) with
 // bloom + 4x MSAA on HD and FXAA on LITE; the arena is the loom of the Moirai (fates-loom.js: marble posts, gold beams, a sheet of
 // warp fibres, a colonnade); the spindle is gold; the eval gauge stands beside the loom (sc.gauge). Draw calls: about 50 with the
@@ -17,6 +19,7 @@ import * as THREE from '../jarvis/three.module.min.js';
 import { createRenderer } from '../olympus/render.js';
 import * as M from '../olympus/materials.js';
 import { buildLoom } from './fates-loom.js';
+import * as FX from '../olympus/fx-atmos.js';
 
 export const COL = { gold: [1.0, 0.76, 0.28], red: [1.0, 0.26, 0.34], violet: [0.62, 0.46, 1.0] };
 export const Y1 = 3.0;            // the target's height (progress 1)
@@ -58,7 +61,7 @@ export function createScene(canvas, opt = {}) {
   } catch (e) { return null; }
   const R = rc.renderer;
   R.setClearColor(BG, 1);
-  const baseTier = () => rc.forced || (rc.software ? 'low' : null);
+  const baseTier = () => rc.forced || (window.OLYMPUS && window.OLYMPUS.fx() === 'off' ? 'off' : rc.software ? 'low' : null);   // 3D Off = the core's 'off' tier (pixel ratio 1, direct draw)
   const tierFor = (v) => baseTier() || (v ? 'low' : ['ultra', 'high'].indexOf(rc.quality()) >= 0 ? rc.quality() : 'high');
   if (opt.lite || baseTier()) rc.setQuality(tierFor(!!opt.lite));
   const G = {};
@@ -140,6 +143,22 @@ export function createScene(canvas, opt = {}) {
   // the arena: the loom of the Moirai (marble, gold, a sheet of warp fibres), lit for the physical materials
   const loom = buildLoom({ lite, len: LEN, y1: Y1 });
   scene.add(loom.group);
+  // the room's light and air (JOB 4+5)
+  const fxShafts = FX.shafts({ count: 4, from: [-3.2, 12, -1], to: [0.4, 0, -3], width: 5, spread: [6, 0, 5], color: '#ffd38a', strength: 0.11, seed: 14 });
+  const fxDust = FX.dust({ count: 180, box: [18, 9, 26], color: '#ffe3b0', size: 4, strength: 0.75, seed: 6 }); fxDust.object.position.set(0, 0, -9);
+  const fxSparks = FX.embers({ count: 110, origin: [0, 0.4, 0], spread: [0.5, 0, 0.5], rise: 3.6, colors: ['#fff4cc', '#ffcf5a', '#b28cff'], size: 5, wind: 0, seed: 40 });
+  const fxAoL = FX.contactAO({ radius: 0.7, strength: 0.7 }), fxAoR = FX.contactAO({ radius: 0.7, strength: 0.7 }), fxAoS = FX.contactAO({ radius: 0.8, strength: 0.6 });
+  fxAoL.object.position.set(-2.1, 0.01, -1.8); fxAoR.object.position.set(2.1, 0.01, -1.8); fxAoS.object.position.set(0, 0.01, 0);
+  const plinth = new THREE.Group();                               // a bronze plinth with a marble ring under the spindle
+  const bronzeM = FX.bronze({ color: '#a4733f', roughness: 0.34 });
+  const pBase = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.56, 0.14, lite ? 18 : 40), bronzeM); pBase.position.y = 0.07;
+  const pRing = new THREE.Mesh(new THREE.TorusGeometry(0.4, 0.025, 8, lite ? 24 : 56), M.metal({ kind: 'gold', roughness: 0.2 })); pRing.rotation.x = Math.PI / 2; pRing.position.y = 0.15;
+  plinth.add(pBase, pRing);
+  // the atmosphere joins the scene after the second frame: the first paint (and the shader compile on a slow GPU) is the loom and the threads only
+  const fxLate = [plinth, fxShafts.object, fxDust.object, fxSparks.object, fxAoL.object, fxAoR.object, fxAoS.object];
+  let fxFrames = 0;
+  const fxList = [fxShafts, fxDust, fxSparks, fxAoL, fxAoR, fxAoS];
+  let fxQ = '';
 
   // the eval gauge (sc.gauge): a rod beside the loom, red from the floor up to today's balance (the drawdown left), gold from there
   // to the gate (still to earn), a pearl at today; and a pass-odds wheel above the gate (gold arc = pass, dim ring = the rest)
@@ -375,6 +394,8 @@ export function createScene(canvas, opt = {}) {
       G.abyss.position.y = ay; G.floorRim.position.y = ay + 0.01; U.uFloorY.value = ay;
       loom.place(map.gateY, ay);
       sc.floorY = ay; sc.gateY = map.gateY;
+      for (const a of [fxAoL, fxAoR, fxAoS]) a.object.position.y = ay + 0.012;
+      plinth.position.y = ay; fxSparks.object.position.y = ay; fxShafts.object.position.y = ay;
       G.gauge.visible = false;
       const lab = (t, c, h, x, y, z, left = true) => { const s = label(t, c, h); s.position.set(left ? x + s.scale.x / 2 : x, y, z); G.labels.add(s); };
       lab(map.gateText, '#ffd36a', 0.3, -1.75, map.gateY + 0.2, -1.6);
@@ -412,6 +433,9 @@ export function createScene(canvas, opt = {}) {
       cam.position.set(sway, 1.55 + (still ? 0 : Math.sin(tg * 0.23) * 0.1), 7.4);
       cam.lookAt(sway * 0.2, MAP && MAP.money ? 0.2 : 1.45, -14);       // money threads start low ($0): look a little down at them
       loom.update(tg, still);
+      if (fxLate && ++fxFrames === 3) { fxLate.forEach((o) => scene.add(o)); fxQ = ''; }
+      if (rc.quality() !== fxQ) { fxQ = rc.quality(); FX.setQuality(fxList, fxQ); }
+      FX.update(fxList, still ? 0 : tg, px);
       rc.render();
     },
     bead(th, k) {

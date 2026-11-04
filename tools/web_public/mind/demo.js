@@ -1,6 +1,8 @@
 // OLYMPUS Mind: the demo brain, shown until the owner connects his vault. Fake notes only (trading, goals, gym, Kalshi,
 // business, daily notes, Jarvis memories), built deterministically, with the same interface as jarvis/obsidian.js:
-//   createDemo({size}) -> {graphSnapshot(), onIndexChange(cb) -> unsubscribe}      size: pad to that many notes (perf checks)
+//   createDemo({size}) -> {graphSnapshot(), onIndexChange(cb) -> unsubscribe, addPack(pack)}      size: pad to that many notes (perf checks)
+//   addPack(pack): the starter vault (starter/starter_pack.js, tools/obsidian_pack.py: ~225 real notes with [[links]] and frontmatter tags) joins the
+//   fake brain, linked into it, so the demo is as rich and realistic as the owner's vault will be (data.js adds it when the demo is shown).
 // While someone watches, it "learns" a new fact every ~20 s (and now and then files a new inbox note), so the page shows
 // what the live brain does. Nothing here is real data.
 
@@ -124,11 +126,39 @@ function build(size, now) {
   return { notes, learned };
 }
 
+/** The starter vault's notes in the demo's shape: id = path, links resolved by note name, tags from the frontmatter, a markdown preview. */
+function packInto(state, pack, now) {
+  const r = rng(4242), list = Array.isArray(pack && pack.notes) ? pack.notes : [];
+  const byTitle = new Map();
+  for (const n of list) byTitle.set(n.path.split('/').pop().replace(/\.md$/i, ''), n.path);
+  const out = [];
+  for (const n of list) {
+    const fm = /^---\n([\s\S]*?)\n---\n/.exec(n.text), body = fm ? n.text.slice(fm[0].length) : n.text;
+    const tg = fm ? /^tags:\s*\[(.*)\]\s*$/m.exec(fm[1]) : null;
+    const links = [];
+    for (const m of body.matchAll(/\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|[^\]]*)?\]\]/g)) {
+      const id = byTitle.get(m[1].trim());
+      if (id && id !== n.path && !links.includes(id)) links.push(id);
+    }
+    const para = body.replace(/^#.*$/gm, '').split(/\n\s*\n/).map((x) => x.replace(/^>\s?/, '').trim()).find((x) => x && !x.startsWith('|') && !x.startsWith('---')) || '';
+    out.push({ id: n.path, title: n.path.split('/').pop().replace(/\.md$/i, ''), path: n.path, tags: tg ? tg[1].split(',').map((t) => t.trim().toLowerCase()).filter(Boolean) : [],
+      links, mtime: now - Math.floor(r() * r() * 60) * D - Math.floor(r() * D), words: (body.match(/\S+/g) || []).length, kind: 'note',
+      snippet: para.replace(/[*`]/g, '').slice(0, 240), preview: body.replace(/\n---\nUp:[^\n]*\s*$/, '').trim().slice(0, 1400) });
+  }
+  state.notes.push(...out);
+  const join = (fromId, title) => {                                  // the old fake hubs lead into their real twins
+    const a = state.notes.find((x) => x.id === fromId), to = byTitle.get(title);
+    if (a && to && !a.links.includes(to)) a.links.push(to);
+  };
+  join('Me.md', '00 Home'); join('Trading/LIT strategy.md', 'Zlarior LIT strategy'); join('Trading/Prop firm rules.md', 'MFFU rules that matter');
+  join('Kalshi/Kalshi bot.md', 'Kalshi bot research'); join('Business/OLYMPUS.md', 'OLYMPUS apps'); join('Trading/Trade journal.md', 'Trade journal');
+}
+
 export function createDemo({ size = 0 } = {}) {
   const now = Date.now();
   const state = build(size, now);
   const listeners = new Set();
-  let step = 5, timer = 0;
+  let step = 5, timer = 0, packed = false;
   const learn = () => {
     const t = Date.now(), [text, note] = LEARNING[step % LEARNING.length];
     state.learned.push({ t, text, note });
@@ -143,6 +173,11 @@ export function createDemo({ size = 0 } = {}) {
     listeners.forEach((cb) => cb());
   };
   return {
+    addPack(pack) {
+      if (packed || size > 0) return;                  // ?demo=N is the performance check: exactly N notes, the starter vault stays out
+      packed = true;
+      packInto(state, pack, Date.now());
+    },
     async graphSnapshot() {
       return { v: 1, t: Date.now(), notes: state.notes.map((n) => ({ ...n, tags: n.tags.slice(), links: n.links.slice() })), learned: state.learned.slice() };
     },

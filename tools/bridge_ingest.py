@@ -2,6 +2,7 @@
 
     python tools/bridge_ingest.py            report: every delivered job, each file approved or rejected with the reason
     python tools/bridge_ingest.py --apply    also copy the approved images to tools/web_public/olympus/assets/<id>/ with a manifest
+    python tools/bridge_ingest.py --handback "Bridge: <job id> done"    what the owner's hand-back line means: the job checked, in one plain paragraph
 
 What it does, for every job folder that has a DONE.md:
   validate   only png / webp / svg / json / md / txt / js, size caps per type, a file-count and total-size cap, plain names, no symlinks,
@@ -57,6 +58,53 @@ SVG_BAD = [
     (r"@import", "an @import"),
 ]
 MD_BAD = [(r"<\s*script\b", "a <script>"), (r"javascript\s*:", "javascript:"), (r"<\s*(?:iframe|object|embed)\b", "an embedded document")]
+
+
+def plain_reason(reason: str) -> str:
+    """ONE plain sentence (8th-grade words) for a rejected file, from the technical reason: what the owner reads on the Bridge page."""
+    r = (reason or "").strip()
+    low = r.lower()
+    if low.startswith("file type"):
+        return "This kind of file is not allowed here (only png, webp, svg, json, md, txt and small js files are)."
+    if low.startswith("too big"):
+        m = re.search(r"\((\d+) KB, limit (\d+) KB\)", r)
+        return f"It is too big ({m.group(1)} KB; the limit for this kind of file is {m.group(2)} KB)." if m else "It is too big."
+    if low.startswith("the job is over"):
+        return "The whole job is too big, so the extra files were left out."
+    if low == "empty file":
+        return "The file is empty."
+    if low.startswith("not a real") or low == "not an svg":
+        return "It says it is a picture, but it is not a real picture."
+    if low.startswith("image size"):
+        return "The picture is much too large."
+    if low.startswith("not utf-8") or low.startswith("binary data"):
+        return "It is not plain readable text."
+    if low.startswith("looks like"):
+        return "It looks like it holds a secret key or password, so I kept it out."
+    if low.startswith("not valid json"):
+        return "The data file is broken, so it cannot be read."
+    if low.startswith("script uses"):
+        what = low[len("script uses "):]
+        if what in ("eval()", "function()", "a timer that runs text"):
+            return "It is a small program that can run hidden code, so I did not use it."
+        if what in ("writes markup", "document.write"):
+            return "It is a small program that changes the page in an unsafe way, so I did not use it."
+        if what.startswith("storage"):
+            return "It is a small program that saves things on your phone, so I did not use it."
+        if what == "node modules":
+            return "It is a small program that uses computer tools it should not, so I did not use it."
+        return "It is a small program that can reach the internet or load more code, so I did not use it."
+    if low.startswith("svg holds") or low.startswith("text holds"):
+        return "It has a hidden program or link inside, so I did not use it."
+    if "odd characters" in low:
+        return "The file name has odd characters (use letters, numbers, dashes and dots)."
+    if low == "a symlink":
+        return "It is a shortcut to another file, which is not allowed."
+    if low == "a hidden file":
+        return "Hidden files are not allowed."
+    if low.startswith("unreadable"):
+        return "I could not read this file."
+    return "It did not pass the safety check, so I did not use it."
 
 
 def _first(patterns, text):
@@ -195,6 +243,9 @@ def scan_job(path: str, job_id: str | None = None) -> dict:
             except OSError as e:
                 row["reason"] = f"unreadable ({e.__class__.__name__})"
         res["files"].append(row)
+    for row in res["files"]:
+        if not row["ok"]:
+            row["plain"] = plain_reason(row["reason"])
     res["approved"] = sum(1 for f in res["files"] if f["ok"] and f["name"] not in ("DONE.md", "QUESTION.md"))
     res["rejected"] = sum(1 for f in res["files"] if not f["ok"])
     return res
@@ -240,7 +291,7 @@ def deliveries(inbox: str = INBOX, results: dict | None = None) -> dict:
         jobs[jid] = {"state": "done", "approved": r["approved"], "rejected": r["rejected"], "issues": r["issues"],
                      "images": [{"name": f["name"], "kind": f["kind"], "w": f.get("w"), "h": f.get("h"), "size": f["size"]} for f in r["files"] if f["ok"] and f["name"].lower().endswith(IMAGE_EXT)],
                      "text": [t for t in texts if t["name"] != "DONE.md"][:12], "done": done.strip()[:600],
-                     "rejects": [{"name": f["name"], "reason": f["reason"]} for f in r["files"] if not f["ok"]]}
+                     "rejects": [{"name": f["name"], "reason": f["reason"], "plain": f.get("plain") or plain_reason(f["reason"])} for f in r["files"] if not f["ok"]]}
     return {"v": 1, "jobs": jobs}
 
 
@@ -290,16 +341,73 @@ def copy_for_site(out_dir: str, inbox: str = INBOX, results: dict | None = None,
     return n
 
 
-def report(results: dict) -> str:
+def stray(inbox: str = INBOX) -> list:
+    """Things in the inbox that are not a job folder, each as ONE plain sentence (they are skipped, never read): a file at the top, a folder whose name is not
+    lowercase letters / numbers / dashes. The owner's most likely slip is a folder named 'Money-Risk-Budget' or a file dropped outside a job folder."""
+    out = []
+    try:
+        for d in sorted(os.listdir(inbox)):
+            p = os.path.join(inbox, d)
+            if d in ("README.md", ".gitkeep"):
+                continue
+            if os.path.islink(p):
+                out.append(f"'{d[:40]}' is a shortcut, so it was skipped.")
+            elif os.path.isdir(p) and not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,60}", d):
+                out.append(f"The folder '{d[:40]}' was skipped: a job folder is named with lowercase letters, numbers and dashes, like the job id.")
+            elif not os.path.isdir(p):
+                out.append(f"The file '{d[:40]}' was skipped: files belong inside a folder named after the job.")
+    except OSError:
+        pass
+    return out
+
+
+def report(results: dict, inbox: str | None = None) -> str:
     lines = []
     for jid, r in results.items():
         lines.append(f"{jid}: {r['state']}, {r['approved']} approved, {r['rejected']} rejected")
+        if r["state"] == "in progress":
+            lines.append("    ChatGPT has not added DONE.md yet, so it is not finished.")
         for f in r["files"]:
             if not f["ok"]:
-                lines.append(f"    REJECTED {f['name']}: {f['reason']}")
+                lines.append(f"    REJECTED {f['name']}: {f.get('plain') or plain_reason(f['reason'])} [{f['reason']}]")
         for i in r["issues"]:
             lines.append(f"    note: {i}")
+    lines += ["note: " + x for x in stray(inbox or INBOX)]
     return "\n".join(lines) or "the inbox is empty"
+
+
+HANDBACK_RE = re.compile(r"\bbridge\s*:\s*([A-Za-z0-9][A-Za-z0-9-]{0,60})\s+(done|question)\b", re.I)
+
+
+def parse_handback(text: str):
+    """The owner's hand-back line, 'Bridge: <job id> done' (or 'question') -> (id, kind), or None. Capital letters, extra spaces, a full stop and a longer
+    message around it are fine. The id is only letters, numbers and dashes, so it can never name a path."""
+    m = HANDBACK_RE.search(str(text or "")[:2000])
+    if not m:
+        return None
+    return m.group(1).lower(), m.group(2).lower()
+
+
+def handback(text: str, inbox: str = INBOX) -> dict:
+    """What Claude does with 'Bridge: <id> done': find the job's folder, check it, say it in ONE plain paragraph. Read-only. -> {ok, id, kind, sentence, job}"""
+    pr = parse_handback(text)
+    if not pr:
+        return {"ok": False, "id": None, "kind": None, "job": None, "sentence": "I did not understand that. The message should look like: Bridge: money-risk-budget done"}
+    jid, kind = pr
+    p = os.path.join(inbox, jid)
+    if not os.path.isdir(p) or os.path.islink(p):
+        return {"ok": False, "id": jid, "kind": kind, "job": None, "sentence": f"I cannot find a folder called {jid} in the inbox. ChatGPT may not have saved its files yet."}
+    job = scan_job(p, jid)
+    if kind == "question" or job["state"] == "question":
+        sentence = f"{jid}: ChatGPT has a question for you. Open QUESTION.md in that folder and answer it."
+    elif job["state"] != "done":
+        sentence = f"{jid}: ChatGPT has not added DONE.md yet, so it is not finished. Ask ChatGPT to finish and add it."
+    else:
+        bad = sorted((f for f in job["files"] if not f["ok"]), key=lambda f: (0 if f["reason"].startswith(("script uses", "looks like", "svg holds", "text holds")) else 1, f["name"]))   # the unsafe ones first
+        sentence = f"{jid}: ChatGPT is done. {job['approved']} file{'s' if job['approved'] != 1 else ''} passed the safety check" + (f" and {len(bad)} {'was' if len(bad) == 1 else 'were'} not used." if bad else ".")
+        if bad:
+            sentence += " " + " ".join(f"{f['name']}: {f.get('plain') or plain_reason(f['reason'])}" for f in bad[:3])
+    return {"ok": job["state"] == "done" and kind == "done", "id": jid, "kind": kind, "job": job, "sentence": sentence}
 
 
 def main(argv=None):
@@ -307,8 +415,11 @@ def main(argv=None):
     inbox = INBOX
     if "--inbox" in argv:
         inbox = argv[argv.index("--inbox") + 1]
+    if "--handback" in argv:
+        print(handback(argv[argv.index("--handback") + 1], inbox)["sentence"])
+        return 0
     res = scan(inbox)
-    print(report(res))
+    print(report(res, inbox))
     if "--apply" in argv:
         done = apply_assets(inbox, ASSETS if "--assets" not in argv else argv[argv.index("--assets") + 1], res)
         print("copied images for:", ", ".join(f"{k} ({v})" for k, v in done.items()) or "nothing")

@@ -3,16 +3,16 @@
  "name": "Plutus",
  "status": {
   "level": "ok",
-  "label": "Trio Jul-Oct: $1,754/mo"
+  "label": "Trio Jul-Oct: $2,147/mo"
  },
  "kpis": [
   {
    "label": "Trio, Jul-Oct",
-   "value": "$1,754/mo"
+   "value": "$2,147/mo"
   },
   {
    "label": "Trio, Jan-Jun",
-   "value": "$2,315/mo"
+   "value": "$2,655/mo"
   }
  ],
  "lines": [

@@ -21,6 +21,29 @@ export function heatRows(w) {
     .sort((a, b) => b.heat - a.heat || Math.abs(a.dist) - Math.abs(b.dist));
 }
 
+/** What a stage means, in plain words (the headline's tooltip and the line under it) */
+const GLOSS = {
+  levels: 'Watching the price levels where stops are likely to sit',
+  sweep: 'Price just poked through a level and grabbed the stops',
+  inducement: 'A small trap move before the real one',
+  displacement: 'A fast, strong move away from the level',
+  cisd5: 'A 5-minute candle closed back the other way: the turn has started',
+  limit: 'The entry order is placed and waiting to fill',
+  cisd1m: 'A 1-minute candle confirms the turn',
+  entry: 'The order just filled',
+  trade: 'In the trade: stop, target and the 15-minute check are running',
+  done: 'The one trade of the day is finished',
+  closed: 'The market is closed',
+};
+
+/** one plain sentence for the stage shown in the headline ('' when there is nothing to say); also reads merged labels like "Sweep and inducement" */
+export function glossOf(stage) {
+  if (!stage) return '';
+  const label = String(stage.label || '');
+  if (/sweep/i.test(label) && /inducement/i.test(label)) return 'Price poked through a level, then a small trap move: the bot is waiting for a fast move away';
+  return GLOSS[stage.key] || '';
+}
+
 const NEED = {
   sweep: 'inducement: a small counter-move that traps the late traders',
   inducement: 'displacement: a strong, fast move away from the sweep',

@@ -12,6 +12,7 @@ New post-fill options (X), all decided at a bar's close, acting from the next ba
   tc2     {"at": min, "x": R, "mfe": R}          a second cut check (like the live 15-minute check) at `at` minutes
   tc1     {"at": min, ...}                       the live check at another minute (replaces the 15)
   stale   {"min": m, "r": R}                     m minutes after the fill, still no breakeven and best point < R -> out at the next open
+  be_r / be_off   the breakeven trigger in R (live 1.0) and its cushion above the entry in points (live 1.25)
   news    {"lead": min, "mode": "flat"|"be", "r": R}  the next scheduled high-impact release (trade_intel news_next, known at the entry):
                                                   `lead` minutes before it, flat (if best point < R) or the stop to entry + 1.25 (if best >= R)
 
@@ -58,6 +59,9 @@ def manage2(X, BX, fill, d, entry, stop, tg, s_day, risk, tg_far=None, be_r=None
         tc = {**tc, **X["tc1"]}
     tc2 = X.get("tc2") if on1 else None
     be_r = LIVE["be_r"] if be_r is None else be_r
+    if X.get("be_r") is not None:         # round 3: the breakeven trigger as an option
+        be_r = float(X["be_r"])
+    cushion = float(X["be_off"]) if X.get("be_off") is not None else BE_OFF      # round 3: the cost cushion above the entry
     pa, ld, st_, nw = X.get("partial"), X.get("ladder"), X.get("stale"), X.get("news")
     rel = None
     if nw:
@@ -86,8 +90,8 @@ def manage2(X, BX, fill, d, entry, stop, tg, s_day, risk, tg_far=None, be_r=None
                 cur = max(cur, entry + pa["lock"] * risk)
                 be_done = True
         if be_r is not None and not be_done and hi_d[k] >= entry + be_r * risk:
-            if entry + BE_OFF > cur:
-                cur = entry + BE_OFF
+            if entry + cushion > cur:
+                cur = entry + cushion
             be_done = True
         if ld:
             for a, lk in ld:
@@ -114,8 +118,8 @@ def manage2(X, BX, fill, d, entry, stop, tg, s_day, risk, tg_far=None, be_r=None
                 if not be_done and mfe < float(nw.get("r", 1.0)) and nxt:
                     cut = "NEWS"; k += 1; continue
             else:
-                if mfe >= float(nw.get("r", 1.0)) and entry + BE_OFF > cur:
-                    cur = entry + BE_OFF
+                if mfe >= float(nw.get("r", 1.0)) and entry + cushion > cur:
+                    cur = entry + cushion
                     be_done = True
         k += 1
     if exit_px is None:

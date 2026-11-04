@@ -8,7 +8,7 @@ const SHELLS = 8, PER = 112, LIFE = 4.4, RISE = 1.25;
 
 const VS = `
 attribute vec4 aDir; attribute vec2 aSeed;
-uniform float uTime; uniform float uPR; uniform vec4 uShell[${SHELLS}]; uniform vec4 uCol[${SHELLS}];
+uniform float uTime; uniform float uPR; uniform float uKeep; uniform vec4 uShell[${SHELLS}]; uniform vec4 uCol[${SHELLS}];
 varying vec3 vC; varying float vA;
 void main(){
   int si = int(aDir.w + 0.5);
@@ -31,7 +31,7 @@ void main(){
       vA = (1.0 - life) * (1.0 - life) * (0.7 + 0.3 * sin(a * 40.0 + aSeed.y * 30.0));
       vC = mix(vec3(1.0, 0.95, 0.8), C.rgb, smoothstep(0.0, 0.18, life));
       vC = mix(vC, vec3(1.0, 0.35, 0.1), smoothstep(0.55, 1.0, life));
-      size = (10.0 + 7.0 * aSeed.y) * (1.0 - 0.45 * life);
+      size = (10.0 + 7.0 * aSeed.y) * (1.0 - 0.45 * life) * step(aSeed.y, uKeep);        // a phone keeps only part of the sparks
     }
   }
   vec4 mv = modelViewMatrix * vec4(p, 1.0);
@@ -61,7 +61,8 @@ export class Fireworks {
     g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 2));
     this.uShell = Array.from({ length: SHELLS }, () => new THREE.Vector4(0, 0, 0, -99));
     this.uCol = Array.from({ length: SHELLS }, () => new THREE.Vector4(1, 0.8, 0.3, 0));
-    this.U = { uTime: { value: 0 }, uPR: { value: 1 }, uShell: { value: this.uShell }, uCol: { value: this.uCol } };
+    this.cap = SHELLS;
+    this.U = { uTime: { value: 0 }, uPR: { value: 1 }, uKeep: { value: 1 }, uShell: { value: this.uShell }, uCol: { value: this.uCol } };
     this.points = new THREE.Points(g, new THREE.ShaderMaterial({ vertexShader: VS, fragmentShader: FS, uniforms: this.U, transparent: true, depthWrite: false,
       blending: THREE.AdditiveBlending }));
     this.points.frustumCulled = false; this.points.renderOrder = 9;
@@ -75,12 +76,15 @@ export class Fireworks {
     this.pump();
   }
 
+  /** caps.shells shells at once, caps.spark of the sparks (a phone: 3 and half) */
+  setQuality(q, caps) { this.cap = Math.max(1, Math.min(SHELLS, caps?.shells ?? SHELLS)); this.U.uKeep.value = caps?.spark ?? 1; }
+
   pump() {
     for (let i = this.pending.length - 1; i >= 0; i--) {
       const p = this.pending[i];
       if (p.at > this.t) continue;
       this.pending.splice(i, 1);
-      const k = this.next++ % SHELLS, c = new THREE.Color(p.color);
+      const k = this.next++ % this.cap, c = new THREE.Color(p.color);
       this.uShell[k].set(p.x, p.y, p.z, this.t);
       this.uCol[k].set(c.r, c.g, c.b, 1);
     }

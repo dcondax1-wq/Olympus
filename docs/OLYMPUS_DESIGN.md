@@ -152,9 +152,39 @@ changed HUD text, never a forced one in the loop.
 Update 2026-11-04 (apps on the render core, HD tier, 390 x 700, pixel ratio 1; the table above is the pre-core measure): odeon 41 draw
 calls / 11.9k triangles, fates 47 / 7.2k (34 on LITE), oracle 77 / 9.9k. The post passes add about 15 calls. Budgets now: odeon 60 / 60k, fates 64 / 40k, oracle 170 / 10k.
 
-Budgets (`tests/test_olympus_kit.py` `BUDGET`): draw calls / triangles per frame per app at about 1.25 × the measured
-value, the JS heap ≤ 40 MB, layouts per frame ≤ 1.1. Headless fps is SwiftShader (software GL) and only shows relative
-cost; an iPhone runs all nine at 60 fps on HD.
+Update 2026-11-04 (close-out after the night's merges; Playwright Chromium, 390 x 844, dpr 3, **HD tier forced with `?gpu=1`**, 3 s on screen;
+`tests/test_olympus_kit.py` `BUDGET` and `EXTRA_BUDGET`, `python -X utf8 -m tests.test_olympus_kit <app>`). Without `?gpu=1` the render core holds
+software GL (SwiftShader) to LITE (docs/OLYMPUS_RENDER.md), which hides the bloom and finish passes (about 12-15 draw calls) and the HD pixel ratio: the kit
+test's HD checks now pass the flag. The box was at load 50+, so only the counts below are quoted, never the fps:
+
+| app | measured calls / tris (HD) | heap MB | layouts/frame | budget (calls / tris) | verdict |
+|---|---|---|---|---|---|
+| tyche | 220 / 24,244 | 7.3 | 1.0 | 270 / 30,000 | within |
+| plutus | 19 / 4,720 | 4.9 | 0.0 | 25 / 6,000 | within (new row) |
+| hermes | no three.js (one raw-WebGL shader) | 4.1 | 0.0 | - | within |
+| forum | 111 / 7,140 | 6.4 | 0.5 | 140 / 9,000 | within (new row) |
+| daphne (`tree`) | 28 / 47,712 (the 3D laurel tree: one merged bark mesh of tapered tubes) | 12.2 | 0.0 | **35 / 60,000** | **budget was 0 / 0**: written when the app was a 2D canvas; set to the measure +25% |
+| pantheon | **about 128 -> 86** / 25,222 | 5.1 | 0.0 | 108 / 31,500 | **over, fixed in the scene code**: the eight statues were six meshes each (48 draw calls); they are six instanced meshes for all gods now (ember colour per instance), same picture |
+| athena | 130 / 4,788 | 7.0 | 0.0 | 163 / 6,000 | within (new row). Nine shelves of single book meshes: the 3 in view are drawn plus the effects; merging the book meshes would save about 40 calls and is the next cheap cut |
+| ares | 40 / 6,184 | 5.5 | 0.0 | 50 / 7,800 | within (new row) |
+| cities | 21 / 130,854 | 5.9 | 0.5 | 27 / 164,000 | within (new row): few calls, many triangles (one generated city); cutting triangles would need LOD, not done tonight |
+| kalshicity | 71 / 41,634 | 5.7 | 0.5 | 89 / 52,000 | within (new row) |
+| mind | 34 / 752 (+5,014 points) | 5.3 | 0.5 | **44 / 20,000** | **budget was 30**: 34 = 19 scene calls (including tonight's nebula sky and dust, 2 calls) + the bloom / finish passes; raised by 14 with that breakdown |
+| prometheus | 53 / 7,186 (HD) | 6.0 | 1.0 | **66 / 9,000** | **budget was 40**: the smithy's twenty static parts are already merged into one mesh per material (50 -> 40 on LITE); on HD the owner-requested effects (embers, heat haze, smoke, light shafts) add about 13: 31 (forge) + 9 (smithy, hammer, ingot, furnace mouth) + 13 (effects); raised with that breakdown |
+
+Pantheon and Prometheus were cut back before anything was raised; Daphne's and Mind's old numbers simply predated their 3D rework; the rest had no budget (new rows,
+measure +25%). Hermes needed nothing. Not run again here (not touched tonight): datacity, oracle, odeon, fates.
+
+**One table, one run mode (2026-11-04, job 11).** `tests/test_olympus_kit.py` had two budget tables (`BUDGET` for the apps with a full kit case, `MORE` for
+the others), measured two ways (one on LITE, one on HD). There is now one `PERF` dict: app -> (page query, draw calls, triangles), and `BUDGET` / `MORE` are
+derived from it. Every app is opened with `?gpu=1` (`hd(q)` adds it), the OLYMPUS level is forced to `high` (`jfx`), and the waits are long (`wait_ready` 120 s, page
+default timeout 150 s, the veil may take 30 s to fade): a busy shared box on software GL needs a minute or two to load a page. Where the HD numbers differ from the old
+LITE ones the HD number wins (e.g. arena is about 258k triangles at HD, 322k budget; its old LITE budget was 80k). Layouts per frame are judged over at least 8
+drawn frames (the test waits up to 40 s), because at 1 frame per second two layouts from a HUD text change look like 2.5 per frame; the table's last column is now
+"frames measured", not fps.
+
+Budgets (`PERF`): draw calls / triangles per frame per app at about 1.25 × the measured value, the JS heap ≤ 40 MB, layouts per frame ≤ 1.25. Headless fps is
+SwiftShader (software GL), is never judged and only shows relative cost; an iPhone runs all nine at 60 fps on HD.
 
 ## Fixed in this pass
 
@@ -242,3 +272,34 @@ and on the `storage` event, so an app framed in Jarvis changes live and the othe
   composited layer of fine scanlines + SVG film grain, no animation, never a tap, so the perf budgets hold.
 - **Adding a theme**: one entry in `THEMES` with every token (+ `jarvis`, + `stage` if light). The test lists any token
   missing and checks WCAG AA (4.5:1) for the text of every theme on its page and glass (the light one everywhere it is read).
+
+## Oracle and Odeon overhaul (2026-11-04, owner: "apps look Play-Doh / blank, a ton of features and effects")
+
+Both apps already ran on the render core (ACES, environment light, bloom, MSAA) with marble, gold and neon from `materials.js`. This pass adds
+the atmosphere that was missing (fire, smoke, mist, shafts, contact shadows) and a layer of real features on each. The kit's own
+effects library (`olympus/fx-*.js`) had not landed when this started, so the effects live in two app-local modules that can be swapped
+for it later. Nothing here trades, writes or calls out: no new address, no `innerHTML`, texts only through `textContent`.
+
+| App | New module | What it adds |
+|---|---|---|
+| Oracle | `temple.js` | Four bronze braziers (brushed bronze, instanced) with real flames (rising, flickering HDR particles that bloom) and a soft halo each; two bronze censers with incense smoke; dust drifting in the light; two additive light shafts from a high window; two scrolling ground-fog layers; baked contact shadows under every column, brazier and the stone (one instanced draw of alpha-map discs); a moon with its halo; one flickering warm point light |
+| Oracle | `prophecy.js` + `prophecy.json` | The **Prophecy** sheet (button in the top bar): odds per open level = how near price is x how often that level family has started one of the bot's 631 replayed trades (`tools/oracle_prophecy_stats.py` builds the file from `research/lab/backtest_live.json`; `--check` in the test). Relative odds that add up to 100, never a price forecast; a family with fewer than 30 trades is greyed |
+| Oracle | `insights.js` | Day type (sweep and reverse / trend up or down / range / quiet / forming), sweep counter (highs, lows, still open), level heat history (the three hottest levels over the last prices), alerts timeline (the Brain's log plus what is hot now). All pure functions of the World, so a replay at any second reads the same as live |
+| Oracle | `sheet.js`, `sheet.css` | The four tabs (Odds, Heat, Alerts, Day), the two chips on the weather row, a "Replay today's session" button; the replay scrubber now shows a tick for every sweep, the entry and the exit |
+| Odeon | `stage_fx.js` | The same family of effects inside the arena group (it follows the camera): flames with halos on the four skene torches (now bronze), two censers with incense, a low mist over the stone, contact shadows under the colonnade |
+| Odeon | `library.js` | The trade library: filters (Wins / Losses / LIT / ATLAS, setup, session Asia / London / NY AM / NY PM, month, R bin), a histogram of R multiples (tap a bar to keep that range), a stats line (win %, avg R, best, worst, PF), Play all (the reels shown), Best 5 (Highlights), Worst 5 |
+| Odeon | `compare.js` | Compare two trades: tap two reels, see both as R over minutes since the entry on one canvas, with a table where the better number of each row is lit |
+| Odeon | `share.js` | Share card: a 1080 x 1350 PNG of the trade (tape, entry / stop / target, result, MFE / MAE, time held) through the phone's share sheet, else a download |
+| Odeon | `ui.js` (`StageStats`) | The trade's numbers on the stage while it plays: R now, MFE, MAE, minutes held (4 times a second, text only) |
+
+**Tiers and fallbacks.** HD: every particle, both shafts, both fog layers, bloom on the flames. LITE (`?lite=1`, the HD/LITE button, the kit's
+`low`/`off`): half the flames and smoke, 90 dust motes, no shafts, one fog layer (Oracle); half the flames and smoke, no mist (Odeon). Reduced
+motion freezes the fire and smoke at one phase. A missing `prophecy.json` leaves the bars ranked by distance with a note; `temple.js` and
+`stage_fx.js` are wrapped in try / catch (the arena stands without them); no WebGL keeps Odeon's 2D stage and the library, the compare sheet
+and the share card (they are 2D); Odeon's demo fixture and Oracle's demo day keep both apps from ever being blank.
+
+**Draw-call budget** (per frame, kit measure, HD, 390 x 700): Oracle +13 calls and about +0.8k triangles for the atmosphere (kit test on software GL, A/B against the
+untouched tree: 133 -> 146 calls, 12,733 -> 13,493 triangles); Odeon +7 calls and +0.6k triangles (22 -> 29, 27,389 -> 27,975). `tests/test_olympus_kit.py` BUDGET was moved with it (Oracle 170 / 10,000 -> 190 / 11,500; Odeon 60 / 60,000 unchanged). On this software-GL machine the veil, pixel-ratio and Oracle triangle checks of the kit test fail with or without this change (same numbers on the untouched tree); on a GPU the Oracle frame measures about 90 calls / 10.7k triangles.
+
+**Tests**: `python -X utf8 -m tests.test_oracle_odeon_fx` (about 4 minutes on software GL; `--only=oracle|odeon`, `--no-browser`) covers
+everything added (43 checks). `test_oracle_page` passes 100/100 and `test_odeon_page`'s static parts pass 18/18 (the first lists the four new modules in `MODULES`); on a box with a load of 50 on 4 cores the browser parts need raised timeouts (every page 3 min, the film waits x5): Oracle's ran green that way, Odeon's film waits (0.17 frames a second, same on the untouched tree) did not finish, so rerun `tests.test_odeon_page` on a quiet machine.

@@ -47,7 +47,7 @@ ORC = os.path.join(WEB, "oracle")
 DEMO = os.path.join(ORC, "demo_day.json")
 ET = ZoneInfo("America/New_York")
 DAY = "2026-01-22"
-MODULES = ["main.js", "data.js", "demo.js", "time.js", "scene.js", "layers.js", "sky.js", "glow.js", "hud.js", "ladder.js", "events.js", "heat.js", "arena.js"]
+MODULES = ["main.js", "data.js", "demo.js", "time.js", "scene.js", "layers.js", "sky.js", "glow.js", "hud.js", "ladder.js", "events.js", "heat.js", "arena.js", "prophecy.js", "insights.js", "sheet.js", "temple.js"]
 API = "https://api.github.com/repos/demetrades2000-coder/nq-dashboard/contents/live.json?ref=live"
 RAW = "https://raw.githubusercontent.com/demetrades2000-coder/nq-dashboard/live/live.json"
 RES: list = []

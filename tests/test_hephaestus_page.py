@@ -304,7 +304,7 @@ def run_browser(tmp):
             p.reload()
             p.wait_for_function("document.body.dataset.ready === '1' && HEPH.state().scene.drawn > 0", timeout=180000)
             check("d. the last dials stay on this phone only: a reload comes back on the no-cut setting (localStorage 'hephaestus.v1')", st(p)["scenario"] == "no_cut"
-                  and set(json.loads(p.evaluate("localStorage.getItem('hephaestus.v1')"))) == {"dials"})
+                  and "dials" in json.loads(p.evaluate("localStorage.getItem('hephaestus.v1')")) and set(json.loads(p.evaluate("localStorage.getItem('hephaestus.v1')"))) <= {"dials", "hist", "pin"})   # JOB 4+5: the dials, the history of dials tried and the pinned compare side, nothing else
             card = p.evaluate("HEPH.card()")
             check("d. the card for Jarvis: 3 kpis, <= 3 lines of <= 120 characters, name Hephaestus", card["name"] == "Hephaestus" and len(card["kpis"]) == 3 and len(card["lines"]) <= 3 and all(len(x) <= 120 for x in card["lines"]), card)
             ctx.close()

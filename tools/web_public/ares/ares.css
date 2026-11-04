@@ -97,7 +97,7 @@ input[type="range"] { width: 100%; min-height: 44px; accent-color: var(--red); }
 .dd[data-tone="watch"] .ddv { color: var(--wait); } .dd[data-tone="watch"] i { background: var(--wait); }
 .dd[data-tone="storm"] .ddv, .dd[data-tone="dead"] .ddv { color: var(--halt); } .dd[data-tone="storm"] i, .dd[data-tone="dead"] i { background: var(--halt); }
 .scen { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 10px; }
-.scen button { min-height: 40px; font-size: 12.5px; padding: 4px 6px; }
+.scen button { min-height: 44px; font-size: 12.5px; padding: 4px 6px; }
 .scen button[aria-pressed="true"] { border-color: var(--red); box-shadow: 0 0 10px rgba(255, 59, 48, .4); }
 .xbox { margin-top: 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 14px; background: linear-gradient(160deg, rgba(255, 59, 48, .07), rgba(245, 184, 74, .04)); }
 .xbox h3 { margin: 0 0 8px; font: 700 12px var(--oly-display, 'Orbitron', sans-serif); letter-spacing: .14em; text-transform: uppercase; color: #ff8a80; }
@@ -110,3 +110,25 @@ input[type="range"] { width: 100%; min-height: 44px; accent-color: var(--red); }
 .ghost { background: transparent; color: var(--dim); }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* ---- the money maths (aresplus.js): details blocks, tables, the day bar. Taps >= 44 px. ---- */
+.plus { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.pd { border: 1px solid var(--line); border-radius: 14px; background: linear-gradient(160deg, rgba(255, 59, 48, .07), rgba(245, 184, 74, .04)); overflow: hidden; }
+.pd summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; padding: 6px 12px; cursor: pointer; }
+.pd summary::-webkit-details-marker { display: none; }
+.pd summary b { font: 700 12px/1.2 var(--oly-display, 'Orbitron', sans-serif); letter-spacing: .1em; text-transform: uppercase; color: #ff8a80; }
+.pd summary span { font-size: 12px; color: var(--dim); text-align: right; font-variant-numeric: tabular-nums; }
+.pd summary::after { content: ''; flex: none; width: 8px; height: 8px; border-right: 2px solid var(--dim); border-bottom: 2px solid var(--dim); transform: rotate(45deg); transition: transform .2s; margin-left: 2px; }
+.pd[open] summary::after { transform: rotate(-135deg); }
+.pd > div { padding: 2px 12px 12px; }
+.pd p.plain { margin: 4px 0 8px; font-size: 13px; line-height: 1.4; color: var(--text, #f3f5fb); }
+.pd p.note { margin: 8px 0 0; font-size: 11.5px; color: var(--dim); }
+.ptab { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.ptab th { padding: 3px 4px; text-align: right; font: 600 10px/1.2 var(--oly-ui, sans-serif); letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
+.ptab th:first-child, .ptab td.k { text-align: left; }
+.ptab td { padding: 6px 4px; text-align: right; font-size: 13px; border-top: 1px solid var(--line); }
+.ptab td.k { font-weight: 700; } .ptab td.good { color: #46d79a; } .ptab td.bad { color: #ff4d5e; font-weight: 700; }
+.ptab tr.me td { background: rgba(255, 59, 48, .14); } .ptab tr.dim td { color: var(--dim); } .ptab tr.bad td.k { color: #ff4d5e; }
+.pbar { display: block; height: 10px; border-radius: 6px; background: rgba(255, 255, 255, .09); overflow: hidden; }
+.pbar i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #ff4d5e, #f5b84a 45%, #46d79a); transition: width .5s cubic-bezier(.16, 1, .3, 1); }
+@media (prefers-reduced-motion: reduce) { .pbar i, .pd summary::after { transition: none; } }

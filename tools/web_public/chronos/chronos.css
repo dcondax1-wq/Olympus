@@ -98,7 +98,7 @@ html[data-noscene] body { background: radial-gradient(ellipse at 50% 55%, #1b124
 .lab { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
 .lab .note { margin: 0; font-size: 12px; color: var(--oly-dim); overflow-wrap: anywhere; }
 .cmpsel { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.cmpsel select { min-width: 0; min-height: 44px; border-radius: 10px; border: 1px solid var(--oly-line); background: var(--oly-glass); color: var(--oly-text); font: 600 12px var(--oly-ui); padding: 0 8px; }
+.cmpsel select { min-width: 0; min-height: 44px; border-radius: 10px; border: 1px solid var(--oly-line); background: var(--oly-glass); color: var(--oly-text); font: 600 12px var(--oly-ui); font-size: 16px; padding: 0 8px; }   /* 16px: iOS zooms the page when a smaller select is focused */
 .cmpcols { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .cmpcol { display: flex; flex-direction: column; gap: 3px; padding: 10px; border-radius: 12px; border: 1px solid var(--oly-line); background: rgba(255, 255, 255, .03); font-size: 12px; min-width: 0; }
 .cmpcol.a { border-color: rgba(127, 233, 255, .5); } .cmpcol.b { border-color: rgba(255, 207, 90, .5); }

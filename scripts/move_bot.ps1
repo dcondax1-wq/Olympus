@@ -36,6 +36,14 @@ FRESH START (choice 3, owner 2026-11-04: the old PC is overheating, there is no 
 param([switch]$Pack, [switch]$NewPC, [switch]$Fresh, [string]$Zip = "", [switch]$DryRun, [switch]$Force, [switch]$Yes)
 
 $ErrorActionPreference = 'Continue'
+# any unexpected failure ends with ONE plain sentence of what to do, never a stack trace (the detail goes to the log only)
+trap {
+    Write-Host ''
+    Write-Host '  [FIX] Something unexpected stopped this: take a photo of this window and send it to Claude (what was already done is in the log).' -ForegroundColor Red
+    try { $lg = Get-Variable -Name Log -Scope Script -ValueOnly -ErrorAction SilentlyContinue; if ($lg) { Add-Content -LiteralPath $lg -Value ('  UNEXPECTED: ' + $_.Exception.Message + ' | ' + $_.InvocationInfo.PositionMessage) -Encoding UTF8 } } catch { }
+    exit 1
+}
+if ($env:LE_T_BOOM) { throw 'test: unexpected failure' }
 $Repo = 'https://github.com/demetrades2000-coder/nq-liquidity-engine.git'
 $SiteHome = 'https://demetrades2000-coder.github.io/nq-dashboard/home.json'
 $BeatFreshS = 360       # a heartbeat from ANOTHER PC newer than 6 minutes = that PC is still running the bot

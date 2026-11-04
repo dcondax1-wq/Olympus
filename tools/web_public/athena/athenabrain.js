@@ -7,7 +7,7 @@
 import { norm, lev, rng, shuffle, tokenScore } from './athenacore.js';
 
 const STOP = new Set('a an the is are was were be do does did i me my we our you your it its of to in on at for and or what when where why how which who whom should can could would will shall this that these those with from about as by if not no into than then so just tell explain please need want get'.split(' '));
-const sents = (t) => String(t || '').split(/(?<=[.!?])\s+/).map((x) => x.trim()).filter(Boolean);
+const sents = (t) => (String(t || '').match(/[\s\S]+?[.!?]+(?=\s|$)|\S[\s\S]*$/g) || []).map((x) => x.trim()).filter(Boolean);   // split after . ! ? (no lookbehind: Safari before 16.4 cannot parse it)
 const DAY_MS = 864e5;
 
 export function ask(ix, question, n = 6) {

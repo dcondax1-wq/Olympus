@@ -41,7 +41,7 @@
     hermes: ['Hermes', 'Η', '#f7c948'], prometheus: ['Prometheus', 'Π', '#ff7a1a'], tyche: ['Tyche', 'Τ', '#e879f9'],
     pantheon: ['Pantheon', 'Σ', '#f2d68a'], arena: ['Arena', 'Α', '#ffb547'],
     ares: ['Ares', 'Λ', '#ff3b30'], plutus: ['Plutus', 'Ρ', '#9be84a'], athena: ['Athena', '🦉', '#5ea8ff'],
-    cities: ['Cities', '◈', '#a68bff'], settings: ['Settings', '⚙', '#b79bff'], kalshicity: ['Kalshi City', 'K', '#2ef2d0'], forum: ['Forum', 'Γ', '#b8e04a'], labyrinth: ['Labyrinth', 'Ξ', '#ff4d57'], argus: ['Argus', 'Α', '#3ad7ff'], nemesis: ['Nemesis', 'Ν', '#8a6bff'], chronos: ['Chronos', 'Χ', '#d4a574'], hephaestus: ['Hephaestus', '⚒', '#d96bff'],
+    cities: ['Cities', '◈', '#a68bff'], settings: ['Settings', '⚙', '#b79bff'], inbox: ['Inbox', '✉', '#7fd0ff'], ledger: ['Ledger', 'L', '#ffcf5a'], journal: ['Mnemosyne', 'Μ', '#f09bd8'], kalshicity: ['Kalshi City', 'K', '#2ef2d0'], forum: ['Forum', 'Γ', '#b8e04a'], labyrinth: ['Labyrinth', 'Ξ', '#ff4d57'], argus: ['Argus', 'Α', '#3ad7ff'], nemesis: ['Nemesis', 'Ν', '#8a6bff'], chronos: ['Chronos', 'Χ', '#d4a574'], hephaestus: ['Hephaestus', '⚒', '#d96bff'],
     bridge: ['Bridge', 'Β', '#34d399'],
   };
   // each app's own CSS tokens -> the theme token they take under any theme but the default (bg = the app's own page colour
@@ -147,9 +147,10 @@
   })();
 
   // ---------------------------------------------------------------- ambience: each app's own quiet bed (olympus/sfx.js, synthesised)
-  var AMBIENT = { datacity: 'city', cities: 'city', kalshicity: 'city', kalshi: 'city', oracle: 'space', mind: 'space', argus: 'space', chronos: 'chimes',
-    odeon: 'crowd', arena: 'crowd', forum: 'crowd', ares: 'crowd', fates: 'chimes', plutus: 'chimes', labyrinth: 'wind', pantheon: 'wind', athena: 'wind',
-    hermes: 'wind', nemesis: 'wind', bridge: 'wind', prometheus: 'forge', hephaestus: 'forge', tyche: 'sea', tree: 'forest' };
+  var AMBIENT = { journal: 'scroll', datacity: 'city', cities: 'city', kalshicity: 'city', kalshi: 'city', oracle: 'space', mind: 'space', argus: 'space', chronos: 'chimes',
+    odeon: 'crowd', arena: 'crowd', forum: 'agora', ares: 'crowd', fates: 'lab', plutus: 'coins', ledger: 'coins', labyrinth: 'lab', pantheon: 'wind', athena: 'scroll',
+    hermes: 'breeze', nemesis: 'wind', bridge: 'wind', prometheus: 'smithy', hephaestus: 'smithy', tyche: 'sea', tree: 'forest', zenith: 'space', inbox: 'scroll',
+    settings: 'lab', planner: 'chimes' };       // 2026-11-04: every app has a bed of its own (forge hammer-and-hiss, scroll rustle, coin chime, forum murmur, lab hum)
   var ambName = AMBIENT[id] || '', ambTimer = 0, ambLoading = false, ambStarted = false;
   var quiet = function () { try { return !!(window.OLYMPUS_QUIET && window.OLYMPUS_QUIET()) || !!(framed && window.parent.OLYMPUS_QUIET && window.parent.OLYMPUS_QUIET()); } catch (e) { return false; } };
   function ambKit(cb) {
@@ -223,6 +224,10 @@
     },
     ambient: function (name) { ambName = name === undefined ? AMBIENT[id] || '' : String(name || ''); ambApply(); return ambName; },
     ambience: function (on) { var k = window.OLYMPUS_SFX; try { return k && k.ambience ? k.ambience(on) : false; } catch (e) { return false; } },
+    /** the kit's Sound switch: sound(true | false | null) (the owner's choice, null = automatic: silent in LITE / reduced motion / saver); sound() = may beds and UI cues sound now */
+    sound: function (on) { var k = window.OLYMPUS_SFX; try { return k && k.sound ? k.sound(on) : false; } catch (e) { return false; } },
+    /** a UI cue: cue('open' | 'close' | 'success' | 'warning' | 'tap'); silent before the first tap, when muted, and in LITE / reduced motion unless Sound is on */
+    cue: function (name) { var k = window.OLYMPUS_SFX; try { return k ? k.play(name) : false; } catch (e) { return false; } },
     track: function (r) {
       if (!r || typeof r.render !== 'function' || r.__oly) return r;
       renderer = r; r.__oly = true;

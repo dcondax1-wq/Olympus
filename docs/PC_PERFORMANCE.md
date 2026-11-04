@@ -46,6 +46,39 @@ the site page `.../nq-dashboard/pc/`, section "Clean storage": it then fetches `
   < 2 GB, fix "Run CLEAN_STORAGE.bat") rides the normal heartbeat (`pc_health.storage`) and shows on Jarvis' System view.
 - Test: `python -X utf8 -m tests.test_clean_storage`.
 
+## PC_CARE: one icon that looks after THIS PC (both computers, 2026-11-04)
+`PC_CARE.bat` (runs `scripts\pc_care.ps1`; downloaded alone it fetches the script from the site's `pc/` page, like CLEAN_STORAGE).
+It finds the role by itself (**bot folder here = MAIN PC**; no bot folder and a Surface, or a small laptop with 8 GB or less = **SURFACE**;
+`-Role main|surface` forces it), prints a plain table (what it is now / what it will be), asks **Y**, and ends with one line:
+`BOT PC HEALTHY: YES` (or `NO, look at: ...`). Windows asks once (click Yes) for the power plan; the startup / background / effects
+parts run in your own account.
+
+| Part | Main PC (bot + NinjaTrader) | Surface (hot, dark screen, little memory) |
+|---|---|---|
+| Power plan "PC Care" (a copy; your plan stays and comes back on undo) | from High performance: never sleeps / hibernates (plugged in), screen off after 10 min, disk never sleeps, USB selective suspend off, PCI Express and Wi-Fi power saving off, CPU 100% | from Balanced: CPU top speed 75% on AC and battery (turbo off = far less heat), cooling policy active (fan first), adaptive brightness off, brightness 100% plugged in, battery saver does not dim the screen and does not start by itself while plugged in, screen off 10 min (5 on battery) |
+| Startup apps (your account) | lists every Run entry with a verdict; asks Y/N for each it suggests (Teams, Spotify, Discord, Steam, Epic, Skype, Zoom, Adobe, iTunes, Dropbox, Slack, Edge / Chrome auto-launch, game launchers, PC-maker helpers); flips the same switch as Task Manager > Startup apps (`StartupApproved\Run`); the Run entry itself is never deleted | same |
+| Never offered | security / Defender, OneDrive, NinjaTrader, the bot, python, Obsidian, Claude, git, drivers (audio, touchpad, Intel / NVIDIA / AMD, Surface), VPN / remote tools, anything it does not recognise; machine-wide (all users) entries are listed and left alone | same |
+| Background apps (Store) | `GlobalUserDisabled=1` (classic programs such as NinjaTrader are not affected) | same |
+| Visual effects | transparency, window animation, taskbar animation off, "best performance" (rest after sign-out) | same |
+| Windows search indexing | two SYSTEM tasks stop `WSearch` weekdays 01:15 ET and start it 16:05 ET (shown on this PC's clock; stopped at once if it is market time); files are found slower in the day, apps are still found | same |
+| Health check (read only, always) | uptime (amber at 10+ days), RAM (amber 88%, red 95%), disk (amber < 15 GB, red < 2 GB), sleep setting, battery, temperature **only if Windows shows it**, and in market hours (weekdays 01:15-16:05 ET) NinjaTrader running and the bot answering on its port | the same minus NinjaTrader and the bot |
+
+- **Honest limits:** the CPU temperature is read from the ACPI thermal zone or the Windows thermal counter; most PCs show neither without
+  HWiNFO / Core Temp, and then the line says "not shown by Windows" (it never guesses). The Surface's **content adaptive brightness** tick is
+  the graphics driver's, not a Windows power setting: the table prints the two Settings paths to untick it by hand once. A power setting a
+  PC does not have is reported ("this PC does not have that setting") and skipped.
+- **Undo:** every change is written to an undo file BEFORE it is made (`%LOCALAPPDATA%\LiquidityEngine\pc_care_user.json` for your account,
+  `%ProgramData%\LiquidityEngine\pc_care_state.json` for the Windows part; the first before-value is kept, so running it twice loses
+  nothing). `UNDO_PC_TUNE.bat` undoes PC_CARE first (a copy of the script sits next to the account undo file), then the deep tune; a step that
+  cannot be undone is said in plain words and stays in the file for the next try. If the old power plan is gone it falls back to Balanced.
+- `PC_CARE.bat -DryRun` prints the table and changes nothing (no undo file, no health file); `-CheckOnly` runs only the health check.
+- The last result is `logs\pc_care.json` (no bot folder: `%LOCALAPPDATA%\LiquidityEngine\pc_care.json`). The bot's PC health block shows it as the
+  **PC care** line (`engine/pc_health.py`, display only: green when ok, amber when it found something or is older than 45 days, never red, no
+  push; no line if PC_CARE was never run) and Jarvis / Argus show it in the System view (amber ones first).
+- Not done on purpose: services (CLEAN_PC / the deep tune own those), Defender, network, memory settings, anything in `HKLM`.
+- Test: `python -X utf8 -m tests.test_pc_care` (about 2 min with pwsh; a fake Windows with a JSON world, a UAC that really runs the
+  elevated child, StrictMode 2 repeats).
+
 ## What CLEAN_PC does
 - **On both computers:** turns off apps that start with Windows but trading doesn't need (switch them back on in Task
   Manager > Startup apps). Also: a lighter Windows (no transparency or animations), old junk files deleted. The deep
@@ -136,3 +169,21 @@ Beelink (ebay.com, camelcamelcamel.com B0C7726ZYB, slickdeals.net); 2026 memory 
 Surface out-of-warranty ~$450 (mspoweruser.com, onmsft.com, Microsoft's per-country price page on support.microsoft.com);
 third-party screen $299 (onehourdevicerepair.com); monitors (walmart.com, productchart.com); coolers (neweggbusiness.com,
 homedepot.com); heat and red-line glitches (Microsoft Q&A / Tech Community). Prices change: check the listing before buying.
+
+## STATUS.bat and the safety review (2026-11-04)
+
+- **STATUS.bat** (repo root, also `<site>/pc/STATUS.bat`; script `scripts/pc_status.ps1` / `pc/pc_status.ps1`): a six line health card
+  for THIS PC, read-only, no Administrator: DISK (free space), RAM, BOT (running / armed / heartbeat age from the published `home.json`
+  `live.pc`), NINJA (process), BARS (age of the last 1-minute bar from the same heartbeat), POWER (active plan). Ends with ONE
+  `NEXT:` sentence (the first red line, else the first yellow, else "nothing to do"). The Surface (not the bot PC) shows its own disk,
+  RAM and plan and where the bot runs; a stopped bot / closed NinjaTrader outside market hours is `[..]`, never red.
+- **Which PC gets which script** (the first line of the PC page): main PC = STATUS, PC care, Clean storage, Fresh start once;
+  Surface (retired, cooling) = Clean storage and PC care only.
+- **Failures**: every script (`pc_care`, `clean_storage`, `move_bot`, `pc_status`, `FRESH_START`) ends an unexpected failure with ONE
+  sentence ("Something unexpected stopped this: take a photo of this window and send it to Claude"), never a stack trace; the detail
+  goes to the log. Test hook `LE_T_BOOM=1`.
+- **Clean storage** also refuses any root inside a person's own folders (Downloads, Desktop, Documents, Pictures, Videos, Music,
+  OneDrive / Dropbox ones, `.ssh`, `.aws`, `.gnupg`; NinjaTrader's folder and the bot folder are the exceptions) and never deletes
+  keys / wallets / sign-ins by name (`*.pem *.key *.ppk *.kdbx id_rsa ...`).
+- Tests: `tests.test_pc_care` (STATUS, the failure sentence), `tests.test_clean_storage` (Downloads / .ssh / Desktop decoys and
+  hostile TEMP), `tests.test_win_scripts`.

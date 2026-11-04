@@ -4,7 +4,7 @@
 <style>
 :root{--bg:#05030b;--ink:#ece9f2;--mut:#9d95b3;--gold:#f5c96a;--line:#2a1d46;--vio:#a855f7;color-scheme:dark}
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;color:var(--ink);font:500 20px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-text-size-adjust:100%;
+body{margin:0;min-height:100vh;min-height:100dvh;color:var(--ink);font:500 20px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-text-size-adjust:100%;
   background:radial-gradient(90% 55% at 50% -8%,#2a1255 0%,transparent 62%),radial-gradient(60% 40% at 100% 100%,rgba(245,201,106,.10),transparent 70%),var(--bg) fixed}
 /* a slow aurora behind the steps (transform only; still for reduced motion) */
 body::before{content:"";position:fixed;inset:-20% -10%;pointer-events:none;z-index:0;opacity:.8;
@@ -28,7 +28,8 @@ p{margin:6px 0;color:var(--mut)}b{color:var(--ink)}
 @media (prefers-reduced-motion:reduce){body::before,.s,a.b::after{animation:none}}
 </style></head><body><div class="w">
 <h1>Start the bot on this PC</h1>
-<p>Open this page ON YOUR MAIN PC. Three steps, nothing to type. Disk full? <a href="#storage" style="color:var(--gold)">Clean storage</a> is further down (works on both PCs).</p>
+<p id="which" style="color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:rgba(245,201,106,.07)"><b>Main PC</b> (bot + NinjaTrader): <b>STATUS</b>, <b>PC care</b>, <b>Clean storage</b>, and <b>Fresh start</b> once. <b>Surface</b> (retired, cooling): <b>Clean storage</b> and <b>PC care</b> only, never Fresh start.</p>
+<p>Open this page ON YOUR MAIN PC. Three steps, nothing to type. Disk full? <a href="#storage" style="color:var(--gold)">Clean storage</a> is further down. PC running hot, sleepy or slow? <a href="#care" style="color:var(--gold)">PC care</a> (both work on both PCs).</p>
 <div class="s"><span class="n">1</span><b>Make sure the Surface is off.</b><p>Start, Power, Shut down. Then NinjaTrader here: log in, connect MFFU, tick AT Interface.</p></div>
 <div class="s"><span class="n">2</span><b>Download and double-click this.</b>
 <a class="b" href="FRESH_START.bat" download>Download FRESH_START.bat</a>
@@ -40,6 +41,15 @@ p{margin:6px 0;color:var(--mut)}b{color:var(--ink)}
 <p>Double-click it. If Windows says "protected your PC", click <b>More info</b> then <b>Run anyway</b>. Press <b>Y</b>. Windows asks once to make changes: click <b>Yes</b>. It takes a few minutes and ends with "Freed ... GB, C: now ... GB free".</p>
 <p>If NinjaTrader or the bot is running it leaves their folders alone and only clears temp files, caches and Windows leftovers. The Recycle Bin and the old Windows copy (big) are asked about separately. Do it on both PCs.</p>
 <p>Already have the bot folder? It is the same file: double-click <b>CLEAN_STORAGE.bat</b> there.</p></div>
+<div class="s" id="care"><b>PC care (Surface and main PC)</b>
+<p>One click to look after this PC. It finds out by itself which PC it is: the <b>main PC</b> (bot and NinjaTrader: never sleeps, high performance, screen off after 10 minutes) or the <b>Surface</b> (cooler, brighter screen, lighter). It shows a table of what it will change, asks <b>Y</b>, and ends with one line: <b>BOT PC HEALTHY: YES</b> or what needs you.</p>
+<a class="b" href="PC_CARE.bat" download>Download PC_CARE.bat</a>
+<p>Double-click it. If Windows says "protected your PC", click <b>More info</b> then <b>Run anyway</b>. Windows asks once to make changes: click <b>Yes</b>. It also offers to switch off startup apps (Y or N for each), background apps and visual effects, and pauses Windows search indexing during market hours.</p>
+<p>Nothing is closed, deleted or downloaded, and NinjaTrader and the bot are never touched. The CPU temperature is shown only if Windows lets a script read it; if not, it says so. To put everything back: double-click <b>UNDO_PC_TUNE.bat</b> (or run PC_CARE.bat again with <b>-Undo</b>).</p></div>
+<div class="s" id="status"><b>STATUS (both PCs)</b>
+<p>A six line health card: free disk, free memory, is the bot running and armed, is NinjaTrader running, how old the last bar is, the power plan. It ends with one sentence of what to do. It only looks: nothing is changed, closed or deleted, and Administrator is not needed.</p>
+<a class="b" href="STATUS.bat" download>Download STATUS.bat</a>
+<p>Double-click it. If Windows says "protected your PC", click <b>More info</b> then <b>Run anyway</b>. On the Surface it shows its own disk, memory and power plan and where the bot runs.</p></div>
 <div class="s"><b>Still stuck?</b><p>Take a photo of the window and send it to Claude. Or use the PowerShell line:</p>
 <code>powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://demetrades2000-coder.github.io/nq-dashboard/pc/FRESH_START.ps1 | iex"</code></div>
 </div></body></html>

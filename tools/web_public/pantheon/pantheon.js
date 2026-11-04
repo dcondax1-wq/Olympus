@@ -184,6 +184,10 @@ class Hall {
       .map(([r, y]) => new THREE.Vector2(r, y)), this.lite ? 14 : 28);
     const headG = new THREE.SphereGeometry(0.085, this.lite ? 10 : 18, this.lite ? 8 : 14), laurel = new THREE.TorusGeometry(0.09, 0.012, 6, this.lite ? 14 : 24);
     const staffG = new THREE.CylinderGeometry(0.014, 0.014, 1.05, 6), beltG = new THREE.TorusGeometry(0.135, 0.016, 6, this.lite ? 14 : 24), orbG = new THREE.SphereGeometry(0.05, 10, 8);
+    const inst = (geo, mat) => { const m = new THREE.InstancedMesh(geo, mat, n); S.add(m); return m; };
+    const statues = { body: inst(robe, marble), head: inst(headG, marble), crown: inst(laurel, gold), staff: inst(staffG, gold), belt: inst(beltG, gold), ember: inst(orbG, new THREE.MeshBasicMaterial()) };
+    const PM = new THREE.Matrix4(), PM2 = new THREE.Matrix4(), PP = new THREE.Vector3(), PQ = new THREE.Quaternion(), PS = new THREE.Vector3(), PX = new THREE.Vector3(1, 0, 0);
+    this.statues = statues;
     this.pillars = this.gods.map((g, i) => {
       const a = -Math.PI / 2 + (i / n) * Math.PI * 2, x = Math.cos(a) * RING_R, z = Math.sin(a) * RING_R;
       base.setMatrixAt(i, M.compose(p.set(x, 0.15, z), q.identity(), sc));
@@ -194,12 +198,12 @@ class Hall {
       const col = new THREE.Color(g.ok ? g.color : '#4a4858');
       bands.setColorAt(i, col);
       shaft.setColorAt(i, new THREE.Color('#ffffff').lerp(col, 0.18));
-      const st = new THREE.Group(), body = new THREE.Mesh(robe, marble), head = new THREE.Mesh(headG, marble), crown = new THREE.Mesh(laurel, gold);
-      head.position.y = 0.87; crown.position.y = 0.93; crown.rotation.x = Math.PI / 2;
-      const staff = new THREE.Mesh(staffG, gold), belt = new THREE.Mesh(beltG, gold), ember = new THREE.Mesh(orbG, new THREE.MeshBasicMaterial({ color: col.clone().multiplyScalar(CORE ? 4 : 1) }));
-      staff.position.set(0.2, 0.52, 0.04); ember.position.set(0.2, 1.08, 0.04); belt.position.y = 0.42; belt.rotation.x = Math.PI / 2;   // a staff topped with the god's own light
-      st.add(body, head, crown, staff, belt, ember); st.scale.setScalar(STATUE_H); st.position.set(x, 3.08, z); st.rotation.y = -a + Math.PI / 2;
-      S.add(st);
+      // the statue's six parts go into six instanced meshes (one draw call each for all gods): the god's transform times the part's own
+      const st = new THREE.Object3D(); st.scale.setScalar(STATUE_H); st.position.set(x, 3.08, z); st.rotation.y = -a + Math.PI / 2; st.updateMatrix();
+      const part = (mesh, px, py, pz, rx) => { PM.compose(PP.set(px, py, pz), PQ.setFromAxisAngle(PX, rx || 0), PS.set(1, 1, 1)); mesh.setMatrixAt(i, PM2.multiplyMatrices(st.matrix, PM)); };
+      part(statues.body, 0, 0, 0); part(statues.head, 0, 0.87, 0); part(statues.crown, 0, 0.93, 0, Math.PI / 2); part(statues.staff, 0.2, 0.52, 0.04);
+      part(statues.belt, 0, 0.42, 0, Math.PI / 2); part(statues.ember, 0.2, 1.08, 0.04);          // a staff topped with the god's own light
+      statues.ember.setColorAt(i, col.clone().multiplyScalar(CORE ? 4 : 1));
       const glyph = new THREE.Sprite(new THREE.SpriteMaterial({ map: emblemTex(g.glyph, g.color), transparent: true, depthWrite: false, opacity: g.ok ? 1 : 0.35 }));
       glyph.scale.set(1.0, 1.0, 1); glyph.position.set(x, GLYPH_Y, z);
       if (CORE) glyph.material.color.setScalar(1.5);
@@ -208,9 +212,10 @@ class Hall {
       const label = new THREE.Sprite(new THREE.SpriteMaterial({ map: labelTex(g.name, chipValue(g), g.color), transparent: true, depthWrite: false }));
       label.scale.set(2.3, 0.86, 1); label.position.set(x, GLYPH_Y + 1.0, z);
       S.add(halo, glyph, label);
-      return { g, a, x, z, glyph, halo, label, col, ph: i * 0.9, statue: st };
+      return { g, a, x, z, glyph, halo, label, col, ph: i * 0.9 };
     });
-    for (const m of [shaft, bands]) if (m.instanceColor) m.instanceColor.needsUpdate = true;
+    for (const m of [shaft, bands, statues.ember]) if (m.instanceColor) m.instanceColor.needsUpdate = true;
+    for (const m of Object.values(statues)) m.instanceMatrix.needsUpdate = true;
 
     // the Council orb: a fresnel sphere, a glow, a core and a turning gauge ring
     this.orbMat = new THREE.ShaderMaterial({
@@ -604,8 +609,10 @@ function flipBanner(f) {
   STATE.hall?.celebrate(f.to);
 }
 
+let gapAt = 0;
 function tick(now) {
-  if (STATE.hall && !(O ? O.hidden() : document.hidden)) STATE.hall.frame(now);   // hidden tab: no frame (the battery)
+  const gap = O && O.frameGap ? O.frameGap() : 0;                         // idle 30 / 15 fps, battery saver, 3D Off (docs/OLYMPUS_PERF.md)
+  if (STATE.hall && !(O ? O.hidden() : document.hidden) && !(gap && now - gapAt < gap - 3)) { gapAt = now; STATE.hall.frame(now); }   // hidden tab: no frame (the battery)
   requestAnimationFrame(tick);
 }
 
