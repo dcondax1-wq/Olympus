@@ -1,5 +1,7 @@
 // GLSL of the Data City (three.js ShaderMaterial: three adds the attribute / uniform preamble and maps gl_FragColor).
-//   BUILD_*   one tile of buildings (InstancedMesh): neon windows (lit share = sample size, a few flicker), neon edges and
+//   BUILD_*   one tile of buildings (InstancedMesh): 12 building types by idea family (tiered towers shaped in the vertex shader),
+//             a physically based facade (Fresnel, roughness, sky + neon reflections, sun highlight, glass curtain walls), windows that
+//             tell the data (lit = holds in 2021-25 AND 2026, unstable ones flicker, gold ones breathe), neon edges and
 //             a roof crown on real towers, a ticker band, a pulse for rising ones, the Today layer, the watch crown, search
 //             dimming, height fog; uMirror = 1 draws the wet-street reflection
 //   IMP_*     the far LOD: one impostor per block, a 3 x 3 cluster of towers whose heights come from the block's buildings
@@ -9,67 +11,133 @@
 //   SKY_*     the market-clock sky (sun / moon, dusk, overcast, lightning);  FOGL_*  drifting fog layers
 //   RAY_*     god-ray cones (searchlights, sky beams, the search beam);  HOLO_*  holographic billboards
 //   RAIN_*    rain streaks round the camera;  WATER_*  the harbor;  TOWER_*  LIT's tower
-const FOG = `
+export const FOG = `
 uniform vec3 uFog; uniform float uFogD; uniform float uHaze;
 float fogAmount(float d, float y){
   float f = 1.0 - exp(-uFogD*uFogD*d*d);
   float hf = uHaze * exp(-max(y, 0.0)*0.16) * (1.0 - exp(-d*0.01));
   return clamp(f + hf*0.32, 0.0, 1.0);
 }`;
-const HASH = `float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)))*43758.5453); }
+export const HASH = `float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)))*43758.5453); }
 float noise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f);
   return mix(mix(hash(i), hash(i+vec2(1,0)), f.x), mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), f.x), f.y); }`;
 
 export const BUILD_VS = `
-attribute vec3 aColor; attribute vec4 aData; attribute vec4 aState; attribute float aSeed;
+attribute vec3 aColor; attribute vec4 aData; attribute vec4 aState; attribute float aSeed; attribute vec4 aLook;
+attribute float aTier; attribute vec2 aRad;
 uniform float uMirror; uniform float uGrow;
+uniform vec4 uArchA[16]; uniform vec4 uArchB[16]; uniform vec4 uArchC[16];
 varying vec3 vColor; varying vec4 vData; varying vec4 vState; varying vec3 vLocal; varying vec3 vN; varying float vFD; varying float vWy; varying float vSeed;
+varying vec4 vLook; varying vec3 vW; varying float vRound; varying float vHalf;
 void main(){
-  vColor=aColor; vData=aData; vState=aState; vLocal=position; vSeed=aSeed;
-  vec3 c0 = (modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+  vColor=aColor; vData=aData; vState=aState; vSeed=aSeed;
+  int ai = int(aLook.x + 0.5);
+  vec4 A = uArchA[ai]; vec4 B = uArchB[ai]; vec4 C = uArchC[ai];     // y1 y2 crown round | s0 bottom,top s1 bottom,top | s2 bottom,top glass rough
+  float y0, y1, sb, st;
+  if (aTier < 0.5) { y0 = 0.0; y1 = A.x; sb = B.x; st = B.y; }
+  else if (aTier < 1.5) { y0 = A.x; y1 = A.y; sb = B.z; st = B.w; }
+  else { y0 = A.y; y1 = 1.0 + A.z; sb = C.x; st = C.y; }
+  float yf = mix(y0, y1, position.y);
+  float sc = mix(sb, st, position.y);
+  vec2 xz = mix(position.xz, aRad * 0.5, A.w) * sc;
+  vLocal = vec3(xz.x, yf, xz.y); vRound = A.w; vHalf = max(0.02, 0.5 * sc);
+  vLook = vec4(aLook.x, aLook.y, C.z, C.w);
+  mat4 M = modelMatrix * instanceMatrix;
+  vec3 c0 = (M * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
   float gr = clamp(uGrow * 1.9 - length(c0.xz) / 480.0 - aSeed * 0.15, 0.0, 1.0); gr = gr*gr*(3.0-2.0*gr);
-  vec4 wp = modelMatrix * instanceMatrix * vec4(position.x, position.y * max(gr, 0.001), position.z, 1.0);
+  vec4 wp = M * vec4(xz.x, yf * max(gr * aState.z, 0.001), xz.y, 1.0);
   if(uMirror>0.5) wp.y = -wp.y;
-  vWy = wp.y;
-  vN = normalize(mat3(modelMatrix*instanceMatrix)*normal);
+  vW = wp.xyz; vWy = wp.y;
+  vec3 nrm = normal;
+  if (abs(normal.y) < 0.5) {
+    nrm = normalize(mix(normal, vec3(aRad.x, 0.0, aRad.y), A.w));
+    float sy = length(M[1].xyz), sx = length(M[0].xyz);
+    nrm.y += ((sb - st) * 0.5 * sx) / (sy * max(y1 - y0, 0.02) + 0.0001);        // a tapering tier leans its walls
+    nrm = normalize(nrm);
+  }
+  vN = normalize(mat3(M) * nrm);
   vec4 mv = viewMatrix*wp; vFD = -mv.z; gl_Position = projectionMatrix*mv;
 }`;
 export const BUILD_FS = `
 uniform float uTime; uniform float uMirror; uniform float uDay; uniform float uToday; uniform float uWet;
+uniform float uDusk; uniform float uCloud; uniform vec3 uSun; uniform vec3 uAccent; uniform float uFlash;
 varying vec3 vColor; varying vec4 vData; varying vec4 vState; varying vec3 vLocal; varying vec3 vN; varying float vFD; varying float vWy; varying float vSeed;
+varying vec4 vLook; varying vec3 vW; varying float vRound; varying float vHalf;
 ${FOG}
+${HASH}
 float h2(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)) + vSeed*17.0)*43758.5453); }
+vec3 envSky(vec3 d){                                         // the sky the glass reflects (the same palette as the sky dome)
+  float h = clamp(d.y, -0.3, 1.0);
+  vec3 top = mix(vec3(0.004,0.007,0.028), vec3(0.14,0.40,0.86), uDay);
+  vec3 hor = mix(vec3(0.07,0.05,0.17), vec3(0.70,0.83,0.96), uDay);
+  vec3 c = mix(hor, top, smoothstep(0.0, 0.55, h));
+  c += vec3(1.0,0.42,0.22) * uDusk * 0.5 * exp(-abs(h)*5.0);
+  float s = max(dot(d, normalize(uSun)), 0.0);
+  c += mix(vec3(1.0,0.7,0.45), vec3(1.0,0.97,0.9), uDay) * pow(s, 30.0) * 0.6 * step(-0.08, uSun.y);
+  c += uAccent * 0.12 * exp(-abs(h)*6.0) * (1.0 - uDay);
+  c = mix(c, vec3(dot(c, vec3(0.333)))*0.75 + 0.03, uCloud*0.75);
+  return c + vec3(0.6,0.7,1.0) * uFlash * 0.4;
+}
 void main(){
-  vec3 n = abs(vN);
-  float side = 1.0 - step(0.5, n.y);
-  vec2 uv = n.x > 0.5 ? vec2(vLocal.z, vLocal.y) : vec2(vLocal.x, vLocal.y);
+  vec3 N = normalize(vN);
+  vec3 n = abs(N);
+  float side = 1.0 - step(0.7, n.y);
   float H = vData.x;
-  vec2 g = vec2((uv.x + 0.5) * 3.0, uv.y * H * 1.7);
+  float across = n.x > n.z ? vLocal.z : vLocal.x;
+  float gx = vRound > 0.5 ? atan(vLocal.z, vLocal.x) * 1.43239 + 4.5 : across * 3.0 + 1.5;
+  vec2 g = vec2(gx, vLocal.y * H * 1.7);
   vec2 cell = floor(g); vec2 f = fract(g);
-  float win = step(0.2,f.x)*step(f.x,0.8)*step(0.3,f.y)*step(f.y,0.74);
+  float body0 = 1.0 - step(1.0, vLocal.y);                                  // the crown above the roof has no windows
+  float win = step(0.2,f.x)*step(f.x,0.8)*step(0.3,f.y)*step(f.y,0.74) * side * body0;
   float rnd = h2(cell + n.xz*3.1);
-  float flick = step(0.992, h2(cell + floor(uTime*0.5 + vSeed*9.0)));
+  float steady = vLook.y;                                                    // 1 gold, .8 holds in both, .4 one period, .1 none
+  // the windows tell the data: lit = holds in 2021-25 and 2026; unstable ideas flicker, gold ones breathe
+  float ft = floor(uTime * (0.7 + (1.0 - steady) * 3.5) + vSeed * 9.0);
+  float flick = step(1.0 - (0.004 + (1.0 - steady) * 0.09), h2(cell + ft));
   float lit = abs(step(rnd, vData.y) - flick);
+  float breathe = steady > 0.95 ? 0.85 + 0.15*sin(uTime*1.3 + rnd*6.0) : 1.0;
   float fired = step(1.5, vState.x) * uToday;
   lit = max(lit, fired * step(rnd, 0.92));
-  float diff = 0.30 + 0.55*max(dot(normalize(vN), normalize(vec3(0.45,0.8,0.25))), 0.0);
-  vec3 body = mix(vColor*0.13, vColor*0.5 + 0.05, uDay) * diff * (0.72 + 0.4*vLocal.y);
-  vec3 warm = mix(vec3(1.0,0.84,0.55), vColor, 0.4 + 0.3*step(0.5, h2(cell*1.7)));
-  vec3 neonWin = mix(warm, vec3(0.55,0.95,1.0), step(0.88, rnd));
-  vec3 col = body + side*win*lit*neonWin*mix(1.35, 0.4, uDay);
+  vec3 wc = steady > 0.7 ? vec3(1.0,0.84,0.5) : steady > 0.3 ? vec3(0.55,0.88,1.0) : vec3(0.9,0.36,0.56);
+  wc = mix(wc, vColor, 0.22 + 0.2*step(0.5, h2(cell*1.7)));
+  wc = mix(wc, vec3(0.55,0.95,1.0), step(0.9, rnd) * 0.5);
+  // the facade: albedo + panels, then a physically based reflection (Fresnel, roughness, the sky, the sun's highlight)
+  vec3 V = normalize(cameraPosition - vW);
+  float NoV = clamp(dot(N, V), 0.0, 1.0);
+  vec3 Ld = normalize(mix(vec3(0.45,0.8,0.25), uSun + vec3(0.0,0.08,0.0), uDay));
+  float diff = 0.30 + 0.55*max(dot(N, Ld), 0.0);
+  float panel = 1.0 - 0.16 * (step(0.94, f.x) + step(0.9, f.y)) * side;
+  float grain = 0.9 + 0.2 * h2(floor(vLocal.xz*40.0) + floor(vLocal.y*H*6.0));
+  vec3 body = mix(vColor*0.13, vColor*0.5 + 0.05, uDay) * diff * (0.72 + 0.4*min(vLocal.y,1.0)) * panel * grain;
+  float glassK = clamp(vLook.z * 0.8 + win * 0.55, 0.0, 1.0);                // curtain walls are glass all over, a window is always glass
+  float rough = mix(vLook.w, 0.08, glassK);
+  float fres = 0.04 + 0.96 * pow(1.0 - NoV, 5.0);
+  vec3 R = reflect(-V, N);
+  vec3 env = envSky(R);
+  float streak = smoothstep(0.74, 1.0, noise(vec2(R.x*7.0 + R.z*5.0, vWy*0.3)));
+  env += vColor * streak * 0.7 * (1.0 - uDay*0.6) * glassK;                  // neon of the street caught in the glass
+  float shin = min(2.0 / max(rough*rough*rough*rough, 0.0006) - 2.0, 900.0);
+  float spec = pow(max(dot(N, normalize(Ld + V)), 0.0), shin) * (shin + 8.0) / 60.0;
+  vec3 col = body * (1.0 - fres*glassK*0.6) + env * fres * (0.18 + 0.82*glassK) * mix(0.9, 1.1, uDay);
+  col += mix(vec3(1.0,0.8,0.55), vec3(1.0), uDay) * spec * fres * (0.4 + glassK) * mix(0.7, 1.2, uDay);
+  // glass takes the sky into the unlit windows
+  col = mix(col, env * (0.4 + 0.6*fres) * mix(0.45, 0.9, uDay) + vec3(0.01,0.02,0.04), win * (0.45 + 0.4*vLook.z) * (1.0 - lit*0.85));
+  col += side * win * lit * breathe * wc * mix(1.4, 0.45, uDay);
   float tall = smoothstep(2.0, 6.0, H);
-  float edge = smoothstep(0.44, 0.5, abs(uv.x)) * side;
-  float crown = smoothstep(0.95, 1.0, vLocal.y) * side;
+  float edge = smoothstep(0.86, 1.0, abs(across) / vHalf) * side * (1.0 - vRound);
+  float crown = smoothstep(0.95, 1.0, vLocal.y) * side * body0;
   float neon = mix(1.0, 0.5, uDay);
   col += vColor * (edge*0.85*tall + crown*1.25) * neon;
   col += vColor * step(0.975, fract(vLocal.y*H*0.3 - uTime*0.3 + vSeed)) * side * tall * 0.9 * neon;
-  col += vColor * (1.0 - side) * 0.6;
+  col += vColor * (1.0 - side) * 0.44;
+  col += vColor * (1.0 - body0) * 0.9 * neon;                               // the spire / mast above the roof glows in the idea's colour
   col += vColor * vData.z * (0.5 + 0.5*sin(uTime*3.2 + vSeed*6.0)) * 0.45;
   if (uToday > 0.5) {
     float armed = step(0.5, vState.x) * (1.0 - step(1.5, vState.x));
     col = col * mix(0.3, 1.0, max(fired, armed)) + vec3(0.3,0.95,1.0) * fired * (0.2 + crown*1.6 + edge*0.6) + vec3(0.25,0.55,1.0) * armed * 0.16;
   }
   col += vec3(1.0,0.88,0.45) * step(0.5, vState.y) * (crown*2.4 + edge*0.8 + 0.1);
+  col += vec3(1.0,0.8,0.35) * vState.w * (0.5 + 1.6*crown + 0.6*edge + 0.6*win);   // a celebration flash (fireworks over a gold idea)
   col *= mix(1.0, 0.12, vData.w);
   float fa = fogAmount(vFD, abs(vWy));
   col = mix(col, uFog, fa);

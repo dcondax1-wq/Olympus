@@ -2,6 +2,7 @@
 // sheet whose view changes (Top, Today, Watch, Find, Read, a building / strategy / LIT / ship / district card), the
 // tour's caption, toasts. Every data string goes in as text (el()), never as HTML.
 import { $, el, money, pct, num, signed, cssColor, CLASS_TEXT } from './util.js';
+import { FAMILIES, IDEA_FAMILIES } from './kinds.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const SPAN_COLS = [['trades', (o) => o.n ?? '–'], ['/wk', (o) => num(o.tpw, 2)], ['win', (o) => pct(o.win)], ['PF', (o) => num(o.pf, 2)],
@@ -13,6 +14,7 @@ export const sheet = {
   /** Show a view: title + a body builder (the body is rebuilt each time unless keep is true and it is already open). */
   open(name, title, build) {
     const s = $('#sheet'), body = $('#sheetBody');
+    if (view && view !== name) sheet.onLeave?.(view, name);
     $('#sheetTitle').textContent = title;
     if (build) { body.replaceChildren(); build(body); body.scrollTop = 0; }
     s.dataset.view = name;
@@ -22,6 +24,7 @@ export const sheet = {
   },
   close() {
     $('#sheet').classList.remove('on');
+    if (view) sheet.onLeave?.(view, null);
     view = null;
     document.querySelectorAll('#dock [data-tab]').forEach((b) => b.classList.remove('on'));
     sheet.onClose?.();
@@ -48,15 +51,15 @@ export function caption(text, i, n, tag) {
 }
 
 // ------------------------------------------------------------------------------------------------ pieces
-const badge = (cls, text) => el('span', 'badge b-' + cls, text);
+export const badge = (cls, text) => el('span', 'badge b-' + cls, text);
 
-function tile(grid, label, value) {
+export function tile(grid, label, value) {
   const d = el('div');
   d.append(el('small', null, label), el('b', null, value));
   grid.appendChild(d);
 }
 
-function spanTable(rows, cols) {
+export function spanTable(rows, cols) {
   const t = el('table'), head = el('tr');
   head.appendChild(el('th', null, ''));
   for (const [name] of cols) head.appendChild(el('th', null, name));
@@ -72,7 +75,7 @@ function spanTable(rows, cols) {
   return wrap;
 }
 
-function svg(w, h, label) {
+export function svg(w, h, label) {
   const s = document.createElementNS(NS, 'svg');
   s.setAttribute('viewBox', `0 0 ${w} ${h}`);
   s.setAttribute('class', 'spark');
@@ -82,7 +85,7 @@ function svg(w, h, label) {
   return s;
 }
 
-function node(tag, attrs) {
+export function node(tag, attrs) {
   const n = document.createElementNS(NS, tag);
   for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
   return n;
@@ -119,7 +122,7 @@ export function barline(pairs, label = 'per year', h = 56) {
   return s;
 }
 
-function listRow(ul, key, color, title, sub, right, onClick, extra) {
+export function listRow(ul, key, color, title, sub, right, onClick, extra) {
   const li = el('li'), k = el('span', 'k', key), t = el('span', 't');
   k.style.background = color;
   t.appendChild(el('div', null, title));
@@ -132,7 +135,7 @@ function listRow(ul, key, color, title, sub, right, onClick, extra) {
   return li;
 }
 
-function tags(row, list) { for (const [cls, text] of list) row.appendChild(badge(cls, text)); }
+export function tags(row, list) { for (const [cls, text] of list) row.appendChild(badge(cls, text)); }
 
 // ------------------------------------------------------------------------------------------------ cards
 /** A combination (district building or discovery monument). ctx: { label, district, watched, onWatch, monument } */
@@ -168,6 +171,12 @@ export function showBuilding(b, ctx) {
     const w = el('button', 'pill' + (ctx.watched ? ' on' : ''), ctx.watched ? '★ Watching' : '☆ Watch');
     w.addEventListener('click', () => { const on = ctx.onWatch(); w.className = 'pill' + (on ? ' on' : ''); w.textContent = on ? '★ Watching' : '☆ Watch'; });
     act.appendChild(w);
+    if (ctx.onCompare) {
+      const c = el('button', 'pill' + (ctx.comparing ? ' on' : ''), ctx.comparing ? '⚖ Pick a second idea' : '⚖ Compare');
+      c.id = 'cmpB';
+      c.addEventListener('click', () => { const on = ctx.onCompare(); c.className = 'pill' + (on ? ' on' : ''); c.textContent = on ? '⚖ Pick a second idea' : '⚖ Compare'; });
+      act.appendChild(c);
+    }
     body.appendChild(act);
     body.appendChild(el('div', 'note', 'Paper only: the data city proposes, it never changes the bot.'));
   });
@@ -350,6 +359,20 @@ export function viewRead(body, model) {
   p('The sky follows the futures clock (sunrise at the 18:00 ET Asia open, noon at the NY open, sunset at the 16:00 close, night in the break and the weekend). The weather is the VIX (CBOE close): clear under 15, haze to 20, rain to 25, a storm above.');
   p('Landmarks (Greek-futuristic, decor with the numbers on their cards): the Temple of the Gold on its acropolis (the gold buildings), the Forum round the plaza (the honesty guard), the Pharos lighthouse (LIT\'s trades), the Gate of Poseidon (its lantern is the VIX) and a gate at the start of every district. Light arcs are data streams: districts into LIT\'s tower, LIT into the Harbor; they run faster when the VIX is high and slow down when the futures market is closed. The towers beyond the districts are scenery. The cameras (ORBIT, SKIM, DRONE, GRAND) fly through it all; a drag takes the camera back.');
   p('Districts: ' + model.sections.map((s) => s.name).join(' · ') + '. The Harbor holds LIT\'s trades as ships. The middle tower is LIT (Zlarior), the live strategy. Paper only: nothing here changes the bot.');
+  body.appendChild(el('h3', null, 'Building types: the idea family'));
+  p('The shape of a building says which kind of idea it is. Height is still the money.');
+  const ft = el('ul', 'list');
+  for (const f of FAMILIES.filter((x) => IDEA_FAMILIES.includes(x))) {
+    const li = el('li'), t = el('span', 't');
+    t.appendChild(el('div', null, `${f.name}: ${f.look}`));
+    t.appendChild(el('small', null, f.blurb));
+    li.appendChild(t);
+    ft.appendChild(li);
+  }
+  body.appendChild(ft);
+  body.appendChild(el('h3', null, 'Windows tell the data'));
+  p('Warm gold-white windows, mostly lit, steady: the idea makes money in 2021-25 AND in 2026 (gold ones also breathe: every year holds). Cool blue, half lit: one period only. A few dim pink windows that flicker: it holds in neither. The rest is how many trades stand behind it.');
+  p('Moving things are decor, not data: the monorail loops the districts, flying taxis and cars follow the market\'s mood, cargo ships sail the Harbor (the moored ones are LIT\'s trades), the river reflects the sky and the city\'s glow, the signs are the district names, and fireworks mean a gold idea.');
   const lift = model.city.lift || [];
   if (!lift.length) return;
   body.appendChild(el('h3', null, 'What the city learned about confluences'));
@@ -365,24 +388,50 @@ export function viewRead(body, model) {
   body.appendChild(ul);
 }
 
-/** The search view (built once, so the query survives switching views). */
-export function viewFind(body, sections, onInput) {
+/** The search view (built once, so the query survives switching views). Plain words ('NY afternoon', 'london short', 'sweep rising') plus
+ *  filters: family, holds in both periods / in every year, $ per trade, trades a week. extra: { fly(), next(), reset() } */
+export function viewFind(body, sections, onInput, extra = {}) {
   const q = el('input');
-  Object.assign(q, { type: 'search', id: 'q', placeholder: 'e.g. London, VWAP, sweep, VIX, Monday, gap', autocomplete: 'off' });
+  Object.assign(q, { type: 'search', id: 'q', placeholder: "Try: sweep, NY afternoon, london short, rising", autocomplete: 'off' });
   q.setAttribute('enterkeyhint', 'search');
-  const seg = el('div', 'seg'), dseg = el('div', 'seg');
-  seg.id = 'seg'; dseg.id = 'dseg';
-  const state = { cls: 'all', d: 'all' };
-  const mk = (box, key, pairs) => pairs.forEach(([k, t]) => {
-    const b = el('button', k === 'all' ? 'on' : '', t);
+  const seg = el('div', 'seg'), dseg = el('div', 'seg'), fseg = el('div', 'seg'), hseg = el('div', 'seg');
+  seg.id = 'seg'; dseg.id = 'dseg'; fseg.id = 'fseg'; hseg.id = 'hseg';
+  const state = { cls: 'all', d: 'all', family: 'all', hold: 'any', minE: 0, minTpw: 0 };
+  const mk = (box, key, pairs, first) => pairs.forEach(([k, t]) => {
+    const b = el('button', k === first ? 'on' : '', t);
     b.dataset.v = k;
     b.addEventListener('click', () => { state[key] = k; box.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b)); onInput(q.value, state); });
     box.appendChild(b);
   });
-  mk(seg, 'cls', [['all', 'All'], ['gold', 'Gold'], ['green', 'Both periods'], ['amber', 'One period'], ['grey', 'Noise']]);
-  mk(dseg, 'd', [['all', 'Every district'], ...sections.map((s) => [s.key, s.name])]);
+  mk(seg, 'cls', [['all', 'All'], ['gold', 'Gold'], ['green', 'Both periods'], ['amber', 'One period'], ['grey', 'Noise']], 'all');
+  mk(hseg, 'hold', [['any', 'Any'], ['both', 'Holds in 2021-25 and 2026'], ['gold', 'Holds in every year']], 'any');
+  mk(fseg, 'family', [['all', 'Every family'], ...IDEA_FAMILIES.map((f) => [f.key, f.name])], 'all');
+  mk(dseg, 'd', [['all', 'Every district'], ...sections.map((s) => [s.key, s.name])], 'all');
   q.addEventListener('input', () => onInput(q.value, state));
-  body.append(q, seg, dseg, Object.assign(el('ul', 'list'), { id: 'findList' }));
+  q.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); q.blur(); extra.fly?.(); } });
+  const slider = (label, key, max, step, fmt) => {
+    const row = el('label', 'rng'), out = el('b', null, fmt(0)), r = el('input');
+    Object.assign(r, { type: 'range', min: '0', max: String(max), step: String(step), value: '0' });
+    r.setAttribute('aria-label', label);
+    r.addEventListener('input', () => { state[key] = +r.value; out.textContent = fmt(+r.value); onInput(q.value, state); });
+    row.append(el('span', null, label + ' '), out, r);
+    row.reset = () => { r.value = '0'; out.textContent = fmt(0); };
+    return row;
+  };
+  const sE = slider('At least $ per trade', 'minE', 60, 1, (v) => (v ? `+$${v}` : 'any')), sT = slider('At least trades a week', 'minTpw', 4, 0.1, (v) => (v ? v.toFixed(1) : 'any'));
+  const act = el('div', 'actions');
+  const fly = el('button', 'pill', 'Fly there'), nxt = el('button', 'pill', 'Next match ▶'), rst = el('button', 'pill', 'Reset');
+  fly.id = 'flyB'; nxt.id = 'nextB'; rst.id = 'resetB';
+  fly.addEventListener('click', () => extra.fly?.());
+  nxt.addEventListener('click', () => extra.next?.());
+  rst.addEventListener('click', () => {
+    Object.assign(state, { cls: 'all', d: 'all', family: 'all', hold: 'any', minE: 0, minTpw: 0 }); q.value = '';
+    for (const [box, first] of [[seg, 'all'], [dseg, 'all'], [fseg, 'all'], [hseg, 'any']]) box.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x.dataset.v === first));
+    sE.reset(); sT.reset(); onInput('', state); extra.reset?.();
+  });
+  act.append(fly, nxt, rst);
+  body.append(q, act, el('div', 'note', 'Plain words work: a time (morning, afternoon, london, asia), a side (long, short), a kind (sweep, fvg, break), a mood (wild, quiet, rising).'),
+              seg, hseg, fseg, dseg, sE, sT, Object.assign(el('ul', 'list'), { id: 'findList' }));
   return { q, state };
 }
 

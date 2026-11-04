@@ -4,6 +4,7 @@
 //   shots(model, L)                        -> [{ cam: [x,y,z], look: [x,y,z], dur, caption, today? }]
 //   new Tour(shots, V3, { onCaption, onEnd, onShot })   .step(dt) -> { pos, look } | null (ended)
 import { money, num } from './util.js';
+import { routes } from './routes.js';
 
 const MOVE_S = 2.4;           // the move into a shot; then it drifts for its dur
 
@@ -33,13 +34,24 @@ export function shots(model, L) {
                     caption: `Grey = noise: ${fmt(grey)} of ${fmt(model.buildings.length)}. ${g.fdr_pos ?? '–'} pass the false-discovery guard; a shuffled placebo passes ${g.placebo_fdr ?? '–'}.` });
   const hb = D.find((d) => d.kind === 'harbor');
   if (hb) out.push({ cam: [hb.cx + 30, 26, hb.cz + hb.half + 40], look: [hb.cx, 0, hb.cz], dur: 5,
-                     caption: `Harbor · ${fmt(hb.n)} ships, one per LIT trade (the live settings replayed, costs in): green won, red lost` });
+                     caption: `Harbor · ${fmt(hb.n)} ships, one per LIT trade (the live settings replayed, costs in): green won, red lost. Cargo ships sail past` });
+  // v3: the river, the monorail, the gold finale
+  try {
+    const R = routes(L), rv = R.river[Math.floor(R.river.length * 0.3)], st = R.stations[0];
+    if (rv) out.push({ cam: [rv[0] * 1.12, 16, rv[1] * 1.12], look: [rv[0] * 0.9, 0, rv[1] * 0.9], dur: 4.5,
+                       caption: 'The river winds round the districts and flows into the Harbor; it reflects the sky and the glow of the city' });
+    if (st) out.push({ cam: [st.x * 1.08, 21, st.z * 1.08], look: [st.x * 0.92, 11, st.z * 0.92], dur: 4.5,
+                       caption: `The monorail loops the city, one station at every district (${R.stations.length} stations); flying taxis cross above it` });
+  } catch (e) { /* no routes: skip those two shots */ }
   const t = model.today;
   if (t?.day) {
     const st = Object.values(t.states || {}).slice(0, 4).join(', ');
     out.push({ cam: [0, span * 0.42, -span * 0.55], look: [0, 0, 0], dur: 6, today: true,
                caption: `Last session ${t.day}: ${fmt(t.fired)} fired, ${fmt(t.armed)} armed${st ? ` · ${st}` : ''}` });
   }
+  const gold = L.items.find((it) => it.kind === 'b' && it.b.cls === 'gold');
+  if (gold) out.push({ cam: [gold.x + 46, gold.h + 30, gold.z + 46], look: [gold.x, gold.h * 0.8, gold.z], dur: 6, fireworks: true,
+                       caption: `Gold: it holds in 2026, in 2021-25 and in every year, and passes the noise guard. Fireworks for every one that appears (${model.buildings.filter((b) => b.cls === 'gold').length} so far)` });
   out.push({ cam: [-span * 0.5, span * 0.3, span * 0.2], look: [0, 6, 0], dur: 4, caption: 'Paper only: the city proposes, it never changes the bot.' });
   return out;
 }
