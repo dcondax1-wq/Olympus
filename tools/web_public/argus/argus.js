@@ -34,9 +34,9 @@ const keep = (o, ks) => { const r = {}; for (const k of ks) if (o && o[k] !== un
 function slim(h) {
   if (!h || typeof h !== 'object') return null;
   const b = h.board && typeof h.board === 'object' ? h.board : {}, pc = h.live && h.live.pc && typeof h.live.pc === 'object' ? h.live.pc : {};
-  const acct = (a) => (a && typeof a === 'object' ? keep(a, ['status', 'blocks', 'quiet_days', 'room', 'mll', 'floor', 'error']) : a);
+  const acct = (a) => (a && typeof a === 'object' ? keep(a, ['status', 'blocks', 'quiet_days', 'room', 'mll', 'floor', 'eval_start', 'error']) : a);
   return { built: h.built, live: { last_run: h.live && h.live.last_run, pc: { running: pc.running, health: { running: pc.health && pc.health.running, account: pc.health && pc.health.account && keep(pc.health.account, ['armed']) } } },
-    board: { data_t: b.data_t, running: b.running, lit: acct(b.lit), atlas: acct(b.atlas), health: b.health && { items: b.health.items } } };
+    board: { data_t: b.data_t, running: b.running, real: { trades: (b.real && Array.isArray(b.real.trades) ? b.real.trades : []).map((t) => ({ acct: t.acct, day: t.day })).slice(0, 60) }, lit: acct(b.lit), atlas: acct(b.atlas), health: b.health && { items: b.health.items } } };
 }
 function save(snap) { try { localStorage.setItem(KEY, JSON.stringify(snap)); } catch (_) { /* private mode */ } }
 function load() { try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); return s && s.home ? s : null; } catch (_) { return null; } }
