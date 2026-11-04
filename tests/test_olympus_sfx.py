@@ -149,5 +149,69 @@ class SfxTest(unittest.TestCase):
         self.assertFalse(self.o["padOff"])
 
 
+WEB = ROOT / "tools/web_public"
+CORE_HARNESS = r"""
+const fs = require('fs'), path = require('path'), os = require('os');
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'sc-')), f = path.join(tmp, 'settingscore.mjs');
+fs.copyFileSync(process.argv[1], f);
+import(f).then((C) => {
+  const store = {}, st = { getItem: (k) => (k in store ? store[k] : null), setItem: (k, v) => { store[k] = String(v); }, removeItem: (k) => { delete store[k]; } };
+  const out = { modes: C.SOUND_MODES.map((m) => m[0]), start: C.soundGet(st) };
+  C.soundSet(st, 'on'); out.on = [C.soundGet(st), JSON.parse(store['olympus.sfx']).s];
+  st.setItem('olympus.sfx', JSON.stringify({ v: 0.6, m: false, s: true }));
+  C.soundSet(st, 'off'); out.off = [C.soundGet(st), JSON.parse(store['olympus.sfx'])];
+  C.soundSet(st, 'auto'); out.auto = [C.soundGet(st), 's' in JSON.parse(store['olympus.sfx']), JSON.parse(store['olympus.sfx']).v];
+  console.log(JSON.stringify(out)); fs.rmSync(tmp, { recursive: true, force: true });
+});
+"""
+
+
+@unittest.skipUnless(shutil.which("node"), "node missing")
+class SoundSwitchTest(unittest.TestCase):
+    """the Sound switch (Auto / On / Off) in the Settings app and in Jarvis's settings sheet, a test-sound button, and the data-oly-cue hooks"""
+
+    def test_settings_core_sound_modes(self):
+        r = subprocess.run(["node", "-e", CORE_HARNESS, str(WEB / "settings/settingscore.js")], capture_output=True, text=True, timeout=60)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        o = json.loads(r.stdout.strip().splitlines()[-1])
+        self.assertEqual(o["modes"], ["auto", "on", "off"])
+        self.assertEqual(o["start"], "auto")
+        self.assertEqual(o["on"], ["on", True])
+        self.assertEqual(o["off"][0], "off")
+        self.assertIs(o["off"][1]["s"], False)
+        self.assertEqual(o["off"][1]["v"], 0.6)              # the volume is kept
+        self.assertEqual(o["auto"], ["auto", False, 0.6])    # auto = the key is removed, nothing else changes
+
+    def test_settings_app_has_the_switch_and_a_test_button(self):
+        html = (WEB / "settings/index.html").read_text(encoding="utf-8")
+        js = (WEB / "settings/settings.js").read_text(encoding="utf-8")
+        self.assertIn('id="soundSeg"', html)
+        self.assertIn('role="radiogroup" aria-label="Sound"', html)
+        self.assertIn('id="soundTest"', html)
+        self.assertIn("Play a test sound", html)
+        for needle in ("C.soundSet(LS, mode)", "s.sound(mode === 'auto' ? null : mode === 'on')", "$('soundTest').addEventListener('click', soundTest)", "s.play('success')"):
+            self.assertIn(needle, js)
+
+    def test_jarvis_sheet_has_the_switch_and_a_test_button(self):
+        html = (WEB / "jarvis/index.html").read_text(encoding="utf-8")
+        for needle in ('id="setOlySound"', 'data-snd="auto"', 'data-snd="on"', 'data-snd="off"', 'id="setOlySoundTest"', "Play a test sound", "k.sound(b.dataset.snd === 'auto' ? null : b.dataset.snd === 'on')"):
+            self.assertIn(needle, html)
+
+    def test_primary_buttons_carry_a_cue(self):
+        import re
+        cues = {"ledger": ("add", "fSave", "fDelete", "toastUndo", "sheetClose"), "inbox": ("markAll", "refresh"), "bridge": ("copySync", "firstJob", "reset")}
+        for app, ids in cues.items():
+            html = (WEB / app / "index.html").read_text(encoding="utf-8")
+            for i in ids:
+                m = re.search(r'<button[^>]*id="%s"[^>]*>' % i, html)
+                self.assertTrue(m and "data-oly-cue=" in m.group(0), (app, i))
+            self.assertIn("../olympus/sfx.js", html, app)       # the cue only sounds with the kit's sfx.js on the page
+        self.assertGreaterEqual((WEB / "bridge/index.html").read_text(encoding="utf-8").count("data-oly-cue', 'success'"), 3)      # the Copy prompt buttons
+        valid = {"open", "close", "success", "warning", "tap"}
+        for app in ("ledger", "inbox", "bridge", "settings", "jarvis"):
+            for v in re.findall(r'data-oly-cue="(\w+)"', (WEB / app / "index.html").read_text(encoding="utf-8")):
+                self.assertIn(v, valid, (app, v))
+
+
 if __name__ == "__main__":
     unittest.main()

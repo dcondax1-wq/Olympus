@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="../olympus/olympus.css?v=o2">
 <script src="../olympus/themes.js?v=o2"></script>
 <script src="../olympus/olympus.js?v=o2" data-app="settings"></script>
+<script src="../olympus/intro-app.js?v=i1" defer></script>
 <script src="../olympus/sfx.js?v=s1" defer></script>
 <script src="../olympus/fx-core.js?v=f1"></script><script src="../olympus/fx-ui.js?v=f1"></script><script src="../olympus/fx-text.js?v=f1"></script><script src="../olympus/fx-burst.js?v=f1"></script>
 <script>(function () { var r = document.documentElement.style; r.setProperty('--oly-accent', '#b79bff'); r.setProperty('--oly-accent-rgb', '183, 155, 255'); })();</script>
@@ -56,6 +57,9 @@
       <label class="row"><span><b>Page transitions</b><small>The smooth glide between pages where the phone supports it</small></span><input type="checkbox" class="sw" id="trans" role="switch"></label>
       <div class="row ro"><span><small id="transNote">&nbsp;</small></span><button type="button" class="mini" id="transTry">Try it</button></div></article>
     <article class="card" id="c-sound" data-oly-fx="glassSpecular"><h2>Sounds and touch</h2>
+      <div class="row ro"><span><b>Sound</b><small id="soundNote">Auto: on, silent in LITE, reduced motion and battery saver</small></span></div>
+      <div class="seg" id="soundSeg" role="radiogroup" aria-label="Sound"></div>
+      <div class="row ro"><span><small id="soundTestNote">Nothing sounds until you tap</small></span><button type="button" class="mini" id="soundTest" data-oly-cue="success">Play a test sound</button></div>
       <label class="row"><span><b>Sounds</b><small id="sfxNote">Synthesized on the phone, silent until you tap</small></span><input type="checkbox" class="sw" id="sfxOn" role="switch"></label>
       <div class="row ro"><span><b>Volume</b></span><input type="range" class="rng" id="vol" min="0" max="100" step="5" aria-label="Volume"><button type="button" class="mini" id="sfxTry">Play</button></div>
       <label class="row"><span><b>Ambient sound</b><small>A soft pad under the apps that use it</small></span><input type="checkbox" class="sw" id="ambient" role="switch"></label>
