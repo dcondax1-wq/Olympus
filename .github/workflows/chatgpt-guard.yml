@@ -1,0 +1,28 @@
+# Checks every pull request from ChatGPT / Codex (branches chatgpt/*) so the owner can merge a green one with one tap.
+# It only READS: it never merges, pushes or changes anything. Path guard + cheap static tests. See handoff/CODEX_RUNBOOK.md.
+name: chatgpt-guard
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+  pull-requests: read
+jobs:
+  guard:
+    if: startsWith(github.head_ref, 'chatgpt/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Path guard (only the safe area, one app per PR, no secrets)
+        run: python tools/chatgpt_guard.py --base origin/${{ github.base_ref }}
+      - name: Shared checks (worker list, app list, money wording)
+        run: |
+          python -X utf8 -m tests.test_jarvis_shell
+          python tools/apps_list_build.py --check
+          python -X utf8 -m tests.test_money_wording

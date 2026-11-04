@@ -17,3 +17,8 @@ The short version:
 - Never commit `cache/dash/*`, `data/VIX_1d.csv`, `data/VXN_1d.csv`.
 - Good, safe jobs: dashboard pages (`tools/web_public/`, `web_next/`), docs, research tools that only read files
   (`tools/`, `research/`), new tests.
+
+## OLYMPUS quality work without Claude (2026-11-04)
+The owner works in ChatGPT / Codex for stretches when Claude is not available. Start with `handoff/CODEX_RUNBOOK.md` (how to test and finish a task)
+and take the first unchecked task in `handoff/QUEUE.md`. One task = one branch `chatgpt/<task-id>` = one PR. The `chatgpt-guard` check blocks PRs that touch
+the bots, workers, publish files, secrets, or more than one app folder (`tools/chatgpt_guard.py` lists the exact rules).
