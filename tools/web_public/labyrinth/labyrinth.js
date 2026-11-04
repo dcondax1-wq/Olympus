@@ -129,7 +129,7 @@ function dangerView() {
   const dead = 1 - (hz.length ? hz[hz.length - 1].alive : 1);
   return [h('p', 'strong', top.bust > 0 ? `The danger zone is trade ${top.i}: ${pct(top.bust)} of all runs end at the floor right there. By trade ${S.hor} ${pct(dead)} of runs are over (floor or target).`
     : 'At this size no run reaches the floor inside the look-ahead: the corridor is clear.'),
-    rows, h('p', '', 'The red strip on the maze floor is the same picture: the redder the block, the more runs end at the floor on that trade. Early trades are dangerous because the room to the floor is still only the max loss.'),
+    rows, h('p', '', 'The red strip on the maze floor is the same picture: the redder the block, the more runs end at the floor on that trade. Early trades are dangerous because there is no cushion yet: the drawdown left is only the max loss.'),
     h('p', '', `${S.R.name}, size ${mx(S.mult)}, ${S.pool.length} trades drawn at random 400 times.`)];
 }
 
